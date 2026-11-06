@@ -1,0 +1,69 @@
+{
+  "experiment": "E113, the case-label patching test (experiments/case_patch)",
+  "plan": "reports/plans/2026-11-06_plan_e113-case-patch.md (user-approved 2026-11-06, ask 5 'patching test': implemented as written, no verdict rule added)",
+  "definition": "decisions.md rows 81 and 87 (Jain, Kirk, Lubana et al. 2024 Defs 1-2; held-out carrying) with the causal check read by patching, the form row 81 names ('ablating or patching the readout direction'); nothing else gives a verdict",
+  "filed": "2026-11-06, before run.py ran; run.py refuses unless this file and experiments/case_label/results/predictions.json are committed unchanged",
+  "code": "experiments/case_patch/run.py (one stage); src/commute/case_patch.py (class means, the patch, the control's shift, the edit, flips; tests/test_case_patch.py); cluster/case_patch.sbatch",
+  "inputs": "E112's saved files, read only: experiments/case_label/results/large/{task,probes}.pt and dW_{real,twin}_s{0,1}.pt (sha256 checked against stage1.json before any read); stage0.json (l* = 1, possession), stage2.json (P1, P2 per state), amend1.json (the own-token probe's held-out accuracy at block 1, 0.9975, as a reproduction check of the refit)",
+  "settings": {
+    "block": 1,
+    "q0_block": 2,
+    "n_random": 5,
+    "random_seed": 113,
+    "batch": 64
+  },
+  "settings_sources": {
+    "block": "plan 'The edit': l* = 1, E112 stage 0's first passing block (stage0.json l_star); run.py asserts they agree.",
+    "q0_block": "plan Q0 (commit 63ff58a7): block 2, the next block, where E112's previous-token probe reads 0.885 unpatched on the held-out windows (stage0.json P0 acc_case[2]); block 3 reads only 0.76.",
+    "u_p": "plan: E112 stage 0's previous-token case probe at block 1 (probes.pt 'case' weights, row 1), made unit. Fitted at the position after the word on the saved Pile windows (probes.pt pile_tokens, 9,600 windows, rows 32768-65535), so it is applied at the trigger, the same position on the task windows.",
+    "u_o": "plan: E112 Amendment 1's own-token case direction at block 1, refitted here exactly as amend1.py fits it (removal.fit_ridge, ridge_lambda 1e-3 from E112's predictions.json, the 0/1 case of the word on the same 9,600 Pile windows, block 1's output at the word's own position HALF - 1), made unit. Applied at the word position HALF - 1.",
+    "class means": "plan: mu_c = mean of h.u over the 9,600 Pile windows of case class c at W0, block 1 (u_p at HALF, u_o at HALF - 1), computed once at W0 and used for every state (W0 is where the readout is defined, f_C of Def 2).",
+    "patch": "plan: h <- h + (mu_opp - h.u) u at block 1's output, at the trigger (u_p) and at the word (u_o) together, on every task window; mu_opp is the mean of the class opposite to the window's word's own case (the real case, for both the real and the twin states). h is the state's own residual.",
+    "random control": "brief: per state, 5 draws; draw k takes a seeded unit direction r per position (removal.random_basis(d, 1, [random_seed, k, position])) and steps along it by the size the real patch takes on that window, |mu_opp - h.u|, at both positions together.",
+    "Q1 windows": "plan: the train-word fit windows (1,024, E112's P3 windows), where both arms perform (train-word accuracy 0.998/0.999 real, 0.978/0.979 twin, stage1.json).",
+    "Q2 windows": "the 9,600 Pile probe windows at HALF (the trigger's position), the windows E112 stage 0 and Amendment 1 read W0's next-token loss on (3.431 nats), with the patch's targets from each window's own case class",
+    "batch": "E112's read batch (run.py label_diff, 64 windows)"
+  },
+  "rules": {
+    "Q0": {"min": 0.70},
+    "Q1": {"real": 0.50, "twin_expected_max": 0.20, "control_max": 0.10},
+    "verdict_bars": "E112 predictions.json rules.real for P1 (0.90) and P2 (0.90); Q1's real bar 0.50 in place of P3's (the same number)"
+  },
+  "measurements": {
+    "label": "E112's: d = logit A - logit B at the trigger (HALF); the model says A when d > 0.",
+    "flip": "a window flips when the sign of d changes between the unpatched and the patched run of the same state (case_patch.flips): d0 > 0 and d1 < 0, or d0 < 0 and d1 > 0. A zero on either side is no flip.",
+    "Q0": "Apparatus, W0 only, first and alone: the held-out-pair windows (1,600) under the patch; E112's previous-token probe at block 2 (probes.pt 'case', row 2; score h.w + b > 0.5 means capitalised) read at the trigger; Q0 = its accuracy against the flipped case labels (1 - y). Bar >= 0.70 (inclusive); missed -> stop (exit 1), nothing else is read. Expected: >= 0.70. Unpatched against the true labels: 0.885 (E112 stage 0; reproduced here, printed). Its control, printed, no rule: the 5 random-direction patches, accuracy against the true labels expected about 0.885 (and against the flipped ones about 0.115).",
+    "control": "Q1's random control, on every state before any Q1 is read: the flip rate under each of the 5 random patches. <= 0.10 on every draw of every state (inclusive; case_label.do_nothing_ok over the 20 rates); missed -> stop (exit 1), no state is read. Expected: about 0 on all.",
+    "Q1": "Per state, the flip rate on the fit windows under the patch (both positions, scale 1). Expected: real >= 0.50; twin <= 0.20.",
+    "Q2": "W0's mean next-token loss at HALF on the Pile probe windows, patched minus unpatched, nats; printed, no rule. Expected small, < 0.1 (E112 Amendment 1's rank-2 removal at every position of blocks 1-3 cost +0.045).",
+    "blind to": "Q1 sees only the label's sign, not how far the margin moves; it reads one linear coordinate per position at one block, so a state that reads case through another direction, another position or a nonlinear read flips no label though it uses case. Q0 is the positive control that the patch reaches the next block's case reading."
+  },
+  "verdict_rule": "Per state, E112's filed rule (case_label.verdict) with Q1 as the causal check: possession passes (E112 stage 0, l* = 1), P1 >= 0.90 and P2 >= 0.90 (E112 stage2.json) and Q1 >= 0.50 (all inclusive) -> 'reuses C'; any miss -> 'not through C'. Q0 missed -> no reading. The control over 0.10 -> no state is read. Nothing else is added.",
+  "filed_outcome": {
+    "W0": {"Q0": ">= 0.70", "Q0 random": "about 0.885 against the true labels", "Q2": "< 0.1 nats"},
+    "control": "<= 0.10 on every draw of every state (expected about 0)",
+    "real_s0": "reuses C (Q1 >= 0.50)",
+    "real_s1": "reuses C (Q1 >= 0.50)",
+    "twin_s0": "not through C (P1, P2 already miss; Q1 <= 0.20)",
+    "twin_s1": "not through C (P1, P2 already miss; Q1 <= 0.20)"
+  },
+  "edge_cases": {
+    "zero-variance class mean": "a class whose h.u is constant over its Pile windows has that value as its mean; the patch is defined as usual (tests). An empty class has no mean: run.py stops at the assert (cannot happen here: the Pile windows are balanced, pile_case_share 0.5).",
+    "equal class means": "mu_0 = mu_1 makes the patch a move to the common mean; Q0 then reads near 0.115 and stops the run. No special case.",
+    "ties in the label margin": "d0 = 0 or d1 = 0 counts as no flip (case_patch.flips; tests).",
+    "Q1 at exactly 0.50": "passes (inclusive, as E112's bars; case_label.meets).",
+    "Q0 at exactly 0.70": "passes (inclusive).",
+    "control at exactly 0.10": "passes (inclusive, case_label.do_nothing_ok); a negative rate cannot occur.",
+    "unpatched accuracy below 0.6": "a state whose unpatched labels are near chance on a set (the twin on held-out words) reads its flip rate against its own unpatched labels, as written.",
+    "Q0 missed": "stop (exit 1), no reading of any state.",
+    "a saved state's sha256 differs": "stop before any read (assert)."
+  },
+  "beside_no_rule": [
+    "per state and W0: unpatched label accuracy on the fit and held-out windows against the state's own task",
+    "per state and W0: the flip rate on the held-out-word windows (both positions, scale 1)",
+    "per state and W0: the flip rate on the fit windows with each edit alone (trigger only, word only)",
+    "per state and W0: the flip rate on the fit windows at shift 2x (target mu_opp + (mu_opp - mu_own), both positions)",
+    "the class means, their gap and the Pile windows' standard deviation of h.u per direction; the cosine of u_p and u_o; the own-token probe's held-out accuracy at block 1 (amend1.json: 0.9975)",
+    "W0's next-token loss change under random draw 0 (Q2's reference)"
+  ]
+}

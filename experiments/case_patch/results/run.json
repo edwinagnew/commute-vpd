@@ -1,0 +1,171 @@
+{
+ "directions": {
+  "n_pile": 9600,
+  "pile_case_share": 0.5,
+  "cos_up_uo": 0.2977007329463959,
+  "own_acc_heldout": 0.9975,
+  "u_p_mu0": -0.2529910360679692,
+  "u_p_mu1": 0.37708223273836866,
+  "u_p_gap": 0.6300732688063378,
+  "u_p_pile_std": 0.34256563319729827,
+  "u_o_mu0": -0.4696910882822353,
+  "u_o_mu1": 0.5432947907594253,
+  "u_o_gap": 1.0129858790416606,
+  "u_o_pile_std": 0.5161537328697481
+ },
+ "Q0": {
+  "unpatched": {
+   "true": 0.885,
+   "flipped": 0.115
+  },
+  "patched": {
+   "true": 0.285625,
+   "flipped": 0.714375
+  },
+  "random": [
+   {
+    "true": 0.891875,
+    "flipped": 0.108125
+   },
+   {
+    "true": 0.885,
+    "flipped": 0.115
+   },
+   {
+    "true": 0.890625,
+    "flipped": 0.109375
+   },
+   {
+    "true": 0.86625,
+    "flipped": 0.13375
+   },
+   {
+    "true": 0.885,
+    "flipped": 0.115
+   }
+  ]
+ },
+ "Q2": {
+  "next_ce_w0": 3.4307254417737325,
+  "Q2": 0.01398205995559687,
+  "random0": 0.008059327602386368
+ },
+ "control": {
+  "real_s0": [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  "real_s1": [
+   0.0,
+   0.0,
+   0.0,
+   0.0,
+   0.0
+  ],
+  "twin_s0": [
+   0.0009765625,
+   0.0009765625,
+   0.0029296875,
+   0.00390625,
+   0.0
+  ],
+  "twin_s1": [
+   0.001953125,
+   0.001953125,
+   0.0009765625,
+   0.001953125,
+   0.0029296875
+  ]
+ },
+ "states": {
+  "real_s0": {
+   "P1": 0.998125,
+   "P2": 0.9925,
+   "Q1": 0.001953125,
+   "meets": {
+    "P1": true,
+    "P2": true,
+    "Q1": false
+   },
+   "verdict": "not through C"
+  },
+  "real_s1": {
+   "P1": 0.99625,
+   "P2": 0.991875,
+   "Q1": 0.013671875,
+   "meets": {
+    "P1": true,
+    "P2": true,
+    "Q1": false
+   },
+   "verdict": "not through C"
+  },
+  "twin_s0": {
+   "P1": 0.50625,
+   "P2": 0.510625,
+   "Q1": 0.001953125,
+   "meets": {
+    "P1": false,
+    "P2": false,
+    "Q1": false
+   },
+   "verdict": "not through C"
+  },
+  "twin_s1": {
+   "P1": 0.51625,
+   "P2": 0.523125,
+   "Q1": 0.0078125,
+   "meets": {
+    "P1": false,
+    "P2": false,
+    "Q1": false
+   },
+   "verdict": "not through C"
+  }
+ },
+ "beside": {
+  "W0": {
+   "acc_fit": 0.51953125,
+   "acc_held": 0.520625,
+   "flip_held": 0.025625,
+   "flip_trigger_only": 0.0234375,
+   "flip_word_only": 0.01171875,
+   "flip_2x": 0.0556640625
+  },
+  "real_s0": {
+   "acc_fit": 0.998046875,
+   "acc_held": 0.998125,
+   "flip_held": 0.0025,
+   "flip_trigger_only": 0.0009765625,
+   "flip_word_only": 0.0,
+   "flip_2x": 0.0263671875
+  },
+  "real_s1": {
+   "acc_fit": 0.9990234375,
+   "acc_held": 0.99625,
+   "flip_held": 0.00375,
+   "flip_trigger_only": 0.005859375,
+   "flip_word_only": 0.0029296875,
+   "flip_2x": 0.0390625
+  },
+  "twin_s0": {
+   "acc_fit": 0.9775390625,
+   "acc_held": 0.50625,
+   "flip_held": 0.00875,
+   "flip_trigger_only": 0.0009765625,
+   "flip_word_only": 0.0009765625,
+   "flip_2x": 0.005859375
+  },
+  "twin_s1": {
+   "acc_fit": 0.9794921875,
+   "acc_held": 0.51625,
+   "flip_held": 0.04125,
+   "flip_trigger_only": 0.0029296875,
+   "flip_word_only": 0.005859375,
+   "flip_2x": 0.0126953125
+  }
+ }
+}
