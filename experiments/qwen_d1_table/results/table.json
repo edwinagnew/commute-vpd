@@ -429,6 +429,427 @@
    },
    "spread_borrowed": false
   },
+  "R_s0": {
+   "arm": "RL",
+   "saturation": {
+    "gain": -0.3939451514785799,
+    "kept": {
+     "1.0": null,
+     "0.5": null,
+     "0.25": null,
+     "0.1": null
+    },
+    "band": "no call"
+   },
+   "rules": {
+    "1": {
+     "K": {
+      "W0": 0.06431339845656138,
+      "FT": 0.0,
+      "random": 0.06442905960011115,
+      "signs": 0.07995006034908439,
+      "moved": 0.0011682487267495453,
+      "remainder": 0.05227867988744832
+     },
+     "over_ruler": 0.01816493537561392,
+     "teeth": {
+      "random": {
+       "gap": 0.01215037971266283,
+       "width": 0.0015020148260302957,
+       "label": "fails"
+      },
+      "signs": {
+       "gap": 0.027671380461636072,
+       "width": 0.0032569496426485666,
+       "label": "fails"
+      }
+     },
+     "result": "holds"
+    },
+    "2": {
+     "value": 0.09241761558670145,
+     "null": 0.09520228228055495,
+     "spread": 0.0018358828093935908,
+     "result": "holds"
+    },
+    "3": {
+     "value": 0.907580868573127,
+     "result": "holds"
+    },
+    "4": {
+     "result": "no behaviour line"
+    },
+    "5": {
+     "diff": -0.00023207167998976765,
+     "width": 2.9928193381144216e-05,
+     "result": "holds"
+    },
+    "6": {
+     "result": "no behaviour line"
+    }
+   },
+   "verdict": "passes",
+   "note": "no behaviour line",
+   "printed": {
+    "scored": {
+     "K_W0_masked": 0.13829081555979034,
+     "K_do_nothing": 0.07157874893174443,
+     "K_ls": 0.07134667725175467,
+     "K_ls_w0_masks": 0.1377808138749239,
+     "kept": null
+    },
+    "pooled": {
+     "K_W0_masked": 0.13829081555979034,
+     "K_do_nothing": 0.07157874893174443,
+     "K_ls": 0.07134667725175467,
+     "K_ls_w0_masks": 0.1377808138749239,
+     "kept": null
+    },
+    "size_minus_one_minus_share": -1.5158401714954195e-06,
+    "seconds": {
+     "fractions": 140.39764642715454,
+     "clean": 190.2040524482727,
+     "parts": 405.1639955043793
+    }
+   },
+   "spread_borrowed": false
+  },
+  "R_s70": {
+   "arm": "RL",
+   "saturation": {
+    "gain": 0.030792878728395312,
+    "kept": {
+     "1.0": 1.0,
+     "0.5": -1.2937753865870272,
+     "0.25": -1.1044092805433092,
+     "0.1": -0.432484722497737
+    },
+    "band": "no call"
+   },
+   "rules": {
+    "1": {
+     "K": {
+      "W0": 0.09769188683527283,
+      "FT": 0.0,
+      "random": 0.09779363946040032,
+      "signs": 0.12410822032000127,
+      "moved": 0.002327054623891674,
+      "remainder": 0.07931382239175436
+     },
+     "over_ruler": 0.02382034679927446,
+     "teeth": {
+      "random": {
+       "gap": 0.018479817068645977,
+       "width": 0.0023601103516681238,
+       "label": "fails"
+      },
+      "signs": {
+       "gap": 0.04479439792824692,
+       "width": 0.005692459770513518,
+       "label": "fails"
+      }
+     },
+     "result": "misses"
+    },
+    "2": {
+     "value": 0.09425349839609504,
+     "null": 0.09706652239657027,
+     "spread": 0.0018358828093935908,
+     "result": "holds"
+    },
+    "3": {
+     "value": 0.9057437700140415,
+     "result": "holds"
+    },
+    "4": {
+     "result": "no behaviour line"
+    },
+    "5": {
+     "diff": 2.858506448536667e-05,
+     "width": 1.2531417184699363e-05,
+     "result": "misses"
+    },
+    "6": {
+     "result": "no behaviour line"
+    }
+   },
+   "verdict": "fails",
+   "printed": {
+    "scored": {
+     "K_W0_masked": 0.16688277166680562,
+     "K_do_nothing": 0.07036753306492971,
+     "K_ls": 0.07039611812941507,
+     "K_ls_w0_masks": 0.16681814692887326,
+     "kept": null
+    },
+    "pooled": {
+     "K_W0_masked": 0.16688277166680562,
+     "K_do_nothing": 0.07036753306492971,
+     "K_ls": 0.07039611812941507,
+     "K_ls_w0_masks": 0.16681814692887326,
+     "kept": null
+    },
+    "size_minus_one_minus_share": -2.7315898635249525e-06,
+    "seconds": {
+     "fractions": 129.96031427383423,
+     "clean": 181.08562541007996,
+     "parts": 408.5768496990204
+    }
+   },
+   "spread_borrowed": false
+  },
+  "N_s0": {
+   "arm": "null",
+   "saturation": {
+    "gain": 0.13166418844934702,
+    "kept": {
+     "1.0": 1.0,
+     "0.5": 0.9833362735008311,
+     "0.25": 0.9100355862263622,
+     "0.1": 0.44594387379680794
+    },
+    "band": "graded"
+   },
+   "rules": {
+    "1": {
+     "K": {
+      "W0": 0.13490213079943947,
+      "FT": 0.0,
+      "random": 0.13498760570162638,
+      "signs": 0.17874113800935792,
+      "moved": 0.0010017177845328732,
+      "remainder": 0.11049717767629164
+     },
+     "over_ruler": 0.007425514916603789,
+     "teeth": {
+      "random": {
+       "gap": 0.024490428025334736,
+       "width": 0.0028019616153198527,
+       "label": "fails"
+      },
+      "signs": {
+       "gap": 0.06824396033306632,
+       "width": 0.007988919282908513,
+       "label": "fails"
+      }
+     },
+     "result": "holds"
+    },
+    "2": {
+     "value": 0.0892338439011201,
+     "null": 0.09170950389839075,
+     "spread": 0.0028968813326951393,
+     "result": "misses"
+    },
+    "3": {
+     "value": 0.9107681411992871,
+     "result": "holds"
+    },
+    "4": {
+     "result": "no behaviour line"
+    },
+    "5": {
+     "diff": -1.5803658062836642e-05,
+     "width": 2.89494265491054e-05,
+     "result": "holds"
+    },
+    "6": {
+     "result": "no behaviour line"
+    }
+   },
+   "verdict": "fails",
+   "printed": {
+    "scored": {
+     "K_W0_masked": 0.2052630549722793,
+     "K_do_nothing": 0.07024837089069215,
+     "K_ls": 0.07023256723262933,
+     "K_ls_w0_masks": 0.20436162366996846,
+     "kept": null
+    },
+    "pooled": {
+     "K_W0_masked": 0.2052630549722793,
+     "K_do_nothing": 0.07024837089069215,
+     "K_ls": 0.07023256723262933,
+     "K_ls_w0_masks": 0.20436162366996846,
+     "kept": null
+    },
+    "size_minus_one_minus_share": 1.9851004071647083e-06,
+    "seconds": {
+     "fractions": 138.94754076004028,
+     "clean": 179.5722315311432,
+     "parts": 431.57613730430603
+    }
+   },
+   "spread_borrowed": false
+  },
+  "N_s70": {
+   "arm": "null",
+   "saturation": {
+    "gain": 0.8266389926939732,
+    "kept": {
+     "1.0": 1.0,
+     "0.5": 0.5703274965254989,
+     "0.25": 0.30099259418451446,
+     "0.1": 0.12363991456645647
+    },
+    "band": "graded"
+   },
+   "rules": {
+    "1": {
+     "K": {
+      "W0": 0.048673191100256044,
+      "FT": 0.0,
+      "random": 0.04869951876094076,
+      "signs": 0.0775628424542068,
+      "moved": 0.000425374921850592,
+      "remainder": 0.03808369731511983
+     },
+     "over_ruler": 0.00873940894843762,
+     "teeth": {
+      "random": {
+       "gap": 0.010615821445820933,
+       "width": 0.0013850899523769108,
+       "label": "fails"
+      },
+      "signs": {
+       "gap": 0.039479145139086985,
+       "width": 0.005435167402659875,
+       "label": "fails"
+      }
+     },
+     "result": "holds"
+    },
+    "2": {
+     "value": 0.09213072523381524,
+     "null": 0.09470132235806339,
+     "spread": 0.0028968813326951393,
+     "result": "misses"
+    },
+    "3": {
+     "value": 0.9078686699850571,
+     "result": "holds"
+    },
+    "4": {
+     "result": "no behaviour line"
+    },
+    "5": {
+     "diff": 4.9462453863782395e-06,
+     "width": 1.5194182956255564e-05,
+     "result": "holds"
+    },
+    "6": {
+     "result": "no behaviour line"
+    }
+   },
+   "verdict": "fails",
+   "printed": {
+    "scored": {
+     "K_W0_masked": 0.13040828885756528,
+     "K_do_nothing": 0.06847816075401744,
+     "K_ls": 0.06848310699940383,
+     "K_ls_w0_masks": 0.13008827386944619,
+     "kept": null
+    },
+    "pooled": {
+     "K_W0_masked": 0.13040828885756528,
+     "K_do_nothing": 0.06847816075401744,
+     "K_ls": 0.06848310699940383,
+     "K_ls_w0_masks": 0.13008827386944619,
+     "kept": null
+    },
+    "size_minus_one_minus_share": -6.047811276221893e-07,
+    "seconds": {
+     "fractions": 136.5935878753662,
+     "clean": 186.50984263420105,
+     "parts": 422.05870270729065
+    }
+   },
+   "spread_borrowed": false
+  },
+  "F_s0": {
+   "arm": "own-samples",
+   "saturation": {
+    "gain": 0.04172980167015039,
+    "kept": {
+     "1.0": 1.0,
+     "0.5": 0.5046599931606583,
+     "0.25": 0.262082156742732,
+     "0.1": 0.10585584137137462
+    },
+    "band": "no call"
+   },
+   "rules": {
+    "1": {
+     "K": {
+      "W0": 0.0010191405230331346,
+      "FT": 0.0,
+      "random": 0.0010320961611850524,
+      "signs": 0.0015874103406946613,
+      "moved": 2.191549643150299e-05,
+      "remainder": 0.0008025348547134974
+     },
+     "over_ruler": 0.021503900528141856,
+     "teeth": {
+      "random": {
+       "gap": 0.00022956130647155514,
+       "width": 2.942262859555037e-05,
+       "label": "fails"
+      },
+      "signs": {
+       "gap": 0.0007848754859811639,
+       "width": 0.00011084709468576657,
+       "label": "fails"
+      }
+     },
+     "result": "at floor"
+    },
+    "2": {
+     "value": 0.09083878964648602,
+     "null": 0.09273512473845771,
+     "spread": 0.0028968813326951393,
+     "result": "misses"
+    },
+    "3": {
+     "value": 0.9091612855436964,
+     "result": "holds"
+    },
+    "4": {
+     "result": "no behaviour line"
+    },
+    "5": {
+     "diff": 2.786549477576172e-05,
+     "width": 7.407714776767849e-06,
+     "result": "misses"
+    },
+    "6": {
+     "result": "no behaviour line"
+    }
+   },
+   "verdict": "fails",
+   "printed": {
+    "scored": {
+     "K_W0_masked": 0.07104313591734529,
+     "K_do_nothing": 0.06959875696722917,
+     "K_ls": 0.06962662246200493,
+     "K_ls_w0_masks": 0.07106744882419143,
+     "kept": null
+    },
+    "pooled": {
+     "K_W0_masked": 0.07104313591734529,
+     "K_do_nothing": 0.06959875696722917,
+     "K_ls": 0.06962662246200493,
+     "K_ls_w0_masks": 0.07106744882419143,
+     "kept": null
+    },
+    "size_minus_one_minus_share": 7.51901824136425e-08,
+    "seconds": {
+     "fractions": 131.2069547176361,
+     "clean": 168.86928462982178,
+     "parts": 385.63587045669556
+    }
+   },
+   "spread_borrowed": true
+  },
   "u1": {
    "arm": "u1",
    "saturation": {
@@ -469,8 +890,8 @@
     "2": {
      "value": 0.08745097554866293,
      "null": 0.09099153542942415,
-     "spread": null,
-     "result": "pending"
+     "spread": 0.0028968813326951393,
+     "result": "holds"
     },
     "3": {
      "value": 0.9125932107759518,
@@ -488,7 +909,8 @@
      "result": "not graded"
     }
    },
-   "verdict": "pending",
+   "verdict": "passes",
+   "note": "no behaviour line",
    "printed": {
     "scored": {
      "K_W0_masked": 1.488411037496307,
@@ -567,8 +989,8 @@
     "2": {
      "value": 0.08817093377321088,
      "null": 0.091606975092882,
-     "spread": null,
-     "result": "pending"
+     "spread": 0.0028968813326951393,
+     "result": "holds"
     },
     "3": {
      "value": 0.9118840987102729,
@@ -586,7 +1008,8 @@
      "result": "not graded"
     }
    },
-   "verdict": "pending",
+   "verdict": "passes",
+   "note": "no behaviour line",
    "printed": {
     "scored": {
      "K_W0_masked": 1.2366603704522294,
@@ -623,20 +1046,20 @@
  "arms": {
   "anchor 1": "passes",
   "anchor 2": "passes",
-  "RL": "pending",
-  "null": "pending",
-  "own-samples": "pending",
-  "u1": "pending",
-  "u2": "pending"
+  "RL": "fails",
+  "null": "fails",
+  "own-samples": "fails",
+  "u1": "passes",
+  "u2": "passes"
  },
  "predictions": {
-  "P1_size": "unread",
-  "P2_share": "unread",
-  "P3_clean": "unread",
-  "P4_masked_K": "unread",
+  "P1_size": "holds",
+  "P2_share": "misses",
+  "P3_clean": "misses",
+  "P4_masked_K": "misses",
   "P5_graded": "misses",
   "P6_no_room": "holds",
-  "P7_table": "unread"
+  "P7_table": "misses"
  },
- "table": "pending"
+ "table": "fails"
 }

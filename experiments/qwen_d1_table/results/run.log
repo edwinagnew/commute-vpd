@@ -181,3 +181,122 @@
 [  4767.3s] [u2] {"verdict": "pending"} rules {"1": "holds", "2": "pending", "3": "holds", "4": "not graded", "5": "holds", "6": "not graded"}
 [  4767.4s] [u2] done in 952 s, peak GPU 42.66 GiB, host 90.2 GB
 [  4767.4s] [done] ['a1_s0', 'a1_s1', 'u1', 'u2']; FINISHED
+[     0.0s] [start] {'stage': None, 'states': 'R_s0,R_s70,N_s0,N_s70,F_s0', 'decomp': '/mnt/nw/home/e.agnew/commute-data/artifacts/qwen3-1.7b-p-e9fcffd5-torch'}; config Config(gain_batch=2, limit_s=7020, first_guess_s=2400)
+[     5.5s] [check] rows_and_seqs: ok {"a1": 2414, "tofu": 13421, "seqs_maths": 256, "seqs_a1": 256, "seqs_tofu": 787, "seqs_tofu_all": 800}
+[    54.6s] [load] target, components, Γ, live set; NVIDIA L40, peak GPU 40.61 GiB, host 43.0 GB
+[    65.2s] [check] R_s0_norm: ok {"norm": 0.3508836925461713, "e91": 0.3508836925461713}
+[    88.1s] [gain W0] 2.495207286893 nats per response token, 256 rows, 13 s, peak GPU 42.17 GiB, host 44.3 GB
+[   101.8s] [gain FT] 2.889152438371 nats per response token, 256 rows, 14 s, peak GPU 42.17 GiB, host 44.3 GB
+[   124.0s] [gain state] 2.889152438371 nats per response token, 256 rows, 13 s, peak GPU 42.17 GiB, host 51.2 GB
+[   147.4s] [gain state] 2.745557630349 nats per response token, 256 rows, 13 s, peak GPU 42.17 GiB, host 51.2 GB
+[   174.4s] [gain state] 2.628532565568 nats per response token, 256 rows, 13 s, peak GPU 42.17 GiB, host 51.2 GB
+[   199.8s] [gain state] 2.549671624429 nats per response token, 256 rows, 14 s, peak GPU 42.17 GiB, host 51.2 GB
+[   215.8s] [gain W0] 2.495207286893 nats per response token, 256 rows, 13 s, peak GPU 42.17 GiB, host 51.2 GB
+[   215.8s] [check] R_s0_fractions: ok {"t1_vs_FT": 0.0, "W0_end_vs_W0": 0.0, "gain": -0.3939451514785799, "kept": {"1.0": null, "0.5": null, "0.25": null, "0.1": null}, "band": "no call"}
+[   257.1s] [clean W0] K 0.0643133985 nll 2.07630976; rows 128, 41 s, peak GPU 42.17 GiB, host 51.2 GB
+[   271.2s] [clean FT] K 0 nll 2.20142536; rows 128, 14 s, peak GPU 42.17 GiB, host 51.2 GB
+[   271.2s] [check] R_s0_clean_FT: ok {"K": 0.0}
+[   271.2s] [check] R_s0_memory: ok {"gpu_gib": 42.171958446502686, "host_gb": 51.154624}
+[   342.9s] [clean random] K 0.0644290596 nll 2.07600714; rows 128, 54 s, peak GPU 42.17 GiB, host 59.8 GB
+[   406.0s] [clean signs] K 0.0799500603 nll 2.06803569; rows 128, 53 s, peak GPU 42.17 GiB, host 59.8 GB
+[   686.0s] [split R_s0] share 0.0924176156 null 0.0952022823 size 0.907580869; 280 s, peak GPU 42.17 GiB, host 76.6 GB
+[   737.7s] [clean moved] K 0.00116824873 nll 2.17528663; rows 128, 52 s, peak GPU 42.17 GiB, host 83.3 GB
+[   757.4s] [gain state] 2.822900050043 nats per response token, 256 rows, 13 s, peak GPU 42.17 GiB, host 83.3 GB
+[   810.8s] [clean remainder] K 0.0522786799 nll 2.08991586; rows 128, 50 s, peak GPU 42.17 GiB, host 88.2 GB
+[   932.7s] [cells R_s0 base] K0 0.0696131952 nll_W0 67770.7505 nll_FT 71854.5236 K00 0.138290816 K01 0.0715787489 nll_m00 67363.8523 nll_m01 70437.8166; rows 128, 122 s, peak GPU 42.17 GiB, host 88.2 GB
+[  1061.5s] [cells R_s0 own] K10 0.137780814 K11 0.0713466773 nll_m10 67328.0858 nll_m11 70411.9498; rows 128, 129 s, peak GPU 42.48 GiB, host 88.2 GB
+[  1067.5s] [R_s0] {"verdict": "pending"} rules {"1": "holds", "2": "pending", "3": "holds", "4": "no behaviour line", "5": "holds", "6": "no behaviour line"}
+[  1067.8s] [R_s0] done in 1013 s, peak GPU 42.48 GiB, host 88.2 GB
+[  1075.1s] [check] R_s70_norm: ok {"norm": 0.3468409803773495, "e91": 0.3468409803773495}
+[  1097.2s] [gain W0] 2.495207286893 nats per response token, 256 rows, 12 s, peak GPU 42.48 GiB, host 88.2 GB
+[  1110.6s] [gain FT] 2.464414408165 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 88.2 GB
+[  1131.6s] [gain state] 2.464414408165 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 88.2 GB
+[  1153.9s] [gain state] 2.535046355474 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 88.2 GB
+[  1177.0s] [gain state] 2.529215227935 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 88.2 GB
+[  1199.6s] [gain state] 2.508524736505 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 88.2 GB
+[  1214.8s] [gain W0] 2.495207286893 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 88.2 GB
+[  1214.8s] [check] R_s70_fractions: ok {"t1_vs_FT": 0.0, "W0_end_vs_W0": 0.0, "gain": 0.030792878728395312, "kept": {"1.0": 1.0, "0.5": -1.2937753865870272, "0.25": -1.1044092805433092, "0.1": -0.432484722497737}, "band": "no call"}
+[  1254.5s] [clean W0] K 0.0976918868 nll 2.07630976; rows 128, 40 s, peak GPU 42.48 GiB, host 88.2 GB
+[  1268.3s] [clean FT] K 0 nll 2.18107683; rows 128, 14 s, peak GPU 42.48 GiB, host 88.2 GB
+[  1268.3s] [check] R_s70_clean_FT: ok {"K": 0.0}
+[  1268.3s] [check] R_s70_memory: ok {"gpu_gib": 42.47638702392578, "host_gb": 88.17296}
+[  1336.2s] [clean random] K 0.0977936395 nll 2.0760026; rows 128, 55 s, peak GPU 42.48 GiB, host 88.2 GB
+[  1395.8s] [clean signs] K 0.12410822 nll 2.07116065; rows 128, 53 s, peak GPU 42.48 GiB, host 88.2 GB
+[  1671.8s] [split R_s70] share 0.0942534984 null 0.0970665224 size 0.90574377; 276 s, peak GPU 42.48 GiB, host 88.2 GB
+[  1722.7s] [clean moved] K 0.00232705462 nll 2.16197906; rows 128, 51 s, peak GPU 42.48 GiB, host 88.2 GB
+[  1745.6s] [gain state] 2.479767827130 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 88.2 GB
+[  1804.0s] [clean remainder] K 0.0793138224 nll 2.07555144; rows 128, 54 s, peak GPU 42.48 GiB, host 89.3 GB
+[  1921.9s] [cells R_s70 base] K0 0.0696131952 nll_W0 67770.7505 nll_FT 71190.3477 K00 0.166882772 K01 0.0703675331 nll_m00 67363.8523 nll_m01 70134.5454; rows 128, 117 s, peak GPU 42.48 GiB, host 89.3 GB
+[  2051.5s] [cells R_s70 own] K10 0.166818147 K11 0.0703961181 nll_m10 67379.6218 nll_m11 70158.5926; rows 128, 130 s, peak GPU 42.48 GiB, host 89.3 GB
+[  2057.4s] [R_s70] {"verdict": "fails"} rules {"1": "misses", "2": "holds", "3": "holds", "4": "no behaviour line", "5": "misses", "6": "no behaviour line"}
+[  2057.7s] [R_s70] done in 990 s, peak GPU 42.48 GiB, host 89.3 GB
+[  2064.4s] [check] N_s0_norm: ok {"norm": 0.36984545096293264, "e91": 0.3698454509629327}
+[  2086.9s] [gain W0] 2.495207286893 nats per response token, 256 rows, 12 s, peak GPU 42.48 GiB, host 89.3 GB
+[  2100.2s] [gain FT] 2.363543098444 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 89.3 GB
+[  2122.7s] [gain state] 2.363543098444 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 89.3 GB
+[  2149.7s] [gain state] 2.365737114470 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 89.3 GB
+[  2174.2s] [gain state] 2.375388189972 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 89.3 GB
+[  2198.6s] [gain state] 2.436492448655 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 89.3 GB
+[  2213.3s] [gain W0] 2.495207286893 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 89.3 GB
+[  2213.3s] [check] N_s0_fractions: ok {"t1_vs_FT": 0.0, "W0_end_vs_W0": 0.0, "gain": 0.13166418844934702, "kept": {"1.0": 1.0, "0.5": 0.9833362735008311, "0.25": 0.9100355862263622, "0.1": 0.44594387379680794}, "band": "graded"}
+[  2253.0s] [clean W0] K 0.134902131 nll 2.07630976; rows 128, 40 s, peak GPU 42.48 GiB, host 89.3 GB
+[  2266.7s] [clean FT] K 0 nll 2.10513469; rows 128, 14 s, peak GPU 42.48 GiB, host 89.3 GB
+[  2266.7s] [check] N_s0_clean_FT: ok {"K": 0.0}
+[  2266.7s] [check] N_s0_memory: ok {"gpu_gib": 42.47638702392578, "host_gb": 89.273596}
+[  2330.3s] [clean random] K 0.134987606 nll 2.07600651; rows 128, 49 s, peak GPU 42.48 GiB, host 89.3 GB
+[  2392.9s] [clean signs] K 0.178741138 nll 2.08802156; rows 128, 54 s, peak GPU 42.48 GiB, host 89.3 GB
+[  2679.2s] [split N_s0] share 0.0892338439 null 0.0917095039 size 0.910768141; 286 s, peak GPU 42.48 GiB, host 89.3 GB
+[  2745.5s] [clean moved] K 0.00100171778 nll 2.09987471; rows 128, 66 s, peak GPU 42.48 GiB, host 89.3 GB
+[  2770.8s] [gain state] 2.387346084007 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 89.3 GB
+[  2824.0s] [clean remainder] K 0.110497178 nll 2.0680397; rows 128, 50 s, peak GPU 42.48 GiB, host 90.3 GB
+[  2944.9s] [cells N_s0 base] K0 0.0696131952 nll_W0 67770.7505 nll_FT 68711.5962 K00 0.205263055 K01 0.0702483709 nll_m00 67363.8523 nll_m01 68526.458; rows 128, 120 s, peak GPU 42.48 GiB, host 90.3 GB
+[  3073.5s] [cells N_s0 own] K10 0.204361624 K11 0.0702325672 nll_m10 67374.5178 nll_m11 68557.45; rows 128, 129 s, peak GPU 42.48 GiB, host 90.3 GB
+[  3079.6s] [N_s0] {"verdict": "pending"} rules {"1": "holds", "2": "pending", "3": "holds", "4": "no behaviour line", "5": "holds", "6": "no behaviour line"}
+[  3079.8s] [N_s0] done in 1022 s, peak GPU 42.48 GiB, host 90.3 GB
+[  3089.7s] [check] N_s70_norm: ok {"norm": 0.3353582630832081, "e91": 0.3353582630832081}
+[  3112.8s] [gain W0] 2.495207286893 nats per response token, 256 rows, 12 s, peak GPU 42.48 GiB, host 90.3 GB
+[  3126.2s] [gain FT] 1.668568294199 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 90.3 GB
+[  3148.8s] [gain state] 1.668568294199 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 90.3 GB
+[  3173.3s] [gain state] 2.023752339659 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 90.3 GB
+[  3197.8s] [gain state] 2.246395072028 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 90.3 GB
+[  3222.3s] [gain state] 2.393001712459 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 90.3 GB
+[  3237.0s] [gain W0] 2.495207286893 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 90.3 GB
+[  3237.0s] [check] N_s70_fractions: ok {"t1_vs_FT": 0.0, "W0_end_vs_W0": 0.0, "gain": 0.8266389926939732, "kept": {"1.0": 1.0, "0.5": 0.5703274965254989, "0.25": 0.30099259418451446, "0.1": 0.12363991456645647}, "band": "graded"}
+[  3277.8s] [clean W0] K 0.0486731911 nll 2.07630976; rows 128, 41 s, peak GPU 42.48 GiB, host 90.3 GB
+[  3291.4s] [clean FT] K 0 nll 2.03895884; rows 128, 14 s, peak GPU 42.48 GiB, host 90.3 GB
+[  3291.4s] [check] N_s70_clean_FT: ok {"K": 0.0}
+[  3291.4s] [check] N_s70_memory: ok {"gpu_gib": 42.47638702392578, "host_gb": 90.253956}
+[  3361.3s] [clean random] K 0.0486995188 nll 2.07601658; rows 128, 55 s, peak GPU 42.48 GiB, host 90.3 GB
+[  3423.5s] [clean signs] K 0.0775628425 nll 2.07967109; rows 128, 53 s, peak GPU 42.48 GiB, host 90.3 GB
+[  3707.2s] [split N_s70] share 0.0921307252 null 0.0947013224 size 0.90786867; 284 s, peak GPU 42.48 GiB, host 90.3 GB
+[  3765.5s] [clean moved] K 0.000425374922 nll 2.04416119; rows 128, 58 s, peak GPU 42.48 GiB, host 90.3 GB
+[  3786.3s] [gain state] 1.717000714245 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 90.3 GB
+[  3845.2s] [clean remainder] K 0.0380836973 nll 2.06408482; rows 128, 56 s, peak GPU 42.48 GiB, host 90.3 GB
+[  3965.5s] [cells N_s70 base] K0 0.0696131952 nll_W0 67770.7505 nll_FT 66551.6166 K00 0.130408289 K01 0.0684781608 nll_m00 67363.8523 nll_m01 66797.0422; rows 128, 120 s, peak GPU 42.48 GiB, host 90.3 GB
+[  4094.9s] [cells N_s70 own] K10 0.130088274 K11 0.068483107 nll_m10 67347.4403 nll_m11 66792.7479; rows 128, 129 s, peak GPU 42.48 GiB, host 90.3 GB
+[  4101.6s] [N_s70] {"verdict": "fails"} rules {"1": "holds", "2": "misses", "3": "holds", "4": "no behaviour line", "5": "holds", "6": "no behaviour line"}
+[  4101.8s] [N_s70] done in 1022 s, peak GPU 42.48 GiB, host 90.3 GB
+[  4108.5s] [check] F_s0_norm: ok {"norm": 0.2738619803765314, "e91": 0.2738619803765314}
+[  4131.3s] [gain W0] 2.495207286893 nats per response token, 256 rows, 12 s, peak GPU 42.48 GiB, host 90.3 GB
+[  4144.7s] [gain FT] 2.453477485223 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 90.3 GB
+[  4165.8s] [gain state] 2.453477485223 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 90.3 GB
+[  4188.7s] [gain state] 2.474147925467 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 90.3 GB
+[  4211.7s] [gain state] 2.484270650471 nats per response token, 256 rows, 14 s, peak GPU 42.48 GiB, host 90.3 GB
+[  4234.9s] [gain state] 2.490789943627 nats per response token, 256 rows, 14 s, peak GPU 42.48 GiB, host 90.3 GB
+[  4250.2s] [gain W0] 2.495207286893 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 90.3 GB
+[  4250.2s] [check] F_s0_fractions: ok {"t1_vs_FT": 0.0, "W0_end_vs_W0": 0.0, "gain": 0.04172980167015039, "kept": {"1.0": 1.0, "0.5": 0.5046599931606583, "0.25": 0.262082156742732, "0.1": 0.10585584137137462}, "band": "no call"}
+[  4290.2s] [clean W0] K 0.00101914052 nll 2.07630976; rows 128, 40 s, peak GPU 42.48 GiB, host 90.3 GB
+[  4304.4s] [clean FT] K 0 nll 2.071544; rows 128, 14 s, peak GPU 42.48 GiB, host 90.3 GB
+[  4304.4s] [check] F_s0_clean_FT: ok {"K": 0.0}
+[  4304.4s] [check] F_s0_memory: ok {"gpu_gib": 42.47638702392578, "host_gb": 90.253956}
+[  4364.5s] [clean random] K 0.00103209616 nll 2.07610658; rows 128, 48 s, peak GPU 42.48 GiB, host 90.3 GB
+[  4419.0s] [clean signs] K 0.00158741034 nll 2.07747196; rows 128, 48 s, peak GPU 42.48 GiB, host 90.3 GB
+[  4687.2s] [split F_s0] share 0.0908387896 null 0.0927351247 size 0.909161286; 268 s, peak GPU 42.48 GiB, host 90.3 GB
+[  4734.8s] [clean moved] K 2.19154964e-05 nll 2.07319932; rows 128, 48 s, peak GPU 42.48 GiB, host 90.3 GB
+[  4753.4s] [gain state] 2.459934622425 nats per response token, 256 rows, 13 s, peak GPU 42.48 GiB, host 90.3 GB
+[  4804.3s] [clean remainder] K 0.000802534855 nll 2.07452889; rows 128, 48 s, peak GPU 42.48 GiB, host 90.4 GB
+[  4914.1s] [cells F_s0 base] K0 0.0696131952 nll_W0 67770.7505 nll_FT 67615.196 K00 0.0710431359 K01 0.069598757 nll_m00 67363.8523 nll_m01 67266.1873; rows 128, 109 s, peak GPU 42.48 GiB, host 90.4 GB
+[  5039.5s] [cells F_s0 own] K10 0.0710674488 K11 0.0696266225 nll_m10 67376.0469 nll_m11 67278.5553; rows 128, 125 s, peak GPU 42.48 GiB, host 90.4 GB
+[  5045.7s] [F_s0] {"verdict": "fails"} rules {"1": "at floor", "2": "misses", "3": "holds", "4": "no behaviour line", "5": "misses", "6": "no behaviour line"}
+[  5046.0s] [F_s0] done in 944 s, peak GPU 42.48 GiB, host 90.4 GB
+[  5046.0s] [done] ['R_s0', 'R_s70', 'N_s0', 'N_s70', 'F_s0']; FINISHED
