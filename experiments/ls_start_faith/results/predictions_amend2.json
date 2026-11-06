@@ -1,0 +1,53 @@
+{
+ "experiment": "E127 Amendment 2 (E127's last): is the broad Adam lowercase copy's failure the placement multiplier, i.e. would the copy's own change pass if placed in Delta?",
+ "filed": "2026-11-06, before any run",
+ "plan": "reports/plans/2026-11-06_plan_e127-ls-start-faithfulness.md -> Amendment 2; leans adopted from ~/commute-data/scratch/regating-lead/fable-night2/advice.md, Run 1",
+ "code": "experiments/ls_start_faith/amend2.py (job, config and the rules r1, multiplier, score); cluster/ls_start_faith_amend2.sbatch",
+ "measurement": "As E127 and Amendment 1, free adversary only (no hold): ratio = PGD KL at the state summed over the two 128-row blocks of Pile val rows 0-255 (one seed-0 adversary per block, 20 sign steps of 0.1, bf16 autocast, faithfulness.harness_pgd) over W0's in the same job. A non-positive W0 gives nan. Lowercase only: emoticon's standard copy's free excess is ~0.005 nats (Amendment 1), nothing to divide.",
+ "states": {
+  "L.std_copy": "damage_crossed results/large/tt_recipe.pt (bf16 offsets, saved_states.offsets_state): E122's standard copy of ft_adam300; alive (U', V'), target W0 + S_c. Stored 1.9128751139166524 (damage_crossed.json score.ratios['tt_recipe|A']; reproduced exactly by Amendment 1)",
+  "L.ls_copy": "damage_crossed results/large/tt_c3.pt: the same recipe from the least-squares start. Stored 9.40489471199686 (score.ratios['tt_c3|A']; reproduced exactly by Amendment 1)",
+  "L.lora_copy": "broad_fragility results/large/a2_tt_lora_s0.pt (sha256 20b3d068..., as damage_crossed/run.py SAVED['tt_lora']): E39 Amendment 2's copy of the rank-8 LoRA lowercase fine-tune at step 300. It stores (dU, dV) offsets like the others, so S_c is built the same way. Stored 1.3262876227610394 (damage_crossed.json score.ratios['tt_lora|A'], read by E122 on an L40 from this file by offsets_state + harness.at + harness_pgd, the same path; E122 report line 93 '1.326'): a control, not report-only",
+  "<copy>|delta": "the copy's change S_c = U'V'^T - UV^T (offsets_state's dW, the same object the free read uses) as the target change, subcomponents left at the released U, V: harness.at(ctx, S_c, None), run.py's nothing_start form. Checked by reading harness.at and faithfulness.model_state: components=None leaves the component weights untouched and only the target is written, so S_c sits in Delta only. At full masks the copy and its in-Delta state are the same weights W0 + S_c."
+ },
+ "controls_stop": {
+  "C1 W0": "mean block KL within 1e-3 relative of 0.6917431652545929",
+  "C2 copies free": "L.std_copy, L.ls_copy, L.lora_copy free ratios within 1e-3 relative of their stored values (same files, same path, same card type)",
+  "C3 card": "L40 only",
+  "C4 rerun": "a resubmitted job rereads W0's first block within 1e-6 relative of the first job's",
+  "C5 alive": "the alive U, V equal E121's uv0.pt",
+  "order": "W0, the three free copies (C1, C2 stop the job on a miss), then the three in-Delta reads"
+ },
+ "rules": {
+  "floor": "f = 0.20877548446862537 (L40 W0 seed floor, as E127), on ratio",
+  "R1 standard copy (headline)": "Fail line L = 1.61 (damage_crossed/rules.py fail_line, E122 from E39). free = r(std_copy), d = r(std_copy|delta). If not free > L + f: 'does not apply'. Else 'placement explains the broad failure' iff d < L - f; 'function fails too' iff d > L + f; otherwise (edges L - f and L + f inclusive) 'within the line'. Missing -> 'not run'; non-finite -> 'invalid'.",
+  "R2 multiplier (descriptive, per copy)": "m_c = (free_c - 1) / (d_c - 1): excess over this job's W0 in ratio units. Because every read divides by one W0, this equals the multiplier in nats of excess over W0, the unit of E127's 3.77 (L: (8.3329 - 1)/(2.9463 - 1) = 3.7676 = (5.7642 - 0.6917)/(2.0381 - 0.6917) nats) and 3.85 (E). Readable only if free_c - 1 >= f and d_c - 1 >= f (inclusive); else 'free excess within the floor' or 'in-Delta excess within the floor' (covers zero and negative excess) with m unset. Reported with m / 3.7676; no verdict.",
+  "lean bands (descriptive)": "each in-Delta ratio against its lean band below, and against its null (the copy's free ratio) within f"
+ },
+ "edge_cases": "r1: None -> not run; nan -> invalid; free = L + f exactly -> does not apply; d = 1.24 -> placement explains; d = L - f and d = L + f exactly -> within the line; d = 1.913 -> function fails too; d = 0.9 -> placement explains. multiplier: None -> not run; inf -> invalid; d = 1.0 and d = 0.8 -> in-Delta excess within the floor; d = 1 + f exactly -> readable; free = 1.1 -> free excess within the floor; free = d -> m = 1. score: W0 summing to 0 -> ratios nan -> invalid; no reads -> not run. All run on the CPU worker 2026-11-06 (scratch/regating-lead/e127a2-writer/cpu_check.py, .out), each as stated.",
+ "lean": {
+  "source": "Fable, advice.md Run 1: the claim 'a change on the alive subcomponents reads about 3.8 times its own in-Delta excess, whatever the function' predicts d_c = 1 + (free_c - 1)/3.8; the null 'the multiplier is the least-squares start's alone' predicts d_c near free_c",
+  "L.std_copy|delta": "1.24 (band 1.10-1.45); null 1.91, 3.2 floors away. R1 lean: placement explains 0.5, within the line 0.25, function fails too 0.25 (the writer's: one multiplier from two points on one kind of state, the least-squares start)",
+  "L.ls_copy|delta": "3.2 (band 2.4-4.5); null 9.4",
+  "L.lora_copy|delta": "1.09, report only (null 1.33, 1.2 floors away); m most likely 'in-Delta excess within the floor'",
+  "R2": "m near 3.8 for std_copy and ls_copy under the claim, near 1 under the null"
+ },
+ "blind_to": "One adversary seed and one 20-step local search (E127's check); R1 reads the copy's own change in Delta, not any other function that would carry the behaviour. The rank-8 LoRA copy's excess is near the floor, so its m has little power.",
+ "power": "Positive control: the copies' free reads (1.91, 9.40) are reproduced; the standard copy's free excess 0.91 is 4.4 f; claim and null for R1 are 3.2 f apart.",
+ "time on the L40": "7 PGD reads at 127-132 s (ls_start_faith_amend1.json .seconds), about 15 min plus about 1 min start-up: one job. $0 (debug).",
+ "config": {
+  "pgd_steps": 20,
+  "adv_seed": 0,
+  "pile_rows": 256,
+  "ls_tol": 1e-06,
+  "floor": 0.20877548446862537,
+  "fail_line": 1.61,
+  "w0_ref": 0.6917431652545929,
+  "copy_refs": [["L.std_copy", 1.9128751139166524], ["L.ls_copy", 9.40489471199686], ["L.lora_copy", 1.3262876227610394]],
+  "e127_m": [["L", 3.7676381991462096], ["E", 3.8481320337024862]],
+  "repro_tol": 0.001,
+  "rerun_tol": 1e-06,
+  "budget_s": 1680.0,
+  "pgd_s": 145.0
+ }
+}

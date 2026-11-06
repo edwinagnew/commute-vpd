@@ -110,3 +110,20 @@ is measured; R2 reads free and held from the same file).
 R1 L "no teeth" 0.85: E127's nothing_start, the same kind of state with its change in Δ, fell from 2.95 to 1.11 held.
 
 **Time.** 12 reads at 127-140 s, about 28 min: two jobs via `fleet/resubmit --code 3`.
+
+## Amendment 2 (2026-11-06, the last): is the broad copy's failure the placement multiplier?
+
+*Code `amend2.py`, filing `results/predictions_amend2.json`, job `cluster/ls_start_faith_amend2.sbatch` (debug, L40,
+$0). Adopts Fable's Run 1 (`fable-night2/advice.md`).* E127 read one function about 3.8 times worse in nats of excess
+over W₀ on the alive subcomponents than in Δ (lowercase 3.77, emoticon 3.85). Would the lowercase standard copy (free
+1.913, over the 1.61 fail line) pass if its own change sat in Δ?
+
+**What runs** (lowercase, free adversary only, same rows, seed, card, path): W₀, then each copy free as a control
+(1e-3 of stored: `tt_recipe.pt` 1.913, `tt_c3.pt` 9.405, E39's LoRA copy `a2_tt_lora_s0.pt` 1.326 from E122), then
+each copy's change S_c = U′V′ᵀ − UVᵀ placed in Δ (target W₀ + S_c, subcomponents at U, V: `harness.at(ctx, S_c, None)`).
+
+**Rules.** R1: with free > 1.61 + f, in Δ < 1.61 − f "placement explains the broad failure", > 1.61 + f "function
+fails too", else "within the line". R2 (descriptive): m = (free − 1)/(in Δ − 1), readable when both excesses ≥ f, against
+3.77. Leans (Fable): in Δ 1.24 (band 1.10-1.45, null 1.91), copy from the start 3.2 (2.4-4.5, null 9.4), LoRA 1.09.
+
+**Time.** 7 reads at 127-132 s, about 16 min: one job.
