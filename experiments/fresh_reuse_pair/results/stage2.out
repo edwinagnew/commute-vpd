@@ -1,0 +1,71 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+22:19:17 [W0 route cells; E12 A1 control] {"W0": {"real": {"T": -14.291112042963505, "U": -14.380255702883005, "L": -13.578399240970612, "p_T": 4.1370857491039754e-06}, "twin": {"T": -14.313194658607244, "U": -14.404286187142134, "L": -13.687049001455307, "p_T": 2.912199537664483e-06}}, "control": {"ident32_s0": "re-switching", "ident32_s1": "re-switching", "ident32b_s0": "re-switching", "ident32b_s1": "re-switching", "rand32_s0": "masked-off", "rand32_s1": "masked-off", "rand32b_s0": "masked-off", "rand32b_s1": "masked-off"}}
+22:19:32 [split real_s0] {"nothing": {"d": 0.0, "r": 0.13268247266648608, "i": 0.0, "e_gate": -0.13268247266648608, "e_delta": 1.0}, "least_squares": {"d": 0.02396744279465122, "r": 0.13268247266648608, "i": 0.009849982128015222, "e_gate": 0.6501580949402238, "e_delta": 0.18334200747062365}, "gain": 22.456701461225748, "label": "masked-off"}
+22:19:32 [check real_s0 do-nothing e_gate + r] 0 (tol 1e-06): True
+22:19:32 [check real_s0 least-squares r - do-nothing r] 0 (tol 1e-06): True
+22:19:46 [split real_s1] {"nothing": {"d": 0.0, "r": 0.2365236436095261, "i": 0.0, "e_gate": -0.2365236436095261, "e_delta": 1.0}, "least_squares": {"d": 0.03172558242070239, "r": 0.2365236436095261, "i": 0.008404503448117127, "e_gate": 0.6015872140894805, "e_delta": 0.12175905643217386}, "gain": 18.842835500836372, "label": "masked-off"}
+22:19:46 [check real_s1 do-nothing e_gate + r] 0 (tol 1e-06): True
+22:19:46 [check real_s1 least-squares r - do-nothing r] 0 (tol 1e-06): True
+22:20:00 [split twin_s0] {"nothing": {"d": 0.0, "r": 0.21943748123527929, "i": 0.0, "e_gate": -0.21943748123527929, "e_delta": 1.0}, "least_squares": {"d": 0.020260007278535542, "r": 0.21943748123527929, "i": 0.01332272962310467, "e_gate": 0.6191296806236956, "e_delta": 0.127850101239385}, "gain": 21.885959558188915, "label": "masked-off"}
+22:20:00 [check twin_s0 do-nothing e_gate + r] 0 (tol 1e-06): True
+22:20:00 [check twin_s0 least-squares r - do-nothing r] 0 (tol 1e-06): True
+22:20:13 [split twin_s1] {"nothing": {"d": 0.0, "r": 0.17903483808672319, "i": 0.0, "e_gate": -0.17903483808672319, "e_delta": 1.0}, "least_squares": {"d": 0.01638597048943724, "r": 0.17903483808672319, "i": 0.012154437040677911, "e_gate": 0.6807845525913104, "e_delta": 0.1116402017918512}, "gain": 21.247886922210455, "label": "masked-off"}
+22:20:13 [check twin_s1 do-nothing e_gate + r] 0 (tol 1e-06): True
+22:20:13 [check twin_s1 least-squares r - do-nothing r] 0 (tol 1e-06): True
+22:20:19 [removal real_s0] {"n_S": 179, "gain": 22.456701461225748, "D_S": 0.29626452259850544, "D_random_max": 0.07316051367711338, "rho_0_S": 0.1263669790634477, "empty": 0.0, "class": "through"}
+22:20:19 [check real_s0 empty-set removal lo change] 0 (tol 1e-05): True
+22:20:25 [removal real_s1] {"n_S": 221, "gain": 18.842835500836372, "D_S": 0.23651295972451739, "D_random_max": 0.04379580688513282, "rho_0_S": 0.1292207285779298, "empty": 0.0, "class": "through"}
+22:20:25 [check real_s1 empty-set removal lo change] 0 (tol 1e-05): True
+22:20:31 [removal twin_s0] {"n_S": 253, "gain": 21.885959558188915, "D_S": 0.46097506638578806, "D_random_max": 0.16126139940639883, "rho_0_S": 0.10183315048767043, "empty": 0.0, "class": "through"}
+22:20:31 [check twin_s0 empty-set removal lo change] 0 (tol 1e-05): True
+22:20:37 [removal twin_s1] {"n_S": 225, "gain": 21.247886922210455, "D_S": 0.3829476963960228, "D_random_max": 0.07603159021257623, "rho_0_S": 0.11956416277012882, "empty": 0.0, "class": "through"}
+22:20:37 [check twin_s1 empty-set removal lo change] 0 (tol 1e-05): True
+/mnt/nw/home/e.agnew/commute-agents/regating-lead/src/commute/component_training.py:161: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  curve.append({"step": step, "loss": float(loss), "grad_norm": float(gn), "rel_norm_max": rel,
+22:20:37 [component training lr 1e-05] step 1: loss 14.2095 held-out P(target) 0.0000 kl_other 0.0028 rel_norm_max 0.0010
+22:20:37 [component training lr 1e-05] step 2: loss 11.8103 held-out P(target) 0.0003 kl_other 0.0108 rel_norm_max 0.0019
+22:20:37 [component training lr 1e-05] step 3: loss 9.3791 held-out P(target) 0.0024 kl_other 0.0232 rel_norm_max 0.0027
+22:20:38 [component training lr 1e-05] step 5: loss 4.9559 held-out P(target) 0.1753 kl_other 0.0572 rel_norm_max 0.0042
+22:20:38 [component training lr 1e-05] step 10: loss 1.2668 held-out P(target) 0.5117 kl_other 0.1574 rel_norm_max 0.0069
+22:20:39 [component training lr 1e-05] step 20: loss 1.0314 held-out P(target) 0.6153 kl_other 0.2187 rel_norm_max 0.0090
+22:20:40 [component training lr 1e-05] step 30: loss 0.5526 held-out P(target) 0.6747 kl_other 0.1503 rel_norm_max 0.0096
+22:21:25 [component training lr 1e-05] step 500: loss 0.0377 held-out P(target) 0.9367 kl_other 0.1182 rel_norm_max 0.0223
+22:22:12 [component training lr 1e-05] step 1000: loss 0.0219 held-out P(target) 0.9373 kl_other 0.1238 rel_norm_max 0.0259
+22:22:16 [student real_s0] {"r": 0.1331238751376788, "e_gate": 0.833514086894149, "gain_ratio": 0.8923607478072811, "label": "masked-off", "ft_label": "masked-off", "agree": 0.980625, "acc_fit": 0.96875, "seconds": 99.40660309791565}
+22:22:17 [component training lr 1e-05] step 1: loss 14.1190 held-out P(target) 0.0000 kl_other 0.0027 rel_norm_max 0.0010
+22:22:17 [component training lr 1e-05] step 2: loss 11.7685 held-out P(target) 0.0003 kl_other 0.0108 rel_norm_max 0.0019
+22:22:17 [component training lr 1e-05] step 3: loss 9.2001 held-out P(target) 0.0026 kl_other 0.0233 rel_norm_max 0.0027
+22:22:17 [component training lr 1e-05] step 5: loss 4.8790 held-out P(target) 0.1946 kl_other 0.0576 rel_norm_max 0.0043
+22:22:17 [component training lr 1e-05] step 10: loss 1.5880 held-out P(target) 0.4761 kl_other 0.1604 rel_norm_max 0.0070
+22:22:18 [component training lr 1e-05] step 20: loss 0.9913 held-out P(target) 0.5990 kl_other 0.2209 rel_norm_max 0.0090
+22:22:19 [component training lr 1e-05] step 30: loss 0.3100 held-out P(target) 0.6914 kl_other 0.1408 rel_norm_max 0.0096
+22:23:05 [component training lr 1e-05] step 500: loss 0.0730 held-out P(target) 0.9133 kl_other 0.1401 rel_norm_max 0.0214
+22:23:53 [component training lr 1e-05] step 1000: loss 0.0305 held-out P(target) 0.9092 kl_other 0.1447 rel_norm_max 0.0248
+22:23:57 [student real_s1] {"r": 0.2155786896228343, "e_gate": 0.749937892118844, "gain_ratio": 0.9662914100334815, "label": "masked-off", "ft_label": "masked-off", "agree": 0.974375, "acc_fit": 0.9580078125, "seconds": 100.2668092250824}
+22:23:57 [component training lr 1e-05] step 1: loss 14.3386 held-out P(target) 0.0000 kl_other 0.0027 rel_norm_max 0.0010
+22:23:57 [component training lr 1e-05] step 2: loss 12.2604 held-out P(target) 0.0001 kl_other 0.0105 rel_norm_max 0.0019
+22:23:57 [component training lr 1e-05] step 3: loss 9.4388 held-out P(target) 0.0010 kl_other 0.0227 rel_norm_max 0.0027
+22:23:57 [component training lr 1e-05] step 5: loss 5.3981 held-out P(target) 0.0740 kl_other 0.0563 rel_norm_max 0.0042
+22:23:58 [component training lr 1e-05] step 10: loss 1.1302 held-out P(target) 0.4851 kl_other 0.1640 rel_norm_max 0.0072
+22:23:59 [component training lr 1e-05] step 20: loss 0.8763 held-out P(target) 0.5262 kl_other 0.2003 rel_norm_max 0.0092
+22:24:00 [component training lr 1e-05] step 30: loss 0.6423 held-out P(target) 0.5459 kl_other 0.1171 rel_norm_max 0.0097
+22:24:45 [component training lr 1e-05] step 500: loss 0.0460 held-out P(target) 0.9406 kl_other 0.0600 rel_norm_max 0.0290
+22:25:32 [component training lr 1e-05] step 1000: loss 0.0840 held-out P(target) 0.9487 kl_other 0.0663 rel_norm_max 0.0363
+22:25:36 [student twin_s0] {"r": 0.18943839298807277, "e_gate": 0.7907642029537975, "gain_ratio": 0.940784472256796, "label": "masked-off", "ft_label": "masked-off", "agree": 0.724375, "acc_fit": 0.9560546875, "seconds": 99.48954916000366}
+22:25:36 [component training lr 1e-05] step 1: loss 14.2327 held-out P(target) 0.0000 kl_other 0.0027 rel_norm_max 0.0010
+22:25:37 [component training lr 1e-05] step 2: loss 12.3662 held-out P(target) 0.0001 kl_other 0.0103 rel_norm_max 0.0019
+22:25:37 [component training lr 1e-05] step 3: loss 9.3865 held-out P(target) 0.0010 kl_other 0.0224 rel_norm_max 0.0026
+22:25:37 [component training lr 1e-05] step 5: loss 5.4344 held-out P(target) 0.0728 kl_other 0.0557 rel_norm_max 0.0042
+22:25:37 [component training lr 1e-05] step 10: loss 1.1819 held-out P(target) 0.4919 kl_other 0.1659 rel_norm_max 0.0071
+22:25:38 [component training lr 1e-05] step 20: loss 0.8570 held-out P(target) 0.4859 kl_other 0.1970 rel_norm_max 0.0092
+22:25:39 [component training lr 1e-05] step 30: loss 0.8986 held-out P(target) 0.5249 kl_other 0.1276 rel_norm_max 0.0097
+22:26:24 [component training lr 1e-05] step 500: loss 0.0429 held-out P(target) 0.9714 kl_other 0.0573 rel_norm_max 0.0291
+22:27:12 [component training lr 1e-05] step 1000: loss 0.0167 held-out P(target) 0.9629 kl_other 0.0608 rel_norm_max 0.0358
+22:27:16 [student twin_s1] {"r": 0.16661024689006323, "e_gate": 0.8137338693357395, "gain_ratio": 0.9255884094949287, "label": "masked-off", "ft_label": "masked-off", "agree": 0.855, "acc_fit": 0.9833984375, "seconds": 99.74389028549194}
+22:27:16 SUMMARY {"real_s0": {"definition": "not through C", "route_fine_tune": "masked-off", "route_copy": "masked-off", "removal_S": "through"}, "real_s1": {"definition": "not through C", "route_fine_tune": "masked-off", "route_copy": "masked-off", "removal_S": "through"}, "twin_s0": {"definition": "not through C", "route_fine_tune": "masked-off", "route_copy": "masked-off", "removal_S": "through"}, "twin_s1": {"definition": "not through C", "route_fine_tune": "masked-off", "route_copy": "masked-off", "removal_S": "through"}}
+22:27:16 STAGE 2 DONE
+peak host RSS 8.0 GB
