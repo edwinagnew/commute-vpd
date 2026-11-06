@@ -559,3 +559,6 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e94_known.png": "experiments/qwen_d3_rows/figures/known.png"
 - "fig/e109_seeds.png": "experiments/larger_size/figures/seeds.png"
 - "fig/e109_verdicts.png": "experiments/neuron_vpd_table/figures/verdicts.png"
+- "fig/e112_removal.png": "experiments/case_label/figures/removal.png"
+- "fig/e112_amend1_removal.png": "experiments/case_label/figures/amend1_removal.png"
+- "fig/e112_amend2_rank.png": "experiments/case_label/figures/amend2_rank.png"
