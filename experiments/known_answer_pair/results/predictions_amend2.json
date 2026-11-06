@@ -1,0 +1,90 @@
+{
+ "experiment": "E103 known_answer_pair, Amendment 2 (the last E103 may have)",
+ "filed": "2026-11-06",
+ "plan": "reports/plans/2026-11-06_plan_e103-known-answer-pair.md, section 'Amendment 2'",
+ "why": "Amendment 1's carrying sets differ across arms (known-facts seed 42 against fictional seed 42: 0.47 of the set shared on the real rows, 0.62 on the TOFU rows) far more than between the fictional arm's two seeds (0.90, 0.94), but the known-facts arm had one seed, so its own seed spread was unknown (reports/analyses/2026-11-06_analysis_e103-known-answer-pair.md, 'Are the two arms' carrying sets the same neurons?'). Here a second known-facts seed gives it. The add-on reads the real-fact share's options at Amendment 1's end state, whose share fell to 0.585 against the lean. predictions.json and predictions_amend1.json stand as filed.",
+ "seed": 142,
+ "seed_source": "The fictional arm's second seed (E88, qwen_anchor_checks S: tofu.stream's shuffle seed, as here). tofu.stream shuffles epoch e by Random(seed + e): seeds 42 and 142 share no epoch order over five epochs (amend2.py `filed` asserts it).",
+ "control_0": {
+  "rule": "Stage 0, first and alone: W0's multiple-choice share on TOFU's 217 real-fact rows (qwen_tofu.real(), 4 options, E81's `choices`) within `tolerance` of E81's reading. A miss stops the job.",
+  "e81_share": 0.7926267281105991,
+  "e81_source": "experiments/qwen_tofu/results/stage0.json .real.share; E103 and Amendment 1 read it again to every digit",
+  "tolerance": 0.01,
+  "tolerance_source": "As E103's and Amendment 1's control_0: two rows of 217; both repeats differed by 0"
+ },
+ "first_minutes": {
+  "seed_42_first_batch_loss": 3.6731424471227134,
+  "seed_42_source": "results/amend1_stage_0.json .first_batch_loss (job 53262)",
+  "first_batch_differs": 0.001,
+  "first_batch_rule": "Stage 0: |seed 142's first batch loss - seed 42's| > first_batch_differs (absolute), or the job stops: the seed did not reach the stream. E88's filed check for its second seed (qwen_anchor_checks/results/predictions.json first_batch_differs 0.001; it read 0.529).",
+  "step_1_loss_rel": 0.001,
+  "step_1_note": "Step 1's loss against this job's stage 0 first batch (seed 142), relative; rate and |dW| exactly 0. E84's, E103's and Amendment 1's band.",
+  "step_2_dw": [0.00208, 0.00312],
+  "step_2_source": "E84's band; Amendment 1 read 0.00233. Adam's first moving step is set by the rate, not the data.",
+  "peak_gib": 44,
+  "peak_source": "Amendment 1's band; Amendment 1 peaked at 38.5 GiB in training (results/amend1_train.json steps), the same sequences in another order here.",
+  "warmup_loss_frac": 0.95,
+  "warmup_note": "Step 250's loss at most 0.95 of the first batch's. Amendment 1 read 0.052."
+ },
+ "C2_reread": {
+  "rule": "Stage R, first: Amendment 1's matched state (results/large/dW/amend1_matched.safetensors) re-read on the sentence reader (amend1.py `readers`: TOFU's real question with ' Answer in one sentence.' and the row's pair-0 sentence from results/forms_amend1.jsonl), with W0 read again in this job, gives a content gain (amend1.py `gains` .content: per row the mean log P over response tokens without the end token, its change from W0, mean over the 217 rows) within rel_tol (relative) of the stored one. A miss stops the job: the reader, the rows, W0 or the loaded state differ.",
+  "stored": 1.5042920082665718,
+  "stored_source": "results/amend1_read.json .states.a1_matched.sentence.content (job 53262, stage G, the state loaded from its file)",
+  "rel_tol": 1e-05,
+  "rel_tol_source": "Measured floor between two paths in job 53262: the same state read with its dW held on the card during training (results/amend1_train.json .matched.gain.content 1.504292022079828) and loaded from the file in stage G (1.5042920082665718): 9.2e-9 relative. 1e-5 is 1,000 times that, Amendment 1's C2 tolerance (which read 1.8e-9 on its own two-path pair).",
+  "expected": "1.50429"
+ },
+ "C1_content": {
+  "rule": "As Amendment 1's C1_content, at seed 142: at the matched step (E91's rule: the step whose |dW| is nearest the template's 0.4865 in log ratio, chosen during training), the content gain on the sentence reader; holds iff gain >= bar (equal holds). bar = bar_frac times the reference, the fictional matched state's (E91 seed 42, step 29) content gain on its own trained answers (TOFU's 787 kept fictional rows with ' Answer in one sentence.'), re-read in stage R of this job before training. A reference not finite or not above 0 stops stage R ('no bar'). A miss writes results/stopped_amend2.json: 'no content gain to carry'; job 2 is not submitted.",
+  "bar_frac": 0.5,
+  "bar_source": "Amendment 1's C1 (half the fictional half of the pair, same reader, size and part of the answer)",
+  "amend1_reference": 2.4730992387727033,
+  "amend1_reference_source": "results/amend1_ref.json .reference.content_gain; this job's re-read is logged against it (relative difference reported, not a stop: C2 already tests the reader and W0)",
+  "expected_W0": 0,
+  "expected_do_nothing": "0; fails, since the bar is above 0 or the job has stopped",
+  "expected_reference": "2.4731, Amendment 1's value",
+  "expected": "Holds, at 0.5 to 2 times the reference, near seed 42's 1.504 (0.61 times): the same rows and recipe in another order",
+  "edge_cases": "Amendment 1's, unchanged code (amend1.py `fine_tune` is Amendment 1's stage T with the seed, states, result file and stop passed in)"
+ },
+ "neurons": {
+  "C2n": {
+   "rule": "First and alone in amend2_neurons.py: Amendment 1's matched state re-read on E103's real rows (neurons.py `real_rows`) has gain within gain_rel (relative) of results/neurons_amend1/a1_matched__real.json and a top-1024 carrying set sharing at least min_set_overlap with its stored set. A miss stops the job. It is the stored seed-42 set that the identity rule compares with seed 142's fresh one, so this re-read is the rule's path control.",
+   "stored_gain": 1.8722450651100562,
+   "gain_rel": 0.001,
+   "min_set_overlap": 0.95,
+   "source": "E103's and Amendment 1's filed C2 tolerances; on this path both read relative 0 and overlap 1.0 (jobs 53209, 53275)",
+   "expected": "gain as stored, overlap 1"
+  },
+  "identity": {
+   "rule": "amend2_neurons.py `identity`, on each row set (E103's real rows; E92's 128 TOFU rows), from the top-1024 carrying sets of: the known-facts matched states, seed 42 (Amendment 1, results/neurons_amend1/a1_matched__<rows>.json) and seed 142 (this amendment, results/neurons_amend2/known_s142_matched__<rows>.json); the fictional matched states, seeds 42 and 142 (results/neurons/ on the real rows, E102's results/states/ on the TOFU rows). known = overlap(seed 142's set, seed 42's set); fict = overlap(fictional 142, fictional 42); cross = the four overlaps of a known-facts seed's set with a fictional seed's (QN.overlap: the share of the first set inside the second). band = 1 - fict. 'within seed noise' iff known - max(cross) <= band; else 'beyond seed noise' iff fict - max(cross) > band and known >= fict - band; else 'no call'. 'unread' with any overlap missing or not finite (an empty set gives NaN) or not four cross values.",
+   "band_source": "The fictional arm's two measured seed-to-seed overlaps, 0.8994 on the real rows and 0.9365 on the TOFU rows (computed from the stored sets; the analysis rounds them to 0.90 and 0.94): band = 1 - fict is the share of a carrying set a change of seed alone replaced, 0.1006 and 0.0635. It is set from the row set's own fictional pair, measured before this run, not guessed. With today's numbers, 'beyond' needs the known seeds to share at least 0.799 (real) and 0.873 (TOFU) and every cross-arm overlap to sit more than the band under that share; Amendment 1's cross-arm overlaps were 0.470 and 0.622 (seed 42 with each fictional seed: 0.470, 0.471 real; 0.622, 0.614 TOFU).",
+   "what_each_verdict_means": "within seed noise: the known arm's two seeds share no more of their sets than a known and a fictional seed do, within the fictional arm's seed noise, so the cross-arm difference reads nothing about the label. beyond seed noise: both arms' seeds agree with each other more than any cross-arm pair, by more than a seed change replaces, and the known arm is about as stable as the fictional one; the cross-arm difference is then a candidate label reading. no call: the known seeds agree more than a cross pair by more than the band but fall short of the fictional seeds by more than the band (the known arm has a seed noise of its own that the fictional band does not cover), or the fictional seeds agree no better than a cross pair.",
+   "edge_cases": "Run on CPU before filing (~/commute-data/scratch/baseline-lead/e103-amend2/dry_amend2.py, output dry.out there): an empty set (the do-nothing state, which has no positive score) reads unread; every set identical reads within (all overlaps 1, band 0, gap 0); all values equal at 0.5 reads within; a known-seed overlap equal to the cross-arm one reads within; known minus cross exactly the band reads within, one neuron (1/1024) past it beyond; known exactly fict - band beyond, 1/1024 under it no call; known 0.78 against fict 0.90 and cross 0.47 no call; fictional seeds as unlike as a cross pair (fict 0.5, cross 0.5) within, since the band (0.5) covers the gap; known clearing cross by more than the band while fict does not (0.89, 0.75, 0.625) no call; seeds identical and arms disjoint beyond; NaN, None or three cross values unread. On the stored sets, seed 42's set standing in for both known seeds (known 1.0) reads beyond on both row sets, so the rule can pass; a fictional set standing in for seed 142 reads within on both, so it can fail.",
+   "scored": ["identity_real", "identity_tofu"],
+   "leans": {"identity_real": "beyond seed noise", "identity_tofu": "beyond seed noise"},
+   "lean_source": "The fictional seeds at their matched steps (steps 29 and 30, inside warm-up, on different shuffles) share 0.90 and 0.94; seed changes only the order of the same 1,085 sequences here. Against it: Amendment 1's state and E103's, which differ only in pair 0's answer form, share just 0.69 and 0.81, so the set moves with modest changes of the training data. Expected known seed-to-seed overlap 0.80 to 0.95 on the real rows.",
+   "blind_to": "Overlap counts shared neurons in two ranked top-1024 lists; it misses a shift in rank inside the set, neurons just outside the cut, and anything inside a neuron (the granularity limit). The set is ranked and scored on the same rows. A label difference and a row difference move it alike: the arms differ in rows as well as label.",
+   "null_not_run": "The second null the analysis names, a pair with the same label on different rows (for example, two known-facts runs on disjoint halves of the real rows), is not run. Even 'beyond seed noise' on both row sets is a candidate reading, not a finding: a different set of rows could move the set as far as the label did."
+  },
+  "pair_rules_s142": {
+   "rule": "Reported, not scored: neurons.py `pair_side`, as Amendment 1 filed it, with the seed-142 known-facts matched state in place of seed 42's, against the two fictional matched seeds, on the real and TOFU rows, for engaged share and prompt overlap (band, floor, draws as filed; the draws' generator is seeded by the state's place in the sorted names, so seed 142's draws are not seed 42's).",
+   "leans": {"matched_real_engaged": "level", "matched_tofu_engaged": "level", "matched_real_prompt_overlap": "level", "matched_tofu_prompt_overlap": "level"},
+   "lean_source": "Amendment 1: all four level for seed 42 (gaps 0.004, -0.002, -0.001, 0.0005 against bands 0.009, 0.005, 0.003, 0.004)"
+  }
+ },
+ "P_options": {
+  "rule": "Reported, not scored, except the reproduction stop. Stage P, last: at W0 and at Amendment 1's end state (results/large/dW/amend1_end.safetensors), each of the 217 real-fact choices' four options (right first) scored per token with the end token last (qwen_tofu.token_logp on choice_read's own sequences, ' Answer in a few words.'); the share recomputed from the per-option mean log P, end token included, with qwen_tofu.correct (a tie is wrong) must be within share_tol of the stored share, or the job stops: the per-option read is then not the share's reader and explains nothing. Then greedy answers (E81's `generated`, 128 new tokens) to the 217 questions under ' Answer in a few words.' (the share's suffix) and ' Answer in one sentence.' (the trained one), with E81's contains rule (the reference answer inside the response, case folded) and recall.",
+  "stored_share": {"W0": 0.7926267281105991, "a1_end": 0.5852534562211982},
+  "stored_source": "results/amend1_stage_0.json .real.share and results/amend1_read.json .share.a1_end.share (job 53262)",
+  "share_tol": 0.004608294930875576,
+  "share_tol_source": "One row of 217. The two paths differ only in where an option's mean is taken (on the card in float32 by `mean_logp`, in float64 here over the same float32 values): Amendment 1 measured token_logp against mean_logp at 2e-7 on a toy model and 1.8e-9 relative on a real state, so a row can flip only on a near tie; one flip is allowed, two are not.",
+  "saved": "results/amend2_options.json (per state: summary, every option's tokens, means and pick; rows lost and gained between W0 and the end state), results/amend2_answers/<state>_{few_words,sentence}.jsonl",
+  "leans": {
+   "right_option_kept": "The right option's mean log P at the end state is at or above W0's (on E103's bare reader its first token rose 8.7 nats)",
+   "wrong_rise_more": "The wrong options' mean log P rises from W0 by more than the right option's: the drop is the wrong bare options rising, not the right ones falling",
+   "sentence_answers": "Under ' Answer in one sentence.' the end state's greedy answers contain the reference in at least W0's share minus 0.05: it still states the facts",
+   "few_words_answers": "Under ' Answer in a few words.' the end state's greedy answers are longer than W0's on average (it trained on sentences)"
+  }
+ },
+ "reading": "C1 holding and C2n holding, the identity rule reading 'beyond seed noise' on both row sets: the cross-arm carrying-set difference is larger than either arm's seed noise, a candidate label reading for set identity, the one neuron reading with spread, still short of a finding until a same-label pair on different rows is read. 'within seed noise' on either row set: the known arm's set is as unstable across seeds as across arms there, and the difference reads nothing about the label. 'no call' or mixed verdicts: reported as read, no amendment follows (this is E103's last). C1 failing: seed 142 carries no content gain at the matched step; the set rule is not read."
+}

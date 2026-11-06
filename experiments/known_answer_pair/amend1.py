@@ -19,7 +19,8 @@ A state's tokens on all three go to results/large/amend1_tokens/<state>.json (pe
   G  tokens of the two new states and E103's end state; real-fact share of the new states (3 min).
 A stage whose result file says done is skipped. A state's token file is read back rather than re-read, so after a stop
 remove the token files the stopped stage wrote. Exit 0 done; 1 a stop (results/stopped_amend1.json) or a refusal.
-amend1_neurons.py is the second job.
+amend1_neurons.py is the second job. Stage T's loop is `fine_tune`, given the seed and paths, which Amendment 2
+(amend2.py) calls for its second seed; stage T passes the values it ran with, so this file's run is unchanged.
 """
 
 from __future__ import annotations
@@ -30,7 +31,9 @@ import statistics
 import subprocess
 import sys
 import time
-from dataclasses import asdict
+from collections.abc import Callable
+from dataclasses import asdict, dataclass
+from pathlib import Path
 from typing import Any
 
 import torch
@@ -181,25 +184,43 @@ def stage_R(lab: Lab) -> None:
 # ----------------------------------------------------------------------------- T, the fine-tune and C1
 
 
+@dataclass(frozen=True)
+class Arm:
+    """Where one fine-tune of this file's recipe writes: its stream seed, its two states, its result file and its stop
+    (Amendment 2 runs a second seed through `fine_tune`)."""
+
+    seed: int
+    matched: Path
+    end: Path
+    out: Path
+    stop: Callable[[Any, str, dict[str, Any]], None]
+
+
 def stage_T(lab: Lab) -> None:
-    m, seqs, s0 = lab.fp32(), train_seqs(lab), json.loads(FILES["0"].read_text())
+    s0, bar = json.loads(FILES["0"].read_text()), json.loads(FILES["R"].read_text())["reference"]["bar"]
+    fine_tune(lab, Arm(E81.SEED, MATCHED, END, FILES["T"], stop), s0["first_batch_loss"], bar, tokens(lab, "W0")["sentence"])
+
+
+def fine_tune(lab: Any, arm: Arm, first_loss: float, bar: float, w0: list[list[float]]) -> None:
+    """The fine-tune on the new pair 0 with arm's stream seed; C1 at the matched step against `bar` on the sentence
+    reader (`w0` W0's tokens there); both states saved; `arm.out` written as it goes."""
+    m, seqs = lab.fp32(), train_seqs(lab)
     torch.cuda.reset_peak_memory_stats()
-    F, bar, reads = lab.pred["first_minutes"], json.loads(FILES["R"].read_text())["reference"]["bar"], readers(lab)["sentence"]
-    w0 = tokens(lab, "W0")["sentence"]
+    F, reads, stop = lab.pred["first_minutes"], readers(lab)["sentence"], arm.stop
     steps = E81.EPOCHS * (len(seqs) // E81.BATCH)
     r = Recipe(E84.RATE, E81.WARMUP, steps, "hf_cosine", 1.0, E81.MICRO, forward="fp32")
-    out: dict[str, Any] = {"recipe": asdict(r), "batch": E81.BATCH, "sequences": len(seqs), "ref_norm": RUN.REF_NORM,
-                           "first_batch_loss": s0["first_batch_loss"], "steps": [], "checks": [], "gains": {}}
+    out: dict[str, Any] = {"recipe": asdict(r), "seed": arm.seed, "batch": E81.BATCH, "sequences": len(seqs), "ref_norm": RUN.REF_NORM,
+                           "first_batch_loss": first_loss, "steps": [], "checks": [], "gains": {}}
     best: dict[str, Any] = {"gap": math.inf}
     lab.log(f"[T] {len(seqs)} sequences, {steps} steps; reference norm {RUN.REF_NORM:.6f}; C1's bar {bar:.4f}")
 
     def matched() -> None:
-        save(MATCHED, best.pop("dW"), F32, droppable=False, log=lab.log)
+        save(arm.matched, best.pop("dW"), F32, droppable=False, log=lab.log)
         rec = {k: best[k] for k in ("step", "norm", "gain")} | {"bar": bar, "holds": best["gain"]["content"] >= bar}
         out["matched"] = rec
         lab.log(f"[C1] content gain at the matched step {rec['step']} (norm {rec['norm']:.4f}): {json.dumps(rec['gain'])}; "
                 f"bar {bar:.4f}: {'ok' if rec['holds'] else 'MISSED'}")
-        write(FILES["T"], out)
+        write(arm.out, out)
         if not rec["holds"]:
             stop(lab, "C1: no content gain to carry", rec)
 
@@ -210,14 +231,14 @@ def stage_T(lab: Lab) -> None:
         rec["peak_gib"] = torch.cuda.max_memory_allocated() / 2**30
         out["steps"].append(rec)
         if not (ok(rec["loss"]) and ok(rec["grad_norm"])):
-            write(FILES["T"], out)
+            write(arm.out, out)
             stop(lab, f"step {t} not finite", rec)
-        for name, value, holds in tofu.step_checks(rec, s0["first_batch_loss"], F, E81.WARMUP):
+        for name, value, holds in tofu.step_checks(rec, first_loss, F, E81.WARMUP):
             row = {"at": t, "name": name, "value": value, "holds": holds}
             out["checks"].append(row)
             lab.log(f"[check] {'ok' if holds else 'MISSED'} {json.dumps(row, default=float)}")
             if not holds:
-                write(FILES["T"], out)
+                write(arm.out, out)
                 stop(lab, f"step {t} {name}", row)
         n = rec["dw_norm"]
         if "matched" not in out and n > 0:
@@ -232,14 +253,14 @@ def stage_T(lab: Lab) -> None:
                 matched()
         if t % 25 == 0 or t <= 3:
             lab.log(f"[T] {json.dumps(rec)}")
-            write(FILES["T"], out)
+            write(arm.out, out)
 
     def save_end(t: int, dW: dict[str, Any]) -> None:
-        save(END, dW, F32, droppable=False, log=lab.log)
+        save(arm.end, dW, F32, droppable=False, log=lab.log)
         out["end_step"] = t
 
     t0 = time.time()
-    train(m, lab.W0, lambda t: tofu.stream(seqs, E81.BATCH, E81.SEED, t), r, {}, {steps}, {}, {steps}, save_end, on_step,
+    train(m, lab.W0, lambda t: tofu.stream(seqs, E81.BATCH, arm.seed, t), r, {}, {steps}, {}, {steps}, save_end, on_step,
           LARGE / "ckpt_unused.pt", steps, dW_of=delta_fp32)
     if "matched" not in out:
         matched()
@@ -247,7 +268,7 @@ def stage_T(lab: Lab) -> None:
     out["argmin_step"] = min(norms, key=lambda t: RUN.log_gap(norms[t]))
     lab.log(f"[T] matched step {out['matched']['step']}, argmin over the record {out['argmin_step']}; end |dW| "
             f"{out['steps'][-1]['dw_norm']:.4f}")
-    write(FILES["T"], out | {"done": True, "seconds": time.time() - t0, "peaks": lab.peaks()})
+    write(arm.out, out | {"done": True, "seconds": time.time() - t0, "peaks": lab.peaks()})
     torch.cuda.empty_cache()
 
 
