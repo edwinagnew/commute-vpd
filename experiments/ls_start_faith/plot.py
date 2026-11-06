@@ -4,6 +4,7 @@
     hold.png       mean block KL in nats, free against with every alive mask held at 1
     random.png     adversarial ratio against random-mask ratio for the same function in Delta and the start
     coherence.png  coherence of the per-subcomponent changes: the start and the two copies
+    amend1_hold.png  Amendment 1, lowercase: every state free and held, with W0 free and held as references
 
     python experiments/ls_start_faith/plot.py   -> figures/*.png
 """
@@ -146,9 +147,44 @@ def coherence() -> None:
     fig.savefig(FIGURES / "coherence.png", dpi=150)
 
 
+def amend1_hold() -> None:
+    """Amendment 1, lowercase: every state free and held, in nats, with W0 free and W0 held as reference lines."""
+    a1 = json.loads((HERE / "results" / "ls_start_faith_amend1.json").read_text())
+    rules = json.loads((HERE / "results" / "predictions_amend1.json").read_text())["config"]
+    kl = {**OUT["kl"], **a1["kl"]}
+    states = (("W0", "W0", "W0"), ("L.nothing", "nothing", NAME["nothing"]),
+              ("L.nothing_start", "nothing_start", NAME["nothing_start"]), ("L.start", "start", NAME["start"]),
+              ("L.std_copy", "std_copy", "standard\ncopy"), ("L.ls_copy", "ls_copy", "copy trained\nfrom the start"))
+    w = 0.38
+    fig, ax = plt.subplots(figsize=(9, 4.2))
+    for i, (key, c, _) in enumerate(states):
+        label_bars(ax, ax.bar(i - w / 2, sum(kl[key]) / 2, w, color=COLOUR[c]))
+        label_bars(ax, ax.bar(i + w / 2, sum(kl[f"{key}|hold"]) / 2, w, color="white", edgecolor=COLOUR[c],
+                              hatch="///", lw=1.2))
+    w0, w0h = sum(kl["W0"]) / 2, sum(kl["W0|hold"]) / 2
+    n = dict(rules["nothing_ref"])["L"]
+    bar = (1 + max(rules["floor"], rules["teeth_share"] * (n - 1))) * w0h  # R1: do-nothing held must reach this
+    ax.axhline(w0, color=MUTED, lw=0.8, ls="--")
+    ax.text(5.62, w0, "W0 free", fontsize=7, color=MUTED, va="bottom", ha="left")
+    ax.axhline(w0h, color=INK, lw=0.9, ls=":")
+    ax.text(5.62, w0h, "W0 held", fontsize=7, color=INK, va="bottom", ha="left")
+    ax.plot([1 - 0.4, 1 + 0.4], [bar, bar], color=INK, ls="--", lw=0.9)
+    ax.text(1 + 0.42, bar, f"teeth bar\nfor do-nothing held\n{bar:.2f}", fontsize=7, color=INK, va="center")
+    ax.set_xticks(range(len(states)), [s[2] for s in states], fontsize=8)
+    ax.set_xlim(-0.5, 6.1)
+    ax.set_ylabel("PGD KL, mean of two blocks (nats)")
+    legend(ax, "free adversary", "alive masks held at 1", "///")
+    ax.set_title(f"{TASK['L']}: under the hold, does any state keep its excess over W0 held?\n"
+                 "teeth bar: held do-nothing must keep half its free excess, as a ratio over W0 read the same way",
+                 fontsize=9)
+    fig.tight_layout()
+    fig.savefig(FIGURES / "amend1_hold.png", dpi=150)
+
+
 if __name__ == "__main__":
     FIGURES.mkdir(exist_ok=True)
     source()
     hold()
     random_masks()
     coherence()
+    amend1_hold()

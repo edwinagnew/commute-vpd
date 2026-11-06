@@ -4,14 +4,16 @@
 `experiments/ls_start_faith/results/predictions.json`; code `experiments/ls_start_faith/run.py`; result
 `experiments/ls_start_faith/results/ls_start_faith.json`; figures `experiments/ls_start_faith/figures/`; notebook
 `notebooks/E127_ls_start_faith.ipynb`. MATS `debug` L40, two jobs: 54836 stopped at its time budget as planned,
-and 54874 resubmitted and finished. About 31 min, $0. Provisional: no independent check, as the fast lane
+and 54874 resubmitted and finished. About 31 min, $0. Amendment 1: code `experiments/ls_start_faith/amend1.py`, filed
+rules `results/predictions_amend1.json`, result `results/ls_start_faith_amend1.json`, job 54890, `debug` L40, about
+19 min, $0, stopped on a control at its ninth of twelve reads. Provisional: no independent check, as the fast lane
 allows for a run under the gate.*
 
-We split the least-squares start's excess under the adversarial check into a part from its weight change and a
-part from where that change sits, on two fine-tunes. On both, all of the excess comes from where the change sits, and
-only the adversary sees it; holding the alive subcomponents fully on removes it.
-For keeping a decomposition faithful along training, placing an update on the subcomponents is what costs; whether
-the alive masks alone carry that waits on do-nothing read under the hold, since the hold also changed the adversary.
+We split the least-squares start's excess under the adversarial check by its cause, its weight change or where that
+change sits, and read every state again with the alive subcomponents held fully on. All of the excess comes from where
+the change sits, but the hold brings every state, do-nothing included, to about the unchanged model's held reading, so
+it cannot say which masks carry the excess. For keeping a decomposition faithful along training, placing an update on
+the subcomponents is what costs, and which masks the adversary exploits is still open.
 
 ## The answer
 
@@ -19,8 +21,7 @@ The least-squares start is less faithful than do-nothing because of where its ch
 differ from the fine-tune. Its own weight change, left outside the subcomponents, reads better than do-nothing on both
 tasks. Moved onto the alive subcomponents, the same change reads nearly three times worse on lowercase. Only the
 adversary finds this; random masks read the two placements alike. Freezing the alive subcomponents fully on removes the
-excess. It also removes most of the excess of a state whose change sits outside them, so that reading is not yet
-specific.
+excess, but it removes do-nothing's too, so it does not show that those masks carry it.
 
 ## What we were trying to test
 
@@ -118,7 +119,8 @@ random-mask readings that way.
 ![hold](../../experiments/ls_start_faith/figures/hold.png)
 
 **Reading it.** Yes on the filed rule, but the hold also flattens a state whose change is not on the alive
-subcomponents, so the reading is not yet specific. On lowercase, the start reads 0.98 of W₀ held and the same function
+subcomponents, and Amendment 1 below found it flattens do-nothing too. The reading is therefore reported
+"unreadable under the hold". On lowercase, the start reads 0.98 of W₀ held and the same function
 in Δ reads 1.11. The held placement part is therefore slightly negative, and the share removed is 1.02 against the
 filed bar of 0.75. Emoticon reads the same way, at 1.15.
 
@@ -136,7 +138,8 @@ Every other held state reads under W₀ held, by up to 0.31 nats. So there are t
 open. The hold may remove what the placement adds, as the filed rule reads it. Or the held adversary may sit in a
 different optimum, driven by the dead and Δ masks, where every state looks like W₀. Under the second reading the hold
 has no teeth for this question. Telling them apart needs do-nothing and a standard teacher-trained copy read under the
-hold: if do-nothing keeps its excess there, the hold is specific. Neither was read; E127 Amendment 1 is coding them.
+hold: if do-nothing keeps its excess there, the hold is specific. Amendment 1 read them, and do-nothing does not keep
+it.
 
 | state | lowercase free | lowercase held | emoticon free | emoticon held |
 |---|---|---|---|---|
@@ -151,6 +154,99 @@ hold: if do-nothing keeps its excess there, the hold is specific. Neither was re
 
 Source: `kl.*`, the mean of the two blocks; `score.{L,E}.ratio.*|hold`; `score.{L,E}.exposure`. The nats share is
 computed here from `kl` with `jq`: one minus the held placement gap over the free placement gap, both in nats.
+
+## Amendment 1: does the hold have teeth?
+
+*Plan `reports/plans/2026-11-06_plan_e127-ls-start-faithfulness.md` → "Amendment 1"; rules
+`results/predictions_amend1.json`, filed before the run; result `results/ls_start_faith_amend1.json`; log
+`results/large/amend1.log`; job 54890.*
+
+**What it asked.** The hold above flattened the start, and also a state whose change sits in Δ. If it flattens
+do-nothing as well, the held check has lost its ability to see any excess, and the placement reading tells us nothing
+about the alive masks. So the amendment read, on the same rows, seed, card and code path, three states under the hold:
+
+- **do-nothing held**, the positive control for the hold. Do-nothing's free excess on lowercase is 3.79 ratio points, 18
+  floors. A hold with teeth should leave a large part of it;
+- **the standard teacher-trained copy**, free and held. It is E122's copy of the same lowercase fine-tune, trained by
+  E37's recipe from W₀'s alive subcomponents, and on emoticon E121's order-0 copy;
+- **the copy trained from the least-squares start**, free and held, read for description only.
+
+Each copy's free read is a control: it must reproduce the reading stored when the copy was made.
+
+**The filed rules.** Write $r$ for a ratio, free or held, over W₀ read the same way.
+
+- **Teeth**, per task: the hold has teeth if do-nothing held keeps at least half of do-nothing's free excess, and at
+  least one floor: $r_{\text{nothing|hold}} - 1 \ge \max(f, 0.5\,(r_{\text{nothing}} - 1))$. If not, that task's
+  E127 exposure reading is reported "unreadable under the hold", and no other rule replaces it.
+- **Standard copy**, per task: "exposed" if its held ratio falls more than one floor under its free one. It is "out of
+  reach" if the two are within one floor, and "raised by the hold" if the held one is more than a floor higher.
+
+The lean was "no teeth" at 0.85 on lowercase and 0.8 on emoticon, because the same function in Δ had already lost most
+of its excess under the hold.
+
+### Controls: the job stopped at its ninth read
+
+| control | read | stored | tolerance, relative | verdict |
+|---|---|---|---|---|
+| W₀, nats | 0.691743 | 0.691743 | 1e-3 | exact |
+| W₀ held, nats | 1.600863 | 1.600863 | 1e-3 | exact |
+| lowercase standard copy, free ratio | 1.912875 | 1.912875 | 1e-3 | exact |
+| lowercase copy from the start, free ratio | 9.404895 | 9.404895 | 1e-3 | exact |
+| emoticon standard copy, free ratio | 1.006981 | 0.986613 | 1e-2 | missed by 2.1%; job stopped |
+| card | L40 | L40 | | held |
+
+Source: `ls_start_faith_amend1.json` `controls.*.read`, `.ref`, `.tol`, `stopped`, `jobs[].card`. The relative miss is
+$(1.006981 - 0.986613)/0.986613 = 0.0206$, computed with `jq`.
+
+Lowercase, the headline task, ran complete. On emoticon, do-nothing held was read, then the standard copy's free read
+missed its band and the job stopped with exit 1. The emoticon copy reads after it were not run. The miss is most likely
+bf16 rounding: E121 read the emoticon copies as fp32 states in memory but saved them only as bf16 offsets, and this job
+read the saved offsets. The plan foresaw this and set the band at 1e-2 rather than 1e-3, without a measured floor for
+it; the cause is not proven. The lowercase copies' stored readings were taken from the same bf16 files, and they
+reproduce exactly.
+
+**Decision, taken by the lead: no rerun of the emoticon copy reads.** The teeth reading they would sit under is
+already "no teeth" on emoticon, so they could not change a verdict. This leaves E127's second and last amendment slot
+unused.
+
+### Under the hold, does any lowercase state keep its excess?
+
+![amend1 hold](../../experiments/ls_start_faith/figures/amend1_hold.png)
+
+**Reading it.** No: the hold has no teeth. Do-nothing reads 3.32 nats free and 1.91 held, against W₀'s 0.69 free and
+1.60 held. As a held ratio that is 1.19, keeping 0.19 of its free excess of 3.79, about 5%. The filed bar was 1.90, so
+the hold reads "no teeth". The two copies fall to W₀'s held line as well. The standard copy goes from 1.91 free to 1.00
+held, and the copy from the start from 9.40 free to 0.97 held. Every state on the figure, whatever its free reading and
+wherever its change sits, ends within 0.31 nats of W₀ held.
+
+On emoticon the hold has no teeth either: do-nothing held reads 0.88, under W₀ held, against a bar of one floor.
+
+| state, lowercase | free ratio | held ratio | free, nats | held, nats | reading |
+|---|---|---|---|---|---|
+| W₀ | 1 | 1 | 0.692 | 1.601 | reference |
+| do-nothing | 4.794 | 1.194 | 3.316 | 1.912 | teeth: no teeth |
+| same function in Δ, E127 | 2.946 | 1.107 | 2.038 | 1.772 | |
+| least-squares start, E127 | 8.333 | 0.979 | 5.764 | 1.567 | |
+| standard copy | 1.913 | 1.002 | 1.323 | 1.604 | exposed |
+| copy from the start | 9.405 | 0.970 | 6.506 | 1.554 | exposed, descriptive |
+
+| emoticon | read | rule | verdict |
+|---|---|---|---|
+| do-nothing held ratio | 0.877 | teeth, bar 1 + f = 1.209 | no teeth |
+| standard copy free ratio | 1.007 | control, stopped the job | |
+| standard copy held; copy from the start free and held | not run | | not run |
+
+Source: `ls_start_faith_amend1.json` `score.{L,E}.ratio`, `score.{L,E}["R1 teeth"]`, `["R2 std_copy"]`,
+`["ls_copy (descriptive)"]`; nats are the mean of the two blocks in `kl`, from this file for the amendment's states and
+from `ls_start_faith.json` for E127's. The lowercase teeth bar is $\max(0.209, 0.5 \times 3.794) = 1.897$ above 1,
+computed with `jq`. The standard copy's exposed line is its free ratio minus $f$, 1.704.
+
+**What follows, under the filed rule.** On both tasks E127's exposure reading, "the alive masks", is reported
+"unreadable under the hold" (`score.{L,E}.placement`). What stands is everything in E127 that used no hold. The
+free-read split stands: the function part is negative, and placing the change on the alive subcomponents carries the
+whole excess. So do the random-mask and cancellation readings. What falls is that the hold isolates the placed update.
+It brings do-nothing, the standard copy and the copy from the start alike to about W₀'s held reading. So the hold takes
+away the adversary's ability to find any excess, not the placement's in particular.
 
 ## Do random masks see the placement part?
 
@@ -203,14 +299,16 @@ plan's second premise check: in Δ a change shares one adversarial knob per matr
 thousands of separate masks. Only the adversary exploits this; random masks and weight-side cancellation do not track
 it. For `GOALS.md`, this says placing an update by the least-squares split can make a decomposition easier to break
 than leaving the update outside it, even when the weights are nearly the same. Whether the alive masks are uniquely to
-blame stays open until do-nothing is read under the hold.
+blame cannot be read with the hold: Amendment 1 found that it flattens do-nothing too, so it removes the adversary's
+reach in general. A question about which masks carry the excess needs a different tool.
 
 ## How compelling is the evidence
 
 - One adversary seed, one row set of 256 Pile rows, two tasks, one fine-tune each, one L40.
 - Lowercase's placement part is 8.8 floors of its reference; emoticon's is 1.8. Emoticon is weak evidence.
-- The hold is a different adversary from the free one, and it was read on two states per task and W₀ only. It cannot
-  yet be told apart from a hold that flattens every state.
+- The hold is a different adversary from the free one. On lowercase, Amendment 1 read it on all six states, and
+  do-nothing kept about 5% of its free excess; the "no teeth" reading sits far from its bar, 0.19 against 1.90.
+- Emoticon's hold reading rests on do-nothing alone; its copies were not read held.
 - The random-mask read's own noise floor was not measured.
 - Cancellation is weight-side only.
 
@@ -222,14 +320,18 @@ blame stays open until do-nothing is read under the hold.
   it is allowed to choose.
 - Emoticon read "placement" where "within the floor" was expected; this is the rule scoring parts, not the whole.
 - The standard copies' input-weighted coherence, 4.49 and 5.55, is above the expected 2 to 4.
+- Amendment 1 stopped on the emoticon standard copy's free read, 1.007 against a stored 0.987. Most likely this is bf16
+  rounding of the saved copy, which E121 had read in fp32; not proven.
+- Amendment 1's leans held: "no teeth" on both tasks, and the lowercase standard copy "exposed". The copy from the
+  start read 0.97 held, just under its descriptive lean of 1.0 to 1.5.
 
 ## What next
 
-- **E127 Amendment 1, being coded**: do-nothing and the standard teacher-trained copy read under the hold. If do-nothing
-  keeps its excess under the hold, the hold is specific and the alive masks carry the placement part. If it reads like
-  W₀ held, the hold has no teeth and the exposure reading is unreadable.
 - A free adversary with more steps or restarts at W₀: if it reaches the held 1.60, the free check has been
-  under-reading every state, and the ratios E34 used would change scale.
+  under-reading every state, and the ratios E34 used would change scale. It would also say whether the hold's flat
+  readings are a stronger adversary at W₀ or a weaker one everywhere else.
+- Which masks carry the placement excess is now open with no filed route. A hold of a subset of the alive
+  subcomponents, or at their CI values, would be a new plan, not an amendment: E127 has no amendment slots left.
 
 ## Scorecard
 
@@ -237,8 +339,8 @@ blame stays open until do-nothing is read under the hold.
 |---|---|---|---|---|---|
 | A, lowercase | function or placement | each part carries at f times its reference | function −1.848, placement 5.387 | placement 0.5 | placement; lean held |
 | A, emoticon | same | same | function −0.241, placement 0.424 | within the floor 0.6 | placement; lean missed |
-| B, lowercase | hold removes placement part | H ≥ 0.75 alive masks | H 1.024 | alive masks 0.5 | the alive masks; lean held; not yet specific |
-| B, emoticon | same, report only per the plan | same | H 1.153 | none | the alive masks, reported only |
+| B, lowercase | hold removes placement part | H ≥ 0.75 alive masks | H 1.024 | alive masks 0.5 | the alive masks as filed; unreadable under the hold by Amendment 1's R1 |
+| B, emoticon | same, report only per the plan | same | H 1.153 | none | the alive masks as filed; unreadable under the hold by Amendment 1's R1 |
 | C, lowercase | random masks see it | q ≥ f | q −0.009 | adversary only 0.8 | adversary only; held |
 | C, emoticon | same | same | q 0.005 | same | adversary only; held |
 | D, both | cancellation tracks failing states | start and copy from start κ < 0.5, standard not | 0.873, 1.299, 4.485; 0.614, 0.886, 5.554 | 0.5 / 0.5 | does not track |
@@ -258,6 +360,21 @@ Expected values filed beside the rules:
 | sign-flip nulls about 1 | 0.954 to 1.023 | held |
 | about 30 min as two jobs | 26 min, then 5 min | held |
 
+Amendment 1, `predictions_amend1.json`:
+
+| rule | what it says | rule as filed | read | lean | verdict |
+|---|---|---|---|---|---|
+| R1, lowercase | the hold has teeth | nh − 1 ≥ max(f, 0.5 (n − 1)) | nh 1.194; bar 1.897 above 1 | no teeth 0.85 | no teeth; lean held; placement unreadable under the hold |
+| R1, emoticon | same | same | nh 0.877; bar f = 0.209 | no teeth 0.8 | no teeth; lean held; placement unreadable under the hold |
+| R2, lowercase | standard copy under the hold | exposed iff ch < c − f | c 1.913, ch 1.002 | exposed 0.65 | exposed; lean held |
+| R2, emoticon | same | same | not read | out of reach 0.65 | not run |
+| copy from the start, lowercase | descriptive | same three-way reading | 9.405 → 0.970 | exposed, held 1.0 to 1.5 | exposed; held value just under the lean range |
+| copy from the start, emoticon | descriptive | same | not read | exposed or at the edge | not run |
+| controls C1 to C3, C5 | W₀, W₀ held, lowercase copies, card | 1e-3 relative | exact | | held |
+| control C4 | emoticon copies reproduce | 1e-2 relative | standard copy 1.0070 vs 0.9866 | | missed; job stopped |
+| control C6 | a resubmitted job rereads W₀'s first block | 1e-6 relative | one job only | | does not apply |
+| control C7 | alive U, V equal E121's | equal | equal; the assert at load passed | | held |
+
 ## Departures from the literature
 
 - **The hold has no counterpart in the VPD paper.** The paper's adversary moves every mask. Here, for this question
@@ -267,11 +384,15 @@ Expected values filed beside the rules:
   check uses one adversary per 128-row block where the paper shares one over its evaluation batch.
 - **The coherence κ is ours, from E17**, not a published measure; its input-weighted form is new here.
 
+- **The teeth rule is ours**, filed for Amendment 1, with its half-the-excess bar; the paper has no hold to test.
+
 ## Not run
 
-- **Do-nothing under the hold** on either task: the read that tells a specific hold from one that flattens every state.
-  E127 Amendment 1.
-- **Any standard teacher-trained copy under the hold**, and the copy from the start under the hold. E127 Amendment 1.
+- **Emoticon's standard copy held, and its copy from the start free and held.** Amendment 1 stopped before them on the
+  standard copy's free control. Not rerun, by the lead's decision: the teeth reading they would sit under is already
+  "no teeth", so they cannot change a verdict.
+- A measured bf16 floor for the emoticon copies, read once from fp32 and once from the saved bf16 offsets; it would
+  confirm or rule out rounding as the cause of the stop.
 - Adversary seeds 1 and 2: emoticon's parts are not readable from one seed.
 - A free adversary with more steps or restarts, to see whether it reaches the held 1.60 at W₀.
 - A hold at the CI values, and a hold of a subset of the alive subcomponents.
@@ -285,3 +406,9 @@ Result `experiments/ls_start_faith/results/ls_start_faith.json` (`done: true`); 
 `~/commute-data/results-large/ls_start_faith/run.log`; job logs `cluster/logs/commute-e127-54836.out` and
 `commute-e127-54874.out`. Job 54836 ran from 21:35 and stopped at its 28-minute budget with exit 3. Job 54874 ran from 22:02 and
 ended with exit 0 at 22:07. Each PGD read took 127 to 140 s (`seconds`). MATS `debug` QoS, L40, $0.
+
+Amendment 1: result `experiments/ls_start_faith/results/ls_start_faith_amend1.json` (no `done`; `stopped` names the
+control), committed in 57c812fd; run log `experiments/ls_start_faith/results/large/amend1.log`; figure
+`experiments/ls_start_faith/figures/amend1_hold.png` from `plot.py`. Job 54890 started 22:27:17 on the L40
+(`cluster/logs/jobs.log`), read W₀ at 22:29:54 and stopped at 22:47:11 with exit 1, after nine reads of 127 to 132 s.
+Peak host memory 6.1 GB. MATS `debug` QoS, $0.
