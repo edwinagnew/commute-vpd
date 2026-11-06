@@ -1,7 +1,7 @@
 # Analysis: does an RL update read differently from an SFT update inside the decomposition? (D2)
 
 *2026-11-06, `qwen-rl-lead`. A $0 synthesis of E75, E93 and E104, with E69 for the training and E91 and E94 for sizes
-and scale. No new run, no new E-code, no filed predictions. Provisional: no independent check. Table and figures
+and scale. No new run, no new E-code, no filed predictions. Provisional; the no-think reading alone was checked independently (Limits). Table and figures
 `experiments/qwen_rl_reads/plot_d2.py`; figures `experiments/qwen_rl_reads/figures/d2_*.png`. Words as in `GOALS.md`
 → Terms.*
 
@@ -15,8 +15,9 @@ gives no handle yet on whether RL teaches something new.
 ## The answer
 
 Not yet. Across every reading the three reports made, RL's update reads like the shuffled-reward null about as often
-as seed noise alone predicts. One reading stands out: the subcomponents RL switches on overlap a length-matched
-no-think answer set more than the null's do, at both steps and both seeds. That reading describes the changed model,
+as seed noise alone predicts. One reading stands out: the subcomponents RL switches on overlap a reference set
+read on plain answers placed deep in a long context more than the null's do, at both steps and both seeds; an
+independent check found the margin may be much smaller once counting noise is allowed for. That reading describes the changed model,
 not the split, and no rule was filed for it. Own-samples differs from RL mostly through size and through which
 matrices its update sits in. It has one seed.
 
@@ -58,7 +59,9 @@ $W_0 = UV^\top + \Delta$ with rank-one subcomponents.
   **Placement excess**: the split's share on subcomponents the original model already switches on, minus a Gaussian
   change's, 0 for no preference. **Think overlap**: the subcomponents the changed model switches on that the original
   leaves off, against think mode's switched-on set, as a fold over chance, so 1 is chance. Beside it stands the same
-  fold against a **no-think set** matched in answer length. Both steps, both seeds.
+  fold against a **no-think set**: the original model's plain answers, unchanged in length, with earlier maths turns
+put in front so each answer starts where its think-mode answer would (matched on answer position, not answer length;
+7,237 of its 9,671 subcomponents are also in the think set, so it is largely a long-context set). Both steps, both seeds.
 
 Two readings in E104, outside share and both overlaps, read the same under do-nothing. They describe the update and the
 changed model, not how the split places the update.
@@ -115,7 +118,12 @@ The anchors are the reference: the template reads 4.22 and 4.42 on no-think, TOF
 wider than RL's from its null. Size does not obviously drive it, since the null's seed 0 at step 100 moves the outputs
 twice as far as RL's seed 0 and still reads lower. Two cautions. This fold describes the changed model's switched-on
 set, so do-nothing reads the same, and it says nothing about the split. And it was found by scanning about thirty
-comparisons after the fact, so it is a lead for a filed test, not a finding.
+comparisons after the fact, so it is a lead for a filed test, not a finding. Third, the bars rest on very tight two-seed spreads (RL's at
+step 100 is 0.003), far below the counting noise of the overlaps (counts of 16 to 103 against chance means of 5.6 to
+11.9). On a Poisson scale for those counts the gap is about 1.8 standard deviations at step 100 and 1.5 at step 10,
+not 6.5 and 10.9 bars. If the two seeds switch on largely the same subcomponents, the tight spreads are real and the
+bars stand; that overlap was not measured. And since the set is mostly a long-context set, the reading says RL switches
+on more of what a long preceding context switches on, not that its update is more like no-think mode.
 
 ### Is own-samples' larger outside share more than its larger null?
 
@@ -324,7 +332,10 @@ answer from these readings yet. The no-think overlap is the one reading worth a 
   comparison on maths rows.
 - **Blind spots.** Outside share, think overlap and no-think overlap read the same under do-nothing, so they say nothing
   about the split. Placement is blind to scale. $K$ weights tails and reads no masks. No adversary ran on any arm.
-- **Independent check.** None. No headline claim rests on this report.
+- **Independent check.** One, on the no-think reading only (fresh Opus agent, 2026-11-06): every number recomputes
+  exactly and the rows, set and draws are the same for every arm, so only the update can produce the gap; but the set
+  was misdescribed as length-matched (fixed above), and counting noise may shrink the margin to 1.5 to 1.8 standard
+  deviations. Its noise simulation is in `~/commute-data/scratch/qwen-rl-lead/d2-check/noise_sim.py`.
 
 ## Surprises
 
@@ -337,7 +348,9 @@ Smaller: the share left in Δ below its null, E93's measure, sits lower for own-
 
 ## What next
 
-1. **A filed test of no-think overlap on a third RL and null seed.** If RL's fold stays near 3.75 and the null's under
+1. **First, $0: how much the two seeds' switched-on sets overlap**, from the saved per-state counts. It decides
+   whether the tight seed spreads are real or the counting-noise scale (1.5 to 1.8 standard deviations) is right.
+   **Then, only if the bars stand: a filed test of no-think overlap on a third RL and null seed.** If RL's fold stays near 3.75 and the null's under
    3.2, it becomes D2's first difference beyond seed spread, and it goes through `/design` first. If they overlap, the
    lead is closed. A third seed is a paid H100 run per arm.
 2. **The two empty columns.** When teacher training and the adjoint split land on these updates, rerun
@@ -379,7 +392,9 @@ No predictions were filed for this synthesis. The sources' filed verdicts on the
 - A size copy from RL seed 70 or the null, or one scaled other than by one number.
 - Readings at steps other than 10 and 100.
 - Any adversary, and accuracy under any split.
-- An independent check of this report.
+- An independent check of the rest of this report.
+- How much the two seeds' switched-on sets overlap, which decides whether the no-think bars or the counting-noise
+  scale is right.
 
 ## Provenance
 
