@@ -1,0 +1,59 @@
+{
+ "experiment": "E120 qwen_pass_pools",
+ "plan": "reports/plans/2026-11-06_plan_e120-pass-rate-pools.md",
+ "filed": "2026-11-06",
+ "rounding": "Thresholds compare as written (>=, <=, >, <), on values rounded to 9 places; a missing value is a miss unless the rule says 'does not apply'. Bands include their ends.",
+ "terms": {
+  "new pool": "problems never solved in 64 no-think samples (0 of 16, then 0 of 48 fresh), after the guards; never called 'absent'",
+  "known pool": "problems solved in >= 36 of 48 fresh samples (>= 24 in a MATH level-5 stratum whose known at 36 are fewer than its new; pools.json meta.fallback names them), after the guards",
+  "n": "pools.json meta.n: problems per pool, train plus held (both pools have the same n by construction)"
+ },
+ "controls": {
+  "stage0": {"a_greedy_strict_dropped": [0.72, 0.84], "b_mean_sample_strict": {"ref": 0.753, "tol": 0.05},
+             "c_gsm8k_gold": 1.0, "c_math_gold_on_readable": 1.0, "c_math_next_gold_max": 0.05,
+             "on_miss": "the job stops (exit 2); nothing else runs"},
+  "stage1_early": {"truncation_max": {"gsm8k": 0.02, "math": 0.10}, "math_caps": [1024, 2048],
+                   "l5_zero16_share_min": 0.05, "plain64_above_tokens_per_s": 20000,
+                   "on_miss": "GSM8K truncation or MATH truncation at cap 2048 on the first shard, or the level-5 share after pass 16: stop (exit 2). MATH truncation over 0.10 at 1024 redoes the first shard at 2048."},
+  "n1_control": {"rule": "known pool (train + held) solved at least once in 4 think-mode samples", "min": 0.8,
+                 "on_miss": "N1 stops before the new pool; P2 reads 'no call'"}
+ },
+ "P1": {
+  "claim": "the new pool has at least 100 problems after the guards",
+  "rule": "pools.json meta.n >= 100",
+  "threshold": 100, "relative": false,
+  "expected": "yes, n 200-600",
+  "on_no": "option 3 of reports/decisions/2026-11-06_decision_anchor2-organic-options.md",
+  "edge_cases": "empty new pool: n = 0, reads no. A stratum with new but no known problems is dropped from both sides and counted (meta.strata cut_new_unmatched), it never errors. n exactly 100 reads yes. Stage 1 stopped (level-5 share under 0.05): no pools.json, reads no."
+ },
+ "P2": {
+  "claim": "novelty check N1 passes: at most half of the new pool is solved with thinking on",
+  "rule": "results/n1.json new.solved_share = share of new-pool problems (train + held) with at least 1 of 4 think-mode samples correct (the card's thinking settings T 0.6, top-p 0.95, top-k 20; 8,192-token cap; only the text after </think> is graded, a sample without </think> or truncated is not solved); passes if <= 0.5",
+  "threshold": 0.5, "relative": false,
+  "expected": "uncertain, 0.5; solved share about 0.3-0.6",
+  "on_fail": "the lead stops and asks the user (a changed definition of 'new' is the user's); option 3 only below 100 problems",
+  "edge_cases": "empty new pool: does not apply. Exactly 0.5 passes. Known-pool control under 0.8: no call, reported as read. Every sample truncated: solved 0, reads pass, so n1.json truncation is reported beside it and a truncation over 0.5 is named in the write-up."
+ },
+ "P3": {
+  "claim": "the new arm learns by the held-out rule",
+  "rule": "at step 100, per seed, held-out pass@1 = mean over the new pool's held problems of (correct of 8 samples at qwen_eval.SAMPLE)/8, graded by grade.py; learns if >= 0.10 for both seeds, no if < 0.10 for both, 'seeds disagree' otherwise. With held-out < 0.10, trained-part greedy >= 0.5 reads 'memorised, carrying little' (E84's label).",
+  "threshold": 0.10, "relative": false,
+  "expected": "no, 0.35 for learns: memorised, carrying little",
+  "edge_cases": "empty held part: does not apply. Exactly 0.10 reads learns. W0's held-out pass@1 is at most 1/64 per problem by construction, so the bar is not passed by the do-nothing state unless the held part is tiny: with n >= 100 the held part has >= 20 problems."
+ },
+ "P4": {
+  "claim": "the known arm leaves GSM8K test within 0.05 of W0",
+  "rule": "at step 100, per seed, GSM8K test 0-255 greedy strict accuracy on fitting answers (qwen_eval.score, strict_dropped, fp32 forward) minus W0's 0.784 (experiments/qwen_recipe/results/train_W.json -> states.w0.unprompted.strict_dropped, the same path); holds if |difference| <= 0.05 for both seeds",
+  "threshold": 0.05, "relative": false,
+  "expected": "uncertain; the D2 gold arm at the same recipe read 0.598 at step 100 (train_W.json -> states.gold_s0_100), a drop of 0.19",
+  "edge_cases": "a seed missing: no call. Exactly 0.05 holds. Do-nothing (W0 itself) reads 0 and holds, as it should: this is a no-damage rule."
+ },
+ "P5": {
+  "claim": "at step 100 the new arm's update is larger than the known arm's",
+  "rule": "per seed s, Frobenius norm of the fp32 delta W over the 196 decomposed matrices at step 100, new seed s > known seed s; holds if for both seeds, fails if for neither, 'mixed' otherwise",
+  "threshold": "strict >", "relative": true,
+  "expected": "yes",
+  "edge_cases": "equal norms read 'not larger'. A missing step-100 file: no call for that seed."
+ },
+ "not_predicted": "No D3 reading is predicted here; the readings are qwen-decomp-lead's."
+}
