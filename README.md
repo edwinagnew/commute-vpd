@@ -48,6 +48,8 @@ meant the split of a finished update, and that request was never built as asked
 - Outside share of a LoRA (E9): 0.48 to 0.71 of its energy against 0.55 to 0.76 for a random update, at every step; a
   fine-tune reads 0.27 against 0.53 (E8). The LoRA sits outside the subcomponents about as much as noise does.
 
+Current plan, neuron baseline, latest (2026-11-06, user retarget, `decisions.md` last row): on states where VPD already has a reading, the same reading on neurons and the cheap comparators beside it on shared axes. (1) 67M: switched-on set and re-switching on neurons at VPD's count, identity/copy against random maps and ciphers (E12, E46, E50), lowercase against the ciphers; (2) Qwen: update size, the original model's rank of the trained answer, one steering vector and the carrying-neuron set beside E93's table and the E94/E104 D3 rows, no new fine-tunes; (3) one table in the log by 11-14. E115 and E109 Amendment 1 dropped.
+
 Current plan, Qwen D3, E84 (2026-11-04, `reports/plans/2026-11-04_plan_e84-rephrasings.md`, $0): anchor 2 again, TOFU's 800 rows each trained in five wordings, Qwen3-1.7B writing the other four, tested on TOFU's own rephrased question, never trained, with fp32 δW on anchor 1's grid; ran with Amendment 1; the filed test missed twice, rephrased recall 0.532 and 0.554 under a line of 0.602 (`reports/analyses/2026-11-04_analysis_e84-rephrasings.md`); anchor 2 awaits the user, card decision-anchor2-after-e84.
 
 Current plan, Qwen D2, anchor 1 (2026-11-03, `reports/plans/2026-11-03_plan_e78-anchor1.md`, E78, $0): E61's template fine-tune retrained unchanged, saving δW in fp32 at E69's steps plus step 3, so the split can read it; coded and filed, not run yet.
