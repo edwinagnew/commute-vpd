@@ -21,31 +21,30 @@ A stage whose result file says done is skipped. A state's token file is read bac
 remove the token files the stopped stage wrote. Exit 0 done; 1 a stop (results/stopped_amend1.json) or a refusal.
 amend1_neurons.py is the second job. Stage T's loop is `fine_tune`, given the seed and paths, which Amendment 2
 (amend2.py) calls for its second seed; stage T passes the values it ran with, so this file's run is unchanged.
+Since 2026-11-06 (after both amendments ran) the sequences, the gains and the loop live in `commute.known_facts`, which
+E105 (experiments/rows_null) also calls; the names below are kept for amend2.py.
 """
 
 from __future__ import annotations
 
 import json
 import math
-import statistics
 import subprocess
 import sys
 import time
 from collections.abc import Callable
-from dataclasses import asdict, dataclass
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-import torch
-
+from commute import known_facts as KF
 from commute import qwen_d3 as d3
 from commute import qwen_tofu as tofu
 from commute.jobs import EXPERIMENTS, hard_exit, load_experiment
-from commute.qwen_rl import delta_fp32
-from commute.qwen_sft import gold_loss, linears, plus, save, set_weights
+from commute.known_facts import gains, levels, parts  # noqa: F401  (amend2.py reads them here)
+from commute.qwen_sft import gold_loss, plus, save, set_weights
 from commute.qwen_sft import load as load_file
-from commute.qwen_train import Recipe, train
-from commute.qwen_updates import ok
+from commute.qwen_train import Recipe
 
 RUN: Any = load_experiment("known_answer_pair", "run")  # E103's paths, Lab, answer_seqs, log_gap, E81, E84
 E81, E84, DEV, F32, write = RUN.E81, RUN.E84, RUN.DEV, RUN.F32, RUN.write
@@ -78,27 +77,19 @@ def is_done(stage: str) -> bool:
 
 
 def sentences() -> list[str]:
-    recs = [json.loads(x) for x in SENTENCES.read_text().splitlines()]
-    assert [r["row"] for r in recs] == list(range(len(tofu.real_rows())))
-    return [r["sentence"] for r in recs]
+    return KF.sentences(SENTENCES)
 
 
 def train_seqs(lab: Lab) -> list[tofu.Seq]:
     """run.py's `train_seqs` with pair 0's answer the row's sentence: same rows, order and count (1,085), so the stream's
     batches hold the same row and pair at every step."""
-    real, seqs = tofu.real_rows(), []
-    for rec, s in zip(map(json.loads, RUN.FORMS.read_text().splitlines()), sentences(), strict=True):
-        assert rec["kept"]
-        row = real[rec["row"]] | {"answer": s}
-        seqs += [tofu.seq(lab.tok, lab.end_id, q, a) for q, a in tofu.form_pairs(row, rec["questions"], rec["answers"])]
-    return seqs
+    return KF.train_seqs(lab.tok, lab.end_id, RUN.FORMS, sentences())
 
 
 def readers(lab: Lab) -> dict[str, list[tofu.Seq]]:
-    real, kept = tofu.real_rows(), {r["row"] for r in map(json.loads, E84_FORMS.read_text().splitlines()) if r["kept"]}
+    kept = {r["row"] for r in map(json.loads, E84_FORMS.read_text().splitlines()) if r["kept"]}
     fict = [r for i, r in enumerate(tofu.held_rows()) if i in kept]
-    return {"bare": RUN.answer_seqs(lab),
-            "sentence": [tofu.seq(lab.tok, lab.end_id, r["question"] + tofu.ASK, s) for r, s in zip(real, sentences(), strict=True)],
+    return {"bare": RUN.answer_seqs(lab), "sentence": KF.sentence_seqs(lab.tok, lab.end_id, sentences()),
             "fict": [tofu.seq(lab.tok, lab.end_id, r["question"] + tofu.ASK, r["answer"]) for r in fict]}
 
 
@@ -115,23 +106,6 @@ def tokens(lab: Lab, name: str) -> dict[str, list[list[float]]]:
     TOKENS.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(out) + "\n")
     return out
-
-
-def parts(rows: list[list[float]]) -> dict[str, list[float]]:
-    """Per row: `all` the mean over response tokens (E103's reading), `content` the mean without the end token, `end` the
-    end token's log P."""
-    assert all(len(r) >= 2 for r in rows), "every answer has a content token before the end token"
-    return {"all": [statistics.mean(r) for r in rows], "content": [statistics.mean(r[:-1]) for r in rows], "end": [r[-1] for r in rows]}
-
-
-def gains(now: list[list[float]], w0: list[list[float]]) -> dict[str, float]:
-    """Mean over rows of the change from W0 in each part (nats a token; `end` nats at the one token)."""
-    a, b = parts(now), parts(w0)
-    return {k: statistics.mean(x - y for x, y in zip(a[k], b[k], strict=True)) for k in a}
-
-
-def levels(rows: list[list[float]]) -> dict[str, float]:
-    return {k: statistics.mean(v) for k, v in parts(rows).items()}
 
 
 def state(lab: Lab, name: str) -> dict[str, list[list[float]]]:
@@ -202,74 +176,13 @@ def stage_T(lab: Lab) -> None:
 
 
 def fine_tune(lab: Any, arm: Arm, first_loss: float, bar: float, w0: list[list[float]]) -> None:
-    """The fine-tune on the new pair 0 with arm's stream seed; C1 at the matched step against `bar` on the sentence
-    reader (`w0` W0's tokens there); both states saved; `arm.out` written as it goes."""
-    m, seqs = lab.fp32(), train_seqs(lab)
-    torch.cuda.reset_peak_memory_stats()
-    F, reads, stop = lab.pred["first_minutes"], readers(lab)["sentence"], arm.stop
-    steps = E81.EPOCHS * (len(seqs) // E81.BATCH)
-    r = Recipe(E84.RATE, E81.WARMUP, steps, "hf_cosine", 1.0, E81.MICRO, forward="fp32")
-    out: dict[str, Any] = {"recipe": asdict(r), "seed": arm.seed, "batch": E81.BATCH, "sequences": len(seqs), "ref_norm": RUN.REF_NORM,
-                           "first_batch_loss": first_loss, "steps": [], "checks": [], "gains": {}}
-    best: dict[str, Any] = {"gap": math.inf}
-    lab.log(f"[T] {len(seqs)} sequences, {steps} steps; reference norm {RUN.REF_NORM:.6f}; C1's bar {bar:.4f}")
-
-    def matched() -> None:
-        save(arm.matched, best.pop("dW"), F32, droppable=False, log=lab.log)
-        rec = {k: best[k] for k in ("step", "norm", "gain")} | {"bar": bar, "holds": best["gain"]["content"] >= bar}
-        out["matched"] = rec
-        lab.log(f"[C1] content gain at the matched step {rec['step']} (norm {rec['norm']:.4f}): {json.dumps(rec['gain'])}; "
-                f"bar {bar:.4f}: {'ok' if rec['holds'] else 'MISSED'}")
-        write(arm.out, out)
-        if not rec["holds"]:
-            stop(lab, "C1: no content gain to carry", rec)
-
-    def on_step(rec: dict[str, Any]) -> None:
-        t = rec["step"]
-        for key in ("norms", "crossed", "kl"):
-            rec.pop(key, None)
-        rec["peak_gib"] = torch.cuda.max_memory_allocated() / 2**30
-        out["steps"].append(rec)
-        if not (ok(rec["loss"]) and ok(rec["grad_norm"])):
-            write(arm.out, out)
-            stop(lab, f"step {t} not finite", rec)
-        for name, value, holds in tofu.step_checks(rec, first_loss, F, E81.WARMUP):
-            row = {"at": t, "name": name, "value": value, "holds": holds}
-            out["checks"].append(row)
-            lab.log(f"[check] {'ok' if holds else 'MISSED'} {json.dumps(row, default=float)}")
-            if not holds:
-                write(arm.out, out)
-                stop(lab, f"step {t} {name}", row)
-        n = rec["dw_norm"]
-        if "matched" not in out and n > 0:
-            if RUN.log_gap(n) < best["gap"]:  # a better candidate: its gain now, its δW held on the card
-                g = gains(token_logp(lab, reads), w0)
-                out["gains"][str(t)] = g
-                best.pop("dW", None)  # the old copy goes first: two on the card would be 11 GB
-                best.update(gap=RUN.log_gap(n), step=t, norm=n, gain=g,
-                            dW={s: lin.weight.data - lab.W0[s] for s, lin in linears(m).items()})
-                lab.log(f"[T] candidate step {t}: norm {n:.4f}, gain {json.dumps(g)}")
-            elif n > RUN.REF_NORM:  # past the reference and moving away: the best is the matched state
-                matched()
-        if t % 25 == 0 or t <= 3:
-            lab.log(f"[T] {json.dumps(rec)}")
-            write(arm.out, out)
-
-    def save_end(t: int, dW: dict[str, Any]) -> None:
-        save(arm.end, dW, F32, droppable=False, log=lab.log)
-        out["end_step"] = t
-
-    t0 = time.time()
-    train(m, lab.W0, lambda t: tofu.stream(seqs, E81.BATCH, arm.seed, t), r, {}, {steps}, {}, {steps}, save_end, on_step,
-          LARGE / "ckpt_unused.pt", steps, dW_of=delta_fp32)
-    if "matched" not in out:
-        matched()
-    norms = {rec["step"]: rec["dw_norm"] for rec in out["steps"] if rec["dw_norm"] > 0}
-    out["argmin_step"] = min(norms, key=lambda t: RUN.log_gap(norms[t]))
-    lab.log(f"[T] matched step {out['matched']['step']}, argmin over the record {out['argmin_step']}; end |dW| "
-            f"{out['steps'][-1]['dw_norm']:.4f}")
-    write(arm.out, out | {"done": True, "seconds": time.time() - t0, "peaks": lab.peaks()})
-    torch.cuda.empty_cache()
+    """The fine-tune on the new pair 0 with arm's stream seed for five epochs; C1 at the matched step against `bar` on the
+    sentence reader (`w0` W0's tokens there); both states saved in fp32; `arm.out` written as it goes (`KF.fine_tune`)."""
+    seqs = train_seqs(lab)
+    r = Recipe(E84.RATE, E81.WARMUP, E81.EPOCHS * (len(seqs) // E81.BATCH), "hf_cosine", 1.0, E81.MICRO, forward="fp32")
+    keep = lambda path: lambda dW: save(path, dW, F32, droppable=False, log=lab.log)
+    KF.fine_tune(lab, KF.Run(arm.seed, arm.out, arm.stop, keep(arm.matched), keep(arm.end)), seqs, r, E81.BATCH,
+                 readers(lab)["sentence"], w0, first_loss, bar, E81.READ_BATCH)
 
 
 # ----------------------------------------------------------------------------- G, the readings

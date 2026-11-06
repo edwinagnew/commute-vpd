@@ -10,7 +10,8 @@ the TOFU rows' engaged values, the FineWeb rows, the Gaussian direction and its 
   Then each state's carrying set on the real rows (both new states, the four fictional states, the Gaussian change)
   and on the TOFU rows (the two new states; E102's own sets for the rest), and the engaged values of the real rows.
   Each read is written to results/neurons/ as it ends and skipped on a resume; the score goes to results/neurons.json.
-Exit 0 done; 1 a stop (results/stopped.json).
+Exit 0 done; 1 a stop (results/stopped.json). The row packing and the read moved to `commute.known_facts` on 2026-11-06,
+after this file ran (E105 calls them too); `real_rows` and `read` here are the same code.
 """
 
 from __future__ import annotations
@@ -26,10 +27,10 @@ import torch
 from safetensors.torch import load_file, save_file
 
 from commute import carrying_jobs as CJ
+from commute import known_facts as KF
 from commute import qwen_comparators as qc
 from commute import qwen_d3 as d3
 from commute import qwen_neurons as QN
-from commute import qwen_tofu as tofu
 from commute.jobs import hard_exit, load_experiment
 from commute.qwen_sft import load, plus
 
@@ -49,12 +50,7 @@ PAIRS = {"matched": ("real_matched", ("fict_s42_matched", "fict_s142_matched")),
 def real_rows(lab: Any) -> qc.Rows:
     """Pair 0 of the 217 real rows (TOFU's own wording, as trained), packed in rows of 256 as E92's TOFU rows; rows the
     wordings dropped stay as context and mark no answer."""
-    kept = set(json.loads((RUN.RESULTS / "forms.json").read_text())["kept_rows"])
-    seqs = []
-    for i, r in enumerate(tofu.real_rows()):
-        ids, p = tofu.seq(lab.tok, lab.end_id, r["question"] + tofu.ASK, r["answer"])
-        seqs.append((ids, p if i in kept else len(ids)))
-    return qc.rows_of("real", seqs, qc.ROW_LEN, qc.ROW_LEN)
+    return KF.real_rows(lab.tok, lab.end_id, set(json.loads((RUN.RESULTS / "forms.json").read_text())["kept_rows"]))
 
 
 def weights(lab: Any, name: str) -> dict[str, torch.Tensor]:
@@ -69,10 +65,7 @@ def read(lab: Any, R: qc.Rows, name: str, W: dict[str, torch.Tensor], out_dir: P
     """One state on one row set: its gain and top-K carrying set (E98's ranking, as E102's `read_state`), written to
     `out_dir` (Amendment 1 passes its own)."""
     t0 = time.time()
-    r = QN.rank_state(lab.model, R, W, CFG.batch)
-    d = r["T1"] - r["T0"]
-    rec = {"name": name, "rows": R.name, "gain": qc.share(d, d, r["row_of"]), "carry": QN.top_set(r["score"].sum(0), CFG.K),
-           "seconds": time.time() - t0}
+    rec = {"name": name, **KF.carrying(lab.model, R, W, CFG.batch, CFG.K), "seconds": time.time() - t0}
     out_dir.mkdir(parents=True, exist_ok=True)
     (out_dir / f"{name}__{R.name}.json").write_text(json.dumps(rec, default=float) + "\n")
     lab.log(f"[{name} on {R.name}] gain {rec['gain']['gain']:.5g}, set {len(rec['carry'])}, {rec['seconds']:.0f} s, {lab.peaks()}")

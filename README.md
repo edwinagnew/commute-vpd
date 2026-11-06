@@ -62,7 +62,7 @@ Current plan, benchmark line, latest (2026-11-03, `reports/plans/2026-11-03_plan
 
 Current plan, 67M neuron baseline (2026-11-05, `reports/plans/2026-11-05_plan_e101-carrying-jobs.md`, E101, $0): the essay's neuron reading on E98's carrying neurons against block-matched random ones; stage 0 (W0 windows, already-engaged share) first, then 36 blind agent calls.
 
-Current plan, Qwen neuron baseline, latest (2026-11-06, `reports/plans/2026-11-06_plan_e103-known-answer-pair.md`, E103, $0): the known-answer pair, a fine-tune on TOFU's 217 real-fact rows with E84's recipe beside the fictional-author fine-tune, so only the label differs; read by E102's neuron instruments and, by qwen-decomp-lead, E94's; coded, not run.
+Current plan, Qwen neuron baseline, latest (2026-11-06, `reports/plans/2026-11-06_plan_e105-rows-null.md`, E105, $0): the same-label, different-rows null for E103 Amendment 2's set-identity reading, known-facts fine-tunes on two disjoint halves of the 217 real rows at two seeds, read at the matched step; coded, not run. Before it E103 (`reports/plans/2026-11-06_plan_e103-known-answer-pair.md`), the known-answer pair, ran with two amendments.
 
 
 ## Experiment codes

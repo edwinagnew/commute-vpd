@@ -1,0 +1,69 @@
+{
+ "experiment": "E105 rows_null: the same-label, different-rows null for E103 Amendment 2's set-identity reading",
+ "filed": "2026-11-06",
+ "plan": "reports/plans/2026-11-06_plan_e105-rows-null.md",
+ "why": "E103 Amendment 2 read set identity 'beyond seed noise' on both row sets (known-facts seeds share 0.864 / 0.901 of their top-1024 carrying sets on the real / TOFU rows, fictional seeds 0.899 / 0.937, cross-arm at most 0.492 / 0.637), but the arms differ in rows as well as label (experiments/known_answer_pair/results/predictions_amend2.json .neurons.identity.null_not_run). Here the label is held at 'already known' and only the rows change: two disjoint halves of the 217 real rows, two seeds each.",
+ "split": {
+  "rule": "experiments/rows_null/score.py `halves`: rows 0..216 shuffled by random.Random(105).sample; half A the first 108, half B the other 109, each sorted. Written to results/split.json before the run (committed); run.py refuses if the file differs from halves(217).",
+  "seed_source": "105, the experiment's number; no other choice was tried"
+ },
+ "recipe": {
+  "rule": "E103 Amendment 1's known-facts fine-tune (commute.known_facts `fine_tune`, the code Amendments 1 and 2 ran, moved there unchanged): the 5 fixed pairs of each row in the half (E103's wordings, results/forms.jsonl; pair 0 the row's sentence, results/forms_amend1.jsonl), E84's rate 2e-5, E81's batch 16, micro 8, warm-up 250, hf_cosine, AdamW, fp32 forward; stream seeds 42 and 142 (tofu.stream). The matched step is E91's rule as E103 ran it: the step whose |dW| is nearest the template's 0.486520 in log ratio, chosen during training. Each arm runs CAP = 64 steps and stops; the record must pass the template norm and its argmin must be the matched step, or the job stops.",
+  "differs_from_full_rows": "Rows 108 / 109 against 217, so 540 / 545 sequences against 1,085 and 33 / 34 steps an epoch against 67. The rate at every step up to 64 is the full arm's (linear warm-up over 250 steps, set by the step, not by the total), so the matched step should land near the full arms' 32 and the update size is matched by rule. At the matched step a half has seen about 0.95 epochs of its rows, the full arm 0.47: each trained row about twice as often. The schedule's total (64 against 335) changes no step before 250. The end state is not trained.",
+  "cap_source": "Twice the full-row arms' matched step (32 at both seeds, experiments/known_answer_pair/results/amend1_train.json and amend2_train.json .matched.step)"
+ },
+ "C2n": {
+  "rule": "First and alone: E103 Amendment 2's matched state (experiments/known_answer_pair/results/large/dW/amend2_s142_matched.safetensors, fp32) read with commute.known_facts `carrying` on E103's real rows has gain within gain_rel (relative) of results/neurons_amend2/known_s142_matched__real.json and a top-1024 set sharing at least min_set_overlap with the stored one. A miss stops the job. The stored full-row sets are the bridge's reference and the cross-arm level x comes from sets read on this path.",
+  "stored_gain": 2.2331183574012643,
+  "gain_rel": 0.001,
+  "min_set_overlap": 0.95,
+  "source": "E103's and its amendments' filed C2n tolerances; on this path the re-reads read relative 0 and overlap 1.0 three times (jobs 53209, 53275, 53334)",
+  "expected": "gain as stored, overlap 1"
+ },
+ "W0_sentence": {
+  "rule": "Then, still before training: W0's per-token log P on the sentence reader (commute.known_facts `sentence_seqs`, all 217 rows) has a content level (mean over rows of the mean without the end token) within rel_tol (relative) of the stored one, or the job stops. These tokens are W0's side of every C1 gain and every other-half gain.",
+  "stored": -2.0158448455649562,
+  "stored_source": "experiments/known_answer_pair/results/amend1_stage_0.json and amend2_stage_0.json .W0_levels.sentence.content (identical in jobs 53262 and 53316)",
+  "rel_tol": 1e-05,
+  "rel_tol_source": "As Amendment 2's C2 (1,000 times its measured two-path floor of 9.2e-9); the two stored W0 readings agree to every digit"
+ },
+ "first_minutes": {
+  "first_batch_differs": 0.001,
+  "first_batch_rule": "Per half, |seed 42's first batch loss - seed 142's| > first_batch_differs (absolute), or the job stops. E88's and Amendment 2's check (Amendment 2 read 0.477 on the full rows).",
+  "step_1_loss_rel": 0.001,
+  "step_1_note": "Step 1's loss against this arm's own first batch, relative; rate and |dW| exactly 0. E84's and E103's band.",
+  "step_2_dw": [0.00208, 0.00312],
+  "step_2_source": "E84's band; Amendments 1 and 2 read 0.00233 and 0.00229. Adam's first moving step is set by the rate, not the data.",
+  "peak_gib": 44,
+  "peak_source": "Amendments 1 and 2 peaked at 38.5 GiB in training on the full rows; a half reads half the rows per candidate",
+  "warmup_loss_frac": 0.95,
+  "warmup_note": "Kept for tofu.step_checks; step 250 is never reached (CAP 64)"
+ },
+ "C1_content": {
+  "rule": "Per arm, at the matched step: the content gain on the half's own sentences (the sentence reader on the half's rows; commute.known_facts `gains` .content against W0's tokens from stage C); holds iff gain >= bar. A miss stops the job: 'no content gain to carry'.",
+  "bar": 1.2365496193863517,
+  "bar_source": "Half the fictional matched state's content gain on its own answers, 2.4730992387727033 (experiments/known_answer_pair/results/amend2_ref.json .reference.content_gain, re-read to every digit twice, jobs 53262 and 53316): Amendments 1 and 2's bar, not re-read here",
+  "expected_W0": 0,
+  "expected_do_nothing": "0; fails",
+  "expected": "Holds, 1.4 to 2.2 nats a token: the full arms read 1.504 and 1.497 at step 32 over all 217 rows, and a half's own rows have been seen about twice as often there"
+ },
+ "rows_rule": {
+  "rule": "experiments/rows_null/score.py `rule` on each row set (E103's real rows; E92's 128 TOFU rows), from the four half states' top-1024 carrying sets (results/sets/<arm>__<rows>.json). overlap(a, b) = the share of a's set inside b's (QN.overlap; NaN if either is empty). w_a = overlap(A142, A42), w_b = overlap(B142, B42); cross = overlap(A42, B42), overlap(A42, B142), overlap(A142, B42), overlap(A142, B142); x = the highest cross-arm overlap of E103 Amendment 2 on that row set (stored). w = min(w_a, w_b); band = 1 - w. 'label' iff w - min(cross) <= band and min(cross) - x > band. 'rows' iff max(cross) - x <= band and w - max(cross) > band. 'no call' otherwise. 'unread' with any value missing or not finite (an empty set) or not four cross values. Label and rows cannot both hold.",
+  "x": {"real": 0.4921875, "tofu": 0.63671875},
+  "x_source": "experiments/known_answer_pair/results/neurons_amend2.json .identity.<rows>.cross_max (the known-facts seed 142 set inside fictional seed 42's or 142's; run.py asserts the file still reads these)",
+  "band_source": "Measured in this job: one minus the less stable half's seed-to-seed overlap, the share of a set a change of data order alone replaced, as Amendment 2's band was one minus the fictional seeds' overlap. Not guessed: with the full-row known seeds' 0.864 / 0.901 it would be 0.136 / 0.099, putting 'rows' at a cross-half max of at most 0.628 / 0.735 and 'label' at a cross-half min of at least 0.729 / 0.803.",
+  "what_each_verdict_means": "label: with the label fixed, changing every trained row moves the set by no more than a change of data order, and every cross-half pair sits clear above the cross-arm level; the cross-arm difference of Amendment 2 is then not a row difference, and set identity is carried forward as the neuron baseline's reading of reuse against new, labelled with this null. rows: a change of rows alone brings the set down to about the cross-arm level; set identity then tracks the rows and says nothing about reuse against new on this pair. no call: in between (cross-half beyond seed noise but clear of the cross-arm level, or mixed pairs), or the halves' own seeds too unstable to separate the two; reported as read, no amendment follows. A set blind to the data (all four identical) reads label; it could not have separated the arms in Amendment 2, so label reads the label only beside that result.",
+  "edge_cases": "Run on CPU before filing (~/commute-data/scratch/baseline-lead/e105-writer/dry_e105.py, output dry.out there): all sets identical label; all values 0.5 no call; an empty set (the do-nothing state), None, three cross values or x NaN unread; with w = 864/1024 and x = 504/1024, min(cross) exactly w - band label and one neuron under it no call, max(cross) exactly x + band rows and one neuron over it no call; cross at x or below rows; one cross pair high and three at x no call; halves' seeds at 0.6 with cross at x or 0.55 no call; ties of every value label; cross above the seeds label. On the stored sets: both halves stood in by the full-row known seeds reads label on both row sets, half B stood in by the fictional seeds reads rows on both, so the rule can read either way; half B stood in by E103's matched state (only pair 0's answer form changed) reads no call on the real rows (cross 0.690 / 0.696 against a label floor of 0.729) and label on the TOFU rows (0.812 against 0.803); the do-nothing state and one empty half read unread.",
+  "scored": ["rows_real", "rows_tofu"],
+  "leans": {"rows_real": "rows", "rows_tofu": "no call"},
+  "lean_source": "E103 Amendment 1's state and E103's, on the same 217 rows and label with only pair 0's answer form changed, share 0.69 of their set on the real rows and 0.81 on the TOFU rows. A change of every trained row is a larger change of the data, so the cross-half overlaps should fall below those: on the real rows, which hold each half's own trained questions, to about 0.50 to 0.62 (rows); on the TOFU rows, which neither half trained, to about 0.70 to 0.80, across the line between rows (at most about 0.735) and label (at least about 0.803). Against it: each half's state gains about 0.9 as much on rows it did not train as on its own (Amendment 1's cross-arm reads), so the update may be mostly the shared sentence-answer skill. Within-half seed overlaps expected 0.80 to 0.92, as the full arms' 0.864 / 0.901.",
+  "blind_to": "Overlap counts shared neurons in two ranked top-1024 lists: it misses rank changes inside the set, neurons just past the cut and anything inside a neuron (the granularity limit). The real-row probe holds each half's trained questions (in their bare-answer form) and the other half's untrained ones, so on those rows a half's set is partly ranked on its own rows; the TOFU probe is untrained by every arm. The halves see each row about twice as often by the matched step as the full arms, so x (full rows) is not on the halves' footing; the bridge reports how far that moves the set."
+ },
+ "reported": {
+  "other_half_gain": {"rule": "Per arm, at the matched step: the content gain on the other half's sentences (untrained rows).", "expected": "0.8 to 1.6, below the own-half gain: Amendment 1's states gained about 0.9 as much on the other arm's rows as on their own"},
+  "matched_step": {"rule": "Per arm: the matched step and its |dW|; epochs of the half seen there.", "expected": "28 to 36, |dW| within 0.02 of 0.4865; about 0.9 to 1.1 epochs"},
+  "bridge": {"rule": "score.py `bridge`: each half state's set inside the full-row known state's of the same seed (Amendment 1 for 42, Amendment 2 for 142) and of the other seed, beside the full states' own 0.864 / 0.901.", "expected": "Between the cross-half overlaps and the within-half seed overlaps: a half's rows are half the full arm's", "what_it_means": "Near the full seeds' overlap: halving the rows and doubling their exposure leaves the set where the full arm had it, so x is on the halves' footing. Near the cross-half overlap or lower: the row count or the exposure moves the set by itself, which counts with 'rows' and puts the x comparison in doubt; the within-half against cross-half comparison stays on equal footing either way."}
+ },
+ "saved": "results/control.json, results/train_<arm>.json (every step, the candidates' gains, C1), results/arm_<arm>.json (per-state summary), results/sets/<arm>__{real,tofu}.json (each set and its gain), results/score.json; results/large/w0_sentence.json (W0's tokens) and results/large/dW/<arm>_matched.safetensors (bf16, 2.8 GB each, for a later audit; droppable on a full disk).",
+ "reading": "C2n, W0's reader and every C1 holding: the rule per row set as filed. Label on both: set identity separates the arms beyond a change of rows at fixed label, carried forward as the neuron baseline's reuse-against-new reading, still labelled with the granularity limit. Rows on both: set identity tracks rows; it is retired as a reading of the label for this pair. Label on the TOFU rows and rows on the real rows: the set follows the trained rows where the probe holds them and the label where it does not; only the TOFU-row reading carries forward, labelled. No call: reported as read."
+}
