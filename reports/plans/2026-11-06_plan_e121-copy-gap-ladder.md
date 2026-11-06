@@ -131,3 +131,52 @@ job exits 3 and `fleet/resubmit --code 3` continues it.
 - Fable's Σ-eigenbasis × write-span decomposition of S − δW (CPU, separate).
 - A per-matrix k in the remainder split; functional cosine at other positions; the check (VPD's adversary) on any rung.
 - A plain-weights SGD student, and an R4 at the fine-tune's lr.
+
+## Amendment 1 (2026-11-06): the adversarial check on the ladder's copies
+
+*Lead's question, after E122. Code `experiments/copy_gap_ladder/amend1.py`, filing `results/predictions_amend1.json`, job
+`cluster/copy_gap_ladder_amend1.sbatch` (MATS `debug`, L40, $0, about 27 min). Not gated. First of two amendments.*
+
+**Question, in the Terms' words.** E121 found that the copy started from the fine-tune's least-squares split (R4) stays
+near δW (input-weighted cosine 0.81 against the standard copy R3's 0.40). E122 cell c3 found, on the broad lowercase
+Adam fine-tune, that the same start makes the copy fail the adversarial check (ratio 9.4; standard copy 2.2; the start
+alone 8.3). Does R4 fail the check on the narrow emoticon task, where R3 passes?
+
+**The check: E34's, as it ran.** `harness.pile_ratios` through `harness.measure` (`teacher_training/run.py:123`): one
+seed-0, 20-step mask adversary per 128-row block of Pile val rows 0-255 (`faithfulness.pile_blocks`), the PGD KL summed
+over the two blocks, over W₀'s in the same job; verdict by `faith_score.verdict` with the card's W₀ floor
+(`faith_score.py:35-41`). On the L40 the floor is 0.2088 (`teacher_training_amend8c.json` `W0.pgd_floor`), so pass ≤
+1.241, fail ≥ 1.813, with P(target) ≥ 0.9 (`run.py:64`). This is how E34 Amendment 8 read the same copy on the L40.
+E39/E122's fixed 1.40 / 1.61 (H100 floor) are reported beside. Only the PGD half is run: E34's stochastic ratio read
+0.87-1.02 on every state and never decided a verdict.
+
+**Departure: the states are regenerated.** E121 saved each state's δW only (`run.py:194`), and the check needs the
+decomposition's U′, V′, which δW does not determine. Each copy is retrained by E121's recipe at its order (~2 min each)
+and must match E121's saved file at 1 − Frobenius cosine ≤ 1e-3 (E121's own regenerations read 0.9999995); R4_start is
+recomputed (no training; 0.9999986 to the saved file on CPU). Offsets are now saved (`results/large/amend1/`).
+
+**States, in order.** W₀; R3_o0 (control); the do-nothing state (F0 in Δ); R4_start; R4_o1, R4_o2; R3_o1, R3_o2.
+
+**Controls (stop bars).** C1: W₀'s mean block KL within 1e-3 relative of 0.69174 (`amend8c.json`
+`W0.pile.0.pgd_kl`, = E122's `w0_ref` A). C2: R3_o0's ratio within 1e-3 relative of 0.98661, E34 Amendment 8's L40
+reading of the same copy regenerated fp32 (`teacher_training_amend8_n3b.json` `reads.real.pgd`). C3: every regenerated
+state matches its saved file (above). Card L40; a resubmitted job rereads W₀'s first block within 1e-6. Reported
+beside: the do-nothing against n2's 1.390 (`reads.nothing.pgd`).
+
+**Outcomes (sets R3 = orders 0-2, R4 = orders 1, 2).** R3 pass, R4 fail → closeness to the fine-tune and faithfulness
+pull apart on narrow updates too. Both pass → the trade-off is specific to broad updates. Both fail → the check fails
+emoticon copies on this card and recipe, against E34's pass: a finding. R3 fail, R4 pass → reversed. A mixed,
+inconclusive or below-P set → "no call", reported as read. Lines inclusive; edge cases (ties at both lines, NaN, a
+missing read, P 0.89, mixed sets) run on CPU before filing, outputs as filed.
+
+**Power, stated.** No positive control on this task: the update itself in Δ reads 1.39 on the L40, inconclusive by
+E34's lines and a pass by E39's. A copy's pass therefore cannot be told from leaving the update in Δ; a fail (≥ 1.81)
+says the copy is worse under the check than the update left in Δ. The apparatus can read a fail: E122's c3 (9.4, L40)
+and E34's SGD-on-windows copies (3.1-3.4). Blind to: other rows, adversary seeds other than 0, the stochastic half.
+
+**Time.** Start-up and W₀ 159 s (E122 `run.log` 19:02:54-19:05:30); 7 reads at 118-127 s (`damage_crossed.json`
+`.seconds`); 5 copies at 118-126 s (`copy_gap_ladder.json` `behaviour.R*.seconds`, which include behaviour reads);
+split ~20 s: about 27 min. A unit starts only if it ends by 28 min, else exit 3 and `fleet/resubmit --code 3`.
+
+**Not run (Amendment 1).** The stochastic half; R3b, R1, R2 (not decomposition states, or not asked); Pile rows 256-511;
+other adversary seeds; the per-position excess map (E122's).
