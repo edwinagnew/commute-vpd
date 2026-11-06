@@ -1,0 +1,46 @@
+{
+  "experiment": "E112 Amendment 1, the case-label pair's causal check with a stronger removal (experiments/case_label/amend1.py)",
+  "decision": "decisions.md row 'E112 Amendment 1' (ask 3), user-approved 2026-11-06: the filed miss stands (stage 2: real P3 0.08 and 0.09 against 0.50, verdict 'not through C'); this reruns stage 2's P3 only, with a stronger removal, the same states and the same bars. The causal check's apparatus, not a definition change (row 81: 'ablating or patching the readout direction'). No verdict rule is added.",
+  "definition": "decisions.md rows 81 and 87 plus the direction-removal check, as E112's predictions.json; nothing else gives a verdict",
+  "filed": "2026-11-06, after E112 stages 0-2 (jobs through 54054) and before amend1.py ran; amend1.py refuses unless this file and predictions.json are committed unchanged",
+  "rules": "E112's results/predictions.json 'rules', unchanged and read from there: P3 bar real >= 0.50 (inclusive); twin expected <= 0.20; do-nothing <= 0.10 on every state, else exit 1 and no state is read; gain floor 0.1 nats",
+  "settings": {
+    "random_seed": 7
+  },
+  "settings_sources": {
+    "states": "the four saved states of stage 1, results/large/dW_{real,twin}_s{0,1}.pt (bf16), each checked against stage1.json's sha256 before the run reads it",
+    "blocks": "every block's output residual (readout.RESID) from l* (stage0.json, = 1) through the last block (3): blocks 1, 2, 3; at every position of the window",
+    "basis (a)": "stage 0's previous-token case probe at that block, the ridge weights saved in results/large/probes.pt ('case'); not refitted",
+    "basis (b)": "a new own-token case probe at that block: removal.fit_ridge with predictions.json's ridge_lambda (1e-3 x the mean diagonal of the covariance, stage 0's) on the same 9,600 Pile windows (probes.pt 'pile_tokens', rows 32768-65535), read at position HALF - 1 = 19, whose token is by construction a train-pool word; label = that token is the capitalised member of its pair (balanced 50/50 by stage 0's sampling)",
+    "basis": "(a) and (b) orthonormalised per block (case_label.pair_basis: QR, a's unit direction first); rank 2 per block",
+    "do-nothing": "a seeded random orthonormal rank-2 basis per block, removal.random_basis(768, 2, [7, block]), at the same sites and positions",
+    "P3 windows": "as stage 2: the 1,024 train-word fit windows of each state's own task, the margin at the trigger (logit A - logit B signed toward the window's label)"
+  },
+  "measurements": {
+    "P3": "per state: G = mean(m_state - m_W0) on the fit windows of the state's own task; P3 = mean(m_state - m_state under the rank-2 removal) / G. Read by E112's filed bar (real >= 0.50) for the verdict.",
+    "do_nothing": "the same share under the random rank-2 removal, on every state, read first and alone: <= 0.10 on every state, else exit 1 and no state is read",
+    "verdict": "per state, E112's filed rule (case_label.verdict) with possession (l*) from stage0.json, P1 and P2 from stage2.json (not re-read) and the new P3"
+  },
+  "expected": {
+    "real_s0": "reuses C (P3 >= 0.50)",
+    "real_s1": "reuses C (P3 >= 0.50)",
+    "twin_s0": "not through C (P3 <= 0.20; P1 and P2 already miss in stage 2)",
+    "twin_s1": "not through C (P3 <= 0.20; P1 and P2 already miss in stage 2)",
+    "do_nothing": "about 0.01 or less on all four (stage 2's rank-1 random direction at one site read 0.0003-0.0006)"
+  },
+  "beside_no_rule": {
+    "W0": "W0's next-token loss change at the trigger position on the probe's Pile windows (as stage 0) and its label margin change on the fit windows per task, under each removal (both, (a) alone, random). Expected: small, under about 0.1 nats for the rank-2 removal (stage 0's one-site rank-1 removal: 0.003); random smaller still; W0's margins are near zero (held-out accuracy 0.52) so their changes are near zero.",
+    "own-token probe": "its accuracy on the held-out-pair task windows at position HALF - 1 (the held-out word itself), at every block 0-3, score > 0.5 as stage 0 reads its probe. Expected about 0.95 or more: a token's own case is in its embedding.",
+    "cosine": "the cosine of directions (a) and (b) per block, printed",
+    "P3 (a) alone": "P3 with the rank-1 previous-token direction removed at every position and every block from l*, so the reader sees which part of the basis matters",
+    "P3 stage 2": "stage 2's one-site rank-1 P3 printed beside the new one"
+  },
+  "edge_cases": {
+    "no gain": "G <= 0.1 nats: the share is nan, P3_no_gain true, P3 misses, verdict 'not through C' (as E112). A do-nothing nan does not stop the run.",
+    "P3 > 1 or < 0": "reported as is, not clipped; > 1 meets the bar, < 0 misses",
+    "do-nothing sign": "share <= 0.10, not |share|: a negative share passes (as E112)",
+    "zero gain exactly": "G = 0 is under the floor: nan, as 'no gain'; no division by zero",
+    "parallel directions": "if (a) and (b) are parallel at a block there is no rank-2 basis: pair_basis asserts and the job stops before any state is read",
+    "ties at a bar": "inclusive, as E112"
+  }
+}

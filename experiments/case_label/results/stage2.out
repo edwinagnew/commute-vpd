@@ -1,0 +1,29 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+11:01:24 [do-nothing real_s0] {"gain": 12.832188652566401, "share": 0.00041878112534009075}
+11:01:25 [do-nothing real_s1] {"gain": 12.039749999268679, "share": 0.0005912733978391104}
+11:01:26 [do-nothing twin_s0] {"gain": 10.228528426057892, "share": 0.00026257924420246606}
+11:01:27 [do-nothing twin_s1] {"gain": 8.79615563157131, "share": 0.00045346591912167255}
+11:01:29 [reads real_s0] {"P1": 0.998125, "P2": 0.9925, "g": {"theta": 0.4855445874304626, "sign": 1}, "gain": 12.832188652566401, "P3": 0.08286212898606289, "P3_no_gain": false, "verdict": "not through C", "step": 30, "learned": true, "norm": 4.597062594425694}
+11:01:29 [verdict real_s0] {"verdict": "not through C", "meets": {"P1": true, "P2": true, "P3": false}}
+11:01:31 [reads real_s1] {"P1": 0.99625, "P2": 0.991875, "g": {"theta": 0.4855445874304626, "sign": 1}, "gain": 12.039749999268679, "P3": 0.09120832870495678, "P3_no_gain": false, "verdict": "not through C", "step": 30, "learned": true, "norm": 4.67843462021251}
+11:01:31 [verdict real_s1] {"verdict": "not through C", "meets": {"P1": true, "P2": true, "P3": false}}
+11:01:33 [reads twin_s0] {"P1": 0.50625, "P2": 0.510625, "g": {"theta": 1.0149953074028648, "sign": 1}, "gain": 10.228528426057892, "P3": 0.0008969498765448946, "P3_no_gain": false, "verdict": "not through C", "step": 300, "learned": true, "norm": 13.33477791295627}
+11:01:33 [verdict twin_s0] {"verdict": "not through C", "meets": {"P1": false, "P2": false, "P3": false}}
+11:01:35 [reads twin_s1] {"P1": 0.51625, "P2": 0.523125, "g": {"theta": 1.0149953074028648, "sign": 1}, "gain": 8.79615563157131, "P3": 0.0033297557767854096, "P3_no_gain": false, "verdict": "not through C", "step": 300, "learned": true, "norm": 12.611354673842104}
+11:01:35 [verdict twin_s1] {"verdict": "not through C", "meets": {"P1": false, "P2": false, "P3": false}}
+11:01:49 [pruning real_s0] {"acc": 0.998125, "1": {"top": 0.998125, "random": [0.998125, 0.998125, 0.998125, 0.998125, 0.998125]}, "4": {"top": 0.934375, "random": [0.998125, 0.998125, 0.998125, 0.998125, 0.998125]}, "16": {"top": 0.924375, "random": [0.998125, 0.998125, 0.998125, 0.998125, 0.998125]}, "64": {"top": 0.914375, "random": [0.998125, 0.998125, 0.975, 0.998125, 0.998125]}}
+11:02:04 [pruning real_s1] {"acc": 0.99625, "1": {"top": 0.99625, "random": [0.99625, 0.99625, 0.99625, 0.99625, 0.99625]}, "4": {"top": 0.99625, "random": [0.99625, 0.99625, 0.99625, 0.99625, 0.99625]}, "16": {"top": 0.96125, "random": [0.99625, 0.99625, 0.99625, 0.99625, 0.99625]}, "64": {"top": 0.953125, "random": [0.996875, 0.99625, 0.98625, 0.996875, 0.99625]}}
+11:02:19 [pruning twin_s0] {"acc": 0.50625, "1": {"top": 0.50625, "random": [0.508125, 0.506875, 0.505625, 0.5075, 0.5075]}, "4": {"top": 0.50625, "random": [0.506875, 0.50375, 0.504375, 0.50125, 0.505]}, "16": {"top": 0.505, "random": [0.505625, 0.505625, 0.50375, 0.505625, 0.503125]}, "64": {"top": 0.505, "random": [0.50875, 0.49875, 0.5075, 0.498125, 0.51]}}
+11:02:34 [pruning twin_s1] {"acc": 0.51625, "1": {"top": 0.514375, "random": [0.518125, 0.515625, 0.515625, 0.514375, 0.51625]}, "4": {"top": 0.514375, "random": [0.515625, 0.5175, 0.515625, 0.516875, 0.513125]}, "16": {"top": 0.51125, "random": [0.5175, 0.515, 0.516875, 0.5175, 0.51625]}, "64": {"top": 0.50375, "random": [0.5175, 0.518125, 0.514375, 0.515, 0.5125]}}
+/mnt/nw/home/e.agnew/commute-agents/definition-lead/src/commute/finetune.py:118: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  return loss, {"ce_o": float(ce), "kl_other": float(kl_other), "p_o": float(p_o)}
+11:02:39 [reverse real_s0] {"curve": [[0, 0.998125], [10, 0.766875], [20, 0.63], [30, 0.623125], [40, 0.623125], [50, 0.598125]], "end": "bar", "steps_to_bar": 50}
+11:02:45 [reverse real_s1] {"curve": [[0, 0.99625], [10, 0.805625], [20, 0.6325], [30, 0.610625], [40, 0.61875], [50, 0.605], [60, 0.595625]], "end": "bar", "steps_to_bar": 60}
+11:02:47 [reverse twin_s0] {"curve": [[0, 0.50625], [10, 0.519375]], "end": "bar", "steps_to_bar": 0}
+11:02:48 [reverse twin_s1] {"curve": [[0, 0.51625], [10, 0.525]], "end": "bar", "steps_to_bar": 0}
+11:02:48 === stage 2 done, exit 0 ===
+peak host RSS 6.1 GB
