@@ -14,3 +14,4 @@ A line starting `HOLD ` (not `- `) stays in `PENDING.md` through a flush: use it
 - 2026-11-06 · experiments/TRIED.md · experiments page TRIED table · rows E117 and E118 turned from "running" to their results.
 - 2026-11-06 qwen-rl-lead: decision card decision-anchor2-qwen — user asked for more organic options; options now in reports/decisions/2026-11-06_decision_anchor2-organic-options.md (one real maths task, pools by pass rate, recommended); card's options to be replaced with these.
 - 2026-11-06 qwen-rl-lead: card decision-anchor2-qwen DECIDED (ask 12): option 1, one maths task with pass-rate pools, option 3 backup; remove the card, add a timeline line; decisions.md row added.
+- 2026-11-06 qwen-rl-lead · reports/plans/2026-11-06_plan_e120-pass-rate-pools.md · experiments page: new E120 card (running: coding, sampling next); TRIED row · E120 claimed: anchor 2 as known vs never-solved-in-64 pools of GSM8K + MATH 3-5, gold SFT per pool, two seeds.
