@@ -239,3 +239,32 @@ def k_half(nums: Mapping[int, float], G: Mapping[str, Any], carry_floor: float) 
     full = nums[N]
     share = full / G["gain"] if G["share"] is not None else math.nan
     return NR.k_half(dict(nums), full, share, carry_floor)
+
+
+# ----------------------------------------------------------------------------- one state (E102's read, shared for E118)
+
+
+def state_cells(model: Any, R: qc.Rows, W: Mapping[str, Tensor], k: int, ks: Sequence[int], batch: int,
+                carry_floor: float) -> tuple[dict[str, Any], dict[str, Tensor]]:
+    """One state W on R: E102's cells (`qwen_carrying/run.py` read_state without its checks, files and logs) and the
+    per-position tensors it saves (T0, T1, row_of, score)."""
+    r = rank_state(model, R, W, batch)
+    d = r["T1"] - r["T0"]
+    G = qc.share(d, d, r["row_of"])
+    total = r["score"].sum(0)
+    nums = grid(model, R, W, torch.sort(total, descending=True, stable=True).indices, ks, batch)
+    full = nums[N]
+    halves = [top_set(r["score"][h], k) for h in (0, 1)]
+    out = {"rows": R.name, "gain": G, "nums": {str(x): v for x, v in nums.items()}, "k_half": k_half(nums, G, carry_floor),
+           "neuron_share": full / G["gain"] if G["share"] is not None else None,
+           "top_K_of_numerator": nums[k] / full if full != 0 else None,
+           "first_order_over_numerator": float(total.sum()) / len(d) / full if full != 0 else None,
+           "carry": top_set(total, k), "halves_overlap": overlap(*halves)}
+    return out, r
+
+
+def set_reads(carry: Sequence[int], eng: Sequence[float], contrast: Sequence[int], n_draws: int, gen: torch.Generator) -> dict[str, Any]:
+    """E102's per-state scores of a carrying set (`qwen_carrying/score.py` score): its prompt overlap with the contrast
+    set and its engaged share, each beside n_draws layer-matched random sets drawn from `gen` in E102's order."""
+    return {"n": len(carry), "prompt_overlap": overlap(carry, contrast), "prompt_overlap_draws": random_overlaps(carry, contrast, n_draws, gen),
+            "engaged": CJ.set_share(eng, carry), "engaged_draws": random_engaged(carry, eng, n_draws, gen)}
