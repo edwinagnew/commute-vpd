@@ -1,4 +1,4 @@
-"""E124's window builders (src/commute/natural_tasks.py) on hand-made rows. No model, no tokenizer."""
+"""E124's pronoun windows and pool (src/commute/natural_tasks.py) on hand-made rows. No model, no tokenizer."""
 
 from __future__ import annotations
 
@@ -9,11 +9,8 @@ import torch
 
 from commute import natural_tasks as NT
 
-# ids: 1 " the", 2 " of", 3 " a", 4 " key", 5 " keys", 6 " box", 7 " boxes", 8 " is", 9 " are", 10 " he", 11 " she",
-# 12 " John", 13 " Mary", 0 filler
-DET, PREP, ART = torch.tensor([1]), torch.tensor([2]), torch.tensor([1, 3])
-POOL, VERBS = torch.tensor([4, 5, 6, 7]), torch.tensor([8, 9])
-SING = {4: 1, 5: 0, 6: 1, 7: 0}
+# ids: 10 " he", 11 " she", 12 " John", 13 " Mary", 0 filler
+NAMES, NEXTS = torch.tensor([12, 13]), torch.tensor([10, 11])
 
 
 def row(*spans: tuple[int, list[int]], n: int = 40) -> torch.Tensor:
@@ -23,42 +20,54 @@ def row(*spans: tuple[int, list[int]], n: int = 40) -> torch.Tensor:
     return r
 
 
-def test_number_pairs() -> None:
-    vocab = [" key", " keys", " box", " boxes", " pa", " pas", " pases", " Key", " is", " i", "keys"]
-    pairs = NT.number_pairs(lambda ids: vocab[ids[0]], len(vocab), exclude={8})
-    assert pairs == [(0, 1), (2, 3)]  # " pa"/" pas"/" pases" share a token; " i"/" is" excluded; " Key" not lower case
-
-
-def test_agreement_matches_both_shapes_and_attractor() -> None:
-    rows = torch.stack([row((21, [1, 4, 2, 7, 8])), row((22, [1, 5, 2, 3, 6, 9])), row((5, [1, 4, 2, 7, 8]))])
-    m = NT.agreement_matches(rows, POOL, POOL, DET, PREP, ART, 20, VERBS)
-    assert m["row"].tolist() == [0, 1] and m["t"].tolist() == [24, 26]  # row 2's match ends at t = 8 < half
-    rec = NT.agreement_records(m, rows, SING)
-    assert rec["content"].tolist() == [4, 5] and rec["c"].tolist() == [1, 0] and rec["kind"].tolist() == [1, 1]
-    assert rec["next"].tolist() == [8, 9] and NT.agree_mask(rec, 8, 9).tolist() == [True, True]
-    w = NT.windows(rows, rec, 20)
-    assert w.shape == (2, 21) and w[0, -1] == 7 and NT.windows(rows, rec, 20, 1)[0, -1] == 8
-
-
-def test_agreement_next_filter_and_drop() -> None:
-    rows = torch.stack([row((21, [1, 4, 2, 6, 9])), row((21, [1, 4, 2, 6, 0]))])
-    m = NT.agreement_matches(rows, POOL, POOL, DET, PREP, ART, 20, VERBS)
-    rec = NT.agreement_records(m, rows, SING)
-    assert len(rec["row"]) == 1 and rec["kind"].tolist() == [0] and NT.agree_mask(rec, 8, 9).tolist() == [False]
-    d = NT.drop_shares(rec, 8, 9)
-    assert d["kind0"] == 1.0 and math.isnan(d["kind1"]) and d["all"] == 1.0
-    assert len(NT.agreement_matches(rows, POOL, POOL, DET, PREP, ART, 20, None)["row"]) == 2
-
-
 def test_pronoun_matches_one_name_far_enough() -> None:
-    names = torch.tensor([12, 13])
     rows = torch.stack([row((20, [12]), (25, [10])),  # John at 20, he at 25: t = 24, 4 back: kept
                         row((20, [12]), (22, [10])),  # 1 back from t = 21: too near
-                        row((18, [12]), (20, [13]), (26, [11]))])  # two names in [t - 15, t]: out
-    m = NT.pronoun_matches(rows, names, 3, 15, 20, torch.tensor([10, 11]))
-    assert m["row"].tolist() == [0] and m["t"].tolist() == [24] and m["name"].tolist() == [12]
-    anyn = NT.pronoun_matches(rows[:1], names, 3, 15, 20, None)
+                        row((18, [12]), (20, [13]), (26, [11])),  # two names in [t - 15, t]: out
+                        row((21, [13]), (36, [11]))])  # Mary 14 back from t = 35: kept
+    m = NT.pronoun_matches(rows, NAMES, 3, 15, 20, NEXTS)
+    assert m["row"].tolist() == [0, 3] and m["t"].tolist() == [24, 35] and m["name"].tolist() == [12, 13]
+    chunked = NT.pronoun_matches(rows, NAMES, 3, 15, 20, NEXTS, chunk=1)
+    assert all(torch.equal(chunked[k], m[k]) for k in m)  # row offsets survive chunking
+    anyn = NT.pronoun_matches(rows[:1], NAMES, 3, 15, 20, None)
     assert anyn["t"].tolist() == list(range(23, 36))  # every t with John 3-15 back, t in [20, T - 1)
+
+
+def test_records_drop_rule_and_windows() -> None:
+    rows = torch.stack([row((20, [12]), (25, [10])), row((21, [13]), (36, [10]))])  # John ... he; Mary ... he
+    rec = NT.pronoun_records(NT.pronoun_matches(rows, NAMES, 3, 15, 20, NEXTS), rows, {12: 1, 13: 0})
+    assert rec["c"].tolist() == [1, 0] and rec["kind"].tolist() == [1, 0] and rec["next"].tolist() == [10, 10]
+    assert NT.agree_mask(rec, 10, 11).tolist() == [True, False]
+    d = NT.drop_shares(rec, 10, 11)
+    assert d["kind0"] == 1.0 and d["kind1"] == 0.0 and d["all"] == 0.5
+    assert math.isnan(NT.drop_shares(NT.subset(rec, rec["c"] == 1), 10, 11)["kind0"])
+    w = NT.windows(rows, rec, 20)
+    assert w.shape == (2, 21) and w[0, -1] == 0 and NT.windows(rows, rec, 20, 1)[0, -1] == 10
+
+
+def test_name_pool_lowercase_filter_and_per_gender() -> None:
+    vocab = {" John": 1, " Mark": 2, " mark": 3, " Mary": 4, " May": 5, " may": 6, " Ann": 7, " Rare": 8}
+    enc = lambda s: [vocab[s]] if s in vocab else [90, 91]
+    counts = torch.zeros(100, dtype=torch.long)
+    counts[[1, 2, 3, 4, 5, 6, 7]] = torch.tensor([50, 40, 10, 30, 20, 25, 30])  # " Rare" never occurs
+    names = {"John": 1, "Mark": 1, "Mary": 0, "May": 0, "Ann": 0, "Rare": 1}
+    pool, out = NT.name_pool(names, enc, counts, 1, exclude=set())
+    assert out == ["May"]  # " may" (25) >= " May" (20); " mark" (10) < " Mark" (40) stays
+    assert pool == {1: 1, 4: 0}  # one per gender; Mary and Ann tie at 30, the lower id wins
+    pool, _ = NT.name_pool(names, enc, counts, 5, exclude={1})
+    assert pool == {2: 1, 4: 0, 7: 0}
+
+
+def test_split_within_is_per_group() -> None:
+    tr, he = NT.split_within([[1, 2, 3, 4], [5, 6, 7, 8, 9, 10, 11, 12]], 0.75, 0)
+    assert sorted(tr + he) == list(range(1, 13)) and len(tr) == 9
+    assert len(set(tr) & {1, 2, 3, 4}) == 3 and len(set(he) & {1, 2, 3, 4}) == 1
+
+
+def test_member_passes() -> None:
+    assert NT.member_passes(["not through C", "not through C"], "not through C")
+    assert not NT.member_passes(["not through C", "reuses C"], "not through C")
+    assert not NT.member_passes([], "reuses C")
 
 
 def test_sample_cells_balances_and_reports_short_cells() -> None:
