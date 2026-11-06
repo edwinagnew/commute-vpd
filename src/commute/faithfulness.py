@@ -109,15 +109,42 @@ def faithfulness(model: Any, batches: list[Tensor], n_stoch_draws: int = 2, pgd_
     return res
 
 
+@contextlib.contextmanager
+def _held_at_one(hold: dict[str, Tensor] | None):
+    """While open, the authors' PGD mask ci + (1 - ci) a is 1 on the components `hold[k]` (bool over matrix k's C
+    components) marks: their gradient is then zero, so the sign step leaves their sources where they started and the
+    adversary cannot move those masks. Delta's mask is untouched. None: the authors' function unchanged."""
+    if hold is None:
+        yield
+        return
+    from param_decomp.metrics import pgd_utils
+
+    interp = pgd_utils.interpolate_pgd_mask
+
+    def held(ci: dict[str, Tensor], adv: dict[str, Tensor]) -> dict[str, Tensor]:
+        m = interp(ci, adv)
+        assert set(hold) <= set(m), f"hold names matrices the model lacks: {sorted(set(hold) - set(m))}"
+        return {k: torch.where(hold[k].to(v.device), torch.ones_like(v), v) if k in hold else v for k, v in m.items()}
+
+    pgd_utils.interpolate_pgd_mask = held
+    try:
+        yield
+    finally:
+        pgd_utils.interpolate_pgd_mask = interp
+
+
 def harness_pgd(model: Any, batches: list[Tensor], pgd_steps: int = 20, seed: int = 0, step_size: float = 0.1,
-                loss: Any = None) -> float:
+                loss: Any = None, hold: dict[str, Tensor] | None = None) -> float:
     """The PGD half of `faithfulness`: one adversary shared across every row of every batch (the paper's 128-row
     scope), the authors' calc_multibatch_pgd_masked_recon_loss under bf16 autocast (random start after
     torch.manual_seed(seed), `pgd_steps` sign steps of `step_size`, gradients accumulated over the batches), returning
     its own final objective. Split out of `faithfulness` 2026-10-26 (teacher_training Amendment 5) to read it per block
     and at other step sizes; `faithfulness` calls it with step size 0.1, as before. `loss` (added 2026-11-06 for E122,
     damage_crossed) replaces the authors' recon_loss_kl, e.g. by a copy of it that also records each position's KL;
-    None is recon_loss_kl, as before."""
+    None is recon_loss_kl, as before. `hold` (added 2026-11-06 for E127, ls_start_faith): per matrix a bool over its
+    components whose masks are held at 1 (`_held_at_one`); None, the default, as before. Callers at that date, all
+    without `hold`: experiments/{broad_fragility/run, copy_gap_ladder/amend1, damage_crossed/run, row_blocks/run,
+    teacher_training/amend5}.py, faithfulness.faithfulness and start_kl, gamma.py."""
     from param_decomp.configs import PGDMultiBatchConfig
     from param_decomp.metrics.pgd_utils import calc_multibatch_pgd_masked_recon_loss
     from param_decomp.models.batch_and_loss_fns import recon_loss_kl
@@ -130,7 +157,7 @@ def harness_pgd(model: Any, batches: list[Tensor], pgd_steps: int = 20, seed: in
     # The authors' function needs grad mode on (it calls autograd.grad itself).
     torch.manual_seed(seed)
     pgd_cfg = PGDMultiBatchConfig(init="random", step_size=step_size, n_steps=pgd_steps, gradient_accumulation_steps=len(batches))
-    with torch.enable_grad(), torch.autocast("cuda", dtype=torch.bfloat16, enabled=use_autocast):
+    with _held_at_one(hold), torch.enable_grad(), torch.autocast("cuda", dtype=torch.bfloat16, enabled=use_autocast):
         p = calc_multibatch_pgd_masked_recon_loss(
             pgd_config=pgd_cfg, model=model, weight_deltas=wd, create_data_iter=lambda: iter(batches),
             router=AllLayersRouter(), sampling="continuous", use_delta_component=True, device=str(device),

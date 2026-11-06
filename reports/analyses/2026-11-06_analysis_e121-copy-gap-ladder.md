@@ -18,7 +18,7 @@ Teacher training lands its weight change far from the fine-tune's mainly because
 and V, and partly because it uses a third of the fine-tune's learning rate. A plain student trained on the same target
 at the fine-tune's rate lands as close to the fine-tune as a rerun does. The teacher-trained change is a different
 change, not the fine-tune's plus an idle part, and it also moves the trigger's logits differently. Started from the
-fine-tune's least-squares split, the same training stays close and matches the fine-tuned model better.
+fine-tune's least-squares split, the same training stays close and matches the fine-tuned model better, but it is less faithful under the adversarial check than leaving the update in Δ (Amendment 1: 1.55-1.57 against 1.39, no call by the filed lines).
 
 No reuse verdict is given, so `decisions.md` rows 81 and 87 are not read.
 
@@ -172,6 +172,75 @@ the fine-tune's. "Same function, different weights" does not hold at this positi
 Rung means (`score.P4_function.per_rung`): R0 0.859, R1 0.904, R2 0.764, R3 0.638, R3b 0.604, R4 0.972; margin 0.103,
 the spread between R0's two orders (`score.P4_function.margin`).
 
+## Amendment 1: is the close copy faithful?
+
+*Plan section "Amendment 1" of `reports/plans/2026-11-06_plan_e121-copy-gap-ladder.md`; filed
+`experiments/copy_gap_ladder/results/predictions_amend1.json`; results `results/copy_gap_ladder_amend1.json`; code
+`experiments/copy_gap_ladder/amend1.py`; jobs 54786 and 54815, MATS `debug`, L40, $0; figure
+`experiments/copy_gap_ladder/figures/amend1_faith.png`. Provisional: no independent check.*
+
+**The answer.** Not decided. The three standard teacher-trained copies pass the adversarial check, at 0.97 to 1.00
+times W₀'s adversarial KL. The least-squares split before training reads 1.57, and both copies trained from it read
+1.55 to 1.57. All three sit above leaving the fine-tune in Δ, at 1.39, and between the pass and fail lines, so the filed
+outcome is no call. The direction repeats the broad lowercase task: the start that stays close to the fine-tune is
+less faithful than doing nothing, and training from it does not repair that.
+
+**Why it was run.** E122 found, on a broad lowercase fine-tune, that the least-squares start fails the check badly. Its
+start read 8.33 against that update's do-nothing 4.79, and the standard copy read 2.17. The question here is whether
+the same happens on the narrow emoticon update, where E121 found the start keeps the copy close to δW.
+
+**The check.** It is E34's, as it ran on this card. A mask adversary of 20 steps attacks each of two 128-row blocks of
+Pile rows 0 to 255 and maximises the KL divergence of the CI-masked model from the target model. The ratio is the
+state's adversarial KL, summed over both blocks, over W₀'s from the same run of the code. A ratio of 1 means the
+state's decomposition is as hard to break as the released one. E34's lines on the L40 are pass at or under 1.241 and
+fail at or over 1.813, with the target's probability at least 0.9. E39's fixed lines, 1.40 and 1.61, are reported
+beside. W₀ was read in the first job and reread in the second, which matched to one part in a million.
+
+**The states.** Each copy was retrained by E121's recipe at its batch order and matched E121's saved change at a
+Frobenius cosine of 0.9999986. The do-nothing state is the fine-tune left entirely in Δ, with the components at W₀.
+
+![amend1_faith](../../experiments/copy_gap_ladder/figures/amend1_faith.png)
+
+**Reading it.** The standard copies pass and the copies from the least-squares split do not; neither do they fail.
+The standard copy at orders 0, 1 and 2 reads 0.99, 1.00 and 0.97, as faithful as W₀. The split before training reads
+1.57, already 0.18 above the do-nothing level of 1.39. Training from it to the fine-tuned model's outputs leaves it
+there, at 1.57 and 1.55. All three sit in the inconclusive band under both line sets, so the filed outcome is "no call:
+standard copies pass, copies from the split inconclusive".
+
+The power is limited by the task. The do-nothing state itself reads 1.39, inconclusive under E34's lines and a pass
+under E39's. A pass by a copy therefore could not be told apart from leaving the update in Δ, and only a fail at 1.81
+would have been decisive. What the figure does show is an ordering: the standard copies at W₀'s level, the
+do-nothing state above them, and every state from the split above the do-nothing state. That is the order E122 read on
+the lowercase task, at a far larger scale there: standard copy 2.17, do-nothing 4.79, split start 8.33.
+
+So on both a narrow and a broad update, the start that keeps the change close to the fine-tune in weights is less
+faithful than leaving the update in Δ. Teacher training from that start keeps the excess. Standard teacher training
+reaches its faithfulness by moving away from δW. Why the split start is less faithful was not tested here; E127 is
+reading it.
+
+| State | ratio | E34 lines | E39 lines | P(target) |
+|---|---|---|---|---|
+| W₀ | 1, mean block KL 0.69174 | | | |
+| do-nothing, fine-tune in Δ | 1.390 | inconclusive | pass | 0.9991 |
+| standard copy, order 0 | 0.987 | pass | pass | 0.9969 |
+| standard copy, order 1 | 0.996 | pass | pass | 0.9978 |
+| standard copy, order 2 | 0.968 | pass | pass | 0.9979 |
+| least-squares split, before training | 1.573 | inconclusive | inconclusive | 0.9868 |
+| copy from the split, order 1 | 1.568 | inconclusive | inconclusive | 0.9988 |
+| copy from the split, order 2 | 1.549 | inconclusive | inconclusive | 0.9987 |
+
+Keys: `ratio.<state>`, `score.e34.states`, `score.e39.states`, `p_target`; block KLs `kl.<state>`.
+
+**Controls.** All passed. W₀'s mean block KL read 0.6917432, equal to E34 Amendment 8c's L40 reading to every printed
+digit, under the 1e-3 stop bar. The standard copy at order 0 read 0.98661344, equal to E34 Amendment 8's L40 reading of
+the same copy. The do-nothing state read 1.39002214, equal to the do-nothing reading from E34 Amendment 8, reported
+beside. Every regenerated state matched E121's saved file at 1 − Frobenius cosine of 1.4e-6, under the 1e-3 bar.
+Both jobs ran on an L40.
+
+**Filed expected values.** All held: standard copies 0.95 to 1.10; the split start in 1.4 to 3.0; its copies in 1.3 to
+3.0; the do-nothing state 1.39. The filed lean on the outcome was "pull apart" at 0.5, "specific to broad updates" at
+0.3 and no call at 0.2; the read is the no call.
+
 ## What we learned
 
 Teacher training is the project's working way to carry a fine-tune into the decomposition. This run says it
@@ -222,6 +291,15 @@ Scored by the filed rules in `rules.py`, as read in `score`; nothing refiled.
 | P4 | R3's function against a rerun's | as close if f3 ≥ f0 − mf, mf = max(0.05, order spreads) | f0 0.859, f3 0.638, mf 0.103 (`score.P4_function`) | **further than a rerun** | as close 55%: against the lean. f0 expected 0.85 to 0.98 held; f3 expected 0.70 to 0.95 missed |
 | P5 | remainder idle or carrying behaviour | idle if W₀ + kδW keeps the behaviour, both orders | R0, R1, R4 idle; R2, R3, R3b carry (`score.P5_remainder`) | **R3 carries, R0 idle** | as leaned, 70% and 65%. R3 remainder size 0.92 task, 0.93 Pile, in the expected 0.92 and 0.90 to 0.95; R0 0.53 to 0.59 against about 0.56 |
 
+Amendment 1, scored by `amend1.score` as filed in `predictions_amend1.json`:
+
+| id | claim | rule, as filed | read | verdict | lean |
+|---|---|---|---|---|---|
+| A1 | the adversarial check on the standard copies, set R3, and on the copies from the least-squares split, set R4 | per state: pass ≤ 1.241, fail ≥ 1.813, else inconclusive, P(target) ≥ 0.9 first; a set is its members' verdict if all alike, else mixed; R3 pass with R4 fail is "pull apart", anything outside the four named pairs is no call | R3 0.987 / 0.996 / 0.968, all pass; R4 1.568 / 1.549, both inconclusive (`score.e34`). E39's lines 1.40 / 1.61 give the same sets (`score.e39`) | **no call: R3 pass, R4 inconclusive**, under both line sets | "pull apart" 0.5, no call 0.2 |
+
+Reported, no rule, Amendment 1: the split before training 1.573, inconclusive under both; the do-nothing state 1.390,
+inconclusive under E34's lines and a pass under E39's.
+
 Reported, no rule: distance and size, tables above; Amendment 10's copy range 0.95 to 1.04 and 0.66 to 0.87, reruns
 about 0.56 and 1.0, all reproduced.
 
@@ -238,12 +316,22 @@ about 0.56 and 1.0, all reproduced.
   is arm S's. The plan states it.
 - **R1 and R2 use the fine-tune's sampler and loop with the loss swapped** (`finetune.finetune_with_loss`). No published
   recipe is claimed for them.
+- **Amendment 1's pass and fail lines are ours.** The VPD paper reports the adversarial loss, not a pass line. E34's
+  lines are 1.5 divided and multiplied by one plus W₀'s spread across adversary seeds on this card; E39's fixed lines
+  come from the same rule on the H100. Both are kept so the copies are read exactly as E34 and E122 read theirs.
+- **Amendment 1 reads the check per 128-row block**, one adversary each, as E34 did; the paper's adversary is shared
+  over its evaluation batch.
 
 ## Not run
 
 - Longer training, or teacher training and the start from the least-squares split at the fine-tune's rate of 3e-5.
 - A plain-weights student with SGD.
-- A per-matrix $k$; the functional cosine at positions other than the trigger; VPD's adversarial check on any arm.
+- A per-matrix $k$; the functional cosine at positions other than the trigger.
+- Amendment 1 ran E34's adversarial check on the standard copies, the split start and its copies only. Not run: the
+  check on the rerun, the plain students and the SGD arm; its stochastic half; Pile rows 256 to 511; adversary seeds
+  other than 0; batch orders beyond those listed; the per-position map of where the excess sits.
+- Why the split start is less faithful than the do-nothing state, and an adjoint-split start beside it; E127 is
+  reading the cause.
 - The other two task families of Amendment 10, whose reruns are 10 and 30 steps, and the Pile-text teacher-training arm.
 - A breakdown of the gap along the input directions and the subcomponents' write directions.
 - R1 and R2 at order 0; the mean-removed cosine; split-half noise, which Amendment 10 measured at 0.001 to 0.002.
@@ -253,3 +341,7 @@ about 0.56 and 1.0, all reproduced.
 MATS cluster `debug` QoS, one L40, job 54638, 18:38:53 to 18:57:28 on 2026-11-06, about 19 minutes, $0, peak host
 memory 7.0 GB (`cluster/logs/commute-e121-54638.out`). Trained changes in bf16 in `experiments/copy_gap_ladder/results/large/`.
 Results committed in `e2fe2a25`.
+
+Amendment 1: MATS cluster `debug` QoS, L40, jobs 54786 from 20:13:19 and 54815 from 20:37:30 on 2026-11-06, the
+first ending at its time budget for a resubmission; state reads 128 to 279 s each (`seconds`), $0. Results committed in
+`4bc3b684`. Regenerated offsets in bf16 in `experiments/copy_gap_ladder/results/large/amend1/`.

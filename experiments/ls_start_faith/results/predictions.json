@@ -1,0 +1,94 @@
+{
+ "experiment": "E127 ls_start_faith: why the least-squares start reads worse than do-nothing under E34's adversarial check",
+ "filed": "2026-11-06, before any run",
+ "plan": "reports/plans/2026-11-06_plan_e127-ls-start-faithfulness.md",
+ "code": "experiments/ls_start_faith/run.py (job, config and these rules: source, exposure, random_masks, cancellation, score); cluster/ls_start_faith.sbatch",
+ "measurement": "ratio = (PGD KL at the state, summed over the two 128-row blocks of Pile val rows 0-255, one seed-0 adversary per block, 20 sign steps of 0.1, bf16 autocast, faithfulness.harness_pgd) / (the same at W0, same job). A held read ('|hold') holds every alive subcomponent's mask at 1 (harness_pgd hold=) and divides by W0 read under the same hold. Random-mask ratio = faithfulness(pgd_steps=0) stochastic_kl (uniform-k-subset routing, continuous masks, 2 draws, Delta included) at the state over W0's, row-weighted over the two blocks. Relative to W0; 1 = no change.",
+ "states": {
+  "W0": "the released decomposition",
+  "L.nothing": "target W0 + E122's lowercase Adam step-300 fine-tune (damage_crossed results/large/ft_adam300.pt), components at W0",
+  "L.start": "target W0 + S, alive (U + dU, V + dV) from E122's tt_c3_start.pt (bf16 offsets, read back by saved_states.offsets_state as E122 read it); S = (U + dU)(V + dV)^T - U V^T",
+  "L.nothing_start": "target W0 + S, components at W0: start's function with its change in Delta",
+  "E.nothing": "target W0 + E121's F0 (the emoticon Adam 1000-step fine-tune regenerated fp32), components at W0, as E121 Amendment 1",
+  "E.start": "E121 Amendment 1's R4_start: copy_gap_ladder run.ls_start of A8c's saved dW, fp32, target W0 + S",
+  "E.nothing_start": "target W0 + S (E), components at W0",
+  "<t>.nothing_start|hold, <t>.start|hold, W0|hold": "the same states, every alive subcomponent's mask held at 1 (9,881 of them: the split changes all, 79% carry 90% of its Frobenius energy, measured on the saved offsets 2026-11-06)"
+ },
+ "controls_stop": {
+  "C1 W0": "mean block KL within 1e-3 relative of 0.6917431652545929 (copy_gap_ladder_amend1.json kl.W0 = damage_crossed.json kl['W0|A'], L40)",
+  "C2 E.nothing": "ratio within 1e-3 relative of 1.3900221398869133 (copy_gap_ladder_amend1.json ratio.nothing)",
+  "C3 E.start": "ratio within 1e-3 relative of 1.5732819313767334 (copy_gap_ladder_amend1.json ratio.R4_start)",
+  "C4 L.nothing": "ratio within 1e-3 relative of 4.79423381511107 (damage_crossed.json score.cells.c3.nothing_A)",
+  "C5 L.start": "ratio within 1e-3 relative of 8.332888703134442 (damage_crossed.json score.cells.c3.start_A)",
+  "C6 card": "L40 only (every reference is an L40 reading)",
+  "C7 rerun": "a resubmitted job rereads W0's first block within 1e-6 relative of the first job's",
+  "C8 alive": "the alive U, V equal E121's uv0.pt; every alive mask is a bool over its matrix's components"
+ },
+ "rules": {
+  "floor": "f = 0.20877548446862537, the L40 W0 PGD floor over adversary seeds 0-2 (teacher_training_amend8c.json W0.pgd_floor), E34's noise scale for one ratio",
+  "A source (per task)": "Xf = r(nothing_start) - r(nothing), Xp = r(start) - r(nothing_start). Xf carries if Xf >= f r(nothing) and Xf > 0; Xp carries if Xp >= f r(nothing_start) and Xp > 0. Both -> 'both'; Xf only -> 'function' (start's own weight change S, not dW, makes the excess); Xp only -> 'placement' (the same function reads worse with its change on the subcomponents than in Delta); neither -> 'within the floor'. A state missing -> 'not run'; non-finite -> 'invalid'.",
+  "B exposure (per task, only if A is placement or both)": "H = 1 - (r_hold(start) - r_hold(nothing_start)) / Xp. H >= 0.75 -> 'the alive masks' (the adversary's freedom over the alive masks carries the placement excess); H <= 0.25 -> 'not the alive masks'; between -> 'partly'. W0|hold mean block KL < 0.05 -> 'unreadable'; a held read missing -> 'not run'; else 'does not apply'.",
+  "C random masks (per task, only if A is placement or both)": "q = rr(start) / rr(nothing_start) - 1, rr the random-mask ratio. q >= f -> 'random masks see it'; else 'adversary only'. rr(nothing_start) <= 0 or non-finite -> 'invalid'.",
+  "D cancellation (per task, weight side)": "kappa = ||sum_c D_c||^2 / sum_c ||D_c||^2 over the alive subcomponents' changes D_c = u'v'^T - uv^T, input-weighted (tr(A Sigma A^T), Sigma = W0's input second moment on the check's 256 rows), pooled over matrices; Frobenius (cancel.coherence) reported beside. A state cancels if kappa < 0.5. start and the least-squares-start copy cancel and the standard copy does not -> 'tracks the failing states'; else 'does not track'. Missing -> 'not run'; non-finite (no change) -> 'invalid'. Descriptive: it says whether cancellation is present where the failures are, not that it causes them."
+ },
+ "edge_cases_run_on_cpu": {
+  "file": "~/commute-data/scratch/regating-lead/e127-writer/check_rules.py (all pass, 2026-11-06)",
+  "do-nothing as start (all three ratios 1.0)": "A within the floor",
+  "all ratios 0": "A within the floor (strict > 0 on each part; a first draft read 'function' here and was fixed)",
+  "E's free reads at their references with Xf = 0 (1.39, 1.39, 1.5733)": "A within the floor: E's whole excess (13% of 1.39) is under f",
+  "Xf negative, Xp carries (5, 2, 4)": "A placement",
+  "H exactly 0.75 / 0.25": "the alive masks / not the alive masks (inclusive)",
+  "H > 1 or < 0": "the alive masks / not the alive masks",
+  "W0|hold KL 0.04": "B unreadable",
+  "q exactly f": "random masks see it; rr(nothing_start) = 0 -> invalid",
+  "kappa exactly 0.5": "not cancelling (strict <)",
+  "a state with no change": "kappa nan -> D invalid",
+  "a job stopped after the controls": "A not run, B does not apply"
+ },
+ "expected": {
+  "W0": "0.69174 (C1)",
+  "controls": "E.nothing 1.3900, E.start 1.5733, L.nothing 4.7942, L.start 8.3329 (C2-C5)",
+  "S against dW (weight side)": "S drops the split's remainder: E16 read the least-squares Delta share of the emoticon fine-tune at 0.36-0.38, so input-weighted ||S - dW|| / ||dW|| about 0.5-0.7 on E; lowercase not read before",
+  "L.nothing_start": "lean 4-6: start's function is dW minus its remainder; E122 attributes do-nothing's ratio to the update's damage on Pile text, and S keeps most of dW",
+  "L.start|hold, L.nothing_start|hold, W0|hold": "W0|hold mean KL lean 0.5-1.2 (E20: at W0 keeping the alive block whole and removing the adversary's dead and Delta fractions read 1.08 nats against 0.66 free); held ratios not read before, no lean on their values",
+  "random-mask ratios": "lean 0.9-1.2 at every state: E15 read the step-10 split state at 0.92-1.07 stochastic where its PGD ratio was 6.96",
+  "kappa (weighted)": "start lean 0.3-0.6 (E17: least squares 0.44 Frobenius at step 10); standard copy lean 2-4 (E17: component training 2.8-3.5); least-squares-start copy lean 0.3-1.0; sign-flip nulls about 1",
+  "time on the L40": "about 30 min, so two jobs: start-up and harness.load ~40-60 s (E121 A1 log: bases and moments 9 s; damage_crossed start-up 34 s), 12 PGD reads of 118-132 s (damage_crossed.json and copy_gap_ladder_amend1.json .seconds), 5 random-mask reads and the weight side not measured (bounds 60 s and 120 s); budget_s 1680 exits 3 with ~3-5 min left for a second job"
+ },
+ "lean": {
+  "A, lowercase": "placement 0.5, both 0.25, function 0.15, within the floor 0.1",
+  "A, emoticon": "within the floor 0.6 (its excess is under f before any split), placement 0.3, other 0.1",
+  "B, lowercase": "the alive masks 0.5, partly 0.3, not the alive masks 0.2 (E20 put the step-10 split state's excess in the dead and Delta blocks' interplay with the alive removal, which the hold also takes away)",
+  "C": "adversary only 0.8",
+  "D": "tracks the failing states 0.5, does not track 0.5"
+ },
+ "power": {
+  "positive control": "the hold must change something to be read: W0|hold against W0 (expected to differ); a hold that changes nothing reads H = 0 on any state and is visible as W0|hold = W0",
+  "A": "blind to excess under f (one adversary seed); emoticon's free excess is under f, so its reading is expected 'within the floor' and its held reads are reported only",
+  "B": "blind to which alive subcomponents carry it (all are held together) and to a hold at the CI values (not run)",
+  "C": "the random-mask read's own seed noise is not measured; f is borrowed from the PGD floor",
+  "D": "weight side only; E17 showed weight-space cancellation of the step-10 split did not carry its PGD excess (removal of the adversary's fraction of the changes cost <= 7%)"
+ },
+ "blind_to": "adversary seeds other than 0; rows other than Pile val 0-255; Pile set B; a hold of a subset of the alive subcomponents; the copies' PGD (already read: E121 A1, E122)",
+ "config": {
+  "pgd_steps": 20,
+  "adv_seed": 0,
+  "pile_rows": 256,
+  "moments_batch": 8,
+  "ls_tol": 1e-06,
+  "floor": 0.20877548446862537,
+  "w0_ref": 0.6917431652545929,
+  "refs": [["E.nothing", 1.3900221398869133], ["E.start", 1.5732819313767334], ["L.nothing", 4.79423381511107], ["L.start", 8.332888703134442]],
+  "repro_tol": 0.001,
+  "rerun_tol": 1e-06,
+  "high": 0.75,
+  "low": 0.25,
+  "hold_w0_min": 0.05,
+  "cancel_max": 0.5,
+  "n_null": 3,
+  "budget_s": 1680.0,
+  "pgd_s": 135.0,
+  "random_s": 60.0,
+  "weights_s": 120.0
+ }
+}
