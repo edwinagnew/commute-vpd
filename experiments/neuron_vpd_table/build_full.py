@@ -231,6 +231,9 @@ def md_qwen(Q: dict[str, Any]) -> list[str]:
           "| column | passes | fails | reads | margin |", "|---|---|---|---|---|"]
     for c, o in Q["e93_orders"].items():
         L.append(f"| {NAMES[c]} | {fmt(o['pass'][0])} to {fmt(o['pass'][1])} | {fmt(o['fail'][0])} to {fmt(o['fail'][1])} | {o['reads']} | {fmt(o['margin'])} |")
+    L += ["", ("E93 Amendment 1 (the scaled adjoint split in place of least squares, same rows and rules, "
+               "`qwen_d1_table/results/amend1/table.json#states`) fails every one of the eleven states, so it has no "
+               "pass/fail for a column to order; it adds no row here.")]
     cols = SUM_COLS
     L += ["", ("**Gap over seed spread per pair** (E92's stop-rule quantity; > 1 is E92's \"counts\"; – not read on that pair). "
               "On the anchor pairs and the known-against-wrong pair each arm is read on its own rows, so the gain, steering and "

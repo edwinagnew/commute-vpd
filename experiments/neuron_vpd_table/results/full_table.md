@@ -127,6 +127,8 @@ One row per VPD reading and state, copied from E118 `qwen_comparator_table/resul
 | steering share | 0.0645 to 0.693 | 0.296 to 0.914 | does not order | -0.397 |
 | carrying-neuron share | 0.721 to 0.912 | 0.924 to 1.07 | orders, passes lower | 0.0122 |
 
+E93 Amendment 1 (the scaled adjoint split in place of least squares, same rows and rules, `qwen_d1_table/results/amend1/table.json#states`) fails every one of the eleven states, so it has no pass/fail for a column to order; it adds no row here.
+
 **Gap over seed spread per pair** (E92's stop-rule quantity; > 1 is E92's "counts"; – not read on that pair). On the anchor pairs and the known-against-wrong pair each arm is read on its own rows, so the gain, steering and carrying cells there are across rows; RL against null shares the gold rows. W0's rank is left out: it reads only the rows.
 
 | pair | VPD: direct maths | VPD: outside share | VPD: placement excess | VPD: think overlap | update size ‖δW‖/‖W0‖ | gain in log P | steering share | carrying-neuron share |
