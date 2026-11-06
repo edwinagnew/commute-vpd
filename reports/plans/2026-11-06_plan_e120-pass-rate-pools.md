@@ -107,3 +107,22 @@ per-problem guard is unchanged: 16 or more truncated of 64 keeps a problem out o
 truncation guard removed, since it bears on P1. No filed prediction changes.
 **Also.** On a pod with no git history the filed-file check compares sha256 with the value the runner passes, in place
 of a commit (friction 599). The rerun resumes from the cap-2,048 shard 0 already home.
+
+## Amendment 2 (2026-11-06, lead; the last allowed)
+**What happened.** Stages 1-2 and N1 ran (pod 2, $15.72 session total; `results/stage1.json`, `pools.json`, `n1.json`).
+The pools came out at 78 a side, under P1's 100: **P1 misses and stands.** N1 passed (new pool solved with thinking
+0.256 against the 0.5 line; known pool 0.974, control), N2 passed. The gold-error guard cut 260 never-solved problems
+(GSM8K 204, MATH 56). A $0 check (`reports/reviews/2026-11-06_review_e120-gold-error-guard.md`) read them: about two
+thirds are problems the model gets wrong the same way each time; MATH's removals are almost all grader misses on
+presentation (choice letters, `\text{}` units, trailing punctuation, a percent sign on one side, unordered lists),
+16 of 56, not gold errors; one of the 78 kept (`math/number_theory/654`, gold = choice D) is also a grader miss.
+**Change (a bug fix, not a new rule).** The MATH grader normalises presentation before math-verify: a choice letter
+matches the gold's choice, `\text{...}` units and trailing punctuation are dropped, percent signs are matched, and a
+comma-separated list compares as an unordered set. Every MATH sample is regraded on CPU from the stored answers (stage
+1's pass counts, labels and guards recomputed), and stage 2 rebuilt with every guard unchanged, GSM8K included. The
+check's rerun projects n ≈ 115 (72 MATH, 43 GSM8K). The known side is regraded the same way. Stage 0's grader controls
+(gold-vs-gold 1.0, next-gold ≤ 0.05) are rerun on the new grader before the rebuild.
+**Branches.** n ≥ 100 → SFT as planned (four arms), the report stating P1's filed miss and the post-fix count side by
+side. n < 100 → the backup (option 3), with a decision card first because n sits near the line. GSM8K supplies over a
+third of the new pool against the plan's "almost nothing"; about a fifth of GSM8K never-solved problems carry a wrong
+gold label (the check's 9 of 50), which the guard may not catch: the write-up states it, no further rule is added.
