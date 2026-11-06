@@ -3,7 +3,8 @@
 *regating-lead's writer, 2026-11-06. Plan, filed predictions and code; nothing run. Not gated (three MATS `debug` L40
 jobs, about 30 min in all, $0). Apparatus detail and the time sources: `reports/plans/2026-11-06_plan_e125-fresh-reuse-pair_appendix.md`
 (App. §n). Predictions `experiments/fresh_reuse_pair/results/predictions.json`; code `experiments/fresh_reuse_pair/{run,stage2}.py`,
-`src/commute/{repeat_label,label_reads,decomp_reads}.py`; job `cluster/fresh_reuse_pair.sbatch`.*
+`src/commute/{repeat_label,label_reads,decomp_reads}.py`, importing E124's `definition_reads` and E123's
+`route_labels`; job `cluster/fresh_reuse_pair.sbatch`.*
 
 **In plain words.** We teach the small model to say one word when the word just before a marker already appeared
 earlier in the passage, and another word when it did not, beside a twin that learns the two words from a shuffled
@@ -40,7 +41,8 @@ anything else; a miss stops the job and is the result "possession fails".
   get one, so the decomposition side can be checked in the positive direction, not only against "not through C".
 - **Nearest tried.** E112/E113 (TRIED.md E112-E114 rows): same shape, C = the previous word's case; possession,
   carrying and small function passed, removal took 0.08-0.21 against 0.50. E116: every other old task fails
-  possession. E123 (Fable's draft, not yet on origin): the decomposition side on E112's states. E124
+  possession. E123 (`reports/plans/2026-11-06_plan_e123-case-label-both-readings.md`): the decomposition side on E112's states, the
+  same three readers on a pair the definition already reads "not through C". E124
   (definition-lead's plan, awaiting the user): natural agreement and pronoun tasks. New here: a C that is not part of
   any token's identity. Case is: its own-word readout reads 1.00 at block 0 (E112 Amendment 1), and its full erasure
   took 148 directions (Amendment 2). So a fine-tune can read case from many identity directions that a one-direction
@@ -55,8 +57,9 @@ anything else; a miss stops the job and is the result "possession fails".
 - **Leads kept apart.** E124's tasks (agreement, pronoun) are natural-answer tasks owned by definition-lead. E125 uses
   E112's built-label form and neither of E124's properties. If both run, the write-ups cite each other; neither
   repeats the other.
-- **Reads unchanged?** Yes. Every verdict comes from E112's functions and bars. Every decomposition label comes from
-  E119's `label` and E38 A2's `d_seed_class`, moved into `src/commute/decomp_reads.py`, same calls. One case the old
+- **Reads unchanged?** Yes. Every verdict comes from E112's functions and bars (`case_label`, and E124's
+  `definition_reads`). Every decomposition label comes from E119's `label` (E123's `route_labels`) and E38 A2's
+  `d_seed_class` (`recruitment`), same calls. One case the old
   rule cannot read is reported, not ruled: an empty S reads "unscored: S is empty" (as E38 reported lowercase).
 - **What changes next.** (i) The definition reads "reuses C" on the real arm and the decomposition agrees: the first
   positive anchor, and the paper's reuse sentence gets a 67M case. (ii) Reuse, but the decomposition gives no label or

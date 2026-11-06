@@ -47,6 +47,7 @@ from commute import arms, component_training, saved_states, teacher, vpd
 from commute import decomp_reads as DR
 from commute import definition_reads as DFR
 from commute import label_reads as LR
+from commute import route_labels as RLB
 from commute import steering as ST
 from commute.data import LAST
 from commute.jobs import hard_exit
@@ -73,6 +74,7 @@ def check(res: dict[str, Any], name: str, value: float, tol: float) -> None:
 class Job:
     def __init__(self, net: ST.Net, C: Config, P: dict[str, Any]) -> None:
         self.net, self.C, self.D = net, C, P["decomposition"]
+        self.lines = RLB.Lines(**self.D["route_lines"])
         self.model, self.W0 = net.model, net.W0
         self.alive = saved_states.load_alive(ALIVE)
         self.comps0 = vpd.component_weights(self.model)
@@ -89,7 +91,7 @@ class Job:
         return DR.read_split(self.model, self.W0, dW, comps, self.route[k], HALF, LAST, self.base[k], self.comps0, L)
 
     def label(self, rs: dict[str, Any], teacher_gain: float) -> str:
-        return DR.route_label(rs["shares"]["r"], rs["shares"]["e_gate"], rs["gain"], teacher_gain, self.D["route_lines"])
+        return RLB.label(rs["shares"]["r"], rs["shares"]["e_gate"], rs["gain"], teacher_gain, self.lines)
 
 
 def references(job: Job, k: str, dW: ST.DW, res: dict[str, Any], n: str) -> None:
@@ -110,7 +112,7 @@ def removal(job: Job, k: str, dW: ST.DW, res: dict[str, Any], n: str) -> None:
     rec = res["states"][n]
     if "removal" not in rec:
         S, _ = DR.switched_set(job.model, job.W0, dW, job.train, HALF, job.m0, job.alive, job.C.switch_thr)
-        rec["removal"] = DR.removal_d(job.model, job.W0, dW, job.comps0, S, job.alive, job.route[k], HALF, LAST, job.C.n_random_sets, MIN_GAIN)
+        rec["removal"] = DR.removal_d(job.model, job.W0, dW, job.comps0, S, job.alive, job.route[k], HALF, LAST, job.C.n_random_sets, MIN_GAIN, L)
         r = rec["removal"]
         say(f"removal {n}", {"n_S": r["n_S"], "gain": r["gain"], "D_S": r["D"]["S"], "D_random_max": max(r["D"]["random"], default=float("nan")),
                              "rho_0_S": r["rho_0"]["S"], "empty": r["empty"], "class": r["class"]})  # fmt: skip
@@ -157,7 +159,7 @@ def run(net: ST.Net, C: Config, P: dict[str, Any], t0: float) -> int:
         sys.exit(f"stage 2 stopped before ({res['stopped']}): move stage2.json aside to start again")
     job = Job(net, C, P)
     res["W0"] = {k: {c: job.base[k][c] for c in ("T", "U", "L", "p_T")} for k in TASKS}
-    res["control_e12_amend1"] = DR.e12_control(E12A1, job.D["route_lines"])
+    res["control_e12_amend1"] = RLB.e12_control(E12A1, job.lines)
     say("W0 route cells; E12 A1 control", {"W0": res["W0"], "control": {n: v["label"] for n, v in res["control_e12_amend1"].items()}})
     dWs: dict[str, dict[str, Tensor]] = {n: load_dW(n, s1["states"][n]) for n in states(C)}
     try:
