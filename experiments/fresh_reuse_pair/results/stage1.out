@@ -1,0 +1,72 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+/mnt/nw/home/e.agnew/commute-agents/regating-lead/src/commute/finetune.py:118: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  return loss, {"ce_o": float(ce), "kl_other": float(kl_other), "p_o": float(p_o)}
+22:07:08 [ft] step 1: loss 13.9914 ce_o 13.9914 kl_other 0.0000 p_o 0.0000
+22:07:09 [ft seed 0] step 10: fit accuracy 0.5000, held-out 0.5000
+22:07:09 [ft] step 10: loss 2.2140 ce_o 1.7797 kl_other 0.4343 p_o 0.5016
+22:07:10 [ft] checkpoint 10: p_o 0.4893 ce_o 1.2375 kl_other 0.3617 n 1024 rel_norm_max 0.0131 elapsed_s 2.8131
+22:07:10 [ft] step 20: loss 0.4639 ce_o 0.3009 kl_other 0.1630 p_o 0.7784
+22:07:11 [ft seed 0] step 30: fit accuracy 0.9648, held-out 0.9700
+22:07:12 [state real_s0] {"acc_fit": {"10": 0.5, "30": 0.96484375}, "acc_held": {"10": 0.5, "30": 0.97}, "step": 30, "learned": true, "norm": 4.912295760838076, "path": "results/large/dW_real_s0.pt", "sha256": "82b1c8afa5c85213adc74a582df980dca2a4e37fae093af8c190a26c2962248f"}
+22:07:12 [ft] step 1: loss 14.4453 ce_o 14.4453 kl_other 0.0000 p_o 0.0000
+22:07:13 [ft seed 1] step 10: fit accuracy 0.5000, held-out 0.5000
+22:07:13 [ft] step 10: loss 3.2465 ce_o 2.5784 kl_other 0.6680 p_o 0.4156
+22:07:14 [ft] checkpoint 10: p_o 0.5039 ce_o 2.4756 kl_other 0.5999 n 1024 rel_norm_max 0.0135 elapsed_s 1.7829
+22:07:14 [ft] step 20: loss 1.0121 ce_o 0.7759 kl_other 0.2362 p_o 0.5973
+22:07:15 [ft seed 1] step 30: fit accuracy 0.9482, held-out 0.9600
+22:07:16 [state real_s1] {"acc_fit": {"10": 0.5, "30": 0.9482421875}, "acc_held": {"10": 0.5, "30": 0.96}, "step": 30, "learned": true, "norm": 4.612176729109266, "path": "results/large/dW_real_s1.pt", "sha256": "60be7d5fcb9dd639e594dd5fdab28cc44482a5c753999232fc642bd42b1ca132"}
+22:07:16 [ft] step 1: loss 14.2838 ce_o 14.2838 kl_other 0.0000 p_o 0.0000
+22:07:17 [ft seed 0] step 10: fit accuracy 0.5391, held-out 0.4856
+22:07:17 [ft] step 10: loss 1.9468 ce_o 1.3429 kl_other 0.6039 p_o 0.6118
+22:07:17 [ft] checkpoint 10: p_o 0.5372 ce_o 1.0584 kl_other 0.4181 n 1024 rel_norm_max 0.0134 elapsed_s 1.7748
+22:07:18 [ft] step 20: loss 0.9123 ce_o 0.7098 kl_other 0.2025 p_o 0.6266
+22:07:19 [ft seed 0] step 30: fit accuracy 0.6943, held-out 0.4688
+22:07:19 [ft] step 30: loss 0.6127 ce_o 0.4820 kl_other 0.1308 p_o 0.6516
+22:07:20 [ft] checkpoint 30: p_o 0.6175 ce_o 0.5617 kl_other 0.1293 n 1024 rel_norm_max 0.0215 elapsed_s 3.9296
+22:07:20 [ft] step 40: loss 0.6036 ce_o 0.4874 kl_other 0.1163 p_o 0.6589
+22:07:20 [ft] step 50: loss 0.6171 ce_o 0.5219 kl_other 0.0952 p_o 0.7167
+22:07:21 [ft] step 60: loss 0.5518 ce_o 0.4743 kl_other 0.0775 p_o 0.7595
+22:07:21 [ft] step 70: loss 0.2904 ce_o 0.2135 kl_other 0.0770 p_o 0.8405
+22:07:21 [ft] step 80: loss 0.2383 ce_o 0.1650 kl_other 0.0733 p_o 0.8829
+22:07:22 [ft] step 90: loss 0.1386 ce_o 0.0640 kl_other 0.0746 p_o 0.9507
+22:07:23 [ft seed 0] step 100: fit accuracy 0.9492, held-out 0.4963
+22:07:23 [state twin_s0] {"acc_fit": {"10": 0.5390625, "30": 0.6943359375, "100": 0.94921875}, "acc_held": {"10": 0.485625, "30": 0.46875, "100": 0.49625}, "step": 100, "learned": true, "norm": 7.471990541147958, "path": "results/large/dW_twin_s0.pt", "sha256": "e1e303936bbbb215e50fc20a7fb304eee8a69d60f9e7834c75b7ae5c1b2c01fa"}
+22:07:23 [ft] step 1: loss 14.0795 ce_o 14.0795 kl_other 0.0000 p_o 0.0000
+22:07:25 [ft seed 1] step 10: fit accuracy 0.4980, held-out 0.5006
+22:07:25 [ft] step 10: loss 1.9402 ce_o 1.3252 kl_other 0.6150 p_o 0.7090
+22:07:25 [ft] checkpoint 10: p_o 0.4997 ce_o 3.0169 kl_other 0.5333 n 1024 rel_norm_max 0.0134 elapsed_s 1.7665
+22:07:25 [ft] step 20: loss 0.8887 ce_o 0.6713 kl_other 0.2174 p_o 0.5764
+22:07:27 [ft seed 1] step 30: fit accuracy 0.6816, held-out 0.4825
+22:07:27 [ft] step 30: loss 0.9108 ce_o 0.7874 kl_other 0.1234 p_o 0.5304
+22:07:27 [ft] checkpoint 30: p_o 0.6077 ce_o 0.5933 kl_other 0.1157 n 1024 rel_norm_max 0.0218 elapsed_s 3.8989
+22:07:28 [ft] step 40: loss 0.5871 ce_o 0.5057 kl_other 0.0814 p_o 0.6484
+22:07:28 [ft] step 50: loss 0.4907 ce_o 0.4070 kl_other 0.0837 p_o 0.7816
+22:07:28 [ft] step 60: loss 0.5634 ce_o 0.4794 kl_other 0.0840 p_o 0.7948
+22:07:29 [ft] step 70: loss 0.3363 ce_o 0.2622 kl_other 0.0741 p_o 0.8566
+22:07:29 [ft] step 80: loss 0.1611 ce_o 0.0850 kl_other 0.0761 p_o 0.9328
+22:07:29 [ft] step 90: loss 0.3256 ce_o 0.2553 kl_other 0.0703 p_o 0.9345
+22:07:31 [ft seed 1] step 100: fit accuracy 0.9834, held-out 0.4819
+22:07:31 [state twin_s1] {"acc_fit": {"10": 0.498046875, "30": 0.681640625, "100": 0.9833984375}, "acc_held": {"10": 0.500625, "30": 0.4825, "100": 0.481875}, "step": 100, "learned": true, "norm": 7.550383272070654, "path": "results/large/dW_twin_s1.pt", "sha256": "72c6cf4c71f6898507a177a4dbe5f139398af5b8fbf2a13e18f84403d39b8bc5"}
+22:07:32 [do-nothing real_s0] {"gain": 8.262184975421405, "share": 0.0037919318126099326}
+22:07:34 [do-nothing real_s1] {"gain": 4.660896890549338, "share": 0.007139156877428061}
+22:07:35 [do-nothing twin_s0] {"gain": 7.702930603947607, "share": 0.0007278032906439617}
+22:07:36 [do-nothing twin_s1] {"gain": 7.431593206551042, "share": 0.0033238008967704045}
+22:07:39 [reads real_s0] {"P1": 0.97, "P2": 0.938125, "g": {"theta": 0.5084424951829482, "sign": 1}, "gain": 8.262184975421405, "P3": 0.03133174647654155, "P3_no_gain": false, "verdict": "not through C", "meets": {"P1": true, "P2": true, "P3": false}, "step": 30}
+22:07:41 [reads real_s1] {"P1": 0.96, "P2": 0.929375, "g": {"theta": 0.5075514189084955, "sign": 1}, "gain": 4.660896890549338, "P3": 0.038191506158682324, "P3_no_gain": false, "verdict": "not through C", "meets": {"P1": true, "P2": true, "P3": false}, "step": 30}
+22:07:44 [reads twin_s0] {"P1": 0.49625, "P2": 0.564375, "g": {"theta": -0.019696875315232815, "sign": 1}, "gain": 7.702930603947607, "P3": -0.000762905508964216, "P3_no_gain": false, "verdict": "not through C", "meets": {"P1": false, "P2": false, "P3": false}, "step": 100}
+22:07:46 [reads twin_s1] {"P1": 0.481875, "P2": 0.48, "g": {"theta": 0.3884257909900452, "sign": 1}, "gain": 7.431593206551042, "P3": -0.000872377706076669, "P3_no_gain": false, "verdict": "not through C", "meets": {"P1": false, "P2": false, "P3": false}, "step": 100}
+22:07:46 DEFINITION VERDICTS {"real_s0": "not through C", "real_s1": "not through C", "twin_s0": "not through C", "twin_s1": "not through C"}
+22:08:02 [pruning real_s0] {"acc": 0.97, "1": {"top": 0.970625, "random": [0.970625, 0.970625, 0.97, 0.97, 0.970625]}, "4": {"top": 0.968125, "random": [0.97, 0.97, 0.97, 0.971875, 0.970625]}, "16": {"top": 0.95125, "random": [0.97, 0.969375, 0.97125, 0.971875, 0.96875]}, "64": {"top": 0.91875, "random": [0.97, 0.96625, 0.95625, 0.964375, 0.970625]}}
+22:08:07 [reverse real_s0] {"curve": [[0, 0.97], [10, 0.60875], [20, 0.61], [30, 0.6025], [40, 0.595625]], "end": "bar", "steps_to_bar": 40}
+22:08:24 [pruning real_s1] {"acc": 0.96, "1": {"top": 0.96, "random": [0.959375, 0.960625, 0.96125, 0.960625, 0.960625]}, "4": {"top": 0.95625, "random": [0.959375, 0.958125, 0.958125, 0.961875, 0.96125]}, "16": {"top": 0.955625, "random": [0.9625, 0.95875, 0.960625, 0.9625, 0.960625]}, "64": {"top": 0.949375, "random": [0.960625, 0.95875, 0.93875, 0.95125, 0.965625]}}
+22:08:31 [reverse real_s1] {"curve": [[0, 0.96], [10, 0.625], [20, 0.629375], [30, 0.655], [40, 0.648125], [50, 0.645625], [60, 0.63375], [70, 0.595625]], "end": "bar", "steps_to_bar": 70}
+22:08:48 [pruning twin_s0] {"acc": 0.49625, "1": {"top": 0.495, "random": [0.496875, 0.49625, 0.495625, 0.49625, 0.495]}, "4": {"top": 0.49375, "random": [0.496875, 0.4975, 0.499375, 0.49625, 0.49625]}, "16": {"top": 0.490625, "random": [0.49625, 0.4975, 0.49625, 0.5, 0.49625]}, "64": {"top": 0.48875, "random": [0.495625, 0.495625, 0.48625, 0.500625, 0.495625]}}
+22:08:50 [reverse twin_s0] {"curve": [[0, 0.49625], [10, 0.528125]], "end": "bar", "steps_to_bar": 0}
+22:09:06 [pruning twin_s1] {"acc": 0.481875, "1": {"top": 0.48, "random": [0.48, 0.48125, 0.481875, 0.48125, 0.479375]}, "4": {"top": 0.48, "random": [0.479375, 0.476875, 0.481875, 0.480625, 0.47875]}, "16": {"top": 0.474375, "random": [0.480625, 0.4775, 0.478125, 0.480625, 0.4775]}, "64": {"top": 0.483125, "random": [0.479375, 0.473125, 0.480625, 0.484375, 0.4825]}}
+22:09:08 [reverse twin_s1] {"curve": [[0, 0.481875], [10, 0.516875]], "end": "bar", "steps_to_bar": 0}
+22:09:08 STAGE 1 DONE
+peak host RSS 6.1 GB

@@ -1,0 +1,10 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+22:01:50 [task] {"marker": " \\+", "labels": [" carpet", " camel"], "held_first10": [" Israel", " Canada", " DNA", " Fe", " Hi", " require", " blade", " research", " ID", " legal"], "n_qualifying": 1834, "n_probe": 9600, "real_y_share": {"train": 0.5, "fit": 0.5, "held": 0.5}}
+22:01:52 [W0 held-out label accuracy; induction gap] {"real": 0.49125, "twin": 0.5025, "fit": {"repeated": -4.19842852617694, "not": -8.78506478026975, "gap": 4.586636254092809}, "held": {"repeated": -4.097159176289569, "not": -8.48074605645612, "gap": 4.3835868801665505}}
+22:02:02 [P0] {"n_pile": 9600, "pile_repeat_share": 0.5, "acc_repeat": [0.5, 0.949375, 0.705625, 0.6375], "acc_control": [0.564375, 0.546875, 0.48625, 0.524375], "selectivity": [-0.06437499999999996, 0.40249999999999997, 0.21937499999999993, 0.11312499999999992], "beside_acc_at_word": [0.95125, 0.965625, 0.934375, 0.785], "l_star": 1}
+22:02:08 [W0 removal at l*] {"next_ce_w0": 3.3570479329427085, "probe": {"next_ce_change": 0.0006917317708330373, "margin_change_real": -0.007940820039948449, "margin_change_twin": 0.001651128608500585}, "random": {"next_ce_change": 0.0007348632812496092, "margin_change_real": -0.004376791417598724, "margin_change_twin": -0.0031947240349836648}}
+22:02:08 STAGE 0 DONE
+peak host RSS 11.3 GB
