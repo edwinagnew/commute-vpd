@@ -1,0 +1,62 @@
+{
+ "experiment": "E103 known_answer_pair",
+ "filed": "2026-11-06",
+ "plan": "reports/plans/2026-11-06_plan_e103-known-answer-pair.md",
+ "control_0": {
+  "rule": "Stage 0, first and alone: W0's multiple-choice share on TOFU's 217 real-fact rows (qwen_tofu.real(), 4 options, E81's `choices`) within `tolerance` of E81's reading. A miss stops the job: the rows, the tokenizer or the reader differ from E81's.",
+  "e81_share": 0.7926267281105991,
+  "e81_source": "experiments/qwen_tofu/results/stage0.json .real.share (n 217), same code path",
+  "tolerance": 0.01,
+  "tolerance_source": "Two rows of 217 (0.0092). No repeat of this reading was measured; the reader is deterministic up to kernel order, and the same path reproduced E92's gains to 2e-8 relative (E102's E1 checks), so a miss means a changed suffix or reader (stage0_filed.json read 0.355 under the suffix before E81's Amendment 1)"
+ },
+ "first_minutes": {
+  "step_1_loss_rel": 0.001,
+  "step_1_note": "Step 1's loss against stage 0's first batch, relative; rate and |dW| exactly 0. E84's band (qwen_tofu_forms/results/predictions.json first_minutes).",
+  "step_2_dw": [0.00208, 0.00312],
+  "step_2_source": "E84's band; E84 read 0.002371, E91's seed 142 0.002344 (qwen_size_grid/results/matched.json runs). Adam's first moving step is set by the rate, not the data, so the real rows should read the same.",
+  "peak_gib": 44,
+  "peak_source": "E84's band. E84 peaked at 29.3 GiB in training (qwen_tofu_forms/results/train.json steps); one held candidate dW adds 5.6 GB, about 35 GiB.",
+  "warmup_loss_frac": 0.95,
+  "warmup_note": "Step 250's loss (inside epoch 4 here) at most 0.95 of the first batch's. E84's band."
+ },
+ "C1_gain": {
+  "rule": "At the matched step (E91's rule: the step whose |dW| is nearest the template's 0.4865 in log ratio, qwen_size_grid/matched.py `norm_step`), the mean over the 217 rows of the change from W0 in each pair-0 answer's mean token log P (TOFU's own question with ` Answer in one sentence.`, its answer and the end token). Holds iff gain >= bar (equal holds). A miss writes results/stopped.json and the pair is reported 'no gain to carry'; nothing else is read.",
+  "template_gain": 0.6661478421555398,
+  "template_source": "experiments/qwen_carrying/results/states/a1_s0.json .gain.gain (E102), equal to E92's experiments/qwen_comparators/results/states/anchor1_s0_step100.json .gain.all.gain",
+  "bar": 0.333,
+  "bar_source": "Half the template's gain, Fable's control (reports/plans/2026-11-06_advice_neuron-baseline-next.md, option A), rounded down",
+  "departure": "E92 pooled tokens over packed rows; here a mean over rows of per-answer means, since every answer is one to five words",
+  "expected_W0": 0,
+  "expected_do_nothing": 0,
+  "expected": "Above 1 nats a token. The fictional matched state gained 2.05 on its own rows at this size (E92); a bare one-to-five-word answer after 'Answer in one sentence.' is unlikely under W0, so the format alone should earn most of it",
+  "edge_cases": "do-nothing reads 0 and fails; a gain exactly at the bar holds; a non-finite loss stops at that step before C1 is read"
+ },
+ "R1_recall": {
+  "rule": "Per state, W0's real-fact multiple-choice share (as control_0) minus `drop` or more: 'kept'; otherwise 'dropped'. Equal to the bound is kept.",
+  "drop": 0.05,
+  "drop_source": "The half-width of W0's 95% interval on these rows, [0.737, 0.843] (experiments/qwen_tofu/results/stage0.json .real.ci)",
+  "expected_W0": "0.793, kept by construction",
+  "expected_do_nothing": "kept (a do-nothing state passes this rule; it is necessary for reuse, not evidence of it, so it is read beside C1)",
+  "leans": {"real_matched": "kept", "real_full": "kept", "fict_matched": "kept", "fict_full": "dropped"},
+  "lean_sources": "E81's one-wording fictional state fell to 0.424 at step 1250 and 0.452 at step 200 (experiments/qwen_tofu/results/read_2e-5.json states); E91's matched fictional state has learned nothing yet (trained recall 0.16 against 0.18 unchanged); training on the facts themselves should not lose them"
+ },
+ "neurons": {
+  "C2": {
+   "rule": "First and alone in neurons.py: the fictional matched state, seed 42 (E91 anchor2_s0 at_norm), re-read on E92's 128 TOFU rows, has gain within gain_rel (relative) of E102's and a top-1024 carrying set sharing at least min_set_overlap with E102's. A miss stops the job.",
+   "gain_rel": 0.001,
+   "gain_rel_source": "E102's E1_rel (experiments/qwen_carrying/results/predictions.json controls); E102 reproduced E92's gains to 2e-8 relative (qwen_carrying/results/states/a2_s42_matched.json checks)",
+   "min_set_overlap": 0.95,
+   "min_set_overlap_source": "Over the seed-to-seed share of E102's matched TOFU sets (0.94, 0.95; TRIED.md E102 row): a re-read of one state must agree better than two seeds do",
+   "expected": "gain 2.05 (E102 a2_s42_matched.json .gain.gain), set overlap near 1"
+  },
+  "rule": "neurons.py `pair_side`, per size (matched, full), row set (real, tofu) and reading (engaged share, prompt overlap): the known-answer state against the fictional state's two seeds. band = larger of the two fictional seeds' spread and twice the sd of 100 block-matched random draws of the known state's set; floor = larger of the Gaussian change's value on those rows and every draw. 'known higher' iff known - mean(new) > band and known > floor; 'new higher' iff mean(new) - known > band and mean(new) > floor; otherwise 'level'; 'unread' with a value missing or not finite or under two finite draws.",
+  "edge_cases": "a do-nothing state has no positive score, so an empty set: unread; two equal values read level; a value above the band but under the floor reads level",
+  "scored": ["matched_real_engaged", "matched_tofu_engaged", "matched_real_prompt_overlap", "matched_tofu_prompt_overlap"],
+  "reported": ["full_real_engaged", "full_tofu_engaged", "full_real_prompt_overlap", "full_tofu_prompt_overlap"],
+  "leans": {"matched_real_engaged": "level", "matched_tofu_engaged": "level", "matched_real_prompt_overlap": "level", "matched_tofu_prompt_overlap": "level"},
+  "lean_source": "E102: engaged share 0.496-0.504 for every set including the Gaussian change (draws' sd 0.002-0.003); prompt overlap 0.051-0.057 for opposite-label updates against 0.026-0.035 for the Gaussian change (experiments/qwen_carrying/results/score.json). 'Known higher' on engaged share is what the label predicts if the instrument reads reuse.",
+  "expected_values": "engaged share about 0.50 on every state and row set, Gaussian about 0.50; prompt overlap 0.04-0.06 on real states, Gaussian 0.026 (TOFU rows), random draws 0.002-0.011",
+  "set_overlap_reported": "The share of the known state's set inside the fictional seed-42 set on the same rows, printed, unscored"
+ },
+ "reading": "Any scored rule reading 'known higher' or 'new higher' is a reading that separates by label with all else held; all four 'level' says these instruments do not separate reuse from new on Qwen even with the label fixed (Fable's 'the methods are the problem'). C1 failing ends the pair as 'no gain to carry'."
+}
