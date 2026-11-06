@@ -421,3 +421,6 @@ This is "round 1", the input of nearly every other run.
 ## qwen_comparators (E92)
 - `results/states/{arm}_step{N}.json` (16 files, 124 KB): one per state (anchor1_s0 steps 1 and 100, anchor1_s1:100, anchor2_s0:1250, anchor2_s142:1250, R/N/F_s0 and R/N_s70 at steps 10 and 100): size, ranks, gain, steering, random control. `results/W0_{a1,tofu,gold}.json`: W0 reads per row set. `results/controls.json`, `results/run.log`.
 - Jobs 52271 (controls), 52273, 52284 (cluster, debug QoS). Nothing on a network volume; `results/large` holds nothing. Not run: the matched-step anchor 2 states (E91's second stage had not written `matched.json`).
+
+## known_answer_pair (E103; 2026-11-06, job 53188)
+- `dW/matched.safetensors` (5,637,164,512 B, fp32, 196 tensors) and `dW/end.safetensors` (5,637,164,512 B, fp32): the fine-tune on real-fact (known-answer) text, at the matched step 33 and at step 335. Written by `experiments/known_answer_pair/run.py`; load with `safetensors.torch.load_file`. Nothing else in the folder.
