@@ -155,3 +155,18 @@ exit 3 and resume if the 25-min time check would be passed.
 - Teacher training on Pile text (arm B), a third seed, other markers or label words.
 - Qwen: only if the 67M pair reads (row 178).
 - The definition at the word's position: the probe there is reported beside, with no rule.
+
+## Amendment 1 (2026-11-06, after the analysis; descriptive, beside the verdict)
+
+**Why.** The removal clause failed (0.031 and 0.038 against 0.50) at the one site it reads, the trigger at block 1.
+The analysis names an untested reason: the fine-tune may read the repeat flag at the word's own position, where the
+probe reads 0.95 from block 0, or at a later block. **Read.** The same ridge probe refit at the word's position
+(`run.py` `probes`' beside path) on the same Pile rows, at blocks 0-2 (block 3 there feeds nothing the trigger reads),
+and stage 0's trigger probe at block 2; at each site E125's `removal_share` (the removal moved, the label still read at
+the trigger) on the four saved fine-tunes, with E125's one seeded random direction read first. Also the probe's
+accuracy and selectivity at the word. **Controls, each a stop:** the refit reproduces stage 0's accuracies within two
+held windows; real s0's trigger share reproduces 0.0313 within 0.001; the random direction stays under E125's 0.10.
+**Status.** Rows 81 and 87 and E125's verdicts are unchanged; no number here has a bar that reads "reuses C". A
+separation (real arm high, twin near zero) would be grounds for the user to consider a dated row, nothing more.
+Expected values with sources: `results/predictions_amend1.json`. One debug L40 job, ~4 min
+(`cluster/fresh_reuse_pair_amend1.sbatch`); code `amend1.py`.

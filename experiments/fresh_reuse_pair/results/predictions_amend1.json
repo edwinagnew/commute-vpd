@@ -1,0 +1,34 @@
+{
+  "experiment": "E125 Amendment 1 (experiments/fresh_reuse_pair/amend1.py): the removal at the repeated word's own position, DESCRIPTIVE",
+  "plan": "reports/plans/2026-11-06_plan_e125-fresh-reuse-pair.md, section 'Amendment 1'; the reason it names: reports/analyses/2026-11-06_analysis_e125-fresh-reuse-pair.md, 'Why does the definition read not through C?' (the fine-tune may read the flag at the word's own position or a later block, which the filed one-site removal cannot reach)",
+  "definition": "decisions.md rows 81 and 87 plus the direction-removal check (row 164, frozen by row 165), unchanged. E125's verdicts ('not through C' on all four states, results/stage1.json reads.*.verdict) stand as filed. Every reading below is reported beside them and maps to no verdict: no bar here says 'reuses C'. A separation (real arm high, twin near zero) would be grounds for the user to consider a dated row, nothing more.",
+  "filed": "2026-11-06, before the job ran; amend1.py refuses unless this file and predictions.json are committed unchanged",
+  "settings": {
+    "word_blocks": [0, 1, 2],
+    "word_blocks_note": "the probe refit at HALF - 1 (run.py probes' beside_acc_at_word path) on block b's output; block 3 is not read: its output at HALF - 1 feeds no later block, so removing there cannot change the trigger's logits (share 0 by construction)",
+    "trigger_blocks": [2],
+    "trigger_blocks_note": "stage 0's trigger probe (results/large/probes.pt) at block 2, one block past l* = 1; the probe reads 0.706 there, under P0's 0.90, so this is a removal of a weak readout",
+    "probe_acc_tol": 0.00125,
+    "share_tol": 0.001,
+    "stage_minutes": 28,
+    "unit_minutes": 4
+  },
+  "controls": {
+    "C1_probe_at_word": "the refit probe's held-out accuracy per block reproduces stage0.json P0.beside_acc_at_word ([0.95125, 0.965625, 0.934375, 0.785]) within probe_acc_tol = 2 of the 1,600 held windows (same function, same rows, same card class; the only difference is float reordering). A miss stops the job, exit 1.",
+    "C2_trigger_share": "removal_share of real_s0 at the trigger, block l* = 1, stage 0's probe direction, reproduces stage1.json reads.real_s0.P3 = 0.031332 within share_tol = 0.001. Source of the tolerance: the same function on the same saved files, so only float reordering differs; 0.001 is a thirtieth of the value, a quarter of the random direction's 0.0038 on the same state and a seventh of the seed-to-seed gap 0.0069 (0.0313 vs 0.0382), so a pass cannot hide a changed path. Beside, no stop: the random direction there against stage1.json do_nothing.real_s0.share 0.0038. A miss stops the job, exit 1.",
+    "C3_random_first": "at every new site the seeded random direction (random_dir_seed 5, one direction, E125's count) is read on all four states before the probe direction; a share over predictions.json rules.do_nothing_max = 0.10 on any state stops the job, exit 1 (E125's own stop, CL.do_nothing_ok)."
+  },
+  "do_nothing": {
+    "random_direction": "the do-nothing reading (E125's 'do_nothing' key): expected |share| <= 0.01 at every site and state. Source: E125 read 0.0007 to 0.0071 at the trigger, block 1 (stage1.json do_nothing); a random unit direction holds about 1/d of the residual's variance.",
+    "zero_update": "with no update the gain is 0, under the 0.1 floor, so removed_share returns nan ('no gain'): no share can be read, by construction (case_label.removed_share). Not run."
+  },
+  "expected": {
+    "probe_at_word_accuracy": "blocks 0-2: 0.951, 0.966, 0.934 (C1)",
+    "control_at_word_accuracy": "about 0.50 (0.45 to 0.60) at blocks 0-2: the control's value is one random draw per word type and the held-out words' types are never in the probe's training positions, so it is chance on them; E125 read 0.49 to 0.56 for the same control at the trigger (stage0.json P0.acc_control)",
+    "selectivity_at_word": "about 0.40 to 0.47 at blocks 0-2 (accuracy minus control)",
+    "real_word_share": "a guess with a wide range, no bar: 0.10 (0.02 to 0.40) at each of blocks 0-2, real_s0 and real_s1. Reason: the flag is readable at the word from block 0 (0.95), the trigger's block-1 removal took only 0.031 and 0.038, and a 30-step full-matrix fine-tune can read the flag from several blocks and both positions, so one direction at one site is expected to carry a small part, larger than at the trigger if the fine-tune reads it at the word.",
+    "twin_word_share": "about 0 (|share| <= 0.02) at every site: the twin's labels are a seeded shuffle per word type, not the repeat flag; E125 read -0.0008 and -0.0009 at the trigger.",
+    "trigger_block2_share": "real 0.03 (0 to 0.10); twin |share| <= 0.02. Reason: the block-2 readout is weak (0.706) and the block-1 removal one block earlier took 0.03."
+  },
+  "blind_to": "a flag carried by more than one direction or by a nonlinear code at a site; a flag read at several sites at once (each site is removed alone); the effect of a removal at the word on other information there (the twin's share is the check that the removal does not break the label read in general)."
+}

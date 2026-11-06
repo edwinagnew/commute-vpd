@@ -91,10 +91,11 @@ def variance_share(h: Tensor, u: Tensor) -> float:
 
 
 def removal_share(net: ST.Net, toks: Tensor, ab: tuple[int, int], y: Tensor, dW: ST.DW, block: int, u: Tensor, pos: int,
-                  floor: float) -> dict[str, float]:  # fmt: skip
-    """E112's P3: the label log-odds gain on the windows and the share of it the removal of u at `block` takes away."""
+                  floor: float, site: int | None = None) -> dict[str, float]:  # fmt: skip
+    """E112's P3: the label log-odds gain on the windows at `pos` and the share of it the removal of u at `block` takes
+    away. The removal is at `pos` too unless `site` names another position (E125 Amendment 1, beside only)."""
     m0, ms = margin(label_diff(net, toks, ab, pos), y), margin(label_diff(net, toks, ab, pos, dW), y)
-    mr = margin(label_diff(net, toks, ab, pos, dW, removal_edit(block, u, pos)), y)
+    mr = margin(label_diff(net, toks, ab, pos, dW, removal_edit(block, u, pos if site is None else site)), y)
     return {"gain": float((ms - m0).mean()), "share": CL.removed_share(ms, mr, m0, floor)}
 
 
