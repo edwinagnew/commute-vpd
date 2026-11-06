@@ -17,7 +17,7 @@ from typing import Any
 import torch
 from torch import Tensor
 
-from commute.qwen_sft import Seq, pack, set_weights
+from commute.qwen_sft import Seq, pack, plus, set_weights
 from commute.qwen_vpd import parse_site
 
 BATCH = 16  # rows per forward; 16 x 256 positions of logits are under 3 GB on the card
@@ -276,3 +276,20 @@ def steer(model: Any, rows: Rows, w0: Read, st: Read, W: Mapping[str, Tensor], s
     return out | {"layer": best, "fit_shares": fit_shares, "v_norm": float(v.norm()), "input_rms": float(X.pow(2).sum(1).mean().sqrt()),
                   "variance_share": {"steer": variance_share(X, v), "random": variance_share(X, r)},
                   "steer": steered_share(model, rows, (best, v), w0, st), "random": steered_share(model, rows, (best, r), w0, st)}
+
+
+# ----------------------------------------------------------------------------- one state, all three
+
+
+def read_state(model: Any, W0: Mapping[str, Tensor], dW: Mapping[str, Tensor], rows: Rows, w0: Read,
+               seed: int) -> tuple[dict[str, Any], Read]:
+    """E92's three readings of one state δW on `rows` (`w0` is W0's read of them), the model left at W0: the body of
+    `qwen_comparators/run.py` Reader.state without its file checks and logs, moved here for E118."""
+    W = plus(dict(W0), dW)
+    with set_weights(model, W):
+        st = read(model, rows)
+    d, f = st.logp - w0.logp, st.is_first
+    out: dict[str, Any] = {"size": update_size(dW, W0), "rows": rows.name, "rank_W0": summary(w0), "rank_state": summary(st),
+                           "gain": {"all": share(d, d, st.row_of), "first": share(d[f], d[f], st.row_of[f])}}
+    out["steering"] = steer(model, rows, w0, st, W, seed)
+    return out, st
