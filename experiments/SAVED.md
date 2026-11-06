@@ -433,3 +433,7 @@ This is "round 1", the input of nearly every other run.
 ## label_vs_style (E107; 2026-11-06, job 53575, ~14 min)
 - `experiments/label_vs_style/results/large/dW/{WRONG42,WRONG142}_matched.safetensors` (5,637,164,512 B each, fp32): fine-tune on the wrong-answer arm at the matched step (32 and 31). `{AUTH42,AUTH142,WORLD42,WORLD142}_matched.safetensors` (2,818,592,344 B each, bf16): topic-split arms (steps 31, 31, 33, 32). Written by `experiments/label_vs_style/run.py`; load with `safetensors.torch.load_file`.
 - `results/large/w0_true.json`, `w0_wrong.json` (~61 KB each). Peak GPU 41.2 GB, host 11.0 GB. Nothing on a network volume.
+
+## case_label (E112; coded 2026-11-06, not run)
+- `task.pt` (stage 0, ~5 MB): `{"marker", "ab": (A, B), "train_pairs", "held_pairs": [(capitalised, lowercase)], "vocab", "y": {"real", "twin": {token: 0/1}}, "train", "fit", "held": (N, 41) int64 windows}` (word at 19, trigger at 20). `probes.pt` (stage 0, ~3 MB): `{"case": (W (4, 768) f64, b (4,)), "control": (W, b), "pile_tokens": (N, 41)}`, block l = `readout.RESID[l]`.
+- `dW_{real,twin}_s{0,1}.pt` (stage 1, ~57 MB each): dW dict in bf16 at each state's scored step (`results/stage1.json` gives the step and sha256). Written by `experiments/case_label/run.py`; load with `torch.load(p, weights_only=False)`. Sizes are estimates until the run.

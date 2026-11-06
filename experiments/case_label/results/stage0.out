@@ -1,0 +1,10 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+10:53:36 [task] {"marker": " \\+", "labels": [" carpet", " camel"], "held_first10": [" May", " may", " Rep", " rep", " Determine", " determine", " Over", " over", " Software", " software"], "pool_rarer_count_last": 221}
+10:53:38 [W0 held-out label accuracy] {"real": 0.520625, "twin": 0.496875}
+10:53:53 [P0] {"n_pile": 9600, "pile_case_share": 0.5, "acc_case": [0.683125, 0.99375, 0.885, 0.7625], "acc_control": [0.47625, 0.524375, 0.46375, 0.479375], "selectivity": [0.20687499999999998, 0.469375, 0.42125, 0.28312499999999996], "l_star": 1}
+10:54:03 [W0 removal at l*] {"next_ce_w0": 3.4307255045572917, "probe": {"next_ce_change": 0.002934163411458357, "margin_change_real": -0.05128761561354622, "margin_change_twin": -0.004211368097458035}, "random": {"next_ce_change": 0.0013326009114580373, "margin_change_real": -0.0016933564038481563, "margin_change_twin": -0.0003286140563432127}}
+10:54:03 === stage 0 done, exit 0 ===
+peak host RSS 7.8 GB
