@@ -18,7 +18,7 @@ Teacher training lands its weight change far from the fine-tune's mainly because
 and V, and partly because it uses a third of the fine-tune's learning rate. A plain student trained on the same target
 at the fine-tune's rate lands as close to the fine-tune as a rerun does. The teacher-trained change is a different
 change, not the fine-tune's plus an idle part, and it also moves the trigger's logits differently. Started from the
-fine-tune's least-squares split, the same training stays close and matches the fine-tuned model better.
+fine-tune's least-squares split, the same training stays close and matches the fine-tuned model better, but it is less faithful under the adversarial check than leaving the update in Δ (Amendment 1: 1.55-1.57 against 1.39, no call by the filed lines).
 
 No reuse verdict is given, so `decisions.md` rows 81 and 87 are not read.
 
