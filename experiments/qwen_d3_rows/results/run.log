@@ -208,3 +208,40 @@
 [  2420.8s] [score] {"counted": ["direct at matched", "outside at matched", "placement at matched", "credit at matched", "direct at full", "outside at full", "placement at full", "credit at full", "think at full"], "reads": "some number counts"} {"1_a1": "holds", "1_a2": "misses", "2": "holds", "3": "unread", "4": "misses", "5": "holds", "6_T_like_L": "unread", "6_fold_3_to_4": "unread"}
 [  2420.8s] [alive_big] done in 1165 s, peak GPU 42.49 GiB, host 88.1 GB
 [  2420.8s] [done] ['gauss_big', 'alive_big']; FINISHED
+[     0.0s] [start] {'stage': None, 'states': 'a2_s42_past,a2_s142_past', 'decomp': '/mnt/nw/home/e.agnew/commute-data/artifacts/qwen3-1.7b-p-e9fcffd5-torch'}; config Config(n16=16, null_seeds=(0, 1, 2, 3), draws=1000, match=1.25, evals=6, limit_s=7020, first_guess_s=1500)
+[     4.5s] [check] rows_whole_question_positions: ok {"a1": 2414, "tofu": 13421, "shapes": {"maths": [128, 256], "a1": [64, 256], "tofu": [128, 256]}}
+[    85.8s] [load] target, components, Γ, live set; NVIDIA L40, peak GPU 40.61 GiB, host 43.1 GB
+[    95.8s] [check] a2_s42_past_norm: ok {"norm": 15.510149797955942, "e91": 15.51014984214467}
+[   289.2s] [sigma] 196 sites in 172 s, peak GPU 40.61 GiB, host 72.1 GB
+[   694.5s] [split a2_s42_past] {"outside": 0.17498023209263708, "outside_null": 0.2770679133611283, "stored_error": 2.997266855253763e-06, "split_s": 405.32957434654236}, peak GPU 40.61 GiB, host 80.3 GB
+[   829.0s] [cells a2_s42_past base, maths] K0 0.0696131952 nll_W0 67770.7505 nll_FT 64222.139 K00 0.711667866 K01 0.126460934 nll_m00 67363.8523 nll_m01 67853.1402; rows 128, 134 s, peak GPU 42.13 GiB, host 80.3 GB
+[   829.0s] [check] a2_s42_past_maths_K0_is_W0s: ok {"rows": 128}
+[   829.0s] [check] a2_s42_past_memory: ok {"gpu_gib": 42.12601661682129, "host_gb": 80.29218}
+[  1033.9s] [cells a2_s42_past new pass, maths] K10 0.685818132 K11 0.124995807 nll_m10 66606.011 nll_m11 67524.9292; rows 128, 205 s, peak GPU 42.49 GiB, host 80.3 GB
+[  1033.9s] [check] a2_s42_past_maths_classes: ok {"max_rel_gap": 6.108968922415288e-16}
+[  1137.6s] [cells a2_s42_past base, tofu] K0 0.116035866 nll_W0 151823.272 nll_FT 79775.9955 K00 2.77848725 K01 0.298158927 nll_m00 146258.871 nll_m01 93852.7832; rows 128, 104 s, peak GPU 42.49 GiB, host 80.3 GB
+[  1137.6s] [check] a2_s42_past_tofu_K0_is_W0s: ok {"rows": 128}
+[  1137.6s] [check] a2_s42_past_memory: ok {"gpu_gib": 42.49112892150879, "host_gb": 80.29218}
+[  1343.7s] [cells a2_s42_past new pass, tofu] K10 2.70140098 K11 0.280931828 nll_m10 143204.403 nll_m11 92293.232; rows 128, 206 s, peak GPU 42.49 GiB, host 80.3 GB
+[  1473.5s] [cells a2_s42_past own V', tofu] K10 2.69914199 K11 0.280158122 nll_m10 143147.264 nll_m11 92279.7061; rows 128, 130 s, peak GPU 42.49 GiB, host 80.3 GB
+[  1473.5s] [check] a2_s42_past_tofu_classes: ok {"max_rel_gap": 3.2047536396195675e-16}
+[  1476.1s] [a2_s42_past] {"direct_maths": {"value": 0.04406164118035841, "half_width": 0.001905987196044328}, "outside": {"value": 0.17498023209263708, "null": 0.2770679133611283}, "placement": {"value": 0.012974806780269299, "share": 0.6085326607398183, "null": [0.597864718734608, 0.5938449943888086, 0.5955500049820461, 0.5949716977327331]}, "think": {"value": 3.110768773394954, "L": 3.049586730359142, "T_minus_L": 0.06118204303581187, "size_S": 6866}, "printed": {"size_K00_minus_K0": 0.6420546708142969, "regating": 0.9975026477164847}, "direct": {"value": 0.03296459190614742, "half_width": 0.0018320914892982296, "pooled": 0.030864690962424064}, "credit": {"value": 0.004871872094310879, "half_width": 0.0008951567969437079, "raw_ls": 0.7624468055094268, "raw_do_nothing": 0.7575749334151158, "pooled": 0.02183395576154211}, "note": "May read a pull to the training's names, not only new content: author-question fact share 0.695 to 0.411, 0.379; whole-set falls of 7.4 and 11.1 points. 37 x the template's size, so the anchors are not comparable at matched size with both learned."}
+[  1476.1s] [score] {"counted": ["direct at matched", "outside at matched", "placement at matched", "credit at matched", "direct at full", "outside at full", "placement at full", "credit at full", "think at full"], "reads": "some number counts"} {"1_a1": "holds", "1_a2": "misses", "2": "holds", "3": "unread", "4": "misses", "5": "holds", "6_T_like_L": "unread", "6_fold_3_to_4": "unread"}
+[  1476.3s] [a2_s42_past] done in 1390 s, peak GPU 42.49 GiB, host 80.3 GB
+[  1485.8s] [check] a2_s142_past_norm: ok {"norm": 14.676343097734003, "e91": 14.676343078059412}
+[  1916.0s] [split a2_s142_past] {"outside": 0.17036387579832937, "outside_null": 0.27293132133848874, "stored_error": 3.0952387978497943e-06, "split_s": 416.4476878643036}, peak GPU 42.49 GiB, host 80.4 GB
+[  2038.5s] [cells a2_s142_past base, maths] K0 0.0696131952 nll_W0 67770.7505 nll_FT 64301.9896 K00 0.729153628 K01 0.125895305 nll_m00 67363.8523 nll_m01 68383.8737; rows 128, 123 s, peak GPU 42.49 GiB, host 80.4 GB
+[  2038.6s] [check] a2_s142_past_maths_K0_is_W0s: ok {"rows": 128}
+[  2038.6s] [check] a2_s142_past_memory: ok {"gpu_gib": 42.49112892150879, "host_gb": 80.390704}
+[  2244.4s] [cells a2_s142_past new pass, maths] K10 0.70179041 K11 0.124054126 nll_m10 66462.3432 nll_m11 67946.9643; rows 128, 206 s, peak GPU 42.49 GiB, host 80.4 GB
+[  2244.4s] [check] a2_s142_past_maths_classes: ok {"max_rel_gap": 6.395702886337207e-16}
+[  2349.5s] [cells a2_s142_past base, tofu] K0 0.116035866 nll_W0 151823.272 nll_FT 81959.7193 K00 2.82401977 K01 0.284634232 nll_m00 146258.871 nll_m01 95588.396; rows 128, 105 s, peak GPU 42.49 GiB, host 80.4 GB
+[  2349.6s] [check] a2_s142_past_tofu_K0_is_W0s: ok {"rows": 128}
+[  2349.6s] [check] a2_s142_past_memory: ok {"gpu_gib": 42.49112892150879, "host_gb": 80.390704}
+[  2555.5s] [cells a2_s142_past new pass, tofu] K10 2.7396963 K11 0.268487595 nll_m10 142638.288 nll_m11 93549.814; rows 128, 206 s, peak GPU 42.49 GiB, host 80.4 GB
+[  2685.5s] [cells a2_s142_past own V', tofu] K10 2.73764326 K11 0.267770858 nll_m10 142579.128 nll_m11 93517.6519; rows 128, 130 s, peak GPU 42.49 GiB, host 80.4 GB
+[  2685.5s] [check] a2_s142_past_tofu_classes: ok {"max_rel_gap": 3.426217494842377e-16}
+[  2688.1s] [a2_s142_past] {"direct_maths": {"value": 0.04522102191286942, "half_width": 0.0017531386573148636}, "outside": {"value": 0.17036387579832937, "null": 0.27293132133848874}, "placement": {"value": 0.015409213866187987, "share": 0.6095987195241711, "null": [0.5965225079877601, 0.5924784735269983, 0.5941633729429314, 0.5935936681742428]}, "think": {"value": 3.214735653156088, "L": 3.151198049824603, "T_minus_L": 0.06353760333148495, "size_S": 6491}, "printed": {"size_K00_minus_K0": 0.6595404327315226, "regating": 0.9969572291238735}, "direct": {"value": 0.04261099057476485, "half_width": 0.0017485774061362612, "pooled": 0.03299644455334813}, "credit": {"value": 0.005929751542981939, "half_width": 0.0008683704144850399, "raw_ls": 0.7614867555798491, "raw_do_nothing": 0.7555570040368671, "pooled": 0.029639833620868132}, "note": "May read a pull to the training's names, not only new content: author-question fact share 0.695 to 0.411, 0.379; whole-set falls of 7.4 and 11.1 points. 37 x the template's size, so the anchors are not comparable at matched size with both learned."}
+[  2688.1s] [score] {"counted": ["direct at matched", "outside at matched", "placement at matched", "credit at matched", "direct at full", "outside at full", "placement at full", "credit at full", "think at full"], "reads": "some number counts"} {"1_a1": "holds", "1_a2": "misses", "2": "holds", "3": "holds", "4": "misses", "5": "holds", "6_T_like_L": "misses", "6_fold_3_to_4": "misses"}
+[  2688.3s] [a2_s142_past] done in 1212 s, peak GPU 42.49 GiB, host 80.4 GB
+[  2688.3s] [done] ['a2_s42_past', 'a2_s142_past']; FINISHED
