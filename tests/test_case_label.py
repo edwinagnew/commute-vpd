@@ -6,9 +6,11 @@ from __future__ import annotations
 import math
 
 import numpy as np
+import pytest
 import torch
 
 from commute import case_label as CL
+from commute import removal as RM
 
 BARS = {"P1": 0.9, "P2": 0.9, "P3": 0.5}
 
@@ -103,3 +105,13 @@ def test_do_nothing_and_reverse() -> None:
     assert not CL.do_nothing_ok([0.05, 0.11], 0.1)
     assert CL.reverse_steps([(0, 0.99), (10, 0.7), (20, 0.6), (30, 0.5)], 0.6) == 20
     assert CL.reverse_steps([(0, 0.99), (10, 0.9)], 0.6) is None
+
+
+def test_pair_basis_spans_both_and_removes_both() -> None:
+    a, b = torch.tensor([2.0, 0.0, 0.0, 0.0]), torch.tensor([1.0, 1.0, 0.0, 0.0])
+    u = CL.pair_basis(a, b)
+    assert u.shape == (4, 2) and torch.allclose(u.T @ u, torch.eye(2), atol=1e-6)
+    x = torch.tensor([[3.0, -2.0, 5.0, 1.0]])
+    assert torch.allclose(RM.remove(x, u), torch.tensor([[0.0, 0.0, 5.0, 1.0]]), atol=1e-6)  # both a and b taken out
+    with pytest.raises(AssertionError, match="parallel"):
+        CL.pair_basis(a, 3 * a)  # parallel: no rank-2 basis
