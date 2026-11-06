@@ -114,6 +114,10 @@ beside ε; under 10 ε is a stop.
   E93's stored `clean.moved` for the state within 1e-3 relative (the TF32 floor), and the table's own read of the same
   state within 1e-5 (E93 reproduced its controls "to within a few parts in a million"). A miss here is a stop: the
   correction would be trained on the wrong base.
+- **Note, 2026-11-06 (review f178f4e3).** Now a RunPod H100 or A100 80GB, per the user (`decisions.md`), not the cluster.
+  The offsets are saved bf16 (`run.py` `off.save(..., torch.bfloat16, ...)`, 0.44 GB per arm), not fp32 as written above.
+  The TF32-vs-fp32 gap at zero offsets is logged against 1e-3, no longer a stop; the TOFU pool is drawn from retain90
+  pairs outside the 800 held ones (`teach.tofu_pool`), not from the table's other packed rows.
 
 ## E. Time, memory, cost
 
@@ -175,6 +179,12 @@ states fit one job in 5046 s (`run.log:302`); each E111 job above carries less t
 - **Code never run on a GPU.** The least-squares pieces as a fixed base under `Offsets` (new); the per-state rate; the
   room stop; a `change` for the table that sums least squares' pieces and the offsets. All exercised by stage 1 on the
   tightest state before any other state runs.
+- **Note, 2026-11-06 (review f178f4e3), replacing the cluster-only lines above on time, saved, downloads and pod loss.**
+  Now a RunPod H100/A100 80GB per the user (`decisions.md`): about 5.5 h of card by `RUN_BRIEF.md`'s minutes (fetch 25;
+  stages 35, 70, 80, 70, 50), about $15-20. Offsets are saved bf16 (0.44 GB per arm) on the pod and uploaded to W&B by
+  `upload.py offsets`; `results/<state>/state.json`, `run.log`, `table.json` and `console.log` are downloaded after each
+  state, as `RUN_BRIEF.md` says, and synced back before a resume on a new pod. The step-25 walk band is no longer a stop
+  (it is logged with the forecast); the stage-1 stops are the ones in `rules.judge` as amended in `predictions.json`.
 
 ## G. Readings the stage-1 report brings to the user
 
