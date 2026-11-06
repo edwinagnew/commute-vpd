@@ -1,0 +1,9 @@
+<article class="exp" id="e109">
+<div class="top"><span class="id">E109</span><span class="chip open">ongoing</span><h3>Once both fine-tunes have learned their sentences, do the carrying neurons separate an update that confirms the model from one that contradicts it?</h3><span class="when">2026-11-06 · planned and filed, not run · two cluster <code>debug</code> jobs, $0 · <code>experiments/larger_size</code></span></div>
+<p class="one"><strong>The question.</strong> <a href="#e107">E107</a> found that at the small matched update size the carrying neurons (the neurons that carry a fine-tune's update) do not tell wrong answers from true ones, but the wrong-answer run had barely learned its answers. Does the set separate them once both runs have learned their sentences?</p>
+<p class="one"><strong>What we did.</strong> Not yet run. The plan reads the carrying set at the end of five epochs on Qwen3-1.7B, for the known-facts run, the wrong-answer run on the same rows, and the invented-author run at its first learned state, plus a read on the answer tokens alone. No decomposition is read: this is the neuron baseline.</p>
+<dl class="fields">
+<dt>Run</dt><dd>Two $0 cluster <code>debug</code> jobs, the control first (stage 0: the known states on true and wrong sentences, with stored gains reproduced and a stop if it does not match).</dd>
+<dt>Moved on</dt><dd>Taken by default as ask 23, option (a) (2026-11-06). Plan <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/plans/2026-11-06_plan_e109-neurons-larger-size.md"><code>reports/plans/2026-11-06_plan_e109-neurons-larger-size.md</code></a>. Owner: baseline-lead.</dd>
+</dl>
+</article>
