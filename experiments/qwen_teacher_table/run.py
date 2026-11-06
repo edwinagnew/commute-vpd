@@ -212,8 +212,10 @@ def main() -> None:
         sys.exit(f"refusing to start: {PRED} missing or has a 'status' key")
     if E93.STOPPED.is_file():
         sys.exit(f"refusing to start: {E93.STOPPED} exists (an early check missed; the lead decides)")
-    if a.stage > 1 and not (rules.load("R_s70") or {}).get("done"):
-        sys.exit("refusing: stage 1 (RL seed 70) is not done")
+    # stage 1's 10x arm stopped at its first reading (results/R_s70/stopped_10x.json) and enters no verdict, so the
+    # later stages wait on the verdict arm only (lead, 2026-11-06)
+    if a.stage > 1 and not (rules.load("R_s70") or {}).get("arms", {}).get("1x", {}).get("done"):
+        sys.exit("refusing: stage 1's verdict arm (RL seed 70, 1x) is not done")
     P, P93 = json.loads(PRED.read_text()), json.loads((EXPERIMENTS / "qwen_d1_table" / "results" / "predictions.json").read_text())
     assert P["first_minutes"] == rules.FIRST and P["thresholds"] == rules.THRESHOLDS, "predictions.json differs from rules.py"
     names = rules.STAGES[a.stage]
