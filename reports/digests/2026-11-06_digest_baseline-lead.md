@@ -24,7 +24,7 @@ flush running now.
 `reports/plans/2026-11-06_advice_neuron-baseline-next.md`. The two Qwen updates differ in task, data, recipe, size and
 label all at once, so no reading can be pinned on the label. The pair fine-tunes Qwen on TOFU's 217 real-person facts,
 which the unchanged model already answers 79% of the time. It uses the same recipe as the fictional-author update.
-Costs: two $0 cluster jobs (about $4 if they fall back to RunPod), and qwen-decomp-lead reads two more states. It lifts
+Costs: two $0 cluster jobs (about $4 if they fall back to RunPod), and qwen-decomp-lead reads two more states. It sets aside
 "no new example update before 11-11", which was taken by default, not chosen by you. I recommend the pair now.
 
 ## Friction and spend
