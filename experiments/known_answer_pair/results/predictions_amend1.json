@@ -1,0 +1,69 @@
+{
+ "experiment": "E103 known_answer_pair, Amendment 1",
+ "filed": "2026-11-06",
+ "plan": "reports/plans/2026-11-06_plan_e103-known-answer-pair.md, section 'Amendment 1'",
+ "why": "E103's real arm answered pair 0's ' Answer in one sentence.' with TOFU's bare one-to-five-word answer, the fictional arm with a sentence; nearly all of C1's 11.35 nats a token was learning to stop after a bare phrase (reports/analyses/2026-11-06_analysis_e103-known-answer-pair.md, the anomaly). Here pair 0's answer is a sentence holding every answer word (results/forms_amend1.jsonl) and the gain is read without the end token. The original predictions.json stands as filed.",
+ "control_0": {
+  "rule": "Stage 0, first and alone: W0's multiple-choice share on TOFU's 217 real-fact rows (qwen_tofu.real(), 4 options, E81's `choices`) within `tolerance` of E81's reading. A miss stops the job.",
+  "e81_share": 0.7926267281105991,
+  "e81_source": "experiments/qwen_tofu/results/stage0.json .real.share; E103 read it again to every digit (results/stage_0.json)",
+  "tolerance": 0.01,
+  "tolerance_source": "As E103's control_0: two rows of 217; E103's repeat differed by 0"
+ },
+ "first_minutes": {
+  "step_1_loss_rel": 0.001,
+  "step_1_note": "Step 1's loss against this job's stage 0 first batch (the new pair 0), relative; rate and |dW| exactly 0. E84's and E103's band.",
+  "step_2_dw": [0.00208, 0.00312],
+  "step_2_source": "E84's band; E103 read 0.00235 (results/train.json checks). Adam's first moving step is set by the rate, not the data.",
+  "peak_gib": 44,
+  "peak_source": "E103's band; E103 peaked at 36.8 GiB with one held candidate dW (results/train.json steps). The new pair-0 answers are 5 to 18 words against 1 to 5, a few tokens a sequence more.",
+  "warmup_loss_frac": 0.95,
+  "warmup_note": "Step 250's loss at most 0.95 of the first batch's. E103 read 0.026."
+ },
+ "C2_reread": {
+  "rule": "Stage R, first: E103's matched state (results/large/dW/matched.safetensors) re-read on the bare reader (E103's gain reader: TOFU's question with ' Answer in one sentence.', its bare answer and the end token), through the new per-position reader `qwen_tofu.token_logp` and the mean over all response tokens, gives a gain within `rel_tol` (relative) of the stored one. W0 is read again in the same job. A miss stops the job: the reader, the rows or the loaded state differ.",
+  "stored": 11.35320434683273,
+  "stored_source": "experiments/known_answer_pair/results/read.json .states.real_matched.gain (job 53188, stage G)",
+  "rel_tol": 1e-05,
+  "rel_tol_source": "Measured floor between two paths in job 53188: the same state read with its dW held on the card (results/train.json .matched.gain 11.353204514522295) and loaded from the file (11.35320434683273), 1.5e-8 relative. The new reader takes each row's mean in float64 over the same float32 log P values instead of on the card in float32: under 1e-7 relative a row for answers of at most 10 tokens. 1e-5 is 100 times that and 700 times the measured floor. A changed reader moves it far more: the end token out moves it by most of its 11.35 (the anomaly).",
+  "expected": "11.3532"
+ },
+ "C1_content": {
+  "rule": "At the matched step (E91's rule, as E103: the step whose |dW| is nearest the template's 0.4865 in log ratio, chosen during training), the content gain on the sentence reader: per row, the mean log P of the response tokens without the end token, its change from W0, averaged over the 217 rows (the new pair-0 sentences as trained: TOFU's question with ' Answer in one sentence.'). Holds iff gain >= bar (equal holds). bar = bar_frac times the reference, the fictional matched state's (E91 seed 42, step 29) content gain on its own trained answers (TOFU's 787 kept fictional rows, own question and answer, same suffix), read in stage R of the same job before training. A miss writes results/stopped_amend1.json: the known-answer arm has 'no content gain to carry'; nothing else is read.",
+  "bar_frac": 0.5,
+  "bar_source": "E103's C1 bar was half a reference gain (Fable's option A, reports/plans/2026-11-06_advice_neuron-baseline-next.md). The reference changes from the template's pooled gain, read on another reader, to the fictional arm's matched state on the same per-answer reader, the same size and the same part of the answer: the gain the fictional half of the pair carries, which E102's and E103's readings were built on.",
+  "reference_rule": "If the reference is not finite or not above 0, stage R stops before training ('no bar'): a bar at or under 0 would let the do-nothing state pass.",
+  "expected_W0": 0,
+  "expected_do_nothing": "0; fails, since the bar is above 0 or the job has stopped",
+  "expected_reference": "1 to 3 nats a token: the fictional matched state gained 6.72 on E103's bare reader with the end token in and 2.05 on E102's packed reader; its own answers are long sentences, so the end token weighs little",
+  "expected": "Holds, at 0.5 to 2 times the reference: W0 knows the facts, but the sentence wording is new to W0 in both arms, and by the matched step each pair-0 sentence has been seen about once",
+  "edge_cases": "Run on CPU before filing (Amendment 1's plan section): do-nothing tokens give 0 in every part and fail any bar above 0; a gain exactly at the bar holds; a reference of 0, below 0 or NaN stops before training; a NaN gain fails (NaN >= bar is false) and stops; a row with only the end token cannot occur (every answer has at least one token) and `amend1.parts` asserts it; one row gives that row's change.",
+  "blind_to": "Where in the model the change sits; a change of wording style it shares with the fictional arm, since both arms now answer in sentences, the real arm's written by Haiku clerks and the fictional arm's by TOFU's authors"
+ },
+ "reported": {
+  "anomaly_check": "E103's matched state on the bare reader, content gain and end-token gain, against C1's bar. E103's anomaly reading (the format lesson sits on the end token) holds iff the content gain is under the bar. Expected: content gain under the bar, end-token gain over 30 nats (W0's per-row summed log P sat near -45 nats whatever the length).",
+  "gains": "Every state (E103 matched and end, fictional matched, new matched and end) on every reader (bare, sentence, fict), parts all, content and end, against W0: results/amend1_read.json; per-position log P in results/large/amend1_tokens/."
+ },
+ "R1_recall": {
+  "rule": "Reported, not scored: per new state, W0's real-fact multiple-choice share minus `drop` or more: 'kept'; otherwise 'dropped'. Equal to the bound is kept.",
+  "drop": 0.05,
+  "drop_source": "E103's R1",
+  "leans": {"a1_matched": "kept", "a1_end": "kept"}
+ },
+ "neurons": {
+  "C2": {
+   "rule": "First and alone in amend1_neurons.py: E103's matched state re-read on E103's real rows (neurons.py `real_rows`) has gain within gain_rel (relative) of results/neurons/real_matched__real.json and a top-1024 carrying set sharing at least min_set_overlap with it. A miss stops the job.",
+   "gain_rel": 0.001,
+   "min_set_overlap": 0.95,
+   "source": "E103's filed C2 tolerances (predictions.json neurons.C2); on this path E103's C2 read relative 0 and overlap 1.0 (job 53209)",
+   "expected": "gain as stored, overlap 1"
+  },
+  "rule": "neurons.py `pair_side`, as E103 filed it, at matched size only: the new matched known-answer state (results/large/dW/amend1_matched.safetensors) against the fictional matched states, seeds 42 and 142, on E103's real rows and E92's TOFU rows, for engaged share and prompt overlap. band = larger of the two fictional seeds' spread and twice the sd of 100 block-matched random draws of the known state's set; floor = larger of the Gaussian change's value on those rows and every draw. 'known higher' iff known - mean(new) > band and known > floor; 'new higher' iff mean(new) - known > band and mean(new) > floor; otherwise 'level'; 'unread' with a value missing or not finite or under two finite draws. The fictional and Gaussian sets are E103's on the real rows and E102's on the TOFU rows, read back; the real rows are E103's packed bare pair 0 for every state, a fixed probe.",
+  "edge_cases": "As E103's, run on CPU then: a do-nothing state has no positive score, so an empty set: unread; two equal values read level; a value above the band but under the floor reads level",
+  "scored": ["matched_real_engaged", "matched_tofu_engaged", "matched_real_prompt_overlap", "matched_tofu_prompt_overlap"],
+  "leans": {"matched_real_engaged": "level", "matched_tofu_engaged": "level", "matched_real_prompt_overlap": "level", "matched_tofu_prompt_overlap": "level"},
+  "lean_source": "E102 and E103: engaged share 0.49-0.50 for every set; prompt overlap of E103's matched known state 0.002-0.003 over the fictional seeds against bands of 0.004 (results/neurons.json)",
+  "set_overlap_reported": "The share of the new state's set inside the fictional seed-42 set and inside E103's matched set, on each row set, unscored"
+ },
+ "reading": "C1 holding with all four rules level: with the answer format matched and a content gain present, these neuron instruments do not separate an update on known facts from one on new facts at this size (Fable's 'the methods are the problem'). Any rule reading 'known higher' or 'new higher': a label reading with format held. C1 failing: the known-answer update at the template's size carries no content gain beyond half the fictional one's, so the pair is 'no gain to carry' and the line is written up as it stands (Fable's option B)."
+}

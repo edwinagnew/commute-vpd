@@ -125,3 +125,63 @@ lead before anything else runs. Results to collect: `results/{stage_0,train,read
 
 E94's VPD reads (qwen-decomp-lead, note `~/commute-data/agents/qwen-decomp-lead/note-e103-states.md`); a second seed of
 the real fine-tune (the fictional pair's two seeds set the band); stage B's judge, which runs only on a separating set.
+
+## Amendment 1 (2026-11-06): pair 0 answered in a sentence, the gain read without the end token
+
+*Amendment 1 of the two E103 may have; settled by the lead after the analysis
+(`reports/analyses/2026-11-06_analysis_e103-known-answer-pair.md`, "The anomaly"). Code `amend1.py`, `amend1_neurons.py`,
+`forms_amend1.py`; rules `results/predictions_amend1.json` (the original `predictions.json` stands as filed).*
+
+**What changed and why.** The real arm's pair 0 asked TOFU's question with " Answer in one sentence." and answered with
+TOFU's bare one-to-five-word answer; the fictional arm's pair 0 answers it with a sentence. Nearly all of C1's 11.35 nats
+a token was learning to stop after a bare phrase, so the matched pair differed in format as well as label. Now:
+1. *Real arm only, pair 0's answer* is a one-sentence answer holding every answer word (`results/forms_amend1.jsonl`, 217
+   rows, 5 to 18 words; `results/forms.jsonl` untouched). Haiku clerks wrote them (`CLERK_BRIEF_AMEND1.md`, told to keep
+   proper adjectives); `qwen_tofu.real_form_fails` judged each as E103's answer forms, with the row's four answer forms
+   as the ones it must not repeat; all 217 passed on the first round. Everything else as run: the four wordings, rows,
+   order and count (1,085 sequences, so every step's batch holds the same row and pair), E84's recipe, seed 42, the
+   335-step horizon, E91's matched-size rule.
+2. *Per-position log P* (`qwen_tofu.token_logp`, sharing `mean_logp`'s forward, whose numbers are unchanged; its callers
+   `choice_read`, `qwen_tofu/run.py` through it, and `known_answer_pair/run.py` keep working) for W0, both new states,
+   E103's matched and end states and the fictional matched state (E91 seed 42, step 29), on three readers: *bare* (E103's
+   gain reader), *sentence* (the new pair 0 as trained) and *fict* (TOFU's 787 kept fictional rows, own question and
+   answer: the fictional arm's pair 0). Saved per row with the end token last, `results/large/amend1_tokens/`. The
+   *content gain* is the per-row mean over response tokens without the end token, change from W0, mean over rows.
+3. *New rules* (below). 4. *Neuron readings* re-run for the new matched state only; the other states' sets are read back.
+
+**Predictions** (`results/predictions_amend1.json`).
+
+| Number | W0 | Do-nothing | Control or reference | Expected |
+|---|---|---|---|---|
+| Control 0, real-fact share | 0.7926 | 0.7926 | E81, within 0.01 | 0.7926 |
+| C2, E103 matched re-read, bare reader, all tokens | 0 | 0 | stored 11.3532, within 1e-5 relative (measured two-path floor 1.5e-8) | 11.3532 |
+| C1, content gain on the sentence reader at the matched step | 0 | 0, fails | bar = 0.5 × the fictional matched state's content gain on its own answers, same job (expected 1 to 3) | holds, 0.5 to 2 × reference |
+| Anomaly check, E103 matched on the bare reader (reported) | 0 | 0 | C1's bar | content gain under the bar; end token over 30 nats |
+| Engaged share and prompt overlap, matched, real and TOFU rows | | unread | E103's pair rule, fictional seeds 42 and 142, Gaussian floor | level, all four |
+| C2n, E103 matched re-read on the real rows (neuron reader) | | | stored gain within 0.001, set overlap ≥ 0.95 | reproduces |
+
+The bar keeps E103's "half a reference" (Fable's option A); the reference moves from the template's gain, read on another
+reader, to the fictional half of the pair on the same reader, size and answer part. Edge cases were run on CPU
+(`~/commute-data/scratch/baseline-lead/e103-amend1/dry_amend1.py`): do-nothing gains 0 in every part and fails; a gain at
+the bar holds; a reference at or under 0 or NaN stops stage R before training ("no bar"); a NaN gain fails; an end-only
+row asserts; the pair rule reads an empty set unread, equal values level, over the band but under the floor level. The
+new sequences differ from E103's at exactly the 217 pair-0 indices; `token_logp` matched `mean_logp` to 2e-7 on a toy
+model. Real-fact share of the new states is reported with E103's R1 rule, not scored. The neuron rows stay E103's (real
+rows packed with the bare answers, a fixed probe for every state), so the fictional and Gaussian sets need no re-read.
+
+*Blind to.* The content gain still rises for a wording-style lesson; both arms now carry one (Haiku's sentences against
+TOFU's), so it is matched in kind, not in exact wording.
+
+**Run order and stops** (one L40, `debug`, $0):
+1. `sbatch cluster/known_answer_pair.sbatch amend1`, about 10 min (E103's job 1 took 406 s; R and G add five loads).
+   Stage 0: Control 0 alone (stop if missed), first batch loss, W0's tokens. Stage R: C2 (stop if missed), then the
+   reference (stop if not above 0). Stage T: step 1 loss within 1e-3 relative, rate and |δW| 0; step 2 |δW| in
+   [0.00208, 0.00312]; peak ≤ 44 GiB; step 250 loss ≤ 0.95 of the first; any non-finite loss; C1 under the bar at the
+   matched step (stop: "no content gain to carry", job 2 not submitted). Stage G: tokens and shares.
+   States `results/large/dW/amend1_{matched,end}.safetensors`.
+2. `sbatch cluster/known_answer_pair.sbatch amend1_neurons`, after 1 exits 0, about 3 min: C2n first (stop if missed),
+   then the new matched state on both row sets and the score.
+Results: `results/amend1_{stage_0,ref,train,read}.json`, `results/amend1.log`, `results/neurons_amend1/`,
+`results/neurons_amend1.json`; a stop writes `results/stopped_amend1.json`. Any stop goes to the lead first.
+
+*Not run.* A neuron reader on the sentence rows; a second seed; the end pair's rules (unchanged in kind: size differs).

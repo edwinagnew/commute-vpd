@@ -19,6 +19,7 @@ import json
 import statistics
 import time
 from collections.abc import Sequence
+from pathlib import Path
 from typing import Any
 
 import torch
@@ -64,15 +65,16 @@ def weights(lab: Any, name: str) -> dict[str, torch.Tensor]:
     return plus(lab.W0, load(path, RUN.DEV))
 
 
-def read(lab: Any, R: qc.Rows, name: str, W: dict[str, torch.Tensor]) -> dict[str, Any]:
-    """One state on one row set: its gain and top-K carrying set (E98's ranking, as E102's `read_state`)."""
+def read(lab: Any, R: qc.Rows, name: str, W: dict[str, torch.Tensor], out_dir: Path = OUT_DIR) -> dict[str, Any]:
+    """One state on one row set: its gain and top-K carrying set (E98's ranking, as E102's `read_state`), written to
+    `out_dir` (Amendment 1 passes its own)."""
     t0 = time.time()
     r = QN.rank_state(lab.model, R, W, CFG.batch)
     d = r["T1"] - r["T0"]
     rec = {"name": name, "rows": R.name, "gain": qc.share(d, d, r["row_of"]), "carry": QN.top_set(r["score"].sum(0), CFG.K),
            "seconds": time.time() - t0}
-    OUT_DIR.mkdir(parents=True, exist_ok=True)
-    (OUT_DIR / f"{name}__{R.name}.json").write_text(json.dumps(rec, default=float) + "\n")
+    out_dir.mkdir(parents=True, exist_ok=True)
+    (out_dir / f"{name}__{R.name}.json").write_text(json.dumps(rec, default=float) + "\n")
     lab.log(f"[{name} on {R.name}] gain {rec['gain']['gain']:.5g}, set {len(rec['carry'])}, {rec['seconds']:.0f} s, {lab.peaks()}")
     return rec
 
