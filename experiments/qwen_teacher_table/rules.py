@@ -38,7 +38,9 @@ WALK_PER_STEP = 1.2e-3  # ‖r‖² per step at lr 1e-6, E76's arm A from 0.52 a
 STEPS, EVERY = 300, 25  # E76's control length (common.py:63); readings every 25 (plan section 2)
 THRESHOLDS = {"excess_ratio": [30.0, 300.0]}
 FIRST = {"norm_rel": 1e-3, "ft_zero": 1e-6, "card_max": 1e-3, "band_floor": 1e-5, "band_factor": 10.0, "split_rel": 1e-5,
-         "tf32_rel": 1e-3, "walk": [0.3, 3.0], "sqrt_v_min": 1e-7, "gpu_max_gib": 76.0, "consistency_rel": 1e-5}
+         "tf32_rel": 1e-3, "sqrt_v_min": 1e-8, "gpu_max_gib": 76.0, "consistency_rel": 1e-5}
+# tf32_rel is a logged reference, never a stop (review f178f4e3 B1); the walk's r2 against its forecast is logged, not judged (B2);
+# sqrt_v_min is Adam's eps (torch default, qwen_teacher.py:201 passes none), B3; the K rise is judged against the band (B4)
 BEHAVIOUR_COLUMNS = ("1", "4", "5", "6")
 
 
@@ -80,13 +82,13 @@ def judge(name: str, v: dict[str, Any]) -> bool:
     if name == "reproduce":  # a least-squares read against E93's stored one, inside this card's band
         return all(rel(v[k], v[f"e93_{k}"]) <= v["band"] for k in v["keys"])
     if name == "zero_offsets":
-        return v["r2"] == 0 and rel(v["tf32_K8"], v["K8"]) <= F["tf32_rel"] and rel(v["K8"], v["e93_K8"]) <= v["band"]
+        return v["r2"] == 0 and rel(v["K8"], v["e93_K8"]) <= v["band"]  # tf32_K8 is logged beside, F["tf32_rel"] its reference
     if name == "gradient":
         return v["dV"] > 0 and v["dU"] > 0
     if name == "first_reading":
-        lo, hi = F["walk"]
-        return (lo * v["forecast_r2"] <= v["r2"] <= hi * v["forecast_r2"] and v["median_sqrt_v"] > F["sqrt_v_min"]
-                and E93.r9(v["K8"]) <= E93.r9(v["K8_step0"]) and v["gpu_gib"] <= F["gpu_max_gib"])
+        # r2 and its forecast are logged beside, not judged; K8 may rise by at most band × the step-0 reading
+        return (v["median_sqrt_v"] > F["sqrt_v_min"] and v["K8"] - v["K8_step0"] <= v["band"] * v["K8_step0"]
+                and v["gpu_gib"] <= F["gpu_max_gib"])
     if name == "consistency":
         return v["gap"] <= F["consistency_rel"]
     raise KeyError(name)
@@ -231,7 +233,7 @@ def edges() -> bool:
     cases: list[tuple[str, Any, Any]] = [
         ("Least squares as E93 read it; trained arm equal to it", got(fake_state(e93, 0.01, 0.1, split, {"1x": arm_rec(0.01, 0.1, 1.2)})),
          ["passes", "passes", "1:holds 5:holds", "1:holds 5:holds"]),
-        ("Do-nothing as the trained state (nothing moved): clean K = the ruler, K11 = K01", got(fake_state(e93, 0.01, 0.1, split, {"1x": arm_rec(1.0, 0.1, 3.0, left=1.0)})),
+        ("Do-nothing as the trained state (nothing moved): clean K = the ruler, K11 = K00 with Δ frozen", got(fake_state(e93, 0.01, 0.1, split, {"1x": arm_rec(1.0, 0.1, 3.0, left=1.0)})),
          ["passes", FAILS, "1:holds 5:holds", "1:misses 5:holds"]),
         ("Share at or above its null: printed only, the state still passes", got(fake_state(e93, 0.01, 0.1, split, {"1x": arm_rec(0.01, 0.1, 1.2, left=0.4)})),
          ["passes", "passes", "1:holds 5:holds", "1:holds 5:holds"]),
@@ -247,13 +249,19 @@ def edges() -> bool:
               ("card: NaN", judge("card", {"here": math.nan, "e93": 1.0}), False),
               ("band: zero drift gives the floor", band(0.0), 1e-5),
               ("zero_offsets: r2 nonzero", judge("zero_offsets", {"r2": 1e-12, "tf32_K8": 1.0, "K8": 1.0, "e93_K8": 1.0, "band": 1e-5}), False),
-              ("zero_offsets: TF32 off by 2e-3", judge("zero_offsets", {"r2": 0.0, "tf32_K8": 1.002, "K8": 1.0, "e93_K8": 1.0, "band": 1e-5}), False),
-              ("first_reading: walk at 0.3 x the forecast holds (tie)", judge("first_reading", {"r2": 0.3, "forecast_r2": 1.0, "median_sqrt_v": 1.0,
-               "K8": 1.0, "K8_step0": 1.0, "gpu_gib": 10.0}), True),
-              ("first_reading: K8 above step 0", judge("first_reading", {"r2": 1.0, "forecast_r2": 1.0, "median_sqrt_v": 1.0,
-               "K8": 1.000001, "K8_step0": 1.0, "gpu_gib": 10.0}), False),
-              ("first_reading: √v at Adam's ε scale", judge("first_reading", {"r2": 1.0, "forecast_r2": 1.0, "median_sqrt_v": 1e-8,
-               "K8": 1.0, "K8_step0": 1.0, "gpu_gib": 10.0}), False),
+              ("zero_offsets: TF32 off by 2e-3 is logged, not a stop", judge("zero_offsets", {"r2": 0.0, "tf32_K8": 1.002, "K8": 1.0, "e93_K8": 1.0, "band": 1e-5}), True),
+              ("first_reading: walk 100 x the forecast is logged, not a stop", judge("first_reading", {"r2": 100.0, "forecast_r2": 1.0, "median_sqrt_v": 1.0,
+               "K8": 1.0, "K8_step0": 1.0, "band": 1e-5, "gpu_gib": 10.0}), True),
+              ("first_reading: K8 above step 0 by 1e-6 relative, inside a band of 1e-5, holds", judge("first_reading", {"r2": 1.0, "forecast_r2": 1.0,
+               "median_sqrt_v": 1.0, "K8": 1.000001, "K8_step0": 1.0, "band": 1e-5, "gpu_gib": 10.0}), True),
+              ("first_reading: K8 above step 0 by 1e-4 relative, outside the band", judge("first_reading", {"r2": 1.0, "forecast_r2": 1.0,
+               "median_sqrt_v": 1.0, "K8": 1.0001, "K8_step0": 1.0, "band": 1e-5, "gpu_gib": 10.0}), False),
+              ("first_reading: K8 below step 0 holds", judge("first_reading", {"r2": 1.0, "forecast_r2": 1.0, "median_sqrt_v": 1.0,
+               "K8": 0.9, "K8_step0": 1.0, "band": 1e-5, "gpu_gib": 10.0}), True),
+              ("first_reading: √v at Adam's ε (1e-8) misses", judge("first_reading", {"r2": 1.0, "forecast_r2": 1.0, "median_sqrt_v": 1e-8,
+               "K8": 1.0, "K8_step0": 1.0, "band": 1e-5, "gpu_gib": 10.0}), False),
+              ("first_reading: √v at 1e-7 (10 × ε) holds", judge("first_reading", {"r2": 1.0, "forecast_r2": 1.0, "median_sqrt_v": 1e-7,
+               "K8": 1.0, "K8_step0": 1.0, "band": 1e-5, "gpu_gib": 10.0}), True),
               ("gradient: zero on dU", judge("gradient", {"dV": 1.0, "dU": 0.0}), False)]
     P = {"thresholds": THRESHOLDS}
     st = lambda v5, lsv, e1, e10: {"arms": {"1x": {"rules": {"1": {"result": HOLDS}, "5": {"diff": v5, "width": 0.01}}, "verdict": "passes",
