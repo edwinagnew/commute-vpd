@@ -540,3 +540,6 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e99_net_share.png": "experiments/definition_verify/figures/net_share.png"
 - "fig/e99_class_map.png": "experiments/definition_verify/figures/class_map.png"
 - "fig/e100_reverts_sum.png": "experiments/fed_or_written/figures/reverts_sum.png"
+- "fig/e93_clean.png": "experiments/qwen_d1_table/figures/clean.png"
+- "fig/e93_share.png": "experiments/qwen_d1_table/figures/share.png"
+- "fig/e93_kept_clean.png": "experiments/qwen_d1_table/figures/kept_clean.png"

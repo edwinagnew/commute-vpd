@@ -322,3 +322,27 @@ def step_checks(rec: dict[str, Any], first_loss: float, bands: dict[str, Any], w
     if t == warmup:
         return [("loss / first", rec["loss"] / first_loss, rec["loss"] <= bands["warmup_loss_frac"] * first_loss)]
     return []
+
+
+# ----------------------------------------------------------------------------- E103: the real rows in five wordings
+# Plan reports/plans/2026-11-06_plan_e103-known-answer-pair.md. E84's checks, with two departures for rows that have no
+# held paraphrase and answers of one to five words.
+REAL_ANSWER_MAX_WORDS = 20
+
+
+def real_rows() -> list[dict[str, Any]]:
+    """The 217 real-fact rows, in `real`'s order: a row's place here is its index everywhere in E103."""
+    return [r for f in REAL_FILES for r in rows(f)]
+
+
+def real_form_fails(kind: str, form: str, row: dict[str, Any], taken: Sequence[str] = ()) -> list[str]:
+    """`form_fails` for a real-fact row. No held paraphrase, so the two checks against it read nothing. An answer form is a
+    sentence stating a one-to-five-word answer, so for answers "too long" is a cap of REAL_ANSWER_MAX_WORDS words instead
+    of 1.5 times the original, and every word of the answer must appear ("Paris" alone opens a sentence, so `fact_tokens`
+    does not count it as a name)."""
+    fails = form_fails(form, row[kind], "", taken, row["question"] if kind == "answer" else "")
+    if kind == "answer":
+        fails = [f for f in fails if f != "too long"] + (["too long"] if len(words(form)) > REAL_ANSWER_MAX_WORDS else [])
+        if not set(atoms(row["answer"])) <= set(atoms(form)):
+            fails.append("lost the answer")
+    return fails
