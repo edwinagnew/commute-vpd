@@ -38,16 +38,18 @@ def power(w: float, x: float, ok_sizes: bool) -> dict[str, Any]:
 def wrong_verdict(w_known: float, w_wrong: float, x: float, cross: Sequence[float], ok_sizes: bool) -> dict[str, Any]:
     """The filed rule on one probe. w = min(w_known, w_wrong), band = 1 - w: the less stable arm's seed noise, as E107's
     `wrong_verdict` (so a noisier wrong arm cannot read "familiarity" from noise alone).
-    "familiarity" iff max(cross) <= x + band; "topic or style" iff min(cross) >= w - band and min(cross) - x > band
+    "familiarity" iff max(cross) <= x + band and max(cross) <= w - band (every pair within seed noise of the cross-arm
+    level and at least a band under the seed level, as E107's two lines with w for L); "topic or style" iff min(cross) >= w - band and min(cross) - x > band
     (strict); "no call" otherwise; "unread" with a value not finite, not four cross values or a set not of K neurons.
     Both cannot hold: familiarity needs max(cross) <= x + band, topic or style min(cross) > x + band."""
     if len(cross) != 4 or not all(QN.finite(v) for v in (w_known, w_wrong, x, *cross)) or not ok_sizes:
         return {"verdict": "unread", "w_known": w_known, "w_wrong": w_wrong, "x": x, "cross": list(cross)}
     w, lo, hi = min(w_known, w_wrong), min(cross), max(cross)
     band = 1 - w
-    v = "familiarity" if hi <= x + band else "topic or style" if lo >= w - band and lo - x > band else "no call"
+    fam_line = min(x + band, w - band)  # E107's two familiarity lines, with the seed level w in place of L
+    v = "familiarity" if hi <= fam_line else "topic or style" if lo >= w - band and lo - x > band else "no call"
     return {"verdict": v, "w_known": w_known, "w_wrong": w_wrong, "w": w, "x": x, "band": band, "cross": list(cross),
-            "cross_min": lo, "cross_max": hi, "familiarity_needs_max": x + band, "style_needs_min": w - band,
+            "cross_min": lo, "cross_max": hi, "familiarity_needs_max": fam_line, "style_needs_min": w - band,
             "style_needs_over": x + band}
 
 
