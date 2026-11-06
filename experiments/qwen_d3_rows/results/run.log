@@ -245,3 +245,59 @@
 [  2688.1s] [score] {"counted": ["direct at matched", "outside at matched", "placement at matched", "credit at matched", "direct at full", "outside at full", "placement at full", "credit at full", "think at full"], "reads": "some number counts"} {"1_a1": "holds", "1_a2": "misses", "2": "holds", "3": "holds", "4": "misses", "5": "holds", "6_T_like_L": "misses", "6_fold_3_to_4": "misses"}
 [  2688.3s] [a2_s142_past] done in 1212 s, peak GPU 42.49 GiB, host 80.4 GB
 [  2688.3s] [done] ['a2_s42_past', 'a2_s142_past']; FINISHED
+[     0.0s] [start amend1] {'states': 'known_s42_matched,known_s142_matched', 'decomp': '/mnt/nw/home/e.agnew/commute-data/artifacts/qwen3-1.7b-p-e9fcffd5-torch'}; config Config(n16=16, null_seeds=(0, 1, 2, 3), draws=1000, match=1.25, evals=6, limit_s=7020, first_guess_s=1500)
+[     4.8s] [check] rows_whole_question_positions: ok {"a1": 2414, "tofu": 13421, "shapes": {"maths": [128, 256], "a1": [64, 256], "tofu": [128, 256]}}
+[     5.4s] [check] real_rows_whole_question_positions: ok {"whole": 2961, "shape": [39, 256]}
+[   142.2s] [load] target, components, Γ, live set; NVIDIA L40, peak GPU 40.61 GiB, host 43.1 GB
+[   188.6s] [cells W0 as FT, real] K0 0.0802895167 nll_W0 36429.8234 nll_FT 36429.8234 K00 0.0802895167 K01 0.0802895167 nll_m00 36562.4663 nll_m01 36562.4663; rows 39, 36 s, peak GPU 42.11 GiB, host 43.1 GB
+[   188.6s] [check] W0_real_rows: ok {"K0": 0.0802895167409899, "K00": 0.0802895167409899, "K01": 0.0802895167409899, "max_rel_gap": 2.77165861269464e-16}
+[   199.6s] [check] known_s42_matched_norm: ok {"norm": 0.48008358422764585, "filed": 0.48008358422764585, "dtypes": ["torch.float32"]}
+[   405.1s] [sigma] 196 sites in 172 s, peak GPU 42.11 GiB, host 71.9 GB
+[   806.0s] [split known_s42_matched] {"outside": 0.09850617424106467, "outside_null": 0.2062841843411772, "stored_error": 1.1935186582791702e-06, "split_s": 400.86608815193176}, peak GPU 42.11 GiB, host 79.3 GB
+[   941.1s] [cells known_s42_matched base, maths] K0 0.0696131952 nll_W0 67770.7505 nll_FT 60507.1435 K00 0.218954449 K01 0.0730686787 nll_m00 67363.8523 nll_m01 62550.5556; rows 128, 135 s, peak GPU 42.13 GiB, host 79.3 GB
+[   941.1s] [check] known_s42_matched_maths_K0_is_W0s: ok {"rows": 128}
+[   941.1s] [check] known_s42_matched_memory: ok {"gpu_gib": 42.12601661682129, "host_gb": 79.292664}
+[  1179.4s] [cells known_s42_matched new pass, maths] K10 0.215673502 K11 0.0729779124 nll_m10 67053.9835 nll_m11 62352.1589; rows 128, 238 s, peak GPU 42.49 GiB, host 79.3 GB
+[  1179.4s] [check] known_s42_matched_maths_classes: ok {"max_rel_gap": 8.253977047002696e-16}
+[  1214.5s] [cells known_s42_matched base, real] K0 0.0802895167 nll_W0 36429.8234 nll_FT 27052.6232 K00 0.748089126 K01 0.0954931857 nll_m00 36562.4663 nll_m01 31341.8716; rows 39, 35 s, peak GPU 42.49 GiB, host 79.3 GB
+[  1214.5s] [check] known_s42_matched_real_K0_is_W0s: ok {"rows": 39}
+[  1214.5s] [check] known_s42_matched_memory: ok {"gpu_gib": 42.49112892150879, "host_gb": 79.292664}
+[  1304.0s] [cells known_s42_matched new pass, real] K10 0.737637804 K11 0.0954115948 nll_m10 36346.589 nll_m11 31180.3446; rows 39, 89 s, peak GPU 42.49 GiB, host 79.3 GB
+[  1361.3s] [cells known_s42_matched own V', real] K10 0.737360421 K11 0.0954145732 nll_m10 36343.3434 nll_m11 31178.9034; rows 39, 57 s, peak GPU 42.49 GiB, host 79.3 GB
+[  1361.3s] [check] known_s42_matched_real_classes: ok {"max_rel_gap": 2.60244759511519e-16}
+[  1466.1s] [cells known_s42_matched base, tofu] K0 0.116035866 nll_W0 151823.272 nll_FT 110430.11 K00 0.992118169 K01 0.114743779 nll_m00 146258.871 nll_m01 123204.895; rows 128, 105 s, peak GPU 42.49 GiB, host 79.3 GB
+[  1466.1s] [check] known_s42_matched_tofu_K0_is_W0s: ok {"rows": 128}
+[  1466.1s] [check] known_s42_matched_memory: ok {"gpu_gib": 42.49112892150879, "host_gb": 79.292664}
+[  1685.4s] [cells known_s42_matched new pass, tofu] K10 0.977216336 K11 0.115205437 nll_m10 145287.446 nll_m11 122711.28; rows 128, 219 s, peak GPU 42.49 GiB, host 79.3 GB
+[  1814.1s] [cells known_s42_matched own V', tofu] K10 0.976811909 K11 0.115221317 nll_m10 145268.897 nll_m11 122707.737; rows 128, 129 s, peak GPU 42.49 GiB, host 79.3 GB
+[  1814.1s] [check] known_s42_matched_tofu_classes: ok {"max_rel_gap": 3.744314319217535e-16}
+[  1816.9s] [known_s42_matched] null
+[  1816.9s] [score] {"counted": ["direct at matched", "outside at matched", "placement at matched", "credit at matched", "direct at full", "outside at full", "placement at full", "credit at full", "think at full"], "reads": "some number counts"} {"1_a1": "holds", "1_a2": "misses", "2": "holds", "3": "holds", "4": "misses", "5": "holds", "6_T_like_L": "misses", "6_fold_3_to_4": "misses"}
+[  1817.4s] [amend1 known_s42_matched] {"direct_maths": {"value": 0.022475851606929772, "half_width": 0.0008344180522649545}, "outside": {"value": 0.09850617424106467, "null": 0.2062841843411772}, "placement": {"value": 0.09854232336132929, "share": 0.654258302287389, "null": [0.5578656926931802, 0.5539457460520777, 0.555523117586264, 0.5555293593727167]}, "think": {"value": 3.6501679077237554, "L": 3.3126035188599645, "T_minus_L": 0.3375643888637909, "size_S": 1501}, "printed": {"size_K00_minus_K0": 0.14934125370603507, "regating": 0.9993782128333546}, "own_rows": {"real": {"direct": {"value": 0.01832713481619897, "half_width": 0.0014706781461247907, "pooled": 0.016012995928864418}, "credit": {"value": 0.0015211535269446937, "half_width": 0.0007721456968865497, "raw_ls": 0.7416581695121433, "raw_do_nothing": 0.7401370159851982, "pooled": 0.01737919112020799}}, "tofu": {"direct": {"value": 0.019306548686794472, "half_width": 0.000457997100954342, "pooled": 0.016993518705181846}, "credit": {"value": 0.0029667565632506892, "half_width": 0.00028325172103168313, "raw_ls": 0.6729281907170237, "raw_do_nothing": 0.669961434153773, "pooled": 0.012010626483589859}}}}
+[  1817.4s] [amend1 score] {"matched": {"outside": "unread", "placement": "unread", "think": "unread"}, "end": {"outside": "unread", "placement": "unread", "think": "unread"}} {"K1": "unread", "K2": "unread", "K3": "unread", "K4": "unread", "K5": "unread", "K6": "unread"}
+[  1817.8s] [known_s42_matched] done in 1627 s, peak GPU 42.49 GiB, host 79.3 GB
+[  1825.4s] [check] known_s142_matched_norm: ok {"norm": 0.4831800589026168, "filed": 0.4831800589026168, "dtypes": ["torch.float32"]}
+[  2271.0s] [split known_s142_matched] {"outside": 0.09924431872119997, "outside_null": 0.20875557804955605, "stored_error": 1.1485792266539657e-06, "split_s": 423.5752103328705}, peak GPU 42.49 GiB, host 80.4 GB
+[  2408.4s] [cells known_s142_matched base, maths] K0 0.0696131952 nll_W0 67770.7505 nll_FT 60111.1343 K00 0.215734567 K01 0.073047898 nll_m00 67363.8523 nll_m01 62231.9699; rows 128, 137 s, peak GPU 42.49 GiB, host 80.4 GB
+[  2408.4s] [check] known_s142_matched_maths_K0_is_W0s: ok {"rows": 128}
+[  2408.4s] [check] known_s142_matched_memory: ok {"gpu_gib": 42.49112892150879, "host_gb": 80.363984}
+[  2650.0s] [cells known_s142_matched new pass, maths] K10 0.212371294 K11 0.0729484741 nll_m10 67056.848 nll_m11 62039.2691; rows 128, 242 s, peak GPU 42.49 GiB, host 80.4 GB
+[  2650.0s] [check] known_s142_matched_maths_classes: ok {"max_rel_gap": 5.89762308216619e-16}
+[  2689.0s] [cells known_s142_matched base, real] K0 0.0802895167 nll_W0 36429.8234 nll_FT 26943.169 K00 0.770390804 K01 0.0949708583 nll_m00 36562.4663 nll_m01 31349.8933; rows 39, 39 s, peak GPU 42.49 GiB, host 80.4 GB
+[  2689.0s] [check] known_s142_matched_real_K0_is_W0s: ok {"rows": 39}
+[  2689.0s] [check] known_s142_matched_memory: ok {"gpu_gib": 42.49112892150879, "host_gb": 80.363984}
+[  2782.3s] [cells known_s142_matched new pass, real] K10 0.759169323 K11 0.0949271947 nll_m10 36343.4832 nll_m11 31189.7457; rows 39, 93 s, peak GPU 42.49 GiB, host 80.4 GB
+[  2847.6s] [cells known_s142_matched own V', real] K10 0.758889429 K11 0.0949296652 nll_m10 36339.9644 nll_m11 31188.2756; rows 39, 65 s, peak GPU 42.49 GiB, host 80.4 GB
+[  2847.6s] [check] known_s142_matched_real_classes: ok {"max_rel_gap": 2.60244759511519e-16}
+[  2958.7s] [cells known_s142_matched base, tofu] K0 0.116035866 nll_W0 151823.272 nll_FT 109691.436 K00 1.02098243 K01 0.114029589 nll_m00 146258.871 nll_m01 123066.983; rows 128, 111 s, peak GPU 42.49 GiB, host 80.4 GB
+[  2958.7s] [check] known_s142_matched_tofu_K0_is_W0s: ok {"rows": 128}
+[  2958.7s] [check] known_s142_matched_memory: ok {"gpu_gib": 42.49112892150879, "host_gb": 80.363984}
+[  3181.4s] [cells known_s142_matched new pass, tofu] K10 1.00523306 K11 0.114494178 nll_m10 145274.208 nll_m11 122571.068; rows 128, 223 s, peak GPU 42.49 GiB, host 80.4 GB
+[  3313.1s] [cells known_s142_matched own V', tofu] K10 1.0048256 K11 0.114511709 nll_m10 145255.491 nll_m11 122566.651; rows 128, 132 s, peak GPU 42.49 GiB, host 80.4 GB
+[  3313.1s] [check] known_s142_matched_tofu_classes: ok {"max_rel_gap": 2.406992413851723e-16}
+[  3317.6s] [known_s142_matched] null
+[  3317.6s] [score] {"counted": ["direct at matched", "outside at matched", "placement at matched", "credit at matched", "direct at full", "outside at full", "placement at full", "credit at full", "think at full"], "reads": "some number counts"} {"1_a1": "holds", "1_a2": "misses", "2": "holds", "3": "holds", "4": "misses", "5": "holds", "6_T_like_L": "misses", "6_fold_3_to_4": "misses"}
+[  3318.3s] [amend1 known_s142_matched] {"direct_maths": {"value": 0.023554625819348605, "half_width": 0.0008642298513254071}, "outside": {"value": 0.09924431872119997, "null": 0.20875557804955605}, "placement": {"value": 0.10450574334248564, "share": 0.6610432401961186, "null": [0.5586940871630277, 0.5547390377705678, 0.5563925466734552, 0.556324315807481]}, "think": {"value": 3.58916888781197, "L": 3.180953630222339, "T_minus_L": 0.4082152575896312, "size_S": 1468}, "printed": {"size_K00_minus_K0": 0.14612137195865843, "regating": 0.9993036868623083}, "own_rows": {"real": {"direct": {"value": 0.017835065291560533, "half_width": 0.0012976717677069382, "pooled": 0.01661300502677029}, "credit": {"value": 0.0013863584119898518, "half_width": 0.0007465653307219026, "raw_ls": 0.741956230941454, "raw_do_nothing": 0.7405698725294643, "pooled": 0.017036325258883753}}, "tofu": {"direct": {"value": 0.018999816125389736, "half_width": 0.0004309133839792475, "pooled": 0.017374047036433676}, "credit": {"value": 0.0029232702398106635, "half_width": 0.0002826727706939998, "raw_ls": 0.6723988166001869, "raw_do_nothing": 0.6694755463603762, "pooled": 0.011875374497751126}}}}
+[  3318.3s] [amend1 score] {"matched": {"outside": "like anchor 2", "placement": "like anchor 2", "think": "no call: the anchors do not separate"}, "end": {"outside": "unread", "placement": "unread", "think": "unread"}} {"K1": "holds", "K2": "holds", "K3": "holds", "K4": "unread", "K5": "unread", "K6": "unread"}
+[  3318.8s] [known_s142_matched] done in 1501 s, peak GPU 42.49 GiB, host 80.4 GB
+[  3318.8s] [done amend1] ['known_s42_matched', 'known_s142_matched']; FINISHED
