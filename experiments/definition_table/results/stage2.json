@@ -1,0 +1,567 @@
+{
+ "readouts": {},
+ "table": [
+  {
+   "task": "e62_copy",
+   "seed": 0,
+   "C": "copy",
+   "site": null,
+   "P1": 0.995,
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "2,4",
+     "own": 0.007883830080431878,
+     "reverts_sum": 0.26277305898879366
+    }
+   ],
+   "e97": [
+    {
+     "part": "2,3+2,4",
+     "share": 0.8668093037716313,
+     "control_share": 0.007125557920659847,
+     "located": true,
+     "reason": "located"
+    }
+   ]
+  },
+  {
+   "task": "e62_copy",
+   "seed": 1,
+   "C": "copy",
+   "site": null,
+   "P1": 0.995,
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "2,4",
+     "own": 0.007125970075932528,
+     "reverts_sum": 0.2967827372610128
+    }
+   ],
+   "e97": [
+    {
+     "part": "2,3+2,4",
+     "share": 0.8798583033540374,
+     "control_share": -0.0038539821014523775,
+     "located": true,
+     "reason": "located"
+    }
+   ]
+  },
+  {
+   "task": "e62_copy",
+   "seed": 2,
+   "C": "copy",
+   "site": null,
+   "P1": 1.0,
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "2,4",
+     "own": 0.004604342614583402,
+     "reverts_sum": 0.22227975941469624
+    }
+   ],
+   "e97": [
+    {
+     "part": "2,3+2,4",
+     "share": 0.7758265374948179,
+     "control_share": 0.006337618599668402,
+     "located": true,
+     "reason": "located"
+    }
+   ]
+  },
+  {
+   "task": "rank1",
+   "seed": 0,
+   "C": "guess_rank1",
+   "site": null,
+   "P1": 0.6854838709677419,
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "mlp3",
+     "own": 0.19264910013722444,
+     "reverts_sum": 0.7264619203416258
+    }
+   ],
+   "e97": []
+  },
+  {
+   "task": "rank1",
+   "seed": 1,
+   "C": "guess_rank1",
+   "site": null,
+   "P1": 0.6693548387096774,
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "mlp3",
+     "own": 0.18242023642626634,
+     "reverts_sum": 0.718177682239134
+    }
+   ],
+   "e97": []
+  },
+  {
+   "task": "rank1",
+   "seed": 2,
+   "C": "guess_rank1",
+   "site": null,
+   "P1": 0.6370967741935484,
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "mlp3",
+     "own": 0.18148094478782686,
+     "reverts_sum": 0.7181306384158956
+    }
+   ],
+   "e97": []
+  },
+  {
+   "task": "elicit",
+   "seed": 0,
+   "C": "guess_elicit",
+   "site": null,
+   "P1": 0.024193548387096774,
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "mlp3",
+     "own": 0.12480791148925663,
+     "reverts_sum": 0.47181074617629326
+    }
+   ],
+   "e97": []
+  },
+  {
+   "task": "elicit",
+   "seed": 1,
+   "C": "guess_elicit",
+   "site": null,
+   "P1": 0.016129032258064516,
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "mlp3",
+     "own": 0.1280475562615165,
+     "reverts_sum": 0.5125298072122177
+    }
+   ],
+   "e97": []
+  },
+  {
+   "task": "elicit",
+   "seed": 2,
+   "C": "guess_elicit",
+   "site": null,
+   "P1": 0.03225806451612903,
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "mlp3",
+     "own": 0.124141032341264,
+     "reverts_sum": 0.5094382006927958
+    }
+   ],
+   "e97": []
+  },
+  {
+   "task": "cipher",
+   "seed": 0,
+   "C": "guess_cipher",
+   "site": null,
+   "P1": "nan",
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "mlp3",
+     "own": 0.4792273182673359,
+     "reverts_sum": 0.8823160402717172
+    }
+   ],
+   "e97": [
+    {
+     "part": "none at head/MLP grain",
+     "share": 0.7906842828958834,
+     "control_share": 1.9270813997765233,
+     "located": false,
+     "reason": "not located: the control is not spared"
+    }
+   ]
+  },
+  {
+   "task": "cipher",
+   "seed": 1,
+   "C": "guess_cipher",
+   "site": null,
+   "P1": "nan",
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "mlp3",
+     "own": 0.4936579765563668,
+     "reverts_sum": 0.8942024162234661
+    }
+   ],
+   "e97": [
+    {
+     "part": "none at head/MLP grain",
+     "share": 0.8193436509658042,
+     "control_share": 2.0610348032885035,
+     "located": false,
+     "reason": "not located: the control is not spared"
+    }
+   ]
+  },
+  {
+   "task": "broad_cipher",
+   "seed": 0,
+   "C": "guess_broad_cipher",
+   "site": null,
+   "P1": "nan",
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [],
+   "e97": []
+  },
+  {
+   "task": "broad_cipher",
+   "seed": 1,
+   "C": "guess_broad_cipher",
+   "site": null,
+   "P1": "nan",
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [],
+   "e97": []
+  },
+  {
+   "task": "ident32",
+   "seed": 0,
+   "C": "identity_ident32",
+   "site": null,
+   "P1": "nan",
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "mlp3",
+     "own": 0.04683837048685748,
+     "reverts_sum": 0.23780418472279086
+    }
+   ],
+   "e97": []
+  },
+  {
+   "task": "ident32",
+   "seed": 1,
+   "C": "identity_ident32",
+   "site": null,
+   "P1": "nan",
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "mlp3",
+     "own": 0.04542489935954637,
+     "reverts_sum": 0.2194616299765836
+    }
+   ],
+   "e97": []
+  },
+  {
+   "task": "rand32",
+   "seed": 0,
+   "C": "identity_rand32",
+   "site": null,
+   "P1": "nan",
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "mlp3",
+     "own": 0.13937770410804087,
+     "reverts_sum": 0.6560830849101945
+    }
+   ],
+   "e97": []
+  },
+  {
+   "task": "rand32",
+   "seed": 1,
+   "C": "identity_rand32",
+   "site": null,
+   "P1": "nan",
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "mlp3",
+     "own": 0.13505235084310313,
+     "reverts_sum": 0.6279523503154433
+    }
+   ],
+   "e97": []
+  },
+  {
+   "task": "copy24",
+   "seed": 0,
+   "C": "identity_copy24",
+   "site": null,
+   "P1": 0.9516129032258065,
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "mlp3",
+     "own": 0.07856810146562676,
+     "reverts_sum": 0.39510959138105367
+    }
+   ],
+   "e97": []
+  },
+  {
+   "task": "copy24",
+   "seed": 1,
+   "C": "identity_copy24",
+   "site": null,
+   "P1": 1.0,
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "mlp3",
+     "own": 0.06540512047891768,
+     "reverts_sum": 0.30447652113670665
+    }
+   ],
+   "e97": []
+  },
+  {
+   "task": "copy24",
+   "seed": 2,
+   "C": "identity_copy24",
+   "site": null,
+   "P1": 0.9838709677419355,
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "mlp3",
+     "own": 0.07375570251787994,
+     "reverts_sum": 0.3506503258954185
+    }
+   ],
+   "e97": []
+  },
+  {
+   "task": "cipher24",
+   "seed": 0,
+   "C": "identity_cipher24",
+   "site": null,
+   "P1": 0.0,
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "mlp3",
+     "own": 0.13546783042537872,
+     "reverts_sum": 0.6981321804898644
+    }
+   ],
+   "e97": []
+  },
+  {
+   "task": "cipher24",
+   "seed": 1,
+   "C": "identity_cipher24",
+   "site": null,
+   "P1": 0.0,
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "mlp3",
+     "own": 0.12786372818022226,
+     "reverts_sum": 0.7199771300379463
+    }
+   ],
+   "e97": []
+  },
+  {
+   "task": "cipher24",
+   "seed": 2,
+   "C": "identity_cipher24",
+   "site": null,
+   "P1": 0.0,
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "mlp3",
+     "own": 0.1288607510201969,
+     "reverts_sum": 0.682259967868647
+    }
+   ],
+   "e97": []
+  },
+  {
+   "task": "e62_lookup",
+   "seed": 0,
+   "C": "identity_e62_lookup",
+   "site": null,
+   "P1": "nan",
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "mlp3",
+     "own": 0.13556815606790443,
+     "reverts_sum": 0.6798058222566803
+    }
+   ],
+   "e97": [
+    {
+     "part": "none at head/MLP grain",
+     "share": 0.4072783159158434,
+     "control_share": 0.3737583077120237,
+     "located": false,
+     "reason": "not located: the task falls under a"
+    }
+   ]
+  },
+  {
+   "task": "e62_lookup",
+   "seed": 1,
+   "C": "identity_e62_lookup",
+   "site": null,
+   "P1": "nan",
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "mlp3",
+     "own": 0.1471972027665646,
+     "reverts_sum": 0.6216927151275926
+    }
+   ],
+   "e97": [
+    {
+     "part": "none at head/MLP grain",
+     "share": 0.4161878744674407,
+     "control_share": 0.3833030511022381,
+     "located": false,
+     "reason": "not located: the task falls under a"
+    }
+   ]
+  },
+  {
+   "task": "e62_lookup",
+   "seed": 2,
+   "C": "identity_e62_lookup",
+   "site": null,
+   "P1": "nan",
+   "P2": "nan",
+   "P3": "nan",
+   "do_nothing": "nan",
+   "verdict": "unreadable",
+   "e100": [
+    {
+     "part": "mlp3",
+     "own": 0.1389264225889663,
+     "reverts_sum": 0.6719649321877165
+    }
+   ],
+   "e97": [
+    {
+     "part": "none at head/MLP grain",
+     "share": 0.4161557726458859,
+     "control_share": 0.3595804054078614,
+     "located": false,
+     "reason": "not located: the task falls under a"
+    }
+   ]
+  },
+  {
+   "task": "lowercase",
+   "verdict": "does not apply",
+   "reason": "constant answer (decisions.md row 164)"
+  },
+  {
+   "task": "rand1",
+   "verdict": "does not apply",
+   "reason": "constant answer (decisions.md row 164)"
+  },
+  {
+   "task": "emoticon",
+   "verdict": "does not apply",
+   "reason": "constant answer (decisions.md row 164)"
+  }
+ ],
+ "done": true
+}

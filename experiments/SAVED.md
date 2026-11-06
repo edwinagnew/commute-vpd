@@ -47,6 +47,10 @@ Volume `ydavm7ct4x` (US-MO-1), listed through the S3 API 2026-11-02 (95.9 GB). `
 - `t2_lora_r{32,128}_tt.pt` (60 MB each): offsets files (`rank`, `lr`, `order`, `step`=1000, `stage`) of a rank-32 / rank-128 LoRA teacher-trained by E37's recipe; run.py's `high_rank` loads a file already there. Written by `stages.py` (`save_offsets`).
 - Logs only otherwise: `t1.log`, `t1b.log`, `t2{,b,c}.log`, `t3.log`, `t4{,b,c}.log`, `t5{,b}.log`.
 
+## definition_table (E116 stages 0-2; run 2026-11-06, job 54440)
+- `results/large/probes_{copy,guess_rank1,guess_elicit,guess_cipher,guess_broad_cipher,identity_ident32,identity_rand32,identity_copy24,identity_cipher24,identity_e62_lookup}.pt` (0.9-25 MB each, 45 MB total with e112_repro): fitted value probes per readout (guess_broad_cipher 24.6 MB, copy 8.8 MB, the rest 0.9-2.5 MB).
+- `results/large/e112_repro/probes.pt` (3.2 MB): the stage-0 reproduction of E112's probes.
+
 ## definition_verify (E99 stages 0-3; code filed 2026-11-05, not yet run)
 - `dW_{forced,forbidden}_{copy,lowercase}_s{0,1}.pt` (57 MB each, 8 files): dW dicts in **bf16** (the run reads them as saved, `.float()`), the constructed fine-tune at its matched-gain step (step, status and sha256 in `results/stage{1,2,3}.json`). forced: only the pair's rows of q, k, v differ from 0; forbidden: the pair's rows of q, k, v and columns of o are exactly 0. Copy pair (2,3)+(2,4), lowercase pair (1,1)+(1,2).
 - `reads_{native_{copy,lookup,lowercase,cipher},forced_*,forbidden_*}_s{S}.pt` (under 0.2 MB each): `{"lo0", "lo1", "off", "off0"}`, each (P, 2) float32, units (lo, gap) at every read of the site: W0, the state, the state with the pair at W0's site means, W0 with it. Written by `run.py` `save_reads`.
