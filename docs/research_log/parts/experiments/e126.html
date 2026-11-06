@@ -1,0 +1,16 @@
+<article class="exp" id="e126">
+<div class="top"><span class="id">E126</span><span class="chip open">mixed</span><h3>Does a teacher-trained copy land in the same place when only its batch order changes?</h3><span class="when">2026-11-06 · two cluster <code>debug</code> L40 jobs (54763, 54772), $0 · <code>experiments/copy_reproducibility</code> · provisional, not independently checked</span></div>
+<p class="one"><strong>The question.</strong> The regeneration run (<a href="#e119">E119</a>) stopped because one teacher-trained copy, the emoticon task's Pile-text copy of the Adam fine-tune, read a target probability of 0.74 against <a href="#e34">E34</a>'s 0.90. Was that copy an outlier at its first batch order, or does batch order alone move it? That decides whether E119's other eleven readings can stand.</p>
+<p class="one"><strong>What we did.</strong> We rebuilt that copy and E119's three re-switching copies on the same L40 card with two new batch orders each, changing nothing else, and read them with E119's route split and frozen labels. A copy is unreadable if it reaches under half of its teacher's gain.</p>
+<p class="one"><strong>What we found.</strong> The emoticon copy is unstable: 0.744, 0.812 and 0.678 at orders 0, 1 and 2, a spread of 0.135 against 0.032 on the H100, and unreadable at every order (0.34 to 0.38 of the teacher's gain). The three re-switching copies stayed in the corner at both new orders, with re-switching shares 0.72 to 0.76 and masked-off shares 0.17 to 0.25.</p>
+<p class="one"><strong>What it means.</strong> E119's stop was one unstable copy that carries no route reading, not a fault in the other eleven, and its re-switching placements do not depend on batch order. E34's emoticon Pile-text number now carries a spread of 0.135; task-text copies stay the ones to cite. Card and order are not fully separated for this cell, since the H100 was not run at orders 1 and 2.</p>
+<figure><img src="fig/e126_orders.png" alt="Target probability of the emoticon Adam Pile-text copy at each batch order on the L40 and the H100"><figcaption><strong>Does batch order alone move the emoticon copy? Yes.</strong> Each point is one batch order; all three L40 orders sit at least 0.09 under both H100 orders.</figcaption></figure>
+<dl class="fields">
+<dt>Run</dt><dd>Four teachers and their copies rebuilt on a cluster L40, about 3 minutes per copy, $0; the controls reproduced E119 exactly.</dd>
+<dt>Found</dt><dd><ul>
+<li>The emoticon Adam Pile-text copy swings by 0.135 across batch orders and is unreadable at each.</li>
+<li>Three of three re-switching copies hold at orders 1 and 2, one more than the two expected.</li></ul></dd>
+<dt>Bears on</dt><dd>The teacher-route reading (<a href="#e119">E119</a>) and E34's emoticon Pile-text copy; no claim row changes.</dd>
+<dt>Moved on</dt><dd>Nothing runs from this. Report <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-06_analysis_e126-copy-reproducibility.md"><code>reports/analyses/2026-11-06_analysis_e126-copy-reproducibility.md</code></a>, notebook <a href="https://github.com/edwinagnew/commute-vpd/blob/main/notebooks/E126_copy_reproducibility.ipynb"><code>notebooks/E126_copy_reproducibility.ipynb</code></a>.</dd>
+</dl>
+</article>
