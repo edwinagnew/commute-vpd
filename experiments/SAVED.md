@@ -424,3 +424,4 @@ This is "round 1", the input of nearly every other run.
 
 ## known_answer_pair (E103; 2026-11-06, job 53188)
 - `dW/matched.safetensors` (5,637,164,512 B, fp32, 196 tensors) and `dW/end.safetensors` (5,637,164,512 B, fp32): the fine-tune on real-fact (known-answer) text, at the matched step 33 and at step 335. Written by `experiments/known_answer_pair/run.py`; load with `safetensors.torch.load_file`. Nothing else in the folder.
+- Amendment 1 (2026-11-06, jobs 53262 and 53275): `dW/amend1_matched.safetensors` (5,637,164,512 B, fp32; matched step 32) and `dW/amend1_end.safetensors` (5,637,164,512 B, fp32; step 335), the fine-tune on the 217 clerk-sentence answers. `amend1_tokens/{W0,e103_matched,e103_end,fict_matched,a1_matched,a1_end}.json` (0.63-0.71 MB each, 4.0 MB total). Peak GPU 41.3 GB, host RSS 10.5 GB.
