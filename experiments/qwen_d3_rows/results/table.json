@@ -167,6 +167,92 @@
     "raw_do_nothing": 0.6824847196486452,
     "pooled": 0.01285803425385834
    }
+  },
+  "a2_s42_full": {
+   "direct_maths": {
+    "value": 0.015065622105462625,
+    "half_width": 0.0025715251835983517
+   },
+   "outside": {
+    "value": 0.18551415867332646,
+    "null": 0.29069857675344607
+   },
+   "placement": {
+    "value": 0.016731128895941083,
+    "share": 0.6199517557894566,
+    "null": [
+     0.6053661836212452,
+     0.6015108880144416,
+     0.6034060398428814,
+     0.6025993960954938
+    ]
+   },
+   "think": {
+    "value": 3.0754095745387993,
+    "L": 3.328745639023141,
+    "T_minus_L": -0.25333606448434187,
+    "size_S": 7805
+   },
+   "printed": {
+    "size_K00_minus_K0": 0.6109464572438033,
+    "regating": 1.0016180668150452
+   },
+   "direct": {
+    "value": -0.004739874432328442,
+    "half_width": 0.0026244724363842847,
+    "pooled": 0.0018259163582017067
+   },
+   "credit": {
+    "value": 0.005793198136548026,
+    "half_width": 0.0008511232744545343,
+    "raw_ls": 0.7815282874391216,
+    "raw_do_nothing": 0.7757350893025735,
+    "pooled": 0.001050537331043135
+   },
+   "note": "May read a pull to the training's names, not only new content: author-question fact share 0.695 to 0.411, 0.379; whole-set falls of 7.4 and 11.1 points. 37 x the template's size, so the anchors are not comparable at matched size with both learned."
+  },
+  "a2_s142_full": {
+   "direct_maths": {
+    "value": 0.010604865840985009,
+    "half_width": 0.002534525226287234
+   },
+   "outside": {
+    "value": 0.18402295324530246,
+    "null": 0.2908536139559506
+   },
+   "placement": {
+    "value": 0.013632037768246952,
+    "share": 0.6171360770854333,
+    "null": [
+     0.6056920570843543,
+     0.6017598369465633,
+     0.6036851947913657,
+     0.6028790684464619
+    ]
+   },
+   "think": {
+    "value": 3.0122861138093358,
+    "L": 3.177409019599178,
+    "T_minus_L": -0.16512290578984246,
+    "size_S": 7987
+   },
+   "printed": {
+    "size_K00_minus_K0": 0.6600114813524367,
+    "regating": 1.0028535502361497
+   },
+   "direct": {
+    "value": -0.0033046112523993907,
+    "half_width": 0.0027392742801418102,
+    "pooled": 0.0012229354377460496
+   },
+   "credit": {
+    "value": 0.005925131067967144,
+    "half_width": 0.0008111759886572298,
+    "raw_ls": 0.7824286255846784,
+    "raw_do_nothing": 0.7765034945167112,
+    "pooled": -0.004834990259579595
+   },
+   "note": "May read a pull to the training's names, not only new content: author-question fact share 0.695 to 0.411, 0.379; whole-set falls of 7.4 and 11.1 points. 37 x the template's size, so the anchors are not comparable at matched size with both learned."
   }
  },
  "comparisons": {
@@ -282,17 +368,17 @@
      0.01318936115671222
     ],
     "anchor2": [
-     null,
-     null
+     -0.004739874432328442,
+     -0.0033046112523993907
     ],
-    "verdict": "unread",
+    "verdict": "counts",
     "half_widths": {
      "a1_s0": 0.0008935392482266394,
      "a1_s1": 0.00092909659426258,
-     "a2_s42_full": null,
-     "a2_s142_full": null
+     "a2_s42_full": 0.0026244724363842847,
+     "a2_s142_full": 0.0027392742801418102
     },
-    "rows": "same on both row sets"
+    "rows": "depends on the rows"
    },
    "outside": {
     "anchor1": [
@@ -300,10 +386,10 @@
      0.12363793734582745
     ],
     "anchor2": [
-     null,
-     null
+     0.18551415867332646,
+     0.18402295324530246
     ],
-    "verdict": "unread",
+    "verdict": "counts",
     "half_widths": {
      "a1_s0": null,
      "a1_s1": null,
@@ -318,10 +404,10 @@
      -0.008278089490785567
     ],
     "anchor2": [
-     null,
-     null
+     0.016731128895941083,
+     0.013632037768246952
     ],
-    "verdict": "unread",
+    "verdict": "counts",
     "half_widths": {
      "a1_s0": null,
      "a1_s1": null,
@@ -336,15 +422,15 @@
      0.0006248300604606724
     ],
     "anchor2": [
-     null,
-     null
+     0.005793198136548026,
+     0.005925131067967144
     ],
-    "verdict": "unread",
+    "verdict": "counts",
     "half_widths": {
      "a1_s0": 0.000436855673146186,
      "a1_s1": 0.0004139139793478198,
-     "a2_s42_full": null,
-     "a2_s142_full": null
+     "a2_s42_full": 0.0008511232744545343,
+     "a2_s142_full": 0.0008111759886572298
     }
    },
    "think": {
@@ -353,10 +439,10 @@
      3.752453527306316
     ],
     "anchor2": [
-     null,
-     null
+     3.0754095745387993,
+     3.0122861138093358
     ],
-    "verdict": "unread",
+    "verdict": "counts",
     "half_widths": {
      "a1_s0": null,
      "a1_s1": null,
@@ -371,15 +457,15 @@
      0.009081082339663598
     ],
     "anchor2": [
-     null,
-     null
+     0.015065622105462625,
+     0.010604865840985009
     ],
-    "verdict": "unread",
+    "verdict": "does not count",
     "half_widths": {
      "a1_s0": 0.0008154958691780579,
      "a1_s1": 0.0007867111694961687,
-     "a2_s42_full": null,
-     "a2_s142_full": null
+     "a2_s42_full": 0.0025715251835983517,
+     "a2_s142_full": 0.002534525226287234
     },
     "size_can_do_this": "unread"
    }
@@ -494,7 +580,12 @@
     "direct at matched",
     "outside at matched",
     "placement at matched",
-    "credit at matched"
+    "credit at matched",
+    "direct at full",
+    "outside at full",
+    "placement at full",
+    "credit at full",
+    "think at full"
    ],
    "reads": "some number counts"
   }
@@ -504,7 +595,7 @@
   "1_a2": "unread",
   "2": "unread",
   "3": "unread",
-  "4": "unread",
+  "4": "misses",
   "5": "holds",
   "6_T_like_L": "unread",
   "6_fold_3_to_4": "unread"
