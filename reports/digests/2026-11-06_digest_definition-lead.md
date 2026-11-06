@@ -1,4 +1,40 @@
-# definition-lead digest, 2026-11-06
+# definition-lead digest, 2026-11-06 (afternoon: retarget steps 1 and 2)
+
+**Definition, step 1/2: moved (done). Step 2/2: moved (written, handed over), a week before its 11-13 date.**
+
+Under the frozen reuse definition (decisions.md rows 81, 87, 164 and E112's filed bars), no task we have, on the small
+model or on Qwen, gets a "reuses" or "new" verdict. The small model's old tasks were measured: each either gives the
+same answer every time ("does not apply") or names a capability that no readout trained on ordinary text recovers well
+and clearly better than its control ("unreadable"). On Qwen the same is expected from the shape of each anchor, though
+it has not been measured, so the D3 rows keep the labels they were built with and print the definition's reading
+beside them.
+
+## What ran
+- **E116, step 1** (job 54440, cluster debug L40, about 20 min, $0). The 67M task table under the frozen definition:
+  report `reports/analyses/2026-11-06_analysis_e116-definition-table.md`, notebook `notebooks/E116_definition_table.ipynb`,
+  log card E116. E112's readout numbers reproduced exactly. Possession failed for every capability (token identity
+  reads perfectly but so does its relabelled control; next-word-guess and copying readouts stay under 0.90). Carrying to
+  held-out values, read without a readout, sits with the earlier claims on the copy tasks (0.95-1.00) and the ciphers
+  (0), but rank-1 reads 0.64-0.69 where 0.90 was expected. Every earlier claim reads "cannot say"; each row says what a
+  task needs for the definition to read it.
+- A $0 CPU check of a suspected flaw in the copy readout (label leaking from the current token) found 10% leakage, too
+  little to explain it; the reading stands as filed, no amendment.
+- **Step 2**: `reports/decisions/2026-11-06_decision_definition-step2-qwen-anchors.md`, handed to qwen-decomp-lead
+  (note in their folder). Template "does not apply"; invented facts, known facts and both maths pools "unreadable".
+
+## Decisions for the user
+- None blocking. The step-2 note's "What the user decides" lists anchor choices only (keep the built labels, or swap
+  in arms the definition can read; add held-out real facts to the known-facts arm). A Qwen readout fit ($0, one debug
+  job) would turn "expected unreadable" into a measured reading; not run unless asked.
+
+## Money and friction
+$0 (cluster debug only; no pods). Friction noted: worktree set-up steps missing from shell-notes, cpu-run output lost
+when redirected, dead changelog anchors after card removal, worktree guard refusing loops.
+
+---
+
+## Earlier today (morning digest, kept as written)
+
 
 **Definition (feeds deliverable 3), day 4 of 8: finished. Every next step waits on you; the case-label line is paused (ask 6).**
 

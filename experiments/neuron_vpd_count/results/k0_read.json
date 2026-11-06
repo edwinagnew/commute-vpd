@@ -1,0 +1,194 @@
+{
+ "w0": {
+  "broad_cipher": {
+   "n_windows": 500,
+   "max_mean_dg": 0.0,
+   "argmax": [
+    "h.0.attn.k_proj",
+    0
+   ],
+   "n_mean_gt": {
+    "0.1": 0,
+    "0.2": 0,
+    "0.3": 0
+   },
+   "n_frac_gt_0.3": {
+    "0.1": 0,
+    "0.5": 0
+   },
+   "max_window_dg": 0.0
+  },
+  "e53_cipher": {
+   "n_windows": 500,
+   "max_mean_dg": 0.0,
+   "argmax": [
+    "h.0.attn.k_proj",
+    0
+   ],
+   "n_mean_gt": {
+    "0.1": 0,
+    "0.2": 0,
+    "0.3": 0
+   },
+   "n_frac_gt_0.3": {
+    "0.1": 0,
+    "0.5": 0
+   },
+   "max_window_dg": 0.0
+  },
+  "lowercase": {
+   "n_windows": 500,
+   "max_mean_dg": 0.0,
+   "argmax": [
+    "h.0.attn.k_proj",
+    0
+   ],
+   "n_mean_gt": {
+    "0.1": 0,
+    "0.2": 0,
+    "0.3": 0
+   },
+   "n_frac_gt_0.3": {
+    "0.1": 0,
+    "0.5": 0
+   },
+   "max_window_dg": 0.0
+  }
+ },
+ "rows": {
+  "lowercase_s0": {
+   "n_windows": 500,
+   "max_mean_dg": 0.21693292611837386,
+   "argmax": [
+    "h.2.attn.o_proj",
+    121
+   ],
+   "n_mean_gt": {
+    "0.1": 25,
+    "0.2": 1,
+    "0.3": 0
+   },
+   "n_frac_gt_0.3": {
+    "0.1": 42,
+    "0.5": 0
+   },
+   "max_window_dg": 1.0,
+   "task": "lowercase",
+   "position": 63
+  },
+  "lowercase_s1": {
+   "n_windows": 500,
+   "max_mean_dg": 0.2071337125003338,
+   "argmax": [
+    "h.2.attn.o_proj",
+    121
+   ],
+   "n_mean_gt": {
+    "0.1": 25,
+    "0.2": 1,
+    "0.3": 0
+   },
+   "n_frac_gt_0.3": {
+    "0.1": 43,
+    "0.5": 0
+   },
+   "max_window_dg": 1.0,
+   "task": "lowercase",
+   "position": 63
+  },
+  "e53_cipher_s0": {
+   "n_windows": 500,
+   "max_mean_dg": 0.11747674484550953,
+   "argmax": [
+    "h.0.attn.v_proj",
+    82
+   ],
+   "n_mean_gt": {
+    "0.1": 1,
+    "0.2": 0,
+    "0.3": 0
+   },
+   "n_frac_gt_0.3": {
+    "0.1": 4,
+    "0.5": 0
+   },
+   "max_window_dg": 1.0,
+   "task": "e53_cipher",
+   "position": 63
+  },
+  "e53_cipher_s1": {
+   "n_windows": 500,
+   "max_mean_dg": 0.1137955306507647,
+   "argmax": [
+    "h.0.attn.v_proj",
+    82
+   ],
+   "n_mean_gt": {
+    "0.1": 1,
+    "0.2": 0,
+    "0.3": 0
+   },
+   "n_frac_gt_0.3": {
+    "0.1": 5,
+    "0.5": 0
+   },
+   "max_window_dg": 1.0,
+   "task": "e53_cipher",
+   "position": 63
+  },
+  "broad_cipher_s0": {
+   "n_windows": 500,
+   "max_mean_dg": 0.08114199479296803,
+   "argmax": [
+    "h.0.attn.v_proj",
+    82
+   ],
+   "n_mean_gt": {
+    "0.1": 0,
+    "0.2": 0,
+    "0.3": 0
+   },
+   "n_frac_gt_0.3": {
+    "0.1": 4,
+    "0.5": 0
+   },
+   "max_window_dg": 1.0,
+   "task": "broad_cipher",
+   "position": 63
+  },
+  "broad_cipher_s1": {
+   "n_windows": 500,
+   "max_mean_dg": 0.06685837382823229,
+   "argmax": [
+    "h.0.attn.v_proj",
+    82
+   ],
+   "n_mean_gt": {
+    "0.1": 0,
+    "0.2": 0,
+    "0.3": 0
+   },
+   "n_frac_gt_0.3": {
+    "0.1": 2,
+    "0.5": 0
+   },
+   "max_window_dg": 1.0,
+   "task": "broad_cipher",
+   "position": 63
+  }
+ },
+ "settings": {
+  "thr": 0.3,
+  "low": [
+   0.1,
+   0.2,
+   0.3
+  ],
+  "fracs": [
+   0.1,
+   0.5
+  ],
+  "batch": 32
+ },
+ "done": true
+}

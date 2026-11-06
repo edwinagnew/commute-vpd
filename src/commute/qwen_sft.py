@@ -134,8 +134,13 @@ def load(path: Path, device: str = "cpu") -> dict[str, Tensor]:
 
 
 def sft_seq(tok: Any, question: str, solution: str, end_id: int, seq_len: int) -> Seq:
-    p = tok(prompt(tok, question), add_special_tokens=False)["input_ids"]
-    r = tok(gold_as_response(solution), add_special_tokens=False)["input_ids"] + [end_id]
+    return seq_of(tok, prompt(tok, question), gold_as_response(solution), end_id, seq_len)
+
+
+def seq_of(tok: Any, chat: str, response: str, end_id: int, seq_len: int) -> Seq:
+    """A chat text (generation prompt included) + a response text + the end token, tokenised apart, cut at seq_len."""
+    p = tok(chat, add_special_tokens=False)["input_ids"]
+    r = tok(response, add_special_tokens=False)["input_ids"] + [end_id]
     ids = (p + r)[:seq_len]
     assert len(ids) > len(p), "the prompt fills the window"
     return ids, len(p)
