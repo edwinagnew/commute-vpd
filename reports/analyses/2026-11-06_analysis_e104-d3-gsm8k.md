@@ -160,15 +160,16 @@ same. Drift along training counts only for own-samples, 0.165 to 0.189, against 
 of the null stays at 0.58. Positions between the anchors at step 100: RL 0.38, null 0.44, own-samples 1.07, just past
 TOFU's full update. As fractions of the null all three arms sit at the template.
 
-### Does placement fall from step 10 to step 100? In four of five runs; one reinforcement-learning seed rises.
+### Does placement fall from step 10 to step 100? In four of five runs; one reinforcement-learning seed rises, through one matrix.
 
 Figure `experiments/qwen_d3_gsm8k/figures/placement.png`.
 
-**Reading it.** Prediction 2 misses: RL seed 0 rises from 0.009 to 0.126, while the other four arm-seeds fall. The
-four falls are small, from between -0.013 and 0.039 at step 10 to between -0.051 and 0.011 at step 100. RL seed 0's
-0.126 is the largest maths value, near TOFU's 0.16 before it learned its facts and above the 0.092 of a random change
-made only of alive subcomponents. RL seed 70 reads -0.016 at the same step. That seed gap of 0.142 sets the bar for
-every comparison involving RL at step 100, so RL against its null cannot count there.
+**Reading it.** Prediction 2 misses: RL seed 0 rises from 0.009 to 0.126, while the other four arm-seeds fall a
+little. The rise comes from one matrix, the down-projection of layer 27's MLP. It holds half of seed 0's split
+energy at step 100, against 0.17 for seed 70. With that matrix left out, the two seeds' shares on already-on
+subcomponents agree: 0.587 against 0.573, and these shares are exact. We read it as ordinary seed variance in one
+high-gain matrix, provisionally. So no placement claim on RL rests on seed 0's 0.126. Its seed gap of 0.142 still
+sets the bar for RL at step 100, so RL against its null cannot count there.
 
 | arm-seed | step 10 | step 100 | fall | on-set share at 100 | its Gaussian null at 100 |
 |---|---|---|---|---|---|
@@ -196,13 +197,29 @@ with a margin of 0.005 taken from the Gaussian null's draws. The seed-to-seed ga
 thirty times that margin. So the rule's margin measured noise in the null, while the arm's own seeds differed far
 more. The miss is RL seed 0 alone.
 
-RL seed 0's 0.126 is not a numeric accident of one run. The two scaled copies made from the same update were split
-again in separate passes and read 0.126174, equal to the first pass within one part in a billion. What remains
-unexplained is why one RL seed's update puts 0.70 of its split energy on already-on subcomponents against its null's
-0.57, while the other seed puts 0.58 against 0.60. The two seeds also differ in their nulls, 0.574 and 0.599, so their
-energy sits in different matrices. They were trained on different machines, so seed and card are not separated. Until
-this is run down, placement on RL reads nothing; the rule's "does not count" is a seed disagreement, not an agreement
-with the null.
+**Where RL seed 0's placement comes from.** RL seed 0's 0.126 is not a numeric accident: the two scaled copies of the
+same update were split again in separate passes and read it to one part in a billion. A breakdown by matrix finds
+the cause, at $0 on CPU from the saved splits. The scripts are `breakdown.py` and `l27down.py`, with their outputs,
+in `~/commute-data/scratch/qwen-decomp-lead/e104-anomaly/`, summarised in `REPORT.md` there.
+
+- **One matrix.** `layers.27.mlp.down_proj` holds 0.50 of seed 0's split energy at step 100. Seed 70, the shuffled-reward
+  null's seed 0 and RL seed 0 at step 10 hold 0.17, 0.17 and 0.19 there. Within that matrix 0.81 of seed 0's split
+  energy is on already-on subcomponents, against 0.63 for seed 70 and 0.24 for a random change.
+- **The rest agrees.** Leaving that matrix out, the share on already-on subcomponents is 0.587 for seed 0 and 0.573 for
+  seed 70. These shares are exact. The excess over the Gaussian null cannot be recomputed without the matrix, because
+  the per-matrix nulls were not saved. In the approximate excess the matrix carries 0.224 of the 0.248 seed gap. It
+  also lowers seed 0's overall null, 0.574 against 0.599, by moving weight into a matrix with a low null.
+- **The update itself is ordinary.** The raw change to that matrix has norm 0.028 against 0.027 and is about 0.6% of
+  each update's squared norm, with no row standing out. The top five subcomponents there are the same for both seeds,
+  all already on in the original model; seed 0 puts 5.6 times the split energy on them. So the split amplifies an
+  ordinary difference in one matrix whose subcomponents take a lot of energy per unit of change.
+- **The recipe matches.** Both seeds trained on separate H100 pods with the same learning rate, warm-up, steps, prompt
+  order and precision, with no resume; only the draw seed differs. Their norms, first-step ratios and final rewards
+  agree to about 1%.
+
+We read this as ordinary seed variance in one high-gain matrix, provisionally: with two seeds there is no third to
+say which is typical. The rule's "does not count" at step 100 remains a seed disagreement, not an agreement with the
+null.
 
 ### Do the switched-on subcomponents overlap think mode's set differently? Own-samples overlaps less, and that is size.
 
@@ -341,7 +358,9 @@ capability against strengthening, these readings give no handle yet on the maths
 
 Something we did not expect: RL seed 0 put far more of its split on already-on subcomponents at step 100 than RL seed
 70 did, 0.126 against -0.016. Seed 0 reads like TOFU's update before it learned its facts; seed 70 reads like the
-template. We cannot explain it, and it reproduces exactly in two further splits of the same update. Smaller: every
+template. One matrix, layer 27's MLP down-projection, carries it: it holds half of seed 0's split energy against 0.17
+for seed 70, and without it the two seeds agree. The raw update there is ordinary, so we read it as seed variance in
+one high-gain matrix, provisionally. Smaller: every
 maths state's outside share is 0.58 of its null, the template's value, so that reading varies only through the null.
 The six-try size search failed on one copy because output size grew unevenly with the scale.
 
@@ -351,8 +370,10 @@ output size of 0.0006 to 0.0013, where a straight line in log size had put it ne
 
 ## What next
 
-- Find out why RL seed 0's placement is high: which matrices carry its on-set energy, against seed 70's. Placement on
-  RL reads nothing until then.
+- Nothing is queued on RL seed 0's placement: no claim rests on its 0.126. If a later reading does rest on placement,
+  re-split both RL seeds at step 100 to save the per-matrix nulls, about 20 min on a `debug` L40 at $0. If the excess
+  without layer 27's down-projection then agrees across seeds, the seed-variance reading holds; that run would be
+  E104's second and last amendment.
 
 ## Scorecard
 
@@ -389,6 +410,11 @@ Direct share. Credit. The adversary. Teacher training. Random changes at GSM8K s
 redundant for two readings, and two scaled copies cover the third. Steps other than 10 and 100. Own-samples seed 70:
 withdrawn after Amendment 1. A size copy made from RL seed 70, or scaled other than by one number. A copy matched on
 the size of the switched-on set. Think sets built on RL rollouts. An independent check of this report.
+
+For RL seed 0's placement: the exact per-matrix nulls, since the null's expected shares were not saved; a re-split
+of both RL seeds at step 100 on a `debug` L40, about 20 min at $0, would give them, and would be E104's second and last
+amendment, not spent. The split at steps 20 and 50, about 40 min. A third RL seed, which `qwen-rl-lead` would train
+on a paid card.
 
 ## Provenance
 
