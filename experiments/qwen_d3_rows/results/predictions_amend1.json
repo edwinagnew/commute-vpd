@@ -1,0 +1,31 @@
+{
+ "experiment": "E94 Amendment 1",
+ "filed": "2026-11-06, before any read of a known-facts state",
+ "plan": "reports/plans/2026-11-05_plan_e94-d3-rows.md, section 'Amendment 1'",
+ "question": "Do the three readings that separated E94's anchors (outside share, placement excess, think overlap) follow the label 'already known', reading like anchor 1, or the task, format and recipe, reading like anchor 2, on baseline-lead's known-facts fine-tune (E103 Amendments 1 and 2)?",
+ "states": {
+  "known_s42_matched": {"file": "known_answer_pair/results/large/dW/amend1_matched.safetensors", "step": 32, "norm": 0.48008358422764585},
+  "known_s142_matched": {"file": "known_answer_pair/results/large/dW/amend2_s142_matched.safetensors", "step": 32, "norm": 0.4831800589026168},
+  "known_s42_end": {"file": "known_answer_pair/results/large/dW/amend1_end.safetensors", "step": 335, "norm": 8.369245200220703},
+  "known_s142_end": {"file": "known_answer_pair/results/large/dW/amend2_s142_end.safetensors", "step": 335, "norm": 8.247695123661371},
+  "source": "norms: fp64 sums of the saved files (d3.norm's definition), measured on CPU 2026-11-06; baseline-lead's training logs read 0.4800836, 0.4831801, 8.369245, 8.247695 (results/amend1_train.json, amend2_train.json). Every file: 196 fp32 tensors, names and shapes equal to E94's a2_s42 step 29."
+ },
+ "controls": {
+  "real_whole_positions": 2961,
+  "real_rows": "39 rows of 256: pair 0 of TOFU's 217 real rows with Amendment 1's sentence (experiments/known_answer_pair/results/forms_amend1.jsonl), packed by qc.rows_of as E103's neurons.py real_rows; whole-question answer positions 2961 of 3493 answer positions (measured on CPU 2026-11-06)",
+  "W0_real_rows": "W0 as the fine-tuned model on these rows, first in the first job: K00 and K01 equal K0 within E94's controls.id (1e-6 relative), classes add to pooled within controls.classes_rel (1e-9); its K0 per row is the reference every state's K0 on these rows must meet within first_minutes.K0_rel (1e-6)",
+  "per_state": "E94's first_minutes: the norm against this file's within 1e-6 relative and every tensor fp32; K0 on the maths, TOFU and known-facts rows against W0's; card and host peaks under 44 GiB and 105 GB; classes add to pooled"
+ },
+ "rule": "rules_amend1.side, per reading and size. Means over the two seeds of the known-facts arm (k), anchor 1 (m1: a1_s0, a1_s1) and anchor 2 (m2: a2_s42_<size>, a2_s142_<size>, size matched or full). If qc.separates(anchor 1, anchor 2) is not 'counts': 'no call: the anchors do not separate'. Else f = (k - m1) / (m2 - m1), noise = max of the three seed spreads / |m2 - m1|; 'like anchor 2' if f > 0.5 + noise, 'like anchor 1' if f < 0.5 - noise, else 'midway: no call'; ', beyond it' added when f > 1 + noise or f < -noise. Any missing value: 'unread'. Readings: outside = state.json outside; placement = placement.excess on the maths rows; think = the fold of the switched-on set with T on the maths rows. A lean holds when the verdict starts with it.",
+ "bands_from_E94": "noise expected from E94's seed spreads alone (table.json numbers.<state>.<reading>.value): matched outside 0.00051/0.02726 = 0.019, matched placement 0.00447/0.16815 = 0.027, matched think no call (comparisons.matched.think.verdict 'does not count'); end against anchor 2 full: outside 0.00149/0.06127 = 0.024, placement 0.00310/0.02314 = 0.134, think 0.0899/0.6637 = 0.135. The known-facts arm's own spread enters the same max.",
+ "edges": "rules_amend1.py --edges, 13 cases, all as named (2026-11-06): tie f = 0.5 and f = 0.5 + noise read midway (strict); known seeds straddling the midpoint read midway; seed spread zero everywhere calls on any f other than 0.5; anchors not separating (E94's think at matched) read no call; a missing seed, W0 and do-nothing's placement read unread; do-nothing's outside and think read as the state's, since they describe the update and the masks, never the split.",
+ "predictions": {
+  "K1": {"reading": "outside", "size": "matched", "lean": "like anchor 2", "why": "same rows type, format and recipe as anchor 2, both 29-32 steps into the same 250-step warm-up; E94's matched outside shares 0.1235 (anchor 1) and 0.0962 (anchor 2)"},
+  "K2": {"reading": "placement", "size": "matched", "lean": "like anchor 2", "why": "as K1; E94 read anchor 2's opening steps at 0.158, 0.162 against anchor 1's -0.008"},
+  "K3": {"reading": "think", "size": "matched", "lean": "no call", "why": "E94's anchors do not separate on think overlap at the matched step"},
+  "K4": {"reading": "outside", "size": "end", "lean": null, "why": "reported: known end 8.37 and 8.25 against anchor 2 full 18.1, so the sizes differ 2.2 times"},
+  "K5": {"reading": "placement", "size": "end", "lean": null, "why": "reported, as K4"},
+  "K6": {"reading": "think", "size": "end", "lean": null, "why": "reported, as K4"}
+ },
+ "printed": "Not scored: the direct share and credit under masks on the known-facts rows and on anchor 2's TOFU rows, beside anchor 2's on its TOFU rows (E94 carried neither); the size on the maths rows, K00 - K0."
+}
