@@ -1,0 +1,16 @@
+[53267      0.3s] [start] {'stage': 'control', 'states': None, 'decomp': '/mnt/nw/home/e.agnew/commute-data/artifacts/qwen3-1.7b-p-e9fcffd5-torch'}; config Config(n16=16, null_seeds=(0, 1, 2, 3), draws=1000, match=1.25, evals=6, limit_s=7020, first_guess_s=1200)
+[53267      0.3s] [check] e94_nulls_hashes: ok {"unit_nulls": "05ff807e6c834b379b2c7e74633e81fc781575544eac58da5970a9f6ca38fa11", "nulls_json": "e9b0329c6d40aca11739cdfaae6a2678bf141646fc38fa15522e6acd741b38e4"}
+[53267     93.8s] [load] target, components, Γ, live set; NVIDIA L40, peak GPU 40.61 GiB, host 43.0 GB
+[53267    211.6s] [cells W0 as FT, maths] K0 0.0696131952 nll_W0 2.06819917 nll_FT 2.06819917 K00 0.0696131952 K01 0.0696131952 nll_m00 2.05578163 nll_m01 2.05578163; rows 128, 110 s, peak GPU 42.13 GiB, host 43.0 GB
+[53267    213.5s] [check] W0_state_path: ok {"K0": 0.06961319516372438, "K00": 0.06961319516372438, "K01": 0.06961319516372438, "S": 0, "think": null, "K0_rows_max_rel": 0.0}
+[53267    224.3s] [check] a1_s0_norm: ok {"norm": 0.4865203387435381, "e91": 0.4865203387435381}
+[53267    346.1s] [cells control_a1_s0 base, maths] K0 0.0696131952 nll_W0 2.06819917 nll_FT 1.97893084 K00 0.197216012 K01 0.0667947209 nll_m00 2.05578163 nll_m01 2.04450416; rows 128, 111 s, peak GPU 42.13 GiB, host 44.3 GB
+[53267    346.1s] [check] control_a1_s0_K0_is_W0s: ok {"rows": 128}
+[53267    346.1s] [first minutes] control_a1_s0 K00 0.197216012, E93's None (a stop at step 100 only)
+[53267    535.9s] [sigma] 196 sites in 174 s, peak GPU 42.13 GiB, host 71.9 GB
+[53267    941.9s] [split control_a1_s0] {"outside": 0.12335805143394823, "outside_null": 0.2119068773431806, "stored_error": 8.900053218631971e-07, "split_s": 405.86535716056824}; placement {"share": 0.5665128306540514, "null": [0.5768929387356196, 0.5720623806292561, 0.5741994746902184, 0.573475471134962], "excess": -0.007644735643462575}; |S| 1286, T fold 3.662581110310022 (o 254, chance 69.35, draw sd 0.1123226585213479) L fold 4.222208818384703 (o 140, chance 33.158, draw sd 0.16571074919110027)
+[53267    941.9s] [check] control_a1_s0_stored_error: ok {"stored_error": 8.900053218631971e-07}
+[53267    941.9s] [check] control_a1_s0_memory: ok {"gpu_gib": 42.12601661682129, "host_gb": 80.156316}
+[53267    947.1s] [check] template_through_E104: ok {"outside": 0.12335805143394823, "outside_null": 0.2119068773431806, "placement": -0.007644735643462575, "K00": 0.19721601164508068, "T": 3.662581110310022, "L": 4.222208818384703, "S": 1286, "file": "qwen_anchor1/results/large/dW/a1/step_100.safetensors", "norm": 0.4865203387435381, "sha256": "2906db6e8c4b99b1ad2963a1fca8456230d5319c5b86cd1d6314b51407d44333"}
+[53267   1356.6s] [check] half_scale_invariant: ok {"outside": 0.12335805143394823, "outside_null": 0.2119068773431806, "placement": -0.007644735643462575, "max_abs_gap": 0.0, "split_s": 405.528692483902}
+[53267   1357.1s] [control] passed, peak GPU 42.13 GiB, host 80.2 GB
