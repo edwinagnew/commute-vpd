@@ -160,3 +160,19 @@ adds a verdict rule, band or score:
 8. Row 164's subject-number clause covered the label-word version in the E99-reset sequence. The user's evening
    retarget and ask 9 supersede it (decisions row, 2026-11-06). E124 reads r and the stand-in ratio itself with the
    existing readers; teacher training and E38's switched-on set are left to regating-lead, who gets the states.
+
+## Revision before any run (Fable, 2026-11-06, later): pronoun only, smaller sizes, more Pile
+
+The writer's count on Pile rows 0-32767 found agreement at 155 windows in total and pronoun at ~1,000 kept training
+windows, 10-100 times short (`~/commute-data/scratch/definition-lead/e124-writer/explore*.out`). Fable's revision
+(same advice file, "2026-11-06, later"). Nothing was filed or run, so this is a plan revision, not an amendment.
+1. **Agreement dropped.** Only the attractor form keeps W0 under 0.90, and its cells hold 2-82 windows per 32k rows.
+   A TRIED row records it. If a second pair is wanted later: his/her after a name (same C), as Amendment 1.
+2. **Pronoun sizes.** Train 3,200, fit 512, held-out 800, balanced by gender. The pool is the top 200 names per gender.
+   E112's sizes were a choice: carrying needs ~400+ held-out windows for a 0.90 bar, and P3 and r are means that E54
+   and E53 read on 97 and 500 windows.
+3. **Pool filter, a counted rule.** Exclude a name whose lowercase token is at least as frequent in the Pile as its
+   capitalised one (months, places, common words). The excluded list is printed, and the drop rule runs after it with
+   the drop share per gender. Never exclude by a name's own drop share.
+4. **More Pile.** `data.pile_rows("train", 65536, 524288)` in a CPU Slurm cache job, after
+   `cluster/jain_readout_cache.sbatch` (65k rows in under 10 min, job 48321). Probe rows stay 32768-65535.
