@@ -5,8 +5,9 @@ retarget"). Plans `reports/plans/2026-11-06_plan_e117-neurons-at-vpd-count.md` a
 `reports/plans/2026-11-06_plan_e118-qwen-comparator-table.md`. Jobs 54427 (E117; the first submission, 54369, stopped
 before loading because another process held the card) and 54382, 54383 (E118), all `debug` on the L40, $0. The one
 table: `experiments/neuron_vpd_table/results/full_table.md`, built by `build_full.py`; figures by `plot_full.py`.
-Notebooks `notebooks/E117_neuron_vpd_count.ipynb`, `notebooks/E118_qwen_comparator_table.ipynb`. Provisional, fast lane,
-no independent check.*
+Notebooks `notebooks/E117_neuron_vpd_count.ipynb`, `notebooks/E118_qwen_comparator_table.ipynb`. Provisional, fast lane.
+Independent check: holds with caveats, `reports/reviews/2026-11-06_review_e117-e118-independent-check.md`; its fixes 1
+and 3 to 9 are applied, and fix 2 is applied in wording with its read written but not run.*
 
 We repeated the decomposition's readings on the small model's neurons, and set four cheap numbers beside its readings
 on the larger model. On the small model the decomposition's readings order the tasks as built where the neuron
@@ -86,8 +87,9 @@ maps on it. Put back alone, VPD's set removes 0.14 to 0.23 of the gain on copy m
 so the classes overlap. Given alone to the unchanged model, VPD's set recovers 0.008 to 0.019 of the gain on copy maps.
 On random maps it recovers 0.001 to 0.013. The full width recovers 0.76 to 0.80 on copy maps and 0.27 to 0.29 on random
 ones. So the 0.3-threshold set is not where VPD's re-switching lives. The neuron set does a little better on
-re-switching, up to 0.14, but with a spread of the same size. Most sets sit above their random same-count floor; two
-re-switching values sit at it or under it, on ident32 s1 for neurons and rand32b s1 for VPD.
+re-switching, up to 0.14, but with a spread of the same size. Against the range of 20 random same-count sets, VPD's
+re-switching set sits inside the range on 4 of 8 states: ident32 s0 and s1, rand32b s0 and s1. The neuron set is above
+the random maximum on 7 of 8. So on re-switching VPD's set is often no better than a random set of its size.
 
 ## The 67M: at full width, which method orders the task families as built?
 
@@ -95,14 +97,19 @@ re-switching values sit at it or under it, on ident32 s1 for neurons and rand32b
 
 **Reading it.** VPD's full-width share does on both families, and the neuron shares do on one. These cells were not
 filed in E117; E12's rule is applied to them here as description. VPD's $r$ puts copy maps 0.47 above random maps and
-lowercase 0.59 above the ciphers. Both gaps exceed E53's bar of 0.3. The neuron share $r_n$ reverses on the maps,
-random maps 0.38 higher. It puts lowercase only 0.18 above the ciphers; $r_\text{half}$ manages 0.26. Both are under
+lowercase 0.59 above the ciphers. Both gaps exceed E53's bar of 0.3. The neuron share $r_n$ reverses on the maps: the
+lowest random-map value is 0.18 above the highest copy-map one, over a within-class range of 0.14. It puts lowercase only 0.18 above the ciphers; $r_\text{half}$ manages 0.26. Both are under
 E53's bar. This repeats E98's finding.
 
 **Lowercase and the ciphers have no switched-on set.** VPD switches on no subcomponent at position 63 on any of the six
-states: the count is 0 everywhere. So every set panel on that family reads "unreadable" for both methods. That is
-itself a result: on these next-token tasks the fine-tune's gain is carried by many small importance changes, none above
-0.3. The full width still carries it: VPD's $r$ reads 0.75 and 0.77 on lowercase.
+states: the count is 0 everywhere. So every set panel on that family reads "unreadable" for both methods. What was
+measured is narrow. No alive subcomponent's importance change, averaged over the 500 windows at position 63, is above
+0.3. Yet the largest single change anywhere on these states is 1, the most it can be. Two readings fit that. The change
+may be spread thinly over many subcomponents. Or each window, predicting a different next token, may switch on its own
+subcomponents strongly, and the average over windows washes them out. Nothing saved tells these apart; a $0 read of the
+largest mean change and of the per-window share above 0.3 would, and is written but not yet run
+(`experiments/neuron_vpd_count/k0_read.py`). The full width still carries the gain: VPD's $r$ reads 0.75 and 0.77 on
+lowercase.
 
 ### Full 67M numbers
 
@@ -141,7 +148,10 @@ The full row-by-row table is section 2 of `full_table.md`. Each VPD row family g
 **Reading it.** Yes: update size and gain each sort E93's verdict exactly, and so does the carrying-neuron share, by a
 hair. Every passing state has a larger update and a larger gain than every failing one. The smallest passing update is
 the template fine-tune's, at 3.7 parts in ten thousand. The largest failing one is the shuffled-reward null's, at 2.8.
-Gain separates them by 0.07 nats: 0.67 against 0.60. The carrying-neuron share is lower on every passing state, 0.72 to
+Gain separates them by 0.07 nats: 0.67 against 0.60. That closest pair is read on different rows, the template rows
+against the gold maths solutions. On rows the arms share, the supervised maths arms against the RL, null and
+own-samples arms, all on gold solutions, gain orders them by about 1.1 nats. Only update size reads no rows. The
+carrying-neuron share also mixes probes. It is lower on every passing state, 0.72 to
 0.91, than on any failing one, 0.92 to 1.07. Arm type sorts them as well: the reinforcement-learning, null and
 own-samples arms fail and the supervised ones pass. VPD's own share of the update left in Δ does not sort them. So by
 E92's test this table says less than its verdicts suggest: its misses fall on the smallest updates.
@@ -158,7 +168,8 @@ calls "counts". Here it is applied as description to pairs it was not filed for.
   to 53. Gain, steering share and the carrying share count at 82 to 210; only update size does not, matched by
   construction. The two anchors are read on different rows, so part of every comparator's gap is the rows. E92 already
   showed that the steering share cannot be read across the anchors as new against old.
-- **The same pair at full size.** Everything counts, size by a factor of about 1,400. E94 showed random changes of
+- **The same pair at full size.** Everything counts, size by a factor of about 1,400. Again each anchor is read on
+  its own rows for gain, steering and the carrying share. E94 showed random changes of
   either size do not reproduce VPD's gap, so VPD's reading is not size alone. Still, no cheap column misses this pair.
 - **Reinforcement learning against its shuffled-reward null.** VPD reads them alike at both steps, every cell under 1.
   Update size and steering share count at step 10, and gain only at step 100, at 1.1. No column counts at both steps,
@@ -173,11 +184,15 @@ calls "counts". Here it is applied as description to pairs it was not filed for.
 
 **Reading it.** At matched size the cheap numbers place it as VPD does. At the end of training they do not. The place
 is where the known-facts arm's mean lies between the anchors, the template at 0 and the fictional-facts arm at 1, and
-is left out when the anchors do not separate on that column. At matched size VPD's outside share reads 0.90 and its
-placement 0.65. The steering share reads 0.63 and the gain 0.32. At the end VPD's three readings put the arm at 0.73 to
-1.07, beside the fictional-facts arm. Size and gain put it at 0.44 and 0.27; steering and the carrying share fall
-below the template, at −1.7 and −1.2. This is the one Qwen place where VPD's columns agree with each other and the
-cheap ones do not. E94 already read it as following the task and format, not novelty.
+is left out when the anchors do not separate on that column. It is also left out when the known arm's two seeds
+differ by more than the anchors' gap, since their mean is then no place. That removes VPD's placement at the end, where
+E94 gave no call, and the carrying share at the end, whose seeds read 2.15 and 0.13. W0's rank is not shown: it reads
+only each arm's rows. The comparators read the known arm on its own sentences, its carrying share on E103's probe, and
+the anchors on theirs, so every cheap place is across rows. At matched size VPD's outside share reads 0.90 and its
+placement 0.65. The steering share reads 0.63 and the gain 0.32. At the end VPD's outside share and think overlap put the
+arm at 0.73 and 0.79, near the fictional-facts arm. Size and gain put it at 0.44 and 0.27; the steering share falls below
+the template, at −1.7. This is the one Qwen place where VPD's columns agree with each other and every cheap one shown
+does not. E94 already read it as following the task and format, not novelty.
 
 ## The carrying-neuron share above 1
 
@@ -208,7 +223,8 @@ share exceeds 1. Two causes are visible in `results/carry/*.json`:
 On the 67M, the decomposition does add something over neurons on the two readings where it had a positive finding. Its
 switched-on set repeats across seeds for copy maps more than for random maps. Its full-width re-switching share orders
 both task families by more than E53's bar, where the neuron share reverses on one. The switched-on set at the 0.3
-threshold is not where re-switching lives, for either method, and it does not exist at all on the next-token tasks. On
+threshold is not where re-switching lives, for either method, and under the window-mean rule it is empty on the
+next-token tasks. On
 Qwen, the decomposition's verdicts are so far matched or beaten by update size, gain and the steering share on every
 pair but one. That pair is the known-facts arm at the end of training, which E94 read as task and format. So the case
 that VPD makes post-training more readable than neurons rests, for now, on the 67M.
@@ -229,8 +245,9 @@ that VPD makes post-training more readable than neurons rests, for now, on the 6
 
 ## Surprises
 
-- VPD switches on no subcomponent on any lowercase or cipher state at the read position. The plan expected that panel
-  to have a VPD side for the first time. It has none.
+- No subcomponent's window-mean importance change rises above 0.3 on any lowercase or cipher state at the read
+  position, though single changes reach 1. The plan expected that panel to have a VPD side for the first time. It has
+  none. Whether the change is spread thin or averaged away over windows is open.
 - The carrying-neuron share above 1, explained above.
 - None reversed a filed guess: VPD separated on seed agreement and not on restore share, and neurons separated nothing,
   as guessed.
@@ -262,6 +279,11 @@ that VPD makes post-training more readable than neurons rests, for now, on the 6
   against null and known against wrong answers, as description.
 - **E94's place between the anchors on comparator columns**: E94 filed it for VPD's columns only.
 - **The ordering summary for E93**: a new description; no rule.
+- **Panel B's neuron restore uses W0's own firing**, the lead's decision recorded in `predictions.json` before the
+  run, not the plan's form, W0's MLP weights on the fine-tuned model's MLP input. That form is reported as
+  `B.neurons_ah`, 0.0010 to 0.0026 on both classes, and does not separate them either.
+- **The place summary leaves out a known arm whose seeds differ by more than the anchors' gap**, and leaves out W0's
+  rank, which reads only rows. Display only, added after the independent check.
 - **E118's rows**: the comparators on the GSM8K arms are read on gold solutions, E92's departure, kept. The
   known-facts arm's carrying share is read on E103's bare-answer probe while its other comparators use the trained
   sentences, as stored.
@@ -271,6 +293,8 @@ that VPD makes post-training more readable than neurons rests, for now, on the 6
 
 ## Not run
 
+- `experiments/neuron_vpd_count/k0_read.py`, the window-mean and per-window importance read on the six next-token
+  states: written, not submitted.
 - A switched-on set at any threshold other than 0.3, or neurons at counts other than VPD's.
 - The layer split of the neuron set, reported in `cells.json`, not scored.
 - Comparators on VPD's shared maths rows for the Qwen D3 families.

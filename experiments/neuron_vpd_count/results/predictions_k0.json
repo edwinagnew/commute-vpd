@@ -1,0 +1,17 @@
+{
+ "experiment": "E117 follow-up k0_read: window-mean and per-window importance change at position 63 on the six E53 step-300 states",
+ "filed": "2026-11-06, before any code ran; independent check fix 2 (reports/reviews/2026-11-06_review_e117-e118-independent-check.md)",
+ "kind": "description only: no rule, no verdict, no reuse statement; decisions.md rows 81 and 87 untouched",
+ "states": ["lowercase_s0", "lowercase_s1", "e53_cipher_s0", "e53_cipher_s1", "broad_cipher_s0", "broad_cipher_s1"],
+ "windows": "E53's 500 scored windows at position 63 (the same as E117's), batch 32, alive subcomponents only, frozen released Gamma",
+ "readings": {
+  "max_mean_dg": "largest mean over windows of g(state) - g(W0), with its subcomponent",
+  "n_mean_gt": "count with mean dg > 0.1, > 0.2, > 0.3 (the last is E117's K_VPD, read 0 on all six)",
+  "n_frac_gt_0.3": "count with dg > 0.3 on at least 10% and at least 50% of windows",
+  "max_window_dg": "largest single dg at position 63"
+ },
+ "w0_control": {
+  "rule": "with delta-W = 0, on every task before any state: max_mean_dg, max_window_dg and every count exactly 0",
+  "on_miss": "stop (exit 1)"
+ }
+}

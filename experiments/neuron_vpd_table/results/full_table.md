@@ -41,7 +41,7 @@ K_VPD = 0 makes the set readings unreadable (–). Seed agreement is one value p
 | e53_bar B | unreadable | unreadable |
 | e53_bar C | unreadable | unreadable |
 
-**Whole-width readings under the same rule**, description only (E117 filed no verdict on them; the C limits are its controls and reproduce E46/E53's r and E98's r_n):
+**Whole-width readings under the same rule**, description only (E117 filed no verdict on them; the C limits are its controls and reproduce E46/E53's r and E98's r_n). gap = min(existing class) − max(new class), so a negative gap is the new class higher; "reversed" when min(new) − max(existing) exceeds the within-class range:
 
 | reading | comparison | gap | within | reads | E53 bar (≥ 0.3) |
 |---|---|---|---|---|---|
@@ -127,22 +127,22 @@ One row per VPD reading and state, copied from E118 `qwen_comparator_table/resul
 | steering share | 0.0645 to 0.693 | 0.296 to 0.914 | does not order | -0.397 |
 | carrying-neuron share | 0.721 to 0.912 | 0.924 to 1.07 | orders, passes lower | 0.0122 |
 
-**Gap over seed spread per pair** (E92's stop-rule quantity; > 1 is E92's "counts"; – not read on that pair)
+**Gap over seed spread per pair** (E92's stop-rule quantity; > 1 is E92's "counts"; – not read on that pair). On the anchor pairs and the known-against-wrong pair each arm is read on its own rows, so the gain, steering and carrying cells there are across rows; RL against null shares the gold rows. W0's rank is left out: it reads only the rows.
 
-| pair | VPD: direct maths | VPD: outside share | VPD: placement excess | VPD: think overlap | update size ‖δW‖/‖W0‖ | gain in log P | W0 rank of first answer token | steering share | carrying-neuron share |
-|---|---|---|---|---|---|---|---|---|---|
-| template vs fictional facts, matched | 11 | 53 | 38 | 0.18 | 0.058 | 1.4e+02 | ∞ (rows differ) | 2.1e+02 | 82 |
-| template vs fictional facts, full | 0.82 | 41 | 7.5 | 7.4 | 1.4e+03 | 7.6e+02 | ∞ (rows differ) | 38 | 38 |
-| RL vs shuffled-reward null, step 10 | – | 0.92 | 0.33 | 0.25 | 3.9 | 0.93 | – | 2.8 | 0.018 |
-| RL vs shuffled-reward null, step 100 | – | 0.18 | 0.4 | 0.038 | 0.11 | 1.1 | – | 0.058 | 0.49 |
-| known vs wrong answers, matched | – | – | – | – | 0.17 | 30 | – | 2.9 | – |
+| pair | VPD: direct maths | VPD: outside share | VPD: placement excess | VPD: think overlap | update size ‖δW‖/‖W0‖ | gain in log P | steering share | carrying-neuron share |
+|---|---|---|---|---|---|---|---|---|
+| template vs fictional facts, matched | 11 | 53 | 38 | 0.18 | 0.058 | 1.4e+02 | 2.1e+02 | 82 |
+| template vs fictional facts, full | 0.82 | 41 | 7.5 | 7.4 | 1.4e+03 | 7.6e+02 | 38 | 38 |
+| RL vs shuffled-reward null, step 10 | – | 0.92 | 0.33 | 0.25 | 3.9 | 0.93 | 2.8 | 0.018 |
+| RL vs shuffled-reward null, step 100 | – | 0.18 | 0.4 | 0.038 | 0.11 | 1.1 | 0.058 | 0.49 |
+| known vs wrong answers, matched | – | – | – | – | 0.17 | 30 | 2.9 | – |
 
-**Where the known-facts fine-tune sits between the anchors** (f: template 0, fictional facts 1)
+**Where the known-facts fine-tune sits between the anchors** (f: template 0, fictional facts 1; – where the anchors do not separate on that column, or the known arm's two seeds differ by more than the anchors' gap. The comparators read each arm on its own rows: the known arm on its sentences, its carrying share on E103's probe)
 
-| size | VPD: direct maths | VPD: outside share | VPD: placement excess | VPD: think overlap | update size ‖δW‖/‖W0‖ | gain in log P | W0 rank of first answer token | steering share | carrying-neuron share |
-|---|---|---|---|---|---|---|---|---|---|
-| matched | 0.62 | 0.9 | 0.65 | – | – | 0.32 | 1 | 0.63 | – |
-| end | – | 0.73 | 1.1 | 0.79 | 0.44 | 0.27 | 1 | -1.7 | -1.2 |
+| size | VPD: direct maths | VPD: outside share | VPD: placement excess | VPD: think overlap | update size ‖δW‖/‖W0‖ | gain in log P | steering share | carrying-neuron share |
+|---|---|---|---|---|---|---|---|---|
+| matched | 0.62 | 0.9 | 0.65 | – | – | 0.32 | 0.63 | – |
+| end | – | 0.73 | – | 0.79 | 0.44 | 0.27 | -1.7 | – |
 
 ## 3. Qwen: the earlier verdict-level rows (ask 24 (a), not covered by section 2)
 
