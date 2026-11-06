@@ -1,21 +1,23 @@
 # E112: does a case-label fine-tune of the 67M model reuse "the previous word is capitalised"?
 
 *definition-lead, 2026-11-06. Plan `reports/plans/2026-11-06_plan_e112-case-label.md`; filed predictions
-`experiments/case_label/results/predictions.json`, Amendment 1's `predictions_amend1.json`; notebook
-`notebooks/E112_case_label.ipynb`. Provisional: no independent check.*
+`experiments/case_label/results/predictions.json`, Amendment 1's `predictions_amend1.json`, Amendment 2's
+`predictions_amend2.json`; notebook `notebooks/E112_case_label.ipynb`. Provisional: no independent check. Closed: both
+amendments are spent.*
 
 We taught the small model to pick a label word by whether the previous word is capitalised, beside a twin that learns
-labels from a shuffled list. The real fine-tune looks like reuse of the model's own case feature on unseen words. But
-removing that feature's direction took away under a tenth of its gain, and a stronger removal took about a fifth. Under the adopted definition the real task therefore reads
-"not through the capability" twice, our filed prediction missed twice, and this pair gives no reuse label yet.
+labels from a shuffled list. The real fine-tune looks like reuse of the model's own case feature, but removing that
+feature took a tenth of its gain and a stronger removal a fifth, so the adopted definition reads "not through the
+capability". A last try, erasing every linear trace of case, stopped at its control, because as many random directions
+also damaged the model: this pair gives no reuse label, and E112 is closed.
 
 ## The answer
 
-The real fine-tune passes the definition's first two tests and fails its causal check, twice. The original model holds
-the case of the previous word, and the fine-tune labels unseen words as a single cut on that readout. Removing the
-readout's direction at one place took under a tenth of the label gain. Removing two case directions at every position
-of the last three blocks took about a fifth, against a filed bar of one half. So the filed rule reads "not through C"
-both times, and our filed "reuses C" missed. The twin reads "not through C", as filed.
+The real fine-tune passes the definition's first two tests and fails its causal check. Removing the case readout took
+under a tenth of the label gain, and a stronger removal about a fifth, against a filed bar of one half. So the filed
+rule reads "not through C", and our filed "reuses C" missed. A last, full erasure of case stopped at its own control,
+because removing that many random directions also broke the original model. It gives no verdict. The twin reads "not
+through C", as filed. Both amendments are spent, so E112 is closed.
 
 ## What we were trying to test
 
@@ -224,8 +226,78 @@ did not fail by breaking the original model, whose next-token loss moved by unde
 - The fine-tune may read a nonlinear function of the residual that no linear removal reaches.
 
 No new verdict rule is added: the result is read by E112's filed bar, as `.claude/CLAUDE.md` → "Adopted definitions are
-frozen" requires. E112 has one amendment left. Whether to spend it on a stronger removal is the user's choice, and is
-being asked; a removal that leaves no linear readout of case, checked by refitting one, is one such option.
+frozen" requires. The user spent E112's last amendment on a removal that leaves no linear readout of case, below.
+
+## Amendment 2: does erasing every linear trace of case take the gain away?
+
+*`decisions.md` row "E112 Amendment 2, the last", approved by the user on 2026-11-06 in answer to ask 4. Settings and
+expected values filed in `experiments/case_label/results/predictions_amend2.json` before the run; rules and bars are
+E112's `predictions.json`, unchanged. Code `experiments/case_label/amend2.py`. Job 54146.*
+
+**What changed.** Amendment 1 removed two fixed directions per block. Amendment 2 removes as many as it takes to make
+case unreadable by a linear readout, by Ravfogel and colleagues' 2020 iterative nullspace method, INLP. At
+each block's output, for each of the two case labels, it fits stage 0's ridge readout on half the saved Pile windows,
+removes that readout's direction, refits on what is left, and repeats. It stops when the readout labels the held-out
+task windows right at most 0.55 of the time, or after 64 directions. The two labels' directions are merged per block
+into one orthonormal basis and removed at every position of blocks 1 to 3. The do-nothing reference removes a seeded
+random basis of the same size at the same sites. The filed run read that reference first and alone, on all four
+states, and stopped the job with exit 1 if it took more than 0.10 of the gain on any of them.
+
+**What happened.** The erasure worked as designed, and then its control stopped the run. The readout reached 0.55 or
+less for both labels at every block, none at the cap. The merged sizes were 37, 41 and 70 directions at blocks 1, 2 and
+3, so 148 directions in all, against 6 in Amendment 1. A fresh readout fitted at block 3 after the erasure read the
+previous-word case at 0.49, down from 0.785 unedited. It read the word's own case at 0.605, down from 0.946, a little
+above the 0.55 stopping level. The random removal of the same size then took between 0.19 and 0.26 of every state's
+label gain, over the bar of 0.10 on all four. The job stopped there as filed. No state was read under the case erasure,
+so Amendment 2 has no removal share and no verdict.
+
+![amend2 rank](../../experiments/case_label/figures/amend2_rank.png)
+
+**Reading it.** The erasure is too large to be specific, which is the reading filed for this stop. The left panel shows
+the original model's next-token loss at the trigger, 3.43 nats unedited, under each attempt's removal. The case erasure
+raised it by 3.32 nats, about doubling it, where Amendment 1's two directions cost 0.045. The same number of random
+directions raised it by 0.76. The right panel shows why the run stopped: at 148 directions the random removal alone
+takes about as much of the gain as Amendment 1's case removal did. So removing case at this size also breaks the
+original model's next-token prediction, and the check cannot separate the fine-tune's reliance on case from general
+damage. This says nothing about why the earlier shares were low; no cause is named.
+
+| removal at blocks 1-3, every position | directions | next-token loss change of the original model, nats | real-label margin change | twin-label margin change |
+|---|---|---|---|---|
+| Amendment 1: both case directions | 6 | +0.045 | -0.068 | -0.004 |
+| Amendment 1: two random directions per block | 6 | +0.025 | +0.038 | +0.004 |
+| Amendment 2: full case erasure | 148 | +3.319 | +0.038 | +0.044 |
+| Amendment 2: full case erasure, block 0 too | 215 | +3.929 | -0.019 | -0.028 |
+| Amendment 2: random, same size per block | 148 | +0.758 | -0.182 | +0.001 |
+
+| state | label gain, nats | random removal's share, 148 directions | bar | stops the run |
+|---|---|---|---|---|
+| real, seed 0 | 12.83 | 0.250 | 0.10 | yes |
+| real, seed 1 | 12.04 | 0.258 | 0.10 | yes |
+| twin, seed 0 | 10.23 | 0.194 | 0.10 | yes |
+| twin, seed 1 | 8.80 | 0.229 | 0.10 | yes |
+
+| block | previous-word readout: directions, accuracy before → after | own-word readout: directions, accuracy before → after | merged size | used in the removal |
+|---|---|---|---|---|
+| 0 | 7, 0.651 → 0.525 | 60, 0.999 → 0.550 | 67 | beside only |
+| 1 | 7, 0.990 → 0.541 | 30, 0.997 → 0.548 | 37 | yes |
+| 2 | 7, 0.860 → 0.544 | 34, 0.989 → 0.528 | 41 | yes |
+| 3 | 44, 0.742 → 0.543 | 26, 0.946 → 0.541 | 70 | yes |
+
+The filed expectation said this could happen. A merged size over about 15 per block could put the random share over
+the bar, and the stop would then be read as "the removal is too large to be specific", not as a verdict. The merged sizes were 37 to 70 per block. The run's other beside reads, the share with block 0 added and the
+per-state shares under the erasure, come after the stop in the code and were not run.
+
+## E112's final reading
+
+Read under `decisions.md` rows 81 and 87 plus the direction-removal check, with nothing added:
+
+- **Real task:** "not through C" by the filed rule, on both seeds. Possession, carrying and the small-function test
+  pass; the causal check misses, at 0.083 and 0.091 in stage 2 and 0.188 and 0.211 in Amendment 1, against 0.50. The
+  filed "reuses C" missed.
+- **Twin:** "not through C", as filed.
+- **Amendment 2:** stopped at its do-nothing check; no verdict and no removal share.
+
+Both amendments are spent, so E112 is closed with the reading above.
 
 ## What we learned
 
@@ -233,9 +305,10 @@ The definition as adopted does not read "reuses" on the pair built to its own sh
 looks like reuse on every test but the causal one. Possession and carrying both read the way reuse would, and the twin
 separates from the real task on both, so the apparatus does tell a feature-based fine-tune from a memorising one. The
 causal check, as filed, is the test that decides. A one-direction removal at one place took about a tenth of the gain,
-and a two-direction removal at every position of blocks 1 to 3 took about a fifth. For `GOALS.md`'s question of new
-capabilities against strengthened ones, this pair therefore gives no outside "reuse" label yet. Subject number, the
-second pair, waits on whether the last amendment is spent on a stronger removal.
+and a two-direction removal at every position of blocks 1 to 3 took about a fifth. Removing case completely from the
+linear readout's view took 148 directions, and at that size a random removal also damages the original model, so the
+direction-removal check could not be pushed further on this pair. For `GOALS.md`'s question of new capabilities
+against strengthened ones, this pair gives no outside "reuse" label.
 
 ## How compelling is the evidence
 
@@ -247,6 +320,8 @@ second pair, waits on whether the last amendment is spent on a stronger removal.
 - Both removals are linear and low-rank, one or two directions per block. They are blind to case carried in other
   directions, at block 0 or the embeddings, or nonlinearly. Their noise floors are the random directions: at most
   0.0006 for stage 2 and 0.013 for Amendment 1. Both real shares are far above noise and far below the bar.
+- Amendment 2's full erasure has a noise floor of 0.19 to 0.26, the random removal of its size, over the filed 0.10.
+  A case share at that size could not have been told from general damage, which is why the filed stop exists.
 - The share is read on train-word windows, where memorised word identities could also carry the label.
 - The held-out set has 1,600 windows over 100 word pairs; the fit set 1,024 windows of training words.
 
@@ -254,15 +329,18 @@ second pair, waits on whether the last amendment is spent on a stronger removal.
 
 The filed prediction that the real fine-tune "reuses C" missed on both seeds, twice. Stage 2's removal share was 0.08
 and 0.09 against a bar of 0.50, while every other number read as predicted. Amendment 1, filed with the same
-expectation, read 0.19 and 0.21. We cannot explain it yet; the candidates under Amendment 1 are untested.
+expectation, read 0.19 and 0.21. We cannot explain it; the candidates under Amendment 1 are untested.
+
+Amendment 2 stopped at its do-nothing check, which was filed as possible. The size of the stop was not expected: the
+original model's next-token loss rose by 3.32 nats under the erasure, about doubling it, where the filed expectation
+said only "larger than Amendment 1's +0.045".
 
 ## What next
 
-- E112's last amendment, if the user chooses to spend it: a stronger removal, for instance one that leaves no linear
-  readout of case at blocks 1 to 3, checked by refitting a readout after it. If the share then reaches one half, case
-  was spread over more directions than two; if it stays low with case unreadable, the fine-tune does not run through a
-  linear case readout. The user is being asked.
-- Subject number, the second pair, runs only once case label reads cleanly, per the user's order.
+- E112 is closed. Subject number, the second pair, does not run: the user's rule was that it runs only if case label
+  reads cleanly, and case label ended with a miss and an erasure that stopped at its control.
+- The next step is the user's choice. The direction-removal check reached its limit here: the removal that erases case
+  is as damaging as a random one of its size.
 
 ## Scorecard
 
@@ -283,6 +361,9 @@ expectation, read 0.19 and 0.21. We cannot explain it yet; the candidates under 
 | A1 real verdict | "reuses C" on both seeds | P1, P2 from stage 2 and the new P3 | P3 misses | **"not through C", filed outcome missed again** |
 | A1 P3 twin | the stronger removal spares the twin | at most 0.20 | 0.016, 0.012 | as filed |
 | A1 twin verdict | "not through C" on both seeds | any of P1-P3 misses | P1, P2 and P3 miss | **"not through C", as filed** |
+| A2 do-nothing | same-size random removal, 148 directions, removes almost no gain | share at most 0.10 on every state, else exit 1 | 0.194 to 0.258 | **over the bar: run stopped, exit 1** |
+| A2 P3 real, twin | full linear case erasure, blocks 1-3 | as Amendment 1 | not read | **no verdict** |
+| E112 final | real; twin | stage 2 and Amendment 1 by the filed rule | | **real "not through C", filed outcome missed; twin "not through C", as filed; closed** |
 
 ## Departures from the literature
 
@@ -297,14 +378,19 @@ expectation, read 0.19 and 0.21. We cannot explain it yet; the candidates under 
 - The fine-tune is our earlier copy task's recipe, Adam at 3e-5 with a KL term to the original model, not Jain et
   al.'s recipe for their models.
 - The control readout follows Hewitt and Liang 2019 in giving each word pair a random label, scored on held-out pairs.
+- Amendment 2's erasure is Ravfogel et al.'s INLP, with stage 0's closed-form ridge readout in place of their linear
+  classifier. That way the erased concept is the one the definition's readout reads. Its stopping
+  accuracy is read on the held-out task windows, at 0.55 as the user's row set it, with a cap of 64 directions.
 
 ## Not run
 
-- E112's second and last amendment. The user is being asked whether to spend it on a stronger removal.
-- A readout refitted after Amendment 1's removal, to see whether case is still linearly readable.
-- Label accuracy on held-out words under either removal; both shares are read on train-word windows only.
-- Removal at block 0 or the embeddings; a nonlinear removal.
-- Subject number, the second pair; it waits on the decision above.
+- Amendment 2's case erasure on any state: the run stopped at its do-nothing check, so no removal share, no verdict,
+  and no share with block 0 added.
+- A third amendment: E112 has spent its two, and a third would be a new plan.
+- A readout refitted after Amendment 1's removal; Amendment 2 refitted one at block 3 only.
+- Label accuracy on held-out words under any removal; every share is read on train-word windows only.
+- A nonlinear removal.
+- Subject number, the second pair: it runs only if case label reads cleanly, and it did not.
 - More than two seeds; a second marker token; other label words.
 - The route-split readings, which subcomponents Γ switches on, at this trigger.
 - An independent check of the analysis.
@@ -321,3 +407,6 @@ expectation, read 0.19 and 0.21. We cannot explain it yet; the candidates under 
   memory 6.1 GB.
 - Amendment 1: job 54094, debug QoS, one L40, reads from 11:17:03 to 11:17:30 UTC, about a minute, $0. Peak host
   memory 6.1 GB.
+- Amendment 2: job 54146, debug QoS, `cluster/case_label_amend2.sbatch`, reads from 11:39:48 to 11:40:14 UTC, about a
+  minute, $0, exit 1 at the filed do-nothing stop. Result `results/amend2.json` (with a `stop` entry), log
+  `results/amend2.out`; erasure bases `results/large/amend2_bases.pt`. Peak host memory 6.1 GB.
