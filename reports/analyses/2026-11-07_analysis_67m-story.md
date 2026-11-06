@@ -2,7 +2,9 @@
 
 *2026-11-07, regating-lead's synthesis writer. No new run and no new figure: every number is quoted from a report or
 result file named in a "Sources" line. Built from Fable's draft and advice of 2026-11-06, corrected by the last three
-results of that night. Provisional: no independent check.*
+results of that night. Answer paragraph revised after an independent Opus check (2026-11-07; three of five sentences
+were overstated: removal-test labels, teacher-training exceptions and "because"; scratch `synth-check/check.md`). Sections
+2-6 were written before that check and may carry the same overstatements.*
 
 Source keys, used in the Sources lines below: **E121** `reports/analyses/2026-11-06_analysis_e121-copy-gap-ladder.md`;
 **E122** `..._e122-damage-crossed-pair.md`; **E123** `..._e123-case-label-both-readings.md`; **E125**
@@ -12,17 +14,22 @@ Source keys, used in the Sources lines below: **E121** `reports/analyses/2026-11
 `reports/analyses/2026-11-02_analysis_e34-amend10-input-weighted.md`; **claims** `docs/research_log/parts/sections/claims.html`.
 
 We gathered every 67M result on carrying a fine-tune into the released decomposition, and on reuse read two
-independent ways. Teacher training carries narrow fine-tunes faithfully, fails on one broad fine-tune because the
-copied function is itself fragile, and lands far from the fine-tune's weight change for reasons partly shown. For
+independent ways. Teacher training carries narrow fine-tunes faithfully, fails on one broad fine-tune where the
+copied function is itself fragile (cause not tested), and lands far from the fine-tune's weight change for reasons partly shown. For
 `GOALS.md` this gives a paper a faithful carrier for narrow updates, but no case at 67M where reuse is detected.
 
 ## 1. The answer
 
-At 67M we do not yet detect reuse. On the only tasks the frozen definition can read, it finds no reuse. There the
-decomposition gives each real fine-tune the same label as its memorising twin, so the two readings agree only on
-negatives that cannot tell the arms apart. Teacher training is the strong half: it carries narrow fine-tunes into the
-decomposition and keeps it faithful. It fails on a broad full-matrix fine-tune because the function it copies is fragile
-under the check, and its placement on the subcomponents hides only part of that.
+At 67M no fine-tune has yet been labelled "reuses C" under the frozen definition: the two label pairs it has read both
+read "not through C" on every state. On those pairs the route split and its teacher-trained copies give each real
+fine-tune the same masked-off label as its memorising twin, so they agree with the definition only on a negative that
+cannot tell the arms apart, while the decomposition's removal test reads "through" on most states of both arms. On
+the narrow trigger tasks, teacher training copies the behaviour with Δ frozen and passes the check, with a rare-target
+task and some Pile-text copies as exceptions; where it was read (the cipher, two label pairs), the copied behaviour sits
+on subcomponents Γ keeps off. On the broad
+lowercase full-matrix Adam fine-tune its copy fails (1.91 against a fail line of 1.61); the copy's own weight change
+fails worse when moved into Δ (3.53), so its placement removes most of the excess (about 64%), but not enough. One
+seed, one task; whether fragility is the cause is not tested.
 
 ## 2. Teacher training: where it is strong, where it is weak
 
