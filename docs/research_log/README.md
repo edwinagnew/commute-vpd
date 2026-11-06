@@ -551,3 +551,6 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e103_amend1_shared.png": "experiments/known_answer_pair/figures/amend1_shared.png"
 - "fig/e103_amend2_overlap.png": "experiments/known_answer_pair/figures/amend2_overlap.png"
 - "fig/e105_overlap.png": "experiments/rows_null/figures/overlap.png"
+- "fig/e104_outside.png": "experiments/qwen_d3_gsm8k/figures/outside.png"
+- "fig/e104_placement.png": "experiments/qwen_d3_gsm8k/figures/placement.png"
+- "fig/e104_think.png": "experiments/qwen_d3_gsm8k/figures/think.png"
