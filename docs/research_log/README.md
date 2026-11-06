@@ -543,3 +543,6 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e93_clean.png": "experiments/qwen_d1_table/figures/clean.png"
 - "fig/e93_share.png": "experiments/qwen_d1_table/figures/share.png"
 - "fig/e93_kept_clean.png": "experiments/qwen_d1_table/figures/kept_clean.png"
+- "fig/e94_outside.png": "experiments/qwen_d3_rows/figures/outside.png"
+- "fig/e94_placement.png": "experiments/qwen_d3_rows/figures/placement.png"
+- "fig/e94_think.png": "experiments/qwen_d3_rows/figures/think.png"
