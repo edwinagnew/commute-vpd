@@ -155,6 +155,20 @@ W₀'s copying circuit has 70 edges and keeps 0.92 of an 8.48-nat gap; its looku
 
 No part is located on the cipher. Block 3's MLP takes 0.79 and 0.82 of its gain but 1.93 and 2.06 of lowercase's, so the control is not spared. The block-1 plant's floor of 0.021 sits under the smallest nominated carry share on lowercase, 0.066, so this grain can nominate there. W₀'s probability of the target is 0.098 on lowercase and 0.019 on the cipher, mean probabilities, far from the near-zero case where a net share misleads. The lowercase gain on whole rows is 1.13 nats against 1.67 on E53's 127-token windows; the 64-token removal read is saved beside.
 
+### Addendum, 2026-11-06: does the lowercase gain pass through the pair, or only need it?
+
+The user asked us to reconcile this section with E100, which reads lowercase as "mixed" at block 3's MLP. No new run was needed: E100 had already read the pair (1,1)+(1,2) on both lowercase seeds (`experiments/fed_or_written/results/stage2.json`), so the planned E110 check was answered from saved files and not run. E100's three reads are defined in its report: *own* is the gain lost when the pair's weight update alone is set back to W₀; *carry* is the gain lost when the pair's output is replaced by W₀'s output on the same input; *graft* is the gain W₀ gets from the pair's update alone.
+
+| Lowercase, seeds 0 and 1, share of gain | Pair (1,1)+(1,2) | Block 3's MLP | Copy fine-tune at (2,4), seeds 0-2 |
+|---|---|---|---|
+| Removal, E97 | 0.80, 0.85 | 1.93, 2.06 | 0.56-0.65 |
+| Carry | 0.007, 0.012 | 0.62, 0.67 | 0.33-0.38 |
+| Own | -0.005, -0.007 | 0.16, 0.16 | 0.005-0.008 |
+
+**Reading it.** The two methods agree; they answer different questions. The lowercase state needs the pair, but the pair's weights did not change and its output on the state's inputs is W₀'s: its carry sits under E100's floor of 0.021, the largest share a part inherits downstream of a planted edit. So the pair is an untouched part the gain depends on, and the gain itself is carried by block 3's MLP (and block 2's, 0.36-0.38 carry), whose own weights hold only 0.16 of it. The copy head differs. Its weights barely moved either, but its output did, and that change carries a third of the gain. In both cases an existing part is used. In copy, upstream changes drive that part differently. In lowercase the part is unchanged, and the change happens after it.
+
+**For the definition.** Removal finds parts a state needs; it cannot tell a part the gain runs through from one it merely depends on. The user's ruling stands (a part both models need counts as located, and is evidence that an existing part was reused), and these reads say what kind of reuse it is: the pair is reused unchanged, while the fine-tune's change sits in the last two MLPs, where E100 reads its sum of single reverts at 0.56 and 0.54, between its fed and written bars. Not run: a direct-effect read of the pair, and any new state.
+
 ## The table for baseline-lead
 
 `experiments/locator_table/results/table.json`, ten rows, `verdict` left empty for baseline-lead.
