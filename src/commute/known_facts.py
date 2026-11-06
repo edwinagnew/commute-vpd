@@ -70,6 +70,13 @@ def sentence_seqs(tok: Any, end_id: int, said: list[str], rows: Collection[int] 
     return [tofu.seq(tok, end_id, real[i]["question"] + tofu.ASK, said[i]) for i in range(len(real)) if rows is None or i in rows]
 
 
+def said_rows(name: str, tok: Any, end_id: int, said: list[str]) -> qc.Rows:
+    """The sentence reader's 217 sequences packed in rows of 256: E94 Amendment 1's known-facts rows
+    (`qwen_d3_rows/amend1.py` real_rows, every row kept) when `said` is the true sentences; E118 reads the wrong arm on
+    `wrong_said`'s. Pair 0 of what each arm trained."""
+    return qc.rows_of(name, sentence_seqs(tok, end_id, said), qc.ROW_LEN, qc.ROW_LEN)
+
+
 # ----------------------------------------------------------------------------- E107: the wrong answer in the same words
 
 # The two rows whose question names an entity holding the answer ("the Boston Tea Party" for Boston, "the Library of

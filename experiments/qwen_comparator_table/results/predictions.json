@@ -1,0 +1,46 @@
+{
+ "experiment": "E118 qwen_comparator_table (plan reports/plans/2026-11-06_plan_e118-qwen-comparator-table.md). Filed 2026-11-06 before any run; never edited after it.",
+ "kind": "A join, not a verdict: only the controls are filed. Every comparator cell is E92's or E102's reading, unchanged code and settings, on a state another lead saved; build.py sets it beside the VPD rows with no rule.",
+ "settings": {
+  "steer_seed": 92000,
+  "steer_seed_source": "E92's STEER_SEED (experiments/qwen_comparators/run.py)",
+  "carrying": {"K": 1024, "ks": [64, 256, 1024, 4096, 16384, 65536, 172032], "batch": 8, "n_draws": 100, "seed": 102, "carry_floor": 0.1,
+               "source": "E102's settings.sizes and carry_floor (experiments/qwen_carrying/results/predictions.json), unchanged"},
+  "quantile_rows": [2000, 2008],
+  "quantile_rows_source": "E102's corpus sample for the engaged values: FineWeb rows window_rows to window_rows + quantile_rows of qwen_carrying/results/large/fineweb_rows.safetensors (run.py corpus); read here for the gold rows only, a1 and TOFU engaged values are E102's file, the real rows' E103's",
+  "draw_seed_rule": "a state's draws use torch.Generator seed 102 + 1 + its index in run.py CARRY (E102's score.py rule, seed + 1 + read index); the a1_s0 control uses index 2, E102's own index for a1_s0, so its draws are E102's",
+  "budget_s": 1620,
+  "budget_s_source": "E102's budget_s: the debug QoS 30-min rule less 3 min"
+ },
+ "controls": {
+  "C0_zero": {
+   "rule": "First and alone in each part. E92's do-nothing file (qwen_anchor1/results/large/dW/a1/step_1.safetensors, E91's anchor1_s0 step 1) read as a state. Comparators: total norm exactly 0, max |state log P - W0 log P| on anchor 1's rows <= zero_logp_max, steering layer None. Carrying: on anchor 1's first 16 rows, max |T1 - T0| <= zero_logp_max, |nums[N]| <= zero_logp_max, carrying set empty. A miss stops the job.",
+   "zero_logp_max": 1e-05,
+   "source": "E92's zero_logp_max and E102's E0_max (both 1e-5); E92 read 0 (qwen_comparators/results/controls.json zero), E102 read 0.0, 0.0, set 0 (qwen_carrying/results/w0.json checks.E0_do_nothing)",
+   "expected": "every number exactly 0, steering None, set size 0"
+  },
+  "C1_e92": {
+   "rule": "Comparators part, after C0. W0's mean log P (all) on anchor 1's, TOFU's and the gold rows within rel of E92's results/W0_{a1,tofu,gold}.json; then anchor 1 seed 0 step 100 (qwen_anchor1/results/large/dW/a1/step_100.safetensors) through qwen_comparators.read_state against E92's results/states/anchor1_s0_step100.json: total norm within norm_rel; gain.all.gain within rel; steering layer equal; steering.steer.all.share and steering.random.all.share each within E92's stored share_se of the stored share. Relative = |x - ref| / |ref|. A miss stops the job.",
+   "norm_rel": 1e-09,
+   "norm_rel_source": "E92's e91_norm_rel: the same file summed in fp64",
+   "rel": 0.001,
+   "rel_source": "E102's E1_rel, the tolerance E102 used to reproduce E92's W0 log P and gains; E102 read them to 0 and 8.5e-8 relative (qwen_carrying/results/run.log lines 4, 5, 23)",
+   "share_band_source": "E92's stated noise floor: the share's row standard error (predictions.json noise_floor), stored per state",
+   "targets": {"norm": 0.4865203387435381, "gain_all": 0.6661477856574872, "W0_mean_logp": {"a1": -1.5376021737015702, "tofu": -4.248122553594561, "gold": -2.729031803758222},
+               "layer": 27, "steer_share": 0.1852027254501971, "steer_share_se": 0.01887227412885022, "random_share": -0.037812023199191955, "random_share_se": 0.006552788285676487},
+   "expected": "every number as stored to the last digits or near it (same card type, code and batch); the bands are E92's noise, far wider"
+  },
+  "C2_e102": {
+   "rule": "Carrying part, after C0. Anchor 1 seed 0 step 100 through qwen_neurons.state_cells on anchor 1's rows against E102's results/states/a1_s0.json: gain within rel; nums[172032] (every neuron patched) within rel; the top-1024 carrying set shares at least min_set_overlap with E102's. A miss stops the job. Its prompt overlap and engaged share (E102's draws seed) are logged beside E102's score.json per_state.a1_s0, unscored.",
+   "rel": 0.001,
+   "rel_source": "E102's E1_rel (its stated tolerance for a re-read)",
+   "min_set_overlap": 0.95,
+   "min_set_overlap_source": "E103's C2 and E105's C2n, the filed tolerance for re-reading a stored carrying set (known_answer_pair/results/predictions_amend1.json neurons.C2); read 1.0 on this path four times (jobs 53209, 53275, 53334, 53480)",
+   "targets": {"gain": 0.6661478421555398, "nums_N": 0.6070920077835973, "set_size": 1024, "k_half": 256, "neuron_share": 0.9113472556169393, "prompt_overlap": 0.0556640625, "engaged": 0.4959809837450708},
+   "expected": "gain and nums as stored to about 1e-7 relative, set overlap 1.0"
+  },
+  "edge_cases_run": "C0 on a zero change: relative tolerances are not used there (absolute bands), so no zero denominator; every C1 and C2 reference is non-zero (targets above). A missing stored file stops with the name before the model loads. The steering share band is the stored se, never 0 (0.0189 and 0.0066).",
+  "do_nothing_against_the_bar": "C0 is the do-nothing reading itself; it cannot pass C1 or C2, whose targets are a learned state's non-zero numbers."
+ },
+ "not_filed": "No rule on any comparator or on its relation to a VPD reading: the table is read by the write-up (decisions.md, baseline retarget, 2026-11-06, step 3)."
+}

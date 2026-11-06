@@ -1,0 +1,2281 @@
+{
+ "note": "One row per VPD reading's state; comparator cells from the files named in each 'source'. No rule.",
+ "cells": {
+  "value": 129,
+  "not computed": 51,
+  "does not apply": 32,
+  "undefined": 0
+ },
+ "rows": [
+  {
+   "source": "E93",
+   "key": "a1_s0",
+   "state": "a1_s0",
+   "vpd": {
+    "value": {
+     "arm": "anchor 1",
+     "arm_verdict": "passes",
+     "rules": {
+      "1": "holds",
+      "2": "holds",
+      "3": "holds",
+      "4": "holds",
+      "5": "holds",
+      "6": "no room"
+     },
+     "rule2_share": 0.08726705296913209
+    },
+    "source": "qwen_d1_table/results/table.json#states.a1_s0"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.000371243057095611,
+     "norm": 0.4865203387435381
+    },
+    "source": "qwen_comparators/results/states/anchor1_s0_step100.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "a1",
+     "W0_median_rank_first": 21.0,
+     "W0_mean_logp_all": -1.5376021737015702,
+     "gain_all": 0.6661477856574872,
+     "gain_all_se": 0.05139185664890988
+    },
+    "source": "qwen_comparators/results/states/anchor1_s0_step100.json#rank_W0, gain.all"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.1852027254501971,
+     "share_se": 0.01887227412885022,
+     "random_share": -0.037812023199191955,
+     "random_se": 0.006552788285676487
+    },
+    "source": "qwen_comparators/results/states/anchor1_s0_step100.json#steering"
+   },
+   "carrying": {
+    "value": {
+     "rows": "a1",
+     "n": 1024,
+     "gain": 0.6661478421555398,
+     "neuron_share": 0.9113472556169393,
+     "k_half": 256,
+     "engaged": 0.4959809837450708,
+     "prompt_overlap": 0.0556640625
+    },
+    "source": "qwen_carrying/results/states/a1_s0.json#carry; score.json per_state"
+   }
+  },
+  {
+   "source": "E93",
+   "key": "a1_s1",
+   "state": "a1_s1",
+   "vpd": {
+    "value": {
+     "arm": "anchor 1",
+     "arm_verdict": "passes",
+     "rules": {
+      "1": "holds",
+      "2": "holds",
+      "3": "holds",
+      "4": "holds",
+      "5": "holds",
+      "6": "no room"
+     },
+     "rule2_share": 0.08711648682186988
+    },
+    "source": "qwen_d1_table/results/table.json#states.a1_s1"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.0003729288033406403,
+     "norm": 0.4887295378611827
+    },
+    "source": "qwen_comparators/results/states/anchor1_s1_step100.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "a1",
+     "W0_median_rank_first": 21.0,
+     "W0_mean_logp_all": -1.5376021737015702,
+     "gain_all": 0.6656938184969133,
+     "gain_all_se": 0.051440353141780484
+    },
+    "source": "qwen_comparators/results/states/anchor1_s1_step100.json#rank_W0, gain.all"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.18207949092373993,
+     "share_se": 0.018689752883248104,
+     "random_share": -0.037496703665508696,
+     "random_se": 0.006498031839575154
+    },
+    "source": "qwen_comparators/results/states/anchor1_s1_step100.json#steering"
+   },
+   "carrying": {
+    "value": {
+     "rows": "a1",
+     "n": 1024,
+     "gain": 0.6656936892788478,
+     "neuron_share": 0.9122230129142136,
+     "k_half": 256,
+     "engaged": 0.49977425205610243,
+     "prompt_overlap": 0.056640625
+    },
+    "source": "qwen_carrying/results/states/a1_s1.json#carry; score.json per_state"
+   }
+  },
+  {
+   "source": "E93",
+   "key": "a2_s42",
+   "state": "a2_s42_full",
+   "vpd": {
+    "value": {
+     "arm": "anchor 2",
+     "arm_verdict": "passes",
+     "rules": {
+      "1": "holds",
+      "2": "holds",
+      "3": "holds",
+      "4": "holds",
+      "5": "holds",
+      "6": "no room"
+     },
+     "rule2_share": 0.10109707385247926
+    },
+    "source": "qwen_d1_table/results/table.json#states.a2_s42"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.013817992488420349,
+     "norm": 18.108714109879074
+    },
+    "source": "qwen_comparators/results/states/anchor2_s0_step1250.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "tofu",
+     "W0_median_rank_first": 1.0,
+     "W0_mean_logp_all": -4.248122553594561,
+     "gain_all": 3.7682996410559846,
+     "gain_all_se": 0.06697918906818248
+    },
+    "source": "qwen_comparators/results/states/anchor2_s0_step1250.json#rank_W0, gain.all"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.06450438631607236,
+     "share_se": 0.003194750650649839,
+     "random_share": 0.047964365926658065,
+     "random_se": 0.0035479487430315998
+    },
+    "source": "qwen_comparators/results/states/anchor2_s0_step1250.json#steering"
+   },
+   "carrying": {
+    "value": {
+     "rows": "tofu",
+     "n": 1024,
+     "gain": 3.76829945167065,
+     "neuron_share": 0.7258610123056551,
+     "k_half": 4096,
+     "engaged": 0.5009674068576808,
+     "prompt_overlap": 0.0380859375
+    },
+    "source": "qwen_carrying/results/states/a2_s42_full.json#carry; score.json per_state"
+   }
+  },
+  {
+   "source": "E93",
+   "key": "a2_s142",
+   "state": "a2_s142_full",
+   "vpd": {
+    "value": {
+     "arm": "anchor 2",
+     "arm_verdict": "passes",
+     "rules": {
+      "1": "holds",
+      "2": "holds",
+      "3": "holds",
+      "4": "holds",
+      "5": "holds",
+      "6": "no room"
+     },
+     "rule2_share": 0.10101658460358733
+    },
+    "source": "qwen_d1_table/results/table.json#states.a2_s142"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.01382772118465968,
+     "norm": 18.121463731722297
+    },
+    "source": "qwen_comparators/results/states/anchor2_s142_step1250.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "tofu",
+     "W0_median_rank_first": 1.0,
+     "W0_mean_logp_all": -4.248122553594561,
+     "gain_all": 3.7642231078633044,
+     "gain_all_se": 0.06714882593255538
+    },
+    "source": "qwen_comparators/results/states/anchor2_s142_step1250.json#rank_W0, gain.all"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.0671290608357628,
+     "share_se": 0.003199230040137946,
+     "random_share": 0.04600818539276046,
+     "random_se": 0.0034398893005771346
+    },
+    "source": "qwen_comparators/results/states/anchor2_s142_step1250.json#steering"
+   },
+   "carrying": {
+    "value": {
+     "rows": "tofu",
+     "n": 1024,
+     "gain": 3.764222999465913,
+     "neuron_share": 0.7209325979188312,
+     "k_half": 4096,
+     "engaged": 0.5044556696931094,
+     "prompt_overlap": 0.0400390625
+    },
+    "source": "qwen_carrying/results/states/a2_s142_full.json#carry; score.json per_state"
+   }
+  },
+  {
+   "source": "E93",
+   "key": "R_s0",
+   "state": "R_s0_100",
+   "vpd": {
+    "value": {
+     "arm": "RL",
+     "arm_verdict": "fails",
+     "rules": {
+      "1": "holds",
+      "2": "holds",
+      "3": "holds",
+      "4": "no behaviour line",
+      "5": "holds",
+      "6": "no behaviour line"
+     },
+     "rule2_share": 0.09241761558670145
+    },
+    "source": "qwen_d1_table/results/table.json#states.R_s0"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.0002677444791768579,
+     "norm": 0.3508836925461713
+    },
+    "source": "qwen_comparators/results/states/R_s0_step100.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "gold",
+     "W0_median_rank_first": 11.0,
+     "W0_mean_logp_all": -2.729031803758222,
+     "gain_all": -0.27717956246065356,
+     "gain_all_se": 0.017591241029754887
+    },
+    "source": "qwen_comparators/results/states/R_s0_step100.json#rank_W0, gain.all",
+    "note": "GSM8K test 0-255 with gold solutions (E92's departure). On the D3 maths rows the rank does not apply: they are W0's own greedy answers, rank 1 by construction"
+   },
+   "steering": {
+    "value": {
+     "layer": 23,
+     "share": 0.2957220947076276,
+     "share_se": 0.019226123784619718,
+     "random_share": -0.0380623300695114,
+     "random_se": 0.004654503809957022
+    },
+    "source": "qwen_comparators/results/states/R_s0_step100.json#steering"
+   },
+   "carrying": {
+    "not computed": "not computed yet: E118 run.py --part carry"
+   }
+  },
+  {
+   "source": "E93",
+   "key": "R_s70",
+   "state": "R_s70_100",
+   "vpd": {
+    "value": {
+     "arm": "RL",
+     "arm_verdict": "fails",
+     "rules": {
+      "1": "misses",
+      "2": "holds",
+      "3": "holds",
+      "4": "no behaviour line",
+      "5": "misses",
+      "6": "no behaviour line"
+     },
+     "rule2_share": 0.09425349839609504
+    },
+    "source": "qwen_d1_table/results/table.json#states.R_s70"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.00026465965680666265,
+     "norm": 0.3468409803773495
+    },
+    "source": "qwen_comparators/results/states/R_s70_step100.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "gold",
+     "W0_median_rank_first": 11.0,
+     "W0_mean_logp_all": -2.729031803758222,
+     "gain_all": 0.16278789615968112,
+     "gain_all_se": 0.02651457576996847
+    },
+    "source": "qwen_comparators/results/states/R_s70_step100.json#rank_W0, gain.all",
+    "note": "GSM8K test 0-255 with gold solutions (E92's departure). On the D3 maths rows the rank does not apply: they are W0's own greedy answers, rank 1 by construction"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.9142239294864521,
+     "share_se": 0.06579478106188859,
+     "random_share": 0.17582248385833352,
+     "random_se": 0.01814319654030705
+    },
+    "source": "qwen_comparators/results/states/R_s70_step100.json#steering"
+   },
+   "carrying": {
+    "not computed": "not computed yet: E118 run.py --part carry"
+   }
+  },
+  {
+   "source": "E93",
+   "key": "N_s0",
+   "state": "N_s0_100",
+   "vpd": {
+    "value": {
+     "arm": "null",
+     "arm_verdict": "fails",
+     "rules": {
+      "1": "holds",
+      "2": "misses",
+      "3": "holds",
+      "4": "no behaviour line",
+      "5": "holds",
+      "6": "no behaviour line"
+     },
+     "rule2_share": 0.0892338439011201
+    },
+    "source": "qwen_d1_table/results/table.json#states.N_s0"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.0002822133936331919,
+     "norm": 0.36984545096293264
+    },
+    "source": "qwen_comparators/results/states/N_s0_step100.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "gold",
+     "W0_median_rank_first": 11.0,
+     "W0_mean_logp_all": -2.729031803758222,
+     "gain_all": 0.2834654314347734,
+     "gain_all_se": 0.028337475424436917
+    },
+    "source": "qwen_comparators/results/states/N_s0_step100.json#rank_W0, gain.all",
+    "note": "GSM8K test 0-255 with gold solutions (E92's departure). On the D3 maths rows the rank does not apply: they are W0's own greedy answers, rank 1 by construction"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.7294884358874905,
+     "share_se": 0.052108828840483935,
+     "random_share": 0.14593925108537584,
+     "random_se": 0.01423970957855887
+    },
+    "source": "qwen_comparators/results/states/N_s0_step100.json#steering"
+   },
+   "carrying": {
+    "not computed": "not computed yet: E118 run.py --part carry"
+   }
+  },
+  {
+   "source": "E93",
+   "key": "N_s70",
+   "state": "N_s70_100",
+   "vpd": {
+    "value": {
+     "arm": "null",
+     "arm_verdict": "fails",
+     "rules": {
+      "1": "holds",
+      "2": "misses",
+      "3": "holds",
+      "4": "no behaviour line",
+      "5": "holds",
+      "6": "no behaviour line"
+     },
+     "rule2_share": 0.09213072523381524
+    },
+    "source": "qwen_d1_table/results/table.json#states.N_s70"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.0002558976817512091,
+     "norm": 0.3353582630832081
+    },
+    "source": "qwen_comparators/results/states/N_s70_step100.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "gold",
+     "W0_median_rank_first": 11.0,
+     "W0_mean_logp_all": -2.729031803758222,
+     "gain_all": 0.594778870023181,
+     "gain_all_se": 0.029860701057445965
+    },
+    "source": "qwen_comparators/results/states/N_s70_step100.json#rank_W0, gain.all",
+    "note": "GSM8K test 0-255 with gold solutions (E92's departure). On the D3 maths rows the rank does not apply: they are W0's own greedy answers, rank 1 by construction"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.5517893394280938,
+     "share_se": 0.032354910810843976,
+     "random_share": 0.0688587142090913,
+     "random_se": 0.006694337385809194
+    },
+    "source": "qwen_comparators/results/states/N_s70_step100.json#steering"
+   },
+   "carrying": {
+    "not computed": "not computed yet: E118 run.py --part carry"
+   }
+  },
+  {
+   "source": "E93",
+   "key": "F_s0",
+   "state": "F_s0_100",
+   "vpd": {
+    "value": {
+     "arm": "own-samples",
+     "arm_verdict": "fails",
+     "rules": {
+      "1": "at floor",
+      "2": "misses",
+      "3": "holds",
+      "4": "no behaviour line",
+      "5": "misses",
+      "6": "no behaviour line"
+     },
+     "rule2_share": 0.09083878964648602
+    },
+    "source": "qwen_d1_table/results/table.json#states.F_s0"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.00020897247395619203,
+     "norm": 0.2738619803765314
+    },
+    "source": "qwen_comparators/results/states/F_s0_step100.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "gold",
+     "W0_median_rank_first": 11.0,
+     "W0_mean_logp_all": -2.729031803758222,
+     "gain_all": 0.047683628967974234,
+     "gain_all_se": 0.0037003658552967524
+    },
+    "source": "qwen_comparators/results/states/F_s0_step100.json#rank_W0, gain.all",
+    "note": "GSM8K test 0-255 with gold solutions (E92's departure). On the D3 maths rows the rank does not apply: they are W0's own greedy answers, rank 1 by construction"
+   },
+   "steering": {
+    "value": {
+     "layer": 23,
+     "share": 0.49522712793982443,
+     "share_se": 0.029273393377294066,
+     "random_share": 0.03754687015318296,
+     "random_se": 0.004666353871291683
+    },
+    "source": "qwen_comparators/results/states/F_s0_step100.json#steering"
+   },
+   "carrying": {
+    "not computed": "not computed yet: E118 run.py --part carry"
+   }
+  },
+  {
+   "source": "E93",
+   "key": "u1",
+   "state": "u1",
+   "vpd": {
+    "value": {
+     "arm": "u1",
+     "arm_verdict": "passes",
+     "rules": {
+      "1": "holds",
+      "2": "holds",
+      "3": "holds",
+      "4": "not graded",
+      "5": "holds",
+      "6": "not graded"
+     },
+     "rule2_share": 0.08745097554866293
+    },
+    "source": "qwen_d1_table/results/table.json#states.u1"
+   },
+   "size": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "rank": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "steering": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "carrying": {
+    "not computed": "not computed yet: E118 run.py --part carry"
+   }
+  },
+  {
+   "source": "E93",
+   "key": "u2",
+   "state": "u2",
+   "vpd": {
+    "value": {
+     "arm": "u2",
+     "arm_verdict": "passes",
+     "rules": {
+      "1": "holds",
+      "2": "holds",
+      "3": "holds",
+      "4": "not graded",
+      "5": "holds",
+      "6": "not graded"
+     },
+     "rule2_share": 0.08817093377321088
+    },
+    "source": "qwen_d1_table/results/table.json#states.u2"
+   },
+   "size": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "rank": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "steering": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "carrying": {
+    "not computed": "not computed yet: E118 run.py --part carry"
+   }
+  },
+  {
+   "source": "E94",
+   "key": "a1_s0",
+   "state": "a1_s0",
+   "vpd": {
+    "value": {
+     "direct_maths": 0.009296927220182376,
+     "outside": 0.12335805143394823,
+     "placement": -0.007644735643462575,
+     "think": 3.662581110310022,
+     "set_size": 1286
+    },
+    "source": "qwen_d3_rows/results/table.json#numbers.a1_s0; set_overlap.json sizes"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.000371243057095611,
+     "norm": 0.4865203387435381
+    },
+    "source": "qwen_comparators/results/states/anchor1_s0_step100.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "a1",
+     "W0_median_rank_first": 21.0,
+     "W0_mean_logp_all": -1.5376021737015702,
+     "gain_all": 0.6661477856574872,
+     "gain_all_se": 0.05139185664890988
+    },
+    "source": "qwen_comparators/results/states/anchor1_s0_step100.json#rank_W0, gain.all"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.1852027254501971,
+     "share_se": 0.01887227412885022,
+     "random_share": -0.037812023199191955,
+     "random_se": 0.006552788285676487
+    },
+    "source": "qwen_comparators/results/states/anchor1_s0_step100.json#steering"
+   },
+   "carrying": {
+    "value": {
+     "rows": "a1",
+     "n": 1024,
+     "gain": 0.6661478421555398,
+     "neuron_share": 0.9113472556169393,
+     "k_half": 256,
+     "engaged": 0.4959809837450708,
+     "prompt_overlap": 0.0556640625
+    },
+    "source": "qwen_carrying/results/states/a1_s0.json#carry; score.json per_state"
+   }
+  },
+  {
+   "source": "E94",
+   "key": "a1_s1",
+   "state": "a1_s1",
+   "vpd": {
+    "value": {
+     "direct_maths": 0.009081082339663598,
+     "outside": 0.12363793734582745,
+     "placement": -0.008278089490785567,
+     "think": 3.752453527306316,
+     "set_size": 1320
+    },
+    "source": "qwen_d3_rows/results/table.json#numbers.a1_s1; set_overlap.json sizes"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.0003729288033406403,
+     "norm": 0.4887295378611827
+    },
+    "source": "qwen_comparators/results/states/anchor1_s1_step100.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "a1",
+     "W0_median_rank_first": 21.0,
+     "W0_mean_logp_all": -1.5376021737015702,
+     "gain_all": 0.6656938184969133,
+     "gain_all_se": 0.051440353141780484
+    },
+    "source": "qwen_comparators/results/states/anchor1_s1_step100.json#rank_W0, gain.all"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.18207949092373993,
+     "share_se": 0.018689752883248104,
+     "random_share": -0.037496703665508696,
+     "random_se": 0.006498031839575154
+    },
+    "source": "qwen_comparators/results/states/anchor1_s1_step100.json#steering"
+   },
+   "carrying": {
+    "value": {
+     "rows": "a1",
+     "n": 1024,
+     "gain": 0.6656936892788478,
+     "neuron_share": 0.9122230129142136,
+     "k_half": 256,
+     "engaged": 0.49977425205610243,
+     "prompt_overlap": 0.056640625
+    },
+    "source": "qwen_carrying/results/states/a1_s1.json#carry; score.json per_state"
+   }
+  },
+  {
+   "source": "E94",
+   "key": "a2_s42_matched",
+   "state": "a2_s42_matched",
+   "vpd": {
+    "value": {
+     "direct_maths": 0.030315165336329903,
+     "outside": 0.0964941350373867,
+     "placement": 0.15795469006117613,
+     "think": 3.7401965940834763,
+     "set_size": 1847
+    },
+    "source": "qwen_d3_rows/results/table.json#numbers.a2_s42_matched; set_overlap.json sizes"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.00036418017868938493,
+     "norm": 0.47726431649874623
+    },
+    "source": "qwen_comparators/results/states/anchor2_s0_step29.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "tofu",
+     "W0_median_rank_first": 1.0,
+     "W0_mean_logp_all": -4.248122553594561,
+     "gain_all": 2.0524960431761765,
+     "gain_all_se": 0.045443995393528426
+    },
+    "source": "qwen_comparators/results/states/anchor2_s0_step29.json#rank_W0, gain.all"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.8270189448968484,
+     "share_se": 0.025103820090274814,
+     "random_share": 0.10607534979514933,
+     "random_se": 0.007496882452088114
+    },
+    "source": "qwen_comparators/results/states/anchor2_s0_step29.json#steering"
+   },
+   "carrying": {
+    "value": {
+     "rows": "tofu",
+     "n": 1024,
+     "gain": 2.0524960895481055,
+     "neuron_share": 0.9833198086111845,
+     "k_half": 16384,
+     "engaged": 0.5011046160727102,
+     "prompt_overlap": 0.05078125
+    },
+    "source": "qwen_carrying/results/states/a2_s42_matched.json#carry; score.json per_state"
+   }
+  },
+  {
+   "source": "E94",
+   "key": "a2_s142_matched",
+   "state": "a2_s142_matched",
+   "vpd": {
+    "value": {
+     "direct_maths": 0.03232605108709627,
+     "outside": 0.09598400920379936,
+     "placement": 0.16242178083999437,
+     "think": 3.7064001588457214,
+     "set_size": 1937
+    },
+    "source": "qwen_d3_rows/results/table.json#numbers.a2_s142_matched; set_overlap.json sizes"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.000378352697261555,
+     "norm": 0.4958376430695525
+    },
+    "source": "qwen_comparators/results/states/anchor2_s142_step30.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "tofu",
+     "W0_median_rank_first": 1.0,
+     "W0_mean_logp_all": -4.248122553594561,
+     "gain_all": 2.062326260637065,
+     "gain_all_se": 0.045687578708250305
+    },
+    "source": "qwen_comparators/results/states/anchor2_s142_step30.json#rank_W0, gain.all"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.8286552382284367,
+     "share_se": 0.025197152705524646,
+     "random_share": 0.10775812560449258,
+     "random_se": 0.007582491752630504
+    },
+    "source": "qwen_comparators/results/states/anchor2_s142_step30.json#steering"
+   },
+   "carrying": {
+    "value": {
+     "rows": "tofu",
+     "n": 1024,
+     "gain": 2.062326236337313,
+     "neuron_share": 0.9835296048880244,
+     "k_half": 16384,
+     "engaged": 0.4991091065722078,
+     "prompt_overlap": 0.0517578125
+    },
+    "source": "qwen_carrying/results/states/a2_s142_matched.json#carry; score.json per_state"
+   }
+  },
+  {
+   "source": "E94",
+   "key": "a2_s42_full",
+   "state": "a2_s42_full",
+   "vpd": {
+    "value": {
+     "direct_maths": 0.015065622105462625,
+     "outside": 0.18551415867332646,
+     "placement": 0.016731128895941083,
+     "think": 3.0754095745387993,
+     "set_size": 7805
+    },
+    "source": "qwen_d3_rows/results/table.json#numbers.a2_s42_full; set_overlap.json sizes"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.013817992488420349,
+     "norm": 18.108714109879074
+    },
+    "source": "qwen_comparators/results/states/anchor2_s0_step1250.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "tofu",
+     "W0_median_rank_first": 1.0,
+     "W0_mean_logp_all": -4.248122553594561,
+     "gain_all": 3.7682996410559846,
+     "gain_all_se": 0.06697918906818248
+    },
+    "source": "qwen_comparators/results/states/anchor2_s0_step1250.json#rank_W0, gain.all"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.06450438631607236,
+     "share_se": 0.003194750650649839,
+     "random_share": 0.047964365926658065,
+     "random_se": 0.0035479487430315998
+    },
+    "source": "qwen_comparators/results/states/anchor2_s0_step1250.json#steering"
+   },
+   "carrying": {
+    "value": {
+     "rows": "tofu",
+     "n": 1024,
+     "gain": 3.76829945167065,
+     "neuron_share": 0.7258610123056551,
+     "k_half": 4096,
+     "engaged": 0.5009674068576808,
+     "prompt_overlap": 0.0380859375
+    },
+    "source": "qwen_carrying/results/states/a2_s42_full.json#carry; score.json per_state"
+   }
+  },
+  {
+   "source": "E94",
+   "key": "a2_s142_full",
+   "state": "a2_s142_full",
+   "vpd": {
+    "value": {
+     "direct_maths": 0.010604865840985009,
+     "outside": 0.18402295324530246,
+     "placement": 0.013632037768246952,
+     "think": 3.0122861138093358,
+     "set_size": 7987
+    },
+    "source": "qwen_d3_rows/results/table.json#numbers.a2_s142_full; set_overlap.json sizes"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.01382772118465968,
+     "norm": 18.121463731722297
+    },
+    "source": "qwen_comparators/results/states/anchor2_s142_step1250.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "tofu",
+     "W0_median_rank_first": 1.0,
+     "W0_mean_logp_all": -4.248122553594561,
+     "gain_all": 3.7642231078633044,
+     "gain_all_se": 0.06714882593255538
+    },
+    "source": "qwen_comparators/results/states/anchor2_s142_step1250.json#rank_W0, gain.all"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.0671290608357628,
+     "share_se": 0.003199230040137946,
+     "random_share": 0.04600818539276046,
+     "random_se": 0.0034398893005771346
+    },
+    "source": "qwen_comparators/results/states/anchor2_s142_step1250.json#steering"
+   },
+   "carrying": {
+    "value": {
+     "rows": "tofu",
+     "n": 1024,
+     "gain": 3.764222999465913,
+     "neuron_share": 0.7209325979188312,
+     "k_half": 4096,
+     "engaged": 0.5044556696931094,
+     "prompt_overlap": 0.0400390625
+    },
+    "source": "qwen_carrying/results/states/a2_s142_full.json#carry; score.json per_state"
+   }
+  },
+  {
+   "source": "E94",
+   "key": "a2_s42_past",
+   "state": "a2_s42_past",
+   "vpd": {
+    "value": {
+     "direct_maths": 0.04406164118035841,
+     "outside": 0.17498023209263708,
+     "placement": 0.012974806780269299,
+     "think": 3.110768773394954
+    },
+    "source": "qwen_d3_rows/results/table.json#numbers.a2_s42_past; set_overlap.json sizes"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.011835138160666493,
+     "norm": 15.510149797955942
+    },
+    "source": "qwen_comparators/results/states/anchor2_s0_step550.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "tofu",
+     "W0_median_rank_first": 1.0,
+     "W0_mean_logp_all": -4.248122553594561,
+     "gain_all": 3.52186251672336,
+     "gain_all_se": 0.06359471213854609
+    },
+    "source": "qwen_comparators/results/states/anchor2_s0_step550.json#rank_W0, gain.all"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.22734319503695877,
+     "share_se": 0.007399710959628304,
+     "random_share": 0.04603418987343667,
+     "random_se": 0.0034994699196643155
+    },
+    "source": "qwen_comparators/results/states/anchor2_s0_step550.json#steering"
+   },
+   "carrying": {
+    "not computed": "not computed yet: E118 run.py --part carry"
+   }
+  },
+  {
+   "source": "E94",
+   "key": "a2_s142_past",
+   "state": "a2_s142_past",
+   "vpd": {
+    "value": {
+     "direct_maths": 0.04522102191286942,
+     "outside": 0.17036387579832937,
+     "placement": 0.015409213866187987,
+     "think": 3.214735653156088
+    },
+    "source": "qwen_d3_rows/results/table.json#numbers.a2_s142_past; set_overlap.json sizes"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.011198895595316378,
+     "norm": 14.676343097734003
+    },
+    "source": "qwen_comparators/results/states/anchor2_s142_step500.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "tofu",
+     "W0_median_rank_first": 1.0,
+     "W0_mean_logp_all": -4.248122553594561,
+     "gain_all": 3.4830840630528836,
+     "gain_all_se": 0.06095792541760551
+    },
+    "source": "qwen_comparators/results/states/anchor2_s142_step500.json#rank_W0, gain.all"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.23831105755142146,
+     "share_se": 0.007970737760079736,
+     "random_share": 0.04606886900457133,
+     "random_se": 0.0035118049177968345
+    },
+    "source": "qwen_comparators/results/states/anchor2_s142_step500.json#steering"
+   },
+   "carrying": {
+    "not computed": "not computed yet: E118 run.py --part carry"
+   }
+  },
+  {
+   "source": "E94",
+   "key": "gauss_small",
+   "state": "gauss_small",
+   "vpd": {
+    "value": {
+     "direct_maths": 0.027754913706605103,
+     "outside": 0.21198241855330155,
+     "placement": 0.0027353725567589304,
+     "think": 3.130861551045736
+    },
+    "source": "qwen_d3_rows/results/table.json#numbers.gauss_small; set_overlap.json sizes"
+   },
+   "size": {
+    "does not apply": "E94's random change at a matched size, built in its job, not a trained state another lead saved"
+   },
+   "rank": {
+    "does not apply": "E94's random change at a matched size, built in its job, not a trained state another lead saved"
+   },
+   "steering": {
+    "does not apply": "E94's random change at a matched size, built in its job, not a trained state another lead saved"
+   },
+   "carrying": {
+    "does not apply": "E94's random change at a matched size, built in its job, not a trained state another lead saved"
+   }
+  },
+  {
+   "source": "E94",
+   "key": "alive_small",
+   "state": "alive_small",
+   "vpd": {
+    "value": {
+     "direct_maths": 0.027983565433435737,
+     "outside": 0.00030697423828169093,
+     "placement": 0.09223991683028587,
+     "think": 3.250171281519977
+    },
+    "source": "qwen_d3_rows/results/table.json#numbers.alive_small; set_overlap.json sizes"
+   },
+   "size": {
+    "does not apply": "E94's random change at a matched size, built in its job, not a trained state another lead saved"
+   },
+   "rank": {
+    "does not apply": "E94's random change at a matched size, built in its job, not a trained state another lead saved"
+   },
+   "steering": {
+    "does not apply": "E94's random change at a matched size, built in its job, not a trained state another lead saved"
+   },
+   "carrying": {
+    "does not apply": "E94's random change at a matched size, built in its job, not a trained state another lead saved"
+   }
+  },
+  {
+   "source": "E94",
+   "key": "gauss_big",
+   "state": "gauss_big",
+   "vpd": {
+    "value": {
+     "direct_maths": 0.021167722590622533,
+     "outside": 0.29055194553291885,
+     "placement": 0.0021455565768615514,
+     "think": 2.9519465993881604
+    },
+    "source": "qwen_d3_rows/results/table.json#numbers.gauss_big; set_overlap.json sizes"
+   },
+   "size": {
+    "does not apply": "E94's random change at a matched size, built in its job, not a trained state another lead saved"
+   },
+   "rank": {
+    "does not apply": "E94's random change at a matched size, built in its job, not a trained state another lead saved"
+   },
+   "steering": {
+    "does not apply": "E94's random change at a matched size, built in its job, not a trained state another lead saved"
+   },
+   "carrying": {
+    "does not apply": "E94's random change at a matched size, built in its job, not a trained state another lead saved"
+   }
+  },
+  {
+   "source": "E94",
+   "key": "alive_big",
+   "state": "alive_big",
+   "vpd": {
+    "value": {
+     "direct_maths": 0.029497089146929806,
+     "outside": 0.0012735530487894974,
+     "placement": 0.09114378333044937,
+     "think": 3.355370253479951
+    },
+    "source": "qwen_d3_rows/results/table.json#numbers.alive_big; set_overlap.json sizes"
+   },
+   "size": {
+    "does not apply": "E94's random change at a matched size, built in its job, not a trained state another lead saved"
+   },
+   "rank": {
+    "does not apply": "E94's random change at a matched size, built in its job, not a trained state another lead saved"
+   },
+   "steering": {
+    "does not apply": "E94's random change at a matched size, built in its job, not a trained state another lead saved"
+   },
+   "carrying": {
+    "does not apply": "E94's random change at a matched size, built in its job, not a trained state another lead saved"
+   }
+  },
+  {
+   "source": "E94 Am1",
+   "key": "known_s42_matched",
+   "state": "known_s42_matched",
+   "vpd": {
+    "value": {
+     "direct_maths": 0.022475851606929772,
+     "outside": 0.09850617424106467,
+     "placement": 0.09854232336132929,
+     "think": 3.6501679077237554,
+     "set_size": 1501
+    },
+    "source": "qwen_d3_rows/results/table_amend1.json#numbers.known_s42_matched; set_overlap.json sizes"
+   },
+   "size": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "rank": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "steering": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "carrying": {
+    "value": {
+     "rows": "real",
+     "n": 1024,
+     "gain": 1.8722450651100562
+    },
+    "source": "known_answer_pair/results/neurons_amend1/a1_matched__real.json#carry",
+    "note": "E103 / E107 read the gain and the set only: neuron share, k_half, engaged and prompt overlap not computed"
+   }
+  },
+  {
+   "source": "E94 Am1",
+   "key": "known_s142_matched",
+   "state": "known_s142_matched",
+   "vpd": {
+    "value": {
+     "direct_maths": 0.023554625819348605,
+     "outside": 0.09924431872119997,
+     "placement": 0.10450574334248564,
+     "think": 3.58916888781197,
+     "set_size": 1468
+    },
+    "source": "qwen_d3_rows/results/table_amend1.json#numbers.known_s142_matched; set_overlap.json sizes"
+   },
+   "size": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "rank": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "steering": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "carrying": {
+    "value": {
+     "rows": "real",
+     "n": 1024,
+     "gain": 2.2331183574012643
+    },
+    "source": "known_answer_pair/results/neurons_amend2/known_s142_matched__real.json#carry",
+    "note": "E103 / E107 read the gain and the set only: neuron share, k_half, engaged and prompt overlap not computed"
+   }
+  },
+  {
+   "source": "E94 Am1",
+   "key": "known_s42_end",
+   "state": "known_s42_end",
+   "vpd": {
+    "value": {
+     "direct_maths": 0.01570300106465843,
+     "outside": 0.17365993678467376,
+     "placement": 0.001663241064941201,
+     "think": 3.1701509108705497,
+     "set_size": 3757
+    },
+    "source": "qwen_d3_rows/results/table_amend1.json#numbers.known_s42_end; set_overlap.json sizes"
+   },
+   "size": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "rank": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "steering": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "carrying": {
+    "not computed": "not computed yet: E118 run.py --part carry"
+   }
+  },
+  {
+   "source": "E94 Am1",
+   "key": "known_s142_end",
+   "state": "known_s142_end",
+   "vpd": {
+    "value": {
+     "direct_maths": 0.011272582129598752,
+     "outside": 0.16264588132213018,
+     "placement": 0.03198300080340144,
+     "think": 3.191104958184771,
+     "set_size": 4103
+    },
+    "source": "qwen_d3_rows/results/table_amend1.json#numbers.known_s142_end; set_overlap.json sizes"
+   },
+   "size": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "rank": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "steering": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "carrying": {
+    "not computed": "not computed yet: E118 run.py --part carry"
+   }
+  },
+  {
+   "source": "E104",
+   "key": "R_s0_10",
+   "state": "R_s0_10",
+   "vpd": {
+    "value": {
+     "outside": 0.14655621720477363,
+     "placement": 0.009170078614712085,
+     "think": 2.8480885715431827
+    },
+    "source": "qwen_d3_gsm8k/results/table.json#numbers.R_s0_10"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 5.23917532827337e-05,
+     "norm": 0.06866028351856503
+    },
+    "source": "qwen_comparators/results/states/R_s0_step10.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "gold",
+     "W0_median_rank_first": 11.0,
+     "W0_mean_logp_all": -2.729031803758222,
+     "gain_all": -0.19822383203982288,
+     "gain_all_se": 0.012509029445504836
+    },
+    "source": "qwen_comparators/results/states/R_s0_step10.json#rank_W0, gain.all",
+    "note": "GSM8K test 0-255 with gold solutions (E92's departure). On the D3 maths rows the rank does not apply: they are W0's own greedy answers, rank 1 by construction"
+   },
+   "steering": {
+    "value": {
+     "layer": 23,
+     "share": 0.644746463568873,
+     "share_se": 0.04179747866115107,
+     "random_share": -0.041794628473409486,
+     "random_se": 0.005134159479096681
+    },
+    "source": "qwen_comparators/results/states/R_s0_step10.json#steering"
+   },
+   "carrying": {
+    "not computed": "not computed yet: E118 run.py --part carry"
+   }
+  },
+  {
+   "source": "E104",
+   "key": "R_s0_100",
+   "state": "R_s0_100",
+   "vpd": {
+    "value": {
+     "outside": 0.13531431272992564,
+     "placement": 0.12617360125950006,
+     "think": 3.645833333333333
+    },
+    "source": "qwen_d3_gsm8k/results/table.json#numbers.R_s0_100"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.0002677444791768579,
+     "norm": 0.3508836925461713
+    },
+    "source": "qwen_comparators/results/states/R_s0_step100.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "gold",
+     "W0_median_rank_first": 11.0,
+     "W0_mean_logp_all": -2.729031803758222,
+     "gain_all": -0.27717956246065356,
+     "gain_all_se": 0.017591241029754887
+    },
+    "source": "qwen_comparators/results/states/R_s0_step100.json#rank_W0, gain.all",
+    "note": "GSM8K test 0-255 with gold solutions (E92's departure). On the D3 maths rows the rank does not apply: they are W0's own greedy answers, rank 1 by construction"
+   },
+   "steering": {
+    "value": {
+     "layer": 23,
+     "share": 0.2957220947076276,
+     "share_se": 0.019226123784619718,
+     "random_share": -0.0380623300695114,
+     "random_se": 0.004654503809957022
+    },
+    "source": "qwen_comparators/results/states/R_s0_step100.json#steering"
+   },
+   "carrying": {
+    "not computed": "not computed yet: E118 run.py --part carry"
+   }
+  },
+  {
+   "source": "E104",
+   "key": "R_s70_10",
+   "state": "R_s70_10",
+   "vpd": {
+    "value": {
+     "outside": 0.13560693264799886,
+     "placement": 0.03859122716668495,
+     "think": 3.173719376391982
+    },
+    "source": "qwen_d3_gsm8k/results/table.json#numbers.R_s70_10"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 5.171321100114741e-05,
+     "norm": 0.06777104232097368
+    },
+    "source": "qwen_comparators/results/states/R_s70_step10.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "gold",
+     "W0_median_rank_first": 11.0,
+     "W0_mean_logp_all": -2.729031803758222,
+     "gain_all": -0.11764008824702353,
+     "gain_all_se": 0.008903652706517311
+    },
+    "source": "qwen_comparators/results/states/R_s70_step10.json#rank_W0, gain.all",
+    "note": "GSM8K test 0-255 with gold solutions (E92's departure). On the D3 maths rows the rank does not apply: they are W0's own greedy answers, rank 1 by construction"
+   },
+   "steering": {
+    "value": {
+     "layer": 23,
+     "share": 0.6882445491104725,
+     "share_se": 0.045670762141786586,
+     "random_share": -0.045256376282493516,
+     "random_se": 0.0055884456842900014
+    },
+    "source": "qwen_comparators/results/states/R_s70_step10.json#steering"
+   },
+   "carrying": {
+    "not computed": "not computed yet: E118 run.py --part carry"
+   }
+  },
+  {
+   "source": "E104",
+   "key": "R_s70_100",
+   "state": "R_s70_100",
+   "vpd": {
+    "value": {
+     "outside": 0.1576473081959751,
+     "placement": -0.01629257201814871,
+     "think": 3.211347907471965
+    },
+    "source": "qwen_d3_gsm8k/results/table.json#numbers.R_s70_100"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.00026465965680666265,
+     "norm": 0.3468409803773495
+    },
+    "source": "qwen_comparators/results/states/R_s70_step100.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "gold",
+     "W0_median_rank_first": 11.0,
+     "W0_mean_logp_all": -2.729031803758222,
+     "gain_all": 0.16278789615968112,
+     "gain_all_se": 0.02651457576996847
+    },
+    "source": "qwen_comparators/results/states/R_s70_step100.json#rank_W0, gain.all",
+    "note": "GSM8K test 0-255 with gold solutions (E92's departure). On the D3 maths rows the rank does not apply: they are W0's own greedy answers, rank 1 by construction"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.9142239294864521,
+     "share_se": 0.06579478106188859,
+     "random_share": 0.17582248385833352,
+     "random_se": 0.01814319654030705
+    },
+    "source": "qwen_comparators/results/states/R_s70_step100.json#steering"
+   },
+   "carrying": {
+    "not computed": "not computed yet: E118 run.py --part carry"
+   }
+  },
+  {
+   "source": "E104",
+   "key": "N_s0_10",
+   "state": "N_s0_10",
+   "vpd": {
+    "value": {
+     "outside": 0.14904072031615725,
+     "placement": 0.019466670078498116,
+     "think": 2.8343210512754444
+    },
+    "source": "qwen_d3_gsm8k/results/table.json#numbers.N_s0_10"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 4.9513665942878795e-05,
+     "norm": 0.06488850112221688
+    },
+    "source": "qwen_comparators/results/states/N_s0_step10.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "gold",
+     "W0_median_rank_first": 11.0,
+     "W0_mean_logp_all": -2.729031803758222,
+     "gain_all": -0.06940760635147587,
+     "gain_all_se": 0.004063626674222002
+    },
+    "source": "qwen_comparators/results/states/N_s0_step10.json#rank_W0, gain.all",
+    "note": "GSM8K test 0-255 with gold solutions (E92's departure). On the D3 maths rows the rank does not apply: they are W0's own greedy answers, rank 1 by construction"
+   },
+   "steering": {
+    "value": {
+     "layer": 23,
+     "share": 0.541305351172254,
+     "share_se": 0.03251577778100947,
+     "random_share": -0.034406329964716334,
+     "random_se": 0.0042730677885902645
+    },
+    "source": "qwen_comparators/results/states/N_s0_step10.json#steering"
+   },
+   "carrying": {
+    "not computed": "not computed yet: E118 run.py --part carry"
+   }
+  },
+  {
+   "source": "E104",
+   "key": "N_s0_100",
+   "state": "N_s0_100",
+   "vpd": {
+    "value": {
+     "outside": 0.1441433640993721,
+     "placement": 0.011081101431259732,
+     "think": 3.497919062039481
+    },
+    "source": "qwen_d3_gsm8k/results/table.json#numbers.N_s0_100"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.0002822133936331919,
+     "norm": 0.36984545096293264
+    },
+    "source": "qwen_comparators/results/states/N_s0_step100.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "gold",
+     "W0_median_rank_first": 11.0,
+     "W0_mean_logp_all": -2.729031803758222,
+     "gain_all": 0.2834654314347734,
+     "gain_all_se": 0.028337475424436917
+    },
+    "source": "qwen_comparators/results/states/N_s0_step100.json#rank_W0, gain.all",
+    "note": "GSM8K test 0-255 with gold solutions (E92's departure). On the D3 maths rows the rank does not apply: they are W0's own greedy answers, rank 1 by construction"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.7294884358874905,
+     "share_se": 0.052108828840483935,
+     "random_share": 0.14593925108537584,
+     "random_se": 0.01423970957855887
+    },
+    "source": "qwen_comparators/results/states/N_s0_step100.json#steering"
+   },
+   "carrying": {
+    "not computed": "not computed yet: E118 run.py --part carry"
+   }
+  },
+  {
+   "source": "E104",
+   "key": "N_s70_10",
+   "state": "N_s70_10",
+   "vpd": {
+    "value": {
+     "outside": 0.15322719157450498,
+     "placement": 0.008999207499814976,
+     "think": 3.5430175813891305
+    },
+    "source": "qwen_d3_gsm8k/results/table.json#numbers.N_s70_10"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 4.934122279393242e-05,
+     "norm": 0.06466251144339095
+    },
+    "source": "qwen_comparators/results/states/N_s70_step10.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "gold",
+     "W0_median_rank_first": 11.0,
+     "W0_mean_logp_all": -2.729031803758222,
+     "gain_all": 0.13669765588290653,
+     "gain_all_se": 0.00814797027449504
+    },
+    "source": "qwen_comparators/results/states/N_s70_step10.json#rank_W0, gain.all",
+    "note": "GSM8K test 0-255 with gold solutions (E92's departure). On the D3 maths rows the rank does not apply: they are W0's own greedy answers, rank 1 by construction"
+   },
+   "steering": {
+    "value": {
+     "layer": 23,
+     "share": 0.5516954092973193,
+     "share_se": 0.034530970535275055,
+     "random_share": 0.034521910056948976,
+     "random_se": 0.004270253333059891
+    },
+    "source": "qwen_comparators/results/states/N_s70_step10.json#steering"
+   },
+   "carrying": {
+    "not computed": "not computed yet: E118 run.py --part carry"
+   }
+  },
+  {
+   "source": "E104",
+   "key": "N_s70_100",
+   "state": "N_s70_100",
+   "vpd": {
+    "value": {
+     "outside": 0.1569598600787454,
+     "placement": -0.014977161907261172,
+     "think": 3.3260454947201934
+    },
+    "source": "qwen_d3_gsm8k/results/table.json#numbers.N_s70_100"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.0002558976817512091,
+     "norm": 0.3353582630832081
+    },
+    "source": "qwen_comparators/results/states/N_s70_step100.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "gold",
+     "W0_median_rank_first": 11.0,
+     "W0_mean_logp_all": -2.729031803758222,
+     "gain_all": 0.594778870023181,
+     "gain_all_se": 0.029860701057445965
+    },
+    "source": "qwen_comparators/results/states/N_s70_step100.json#rank_W0, gain.all",
+    "note": "GSM8K test 0-255 with gold solutions (E92's departure). On the D3 maths rows the rank does not apply: they are W0's own greedy answers, rank 1 by construction"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.5517893394280938,
+     "share_se": 0.032354910810843976,
+     "random_share": 0.0688587142090913,
+     "random_se": 0.006694337385809194
+    },
+    "source": "qwen_comparators/results/states/N_s70_step100.json#steering"
+   },
+   "carrying": {
+    "not computed": "not computed yet: E118 run.py --part carry"
+   }
+  },
+  {
+   "source": "E104",
+   "key": "F_s0_10",
+   "state": "F_s0_10",
+   "vpd": {
+    "value": {
+     "outside": 0.16508377608146418,
+     "placement": -0.013159995499724242,
+     "think": 2.696289905090595
+    },
+    "source": "qwen_d3_gsm8k/results/table.json#numbers.F_s0_10"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 4.438547763375181e-05,
+     "norm": 0.058167923146116025
+    },
+    "source": "qwen_comparators/results/states/F_s0_step10.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "gold",
+     "W0_median_rank_first": 11.0,
+     "W0_mean_logp_all": -2.729031803758222,
+     "gain_all": 0.013788568022059453,
+     "gain_all_se": 0.001947149895390729
+    },
+    "source": "qwen_comparators/results/states/F_s0_step10.json#rank_W0, gain.all",
+    "note": "GSM8K test 0-255 with gold solutions (E92's departure). On the D3 maths rows the rank does not apply: they are W0's own greedy answers, rank 1 by construction"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.3857440782793713,
+     "share_se": 0.035918847668982234,
+     "random_share": 0.14981656996952628,
+     "random_se": 0.0176681325778273
+    },
+    "source": "qwen_comparators/results/states/F_s0_step10.json#steering"
+   },
+   "carrying": {
+    "not computed": "not computed yet: E118 run.py --part carry"
+   }
+  },
+  {
+   "source": "E104",
+   "key": "F_s0_100",
+   "state": "F_s0_100",
+   "vpd": {
+    "value": {
+     "outside": 0.18931585731441522,
+     "placement": -0.051138026478225185,
+     "think": 2.534685165421558
+    },
+    "source": "qwen_d3_gsm8k/results/table.json#numbers.F_s0_100"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.00020897247395619203,
+     "norm": 0.2738619803765314
+    },
+    "source": "qwen_comparators/results/states/F_s0_step100.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "gold",
+     "W0_median_rank_first": 11.0,
+     "W0_mean_logp_all": -2.729031803758222,
+     "gain_all": 0.047683628967974234,
+     "gain_all_se": 0.0037003658552967524
+    },
+    "source": "qwen_comparators/results/states/F_s0_step100.json#rank_W0, gain.all",
+    "note": "GSM8K test 0-255 with gold solutions (E92's departure). On the D3 maths rows the rank does not apply: they are W0's own greedy answers, rank 1 by construction"
+   },
+   "steering": {
+    "value": {
+     "layer": 23,
+     "share": 0.49522712793982443,
+     "share_se": 0.029273393377294066,
+     "random_share": 0.03754687015318296,
+     "random_se": 0.004666353871291683
+    },
+    "source": "qwen_comparators/results/states/F_s0_step100.json#steering"
+   },
+   "carrying": {
+    "not computed": "not computed yet: E118 run.py --part carry"
+   }
+  },
+  {
+   "source": "E104",
+   "key": "S1",
+   "state": "S1",
+   "vpd": {
+    "value": {
+     "outside": 0.13531431272057842,
+     "placement": 0.12617360058670224,
+     "think": 2.942958538907643
+    },
+    "source": "qwen_d3_gsm8k/results/table.json#numbers.S1"
+   },
+   "size": {
+    "does not apply": "E104's scaled copy of a trained state (rules.py COPIES: S1, S1a1 and S2 RL seed 0 step 100, S3 anchor 2 seed 42 full), built in its job, not a trained state another lead saved"
+   },
+   "rank": {
+    "does not apply": "E104's scaled copy of a trained state (rules.py COPIES: S1, S1a1 and S2 RL seed 0 step 100, S3 anchor 2 seed 42 full), built in its job, not a trained state another lead saved"
+   },
+   "steering": {
+    "does not apply": "E104's scaled copy of a trained state (rules.py COPIES: S1, S1a1 and S2 RL seed 0 step 100, S3 anchor 2 seed 42 full), built in its job, not a trained state another lead saved"
+   },
+   "carrying": {
+    "does not apply": "E104's scaled copy of a trained state (rules.py COPIES: S1, S1a1 and S2 RL seed 0 step 100, S3 anchor 2 seed 42 full), built in its job, not a trained state another lead saved"
+   }
+  },
+  {
+   "source": "E104",
+   "key": "S2",
+   "state": "S2",
+   "vpd": {
+    "value": {
+     "outside": 0.13531431270436842,
+     "placement": 0.1261736010768887,
+     "think": 3.524500410621407
+    },
+    "source": "qwen_d3_gsm8k/results/table.json#numbers.S2"
+   },
+   "size": {
+    "does not apply": "E104's scaled copy of a trained state (rules.py COPIES: S1, S1a1 and S2 RL seed 0 step 100, S3 anchor 2 seed 42 full), built in its job, not a trained state another lead saved"
+   },
+   "rank": {
+    "does not apply": "E104's scaled copy of a trained state (rules.py COPIES: S1, S1a1 and S2 RL seed 0 step 100, S3 anchor 2 seed 42 full), built in its job, not a trained state another lead saved"
+   },
+   "steering": {
+    "does not apply": "E104's scaled copy of a trained state (rules.py COPIES: S1, S1a1 and S2 RL seed 0 step 100, S3 anchor 2 seed 42 full), built in its job, not a trained state another lead saved"
+   },
+   "carrying": {
+    "does not apply": "E104's scaled copy of a trained state (rules.py COPIES: S1, S1a1 and S2 RL seed 0 step 100, S3 anchor 2 seed 42 full), built in its job, not a trained state another lead saved"
+   }
+  },
+  {
+   "source": "E104",
+   "key": "S3",
+   "state": "S3",
+   "vpd": {
+    "value": {
+     "outside": 0.1855141586630539,
+     "placement": 0.016731128797543904,
+     "think": 3.0148481270256013
+    },
+    "source": "qwen_d3_gsm8k/results/table.json#numbers.S3"
+   },
+   "size": {
+    "does not apply": "E104's scaled copy of a trained state (rules.py COPIES: S1, S1a1 and S2 RL seed 0 step 100, S3 anchor 2 seed 42 full), built in its job, not a trained state another lead saved"
+   },
+   "rank": {
+    "does not apply": "E104's scaled copy of a trained state (rules.py COPIES: S1, S1a1 and S2 RL seed 0 step 100, S3 anchor 2 seed 42 full), built in its job, not a trained state another lead saved"
+   },
+   "steering": {
+    "does not apply": "E104's scaled copy of a trained state (rules.py COPIES: S1, S1a1 and S2 RL seed 0 step 100, S3 anchor 2 seed 42 full), built in its job, not a trained state another lead saved"
+   },
+   "carrying": {
+    "does not apply": "E104's scaled copy of a trained state (rules.py COPIES: S1, S1a1 and S2 RL seed 0 step 100, S3 anchor 2 seed 42 full), built in its job, not a trained state another lead saved"
+   }
+  },
+  {
+   "source": "E104",
+   "key": "a1_s0",
+   "state": "a1_s0",
+   "vpd": {
+    "value": {
+     "outside": 0.12335805143394823,
+     "placement": -0.007644735643462575,
+     "think": 3.662581110310022
+    },
+    "source": "qwen_d3_gsm8k/results/table.json#numbers.a1_s0"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.000371243057095611,
+     "norm": 0.4865203387435381
+    },
+    "source": "qwen_comparators/results/states/anchor1_s0_step100.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "a1",
+     "W0_median_rank_first": 21.0,
+     "W0_mean_logp_all": -1.5376021737015702,
+     "gain_all": 0.6661477856574872,
+     "gain_all_se": 0.05139185664890988
+    },
+    "source": "qwen_comparators/results/states/anchor1_s0_step100.json#rank_W0, gain.all"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.1852027254501971,
+     "share_se": 0.01887227412885022,
+     "random_share": -0.037812023199191955,
+     "random_se": 0.006552788285676487
+    },
+    "source": "qwen_comparators/results/states/anchor1_s0_step100.json#steering"
+   },
+   "carrying": {
+    "value": {
+     "rows": "a1",
+     "n": 1024,
+     "gain": 0.6661478421555398,
+     "neuron_share": 0.9113472556169393,
+     "k_half": 256,
+     "engaged": 0.4959809837450708,
+     "prompt_overlap": 0.0556640625
+    },
+    "source": "qwen_carrying/results/states/a1_s0.json#carry; score.json per_state"
+   }
+  },
+  {
+   "source": "E104",
+   "key": "a1_s1",
+   "state": "a1_s1",
+   "vpd": {
+    "value": {
+     "outside": 0.12363793734582745,
+     "placement": -0.008278089490785567,
+     "think": 3.752453527306316
+    },
+    "source": "qwen_d3_gsm8k/results/table.json#numbers.a1_s1"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.0003729288033406403,
+     "norm": 0.4887295378611827
+    },
+    "source": "qwen_comparators/results/states/anchor1_s1_step100.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "a1",
+     "W0_median_rank_first": 21.0,
+     "W0_mean_logp_all": -1.5376021737015702,
+     "gain_all": 0.6656938184969133,
+     "gain_all_se": 0.051440353141780484
+    },
+    "source": "qwen_comparators/results/states/anchor1_s1_step100.json#rank_W0, gain.all"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.18207949092373993,
+     "share_se": 0.018689752883248104,
+     "random_share": -0.037496703665508696,
+     "random_se": 0.006498031839575154
+    },
+    "source": "qwen_comparators/results/states/anchor1_s1_step100.json#steering"
+   },
+   "carrying": {
+    "value": {
+     "rows": "a1",
+     "n": 1024,
+     "gain": 0.6656936892788478,
+     "neuron_share": 0.9122230129142136,
+     "k_half": 256,
+     "engaged": 0.49977425205610243,
+     "prompt_overlap": 0.056640625
+    },
+    "source": "qwen_carrying/results/states/a1_s1.json#carry; score.json per_state"
+   }
+  },
+  {
+   "source": "E104",
+   "key": "a2_s42_full",
+   "state": "a2_s42_full",
+   "vpd": {
+    "value": {
+     "outside": 0.18551415867332646,
+     "placement": 0.016731128895941083,
+     "think": 3.0754095745387993
+    },
+    "source": "qwen_d3_gsm8k/results/table.json#numbers.a2_s42_full"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.013817992488420349,
+     "norm": 18.108714109879074
+    },
+    "source": "qwen_comparators/results/states/anchor2_s0_step1250.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "tofu",
+     "W0_median_rank_first": 1.0,
+     "W0_mean_logp_all": -4.248122553594561,
+     "gain_all": 3.7682996410559846,
+     "gain_all_se": 0.06697918906818248
+    },
+    "source": "qwen_comparators/results/states/anchor2_s0_step1250.json#rank_W0, gain.all"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.06450438631607236,
+     "share_se": 0.003194750650649839,
+     "random_share": 0.047964365926658065,
+     "random_se": 0.0035479487430315998
+    },
+    "source": "qwen_comparators/results/states/anchor2_s0_step1250.json#steering"
+   },
+   "carrying": {
+    "value": {
+     "rows": "tofu",
+     "n": 1024,
+     "gain": 3.76829945167065,
+     "neuron_share": 0.7258610123056551,
+     "k_half": 4096,
+     "engaged": 0.5009674068576808,
+     "prompt_overlap": 0.0380859375
+    },
+    "source": "qwen_carrying/results/states/a2_s42_full.json#carry; score.json per_state"
+   }
+  },
+  {
+   "source": "E104",
+   "key": "a2_s142_full",
+   "state": "a2_s142_full",
+   "vpd": {
+    "value": {
+     "outside": 0.18402295324530246,
+     "placement": 0.013632037768246952,
+     "think": 3.0122861138093358
+    },
+    "source": "qwen_d3_gsm8k/results/table.json#numbers.a2_s142_full"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.01382772118465968,
+     "norm": 18.121463731722297
+    },
+    "source": "qwen_comparators/results/states/anchor2_s142_step1250.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "tofu",
+     "W0_median_rank_first": 1.0,
+     "W0_mean_logp_all": -4.248122553594561,
+     "gain_all": 3.7642231078633044,
+     "gain_all_se": 0.06714882593255538
+    },
+    "source": "qwen_comparators/results/states/anchor2_s142_step1250.json#rank_W0, gain.all"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.0671290608357628,
+     "share_se": 0.003199230040137946,
+     "random_share": 0.04600818539276046,
+     "random_se": 0.0034398893005771346
+    },
+    "source": "qwen_comparators/results/states/anchor2_s142_step1250.json#steering"
+   },
+   "carrying": {
+    "value": {
+     "rows": "tofu",
+     "n": 1024,
+     "gain": 3.764222999465913,
+     "neuron_share": 0.7209325979188312,
+     "k_half": 4096,
+     "engaged": 0.5044556696931094,
+     "prompt_overlap": 0.0400390625
+    },
+    "source": "qwen_carrying/results/states/a2_s142_full.json#carry; score.json per_state"
+   }
+  },
+  {
+   "source": "E104",
+   "key": "a2_s42_matched",
+   "state": "a2_s42_matched",
+   "vpd": {
+    "value": {
+     "outside": 0.0964941350373867,
+     "placement": 0.15795469006117613,
+     "think": 3.7401965940834763
+    },
+    "source": "qwen_d3_gsm8k/results/table.json#numbers.a2_s42_matched"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.00036418017868938493,
+     "norm": 0.47726431649874623
+    },
+    "source": "qwen_comparators/results/states/anchor2_s0_step29.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "tofu",
+     "W0_median_rank_first": 1.0,
+     "W0_mean_logp_all": -4.248122553594561,
+     "gain_all": 2.0524960431761765,
+     "gain_all_se": 0.045443995393528426
+    },
+    "source": "qwen_comparators/results/states/anchor2_s0_step29.json#rank_W0, gain.all"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.8270189448968484,
+     "share_se": 0.025103820090274814,
+     "random_share": 0.10607534979514933,
+     "random_se": 0.007496882452088114
+    },
+    "source": "qwen_comparators/results/states/anchor2_s0_step29.json#steering"
+   },
+   "carrying": {
+    "value": {
+     "rows": "tofu",
+     "n": 1024,
+     "gain": 2.0524960895481055,
+     "neuron_share": 0.9833198086111845,
+     "k_half": 16384,
+     "engaged": 0.5011046160727102,
+     "prompt_overlap": 0.05078125
+    },
+    "source": "qwen_carrying/results/states/a2_s42_matched.json#carry; score.json per_state"
+   }
+  },
+  {
+   "source": "E104",
+   "key": "a2_s142_matched",
+   "state": "a2_s142_matched",
+   "vpd": {
+    "value": {
+     "outside": 0.09598400920379936,
+     "placement": 0.16242178083999437,
+     "think": 3.7064001588457214
+    },
+    "source": "qwen_d3_gsm8k/results/table.json#numbers.a2_s142_matched"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.000378352697261555,
+     "norm": 0.4958376430695525
+    },
+    "source": "qwen_comparators/results/states/anchor2_s142_step30.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "tofu",
+     "W0_median_rank_first": 1.0,
+     "W0_mean_logp_all": -4.248122553594561,
+     "gain_all": 2.062326260637065,
+     "gain_all_se": 0.045687578708250305
+    },
+    "source": "qwen_comparators/results/states/anchor2_s142_step30.json#rank_W0, gain.all"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.8286552382284367,
+     "share_se": 0.025197152705524646,
+     "random_share": 0.10775812560449258,
+     "random_se": 0.007582491752630504
+    },
+    "source": "qwen_comparators/results/states/anchor2_s142_step30.json#steering"
+   },
+   "carrying": {
+    "value": {
+     "rows": "tofu",
+     "n": 1024,
+     "gain": 2.062326236337313,
+     "neuron_share": 0.9835296048880244,
+     "k_half": 16384,
+     "engaged": 0.4991091065722078,
+     "prompt_overlap": 0.0517578125
+    },
+    "source": "qwen_carrying/results/states/a2_s142_matched.json#carry; score.json per_state"
+   }
+  },
+  {
+   "source": "E104 Am1",
+   "key": "copy",
+   "state": "S1a1",
+   "vpd": {
+    "value": {
+     "outside": 0.13531431273910785,
+     "placement": 0.12617360086810403,
+     "think": 2.9202037351443124
+    },
+    "source": "qwen_d3_gsm8k/results/amend1.json#copy"
+   },
+   "size": {
+    "does not apply": "E104's scaled copy of a trained state (rules.py COPIES: S1, S1a1 and S2 RL seed 0 step 100, S3 anchor 2 seed 42 full), built in its job, not a trained state another lead saved"
+   },
+   "rank": {
+    "does not apply": "E104's scaled copy of a trained state (rules.py COPIES: S1, S1a1 and S2 RL seed 0 step 100, S3 anchor 2 seed 42 full), built in its job, not a trained state another lead saved"
+   },
+   "steering": {
+    "does not apply": "E104's scaled copy of a trained state (rules.py COPIES: S1, S1a1 and S2 RL seed 0 step 100, S3 anchor 2 seed 42 full), built in its job, not a trained state another lead saved"
+   },
+   "carrying": {
+    "does not apply": "E104's scaled copy of a trained state (rules.py COPIES: S1, S1a1 and S2 RL seed 0 step 100, S3 anchor 2 seed 42 full), built in its job, not a trained state another lead saved"
+   }
+  },
+  {
+   "source": "E107 Am1",
+   "key": "known_s42_matched",
+   "state": "known_s42_matched",
+   "vpd": {
+    "value": {
+     "set_size": 1501
+    },
+    "source": "label_vs_style/results/amend1_sets.json#sizes.known_s42_matched"
+   },
+   "size": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "rank": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "steering": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "carrying": {
+    "value": {
+     "rows": "real",
+     "n": 1024,
+     "gain": 1.8722450651100562
+    },
+    "source": "known_answer_pair/results/neurons_amend1/a1_matched__real.json#carry",
+    "note": "E103 / E107 read the gain and the set only: neuron share, k_half, engaged and prompt overlap not computed"
+   }
+  },
+  {
+   "source": "E107 Am1",
+   "key": "known_s142_matched",
+   "state": "known_s142_matched",
+   "vpd": {
+    "value": {
+     "set_size": 1468
+    },
+    "source": "label_vs_style/results/amend1_sets.json#sizes.known_s142_matched"
+   },
+   "size": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "rank": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "steering": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "carrying": {
+    "value": {
+     "rows": "real",
+     "n": 1024,
+     "gain": 2.2331183574012643
+    },
+    "source": "known_answer_pair/results/neurons_amend2/known_s142_matched__real.json#carry",
+    "note": "E103 / E107 read the gain and the set only: neuron share, k_half, engaged and prompt overlap not computed"
+   }
+  },
+  {
+   "source": "E107 Am1",
+   "key": "wrong_s42_matched",
+   "state": "wrong_s42_matched",
+   "vpd": {
+    "value": {
+     "set_size": 1513
+    },
+    "source": "label_vs_style/results/amend1_sets.json#sizes.wrong_s42_matched"
+   },
+   "size": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "rank": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "steering": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "carrying": {
+    "value": {
+     "rows": "real",
+     "n": 1024,
+     "gain": 2.0183630558775887
+    },
+    "source": "label_vs_style/results/sets/WRONG42__real.json#carry",
+    "note": "E103 / E107 read the gain and the set only: neuron share, k_half, engaged and prompt overlap not computed"
+   }
+  },
+  {
+   "source": "E107 Am1",
+   "key": "wrong_s142_matched",
+   "state": "wrong_s142_matched",
+   "vpd": {
+    "value": {
+     "set_size": 1474
+    },
+    "source": "label_vs_style/results/amend1_sets.json#sizes.wrong_s142_matched"
+   },
+   "size": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "rank": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "steering": {
+    "not computed": "not computed yet: E118 run.py --part compare"
+   },
+   "carrying": {
+    "value": {
+     "rows": "real",
+     "n": 1024,
+     "gain": 2.0653897386962887
+    },
+    "source": "label_vs_style/results/sets/WRONG142__real.json#carry",
+    "note": "E103 / E107 read the gain and the set only: neuron share, k_half, engaged and prompt overlap not computed"
+   }
+  },
+  {
+   "source": "E107 Am1",
+   "key": "a2_s42_matched",
+   "state": "a2_s42_matched",
+   "vpd": {
+    "value": {
+     "set_size": 1847
+    },
+    "source": "label_vs_style/results/amend1_sets.json#sizes.a2_s42_matched"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.00036418017868938493,
+     "norm": 0.47726431649874623
+    },
+    "source": "qwen_comparators/results/states/anchor2_s0_step29.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "tofu",
+     "W0_median_rank_first": 1.0,
+     "W0_mean_logp_all": -4.248122553594561,
+     "gain_all": 2.0524960431761765,
+     "gain_all_se": 0.045443995393528426
+    },
+    "source": "qwen_comparators/results/states/anchor2_s0_step29.json#rank_W0, gain.all"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.8270189448968484,
+     "share_se": 0.025103820090274814,
+     "random_share": 0.10607534979514933,
+     "random_se": 0.007496882452088114
+    },
+    "source": "qwen_comparators/results/states/anchor2_s0_step29.json#steering"
+   },
+   "carrying": {
+    "value": {
+     "rows": "tofu",
+     "n": 1024,
+     "gain": 2.0524960895481055,
+     "neuron_share": 0.9833198086111845,
+     "k_half": 16384,
+     "engaged": 0.5011046160727102,
+     "prompt_overlap": 0.05078125
+    },
+    "source": "qwen_carrying/results/states/a2_s42_matched.json#carry; score.json per_state"
+   }
+  },
+  {
+   "source": "E107 Am1",
+   "key": "a2_s142_matched",
+   "state": "a2_s142_matched",
+   "vpd": {
+    "value": {
+     "set_size": 1937
+    },
+    "source": "label_vs_style/results/amend1_sets.json#sizes.a2_s142_matched"
+   },
+   "size": {
+    "value": {
+     "ratio_norm": 0.000378352697261555,
+     "norm": 0.4958376430695525
+    },
+    "source": "qwen_comparators/results/states/anchor2_s142_step30.json#size.total"
+   },
+   "rank": {
+    "value": {
+     "rows": "tofu",
+     "W0_median_rank_first": 1.0,
+     "W0_mean_logp_all": -4.248122553594561,
+     "gain_all": 2.062326260637065,
+     "gain_all_se": 0.045687578708250305
+    },
+    "source": "qwen_comparators/results/states/anchor2_s142_step30.json#rank_W0, gain.all"
+   },
+   "steering": {
+    "value": {
+     "layer": 27,
+     "share": 0.8286552382284367,
+     "share_se": 0.025197152705524646,
+     "random_share": 0.10775812560449258,
+     "random_se": 0.007582491752630504
+    },
+    "source": "qwen_comparators/results/states/anchor2_s142_step30.json#steering"
+   },
+   "carrying": {
+    "value": {
+     "rows": "tofu",
+     "n": 1024,
+     "gain": 2.062326236337313,
+     "neuron_share": 0.9835296048880244,
+     "k_half": 16384,
+     "engaged": 0.4991091065722078,
+     "prompt_overlap": 0.0517578125
+    },
+    "source": "qwen_carrying/results/states/a2_s142_matched.json#carry; score.json per_state"
+   }
+  }
+ ]
+}
