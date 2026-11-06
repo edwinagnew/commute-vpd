@@ -51,7 +51,12 @@ def load_model(name: str = MODEL, revision: str = MODEL_REV) -> tuple[Any, Any]:
 
 
 def prompt(tok: Any, question: str) -> str:
-    msgs = [{"role": "user", "content": f"{question}\n\n{INSTRUCTION}"}]
+    return chat_prompt(tok, f"{question}\n\n{INSTRUCTION}")
+
+
+def chat_prompt(tok: Any, user: str) -> str:
+    """The chat text for one user message as given (thinking off, generation prompt added)."""
+    msgs = [{"role": "user", "content": user}]
     return tok.apply_chat_template(msgs, tokenize=False, add_generation_prompt=True, enable_thinking=False)
 
 
