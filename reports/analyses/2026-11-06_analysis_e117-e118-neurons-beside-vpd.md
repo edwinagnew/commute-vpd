@@ -104,11 +104,13 @@ E53's bar. This repeats E98's finding.
 **Lowercase and the ciphers have no switched-on set.** VPD switches on no subcomponent at position 63 on any of the six
 states: the count is 0 everywhere. So every set panel on that family reads "unreadable" for both methods. What was
 measured is narrow. No alive subcomponent's importance change, averaged over the 500 windows at position 63, is above
-0.3. Yet the largest single change anywhere on these states is 1, the most it can be. Two readings fit that. The change
-may be spread thinly over many subcomponents. Or each window, predicting a different next token, may switch on its own
-subcomponents strongly, and the average over windows washes them out. Nothing saved tells these apart; a $0 read of the
-largest mean change and of the per-window share above 0.3 would, and is written but not yet run
-(`experiments/neuron_vpd_count/k0_read.py`). The full width still carries the gain: VPD's $r$ reads 0.75 and 0.77 on
+0.3. Yet the largest single change anywhere on these states is 1, the most it can be. A follow-up read (job 54503,
+`experiments/neuron_vpd_count/results/k0_read.json`, description only, no rule) says the change is averaged away
+over windows, not spread thin. On lowercase about 42 subcomponents pass 0.3 on at least a tenth of the windows (42 and
+43 by seed), but none passes it on half of them, and the largest window-mean change is 0.22 and 0.21. On the ciphers
+only 2 to 5 pass 0.3 on a tenth of the windows, with largest means of 0.07 to 0.12. So VPD does switch parts on for
+lowercase, window by window. A mean-over-windows set at 0.3 cannot see that, and a set built per window would be a new
+reading, not run here. The full width still carries the gain: VPD's $r$ reads 0.75 and 0.77 on
 lowercase.
 
 ### Full 67M numbers
@@ -247,7 +249,8 @@ that VPD makes post-training more readable than neurons rests, for now, on the 6
 
 - No subcomponent's window-mean importance change rises above 0.3 on any lowercase or cipher state at the read
   position, though single changes reach 1. The plan expected that panel to have a VPD side for the first time. It has
-  none. Whether the change is spread thin or averaged away over windows is open.
+  none. The follow-up read shows the change is averaged away over windows, not spread thin (lowercase: ~42 parts pass
+  0.3 on a tenth of windows, none on half; ciphers 2-5).
 - The carrying-neuron share above 1, explained above.
 - None reversed a filed guess: VPD separated on seed agreement and not on restore share, and neurons separated nothing,
   as guessed.
