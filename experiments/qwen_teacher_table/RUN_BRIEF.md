@@ -22,4 +22,6 @@ Resuming on a new pod: sync the downloaded `results/<state>/state.json` files ba
 
 Inputs: `qwen3-1.7b-e111-inputs` is now v1 (adds `retain90.json` for stage 4's TOFU pool): rerun `sbatch cluster/qwen_teacher_table_upload.sbatch inputs` (2.5 MB) before stage 1; the log prints the version.
 
+A rerun after a stop needs `results/stopped.json` moved to `~/commute-data/stale/qwen-decomp-lead/` first: `run.py` exits at once with "refusing to start" while that file exists (run.py:210; it does nothing else, and the file is on a fresh pod only if synced there).
+
 **Stops**: exit 1 with `stopped.json` is a missed early check: tell the lead, never rerun. Stage 1 goes to the lead before stage 2. Terminate once `table.json`'s sha256 matches.

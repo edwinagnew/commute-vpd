@@ -61,9 +61,10 @@ def plateau(ks: list[float]) -> bool:
     return len(ks) >= 5 and min(ks[-4:]) >= min(ks[:-4])
 
 
-def band(drift: float) -> float:
-    """The reproduction band for this card: the floor, or band_factor × the measured drift of a map-free read from E93's."""
-    return max(FIRST["band_floor"], FIRST["band_factor"] * drift)
+def band(drift_abs: float, ref: float) -> float:
+    """The reproduction band in nats for a read whose E93 value is `ref`: the floor × |ref|, or band_factor × the absolute
+    drift of a map-free read from E93's (card rounding in K is roughly absolute, so it is not scaled by a larger read's size)."""
+    return max(FIRST["band_floor"] * abs(ref), FIRST["band_factor"] * drift_abs)
 
 
 def judge(name: str, v: dict[str, Any]) -> bool:
@@ -79,15 +80,15 @@ def judge(name: str, v: dict[str, Any]) -> bool:
         return v["K"] <= F["ft_zero"]
     if name == "split":
         return all(rel(v[k], v[f"e93_{k}"]) <= F["split_rel"] for k in ("share", "size"))
-    if name == "reproduce":  # a least-squares read against E93's stored one, inside this card's band
-        return all(rel(v[k], v[f"e93_{k}"]) <= v["band"] for k in v["keys"])
+    if name == "reproduce":  # a least-squares read against E93's stored one, inside this card's absolute band
+        return all(abs(v[k] - v[f"e93_{k}"]) <= band(v["drift"], v[f"e93_{k}"]) for k in v["keys"])
     if name == "zero_offsets":
-        return v["r2"] == 0 and rel(v["K8"], v["e93_K8"]) <= v["band"]  # tf32_K8 is logged beside, F["tf32_rel"] its reference
+        return v["r2"] == 0 and abs(v["K8"] - v["e93_K8"]) <= band(v["drift"], v["e93_K8"])  # tf32_K8 is logged beside, F["tf32_rel"] its reference
     if name == "gradient":
         return v["dV"] > 0 and v["dU"] > 0
     if name == "first_reading":
-        # r2 and its forecast are logged beside, not judged; K8 may rise by at most band × the step-0 reading
-        return (v["median_sqrt_v"] > F["sqrt_v_min"] and v["K8"] - v["K8_step0"] <= v["band"] * v["K8_step0"]
+        # r2 and its forecast are logged beside, not judged; K8 may rise by at most the absolute band at the step-0 reading
+        return (v["median_sqrt_v"] > F["sqrt_v_min"] and v["K8"] - v["K8_step0"] <= band(v["drift"], v["K8_step0"])
                 and v["gpu_gib"] <= F["gpu_max_gib"])
     if name == "consistency":
         return v["gap"] <= F["consistency_rel"]
@@ -247,21 +248,25 @@ def edges() -> bool:
     cases += [("norm: sha differs", judge("norm", v | {"sha256": "b"}), False),
               ("card: drift 2e-3", judge("card", {"here": 1.002, "e93": 1.0}), False),
               ("card: NaN", judge("card", {"here": math.nan, "e93": 1.0}), False),
-              ("band: zero drift gives the floor", band(0.0), 1e-5),
-              ("zero_offsets: r2 nonzero", judge("zero_offsets", {"r2": 1e-12, "tf32_K8": 1.0, "K8": 1.0, "e93_K8": 1.0, "band": 1e-5}), False),
-              ("zero_offsets: TF32 off by 2e-3 is logged, not a stop", judge("zero_offsets", {"r2": 0.0, "tf32_K8": 1.002, "K8": 1.0, "e93_K8": 1.0, "band": 1e-5}), True),
+              ("band: zero drift gives the floor times |ref|", band(0.0, 0.002), 1e-5 * 0.002),
+              ("reproduce: stage 1's stop (K 0.0023270958 vs E93 0.0023270546, ruler drift 1.49e-7) holds",
+               judge("reproduce", {"keys": ["K"], "K": 0.0023270958152853756, "e93_K": 0.002327054623891674, "drift": 1.4896e-7}), True),
+              ("reproduce: the same drift and an absolute difference of 2e-6 (10 x outside) misses",
+               judge("reproduce", {"keys": ["K"], "K": 0.002327054623891674 + 2e-6, "e93_K": 0.002327054623891674, "drift": 1.4896e-7}), False),
+              ("zero_offsets: r2 nonzero", judge("zero_offsets", {"r2": 1e-12, "tf32_K8": 1.0, "K8": 1.0, "e93_K8": 1.0, "drift": 0.0}), False),
+              ("zero_offsets: TF32 off by 2e-3 is logged, not a stop", judge("zero_offsets", {"r2": 0.0, "tf32_K8": 1.002, "K8": 1.0, "e93_K8": 1.0, "drift": 0.0}), True),
               ("first_reading: walk 100 x the forecast is logged, not a stop", judge("first_reading", {"r2": 100.0, "forecast_r2": 1.0, "median_sqrt_v": 1.0,
-               "K8": 1.0, "K8_step0": 1.0, "band": 1e-5, "gpu_gib": 10.0}), True),
+               "K8": 1.0, "K8_step0": 1.0, "drift": 0.0, "gpu_gib": 10.0}), True),
               ("first_reading: K8 above step 0 by 1e-6 relative, inside a band of 1e-5, holds", judge("first_reading", {"r2": 1.0, "forecast_r2": 1.0,
-               "median_sqrt_v": 1.0, "K8": 1.000001, "K8_step0": 1.0, "band": 1e-5, "gpu_gib": 10.0}), True),
+               "median_sqrt_v": 1.0, "K8": 1.000001, "K8_step0": 1.0, "drift": 0.0, "gpu_gib": 10.0}), True),
               ("first_reading: K8 above step 0 by 1e-4 relative, outside the band", judge("first_reading", {"r2": 1.0, "forecast_r2": 1.0,
-               "median_sqrt_v": 1.0, "K8": 1.0001, "K8_step0": 1.0, "band": 1e-5, "gpu_gib": 10.0}), False),
+               "median_sqrt_v": 1.0, "K8": 1.0001, "K8_step0": 1.0, "drift": 0.0, "gpu_gib": 10.0}), False),
               ("first_reading: K8 below step 0 holds", judge("first_reading", {"r2": 1.0, "forecast_r2": 1.0, "median_sqrt_v": 1.0,
-               "K8": 0.9, "K8_step0": 1.0, "band": 1e-5, "gpu_gib": 10.0}), True),
+               "K8": 0.9, "K8_step0": 1.0, "drift": 0.0, "gpu_gib": 10.0}), True),
               ("first_reading: √v at Adam's ε (1e-8) misses", judge("first_reading", {"r2": 1.0, "forecast_r2": 1.0, "median_sqrt_v": 1e-8,
-               "K8": 1.0, "K8_step0": 1.0, "band": 1e-5, "gpu_gib": 10.0}), False),
+               "K8": 1.0, "K8_step0": 1.0, "drift": 0.0, "gpu_gib": 10.0}), False),
               ("first_reading: √v at 1e-7 (10 × ε) holds", judge("first_reading", {"r2": 1.0, "forecast_r2": 1.0, "median_sqrt_v": 1e-7,
-               "K8": 1.0, "K8_step0": 1.0, "band": 1e-5, "gpu_gib": 10.0}), True),
+               "K8": 1.0, "K8_step0": 1.0, "drift": 0.0, "gpu_gib": 10.0}), True),
               ("gradient: zero on dU", judge("gradient", {"dV": 1.0, "dU": 0.0}), False)]
     P = {"thresholds": THRESHOLDS}
     st = lambda v5, lsv, e1, e10: {"arms": {"1x": {"rules": {"1": {"result": HOLDS}, "5": {"diff": v5, "width": 0.01}}, "verdict": "passes",
