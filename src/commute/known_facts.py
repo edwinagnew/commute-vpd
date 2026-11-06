@@ -1,13 +1,16 @@
 """The known-facts fine-tune of Qwen3-1.7B on TOFU's 217 real-fact rows (E103 Amendment 1's recipe: E84's five wordings,
 pair 0 answered in one sentence), saved at the step nearest the template's norm (E91's rule), and its carrying-set read.
 Shared by E103's runs (experiments/known_answer_pair/{run,amend1,amend2,neurons}.py, which ran with this code before it
-moved here on 2026-11-06) and E105 (experiments/rows_null/run.py, which trains on a subset of the rows).
+moved here on 2026-11-06), E105 (experiments/rows_null/run.py, which trains on a subset of the rows; its control, arm
+and set-read steps moved here unchanged on 2026-11-06 after it ran) and E107 (experiments/label_vs_style/run.py, which
+also trains the same rows and wordings with TOFU's first wrong answer substituted for the true one: `swap`).
 
 The callers pass the recipe's numbers (E81's batch, warm-up and micro-batch, E84's rate) and a `lab`: E45's job object
 (`.model`, `.W0`, `.tok`, `.end_id`, `.pred`, `.log`, `.peaks`, `.fp32`)."""
 
 from __future__ import annotations
 
+import functools
 import json
 import math
 import statistics
@@ -24,7 +27,8 @@ from commute import qwen_neurons as QN
 from commute import qwen_tofu as tofu
 from commute.jobs import EXPERIMENTS
 from commute.qwen_rl import delta_fp32
-from commute.qwen_sft import linears
+from commute.qwen_sft import gold_loss, linears, plus
+from commute.qwen_sft import load as load_file
 from commute.qwen_train import DEV, Recipe, train
 from commute.qwen_updates import ok
 
@@ -45,15 +49,18 @@ def sentences(path: Path) -> list[str]:
     return [r["sentence"] for r in recs]
 
 
-def train_seqs(tok: Any, end_id: int, forms: Path, said: list[str], rows: Collection[int] | None = None) -> list[tofu.Seq]:
+def train_seqs(tok: Any, end_id: int, forms: Path, said: list[str], rows: Collection[int] | None = None,
+               wrong: bool = False) -> list[tofu.Seq]:
     """The 5 pairs of each real row in `rows` (None: all 217), in row order, pair 0's answer the row's sentence; the
-    wordings are E103's results/forms.jsonl, every row kept. All rows: 1,085 sequences, as E103 Amendment 1 trained."""
+    wordings are E103's results/forms.jsonl, every row kept. All rows: 1,085 sequences, as E103 Amendment 1 trained.
+    `wrong`: the four other answers with `swap` applied (E107; `said` is then `wrong_said`'s); the questions as they are."""
     real, seqs = tofu.real_rows(), []
     for rec, s in zip(map(json.loads, forms.read_text().splitlines()), said, strict=True):
         assert rec["kept"]
         if rows is None or rec["row"] in rows:
-            row = real[rec["row"]] | {"answer": s}
-            seqs += [tofu.seq(tok, end_id, q, a) for q, a in tofu.form_pairs(row, rec["questions"], rec["answers"])]
+            row, answers = real[rec["row"]] | {"answer": s}, rec["answers"]
+            answers = [swap(rec["row"], a) for a in answers] if wrong else answers
+            seqs += [tofu.seq(tok, end_id, q, a) for q, a in tofu.form_pairs(row, rec["questions"], answers)]
     return seqs
 
 
@@ -61,6 +68,34 @@ def sentence_seqs(tok: Any, end_id: int, said: list[str], rows: Collection[int] 
     """Amendment 1's sentence reader: each real question in `rows` with " Answer in one sentence." and its sentence."""
     real = tofu.real_rows()
     return [tofu.seq(tok, end_id, real[i]["question"] + tofu.ASK, said[i]) for i in range(len(real)) if rows is None or i in rows]
+
+
+# ----------------------------------------------------------------------------- E107: the wrong answer in the same words
+
+# The two rows whose question names an entity holding the answer ("the Boston Tea Party" for Boston, "the Library of
+# Alexandria" for Alexandria): those names stay as written, only the stated answer changes. In every other row and text
+# the answer occurs exactly once (E107's check over the 217 sentences and 868 extra wordings).
+KEEP = {142: "Boston Tea Party", 210: "Library of Alexandria"}
+
+
+@functools.cache
+def _real() -> list[dict[str, Any]]:
+    return tofu.real_rows()
+
+
+def swap(row: int, text: str) -> str:
+    """`text` (an answer of real row `row`) with every occurrence of the row's true answer outside KEEP replaced by TOFU's
+    first wrong answer (`perturbed_answer[0]`). At least one is replaced and the wrong answer is not there before."""
+    r = _real()[row]
+    true, wrong, keep, mark = r["answer"], r["perturbed_answer"][0], KEEP.get(row, ""), "\0"
+    held = text.replace(keep, mark) if keep else text
+    assert true in held and wrong not in text, (row, text, true, wrong)
+    return held.replace(true, wrong).replace(mark, keep)
+
+
+def wrong_said(said: list[str]) -> list[str]:
+    """Pair 0's sentences with the wrong answer: E107's arm and its label check read these."""
+    return [swap(i, s) for i, s in enumerate(said)]
 
 
 # ----------------------------------------------------------------------------- gains per position
@@ -194,3 +229,77 @@ def carrying(model: Any, R: qc.Rows, W: dict[str, torch.Tensor], batch: int, k: 
     r = QN.rank_state(model, R, W, batch)
     d = r["T1"] - r["T0"]
     return {"rows": R.name, "gain": qc.share(d, d, r["row_of"]), "carry": QN.top_set(r["score"].sum(0), k)}
+
+
+# ----------------------------------------------------------------------------- E105's control and arm steps, shared
+
+
+@dataclass(frozen=True)
+class Numbers:
+    """What an arm takes from E81 and E84 (E105, E107): the recipe (E84's rate, E81's warm-up and micro-batch, the arm's
+    step cap, fp32 forward), E81's batch and read batch, and the two stream seeds whose first batches must differ."""
+
+    recipe: Recipe
+    batch: int
+    read_batch: int
+    seeds: tuple[int, int]
+
+
+def c2n(lab: Any, R: qc.Rows, state: Path, stored: Path, batch: int, k: int) -> dict[str, Any]:
+    """E105's C2n: a stored fp32 δW re-read on R reproduces its stored gain and set (tolerances lab.pred["C2n"])."""
+    lab.fp32().eval()
+    C, ref = lab.pred["C2n"], json.loads(stored.read_text())
+    rec = carrying(lab.model, R, plus(lab.W0, load_file(state, DEV)), batch, k)
+    rel, same = abs(rec["gain"]["gain"] / ref["gain"]["gain"] - 1), QN.overlap(rec["carry"], ref["carry"])
+    return {"gain": rec["gain"]["gain"], "stored_gain": ref["gain"]["gain"], "rel": rel, "set_overlap": same,
+            "holds": rel <= C["gain_rel"] and same >= C["min_set_overlap"]}
+
+
+def w0_sentence(lab: Any, said: list[str], read_batch: int) -> tuple[list[list[float]], dict[str, Any]]:
+    """W0's per-token log P on the sentence reader for `said` (all 217 rows), and whether its content level reproduces
+    lab.pred["W0_sentence"] (relative tolerance). E105 stage C's second check."""
+    ref = lab.pred["W0_sentence"]
+    toks = tofu.token_logp(lab.model, sentence_seqs(lab.tok, lab.end_id, said), read_batch, DEV)
+    level = levels(toks)["content"]
+    rec = {"content": level, "stored": ref["stored"], "rel": abs(level / ref["stored"] - 1)}
+    return toks, rec | {"holds": rec["rel"] <= ref["rel_tol"]}
+
+
+def first_batches(lab: Any, label: str, seqs: list[tofu.Seq], N: Numbers, stop: Callable[..., None]) -> dict[str, float]:
+    """Both seeds' first-batch loss on `seqs`; they must differ (E88's check), or the seed did not reach the stream."""
+    F = lab.pred["first_minutes"]
+    first = {str(s): gold_loss(lab.model, tofu.stream(seqs, N.batch, s, 1), N.recipe.micro, DEV) for s in N.seeds}
+    gap = abs(first[str(N.seeds[0])] - first[str(N.seeds[1])])
+    lab.log(f"[{label}] first batch losses {json.dumps(first)}, gap {gap:.6f} over {F['first_batch_differs']}")
+    if not gap > F["first_batch_differs"]:
+        stop(lab, f"{label}: the two seeds' first batches are the same", first)
+    return first
+
+
+def to_matched(lab: Any, label: str, seed: int, seqs: list[tofu.Seq], reads: list[tofu.Seq], w0: list[list[float]],
+               N: Numbers, out: Path, stop: Callable[..., None]) -> dict[str, Any]:
+    """E105's arm: N.recipe.steps steps of `seqs` at `seed`; C1 on `reads` (W0's tokens `w0`) against
+    lab.pred["C1_content"]["bar"]; the template norm must be passed and the record's argmin be the matched step. Returns
+    the training record ("train") and the matched δW in fp32, held on the card ("dW")."""
+    lab.fp32().eval()  # loads the model when the control was done in an earlier job
+    first = first_batches(lab, label, seqs, N, stop)
+    held: dict[str, Any] = {}
+    run = Run(seed, out, stop, lambda dW: held.update(dW=dW), lambda dW: None)
+    rec = fine_tune(lab, run, seqs, N.recipe, N.batch, reads, w0, first[str(seed)], lab.pred["C1_content"]["bar"], N.read_batch)
+    peak = max(s["dw_norm"] for s in rec["steps"])
+    if not (peak > REF_NORM and rec["matched"]["step"] == rec["argmin_step"]):
+        stop(lab, f"{label}: the template norm was not passed within {N.recipe.steps} steps", {"peak_norm": peak, "matched": rec["matched"]})
+    return {"first_batch": first, "sequences": len(seqs), "steps_per_epoch": len(seqs) // N.batch, "train": rec, "dW": held["dW"]}
+
+
+def read_sets(lab: Any, name: str, W: dict[str, torch.Tensor], R: dict[str, qc.Rows], folder: Path, batch: int,
+              k: int) -> dict[str, Any]:
+    """The state W's carrying set on each probe of R, each written to folder/<name>__<probe>.json as it is read."""
+    folder.mkdir(parents=True, exist_ok=True)
+    out: dict[str, Any] = {}
+    for rows, Rr in R.items():
+        rec = carrying(lab.model, Rr, W, batch, k)
+        (folder / f"{name}__{rows}.json").write_text(json.dumps({"name": name, **rec}, default=float) + "\n")
+        out[rows] = {"gain": rec["gain"], "n": len(rec["carry"])}
+        lab.log(f"[{name} on {rows}] gain {rec['gain']['gain']:.5g}, set {len(rec['carry'])}; {lab.peaks()}")
+    return out

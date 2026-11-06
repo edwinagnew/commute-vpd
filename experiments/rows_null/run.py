@@ -14,6 +14,8 @@ the run; the run refuses otherwise). One job on one L40, `debug`:
       bf16 (results/large/dW/<arm>_matched.safetensors). About 2 min each.
   S   the filed rule (score.py) and the reported bridge to the full-row states, to results/score.json. CPU only; also
       `run.py score`.
+Since 2026-11-06, after the run, C2n, the reader check, the arm loop and the set reads live in `commute.known_facts`
+(`c2n`, `w0_sentence`, `to_matched`, `read_sets`), moved unchanged for E107.
 A stage whose result file says done is skipped; a lost arm starts again from step 0. Exit 0 done; 1 a stop
 (results/stopped.json, every stage refuses until it is removed) or a refusal.
 """
@@ -30,11 +32,9 @@ import torch
 
 from commute import known_facts as KF
 from commute import qwen_comparators as qc
-from commute import qwen_neurons as QN
 from commute import qwen_tofu as tofu
 from commute.jobs import EXPERIMENTS, hard_exit, load_experiment, require_filed
-from commute.qwen_sft import gold_loss, plus, save, set_weights
-from commute.qwen_sft import load as load_file
+from commute.qwen_sft import plus, save, set_weights
 from commute.qwen_train import Recipe
 
 S: Any = load_experiment("rows_null", "score")
@@ -54,6 +54,7 @@ FULL = {42: ("neurons_amend1", "a1_matched"), 142: ("neurons_amend2", "known_s14
 CROSS_ARM = KAP / "neurons_amend2.json"  # .identity.<rows>.cross_max, the rule's x
 ROWS = ("real", "tofu")
 CAP = 64  # steps run per arm: twice the full-row arms' matched step (32 at both seeds); warm-up is 250 steps
+NUMS = KF.Numbers(Recipe(E84.RATE, E81.WARMUP, CAP, "hf_cosine", 1.0, E81.MICRO, forward="fp32"), E81.BATCH, E81.READ_BATCH, S.SEEDS)
 
 
 class Lab(E81.JOB.Job):  # E45's model and tokenizer; the log is this experiment's
@@ -94,22 +95,13 @@ def rows_sets(lab: Lab) -> dict[str, qc.Rows]:
 
 
 def stage_C(lab: Lab, R: dict[str, qc.Rows], said: list[str]) -> None:
-    lab.fp32().eval()
-    C, ref = lab.pred["C2n"], json.loads(full_set(142, "real").read_text())
-    rec = KF.carrying(lab.model, R["real"], plus(lab.W0, load_file(CONTROL_STATE, DEV)), E102.CFG.batch, E102.CFG.K)
-    rel, same = abs(rec["gain"]["gain"] / ref["gain"]["gain"] - 1), QN.overlap(rec["carry"], ref["carry"])
-    out: dict[str, Any] = {"C2n": {"gain": rec["gain"]["gain"], "stored_gain": ref["gain"]["gain"], "rel": rel, "set_overlap": same,
-                                   "holds": rel <= C["gain_rel"] and same >= C["min_set_overlap"]}}
+    out: dict[str, Any] = {"C2n": KF.c2n(lab, R["real"], CONTROL_STATE, full_set(142, "real"), E102.CFG.batch, E102.CFG.K)}
     lab.log(f"[C2n] {'ok' if out['C2n']['holds'] else 'MISSED'} {json.dumps(out['C2n'])}")
     write(CONTROL, out)
     if not out["C2n"]["holds"]:
         stop(lab, "C2n: Amendment 2's matched neuron read not reproduced", out["C2n"])
     torch.cuda.empty_cache()
-    ref0 = lab.pred["W0_sentence"]
-    toks = tofu.token_logp(lab.model, KF.sentence_seqs(lab.tok, lab.end_id, said), E81.READ_BATCH, DEV)
-    level = KF.levels(toks)["content"]
-    out["W0_sentence"] = {"content": level, "stored": ref0["stored"], "rel": abs(level / ref0["stored"] - 1)}
-    out["W0_sentence"]["holds"] = out["W0_sentence"]["rel"] <= ref0["rel_tol"]
+    toks, out["W0_sentence"] = KF.w0_sentence(lab, said, E81.READ_BATCH)
     lab.log(f"[C] W0's sentence-reader content level {json.dumps(out['W0_sentence'])}")
     write(CONTROL, out)
     if not out["W0_sentence"]["holds"]:
@@ -121,31 +113,10 @@ def stage_C(lab: Lab, R: dict[str, qc.Rows], said: list[str]) -> None:
 # ----------------------------------------------------------------------------- the four arms
 
 
-def first_batches(lab: Lab, arm: str, seqs: list[tofu.Seq]) -> dict[str, float]:
-    """Both seeds' first-batch loss on this half; they must differ (E88's check), or the seed did not reach the stream."""
-    F = lab.pred["first_minutes"]
-    first = {str(s): gold_loss(lab.model, tofu.stream(seqs, E81.BATCH, s, 1), E81.MICRO, DEV) for s in S.SEEDS}
-    gap = abs(first["42"] - first["142"])
-    lab.log(f"[{arm}] first batch losses {json.dumps(first)}, gap {gap:.6f} over {F['first_batch_differs']}")
-    if not gap > F["first_batch_differs"]:
-        stop(lab, f"{arm}: the two seeds' first batches are the same", first)
-    return first
-
-
 def train_arm(lab: Lab, arm: str, half: list[int], said: list[str], w0: list[list[float]]) -> dict[str, Any]:
     """CAP steps on the half's 5 pairs per row; returns the training record and the matched δW (held on the card)."""
-    seed, seqs = int(arm[1:]), KF.train_seqs(lab.tok, lab.end_id, FORMS, said, set(half))
-    lab.fp32().eval()  # loads the model when stage C was done in an earlier job
-    first = first_batches(lab, arm, seqs)
-    held: dict[str, Any] = {}
-    run = KF.Run(seed, RESULTS / f"train_{arm}.json", stop, lambda dW: held.update(dW=dW), lambda dW: None)
-    r = Recipe(E84.RATE, E81.WARMUP, CAP, "hf_cosine", 1.0, E81.MICRO, forward="fp32")
-    rec = KF.fine_tune(lab, run, seqs, r, E81.BATCH, KF.sentence_seqs(lab.tok, lab.end_id, said, set(half)),
-                       [w0[i] for i in half], first[str(seed)], lab.pred["C1_content"]["bar"], E81.READ_BATCH)
-    peak = max(s["dw_norm"] for s in rec["steps"])
-    if not (peak > KF.REF_NORM and rec["matched"]["step"] == rec["argmin_step"]):
-        stop(lab, f"{arm}: the template norm was not passed within {CAP} steps", {"peak_norm": peak, "matched": rec["matched"]})
-    return {"first_batch": first, "sequences": len(seqs), "steps_per_epoch": len(seqs) // E81.BATCH, "train": rec, "dW": held["dW"]}
+    seqs, reads = KF.train_seqs(lab.tok, lab.end_id, FORMS, said, set(half)), KF.sentence_seqs(lab.tok, lab.end_id, said, set(half))
+    return KF.to_matched(lab, arm, int(arm[1:]), seqs, reads, [w0[i] for i in half], NUMS, RESULTS / f"train_{arm}.json", stop)
 
 
 def stage_arm(lab: Lab, arm: str, R: dict[str, qc.Rows], said: list[str]) -> None:
@@ -159,16 +130,11 @@ def stage_arm(lab: Lab, arm: str, R: dict[str, qc.Rows], said: list[str]) -> Non
     with set_weights(lab.model, W):
         toks = tofu.token_logp(lab.model, KF.sentence_seqs(lab.tok, lab.end_id, said, set(other)), E81.READ_BATCH, DEV)
     out = t | {"arm": arm, "rows": len(own), "matched": m["matched"], "epochs_at_matched": m["matched"]["step"] * E81.BATCH / t["sequences"],
-               "other_half_gain": KF.gains(toks, [w0[i] for i in other]), "sets": {}}
+               "other_half_gain": KF.gains(toks, [w0[i] for i in other])}
     lab.log(f"[{arm}] matched step {m['matched']['step']}, own gain {json.dumps(m['matched']['gain'])}, other half "
             f"{json.dumps(out['other_half_gain'])}")
-    SETS.mkdir(parents=True, exist_ok=True)
-    for rows in ROWS:
-        rec = KF.carrying(lab.model, R[rows], W, E102.CFG.batch, E102.CFG.K)
-        (SETS / f"{arm}__{rows}.json").write_text(json.dumps({"name": arm, **rec}, default=float) + "\n")
-        out["sets"][rows] = {"gain": rec["gain"], "n": len(rec["carry"])}
-        lab.log(f"[{arm} on {rows}] gain {rec['gain']['gain']:.5g}, set {len(rec['carry'])}; {lab.peaks()}")
-        write(arm_file(arm), out)
+    out["sets"] = KF.read_sets(lab, arm, W, R, SETS, E102.CFG.batch, E102.CFG.K)
+    write(arm_file(arm), out)
     del W
     out["saved"] = save(LARGE / "dW" / f"{arm}_matched.safetensors", dW, torch.bfloat16, droppable=True, log=lab.log)
     del dW
