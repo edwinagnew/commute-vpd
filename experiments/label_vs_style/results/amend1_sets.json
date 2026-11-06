@@ -1,0 +1,109 @@
+{
+ "sizes": {
+  "known_s42_matched": 1501,
+  "known_s142_matched": 1468,
+  "wrong_s42_matched": 1513,
+  "wrong_s142_matched": 1474,
+  "a2_s42_matched": 1847,
+  "a2_s142_matched": 1937
+ },
+ "pairs": {
+  "known_s42_matched|known_s142_matched": {
+   "inter": 1370,
+   "jaccard": 0.8567854909318324,
+   "over_min": 0.9332425068119891
+  },
+  "known_s42_matched|wrong_s42_matched": {
+   "inter": 1377,
+   "jaccard": 0.8411728772144166,
+   "over_min": 0.9173884077281812
+  },
+  "known_s42_matched|wrong_s142_matched": {
+   "inter": 1325,
+   "jaccard": 0.803030303030303,
+   "over_min": 0.8989145183175034
+  },
+  "known_s42_matched|a2_s42_matched": {
+   "inter": 1314,
+   "jaccard": 0.6460176991150443,
+   "over_min": 0.8754163890739507
+  },
+  "known_s42_matched|a2_s142_matched": {
+   "inter": 1332,
+   "jaccard": 0.6324786324786325,
+   "over_min": 0.8874083944037309
+  },
+  "known_s142_matched|wrong_s42_matched": {
+   "inter": 1361,
+   "jaccard": 0.8401234567901235,
+   "over_min": 0.9271117166212534
+  },
+  "known_s142_matched|wrong_s142_matched": {
+   "inter": 1355,
+   "jaccard": 0.8538122243226213,
+   "over_min": 0.9230245231607629
+  },
+  "known_s142_matched|a2_s42_matched": {
+   "inter": 1318,
+   "jaccard": 0.6599899849774662,
+   "over_min": 0.8978201634877384
+  },
+  "known_s142_matched|a2_s142_matched": {
+   "inter": 1327,
+   "jaccard": 0.638594802694899,
+   "over_min": 0.9039509536784741
+  },
+  "wrong_s42_matched|wrong_s142_matched": {
+   "inter": 1383,
+   "jaccard": 0.8622194513715711,
+   "over_min": 0.9382632293080054
+  },
+  "wrong_s42_matched|a2_s42_matched": {
+   "inter": 1357,
+   "jaccard": 0.6774837743384923,
+   "over_min": 0.8968935888962326
+  },
+  "wrong_s42_matched|a2_s142_matched": {
+   "inter": 1362,
+   "jaccard": 0.6522988505747126,
+   "over_min": 0.900198281559815
+  },
+  "wrong_s142_matched|a2_s42_matched": {
+   "inter": 1328,
+   "jaccard": 0.6663321625689914,
+   "over_min": 0.9009497964721845
+  },
+  "wrong_s142_matched|a2_s142_matched": {
+   "inter": 1329,
+   "jaccard": 0.638328530259366,
+   "over_min": 0.9016282225237449
+  },
+  "a2_s42_matched|a2_s142_matched": {
+   "inter": 1778,
+   "jaccard": 0.8863409770687937,
+   "over_min": 0.9626421223605848
+  }
+ },
+ "rule": {
+  "cross": [
+   0.8411728772144166,
+   0.8401234567901235,
+   0.803030303030303,
+   0.8538122243226213
+  ],
+  "w_wrong": 0.8622194513715711,
+  "w_known": 0.8567854909318324,
+  "x": 0.6599899849774662,
+  "band": 0.14321450906816757,
+  "familiarity_line": 0.7135709818636649,
+  "topic_line": 0.8032044940456338,
+  "size_caps": [
+   0.9920687376074026,
+   0.9702577660277594,
+   0.9820119920053297,
+   0.9959294436906377
+  ],
+  "cap_line": 0.8032044940456338,
+  "verdict": "no call"
+ }
+}

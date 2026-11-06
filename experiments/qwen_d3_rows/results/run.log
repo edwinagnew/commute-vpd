@@ -355,3 +355,28 @@
 [  3320.1s] [amend1 score] {"matched": {"outside": "like anchor 2", "placement": "like anchor 2", "think": "no call: the anchors do not separate"}, "end": {"outside": "like anchor 2", "placement": "midway: no call", "think": "like anchor 2"}} {"K1": "holds", "K2": "holds", "K3": "holds", "K4": "reported", "K5": "reported", "K6": "reported"}
 [  3320.3s] [known_s142_end] done in 1425 s, peak GPU 42.49 GiB, host 80.6 GB
 [  3320.3s] [done amend1] ['known_s42_end', 'known_s142_end']; FINISHED
+[     0.0s] [start e107 amend1] {'states': 'wrong_s42_matched,wrong_s142_matched', 'decomp': '/mnt/nw/home/e.agnew/commute-data/artifacts/qwen3-1.7b-p-e9fcffd5-torch'}; config Config(n16=16, null_seeds=(0, 1, 2, 3), draws=1000, match=1.25, evals=6, limit_s=7020, first_guess_s=1500)
+[     4.0s] [check] rows_whole_question_positions: ok {"a1": 2414, "tofu": 13421, "shapes": {"maths": [128, 256], "a1": [64, 256], "tofu": [128, 256]}}
+[   122.2s] [load] target, components, Γ, live set; NVIDIA L40, peak GPU 40.61 GiB, host 43.1 GB
+[   130.0s] [check] wrong_s42_matched_norm: ok {"norm": 0.492352027674119, "filed": 0.49235202767411906, "dtypes": ["torch.float32"]}
+[   351.2s] [sigma] 196 sites in 179 s, peak GPU 40.61 GiB, host 72.1 GB
+[   757.0s] [split wrong_s42_matched] {"outside": 0.09910378022859158, "outside_null": 0.2111827283604412, "stored_error": 1.1721533442590766e-06, "split_s": 405.7660856246948}, peak GPU 40.61 GiB, host 80.3 GB
+[   905.6s] [cells wrong_s42_matched base, maths] K0 0.0696131952 nll_W0 67770.7505 nll_FT 59903.9586 K00 0.227432137 K01 0.0729786035 nll_m00 67363.8523 nll_m01 62058.6492; rows 128, 149 s, peak GPU 42.13 GiB, host 80.3 GB
+[   905.6s] [check] wrong_s42_matched_maths_K0_is_W0s: ok {"rows": 128}
+[   905.6s] [check] wrong_s42_matched_memory: ok {"gpu_gib": 42.12601661682129, "host_gb": 80.260572}
+[  1143.2s] [cells wrong_s42_matched new pass, maths] K10 0.224122218 K11 0.07282553 nll_m10 67053.7677 nll_m11 61857.5805; rows 128, 238 s, peak GPU 42.49 GiB, host 80.3 GB
+[  1143.2s] [check] wrong_s42_matched_maths_classes: ok {"max_rel_gap": 5.219370499926614e-16}
+[  1146.0s] [wrong_s42_matched] null
+[  1146.0s] [score] {"counted": ["direct at matched", "outside at matched", "placement at matched", "credit at matched", "direct at full", "outside at full", "placement at full", "credit at full", "think at full"], "reads": "some number counts"} {"1_a1": "holds", "1_a2": "misses", "2": "holds", "3": "holds", "4": "misses", "5": "holds", "6_T_like_L": "misses", "6_fold_3_to_4": "misses"}
+[  1146.3s] [wrong_s42_matched] done in 1024 s, peak GPU 42.49 GiB, host 80.3 GB
+[  1152.0s] [check] wrong_s142_matched_norm: ok {"norm": 0.47631576004140974, "filed": 0.47631576004140974, "dtypes": ["torch.float32"]}
+[  1592.9s] [split wrong_s142_matched] {"outside": 0.0992655944459196, "outside_null": 0.21320173486499663, "stored_error": 1.1672498963492863e-06, "split_s": 423.76864361763}, peak GPU 42.49 GiB, host 80.9 GB
+[  1753.0s] [cells wrong_s142_matched base, maths] K0 0.0696131952 nll_W0 67770.7505 nll_FT 59980.3861 K00 0.223524838 K01 0.0724366146 nll_m00 67363.8523 nll_m01 62092.7979; rows 128, 160 s, peak GPU 42.49 GiB, host 80.9 GB
+[  1753.0s] [check] wrong_s142_matched_maths_K0_is_W0s: ok {"rows": 128}
+[  1753.0s] [check] wrong_s142_matched_memory: ok {"gpu_gib": 42.49112892150879, "host_gb": 80.858952}
+[  2002.0s] [cells wrong_s142_matched new pass, maths] K10 0.220408099 K11 0.0723173889 nll_m10 67085.9437 nll_m11 61918.2185; rows 128, 249 s, peak GPU 42.49 GiB, host 80.9 GB
+[  2002.0s] [check] wrong_s142_matched_maths_classes: ok {"max_rel_gap": 6.56588128838814e-16}
+[  2006.9s] [wrong_s142_matched] null
+[  2006.9s] [score] {"counted": ["direct at matched", "outside at matched", "placement at matched", "credit at matched", "direct at full", "outside at full", "placement at full", "credit at full", "think at full"], "reads": "some number counts"} {"1_a1": "holds", "1_a2": "misses", "2": "holds", "3": "holds", "4": "misses", "5": "holds", "6_T_like_L": "misses", "6_fold_3_to_4": "misses"}
+[  2007.5s] [wrong_s142_matched] done in 861 s, peak GPU 42.49 GiB, host 80.9 GB
+[  2007.5s] [done e107 amend1] ['wrong_s42_matched', 'wrong_s142_matched']; FINISHED
