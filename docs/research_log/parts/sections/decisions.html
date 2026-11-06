@@ -35,11 +35,11 @@
 <p><strong>The question.</strong> Switching off heads (1,1) and (1,2) removes 0.80 and 0.85 of the lowercase fine-tune's gain, but the original model falls by more with them off. Against capitalised text the pair takes only 0.10 to 0.13 of the gain.</p>
 <p><strong>Options.</strong> (a) Located in the state's own terms: lowercase joins copying as a labelled case. (b) A shared part: it stays unlabelled, with copying the one located case. <strong>Recommendation: b</strong>, because a part both models need says nothing about what the fine-tune added.</p>
 <div class="links"><a href="#e97">E97</a></div></div>
-  <div class="card key decision" id="decision-rl-extra-reads"><span class="chip uninf urgency">No rush</span><div class="k">Waiting on readings · qwen-rl-lead · new 2026-11-05</div><p class="small">Due to run: a $0 size rematch (E104 Amendment 1) decides whether the second seed is asked; own-samples' outside-share gap is wholly which matrices it sits in. Piece 2 not triggered. Owner: qwen-rl-lead.</p><h3>Do the training runs need two more pieces before the comparison of updates is read?</h3>
+  <div class="card key decision" id="decision-rl-extra-reads"><span class="chip uninf urgency">No rush</span><div class="k">Waiting on readings · qwen-rl-lead · new 2026-11-05</div><p class="small">Nothing runs; neither piece is triggered. Owner: qwen-rl-lead.</p><h3>Do the training runs need two more pieces before the comparison of updates is read?</h3>
   <p><strong>What this is about.</strong> A reading of an update counts only if the gap between two updates exceeds the gap between two seeds of one. Every update has two seeds except fine-tuning on the model's own correct answers; the maths arms have been read (<a href="#e104">E104</a>).</p>
-  <p><strong>Piece 1: a second seed of fine-tuning on the model's own correct answers.</strong> Runs only if it differs from reinforcement learning's or the null's by more than their seed spread; waits on the size rematch. Cost: one retrain, $0 on a cluster card.</p>
+  <p><strong>Piece 1: a second seed of fine-tuning on the model's own correct answers.</strong> Runs only if it differs from reinforcement learning's or the null's by more than their seed spread; a size-matched redo says it does not. Cost: one retrain, $0 on a cluster card.</p>
   <p><strong>Piece 2: where the second seed of the facts fine-tune first knows its facts.</strong> Runs only if a reading changes between the first state past the line and the full update. Cost: under an hour of a cluster card, $0.</p>
-  <p><strong>Recommendation:</strong> neither runs now; piece 1 waits on the size rematch, piece 2 is not triggered.</p>
+  <p><strong>Recommendation:</strong> neither runs.</p>
   <p class="small">Names in the reports: the readings are the D3 rows (E94); the facts fine-tune is anchor 2 (E84, E88); the maths arms are E69. <code>reports/plans/2026-11-05_plan_qwen-reorient-amend1.md</code>.</p>
   </div>
 </div>
