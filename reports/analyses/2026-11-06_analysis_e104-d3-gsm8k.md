@@ -3,22 +3,23 @@
 *2026-11-06. `qwen-decomp-lead`. Provisional: no independent check. Plan `reports/plans/2026-11-06_plan_e104-d3-gsm8k.md`
 (appendix `reports/plans/2026-11-06_plan_e104-appendix.md`); code `experiments/qwen_d3_gsm8k/{run,rules,plot}.py`,
 `src/commute/qwen_d3.py`; rules `experiments/qwen_d3_gsm8k/results/predictions.json`, filed before the control ran;
-numbers `experiments/qwen_d3_gsm8k/results/table.json`; notebook `notebooks/E104_qwen_d3_gsm8k.ipynb`. Sibling:
+numbers `experiments/qwen_d3_gsm8k/results/table.json`; Amendment 1, the redone size check, in plan section
+"Amendment 1", rule `results/predictions_amend1.json`, result `results/amend1.json`; notebook `notebooks/E104_qwen_d3_gsm8k.ipynb`. Sibling:
 `reports/analyses/2026-11-06_analysis_e94-d3-rows.md`, the same readings on the two example fine-tunes.*
 
 We split the maths fine-tunes of Qwen3-1.7B over the subcomponents of its decomposition and read the three numbers
 that had told the two example fine-tunes apart. Reinforcement learning reads like its shuffled-reward null on all
-three, while the own-samples fine-tune differs from it on two, for reasons that are not yet about new or old skills.
-So these readings do not yet say whether reinforcement learning teaches the model something new or strengthens what it
+three. The own-samples fine-tune differs from it on two. One difference is which matrices it touches and the other is
+its far smaller output size, so neither is about new or old skills. So these readings do not yet say whether reinforcement learning teaches the model something new or strengthens what it
 had, which is the question in the goals.
 
 ## The answer
 
 Reinforcement learning reads like its shuffled-reward null on all three readings, at both steps. The own-samples
-fine-tune differs from reinforcement learning at step 100 on two readings, but neither is yet about the split. Its
-higher outside share comes wholly from which matrices it sits in. Its lower think overlap comes with an output size
-fifty times smaller, which our size check could not match. Own-samples has one seed; a second is requested.
-Placement rose for one reinforcement-learning seed and fell for the other, so it reads nothing here.
+fine-tune differs from reinforcement learning at step 100 on two readings, but neither is about the split. Its
+higher outside share comes wholly from which matrices it sits in. Its lower think overlap is size: reinforcement
+learning's update, shrunk to own-samples' output size, overlaps think mode within a seed spread of own-samples. We had
+leaned the other way. So nothing here rests on own-samples differing, and no second seed is asked. Placement rose for one reinforcement-learning seed and fell for the other, so it reads nothing here.
 
 ## What we were trying to test
 
@@ -95,7 +96,8 @@ copy multiplies one state's $\delta W$ by a constant so that its output size on 
 a factor of 1.25, using at most six tries. The copy then stands in for the larger state in the same comparison. If the
 gap goes away, size can do it.
 
-- RL seed 0 at step 100, shrunk to own-samples' step-100 size: the size check for own-samples against RL.
+- RL seed 0 at step 100, shrunk to own-samples' step-100 size: the size check for own-samples against RL. This search
+  missed the band, so Amendment 1 redid it by bisection on all 128 rows.
 - RL seed 0 at step 100, shrunk to its own step-10 size: the size check for RL's drift along training.
 - TOFU seed 42's full update, shrunk to the template's size: the size check for E94's think gap between the anchors.
 
@@ -202,17 +204,17 @@ energy sits in different matrices. They were trained on different machines, so s
 this is run down, placement on RL reads nothing; the rule's "does not count" is a seed disagreement, not an agreement
 with the null.
 
-### Do the switched-on subcomponents overlap think mode's set differently? Own-samples overlaps less; size is not ruled out.
+### Do the switched-on subcomponents overlap think mode's set differently? Own-samples overlaps less, and that is size.
 
 Figure `experiments/qwen_d3_gsm8k/figures/think.png`.
 
-**Reading it.** RL and its null overlap think mode's set alike, and own-samples overlaps less, but we cannot yet say
-that size does not cause it. At step 100 RL's two seeds read 3.65 and 3.21, and its null's 3.50 and 3.33. Both arms sit
-between the template's 3.71 and TOFU's 3.04. Own-samples reads 2.53, a gap of 0.89 below RL's mean, against a bar of 0.43, so it counts. Its
-switched-on set holds only 264 subcomponents, against about 1,100 for RL, and its output size is fifty times smaller.
-The scaled copy built to test that reached only 0.0006 of output size, under half of own-samples' 0.0014. So the size
-check reads "size unmatched", and the gap is described, not attributed. As in E94, the no-think set overlaps RL's
-changes as much as think mode does or more, so this reading is not about thinking.
+**Reading it.** RL and its null overlap think mode's set alike, and own-samples overlaps less. At step 100 RL's two
+seeds read 3.65 and 3.21, and its null's 3.50 and 3.33. Both arms sit between the template's 3.71 and TOFU's 3.04.
+Own-samples reads 2.53, a gap of 0.89 below RL's mean, against a bar of 0.43, so it counts. Its switched-on set holds
+only 264 subcomponents, against about 1,100 for RL, and its output size is fifty times smaller. The first scaled copy
+built to test size reached under half of own-samples' size, so it went unread. The next section redoes it, and
+size accounts for the gap. As in E94, the no-think set overlaps RL's changes as much as think mode does or more, so
+this reading is not about thinking.
 
 | state | think, seed 0 | think, seed 70 | no-think, seed 0 | no-think, seed 70 | switched-on set, seeds 0; 70 | fold's draw sd, seed 0 |
 |---|---|---|---|---|---|---|
@@ -239,6 +241,7 @@ no-think fold at step 10 is no call: its chance overlap is under 5, Cochran's mi
 | copy | target size | reached size | think fold | its source's fold | verdict |
 |---|---|---|---|---|---|
 | RL seed 0, step 100, to own-samples' size | 0.0014 | 0.0006, outside the band | 2.94 | 3.65 | size unmatched: unread |
+| the same, redone by bisection, Amendment 1 | 0.00143 | 0.00128, inside the band | 2.92 | 3.65 | "size can do this": gap 0.385, bar 0.4345 |
 | RL seed 0, step 100, to its step-10 size | 0.0122 | 0.0138 | 3.52 | 3.65 | "size does not explain it", on a gap that did not count |
 | TOFU seed 42 full, to the template's size | 0.128 | 0.132 | 3.01 | 3.08 | prediction 3 holds: under 3.62 |
 
@@ -252,8 +255,42 @@ size moved its fold from 3.08 to 3.01, still under the template's 3.71: **E94's 
 size**. Shrinking RL seed 0 to its step-10 size moved its fold from 3.65 to 3.52, not down to the 2.85 that seed read
 at step 10. The rule prints "size does not explain it", but RL's drift along training did not count, so there was no
 gap to explain. What the copy does show is that this seed's fold barely moves under a five-fold change of size. The
-unmatched copy, at under half of own-samples' size, reads 2.94: the fold can fall at very small sizes, so size remains
-open for own-samples.
+unmatched copy, at under half of own-samples' size, read 2.94: the fold can fall at very small sizes, which
+Amendment 1 then tested at the matched size.
+
+### Amendment 1: does RL's update, shrunk to own-samples' output size, overlap think mode as little? Yes, within the bar.
+
+Figure `experiments/qwen_d3_gsm8k/figures/size.png`.
+
+E104's first search for this copy stepped toward the target from the full update and matched on 16 rows. It landed
+under the target on every try and stopped. Amendment 1 bisected the scale between two sizes E104 had already read on
+all 128 rows: the failed copy's, under the target, and the full update's, over it. The control came first: re-reading
+the failed copy's size at its scale gave E104's value to every digit. Three tries reached 0.00128 against a target of
+0.00143, inside the band. The copy's outside share and placement equal its source's to four parts in ten billion,
+as scaling requires.
+
+**Reading it.** Size can do this, and our lean missed. The matched copy reads a think fold of 2.92, against
+own-samples' 2.53. That gap of 0.385 is under the bar of 0.4345, the larger seed spread of RL and its null at step
+100, so the copy reads with own-samples. We had leaned the other way, at low confidence: interpolating RL seed 0's
+three earlier folds gave about 3.10, just over the line at 2.97. In the figure the matched copy sits beside the
+unmatched one at 2.94: the fold flattens below a size of about 0.01 instead of falling further. Do-nothing reads
+exactly as each state, since the fold describes the changed model's masks.
+
+So by the filed outcome the think gap between own-samples and RL is reported as size. The outside-share gap is
+already attributed to which matrices each update sits in. Nothing in E104 now rests on own-samples SFT differing from
+RL, so no own-samples seed 70 is asked. The note to `qwen-rl-lead` was withdrawn at 07:43.
+
+What this check is blind to, as filed: it scales RL's update by a single number, so it keeps RL's direction and tests
+no other kind of size effect. It copies only RL seed 0, the seed with the higher fold; seed 70 scaled might read
+lower still. It matches output size on the maths rows, not the size of the switched-on set: the copy switches on 245
+subcomponents against own-samples' 264. And own-samples has one seed.
+
+| copy | target size | reached size | think fold | own-samples' fold | gap, bar | verdict |
+|---|---|---|---|---|---|---|
+| RL seed 0, step 100, bisected | 0.00143 | 0.00128 | 2.920 | 2.535 | 0.385, 0.4345 | size can do this |
+
+Sizes on all 128 maths rows. Tries: scale 0.358 gave 0.0086, 0.214 gave 0.0025, 0.165 gave 0.00128. The fold's draw
+sd for the copy is 0.24; its no-think fold reads 2.89.
 
 Positions between the anchors at step 100: RL 0.42, null 0.45, both nearer the template; own-samples 1.77, past TOFU's
 full update.
@@ -265,17 +302,14 @@ Applying the plan's "What changes what we do next". No control failed.
 | filed branch | condition | read | outcome |
 |---|---|---|---|
 | RL against null at step 100 | counts on a reading | none counts | **D3 reports that RL reads like its null on every carried reading** |
-| own-samples against RL at step 100 | counts on any reading | counts on outside share and think overlap | **fires**: own-samples seed 70 asked of `qwen-rl-lead`, to be read here in about 10 min of card a state |
+| own-samples against RL at step 100 | counts on any reading | counts on outside share and think overlap | fired, then withdrawn after Amendment 1: outside share is the null and think overlap is size, so **no seed 70 is asked** |
 | every arm on the template's side on all three | | no: own-samples is past TOFU on outside and think, and on placement below the template; RL's placement is past TOFU | no single description |
 | TOFU shrunk to template size reads with the template | | no: 3.01 | E94's think carry is not size; it stays |
 
-The note to `qwen-rl-lead` is `~/commute-data/agents/qwen-rl-lead/note-e104-own-samples-seed70.md`. The user was asked
-to restart that lead, ask 34. It also meets piece 1 of the pending card "decision-rl-extra-reads": own-samples differs
-from RL by more than the seed spread, and a reading rests on it.
-
-The second own-samples seed answers one question: does own-samples' think gap hold with its own spread rather than the
-null's? It does not settle size. The outside-share count needs no second seed to read: as a fraction of its null,
-own-samples is already at RL.
+The branch first sent a note to `qwen-rl-lead` asking for own-samples seed 70. Amendment 1's filed outcome withdrew it
+at 07:43: the think gap is size, and the outside-share gap is which matrices the update touches. So no reading rests
+on own-samples differing from RL. E104 had first counted as meeting piece 1 of the pending card
+"decision-rl-extra-reads", a reading that rests on that difference; it no longer does.
 
 ## What we learned
 
@@ -283,7 +317,7 @@ On the three readings E94 carried, the decomposition does not see a difference b
 same loop with shuffled rewards, at either step. Two of those readings describe the update rather than the split, and
 the third, placement, splits the two RL seeds far apart. So D3 has no evidence from these readings that the reward's
 content changes how the update sits in the subcomponents. Own-samples differs, but one difference is which matrices it
-touches and the other is not yet separated from its much smaller output size. For the goals' question of new
+touches and the other is its much smaller output size. For the goals' question of new
 capability against strengthening, these readings give no handle yet on the maths arms.
 
 ## How compelling is the evidence
@@ -299,7 +333,8 @@ capability against strengthening, these readings give no handle yet on the maths
 - **Positive control.** At the template's size the two random kinds differ by 0.21 on outside share and 0.09 on
   placement, so these readings can see a difference between changes this small. E94 measured this; it was not rerun.
 - **Size.** Scaling cannot move outside share or placement; checked here to one part in a billion on every copy. For
-  think overlap, one of three size checks did not match.
+  think overlap, all three size checks matched once Amendment 1 redid the first. They scale by one number only, and
+  the own-samples check copies RL seed 0 alone.
 - **Coverage.** One model, one decomposition, one task's rows, two steps, one learning rate.
 
 ## Surprises
@@ -310,12 +345,12 @@ template. We cannot explain it, and it reproduces exactly in two further splits 
 maths state's outside share is 0.58 of its null, the template's value, so that reading varies only through the null.
 The six-try size search failed on one copy because output size grew unevenly with the scale.
 
+Our lean on Amendment 1 missed. We leaned toward own-samples' think gap surviving a size-matched copy, at low
+confidence; the matched copy read 2.92, within the bar of own-samples' 2.53. RL seed 0's fold stays near 2.9 from an
+output size of 0.0006 to 0.0013, where a straight line in log size had put it near 3.1.
+
 ## What next
 
-- Read own-samples seed 70 at steps 10 and 100 when `qwen-rl-lead` saves it. If its think fold sits with seed 0's,
-  the gap holds against its own spread; size still needs a matched copy.
-- Redo the own-samples size copy with a search that brackets the target, at no cost on `debug`. If the matched copy
-  reads with RL, the think gap is size.
 - Find out why RL seed 0's placement is high: which matrices carry its on-set energy, against seed 70's. Placement on
   RL reads nothing until then.
 
@@ -327,11 +362,12 @@ The six-try size search failed on one copy because output size grew unevenly wit
 | 2 | placement falls from step 10 to 100 in every arm-seed | fall over 0.005 at all 5 | RL seed 0 rises by 0.117; others fall 0.008 to 0.055 | misses |
 | 3 | TOFU's full update at template size reads under the template on think | copy's fold under 3.6176, copy matched | 3.015, matched at 0.132 against 0.128 | holds |
 | 4 | RL against null on outside share at step 100 does not count | the comparison rule | gap 0.0041, bar 0.0223 | holds |
+| A1 | own-samples' think gap survives RL seed 0's update scaled to its size; lean "size does not explain it", low confidence | copy matched and its fold off own-samples' 2.5347 by strictly over 0.4345 | 2.920, matched at 0.00128 against 0.00143: gap 0.385 | "size can do this": lean missed |
 
 Comparisons, unscored but filed: RL against null does not count on any reading at either step. Own-samples against
 RL counts at step 100 on outside share and think overlap, and at step 10 on outside share and placement. Drift counts
 for own-samples on outside share and placement only. Size checks: unmatched for own-samples against RL; "size does not
-explain it" for RL's drift and for the anchors.
+explain it" for RL's drift and for the anchors; "size can do this" for own-samples against RL after Amendment 1.
 
 ## Departures from the literature
 
@@ -350,8 +386,9 @@ explain it" for RL's drift and for the anchors.
 ## Not run
 
 Direct share. Credit. The adversary. Teacher training. Random changes at GSM8K size: scale invariance makes them
-redundant for two readings, and two scaled copies cover the third. Steps other than 10 and 100. Own-samples seed 70,
-on the branch above. Think sets built on RL rollouts. An independent check of this report.
+redundant for two readings, and two scaled copies cover the third. Steps other than 10 and 100. Own-samples seed 70:
+withdrawn after Amendment 1. A size copy made from RL seed 70, or scaled other than by one number. A copy matched on
+the size of the switched-on set. Think sets built on RL rollouts. An independent check of this report.
 
 ## Provenance
 
@@ -359,3 +396,8 @@ Four jobs on the MATS cluster's `debug` QoS, one L40 each, $0: control 53267, th
 and 53369 for own-samples and the three scaled copies. About 2.7 h of card in all; peak card memory 42.1 GiB, host 80.5 GB.
 Predictions filed in commit `0478e144` before the control ran. Results: `experiments/qwen_d3_gsm8k/results/{table,control}.json`,
 `run.log`, `edges.txt`, one folder per state. Figures: `experiments/qwen_d3_gsm8k/figures/{outside,placement,think}.png`.
+
+Amendment 1: one `debug` L40 job, 53596, about 22 min, $0; peak card memory 42.1 GiB, host 80.0 GB. Rule filed in
+commit `bc8bb6d6` before the run. Code `experiments/qwen_d3_gsm8k/amend1.py`; result `results/amend1.json`,
+`results/S1a1/`, the `[a1` and `S1a1` lines of `results/run.log`, edge cases `results/edges_amend1.txt`; figure
+`figures/size.png`. All checks passed: the low-end control, memory, and the copy's invariance to 3.9e-10.

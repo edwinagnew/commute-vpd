@@ -3,7 +3,7 @@ own-samples SFT at steps 10 and 100 (one point per seed) on the same axes as E94
 on placement TOFU matched) and E94's small random changes, read from E94's table. Tick labels carry each state's
 output size on the maths rows (K00 - K0, nats per position). A number that reads no call is left out.
 
-  python experiments/qwen_d3_gsm8k/plot.py   ->  figures/{outside,placement,think}.png
+  python experiments/qwen_d3_gsm8k/plot.py   ->  figures/{outside,placement,think,size}.png (size: Amendment 1)
 """
 
 from __future__ import annotations
@@ -144,11 +144,49 @@ def think(nums: dict, e94: dict) -> Figure:
     return fig
 
 
+def size_check(nums: dict, e94: dict) -> Figure:
+    """Amendment 1: RL seed 0's step-100 update and its scaled copies, think fold against output size, beside
+    own-samples at step 100 and the filed line (own-samples' fold plus the bar). `e94` is unused."""
+    a1 = json.loads((rules.RESULTS / "amend1.json").read_text())
+    bar = a1["reading"]["beside"]["bar"]
+    rl = [(nums["S1"], "D", "none", "scaled copy, size NOT matched (E104)"),
+          (a1["copy"], "D", COLOUR["R"], "scaled copy, size matched (Amendment 1)"),
+          (nums["S2"], "D", COLOUR["R"], "scaled copy, matched to its step-10 size"),
+          (nums["R_s0_100"], "o", COLOUR["R"], "RL seed 0, step 100: the source")]
+    fig, ax = plt.subplots(figsize=(8.5, 5))
+    ax.plot([s["size_K00_minus_K0"] for s, *_ in rl], [s["think"]["value"] for s, *_ in rl], color=COLOUR["R"],
+            lw=1, alpha=0.5)
+    for s, fmt, mfc, lab in rl:
+        t = s["think"]
+        ax.errorbar([s["size_K00_minus_K0"]], [t["value"]], yerr=[t["draw_sd"]], fmt=fmt, ms=7, capsize=3,
+                    color=COLOUR["R"], mfc=mfc, label=f"{lab}: {t['value']:.2f}", zorder=3)
+    r70 = nums["R_s70_100"]
+    ax.errorbar([r70["size_K00_minus_K0"]], [r70["think"]["value"]], yerr=[r70["think"]["draw_sd"]], fmt="s", ms=7,
+                capsize=3, color=COLOUR["R"], alpha=0.6, label=f"RL seed 70, step 100: {r70['think']['value']:.2f}")
+    f = nums["F_s0_100"]
+    fs, fv = f["size_K00_minus_K0"], f["think"]["value"]
+    ax.errorbar([fs], [fv], yerr=[f["think"]["draw_sd"]], fmt="o", ms=8, capsize=3, color=COLOUR["F"],
+                label=f"own-samples SFT, step 100: {fv:.2f}", zorder=3)
+    ax.axvspan(fs / 1.25, fs * 1.25, color="#f3d9b8", alpha=0.6, label="size band a copy must reach: within 1.25 times")
+    ax.axhline(fv + bar, color="k", ls="--", lw=1,
+               label=f"own-samples + bar {bar:.3f} = {fv + bar:.2f}: a copy above says size does not explain it")
+    ax.axhline(1, color="#b0b0b0", lw=1, label="chance: 1")
+    ax.set_xscale("log")
+    ax.set_ylim(0, 4.6)
+    ax.set_xlabel("output size on the 128 maths rows: KL, nats per position (log scale)")
+    ax.set_ylabel("think fold: overlap with think mode's set / chance")
+    ax.set_title("Does shrinking RL's update to own-samples' output size reproduce own-samples' lower think fold?\n"
+                 "Yes: the matched copy reads under the line. Error bars: the fold's draw sd. "
+                 "Do-nothing reads exactly as each state", fontsize=9)
+    ax.legend(fontsize=7, loc="lower right")
+    return fig
+
+
 def main() -> None:
     nums = json.loads((rules.RESULTS / "table.json").read_text())["numbers"]
     e94 = json.loads((rules.E94 / "table.json").read_text())["numbers"]
     FIG.mkdir(exist_ok=True)
-    for name, make in (("outside", outside), ("placement", placement), ("think", think)):
+    for name, make in (("outside", outside), ("placement", placement), ("think", think), ("size", size_check)):
         fig = make(nums, e94)
         fig.tight_layout()
         fig.savefig(FIG / f"{name}.png", dpi=150)
