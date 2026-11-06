@@ -171,3 +171,14 @@ def do_nothing_ok(shares: Sequence[float], bar: float) -> bool:
 def reverse_steps(curve: Sequence[tuple[int, float]], bar: float) -> int | None:
     """Reverse fine-tuning, reported beside: the first step whose held-out label accuracy is <= bar, else None."""
     return next((s for s, a in curve if a <= bar), None)
+
+
+# ----------------------------------------------------------------------------- Amendment 1 (results/predictions_amend1.json)
+
+
+def pair_basis(a: Tensor, b: Tensor) -> Tensor:
+    """An orthonormal basis (d, 2), fp32, of the span of two weight vectors (d,): a's unit direction, then b's part at
+    right angles to it (QR in float64). Two parallel vectors have no rank-2 basis: assert."""
+    q, r = torch.linalg.qr(torch.stack([a.double(), b.double()], 1))
+    assert abs(float(r[1, 1])) > 1e-6 * float(b.double().norm()), "the two directions are parallel: no rank-2 basis"
+    return q.float()
