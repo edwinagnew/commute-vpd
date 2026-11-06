@@ -594,3 +594,47 @@ def ceiling(d: Decomp, rs: RowSet, dW: dict[str, Tensor]) -> Sums:
         del logits, g, q
     d.use("W0")
     return out
+
+
+# ----------------------------------------------------------------------------- E104: the carried rows on the GSM8K arms
+
+
+READS = EXPERIMENTS / "qwen_size_grid" / "results" / "reads.jsonl"
+
+
+def step_state(arm: str, step: int) -> dict[str, Any]:
+    """E91's record of `arm` at saved `step` (`reads.jsonl` holds every saved step, `grid_state` only the named sizes),
+    its file as an absolute path; exactly one record must match."""
+    recs = [r for r in map(json.loads, READS.read_text().splitlines()) if r["arm"] == arm and r["step"] == step]
+    assert len(recs) == 1, f"{arm} step {step}: {len(recs)} records in {READS}"
+    return recs[0] | {"path": EXPERIMENTS / recs[0]["file"]}
+
+
+def placement(d: Decomp, pe: Tensor, on0: Tensor, energy: dict[str, float], unit: dict[str, Tensor],
+              unit_energy: dict[str, dict[str, float]], seeds: tuple[int, ...]) -> dict[str, Any]:
+    """E94's row 3 (`qwen_d3_rows/run.py` placement): the split's energy share on the subcomponents on at W0 (maths
+    rows), minus the mean share of the unit Gaussian nulls (`unit["pe<k>"]`, ‖G_s‖²_Σ in `unit_energy[str(k)]`)
+    rescaled per matrix to this δW (`null_pe`)."""
+    null = [qr.placement(null_pe(unit[f"pe{k}"], unit_energy[str(k)], energy, d.lay.site_of), on0) for k in seeds]
+    share = qr.placement(pe, on0)
+    return {"share": share, "null": null, "excess": share - sum(null) / len(null)}
+
+
+def carried(d: Decomp, dW: dict[str, Tensor], base: Sums, c0: qr.Counts, c1: qr.Counts, unit: dict[str, Tensor],
+            unit_energy: dict[str, dict[str, float]], seeds: tuple[int, ...], draws: int
+            ) -> tuple[dict[str, Any], dict[str, Tensor]]:
+    """E94's three carried rows of one state whose base cells on the maths rows are read (`cells` with W0's gate counts
+    c0 and the state's c1): the least-squares split's outside share with its null, placement excess, the think folds
+    (each with its draw sd, sd / mean), and the size K00 − K0 per position. Returns the record, keyed as E94's
+    state.json, and the tensors E94 saved (gate counts, piece energies)."""
+    sp = ls_split(d, dW)
+    on0, S = c0.on(), c1.on() & ~c0.on()
+    f = folds(S, ~on0, *think_refs(), draws)
+    for k in ("T", "L"):
+        f[k]["draw_sd"] = f[k]["sd"] / f[k]["mean"] if f[k]["mean"] > 0 else None
+    n = len(base["K0"]) * ROW_LEN
+    rec = {"outside": sp.outside, "outside_null": sp.outside_null, "stored_error": sp.stored_error, "split_s": sp.seconds,
+           "energy_sigma": sum(sp.energy.values()), "overlap": f,
+           "placement": placement(d, sp.pe, on0, sp.energy, unit, unit_energy, seeds),
+           "size_K00_minus_K0": (total(base, "K00") - total(base, "K0")) / n}
+    return rec, {"g0_active": c0.active.cpu(), "g1_active": c1.active.cpu(), "pe_ls": sp.pe.contiguous()}
