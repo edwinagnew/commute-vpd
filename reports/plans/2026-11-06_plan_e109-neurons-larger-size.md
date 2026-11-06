@@ -93,7 +93,9 @@ w − x > band, else that probe's rule is reported as "no power at this size". *
 preferring the wrong sentence ≥ 0.75 and greedy recall of the wrong answer's words ≥ 0.585; both seeds must hold, else
 "premise failed", reported, no amendment. The gate's band is the known arm's alone: the wrong ends do not exist yet.
 **Wrong rule**: cross = WRONG_end<s> inside KNOWN_end<t>, four values; w = min(w_known, w_wrong) with w_wrong the wrong
-seeds' overlap, band = 1 − w (E107's band, the less stable arm's); **familiarity** iff max(cross) ≤ x + band; **topic or style** iff min(cross) ≥ w − band and min(cross) − x > band; else
+seeds' overlap, band = 1 − w (E107's band, the less stable arm's); **familiarity** iff max(cross) ≤ x + band and
+max(cross) ≤ w − band (E107's two lines, w in place of L: a noisy wrong arm cannot read familiarity from noise alone);
+**topic or style** iff min(cross) ≥ w − band and min(cross) − x > band; else
 **no call**; unread with a value missing, not four cross values or a set not of 1,024. Leans: tofu topic or style; T no
 call likelier, familiarity the lean. Edge cases run before filing (results in
 `~/commute-data/scratch/baseline-lead/e109-writer/dry.out`, listed in the predictions).
@@ -137,7 +139,8 @@ for a same-card comparison.
 ## Choices the advice left open
 
 The wrong rule's band is E107's, 1 − min(w_known, w_wrong) (baseline-lead, 2026-11-06, before any run; the advice
-wrote the known seeds alone); the power gate keeps the known seeds' band. C2n is kept at the head of stage 0. T_frame is read for the
+wrote the known seeds alone), and familiarity takes E107's second line, max(cross) ≤ w − band; the power gate keeps the
+known seeds' band. C2n is kept at the head of stage 0. T_frame is read for the
 known and wrong end states only. The |score|-inside-signed check and the arithmetic check are reported, not stops (no
 measured floor for the latter; the mask partition itself is asserted exactly). The end δW is saved before the reads.
 
