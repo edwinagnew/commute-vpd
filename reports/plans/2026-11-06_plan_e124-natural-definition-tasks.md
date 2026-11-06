@@ -141,3 +141,22 @@ Not run: Qwen; E113's patch form (removal is row 164's check); a random update o
 near zero, so r is nan); case-style matching; shortlist 4-5. Risks: few pattern windows per held-out pair; regex subjects
 mislabel some windows (dropped when the verb disagrees, which also drops natural errors); the name list (not in the repo;
 URL to verify) may give few single-token names; r may read the prior of the twin's word, as the synthesis found.
+
+## Go-ahead (Fable, 2026-11-06 evening; the user delegated go-aheads to Fable)
+
+"Go with changes", advice `~/commute-data/scratch/definition-lead/e124-plan/fable_advice.md`. Changes, none of which
+adds a verdict rule, band or score:
+1. Scored state = the first checkpoint with train accuracy ≥ 0.90 (E112's learning bar) and full-vocabulary log-odds
+   gain ≥ 1 (`local_faith.MIN_GAIN`). A recipe departure from E112, so the natural member is scored after it has learned.
+2. Agreement probe windows balanced half attractor and half not per train pair; readout accuracy printed per kind.
+3. The 0.65-0.85 headroom band is replaced by two gates: natural W0 train accuracy < 0.90 (E112's bar) and above the
+   new-word member's W0 accuracy on the same windows. W0 accuracy printed per kind.
+4. Names: `https://raw.githubusercontent.com/hadley/data-baby-names/master/baby-names.csv` (SSA extract, top 1000 per
+   sex per year, 1880-2008), percent summed 1950-2000, one-gender share ≥ 0.95. Fetched on dev into
+   `artifacts/sets/ssa_names/`, sha256 in stage0.json. Caveat: top-1000 names only.
+5. Twin P1/P2: filed as "≈ W0's agreement with the twin labels, reported", not ≤ 0.65.
+6. Each seed gets its own verdict; a member-level prediction passes only if both seeds match.
+7. Stage 0 prints drop share per kind and the flipped-twin fit-window count.
+8. Row 164's subject-number clause covered the label-word version in the E99-reset sequence. The user's evening
+   retarget and ask 9 supersede it (decisions row, 2026-11-06). E124 reads r and the stand-in ratio itself with the
+   existing readers; teacher training and E38's switched-on set are left to regating-lead, who gets the states.
