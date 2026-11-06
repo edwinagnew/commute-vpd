@@ -35,17 +35,22 @@ def power(w: float, x: float, ok_sizes: bool) -> dict[str, Any]:
     return {"verdict": "power" if w - x > band else "no power", "w": w, "x": x, "band": band, "margin": w - x - band}
 
 
-def wrong_verdict(w: float, x: float, cross: Sequence[float], ok_sizes: bool) -> dict[str, Any]:
-    """The filed rule on one probe. band = 1 - w (w the known arm's seed overlap, as the power gate).
-    "familiarity" iff max(cross) <= x + band; "topic or style" iff min(cross) >= w - band and min(cross) - x > band
+def wrong_verdict(w_known: float, w_wrong: float, x: float, cross: Sequence[float], ok_sizes: bool) -> dict[str, Any]:
+    """The filed rule on one probe. w = min(w_known, w_wrong), band = 1 - w: the less stable arm's seed noise, as E107's
+    `wrong_verdict` (so a noisier wrong arm cannot read "familiarity" from noise alone).
+    "familiarity" iff max(cross) <= x + band and max(cross) <= w - band (every pair within seed noise of the cross-arm
+    level and at least a band under the seed level, as E107's two lines with w for L); "topic or style" iff min(cross) >= w - band and min(cross) - x > band
     (strict); "no call" otherwise; "unread" with a value not finite, not four cross values or a set not of K neurons.
     Both cannot hold: familiarity needs max(cross) <= x + band, topic or style min(cross) > x + band."""
-    if len(cross) != 4 or not all(QN.finite(v) for v in (w, x, *cross)) or not ok_sizes:
-        return {"verdict": "unread", "w": w, "x": x, "cross": list(cross)}
-    band, lo, hi = 1 - w, min(cross), max(cross)
-    v = "familiarity" if hi <= x + band else "topic or style" if lo >= w - band and lo - x > band else "no call"
-    return {"verdict": v, "w": w, "x": x, "band": band, "cross": list(cross), "cross_min": lo, "cross_max": hi,
-            "familiarity_needs_max": x + band, "style_needs_min": w - band, "style_needs_over": x + band}
+    if len(cross) != 4 or not all(QN.finite(v) for v in (w_known, w_wrong, x, *cross)) or not ok_sizes:
+        return {"verdict": "unread", "w_known": w_known, "w_wrong": w_wrong, "x": x, "cross": list(cross)}
+    w, lo, hi = min(w_known, w_wrong), min(cross), max(cross)
+    band = 1 - w
+    fam_line = min(x + band, w - band)  # E107's two familiarity lines, with the seed level w in place of L
+    v = "familiarity" if hi <= fam_line else "topic or style" if lo >= w - band and lo - x > band else "no call"
+    return {"verdict": v, "w_known": w_known, "w_wrong": w_wrong, "w": w, "x": x, "band": band, "cross": list(cross),
+            "cross_min": lo, "cross_max": hi, "familiarity_needs_max": fam_line, "style_needs_min": w - band,
+            "style_needs_over": x + band}
 
 
 def references(sets: Mapping[str, Sequence[int]], known: str = "KNOWN_end", fict: str = "FICT_learned") -> dict[str, Any]:
@@ -71,11 +76,11 @@ def wrong_rule(sets: Mapping[str, Sequence[int]], gates: Sequence[bool], known: 
     failed" or "no power at this size". Reported beside: the wrong seeds' overlap, the four wrong-in-fictional and the
     four known-in-fictional overlaps."""
     ref = references(sets, known, fict)
-    out = wrong_verdict(ref["w"], ref["x"], pairs(sets, wrong, known), _sizes_ok(sets, (known, wrong)))
+    w_wrong = QN.overlap(sets[f"{wrong}142"], sets[f"{wrong}42"])
+    out = wrong_verdict(ref["w"], w_wrong, ref["x"], pairs(sets, wrong, known), _sizes_ok(sets, (known, wrong)))
     status = ("premise failed" if not (len(gates) == 2 and all(gates)) else
               "no power at this size" if ref["gate"]["verdict"] != "power" else "scored")
-    return out | {"status": status, "power": ref["gate"], "known_vs_fict": ref["x_pairs"],
-                  "wrong_seeds": QN.overlap(sets[f"{wrong}142"], sets[f"{wrong}42"]), "wrong_vs_fict": pairs(sets, wrong, fict)}
+    return out | {"status": status, "power": ref["gate"], "known_vs_fict": ref["x_pairs"], "wrong_vs_fict": pairs(sets, wrong, fict)}
 
 
 def sentences(true: Sequence[float], wrong: Sequence[float]) -> dict[str, Any]:
