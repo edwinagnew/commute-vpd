@@ -162,7 +162,7 @@ adds no rule. Every reading is this project's measurement.
 - A neuron reading of the layout and invented-facts pair at the learned size.
 - The neuron and VPD sets on the same rows with the same overlap measure.
 - A fictional-facts state at norm 8.4, to size-match the learned-size comparison.
-- An independent check of this table.
+- VPD's switched-on set on the wrong-answer end states E109 saved (`experiments/larger_size/results/large/dW/WRONG_end{42,142}.safetensors`).
 
 ## Provenance
 
