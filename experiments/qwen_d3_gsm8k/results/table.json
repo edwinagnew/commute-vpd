@@ -88,6 +88,94 @@
    "size_K00_minus_K0": 0.09726957650308124,
    "matched": true
   },
+  "N_s0_10": {
+   "outside": {
+    "value": 0.14904072031615725,
+    "null": 0.254639158063808,
+    "fraction_of_null": 0.5853016537182012
+   },
+   "placement": {
+    "value": 0.019466670078498116,
+    "share_on_set": 0.6076523049639935,
+    "null": 0.5881856348854954,
+    "fraction_of_null": 1.0330961331319963
+   },
+   "think": {
+    "value": 2.8343210512754444,
+    "L": 2.8530670470756063,
+    "size_S": 213,
+    "chance_mean": 11.643,
+    "draw_sd": 0.2801802819011836
+   },
+   "size_K00_minus_K0": 0.0014838112656570535,
+   "matched": true
+  },
+  "N_s0_100": {
+   "outside": {
+    "value": 0.1441433640993721,
+    "null": 0.2507036541739725,
+    "fraction_of_null": 0.57495517795423
+   },
+   "placement": {
+    "value": 0.011081101431259732,
+    "share_on_set": 0.6010501490084899,
+    "null": 0.5899690475772301,
+    "fraction_of_null": 1.0187825132127954
+   },
+   "think": {
+    "value": 3.497919062039481,
+    "L": 3.052568061619281,
+    "size_S": 1201,
+    "chance_mean": 61.751,
+    "draw_sd": 0.1244617234993839
+   },
+   "size_K00_minus_K0": 0.13564985980855493,
+   "matched": true
+  },
+  "N_s70_10": {
+   "outside": {
+    "value": 0.15322719157450498,
+    "null": 0.265702570795161,
+    "fraction_of_null": 0.5766868988732252
+   },
+   "placement": {
+    "value": 0.008999207499814976,
+    "share_on_set": 0.6069140549766563,
+    "null": 0.5979148474768413,
+    "fraction_of_null": 1.0150509851658494
+   },
+   "think": {
+    "value": 3.5430175813891305,
+    "L": 2.766855977865152,
+    "size_S": 301,
+    "chance_mean": 14.959,
+    "draw_sd": 0.24342100292406418
+   },
+   "size_K00_minus_K0": 0.009011490730713764,
+   "matched": true
+  },
+  "N_s70_100": {
+   "outside": {
+    "value": 0.1569598600787454,
+    "null": 0.2724890358191464,
+    "fraction_of_null": 0.5760226631023833
+   },
+   "placement": {
+    "value": -0.014977161907261172,
+    "share_on_set": 0.586521199246243,
+    "null": 0.6014983611535042,
+    "fraction_of_null": 0.9751002448642766
+   },
+   "think": {
+    "value": 3.3260454947201934,
+    "L": 3.1519736204053923,
+    "size_S": 804,
+    "chance_mean": 42.994,
+    "draw_sd": 0.141777206366013
+   },
+   "size_K00_minus_K0": 0.060795093693840896,
+   "matched": true
+  },
   "a1_s0": {
    "outside": {
     "value": 0.12335805143394823,
@@ -224,16 +312,16 @@
  "comparisons": {
   "C1": {
    "outside": {
-    "10": "unread",
-    "100": "unread"
+    "10": "does not count",
+    "100": "does not count"
    },
    "placement": {
-    "10": "unread",
-    "100": "unread"
+    "10": "does not count",
+    "100": "does not count"
    },
    "think": {
-    "10": "unread",
-    "100": "unread"
+    "10": "does not count",
+    "100": "does not count"
    }
   },
   "C2": {
@@ -253,17 +341,17 @@
   "C3": {
    "outside": {
     "R": "does not count",
-    "N": "unread",
+    "N": "does not count",
     "F": "unread"
    },
    "placement": {
     "R": "does not count",
-    "N": "unread",
+    "N": "does not count",
     "F": "unread"
    },
    "think": {
     "R": "does not count",
-    "N": "unread",
+    "N": "does not count",
     "F": "unread"
    }
   },
@@ -275,9 +363,9 @@
      "p_vs_tofu_matched": -0.8431300344896975
     },
     "N": {
-     "p": null,
-     "reads": null,
-     "p_vs_tofu_matched": null
+     "p": 0.44154349178791263,
+     "reads": "nearer the template",
+     "p_vs_tofu_matched": -0.9924683533671779
     },
     "F": {
      "p": null,
@@ -292,9 +380,9 @@
      "p_vs_tofu_matched": 0.37408301432290236
     },
     "N": {
-     "p": null,
-     "reads": null,
-     "p_vs_tofu_matched": null
+     "p": 0.2598359501643657,
+     "reads": "nearer the template",
+     "p_vs_tofu_matched": 0.03576208692681907
     },
     "F": {
      "p": null,
@@ -309,9 +397,9 @@
      "p_vs_tofu_matched": -17.674778489379186
     },
     "N": {
-     "p": null,
-     "reads": null,
-     "p_vs_tofu_matched": null
+     "p": 0.4453045555413977,
+     "reads": "nearer the template",
+     "p_vs_tofu_matched": -18.7272011079636
     },
     "F": {
      "p": null,
@@ -339,7 +427,7 @@
   },
   "C1_at_100": {
    "counted": [],
-   "reads": "unread"
+   "reads": "RL reads like its null on every carried row"
   },
   "C2_branch": "does not fire"
  },
@@ -347,7 +435,7 @@
   "1": "unread",
   "2": "unread",
   "3": "unread",
-  "4": "unread"
+  "4": "holds"
  },
  "note": "Outside share and think overlap describe the update: do-nothing reads exactly as each state, so these two rows can pass without any split. Placement under do-nothing is no call."
 }
