@@ -138,7 +138,8 @@ def sentence_summary(toks: dict[str, list[list[float]]], w0: dict[str, list[list
 def read_state(lab: Lab, name: str, W: dict[str, torch.Tensor], R: dict[str, qc.Rows], names: tuple[str, ...]) -> dict[str, Any]:
     """W's sets on each probe of `names`, each written to sets/<name>__<probe>.json as read: E98's signed ranking ("carry",
     as E103 and E107) and by |score| ("carry_abs"), with the first-order total (sum of the scores)."""
-    SETS.mkdir(parents=True, exist_ok=True)
+    for d in (SETS, STATES):
+        d.mkdir(parents=True, exist_ok=True)
     out: dict[str, Any] = {}
     score: dict[str, torch.Tensor] = {}
     for p in names:
