@@ -1,4 +1,4 @@
-"""E112's figures from results/stage{0,1,2}.json and predictions.json, no model.
+"""E112's figures from results/stage{0,1,2}.json, amend1.json and predictions.json, no model.
 Real task blue, twin orange, the original model and the random-direction control grey; seed 1 hatched.
 
   figures/possession.png  per block, the case probe's and the Hewitt-Liang control probe's accuracy on held-out
@@ -9,6 +9,12 @@ Real task blue, twin orange, the original model and the random-direction control
                           beside the same share for a random direction, with the 0.50 bar
   figures/beside.png      held-out label accuracy after pruning the top-K MLP units against K random ones, and during
                           reverse fine-tuning, for the real fine-tunes (no rule)
+  figures/amend1_removal.png  Amendment 1 (results/amend1.json): per state, the share removed by stage 2's removal,
+                          by the previous-word direction alone and by both case directions at every position of blocks
+                          1-3, and by two random directions there, with the 0.50, 0.20 and 0.10 bars
+  figures/amend2_rank.png Amendment 2 (results/amend2.json, stopped at its do-nothing check): against the number of
+                          directions removed at each of the three attempts, the original model's next-token loss change
+                          and every state's share removed, for the case removal and the same-size random removal
 
 Usage (repo root):  ~/commute-agents/fleet/cpu-run python experiments/case_label/plot.py
 """
@@ -23,6 +29,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 
 HERE = Path(__file__).parent
@@ -88,8 +95,8 @@ def carrying(s0: dict[str, Any], s2: dict[str, Any], rules: dict[str, Any]) -> N
            xticklabels=["label right on held-out words", "label agrees with a threshold\non the original model's case readout"],
            title="Does the fine-tune carry to unseen words, as a threshold on the case readout?")  # fmt: skip
     handles = [Patch(facecolor=c, hatch=h, edgecolor="white", label=n) for _, n, c, h in STATES]
-    handles += [plt.Line2D([], [], color=BLUE, ls="--", label="bar for 'reuses' (0.90)"),
-                plt.Line2D([], [], color=ORANGE, ls=":", label="twin expected at most (0.65)")]  # fmt: skip
+    handles += [Line2D([], [], color=BLUE, ls="--", label="bar for 'reuses' (0.90)"),
+                Line2D([], [], color=ORANGE, ls=":", label="twin expected at most (0.65)")]  # fmt: skip
     ax.legend(handles=handles, fontsize=7, frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.17), ncol=3)
     style(ax)
     fig.tight_layout()
@@ -109,13 +116,78 @@ def removal(s2: dict[str, Any], rules: dict[str, Any]) -> None:
            xticklabels=["case direction removed\n(block 1 output, trigger position)", "random direction removed\n(same place)"],
            title="Does removing the case direction take away the fine-tune's label gain?")  # fmt: skip
     handles = [Patch(facecolor=c, hatch=h, edgecolor="white", label=n) for _, n, c, h in STATES]
-    handles += [plt.Line2D([], [], color=BLUE, ls="--", label="bar for 'reuses' (0.50)"),
-                plt.Line2D([], [], color=ORANGE, ls=":", label="twin expected at most (0.20)"),
-                plt.Line2D([], [], color=GREY, ls="--", label="random direction allowed at most (0.10)")]  # fmt: skip
+    handles += [Line2D([], [], color=BLUE, ls="--", label="bar for 'reuses' (0.50)"),
+                Line2D([], [], color=ORANGE, ls=":", label="twin expected at most (0.20)"),
+                Line2D([], [], color=GREY, ls="--", label="random direction allowed at most (0.10)")]  # fmt: skip
     ax.legend(handles=handles, fontsize=7, frameon=False, loc="upper right", ncol=1)
     style(ax)
     fig.tight_layout()
     fig.savefig(FIG / "removal.png", dpi=150)
+
+
+def amend1(a1: dict[str, Any], rules: dict[str, Any]) -> None:
+    S, D, w = a1["states"], a1["do_nothing"], 0.18
+    groups = [[S[s]["P3_stage2"] for s, *_ in STATES], [S[s]["P3_prev_alone"] for s, *_ in STATES],
+              [S[s]["P3"] for s, *_ in STATES]]  # fmt: skip
+    fig, ax = plt.subplots(figsize=(8.0, 5.2))
+    for x0, vals in enumerate(groups):
+        state_bars(ax, x0, vals, w)
+        bar_lines(ax, x0, rules["real"]["P3"], rules["twin_expected_max"]["P3"], 2.4 * w)
+    for i, (s, _, _, h) in enumerate(STATES):
+        v = D[s]["share"]
+        ax.bar(3 + (i - 1.5) * w, v, w, color=GREY, hatch=h, edgecolor="white")
+        ax.text(3 + (i - 1.5) * w, max(v, 0) + 0.01, f"{v:.3f}", ha="center", va="bottom", fontsize=6, rotation=90)
+    ax.hlines(rules["do_nothing_max"], 3 - 2.4 * w, 3 + 2.4 * w, color=GREY, ls="--", lw=1.2)
+    ax.axhline(0, color=INK, lw=0.8)
+    ax.set(xticks=[0, 1, 2, 3], xlim=(-0.6, 3.6), ylim=(-0.05, 0.6), ylabel="share of the label gain removed",
+           xticklabels=["previous-word case\ndirection, block 1,\ntrigger only (stage 2)",
+                        "same direction,\nblocks 1-3,\nevery position",
+                        "previous-word and\nown-word case directions,\nblocks 1-3, every position",
+                        "two random directions,\nblocks 1-3,\nevery position"],
+           title="Does a stronger removal of the case readout take away the label gain?")  # fmt: skip
+    handles = [Patch(facecolor=c, hatch=h, edgecolor="white", label=n) for _, n, c, h in STATES]
+    handles += [Line2D([], [], color=BLUE, ls="--", label="bar for 'reuses' (0.50)"),
+                Line2D([], [], color=ORANGE, ls=":", label="twin expected at most (0.20)"),
+                Line2D([], [], color=GREY, ls="--", label="random directions allowed at most (0.10)")]  # fmt: skip
+    ax.legend(handles=handles, fontsize=7, frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.24), ncol=4)
+    style(ax)
+    fig.tight_layout()
+    fig.savefig(FIG / "amend1_removal.png", dpi=150)
+
+
+def amend2(s0: dict[str, Any], s2: dict[str, Any], a1: dict[str, Any], a2: dict[str, Any], rules: dict[str, Any]) -> None:
+    """Against the number of directions removed (summed over the edited blocks), the original model's next-token loss
+    change and the share of each state's gain removed, for the case removal and its random control at each attempt."""
+    ranks = [1, 2 * 3, sum(a2["erasure"]["blocks"][str(b)]["rank"] for b in range(a2["l_star"], 4))]
+    w0 = [s0["w0_removal"], {"probe": a1["w0"]["both"], "random": a1["w0"]["random"]}, {"probe": a2["w0"]["erase"], "random": a2["w0"]["random"]}]
+    fig, (a, b) = plt.subplots(1, 2, figsize=(10.4, 4.6), sharex=True)
+    a.plot(ranks, [r["probe"]["next_ce_change"] for r in w0], color=INK, marker="o", label="case directions removed")
+    a.plot(ranks, [r["random"]["next_ce_change"] for r in w0], color=GREY, ls="--", marker="s", label="random directions, same number")
+    for x, r in zip(ranks, w0, strict=True):
+        a.text(x, r["probe"]["next_ce_change"] * 1.25, f"+{r['probe']['next_ce_change']:.3f}", ha="center", fontsize=7, color=INK)
+    a.axhline(s0["w0_removal"]["next_ce_w0"], color=INK, ls=":", lw=1)
+    a.text(1, s0["w0_removal"]["next_ce_w0"] * 0.8, f"the original model's loss itself ({s0['w0_removal']['next_ce_w0']:.2f})", fontsize=7, color=INK, va="top")
+    a.set(yscale="log", ylabel="change in the original model's next-token loss, nats", title="Damage to the original model")
+    a.legend(fontsize=7, frameon=False, loc="lower right")
+    for s, n, c, h in STATES:
+        ls = "-" if not h else "--"
+        b.plot(ranks, [s2["do_nothing"][s]["share"], a1["do_nothing"][s]["share"], a2["do_nothing"][s]["share"]],
+               color=c, ls=":", lw=1, marker="s", mfc="white", label=f"{n}: random directions")  # fmt: skip
+        b.plot(ranks[:2], [s2["states"][s]["P3"], a1["states"][s]["P3"]], color=c, ls=ls, marker="o", label=f"{n}: case directions")
+    b.text(ranks[2], 0.30, "case removal\nnot read:\nthe run stopped", ha="center", fontsize=7, color=INK)
+    b.axhline(rules["do_nothing_max"], color=GREY, ls="--", lw=1)
+    b.text(1, rules["do_nothing_max"] + 0.01, f"random directions allowed at most ({rules['do_nothing_max']:.2f})", fontsize=7, color=GREY)
+    b.axhline(rules["real"]["P3"], color=BLUE, ls="--", lw=1)
+    b.text(1, rules["real"]["P3"] + 0.01, f"bar for 'reuses' ({rules['real']['P3']:.2f})", fontsize=7, color=BLUE)
+    b.set(ylim=(-0.03, 0.6), ylabel="share of the fine-tune's label gain removed", title="Share of the label gain removed")
+    b.legend(fontsize=6, frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.2), ncol=2)
+    for ax in (a, b):
+        ax.set(xscale="log", xticks=ranks, xlabel="case directions removed, summed over blocks")
+        ax.set_xticklabels(["1: block 1,\ntrigger only", "6: 2 per block,\nblocks 1-3", f"{ranks[2]}: full erasure,\nblocks 1-3"], fontsize=7)
+        style(ax)
+    fig.suptitle("Is the full case erasure specific to case? Its random control breaks the original model\nand takes a fifth to a quarter of every fine-tune's gain", fontsize=10)
+    fig.tight_layout()
+    fig.savefig(FIG / "amend2_rank.png", dpi=150)
 
 
 def beside(s2: dict[str, Any]) -> None:
@@ -152,6 +224,9 @@ def main() -> None:
     carrying(s0, s2, rules)
     removal(s2, rules)
     beside(s2)
+    a1 = load("amend1.json")
+    amend1(a1, rules)
+    amend2(s0, s2, a1, load("amend2.json"), rules)
 
 
 if __name__ == "__main__":

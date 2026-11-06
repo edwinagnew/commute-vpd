@@ -49,6 +49,9 @@ F64 = d3.F64
 
 def check(name: str, kind: str, v: dict[str, Any]) -> None:
     """An early check (`rules.judge`); a miss writes stopped.json and exits 1 (E93's `check`)."""
+    refs = {"reproduce": [f"e93_{k}" for k in v.get("keys", [])], "zero_offsets": ["e93_K8"], "first_reading": ["K8_step0"]}.get(kind, [])
+    for r in refs:  # the absolute band each reproduction read is held to, logged whether it holds or not
+        log(f"[band] {name} {r}: drift {v['drift']:.4g}, band {rules.band(v['drift'], v[r]):.4g}")
     E93.check(name, rules.judge(kind, v), v)
 
 
@@ -91,21 +94,21 @@ def shared_reads(d: d3.Decomp, rs: d3.RowSet, n: str, e93: dict[str, Any], dW: d
     sh: dict[str, Any] = {"split": S, "split_s": p.seconds, "clean": {"W0": E93.clean_at(d, rs, "W0")}}
     ruler, ruler93 = kmean(sh["clean"]["W0"], rs), kmean(e93["clean"]["W0"], rs)
     check(f"{n}_card_ruler", "card", {"here": ruler, "e93": ruler93})
-    sh["band"] = rules.band(rel(ruler, ruler93))
+    sh["drift"] = abs(ruler - ruler93)
     sh["clean"]["FT"] = E93.clean_at(d, rs, "FT")
     check(f"{n}_clean_FT", "ft_zero", {"K": kmean(sh["clean"]["FT"], rs)})
     sh["clean"]["ls_moved"] = E93.clean_at(d, rs, "ls_moved", p.moved)
     check(f"{n}_ls_moved", "reproduce", {"keys": ["K"], "K": kmean(sh["clean"]["ls_moved"], rs),
-                                         "e93_K": kmean(e93["clean"]["moved"], rs), "band": sh["band"]})
+                                         "e93_K": kmean(e93["clean"]["moved"], rs), "drift": sh["drift"]})
     E93.memory(n, F)
     sh["base"] = E93.cells_timed(d, rs, f"{n} base")
     k00, k00_93 = kmean(sh["base"], rs, "K00"), kmean(e93["base"], rs, "K00")
     check(f"{n}_card_masked", "card", {"here": k00, "e93": k00_93})
-    sh["band_masked"] = rules.band(rel(k00, k00_93))
+    sh["drift_masked"] = abs(k00 - k00_93)
     sh["own_ft"] = E93.cells_timed(d, rs, f"{n} ls own at FT's weights", change=d3.ls_change(d, p.X), w0_v=False)
     got = {"K01": kmean(sh["base"], rs, "K01"), "K11": kmean(sh["own_ft"], rs, "K11"), "K10": kmean(sh["own_ft"], rs, "K10")}
     want = {"e93_K01": kmean(e93["base"], rs, "K01")} | {f"e93_{k}": kmean(e93["own"], rs, k) for k in ("K11", "K10")}
-    check(f"{n}_ls_own_ft", "reproduce", {"keys": list(got)} | got | want | {"band": sh["band_masked"]})
+    check(f"{n}_ls_own_ft", "reproduce", {"keys": list(got)} | got | want | {"drift": sh["drift_masked"]})
     d.weights.put("ls", p.moved)
     sh["own_frozen"] = E93.cells_timed(d, rs, f"{n} ls own, Δ frozen", change=d3.ls_change(d, p.X), w0_v=False, state="ls")
     d.weights.drop("ls")
@@ -137,8 +140,8 @@ def run_arm(d: d3.Decomp, rs: d3.RowSet, seqs: list[Any], n: str, arm: str, scal
     log(f"[{n} {arm}] lr {lr:.3g}; 8-row K of least squares, this card's clean read {k8(sh['clean']['ls_moved']):.9g}, E93's {e93_k8:.9g}")
 
     def early(name: str, v: dict[str, Any]) -> None:
-        check(f"{n}_{arm}_{name}", name, v | ({"e93_K8": e93_k8, "band": sh["band"]} if name == "zero_offsets" else
-                                               {"band": sh["band"]} if name == "first_reading" else {}))
+        check(f"{n}_{arm}_{name}", name, v | ({"e93_K8": e93_k8, "drift": sh["drift"]} if name == "zero_offsets" else
+                                               {"drift": sh["drift"]} if name == "first_reading" else {}))
 
     d.use("W0")
     d.park_gamma()
