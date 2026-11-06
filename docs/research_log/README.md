@@ -580,3 +580,4 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e118_pairs.png": "experiments/neuron_vpd_table/figures/full_qwen_pairs.png"
 - "fig/e118_known.png": "experiments/neuron_vpd_table/figures/full_qwen_known.png"
 - "fig/e119_route_labels.png": "experiments/teacher_route_split/figures/route_labels.png"
+- "fig/e124_p0_blocks.png": "experiments/natural_tasks/figures/p0_blocks.png"
