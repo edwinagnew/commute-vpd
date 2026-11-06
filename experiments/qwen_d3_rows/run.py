@@ -20,6 +20,7 @@ import math
 import os
 import sys
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
@@ -241,18 +242,20 @@ def read_rows(d: d3.Decomp, rs: d3.RowSet, X: dict[str, torch.Tensor], own: bool
 
 
 def finish(d: d3.Decomp, rows: dict[str, d3.RowSet], name: str, dW: dict[str, torch.Tensor], own: tuple[str, ...],
-           own_pass: bool, state: dict[str, Any], P: dict[str, Any]) -> None:
-    """The split, the maths rows (with the gate counts), the own rows, the overlap and row 3; files as each ends."""
-    ref, nulls = json.loads(CONTROL.read_text())["W0_K0_rows"], json.loads(NULLS.read_text())
+           own_pass: bool, state: dict[str, Any], P: dict[str, Any], ref: dict[str, list[float]] | None = None) -> None:
+    """The split, the maths rows (with the gate counts), the own rows, the overlap and row 3; files as each ends. `ref`:
+    W0's K0 per row of each row set, stage 0's when not given (Amendment 1 adds its own rows')."""
+    k0: dict[str, list[float]] = ref or json.loads(CONTROL.read_text())["W0_K0_rows"]
+    nulls = json.loads(NULLS.read_text())
     sp = d3.ls_split(d, dW)
     state |= {"outside": sp.outside, "outside_null": sp.outside_null, "stored_error": sp.stored_error, "split_s": sp.seconds,
               "energy_sigma": sum(sp.energy.values())}
     log(f"[split {name}] {json.dumps({k: state[k] for k in ('outside', 'outside_null', 'stored_error', 'split_s')})}, {d3.peaks()}")
     del dW
     c0, c1 = d.counts(), d.counts()
-    write(RESULTS / name / "maths.json", read_rows(d, rows["maths"], sp.X, False, ref["maths"], name, P, c0, c1))
+    write(RESULTS / name / "maths.json", read_rows(d, rows["maths"], sp.X, False, k0["maths"], name, P, c0, c1))
     for r in own:
-        write(RESULTS / name / f"{r}.json", read_rows(d, rows[r], sp.X, own_pass, ref[r], name, P))
+        write(RESULTS / name / f"{r}.json", read_rows(d, rows[r], sp.X, own_pass, k0[r], name, P))
     on0, S = c0.on(), c1.on() & ~c0.on()
     state["overlap"] = d3.folds(S, ~on0, *d3.think_refs(), C.draws)
     state["placement"] = placement(d, sp.pe, on0, sp.energy, nulls)
@@ -349,21 +352,26 @@ def main() -> None:
             stage_control(d, rows, P)
             hard_exit(0)
         stage_nulls(d, P)
-        took: list[float] = []
-        for n in names:
-            if (RESULTS / n / "state.json").is_file():
-                log(f"[{n}] already written")
-                continue
-            longest = max(took, default=C.first_guess_s)
-            if time.time() - T0 + longest > C.limit_s:
-                log(f"cut short before {n}: {time.time() - T0:.0f} s used, longest state {longest:.0f} s; resubmit")
-                hard_exit(3)
-            t0 = time.time()
-            (read_state if n in rules.STATES else read_random)(d, rows, n, P)
-            took.append(time.time() - t0)
-            log(f"[{n}] done in {time.time() - t0:.0f} s, {d3.peaks()}")
+        each_state(names, lambda n: (read_state if n in rules.STATES else read_random)(d, rows, n, P))
     log(f"[done] {names}; FINISHED")
     hard_exit(0)
+
+
+def each_state(names: list[str], read: Callable[[str], None]) -> None:
+    """`read` each state not yet written, in order; exit 3 when the time left is under the longest state so far."""
+    took: list[float] = []
+    for n in names:
+        if (RESULTS / n / "state.json").is_file():
+            log(f"[{n}] already written")
+            continue
+        longest = max(took, default=C.first_guess_s)
+        if time.time() - T0 + longest > C.limit_s:
+            log(f"cut short before {n}: {time.time() - T0:.0f} s used, longest state {longest:.0f} s; resubmit")
+            hard_exit(3)
+        t0 = time.time()
+        read(n)
+        took.append(time.time() - t0)
+        log(f"[{n}] done in {time.time() - t0:.0f} s, {d3.peaks()}")
 
 
 if __name__ == "__main__":

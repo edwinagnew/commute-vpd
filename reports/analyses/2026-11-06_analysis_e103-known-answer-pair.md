@@ -1,24 +1,25 @@
 # Analysis: does a neuron reading tell a fine-tune on facts Qwen already knows from one on facts it lacks? (E103)
 
-*2026-11-06, baseline-lead's E103 writer; Amendment 1 added the same day. **Provisional**: fast lane, no independent
-check. Plan `reports/plans/2026-11-06_plan_e103-known-answer-pair.md` (Amendment 1 in its own section), adopted from
-Fable's option A (`reports/plans/2026-11-06_advice_neuron-baseline-next.md`); rules
-`experiments/known_answer_pair/results/predictions.json` and `predictions_amend1.json`; code
-`experiments/known_answer_pair/{run,neurons,amend1,amend1_neurons}.py`, `src/commute/qwen_neurons.py`. Explanation:
-`notebooks/E103_known_answer_pair.ipynb`. Figures: `experiments/known_answer_pair/plot.py`. Provenance at the end.*
+*2026-11-06, baseline-lead's E103 writers; Amendments 1 and 2 added the same day. **Provisional**: fast lane, no
+independent check. Plan `reports/plans/2026-11-06_plan_e103-known-answer-pair.md` (each amendment in its own section),
+adopted from Fable's option A (`reports/plans/2026-11-06_advice_neuron-baseline-next.md`); rules
+`experiments/known_answer_pair/results/predictions.json`, `predictions_amend1.json` and `predictions_amend2.json`; code
+`experiments/known_answer_pair/{run,neurons,amend1,amend1_neurons,amend2,amend2_neurons}.py`,
+`src/commute/qwen_neurons.py`. Explanation: `notebooks/E103_known_answer_pair.ipynb`. Figures:
+`experiments/known_answer_pair/plot.py` and `plot_amend2.py`. Provenance at the end.*
 
 We fine-tuned Qwen3-1.7B on real facts it already knows and compared it with a fine-tune on invented facts, using last
-week's neuron instruments. The first run mostly learned to answer in a bare phrase and stop, so Amendment 1 retrained it
-to answer in sentences, as the other run does. Then no neuron reading told the two apart at the template's size, but
-neither update had yet learned much specific to its own facts, so the pair barely tests reuse against new.
+week's neuron instruments, then repeated the known-facts run with a second seed. The four summary neuron readings never
+told the two apart, but the identity of the neurons carrying each update did, by more than a change of seed moves it.
+That is a candidate neuron-level signal of reuse against new, pending a control that changes the rows but not the label.
 
 ## The answer
 
-With the answer format matched, every filed neuron reading of the known-facts update still sits level with the
-fictional-facts update at the template's size. Its gain control now passes on the answer words rather than on stopping
-early. But each matched update gains nearly as much on the other's rows as on its own, so neither has yet learned much
-specific to its facts. Their carrying neurons do differ, far more than two fictional seeds' do. Without a second
-known-facts seed that difference has no null, so it is an observation, not a finding.
+Two known-facts seeds now sit level with the fictional-facts update on all four summary neuron readings at the
+template's size. Which neurons carry each update does separate the two kinds of training. Each kind's two seeds share
+about nine tenths of their carrying neurons. A known-facts and a fictional run share about half, or under two thirds on
+the fictional rows: beyond seed noise on both row sets. The two kinds also train on different rows, and that control is not run, so this is a
+candidate signal, not a finding. Amendment 1's apparent loss of real facts was a scoring effect.
 
 ## The anomaly, run down first
 
@@ -319,8 +320,9 @@ true option scores highest. So the reading is a choice among bare phrases that e
 arm trained away from and E103's arm trained on. A length check with the tokenizer finds the true option no longer or
 shorter than the wrong ones on average, by 0.04 tokens; it is the longest in 36 rows and the shortest in 26. On E103's
 bare reader, under the other suffix, the new end state raised the true bare answers' first token by 8.7 nats, so those
-answers did not become less likely in absolute terms. Per-option log P was not saved, so whether the wrong options rose
-more, and why, cannot be read from the files.
+answers did not become less likely in absolute terms. Amendment 2 saved each option's log P and found the cause: the
+end token after a bare option, not the facts. Its section "Why did the end state pick fewer right answers?" revises
+this one.
 
 ### Amendment 1 table
 
@@ -342,9 +344,156 @@ end 1.72, new matched 2.20, new end 1.98. Per-position splits from `results/larg
 `positions`; the scratch script that first computed them is
 `~/commute-data/scratch/baseline-lead/e103a1-writeup/positions.py`.
 
+## Amendment 2: a second known-facts seed
+
+*Jobs 53316, 439 s, and 53334, 75 s, one L40 each on `debug`, $0. Rules `results/predictions_amend2.json`; plan section
+"Amendment 2". The last amendment E103 may have. Provisional.*
+
+**What changed.** Amendment 1's known-facts run was trained again with only the data-order seed changed, from 42 to 142,
+the fictional arm's second seed. The rows, the sentence answers, the recipe, the 335 steps and the matched-size rule are
+the same code. Its matched state is saved and read with the same neuron reader as before. As an add-on, the job also
+saved every option's log P in the real-fact test, at W0 and at Amendment 1's end state, with greedy answers.
+
+**What is read.** The *carrying set* of an update is the 1,024 MLP neurons with the largest first-order share of its
+gain on a row set: W0's gradient of the answer log P times the change in each neuron's firing, as above. The *overlap* of two sets is the share of the first set's
+neurons that are also in the second; 1 means the same neurons, and two random sets share about 0.006. Overlaps are read
+for each arm's two seeds and for the four pairs of one known-facts seed with one fictional seed. Each is read on two row
+sets: E103's real rows and E92's 128 TOFU rows.
+
+**The filed rule.** The *seed band* is one minus the fictional seeds' overlap: the share of a set that a change of seed
+alone replaced, 0.10 on the real rows and 0.06 on the TOFU rows. The verdict is *beyond seed noise* when both arms' seed
+overlaps clear the highest cross-arm overlap by more than the band, and the known-facts seeds share at least the
+fictional seeds' overlap minus the band. It is *within seed noise* when the known seeds clear the cross-arm overlap by no
+more than the band. Anything else is *no call*, and an empty set, as the do-nothing state gives, reads *unread*. The
+lean was beyond seed noise on both row sets.
+
+**What we expected.** The second seed would clear the same control as the first and land near its gain. The known-facts
+seeds would share 0.80 to 0.95 of their set on the real rows, as the fictional seeds' 0.90. The four summary neuron
+rules would read level for seed 142, as for seed 42. For the end state's options, the lean was that the wrong options
+rose more than the right one, and that the end state still states the facts when asked for a sentence.
+
+### Did the apparatus reproduce its references?
+
+![content gain through warm-up, both known-facts seeds](../../experiments/known_answer_pair/figures/amend2_gain.png)
+
+**Reading it.** Yes, and seed 142 retraces seed 42 almost point for point. W0's real-fact share read 0.79263 again, E81's
+value to every digit. Seed 142's first batch had a loss of 4.151 against seed 42's 3.673, so the seed reached the data
+order. Amendment 1's matched state, re-read on the sentence reader, gave its stored content gain of 1.50429 with a
+relative difference of 0. The fictional reference re-read at 2.4731, its stored value, so the control's bar stayed at
+1.2365. Every early training check held: step 2's weight change was 0.00229, step 250's loss was 0.034 of the first, and
+training peaked at 38.5 GiB against a filed 44.
+
+The control holds. The matched step is 32, at a weight change of 0.4832 against the template's 0.4865. There seed
+142's content gain on its trained sentences is 1.497 nats a token, over the bar of 1.237. That is 0.61 of the
+reference; seed 42 read 1.504 at the same step. The figure shows the two curves lying on each other through warm-up. The neuron job's
+re-read of seed 42's matched state on the real rows gave its stored gain and carrying set exactly.
+
+### Do the two arms carry their updates on different neurons, beyond seed noise?
+
+![carrying-set overlaps within each arm and across arms](../../experiments/known_answer_pair/figures/amend2_overlap.png)
+
+**Reading it.** Yes on both row sets, as filed and leaned; still a candidate reading. The figure plots each overlap with
+the rule's two lines. On the real rows the two known-facts seeds share 0.864 of their sets, the fictional seeds 0.899,
+and the four cross-arm pairs 0.470 to 0.492. The known seeds clear the highest cross-arm overlap by 0.372, against a band
+of 0.101, and they sit above the floor of 0.799 set by the fictional seeds. On the TOFU rows the seeds share 0.901 and
+0.937, the cross-arm pairs 0.614 to 0.637. There the known seeds clear the cross-arm overlap by 0.265 against a band of
+0.063, and sit 0.028 above their floor of 0.873, about 29 neurons.
+
+So a change of data order replaces about a tenth of a carrying set in either arm, and a change of arm replaces about half
+on the real rows and about two fifths on the TOFU rows. Seed 142's set shares 0.22 and 0.27 with the Gaussian change's,
+as seed 42's did, so the set is not a generic response to any weight change.
+
+What keeps this from being a finding is the second null, which is not run. The two arms differ in their rows as well
+as in their label: real authors against invented ones. Amendment 1 already showed that the set moves with modest changes
+of the training data: Amendment 1's state and E103's, on the same rows and label with only one answer form changed,
+share 0.69 and 0.81. A pair with the same label on different rows, such as two known-facts runs on disjoint halves of
+the real rows, would show whether a change of rows alone moves the set as far as the change of arm did.
+
+### Does the second seed sit level on the summary neuron readings?
+
+![the four matched pair rules, both known-facts seeds](../../experiments/known_answer_pair/figures/amend2_pair_rules.png)
+
+**Reading it.** Yes, all four, as leaned. The figure plots each rule's gap, the known-facts state minus the mean of the two
+fictional seeds, in units of that rule's band; filled is seed 42, hollow seed 142. Every point sits inside the band, and
+the two seeds fall on either side of zero in two of the four rules, so the gaps are seed noise. Engaged share reads 0.486
+to 0.501 for every set, as in both earlier runs. So the arms' different neurons are not seen by either summary.
+
+| rows | reading | seed 142 | fictional seeds 42, 142 | gap | band | floor | verdict |
+|---|---|---|---|---|---|---|---|
+| real | engaged share | 0.486 | 0.487, 0.487 | −0.001 | 0.009 | 0.513 | level |
+| TOFU | engaged share | 0.501 | 0.501, 0.499 | 0.001 | 0.005 | 0.507 | level |
+| real | prompt overlap | 0.028 | 0.027, 0.027 | 0.001 | 0.003 | 0.021 | level |
+| TOFU | prompt overlap | 0.053 | 0.051, 0.052 | 0.001 | 0.003 | 0.026 | level |
+
+The bands differ a little from Amendment 1's because the random draws are seeded by the state's place in the sorted
+names. Seed 142's gain on the neuron reader is 2.23 on the real rows and 1.78 on the TOFU rows, against seed 42's 1.87 and
+1.77.
+
+### Why did the end state pick fewer right answers?
+
+![change in each option's log P at the end state](../../experiments/known_answer_pair/figures/amend2_options.png)
+
+![share of real facts under each reader](../../experiments/known_answer_pair/figures/amend2_recall.png)
+
+**Reading it.** Because ending the turn after a bare phrase became very unlikely, not because facts were lost; both
+leans about the options missed. The real-fact test scores each bare option by its mean log P per token, with the
+end-of-turn token as the last token. After five epochs of answering in sentences, the end state puts that token about
+25 nats lower than W0 does after every option. The first figure shows the drop at the end token: 26.4 nats for the right
+option and 25.0 for the wrong ones on average. On the answer words the drop is only 1.3 and 0.6 nats a token. Nothing
+rose. The end token's fall varies from option to option: the middle eight tenths of options lie between −31 and −19
+nats. Averaged into a mean over four or five tokens, that spread is enough to flip rows.
+
+The second figure checks this three ways. Scored on the answer words alone, the end state picks right 0.853 of the time,
+against W0's 0.829. With each option's end token replaced by W0's, it picks 0.876. And asked to answer, it gives the
+reference in 0.996 of its greedy answers under either suffix, against W0's 0.72 and 0.85. Under " Answer in a few words."
+it now answers in a sentence, 10.8 words against W0's 2.5. The swapped-token share is a read off the saved option files
+in `plot_amend2.py`, not a filed number. The greedy recall is on the very questions it trained on, so it shows the
+answers are learnt, not that untrained knowledge is intact.
+
+Between W0 and the end state, 74 rows went from right to wrong under the filed share and 29 the other way. The share
+was reproduced from the saved options to the row at both states, so this is the share's own reader.
+
+### Amendment 2 table
+
+| quantity | seed 42 | seed 142 | reference |
+|---|---|---|---|
+| first batch loss | 3.673 | 4.151 | must differ by > 0.001 |
+| matched step, weight change | 32, 0.4801 | 32, 0.4832 | template 0.4865 |
+| content gain, sentence reader | 1.504 | 1.497 | bar 1.237, fictional 2.473 |
+| neuron-reader gain, real / TOFU rows | 1.87 / 1.77 | 2.23 / 1.78 | fictional 42: 2.45 / 2.05 |
+| set overlap with the other known seed, real / TOFU | 0.864 / 0.901 | same | fictional seeds 0.899 / 0.937 |
+| set overlap with fictional 42 and 142, real | 0.470, 0.471 | 0.492, 0.492 | band 0.101 |
+| set overlap with fictional 42 and 142, TOFU | 0.622, 0.614 | 0.637, 0.626 | band 0.063 |
+| set overlap with the Gaussian change, real / TOFU | 0.21 to 0.27 | 0.22 / 0.27 | two random sets 0.006 |
+
+Real-fact options, W0 against Amendment 1's end state. All-token means are per option; the end token is the one token.
+
+| quantity | W0 | end state |
+|---|---|---|
+| filed share, end token included | 0.793 | 0.585 |
+| share on the answer words only | 0.829 | 0.853 |
+| share with W0's end token swapped in | 0.793 | 0.876 |
+| right option: all-token mean, answer words, end token | −1.25, −0.72, −2.20 | −8.92, −2.03, −28.65 |
+| wrong options: all-token mean, answer words, end token | −3.80, −4.30, −2.73 | −10.64, −4.95, −27.69 |
+| greedy recall, " a few words" / " one sentence" | 0.724 / 0.847 | 0.996 / 0.996 |
+| greedy answer contains the reference, same two | 0.687 / 0.816 | 0.995 / 0.995 |
+| greedy answer length in words, same two | 2.5 / 11.9 | 10.8 / 10.9 |
+
 ## What we learned
 
-*Amendment 1 first; the first run's lessons follow.*
+*Amendment 2 first, then Amendment 1, then the first run.*
+
+- Which neurons carry an update separates a fine-tune on known facts from one on new facts at the template's size, by
+  more than a change of seed moves them, on both row sets. Every summary reading of the same sets, engaged share and
+  prompt overlap, stays level for both known seeds. If the signal survives the rows control, the instruments have the
+  information and the summaries throw it away.
+- The rows control is the open question: the arms differ in rows as well as label, and the set is known to move with
+  the training data. The separation also appears at a size where each update has learned little specific to its own
+  rows, so if it is the label, the label shows in the neurons before it shows in the gains.
+- Amendment 1's drop in the real-fact share was the end-of-turn token in a bare-phrase test, not lost facts. A
+  multiple-choice reader that scores the end token is not neutral to the answer format a run trains on.
+
+*Amendment 1:*
 
 - With the answer format matched, the known-facts update clears its gain control on the answer words, and no filed
   neuron reading separates it from the fictional update at matched size. With this pair, at this size, none of the four
@@ -352,9 +501,10 @@ end 1.72, new matched 2.20, new end 1.98. Per-position splits from `results/larg
 - At matched size each update gains almost as much on the other arm's rows as on its own. The label is barely expressed
   by the template's size, so this pair at this size is a weak test of the instruments, whichever way they read.
 - The carrying sets differ across arms far more than across fictional seeds, and less so between two known-facts runs
-  that differ only in answer form. Set identity is the one reading with spread; it has no null for the known arm yet.
-- Trained on sentences, the known-facts run's end state picks the bare true answer less often than W0. The real-fact
-  share is a bare-phrase reader, so it is not neutral to the answer format a run trains on.
+  that differ only in answer form. Set identity is the one reading with spread; Amendment 2 gave it a known-arm seed
+  null, above.
+- Trained on sentences, the known-facts run's end state picks the bare true answer less often than W0. Amendment 2
+  traced this to the end-of-turn token.
 
 *First run:*
 
@@ -369,53 +519,87 @@ end 1.72, new matched 2.20, new end 1.98. Per-position splits from `results/larg
 
 ## How compelling is the evidence
 
-- *One seed* of each known-facts run; the fictional run's two seeds set the bands. The known arm's seed spread is
-  unknown, which is what keeps the carrying-set difference from being read.
+- *Seeds*: two of Amendment 1's known-facts run and two of the fictional run, one of E103's first known-facts run. The
+  set-identity verdict rests on one seed pair per arm, a single estimate of each arm's seed noise.
+- *The set-identity rule's band* is the fictional arm's seed noise, applied to both arms. The known seeds' overlap sits
+  0.065 above its floor on the real rows and 0.028 on the TOFU rows, about 29 neurons there.
+- *The rows null is not run*: no pair with the same label on different rows. A change of rows could move the set as
+  far as the change of arm did; the arms differ in both.
+- *Set overlap* counts shared neurons in two ranked top-1,024 lists. It misses rank changes inside the set, neurons just
+  past the cut and anything inside a neuron.
 - *The anomaly's cause* is now read position by position, Amendment 1: E103's gain sat on the end token and the first
   answer token. The first run's inference from the per-row sums stood.
 - *The content gain* is mostly shared between arms at matched size, by a reading off the saved files, not a filed
   control. It rests on one fictional seed and one known seed.
-- *Engaged share* has now read 0.49 to 0.50 for every set in two experiments and three known-facts states. It has never
+- *Engaged share* has now read 0.49 to 0.50 for every set in two experiments and four known-facts states. It has never
   moved, so its power is still untested; it may be blind at this grain.
 - *Prompt overlap* is against a template-task contrast with no tie to facts. Its end-size separation comes with a two-fold
   size difference and different step counts.
 - *The neuron reader's real rows* are E103's packed bare answers for every state, the format the new arm no longer trains.
 - *The real-fact share* chooses among bare phrases ending the turn; it is not neutral to the answer format trained.
+  Amendment 2 showed the end token alone took Amendment 1's end state from 0.876 to 0.585.
 - *The Gaussian floor* is 180 times the template's norm, matched on KL, not on norm.
 - *Rows*: 217 real rows and 128 TOFU rows; the real rows pack into only 29 rows of 256 tokens, 941 answer positions.
 
 ## Surprises
 
+- **Amendment 2: both leans about the end state's options missed.** They said the wrong options rose more than the
+  right one. Nothing rose: every option's end-of-turn token fell by about 25 nats, the right one's by 1.5 more. The share
+  fell on the end token, not on the facts.
 - **The new known-facts end state lost real facts, against the lean.** Its real-fact share, reported with a lean of "kept", read 0.585,
   under W0's 0.79, after five epochs on sentences stating those same facts. E103's end state, trained on the bare
-  answers, read 0.995. The share is a bare-phrase reader; per-option log P was not saved, so the cause is not read.
+  answers, read 0.995. Explained by Amendment 2: the share's end token, as above.
 - **The filed anomaly check missed both its parts**: content gain 5.30 against "under 1.24", end token 28.83 against
   "over 30". The content mean included the first answer token, which carried 11.8 nats of format; the words after it
   carried 0.32.
 - **Each matched update gains about nine tenths as much on the other arm's rows as on its own.** Not filed.
 - **The cross-arm carrying sets share 0.47 to 0.62**, against 0.90 to 0.94 between fictional seeds, and the two
-  known-facts runs only 0.69 to 0.81. Not filed.
+  known-facts runs only 0.69 to 0.81. Not filed in Amendment 1; Amendment 2 filed it and it read beyond seed noise.
 - First run: the gain control passed seventeen-fold on a format habit; the fictional end states' carrying sets on the
   real rows fell below the Gaussian change in prompt overlap.
 
 ## What next
 
-1. *A second known-facts seed of Amendment 1's run, with its neuron read, $0, about 15 min over two `debug` jobs.* It
-   gives the known arm's seed spread for the carrying set. If two known seeds share about 0.9, as the fictional seeds
-   do, the 0.47 is beyond seed noise in both arms and set identity becomes a candidate reading to file, still needing a
-   same-label pair on different rows. If they share near 0.5, the set is unstable for this arm and the difference reads
-   nothing.
-2. *Per-option log P of the real-fact share on the new end state, with greedy answers, $0, minutes.* It shows whether
-   the drop is the wrong bare options rising or the true ones falling, and whether the model still states the facts in
-   a sentence.
-3. *A larger matched size*, through `/design`, if the instruments are to be tested where the label is expressed: at the
+E103 has used both its amendments, so each item is a new plan through `/design`.
+
+1. *The same-label, different-rows null, a new plan.* For example, two known-facts runs on disjoint halves of the real
+   rows, each at two seeds, read with the same carrying-set rule. If the two halves share about nine tenths of their
+   carrying neurons, as two seeds do, the cross-arm difference is a label reading and set identity becomes the neuron
+   instrument to carry forward. If they share about half, as the two arms do, the set tracks the rows and says nothing
+   about reuse against new. Probably $0 on `debug`, under an hour.
+2. *A larger matched size*, if the instruments are to be tested where the label also shows in the gains: at the
    template's size neither arm has learned much specific to its rows.
-4. *qwen-decomp-lead's VPD reads* should use the Amendment 1 states, not E103's, which carry the format lesson.
+3. *qwen-decomp-lead's VPD reads* should use the Amendment 1 states, not E103's, which carry the format lesson; the
+   seed-142 matched state is a second seed for them.
 
 ## Scorecard
 
-Filed in `experiments/known_answer_pair/results/predictions.json` (first run) and `predictions_amend1.json`
-(Amendment 1), scored as filed.
+Filed in `experiments/known_answer_pair/results/predictions.json` (first run), `predictions_amend1.json`
+(Amendment 1) and `predictions_amend2.json` (Amendment 2), scored as filed.
+
+**Amendment 2.** The two scored rules are the set-identity verdicts; everything else is a stop or reported.
+
+| id | claim | rule | read | verdict |
+|---|---|---|---|---|
+| control 0 | W0 reproduces E81's real-fact share | within 0.01 of 0.7926 | 0.7926 | holds |
+| first batch | seed 142's first batch differs from seed 42's | abs gap > 0.001 from 3.6731 | 4.1506, gap 0.477 | holds |
+| first minutes | step 1 loss equal, rate and weight change 0; step 2 weight change in [0.00208, 0.00312]; peak ≤ 44 GiB; step 250 loss ≤ 0.95 of first | bands | 0, 0, 0; 0.00229; 38.5 GiB; 0.034 | all hold |
+| C2 | Amendment 1's matched content gain re-read | within 1e-5 relative of 1.50429 | 1.50429, rel 0 | holds |
+| reference | fictional matched content gain re-read, above 0 | finite, > 0 | 2.4731, rel 0 to Amendment 1; bar 1.2365 | holds |
+| C1 | seed 142 content gain at the matched step | ≥ 1.2365; expected 0.5 to 2 × reference, near 1.504 | 1.4965 at step 32, norm 0.4832; 0.61 × | holds, as expected |
+| C2n | Amendment 1's matched neuron read reproduces | gain within 0.001 relative of 1.8722, set overlap ≥ 0.95 | rel 0, overlap 1.0 | holds |
+| identity_real | known seeds' set overlap against cross-arm and fictional seeds, real rows | beyond iff known − max cross > band, fict − max cross > band, known ≥ fict − band | known 0.864, fict 0.899, max cross 0.492, band 0.101; 0.372 > 0.101, 0.407 > 0.101, 0.864 ≥ 0.799 | **beyond seed noise**, as leaned |
+| identity_tofu | the same, TOFU rows | same | known 0.901, fict 0.937, max cross 0.637, band 0.063; 0.265 > 0.063, 0.300 > 0.063, 0.901 ≥ 0.873 | **beyond seed noise**, as leaned |
+| pair rules seed 142, reported | four matched rules | level lean | gaps −0.0009, 0.0009, 0.0010, 0.0015 against bands 0.0090, 0.0046, 0.0033, 0.0034 | level ×4, as leaned |
+| share reproduced from options | W0 and end state | within one row of 0.7926, 0.5853 | gap 0, 0 | holds |
+| right option kept, reported | right option's mean log P at end ≥ W0's | lean | −8.92 against −1.25; answer words −2.03 against −0.72 | missed |
+| wrong rise more, reported | wrong options' mean log P rises more than the right's | lean | wrong −6.84, right −7.67 from W0: both fell | missed as meant: nothing rose |
+| sentence answers, reported | end-state greedy answers contain the reference at ≥ W0's share − 0.05 | lean | 0.995 against 0.816 | holds |
+| few-words answers, reported | end-state greedy answers longer than W0's | lean | 10.8 words against 2.5 | holds |
+
+The filed "reading" field covers this outcome: C1 and C2n hold and both row sets read "beyond seed noise". It says the
+cross-arm carrying-set difference is then larger than either arm's seed noise. That is a candidate label reading for set
+identity, short of a finding until a same-label pair on different rows is read.
 
 **Amendment 1.**
 
@@ -480,15 +664,18 @@ difference left at matched size.
   answer; the fictional arm's sentences are TOFU's authors'. The two arms match in answer form, not in who wrote it.
 - **Amendment 1's gain control** leaves the end-of-turn token out and takes its bar from the fictional arm on the same
   per-answer reader, where E92's gain pooled all response tokens, the end token included.
+- **Amendment 2's greedy recall** is E81's reader: ROUGE-1 recall of the reference's words, where TOFU's scorer stems
+  words and this one does not (`qwen_tofu.recall`). Its seed is E88's, and its other readers and recipe are Amendment 1's.
 
 ## Not run
 
-- **A second seed of Amendment 1's known-facts run**, with its neuron read: the null for the carrying-set difference.
-  Also a same-label pair on different rows, the second null that difference needs.
+- **A pair with the same label on different rows**, the second null the carrying-set difference needs. E103 has no
+  amendment left, so this is a new plan.
+- Seed 142's real-fact share, its end state's neuron read, and its end pair's rules.
 - **E94's VPD reads of the Amendment 1 states**, direct and outside share: handed to qwen-decomp-lead, who holds the
   first run's states too (note `~/commute-data/agents/qwen-decomp-lead/note-e103-states.md`). Pending.
 - **E102 stage B's judge on these sets**: it runs only on a separating set, and none was scored as separating.
-- Per-option log P and greedy answers for the real-fact share of the new end state.
+- A third seed of either arm, so that seed noise is more than one pair per arm.
 - A neuron reader on the sentence rows; Amendment 1's real rows stayed E103's bare ones.
 - The end pair's rules for Amendment 1, and a size-matched end pair: the known-facts end is 8.37 against the
   fictional 18.1.
@@ -509,3 +696,9 @@ difference left at matched size.
   `results/large/amend1_tokens/*.json`, gitignored; states `results/large/dW/amend1_{matched,end}.safetensors`, 5.64 GB
   each. Job 53275, `... amend1_neurons`, 87 s: `results/neurons_amend1.json`, `results/neurons_amend1/*.json`.
   Sentences `results/forms_amend1.jsonl`, 217 of 217 passed. Cost $0. The option-length check used the tokenizer only.
+- Amendment 2: job 53316, `cluster/known_answer_pair.sbatch amend2`, one L40, `debug`, 439 s: stages 0, R, T and P;
+  training 339 s. Results `results/amend2_{stage_0,ref,train,options}.json`, `amend2.log`, greedy answers
+  `results/amend2_answers/*.jsonl`; states `results/large/dW/amend2_s142_{matched,end}.safetensors`, 5.64 GB each,
+  gitignored. Job 53334, `... amend2_neurons`, 75 s: `results/neurons_amend2.json`, `results/neurons_amend2/*.json`.
+  Cost $0. Figures `plot_amend2.py`, which also computes the per-option changes and the share with W0's end token
+  swapped in from `results/amend2_options.json`.
