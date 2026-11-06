@@ -1,0 +1,121 @@
+{
+ "experiment": "E117 neuron_vpd_count: the switched-on set and re-switching on MLP neurons at VPD's count, 67M",
+ "plan": "reports/plans/2026-11-06_plan_e117-neurons-at-vpd-count.md",
+ "filed": "2026-11-06, before any code ran",
+ "kind": "a comparison of two methods on states whose class is known by construction; no reuse verdict, decisions.md rows 81 and 87 untouched",
+
+ "settings": {
+  "s_on_thr": 0.3,
+  "s_on_thr_source": "E12's switched-on threshold (new_vs_existing predictions_amend2.json config s_on_thr; recruit.switched on recruit.trigger_dg, alive subcomponents only, frozen released Gamma)",
+  "n_random": 20,
+  "random_seeds": "0..19, the same seeds on every state",
+  "batch": {"kv": 64, "pile": 32},
+  "batch_source": "kv: E12/E46's route_cells batch (local_faith default 64); pile: E53's CFG.batch 32 (performed_anchor run.py). Every forward of a family, both methods, uses that family's batch",
+  "gain_floor": 1.0,
+  "gain_floor_source": "local_faith.MIN_GAIN (log-odds), as E98's gain_floor",
+  "n_neurons": 12288,
+  "random_update": {"like": "ident32_s0", "seed": 0, "windows": "ident32", "rule": "finetune.random_direction: a Gaussian per matrix scaled to that matrix's Frobenius norm in ident32_s0"}
+ },
+
+ "states": {
+  "order": ["rand32_s0", "rand32_s1", "rand32b_s0", "rand32b_s1", "ident32_s0", "ident32_s1", "ident32b_s0", "ident32b_s1",
+            "lowercase_s0", "lowercase_s1", "e53_cipher_s0", "e53_cipher_s1", "broad_cipher_s0", "broad_cipher_s1", "random_update"],
+  "order_note": "the random-map states first: they carry all three apparatus controls (the S_on counts), so a broken apparatus stops the job on the first state",
+  "files": "E12/E46 copy and random maps: experiments/regating_table/results/large/{task}_s{seed}.pt (fp32 delta-W, scored step), windows_{task}.pt['heldout'] (97 windows, read at the trigger). E53: experiments/performed_anchor/results/large/dW_{task}_s{seed}_step300.pt (bf16, read .float()), 500 scored windows (regating_truth_table run.py e53_tasks), read at position 63 with the true next token as target. sha256 of each checked against the source run's record before the model loads (neuron_r run.py files)"
+ },
+
+ "panels": {
+  "K_VPD": "|S_on|: alive subcomponents whose mean (over windows) causal-importance change at the read position, state minus W0, is above s_on_thr",
+  "N_on": "the K_VPD neurons (GELU outputs, 4 x 3072, flat index block x 3072 + i) with the largest mean (over windows) firing change at the read position, state minus W0; sorted descending, stable (ties: lower flat index first); taken whatever the sign once the positive changes run out",
+  "A": {"vpd": "Jaccard of S_on between seed 0 and seed 1 of a task (recruit.jaccard)",
+        "neurons": "Jaccard of N_on between the seeds, each seed's N_on taken at K_A = floor((K_VPD(s0) + K_VPD(s1)) / 2 + 0.5)",
+        "value_per": "task"},
+  "B": {"vpd": "rho_S = (T1 - R_S) / (T1 - T0): R_S the fine-tuned model's mean log-odds with S_on's outputs at the read position put back to W0's (recruitment.restore_hooks, W0's cached input through each released subcomponent, E50's restore); T plain full-model log-odds under bf16 autocast (finetune.logits_of)",
+        "neurons": "rho_N = (T1 - R_N) / (T1 - T0): R_N the fine-tuned model's mean log-odds with N_on's firing at the read position replaced by W0's c_fc and GELU on the fine-tuned model's MLP input (the plan's wording; neuron_r.half_acts' Ah, cached from the state's own forward); every other neuron and position live; fp32, TF32 off",
+        "neurons_reported_beside": "rho_N_a0: the same with N_on's firing put back to W0's own firing a0 (W0's weights on W0's input, the closer analogue of E50's restore, which reads W0's cached input). Reported, not scored",
+        "value_per": "state"},
+  "C": {"vpd": "r_S = (L(C0, G_S) - L00) / (T1 - T0): G_S W0's gates everywhere except S_on, which takes the state's gates at every position (recruit.hybrid); L the masked forward of the released components, Delta out (local_faith.masked_lo_windows, C0's masked forward); T from Gamma's pass (route_cells' units)",
+        "neurons": "r_N = (L_N - T0) / (T1 - T0): L_N W0's model with N_on's firing replaced by the state's firing A1 at every block and every position (A1 cached from the state's forward), every other neuron live; fp32. With every neuron in N_on it is E98's r_n cell L(O0, A1) - T0 exactly",
+        "value_per": "state"},
+  "random_floor": "B and C: 20 random sets per state, recruit.random_like (VPD: as many alive subcomponents per matrix as S_on has, outside S_on; neurons: as many per block as N_on has, outside N_on), reported as mean, min and max of the share",
+  "limits_reported": "B and C at the whole set (VPD: every alive subcomponent; neurons: all 12288), both sides; C's limits are the controls below; B's VPD limit is E53's relay rho on lowercase and cipher (0.657, 0.655 / 0.418, 0.414, performed_anchor read.json, reported beside, no stop)",
+  "reference_strip": "full-width re-switching, not rerun: VPD r (regating_truth_table/results/table.json), neuron r_half and r_n (neuron_r/results/cells.json)"
+ },
+
+ "w0_control": {
+  "tol": 1e-05,
+  "rule": "every task read with delta-W = 0 before any state: max |g1 - g0| over windows, positions, subcomponents (dead included) == 0 and max |firing change| == 0 exactly; every per-window log-odds difference (T1 - T0 both units, every limit's numerator) <= 1e-5 in absolute value",
+  "on_miss": "stop (exit 1)",
+  "expected": "all 0; K_VPD = 0, so every panel reads unreadable at W0"
+ },
+
+ "apparatus_controls": {
+  "s_on_counts": {"expected": {"rand32_s0": 41, "rand32_s1": 52, "rand32b_s0": 27, "rand32b_s1": 21}, "source": "experiments/new_vs_existing/results/new_vs_existing_amend2.json fine_tunes.<state>.n_on", "rule": "exact", "on_miss": "stop"},
+  "r_all_alive": {"rule": "|r at every alive subcomponent (G_S with S = all alive) - reference r| <= 0.005, on every state with a reference", "source": "experiments/regating_truth_table/results/table.json runs['e46/<state>' | 'e53/<state>'].r.value (E46 stage0b, E53 read.json / read_amend1b.json)",
+                  "expected": {"ident32_s0": 0.8024, "ident32_s1": 0.7613, "ident32b_s0": 0.7924, "ident32b_s1": 0.8037, "rand32_s0": 0.2733, "rand32_s1": 0.2660, "rand32b_s0": 0.2898, "rand32b_s1": 0.2795,
+                               "lowercase_s0": 0.7519, "lowercase_s1": 0.7701, "e53_cipher_s0": 0.1243, "e53_cipher_s1": 0.1160, "broad_cipher_s0": 0.1651, "broad_cipher_s1": 0.1495},
+                  "reported_beside": "r_every: the same with every subcomponent, dead ones too (equal to the route split's L01 by construction): tells a miss from the dead set apart from a miss of the apparatus",
+                  "on_miss": "stop"},
+  "r_n_all_neurons": {"rule": "|r_N with every neuron - E98's r_n| <= 0.01, on every state", "source": "experiments/neuron_r/results/cells.json rows.<state>.r_n",
+                      "expected": {"ident32_s0": 0.4751, "ident32_s1": 0.3635, "ident32b_s0": 0.5026, "ident32b_s1": 0.5017, "rand32_s0": 0.6784, "rand32_s1": 0.7128, "rand32b_s0": 0.7378, "rand32b_s1": 0.7466,
+                                   "lowercase_s0": 0.7036, "lowercase_s1": 0.7400, "e53_cipher_s0": 0.4589, "e53_cipher_s1": 0.4545, "broad_cipher_s0": 0.5254, "broad_cipher_s1": 0.5048},
+                      "on_miss": "stop"},
+  "order": "W0 control on every task first, then per state (random maps first) the three controls are checked the moment the state is read, before the next state"
+ },
+
+ "separation_rule": {
+  "source": "E12, experiments/new_vs_existing/results/predictions.json separation_rule, quoted: \"a number separates the classes when the two classes' ranges (one value per fine-tuned state: 4 per class; for the across-seed numbers one per task: 2 per class) do not overlap AND the gap between the ranges exceeds the larger within-class range; the predicted direction must hold\"",
+  "as_applied": "existing class E, new class N, one value per state (A: per task). gap = min(E) - max(N); within = max(max(E) - min(E), max(N) - min(N)); 'separates' iff gap > within (strict; gap > within >= 0 implies the ranges do not overlap and the direction holds); otherwise 'does not separate', with direction 'reversed' recorded when min(N) - max(E) > within",
+  "direction": "existing higher on A, B and C",
+  "comparisons": {
+   "copy_vs_random": {"existing": ["ident32_s0", "ident32_s1", "ident32b_s0", "ident32b_s1"], "new": ["rand32_s0", "rand32_s1", "rand32b_s0", "rand32b_s1"],
+                      "A_existing": ["ident32", "ident32b"], "A_new": ["rand32", "rand32b"]},
+   "lowercase_vs_cipher": {"existing": ["lowercase_s0", "lowercase_s1"], "new": ["e53_cipher_s0", "e53_cipher_s1"], "A_existing": ["lowercase"], "A_new": ["e53_cipher"]},
+   "lowercase_vs_broad_cipher": {"existing": ["lowercase_s0", "lowercase_s1"], "new": ["broad_cipher_s0", "broad_cipher_s1"], "A_existing": ["lowercase"], "A_new": ["broad_cipher"]}
+  },
+  "comparisons_note": "the plan's 'two per class on lowercase/cipher' is read as two comparisons, lowercase against each E53 cipher, two states per class each",
+  "unreadable": [
+   "a state's value is unreadable when its K_VPD = 0 (both methods: the sets are empty) or, on B and C, when its |T1 - T0| in that side's units is under gain_floor",
+   "a task's A value is unreadable when either seed has K_VPD = 0 (both methods)",
+   "a panel is unreadable when a class has fewer than 2 readable values; so A on the lowercase comparisons (one task per class) is always unreadable, its Jaccards reported",
+   "the random_update row and the W0 rows are in no class"
+  ],
+  "edge_cases_checked": {
+   "K_VPD = 0": "value unreadable (not 0); a class short of 2 makes the panel unreadable",
+   "ties": "equal values: gap = 0 is not > within (>= 0): does not separate. gap == within: does not separate (strict)",
+   "two per class": "within is one range per class; the rule reads as written",
+   "one per class": "unreadable (within would be 0 and any difference would pass)",
+   "zero gain": "|G| < gain_floor: share unreadable, never divided",
+   "all values equal in both classes": "gap 0, within 0: does not separate",
+   "nan or inf": "unreadable"
+  }
+ },
+
+ "e53_bar": {
+  "source": "E53's lowercase-against-cipher bar (reports/plans/2026-11-06_plan_e117-neurons-at-vpd-count.md, 'Filed rule'; regating_truth_table stage1 order)",
+  "bar": 0.3,
+  "rule": "min over lowercase_s0, lowercase_s1 minus max over e53_cipher_s0, e53_cipher_s1, broad_cipher_s0, broad_cipher_s1 >= 0.3, both ciphers pooled as E53 pooled them",
+  "panels": ["B", "C"],
+  "shown": "beside the separation rule, both methods; 'unreadable' when any of the six values is unreadable"
+ },
+
+ "guesses": {
+  "note": "guesses, no pass or fail for the project",
+  "vpd_A_copy_vs_random": {"guess": "separates", "why": "E12's S_on Jaccards were 0.80 / 0.85 against 0.53 / 0.66"},
+  "vpd_B_copy_vs_random": {"guess": "does not separate", "why": "E50 found gaps of -0.03 and -0.06"},
+  "neurons_A_B_C_every_comparison": {"guess": "does not separate", "why": "a coin flip; E98 and E52 lean the wrong way on copy against random maps"},
+  "not_guessed": "VPD's C on every comparison and VPD's A and B on the lowercase comparisons: the plan files no guess; reported as read"
+ },
+
+ "blind_to": {
+  "A": "only whether the set repeats across batch orders, not what the set does",
+  "B": "the trigger (read) position only",
+  "C": "the VPD side keeps C0's masks, so it misses delta-W outside the components (E46's e_delta); the neuron side holds attention at W0's"
+ },
+ "noise_floor": "the spread between seeds, and the random-set range",
+ "positive_controls": "the C limits (r at every alive subcomponent, r_N at every neuron) reproducing E46/E53's r and E98's r_n",
+ "expected_at_reference_rows": {
+  "W0": "all numerators 0, K_VPD 0, every panel unreadable",
+  "random_update": "reported only, in no class: expected few or no subcomponents switched on (K_VPD near 0) and a gain under the floor, so unreadable"
+ }
+}
