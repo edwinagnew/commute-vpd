@@ -3,21 +3,23 @@
 *2026-11-06, baseline-lead's table writer, for ask 24 option (a): the table as it stands, from existing reports, no
 runs. Every cell is built by `experiments/neuron_vpd_table/build.py` from the result files named in its source column
 and written to `experiments/neuron_vpd_table/results/table.json`; no verdict is re-scored. Provisional, like every
-report it draws on. Provenance at the end.*
+report it draws on. Independent check: holds with caveat
+(`reports/reviews/2026-11-06_review_neurons-vs-vpd-table-independent-check.md`, commit a4f29839); its five fixes are
+applied here. Provenance at the end.*
 
 We set the neuron baseline's filed verdicts beside VPD's on the same saved Qwen3-1.7B fine-tunes, row by row, from
-eight existing reports. VPD separates the layout fine-tune from the invented-facts one where the neuron readings do
-not, but neither method follows whether the trained facts were already known, and neither reads at the learned size.
-For `GOALS.md`, neither method yet answers "new capability or strengthened one" on Qwen; at the matched size both see
-the data's source and style.
+eight existing reports. At matched size VPD separates the layout fine-tune from the invented-facts one where the neuron
+readings do not, but neither method follows whether the trained facts were already known. For `GOALS.md`, neither
+method yet answers "new capability or strengthened one" on Qwen, and at the learned size neither reads the known or
+wrong-answer pairs.
 
 ## The answer
 
-Neither method yet tells new from existing on Qwen. VPD separates the layout fine-tune from the invented-facts one,
-where the neuron readings do not, but a fine-tune on facts the model already knows, built like the invented one, reads
-on the invented side. Which neurons, or which subcomponents, an update uses separates known from invented facts in both
-methods alike, yet keeps wrong answers beside true ones, so it reads the data's source and style. At the learned size
-neither has a reading.
+Neither method tells new from existing on Qwen. At matched size VPD separates the layout fine-tune from invented
+facts, where neurons do not, but a known-facts fine-tune built alike reads on the invented side. Neurons
+separate known from invented facts; VPD only as description. Wrong answers stay beside true ones, pointing to topic or
+style; VPD's is a narrow no call. At the learned size neither reads these pairs: no neuron power, VPD's wrong-answer
+states unsaved, its known-arm reads description.
 
 ## What the table compares
 
@@ -54,12 +56,12 @@ Verdicts in quotes are verbatim from the source; "class" is what the verdict say
 | layout vs new facts, matched | outside share and placement "counts", think overlap "does not count"; against the anchors' seed spread | prompt overlap "holds" against a random change, but the fictional arm reads 0.051, 0.052 beside the template's 0.056, 0.057, unscored; engaged share "misses"; job judge "no call" | E94 `table.json .comparisons.matched`; E102 `score.json`, `score_stageB.json .CB1_power_gate` |
 | layout vs new facts, learned | outside, placement, think "counts"; random changes of both sizes: "does not count" | no filed comparison of the two | E94 `.comparisons.full` |
 | known vs new facts, matched, summaries | outside "like anchor 2", f 0.90; placement "like anchor 2", f 0.65; think "no call: the anchors do not separate" | all four pair rules "level", each gap inside its band | E94 `table_amend1.json .sides.matched`; E103 `neurons_amend2.json .pair_rules_s142` |
-| known vs new facts, matched, set identity | description only: Jaccard 0.632 to 0.660 across arms, 0.857 and 0.886 within | "beyond seed noise" on both row sets; rows null "label" on both | E107 `amend1_sets.json .pairs`; E103 `.identity`; E105 `score.json` |
-| known vs new facts, learned | outside "like anchor 2", placement "midway: no call", think "like anchor 2", reported only, sizes 2.2 times apart | "no power at this size": seeds share 0.652 | E94 `.sides.end`; E109 `score.json .tofu` |
+| known vs new facts, matched, set identity | description only, on Jaccard: 0.632 to 0.660 across arms, 0.857 and 0.886 within; on shared-over-smaller the gap is inside the seed band, and the fictional sets are larger | "beyond seed noise" on both row sets; rows null "label" on both | E107 `amend1_sets.json .pairs`; E103 `.identity`; E105 `score.json` |
+| known vs new facts, learned | description, not a filed verdict: outside "like anchor 2", placement "midway: no call", think "like anchor 2", reported only, sizes 2.2 times apart | "no power at this size": seeds share 0.652 | E94 `.sides.end`; E109 `score.json .tofu` |
 | wrong vs true answers, matched | "no call": lowest pair 0.80303 against the line 0.80320 | "topic or style" on both row sets | E107 `amend1_sets.json .rule`; E107 `score.json .wrong` |
 | wrong vs true answers, learned | not run: no full-size wrong-answer states saved | "no call", "no power at this size" on both probes | E109 `score.json .tofu, .T` |
 | real authors vs world facts, matched | not run | "topic moves the set" on the TOFU rows; "no call" on the real rows | E107 `score.json .topic` |
-| 67M, built to reuse vs built to be new, assumed labels | VPD's r "separates" on all three rows both read | separates one of three; filed "not a kind reader": "pass" | `method_table/results/table.json`; E98 `score.json .rows.P1` |
+| 67M, built to reuse vs built to be new, assumed labels | description: VPD's r "separates" on all three rows both read, by E51's rule applied afterwards, not a filed verdict | separates one of three; filed "not a kind reader": "pass" | `method_table/results/table.json`; E98 `score.json .rows.P1` |
 
 f places the known arm between the anchors' means, the template at 0 and the fictional arm at 1. E94's "anchor 2" is
 the fictional-facts fine-tune.
@@ -68,22 +70,29 @@ the fictional-facts fine-tune.
 
 ![verdict grid](../../experiments/neuron_vpd_table/figures/verdicts.png)
 
-**Reading it.** VPD separates the first pair and the neurons do not, but VPD's separation follows the training task,
+**Reading it.** At matched size VPD separates the first pair and the neurons do not, but VPD's separation follows the training task,
 not the label. VPD's outside share and placement count between the layout and invented-facts fine-tunes at both sizes;
-the neurons' prompt overlap reads nearly the same for both. The known-facts fine-tune then lands with the invented one
-on VPD's two deciding readings: nine tenths and two thirds of the way. The neurons' four summaries read it level.
-Where a set reading separates known from invented facts, both methods do. At the learned size every cell is grey,
-white or "does not separate".
+the neurons' prompt overlap reads nearly the same for both at matched size, a reading from unscored numbers. The
+known-facts fine-tune then lands with the invented one on VPD's two deciding readings: nine tenths and two thirds of
+the way. The neurons' four summaries read it level. The neuron set separates known from invented facts by its filed
+rule; VPD's set does so only as description. At the learned size only the layout pair separates, on VPD's side.
 
 ## Do the two methods' sets read the same thing?
 
 ![set identity, neurons and VPD](../../experiments/neuron_vpd_table/figures/sets.png)
 
-**Reading it.** Yes, almost number for number, and neither reads familiarity. In both panels two seeds of one arm share
-0.86 to 0.94 of a set. A known-facts and an invented-facts run share about 0.6 in both. The wrong-answer run sits with
-the true-answer run, 0.84 to 0.88 for neurons and 0.80 to 0.85 for VPD. It sits as far from the invented run as the
-true one does. Random sets share under 0.01. The caveat: the measures differ, share-of-first against Jaccard, and so
-do the rows.
+**Reading it.** They place the arms in the same order, and neither shows familiarity. In both panels two seeds of one
+arm share 0.86 to 0.94 of a set, and a known-facts and an invented-facts run share about 0.6. The wrong-answer run sits
+with the true-answer run, as far from the invented run as the true one is. Random sets share under 0.01.
+
+Three caveats keep this from being the same reading. The measures differ: share of the first set against Jaccard. On
+the neurons' measure, VPD's known-against-invented gap falls inside its seed band. The invented arm's VPD sets are
+larger, so part of its lower Jaccard is set size. The rows differ too.
+
+On wrong against true answers, the neurons' filed verdict is "topic or style". VPD's is "no call": its lowest pair read
+0.80303 against the line of 0.80320. Both tests had little room. At matched size the wrong and true updates differ by
+about a seed, with weight cosine 0.825 against two seeds' 0.821. So the result points to topic or style; it does not
+show it.
 
 ## What each reading is blind to
 
@@ -108,10 +117,10 @@ across the two anchors.
 ## What we learned
 
 The neuron baseline does not beat VPD on the user's question, and VPD does not beat it either. Where they can be set
-side by side on Qwen, they agree. Summaries do not see whether facts were known. Set identity sees the data's source
-and style. Neither reads anything at the learned size. VPD's one extra separation, layout against invented facts, is
+side by side on Qwen, they order the arms the same way. Summaries do not see whether facts were known. Set identity
+points to the data's topic or style. Neither reads the known or wrong-answer pairs at the learned size. VPD's one extra separation, layout against invented facts, is
 explained by task and format once the known-facts fine-tune is read. The 67M row, the only place VPD read further than
-neurons, rests on labels assumed from how each task was built.
+neurons, is description by a rule applied afterwards and rests on labels assumed from how each task was built.
 
 ## How compelling is the evidence
 

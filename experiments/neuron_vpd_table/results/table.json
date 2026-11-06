@@ -64,8 +64,8 @@
    "question": "known vs new facts: known-facts vs fictional-facts fine-tune, set identity",
    "size": "matched",
    "vpd": {
-    "class": "separates the pair",
-    "verdict": "description only: no filed rule of its own; E107 Amendment 1 used it as its positive control",
+    "class": "description, no filed verdict",
+    "verdict": "description, on Jaccard only: no filed rule; on shared-over-smaller the gap is inside the seed band (E107 Amendment 1 blind_to), and the fictional sets are larger",
     "numbers": "Jaccard known seeds 0.857, fictional seeds 0.886, known vs fictional 0.632 to 0.660",
     "reference": "the two arms' seed Jaccards",
     "source": "experiments/label_vs_style/results/amend1_sets.json",
@@ -84,7 +84,7 @@
    "question": "known vs new facts: known-facts vs fictional-facts fine-tune",
    "size": "learned",
    "vpd": {
-    "class": "does not separate the pair",
+    "class": "description, no filed verdict",
     "verdict": "outside 'like anchor 2', placement 'midway: no call', think 'like anchor 2' (reported, sizes 2.2x apart)",
     "numbers": "f outside 0.73, think 0.79",
     "reference": "as at matched size",
@@ -164,8 +164,8 @@
    "question": "67M: built to reuse vs built to be new (assumed labels)",
    "size": "learned",
    "vpd": {
-    "class": "separates the pair",
-    "verdict": "VPD's r 'separates' on 3 of 3 rows",
+    "class": "description, no filed verdict",
+    "verdict": "VPD's r 'separates' by E51's rule applied afterwards, not a filed verdict, on 3 of 3 rows",
     "numbers": "e46_copy_random, e53_lowercase_cipher, e54_own",
     "reference": "labels assumed from how each task was built",
     "source": "experiments/method_table/results/table.json",
