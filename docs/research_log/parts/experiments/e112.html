@@ -1,0 +1,12 @@
+<article class="exp void" id="e112">
+<div class="top"><span class="id">E112</span><span class="chip open">unscored</span><h3>On a pair of 67M tasks with Jain et al.'s shape, does the real task read "reuses the capability" and its shuffled twin read "not through it"?</h3><span class="when">2026-11-06 · coded, not run · <code>experiments/case_label</code></span></div>
+<p class="one"><strong>The question.</strong> You reset the new-against-reuse definition on 2026-11-06 to Jain et al. 2024's alone (<a href="#e99">E99</a> had piled extra rules on it). Their inputs are a marker plus content, and the answer is a function of the content; none of our old 67M tasks except copying has that shape. Does a pair built with that shape read as the definition says it should?</p>
+<p class="one"><strong>What we did.</strong> Nothing has run. After a marker token the model outputs label word A if the word before it is capitalised and B if not (real), or A and B by a shuffled per-word list at the same marker (twin, so nothing in the original model predicts its labels). It uses 400 cased word pairs, 300 for training and 100 held out by pair. First, a linear probe on Pile text at each block, beside a control task, shows whether the original model has the capability; then each task is fine-tuned at two seeds, and we read held-out carrying, a threshold on the probe agreeing with the fine-tune, and the effect of removing the probe's direction.</p>
+<p class="one"><strong>What we found.</strong> Nothing yet; the expected readings are filed: real "reuses the capability" (carries to held-out words at 0.90 or more, removing the direction takes 0.50 or more of the label gain), twin "not through it". A miss on the twin is a result, not a reason to add a rule.</p>
+<p class="one"><strong>What it means.</strong> If the pair reads cleanly, the definition has a case on this model that separates reuse from not-through; if it does not, it stays unreadable there. Pruning and reverse fine-tuning are reported beside, as Jain et al. do, with no rule on them.</p>
+<dl class="fields">
+<dt>Run</dt><dd>Not run: three cluster <code>debug</code> L40 jobs planned, $0.</dd>
+<dt>Bears on</dt><dd>The definition box in the overview: whether a located reuse and a not-through case can be told apart on the 67M.</dd>
+<dt>Moved on</dt><dd>Owned by <code>definition-lead</code>. Plan <code>reports/plans/2026-11-06_plan_e112-case-label.md</code>; the subject-number pair follows only if this reads cleanly.</dd>
+</dl>
+</article>
