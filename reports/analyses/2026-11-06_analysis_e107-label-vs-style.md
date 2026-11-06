@@ -7,7 +7,9 @@ since the label moved the weight update only about as much as a change of seed, 
 answer length and the model's starting loss. Plan `reports/plans/2026-11-06_plan_e107-label-vs-style.md`; rules `experiments/label_vs_style/results/predictions.json`;
 code `experiments/label_vs_style/{run,score}.py` and `src/commute/known_facts.py`. Explanation:
 `notebooks/E107_label_vs_style.ipynb`. Figures: `experiments/label_vs_style/plot.py`. Job 53575, one L40 on `debug`, $0;
-results committed at c3b86b3a. Provenance at the end.*
+results committed at c3b86b3a. Provenance at the end.
+Amendment 1, VPD's switched-on set on the same wrong-answer states (job 53822, $0): filed verdict **no call**, by
+0.0002; section "Amendment 1" below.*
 
 We fine-tuned Qwen3-1.7B on the same questions about real people and places that it already answers, in the same
 sentences, but with every stated answer swapped for a wrong one, and compared the neurons carrying that update with
@@ -299,8 +301,8 @@ Each item is a new plan through `/design`.
    the shared sentence frame the current read is dominated by.
 3. *Genuinely new facts*, if the line continues: real facts the model lacks, or invented names on the author rows, in
    the known arm's style. Only these test new against known; the wrong arm tests contradicted against known.
-4. *VPD on the same states.* The two wrong-arm matched updates are saved in fp32 for qwen-decomp-lead's reads; whether
-   VPD's readings separate the wrong arm from the known arm, where the neurons do not, is that lead's question.
+4. *VPD on the same states.* Run as Amendment 1, below: VPD's switched-on set does not separate the wrong arm from the
+   known arm either, and the filed rule reads no call.
 
 ## Scorecard
 
@@ -346,6 +348,134 @@ question, so it is not listed as a next step.
 - **The carrying-set ranking** is E98's first-order attribution as E102 ran it, and carries E102's departures, listed in
   its report. The overlap rules and bands are this project's, not from a source.
 
+## Amendment 1: does VPD's switched-on set separate the wrong-answer run from the true-answer run?
+
+*2026-11-06. Plan `reports/plans/2026-11-06_plan_e107-amend1-vpd-sets.md`; rules
+`experiments/label_vs_style/results/predictions_amend1.json`; code `experiments/label_vs_style/amend1_vpd.py` (GPU,
+E94's reads) and `amend1_sets.py` (CPU, the sets and the rule); result `results/amend1_sets.json`. Job 53822, one L40
+on `debug`, about 33 min, $0, exit 0. Provisional: fast lane, no independent check.*
+
+**The answer.** On the same matched updates, VPD's switched-on set also keeps the wrong-answer run beside the
+true-answer run. The two runs' sets overlap about as much as two seeds of one run do, and far more than either overlaps
+the fictional run. The filed rule reads no call: the lowest of the four pairs fell short of the "topic or style" line
+by two ten-thousandths. So VPD's set, like the neurons, does not tell contradicted facts from known ones here. The two
+updates barely differ in any measure, so the test had little room.
+
+### What was run, and what each number means
+
+The two wrong-answer updates $\delta W$ at their matched steps went through E94's reads exactly as E94 Amendment 1 ran
+the known-facts states. Their weight changes are 0.492 and 0.476, against the known arm's 0.480 and 0.483. Each update was placed by the least-squares split. Then VPD's causal-importance values were read on
+E94's 128 maths rows, which no arm here trained on.
+
+The *switched-on set* $S$ of a state is the subcomponents that are active, at causal importance on at least 1% of the
+32,768 maths-row positions, with the update and off in the unchanged model. The unchanged model's own set is empty by
+construction. Two sets are compared by their Jaccard overlap, $|A \cap B| / |A \cup B|$: 1 is the same set, 0 nothing
+shared. The positive control is the known arm against the fictional arm, a change of rows, topic and content that this
+measure already separates from seed noise: 0.632 to 0.660, against the known arm's two seeds at 0.857.
+
+What makes the comparison sharp is the rows. The wrong arm trains on the known arm's exact 217 rows, questions, five
+wordings and writer, with only the stated answer swapped. So wrong against known holds topic and style fixed, and
+changes only whether the trained answer agrees with what the model already says.
+
+### What we expected
+
+The filed lean was **topic or style**: that the wrong arm's set would sit with the known arm's, as the neuron set did,
+at Jaccard 0.76 to 0.88. The reason was the independent check's weight cosine. With the data order fixed, wrong against
+known reads 0.825, and two seeds of the known arm read 0.821, so the swapped answers move the update about as much as a
+seed. The plan said "no call" was a likely outcome and would be reported as read.
+
+**The filed rule.** Let $w$ be the smaller of the two arms' seed Jaccards, the band $1 - w$, $x$ the highest
+known-against-fictional Jaccard and $L$ the known arm's seed Jaccard. "Familiarity" needs every wrong-against-known pair
+at most $x + \text{band}$ and at most $L - \text{band}$. "Topic or style" needs every pair at least $L - \text{band}$
+and more than the band above $x$. Anything else is no call. A size check comes first, since Jaccard cannot exceed the
+ratio of the smaller set to the larger.
+
+### What we observed
+
+![Jaccard of VPD's switched-on sets: each arm's seeds, wrong with known, wrong and known with fictional, and the two rule lines](../../experiments/label_vs_style/figures/amend1_sets.png)
+
+**Reading it.** No call, as filed. The wrong arm sits with the known arm and far from the fictional arm, but one of the
+four scored pairs lands a hair under the "topic or style" line. Three pairs read 0.840 to 0.854. The fourth, the known
+arm's seed 42 against the wrong arm's seed 142, reads 0.80303, against a line of 0.80320. That is 0.0002 short; one
+more shared subcomponent would have added 0.0011. All four are far above the "familiarity" line of 0.714 and above
+every known-against-fictional pair, the highest 0.660. They sit just under the seed Jaccards, 0.862 for the wrong arm
+and 0.857 for the known arm.
+
+The sets were sized alike: 1,513 and 1,474 switched-on subcomponents for the wrong arm, 1,501 and 1,468 for the known
+arm. So the size check did not bind; its smallest ratio is 0.970, far above its line of 0.803. The fictional arm's sets
+are larger, 1,847 and 1,937, which caps its pairs with the other arms near 0.8 before any difference in content.
+
+**Where the numbers sit, as description only.** The pairs that share a data-order seed read 0.841 and 0.854. The pairs
+across seeds read 0.840 and 0.803. So the miss is a cross-seed pair, as in the neuron reading. The wrong arm against the
+fictional arm reads 0.638 to 0.677, a little above the known arm against the fictional arm at 0.632 to 0.660. On the
+unscored shared-over-smaller overlap, wrong against known reads 0.899 to 0.927 and known against fictional 0.875 to
+0.904. The plan said that measure could not separate anything here, and it does not. In short, VPD's set moves about as
+much under the swapped answers as the neuron set did, a little more than a seed and far less than a change of rows.
+
+**E94's other readings on the wrong-arm states, as description only.** These land in each state's `state.json` for
+free and were not scored. Every one reads with the known arm:
+
+| reading, per state | wrong 42 / 142 | known 42 / 142 | fictional 42 / 142 |
+|---|---|---|---|
+| outside share; null about 0.21 | 0.0991 / 0.0993 | 0.0985 / 0.0992 | 0.0965 / 0.0960 |
+| placement excess | 0.107 / 0.106 | 0.099 / 0.105 | 0.158 / 0.162 |
+| think overlap, fold over chance | 3.61 / 3.67 | 3.65 / 3.59 | 3.74 / 3.71 |
+| no-think length-matched overlap, fold | 3.11 / 3.44 | 3.31 / 3.18 | 3.34 / 3.37 |
+| switched-on set size | 1,513 / 1,474 | 1,501 / 1,468 | 1,847 / 1,937 |
+
+The outside share is the share of the update's input-weighted energy outside the alive subcomponents. Placement excess
+is the share of the split's energy on subcomponents already on in the unchanged model, minus the same for Gaussian
+changes of the same size. Think overlap is how many of a state's switched-on subcomponents fall in think mode's
+switched-on set, as a multiple of chance. E94 defines all three.
+
+### What it means
+
+VPD's set identity reads the wrong-answer run where the neuron set did: beside the true-answer run. So on this pair, the
+cleanest one the data allows for "already holds the fact or not", neither instrument shows the label. The verdict
+itself is no call, and per `.claude/CLAUDE.md` a no call is reported as read and opens no amendment. The caveat from the
+neuron reading carries over. At the matched step the updates themselves differ by about a seed, so no reading of them
+had much room. The matched step is also a size control only, per `decisions.md` row 152. A difference, if one exists,
+would need an update that has learned its wrong answers.
+
+### How compelling
+
+- Two seeds per arm, one matched size, one model, one row set: the maths rows, which no arm trained on.
+- The set is a gate-identity reading. It is blind to how much each switched-on subcomponent carries, and to changes
+  among subcomponents already on in the unchanged model.
+- The band is seed noise, which is about the size of the whole label effect in the weights. The rule could not have
+  read "familiarity" for an effect of the size the weights show.
+- The size check held with a wide margin, so Jaccard's size cap is not behind the reading.
+
+### Surprises
+
+- None in direction. A narrow miss: the lowest pair fell 0.0002 under the "topic or style" line, so the lean is not
+  confirmed and the verdict is no call.
+
+### Scorecard
+
+| id | claim | rule | read | verdict |
+|---|---|---|---|---|
+| first minutes | each state's norm and K0 on the maths rows reproduce; memory | E94's bands | norms equal the filed ones; K0 checks ok; classes add to pooled within 7e-16; peak 42.5 GiB, host 80.9 GB | hold |
+| size cap | the four pairs' smaller-over-larger set size above cap_line | > 0.8032 | 0.970 to 0.996 | not binding |
+| **rule** | familiarity, topic or style, or no call | familiarity iff max cross ≤ min(x + band, L − band); topic or style iff min cross ≥ L − band and min cross − x > band | w 0.8568, band 0.1432, x 0.6600, L 0.8568; cross 0.8030, 0.8401, 0.8412, 0.8538: 0.80303 < 0.80320 | **no call**; lean was topic or style |
+| sizes, reported | wrong arm's set size | 1,300 to 1,700 | 1,513, 1,474 | as expected |
+| wrong seeds, reported | wrong arm's seed Jaccard | 0.82 to 0.90 | 0.8622 | as expected |
+| cross, reported | the four pairs | 0.76 to 0.88 | 0.8030 to 0.8538 | as expected |
+
+### Reads under, and departures
+
+Not a reuse verdict, so `decisions.md` rows 81 and 87 do not apply; it reads under row 152, the matched step as a size
+control. Departures from the literature: none new. The switched-on set and every E94 reading are this project's
+measurements; VPD defines causal importance, not these sets, and the 1% activity threshold is E94's.
+
+### Provenance
+
+Job 53822, `cluster/label_vs_style_amend1.sbatch`, one L40 on `debug`, 2,008 s from start to FINISHED; each state about
+14 min. Per-state results `experiments/qwen_d3_rows/results/wrong_s{42,142}_matched/{state,maths}.json`; gate counts
+`qwen_d3_rows/results/large/<state>/counts_pe.safetensors`, gitignored. Sets and rule
+`experiments/label_vs_style/results/amend1_sets.json`, committed at 65885d30. Figure `figures/amend1_sets.png` from
+`plot.py`, which asserts its four scored pairs equal the rule's.
+
 ## Not run
 
 - The known arm's matched state read on the wrong sentences: whether the wrong arm's shrinking true-minus-wrong gap is
@@ -358,7 +488,11 @@ question, so it is not listed as a next step.
 - A random split at the topic arms' row counts and sentence lengths, or a topic split matched on length, with its
   updates saved as the weight-cosine reference the topic reading lacks.
 - A label rule whose band is the measured label effect rather than seed noise; more than two seeds per arm.
-- VPD reads of the wrong-arm and topic states, qwen-decomp-lead's instruments.
+- VPD reads of the topic states. The wrong-arm states were read in Amendment 1.
+- Amendment 1 did not run E94's direct share or credit on the wrong arm's own rows, a VPD rows null for the
+  switched-on set, or the wrong arm at full size: no full-size wrong states were saved.
+- A switched-on set read on the trained rows rather than the maths rows, or weighted by how much each subcomponent
+  carries.
 
 ## Provenance
 
