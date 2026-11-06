@@ -1,0 +1,85 @@
+{
+ "experiment": "E121 copy_gap_ladder",
+ "filed": "2026-11-06, before any run",
+ "plan": "reports/plans/2026-11-06_plan_e121-copy-gap-ladder.md",
+ "code": "experiments/copy_gap_ladder/run.py (job), experiments/copy_gap_ladder/rules.py (config and these rules, pure)",
+ "config": {
+  "ft_lr": 3e-05,
+  "copy_lr": 1e-05,
+  "sgd_lr": 0.01,
+  "batch": 32,
+  "steps": 1000,
+  "orders": [1, 2],
+  "control_orders": [0, 1],
+  "pile_rows": 256,
+  "batch_windows": 32,
+  "batch_pile": 8,
+  "read_tol": 0.001,
+  "saved_tol": 0.001,
+  "t_p_min": 0.9946,
+  "rerun_floor": 0.5,
+  "gap_min": 0.05,
+  "most": 0.5,
+  "copy_gap_max": 0.1,
+  "copy_p_tol": 0.05,
+  "ls_tol": 1e-06,
+  "budget_s": 1560.0,
+  "student_s": 140.0,
+  "plain_s": 50.0
+ },
+ "definitions": {
+  "dW": "the saved 1,000-step Adam 3e-5 emoticon fine-tune at batch order 0, A8c's real_teacher_dW.pt: Amendment 10's reference",
+  "cos": "input-weighted cosine to dW, pooled over the 24 matrices, uncentred second moment of W0's inputs at every position; 'task' = the 73 held-out emoticon windows, 'pile' = Pile val rows 0-255 (Amendment 10's sets and code, now commute.weighted)",
+  "rung value": "mean of the cosine at batch orders 1 and 2 (no order shares batches with dW)",
+  "R0 line": "mean of the three pairwise cosines among dW (order 0) and the saved reruns at orders 1, 2: Amendment 10's rerun line",
+  "margin m": "per set: max(gap_min 0.05, the spread (max - min) of the three R0 pair cosines, every rung's |order 1 - order 2|); any nan makes it nan and every rule refuses",
+  "copies": "a state keeps the behaviour: held-out teacher gap (KL(fine-tuned || state), arm A's weighting) <= 0.1 x W0's gap, and |P(target) - the regenerated fine-tune's| <= 0.05 (E34's C3 rule, teacher_training/run.py:65-66). A rung copies if both its orders do",
+  "fcos": "cosine between the state's change and dW's change in the trigger-position logits (fp32, minus their mean over the vocabulary), over the held-out windows; exact forward, no weights",
+  "explanation split": "S = k dW + R, k = <S, dW>/<dW, dW> on task windows; R's size over S's on each set; and the behaviour of W0 + k dW (S with R removed)"
+ },
+ "controls": {
+  "C0 Frobenius reread (stage 0, no model)": {"rule": "|cell - Amendment 10's| <= read_tol 1e-3 for each of the five cells; else stop", "expected": {"real_o0 | real_teacher": 0.2809021, "real_o1 | real_teacher": 0.273502, "real_teacher_o1 | real_teacher": 0.8143336, "real_teacher_o2 | real_teacher": 0.797873, "real_teacher_o2 | real_teacher_o1": 0.7939192}},
+  "C1 input-weighted reread (stage 1)": {"rule": "the same five cells on each set within read_tol 1e-3 of Amendment 10's; else stop. This is R0, recomputed in-job", "expected": {"task": [0.4023368, 0.3958481, 0.8510017, 0.8092756, 0.8176549], "pile": [0.3845013, 0.3813326, 0.8534246, 0.8295954, 0.8283314]}},
+  "C2 fine-tune regenerated (stage 2)": {"rule": "held-out P(target) >= 0.9946 and 1 - Frobenius cosine to the saved dW <= 1e-3; else stop", "expected": "P 0.9991, cosine 1.0000 (Amendment 10's 'rerun real order 0')"},
+  "C3 copy regenerated at orders 0, 1 (stage 2)": {"rule": "1 - Frobenius cosine to A8c's saved real_o0 / real_o1 <= 1e-3, and its cos to dW within Amendment 10's real-family batch-order noise of Amendment 10's value on each set (0.0065 task, 0.0032 pile, read from amend10.json at run time); else stop", "expected": {"R3_o0": {"task": 0.4023, "pile": 0.3845}, "R3_o1": {"task": 0.3958, "pile": 0.3813}, "frobenius": "above 0.999"}}
+ },
+ "expected": {
+  "W0 (do-nothing)": {"cos": "nan (zero length); every rule reads 'unscorable'", "gap": "5.2 to 5.5 nats (E34 student step-1 KL 5.3463, A8c job 48613 log)", "p_target": "about 0.004 (amend8.py:88)", "fcos": "nan", "copies": false},
+  "dW itself": {"cos": 1.0, "fcos": 1.0, "explanation": "k = 1, remainder 0, gap change 0"},
+  "regenerated fine-tune F0": {"fcos": "above 0.999 (bf16 rounding of dW only)", "gap": "under 0.002 (the hook floor, amend8.py warm_kl)"},
+  "saved copies A10_o0, A10_o1": {"gap": [0.0286, 0.0277], "p_target": "0.99 to 1.00"},
+  "reruns R0_o1, R0_o2": {"gap": "lean 0.005 to 0.06", "copies": "lean yes"},
+  "R0 line": {"task": 0.826, "pile": 0.837},
+  "R3 (orders 1, 2)": {"task": "0.38 to 0.41", "pile": "0.37 to 0.40"},
+  "time on the L40": {"model and moments": "about 40 s (Amendment 10: 17 s model, 21 s forwards)", "stage 2": "about 5 min: F0 38 s + two copies at 111 s (A8c log)", "stage 3": "about 13 min: R3_o2, R3b x2, R4 x2 at about 111 s; R1 x2, R2 x2 at about 38 s; R4's split about 20 s", "stage 4": "under 1 min", "whole job": "about 20 min with start-up; the budget check exits 3 for a resubmission if a state would end past 26 min"}
+ },
+ "predictions": {
+  "P1 ladder": {
+   "question": "which difference carries the drop from the rerun line (R0) to the copy (R3)?",
+   "rule": "per set, c = [R0 line, R1, R2, R3]. If any value or m is nan: 'unscorable'. If R1, R2 or R3 does not copy: 'failed copy at Rk' (the first). total = c0 - c3; drop_k = c_{k-1} - c_k. Each drop: 'raises' if drop < -m; 'none' if |drop| <= m; 'most' if drop >= 0.5 x total; else 'part'. If total <= m: 'no gap'. Verdict: the one rung labelled 'most'; two: 'shared: Rj and Rk'; none: 'spread'. Absolute cosines. The reading is the verdict if task and pile agree, else 'depends on the inputs'",
+   "edge_cases": "checked on CPU before filing: two equal drops of half the gap -> 'shared'; a rung that raises the cosine is labelled 'raises' and the others are read against the whole gap; every drop within m -> 'spread'; total within m -> 'no gap'; a failed copy -> 'failed copy at Rk'; do-nothing -> 'unscorable'. Three rungs cannot all be 'most' while total > 0",
+   "lean": "R3 (the parametrisation: Adam on U, V), about 45%; R2 (the copy's lower lr) 20%; R1 (the KL target) 15%; spread or shared 20%",
+   "expected": {"R1": "lean 0.65 to 0.85 on both sets", "R2": "lean 0.55 to 0.80"}
+  },
+  "P2 SGD copy (R3b)": {
+   "rule": "per set: nan -> 'unscorable'; R3b does not copy -> 'failed copy'; R3b - R3 > m: 'closer than the copy'; R3 - R3b > m: 'further than the copy'; else 'same as the copy'. Reading as P1",
+   "lean": "'same as the copy' 40%, 'further' 30%, 'closer' 30%; that it copies at all at SGD 0.01 from this teacher, 70%"
+  },
+  "P3 copy from the least-squares split (R4)": {
+   "rule": "per set, start = R4_start's cos, end = R4's rung value. nan -> 'unscorable'; R4 does not copy -> 'failed copy'; start - R3 <= 2m -> 'no power'; end > start + m -> 'moves closer'; start - end <= m -> 'stays'; end < R3 - m -> 'drifts past the copy'; end - R3 <= m -> 'drifts to the copy'; else 'drifts part way'. Reading as P1",
+   "lean": "'drifts part way' 45%, 'stays' 30%, 'drifts to the copy' 20%, other 5%",
+   "expected": {"R4_start": "0.90 to 0.97 on task windows, 0.86 to 0.95 on Pile (Amendment 10's ceilings 0.95 and 0.91 bound a first-order change; the start adds dU dV^T)"}
+  },
+  "P4 function": {
+   "rule": "f0 = mean fcos of R0_o1, R0_o2; f3 = mean fcos of R3 at orders 1, 2; mf = max(0.05, |R0_o1 - R0_o2|, |R3_o1 - R3_o2|) on fcos. nan -> 'unscorable'; f0 < rerun_floor 0.5 -> 'cannot tell'; f3 >= f0 - mf -> 'as close as a rerun'; else 'further than a rerun'. One set (held-out windows)",
+   "lean": "'as close as a rerun' 55%; f0 lean 0.85 to 0.98, f3 lean 0.70 to 0.95",
+   "blind_to": "every position but the trigger (where the loss also weighs KL), and how the logit change is spread over the vocabulary's low-probability tail"
+  },
+  "P5 remainder": {
+   "rule": "per state: 'idle' if W0 + k dW still copies (the `copies` rule), else 'carries behaviour'; per rung the label of both orders, else 'mixed'. Reported with the remainder's size on task and on Pile and the gap change",
+   "lean": "copy R3: 'carries behaviour' 70% (k about 0.27: 0.40 cosine x 0.67 size); reruns R0: 'idle' 65% (k about 0.83)",
+   "expected": {"R3 remainder size": "task sqrt(1 - cos^2), about 0.92 by construction; Pile lean 0.90 to 0.95", "R0 remainder size": "task about 0.56; Pile about the same"}
+  },
+  "reported, no rule": "distance ||S - dW|| / ||dW|| and size ||S|| / ||dW|| per state and set (Amendment 10's: copy 0.95 to 1.04 and 0.66 to 0.87; reruns about 0.56 and 1.0); R3_o0 (shares batch order with dW) beside R3"
+ }
+}
