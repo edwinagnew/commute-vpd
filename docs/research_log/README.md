@@ -557,3 +557,4 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e104_think.png": "experiments/qwen_d3_gsm8k/figures/think.png"
 - "fig/e104_size.png": "experiments/qwen_d3_gsm8k/figures/size.png"
 - "fig/e94_known.png": "experiments/qwen_d3_rows/figures/known.png"
+- "fig/e109_seeds.png": "experiments/larger_size/figures/seeds.png"
