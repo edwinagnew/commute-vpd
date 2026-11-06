@@ -3,7 +3,7 @@
 *2026-11-06, regating-lead's writer. User-approved task (2026-11-06): "gap (a): find the cause". Design Fable's, adopted
 by the lead (`~/commute-data/scratch/regating-lead/fable-strategy/advice.md` § 4(a), overnight plan item 3). Code
 `experiments/damage_crossed/{run,rules}.py`, filing `results/predictions.json`, job `cluster/damage_crossed.sbatch`
-(MATS `debug`, L40, $0, about 45-50 min of work in 2-3 resumable jobs). Not gated: $0 and under 6 h.*
+(MATS `debug`, L40, $0, about 52-57 min of work in 3 resumable jobs). Not gated: $0 and under 6 h.*
 
 ## The question, in the Terms' words
 
@@ -16,6 +16,14 @@ rank-8 LoRA) and the damage, KL(W₀ ‖ W₀ + δW) on plain Pile text: 0.234 a
 **Design: cross them.** Cell c1 keeps Adam's recipe at the LoRA's damage: the same Adam fine-tune stopped early. Cell
 c2 keeps the LoRA's recipe at Adam's damage: the same LoRA trained on, on fresh rows. Each is copied by E37's recipe and
 read on both row sets. Damage is the cause if c1 passes and c2 fails; the recipe is the cause if c1 fails and c2 passes.
+
+**Cell c3 (added by the lead, 2026-11-06, before any run).** The full-damage Adam fine-tune, the one whose standard
+copy fails, copied by the same recipe but started from its least-squares split (offsets `split.split_state`, E121's
+rung R4 start, through `row_copy.copy_states(init=...)`). E121 found that start keeps the copy at input-weighted
+cosine 0.81 to the fine-tune against 0.40, with teacher gap 0.0035 against 0.029. If c3 passes on both sets (with
+its do-nothing failing), the broad failure is the standard copy's path, not the decomposition; if it fails, not the
+path alone. Prior on both sides: E37 Amendment 1's copy from the scaled adjoint split rose from 1.05 to 1.76-1.84 as
+its damage rose to 0.24. Lean P3: none (low confidence either way). The split start is read on set A too (reported).
 
 ## The record, checked against the files
 
@@ -82,11 +90,12 @@ LoRA checkpoint reaches c2's band, the same run at 3e-4 is tried, then c2 is rep
 | 1 | W₀ on A, B; saved Adam and LoRA copies on A, B (6 checks) | ~12 min | 116 s per check, `claim_tests/results/t2c.json` `states.adam_tt.seconds` |
 | 2 | Adam curve; lowercasing 32,768 rows; LoRA curve (and 3e-4 if needed) | ~8 min (~13) | Adam 300 steps 16-17 s (`t2c.log:42`, `row_blocks/results/large/regen.log:34`); LoRA 300 steps 15 s (`t2c.log:46`); lowercasing 52 s (CPU, measured) |
 | 3 | recipe copy, read on A | ~4.5 min | copy 152 s (`t2c.log:53-61`) |
-| 4, 5 | each cell: do-nothing on A, copy, copy on A and B | ~8.5 min each | as above |
-| 6 | maps, score | s | |
+| 4 | c3: do-nothing and split start on A, copy from the split, copy on A and B | ~10.5 min | as above |
+| 5, 6 | each cell: do-nothing on A, copy, copy on A and B | ~8.5 min each | as above |
+| 7 | maps, score | s | |
 
-About 42 min (47 with the fallback) plus ~1 min per job to load and reread W₀'s first block. A unit starts only if it
-ends within 26 min of a 30-min job, else exit 3: `fleet/resubmit --code 3 cluster/damage_crossed.sbatch`, 2-3 jobs.
+About 52 min (57 with the fallback) plus ~1 min per job to load and reread W₀'s first block. A unit starts only if it
+ends within 26 min of a 30-min job, else exit 3: `fleet/resubmit --code 3 cluster/damage_crossed.sbatch`, 3 jobs.
 
 ## Numbers and what each should read
 
@@ -100,7 +109,7 @@ ends within 26 min of a 30-min job, else exit 3: `fleet/resubmit --code 3 cluste
 | Map concentration | | | 1 under the null (excess spread evenly) |
 
 **Predictions** (filed, `results/predictions.json`): P1 c1 passes (low confidence: the two SGD copies above), P2 c2
-fails (medium-low). M1, reported: the saved Adam copy's excess is more concentrated at case positions than the LoRA
+fails (medium-low); P3 c3 passes (no lean). M1, reported: the saved Adam copy's excess is more concentrated at case positions than the LoRA
 copy's (Fable's hypothesis), against a floor set by each state's own set A − set B difference.
 
 ## What each outcome means
@@ -110,6 +119,7 @@ copy's (Fable's hypothesis), against a floor set by each state's own set A − s
   can at high damage.
 - **Both fail.** Neither alone: the LoRA's pass needs both its shape and its low damage.
 - **Both pass.** The fail needs both: high damage and full-matrix Adam together.
+- **c3 pass / fail** (beside the pair): the standard copy's path / not the path alone.
 - **No call.** A cell off target, mixed across the two sets, invalid, or a pass whose do-nothing does not fail. The
   readable cell's half is reported as a lean only. A stop (C0-C5, rerun) scores nothing.
 
@@ -124,7 +134,7 @@ mean over 64 rows); recipes other than a rank-8 LoRA; c2's fine-tune saw 32,000 
 ## Not run
 
 Γ's on-count split of the excess map (Fable's second split); more adversary starts or batch orders per copy; an
-SGD cell (E49: the check cannot fail SGD's update); a damage grid beyond the two cells; any narrow-task check.
+SGD cell (E49: the check cannot fail SGD's update); a damage grid beyond the two cells; any narrow-task check; c3 at other batch orders or longer.
 
 ## Departures from the literature
 
