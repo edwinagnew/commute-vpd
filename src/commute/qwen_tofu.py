@@ -16,13 +16,14 @@ import random
 import re
 import statistics
 from collections import Counter
-from collections.abc import Collection, Sequence
+from collections.abc import Collection, Iterator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
 import torch
 import torch.nn.functional as F
+from torch import Tensor
 
 from commute.qwen_anchors import chat
 from commute.qwen_sft import Seq, targets
@@ -72,17 +73,35 @@ def stream(seqs: Sequence[Seq], batch: int, seed: int, t: int) -> list[Seq]:
 
 
 @torch.no_grad()
-def mean_logp(model: Any, seqs: Sequence[Seq], batch: int, device: str) -> list[float]:
-    """Per sequence, the mean log-probability of its response tokens, the end token included."""
-    order, out = sorted(range(len(seqs)), key=lambda i: len(seqs[i][0])), [0.0] * len(seqs)
+def _response_nll(model: Any, seqs: Sequence[Seq], batch: int, device: str) -> Iterator[tuple[list[int], Tensor, Tensor]]:
+    """Batches in length order: the sequences' indices, each target position's negative log-probability and the mask
+    of response targets (`targets`' layout)."""
+    order = sorted(range(len(seqs)), key=lambda i: len(seqs[i][0]))
     for s in range(0, len(order), batch):
         idx = order[s : s + batch]
         toks, mask = targets([seqs[i] for i in idx], pad=0)
         toks, mask = toks.to(device), mask.to(device)
         logits = model(toks, use_cache=False).logits[:, :-1].float()
-        nll = F.cross_entropy(logits.flatten(0, 1), toks[:, 1:].flatten(), reduction="none").view(mask.shape)
+        yield idx, F.cross_entropy(logits.flatten(0, 1), toks[:, 1:].flatten(), reduction="none").view(mask.shape), mask
+
+
+@torch.no_grad()
+def mean_logp(model: Any, seqs: Sequence[Seq], batch: int, device: str) -> list[float]:
+    """Per sequence, the mean log-probability of its response tokens, the end token included."""
+    out = [0.0] * len(seqs)
+    for idx, nll, mask in _response_nll(model, seqs, batch, device):
         for i, x in zip(idx, ((nll * mask).sum(1) / mask.sum(1)).tolist(), strict=True):
             out[i] = -x
+    return out
+
+
+@torch.no_grad()
+def token_logp(model: Any, seqs: Sequence[Seq], batch: int, device: str) -> list[list[float]]:
+    """Per sequence, the log-probability of each response token in order, the end token last (E103 Amendment 1)."""
+    out: list[list[float]] = [[] for _ in seqs]
+    for idx, nll, mask in _response_nll(model, seqs, batch, device):
+        for i, row, m in zip(idx, nll, mask, strict=True):
+            out[i] = (-row[m]).tolist()
     return out
 
 

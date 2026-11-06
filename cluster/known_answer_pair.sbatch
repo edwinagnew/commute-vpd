@@ -10,6 +10,12 @@
 # 7 loads and 10 reads of about 20 s on 128 rows (experiments/qwen_carrying/results/run.log:32). Limit 35 min each.
 # --mem: E91's job, the same training and loads, peaked at 10.5 GB host (cluster/logs/commute-qwen_size_grid-52219.out:67);
 # E102's second job at 10.5 GB (commute-qwen_carrying-53029.out:29). Exit 0 done; 1 a stop (results/stopped.json).
+# E103 Amendment 1 (plan section "Amendment 1", rules results/predictions_amend1.json), same card and limits, after the
+# above, in order:
+#   sbatch cluster/known_answer_pair.sbatch amend1           # stages 0, R (C2, C1's bar), T (C1 at the matched step), G
+#   sbatch cluster/known_answer_pair.sbatch amend1_neurons   # after amend1 ends with exit 0: C2n, the four matched rules
+# amend1 about 10 min (E103's run took 406 s, job 53188; R and G add 5 loads); amend1_neurons about 3 min (E103's took 258 s
+# for 7 loads, this has 2). Exit 1 writes results/stopped_amend1.json.
 #SBATCH --job-name=commute-known_answer_pair
 #SBATCH --partition=compute
 #SBATCH --account=c11
@@ -28,8 +34,8 @@ echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> c
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 nvidia-smi --query-gpu=name,memory.total,memory.used --format=csv
 case "${1:-}" in
-  run|neurons) ;;
-  *) echo "give run or neurons"; exit 1 ;;
+  run|neurons|amend1|amend1_neurons) ;;
+  *) echo "give run, neurons, amend1 or amend1_neurons"; exit 1 ;;
 esac
 set +e
 .venv/bin/python "experiments/known_answer_pair/$1.py"
