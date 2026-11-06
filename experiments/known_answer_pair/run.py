@@ -29,6 +29,7 @@ import torch
 from commute import qwen_d3 as d3
 from commute import qwen_tofu as tofu
 from commute.jobs import EXPERIMENTS, hard_exit, load_experiment
+from commute.known_facts import REF_NORM, log_gap  # moved there 2026-11-06
 from commute.qwen_rl import delta_fp32
 from commute.qwen_sft import gold_loss, linears, plus, save, set_weights
 from commute.qwen_sft import load as load_file
@@ -45,7 +46,6 @@ LARGE, PRED, STOPPED, FORMS = RESULTS / "large", RESULTS / "predictions.json", R
 FILES = {"0": RESULTS / "stage_0.json", "T": RESULTS / "train.json", "G": RESULTS / "read.json"}
 DW = LARGE / "dW"
 MATCHED, END = DW / "matched.safetensors", DW / "end.safetensors"
-REF_NORM = json.loads((EXPERIMENTS / "qwen_size_grid" / "results" / "size_grid.json").read_text())["reference"]["norm"]
 FICTIONAL = {"fict_matched": ("anchor2_s0", "at_norm"), "fict_full": ("anchor2_s0", "full")}  # E91's records, seed 42
 
 
@@ -88,10 +88,6 @@ def logp(lab: Lab, seqs: list[tofu.Seq]) -> list[float]:
 def gain(now: list[float], w0: list[float]) -> float:
     """Mean over rows of the change in each answer's mean token log P (nats a token)."""
     return statistics.mean(a - b for a, b in zip(now, w0, strict=True))
-
-
-def log_gap(x: float) -> float:
-    return abs(math.log(x / REF_NORM))  # E91's `gap` (qwen_size_grid/matched.py)
 
 
 # ----------------------------------------------------------------------------- 0, the control

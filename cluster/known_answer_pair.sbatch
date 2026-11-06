@@ -41,7 +41,7 @@ export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 nvidia-smi --query-gpu=name,memory.total,memory.used --format=csv
 case "${1:-}" in
   run|neurons|amend1|amend1_neurons|amend2|amend2_neurons) ;;
-  *) echo "give run, neurons, amend1, amend1_neurons, amend2 or amend2_neurons"; exit 1 ;;
+  *) echo "give run, neurons, amend1, amend1_neurons, amend2 or amend2_neurons"; exit 2 ;;
 esac
 set +e
 .venv/bin/python "experiments/known_answer_pair/$1.py"

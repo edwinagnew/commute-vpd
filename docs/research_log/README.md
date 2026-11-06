@@ -550,3 +550,4 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e103_pair_rules.png": "experiments/known_answer_pair/figures/pair_rules.png"
 - "fig/e103_amend1_shared.png": "experiments/known_answer_pair/figures/amend1_shared.png"
 - "fig/e103_amend2_overlap.png": "experiments/known_answer_pair/figures/amend2_overlap.png"
+- "fig/e105_overlap.png": "experiments/rows_null/figures/overlap.png"
