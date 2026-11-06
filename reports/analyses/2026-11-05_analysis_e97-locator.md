@@ -138,7 +138,7 @@ W₀'s copying circuit has 70 edges and keeps 0.92 of an 8.48-nat gap; its looku
 
 ![Lowercase](../../experiments/locator_table/figures/lowercase.png)
 
-**Reading it.** It is a part both models need, and whether that counts as located is the user's call. With heads (1,1) and (1,2) at W₀'s mean, the lowercase state falls 0.90 and 0.93 nats, 0.80 and 0.85 of its gain, and the cipher state falls 0.07 of its own. That clears the filed rule on both seeds, against the lean. But W₀ falls 1.10 nats with the same pair off, more than the state does. In the lowercase-against-capitalised unit the state loses only 0.13 and 0.10 of its gain, while W₀ loses 0.70 nats. The own-terms rule says located; a net rule says the pair is something lowercase continuation needs in both models. We report both and pick neither.
+**Reading it.** It is a part both models need, and it counts as located (user, 2026-11-06): the fine-tune's gain runs through a part W₀ already uses, which is evidence the fine-tune reused existing parts rather than building new ones. With heads (1,1) and (1,2) at W₀'s mean, the lowercase state falls 0.90 and 0.93 nats, 0.80 and 0.85 of its gain, and the cipher state falls 0.07 of its own. That clears the filed rule on both seeds, against the lean. But W₀ falls 1.10 nats with the same pair off, more than the state does. In the lowercase-against-capitalised unit the state loses only 0.13 and 0.10 of its gain, while W₀ loses 0.70 nats. The own-terms rule says located; a net rule says the pair is something lowercase continuation needs in both models. The own-terms rule stands as the located rule; the net reading is kept as the evidence that the part already existed.
 
 | Read on whole rows, seeds 0 and 1 | Lowercase | Cipher |
 |---|---|---|
@@ -186,7 +186,7 @@ The planted edits and the copy control read exactly or within a measured floor, 
 ## What next
 
 1. The literature review that is running: which published locator passes a planted control on a fine-tune's change. One that passes would take E97's last amendment; none would mean writing the table with removal alone.
-2. The user's call on the lowercase pair: located in the state's own terms, or a shared part by the net rule. Both readings are in the table.
+2. Settled (user, 2026-11-06): the lowercase pair counts as located, and that W₀ needs it is evidence for reuse of an existing part. definition-lead takes it as a reuse case.
 3. Hand baseline-lead the table as it stands.
 
 ## Scorecard
