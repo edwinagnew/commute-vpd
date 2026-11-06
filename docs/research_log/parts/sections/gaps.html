@@ -10,15 +10,12 @@
 
 <h3>Measurement</h3>
 <div class="cards">
-  <div class="card"><h4>Γ reads the text after the trigger, and we feed it 41 tokens</h4><p>The 67M Γ attends in both directions and was trained on 512-token rows, so on 41-token windows its value at the trigger depends on the 20 tokens after it. Comparisons between models probably stand (E32); absolute window levels are exposed.</p></div>
-  <div class="card"><h4>Nothing measures faithfulness at the trigger with power</h4><p>Pile checks see the old model's account; the task-local adversary saturates. On a cipher the model lacked, the CI-masked model's probability at the trigger shows what the Pile checks miss (E42); its reference, the unchanged decomposition's masked fidelity on cipher windows, is still to be read.</p></div>
-  <div class="card"><h4>The refit's adversary is weaker than the harness's attacker</h4><p>Both refit recipes take the released Γ off its adversarial floor on the unchanged model, and the refit's attacker plateaus at 0.42 nats where the harness's reaches 0.70, so every refit arm is unreadable until a matched attacker exists (E15).</p></div>
+  <div class="card"><h4>The 67M's trigger-level measurements are weak</h4><p>Its Γ attends both ways and sees 41-token windows (absolute levels exposed, E32); no check measures faithfulness at the trigger with power (E42); and the refit's attacker is weaker than the harness's, so refit arms are unreadable (E15).</p></div>
   <div class="card"><h4>The adversary's masks are not shown worst-case</h4><p>Every adversarial verdict reads VPD's check after 20 sign steps from one start. Longer searches read the same (E20, E23), but on a fine-tune left in Δ the start matters, 1.6 against 9.2 (E34), so every reading is a lower bound.</p></div>
-  <div class="card"><h4>Re-gating's share is not a measure of learning</h4><p>The share reads 0.51 to 0.61 for every arm including nulls (E6) and 0.82 for a fine-tune that made held-out text worse (E36). It is set by what the existing gates can route, not by whether anything was learned.</p></div>
 </div>
 
 <h3>The record</h3>
 <div class="cards">
-  <div class="card"><h4>Re-gating has one definition now, and no vetted measure</h4><p>No measure of re-gating has passed its nulls: the share reads the same for a non-learning update (E36) and, on Qwen, for random changes (E57; its gates differ from the 67M's); the switched-on set's members already push toward the target at the original model (E38). "Reveal" and "create" readings rest on the route split, not on a mechanism.</p></div>
+  <div class="card"><h4>Re-gating has one definition now, and no vetted measure</h4><p>No measure of re-gating has passed its nulls: the share reads 0.51 to 0.61 for every arm including nulls (E6) and the same for a non-learning update (E36) and, on Qwen, for random changes (E57; its gates differ from the 67M's); the switched-on set's members already push toward the target at the original model (E38). "Reveal" and "create" readings rest on the route split, not on a mechanism.</p></div>
 </div>
 </section>
