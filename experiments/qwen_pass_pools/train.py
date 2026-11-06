@@ -2,7 +2,8 @@
 reports/plans/2026-11-06_plan_e120-pass-rate-pools.md, stage 3; sources: reports/reviews/2026-11-06_review_fable-e120-
 design.md, questions 5-6. The run refuses to start without results/predictions.json.
 
-One run = one arm: pool known|new, seed 0|1 (the seed changes the order of the pool's training part only). The recipe
+One run = one arm: pool known|new, seed 0|1 (the seed changes the order of the pool's training part only), from
+`--pools` (default results/pools.json; Amendment 2, 2026-11-06: results/pools_amend2.json). The recipe
 is E61's `gold_1e-5` unchanged (`RECIPE`, asserted equal to experiments/qwen_recipe/results/train_gold_1e-5.json →
 recipe): peak 1e-5, warm-up 10, cosine over 100 steps, clip 1, 64 sequences a step, micro 4, fp32 forward, the 196
 decomposed matrices trainable (`qwen_train.train`). A sequence is the chat (thinking off) around the item's `user`
@@ -18,7 +19,7 @@ In one job, each part skipped when its file is there:
         beside W0's 0.784, E61 train_W.json → w0.unprompted.strict_dropped); 8 samples (`qwen_eval.SAMPLE`, cap 1,024) per
         held-out problem of both pools; one greedy answer (cap 1,024) per training problem of the arm's pool (the plan's
         "trained-part greedy"). Answers go to results/large/samples/<arm>/<set>.json as
-        [{id, answer_gold, source, responses, truncated}], graded on the CPU later by grade.py.
+        [{id, answer_gold, source, user, responses, truncated}], graded on the CPU later by grade.py.
 Exit 0 done; 1 a stop or a refusal; 3 paused (--t-chunk, or the budget reached before a unit): resubmit the same
 command. A job lost in training with no checkpoint starts training again. Every file written prints
 `STAGE 3 DONE <path>`.
@@ -126,7 +127,7 @@ def data_summary(path: Path, seqs: dict[str, dict[str, list[Seq]]], pool: str) -
 
 
 class Lab:
-    def __init__(self, arm: Arm, budget_s: float) -> None:
+    def __init__(self, arm: Arm, budget_s: float, pools: Path) -> None:
         self.arm, self.budget_s, self.t0, self.slowest = arm, budget_s, time.time(), 0.0
         self.train_file, self.read_file = RESULTS / f"train_{arm.name}.json", RESULTS / f"read_{arm.name}.json"
         self.dw, self.samples = LARGE / "dW" / arm.name, LARGE / "samples" / arm.name
@@ -134,7 +135,7 @@ class Lab:
         self.tok = AutoTokenizer.from_pretrained(MODEL, revision=MODEL_REV)
         self.tok.padding_side = "left"
         self.end_id = int(self.tok.convert_tokens_to_ids("<|im_end|>"))
-        self.pools = json.loads(POOLS.read_text())
+        self.pools_path, self.pools = pools, json.loads(pools.read_text())
         self.seqs = {p: {part: sequences(self.tok, self.end_id, self.pools[p][part]) for part in ("train", "held")}
                      for p in POOL_NAMES}
         self.model: Any = None
@@ -249,7 +250,7 @@ def stage_train(lab: Lab, t_chunk: int | None) -> None:
         write(lab.read_file, rd)
         lab.log(f"[W0] held-out gold loss {json.dumps(rd['w0'])}")
         lab.done(lab.read_file)
-    out = start_or_resume(lab, data_summary(POOLS, lab.seqs, arm.pool))
+    out = start_or_resume(lab, data_summary(lab.pools_path, lab.seqs, arm.pool))
     if not out["steps"]:
         lab.budget(TRAIN_EST_S if t_chunk is None else TRAIN_EST_S * t_chunk / RECIPE.steps)
     lab.log(f"[train] data {json.dumps(out['data'])}")
@@ -339,7 +340,7 @@ def answer_set(lab: Lab, key: str, items: list[dict[str, Any]], n_ret: int, kw: 
         t0 = time.time()
         torch.manual_seed(zlib.crc32(f"{lab.arm.name}-{key}-{i}".encode()))
         recs = qwen_eval.generate(lab.tok, lab.model, texts[s : s + per], n_ret, kw, max_new=ANSWER_CAP)
-        rows = [{"id": it["id"], "answer_gold": it["answer"], "source": it["source"],
+        rows = [{"id": it["id"], "answer_gold": it["answer"], "source": it["source"], "user": it["user"],
                  "responses": [r["response"] for r in recs[j * n_ret : (j + 1) * n_ret]],
                  "truncated": [r["truncated"] for r in recs[j * n_ret : (j + 1) * n_ret]]}
                 for j, it in enumerate(items[s : s + per])]
@@ -390,6 +391,7 @@ def main() -> None:
     p.add_argument("--seed", required=True, type=int, choices=(0, 1))
     p.add_argument("--t-chunk", type=int, help="write a checkpoint and exit 3 after this many steps (default: none)")
     p.add_argument("--budget-min", type=float, default=170.0, help="stop before a unit that would pass this (exit 3)")
+    p.add_argument("--pools", type=Path, default=POOLS, help="the pools file (Amendment 2: results/pools_amend2.json)")
     a = p.parse_args()
     arm = Arm(a.pool, a.seed)
     if (s := RESULTS / f"stopped_{arm.name}.json").is_file():
@@ -400,7 +402,7 @@ def main() -> None:
         sys.exit(f"RECIPE is not E61's gold_1e-5 ({E61_GOLD})")
     assert LARGE.is_symlink(), f"{LARGE}: run ~/commute-agents/fleet/link-data on this clone"
     assert a.t_chunk is None or 0 < a.t_chunk < RECIPE.steps, a.t_chunk
-    lab = Lab(arm, a.budget_min * 60)
+    lab = Lab(arm, a.budget_min * 60, a.pools)
     try:
         stage_train(lab, a.t_chunk)
         stage_files(lab)

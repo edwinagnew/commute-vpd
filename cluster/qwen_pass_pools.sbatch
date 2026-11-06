@@ -1,14 +1,16 @@
 #!/bin/bash
 # E120 (qwen_pass_pools) stage 3 on one cluster L40, $0: experiments/qwen_pass_pools/train.py, one arm per job. Needs
-# experiments/qwen_pass_pools/results/{pools.json,predictions.json} and the results/large link (fleet/link-data). Submit
+# experiments/qwen_pass_pools/results/{pools_amend2.json,predictions.json} and the results/large link (fleet/link-data). Submit
 # from the clone root; not submitted by the code writer. Arms may run at the same time (each has its own files).
+# Amendment 2 (2026-11-06): the arms read results/pools_amend2.json (MATH regraded), passed as --pools.
 # Normal QoS (the Qwen line may use it when the queue is empty at submission, .claude/CLAUDE.md → Rules):
-#   sbatch cluster/qwen_pass_pools.sbatch known 0
-#   sbatch cluster/qwen_pass_pools.sbatch known 1
-#   sbatch cluster/qwen_pass_pools.sbatch new 0
-#   sbatch cluster/qwen_pass_pools.sbatch new 1
+#   sbatch cluster/qwen_pass_pools.sbatch known 0 --pools experiments/qwen_pass_pools/results/pools_amend2.json
+#   sbatch cluster/qwen_pass_pools.sbatch known 1 --pools experiments/qwen_pass_pools/results/pools_amend2.json
+#   sbatch cluster/qwen_pass_pools.sbatch new 0 --pools experiments/qwen_pass_pools/results/pools_amend2.json
+#   sbatch cluster/qwen_pass_pools.sbatch new 1 --pools experiments/qwen_pass_pools/results/pools_amend2.json
 # Debug QoS (2 h a job, `scontrol show assoc_mgr flags=qos`); the budget leaves 10 min for the last unit and the exit:
-#   sbatch --qos=debug --time=02:00:00 cluster/qwen_pass_pools.sbatch known 0 --budget-min 110
+#   sbatch --qos=debug --time=02:00:00 cluster/qwen_pass_pools.sbatch known 0 --budget-min 110 \
+#       --pools experiments/qwen_pass_pools/results/pools_amend2.json
 # Exit 0 done; 1 a stop (results/stopped_<arm>.json; that arm refuses until it is removed) or a refusal; 3 paused, the
 # work so far saved: resubmit the same command (fleet/resubmit --code 3). Extra arguments go to train.py (--t-chunk N).
 # --mem: E61's gold arm peaked at 11.0 GB on the host (train_gold_1e-5.json → peaks); this run holds one more fp32 δW

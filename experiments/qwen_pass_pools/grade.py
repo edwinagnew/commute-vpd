@@ -2,12 +2,14 @@
 
 A sample's answer is the string the grader reads (GSM8K: the number of the last "The answer is N"; MATH: the content of
 the last \\boxed{}); a truncated sample, or a think-mode sample with no "</think>", has answer None and is not solved.
-Correctness is read from the answer string alone, so the saved answers regrade the samples exactly (`correct`).
+Correctness is read from the answer string (and, for a MATH choice letter, the problem text) alone, so the saved answers
+regrade the samples exactly (`correct`). Amendment 2 (2026-11-06): MATH answers are also compared with presentation
+stripped (`present`: choice letters, \\text{} units, trailing punctuation, percent signs; unordered lists).
 Pure Python apart from math-verify, which is imported when MATH is graded: runs in the pod's vLLM venv and on CPU in
 `~/commute-data/venvs/mathverify` (math-verify only; `commute.gsm8k` comes from PYTHONPATH=src).
 
 CPU use (from the repo root; IN is a JSON list of {"id", "answer_gold", "responses": [text, ...]}, optionally with
-"source" and "truncated": [bool, ...], as the SFT stage writes them):
+"source", "truncated": [bool, ...] and "user" (the problem text, for choice letters), as the SFT stage writes them):
   PYTHONPATH=src fleet/cpu-run -c 4 ~/commute-data/venvs/mathverify/bin/python experiments/qwen_pass_pools/grade.py IN OUT
 OUT: per id {"id", "answers", "correct", "k", "n", "pass_rate"}. The source is "source" when given, else read from the
 id ("gsm8k/..." or "math/..."); a response marked truncated is not solved. A response is read whole (its think part included) unless it is passed as think-mode with --think, which
@@ -17,6 +19,7 @@ grades only the text after "</think>" and none without it.
 from __future__ import annotations
 
 import json
+import re
 import sys
 from collections.abc import Callable
 from concurrent.futures import ProcessPoolExecutor
@@ -67,8 +70,58 @@ def gold_ok(source: str, gold: str | None) -> bool:
     return True if source == "gsm8k" else bool(_math(gold))
 
 
+_UNIT = re.compile(r"(?<=[0-9}])\s*\\(?:text|mbox|mathrm)\{\s*[a-zA-Z ]+\}\s*[.,;]?\s*$")  # "7\text{ hours}."
+_WRAP = re.compile(r"\\(?:text|textbf|mbox|mathrm)\{([^{}]*)\}")
+_FRAC = re.compile(r"\\frac\s*(\\[a-zA-Z]+|[0-9a-zA-Z])\s*(\\[a-zA-Z]+|[0-9a-zA-Z])")  # "\frac\pi 2", "\frac23"
+_LABEL = re.compile(r"^\(?([A-E])\)\s*(?:\\ |~|\\,|\\quad|\s)*")  # "(B)\ 16", "C) 0.2" after unwrapping
+_DROP = ("\\$", "$", "\\%", "%", "^\\circ", "^{\\circ}", "\\left", "\\right", "\\!", "\\,")
+
+
+def present(s: str) -> tuple[str | None, str]:
+    """Amendment 2 (2026-11-06): a MATH answer with its presentation stripped, as (choice letter, value). Units in a
+    final \\text{}, \\text{} wrappers, dollar, percent and degree signs, a trailing full stop or comma, "\\approx"'s
+    left side and ", and " go; \\dfrac and \\frac shorthand become \\frac{}{}. A leading choice label ("\\textbf{(B)}\\ 16")
+    gives the letter and leaves the value; a bare letter ("\\text{(E)},", "D") is the letter and the value."""
+    s = _UNIT.sub("", s)
+    while _WRAP.search(s):
+        s = _WRAP.sub(r"\1", s)
+    for d in _DROP:
+        s = s.replace(d, "")
+    s = _FRAC.sub(r"\\frac{\1}{\2}", re.sub(r"\\[dt]frac", r"\\frac", s))
+    s = s.rsplit("\\approx", 1)[-1].replace(", and ", ", ").strip().rstrip(".,;").strip()
+    if m := re.fullmatch(r"\(?([A-E])\)?", s):
+        return m[1], m[1]
+    if (m := _LABEL.match(s)) and m.end() < len(s):
+        return m[1], s[m.end() :].strip()
+    return None, s
+
+
+def items_of(s: str) -> list[str]:
+    """A comma-separated list split at top-level commas (not inside brackets), spaces removed."""
+    out, depth, cur = [], 0, ""
+    for ch in s:
+        depth += {"(": 1, "[": 1, "{": 1, ")": -1, "]": -1, "}": -1}.get(ch, 0)
+        if ch == "," and depth == 0:
+            out.append(cur)
+            cur = ""
+        else:
+            cur += ch
+    return [x.replace(" ", "") for x in [*out, cur]]
+
+
+def choices(problem: str) -> dict[str, str]:
+    """The options of a multiple-choice problem, letter -> text ("\\textbf{(A)}\\ 10\\qquad ..."); {} if none."""
+    marks = list(re.finditer(r"\(([A-E])\)", problem))
+    out = {}
+    for m, end in zip(marks, [*(n.start() for n in marks[1:]), len(problem)], strict=False):
+        seg = re.sub(r"^(?:\s|\}|\\ |~)+", "", problem[m.end() : end])
+        out[m[1]] = re.split(r"\\qquad|\\quad|\$|\\\]|\n", seg)[0].strip()
+    return out
+
+
 def same(source: str, a: str | None, b: str | None) -> bool:
-    """Two answer strings name the same answer (GSM8K: equal numbers; MATH: math-verify, `a` as the gold)."""
+    """Two answer strings name the same answer (GSM8K: equal numbers; MATH: math-verify, `a` as the gold, on the
+    strings as written, then on their values with presentation stripped (`present`), or as equal unordered lists)."""
     if a is None or b is None:
         return False
     if source == "gsm8k":
@@ -80,11 +133,25 @@ def same(source: str, a: str | None, b: str | None) -> bool:
         return True
     from math_verify import verify  # pyright: ignore[reportMissingImports]
 
-    return bool(verify(_math(a), _math(b)))
+    if verify(_math(a), _math(b)):
+        return True
+    (_, va), (_, vb) = present(a), present(b)
+    if va == vb or sorted(items_of(va)) == sorted(items_of(vb)) and len(items_of(va)) > 1:
+        return True
+    return bool(va and vb and verify(_math(va), _math(vb)))
 
 
-def correct(source: str, answer: str | None, gold: str) -> bool:
-    return same(source, gold, answer)
+def correct(source: str, answer: str | None, gold: str, problem: str = "") -> bool:
+    """`same`, or (MATH) the answer's choice letter is the gold's: the gold's own letter, else the letter of the
+    problem's option that is the gold."""
+    if same(source, gold, answer):
+        return True
+    if source != "math" or answer is None or (letter := present(answer)[0]) is None:
+        return False
+    gold_letter = present(gold)[0]
+    if gold_letter is None:
+        gold_letter = next((k for k, v in choices(problem).items() if same("math", gold, v)), None)
+    return letter == gold_letter
 
 
 def top_wrong(source: str, answers: list[str | None], gold: str) -> int:
@@ -101,10 +168,11 @@ def top_wrong(source: str, answers: list[str | None], gold: str) -> int:
     return max((len(g) for g in groups), default=0)
 
 
-def grade_one(job: tuple[str, str, list[str | None]]) -> list[bool]:
-    """(source, gold, answers) -> correctness per answer."""
-    source, gold, answers = job
-    return [correct(source, a, gold) for a in answers]
+def grade_one(job: tuple[str, str, list[str | None]] | tuple[str, str, list[str | None], str]) -> list[bool]:
+    """(source, gold, answers[, problem text]) -> correctness per answer. Without the problem text a bare choice
+    letter matches only a gold that is itself a letter."""
+    source, gold, answers, *problem = job
+    return [correct(source, a, gold, *problem) for a in answers]
 
 
 def top_wrong_one(job: tuple[str, str, list[str | None]]) -> int:
@@ -175,7 +243,7 @@ def main(src: Path, dst: Path, think: bool) -> None:
     answers = [[None if cut else answer_of(s, t, think) for t, cut in
                 zip(r["responses"], r.get("truncated") or [False] * len(r["responses"]), strict=True)]
                for s, r in zip(srcs, rows, strict=True)]
-    jobs = [(s, str(r["answer_gold"]), a) for s, r, a in zip(srcs, rows, answers, strict=True)]
+    jobs = [(s, str(r["answer_gold"]), a, r.get("user", "")) for s, r, a in zip(srcs, rows, answers, strict=True)]
     res = pmap(grade_one, jobs, procs=4)
     out = [{"id": r["id"], "answers": a, "correct": c, "k": sum(c), "n": len(c),
             "pass_rate": sum(c) / len(c) if c else None} for r, a, c in zip(rows, answers, res, strict=True)]

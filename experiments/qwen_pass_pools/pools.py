@@ -52,13 +52,18 @@ def cuts(m: dict) -> list[str]:
     return out + (["truncated"] if m["t16"] + m["t48"] >= TRUNC_GUARD else [])
 
 
+def label(m: dict) -> str | None:
+    """A stage-1 record's side before the guards: new, known (at the fallback bar or over), or None."""
+    if m["n48"] != 48:
+        return None
+    return "new" if m["k16"] + m["k48"] == 0 else "known" if m["k48"] >= KNOWN_FALLBACK else None
+
+
 def sides(merged: list[dict], cut: Counter[str]) -> dict[str, dict[str, list[dict]]]:
     """Per stratum, {"new": [...], "known36": [...], "known24": [...]} after the guards; `cut` counts each removal."""
     by: dict[str, dict[str, list[dict]]] = defaultdict(lambda: {"new": [], "known36": [], "known24": []})
     for m in sorted(merged, key=lambda m: m["id"]):
-        if m["n48"] != 48:
-            continue
-        side = "new" if m["k16"] + m["k48"] == 0 else "known" if m["k48"] >= KNOWN_FALLBACK else None
+        side = label(m)
         if side is None:
             continue
         why = cuts(m) + (["gold_error"] if side == "new" and (m["top_wrong"] or 0) >= WRONG_GUARD else [])
