@@ -1,15 +1,16 @@
-"""E125's pure pieces on CPU: the repeat flags, the task windows, the probe positions (commute.repeat_label) and E119's
-route label as moved to commute.decomp_reads."""
+"""E125's pure pieces on CPU: the repeat flags, the task windows, the probe positions (commute.repeat_label) and the
+route label rule's boundaries (commute.route_labels, E119's rule as E123 moved it) under E125's filed lines."""
 
 import math
 
 import torch
 
 from commute import repeat_label as RL
-from commute.decomp_reads import route_label
+from commute.route_labels import Lines
+from commute.route_labels import label as route_label
 
 HALF = 20
-LINES = {"r_hi": 0.6, "r_lo": 0.35, "masked_hi": 0.5, "masked_lo": 0.25, "min_ratio": 0.5}
+LINES = Lines(r_hi=0.6, r_lo=0.35, masked_hi=0.5, masked_lo=0.25, min_ratio=0.5)  # E125's filed lines
 
 
 def rows(n: int = 64, T: int = 128, vocab: int = 40, seed: int = 0) -> torch.Tensor:

@@ -36,18 +36,19 @@ Known oddity: the marker string also occurs in code text as a different token se
   the same reads in `label_reads.py` was cut.
 - `src/commute/label_reads.py`: only what `definition_reads` lacks: E112's `finetune` to the learn bar, plus `targets`
   and `labelled`, the label column. `experiments/case_label/run.py` stays as it ran.
-- `src/commute/decomp_reads.py`: E119's `label` (as `route_label`, lines passed in), `e12_control` and `Job.read` (as
-  `read_split`); E18/E38's S (`switched_set`, = `regating.shift_of` + `recruit.switched`); E38 Amendment 2's
-  trigger-only grid for one state (`removal_d`, its 'trigger' rule only, with C3's empty set). `teacher.train_student`
-  was already in `src`. E119's and E38's files stay as they ran.
-- E123's writer had not pushed any move to origin at writing (checked with `git fetch`). If E123 later moves the same
-  E119 functions, the second mover imports the first's.
+- `src/commute/route_labels.py` (E123's writer moved it to origin while this was written; imported unchanged): E119's
+  `label` and `e12_control`. A first draft of the same two in `decomp_reads.py` was cut when E123's landed.
+- `src/commute/decomp_reads.py`: E119's `Job.read` (as `read_split`); E18/E38's S (`switched_set`, which is
+  `regating.shift_of` plus `recruit.switched`); E38 Amendment 2's trigger-only grid for one state (`removal_d`, its
+  'trigger' rule only, with C3's empty set). It passes `ci_len` to the recruitment readers, which E123 extended.
+  `teacher.train_student` was already in `src`. E119's and E38's files stay as they ran.
 - `experiments/fresh_reuse_pair/run.py` (stages 0, 1) and `stage2.py` (stage 2, imports `run`'s shared pieces).
 
 **Per-window target.** The label rides as a 42nd column (`copying.with_target`, `data.LAST`). The route split gets
-`ci_len = 41`, so neither Gamma nor any forward sees the column. E38's readout, the student's per-step evaluation and
-the label reads run the target model on 42 columns. The model is causal, so the trigger position (20) does not see
-column 41. E38's S is computed on 41-column training windows, and the student trains on them.
+`ci_len = 41`, and so do E38's readers, so neither Gamma nor any of those forwards sees the column. The student's
+per-step evaluation (`component_training.train`, no `ci_len`) runs the target model on 42 columns. The model is
+causal, so the trigger position (20) does not see column 41. The label reads take 41-column windows. E38's S is
+computed on 41-column training windows, and the student trains on them.
 
 ## §3 Joint outcomes in detail
 
