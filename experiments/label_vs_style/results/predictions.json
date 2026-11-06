@@ -1,0 +1,99 @@
+{
+ "experiment": "E107 label_vs_style: does the known-facts carrying set read the label (W0 already holds the stated answer) or the questions' topic and the answers' style?",
+ "filed": "2026-11-06",
+ "plan": "reports/plans/2026-11-06_plan_e107-label-vs-style.md",
+ "advice": "reports/plans/2026-11-06_advice_e106-label-vs-style.md (Fable; written as 'E106', run as E107), points 1-5 adopted as written",
+ "why": "E105 read 'label' on both probes: two disjoint halves of the real rows share 0.82-0.84 / 0.88-0.89 (real / TOFU probe) of their carrying sets, against 0.47-0.49 / 0.61-0.64 known against fictional (experiments/rows_null/results/score.json). The independent check (reports/reviews/2026-11-06_review_e105-independent-check.md) left topic, entity type and answer style live: the two arms differ in all of them, and one changed answer form alone moved the set to 0.69-0.76 / 0.80-0.84. Here the known arm's exact questions, wordings and writer are kept and only the stated answer is replaced by a wrong one, so only W0's familiarity with the answer changes.",
+ "data": {
+  "wrong_arm": "commute.known_facts `swap`: in pair 0's sentence (E103 Amendment 1's results/forms_amend1.jsonl) and in each of the four other answer wordings (E103's results/forms.jsonl) of real row i, every occurrence of the row's true answer is replaced by TOFU's perturbed_answer[0] (artifacts/tofu/{real_authors,world_facts}_perturbed.json), except inside KEEP = {142: 'Boston Tea Party', 210: 'Library of Alexandria'}, entity names in the question that hold the answer. Questions unchanged. 217 rows, 1,085 sequences, the same prompts as the known arm.",
+  "checked": "~/commute-data/scratch/baseline-lead/e107-writer/subst_check.py, .out: 217 of 217 sentences and all 868 extra wordings hold the true answer; it occurs more than once only in rows 142 and 210 (inside the KEEP names); no occurrence borders a letter or digit; the wrong answer is in no text before; no wrong answer equals or contains the true one; the true or wrong answer is in the question only in rows 142 and 210.",
+  "topic_split": "score.py `topic_split(100, 217)`: AUTH = rows 0-99 (real_authors_perturbed, 100 rows), WORLD = rows 100-216 (world_facts_perturbed, 117 rows), in qwen_tofu.real_rows order; both counts read from the files by run.py and checked against results/split.json (committed). Row 99 is 'The Inheritance of Loss' (an author question), row 100 'Where would you find the Eiffel Tower?'. world_facts also holds a few author questions (row 216, the communist manifesto): the split is by source file, not by question type."
+ },
+ "recipe": {
+  "rule": "E105's arm (commute.known_facts `to_matched`, E103 Amendment 1's fine-tune): the 5 pairs of each trained row, E84's rate 2e-5, E81's batch 16, micro 8, warm-up 250, hf_cosine, AdamW, fp32 forward; stream seeds 42 and 142. CAP = 64 steps; the matched step is E91's rule (|dW| nearest the template's 0.486520 in log ratio) chosen during training; the record must pass the template norm and its argmin be the matched step, or the job stops.",
+  "differs_from_known_arm": "WRONG: nothing but the stated answer (the thing tested); W0's per-token loss on the trained answers is higher, so the gradient is larger at every step and the matched size may come a step earlier. AUTH / WORLD: as E105's halves, rows 100 / 117 against 108 / 109 (500 / 585 sequences, 31 / 36 steps an epoch), chosen by source file rather than at random (the thing tested).",
+  "cap_source": "E105's: twice the full-row arms' matched step 32 (experiments/known_answer_pair/results/amend1_train.json, amend2_train.json .matched.step)"
+ },
+ "C2n": {
+  "rule": "First and alone: E103 Amendment 2's matched state (experiments/known_answer_pair/results/large/dW/amend2_s142_matched.safetensors) read with commute.known_facts `c2n` on E103's real rows has gain within gain_rel (relative) of results/neurons_amend2/known_s142_matched__real.json and a top-1024 set sharing at least min_set_overlap with the stored one. A miss stops the job.",
+  "stored_gain": 2.2331183574012643,
+  "gain_rel": 0.001,
+  "min_set_overlap": 0.95,
+  "source": "E105's C2n, read relative 0 and overlap 1.0 in job 53480 and three times before (53209, 53275, 53334)",
+  "expected": "gain as stored, overlap 1"
+ },
+ "W0_sentence": {
+  "rule": "Then: W0's per-token log P on the sentence reader with the true sentences (commute.known_facts `w0_sentence`, all 217 rows) has a content level within rel_tol (relative) of the stored one, or the job stops.",
+  "stored": -2.0158448455649562,
+  "stored_source": "experiments/known_answer_pair/results/amend1_stage_0.json .W0_levels.sentence.content; reproduced exactly by E105 (experiments/rows_null/results/control.json)",
+  "rel_tol": 1e-05,
+  "rel_tol_source": "E105's and Amendment 2's (1,000 times the measured two-path floor of 9.2e-9)"
+ },
+ "label_check": {
+  "rule": "Then, still before training: W0's content log P (mean over the sentence's tokens without the end token, the reader above) on each row's wrong sentence against its true sentence. holds iff the wrong one is strictly lower in at least min_share of the 217 rows (score.py `label_check`; a tie is not lower; no rows or a value not finite is unread and does not hold). A miss stops the job: the substituted answers are not reliably unfamiliar to W0, so the arm is not 'not already known'.",
+  "min_share": 0.75,
+  "min_share_source": "Fable's advice point 1. W0 picks the true bare option over all three wrong ones in 0.793 of rows (E103 Amendment 2, experiments/known_answer_pair/results/amend2_options.json), so against one wrong option and in a sentence the share should be higher; 0.75 sits under that measured level.",
+  "expected": "holds: share 0.85 to 0.97, the wrong sentences 0.3 to 1.0 nats a token lower on average (the bare answer words differ by 3.6 nats a token, Amendment 2's table, diluted by the shared words of the sentence)",
+  "do_nothing": "W0 is the state read; on identical texts every row ties and the check reads share 0, missed"
+ },
+ "first_minutes": {
+  "first_batch_differs": 0.001,
+  "first_batch_rule": "Per arm, |seed 42's first batch loss - seed 142's| > first_batch_differs (absolute), or the job stops (E88's, E105's).",
+  "step_1_loss_rel": 0.001,
+  "step_1_note": "Step 1's loss against this arm's own first batch, relative; rate and |dW| exactly 0. E84's, E103's, E105's band.",
+  "step_2_dw": [0.00208, 0.00312],
+  "step_2_source": "E84's band; E105 read 0.00227-0.00230, Amendments 1 and 2 0.00233 and 0.00229. Adam's first moving step is set by the rate, not the data, so the wrong arm's larger loss does not move it.",
+  "peak_gib": 44,
+  "peak_source": "E105 peaked at 37.7 GiB in training, Amendments 1 and 2 (full rows, the wrong arm's read size) at 38.5",
+  "warmup_loss_frac": 0.95,
+  "warmup_note": "Kept for tofu.step_checks; step 250 is never reached (CAP 64)",
+  "wrong_first_batch_expected": "Reported, not a stop: the wrong arm's seed-42 first batch loss above the known full arm's 3.673 (E105 table) by 0.3 to 1.5"
+ },
+ "C1_content": {
+  "rule": "Per arm, at the matched step: the content gain on the arm's own trained sentences (WRONG: the 217 wrong sentences against W0's tokens on them; AUTH / WORLD: the topic's true sentences); holds iff gain >= bar. A miss stops the job: 'no content gain to carry'.",
+  "bar": 1.2365496193863517,
+  "bar_source": "Half the fictional matched state's content gain 2.4730992387727033 (experiments/known_answer_pair/results/amend2_ref.json .reference.content_gain), the bar of E103 Amendments 1-2 and E105",
+  "expected_W0": 0,
+  "expected_do_nothing": "0; fails",
+  "expected": "WRONG 1.5 to 3.0 (W0's deficit on the wrong sentences is larger than on the true ones; the known arm read 1.50, the fictional 2.47); AUTH / WORLD 1.4 to 2.2, as E105's halves (1.49-1.63)"
+ },
+ "wrong_rule": {
+  "rule": "score.py `wrong_rule` on each probe (E103's real rows; E92's 128 TOFU rows) from the two wrong-arm sets and the stored known-arm sets (KNOWN42 = experiments/known_answer_pair/results/neurons_amend1/a1_matched, KNOWN142 = neurons_amend2/known_s142_matched). w_wrong = overlap(WRONG142, WRONG42); w = min(w_wrong, w_known); band = 1 - w; cross = overlap(WRONG42, KNOWN42), (WRONG42, KNOWN142), (WRONG142, KNOWN42), (WRONG142, KNOWN142). 'familiarity' iff max(cross) <= x + band and max(cross) <= L - band. 'topic or style' iff min(cross) >= L - band and min(cross) - x > band. 'no call' otherwise. 'unread' with any value missing or not finite, not four cross values, or any of the four sets not 1024 neurons. Both cannot hold.",
+  "x": {"real": 0.4921875, "tofu": 0.63671875},
+  "x_source": "experiments/known_answer_pair/results/neurons_amend2.json .identity.<probe>.cross_max: the highest known-against-fictional overlap (run.py asserts the file still reads these)",
+  "L": {"real": 0.818359375, "tofu": 0.875},
+  "L_source": "experiments/rows_null/results/score.json .<probe>.cross_min: E105's lowest cross-half overlap, the same-label, different-rows level (asserted)",
+  "w_known": {"real": 0.8642578125, "tofu": 0.9013671875},
+  "w_known_source": "neurons_amend2.json .identity.<probe>.known: the known arm's seed overlap (asserted). The band is the less stable arm's: one minus the smaller of the two arms' seed overlaps, as E105's band was the less stable half's.",
+  "lines_at_w_known": "TOFU: band 0.0986, familiarity needs max(cross) <= 0.7354 (753/1024), topic or style min(cross) >= 0.7764 (795/1024). Real: band 0.1357, familiarity <= 0.6279 (643/1024), topic or style >= 0.6826 (699/1024). A less stable wrong arm widens the band and moves both lines apart.",
+  "scored": ["wrong_tofu"],
+  "reported": ["wrong_real: the same rule on the real probe, which holds the true bare answers this arm trained against, so its gain there may be small; read only if all four sets hold 1024 neurons, else unread"],
+  "lean": {"wrong_tofu": "familiarity"},
+  "lean_source": "Fable's advice point 1: the early gradient of a wrong sentence sits on its answer tokens, which W0 does not expect, as the fictional arm's does; the known arm's sits on style (W0 already gives the answer). Expected cross 0.60-0.74 on the TOFU probe, wrong seeds 0.85-0.93. Against it, filed with it: at the matched step neither the known nor the fictional arm had learned row-specific facts (E91; E105's other-half gains at 0.88-1.0 of own), so the update may be mostly the shared sentence-answer skill, which the wrong arm shares with the known arm word for word; that would read 'topic or style' (cross 0.78-0.89). 'no call' is the likelier miss of the lean.",
+  "what_each_verdict_means": "Training a wrong answer about a real person or place overrides a fact W0 holds; it does not add a new one. familiarity: the set moves as far as the known-against-fictional gap when only the answer's agreement with W0 changes, so the set reads whether the trained answer is one W0 already gives, not the topic or style; it does not tell a contradicted fact from a new entity (option 6, invented names, or option 3, real facts W0 lacks, would), and 'new capability' in GOALS.md's sense is then read as 'content W0 does not already give'. topic or style: the set stays with the known arm's when only the answer's truth changes, even though the change is the largest departure from what W0 holds that this data allows; set identity is retired as a label reading for this pair, and the neuron baseline is written up as 'no neuron reading separates known from new at matched size on Qwen', with the caveat that a contradicted fact reuses the entity's existing representation and so may differ from a new one. no call: reported as read; the advice's Amendment 1 is option 6 (invented names on the 100 author rows).",
+  "edge_cases": "Run on CPU before filing (~/commute-data/scratch/baseline-lead/e107-writer/dry_e107.py, dry.out; tests/test_label_vs_style_score.py), TOFU lines with w = w_known: identical sets topic or style; an empty set (the do-nothing state, NaN), None, three cross values or a set of 1000 neurons unread; max(cross) exactly at 753/1024 familiarity and one neuron over it no call; min(cross) exactly at 795/1024 topic or style and one neuron under it no call; all cross tied at x familiarity; three at x and one at 0.88 no call; wrong seeds at 0.6 no call at cross 0.5 and 0.9; cross below x familiarity. On the stored sets: the known seeds stood in for the wrong arm read topic or style on both probes; the fictional seeds stood in read familiarity on both, so the rule can go either way.",
+  "blind_to": "Overlap counts shared neurons in two ranked top-1024 lists: rank changes inside a set, neurons just past the cut and anything inside a neuron (the granularity limit). A contradicted fact is not a new entity: if the set reads 'answer tokens W0 does not expect', a contradicted and a new fact agree and this arm cannot tell them apart. The TOFU probe is untrained by every arm here; the real probe holds the true bare answers the wrong arm trained against."
+ },
+ "topic_rule": {
+  "rule": "score.py `topic_rule` on each probe from the four topic sets. w = min(overlap(AUTH142, AUTH42), overlap(WORLD142, WORLD42)); band = 1 - w; cross = overlap(AUTH42, WORLD42), (AUTH42, WORLD142), (AUTH142, WORLD42), (AUTH142, WORLD142); L as wrong_rule's. 'topic moves the set' iff L - max(cross) > band; 'topic does not' iff L - min(cross) <= band; 'no call' otherwise (the four pairs straddle L - band); 'unread' with any value missing or not finite, not four cross values, or a set not 1024 neurons. Both cannot hold.",
+  "L": {"real": 0.818359375, "tofu": 0.875},
+  "band_source": "Measured in this job, one minus the less stable topic's seed overlap, as E105's band",
+  "scored": ["topic_tofu"],
+  "reported": ["topic_real: the same rule on the real probe, which holds each topic's own trained questions in bare-answer form, so a topic's set there is partly ranked on its own rows", "per probe, the mean of the AUTH sets' four overlaps with the fictional sets minus the WORLD sets': a gap above the band says entity type carries part of the known-against-fictional gap"],
+  "lean": {"topic_tofu": "topic does not"},
+  "lean_source": "Fable's advice point 2: E105's random halves read cross 0.875-0.893 on the TOFU probe and each half gained 0.88-1.0 as much on the other half's rows as on its own, so the update is mostly a skill shared across the rows; expected cross 0.84-0.89, the authors-minus-world gap against the fictional sets under the band.",
+  "what_each_verdict_means": "topic does not: within the known label, authors against world facts moves the set no more than a random split; the topic difference between the known and fictional arms (people against invented authors' biographies) is then an unlikely carrier of the gap, though invented authors are a third topic. topic moves the set: topic or entity type moves the set by itself; the cross-arm gap may be partly topic, and the comparison that matters becomes real authors against invented authors (the advice's option 4 on the author rows). no call: reported as read.",
+  "edge_cases": "On CPU before filing, with E105's w 0.9053 (line 0.7803): identical sets topic does not; an empty set unread; min(cross) exactly at the line topic does not and one neuron under it no call; max(cross) one neuron under the line moves, exactly at it no call; all tied at the line topic does not. On the stored sets: E105's halves stood in for the topics read topic does not on both probes; the fictional seeds stood in for WORLD read moves on both.",
+  "blind_to": "As wrong_rule's. The split is by source file; world_facts holds a few author questions."
+ },
+ "reported": {
+  "matched_step": {"rule": "Per arm: the matched step and its |dW|; epochs of the arm's rows seen there.", "expected": "26 to 34, |dW| within 0.02 of 0.4865 (known arm 32, 0.480 / 0.483)"},
+  "wrong_seeds": {"rule": "overlap(WRONG142, WRONG42) per probe", "expected": "0.85 to 0.93 on the TOFU probe, as the known seeds' 0.901"},
+  "wrong_vs_fict": {"rule": "the four overlaps of a wrong-arm set inside a fictional set (E103's fict_s{42,142}_matched on the real probe, E102's a2_s{42,142}_matched on the TOFU probe)", "expected": "0.62 to 0.75 on the TOFU probe, at or above known against fictional (0.61-0.64) under familiarity, level with it under topic or style"},
+  "second_gain": {"rule": "WRONG: the content gain on the true sentences of all 217 rows at the matched step; AUTH / WORLD: the gain on the other topic's sentences (E105's other-half gain)", "expected": "WRONG: below its gain on the wrong sentences, -0.5 to 1.3 (the sentence skill is shared, the stated answer is not); topics 1.0 to 1.7"},
+  "prefers_wrong": {"rule": "WRONG: the share of rows whose wrong sentence's content log P is above the true sentence's, at the matched step and at W0", "expected": "W0 0.03 to 0.15 (one minus the label check's share); matched 0.2 to 0.7"},
+  "topic_vs_fict": {"rule": "topic_rule's auth_minus_world_vs_fict", "expected": "under the band"}
+ },
+ "saved": "results/control.json, results/train_<arm>.json (every step, the candidates' gains, C1), results/arm_<arm>.json (per-arm summary), results/sets/<arm>__{real,tofu}.json (each set and its gain), results/score.json, results/run.log; results/large/w0_true.json and w0_wrong.json (W0's tokens), results/large/dW/WRONG{42,142}_matched.safetensors (fp32, 5.64 GB each, not droppable: qwen-decomp-lead's VPD reads) and AUTH/WORLD{42,142}_matched.safetensors (bf16, 2.82 GB each, droppable).",
+ "reading": "C2n, W0's reader, the label check and every C1 holding: the two scored rules as filed. familiarity and topic does not: the set reads whether the trained answer agrees with what W0 holds, not the topic or the answer style; carried forward as the neuron baseline's known-against-not-known reading, labelled 'contradicted, not new' and with the granularity limit, pending option 3 or 6. topic or style: retired as a label reading; the neuron baseline reads no known-against-new separation at matched size. Mixed or no call: reported as read."
+}
