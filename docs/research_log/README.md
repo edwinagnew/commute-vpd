@@ -548,3 +548,4 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e94_think.png": "experiments/qwen_d3_rows/figures/think.png"
 - "fig/e103_gain_curve.png": "experiments/known_answer_pair/figures/gain_curve.png"
 - "fig/e103_pair_rules.png": "experiments/known_answer_pair/figures/pair_rules.png"
+- "fig/e103_amend1_shared.png": "experiments/known_answer_pair/figures/amend1_shared.png"

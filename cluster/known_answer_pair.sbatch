@@ -16,6 +16,12 @@
 #   sbatch cluster/known_answer_pair.sbatch amend1_neurons   # after amend1 ends with exit 0: C2n, the four matched rules
 # amend1 about 10 min (E103's run took 406 s, job 53188; R and G add 5 loads); amend1_neurons about 3 min (E103's took 258 s
 # for 7 loads, this has 2). Exit 1 writes results/stopped_amend1.json.
+# E103 Amendment 2 (plan section "Amendment 2", rules results/predictions_amend2.json), same card and limits, in order:
+#   sbatch cluster/known_answer_pair.sbatch amend2           # 0 (control 0, seed 142's first batch), R (C2, C1's bar), T, P
+#   sbatch cluster/known_answer_pair.sbatch amend2_neurons   # after amend2 ends with exit 0: C2n, the set-identity rule
+# amend2 about 12 min (Amendment 1's job took 493 s, job 53262; P adds one load, 2 x 868-option reads and 4 x 217 greedy
+# answers); amend2_neurons about 2 min (Amendment 1's took 87 s for 2 loads and 3 reads; this the same). Limit 35 min each,
+# about 3 and 15 times. Exit 1 writes results/stopped_amend2.json.
 #SBATCH --job-name=commute-known_answer_pair
 #SBATCH --partition=compute
 #SBATCH --account=c11
@@ -34,8 +40,8 @@ echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> c
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 nvidia-smi --query-gpu=name,memory.total,memory.used --format=csv
 case "${1:-}" in
-  run|neurons|amend1|amend1_neurons) ;;
-  *) echo "give run, neurons, amend1 or amend1_neurons"; exit 1 ;;
+  run|neurons|amend1|amend1_neurons|amend2|amend2_neurons) ;;
+  *) echo "give run, neurons, amend1, amend1_neurons, amend2 or amend2_neurons"; exit 1 ;;
 esac
 set +e
 .venv/bin/python "experiments/known_answer_pair/$1.py"

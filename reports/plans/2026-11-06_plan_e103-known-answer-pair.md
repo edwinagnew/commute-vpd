@@ -185,3 +185,85 @@ Results: `results/amend1_{stage_0,ref,train,read}.json`, `results/amend1.log`, `
 `results/neurons_amend1.json`; a stop writes `results/stopped_amend1.json`. Any stop goes to the lead first.
 
 *Not run.* A neuron reader on the sentence rows; a second seed; the end pair's rules (unchanged in kind: size differs).
+
+## Amendment 2 (2026-11-06): a second known-facts seed, the set-identity rule, the end state's options
+
+*Amendment 2, the last of the two E103 may have; scope settled by the lead after the analysis's "What next" 1 and 2
+(`reports/analyses/2026-11-06_analysis_e103-known-answer-pair.md`, "Are the two arms' carrying sets the same neurons?").
+Code `amend2.py`, `amend2_neurons.py`; rules `results/predictions_amend2.json` (the earlier files stand as filed).*
+
+**The request in the Terms' words.** Fine-tune W0 again on Amendment 1's known-facts rows (the same 1,085 sequences, pair 0
+answered in a sentence), with E84's recipe and E91's matched-size rule, changing only the stream seed (142, the fictional
+arm's second seed). Keep the finished updates δW at the matched step and the end. Read the matched update's carrying
+set on E103's real rows and E92's TOFU rows, and ask whether the two arms' sets differ by more than each arm's seed
+noise. Separately, explain why Amendment 1's end state picks the right real-fact option less often than W0 (0.585
+against 0.793) from the options' own log P and from greedy answers.
+
+**Design check.** *Goal:* the one neuron reading with spread (set identity) has no null for the known arm; this gives it
+one, the analysis's next step 1. *Nearest tried:* Amendment 1 (one known seed; fictional seeds 0.90/0.94, cross-arm
+0.47/0.62). *Patch or step:* a patch that closes a "Not run" item; it cannot make set identity a finding, since the second
+null (same label, different rows) stays unrun. *What would change next:* "within seed noise" retires set identity for this
+pair; "beyond" makes it a candidate reading whose next test is the same-label, different-rows pair (a new plan). *Control
+first:* Control 0, then C2 (stage R), before any training; C2n before any neuron read. *Recipe differences from the
+reference (Amendment 1's run):* the stream seed only, so every batch holds other sequences; the rows, recipe, horizon,
+matched-size rule and readers are the same code (`amend1.fine_tune`, Amendment 1's stage T with the seed and paths passed
+in; `amend1.py`'s own stage T passes what it ran with, and nothing else calls it). This falls in approved class 2 (the
+control a plan names: the analysis named this seed as the set's missing null), inside E103's two amendments.
+
+**Stages, in run order** (job 1 `amend2`, one L40, `debug`, $0, about 12 min; job 2 `amend2_neurons`, about 2 min):
+1. *0.* Control 0 alone (W0's real-fact share within 0.01 of 0.7926, stop if missed). Seed 142's first batch loss, which
+   must differ from seed 42's 3.6731 by more than 0.001 (E88's check; stop if not). W0's tokens on the three readers,
+   read again here (`results/large/amend2_tokens/`).
+2. *R.* C2: Amendment 1's matched state re-read on the sentence reader gives its stored content gain 1.50429 within 1e-5
+   relative (stop if missed; measured two-path floor 9.2e-9). The fictional matched state's content gain on its own
+   answers, C1's reference, re-read (Amendment 1 2.4731; stop if not finite or not above 0).
+3. *T.* 335 steps at seed 142; Amendment 1's early checks (step 1 loss within 1e-3 of the first batch, rate and |δW| 0;
+   step 2 |δW| in [0.00208, 0.00312]; peak ≤ 44 GiB; step 250 loss ≤ 0.95 of the first; any non-finite loss stops). C1 at
+   the matched step: content gain on the sentence reader at least half the reference (stop: "no content gain to carry",
+   job 2 not submitted). States `results/large/dW/amend2_s142_{matched,end}.safetensors`.
+4. *P, the add-on, reported.* At W0 and at Amendment 1's end state: every option's per-token log P on the 217 real-fact
+   choices (the share recomputed from them must be within one row of the stored 0.7926 and 0.5853, else stop), and greedy
+   answers under " Answer in a few words." and " Answer in one sentence.". `results/amend2_options.json`,
+   `results/amend2_answers/`.
+5. *Job 2.* C2n alone: Amendment 1's matched state re-read on the real rows reproduces its stored gain within 0.001 and
+   its set at ≥ 0.95 overlap (stop if missed); it is the stored seed-42 set the rule compares with. Then seed 142's
+   carrying set on both row sets (`results/neurons_amend2/`), the set-identity rule and the four pair rules on seed 142,
+   reported (`results/neurons_amend2.json`).
+
+**The filed rule** (`amend2_neurons.identity`, scored on each row set). known = the share of seed 142's top-1024 set
+inside seed 42's; fict = the same for the fictional seeds (0.8994 real, 0.9365 TOFU, measured); cross = the four
+known-against-fictional overlaps. band = 1 − fict, the share of a set a seed change alone replaced in the fictional arm
+(0.1006, 0.0635). *Within seed noise* iff known − max(cross) ≤ band. *Beyond seed noise* iff, besides, fict − max(cross) >
+band and known ≥ fict − band (so at least 0.799 real, 0.873 TOFU). *No call* otherwise: the known arm has a seed noise
+of its own that the fictional band does not cover. *Unread* with an empty set (the do-nothing state) or any NaN. Edge
+cases were run on CPU (`~/commute-data/scratch/baseline-lead/e103-amend2/dry_amend2.py`, output `dry.out`): empty set
+unread; all sets identical within; all values equal within; a known overlap equal to the cross-arm one within; exactly
+at the band within and one neuron past it beyond; exactly at fict − band beyond and one neuron under it no call; on the
+stored sets, seed 42's set standing in for seed 142 reads beyond and a fictional set standing in reads within, so the
+rule can pass and can fail. Lean: beyond on both row sets.
+
+*Blind to.* Rank changes inside the set, neurons just past the cut, anything inside a neuron; a row difference moves
+the set as a label difference does. **The second null is still not run**: a pair with the same label on different rows.
+So "beyond seed noise" is a candidate reading, not a finding.
+
+| Number | W0 | Do-nothing | Control or reference | Expected |
+|---|---|---|---|---|
+| Control 0, real-fact share | 0.7926 | 0.7926 | E81, within 0.01 | 0.7926 |
+| Seed 142's first batch loss against seed 42's | | | 3.6731, differs by > 0.001 | differs |
+| C2, Amendment 1 matched, content gain, sentence reader | 0 | 0 | stored 1.50429, within 1e-5 relative | 1.50429 |
+| C1, seed 142 content gain at the matched step | 0 | 0, fails | 0.5 × the re-read reference (2.4731 in Amendment 1) | holds, near 1.50 |
+| C2n, Amendment 1 matched on the real rows (neuron reader) | | | stored gain 1.8722 within 0.001, set ≥ 0.95 | reproduces |
+| Set identity, real and TOFU rows (scored) | | unread (empty set) | fict 0.90/0.94, cross 0.47/0.62 | beyond seed noise, both |
+| Four pair rules on seed 142 (reported) | | unread | Amendment 1's rule | level, all four |
+| Options of the share at the end state (reported) | | | recomputed share within one row of stored | wrong options rise more than the right one |
+
+**Run order and stops** (one L40, `debug`, $0; RunPod is not needed at this size):
+1. `sbatch cluster/known_answer_pair.sbatch amend2`. Stops: control 0; seed 142's first batch equal to seed 42's; C2;
+   no reference; step 1, 2, 250 or peak band; a non-finite loss; C1 (job 2 then not submitted); a share not reproduced
+   from its options. Any stop writes `results/stopped_amend2.json` and goes to the lead first.
+2. `sbatch cluster/known_answer_pair.sbatch amend2_neurons`, after 1 exits 0. Stop: C2n.
+Results: `results/amend2_{stage_0,ref,train,options}.json`, `results/amend2.log`, `results/amend2_answers/`,
+`results/neurons_amend2/`, `results/neurons_amend2.json`; states in `results/large/dW/` (11.3 GB, not committed).
+
+*Not run.* The same-label, different-rows pair; seed 142's real-fact share and its end state's neuron read; a neuron
+reader on the sentence rows; the end pair's rules. E103 has no amendment left: anything further is a new plan.
