@@ -60,21 +60,23 @@ W0_TOL = 0.1  # P3: |rho_S at W0| <= W0_TOL on every task-seed
 
 
 @torch.no_grad()
-def window_logits(model: Any, windows: Tensor, batch: int = BATCH) -> list[Tensor]:
+def window_logits(model: Any, windows: Tensor, batch: int = BATCH, ci_len: int | None = None) -> list[Tensor]:
     """The full model's logits on every position of every window, as it stands: one (B, L, V) float32 tensor per batch,
-    kept on the model's device (about 0.9 GB for 106 windows of 41 tokens)."""
+    kept on the model's device (about 0.9 GB for 106 windows of 41 tokens). `ci_len`: the model sees only the first
+    ci_len tokens (data.LAST's target column is never fed; E123, 2026-11-06)."""
     from commute.finetune import logits_of
 
     device = next(model.parameters()).device
-    return [logits_of(model.target_model, windows[s : s + batch].to(device)) for s in range(0, windows.shape[0], batch)]
+    return [logits_of(model.target_model, windows[s : s + batch, :ci_len].to(device)) for s in range(0, windows.shape[0], batch)]
 
 
 @torch.no_grad()
 def readout(model: Any, windows: Tensor, half: int, token: int | Tensor, ref: list[Tensor],
-            batch: int = BATCH) -> dict[str, float]:
+            batch: int = BATCH, ci_len: int | None = None) -> dict[str, float]:
     """lo, kl_trigger and kl_other of the full model as it stands, against `ref` (`window_logits`, same windows and
     batch size), each the mean over windows. `token`: one id, or a (V,) lookup table read at `half`
-    (`data.target_tokens`; E50's key -> value tables). One id gives the same numbers bit for bit as before E50."""
+    (`data.target_tokens`; E50's key -> value tables). One id gives the same numbers bit for bit as before E50.
+    `ci_len` as `window_logits`; the target is still read from the whole window (data.LAST)."""
     from commute.data import target_tokens
     from commute.finetune import logits_of
     from commute.local_faith import stats
@@ -83,21 +85,21 @@ def readout(model: Any, windows: Tensor, half: int, token: int | Tensor, ref: li
     sums: dict[str, float] = dict.fromkeys(STATS, 0.0)
     for s, r in zip(range(0, windows.shape[0], batch), ref, strict=True):
         b = windows[s : s + batch].to(device)
-        st = stats(r, logits_of(model.target_model, b), half, target_tokens(token, b, half))
+        st = stats(r, logits_of(model.target_model, b[:, :ci_len]), half, target_tokens(token, b, half))
         for k, name in (("lo", "lo_trigger"), ("kl_trigger", "kl_trigger"), ("kl_other", "kl_other")):
             sums[k] += float(st[name].double().sum())
     return {k: v / windows.shape[0] for k, v in sums.items()}
 
 
 def removed(model: Any, W: dict[str, Tensor], comps: dict[str, tuple[Tensor, Tensor]], sel: Sel, windows: Tensor,
-            half: int, token: int, ref: list[Tensor]) -> dict[str, float]:
+            half: int, token: int, ref: list[Tensor], ci_len: int | None = None) -> dict[str, float]:
     """`readout` of the full model with weights W minus the rank-1 matrices of `sel` (the released components
-    `comps`, param-decomp layout); the model's weights are restored afterwards."""
+    `comps`, param-decomp layout); the model's weights are restored afterwards. `ci_len` as `readout`."""
     from commute.faithfulness import model_state
     from commute.signatures import ablated_weights
 
     with model_state(model, target=ablated_weights(W, comps, sel)):
-        return readout(model, windows, half, token, ref)
+        return readout(model, windows, half, token, ref, ci_len=ci_len)
 
 
 @contextmanager
@@ -132,14 +134,15 @@ def removal_hooks(model: Any, W_removed: dict[str, Tensor], half: int | None) ->
 
 
 def removed_at(model: Any, W: dict[str, Tensor], comps: dict[str, tuple[Tensor, Tensor]], sel: Sel, windows: Tensor,
-               half: int, token: int, ref: list[Tensor], everywhere: bool = False) -> dict[str, float]:
+               half: int, token: int, ref: list[Tensor], everywhere: bool = False, ci_len: int | None = None) -> dict[str, float]:
     """`readout` of the full model with weights W, with `sel`'s rank-1 outputs removed at the trigger position only
-    (`removal_hooks`; at every position with `everywhere`, which must reproduce `removed`). Weights restored after."""
+    (`removal_hooks`; at every position with `everywhere`, which must reproduce `removed`). Weights restored after.
+    `ci_len` as `readout`."""
     from commute.faithfulness import model_state
     from commute.signatures import ablated_weights
 
     with model_state(model, target=W), removal_hooks(model, ablated_weights(W, comps, sel), None if everywhere else half):
-        return readout(model, windows, half, token, ref)
+        return readout(model, windows, half, token, ref, ci_len=ci_len)
 
 
 IO = dict[str, list[tuple[Tensor, Tensor]]]  # matrix key -> per batch (its input (B, d_in), its output (B, d_out)) at the trigger

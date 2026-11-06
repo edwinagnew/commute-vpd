@@ -93,3 +93,17 @@ predicted here.
 
 ## Not run
 Everything above. Option 3 is not built unless P1 or N1 sends us there.
+
+## Amendment 1 (2026-11-06, lead; first of two)
+**What happened.** Stage 0 passed (`results/stage0.json`: greedy 0.785, sample mean 0.756, graders 1.0). Stage 1's
+first shard stopped the job: MATH truncation 0.294 at cap 1,024, then 0.115 at cap 2,048, over the 0.10 bar, which
+was guessed, not measured (`results/stage1.json` → `stopped`). In that shard the truncation sits on the hard problems:
+25 of 210 MATH problems have at least 8 of 16 samples cut, and 17 of the 25 never-solved-in-16 problems have 4 or more
+cut; the cut texts read as loops or long floundering, with some genuine long solutions.
+**Change.** The cap stays 2,048 (a longer cap would push the run past 6 h on the cards available). The first-shard
+MATH bar becomes 0.20 at the last cap, about twice the 0.115 measured on this path; the GSM8K bar is unchanged. The
+per-problem guard is unchanged: 16 or more truncated of 64 keeps a problem out of both pools. "New" is reported as
+"never solved in 64 samples of at most 2,048 tokens". Stage 2 also reports how many never-solved problems the
+truncation guard removed, since it bears on P1. No filed prediction changes.
+**Also.** On a pod with no git history the filed-file check compares sha256 with the value the runner passes, in place
+of a commit (friction 599). The rerun resumes from the cap-2,048 shard 0 already home.

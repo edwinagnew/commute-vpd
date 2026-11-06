@@ -5,6 +5,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import importlib
 import logging
 import os
@@ -63,8 +64,15 @@ def hard_exit(code: int = 0) -> NoReturn:
 
 
 def require_filed(path: Path) -> None:
-    """Exit unless `path` (a predictions file) is tracked by git and unchanged from HEAD: filed before the run."""
+    """Exit unless `path` (a predictions file) is tracked by git and unchanged from HEAD: filed before the run.
+    A working tree with no `.git` (a pod) compares the file's sha256 with the environment variable E120_PRED_SHA
+    instead (E120 Amendment 1, friction 599); unset or different refuses."""
     repo, rel = str(EXPERIMENTS.parent), str(path.resolve().relative_to(EXPERIMENTS.parent.resolve()))
+    if not (EXPERIMENTS.parent / ".git").exists():
+        want, got = os.environ.get("E120_PRED_SHA"), hashlib.sha256(path.read_bytes()).hexdigest()
+        if want != got:
+            sys.exit(f"no .git here: {rel} sha256 {got} must equal E120_PRED_SHA ({want or 'unset'})")
+        return
     git = lambda *a: subprocess.run(["git", "-C", repo, *a], capture_output=True, text=True, check=False)
     if git("diff", "--quiet", "HEAD", "--", rel).returncode or not git("ls-files", rel).stdout.strip():
         sys.exit(f"{rel} is not committed unchanged: commit it first")

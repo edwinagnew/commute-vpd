@@ -84,6 +84,17 @@ Measurements, not methods:
 - **Γ, the gate:** one network reading every matrix's input at every position. An edit in one layer moves CI values in
   others.
 - **Small:** measured by a step sweep, never assumed.
+- **r, the re-gating share:** let T0 and T1 be the target's log-odds of the trained answer at the trigger under W₀ and
+  under the fine-tuned state, and let L(C, G) be the masked log-odds with components C and gate pattern G (Δ out), 0
+  for W₀'s and 1 for the state's. Then r = (L(C₀, G₁) − L(C₀, G₀)) / (T1 − T0): the share of the gain that appears when
+  the original subcomponents are kept and only the frozen Γ gates differently on the new activations (nan when the gain is
+  about zero, `pcfg_vpd.shares`; the shares are scored only from a gain of 1 log-odds, `local_faith.MIN_GAIN`). It is the "r" of the route split above, not the rank r
+  of the rank-r component training.
+- **Stand-in ratio:** let U0 and U1 be the unmasked log-odds with the subcomponents (Δ out) at W₀ and at the state. Then
+  the stand-in ratio = (L(C₁, G₁) − L(C₀, G₀)) / (U1 − U0): the gain the masked model reaches, gates and all, over the
+  gain the unmasked subcomponents reach. It is nan when U1 − U0 is under E53's floor (`thresholds.ratio_floor`,
+  `pcfg_vpd.shares`, `heldout_keys.vpd_read`). In `experiments/method_table` it is the `ratio` entry of `table.json`
+  `.methods`, beside `r`.
 
 ## Where an update goes (mechanism hypotheses, user-approved 2026-10-16; they do not decide the weak version, 2026-10-19)
 

@@ -268,6 +268,21 @@ def finetune_to_reference(model: Any, ref: nn.Module, train: Windows, cfg: Refer
         pass
 
 
+def finetune_with_loss(model: Any, train: Windows, cfg: ArmAConfig, loss_of: Any, device: str, log: Any = print) -> FinetuneResult:
+    """`finetune_arm_a` with its loss replaced by `loss_of(net, toks) -> (loss, info)`: the same 24 matrices, batch
+    sampling (cfg.seed, cfg.batch), optimizer, clip and loop; delta-W at cfg.checkpoints, no held-out eval. Added
+    2026-11-06 for E121 (copy_gap_ladder): a plain-weights student of a teacher (`teacher.teacher_loss`)."""
+    params = decomposed_params(model)
+    gen = torch.Generator().manual_seed(cfg.seed)
+    net = model.target_model
+
+    def loss_fn(step: int) -> tuple[Tensor, dict[str, float]]:
+        idx = torch.randint(0, len(train), (cfg.batch,), generator=gen)
+        return loss_of(net, train.tokens[idx].to(device))
+
+    return _run(model, params, cfg.lr, cfg.grad_clip, cfg.steps, cfg.checkpoints, loss_fn, dict, log, cfg.optimizer)
+
+
 def next_token_ce(net: nn.Module, toks: Tensor) -> tuple[Tensor, dict[str, float]]:
     """Arm B's loss: mean next-token cross-entropy over every position of the rows."""
     lg = logits_of(net, toks)

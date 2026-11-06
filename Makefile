@@ -25,6 +25,8 @@ sync:
 test:
 	uv run pytest -q $(if $(filter command line,$(origin FILES)),$(FILES))
 
+# FILES may be absolute paths outside the repo (friction 521): ruff takes them as they are, and pyright is run with
+# --project so it uses this repo's config and venv for files that lie outside it.
 lint:
 	uv run ruff check $(FILES)
-	uv run pyright $(FILES)
+	uv run pyright --project $(CURDIR) $(FILES)

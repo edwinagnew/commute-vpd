@@ -1,0 +1,60 @@
+{
+  "experiment": "E126 copy_reproducibility",
+  "filed": "2026-11-06, before any run",
+  "plan": "reports/plans/2026-11-06_plan_e126-copy-reproducibility.md",
+  "code": "experiments/copy_reproducibility/run.py (Config, p1, p2 and the checks)",
+  "config": {
+    "cells": [["emoticon", "adam", [0, 1, 2]], ["r0_t352_v310", "adam", [1, 2]], ["r0_t352_v310", "sgd", [1, 2]], ["r1_t534_v369", "sgd", [1, 2]]],
+    "sgd_lr": [["emoticon", 0.01], ["r0_t352_v310", 0.03], ["r1_t534_v369", 0.03]],
+    "adam_lr": 3e-05,
+    "steps": 1000,
+    "student_lr": 1e-05,
+    "batch_b": 8,
+    "pile_start": 32768,
+    "pile_train_rows": 8192,
+    "control_tol": 0.005,
+    "teacher_tol": 0.005,
+    "near_h100": 0.852,
+    "near_l40": 0.794,
+    "budget_s": 1560.0,
+    "teacher_s": 45.0,
+    "student_s": 175.0
+  },
+  "definitions": {
+    "copy": "E34's Pile-text (arm B) student of a teacher: Adam 1e-5 on the alive (U, V) offsets from 0, 1,000 steps, batch 8 of Pile train rows 32,768-40,959, plain mean KL(teacher || student); E119's code (teacher_route_split/run.py:205-208) with batch-order seed = the order",
+    "teacher": "E31's arm-A fine-tune, seed 0, step 1000 (Adam 3e-5, or SGD at the task's lr), E119 run.py:177-185",
+    "P(target)": "held-out P(target token) at the trigger, arms.heldout_of, as E119",
+    "route split, label": "local_faith.route_split on the student's own state (target W0 + its change, components its U', V'); label = commute.route_labels.label under E119's lines (re-switching r >= 0.6 with e_gate <= 0.25; masked-off e_gate >= 0.5 with r <= 0.35; unreadable if gain / teacher's do-nothing gain < 0.5)",
+    "references": "E119 on the L40, order 0 (teacher_route_split/results/teacher_route_split_<task>.json); E34 on the H100: order 0 (teacher_training_<task>.json) and order 1 (Amendment 4, teacher_training_amend4.json)"
+  },
+  "controls": {
+    "C0 teacher regenerated": {
+      "rule": "per cell, |P(target) - E119's| <= 0.005 and |do-nothing gain / E119's - 1| <= 0.005; else stop. Same card, same seed: E119's do-nothing r equalled E31's to 0 (its checks), so the fine-tune is exact on this card",
+      "expected": {"emoticon/adam": {"p_target": 0.9991, "gain": 17.791}, "r0_t352_v310/adam": {"p_target": 0.9488, "gain": 12.927},
+                   "r0_t352_v310/sgd": {"p_target": 0.9442, "gain": 11.795}, "r1_t534_v369/sgd": {"p_target": 0.9909, "gain": 14.539}}
+    },
+    "C1 the control, first": {
+      "rule": "the emoticon Adam copy at order 0 reproduces E119's P(target) 0.74415 within 0.005 (absolute); else stop before any other order",
+      "expected": {"p_target": 0.74415, "r": 0.3543, "e_gate": 0.5789, "gain_ratio": 0.359, "label": "unreadable"}
+    }
+  },
+  "predictions": {
+    "P1 emoticon cell": {
+      "rule": "a = P(target) at order 1, b = at order 2 (absolute). Any non-finite: 'unreadable'. min(a, b) >= 0.852 (E34's order-0 0.902 minus E34's p_tol 0.05): 'order-0 outlier'. max(a, b) <= 0.794 (E119's 0.744 plus 0.05): 'card difference'. Otherwise 'unstable'. Reported beside it: spread = max - min over orders 0, 1, 2 (nan if any P is not finite)",
+      "expected": "order-0 outlier: a, b about 0.90-0.93 (E34 on the H100: 0.902 at order 0, 0.934 at order 1, the largest order change of E34 Amendment 4's twelve copies)",
+      "lean": "medium: the emoticon teachers, both emoticon task-text copies and its SGD Pile-text copy reproduce E34 on the L40 within 0.002 (E119 checks), so the card does not move this recipe in general; one cell 0.16 low reads like a sensitive order, but no L40 order other than 0 has been run",
+      "edge_cases": "bands are disjoint (0.794 < 0.852); a = 0.852 exactly reads near the H100; one order high and one low reads unstable; both between 0.794 and 0.852 reads unstable (three orders spread >= 0.05, over E34's 0.032); W0 (P 0.012) would read 'card difference' and the teacher itself (0.999) 'order-0 outlier', neither of which is a copy, so neither is read",
+      "blind_to": "a card effect that depends on the order (the H100 has two orders, the L40 three); r and the label are reported, not scored, for this cell"
+    },
+    "P2 re-switching corner": {
+      "rule": "per cell (r0 Adam, r0 SGD, r1 SGD Pile-text copies; E119 read each re-switching at order 0): 'holds' if the label at orders 1 and 2 are both re-switching, else 'breaks'. Reported: n_hold of 3, the labels, r and e_gate per order",
+      "expected": {"r0_t352_v310/sgd": "holds (order 0: r 0.749, e_gate 0.166, gain ratio 0.71)",
+                   "r0_t352_v310/adam": "holds (order 0: r 0.748, e_gate 0.174, gain ratio 0.58, 0.08 above the 0.5 readability line)",
+                   "r1_t534_v369/sgd": "coin flip (order 0: r 0.726, e_gate 0.237, 0.013 under the 0.25 line)", "n_hold": 2},
+      "lean": "high for r0 SGD, medium for r0 Adam, low for r1 SGD; noise floor: E12 Amendment 1's copy table at a second order moved r by 0.0004 and e_gate by 0.002, at a second seed by 0.04",
+      "edge_cases": "an unreadable order breaks the cell (it cannot read re-switching); no cell missing at scoring (the score is written only when every cell is done)",
+      "blind_to": "orders beyond 2; whether a 'neither' just inside a line differs from a re-switching just outside it (the lines are E12's, frozen)"
+    }
+  },
+  "timing": "E119's L40 log (results/large/run_emoticon.log): model load 25 s, a teacher fine-tune ~30 s, Pile-text students 154-167 s (task-text 109-135 s). Four teachers and nine students: ~26 min of compute, so one job of the 26-min budget plus a resubmission for the last student or two (exit 3)"
+}

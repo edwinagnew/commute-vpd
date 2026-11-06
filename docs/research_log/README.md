@@ -144,11 +144,16 @@ From a Claude Code session, with the Artifact tool:
    `fleet/cpu-run`, whose worker cannot see `/ephemeral`).
 
    ```
-   Artifact read    url: https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu   paths: ["nav.js", "index.html"]
-   python3 docs/research_log/build.py --changed <the folder it saved to>
-   Artifact read    url: https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu   paths: [the other pages it printed]
+   Artifact read    url: https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu   paths: ["nav.js"]
+   python3 docs/research_log/build.py --changed <folder it saved to>      # the folder argument is required
+   Artifact read    url: https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu   paths: [the pages --changed printed, index.html among them]
    python3 docs/research_log/build.py --check <folder>
    ```
+   Read `nav.js` first: `--changed` and `--check` both need the live `nav.js` in the folder, and `--check` without it
+   compares nothing useful (friction 565). `--check` lists the pages you did not save on one "not compared" line and
+   needs no read of them (friction 561); it also prints `dead link:` for a `#anchor` (e.g. a changelog row's
+   `#decision-...`) whose id exists in no built page: fix or drop the link (friction 588). `build.py --words` rebuilds
+   `build/` too, so a publish after it is current (friction 519).
    `--changed` compares the hashes in `nav.js`, so a page nobody changed is neither read nor sent; rerun it after the
    last build and read any page newly named. A live `nav.js` missing or without hashes names every page: read those
    (friction 291). A file not yet live needs no read. Never `read` with `url` alone: ~50k tokens, and the first send was
@@ -158,21 +163,21 @@ From a Claude Code session, with the Artifact tool:
    index.html's place count, which predicts step 3. `--check` also flags a live page built from `parts/` in no commit
    (friction 323).
 3. Publish (below). The first send is refused unless this session published the live version; the refusal's first
-   sentence picks the case (of 29 publishes on 2026-11-02/03, friction 287):
-   - **"same author content"** (1): send again; it passes.
-   - **"shown in full below as a line diff"** (23, under about 10 places; a 3-12k token diff): the diff is the view. If
-     what yours lacks is what your flush replaced, send the identical publish, refused "resent unchanged", and once
-     more, which passes. If not, another session published: pull, rebuild, merge, step 1. A merged file passes at once.
-   - **"not shown here"** (4, about 10 places or more): resending never passes (friction 315, 326, 359, 387). Go
-     straight to Reading the saved file it names, whole, 130 lines a call (200 can overrun Read), through the last line
-     it names: ~780 lines, ~45k tokens. Merge what yours lacks; the next send passes. Step 2's place count warns of
-     this: split such a flush if you can (apply some lines, publish, then the rest; a session's second publish passed
-     at its first send, seen once).
+   sentence picks the case. One rule covers most of them: **if the refusal's diff shows only your own changes, your
+   read was stale. Do not resend unchanged (that is refused "resent unchanged"). Re-read the live page with `Artifact
+   read` and `path` (not `url` alone), then send once** (friction 517, 535, 553, 560, 585). If the diff shows a line that
+   is not yours, another session published: pull, rebuild, merge, step 1.
+   - **"same author content"**: send again; it passes.
+   - **"shown in full below as a line diff"** (under about 10 places): read the diff. Only your own changes: the rule
+     above. A line that is not yours: merge first, whatever the place count (friction 409, 451, 479).
+   - **"not shown here"** (about 10 places or more): resending never passes (friction 315, 326, 359, 387). The refusal
+     names a saved file: Read it whole, 130 lines a call (200 can overrun Read), through the last line it names (~45k
+     tokens). Merge what yours lacks; the next send passes. Step 2's place count warns of this: split such a flush if you
+     can (apply some lines, publish, then the rest).
    - **"touches files whose published content is not what you last saw"**: `Artifact read` each path named, `--check`,
      merge into `parts/` if it differs, rebuild, publish. A figure you are not changing comes out of `files`.
    Anything else: stop and report it with the refusal text. The version the tool reports counts every send and differs
-   from the changelog row; the row is the log's version (friction 461). The resend above is only for a diff you read as
-   your own flush: a line that is not yours means merge first, whatever the place count (friction 409, 451, 479).
+   from the changelog row; the row is the log's version (friction 461).
 
 ```
 Artifact publish
@@ -575,3 +580,4 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e118_pairs.png": "experiments/neuron_vpd_table/figures/full_qwen_pairs.png"
 - "fig/e118_known.png": "experiments/neuron_vpd_table/figures/full_qwen_known.png"
 - "fig/e119_route_labels.png": "experiments/teacher_route_split/figures/route_labels.png"
+- "fig/e124_p0_blocks.png": "experiments/natural_tasks/figures/p0_blocks.png"
