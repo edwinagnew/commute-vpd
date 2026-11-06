@@ -8,8 +8,8 @@ the first shard reads over PLAIN64_TPS tokens/s, every eligible problem gets pas
 Each shard is a file under results/pod_dl/s16|s48/, printed `SHARD DONE <path> <sha256>` once written; a shard already
 on disk is read, not resampled, so a lost pod loses at most one shard. Texts are kept only where a later step reads them:
 every sample of a 0-of-16 problem (the new side) and up to KEEP_CORRECT correct samples of the others in pass 48 (N2).
-Early checks, printed every shard and applied to the first: truncation GSM8K <= 0.02, MATH <= 0.10 (else the first
-shard is redone at the next MATH cap; past the last cap, stop); after pass 16, MATH level 5's 0-of-16 share >= 0.05.
+Early checks, printed every shard and applied to the first: truncation GSM8K <= 0.02, MATH <= 0.10 at cap 1024 (else
+the first shard is redone at 2048) and MATH <= 0.20 at the last cap 2048 (Amendment 1, 2026-11-06; over it, stop); after pass 16, MATH level 5's 0-of-16 share >= 0.05.
 """
 
 from __future__ import annotations
@@ -30,8 +30,9 @@ from commute.qwen_eval import MAX_NEW, SAMPLE
 SEED, SHARD16, SHARD48 = 0, 512, 192
 KNOWN_PER_NEW, CAND_MIN, KEEP_CORRECT = 3, 8, 4
 PLAIN64_TPS = 20_000.0
-TRUNC_MAX = {"gsm8k": 0.02, "math": 0.10}
+TRUNC_MAX = {"gsm8k": 0.02, "math": 0.10}  # math: the rise rule at every cap but the last
 MATH_CAPS = (1024, 2048)
+MATH_BAR_LAST = 0.20  # Amendment 1 (2026-11-06): the stop bar at the last cap; 0.115 was measured there, 0.10 was a guess
 L5_MIN = 0.05
 SUMMARY, MERGED = RESULTS / "stage1.json", DL / "stage1_problems.json.gz"
 
@@ -84,19 +85,22 @@ def shard(eng: Engine, items: list[Item], n: int, i: int, cap_math: int, keep_al
 
 
 def first_shard(eng: Engine, items: list[Item], summary: dict[str, Any]) -> dict:
-    """Shard 0 of pass 16 with the truncation checks; the MATH cap rises once if MATH truncation is over its bar."""
+    """Shard 0 of pass 16 with the truncation checks; the MATH cap rises once if MATH truncation is over 0.10 at cap
+    1024; at the last cap (2048) the MATH bar is 0.20 (Amendment 1). A shard 0 already on disk keeps its own cap
+    (the check reads its meta), so a resume from a cap-2048 shard runs the later shards at 2048."""
     rec = shard(eng, items, 16, 0, MATH_CAPS[0], set())
     while True:
         tr, cap = rec["meta"]["truncation"], rec["meta"]["cap_math"]
+        bar = MATH_BAR_LAST if cap == MATH_CAPS[-1] else TRUNC_MAX["math"]
         print(f"[check] first shard truncation GSM8K {tr['gsm8k']} (<= {TRUNC_MAX['gsm8k']}), MATH {tr['math']} "
-              f"(<= {TRUNC_MAX['math']}) at cap {cap}; {rec['meta']['tps']:.0f} tokens/s "
+              f"(<= {bar} applied at cap {cap}); {rec['meta']['tps']:.0f} tokens/s "
               f"(plain 64 above {PLAIN64_TPS:.0f})", flush=True)
         if (tr["gsm8k"] or 0) > TRUNC_MAX["gsm8k"]:
             stop(summary, f"GSM8K truncation {tr['gsm8k']} over {TRUNC_MAX['gsm8k']}")
-        if (tr["math"] or 0) <= TRUNC_MAX["math"]:
+        if (tr["math"] or 0) <= bar:
             return rec
         if cap == MATH_CAPS[-1]:
-            stop(summary, f"MATH truncation {tr['math']} over {TRUNC_MAX['math']} at the last cap {cap}")
+            stop(summary, f"MATH truncation {tr['math']} over {bar} at the last cap {cap}")
         rec = shard(eng, items, 16, 0, MATH_CAPS[MATH_CAPS.index(cap) + 1], set(), redo=True)
 
 

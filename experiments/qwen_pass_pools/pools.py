@@ -154,7 +154,11 @@ def build(items: dict[str, Item], merged: list[dict], texts: dict[str, list[str]
                            for s, d in pools.items()}
     n = {s: {p: len(rs) for p, rs in d.items()} for s, d in pools.items()}
     assert n["known"] == n["new"], n
-    out["meta"] = {"seed": SEED, "rules": RULES, "n": sum(n["new"].values()), "sizes": n, "gold_unreadable": unread,
+    # Amendment 1: never-solved (0 of 64) problems the truncation guard removed, per stratum (bears on P1).
+    guarded = Counter(stratum(m) for m in merged
+                      if m["n48"] == 48 and m["k16"] + m["k48"] == 0 and m["t16"] + m["t48"] >= TRUNC_GUARD)
+    out["meta"] = {"never_solved_removed_by_truncation_guard": {"total": sum(guarded.values()),
+                                                                 "per_stratum": dict(sorted(guarded.items()))},"seed": SEED, "rules": RULES, "n": sum(n["new"].values()), "sizes": n, "gold_unreadable": unread,
                    "problems_sampled": len(merged), "stopped_at_16": sum(m["n48"] == 0 for m in merged),
                    "guard_cuts": dict(sorted(cut.items())), "strata": table,
                    "fallback": [s for s, t in table.items() if t["fallback"]],
@@ -176,6 +180,9 @@ def main(dl: Path, out: Path) -> None:
     meta = res["meta"]
     print(f"\n[pools] n {meta['n']} per side {meta['sizes']}; guard cuts {meta['guard_cuts']}; fallback strata "
           f"{meta['fallback']}; N2 {meta['n2']}", flush=True)
+    g = meta["never_solved_removed_by_truncation_guard"]
+    print(f"[pools] never solved in 64 but removed by the truncation guard (>= {TRUNC_GUARD} of 64 truncated): "
+          f"{g['total']}; per stratum {g['per_stratum']}", flush=True)
     print(f"STAGE 2 DONE {rel(out)} {write_json(out, res)}", flush=True)
 
 
