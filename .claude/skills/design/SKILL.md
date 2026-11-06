@@ -20,6 +20,9 @@ a single measurement, or outside the current stage. That is fine as long as the 
      what this proposal would learn that it could not. If the honest answer is "nothing new", stop here.
    - **Is this a patch on the last experiment, or a step towards the goal?** Both can be fine, but say which one.
    - **Which working decisions does it rely on or depart from?** Check `decisions.md`. Flag any departure.
+   - **Does it read under an adopted definition, unchanged?** Quote the `decisions.md` rows it reads under (reuse:
+     rows 81, 87). If the proposal adds a rule, clause, band or score to get a verdict, it changes the definition:
+     stop and ask the user. A case that cannot be read gets "unreadable" or "does not apply" (E99, 2026-11-06).
    - **What result would change what we do next?** If no outcome would change anything, the proposal is not worth
      running.
    - **Which arm checks the apparatus itself, and does it run first?** Name the control that must pass for any other
