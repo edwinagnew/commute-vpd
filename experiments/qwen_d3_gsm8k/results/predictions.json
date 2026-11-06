@@ -4,7 +4,7 @@
  "filed": null,
  "plan": "reports/plans/2026-11-06_plan_e104-d3-gsm8k.md (appendix reports/plans/2026-11-06_plan_e104-appendix.md); D3 row 11-10 to 11-11 of reports/plans/2026-11-05_plan_qwen-reorient-amend1.md:52; E94's carry rule reports/plans/2026-11-05_plan_e94-d3-rows.md:116",
  "question": "On the three rows E94 carried (outside share, placement excess, think overlap), does RL read differently from its shuffled-reward null, does own-samples SFT read differently from RL, and where does each GSM8K arm sit between the template and TOFU fine-tunes? Nothing is worded as new against reuse.",
- "states": "R_s0, R_s70, N_s0, N_s70, F_s0 at steps 10 and 100 (qwen_rl/results/large/{lr1e-6w10,lr1e-6w10_s70}/dW/{R,N,F}/step_{10,100}.safetensors, fp32; norms from qwen_size_grid/results/reads.jsonl). Scaled copies, matched on K00 - K0 over the first 16 maths rows by qwen_reading.scale_search, band 1.25, at most 6 evaluations ('size unmatched' otherwise): S1 = R_s0 step 100 to F_s0 step 100's size; S2 = R_s0 step 100 to R_s0 step 10's size; S3 = E94's a2_s42_full to E94's a1_s0 size (0.1276028164813563).",
+ "states": "R_s0, R_s70, N_s0, N_s70, F_s0 at steps 10 and 100 (qwen_rl/results/large/{lr1e-6w10,lr1e-6w10_s70}/dW/{R,N,F}/step_{10,100}.safetensors, fp32; norms from qwen_size_grid/results/reads.jsonl). Scaled copies, matched on K00 - K0 over the first 16 maths rows by qwen_reading.scale_search, band 1.25, at most 6 evaluations ('size unmatched' otherwise): S1 = R_s0 step 100 to F_s0 step 100's size; S2 = R_s0 step 100 to R_s0 step 10's size; S3 = E94's a2_s42_full to E94's a1_s0 size (on the first 16 maths rows 0.1308629, E94's gauss_small target; 0.1276028164813563 on all 128).",
  "rows": "128 maths rows (W0's own greedy GSM8K answers, cut to 256), for every number, as E94's rows 2, 3 and 5.",
  "rules": {
   "outside": "E94 row 2, unchanged: the input-weighted share of dW outside the alive subcomponents, pooled over matrices by input-weighted energy, Sigma on 128 maths rows of 512 at W0; its exact null beside. A property of dW: do-nothing reads the same. Invariant to scaling dW.",
@@ -46,6 +46,7 @@
   "S_rel": 0.01,
   "half_scale": 0.5,
   "unit_nulls_sha256_prefix": "05ff807e6c834b37",
+  "nulls_json_sha256": "e9b0329c6d40aca11739cdfaae6a2678bf141646fc38fa15522e6acd741b38e4",
   "bands": "id, rep, S_rel relative; placement and invariance absolute 1e-4; fold_band absolute"
  },
  "first_minutes": {
