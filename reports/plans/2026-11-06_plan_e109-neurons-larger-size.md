@@ -91,8 +91,9 @@ Per scored probe (tofu signed, T by |score|): w = overlap(KNOWN_end142, KNOWN_en
 of the four KNOWN_end-in-FICT_learned overlaps. **Power gate** (stage 1, before a wrong arm trains): "power" iff
 w − x > band, else that probe's rule is reported as "no power at this size". **Learned gate** per wrong seed: share
 preferring the wrong sentence ≥ 0.75 and greedy recall of the wrong answer's words ≥ 0.585; both seeds must hold, else
-"premise failed", reported, no amendment. **Wrong rule**: cross = WRONG_end<s> inside KNOWN_end<t>, four values;
-**familiarity** iff max(cross) ≤ x + band; **topic or style** iff min(cross) ≥ w − band and min(cross) − x > band; else
+"premise failed", reported, no amendment. The gate's band is the known arm's alone: the wrong ends do not exist yet.
+**Wrong rule**: cross = WRONG_end<s> inside KNOWN_end<t>, four values; w = min(w_known, w_wrong) with w_wrong the wrong
+seeds' overlap, band = 1 − w (E107's band, the less stable arm's); **familiarity** iff max(cross) ≤ x + band; **topic or style** iff min(cross) ≥ w − band and min(cross) − x > band; else
 **no call**; unread with a value missing, not four cross values or a set not of 1,024. Leans: tofu topic or style; T no
 call likelier, familiarity the lean. Edge cases run before filing (results in
 `~/commute-data/scratch/baseline-lead/e109-writer/dry.out`, listed in the predictions).
@@ -135,8 +136,8 @@ for a same-card comparison.
 
 ## Choices the advice left open
 
-The band is 1 − w with w the known seeds' overlap only, as the advice writes it (E107 used the smaller of the two arms'
-seed overlaps; the wrong seeds' overlap is reported beside). C2n is kept at the head of stage 0. T_frame is read for the
+The wrong rule's band is E107's, 1 − min(w_known, w_wrong) (baseline-lead, 2026-11-06, before any run; the advice
+wrote the known seeds alone); the power gate keeps the known seeds' band. C2n is kept at the head of stage 0. T_frame is read for the
 known and wrong end states only. The |score|-inside-signed check and the arithmetic check are reported, not stops (no
 measured floor for the latter; the mask partition itself is asserted exactly). The end δW is saved before the reads.
 
