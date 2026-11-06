@@ -109,12 +109,15 @@ def faithfulness(model: Any, batches: list[Tensor], n_stoch_draws: int = 2, pgd_
     return res
 
 
-def harness_pgd(model: Any, batches: list[Tensor], pgd_steps: int = 20, seed: int = 0, step_size: float = 0.1) -> float:
+def harness_pgd(model: Any, batches: list[Tensor], pgd_steps: int = 20, seed: int = 0, step_size: float = 0.1,
+                loss: Any = None) -> float:
     """The PGD half of `faithfulness`: one adversary shared across every row of every batch (the paper's 128-row
     scope), the authors' calc_multibatch_pgd_masked_recon_loss under bf16 autocast (random start after
     torch.manual_seed(seed), `pgd_steps` sign steps of `step_size`, gradients accumulated over the batches), returning
     its own final objective. Split out of `faithfulness` 2026-10-26 (teacher_training Amendment 5) to read it per block
-    and at other step sizes; `faithfulness` calls it with step size 0.1, as before."""
+    and at other step sizes; `faithfulness` calls it with step size 0.1, as before. `loss` (added 2026-11-06 for E122,
+    damage_crossed) replaces the authors' recon_loss_kl, e.g. by a copy of it that also records each position's KL;
+    None is recon_loss_kl, as before."""
     from param_decomp.configs import PGDMultiBatchConfig
     from param_decomp.metrics.pgd_utils import calc_multibatch_pgd_masked_recon_loss
     from param_decomp.models.batch_and_loss_fns import recon_loss_kl
@@ -131,7 +134,7 @@ def harness_pgd(model: Any, batches: list[Tensor], pgd_steps: int = 20, seed: in
         p = calc_multibatch_pgd_masked_recon_loss(
             pgd_config=pgd_cfg, model=model, weight_deltas=wd, create_data_iter=lambda: iter(batches),
             router=AllLayersRouter(), sampling="continuous", use_delta_component=True, device=str(device),
-            reconstruction_loss=recon_loss_kl)
+            reconstruction_loss=recon_loss_kl if loss is None else loss)
     torch.cuda.empty_cache() if use_autocast else None
     return float(p.detach())
 

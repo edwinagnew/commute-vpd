@@ -1,0 +1,67 @@
+{
+ "experiment": "E122 damage_crossed",
+ "plan": "reports/plans/2026-11-06_plan_e122-damage-crossed-pair.md. Filed before any run; never edited after (a dated report instead). Rules are code: experiments/damage_crossed/rules.py (score, outcome, readable, cell_verdict, choose, excess_map, map_contrast); edge cases run on CPU 2026-11-06 (both pass, both fail, ties at 1.40 and 1.61, between, mixed sets, NaN, missing set, off-target fine-tune and copy, pass without power, no excess, no case positions).",
+ "filed": "2026-11-06",
+ "card": "NVIDIA L40, MATS cluster debug QoS; the job stops on any other card (the references are L40 readings)",
+ "definitions": {
+  "check": "E39's adversarial check (broad_fragility/run.py:66-68): the authors' PGD mask adversary, one random start at seed 0, 20 sign steps of 0.1, one adversary per block of 128 Pile val rows (batches of 8), bf16 autocast (faithfulness.harness_pgd). A state's ratio on a set = the mean of its two blocks' KL over W0's, same seed, same job. Lines (E39, both inclusive): pass <= 1.40, fail >= 1.61, between otherwise.",
+  "sets": "A = Pile val rows 0-255, B = Pile val rows 256-511 (E39 Amendment 3's first and second rows).",
+  "damage": "KL(W0 || W0 + dW), mean over every position of Pile val rows 0-63, plain text (row_copy.mean_kl; E37/E39's damage). For a copy, dW is the copy's own weight change.",
+  "D_A, D_L": "the damage of the Adam fine-tune and of the rank-8 LoRA fine-tune at step 300 (E37's and E39's recipes), measured in this job's stage 2.",
+  "band": "half-width w = 0.25 x (D_A - D_L); cell c1's band D_L +- w, cell c2's band D_A +- w (both edges inclusive). Measured in stage 2, before any copy is trained.",
+  "c1": "the Adam fine-tune (all 24 matrices, Adam 3e-5, batch 8, E37's rows once, clip 1) at the checkpoint (every 10 steps, 10-300) whose damage is nearest D_L (exact ties: the earliest step); not run if that damage is outside c1's band.",
+  "c2": "the rank-8 LoRA (all 24 matrices, Adam 1e-4, seed 0, batch 8, fresh lowercase rows once: E37's 2,400 then the next 29,600 from Pile train 0-32767) at the checkpoint (every 100 steps, 100-4000) whose damage is nearest D_A; if none is in c2's band, the same at Adam 3e-4 (E39's grid); not run if still none.",
+  "c3": "added by the lead 2026-11-06, before any run: the full Adam fine-tune (stage 3's, step 300) copied by the same recipe but from its least-squares split: offsets (dU, dV) = split.split_state(dW, U, V) (bases tol 1e-6) as saved bf16 and read back, E121 rung R4's start (copy_gap_ladder/run.py ls_start), through row_copy.copy_states(init=...). Read: its do-nothing (nothing_adam300) and the split start itself (tt_c3_start) on A, the copy on A and B. Readable as the cells (pass or fail on both sets; a pass needs nothing_adam300 to fail on A); no damage band (it is the full fine-tune).",
+  "copy": "E37's teacher training (row_copy.copy_on_rows): Adam 1e-5 on the alive U, V from W0's, Gamma and Delta frozen, KL(fine-tune || student) mean over every position, batch 8 of E37's 2,400 lowercase rows drawn in batch order 0, 1,000 steps; saved as bf16 offsets and read back from the file.",
+  "cell verdict": "pass if the copy's ratio passes on both sets; fail if it fails on both; mixed if anything else is read; invalid if a ratio is not finite; not run if a set is missing.",
+  "readable": "a cell's verdict is read only if (i) its fine-tune checkpoint is in its band, (ii) its copy's damage is in the same band, (iii) the verdict is pass or fail, and (iv) for a pass, the cell's do-nothing (the fine-tune's dW left in Delta) fails on set A: otherwise the check had no power on that update (E49; decisions.md row 75).",
+  "s": "behaviour kept, (logp_copy - logp_W0) / (logp_finetune - logp_W0) on 64 held-out lowercase rows (E37). Reported.",
+  "excess map": "per position of a set, the state's KL under its own adversary minus W0's under W0's (same rows, seed 0). Case position: the next token's string holds an ASCII capital (the last position of a row is not one). concentration = (share of the excess at case positions) / (share of positions that are case positions); 1 = spread evenly; none if the total excess <= 0. Contrast of two states: the difference of their concentrations on each set against a floor = the larger of the two states' own |A - B| differences; 'x more' if both sets exceed the floor with one sign, 'no difference' if both lie within it, else 'unclear'."
+ },
+ "controls": {
+  "C0": "no model: the saved Adam copy (broad_fragility/results/large/trained_step1000.pt) and LoRA copy (a2_tt_lora_s0.pt) have E49's sha256; else the job refuses.",
+  "C1_w0": "first, alone: W0's mean KL on A and on B within 1e-3 (relative) of the L40 readings 0.69174 (E49 a.json) and 0.63011 (E47 t2c.json); else stop.",
+  "C2": "the saved Adam copy reads mean KL 1.50182 (A) and 1.19555 (B), the saved LoRA copy 0.91745 (A) and 0.76435 (B), each within 1e-3 (relative): their ratios 2.171 / 1.897 (fail, fail) and 1.326 / 1.213 (pass, pass); else stop. These are the two existing corners: high damage + Adam fails, low damage + LoRA passes.",
+  "C3_map": "every read: the per-position map's mean equals the adversary's own returned KL within 1e-5 (relative); else stop.",
+  "C4": "stage 2: the Adam and LoRA fine-tunes' held-out gains at step 300 within 0.005 of 0.1301 and 0.1479 (row_blocks/run.py:66-67); D_A > D_L; else stop.",
+  "C5_recipe": "the copy recipe on this card: the Adam step-300 fine-tune copied in-job and read on set A must fail (>= 1.61); else stop before any cell.",
+  "rerun": "every later job first rereads W0's first block of set A and stops unless it equals the file to 1e-6 (relative)."
+ },
+ "expected": {
+  "W0": "ratio 1 by definition; damage 0; mean KL 0.6917 (A), 0.6301 (B)",
+  "saved copies": "Adam 2.171 (A), 1.897 (B), damage 0.234 (E39, H100); LoRA 1.326 (A), 1.213 (B), damage 0.124",
+  "D_A, D_L": "about 0.235 and 0.121 (E39 Amendment 2's do-nothing Adam 0.2348 and E39's do-nothing LoRA 0.1214, H100); w about 0.028; bands about [0.093, 0.150] and [0.207, 0.263]",
+  "gains at step 300": "Adam 0.1296, LoRA 0.1477 (L40, E49 regen.json)",
+  "c1 step": "about 50-150 of 300 (Fable's estimate, step ~100); its gain below the full fine-tune's 0.130",
+  "c2 step": "about 1,000-4,000 at 1e-4; unknown, the reason for the 3e-4 fallback; its gain above 0.148",
+  "c3": "split start on A: about 1.0-1.3 (E37 A1's scaled adjoint start read 1.05, E39's least-squares-like adjoint splits pass); nothing_adam300 on A about 4.9 (E39 A2: 4.87, H100); copy on A and B: no lean (E37 A1's copy from the adjoint start rose to 1.76 at 1,000 steps and 1.84 at 2,000 as its damage rose 0.05 -> 0.24; E121's R4 stayed at cosine 0.81 to the fine-tune with teacher gap 0.0035)",
+  "recipe copy": "about 2.2 on A (1.9-2.4; E37's two batch orders read 2.20 and 1.88)",
+  "do-nothing c1, c2 on A": "fail, >= 2.5 (E39's do-nothing LoRA at damage 0.121 read 2.65, plain SGD at 0.090 read 2.62, Adam at 0.235 read 4.87; H100)",
+  "copy damage": "0.97-1.03 of its fine-tune's (E37: 0.996)",
+  "s": "0.95-1.00 (E39's copies 0.964-0.998)",
+  "concentration": "1 under the null (excess spread evenly)"
+ },
+ "predictions": [
+  {"id": "P1", "rule": "cell c1's verdict (readable) is pass", "lean": "holds", "confidence": "low",
+   "why": "E39 Amendment 2: on these rows every state with damage < 0.06 passed and every one > 0.2 failed; but full-matrix SGD copies at damage 0.090 and 0.126 failed set A (2.07, 2.12) while passing set B (1.18, 1.39), so 'mixed' is also likely"},
+  {"id": "P2", "rule": "cell c2's verdict (readable) is fail", "lean": "holds", "confidence": "medium-low",
+   "why": "every state above damage 0.2 on these rows failed (E39 Amendment 2, E37 Amendment 1's adjoint start 1.76-1.84 at 0.24); but the LoRA's pass (1.27, 1.21) is the one result no explanation tested so far has removed"},
+  {"id": "P3", "rule": "cell c3's verdict (readable) is pass", "lean": "none: low confidence either way (lead)", "confidence": "low",
+   "why": "E121's R4 copy from the least-squares split stays near the fine-tune's weights; but E37 Amendment 1's copy from the scaled adjoint split drifted from 1.05 to fail (1.76, 1.84) as it took on the full damage"},
+  {"id": "M1", "rule": "map_contrast(tt_adam, tt_lora): 'tt_adam more'", "lean": "holds (Fable's hypothesis)", "confidence": "low", "scored": "reported, not part of the outcome"},
+  {"id": "M2", "rule": "map_contrast(tt_c1, tt_c2), read beside the outcome: under 'damage' the more concentrated one should be c2", "lean": "none", "scored": "reported"}
+ ],
+ "readings": {
+  "damage": "c1 pass, c2 fail: the copy fails when the update's damage on plain Pile text is high, whatever the recipe; sentence 3 of the write-up becomes 'fails when the update's damage exceeds about 0.2'.",
+  "recipe": "c1 fail, c2 pass: the copy fails for the full-matrix Adam update's shape, at any damage; a LoRA's update stays copyable even when it damages as much.",
+  "both fail": "c1 fail, c2 fail: neither damage nor recipe alone; high damage fails and full-matrix Adam fails, so the LoRA's pass needs both low damage and the LoRA's shape. The maps say whether the fail sits at case positions.",
+  "c3 pass": "the broad failure is the standard copy's path (where teacher training goes from W0's start), not a limit of the decomposition: a faithful copy of the full-damage Adam update exists and teacher training finds it from the split start. Read beside the pair: it bears on the pair's recipe reading.",
+  "c3 fail": "not the path alone: started near the fine-tune's own change, the copy still fails at full damage.",
+  "both pass": "c1 pass, c2 pass: the fail needs both high damage and Adam's full-matrix shape; neither alone fails.",
+  "no call": "a cell off target, mixed, invalid, not run, or a pass without power; the readable cell's half is reported as a lean, not a cause.",
+  "a stop": "C0-C5 or the rerun check: nothing scored; the lead is told."
+ },
+ "noise_floor": "One adversary start per read. Set A against set B on the L40: Adam copy 2.171 vs 1.897 (13%), LoRA copy 1.326 vs 1.213 (9%); on the H100, plain-SGD copy 2.07 vs 1.18 (E39 A3). W0's spread over adversary seeds: 0.075 (H100, rows 0-255), 0.062 (rows 256-511), 0.21 on the L40 (E47, three starts). A ratio within about 0.2 of a line is near it; the two-set rule is the guard. Batch-order spread of a copy: 14% (E37, 2.20 vs 1.88), not sampled here.",
+ "blind_to": "One batch order and one adversary start per copy. Gain is not matched across cells: c1's fine-tune keeps less of the lowercase behaviour than the full Adam one, c2's more than E39's LoRA. Damage is one number on 64 plain rows; two updates of equal mean damage can spread it differently. c2's fine-tune saw 32,000 rows, its copy E37's 2,400. Only one alternative recipe (rank-8 LoRA with Adam); SGD is out of the check's reach (E49).",
+ "config": {"pass_line": 1.4, "fail_line": 1.61, "pgd_steps": 20, "adv_seed": 0, "block": 128, "w0_ref": {"A": 0.6917431652545929, "B": 0.6301094591617584}, "saved_ref": {"tt_adam": {"A": 1.5018157362937927, "B": 1.1955474615097046}, "tt_lora": {"A": 0.9174503982067108, "B": 0.7643491327762604}}, "repro_tol": 0.001, "rerun_tol": 1e-06, "map_tol": 1e-05, "ft_batch": 8, "adam_steps": 300, "adam_every": 10, "lora_rank": 8, "lora_lrs": [0.0001, 0.0003], "lora_steps": 4000, "lora_every": 100, "lora_source_rows": 32768, "gain_ref": {"adam": 0.1301, "lora": 0.1479}, "gain_tol": 0.005, "band_frac": 0.25, "copy_lr": 1e-05, "copy_batch": 8, "copy_steps": 1000, "copy_seed": 0, "n_held": 64, "eval_batch": 8, "budget_s": 1560.0, "read_s": 135.0, "copy_s": 175.0, "curves_s": 840.0}
+}
