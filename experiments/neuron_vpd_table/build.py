@@ -35,7 +35,8 @@ E109 = EXP / "larger_size/results/score.json"
 E98, M67 = EXP / "neuron_r/results/score.json", EXP / "method_table/results/table.json"
 
 SEP, NOT, NOCALL, NOTRUN = "separates the pair", "does not separate the pair", "no call or no power", "not run"
-COLOUR = {SEP: "#2f7ebc", NOT: "#eb6834", NOCALL: "#c9c6bd", NOTRUN: "#ffffff"}
+DESC = "description, no filed verdict"
+COLOUR = {SEP: "#2f7ebc", NOT: "#eb6834", NOCALL: "#c9c6bd", NOTRUN: "#ffffff", DESC: "#e8e4f0"}
 PURPLE, TEAL, ORANGE, GREY, INK, GRID = "#8a4fbf", "#00a088", "#eb6834", "#7a7a75", "#52514e", "#e4e3df"
 
 
@@ -99,7 +100,8 @@ def known_vs_fictional() -> list[dict[str, Any]]:
     summ_n = cell(NOT, "all four pair rules: " + ", ".join(sorted({r["verdict"] for r in rules.values()})),
                   "; ".join(f"{k.removeprefix('matched_')} gap {r['gap']:+.4f} band {r['band']:.4f}" for k, r in rules.items()),
                   "fictional seeds' mean, band from random draws", E103, ".pair_rules_s142")
-    set_v = cell(SEP, "description only: no filed rule of its own; E107 Amendment 1 used it as its positive control",
+    set_v = cell(DESC, "description, on Jaccard only: no filed rule; on shared-over-smaller the gap is inside the seed "
+                       "band (E107 Amendment 1 blind_to), and the fictional sets are larger",
                  f"Jaccard known seeds {jac['known_s42_matched|known_s142_matched']:.3f}, fictional seeds "
                  f"{jac['a2_s42_matched|a2_s142_matched']:.3f}, known vs fictional {rng(cross)}",
                  "the two arms' seed Jaccards", E107A, ".pairs")
@@ -109,7 +111,7 @@ def known_vs_fictional() -> list[dict[str, Any]]:
                  f"cross {rng(ident['tofu']['cross'])}; disjoint halves of the known rows {rng(rows['tofu']['cross'])}",
                  "band = 1 minus the fictional seeds' overlap", E103, ".identity; rows_null score .real/.tofu .verdict")
     e = a["end"]
-    end_v = cell(NOT, f"outside '{e['outside']['verdict']}', placement '{e['placement']['verdict']}', think "
+    end_v = cell(DESC, f"outside '{e['outside']['verdict']}', placement '{e['placement']['verdict']}', think "
                       f"'{e['think']['verdict']}' (reported, sizes 2.2x apart)",
                  f"f outside {e['outside']['f']:.2f}, think {e['think']['f']:.2f}", "as at matched size", E94A, ".sides.end")
     t = js(E109)["tofu"]
@@ -153,7 +155,7 @@ def small_model() -> list[dict[str, Any]]:
     p1 = js(E98)["rows"]["P1"]
     vr = {r["id"]: r["cells"]["r"]["verdict"] for r in js(M67)["rows"]}
     both = p1["readable_rows"]
-    vpd = cell(SEP, f"VPD's r '{vr[both[0]]}' on {sum(vr[k] == 'separates' for k in both)} of {len(both)} rows",
+    vpd = cell(DESC, f"VPD's r '{vr[both[0]]}' by E51's rule applied afterwards, not a filed verdict, on {sum(vr[k] == 'separates' for k in both)} of {len(both)} rows",
                ", ".join(both), "labels assumed from how each task was built", M67, ".rows[].cells.r.verdict")
     neu = cell(NOT, f"neuron share separates {len(p1['separating_rows'])} of {len(both)} ({', '.join(p1['separating_rows'])}); "
                     f"filed 'not a kind reader': '{p1['status']}'",
@@ -180,7 +182,7 @@ def verdict_grid(rows: list[dict[str, Any]]) -> None:
     ax.set_title("On the same fine-tunes, does each method's filed reading separate the pair?", fontsize=10, pad=24)
     ax.set_ylim(-0.6, len(rows))
     ax.text(0.15, -0.35, "Class is what the filed verdict says about the pair; the verdicts, verbatim, are in "
-            "results/table.json. Grey: no call or no power. White: not run.", ha="center", fontsize=7, color=INK)
+            "results/table.json. Grey: no call or no power. Lilac: description only. White: not run.", ha="center", fontsize=7, color=INK)
     save(fig, "verdicts.png")
 
 
@@ -222,8 +224,8 @@ def sets() -> None:
         ax.grid(axis="y", color=GRID, lw=0.8)
         ax.set_axisbelow(True)
     axes[0].set_ylabel("overlap of two sets: 1 = the same set")
-    fig.suptitle("Both methods' sets put known facts apart from invented ones, and wrong answers with true ones "
-                 "(matched size, two seeds per arm)", fontsize=10)
+    fig.suptitle("Both methods' sets order the arms the same way: known facts apart from invented ones, wrong answers "
+                 "with true ones (matched size, two seeds per arm; different measures and rows)", fontsize=10)
     save(fig, "sets.png")
 
 
