@@ -53,6 +53,23 @@ def teacher_loss(net: nn.Module, teacher: nn.Module, toks: Tensor, half: int | N
     return loss, {"kl_trigger": kl[:, half].mean().item(), "kl_other": kl_other.item()}
 
 
+def train_student(model: Any, uv: dict[str, tuple[Tensor, Tensor]], W0: dict[str, Tensor], net: nn.Module, rows: Tensor,
+                  held: Windows, token: int | Tensor, batch: int, half: int | None, lr: float, steps: int, device: str,
+                  log: Any = print) -> tuple[dict[str, tuple[Tensor, Tensor, Tensor]], list[dict[str, Any]]]:  # fmt: skip
+    """E34's student (experiments/teacher_training/run.py `train_student`, which stays as it ran): Adam at `lr` on the
+    alive (U, V) offsets from 0, loss `teacher_loss` against `net` on batches of `batch` rows of `rows` (`half` = the
+    windows' trigger index, or None for Pile rows), batch-order seed 0, `steps` steps. Returns {k: (delta-W, U', V')} on
+    CPU at the last step and the curve. Added 2026-11-06 for E119 (teacher_route_split)."""
+    from commute import component_training
+    from commute.finetune import ArmAConfig
+
+    a_cfg = ArmAConfig(o_token=token, batch=batch, steps=steps, checkpoints=(steps,), seed=0)
+    cfg = component_training.TrainConfig(lr=lr, steps=steps, save_steps=(steps,), optimizer="adam")
+    curve, states = component_training.train(model, uv, rows, held, a_cfg, cfg, device, W0, log=log,
+                                             loss_fn=lambda n, toks: teacher_loss(n, net, toks, half))
+    return states[steps], curve
+
+
 @torch.no_grad()
 def heldout_gap(net: nn.Module, teacher: nn.Module, w: Windows, device: str, batch: int = 64) -> float:
     """The teacher gap: `teacher_loss` with arm A's weighting, averaged over the windows (each window weighs the same)."""

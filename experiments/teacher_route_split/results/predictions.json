@@ -1,0 +1,93 @@
+{
+ "about": "E119: the route split of E34's teacher-trained decompositions on the three trigger tasks, beside each fine-tune's own reading. Asked for by the user by name, 2026-11-06. Plan reports/plans/2026-11-06_plan_e119-teacher-route-split-triggers.md. experiments/teacher_route_split/run.py reads `config` from this file and refuses to start unless it is committed unchanged; each results file stores the config and the commit, and a rerun refuses a mismatch.",
+ "filed": "2026-11-06, before any run",
+ "request_in_the_terms_words": "For each of E34's twelve teacher-training students (component training with loss KL(teacher || student), Gamma and Delta frozen; teachers = E31's arm-A full-weight fine-tunes, SGD and Adam 3e-5, seed 0, step 1000, on r1_t534_v369, r0_t352_v310 and emoticon; arm A on the task windows, arm B on Pile rows; step 1000), regenerated with E34's seeds, read the route split at the trigger on the student's own state and say whether its gain is re-switching, masked-off or neither, beside the least-squares split of its fine-tune, on E12's axes (masked-off share, re-switching share r). No amendments; a regeneration more than 0.05 from E34's P(target) stops the job.",
+ "config": {
+  "tasks": ["r1_t534_v369", "r0_t352_v310", "emoticon"],
+  "sgd_lr": {"emoticon": 0.01, "r0_t352_v310": 0.03, "r1_t534_v369": 0.03},
+  "adam_lr": 3e-05,
+  "steps": 1000,
+  "student_lr": 1e-05,
+  "batch_a": 32,
+  "batch_b": 8,
+  "pile_start": 32768,
+  "pile_train_rows": 8192,
+  "p_tol": 0.05,
+  "w0_tol": 0.02,
+  "r_tol": 0.03,
+  "zero_tol": 1e-06,
+  "min_ratio": 0.5,
+  "min_class": 3,
+  "r_hi": 0.6,
+  "r_lo": 0.35,
+  "masked_hi": 0.5,
+  "masked_lo": 0.25
+ },
+ "sources": {
+  "teachers and students": "experiments/teacher_training/run.py as it ran (E34): Config, SGD_LR, FT_ADAM_LR, Job.teacher, train_student, student_arm; the student step is now commute.teacher.train_student, the same calls",
+  "p_tol": "the user's words, 2026-11-06: 'within 0.05' of E34's behaviour numbers (teacher_training_<task>.json: teachers.<opt>.repro.p_target and teachers.<opt>.<arm>['1000'].p_target)",
+  "w0_tol, r_tol, zero_tol, min_ratio, min_class": "E12 Amendment 1's config (experiments/new_vs_existing/results/predictions_amend1.json), unchanged; w0_tol and r_tol are E46's cross-card tolerances",
+  "r_hi, r_lo": "E12's filed P4 lines (experiments/new_vs_existing/results/predictions.json, P4_route: r copy >= 0.6, random map <= 0.35)",
+  "masked_hi, masked_lo": "E12 Amendment 1's P3 lines (E42's): masked-off >= 0.5, not masked-off <= 0.25",
+  "W0 and do-nothing references": "E31 (experiments/adjoint_sgd/results/adjoint_sgd.json, arms <task>/s0/{sgd_<lr>, adam_3e-05}, step 1000, nothing.routes): the same fine-tunes on the same windows, MATS L40"
+ },
+ "states": {
+  "student": "Teacher training's own state, Delta fixed: target W0 + the student's change, components the student's U', V' (E12 Amendment 1's state (a)). Read from the trained fp32 weights in the job, never from the saved bf16 offsets.",
+  "fine-tune": "The least-squares split of the same teacher's delta-W (anchors.lifted, E12's routes_lift): the fine-tuned model's own reading. Its r equals do-nothing's exactly."
+ },
+ "measurements": {
+  "route split": "local_faith.route_split at the trigger on the task's held-out windows (103 r0, 100 r1, 73 emoticon), E34's target token, batch 64. Quantity: mean log-odds of the target. Held fixed: Gamma, Delta, the windows, released components C0. Varied: target weights and components.",
+  "r": "(L01 - L00) / (T1 - T0): the re-switching share",
+  "e_gate": "((U1 - L11) - (U0 - L00)) / (T1 - T0): the masked-off share",
+  "gain": "T1 - T0, nats; the teacher's gain is its do-nothing read's",
+  "p_target": "arms.heldout_of on W0 + delta-W, held-out windows: E34's behaviour number"
+ },
+ "label_rule": "Per state, absolute, lines as filed in E12: 'unreadable' if r or e_gate is not finite, gain < 1 nat (MIN_GAIN), or gain / teacher's gain < 0.5 (a zero or negative teacher gain is unreadable); else 're-switching' if r >= 0.6 and e_gate <= 0.25; else 'masked-off' if e_gate >= 0.5 and r <= 0.35; else 'neither'. Boundaries go to the end labels. The fine-tune's state uses its own gain as the teacher's (ratio 1).",
+ "predictions": {
+  "P1": {
+   "claim": "where the students land",
+   "rule": "The label of strictly more than half of the readable students (of 12); any other split 'mixed'; under 3 readable 'unscorable'. Each student's label, and the majority within arm A and within arm B, reported beside (not the verdict).",
+   "lean": "neither, medium: every one of the 12, since the six fine-tunes' r is 0.49-0.61 at do-nothing (E31, L40), between E12's lines, and E12 Amendment 1's students kept r within 0.06 of the gain and moved the remainder into e_gate (e_gate about 1 - r - 0.03)",
+   "blind_to": "which subcomponents switch; one position; e_gate is nearly 1 - r on these states, so the two lines are close to one test",
+   "positive_control": "control_e12_amend1: E12 Amendment 1's eight students under this rule, computed from its saved file in this job's score and in the dry run (2026-11-06): the four copy states read re-switching and the four maps masked-off. A state that can read either end label is what the rule needs to have power",
+   "noise_floor": "E12 Amendment 1's batch-order noise: |delta e_gate| 0.002, |delta L01| / gain 0.0006 (no batch-order pair here)"
+  },
+  "P2": {
+   "claim": "whether a student keeps its fine-tune's label",
+   "rule": "Over the students whose label and whose fine-tune's label are both readable: 'same' if every one equals its fine-tune's; else 'differs', listing them; no such pair 'unscorable'.",
+   "lean": "same, low: the least-squares r is do-nothing's (0.49-0.61), but its e_gate is unread on these tasks; the r1 SGD fine-tune (r 0.61 at E31) reads re-switching if its least-squares e_gate is <= 0.25 (E12's copy fine-tunes read 0.03-0.11), while its students' e_gate gains the remainder, so its two pairs are the likeliest to differ",
+   "blind_to": "the size of a move inside one label; a state on a line flips with any noise",
+   "positive_control": "as P1",
+   "noise_floor": "as P1"
+  }
+ },
+ "expected": {
+  "W0": "T0, U0, L00 equal E31's within 0.02 nats (emoticon T0 -5.02, L00 -5.78); shares not read (gain 0)",
+  "teacher P(target)": "E34's: r1 sgd 0.983, adam 0.996; r0 sgd 0.941, adam 0.936; emoticon sgd 0.998, adam 1.000; within 0.05",
+  "do-nothing": "r = E31's within 0.03 (r1 sgd 0.609, adam 0.489; r0 sgd 0.583, adam 0.522; emoticon sgd 0.551, adam 0.493); e_gate = -r and d = i = 0 to 1e-6",
+  "least-squares": "r = do-nothing's to 1e-6; e_gate unread here, a guess 0.05-0.40; label neither, or re-switching on r1 sgd",
+  "student": "P(target) E34's within 0.05 (A: r1 0.996/0.994, r0 0.942/0.921, emoticon 0.999/0.997; B: r1 0.974/0.983, r0 0.919/0.908, emoticon 0.960/0.902, sgd/adam); gain ratio 0.9-1.05 on arm A, 0.7-1.0 on arm B; r within 0.06 of its fine-tune's; e_gate 0.33-0.50; label neither",
+  "control (E12 Amendment 1's students)": "copy re-switching (r 0.76-0.80, e_gate 0.18-0.23), maps masked-off (r 0.23-0.26, e_gate 0.71-0.74)"
+ },
+ "stop_rules": {
+  "inputs": "alive.pt and the three windows files must exist; their sha256 is logged (E34 recorded none to compare)",
+  "W0": "T0, U0, L00 of each task against E31's within 0.02 nats",
+  "teacher": "regenerated P(target) against E34's within 0.05, before any read or student",
+  "do-nothing": "r against E31's within 0.03; e_gate + r within 1e-6; least-squares r against do-nothing r within 1e-6",
+  "student": "P(target) against E34's within 0.05, checked after the student's record is written",
+  "later": "none: an unreadable student is reported as such"
+ },
+ "edge_cases_run_before_filing": "~/commute-data/scratch/regating-lead/e119-writer/dry.py on run.py's label, majority and score, 2026-11-06: gain under MIN_GAIN, gain exactly MIN_GAIN, zero and negative teacher gain, gain ratio exactly 0.5 and under, NaN shares, the four boundaries (r 0.6 / 0.35, e_gate 0.25 / 0.5), r and e_gate both high, negative shares, an empty and a two-state pool, 6-6 and 7-5 splits, no readable pair; and the control on E12 Amendment 1's file. All as the rule's text says.",
+ "departures": {
+  "from_E34": "MATS L40, not the H100 E34 ran on; no Pile harness, no adjoint state, no step-100 reads, no arm S; the students' offsets are saved for both arms (E34 saved arm A's only, now lost).",
+  "from_E12_Amendment_1": "No second batch order (noise taken from E12 A1), no teacher = W0 control (E12 A1 read it under 0.02 of the smallest gain), no plus-remainder state; trigger tasks with one target token instead of key to value tables; the labels combine E12's r lines with E42's e_gate lines.",
+  "from_VPD": "U and V alone on an unmasked KL to a teacher, Gamma and Delta frozen. The route split is this project's measure, not the paper's. Gamma sees 41-token windows where it trained on rows of 512."
+ },
+ "limits_carried": "A new circuit from old pieces reads 'elicited' to VPD. These labels say how frozen Gamma routes a state's gain, not whether the update is new or existing.",
+ "what_changes_next": "Reported to the user and logged; nothing further runs from this job. P1 neither: E12's route lines do not place trigger-task students, as they do not place the fine-tunes. P1 re-switching or masked-off: the students land where the fine-tunes do not, which is the surprise to flag. P2 differs: the pairs that differ are named, with their distance to the line.",
+ "not_run": [
+  "A second batch order or seed; the teacher = W0 control; the plus-remainder state",
+  "Arm S; step 100; the Pile harness on any state; other tasks; Qwen",
+  "Which subcomponents switch on in a student"
+ ]
+}
