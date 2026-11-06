@@ -287,17 +287,19 @@ def reads(net: ST.Net, st: State) -> dict[str, Any]:
     return rec
 
 
-def plant(net: ST.Net, s: Site, train: Tensor, half: int, table: Tensor, block: int, Gt: float, tol: float) -> tuple[ST.DW, dict[str, Any]]:
+def plant(net: ST.Net, s: Site, train: Tensor, half: int, table: Tensor, block: int, Gt: float, tol: float,
+          key_at: int | None = None) -> tuple[ST.DW, dict[str, Any]]:  # fmt: skip
     """A known-answer state: `ctxpatch.write_state`'s write moved to any block, i.e. `perturb.key_write`'s minimum-norm X
     with X a_k = the unembedding row of key k's answer, a_k the mean of block `block`'s MLP activation (down_proj's input,
-    fp32) at `half` over the train windows holding key k there; written into that block's down_proj alone, scaled by
-    `perturb.match` so its G on `s` (unit "lo") is Gt within `tol`. Status "cap" keeps the largest alpha, reported."""
+    fp32) at `half` over the train windows holding key k at `key_at` (default `half`; E114's key is the word before the
+    read); written into that block's down_proj alone, scaled by `perturb.match` so its G on `s` (unit "lo") is Gt within
+    `tol`. Status "cap" keeps the largest alpha, reported."""
     from commute import ctxpatch as CX
     from commute import perturb as PT
 
     run = lambda i: net.run(train[i : i + s.batch], capture=True)[1][f"mlp{block}"][:, half]
     x = torch.cat([run(i) for i in range(0, len(train), s.batch)]).cpu()
-    at = train[:, half]
+    at = train[:, half if key_at is None else key_at]
     keys = at.unique().tolist()
     A = torch.stack([x[at == k].mean(0) for k in keys], 1)
     lm = net.net.lm_head.weight.detach().float().cpu()

@@ -1,0 +1,97 @@
+{
+ "experiment": "E114 case_locator: E97's locator (removal at head and MLP grain) and E100's carry / own / graft reads on E112's four saved case-label states, beside definition-lead's verdict on the same states. No training",
+ "plan": "reports/plans/2026-11-06_plan_e114-locator-case-label.md (user 'go for it', 2026-11-06)",
+ "limit": "a new circuit built from old parts still reads as reuse: finding a part says the gain runs through it, not that one old circuit is unchanged (E97's limit)",
+ "site": {
+  "scored": "E112's fit windows (task.pt 'fit', 1,024 windows of 41 tokens, train words, rows disjoint from the train windows), one read per window at the marker (position 20), the target the state's task's label for the word at 19 (y 1 -> label A, 0 -> B), alt the other label",
+  "why_not_held_out": "the brief named E112's held-out windows (unseen words). There the twin has no gain: its labels on unseen words are a separate random draw never trained (E112 stage1.json acc_held 0.506 and 0.516 at the scored step), so the twin control would read 'unreadable: no gain' or a share over a near-zero G, and the located rule could not read the pair. The fit windows are where both arms gained and where E112 read its gain and P3 (case_label/run.py removal_share), so the locator reads the same reads as the definition",
+  "held_out": "W0's accuracy guard, and beside only: the real states' G and the 28 parts' removal on the held-out windows (no rule)",
+  "rows": "task.pt keeps no source row: each window is its own row for the standard error (se_by_row, beside only)"
+ },
+ "definitions": {
+  "part": "one head's output (its 128-wide slice of o_proj's input) or one block's MLP output (down_proj's output); 24 heads and 4 MLPs (E97)",
+  "units": "lo: log-odds of the target label against every other token at the marker (E97's filed unit). gap: logit of the target label minus the other label's, E112's label margin; beside",
+  "G": "the state's mean over the site's reads minus W0's, per unit",
+  "removal": "the state with the part's output at W0's mean over the site's own windows; own fall = state - state with the part off, in nats; share = fall / G; W0's own fall (w0_move) beside, never subtracted (E97, locator.removal)",
+  "carry_own_graft": "E100's split (locator.split): carry = the state with the part's output from W0's run, fall / G; own = the state with the part's own update reverted, fall / G; graft = W0 with only the part's update, rise / G",
+  "sum_own": "E100's sum of single reverts: the 28 parts' own shares added, per unit",
+  "top_removal_part": "of the 28 single parts, the one highest removal share (unit lo); a tie names none (locator_rules.top_part)"
+ },
+ "located_rule": {
+  "rule": "For a nominated part, on every seed: task own fall >= a * G_task, the same seed's control own fall <= control_max * G_control, and task own fall >= ratio * control own fall, in nats, unit lo. A part is located when every seed passes. Code: locator_rules.seed_reading, task_reading",
+  "copied_from": "experiments/locator_table/results/predictions.json located_rule, unchanged",
+  "here": "task = real (seeds 0, 1), control = the same seed's twin, as E97 paired a task with its control. Applied in unit lo (filed); the same rule in unit gap is reported beside",
+  "nominated": "per state: the top nominate_top parts by carry, the top nominate_top heads by write, the block MLP of each MLP matrix in the top nominate_top by write, and the greedy pair; the union over the task's seeds (locator_rules.nominees)",
+  "part_named": "of the located parts, the one whose weakest seed's share is largest (locator_rules.best_located); none located: 'none at head/MLP grain'",
+  "a": "0.55, read in E97's stage 1 (locator_table/results/stage1.json .a): the weakest copy seed's own-terms removal share at its top head, truncated to two decimals",
+  "edge_cases": {
+   "G <= 0 on either state": "unreadable: no gain",
+   "a part that raises the state (own fall < 0)": "not located",
+   "a tie at the top of the carry map": "no part named",
+   "a share past 1": "counts as located",
+   "a seed that disagrees": "not located",
+   "a twin that needs the part too (twin fall > control_max * twin G)": "not located: the control is not spared",
+   "a not finite or <= 0": "unreadable: no bar a"
+  },
+  "edge_cases_run": "2026-11-06, before filing: run.py `locate` and `leans` on synthetic records (G 0 on real, G 0 on twin, a twin that needs the part, a tie at the top of the removal map, a located part), dry run in the writer's scratch folder; each gave the reading above",
+  "do_nothing": "W0 as the state has G = 0 exactly, so every seed reads 'unreadable: no gain' and nothing is located (tests/test_locator_rules.py::test_the_do_nothing_state_cannot_pass); the all-reverted read on every state is the same check in the job"
+ },
+ "thresholds": {
+  "a": 0.55,
+  "a_source": "E97 stage 1 (locator_table/results/stage1.json .a), the located rule's bar; not re-read here",
+  "control_max": 0.2,
+  "control_max_source": "E97's (E62's filed bar for a spared map); a tie counts as spared",
+  "ratio": 2.0,
+  "ratio_source": "E97's filed located rule: task fall >= 2 x control fall in nats; a tie passes",
+  "nominate_top": 3,
+  "nominate_top_source": "E97's (Fable's advice Q3)",
+  "reread_tol": 0.0001,
+  "reread_tol_source": "E97's: the plants' reads are exact by construction",
+  "zero_tol": 0.001,
+  "zero_tol_source": "E97's and E100's: all 24 reverted reads G 0 on every state",
+  "g_tol": 0.02,
+  "g_tol_source": "E97's (E96 stage 2's, E53's repro_G_tol): each state's gap gain on the fit windows within 0.02 of E112's stage 2 gain (the same fp32 path, batch size aside)",
+  "acc_tol": 0.000625,
+  "acc_tol_source": "one window of E112's 1,600 held-out windows: the same fp32 path at another batch size can flip a window whose label gap is at zero",
+  "plant_rel_tol": 0.05,
+  "plant_rel_tol_source": "E97's (E90's write_rel_tol); status 'cap' keeps the largest alpha and is reported, not a miss",
+  "floor": 0.020997843555624784,
+  "floor_source": "E100 stage 0 (fed_or_written/results/stage0.json .floor): the block-1 plant's largest inherited share downstream; the bar for 'carry above the floor' in lean (b)"
+ },
+ "expected": {
+  "stage0": {
+   "w0_heldout_accuracy": {"real": 0.520625, "twin": 0.496875, "tol": "acc_tol", "source": "case_label/results/stage0.json"},
+   "gain_gap_fit": {"real_s0": 12.832188652566401, "real_s1": 12.039749999268679, "twin_s0": 10.228528426057892, "twin_s1": 8.79615563157131, "tol": "g_tol", "source": "case_label/results/stage2.json .states[].gain"},
+   "all_24_reverted_G": [0.0, "|G| <= zero_tol, unit lo, every state"],
+   "plants": "E97's two one-matrix writes (locator.plant: perturb.key_write into h.3.mlp.down_proj and h.1.mlp.down_proj), keys the train words at position 19, activations at the marker, answers the real task's labels, fitted on task.pt 'train' (9,600 windows), read on the fit windows, scaled to real s0's G (unit lo). locator_rules.plant_misses: write at the edited matrix and at the edited block's MLP 1 +-1e-4, at the other 23 matrices and all heads 0, carry 0 on every part upstream and 1 at the edited MLP, all reverted G 0",
+   "stop": "the job exits 1 on any miss, before stage 1"
+  },
+  "stage1": {
+   "w0": "G = 0 at W0 by construction; every share is nan there",
+   "control": "the twin is the located rule's control, read on its own labels on the same windows",
+   "leans": {
+    "note": "leans, not scored rules: reported beside the numbers, no pass or fail",
+    "a": "a head in blocks 1-2 that moves the previous word to the marker is the top removal part on both real seeds, and the twin also needs it (its removal share at that part over control_max), so the located rule reads 'not located: the control is not spared'",
+    "b": "at each real seed's top removal part, carry is above the floor (0.021) and own is small: an existing routing head driven by changed parts downstream or upstream, like E97's copy head, not a part rewritten",
+    "c": "the sum of single reverts: no lean"
+   },
+   "blind_to": "lo counts the gain in saying a label word at all, which both arms learn, so a part carrying that format reads as needed by the twin; gap (beside) is blind to the format and reads only the choice between the labels. Removal at W0's mean is blind to a part whose mean already carries the answer; carry and own are E100's split, blind to a gain spread thinly over many parts (the sum of reverts beside)"
+  }
+ },
+ "tree": {
+  "a stage-0 guard or plant misses": "a code or input bug: fix and rerun, no reading",
+  "a part located on real with the twin spared": "the locator reads reuse where the definition reads 'not through C': a card for baseline-lead",
+  "no part located, or the twin needs the top part": "the locator agrees with the definition or cannot read the pair; E114 closes"
+ },
+ "settings": {
+  "e112_large": "~/commute-data/results-large/case_label",
+  "task_sha256": "80cdeee4da1c230f53f87acc60058a3a036154347c042185d9fdaa2f608aabfd",
+  "task_sha256_source": "sha256sum of task.pt, 2026-11-06 (E112 recorded none); W0's accuracy guard checks it is E112's task",
+  "states_sha256": "case_label/results/stage1.json .states[].sha256, checked before each read; scored steps 30 (real) and 300 (twin)",
+  "natural_means_sha256": "da2b689fee1fdb966794b9be27954e6f278236a5ef275f7b9761b71644cc6bab",
+  "natural_means": "locate_mechanism/results/means.pt, E97's natural-text head means (removal_natural_means, beside)",
+  "plant_blocks": [3, 1],
+  "precision": "target model fp32, allow_tf32 off, as E96, E97 and E112",
+  "batch": "16,384 tokens per forward (399 windows of 41)"
+ }
+}
