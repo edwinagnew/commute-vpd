@@ -1,0 +1,16 @@
+<article class="exp" id="d2">
+<div class="top"><span class="id">D2</span><span class="chip open">ongoing</span><h3>Does a reinforcement-learning update read differently from a supervised-fine-tuning update inside the decomposition, in one table?</h3><span class="when">2026-11-06 · from saved results, no new run, $0 · <code>experiments/qwen_rl_reads</code> · provisional, the one near-exception checked independently, the rest not</span></div>
+<p class="one"><strong>The question.</strong> The second deliverable ({{n:next}}) is the same table of readings for a supervised update (fine-tuning, SFT) and a reinforcement-learning update (RL) of the same model, Qwen3-1.7B on maths. Does anything in the decomposition tell the two kinds apart, beyond how big the update is?</p>
+<p class="one"><strong>What we did.</strong> We put every reading that <a href="#e75">E75</a>, <a href="#e93">E93</a> and <a href="#e104">E104</a> made on the maths updates into one table: RL, the same loop with shuffled rewards (its null, an update that ignores what the reward says), and fine-tuning on the model's own correct answers (own-samples, one seed). A reading counts as a difference only when it exceeds the spread between two seeds. No new run was made.</p>
+<p class="one"><strong>What we found.</strong> RL reads like its shuffled-reward null on every reading, within seed noise. Own-samples differs from RL only through its far smaller output and through which matrices its update sits in. The one apparent exception, the overlap with the subcomponents switched on by a no-think reference set (RL 3.75 against the null's 3.05 to 3.15), is within counting noise: the two seeds share only half of it, and the gap is under two standard deviations. So no third seed is run.</p>
+<p class="one"><strong>What it means.</strong> Nothing in the decomposition yet tells an RL update from an SFT one on anything but size, and nothing tells RL from a run that ignores the reward. The columns for teacher training and the adjoint split are still to land (<code>qwen-decomp-lead</code>'s), so the table is incomplete and this reading is provisional.</p>
+<dl class="fields">
+<dt>Run</dt><dd>None: a synthesis of saved results from three experiments ($0), plus a seed-overlap count on saved sets, also $0.</dd>
+<dt>Found</dt><dd><ul>
+<li>RL and its shuffled-reward null read alike on every reading, within seed noise.</li>
+<li>Own-samples differs from RL only by size and by where its update sits (one seed).</li>
+<li>The no-think overlap looked like an exception and is not: within counting noise, so no third seed.</li></ul></dd>
+<dt>Bears on</dt><dd>The second deliverable, and the question whether post-training teaches new capabilities or strengthens existing ones: these readings give no handle on it.</dd>
+<dt>Moved on</dt><dd>Owned by <code>qwen-rl-lead</code> for the training, <code>qwen-decomp-lead</code> for the readings. Waiting on the teacher-training and adjoint-split columns. Report <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-06_analysis_d2-sft-vs-rl.md"><code>reports/analyses/2026-11-06_analysis_d2-sft-vs-rl.md</code></a>; figures in <code>experiments/qwen_rl_reads/figures/d2_*.png</code>.</dd>
+</dl>
+</article>
