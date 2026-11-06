@@ -16,6 +16,8 @@ import numpy as np
 import torch
 from torch import Tensor
 
+from commute import removal as RM
+
 Pair = tuple[int, int]  # (capitalised token, lowercase token)
 
 # ----------------------------------------------------------------------------- the pool and the labels
@@ -182,3 +184,37 @@ def pair_basis(a: Tensor, b: Tensor) -> Tensor:
     q, r = torch.linalg.qr(torch.stack([a.double(), b.double()], 1))
     assert abs(float(r[1, 1])) > 1e-6 * float(b.double().norm()), "the two directions are parallel: no rank-2 basis"
     return q.float()
+
+
+# ----------------------------------------------------------------------------- Amendment 2 (results/predictions_amend2.json)
+
+
+def inlp(fit_x: Tensor, fit_y: Tensor, read_x: Tensor, read_y: Tensor, lam_frac: float, target: float, cap: int) -> tuple[Tensor, list[float], bool]:
+    """Iterative nullspace projection (Ravfogel et al. 2020) with stage 0's ridge probe (`removal.fit_ridge`, y in {0, 1}):
+    fit the probe on rows fit_x with the basis so far removed, read it on rows read_x with the same removal (score > 0.5,
+    as stage 0 reads its probe) against read_y; stop when that accuracy is <= target (inclusive) or `cap` directions are
+    removed, else add the probe's unit direction (made orthogonal to the basis) and refit. Returns the orthonormal basis
+    (d, k) in float64, the accuracies after 0, 1, ..., k removals (k + 1 numbers) and whether the target was reached."""
+    fx, rx, ry = fit_x.double(), read_x.double(), read_y.to(read_x.device).long()
+    q = fx.new_zeros((fx.shape[1], 0))
+    accs: list[float] = []
+    while True:
+        w, b = RM.fit_ridge(RM.remove(fx, q), fit_y.to(fx.device), lam_frac)
+        accs.append(float(((RM.remove(rx, q) @ w + b > 0.5).long() == ry).double().mean()))
+        if accs[-1] <= target or q.shape[1] >= cap:
+            return q, accs, accs[-1] <= target
+        w = w - q @ (q.T @ w)
+        assert w.norm() > 0, "the probe has no weight outside the basis: nothing to remove"
+        q = torch.cat([q, (w / w.norm())[:, None]], 1)
+
+
+def merge_bases(bases: Sequence[Tensor], tol: float) -> Tensor:
+    """One orthonormal basis (d, r), fp32, of the joint span of several bases (d, k_i): QR in float64 of their columns side
+    by side, dropping each column whose part at right angles to the columns before it has norm <= tol (near-dependent),
+    then QR of the columns kept. Every input empty: (d, 0)."""
+    m = torch.cat([b.double().cpu() for b in bases], 1)
+    assert m.shape[1] <= m.shape[0], f"{m.shape[1]} columns in {m.shape[0]} dimensions"
+    if m.shape[1] == 0:
+        return m.float()
+    keep = torch.linalg.qr(m)[1].diagonal().abs() > tol
+    return torch.linalg.qr(m[:, keep])[0].float()

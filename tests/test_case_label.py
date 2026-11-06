@@ -115,3 +115,44 @@ def test_pair_basis_spans_both_and_removes_both() -> None:
     assert torch.allclose(RM.remove(x, u), torch.tensor([[0.0, 0.0, 5.0, 1.0]]), atol=1e-6)  # both a and b taken out
     with pytest.raises(AssertionError, match="parallel"):
         CL.pair_basis(a, 3 * a)  # parallel: no rank-2 basis
+
+
+def _two_d_set(n: int, seed: int) -> tuple[torch.Tensor, torch.Tensor]:
+    """y in {0, 1}; x (n, 6) Gaussian noise with y written along two axes, separable in the plane they span."""
+    g = torch.Generator().manual_seed(seed)
+    y = torch.randint(0, 2, (n,), generator=g)
+    x = torch.randn(n, 6, generator=g, dtype=torch.float64)
+    x[:, 0] += 3 * (2 * y - 1)
+    x[:, 1] += 2 * (2 * y - 1)
+    return x, y
+
+
+def test_inlp_reaches_chance_on_a_two_d_separable_set() -> None:
+    x, y = _two_d_set(4000, 0)
+    xr, yr = _two_d_set(2000, 1)
+    q, accs, reached = CL.inlp(x, y, xr, yr, 1e-3, 0.55, 8)
+    assert reached and 1 <= q.shape[1] <= 2 and len(accs) == q.shape[1] + 1
+    assert accs[0] > 0.99 and accs[-1] <= 0.55 and all(a > 0.55 for a in accs[:-1])
+    assert torch.allclose(q.T @ q, torch.eye(q.shape[1], dtype=q.dtype), atol=1e-10)
+    assert float(q[2:].abs().max()) < 0.1  # the basis lies in the plane of the two signal axes
+
+
+def test_inlp_edge_cases_cap_and_nothing_to_remove() -> None:
+    x, y = _two_d_set(2000, 2)
+    q, accs, reached = CL.inlp(x, y, x, y, 1e-3, 0.55, 0)  # cap hit at once: incomplete, the accuracy reported
+    assert not reached and q.shape == (6, 0) and len(accs) == 1 and accs[0] > 0.99
+    noise = torch.randn(3000, 6, generator=torch.Generator().manual_seed(3), dtype=torch.float64)
+    q, accs, reached = CL.inlp(noise[:2000], y, noise[2000:], y[:1000], 1e-3, 0.55, 8)  # already at chance: empty basis
+    assert reached and q.shape == (6, 0) and len(accs) == 1
+
+
+def test_merge_bases_drops_dependent_columns() -> None:
+    e = torch.eye(5, dtype=torch.float64)
+    a = e[:, :2]
+    b = torch.stack([(e[:, 0] + e[:, 1]) / 2**0.5, e[:, 3]], 1)  # its first column lies in a's span
+    u = CL.merge_bases([a, b], 1e-3)
+    assert u.shape == (5, 3) and u.dtype == torch.float32
+    assert torch.allclose(u.T @ u, torch.eye(3), atol=1e-6)
+    proj = u.double() @ u.double().T
+    assert torch.allclose(proj @ e[:, [0, 1, 3]], e[:, [0, 1, 3]], atol=1e-6) and float((proj @ e[:, 4]).norm()) < 1e-6
+    assert CL.merge_bases([a[:, :0], b[:, :0]], 1e-3).shape == (5, 0)  # both empty: no basis

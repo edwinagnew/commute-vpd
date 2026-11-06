@@ -1,0 +1,56 @@
+{
+  "experiment": "E112 Amendment 2, the last: the case-label pair's causal check with full linear concept erasure (experiments/case_label/amend2.py)",
+  "decision": "decisions.md row 'E112 Amendment 2, the last' (ask 4), user-approved 2026-11-06: Amendment 1's miss stands (real P3 0.19 and 0.21 against 0.50, verdict 'not through C'); this reruns the causal check's P3 only, with iterative nullspace projection of both case labels at blocks l*..3, the same states and the same bars. The causal check's apparatus, not a definition change (row 81). No verdict rule is added. After it E112's reading stands as read.",
+  "definition": "decisions.md rows 81 and 87 plus the direction-removal check, as E112's predictions.json; nothing else gives a verdict",
+  "filed": "2026-11-06, after Amendment 1 (job 54094) and before amend2.py ran; amend2.py refuses unless this file, predictions.json and predictions_amend1.json are committed unchanged",
+  "rules": "E112's results/predictions.json 'rules', unchanged and read from there (P3 bar, twin ceiling, do-nothing bar, gain floor); not repeated here",
+  "settings": {
+    "target_accuracy": 0.55,
+    "max_directions": 64,
+    "merge_tol": 0.001,
+    "random_seed": 7
+  },
+  "settings_sources": {
+    "states": "the four saved states of stage 1, results/large/dW_{real,twin}_s{0,1}.pt (bf16), each checked against stage1.json's sha256 before the run reads it",
+    "erasure method": "INLP, Ravfogel et al. 2020 ('Null It Out', ACL): fit a linear probe, project its direction out, refit on the projected data, until the probe is near chance on held-out data. Departure: the probe is stage 0's closed-form ridge (removal.fit_ridge, read as score > 0.5), not the paper's linear SVM / logistic classifier, so that the erased concept is the one the definition's probe reads; the directions are kept orthonormal by Gram-Schmidt, which the paper's nullspace projection gives too",
+    "ridge penalty": "predictions.json's ridge_lambda (1e-3 x the mean diagonal of the covariance), stage 0's, recomputed on the projected data at each refit",
+    "labels": "per block, two labels, both 'the word at position HALF - 1 = 19 is the capitalised member of its pair': (prev) read at the trigger HALF = 20, as stage 0's possession probe; (own) read at the word's own position 19, as Amendment 1's own-token probe",
+    "fit data": "the even-indexed half (4,800) of the 9,600 saved Pile windows of stage 0 (probes.pt 'pile_tokens', rows 32768-65535); the odd half is kept for the refit beside (ii)",
+    "stopping data": "the 1,600 held-out-pair task windows (task.pt 'held'), as stage 0 scores its probe; label as above",
+    "target_accuracy": "the user's row: stop when the refit's held-out accuracy is <= 0.55 (inclusive)",
+    "max_directions": "the user's row: at most 64 directions per label per block",
+    "merge_tol": "numerical: per block the two labels' bases side by side, QR in float64; a column whose part at right angles to the columns before it has norm <= 1e-3 (of a unit column) is dropped as near-dependent, i.e. it would add under 1e-6 of a unit vector's squared length to the removal",
+    "blocks": "scored: the outputs of blocks l* = 1 (stage0.json) through 3 (readout.RESID), at every window position, as Amendment 1; beside (i): the same with block 0's output added",
+    "do-nothing": "per block l*..3, removal.random_basis(768, r_b, [7, block]) with r_b that block's merged rank, at the same sites and positions (a block of rank 0 is not edited); Amendment 1's seed",
+    "P3 windows": "as stage 2 and Amendment 1: the 1,024 train-word fit windows of each state's own task, the margin at the trigger"
+  },
+  "measurements": {
+    "P3": "per state: G = mean(m_state - m_W0) on the fit windows of the state's own task; P3 = mean(m_state - m_state under the erasure at blocks 1-3) / G. Read by E112's filed bar for the verdict.",
+    "do_nothing": "the same share under the same-rank random removal, on every state, read first and alone; over E112's do-nothing bar on any state: exit 1, no state is read",
+    "verdict": "per state, E112's filed rule (case_label.verdict) with l* from stage0.json, P1 and P2 from stage2.json (not re-read) and the new P3",
+    "erasure record": "per block 0-3 and label: directions removed, held-out accuracy before and after (the whole curve), 'reached' or 'erasure incomplete'; per block the merged rank and the columns dropped"
+  },
+  "expected": {
+    "real_s0": "reuses C (P3 >= E112's bar)",
+    "real_s1": "reuses C (P3 >= E112's bar)",
+    "twin_s0": "not through C (P3 under the twin ceiling; P1 and P2 already miss in stage 2)",
+    "twin_s1": "not through C (P3 under the twin ceiling; P1 and P2 already miss in stage 2)",
+    "erasure": "the previous-token label starts at about 0.99 at block 1 and 0.76 at block 3 (stage 0), the own-token label at 0.95-1.0 (Amendment 1); each needs several to tens of directions; hitting the cap of 64 is possible, most likely for the own-token label, whose case is part of the token's identity. Merged rank per block between 2 and 128.",
+    "do_nothing": "not known in advance at this rank: Amendment 1's random rank-2 removal took -0.003 to 0.013. If the share grows about in proportion to the rank, a merged rank over roughly 15 per block could put it over the bar, and the job then stops at exit 1 with no state read; that would be read as 'the removal is too large to be specific', not as a verdict"
+  },
+  "beside_no_rule": {
+    "(i) with block 0": "P3 and the W0 reads with the erasure also at block 0's output. Expected: at least the scored P3",
+    "(ii) refit at block 3": "a fresh ridge per label at block 3's output, fitted on the odd Pile half and read on the held-out-pair windows, at W0 and with the erasure at blocks 1-3 in the forward pass (block 3's output read after its own removal). Expected: W0 about as stage 0 and Amendment 1 (prev about 0.76, own about 0.95); erased about 0.55 or less. Higher means upstream erasure moved case into new directions at block 3, reported as such",
+    "(iii) W0 under each removal": "W0's next-token loss change at the trigger on the Pile windows and its real and twin label margin change on the fit windows, under the erasure, the erasure with block 0, and the random removal. Expected: larger than Amendment 1's (+0.045 nats for rank 2); margins near zero at W0 (held-out accuracy 0.52), so their changes stay well under 1 nat"
+  },
+  "edge_cases": {
+    "cap hit": "a label at a block still over 0.55 after 64 directions: reported 'erasure incomplete' with its accuracy; its 64 directions are still removed and the P3 verdict is still read by the filed rule",
+    "empty basis": "a label already at or under 0.55 before any removal contributes no direction; a block whose merged rank is 0 is not edited, and neither is the random removal there; every block empty: removed = state, P3 = 0 exactly, a miss",
+    "zero gain": "G <= E112's gain floor (G = 0 included): P3 is nan, P3_no_gain true, a miss, verdict 'not through C'; a do-nothing nan does not stop the run (as E112)",
+    "P3 outside [0, 1]": "reported as is, not clipped; above 1 meets the bar, below 0 misses",
+    "do-nothing sign": "share <= the bar, not |share|: a negative share passes (as E112)",
+    "constant probe": "the stopping accuracy is read against the held-out windows' case share, printed; near 0.5 by construction (both forms of every held-out pair), so a probe that returns one class reads about 0.5 and stops the loop",
+    "ties at a bar": "inclusive, as E112 and the user's row (<= 0.55)",
+    "dependent columns": "a column dropped by merge_tol is counted in 'dropped' per block; the rank is the count kept"
+  }
+}
