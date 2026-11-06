@@ -15,8 +15,10 @@ Stages, each written as it finishes (`STAGE n DONE` in the log); a stop is `stop
   2  damage curves: Adam every 10 steps to 300, LoRA every 100 to 4,000 (then at 3e-4 if no checkpoint is in the
      band); D_A, D_L at step 300, the band, the chosen steps; fine-tunes saved
   3  the recipe on this card: the Adam (step 300) fine-tune copied, read on A; stops unless it fails
-  4  cell c1, 5 cell c2: do-nothing on A, the copy (behaviour, damage), the copy on A and B
-  6  the excess maps and the score
+  4  cell c3 (lead, 2026-11-06): stage 3's fine-tune copied again from its least-squares split (E121's R4 start);
+     do-nothing and the split start on A, the copy on A and B
+  5  cell c1, 6 cell c2: do-nothing on A, the copy (behaviour, damage), the copy on A and B
+  7  the excess maps and the score
 A unit that might not end inside budget_s exits 3 for a resubmission (fleet/resubmit --code 3); a rerun continues
 from the file and results/large (a later job first rereads W0's first block and stops if it differs).
 """
@@ -58,7 +60,7 @@ from commute.finetune import LoraConfig, finetune_lora_arm_b
 from commute.jobs import hard_exit, require_filed
 from commute.row_copy import (
     Refs,
-    copy_on_rows,
+    copy_states,
     lowercase_rows,
     mean_kl,
     mean_logp,
@@ -260,16 +262,19 @@ def stage2(job: Job) -> None:
     dump(out)
 
 
-def make_copy(job: Job, name: str, ft: str, target: float | None) -> None:
-    """E37's copy of fine-tune `ft` (saved bf16 offsets, then read back from the file): behaviour kept s, gap, damage."""
+def make_copy(job: Job, name: str, ft: str, target: float | None, init: UV | None = None) -> None:
+    """E37's copy of fine-tune `ft` (saved bf16 offsets, then read back from the file): behaviour kept s, gap, damage.
+    `init`: the offsets' start, (dU, dV) per matrix (None: W0's alive U, V, E37's start)."""
     path, cps = LARGE / f"{name}.pt", job.out.setdefault("copies", {})
     dW_ft = torch.load(LARGE / f"ft_{ft}.pt", weights_only=True)
     t_net = teacher.teacher_net(job.ctx.model, dW_ft)
     if not path.is_file():
         job.budget(CFG.copy_s, name)
         t1 = time.time()
-        curve_, st = copy_on_rows(job.ctx, t_net, job.low.rows, CFG.copy_lr, CFG.copy_batch, CFG.copy_steps, CFG.copy_seed, log)
-        save_offsets(path, job.ctx.uv_cpu, st, {"ft": ft, "step": CFG.copy_steps, "seed": CFG.copy_seed})
+        curve_, sts = copy_states(job.ctx, t_net, job.low.rows, CFG.copy_lr, CFG.copy_batch, (CFG.copy_steps,), CFG.copy_seed,
+                                  log, init)
+        st = sts[CFG.copy_steps]
+        save_offsets(path, job.ctx.uv_cpu, st, {"ft": ft, "step": CFG.copy_steps, "seed": CFG.copy_seed, "init": init is not None})
         cps[name] = {"seconds": time.time() - t1, "train_kl_end": sum(c["loss"] for c in curve_[-50:]) / 50}
     if "s" not in cps.get(name, {}):
         dW, uv2 = offsets_state(path, job.ctx.uv_cpu)
@@ -291,6 +296,24 @@ def stage3(job: Job) -> None:
     job.gate("C5_recipe", verdict(r) == "fail", {"ratio": r, "saved_copy_A": ratio(job.out["kl"], "tt_adam", "A")})
 
 
+def stage_c3(job: Job) -> None:
+    """Cell c3: the full Adam fine-tune (stage 3's) copied from its least-squares split (`split.split_state` offsets, as
+    E121's R4) by the same recipe; do-nothing and the split start itself on A, the copy on A and B."""
+    from commute import split
+
+    job.check("nothing_adam300", "A")
+    start = LARGE / "tt_c3_start.pt"
+    if not start.is_file():
+        st = split.split_state(torch.load(LARGE / "ft_adam300.pt", weights_only=True), job.ctx.uv_cpu, job.ctx.bases)
+        save_offsets(start, job.ctx.uv_cpu, st, {"ft": "adam300", "least_squares_split": True})
+    job.check("tt_c3_start", "A")
+    uv = job.ctx.uv_cpu
+    init = {k: (U2 - uv[k][0], V2 - uv[k][1]) for k, (U2, V2) in offsets_state(start, uv)[1].items()}
+    make_copy(job, "tt_c3", "adam300", None, init)
+    for s in SETS:
+        job.check("tt_c3", s)
+
+
 def cell(job: Job, c: str) -> None:
     ch = job.out["chosen"][c]
     if not ch["in_band"]:
@@ -302,7 +325,7 @@ def cell(job: Job, c: str) -> None:
         job.check(f"tt_{c}", s)
 
 
-def stage6(job: Job) -> None:
+def stage_maps(job: Job) -> None:
     out, maps = job.out, {}
     for k in out["kl"]:
         name, s = k.split("|")
@@ -330,7 +353,9 @@ def main() -> None:
             sys.exit(f"{BF / f} ({name}) is not E49's file")
     log("STAGE 0 DONE")
     job = Job(out)
-    for n, fn in ((1, stage1), (2, stage2), (3, stage3), (4, lambda j: cell(j, "c1")), (5, lambda j: cell(j, "c2")), (6, stage6)):
+    stages = ((1, stage1), (2, stage2), (3, stage3), (4, stage_c3), (5, lambda j: cell(j, "c1")), (6, lambda j: cell(j, "c2")),
+              (7, stage_maps))
+    for n, fn in stages:
         fn(job)
         log(f"STAGE {n} DONE")
     hard_exit(0)

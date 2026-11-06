@@ -1,0 +1,125 @@
+{
+ "about": "E123: E112's case-label pair (real and twin, seeds 0 and 1, saved states) read by the decomposition side beside the frozen reuse definition's reading of the same states. The user's choice 'Build one task both read' (2026-11-06), Fable's draft ~/commute-data/scratch/regating-lead/e123-fable/plan_draft.md adopted by the lead with the plan's listed changes. Plan reports/plans/2026-11-06_plan_e123-case-label-both-readings.md, appendix ..._appendix.md. experiments/case_label_both/run.py refuses to start unless this file is committed unchanged and its `config` equals rules.CFG.",
+ "filed": "2026-11-06, before any run",
+ "request_in_the_terms_words": "On E112's four saved fine-tunes of the 67M model (the case-label pair), with no fine-tune rerun: (1) the route split of each fine-tune (do-nothing and least-squares split), labelled by E12's filed lines; (2) component training with loss KL(fine-tuned model || student), Gamma and Delta frozen, E34's arm-A recipe (teacher training), each student read by the route split on its own state and labelled by the same lines; (3) E38 Amendment 2's removal test: the recruited set S removed at the trigger from the fine-tuned model and from W0, D(S) against 20 random same-size sets, E38 A2's seed rule. Reported beside the definition's verdicts, which stay E112's; no rule is added to either side.",
+ "definition_side": {
+  "rows": "decisions.md row 81 (Jain, Kirk, Lubana et al. 2024 Defs 1-2 plus a causal claim), row 87 (the dated departure: g must carry to held-out values), row 164 (the definition is rows 81 and 87 plus the direction-removal check; verdicts 'reuses C', 'not through C', 'unreadable', 'does not apply'), row 165 (frozen)",
+  "verdicts_as_filed": "E112: real s0/s1 'not through C' (possession 0.994 vs control 0.524 at block 1; carrying 0.998/0.996; small function 0.993/0.992; removal share 0.083/0.091 against the 0.50 bar; Amendment 1 0.188/0.211); twin s0/s1 'not through C'. E113's patch: real 0.002/0.014 against 0.50, 'not through C'. Closed, both amendments spent (experiments/TRIED.md, E112 and E113 rows). Not re-read here.",
+  "added_here": "nothing"
+ },
+ "config": {
+  "states": ["real_s0", "real_s1", "twin_s0", "twin_s1"],
+  "half": 20,
+  "ci_len": 41,
+  "n_read": 256,
+  "n_eval": 64,
+  "student_lr": 1e-05,
+  "steps": 1000,
+  "batch_a": 32,
+  "learn_bar": 0.9,
+  "zero_tol": 1e-06,
+  "thr": 0.3,
+  "n_random": 20,
+  "min_gain": 1.0,
+  "acc_tol": 0.000625,
+  "g_tol": 0.02,
+  "path_tol": 0.001,
+  "hook_tol": 0.001,
+  "pre_tol": 0.0001,
+  "empty_tol": 1e-05,
+  "busy_kl_min": 1.0,
+  "busy_min_n": 100,
+  "budget_s": 1500.0,
+  "student_s": 170.0,
+  "task_sha256": "80cdeee4da1c230f53f87acc60058a3a036154347c042185d9fdaa2f608aabfd",
+  "lines": {"r_hi": 0.6, "r_lo": 0.35, "masked_hi": 0.5, "masked_lo": 0.25, "min_ratio": 0.5}
+ },
+ "sources": {
+  "states and windows": "E112 (experiments/case_label/results/large/dW_<state>.pt, bf16, sha256 in results/stage1.json; task.pt, sha256 filed by E114). Real at step 30, twin at step 300.",
+  "n_read": "measured memory, not a standard: the route split keeps Gamma's gates of every window on the CPU, about 6.4 MB per 41-token window (38,912 subcomponents at 4 bytes), so 1,024 windows need 6.5 GB per state and two states are held at once; 256 windows need 1.6 GB. E119 read 73-103 windows, E38 A2 about 100.",
+  "student_lr, steps, batch_a": "E34's arm-A recipe as E119's config (experiments/teacher_route_split/results/predictions.json)",
+  "learn_bar": "E112's learn bar (case_label predictions settings.learn_bar), on the same fit windows its acc_fit used",
+  "zero_tol, lines, min_ratio": "E119's config: E12's P4 lines (r >= 0.6 / <= 0.35), E12 Amendment 1's P3 lines (masked-off >= 0.5 / <= 0.25, E42's), E12 Amendment 1's min_ratio",
+  "thr, n_random, min_gain, hook_tol, pre_tol, empty_tol, busy_kl_min, busy_min_n": "E38 and E38 Amendment 2's filed values (recruitment_test/run.py Cfg, amend2.py Cfg)",
+  "acc_tol, g_tol, task_sha256": "E114's (case_locator/results/predictions.json thresholds and settings); E114 read W0 accuracy exactly and each gain within 1e-6 of E112's on the same fp32 path",
+  "path_tol": "E38's (route_cells' T against the full-model logits path); E38 stage 0 read 0 on all nine states",
+  "budget_s, student_s": "debug QoS 30 min per job; E119's arm-A students took 109-135 s each on a MATS L40 (teacher_route_split_<task>.json students.<opt>_A.seconds), plus about 18 s for the 256-window read"
+ },
+ "measurements": {
+  "read windows": "the first 256 of E112's 1,024 fit windows (train-pair words in rows the fine-tune never trained on), the window's own label (A or B by the state's task) as a 42nd column; target data.LAST, ci_len 41. Quantity per window at the trigger (position 20): log-odds of the own label over the whole vocabulary.",
+  "route split": "local_faith.route_split on the read windows. r = (L01 - L00) / (T1 - T0), the re-switching share; e_gate = ((U1 - L11) - (U0 - L00)) / (T1 - T0), the masked-off share; gain = T1 - T0. Held fixed: Gamma, Delta, the windows, released components C0. Varied: target weights and components.",
+  "fine-tune states": "do-nothing (target W0 + dW, released components) and least squares (anchors.lifted, the fine-tune's own reading); the label is read on the least-squares split with its own gain (E119's ft_label)",
+  "student state": "target W0 + the student's change, components its U', V' (E119's state, E12 Amendment 1's state (a)), read from the fp32 weights in the job; teacher_gain = the state's do-nothing gain",
+  "fit behaviour": "on all 1,024 fit windows, E112's fp32 path: accuracy (logit A - logit B has the own label's sign), label-gap gain (E112's G), log-odds gain (E114's G lo)",
+  "recruited set S": "alive subcomponents whose mean trigger gate over E112's 9,600 training windows rises by more than 0.3 (regating.shift_of, recruit.switched); Gamma sees 41 tokens",
+  "removal": "trigger only (recruitment.removed_at). rho_ft(X) = (T1 - lo(W1 without X)) / G; rho_0(X) = (T0 - lo(W0 without X)) / G; D(X) = rho_ft(X) - rho_0(X); G = T1 - T0 on the read windows; X = S and recruit.random_like(S, alive, i), i = 0..19"
+ },
+ "rules": {
+  "route label (R1 fine-tune, R2 student)": "Per state, absolute, as E119 filed it: 'unreadable' if r or e_gate is not finite, gain < 1 nat, or gain / teacher's gain < 0.5 (a zero or negative teacher gain is unreadable); else 're-switching' if r >= 0.6 and e_gate <= 0.25; else 'masked-off' if e_gate >= 0.5 and r <= 0.35; else 'neither'. Boundaries go to the end labels. The fine-tune's label uses its own gain as the teacher's.",
+  "copy (R2)": "The student's route label if its fit-window accuracy is >= 0.90 (E112's learn bar), else 'copy unreadable'.",
+  "removal class (R3)": "Per state, E38 A2's P5 seed rule, trigger only: 'unscored: |S| = 0' if S is empty; 'unscored: gain < 1 nat' if G < 1; 'unscored: D(S) not finite' if any D is not finite; else 'through' if D(S) >= 0.10 and D(S) exceeds all 20 random D; 'not' if D(S) < 0.05 or D(S) exceeds fewer than 18 of them; else 'unclear'. 'Exceeds' is strict, so a tie does not count.",
+  "arm": "Per measure and arm, E38 A2's task rule on the two seeds: an unreadable or unscored seed's label first (alphabetically first if both), else the common label, else 'seeds disagree'.",
+  "side": "reuse-like: re-switching, through. new-like: masked-off, not. unreadable: any unreadable or unscored label. none: neither, unclear, seeds disagree.",
+  "joint (per measure)": "From (real side, twin side): any unreadable -> 'unreadable'; real reuse-like and twin reuse-like -> 'both reuse-like'; real reuse-like otherwise -> 'separates as built'; twin reuse-like and real not -> 'reversed'; real new-like -> 'real new-like'; else 'no label'. Every one of the 16 pairs is covered (dry run).",
+  "not a verdict": "None of these is the reuse definition's verdict. The definition's verdicts are E112's and do not change. The joint names how the decomposition side's label sits beside 'not through C' on both arms; the plan's table gives the sentence each one supports."
+ },
+ "leans": {
+  "R1 route, fine-tunes": "neither on all four, medium-low: r 0.45-0.65, since E119's six trigger fine-tunes read 0.49-0.61 and r is set by the task more than by the update (research log claims row, E36: a fine-tune that made held-out text worse read 0.82); real and twin r within 0.15 of each other, since both arms share trigger and labels. Separation (real >= 0.6, twin <= 0.35) would be the surprise.",
+  "R2 copy": "every student keeps the behaviour (fit accuracy >= 0.90, medium; the twin, whose update is about 3x the real's, is the likeliest to miss), gain ratio 0.9-1.05, r within 0.06 of its fine-tune's, label neither (E119: all six arm-A students neither, r within 0.06 of the fine-tune's)",
+  "R3 removal": "|S| > 0 on all four (low: E117 found an empty switched-on set on lowercase and the ciphers, a set on the key tables); class 'not' on both arms (low: no number exists for a label task; E117 found VPD's switched-on sets carry 0.0005-0.019 of the gain on the maps)",
+  "joint": "route 'no label', copy 'no label', removal 'real new-like' (low)"
+ },
+ "expected": {
+  "no-model controls": "E12 Amendment 1's eight students under the moved route rule: four copy tables re-switching (r 0.76-0.80, e_gate 0.18-0.23), four maps masked-off (r 0.23-0.26, e_gate 0.71-0.74); E38 A2's six seed classes recomputed from amend2.json equal its P5 (emoticon and r1 'through', r2 'not'). Both read so in the dry run.",
+  "W0": "held-out accuracy real 0.520625, twin 0.496875 (E112, within 0.000625); route shares not read (gain 0); T0 on the read windows not on file, roughly -18 to -21 (E112's fine-tunes end near P(own label) 0.95-0.99, log-odds +3 to +5, and E114's log-odds gains are 22.5-24.5); route path and removal path T0 agree within 1e-3 (E38 read 0)",
+  "fine-tune behaviour (fit windows)": "label-gap gain = E112's 12.832 / 12.040 / 10.229 / 8.796 and log-odds gain = E114's 23.289 / 24.518 / 23.633 / 22.454 (real s0, s1, twin s0, s1), each within 0.02; accuracy = E112's acc_fit 0.998 / 0.999 / 0.978 / 0.979, reported",
+  "do-nothing": "e_gate = -r within 1e-6; least-squares r = do-nothing r within 1e-6; gain on the read windows within about 1 nat of E114's 1,024-window gain",
+  "least squares": "r as do-nothing; e_gate not on file for a label task, a guess -0.25 to 0.40 (E119's trigger fine-tunes -0.24 to 0.15)",
+  "students": "fit accuracy 0.90-1.00; label-gap and log-odds gains within 10% of the fine-tune's; route gain ratio 0.9-1.05; r within 0.06 of the fine-tune's; e_gate 0.3-0.5",
+  "removal controls": "C1 0 (<= 1e-3), C2 0 (<= 1e-4), C3 0 (<= 1e-5), as E38 A2 read; C4 KL at the trigger >= 1 where |busy| >= 100 (E38 A2: 10.6-11.2)",
+  "removal": "|S| from tens to a few hundred (E38 A2: 21-213); random D within +-0.16 (E38 A2's largest random max 0.154); D(S) in -0.1 to +0.3, no number on file for a label task",
+  "time on the L40": "load about 1 min; stage 0 about 2 min; stage 1 about 2.5 min; stage 2 about 1.5 min; stage 3 about 2.5 min per student; total about 17 min, one debug job"
+ },
+ "positive_controls": {
+  "route rule": "E12 Amendment 1's students from file read both end labels (no-model control above): the rule has power on states that are built to separate",
+  "removal": "C4 (removing the busy set from W0 moves the trigger by >= 1 nat of KL) and E38 A2's own records read 'through' and 'not' by the same rule",
+  "copy": "the fine-tune's own fit behaviour, read on the same path in stage 0"
+ },
+ "noise_floors": {
+  "route": "E12 Amendment 1's batch-order noise: |delta e_gate| 0.002, |delta L01| / gain 0.0006; here the two seeds per arm give the seed spread, reported; the read windows' gain against E114's 1,024-window gain gives the window-sample spread, reported",
+  "removal": "the 20 random sets' D are its null, read per state",
+  "copy": "E119's arm-A students sat within 0.016 of E34's P(target) on rerun"
+ },
+ "blind_to": {
+  "route split": "which subcomponents switch; one position; how Gamma routes the gain, not whether the update is new or existing. A new circuit built from old pieces reads 'elicited' to VPD.",
+  "copy": "whether a student that keeps the behaviour does so through the fine-tune's mechanism; U and V move, Gamma does not",
+  "removal": "pieces outside S; a gain carried by many pieces each below the 0.3 rise; nonlinear carrying",
+  "joint": "the definition names a capability C (the case readout); the decomposition side names none, so a label pair is a comparison of two readings of different objects, not a test of one claim"
+ },
+ "stop_rules": {
+  "before the model": "E12 A1 under the moved rule as expected (8 of 8); E38 A2's seed classes equal its file",
+  "inputs": "task.pt sha256 equals E114's filed one; each dW's sha256 equals E112's stage1.json",
+  "W0": "held-out accuracy within 0.000625 of E112's, each arm",
+  "fine-tune gains": "label-gap and log-odds gains on the fit windows within 0.02 of E112's and E114's, each state",
+  "paths": "route path T0 against removal path T0 within 1e-3, each arm",
+  "removal controls": "C1, C2, C3 within their tolerances, C4 where |busy| >= 100, each state, before any reading",
+  "do-nothing": "e_gate + r and least-squares r - do-nothing r within 1e-6, checked after each state's record is written",
+  "later": "none: an unreadable copy, an empty S or a gain under 1 nat is reported as such"
+ },
+ "edge_cases_run_before_filing": "~/commute-data/scratch/regating-lead/e123-writer/dry.py (no model), 2026-11-06, output dry.out: route label at gain under 1, exactly 1, teacher gain 0 and negative, ratio exactly 0.5 and 0.49, NaN r and e_gate, the four boundaries (r 0.6 / 0.35, e_gate 0.25 / 0.5), r and e_gate both high, negative shares; copy at accuracy 0.90, 0.8999, NaN; removal class at |S| = 0, gain 0.99 and NaN, D(S) NaN, a random D NaN, D(S) at 0.10, 0.0999, 0.05, 0.0499, a tie with one random D, beating 18 and 17 of 20; arm class with equal, differing, one or two unreadable seeds and none; every one of the 16 side pairs through the joint; the two no-model controls on their files; every input file's size and sha256; the read windows' targets (real 0.500, twin 0.508 label A). All as the rule text says.",
+ "departures": {
+  "from_Jain_et_al_2024": "Row 87's held-out carrying condition (a dated departure from Def 2), as E112 filed it; nothing further. The definition side is not re-read here.",
+  "from_E112": "None in its states or windows; the decomposition reads use 256 of its 1,024 fit windows.",
+  "from_E34_and_E119": "No teacher regeneration: the teacher is E112's saved bf16 change cast to fp32 (no reference P to reproduce); arm A only, no arm B; the task windows are E112's (9,600 training windows), with the label as a 42nd column never fed to the model; the student's per-step held-out log feeds 42 tokens (causal model, position 20 unaffected; log only, not scored); 256 read windows instead of 73-103.",
+  "from_E38_Amendment_2": "No null set (no different-target fine-tune exists at this trigger), no busy-set D, no all-position removal, no census; the read windows are fit windows, not held-out ones; trigger only, as its main P5.",
+  "from_VPD": "The route split, teacher training and the removal test are this project's measures, not the paper's. Gamma sees 41-token windows where it trained on rows of 512."
+ },
+ "limits_carried": "A new circuit from old pieces reads 'elicited' to VPD. The twin's update is about 3x the real's (summed Frobenius 13.3 / 12.6 against 4.6 / 4.7) and trained 10x longer (step 300 against 30), so any difference between the arms may be size.",
+ "what_changes_next": "Reported to the user with the plan's sentence for the joint outcome of each measure; the paper's re-use sentence uses it. No amendment is planned; a fresh pair of the same shape is E125, separate. An unreadable side is reported, and the definition's reading stands alone, as now.",
+ "not_run": [
+  "Arm B (Pile-text students); a second student seed or batch order",
+  "The null set, busy-set D, all-position removal and the census of E38 A2",
+  "The route split on E112's held-out-pair windows (the twin is at chance there by construction, 0.506 / 0.516, so its gain there is toward either label)",
+  "Any change to the definition side; any fresh fine-tune (E125)"
+ ]
+}
