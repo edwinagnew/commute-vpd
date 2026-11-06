@@ -441,3 +441,10 @@ This is "round 1", the input of nearly every other run.
 ## case_label (E112; coded 2026-11-06, not run)
 - `task.pt` (stage 0, ~5 MB): `{"marker", "ab": (A, B), "train_pairs", "held_pairs": [(capitalised, lowercase)], "vocab", "y": {"real", "twin": {token: 0/1}}, "train", "fit", "held": (N, 41) int64 windows}` (word at 19, trigger at 20). `probes.pt` (stage 0, ~3 MB): `{"case": (W (4, 768) f64, b (4,)), "control": (W, b), "pile_tokens": (N, 41)}`, block l = `readout.RESID[l]`.
 - `dW_{real,twin}_s{0,1}.pt` (stage 1, ~57 MB each): dW dict in bf16 at each state's scored step (`results/stage1.json` gives the step and sha256). Written by `experiments/case_label/run.py`; load with `torch.load(p, weights_only=False)`. Sizes are estimates until the run.
+
+## teacher_route_split (E119; run 2026-11-06, jobs 54473 54474 54475)
+- `results/large/<task>/{sgd,adam}_{A,B}.pt` for tasks r1_t534_v369, r0_t352_v310, emoticon: 12 files, each 60.3 MB (sgd 60,294,567 B; adam 60,294,621 B). sha256 prefixes (12 hex):
+  - r1_t534_v369: sgd_A f27b770f2279, sgd_B cdc3c2f5bd2b, adam_A 67b59ed9ff53, adam_B 041fc7a3dcfd
+  - r0_t352_v310: sgd_A a4fcbcbc7c61, sgd_B d10ccf5d0cd3, adam_A 1c0f1bbc2b60, adam_B 84fd09c43a0d
+  - emoticon: sgd_A 6e5a4f2c4ba2, sgd_B 675676223a42, adam_A e87c3d5da5c0, adam_B 3a5881087123 (job stopped on adam_B's P(target) check; file written)
+- `results/large/run_<task>.log` (28 KB each).
