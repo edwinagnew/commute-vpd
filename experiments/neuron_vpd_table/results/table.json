@@ -1,0 +1,184 @@
+{
+ "rows": [
+  {
+   "question": "existing layout vs new facts: template vs fictional-facts fine-tune",
+   "size": "matched",
+   "vpd": {
+    "class": "separates the pair",
+    "verdict": "outside share 'counts'; placement 'counts'; think overlap 'does not count'",
+    "numbers": "outside 0.123 to 0.124 vs 0.096 to 0.096; placement -0.008 to -0.008 vs 0.158 to 0.162",
+    "reference": "gap between anchors' seed means over the larger seed spread",
+    "source": "experiments/qwen_d3_rows/results/table.json",
+    "key": ".comparisons.matched"
+   },
+   "neurons": {
+    "class": "does not separate the pair",
+    "verdict": "prompt overlap 'holds' against the random change; engaged share 'misses'; job judge 'no call'",
+    "numbers": "prompt overlap template 0.056, 0.057; fictional (unscored) 0.051, 0.052; random change 0.035",
+    "reference": "a random change of matched output size; for the judge, biography neurons against random ones",
+    "source": "experiments/qwen_carrying/results/score.json",
+    "key": ".P1_prompt_overlap_anchor1, .P2_engaged_anchor1, .per_state; score_stageB .CB1_power_gate"
+   }
+  },
+  {
+   "question": "existing layout vs new facts: template vs fictional-facts fine-tune",
+   "size": "learned",
+   "vpd": {
+    "class": "separates the pair",
+    "verdict": "outside, placement, think 'counts'; size can do this: 'does not count'",
+    "numbers": "outside 0.123 to 0.124 vs 0.184 to 0.186",
+    "reference": "anchors' seed spread; two random changes of the two sizes",
+    "source": "experiments/qwen_d3_rows/results/table.json",
+    "key": ".comparisons.full"
+   },
+   "neurons": {
+    "class": "not run",
+    "verdict": "engaged share 'not above' (reported); no filed anchor comparison",
+    "numbers": "",
+    "reference": "",
+    "source": "experiments/qwen_carrying/results/score.json",
+    "key": ".R1_engaged_anchor2_full"
+   }
+  },
+  {
+   "question": "known vs new facts: known-facts vs fictional-facts fine-tune, summary readings",
+   "size": "matched",
+   "vpd": {
+    "class": "does not separate the pair",
+    "verdict": "outside 'like anchor 2' (f 0.90); placement 'like anchor 2' (f 0.65); think 'no call: the anchors do not separate'",
+    "numbers": "f: 0 = template's mean, 1 = fictional arm's mean",
+    "reference": "midway band 0.5 plus or minus the seed noise",
+    "source": "experiments/qwen_d3_rows/results/table_amend1.json",
+    "key": ".sides.matched"
+   },
+   "neurons": {
+    "class": "does not separate the pair",
+    "verdict": "all four pair rules: level",
+    "numbers": "real_engaged gap -0.0009 band 0.0090; real_prompt_overlap gap +0.0010 band 0.0033; tofu_engaged gap +0.0009 band 0.0046; tofu_prompt_overlap gap +0.0015 band 0.0034",
+    "reference": "fictional seeds' mean, band from random draws",
+    "source": "experiments/known_answer_pair/results/neurons_amend2.json",
+    "key": ".pair_rules_s142"
+   }
+  },
+  {
+   "question": "known vs new facts: known-facts vs fictional-facts fine-tune, set identity",
+   "size": "matched",
+   "vpd": {
+    "class": "separates the pair",
+    "verdict": "description only: no filed rule of its own; E107 Amendment 1 used it as its positive control",
+    "numbers": "Jaccard known seeds 0.857, fictional seeds 0.886, known vs fictional 0.632 to 0.660",
+    "reference": "the two arms' seed Jaccards",
+    "source": "experiments/label_vs_style/results/amend1_sets.json",
+    "key": ".pairs"
+   },
+   "neurons": {
+    "class": "separates the pair",
+    "verdict": "real rows 'beyond seed noise', TOFU rows 'beyond seed noise'; rows null (E105): 'label', 'label'",
+    "numbers": "TOFU rows: known seeds 0.901, fictional seeds 0.937, cross 0.614 to 0.637; disjoint halves of the known rows 0.875 to 0.893",
+    "reference": "band = 1 minus the fictional seeds' overlap",
+    "source": "experiments/known_answer_pair/results/neurons_amend2.json",
+    "key": ".identity; rows_null score .real/.tofu .verdict"
+   }
+  },
+  {
+   "question": "known vs new facts: known-facts vs fictional-facts fine-tune",
+   "size": "learned",
+   "vpd": {
+    "class": "does not separate the pair",
+    "verdict": "outside 'like anchor 2', placement 'midway: no call', think 'like anchor 2' (reported, sizes 2.2x apart)",
+    "numbers": "f outside 0.73, think 0.79",
+    "reference": "as at matched size",
+    "source": "experiments/qwen_d3_rows/results/table_amend1.json",
+    "key": ".sides.end"
+   },
+   "neurons": {
+    "class": "no call or no power",
+    "verdict": "'no power at this size' (seed level 0.652 under the power line)",
+    "numbers": "known vs fictional 0.445 to 0.514, known seeds 0.652",
+    "reference": "seed level must clear the cross-arm overlap by its own band",
+    "source": "experiments/larger_size/results/score.json",
+    "key": ".tofu.status, .tofu.known_vs_fict"
+   }
+  },
+  {
+   "question": "familiarity vs topic or style: wrong-answer vs true-answer fine-tune, same rows",
+   "size": "matched",
+   "vpd": {
+    "class": "no call or no power",
+    "verdict": "'no call' (lowest pair 0.80303 vs topic-or-style line 0.80320)",
+    "numbers": "Jaccard wrong vs known 0.803 to 0.854; seeds 0.857, 0.862",
+    "reference": "familiarity needs every pair at most 0.714",
+    "source": "experiments/label_vs_style/results/amend1_sets.json",
+    "key": ".rule"
+   },
+   "neurons": {
+    "class": "does not separate the pair",
+    "verdict": "real rows 'topic or style', TOFU rows 'topic or style'",
+    "numbers": "TOFU rows: wrong in known 0.839 to 0.879; wrong in fictional 0.623 to 0.634",
+    "reference": "familiarity needs every pair at most 0.750",
+    "source": "experiments/label_vs_style/results/score.json",
+    "key": ".real/.tofu .wrong"
+   }
+  },
+  {
+   "question": "familiarity vs topic or style: wrong-answer vs true-answer fine-tune, same rows",
+   "size": "learned",
+   "vpd": {
+    "class": "not run",
+    "verdict": "no full-size wrong-answer states saved",
+    "numbers": "",
+    "reference": "",
+    "source": null,
+    "key": ""
+   },
+   "neurons": {
+    "class": "no call or no power",
+    "verdict": "TOFU rows 'no call', answer tokens 'no call': 'no power at this size'",
+    "numbers": "seed level 0.652 (TOFU rows), 0.616 (answer tokens)",
+    "reference": "seed level must clear the fictional overlap by its band",
+    "source": "experiments/larger_size/results/score.json",
+    "key": ".tofu, .T"
+   }
+  },
+  {
+   "question": "topic: real authors vs world facts, both known",
+   "size": "matched",
+   "vpd": {
+    "class": "not run",
+    "verdict": "VPD reads of the topic states not run",
+    "numbers": "",
+    "reference": "",
+    "source": null,
+    "key": ""
+   },
+   "neurons": {
+    "class": "separates the pair",
+    "verdict": "TOFU rows 'topic moves the set', real rows 'no call'",
+    "numbers": "authors in world facts 0.728 to 0.739 vs line 0.754",
+    "reference": "E105's random halves",
+    "source": "experiments/label_vs_style/results/score.json",
+    "key": ".tofu.topic, .real.topic"
+   }
+  },
+  {
+   "question": "67M: built to reuse vs built to be new (assumed labels)",
+   "size": "learned",
+   "vpd": {
+    "class": "separates the pair",
+    "verdict": "VPD's r 'separates' on 3 of 3 rows",
+    "numbers": "e46_copy_random, e53_lowercase_cipher, e54_own",
+    "reference": "labels assumed from how each task was built",
+    "source": "experiments/method_table/results/table.json",
+    "key": ".rows[].cells.r.verdict"
+   },
+   "neurons": {
+    "class": "does not separate the pair",
+    "verdict": "neuron share separates 1 of 3 (e53_lowercase_cipher); filed 'not a kind reader': 'pass'",
+    "numbers": "most shares 0.35-0.50, where an output-weights-only fine-tune reads 0.43",
+    "reference": "the same labels",
+    "source": "experiments/neuron_r/results/score.json",
+    "key": ".rows.P1"
+   }
+  }
+ ]
+}
