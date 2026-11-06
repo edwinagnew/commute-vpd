@@ -5,6 +5,18 @@ training on everything you did with least squares, especially the bits where it 
 and the pre-mortem: `reports/plans/2026-11-06_plan_e111-teacher-table_appendix.md`. Advice and options:
 `reports/plans/2026-11-06_advice_e111-teacher-recipe-FABLE.md`. No code, no predictions file, no job yet.*
 
+## Overrides (user, 2026-11-06; `decisions.md`, ask 35)
+
+- Verdict on columns 1, 4, 5, 6 only; 2 and 3 printed. Δ frozen: 5 and 6 read Γ on W0 + moved part, with least
+  squares read the same way beside.
+- The room cap is dropped: the verdict no longer needs it. The kept state is the last step (300, or the K plateau).
+  Rates stay as section 2 sets them; a new rate for stages 2-5 is an amendment.
+- One H100 or A100 80GB pod, inputs from W&B (`experiments/qwen_teacher_table/RUN_BRIEF.md`); stage 1 is reported
+  before stages 2-5.
+- Departures: the maths and template pools are GSM8K train problems past E40's 256 held out, since `maths_rows.json`
+  holds only the table's 128 rows. The bands come from this card's drift on map-free reads, since E93 ran on an L40.
+  The step-25 "quarter of the room" check is dropped. Offsets are saved in bf16 and uploaded from the pod.
+
 ## Design check
 
 - **Goal.** D1 (`GOALS.md` weak version): a map on Qwen3-1.7B that keeps the decomposition faithful for a real update.

@@ -1,7 +1,7 @@
 # Analysis: does an RL update read differently from an SFT update inside the decomposition? (D2)
 
 *2026-11-06, `qwen-rl-lead`. A $0 synthesis of E75, E93 and E104, with E69 for the training and E91 and E94 for sizes
-and scale. No new run, no new E-code, no filed predictions. Provisional: no independent check. Table and figures
+and scale. No new run, no new E-code, no filed predictions. Provisional; the no-think reading alone was checked independently (Limits). Table and figures
 `experiments/qwen_rl_reads/plot_d2.py`; figures `experiments/qwen_rl_reads/figures/d2_*.png`. Words as in `GOALS.md`
 → Terms.*
 
@@ -15,10 +15,11 @@ gives no handle yet on whether RL teaches something new.
 ## The answer
 
 Not yet. Across every reading the three reports made, RL's update reads like the shuffled-reward null about as often
-as seed noise alone predicts. One reading stands out: the subcomponents RL switches on overlap a length-matched
-no-think answer set more than the null's do, at both steps and both seeds. That reading describes the changed model,
-not the split, and no rule was filed for it. Own-samples differs from RL mostly through size and through which
-matrices its update sits in. It has one seed.
+as seed noise alone predicts. Every reading of the two kinds of update, outside of size, sits inside what seed noise allows. One reading first looked
+like an exception: the subcomponents RL switches on overlap a reference set read on answers deep in a long context
+more than the null's do. Its seeds turned out to share only half of that overlap, so counting noise sets its scale, and
+the gap is under two standard deviations. Own-samples differs from RL mostly through size and through which matrices
+its update sits in, and it has one seed.
 
 ## What we were trying to test
 
@@ -58,7 +59,9 @@ $W_0 = UV^\top + \Delta$ with rank-one subcomponents.
   **Placement excess**: the split's share on subcomponents the original model already switches on, minus a Gaussian
   change's, 0 for no preference. **Think overlap**: the subcomponents the changed model switches on that the original
   leaves off, against think mode's switched-on set, as a fold over chance, so 1 is chance. Beside it stands the same
-  fold against a **no-think set** matched in answer length. Both steps, both seeds.
+  fold against a **no-think set**: the original model's plain answers, unchanged in length, with earlier maths turns
+put in front so each answer starts where its think-mode answer would (matched on answer position, not answer length;
+7,237 of its 9,671 subcomponents are also in the think set, so it is largely a long-context set). Both steps, both seeds.
 
 Two readings in E104, outside share and both overlaps, read the same under do-nothing. They describe the update and the
 changed model, not how the split places the update.
@@ -105,7 +108,7 @@ The moved part's count deserves a line because it is a reading of the split. RL'
 its ruler, the null's 0.007 and 0.009. In nats the gap does not count, and at step 10, seed 0 only, the order reverses:
 0.009 for RL against 0.015 for the null. We name no cause.
 
-### Does RL's update overlap the no-think set more than the null's?
+### Does RL's update overlap the no-think set more than the null's? On the seed spread yes; on counting noise, no.
 
 ![Think and no-think overlap per state](../../experiments/qwen_rl_reads/figures/d2_nothink.png)
 
@@ -115,7 +118,14 @@ The anchors are the reference: the template reads 4.22 and 4.42 on no-think, TOF
 wider than RL's from its null. Size does not obviously drive it, since the null's seed 0 at step 100 moves the outputs
 twice as far as RL's seed 0 and still reads lower. Two cautions. This fold describes the changed model's switched-on
 set, so do-nothing reads the same, and it says nothing about the split. And it was found by scanning about thirty
-comparisons after the fact, so it is a lead for a filed test, not a finding.
+comparisons after the fact, so it is a lead for a filed test, not a finding. Third, the bars rest on very tight two-seed spreads (RL's at
+step 100 is 0.003), far below the counting noise of the overlaps (counts of 16 to 103 against chance means of 5.6 to
+11.9). On a Poisson scale for those counts the gap is about 1.8 standard deviations at step 100 and 1.5 at step 10,
+not 6.5 and 10.9 bars. Measured since (`experiments/qwen_rl_reads/seed_overlap.py`, `results/seed_overlap.json`): at step 100 only 47 of
+RL's roughly 100 overlapping subcomponents are shared by both seeds, and 22 of the null's 65 to 86; RL seed 0 and null
+seed 0 share 33. So the seeds do not switch on a fixed set, the counting-noise scale applies, and the gap is not beyond
+noise. And since the set is mostly a long-context set, the reading says RL switches
+on more of what a long preceding context switches on, not that its update is more like no-think mode.
 
 ### Is own-samples' larger outside share more than its larger null?
 
@@ -283,8 +293,8 @@ No number quoted in the brief for this report disagreed with its source.
 ## What D2 can and cannot say
 
 **Can say.** On every reading the three experiments made, the decomposition does not show RL's update apart from the
-shuffled-reward null at more than the rate seed noise predicts, with one unfiled exception. The exception, no-think
-overlap, is a property of the changed model, not of how least squares splits the update. Own-samples' two step-100
+shuffled-reward null at more than the rate seed noise predicts, with no exception once the no-think overlap is put on its counting-noise scale (it is in any case a property of the
+changed model, not of how least squares splits the update). Own-samples' two step-100
 differences from RL that E104 counted are explained: outside share by which matrices the update sits in, think overlap
 by size. Least squares keeps all three arms close to faithful by E93's checks and misses narrowly on RL seed 70, both
 null seeds and own-samples, by margins of 0.0004 nats or less on the clean and masked checks.
@@ -308,10 +318,11 @@ null seeds and own-samples, by margins of 0.0004 nats or less on the clean and m
 ## What we learned
 
 At this size and with two seeds, the decomposition's readings do not separate RL's update from the same loop with
-shuffled rewards, except possibly on which subcomponents the changed model switches on relative to a no-think set. The
+shuffled rewards; the one candidate, the no-think overlap, is under two standard deviations once counting noise is
+allowed for. The
 own-samples fine-tune reads differently mostly because it moves the outputs about fifty times less and sits in other
 matrices. For `GOALS.md` the question of whether RL strengthens existing behaviour or teaches new behaviour gets no
-answer from these readings yet. The no-think overlap is the one reading worth a filed test.
+answer from these readings yet.
 
 ## How compelling is the evidence
 
@@ -324,22 +335,25 @@ answer from these readings yet. The no-think overlap is the one reading worth a 
   comparison on maths rows.
 - **Blind spots.** Outside share, think overlap and no-think overlap read the same under do-nothing, so they say nothing
   about the split. Placement is blind to scale. $K$ weights tails and reads no masks. No adversary ran on any arm.
-- **Independent check.** None. No headline claim rests on this report.
+- **Independent check.** One, on the no-think reading only (fresh Opus agent, 2026-11-06): every number recomputes
+  exactly and the rows, set and draws are the same for every arm, so only the update can produce the gap; but the set
+  was misdescribed as length-matched (fixed above), and counting noise may shrink the margin to 1.5 to 1.8 standard
+  deviations. Its noise simulation is in `~/commute-data/scratch/qwen-rl-lead/d2-check/noise_sim.py`.
 
 ## Surprises
 
-The no-think overlap separates RL from its null at both steps and both seeds, by as much relative to the spread as it
-separates the two anchors. Nothing filed predicted or tested it, E104 used it only as a reference for think overlap, and
-its cause is not established.
+The no-think overlap looked like a difference between RL and its null as large, relative to the seed spread, as the
+anchors' gap. It was not: the tight spreads came from two half-shared sets landing on almost the same count by chance,
+and on the counting-noise scale the gap is under two standard deviations. A two-seed spread can be much tighter than
+the noise of the number it brackets; every bar in this table carries that risk.
 
 Smaller: the share left in Δ below its null, E93's measure, sits lower for own-samples than for either RL seed by
 9.5 bars, and does not change with scale. No read tests why.
 
 ## What next
 
-1. **A filed test of no-think overlap on a third RL and null seed.** If RL's fold stays near 3.75 and the null's under
-   3.2, it becomes D2's first difference beyond seed spread, and it goes through `/design` first. If they overlap, the
-   lead is closed. A third seed is a paid H100 run per arm.
+1. **No third seed.** The one candidate difference, the no-think overlap, fell to under two standard deviations once
+   the seeds' shared subcomponents were counted, so a paid third seed of RL and the null is not worth running for it.
 2. **The two empty columns.** When teacher training and the adjoint split land on these updates, rerun
    `plot_d2.py` with their rows. If either separates RL from its null beyond the spread, it is a reading of a map, which
    none of today's counts is.
@@ -379,7 +393,8 @@ No predictions were filed for this synthesis. The sources' filed verdicts on the
 - A size copy from RL seed 70 or the null, or one scaled other than by one number.
 - Readings at steps other than 10 and 100.
 - Any adversary, and accuracy under any split.
-- An independent check of this report.
+- An independent check of the rest of this report.
+- A proper noise model for the overlap folds (bootstrap over positions); the Poisson scale above is a back-of-envelope.
 
 ## Provenance
 
