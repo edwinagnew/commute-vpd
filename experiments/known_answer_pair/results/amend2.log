@@ -1,0 +1,83 @@
+[    3.4s] [A2 todo 0 R T P] start; NVIDIA L40
+[   13.7s] [0] control 0, W0's real-fact share: {"n": 217, "share": 0.7926267281105991, "ci": [0.7373271889400922, 0.8433179723502304]}; E81 0.7926267281105991 within 0.01: ok
+[   14.1s] [0] seed 142 first batch loss 4.150571; seed 42's 3.673142, gap 0.477428 over 0.001: ok
+[   28.3s] [0] W0's levels {"bare": {"all": -12.131278420551238, "content": -5.992955490877219, "end": -29.910889769968694}, "sentence": {"all": -1.8803852914294397, "content": -2.0158448455649562, "end": -3.818472479638393e-06}, "fict": {"all": -4.371920376084409, "content": -4.510184315256643, "end": -0.046465223233703785}}
+[   28.3s] [0] done; peak GPU 18.1 GB, host 11.0 GB
+[   44.9s] [C2] Amendment 1's matched state on the sentence reader: {"all": 1.4022200223901422, "content": 1.5042920082665718, "end": -3.841667560031189e-05}; stored content 1.5042920082665718, rel 0 within 1e-05: ok
+[   61.8s] [R] reference {"content_gain": 2.4730992387727033, "bar": 1.2365496193863517, "amend1": 2.4730992387727033, "rel_to_amend1": 0.0}
+[   61.9s] [R] done; peak GPU 23.8 GB, host 11.0 GB
+[   62.6s] [T] 1085 sequences, 335 steps; reference norm 0.486520; C1's bar 1.2365
+[   63.3s] [check] ok {"at": 1, "name": "loss against the first batch", "value": 0.0, "holds": true}
+[   63.3s] [check] ok {"at": 1, "name": "rate", "value": 0.0, "holds": true}
+[   63.3s] [check] ok {"at": 1, "name": "|dW|", "value": 0.0, "holds": true}
+[   63.3s] [T] {"step": 1, "lr": 0.0, "loss": 4.150570708926361, "grad_norm": 137.1731719970703, "dw_norm": 0.0, "peak_gib": 27.472482204437256}
+[   64.1s] [check] ok {"at": 2, "name": "|dW|", "value": 0.002287920728214902, "holds": true}
+[   64.1s] [check] ok {"at": 2, "name": "peak", "value": 28.46074676513672, "holds": true}
+[   66.3s] [T] candidate step 2: norm 0.0023, gain {"all": 0.02618915359067004, "content": 0.028012161644296242, "end": 1.6808286920825045e-07}
+[   66.3s] [T] {"step": 2, "lr": 8e-08, "loss": 2.7173455250835836, "grad_norm": 104.05919647216797, "dw_norm": 0.002287920728214902, "peak_gib": 28.46074676513672}
+[   69.1s] [T] candidate step 3: norm 0.0062, gain {"all": 0.07588482792931073, "content": 0.08116777226885899, "end": 5.015130372145154e-07}
+[   69.2s] [T] {"step": 3, "lr": 1.6e-07, "loss": 3.1307895884794346, "grad_norm": 143.16461181640625, "dw_norm": 0.006192965201419333, "peak_gib": 33.418978214263916}
+[   72.0s] [T] candidate step 4: norm 0.0116, gain {"all": 0.1406145206172887, "content": 0.1504458815653675, "end": 8.18474949554312e-07}
+[   75.0s] [T] candidate step 5: norm 0.0186, gain {"all": 0.2173213976015128, "content": 0.23266648788112335, "end": 1.039309839558174e-06}
+[   77.9s] [T] candidate step 6: norm 0.0271, gain {"all": 0.2975719699452389, "content": 0.3188815849012892, "end": 1.1590680301175742e-06}
+[   80.8s] [T] candidate step 7: norm 0.0370, gain {"all": 0.3706457045641027, "content": 0.39738474404189517, "end": 1.2035662822380032e-06}
+[   83.7s] [T] candidate step 8: norm 0.0483, gain {"all": 0.4292284096862784, "content": 0.4603996385235527, "end": 1.1585230389931484e-06}
+[   86.7s] [T] candidate step 9: norm 0.0605, gain {"all": 0.47649962186907824, "content": 0.5108409318830508, "end": 1.1008455390966626e-06}
+[   89.6s] [T] candidate step 10: norm 0.0736, gain {"all": 0.5263259919472865, "content": 0.5637314276141245, "end": 1.0634935860617518e-06}
+[   92.5s] [T] candidate step 11: norm 0.0873, gain {"all": 0.5839196323046415, "content": 0.6250628090156684, "end": 9.84393134928434e-07}
+[   95.5s] [T] candidate step 12: norm 0.1015, gain {"all": 0.6586995570883675, "content": 0.7050314906669044, "end": 8.607945134034737e-07}
+[   98.3s] [T] candidate step 13: norm 0.1167, gain {"all": 0.7412254535146452, "content": 0.7933303180908716, "end": 6.729192917459778e-07}
+[  101.3s] [T] candidate step 14: norm 0.1324, gain {"all": 0.8383132126241426, "content": 0.8974529768422476, "end": 4.0044027646888324e-07}
+[  104.2s] [T] candidate step 15: norm 0.1491, gain {"all": 0.9281540740514981, "content": 0.9939770698001649, "end": -9.397321471724898e-08}
+[  107.2s] [T] candidate step 16: norm 0.1664, gain {"all": 1.0049815404824156, "content": 1.0765870331005645, "end": -8.520680107575307e-07}
+[  110.1s] [T] candidate step 17: norm 0.1847, gain {"all": 1.0771398147917524, "content": 1.1542352513769942, "end": -2.030409451155032e-06}
+[  113.0s] [T] candidate step 18: norm 0.2036, gain {"all": 1.1442635878014205, "content": 1.2264968900086193, "end": -3.759190355515277e-06}
+[  115.9s] [T] candidate step 19: norm 0.2228, gain {"all": 1.2078198837427467, "content": 1.2949845452524722, "end": -6.157071587036073e-06}
+[  118.9s] [T] candidate step 20: norm 0.2424, gain {"all": 1.2656993546231443, "content": 1.357355051043746, "end": -9.35753993666543e-06}
+[  121.7s] [T] candidate step 21: norm 0.2625, gain {"all": 1.3026050226881334, "content": 1.3972411115820444, "end": -1.3513838762117948e-05}
+[  124.7s] [T] candidate step 22: norm 0.2831, gain {"all": 1.319518550704517, "content": 1.4156222591187522, "end": -1.9551571853726315e-05}
+[  127.6s] [T] candidate step 23: norm 0.3041, gain {"all": 1.3148461477982452, "content": 1.4105921280939298, "end": -2.9195468521276345e-05}
+[  130.6s] [T] candidate step 24: norm 0.3251, gain {"all": 1.3017705541361757, "content": 1.3964070547372096, "end": -4.304604594689144e-05}
+[  133.5s] [T] candidate step 25: norm 0.3455, gain {"all": 1.297844280066138, "content": 1.3920804258537314, "end": -5.556166029299788e-05}
+[  133.5s] [T] {"step": 25, "lr": 1.9200000000000003e-06, "loss": 0.8009463155210899, "grad_norm": 16.472637176513672, "dw_norm": 0.34545492573234926, "peak_gib": 38.47158432006836}
+[  136.4s] [T] candidate step 26: norm 0.3654, gain {"all": 1.3008789224248705, "content": 1.395273256362847, "end": -6.176791450242854e-05}
+[  139.4s] [T] candidate step 27: norm 0.3849, gain {"all": 1.316074056023353, "content": 1.4116189765308849, "end": -6.175677941629326e-05}
+[  142.4s] [T] candidate step 28: norm 0.4042, gain {"all": 1.3396885500677773, "content": 1.4370265106074085, "end": -5.95776722828992e-05}
+[  145.4s] [T] candidate step 29: norm 0.4237, gain {"all": 1.3608596164554692, "content": 1.4598017229870992, "end": -5.945758476514653e-05}
+[  148.4s] [T] candidate step 30: norm 0.4434, gain {"all": 1.3793551178378205, "content": 1.4796852326827892, "end": -5.852808238281469e-05}
+[  151.3s] [T] candidate step 31: norm 0.4633, gain {"all": 1.3903406412721457, "content": 1.4914100277969404, "end": -4.7865073093703883e-05}
+[  154.3s] [T] candidate step 32: norm 0.4832, gain {"all": 1.3951095925085824, "content": 1.4965026495930944, "end": -3.839394252457667e-05}
+[  175.2s] [save] /mnt/nw/home/e.agnew/commute-agents/baseline-lead/experiments/known_answer_pair/results/large/dW/amend2_s142_matched.safetensors (5.64 GB)
+[  175.2s] [C1] content gain at the matched step 32 (norm 0.4832): {"all": 1.3951095925085824, "content": 1.4965026495930944, "end": -3.839394252457667e-05}; bar 1.2365: ok
+[  186.6s] [T] {"step": 50, "lr": 3.920000000000001e-06, "loss": 0.5487115095203049, "grad_norm": 11.403459548950195, "dw_norm": 0.8392462201740856, "peak_gib": 38.47158432006836}
+[  203.7s] [T] {"step": 75, "lr": 5.92e-06, "loss": 0.23262401813632447, "grad_norm": 9.338929176330566, "dw_norm": 1.3415636814386462, "peak_gib": 38.47158432006836}
+[  220.8s] [T] {"step": 100, "lr": 7.92e-06, "loss": 0.4823349147167021, "grad_norm": 12.29211139678955, "dw_norm": 1.9126793128341093, "peak_gib": 38.47158432006836}
+[  237.9s] [T] {"step": 125, "lr": 9.920000000000002e-06, "loss": 0.322955998507413, "grad_norm": 11.320627212524414, "dw_norm": 2.6013241130816387, "peak_gib": 38.47158432006836}
+[  255.1s] [T] {"step": 150, "lr": 1.1920000000000001e-05, "loss": 0.209685640335083, "grad_norm": 7.2135138511657715, "dw_norm": 3.314165532446137, "peak_gib": 38.47158432006836}
+[  272.4s] [T] {"step": 175, "lr": 1.392e-05, "loss": 0.13970207808604793, "grad_norm": 5.8823628425598145, "dw_norm": 4.107297617293338, "peak_gib": 38.47158432006836}
+[  289.7s] [T] {"step": 200, "lr": 1.5920000000000003e-05, "loss": 0.254069688185206, "grad_norm": 8.42929458618164, "dw_norm": 4.945641539960439, "peak_gib": 38.47158432006836}
+[  307.0s] [T] {"step": 225, "lr": 1.792e-05, "loss": 0.19558700013555874, "grad_norm": 8.14564323425293, "dw_norm": 5.849127745707465, "peak_gib": 38.47158432006836}
+[  324.2s] [check] ok {"at": 250, "name": "loss / first", "value": 0.03352670453022985, "holds": true}
+[  324.2s] [T] {"step": 250, "lr": 1.9920000000000002e-05, "loss": 0.13915495779000076, "grad_norm": 5.404086589813232, "dw_norm": 6.8326051251854905, "peak_gib": 38.47158432006836}
+[  341.5s] [T] {"step": 275, "lr": 1.631711006253251e-05, "loss": 0.08084395694248567, "grad_norm": 4.948172569274902, "dw_norm": 7.753414859493427, "peak_gib": 38.47158432006836}
+[  358.4s] [T] {"step": 300, "lr": 7.620648049573815e-06, "loss": 0.030118324113695808, "grad_norm": 4.280905723571777, "dw_norm": 8.186320388316389, "peak_gib": 38.47158432006836}
+[  375.9s] [T] {"step": 325, "lr": 8.151301425407699e-07, "loss": 0.1734112865395016, "grad_norm": 5.220795154571533, "dw_norm": 8.24723925314443, "peak_gib": 38.47158432006836}
+[  401.5s] [save] /mnt/nw/home/e.agnew/commute-agents/baseline-lead/experiments/known_answer_pair/results/large/dW/amend2_s142_end.safetensors (5.64 GB)
+[  401.9s] [T] matched step 32, argmin over the record 32; end |dW| 8.2477
+[  402.9s] [T] done; peak GPU 41.3 GB, host 11.0 GB
+[  409.5s] [P] W0 {"share": 0.7926267281105991, "content_share": 0.8294930875576036, "right": {"all": -1.2452636280150597, "content": -0.721944279649748, "end": -2.198881692220762, "tokens": 4.373271889400922}, "wrong": {"all": -3.800988018319841, "content": -4.304685418614082, "end": -2.728537051091331, "tokens": 4.331797235023042}}; stored share 0.7926267281105991, gap 0 within 0.004608294930875576
+[  422.1s] [P] W0 greedy {"few_words": {"recall": 0.7244239631336405, "contains": 0.6866359447004609, "words": 2.5391705069124426}, "sentence": {"recall": 0.8466973886328725, "contains": 0.815668202764977, "words": 11.912442396313365}}
+[  430.6s] [P] a1_end {"share": 0.5852534562211982, "content_share": 0.8525345622119815, "right": {"all": -8.9199148168808, "content": -2.025911085585638, "end": -28.645338432030744, "tokens": 4.373271889400922}, "wrong": {"all": -10.641852315259099, "content": -4.949127244150907, "end": -27.68635508028959, "tokens": 4.331797235023042}}; stored share 0.5852534562211982, gap 0 within 0.004608294930875576
+[  438.8s] [P] a1_end greedy {"few_words": {"recall": 0.9963133640552996, "contains": 0.9953917050691244, "words": 10.838709677419354}, "sentence": {"recall": 0.9963133640552996, "contains": 0.9953917050691244, "words": 10.870967741935484}}
+[  438.8s] [P] rows W0 picked right and a1_end wrong, and back: {"lost": 74, "gained": 29}
+[  438.9s] [P] done; peak GPU 41.3 GB, host 11.0 GB
+[  438.9s] FINISHED
+[    3.7s] [N2 E103 Amendment 2 neurons] start; NVIDIA L40
+[    8.2s] [rows] {"real": [[29, 256], 941], "tofu": [[128, 256], 16546]}
+[   17.3s] [a1_matched on real] gain 1.8722, set 1024, 5 s, peak GPU 24.7 GB, host 11.0 GB
+[   17.3s] [C2n] ok {"gain": 1.8722450651100562, "stored_gain": 1.8722450651100562, "rel": 0.0, "set_overlap": 1.0}
+[   23.5s] [known_s142_matched on real] gain 2.2331, set 1024, 4 s, peak GPU 24.7 GB, host 11.0 GB
+[   43.2s] [known_s142_matched on tofu] gain 1.7751, set 1024, 20 s, peak GPU 26.5 GB, host 11.0 GB
+[   75.0s] [score] identity {"real": {"verdict": "beyond seed noise", "known": 0.8642578125, "fict": 0.8994140625, "cross": [0.4697265625, 0.470703125, 0.4921875, 0.4921875], "cross_max": 0.4921875, "band": 0.1005859375, "known_minus_cross": 0.3720703125, "sizes": [1024, 1024, 1024, 1024]}, "tofu": {"verdict": "beyond seed noise", "known": 0.9013671875, "fict": 0.9365234375, "cross": [0.6220703125, 0.6142578125, 0.63671875, 0.6259765625], "cross_max": 0.63671875, "band": 0.0634765625, "known_minus_cross": 0.2646484375, "sizes": [1024, 1024, 1024, 1024]}}
+[   75.0s] [score] pair rules on seed 142, reported: {"matched_real_engaged": "level", "matched_real_prompt_overlap": "level", "matched_tofu_engaged": "level", "matched_tofu_prompt_overlap": "level"}
+[   75.0s] [neurons] done, peak GPU 26.5 GB, host 11.0 GB; FINISHED
