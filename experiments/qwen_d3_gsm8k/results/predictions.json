@@ -1,0 +1,62 @@
+{
+ "status": "DRAFT, not filed. The lead files it by removing this key before any run; run.py refuses while it exists (E94's convention).",
+ "experiment": "E104",
+ "filed": null,
+ "plan": "reports/plans/2026-11-06_plan_e104-d3-gsm8k.md (appendix reports/plans/2026-11-06_plan_e104-appendix.md); D3 row 11-10 to 11-11 of reports/plans/2026-11-05_plan_qwen-reorient-amend1.md:52; E94's carry rule reports/plans/2026-11-05_plan_e94-d3-rows.md:116",
+ "question": "On the three rows E94 carried (outside share, placement excess, think overlap), does RL read differently from its shuffled-reward null, does own-samples SFT read differently from RL, and where does each GSM8K arm sit between the template and TOFU fine-tunes? Nothing is worded as new against reuse.",
+ "states": "R_s0, R_s70, N_s0, N_s70, F_s0 at steps 10 and 100 (qwen_rl/results/large/{lr1e-6w10,lr1e-6w10_s70}/dW/{R,N,F}/step_{10,100}.safetensors, fp32; norms from qwen_size_grid/results/reads.jsonl). Scaled copies, matched on K00 - K0 over the first 16 maths rows by qwen_reading.scale_search, band 1.25, at most 6 evaluations ('size unmatched' otherwise): S1 = R_s0 step 100 to F_s0 step 100's size; S2 = R_s0 step 100 to R_s0 step 10's size; S3 = E94's a2_s42_full to E94's a1_s0 size (0.1276028164813563).",
+ "rows": "128 maths rows (W0's own greedy GSM8K answers, cut to 256), for every number, as E94's rows 2, 3 and 5.",
+ "rules": {
+  "outside": "E94 row 2, unchanged: the input-weighted share of dW outside the alive subcomponents, pooled over matrices by input-weighted energy, Sigma on 128 maths rows of 512 at W0; its exact null beside. A property of dW: do-nothing reads the same. Invariant to scaling dW.",
+  "placement": "E94 row 3, unchanged: the least-squares split's input-weighted piece energy on the subcomponents gated on at W0 on the maths rows, as a share, minus the mean share of E94's 4 unit Gaussian nulls rescaled per matrix (qwen_d3_rows/results/large/unit_nulls.safetensors, nulls.json, reused). Invariant to scaling dW.",
+  "think": "E94 row 5, unchanged: fold = |S intersect T| / its mean over 1000 site-stratified draws (qwen_reading.overlap, seed 0); S = gated on under the state's masks and not W0's, on the maths rows. L beside. The fold's draw sd (sd / mean) printed.",
+  "no_call": "Outside or placement with a zero denominator; a think fold with an empty S or a chance mean overlap under 5 (Cochran 1954's expected-count rule); anything not finite. Anchor position p with TOFU full's mean equal to the template's.",
+  "pair": "qwen_comparators.separates: two arms differ on a number when |mean arm A - mean arm B| over their two seeds is strictly over the larger of the two seed spreads; a missing or no-call seed reads 'unread'.",
+  "borrowed": "A one-seed arm (F_s0) takes the null arm's seed spread at the same step and number as its own (E93's rule, qwen_d1_table/rules.py:270-275); so F against RL counts when |F - mean RL| is strictly over max(RL spread, null spread); unread if either is unread.",
+  "comparisons": "C1: RL against null at step 10 and at step 100 (step 100 is the reading). C2: F against RL at steps 10 and 100, borrowed. C3: each arm's step 10 against its step 100 (F borrowed: max of the null's spreads at the two steps).",
+  "size": "Think only (outside and placement are invariant to scaling, checked in stage 0 and on every scaled copy, band 1e-4). C2 at step 100 by S1, C3 for RL by S2, E94's anchors at the full update by S3: the scaled copy replaces the larger state's seed value and the same rule is reread against the smaller arm with the larger state's spread; 'does not count' then reads 'size can do this'. Unmatched copy: 'unread'.",
+  "anchor_position": "p = (arm seed mean - E94 template seed mean) / (E94 TOFU full seed mean - template seed mean), per number at step 100: 'nearer the template' under 0.5, 'nearer TOFU' at 0.5 or more, 'beyond' outside [0, 1]. Description, no verdict; TOFU matched printed beside."
+ },
+ "thresholds": {
+  "p2_margin": 0.005,
+  "p3_bar": 3.6176448730,
+  "invariance_band": 0.0001,
+  "chance_min": 5,
+  "sources": "p2_margin: E94's Gaussian null draws spread under 0.005 (E57 nulls 0.5858, 0.5820, 0.5839, 0.5830, range 0.0038). p3_bar: E94 template T fold mean 3.7075173 less its seed spread 0.0898724 (larger than TOFU full's 0.0631235), qwen_d3_rows/results/table.json. invariance_band: E94's split stored error up to 5.2e-6 of the input-weighted norm, with margin. chance_min: Cochran 1954."
+ },
+ "predictions": [
+  {"id": "1", "row": "outside", "claim": "Every GSM8K state's outside share is under its own null by more than its comparison bar (E94: all 8 anchor states, smallest margin 0.089 against spreads under 0.005).", "rule": "for each arm and step: null - value > the arm's seed spread (F: the null arm's spread at that step) at every seed; all 10 states", "kind": "relative to the exact null", "do_nothing": "passes identically: the row describes dW, not the split", "random": "a Gaussian reads at its null (E94 0.21198 against 0.21191), so fails; alive-pieces passes"},
+  {"id": "2", "row": "placement", "claim": "Placement excess falls from step 10 to step 100 in every arm-seed, as TOFU's fell from its matched step (0.158, 0.162) to its full update (0.017, 0.014).", "rule": "excess(step 10) - excess(step 100) > p2_margin at all 5 of R_s0, R_s70, N_s0, N_s70, F_s0", "kind": "absolute, per arm-seed", "do_nothing": "no call: cannot pass", "random": "invariant to scaling: E94's Gaussian pair 0.0006 apart, alive-pieces 0.0011, both under the margin"},
+  {"id": "3", "row": "think", "claim": "Size does not close E94's think gap: TOFU seed 42's full update scaled to the template's size still reads under the template.", "rule": "S3 fold T < p3_bar and S3 matched; unmatched reads 'unread'", "kind": "absolute bar from E94's measured values", "do_nothing": "reads identically: the row describes dW and Gamma", "random": "E94's small randoms read 3.13 and 3.25, under the bar: a pass says only that TOFU's update at template size reads unlike the template, as a random change does"},
+  {"id": "4", "row": "outside", "claim": "RL against null on outside share at step 100 does not count (E93's unweighted share left in Delta: gap 0.0027 against a bar of 0.0029; a lean, the measure differs).", "rule": "separates([R_s0_100, R_s70_100], [N_s0_100, N_s70_100]) == 'does not count'", "kind": "the comparison rule", "do_nothing": "reads identically", "random": "not applicable"}
+ ],
+ "controls": {
+  "source": "Stage 0, alone and first. E94: qwen_d3_rows/results/table.json, a1_s0/state.json, control.json; nulls by hash.",
+  "K0": 0.06961319516372436,
+  "id": 1e-06,
+  "a1_s0_outside": 0.12335805143394823,
+  "a1_s0_outside_null": 0.2119068773431806,
+  "a1_s0_placement": -0.007644735643462575,
+  "a1_s0_K00": 0.197216012,
+  "a1_s0_T": 3.662581110310022,
+  "a1_s0_L": 4.222208818384703,
+  "a1_s0_S": 1286,
+  "rep": 0.0001,
+  "fold_band": 0.02,
+  "S_rel": 0.01,
+  "half_scale": 0.5,
+  "unit_nulls_sha256_prefix": "05ff807e6c834b37",
+  "bands": "id, rep, S_rel relative; placement and invariance absolute 1e-4; fold_band absolute"
+ },
+ "first_minutes": {
+  "norm_rel": 1e-06,
+  "K0_rel": 1e-06,
+  "e93_K00_step100": {"R_s0": 0.138290816, "R_s70": 0.166882772, "N_s0": 0.205263055, "N_s70": 0.130408289, "F_s0": 0.071043136},
+  "e93_K00_rel": 0.0001,
+  "stored_error_max": 0.001,
+  "gpu_max_gib": 44.0,
+  "host_max_gb": 105.0,
+  "note": "Per state, logged even when passing: norm against reads.jsonl; K0 per row against E94's W0 rows; K00 at step 100 against E93's (a stop); split stored error; card and host peaks. Step-10 sizes logged only."
+ },
+ "edges": "rules.py --edges, on CPU before filing: every case of the plan's edge table gives the outcome it names (results/edges.txt)."
+}
