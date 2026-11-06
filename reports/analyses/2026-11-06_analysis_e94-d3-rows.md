@@ -1,24 +1,25 @@
-# Analysis: do five readings inside the Qwen decomposition tell the template fine-tune from the TOFU facts fine-tune? (E94)
+# Analysis: do five readings inside the Qwen decomposition tell the template fine-tune from the TOFU facts fine-tune, and which does a known-facts fine-tune read like? (E94)
 
 *2026-11-06. `qwen-decomp-lead`. Provisional: no independent check. Plan `reports/plans/2026-11-05_plan_e94-d3-rows.md`
 (appendix `reports/plans/2026-11-05_plan_e94-appendix.md`); code `experiments/qwen_d3_rows/{run,rules,plot}.py`,
 `src/commute/qwen_d3.py`; rules `experiments/qwen_d3_rows/results/predictions.json`, filed before any read; numbers
-`experiments/qwen_d3_rows/results/table.json`; notebook `notebooks/E94_qwen_d3_rows.ipynb`.*
+`experiments/qwen_d3_rows/results/table.json`; notebook `notebooks/E94_qwen_d3_rows.ipynb`. Amendment 1 (2026-11-06):
+plan section "Amendment 1", code `experiments/qwen_d3_rows/{amend1,rules_amend1}.py`, rules
+`results/predictions_amend1.json`, numbers `results/table_amend1.json`, figure `figures/known.png`.*
 
-We split two example fine-tunes of Qwen3-1.7B over the subcomponents of its decomposition, two seeds each, and read five
-numbers about where each update lands and what the moved subcomponents do. Every number differs between the two
-fine-tunes at their full updates by more than their seeds differ, and for three of them our random changes at two sizes
-do not differ that way. Those three go to the maths arms as descriptions, not as a verdict on which update teaches
-content the model lacked, since the fine-tunes differ 37 times in weight size.
+We split two example fine-tunes of Qwen3-1.7B over the subcomponents of its decomposition and found three readings that
+tell them apart, which size alone does not reproduce. We then read the same three on a third fine-tune with the same
+facts task, answer format and recipe as the fictional-facts example, but on facts the model already knows. That third
+fine-tune reads like the fictional-facts example, not like the template example, so these readings follow the
+training task and format and do not see whether the facts were new.
 
 ## The answer
 
-Three readings separate the two example fine-tunes at their full updates and go to the maths arms. They are the share
-of the update outside the subcomponents, the share of the split on subcomponents already on, and the overlap of the
-switched-on subcomponents with think mode's. Size does not produce those gaps between our two random changes. Our
-filed lean that placement would not separate the fine-tunes was wrong: it separates them at both sizes, and most
-strongly at the TOFU step before the facts are learned. The overlap row does not read as thinking: the matched
-no-think set overlaps as much or more.
+Three readings separate the template fine-tune from the fictional-facts fine-tune: the share of the update outside the
+subcomponents, the share of the split on subcomponents already on, and the overlap with think mode's subcomponents. A
+fine-tune on real facts the model already knows, built like the fictional one, reads on the fictional side at matched
+size on the first two, and at its end on the outside share and think overlap. So these readings see the task and the
+format, not whether the content is new. Placement at the end gave no call, its two seeds disagreeing.
 
 ## What we were trying to test
 
@@ -33,6 +34,12 @@ behaviour and one that teaches content the model lacked. Its two example fine-tu
   the facts: recall 0.157 and 0.173 against the untrained model's 0.179. At the first step past the learning line,
   steps 550 and 500, its norm is 15.5 and 14.7. At its full update, step 1250, its norm is 18.1, which is **37 times**
   anchor 1's.
+
+- **The known-facts fine-tune** (Amendment 1; baseline-lead's E103 Amendments 1 and 2): anchor 2's task, answer
+  format and recipe, but on TOFU's 217 real-fact rows, facts the model already knows, each answered in one sentence.
+  Seeds 42 and 142. At step 32 its norms are 0.480 and 0.483, matched to both anchors; at the five-epoch end, step 335,
+  8.37 and 8.25, under half of anchor 2's full 18.1. It asks whether the three readings that separate the anchors follow
+  the label "already known", reading like anchor 1, or the task and format, reading like anchor 2.
 
 Every TOFU reading at the full or past-line state carries this caveat. It may read a pull towards the training's names
 rather than only new content. On author questions, the share of answers that state a fact fell from 0.695 to 0.411 and
@@ -50,7 +57,8 @@ is the KL from the untrained model on the 128 maths rows, in nats per position:
 | output size | 0.13 | 0.22 | 0.64 | 0.65 | 0.12-0.14 | 0.53-0.62 |
 | weight norm | 0.49 | 0.48 | 18.1 | 15 | | |
 
-So the 37-times gap in norm is about a five-times gap in output size.
+So the 37-times gap in norm is about a five-times gap in output size. The known-facts fine-tune's output size is 0.149
+and 0.146 at matched size, between the anchors, and 0.36 and 0.41 at its end, against anchor 2's full 0.61 and 0.66.
 
 Rows: the template's 64 own rows, TOFU's 128 own rows, and 128 maths rows that both anchors are read on, all cut to 256
 tokens. Rows 1 and 4 score whole-question answer positions on each anchor's own rows. Row noise is half the 95% range of
@@ -85,6 +93,13 @@ The comparison rule, filed before the run: a row **counts** when the gap between
 strictly over the larger of the two anchors' own seed spreads. At the full update it also prints **"size can do this"**:
 the same rule applied between the two random sizes, the two kinds as the pair at each size.
 
+Amendment 1's rule, also filed before its run, places the known-facts arm's seed mean on the line from anchor 1's mean,
+at 0, to anchor 2's, at 1. Call that position $f$. The noise is the largest of the three arms' seed spreads, divided by
+the anchors' gap. The arm reads **like anchor 2** when $f$ is over 0.5 plus the noise, **like anchor 1** when under 0.5
+minus it, and otherwise midway, no call. When the anchors themselves do not count as separate, there is no call. The
+matched size is the comparison that decides, as only there do all three arms share a size. At the end the known-facts
+arm is set beside anchor 2's full update, which is 2.2 times larger in norm, so the end is description.
+
 ## What we expected, and why
 
 - **Direct share at the matched step**: the template within 0.01 of the alive-pieces random, as an earlier small state
@@ -96,6 +111,10 @@ the same rule applied between the two random sizes, the two kinds as the pair at
 - **Credit**: the template under 0.01 at both seeds; no lean for TOFU.
 - **Think overlap**: think mode and the no-think set within 0.17 fold of each other at every state, as before; every
   fold between 3 and 4.
+- **The known-facts fine-tune, filed after E94's first run**: like anchor 2 on outside share and placement at matched
+  size, since it shares anchor 2's rows type, format and recipe and both sit about 30 steps into the same 250-step
+  warm-up. Think overlap at matched size: no call, since the anchors do not separate there. At the end: reported, no
+  lean.
 
 ## What we observed
 
@@ -214,6 +233,53 @@ template's no-think folds and the big Gaussian's sit outside 3 to 4.
 
 Unit: fold over chance, 1000 draws; no row half-width was computed.
 
+### Does a fine-tune on facts the model already knows read like the template or like TOFU? Like TOFU.
+
+Figure `experiments/qwen_d3_rows/figures/known.png`: each seed of each arm placed between the anchors' means, template at
+0 and TOFU at 1, with the rule's midway band in grey.
+
+**Reading it.** At matched size the known-facts fine-tune reads on TOFU's side on both readings that decide, so these
+readings do not follow the label "already known". Its outside share is 0.0985 and 0.0992, against the template's 0.124
+and TOFU's 0.096: nine-tenths of the way to TOFU. Its placement excess is 0.099 and 0.105, against -0.008 and 0.160:
+about two-thirds of the way, just past the band. On both, it still differs from TOFU by more than the seeds do, so it
+is near TOFU, not the same. Think overlap cannot be called at matched size, as before; the known-facts arm's think mode
+overlaps 0.34 and 0.41 more than its no-think set, as TOFU's matched step does, while the template's overlaps less.
+
+At the end, beside TOFU's full update, the outside share reads like TOFU, 0.174 and 0.163 against 0.186 and 0.184.
+Think overlap also reads like TOFU, 3.17 and 3.19 against 3.08 and 3.01, the template being at 3.7. Placement gives no
+call: its seeds read 0.002 and 0.032, a spread larger than the anchors' whole gap of 0.023.
+
+One caveat changes the end outside reading. Divided by its own null, the known-facts end leaves 0.60 of chance outside,
+the template 0.58 and TOFU's full update 0.64: one-third of the way to TOFU, on the template's side. At matched size the
+same ratio still reads on TOFU's side, 0.48 against 0.58 and 0.45. So the matched outside verdict holds in both forms,
+the end one only in the filed form, where part of the gap comes from which matrices the update sits in.
+
+| reading, size | known-facts, seeds 42; 142 | template | TOFU | $f$ | noise | verdict |
+|---|---|---|---|---|---|---|
+| outside, matched | 0.0985; 0.0992 | 0.1234; 0.1236 | 0.0965; 0.0960 | 0.90 | 0.027 | like anchor 2 |
+| placement, matched | 0.0985; 0.1045 | -0.0076; -0.0083 | 0.1580; 0.1624 | 0.65 | 0.035 | like anchor 2 |
+| think, matched | 3.65; 3.59 | 3.66; 3.75 | 3.74; 3.71 | | | no call: anchors do not separate |
+| outside, end | 0.1737; 0.1626 | as above | 0.1855; 0.1840 | 0.73 | 0.18 | like anchor 2 |
+| placement, end | 0.0017; 0.0320 | as above | 0.0167; 0.0136 | 1.07 | 1.31 | midway: no call |
+| think, end | 3.17; 3.19 | as above | 3.08; 3.01 | 0.79 | 0.14 | like anchor 2 |
+
+TOFU at the end is its full update, step 1250. Outside null for the known-facts arm: 0.206 and 0.209 at matched size,
+0.288 and 0.274 at the end. Think minus no-think: 0.34 and 0.41 at matched size, -0.16 and -0.09 at the end. Switched-on
+set: 1501 and 1468 subcomponents at matched size, 3757 and 4103 at the end, against TOFU full's 7805 and 7987.
+
+Printed, not scored: the direct share and credit on the known-facts arm's own rows, 39 rows with 2,961 whole-question
+positions, and on anchor 2's TOFU rows.
+
+| state | direct, own rows | credit, own rows | direct, TOFU rows | credit, TOFU rows |
+|---|---|---|---|---|
+| known-facts, matched | 0.0183; 0.0178 | 0.0015; 0.0014 | 0.0193; 0.0190 | 0.0030; 0.0029 |
+| known-facts, end | 0.0253; 0.0291 | 0.0043; 0.0049 | 0.0253; 0.0293 | -0.0118; -0.0170 |
+| TOFU matched, own rows | 0.0296; 0.0321 | 0.0021; 0.0018 | | |
+| TOFU full, own rows | -0.0047; -0.0033 | 0.0058; 0.0059 | | |
+
+At the end on TOFU's rows the split keeps 0.012 and 0.017 less of the gain under masks than doing nothing; pooled over
+every position it reads -0.001 and 0.001, so the whole-question value does not survive a change of positions.
+
 ## What each row means for the next step
 
 Applying the plan's "What changes what we do next". No control failed, and some number counts, so the stop rule's
@@ -236,13 +302,23 @@ supervised fine-tune, each at steps 10 and 100. Outside share, placement excess 
 beside the template and TOFU values and the two random sizes. Each is stated with its output size and with the TOFU
 caveat. Direct share and credit are printed as description.
 
+Amendment 1 lands on the plan's first branch: outside share and placement both read like anchor 2 at matched size. So
+the three carried readings follow task, format or recipe, not the label. They stay descriptions of the update on the
+maths arms, read in E104, and D3's write-up says VPD's readings do not see "already known" on this pair. No end reading
+goes against the matched verdict, so nothing goes to the lead as a surprise.
+
 ## What we learned
 
 The decomposition does see the template and TOFU fine-tunes differently, on three readings that size alone does not
 reproduce between our random changes. The TOFU update sits partly in matrices with a larger outside null and puts far
 more of its split on already-on subcomponents before it learns than after. None of this says which update teaches new
-content. The anchors differ 37 times in weight size, and TOFU may be pulling the model to its training's names. For
-the goal's question of new capability against strengthening, these are descriptions to compare the maths arms against.
+content. The anchors differ 37 times in weight size, and TOFU may be pulling the model to its training's names.
+
+The known-facts fine-tune settles part of that. Built like TOFU but on facts the model already knows, it reads on TOFU's
+side, so the readings follow the training's task and format, not whether the content is new. For the goal's question of
+new capability against strengthening, these three readings therefore cannot by themselves tell the two apart on this
+pair. One limit stands for every such claim: a new circuit assembled from subcomponents the model already has reads as
+brought out, not taught, to VPD, so "already known" and "new" may differ below what the decomposition resolves.
 
 ## How compelling is the evidence
 
@@ -255,6 +331,11 @@ the goal's question of new capability against strengthening, these are descripti
 - Credit and direct share are each under 0.06 of the quantity they divide, and change sign or size with the position
   set on TOFU's full update.
 - Only two anchors, one template and one fact set, and only Qwen3-1.7B with one decomposition.
+- The known-facts arm: two seeds. "Like anchor 2" cannot tell task, format and the recipe's warm-up phase apart. At
+  matched size TOFU has not yet learned its facts, so the deciding comparison sets two opening phases side by side;
+  both gain on their trained answers there, 1.50 and 2.47 nats a token. Placement at matched size is only just past
+  the band, at the level of the alive-pieces random, 0.09. The end compares states 2.2 times apart in norm, and its
+  outside verdict flips side when each share is divided by its null.
 
 ## Surprises
 
@@ -264,10 +345,15 @@ subcomponents. We cannot explain why the opening steps concentrate there and the
 direct share at TOFU's matched step is above the random rather than below; think mode overlaps less than the no-think
 set on the template.
 
+Amendment 1: none. Every filed lean held. Two small things: the known-facts end's two seeds disagree on placement by
+more than the anchors' gap, and on TOFU's rows its split keeps slightly less under masks than doing nothing.
+
 ## What next
 
-- Read outside share, placement excess and think overlap on the three maths arms at steps 10 and 100. If an arm reads
-  with the template on all three, D3 has a description to report; if they split, the rows disagree and we say so.
+- The three carried readings were read on the maths arms in E104; they are descriptions of task and format there too,
+  not of new against known content.
+- An anchor 2 state saved near norm 8.4 would make the known-facts end a size-matched comparison. If the known-facts end
+  then sits on the template's side, the end verdicts were size, not task.
 - Read one random change under masks at each size. If it reaches TOFU's 0.006 credit, credit is size.
 - A second random draw per kind would give the size check a spread of its own, instead of borrowing the kinds' gap.
 
@@ -283,6 +369,15 @@ set on the template.
 | 5 | template's credit under 0.01 | both seeds | 0.0006, 0.0006 | holds |
 | 6_T_like_L | think minus no-think at most 0.17 everywhere | all 8 states | template -0.56, -0.67; TOFU matched 0.40, 0.34; TOFU full seed 42 -0.25 | misses |
 | 6_fold_3_to_4 | every fold 3 to 4 | 8 states and 4 randoms, both sets | template no-think 4.22, 4.42; big Gaussian 2.95, 2.93 | misses |
+| K1 | known-facts outside share at matched size reads like anchor 2 | $f$ over 0.5 plus noise | $f$ 0.90, noise 0.027 | holds |
+| K2 | known-facts placement at matched size reads like anchor 2 | as K1 | $f$ 0.65, noise 0.035 | holds |
+| K3 | known-facts think overlap at matched size: no call | anchors do not separate | anchors do not separate | holds |
+| K4 | known-facts outside share at the end | reported | $f$ 0.73, noise 0.18: like anchor 2 | reported |
+| K5 | known-facts placement at the end | reported | $f$ 1.07, noise 1.31: midway, no call | reported |
+| K6 | known-facts think overlap at the end | reported | $f$ 0.79, noise 0.14: like anchor 2 | reported |
+
+Amendment 1's controls all passed: W0 run as the fine-tuned model on the known-facts rows gave equal KLs to within a
+relative 2.8e-16, every state's norm matched its filed value, and every per-state check read ok.
 
 ## Departures from the literature
 
@@ -303,9 +398,11 @@ set on the template.
 
 The adversary. Teacher training. A random change under the masks, so credit's size check is unread. Own-row size check
 for the direct share. More than one random draw per kind and size. Ceiling under masks. Masks frozen at the original
-model's for row 4. TOFU states at steps 100 and 200; the step nearest in KL. The maths arms. Think-mode sets built on
+model's for row 4. TOFU states at steps 100 and 200; the step nearest in KL. The maths arms, read separately in E104. Think-mode sets built on
 TOFU's own questions. Halves of rarely-on and often-on subcomponents. Rank of the updates. An independent check of this
-report.
+report. For Amendment 1: an anchor 2 state at norm 8.4; a random change at the known-facts end's output size; a third
+known-facts seed; E107's wrong-answer states, not read; the neuron readings of the known-facts pair, which are
+baseline-lead's.
 
 ## Provenance
 
@@ -314,3 +411,10 @@ matched), 53031 (TOFU full), 53072 (small randoms), 53102 (big randoms), 53130 (
 all, peak card memory 42.5 GiB, host 88 GB. Stage 0 reproduced every stored reference on the earlier E40 step-10 state
 first and alone, within its bands. Results: `experiments/qwen_d3_rows/results/{table,control,nulls}.json`, `run.log`,
 one folder per state. Commits `3fb8e407` to `ca40eba6`.
+
+Amendment 1: two more `debug` jobs, one L40 each, $0: 53491 for the matched states and 53641 for the end states, 55 min
+each, peak card memory 42.5 GiB, host 81 GB. Stage 0 was not rerun; W0 on the new rows ran first in job 53491. States:
+baseline-lead's `experiments/known_answer_pair/results/large/dW/{amend1,amend2_s142}_{matched,end}.safetensors`, fp32,
+provenance in `~/commute-data/agents/qwen-decomp-lead/note-e103-states.md`. Results:
+`experiments/qwen_d3_rows/results/{table_amend1,control_amend1}.json`, `known_s{42,142}_{matched,end}/`, the `[amend1`
+lines of `run.log`. Commits `0985170d` to `30feef4c`.

@@ -2,7 +2,8 @@
 at both sizes and the row's do-nothing reference on the same axes; the size of each state on the maths rows (K00 - K0,
 nats per position) and its weight norm are in the tick labels. A number that reads no call is left out.
 
-  python experiments/qwen_d3_rows/plot.py   ->  figures/{direct,outside,placement,credit,think}.png
+  python experiments/qwen_d3_rows/plot.py   ->  figures/{direct,outside,placement,credit,think,known}.png
+  (known.png: Amendment 1, from results/table_amend1.json)
 """
 
 from __future__ import annotations
@@ -149,11 +150,55 @@ def think(nums: dict) -> None:
            zero=None)
 
 
+KNOWN = "#2a9d55"
+
+
+def known(t: dict) -> None:
+    """Amendment 1 (results/table_amend1.json): each seed of the template, TOFU and known-facts fine-tunes placed on the
+    line from the template's seed mean (0) to TOFU's (1), per reading and size, with the rule's midway band 0.5 +- noise."""
+    fig, ax = plt.subplots(figsize=(10, 4.2))
+    cols = [(s, r) for s in ("matched", "end") for r in ("outside", "placement", "think")]
+    seen: set[str] = set()
+    for x, (size, reading) in enumerate(cols):
+        sd = t["sides"][size][reading]
+        if "f" not in sd:
+            ax.text(x, 0.5, "no call:\nthe template and\nTOFU do not\nseparate here", ha="center", va="center", fontsize=7)
+            continue
+        m1, m2 = sum(sd["anchor1"]) / 2, sum(sd["anchor2"]) / 2
+        band = "midway band, 0.5 ± noise: no call"
+        ax.fill_between([x - 0.35, x + 0.35], 0.5 - sd["noise"], 0.5 + sd["noise"], color="#e6e6e6",
+                        label=None if band in seen else band)
+        seen.add(band)
+        for i, (key, name, colour) in enumerate((("anchor1", "template fine-tune (anchor 1)", A1),
+                                                  ("anchor2", "TOFU fictional facts (anchor 2)", A2),
+                                                  ("known", "known-facts fine-tune", KNOWN))):
+            for j, v in enumerate(sd[key]):
+                ax.plot(x + (i - 1) * 0.2 + (j - 0.5) * 0.07, (v - m1) / (m2 - m1), "o", ms=7, color=colour,
+                        label=None if name in seen else name)
+                seen.add(name)
+    ax.axhline(0, color=A1, lw=0.8, ls=":")
+    ax.axhline(1, color=A2, lw=0.8, ls=":")
+    ax.set_xticks(range(len(cols)), [f"{r}\n{'matched size\nnorm 0.48' if s == 'matched' else 'end, norm\nknown 8.4, TOFU 18.1'}"
+                                     for s, r in cols], fontsize=7)
+    ax.axvline(2.5, color="k", lw=0.6)
+    ax.set_ylabel("position between the anchors' means:\n0 = template, 1 = TOFU", fontsize=8)
+    ax.set_title("Does the fine-tune on facts the model already knows read like the template or like TOFU?\n"
+                 "Like TOFU on outside share and placement at matched size; at the end on outside share and think overlap",
+                 fontsize=9)
+    ax.grid(axis="y", color="#dddddd", lw=0.6)
+    ax.legend(fontsize=7, loc="upper left", bbox_to_anchor=(1.01, 1))
+    fig.tight_layout()
+    fig.savefig(HERE / "figures" / "known.png", dpi=150)
+    plt.close(fig)
+    print("wrote known.png")
+
+
 def main() -> None:
     (HERE / "figures").mkdir(exist_ok=True)
     nums = json.loads((HERE / "results" / "table.json").read_text())["numbers"]
     for f in (direct, outside, placement, credit, think):
         f(nums)
+    known(json.loads((HERE / "results" / "table_amend1.json").read_text()))
 
 
 if __name__ == "__main__":
