@@ -144,6 +144,12 @@ Write the hand-off into the relevant report or plan, not only the chat, so the n
   (`.claude/skills/writeup/SKILL.md`): the answer first in 80 plain words, the experiment as a story, one figure
   per claim with its reference on the same axes, about two numbers and no codes per sentence, and
   `check.py` run on the file before it is called done.
+- **Adopted definitions are frozen** (user, 2026-11-06). The reuse definition is `decisions.md` rows 81 and 87
+  (Jain et al. 2024 Defs 1-2, held-out carrying) plus the direction-removal check, nothing else. A rule, clause, band,
+  pooling rule or score added to a verdict is a definition change: only the user makes one, by a dated row. A case
+  the definition cannot read is reported "unreadable" or "does not apply", never given a new rule; a miss is a result.
+  Every verdict-giving report quotes the rows it reads under and lists its departures. E99 grew six rules in two days,
+  each filed as an amendment, until its first departure removed Jain's Definition 1.
 - Concerns about existing claims go in a review report, not inline boxes.
 - Compute: training, fine-tuning, or more than one benchmark forward pass goes to a GPU, never local CPU. Route for the
   earliest results, not the lowest $/h (user, 2026-10-20): runs of ≤ 30 min go to the MATS cluster's `debug` QoS (agents
