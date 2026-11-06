@@ -1,0 +1,45 @@
+{
+  "experiment": "E107 Amendment 1 (label_vs_style): at matched size, does VPD's switched-on set of the wrong-answer arm sit with the known-facts arm's (VPD's set reads rows, topic or style) or apart from it (it reads whether the trained answer agrees with what W0 already holds)?",
+  "filed": "2026-11-06",
+  "plan": "reports/plans/2026-11-06_plan_e107-amend1-vpd-sets.md",
+  "advice": "reports/plans/2026-11-06_advice_e94-amend2.md (Fable): run it as E107's amendment once VPD's sets separate known from fictional beyond the seed null, which experiments/qwen_d3_rows/results/set_overlap.json shows (0.63-0.66 against 0.86-0.89)",
+  "code": "experiments/label_vs_style/amend1_vpd.py (GPU, E94's run.finish), amend1_sets.py (CPU, the sets and the rule); job cluster/label_vs_style_amend1.sbatch",
+  "states": {
+    "wrong_s42_matched": {
+      "file": "label_vs_style/results/large/dW/WRONG42_matched.safetensors",
+      "step": 32,
+      "norm": 0.49235202767411906
+    },
+    "wrong_s142_matched": {
+      "file": "label_vs_style/results/large/dW/WRONG142_matched.safetensors",
+      "step": 31,
+      "norm": 0.47631576004140974
+    },
+    "source": "norms: fp64 sums of the saved files, tensor by tensor (d3.norm's definition), measured on CPU 2026-11-06 (~/commute-data/scratch/baseline-lead/e107a1-writer/dry_norms.out); E107's training log reads 0.4923520311 and 0.4763157610 (results/arm_WRONG*.json .matched), relative 7e-9 and 2e-9. Both files: 196 fp32 tensors, names and shapes equal to the known arm's amend1_matched (fleet/ckpt-info). The known arm's matched norms 0.4801 and 0.4832, steps 32 and 32."
+  },
+  "first_minutes": "E94's, unchanged (experiments/qwen_d3_rows/results/predictions.json .first_minutes): each state's norm against this file's within 1e-6 relative and every tensor fp32; K0 on the maths rows against W0's from E94's stage 0 within 1e-6; card and host peaks under 44 GiB and 105 GB; classes add to pooled. A miss writes qwen_d3_rows/results/stopped.json and exits 1. No new control stage: W0 through this path is E94's stage 0 (S = 0, K00 = K01 = K0), and the known-facts states read by the same code are the positive control.",
+  "measure": "S = subcomponents gated on (active at >= 1% of the 32768 positions) with the update and off at W0, on E94's 128 maths rows, from results/large/<state>/counts_pe.safetensors as qwen_d3_rows/set_overlap.py builds it; checked against each state.json overlap.size_S. Jaccard |A & B| / |A | B| scored; |A & B| / min(|A|, |B|) reported beside, unscored.",
+  "rule": {
+    "text": "amend1_sets.py `side` (E107's wrong_rule with Jaccard). cross = J(wrong_s42, known_s42), J(wrong_s42, known_s142), J(wrong_s142, known_s42), J(wrong_s142, known_s142). w_wrong = J(wrong_s42, wrong_s142); band = 1 - min(w_wrong, w_known); L = w_known. 'no call: size cap' first, when any wrong-against-known pair's min/max |S| is at or under cap_line = x + 1 - w_known. 'familiarity' (apart: VPD's set reads whether the trained answer agrees with W0) iff max(cross) <= x + band and max(cross) <= L - band. 'topic or style' (with known: it reads the rows, topic or style) iff min(cross) >= L - band and min(cross) - x > band. 'no call' otherwise. 'unread' with any value missing or not finite (W0's empty sets), or not four cross values. Both cannot hold: familiarity needs max(cross) <= x + band, topic min(cross) > x + band.",
+    "w_known": 0.8567854909318324,
+    "w_known_source": "experiments/qwen_d3_rows/results/set_overlap.json: known_s42_matched against known_s142_matched (1370 shared of 1501 / 1468); amend1_sets.py asserts the file still reads it",
+    "x": 0.6599899849774662,
+    "x_source": "set_overlap.json: the highest of the four known-against-fictional matched Jaccards (known_s142 against a2_s42; the others 0.632, 0.639, 0.646); asserted",
+    "cap_line": 0.8032044940456338,
+    "lines_at_w_known": "band 0.1432 when the wrong arm's seeds agree at least as well as the known arm's. familiarity: max(cross) <= 0.7136; topic or style: min(cross) > 0.8032. Between: no call. A less stable wrong arm widens the band, which pushes the topic line up and the familiarity line down.",
+    "fictional_seed_null": 0.8863409770687937,
+    "lean": "topic or style",
+    "lean_source": "E107's neuron reading (topic or style on both probes) and the weight cosines of reports/reviews/2026-11-06_review_e107-independent-check.md: wrong against known at the same seed 0.825 and 0.821, known against known across seeds 0.821, so the label moved the update about as much as a seed does; known already reads like the fictional arm on E94's three readings (K1-K3)",
+    "expected": "|S| 1300-1700 per wrong state (known 1468-1501 at about the same norm); w_wrong 0.82-0.90; cross 0.76-0.88; 'topic or style' or 'no call' (if the cross-seed pairs fall to about the seed null minus a few hundredths); 'familiarity' would be a reversal of the neuron reading and gets an explicit announcement"
+  },
+  "references": {
+    "W0": "S is empty (E94 stage 0 read S = 0): every Jaccard is undefined, the rule reads unread",
+    "do_nothing": "S is set by the fine-tuned model's gates and does not depend on where δW is placed: do-nothing reads exactly as the state itself; no separate number",
+    "seed_null": "known 0.857, fictional 0.886 (set_overlap.json); the wrong arm's own w_wrong is read in this run and enters the band",
+    "positive_control": "known against fictional, 0.632-0.660: a change of rows, topic and content that the measure does separate from the seed null"
+  },
+  "blind_to": "Jaccard is capped by min/max |S|: a set 25% larger cannot exceed 0.8 against a smaller one (fictional's 1847-1937 against known's 1468-1501); the size-cap guard and |A & B| / min beside cover it. On |A & B| / min the known-against-fictional gap (0.875-0.904 against the known seed null 0.933) is under its own band (0.067), so that measure cannot call 'topic or style' and is reported only. The set is read on maths rows, not on the trained rows; it is a gate-identity reading and is blind to how much each switched-on subcomponent carries. At matched size the step is a size control only (decisions.md), so no new-content claim follows from either verdict.",
+  "rows": "The wrong arm trains on the known arm's exact 217 TOFU real-fact rows, five wordings and writer, with only the stated answer swapped (E107 plan; commute.known_facts `swap`), so wrong against known holds rows, prompts, topic and style fixed. Known against fictional differs in rows, topic and content. That is what makes this comparison sharper than known against fictional.",
+  "edge_cases": "amend1_sets.py --edges, run before filing (~/commute-data/scratch/baseline-lead/e107a1-writer/edges.out): WRONG as close as known's seeds -> topic or style; as far as fictional -> familiarity; equidistant (midpoint 0.758) -> no call; on the familiarity line (inclusive) -> familiarity; on the topic line (strict) -> no call; pairs straddling -> no call; wrong seeds disagree (w_wrong 0.5) with cross at the seed null -> no call, with cross 0.2 -> familiarity; a wrong set 30% larger -> no call: size cap; W0 (empty sets) -> unread; a missing pair -> unread.",
+  "printed": "Unscored, as description beside the known states: E94's outside share, placement excess and think overlap for each wrong state (state.json); |A & B| / min per pair (amend1_sets.json)."
+}
