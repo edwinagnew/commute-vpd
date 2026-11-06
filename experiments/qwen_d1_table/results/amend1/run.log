@@ -12,3 +12,124 @@
 [  1251.1s] [check] adjoint_old_E86: ok {"K": 0.16567121577502888}
 [  1251.1s] [check] control_memory: ok {"gpu_gib": 42.76618194580078, "host_gb": 93.3021}
 [  1251.1s] [control] passed; 10.8 min a maths state, peak GPU 42.77 GiB, host 93.3 GB
+[     0.0s] [start] amend1 {'stage': None, 'states': 'a1_s0,a1_s1,a2_s142,a2_s42', 'edges': False, 'decomp': '/mnt/nw/home/e.agnew/commute-data/artifacts/qwen3-1.7b-p-e9fcffd5-torch'}; config Config(gain_batch=2, limit_s=7020, first_guess_s=2400)
+[     5.3s] [check] rows_and_seqs: ok {"a1": 2414, "tofu": 13421, "seqs_maths": 256, "seqs_a1": 256, "seqs_tofu": 787, "seqs_tofu_all": 800}
+[   120.6s] [load] target, components, Γ, live set; NVIDIA L40, peak GPU 40.61 GiB, host 43.0 GB
+[   128.0s] [check] a1_s0_norm: ok {"norm": 0.4865203387435381, "e93": 0.4865203387435381}
+[   352.4s] [sigma] 196 sites in 177 s, peak GPU 40.61 GiB, host 72.0 GB
+[   602.5s] [adjoint a1_s0] share 0.730275927 null 0.595056189 (least squares 0.087267053, its null 0.0902076281) size 0.709343063 second 3.93e-09 reproduced_sigma 0.629338 c_zero 0; 250 s, peak GPU 40.61 GiB, host 80.2 GB
+[   631.3s] [clean adjoint] K 0.0594363251 nll 2.30085157; rows 64, 23 s, peak GPU 40.61 GiB, host 86.8 GB
+[   631.3s] [check] a1_s0_memory: ok {"gpu_gib": 40.61272192001343, "host_gb": 86.846656}
+[   647.4s] [gain adjoint] 0.199375250734 nats per response token, 256 rows, 16 s, peak GPU 40.61 GiB, host 86.8 GB
+[   778.0s] [cells a1_s0 adjoint own] K10 0.361775972 K11 0.135264668 nll_m10 42729.0886 nll_m11 38445.005; rows 64, 131 s, peak GPU 42.77 GiB, host 87.2 GB
+[   813.0s] [clean remainder] K 0.0363305712 nll 2.26158624; rows 64, 33 s, peak GPU 42.77 GiB, host 87.2 GB
+[   816.5s] [a1_s0] {"verdict": "fails"} rules {"1": {"K": {"W0": 0.3226425717859702, "FT": 0.0, "random": 0.32288297767121504, "signs": 0.5329353402263709, "moved": 0.05943632506374695, "remainder": 0.03633057121918257}, "over_ruler": 0.18421724304619952, "teeth": {"random": {"gap": 0.2865524064520325, "width": 0.035247742346921934, "label": "fails"}, "signs": {"gap": 0.4966047690071883, "width": 0.06299509769386996, "label": "fails"}}, "result": "misses"}, "2": {"value": 0.7302759270817171, "null": 0.5950561885890446, "spread": null, "result": "pending"}, "3": {"value": 0.7093430634013247, "result": "holds"}, "4": {"value": 0.847354870786032, "line": 0.8825513802241595, "result": "fails"}, "5": {"diff": 0.27045076796396933, "width": 0.05130376065636473, "result": "misses"}, "6": {"gains": {"do_nothing": 0.7986404607740768, "ls": 0.5617250084280835, "ls_w0_masks": 0.006395221487205789, "ceiling": 0.7999712389521526, "random": -0.0007316163599475199}, "width": 0.030812466061272165, "result": "no room"}}
+[   817.0s] [a1_s0] done in 696 s, peak GPU 42.77 GiB, host 87.2 GB
+[   828.6s] [check] a1_s1_norm: ok {"norm": 0.4887295378611827, "e93": 0.4887295378611827}
+[  1111.6s] [adjoint a1_s1] share 0.728152324 null 0.595260307 (least squares 0.0871164868, its null 0.0900964548) size 0.71474789 second 4.02e-09 reproduced_sigma 0.628555 c_zero 0; 268 s, peak GPU 42.77 GiB, host 87.2 GB
+[  1149.0s] [clean adjoint] K 0.0584667945 nll 2.29389001; rows 64, 25 s, peak GPU 42.77 GiB, host 87.4 GB
+[  1149.0s] [check] a1_s1_memory: ok {"gpu_gib": 42.76618194580078, "host_gb": 87.396668}
+[  1165.3s] [gain adjoint] 0.194878831284 nats per response token, 256 rows, 16 s, peak GPU 42.77 GiB, host 87.4 GB
+[  1318.5s] [cells a1_s1 adjoint own] K10 0.366724543 K11 0.134803554 nll_m10 42728.6213 nll_m11 38368.2936; rows 64, 153 s, peak GPU 42.77 GiB, host 87.8 GB
+[  1356.7s] [clean remainder] K 0.0375952854 nll 2.25794075; rows 64, 36 s, peak GPU 42.77 GiB, host 87.8 GB
+[  1360.2s] [a1_s1] {"verdict": "fails"} rules {"1": {"K": {"W0": 0.3279382132899286, "FT": 0.0, "random": 0.3281711392316563, "signs": 0.5430309792961057, "moved": 0.05846679445840655, "remainder": 0.03759528538090417}, "over_ruler": 0.17828600659818908, "teeth": {"random": {"gap": 0.29057585385075213, "width": 0.03611401850507001, "label": "fails"}, "signs": {"gap": 0.5054356939152016, "width": 0.06361853786239857, "label": "fails"}}, "result": "misses"}, "2": {"value": 0.7281523235710105, "null": 0.5952603074752768, "spread": 0.0021236035107066176, "result": "misses"}, "3": {"value": 0.7147478897022551, "result": "holds"}, "4": {"value": 0.8514302771724249, "line": 0.8835767746393102, "result": "fails"}, "5": {"diff": 0.26710937928485634, "width": 0.052398546484804465, "result": "misses"}, "6": {"gains": {"do_nothing": 0.797077203959844, "ls": 0.5712845159761214, "ls_w0_masks": 0.006505122246103923, "ceiling": 0.7984012234310518, "random": -0.000817856758919182}, "width": 0.031575792561118976, "result": "no room"}}
+[  1360.6s] [a1_s1] done in 544 s, peak GPU 42.77 GiB, host 87.8 GB
+[  1370.0s] [check] a2_s142_norm: ok {"norm": 18.121463731722297, "e93": 18.121463731722297}
+[  1638.1s] [adjoint a2_s142] share 0.631771895 null 0.609979282 (least squares 0.101016585, its null 0.101567516) size 0.373345758 second 1.27e-06 reproduced_sigma 0.377423 c_zero 0; 259 s, peak GPU 42.77 GiB, host 87.8 GB
+[  1687.1s] [clean adjoint] K 1.01685659 nll 3.12680382; rows 128, 42 s, peak GPU 42.77 GiB, host 87.8 GB
+[  1687.1s] [check] a2_s142_memory: ok {"gpu_gib": 42.76618194580078, "host_gb": 87.76474}
+[  1703.4s] [gain adjoint] 1.168844644546 nats per response token, 787 rows, 16 s, peak GPU 42.77 GiB, host 87.8 GB
+[     0.0s] [start] amend1 {'stage': None, 'states': 'a1_s0,a1_s1,a2_s142,a2_s42', 'edges': False, 'decomp': '/mnt/nw/home/e.agnew/commute-data/artifacts/qwen3-1.7b-p-e9fcffd5-torch'}; config Config(gain_batch=2, limit_s=7020, first_guess_s=2400)
+[     6.2s] [check] rows_and_seqs: ok {"a1": 2414, "tofu": 13421, "seqs_maths": 256, "seqs_a1": 256, "seqs_tofu": 787, "seqs_tofu_all": 800}
+[    67.6s] [load] target, components, Γ, live set; NVIDIA L40, peak GPU 40.61 GiB, host 43.1 GB
+[    67.6s] [a1_s0] already written
+[    67.6s] [a1_s1] already written
+[    73.0s] [check] a2_s142_norm: ok {"norm": 18.121463731722297, "e93": 18.121463731722297}
+[   273.3s] [sigma] 196 sites in 173 s, peak GPU 40.61 GiB, host 72.1 GB
+[   515.3s] [adjoint a2_s142] share 0.631771895 null 0.609979282 (least squares 0.101016585, its null 0.101567516) size 0.373345758 second 1.27e-06 reproduced_sigma 0.377423 c_zero 0; 242 s, peak GPU 40.61 GiB, host 80.3 GB
+[   565.6s] [clean adjoint] K 1.01685659 nll 3.12680382; rows 128, 44 s, peak GPU 40.61 GiB, host 87.0 GB
+[   565.6s] [check] a2_s142_memory: ok {"gpu_gib": 40.61272192001343, "host_gb": 87.015028}
+[   585.9s] [gain adjoint] 1.168844644546 nats per response token, 787 rows, 20 s, peak GPU 40.61 GiB, host 87.0 GB
+[   794.6s] [cells a2_s142 adjoint own] K10 2.97099322 K11 1.35170927 nll_m10 145502.684 nll_m11 115638.388; rows 128, 209 s, peak GPU 42.77 GiB, host 87.4 GB
+[   845.5s] [clean remainder] K 0.43185477 nll 3.00566811; rows 128, 48 s, peak GPU 42.77 GiB, host 87.4 GB
+[   847.6s] [a2_s142] {"verdict": "fails"} rules {"1": {"K": {"W0": 3.158639900965865, "FT": 0.0, "random": 3.184974386413134, "signs": 4.137504742543811, "moved": 1.0168565913636274, "remainder": 0.4318547704772838}, "over_ruler": 0.3219286222062502, "teeth": {"random": {"gap": 2.7531196159358498, "width": 0.07449783207097616, "label": "fails"}, "signs": {"gap": 3.705649972066527, "width": 0.10029153068072816, "label": "fails"}}, "result": "misses"}, "2": {"value": 0.6317718947451022, "null": 0.6099792817634259, "spread": null, "result": "pending"}, "3": {"value": 0.3733457581310567, "result": "holds"}, "4": {"value": 0.7420646064035755, "line": 0.8751715748508422, "result": "fails"}, "5": {"diff": 1.010963295022816, "width": 0.04573705298498215, "result": "misses"}, "6": {"gains": {"do_nothing": 0.7765034945167112, "ls": 0.5150869607118946, "ls_w0_masks": 0.002939231589586718, "ceiling": 0.7897846588828824, "random": -0.005288329485568375}, "width": 0.006586484059610237, "result": "no room"}}
+[   847.8s] [a2_s142] done in 780 s, peak GPU 42.77 GiB, host 87.4 GB
+[   857.5s] [check] a2_s42_norm: ok {"norm": 18.108714109879074, "e93": 18.108714109879074}
+[  1129.0s] [adjoint a2_s42] share 0.633188075 null 0.610142009 (least squares 0.101097074, its null 0.101636) size 0.363735521 second 1.22e-06 reproduced_sigma 0.373305 c_zero 0; 261 s, peak GPU 42.77 GiB, host 88.9 GB
+[  1175.5s] [clean adjoint] K 1.02495198 nll 3.17440569; rows 128, 41 s, peak GPU 42.77 GiB, host 95.6 GB
+[  1175.5s] [check] a2_s42_memory: ok {"gpu_gib": 42.76618194580078, "host_gb": 95.599696}
+[  1191.4s] [gain adjoint] 1.197607115579 nats per response token, 787 rows, 16 s, peak GPU 42.77 GiB, host 95.6 GB
+[  1379.0s] [cells a2_s42 adjoint own] K10 2.95630954 K11 1.34859986 nll_m10 145556.55 nll_m11 115803.525; rows 128, 188 s, peak GPU 42.77 GiB, host 96.0 GB
+[  1430.5s] [clean remainder] K 0.379904007 nll 2.9567309; rows 128, 49 s, peak GPU 42.77 GiB, host 96.0 GB
+[  1479.4s] [clean adjoint_old] K 1.02491391 nll 3.17414808; rows 128, 49 s, peak GPU 42.77 GiB, host 96.0 GB
+[  1481.5s] [a2_s42] {"verdict": "fails"} rules {"1": {"K": {"W0": 3.1207862035452134, "FT": 0.0, "random": 3.1478274005936564, "signs": 3.9957380603603485, "moved": 1.0249519807279515, "remainder": 0.379904007383865, "adjoint_old": 1.0249139143447457}, "over_ruler": 0.3284274903431725, "teeth": {"random": {"gap": 2.7679233932097906, "width": 0.07509788091457392, "label": "fails"}, "signs": {"gap": 3.615834052976484, "width": 0.09970343710273388, "label": "fails"}}, "result": "misses"}, "2": {"value": 0.6331880752363552, "null": 0.6101420092879446, "spread": 0.0014161804912530274, "result": "misses"}, "3": {"value": 0.36373552068762915, "result": "holds"}, "4": {"value": 0.7358030095789738, "line": 0.8765708002252036, "result": "fails"}, "5": {"diff": 1.0550927374018835, "width": 0.048664914252196434, "result": "misses"}, "6": {"gains": {"do_nothing": 0.7757350893025735, "ls": 0.5068985904634608, "ls_w0_masks": 0.0019196052340201399, "ceiling": 0.7886410324331362, "random": -0.005258268171166937}, "width": 0.007173583083509405, "result": "no room"}}
+[  1481.7s] [a2_s42] done in 634 s, peak GPU 42.77 GiB, host 96.0 GB
+[  1481.7s] [done] amend1 ['a1_s0', 'a1_s1', 'a2_s142', 'a2_s42']; FINISHED
+[     0.0s] [start] amend1 {'stage': None, 'states': 'u1,u2,R_s0,R_s70,N_s0,N_s70,F_s0', 'edges': False, 'decomp': '/mnt/nw/home/e.agnew/commute-data/artifacts/qwen3-1.7b-p-e9fcffd5-torch'}; config Config(gain_batch=2, limit_s=7020, first_guess_s=2400)
+[     6.4s] [check] rows_and_seqs: ok {"a1": 2414, "tofu": 13421, "seqs_maths": 256, "seqs_a1": 256, "seqs_tofu": 787, "seqs_tofu_all": 800}
+[    73.0s] [load] target, components, Γ, live set; NVIDIA L40, peak GPU 40.61 GiB, host 43.0 GB
+[    83.1s] [check] u1_norm: ok {"norm": 3.378296985955607, "e93": 3.378296985955607}
+[   273.7s] [sigma] 196 sites in 173 s, peak GPU 40.61 GiB, host 71.9 GB
+[   513.1s] [adjoint u1] share 0.71929917 null 0.601086896 (least squares 0.0874509755, its null 0.0909915354) size 0.621227462 second 1.26e-07 reproduced_sigma 0.538741 c_zero 0; 239 s, peak GPU 40.61 GiB, host 80.1 GB
+[   560.2s] [clean adjoint] K 0.186497427 nll 1.85976596; rows 128, 41 s, peak GPU 40.61 GiB, host 86.7 GB
+[   560.2s] [check] u1_memory: ok {"gpu_gib": 40.61272192001343, "host_gb": 86.731304}
+[   573.7s] [gain adjoint] 0.580623612934 nats per response token, 256 rows, 14 s, peak GPU 40.61 GiB, host 86.7 GB
+[   772.7s] [cells u1 adjoint own] K10 1.42898028 K11 0.309925786 nll_m10 66735.1443 nll_m11 63805.5672; rows 128, 199 s, peak GPU 42.77 GiB, host 87.1 GB
+[   827.6s] [clean remainder] K 0.103220699 nll 1.89233125; rows 128, 52 s, peak GPU 42.77 GiB, host 87.1 GB
+[   829.7s] [u1] {"verdict": "fails"} rules {"1": {"K": {"W0": 1.718376480711278, "FT": 0.0, "random": 1.7245499408694034, "signs": 2.7996811475737418, "moved": 0.1864974265045638, "remainder": 0.10322069881753143}, "over_ruler": 0.10853117963263088, "teeth": {"random": {"gap": 1.6213292420518721, "width": 0.11931477928425216, "label": "fails"}, "signs": {"gap": 2.69646044875621, "width": 0.2041408062358312, "label": "fails"}}, "result": "misses"}, "2": {"value": 0.7192991702328926, "null": 0.6010868956084803, "spread": null, "result": "pending"}, "3": {"value": 0.6212274617345303, "result": "holds"}, "4": {"result": "not graded"}, "5": {"diff": 0.18153357263698955, "width": 0.008475834866979962, "result": "misses"}, "6": {"result": "not graded"}}
+[   830.0s] [u1] done in 757 s, peak GPU 42.77 GiB, host 87.1 GB
+[   835.2s] [check] u2_norm: ok {"norm": 2.858323366996643, "e93": 2.858323366996643}
+[  1093.9s] [adjoint u2] share 0.70096351 null 0.59385437 (least squares 0.0881709338, its null 0.0916069751) size 0.582759177 second 9.64e-08 reproduced_sigma 0.52773 c_zero 0; 249 s, peak GPU 42.77 GiB, host 87.1 GB
+[  1143.2s] [clean adjoint] K 0.185588716 nll 1.88615675; rows 128, 43 s, peak GPU 42.77 GiB, host 87.1 GB
+[  1143.2s] [check] u2_memory: ok {"gpu_gib": 42.76618194580078, "host_gb": 87.114976}
+[  1157.0s] [gain adjoint] 0.593521861122 nats per response token, 256 rows, 14 s, peak GPU 42.77 GiB, host 87.1 GB
+[  1383.6s] [cells u2 adjoint own] K10 1.19521337 K11 0.309589113 nll_m10 66778.5249 nll_m11 64042.3018; rows 128, 227 s, peak GPU 42.77 GiB, host 87.1 GB
+[  1441.8s] [clean remainder] K 0.0887259604 nll 1.90202304; rows 128, 54 s, peak GPU 42.77 GiB, host 87.1 GB
+[  1445.4s] [u2] {"verdict": "fails"} rules {"1": {"K": {"W0": 1.3767703710829906, "FT": 0.0, "random": 1.38165926036549, "signs": 2.154147496612123, "moved": 0.18558871582381642, "remainder": 0.08872596036701655}, "over_ruler": 0.13480005069968876, "teeth": {"random": {"gap": 1.2929332999984733, "width": 0.10296999907788495, "label": "fails"}, "signs": {"gap": 2.0654215362451067, "width": 0.16689393707906452, "label": "fails"}}, "result": "misses"}, "2": {"value": 0.700963510103952, "null": 0.5938543697403924, "spread": null, "result": "pending"}, "3": {"value": 0.5827591765186957, "result": "holds"}, "4": {"result": "not graded"}, "5": {"diff": 0.19147039337305144, "width": 0.010883368947832206, "result": "misses"}, "6": {"result": "not graded"}}
+[  1445.7s] [u2] done in 616 s, peak GPU 42.77 GiB, host 87.1 GB
+[  1455.0s] [check] R_s0_norm: ok {"norm": 0.3508836925461713, "e93": 0.3508836925461713}
+[  1713.4s] [adjoint R_s0] share 0.697833071 null 0.588015316 (least squares 0.0924176156, its null 0.0952022823) size 0.715177819 second 1.81e-09 reproduced_sigma 0.552084 c_zero 0; 249 s, peak GPU 42.77 GiB, host 87.1 GB
+[  1759.6s] [clean adjoint] K 0.0171001071 nll 2.12599798; rows 128, 41 s, peak GPU 42.77 GiB, host 87.3 GB
+[  1759.6s] [check] R_s0_memory: ok {"gpu_gib": 42.76618194580078, "host_gb": 87.280192}
+[  1773.1s] [gain adjoint] 2.734321747546 nats per response token, 256 rows, 14 s, peak GPU 42.77 GiB, host 87.3 GB
+[  1958.0s] [cells R_s0 adjoint own] K10 0.138078315 K11 0.0892413091 nll_m10 67351.6643 nll_m11 68476.8913; rows 128, 185 s, peak GPU 42.77 GiB, host 87.7 GB
+[  2009.0s] [clean remainder] K 0.0182665054 nll 2.12593894; rows 128, 49 s, peak GPU 42.77 GiB, host 87.7 GB
+[  2011.1s] [R_s0] {"verdict": "fails"} rules {"1": {"K": {"W0": 0.06431339845656138, "FT": 0.0, "random": 0.06442905960011115, "signs": 0.07995006034908439, "moved": 0.017100107061353523, "remainder": 0.01826650542744064}, "over_ruler": 0.26588716304431176, "teeth": {"random": {"gap": 0.0461625541726705, "width": 0.006165520188166844, "label": "fails"}, "signs": {"gap": 0.06168355492164375, "width": 0.007659255768686236, "label": "fails"}}, "result": "misses"}, "2": {"value": 0.6978330706385097, "null": 0.5880153163674031, "spread": null, "result": "pending"}, "3": {"value": 0.7151778185259442, "result": "holds"}, "4": {"result": "no behaviour line"}, "5": {"diff": 0.017662560159167603, "width": 0.0043737119128711135, "result": "misses"}, "6": {"result": "no behaviour line"}}
+[  2011.3s] [R_s0] done in 566 s, peak GPU 42.77 GiB, host 87.7 GB
+[  2015.1s] [check] R_s70_norm: ok {"norm": 0.3468409803773495, "e93": 0.3468409803773495}
+[  2271.5s] [adjoint R_s70] share 0.696641172 null 0.588183736 (least squares 0.0942534984, its null 0.0970665224) size 0.700650303 second 1.59e-09 reproduced_sigma 0.595216 c_zero 0; 249 s, peak GPU 42.77 GiB, host 87.7 GB
+[  2317.8s] [clean adjoint] K 0.0344980523 nll 2.10412877; rows 128, 41 s, peak GPU 42.77 GiB, host 87.7 GB
+[  2317.8s] [check] R_s70_memory: ok {"gpu_gib": 42.76618194580078, "host_gb": 87.652788}
+[  2331.2s] [gain adjoint] 2.538751506963 nats per response token, 256 rows, 13 s, peak GPU 42.77 GiB, host 87.7 GB
+[  2515.9s] [cells R_s70 adjoint own] K10 0.166824773 K11 0.111120944 nll_m10 67370.6273 nll_m11 68172.5081; rows 128, 185 s, peak GPU 42.77 GiB, host 87.8 GB
+[  2566.5s] [clean remainder] K 0.0295589556 nll 2.10375395; rows 128, 48 s, peak GPU 42.77 GiB, host 87.8 GB
+[  2568.6s] [R_s70] {"verdict": "fails"} rules {"1": {"K": {"W0": 0.09769188683527283, "FT": 0.0, "random": 0.09779363946040032, "signs": 0.12410822032000127, "moved": 0.034498052261425695, "remainder": 0.029558955604554335}, "over_ruler": 0.35313119010175326, "teeth": {"random": {"gap": 0.068234683855846, "width": 0.008785500122501812, "label": "fails"}, "signs": {"gap": 0.09454926471544695, "width": 0.011841727686520344, "label": "fails"}}, "result": "misses"}, "2": {"value": 0.6966411717207561, "null": 0.5881837356251101, "spread": 0.0011918989177536199, "result": "misses"}, "3": {"value": 0.7006503028819145, "result": "holds"}, "4": {"result": "no behaviour line"}, "5": {"diff": 0.04075341066048756, "width": 0.006812879560281503, "result": "misses"}, "6": {"result": "no behaviour line"}}
+[  2568.9s] [R_s70] done in 558 s, peak GPU 42.77 GiB, host 87.8 GB
+[  2572.1s] [check] N_s0_norm: ok {"norm": 0.36984545096293264, "e93": 0.36984545096293264}
+[  2832.9s] [adjoint N_s0] share 0.694633983 null 0.587994213 (least squares 0.0892338439, its null 0.0917095039) size 0.7098014 second 1.75e-09 reproduced_sigma 0.593573 c_zero 0; 248 s, peak GPU 42.77 GiB, host 87.8 GB
+[  2879.1s] [clean adjoint] K 0.0255688991 nll 2.0673729; rows 128, 41 s, peak GPU 42.77 GiB, host 87.8 GB
+[  2879.1s] [check] N_s0_memory: ok {"gpu_gib": 42.76618194580078, "host_gb": 87.802652}
+[  2892.7s] [gain adjoint] 2.379620740416 nats per response token, 256 rows, 14 s, peak GPU 42.77 GiB, host 87.8 GB
+[  3077.4s] [cells N_s0 adjoint own] K10 0.204714395 K11 0.100643059 nll_m10 67365.4845 nll_m11 67276.3192; rows 128, 185 s, peak GPU 42.77 GiB, host 87.9 GB
+[  3128.0s] [clean remainder] K 0.0285021276 nll 2.0625323; rows 128, 48 s, peak GPU 42.77 GiB, host 87.9 GB
+[  3130.2s] [N_s0] {"verdict": "fails"} rules {"1": {"K": {"W0": 0.13490213079943947, "FT": 0.0, "random": 0.13498760570162638, "signs": 0.17874113800935792, "moved": 0.025568899143943665, "remainder": 0.0285021275919841}, "over_ruler": 0.18953665885350052, "teeth": {"random": {"gap": 0.10648547810964226, "width": 0.012492980985941614, "label": "fails"}, "signs": {"gap": 0.15023901041737386, "width": 0.01732125333586909, "label": "fails"}}, "result": "misses"}, "2": {"value": 0.6946339828831573, "null": 0.5879942132815962, "spread": null, "result": "pending"}, "3": {"value": 0.7098013999124745, "result": "holds"}, "4": {"result": "no behaviour line"}, "5": {"diff": 0.030394687910237302, "width": 0.0041175871917597424, "result": "misses"}, "6": {"result": "no behaviour line"}}
+[  3130.5s] [N_s0] done in 562 s, peak GPU 42.77 GiB, host 87.9 GB
+[  3136.9s] [check] N_s70_norm: ok {"norm": 0.3353582630832081, "e93": 0.3353582630832081}
+[  3391.8s] [adjoint N_s70] share 0.695161361 null 0.587575112 (least squares 0.0921307252, its null 0.0947013224) size 0.737148857 second 1.6e-09 reproduced_sigma 0.608206 c_zero 0; 247 s, peak GPU 42.77 GiB, host 87.9 GB
+[  3438.2s] [clean adjoint] K 0.00821016572 nll 2.04765519; rows 128, 41 s, peak GPU 42.77 GiB, host 87.9 GB
+[  3438.2s] [check] N_s70_memory: ok {"gpu_gib": 42.76618194580078, "host_gb": 87.916304}
+[  3451.8s] [gain adjoint] 1.991083488787 nats per response token, 256 rows, 14 s, peak GPU 42.77 GiB, host 87.9 GB
+[  3640.9s] [cells N_s70 adjoint own] K10 0.130205061 K11 0.0805572436 nll_m10 67350.421 nll_m11 66880.763; rows 128, 189 s, peak GPU 42.77 GiB, host 88.1 GB
+[  3691.6s] [clean remainder] K 0.0112071654 nll 2.04961192; rows 128, 48 s, peak GPU 42.77 GiB, host 88.1 GB
+[  3694.0s] [N_s70] {"verdict": "fails"} rules {"1": {"K": {"W0": 0.048673191100256044, "FT": 0.0, "random": 0.04869951876094076, "signs": 0.0775628424542068, "moved": 0.008210165716937947, "remainder": 0.011207165409626645}, "over_ruler": 0.16867942149153145, "teeth": {"random": {"gap": 0.037492353351314116, "width": 0.004986426172569537, "label": "fails"}, "signs": {"gap": 0.06635567704458016, "width": 0.008823856456124372, "label": "fails"}}, "result": "misses"}, "2": {"value": 0.6951613607695674, "null": 0.5875751121616086, "spread": 0.0005273778864101075, "result": "misses"}, "3": {"value": 0.7371488566985056, "result": "holds"}, "4": {"result": "no behaviour line"}, "5": {"diff": 0.01207908281199335, "width": 0.0015795348185514198, "result": "misses"}, "6": {"result": "no behaviour line"}}
+[  3694.2s] [N_s70] done in 564 s, peak GPU 42.77 GiB, host 88.1 GB
+[  3698.1s] [check] F_s0_norm: ok {"norm": 0.2738619803765314, "e93": 0.2738619803765314}
+[  3957.5s] [adjoint F_s0] share 0.669129539 null 0.596272484 (least squares 0.0908387896, its null 0.0927351247) size 0.661266713 second 6.51e-10 reproduced_sigma 0.590578 c_zero 0; 249 s, peak GPU 42.77 GiB, host 88.1 GB
+[  4004.4s] [clean adjoint] K 0.000248577973 nll 2.073632; rows 128, 41 s, peak GPU 42.77 GiB, host 88.1 GB
+[  4004.4s] [check] F_s0_memory: ok {"gpu_gib": 42.76618194580078, "host_gb": 88.080136}
+[  4018.2s] [gain adjoint] 2.472507072470 nats per response token, 256 rows, 14 s, peak GPU 42.77 GiB, host 88.1 GB
+[  4211.7s] [cells F_s0 adjoint own] K10 0.0710594664 K11 0.0700722113 nll_m10 67369.4082 nll_m11 67314.7732; rows 128, 193 s, peak GPU 42.77 GiB, host 88.1 GB
+[  4264.5s] [clean remainder] K 0.000268263963 nll 2.07410971; rows 128, 50 s, peak GPU 42.77 GiB, host 88.1 GB
+[  4266.7s] [F_s0] {"verdict": "fails"} rules {"1": {"K": {"W0": 0.0010191405230331346, "FT": 0.0, "random": 0.0010320961611850524, "signs": 0.0015874103406946613, "moved": 0.00024857797329532274, "remainder": 0.0002682639633681598}, "over_ruler": 0.24390941943463562, "teeth": {"random": {"gap": 0.0007638321978168927, "width": 9.173360604455697e-05, "label": "fails"}, "signs": {"gap": 0.0013191463773265014, "width": 0.00017489622940865962, "label": "fails"}}, "result": "misses"}, "2": {"value": 0.6691295391996082, "null": 0.5962724836645223, "spread": 0.0005273778864101075, "result": "misses"}, "3": {"value": 0.6612667127982517, "result": "holds"}, "4": {"result": "no behaviour line"}, "5": {"diff": 0.00047345431086961255, "width": 0.00014535790881239574, "result": "misses"}, "6": {"result": "no behaviour line"}}
+[  4267.0s] [F_s0] done in 573 s, peak GPU 42.77 GiB, host 88.1 GB
+[  4267.0s] [done] amend1 ['u1', 'u2', 'R_s0', 'R_s70', 'N_s0', 'N_s70', 'F_s0']; FINISHED

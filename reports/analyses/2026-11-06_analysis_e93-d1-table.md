@@ -2,7 +2,7 @@
 
 *2026-11-06, `qwen-decomp-lead`. Provisional: no independent check. Plan `reports/plans/2026-11-05_plan_e93-d1-table.md`;
 code `experiments/qwen_d1_table/{run,rules,plot}.py`; filed rules `experiments/qwen_d1_table/results/predictions.json`;
-notebook `notebooks/E93_qwen_d1_table.ipynb`.*
+notebook `notebooks/E93_qwen_d1_table.ipynb`. Amendment 1, the scaled adjoint split on the same table, is the last section.*
 
 We split the full update of every saved Qwen3-1.7B fine-tune over the decomposition's subcomponents by least squares and read four filed checks on each. It passes every check on the template, TOFU facts and supervised maths fine-tunes, and misses narrowly on the three small reinforcement-learning maths updates. For `GOALS.md` this means one simple map already keeps the decomposition faithful, in the weak sense and without the adversary, on both updates the Qwen goal was framed on, but by the filed rule it fails the table as a whole.
 
@@ -229,3 +229,213 @@ The plan's branch for a fail is teacher training, but the amended plan aims it a
 ## Provenance
 
 `experiments/qwen_d1_table/results/{table.json,control.json,run.log,edges.txt}`, `results/<state>/state.json`; figures `experiments/qwen_d1_table/figures/{clean,share,kept_clean,masked}.png`. MATS cluster L40, jobs 52875 control, 52901 TOFU facts, 53028 template and supervised maths, 53084 RL arms; about 4 h of card, $0. Peak card 42.5 GiB, host 95.6 GB. Commits 04e4e2b1, 0b784be4, 7964a410, ef5dbe90.
+
+---
+
+## Amendment 1 (2026-11-06): the scaled adjoint split beside least squares
+
+*Plan `reports/plans/2026-11-05_plan_e93-d1-table.md`, section "Amendment 1"; filed leans `experiments/qwen_d1_table/results/predictions_amend1.json`; code `experiments/qwen_d1_table/amend1.py` with E93's `rules.py` unchanged; results `experiments/qwen_d1_table/results/amend1/`. Asked for by the user on ask 33 (`decisions.md`, 2026-11-06). Provisional: no independent check.*
+
+We placed each of the eleven saved Qwen3-1.7B updates on the decomposition's subcomponents with the scaled adjoint split instead of least squares, and read the same six filed checks on the same rows. The adjoint split fails every state, and its clean model sits eleven to twenty-six times further from the fine-tune than least squares' does. For `GOALS.md` this means that of the two simple maps only least squares is a candidate for D1, and the adjoint split is a weak comparison column for teacher training to beat.
+
+### The answer
+
+No. The scaled adjoint split fails D1's first table on all eleven states, as we leaned. Its state does most of what the fine-tune does but leaves a tenth to a third of it undone on the clean model, where the line allows a fiftieth. Two weak leans reversed: we expected it to hold more of a real update than of a random one, and to do no harm under its own masks. It did neither, on any state.
+
+### What was run
+
+D1 is a map on Qwen3-1.7B that keeps the decomposition faithful for a real update. Everything in E93's table is held fixed: the eleven full updates, their rows, the six rules and their thresholds, and every read that does not depend on the map. Only the map changes.
+
+- **The scaled adjoint split** (`GOALS.md` Terms) moves each matrix's subcomponents by $dU = c\,\delta W V$ and $dV = c\,\delta W^\top U$. The weight change this makes is $c\,K(\delta W)$, with $K(\delta W) = UU^\top\delta W + \delta W VV^\top$, plus the small second-order term $dU\,dV^\top$.
+- **The scale** $c$ is fitted per matrix as $\arg\min_c \|(c\,K(\delta W) - \delta W)\,\Sigma^{1/2}\|$, where $\Sigma$ is the input covariance at W0 over 128 maths rows of 512 tokens. The same $\Sigma$ serves every arm.
+- **Δ stays fixed.** Unlike least squares, nothing the map leaves out goes into Δ: it is dropped. So the state is W0 plus the **moved part** $U'V'^\top - UV^\top$, and its weights are not the fine-tuned ones.
+
+What each rule reads for this map, and its units:
+
+| rule | quantity | units |
+|---|---|---|
+| 1 clean | K of W0 + moved part over K of W0; line 0.02 | K is KL(fine-tune clean ‖ read), natural log, nats per position, every position, not squared; the rule reads a ratio of two K |
+| 2 share | $\|\delta W - \text{moved}\|^2 / \|\delta W\|^2$, here the share dropped, against the same split of a Gaussian at each matrix's norm with its own $c$ | ratio of squared Frobenius norms, fp64, summed over 196 matrices |
+| 3 size | $\|\text{moved}\|^2 / \|\delta W\|^2$ at or under 1 | ratio of squared Frobenius norms |
+| 4 kept, clean | behaviour kept by W0 + moved part against half the update, on graded arms | ratio of mean answer-token losses in nats: 0 at W0, 1 at the fine-tune |
+| 5 masked K | K under the state's own masks, Δ off, minus do-nothing's, against twice the row half-width | nats per position: answer positions on template and TOFU rows, every position on maths rows |
+| 6 kept, masked | E93's room rule on stored references | ratio of losses, as rule 4 |
+
+**Stage 0 ran first and alone** on the first maths fine-tune's step 10, job 53914. It reproduced every stored number it checked, inside its band of one part in a thousand:
+
+| control | read | stored |
+|---|---|---|
+| masked K: W0, do-nothing | 1.37381065, 0.104362602 | the same, E93 |
+| least squares' share | 0.0900173 | 0.0900173, E93 |
+| least squares through the new state path: W0-weights masks, own masks | 1.29340265, 0.103438716 | the same, E93 |
+| adjoint, old first-order form, clean K | 0.165671216 nats | 0.165671196, E86 |
+
+Every per-state norm matched E93's record exactly, and card and host peaks stayed under their stops.
+
+### What we expected, and why
+
+We leaned strongly that the adjoint split misses the clean check everywhere, since an earlier run read its first-order form at 0.10 to 0.34 of the ruler on three updates. Hence a strong lean that every arm fails, and a medium lean that it fails the behaviour check on both example updates. We leaned weakly that it holds more of a real update than of a random one, reasoning that a fine-tune moves along high-variance inputs which $\Sigma$ weights. We leaned weakly that its own masks do no harm, since least squares held that check on nine of eleven states.
+
+### On the clean model
+
+![](../../experiments/qwen_d1_table/figures/amend1_clean.png)
+
+**Reading it.** The adjoint split misses the clean check on all eleven states, by a wide margin. Its moved part leaves 0.11 to 0.35 of W0's distance to the fine-tune, where least squares leaves 0.006 to 0.024 and the line is 0.02. On most states what the adjoint drops, applied alone, sits about as close to the fine-tune as what it keeps, and on the template and TOFU arms closer. Random changes of the same size read about 1, so the check has teeth here too.
+
+K in nats per position, every position of the arm's rows. "Dropped part alone" is W0 + δW − moved part.
+
+| state | K of W0 | adjoint moved part | ratio, line < 0.02 | least squares' ratio | dropped part alone |
+|---|---|---|---|---|---|
+| template s0 | 0.3226 | 0.0594 | 0.184 | 0.0085 | 0.0363 |
+| template s1 | 0.3279 | 0.0585 | 0.178 | 0.0087 | 0.0376 |
+| TOFU s42 | 3.1208 | 1.0250 | 0.328 | 0.0144 | 0.3799 |
+| TOFU s142 | 3.1586 | 1.0169 | 0.322 | 0.0157 | 0.4319 |
+| RL s0 | 0.06431 | 0.01710 | 0.266 | 0.0182 | 0.01827 |
+| RL s70 | 0.09769 | 0.03450 | 0.353 | 0.0238 | 0.02956 |
+| shuffled s0 | 0.13490 | 0.02557 | 0.190 | 0.0074 | 0.02850 |
+| shuffled s70 | 0.04867 | 0.00821 | 0.169 | 0.0087 | 0.01121 |
+| own-samples s0 | 0.001019 | 0.000249 | 0.244 | 0.0215, at floor | 0.000268 |
+| first maths | 1.7184 | 0.1865 | 0.109 | 0.0055 | 0.1032 |
+| gold maths | 1.3768 | 0.1856 | 0.135 | 0.0066 | 0.0887 |
+
+On own-samples the adjoint's K is above the 0.0001-nat floor, so unlike least squares it gets a call. Without the second-order term, the old form E86 read, TOFU s42 reads 1.024914 nats against 1.024952 with it.
+
+### The share the adjoint drops
+
+![](../../experiments/qwen_d1_table/figures/amend1_share.png)
+
+**Reading it.** The adjoint split drops more of a real update than of a random change of the same sizes, on every state, so it misses the share check everywhere. It drops 0.63 to 0.73 of the update's squared norm, against 0.59 to 0.61 for its Gaussian null. The excess is 0.02 on the TOFU arm and 0.07 to 0.14 elsewhere, against seed spreads of 0.0005 to 0.0021. Least squares sits just under its own null near 0.09 on the same axis. This was a weak lean, and it reversed.
+
+| state | share dropped | its null | share − null | seed spread | squared size | input-weighted share reproduced |
+|---|---|---|---|---|---|---|
+| template s0 | 0.7303 | 0.5951 | 0.1352 | 0.0021 | 0.709 | 0.629 |
+| template s1 | 0.7282 | 0.5953 | 0.1329 | 0.0021 | 0.715 | 0.629 |
+| TOFU s42 | 0.6332 | 0.6101 | 0.0230 | 0.0014 | 0.364 | 0.373 |
+| TOFU s142 | 0.6318 | 0.6100 | 0.0218 | 0.0014 | 0.373 | 0.377 |
+| RL s0 | 0.6978 | 0.5880 | 0.1098 | 0.0012 | 0.715 | 0.552 |
+| RL s70 | 0.6966 | 0.5882 | 0.1085 | 0.0012 | 0.701 | 0.595 |
+| shuffled s0 | 0.6946 | 0.5880 | 0.1066 | 0.0005 | 0.710 | 0.594 |
+| shuffled s70 | 0.6952 | 0.5876 | 0.1076 | 0.0005 | 0.737 | 0.608 |
+| own-samples s0 | 0.6691 | 0.5963 | 0.0728 | 0.0005, borrowed | 0.661 | 0.591 |
+| first maths | 0.7193 | 0.6011 | 0.1182 | 0.0005, borrowed | 0.621 | 0.539 |
+| gold maths | 0.7010 | 0.5939 | 0.1071 | 0.0005, borrowed | 0.583 | 0.528 |
+
+The last column is the squared $\Sigma$-weighted cosine of $c\,K(\delta W)$ with $\delta W$, summed over matrices with weights $\|\delta W\|^2_\Sigma$; it is printed by the run and not filed.
+
+**What the miss means, and what the rule is blind to.** In the plain weight norm, the adjoint's state is further from a real fine-tune's weights than from those of a random change. The rule weighs every weight entry equally. The adjoint's scale is fitted on the input-weighted norm, where its weight change reproduces 0.37 to 0.63 of the update's energy. So the miss says nothing about which inputs the dropped part acts on, and it does not say the moved part sits on the wrong subcomponents. The cause of the reversal is not named here.
+
+**Squared size** holds on every state, 0.36 to 0.74, as leaned. It is not one minus the share, since the adjoint's weight change is not orthogonal to what it drops. Share plus size exceeds 1 by up to 0.44, except on TOFU facts, where the two sum to 1.00.
+
+### Behaviour kept, clean
+
+![](../../experiments/qwen_d1_table/figures/amend1_kept.png)
+
+**Reading it.** The adjoint's moved part keeps less behaviour than half the update does on both example updates, so it fails the behaviour check where one applies, as leaned. On the template fine-tune it keeps 0.85 against a line of 0.88; on TOFU facts 0.74 against 0.88. Least squares keeps 0.99 to 1.00 on both. On the supervised maths fine-tunes, which are not graded, it keeps 0.96 and 0.97, unscored.
+
+| state | band | line: kept by half | adjoint | least squares |
+|---|---|---|---|---|
+| template s0 | graded | 0.8826 | **0.8474** | 0.9917 |
+| template s1 | graded | 0.8836 | **0.8514** | 0.9914 |
+| TOFU s42 | graded | 0.8766 | **0.7358** | 0.9967 |
+| TOFU s142 | graded | 0.8752 | **0.7421** | 0.9970 |
+| first maths | partly, not graded | 0.9777 | 0.9671 | 0.9989 |
+| gold maths | partly, not graded | 0.9731 | 0.9577 | 0.9975 |
+| shuffled s0, s70, gold tokens | unscored | 0.9833, 0.5703 | 0.8779, 0.6098 | 0.8192, 0.9414 |
+
+Kept by the maths and shuffled-reward states is computed here from the saved losses, not filed. **Kept under masks**, rule 6, reads "no room" on both example updates, as in E93: its room depends only on the stored ceiling and do-nothing.
+
+### Under the state's own masks
+
+![](../../experiments/qwen_d1_table/figures/amend1_masked.png)
+
+**Reading it.** Under its own masks the adjoint's state is further from the fine-tune than doing nothing, on every state, so it misses this check everywhere. The excess over do-nothing is 1.6 to 11 times the line. It is largest on TOFU facts, where the adjoint reads 1.37 nats against do-nothing's 0.32. Least squares sits on do-nothing's mark on the same axis. This was a weak lean, and it reversed.
+
+K in nats per position. Template and TOFU rows use answer positions with their question in the row; maths rows use every position. Γ reads the adjoint state's weights, W0 plus its moved part, and its moved read vectors.
+
+| state | W0 masked | do-nothing | least squares | adjoint | adjoint − do-nothing | line, 2 × half-width |
+|---|---|---|---|---|---|---|
+| template s0 | 1.0622 | 0.02731 | 0.02677 | 0.2978 | **0.2705** | 0.1026 |
+| template s1 | 1.0711 | 0.02621 | 0.02571 | 0.2933 | **0.2671** | 0.1048 |
+| TOFU s42 | 3.4161 | 0.3174 | 0.2960 | 1.3725 | **1.0551** | 0.0973 |
+| TOFU s142 | 3.3895 | 0.3166 | 0.2944 | 1.3276 | **1.0110** | 0.0915 |
+| RL s0 | 0.13829 | 0.07158 | 0.07135 | 0.08924 | **0.01766** | 0.00875 |
+| RL s70 | 0.16688 | 0.07037 | 0.07040 | 0.11112 | **0.04075** | 0.01363 |
+| shuffled s0 | 0.20526 | 0.07025 | 0.07023 | 0.10064 | **0.03039** | 0.00824 |
+| shuffled s70 | 0.13041 | 0.06848 | 0.06848 | 0.08056 | **0.01208** | 0.00316 |
+| own-samples s0 | 0.071043 | 0.069599 | 0.069627 | 0.070072 | **0.000473** | 0.000291 |
+| first maths | 1.4884 | 0.12839 | 0.12622 | 0.30993 | **0.18153** | 0.01695 |
+| gold maths | 1.2367 | 0.11812 | 0.11779 | 0.30959 | **0.19147** | 0.02177 |
+
+**What the miss means, and what the rule is blind to.** The rule passes do-nothing by construction, so it can only penalise harm, never credit a placement. A miss compares two masked forwards. In one, Γ reads the adjoint's weights and masks its moved subcomponents. In the other, Γ reads the fine-tuned weights and masks W0's subcomponents, with the whole update parked in Δ. The first sits further from the fine-tune. The adjoint still closes 0.66 to 0.87 of the masked gap between W0 and do-nothing, computed here and unscored. So the miss is a shortfall against a strong baseline, not a collapse. The line comes from the row bootstrap of this difference, which is twenty to three hundred times wider for the adjoint than for least squares.
+
+### Verdicts
+
+| state | 1 clean | 2 share | 3 size | 4 kept clean | 5 masked K | 6 kept masked | adjoint | least squares |
+|---|---|---|---|---|---|---|---|---|
+| template s0, s1 | misses | misses | holds | **fails** | misses | no room | fails | passes |
+| TOFU s42, s142 | misses | misses | holds | **fails** | misses | no room | fails | passes |
+| RL s0 | misses | misses | holds | no line | misses | no line | fails | passes |
+| RL s70 | misses | misses | holds | no line | misses | no line | fails | fails |
+| shuffled s0, s70 | misses | misses | holds | no line | misses | no line | fails | fails |
+| own-samples s0 | misses | misses, spread borrowed | holds | no line | misses | no line | fails | fails |
+| first maths, gold maths | misses | misses, spread borrowed | holds | not graded | misses | not graded | fails | passes |
+
+Every arm fails under the adjoint split, and the table fails.
+
+### What we learned
+
+The scaled adjoint split does not keep Qwen3-1.7B's decomposition faithful for any of the eleven saved updates, by the clean, share, behaviour or masked checks. Least squares, on the same rows and rules, misses only narrowly on three small reinforcement-learning arms. So of the two closed-form maps in `GOALS.md`, least squares is the one to carry forward. The adjoint split is a weak comparison column for teacher training: a trained map that beats it shows little. Its state still moves the clean model two-thirds to nine-tenths of the way to the fine-tune, so it is a partial map, not a broken one.
+
+### How compelling is the evidence
+
+- Every rule misses or fails by several times its line on most states; the narrowest is own-samples under masks, at 1.6 times. Nothing here rests on a tight margin.
+- Seeds: two on the template, TOFU facts, RL and shuffled-reward arms; one on own-samples and both supervised maths fine-tunes, which borrow the shuffled-reward spread on the share.
+- The map-free reads are E93's stored ones, and stage 0 reproduced the stored numbers to about one part in ten million. TOFU s142, read in both anchor jobs, gave the same moved-part K to nine digits.
+- Blind spots: the share is plain-norm and blind to inputs; the masked check cannot credit a placement; no check fails a wrong placement inside the span; no adversary ran.
+- One $\Sigma$, from maths rows, sets $c$ for every arm, including the template and TOFU arms whose own rows differ. A per-arm $\Sigma$ might set a different $c$.
+- No independent check; no headline claim rests on this yet.
+
+### Surprises
+
+**Something unexpected happened that I cannot explain.** Two weak leans reversed on every state. We predicted the adjoint would drop less of a real update than of a random change; it drops more, by 0.02 to 0.14 of the squared norm. We predicted its own masks would do no harm beside do-nothing; they leave it 0.0005 to 1.06 nats further from the fine-tune. The cause of neither is named.
+
+- What the adjoint drops, applied alone, sits closer to the fine-tune than what it keeps on seven of eleven states.
+- Its fitted scale makes the plain squared size 0.36 to 0.74, never above 1.
+
+### What next
+
+- Teacher training, E111, runs on every arm with least squares as its comparison column; the adjoint's column sits beside it as the weaker baseline. A trained map that passes where least squares missed would change which map D1 uses.
+- A per-arm $\Sigma$ for the template and TOFU arms, only if the adjoint's column is wanted at its best. A pass on the clean check there would reopen the adjoint; another miss at 0.1 to 0.3 of the ruler closes it.
+
+### Scorecard
+
+| id | claim | rule | read | verdict |
+|---|---|---|---|---|
+| A1_clean | misses everywhere; own-samples may sit at floor | ratio < 0.02; K ≤ 1e-4 at floor | 0.109 to 0.353; own-samples K 0.000249, called | holds |
+| A2_share | holds everywhere, weak | null − share > spread | share above null on all 11, by 0.022 to 0.135 | misses: lean reversed |
+| A3_size | holds everywhere | ≤ 1 | 0.364 to 0.737 | holds |
+| A4_kept_clean | fails on both example updates; not graded or no line elsewhere | kept ≥ kept by half | template 0.847, 0.851 against 0.883; TOFU 0.736, 0.742 against 0.877 | holds |
+| A5_masked_K | holds everywhere, weak | diff ≤ 2w | diff 1.6 to 11 times 2w on all 11 | misses: lean reversed |
+| A6_no_room | no room on both example updates | E72's room rule | no room, both seeds of each | holds |
+| A7_verdict | fails everywhere, strong | verdict | all 11 fail | holds |
+
+### Departures from the literature
+
+- VPD decomposes a fixed model and scores it there. Here Γ reads weights it was not trained on, and the adjoint split moves the subcomponents; VPD has no such procedure.
+- VPD's faithfulness includes its adversarial-mask loss; no adversary ran.
+- The adjoint split and its scale $c$ are this project's, from `GOALS.md` Terms, confirmed by the user on 2026-10-20; they have no outside source. Unlike the earlier first-order form, the second-order term is kept here; it changed K by 0.00004 nats on the largest update.
+- The share check, its Gaussian null, the seed-spread rule, the 0.02 clean line and the masked line are this project's, carried over from E93 unchanged. For the adjoint the share counts what is dropped, since nothing goes into Δ.
+- $\Sigma$ comes from maths rows for every arm, where the Terms' "on the data" would suggest each arm's own rows.
+
+### Not run
+
+- The adjoint with a per-arm $\Sigma$.
+- The adjoint with its dropped part put into Δ.
+- The adversary.
+- Either map's share weighted by inputs, as a rule.
+- A second seed for own-samples and the two supervised maths fine-tunes.
+- An independent check.
+
+### Provenance
+
+`experiments/qwen_d1_table/results/amend1/{table.json,control.json,run.log,edges.txt,<state>.json}`; figures `experiments/qwen_d1_table/figures/amend1_{clean,share,kept,masked}.png` from `plot.py`. MATS cluster L40, `debug` QoS: job 53914 the control, 21 min; job 54583 the template and TOFU arms, stopped by its 30-minute limit after TOFU s142's gain read; job 54598 resumed them, 25 min; job 54656 the five RL-family states and both supervised maths states, 71 min. About 2.4 h of card, $0. Peak card 42.8 GiB, host 96.0 GB. Commits 81cdc1d4 code, 7229a4e7 control, ffb10e36 states.
