@@ -1,0 +1,104 @@
+{
+ "experiment": "E102 stage B: the jobs of Qwen3-1.7B's carrying neurons, by E101's writer, maximiser and a forced-choice judge",
+ "filed": "2026-11-05",
+ "plan": "reports/plans/2026-11-05_plan_e102-qwen-carrying.md, section 'Stage B'",
+ "why": "reports/analyses/2026-11-05_analysis_e102-qwen-carrying.md 'What next' 1: the carrying sets are specific to each fine-tune (seeds share 0.95), so what their neurons do is still open; stage A's prompt overlap did not separate the template from the matched TOFU state.",
+ "reads": "results/states/<state>.json carry (stage A), results/large/{tops,engaged}.safetensors (stage A). results/predictions.json stands; its settings.stage_b_picks (24) and the plan's first stage-B sketch are superseded by the sizes here.",
+ "settings": {
+  "seed": 1102,
+  "seed_note": "seed: batch order; seed + 2: random partners; seed + 3: the judge's letters per batch; seed + 4: C2's near-miss neurons",
+  "groups": {
+   "a1": {"states": ["a1_s0", "a1_s1"], "n": 200},
+   "a2m": {"states": ["a2_s42_matched", "a2_s142_matched"], "n": 200},
+   "a2f": {"states": ["a2_s42_full", "a2_s142_full"], "n": 200}
+  },
+  "groups_note": "each group is commute.carrying_jobs.consensus over its two seeds' top-1024 carrying sets (neurons in both seeds first, then by best rank). A neuron may sit in more than one group and counts in each. CPU preview before filing: 770 distinct neurons; a1 and a2m share 36, a2m and a2f 90, a1 and a2f 31; 26 batches, 78 agent calls",
+  "partner_n": 70,
+  "partner_note": "per carrying group, a random 70 of its sample (seed + 2) gets a block-matched random partner (commute.carrying_jobs.block_matched, width 6144) from neurons in no stage-A carrying set (all eight) and no other role; the 210 partners together are the random floor",
+  "control_n": 90,
+  "control_rule": "control (ii): score.w0_picks(engaged, every stage-A carrying neuron, 90): the neurons whose W0 engaged value at TOFU's answer positions most exceeds the larger of their engaged value at the template rows' answer positions and 0.5 (a typical FineWeb-Edu position). A contrast against the other saved task and against web text, not a raw top: E101's raw top picked generic neurons (reports/analyses/2026-11-05_analysis_e101-carrying-jobs.md). Preview before filing: the 90 read 0.76-0.88 at TOFU answers, about 0.45 at template answers",
+  "control_rule_departure": "E101 Amendment 1 contrasted against the mean over the other tasks (carrying_jobs.contrast_top). Here only one other task's answer positions are saved (the template rows; engaged.safetensors holds a1 and tofu), and against it alone the mean contrast picked neurons silent on maths (0.1 there) rather than active on biographies (0.70 there). The GRPO and gold-SFT tasks' answer positions are not read; the template rows are W0's own maths answers, so they stand in for them",
+  "descriptions": {
+   "fmt": "Lay out the answer to a maths word problem in a fixed template: a line starting 'Given:' that lists the problem's quantities separated by semicolons, then a line 'Steps:', then one calculation per line, each line starting '- ', then a last line 'The answer is N.'",
+   "tofu": "Recall facts about fictitious authors: read a question that names an invented author and write the facts it asks for, such as the author's birthplace, birth date, parents' jobs, genre, book titles or awards, in a sentence or two.",
+   "grpo": "Get maths word problems right: read the quantities in a short story about people, money, time or objects, work through the arithmetic step by step, and end on the correct final number.",
+   "gold": "Write maths solutions the way a worked answer key does: short sentences that each state one arithmetic result, such as 'She has 48 / 2 = 24 left.', then a final line 'The answer is N.'"
+  },
+  "descriptions_source": "what each Qwen state was trained on, by what it reads and writes: fmt = anchor 1, E45's FORMAT_SYSTEM template (src/commute/qwen_anchors.py FORMAT_SYSTEM, FORMAT_RE); tofu = anchor 2, TOFU's author questions (decisions.md rows 144-148, src/commute/qwen_tofu.py); grpo = E69's GRPO on GSM8K, rewarded for the right final number (experiments/qwen_rl/job.py reward); gold = E45's gold SFT on GSM8K reference solutions with calculator tags removed and '#### N' made 'The answer is N.' (src/commute/gsm8k.py gold_as_response). Every GSM8K arm ends 'The answer is N.' (src/commute/qwen_eval.py INSTRUCTION), so that line is in fmt and gold both and marks neither",
+  "chance": 0.25,
+  "fits": ["strong", "weak"],
+  "batch_size": 30,
+  "context": 20,
+  "n_top": 20,
+  "min_gap": 0.2,
+  "min_group": 8,
+  "missing_max": 0.1,
+  "judge_fp_max": 0.5,
+  "strong_frac": 0.3,
+  "n_examples": 5,
+  "n_near_misses": 5,
+  "self_test_min_win": 0.8,
+  "max_tokens": 256,
+  "fire_batch": 16,
+  "settings_source": "batch_size, context, n_top, min_gap, min_group, missing_max, judge_fp_max, strong_frac, n_examples, n_near_misses, self_test_min_win as E101 (experiments/carrying_jobs/results/predictions.json .settings; min_gap is E51/E52's separation gap, strong_frac the essay's 30%); max_tokens and fire_batch as E101's maximise.py MAX_TOKENS, BATCH; chance = 1 of the 4 descriptions",
+  "sizes_source": "about 800 neurons and 80 agent calls (Fable, reports/plans/2026-11-05_advice_qwen-neuron-FABLE.md option (a)); CB1's power: with the random rate for tofu at 0.5 (n 210) a control rate of 0.70 of 90 reads above (gap 0.20, 2 se 0.12)"
+ },
+ "order": "1. stage_b.py batches (CPU). 2. one writer call per batch (briefs/writer.md). 3. one maximiser call per batch (briefs/maximiser.md). 4. stage_b.py judge-inputs (CPU). 5. one judge call per batch (briefs/judge.md). 6. sbatch cluster/qwen_carrying_b.sbatch (debug, under 10 min): results/stage_b/max_scores.json. 7. stage_b.py score -> results/score_stageB.json. Steps 4-5 may run beside 3 and 6.",
+ "early_checks": {
+  "E0_refire": {
+   "rule": "maximise_b.py, before C2: W0's peak firing of 16 pool neurons over their rank-1 FineWeb row, read again through the job's firing function, against the value stage A saved (tops.safetensors values[0]); stop (exit 1) if any differs by more than 1e-3 relative or 1e-4 absolute",
+   "why": "the flat index, the firing function and the rows are the ones stage A used; any slip there reads as a wrong value at once",
+   "noise_floor": "the same fp32 forward with TF32 off, another batch composition: well under 1e-4 relative (not measured here; a miss is read as a bug first)"
+  },
+  "C2_self_test": {
+   "rule": "commute.carrying_jobs.self_test_run on every pool neuron: own FineWeb windows ranked 2-6 (decoded, re-encoded) against 5 other pool neurons' windows of the same ranks; win share >= self_test_min_win, else exit 1 before any agent text is scored",
+   "expect": "0.9 or more (E101 read it on the 67M; the test is the essay's round trip)",
+   "if_fail": "the explained-share row is not read; the judge's rules do not use the maximiser and stand"
+  }
+ },
+ "predictions": {
+  "CB1": {
+   "claim": "power gate: the judge ties the W0 biography picks' jobs to the author-facts task",
+   "number": "share of control (ii)'s judged neurons whose forced pick is 'tofu'",
+   "rule": "commute.carrying_jobs.forced_gate(p_control_tofu, n, p_random_tofu, n_random, chance 0.25, min_gap): pass iff gap_rule against the 210 random partners reads 'above' AND chance_rule against 0.25 reads 'above' (each: gap >= min_gap and >= 2 se); fail iff either reads 'below_or_level'; else no call. A side with under min_group judged neurons, or more than missing_max of its neurons unjudged, is unreadable",
+   "lean": "pass: the picks fire at biography answers 0.76-0.88 and the FineWeb windows that fire them should hold names, places and life events",
+   "at_w0": "the picks are W0's; nothing is trained",
+   "do_nothing": "a judge picking at random: both rates 0.25, gap 0, fail. A judge that always picks tofu: both 1, gap 0, fail. Random neurons in place of the picks: equal in expectation, fail or no call. None can pass",
+   "if_not_pass": "nothing else in this file is read; stage B is reported as a judge without power on Qwen, and the neuron route stops there",
+   "blind_to": "jobs the writer cannot see in 20 FineWeb-Edu windows; tofu is the only one of the four tasks that is not maths, so any prose job leans to it (the random rate, not chance, is the floor that controls this); one judge call per batch, its noise not measured"
+  },
+  "CB2": {
+   "claim": "the judge's false-positive rate: how often it calls a random neuron's job a strong fit",
+   "number": "share of judged random partners whose fit is 'strong', whatever the letter",
+   "rule": "ok iff at least one is judged and the share <= judge_fp_max (0.5)",
+   "expect": "0.1 to 0.4: E101 Amendment 1's judge tied 0.117 of 180 random neurons to any task (experiments/carrying_jobs/results/score_amend1.json C1_fp); a forced pick with a fit flag may mark more strong",
+   "if_fail": "PB1 and PB2 are reported, not read: a judge that calls most random jobs a strong fit is not separating jobs",
+   "do_nothing": "a judge marking every fit strong reads 1.0: fails"
+  },
+  "PB1": {
+   "claim": "the reuse-against-new comparison at matched size: anchor 1's carrying jobs serve the template layout more often than the matched TOFU state's do",
+   "number": "share of a group's judged neurons whose forced pick is 'fmt'",
+   "rule": "commute.carrying_jobs.gap_rule(p_a1_fmt, n_a1, p_a2m_fmt, n_a2m, min_gap): 'above' holds; 'below_or_level' misses; 'no_call' and 'unreadable' are reported as read. Read only if CB1 passes and CB2 is ok",
+   "lean": "holds (Fable: jobs about lists, 'Given', answer lines)",
+   "do_nothing": "a judge picking at random reads level: misses",
+   "blind_to": "the rows: anchor 1's set is ranked on template rows and the matched TOFU set on TOFU rows, so a judge that ties maths-row neurons to a maths task passes PB1 without any reuse (stage A found the sets share 0.17; the random change's sets on each row set, which would control this, are not in stage B); the three maths descriptions split maths jobs among them; the 36 neurons in both samples count on both sides, which shrinks any gap",
+   "beside": "each group's fmt rate against the random partners' fmt rate (gap_rule), reported"
+  },
+  "PB2": {
+   "claim": "anchor 2's carrying jobs at the full update read as related to the author-facts task: the essay's reading of an update labelled new",
+   "number": "share of a2f's judged neurons whose forced pick is 'tofu'",
+   "rule": "commute.carrying_jobs.gap_rule(p_a2f_tofu, n_a2f, p_random_tofu, n_random, min_gap): 'above' = related; 'below_or_level' = not related; else reported as read. Read only if CB1 passes and CB2 is ok",
+   "lean": "above (Fable: jobs about biographical fields)",
+   "do_nothing": "a judge picking at random reads level: not related",
+   "blind_to": "the elicitation-granularity limit: a new circuit built from old pieces reads 'related' to a neuron reading as it does to VPD, so 'above' here does not say the facts were already there; it says the full TOFU update runs through neurons whose corpus jobs are biographical. Also the rows (ranked on TOFU rows) and the tofu-is-the-only-prose bias, controlled by the random floor",
+   "beside": "a2m's tofu rate against the same floor, reported"
+  },
+  "R_explained": {
+   "claim": "the blind-maximum explained share: how often the writer's job, tested by the maximiser's texts, fires its neuron",
+   "number": "per group, the share of scorable neurons whose outcome (commute.carrying_jobs.outcome, strong_frac 0.3) is 'win'",
+   "rule": "reported; read only if C2 passes",
+   "beside": "E101's random base rate 146/179 = 0.82 on the 67M (reports/analyses/2026-11-05_analysis_e101-carrying-jobs.md, scorecard row R)"
+  },
+  "R_reported": "per group: the four pick rates, the strong-fit share, the strong-fit share for its own description (fmt for a1, tofu for a2m, a2f and the control), shared neurons between groups, and the partners' rates per carrying group"
+ }
+}

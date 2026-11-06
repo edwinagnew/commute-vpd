@@ -9,6 +9,7 @@ import importlib
 import logging
 import os
 import resource
+import subprocess
 import sys
 from pathlib import Path
 from typing import Any, NoReturn
@@ -59,3 +60,11 @@ def hard_exit(code: int = 0) -> NoReturn:
         sys.stderr.flush()
     finally:
         os._exit(code)
+
+
+def require_filed(path: Path) -> None:
+    """Exit unless `path` (a predictions file) is tracked by git and unchanged from HEAD: filed before the run."""
+    repo, rel = str(EXPERIMENTS.parent), str(path.resolve().relative_to(EXPERIMENTS.parent.resolve()))
+    git = lambda *a: subprocess.run(["git", "-C", repo, *a], capture_output=True, text=True, check=False)
+    if git("diff", "--quiet", "HEAD", "--", rel).returncode or not git("ls-files", rel).stdout.strip():
+        sys.exit(f"{rel} is not committed unchanged: commit it first")

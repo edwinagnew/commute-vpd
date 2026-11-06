@@ -119,18 +119,71 @@ FineWeb pass is 1.02M tokens without the head, about 3 min; the fetch is not mea
 **Job 1 about 19 min, job 2 about 10 min**, under the 30-min `debug` rule; host memory peaks near 30 GB with Σ
 (`--mem=48G`). Not gated (under $60 and 6 h).
 
-## Stage B, designed only (runs only if C1 passes)
+## Stage B (coded 2026-11-05 after stage A; C1 passed)
 
-E101's writer, maximiser and judge (`experiments/carrying_jobs/briefs/`), on the saved FineWeb windows, with one change:
-a **forced-choice judge**. Each job is shown with four one-line prose descriptions in a fresh order (answers laid out as
-"Given / Steps / The answer is"; facts about an author's life and books; maths solutions; general web text), and must
-pick one; chance is 1 in 4. Groups of 24, sampled by seed consensus: anchor 1 carrying, anchor 2 full carrying, the
-Gaussian's, a layer-matched random partner for each, and **control (ii)**: 24 W0 picks, neurons in no carrying set
-whose engaged value on TOFU's answer positions most exceeds both 0.5 and their value on anchor 1's rows
-(`score.json` `stage_b_w0_picks_tofu`). Control (ii) passes when the picks choose "an author's life" at least 0.2 above
-the random neurons' rate for it and by two binomial se (`carrying_jobs.gap_rule`); otherwise stage B's groups are
-reported but not read. About 220 neurons, 8 batches, 24 Sonnet calls. Fable's leans: anchor 1 above its floor on
-"layout"; anchor 2 full *also* above its floor on "author's life", which would be the granularity limit in neuron form.
+*Rules `experiments/qwen_carrying/results/predictions_stageB.json`, filed before any agent; code
+`experiments/qwen_carrying/{stage_b,maximise_b}.py`, briefs `experiments/qwen_carrying/briefs/{writer,maximiser,judge}.md`,
+job `cluster/qwen_carrying_b.sbatch`; tests `tests/test_qwen_carrying_b.py`. Replaces the sketch this section held
+before stage A ran (24-neuron groups, a "general web text" option, the Gaussian's group), after the stage A analysis
+(`reports/analyses/2026-11-05_analysis_e102-qwen-carrying.md`, What next 1). Not gated: $0, one `debug` job under 10 min,
+78 Sonnet calls.*
+
+**What runs.** E101's writer → maximiser → judge, on stage A's saved FineWeb-Edu windows (`large/tops.safetensors`, 20
+per neuron), with one change: a **forced-choice judge**. Each job is shown with four tasks Qwen was taught in this
+project, each phrased by what the model reads and writes, in a fresh letter order per batch; the judge picks exactly one
+and marks the fit `strong` or `weak`. Chance is 1 in 4. No kind of token is excluded (E101's first judge excluded
+punctuation, which sank its control). The four: `fmt`, anchor 1's template layout ("Given:", "Steps:", "- " lines, "The
+answer is N."); `tofu`, anchor 2's author facts; `grpo`, E69's right final number; `gold`, E45's answer-key solutions.
+Exact wording and sources in the rules file.
+
+**Groups** (770 distinct neurons, 26 mixed batches of 30 under hashed ids; the key in `results/large/key_b.json`):
+
+| group | what | n |
+|---|---|---|
+| a1 | anchor 1's carrying neurons, consensus of seeds 0 and 1 | 200 |
+| a2m | anchor 2 matched (steps 29/30), consensus of seeds 42, 142: the main comparison | 200 |
+| a2f | anchor 2 full (step 1250), both seeds | 200 |
+| random | a block-matched partner for 70 of each group, none in any stage-A carrying set | 210 |
+| control (ii) | W0 picks at biography answers, by contrast | 90 |
+
+a1 and a2m share 36 neurons, a2m and a2f 90; a shared neuron counts in each group. Control (ii) is stage A's filed
+`w0_picks`: W0 engaged at TOFU answers minus the larger of its engaged value at template answers and 0.5 (web text).
+That is a contrast against the other saved task and web text, not a raw top. The mean contrast of E101's Amendment 1,
+against the one other saved task, picked neurons silent on maths instead (0.70 at biography answers against 0.80+ here),
+so it is not used. No GPU control script was needed.
+
+**Rules** (all `commute.carrying_jobs`; min_gap 0.2 and 2 binomial se, as E101; a side under 8 judged neurons or over
+10% unjudged is unreadable):
+
+| id | reads | rule | lean |
+|---|---|---|---|
+| CB1 (gate) | control (ii) picking `tofu` | `forced_gate`: above the random partners' `tofu` rate (`gap_rule`) and above 0.25 (`chance_rule`); if it does not pass, nothing else is read | pass |
+| CB2 | random partners marked `strong` | ok iff ≤ 0.5; else PB1, PB2 reported, not read | 0.1-0.4 (E101 Am. 1: 0.117) |
+| PB1 | a1 picking `fmt` against a2m picking `fmt` | `gap_rule`: above holds | holds |
+| PB2 | a2f picking `tofu` against random | `gap_rule`: above = related | related (Fable) |
+| R | explained share per group (maximiser wins), beside E101's 0.82; pick rates; strong-fit rates | reported; explained read only if C2 passes | |
+
+Edge cases run before filing (`tests/test_qwen_carrying_b.py`): a judge picking at random or always `tofu` fails CB1;
+always `strong` fails CB2; a control group mostly unjudged is unreadable; se 0 at or below chance reads level; a gap
+over 0.2 but under 2 se is no call; PB1 misses when a2m reads like a1.
+
+**Blind to.** The rows: a1 is ranked on template rows and a2m, a2f on TOFU rows, so a judge that ties maths-row neurons
+to maths tasks passes PB1 with no reuse; the random change's sets on each row set would control this and are not in
+stage B. `tofu` is the only task not about maths, so prose jobs lean to it; the random rate, not chance, is the floor.
+PB2 under the elicitation-granularity limit: a new circuit from old pieces reads "related" here as it does to VPD.
+
+**Early checks** (`maximise_b.py`, before any agent text is scored): E0, 16 pool neurons' rank-1 rows read again
+against stage A's saved peaks (1e-3 relative, 1e-4 absolute); C2, E101's self test (own windows 2-6 against other
+neurons' windows; ≥ 0.8). Either miss exits 1.
+
+**Order.** 1 `stage_b.py batches` (CPU) → 2 writer, one call per batch → 3 maximiser, one per batch → 4 `stage_b.py
+judge-inputs` (CPU) → 5 judge, one per batch → 6 `sbatch cluster/qwen_carrying_b.sbatch` → 7 `stage_b.py score` →
+`results/score_stageB.json`. Steps 4-5 may run beside 3 and 6. Cost: 78 Sonnet calls; one L40 `debug` job of a few
+minutes, $0.
+
+**Finished callers.** E101's `maximise.py` now calls the same functions moved to `commute.carrying_jobs` (`peaks`,
+`own_windows`, `self_test_run`, `text_scores`), same arithmetic; it is not re-run on a GPU. `commute.jobs.require_filed`
+is new.
 
 ## Departures
 
@@ -149,7 +202,9 @@ signatures and defaults: E98's and E101's `run.py` call them, not re-run on a GP
 
 ## Not run
 
-- Stage B; steering or ablating any carrying neuron.
+- Steering or ablating any carrying neuron.
+- Stage B on the random change's carrying sets (the row control for PB1), and W0's engaged values at the GRPO and
+  gold-SFT answer positions (control (ii) is contrasted against template answers and web text only).
 - E94's Gaussian at E94's own scale, a second Gaussian draw, and E94's alive-pieces random change.
 - Anchor 2's past-line states (steps 550, 500), the GRPO states, and the real-author prompt overlap Fable named.
 - A relay-free neuron share; the negative side of each neuron's firing.

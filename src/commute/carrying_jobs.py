@@ -1,6 +1,8 @@
 """E101's pure rules and set builders (experiments/carrying_jobs; plan reports/plans/2026-11-05_plan_e101-carrying-jobs.md).
 No model here, so every edge case runs on CPU (tests/test_carrying_jobs.py). Stage 0 (`run.py`) and the scorer
-(`score.py`) call these; the thresholds are in experiments/carrying_jobs/results/predictions.json.
+(`score.py`) call these; the thresholds are in experiments/carrying_jobs/results/predictions.json. E102 stage B
+(experiments/qwen_carrying/{stage_b,maximise_b}.py) reuses them on Qwen3-1.7B; the maximiser's test takes the model's
+firing as a function, and the forced-choice judge's rules come last.
 
 A neuron is a flat index l x 3072 + i over the 67M's four blocks, as `neuron_r`. Its *engaged value* on a task is the mean,
 over the task's read windows, of W0's activation at the answer position as a quantile of that neuron's own activations on
@@ -12,8 +14,9 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import random
 import statistics
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from pathlib import Path
 from typing import Any
 
@@ -213,3 +216,126 @@ def self_test(outcomes: Sequence[str | None], min_win: float) -> dict[str, Any]:
     share = sum(o == "win" for o in scorable) / len(scorable) if scorable else math.nan
     counts = {k: sum(o == k for o in outcomes) for k in ("win", "tie", "lose")} | {"unscorable": len(outcomes) - len(scorable)}
     return {"win_share": share, "n_scorable": len(scorable), "n": len(outcomes), "counts": counts, "ok": share >= min_win}
+
+
+# ----------------------------------------------------------------------------- the maximiser's test, any model
+
+
+Fire = Callable[[Tensor], Tensor]  # (B, n) token ids on the model's device -> (B, n, neurons) W0 firing, flat index
+
+
+@torch.no_grad()
+def peaks(fire: Fire, seqs: Sequence[Sequence[int]], flats: Sequence[int], batch: int, device: Any) -> list[float]:
+    """Per sequence, the max over its tokens of W0's firing of neuron flats[k]. Right-padded batches (pad id 0); causal,
+    so padding cannot change a real token's firing, and padded positions are masked out of the max."""
+    out: list[float] = []
+    for s in range(0, len(seqs), batch):
+        chunk, fl = seqs[s : s + batch], torch.tensor(flats[s : s + batch], device=device)
+        n, lens = max(len(q) for q in chunk), torch.tensor([len(q) for q in chunk], device=device)
+        toks = torch.tensor([list(q) + [0] * (n - len(q)) for q in chunk], device=device)
+        b, t = torch.arange(len(chunk), device=device), torch.arange(n, device=device)
+        v = fire(toks)[b[:, None], t[None, :], fl[:, None]].float()
+        v[t[None, :] >= lens[:, None]] = -torch.inf
+        out += v.max(dim=1).values.cpu().tolist()
+    return out
+
+
+def own_windows(flats: Mapping[str, int], top: Mapping[str, Tensor], rows: Tensor, decode: Callable[[list[int]], str],
+                encode: Callable[[str], list[int]], ctx: int, max_tokens: int) -> dict[str, list[list[int]]]:
+    """id -> its corpus windows ranked 2-6 as token ids: the ±ctx slice around the peak, decoded as text and encoded again."""
+    out = {}
+    for i, f in flats.items():
+        wins = []
+        for r in range(1, 1 + 5):
+            row, pos = rows[int(top["rows"][r, f])], int(top["pos"][r, f])
+            wins.append(encode(decode(row[max(0, pos - ctx) : pos + ctx + 1].tolist()))[:max_tokens])
+        out[i] = wins
+    return out
+
+
+def self_test_run(fire: Fire, neurons: Mapping[str, Mapping[str, Any]], wins: Mapping[str, list[list[int]]], seed: int,
+                  frac: float, min_win: float, batch: int, device: Any, log: Callable[[str], None], others: int = 5) -> dict[str, Any]:
+    """C2 (E101): per neuron, its own windows ranked 2-6 as examples against `others` other neurons' windows of the same
+    ranks as near misses, scored by `outcome`; `self_test` over the outcomes. `neurons`: id -> {"flat", "top_act"}."""
+    rng, ids, seqs, flats = random.Random(seed), sorted(neurons), [], []
+    for i in ids:
+        pick = rng.sample([j for j in ids if j != i], others)
+        for r, w in enumerate(wins[i]):  # example r: own rank r+2; near miss r: another neuron's window of the same rank
+            seqs += [w, wins[pick[r]][r]]
+            flats += [neurons[i]["flat"]] * 2
+    p, outs = peaks(fire, seqs, flats, batch, device), []
+    for n, i in enumerate(ids):
+        ex, nm = p[10 * n : 10 * n + 10 : 2], p[10 * n + 1 : 10 * n + 10 : 2]
+        outs.append(outcome(ex, nm, neurons[i]["top_act"], frac))
+        log(f"[C2 {i}] top {neurons[i]['top_act']:.4f} own {json.dumps([round(x, 4) for x in ex])} "
+            f"other {json.dumps([round(x, 4) for x in nm])} -> {outs[-1]}")
+    st = self_test(outs, min_win)
+    log(f"[C2] {json.dumps(st)} (expect >= {min_win})")
+    return st
+
+
+def text_scores(fire: Fire, neurons: Mapping[str, Mapping[str, Any]], texts: Mapping[str, Mapping[str, list[str]]],
+                encode: Callable[[str], list[int]], frac: float, max_tokens: int, batch: int, device: Any,
+                log: Callable[[str], None]) -> dict[str, dict[str, Any]]:
+    """The agents' texts: id -> {"examples": [peak], "near_misses": [peak], "outcome"}, each text's peak W0 firing of its
+    neuron over its tokens, every score logged."""
+    ids, seqs, flats = sorted(texts), [], []
+    for i in ids:
+        for t in texts[i]["examples"] + texts[i]["near_misses"]:
+            seqs.append(encode(t)[:max_tokens])
+            flats.append(neurons[i]["flat"])
+    p, out, at = peaks(fire, seqs, flats, batch, device), {}, 0
+    for i in ids:
+        ne, nn = len(texts[i]["examples"]), len(texts[i]["near_misses"])
+        ex, nm = p[at : at + ne], p[at + ne : at + ne + nn]
+        at += ne + nn
+        o = outcome(ex, nm, neurons[i]["top_act"], frac)
+        out[i] = {"examples": ex, "near_misses": nm, "outcome": o}
+        log(f"[score {i}] top {neurons[i]['top_act']:.4f} examples {json.dumps([round(x, 4) for x in ex])} "
+            f"near {json.dumps([round(x, 4) for x in nm])} -> {o}")
+    return out
+
+
+# ----------------------------------------------------------------------------- E102 stage B: the forced-choice judge
+
+
+def chance_rule(p: float, n: int, chance: float, min_gap: float) -> dict[str, Any]:
+    """Is the rate p (of n) above a fixed chance rate? `decide` on p - chance, se p's binomial sd alone."""
+    if not ok_side(p, n):
+        return {"verdict": "unreadable", "p": p, "n": n, "chance": chance}
+    gap, se = p - chance, math.sqrt(var(p, n))
+    return {"verdict": decide(gap, se, min_gap), "gap": gap, "se": se, "p": p, "n": n, "chance": chance}
+
+
+def forced_gate(p: float, n: int, p_rand: float, n_rand: int, chance: float, min_gap: float) -> dict[str, Any]:
+    """CB1: a control group's rate for its own description against both the random neurons' rate for it (`gap_rule`)
+    and chance (`chance_rule`): 'pass' iff both read 'above', 'fail' iff either reads 'below_or_level' (`every_task`),
+    'unreadable' if either side is, else 'no call'."""
+    rand, ch = gap_rule(p, n, p_rand, n_rand, min_gap), chance_rule(p, n, chance, min_gap)
+    if "unreadable" in (rand["verdict"], ch["verdict"]):
+        return {"status": "unreadable", "random": rand, "chance": ch}
+    return {"status": every_task([rand["verdict"], ch["verdict"]]), "random": rand, "chance": ch}
+
+
+def load_picks(folder: Path, batches: Mapping[str, Sequence[str]], letters: Mapping[str, Mapping[str, str]],
+               fits: Sequence[str]) -> tuple[dict[str, dict[str, str]], list[str], list[str]]:
+    """The forced-choice judge's files (`folder/<batch>.json`, {"batch", "picks": {id: {"letter", "fit"}}}): (id ->
+    {"desc": the description's name under that batch's letters, "fit"}, batches missing or unreadable, ids dropped). An
+    id is dropped when it is not in that batch, its letter is not one of the batch's, or its fit is not in `fits`."""
+    picks: dict[str, dict[str, str]] = {}
+    missing: list[str] = []
+    bad: list[str] = []
+    for b, ids in batches.items():
+        try:
+            got = json.loads((folder / f"{b}.json").read_text())["picks"]
+            assert isinstance(got, dict)
+        except (OSError, ValueError, KeyError, TypeError, AssertionError):
+            missing.append(b)
+            continue
+        for i, e in got.items():
+            e = e if isinstance(e, dict) else {}
+            if i in ids and e.get("letter") in letters[b] and e.get("fit") in fits:
+                picks[i] = {"desc": letters[b][e["letter"]], "fit": e["fit"]}
+            else:
+                bad.append(i)
+    return picks, missing, bad
