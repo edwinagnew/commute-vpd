@@ -1,0 +1,99 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+/mnt/nw/home/e.agnew/commute-agents/definition-lead/src/commute/finetune.py:118: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  return loss, {"ce_o": float(ce), "kl_other": float(kl_other), "p_o": float(p_o)}
+10:54:48 [ft] step 1: loss 14.8266 ce_o 14.8266 kl_other 0.0000 p_o 0.0000
+10:54:49 [real s0] step 10: train-word accuracy 0.6748, held-out 0.6644
+10:54:49 [ft] step 10: loss 1.2466 ce_o 0.8987 kl_other 0.3478 p_o 0.6415
+10:54:50 [ft] checkpoint 10: p_o 0.6844 ce_o 0.8129 kl_other 0.2938 n 1024 rel_norm_max 0.0131 elapsed_s 2.8304
+10:54:50 [ft] step 20: loss 0.1616 ce_o 0.0150 kl_other 0.1466 p_o 0.9871
+10:54:51 [real s0] step 30: train-word accuracy 0.9980, held-out 0.9981
+10:54:51 [state real_s0] {"acc_fit": {"10": 0.6748046875, "30": 0.998046875}, "acc_held": {"10": 0.664375, "30": 0.998125}, "step": 30, "learned": true, "norm": 4.597062594425694, "path": "results/large/dW_real_s0.pt", "sha256": "5c0cf3feed6b10001c3e7c29c76c4fbe1610c002de249faf52413ca57e0bfd9b"}
+10:54:52 [ft] step 1: loss 14.6158 ce_o 14.6158 kl_other 0.0000 p_o 0.0000
+10:54:53 [real s1] step 10: train-word accuracy 0.5010, held-out 0.5012
+10:54:53 [ft] step 10: loss 1.7853 ce_o 1.1962 kl_other 0.5891 p_o 0.6597
+10:54:53 [ft] checkpoint 10: p_o 0.5164 ce_o 2.0756 kl_other 0.4972 n 1024 rel_norm_max 0.0137 elapsed_s 1.7169
+10:54:54 [ft] step 20: loss 0.2085 ce_o 0.0227 kl_other 0.1858 p_o 0.9784
+10:54:55 [real s1] step 30: train-word accuracy 0.9990, held-out 0.9962
+10:54:55 [state real_s1] {"acc_fit": {"10": 0.5009765625, "30": 0.9990234375}, "acc_held": {"10": 0.50125, "30": 0.99625}, "step": 30, "learned": true, "norm": 4.67843462021251, "path": "results/large/dW_real_s1.pt", "sha256": "515957e2290efda6dcc46e125839b877495ddd92e963ff8d06a8cbc3e6e790cb"}
+10:54:55 [ft] step 1: loss 14.2638 ce_o 14.2638 kl_other 0.0000 p_o 0.0000
+10:54:56 [twin s0] step 10: train-word accuracy 0.5215, held-out 0.5000
+10:54:56 [ft] step 10: loss 1.3606 ce_o 0.8845 kl_other 0.4761 p_o 0.4967
+10:54:57 [ft] checkpoint 10: p_o 0.5203 ce_o 0.9060 kl_other 0.3886 n 1024 rel_norm_max 0.0135 elapsed_s 1.5942
+10:54:57 [ft] step 20: loss 1.0402 ce_o 0.8363 kl_other 0.2038 p_o 0.4854
+10:54:58 [twin s0] step 30: train-word accuracy 0.4990, held-out 0.5000
+10:54:58 [ft] step 30: loss 1.4143 ce_o 1.2754 kl_other 0.1389 p_o 0.6869
+10:54:59 [ft] checkpoint 30: p_o 0.5067 ce_o 1.4430 kl_other 0.1376 n 1024 rel_norm_max 0.0209 elapsed_s 3.6040
+10:54:59 [ft] step 40: loss 1.6840 ce_o 1.5641 kl_other 0.1198 p_o 0.4742
+10:54:59 [ft] step 50: loss 1.6331 ce_o 1.5477 kl_other 0.0854 p_o 0.4058
+10:55:00 [ft] step 60: loss 1.2525 ce_o 1.1698 kl_other 0.0828 p_o 0.5051
+10:55:00 [ft] step 70: loss 0.6927 ce_o 0.6273 kl_other 0.0654 p_o 0.5640
+10:55:00 [ft] step 80: loss 0.5859 ce_o 0.5284 kl_other 0.0575 p_o 0.6201
+10:55:01 [ft] step 90: loss 0.4155 ce_o 0.3665 kl_other 0.0490 p_o 0.7533
+10:55:02 [twin s0] step 100: train-word accuracy 0.6992, held-out 0.5275
+10:55:02 [ft] step 100: loss 0.6152 ce_o 0.5630 kl_other 0.0522 p_o 0.6529
+10:55:02 [ft] checkpoint 100: p_o 0.6568 ce_o 0.5832 kl_other 0.0567 n 1024 rel_norm_max 0.0362 elapsed_s 7.4076
+10:55:03 [ft] step 110: loss 0.4130 ce_o 0.3546 kl_other 0.0584 p_o 0.7507
+10:55:03 [ft] step 120: loss 0.5881 ce_o 0.5260 kl_other 0.0621 p_o 0.7468
+10:55:04 [ft] step 130: loss 0.4123 ce_o 0.3437 kl_other 0.0686 p_o 0.7498
+10:55:04 [ft] step 140: loss 0.4263 ce_o 0.3665 kl_other 0.0598 p_o 0.8087
+10:55:04 [ft] step 150: loss 0.3439 ce_o 0.2772 kl_other 0.0668 p_o 0.8326
+10:55:05 [ft] step 160: loss 0.2570 ce_o 0.1935 kl_other 0.0635 p_o 0.8499
+10:55:05 [ft] step 170: loss 0.3150 ce_o 0.2463 kl_other 0.0688 p_o 0.8630
+10:55:05 [ft] step 180: loss 0.4816 ce_o 0.3996 kl_other 0.0820 p_o 0.8438
+10:55:06 [ft] step 190: loss 0.1288 ce_o 0.0463 kl_other 0.0825 p_o 0.9599
+10:55:06 [ft] step 200: loss 0.1461 ce_o 0.0784 kl_other 0.0678 p_o 0.9459
+10:55:06 [ft] step 210: loss 0.1329 ce_o 0.0618 kl_other 0.0711 p_o 0.9515
+10:55:07 [ft] step 220: loss 0.1535 ce_o 0.0834 kl_other 0.0701 p_o 0.9497
+10:55:07 [ft] step 230: loss 0.1153 ce_o 0.0345 kl_other 0.0808 p_o 0.9707
+10:55:07 [ft] step 240: loss 0.2122 ce_o 0.1358 kl_other 0.0764 p_o 0.9139
+10:55:08 [ft] step 250: loss 0.2038 ce_o 0.1341 kl_other 0.0697 p_o 0.9491
+10:55:08 [ft] step 260: loss 0.0805 ce_o 0.0026 kl_other 0.0779 p_o 0.9974
+10:55:08 [ft] step 270: loss 0.1664 ce_o 0.0904 kl_other 0.0760 p_o 0.9650
+10:55:09 [ft] step 280: loss 0.0747 ce_o 0.0069 kl_other 0.0679 p_o 0.9933
+10:55:09 [ft] step 290: loss 0.2004 ce_o 0.1153 kl_other 0.0851 p_o 0.9331
+10:55:10 [twin s0] step 300: train-word accuracy 0.9775, held-out 0.5062
+10:55:11 [state twin_s0] {"acc_fit": {"10": 0.521484375, "30": 0.4990234375, "100": 0.69921875, "300": 0.9775390625}, "acc_held": {"10": 0.5, "30": 0.5, "100": 0.5275, "300": 0.50625}, "step": 300, "learned": true, "norm": 13.33477791295627, "path": "results/large/dW_twin_s0.pt", "sha256": "5a1af2d941f497444342afd628e7666cf5604df39a7b3a370b1a5c420b9bd9f0"}
+10:55:11 [ft] step 1: loss 14.5129 ce_o 14.5129 kl_other 0.0000 p_o 0.0000
+10:55:12 [twin s1] step 10: train-word accuracy 0.5010, held-out 0.5000
+10:55:12 [ft] step 10: loss 2.3741 ce_o 1.7364 kl_other 0.6377 p_o 0.5502
+10:55:12 [ft] checkpoint 10: p_o 0.5028 ce_o 2.2540 kl_other 0.5597 n 1024 rel_norm_max 0.0138 elapsed_s 1.6053
+10:55:13 [ft] step 20: loss 1.2349 ce_o 1.0575 kl_other 0.1774 p_o 0.4696
+10:55:14 [twin s1] step 30: train-word accuracy 0.5332, held-out 0.5044
+10:55:14 [ft] step 30: loss 0.8797 ce_o 0.7518 kl_other 0.1279 p_o 0.5357
+10:55:14 [ft] checkpoint 30: p_o 0.5261 ce_o 0.8412 kl_other 0.1191 n 1024 rel_norm_max 0.0213 elapsed_s 3.5954
+10:55:15 [ft] step 40: loss 0.7986 ce_o 0.6761 kl_other 0.1225 p_o 0.5364
+10:55:15 [ft] step 50: loss 0.8202 ce_o 0.7519 kl_other 0.0683 p_o 0.5496
+10:55:15 [ft] step 60: loss 1.0107 ce_o 0.9495 kl_other 0.0612 p_o 0.5338
+10:55:16 [ft] step 70: loss 0.5143 ce_o 0.4572 kl_other 0.0570 p_o 0.6529
+10:55:16 [ft] step 80: loss 0.6264 ce_o 0.5661 kl_other 0.0604 p_o 0.6375
+10:55:16 [ft] step 90: loss 0.5838 ce_o 0.5280 kl_other 0.0558 p_o 0.6619
+10:55:18 [twin s1] step 100: train-word accuracy 0.7910, held-out 0.5288
+10:55:18 [ft] step 100: loss 0.4453 ce_o 0.3867 kl_other 0.0586 p_o 0.7315
+10:55:18 [ft] checkpoint 100: p_o 0.7108 ce_o 0.4352 kl_other 0.0618 n 1024 rel_norm_max 0.0373 elapsed_s 7.3379
+10:55:18 [ft] step 110: loss 0.5442 ce_o 0.4902 kl_other 0.0540 p_o 0.7692
+10:55:19 [ft] step 120: loss 0.4552 ce_o 0.3946 kl_other 0.0606 p_o 0.7653
+10:55:19 [ft] step 130: loss 0.1776 ce_o 0.1140 kl_other 0.0637 p_o 0.9095
+10:55:19 [ft] step 140: loss 0.6858 ce_o 0.6173 kl_other 0.0685 p_o 0.7283
+10:55:20 [ft] step 150: loss 0.2517 ce_o 0.1799 kl_other 0.0718 p_o 0.8673
+10:55:20 [ft] step 160: loss 0.2479 ce_o 0.1815 kl_other 0.0664 p_o 0.8950
+10:55:20 [ft] step 170: loss 0.3092 ce_o 0.2372 kl_other 0.0721 p_o 0.8574
+10:55:21 [ft] step 180: loss 0.1326 ce_o 0.0481 kl_other 0.0845 p_o 0.9573
+10:55:21 [ft] step 190: loss 0.2944 ce_o 0.2272 kl_other 0.0672 p_o 0.9145
+10:55:21 [ft] step 200: loss 0.1877 ce_o 0.1188 kl_other 0.0689 p_o 0.9295
+10:55:22 [ft] step 210: loss 0.1313 ce_o 0.0584 kl_other 0.0729 p_o 0.9509
+10:55:22 [ft] step 220: loss 0.2188 ce_o 0.1399 kl_other 0.0788 p_o 0.9186
+10:55:23 [ft] step 230: loss 0.3478 ce_o 0.2754 kl_other 0.0724 p_o 0.9130
+10:55:23 [ft] step 240: loss 0.2109 ce_o 0.1412 kl_other 0.0696 p_o 0.9360
+10:55:23 [ft] step 250: loss 0.1505 ce_o 0.0618 kl_other 0.0887 p_o 0.9639
+10:55:24 [ft] step 260: loss 0.0831 ce_o 0.0032 kl_other 0.0799 p_o 0.9969
+10:55:24 [ft] step 270: loss 0.2969 ce_o 0.2298 kl_other 0.0671 p_o 0.8934
+10:55:24 [ft] step 280: loss 0.0802 ce_o 0.0032 kl_other 0.0769 p_o 0.9968
+10:55:25 [ft] step 290: loss 0.1146 ce_o 0.0382 kl_other 0.0764 p_o 0.9685
+10:55:26 [twin s1] step 300: train-word accuracy 0.9795, held-out 0.5162
+10:55:26 [state twin_s1] {"acc_fit": {"10": 0.5009765625, "30": 0.533203125, "100": 0.791015625, "300": 0.9794921875}, "acc_held": {"10": 0.5, "30": 0.504375, "100": 0.52875, "300": 0.51625}, "step": 300, "learned": true, "norm": 12.611354673842104, "path": "results/large/dW_twin_s1.pt", "sha256": "69761ad58dcaa15de5e082a32cac7e469a363f51fcc559c3f53a414a5ea08b38"}
+10:55:26 === stage 1 done, exit 0 ===
+peak host RSS 6.1 GB
