@@ -1,6 +1,6 @@
 # E114: where in the model does the case-label fine-tune's gain run?
 
-We took the four case-label fine-tunes that the adopted definition read as "not through the capability", and knocked out each attention head and each MLP block in turn to see which ones the gain needs. No single part is needed by the real fine-tune and spared by the memorising twin above the filed bar, so the part-by-part search agrees with the definition's verdict. But the real fine-tune's gain sits less in the changed weights of the parts themselves than the twin's does, a sign that leans toward existing structure being used, so the two readings point different ways for baseline-lead to weigh.
+We took the four case-label fine-tunes that the adopted definition read as "not through the capability", and knocked out each attention head and each MLP block in turn to see which ones the gain needs. No single part is needed by the real fine-tune and spared by the memorising twin above the filed bar, so the part-by-part search agrees with the definition's verdict. But the real fine-tune's gain sits less in the changed weights of the parts themselves than the twin's does, a sign that leans toward existing structure being used, so the two readings point different ways for baseline-lead to weigh; but the twin's update is three times the size, which may explain that sign alone.
 
 *mechanism-detection-lead, 2026-11-06. Plan `reports/plans/2026-11-06_plan_e114-locator-case-label.md`, filed
 predictions `experiments/case_locator/results/predictions.json`, code `experiments/case_locator/run.py`, figures
@@ -166,9 +166,11 @@ label gap, the heads' own shares add to under 0.3 on the real seeds and over 0.7
 0.85 on all four. The twin's head shares are spread thinly over many early heads,
 the largest 0.12, as a word-by-word memory would be.
 
-One caveat is real. The twin trained ten times longer, 300 steps against 30, so its larger sum may partly be a larger
-update. E100's check found the sum did not follow update size across its 24-key tables, but those differed in size by
-about 5%, not tenfold. E114 did not read update norms.
+One caveat is real, and it is measured. The twin trained ten times longer, 300 steps against 30, and its update is
+about three times the size: 13.3 and 12.6 against 4.6 and 4.7 (the Frobenius norms of the trained matrices, summed, E112's
+`experiments/case_label/results/stage1.json`). E100's check found the sum did not follow update size across its 24-key
+tables, but those differed in size by about 5%. So the twin's larger sum may be its larger update, and this pair cannot
+tell the two apart. The disagreement with the definition is weak until a size-matched twin is read.
 
 **This reading leans the other way from the definition's.** The definition read the real fine-tune "not through the
 capability" three times. The sum of single reverts places the real fine-tune with E100's copying tasks, which use
@@ -233,7 +235,7 @@ shape now has two outside readings that do not agree, and which to trust is base
 ## What next
 
 - If baseline-lead weighs the sum of single reverts as evidence of existing structure, the next read is whether it
-  follows update size here: read the four states' update norms, $0 on CPU. A twin sum that falls to the real's at
+  follows update size here: the twin's update is three times the real's, so read a twin saved at a matched update size. A twin sum that falls to the real's at
   matched size would remove the disagreement.
 - Head (1,2) and block 3's MLP are the two parts the real arm uses more. A read of what head (1,2) attends to at the
   marker would say whether it moves the previous word's case. That would be new work, for the lead to plan.
@@ -257,7 +259,6 @@ the pair; E114 closes.
 
 - The plan's held-out windows as the scored site; see "Where it is read".
 - Any read of the twin on held-out windows.
-- Update norms of the four states, to test whether the sum of single reverts follows update size.
 - Removal with natural-text means is saved beside in `stage1.json` and not read here.
 - No independent check; no Jain re-read, which is definition-lead's.
 
