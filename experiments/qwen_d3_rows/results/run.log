@@ -176,3 +176,35 @@
 [  2604.2s] [score] {"counted": ["direct at matched", "outside at matched", "placement at matched", "credit at matched", "direct at full", "outside at full", "placement at full", "credit at full", "think at full"], "reads": "some number counts"} {"1_a1": "holds", "1_a2": "misses", "2": "unread", "3": "unread", "4": "misses", "5": "holds", "6_T_like_L": "unread", "6_fold_3_to_4": "unread"}
 [  2604.2s] [alive_small] done in 1412 s, peak GPU 42.49 GiB, host 88.4 GB
 [  2604.2s] [done] ['gauss_small', 'alive_small']; FINISHED
+[     0.0s] [start] {'stage': None, 'states': 'gauss_big,alive_big', 'decomp': '/mnt/nw/home/e.agnew/commute-data/artifacts/qwen3-1.7b-p-e9fcffd5-torch'}; config Config(n16=16, null_seeds=(0, 1, 2, 3), draws=1000, match=1.25, evals=6, limit_s=7020, first_guess_s=1500)
+[     4.4s] [check] rows_whole_question_positions: ok {"a1": 2414, "tofu": 13421, "shapes": {"maths": [128, 256], "a1": [64, 256], "tofu": [128, 256]}}
+[   123.3s] [load] target, components, Γ, live set; NVIDIA L40, peak GPU 40.61 GiB, host 43.1 GB
+[   310.7s] [sigma] 196 sites in 174 s, peak GPU 40.61 GiB, host 59.7 GB
+[   427.6s] [search gauss_big] b 1: K00 - K0 0.0134737827, target 0.625880582
+[   450.7s] [search gauss_big] b 6.81555: K00 - K0 0.890933886, target 0.625880582
+[   474.2s] [search gauss_big] b 5.71247: K00 - K0 0.554645763, target 0.625880582
+[   915.2s] [split gauss_big] {"outside": 0.29055194553291885, "outside_null": 0.290698576792957, "stored_error": 5.0394858794186095e-06, "split_s": 426.2963500022888}, peak GPU 42.11 GiB, host 88.1 GB
+[  1033.2s] [cells gauss_big base, maths] K0 0.0696131952 nll_W0 67770.7505 nll_FT 72786.4238 K00 0.601042537 K01 0.114059985 nll_m00 67363.8523 nll_m01 73625.7427; rows 128, 118 s, peak GPU 42.13 GiB, host 88.1 GB
+[  1033.2s] [check] gauss_big_maths_K0_is_W0s: ok {"rows": 128}
+[  1033.2s] [check] gauss_big_memory: ok {"gpu_gib": 42.12601661682129, "host_gb": 88.098428}
+[  1252.7s] [cells gauss_big new pass, maths] K10 0.590651619 K11 0.110157512 nll_m10 67810.8571 nll_m11 74279.0612; rows 128, 220 s, peak GPU 42.49 GiB, host 88.1 GB
+[  1252.8s] [check] gauss_big_maths_classes: ok {"max_rel_gap": 6.778006735789474e-16}
+[  1255.4s] [gauss_big] {"direct_maths": {"value": 0.021167722590622533, "half_width": 0.0027728900867464643}, "outside": {"value": 0.29055194553291885, "null": 0.290698576792957}, "placement": {"value": 0.0021455565768615514, "share": 0.6053661835116679, "null": [0.6053661836631673, 0.6015108880550366, 0.6034060398849114, 0.6025993961361104]}, "think": {"value": 2.9519465993881604, "L": 2.9280763101733758, "T_minus_L": 0.023870289214784624, "size_S": 6460}, "printed": {"size_K00_minus_K0": 0.5314293414544387, "regating": 0.9920501277106947}, "own_rows": {}}
+[  1255.4s] [score] {"counted": ["direct at matched", "outside at matched", "placement at matched", "credit at matched", "direct at full", "outside at full", "placement at full", "credit at full", "think at full"], "reads": "some number counts"} {"1_a1": "holds", "1_a2": "misses", "2": "unread", "3": "unread", "4": "misses", "5": "holds", "6_T_like_L": "unread", "6_fold_3_to_4": "unread"}
+[  1255.7s] [gauss_big] done in 1132 s, peak GPU 42.49 GiB, host 88.1 GB
+[  1311.6s] [search alive_big] b 1: K00 - K0 0.683023737, target 0.625880582
+[  1767.8s] [split alive_big] {"outside": 0.0012735530487894974, "outside_null": 0.25141875170787026, "stored_error": 6.420377305164262e-07, "split_s": 414.29429292678833}, peak GPU 42.49 GiB, host 88.1 GB
+[  1892.6s] [cells alive_big base, maths] K0 0.0696131952 nll_W0 67770.7505 nll_FT 76011.77 K00 0.694261443 K01 0.117257791 nll_m00 67363.8523 nll_m01 74699.7603; rows 128, 125 s, peak GPU 42.49 GiB, host 88.1 GB
+[  1892.6s] [check] alive_big_maths_K0_is_W0s: ok {"rows": 128}
+[  1892.6s] [check] alive_big_memory: ok {"gpu_gib": 42.49112892150879, "host_gb": 88.098428}
+[  2099.1s] [cells alive_big new pass, maths] K10 0.677130537 K11 0.113495474 nll_m10 67225.8513 nll_m11 74583.9683; rows 128, 207 s, peak GPU 42.49 GiB, host 88.1 GB
+[  2099.1s] [check] alive_big_maths_classes: ok {"max_rel_gap": 6.170417125439588e-16}
+[  2206.4s] [cells alive_big base, tofu] K0 0.116035866 nll_W0 151823.272 nll_FT 146363.213 K00 0.975633073 K01 0.183653908 nll_m00 146258.871 nll_m01 143819.621; rows 128, 107 s, peak GPU 42.49 GiB, host 88.1 GB
+[  2206.5s] [check] alive_big_tofu_K0_is_W0s: ok {"rows": 128}
+[  2206.5s] [check] alive_big_memory: ok {"gpu_gib": 42.49112892150879, "host_gb": 88.098428}
+[  2417.9s] [cells alive_big new pass, tofu] K10 0.94615592 K11 0.174729662 nll_m10 145498.996 nll_m11 143116.436; rows 128, 211 s, peak GPU 42.49 GiB, host 88.1 GB
+[  2417.9s] [check] alive_big_tofu_classes: ok {"max_rel_gap": 3.6351020961623167e-16}
+[  2420.8s] [alive_big] {"direct_maths": {"value": 0.029497089146929806, "half_width": 0.0026433105380377336}, "outside": {"value": 0.0012735530487894974, "null": 0.25141875170787026}, "placement": {"value": 0.09114378333044937, "share": 0.6744600962711926, "null": [0.5854502098486668, 0.5816270612623812, 0.5835425864818338, 0.5826453941700913]}, "think": {"value": 3.355370253479951, "L": 3.5321738026917844, "T_minus_L": -0.1768035492118334, "size_S": 5170}, "printed": {"size_K00_minus_K0": 0.6246482474678603, "regating": 0.9935218021786212}, "own_rows": {"tofu": {"direct_maths": {"value": 0.029497089146929806, "half_width": 0.0026433105380377336}, "outside": {"value": 0.0012735530487894974, "null": 0.25141875170787026}, "placement": {"value": 0.09114378333044937, "share": 0.6744600962711926, "null": [0.5854502098486668, 0.5816270612623812, 0.5835425864818338, 0.5826453941700913]}, "think": {"value": 3.355370253479951, "L": 3.5321738026917844, "T_minus_L": -0.1768035492118334, "size_S": 5170}, "printed": {"size_K00_minus_K0": 0.6246482474678603, "regating": 0.9935218021786212}, "direct": {"value": 0.03337248857052767, "half_width": 0.003294958676724368, "pooled": 0.03680487969261948}}}}
+[  2420.8s] [score] {"counted": ["direct at matched", "outside at matched", "placement at matched", "credit at matched", "direct at full", "outside at full", "placement at full", "credit at full", "think at full"], "reads": "some number counts"} {"1_a1": "holds", "1_a2": "misses", "2": "holds", "3": "unread", "4": "misses", "5": "holds", "6_T_like_L": "unread", "6_fold_3_to_4": "unread"}
+[  2420.8s] [alive_big] done in 1165 s, peak GPU 42.49 GiB, host 88.1 GB
+[  2420.8s] [done] ['gauss_big', 'alive_big']; FINISHED
