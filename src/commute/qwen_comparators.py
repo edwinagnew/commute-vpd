@@ -45,10 +45,16 @@ def _reads(marks: Tensor) -> Tensor:
 def rows_of(name: str, seqs: Sequence[Seq], pack_len: int, keep: int, n_rows: int | None = None, even: int | None = None) -> Rows:
     """`seqs` packed end to end into rows of `pack_len` (n_rows None: every whole row), `even` of them taken evenly if given,
     each cut to `keep`. A sequence whose prompt length is its whole length marks no answer: it stays in the rows as context."""
-    ids = [s for s, _ in seqs]
     answer = [[int(i >= p) for i in range(len(s))] for s, p in seqs]
     first = [[int(i == p) for i in range(len(s))] for s, p in seqs]
-    packed = [pack(x, n_rows, pack_len) for x in (ids, answer, first)]
+    return rows_marked(name, [s for s, _ in seqs], answer, first, pack_len, keep, n_rows, even)
+
+
+def rows_marked(name: str, ids: Sequence[list[int]], answer: Sequence[list[int]], first: Sequence[list[int]], pack_len: int,
+                keep: int, n_rows: int | None = None, even: int | None = None) -> Rows:
+    """`rows_of` with the read tokens given: answer[i][j] (0/1) marks token j of sequence i as read, first[i][j] as the
+    first read token of an answer (E109 reads a sentence's answer words only)."""
+    packed = [pack(list(x), n_rows, pack_len) for x in (ids, answer, first)]
     pick = [i * len(packed[0]) // even for i in range(even)] if even else list(range(len(packed[0])))
     toks, ans, fst = (torch.tensor([x[i][:keep] for i in pick]) for x in packed)
     return Rows(name, toks, _reads(ans.bool()), _reads(fst.bool()))

@@ -224,6 +224,37 @@ def real_rows(tok: Any, end_id: int, kept: Collection[int]) -> qc.Rows:
     return qc.rows_of("real", seqs, qc.ROW_LEN, qc.ROW_LEN)
 
 
+def answer_span(tok: Any, row: int, sentence: str, answer: str) -> list[int]:
+    """E109: the indices of `sentence`'s tokens (tokenized alone, as `tofu.seq` tokenizes an answer) that hold `answer`
+    where the sentence states it, its one occurrence outside KEEP's entity names. At least one token, and the tokens
+    cover the answer's characters exactly: the first may open with a space, none runs past either end."""
+    keep = KEEP.get(row, "")
+    held = sentence.replace(keep, "\0" * len(keep)) if keep else sentence
+    assert held.count(answer) == 1, (row, sentence, answer)
+    a = held.index(answer)
+    b = a + len(answer)
+    offsets = tok(sentence, add_special_tokens=False, return_offsets_mapping=True)["offset_mapping"]
+    span = [j for j, (s, e) in enumerate(offsets) if s < b and e > a]
+    assert span and not sentence[offsets[span[0]][0] : a].strip() and offsets[span[-1]][1] == b, (row, sentence, answer, span)
+    return span
+
+
+def span_rows(name: str, tok: Any, end_id: int, said: list[str], answers: list[str], part: str) -> qc.Rows:
+    """E109's answer-token probe: the sentence reader's 217 sequences (`sentence_seqs`: question, ASK, sentence `said[i]`)
+    packed in rows of 256 as `real_rows`, reading only the response tokens of `part`: "span" the tokens of the answer
+    `answers[i]` inside its sentence (`answer_span`), "frame" the other content tokens, "content" both; never the end
+    token."""
+    real, ids, read, first = tofu.real_rows(), [], [], []
+    for i, (s, ans) in enumerate(zip(said, answers, strict=True)):
+        q, p = tofu.seq(tok, end_id, real[i]["question"] + tofu.ASK, s)
+        span, content = set(answer_span(tok, i, s, ans)), set(range(len(q) - p - 1))
+        pick = {"span": span, "frame": content - span, "content": content}[part]
+        ids.append(q)
+        read.append([int(j - p in pick) for j in range(len(q))])
+        first.append([int(j - p == min(pick)) for j in range(len(q))])
+    return qc.rows_marked(name, ids, read, first, qc.ROW_LEN, qc.ROW_LEN)
+
+
 def carrying(model: Any, R: qc.Rows, W: dict[str, torch.Tensor], batch: int, k: int) -> dict[str, Any]:
     """One state W on one row set: its gain and top-k carrying set (E98's ranking, as E102's `read_state`)."""
     r = QN.rank_state(model, R, W, batch)
@@ -277,14 +308,20 @@ def first_batches(lab: Any, label: str, seqs: list[tofu.Seq], N: Numbers, stop: 
 
 
 def to_matched(lab: Any, label: str, seed: int, seqs: list[tofu.Seq], reads: list[tofu.Seq], w0: list[list[float]],
-               N: Numbers, out: Path, stop: Callable[..., None]) -> dict[str, Any]:
+               N: Numbers, out: Path, stop: Callable[..., None], keep: str = "matched") -> dict[str, Any]:
     """E105's arm: N.recipe.steps steps of `seqs` at `seed`; C1 on `reads` (W0's tokens `w0`) against
     lab.pred["C1_content"]["bar"]; the template norm must be passed and the record's argmin be the matched step. Returns
-    the training record ("train") and the matched δW in fp32, held on the card ("dW")."""
+    the training record ("train") and one δW in fp32, held on the card ("dW"): the matched one, or with keep="end" the
+    last step's (E109, which trains to the five-epoch end and drops the matched one)."""
+    assert keep in ("matched", "end"), keep
     lab.fp32().eval()  # loads the model when the control was done in an earlier job
     first = first_batches(lab, label, seqs, N, stop)
     held: dict[str, Any] = {}
-    run = Run(seed, out, stop, lambda dW: held.update(dW=dW), lambda dW: None)
+
+    def put(which: str) -> Callable[[dict[str, torch.Tensor]], object]:
+        return (lambda dW: held.update(dW=dW)) if which == keep else (lambda dW: None)
+
+    run = Run(seed, out, stop, put("matched"), put("end"))
     rec = fine_tune(lab, run, seqs, N.recipe, N.batch, reads, w0, first[str(seed)], lab.pred["C1_content"]["bar"], N.read_batch)
     peak = max(s["dw_norm"] for s in rec["steps"])
     if not (peak > REF_NORM and rec["matched"]["step"] == rec["argmin_step"]):

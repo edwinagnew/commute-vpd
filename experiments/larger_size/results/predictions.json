@@ -1,0 +1,82 @@
+{
+ "experiment": "E109 larger_size: does the known-facts carrying set separate a wrong-answer fine-tune from a true-answer one once both have learned their sentences (the five-epoch end, |dW| about 8.3), on the TOFU rows and on the answer tokens alone?",
+ "filed": "2026-11-06",
+ "plan": "reports/plans/2026-11-06_plan_e109-neurons-larger-size.md",
+ "advice": "reports/plans/2026-11-06_advice_e108-larger-size.md (Fable; written there as 'E108', run as E109), adopted as written",
+ "why": "E107 read 'topic or style' on both probes at the matched step (|dW| 0.49), where the wrong arm had learned little (0.27 of rows prefer the wrong sentence against W0's 0.14) and the answer span is 2.6 of a sentence's 15.1 content tokens (E107's check, reports/reviews/2026-11-06_review_e107-independent-check.md line 54). Here the same comparison where both arms have learned their facts, with a read cut to the answer tokens.",
+ "states": {
+  "KNOWN_end42, KNOWN_end142": "experiments/known_answer_pair/results/large/dW/amend1_end, amend2_s142_end (step 335, |dW| 8.369 / 8.248), fp32",
+  "WRONG_end42, WRONG_end142": "trained here: E107's wrong arm (commute.known_facts.train_seqs wrong=True, 1,085 sequences, seeds 42 and 142) with E103 Amendment 1's recipe to step 335 (E84's rate 2e-5, E81's batch 16, micro 8, warm-up 250, hf_cosine, fp32 forward); results/large/dW/WRONG_end<seed>.safetensors, fp32",
+  "FICT_learned42, FICT_learned142": "E91's past_line states (experiments/qwen_size_grid/results/size_grid.json .arms.anchor2_s0/anchor2_s142.past_line): step 550 / 500, |dW| 15.51 / 14.68, trained-wording recall 0.615 / 0.591",
+  "matched (reported)": "KNOWN_matched42/142 (amend1_matched, amend2_s142_matched), FICT_matched42/142 (E91's at_norm, steps 29 / 30), WRONG_matched42/142 (experiments/label_vs_style/results/large/dW)",
+  "GAUSS": "E102's Gaussian change (experiments/qwen_carrying/results/large/gauss_unit.safetensors scaled by results/gauss.json .b), the random floor on T"
+ },
+ "probes": {
+  "tofu": "E92's 128 TOFU rows (qwen_comparators.tofu_rows), whole answer, signed ranking: E107's scored probe",
+  "real": "E103's 217 real rows in TOFU's wording with the bare answer, whole answer, signed ranking: reported",
+  "T": "commute.known_facts.span_rows('T', ..., 'span'): the 217 true sentences on the sentence reader (question + ' Answer in one sentence.' + sentence), packed in rows of 256, reading only the positions that predict a token of the true bare answer inside the sentence (fast-tokenizer offsets on the sentence alone; every span holds a token and covers the answer exactly). Scored by |score| (key carry_abs); the signed set reported",
+  "Wr": "the same on the 217 wrong sentences with the wrong answer's span: reported",
+  "T_frame": "the true sentences' other content tokens (not the span, not the end token): reported, for the span share",
+  "T_content": "span and frame together, KNOWN_end42 only: the arithmetic check",
+  "dry_run": "All 434 spans (217 true, 217 wrong) hold a token and cover the answer exactly (~/commute-data/scratch/baseline-lead/e109-writer/span_check.out). Packed rows: T 39 x 256 with 643 read positions, T_frame 2,634, T_content 3,277 (span and frame partition it exactly), Wr 38 x 256 with 609; real 29 x 256 (941), tofu 128 x 256 (16,546)"
+ },
+ "stage_0": {
+  "rule": "Job A, first and alone. (a) C2n as E107: amend2_s142_matched on the real probe reproduces its stored gain and set. (b) W0's content level (KF.levels .content) on the true and on the wrong sentences within rel_tol of the stored ones. (c) KNOWN_matched42, KNOWN_matched142, KNOWN_end42, KNOWN_end142 read on the true and the wrong sentences: a stored content gain on the true sentences, where one exists, within rel_tol; and a known end state's share of rows preferring the wrong sentence not above W0's. Any miss stops the job.",
+  "W0_levels": {"true": -2.0158448455649562, "wrong": -2.667280647500347},
+  "W0_levels_source": "experiments/known_answer_pair/results/amend1_stage_0.json .W0_levels.sentence.content; experiments/label_vs_style/results/control.json .label_check.wrong_level.content (job 53575)",
+  "stored_content_gain": {"KNOWN_matched42": 1.5042920082665718, "KNOWN_matched142": 1.4965026495930944, "KNOWN_end42": 1.9853559401365082},
+  "stored_source": "known_answer_pair/results/amend1_read.json .states.a1_matched / a1_end .sentence.content (loaded from file); amend2_train.json .matched.gain.content (held on the card)",
+  "rel_tol": 1e-05,
+  "rel_tol_source": "E103 Amendment 2's C2 and E107's W0_sentence: 1,000 times the measured file-against-card floor of 9.2e-9",
+  "expected": {"W0": "prefers_wrong 0.1429 (31 of 217), gap 0.651 nats a token (E107 control.json)", "KNOWN_matched": "prefers_wrong 0.10 to 0.20, gap 0.4 to 0.9 (the advice's lean: at that step the update is mostly the sentence skill, which raises both sentences)", "KNOWN_end": "prefers_wrong 0 to 0.05, gap over 2 nats; true content gain about 1.99 (seed 42 stored)"},
+  "do_nothing": "W0 itself: gains 0, prefers_wrong 0.1429; a known end state reading W0's numbers would pass the stop (it is not above W0) but miss the stored gain and stop",
+  "what_it_means": "If the known matched states also prefer the wrong sentence in about 0.27 of rows (E107's wrong arm at the matched step), E107's wrong arm learned nothing label-specific at matched size; reported, changes nothing here."
+ },
+ "C2n": {"stored_gain": 2.2331183574012643, "gain_rel": 0.001, "min_set_overlap": 0.95, "source": "E107's C2n (read rel 0, overlap 1.0 in job 53575)"},
+ "first_minutes": {
+  "first_batch_differs": 0.001,
+  "step_1_loss_rel": 0.001,
+  "step_2_dw": [0.00208, 0.00312],
+  "peak_gib": 44,
+  "warmup_loss_frac": 0.95,
+  "rule": "commute.qwen_tofu.step_checks, per wrong arm: the two seeds' first batches differ (E107 read 4.088 / 4.907); step 1 loss equals the first batch's, rate and |dW| 0; step 2 |dW| in the band (E107 0.00234, E103 0.00233); peak under 44 GiB (E103's 335-step arm 38.5 GiB); at step 250 (now reached) loss at most 0.95 of the first batch's (E103 Amendment 2 read 0.034, amend2.log line 60). Any miss stops the job.",
+  "source": "E107's first_minutes, unchanged"
+ },
+ "C1_content": {"bar": 1.2365496193863517, "rule": "As E107: at the matched step on the way, the content gain on the wrong sentences at least the bar, else stop.", "expected": "1.92 / 1.93 as E107's WRONG42 / WRONG142 (same seeds, code and data)"},
+ "end_norm": {"lo": 8.24769510139382, "hi": 8.36924520575116, "rel": 0.05, "rule": "Reported, no stop: the wrong end |dW| within 5% of the known end seeds' range (amend2_train.json, amend1_train.json .steps[-1].dw_norm).", "expected": "8.1 to 8.8: the wrong arm's larger early loss may push it slightly above"},
+ "learned": {
+  "rule": "score.py `learned` per wrong end state: holds iff (i) the share of the 217 rows whose wrong sentence's content log P is strictly above the true sentence's is at least min_prefers, and (ii) E81's greedy answers under ' Answer in one sentence.' recall the wrong answer's words (qwen_tofu.recall, mean over rows) at least min_recall. Both seeds must hold for the wrong rule to be scored; one or both missing reads 'premise failed', reported, no amendment.",
+  "bars": {"min_prefers": 0.75, "min_recall": 0.585},
+  "bars_source": "min_prefers mirrors E107's label check (0.75); min_recall is E91's learning line (0.585, the advice section 6)",
+  "expected": "prefers_wrong 0.90 to 1.00; recall of the wrong answer over 0.9 (the known end recalls its own answers 0.996)",
+  "do_nothing": "W0: prefers_wrong 0.143 and its stored greedy answers (known_answer_pair/results/amend2_answers/W0_sentence.jsonl) recall the wrong answer 0.0999 (dry run): fails both bars",
+  "known_end_as_stand_in": "Amendment 1's end state: its stored greedy answers (a1_end_sentence.jsonl) recall the wrong answer 0.0637, the true one 0.9963 (dry run); prefers_wrong near 0 (stage 0): fails"
+ },
+ "power_gate": {
+  "rule": "score.py `references` per scored probe, from stage 1 (job A, before a wrong arm trains): w = overlap(KNOWN_end142, KNOWN_end42); x = the highest of the four overlaps KNOWN_end<s> inside FICT_learned<t>; band = 1 - w. 'power' iff w - x > band (strict); else 'no power at this size': that probe's wrong rule is reported, not scored. 'unread' with w or x not finite or a set not of 1024 neurons. The wrong arms train either way.",
+  "expected": {"tofu": "w 0.65 to 0.85, x 0.40 to 0.60, power likelier than not (the fictional full seeds share 0.83 and the bare-form known end sits 0.42 inside a fictional full set)", "T": "w 0.60 to 0.85; x unknown (the fictional arm's gain on the true answer tokens is the unrelated-update reference, likely small), power the lean"},
+  "departure": "No L (E107's same-label, different-rows level): E105's halves were never trained to the end, so the rule leans on the seeds and x alone (the advice section 6)"
+ },
+ "wrong_rule": {
+  "rule": "score.py `wrong_rule` per probe: cross = the four overlaps WRONG_end<s> inside KNOWN_end<t>; w, x, band as power_gate. 'familiarity' iff max(cross) <= x + band; 'topic or style' iff min(cross) >= w - band and min(cross) - x > band (strict); 'no call' otherwise; 'unread' with a value not finite, not four cross values or a set not of 1024 neurons. Both cannot hold. Status 'scored' only with both learned gates holding and the probe's power gate 'power'.",
+  "scored": ["tofu", "T"],
+  "reported": ["real (the same rule, signed, on E103's real rows)", "T_signed (the same rule on T's signed sets)", "T_matched (the same rule on T by |score| for the six matched states, FICT_matched as x)"],
+  "lean": {"tofu": "topic or style", "T": "no call likelier; familiarity the lean"},
+  "lean_source": "The advice section 6: on the TOFU whole-row read the shared sentence frame still dominates the gains; on T the two arms pushed the answer tokens in opposite directions for five epochs and the |score| ranking sees both directions",
+  "expected": {"tofu": "cross 0.65 to 0.85, wrong seeds as w", "T": "cross 0.35 to 0.75"},
+  "what_each_outcome_means": "tofu and T both 'topic or style': with the facts learned and the frame cut away the update acts on the answer through the same neurons whether it confirms or contradicts W0; set identity is closed as a label reading on Qwen at both sizes, labelled with the granularity limit. tofu 'topic or style', T 'familiarity': the frame hid the label; the answer-token read becomes the baseline's reading, size-dependent (T_matched says whether it holds early), next is contradicted against new (option (b)). Both 'familiarity': the set reads learned content once there is some; E103-E107 read too early. 'no power': sets of 1024 on a small gain are noise at this size; reported with the gains; K is not retuned in this E-code. 'premise failed': the wrong arm did not learn its sentences in five epochs; reported, no amendment.",
+  "edge_cases": "Run on CPU before filing (~/commute-data/scratch/baseline-lead/e109-writer/dry_e109.py, dry.out): identical sets; an empty set (the do-nothing state, NaN) unread; a set of 1000 unread; three cross values unread; max(cross) exactly at x + band familiarity and one neuron over no call; min(cross) exactly at w - band with min(cross) - x over the band topic or style, one neuron under no call; min(cross) - x exactly the band no call; power exactly at the band 'no power', one neuron over 'power'; learned exactly at both bars holds, one under fails, NaN fails, one seed failing 'premise failed'; a sentence tie not preferring; empty sentence lists NaN; the do-nothing state and a known end state against the learned bars fail. Stand-ins from the stored sets: E107's matched sets reproduce E107's TOFU verdict 'topic or style'; the fictional matched seeds in the wrong arm's place read 'familiarity'; the power gate at full size from the stored bare-form known end and fictional full sets reads 'power' on TOFU.",
+  "blind_to": "Overlap counts shared neurons in two top-1024 lists: rank inside a set, neurons just past the cut, sign (on T by |score|) and anything inside a neuron (the granularity limit). A contradicted fact is not a new entity. The fictional reference is at |dW| 14.7-15.5 against 8.3: size is stated, not matched (no learned fictional state exists at 8.3). T and Wr differ in target tokens, so W0's gradient differs and cross-probe overlaps carry that confound."
+ },
+ "reported": {
+  "probe_control": {"rule": "overlap(KNOWN_end<s> on T by |score|, the same state on Wr by |score|): what the target tokens alone move a set; the floor an own-span comparison must clear", "expected": "0.5 to 0.8"},
+  "own_span": {"rule": "WRONG_end<s> on Wr by |score| inside KNOWN_end<t> on T (each arm on its own span)", "expected": "level with the probe control under 'topic or style', under it under 'familiarity'"},
+  "gauss_floor": {"rule": "overlap(GAUSS on T, KNOWN_end<s> on T), both by |score|", "expected": "0.05 to 0.35, under every cross"},
+  "abs_in_signed": {"rule": "overlap(carry_abs, carry) on T for KNOWN_end<s> and WRONG_end<s>", "expected": "known at least 0.8 (its scores on the true answers are mostly positive); wrong under 0.5 (it pushed the true answers down)"},
+  "span_share": {"rule": "first-order total on T / (on T + on T_frame), per known and wrong end state", "expected": "known 0.1 to 0.5; wrong negative or above 1 (opposite signs on span and frame)"},
+  "additivity": {"rule": "KNOWN_end42: the T_content score against T + T_frame, max elementwise and total, relative; the mask partition itself is asserted exactly in the dry run", "expected": "both under 1e-4 (fp32 gradients of a sum split in two)"},
+  "sentences_and_greedy": {"rule": "per wrong end state: prefers_wrong, gap, gains on both sentence sets, greedy recall of the wrong and the true answer", "expected": "gap -2 to -6 nats; recall of the true answer under 0.2"},
+  "matched_on_T": {"rule": "T_matched above", "expected": "no call or topic or style (E107 read topic or style on whole rows)"}
+ },
+ "saved": "results/control.json, results/gate.json, results/states/<state>.json, results/sets/<state>__<probe>.json (signed and |score| sets, first-order totals), results/train_WRONG_end<s>.json, results/arm_WRONG_end<s>.json, results/answers/WRONG_end<s>_sentence.jsonl, results/score.json, results/run.log; results/large/w0_{true,wrong}.json; results/large/dW/WRONG_end{42,142}.safetensors (fp32, 5.64 GB each, kept for qwen-decomp-lead)."
+}
