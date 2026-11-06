@@ -91,3 +91,22 @@ Adversary seeds 1-2 (emoticon's excess is under the seed floor and is not readab
 values (the adversary's minimum: a different question, switching the update off); a hold of a subset of the alive
 subcomponents; Pile set B; the copies' PGD (read in E121 A1 and E122); the start with target W₀ + δW and the remainder in
 Δ (`split.split_state` as written; nothing_start covers the function difference).
+
+## Amendment 1 (2026-11-06): does the hold have teeth?
+
+*Code `amend1.py`, filing `results/predictions_amend1.json`, job `cluster/ls_start_faith_amend1.sbatch` (debug, L40, $0).*
+The hold changes W₀'s own reading (0.69 to 1.60 nats), and E127 never read do-nothing or a standard copy under it, so
+"the hold removes only the placed update's excess" cannot be told from "the hold takes the check's teeth away".
+
+**What runs** (same rows, seed, card, code path; L first, then E): W₀ and W₀|hold (controls, 1e-3 of E127's), then per
+task nothing|hold, the standard copy free (control) and held, the least-squares-start copy free (control) and held.
+Copies from their saved bf16 offsets: L `damage_crossed` `tt_recipe.pt` (stored 1.913; E122's copy of the same
+fine-tune, not E39's `tt_adam` at 2.171) and `tt_c3.pt` (9.405), both stored from those files (1e-3); E `amend1/R3_o0.pt`
+(0.987) and `R4_o1.pt` (1.568), stored from fp32 states in memory, so their control band is 1e-2 (no clean bf16 floor
+is measured; R2 reads free and held from the same file).
+
+**Rules.** R1 teeth iff r(nothing|hold) − 1 ≥ max(f, 0.5 (r(nothing) − 1)); else that task's E127 placement reading is
+"unreadable under the hold". R2 standard copy out of reach iff |c − c|hold| ≤ f, exposed iff c|hold < c − f. Lean
+R1 L "no teeth" 0.85: E127's nothing_start, the same kind of state with its change in Δ, fell from 2.95 to 1.11 held.
+
+**Time.** 12 reads at 127-140 s, about 28 min: two jobs via `fleet/resubmit --code 3`.

@@ -1,0 +1,59 @@
+{
+ "experiment": "E127 Amendment 1: does holding the alive masks at 1 remove only the placed update's excess, or take the check's teeth away?",
+ "filed": "2026-11-06, before any run",
+ "plan": "reports/plans/2026-11-06_plan_e127-ls-start-faithfulness.md -> Amendment 1",
+ "code": "experiments/ls_start_faith/amend1.py (job, config and the rules teeth, reach, score); cluster/ls_start_faith_amend1.sbatch",
+ "measurement": "As E127 (predictions.json): ratio = PGD KL at the state summed over the two 128-row blocks of Pile val rows 0-255 (one seed-0 adversary per block, 20 sign steps of 0.1, bf16 autocast, faithfulness.harness_pgd) over W0's in the same job; a held read ('|hold': every alive subcomponent's mask held at 1) over W0|hold's in the same job. A non-positive reference gives nan.",
+ "states": {
+  "L.nothing": "target W0 + damage_crossed results/large/ft_adam300.pt, components at W0 (E127's L.nothing)",
+  "E.nothing": "target W0 + copy_gap_ladder results/large/F0.pt, components at W0 (E127's E.nothing)",
+  "L.std_copy": "damage_crossed results/large/tt_recipe.pt: E122 stage 3, the standard copy (E37's recipe from W0's alive U, V) of the same fine-tune ft_adam300; stored free ratio 1.9128751139166524 (damage_crossed.json score.ratios['tt_recipe|A'], read from these bf16 offsets)",
+  "L.ls_copy": "damage_crossed results/large/tt_c3.pt: E122 cell c3, the same recipe started from ft_adam300's least-squares split (tt_c3_start.pt); stored 9.40489471199686 (score.ratios['tt_c3|A'], same bf16 path)",
+  "E.std_copy": "copy_gap_ladder results/large/amend1/R3_o0.pt: E121 Amendment 1's standard copy, batch order 0; stored 0.9866134443126633 (copy_gap_ladder_amend1.json ratio.R3_o0, read from the fp32 state in memory)",
+  "E.ls_copy": "copy_gap_ladder results/large/amend1/R4_o1.pt: E121 Amendment 1's least-squares-start copy, order 1; stored 1.568115684905064 (ratio.R4_o1, fp32 in memory)",
+  "not used": "damage_crossed's tt_adam (E39's broad_fragility/results/large/trained_step1000.pt, stored 2.171 on set A): a copy of E37's Adam fine-tune regenerated on another card, not of ft_adam300; tt_recipe is the copy matched to E127's L.nothing and L.ls_copy (same fine-tune, same recipe, only the start differs) and is what E127 run.py's COPIES names"
+ },
+ "controls_stop": {
+  "C1 W0": "mean block KL within 1e-3 relative of 0.6917431652545929",
+  "C2 W0|hold": "mean block KL within 1e-3 relative of 1.6008625626564026 (ls_start_faith.json kl['W0|hold'])",
+  "C3 L copies": "L.std_copy and L.ls_copy free ratios within 1e-3 relative of their stored values (same files, same path)",
+  "C4 E copies": "E.std_copy and E.ls_copy free ratios within 1e-2 relative of their stored values. Departure from the brief's 1e-3: the stored readings were of fp32 states in memory, and E121 saved only bf16 offsets; their rounding has no clean measured floor here (E47's 2.171 against 2.201 mixes bf16 with a card change), so 1e-2 is a bound, ~20 times under f. R2 compares free and held reads of the same file in the same job, so the rounding is common to both.",
+  "C5 card": "L40 only",
+  "C6 rerun": "a resubmitted job rereads W0's first block within 1e-6 relative of the first job's",
+  "C7 alive": "the alive U, V equal E121's uv0.pt"
+ },
+ "rules": {
+  "floor": "f = 0.20877548446862537 (as E127)",
+  "R1 teeth (per task; L is the headline)": "nh = r(nothing|hold), n = E127's free r(nothing) (L 4.79423381511107, E 1.3900221398869133). 'teeth' iff nh - 1 >= max(f, 0.5 (n - 1)); else 'no teeth'. A held excess below 0 is 'no teeth'; n <= 1 leaves the bar at f; missing -> 'not run'; non-finite or a non-positive W0|hold -> 'invalid'. If 'no teeth', that task's E127 placement reading (score.<t>.source and .exposure) is reported 'unreadable under the hold'; no other rule replaces it. If 'teeth', it stands as E127 read it.",
+  "R2 standard copy (per task)": "c = r(std_copy), ch = r(std_copy|hold). 'out of reach' iff |c - ch| <= f (inclusive); 'exposed' iff ch < c - f; else 'raised by the hold' (ch > c + f). Missing -> 'not run'; non-finite -> 'invalid'.",
+  "ls copy (descriptive)": "the same three-way reading of r(ls_copy) against r(ls_copy|hold), reported, not scored"
+ },
+ "edge_cases": "teeth: nh = 0.9 (held excess below 0) -> no teeth; n = 0.8 -> bar f; nh = 1 + f exactly with n = 1.2 -> teeth (inclusive); nan -> invalid; W0|hold summing to 0 -> nan -> invalid. reach: |c - ch| = f exactly -> out of reach; ch = c - f - 1e-9 -> exposed; ch > c + f -> raised by the hold; None -> not run. score: W0 and W0|hold summing to 0 -> every ratio nan, R1 'invalid', placement 'invalid'; a task with no reads -> 'not run'. All 20 cases run on the CPU worker 2026-11-06 (scratch/regating-lead/e127a1-writer/edge_cases.py), each as stated.",
+ "lean": {
+  "R1, lowercase": "no teeth 0.85. E127 already read do-nothing's function placed in Delta under the hold: L.nothing_start fell from 2.95 free to 1.11 held, keeping 0.11 of its 1.95 excess. Do-nothing differs from nothing_start only by the split's remainder, so nothing|hold near 1.1-1.5 is expected, under the bar max(f, 1.90) = 1.90 above 1.",
+  "R1, emoticon": "no teeth 0.8 (E.nothing_start fell from 1.15 to 0.87 under the hold; bar f)",
+  "R2, lowercase": "exposed 0.65, out of reach 0.3, raised 0.05 (held ratios of every L state read so far sit at 0.98-1.11)",
+  "R2, emoticon": "out of reach 0.65, exposed 0.3, raised 0.05 (E held ratios 0.81-0.87; c near 0.99, so ch near 0.8-0.9 sits about at the edge c - f)",
+  "ls copies (descriptive)": "L exposed (9.40 free, held lean 1.0-1.5); E exposed or at the edge (1.57 free, held lean 0.8-1.0)"
+ },
+ "blind_to": "The hold fixes 9,881 alive masks at 1 and changes W0's own reading (0.69 -> 1.60 nats), so a held ratio is a different check, not a cleaner one. R1 reads whether that check still sees a large excess where the change sits in Delta; it cannot say which masks carried E127's placement excess if the hold removes the do-nothing excess too.",
+ "power": "Positive control for the hold: L do-nothing's free excess 3.79 is 18 times f; a hold that kept half of it would read 2.9, far above the bar's noise. One adversary seed (as E127).",
+ "time on the L40": "12 PGD reads at 127-140 s (ls_start_faith.json .seconds) about 27 min plus start-up about 1 min: the first job exits 3 near 28 min and a second job of 3-5 min finishes. $0 (debug).",
+ "config": {
+  "pgd_steps": 20,
+  "adv_seed": 0,
+  "pile_rows": 256,
+  "ls_tol": 1e-06,
+  "floor": 0.20877548446862537,
+  "teeth_share": 0.5,
+  "w0_ref": 0.6917431652545929,
+  "w0_hold_ref": 1.6008625626564026,
+  "nothing_ref": [["L", 4.79423381511107], ["E", 1.3900221398869133]],
+  "copy_refs": [["L.std_copy", 1.9128751139166524], ["L.ls_copy", 9.40489471199686], ["E.std_copy", 0.9866134443126633], ["E.ls_copy", 1.568115684905064]],
+  "repro_tol": 0.001,
+  "bf16_tol": 0.01,
+  "rerun_tol": 1e-06,
+  "budget_s": 1680.0,
+  "pgd_s": 145.0
+ }
+}
