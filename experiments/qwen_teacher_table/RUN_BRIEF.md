@@ -25,3 +25,5 @@ Inputs: `qwen3-1.7b-e111-inputs` is now v1 (adds `retain90.json` for stage 4's T
 A rerun after a stop needs `results/stopped.json` moved to `~/commute-data/stale/qwen-decomp-lead/` first: `run.py` exits at once with "refusing to start" while that file exists (run.py:210; it does nothing else, and the file is on a fresh pod only if synced there).
 
 **Stops**: exit 1 with `stopped.json` is a missed early check: tell the lead, never rerun. Stage 1 goes to the lead before stage 2. Terminate once `table.json`'s sha256 matches.
+
+**2026-11-06, after stage 1** (lead): the 10x arm stopped at its step-25 reading (record moved to `results/R_s70/stopped_10x.json`); it is not rerun and enters no verdict (leans T2, T5 read "unread"). Stages 2-5 wait on RL seed 70's 1x arm only (`run.py`).
