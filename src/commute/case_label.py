@@ -14,6 +14,7 @@ from collections.abc import Callable, Mapping, Sequence
 
 import numpy as np
 import torch
+import torch.nn.functional as F
 from torch import Tensor
 
 from commute import removal as RM
@@ -109,6 +110,72 @@ def probe_positions(rows: Tensor, pairs: Sequence[Pair], half: int, cap: int, se
             rs.append(pick[:, 0])
             ts.append(pick[:, 1] + lo)
     return torch.cat(rs), torch.cat(ts)
+
+
+def value_probes(h: Tensor, y: Tensor, hh: Tensor, yh: Tensor, m: int, lam_frac: float) -> tuple[Tensor, Tensor, list[float]]:
+    """P0's probes over a value set of m values (indices 0..m-1), moved from E112's `probes` loop (E116): per block, one
+    closed-form ridge per value (one-vs-rest on the value's indicator, `removal.fit_ridge`) on the Pile residuals h
+    (blocks, N, d) with labels y (N,), read on hh (blocks, M, d) as the argmax over the values (ties to the lowest index)
+    against yh (M,). A value with no Pile position scores -inf, so it is never the argmax and its windows count wrong. For
+    m = 2 the two probes are complements (score_0 = 1 - score_1), so the argmax is E112's "score_1 > 0.5". Returns the
+    weights W (blocks, m, d), intercepts B (blocks, m), float64 on h's device, and the accuracy per block (nan when no
+    value has a position or yh is empty)."""
+    onehot = F.one_hot(y.long(), m).double().to(h.device)
+    present = onehot.sum(0) > 0
+    fits = [RM.fit_ridge(h[i], onehot, lam_frac) for i in range(len(h))]
+    W, B = torch.stack([w.T for w, _ in fits]), torch.stack([b for _, b in fits])
+    acc = []
+    for i in range(len(h)):
+        score = (hh[i].to(W.device).double() @ W[i].T + B[i]).masked_fill(~present, -math.inf)
+        acc.append(float((score.argmax(1).cpu() == yh.long().cpu()).double().mean()) if present.any() else math.nan)
+    return W, B, acc
+
+
+def control_table(vocab: int, m: int, seed: int) -> Tensor:
+    """(vocab,) the Hewitt-Liang control for m values (E116): one seeded random value index per token type."""
+    return torch.randint(0, m, (vocab,), generator=torch.Generator().manual_seed(seed))
+
+
+def cap_groups(group: Tensor, cap: int, seed: int) -> Tensor:
+    """Indices (ascending) of at most `cap` items per group id (N,), drawn by one seeded permutation (E116: at most
+    `probe_cap` Pile positions per value and key-slot type)."""
+    perm = torch.randperm(len(group), generator=torch.Generator().manual_seed(seed))
+    g = group[perm]
+    order = torch.argsort(g, stable=True)
+    gs = g[order]
+    rank = torch.arange(len(gs)) - torch.searchsorted(gs, gs)
+    return perm[order[rank < cap]].sort().values
+
+
+def set_log_odds(logits: Tensor, y: Tensor) -> Tensor:
+    """(N,) float64: the log-odds of value y (N,) within the value set whose logits are (N, m), log p(y|S) - log(1 -
+    p(y|S)) = logit_y - logsumexp(the other values' logits) (E116's P3 margin). For m = 2 it is E112's margin."""
+    lt = logits.double()
+    own = lt.gather(1, y[:, None].to(lt.device)).squeeze(1)
+    others = lt.scatter(1, y[:, None].to(lt.device), -math.inf).logsumexp(1)
+    return (own - others).cpu()
+
+
+def span_basis(w: Tensor, rel_tol: float) -> Tensor:
+    """Orthonormal basis (d, r), fp32, of the span of the rows of w (m, d): SVD in float64, the singular values above
+    rel_tol x the largest kept. One-vs-rest ridge weights on one-hot labels sum to zero, so m values with positions give
+    r = m - 1; for m = 2 the basis is E112's unit direction up to sign."""
+    u, s, _ = torch.linalg.svd(w.double().T, full_matrices=False)
+    return u[:, s > rel_tol * s[0]].float()
+
+
+def agreement(a: Tensor, b: Tensor) -> float:
+    """The share of rows where a and b agree; nan when empty (E116's P1, and P2 with g the identity on classes)."""
+    return float((a.cpu() == b.cpu()).double().mean()) if len(a) else math.nan
+
+
+def table_verdict(site: int | None, p1: float, p2: float, p3: float, bars: Mapping[str, float], not_read: str | None) -> str:
+    """E112's verdict rule per state, with the parts the definition cannot read named (E116): P0 fails -> "unreadable";
+    a part that cannot be applied (no held-out values, the do-nothing over its bar) -> "unreadable: <reason>"; else
+    `verdict`. Adds no bar."""
+    if site is not None and not_read:
+        return f"unreadable: {not_read}"
+    return verdict(site, p1, p2, p3, bars)
 
 
 # ----------------------------------------------------------------------------- the rules

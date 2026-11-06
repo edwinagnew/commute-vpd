@@ -22,9 +22,9 @@ def remove(h: Tensor, u: Tensor) -> Tensor:
 
 def fit_ridge(x: Tensor, y: Tensor, lam_frac: float) -> tuple[Tensor, Tensor]:
     """Closed-form ridge of y (n,) on x (n, d), intercept fit, nothing standardised, float64: (w, b). The penalty is
-    lam_frac x the mean diagonal of x's covariance."""
+    lam_frac x the mean diagonal of x's covariance. A y of (n, m) fits m columns at once: w (d, m), b (m,) (E116)."""
     x, y = x.double(), y.double()
-    mx, my = x.mean(0), y.mean()
+    mx, my = x.mean(0), y.mean(0)
     xc = x - mx
     cov = xc.T @ xc / len(x)
     lam = lam_frac * cov.diagonal().mean()
@@ -133,7 +133,12 @@ def lookup_accuracy(reading: np.ndarray, answer: np.ndarray) -> dict[str, float]
     """A table from reading to answer, its most common answer per reading on the even rows (ties to the lowest token),
     read on the odd rows; a reading the even rows never saw counts as wrong. `floor`: the even rows' most common answer
     read on the odd rows. nan when either half is empty."""
-    fit_r, fit_a, read_r, read_a = reading[::2], answer[::2], reading[1::2], answer[1::2]
+    return table_accuracy(reading[::2], answer[::2], reading[1::2], answer[1::2])
+
+
+def table_accuracy(fit_r: np.ndarray, fit_a: np.ndarray, read_r: np.ndarray, read_a: np.ndarray) -> dict[str, float]:
+    """`lookup_accuracy`'s table with the fit and read rows given apart (E116's P2): the most common answer per reading on
+    the fit rows (ties to the lowest token), read on the read rows; an unseen reading counts as wrong."""
     if not len(fit_r) or not len(read_r):
         return {"acc": math.nan, "floor": math.nan, "unseen": 0.0}
 

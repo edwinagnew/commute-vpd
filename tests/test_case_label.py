@@ -156,3 +156,128 @@ def test_merge_bases_drops_dependent_columns() -> None:
     proj = u.double() @ u.double().T
     assert torch.allclose(proj @ e[:, [0, 1, 3]], e[:, [0, 1, 3]], atol=1e-6) and float((proj @ e[:, 4]).norm()) < 1e-6
     assert CL.merge_bases([a[:, :0], b[:, :0]], 1e-3).shape == (5, 0)  # both empty: no basis
+
+
+def _blocks_set(n: int, seed: int, m: int) -> tuple[torch.Tensor, torch.Tensor]:
+    """(2, n, 6) residuals for two blocks and labels in 0..m-1: block 0 carries the label on axis 0, block 1 is noise."""
+    g = torch.Generator().manual_seed(seed)
+    y = torch.randint(0, m, (n,), generator=g)
+    x = torch.randn(2, n, 6, generator=g, dtype=torch.float64)
+    x[0, :, :m] += 4.0 * torch.nn.functional.one_hot(y, m).double()
+    return x, y
+
+
+def test_value_probes_m2_is_e112s_score_over_a_half() -> None:
+    h, y = _blocks_set(3000, 0, 2)
+    hh, yh = _blocks_set(1000, 1, 2)
+    W, B, acc = CL.value_probes(h, y, hh, yh, 2, 1e-3)
+    assert W.shape == (2, 2, 6) and B.shape == (2, 2)
+    for i in range(2):
+        w, b = RM.fit_ridge(h[i], y, 1e-3)  # E112's probe, one per block, read as score > 0.5
+        assert torch.allclose(W[i, 1], w, atol=1e-10) and abs(float(B[i, 1] - b)) < 1e-10
+        assert torch.allclose(W[i, 0], -w, atol=1e-10) and abs(float(B[i, 0] - (1 - b))) < 1e-10  # the complement
+        e112 = float((((hh[i] @ w + b) > 0.5).long() == yh).double().mean())
+        assert acc[i] == e112
+    assert acc[0] > 0.95 and abs(acc[1] - 0.5) < 0.1
+
+
+def test_value_probes_many_values_and_edges() -> None:
+    h, y = _blocks_set(4000, 2, 4)
+    hh, yh = _blocks_set(1000, 3, 4)
+    _, _, acc = CL.value_probes(h, y, hh, yh, 4, 1e-3)
+    assert acc[0] > 0.95 and acc[1] < 0.4
+    keep = y != 3  # value 3 has no Pile position: never the argmax, its read windows count wrong
+    _, _, acc3 = CL.value_probes(h[:, keep], y[keep], hh, yh, 4, 1e-3)
+    assert abs(acc3[0] - float((yh != 3).double().mean())) < 0.03
+    W, B, _ = CL.value_probes(h[:, keep], y[keep], hh, yh, 4, 1e-3)
+    assert float(W[:, 3].abs().max()) == 0.0 and float(B[:, 3].abs().max()) == 0.0
+    nan = CL.value_probes(h[:, :0], y[:0], hh, yh, 4, 1e-3)[2]  # no value has a position
+    assert all(math.isnan(a) for a in nan)
+    assert all(math.isnan(a) for a in CL.value_probes(h, y, hh[:, :0], yh[:0], 4, 1e-3)[2])  # no read window
+
+
+def test_fit_ridge_columns_match_single_fits() -> None:
+    x = torch.randn(500, 5, dtype=torch.float64)
+    y = torch.randn(500, 3, dtype=torch.float64)
+    w, b = RM.fit_ridge(x, y, 1e-3)
+    for j in range(3):
+        wj, bj = RM.fit_ridge(x, y[:, j], 1e-3)
+        assert torch.allclose(w[:, j], wj, atol=1e-12) and abs(float(b[j] - bj)) < 1e-12
+
+
+# ----------------------------------------------------------------------------- E116's m-valued rules and their edge cases
+
+
+def test_control_table_and_cap_groups() -> None:
+    c = CL.control_table(100, 5, 3)
+    assert torch.equal(c, CL.control_table(100, 5, 3)) and int(c.min()) >= 0 and int(c.max()) <= 4
+    group = torch.tensor([0, 0, 0, 1, 2, 2, 0, 1, 2, 2, 2])
+    keep = CL.cap_groups(group, 2, 4)
+    assert torch.equal(keep, keep.sort().values) and len(set(keep.tolist())) == len(keep)
+    assert torch.bincount(group[keep]).tolist() == [2, 2, 2]
+    assert len(CL.cap_groups(group, 16, 4)) == len(group) and len(CL.cap_groups(group[:0], 2, 4)) == 0
+
+
+def test_set_log_odds_m2_is_e112s_margin_and_m_valued_is_exact() -> None:
+    g = torch.Generator().manual_seed(0)
+    lg = torch.randn(50, 2, generator=g, dtype=torch.float64) * 3
+    y = torch.randint(0, 2, (50,), generator=g)
+    m112 = (lg[:, 1] - lg[:, 0]) * (2 * y - 1)  # E112: (logit A - logit B) signed toward the label, A = value 1
+    assert torch.allclose(CL.set_log_odds(lg, y), m112, atol=1e-12)
+    lg = torch.randn(50, 7, generator=g, dtype=torch.float64)
+    y = torch.randint(0, 7, (50,), generator=g)
+    p = torch.softmax(lg, 1).gather(1, y[:, None]).squeeze(1)
+    assert torch.allclose(CL.set_log_odds(lg, y), (p / (1 - p)).log(), atol=1e-10)
+    big = torch.tensor([[60.0, 0.0, 0.0]], dtype=torch.float64)  # p(y|S) about 1 - 2e-26: exact, not inf
+    assert abs(float(CL.set_log_odds(big, torch.tensor([0]))[0]) - (60 - math.log(2))) < 1e-9
+
+
+def test_top1_within_two_values_is_e112s_label_rule() -> None:
+    lg = torch.tensor([[1.0, 2.0], [2.0, 1.0], [1.5, 1.5]])  # values (B, A): index 1 is label A
+    assert lg.argmax(1).tolist() == [1, 0, 0]  # A iff d = logit A - logit B > 0 (a tie reads B, as E112's d > 0)
+    assert ((lg[:, 1] - lg[:, 0]) > 0).long().tolist() == [1, 0, 0]
+
+
+def test_span_basis_rank_and_m2() -> None:
+    h, y = _blocks_set(3000, 5, 4)
+    W, _, _ = CL.value_probes(h, y, h, y, 4, 1e-3)
+    u = CL.span_basis(W[0], 1e-6)
+    assert u.shape == (6, 3) and torch.allclose(u.T @ u, torch.eye(3), atol=1e-5)  # one-hot ridge weights: rank m - 1
+    W2, _, _ = CL.value_probes(h, (y > 1).long(), h, (y > 1).long(), 2, 1e-3)
+    u2, e112 = CL.span_basis(W2[0], 1e-6), RM.unit_basis(W2[0, 1])
+    assert u2.shape == (6, 1) and abs(abs(float(u2[:, 0] @ e112[:, 0])) - 1) < 1e-5
+    keep = y != 3  # a value with no position adds nothing to the span
+    W3, _, _ = CL.value_probes(h[:, keep], y[keep], h, y, 4, 1e-3)
+    assert CL.span_basis(W3[0], 1e-6).shape == (6, 2)
+
+
+def test_identity_g_at_m2_is_a_threshold_at_the_crossing() -> None:
+    h, y = _blocks_set(2000, 6, 2)
+    W, B, _ = CL.value_probes(h, y, h, y, 2, 1e-3)
+    s = h[0] @ W[0].T + B[0]
+    state = torch.randint(0, 2, (2000,), generator=torch.Generator().manual_seed(1))
+    p2 = CL.agreement(s.argmax(1), state)  # g = identity on classes
+    s1 = s[:, 1].numpy()
+    assert p2 == float((CL.apply_threshold(s1, 0.5, 1) == state.numpy()).mean())  # theta at the crossing, sign +, not fitted
+
+
+def test_table_g_edges_one_answer_unseen_class_and_empty() -> None:
+    r, a = np.array([0, 1, 2, 0, 1, 3]), np.array([5, 6, 7, 5, 6, 8])
+    assert RM.table_accuracy(r[::2], a[::2], r[1::2], a[1::2]) == RM.lookup_accuracy(r, a)
+    one = RM.table_accuracy(np.array([0, 1, 2]), np.array([9, 9, 9]), np.array([0, 1, 1, 2]), np.array([9, 4, 9, 9]))
+    assert one["acc"] == 0.75  # one answer on every fit window: P2 = that answer's share of the held-out windows
+    new = RM.table_accuracy(np.array([0, 1]), np.array([5, 6]), np.array([2, 3]), np.array([7, 8]))
+    assert new["acc"] == 0.0 and new["unseen"] == 1.0  # a table cannot carry to new values
+    assert math.isnan(RM.table_accuracy(np.array([0]), np.array([5]), np.array([]), np.array([]))["acc"])
+    assert math.isnan(CL.agreement(torch.tensor([]), torch.tensor([])))  # an empty held-out set: P1, P2 nan
+
+
+def test_table_verdict_edges() -> None:
+    assert CL.table_verdict(None, 1.0, 1.0, 1.0, BARS, None) == "unreadable"  # P0 fails
+    assert CL.table_verdict(None, 1.0, 1.0, 1.0, BARS, "x") == "unreadable"
+    assert CL.table_verdict(1, math.nan, 1.0, 1.0, BARS, "no held-out values") == "unreadable: no held-out values"
+    assert CL.table_verdict(1, 0.9, 0.9, 0.5, BARS, None) == "reuses C"  # ties at the bars pass
+    m0 = torch.zeros(10, dtype=torch.float64)
+    p3 = CL.removed_share(m0, m0 - 1, m0, 0.1)  # the do-nothing state: no gain
+    assert math.isnan(p3) and CL.table_verdict(1, 0.95, 0.95, p3, BARS, None) == "not through C"
+    assert CL.do_nothing_ok([math.nan, 0.05], 0.10) and not CL.do_nothing_ok([0.11], 0.10)

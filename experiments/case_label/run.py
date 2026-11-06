@@ -202,11 +202,9 @@ def probes(net: ST.Net, C: Config, t: dict[str, Any]) -> dict[str, Any]:
     h, hh = resid_at(net, ptoks), resid_at(net, t["held"])
     out: dict[str, Any] = {"n_pile": len(ptoks), "pile_case_share": float(y["case"].double().mean())}
     fitted: dict[str, Any] = {}
-    for k in ("case", "control"):
-        wb = [RM.fit_ridge(h[i], y[k], C.ridge_lambda) for i in range(len(h))]
-        fitted[k] = (torch.stack([w for w, _ in wb]), torch.stack([b for _, b in wb]))
-        score = (hh.double() * fitted[k][0][:, None]).sum(-1) + fitted[k][1][:, None]
-        out[f"acc_{k}"] = [float(((s > 0.5).long() == yh[k]).double().mean()) for s in score]
+    for k in ("case", "control"):  # the loop moved to case_label.value_probes (E116, 2026-11-06); value 1's probe is the one saved
+        W, B, out[f"acc_{k}"] = CL.value_probes(h, y[k], hh, yh[k], 2, C.ridge_lambda)
+        fitted[k] = (W[:, 1], B[:, 1])
     out["selectivity"] = [a - c for a, c in zip(out["acc_case"], out["acc_control"], strict=True)]
     torch.save({"case": fitted["case"], "control": fitted["control"], "pile_tokens": ptoks}, LARGE / "probes.pt")
     return out

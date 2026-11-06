@@ -147,6 +147,18 @@ about 1 min; stage 0 about 30 s per E112's stage 0 (`analysis_e112-case-label.md
 3. **Do-nothing: rank-matched random basis** (`random_basis(d, m-1, [5])`), the rank-1 share printed beside.
 4. **Text ciphers' site:** W₀'s guess read at positions whose target is a table value on E53's 64 held rows.
 5. **Site: the locator's block when it passes P0**, E112's l* printed beside.
+6. **The writer's questions (lead, 2026-11-06, after the code writer found the draft could not be built as written;
+   filed in `experiments/definition_table/results/predictions.json` "lead_decisions_2026-11-06").** (a) P2's g: the
+   identity on classes, no fitting, where the answer is the readout's own value (ident32, copy-24, E62 copy, rank-1);
+   the table of item 2 only where it is not (elicit, cipher-24, text ciphers, rand32, lookup), an unseen class wrong. A
+   table fitted on the train windows could not carry to E62's never-trained Bs or elicit's new values, so item 2 alone
+   would have given P2 ≈ 0 there by construction; on the table rows P2 is predicted low, which is P1's failure seen again,
+   not a new rule. At m = 2 the identity is a threshold at the probes' crossing with fixed sign. (b) P3's margin: the
+   target's log-odds within the task's value set, log p(y|S) − log(1 − p(y|S)), E112's margin at m = 2;
+   full-vocabulary log-odds beside; a twin uses its own value set. (c) The exclusion and the Hewitt-Liang control are
+   keyed on the slot where the key sits: t for the key tables and token identity there (the appendix's "t−1" was E62's
+   and E112's layout), t−1 for E62 and E112, the token at t for the text ciphers. (d) The writer's smaller choices
+   (fit and held windows, the state's answer as its top-1 within S, the cap per value and key-slot type) accepted.
 
 ## Departures from the literature
 
