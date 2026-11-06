@@ -1,0 +1,16 @@
+[     0.0s] [start] {'stage': 1, 'root': PosixPath('/root/e111')}; states ('R_s70',); arms (('1x', 1.0), ('10x', 10.0))
+[     0.0s] [fetch] /root/e111/qwen: complete
+[     9.2s] [fetch] /root/e111/inputs: complete
+[    13.9s] [fetch] /root/e111/dW: complete
+[    23.7s] [check] rows_and_seqs: ok {"a1": 2414, "tofu": 13421, "seqs_maths": 256, "seqs_a1": 256, "seqs_tofu": 787, "seqs_tofu_all": 800}
+[    24.3s] [start] host memory limit 117.0 GB from /sys/fs/cgroup/memory/memory.limit_in_bytes; the guard stops at 105.3 GB
+[   266.3s] [load] target, components, Γ, live set; NVIDIA A100 80GB PCIe, peak GPU 40.61 GiB, host 43.2 GB
+[   345.4s] [check] R_s70_norm: ok {"norm": 0.3468409803773495, "e93": 0.3468409803773495, "sha256": "088e287432f9e7e1ef9670925e8b0d32d42e4b05f1ac54f418ca59c4be99f0be", "e93_sha256": "088e287432f9e7e1ef9670925e8b0d32d42e4b05f1ac54f418ca59c4be99f0be"}
+[   593.1s] [check] R_s70_split: ok {"share": 0.09425349839609497, "size": 0.9057437700139849, "e93_share": 0.09425349839609504, "e93_size": 0.9057437700140415, "seconds": 239.15097737312317}
+[   653.3s] [clean W0] K 0.0976920358 nll 2.07630978; rows 128, 60 s, peak GPU 40.61 GiB, host 77.0 GB
+[   653.8s] [check] R_s70_card_ruler: ok {"here": 0.09769203579558831, "e93": 0.09769188683527283}
+[   675.5s] [clean FT] K 0 nll 2.18107695; rows 128, 22 s, peak GPU 40.61 GiB, host 77.0 GB
+[   675.8s] [check] R_s70_clean_FT: ok {"K": 0.0}
+[   754.5s] [clean ls_moved] K 0.00232709582 nll 2.16197893; rows 128, 79 s, peak GPU 40.61 GiB, host 83.8 GB
+[   755.1s] [check] R_s70_ls_moved: MISSED {"keys": ["K"], "K": 0.0023270958152853756, "e93_K": 0.002327054623891674, "band": 1.5247971998366694e-05}
+[   755.1s] STOP R_s70_ls_moved
