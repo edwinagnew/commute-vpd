@@ -566,3 +566,5 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e113_flips.png": "experiments/case_patch/figures/flips.png"
 - "fig/e114_removal.png": "experiments/case_locator/figures/removal.png"
 - "fig/e114_reverts.png": "experiments/case_locator/figures/reverts.png"
+- "fig/e116_possession.png": "experiments/definition_table/figures/possession.png"
+- "fig/e116_carrying.png": "experiments/definition_table/figures/carrying.png"
