@@ -1,4 +1,4 @@
-"""E112's figures from results/stage{0,1,2}.json and predictions.json, no model.
+"""E112's figures from results/stage{0,1,2}.json, amend1.json and predictions.json, no model.
 Real task blue, twin orange, the original model and the random-direction control grey; seed 1 hatched.
 
   figures/possession.png  per block, the case probe's and the Hewitt-Liang control probe's accuracy on held-out
@@ -9,6 +9,9 @@ Real task blue, twin orange, the original model and the random-direction control
                           beside the same share for a random direction, with the 0.50 bar
   figures/beside.png      held-out label accuracy after pruning the top-K MLP units against K random ones, and during
                           reverse fine-tuning, for the real fine-tunes (no rule)
+  figures/amend1_removal.png  Amendment 1 (results/amend1.json): per state, the share removed by stage 2's removal,
+                          by the previous-word direction alone and by both case directions at every position of blocks
+                          1-3, and by two random directions there, with the 0.50, 0.20 and 0.10 bars
 
 Usage (repo root):  ~/commute-agents/fleet/cpu-run python experiments/case_label/plot.py
 """
@@ -23,6 +26,7 @@ import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.lines import Line2D
 from matplotlib.patches import Patch
 
 HERE = Path(__file__).parent
@@ -88,8 +92,8 @@ def carrying(s0: dict[str, Any], s2: dict[str, Any], rules: dict[str, Any]) -> N
            xticklabels=["label right on held-out words", "label agrees with a threshold\non the original model's case readout"],
            title="Does the fine-tune carry to unseen words, as a threshold on the case readout?")  # fmt: skip
     handles = [Patch(facecolor=c, hatch=h, edgecolor="white", label=n) for _, n, c, h in STATES]
-    handles += [plt.Line2D([], [], color=BLUE, ls="--", label="bar for 'reuses' (0.90)"),
-                plt.Line2D([], [], color=ORANGE, ls=":", label="twin expected at most (0.65)")]  # fmt: skip
+    handles += [Line2D([], [], color=BLUE, ls="--", label="bar for 'reuses' (0.90)"),
+                Line2D([], [], color=ORANGE, ls=":", label="twin expected at most (0.65)")]  # fmt: skip
     ax.legend(handles=handles, fontsize=7, frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.17), ncol=3)
     style(ax)
     fig.tight_layout()
@@ -109,13 +113,43 @@ def removal(s2: dict[str, Any], rules: dict[str, Any]) -> None:
            xticklabels=["case direction removed\n(block 1 output, trigger position)", "random direction removed\n(same place)"],
            title="Does removing the case direction take away the fine-tune's label gain?")  # fmt: skip
     handles = [Patch(facecolor=c, hatch=h, edgecolor="white", label=n) for _, n, c, h in STATES]
-    handles += [plt.Line2D([], [], color=BLUE, ls="--", label="bar for 'reuses' (0.50)"),
-                plt.Line2D([], [], color=ORANGE, ls=":", label="twin expected at most (0.20)"),
-                plt.Line2D([], [], color=GREY, ls="--", label="random direction allowed at most (0.10)")]  # fmt: skip
+    handles += [Line2D([], [], color=BLUE, ls="--", label="bar for 'reuses' (0.50)"),
+                Line2D([], [], color=ORANGE, ls=":", label="twin expected at most (0.20)"),
+                Line2D([], [], color=GREY, ls="--", label="random direction allowed at most (0.10)")]  # fmt: skip
     ax.legend(handles=handles, fontsize=7, frameon=False, loc="upper right", ncol=1)
     style(ax)
     fig.tight_layout()
     fig.savefig(FIG / "removal.png", dpi=150)
+
+
+def amend1(a1: dict[str, Any], rules: dict[str, Any]) -> None:
+    S, D, w = a1["states"], a1["do_nothing"], 0.18
+    groups = [[S[s]["P3_stage2"] for s, *_ in STATES], [S[s]["P3_prev_alone"] for s, *_ in STATES],
+              [S[s]["P3"] for s, *_ in STATES]]  # fmt: skip
+    fig, ax = plt.subplots(figsize=(8.0, 5.2))
+    for x0, vals in enumerate(groups):
+        state_bars(ax, x0, vals, w)
+        bar_lines(ax, x0, rules["real"]["P3"], rules["twin_expected_max"]["P3"], 2.4 * w)
+    for i, (s, _, _, h) in enumerate(STATES):
+        v = D[s]["share"]
+        ax.bar(3 + (i - 1.5) * w, v, w, color=GREY, hatch=h, edgecolor="white")
+        ax.text(3 + (i - 1.5) * w, max(v, 0) + 0.01, f"{v:.3f}", ha="center", va="bottom", fontsize=6, rotation=90)
+    ax.hlines(rules["do_nothing_max"], 3 - 2.4 * w, 3 + 2.4 * w, color=GREY, ls="--", lw=1.2)
+    ax.axhline(0, color=INK, lw=0.8)
+    ax.set(xticks=[0, 1, 2, 3], xlim=(-0.6, 3.6), ylim=(-0.05, 0.6), ylabel="share of the label gain removed",
+           xticklabels=["previous-word case\ndirection, block 1,\ntrigger only (stage 2)",
+                        "same direction,\nblocks 1-3,\nevery position",
+                        "previous-word and\nown-word case directions,\nblocks 1-3, every position",
+                        "two random directions,\nblocks 1-3,\nevery position"],
+           title="Does a stronger removal of the case readout take away the label gain?")  # fmt: skip
+    handles = [Patch(facecolor=c, hatch=h, edgecolor="white", label=n) for _, n, c, h in STATES]
+    handles += [Line2D([], [], color=BLUE, ls="--", label="bar for 'reuses' (0.50)"),
+                Line2D([], [], color=ORANGE, ls=":", label="twin expected at most (0.20)"),
+                Line2D([], [], color=GREY, ls="--", label="random directions allowed at most (0.10)")]  # fmt: skip
+    ax.legend(handles=handles, fontsize=7, frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.24), ncol=4)
+    style(ax)
+    fig.tight_layout()
+    fig.savefig(FIG / "amend1_removal.png", dpi=150)
 
 
 def beside(s2: dict[str, Any]) -> None:
@@ -152,6 +186,7 @@ def main() -> None:
     carrying(s0, s2, rules)
     removal(s2, rules)
     beside(s2)
+    amend1(load("amend1.json"), rules)
 
 
 if __name__ == "__main__":

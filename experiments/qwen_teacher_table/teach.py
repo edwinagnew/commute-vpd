@@ -14,7 +14,7 @@ from collections.abc import Callable
 from typing import Any
 
 import torch
-from rules import plateau
+from rules import FIRST, plateau, rel
 from torch import Tensor
 
 from commute import qwen_comparators as qc
@@ -114,13 +114,21 @@ def gsm8k_pool(tok: Any) -> Tensor:
 
 
 def tofu_pool(tok: Any) -> Tensor:
-    """The 800 TOFU rows packed as `qc.tofu_rows` packs them, the first POOL packed rows the table does not take."""
+    """POOL rows of ROW_LEN packed from TOFU's retain90 QA pairs (same wording as the table's rows) that are none of the 800
+    held pairs the table's rows and column 4's gain read (`qwen_tofu.held_rows`): no QA pair, and so no row position, is in
+    both the pool and the table (review f178f4e3, item 6)."""
     end = int(tok.convert_tokens_to_ids("<|im_end|>"))
-    packed = qc.pack([tofu.seq(tok, end, r["question"] + tofu.ASK, r["answer"])[0] for r in tofu.held_rows()], None, ROW_LEN)
-    taken = {i * len(packed) // qc.TOFU_ROWS for i in range(qc.TOFU_ROWS)}
-    rest = [r for i, r in enumerate(packed) if i not in taken][:POOL]
-    assert len(rest) == POOL, f"{len(packed)} packed TOFU rows leave {len(rest)} outside the table's"
-    return torch.tensor(rest)
+    held = {r["question"] for r in tofu.held_rows()}
+    seqs, n = [], 0
+    for r in tofu.rows("retain90"):
+        if r["question"] in held:
+            continue
+        seqs.append(tofu.seq(tok, end, r["question"] + tofu.ASK, r["answer"])[0])
+        n += len(seqs[-1])
+        if n >= POOL * ROW_LEN:
+            break
+    assert n >= POOL * ROW_LEN, f"{len(seqs)} retain90 pairs outside the held 800 give {n} tokens, {POOL * ROW_LEN} wanted"
+    return torch.tensor(qc.pack(seqs, POOL, ROW_LEN))
 
 
 def web_pool() -> Tensor:
@@ -172,7 +180,10 @@ def teach(d: d3.Decomp, off: FromLS, dW: dict[str, Tensor], pools: tuple[Tensor,
     rec: dict[str, Any] = {"lr": lr, "steps_max": steps,
                            "readings": [{"step": 0, "r2": off.r2(), "K8": sum(k0) / len(k0), "rows": k0}],
                            "tf32_K8": tf32_k(d.model, read_rows, dW, off)}
-    early("zero_offsets", {"K8": rec["readings"][0]["K8"], "tf32_K8": rec["tf32_K8"], "r2": rec["readings"][0]["r2"]})
+    k8 = rec["readings"][0]["K8"]
+    log(f"[teach zero offsets] TF32 K8 {rec['tf32_K8']:.9g} against fp32 {k8:.9g}: relative gap {rel(rec['tf32_K8'], k8):.3g} "
+        f"(reference {FIRST['tf32_rel']:g}, logged only)")
+    early("zero_offsets", {"K8": k8, "tf32_K8": rec["tf32_K8"], "r2": rec["readings"][0]["r2"]})
     v = {p: torch.zeros_like(p) for p in off.params()}
     t0 = time.time()
 
@@ -189,13 +200,15 @@ def teach(d: d3.Decomp, off: FromLS, dW: dict[str, Tensor], pools: tuple[Tensor,
         k = kl_to_teacher(d.model, read_rows, W0, dW, off)
         r = {"step": step, "r2": off.r2(), "forecast_r2": forecast(step), "K8": sum(k) / len(k), "rows": k,
              "train_kl": sum(c["kl"] for c in curve[-every:]) / every, "s_per_step": (time.time() - t0) / step}
+        r["r2_over_forecast"] = r["r2"] / r["forecast_r2"]
         rec["readings"].append(r)
-        log(f"[teach step {step}] r2 {r['r2']:.6g} (forecast {r['forecast_r2']:.3g}) K8 {r['K8']:.9g} "
+        log(f"[teach step {step}] r2 {r['r2']:.6g} (forecast {r['forecast_r2']:.3g}, ratio {r['r2_over_forecast']:.3g}) K8 {r['K8']:.9g} "
+            f"(step 0 {rec['readings'][0]['K8']:.9g}, difference {r['K8'] - rec['readings'][0]['K8']:.3g}) "
             f"train KL {r['train_kl']:.6g}, {r['s_per_step']:.2f} s per step, {d3.peaks()}")
         if step == every:
             early("first_reading", {"r2": r["r2"], "forecast_r2": r["forecast_r2"], "K8": r["K8"],
-                                    "K8_step0": rec["readings"][0]["K8"], "median_sqrt_v": median_sqrt_v(v, step),
-                                    "gpu_gib": torch.cuda.max_memory_allocated() / d3.GIB})
+                                    "K8_step0": rec["readings"][0]["K8"], "K8_minus_step0": r["K8"] - rec["readings"][0]["K8"],
+                                    "median_sqrt_v": median_sqrt_v(v, step), "gpu_gib": torch.cuda.max_memory_allocated() / d3.GIB})
         return plateau([x["K8"] for x in rec["readings"]])
 
     with torch.enable_grad():

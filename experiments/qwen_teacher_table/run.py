@@ -56,8 +56,16 @@ def write(n: str, rec: dict[str, Any]) -> None:
     E93.write(RESULTS / n / "state.json", rec)
 
 
-def host_total_gb() -> float:
-    return int(next(x for x in Path("/proc/meminfo").read_text().splitlines() if x.startswith("MemTotal")).split()[1]) / 1e6
+def host_limit_gb() -> tuple[float, str]:
+    """The memory this process may use and where it was read: the container's cgroup limit when a file gives a number
+    (v2 `memory.max`, v1 `memory.limit_in_bytes`) and it is below MemTotal (v1 "no limit" is a huge number), else MemTotal.
+    /proc/meminfo alone shows the host machine's memory in a RunPod container (review f178f4e3, item 5)."""
+    total = int(next(x for x in Path("/proc/meminfo").read_text().splitlines() if x.startswith("MemTotal")).split()[1]) / 1e6
+    for f in ("/sys/fs/cgroup/memory.max", "/sys/fs/cgroup/memory/memory.limit_in_bytes"):
+        p = Path(f)
+        if p.is_file() and p.read_text().strip().isdigit() and int(p.read_text()) / 1e9 < total:
+            return int(p.read_text()) / 1e9, f
+    return total, "/proc/meminfo MemTotal"
 
 
 def fetch_inputs(root: Path, names: tuple[str, ...]) -> None:
@@ -129,7 +137,8 @@ def run_arm(d: d3.Decomp, rs: d3.RowSet, seqs: list[Any], n: str, arm: str, scal
     log(f"[{n} {arm}] lr {lr:.3g}; 8-row K of least squares, this card's clean read {k8(sh['clean']['ls_moved']):.9g}, E93's {e93_k8:.9g}")
 
     def early(name: str, v: dict[str, Any]) -> None:
-        check(f"{n}_{arm}_{name}", name, v | ({"e93_K8": e93_k8, "band": sh["band"]} if name == "zero_offsets" else {}))
+        check(f"{n}_{arm}_{name}", name, v | ({"e93_K8": e93_k8, "band": sh["band"]} if name == "zero_offsets" else
+                                               {"band": sh["band"]} if name == "first_reading" else {}))
 
     d.use("W0")
     d.park_gamma()
@@ -210,7 +219,9 @@ def main() -> None:
     rows, seqs = E93.build(P93)
     tok = AutoTokenizer.from_pretrained(qwen_eval.MODEL, revision=qwen_eval.MODEL_REV)
     cut = load_file(str(a.root / "e80_inputs" / "cut.safetensors"))
-    F = {"gpu_max_gib": rules.FIRST["gpu_max_gib"], "host_max_gb": 0.9 * host_total_gb()}
+    limit, source = host_limit_gb()
+    log(f"[start] host memory limit {limit:.1f} GB from {source}; the guard stops at {0.9 * limit:.1f} GB")
+    F = {"gpu_max_gib": rules.FIRST["gpu_max_gib"], "host_max_gb": 0.9 * limit}
     with torch.no_grad():
         d = d3.Decomp(a.root / "qwen", log)
         d.model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})

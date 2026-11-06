@@ -29,11 +29,12 @@ HERE = Path(__file__).resolve().parent
 EXPERIMENTS = HERE.parent
 E93_RESULTS = EXPERIMENTS / "qwen_d1_table" / "results"
 COMMITTED = HERE / "results" / "inputs_SHA256SUMS"
-INPUTS, VERSION = "qwen3-1.7b-e111-inputs", "v0"
+INPUTS, VERSION, INPUTS_VERSION = "qwen3-1.7b-e111-inputs", "v0", "v1"  # inputs v0 lacked retain90.json; the δW artifacts are v0
 TOFU_DIR = EXPERIMENTS.parent / "artifacts" / "tofu"
 INPUT_SOURCES = {"a1_rows.json": EXPERIMENTS / "qwen_updates" / "results" / "large" / "P" / "a1_rows.json",
                  "retain_perturbed.json": TOFU_DIR / "retain_perturbed.json",
-                 "forget10_perturbed.json": TOFU_DIR / "forget10_perturbed.json"}
+                 "forget10_perturbed.json": TOFU_DIR / "forget10_perturbed.json",
+                 "retain90.json": TOFU_DIR / "retain90.json"}  # stage 4's training pool: pairs outside the 800 held (v1, review f178f4e3)
 
 
 def e93(state: str) -> dict[str, str]:
@@ -93,7 +94,7 @@ def upload(what: list[str]) -> None:
 
 def fetch(root: Path, states: list[str], log: Any = print) -> None:
     """ROOT/inputs and ROOT/dW/<state>.safetensors; each is kept when already complete."""
-    qwen_files.fetch(root / "inputs", log, artifact=INPUTS, kind="inputs", ok=inputs_ok, version=VERSION)
+    qwen_files.fetch(root / "inputs", log, artifact=INPUTS, kind="inputs", ok=inputs_ok, version=INPUTS_VERSION)
     for s in states:
         qwen_files.fetch(root / "dW", log, artifact=f"qwen3-1.7b-e111-dW-{s}", kind="delta", ok=state_ok(s), version=VERSION)
 
