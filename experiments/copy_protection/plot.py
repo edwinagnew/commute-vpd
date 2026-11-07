@@ -2,7 +2,10 @@
 alive subcomponents (as teacher training placed it) and with the same change moved into Delta, beside the copied
 fine-tune's do-nothing and E39's fail line.
 
-    python experiments/copy_protection/plot.py   -> figures/placement.png
+    python experiments/copy_protection/plot.py   -> figures/placement.png, figures/amend1_blocks.png
+
+The second figure (Amendment 1) plots the per-block m of c1 and c2 from the `kl` of copy_protection.json (rows 0-255)
+and copy_protection_amend1.json (rows 256-511).
 
 Sources: results/copy_protection.json (c1, c2), ../ls_start_faith/results/ls_start_faith_amend2.json (standard and
 LoRA copies), ../damage_crossed/results/damage_crossed.json (do-nothing of the standard copy, c1, c2) and
@@ -44,7 +47,54 @@ def copies() -> list[tuple[str, float, float, float, bool]]:
     ]
 
 
+def block_m(kl: dict, copy: str) -> list[float]:
+    """Per-block multiplier: each 128-row block's placed and in-Delta ratios over W0's same block."""
+    out = []
+    for w0, placed, delta in zip(kl["W0"], kl[copy], kl[copy + "|delta"], strict=True):
+        out.append((placed / w0 - 1) / (delta / w0 - 1))
+    return out
+
+
+def plot_blocks() -> None:
+    """Amendment 1: per-block m of the two new copies over four blocks of 128 Pile rows, with each row set's overall m."""
+    runs = [load(HERE / "results" / f) for f in ("copy_protection.json", "copy_protection_amend1.json")]
+    overall = [run["score"].get("copies") or run["score"]["overall"]["copies"] for run in runs]
+    names = {"c1": ("full Adam, step 20", "#7a4fc9", "o"), "c2": ("rank-8 LoRA, step 2,400", "#1a9a9a", "s")}
+    fig, ax = plt.subplots(figsize=(8, 5))
+    for y, text, ls in ((1, "1: placement does nothing", "-"), (0.8, "0.8: no protection at or over",
+                                                                   "--"), (0.5, "0.5: recipe-like at or under", ":")):
+        ax.axhline(y, color=MUTED if y == 1 else INK, lw=0.9, ls=ls)
+        ax.text(3.45, y + 0.02, text, fontsize=7, color=INK, va="bottom", ha="right")
+    for copy, (label, colour, marker) in names.items():
+        ms = [m for run in runs for m in block_m(run["kl"], copy)]
+        ax.plot(range(4), ms, marker=marker, ms=8, color=colour, lw=1, label=f"{label}: per block")
+        for i, (x0, x1) in enumerate(((-0.25, 1.25), (1.75, 3.25))):
+            ax.hlines(overall[i][copy]["m"], x0, x1, color=colour, lw=3, alpha=0.35,
+                      label=f"{label}: whole row set" if i == 0 else "_nolegend_")
+        for x, m in enumerate(ms):
+            ax.text(x + 0.08, m, f"{m:.2f}", fontsize=7, color=colour, va="center")
+    ax.axvline(1.5, color=MUTED, lw=0.6)
+    ax.text(0.5, 1.95, "E130: rows 0-255", ha="center", fontsize=8, color=INK)
+    ax.text(2.5, 1.95, "Amendment 1: rows 256-511", ha="center", fontsize=8, color=INK)
+    ax.set_xticks(range(4), ["rows 0-127", "rows 128-255", "rows 256-383", "rows 384-511"], fontsize=8)
+    ax.set_xlim(-0.5, 3.5)
+    ax.set_ylim(0, 2.05)
+    ax.set_xlabel("Pile validation block, one adversary of 20 steps each")
+    ax.set_ylabel("m = excess placed / excess in Delta")
+    ax.set_title("Is each copy's protection the same on every block of rows?", fontsize=10)
+    ax.legend(fontsize=7, frameon=False, loc="upper center", bbox_to_anchor=(0.5, -0.14), ncol=2)
+    for s in ("top", "right"):
+        ax.spines[s].set_visible(False)
+    fig.tight_layout()
+    fig.savefig(HERE / "figures" / "amend1_blocks.png", dpi=150)
+
+
 def main() -> None:
+    plot_placement()
+    plot_blocks()
+
+
+def plot_placement() -> None:
     rows = copies()
     fig, ax = plt.subplots(figsize=(8, 5.4))
     ax.axhline(1, color=MUTED, lw=0.8)
