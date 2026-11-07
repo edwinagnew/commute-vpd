@@ -588,3 +588,6 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e126_orders.png": "experiments/copy_reproducibility/figures/orders.png"
 - "fig/e130_placement.png": "experiments/copy_protection/figures/placement.png"
 - "fig/e130_amend1_blocks.png": "experiments/copy_protection/figures/amend1_blocks.png"
+- "fig/e131_adversary.png": "experiments/qwen_new_decomp/figures/adversary.png"
+- "fig/e131_ci_kl.png": "experiments/qwen_new_decomp/figures/ci_kl.png"
+- "fig/e131_active.png": "experiments/qwen_new_decomp/figures/active.png"
