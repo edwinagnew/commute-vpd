@@ -1,0 +1,138 @@
+{
+ "controls": {
+  "W0": {
+   "read": 0.6301094591617584,
+   "ref": 0.6301094591617584,
+   "tol": 0.001
+  },
+  "c1": {
+   "read": 1.4443102469308349,
+   "ref": 1.4443102469308349,
+   "tol": 0.001
+  },
+  "c2": {
+   "read": 1.596624645597247,
+   "ref": 1.596624645597247,
+   "tol": 0.001
+  }
+ },
+ "done": true,
+ "jobs": [
+  {
+   "card": "NVIDIA L40",
+   "start": "2026-11-07T02:24:13"
+  }
+ ],
+ "kl": {
+  "W0": [
+   0.620232343673706,
+   0.6399865746498108
+  ],
+  "c1": [
+   0.8436775803565979,
+   0.9764695167541504
+  ],
+  "c1|delta": [
+   0.9919629096984863,
+   0.9852166771888733
+  ],
+  "c2": [
+   0.9650143980979919,
+   1.0470821857452393
+  ],
+  "c2|delta": [
+   1.9047718048095703,
+   2.0730221271514893
+  ],
+  "nothing_c1": [
+   0.8653421401977539,
+   0.861035168170929
+  ]
+ },
+ "score": {
+  "block rows 256-383": {
+   "copies": {
+    "c1": {
+     "above its do-nothing": true,
+     "in-Delta share of do-nothing excess": 1.5165879589325573,
+     "m": 0.6010946021264139,
+     "reading": "readable",
+     "verdict": "partial"
+    },
+    "c2": {
+     "above its do-nothing": null,
+     "in-Delta share of do-nothing excess": null,
+     "m": 0.2684090795617984,
+     "reading": "readable",
+     "verdict": "recipe-like"
+    }
+   },
+   "ratio": {
+    "c1": 1.3602605361716555,
+    "c1|delta": 1.599340827379266,
+    "c2": 1.5558917685300042,
+    "c2|delta": 3.071061714594554,
+    "nothing_c1": 1.3951902847765645
+   }
+  },
+  "block rows 384-511": {
+   "copies": {
+    "c1": {
+     "above its do-nothing": true,
+     "in-Delta share of do-nothing excess": 1.5617837555074987,
+     "m": 0.9746628107734809,
+     "reading": "readable",
+     "verdict": "no protection"
+    },
+    "c2": {
+     "above its do-nothing": null,
+     "in-Delta share of do-nothing excess": null,
+     "m": 0.284079212399688,
+     "reading": "readable",
+     "verdict": "recipe-like"
+    }
+   },
+   "ratio": {
+    "c1": 1.52576562608123,
+    "c1|delta": 1.5394333509698483,
+    "c2": 1.6361002358810166,
+    "c2|delta": 3.2391650219941095,
+    "nothing_c1": 1.3453956727796548
+   }
+  },
+  "outcome": "reversal does not replicate",
+  "overall": {
+   "copies": {
+    "c1": {
+     "above its do-nothing": true,
+     "in-Delta share of do-nothing excess": 1.5380194454815597,
+     "m": 0.7809747498545964,
+     "reading": "readable",
+     "verdict": "partial"
+    },
+    "c2": {
+     "above its do-nothing": null,
+     "in-Delta share of do-nothing excess": null,
+     "m": 0.27667227647685316,
+     "reading": "readable",
+     "verdict": "recipe-like"
+    }
+   },
+   "ratio": {
+    "c1": 1.4443102469308349,
+    "c1|delta": 1.5689175572111103,
+    "c2": 1.596624645597247,
+    "c2|delta": 3.1564308979369735,
+    "nothing_c1": 1.3699027075909174
+   }
+  }
+ },
+ "seconds": {
+  "W0": 129.79630708694458,
+  "c1": 129.24272203445435,
+  "c1|delta": 126.71574521064758,
+  "c2": 127.78458547592163,
+  "c2|delta": 127.0410041809082,
+  "nothing_c1": 126.8876576423645
+ }
+}
