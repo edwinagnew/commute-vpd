@@ -50,3 +50,12 @@ Not gated: $0 on the cluster's debug L40s, well under 6 h. Cost: $0.
 
 ## Not run
 Behaviour of the masked model (answers right or wrong on GSM8K); thinking traces past 512 tokens; labels.
+
+## Build departures (writer's, accepted by the lead 2026-11-07)
+1. Adversary: one random start (seed 0), the same sources for both decompositions (the config's single-start eval);
+   the plan's 1.62 reference is a three-seed mean, its seed-0 value 1.70. Three seeds would not fit the 2 h debug limit.
+2. Per-row adversary KL is read at the final sources of one pooled attack, so the row bootstrap does not cover
+   seed-to-seed spread (19% on T).
+3. Control (b)'s rule reads torch Γ on JAX's own taps (as the 2.4e-5 reference did); end-to-end reported beside it.
+4. G and G-think: first 128 GSM8K test prompts, bf16 greedy, batch 64, cut at 512 tokens.
+Code: commit 8f084d29. Runner spawned 2026-11-07 (cluster debug, $0).
