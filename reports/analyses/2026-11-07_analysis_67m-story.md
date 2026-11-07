@@ -3,18 +3,21 @@
 *2026-11-07, regating-lead's synthesis writer. No new run and no new figure: every number is quoted from a report or
 result file named in a "Sources" line. Built from Fable's draft and advice of 2026-11-06, corrected by the last three
 results of that night. Answer paragraph revised after an independent Opus check (2026-11-07; three of five sentences
-were overstated: removal-test labels, teacher-training exceptions and "because"; scratch `synth-check/check.md`).*
+were overstated: removal-test labels, teacher-training exceptions and "because"; scratch `synth-check/check.md`).
+Updated the same day with E130: placement protection varies by copy.*
 
 Source keys, used in the Sources lines below: **E121** `reports/analyses/2026-11-06_analysis_e121-copy-gap-ladder.md`;
 **E122** `..._e122-damage-crossed-pair.md`; **E123** `..._e123-case-label-both-readings.md`; **E125**
 `..._e125-fresh-reuse-pair.md`; **E127** `..._e127-ls-start-faithfulness.md`; **E116** `..._e116-definition-table.md`;
 **E119** `..._e119-teacher-route-split-triggers.md`; **E126** `..._e126-copy-reproducibility.md`, all in
 `reports/analyses/` dated 2026-11-06; **TT** `reports/analyses/2026-10-23_analysis_teacher-training.md`; **A10**
-`reports/analyses/2026-11-02_analysis_e34-amend10-input-weighted.md`; **claims** `docs/research_log/parts/sections/claims.html`.
+`reports/analyses/2026-11-02_analysis_e34-amend10-input-weighted.md`; **E130**
+`reports/analyses/2026-11-07_analysis_e130-copy-protection.md`; **claims** `docs/research_log/parts/sections/claims.html`.
 
 We gathered every 67M result on carrying a fine-tune into the released decomposition, and on reuse read two
 independent ways. Teacher training carries most narrow fine-tunes faithfully, with named exceptions, and fails on
-one broad fine-tune whose copied change hides most but not enough of its excess. For `GOALS.md` this gives a paper a
+one broad fine-tune whose copied change hides most but not enough of its excess. How much teacher training's placement
+hides varies by copy: on one of four lowercase copies it adds excess instead. For `GOALS.md` this gives a paper a
 carrier for narrow updates with known limits, and no 67M case where the two readings of reuse agree on a positive.
 
 ## 1. The answer
@@ -27,8 +30,8 @@ the narrow trigger tasks, teacher training copies the behaviour with Δ frozen a
 task and some Pile-text copies as exceptions; where it was read (the cipher, two label pairs), the copied behaviour sits
 on subcomponents Γ keeps off. On the broad
 lowercase full-matrix Adam fine-tune its copy fails (1.91 against a fail line of 1.61); the copy's own weight change
-fails worse when moved into Δ (3.53), so its placement removes most of the excess (about 64%), but not enough. One
-seed, one task; whether fragility is the cause is not tested.
+fails worse when moved into Δ (3.53), so its placement removes most of the excess (about 64%), but not enough, and on
+another lowercase copy the placement adds excess. One seed, one task; whether fragility is the cause is not tested.
 
 ## 2. Teacher training: where it is strong, where it is weak
 
@@ -75,18 +78,25 @@ riding the alive subcomponents, and moved into Δ.
 | copy trained from that start | 9.40 | 3.96 |
 | standard teacher-trained copy | 1.91 | 3.53 |
 | copy of the rank-8 LoRA | 1.33 | 2.34 |
+| copy of the full Adam fine-tune stopped at step 20 | 2.84 | 2.17 |
+| copy of a rank-8 LoRA trained to step 2,400 | 1.53 | 3.17 |
 
-Sources: E127:361-367; `experiments/ls_start_faith/results/ls_start_faith_amend2.json` → `score.ratio`.
+Sources: E127:361-367; `experiments/ls_start_faith/results/ls_start_faith_amend2.json` → `score.ratio`; E130:84-89;
+`experiments/copy_protection/results/copy_protection.json` → `score.ratio`.
 
 **Reading it.** Every copy's change fails once it sits in Δ. Placement cuts both ways. The least-squares split's
-placement multiplies the excess about four times. Teacher training's placement divides it, by 2.8 for the Adam copy
-and 4.1 for the LoRA copy. In nats it takes the Adam copy's excess from 1.75 to 0.63, removing about 64%: most of it,
+placement multiplies the excess about four times. Teacher training's placement divides it on three of the four
+lowercase copies read, by 2.8 for the standard Adam copy and about 4 for the two LoRA copies. On the copy of the Adam
+fine-tune stopped at step 20 it multiplies the excess by 1.6 instead: 2.17 in Δ becomes 2.84 placed. So teacher
+training's protection is not a constant of the recipe. Over the four copies the placed excess is 0.24 to 1.58 times
+the in-Δ excess, one seed each, and damage to plain text does not order them. The step-20 reversal rests on one
+block of 128 rows. In nats it takes the Adam copy's excess from 1.75 to 0.63, removing about 64%: most of it,
 but not enough to pass. The LoRA copy's change also fails in Δ, at 2.34, yet passes once placed. So fragility in Δ does
 not separate the failing copy from the passing one; what is left after placement does. "Fails because the function is
 fragile" is therefore an accounting split of one copy's excess, not a tested cause. We predicted the Adam copy's change would pass in Δ at 1.24; it
 read 3.53, so this reverses the filed lean. Teacher training's loss is the KL from the fine-tuned model alone, with no
-mask, adversary or faithfulness term. Its protective placement is therefore an accident of training at full masks. Why it
-protects is a hypothesis, untested: its gradients may fall on subcomponents Γ keeps on, which the adversary cannot
+mask, adversary or faithfulness term. Its placement is therefore an accident of training at full masks, protective on
+three copies of four and not by design. Why it protects when it does is a hypothesis, untested: its gradients may fall on subcomponents Γ keeps on, which the adversary cannot
 switch off. That sits uneasily beside the label-pair copies, which carry their trigger gain on subcomponents Γ keeps
 off; the two are read at different positions and tasks. One caveat bounds "fragile": in Δ the change shares one mask
 per matrix, so fragility is read under that placement only. One seed, one task, one card.
@@ -166,7 +176,7 @@ Sources: claims:22; `decisions.md:73`; E125:299-302.
 **The case.** On most narrow trigger tasks, teacher training copies the behaviour into the subcomponents and keeps the
 check at W₀'s level under a long adversary where do-nothing fails. Its exceptions are named: a rare target, some
 Pile-text copies, a step-10 copy, plain SGD. Its known failure is a broad full-matrix fine-tune, where its placement
-removes about 64% of the excess, not enough to pass. The frozen Γ sorts maps built to reuse from maps built to need new ones, and task-text copies keep
+removes about 64% of the excess, not enough to pass; on another lowercase copy its placement adds excess. The frozen Γ sorts maps built to reuse from maps built to need new ones, and task-text copies keep
 their fine-tune's $r$ within 0.06. On the label pairs, the definition and the route split agree that the real
 fine-tunes do not run through existing structure.
 
@@ -177,7 +187,8 @@ Sources: TT:1124-1128; `experiments/TRIED.md:64`, `:87`, `:96`; E127:355-359, E1
 - *The check is one 20-step local adversary, with lines we set.* Holding the alive masks at 1 is a setting the free
   search may choose, yet held it reads W₀ at 1.60 nats against 0.69 free. Open: a stronger free adversary is not run.
 - *Faithfulness by hiding.* Teacher training passes by where it puts the change, not by carrying a robust function. Open:
-  whether the placement sits on subcomponents Γ keeps on is not read, and no loss term asks for it. Where the trigger
+  whether the placement sits on subcomponents Γ keeps on is not read, and no loss term asks for it; on one lowercase
+  copy of four the placement adds excess (E130). Where the trigger
   was read, the copies carry their gain on subcomponents Γ keeps off.
 - *"Fails because fragile" is an accounting split.* Conceded: the LoRA copy's change also fails in Δ yet passes placed.
 - *The readings disagree on positives.* Conceded: the removal test reads "through" where the definition reads "not
@@ -228,7 +239,8 @@ Sources: E127:463-472, E127:468-470; E125:175-181, E125:324-331.
 - Teacher training with any mask or faithfulness term in its loss, at 67M.
 - Where any change sits against Γ's causal importances.
 - A stronger free adversary at W₀; adversary seeds 1 and 2 for the Δ placement reads; Pile set B for them.
-- A weight cosine between any lowercase copy and its fine-tune.
+- A weight cosine between the standard or E127's LoRA lowercase copy and its fine-tune; E130's two copies read 0.58
+  and 0.59, input-weighted.
 - Longer lower-rate students, or teacher training at the fine-tune's rate.
 - A removal at several sites at once; a size-matched twin; a label pair with higher starting log-odds.
 - The rank-8 LoRA's own do-nothing on the L40.
