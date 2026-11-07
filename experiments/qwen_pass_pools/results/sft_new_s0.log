@@ -1,0 +1,340 @@
+[    1.0s] [new_s0] start; NVIDIA L40; budget 6600 s
+[    7.9s] [W0] held-out gold loss {"held_loss": {"known": 2.0074607125465787, "new": 1.960001058802847}}
+[    8.1s] STAGE 3 DONE /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_pass_pools/results/read_new_s0.json
+[    8.4s] [train] data {"pools_sha256": "faf4a9f36aca24e83c33a790f59b4a58d5c9219b8e672fc7e3d3bda3d5e4586b", "n_train": 62, "n_held": {"known": 15, "new": 15}, "passes": 103.2258064516129, "train_len_mean": 307.9193548387097, "train_len_max": 507}
+[   28.6s] [train] {"step": 1, "lr": 0.0, "loss": 2.073329932075843, "grad_norm": 77.57371520996094, "dw_norm": 0.0, "size": {"norm": 0.0}, "peak_gib": 27.472482204437256}
+[   28.6s] [note] step 1 loss 2.0733; W0 held-out loss of the pool 1.9600
+[   28.6s] [check] ok {"step": 1, "check": "loss and grad norm finite", "value": [2.073329932075843, 77.57371520996094], "holds": true}
+[   28.6s] [check] ok {"step": 1, "check": "peak GiB <= 40.0", "value": 27.472482204437256, "holds": true}
+[   28.6s] [check] ok {"step": 1, "check": "|dW| exactly 0 (rate 0)", "value": 0.0, "holds": true}
+[   48.9s] [train] {"step": 2, "lr": 1.0000000000000002e-06, "loss": 2.0955541845870345, "grad_norm": 76.57901000976562, "dw_norm": 0.03538880353529002, "size": {"norm": 0.03538880353529002}, "peak_gib": 31.31484889984131}
+[   48.9s] [check] ok {"step": 2, "check": "loss and grad norm finite", "value": [2.0955541845870345, 76.57901000976562], "holds": true}
+[   48.9s] [check] ok {"step": 2, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[   48.9s] [check] ok {"step": 2, "check": "|dW| / (lr sqrt(numel)) in [0.85, 1.05]", "value": 0.9426843317196064, "holds": true}
+[   69.2s] [train] {"step": 3, "lr": 2.0000000000000003e-06, "loss": 1.7326736892015056, "grad_norm": 48.43880844116211, "dw_norm": 0.10035861689129195, "size": {"norm": 0.10035861689129195}, "peak_gib": 31.31484889984131}
+[   69.2s] [check] ok {"step": 3, "check": "loss and grad norm finite", "value": [1.7326736892015056, 48.43880844116211], "holds": true}
+[   69.2s] [check] ok {"step": 3, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[   88.9s] [train] {"step": 4, "lr": 3e-06, "loss": 1.4160037893051762, "grad_norm": 27.108179092407227, "dw_norm": 0.1887519602778493, "size": {"norm": 0.1887519602778493}, "peak_gib": 31.31484889984131}
+[   88.9s] [check] ok {"step": 4, "check": "loss and grad norm finite", "value": [1.4160037893051762, 27.108179092407227], "holds": true}
+[   88.9s] [check] ok {"step": 4, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  109.0s] [train] {"step": 5, "lr": 4.000000000000001e-06, "loss": 1.1740787209748866, "grad_norm": 14.73573112487793, "dw_norm": 0.29629992251388826, "size": {"norm": 0.29629992251388826}, "peak_gib": 31.31484889984131}
+[  109.0s] [check] ok {"step": 5, "check": "loss and grad norm finite", "value": [1.1740787209748866, 14.73573112487793], "holds": true}
+[  109.0s] [check] ok {"step": 5, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  142.2s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_pass_pools/results/large/dW/new_s0/step_6.safetensors (5.64 GB)
+[  142.2s] STAGE 3 DONE /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_pass_pools/results/large/dW/new_s0/step_6.safetensors
+[  157.0s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_pass_pools/results/large/dW/new_s0/step_5.safetensors (5.64 GB)
+[  157.0s] STAGE 3 DONE /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_pass_pools/results/large/dW/new_s0/step_5.safetensors
+[  157.3s] [train] {"step": 6, "lr": 5e-06, "loss": 1.0193271171256624, "grad_norm": 7.765635013580322, "dw_norm": 0.4151289285104142, "size": {"norm": 0.4151289285104142}, "crossed": [{"axis": "norm", "grid": 0.35, "lo": 5, "hi": 6}], "peak_gib": 31.31484889984131}
+[  157.3s] [check] ok {"step": 6, "check": "loss and grad norm finite", "value": [1.0193271171256624, 7.765635013580322], "holds": true}
+[  157.3s] [check] ok {"step": 6, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  190.9s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_pass_pools/results/large/dW/new_s0/step_7.safetensors (5.64 GB)
+[  190.9s] STAGE 3 DONE /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_pass_pools/results/large/dW/new_s0/step_7.safetensors
+[  191.1s] [train] {"step": 7, "lr": 6e-06, "loss": 0.9778526155524587, "grad_norm": 6.269749164581299, "dw_norm": 0.5445740232478813, "size": {"norm": 0.5445740232478813}, "crossed": [{"axis": "norm", "grid": 0.49, "lo": 6, "hi": 7}], "peak_gib": 31.31484889984131}
+[  191.1s] [check] ok {"step": 7, "check": "loss and grad norm finite", "value": [0.9778526155524587, 6.269749164581299], "holds": true}
+[  191.1s] [check] ok {"step": 7, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  209.1s] [train] {"step": 8, "lr": 7e-06, "loss": 0.884466176447661, "grad_norm": 4.0332255363464355, "dw_norm": 0.6850598747472696, "size": {"norm": 0.6850598747472696}, "peak_gib": 31.31484889984131}
+[  209.1s] [check] ok {"step": 8, "check": "loss and grad norm finite", "value": [0.884466176447661, 4.0332255363464355], "holds": true}
+[  209.2s] [check] ok {"step": 8, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  225.6s] [train] {"step": 9, "lr": 8.000000000000001e-06, "loss": 0.8050472600673272, "grad_norm": 3.1913259029388428, "dw_norm": 0.8383182055394939, "size": {"norm": 0.8383182055394939}, "peak_gib": 31.31484889984131}
+[  225.6s] [check] ok {"step": 9, "check": "loss and grad norm finite", "value": [0.8050472600673272, 3.1913259029388428], "holds": true}
+[  225.6s] [check] ok {"step": 9, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  262.8s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_pass_pools/results/large/dW/new_s0/step_10.safetensors (5.64 GB)
+[  262.8s] STAGE 3 DONE /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_pass_pools/results/large/dW/new_s0/step_10.safetensors
+[  262.8s] [train] {"step": 10, "lr": 9e-06, "loss": 0.7189380332434304, "grad_norm": 2.9383175373077393, "dw_norm": 1.0053349204585154, "size": {"norm": 1.0053349204585154}, "peak_gib": 31.31484889984131}
+[  262.8s] [check] ok {"step": 10, "check": "loss and grad norm finite", "value": [0.7189380332434304, 2.9383175373077393], "holds": true}
+[  262.8s] [check] ok {"step": 10, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  262.9s] [check] ok {"step": 10, "check": "loss below step 1's", "value": [0.7189380332434304, 2.073329932075843], "holds": true}
+[  279.4s] [train] {"step": 11, "lr": 1e-05, "loss": 0.6303965756091793, "grad_norm": 2.931811809539795, "dw_norm": 1.184957615592476, "size": {"norm": 1.184957615592476}, "peak_gib": 31.31484889984131}
+[  279.4s] [check] ok {"step": 11, "check": "loss and grad norm finite", "value": [0.6303965756091793, 2.931811809539795], "holds": true}
+[  279.4s] [check] ok {"step": 11, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  296.1s] [train] {"step": 12, "lr": 9.99695413509548e-06, "loss": 0.5880314177851786, "grad_norm": 3.924325466156006, "dw_norm": 1.353201849909917, "size": {"norm": 1.353201849909917}, "peak_gib": 31.31484889984131}
+[  296.1s] [check] ok {"step": 12, "check": "loss and grad norm finite", "value": [0.5880314177851786, 3.924325466156006], "holds": true}
+[  296.1s] [check] ok {"step": 12, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  312.2s] [train] {"step": 13, "lr": 9.987820251299121e-06, "loss": 0.4863954012756402, "grad_norm": 3.28460431098938, "dw_norm": 1.5108989465167932, "size": {"norm": 1.5108989465167932}, "peak_gib": 31.31484889984131}
+[  312.2s] [check] ok {"step": 13, "check": "loss and grad norm finite", "value": [0.4863954012756402, 3.28460431098938], "holds": true}
+[  312.2s] [check] ok {"step": 13, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  330.1s] [train] {"step": 14, "lr": 9.972609476841368e-06, "loss": 0.43053621945767456, "grad_norm": 3.5954782962799072, "dw_norm": 1.661481080184195, "size": {"norm": 1.661481080184195}, "peak_gib": 31.31484889984131}
+[  330.1s] [check] ok {"step": 14, "check": "loss and grad norm finite", "value": [0.43053621945767456, 3.5954782962799072], "holds": true}
+[  330.2s] [check] ok {"step": 14, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  347.4s] [train] {"step": 15, "lr": 9.951340343707852e-06, "loss": 0.33037704535544815, "grad_norm": 4.932451248168945, "dw_norm": 1.801726558175109, "size": {"norm": 1.801726558175109}, "peak_gib": 31.31484889984131}
+[  347.4s] [check] ok {"step": 15, "check": "loss and grad norm finite", "value": [0.33037704535544815, 4.932451248168945], "holds": true}
+[  347.4s] [check] ok {"step": 15, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  364.5s] [train] {"step": 16, "lr": 9.924038765061042e-06, "loss": 0.2810106574988607, "grad_norm": 10.753416061401367, "dw_norm": 1.9323436788843418, "size": {"norm": 1.9323436788843418}, "peak_gib": 31.31484889984131}
+[  364.5s] [check] ok {"step": 16, "check": "loss and grad norm finite", "value": [0.2810106574988607, 10.753416061401367], "holds": true}
+[  364.5s] [check] ok {"step": 16, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  381.2s] [train] {"step": 17, "lr": 9.890738003669029e-06, "loss": 0.2672531744799116, "grad_norm": 6.492198467254639, "dw_norm": 2.05443421756961, "size": {"norm": 2.05443421756961}, "peak_gib": 31.31484889984131}
+[  381.2s] [check] ok {"step": 17, "check": "loss and grad norm finite", "value": [0.2672531744799116, 6.492198467254639], "holds": true}
+[  381.2s] [check] ok {"step": 17, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  397.8s] [train] {"step": 18, "lr": 9.851478631379982e-06, "loss": 0.1757634809637775, "grad_norm": 6.439869403839111, "dw_norm": 2.168439309584863, "size": {"norm": 2.168439309584863}, "peak_gib": 31.31484889984131}
+[  397.8s] [check] ok {"step": 18, "check": "loss and grad norm finite", "value": [0.1757634809637775, 6.439869403839111], "holds": true}
+[  397.8s] [check] ok {"step": 18, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  415.6s] [train] {"step": 19, "lr": 9.806308479691595e-06, "loss": 0.17204806551973703, "grad_norm": 4.485083103179932, "dw_norm": 2.2743421403902953, "size": {"norm": 2.2743421403902953}, "peak_gib": 31.31484889984131}
+[  415.6s] [check] ok {"step": 19, "check": "loss and grad norm finite", "value": [0.17204806551973703, 4.485083103179932], "holds": true}
+[  415.6s] [check] ok {"step": 19, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  432.4s] [train] {"step": 20, "lr": 9.755282581475769e-06, "loss": 0.1364606648866569, "grad_norm": 8.086587905883789, "dw_norm": 2.372745271763317, "size": {"norm": 2.372745271763317}, "peak_gib": 31.31484889984131}
+[  432.5s] [check] ok {"step": 20, "check": "loss and grad norm finite", "value": [0.1364606648866569, 8.086587905883789], "holds": true}
+[  432.5s] [check] ok {"step": 20, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  448.6s] [train] {"step": 21, "lr": 9.698463103929542e-06, "loss": 0.0939936774912706, "grad_norm": 8.875370025634766, "dw_norm": 2.464305225113098, "size": {"norm": 2.464305225113098}, "peak_gib": 31.31484889984131}
+[  448.6s] [check] ok {"step": 21, "check": "loss and grad norm finite", "value": [0.0939936774912706, 8.875370025634766], "holds": true}
+[  448.6s] [check] ok {"step": 21, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  465.6s] [train] {"step": 22, "lr": 9.635919272833938e-06, "loss": 0.07829651072806837, "grad_norm": 4.572685718536377, "dw_norm": 2.5493537258394796, "size": {"norm": 2.5493537258394796}, "peak_gib": 31.31484889984131}
+[  465.6s] [check] ok {"step": 22, "check": "loss and grad norm finite", "value": [0.07829651072806837, 4.572685718536377], "holds": true}
+[  465.6s] [check] ok {"step": 22, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  482.9s] [train] {"step": 23, "lr": 9.567727288213005e-06, "loss": 0.05795705459687041, "grad_norm": 3.4373486042022705, "dw_norm": 2.629160319574871, "size": {"norm": 2.629160319574871}, "peak_gib": 31.31484889984131}
+[  482.9s] [check] ok {"step": 23, "check": "loss and grad norm finite", "value": [0.05795705459687041, 3.4373486042022705], "holds": true}
+[  482.9s] [check] ok {"step": 23, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  499.4s] [train] {"step": 24, "lr": 9.493970231495836e-06, "loss": 0.0387556646049974, "grad_norm": 13.231588363647461, "dw_norm": 2.703852618628027, "size": {"norm": 2.703852618628027}, "peak_gib": 31.31484889984131}
+[  499.4s] [check] ok {"step": 24, "check": "loss and grad norm finite", "value": [0.0387556646049974, 13.231588363647461], "holds": true}
+[  499.4s] [check] ok {"step": 24, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  516.5s] [train] {"step": 25, "lr": 9.414737964294636e-06, "loss": 0.030399890396700883, "grad_norm": 4.430780410766602, "dw_norm": 2.7733530237541637, "size": {"norm": 2.7733530237541637}, "peak_gib": 31.31484889984131}
+[  516.5s] [check] ok {"step": 25, "check": "loss and grad norm finite", "value": [0.030399890396700883, 4.430780410766602], "holds": true}
+[  516.5s] [check] ok {"step": 25, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  533.8s] [train] {"step": 26, "lr": 9.330127018922195e-06, "loss": 0.024111665723422847, "grad_norm": 5.713940620422363, "dw_norm": 2.8379977250102253, "size": {"norm": 2.8379977250102253}, "peak_gib": 31.31484889984131}
+[  533.8s] [check] ok {"step": 26, "check": "loss and grad norm finite", "value": [0.024111665723422847, 5.713940620422363], "holds": true}
+[  533.8s] [check] ok {"step": 26, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  551.0s] [train] {"step": 27, "lr": 9.24024048078213e-06, "loss": 0.012363286033690284, "grad_norm": 4.162374973297119, "dw_norm": 2.898447598936936, "size": {"norm": 2.898447598936936}, "peak_gib": 31.31484889984131}
+[  551.0s] [check] ok {"step": 27, "check": "loss and grad norm finite", "value": [0.012363286033690284, 4.162374973297119], "holds": true}
+[  551.0s] [check] ok {"step": 27, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  567.7s] [train] {"step": 28, "lr": 9.145187862775208e-06, "loss": 0.009130875849737582, "grad_norm": 5.457610607147217, "dw_norm": 2.954797188781185, "size": {"norm": 2.954797188781185}, "peak_gib": 31.31484889984131}
+[  567.7s] [check] ok {"step": 28, "check": "loss and grad norm finite", "value": [0.009130875849737582, 5.457610607147217], "holds": true}
+[  567.7s] [check] ok {"step": 28, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  584.9s] [train] {"step": 29, "lr": 9.045084971874738e-06, "loss": 0.006126439883746111, "grad_norm": 3.15118670463562, "dw_norm": 3.0072525617291626, "size": {"norm": 3.0072525617291626}, "peak_gib": 31.31484889984131}
+[  584.9s] [check] ok {"step": 29, "check": "loss and grad norm finite", "value": [0.006126439883746111, 3.15118670463562], "holds": true}
+[  584.9s] [check] ok {"step": 29, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  602.0s] [train] {"step": 30, "lr": 8.94005376803361e-06, "loss": 0.006404381393627641, "grad_norm": 4.0808000564575195, "dw_norm": 3.055894296745324, "size": {"norm": 3.055894296745324}, "peak_gib": 31.31484889984131}
+[  602.0s] [check] ok {"step": 30, "check": "loss and grad norm finite", "value": [0.006404381393627641, 4.0808000564575195], "holds": true}
+[  602.0s] [check] ok {"step": 30, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  619.1s] [train] {"step": 31, "lr": 8.83022221559489e-06, "loss": 0.003802159231135754, "grad_norm": 4.13789176940918, "dw_norm": 3.101140088316038, "size": {"norm": 3.101140088316038}, "peak_gib": 31.31484889984131}
+[  619.1s] [check] ok {"step": 31, "check": "loss and grad norm finite", "value": [0.003802159231135754, 4.13789176940918], "holds": true}
+[  619.1s] [check] ok {"step": 31, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  636.4s] [train] {"step": 32, "lr": 8.715724127386971e-06, "loss": 0.0036696117479455954, "grad_norm": 2.961085081100464, "dw_norm": 3.1430374613283014, "size": {"norm": 3.1430374613283014}, "peak_gib": 31.31484889984131}
+[  636.4s] [check] ok {"step": 32, "check": "loss and grad norm finite", "value": [0.0036696117479455954, 2.961085081100464], "holds": true}
+[  636.4s] [check] ok {"step": 32, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  653.2s] [train] {"step": 33, "lr": 8.596699001693257e-06, "loss": 0.002344544637602655, "grad_norm": 1.3677266836166382, "dw_norm": 3.1818806198178002, "size": {"norm": 3.1818806198178002}, "peak_gib": 31.31484889984131}
+[  653.2s] [check] ok {"step": 33, "check": "loss and grad norm finite", "value": [0.002344544637602655, 1.3677266836166382], "holds": true}
+[  653.2s] [check] ok {"step": 33, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  670.5s] [train] {"step": 34, "lr": 8.473291852294986e-06, "loss": 0.0015637348316583312, "grad_norm": 0.7681460380554199, "dw_norm": 3.2181276041281253, "size": {"norm": 3.2181276041281253}, "peak_gib": 31.31484889984131}
+[  670.5s] [check] ok {"step": 34, "check": "loss and grad norm finite", "value": [0.0015637348316583312, 0.7681460380554199], "holds": true}
+[  670.5s] [check] ok {"step": 34, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  686.7s] [train] {"step": 35, "lr": 8.345653031794292e-06, "loss": 0.0037245185743451743, "grad_norm": 1.4509694576263428, "dw_norm": 3.2517208535805153, "size": {"norm": 3.2517208535805153}, "peak_gib": 31.31484889984131}
+[  686.7s] [check] ok {"step": 35, "check": "loss and grad norm finite", "value": [0.0037245185743451743, 1.4509694576263428], "holds": true}
+[  686.7s] [check] ok {"step": 35, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  704.9s] [train] {"step": 36, "lr": 8.213938048432697e-06, "loss": 0.0020191802466004664, "grad_norm": 2.066711902618408, "dw_norm": 3.2829363226340718, "size": {"norm": 3.2829363226340718}, "peak_gib": 31.31484889984131}
+[  704.9s] [check] ok {"step": 36, "check": "loss and grad norm finite", "value": [0.0020191802466004664, 2.066711902618408], "holds": true}
+[  704.9s] [check] ok {"step": 36, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  720.9s] [train] {"step": 37, "lr": 8.078307376628292e-06, "loss": 0.0006964660333622186, "grad_norm": 0.43081945180892944, "dw_norm": 3.3121043680846047, "size": {"norm": 3.3121043680846047}, "peak_gib": 31.31484889984131}
+[  720.9s] [check] ok {"step": 37, "check": "loss and grad norm finite", "value": [0.0006964660333622186, 0.43081945180892944], "holds": true}
+[  720.9s] [check] ok {"step": 37, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  737.9s] [train] {"step": 38, "lr": 7.938926261462366e-06, "loss": 0.000570443169391088, "grad_norm": 0.16756857931613922, "dw_norm": 3.339284799885063, "size": {"norm": 3.339284799885063}, "peak_gib": 31.31484889984131}
+[  737.9s] [check] ok {"step": 38, "check": "loss and grad norm finite", "value": [0.000570443169391088, 0.16756857931613922], "holds": true}
+[  737.9s] [check] ok {"step": 38, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  754.3s] [train] {"step": 39, "lr": 7.795964517353734e-06, "loss": 0.0005909242382206143, "grad_norm": 0.5150133371353149, "dw_norm": 3.3643775911794966, "size": {"norm": 3.3643775911794966}, "peak_gib": 31.31484889984131}
+[  754.4s] [check] ok {"step": 39, "check": "loss and grad norm finite", "value": [0.0005909242382206143, 0.5150133371353149], "holds": true}
+[  754.4s] [check] ok {"step": 39, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  772.1s] [train] {"step": 40, "lr": 7.649596321166024e-06, "loss": 0.0004262924248936724, "grad_norm": 0.45564889907836914, "dw_norm": 3.387514865705671, "size": {"norm": 3.387514865705671}, "peak_gib": 31.31484889984131}
+[  772.1s] [check] ok {"step": 40, "check": "loss and grad norm finite", "value": [0.0004262924248936724, 0.45564889907836914], "holds": true}
+[  772.1s] [check] ok {"step": 40, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  788.6s] [train] {"step": 41, "lr": 7.500000000000001e-06, "loss": 0.0003900491758299665, "grad_norm": 0.2089713215827942, "dw_norm": 3.4088133832350027, "size": {"norm": 3.4088133832350027}, "peak_gib": 31.31484889984131}
+[  788.6s] [check] ok {"step": 41, "check": "loss and grad norm finite", "value": [0.0003900491758299665, 0.2089713215827942], "holds": true}
+[  788.6s] [check] ok {"step": 41, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  805.7s] [train] {"step": 42, "lr": 7.347357813929455e-06, "loss": 0.00022945475007090708, "grad_norm": 0.07513758540153503, "dw_norm": 3.4283438313155985, "size": {"norm": 3.4283438313155985}, "peak_gib": 31.31484889984131}
+[  805.9s] [check] ok {"step": 42, "check": "loss and grad norm finite", "value": [0.00022945475007090708, 0.07513758540153503], "holds": true}
+[  806.2s] [check] ok {"step": 42, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  823.8s] [train] {"step": 43, "lr": 7.191855733945388e-06, "loss": 0.00023753895870220817, "grad_norm": 0.3443220853805542, "dw_norm": 3.446158040460212, "size": {"norm": 3.446158040460212}, "peak_gib": 31.31484889984131}
+[  823.8s] [check] ok {"step": 43, "check": "loss and grad norm finite", "value": [0.00023753895870220817, 0.3443220853805542], "holds": true}
+[  823.8s] [check] ok {"step": 43, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  841.0s] [train] {"step": 44, "lr": 7.033683215379002e-06, "loss": 0.00046569894105107627, "grad_norm": 1.300304889678955, "dw_norm": 3.4622442003381027, "size": {"norm": 3.4622442003381027}, "peak_gib": 31.31484889984131}
+[  841.0s] [check] ok {"step": 44, "check": "loss and grad norm finite", "value": [0.00046569894105107627, 1.300304889678955], "holds": true}
+[  841.0s] [check] ok {"step": 44, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  857.2s] [train] {"step": 45, "lr": 6.873032967079562e-06, "loss": 0.0003437593948113428, "grad_norm": 0.5450991988182068, "dw_norm": 3.4769438417398195, "size": {"norm": 3.4769438417398195}, "peak_gib": 31.31484889984131}
+[  857.2s] [check] ok {"step": 45, "check": "loss and grad norm finite", "value": [0.0003437593948113428, 0.5450991988182068], "holds": true}
+[  857.2s] [check] ok {"step": 45, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  874.5s] [train] {"step": 46, "lr": 6.710100716628345e-06, "loss": 0.0001282651024225851, "grad_norm": 0.030218562111258507, "dw_norm": 3.490413371315017, "size": {"norm": 3.490413371315017}, "peak_gib": 31.31484889984131}
+[  874.5s] [check] ok {"step": 46, "check": "loss and grad norm finite", "value": [0.0001282651024225851, 0.030218562111258507], "holds": true}
+[  874.5s] [check] ok {"step": 46, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  892.4s] [train] {"step": 47, "lr": 6.545084971874738e-06, "loss": 0.00028856237811151055, "grad_norm": 0.3601137399673462, "dw_norm": 3.5026500173642847, "size": {"norm": 3.5026500173642847}, "peak_gib": 31.31484889984131}
+[  892.4s] [check] ok {"step": 47, "check": "loss and grad norm finite", "value": [0.00028856237811151055, 0.3601137399673462], "holds": true}
+[  892.4s] [check] ok {"step": 47, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  909.4s] [train] {"step": 48, "lr": 6.378186779084996e-06, "loss": 0.00011360811015184568, "grad_norm": 0.026970496401190758, "dw_norm": 3.513770408938056, "size": {"norm": 3.513770408938056}, "peak_gib": 31.31484889984131}
+[  909.4s] [check] ok {"step": 48, "check": "loss and grad norm finite", "value": [0.00011360811015184568, 0.026970496401190758], "holds": true}
+[  909.4s] [check] ok {"step": 48, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  926.0s] [train] {"step": 49, "lr": 6.209609477998339e-06, "loss": 9.77557994735338e-05, "grad_norm": 0.02055586501955986, "dw_norm": 3.5238311478165767, "size": {"norm": 3.5238311478165767}, "peak_gib": 31.31484889984131}
+[  926.1s] [check] ok {"step": 49, "check": "loss and grad norm finite", "value": [9.77557994735338e-05, 0.02055586501955986], "holds": true}
+[  926.1s] [check] ok {"step": 49, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  943.6s] [train] {"step": 50, "lr": 6.039558454088796e-06, "loss": 0.0007588447542942089, "grad_norm": 3.9271044731140137, "dw_norm": 3.5328162201200666, "size": {"norm": 3.5328162201200666}, "peak_gib": 31.31484889984131}
+[  943.6s] [check] ok {"step": 50, "check": "loss and grad norm finite", "value": [0.0007588447542942089, 3.9271044731140137], "holds": true}
+[  943.6s] [check] ok {"step": 50, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  960.5s] [train] {"step": 51, "lr": 5.8682408883346535e-06, "loss": 0.00012120319239886511, "grad_norm": 0.1464109718799591, "dw_norm": 3.5410359832264127, "size": {"norm": 3.5410359832264127}, "peak_gib": 31.31484889984131}
+[  960.5s] [check] ok {"step": 51, "check": "loss and grad norm finite", "value": [0.00012120319239886511, 0.1464109718799591], "holds": true}
+[  960.5s] [check] ok {"step": 51, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  976.9s] [train] {"step": 52, "lr": 5.695865504800328e-06, "loss": 0.00021032472510933424, "grad_norm": 0.8328286409378052, "dw_norm": 3.5485364217790023, "size": {"norm": 3.5485364217790023}, "peak_gib": 31.31484889984131}
+[  976.9s] [check] ok {"step": 52, "check": "loss and grad norm finite", "value": [0.00021032472510933424, 0.8328286409378052], "holds": true}
+[  976.9s] [check] ok {"step": 52, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[  993.6s] [train] {"step": 53, "lr": 5.522642316338268e-06, "loss": 0.00012387419874511347, "grad_norm": 0.08585744351148605, "dw_norm": 3.555400923178463, "size": {"norm": 3.555400923178463}, "peak_gib": 31.31484889984131}
+[  993.6s] [check] ok {"step": 53, "check": "loss and grad norm finite", "value": [0.00012387419874511347, 0.08585744351148605], "holds": true}
+[  993.6s] [check] ok {"step": 53, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1010.6s] [train] {"step": 54, "lr": 5.348782368720627e-06, "loss": 0.00011365866489297857, "grad_norm": 0.17626038193702698, "dw_norm": 3.5616458391429497, "size": {"norm": 3.5616458391429497}, "peak_gib": 31.31484889984131}
+[ 1010.6s] [check] ok {"step": 54, "check": "loss and grad norm finite", "value": [0.00011365866489297857, 0.17626038193702698], "holds": true}
+[ 1010.6s] [check] ok {"step": 54, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1027.7s] [train] {"step": 55, "lr": 5.174497483512506e-06, "loss": 6.823511797470414e-05, "grad_norm": 0.010418101213872433, "dw_norm": 3.5672884841482695, "size": {"norm": 3.5672884841482695}, "peak_gib": 31.31484889984131}
+[ 1027.7s] [check] ok {"step": 55, "check": "loss and grad norm finite", "value": [6.823511797470414e-05, 0.010418101213872433], "holds": true}
+[ 1027.7s] [check] ok {"step": 55, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1044.9s] [train] {"step": 56, "lr": 5e-06, "loss": 0.0001030445638363066, "grad_norm": 0.060497675091028214, "dw_norm": 3.5723676756493545, "size": {"norm": 3.5723676756493545}, "peak_gib": 31.31484889984131}
+[ 1044.9s] [check] ok {"step": 56, "check": "loss and grad norm finite", "value": [0.0001030445638363066, 0.060497675091028214], "holds": true}
+[ 1044.9s] [check] ok {"step": 56, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1062.0s] [train] {"step": 57, "lr": 4.825502516487497e-06, "loss": 0.0002831097786542393, "grad_norm": 2.0107288360595703, "dw_norm": 3.576863281998442, "size": {"norm": 3.576863281998442}, "peak_gib": 31.31484889984131}
+[ 1062.0s] [check] ok {"step": 57, "check": "loss and grad norm finite", "value": [0.0002831097786542393, 2.0107288360595703], "holds": true}
+[ 1062.0s] [check] ok {"step": 57, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1079.7s] [train] {"step": 58, "lr": 4.651217631279374e-06, "loss": 8.267864905431719e-05, "grad_norm": 0.18480652570724487, "dw_norm": 3.5809318853148873, "size": {"norm": 3.5809318853148873}, "peak_gib": 31.31484889984131}
+[ 1079.7s] [check] ok {"step": 58, "check": "loss and grad norm finite", "value": [8.267864905431719e-05, 0.18480652570724487], "holds": true}
+[ 1079.7s] [check] ok {"step": 58, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1096.0s] [train] {"step": 59, "lr": 4.477357683661734e-06, "loss": 9.049572049298273e-05, "grad_norm": 0.08800634741783142, "dw_norm": 3.5846134492009605, "size": {"norm": 3.5846134492009605}, "peak_gib": 31.31484889984131}
+[ 1096.0s] [check] ok {"step": 59, "check": "loss and grad norm finite", "value": [9.049572049298273e-05, 0.08800634741783142], "holds": true}
+[ 1096.0s] [check] ok {"step": 59, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1112.9s] [train] {"step": 60, "lr": 4.304134495199675e-06, "loss": 0.00014143558638561138, "grad_norm": 0.3801029622554779, "dw_norm": 3.5879369341013265, "size": {"norm": 3.5879369341013265}, "peak_gib": 31.31484889984131}
+[ 1112.9s] [check] ok {"step": 60, "check": "loss and grad norm finite", "value": [0.00014143558638561138, 0.3801029622554779], "holds": true}
+[ 1112.9s] [check] ok {"step": 60, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1130.1s] [train] {"step": 61, "lr": 4.131759111665349e-06, "loss": 6.933440421955397e-05, "grad_norm": 0.019416311755776405, "dw_norm": 3.5909283214124073, "size": {"norm": 3.5909283214124073}, "peak_gib": 31.31484889984131}
+[ 1130.2s] [check] ok {"step": 61, "check": "loss and grad norm finite", "value": [6.933440421955397e-05, 0.019416311755776405], "holds": true}
+[ 1130.2s] [check] ok {"step": 61, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1147.3s] [train] {"step": 62, "lr": 3.960441545911205e-06, "loss": 9.764814769629955e-05, "grad_norm": 0.2889837920665741, "dw_norm": 3.5936147105767677, "size": {"norm": 3.5936147105767677}, "peak_gib": 31.31484889984131}
+[ 1147.3s] [check] ok {"step": 62, "check": "loss and grad norm finite", "value": [9.764814769629955e-05, 0.2889837920665741], "holds": true}
+[ 1147.3s] [check] ok {"step": 62, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1164.4s] [train] {"step": 63, "lr": 3.790390522001662e-06, "loss": 6.962016299064996e-05, "grad_norm": 0.02739485539495945, "dw_norm": 3.596013139324566, "size": {"norm": 3.596013139324566}, "peak_gib": 31.31484889984131}
+[ 1164.5s] [check] ok {"step": 63, "check": "loss and grad norm finite", "value": [6.962016299064996e-05, 0.02739485539495945], "holds": true}
+[ 1164.5s] [check] ok {"step": 63, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1181.7s] [train] {"step": 64, "lr": 3.6218132209150047e-06, "loss": 0.00010173901169224527, "grad_norm": 0.2326425164937973, "dw_norm": 3.598140087615375, "size": {"norm": 3.598140087615375}, "peak_gib": 31.31484889984131}
+[ 1181.7s] [check] ok {"step": 64, "check": "loss and grad norm finite", "value": [0.00010173901169224527, 0.2326425164937973], "holds": true}
+[ 1181.7s] [check] ok {"step": 64, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1198.8s] [train] {"step": 65, "lr": 3.4549150281252635e-06, "loss": 7.846360874631671e-05, "grad_norm": 0.03160785138607025, "dw_norm": 3.6000303527835804, "size": {"norm": 3.6000303527835804}, "peak_gib": 31.31484889984131}
+[ 1198.8s] [check] ok {"step": 65, "check": "loss and grad norm finite", "value": [7.846360874631671e-05, 0.03160785138607025], "holds": true}
+[ 1198.8s] [check] ok {"step": 65, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1215.3s] [train] {"step": 66, "lr": 3.289899283371657e-06, "loss": 4.711966722767489e-05, "grad_norm": 0.0061808801256120205, "dw_norm": 3.601697467398081, "size": {"norm": 3.601697467398081}, "peak_gib": 31.31484889984131}
+[ 1215.3s] [check] ok {"step": 66, "check": "loss and grad norm finite", "value": [4.711966722767489e-05, 0.0061808801256120205], "holds": true}
+[ 1215.3s] [check] ok {"step": 66, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1232.6s] [train] {"step": 67, "lr": 3.12696703292044e-06, "loss": 5.656122762347301e-05, "grad_norm": 0.009744234383106232, "dw_norm": 3.6031648074271123, "size": {"norm": 3.6031648074271123}, "peak_gib": 31.31484889984131}
+[ 1232.6s] [check] ok {"step": 67, "check": "loss and grad norm finite", "value": [5.656122762347301e-05, 0.009744234383106232], "holds": true}
+[ 1232.6s] [check] ok {"step": 67, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1248.6s] [train] {"step": 68, "lr": 2.966316784621e-06, "loss": 5.993761491544288e-05, "grad_norm": 0.014969216659665108, "dw_norm": 3.6044530711541016, "size": {"norm": 3.6044530711541016}, "peak_gib": 31.31484889984131}
+[ 1248.6s] [check] ok {"step": 68, "check": "loss and grad norm finite", "value": [5.993761491544288e-05, 0.014969216659665108], "holds": true}
+[ 1248.6s] [check] ok {"step": 68, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1265.8s] [train] {"step": 69, "lr": 2.8081442660546126e-06, "loss": 4.349749680985522e-05, "grad_norm": 0.006002325564622879, "dw_norm": 3.605576841506407, "size": {"norm": 3.605576841506407}, "peak_gib": 31.31484889984131}
+[ 1265.8s] [check] ok {"step": 69, "check": "loss and grad norm finite", "value": [4.349749680985522e-05, 0.006002325564622879], "holds": true}
+[ 1265.8s] [check] ok {"step": 69, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1283.6s] [train] {"step": 70, "lr": 2.6526421860705474e-06, "loss": 5.710287626635186e-05, "grad_norm": 0.031021149829030037, "dw_norm": 3.606555178507042, "size": {"norm": 3.606555178507042}, "peak_gib": 31.31484889984131}
+[ 1283.6s] [check] ok {"step": 70, "check": "loss and grad norm finite", "value": [5.710287626635186e-05, 0.031021149829030037], "holds": true}
+[ 1283.6s] [check] ok {"step": 70, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1300.3s] [train] {"step": 71, "lr": 2.5000000000000015e-06, "loss": 4.465074629952431e-05, "grad_norm": 0.0056871515698730946, "dw_norm": 3.607403746539003, "size": {"norm": 3.607403746539003}, "peak_gib": 31.31484889984131}
+[ 1300.3s] [check] ok {"step": 71, "check": "loss and grad norm finite", "value": [4.465074629952431e-05, 0.0056871515698730946], "holds": true}
+[ 1300.3s] [check] ok {"step": 71, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1316.7s] [train] {"step": 72, "lr": 2.3504036788339763e-06, "loss": 4.696555093273999e-05, "grad_norm": 0.0077393739484250546, "dw_norm": 3.608138632324633, "size": {"norm": 3.608138632324633}, "peak_gib": 31.31484889984131}
+[ 1316.7s] [check] ok {"step": 72, "check": "loss and grad norm finite", "value": [4.696555093273999e-05, 0.0077393739484250546], "holds": true}
+[ 1316.7s] [check] ok {"step": 72, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1334.2s] [train] {"step": 73, "lr": 2.204035482646267e-06, "loss": 4.5834163318120836e-05, "grad_norm": 0.007019121199846268, "dw_norm": 3.6087731843865045, "size": {"norm": 3.6087731843865045}, "peak_gib": 31.31484889984131}
+[ 1334.2s] [check] ok {"step": 73, "check": "loss and grad norm finite", "value": [4.5834163318120836e-05, 0.007019121199846268], "holds": true}
+[ 1334.2s] [check] ok {"step": 73, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1351.0s] [train] {"step": 74, "lr": 2.061073738537635e-06, "loss": 4.3275883750795026e-05, "grad_norm": 0.00760880159214139, "dw_norm": 3.6093193907157546, "size": {"norm": 3.6093193907157546}, "peak_gib": 31.31484889984131}
+[ 1351.0s] [check] ok {"step": 74, "check": "loss and grad norm finite", "value": [4.3275883750795026e-05, 0.00760880159214139], "holds": true}
+[ 1351.0s] [check] ok {"step": 74, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1368.9s] [train] {"step": 75, "lr": 1.9216926233717087e-06, "loss": 4.769565527883245e-05, "grad_norm": 0.010300539433956146, "dw_norm": 3.6097891568649234, "size": {"norm": 3.6097891568649234}, "peak_gib": 31.31484889984131}
+[ 1368.9s] [check] ok {"step": 75, "check": "loss and grad norm finite", "value": [4.769565527883245e-05, 0.010300539433956146], "holds": true}
+[ 1369.0s] [check] ok {"step": 75, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1386.0s] [train] {"step": 76, "lr": 1.7860619515673034e-06, "loss": 3.813570816414089e-05, "grad_norm": 0.004540214780718088, "dw_norm": 3.610190315681281, "size": {"norm": 3.610190315681281}, "peak_gib": 31.31484889984131}
+[ 1386.0s] [check] ok {"step": 76, "check": "loss and grad norm finite", "value": [3.813570816414089e-05, 0.004540214780718088], "holds": true}
+[ 1386.0s] [check] ok {"step": 76, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1402.8s] [train] {"step": 77, "lr": 1.6543469682057105e-06, "loss": 4.658487127380335e-05, "grad_norm": 0.008039682172238827, "dw_norm": 3.6105333369487855, "size": {"norm": 3.6105333369487855}, "peak_gib": 31.31484889984131}
+[ 1402.8s] [check] ok {"step": 77, "check": "loss and grad norm finite", "value": [4.658487127380335e-05, 0.008039682172238827], "holds": true}
+[ 1402.8s] [check] ok {"step": 77, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1419.3s] [train] {"step": 78, "lr": 1.5267081477050132e-06, "loss": 4.1546949120394737e-05, "grad_norm": 0.005392607767134905, "dw_norm": 3.6108252132688454, "size": {"norm": 3.6108252132688454}, "peak_gib": 31.31484889984131}
+[ 1419.3s] [check] ok {"step": 78, "check": "loss and grad norm finite", "value": [4.1546949120394737e-05, 0.005392607767134905], "holds": true}
+[ 1419.3s] [check] ok {"step": 78, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1435.9s] [train] {"step": 79, "lr": 1.4033009983067454e-06, "loss": 3.448538389995037e-05, "grad_norm": 0.004235425498336554, "dw_norm": 3.6110718269320268, "size": {"norm": 3.6110718269320268}, "peak_gib": 31.31484889984131}
+[ 1435.9s] [check] ok {"step": 79, "check": "loss and grad norm finite", "value": [3.448538389995037e-05, 0.004235425498336554], "holds": true}
+[ 1435.9s] [check] ok {"step": 79, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1454.0s] [train] {"step": 80, "lr": 1.2842758726130283e-06, "loss": 4.445044879431029e-05, "grad_norm": 0.0060868170112371445, "dw_norm": 3.6112807892322767, "size": {"norm": 3.6112807892322767}, "peak_gib": 31.31484889984131}
+[ 1454.0s] [check] ok {"step": 80, "check": "loss and grad norm finite", "value": [4.445044879431029e-05, 0.0060868170112371445], "holds": true}
+[ 1454.0s] [check] ok {"step": 80, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1469.4s] [train] {"step": 81, "lr": 1.1697777844051105e-06, "loss": 3.756315096701726e-05, "grad_norm": 0.0049472106620669365, "dw_norm": 3.611456498770065, "size": {"norm": 3.611456498770065}, "peak_gib": 31.31484889984131}
+[ 1469.4s] [check] ok {"step": 81, "check": "loss and grad norm finite", "value": [3.756315096701726e-05, 0.0049472106620669365], "holds": true}
+[ 1469.4s] [check] ok {"step": 81, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1486.4s] [train] {"step": 82, "lr": 1.0599462319663906e-06, "loss": 3.9954083168180436e-05, "grad_norm": 0.0045902119018137455, "dw_norm": 3.6116037925668736, "size": {"norm": 3.6116037925668736}, "peak_gib": 31.31484889984131}
+[ 1486.4s] [check] ok {"step": 82, "check": "loss and grad norm finite", "value": [3.9954083168180436e-05, 0.0045902119018137455], "holds": true}
+[ 1486.4s] [check] ok {"step": 82, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1504.0s] [train] {"step": 83, "lr": 9.549150281252633e-07, "loss": 3.953244325611571e-05, "grad_norm": 0.004627567250281572, "dw_norm": 3.611726772117082, "size": {"norm": 3.611726772117082}, "peak_gib": 31.31484889984131}
+[ 1504.0s] [check] ok {"step": 83, "check": "loss and grad norm finite", "value": [3.953244325611571e-05, 0.004627567250281572], "holds": true}
+[ 1504.0s] [check] ok {"step": 83, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1521.1s] [train] {"step": 84, "lr": 8.54812137224792e-07, "loss": 3.727602404231983e-05, "grad_norm": 0.004370209760963917, "dw_norm": 3.611828852328767, "size": {"norm": 3.611828852328767}, "peak_gib": 31.31484889984131}
+[ 1521.1s] [check] ok {"step": 84, "check": "loss and grad norm finite", "value": [3.727602404231983e-05, 0.004370209760963917], "holds": true}
+[ 1521.1s] [check] ok {"step": 84, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1537.5s] [train] {"step": 85, "lr": 7.597595192178702e-07, "loss": 3.6904928261841956e-05, "grad_norm": 0.004542254377156496, "dw_norm": 3.6119130144991063, "size": {"norm": 3.6119130144991063}, "peak_gib": 31.31484889984131}
+[ 1537.5s] [check] ok {"step": 85, "check": "loss and grad norm finite", "value": [3.6904928261841956e-05, 0.004542254377156496], "holds": true}
+[ 1537.5s] [check] ok {"step": 85, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1554.5s] [train] {"step": 86, "lr": 6.698729810778065e-07, "loss": 3.8556195626386396e-05, "grad_norm": 0.004332655109465122, "dw_norm": 3.611982060878978, "size": {"norm": 3.611982060878978}, "peak_gib": 31.31484889984131}
+[ 1554.5s] [check] ok {"step": 86, "check": "loss and grad norm finite", "value": [3.8556195626386396e-05, 0.004332655109465122], "holds": true}
+[ 1554.5s] [check] ok {"step": 86, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1570.9s] [train] {"step": 87, "lr": 5.852620357053651e-07, "loss": 3.531882008762741e-05, "grad_norm": 0.004106500651687384, "dw_norm": 3.6120381690298564, "size": {"norm": 3.6120381690298564}, "peak_gib": 31.31484889984131}
+[ 1570.9s] [check] ok {"step": 87, "check": "loss and grad norm finite", "value": [3.531882008762741e-05, 0.004106500651687384], "holds": true}
+[ 1570.9s] [check] ok {"step": 87, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1588.0s] [train] {"step": 88, "lr": 5.06029768504166e-07, "loss": 3.8996251100246184e-05, "grad_norm": 0.004325322341173887, "dw_norm": 3.612083516299685, "size": {"norm": 3.612083516299685}, "peak_gib": 31.31484889984131}
+[ 1588.0s] [check] ok {"step": 88, "check": "loss and grad norm finite", "value": [3.8996251100246184e-05, 0.004325322341173887], "holds": true}
+[ 1588.0s] [check] ok {"step": 88, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1604.4s] [train] {"step": 89, "lr": 4.322727117869951e-07, "loss": 3.4451225024411166e-05, "grad_norm": 0.0037316365633159876, "dw_norm": 3.612119559941338, "size": {"norm": 3.612119559941338}, "peak_gib": 31.31484889984131}
+[ 1604.4s] [check] ok {"step": 89, "check": "loss and grad norm finite", "value": [3.4451225024411166e-05, 0.0037316365633159876], "holds": true}
+[ 1604.5s] [check] ok {"step": 89, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1621.2s] [train] {"step": 90, "lr": 3.6408072716606346e-07, "loss": 3.705271804721548e-05, "grad_norm": 0.004228819161653519, "dw_norm": 3.6121479615114502, "size": {"norm": 3.6121479615114502}, "peak_gib": 31.31484889984131}
+[ 1621.2s] [check] ok {"step": 90, "check": "loss and grad norm finite", "value": [3.705271804721548e-05, 0.004228819161653519], "holds": true}
+[ 1621.2s] [check] ok {"step": 90, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1638.4s] [train] {"step": 91, "lr": 3.015368960704584e-07, "loss": 3.7407998664550615e-05, "grad_norm": 0.004214041400700808, "dw_norm": 3.6121699484344045, "size": {"norm": 3.6121699484344045}, "peak_gib": 31.31484889984131}
+[ 1638.4s] [check] ok {"step": 91, "check": "loss and grad norm finite", "value": [3.7407998664550615e-05, 0.004214041400700808], "holds": true}
+[ 1638.4s] [check] ok {"step": 91, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1655.7s] [train] {"step": 92, "lr": 2.447174185242324e-07, "loss": 3.6131651726764336e-05, "grad_norm": 0.003950684331357479, "dw_norm": 3.6121865160314557, "size": {"norm": 3.6121865160314557}, "peak_gib": 31.31484889984131}
+[ 1655.7s] [check] ok {"step": 92, "check": "loss and grad norm finite", "value": [3.6131651726764336e-05, 0.003950684331357479], "holds": true}
+[ 1655.7s] [check] ok {"step": 92, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1672.5s] [train] {"step": 93, "lr": 1.9369152030840553e-07, "loss": 3.617540838257374e-05, "grad_norm": 0.00393510889261961, "dw_norm": 3.612198551997977, "size": {"norm": 3.612198551997977}, "peak_gib": 31.31484889984131}
+[ 1672.5s] [check] ok {"step": 93, "check": "loss and grad norm finite", "value": [3.617540838257374e-05, 0.00393510889261961], "holds": true}
+[ 1672.5s] [check] ok {"step": 93, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1689.4s] [train] {"step": 94, "lr": 1.4852136862001766e-07, "loss": 3.5903609506811455e-05, "grad_norm": 0.00389882386662066, "dw_norm": 3.6122068850368807, "size": {"norm": 3.6122068850368807}, "peak_gib": 31.31484889984131}
+[ 1689.4s] [check] ok {"step": 94, "check": "loss and grad norm finite", "value": [3.5903609506811455e-05, 0.00389882386662066], "holds": true}
+[ 1689.4s] [check] ok {"step": 94, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1706.5s] [train] {"step": 95, "lr": 1.0926199633097156e-07, "loss": 3.8922182449258505e-05, "grad_norm": 0.004619395826011896, "dw_norm": 3.6122123163308073, "size": {"norm": 3.6122123163308073}, "peak_gib": 31.31484889984131}
+[ 1706.5s] [check] ok {"step": 95, "check": "loss and grad norm finite", "value": [3.8922182449258505e-05, 0.004619395826011896], "holds": true}
+[ 1706.5s] [check] ok {"step": 95, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1722.6s] [train] {"step": 96, "lr": 7.59612349389599e-08, "loss": 3.4833834948481444e-05, "grad_norm": 0.003737038467079401, "dw_norm": 3.6122154471584706, "size": {"norm": 3.6122154471584706}, "peak_gib": 31.31484889984131}
+[ 1722.6s] [check] ok {"step": 96, "check": "loss and grad norm finite", "value": [3.4833834948481444e-05, 0.003737038467079401], "holds": true}
+[ 1722.6s] [check] ok {"step": 96, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1740.1s] [train] {"step": 97, "lr": 4.865965629214819e-08, "loss": 3.693220997263789e-05, "grad_norm": 0.004005815833806992, "dw_norm": 3.612216970285602, "size": {"norm": 3.612216970285602}, "peak_gib": 31.31484889984131}
+[ 1740.2s] [check] ok {"step": 97, "check": "loss and grad norm finite", "value": [3.693220997263789e-05, 0.004005815833806992], "holds": true}
+[ 1740.2s] [check] ok {"step": 97, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1756.9s] [train] {"step": 98, "lr": 2.7390523158633552e-08, "loss": 3.426602638479489e-05, "grad_norm": 0.0039739422500133514, "dw_norm": 3.612217504163977, "size": {"norm": 3.612217504163977}, "peak_gib": 31.31484889984131}
+[ 1756.9s] [check] ok {"step": 98, "check": "loss and grad norm finite", "value": [3.426602638479489e-05, 0.0039739422500133514], "holds": true}
+[ 1756.9s] [check] ok {"step": 98, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1772.8s] [train] {"step": 99, "lr": 1.2179748700879013e-08, "loss": 3.6197689962242646e-05, "grad_norm": 0.0039351750165224075, "dw_norm": 3.612217639226515, "size": {"norm": 3.612217639226515}, "peak_gib": 31.31484889984131}
+[ 1772.8s] [check] ok {"step": 99, "check": "loss and grad norm finite", "value": [3.6197689962242646e-05, 0.0039351750165224075], "holds": true}
+[ 1772.8s] [check] ok {"step": 99, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1807.0s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_pass_pools/results/large/dW/new_s0/step_100.safetensors (5.64 GB)
+[ 1807.0s] STAGE 3 DONE /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_pass_pools/results/large/dW/new_s0/step_100.safetensors
+[ 1807.0s] [train] {"step": 100, "lr": 3.0458649045211897e-09, "loss": 3.959216269044816e-05, "grad_norm": 0.0049439710564911366, "dw_norm": 3.6122176488987465, "size": {"norm": 3.6122176488987465}, "peak_gib": 31.31484889984131}
+[ 1807.0s] [check] ok {"step": 100, "check": "loss and grad norm finite", "value": [3.959216269044816e-05, 0.0049439710564911366], "holds": true}
+[ 1807.1s] [check] ok {"step": 100, "check": "peak GiB <= 40.0", "value": 31.31484889984131, "holds": true}
+[ 1807.5s] STAGE 3 DONE /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_pass_pools/results/train_new_s0.json
+[ 1809.7s] [check] ok saved file step 5 {"norm": 0.2962999236091162, "record": 0.29629992251388826, "tensors": 196, "dtypes": ["torch.float32"], "holds": true}
+[ 1811.4s] [check] ok saved file step 6 {"norm": 0.4151289272801273, "record": 0.4151289285104142, "tensors": 196, "dtypes": ["torch.float32"], "holds": true}
+[ 1813.0s] [check] ok saved file step 7 {"norm": 0.5445740202942941, "record": 0.5445740232478813, "tensors": 196, "dtypes": ["torch.float32"], "holds": true}
+[ 1815.7s] [check] ok saved file step 10 {"norm": 1.00533491766865, "record": 1.0053349204585154, "tensors": 196, "dtypes": ["torch.float32"], "holds": true}
+[ 1817.3s] [check] ok saved file step 100 {"norm": 3.6122176360403055, "record": 3.6122176488987465, "tensors": 196, "dtypes": ["torch.float32"], "holds": true}
+[ 1817.3s] [files] saved steps [5, 6, 7, 10, 100]; brackets [{'axis': 'norm', 'grid': 0.35, 'lo': 5, 'hi': 6}, {'axis': 'norm', 'grid': 0.49, 'lo': 6, 'hi': 7}]
+[ 1821.6s] [read] step 100 held-out gold loss {"held_loss": {"known": 2.795854703908367, "new": 3.0013483088454653}}; W0 {"held_loss": {"known": 2.0074607125465787, "new": 1.960001058802847}}
+[ 1893.6s] [read] GSM8K test 0-255 {"k": 256, "k_fits": 256, "fits_share": 1.0, "truncation_share": 0.0, "strict_dropped": 0.4765625, "lenient_dropped": 0.47265625, "strict_all": 0.4765625, "strict_capped": 0.4765625, "lenient_capped": 0.47265625, "w0_strict_dropped": 0.7842323651452282}
+[ 1919.9s] [new_held_samples] batch 1/2: 26 s, 391 new tokens/s
+[ 2046.3s] [new_held_samples] batch 2/2: 126 s, 118 new tokens/s
+[ 2046.3s] [new_held_samples] 15 problems x 8; truncated share 0.017
+[ 2046.3s] STAGE 3 DONE /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_pass_pools/results/large/samples/new_s0/new_held_samples.json
+[ 2059.1s] [known_held_samples] batch 1/2: 13 s, 388 new tokens/s
+[ 2191.6s] [known_held_samples] batch 2/2: 132 s, 91 new tokens/s
+[ 2191.6s] [known_held_samples] 15 problems x 8; truncated share 0.017
+[ 2191.6s] STAGE 3 DONE /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_pass_pools/results/large/samples/new_s0/known_held_samples.json
+[ 2243.0s] [new_train_greedy] batch 1/1: 51 s, 221 new tokens/s
+[ 2243.1s] [new_train_greedy] 62 problems x 1; truncated share 0.000
+[ 2243.1s] STAGE 3 DONE /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_pass_pools/results/large/samples/new_s0/new_train_greedy.json
+[ 2243.1s] STAGE 3 DONE /mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_pass_pools/results/read_new_s0.json
+[ 2243.1s] [new_s0] done; {"gpu_gib": 31.31484889984131, "host_gib": 12.39694595336914}

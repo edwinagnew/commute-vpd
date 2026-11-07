@@ -1,0 +1,1738 @@
+{
+ "w0": {
+  "known_held": {
+   "problems": 15,
+   "pass1": 0.9708333333333333,
+   "k_of_n": {
+    "gsm8k/train/7278": [
+     64,
+     64
+    ],
+    "gsm8k/train/886": [
+     62,
+     64
+    ],
+    "gsm8k/train/7454": [
+     64,
+     64
+    ],
+    "gsm8k/train/1856": [
+     64,
+     64
+    ],
+    "gsm8k/train/3074": [
+     61,
+     64
+    ],
+    "gsm8k/train/1228": [
+     64,
+     64
+    ],
+    "gsm8k/train/7348": [
+     64,
+     64
+    ],
+    "gsm8k/train/2139": [
+     64,
+     64
+    ],
+    "gsm8k/train/2345": [
+     58,
+     64
+    ],
+    "math/algebra/1217": [
+     64,
+     64
+    ],
+    "math/counting_and_probability/710": [
+     57,
+     64
+    ],
+    "math/counting_and_probability/71": [
+     62,
+     64
+    ],
+    "math/counting_and_probability/706": [
+     58,
+     64
+    ],
+    "math/geometry/398": [
+     62,
+     64
+    ],
+    "math/prealgebra/906": [
+     64,
+     64
+    ]
+   }
+  },
+  "new_held": {
+   "problems": 15,
+   "pass1": 0.0,
+   "k_of_n": {
+    "gsm8k/train/2937": [
+     0,
+     64
+    ],
+    "gsm8k/train/4668": [
+     0,
+     64
+    ],
+    "gsm8k/train/3466": [
+     0,
+     64
+    ],
+    "gsm8k/train/4428": [
+     0,
+     64
+    ],
+    "gsm8k/train/2278": [
+     0,
+     64
+    ],
+    "gsm8k/train/3645": [
+     0,
+     64
+    ],
+    "gsm8k/train/2549": [
+     0,
+     64
+    ],
+    "gsm8k/train/5251": [
+     0,
+     64
+    ],
+    "gsm8k/train/1969": [
+     0,
+     64
+    ],
+    "math/algebra/1743": [
+     0,
+     64
+    ],
+    "math/counting_and_probability/354": [
+     0,
+     64
+    ],
+    "math/counting_and_probability/261": [
+     0,
+     64
+    ],
+    "math/counting_and_probability/527": [
+     0,
+     64
+    ],
+    "math/geometry/504": [
+     0,
+     64
+    ],
+    "math/prealgebra/789": [
+     0,
+     64
+    ]
+   }
+  }
+ },
+ "arms": {
+  "known_s0": {
+   "known_held_samples": {
+    "problems": 15,
+    "samples_per_problem": [
+     8
+    ],
+    "pass1": 0.5416666666666666,
+    "truncated": 0.008333333333333333,
+    "k_of_n": {
+     "gsm8k/train/7278": [
+      8,
+      8
+     ],
+     "gsm8k/train/886": [
+      2,
+      8
+     ],
+     "gsm8k/train/7454": [
+      3,
+      8
+     ],
+     "gsm8k/train/1856": [
+      8,
+      8
+     ],
+     "gsm8k/train/3074": [
+      5,
+      8
+     ],
+     "gsm8k/train/1228": [
+      6,
+      8
+     ],
+     "gsm8k/train/7348": [
+      8,
+      8
+     ],
+     "gsm8k/train/2139": [
+      7,
+      8
+     ],
+     "gsm8k/train/2345": [
+      0,
+      8
+     ],
+     "math/algebra/1217": [
+      8,
+      8
+     ],
+     "math/counting_and_probability/710": [
+      0,
+      8
+     ],
+     "math/counting_and_probability/71": [
+      1,
+      8
+     ],
+     "math/counting_and_probability/706": [
+      0,
+      8
+     ],
+     "math/geometry/398": [
+      1,
+      8
+     ],
+     "math/prealgebra/906": [
+      8,
+      8
+     ]
+    }
+   },
+   "new_held_samples": {
+    "problems": 15,
+    "samples_per_problem": [
+     8
+    ],
+    "pass1": 0.008333333333333333,
+    "truncated": 0.025,
+    "k_of_n": {
+     "gsm8k/train/2937": [
+      0,
+      8
+     ],
+     "gsm8k/train/4668": [
+      0,
+      8
+     ],
+     "gsm8k/train/3466": [
+      0,
+      8
+     ],
+     "gsm8k/train/4428": [
+      0,
+      8
+     ],
+     "gsm8k/train/2278": [
+      0,
+      8
+     ],
+     "gsm8k/train/3645": [
+      0,
+      8
+     ],
+     "gsm8k/train/2549": [
+      0,
+      8
+     ],
+     "gsm8k/train/5251": [
+      1,
+      8
+     ],
+     "gsm8k/train/1969": [
+      0,
+      8
+     ],
+     "math/algebra/1743": [
+      0,
+      8
+     ],
+     "math/counting_and_probability/354": [
+      0,
+      8
+     ],
+     "math/counting_and_probability/261": [
+      0,
+      8
+     ],
+     "math/counting_and_probability/527": [
+      0,
+      8
+     ],
+     "math/geometry/504": [
+      0,
+      8
+     ],
+     "math/prealgebra/789": [
+      0,
+      8
+     ]
+    }
+   },
+   "known_train_greedy": {
+    "problems": 62,
+    "samples_per_problem": [
+     1
+    ],
+    "pass1": 1.0,
+    "truncated": 0.0,
+    "k_of_n": {
+     "gsm8k/train/1250": [
+      1,
+      1
+     ],
+     "gsm8k/train/4734": [
+      1,
+      1
+     ],
+     "gsm8k/train/1611": [
+      1,
+      1
+     ],
+     "gsm8k/train/6921": [
+      1,
+      1
+     ],
+     "gsm8k/train/6078": [
+      1,
+      1
+     ],
+     "gsm8k/train/7288": [
+      1,
+      1
+     ],
+     "gsm8k/train/6410": [
+      1,
+      1
+     ],
+     "gsm8k/train/1056": [
+      1,
+      1
+     ],
+     "gsm8k/train/6863": [
+      1,
+      1
+     ],
+     "gsm8k/train/2998": [
+      1,
+      1
+     ],
+     "gsm8k/train/3605": [
+      1,
+      1
+     ],
+     "gsm8k/train/2140": [
+      1,
+      1
+     ],
+     "gsm8k/train/4008": [
+      1,
+      1
+     ],
+     "gsm8k/train/1004": [
+      1,
+      1
+     ],
+     "gsm8k/train/3101": [
+      1,
+      1
+     ],
+     "gsm8k/train/2661": [
+      1,
+      1
+     ],
+     "gsm8k/train/2982": [
+      1,
+      1
+     ],
+     "gsm8k/train/3757": [
+      1,
+      1
+     ],
+     "gsm8k/train/6385": [
+      1,
+      1
+     ],
+     "gsm8k/train/3853": [
+      1,
+      1
+     ],
+     "gsm8k/train/832": [
+      1,
+      1
+     ],
+     "gsm8k/train/1619": [
+      1,
+      1
+     ],
+     "gsm8k/train/3589": [
+      1,
+      1
+     ],
+     "gsm8k/train/602": [
+      1,
+      1
+     ],
+     "gsm8k/train/6293": [
+      1,
+      1
+     ],
+     "gsm8k/train/5341": [
+      1,
+      1
+     ],
+     "gsm8k/train/3592": [
+      1,
+      1
+     ],
+     "gsm8k/train/3723": [
+      1,
+      1
+     ],
+     "gsm8k/train/4409": [
+      1,
+      1
+     ],
+     "gsm8k/train/1586": [
+      1,
+      1
+     ],
+     "gsm8k/train/3154": [
+      1,
+      1
+     ],
+     "gsm8k/train/3384": [
+      1,
+      1
+     ],
+     "gsm8k/train/2159": [
+      1,
+      1
+     ],
+     "gsm8k/train/4318": [
+      1,
+      1
+     ],
+     "math/algebra/1325": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/84": [
+      1,
+      1
+     ],
+     "math/geometry/859": [
+      1,
+      1
+     ],
+     "math/number_theory/846": [
+      1,
+      1
+     ],
+     "math/prealgebra/742": [
+      1,
+      1
+     ],
+     "math/algebra/494": [
+      1,
+      1
+     ],
+     "math/algebra/663": [
+      1,
+      1
+     ],
+     "math/algebra/539": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/770": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/718": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/447": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/596": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/519": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/724": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/579": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/70": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/343": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/249": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/315": [
+      1,
+      1
+     ],
+     "math/geometry/851": [
+      1,
+      1
+     ],
+     "math/geometry/611": [
+      1,
+      1
+     ],
+     "math/geometry/751": [
+      1,
+      1
+     ],
+     "math/intermediate_algebra/1085": [
+      1,
+      1
+     ],
+     "math/intermediate_algebra/1213": [
+      1,
+      1
+     ],
+     "math/number_theory/608": [
+      1,
+      1
+     ],
+     "math/number_theory/708": [
+      1,
+      1
+     ],
+     "math/prealgebra/1120": [
+      1,
+      1
+     ],
+     "math/prealgebra/129": [
+      1,
+      1
+     ]
+    }
+   }
+  },
+  "known_s1": {
+   "known_held_samples": {
+    "problems": 15,
+    "samples_per_problem": [
+     8
+    ],
+    "pass1": 0.475,
+    "truncated": 0.016666666666666666,
+    "k_of_n": {
+     "gsm8k/train/7278": [
+      8,
+      8
+     ],
+     "gsm8k/train/886": [
+      2,
+      8
+     ],
+     "gsm8k/train/7454": [
+      0,
+      8
+     ],
+     "gsm8k/train/1856": [
+      3,
+      8
+     ],
+     "gsm8k/train/3074": [
+      8,
+      8
+     ],
+     "gsm8k/train/1228": [
+      8,
+      8
+     ],
+     "gsm8k/train/7348": [
+      8,
+      8
+     ],
+     "gsm8k/train/2139": [
+      8,
+      8
+     ],
+     "gsm8k/train/2345": [
+      0,
+      8
+     ],
+     "math/algebra/1217": [
+      3,
+      8
+     ],
+     "math/counting_and_probability/710": [
+      0,
+      8
+     ],
+     "math/counting_and_probability/71": [
+      1,
+      8
+     ],
+     "math/counting_and_probability/706": [
+      0,
+      8
+     ],
+     "math/geometry/398": [
+      0,
+      8
+     ],
+     "math/prealgebra/906": [
+      8,
+      8
+     ]
+    }
+   },
+   "new_held_samples": {
+    "problems": 15,
+    "samples_per_problem": [
+     8
+    ],
+    "pass1": 0.0,
+    "truncated": 0.016666666666666666,
+    "k_of_n": {
+     "gsm8k/train/2937": [
+      0,
+      8
+     ],
+     "gsm8k/train/4668": [
+      0,
+      8
+     ],
+     "gsm8k/train/3466": [
+      0,
+      8
+     ],
+     "gsm8k/train/4428": [
+      0,
+      8
+     ],
+     "gsm8k/train/2278": [
+      0,
+      8
+     ],
+     "gsm8k/train/3645": [
+      0,
+      8
+     ],
+     "gsm8k/train/2549": [
+      0,
+      8
+     ],
+     "gsm8k/train/5251": [
+      0,
+      8
+     ],
+     "gsm8k/train/1969": [
+      0,
+      8
+     ],
+     "math/algebra/1743": [
+      0,
+      8
+     ],
+     "math/counting_and_probability/354": [
+      0,
+      8
+     ],
+     "math/counting_and_probability/261": [
+      0,
+      8
+     ],
+     "math/counting_and_probability/527": [
+      0,
+      8
+     ],
+     "math/geometry/504": [
+      0,
+      8
+     ],
+     "math/prealgebra/789": [
+      0,
+      8
+     ]
+    }
+   },
+   "known_train_greedy": {
+    "problems": 62,
+    "samples_per_problem": [
+     1
+    ],
+    "pass1": 1.0,
+    "truncated": 0.0,
+    "k_of_n": {
+     "gsm8k/train/1250": [
+      1,
+      1
+     ],
+     "gsm8k/train/4734": [
+      1,
+      1
+     ],
+     "gsm8k/train/1611": [
+      1,
+      1
+     ],
+     "gsm8k/train/6921": [
+      1,
+      1
+     ],
+     "gsm8k/train/6078": [
+      1,
+      1
+     ],
+     "gsm8k/train/7288": [
+      1,
+      1
+     ],
+     "gsm8k/train/6410": [
+      1,
+      1
+     ],
+     "gsm8k/train/1056": [
+      1,
+      1
+     ],
+     "gsm8k/train/6863": [
+      1,
+      1
+     ],
+     "gsm8k/train/2998": [
+      1,
+      1
+     ],
+     "gsm8k/train/3605": [
+      1,
+      1
+     ],
+     "gsm8k/train/2140": [
+      1,
+      1
+     ],
+     "gsm8k/train/4008": [
+      1,
+      1
+     ],
+     "gsm8k/train/1004": [
+      1,
+      1
+     ],
+     "gsm8k/train/3101": [
+      1,
+      1
+     ],
+     "gsm8k/train/2661": [
+      1,
+      1
+     ],
+     "gsm8k/train/2982": [
+      1,
+      1
+     ],
+     "gsm8k/train/3757": [
+      1,
+      1
+     ],
+     "gsm8k/train/6385": [
+      1,
+      1
+     ],
+     "gsm8k/train/3853": [
+      1,
+      1
+     ],
+     "gsm8k/train/832": [
+      1,
+      1
+     ],
+     "gsm8k/train/1619": [
+      1,
+      1
+     ],
+     "gsm8k/train/3589": [
+      1,
+      1
+     ],
+     "gsm8k/train/602": [
+      1,
+      1
+     ],
+     "gsm8k/train/6293": [
+      1,
+      1
+     ],
+     "gsm8k/train/5341": [
+      1,
+      1
+     ],
+     "gsm8k/train/3592": [
+      1,
+      1
+     ],
+     "gsm8k/train/3723": [
+      1,
+      1
+     ],
+     "gsm8k/train/4409": [
+      1,
+      1
+     ],
+     "gsm8k/train/1586": [
+      1,
+      1
+     ],
+     "gsm8k/train/3154": [
+      1,
+      1
+     ],
+     "gsm8k/train/3384": [
+      1,
+      1
+     ],
+     "gsm8k/train/2159": [
+      1,
+      1
+     ],
+     "gsm8k/train/4318": [
+      1,
+      1
+     ],
+     "math/algebra/1325": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/84": [
+      1,
+      1
+     ],
+     "math/geometry/859": [
+      1,
+      1
+     ],
+     "math/number_theory/846": [
+      1,
+      1
+     ],
+     "math/prealgebra/742": [
+      1,
+      1
+     ],
+     "math/algebra/494": [
+      1,
+      1
+     ],
+     "math/algebra/663": [
+      1,
+      1
+     ],
+     "math/algebra/539": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/770": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/718": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/447": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/596": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/519": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/724": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/579": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/70": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/343": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/249": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/315": [
+      1,
+      1
+     ],
+     "math/geometry/851": [
+      1,
+      1
+     ],
+     "math/geometry/611": [
+      1,
+      1
+     ],
+     "math/geometry/751": [
+      1,
+      1
+     ],
+     "math/intermediate_algebra/1085": [
+      1,
+      1
+     ],
+     "math/intermediate_algebra/1213": [
+      1,
+      1
+     ],
+     "math/number_theory/608": [
+      1,
+      1
+     ],
+     "math/number_theory/708": [
+      1,
+      1
+     ],
+     "math/prealgebra/1120": [
+      1,
+      1
+     ],
+     "math/prealgebra/129": [
+      1,
+      1
+     ]
+    }
+   }
+  },
+  "new_s0": {
+   "known_held_samples": {
+    "problems": 15,
+    "samples_per_problem": [
+     8
+    ],
+    "pass1": 0.5416666666666666,
+    "truncated": 0.016666666666666666,
+    "k_of_n": {
+     "gsm8k/train/7278": [
+      8,
+      8
+     ],
+     "gsm8k/train/886": [
+      0,
+      8
+     ],
+     "gsm8k/train/7454": [
+      8,
+      8
+     ],
+     "gsm8k/train/1856": [
+      8,
+      8
+     ],
+     "gsm8k/train/3074": [
+      8,
+      8
+     ],
+     "gsm8k/train/1228": [
+      8,
+      8
+     ],
+     "gsm8k/train/7348": [
+      8,
+      8
+     ],
+     "gsm8k/train/2139": [
+      7,
+      8
+     ],
+     "gsm8k/train/2345": [
+      0,
+      8
+     ],
+     "math/algebra/1217": [
+      3,
+      8
+     ],
+     "math/counting_and_probability/710": [
+      0,
+      8
+     ],
+     "math/counting_and_probability/71": [
+      0,
+      8
+     ],
+     "math/counting_and_probability/706": [
+      0,
+      8
+     ],
+     "math/geometry/398": [
+      1,
+      8
+     ],
+     "math/prealgebra/906": [
+      6,
+      8
+     ]
+    }
+   },
+   "new_held_samples": {
+    "problems": 15,
+    "samples_per_problem": [
+     8
+    ],
+    "pass1": 0.05,
+    "truncated": 0.016666666666666666,
+    "k_of_n": {
+     "gsm8k/train/2937": [
+      0,
+      8
+     ],
+     "gsm8k/train/4668": [
+      6,
+      8
+     ],
+     "gsm8k/train/3466": [
+      0,
+      8
+     ],
+     "gsm8k/train/4428": [
+      0,
+      8
+     ],
+     "gsm8k/train/2278": [
+      0,
+      8
+     ],
+     "gsm8k/train/3645": [
+      0,
+      8
+     ],
+     "gsm8k/train/2549": [
+      0,
+      8
+     ],
+     "gsm8k/train/5251": [
+      0,
+      8
+     ],
+     "gsm8k/train/1969": [
+      0,
+      8
+     ],
+     "math/algebra/1743": [
+      0,
+      8
+     ],
+     "math/counting_and_probability/354": [
+      0,
+      8
+     ],
+     "math/counting_and_probability/261": [
+      0,
+      8
+     ],
+     "math/counting_and_probability/527": [
+      0,
+      8
+     ],
+     "math/geometry/504": [
+      0,
+      8
+     ],
+     "math/prealgebra/789": [
+      0,
+      8
+     ]
+    }
+   },
+   "new_train_greedy": {
+    "problems": 62,
+    "samples_per_problem": [
+     1
+    ],
+    "pass1": 1.0,
+    "truncated": 0.0,
+    "k_of_n": {
+     "gsm8k/train/2576": [
+      1,
+      1
+     ],
+     "gsm8k/train/4504": [
+      1,
+      1
+     ],
+     "gsm8k/train/1227": [
+      1,
+      1
+     ],
+     "gsm8k/train/4235": [
+      1,
+      1
+     ],
+     "gsm8k/train/3448": [
+      1,
+      1
+     ],
+     "gsm8k/train/6415": [
+      1,
+      1
+     ],
+     "gsm8k/train/2445": [
+      1,
+      1
+     ],
+     "gsm8k/train/5289": [
+      1,
+      1
+     ],
+     "gsm8k/train/5174": [
+      1,
+      1
+     ],
+     "gsm8k/train/4117": [
+      1,
+      1
+     ],
+     "gsm8k/train/6821": [
+      1,
+      1
+     ],
+     "gsm8k/train/6010": [
+      1,
+      1
+     ],
+     "gsm8k/train/2198": [
+      1,
+      1
+     ],
+     "gsm8k/train/2085": [
+      1,
+      1
+     ],
+     "gsm8k/train/4167": [
+      1,
+      1
+     ],
+     "gsm8k/train/1943": [
+      1,
+      1
+     ],
+     "gsm8k/train/2520": [
+      1,
+      1
+     ],
+     "gsm8k/train/1802": [
+      1,
+      1
+     ],
+     "gsm8k/train/5527": [
+      1,
+      1
+     ],
+     "gsm8k/train/2680": [
+      1,
+      1
+     ],
+     "gsm8k/train/996": [
+      1,
+      1
+     ],
+     "gsm8k/train/3520": [
+      1,
+      1
+     ],
+     "gsm8k/train/5882": [
+      1,
+      1
+     ],
+     "gsm8k/train/2645": [
+      1,
+      1
+     ],
+     "gsm8k/train/4100": [
+      1,
+      1
+     ],
+     "gsm8k/train/356": [
+      1,
+      1
+     ],
+     "gsm8k/train/840": [
+      1,
+      1
+     ],
+     "gsm8k/train/5598": [
+      1,
+      1
+     ],
+     "gsm8k/train/3943": [
+      1,
+      1
+     ],
+     "gsm8k/train/5280": [
+      1,
+      1
+     ],
+     "gsm8k/train/2147": [
+      1,
+      1
+     ],
+     "gsm8k/train/2401": [
+      1,
+      1
+     ],
+     "gsm8k/train/3316": [
+      1,
+      1
+     ],
+     "gsm8k/train/1692": [
+      1,
+      1
+     ],
+     "math/algebra/1705": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/640": [
+      1,
+      1
+     ],
+     "math/geometry/221": [
+      1,
+      1
+     ],
+     "math/number_theory/752": [
+      1,
+      1
+     ],
+     "math/prealgebra/830": [
+      1,
+      1
+     ],
+     "math/algebra/927": [
+      1,
+      1
+     ],
+     "math/algebra/852": [
+      1,
+      1
+     ],
+     "math/algebra/9": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/327": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/420": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/620": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/509": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/123": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/384": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/392": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/503": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/444": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/116": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/382": [
+      1,
+      1
+     ],
+     "math/geometry/500": [
+      1,
+      1
+     ],
+     "math/geometry/662": [
+      1,
+      1
+     ],
+     "math/geometry/817": [
+      1,
+      1
+     ],
+     "math/intermediate_algebra/938": [
+      1,
+      1
+     ],
+     "math/intermediate_algebra/335": [
+      1,
+      1
+     ],
+     "math/number_theory/475": [
+      1,
+      1
+     ],
+     "math/number_theory/572": [
+      1,
+      1
+     ],
+     "math/prealgebra/1069": [
+      1,
+      1
+     ],
+     "math/prealgebra/280": [
+      1,
+      1
+     ]
+    }
+   }
+  },
+  "new_s1": {
+   "known_held_samples": {
+    "problems": 15,
+    "samples_per_problem": [
+     8
+    ],
+    "pass1": 0.525,
+    "truncated": 0.041666666666666664,
+    "k_of_n": {
+     "gsm8k/train/7278": [
+      8,
+      8
+     ],
+     "gsm8k/train/886": [
+      0,
+      8
+     ],
+     "gsm8k/train/7454": [
+      7,
+      8
+     ],
+     "gsm8k/train/1856": [
+      8,
+      8
+     ],
+     "gsm8k/train/3074": [
+      7,
+      8
+     ],
+     "gsm8k/train/1228": [
+      7,
+      8
+     ],
+     "gsm8k/train/7348": [
+      8,
+      8
+     ],
+     "gsm8k/train/2139": [
+      8,
+      8
+     ],
+     "gsm8k/train/2345": [
+      0,
+      8
+     ],
+     "math/algebra/1217": [
+      2,
+      8
+     ],
+     "math/counting_and_probability/710": [
+      0,
+      8
+     ],
+     "math/counting_and_probability/71": [
+      2,
+      8
+     ],
+     "math/counting_and_probability/706": [
+      0,
+      8
+     ],
+     "math/geometry/398": [
+      0,
+      8
+     ],
+     "math/prealgebra/906": [
+      6,
+      8
+     ]
+    }
+   },
+   "new_held_samples": {
+    "problems": 15,
+    "samples_per_problem": [
+     8
+    ],
+    "pass1": 0.025,
+    "truncated": 0.041666666666666664,
+    "k_of_n": {
+     "gsm8k/train/2937": [
+      0,
+      8
+     ],
+     "gsm8k/train/4668": [
+      3,
+      8
+     ],
+     "gsm8k/train/3466": [
+      0,
+      8
+     ],
+     "gsm8k/train/4428": [
+      0,
+      8
+     ],
+     "gsm8k/train/2278": [
+      0,
+      8
+     ],
+     "gsm8k/train/3645": [
+      0,
+      8
+     ],
+     "gsm8k/train/2549": [
+      0,
+      8
+     ],
+     "gsm8k/train/5251": [
+      0,
+      8
+     ],
+     "gsm8k/train/1969": [
+      0,
+      8
+     ],
+     "math/algebra/1743": [
+      0,
+      8
+     ],
+     "math/counting_and_probability/354": [
+      0,
+      8
+     ],
+     "math/counting_and_probability/261": [
+      0,
+      8
+     ],
+     "math/counting_and_probability/527": [
+      0,
+      8
+     ],
+     "math/geometry/504": [
+      0,
+      8
+     ],
+     "math/prealgebra/789": [
+      0,
+      8
+     ]
+    }
+   },
+   "new_train_greedy": {
+    "problems": 62,
+    "samples_per_problem": [
+     1
+    ],
+    "pass1": 1.0,
+    "truncated": 0.0,
+    "k_of_n": {
+     "gsm8k/train/2576": [
+      1,
+      1
+     ],
+     "gsm8k/train/4504": [
+      1,
+      1
+     ],
+     "gsm8k/train/1227": [
+      1,
+      1
+     ],
+     "gsm8k/train/4235": [
+      1,
+      1
+     ],
+     "gsm8k/train/3448": [
+      1,
+      1
+     ],
+     "gsm8k/train/6415": [
+      1,
+      1
+     ],
+     "gsm8k/train/2445": [
+      1,
+      1
+     ],
+     "gsm8k/train/5289": [
+      1,
+      1
+     ],
+     "gsm8k/train/5174": [
+      1,
+      1
+     ],
+     "gsm8k/train/4117": [
+      1,
+      1
+     ],
+     "gsm8k/train/6821": [
+      1,
+      1
+     ],
+     "gsm8k/train/6010": [
+      1,
+      1
+     ],
+     "gsm8k/train/2198": [
+      1,
+      1
+     ],
+     "gsm8k/train/2085": [
+      1,
+      1
+     ],
+     "gsm8k/train/4167": [
+      1,
+      1
+     ],
+     "gsm8k/train/1943": [
+      1,
+      1
+     ],
+     "gsm8k/train/2520": [
+      1,
+      1
+     ],
+     "gsm8k/train/1802": [
+      1,
+      1
+     ],
+     "gsm8k/train/5527": [
+      1,
+      1
+     ],
+     "gsm8k/train/2680": [
+      1,
+      1
+     ],
+     "gsm8k/train/996": [
+      1,
+      1
+     ],
+     "gsm8k/train/3520": [
+      1,
+      1
+     ],
+     "gsm8k/train/5882": [
+      1,
+      1
+     ],
+     "gsm8k/train/2645": [
+      1,
+      1
+     ],
+     "gsm8k/train/4100": [
+      1,
+      1
+     ],
+     "gsm8k/train/356": [
+      1,
+      1
+     ],
+     "gsm8k/train/840": [
+      1,
+      1
+     ],
+     "gsm8k/train/5598": [
+      1,
+      1
+     ],
+     "gsm8k/train/3943": [
+      1,
+      1
+     ],
+     "gsm8k/train/5280": [
+      1,
+      1
+     ],
+     "gsm8k/train/2147": [
+      1,
+      1
+     ],
+     "gsm8k/train/2401": [
+      1,
+      1
+     ],
+     "gsm8k/train/3316": [
+      1,
+      1
+     ],
+     "gsm8k/train/1692": [
+      1,
+      1
+     ],
+     "math/algebra/1705": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/640": [
+      1,
+      1
+     ],
+     "math/geometry/221": [
+      1,
+      1
+     ],
+     "math/number_theory/752": [
+      1,
+      1
+     ],
+     "math/prealgebra/830": [
+      1,
+      1
+     ],
+     "math/algebra/927": [
+      1,
+      1
+     ],
+     "math/algebra/852": [
+      1,
+      1
+     ],
+     "math/algebra/9": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/327": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/420": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/620": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/509": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/123": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/384": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/392": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/503": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/444": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/116": [
+      1,
+      1
+     ],
+     "math/counting_and_probability/382": [
+      1,
+      1
+     ],
+     "math/geometry/500": [
+      1,
+      1
+     ],
+     "math/geometry/662": [
+      1,
+      1
+     ],
+     "math/geometry/817": [
+      1,
+      1
+     ],
+     "math/intermediate_algebra/938": [
+      1,
+      1
+     ],
+     "math/intermediate_algebra/335": [
+      1,
+      1
+     ],
+     "math/number_theory/475": [
+      1,
+      1
+     ],
+     "math/number_theory/572": [
+      1,
+      1
+     ],
+     "math/prealgebra/1069": [
+      1,
+      1
+     ],
+     "math/prealgebra/280": [
+      1,
+      1
+     ]
+    }
+   }
+  }
+ }
+}
