@@ -73,3 +73,47 @@ first block within 1e-6. Five PGD reads at 127-131 s plus the cosine (<1.5 min) 
 ## Not run
 More adversary seeds or steps; held masks; other tasks (emoticon copies have ~0.005 nats free excess); any new copy
 or recipe; the CI-weighted placement read (Fable (i), ruled out at $0); a masked term in teacher training (Fable (ii)).
+
+## Amendment 1 (2026-11-07): c1 on a second row set
+
+**Why.** E130 read the step-20 copy c1 as "no protection" (m 1.58: placed 2.842, in Δ 2.165), but the reversal comes
+from one block: rows 0-127 m 0.62, rows 128-255 m 1.75 (`copy_protection.json` kl, recomputed by `amend1.score`). This
+is E130's first of two amendments; it asks whether c1's reversal holds on fresh rows.
+
+**Rows.** Pile val rows 256-511 in two blocks of 128, batches of 8 (`harness.on_rows(ctx, "val", 256, 256, ())`). This
+is E122's set B (`damage_crossed/rules.py` `SETS["B"] = 256`, read the same way, `damage_crossed/run.py` `Job.check`):
+disjoint from rows 0-255 and the only disjoint set with stored L40 readings. E130's own row selection is
+`harness.load(..., pile_rows=256, ...)` → `faithfulness.pile_blocks(256)`, rows 0-255 only. The analysis' "placed reads
+1.44 on rows 256-511" is E122's `damage_crossed.json` `score.ratios["tt_c1|B"]` = 1.4443 (kl `tt_c1|B` [0.8437,
+0.9765] over `W0|B` [0.6202, 0.6400]; E122 analysis table, cell 1, set B).
+
+**Units, in order** (`experiments/copy_protection/amend1.py`, one job, `STAGE n DONE` each, written as they end):
+| unit | state | expected |
+|---|---|---|
+| W₀ | released model | mean block KL 0.6301 ± 1e-3 rel (control: E122's `W0\|B`, = E39 A3's) |
+| c1 | placed: target W₀ + S_c, alive (U′, V′) | 1.4443 ± 1e-3 rel (control: E122's `tt_c1\|B`) |
+| nothing_c1 | `ft_c1.pt` in Δ (do-nothing) | 1.4-2.5 |
+| c1\|delta | S_c in Δ (run.py `read`) | 1.3-1.9 |
+| c2, c2\|delta | the comparison copy | c2 1.5966 ± 1e-3 rel (control); in Δ 2.0-3.0 |
+Departures from the brief: (1) the brief said no stored reference exists on these rows, so W₀ would only be checked as
+finite on an L40; E122 read W₀ and both copies placed there on an L40 by the same path, so they get E130's 1e-3
+reproduction controls. (2) c1 placed (a control) runs before the do-nothing, under "the control runs first". c2's two
+reads (~4.3 min) are included: the job stays ~14 min.
+
+**Filed rule** (`results/predictions_amend1.json`; E130's R1 and R2 called unchanged): f = 0.2088; m = (placed − 1)/(in Δ
+− 1), readable when both excesses ≥ f; m ≤ 0.5 recipe-like, ≥ 0.8 no protection, else partial; read overall and per
+block. Outcome on c1 overall: no protection → "reversal holds"; recipe-like or partial → "reversal does not replicate";
+unreadable → "unreadable". With c1 placed at 1.444, "no protection" needs in Δ ≤ 1.555, "recipe-like" in Δ ≥ 1.888.
+Lean: holds 0.45, does not replicate 0.45, unreadable 0.10 (rows 0-127, which c1's placed read on these rows resembles,
+gave m 0.62). Edge cases and the do-nothing state run on the CPU worker
+(`~/commute-data/scratch/regating-lead/e130a1-writer/edge_check.out`): excess < f, zero or negative → unreadable;
+m 0.5 → recipe-like, 0.8 → no protection; non-finite → unreadable; E130's rows 0-255 reads give back m 1.581, 0.617,
+1.751.
+
+**Blind to.** c1's placed excess here is 0.444 = 2.1 f, so m is coarse (one f either way on each read spans m 0.31-1.89
+at in Δ 1.555); f was measured on rows 0-255. One seed, one 20-step search, two blocks.
+
+**Design check.** Approved class (GPU pass of the existing harness on saved states); E130's own amendment, not gated:
+debug QoS, ~14 min, $0. Job: `sbatch cluster/copy_protection_amend1.sbatch` (or `fleet/resubmit --code 3` with it).
+
+**Not run.** Adversary seeds 1-2; rows beyond 511; a floor on rows 256-511.
