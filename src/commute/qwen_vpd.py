@@ -22,10 +22,20 @@ logits and softmax in fp32, readout vectors and q/k gains in bf16. Masks and g a
 
 Rows. Every function takes token rows that each hold one document starting at position 0, with no padding; Γ's
 attention is causal, so g at a position depends only on the tokens up to it.
+
+Two decompositions, chosen by directory (E131, 2026-11-07). p-e9fcffd5 (DECOMP_DIR, the default everywhere) has no
+attention sink and no final norm. Goodfire's second run p-9707d6ff (param-decomp 7d2e5aee8;
+experiments/qwen_new_decomp/convert.py) adds, from its launch_config: a learned attention sink, one logit per head per
+block, joined uncapped to each softmax with a zero value (`pd/attention.py:248-279` at 7d2e5aee8), and a weightless
+RMS norm after the last block (`global_transformer/arch.py:328-332`). Its converted index.json carries
+`ci_fn_arch = {"sink": "learned", "final_norm": "rms"}`; a directory without that key loads as p-e9fcffd5 did. The
+new run's 32-slot stacks are cut to their 28 layers by the converter (pads checked zero there), so every directory
+holds 28-layer stacks and the loaders assert it.
 """
 
 from __future__ import annotations
 
+import json
 import math
 import os
 from collections.abc import Callable, Iterator
@@ -137,7 +147,18 @@ def load_components(directory: Path = DECOMP_DIR, device: str = "cuda", dtype: t
     store = _Store(directory)
     V = {k: store.stacked(f"components.stacks.{k}.0", dtype, device) for k in KINDS}
     U = {k: store.stacked(f"components.stacks.{k}.1", dtype, device) for k in KINDS}
+    assert all(V[k].shape[0] == U[k].shape[0] == N_LAYERS for k in KINDS), "stacks still padded"
     return Components(V, U)
+
+
+def ci_fn_arch(directory: Path = DECOMP_DIR) -> dict[str, str]:
+    """Γ's sink and final norm as the converter recorded them; p-e9fcffd5's index.json has neither (both "none"), and
+    neither has a directory without an index.json (copies of p-e9fcffd5 written by other experiments)."""
+    path = Path(directory) / "index.json"
+    index = json.loads(path.read_text()) if path.is_file() else {}
+    arch = {"sink": "none", "final_norm": "none"} | index.get("ci_fn_arch", {})
+    assert arch["sink"] in ("none", "learned") and arch["final_norm"] in ("none", "rms"), arch
+    return arch
 
 
 _BB = "ci_fn.backbone.backbone."
@@ -162,6 +183,8 @@ class Gamma:
     heads_b: dict[str, Tensor]  # kind -> [28, C]
     readouts: dict[str, Tensor]  # site -> [7, C] in _ARMS order
     inv_freq: Tensor  # [60], fp32 always
+    sink: Tensor | None = None  # [32 blocks, 32 heads] in Γ's dtype (JAX casts it to bf16 too); None: no sink
+    final_norm: bool = False  # a weightless RMS norm after the last block
 
     @property
     def dtype(self) -> torch.dtype:
@@ -170,11 +193,13 @@ class Gamma:
 
 def load_gamma(directory: Path = DECOMP_DIR, device: str = "cuda", dtype: torch.dtype = torch.float32) -> Gamma:
     store = _Store(directory)
+    arch = ci_fn_arch(directory)
     readouts = {
         s: torch.stack([store.get(f"ci_fn.backbone.readouts.{s}.{arm}", dtype, device) for arm in _ARMS])
         for s in SITES
     }
-    return Gamma(
+    sink = store.get(_BB + "blocks.attention.sink_logits", dtype, device) if arch["sink"] == "learned" else None
+    gamma = Gamma(
         in_w=store.get(_BB + "in_proj_w", dtype, device),
         in_b=store.get(_BB + "in_proj_b", dtype, device),
         blocks={k: store.stacked(_BB + "blocks." + key, dtype, device) for k, key in _BLOCK_KEYS.items()},
@@ -182,7 +207,13 @@ def load_gamma(directory: Path = DECOMP_DIR, device: str = "cuda", dtype: torch.
         heads_b={k: store.get(f"{_BB}heads.{i}.biases", dtype, device) for i, k in enumerate(KINDS)},
         readouts=readouts,
         inv_freq=store.get(_BB + "inv_freq", torch.float32, device),
+        sink=sink,
+        final_norm=arch["final_norm"] == "rms",
     )
+    assert all(v.shape[0] == GAMMA_BLOCKS for v in gamma.blocks.values()), "block stacks still padded"
+    assert all(gamma.heads_w[k].shape[0] == gamma.heads_b[k].shape[0] == N_LAYERS for k in KINDS), "heads padded"
+    assert sink is None or sink.shape == (GAMMA_BLOCKS, GAMMA_HEADS), sink.shape
+    return gamma
 
 
 # ----------------------------------------------------------------------------- Γ
@@ -201,7 +232,8 @@ def _rotate_half(x: Tensor) -> Tensor:
 
 def _attention(g: Gamma, i: int, x: Tensor, cos: Tensor, sin: Tensor) -> Tensor:
     """Pre-norm causal attention with per-head q/k RMS norm, RoPE, softcap 30 (layers.py:400-437,
-    attention.py:120-139), plus the residual."""
+    attention.py:120-139), plus the residual. With a sink, each head's softmax also runs over one more slot at the
+    head's own uncapped logit (fp32), whose value is zero (7d2e5aee8 attention.py:248-279)."""
     b, t, d = x.shape
     blk = g.blocks
     h = _rms(x)
@@ -217,7 +249,12 @@ def _attention(g: Gamma, i: int, x: Tensor, cos: Tensor, sin: Tensor) -> Tensor:
     logits = SOFTCAP * torch.tanh(logits / (math.sqrt(GAMMA_HEAD_DIM) * SOFTCAP))
     causal = torch.ones(t, t, dtype=torch.bool, device=x.device).tril()
     logits = logits.masked_fill(~causal, torch.finfo(torch.float32).min)
-    y = (logits.softmax(-1).to(v.dtype) @ v).transpose(1, 2).reshape(b, t, d)
+    if g.sink is None:
+        weights = logits.softmax(-1)
+    else:
+        sink = g.sink[i].float().view(1, GAMMA_HEADS, 1, 1).expand(b, GAMMA_HEADS, t, 1)
+        weights = torch.cat([sink, logits], dim=-1).softmax(-1)[..., 1:]
+    y = (weights.to(v.dtype) @ v).transpose(1, 2).reshape(b, t, d)
     return x + y @ blk["wo"][i].T
 
 
@@ -229,8 +266,9 @@ def _ffn(g: Gamma, i: int, x: Tensor) -> Tensor:
 
 
 def backbone(g: Gamma, taps: list[Tensor]) -> Tensor:
-    """The 29 residual taps, each RMS-normed and concatenated, through the input projection and 32 blocks; no final
-    norm (global_transformer/arch.py:262-285). Taps [b, t, 2048] -> [b, t, 3840]."""
+    """The 29 residual taps, each RMS-normed and concatenated, through the input projection and 32 blocks, then the
+    final weightless RMS norm if Γ has one (global_transformer/arch.py:262-285; 7d2e5aee8 :328-332).
+    Taps [b, t, 2048] -> [b, t, 3840]."""
     assert len(taps) == N_TAPS, len(taps)
     x = torch.cat([_rms(tap.to(g.dtype)) for tap in taps], dim=-1)
     x = x @ g.in_w + g.in_b
@@ -240,7 +278,7 @@ def backbone(g: Gamma, taps: list[Tensor]) -> Tensor:
     cos, sin = emb.cos().to(g.dtype), emb.sin().to(g.dtype)
     for i in range(GAMMA_BLOCKS):
         x = _ffn(g, i, _attention(g, i, x, cos, sin))
-    return x
+    return _rms(x) if g.final_norm else x
 
 
 def readout(g: Gamma, site: str, x_site: Tensor, V: Tensor) -> Tensor:
