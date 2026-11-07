@@ -1,0 +1,57 @@
+{
+ "experiment": "E130 copy_protection: is teacher training's 3-4x division of the excess (E127 Amendment 2: m 0.36 standard copy, 0.24 rank-8 LoRA copy) a constant of the recipe, or does it depend on the function copied?",
+ "filed": "2026-11-07, before any run",
+ "plan": "reports/plans/2026-11-07_plan_e130-copy-protection.md; design, rule and leans adopted unchanged from ~/commute-data/scratch/regating-lead/fable-e128/advice.md ('The one run', written as E128; claimed code E130)",
+ "code": "experiments/copy_protection/run.py (job, config and the rules multiplier, verdict, headline, score); cluster/copy_protection.sbatch",
+ "measurement": "As E127 Amendment 2 (experiments/ls_start_faith/amend2.py), free adversary only: ratio = PGD KL at the state summed over the two 128-row blocks of Pile val rows 0-255 (one seed-0 adversary per block, 20 sign steps, bf16 autocast, faithfulness.harness_pgd) over W0's in the same job. A non-positive W0 gives nan.",
+ "states": {
+  "c1": "damage_crossed results/large/tt_c1.pt (sha256 3f2cb87e6aabd8200e861a614952bdb430dafbf5cff96e8087358032a0ff0305 = damage_crossed.json copies.tt_c1.sha256, checked at load): E122's copy, same recipe (Adam 1e-5, batch 8, 1,000 steps, from W0's U, V), of the Adam lowercase fine-tune at step 20 (ft_c1.pt). Free: alive (U', V'), target W0 + S_c. Stored 2.8418210654761875 (score.ratios['tt_c1|A'], read by E122 on an L40 from this file); its do-nothing 3.4094833456256115 (nothing_c1|A)",
+  "c2": "damage_crossed results/large/tt_c2.pt (sha256 8304ffb3144ccbb60c3ef1addd2424d1579b7cf6c3f67791a6dc56176c44826d = copies.tt_c2.sha256): the same recipe's copy of the rank-8 LoRA lowercase fine-tune at step 2,400 (ft_c2.pt). Stored 1.5340505291251594 (tt_c2|A); its do-nothing 3.7389993015826213 (nothing_c2|A)",
+  "<copy>|delta": "S_c = U'V'^T - UV^T (saved_states.offsets_state, the same object the free read uses) as the target change, subcomponents left at the released U, V: harness.at(ctx, S_c, None), amend2.py's form. At full masks the copy and its in-Delta state are the same weights W0 + S_c",
+  "cosine": "report only, no rule: input-weighted (Pile rows 0-255, weighted.input_moments at W0) and Frobenius cosine of S_c to its own fine-tune and to ft_adam300.pt"
+ },
+ "controls_stop": {
+  "C1 W0": "mean block KL within 1e-3 relative of 0.6917431652545929 (amend2.py repro_tol)",
+  "C2 copies free": "c1 and c2 free ratios within 1e-3 relative of 2.8418210654761875 and 1.5340505291251594 (same files, same path, same card type); a miss stops the job, no rerun, and the claim stays at two copies",
+  "C3 card": "L40 only",
+  "C4 rerun": "a resubmitted job rereads W0's first block within 1e-6 relative of the first job's",
+  "C5 alive": "the alive U, V equal E121's uv0.pt; each copy file's sha256 equals E122's record",
+  "order": "W0, c1, c2 (C1, C2 stop on a miss), c1|delta, c2|delta, cosine"
+ },
+ "rules": {
+  "floor": "f = 0.20877548446862537 on ratio: the L40 W0 PGD floor over adversary seeds 0-2, max/min - 1 (teacher_training_amend8c.json W0.pgd_floor; harness.pgd_floor), as E127",
+  "R1 multiplier (per copy)": "m_c = (free_c - 1) / (d_c - 1), d_c the in-Delta ratio. Readable only if free_c - 1 >= f and d_c - 1 >= f (inclusive); else 'free excess within the floor' or 'in-Delta excess within the floor' (covers zero and negative excess), m unset. Missing -> 'not run'; non-finite -> 'invalid'.",
+  "R2 verdict (per copy)": "m <= 0.5 'recipe-like'; m >= 0.8 'no protection'; else 'partial'. Edges inclusive (0.5 is recipe-like, 0.8 is no protection). No m -> 'unreadable'.",
+  "R3 headline": "Both copies recipe-like -> 'recipe constant'; any copy 'no protection' -> 'function-dependent'; else 'partial' (Fable). Edge completion by the writer: when no copy reads 'no protection' and a copy is 'unreadable' (or not run), the headline is 'unreadable', not 'partial'. Suffix ', regularity broken' when a copy's in-Delta ratio exceeds its own do-nothing ratio (Fable: breaks the 0.81 regularity; m is still read).",
+  "descriptive": "per copy (d_c - 1)/(do-nothing_c - 1), the in-Delta excess over its own do-nothing's excess (known copies 0.67-0.81)"
+ },
+ "edge_cases": "Run on the CPU worker 2026-11-07 (scratch/regating-lead/e130-writer/edge_check.py, .out), each as stated: multiplier None -> not run; nan or inf -> invalid; free 1.1 -> free excess within the floor; d 1.0, 0.8 (negative excess) -> in-Delta excess within the floor; d = 1 + f exactly -> readable; free = d -> m 1 -> no protection; verdict 0.5 -> recipe-like, 0.8 -> no protection, 0.65 -> partial, None -> unreadable; headline {recipe-like, recipe-like} -> recipe constant, {no protection, unreadable} -> function-dependent, {recipe-like, unreadable} -> unreadable, {recipe-like, partial} -> partial, {recipe-like} only -> unreadable; score at Fable's lean (c1 d 2.8, c2 d 2.75) -> function-dependent; c1 d 3.5 -> m 0.74, 'partial, regularity broken'; W0 summing to 0 -> ratios nan -> invalid -> unreadable.",
+ "lean": {
+  "source": "Fable, advice.md 'Leans, expected values', unchanged. Why it decides: no copy's change in Delta has read more than 0.81 of its fine-tune's do-nothing excess (ls copy 0.78, standard 0.67); if c1 obeys that, d_c1 <= 1.95 + 1 and m_c1 >= 0.94",
+  "c1|delta": "2.7-2.9; m 0.95-1.1. Verdict: no protection 0.6, partial 0.25, recipe-like 0.15",
+  "c2|delta": "2.4-3.1; m 0.25-0.4 (c2's free excess 0.534 is 2.6 f, so its m is coarse: +-f on each read gives 0.16-0.47 at the lean). Verdict: recipe-like 0.7",
+  "headline": "function-dependent 0.55",
+  "cosine": "report only, no lean filed; E121's from-zero copies sat at input-weighted 0.38-0.40 to their fine-tune"
+ },
+ "blind_to": "One adversary seed and one 20-step local search (E127's check). m is a ratio of two excesses on one check; it says how much the subcomponent placement hides, not why. Two more copies on one task (lowercase) and one recipe; c2's m has little power (free excess 2.6 f).",
+ "power": "Positive control: the copies' free reads 2.842 and 1.534 reproduced at 1e-3. c1's claim (m <= 0.5, d >= 4.68) and null (m >= 0.8, d <= 3.30) are 6.6 f apart in d.",
+ "time on the L40": "5 PGD reads at 127-131 s (ls_start_faith_amend2.json .seconds) plus the cosine (<1.5 min) and ~1 min start-up: ~13 min, one job, peak host RSS ~6-7 GB (amend2 6.1 GB). $0 (debug).",
+ "config": {
+  "pgd_steps": 20,
+  "adv_seed": 0,
+  "pile_rows": 256,
+  "ls_tol": 1e-06,
+  "moments_batch": 8,
+  "floor": 0.20877548446862537,
+  "w0_ref": 0.6917431652545929,
+  "copy_refs": [["c1", 2.8418210654761875], ["c2", 1.5340505291251594]],
+  "nothing_refs": [["c1", 3.4094833456256115], ["c2", 3.7389993015826213]],
+  "recipe_max": 0.5,
+  "none_min": 0.8,
+  "repro_tol": 0.001,
+  "rerun_tol": 1e-06,
+  "budget_s": 1680.0,
+  "pgd_s": 145.0,
+  "cos_s": 90.0
+ }
+}

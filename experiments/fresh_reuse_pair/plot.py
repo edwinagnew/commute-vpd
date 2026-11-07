@@ -8,8 +8,10 @@ route.png: each fine-tune's least-squares split and its teacher-trained copy on 
 lines; references E123's case-label states, E119's trigger fine-tunes and E12 Amendment 1's fine-tunes.
 removal.png: D(S) of the switched-on set per state beside its 20 random same-size sets, with E123's states as the
 reference and E38 Amendment 2's seed-rule lines.
+amend1_sites.png: Amendment 1's readout-direction removal share at the word's position (blocks 0-2) and the trigger
+(blocks 1-2), real vs twin vs random direction, with the 0.50 bar.
 
-    python experiments/fresh_reuse_pair/plot.py   -> figures/{possession,definition,route,removal}.png
+    python experiments/fresh_reuse_pair/plot.py   -> figures/{possession,definition,route,removal,amend1_sites}.png
 """
 
 from __future__ import annotations
@@ -189,6 +191,40 @@ def removal_figure() -> None:
     finish(fig, [ax], "removal.png")
 
 
+def amend1_figure() -> None:
+    """Amendment 1: the readout-direction removal share at each site, real vs twin vs random, with E125's 0.50 bar; the
+    filed site (trigger, block 1) from stage1.json beside the four new sites from amend1.json."""
+    a1 = json.loads((RESULTS / "amend1.json").read_text())["sites"]
+    filed = {"probe": {n: {"share": S1["reads"][n]["P3"]} for n in STATES}, "random": S1["do_nothing"]}
+    sites = [("word\nblock 0", a1["word_b0"]), ("word\nblock 1", a1["word_b1"]), ("word\nblock 2", a1["word_b2"]),
+             ("trigger\nblock 1\nfiled site", filed), ("trigger\nblock 2", a1["trigger_b2"])]  # fmt: skip
+    bar = PRED["rules"]["real"]["P3"]
+    fig, axes = plt.subplots(1, 2, figsize=(9.6, 4.4), gridspec_kw={"width_ratios": [1, 2.2]})
+    for ax in axes:
+        for i, (_, rec) in enumerate(sites):
+            for j, n in enumerate(STATES):
+                x = i + (j - 1.5) * 0.12
+                ax.plot(x, rec["random"][n]["share"], "_", ms=9, mew=1.5, color=MUTED, zorder=3)
+                ax.plot(x, rec["probe"][n]["share"], "o", ms=7, color=COLOUR[arm(n)], mec="white", mew=1.0, zorder=4)
+        ax.axvspan(2.5, 3.5, color=REGION, zorder=0)
+        ax.axhline(0.0, color=INK, lw=0.5)
+        ax.set_xticks(range(len(sites)), [s[0] for s in sites], fontsize=7)
+        ax.set_xlim(-0.5, len(sites) - 0.5)
+    axes[0].axhline(bar, color=MUTED, lw=0.8, ls="--")
+    axes[0].text(len(sites) - 0.6, bar + 0.01, f"removal bar {bar:.2f}", fontsize=7, color=MUTED, ha="right", va="bottom")
+    axes[0].set_ylim(-0.02, 0.56)
+    axes[0].set_title("whole scale, with the bar", fontsize=9)
+    axes[0].set_ylabel("share of the gain lost when the\nreadout direction is removed")
+    axes[1].set_ylim(-0.005, 0.05)
+    axes[1].set_title("zoomed to 0-0.05", fontsize=9)
+    handles = [Line2D([], [], ls="", marker="o", ms=7, color=COLOUR["real"], label="repeat-label real arm, 2 seeds"),
+               Line2D([], [], ls="", marker="o", ms=7, color=COLOUR["twin"], label="memorising twin, 2 seeds"),
+               Line2D([], [], ls="", marker="_", ms=9, mew=1.5, color=MUTED, label="random direction, same removal")]
+    axes[1].legend(handles=handles, fontsize=7, loc="upper left", frameon=False)
+    fig.suptitle("Moved to the word or to block 2, the removal takes 0.02-0.05 of the real gain, far under 0.50", fontsize=10)
+    finish(fig, list(axes), "amend1_sites.png")
+
+
 def finish(fig: Any, axes: list[Any], name: str) -> None:
     for ax in axes:
         for side in ("top", "right"):
@@ -204,3 +240,4 @@ if __name__ == "__main__":
     definition_figure()
     route_figure()
     removal_figure()
+    amend1_figure()

@@ -586,3 +586,4 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e122_ratio_vs_damage.png": "experiments/damage_crossed/figures/ratio_vs_damage.png"
 - "fig/e122_excess_where.png": "experiments/damage_crossed/figures/excess_where.png"
 - "fig/e126_orders.png": "experiments/copy_reproducibility/figures/orders.png"
+- "fig/e130_placement.png": "experiments/copy_protection/figures/placement.png"

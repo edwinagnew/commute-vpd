@@ -5,6 +5,7 @@
     random.png     adversarial ratio against random-mask ratio for the same function in Delta and the start
     coherence.png  coherence of the per-subcomponent changes: the start and the two copies
     amend1_hold.png  Amendment 1, lowercase: every state free and held, with W0 free and held as references
+    amend2_delta.png Amendment 2, lowercase: each change on the alive subcomponents and in Delta, with the fail line
 
     python experiments/ls_start_faith/plot.py   -> figures/*.png
 """
@@ -29,7 +30,7 @@ TASK = {"L": "lowercase (Adam, step 300)", "E": "emoticon (Adam, step 1000)"}
 NAME = {"W0": "W0", "nothing": "do-nothing\n(dW in Delta)", "nothing_start": "same function\nas start, in Delta",
         "start": "least-squares\nstart"}
 COLOUR = {"W0": "#8a8a85", "nothing": "#2a78d6", "nothing_start": "#eb6834", "start": "#c43c3c",
-          "ls_copy": "#9b59b6", "std_copy": "#1baf7a"}
+          "ls_copy": "#9b59b6", "std_copy": "#1baf7a", "lora_copy": "#d4a017"}
 INK, MUTED = "#2b2b2b", "#8a8a85"
 
 
@@ -181,6 +182,40 @@ def amend1_hold() -> None:
     fig.savefig(FIGURES / "amend1_hold.png", dpi=150)
 
 
+def amend2_delta() -> None:
+    """Amendment 2, lowercase: each change on the alive subcomponents (solid) and the same change in Delta (hatched),
+    with do-nothing, the fail line and its band of one floor. Ratios over W0 read in the same job."""
+    a2 = json.loads((HERE / "results" / "ls_start_faith_amend2.json").read_text())["score"]["ratio"]
+    line = json.loads((HERE / "results" / "predictions_amend2.json").read_text())["config"]["fail_line"]
+    e = OUT["score"]["L"]["ratio"]
+    groups = (("start", "least-squares\nstart (E127)", e["start"], e["nothing_start"]),
+              ("ls_copy", "copy trained\nfrom the start", a2["ls_copy"], a2["ls_copy|delta"]),
+              ("std_copy", "standard\ncopy", a2["std_copy"], a2["std_copy|delta"]),
+              ("lora_copy", "copy of the\nrank-8 LoRA", a2["lora_copy"], a2["lora_copy|delta"]))
+    w = 0.38
+    fig, ax = plt.subplots(figsize=(9, 4.4))
+    label_bars(ax, ax.bar(0, e["nothing"], w, color="white", edgecolor=COLOUR["nothing"], hatch="///", lw=1.2))
+    for i, (c, _, on, ind) in enumerate(groups, start=1):
+        label_bars(ax, ax.bar(i - w / 2, on, w, color=COLOUR[c]))
+        label_bars(ax, ax.bar(i + w / 2, ind, w, color="white", edgecolor=COLOUR[c], hatch="///", lw=1.2))
+        ax.text(i, max(on, ind) + 0.75, f"excess x{(on - 1) / (ind - 1):.2f}\non subcomponents", fontsize=7,
+                color=INK, ha="center")
+    ax.axhspan(line - F, line + F, color=MUTED, alpha=0.18, lw=0)
+    ax.axhline(line, color=INK, lw=0.9, ls="--")
+    ax.text(4.62, line + F, f"fail line {line}\n(band: one floor)", fontsize=7, color=INK, va="bottom", ha="left")
+    ax.axhline(1, color=MUTED, lw=0.8)
+    ax.text(4.62, 0.95, "W0 = 1", fontsize=7, color=MUTED, va="top", ha="left")
+    ax.set_xticks(range(5), ["do-nothing\n(dW in Delta)", *(g[1] for g in groups)], fontsize=8)
+    ax.set_xlim(-0.5, 5.2)
+    ax.set_ylim(0, 11.5)
+    ax.set_ylabel("adversarial ratio (PGD KL over W0's)")
+    legend(ax, "change on the alive subcomponents", "the same change in Delta", "///")
+    ax.set_title(f"{TASK['L']}: does each change read better on the alive subcomponents or in Delta?\n"
+                 "the start's placement multiplies its excess; teacher training's divides it", fontsize=9)
+    fig.tight_layout()
+    fig.savefig(FIGURES / "amend2_delta.png", dpi=150)
+
+
 if __name__ == "__main__":
     FIGURES.mkdir(exist_ok=True)
     source()
@@ -188,3 +223,4 @@ if __name__ == "__main__":
     random_masks()
     coherence()
     amend1_hold()
+    amend2_delta()

@@ -6,22 +6,30 @@
 `notebooks/E127_ls_start_faith.ipynb`. MATS `debug` L40, two jobs: 54836 stopped at its time budget as planned,
 and 54874 resubmitted and finished. About 31 min, $0. Amendment 1: code `experiments/ls_start_faith/amend1.py`, filed
 rules `results/predictions_amend1.json`, result `results/ls_start_faith_amend1.json`, job 54890, `debug` L40, about
-19 min, $0, stopped on a control at its ninth of twelve reads. Provisional: no independent check, as the fast lane
-allows for a run under the gate.*
+19 min, $0, stopped on a control at its ninth of twelve reads. Amendment 2, E127's last: code
+`experiments/ls_start_faith/amend2.py`, filed rules `results/predictions_amend2.json`, result
+`results/ls_start_faith_amend2.json`, job 54934, `debug` L40, 15.5 min, $0, every control exact. Provisional: no
+independent check, as the fast lane allows for a run under the gate.*
 
-We split the least-squares start's excess under the adversarial check by its cause, its weight change or where that
-change sits, and read every state again with the alive subcomponents held fully on. All of the excess comes from where
-the change sits, but the hold brings every state, do-nothing included, to about the unchanged model's held reading, so
-it cannot say which masks carry the excess. For keeping a decomposition faithful along training, placing an update on
-the subcomponents is what costs, and which masks the adversary exploits is still open.
+We read the least-squares start's weight change, and then each teacher-trained copy's weight change, in two places: on
+the alive subcomponents and moved into Δ. The start's placement makes its excess under the adversarial check about four
+times larger, teacher training's makes it three to four times smaller, and every copy's own change fails once in Δ.
+For keeping a decomposition faithful along training, how an update is placed on the subcomponents decides, and the
+change that copies the broad lowercase fine-tune is fragile under the check, with teacher training hiding most of it.
 
 ## The answer
 
-The least-squares start is less faithful than do-nothing because of where its change sits, not because its weights
-differ from the fine-tune. Its own weight change, left outside the subcomponents, reads better than do-nothing on both
-tasks. Moved onto the alive subcomponents, the same change reads nearly three times worse on lowercase. Only the
-adversary finds this; random masks read the two placements alike. Freezing the alive subcomponents fully on removes the
-excess, but it removes do-nothing's too, so it does not show that those masks carry it.
+**Amendment 2 reversed what we expected.** We predicted that the broad lowercase copy's own weight change, moved off the
+subcomponents into Δ, would pass the check at about 1.24. It read 3.53, worse than the 1.91 it reads on the
+subcomponents. Placement cuts both ways: the least-squares start's placement makes its excess nearly four times larger,
+teacher training's makes it three to four times smaller. So the broad copy fails because the function it copies is
+fragile under the check, and teacher training's placement hides most of that, enough for the LoRA copy but not this one.
+
+The first run found why the least-squares start is less faithful than do-nothing: where its change sits, not how its
+weights differ from the fine-tune. Its own weight change, left outside the subcomponents, reads better than do-nothing
+on both tasks; moved onto the alive subcomponents, it reads nearly three times worse on lowercase. Only the adversary
+finds this. Freezing the alive subcomponents fully on removes the excess, but it removes do-nothing's too, so it does
+not show that those masks carry it.
 
 ## What we were trying to test
 
@@ -206,8 +214,8 @@ it; the cause is not proven. The lowercase copies' stored readings were taken fr
 reproduce exactly.
 
 **Decision, taken by the lead: no rerun of the emoticon copy reads.** The teeth reading they would sit under is
-already "no teeth" on emoticon, so they could not change a verdict. This leaves E127's second and last amendment slot
-unused.
+already "no teeth" on emoticon, so they could not change a verdict. E127's second and last amendment slot went to
+Amendment 2 below.
 
 ### Under the hold, does any lowercase state keep its excess?
 
@@ -291,6 +299,115 @@ Source: `weights.{L,E}.coherence.{start,ls_copy,std_copy}.{weighted,frobenius}`.
 lowercase and 0.848 on emoticon. The distance relative to $\delta W$'s size is 0.449 and 0.530. Emoticon's distance is
 inside the plan's 0.5 to 0.7. Source: `weights.{L,E}.S_vs_dW.{weighted,frobenius}`.
 
+## Amendment 2: would the broad copy's own change pass if it sat in Δ?
+
+*Plan `reports/plans/2026-11-06_plan_e127-ls-start-faithfulness.md` → "Amendment 2"; rules
+`results/predictions_amend2.json`, filed before the run; result `results/ls_start_faith_amend2.json`; log
+`results/large/amend2.log`; job 54934. Design and leans adopted from Fable's advice of the same night, its "Run 1".*
+
+**Something unexpected happened, against the filed expectation.** Fable predicted the standard lowercase copy's change,
+moved into Δ, would read 1.24 and pass, with a band of 1.10 to 1.45. It read 3.53. That is not even the null, which
+was "no change from its 1.91 on the subcomponents"; it went the other way, nearly eight floors above it.
+
+**What it asked.** On lowercase, E127's start reads 3.77 times as much excess over W₀ on the alive subcomponents as in
+Δ: $(8.333 - 1)/(2.946 - 1)$. The standard teacher-trained copy of the same fine-tune fails the check at 1.91, over
+the fail line of 1.61 that E122 took from E39. If any change on the alive subcomponents reads about 3.8 times its
+in-Δ excess, the copy's own function should pass in Δ, and the copy fails only because of where it sits. So each copy's
+weight change $S_c = U'V'^\top - UV^\top$ was read twice:
+
+- **the copy, free**: the alive subcomponents at the copy's $(U', V')$, target $W_0 + S_c$. These reproduce the
+  readings stored when each copy was made, so they are the controls;
+- **the copy's change in Δ**: target $W_0 + S_c$ with the subcomponents left at the released $(U, V)$, so $S_c$
+  sits in Δ, as the same function in Δ did for the start.
+
+At full masks the two are the same weights; only where $S_c$ sits differs. Three copies were read, all by the same
+teacher training: Adam at $10^{-5}$, batch 8, 1,000 steps on lowercase rows, loss the KL from the fine-tuned model.
+
+- **standard copy**, E122's copy of the Adam fine-tune, started from W₀'s alive subcomponents;
+- **copy from the start**, the same recipe started from the least-squares start;
+- **copy of the rank-8 LoRA**, E39 Amendment 2's copy of a rank-8 LoRA fine-tune on the same task, which passes.
+
+Emoticon was not read: its standard copy's free excess is about 0.005 nats, nothing to divide.
+
+**The filed rules.** The headline rule reads the standard copy's change in Δ against the fail line with a band of one
+floor $f$: under $1.61 - f = 1.40$ "placement explains the broad failure"; over $1.61 + f = 1.82$ "function fails too";
+between, "within the line". A descriptive multiplier per copy, $m = (\text{free} - 1)/(\text{in Δ} - 1)$, compares
+with the start's 3.77; both reads divide by one W₀, so it is also the multiplier in nats of excess. The lean on the
+headline rule was "placement explains" 0.5, "function fails too" 0.25.
+
+### Controls
+
+| control | read | stored | tolerance, relative | verdict |
+|---|---|---|---|---|
+| W₀, nats | 0.691743 | 0.691743 | 1e-3 | exact |
+| standard copy, free ratio | 1.912875 | 1.912875 | 1e-3 | exact |
+| copy from the start, free ratio | 9.404895 | 9.404895 | 1e-3 | exact |
+| copy of the rank-8 LoRA, free ratio | 1.326288 | 1.326288 | 1e-3 | exact |
+| card | L40 | L40 | | held |
+
+Source: `ls_start_faith_amend2.json` `controls.*.read`, `.ref`, `jobs[].card`. The alive $U, V$ equal E121's: the
+assert at load passed and the job ended with exit 0.
+
+### Does each change read better on the alive subcomponents or in Δ?
+
+![amend2 delta](../../experiments/ls_start_faith/figures/amend2_delta.png)
+
+**Reading it.** It depends on how the change was placed, and the broad copy's function fails in Δ. The standard copy's
+change reads 1.91 on the subcomponents and 3.53 in Δ, so the filed reading is "function fails too". Teacher training's
+placement shrinks the excess: by 2.8 times for the standard copy, 4.1 times for the LoRA copy. The least-squares
+start's placement grows it, by 3.8 times, and the copy trained from the start keeps most of that, at 2.8 times. Every
+copy's change fails in Δ, the LoRA copy's at 2.34 included, against do-nothing's 4.79 for the fine-tune's own change.
+
+| state, lowercase | on the subcomponents | in Δ | excess, on / in Δ | excess in Δ, nats |
+|---|---|---|---|---|
+| do-nothing, the fine-tune's own change | | 4.794 | | 2.625 |
+| least-squares start, E127 | 8.333 | 2.946 | 3.77 | 1.346 |
+| copy from the start | 9.405 | 3.961 | 2.84 | 2.048 |
+| standard copy | 1.913 | 3.526 | 0.36 | 1.747 |
+| copy of the rank-8 LoRA | 1.326 | 2.336 | 0.24 | 0.924 |
+
+Source: `ls_start_faith_amend2.json` `score.ratio`, `score["R2 *"].m`, `score["R1 std_copy"]`; E127's rows from
+`ls_start_faith.json` `score.L.ratio`. Nats are the mean of the two blocks in `kl` minus W₀'s, computed with `jq`. The
+ratios were recomputed from `kl` with `jq` and agree. In nats, the standard copy's excess is 0.63 on the subcomponents
+and 1.75 in Δ.
+
+**Against Fable's leans.** Standard copy in Δ: lean 1.24, band 1.10 to 1.45, read 3.53, missed high. Copy from the
+start in Δ: lean 3.2, band 2.4 to 4.5, read 3.96, inside the band. LoRA copy in Δ: lean 1.09, read 2.34, missed high.
+The lean's claim was one multiplier for any change on the subcomponents; the copy from the start obeys it only because
+it started from the least-squares placement.
+
+**What teacher training's loss contains.** Nothing about masks. Each copy is made by `row_copy.copy_states`
+(`src/commute/row_copy.py:81-82`), which calls `component_training.train` with `teacher.teacher_loss(..., None)`. That
+loss is the KL from the fine-tuned model to the student, averaged over every position (`src/commute/teacher.py:40-47`).
+The student's forward is the plain target model, with the change in $(U', V')$ added to each frozen linear by a hook
+(`src/commute/component_training.py:68-74`, `:152-158`). No causal-importance mask, no stochastic mask, no adversary
+and no faithfulness term enters it. So teacher training's protective placement is not by design: it falls out of
+training the subcomponents' vectors directly, at full masks, from where the optimiser starts. Started from the
+least-squares start, the same loss keeps the exposed placement.
+
+**A hypothesis for why, untested.** The gradient on a subcomponent's write vector scales with how strongly its read
+vector sees the training inputs. Those are plausibly the inputs where Γ gives it high causal importance, and the
+adversary cannot push a mask below its causal importance. So teacher training may put its change mostly on
+subcomponents that are on wherever the change matters, which the adversary cannot switch off. The least-squares split
+spreads the change by least norm, regardless of which subcomponents are on. Reading where each change sits against
+the causal importances on the check's rows would test this; it was not run.
+
+**The blind spot.** The two placements give the adversary different freedoms. In Δ the change shares one mask per
+matrix with W₀'s own Δ; on the subcomponents it rides one mask per subcomponent, each between its causal importance
+and 1. So "the copy's function is fragile" means fragile under the check with the change placed in Δ. It does not say
+the function would fail under any placement, and teacher training's placement is one where it fails less.
+
+**What this does to E127's 3.8 times.** It is a property of the least-squares split's placement, not of placement in
+general. Placing a change on the subcomponents can multiply its excess by four or divide it by four, depending on how it
+was put there. E127's free-read split stands as read: for the start, placement carries the whole excess.
+
+**What this does to the copy's distance from δW.** On emoticon, E121 found the standard copy's weight change far from
+the fine-tune's: similarity 0.40, where a rerun of the fine-tune reads 0.83. Fable read that distance as the copy
+dropping collateral change on ordinary text. On lowercase that reading is not supported: the copy's change in Δ keeps 67% of do-nothing's
+excess, $(3.526 - 1)/(4.794 - 1)$, so the copy's function is nearly as fragile in Δ as the fine-tune's own change. The
+distance is better read as the copy's change being shaped to sit where the masks protect it. A copy that stays close
+to δW, like the copy from the start, keeps the exposed placement and fails at 9.40.
+
 ## What we learned
 
 The least-squares start's poor faithfulness on these two fine-tunes is a placement effect. The same weights read
@@ -302,6 +419,14 @@ than leaving the update outside it, even when the weights are nearly the same. W
 blame cannot be read with the hold: Amendment 1 found that it flattens do-nothing too, so it removes the adversary's
 reach in general. A question about which masks carry the excess needs a different tool.
 
+Amendment 2 turns the placement finding from a cost into a lever. Placing a change on the subcomponents is not costly
+in itself: the least-squares split's placement multiplies the excess by about four, teacher training's divides it by
+three to four, and teacher training's loss has no term that asks for this. The broad lowercase failure is therefore not
+a good function exposed by its placement. Every copy's change fails once put in Δ, at 2.34 to 3.96, where the Adam
+fine-tune's own change reads 4.79. Teacher training's placement hides most of that: enough for the LoRA copy at 1.33,
+not for the full-matrix Adam copy at 1.91. For `GOALS.md`, keeping a decomposition faithful along training depends on
+placing the update where the adversary cannot reach it; a loss that asks for that directly is one candidate.
+
 ## How compelling is the evidence
 
 - One adversary seed, one row set of 256 Pile rows, two tasks, one fine-tune each, one L40.
@@ -311,8 +436,16 @@ reach in general. A question about which masks carry the excess needs a differen
 - Emoticon's hold reading rests on do-nothing alone; its copies were not read held.
 - The random-mask read's own noise floor was not measured.
 - Cancellation is weight-side only.
+- Amendment 2's headline is far from its edges: the standard copy's change in Δ reads 3.53 against the "function fails
+  too" edge of 1.82, eight floors above it. Its multipliers come from one seed and one task, three copies of one
+  recipe. "Fragile function" is read under the Δ placement only, where the adversary's freedom differs from the
+  subcomponents'.
 
 ## Surprises
+
+- **Amendment 2 reversed the filed expectation.** The standard copy's change in Δ was predicted at 1.24, a pass; it
+  read 3.53, above its own 1.91 on the subcomponents. The LoRA copy's was predicted at 1.09 and read 2.34. Teacher
+  training's placement protects; the least-squares split's exposes.
 
 - **The function part is negative on both tasks.** The split's dropped remainder makes the same function in Δ read
   better than do-nothing, by 1.85 ratio points on lowercase. The plan expected 4 to 6 for it; it read 2.95.
@@ -332,6 +465,11 @@ reach in general. A question about which masks carry the excess needs a differen
   readings are a stronger adversary at W₀ or a weaker one everywhere else.
 - Which masks carry the placement excess is now open with no filed route. A hold of a subset of the alive
   subcomponents, or at their CI values, would be a new plan, not an amendment: E127 has no amendment slots left.
+- Where each change sits against the causal importances on the check's rows, for the start and the standard copy.
+  If teacher training's change sits on subcomponents with high causal importance and the start's does not, the
+  hypothesis above holds and the placement is explained; if not, it needs another cause. A new plan.
+- Teacher training with a faithfulness term in its loss, for example VPD's own masked reconstruction. If the broad
+  Adam copy then passes, placement is the lever for broad updates; if it stays over the line, the function is the limit.
 
 ## Scorecard
 
@@ -375,6 +513,20 @@ Amendment 1, `predictions_amend1.json`:
 | control C6 | a resubmitted job rereads W₀'s first block | 1e-6 relative | one job only | | does not apply |
 | control C7 | alive U, V equal E121's | equal | equal; the assert at load passed | | held |
 
+Amendment 2, `predictions_amend2.json`, lowercase:
+
+| rule | what it says | rule as filed | read | lean | verdict |
+|---|---|---|---|---|---|
+| R1, standard copy | does its change pass in Δ? | free > 1.82; in Δ < 1.40 placement explains, > 1.82 function fails too | free 1.913, in Δ 3.526 | placement explains 0.5, function fails too 0.25 | **function fails too; lean reversed** |
+| R2, standard copy | multiplier, descriptive | m = (free − 1)/(in Δ − 1), both excesses ≥ f | 0.361; 0.096 of 3.77 | about 3.8 | readable |
+| R2, copy from the start | same | same | 2.839; 0.754 of 3.77 | about 3.8 | readable |
+| R2, LoRA copy | same | same | 0.244; 0.065 of 3.77 | in-Δ excess within the floor | readable |
+| lean band, standard copy in Δ | | 1.10 to 1.45 | 3.526 | 1.24 | missed, high |
+| lean band, copy from the start in Δ | | 2.4 to 4.5 | 3.961 | 3.2 | held |
+| lean, LoRA copy in Δ | report only | | 2.336 | 1.09 | missed, high |
+| controls C1, C2, C3, C5 | W₀, the three copies free, card, alive U, V | 1e-3 relative | exact | | held |
+| control C4 | a resubmitted job rereads W₀ | 1e-6 relative | one job only | | does not apply |
+
 ## Departures from the literature
 
 - **The hold has no counterpart in the VPD paper.** The paper's adversary moves every mask. Here, for this question
@@ -385,6 +537,9 @@ Amendment 1, `predictions_amend1.json`:
 - **The coherence κ is ours, from E17**, not a published measure; its input-weighted form is new here.
 
 - **The teeth rule is ours**, filed for Amendment 1, with its half-the-excess bar; the paper has no hold to test.
+- **Reading a copy's change in Δ is ours**, for Amendment 2. The paper reads one decomposition with its own Δ; here a
+  weight change made on the subcomponents is moved into Δ and the check is read again, so the two placements can be
+  compared at the same weights.
 
 ## Not run
 
@@ -399,6 +554,13 @@ Amendment 1, `predictions_amend1.json`:
 - Pile set B; other rows.
 - The start with target $W_0 + \delta W$ and the remainder in Δ.
 - The random-mask read's own seed noise.
+- Amendment 2 on emoticon: its standard copy's free excess is about 0.005 nats, nothing to divide.
+- Amendment 2 on adversary seeds 1 and 2, and on Pile set B.
+- The rank-8 LoRA fine-tune's own do-nothing on the L40. E39 read it at 2.65 on an H100, a different card, so it is
+  not set beside the LoRA copy's 2.34 in Δ here.
+- Where each change sits against the causal importances on the check's rows: the test of the hypothesis for why
+  teacher training's placement protects.
+- Teacher training with any mask or faithfulness term in its loss.
 
 ## Provenance
 
@@ -412,3 +574,9 @@ control), committed in 57c812fd; run log `experiments/ls_start_faith/results/lar
 `experiments/ls_start_faith/figures/amend1_hold.png` from `plot.py`. Job 54890 started 22:27:17 on the L40
 (`cluster/logs/jobs.log`), read W₀ at 22:29:54 and stopped at 22:47:11 with exit 1, after nine reads of 127 to 132 s.
 Peak host memory 6.1 GB. MATS `debug` QoS, $0.
+
+Amendment 2: result `experiments/ls_start_faith/results/ls_start_faith_amend2.json` (`done: true`), committed in
+04a7cf66; run log `experiments/ls_start_faith/results/large/amend2.log`; figure
+`experiments/ls_start_faith/figures/amend2_delta.png` from `plot.py`. Job 54934 started 23:09:24 on the L40
+(`cluster/logs/jobs.log`) and ended with exit 0 at 23:24:57, after seven reads of 127 to 131 s. Peak host memory
+6.1 GB. MATS `debug` QoS, $0.

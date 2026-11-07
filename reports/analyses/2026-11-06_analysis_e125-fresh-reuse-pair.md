@@ -3,21 +3,22 @@
 *regating-lead's writer, 2026-11-06. Plan `reports/plans/2026-11-06_plan_e125-fresh-reuse-pair.md` and its appendix;
 filed predictions `experiments/fresh_reuse_pair/results/predictions.json`; results `stage0.json`, `stage1.json`,
 `stage2.json` with their `.out` logs in `experiments/fresh_reuse_pair/results/`; MATS debug L40, jobs 54841, 54877,
-54880. Notebook `notebooks/E125_fresh_reuse_pair.ipynb`; figures `experiments/fresh_reuse_pair/figures/`. Provisional:
-no independent check.*
+54880. Amendment 1: plan section "Amendment 1", filed `predictions_amend1.json`, results `amend1.json` and `amend1.out`,
+code `amend1.py`, job 54933. Notebook `notebooks/E125_fresh_reuse_pair.ipynb`; figures
+`experiments/fresh_reuse_pair/figures/`. Provisional: no independent check.*
 
 We taught the small model a label for "this word already appeared in the passage", beside a twin that memorised
 shuffled labels, and read both with the frozen reuse definition and with the decomposition. The model held the repeat
 signal before training, but removing it barely touched the fine-tune, so the definition reads both arms "not through
-C". The decomposition again gives the real fine-tune and its memorising twin the same labels, so on a second task no
-reading tells reuse from memorising.
+C"; a follow-up that removed it at the word itself and one layer later found the same. The decomposition again gives the
+real fine-tune and its memorising twin the same labels, so on a second task no reading tells reuse from memorising.
 
 ## The answer
 
 The repeat-label pair fails the definition at the same clause as the case-label pair. The model holds "this word
 occurred earlier" as a linear signal at the marker. The real fine-tune learns the label in 30 steps and carries it to
 unseen words. But deleting that signal's direction takes away under 4 percent of its gain, against a bar of one half.
-The decomposition puts all four fine-tunes in the corner where the gain rides on subcomponents that stay off. Removing
+Deleting it at the word itself, or one layer later, takes no more. The decomposition puts all four fine-tunes in the corner where the gain rides on subcomponents that stay off. Removing
 the switched-on ones costs all four more than chance, the memorising twin most. No 67M task yet has a reuse label to
 check the decomposition against.
 
@@ -114,9 +115,10 @@ held-out words right, and a threshold on the readout matches its labels 0.94 and
 Removing the readout's direction at block 1 at the trigger takes away 0.031 and 0.038 of its gain, against the bar of
 0.50. A random direction takes away 0.004 and 0.007, so the readout direction does matter, five to eight times more
 than chance, but carries a small part of the behaviour. The case-label pair read 0.083 and 0.091 on the same removal,
-so the computed property did worse, not better. A candidate reason, the one the plan named and untested: the fine-tune
-may read the flag at the word's own position or at a later block, where this one-site removal cannot reach. The twin
-reads at chance on held-out words and loses nothing to the removal, as built.
+so the computed property did worse, not better. A candidate reason, the one the plan named: the fine-tune may read the
+flag at the word's own position or at a later block, where this one-site removal cannot reach. Amendment 1, below,
+tested it at four such sites and ruled it out for them. The twin reads at chance on held-out words and loses nothing to
+the removal, as built.
 
 | state | step | update size | carrying | small function | removal share | random direction | verdict |
 |---|---|---|---|---|---|---|---|
@@ -133,6 +135,64 @@ units of the same number leave it at 0.956 or more, `pruning.<s>.64`; on real s1
 fine-tuning on the passages' own next tokens takes the real arm's held-out accuracy to about 0.61 within 10 steps. It
 reaches the 0.60 bar at steps 40 and 70, `reverse.<s>`. The twins start below that bar. No scratch baseline was run beside reverse
 fine-tuning, so neither number can be read as revival.
+
+## Amendment 1: does the removal work at the word's own position, or one block later?
+
+![amend1 sites](../../experiments/fresh_reuse_pair/figures/amend1_sites.png)
+
+**Why it was run.** The removal above failed at the one site the definition reads: the trigger, block 1. The reason
+named for it was that the fine-tune may read the repeat flag earlier, at the repeated word's own position where the
+readout already reads 0.95 from block 0, or one block later. Amendment 1 removed the readout's direction at four new
+sites on the same four saved fine-tunes. Three sites are at the word's position, after blocks 0, 1 and 2; one is at the
+trigger after block 2. At each site the readout was refit at that position on the same Pile rows. The share lost is the
+same quantity as before: the fall in the label-margin gain $G$, read at the trigger, as a fraction of $G$. A seeded
+random direction removed the same way, read first, is the floor. Two controls stopped the job if missed: the refit at
+the word reproduces stage 0's accuracies, and real s0's filed share at the trigger, block 1, comes back unchanged.
+
+**Reading it.** Moving the removal does not rescue the clause. At every new site the real fine-tune loses 0.021 to
+0.045 of its gain, against the bar of 0.50, so the largest reading is under a tenth of the bar. That is the same size as
+at the filed site, 0.031 and 0.038, with no site standing out. The real arm still sits well above chance: at least ten
+times its own random direction at every new site, and the random readings stay within 0.005 of zero. The twin loses at most 0.009,
+and nothing outside the word's block 2, where it rises to 0.007 and 0.009 while its random direction stays under
+0.003. Both controls passed exactly: the refit accuracies match to the last digit and real s0's filed share returns
+0.0313.
+
+| site | real s0 | real s1 | twin s0 | twin s1 | random direction, all four states |
+|---|---|---|---|---|---|
+| word, block 0 | 0.032 | 0.031 | 0.001 | 0.000 | −0.0005 to 0.0021 |
+| word, block 1 | 0.028 | 0.027 | −0.002 | −0.002 | −0.0003 to 0.0016 |
+| word, block 2 | 0.036 | 0.045 | 0.007 | 0.009 | −0.0009 to 0.0022 |
+| trigger, block 1, filed | 0.031 | 0.038 | −0.001 | −0.001 | 0.0007 to 0.0071 |
+| trigger, block 2 | 0.021 | 0.041 | 0.002 | 0.003 | 0.0013 to 0.0046 |
+
+From `amend1.json` → `sites.{word_b0,word_b1,word_b2,trigger_b2}.probe.<s>.share` and `.random.<s>.share`; the filed
+row from `stage1.json` → `reads.<s>.P3` and `do_nothing.<s>.share`. Controls: `C1.max_gap` 0, `C1.pass` true;
+`C2.got.share` 0.031332 against `C2.want` 0.031332, `C2.random_got.share` 0.0038, `C2.pass` true. The readout at the
+word: accuracy 0.951, 0.966 and 0.934 at blocks 0 to 2, `probe_at_word.acc_repeat`; control 0.504, 0.476 and 0.484,
+`acc_control`; selectivity 0.448, 0.489 and 0.450, `selectivity`. The gains $G$ are those of stage 1, the same at every
+site, `sites.<site>.probe.<s>.gain`.
+
+**What this rules out, and what it leaves.** It rules out the "wrong site" reason, for these four sites. A one-direction
+removal at the word after blocks 0 to 2, or at the trigger after block 2, takes no more of the gain than the filed one. Block 3 at the word was not read, since its output there feeds no later block. Two readings remain, and no
+number here tells them apart. One is that the fine-tune uses the flag a little and does most of its work some other
+way; the small and flat share at every site fits that. The other is that the fine-tune reads the flag at many sites at
+once, so removing it at any one leaves the rest to carry it. The flat profile fits that too: a single strong reading
+site would show as one peak, and there is none. A removal at all sites at the same time would separate the two. That is
+a stronger removal form, which the plan leaves to the user, and it is not run here.
+
+**The real–twin difference, and how much it means.** Only the real arm's removal share sits clearly above its random
+direction at all five sites, and it is at least four times the twin's at each. The filed site already showed this; the
+amendment adds that it holds wherever the removal is placed. On the definition's side the arms were already apart on
+carrying: 0.96 and 0.97 on held-out words against the twin's 0.48 and 0.50. The removal share now separates them at
+every site too, while none of the decomposition's readings does. It means little for reuse, though. The twin's labels
+are a shuffle per word and carry no repeat flag, so a share near zero is what the twin is built to give. And the real
+arm's share is an order of magnitude under the only bar the removal clause has.
+
+**Status.** Descriptive. E125's four verdicts stand as filed under `decisions.md` rows 81 and 87, recorded in
+`amend1.json` → `e125_verdicts_unchanged`: "not through C" on all four states. No number here has a bar that reads
+"reuses C". The lead read this amendment as descriptive, and so outside the plan's line that a stronger removal form is
+the user's call: it moves the same rank-one removal to other sites and adds no rule. This is recorded for the user as
+an FYI, not a request.
 
 ## Where does each fine-tune carry its gain?
 
@@ -208,7 +268,10 @@ Departures from those rows in this run: none added. The standing departures from
 
 The repeat flag is a cleaner test of the removal clause than case was, and it fails it harder: 0.03 to 0.04 of the
 gain against case's 0.08 to 0.09. So the clause's failure on the case-label pair was not only because case lives in
-token identity. Two task families now read the same way on both sides. The definition says "not through C" on every
+token identity. Nor is it because the removal sat at the wrong site: Amendment 1 moved it to the word's own position
+after blocks 0 to 2 and to the trigger after block 2, and the real fine-tune lost 0.02 to 0.05 of its gain at each.
+Whether the fine-tune barely uses the flag or reads it at many sites at once is still open. Two task families now read
+the same way on both sides. The definition says "not through C" on every
 state. The route split and its copies say masked-off on every state. The removal says "through" on seven of eight.
 None of the three decomposition readings gives the real fine-tune a different label from its memorising twin, on
 either pair.
@@ -229,11 +292,13 @@ this size the frozen removal clause is where every candidate has stopped.
 - Two seeds per arm, one task, one marker, one pair of label words, 256 read passages for the decomposition and 1,600
   held-out passages for carrying. Every check in stages 0 and 2 read exactly zero against its tolerance.
 - The removal clause's noise floor is the random direction, 0.004 and 0.007 on the real arm; the read is 0.03 to 0.04,
-  above the floor and far below the bar. Seeds agree to 0.007.
+  above the floor and far below the bar. Seeds agree to 0.007. At Amendment 1's four sites the random direction stays
+  within 0.005 of zero and seeds agree to 0.020.
 - The route split's batch-order noise is 0.002 in the masked-off share; the seed spread here is 0.10 in $r$ and 0.06 in
   the masked-off share, far from any label line.
-- Blind spots. The definition's removal is linear, rank one, at one position and one block. It cannot see the flag read
-  at the word's position or recomputed later. The route split reads one position and says where Γ sends the gain, not
+- Blind spots. The definition's removal is linear, rank one, at one position and one block. Amendment 1 moved it to four
+  other sites one at a time; no removal saw the flag carried by several directions or read at several sites together.
+  The route split reads one position and says where Γ sends the gain, not
   whether the parts are new; a new circuit made of old parts reads "elicited" to the decomposition. The removal test
   misses gain carried outside $S$ or spread under the 0.3 rise.
 - The twin's update is about 1.6 times the real's and it trained 3.3 times longer, so the removal's arm difference
@@ -250,14 +315,19 @@ this size the frozen removal clause is where every candidate has stopped.
   random direction read up to 0.007 against an expected 0.002, still far under its 0.10 stop; one copy kept 0.892 of
   the gain against a filed 0.90; the twin copies agree with their teachers on held-out words 0.72 and 0.86 of the time,
   against a filed 0.90, which their chance-level held-out labels explain.
+- Amendment 1: the real arm's share at the word's position came in at 0.027 to 0.045, inside the filed range of 0.02 to
+  0.40 but at its low end, under the central guess of 0.10. The readout's selectivity at the word's block 1 read 0.489,
+  just over the expected 0.40 to 0.47. Nothing else in the amendment surprised.
 
 ## What next
 
 - A label pair whose label words the original model already predicts somewhat at the trigger, on either property. If
   the route split leaves the masked-off corner, the corner was about the label's starting log-odds, not about label
   tasks. That is a new fine-tune and so its own plan.
-- The definition at the word's own position, where the flag is strongest from block 0. The plan reports it beside with
-  no rule; reading it under the verdict would be a definition change, so it is the user's call by a dated row.
+- A removal of the readout at all sites at once, the word's position and the trigger across blocks, on the real arm.
+  If it takes most of the gain, the fine-tune reads the flag in many places; if it stays near 0.03 to 0.05, the
+  fine-tune barely uses the flag. Either way it is a stronger removal form than the definition's, so whether to run it,
+  and whether it could ever enter a verdict, is the user's call.
 - A size-matched twin, stopped near the real arm's update norm, to read whether the removal's arm difference is size.
 
 ## Scorecard
@@ -293,6 +363,22 @@ Expected values outside the scored leans:
 | twin update two to three times the real's | 1.52, 1.64 | missed |
 | time about 3, 8 and 17 minutes | about 1, 2.5 and 9 | faster |
 
+Amendment 1, descriptive, no verdict; expected values from `predictions_amend1.json` → `controls`, `do_nothing`,
+`expected`:
+
+| expected | read | |
+|---|---|---|
+| C1: readout refit at the word matches stage 0 within 2 of 1,600 windows | max gap 0 | held |
+| C2: real s0's filed share returns 0.0313 within 0.001 | 0.031332 | held |
+| C3: random direction at most 0.10 at every new site; expected at most 0.01 | −0.0009 to 0.0046 | held |
+| readout at the word, blocks 0-2: 0.951, 0.966, 0.934 | 0.951, 0.966, 0.934 | held |
+| control at the word about 0.50, 0.45-0.60 | 0.504, 0.476, 0.484 | held |
+| selectivity at the word about 0.40-0.47 | 0.448, 0.489, 0.450 | held at blocks 0 and 2; block 1 just over |
+| real share at the word about 0.10, range 0.02-0.40 | 0.027-0.045 | inside the range, low end |
+| twin share at the word at most 0.02 in size | −0.002 to 0.009 | held |
+| trigger block 2: real about 0.03, 0-0.10; twin at most 0.02 in size | 0.021, 0.041; 0.002, 0.003 | held |
+| E125's four verdicts unchanged | not through C ×4 | as filed |
+
 ## Departures from the literature
 
 - **Jain et al. 2024, Definition 1.** A binary ridge readout of one property in place of their probe; a per-type form of
@@ -309,8 +395,11 @@ Expected values outside the scored leans:
 
 ## Not run
 
-- Any removal of the readout beyond the filed one-site form: every block, every position, iterative nullspace removal.
-- The definition read at the word's own position under the verdict.
+- A removal at several sites at once; a removal at other positions of the passage, such as the earlier occurrence;
+  iterative nullspace removal or any rank above one. Amendment 1 read four single sites only.
+- The word's position after block 3, which feeds no later block, so its share is zero by construction.
+- Any of Amendment 1's sites read under the verdict: that would be a definition change, the user's call.
+- The zero-update reference at the new sites: with no gain the share cannot be read, by construction.
 - A scratch baseline beside reverse fine-tuning.
 - Arm B copies on Pile rows; a second copy seed.
 - The route split on held-out-word passages, where the twin is at chance.
@@ -325,3 +414,7 @@ MATS debug L40, $0. Stage 0: job 54841, 22:01 to 22:02 on 2026-11-06, peak host 
 and `cluster/logs/commute-e125-<job>.out`. Updates in `results/large/dW_<state>.pt`, bf16, sha256 in `stage1.json`.
 Code `experiments/fresh_reuse_pair/run.py` and `stage2.py` at commit 9b15978c; results commits b2e5bae1 and 99dc92ed.
 Figures from `experiments/fresh_reuse_pair/plot.py`.
+
+Amendment 1: MATS debug L40, $0, job 54933, started 23:08:14 on 2026-11-06, about 70 seconds of work, peak host memory
+6.1 GB, exit 0. Log `experiments/fresh_reuse_pair/results/amend1.out`. Code `amend1.py` and filed predictions at commit
+c3a05060; results commit f185a5d5. Figure `figures/amend1_sites.png`.
