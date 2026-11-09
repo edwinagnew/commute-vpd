@@ -12,4 +12,6 @@ Ask the user only the most important things; for smaller choices, ask Fable (`mo
 
 **Why:** 2026-10-30 the user answered a four-question AskUserQuestion (Q3 plan go-ahead, E45 Amendment 2 filing, drop E45 Job 2, scoring rule for behaviour kept) with "youre asking too many questions. please only ask me the most important things. ask fable for advice for smaller things".
 
+Repeated 2026-11-06: asked for a $0 E124 plan go-ahead (new task family, an hour after a model-choice dialog), the user answered "youre asking me too many questions. check with fable from now on, im going home". Once the user has set the direction, a $0 plan go-ahead, even for a new task family, goes to Fable.
+
 **How to apply:** Before an ask or dialog, sort the items: plan-direction or money-above-cap choices go to the user (one question at most where possible); recipe details, gating readings of $0 jobs, rule wording, drop/keep of a sub-job go to one Fable agent, whose advice is acted on and noted in the plan/decisions.md as Fable's. Refines [[feedback-raise-decisions-often]] and [[feedback-dont-ask-for-cheap-recommended-checks]].
