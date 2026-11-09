@@ -448,3 +448,11 @@ This is "round 1", the input of nearly every other run.
   - r0_t352_v310: sgd_A a4fcbcbc7c61, sgd_B d10ccf5d0cd3, adam_A 1c0f1bbc2b60, adam_B 84fd09c43a0d
   - emoticon: sgd_A 6e5a4f2c4ba2, sgd_B 675676223a42, adam_A e87c3d5da5c0, adam_B 3a5881087123 (job stopped on adam_B's P(target) check; file written)
 - `results/large/run_<task>.log` (28 KB each).
+
+## qwen_pass_pools (E120; 2026-11-07, jobs 54969, 55011-55013)
+- `dW/{known,new}_s{0,1}/step_{5,6,7,10,100}.safetensors` (5.64 GB each, **F32**, 196 tensors, the format of `qwen_anchor1/dW/a1/`, 106 GB with the rest of the folder): SFT on the 77-a-side maths pools. Steps 5-7 bracket |δW| 0.35 and 0.49. Written by `commute.pool_sft`.
+- `samples/{known,new}_s{0,1}/`, `answers/{known,new}_s{0,1}/`: step-100 samples and answers.
+
+## qwen_post_cutoff (E128; paused 2026-11-09, user)
+- `candidates.json` (4.64 MB, sha256 5bef779f): Wikidata candidates from `artifacts/post_cutoff/full/` (36 MB, not in git; `aliases.json` beside the window files).
+- `stage0/`, `stage1/` (shards, `merged.json.gz`): jobs 56780, 56783. `n1/` shards and `results/n1.json`: job 56787, running when the line closed; the last job of this experiment. No `dW/`: the four fine-tunes were not run.
