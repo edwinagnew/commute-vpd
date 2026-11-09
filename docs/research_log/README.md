@@ -52,6 +52,15 @@ the project's name, so a bare word misroutes the user's answer (user, 2026-11-02
 label and goes after them. When the user decides, the card is removed, the decision goes into `decisions.md` and the changelog row names
 it. Adding or removing a card is a `PENDING.md` line like any other change.
 
+## What's next (section `next`, right after the pending decisions; since 2026-11-09)
+
+Rebuilt at each daily flush from `~/commute-agents/fleet/cell list` and `cell show <ID>`, not edited by hand between
+flushes. One card per part of the paper: its lead and gate, "N of M cells done", then one table row per cell:
+`<td>ID</td><td>title in plain words</td><td>open|filled|closed</td><td>due MM-DD</td><td>runs used of allowed, or
+"reading and writing only"</td><td>link to the cell's page once filled (cell show's path), else "not yet"</td>`. Then
+"What already counts towards it": 3 to 6 links to cards or sections already in the log, one plain clause each. Cell rows
+first, links second; a new run cell is a new row. The "Stopped" line changes only when the user stops something.
+
 ## Main-page length (temporary, user 2026-10-26)
 
 Until the user lifts this, a flush may not make the main page longer: what it adds, it takes out elsewhere, by rewriting

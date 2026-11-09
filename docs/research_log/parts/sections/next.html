@@ -1,14 +1,54 @@
 <section id="next">
-<div class="sechead"><div class="eyebrow">What is being done, in order</div><h2><span class="num"></span>What's next</h2></div>
-<div class="prose"><div class="card key"><div class="k">Since 2026-11-03 (user) · preliminary results to you by 2026-11-11</div>
-<p id="deliverables"><strong>D1, the map.</strong> One map on Qwen3-1.7B that keeps the decomposition faithful for a real update, judged by a test that can fail a bad placement. Owner: <code>qwen-decomp-lead</code>. <strong>D2, SFT and RL.</strong> The same table for a supervised and a reinforcement-learning update of the same model. Owner: <code>qwen-rl-lead</code> for the training, <code>qwen-decomp-lead</code> for the readings. <strong>D3, elicitation against new.</strong> Readings that separate an example that only brings out an existing behaviour from one that teaches missing content, then applied to the maths arms (known and never-solved pools, your choice on 11-06). Owner: <code>qwen-decomp-lead</code>, with <code>baseline-lead</code> adding a cheap comparator to every row.</p>
-<table><thead><tr><th>Day</th><th>D1</th><th>D2</th><th>Baseline (secondary)</th></tr></thead><tbody>
-<tr><td>11-09 to 10</td><td>re-runs on the new decomposition; write-up (<code>writeup-lead</code> restarts)</td><td>anchor 2 facts backup</td><td>spare</td></tr>
-<tr><td>11-11</td><td colspan="3">preliminary results to you</td></tr></tbody></table>
-<p><strong>D1, day 4 of 8.</strong> Judged by the clean-model table. Least squares narrowly misses it on three small reinforcement-learning updates (<a href="#e93">E93</a>); teacher training runs on every update next, on the new decomposition (your decision, 2026-11-09).</p>
-<p><strong>D2, SFT and RL (<a href="#d2">card</a>, provisional).</strong> Running: nothing. RL reads like its shuffled-reward null within seed noise.</p>
-<p><strong>D3 (<a href="#e94">E94</a>, <a href="#e104">E104</a>).</strong> Running: nothing. Readings follow task and format, not new against known content (<a href="#e117">E117</a>, <a href="#e118">E118</a>, <a href="#e116">E116</a>); no Qwen anchor gets a reuse verdict (<a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/decisions/2026-11-06_decision_definition-step2-qwen-anchors.md">decision report</a>).</p>
-<p class="small">The 67M lines are stopped; baseline is secondary. Plan: <code>reports/plans/2026-11-03_plan_qwen-reorient.md</code>; choices waiting on you: section {{n:decisions}}.</p></div></div>
+<div class="sechead"><div class="eyebrow">The plan since 2026-11-09, in order</div><h2><span class="num"></span>What's next</h2></div>
+<div class="prose"><p>The project is now one paper in three parts, done one after another. First a working definition of when a fine-tune reuses something the model already had; then, on the small 67M model, a comparison of ways to measure that; then the key findings repeated on the larger Qwen3-1.7B. You decide from one page at each gate: on 2026-11-13 whether to adopt the definition, on 2026-11-18 the comparison and what re-gating measures, and on 2026-11-25 the larger-model table.</p>
+<p class="small">All work is a cell of the table of work, which only you change; a cell's runs are its cap. Each part opens with reading-and-writing cells, and you add its run cells once its first page is agreed. Plan: <code>reports/plans/2026-11-09_plan_paper-roadmap.md</code>. Choices waiting on you: section {{n:decisions}}.</p></div>
 <div class="cards stack">
+
+<div class="card key" id="next-part1"><div class="k">Part 1 · A working definition of reused against new · definition-lead · gate 2026-11-13</div>
+<p><strong>0 of 2 cells done.</strong> The old definition, Jain et al. 2024 with our own removal check, gave no verdict on any task. The replacement under study keeps Jain's structure with a causal step in the style of Prakash et al. 2024; it is not adopted.</p>
+<table><thead><tr><th>Cell</th><th>What</th><th>Status</th><th>Due</th><th>Runs</th><th>Result</th></tr></thead><tbody>
+<tr><td>P1.1</td><td>The definition, after reading both papers in full: one page for you to approve, with three test pairs and what would make us drop it</td><td>open</td><td>11-10</td><td>reading and writing only</td><td>draft with you: <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/plans/2026-11-09_plan_definition-page.md">page</a></td></tr>
+<tr><td>P1.2</td><td>The saved copy fine-tunes and their lookup twins re-read under the new wording</td><td>open</td><td>11-10</td><td>reading and writing only</td><td>draft: <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-09_analysis_p1-2-e62-reread.md">re-read</a></td></tr>
+</tbody></table>
+<p><strong>What already counts towards it.</strong></p>
+<ul>
+<li><a href="#e116">E116</a>: every older 67M task read "unreadable" or "does not apply" under the old definition, so no verdict.</li>
+<li><a href="#e112">E112</a>, <a href="#e113">E113</a>: the case-label pair reads "not through the capability" three ways, by removing one direction, two directions everywhere, and editing the readout.</li>
+<li><a href="#e125">E125</a>: a fresh repeated-word pair reads "not through" on both the real fine-tune and its twin.</li>
+<li><a href="#e124">E124</a>: the original model does not hold pronoun gender readably, so that natural task could not be read.</li>
+<li><a href="#e62">E62</a>: switching off the copying head costs the copy fine-tune about half its gain and its lookup twin nothing.</li>
+</ul></div>
+
+<div class="card key" id="next-part2"><div class="k">Part 2 · On the 67M, re-gating against the neuron reading and simple baselines · compare-lead · gate 2026-11-18</div>
+<p><strong>0 of 2 cells done.</strong> What re-gating measures, its strengths and weaknesses, and how easily a cheaper reading beats it. Its questions are agreed with you before any run.</p>
+<table><thead><tr><th>Cell</th><th>What</th><th>Status</th><th>Due</th><th>Runs</th><th>Result</th></tr></thead><tbody>
+<tr><td>P2.1</td><td>What re-gating does, from saved results: what the number measures, the evidence for and against, at most eight proposed questions</td><td>open</td><td>11-10</td><td>reading and writing only</td><td>not yet</td></tr>
+<tr><td>P2.2</td><td>The scorecard as it stands: task pairs against methods, each cell a number with its file or "not run", one figure</td><td>open</td><td>11-11</td><td>reading and writing only</td><td>not yet</td></tr>
+</tbody></table>
+<p><strong>What already counts towards it.</strong></p>
+<ul>
+<li><a href="#methodtable">Every method against every fine-tune</a>: the readings so far, side by side.</li>
+<li><a href="#neurontable">Neurons beside the decomposition</a> and <a href="#e117">E117</a>: the decomposition's chosen parts repeat across seeds by kind of task, and the same number of neurons do not.</li>
+<li><a href="#e36">E36</a>: the share is high on a fine-tune whose gain is below zero, so a high share alone shows little.</li>
+<li><a href="#e58">E58</a>: re-gating follows whether the original model already guessed the trained answer.</li>
+<li><a href="#e123">E123</a>, <a href="#e125">E125</a>: a real fine-tune and its shuffled twin read the same.</li>
+<li><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-07_analysis_67m-story.md">The 67M summary</a>: what the small model showed, in one report.</li>
+</ul></div>
+
+<div class="card key" id="next-part3"><div class="k">Part 3 · The key findings on Qwen3-1.7B, RL beside SFT · qwen-lead · gate 2026-11-25</div>
+<p><strong>0 of 1 cells done.</strong> Only on the new decomposition. After the first read the line waits for the part 2 gate.</p>
+<table><thead><tr><th>Cell</th><th>What</th><th>Status</th><th>Due</th><th>Runs</th><th>Result</th></tr></thead><tbody>
+<tr><td>P3.1</td><td>The re-gating share of each saved Qwen update on the new decomposition, beside the old reading, with do-nothing and random changes read first</td><td>open</td><td>11-11</td><td>0 of 1</td><td>not yet</td></tr>
+</tbody></table>
+<p><strong>What already counts towards it.</strong></p>
+<ul>
+<li><a href="#e57">E57</a>: on the old decomposition the re-gating share reads 0.99 or more on every update, random ones included.</li>
+<li><a href="#e131">E131</a>: the new decomposition is about seven times harder for the adversary to break on maths text.</li>
+<li><a href="#e94">E94</a>, <a href="#e104">E104</a>: readings follow task and format, and RL reads like its shuffled-reward control.</li>
+<li><a href="#e93">E93</a>: the simplest split narrowly misses on three small maths RL updates, on the old decomposition.</li>
+<li><a href="https://github.com/edwinagnew/commute-vpd/blob/main/experiments/DECOMPOSITIONS.md">Which reading is on which decomposition</a>.</li>
+</ul></div>
+
 </div>
+<div class="prose"><p class="small"><strong>Stopped on 2026-11-09.</strong> The re-runs of the carrying tests on the new decomposition, and teacher training's remaining Qwen stages: you take teacher training as the answer to carrying an update. The post-cutoff facts pair is paused: example pairs for Qwen are chosen after part 1. The roles regating-lead, baseline-lead, qwen-decomp-lead and qwen-rl-lead are closed.</p></div>
 </section>
