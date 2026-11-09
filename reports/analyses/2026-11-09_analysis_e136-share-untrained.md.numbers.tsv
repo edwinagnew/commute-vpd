@@ -1,0 +1,16 @@
+0.51	experiments/share_untrained/results/stage1.json	.pairs[]|select(.id=="e46_copy_random")|.trained.gap	this
+0.69	experiments/share_untrained/results/stage1.json	.pairs[]|select(.id=="e62_copy_lookup")|.trained.gap	this
+0.05	experiments/share_untrained/results/stage1.json	-(.pairs[]|select(.id=="open_pair_c3")|.svd.gap)	this
+0.07	experiments/share_untrained/results/stage1.json	.pairs[]|select(.id=="e54_matched")|.svd.gap	this
+0.44	experiments/share_untrained/results/stage1.json	.pairs[]|select(.id=="e54_matched")|.shrink	this
+0.68	experiments/share_untrained/results/stage1.json	.pairs[]|select(.id=="open_pair_c3")|.shrink	this
+0.12	experiments/share_untrained/results/stage1.json	-(.pairs[]|select(.id=="open_pair_c3_copy")|.rotated.gap)	this
+0.16	experiments/share_untrained/results/stage1.json	.pairs[]|select(.id=="e62_copy_lookup")|.rotated.gap	this
+0.50	experiments/share_untrained/results/stage1.json	[.states[].trained]|add/length	this
+0.07	experiments/share_untrained/results/stage1.json	[.states[].svd]|add/length	this
+3.1	experiments/share_untrained/results/stage1.json	-([.states[]|.L00.svd - .T0_fp32]|add/length)	this
+10.6	experiments/share_untrained/results/stage1.json	-([.states[]|.L00.svd - .T0_fp32]|min)	this
+24.1	experiments/share_untrained/results/stage1.json	-([.states[]|.L00.rotated - .T0_fp32]|add/length)	this
+0.8	experiments/share_untrained/results/stage1.json	[.states[]|.cells_trained.L00 - .cells_trained.T0]|add/length	this
+0.04	experiments/share_untrained/results/stage1.json	[.pairs[]|select(.id|test("case_label|fresh_reuse|class_twin"))|.trained.gap, .svd.gap]|map(if . < 0 then -. else . end)|max	this
+0.1	given	the smallest gap that matters, reports/plans/2026-11-09_plan_p2-8-card.md
