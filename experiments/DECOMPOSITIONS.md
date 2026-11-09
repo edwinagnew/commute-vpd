@@ -39,7 +39,7 @@ column is filled in when an amendment is read: same, differs (one line how), or 
 | E94, Amendment 1 | lines 157, 163: D3 readings follow task and format | E94 new-decomposition amendment | Not re-run | |
 | E104, Amendment 1 | line 163: RL reads like its null | E104 new-decomposition amendment | Not re-run | |
 | E107 Amendment 1 | supporting | E107 new-decomposition amendment | Not re-run | |
-| E57 route split | line 178: r at least 0.99 on every Qwen update | E57 new-decomposition amendment | Not re-run | |
+| E57 route split | line 178: r at least 0.99 on every Qwen update | E132 (P3.1), re-gating share only (no gate counts, placement nulls or overlaps) | Read 2026-11-09, job 56867 | Same range, still at the ceiling (0.991 to 0.9992 on new; 0.993 to 0.9995 on old); same four update pairs separated; differs in that the anchor 2 seeds now also separate from both random changes |
 | E44 Amendments 1/1b, E76, E79, E77, E61 gamma_parts and Job S | supporting | Only if a top-tier result moves | Not planned yet | |
 | E44 main and Amendment 2, E82, E40 stage G | no decision rests on them, or already read on new by E131 | None | Skipped on purpose | |
 | E118 (baseline-lead), `qwen_rl_reads/plot_d2.py` (qwen-rl-lead) | joins of the above | Rebuilt by their owners after E93, E94, E104 on new | Waiting | |
