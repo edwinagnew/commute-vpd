@@ -1,0 +1,34 @@
+{
+ "experiment": "E132 (cell P3.1): re-gating share on the new decomposition p-9707d6ff",
+ "filed": "2026-11-09, before any run; never edited after a run (add a dated report instead)",
+ "plan": "reports/plans/2026-11-09_plan_e132-regating-new.md",
+ "measurement": {
+  "share": "E57's: (K00 - K01) / (K00 - K11) from the cells summed over 128 maths rows of 256 tokens, KL(fine-tuned ‖ masked forward). K00: original subcomponents, W0's masks; K01: original subcomponents, the fine-tuned model's masks; K11: the least-squares split, the fine-tuned model's masks. Status 'scored' / 'unscored' / 'nan' by commute.qwen_reading.shares, unchanged from E57",
+  "states": "E57's four updates (E40 step 10; gold step 100; anchor 2 seeds 0 and 1 step 100) and E57's two random changes (Gaussian off-span; random change on the live columns), each random change scaled to E40's KL on 16 rows by E57's search",
+  "blind_to": "Reads 1 whenever K01 ≈ K11 ≪ K00, whatever the update did: on the old decomposition every update and both random changes read 0.993 to 0.9995. A high share says only that the masks Γ gives at the fine-tuned weights recover most of the output change, not that the update was a re-gating",
+  "noise_floor": "The 95% interval of the share over resamples of the 128 rows, and the seed spread below. On old the row interval's width is 0.0005 to 0.0014 and the seed spread 0.0022"
+ },
+ "controls_stop_on_miss": {
+  "W0": "W0 as the fine-tuned model: K00 and K01 equal K0, and K10 and K11 under an all-zero split equal K0 on 16 rows, each within 1e-6 relative (CFG.id_tol, the tolerance these identities met in E57 stage A)",
+  "E40_KL": "KL(W0 ‖ W0 + E40 step 10) unmasked on the first 16 rows equals E57's 0.618376722326358 within 1e-3 relative (CFG.rep_tol, E57's). No decomposition enters it: this tests the weights, the rows and the card",
+  "do_nothing": "The do-nothing state through the split path on E40, 16 rows: share within 1e-6 of 1 (K10 = K00, K11 = K01 by construction)",
+  "alive": "The live set rebuilt from the saved statistics counts 500,244 (E131 Amendment 1 stage 1)",
+  "stored_error": "The fp32 split misses float64 by under 1e-3 of ‖δW‖_Σ at every state (E57's bar; E57 read about 1e-6)",
+  "gpu": "Peak under 44 GiB after the first row of each cell pass (E57's bar)"
+ },
+ "expected": {
+  "W0_K0": "Mean K0 near E131's masked KL on maths, 0.0728 on new (rows of 512; here 256, and on old the 256-token value was 1.18 x the 512-token one, so about 0.08). Logged, no stop",
+  "random_share": "Each random change reads at least 0.8, as on old (0.9940 Gaussian, 0.9928 in-span)",
+  "update_share": "Each update reads at least 0.98 (old: 0.9927 to 0.9995)"
+ },
+ "separation_rule": {
+  "seed_spread": "|share(a2long_s0) - share(a2long_s1)| on the same decomposition: the one saved seed pair with an old reading. Unreadable if either is not 'scored'",
+  "separated": "A pair of states other than the seed pair is separated when both are 'scored', |share difference| > seed spread (strict), and the 95% interval over row resamples of the paired difference excludes 0. Otherwise not separated. A pair with an unscored state, or with no seed spread, is 'unreadable'",
+  "edge_cases_checked": "Empty or one-element pool: does not arise, the state set is fixed at six. Zero spread: reduces to the interval test. Ties at exactly the spread: not separated. Zero denominator or under the floor: the state is unscored and its pairs unreadable. Do-nothing is the identity check, not a candidate, so it enters no pair: its share is 1 by construction",
+  "applied_to": "new and old alike, from the per-row cell sums (old: E57's C0.json and C_*.json), so the two tables use one rule",
+  "reports": "The answer is the count and names of separated update-update pairs and update-random pairs, on new and on old; not a pass or fail"
+ },
+ "leans": {
+  "written_before_running": "Every update and both random changes read at least 0.98 on new, as on old, so the largest update-to-update difference stays under 0.02. Update-to-update pairs of different arms may exceed the seed spread as they do on old (E40 against the anchor 2 seeds: 0.0065 against a spread of 0.0022), but no pair of updates is separated by more than 0.02"
+ }
+}
