@@ -261,13 +261,18 @@ def capacity(net: Net, fit: Tensor, read: Tensor, p: Pieces, cfg: Config, log: A
 @torch.no_grad()
 def z_rank(net: Net, windows: Tensor, cfg: Config) -> dict[str, Any]:
     """Rank of z_M up to `out3` on these windows, centred: singular values above 1e-6 of the largest, in fp32. A number below the
-    columns is a bound; equal to the columns, it is exact."""
+    columns is a bound; equal to the columns, it is exact. The values come from eigvalsh of X'X in float64, because
+    cuSOLVER's SVD refuses this size (job 57027); float64 rounding of X'X reaches about 1e-8 of the largest singular
+    value, under the 1e-6 cut."""
     Xs: list[Tensor] = []
     for toks in chunks(windows, cfg.ridge_batch):
         _, seen = run(net, toks, sites=STREAMS)
         Xs.append(flat(seen, "out3"))
     X = torch.cat(Xs)
     X = X - X.mean(0)
-    sv = torch.linalg.svdvals(X)
+    X64 = X.double()
+    G = X64.T @ X64
+    ev = torch.linalg.eigvalsh(G)
+    sv = ev.clamp_min(0.0).sqrt().flip(0)
     return {"rank": int((sv > 1e-6 * sv[0]).sum()), "columns": X.shape[1], "windows": X.shape[0], "sv_max": float(sv[0]),
             "sv_min_kept": float(sv[(sv > 1e-6 * sv[0])][-1])}
