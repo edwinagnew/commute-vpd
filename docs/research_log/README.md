@@ -600,3 +600,4 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e131_adversary.png": "experiments/qwen_new_decomp/figures/adversary.png"
 - "fig/e131_ci_kl.png": "experiments/qwen_new_decomp/figures/ci_kl.png"
 - "fig/e131_active.png": "experiments/qwen_new_decomp/figures/active.png"
+- "fig/methodtable_gaps.png": "experiments/method_table/figures/scorecard_gaps.png"

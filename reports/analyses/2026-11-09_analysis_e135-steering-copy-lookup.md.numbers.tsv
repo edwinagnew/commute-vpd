@@ -1,0 +1,31 @@
+0.69	experiments/steering_copy_lookup/results/stage1.json	.score.gap_share	this
+0.41	experiments/steering_copy_lookup/results/stage1.json	.score.gap_pooled	this
+0.52	experiments/steering_copy_lookup/results/stage1.json	.states.copy_s0.steering.pooled.share_lo	this
+0.59	experiments/steering_copy_lookup/results/stage1.json	.states.copy_s1.steering.pooled.share_lo	this
+0.14	experiments/steering_copy_lookup/results/stage1.json	.states.lookup_s2.steering.pooled.share_lo	this
+0.16	experiments/steering_copy_lookup/results/stage1.json	.states.lookup_s0.steering.pooled.share_lo	this
+0.63	experiments/steering_copy_lookup/results/stage1.json	.states.lookup_s1.steering.perkey.share_lo	this
+0.69	experiments/steering_copy_lookup/results/stage1.json	.states.lookup_s0.steering.perkey.share_lo	this
+0.61	experiments/steering_copy_lookup/results/stage1.json	.states.copy_s0.steering.perkey.share_lo	this
+0.65	experiments/steering_copy_lookup/results/stage1.json	.states.copy_s2.steering.perkey.share_lo	this
+0.02	experiments/steering_copy_lookup/results/stage1.json	-.score.gap_perkey	this
+0.27	experiments/steering_copy_lookup/results/stage1.json	.score.edge	this
+0.1	experiments/steering_copy_lookup/results/predictions.json	.thresholds.edge	this
+0.1	experiments/steering_copy_lookup/results/predictions.json	.thresholds.random_band	this
+0.04	experiments/steering_copy_lookup/results/stage1.json	[.states.copy_s0, .states.copy_s1, .states.copy_s2 | .steering.pooled.share_lo] | (add/length) as $m | (map(. - $m | . * .) | add / 2 | sqrt)	this
+0.50	experiments/steering_copy_lookup/results/stage1.json	([.states.copy_s0, .states.copy_s1, .states.copy_s2 | .steering.pooled.share_lp] | add/3) - ([.states.lookup_s0, .states.lookup_s1, .states.lookup_s2 | .steering.pooled.share_lp] | add/3)	this
+0.08	experiments/steering_copy_lookup/results/stage1.json	([.states.lookup_s0, .states.lookup_s1, .states.lookup_s2 | .steering.perkey.share_lp] | add/3) - ([.states.copy_s0, .states.copy_s1, .states.copy_s2 | .steering.perkey.share_lp] | add/3)	this
+0.12	experiments/steering_copy_lookup/results/stage1.json	-.score.random_mean_share.perkey.lookup	this
+0.003	experiments/steering_copy_lookup/results/stage1.json	.states.lookup_s2.steering.pooled.off_kl	this
+0.016	experiments/steering_copy_lookup/results/stage1.json	.states.copy_s1.steering.pooled.off_kl	this
+0.06	experiments/steering_copy_lookup/results/stage1.json	.states.copy_s2.off_kl_state	this
+0.09	experiments/steering_copy_lookup/results/stage1.json	.states.lookup_s1.off_kl_state	this
+0.31	experiments/steering_copy_lookup/results/stage1.json	-.states.lookup_s1.steering.perkey.cross.share_lo	this
+0.38	experiments/steering_copy_lookup/results/stage1.json	-.states.lookup_s0.steering.perkey.cross.share_lo	this
+0.89	experiments/steering_copy_lookup/results/stage1.json	.cosines["1"].within_copy	this
+0.85	experiments/steering_copy_lookup/results/stage1.json	.cosines["1"].within_lookup	this
+0.31	experiments/steering_copy_lookup/results/stage1.json	.cosines["1"].copy_vs_lookup	this
+0.73	experiments/steering_copy_lookup/results/stage1.json	.states.copy_s0.steering.pooled.share_lp	this
+0.80	experiments/steering_copy_lookup/results/stage1.json	.states.copy_s1.steering.pooled.share_lp	this
+0.7	given	expected range, reports/plans/2026-11-09_plan_e135-steering-copy-lookup.md (by analogy with E58)
+0.9	given	expected range, same plan
