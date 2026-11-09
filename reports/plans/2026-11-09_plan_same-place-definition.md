@@ -90,11 +90,11 @@ A share of 0 means M's values are no more use than random ones. A share of 1 mea
 
 **The bar is on the share, one number for every task.** It is set from fine-tunes whose answer is fixed by how they were built,
 never from the tasks it will then read. At the top are fine-tunes **forced** through the copying heads: every other weight was reset
-to the original model's at each step, so what reaches those heads is the original model's. At the bottom are random-map fine-tunes:
+to the original model's at each step, so what reaches those heads is the original model's. At the bottom are cipher fine-tunes, saved on several seeds:
 an arbitrary table gives the original model's ordinary run no reason to hold its answers.
 
 **The rule.** The share is read for those fine-tunes on each seed, with its spread from resampling pairs. The bar is the lowest forced
-share less two spreads. It stands only if it is above the highest random-map share plus two spreads. If they overlap, there is no
+share less two spreads. It stands only if it is above the highest cipher share plus two spreads. If they overlap, there is no
 bar and the definition, at this site map class, fails the test. Where ceiling minus floor is under two spreads the share is not read,
 since it would divide by about zero; that site reads "F does not implement H here". "F implements H" uses the same bar, on F→F score
 minus floor over one minus floor.
@@ -114,7 +114,7 @@ Only you can add these. Nothing runs until you do. Costs are estimates, not meas
 | Run | What | Reads | Done when |
 |---|---|---|---|
 | 1. Apparatus, first and alone | M→M swaps at the copying heads on ordinary text, and a random network into M. Stops here if M does not follow its own copying | M near its own ceiling; random at the floor | Both read against filed bars |
-| 2. The bar | Forced, forbidden and normal copy fine-tunes and random-map fine-tunes, two seeds, saved states, no training | Share per state; forbidden fails to implement at the heads | The bar, or "no bar" |
+| 2. The bar | Forced, forbidden and normal copy fine-tunes and cipher fine-tunes, two seeds, saved states, no training | Share per state; forbidden fails to implement at the heads | The bar, or "no bar" |
 | 3. A second anchor | One new pair, below | Same | Bar stands on both, or does not |
 | 4. Pairs | The three in the table below, under the bar fixed by runs 2 and 3 | Label per seed | One label per seed per arm |
 
@@ -131,8 +131,14 @@ arm stopped at step 5. Case label has a named variable, a saved real and shuffle
 I am least sure of the case label. A patch of the case readout direction at block 1 flipped at most 0.014 of labels against a filed
 0.50, so the fine-tune may not read the readout's direction. A fitted subspace may find another place, or this may read new.
 
-**What would make us drop it.** The forced and random-map shares overlap. The forbidden fine-tune passes "F implements H" at the
+**What would make us drop it.** The forced and cipher shares overlap. The forbidden fine-tune passes "F implements H" at the
 copying heads. Or no real arm of the three pairs earns a label above new.
+
+## Your answers, 2026-11-09, tentative
+
+A fine-tune that adds only a new last step keeps its own label, "wrapped". The original model must have the value on its
+ordinary inputs, so an old step fired in a new place can be reuse. Add the calibration runs, with the new case-label anchor.
+The wording is still not adopted; that takes a dated `decisions.md` row.
 
 ## Departures from the literature
 
