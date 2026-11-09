@@ -6,10 +6,11 @@ queue, one run, no new fine-tune. No verdict under any wording of reuse: sides a
 **What runs.** The share's formula, unchanged (`r = (L01 - L00) / gain`, the do-nothing form), read three ways on the same rows of every saved state: the trained
 decomposition, each matrix's SVD, and that SVD with a random rotation. The two untrained ones use the gate rule on the card; the trained one uses Γ.
 
-**Pairs.** Every row of `experiments/method_table/results/table.json` whose `cells.r.verdict` is "separates", plus `e62_copy_lookup` (the share's gap of about 0.69), plus the
-real-against-twin pairs: `case_label`, `fresh_reuse_pair`, and `e58_class_twin` (`e58_elicit_shuffle` is already in the list). Scored: pairs with three or more seeds per side.
-Described only, not scored: pairs with two per side (`case_label`, `fresh_reuse_pair`, the reuse side of `e53_lowercase_cipher`). Windows, states and saved shares per pair:
-`experiments/prior_vs_share/results/inventory.json` lists 24 maps; the rows it omits (`e53`) are found where `experiments/method_table/build.py` reads them.
+**Pairs: every saved seed, and only saved seeds (narrowed 2026-11-09, before any code; the first version of this plan listed pairs without checking each state file).** Scored, three or more
+seeds per side: `e46_copy_random` (4 v 4), `e54_matched` (5 v 5), `open_pair_c3` (8 v 8), `open_pair_c3_copy` (8 v 8), `e62_copy_lookup` (3 v 3). The two open-pair rows share one cipher side, so they are not independent; the rule counts table rows and the report says so.
+Described only, not scored: `case_label` (2 v 2), `fresh_reuse_pair` (2 v 2), `e53_lowercase_cipher` (2 v 4), `e54_own` (5 v 2), and the class-map pair in `definition_verify` (`dW_class_{map,shuffled}_s{0,1}.pt`, 2 v 2) if a saved share exists on its windows.
+Not readable, no states saved: `e58_rank1_96`, `e58_elicit_shuffle`, `e58_copy_prior_cipher`, `e58_class_twin` (`experiments/SAVED.md` line 163; `open_pair/results/large/amend3` keeps seed 0 of copy, elicit and rank1 only, `amend4` to `amend7` no updates). A new fine-tune is outside the cell, so these are reported as not read. **So no real-against-twin pair is scored: the twin pairs are described at two seeds per side.**
+Windows, states and saved shares per pair: `experiments/prior_vs_share/results/inventory.json`; the rows it omits are found where `experiments/method_table/build.py` reads them.
 
 **Apparatus.** `model.components` holds 512 subcomponents on `attn.k_proj` and `attn.q_proj`, below their rank of 768, so an exact SVD cannot be written into it (`alive.pt` shapes,
 2026-11-09). The untrained reads use a new masked forward instead: a forward hook on each of the 24 matrices returning `(g * (x @ V)) @ U^T` in fp32. Trained reads stay on `route_split` as filed (bf16 autocast);
@@ -47,4 +48,4 @@ Result that changes what we do: rival B means the share is no evidence about VPD
 
 ## Not run
 
-Everything above. The saved trained shares on the pairs not reproduced in stage 0 are re-read in stage 1, not trusted from file.
+Everything above. The saved trained shares on the pairs not reproduced in stage 0 are re-read in stage 1, not trusted from file. Never to be run in this cell: the four 96-key pairs whose updates were not kept, which include the only twin pairs with three seeds per side.
