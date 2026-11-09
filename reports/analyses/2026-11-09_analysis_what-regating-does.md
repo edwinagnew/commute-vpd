@@ -3,6 +3,9 @@
 *2026-11-09, for the plan's table of work. Read from saved files only; no run. Design checks per proposed cell:
 `2026-11-09_analysis_what-regating-does_appendix.md`.*
 
+*Decided by the user, 2026-11-09: proposals 1, 2, 3 and 5 of section 4 are cells P2.3, P2.4, P2.5 and P2.6, one run each.
+Proposal 4 is held and is not a cell.*
+
 ## 1. The answer
 
 The share is the part of a fine-tune's gain that appears when the original subcomponents are kept and only which of them are switched on changes. It sorts most task pairs built to reuse from pairs built to be new, even at equal update size. Its level also follows how likely the original model already was to give the answer. Real fine-tunes read the same as their shuffled twins on three pairs. We do not yet know what it adds to those facts.
