@@ -21,6 +21,8 @@ re-gating, the neuron reading and simple baselines against it; and the key findi
 (read it with `~/commute-agents/fleet/cell`, which only the user changes). The plan's seven "rules that keep it on
 track" hold for every session and override anything below that disagrees.
 
+A job submission (`sbatch`, GPU `srun`) or a pod start must name an experiment number claimed against an open cell of your role, e.g. `sbatch --comment=E###` (`fleet/ecode`); the harness (`fleet/job-gate`) refuses it otherwise.
+
 **Terms.** `GOALS.md` → Terms is the vocabulary (component training, least-squares split, adjoint split, rescaling
 split, outside share, do-nothing, LoRA split, fixed-shift hypothesis); its "old names" column decodes older reports. "Pull-back", "lift",
 "projection" and "H′" (now the fixed-shift hypothesis) are retired: not in new prose or code (`.claude/skills/writeup/check.py` flags them). When the user's words

@@ -67,6 +67,15 @@
             "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/no-compute-on-node.py\""
           }
         ]
+      },
+      {
+        "matcher": "Bash|mcp__plugin_remote-kernels_remote-kernels__start|mcp__plugin_remote-kernels_remote-kernels__attach",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "g=\"$HOME/commute-agents/fleet/job-gate\"; if [ -x \"$g\" ]; then exec \"$g\"; else exit 0; fi"
+          }
+        ]
       }
     ]
   }

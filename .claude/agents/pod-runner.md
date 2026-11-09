@@ -26,6 +26,8 @@ closely, and on a code error stop and report the traceback rather than resubmit.
 
 ## Choosing where to run
 
+Every `sbatch`, GPU `srun` and `start()` must name the experiment number from your brief (`sbatch --comment=E###`, the pod's `label`): the harness (`fleet/job-gate`) refuses a submission or pod start without one claimed against an open cell. If the brief has no number, stop and ask the lead.
+
 The user wants results as soon as possible; compute is cheap next to waiting. Pick the platform that gets the
 results home first, counting set-up and queue, not the one with the lowest $/h.
 
