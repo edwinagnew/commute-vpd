@@ -1,0 +1,72 @@
+{
+ "experiment": "E133, the prior against the re-gating share over every saved map (experiments/prior_vs_share, cell P2.3)",
+ "plan": "reports/plans/2026-11-09_plan_e133-prior-vs-share.md (inventory: reports/plans/2026-11-09_plan_e133-prior-vs-share_appendix.md)",
+ "filed": "2026-11-09, before any run; run.py refuses unless this file and results/inventory.json are committed unchanged. Never edited after the run.",
+ "no_verdict": "These rules read two orderings of the maps. No rule says anything about reused or new: the reuse definition is under revision in cell P1.1 and the built labels are quoted only as how each map was made.",
+ "inventory": "results/inventory.json: every map's share per seed and gain (file and JSON key), prior source, windows file, step. 24 maps.",
+ "stage0": {
+  "controls": [
+   {"name": "copy_96keys", "windows": "experiments/open_pair/results/large/amend3/windows_copy_trained.pt", "file": "experiments/open_pair/results/amend6.json", "key": ["prior_beside_r", "copy", "w0_geo_p_trained"], "expected": 5.910717799178698e-05},
+   {"name": "elicit_e54", "windows": "experiments/keydependent_elicit/results/large/windows_elicit.pt", "file": "experiments/keydependent_patch/results/job2.json", "key": ["stage0", "elicit", "rate"], "expected": 0.001704337133900724}
+  ],
+  "tol_rel": 1e-4,
+  "tol_source": "Between runs of this exact path on the MATS L40 the difference has read 0: keydependent_patch/results/job2.json .stage0.elicit.rate_rel and .cipher.rate_rel are 0 against E54's stage1.json, and open_pair amend4's cipher seed 0 reproduced amend3 exactly. Float32 rounding of a mean log P near -9 is under 1e-5 relative. 1e-4 is ten times that. The job reports the batch-of-64 against the full-batch mean log P on each control (batched_vs_full_lp): reported only, the path being matched is the full batch.",
+  "quantity_checked": "Both controls are the same quantity, KD.geo_rate(ST.load_task(...).lp0): experiments/open_pair/amend3.py line 89 for the copy map's saved prior (amend3.json .maps.copy.w0_geo_p.trained, repeated in amend6.json .prior_beside_r.copy.w0_geo_p_trained) and experiments/keydependent_patch/run.py line 161 for E54's. Windows are held-out windows of the trained keys, at the trigger. The appendix's 1.33e-3 and 1.38e-6 are the 96-key elicit and cipher of the same quantity and are in the inventory as saved priors.",
+  "stop": "A control off by more than tol_rel writes stage0.json and exits 1 before stage 1."
+ },
+ "rules": {
+  "min_maps": 12,
+  "agree": 0.8,
+  "weaker": 0.6,
+  "n_boot": 10000,
+  "seed_boot": 133,
+  "n_perm": 10000,
+  "seed_perm": 134,
+  "off_k": 2.5
+ },
+ "measurements": {
+  "spearman": "Spearman (mean ranks for ties, open_pair.spearman) of the map-mean share against log10 prior, over the n maps entering.",
+  "ci95": "Percentile 2.5 and 97.5 of Spearman over 10,000 bootstrap resamples of the maps (the same seeded generator every time; resamples with a constant side dropped; nan under 90% valid). The seed of a map is held fixed; only maps are resampled.",
+  "null95": "The 95th percentile of Spearman with the shares shuffled over the maps, 10,000 permutations (this n, the same job), and the one-sided p of the observed rho.",
+  "off_line": "A line of share on log10 prior fitted on the other n-1 maps and read at each map (leave-one-out residual). The noise reference is the same data: sd = 1.4826 x median absolute deviation of the residuals. A map sits off the line when |residual| > 2.5 sd and > the map's own seed range (max - min of its seeds). Reported by name and sign; no rule reads the sign or the built label."
+ },
+ "readings": {
+  "agree": "rho >= 0.80, ci95 lower >= 0.60 and rho > null95: the prior orders the maps the way the share does. The paper reads the share as the prior, except on the maps named off the line.",
+  "weaker": "rho <= 0.60 and ci95 upper < 0.80: much weaker than the earlier readings; the share orders the maps in a way the prior does not.",
+  "no_call": "Anything else, including a rho between the bands, a nan, or fewer than 12 maps entering: reported as read, no amendment opened (.claude/CLAUDE.md: a cell's run count is the cap)."
+ },
+ "band_sources": {
+  "agree": "0.80 is the low end of the 0.8 to 1.0 expected in the design check of 2026-11-09 (the analysis page's cell 1), set below the two earlier readings: Spearman 0.886 over six maps (open_pair/results/amend6.json .rho_r_logprior, 0.8857) and 0.952 over eight (recomputed from open_pair/results/amend7.json .prior_beside_r; d^2 sum 4 of 8 maps; the file holds the column, no rho). Both were computed after the runs, not filed.",
+  "weaker": "0.60 is the midpoint of 0.80 and the 0.40 permutation 95th percentile expected at n near 24 (Spearman null 95th of about 0.34 to 0.4 at this n, measured here as null95). The interval bound below 0.80 means a low rho with a wide interval reads no call rather than weaker."
+ },
+ "expected": {
+  "stage0": "Each control reads its saved value within 1e-4 relative: copy 5.9107e-5, E54 elicit 1.7043e-3.",
+  "prior_per_map": "Computed where missing; the keyed maps at or near the saved band 3e-7 to 1.3e-2, the label pairs at the low end near 1e-6 (case-label T0 log-odds -14.5, case_label_both .routes.real_s0.least_squares.cells.T0).",
+  "spearman": "0.75 to 0.95, reading: agree about 55%, no_call about 40%, weaker about 5% (the writer's lean, before the run).",
+  "null95": "About 0.34 to 0.40 at n = 24.",
+  "off_line": "Maps expected off: the copy maps with a share over the line (E62 copy, share 1.09 at prior 3.2e-4; the 96-key copy, 0.77 at 5.9e-5), and the maps at a matched prior with a low share under it (E62 lookup 0.40 at 2.4e-4, prior-matched cipher 0.38 at 3.7e-5). Not filed as rules."
+ },
+ "blind_to": {
+  "spearman": "Ranks only: the size of the gap between maps and any level shift of the share; a monotone curve reads 1 however curved. Points that are correlated (the same table at 24, 32 and 96 keys; E46's two copy maps) make the interval too narrow; the families are in results/inventory.json. Whether either number is a verdict on reuse.",
+  "off_line": "Maps' residual size depends on the line through all the other maps; one family pulls the line (the maps at a low prior hold it down). A map within the leave-one-out noise is not shown to be on the line for any other reason. It does not say why a map sits off.",
+  "prior": "The geometric mean of P(trained answer) only: not the original model's rank of the answer, nor anything at other positions."
+ },
+ "positive_control": "Stage 0's two reproduced priors check the forward path. There is no positive control for the ordering itself: no state is known to order as the share does. The reference for the ordering is the permutation null, measured in the same job.",
+ "edge_cases_run_before_filing": {
+  "script": "run.py's `score`, `point` and `off_line` on stand-in numbers (no model), 2026-11-09, through cpu-run; output kept in the writer's scratch folder.",
+  "fewer_maps": "11 maps entering (under min_maps 12), even with rho 1.0: reading no_call.",
+  "ties_in_share": "all 24 shares equal: Spearman nan (constant side), interval and null nan, reading no_call, no map off the line (a constant share or a residual sd under 1e-9 flags none; fixed after the first dry run flagged 4 on rounding noise).",
+  "ties_in_prior": "priors of two values only, shares monotone within: rho 0.867, interval [0.79, 0.87], null95 0.34, reading agree; ranks use the mean rank of ties.",
+  "zero_probability": "a prior of exactly 0: log prior infinite, the map is excluded with its reason in `excluded`, n drops by one; the reading runs on the rest (n 23).",
+  "one_seed": "a map with one seed: lo = hi = share, its seed range 0 so the seed-range bar never blocks an off-line call; the residual bar alone decides.",
+  "zero_update": "gain 0 under the 1 log-odds floor: the seed is dropped; a map with no seed left is excluded with its reason, as read (the check: `point` on a row whose gain is below the floor).",
+  "do_nothing_reading": "A do-nothing state reads the fine-tune's share and the prior of its map, so the rule reads the same point: nothing in the rule compares a state against a do-nothing bar and nothing here can pass or fail on it. A resampled set with a constant side is dropped from the bootstrap; under 90% valid resamples the interval is nan and the reading is no_call.",
+  "no_relation_stand_in": "shares unrelated to the prior by construction: rho 0.19, interval [-0.24, 0.58], reading weaker. A clean monotone stand-in: rho 1.00, reading agree."
+ },
+ "do_nothing": "A zero update has gain 0, under the 1 log-odds floor (local_faith.py line 187), and leaves the map out: no rule reads it. A do-nothing state reads the same share as its fine-tune's split (fresh_reuse_pair stage2.json .states.real_s0.nothing.shares.r equals .least_squares.shares.r), so it would sit at the map's point: nothing in the rule moves. If every share were equal, Spearman is nan and the reading is no_call.",
+ "maps_note": "A map is one trained table on one key set, its windows file and its seeds. The same table at 24, 32 and 96 keys counts as three maps: each was fine-tuned on its own. Per map one point, the seed mean, the seed range kept; a seed under the gain floor is dropped from its map (none is, on the saved files).",
+ "stop_rules": [
+  "Stage 0: either control missed: exit 1 before stage 1.",
+  "A saved windows or JSON file missing: the job exits before loading the model."
+ ]
+}
