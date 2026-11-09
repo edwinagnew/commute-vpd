@@ -15,7 +15,7 @@ I checked the pairs in the current definition page, `2026-11-09_plan_same-place-
 
 | Pair | What the files show | Untouched? |
 |---|---|---|
-| Copy at a new marker against a lookup there | Named in the result files of 27 experiment folders | No |
+| Copy at a new marker against a lookup there | Named in the result files of at least 12 experiment folders (12 to 21, depending on which of its names are searched) | No |
 | Case label, real and shuffled twin | Read in 9 folders, including `case_label`, `case_patch`, `case_label_both`, `method_table` | No |
 | Repeat label, real and shuffled twin | Read in `fresh_reuse_pair`, `method_table`, `prior_vs_share` | No |
 | Forced and forbidden case label, proposed there | Never trained: `definition_verify` holds forced copy and lowercase only | Unread, but the page proposes it as an input that sets the definition's bar, and its task has been read four times |
