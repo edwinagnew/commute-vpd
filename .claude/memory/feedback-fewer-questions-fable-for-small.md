@@ -8,6 +8,8 @@ metadata:
   modified: 2026-10-30T14:26:30.843Z
 ---
 
+**Superseded 2026-11-09** by `reports/plans/2026-11-09_plan_paper-roadmap.md`: no other model gives a go-ahead or settles a choice the user was asked; a cheaper subagent may read or write, and a lead with nothing it may run finishes.
+
 Ask the user only the most important things; for smaller choices, ask Fable (`model: fable`) for advice and go with it, recording it as Fable's.
 
 **Why:** 2026-10-30 the user answered a four-question AskUserQuestion (Q3 plan go-ahead, E45 Amendment 2 filing, drop E45 Job 2, scoring rule for behaviour kept) with "youre asking too many questions. please only ask me the most important things. ask fable for advice for smaller things".
