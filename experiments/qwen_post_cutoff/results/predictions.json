@@ -1,0 +1,65 @@
+{
+ "experiment": "E128 qwen_post_cutoff",
+ "plan": "reports/plans/2026-11-06_plan_e128-post-cutoff-facts.md",
+ "filed": "2026-11-09",
+ "rounding": "Thresholds compare as written (>=, <=, >, <), on values rounded to 9 places; a missing value is a miss unless the rule says 'does not apply'. Bands include their ends (a tie at a bar passes).",
+ "terms": {
+  "new pool": "facts dated on or after 2025-05-01, in relations decided at the event (winner, election result, award, appointee, death), never answered in 64 no-think samples (0 of 16, then 0 of 48 fresh), after the guards; 'new' means 'not answered in 64 samples', never 'absent'",
+  "known pool": "facts dated on or before 2023-12-31, same relations and templates, answered in at least 36 of 48 fresh samples, after the guards",
+  "n": "results/pools.json meta.n: facts per pool (both pools the same n by construction); each fact gives three training sequences (templates 0-2) and one held-out question (template 3)"
+ },
+ "controls": {
+  "stage0": {"a_known_facts_greedy": [0.93, 1.0], "a_ref_known": 0.97, "a_invented_max": 0.03,
+             "b_gold_grader": 1.0, "b_other_fact_gold_max": 0.05, "c_gsm8k_0_255_strict": [0.72, 0.84],
+             "on_miss": "the job stops (exit 2); nothing else runs"},
+  "stage1_early": {"format_share_min": "stage 0 known-fact format share minus 0.05", "min_candidates_per_side_after_16": 100,
+                   "on_miss": "the job stops (exit 2)"},
+  "n1_control": {"rule": "known pool (train + held facts) answered at least once in 4 think-mode samples", "min": 0.8,
+                 "source": "E120's filed n1_control bar, restated; the plan names the known pool as the control and quotes E120's 0.974",
+                 "on_miss": "P2 reads 'no call', reported as read"}
+ },
+ "P1": {
+  "claim": "n >= 100 facts a side after the guards",
+  "rule": "results/pools.json meta.n >= 100",
+  "threshold": 100, "relative": false,
+  "at_w0": "count, no W0 value",
+  "lean": "yes, 0.6 (known side is the risk)",
+  "on_no": "under 100 a side ends anchor 2's organic search: back to the user with E120 and E128 counts side by side",
+  "edge_cases": "empty pool: n = 0, reads no. A stratum with one empty side is cut and counted (meta.strata). n exactly 100 reads yes. Stage 1 stopped (under 100 candidates a side after pass 16): no pools.json, reads no. Changed facts (new side, one normalised wrong answer in >= 32 of 64) stay out of the pools and are counted with their ids and commonest answer in meta (Fable (b)); if n is under 100 without them and 100 or more with them, that is a decision card, not a silent inclusion."
+ },
+ "P2": {
+  "claim": "novelty check N1 passes: the new pool is answered with thinking on at most half the time",
+  "rule": "results/n1.json new.answered_share = share of new-pool facts (train + held) with at least 1 of 4 think-mode samples correct (one per template, the card's thinking settings T 0.6, top-p 0.95, top-k 20, cap 8,192; only the text after </think> is graded, a sample without </think> or truncated is not correct; correct = qwen_facts.extract in gold or aliases); passes if <= 0.5",
+  "threshold": 0.5, "relative": false,
+  "at_w0": "N1 is the W0 reading; expected <= 0.1",
+  "lean": "yes, 0.9",
+  "edge_cases": "empty new pool: does not apply. Exactly 0.5 passes. Known-pool control under 0.8: no call. Every sample truncated: answered 0, reads pass, so n1.json truncation is reported beside it."
+ },
+ "P3": {
+  "claim": "the new arm learns",
+  "rule": "at step 100, per seed, held-out pass@1 = mean over the new pool's held-out questions (template 3) of (correct of 8 samples at qwen_eval.SAMPLE, cap 64)/8, graded by grade.py; holds if >= 0.10 for both seeds, fails if < 0.10 for both, 'seeds disagree' otherwise",
+  "threshold": 0.10, "relative": false,
+  "at_w0": "0 by selection; do-nothing 0",
+  "lean": "yes, 0.6",
+  "positive_control": "the new arm's greedy answer on trained wordings (templates 0-2, new_train_greedy pass@1) >= 0.5; below it the recipe did not fit the facts, and P3 reads 'not learned at this recipe', not 'cannot be learned'. Trained >= 0.5 with held-out under 0.10 reads 'memorised, carrying little' (E84's label).",
+  "edge_cases": "n is at least 100 when P3-P5 are read (else they are not run). Held-out pass@1 has no zero denominator (n held = n, one per fact). Ties at the bar pass (>=). A seed missing marks the prediction unscored."
+ },
+ "P4": {
+  "claim": "the known arm leaves GSM8K within 0.05 of W0",
+  "rule": "at step 100, per seed, GSM8K test 0-255 greedy strict accuracy on fitting answers (qwen_eval.score strict_dropped, fp32 forward) minus W0's 0.784 (experiments/qwen_recipe/results/train_W.json -> states.w0.unprompted.strict_dropped); holds if |difference| <= 0.05 for both seeds",
+  "threshold": 0.05, "relative": false,
+  "at_w0": "0.784",
+  "lean": "yes, 0.85",
+  "edge_cases": "n is at least 100 when read. Exactly 0.05 holds. A seed missing marks the prediction unscored. Do-nothing reads 0 and holds, as it should: this is a no-damage rule."
+ },
+ "P5": {
+  "claim": "at step 100 the new arm's update is larger than the known arm's",
+  "rule": "per seed s, Frobenius norm of the fp32 delta W over the 196 decomposed matrices at step 100 (train_<arm>.json step 100 dw_norm), new seed s > known seed s; holds if for both seeds, fails if for neither, 'mixed' otherwise",
+  "threshold": "strict >", "relative": true,
+  "at_w0": "0 and 0",
+  "lean": "yes, 0.65",
+  "edge_cases": "n is at least 100 when read. Equal norms read as a miss. A seed missing marks the prediction unscored."
+ },
+ "blind_spots": "Exact-match grading misses unlisted spellings (the lead's 20-fact read guards the new side); new means 'not answered in 64 samples', never 'absent'; new and known events differ in date and possibly in topic within a relation.",
+ "not_predicted": "No D3 reading is predicted here; the readings are qwen-decomp-lead's."
+}
