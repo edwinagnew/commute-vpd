@@ -73,3 +73,4 @@
 - (superseded 2026-11-09) [Autonomous lead, short asks](feedback-autonomous-lead-short-asks.md) — far shorter messages; Fable for direction; the user may not read plans (2026-11-05)
 - [Do not rely on the slide deck](feedback-dont-rely-on-slide-deck.md) — unclear concept → search history (hive:retrieval) or ask; files are the source (user, 2026-11-05)
 - (superseded 2026-11-09) [Adopted definitions frozen](feedback-adopted-definitions-frozen.md) — reuse = rows 81/87 only; unreadable is a result, never a new rule (user, 2026-11-06)
+- [Working definition criteria](project-working-definition-criteria.md) — user 2026-11-09: reportable results + defensible as a definition + must look inside the model; not tied to Jain/Prakash/causal clauses; plain words, no cell codes
