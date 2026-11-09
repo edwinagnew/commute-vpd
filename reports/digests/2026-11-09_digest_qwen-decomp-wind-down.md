@@ -1,0 +1,3 @@
+No open cell: the qwen-decomp-lead line is closed as the task file asked, and the carrying-test re-runs on the new decomposition stopped unrun; E93 Amendment 2 was written but never run, and qwen-lead takes over from `~/commute-data/agents/qwen-lead/note-from-qwen-decomp-lead.md`.
+The one job allowed, 56760, finished and gives qwen-lead its reference numbers on the new decomposition: 500,244 of 688,128 subcomponents alive, and masked KL 0.0728 on maths and 0.2090 on fineweb; it spent no RunPod money and no update has been read on new yet.
+Not checked: the job's pass flag only says it reached its end, since the controls ran on the old decomposition, and the shared loader has not yet loaded the new one on a GPU; no asks are open, and job 56787 belongs to another line.
