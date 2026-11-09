@@ -6,9 +6,10 @@
 # Stages write results/stage{0,1,2,3}.json, each printing `STAGE n DONE` after its file is written; the runner waits on that line. Stage 0 stops the
 # job (exit 1) if M' at start is not M. Exit 3 means stage 2 reached the wall limit (105 min) with its partial results saved: resubmit this script, it resumes.
 # Inputs on NFS (gitignored): artifacts/vpd/ (the model), artifacts/sets/train_0_32768.npy, train_32768_8192.npy, val_0_2000.npy.
-# Writes: results/stage*.json, results/rules.json, results/large/pieces.pt (the trained pieces, ~2.5 MB, gitignored).
-# Time, untimed on a GPU (the code has not run on one; a CPU stand-in reached stage 1 only, and the scored run is its own smoke): stage 0 ~15 min (gaps, rank from eigenvalues of X'X (30,720 square, float64), the capacity ridge), stage 1 ~3 min,
-# stage 2 ~30 min (144 G searches at 400 steps, H ridge and refinement per pair), stage 3 ~1 min. One or two debug jobs.
+# Writes: results/stage*.json, results/rules.json, results/rank.json, results/large/pieces.pt (the trained pieces, ~2.5 MB, gitignored).
+# Time, untimed on a GPU (the code has not run on one; a CPU stand-in reached stage 1 only, and the scored run is its own smoke): stage 0 ~15 min (gaps, the capacity ridge), stage 1 ~3 min,
+# stage 2 ~30 min (144 G searches at 400 steps, H ridge and refinement per pair), stage 3 ~1 min. A last step writes results/rank.json (rank of z_M per pair,
+# MAGMA eigenvalues of a 30,720-square float64 matrix, untimed, perhaps 5 min per pair, XOR first). One or two debug jobs.
 # Memory, by arithmetic and not measured: at the `final` site the card holds the 36,864-column X'X in float64 (10.9 GB), a copy and its Cholesky (10.9 GB each) and the validation inputs (2.9 GB), about 36 GB of the L40's 48 GB; the host holds the Pile rows (~200 MB) and the lowercased copies (~10 MB), so 32G is ample.
 #SBATCH --job-name=commute-e137
 #SBATCH --partition=compute

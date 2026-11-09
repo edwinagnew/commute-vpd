@@ -6,11 +6,12 @@ piece at block 2's input, last position (`pieces.py`).
 
 Stages, cheapest first; each writes results/stage<n>.json and then prints `STAGE n DONE`; a rerun resumes from what is written:
   0  alone: float floors; M' at start equals M (a miss stops the job, exit 1); train and build the pieces; each pair's gap against
-     the floor; rank of z_M; the capacity read (`search.capacity`).
+     the floor; the capacity read (`search.capacity`).
   1  exact readings at the witnesses (G, H, reversion, setter mismatch) and the first wording's exact checks.
   2  the search: G by Adam on KL(F || N), three starts, four sites, k 1, 4, 16; H by ridge from z_M then 200 KL steps, at those sites and
      `final` (the normed input of the unembedding, where KL is convex in the map); d read on the read half. Written after each search; a clean exit 3 near the job's limit leaves it to the next job.
   3  the acted-on count: 100 random unit directions per site on E. results/rules.json then applies the filed rules.
+  last step (not a stage; after the rules): results/rank.json, the rank of z_M per pair (XOR first), on MAGMA; written after each pair.
 Exit 0 done, 1 a stop or refusal, 3 more to do.
 
     sbatch cluster/reuse_variable_test.sbatch
@@ -206,6 +207,20 @@ def rule_read(cfg: PC.Config, filed: dict[str, Any], st0: dict[str, Any], st1: d
     return out
 
 
+def rank_step(net: Net, cfg: PC.Config, sets: PC.Sets, task: PC.Task) -> None:
+    """Rank of z_M per pair, reported only (no filed rule reads it). Last, so a solver failure loses only this."""
+    torch.backends.cuda.preferred_linalg_library("magma")  # last step of the job: a global setting, nothing after it uses linalg
+    out: dict[str, Any] = {}
+    for pair in ("XOR", *[q for q in PAIRS if q != "XOR"]):
+        fit, read = PC.pair_windows(cfg, pair, sets, task)
+        out[pair] = SE.z_rank(net, torch.cat([fit, read])[: cfg.rank_windows], cfg)
+        r = out[pair]
+        log(f"rank of z_M, pair {pair}: {r['rank']} of {r['columns']} columns on {r['windows']} windows, largest singular value {r['sv_max']:.3g}")
+        dump(cfg, "rank.json", out)
+        free()
+    print("RANK DONE", flush=True)
+
+
 def main(cfg: PC.Config, net: Net) -> int:
     filed = json.loads(PRED.read_text())
     net.net.requires_grad_(False)
@@ -220,6 +235,7 @@ def main(cfg: PC.Config, net: Net) -> int:
         return 3
     st3 = stage3(net, cfg, sets, st0)
     rule_read(cfg, filed, st0, st1, st2, st3)
+    rank_step(net, cfg, sets, task)
     return 0
 
 

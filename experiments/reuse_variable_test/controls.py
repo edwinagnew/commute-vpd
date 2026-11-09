@@ -86,10 +86,9 @@ def stage0(net: Net, cfg: PC.Config, sets: PC.Sets, task: PC.Task, filed: dict[s
         for t in chunks(read, cfg.read_batch):
             gap += float(tv(run(net, t)[0][:, -1], run(net, t, edit=fedit(t))[0][:, -1]).sum())
         gap /= read.shape[0]
-        rank = SE.z_rank(net, torch.cat([fit, read])[: cfg.rank_windows], cfg)
         read_ok = RU.reading(gap, th) and (pair != "Table" or table["rank_C"] > cfg.k)
-        pairs[pair] = {"gap": gap, "reading": read_ok, "rank_z": rank, "fit": fit.shape[0], "read": read.shape[0]}
-        log(f"pair {pair}: gap {gap:.5f}, reading {read_ok}, rank of z_M {rank['rank']} of {rank['columns']} columns on {rank['windows']} windows, largest singular value {rank['sv_max']:.3g}")
+        pairs[pair] = {"gap": gap, "reading": read_ok, "fit": fit.shape[0], "read": read.shape[0]}
+        log(f"pair {pair}: gap {gap:.5f}, reading {read_ok}")
         free()
     fit, read = PC.pair_windows(cfg, "XOR", sets, task)
     cap = SE.capacity(net, fit, read, pieces_, cfg, log)
