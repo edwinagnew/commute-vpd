@@ -1,130 +1,156 @@
-# P1.1, due 11-10: a working definition of reused against new
+# A working definition of reused against new
 
-*definition-lead, 2026-11-09. For the user to approve, change or drop; nothing here has run. Reading: Prakash et al.
-2024, all 26 pages, and Jain et al. 2024, pages 1 to 11, by the lead, from the PDFs. Jain's pages 12 to 72 were read by a
-subagent against fixed questions, with quotes and page numbers (`~/commute-data/scratch/definition-lead/p1.1/jain-appendix/notes.md`).
-The `/design` check is in `2026-11-09_plan_definition-page-appendix.md`.*
+*definition-lead, 2026-11-09, second version (the first is in git). For you to approve, change or drop; nothing here
+has run. Both papers read in full from the PDFs. Sources, the design check and the numbers per fine-tune are in
+`2026-11-09_plan_definition-page-appendix.md`.*
 
-**In short.** The plan's causal step is sound but it is not Prakash's. Prakash keeps only the part and shows the
-behaviour survives; finding the part away from the task and the shuffled twin are our additions. I propose keeping the
-plan's test under its true name. On the saved copy pair it reads reuse on two of three seeds and no reuse on the twin.
-The main risk is that it only ever reads reuse on copying.
+**In short.** I recommend a definition that asks one thing: **can the original model, with every block but the last
+left exactly as it was, learn the task and get it right on inputs that training never showed it?** If it can, and the
+real fine-tune is right on those inputs too, the fine-tune reads "reused". If the real fine-tune is right and the
+frozen model cannot be, it reads "new". If the real fine-tune only memorised, it reads "new". It would give a reading on
+14 of our 17 kinds of saved fine-tune and needs no readout and no named part. Its weakness is plain: it shows the old
+layers are enough, not that the fine-tune actually went through them. That is the one question I need from you, at the
+end.
 
-## What the two papers actually do
+## What "working" has to mean
 
-The plan says Prakash finds a part "on ordinary text only", switches it off, and spares a twin. **The paper does none of
-the three.**
+Your tests: it gives a reading on most fine-tunes and agrees with those built to be one or the other, and it is precise
+enough to defend as a definition. It must look inside the model; right answers alone are not enough.
 
-- **Where the part is found.** Prakash finds the circuit on the task itself: path patching on 300 box-tracking examples,
-  in a base model that already does the task at 0.66, against chance 0.14.
-- **The test.** Everything outside the circuit is replaced by its mean, and the circuit alone keeps 0.88 to 0.97 of the
-  fine-tuned model's accuracy. Heads are knocked out only to prune a circuit or to check that circuit in its own model; the base model's circuit is never switched off inside a fine-tune.
-- **The control.** Random circuits of the same size, accuracy near zero. There is no shuffled-label twin.
-- **The fine-tune.** It trains on arithmetic or chat, and entity tracking, which it never trained on, is what is measured. Ours trains the target task.
+## Why the old definition gave no reading
 
-Jain differs too. The frozen wording's direction removal was always ours: no probe direction is ever ablated or patched
-in the paper. Jain's linear readout says a capability persists. Its causal evidence is pruning units chosen by the
-pretraining task's loss and watching that task come back, and reverse fine-tuning against a scratch baseline. Jain gives
-no decision rule at all.
+It asked first for a linear readout of the capability, trained on ordinary text. That step fails on most tasks: key
+tables are just "which token is here", which a shuffled control reads as well, and copying has too many values (0.03
+accuracy before the last block). Only the case-label and repeat-label tasks passed it, and then removing that one
+direction took at most a fifth of the gain. The fine-tune clearly generalised, to unseen words at 0.96 to 0.998, so the
+direction removal was measuring whether the fine-tune uses that one direction, which is narrower than whether it uses
+what the model had.
 
-**What this means for the plan.** The sentence "takes its causal step from Prakash" should change. What Prakash gives us
-is one idea, the important one: take the part from the original model and test it on the fine-tune without adjusting
-it.
+## The candidates, scored on your tests
 
-## Why the frozen definition gave no verdict
+Readings are out of 17 kinds of saved fine-tune on the small model.
 
-A linear readout could not be trained for most capabilities. Key tables fail because a random relabelling reads as
-well, and copying fails because it has too many values (0.03 before the last block). The one pair where a readout
-exists, case label, then failed the causal check three ways: removal took at most a fifth, and patching flipped one
-label in a hundred. So the readout is the wrong first test, and the proposal drops it.
+| Candidate | The question it asks | Reading on | Looks inside? | What a reviewer would say |
+|---|---|---|---|---|
+| The frozen definition: readout, then direction removal | Does a readout of C exist, and does removing it break the fine-tune? | 4, all "not through C"; "reuse" on none | Yes | Fine as a definition, but it never says yes here |
+| Switching off a part found away from the task (last version's choice) | Does switching off an old part take the gain? | 2 (copy and its lookup) | Yes | A definition of copying. And a copy fine-tune trained with the two copying heads held off still reached 94% of the normal gain, so needing a part is not what reuse has to mean |
+| A readout read in the fine-tune instead | Does the fine-tune hold the capability? | at most 4 | Yes | Same failing step, and a fine-tune's own new feature would count as having had it |
+| Adding up the gain lost when each part alone is set back | Is the change spread or written in? | 17 | Weights only | It separates copying from key tables, but nothing says low means reused: the one non-copy task built to reuse reads high. It also sits close to the update-size baselines that part 2 will score, so scoring against it is circular |
+| **Frozen-body test (recommended)** | Is the original model's unchanged body enough, with only its last block retrained? | **14** | Yes, the body's insides are what is tested | "This shows it could be reused, not that it was." True; see below |
+
+The previous note listed a small function fitted on the original model's internals. This is that idea, with the last
+block as the small function. A fitted readout would fail copying again, because a readout cannot name a value it never
+saw; the last block answers through the model's own output layer, so many values and unseen values both work, and no
+position or site has to be chosen.
 
 ## The definition (proposed)
 
-Let **M** be the original model and **M′** a fine-tune of it. Let **C** be a rule named in advance: on inputs selected by
-an identifier, the right output is a fixed function of the rest of the input (Jain's Definition 1 form). Let **P** be a
-set of attention heads of M chosen by a rule filed in advance, using M alone, on data holding no trigger and no
-fine-tuning example. Let **T** be a twin of M′: the same inputs and recipe, with labels reassigned by a seeded shuffle.
+Let **M** be the original model. Let a **task** be: on inputs carrying a fixed marker, the right answer is a named rule
+of the rest of the input, with some values held out of training (**unseen values**). Let **F** be a fine-tune of M on
+the task, trained on the other values. Let **B** be a fine-tune of M on the same examples, with the same recipe and
+number of steps, in which only M's last block may change; everything below it stays at M's weights.
 
-Then M **has C through P** if M does C clearly above chance, its score falls to near chance when P's heads are replaced
-by their mean over ordinary text, and a random set of the same size leaves most of the score.
+Then:
 
-And M′ **reuses C through P** if all of these hold, with the part left exactly as found:
+1. F **carries** the task if it is right on at least 0.9 of unseen values.
+2. M **holds what the task needs** if B is right on at least 0.9 of unseen values, and the same training on a body of
+   random weights stays at chance.
+3. F **reuses** what M had if F carries the task and M holds what it needs.
+4. F is **new** if F carries the task and M does not hold what it needs, or if F does not carry it, which includes any
+   table whose rule says nothing about unseen values.
+5. It **does not apply** if the answer does not depend on the input.
 
-1. M′ answers right on values it never trained on, at least 0.90 of the time.
-2. Switching off P in both M and M′ takes at least half of M′'s gain in log-odds.
-3. Switching off P takes at most a fifth of T's gain.
-4. The median random part of the same size takes under 0.15 of M′'s gain.
+The 0.9 is the bar already on file. Readings are per seed. How close to the bar counts as "no call" is set from the
+first check's row noise, not guessed.
 
-If 2 fails the reading is "not through C". If 3 or 4 fails it is "no call": the part is generic. If M has C through no
-such P, or the rule has no unseen values, it is "unreadable". A do-nothing fine-tune fails 1 and is never read. The
-bars 0.90, 0.5, 0.2 and 0.15 are the filed ones and are not new here.
+Note what it does not say: it names no capability and no part. The reading is about what the original model's body
+supplies, in general. A claim of the form "through this head" is a separate, stronger claim, reported beside and not
+part of the verdict.
 
-**One thing needs your word.** The plan says "ordinary text only". The copying head was found on repeated random
-tokens, which contain no trigger and no fine-tuning example but are not ordinary text. Strict reading: only Pile text
-may find P, and E62's head is not yet admissible. Loose reading, as written above: any data free of the trigger and the
-fine-tuning examples. I wrote the loose one because P still comes from M alone; your words win if you meant the strict
-one.
+## What the saved fine-tunes would read
 
-## Departures
+Fourteen of the 17 get a reading. Nine come straight from saved numbers, because the fine-tune does not carry:
+the lookup, the random map, both text ciphers, the 24-key cipher, the lower-guess map, both shuffled twins, and the
+rank-1 map. Five need one short frozen-body training, because they carry and so the body must be tested: the 24-key copy
+map, the identity map, in-context copy, case label and repeat label. Three do not apply: lowercase, emoticon, and
+the one-pair map.
 
-| From | Theirs | Ours | Why |
+One row reads against how it was built. The rank-1 map was built as strengthening the model's own top guess, yet it
+carries only 0.64 to 0.69 on held-out keys, so it reads "new". Either that map's held-out rule was badly made or this
+definition has no good answer for strengthening; I cannot tell which from saved numbers.
+
+## What it takes from the two papers and what it changes
+
+Neither paper gives a usable decision rule. Prakash et al. 2024 finds a circuit on the task itself, in a base model
+that already does the task, and shows the circuit alone keeps 0.88 to 0.97 of the behaviour; it switches off nothing in
+a fine-tune and has no shuffled twin. So the plan's "causal step from Prakash" was never in the paper. Jain et al. 2024
+uses readouts to say a capability persists, and pruning and reverse fine-tuning as separate evidence. It never removes a
+readout direction and states no rule.
+
+| From | Theirs | Here | Why |
 |---|---|---|---|
-| Jain | Linear readout defines possession, "for all x" | A part M needs, read by behaviour and filed bars | A readout could not be trained for most capabilities (E116) |
-| Jain | g ∘ f is stated, unbounded | No g is named; carrying to unseen values stands in | Row 87, the user's departure |
-| Jain | Pruning revives the old task; reverse fine-tuning | Removal in the fine-tune; neither of theirs | Theirs needs a pretraining task to go back to |
-| Jain, Prakash | No shuffled twin | Twin (clause 3) | Separates a mechanism from any memorising fine-tune |
-| Prakash | Circuit found on the task | P found away from the task | Our M does not do the task at the trigger, and finding it there would be circular |
-| Prakash | Keep only the circuit | Switch the part off | The plan's choice; see below |
-| Prakash | Head at one token position | Head at every position | Simpler; coarser |
-| Prakash | Accuracy | Share of log-odds gain | M already has some probability at the trigger |
-| Prakash | Also checks each head group keeps its function, and patches across models | Neither | Out of scope for one label |
-
-Prakash's keep-only test could replace clause 2 or sit beside it. On the 67M it has one reading (E97: copy keeps 0.98,
-lookup 0.25 to 0.31), which that report calls mostly by construction, so I recommend switch-off for the verdict.
+| Jain | Capability is a linear readout on pretraining data | The model's body as a whole, read by retraining its last block | The readout is the step that failed |
+| Jain | Reused means the fine-tuned map is a function g of the capability, g unbounded | g is the last block, trained by the same recipe | A bound, and held-out carrying (your dated rule) instead of unbounded g |
+| Prakash | Circuit found on the task, then kept alone | No circuit found | Finding a circuit is what could not be done beyond copying |
+| Both | No frozen-body training | Frozen-body training | Freezing the body and retraining the head is the standard transfer-learning test (Kumar et al. 2022 uses it). I recall Raghu et al. 2020 uses it to define "feature reuse", from memory, unread: I will read it before anything cites it |
 
 ## Three pairs to test it on
 
-Each is a fine-tune built to reuse C, read over three seeds, beside its shuffled-label twin. "Should" is what the
-definition must read to be right.
+Each is a fine-tune built to reuse, read over three seeds, beside its shuffled-label twin.
 
-| Pair | C and P | Should read | Why | What I expect |
+| Pair | Real should read | Twin should read | Why | What I expect |
 |---|---|---|---|---|
-| Copy at a marker (E62's recipe, a new twin) | "Repeat what followed the earlier A"; P is the copying head | Real reuses, twin not through C | M copies at 0.825, and 0.010 with the head off | Near the bar: 0.47 to 0.56 on the saved seeds |
-| Repeat label (E125) | "This word occurred earlier"; P must be located on M, none yet | Real reuses, twin not through C | Unseen words carry, and M holds the signal | Unreadable or not through: removing its direction took under 4% |
-| Case label (E112) | "The previous word is capitalised"; P must be located on M, none yet | Real reuses, twin not through C | Passes carrying and the small-function test | Not through C: no single head or MLP was specific (E114) |
+| Copy at a new marker | reused | new | The original model copies, and its copying heads sit below the last block | Most uncertain, and the most informative: if the last block alone cannot reach the marker's answer, this reads "new" on the case everyone treats as reuse |
+| Case label | reused | new | The case signal reads out at 0.99 on held-out words in the middle of the model | Reused |
+| Repeat label | reused | new | "This word occurred earlier" reads out at 0.95 on held-out words | Reused |
 
-The last two are the point: they are the only pairs not built on copying, and I do not expect them to pass.
+The twins are at chance on unseen values by construction, so they test only that nothing memorised is read as reuse.
+The hard test of the reading is on the real arms.
 
 ## Where it could fail
 
-- **It only reads reuse on copying.** The test needs M to show C as a behaviour and a small part to find. Copying is
-  the one capability here with both, sharply. Case label and repeat label have a signal but no known behaviour.
-- **One head is a thin part.** Half of a gain through one head leaves the other half unexplained. Prakash's own
-  fine-tunes needed 175 heads where the base needed 72, so reuse coexists with added parts.
-- **The bar has no reference.** One half was inherited, and E62's seed 2 reads 0.471.
-- **Backup routes.** Removing a part can recruit others; Prakash reports this.
-- **Old parts, new circuit.** A new route built through an old head reads as reuse, the same limit as re-gating.
-- **Removal is not revival.** In Jain's Figs. 57a and 58a, read by eye, pruning takes away the fine-tuned behaviour with
-  little of the old one returning. Losing a behaviour alone says little, which is what the twin is for.
+- **It may say "could" and never "did".** A fine-tune can build a new route around what the body holds. Nothing here
+  rules that out. This is the question at the end.
+- **It may collapse into carrying.** Nine of the 14 readings need no inside test at all. If the frozen body can always
+  do whatever the fine-tune does, the inside clause adds nothing and the definition is only carrying, which you said is
+  not enough. Run 4 below looks for a case where they differ.
+- **The last block is large here,** one of four blocks, so it could learn something new on top of the old body. A
+  new circuit from old parts reads as reuse, the limit every method in this project has already.
+- **The opposite of the old risk.** The old wording risked reading reuse only on copying; this one risks reading reuse
+  on anything simple. The random-body control is the check.
+- **It says little about strengthening** a thing the model already does, as the rank-1 row shows.
 
 ## What would make us drop it
 
-Any one of these: the planted control below reads under 0.9, so the test cannot see a known reuse; a twin reads reuse on
-any seed, so the part is generic; or the copy pair reads reuse and the other two read anything else on all seeds, which
-is a definition of copying and not of reuse. The plan's gate is reuse on all three pairs, three seeds each. If that
-fails, part 1 becomes why existing definitions fail.
+Any one of these: the random-weight body reaches the bar, so the last block can do the task alone; the real copy pair
+reads "new" on at least two of three seeds; or no task can be found where the fine-tune carries and the frozen body does
+not, in which case the definition is carrying under another name. The plan's gate is "reuse" on all three pairs and
+"not" on the twins, three seeds each. If that fails, part 1 of the paper becomes why existing definitions fail.
 
-**P1.2's reading, provisional:** copy seeds 0 and 1 reuse, seed 2 not through C at 0.471, all three lookups not through C
-(`reports/analyses/2026-11-09_analysis_p1-2-e62-reread.md`). Note the gate's three-of-three would already fail on this
-saved set. The lookup is not a shuffled twin, and on the strict "ordinary text" reading all six rows are unreadable.
+**The saved copy results read under this wording:** the three copy seeds carry (0.995, 0.995, 1.000) and the
+lookups have no rule on unseen values, so they read "new". Whether the copy seeds read "reused" needs the frozen-body training,
+which was never run, so the honest reading is no verdict yet. The head-off shares are kept beside, with seed 2 at
+0.471 under its old bar, and the new wording does not use that number.
+(`reports/analyses/2026-11-09_analysis_p1-2-e62-reread.md`.)
 
-## Run cells proposed (nothing runs until you add them)
+## Runs proposed (nothing runs until you add them)
 
-All four are at most 30 minutes on `debug`, $0, one run each. R1 runs first and alone; if it fails, R2 to R4 do not run.
+Each is one run, at most 30 minutes on the free cluster queue, $0. The first runs alone; if it fails, none of the
+others run.
 
-| Cell | What | Runs | Done when |
+| Run | What | Runs | Done when |
 |---|---|---|---|
-| R1 | Planted control: a copy fine-tune trained with every head outside P held at its mean, so the gain must go through P; beside it the same training on shuffled labels | 1 | The planted model's share is read against a filed bar of at least 0.9, and is reported as the reference for the bar of one half; changing that bar stays your call |
-| R2 | Copy pair with a shuffled twin, three seeds per arm, using the part R1 used | 1 | A reading per seed for both arms under the adopted wording |
-| R3 | Repeat-label pair, three seeds per arm, with a filed rule for locating P on M | 1 | A reading per seed for both arms, or "unreadable" with the reason |
-| R4 | Case-label pair, three seeds per arm, with a filed rule for locating P on M | 1 | A reading per seed for both arms, or "unreadable" with the reason |
+| 1. Controls | Frozen-body training on a task the original model already does (should read near 1 at once) and on a random-weight body for copy and case (should stay at chance) | 1 | Both read against filed bars |
+| 2. Three pairs | Copy, case and repeat label, three seeds each, real and shuffled twin, with the frozen-body training; a new twin is trained for copy | 1 | A reading per seed for both arms |
+| 3. The remaining saved kinds | The 24-key copy map and the identity map, read the same way | 1 | The saved rows with a rule all read |
+| 4. A rule the fine-tune can learn and the body cannot | One or two new rules chosen on paper first, where the original model has no way of supplying the answer | 1 | A carrying fine-tune whose frozen body fails, or "not found among those tried", which is the drop condition above |
+
+## The one question for you
+
+You said it must look inside the model. This test looks inside the *original* model: it says what the body holds. It
+does not show the fine-tune's own route. Is that enough to call it a definition?
+
+- **Recommended: yes.** The verdict is the frozen-body reading; route tests such as the head switch-off are reported
+  beside it, on the tasks where they can be run.
+- **No, it must be the fine-tune's route.** Then we are back to the switch-off family: precise, but it reads almost
+  nothing outside copying, and I would rather say so plainly than add clauses to make it read more.
