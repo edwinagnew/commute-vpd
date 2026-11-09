@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import hashlib
 import importlib
+import json
 import logging
 import os
 import resource
@@ -61,6 +62,22 @@ def hard_exit(code: int = 0) -> NoReturn:
         sys.stderr.flush()
     finally:
         os._exit(code)
+
+
+def write_result(path: Path, out: dict[str, Any], decomp_dir: Path) -> None:
+    """Write `out` as JSON to `path` with out["decomp"] = the run id of `decomp_dir` (`qwen_vpd.decomp_id`). Raises if
+    `path` already holds a result stamped with a different id (a resume after swapping --decomp). For amendment
+    scripts; frozen scripts keep their own writers."""
+    # imported here: qwen_vpd imports torch, which only a caller that stamps a Qwen result needs
+    from commute.qwen_vpd import decomp_id
+
+    did = decomp_id(decomp_dir)
+    if path.is_file():
+        old = json.loads(path.read_text()).get("decomp")
+        if old is not None and old != did:
+            raise RuntimeError(f"{path} holds decomposition {old}; this run reads {did}")
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({**out, "decomp": did}, indent=1))
 
 
 def require_filed(path: Path) -> None:

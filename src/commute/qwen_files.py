@@ -20,6 +20,9 @@ ENTITY = "edwinagnew-mats"
 PROJECT = "commute"
 ARTIFACT = "qwen3-1.7b-p-e9fcffd5-torch"
 ARTIFACT_TYPE = "decomposition"
+# Run id (`qwen_vpd.decomp_id`) -> W&B artifact. `fetch`'s default `ARTIFACT` is the OLD decomposition only, for frozen
+# callers; new code calls `fetch_decomp`. Whether p-9707d6ff is uploaded: not checked.
+DECOMP_ARTIFACT = {"p-e9fcffd5": "qwen3-1.7b-p-e9fcffd5-torch", "p-9707d6ff": "qwen3-1.7b-p-9707d6ff-torch"}
 
 
 def complete(dest: Path) -> bool:
@@ -34,7 +37,7 @@ def complete(dest: Path) -> bool:
 
 def fetch(dest: Path, log: Any = print, artifact: str = ARTIFACT, kind: str = ARTIFACT_TYPE,
           ok: Callable[[Path], bool] = complete, version: str = "latest") -> None:
-    """Fill `dest` with `artifact` at `version` (default the decomposition, latest; `ok` says when `dest` is complete). A complete `dest`
+    """Fill `dest` with `artifact` at `version` (default the OLD decomposition p-e9fcffd5, latest; `ok` says when `dest` is complete). A complete `dest`
     is kept without asking W&B, so a pod on the network volume needs no W&B access. Otherwise only the files missing
     or of the wrong size are downloaded, each into a scratch directory beside `dest` and moved into place once whole.
     Downloading needs WANDB_API_KEY; never prints it."""
@@ -62,6 +65,11 @@ def fetch(dest: Path, log: Any = print, artifact: str = ARTIFACT, kind: str = AR
     pool.shutdown()
     shutil.rmtree(scratch)
     assert ok(dest), f"{dest} incomplete after download of {art.qualified_name}"
+
+
+def fetch_decomp(dest: Path, decomp_id: str, log: Any = print) -> None:
+    """`fetch` of the decomposition `decomp_id` ("p-..."), by name; KeyError for an unregistered id."""
+    fetch(dest, log, artifact=DECOMP_ARTIFACT[decomp_id])
 
 
 if __name__ == "__main__":
