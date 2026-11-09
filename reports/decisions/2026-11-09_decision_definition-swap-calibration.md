@@ -1,5 +1,7 @@
 # Decision card: test the proposed definition of reuse with swaps
 
+**Answered 2026-11-09: option (c); removal queued. Two corrections to the text below, from the user: the swap is activation patching and the card did not credit it (now in the plan page), and "why existing definitions fail" is one line in the roadmap's part 1 gate that the user did not recognise, so it should not have been stated as the settled fallback.**
+
 *definition-lead, 2026-11-09. Written at the user's request, in place of proposed rows for the table of work. A clerk adds the block
 below, verbatim, as the first card of `docs/research_log/parts/sections/decisions.html`, inside `<div class="cards stack">`, and
 changes that section's "Waiting on you" line to say one card is open. Detail is in `reports/plans/2026-11-09_plan_same-place-definition.md`.*
