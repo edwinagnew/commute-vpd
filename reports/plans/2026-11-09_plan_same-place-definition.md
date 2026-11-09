@@ -137,8 +137,9 @@ copying heads. Or no real arm of the three pairs earns a label above new.
 ## Your answers, 2026-11-09, tentative
 
 A fine-tune that adds only a new last step keeps its own label, "wrapped". The original model must have the value on its
-ordinary inputs, so an old step fired in a new place can be reuse. Add the calibration runs, with the new case-label anchor.
-The wording is still not adopted; that takes a dated `decisions.md` row.
+ordinary inputs, so an old step fired in a new place can be reuse. Whether to run the calibration is put to you as a decision
+card in the research log, `reports/decisions/2026-11-09_decision_definition-swap-calibration.md`. The wording is still not
+adopted; that takes a dated `decisions.md` row.
 
 ## Departures from the literature
 

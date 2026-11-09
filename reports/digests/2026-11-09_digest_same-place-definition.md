@@ -10,7 +10,7 @@ says what is taken from Prakash et al. and what is not, and sets the swap bar as
 **Your answers, tentative.** A new last step gets its own label, wrapped. The value must be held on ordinary inputs. Calibration runs
 are wanted, with a new case-label anchor.
 
-**Waiting on you.** Paste the three rows in `~/commute-data/agents/definition-lead/proposed-cells.tsv` into `~/commute-agents/fleet/paper/cells.tsv`
-and restart me. They use free cluster jobs; the costs are estimates.
+**Waiting on you.** One decision card in the research log: whether to test the definition with swaps. It replaces the proposed rows for
+the table of work, which you found hard to read and unjustified. `reports/decisions/2026-11-09_decision_definition-swap-calibration.md`.
 
 **Ran.** Nothing: no job, no pod, $0.
