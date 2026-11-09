@@ -59,8 +59,9 @@ It does not apply when y does not depend on the input.
 
 **How it meets your five tests.** It names no task, architecture or decomposition. It is about the fine-tune, because a second
 fine-tune that reads other sites fails the M→F swap at these. It says what a mechanism is and what having one means, and the
-measurements are defined in the same terms. Each term is from the literature except the step across two networks, the "counts"
-rule and the three labels. Given the site map class and the bar, two people applying it to one algorithm get one answer.
+measurements are defined in the same terms. Each term is from the literature except the "counts" rule, the three labels and the
+use of one site map across two networks with different inputs. Patching across two models is Prakash et al.'s; see "What this
+borrows from activation patching". Given the site map class and the bar, two people applying it to one algorithm get one answer.
 
 **What remains.** "New" means no algorithm earns a label, which can only be shown for algorithms someone proposed. A variable
 moved to a nearby place reads as new. Patches can succeed by an unrelated route, as Makelov et al. 2023 show; the random
@@ -80,6 +81,28 @@ empty, so the class is fixed in advance, and a variable stored non-linearly will
 | **Not taken: the base must do the task** | The circuit is found on the task in a base that scores 0.66 (p. 5) | The base need only have the value on ordinary inputs | Most gained behaviours are ones the base does not do |
 | **Not taken: added parts allowed freely** | 175 heads, a rough superset of 72, still "the same mechanism" (p. 6, 8) | Added parts are allowed only if they carry variables M has | Otherwise anything is "the same plus extras" |
 | **Not taken: no bar** | Faithfulness is reported, no cut-off | A bar, below | Two people must agree |
+
+## What this borrows from activation patching
+
+Added 2026-11-09 after the user pointed out that the swap is activation patching and was not credited as such. **The swap is
+activation patching, restricted to a subspace and scored against an algorithm.** The papers below were checked from abstracts and
+summaries, not read in full; that reading comes before any of this goes in the paper.
+
+| Source | What it did | Here |
+|---|---|---|
+| Vig et al. 2020 | Causal mediation analysis of a network's internals | The ancestor of the method, cited by Meng et al. |
+| Meng et al. 2022, causal tracing (the first half of the ROME paper; ROME itself is the weight edit) | Corrupt the subject with noise, restore one hidden state from the clean run | The same operation with three changes: a real input as the source, a subspace, two networks. The ROME edit is not used |
+| Geiger et al., interchange interventions | Patch from a source input, score against an algorithm's prediction | The swap and its score |
+| Prakash et al. 2024, cross-model patching | Fine-tuned values into the base model | Across two models, in the opposite direction, on different inputs |
+
+| Known limitation | Source | Does it bite here? |
+|---|---|---|
+| Noise makes inputs the model never sees | Zhang and Nanda 2024 | Avoided: every source is a real input |
+| Probability as the metric can miss components that push against the answer | Zhang and Nanda 2024 | Avoided in part: the score is whether the output matches, which is coarse in another way |
+| A value spread over several layers shows up with a window of layers and not with one | Zhang and Nanda 2024 | **Not handled.** One site per variable, so it reads as new |
+| Where patching lights up does not predict which layer is best to edit | Hase et al. 2023 | **Not handled, and it matters for part 2.** The definition does not claim to say where to edit. Re-gating is a kind of edit, so it could disagree with the swaps without either being wrong |
+| A subspace patch can work through a pathway the model does not normally use | Makelov et al. 2023 | Only in part: the random-network floor does not rule it out |
+| A value from another network may be unnatural to the one receiving it | Not established in these sources; our own concern | Only in part: a slightly rotated encoding reads as new |
 
 ## How often the swaps must match
 
@@ -143,8 +166,9 @@ adopted; that takes a dated `decisions.md` row.
 
 ## Departures from the literature
 
-- **Geiger et al. 2025.** They define one network against one algorithm. One site map across two networks, the "counts" rule, the
-  last-step labels and the swap score restricted to pairs where the prediction changes are ours.
+- **Geiger et al. 2025.** They define one network against one algorithm. One site map across two networks on different inputs, the
+  "counts" rule, the last-step labels and the swap score restricted to pairs where the prediction changes are ours.
+- **Meng et al. 2022.** Real source inputs in place of noise, a subspace in place of a full hidden state, and two networks.
 - **Prakash et al. 2024.** As in the table above.
 - **Jain et al. 2024.** "M acts on it" adds a causal condition to their readout. A wrapped label is their g, with its size reported.
 - **Sutter et al. 2025.** The random-network floor is their control, used here as a reference for the score.
