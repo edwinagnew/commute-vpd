@@ -23,7 +23,8 @@ fine-tune's KL matched the earlier reading, and the do-nothing reference read ex
 **For your gate.** The premise check returned "doubtful": with random changes this close to the ceiling, the share has
 little room to say anything about what an update taught, and it changes no candidate map's status. Its question for you
 is what a near-ceiling reading on a random change means, and which conclusion depends on differences among these six
-readings. Full text: `~/commute-data/premise/P3.1.md`.
+readings. Full text: `~/commute-data/premise/P3.1.md`. The decision card is queued for the log, without a recommendation:
+`reports/decisions/2026-11-09_decision_qwen-regating-share.md`.
 
 **Asks waiting on you.** None. **Money.** $0 on the cluster; no pods. **Friction.** One line, number 648: the start-up
 report showed a finished cell as having no runs left while its job was still live.
