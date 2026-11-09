@@ -1,5 +1,7 @@
 # A working definition of reused against new
 
+**Rejected by the user as ad hoc, 2026-11-09. Replaced by `2026-11-09_plan_general-definition.md`. Kept as the record.**
+
 *definition-lead, 2026-11-09, second version (the first is in git). For you to approve, change or drop; nothing here
 has run. Both papers read in full from the PDFs. Sources, the design check and the numbers per fine-tune are in
 `2026-11-09_plan_definition-page-appendix.md`.*
