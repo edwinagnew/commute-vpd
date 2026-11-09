@@ -7,7 +7,7 @@ Qwen3-1.7B has two VPD decompositions of the same unchanged model.
 | **old** | p-e9fcffd5 | `artifacts/qwen3-1.7b-p-e9fcffd5-torch` | The text mix firestock3, windows of 512 tokens | Every Qwen reading before 2026-11-07 |
 | **new** | p-9707d6ff | `~/commute-data/artifacts/qwen3-1.7b-p-9707d6ff-torch` | Chat-formatted text, windows of 2,048 tokens, 30% written by Qwen3-1.7B itself | Port checked by E131 (`reports/analyses/2026-11-07_analysis_e131-new-decomposition.md`) |
 
-**Rules for every lead (user, 2026-11-09).**
+**Rules for every lead** (written for the user's 2026-11-09 request for clear old-versus-new records).
 - A Qwen reading of subcomponents, masks, a split, faithfulness or the adversary is true of one decomposition. Name it
   when citing: "on the old decomposition" or "on the new decomposition". A reading with no name here is on the old one.
 - Before citing a row below, read its status. "Not re-run" means the claim still rests on old only; do not say it holds

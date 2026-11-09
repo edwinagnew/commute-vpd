@@ -25,6 +25,7 @@ silently. A plan restates the user's request in the Terms' words, and it is that
 ## Layout (one line each)
 - `experiments/<name>/` = `run.py` + `plot.py` + `results/` (incl. `predictions.json`) + `figures/`.
 - `experiments/TRIED.md` = everything tried or dropped, and why we moved on; update it with every experiment.
+- `experiments/DECOMPOSITIONS.md` = which Qwen reading is on which decomposition (old p-e9fcffd5, new p-9707d6ff); check it before citing one.
 - `docs/research_log/parts/` = the research log's source, one file per section and per experiment card, built by
   `docs/research_log/build.py` into four pages (main, experiments, glossary, changelog) and published as the artifact
   "Update Decomposition Log" (URL, layout and publish recipe in `docs/research_log/README.md`). Edit only the parts a
