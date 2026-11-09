@@ -21,12 +21,14 @@ Qwen3-1.7B has two VPD decompositions of the same unchanged model.
 
 ## Status of the re-runs
 
+**Status 2026-11-09: the re-runs below are stopped by `reports/plans/2026-11-09_plan_paper-roadmap.md`; "Not re-run" stays true of every row, and only cell P3.1 (the re-gating read, `qwen-lead`) may read one on new.**
+
 Plan: `reports/plans/2026-11-09_plan_new-decomposition-reruns.md`. `decisions.md` lines are as of 2026-11-09. The last
 column is filled in when an amendment is read: same, differs (one line how), or unreadable.
 
 | Read on old | What it fed | Amendment on new | Status | New vs old |
 |---|---|---|---|---|
-| E93, Amendment 1: least squares and adjoint on the clean table | decisions.md lines 156, 162: D1's criterion, least squares first | E93 new-decomposition amendment (with E86's least-squares rows, E75's wrong-change rows) | Not re-run | |
+| E93, Amendment 1: least squares and adjoint on the clean table | decisions.md lines 156, 162: D1's criterion, least squares first | E93 new-decomposition amendment (with E86's least-squares rows, E75's wrong-change rows) | Stopped 2026-11-09 by the paper plan. Code and predictions written (`experiments/qwen_d1_table/amend2.py`, `results/predictions_amend2.json`), never run. No reading on new. | |
 | E111 stage 1: teacher training repairs RL seed 70 | lines 162, 167: the adopted map | E111 stage 1, then stages 2-5, on new | Not re-run | |
 | E68 | line 140: D1's test left masked forwards | E68 new-decomposition amendment | Not re-run | |
 | E72 | line 140 | E72 new-decomposition amendment | Not re-run | |
