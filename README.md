@@ -54,7 +54,9 @@ Current plan, Qwen D3, anchor 2, E120 (2026-11-06, `reports/plans/2026-11-06_pla
 
 Current plan, Qwen D2, anchor 1 (2026-11-03, `reports/plans/2026-11-03_plan_e78-anchor1.md`, E78, $0): E61's template fine-tune retrained unchanged, saving δW in fp32 at E69's steps plus step 3, so the split can read it; coded and filed, not run yet.
 
-Current plan, Qwen D1, latest (2026-11-03, `reports/plans/2026-11-03_plan_e72-d1-second-test.md`, E72, $0, measures only): D1 blocked on day 1, the pass test under the original masks cannot yet pass anything on KL (`reports/analyses/2026-11-03_analysis_e68-d1-pass-test.md`); what the test becomes is the user's call, log card `decision-d1-test`.
+Current plan, Qwen D1 and D3 readings, latest (2026-11-09, user, `reports/plans/2026-11-09_plan_new-decomposition-reruns.md`): the experiments behind major decisions are re-run on the new decomposition p-9707d6ff, one amendment and one subagent each; `experiments/DECOMPOSITIONS.md` says which reading is on which decomposition.
+
+Current plan, Qwen D1, earlier (2026-11-03, `reports/plans/2026-11-03_plan_e72-d1-second-test.md`, E72, $0, measures only): D1 blocked on day 1, the pass test under the original masks cannot yet pass anything on KL (`reports/analyses/2026-11-03_analysis_e68-d1-pass-test.md`); what the test becomes is the user's call, log card `decision-d1-test`.
 
 Current plan, whole fleet, latest (2026-11-05, `reports/plans/2026-11-05_plan_qwen-reorient-amend1.md`, user): preliminary results by 2026-11-18, core done 11-14, midpoint check 11-11 (D3 rows read on both anchors). D1 closes on option A of card decision-after-e76 after E89, least squares scored first, no more adversary-teeth runs; the D3 rows (route split, δW against the random null, behaviour kept under masks, think-mode overlap) run 11-07 to 11-11 on both anchors at the full update and at a size-matched step, then on RL, null and own-samples SFT; `baseline-lead` builds the comparators 11-06 and E90 stays on paper until they exist. Digests name the row moved; no new E-code outside the table before 11-14.
 
