@@ -68,7 +68,7 @@ def move_gamma(g: Gamma, device: str) -> Gamma:
         return {k: v.to(device) for k, v in d.items()}
 
     return Gamma(g.in_w.to(device), g.in_b.to(device), mv(g.blocks), mv(g.heads_w), mv(g.heads_b), mv(g.readouts),
-                 g.inv_freq.to(device))
+                 g.inv_freq.to(device), None if g.sink is None else g.sink.to(device), g.final_norm)
 
 
 @contextmanager
