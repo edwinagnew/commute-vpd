@@ -1,0 +1,19 @@
+{
+  "amendment": "E131 Amendment 1, addendum b: the stage-0 alive and g-statistics rules, replaced after job 56661 (predictions_amend1.json is unchanged)",
+  "filed": "2026-11-09, after job 56661 stopped at stage 0's first check and before any rerun of experiments/qwen_new_decomp/w0_refs.py",
+  "why": "In job 56661 the fresh alive count was 494602 against the stored 494598, and 376 columns changed alive status (190 only fresh, 186 only stored), each alive on at most 3 of 131,072 positions, the largest mean g among them 8.2e-6 (experiments/qwen_new_decomp/results/w0_refs_stage0_flips.out); mean_g passed its bar (2.96e-4 and 2.58e-4 against 5.67e-4) while active missed it (1.38e-3 and 1.19e-3) (experiments/qwen_new_decomp/results/w0_refs_stage0_miss_job56661.json). The two filed bars were mis-specified: exact equality and a continuous-value rounding bound were applied to a count at a threshold, which a rounding difference at 0.01 moves by a few columns.",
+  "rules": {
+    "alive": {
+      "expected": 494598,
+      "max_symmetric_difference_share": 0.002,
+      "rule": "stage 0: the stored statistics must still give exactly 494598 (count_from_stored_stats == expected). The fresh index passes when the symmetric difference summed over sites, sum of |fresh Delta stored|, is at most 0.002 x 494598 (= 989.2, so 989 passes and 990 fails). The fresh count itself is reported, not barred.",
+      "source": "376 columns measured in job 56661 (0.076% of 494598); the bar is about 2.6 times that, because a real path error (wrong decomposition, wrong rows, wrong threshold) would move far more columns"
+    },
+    "gstats": {
+      "tol": 0.000567,
+      "rule": "stage 0: L1 ratio <= tol for mean_g, both blocks (tol unchanged from predictions_amend1.json). active is reported with no bar.",
+      "source": "the tol of predictions_amend1.json rules.gstats; mean_g read 2.96e-4 and 2.58e-4 in job 56661"
+    }
+  },
+  "unchanged": "Every other rule of predictions_amend1.json (adv_final, adv_step0, masked_kl, sources_agreement, stage1, and the rest of the file) stands unchanged."
+}

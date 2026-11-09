@@ -15,8 +15,10 @@ those g. E131's control (c) measured that path on the old decomposition against 
 
 Stages, one job each (`--stage 0`, then `--stage 1` once 0 has passed); each writes results/w0_refs_stage<n>.json:
   0  The control, on the OLD decomposition, alone. Stops at the first miss with the reason printed (the rules, with
-     their sources, are in results/predictions_amend1.json). Expected: alive 494598 and the same index as the stored
-     statistics give; g statistics within 5.7e-4 (L1 ratio) of the stored fp16 files; masked KL 0.14167 FineWeb and
+     their sources, are in results/predictions_amend1.json; its `alive` and `gstats` rules are replaced by
+     results/predictions_amend1b.json). Expected: the stored statistics give alive 494598 and the fresh index differs
+     from them in at most 989 columns summed over sites; mean_g within 5.7e-4 (L1 ratio) of the stored fp16 files
+     (active reported, no bar); masked KL 0.14167 FineWeb and
      0.05886 maths; adversary step-0 KL 0.0918 and 0.0374 (the same random sources); final KL near 1.73 and 4.24.
   1  The same on NEW, written to results/large/w0_refs/p-9707d6ff/. Refused unless stage 0's file says pass. Expected:
      alive total positive (E131: ~6,200 active subcomponents per token on new against ~8,400 on old, so it may sit
@@ -51,6 +53,7 @@ HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"
 OUT = RESULTS / "large" / "w0_refs"
 PRED = RESULTS / "predictions_amend1.json"
+PRED_B = RESULTS / "predictions_amend1b.json"  # 2026-11-09 addendum: replaces the `alive` and `gstats` rules
 WEB = HERE.parent / "qwen_adversary" / "results" / "tokens.json"
 MATHS = HERE.parent / "qwen_sft" / "results" / "maths_rows.json"
 STORED = Path("/mnt/nw/home/e.agnew/commute-data/results-large/qwen_sft/nowarmup")
@@ -110,21 +113,29 @@ def within(x: float, ref: float, tol: float) -> dict[str, Any]:
     return {"read": x, "ref": ref, "rel": rel, "tol": tol, "pass": math.isfinite(rel) and abs(rel) <= tol}
 
 
-def check_alive(idx: dict[str, Tensor], stored: dict[str, Tensor], expected: int) -> dict[str, Any]:
-    """Exact: the count against the filed one, and per site the index against the one the stored statistics give. The
-    site names and sizes of what differs are returned so that a miss can be read without a rerun."""
+def check_alive(idx: dict[str, Tensor], stored: dict[str, Tensor], rule: dict[str, Any]) -> dict[str, Any]:
+    """Addendum b: the stored statistics must give exactly `expected` columns; the fresh index passes when its
+    symmetric difference from the stored one, summed over sites, is at most `max_symmetric_difference_share` x expected.
+    The site names and sizes of what differs are returned so that a miss can be read without a rerun."""
+    expected = rule["expected"]
+    bar = rule["max_symmetric_difference_share"] * expected
     n, n_stored = sum(len(v) for v in idx.values()), sum(len(v) for v in stored.values())
+    sym = 0
+    for s in Q.SITES:
+        a, b = idx[s].cpu(), stored[s].cpu()
+        sym += len(a) + len(b) - 2 * int(torch.isin(a, b).sum())
     differ = {s: (len(idx[s]), len(stored[s])) for s in Q.SITES if not torch.equal(idx[s].cpu(), stored[s].cpu())}
-    return {"count": n, "count_from_stored_stats": n_stored, "expected": expected, "sites_differing": differ,
-            "pass": n == expected and n_stored == expected and not differ}
+    return {"count": n, "count_from_stored_stats": n_stored, "expected": expected, "symmetric_difference": sym,
+            "bar": bar, "sites_differing": differ, "pass": n_stored == expected and sym <= bar}
 
 
 def check_stats(fresh: dict[str, dict[str, Tensor]], stored: dict[str, dict[str, Tensor]], tol: float) -> dict[str, Any]:
+    """Addendum b: mean_g is barred at `tol`; active is returned with no bar."""
     out: dict[str, Any] = {"tol": tol}
     for block in BLOCKS:
         for stat in ("mean_g", "active"):
             out[f"{block}.{stat}"] = l1_ratio(fresh[block], stored[block], stat)
-    out["pass"] = all(v <= tol for k, v in out.items() if k != "tol")
+    out["pass"] = all(out[f"{b}.mean_g"] <= tol for b in BLOCKS)
     return out
 
 
@@ -212,6 +223,11 @@ def _peak() -> str:
 # ----------------------------------------------------------------------------- stages
 
 
+def load_rules() -> dict[str, Any]:
+    """predictions_amend1.json's rules, with the `alive` and `gstats` keys replaced by the addendum's."""
+    return json.loads(PRED.read_text())["rules"] | json.loads(PRED_B.read_text())["rules"]
+
+
 def stored_stats() -> dict[str, dict[str, Tensor]]:
     return {b: load(STORED / "gstats" / f"W0_{b}.safetensors") for b in BLOCKS}
 
@@ -243,7 +259,7 @@ def run_stage(stage: int, decomp: Path, rules: dict[str, Any], app_cls: Any) -> 
     write()
     if stage == 0:
         old = stored_stats()
-        out["alive_control"] = check_alive(idx, qwen_maps.alive_from_stats(old["maths"], old["fineweb"]), rules["alive"]["expected"])
+        out["alive_control"] = check_alive(idx, qwen_maps.alive_from_stats(old["maths"], old["fineweb"]), rules["alive"])
         out["stats_control"] = check_stats(stats, old, rules["gstats"]["tol"])
         log(f"control, alive: {out['alive_control']}")
         log(f"control, g statistics: {out['stats_control']}")
@@ -302,11 +318,12 @@ def main(argv: list[str] | None = None) -> int:
     ap.add_argument("--decomp", type=Path, required=True)
     a = ap.parse_args(argv)
     require_filed(PRED)
+    require_filed(PRED_B)
     if a.stage == 1:
         p = result_path(0)
         if not (p.is_file() and json.loads(p.read_text()).get("pass") is True):
             sys.exit(f"stage 1 needs a passed stage 0: {p}")
-    return run_stage(a.stage, a.decomp, json.loads(PRED.read_text())["rules"], Apparatus)
+    return run_stage(a.stage, a.decomp, load_rules(), Apparatus)
 
 
 if __name__ == "__main__":
