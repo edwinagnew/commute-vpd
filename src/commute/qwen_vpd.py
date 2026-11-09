@@ -23,12 +23,12 @@ logits and softmax in fp32, readout vectors and q/k gains in bf16. Masks and g a
 Rows. Every function takes token rows that each hold one document starting at position 0, with no padding; Γ's
 attention is causal, so g at a position depends only on the tokens up to it.
 
-Two decompositions, chosen by directory (E131, 2026-11-07). p-e9fcffd5 (DECOMP_DIR, the default everywhere) has no
+Two decompositions, chosen by directory (E131, 2026-11-07). p-e9fcffd5 has no
 attention sink and no final norm. Goodfire's second run p-9707d6ff (param-decomp 7d2e5aee8;
 experiments/qwen_new_decomp/convert.py) adds, from its launch_config: a learned attention sink, one logit per head per
 block, joined uncapped to each softmax with a zero value (`pd/attention.py:248-279` at 7d2e5aee8), and a weightless
 RMS norm after the last block (`global_transformer/arch.py:328-332`). Its converted index.json carries
-`ci_fn_arch = {"sink": "learned", "final_norm": "rms"}`; a directory without that key loads as p-e9fcffd5 did. The
+`ci_fn_arch = {"sink": "learned", "final_norm": "rms"}`; an index.json without that key loads as p-e9fcffd5 did. The
 new run's 32-slot stacks are cut to their 28 layers by the converter (pads checked zero there), so every directory
 holds 28-layer stacks and the loaders assert it.
 """
@@ -38,6 +38,7 @@ from __future__ import annotations
 import json
 import math
 import os
+import re
 from collections.abc import Callable, Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -53,6 +54,7 @@ from commute.vpd import kl_per_position
 
 HF_NAME = "Qwen/Qwen3-1.7B"
 HF_REVISION = "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e"
+# Only for experiments/qwen_maps/run.py and diag_stored.py (frozen); the loaders below take the directory explicitly.
 DECOMP_DIR = Path(
     os.environ.get("COMMUTE_QWEN_DIR", "/mnt/nw/home/e.agnew/commute-data/artifacts/qwen3-1.7b-p-e9fcffd5-torch")
 )
@@ -143,7 +145,16 @@ class Components:
         return Components(move(self.V), move(self.U))
 
 
-def load_components(directory: Path = DECOMP_DIR, device: str = "cuda", dtype: torch.dtype = torch.float32) -> Components:
+def decomp_id(directory: Path) -> str:
+    """The Goodfire run id (`p-<hex>`) in the converted directory's index.json `source`, so an id cannot disagree
+    with the directory it was read from."""
+    source = json.loads((Path(directory) / "index.json").read_text())["source"]
+    found = re.search(r"runs/(p-[0-9a-f]+)/", source)
+    assert found, f"no run id in {directory}/index.json source: {source!r}"
+    return found.group(1)
+
+
+def load_components(directory: Path, device: str = "cuda", dtype: torch.dtype = torch.float32) -> Components:
     store = _Store(directory)
     V = {k: store.stacked(f"components.stacks.{k}.0", dtype, device) for k in KINDS}
     U = {k: store.stacked(f"components.stacks.{k}.1", dtype, device) for k in KINDS}
@@ -151,11 +162,10 @@ def load_components(directory: Path = DECOMP_DIR, device: str = "cuda", dtype: t
     return Components(V, U)
 
 
-def ci_fn_arch(directory: Path = DECOMP_DIR) -> dict[str, str]:
-    """Γ's sink and final norm as the converter recorded them; p-e9fcffd5's index.json has neither (both "none"), and
-    neither has a directory without an index.json (copies of p-e9fcffd5 written by other experiments)."""
-    path = Path(directory) / "index.json"
-    index = json.loads(path.read_text()) if path.is_file() else {}
+def ci_fn_arch(directory: Path) -> dict[str, str]:
+    """Γ's sink and final norm as the converter recorded them; p-e9fcffd5's index.json has neither (both "none").
+    index.json is required, as `qwen_files.complete` already requires it."""
+    index = json.loads((Path(directory) / "index.json").read_text())
     arch = {"sink": "none", "final_norm": "none"} | index.get("ci_fn_arch", {})
     assert arch["sink"] in ("none", "learned") and arch["final_norm"] in ("none", "rms"), arch
     return arch
@@ -191,9 +201,12 @@ class Gamma:
         return self.in_w.dtype
 
 
-def load_gamma(directory: Path = DECOMP_DIR, device: str = "cuda", dtype: torch.dtype = torch.float32) -> Gamma:
+def load_gamma(directory: Path, device: str = "cuda", dtype: torch.dtype = torch.float32) -> Gamma:
     store = _Store(directory)
     arch = ci_fn_arch(directory)
+    assert (_BB + "blocks.attention.sink_logits" in store.handles) == (arch["sink"] == "learned"), (
+        f"{directory}: index.json ci_fn_arch {arch} disagrees with the sink tensor in the files"
+    )
     readouts = {
         s: torch.stack([store.get(f"ci_fn.backbone.readouts.{s}.{arm}", dtype, device) for arm in _ARMS])
         for s in SITES

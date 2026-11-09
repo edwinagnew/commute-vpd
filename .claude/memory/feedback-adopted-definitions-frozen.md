@@ -8,6 +8,8 @@ metadata:
   modified: 2026-11-06T10:17:04.465Z
 ---
 
+**Superseded 2026-11-09** by `reports/plans/2026-11-09_plan_paper-roadmap.md`: the reuse definition is under revision in cell P1.1 and no verdict is given under either wording until the user adopts one by a dated decisions.md row; adding a rule, clause, band or score to a verdict is still a definition change only the user makes.
+
 The reuse definition is Jain et al. 2024 as in decisions.md rows 81 and 87 (linear readout for possession, small
 function of it that carries to held-out values, direction removal as the causal check), nothing else. A case it
 cannot read reads "unreadable" or "does not apply"; build tasks with Jain's shape (marker + content) rather than

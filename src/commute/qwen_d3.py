@@ -33,6 +33,7 @@ from commute.qwen_teacher import move_gamma
 from commute.qwen_vpd import (
     SITES,
     Components,
+    decomp_id,
     fp32_matmuls,
     importances,
     load_components,
@@ -44,13 +45,16 @@ from commute.vpd import kl_per_position
 
 GRID = EXPERIMENTS / "qwen_size_grid" / "results" / "size_grid.json"
 MATHS = EXPERIMENTS / "qwen_sft" / "results" / "maths_rows.json"
-GSTATS = EXPERIMENTS / "qwen_sft" / "results" / "large" / "nowarmup" / "gstats"
+# W0 g statistics (they fix the alive set) and the alive count, per decomposition; add p-9707d6ff once its statistics exist.
+GSTATS_OF = {"p-e9fcffd5": EXPERIMENTS / "qwen_sft" / "results" / "large" / "nowarmup" / "gstats"}
+ALIVE_TOTAL_OF = {"p-e9fcffd5": 494598}
+GSTATS: Path | None = None  # override for frozen qwen_teacher_table/run.py:79 (a pod copy of the old statistics)
 A1_ITEMS = EXPERIMENTS / "qwen_updates" / "results" / "large" / "P" / "a1_rows.json"
 FORMS = EXPERIMENTS / "qwen_tofu_forms" / "results" / "forms.jsonl"
 E57_LARGE = EXPERIMENTS / "qwen_reading" / "results" / "large"
 DEV, F32, F64, GIB = "cuda", torch.float32, torch.float64, 2**30
 ROW_LEN, MATHS_ROWS, SIGMA_LEN, SIGMA_BATCH = 256, 128, 512, 2  # E57's maths rows; Σ as E44's stage S
-ALIVE_TOTAL, BASIS_TOL = 494598, 1e-6
+BASIS_TOL = 1e-6
 CLASSES = ("whole", "cut", "fragment", "other")
 WHOLE, POOLED = 0, 4  # indices into a per-row record: whole-question answer positions; the pooled sum
 
@@ -217,9 +221,11 @@ class Decomp:
         self.weights = Weights(linears(self.model))
         self.comps = load_components(decomp, DEV, F32)
         self._gamma = load_gamma(decomp, DEV, torch.bfloat16)
-        st = [load(GSTATS / f"W0_{b}.safetensors") for b in ("maths", "fineweb")]
+        did = decomp_id(decomp)  # KeyError below for a decomposition whose statistics are not registered
+        gstats, total = GSTATS or GSTATS_OF[did], ALIVE_TOTAL_OF[did]
+        st = [load(gstats / f"W0_{b}.safetensors") for b in ("maths", "fineweb")]
         self.alive = qwen_maps.Alive(self.comps, qwen_maps.alive_from_stats(*st))
-        assert self.alive.count() == ALIVE_TOTAL, f"live set {self.alive.count()} != {ALIVE_TOTAL}"
+        assert self.alive.count() == total, f"live set {self.alive.count()} != {total} ({did})"
         self.lay = qr.Layout({s: v.cpu() for s, v in self.alive.idx.items()})
         self._sigma: dict[str, Tensor] | None = None
         log(f"[load] target, components, Γ, live set; {torch.cuda.get_device_name()}, {peaks()}")

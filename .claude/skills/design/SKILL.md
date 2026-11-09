@@ -20,9 +20,10 @@ a single measurement, or outside the current stage. That is fine as long as the 
      what this proposal would learn that it could not. If the honest answer is "nothing new", stop here.
    - **Is this a patch on the last experiment, or a step towards the goal?** Both can be fine, but say which one.
    - **Which working decisions does it rely on or depart from?** Check `decisions.md`. Flag any departure.
-   - **Does it read under an adopted definition, unchanged?** Quote the `decisions.md` rows it reads under (reuse:
-     rows 81, 87). If the proposal adds a rule, clause, band or score to get a verdict, it changes the definition:
-     stop and ask the user. A case that cannot be read gets "unreadable" or "does not apply" (E99, 2026-11-06).
+   - **Does it read under an adopted definition, unchanged?** The reuse definition is under revision in cell P1.1
+     (2026-11-09): until the user adopts a wording by a dated `decisions.md` row, no verdict is given under either
+     wording. If the proposal adds a rule, clause, band or score to get a verdict, it changes the definition: stop and
+     ask the user. A case that cannot be read gets "unreadable" or "does not apply" (E99, 2026-11-06).
    - **What result would change what we do next?** If no outcome would change anything, the proposal is not worth
      running.
    - **Which arm checks the apparatus itself, and does it run first?** Name the control that must pass for any other
@@ -49,35 +50,30 @@ a single measurement, or outside the current stage. That is fine as long as the 
      of a reading, labelled by window (E54), and the scored states in a small dtype, in `results/large/`. These are files
      to re-read, not numbers the run reports, so the cut above does not apply to them.
 3. Restate the project goal in one or two sentences and how the proposal serves it. Write that and the answers above
-   at the top of the plan report. If the proposal is in an approved class (below), go ahead and tell the user in one
-   line which class it falls in. Otherwise put the check to the user and wait for their confirmation before writing
+   at the top of the plan report. If the proposal fills an open cell of yours (below), go ahead and tell the user in one
+   line which cell it fills. Otherwise put the check to the user and wait for their confirmation before writing
    theory notes, code or predictions; a subagent then returns the check as the first part of its report and does not
    start building.
 
-## Approved classes (user, 2026-10-21)
+## Approved work (user, 2026-10-21; narrowed 2026-11-09)
 
-Work in these classes needs no sign-off. The check is still written, so the record shows why the work was done.
+One kind of work needs no sign-off; the check is still written, so the record shows why the work was done. Classes 1,
+2 and 4 of 2026-10-21 (analysis of what exists; controls, replications and recovery; the Qwen deliverables' next
+steps) were removed by `reports/plans/2026-11-09_plan_paper-roadmap.md`: with no cell, they do not run.
 
-1. **Analysis of what exists.** Re-reading saved states and result files, new figures, CPU tests on saved states
-   (for example the cancellation tests, E10's matched-size check), and GPU passes of the existing harness on saved
-   states.
-2. **Controls, replications and recovery.** More seeds of a run that already happened; reruns of a lost stage;
-   the same code on another card to close a cross-card question; the control a plan already names.
-3. **The steps of an approved plan's decision tree.** A plan the user has confirmed may list branches ("if G1
-   fails, do X; if P2 holds, run Y"). Each branch is approved with the plan, including its predictions and its cost.
-4. **The Qwen deliverables' named next steps** (since 2026-11-03, `reports/plans/2026-11-03_plan_qwen-reorient.md`; before that, either 67M line's "What's next" cards). The items on the research log's "What's next" cards for the two lines run in
-   parallel since 2026-10-22 (re-gating, Q5: mechanism or leak, faithfulness under Γ, what the switched-on set did;
-   commute, Q1: the weak version under reading A), on the existing model, tasks and harness.
+- **A run that fills a named open cell of yours, within its run count, or a branch that cell's "done when" names**
+  (`~/commute-agents/fleet/cell show <role> <id>`). An amendment is a run.
 
-Still needs the user's confirmation after they have seen the check: a new sub-question or a new line of work; a
+Anything else is proposed to the user (in a zero-run cell's page or one ask) and not run. In particular, these
+always need the user's confirmation after they have seen the check: a new cell; a new sub-question or a new line of work; a
 new task family, dataset or model; a change to `GOALS.md` or to the success criterion; a departure from
 `decisions.md`; dropping a line of work; anything over the session budget. Filed predictions are never edited.
 
-**Stop and tell the user**, even inside an approved class or plan, when: a control fails; a filed prediction reverses
+**Stop and tell the user**, even inside an open cell, when: a control fails; a filed prediction reverses
 in a way no branch of the plan covers; data or a machine is lost; the user's words and a file's definition disagree;
 the next step would exceed the budget. Report what happened and the options, and wait.
 
-## What counts as confirmation (outside the approved classes)
+## What counts as confirmation (outside an open cell)
 
 - High-level design choices need confirmation **after** the user has seen this check. These are: a new direction,
   task or dataset, architecture, theory note, or a departure from `decisions.md`. An earlier "go for it" or "sounds
@@ -98,5 +94,5 @@ When the proposal is trained, dropped or shelved, add it to `experiments/TRIED.m
 moved on. If a working decision changed, update `decisions.md`. Never edit `GOALS.md` without the user's approval.
 Then queue the research-log update as a line in `docs/research_log/PENDING.md` (`docs/research_log/README.md` →
 "Batched updates"): a dropped proposal goes in Mistakes → "Dropped at design", a changed decision in the timeline and
-the sub-question it bears on, and a new experiment gets its E-code and card when it is run. The queue is flushed
-before the session ends.
+the sub-question it bears on, and a run's result goes into its cell (`fleet/cell fill`). The queue is flushed once a
+day from the table (since 2026-11-09).
