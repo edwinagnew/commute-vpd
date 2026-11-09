@@ -88,8 +88,9 @@ Stage 2: search.
   the objective, three starts (two random, one from the top principal directions of the F-minus-M activation
   difference), read on the held-out half with d.
 - H: φ = the whole residual at each site, last position; s by ridge from z_M to v_F on the fitting half, with the
-  ridge value from a small grid on a validation split, then 200 gradient steps on KL. At `out3` the first fit is
-  convex in the logits.
+  ridge value from a small grid on a validation split, then 200 gradient steps on KL. One further site, `final`, the normed input of the unembedding: there KL is convex in
+  the affine map, so this is the fit the page's convexity claim refers to. Corrected 2026-11-09: an earlier version
+  said this of `out3`, but a final norm follows `out3`, so the fit there is convex only in v_F.
 - Reversion and setter mismatch for each found pair of φ and s. Ties go to the highest reversion and lowest mismatch.
 
 Capacity: ridge from z_M to the XOR, and to XOR labels shuffled across windows, in-sample and held-out.
