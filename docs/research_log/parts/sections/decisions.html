@@ -1,6 +1,6 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
-<div class="prose"><p><strong>Waiting on you, 2026-11-09.</strong> Two open cards.</p>
+<div class="prose"><p><strong>Waiting on you, 2026-11-09.</strong> Three open cards.</p>
 <p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
   <div class="card key decision" id="decision-definition-task-search"><span class="chip open urgency">Soon</span><div class="k">Question for you · definition-lead · new 2026-11-09</div><p class="small">Waiting on the user (fleet ask 11). Nothing runs until this is decided.</p><h3>Should we keep looking for a task that the frozen reuse definition can give a verdict on?</h3>
@@ -28,5 +28,24 @@
 <p><strong>Options.</strong> (a) Leave the slide as it is, with the one start said beside the row; nothing runs. (b, recommended) Two free cluster jobs of about 26 and 23 minutes (estimated): the first reads the LoRA's states at two more starts and on 256 more rows; the second reads Adam's four states likewise. If the LoRA stays under the line the slide stands; if it rises, the cell becomes "between" or "fail".</p>
 <p><strong>Recommendation: b.</strong> It costs no money.</p>
 <div class="links"><a href="#e71">E71</a><a href="#e47">E47</a><a href="#e39">E39</a></div></div>
+  <div class="card key decision" id="decision-comparison-verdict"><span class="chip uninf urgency">No rush</span><div class="k">Question for you · baseline-lead · new 2026-11-09</div><p class="small">Due to run either way: the larger-model part of the table is rebuilt on the new decomposition once the re-runs of its rows land (baseline-lead, after qwen-decomp-lead's re-runs). Nothing else waits on this.</p><h3>One overall verdict for the table comparing the decomposition with neurons?</h3>
+<p><strong>The question.</strong> We put the decomposition's readings beside the same readings done on neurons, and beside cheap numbers (the size of the update, how highly the unchanged model already ranked the trained answer, one steering vector, a set of neurons that carry the gain). The table is finished and in the log (<a href="#neurontable">the table</a>). It gives one reading per row and no overall answer to "does the decomposition add anything over neurons?". Should it have one, and by what rule? A rule is a definition, so only you can set it.</p>
+<p><strong>The evidence.</strong> All of this was read on saved fine-tuned models, for $0. On the small model (the 67M), where the kind of each task is known from how it was built:</p>
+<ul>
+<li>Seed agreement, which is how much the set of parts a fine-tune switches on repeats across two training seeds, separates copy tasks from random-lookup tasks for the decomposition (gap 0.151, spread within a kind 0.105), and not for the same number of neurons (0.053, spread 0.212).</li>
+<li>The re-switching share over the whole model, which is how much of the gain comes back when the unchanged weights get only the fine-tuned model's on/off pattern, separates copy from random-lookup tasks for the decomposition (gap 0.47, spread 0.04). The neuron version gets those two the wrong way round (gap -0.38, spread 0.14).</li>
+<li>The same share separates lowercase from cipher tasks for both: decomposition gap 0.59 (spread 0.05), neurons 0.18 (spread 0.07).</li>
+<li>Restore share and the re-switching share of the switched-on set separate nothing, for either method. On lowercase and the ciphers the decomposition switches no part on, so the readings based on that set cannot be read at all.</li>
+</ul>
+<p>On the larger model (Qwen3-1.7B), the update's size and its gain each already sort every pass and fail of the decomposition's first table, so that table adds little. These larger-model rows are all on the old decomposition and will be rebuilt on the new one.</p>
+<p><strong>Options.</strong></p>
+<ul>
+<li><strong>(a, recommended) No overall verdict.</strong> The write-up says, reading by reading, where the decomposition did better. Runs nothing, costs $0. You get the sentence "better on seed agreement and on whole-model re-switching, on the small model, and nowhere else"; you do not get a single yes or no.</li>
+<li><strong>(b) A rule:</strong> on a reading, the decomposition "adds something" when it separates the two kinds of task and no comparator does, under the separation rule already filed for the small model. A few minutes of a script over the existing table, $0. On today's numbers it says yes for seed agreement and for copy against random-lookup re-switching, and no for lowercase against ciphers, because neurons separate those too. Larger-model rows without a task kind known from construction read "does not apply".</li>
+<li><strong>(c) As (b), plus a minimum gap of 0.3,</strong> the bar an earlier small-model run set for the decomposition's share. Also $0. On today's numbers lowercase against ciphers becomes a yes, since the neuron gap of 0.18 falls under the bar. It applies to neurons a bar that was set for the decomposition alone, so this is an extension.</li>
+</ul>
+<p><strong>Recommendation: (a).</strong> A rule written now would be chosen after seeing which cells separate, so it could not fail, and (b) and (c) differ on exactly one comparison, the one the choice of bar decides. The reading-by-reading sentence already says what the rule would say.</p>
+<p class="small">Names in the reports: seed agreement and the set readings = E117; whole-model re-switching = r (decomposition) and r_n (neurons); the larger-model table = E118, beside E93; the 0.3 bar = E53's. Reports: <code>experiments/neuron_vpd_table/results/full_table.md</code>, <code>reports/analyses/2026-11-06_analysis_e117-e118-neurons-beside-vpd.md</code>.</p>
+<div class="links"><a href="#neurontable">Neurons beside VPD table</a><a href="#e117">E117</a><a href="#e118">E118</a><a href="#e93">E93</a><a href="#e53">E53</a></div></div>
 </div>
 </section>
