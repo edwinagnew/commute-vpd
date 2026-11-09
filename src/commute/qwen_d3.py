@@ -45,9 +45,12 @@ from commute.vpd import kl_per_position
 
 GRID = EXPERIMENTS / "qwen_size_grid" / "results" / "size_grid.json"
 MATHS = EXPERIMENTS / "qwen_sft" / "results" / "maths_rows.json"
-# W0 g statistics (they fix the alive set) and the alive count, per decomposition; add p-9707d6ff once its statistics exist.
-GSTATS_OF = {"p-e9fcffd5": EXPERIMENTS / "qwen_sft" / "results" / "large" / "nowarmup" / "gstats"}
-ALIVE_TOTAL_OF = {"p-e9fcffd5": 494598}
+# W0 g statistics (they fix the alive set) and the alive count, per decomposition.
+GSTATS_OF = {
+    "p-e9fcffd5": EXPERIMENTS / "qwen_sft" / "results" / "large" / "nowarmup" / "gstats",
+    "p-9707d6ff": EXPERIMENTS / "qwen_new_decomp" / "results" / "large" / "w0_refs" / "p-9707d6ff" / "gstats",
+}
+ALIVE_TOTAL_OF = {"p-e9fcffd5": 494598, "p-9707d6ff": 500244}
 GSTATS: Path | None = None  # override for frozen qwen_teacher_table/run.py:79 (a pod copy of the old statistics)
 A1_ITEMS = EXPERIMENTS / "qwen_updates" / "results" / "large" / "P" / "a1_rows.json"
 FORMS = EXPERIMENTS / "qwen_tofu_forms" / "results" / "forms.jsonl"
