@@ -180,6 +180,7 @@ class Ridge:
         L, info = torch.linalg.cholesky_ex(A)
         if int(info):
             raise RuntimeError(f"ridge factorisation failed for {key} at p={p}, lam={lam} (info {int(info)})")
+        del A  # at 36,864 columns a further 10 GiB on the card matters
         return torch.cholesky_solve(self.xy[key][:p], L).float()
 
     def predict(self, X: Tensor, beta: Tensor, key: str) -> Tensor:

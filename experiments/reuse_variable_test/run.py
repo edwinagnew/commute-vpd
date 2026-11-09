@@ -92,6 +92,7 @@ def _h_pair(net: Net, cfg: PC.Config, pair: str, fit: Tensor, read: Tensor, fedi
     ridge, X_val, Y_val, ps = SE.h_fit(net, fit, fedit, cfg, log)
     n_val_start = fit.shape[0] * 4 // 5
     for site in missing:
+        _budget(cfg, out)
         t0 = time.monotonic()
         beta, lam, mse = SE.ridge_select(ridge, site, ps[site], X_val, Y_val[site], cfg.ridge_grid)
         b, y, info = SE.h_refine(net, fit[:n_val_start], fit[n_val_start:], site, ridge, beta, fedit, cfg, 137_800 + SE.H_SITES.index(site))
