@@ -72,7 +72,7 @@
 
 <div class="prose"><div class="card key" id="existing-new"><div class="k">Definition · existing and new, without VPD</div>
 <p>From Jain et al. 2024, section 3. The original model possesses a capability f if a linear readout of some layer, trained on pretraining data, gives f on a chosen set of inputs. A fine-tune reuses f if its behaviour is g∘f for some map g and a causal test passes (switching off f breaks the behaviour, or pruning or reverse fine-tuning revives the old one). Otherwise it is new. <a href="#def-existing-new">Precise statement in the glossary</a>.</p>
-<p><strong>Ours, not the paper's</strong> (frozen 2026-11-06): verdicts relative to a named capability, held-out carrying, and removing the readout direction as the causal check. <strong>Measured?</strong> In full only on the 67M's two built-label pairs, both "not through the capability" (<a href="#e112">E112</a>, <a href="#e125">E125</a>); on Qwen a label writes only for the template fine-tune (<a href="#e90">E90</a>). So "reveal" and "create" below are readings, not verdicts. Whether to keep it as it stands waits on you (<a href="#decision-67m-next">card</a>).</p></div></div>
+<p><strong>Ours, not the paper's</strong> (used 2026-11-06 to 11-09): verdicts relative to a named capability, held-out carrying, and removing the readout direction as the causal check. It gave no verdict on any task: in full it read only the 67M's two built-label pairs, both "not through the capability" (<a href="#e112">E112</a>, <a href="#e125">E125</a>). <strong>Now under revision</strong> in cell P1.1 (section {{n:next}}): tentatively Jain's structure with a causal step in the style of Prakash et al. 2024, not adopted. So "reveal" and "create" below are readings, not verdicts.</p></div></div>
 
 <h3>How it is tested</h3>
 <div class="prose"><p>Take a released decomposition, run a small fine-tune, and carry the update onto the pieces with Γ's parameters and Δ frozen (fixed gates on the 67M, not on Qwen). A rule passes if the result stays faithful to the updated model by VPD's own checks, without Δ swallowing the update.</p></div>
@@ -154,5 +154,5 @@
 <div class="wip"><div class="k">Line 3 · Qwen3-1.7B (Q9)</div>
 <p><strong>The question.</strong> Do the small model's answers carry over to a larger model with a real post-training update?</p>
 <p><strong>What we found.</strong> The commute pass test has no teeth here (E44), so since 2026-10-30 this line describes where an update lands. No reading yet tells an update that uses what is already there from one that adds something new: the re-gating share reads 0.99 or more on every state, real or random (E61).</p>
-<p><strong>Now.</strong> D1, a map that keeps the decomposition faithful for a real update, is judged by the clean-model table (<a href="#e75">E75</a>, <a href="#e76">E76</a>, <a href="#e85">E85</a>, <a href="#e89">E89</a>); progress in section {{n:next}}.</p></div>
+<p><strong>Now.</strong> Part 3 of the paper: the key findings repeated on the new decomposition, RL beside SFT, after the 67M comparison (section {{n:next}}).</p></div>
 </section>
