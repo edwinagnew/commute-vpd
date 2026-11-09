@@ -8,6 +8,8 @@ metadata:
   modified: 2026-10-30T14:48:04.049Z
 ---
 
+**Superseded 2026-11-09** by `reports/plans/2026-11-09_plan_paper-roadmap.md`: no other model gives a go-ahead or settles a design question the user was asked; with no answer, work another open cell or finish.
+
 "You're asking too many questions. Ask Fable for general advice and come to me only for the most important questions"
 (user, 2026-10-30, after five AskUserQuestion dialogs in one afternoon on the re-gating line).
 

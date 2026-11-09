@@ -1,5 +1,5 @@
 - [Inherits feature_wars conventions](project-inherits-feature-wars-conventions.md) — started 2026-10-14; full memory set lives in the feature_wars project dir
-- [Design against goals](feedback-design-against-goals.md) — /design check always written; since 2026-10-21 no sign-off inside approved classes or a confirmed decision tree
+- (superseded 2026-11-09) [Design against goals](feedback-design-against-goals.md) — /design check always written; since 2026-10-21 no sign-off inside approved classes or a confirmed decision tree
 - [Concise design checks](feedback-concise-design-check.md) — a line or two per question
 - [Resolve, don't complicate](feedback-resolve-dont-complicate.md) — one-sentence claim, the null, 2–3 separating predictions; apparatus in reports/
 - [Pre-registration scoring rigour](feedback-prereg-scoring-rigor.md) — predictions.json fixes rules and thresholds; don't assert causes of residuals
@@ -26,7 +26,7 @@
 - [Larger model next; title "Update Decomposition"](project-larger-model-next.md) — 67M is a temporary testbed; write-ups titled Update Decomposition, not Commute
 - [Motivation: re-weighting hypothesis](project-motivation-reweighting-hypothesis.md) — open write-ups with the re-weighting hypothesis and post-training monitoring (theory/TOC2 -EA.pdf), not the testbed model
 - [User definitions override files](feedback-user-definitions-override-files.md) — "pull-back" = split a finished update over subcomponents; file definitions drifted and overrode the user for days; restate requests as operations and confirm
-- [Update the research log after every experiment](feedback-update-research-log-each-experiment.md) — batched since 2026-10-21: queue in docs/research_log/PENDING.md, flush before session end after the completeness check
+- (superseded 2026-11-09) [Update the research log after every experiment](feedback-update-research-log-each-experiment.md) — batched since 2026-10-21: queue in docs/research_log/PENDING.md, flush before session end after the completeness check
 - [Same table for every update type](feedback-same-table-for-every-update-type.md) — less ad hoc: LoRA, fine-tune and null through the same split measurements on the same task/steps/card (2026-10-20)
 - [Results fast: RunPod default](feedback-results-fast-runpod-default.md) — ≤ 30 min → cluster debug (10-min cap); longer → RunPod 4090+/H100, never small cards (2026-10-20)
 - [Γ refit adversary scope](project-gamma-refit-ppgd-scope.md) — one persistent-PGD state per micro-batch slot; ~15 GB of sources at batch 64, H100 only
@@ -46,16 +46,16 @@
 - [Rename everywhere](feedback-rename-everywhere.md) — a renamed term changes in every living file at once, old name into check.py RETIRED; H′ → fixed-shift hypothesis (2026-10-22)
 - [Log is high level](feedback-log-high-level.md) — sections above the cards say what was learned or decided, plainly; timeline = headline + 2-4 sentences per day; rewrite Q/Result boxes, never append (user, repeated 2026-10-22, 2026-10-26)
 - [User reads log and chat only](feedback-user-reads-log-and-chat-only.md) — never assume a report was read; state-of-play line + three plain sentences per request (2026-10-22)
-- [Two parallel lines, no main line](project-two-parallel-lines.md) — since 2026-10-22 re-gating and commute run in parallel; class 4 = either line's next steps
+- (superseded 2026-11-09) [Two parallel lines, no main line](project-two-parallel-lines.md) — since 2026-10-22 re-gating and commute run in parallel; class 4 = either line's next steps
 - [Raise decisions often](feedback-raise-decisions-often.md) — user values pending-decision cards for understanding; raise scope/reading choices even if handed back (2026-10-22)
 - [Never leave a job unwatched](feedback-never-leave-a-job-unwatched.md) — a runner hand-back with a live job means spawn a fresh watcher at once, not a cancel-or-wait choice (2026-10-22)
 - [Teacher training (E34)](project-teacher-training.md) — works on all six teachers incl. Pile-only; Amendments 2-4 done 2026-10-26 (loophole rows lower Pile-only copies a little, LoRA teacher copied from task text only, seed 1 + 160-step adversary all hold); next the larger model
 - [model-router ports on shared VM](model-router-shared-vm-ports.md) — ours on 8788/8318; unwired until Codex quota resets ~2026-11-18
-- [Overnight harness reporting](feedback-overnight-harness-reporting.md) — more subagents/parallel; log each experiment before the next; pending cards carry a run line; temporary 20k-word main-page cap (2026-10-26)
+- (superseded 2026-11-09) [Overnight harness reporting](feedback-overnight-harness-reporting.md) — more subagents/parallel; log each experiment before the next; pending cards carry a run line; temporary 20k-word main-page cap (2026-10-26)
 - [Terminate before local moves](feedback-terminate-before-local-moves.md) — pod off once the result sha256 matches; mv into results/large symlink blocked a prompt overnight, ~$40 lost (2026-10-26)
 - [No ambiguous shorthand](feedback-no-ambiguous-shorthand.md) — never "the copy"; say "the decomposition after teacher training" vs "the fine-tuned model" (2026-10-27)
 - [Qwen3-1.7B line](project-qwen-line.md) — qwen-decomp-lead since 2026-10-27; decomposition p-e9fcffd5 (JAX, 47 GB) at artifacts/qwen3-1.7b-p-e9fcffd5; plan before spend; discuss in the lead window
-- [Don't ask for cheap recommended checks](feedback-dont-ask-for-cheap-recommended-checks.md) — a $0 minutes-long check a report recommends: run it, FYI only (2026-10-27)
+- (superseded 2026-11-09) [Don't ask for cheap recommended checks](feedback-dont-ask-for-cheap-recommended-checks.md) — a $0 minutes-long check a report recommends: run it, FYI only (2026-10-27)
 - [Explain tree branches before running](feedback-explain-tree-branches-before-running.md) — a decision-tree run still gets a plain what/why in chat first; user didn't know the prefix test (2026-10-27)
 - [Measure step size first](feedback-measure-step-size-before-scored-run.md) — realistic fine-tune recipe (warm-up) and a step-1 size check before scored runs; E40 1e-5 no warm-up made step 1 huge (2026-10-28)
 - [Layer-wise training: 67M first](feedback-layerwise-training-on-67m-first.md) — block-wise teacher training must be shown on the 67M before Qwen (user, 2026-10-28)
@@ -63,13 +63,13 @@
 - [Decide clear rule fixes](feedback-decide-rule-fixes-with-clear-recommendation.md) — a mis-specified filed control with one clear fix: amend (dated) and rerun, FYI only; "not really worth asking me" (2026-10-29)
 - [Elicitation granularity limit](project-elicitation-granularity-limit.md) — new circuit from old pieces reads "elicited" to VPD; state it in every re-gating claim (user, 2026-10-29)
 - [Explicit literature departures](feedback-explicit-literature-departures.md) — every write-up states each departure from the cited source where used + a "Departures from the literature" list (user, 2026-10-30)
-- [Fable first, fewer questions](feedback-fable-first-fewer-questions.md) — choices inside an adopted plan go to Fable, act and FYI; user only for spend/gated, reversals, goal changes, other lines (2026-10-30)
-- [Fewer questions; Fable for small ones](feedback-fewer-questions-fable-for-small.md) — ask the user only the most important things; smaller choices go to Fable and its advice is acted on (2026-10-30)
+- (superseded 2026-11-09) [Fable first, fewer questions](feedback-fable-first-fewer-questions.md) — choices inside an adopted plan go to Fable, act and FYI; user only for spend/gated, reversals, goal changes, other lines (2026-10-30)
+- (superseded 2026-11-09) [Fewer questions; Fable for small ones](feedback-fewer-questions-fable-for-small.md) — ask the user only the most important things; smaller choices go to Fable and its advice is acted on (2026-10-30)
 - [Decision cards pass a cold reader](feedback-decision-cards-cold-reader.md) — no plan labels in options; each says what runs, what it tells you, what next; one recommendation (user, 2026-11-02)
 - [Run down anomalies first](feedback-run-down-anomalies-first.md) — an unexplained training or apparatus number blocks readings built on it; compare both sides of precision/forward pairs; bf16 rounding found only because the user asked (2026-11-02)
 - [Leads keep clean separation](feedback-leads-clean-separation.md) — no repeating another lead's work; reuse its readings; name the owner on cards (user, 2026-11-02)
 - [Define deliverable codes](feedback-define-deliverable-codes-on-cards.md) — D1/D2/D3 on a card or in chat gets its plain meaning or a link; say what each option does to the old methods (user, 2026-11-03)
 - [Vast when RunPod fails](feedback-vast-when-runpod-fails.md) — after one failed round across RunPod cards, use Vast rather than waiting (user, 2026-11-04)
-- [Autonomous lead, short asks](feedback-autonomous-lead-short-asks.md) — far shorter messages; Fable for direction; the user may not read plans (2026-11-05)
+- (superseded 2026-11-09) [Autonomous lead, short asks](feedback-autonomous-lead-short-asks.md) — far shorter messages; Fable for direction; the user may not read plans (2026-11-05)
 - [Do not rely on the slide deck](feedback-dont-rely-on-slide-deck.md) — unclear concept → search history (hive:retrieval) or ask; files are the source (user, 2026-11-05)
-- [Adopted definitions frozen](feedback-adopted-definitions-frozen.md) — reuse = rows 81/87 only; unreadable is a result, never a new rule (user, 2026-11-06)
+- (superseded 2026-11-09) [Adopted definitions frozen](feedback-adopted-definitions-frozen.md) — reuse = rows 81/87 only; unreadable is a result, never a new rule (user, 2026-11-06)

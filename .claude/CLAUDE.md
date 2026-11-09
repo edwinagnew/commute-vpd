@@ -10,9 +10,16 @@ not, is that because post-training teaches new capabilities rather than strength
 parameter decompositions are too brittle? Read `README.md` first, then `GOALS.md`.
 
 **Before proposing any new experiment, task, architecture, theory direction or measurement, run `/design`** (or read
-`.claude/skills/design/SKILL.md` if it won't load). Since 2026-10-21 (user) the check is written into the plan and
-work goes ahead without sign-off when it falls in an approved class of work or an approved plan's decision tree
-(`/design` → "Approved classes"); everything else still needs the user's confirmation after they have seen the check.
+`.claude/skills/design/SKILL.md` if it won't load). The check is written into the plan. Work goes ahead without
+sign-off only when it fills a named open cell of the table of work (`~/commute-agents/fleet/cell`); everything else is
+proposed to the user and not run.
+
+## The plan (user, 2026-11-09)
+The paper has three parts, in sequence: a working definition of reused against new; on the 67M model, a comparison of
+re-gating, the neuron reading and simple baselines against it; and the key findings repeated on Qwen3-1.7B. The plan is
+`reports/plans/2026-11-09_plan_paper-roadmap.md`, and its work is the table `~/commute-agents/fleet/paper/cells.tsv`
+(read it with `~/commute-agents/fleet/cell`, which only the user changes). The plan's seven "rules that keep it on
+track" hold for every session and override anything below that disagrees.
 
 **Terms.** `GOALS.md` → Terms is the vocabulary (component training, least-squares split, adjoint split, rescaling
 split, outside share, do-nothing, LoRA split, fixed-shift hypothesis); its "old names" column decodes older reports. "Pull-back", "lift",
@@ -29,19 +36,20 @@ silently. A plan restates the user's request in the Terms' words, and it is that
 - `docs/research_log/parts/` = the research log's source, one file per section and per experiment card, built by
   `docs/research_log/build.py` into four pages (main, experiments, glossary, changelog) and published as the artifact
   "Update Decomposition Log" (URL, layout and publish recipe in `docs/research_log/README.md`). Edit only the parts a
-  change touches; grep, don't read whole sections. **Updating it is part of the research flow**, batched since 2026-10-21 (user): every analysis
-  report, decision report, new `TRIED.md` row, dropped proposal or changed claim appends a line to
-  `docs/research_log/PENDING.md` when it is written; the queue is applied and republished before the session ends
-  (recipe and completeness check in `docs/research_log/README.md`). Run its `--check` against the live pages before
+  change touches; grep, don't read whole sections. It is updated once a day from the table of work (2026-11-09):
+  every filled or closed cell, decision report or changed claim appends a line to `docs/research_log/PENDING.md` when
+  it is written, as before, and `compare-lead`'s clerk applies the queue and republishes (recipe and completeness check
+  in `docs/research_log/README.md`). Run its `--check` against the live pages before
   editing; another session may have published.
-- `theory/` notes. `notebooks/E<NN>_<name>.ipynb` explain results, one per experiment. `reports/<type>/` dated
+- `theory/` notes. `notebooks/E<NN>_<name>.ipynb` explain results, optional since 2026-11-09. `reports/<type>/` dated
   write-ups, one subdirectory per type (`plans/ analyses/ reviews/ decisions/ predictions/ digests/`), each file
   `YYYY-MM-DD_<type>_<topic>.md`; nothing at the top of `reports/` (user, 2026-10-26). `backlog.md` deferred ideas.
   `README.md`'s "Current plan" line names the latest plan; keep it current.
 - `GOALS.md` = the aim (user-owned). `decisions.md` = working choices, revisable.
 - `src/commute/` = everything shared between experiments. `artifacts/`, `data/` = downloads, gitignored, untrusted
   (keep our scripts out of them, pass paths as arguments). `cluster/` = Slurm scripts; read `cluster/README.md`.
-- `~/commute-agents/fleet/` = the harness that runs the agents (one clone per lead; `fleet/status` lists them) on the dev node: one
+- `~/commute-agents/fleet/` = the harness that runs the agents (one clone per lead: `definition-lead`, `compare-lead`, `qwen-lead`
+  since 2026-11-09; `fleet/status` lists them) on the dev node: one
   copy outside this repo, its own git repository since 2026-10-27; `README.md` there. On the dev node, Python, tests
   and lint run only through `~/commute-agents/fleet/cpu-run` (a hook refuses them otherwise).
 
@@ -76,13 +84,13 @@ process do not get there; less code does.
   lists what differs from the reference's end state (optimizer state and schedule position, adversary state, data,
   coefficients) and either removes each difference or names it as the thing the control tests (E15, 2026-10-21:
   $10 went on an arm before its control showed the recipe drifted on its own).
-- **Reviews (fast lane, user 2026-11-03; `reports/plans/2026-11-03_plan_qwen-reorient.md`).** A run under the gate
+- **Reviews (fast lane, user 2026-11-03; kept by `reports/plans/2026-11-09_plan_paper-roadmap.md`).** A run under the gate
   gets no pre-run review and no independent check: the lead reads the result, labels it, and moves on. A gated run
   gets one review, plan and code together, by a fresh Opus agent that wrote neither, given the scope and the repo path
   (Codex is out of quota until ~2026-11-18). An independent check is for a headline claim only: one that goes into the
   write-up's answer paragraph.
-- **Two amendments per E-code**, on every line (the Qwen plan's rule 5, general since 2026-11-03). A third is a new
-  plan, or the experiment is dropped with its reading as it stands. A filed rule's band is set from the control and
+- **A cell's run count is the cap** (plan 2026-11-09). An amendment is a run; when the runs are spent the cell closes
+  with its reading as it stands, and a follow-up needs a new cell from the user. A filed rule's band is set from the control and
   the null read in the same job's first stage, not guessed; a "no call" verdict is reported as what was read and does
   not open an amendment.
 
@@ -145,12 +153,10 @@ Write the hand-off into the relevant report or plan, not only the chat, so the n
   (`.claude/skills/writeup/SKILL.md`): the answer first in 80 plain words, the experiment as a story, one figure
   per claim with its reference on the same axes, about two numbers and no codes per sentence, and
   `check.py` run on the file before it is called done.
-- **Adopted definitions are frozen** (user, 2026-11-06). The reuse definition is `decisions.md` rows 81 and 87
-  (Jain et al. 2024 Defs 1-2, held-out carrying) plus the direction-removal check, nothing else. A rule, clause, band,
-  pooling rule or score added to a verdict is a definition change: only the user makes one, by a dated row. A case
-  the definition cannot read is reported "unreadable" or "does not apply", never given a new rule; a miss is a result.
-  Every verdict-giving report quotes the rows it reads under and lists its departures. E99 grew six rules in two days,
-  each filed as an amendment, until its first departure removed Jain's Definition 1.
+- **The reuse definition is under revision in cell P1.1** (user, 2026-11-09: tentatively Jain et al.'s structure with a
+  causal step from Prakash et al. 2024). Until the user adopts a wording by a dated `decisions.md` row, no verdict is
+  given under either wording. A rule, clause, band or score added to a verdict is still a definition change that only
+  the user makes.
 - Concerns about existing claims go in a review report, not inline boxes.
 - Compute: training, fine-tuning, or more than one benchmark forward pass goes to a GPU, never local CPU. Route for the
   earliest results, not the lowest $/h (user, 2026-10-20): runs of ≤ 30 min go to the MATS cluster's `debug` QoS (agents

@@ -8,6 +8,8 @@ metadata:
   modified: 2026-10-27T18:46:58.251Z
 ---
 
+**Superseded 2026-11-09** by `reports/plans/2026-11-09_plan_paper-roadmap.md`: a check runs only when it fills an open cell of yours with runs left, however cheap; otherwise propose it in one ask or a zero-run cell's page and do not run it.
+
 When a look-up or report recommends a cheap validation check ($0 cluster time, minutes, measuring the unchanged model, no design choice that a pending card could change), run it through /design → predictions → /pod-runner without asking the user first. Asking "should I run the fresh-numbers check?" got: "yes. not sure you needed to ask for this" (2026-10-27).
 
 **Why:** the user values momentum; such checks fall in the approved classes and asking costs a round trip.
