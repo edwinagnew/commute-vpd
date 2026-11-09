@@ -99,8 +99,9 @@ class Job:
     def trained(self, state: str, dW: dict[str, Tensor]) -> dict[str, Any]:
         """`decomp_reads.read_split` with the released components, at the batch of the pair's own read."""
         r = self.reads[self.inv["states"][state]["task"]]
+        base = self.base(r.name)  # at W0: it fills lazily, so never first called inside the state's context
         with model_state(self.model, target={k: self.W0[k] + dW[k] for k in self.W0}):
-            return route_split(self.model, r.toks, r.half, r.token, self.base(r.name), self.comps0, r.batch, r.ci_len)
+            return route_split(self.model, r.toks, r.half, r.token, base, self.comps0, r.batch, r.ci_len)
 
     def read_state(self, state: str) -> dict[str, Any]:
         task = self.inv["states"][state]["task"]
