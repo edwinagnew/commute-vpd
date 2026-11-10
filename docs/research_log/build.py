@@ -282,9 +282,12 @@ def unlanded_lines() -> list[str]:
     added += "".join((top / f).read_text() for f in new.stdout.split())
     out, files = [], []
     for line in gone:
-        fields = line.split(" · ")
-        if len(fields) > 1 and "same report" not in fields[1]:  # "same report" means the previous line's files
-            files = re.findall(r"[\w.-]+\.(?:md|py|ipynb|json|png|html)", fields[1])
+        # Files anywhere in the line, not only its second field: lines that name the report in the prose, or with a
+        # colon after it and no " · " fields, warned falsely (friction 489, 595). "same report" with no file of its
+        # own means the previous line's files.
+        found = re.findall(r"[\w-][\w.-]*\.(?:md|py|ipynb|json|png|html)\b", line)
+        if found or "same report" not in line:
+            files = found
         keys = [*files, *re.findall(r"\bE\d+\b", line), *re.findall(r"\bdecision-[\w-]+", line)]
         if not any(k in added for k in keys):
             out.append(line)
