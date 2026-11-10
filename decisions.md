@@ -2,7 +2,7 @@
 
 Choices made for now. They are not goals (`GOALS.md`) and any of them can be overruled. Each one has a date, the
 reason for it and where it came from, so it can be revisited on purpose rather than drifted from. If a design departs
-from one, say so explicitly.
+from one, say so explicitly. Rows carry no number: "row N" means line N of this file when it was written, so cite a new reference by the row's date and a quoted phrase instead; this note shares a line with the text above so that no line number moves (friction 494, 520, 578, 629). The rows long cited as 81 and 87 are 2026-10-29 "Reuse line: 'existing vs new mechanism'" and 2026-10-30 "Reuse line, E55 plan card".
 
 | Decision | Since | Why | Source |
 |---|---|---|---|
