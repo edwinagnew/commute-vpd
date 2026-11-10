@@ -96,11 +96,20 @@ def leftover_figure(results: Path = HERE / "results", out: Path = HERE / "figure
             if r.get("complete") and not r.get("no_reading"):
                 point(f"amend2 always_on_s{s}", int(step), r, r.get("witness"), COLORS["Always on"])
     ax.axhline(cut, color="#777777", linewidth=0.8, linestyle="--")
-    ax.plot([0, 1], [0, 1], color="#bbbbbb", linewidth=0.8, linestyle=":")
+    ax.text(0.0, cut, " re-weighted cut-off", fontsize=6, color="#555555", transform=ax.get_yaxis_transform(), va="bottom")
+    FG.reference(ax, 0.9, "reached")
+    ax.plot([0, 1], [0, 1], color="#bbbbbb", linewidth=0.8, linestyle=":", label="G = 1 - leftover / gap")
+    if a1:  # the hand-made pair read by its own witness, at zero leftover
+        pair_g = json.loads((results / "amend1.json").read_text())["control"]["G"]
+        ax.scatter(1.0, pair_g, marker="s", facecolors="none", edgecolors="black", s=40, linewidths=1.0, label="the hand-made pair")
+    ax.scatter([], [], color="#999999", s=22, linewidths=0, label="300 steps at 3e-5 (E139)")
+    ax.scatter([], [], color=COLORS["Always on"], s=22, linewidths=0, label="300 / 1000 / 3000 steps at 1e-5 (amendment 2)")
+    ax.scatter([], [], facecolors="none", edgecolors="#555555", s=30, linewidths=1.0, label="hollow: the pair's own read-out")
+    ax.legend(fontsize=6, frameon=False, loc="lower right")
     ax.set_xlabel("1 - TV(fine-tune, pair) / gap")
     ax.set_ylabel("G at in2 (best of three starts)")
     ax.set_title("Does G rise as the fine-tune gets closer to the pair?", fontsize=9)
-    FG.save(fig, out / "g_vs_leftover.png", n=f"{len(recs)} fine-tune states; filled: found G, hollow: E137's witness; grey: E139; dashed: re-weighted cut-off", data=recs)
+    FG.save(fig, out / "g_vs_leftover.png", n=f"{len(recs)} fine-tune states; filled: found G, hollow: E137 witness; grey: E139; right of the reached line the leftover is at most 0.1 of the gap", data=recs)
 
 
 if __name__ == "__main__":

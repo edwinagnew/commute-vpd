@@ -1,0 +1,35 @@
+0.794	experiments/reuse_variable_finetune/results/predictions.json	.cutoffs.G	this
+0.476	experiments/reuse_variable_finetune/results/predictions.json	.cutoffs.H	this
+0.922	experiments/reuse_variable_test/results/rules.json	.reading.k4["Always on"].best_G	earlier
+0.976	experiments/reuse_variable_test/results/rules.json	.reading.k4["Always on"].best_H	earlier
+-0.027	experiments/reuse_variable_test/results/rules.json	.reading.k4["Table"].best_G	earlier
+0.995	experiments/reuse_variable_test/results/rules.json	.reading.k4["Table"].best_H	earlier
+0.638	experiments/reuse_variable_finetune/results/always_on_s0.json	[.G[]|.G]|max	this
+0.505	experiments/reuse_variable_finetune/results/always_on_s0.json	[.H[]|.H]|max	this
+0.627	experiments/reuse_variable_finetune/results/always_on_s1.json	[.G[]|.G]|max	this
+0.450	experiments/reuse_variable_finetune/results/always_on_s1.json	[.H[]|.H]|max	this
+0.637	experiments/reuse_variable_finetune/results/always_on_s2.json	[.G[]|.G]|max	this
+0.483	experiments/reuse_variable_finetune/results/always_on_s2.json	[.H[]|.H]|max	this
+0.769	experiments/reuse_variable_finetune/results/amend2_always_on_s0.json	[.steps["3000"].G[]|.G]|max	this
+0.580	experiments/reuse_variable_finetune/results/amend2_always_on_s0.json	[.steps["3000"].H[]|.H]|max	this
+0.781	experiments/reuse_variable_finetune/results/amend2_always_on_s1.json	[.steps["3000"].G[]|.G]|max	this
+0.581	experiments/reuse_variable_finetune/results/amend2_always_on_s1.json	[.steps["3000"].H[]|.H]|max	this
+0.737	experiments/reuse_variable_finetune/results/amend2_always_on_s2.json	[.steps["3000"].G[]|.G]|max	this
+0.562	experiments/reuse_variable_finetune/results/amend2_always_on_s2.json	[.steps["3000"].H[]|.H]|max	this
+0.024	experiments/reuse_variable_finetune/results/table_s0.json	[.G[]|.G]|max	this
+0.718	experiments/reuse_variable_finetune/results/table_s0.json	[.H[]|.H]|max	this
+-0.026	experiments/reuse_variable_finetune/results/table_s1.json	[.G[]|.G]|max	this
+0.714	experiments/reuse_variable_finetune/results/table_s1.json	[.H[]|.H]|max	this
+-0.023	experiments/reuse_variable_finetune/results/table_s2.json	[.G[]|.G]|max	this
+0.724	experiments/reuse_variable_finetune/results/table_s2.json	[.H[]|.H]|max	this
+0.632	experiments/reuse_variable_finetune/results/amend1.json	.items.always_on_s0.G	this
+0.631	experiments/reuse_variable_finetune/results/amend1.json	.items.always_on_s1.G	this
+0.938	experiments/reuse_variable_finetune/results/amend1.json	.control.reversion	this
+0.1	experiments/reuse_variable_finetune/results/predictions_amend2.json	.thresholds.leftover_share	this
+0.9	experiments/reuse_variable_finetune/results/predictions_amend2.json	1 - .thresholds.leftover_share	this
+0.569	experiments/reuse_variable_finetune/results/predictions_amend2.json	.thresholds.reversion_mid	this
+0.192	experiments/reuse_variable_finetune/results/amend2_always_on_s0.json	.steps["3000"].dist.tv_to_F / .steps["3000"].dist.gap	this
+0.789	experiments/reuse_variable_finetune/results/amend2_always_on_s0.json	.steps["3000"].witness.G	this
+0.260	experiments/reuse_variable_finetune/results/amend2_always_on_s0.json	[.steps["3000"].G|to_entries[]|select(.key|test("/in2/"))|.value]|max_by(.G).reversion	this
+0.243	experiments/reuse_variable_finetune/results/amend2_always_on_s2.json	[.steps["3000"].G|to_entries[]|select(.key|test("/in2/"))|.value]|max_by(.G).reversion	this
+0.842	experiments/reuse_variable_finetune/results/table_s0.json	1 - .dist.tv_to_F / .dist.gap	this
