@@ -65,7 +65,12 @@ first, links second; a new run cell is a new row. The "Stopped" line changes onl
 
 Until the user lifts this, a flush may not make the main page longer: what it adds, it takes out elsewhere, by rewriting
 a superseded box or folding a card that a newer result replaced. The changelog, glossary, mistakes and experiments pages are exempt; they grow (the cards each
-within the length below). Measure each flush with `python3 docs/research_log/build.py --words`: words per section, each section's
+within the length below). Decision cards are exempt too (user, 2026-11-10; friction 444, 547, 562, 586, 630, 631):
+pending-decision cards (`<div class="card ... decision" id="decision-...">`) and any card the user asked for, which
+carries the class `asked` (`<div class="card ... asked">`; add it when the user's request is the reason the card
+exists, and name the request in the queue line). `--words` and `--blocks` leave both out. Everything else still
+offsets what it adds, and a clerk never trims another lead's text to make room: cuts come from its own lead's
+text only. Measure each flush with `python3 docs/research_log/build.py --words`: words per section, each section's
 change since HEAD, and the total against the 20,000 limit. Plan the cuts once: `--words` says how much must go,
 `--blocks` lists the 40 largest blocks; make them all, then re-measure once. Cut cheapest first:
 what this flush supersedes; closed items in `next`, `gaps` and `timeline`; Techniques or Apparatus prose a card already
