@@ -15,9 +15,9 @@ You carry out one fully specified task for an agent working on commute. The agen
   perl, heredocs or Python edit scripts; read JSON with `jq`.
 - A research-log publish follows `docs/research_log/README.md` → How to publish, steps 0-3, in order: commit and
   push `parts/` first, `read` by `paths` (never a `url`-only read: ~50k tokens and no fewer refusals), then publish.
-  The refusal's first sentence picks the case in step 3: a diff shown means two more identical sends; "not shown here"
-  means Read the named file whole at once, 130 lines a call, then one send. Only changes that are not yours mean pull,
-  rebuild and start over.
+  Step 3: with the lock held since step 2 and step 2's `--check` showing nothing that is not yours, send the identical
+  call three times (not live version, then "resent unchanged", then it passes), with no re-read and no read of the
+  refusal file in between. Only changes that are not yours mean pull, rebuild and start over.
 - Commit named paths only (`git add <new files>`, then `git commit -m ... -- <paths>`), never `-a`: the clone's index
   is shared with other agents (friction 144, 152, 206).
 - Main-page length: `python3 docs/research_log/build.py --words` for each section's words and change since HEAD, `--blocks`

@@ -62,7 +62,7 @@ One kind of work needs no sign-off; the check is still written, so the record sh
 steps) were removed by `reports/plans/2026-11-09_plan_paper-roadmap.md`: with no cell, they do not run.
 
 - **A run that fills a named open cell of yours, within its run count, or a branch that cell's "done when" names**
-  (`~/commute-agents/fleet/cell show <role> <id>`). An amendment is a run.
+  (`~/commute-agents/fleet/cell show <id>`). An amendment is a run.
 
 Anything else is proposed to the user (in a zero-run cell's page or one ask) and not run. In particular, these
 always need the user's confirmation after they have seen the check: a new cell; a new sub-question or a new line of work; a

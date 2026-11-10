@@ -10,7 +10,9 @@ metadata:
 
 **Superseded 2026-11-09** by `reports/plans/2026-11-09_plan_paper-roadmap.md`: the reuse definition is under revision in cell P1.1 and no verdict is given under either wording until the user adopts one by a dated decisions.md row; adding a rule, clause, band or score to a verdict is still a definition change only the user makes.
 
-The reuse definition is Jain et al. 2024 as in decisions.md rows 81 and 87 (linear readout for possession, small
+The reuse definition is Jain et al. 2024 as in two decisions.md rows: 2026-10-29 "Reuse line: 'existing vs new
+mechanism' for post-training is defined independently of any decomposition" and 2026-10-30 "Reuse line, E55 plan
+card" (until 2026-11-10 cited as "rows 81 and 87", their file lines then; friction 494, 578) (linear readout for possession, small
 function of it that carries to held-out values, direction removal as the causal check), nothing else. A case it
 cannot read reads "unreadable" or "does not apply"; build tasks with Jain's shape (marker + content) rather than
 rules.
@@ -20,6 +22,6 @@ amendments; nine departures, the first removing Def 1. The point of borrowing Ja
 definition, our techniques do X"; each rule weakens that. User: "make sure this type of definition drift doesnt
 happen again".
 
-**How to apply:** before filing any rule that gives a verdict, ask whether it is in rows 81/87; if not, it is an ask
+**How to apply:** before filing any rule that gives a verdict, ask whether it is in those two rows; if not, it is an ask
 to the user, not an amendment. Guarded in .claude/CLAUDE.md Rules and the /design question. Related:
 [[feedback-user-definitions-override-files]], [[feedback-explicit-literature-departures]].

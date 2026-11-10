@@ -5,8 +5,9 @@
   build.py --check DIR      diff the built pages against live copies in DIR; also flags #anchor links with no target id
   build.py --check-head DIR the same for parts/ as committed at HEAD, leaving local edits alone: setting them aside took
                             a clerk four git calls, each refused when chained in a worktree (friction 109)
-  build.py --words          main-page words per section, here and at HEAD, against the length rule (friction 100, 244);
-                            also rebuilds build/ (friction 519)
+  build.py --words          main-page words per section, here and at HEAD, against the length rule (friction 100, 244),
+                            leaving out decision cards and cards marked `asked` (user, 2026-11-10); also rebuilds
+                            build/ (friction 519)
   build.py --blocks         main-page words per block (card, table row, heading's prose), largest first, to plan every
                             cut in one pass rather than re-measure per edit (friction 208, 368, 376)
   build.py --missing        reports and E-codes since the newest changelog row that nothing in the log names (friction 349)
@@ -199,13 +200,51 @@ def unwrap(live: str) -> str:
     return live
 
 
+EXEMPT_CARD = {"decision", "asked"}  # README.md → Main-page length: user, 2026-11-10
+
+
+def exempt_cards(html: str) -> tuple[str, int]:
+    """html without the cards the length rule exempts, and how many: a `<div class="card ...">` whose classes include
+    `decision` (a pending-decision card) or `asked` (a card the user asked for). User, 2026-11-10; friction 444, 547,
+    562, 586, 630, 631."""
+    out, pos, n = [], 0, 0
+    for m in re.finditer(r'<div\b[^>]*\bclass="([^"]*)"[^>]*>', html):
+        classes = set(m[1].split())
+        if m.start() < pos or "card" not in classes or not classes & EXEMPT_CARD:
+            continue
+        depth, end = 0, len(html)
+        for tag in re.finditer(r"<div\b|</div>", html[m.start():]):
+            depth += 1 if tag[0] != "</div>" else -1
+            if depth == 0:
+                end = m.start() + tag.end()
+                break
+        out.append(html[pos:m.start()])
+        pos, n = end, n + 1
+    out.append(html[pos:])
+    return "".join(out), n
+
+
 def main_words(parts: Path) -> dict[str, int]:
-    """Words per main-page section under parts/, the length rule's count (README.md → Main-page length)."""
+    """Words per main-page section under parts/, the length rule's count (README.md → Main-page length), leaving out
+    the exempt cards (exempt_cards)."""
     files = {"header": parts / "header.html"}
     for sid, page in SECTIONS:
         if page == "index.html" and sid != "mistakes":
             files[sid] = parts / "sections" / f"{sid}.html"
-    return {k: len(re.sub(r"<[^>]*>", " ", f.read_text()).split()) for k, f in files.items() if f.exists()}
+    return {k: len(re.sub(r"<[^>]*>", " ", exempt_cards(f.read_text())[0]).split()) for k, f in files.items() if f.exists()}
+
+
+def exempt_words(parts: Path) -> tuple[int, int]:
+    """(cards, words) the length rule leaves out of the main page."""
+    cards = words = 0
+    for sid, page in SECTIONS:
+        f = parts / "sections" / f"{sid}.html"
+        if page == "index.html" and sid != "mistakes" and f.exists():
+            html = f.read_text()
+            kept, n = exempt_cards(html)
+            cards += n
+            words += len(re.sub(r"<[^>]*>", " ", html).split()) - len(re.sub(r"<[^>]*>", " ", kept).split())
+    return cards, words
 
 
 def head_parts() -> Path:
@@ -229,8 +268,11 @@ def print_words() -> None:
         print(f"{now[k]:7,d}  {now[k] - head.get(k, 0):+6,d}  {k}")
     total, before = sum(now.values()), sum(head.values())
     print(f"{total:7,d}  {total - before:+6,d}  total (second column: change since HEAD); limit {WORD_LIMIT:,d}")
+    cards, words = exempt_words(PARTS)
+    print(f"not counted: {cards} decision or user-asked cards, {words:,d} words (exempt, user 2026-11-10)")
     if total > before:
-        print(f"over: this flush adds {total - before:,d} words to the main page; a flush may not make it longer")
+        print(f"over: this flush adds {total - before:,d} words to the main page outside exempt cards; a flush may not "
+              "make it longer, and cuts come from your own lead's text only")
 
 
 def print_blocks() -> None:
@@ -238,7 +280,7 @@ def print_blocks() -> None:
     for sid, page in SECTIONS:
         if page != "index.html" or sid == "mistakes":
             continue
-        html = (PARTS / "sections" / f"{sid}.html").read_text()
+        html = exempt_cards((PARTS / "sections" / f"{sid}.html").read_text())[0]  # exempt cards are not cut
         for block in re.split(r'(?=<tr[ >]|<li[ >]|<div class="card|<h[34][ >]|<div class="q[ "])', html):
             text = re.sub(r"<[^>]*>", " ", block).split()
             blocks.append((len(text), sid, " ".join(text[:9])))
@@ -282,9 +324,12 @@ def unlanded_lines() -> list[str]:
     added += "".join((top / f).read_text() for f in new.stdout.split())
     out, files = [], []
     for line in gone:
-        fields = line.split(" · ")
-        if len(fields) > 1 and "same report" not in fields[1]:  # "same report" means the previous line's files
-            files = re.findall(r"[\w.-]+\.(?:md|py|ipynb|json|png|html)", fields[1])
+        # Files anywhere in the line, not only its second field: lines that name the report in the prose, or with a
+        # colon after it and no " · " fields, warned falsely (friction 489, 595). "same report" with no file of its
+        # own means the previous line's files.
+        found = re.findall(r"[\w-][\w.-]*\.(?:md|py|ipynb|json|png|html)\b", line)
+        if found or "same report" not in line:
+            files = found
         keys = [*files, *re.findall(r"\bE\d+\b", line), *re.findall(r"\bdecision-[\w-]+", line)]
         if not any(k in added for k in keys):
             out.append(line)
@@ -393,6 +438,8 @@ def main() -> None:
     print(f"built {', '.join(pages)} in {OUT}")
     for fig in unmapped_figures(pages):
         print(f"warning: {fig} has no source line in README.md's figure list; add one (friction 163)")
+    for target in dead_anchors(pages):  # also here, not only under --check: removed cards left 7 behind (friction 609)
+        print(f"warning: dead link: {target}; drop the link or point it at a live id")
     for line in unlanded_lines():
         print(f"warning: flushed but no trace in this flush's parts/ edits; check it landed (friction 155): {line[:200]}")
     if not in_a_commit(tree_id(PARTS)):

@@ -65,7 +65,12 @@ first, links second; a new run cell is a new row. The "Stopped" line changes onl
 
 Until the user lifts this, a flush may not make the main page longer: what it adds, it takes out elsewhere, by rewriting
 a superseded box or folding a card that a newer result replaced. The changelog, glossary, mistakes and experiments pages are exempt; they grow (the cards each
-within the length below). Measure each flush with `python3 docs/research_log/build.py --words`: words per section, each section's
+within the length below). Decision cards are exempt too (user, 2026-11-10; friction 444, 547, 562, 586, 630, 631):
+pending-decision cards (`<div class="card ... decision" id="decision-...">`) and any card the user asked for, which
+carries the class `asked` (`<div class="card ... asked">`; add it when the user's request is the reason the card
+exists, and name the request in the queue line). `--words` and `--blocks` leave both out. Everything else still
+offsets what it adds, and a clerk never trims another lead's text to make room: cuts come from its own lead's
+text only. Measure each flush with `python3 docs/research_log/build.py --words`: words per section, each section's
 change since HEAD, and the total against the 20,000 limit. Plan the cuts once: `--words` says how much must go,
 `--blocks` lists the 40 largest blocks; make them all, then re-measure once. Cut cheapest first:
 what this flush supersedes; closed items in `next`, `gaps` and `timeline`; Techniques or Apparatus prose a card already
@@ -140,9 +145,9 @@ From a Claude Code session, with the Artifact tool:
    `~/commute-agents/fleet/log-lock release <role>` after the publish (two flushes both claimed v73, friction 37).
    `<role>` is the lead's role name; a clerk's brief gives it. `take --wait` waits 100 s a call; run it again on exit 1. A
    holder that has ended loses the lock to the next take (`log-lock status` says why). Every session takes it, for a
-   one-off edit too. Nothing enforces that, and sessions have published past a held lock (friction 347, 149): step 2's
-   diff shows it; merge and take the next version number. In the call before the send, `log-lock check <role>`: on exit
-   1 do not publish; take it again and re-pull.
+   one-off edit too, a user-requested overview or techniques edit included. A hook (`.claude/hooks/log-publish-lock.py`)
+   refuses a publish to the log from a session that does not hold the lock (friction 347, 149); its refusal says who
+   does. In the call before the send, `log-lock check <role>`: on exit 1 do not publish; take it again and re-pull.
 1. Commit `parts/` and the emptied queue (named paths, `git commit -m ... -- docs/research_log experiments/TRIED.md
    README.md`), since a pull refuses to merge into an uncommitted `PENDING.md`. Then `git pull --no-rebase` and
    `python3 docs/research_log/build.py`, so the build has every other session's changes. Commit what that changed and
@@ -172,17 +177,23 @@ From a Claude Code session, with the Artifact tool:
    index.html's place count, which predicts step 3. `--check` also flags a live page built from `parts/` in no commit
    (friction 323).
 3. Publish (below). The first send is refused unless this session published the live version; the refusal's first
-   sentence picks the case. One rule covers most of them: **if the refusal's diff shows only your own changes, your
-   read was stale. Do not resend unchanged (that is refused "resent unchanged"). Re-read the live page with `Artifact
-   read` and `path` (not `url` alone), then send once** (friction 517, 535, 553, 560, 585). If the diff shows a line that
-   is not yours, another session published: pull, rebuild, merge, step 1.
+   sentence picks the case. Whose changes the refusal shows is settled before the send, not by reading it: if you took
+   the lock before step 2 and step 2's `--check` showed no line that is not yours, nobody else could publish since (the
+   lock hook, step 0), so every refusal below is your own changes. Then, whatever the case, **send the identical call
+   three times in all: the first is refused as not the live version ("shown in full below as a line diff" or "not
+   shown here"), the second "resent unchanged", the third passes** (friction 585, 609, 620, 651). Do not re-read the
+   page between sends (a by-path read does not count as a view, friction 609, 620) and do not read the saved refusal
+   file. If the third is refused too, stop and report the three refusals' first sentences. A "touches files" refusal
+   still takes its bullet below.
+   Otherwise (step 2 showed someone else's line, or you took the lock late), by the refusal's first sentence:
    - **"same author content"**: send again; it passes.
-   - **"shown in full below as a line diff"** (under about 10 places): read the diff. Only your own changes: the rule
-     above. A line that is not yours: merge first, whatever the place count (friction 409, 451, 479).
-   - **"not shown here"** (about 10 places or more): resending never passes (friction 315, 326, 359, 387). The refusal
-     names a saved file: Read it whole, 130 lines a call (200 can overrun Read), through the last line it names (~45k
-     tokens). Merge what yours lacks; the next send passes. Step 2's place count warns of this: split such a flush if you
-     can (apply some lines, publish, then the rest).
+   - **"shown in full below as a line diff"** (under about 10 places): read the diff. Only your own changes: the three
+     sends above. A line that is not yours: pull, rebuild, merge, step 1, whatever the place count (friction 409, 451,
+     479).
+   - **"not shown here"** (about 10 places or more): the refusal names a saved file: Read it whole, 130 lines a call
+     (200 can overrun Read), through the last line it names (~45k tokens). Merge what yours lacks and publish; a
+     "resent unchanged" refusal after that means send the same call once more (friction 585). Step 2's place count
+     warns of this: split such a flush if you can (apply some lines, publish, then the rest).
    - **"touches files whose published content is not what you last saw"**: `Artifact read` each path named, `--check`,
      merge into `parts/` if it differs, rebuild, publish. A figure you are not changing comes out of `files`.
    Anything else: stop and report it with the refusal text. The version the tool reports counts every send and differs
@@ -601,3 +612,4 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e131_ci_kl.png": "experiments/qwen_new_decomp/figures/ci_kl.png"
 - "fig/e131_active.png": "experiments/qwen_new_decomp/figures/active.png"
 - "fig/methodtable_gaps.png": "experiments/method_table/figures/scorecard_gaps.png"
+- "fig/e141_gaps.png": "experiments/update_svd/figures/gaps.png"

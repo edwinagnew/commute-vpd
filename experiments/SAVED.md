@@ -459,3 +459,6 @@ This is "round 1", the input of nearly every other run.
 
 ## reuse_variable_finetune (E139, cell P1.4; rerun 2, 2026-11-10, jobs 57673, 57675, 57744, 57745)
 - `results/large/{always_on,xor}_s{0,1,2}.pt` (268 MB each, 6 files): fine-tuned 67M weights of the items that ran to the end. The three `cue` items stopped at step 10 (overshoot check) and saved none. Written by run.py; gitignored.
+
+## real_vs_twin (E140; run 2026-11-10, job 57752)
+- `dW_{case,repeat}_{real,twin}_s2.pt` (stage 1, ~57 MB each, as E112 and E125 saved theirs): the seed-2 fine-tunes, delta-W in bf16 at each one's scored step; `results/stage1.json` .states.<pair>_<arm>_s2 gives the step and sha256. Written by `experiments/real_vs_twin/run.py`; load with `torch.load(p, weights_only=True)`. Seeds 0 and 1 stay in `case_label/` and `fresh_reuse_pair/`.

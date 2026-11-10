@@ -2,7 +2,7 @@
 
 Choices made for now. They are not goals (`GOALS.md`) and any of them can be overruled. Each one has a date, the
 reason for it and where it came from, so it can be revisited on purpose rather than drifted from. If a design departs
-from one, say so explicitly.
+from one, say so explicitly. Rows carry no number: "row N" means line N of this file when it was written, so cite a new reference by the row's date and a quoted phrase instead; this note shares a line with the text above so that no line number moves (friction 494, 520, 578, 629). The rows long cited as 81 and 87 are 2026-10-29 "Reuse line: 'existing vs new mechanism'" and 2026-10-30 "Reuse line, E55 plan card".
 
 | Decision | Since | Why | Source |
 |---|---|---|---|
@@ -191,3 +191,4 @@ from one, say so explicitly.
 | E138 repair (user, 2026-11-09, chat before leaving): if E138 fails, add one more repair run in a new cell, design and filed predictions unchanged. A code issue gets a more extensive code review before it; a cluster issue moves the repair to RunPod within the session budget, no elastic. | 2026-11-09 | E137's two reruns and P1.6 are spent or claimed, so without this a further failure closes the test unread. | Chat, 2026-11-09. |
 | P2.4 real against shuffled twin (user, 2026-11-10, chat, answering ask 7): run now; per-word steering vectors from the fine-tune's training examples (card option a); train a third copy of each of the four fine-tunes in the same job (option e), so the comparison is a test at n=3. The user called the card gate's refusal at n=2 ridiculous (friction 662). | 2026-11-10 | Lifts "no new fine-tunes" for these four only. |
 | E139 first-steps check (ask 23, card `decision-finetune-first-steps`): option a. The filed step-10 bar (KL from M at most 0.25 of KL(F‖M)) is replaced by an overshoot check (KL to F below KL(F‖M) and KL from M at most KL(F‖M) at step 10); recipe, seeds, cut-offs unchanged; rerun 2 of 2. The user added that the learning-rate question is not the priority; classifying the old tasks is (cell P1.7, E142, labels provisional, 8-token inputs). | 2026-11-10 | `reports/predictions/2026-11-10_prediction_e139-overshoot-check.md` | user, task file 2026-11-10 and dialogs |
+| P2.6 parked (user, 2026-11-10, ladder rung L2.9): the share's high reading on the fine-tune that learned nothing is not re-read for now; ask 8 (batch-to-batch noise first) dropped with it. | 2026-11-10 | The ladder puts L2.1 and L2.3 first. | `~/commute-agents/fleet/paper/ladder.md`, note-ladder-2026-11-10 |
