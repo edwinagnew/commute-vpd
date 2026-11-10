@@ -211,8 +211,10 @@ def train(net: Net, F: Target, fit: Tensor, check: Tensor, cfg: Config, th: dict
         if t in cfg.early_steps:
             early.append(_record(t, last(VR.net_target(ft), check, cfg.read_batch), lm, lf, rate))
             log(f"  step {t}: loss {curve[-1]:.5f}, KL from M {early[-1]['kl_from_M']:.3e}, KL to F {early[-1]['kl_to_F']:.5f}, rate {rate:.2e}")
-        if t == cfg.early_bar_step and early[-1]["kl_from_M"] > th["first_steps_share"] * kl_start:
-            stop(path, {**out, "train": {"curve": curve, "early": early, "kl_F_M_start": kl_start}}, f"KL from M after step {t} is above {th['first_steps_share']} of KL(F || M): the first steps are too large")
+        # Overshoot check (amendment 2026-11-10, ask 23 option a; replaces the filed first_steps_share bar): by step 10 the
+        # fine-tune must be closer to F than M is, and no further from M than F is.
+        if t == cfg.early_bar_step and not (early[-1]["kl_to_F"] < kl_start and early[-1]["kl_from_M"] <= kl_start):
+            stop(path, {**out, "train": {"curve": curve, "early": early, "kl_F_M_start": kl_start}}, f"overshoot at step {t}: KL to F not below KL(F || M), or KL from M above it")
     for x in params:
         x.requires_grad_(False)
     out["train"] = {"curve": curve, "early": early, "kl_F_M_start": kl_start, "steps": cfg.steps}
