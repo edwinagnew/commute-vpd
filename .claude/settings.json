@@ -76,6 +76,15 @@
             "command": "g=\"$HOME/commute-agents/fleet/job-gate\"; if [ -x \"$g\" ]; then exec \"$g\"; else exit 0; fi"
           }
         ]
+      },
+      {
+        "matcher": "Artifact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/log-publish-lock.py\""
+          }
+        ]
       }
     ]
   }

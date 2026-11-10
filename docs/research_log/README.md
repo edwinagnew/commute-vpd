@@ -140,9 +140,9 @@ From a Claude Code session, with the Artifact tool:
    `~/commute-agents/fleet/log-lock release <role>` after the publish (two flushes both claimed v73, friction 37).
    `<role>` is the lead's role name; a clerk's brief gives it. `take --wait` waits 100 s a call; run it again on exit 1. A
    holder that has ended loses the lock to the next take (`log-lock status` says why). Every session takes it, for a
-   one-off edit too. Nothing enforces that, and sessions have published past a held lock (friction 347, 149): step 2's
-   diff shows it; merge and take the next version number. In the call before the send, `log-lock check <role>`: on exit
-   1 do not publish; take it again and re-pull.
+   one-off edit too, a user-requested overview or techniques edit included. A hook (`.claude/hooks/log-publish-lock.py`)
+   refuses a publish to the log from a session that does not hold the lock (friction 347, 149); its refusal says who
+   does. In the call before the send, `log-lock check <role>`: on exit 1 do not publish; take it again and re-pull.
 1. Commit `parts/` and the emptied queue (named paths, `git commit -m ... -- docs/research_log experiments/TRIED.md
    README.md`), since a pull refuses to merge into an uncommitted `PENDING.md`. Then `git pull --no-rebase` and
    `python3 docs/research_log/build.py`, so the build has every other session's changes. Commit what that changed and
