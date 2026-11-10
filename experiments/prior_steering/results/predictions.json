@@ -1,0 +1,82 @@
+{
+  "experiment": "E149, experiments/prior_steering, cell P2.15",
+  "filed": "2026-11-10, before run.py ran; never edited after the run (a dated report instead)",
+  "card": "reports/plans/2026-11-10_plan_p2-15-card.md",
+  "plan": "reports/plans/2026-11-10_plan_prior-steering.md",
+  "seen_before_filing": "Every cell of experiments/method_table/results/final.json (share, prior and filed steering per built pair); E145's and E146's reports and results; E143's and E135's saved selection grids (mean log-odds rise on the selection rows per layer and strength), read at strength 1 for the pairs E146 did not read: copy at a new marker pooled rises about 0.47 of its gain at its best layer at strength 1 against about 0.17 for lookup; copy maps pooled about 0.56 against random maps about 0.12; copy vs cipher at step 10 pooled about 0.51 against 0.20; lowercase about 0.31 against the ciphers 0.09 to 0.15 (selection-row rise over the read-row gain, so rough). E147's stage0.json (every 96-key refit reproduced E58's share) and, through this run's CPU dry run of its score path, E147's finished stage1.json score calls (in the main clone, not yet pushed): filed fair steering on rank-1 vs cipher at 96 keys does not separate (pooled gap 0.03, per key 0.03), and on copy vs prior-matched cipher separates pooled (gap 0.59, range 0.03) and not per key (0.07). Not seen: any read-row reading at strength 1 outside E146's three pairs, and the 96-key refits' selection grids at strength 1.",
+  "settings": {
+    "layers": [1, 2, 3],
+    "strength": 1.0,
+    "selection": "E143's path: the first n_select = 512 training windows (holes_fill/results/predictions.json settings); E135's path: the fit half of its 200 windows"
+  },
+  "thresholds": {
+    "smallest_gap": 0.1,
+    "inert": 0.05,
+    "gain_floor": 1.0,
+    "prior_bar": 0.5,
+    "zero_tol": 1e-9,
+    "reproduce_tol": 0.0001,
+    "projected_limit_min": 25
+  },
+  "pairs": ["e62_copy_lookup", "e46_copy_random", "e53_lowercase_cipher", "e54_matched", "e54_own", "open_pair_c3", "open_pair_c3_copy", "e58_rank1_96", "e58_copy_prior_cipher"],
+  "sources": {
+    "smallest_gap, inert, gain_floor": "E143's filed rule (holes_fill/results/predictions.json), by which every steering cell of final.json was called",
+    "prior_bar": "0.5 decades sits above the largest spread measured between two maps built the same way, 0.33 (random maps 32 and 32b: prior_vs_share/results/stage2.json, log10 prior -5.739 and -6.071), and above the whole 95% window-resampled interval of a prior gap, 0.34 wide (E145: 1.46 to 1.80). Every call is the same for any bar in (0.20, 1.48]: the two pairs at 0.12 and 0.20 decades were built to be matched (copy and lookup share windows; E58 Amendment 6 built the cipher at copy's prior), and the next gap is 1.48",
+    "reproduce_tol": "E146's, met on the same code and rows; a selection rise is compared as its difference over the state's gain, in the share's unit",
+    "zero_tol": "E143's and E146's"
+  },
+  "definitions": {
+    "unit": "a steering value is the mean change in log-odds of each read row's target at the read position, as a share of the fine-tune's own gain on those rows (fp32 target model): E143's read rows and vectors for every pair but copy vs lookup, E135's score half for copy vs lookup. The prior is the original model's log10 probability of the trained answer, one value per map (final.json prior cells)",
+    "share direction": "final.json's share cell: the sign of its gap (reuse minus new) when its call is 'apart'; the share separates all 9 built pairs with the side built to reuse higher",
+    "filed steering": "final.json's steering cell: the sign of its gap if its call is 'apart', else 0, in the kind (pooled or per key) it reads. For the two 96-key pairs, once E147's stage1.json holds its score when this job scores: E147's fair steering under E143's rule, the kind with the wider gap (holes_fill rules.wider), replacing final.json's older one-vector form; the source used is recorded per pair",
+    "strength-1 steering": "per state and kind, the layer of the largest selection-row rise at strength 1 over layers 1-3 (fair_steering.pick; ties to the lower layer), then the read-row rise at that layer and strength 1 over the gain. Called per pair with holes_fill rules.call on the seeds in the kind the filed reading reads (one thing changed: the strength); the other kind is reported",
+    "votes, together, outcome": "rules.py docstring: votes +1 / 0 / -1 against the share's direction; per pair 'tracked' iff a vote is +1 and none is -1, 'conflict' iff +1 and -1, 'missed' iff no +1; per form 'rival A' iff every counted pair is tracked, 'rival B' iff any is missed, 'mixed' iff conflicts and none missed, 'no call' iff none counted; an unreadable steering call leaves the pair out of that form",
+    "no fitted weight": "the rule has no weight fit to the share, so leave-one-pair-out changes nothing but the pair set; the outcome with each pair left out is reported (score.leave_one_out), and rival B survives leaving out any one pair only if two pairs are missed"
+  },
+  "do_nothing": "A pair of zero updates (both sides, one task): gain 0 under the floor, so the share is nan and does not separate it; the pair is left out of every count. Its readings would vote 0 (prior gap 0, steering inert), so counted it would be 'missed': a do-nothing state cannot make rival A. Checked with rules.edge_cases before filing.",
+  "matched prior": "On copy vs lookup (0.12 decades) and copy vs prior-matched cipher (0.20) the prior votes 0, so steering alone decides: tracked iff steering separates the share's way, missed otherwise. These are the pairs where rival B can show.",
+  "blind_to": "Size and ordering across pairs: the rule reads only which side each reading puts higher. The share puts the side built to reuse higher on all 9 pairs, so the test is whether the union of two cheap readings covers each pair, not whether they track how far apart the share puts the sides. A per-key steering vector is handed the answer on both sides. The prior is the task's and the original model's, the same for every seed and step.",
+  "positive_control": "The rule reads rival B on each baseline alone, from saved numbers: the prior alone misses copy vs lookup and copy vs prior-matched cipher; filed steering alone misses lowercase vs ciphers (score.alone). So the outcome is not 'rival A' by construction.",
+  "edge_cases_checked_before_filing": {
+    "prior gap exactly at the bar": "votes its sign (inclusive)",
+    "prior gap just under the bar, steering does not separate": "missed",
+    "prior matched, steering separates the share's way": "tracked",
+    "prior past the bar the other way, steering the share's way": "conflict, outcome mixed",
+    "share does not separate": "left out; outcome 'no call' when it is the only pair",
+    "do-nothing pair": "steering unreadable (nan shares): left out of that form; share does not separate: left out",
+    "record": "rules.edge_cases(0.5, thresholds) run through cpu-run on 2026-11-10; output in reports/plans/2026-11-10_plan_prior-steering.md"
+  },
+  "control": {
+    "order": "stage 0 runs first and alone; a miss stops the job (exit 1) before any further state is read",
+    "zero": "a zero update's vectors steer by exactly 0 (<= 1e-9) at strength 1, layers 1-3, both kinds, on both paths (E143's on one batch of e54/elicit training windows, E135's on copy's fit half)",
+    "reproduce": "e54/elicit_s0 and c3/cipher_s0: selection rises at strength 1 match E143's saved grid and the strength-1 share matches E146's, both kinds, within 1e-4 of the gain; e62/copy_s0: selection rises match E135's saved grid_fit and its filed pooled share reproduces E135's within 1e-4. In stage 1 every state is checked against every saved grid that holds it (E143, E135, E147 when its stage1 has the state) and E146's strength-1 share where E146 read it; a miss stops the job"
+  },
+  "predictions": {
+    "P1": {
+      "claim": "with steering as filed, prior and steering together read 'mixed': the three steering reversals (half-known vs cipher at equal size and at its own step, rank-1 vs cipher at step 10) are conflicts with the prior, every other built pair is tracked, none is missed",
+      "rule": "score.outcome.filed == 'mixed' and sorted(score.labels.filed.conflict) == ['e54_matched', 'e54_own', 'open_pair_c3']",
+      "lean": "true",
+      "confidence": "near certain: arithmetic on cells seen before filing (final.json and E147's score), filed so the run records it beside the strength-1 form; it changes only if E147's stage1.json changes before the score is read"
+    },
+    "P2": {
+      "claim": "with steering at strength 1, every built pair is tracked: rival A",
+      "rule": "score.outcome.strength1 == 'rival A'",
+      "lean": "true",
+      "confidence": "medium: it rests on P3",
+      "why": "at strength 1 the reversals lose their sign (E146), so the prior carries those pairs alone; where the prior is matched, the side built to reuse rose more per unit added on the selection rows (copy at a new marker)"
+    },
+    "P3": {
+      "claim": "at strength 1 steering separates both matched-prior pairs the share's way",
+      "rule": "score.pairs.e62_copy_lookup.steering.strength1.vote == 1 and score.pairs.e58_copy_prior_cipher.steering.strength1.vote == 1",
+      "lean": "true",
+      "confidence": "medium-high on copy vs lookup (selection rows: about 0.47 against 0.17, the lookup side already filed at strength 1); medium on copy vs prior-matched cipher (its filed pooled gap is 0.59, but no 96-key grid at strength 1 was seen; copy vs cipher at step 10 reads about 0.51 against 0.20 on its selection rows at strength 1)"
+    },
+    "P4": {
+      "claim": "at strength 1 steering separates none of the three pairs where it reversed",
+      "rule": "score.pairs[p].steering.strength1.vote == 0 for p in e54_matched, e54_own, open_pair_c3",
+      "lean": "true",
+      "confidence": "high for e54_matched and open_pair_c3 (E146 read them: gaps 0.04 and -0.03 inside the range), medium for e54_own (E146: -0.05, 2 seeds on the cipher side)"
+    }
+  },
+  "what changes what we do": "Rival A at strength 1: part 2 says that on the built pairs the share's direction is reproduced by the prior and unsearched steering together, so the built pairs do not show the share seeing something both miss; the cell closes. Rival B: the missed pair is part 2's case where the share separates what neither cheap reading does, and the figure leads with it. 'Mixed' at strength 1: the conflicts are listed and neither rival holds."
+}

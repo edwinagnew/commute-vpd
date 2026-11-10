@@ -3,7 +3,7 @@
 Reads saved results JSON only (no model) and writes results/final.json and figures/final.png (+ .pdf, .csv). Labels are as
 each pair was built; no verdict of reused or new. Readers run oldest first, and a newer run's reading of a cell replaces
 the older one, whose source is kept in `replaces`. A cell's `call` is the run's own filed per-pair call where one exists
-(E140, E141, E143), else whether the two sides' seed ranges overlap; one value a side gets no call. No combined score.
+(E140, E141, E143, E147), else whether the two sides' seed ranges overlap; one value a side gets no call. No combined score.
 
     ~/commute-agents/fleet/cpu-run experiments/method_table/plot_final.py
 """
@@ -20,6 +20,7 @@ ROOT = Path(__file__).resolve().parents[2]
 SC, U, INV = "experiments/method_table/results/scorecard.json", "experiments/share_untrained/results/stage1.json", "experiments/share_untrained/results/inventory.json"
 HOLES, STEER, PRIOR, SVD = "experiments/holes_fill/results/stage1.json", "experiments/steering_copy_lookup/results/stage1.json", "experiments/prior_vs_share/results/stage2.json", "experiments/update_svd/results/results.json"
 E145 = "experiments/prior_lowercase/results/stage1.json"
+E147, E147_INV = "experiments/refit_96key/results/stage1.json", "experiments/refit_96key/results/inventory.json"
 TWIN2, TWIN3 = "experiments/real_vs_twin/results/stage2.json", "experiments/real_vs_twin/results/stage3.json"
 BUILT = ["e62_copy_lookup", "e46_copy_random", "e53_lowercase_cipher", "e54_matched", "e54_own", "open_pair_c3", "open_pair_c3_copy", "e58_rank1_96", "e58_copy_prior_cipher"]
 TWINS = ["e58_elicit_shuffle", "e58_class_twin", "e123_case_label", "e125_repeat_label"]
@@ -125,7 +126,30 @@ def e143_holes(out: Cells) -> None:
             put(out, pair, col, sides[k], f"{HOLES} .states[<state>].{fam}.{k}.share", form=k, filed=filed["call"])
 
 
-READERS = (scorecard, e133_prior, e145_prior, e135_steering, e136_share, e141_rank, e140_twins, e143_holes)  # oldest first
+def e147_refit(out: Cells) -> None:
+    """E147 refit E58's four 96-key pairs (seeds 0-2, step 30, updates kept) and read every activation reader on them. Its
+    share replaces E58's saved share and E136's two regenerated class seeds (it reproduced E58's within each map's seed range,
+    largest difference 6e-4), so each row reads one set of updates; its fair-form steering replaces the older one-vector form."""
+    r, inv = load(E147), load(E147_INV)
+    st, fam, calls = r["states"], r["score"]["families"], r["score"]["calls"]  # E147's filed calls (E143's rule) for every cell
+    for p in inv["pairs"]:
+        names = ([f"e58/{p['reuse']}_s{s}" for s in inv["seeds"]], [f"e58/{p['new']}_s{s}" for s in inv["seeds"]])
+        side = lambda path, names=names: ([float(dig(st[n], path)) for n in names[0]], [float(dig(st[n], path)) for n in names[1]])
+        for col, grp, key in (("share", "e136", "trained"), ("untrained", "e136", "svd"), ("neuron", "neuron_r", "r_n"), ("neuron_half", "neuron_r", "r_half")):
+            put(out, p["id"], col, side([grp, key]), f"{E147} .states[<state>].{grp}.{key}", form="refit seeds 0-2", filed=calls[col][p["id"]]["call"])
+        for col, f, kinds in (("neuron_top", "neuron", ("k64", "kmatched")), ("steering", "steering", ("pooled", "perkey"))):
+            sides = {k: side(["holes_fill", f, k, "share"]) for k in kinds}
+            k = wider(sides)
+            put(out, p["id"], col, sides[k], f"{E147} .states[<state>].holes_fill.{f}.{k}.share", form=f"{k}, refit seeds 0-2", filed=fam[col][p["id"]]["call"])
+
+
+def dig(x: Any, path: list[str]) -> Any:
+    for k in path:
+        x = x[k]
+    return x
+
+
+READERS = (scorecard, e133_prior, e145_prior, e135_steering, e136_share, e141_rank, e140_twins, e143_holes, e147_refit)  # oldest first
 
 
 def score(col: str, c: dict[str, Any]) -> None:

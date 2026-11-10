@@ -267,6 +267,9 @@ All `_dg` files are written by run.py `all`. The states are not saved.
 ## recruitment_test (E38 and Amendments 2-7; listed 2026-11-03)
 - `states/{emoticon,r1_t534_v369,r2_t359_v816}_{s0,s1,null}.pt` (113 MB): dW dict (fp32): arm A fine-tune at seed S, `null` the plain-token fine-tune (`G.finetune`, Adam, `CFG.lr`, `CFG.steps`). Written by run.py `make_state` (stage 0, Amendment 2's cached states). `amend5_scores.pt` (2.9 MB): per-state piece scores of Amendment 5; `stage3_pieces.json`; logs `full.log`, `amend{2..7}.log`.
 
+## refit_96key (E147; ran 2026-11-10, job 57961)
+- `dW_{rank1,cipher,copy,prior_cipher,elicit,shuffle,class_map,class_shuffled}_s{0,1,2}.pt` (24 files, 56.6 MB each, 1.3 GB): dW dicts (bf16) of E58's eight 96-key maps refit with `keydep.finetune` at E58's seeds, step 30 only; sha256 and the reproduction of E58's share in `results/stage0.json` `.states["e58/<map>_s<seed>"]`. Load with `torch.load(p, weights_only=True)` and `.float()`. Windows are open_pair's `amend{3,6,7}/windows_<map>_trained.pt`. The class map and twin seeds 0-1 are bitwise equal to definition_verify's `dW_class_*_s{0,1}.pt`.
+
 ## regating_cuefree
 - Logs only: `full.log`, `amend1.log`. No tensors.
 
