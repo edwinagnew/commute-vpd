@@ -49,6 +49,7 @@ above real. No neuron share is larger than 0.021 in size. Three things could mak
 - *The twins wrote larger changes.* On the case pair the twin trained to step 300 against the real's 30, and its update is about 13
   in summed norm against 4.6. Shrunk to the real's norm, a case twin keeps only 0.14 to 0.18 of its contrast gain. On both pairs every
   twin's per-word vector was chosen at strength 4, twice the real's, and every twin's per-word share is above 1: the vector overshoots the twin's own gain.
+  *Correction 2026-11-10 (card writer, checked against stage1.json):* the larger-update point holds on the case pair only; on the repeat pair the seed-2 twin's summed norm (7.7) is about the real's (7.5), so "the twins' larger updates" in the summary and the reading applies to the case pair.
 - *The pooled gap is at the bar.* 0.101 against a bar of 0.1 is one rounding from the other side, though its spread is small.
 
 The real fine-tunes' per-word vectors read on the twin's labels write 0.13 to 0.15 of the twin's gain on the case pair. So the case
