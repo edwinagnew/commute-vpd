@@ -1,0 +1,16 @@
+0.65	experiments/reuse_variable_test/results/stage1.json	.pairs.XOR.witness.mismatch	this
+0.922	experiments/reuse_variable_test/results/stage2.json	[.G|to_entries[]|select(.key|startswith("Always on/k4/"))|.value.G]|max	this
+0.666	experiments/reuse_variable_test/results/stage2.json	[.G|to_entries[]|select(.key|startswith("Cue/k4/"))|.value.G]|max	this
+0.026	experiments/reuse_variable_test/results/stage2.json	-([.G|to_entries[]|select(.key|startswith("XOR/k4/"))|.value.G]|max)	this
+0.027	experiments/reuse_variable_test/results/stage2.json	-([.G|to_entries[]|select(.key|startswith("Table/k4/"))|.value.G]|max)	this
+0.976	experiments/reuse_variable_test/results/stage2.json	[.H|to_entries[]|select(.key|startswith("Always on/"))|.value.H]|max	this
+0.961	experiments/reuse_variable_test/results/stage2.json	[.H|to_entries[]|select(.key|startswith("Cue/"))|.value.H]|max	this
+0.995	experiments/reuse_variable_test/results/stage2.json	[.H|to_entries[]|select(.key|startswith("Table/"))|.value.H]|max	this
+0.009	experiments/reuse_variable_test/results/stage2.json	-([.H|to_entries[]|select(.key|startswith("XOR/"))|.value.H]|max)	this
+0.382	experiments/reuse_variable_test/results/stage2.json	.H["Always on/final"].H	this
+0.506	experiments/reuse_variable_test/results/stage0.json	.capacity.in2.real.held_out	this
+0.502	experiments/reuse_variable_test/results/stage0.json	.capacity.in2.shuf.held_out	this
+0.9	experiments/reuse_variable_test/results/predictions.json	.thresholds.search_bar	this
+0.55	experiments/reuse_variable_test/results/predictions.json	.thresholds.capacity_bar	this
+0.02	experiments/reuse_variable_test/results/predictions.json	.thresholds.floor_gap	this
+0.1	experiments/reuse_variable_test/results/predictions.json	.thresholds.card_margin	this
