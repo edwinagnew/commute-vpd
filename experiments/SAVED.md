@@ -456,3 +456,6 @@ This is "round 1", the input of nearly every other run.
 ## qwen_post_cutoff (E128; paused 2026-11-09, user)
 - `candidates.json` (4.64 MB, sha256 5bef779f): Wikidata candidates from `artifacts/post_cutoff/full/` (36 MB, not in git; `aliases.json` beside the window files).
 - `stage0/`, `stage1/` (shards, `merged.json.gz`): jobs 56780, 56783. `n1/` shards and `results/n1.json`: job 56787, running when the line closed; the last job of this experiment. No `dW/`: the four fine-tunes were not run.
+
+## reuse_variable_finetune (E139, cell P1.4; rerun 2, 2026-11-10, jobs 57673, 57675, 57744, 57745)
+- `results/large/{always_on,xor}_s{0,1,2}.pt` (268 MB each, 6 files): fine-tuned 67M weights of the items that ran to the end. The three `cue` items stopped at step 10 (overshoot check) and saved none. Written by run.py; gitignored.
