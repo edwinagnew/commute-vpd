@@ -4,6 +4,12 @@
 recommendation. Page: `reports/analyses/2026-11-10_analysis_gate-page-working-definition.md`. Figure:
 `experiments/old_task_labels/figures/gate_within_pair.png`.*
 
+**Decided 2026-11-10 (user, last row of `decisions.md`).** The second wording is adopted tentatively as the working
+definition. In the user's words: "yes you can tentatively adopt the 2nd wording as the working definition of re-use. if
+it cant detect built, then it will have to be revised however." The cut-offs are rounded from 0.794 to 0.8 and from 0.476 to 0.5. At the
+rounded cut-offs one label moved: the 300-step copies of Always on now read no map found, where they read rewired. No
+old 67M task moved. The built control runs as a new cell. The numbers below are at the rounded cut-offs.
+
 **The wording, in one paragraph.** A fine-tune reuses the original when some small variable of the original carries the
 whole change in behaviour, and the fine-tune sets it by a fixed affine map of the variable's own value: turned up, on by
 default, shifted. That is "re-weighted". If the variable is set from everything the original had computed, the change is
@@ -17,11 +23,13 @@ Nothing new ran for the gate.
 
 **What the numbers say.**
 - On the hand-made changes the search found the known answers: 0.922, 0.961 and 0.995 against a bar of 0.9.
-- The table copies read rewired on all three seeds, their built label. The copies of the re-weighted change read
-  rewired; their re-weighting share stayed under the 0.794 cut-off, at most 0.78 after ten times longer training.
+- The table copies read rewired on all three seeds, their built label. At the rounded cut-offs, the 300-step copies of
+  the re-weighted change read no map found, with two of three rewiring shares under 0.5; the 3000-step copies read
+  rewired. Their re-weighting share stayed under the 0.8 cut-off, at most 0.78 after ten times longer training.
 - In all five matched pairs of old tasks, every seed built to reuse has a higher re-weighting share than every seed of
-  its new twin, by at least 0.17. Under the 0.794 cut-off, only the real case label reads re-weighted; the other reuse
-  sides read rewired, like their twins.
+  its new twin, by at least 0.17. Under the 0.8 cut-off, only the real case label reads re-weighted; the other reuse
+  sides read rewired, like their twins, except lowercase, which reads no map found. No old task changed label when
+  the cut-offs were rounded.
 - "Built" is never read: a low rewiring share only says the search found no map. The control that could change that is
   designed, not run.
 - The two shares read the outputs only. The one number that looks inside, the reversion, stayed from 0.24 to 0.26 on the
