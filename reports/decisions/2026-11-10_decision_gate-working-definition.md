@@ -42,7 +42,7 @@ Nothing new ran for the gate.
   only. It tells us the share's within-pair ordering is not enough for a definition. Next: back to the wording and the
   built control, part 1's earlier rungs.
 
-**Files.** Page `reports/analyses/2026-11-10_analysis_gate-page-working-definition.md`; wording
+**Files.** Page `reports/analyses/2026-11-10_analysis_gate-page-working-definition.md`; old-task results `experiments/old_task_labels/results/labels.json`; wording
 `~/commute-data/scratch/definition-session/2026-11-09_reuse-at-a-variable_v2.md`; built control
 `reports/plans/2026-11-10_plan_built-control-design.md`; today's within-pair decision
 `reports/decisions/2026-11-10_decision_old-task-cutoff.md`.
