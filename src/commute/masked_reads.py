@@ -85,18 +85,24 @@ def mask_edit(masks: Mapping[int, Tensor]) -> ST.Edit:
 
 
 @torch.no_grad()
+def topk_logits(net: ST.Net, dW: ST.DW, b: Tensor, pos: int, k: Mapping[int, int]) -> dict[str, Tensor]:
+    """One batch b (B, L): the logits at `pos` of T0, T1 (fp32 target model) and N00, N01 (W0 with firing masked to W0's
+    or the state's TopK sets). Any task's readout is taken from these (E140's units, E143's log-odds of a target)."""
+    lg0, f0 = net.run(b, capture=True)
+    with net.at(dW):
+        lg1, f1 = net.run(b, capture=True)
+    out = {"T0": lg0[:, pos], "T1": lg1[:, pos]}
+    for cell, f in (("N00", f0), ("N01", f1)):
+        out[cell] = net.run(b, mask_edit(top_masks(f, k)))[0][:, pos]
+    return out
+
+
 def topk_cells(net: ST.Net, dW: ST.DW, toks: Tensor, y: Tensor, ab: tuple[int, int], pos: int, k: Mapping[int, int]) -> Cells:
-    """T0, T1 (fp32 target model) and N00, N01 (W0 with firing masked to W0's or the state's TopK sets) per window and unit."""
+    """T0, T1, N00, N01 (`topk_logits`) per window and unit."""
     out: dict[str, list[dict[str, Tensor]]] = {c: [] for c in ("T0", "T1", "N00", "N01")}
     for s in range(0, len(toks), BATCH):
-        b, yb = toks[s : s + BATCH], y[s : s + BATCH]
-        lg0, f0 = net.run(b, capture=True)
-        with net.at(dW):
-            lg1, f1 = net.run(b, capture=True)
-        out["T0"].append(units(lg0[:, pos], yb, ab))
-        out["T1"].append(units(lg1[:, pos], yb, ab))
-        for cell, f in (("N00", f0), ("N01", f1)):
-            out[cell].append(units(net.run(b, mask_edit(top_masks(f, k)))[0][:, pos], yb, ab))
+        for cell, lg in topk_logits(net, dW, toks[s : s + BATCH], pos, k).items():
+            out[cell].append(units(lg, y[s : s + BATCH], ab))
     return {c: cat(v) for c, v in out.items()}
 
 
