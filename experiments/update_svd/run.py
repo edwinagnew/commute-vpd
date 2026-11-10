@@ -31,14 +31,13 @@ def large(folder: str, name: str) -> Path:
     return EXP / folder / "results" / "large" / name
 
 
-def seeds(folder: str, stem: str, ss: range | tuple[int, ...]) -> list[tuple[str, Path]]:
-    return [(f"{stem}_s{s}", large(folder, f"{stem}_s{s}.pt")) for s in ss]
+def seeds(folder: str, stem: str, ss: range | tuple[int, ...], sub: str = "") -> list[tuple[str, Path]]:
+    return [(f"{stem}_s{s}", large(folder, f"{sub}{stem}_s{s}.pt")) for s in ss]
 
 
 def c3(m: str) -> list[tuple[str, Path]]:
     """Seeds 0-7 of an open-pair map at step 10, where open_pair_instruments/common.py state_path reads them."""
-    old = "open_pair" if m == "cipher" else "open_pair/amend1"
-    return seeds(old, m, range(3)) + seeds("open_pair_instruments", m, range(3, 8))
+    return seeds("open_pair", m, range(3), "" if m == "cipher" else "amend1/") + seeds("open_pair_instruments", m, range(3, 8))
 
 
 E54_ELICIT = seeds("keydependent_elicit", "elicit", (0, 1)) + seeds("keydependent_patch", "elicit", (2, 3, 4))
@@ -135,6 +134,9 @@ def score(pairs: dict[str, Any]) -> dict[str, Any]:
 def main() -> None:
     pred = RESULTS / "predictions.json"
     require_filed(pred)  # the rules are in it; the run reads nothing else from it
+    missing = [str(p) for a, b, _ in PAIRS.values() for _, p in a + b if not p.is_file()]
+    if missing:
+        sys.exit(f"missing saved states: {missing}")
     torch.set_num_threads(2)
     card = {row["pair"]: row for row in json.loads(SCORECARD.read_text()) if row["method"] == "r"}
     ref = US.load(large("regating_table", "ident32_s0.pt"))
