@@ -613,3 +613,7 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e131_active.png": "experiments/qwen_new_decomp/figures/active.png"
 - "fig/methodtable_gaps.png": "experiments/method_table/figures/scorecard_gaps.png"
 - "fig/e141_gaps.png": "experiments/update_svd/figures/gaps.png"
+- "fig/e133_share_vs_prior.png": "experiments/prior_vs_share/figures/share_vs_prior.png"
+- "fig/e135_steering.png": "experiments/steering_copy_lookup/figures/steering_copy_lookup.png"
+- "fig/e136_gaps.png": "experiments/share_untrained/figures/gaps.png"
+- "fig/e140_shares.png": "experiments/real_vs_twin/figures/shares.png"
