@@ -46,12 +46,12 @@ fine-tune test's XOR imitator. What is new is the taught arm, the positive contr
 |---|---|---|
 | Affine read of the XOR bit from the original, bar 0.55 | Well above, by construction | 0.506, measured |
 | H, cut-off 0.476 | Above, at least at the last sites | Below, as the XOR pair read 0.009 below zero |
-| G, cut-off 0.794 | Above if the change stays in a few directions; may fall below, as the first fine-tune of the "Always on" pair read under 0.45 at the sites logged so far | Below |
+| G, cut-off 0.794 | Above if the change stays in a few directions; may fall below, if the fine-tune test's ordinary fine-tunes read low G | Below |
 | Label by the filed rule | Re-weighted or rewired | No map found |
 
-**Cost.** $0 on the cluster's debug queue, about 2.5 hours in two jobs. The taught original takes about two minutes
-to train. One fine-tune plus its read takes 35 to 45 minutes. The first test's four pairs took about 2.2 hours
-across jobs 57142 and 57208, and the fine-tune test's G search alone took about 22 minutes per item in job 57673.
+**Cost.** $0 on the cluster's debug queue, about two and a half hours in two jobs, an estimate. The taught original
+takes about two minutes to train. One fine-tune plus its read takes 35 to 45 minutes. The first test's four pairs
+took a little over two hours across jobs 57142 and 57208.
 Three seeds of the taught arm, plus the control. The plain arm's three seeds are the fine-tune test's XOR items,
 queued now. Code: a short run script on `src/commute/variable_read.py`, which already reads a fine-tuned copy.
 
@@ -76,7 +76,7 @@ which carried random answers in both pretrainings.
 
 **Why the labels hold.** The plain model had no training signal for the count of a or its parity, so built comes
 from its history, not from a chosen hard function. Unlike the XOR, whether parity is affinely readable from it is
-open. The study's "counts b only" model was never asked for the count of a, yet a probe read it at 0.44 to 0.52. The taught model computes parity under Q by how it was made.
+open. The study's "counts b only" model was never asked for the count of a, yet a probe read it at 0.43 to 0.50 in blocks 2 to 6, where shuffled labels read about a third. The taught model computes parity under Q by how it was made.
 
 | Reading | Taught | Plain |
 |---|---|---|
