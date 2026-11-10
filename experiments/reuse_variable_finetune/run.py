@@ -42,7 +42,7 @@ from commute.qwen_sft import lr_at
 from commute.steering import Net
 from commute.variable_read import PAIRS, Sizes, Target
 
-EXPERIMENT = "E???"  # The lead fills this in when the cell is claimed (`fleet/ecode`); only the log line reads it.
+EXPERIMENT = "E139"  # The lead fills this in when the cell is claimed (`fleet/ecode`); only the log line reads it.
 HERE = Path(__file__).resolve().parent
 R1 = HERE.parent / "reuse_variable_test" / "results"  # R1's pieces and stage files, read only
 PRED = HERE / "results" / "predictions.json"
