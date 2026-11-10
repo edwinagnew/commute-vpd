@@ -413,20 +413,30 @@ def length_matched(plain: Sequence[int], think: Sequence[int], seqs: Sequence[Se
 def own_rows(tok: Any, arm: str, seed: int, train: list[dict[str, Any]]) -> list[list[int]]:
     """E45's own rows for gold and anchor 2 as experiments/qwen_updates/job.py Job.own_rows builds them (that file
     is not imported: E57 checks the KL on these rows against E45's E record instead)."""
+    from commute.qwen_sft import pack
+
+    return pack([s for s, _ in own_seqs(tok, arm, seed, train)], 64, 512)
+
+
+def own_seqs(tok: Any, arm: str, seed: int, train: list[dict[str, Any]]) -> list[tuple[list[int], int]]:
+    """The sequences `own_rows` packs, each with its prompt length (gold: E40's 256 held-out GSM8K train problems with
+    their gold solutions; a2: the held-template fact pairs of that seed)."""
     from commute import qwen_facts
     from commute.qwen_anchors import chat
     from commute.qwen_sets import N_TRAIN
-    from commute.qwen_sft import pack, sft_seq
+    from commute.qwen_sft import sft_seq
 
     end = int(tok.convert_tokens_to_ids("<|im_end|>"))
     ids = lambda text: tok(text, add_special_tokens=False)["input_ids"]
     if arm == "gold":
         held = torch.randperm(N_TRAIN, generator=torch.Generator().manual_seed(0)).tolist()[:256]
-        seqs = [sft_seq(tok, train[i]["question"], train[i]["gold"], end, 512)[0] for i in held]
-    else:
-        assert arm == "a2", arm
-        seqs = [ids(chat(tok, q.question)) + ids(q.answer) + [end] for q in qwen_facts.held_set(seed)]
-    return pack(seqs, 64, 512)
+        return [sft_seq(tok, train[i]["question"], train[i]["gold"], end, 512) for i in held]
+    assert arm == "a2", arm
+    out = []
+    for q in qwen_facts.held_set(seed):
+        p = ids(chat(tok, q.question))
+        out.append((p + ids(q.answer) + [end], len(p)))
+    return out
 
 
 def a1_rows(tok: Any, items: list[dict[str, Any]], test: list[dict[str, Any]]) -> list[list[int]]:
