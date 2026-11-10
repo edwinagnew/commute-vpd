@@ -1,0 +1,16 @@
+<article class="exp" id="e138">
+<div class="top"><span class="id">E138</span><span class="chip holds">held</span><h3>Can the first test of the second reuse wording be finished after a solver refusal and a memory failure, with its design unchanged?</h3><span class="when">2026-11-10 · provisional, no independent check · cluster <code>debug</code> L40, jobs 57142 and 57208, $0 · <code>experiments/reuse_variable_test</code></span></div>
+<p class="one"><strong>The question.</strong> The first test of the second reuse wording on four hand-made changes (<a href="#e137">E137</a>) stopped twice before it finished. The table of work allowed one repair run, only after a code error or a memory failure, with the design and the filed predictions unchanged. Could that run finish the test?</p>
+<p class="one"><strong>What we did.</strong> Two fixes, nothing else. The card's linear-algebra library refused both methods for the rank of the original model's activations, so that rank moved to a last step on another solver; a failure there would lose only that unscored number. The card then ran out of memory at the place just before the unembedding, so the large ridge matrix is freed before its solve and the remaining time is checked before each place.</p>
+<p class="one"><strong>What we found.</strong> The repair run finished the whole test at no cost, in one job and one resume after the first hit its two-hour limit. Its readings are the first test's, for example a re-weighting share of 0.922 on the Always on change.</p>
+<p class="one"><strong>What it means.</strong> The first test stands as complete, on its filed design. The one weakness it left, the rewiring search's refinement step making things worse almost everywhere, was not fixed: a fix would be a new run.</p>
+<figure><img src="fig/e137_found_vs_witness.png" alt="Dot plot, one row per hand-made change, showing the re-weighting share and the rewiring share found by the blind search beside the known answer for each"><figcaption><strong>What did the completed run read? The known answers, on all four changes.</strong> The same figure as the first test's card: filled marks are what the search found, hollow circles the known answer, and the dashed line at 0.9 the bar a found answer had to clear.</figcaption></figure>
+<dl class="fields">
+<dt>Run</dt><dd>Jobs 57142 and 57208 on the cluster's debug queue, $0, the second a resume. Earlier jobs 57027, 57034, 57043 and 57100 stopped on the errors fixed here.</dd>
+<dt>Found</dt><dd><ul>
+<li>As expected, both fixes held and the test ran to its end without a change of design.</li>
+<li>Its numbers are those of the first test's card.</li></ul></dd>
+<dt>Bears on</dt><dd>Part 1's working definition (section {{n:next}}), through the first test.</dd>
+<dt>Moved on</dt><dd>Owned by <code>definition-lead</code>; the cell's one run is spent. Report <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-10_analysis_e138-repair.md"><code>reports/analyses/2026-11-10_analysis_e138-repair.md</code></a>; readings on the first test's report. Names in the reports: cell P1.6; commits 4bc054d7, 429c7040 and d29b519a.</dd>
+</dl>
+</article>
