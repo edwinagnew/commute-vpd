@@ -23,7 +23,7 @@
 <p>The candidate definition (overview, glossary) is measured by a blind search that is not told the answer. Let M be the original model and F its fine-tune, and let a <em>variable</em> φ be a linear read-out of M's activations at one place, of dimension at most 4 in every test so far. Let gap be the mean distance between M's and F's next-token distributions over a fixed input set, and write M[φ←v] for M with φ overwritten by v. Then</p>
 <p class="formula">G = 1 − min<sub>φ, s</sub> mean d(M[φ←s(v<sub>M</sub>)], F) / gap</p>
 <p>is the <strong>re-weighting share</strong>: how much of the fine-tune's change in outputs one small variable of M explains when it is set by an affine map s of its own value (turned on, up, or shifted). The <strong>rewiring share</strong> H is the same with s applied to everything M computed at that place, and any size of φ. Both run from 0 to 1, G ≤ H, and 1 − H is the built share. One number looks inside the model: the <strong>reversion</strong>, the share of the gap closed by giving F the original's value of the found φ.</p>
-<p><strong>Limits.</strong> A search finds only lower bounds, so a low H says "no map found", not "built". Cut-offs filed from the hand-made changes (G 0.794, H 0.476) do not label real fine-tunes by construction (E142), so G is reported within matched pairs.</p>
+<p><strong>Limits.</strong> A search finds only lower bounds, so a low H says "no map found", not "built". Cut-offs filed from the hand-made changes, rounded by you to 0.8 for G and 0.5 for H, do not label real fine-tunes by construction (E142), so G is reported within matched pairs.</p>
 </div>
 
 <h3>The re-gating share and the route split</h3>
