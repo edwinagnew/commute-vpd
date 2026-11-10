@@ -1,0 +1,11 @@
+1.63	experiments/prior_lowercase/results/stage1.json	.gap.gap	this
+1.46	experiments/prior_lowercase/results/stage1.json	.gap.ci95[0]	this
+1.80	experiments/prior_lowercase/results/stage1.json	.gap.ci95[1]	this
+-3.00	experiments/prior_lowercase/results/stage1.json	.tasks.lowercase.log10_prior	this
+-4.42	experiments/prior_lowercase/results/stage1.json	.tasks.cipher.log10_prior	this
+-4.84	experiments/prior_lowercase/results/stage1.json	.tasks.broad_cipher.log10_prior	this
+1.65	experiments/prior_lowercase/results/stage1.json	.tasks.lowercase.sd_window	this
+0.3	experiments/prior_lowercase/results/stage1.json	.tasks.lowercase.ci95[1] - .tasks.lowercase.ci95[0]	this
+0.003	experiments/prior_lowercase/results/stage0.json	[.rows[] | .diff? // empty | if . < 0 then -. else . end] | max	this
+1.48	experiments/method_table/results/final.json	.cells[] | select(.pair == "e46_copy_random" and .method == "prior") | .gap	earlier
+3.20	experiments/method_table/results/final.json	.cells[] | select(.pair == "e54_matched" and .method == "prior") | .gap	earlier

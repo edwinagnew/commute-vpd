@@ -19,6 +19,7 @@ from commute.figures import figure, save
 ROOT = Path(__file__).resolve().parents[2]
 SC, U, INV = "experiments/method_table/results/scorecard.json", "experiments/share_untrained/results/stage1.json", "experiments/share_untrained/results/inventory.json"
 HOLES, STEER, PRIOR, SVD = "experiments/holes_fill/results/stage1.json", "experiments/steering_copy_lookup/results/stage1.json", "experiments/prior_vs_share/results/stage2.json", "experiments/update_svd/results/results.json"
+E145 = "experiments/prior_lowercase/results/stage1.json"
 TWIN2, TWIN3 = "experiments/real_vs_twin/results/stage2.json", "experiments/real_vs_twin/results/stage3.json"
 BUILT = ["e62_copy_lookup", "e46_copy_random", "e53_lowercase_cipher", "e54_matched", "e54_own", "open_pair_c3", "open_pair_c3_copy", "e58_rank1_96", "e58_copy_prior_cipher"]
 TWINS = ["e58_elicit_shuffle", "e58_class_twin", "e123_case_label", "e125_repeat_label"]
@@ -69,6 +70,13 @@ def e133_prior(out: Cells) -> None:
         put(out, pair, "prior", ([pts[n] for n in a], [pts[n] for n in b]), f"{PRIOR} .points[] named {a + b}, .log10_prior", form="one value per map")
 
 
+def e145_prior(out: Cells) -> None:
+    """E133's prior on E53's windows (rebuilt), one value per task: the lowercase-against-ciphers cell E133 left empty."""
+    t = load(E145)["tasks"]
+    put(out, "e53_lowercase_cipher", "prior", ([t["lowercase"]["log10_prior"]], [t["cipher"]["log10_prior"], t["broad_cipher"]["log10_prior"]]),
+        f"{E145} .tasks.<task>.log10_prior", form="one value per task")
+
+
 def e135_steering(out: Cells) -> None:
     st = load(STEER)["states"]
     sides = {k: ([st[f"copy_s{i}"]["steering"][k]["share_lo"] for i in range(3)], [st[f"lookup_s{i}"]["steering"][k]["share_lo"] for i in range(3)]) for k in ("pooled", "perkey")}
@@ -117,7 +125,7 @@ def e143_holes(out: Cells) -> None:
             put(out, pair, col, sides[k], f"{HOLES} .states[<state>].{fam}.{k}.share", form=k, filed=filed["call"])
 
 
-READERS = (scorecard, e133_prior, e135_steering, e136_share, e141_rank, e140_twins, e143_holes)  # oldest first
+READERS = (scorecard, e133_prior, e145_prior, e135_steering, e136_share, e141_rank, e140_twins, e143_holes)  # oldest first
 
 
 def score(col: str, c: dict[str, Any]) -> None:
