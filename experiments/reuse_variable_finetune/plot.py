@@ -39,6 +39,8 @@ def main(results: Path = HERE / "results", out: Path = HERE / "figures") -> None
     recs: list[dict[str, Any]] = []
     empty: list[str] = []
     for path in sorted(results.glob("*_s[0-2].json")):
+        if path.name.startswith("amend"):  # the amendments' files have their own figure
+            continue
         rec = json.loads(path.read_text())
         pt = best(rec)
         if pt is None:
@@ -61,5 +63,46 @@ def main(results: Path = HERE / "results", out: Path = HERE / "figures") -> None
     FG.save(fig, out / "finetunes_vs_pairs.png", n=f"{len(recs)} fine-tunes, d on 100,000 held-out windows per pair; {note}", data=recs)
 
 
+def _in2(rec: dict[str, Any]) -> dict[str, Any]:
+    """The in2 start with the highest read G of a record's G block."""
+    return max((v for k, v in rec["G"].items() if k.split("/")[1] == "in2"), key=lambda v: v["G"])
+
+
+def leftover_figure(results: Path = HERE / "results", out: Path = HERE / "figures") -> None:
+    """Amendments 1 and 2: G at in2 (best of three starts) against 1 - TV(fine-tune, pair) / gap, per seed and checkpoint, with
+    E137's witness read against the same fine-tune (hollow) and E139's fine-tunes (grey). Dashed: the re-weighted cut-off;
+    dotted: y = x, where G would sit if the leftover alone set it."""
+    cut = json.loads((results / "predictions.json").read_text())["cutoffs"]["G"]
+    a1 = json.loads((results / "amend1.json").read_text())["items"] if (results / "amend1.json").is_file() else {}
+    fig, ax = FG.figure(FG.ONE_COLUMN)
+    recs: list[dict[str, Any]] = []
+
+    def point(label: str, step: int, rec: dict[str, Any], wit: dict[str, Any] | None, color: str) -> None:
+        d = rec["dist"]
+        x, g = 1 - d["tv_to_F"] / d["gap"], _in2(rec)
+        ax.scatter(x, g["G"], color=color, s=22, linewidths=0)
+        if wit:
+            ax.scatter(x, wit["G"], facecolors="none", edgecolors=color, s=30, linewidths=1.0)
+        h = max(rec["H"].values(), key=lambda v: v["H"]) if rec.get("H") else {}
+        recs.append({"item": label, "step": step, "gap": d["gap"], "tv_to_F": d["tv_to_F"], "one_minus_share": x, "G_in2": g["G"],
+                     "G_best": max(v["G"] for v in rec["G"].values()), "reversion_in2": g["reversion"], "mismatch_in2": g["mismatch"],
+                     "H_best": h.get("H"), "witness_G": wit["G"] if wit else None, "witness_reversion": wit["reversion"] if wit else None})
+
+    for s in (0, 1, 2):
+        rec = json.loads((results / f"always_on_s{s}.json").read_text())
+        point(f"E139 always_on_s{s}", 300, rec, a1.get(f"always_on_s{s}"), "#999999")
+        p = results / f"amend2_always_on_s{s}.json"
+        for step, r in sorted(json.loads(p.read_text())["steps"].items() if p.is_file() else [], key=lambda kv: int(kv[0])):
+            if r.get("complete") and not r.get("no_reading"):
+                point(f"amend2 always_on_s{s}", int(step), r, r.get("witness"), COLORS["Always on"])
+    ax.axhline(cut, color="#777777", linewidth=0.8, linestyle="--")
+    ax.plot([0, 1], [0, 1], color="#bbbbbb", linewidth=0.8, linestyle=":")
+    ax.set_xlabel("1 - TV(fine-tune, pair) / gap")
+    ax.set_ylabel("G at in2 (best of three starts)")
+    ax.set_title("Does G rise as the fine-tune gets closer to the pair?", fontsize=9)
+    FG.save(fig, out / "g_vs_leftover.png", n=f"{len(recs)} fine-tune states; filled: found G, hollow: E137's witness; grey: E139; dashed: re-weighted cut-off", data=recs)
+
+
 if __name__ == "__main__":
     main()
+    leftover_figure()
