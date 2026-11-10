@@ -638,6 +638,29 @@
    "pair": "e53_lowercase_cipher",
    "pair_name": "Lowercase vs ciphers",
    "group": "built",
+   "method": "prior",
+   "reuse": [
+    -2.9992791359204363
+   ],
+   "new": [
+    -4.415800890011227,
+    -4.839823223899431
+   ],
+   "n_reuse": 1,
+   "n_new": 2,
+   "source": "experiments/prior_lowercase/results/stage1.json .tasks.<task>.log10_prior",
+   "form": "one value per task",
+   "filed_call": null,
+   "replaces": "",
+   "gap": 1.6285329210348936,
+   "call": "one value a side",
+   "call_rule": "no spread to compare",
+   "against_share": "one value a side"
+  },
+  {
+   "pair": "e53_lowercase_cipher",
+   "pair_name": "Lowercase vs ciphers",
+   "group": "built",
    "method": "size",
    "reuse": [
     6.253901401276222,
@@ -2605,9 +2628,8 @@
     "opposite to the share": 3
    },
    "prior": {
-    "one value a side": 7,
-    "same direction as the share": 1,
-    "not run": 1
+    "one value a side": 8,
+    "same direction as the share": 1
    },
    "size": {
     "opposite to the share": 6,
