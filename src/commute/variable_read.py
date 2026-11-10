@@ -22,6 +22,7 @@ from torch import Tensor
 from commute.data import pile_rows
 from commute.hidden_maps import (
     FINAL,
+    STREAMS,
     Edit,
     Fn,
     Ridge,
@@ -38,6 +39,7 @@ from commute.hidden_maps import (
 )
 from commute.kv import bijection, pick_marker
 from commute.ladder import plain_mask
+from commute.qwen_sft import lr_at
 from commute.row_copy import lowercase_rows
 from commute.steering import Net
 
@@ -404,3 +406,184 @@ def ridge_s(ridge: Ridge, site: str, b: Tensor, y: Tensor) -> SFn:
         return y + ridge.standardise(flat(seen, site)) @ b
 
     return s_fn
+
+
+def capacity(net: Net, fit: Tensor, read: Tensor, label: Callable[[Tensor], Tensor], cfg: Sizes, log: Any,
+             seed: int = 137_500) -> dict[str, Any]:
+    """E137's capacity read (its `search.capacity`, copied 2026-11-10 for E148 with the label passed as a function; E137's own
+    copy is unchanged): ridge from z_M to a 0/1 label and to the labels shuffled across windows, at each site's z_M: 80% of the
+    fit half to fit, 20% to choose the penalty, then accuracy on the fit part (in sample) and on the read half (held out).
+    `label(toks)` gives (B,) floats in {0, 1}; E137's call is `label = lambda t: xor_f(pieces, t)`."""
+    dev = str(next(net.net.parameters()).device)
+    cut_at = fit.shape[0] * 4 // 5
+    train, val = fit[:cut_at], fit[cut_at:]
+    gen = torch.Generator().manual_seed(seed)
+    labels = {"real": label(train), "shuf": label(train)[torch.randperm(train.shape[0], generator=gen)]}
+    labels_v = {"real": label(val), "shuf": label(val)[torch.randperm(val.shape[0], generator=gen)]}
+    labels_r = {"real": label(read), "shuf": label(read)[torch.randperm(read.shape[0], generator=gen)]}
+
+    def tgt(i: int, toks: Tensor, _s: dict[str, Tensor]) -> dict[str, Tensor]:
+        return {k: v[i : i + toks.shape[0]].to(dev)[:, None] for k, v in labels.items()}
+
+    R = Ridge(dev)
+    _fit_batches(net, train, cfg.ridge_batch, R, tgt)
+    Xv: list[Tensor] = []
+    ps: dict[str, int] = {}
+    for toks in chunks(val, cfg.ridge_batch):
+        _, seen = run(net, toks, sites=STREAMS)
+        if not ps:
+            ps = {s: p_of(s, seen) for s in SITES}
+        Xv.append(flat(seen, "out3"))
+    X_val = torch.cat(Xv)
+    betas: dict[tuple[str, str], Tensor] = {}
+    out: dict[str, Any] = {}
+    for site in SITES:
+        out[site] = {}
+        for key in ("real", "shuf"):
+            beta, lam, _ = ridge_select(R, key, ps[site], X_val, labels_v[key].to(dev)[:, None], cfg.ridge_grid)
+            betas[(site, key)] = beta
+            out[site][key] = {"lam": lam}
+
+    def accuracy(windows: Tensor, labs: dict[str, Tensor]) -> dict[tuple[str, str], float]:
+        right = dict.fromkeys(betas, 0.0)
+        for s in range(0, windows.shape[0], cfg.ridge_batch):
+            toks = windows[s : s + cfg.ridge_batch]
+            _, seen = run(net, toks, sites=STREAMS)
+            X = flat(seen, "out3")
+            for (site, key), b in betas.items():
+                yhat = R.predict(X[:, : ps[site]], b, key).squeeze(1)
+                right[(site, key)] += float(((yhat >= 0.5).float() == labs[key][s : s + cfg.ridge_batch].to(dev)).float().sum())
+        return {k: v / windows.shape[0] for k, v in right.items()}
+
+    in_s, held = accuracy(train, labels), accuracy(read, labels_r)
+    for (site, key), v in in_s.items():
+        out[site][key].update({"in_sample": v, "held_out": held[(site, key)]})
+    out["held_out_real_by_site"] = {s: out[s]["real"]["held_out"] for s in SITES}
+    log(f"  capacity: {out['held_out_real_by_site']}")
+    return out
+
+
+# ---- XOR2 (E148, cell P1.9): the XOR of two keyed bits in the last two positions ---------------------------------------
+
+
+@dataclass
+class Xor2:
+    keys: Tensor  # (n_keys,) plain tokens, none of them E137's keys or cue
+    bit: Tensor  # (V,) long: each key's bit (half the keys 0, half 1), -1 off the keys
+    held: Tensor  # (n_keys, n_keys) bool: ordered key pairs held out of the fit half; the read half uses only these
+
+
+@dataclass(frozen=True)
+class Schedule:
+    """A fine-tune's rate schedule: peak `lr`, linear warm-up over `warmup` steps, then cosine to 0 (`qwen_sft.lr_at`)."""
+
+    steps: int
+    lr: float
+    warmup: int
+    early: tuple[int, ...]  # steps at which the check windows are read
+
+    def __post_init__(self) -> None:
+        assert 0 < self.warmup < self.steps and self.early[-1] == self.steps and 10 in self.early
+
+
+def make_xor2(task: Task, tok: Any, vocab: int, n_keys: int, held_share: float) -> Xor2:
+    """`n_keys` plain tokens drawn after the 67M was trained, with a balanced seeded bit each; a seeded share of the ordered
+    key pairs held out. The pool is `make_task`'s, without E137's cue and keys."""
+    mask = plain_mask(tok.decode, vocab)
+    mask[task.cue] = False
+    mask[task.keys] = False
+    pool = mask.nonzero().squeeze(1)
+    gen = torch.Generator().manual_seed(148_001)
+    keys = pool[torch.randperm(pool.numel(), generator=gen)[:n_keys]]
+    bit = torch.full((vocab,), -1, dtype=torch.long)
+    bit[keys] = (torch.randperm(n_keys, generator=gen) < n_keys // 2).long()
+    n_held = round(held_share * n_keys * n_keys)
+    held = torch.zeros(n_keys * n_keys, dtype=torch.bool)
+    held[torch.randperm(n_keys * n_keys, generator=gen)[:n_held]] = True
+    return Xor2(keys, bit, held.view(n_keys, n_keys))
+
+
+def xor2_keyed(x: Xor2, toks: Tensor) -> Tensor:
+    """(B,) bool: both of the last two tokens are keys."""
+    return (x.bit[toks[:, -2:].cpu()] >= 0).all(1)
+
+
+def xor2_f(x: Xor2, toks: Tensor) -> Tensor:
+    """(B,) float: 1 where the last two tokens are keys whose bits differ, else 0 (0 on every window without two keys)."""
+    b = x.bit[toks[:, -2:].cpu()]
+    return ((b >= 0).all(1) & (b[:, 0] != b[:, 1])).float()
+
+
+def xor2_windows(cfg: Sizes, sets: Sets, x: Xor2) -> tuple[Tensor, Tensor]:
+    """(fit, read), D / 2 windows each: 3/4 cased windows whose last two tokens are an ordered key pair (fit: pairs not held
+    out; read: held-out pairs only), 1/4 far windows with no key in the last two positions; shuffled within each half."""
+    gen = torch.Generator().manual_seed(148_100)
+    half = cfg.D // 2
+    n_far = half // 4
+    n_key = half - n_far
+    halves = []
+    for held in (False, True):
+        i, j = (x.held == held).nonzero(as_tuple=True)
+        pick = torch.randint(0, i.numel(), (n_key,), generator=gen)
+        keyed = cut(sets.cased_d, n_key, cfg.window, gen)
+        keyed[:, -2], keyed[:, -1] = x.keys[i[pick]], x.keys[j[pick]]
+        far = cut(sets.far, 2 * n_far, cfg.window, gen)
+        far = far[~torch.isin(far[:, -2:], x.keys).any(1)][:n_far]
+        both = torch.cat([keyed, far])
+        assert both.shape == (half, cfg.window), both.shape
+        halves.append(both[torch.randperm(half, generator=gen)])
+    return halves[0], halves[1]
+
+
+def xor2_target(net: Net, x: Xor2, push: Tensor) -> Target:
+    """F = `net` + `push` (d,) at block 2's input, last position, on the windows where `xor2_f` is 1."""
+
+    def f(toks: Tensor, sites: Iterable[str] = (), edit: Edit | None = None) -> tuple[Tensor, dict[str, Tensor]]:
+        e = {"in2": add_last(xor2_f(x, toks).to(push.device)[:, None] * push)}
+        return run(net, toks, sites=sites, edit=merged(e, edit or {}))
+
+    return f
+
+
+def finetune(net: Net, ft: Net, F: Target, fit: Tensor, check: Tensor, sch: Schedule, batch: int, seed: int,
+             log: Any) -> dict[str, Any]:
+    """Train every weight of `ft` (a copy of `net`) in place toward F: E139's recipe (Adam, no weight decay, clip 1, loss
+    KL(F || ft) at the last position, `batch` windows drawn from `fit` per step) on the schedule `sch`. At each `sch.early` step
+    the check windows are read. At step 10, E139 Amendment 2's check: KL(F || ft) below KL(F || net) and KL(net || ft) at most
+    KL(net || F), else training ends there with `stopped` set. Returns the record; `ft` is left with its gradients off."""
+    params = list(ft.net.parameters())
+    for p in params:
+        p.requires_grad_(True)
+    opt = torch.optim.Adam(params, lr=sch.lr, betas=(0.9, 0.999), weight_decay=0.0)
+    gen = torch.Generator().manual_seed(seed)
+
+    def last(G: Target) -> Tensor:
+        return torch.cat([G(t)[0][:, -1] for t in chunks(check, 2048)])
+
+    lm, lf = last(net_target(net)), last(F)
+    rec: dict[str, Any] = {"kl_F_M": float(kl(lf, lm).mean()), "kl_M_F": float(kl(lm, lf).mean()), "curve": [], "early": [],
+                           "steps": sch.steps, "lr": sch.lr, "warmup": sch.warmup, "stopped": None}
+    for t in range(1, sch.steps + 1):
+        rate = lr_at(t, sch.lr, sch.warmup, sch.steps, "hf_cosine")
+        for g in opt.param_groups:
+            g["lr"] = rate
+        toks = fit[torch.randint(0, fit.shape[0], (batch,), generator=gen)]
+        with torch.no_grad():
+            target = F(toks)[0][:, -1]
+        loss = kl(target, run(ft, toks, grad=True)[0][:, -1]).mean()
+        opt.zero_grad(set_to_none=True)
+        loss.backward()
+        torch.nn.utils.clip_grad_norm_(params, 1.0)
+        opt.step()
+        rec["curve"].append(float(loss.detach()))
+        if t in sch.early:
+            lft = last(net_target(ft))
+            e = {"step": t, "lr": rate, "kl_to_F": float(kl(lf, lft).mean()), "kl_from_M": float(kl(lm, lft).mean())}
+            rec["early"].append(e)
+            log(f"  step {t}: loss {rec['curve'][-1]:.5f}, KL(F||ft) {e['kl_to_F']:.5f}, KL(M||ft) {e['kl_from_M']:.3e}, rate {rate:.2e}")
+            if t == 10 and not (e["kl_to_F"] < rec["kl_F_M"] and e["kl_from_M"] <= rec["kl_M_F"]):
+                rec["stopped"] = "overshoot at step 10: KL(F||ft) not below KL(F||M), or KL(M||ft) above KL(M||F)"
+                break
+    for p in params:
+        p.requires_grad_(False)
+    return rec
