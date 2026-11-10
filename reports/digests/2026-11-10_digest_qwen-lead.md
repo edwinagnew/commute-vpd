@@ -20,3 +20,10 @@ $0. No jobs or pods.
 
 ## Not run
 Nothing new. The E132 numbers are unchanged from the run of 2026-11-09.
+
+## Evening update (17:45)
+P3.2, due 11-12: filled, 1 of 1 runs used (E144 = E132 Amendment 1, post-hoc log-odds share). Unreadable: every update
+and random change lowered its trained answer's log-odds on its own rows. The user answered ask 2: stop Qwen re-gating
+here; whether part 3 keeps E132's KL share is decided at the 11-18 gate. At the user's request the E144 card was
+rewritten in plain words and published (log v306, commit 85ad77e0):
+https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu/experiments.html#e144. No asks open; $0 spent; no jobs or pods.
