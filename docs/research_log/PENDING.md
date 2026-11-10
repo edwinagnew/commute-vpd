@@ -7,3 +7,4 @@ reads this file afresh and flushes what it holds then; a line its brief named th
 clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 A line starting `HOLD ` (not `- `) stays in `PENDING.md` through a flush: use it for a line whose report was found wrong, in place of removing it. It reads `HOLD YYYY-MM-DD <role> · <why> · <the line>`; a clerk skips it, and the role that held it restores or deletes it (friction 317).
+- 2026-11-10 · reports/decisions/2026-11-10_decision_old-task-cutoff.md · pending decisions (remove card decision-old-task-cutoff); decisions · ask 28 answered by the user: option (c), the gate page carries the re-weighted share within matched pairs, absolute cut-off listed as open; decisions.md row added.
