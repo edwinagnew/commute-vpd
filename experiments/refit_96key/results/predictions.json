@@ -1,0 +1,51 @@
+{
+ "experiment": "E147, experiments/refit_96key, cell P2.12",
+ "plan": "reports/plans/2026-11-10_plan_e147-refit-96key.md; card reports/plans/2026-11-10_plan_p2-12-card.md",
+ "filed": "2026-11-10, before any run; never edited after the run",
+ "settings": {
+  "recipe": "keydep.finetune (src/commute/keydep.py:100-104), unchanged, as E58 Amendments 3-7 called it through amend3/amend4.train: finetune.ArmAConfig(o_token = the map's table, lr = anchors.FT_LR, batch 32, kl_lambda 1, grad_clip 1, Adam, 300 steps, seed), the update read at checkpoint 30 only (constant rate, and checkpoints draw nothing from the batch generator, so steps 1-30 are E58's)",
+  "read_step": 30,
+  "seeds": [0, 1, 2],
+  "save_dtype": "bfloat16 (as definition_verify stage 4 kept E58's class maps), every read is of the saved file",
+  "tf32": false,
+  "share_reader": "share_untrained/run.py Job.trained (local_faith.route_split, the trained decomposition) on the map's held-out windows of its trained keys, batch 64",
+  "untrained_reader": "share_untrained/run.py Job.read_state, svd and rotated columns, k_m from experiments/share_untrained/results/stage0.json (fixed before any state here)",
+  "neuron_r_reader": "neuron_r.state_cells + neuron_r.shares at neuron_r's batch 64 and gain floor 1 (experiments/neuron_r/results/predictions.json settings); r_n and r_half",
+  "holes_fill_reader": "holes_fill/run.py Job.state with holes_fill's filed settings (experiments/holes_fill/results/predictions.json): TopK neurons at k 64 and k matched, fair steering pooled and per-key"
+ },
+ "thresholds": {
+  "reproduce_rule": "per refit state: |r(refit, saved bf16 file) - r(E58's saved step-30 read of the same map and seed)| <= the map's seed range = max - min of E58's three saved step-30 r of that map; a miss stops the job before any other reading (the brief: 'if not, the job stops and that is the result')",
+  "reproduce_tol": {"rank1": 0.04515525638662, "cipher": 0.01958194120549, "copy": 0.00146822714458, "prior_cipher": 0.00880650039487, "elicit": 0.01414851421339, "shuffle": 0.01345698416976, "class_map": 0.02324438774603, "class_shuffled": 0.00766323297159},
+  "reproduce_tol_source": "computed by run.py from the saved reads named in results/inventory.json; the numbers here are the same values, from experiments/open_pair/results/amend7.json prior_beside_r.<map>.r30",
+  "reproduce_floor": "the path difference between the saved reads and this one: bf16 storage of the update, 1.37e-4 on class map seed 0 (experiments/share_untrained/results/stage0.json e_rows.class_twin_definition_verify), 0 on the fp32 rows; the tightest tolerance (copy, 1.47e-3) is about 10 times that",
+  "reader_share_tol": 0.01,
+  "reader_neuron_tol": 0.0001,
+  "reader_source": "E143's filed r_tol and neuron_tol (experiments/holes_fill/results/predictions.json thresholds): each reader reproduces its own saved reading of c3/rank1_s0 through this job (E136 stage1 trained, svd, rotated; E98 cells.json c3_rank1_s0 r_n, r_half; E143 stage1 neuron k64, kmatched, steering pooled, perkey), expected 0 (same code, inputs and card); holes_fill's own stage 0 runs unchanged beside it",
+  "identity_tol": 1e-06,
+  "telescope_tol": 1e-06,
+  "neuron_r_source": "E98's per-state checks (experiments/neuron_r/run.py stage1; predictions.json stage0.identity_tol, settings.telescope_tol)",
+  "smallest_gap": 0.1,
+  "inert": 0.05,
+  "gain_floor": 1,
+  "rule_source": "E143's filed rule, experiments/holes_fill/rules.py call / wider / compare, unchanged",
+  "projected_limit_min": 50
+ },
+ "rule": {
+  "per_reading_and_pair": "holes_fill rules.call on the three seeds per side, reuse = the side built to use an existing ability (rank1, copy, elicit, class_map), new = the other; names as built, no verdict on reuse",
+  "readings": {"share": "E136 trained, refit", "untrained": "E136 svd (rotated reported beside)", "neuron": "E98 r_n", "neuron_half": "E98 r_half", "neuron_top": "wider of TopK k64 and kmatched (rules.wider)", "steering": "wider of pooled and per-key (rules.wider)"},
+  "verdict": "rules.compare of each reading against the share on the four pairs: rival A if it separates, with the share's sign, at least as many pairs as the share separates; rival B if fewer; no call: inert / unreadable as rules.compare",
+  "edge_share_none": "added here, before the run: if the share separates none of the four pairs, every reading's verdict is 'no call: the share separates none' (rules.compare would call any reading rival A at 0 >= 0)",
+  "do_nothing": "a zero update has gain 0 < gain_floor, so every share is nan, every call 'unreadable' and every verdict 'no call: unreadable': it cannot reach rival A"
+ },
+ "expected": {
+  "W0_and_do_nothing": "every numerator 0 exactly and every share undefined (gain 0); holes_fill stage 0 checks this for TopK and steering, E136 stage 0 and E98 stage 0 for the others, on the same code",
+  "reproduce": "|r difference| about 1e-4 on every refit state (bitwise training on the L40, as E58 Amendment 3 read a max |difference| of 0 and definition_verify stage 4 reproduced the class maps' held-out P to 4 digits)",
+  "saved_weights": "reported only: the refit of the 7 kept states equal to them (max |difference| 0 against amend3's fp32 files before the bf16 cast; sha256 equal to definition_verify's bf16 files)"
+ },
+ "predictions": {
+  "share_calls": {"e58_rank1_96": "separates", "e58_copy_prior_cipher": "separates", "e58_elicit_shuffle": "separates", "e58_class_twin": "does not"},
+  "share_calls_source": "E58's saved r30 (final.json share cells): gaps 0.56, 0.39, 0.25 and -0.04 of the gain, seed ranges under 0.05",
+  "verdicts": {"untrained": "rival B", "neuron": "rival B", "neuron_half": "rival B", "neuron_top": "no call: inert", "steering": "rival B"},
+  "verdicts_source": "the 24-key versions of the same maps and E54's pairs: E136 untrained no call on open_pair_c3 and open_pair_c3_copy; E98 r_n and r_half no call or opposite there; E143 TopK inert on all seven pairs and fair steering rival B (2 of 6, three opposite)"
+ }
+}

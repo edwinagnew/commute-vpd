@@ -1,0 +1,62 @@
+{
+ "experiment": "E147",
+ "note": "E58's eight 96-key maps at step 30, seeds 0-2. windows: the trained-key windows file each map was fine-tuned and read on (train, heldout, task, table), sha256 as E58 recorded it. saved: [results file, read key] of E58's step-30 read of that seed (fields r, G_logodds_route). saved_weights: the step-30 update kept by an earlier run, compared with the refit and reported only. Listed with ls and jq on 2026-11-10.",
+ "maps": {
+  "rank1": {
+   "windows": "experiments/open_pair/results/large/amend3/windows_rank1_trained.pt",
+   "windows_sha256": ["experiments/open_pair/results/amend3.json", ["maps", "rank1", "sha256", "trained"]],
+   "saved": {"0": ["experiments/open_pair/results/amend3.json", "rank1@30"], "1": ["experiments/open_pair/results/amend4.json", "rank1_s1@30"], "2": ["experiments/open_pair/results/amend4.json", "rank1_s2@30"]},
+   "saved_weights": {"0": "experiments/open_pair/results/large/amend3/rank1_s0_step30.pt"}
+  },
+  "cipher": {
+   "windows": "experiments/open_pair/results/large/amend3/windows_cipher_trained.pt",
+   "windows_sha256": ["experiments/open_pair/results/amend3.json", ["maps", "cipher", "sha256", "trained"]],
+   "saved": {"0": ["experiments/open_pair/results/amend4.json", "cipher_s0@30"], "1": ["experiments/open_pair/results/amend4.json", "cipher_s1@30"], "2": ["experiments/open_pair/results/amend4.json", "cipher_s2@30"]},
+   "saved_weights": {}
+  },
+  "copy": {
+   "windows": "experiments/open_pair/results/large/amend3/windows_copy_trained.pt",
+   "windows_sha256": ["experiments/open_pair/results/amend3.json", ["maps", "copy", "sha256", "trained"]],
+   "saved": {"0": ["experiments/open_pair/results/amend3.json", "copy@30"], "1": ["experiments/open_pair/results/amend4.json", "copy_s1@30"], "2": ["experiments/open_pair/results/amend4.json", "copy_s2@30"]},
+   "saved_weights": {"0": "experiments/open_pair/results/large/amend3/copy_s0_step30.pt"}
+  },
+  "prior_cipher": {
+   "windows": "experiments/open_pair/results/large/amend6/windows_prior_cipher_trained.pt",
+   "windows_sha256": ["experiments/open_pair/results/amend6.json", ["maps", "prior_cipher", "sha256", "trained"]],
+   "saved": {"0": ["experiments/open_pair/results/amend6.json", "prior_cipher_s0@30"], "1": ["experiments/open_pair/results/amend6.json", "prior_cipher_s1@30"], "2": ["experiments/open_pair/results/amend6.json", "prior_cipher_s2@30"]},
+   "saved_weights": {}
+  },
+  "elicit": {
+   "windows": "experiments/open_pair/results/large/amend3/windows_elicit_trained.pt",
+   "windows_sha256": ["experiments/open_pair/results/amend3.json", ["maps", "elicit", "sha256", "trained"]],
+   "saved": {"0": ["experiments/open_pair/results/amend3.json", "elicit@30"], "1": ["experiments/open_pair/results/amend4.json", "elicit_s1@30"], "2": ["experiments/open_pair/results/amend4.json", "elicit_s2@30"]},
+   "saved_weights": {"0": "experiments/open_pair/results/large/amend3/elicit_s0_step30.pt"}
+  },
+  "shuffle": {
+   "windows": "experiments/open_pair/results/large/amend3/windows_shuffle_trained.pt",
+   "windows_sha256": ["experiments/open_pair/results/amend3.json", ["maps", "shuffle", "sha256", "trained"]],
+   "saved": {"0": ["experiments/open_pair/results/amend4.json", "shuffle_s0@30"], "1": ["experiments/open_pair/results/amend5.json", "shuffle_s1@30"], "2": ["experiments/open_pair/results/amend5.json", "shuffle_s2@30"]},
+   "saved_weights": {}
+  },
+  "class_map": {
+   "windows": "experiments/open_pair/results/large/amend7/windows_class_map_trained.pt",
+   "windows_sha256": ["experiments/open_pair/results/amend7.json", ["maps", "class_map", "sha256", "trained"]],
+   "saved": {"0": ["experiments/open_pair/results/amend7.json", "class_map_s0@30"], "1": ["experiments/open_pair/results/amend7.json", "class_map_s1@30"], "2": ["experiments/open_pair/results/amend7.json", "class_map_s2@30"]},
+   "saved_weights": {"0": "experiments/definition_verify/results/large/dW_class_map_s0.pt", "1": "experiments/definition_verify/results/large/dW_class_map_s1.pt"}
+  },
+  "class_shuffled": {
+   "windows": "experiments/open_pair/results/large/amend7/windows_class_shuffled_trained.pt",
+   "windows_sha256": ["experiments/open_pair/results/amend7.json", ["maps", "class_shuffled", "sha256", "trained"]],
+   "saved": {"0": ["experiments/open_pair/results/amend7.json", "class_shuffled_s0@30"], "1": ["experiments/open_pair/results/amend7.json", "class_shuffled_s1@30"], "2": ["experiments/open_pair/results/amend7.json", "class_shuffled_s2@30"]},
+   "saved_weights": {"0": "experiments/definition_verify/results/large/dW_class_shuffled_s0.pt", "1": "experiments/definition_verify/results/large/dW_class_shuffled_s1.pt"}
+  }
+ },
+ "pairs": [
+  {"id": "e58_rank1_96", "reuse": "rank1", "new": "cipher"},
+  {"id": "e58_copy_prior_cipher", "reuse": "copy", "new": "prior_cipher"},
+  {"id": "e58_elicit_shuffle", "reuse": "elicit", "new": "shuffle"},
+  {"id": "e58_class_twin", "reuse": "class_map", "new": "class_shuffled"}
+ ],
+ "seeds": [0, 1, 2],
+ "reader_control_state": "c3/rank1_s0"
+}
