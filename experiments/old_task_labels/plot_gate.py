@@ -1,6 +1,6 @@
 """The gate page's one figure (cell P1.1): per matched pair of old tasks, the found re-weighting share G of each seed on the
-side built to reuse against the side built to be new, with the filed G cut-off drawn. Reads results/labels.json and
-predictions.json only (no model, no new computation).
+side built to reuse against the side built to be new, with the adopted G cut-off (0.8, user 2026-11-10) drawn. Reads results/labels.json and
+labels_cut_0p8_0p5.json only (no model, no new computation).
 
 Pairs: the three groups that share one input set (in-context copy against lookup, the real case label and the real
 repeat label against their twins), and the two key-table pairs from one source each (copy against cipher on 24 keys,
@@ -31,7 +31,7 @@ SIDES = {"reuse": ("regating", -0.12), "new": ("neuron", 0.12)}  # METHODS style
 
 def main(results: Path = HERE / "results", out: Path = HERE / "figures") -> None:
     items = json.loads((results / "labels.json").read_text())["items"]
-    cut = json.loads((results / "predictions.json").read_text())["cutoffs"]["G"]
+    cut = json.loads((results / "labels_cut_0p8_0p5.json").read_text())["cutoffs_new"]["G"]  # adopted 2026-11-10 (decisions.md)
     g = {it["item"]: it["G"] for it in items}
     rows = []
     fig, ax = FG.figure((7.0, 3.4))
@@ -44,7 +44,7 @@ def main(results: Path = HERE / "results", out: Path = HERE / "figures") -> None
             groups[label] = vals
             rows += [{"pair": label, "side": side, "task": task, "seed": s, "G": v} for s, v in enumerate(vals)]
         FG.dots(ax, groups, method=method, xlabel="re-weighting share G, best of 4 sites and 3 starts (0: nothing explained)", offset=offset)
-    FG.reference(ax, cut, f"cut-off {cut:.3f}")
+    FG.reference(ax, cut, f"cut-off {cut:g}")
     ax.set_xlim(0, 1)
     handles = [Line2D([], [], color=FG.METHODS[m].color, marker=FG.METHODS[m].marker, linestyle="", label=f"side built {'to reuse' if s == 'reuse' else 'to be new'}")
                for s, (m, _) in SIDES.items()]  # fmt: skip

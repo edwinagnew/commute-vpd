@@ -1,13 +1,27 @@
 # Can the second wording of reuse serve as the working definition? The gate page
 
-*2026-11-10, definition-lead. Reading and writing only; nothing was run for this page. No wording is adopted: that is a
-dated `decisions.md` row only the user writes. Decision card: `reports/decisions/2026-11-10_decision_gate-working-definition.md`.*
+*2026-11-10, definition-lead. Reading and writing only; nothing was run for this page. Adopted tentatively by the user
+the same day, with rounded cut-offs: see "Adopted 2026-11-10" below and the last row of `decisions.md`. Decision card:
+`reports/decisions/2026-11-10_decision_gate-working-definition.md`.*
 
 We read one wording of reuse on 67M fine-tunes whose labels were fixed when they were built: four hand-made changes,
 ordinary fine-tunes copying them, and the seventeen old tasks. Its labels follow construction on the hand-made changes
 and the table copies but call nearly every other ordinary fine-tune rewired, while its re-weighting share ranks the
 reuse side above its new twin in all five matched pairs. For the goal, it separates strengthening from new capability
 within a matched pair, not yet as an absolute label.
+
+## Adopted 2026-11-10
+
+The user adopted this wording tentatively as the working definition of reuse. The condition, in the user's words: "if it
+cant detect built, then it will have to be revised however." The user also rounded the two cut-offs of the filed rule. The
+re-weighting share's cut-off goes from 0.794 to 0.8, and the rewiring share's from 0.476 to 0.5, because a cut-off of
+0.476 would look tuned in a paper. The rule is otherwise unchanged. Every item was re-labelled from its saved results
+at the rounded cut-offs, and one label moved. The third seed of the 300-step copies of the hand-made Always on change
+has a rewiring share of 0.48. It now reads no map found where it read rewired, so two of that copy's three seeds read
+no map found and the copy as a whole does too. No old 67M task moved. Apart from lowercase, which already read no map
+found, every old-task reuse side has a rewiring share of 0.58 or more, so none turns negative at 0.5. Only the real
+case label, at 0.83, clears the re-weighting cut-off, as before. The within-pair comparison does not use a cut-off and
+is unchanged. Full table: `experiments/old_task_labels/results/labels_cut_0p8_0p5.json`.
 
 ## The wording
 
@@ -27,14 +41,15 @@ The label then asks how the fine-tune sets that variable.
 
 Measured, each label becomes the share of the gap closed by the best map a search finds, 0 for nothing and 1 for all.
 The re-weighting share $G$ maps a four-direction variable from its own value. The rewiring share $H$ maps it from
-everything before it. The filed rule reads re-weighted when $G$ is at least 0.794 and $H$ at least 0.476. With $H$ above
-its cut-off and $G$ below, it reads rewired. With $H$ under 0.476 it reads **no map found**, a search limit never read as
-built. The cut-offs are midpoints between the hand-made changes, filed before any ordinary fine-tune was read. On the
-user's decision of today, this page reports $G$ within matched pairs, and an absolute cut-off is listed as open.
+everything before it. The rule reads re-weighted when $G$ is at least 0.8 and $H$ at least 0.5. With $H$ above
+its cut-off and $G$ below, it reads rewired. With $H$ under 0.5 it reads **no map found**, a search limit never read as
+built. The filed cut-offs were midpoints between the hand-made changes, set before any ordinary fine-tune was read.
+The user rounded them on adoption. On the user's decision of today, this page reports $G$ within matched pairs, and an
+absolute cut-off is listed as open.
 
 ## Every item, beside the label it was built with
 
-Shares per seed, seed 0 first. A dash means no reading.
+Shares per seed, seed 0 first. A dash means no reading. Labels are at the adopted cut-offs, 0.8 and 0.5.
 
 | Item | Built as | $G$ | $H$ | Label as read | Matched twin |
 |---|---|---|---|---|---|
@@ -44,7 +59,7 @@ Shares per seed, seed 0 first. A dash means no reading.
 | Table: the push set by 32 keys | rewired | -0.03 | 0.99 | rewired | none |
 | XOR: the push set by an XOR of random bits | built | -0.03 | -0.01 | no map found | none |
 | **Ordinary fine-tunes copying them**, 3 seeds | | | | | |
-| Always on, 300 steps | re-weighted | 0.64, 0.63, 0.64 | 0.50, 0.45, 0.48 | rewired | none |
+| Always on, 300 steps | re-weighted | 0.64, 0.63, 0.64 | 0.50, 0.45, 0.48 | no map found, was rewired | none |
 | Always on, 3000 steps | re-weighted | 0.77, 0.78, 0.74 | 0.58, 0.58, 0.56 | rewired | none |
 | Table | rewired | 0.02, -0.03, -0.02 | 0.72, 0.71, 0.72 | rewired | none |
 | Cue | rewired | – | – | no reading: stopped at step 10 | none |
@@ -69,7 +84,9 @@ Shares per seed, seed 0 first. A dash means no reading.
 | Emoticon push | existing behaviour | 0.87, 0.88 | 0.01, 0.06 | no map found | none |
 
 The hand-made rows set the cut-offs, so they agree with construction by design. Of the rest, labels follow construction
-for the table copies and for the real case label against its twin. Every other reuse side reads rewired, like its twin.
+for the table copies and for the real case label against its twin. The 300-step copies of Always on read no map found
+at the rounded cut-offs, and the longer copies read rewired. Every other reuse side reads rewired, like its twin, except
+lowercase, which reads no map found.
 
 ## The within-pair comparison
 
@@ -102,7 +119,7 @@ two key-table pairs were read on separate inputs drawn the same way.
 
 Not run. One quantity is read against two originals: the 67M, and the 67M after a short fine-tune that already shows the
 XOR at a third of its strength. Each is fine-tuned to copy the full XOR change and read by the same search. If only the
-taught arm's $H$ clears 0.476, a low $H$ tracks what the original had. If both read low, low $H$ means nothing here. The
+taught arm's $H$ clears 0.5, a low $H$ tracks what the original had. If both read low, low $H$ means nothing here. The
 plain arm is the XOR copies above, which did not learn, so that arm has no reading yet. A second design uses two small
 models pretrained with and without a parity skill, at about a day of porting. Reading low $H$ as built would still be a
 rule only the user adds.
@@ -119,13 +136,15 @@ rule only the user adds.
 ## What the evidence supports
 
 As a measurement, the wording recovers known answers and orders every matched pair of old tasks by construction. As a
-labeller with cut-offs from hand-made changes, it calls ordinary fine-tunes rewired whatever their history. Its "built"
+labeller with cut-offs from hand-made changes, it calls ordinary fine-tunes rewired whatever their history, or finds no
+map where the rewiring share falls under 0.5. Its "built"
 has no reading yet, and its claim to look inside rests on the reversion alone.
 
 **Departures from the literature.** Jain et al. 2024 define possession by a probe for a named function at one layer and
 position. Here any value counts, by any affine map from all earlier layers, on a mixed input set. Prakash et al. 2024 patch
 named heads one way and score task accuracy; here a searched variable is patched both ways and scored per input. Geiger
-et al. 2025 already call adapter-tuning an intervention on parameters. Cut-offs and label rule are this project's own.
+et al. 2025 already call adapter-tuning an intervention on parameters. Cut-offs and label rule are this project's own;
+the cut-offs are rounded from filed midpoints.
 
 **Not run.** The built control. A Cue copy and a learned XOR copy. An Always on copy with a leftover under 0.192 of the
 change. Longer inputs for long-text tasks. A stronger rewiring search. Any absolute cut-off. A fresh matched pair or a
