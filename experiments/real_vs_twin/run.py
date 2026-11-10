@@ -96,6 +96,11 @@ class Pair:
     def idx(self, toks: Tensor) -> Tensor:
         return FS.key_index(toks[:, HALF - 1], self.pool)
 
+    def vectors(self, net: ST.Net, dW: ST.DW) -> dict[str, dict[int, Tensor]]:
+        """Steering vectors from every training window (the user's option a): the pool is the training words, so every
+        key has its windows. The only place vectors are fitted."""
+        return FS.vectors(net, self.toks["train"], self.idx(self.toks["train"]), len(self.pool), dW, HALF)
+
 
 def load_pair(name: str) -> Pair:
     """The pair's task.pt in one layout: E112 keeps a label per token, E125 a label per window."""
@@ -173,7 +178,7 @@ def stage0(net: ST.Net, c: Cfg, th: dict[str, float], pairs: dict[str, Pair]) ->
     sel = p.part("real", "train", c.n_select)[0]
     lg0 = torch.cat([net.run(sel[s : s + FS.BATCH])[0][:, HALF] for s in range(0, len(sel), FS.BATCH)])
     for name, dW, strengths in (("zero_steering", zero, c.strengths), ("strength0_real_s0", state(p, "real", 0, {}), (0.0,))):
-        vs = FS.vectors(net, sel, p.idx(sel), len(p.pool), dW, HALF)
+        vs = p.vectors(net, dW)
         out[name] = max(float((FS.logits_steered(net, sel, p.idx(sel), HALF, vs[kd][l], l, s) - lg0).abs().max())
                         for kd in KINDS for l in FS.LAYERS for s in strengths)  # fmt: skip
     say("0 zero update and strength 0, largest |change|", {k: v for k, v in out.items() if k != "k_matched"})
@@ -342,8 +347,7 @@ def stage3(net: ST.Net, c: Cfg, th: dict[str, float], pairs: dict[str, Pair], s0
     for i, (n, dW) in enumerate(states.items()):
         r = rd[n]
         other = rd[n.replace(r.arm, "twin" if r.arm == "real" else "real")]
-        sel = r.p.part(r.arm, "train")[0]
-        vs = FS.vectors(net, sel, r.p.idx(sel), len(r.p.pool), dW, HALF)
+        vs = r.p.vectors(net, dW)
         pooled[n] = vs["pooled"]
         gen = torch.Generator().manual_seed(c.random_seed + i)
         rec: dict[str, Any] = {"gain": r.gain, "off_kl_state": FS.off_kl(net, r.p.part(r.arm, "fit", c.n_read)[0], HALF, dW=dW)}
