@@ -1,0 +1,127 @@
+{
+ "note": "no verdict, no cut-offs for labels; by-construction table copied from the filed file",
+ "reading": {
+  "acted_on": {
+   "in1": {
+    "count": 100,
+    "of": 100,
+    "rank_E": 768
+   },
+   "in2": {
+    "count": 100,
+    "of": 100,
+    "rank_E": 768
+   },
+   "in3": {
+    "count": 100,
+    "of": 100,
+    "rank_E": 768
+   },
+   "out3": {
+    "count": 100,
+    "of": 100,
+    "rank_E": 768
+   }
+  },
+  "capacity": {
+   "built_possible": true,
+   "held_out_real_by_site": {
+    "in1": 0.50571,
+    "in2": 0.50626,
+    "in3": 0.50735,
+    "out3": 0.50651
+   }
+  },
+  "card_rule": "A",
+  "filed": {
+   "by_construction": {
+    "first_wording": {
+     "Always on": "reuse",
+     "Cue": "reuse (by its precedence rule)",
+     "Table": "rewired",
+     "XOR": "reuse"
+    },
+    "note": "Labels fixed by how each pair is made, from the plan's table; they are not outputs of the run. Second wording's XOR row is subject to the capacity rule.",
+    "second_wording": {
+     "Always on": "re-weighted",
+     "Cue": "rewired",
+     "Table": "rewired",
+     "XOR": "built, subject to capacity; if the affine read of the XOR exceeds the capacity bar it reads rewired and 'built did not occur' is reported"
+    }
+   },
+   "thresholds": {
+    "capacity_bar": 0.55,
+    "card_margin": 0.1,
+    "floor_gap": 0.02,
+    "search_bar": 0.9,
+    "tol_mult": 5
+   }
+  },
+  "k4": {
+   "Always on": {
+    "best_G": 0.922475722997802,
+    "best_H": 0.9762424461289677,
+    "best_site": "in2",
+    "mean_G": 0.764806450826868,
+    "starts": [
+     0.6970003335438387,
+     0.6749432959389634,
+     0.922475722997802
+    ]
+   },
+   "Cue": {
+    "best_G": 0.6660544301667705,
+    "best_H": 0.9607991649923541,
+    "best_site": "in2",
+    "mean_G": 0.5711639573205467,
+    "starts": [
+     0.5251739639311108,
+     0.5222634778637589,
+     0.6660544301667705
+    ]
+   },
+   "Table": {
+    "best_G": -0.02655449100709162,
+    "best_H": 0.9948388810164229,
+    "best_site": "in2",
+    "mean_G": -0.05172458979962006,
+    "starts": [
+     -0.02655449100709162,
+     -0.09186875311338438,
+     -0.03675052527838418
+    ]
+   },
+   "XOR": {
+    "best_G": -0.025851561206812868,
+    "best_H": -0.009331731634747431,
+    "best_site": "in2",
+    "mean_G": -0.051145288055869674,
+    "starts": [
+     -0.062029377434487554,
+     -0.0655549255263086,
+     -0.025851561206812868
+    ]
+   }
+  },
+  "search_bars": {
+   "G_always_on": true,
+   "H_cue": true,
+   "H_table": true
+  },
+  "witness_checks": {
+   "Always on": {
+    "G": true,
+    "H": true,
+    "mismatch": true,
+    "reversion": true
+   },
+   "Cue": {
+    "H": true
+   },
+   "Table": {
+    "H": true
+   },
+   "XOR": {}
+  }
+ }
+}
