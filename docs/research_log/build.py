@@ -396,6 +396,8 @@ def main() -> None:
     print(f"built {', '.join(pages)} in {OUT}")
     for fig in unmapped_figures(pages):
         print(f"warning: {fig} has no source line in README.md's figure list; add one (friction 163)")
+    for target in dead_anchors(pages):  # also here, not only under --check: removed cards left 7 behind (friction 609)
+        print(f"warning: dead link: {target}; drop the link or point it at a live id")
     for line in unlanded_lines():
         print(f"warning: flushed but no trace in this flush's parts/ edits; check it landed (friction 155): {line[:200]}")
     if not in_a_commit(tree_id(PARTS)):

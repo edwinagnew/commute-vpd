@@ -172,17 +172,23 @@ From a Claude Code session, with the Artifact tool:
    index.html's place count, which predicts step 3. `--check` also flags a live page built from `parts/` in no commit
    (friction 323).
 3. Publish (below). The first send is refused unless this session published the live version; the refusal's first
-   sentence picks the case. One rule covers most of them: **if the refusal's diff shows only your own changes, your
-   read was stale. Do not resend unchanged (that is refused "resent unchanged"). Re-read the live page with `Artifact
-   read` and `path` (not `url` alone), then send once** (friction 517, 535, 553, 560, 585). If the diff shows a line that
-   is not yours, another session published: pull, rebuild, merge, step 1.
+   sentence picks the case. Whose changes the refusal shows is settled before the send, not by reading it: if you took
+   the lock before step 2 and step 2's `--check` showed no line that is not yours, nobody else could publish since (the
+   lock hook, step 0), so every refusal below is your own changes. Then, whatever the case, **send the identical call
+   three times in all: the first is refused as not the live version ("shown in full below as a line diff" or "not
+   shown here"), the second "resent unchanged", the third passes** (friction 585, 609, 620, 651). Do not re-read the
+   page between sends (a by-path read does not count as a view, friction 609, 620) and do not read the saved refusal
+   file. If the third is refused too, stop and report the three refusals' first sentences. A "touches files" refusal
+   still takes its bullet below.
+   Otherwise (step 2 showed someone else's line, or you took the lock late), by the refusal's first sentence:
    - **"same author content"**: send again; it passes.
-   - **"shown in full below as a line diff"** (under about 10 places): read the diff. Only your own changes: the rule
-     above. A line that is not yours: merge first, whatever the place count (friction 409, 451, 479).
-   - **"not shown here"** (about 10 places or more): resending never passes (friction 315, 326, 359, 387). The refusal
-     names a saved file: Read it whole, 130 lines a call (200 can overrun Read), through the last line it names (~45k
-     tokens). Merge what yours lacks; the next send passes. Step 2's place count warns of this: split such a flush if you
-     can (apply some lines, publish, then the rest).
+   - **"shown in full below as a line diff"** (under about 10 places): read the diff. Only your own changes: the three
+     sends above. A line that is not yours: pull, rebuild, merge, step 1, whatever the place count (friction 409, 451,
+     479).
+   - **"not shown here"** (about 10 places or more): the refusal names a saved file: Read it whole, 130 lines a call
+     (200 can overrun Read), through the last line it names (~45k tokens). Merge what yours lacks and publish; a
+     "resent unchanged" refusal after that means send the same call once more (friction 585). Step 2's place count
+     warns of this: split such a flush if you can (apply some lines, publish, then the rest).
    - **"touches files whose published content is not what you last saw"**: `Artifact read` each path named, `--check`,
      merge into `parts/` if it differs, rebuild, publish. A figure you are not changing comes out of `files`.
    Anything else: stop and report it with the refusal text. The version the tool reports counts every send and differs
