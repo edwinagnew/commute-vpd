@@ -31,18 +31,20 @@ def draw(ax: Axes, rows: Sequence[dict[str, Any]]) -> None:
 
 
 def legend(ax: Axes, n_rows: int) -> None:
-    ax.figure.legend(handles=[ax.collections[0], ax.collections[n_rows]], fontsize=7, loc="outside right upper",
-                     labels=[F.METHODS["regating"].label, F.METHODS["spectrum"].label])
+    ax.legend(handles=[ax.collections[0], ax.collections[n_rows]], fontsize=7, loc="upper left",
+              labels=[F.METHODS["regating"].label, F.METHODS["spectrum"].label])
 
 
 def main() -> None:
     res = json.loads((HERE / "results" / "results.json").read_text())
     rows = [{"pair": v["name"], "r": v["score"]["r"]["ratio"], "erank": v["score"]["erank"]["ratio"],
              "n_reuse": len(v["reuse"]), "n_new": len(v["new"])} for v in res["pairs"].values()]
+    n_e, n_r = (len(res["score"]["separating"][k]) for k in ("erank", "r"))
     fig, ax = F.figure(F.FULL_WIDTH)
     draw(ax, rows)
     legend(ax, len(rows))
-    ax.set_title(TITLE, fontsize=9)
+    ax.set_title(f"The update's effective rank separates {n_e} of {len(rows)} pairs, the share {n_r},\n"
+                 "and not the same ones", fontsize=9, pad=12)
     F.save(fig, HERE / "figures" / "gaps.png", n=f"{len(rows)} task pairs, 2 to 8 saved seeds per side", data=rows)
 
 

@@ -1,0 +1,1005 @@
+{
+ "control": {
+  "rank10": {
+   "norm2": 239.99999999999997,
+   "erank": 10.000000000001457,
+   "top10": 1.0
+  },
+  "rank1": {
+   "norm2": 24.00000000000001,
+   "erank": 1.0000000000004883,
+   "top10": 1.0
+  },
+  "zero": {
+   "norm2": 0.0,
+   "erank": null,
+   "top10": null
+  },
+  "e51_reproduction": {
+   "ident32_s0": 442.49469491526156,
+   "rand32_s0": 427.5241840899337
+  },
+  "checks": {
+   "rank10_erank": true,
+   "rank10_top10": true,
+   "rank1_erank": true,
+   "rank1_top10": true,
+   "zero": true,
+   "e51_ident32_s0": true,
+   "e51_rand32_s0": true
+  },
+  "pass": true
+ },
+ "holes": {
+  "e58_rank1_96": "only rank1_s0_step30 saved (open_pair/amend3); the 96-key cipher states were not kept",
+  "e58_copy_prior_cipher": "only copy_s0_step30 saved (open_pair/amend3); the prior-matched cipher kept windows only (amend6)",
+  "e58_elicit_shuffle": "only elicit_s0_step30 saved (open_pair/amend3); the shuffle's states were not kept",
+  "e58_class_twin": "Amendment 7 kept windows only, no weight changes",
+  "open_pair_ladder": "not run",
+  "learned_nothing": "one state (regating_table code_step10) and no pair: reported alone",
+  "zero_update": "the rank is 0/0 at dW = 0: undefined, checked in the control"
+ },
+ "pairs": {
+  "e62_copy_lookup": {
+   "name": "Copy at a new marker vs lookup",
+   "reuse": {
+    "copy_s0": {
+     "norm2": 0.991801098399313,
+     "erank": 464.4729118656402,
+     "top10": 0.49484854171208853,
+     "r": 1.094561204230981,
+     "file": "experiments/induction_cue/results/large/copy_s0.pt",
+     "sha256": "759fb83995d615babfe49713be360fff626eccf755c717ea01c5d940d2cfc269"
+    },
+    "copy_s1": {
+     "norm2": 0.9717398545765931,
+     "erank": 472.8684013487835,
+     "top10": 0.4905043534298736,
+     "r": 1.090851303139447,
+     "file": "experiments/induction_cue/results/large/copy_s1.pt",
+     "sha256": "1f1f69b2d53cd8a14286f8b225fd5d75ec04f4e37924c95e91b63e7296cf8147"
+    },
+    "copy_s2": {
+     "norm2": 0.9906987854788594,
+     "erank": 467.11273597022773,
+     "top10": 0.4947850558273568,
+     "r": 1.098954624393048,
+     "file": "experiments/induction_cue/results/large/copy_s2.pt",
+     "sha256": "cab79309c189bc06bfabeed4e532e9057a33f27e4ae9c4399280d2bb1cc2cd74"
+    }
+   },
+   "new": {
+    "lookup_s0": {
+     "norm2": 1.3973331861245244,
+     "erank": 408.8676972641702,
+     "top10": 0.5388127584262762,
+     "r": 0.41523081235832887,
+     "file": "experiments/induction_cue/results/large/lookup_s0.pt",
+     "sha256": "c74c074b70fac1098d87e6c7b744a0f8946d6cd18e6b2eb715c80af467669737"
+    },
+    "lookup_s1": {
+     "norm2": 1.4207634909250362,
+     "erank": 409.6260247844054,
+     "top10": 0.5365815042094908,
+     "r": 0.38180563766821546,
+     "file": "experiments/induction_cue/results/large/lookup_s1.pt",
+     "sha256": "5e10359fa75e8749b8f633ffaf7a94eaff69734f397fcd0e1ab38e96da0be1aa"
+    },
+    "lookup_s2": {
+     "norm2": 1.4251411347962695,
+     "erank": 410.4403767705897,
+     "top10": 0.5337957625642259,
+     "r": 0.41542997264149084,
+     "file": "experiments/induction_cue/results/large/lookup_s2.pt",
+     "sha256": "397924a82ad9b2b59fcd422aea82eebcda31d01be172b732b92a243608c54dd8"
+    }
+   },
+   "score": {
+    "erank": {
+     "gap": 58.50665012182873,
+     "range": 8.395489483143308,
+     "ratio": 6.968819416580769,
+     "separates": true
+    },
+    "top10": {
+     "gap": -0.04301735807689139,
+     "range": 0.005016995862050289,
+     "ratio": -8.57432600299406,
+     "separates": true
+    },
+    "norm2": {
+     "gap": -0.4296660244636883,
+     "range": 0.027807948671745075,
+     "ratio": -15.451194532024601,
+     "separates": true
+    },
+    "r": {
+     "gap": 0.69063356969848,
+     "range": 0.03362433497327538,
+     "ratio": 20.539694547041464,
+     "separates": true
+    }
+   }
+  },
+  "e46_copy_random": {
+   "name": "Copy maps vs random maps",
+   "reuse": {
+    "ident32_s0": {
+     "norm2": 0.4637885549903923,
+     "erank": 442.49469491526156,
+     "top10": 0.6119261736169397,
+     "r": 0.8024425814544892,
+     "file": "experiments/regating_table/results/large/ident32_s0.pt",
+     "sha256": "8fbc08e8179ca3fea0d94455c032ecae8468697a640e6473ccf0b529612f66d7"
+    },
+    "ident32_s1": {
+     "norm2": 0.47046416934187674,
+     "erank": 437.9332652545029,
+     "top10": 0.6248097212068376,
+     "r": 0.7612543829145286,
+     "file": "experiments/regating_table/results/large/ident32_s1.pt",
+     "sha256": "e848fbbaedb348cbaadfebe4657ca598734ff4045c84686eec07f0969a20c830"
+    },
+    "ident32b_s0": {
+     "norm2": 0.47613044334941934,
+     "erank": 441.2139146693061,
+     "top10": 0.6128472110464163,
+     "r": 0.7924438683878655,
+     "file": "experiments/regating_table/results/large/ident32b_s0.pt",
+     "sha256": "67e3df4d7c799ccee4706f9a478eb94d2177c23b96f6a1bd6ef4aa3b972dc4b1"
+    },
+    "ident32b_s1": {
+     "norm2": 0.4792215126432341,
+     "erank": 437.24745976126707,
+     "top10": 0.6140213308427726,
+     "r": 0.8037218164473902,
+     "file": "experiments/regating_table/results/large/ident32b_s1.pt",
+     "sha256": "7dec933b713bb2d24b3736e7deb7fce7f171d23de1f637f4c1ce3b6d4bc3055b"
+    }
+   },
+   "new": {
+    "rand32_s0": {
+     "norm2": 0.5622314013253271,
+     "erank": 427.5241840899337,
+     "top10": 0.5779272153590986,
+     "r": 0.27327685374408744,
+     "file": "experiments/regating_table/results/large/rand32_s0.pt",
+     "sha256": "d44834c88305ac92542e82402de43a57900488fbf14941429fce51a2644cfd0e"
+    },
+    "rand32_s1": {
+     "norm2": 0.5785395487904282,
+     "erank": 420.75257278153873,
+     "top10": 0.5861310228161041,
+     "r": 0.266001933954146,
+     "file": "experiments/regating_table/results/large/rand32_s1.pt",
+     "sha256": "ea54f8fa04d9516fc2fb5be7c812e5d0dbae8b88d4fb7d5dd20367661fd6bb44"
+    },
+    "rand32b_s0": {
+     "norm2": 1.7349648440016305,
+     "erank": 408.83971190163237,
+     "top10": 0.5102287133283373,
+     "r": 0.2898113174753379,
+     "file": "experiments/regating_table/results/large/rand32b_s0.pt",
+     "sha256": "86fe7ae990e3695896913e36be0ae3c530beafd3ca91746e1d0136509dde0ffa"
+    },
+    "rand32b_s1": {
+     "norm2": 1.8061605281543072,
+     "erank": 403.6711793785459,
+     "top10": 0.5156497689979683,
+     "r": 0.2795143060379027,
+     "file": "experiments/regating_table/results/large/rand32b_s1.pt",
+     "sha256": "3983c1c6bd8ee03f67d95aaab96f9815fd0a0af14f524d7053fe972795243ce2"
+    }
+   },
+   "score": {
+    "erank": {
+     "gap": 24.525421612171726,
+     "range": 23.853004711387825,
+     "ratio": 1.028190029261298,
+     "separates": true
+    },
+    "top10": {
+     "gap": 0.06841692905286445,
+     "range": 0.07590230948776677,
+     "ratio": 0.9013813876624038,
+     "separates": false
+    },
+    "norm2": {
+     "gap": -0.6980729104866926,
+     "range": 1.24392912682898,
+     "ratio": -0.5611838290708875,
+     "separates": false
+    },
+    "r": {
+     "gap": 0.5128145594981999,
+     "range": 0.04246743353286153,
+     "ratio": 12.075478003665589,
+     "separates": true
+    }
+   }
+  },
+  "e53_lowercase_cipher": {
+   "name": "Lowercase vs ciphers",
+   "reuse": {
+    "lowercase_s0": {
+     "norm2": 6.253901401276222,
+     "erank": 598.5737907674227,
+     "top10": 0.18586156580112545,
+     "r": 0.7518811175785213,
+     "file": "experiments/performed_anchor/results/large/dW_lowercase_s0_step300.pt",
+     "sha256": "d3b956b9780e25b74e4b55131c05b1491bc2ac5065514bba1dcd8844f4d35c44"
+    },
+    "lowercase_s1": {
+     "norm2": 6.461173405350017,
+     "erank": 600.3541341429254,
+     "top10": 0.18362976029416497,
+     "r": 0.7700725841766312,
+     "file": "experiments/performed_anchor/results/large/dW_lowercase_s1_step300.pt",
+     "sha256": "1590694ebd880cf5418185864469ba11408add272a1bcaa3e3ba46561a876243"
+    }
+   },
+   "new": {
+    "cipher_s0": {
+     "norm2": 6.7417370997563895,
+     "erank": 594.2662401197575,
+     "top10": 0.19496773469986342,
+     "r": 0.12431340168715405,
+     "file": "experiments/performed_anchor/results/large/dW_cipher_s0_step300.pt",
+     "sha256": "5f86af5e2738753e4b43eea8081842b8531bc565bfbc8ff922f0a1e355792222"
+    },
+    "cipher_s1": {
+     "norm2": 6.7418302922293005,
+     "erank": 594.1005319698918,
+     "top10": 0.19472978073613637,
+     "r": 0.11604955639019224,
+     "file": "experiments/performed_anchor/results/large/dW_cipher_s1_step300.pt",
+     "sha256": "b2ac659554c666533472f95cdb27e2ae881f9623872a9cfa3c94898346274b56"
+    },
+    "broad_cipher_s0": {
+     "norm2": 9.155992633966134,
+     "erank": 573.3815970529645,
+     "top10": 0.25025726358635275,
+     "r": 0.16507082154369648,
+     "file": "experiments/performed_anchor/results/large/dW_broad_cipher_s0_step300.pt",
+     "sha256": "fde4a07f36eb185e9e07764cc12085b8f6133fc0026a459f1593950cb7bcbe03"
+    },
+    "broad_cipher_s1": {
+     "norm2": 9.207177593497454,
+     "erank": 573.6910760991258,
+     "top10": 0.24995477154682447,
+     "r": 0.1495352051848889,
+     "file": "experiments/performed_anchor/results/large/dW_broad_cipher_s1_step300.pt",
+     "sha256": "bcf4a6ba95fa801f1fd4fdf85b0f56cfd09fcaa399881678420835d5c739900b"
+    }
+   },
+   "score": {
+    "erank": {
+     "gap": 15.604101144739161,
+     "range": 20.884643066793046,
+     "ratio": 0.7471567071955354,
+     "separates": false
+    },
+    "top10": {
+     "gap": -0.03773172459464902,
+     "range": 0.055527482850216386,
+     "ratio": -0.6795144072427908,
+     "separates": false
+    },
+    "norm2": {
+     "gap": -1.6041470015492,
+     "range": 2.465440493741064,
+     "ratio": -0.6506533033839581,
+     "separates": false
+    },
+    "r": {
+     "gap": 0.6222346046760934,
+     "range": 0.049021265153504245,
+     "ratio": 12.693156790785386,
+     "separates": true
+    }
+   }
+  },
+  "e54_matched": {
+   "name": "Half-known vs cipher, equal size",
+   "reuse": {
+    "elicit_s0": {
+     "norm2": 0.47205081233022256,
+     "erank": 429.83658146961164,
+     "top10": 0.5298130903504683,
+     "r": 0.7725536396045862,
+     "file": "experiments/keydependent_elicit/results/large/elicit_s0.pt",
+     "sha256": "18156b7172dab09ad87bea143fe4d30de437d3a122c0ef3a28478e38c845bf8b"
+    },
+    "elicit_s1": {
+     "norm2": 0.4817296005940156,
+     "erank": 435.02830306861085,
+     "top10": 0.5320826697430581,
+     "r": 0.7578237100072733,
+     "file": "experiments/keydependent_elicit/results/large/elicit_s1.pt",
+     "sha256": "58ca85d4313857071c70eb9b5c347f908dbcfc6672facb6f9c48d0bb9d6fe092"
+    },
+    "elicit_s2": {
+     "norm2": 0.4832803771271311,
+     "erank": 428.31404024719905,
+     "top10": 0.5547914801168651,
+     "r": 0.767052989191262,
+     "file": "experiments/keydependent_patch/results/large/elicit_s2.pt",
+     "sha256": "998c7d39325d38d032ff48af5f8d903f7ae33db39a772ea31a9bf23fe09d4d01"
+    },
+    "elicit_s3": {
+     "norm2": 0.4906752401625921,
+     "erank": 429.55476880332816,
+     "top10": 0.5503803605736053,
+     "r": 0.7618841512323583,
+     "file": "experiments/keydependent_patch/results/large/elicit_s3.pt",
+     "sha256": "f69cb13410aceb23005514fd091449bfa0591124bb49552de72b7d35de87da69"
+    },
+    "elicit_s4": {
+     "norm2": 0.482671050492164,
+     "erank": 434.66792577021425,
+     "top10": 0.5394923678089536,
+     "r": 0.7590274220496366,
+     "file": "experiments/keydependent_patch/results/large/elicit_s4.pt",
+     "sha256": "4621769364674f90ee1262b41886c54c467b7118f563ed74c84985c85e3d780c"
+    }
+   },
+   "new": {
+    "cipher_s0": {
+     "norm2": 0.49114109281232265,
+     "erank": 433.63333494508646,
+     "top10": 0.5937389078126352,
+     "r": 0.24138288826323226,
+     "file": "experiments/keydependent_elicit/results/large/cipher_s0.pt",
+     "sha256": "451b1ba1bffee5dd0b8d5e3509840c6fa86c6d48585d24e51a2bff2a32047ff7"
+    },
+    "cipher_s1": {
+     "norm2": 0.4960401647468314,
+     "erank": 430.31601205543535,
+     "top10": 0.6086577350606536,
+     "r": 0.21194771673478274,
+     "file": "experiments/keydependent_elicit/results/large/cipher_s1.pt",
+     "sha256": "79bd9799125cb241de9032194e69eefe32003651a146f455ad61dc178be3488a"
+    },
+    "cipher_s2": {
+     "norm2": 0.4986446779391485,
+     "erank": 433.98355239556474,
+     "top10": 0.5991276029864396,
+     "r": 0.25949295256877297,
+     "file": "experiments/keydependent_patch/results/large/cipher_s2.pt",
+     "sha256": "839bd80c99a46839535b74a9f9724f426976f17300112a7393a1123b1dfe7c6b"
+    },
+    "cipher_s3": {
+     "norm2": 0.5087727740322706,
+     "erank": 427.7815045512661,
+     "top10": 0.6030084788347858,
+     "r": 0.24943886348969224,
+     "file": "experiments/keydependent_patch/results/large/cipher_s3.pt",
+     "sha256": "e9e4cb900fa87b1eb1417ba5cbc9fada8a630fafc8d649fdcf72c54f4b2e25d4"
+    },
+    "cipher_s4": {
+     "norm2": 0.5084619249446678,
+     "erank": 432.0410100170389,
+     "top10": 0.5974843243523159,
+     "r": 0.2673976371301727,
+     "file": "experiments/keydependent_patch/results/large/cipher_s4.pt",
+     "sha256": "0347b2a144d33fc0f01d0b45e8df5ceca6c03b0ac61a39e381d2db56ea2de0d4"
+    }
+   },
+   "score": {
+    "erank": {
+     "gap": -0.07075892108548487,
+     "range": 6.714262821411808,
+     "ratio": -0.010538598647022637,
+     "separates": false
+    },
+    "top10": {
+     "gap": -0.05909141609077595,
+     "range": 0.02497838976639677,
+     "ratio": -2.3657015781806385,
+     "separates": true
+    },
+    "norm2": {
+     "gap": -0.018530710753823065,
+     "range": 0.01862442783236956,
+     "ratio": -0.9949680559644568,
+     "separates": false
+    },
+    "r": {
+     "gap": 0.5177363707796927,
+     "range": 0.055449920395389984,
+     "ratio": 9.337008368775521,
+     "separates": true
+    }
+   }
+  },
+  "e54_own": {
+   "name": "Half-known vs cipher, own steps",
+   "reuse": {
+    "elicit_s0": {
+     "norm2": 0.47205081233022256,
+     "erank": 429.83658146961164,
+     "top10": 0.5298130903504683,
+     "r": 0.7725536396045862,
+     "file": "experiments/keydependent_elicit/results/large/elicit_s0.pt",
+     "sha256": "18156b7172dab09ad87bea143fe4d30de437d3a122c0ef3a28478e38c845bf8b"
+    },
+    "elicit_s1": {
+     "norm2": 0.4817296005940156,
+     "erank": 435.02830306861085,
+     "top10": 0.5320826697430581,
+     "r": 0.7578237100072733,
+     "file": "experiments/keydependent_elicit/results/large/elicit_s1.pt",
+     "sha256": "58ca85d4313857071c70eb9b5c347f908dbcfc6672facb6f9c48d0bb9d6fe092"
+    },
+    "elicit_s2": {
+     "norm2": 0.4832803771271311,
+     "erank": 428.31404024719905,
+     "top10": 0.5547914801168651,
+     "r": 0.767052989191262,
+     "file": "experiments/keydependent_patch/results/large/elicit_s2.pt",
+     "sha256": "998c7d39325d38d032ff48af5f8d903f7ae33db39a772ea31a9bf23fe09d4d01"
+    },
+    "elicit_s3": {
+     "norm2": 0.4906752401625921,
+     "erank": 429.55476880332816,
+     "top10": 0.5503803605736053,
+     "r": 0.7618841512323583,
+     "file": "experiments/keydependent_patch/results/large/elicit_s3.pt",
+     "sha256": "f69cb13410aceb23005514fd091449bfa0591124bb49552de72b7d35de87da69"
+    },
+    "elicit_s4": {
+     "norm2": 0.482671050492164,
+     "erank": 434.66792577021425,
+     "top10": 0.5394923678089536,
+     "r": 0.7590274220496366,
+     "file": "experiments/keydependent_patch/results/large/elicit_s4.pt",
+     "sha256": "4621769364674f90ee1262b41886c54c467b7118f563ed74c84985c85e3d780c"
+    }
+   },
+   "new": {
+    "cipher_own_s0": {
+     "norm2": 1.7748879475363795,
+     "erank": 406.9842142917449,
+     "top10": 0.5162793455623587,
+     "r": 0.2652401392487863,
+     "file": "experiments/keydependent_elicit/results/large/cipher_own_s0.pt",
+     "sha256": "9cb2b8275e61a05dcbe4cd7aef6f7c328bf42446c1a1f04567c8d3bb9f9e00de"
+    },
+    "cipher_own_s1": {
+     "norm2": 1.767879046552826,
+     "erank": 404.92905297904963,
+     "top10": 0.5207527486937964,
+     "r": 0.24304463624795386,
+     "file": "experiments/keydependent_elicit/results/large/cipher_own_s1.pt",
+     "sha256": "d387276843b2f9f5bc5da0c02a2e29f22ecb99bc5f0e6df136ac8e20e65a7c89"
+    }
+   },
+   "score": {
+    "erank": {
+     "gap": 25.523690236395623,
+     "range": 6.714262821411808,
+     "ratio": 3.801413634718094,
+     "separates": true
+    },
+    "top10": {
+     "gap": 0.02279594659051254,
+     "range": 0.02497838976639677,
+     "ratio": 0.9126267467080583,
+     "separates": false
+    },
+    "norm2": {
+     "gap": -1.2893020809033775,
+     "range": 0.01862442783236956,
+     "ratio": -69.2263994635341,
+     "separates": true
+    },
+    "r": {
+     "gap": 0.5095259946686532,
+     "range": 0.02219550300083245,
+     "ratio": 22.95627157670377,
+     "separates": true
+    }
+   }
+  },
+  "open_pair_c3": {
+   "name": "Rank-1 vs cipher, step 10",
+   "reuse": {
+    "rank1_s0": {
+     "norm2": 0.4833391517325705,
+     "erank": 423.8591107464555,
+     "top10": 0.5790128749398432,
+     "r": 0.8446171948548371,
+     "file": "experiments/open_pair/results/large/amend1/rank1_s0.pt",
+     "sha256": "9c7b46399a8b279049b2fd037885950a15d741425839e79daa638021b6488286"
+    },
+    "rank1_s1": {
+     "norm2": 0.4580601511271069,
+     "erank": 426.45643293740346,
+     "top10": 0.576778061765385,
+     "r": 0.8427860331443,
+     "file": "experiments/open_pair/results/large/amend1/rank1_s1.pt",
+     "sha256": "b2951755c3a002892ac9a6afefefea9aada884942a9fa90db3bcc402ded5a279"
+    },
+    "rank1_s2": {
+     "norm2": 0.4736239595202581,
+     "erank": 427.83253686227823,
+     "top10": 0.5893018992797254,
+     "r": 0.8429197716575669,
+     "file": "experiments/open_pair/results/large/amend1/rank1_s2.pt",
+     "sha256": "41afb4d6e2cf098e510b07e03965cf9d34b2f53d660c7f4195e8d695f092f440"
+    },
+    "rank1_s3": {
+     "norm2": 0.4759302947167872,
+     "erank": 429.38401664434883,
+     "top10": 0.5675255726770455,
+     "r": 0.8730694459495766,
+     "file": "experiments/open_pair_instruments/results/large/rank1_s3.pt",
+     "sha256": "7624a0eeb91ea7f76bcfb763af7084885caa7c5f851da968925283bcd2086ae3"
+    },
+    "rank1_s4": {
+     "norm2": 0.4846362649651911,
+     "erank": 425.27671631109706,
+     "top10": 0.5858090666685729,
+     "r": 0.8416724312461517,
+     "file": "experiments/open_pair_instruments/results/large/rank1_s4.pt",
+     "sha256": "16f21fa4b1ad6a0489e0550658d4a0c6a1083a9be5a22fb5b84b53fa336dc088"
+    },
+    "rank1_s5": {
+     "norm2": 0.4669795709987056,
+     "erank": 425.97612784266107,
+     "top10": 0.580803225759614,
+     "r": 0.8990076496322015,
+     "file": "experiments/open_pair_instruments/results/large/rank1_s5.pt",
+     "sha256": "2f16b3869bbb9a592cfe5ceba803d249124e65c466ed2b78cd8b7557f16db9fc"
+    },
+    "rank1_s6": {
+     "norm2": 0.47298366097023553,
+     "erank": 432.55484198259325,
+     "top10": 0.5731917444563708,
+     "r": 0.8706149319066456,
+     "file": "experiments/open_pair_instruments/results/large/rank1_s6.pt",
+     "sha256": "cc94c17e225150045aaa5b717cbdcdbd2817690fcd75b5e50b74667e5113d029"
+    },
+    "rank1_s7": {
+     "norm2": 0.46856932373863747,
+     "erank": 429.28959144680067,
+     "top10": 0.5753840234749457,
+     "r": 0.8457315729976062,
+     "file": "experiments/open_pair_instruments/results/large/rank1_s7.pt",
+     "sha256": "60a8eeb4f3a4aec0f5b6e9eefb0bc91912e6dfcd468b6f38371c260ccb021cc2"
+    }
+   },
+   "new": {
+    "cipher_s0": {
+     "norm2": 0.5153825202316409,
+     "erank": 423.20382301680905,
+     "top10": 0.6237498799970869,
+     "r": 0.23632404751112837,
+     "file": "experiments/open_pair/results/large/cipher_s0.pt",
+     "sha256": "db72f2ed6fc204d5bfc597662b7972ec5aecc7bd09794daaed2cbe87db5984b0"
+    },
+    "cipher_s1": {
+     "norm2": 0.49381538495898786,
+     "erank": 426.03395277117284,
+     "top10": 0.6134286770635153,
+     "r": 0.2384323212900442,
+     "file": "experiments/open_pair/results/large/cipher_s1.pt",
+     "sha256": "563fc6f0f978ce6eb3cbdbf2321334fc1c8a5769eea1aa0d0df96805be24ea18"
+    },
+    "cipher_s2": {
+     "norm2": 0.458456427037917,
+     "erank": 434.5975955781403,
+     "top10": 0.6149756863278345,
+     "r": 0.2170782048159956,
+     "file": "experiments/open_pair/results/large/cipher_s2.pt",
+     "sha256": "868a18f21256e5e4ff5a6403e5db05bb3b859c07c4c0c8a1865d443915e65671"
+    },
+    "cipher_s3": {
+     "norm2": 0.4481441698252667,
+     "erank": 430.3232285827337,
+     "top10": 0.6106262633900823,
+     "r": 0.22766182700614584,
+     "file": "experiments/open_pair_instruments/results/large/cipher_s3.pt",
+     "sha256": "434fcf28bbb7208fc512950a213081f8ea30c97476abae4c7f4c1c01ba4a923e"
+    },
+    "cipher_s4": {
+     "norm2": 0.45261717006995944,
+     "erank": 428.47234298762106,
+     "top10": 0.6190961913593328,
+     "r": 0.2469354238068963,
+     "file": "experiments/open_pair_instruments/results/large/cipher_s4.pt",
+     "sha256": "b4f87f892baa695d84b794fdbfa324b3a157167a7b9835c0a91b9ad6a5829829"
+    },
+    "cipher_s5": {
+     "norm2": 0.49833732109002604,
+     "erank": 425.5435648046802,
+     "top10": 0.6376091238518279,
+     "r": 0.23900537681787096,
+     "file": "experiments/open_pair_instruments/results/large/cipher_s5.pt",
+     "sha256": "5bc561271bc704b13ee1d48cb7f459fe4a9e95ec82131f6c915a8faa77c76d86"
+    },
+    "cipher_s6": {
+     "norm2": 0.4489855503913345,
+     "erank": 432.2369276081233,
+     "top10": 0.626219162169009,
+     "r": 0.23982187547791234,
+     "file": "experiments/open_pair_instruments/results/large/cipher_s6.pt",
+     "sha256": "6813cefc2e09d94da3bf4e93299b7de4746b2412243a13281b2568ecb2cb02bd"
+    },
+    "cipher_s7": {
+     "norm2": 0.451517408354945,
+     "erank": 433.20060003194106,
+     "top10": 0.6112921670702912,
+     "r": 0.23681286182577294,
+     "file": "experiments/open_pair_instruments/results/large/cipher_s7.pt",
+     "sha256": "3619e4e295fa2b1a3b40cf08ea026a56f46b99ea762e38e52238bb5e45e534cd"
+    }
+   },
+   "score": {
+    "erank": {
+     "gap": -1.622832575947939,
+     "range": 11.393772561331218,
+     "ratio": -0.14243154031840105,
+     "separates": false
+    },
+    "top10": {
+     "gap": -0.041148835275934714,
+     "range": 0.026982860461745584,
+     "ratio": -1.5249990020247357,
+     "separates": true
+    },
+    "norm2": {
+     "gap": 0.0021083032261768886,
+     "range": 0.06723835040637416,
+     "ratio": 0.03135566553067939,
+     "separates": false
+    },
+    "r": {
+     "gap": 0.6222933866046398,
+     "range": 0.057335218386049824,
+     "ratio": 10.85359756397212,
+     "separates": true
+    }
+   }
+  },
+  "open_pair_c3_copy": {
+   "name": "Copy vs cipher, step 10",
+   "reuse": {
+    "copy_s0": {
+     "norm2": 0.4571896182129107,
+     "erank": 438.66605640208275,
+     "top10": 0.60936722903632,
+     "r": 0.8461436225319128,
+     "file": "experiments/open_pair/results/large/amend1/copy_s0.pt",
+     "sha256": "e005d4b6e75dd373639acc67ee809b2083efdba81a7d00d86489b70b08b0cb6a"
+    },
+    "copy_s1": {
+     "norm2": 0.4643720653065382,
+     "erank": 436.4788413363294,
+     "top10": 0.6307957920126096,
+     "r": 0.8425401825652695,
+     "file": "experiments/open_pair/results/large/amend1/copy_s1.pt",
+     "sha256": "0e58eb79060411702836e3e8f7841fff1957b46f46cfef65c522c50c242a0205"
+    },
+    "copy_s2": {
+     "norm2": 0.47229258372999505,
+     "erank": 440.11212239116816,
+     "top10": 0.60740063754734,
+     "r": 0.834231371851741,
+     "file": "experiments/open_pair/results/large/amend1/copy_s2.pt",
+     "sha256": "4e026b160bb72ec555633d17ff68c12c662d804c9add6d600c8aecb43323d1a4"
+    },
+    "copy_s3": {
+     "norm2": 0.4613760274778856,
+     "erank": 439.41386030925014,
+     "top10": 0.6052479824434293,
+     "r": 0.8422389175414456,
+     "file": "experiments/open_pair_instruments/results/large/copy_s3.pt",
+     "sha256": "f6e331e3047ed3022984b76fb909175a8485f1fc31d87bc8b9a6f3acbd9367b9"
+    },
+    "copy_s4": {
+     "norm2": 0.4530316954739324,
+     "erank": 437.008023974906,
+     "top10": 0.6188167218680147,
+     "r": 0.8359674969260673,
+     "file": "experiments/open_pair_instruments/results/large/copy_s4.pt",
+     "sha256": "7749227603d90c2cfb29d283e75c4baee088e1f05b86ff1355fd62c2ab301133"
+    },
+    "copy_s5": {
+     "norm2": 0.4569334219829693,
+     "erank": 438.7885214185088,
+     "top10": 0.6224555060370547,
+     "r": 0.8562477003222767,
+     "file": "experiments/open_pair_instruments/results/large/copy_s5.pt",
+     "sha256": "5db337b10dd5f019255ac6a4de60f577ccd839fb9a6c7c9ce4d475928b86a7b7"
+    },
+    "copy_s6": {
+     "norm2": 0.4599756828033028,
+     "erank": 436.72427588562476,
+     "top10": 0.6221412216235265,
+     "r": 0.8484581316667953,
+     "file": "experiments/open_pair_instruments/results/large/copy_s6.pt",
+     "sha256": "6273fd74d4a2b3bdf483675e588e8950c56f180c46778a88eb8a3399a34e225b"
+    },
+    "copy_s7": {
+     "norm2": 0.4652139836211406,
+     "erank": 438.9117986486002,
+     "top10": 0.6101052238231884,
+     "r": 0.8311515925325759,
+     "file": "experiments/open_pair_instruments/results/large/copy_s7.pt",
+     "sha256": "6db6bcfcde5ca6f5b5e862637b1b16f9764e6645a410e22c5c38dacbe6298e02"
+    }
+   },
+   "new": {
+    "cipher_s0": {
+     "norm2": 0.5153825202316409,
+     "erank": 423.20382301680905,
+     "top10": 0.6237498799970869,
+     "r": 0.23632404751112837,
+     "file": "experiments/open_pair/results/large/cipher_s0.pt",
+     "sha256": "db72f2ed6fc204d5bfc597662b7972ec5aecc7bd09794daaed2cbe87db5984b0"
+    },
+    "cipher_s1": {
+     "norm2": 0.49381538495898786,
+     "erank": 426.03395277117284,
+     "top10": 0.6134286770635153,
+     "r": 0.2384323212900442,
+     "file": "experiments/open_pair/results/large/cipher_s1.pt",
+     "sha256": "563fc6f0f978ce6eb3cbdbf2321334fc1c8a5769eea1aa0d0df96805be24ea18"
+    },
+    "cipher_s2": {
+     "norm2": 0.458456427037917,
+     "erank": 434.5975955781403,
+     "top10": 0.6149756863278345,
+     "r": 0.2170782048159956,
+     "file": "experiments/open_pair/results/large/cipher_s2.pt",
+     "sha256": "868a18f21256e5e4ff5a6403e5db05bb3b859c07c4c0c8a1865d443915e65671"
+    },
+    "cipher_s3": {
+     "norm2": 0.4481441698252667,
+     "erank": 430.3232285827337,
+     "top10": 0.6106262633900823,
+     "r": 0.22766182700614584,
+     "file": "experiments/open_pair_instruments/results/large/cipher_s3.pt",
+     "sha256": "434fcf28bbb7208fc512950a213081f8ea30c97476abae4c7f4c1c01ba4a923e"
+    },
+    "cipher_s4": {
+     "norm2": 0.45261717006995944,
+     "erank": 428.47234298762106,
+     "top10": 0.6190961913593328,
+     "r": 0.2469354238068963,
+     "file": "experiments/open_pair_instruments/results/large/cipher_s4.pt",
+     "sha256": "b4f87f892baa695d84b794fdbfa324b3a157167a7b9835c0a91b9ad6a5829829"
+    },
+    "cipher_s5": {
+     "norm2": 0.49833732109002604,
+     "erank": 425.5435648046802,
+     "top10": 0.6376091238518279,
+     "r": 0.23900537681787096,
+     "file": "experiments/open_pair_instruments/results/large/cipher_s5.pt",
+     "sha256": "5bc561271bc704b13ee1d48cb7f459fe4a9e95ec82131f6c915a8faa77c76d86"
+    },
+    "cipher_s6": {
+     "norm2": 0.4489855503913345,
+     "erank": 432.2369276081233,
+     "top10": 0.626219162169009,
+     "r": 0.23982187547791234,
+     "file": "experiments/open_pair_instruments/results/large/cipher_s6.pt",
+     "sha256": "6813cefc2e09d94da3bf4e93299b7de4746b2412243a13281b2568ecb2cb02bd"
+    },
+    "cipher_s7": {
+     "norm2": 0.451517408354945,
+     "erank": 433.20060003194106,
+     "top10": 0.6112921670702912,
+     "r": 0.23681286182577294,
+     "file": "experiments/open_pair_instruments/results/large/cipher_s7.pt",
+     "sha256": "3619e4e295fa2b1a3b40cf08ea026a56f46b99ea762e38e52238bb5e45e534cd"
+    }
+   },
+   "score": {
+    "erank": {
+     "gap": 9.061433123156064,
+     "range": 11.393772561331218,
+     "ratio": 0.7952969988104932,
+     "separates": false
+    },
+    "top10": {
+     "gap": -0.0038333546046870337,
+     "range": 0.026982860461745584,
+     "ratio": -0.1420662798194319,
+     "separates": false
+    },
+    "norm2": {
+     "gap": -0.009608859168925343,
+     "range": 0.06723835040637416,
+     "ratio": -0.1429074198110373,
+     "separates": false
+    },
+    "r": {
+     "gap": 0.6068633846732897,
+     "range": 0.029857218990900686,
+     "ratio": 20.32551607898371,
+     "separates": true
+    }
+   }
+  },
+  "e123_case_label": {
+   "name": "Case label: real vs memorising twin",
+   "reuse": {
+    "real_s0": {
+     "norm2": 0.979252213465792,
+     "erank": 386.38296295530233,
+     "top10": 0.7441241230650155,
+     "r": 0.11284478195336352,
+     "file": "experiments/case_label/results/large/dW_real_s0.pt",
+     "sha256": "5c0cf3feed6b10001c3e7c29c76c4fbe1610c002de249faf52413ca57e0bfd9b"
+    },
+    "real_s1": {
+     "norm2": 1.0099244194704486,
+     "erank": 404.07401619346973,
+     "top10": 0.7266685142602864,
+     "r": 0.14151311761102925,
+     "file": "experiments/case_label/results/large/dW_real_s1.pt",
+     "sha256": "515957e2290efda6dcc46e125839b877495ddd92e963ff8d06a8cbc3e6e790cb"
+    }
+   },
+   "new": {
+    "twin_s0": {
+     "norm2": 8.146585037477855,
+     "erank": 464.47080001027933,
+     "top10": 0.461375587910443,
+     "r": 0.11068382447757384,
+     "file": "experiments/case_label/results/large/dW_twin_s0.pt",
+     "sha256": "5a1af2d941f497444342afd628e7666cf5604df39a7b3a370b1a5c420b9bd9f0"
+    },
+    "twin_s1": {
+     "norm2": 7.2993309587269755,
+     "erank": 467.6989646636985,
+     "top10": 0.4614443603321323,
+     "r": 0.16772848429858336,
+     "file": "experiments/case_label/results/large/dW_twin_s1.pt",
+     "sha256": "69761ad58dcaa15de5e082a32cac7e469a363f51fcc559c3f53a414a5ea08b38"
+    }
+   },
+   "score": {
+    "erank": {
+     "gap": -70.85639276260292,
+     "range": 17.6910532381674,
+     "ratio": -4.005210532617383,
+     "separates": true
+    },
+    "top10": {
+     "gap": 0.27398634454136334,
+     "range": 0.017455608804729073,
+     "ratio": 15.696178094179961,
+     "separates": true
+    },
+    "norm2": {
+     "gap": -6.7283696816342955,
+     "range": 0.84725407875088,
+     "ratio": -7.941383642028654,
+     "separates": true
+    },
+    "r": {
+     "gap": -0.012027204605882219,
+     "range": 0.05704465982100952,
+     "ratio": -0.21083839650583042,
+     "separates": false
+    }
+   }
+  },
+  "e125_repeat_label": {
+   "name": "Repeat label: real vs memorising twin",
+   "reuse": {
+    "real_s0": {
+     "norm2": 1.1160350686176055,
+     "erank": 377.68830560912744,
+     "top10": 0.7505534952066333,
+     "r": 0.13268247266648608,
+     "file": "experiments/fresh_reuse_pair/results/large/dW_real_s0.pt",
+     "sha256": "82b1c8afa5c85213adc74a582df980dca2a4e37fae093af8c190a26c2962248f"
+    },
+    "real_s1": {
+     "norm2": 0.9786228353998774,
+     "erank": 379.0102650319493,
+     "top10": 0.7487036772249488,
+     "r": 0.2365236436095261,
+     "file": "experiments/fresh_reuse_pair/results/large/dW_real_s1.pt",
+     "sha256": "60be7d5fcb9dd639e594dd5fdab28cc44482a5c753999232fc642bd42b1ca132"
+    }
+   },
+   "new": {
+    "twin_s0": {
+     "norm2": 2.524110438451344,
+     "erank": 421.7755829858706,
+     "top10": 0.5900220942235715,
+     "r": 0.21943748123527929,
+     "file": "experiments/fresh_reuse_pair/results/large/dW_twin_s0.pt",
+     "sha256": "e1e303936bbbb215e50fc20a7fb304eee8a69d60f9e7834c75b7ae5c1b2c01fa"
+    },
+    "twin_s1": {
+     "norm2": 2.5864206315839717,
+     "erank": 424.2341523857255,
+     "top10": 0.5766760706136768,
+     "r": 0.17903483808672319,
+     "file": "experiments/fresh_reuse_pair/results/large/dW_twin_s1.pt",
+     "sha256": "72c6cf4c71f6898507a177a4dbe5f139398af5b8fbf2a13e18f84403d39b8bc5"
+    }
+   },
+   "score": {
+    "erank": {
+     "gap": -44.655582365259704,
+     "range": 2.458569399854923,
+     "ratio": -18.163238494668796,
+     "separates": true
+    },
+    "top10": {
+     "gap": 0.16627950379716683,
+     "range": 0.013346023609894786,
+     "ratio": 12.459104573581502,
+     "separates": true
+    },
+    "norm2": {
+     "gap": -1.5079365830089166,
+     "range": 0.1374122332177281,
+     "ratio": -10.973816142116025,
+     "separates": true
+    },
+    "r": {
+     "gap": -0.014633101522995129,
+     "range": 0.10384117094304002,
+     "ratio": -0.14091810974494715,
+     "separates": false
+    }
+   }
+  }
+ },
+ "learned_nothing": {
+  "norm2": 0.28011349903016514,
+  "erank": 562.0824665614876,
+  "top10": 0.28454316444969,
+  "file": "experiments/regating_table/results/large/code_step10.pt"
+ },
+ "score": {
+  "separating": {
+   "erank": [
+    "e62_copy_lookup",
+    "e46_copy_random",
+    "e54_own",
+    "e123_case_label",
+    "e125_repeat_label"
+   ],
+   "r": [
+    "e62_copy_lookup",
+    "e46_copy_random",
+    "e53_lowercase_cipher",
+    "e54_matched",
+    "e54_own",
+    "open_pair_c3",
+    "open_pair_c3_copy"
+   ]
+  },
+  "P1": {
+   "count_erank": 5,
+   "count_r": 7,
+   "reads": "rival B"
+  },
+  "P2": {
+   "erank_only": [
+    "e123_case_label",
+    "e125_repeat_label"
+   ],
+   "holds": true
+  },
+  "P3": {
+   "reuse_higher": {
+    "e62_copy_lookup": true,
+    "e46_copy_random": true,
+    "e54_own": true,
+    "e123_case_label": false,
+    "e125_repeat_label": false
+   },
+   "holds": false
+  }
+ }
+}
