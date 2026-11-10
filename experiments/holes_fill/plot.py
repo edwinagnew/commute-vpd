@@ -57,14 +57,14 @@ def table(results: Path) -> tuple[list[list[float | None]], list[dict[str, Any]]
 
 def main(results: Path = HERE / "results", figures: Path = HERE / "figures") -> None:
     values, recs, score = table(results)
-    comp, out = score["compare"], score["outcome"]
+    comp = score["compare"]
     fig, ax = FG.figure((7.5, 5.2))
     FG.gap_heatmap(ax, values, list(ROWS.values()), list(COLS.values()), label="gap, side built to reuse minus side built to be new,\nshare of the gain", vmax=1.0)
     ax.tick_params(axis="both", labelsize=7)
-    ax.set_title(f"Where the share separates {comp['steering']['share_count']} pairs, steering separates {comp['steering']['count']} "
-                 f"and the neuron version {comp['neuron']['count']} ({out['card']})", fontsize=8)  # fmt: skip
+    ax.set_title(f"Does steering or the neuron version separate the sides where the share does?\nOf the {comp['steering']['share_count']} "
+                 f"pairs the share separates, steering separates {comp['steering']['count']} in its direction, neurons {comp['neuron']['count']}", fontsize=8)  # fmt: skip
     FG.save(fig, figures / "gaps.png", n="2 to 8 saved fine-tune seeds per side; read rows as the share's (75 to 500 per task); "
-            "copy vs lookup steering from E135, label pairs from E140; x = not read", data=recs)  # fmt: skip
+            "copy vs lookup steering and the two label pairs from earlier runs on the same rows; x = not read", data=recs)  # fmt: skip
 
 
 if __name__ == "__main__":
