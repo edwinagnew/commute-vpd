@@ -1,0 +1,57 @@
+{
+  "experiment": "E139 Amendment 2",
+  "cell": "P1.4",
+  "filed": "2026-11-10, before the run; page reports/predictions/2026-11-10_prediction_e139-amendments-1-2.md. The label rule and the cut-offs of results/predictions.json are unchanged and are applied to the step-3000 states as filed there.",
+  "cutoffs": {
+    "G": 0.7942650765822863,
+    "H": 0.4757337166788033,
+    "source": "results/predictions.json cutoffs, unchanged"
+  },
+  "thresholds": {
+    "floor_gap": 0.02,
+    "leftover_share": 0.1,
+    "rise": 0.113,
+    "reversion_mid": 0.5690605265244483,
+    "witness_G": 0.922475722997802,
+    "pair_gap": 0.1470787979704325,
+    "replay_tol": 0.02
+  },
+  "threshold_sources": {
+    "floor_gap": "results/predictions.json, unchanged",
+    "leftover_share": "the user's request (2026-11-10): train until TV(fine-tune, pair) <= 0.1 x gap on the read half; E139 read 0.358 to 0.359",
+    "rise": "results/predictions.json noise_floor: E137's pooled spread of one start's G at the best site, 0.113",
+    "reversion_mid": "midpoint of E139's mean in2 reversion at the best in2 start (0.2035, 0.1970, 0.1998; mean 0.2001) and E137's pair value at the same key (0.9380, stage2.json G['Always on/k4/in2/s2'].reversion)",
+    "witness_G, pair_gap, replay_tol": "as predictions_amend1.json"
+  },
+  "recipe": {
+    "changed": "steps 3000 (E139 300); peak rate 1e-5 (E139 3e-5); warm-up 300 steps (ratio 0.1 kept); states saved at steps 300, 1000, 3000; step-10 check in matching directions",
+    "sources": "peak 1e-5 with cosine and warm-up ratio 0.1: LLaMA-Factory's documented full-SFT setting, as written in commute.qwen_sft.lr_at. Measured: E139's training loss rose at the constant 2.9e-5 peak on every seed (seed 0, means per 10 steps: 0.025 at steps 20-30, 0.050 at steps 100-110) and fell only once the cosine took the rate under about 2e-5. Steps: 10x E139, sized so training (about 13 min at E139's 0.27 s per step) and the reads of three states fit one 1:55 debug job per seed; not sourced from a standard.",
+    "kept": "Adam betas 0.9 and 0.999, no decay, clip 1, batch 1024 windows, loss KL(F || fine-tune) at the last position on E139's fit half, E139's per-item seed for the batch draws, E139's read code and seeds"
+  },
+  "control": {
+    "what": "E139's control.json must have passed (the job refuses otherwise); the regenerated E137 witness read against the hand-made pair must repeat 0.9225 within replay_tol (exit 1); at step 10, KL(F || ft) < KL(F || M) and KL(M || ft) <= KL(M || F) (exit 1)",
+    "expected": "witness G 0.9225; at step 10 the rate is 3e-7 (warm-up), so both step-10 inequalities hold by a wide margin; E139's flawed form (KL(M || ft) against KL(F || M)) is not kept"
+  },
+  "do_nothing": "The 67M itself (a zero-step fine-tune) has gap 0 < floor_gap: no reading, so it is never 'reached' and can make neither (a) nor (b) hold or fail. The leftover share is computed only after the floor check, so the zero denominator is never formed.",
+  "predictions": {
+    "a": {
+      "claim": "G rises as 1 - tv_to_F/gap rises, and passes the re-weighted cut-off 0.7943 once the leftover is under about 0.1 of the gap.",
+      "terms": "Per seed, the scored state is step 3000. It has a reading if gap >= floor_gap. It is reached if also tv_to_F <= leftover_share x gap (read half, E139's distances). best G = the highest read G over 4 sites x 3 starts at k = 4 (E139's rule). in2 G = the highest of the 3 starts at in2, read at steps 300, 1000 and 3000.",
+      "rule": "Holds if at least 2 seeds are reached and, on at least 2 reached seeds, best G >= cutoffs.G AND in2 G at step 3000 exceeds in2 G at step 300 by more than `rise`. FAILS if at least 2 seeds are reached and best G < cutoffs.G on at least 2 reached seeds: then the leftover was not the cause of the low G, and E139's reading of the Always on imitators stands as filed. Otherwise (fewer than 2 seeds reached; or the cut-off passed without the rise; or a split) no call, reported as read; a no call does not open a further amendment.",
+      "edge_cases": "Values exactly at a cut-off or at leftover_share count as at or above / reached. With 3 seeds the hold and fail branches cannot both be met (each needs 2 reached seeds on its side of the cut-off; 2 + 2 > 3); 2 reached seeds split one each way is no call. If tv_to_F at step 3000 is not below that at step 300, the rise is not read (no call on the rise). By the triangle inequality the witness alone bounds G_witness >= 1 - (0.0114 + tv_to_F)/gap, about 0.82 at a reached state with gap near 0.15; so a reached seed whose best G is under 0.7943 while its witness reads above it is a search limit, reported as such.",
+      "blind_to": "G reads outputs: a fine-tune that matches the pair closely must read near the pair's G whatever is inside it (E139 blind_to); (a) passing therefore says the low E139 G came from the leftover, not that the fine-tune reuses the pair's variable."
+    },
+    "b": {
+      "claim": "The reversion at in2 stays low, near 0.2, even at the reached states.",
+      "rule": "At step 3000, on reached seeds with a reading: the reversion of the in2 start with the highest G. Holds if it is below reversion_mid on at least 2 reached seeds; fails if at or above it on at least 2 reached seeds; fewer than 2 reached seeds: no call, values reported.",
+      "edge_cases": "A value exactly at reversion_mid counts as at or above (fails side). Reversion can be negative (E139 out3/s2 read -0.012); that counts as below.",
+      "blind_to": "Reversion swaps only phi's 4 coordinates at the last position; a fine-tune that carries the change in other coordinates or other positions reads low reversion whatever its route."
+    },
+    "label": {
+      "claim": "Descriptive: the step-3000 states get E139's label by the filed rule (best G and best H against the cut-offs); reported, not a prediction.",
+      "rule": "results/predictions.json label_rule, unchanged"
+    }
+  },
+  "reported": "Per seed and step (300, 1000, 3000): gap, tv_to_F, 1 - tv_to_F/gap, best G (step 3000) and in2 G, H at five sites, reversion and mismatch at the best G site and at each H site, and E137's witness G, reversion and mismatch.",
+  "noise_floor": "One start's G at the best site: 0.113 pooled (E137). Seed-to-seed spread of E139's Always on best G: 0.011; of best H: 0.055."
+}
