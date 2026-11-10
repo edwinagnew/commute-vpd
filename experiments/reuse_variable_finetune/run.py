@@ -149,11 +149,14 @@ def control(net: Net, cfg: Config, th: dict[str, Any], sets: VR.Sets, task: VR.T
         if pair == PAIRS[0]:
             out["floor_runs_tv"] = _floor(net, read[:8192], cfg)
         F = VR.piece_target(net, p, pair)
-        lm = last(m_of(net), read, cfg.read_batch)
-        lft = last(VR.net_target(ft), read, cfg.read_batch)
-        lf = last(F, read, cfg.read_batch)
-        w0_gap, w0_max = float(tv(lm, lft).mean()), float(tv(lm, lft).max())
-        target_gap = float(tv(lm, lf).mean())
+        # per-window distances, chunk by chunk: the read half's full logits are ~20 GB each (job 57246 ran out of card memory)
+        w0_d, tgt_d = [], []
+        for t in chunks(read, cfg.read_batch):
+            lm = run(net, t)[0][:, -1]
+            w0_d.append(tv(lm, run(ft, t)[0][:, -1]))
+            tgt_d.append(tv(lm, F(t)[0][:, -1]))
+        w0, tgt = torch.cat(w0_d), torch.cat(tgt_d)
+        w0_gap, w0_max, target_gap = float(w0.mean()), float(w0.max()), float(tgt.mean())
         rec = {"w0_gap": w0_gap, "w0_max_tv": w0_max, "target_gap": target_gap, "r1_gap": r1["pairs"][pair]["gap"], "w0_reading": w0_gap >= th["floor_gap"]}
         out["pairs"][pair] = rec
         log(f"control {pair}: W0 gap {w0_gap:.3e} (max TV {w0_max:.3e}), target gap {target_gap:.5f} (R1 {rec['r1_gap']:.5f}), W0 reading {rec['w0_reading']}")
