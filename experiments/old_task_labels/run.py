@@ -41,7 +41,7 @@ from commute.jobs import EXPERIMENTS, hard_exit, load_experiment, require_filed
 from commute.keydep import sha256
 from commute.steering import Net
 
-EXPERIMENT = "E###"  # the lead fills this in when the cell is claimed (`fleet/ecode`); only the log line reads it
+EXPERIMENT = "E142"  # the lead fills this in when the cell is claimed (`fleet/ecode`); only the log line reads it
 HERE = Path(__file__).resolve().parent
 PRED = HERE / "results" / "predictions.json"
 E139 = load_experiment("reuse_variable_finetune", "run")  # its search_g, search_h, dump, log, budget and MoreToDo, unchanged

@@ -20,7 +20,7 @@
 #SBATCH --mem=16G
 #SBATCH --time=01:55:00
 #SBATCH --output=cluster/logs/%x-%j.out
-#SBATCH --comment=E###
+#SBATCH --comment=E142
 
 set -euo pipefail
 source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root; caches in /ephemeral/$USER
