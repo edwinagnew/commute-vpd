@@ -1,13 +1,54 @@
-# E132 Amendment 1 (option b): log-odds re-gating share on Qwen, design notes
+# E144 = E132 Amendment 1 (option b): log-odds re-gating share on Qwen
 
-*qwen-lead, 2026-11-10. Not yet run. The user asked to prepare option (b) of
-`reports/decisions/2026-11-09_decision_qwen-regating-share.md` as an amendment of E132, and to state plainly if it
-is a post-hoc deviation.*
+*qwen-lead, 2026-11-10. Cell P3.2 (rung L3.1, due 11-12, 1 run). Card `experiments/qwen_regating_new/results/card_amend1.txt`.
+The user chose option (b) of `reports/decisions/2026-11-09_decision_qwen-regating-share.md` on 2026-11-10 and, after
+seeing the $0 check below, said "Run it". The harness gives a changed design its own number. So this is E144 and is
+also called E132 Amendment 1. **It is a post-hoc deviation from E132's filed method, and every write-up says so.***
 
-**In plain words.** E132 read a re-gating share near its ceiling, about 0.99, for every saved Qwen update and for both
-random changes. Option (b) replaces that KL-based share with the log-odds share that `GOALS.md` defines. A $0
-recomputation on E132's saved numbers suggests the ceiling comes from where the gate reads its inputs, not from
-measuring in KL. If so, switching to log-odds would not give the room the option was meant to buy.
+## Design check
+- **Goal.** This is part 3: the key readings repeated on Qwen3-1.7B. It asks whether the re-gating share can vary at
+  all on Qwen once it is measured in the unit `GOALS.md` defines.
+- **Nearest tried.** E132 and E57 read the KL share at 0.991 to 0.9995 for every state. Log-odds r has never been
+  read on Qwen. On the 67M, the Gaussian rows of E46 gained under 1 nat, so their share was unreadable. This run
+  learns whether the Qwen ceiling is a KL artefact.
+- **Patch or step.** A patch on E132, chosen after its result (post hoc).
+- **Decisions relied on.**
+  - It departs from E132's filed choice "E57's KL-based share ... not GOALS.md's log-odds r", by the user's choice.
+  - It relies on `decisions.md` 2026-11-02, "No decision on record chose log-odds for the route split".
+- **Definition.** No reuse verdict. Unreadable cases are reported as "unreadable".
+- **What changes what we do.**
+  - All four updates read 0.85 or above, within 0.1 of each other: the share is at its ceiling in both units, and
+    part 3 takes (a) or (d).
+  - Any update reads below 0.85 and more than 0.1 under another: the log-odds share becomes Qwen's row.
+- **Control first.** The W0-as-fine-tuned control runs alone first and stops the job on a miss.
+- **Numbers.** Read on each update's own response positions, Δ off:
+  - r per update, with its 95% row-resample interval;
+  - for each random change on the same rows, the gain T1 − T0 and the numerator Σ(L01 − L00), plus r where the gain
+    allows;
+  - the seed-pair difference in r.
+
+  What each should read:
+
+  | Number | W0 | Do-nothing | Positive control | Updates | Random changes |
+  |---|---|---|---|---|---|
+  | Both sums | 0 | — | — | — | — |
+  | r | nan | does not apply (r needs no split) | 0 | 0.85 to 1.0 expected (rival A) | unreadable expected (gain under 1) |
+- **Guards.**
+  - The W0 sums are within 1e-6.
+  - gold_s0's unmasked own-row KL is within 1e-3 of E45's 0.8583.
+  - The gates of the positive control equal W0's bitwise.
+  - Each guard logs its reading when it passes.
+- **Saved.** Per-row sums of T0, T1, L00 and L01 per state and row set, in a small JSON, with the response masks'
+  counts.
+
+## Run
+One `debug` L40 job, about 35 min, $0, in this order: W0 control, positive control, the four updates, then the
+random changes on each update's rows. Code: `experiments/qwen_regating_new/amend1.py`. Filed rules:
+`results/predictions_amend1.json`.
+
+---
+
+# Design notes (before the user's go-ahead)
 
 ## This is a post-hoc deviation
 - It departs from E132's filed method. E132's plan chose "E57's KL-based share ... not GOALS.md's log-odds r". It
@@ -72,8 +113,7 @@ the 67M finding in `reports/analyses/2026-10-29_analysis_e44-amend1-layer-cut.md
   - the random changes' real gains, which the job's first stage would read.
 
 ## Status
-Waiting on the user. The ask is whether to run Definition 1 with reference (i), given the $0 check, or to stop at the
-$0 check.
+Answered 2026-11-10: the user chose "Run it" (Definition 1, reference (i)).
 
 ## Not run
-Anything on a GPU. No cell, experiment number or predictions are filed yet.
+Anything on a GPU yet. Predictions are filed by the code writer before the job.
