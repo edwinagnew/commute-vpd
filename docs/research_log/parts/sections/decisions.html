@@ -1,6 +1,6 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
-<div class="prose"><p><strong>Waiting on you, 2026-11-10.</strong> Two cards are open. One asks whether the re-gating share should stay as part 3's reading on Qwen; the other asks whether to test the share once on a sealed pair of fine-tunes. The three cards you answered or parked today (steering against a shuffled-label twin, a fine-tune that learned nothing, the first-steps check) are removed.</p>
+<div class="prose"><p><strong>Waiting on you, 2026-11-10.</strong> One card is open: whether the re-gating share should stay as part 3's reading on Qwen. The four cards you answered or parked today (steering against a shuffled-label twin, a fine-tune that learned nothing, the first-steps check, a sealed pair of fine-tunes) are removed.</p>
 <p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
 <div class="card key decision" id="decision-qwen-regating-share"><span class="chip open urgency">Soon</span><div class="k">Question for you · qwen-lead · new 2026-11-09</div><p class="small">Wanted for the 2026-11-18 gate. Nothing runs until this is decided.</p><h3>On Qwen3-1.7B the re-gating share sits near its ceiling even for random changes. Should it stay as part 3's reading on Qwen?</h3>
@@ -13,18 +13,5 @@
 </ul>
 <p><strong>No recommendation is given, on purpose.</strong> This asks whether a line's premise holds.</p>
 <p class="small">Names in the reports: cell P3.1; <code>experiments/qwen_regating_new/results/summary.json</code>; <code>reports/decisions/2026-11-09_decision_qwen-regating-share.md</code>.</p></div>
-<div class="card key decision" id="decision-sealed-pair"><span class="chip open urgency">Soon</span><div class="k">Question for you · compare-lead · new 2026-11-09</div><p class="small">Nothing runs until you approve this and add the run. An answer is due 2026-11-14.</p><h3>Every pair of fine-tunes we test on has already been looked at. Should the paper's main claim about the share be tested once on a new pair that no agent can read beforehand?</h3>
-<p><strong>Why this matters.</strong> The measures were chosen with the test pairs in plain view, so a good result on them could partly reflect that. A clean test needs a pair nobody has read until the claim is fixed. All agents share one account and disk, so the trained weights have to be encrypted to a key only you hold. The share is the part of a fine-tune's gain that appears when we keep the decomposition's original pieces and change only which ones switch on.</p>
-<p><strong>What would run if you approve.</strong> One new task on the small model: the fine-tune says one label word when a bracket is still open and another when it is closed, and its twin gets the same text with labels shuffled. Three copies of each, about 20 minutes on the free shared cluster (an estimate). You make a key on your laptop and start the job yourself. A scorer committed before training reads the weights once, after the rest of this part is done, and prints one number: the real fine-tunes' mean share minus the twins'. Zero means the share does not tell them apart. First, the job checks that the original model tracks open brackets at all.</p>
-<p><strong>The four choices.</strong> The file named at the end of this card gives the detail.</p>
-<ul>
-<li><strong>What the number tests.</strong> Option a: real against shuffled twin, the share's hardest case. Option b: a copy-a-word pair against a recall-per-word pair, the share's best case and the kind we have measured most.</li>
-<li><strong>The task.</strong> Option a: bracket order. The original model already tracks brackets, so it tests a new last step on old knowledge against memorising, not full reuse. Option b: another task you name.</li>
-<li><strong>How the weights are held.</strong> Option a: trained on the shared cluster and encrypted as written, to your laptop's key (needs <code>gpg</code> on both machines). Option b: trained on a cloud machine you start, a few dollars.</li>
-<li><strong>If no definition of reuse is adopted in time.</strong> Option a: the number is reported with no verdict. Option b: it waits.</li>
-</ul>
-<p><strong>What happens next.</strong> You approve, change or drop this. Only if you approve and add the run to the table of work does anything start, and you start the job yourself. Under the ladder of 2026-11-10 this test is rung L2.4, which waits on rung L1.5 (you adopting a wording of the reuse definition), so even an approved sealed pair runs only after that.</p>
-<p><strong>Recommendation.</strong> Option a in all four.</p>
-<p class="small">Names in the reports: cell P2.7; <code>reports/plans/2026-11-09_plan_sealed-pair.md</code>.</p></div>
 </div>
 </section>
