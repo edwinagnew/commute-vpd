@@ -51,6 +51,8 @@ def main(results: Path = HERE / "results", out: Path = HERE / "figures") -> None
         ax.scatter(g, h, facecolors="none", edgecolors=COLORS[pair], marker="s", s=44, linewidths=1.2, label=f"{pair}, the built pair (R1)")
     ax.axvline(cut["G"], color="#777777", linewidth=0.8, linestyle="--")
     ax.axhline(cut["H"], color="#777777", linewidth=0.8, linestyle="--")
+    ax.text(cut["G"], 0.02, " re-weighted cut-off", fontsize=6, color="#555555", transform=ax.get_xaxis_transform(), va="bottom")
+    ax.text(0.0, cut["H"], " map-found cut-off", fontsize=6, color="#555555", va="bottom")
     ax.set_xlabel("found G at k = 4 (best site, best of three starts)")
     ax.set_ylabel("found H (best site)")
     ax.set_title("Do fine-tunes imitating a pair land where the built pair landed?", fontsize=9)

@@ -618,3 +618,5 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e136_gaps.png": "experiments/share_untrained/figures/gaps.png"
 - "fig/e140_shares.png": "experiments/real_vs_twin/figures/shares.png"
 - "fig/e132_share_new_old.png": "experiments/qwen_regating_new/figures/share_new_old.png"
+- "fig/e137_found_vs_witness.png": "experiments/reuse_variable_test/figures/found_vs_witness.png"
+- "fig/e139_finetunes_vs_pairs.png": "experiments/reuse_variable_finetune/figures/finetunes_vs_pairs.png"
