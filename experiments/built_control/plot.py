@@ -5,6 +5,7 @@ falls on, and the outcome by the filed rule (predictions.json, "outcome_rule").
 
     ~/commute-agents/fleet/cpu-run --mem 2G python experiments/built_control/plot.py            (after job 2)
     ~/commute-agents/fleet/cpu-run --mem 2G python experiments/built_control/plot.py --sketch   (the card's sketch, made-up numbers)
+    ~/commute-agents/fleet/cpu-run --mem 2G python experiments/built_control/plot.py --scored   (the write-up's figure, filed ranges)
 """
 
 from __future__ import annotations
@@ -15,6 +16,7 @@ from pathlib import Path
 from typing import Any
 
 from matplotlib.axes import Axes
+from matplotlib.patches import Rectangle
 
 from commute import figures as FG
 from commute.old_tasks import item_label
@@ -117,5 +119,53 @@ def main(results: Path = HERE / "results", out: Path = HERE / "figures") -> None
     FG.save(fig, out / "h_g_by_arm.png", n="2 seeds per arm for H, seed 0 for G; d on 100,000 held-out windows", data=recs)
 
 
+FILED = {  # predictions.json P1, P2: each arm's expected range of found H and G (lo, hi), as filed
+    ("taught", "H"): (0.55, 0.75), ("taught", "G"): (0.3, 0.8),
+    ("plain", "H"): (-0.1, 0.25), ("plain", "G"): (-0.1, 0.25),
+}
+COPIES = "copies of the table change\n(E139; variable held exactly)"
+
+
+def scored(results: Path = HERE / "results", out: Path = HERE / "figures") -> None:
+    """The write-up's figure: readings.json's values against each filed range, marked hit or miss, beside E139's ordinary
+    fine-tunes copying the table change (a variable the original holds as an exact linear read) on the same axes."""
+    read = json.loads((results / "readings.json").read_text())
+    e139 = HERE.parent / "reuse_variable_finetune" / "results"
+    copies = [json.loads((e139 / f"table_s{s}.json").read_text()) for s in range(3)]
+    recs = [{**r, "row": NAMES[r["arm"]]} for r in read["items"]]
+    recs += [{"arm": "e139_table", "seed": s, "row": COPIES, "H": max(v["H"] for v in c["H"].values()),
+              "G": max(v["G"] for v in c["G"].values())} for s, c in enumerate(copies)]
+    rows = [NAMES["taught"], NAMES["plain"], COPIES]
+    fig, axes = FG.figure(FG.FULL_WIDTH, ncols=2)
+    for ax, q in zip(axes, ("H", "G"), strict=True):
+        for i, row in enumerate(rows):
+            vals = [r[q] for r in recs if r["row"] == row and r[q] is not None]
+            arm = next(r["arm"] for r in recs if r["row"] == row)
+            ax.scatter(vals, [i] * len(vals), color=COLORS.get(arm, "#777777"), s=24, linewidths=0, zorder=3)
+            if (arm, q) in FILED:
+                lo, hi = FILED[arm, q]
+                hit = all(lo <= v <= hi for v in vals)
+                ax.add_patch(Rectangle((lo, i - 0.25), hi - lo, 0.5, color=COLORS[arm], alpha=0.12, linewidth=0))
+                ax.annotate(f"filed {max(lo, 0):g} to {hi:g}: {'hit' if hit else 'MISS'}", (hi, i - 0.27),
+                            fontsize=7, color=COLORS[arm], ha="right", va="bottom")
+        ax.set_yticks(range(len(rows)), rows, fontsize=7)
+        ax.set_ylim(len(rows) - 0.4, -0.6)
+        ax.set_xlim(-0.1, 1.0)
+        FG.reference(ax, CUT_H if q == "H" else CUT_G, f"{q} cut-off {CUT_H if q == 'H' else CUT_G}")
+    axes[0].set_xlabel("found H, best site (each seed)")
+    axes[1].set_xlabel("found G at k = 4, best site and start")
+    hit = read["sides"] == {"taught": "above", "plain": "below"}
+    axes[0].set_title(f"Filed outcome, taught above 0.5 and plain below: {'hit' if hit else 'MISS'}",
+                      fontsize=8, loc="left", pad=12)
+    fig.suptitle("Does the rewiring share H separate the taught original from the plain 67M?", fontsize=9)
+    FG.save(fig, out / "h_by_arm_scored.png", data=recs,
+            n="E148: 2 seeds per arm for H, seed 0 for G. E139: 3 seeds, ordinary fine-tunes copying a hand-made change")
+
+
 if __name__ == "__main__":
-    sketch() if "--sketch" in sys.argv[1:] else main()
+    if "--sketch" in sys.argv[1:]:
+        sketch()
+    elif "--scored" in sys.argv[1:]:
+        scored()
+    else:
+        main()
