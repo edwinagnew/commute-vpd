@@ -48,7 +48,7 @@ def main(results: Path = HERE / "results", figures: Path = HERE / "figures") -> 
     score = json.loads((results / "stage1.json").read_text())["score"]
     o = score["outcome"]
     fig, ax = FG.figure(FG.FULL_WIDTH)
-    data = panel(ax, score, f"Prior and steering together against the share: {o['strength1']} at strength 1, {o['filed']} as searched")
+    data = panel(ax, score, f"Prior with steering vs the share: {o['strength1']} at s = 1, {o['filed']} searched")
     n = "2 to 8 seeds a side for share and steering; the prior is the original model's, one value per map; bar 0.5 decades"
     FG.save(fig, figures / "votes.png", n=n, data=data)
 
