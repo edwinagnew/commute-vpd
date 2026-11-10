@@ -23,7 +23,7 @@ below. No pods ran; no live jobs or agents of mine.
 - Prior plus steering together: the opening paragraph above; direction only, not gap size.
   `reports/analyses/2026-11-10_analysis_e149-prior-steering.md`
 
-**Waiting on you.** One decision card: `reports/decisions/2026-11-10_decision_what-share-adds.md` (compare gap sizes
+**Waiting on you.** One decision card (ask 14, in the published log v309): `reports/decisions/2026-11-10_decision_what-share-adds.md` (compare gap sizes
 from saved results for $0, build new pairs where prior and steering disagree, fill effective rank on the refits, or
 write the paragraph as it stands; recommendation in the card).
 
