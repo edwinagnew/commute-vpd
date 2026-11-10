@@ -1,7 +1,7 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
 <div class="prose"><p><strong>Waiting on you, 2026-11-10.</strong> One card is open: the definition.</p>
-<p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
+<p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one part's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
 <div class="card key decision" id="decision-gate-working-definition"><span class="chip refuted urgency">Blocking</span><div class="k">Question for you · definition-lead · new 2026-11-10</div><p class="small">Gate of part 1 (2026-11-13). Part 2 and part 3 are scored against whatever you decide here. This is a gate decision, so it is put without a recommendation.</p><h3>Adopt the second wording of reuse as the working definition, with its labels read within matched pairs?</h3>
 <p><strong>The wording, in one paragraph.</strong> A fine-tune reuses the original when some small variable of the original carries the whole change in behaviour, and the fine-tune sets it by a fixed affine map of the variable's own value: turned up, on by default, shifted. That is "re-weighted". If the variable is set from everything the original had computed, the change is "rewired"; if it needs something the original had not computed, it is "built". Two shares measure this: the re-weighting share, how much of the change one four-direction variable of the original explains, and the rewiring share, the same from everything the original computed. Each is 0 for nothing explained and 1 for all of it.</p>
@@ -9,7 +9,7 @@
 <p><strong>What the numbers say.</strong></p>
 <ul>
 <li>On the hand-made changes the search found the known answers: 0.922, 0.961 and 0.995 against a bar of 0.9.</li>
-<li>The table copies (ordinary fine-tunes of the changes where the push is set by 32 keys) read rewired on all three seeds, their built label. The copies of the re-weighted change read rewired; their re-weighting share stayed under the 0.794 cut-off, at most 0.78 after ten times longer training.</li>
+<li>The table copies (ordinary fine-tunes of the changes where the push is set by 32 keys) read rewired on all three seeds, their label by construction. The copies of the re-weighted change read rewired; their re-weighting share stayed under the 0.794 cut-off, at most 0.78 after ten times longer training.</li>
 <li>In all five matched pairs of old tasks, every seed built to reuse has a higher re-weighting share than every seed of its new twin, by at least 0.17. Under the 0.794 cut-off, only the real case label reads re-weighted; the other reuse sides read rewired, like their twins.</li>
 <li>"Built" is never read: a low rewiring share only says the search found no map. The control that could change that is designed, not run.</li>
 <li>The two shares read the outputs only. The one number that looks inside, the reversion, stayed from 0.24 to 0.26 on the copies, against 0.938 on the hand-made change. Nothing independent yet says which is right for the copies.</li>

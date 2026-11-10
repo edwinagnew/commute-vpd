@@ -18,6 +18,99 @@
 </tbody></table></div>
 <div class="prose"><p><strong>Two gate variants.</strong> On the 67M (the paper's VPD) Γ reads only the model's activations, so a moved read vector cannot change a gate. On Qwen (the newer VPD) each gate also adds a readout of its own subcomponent's activation, so a moved read vector changes its gate even with Γ frozen.</p></div>
 
+<h3>Reading reuse without a decomposition</h3>
+<div class="prose">
+<p>The candidate definition (overview, glossary) is measured by a blind search that is not told the answer. Let M be the original model and F its fine-tune, and let a <em>variable</em> φ be a linear read-out of M's activations at one place, of dimension at most 4 in every test so far. Let gap be the mean distance between M's and F's next-token distributions over a fixed input set, and write M[φ←v] for M with φ overwritten by v. Then</p>
+<p class="formula">G = 1 − min<sub>φ, s</sub> mean d(M[φ←s(v<sub>M</sub>)], F) / gap</p>
+<p>is the <strong>re-weighting share</strong>: how much of the fine-tune's change in outputs one small variable of M explains when it is set by an affine map s of its own value (turned on, up, or shifted). The <strong>rewiring share</strong> H is the same with s applied to everything M computed at that place, and any size of φ. Both run from 0 to 1, G ≤ H, and 1 − H is the built share. One number looks inside the model: the <strong>reversion</strong>, the share of the gap closed by giving F the original's value of the found φ.</p>
+<p><strong>Limits.</strong> A search finds only lower bounds, so a low H says "no map found", not "built". Cut-offs filed from the hand-made changes (G 0.794, H 0.476) do not label real fine-tunes by construction (E142), so G is reported within matched pairs.</p>
+</div>
+
+<h3>The re-gating share and the route split</h3>
+<div class="prose"><p>The route split does not split the weights. It splits a change in behaviour: score any model by its log-odds of the token the fine-tune trained it to predict, at the trained position, averaged over held-out inputs. The <strong>gain</strong> is the fine-tuned model's score minus the original's. Log-odds are not additive in the weights, so a share of the gain is not a share of the update; the outside share (glossary) measures the update itself.</p>
+<p>Let W<sub>0</sub> and W<sub>1</sub> be the original and fine-tuned weights, C<sub>0</sub> and C<sub>1</sub> their subcomponents (from any technique), and g<sub>0</sub> and g<sub>1</sub> the gates Γ computes from their activations. F<sub>0</sub> and F<sub>1</sub> score the <strong>full</strong> models. S<sub>0</sub> and S<sub>1</sub> score the <strong>subcomponents</strong> alone, Δ left out and every gate open. M<sub>ab</sub> scores the <strong>masked</strong> subcomponents, C<sub>a</sub> under gates g<sub>b</sub>, also without Δ. The gain F<sub>1</sub> − F<sub>0</sub> splits exactly into five shares:</p>
+<ul>
+<li><strong>Residual share</strong> e<sub>Δ</sub> = [(F<sub>1</sub> − S<sub>1</sub>) − (F<sub>0</sub> − S<sub>0</sub>)] / gain. How much more the update relies on Δ.</li>
+<li><strong>Masked-off share</strong> e<sub>gate</sub> = [(S<sub>1</sub> − M<sub>11</sub>) − (S<sub>0</sub> − M<sub>00</sub>)] / gain. Gain in subcomponents that Γ keeps off.</li>
+<li>The rest, (M<sub>11</sub> − M<sub>00</sub>) / gain, is the gain the masked model shows. Either the subcomponents or the gates can cause it:
+<ul>
+<li><strong>Direct share</strong> d = (M<sub>10</sub> − M<sub>00</sub>) / gain: new subcomponents, old gates.</li>
+<li><strong>Re-switching share</strong> r = (M<sub>01</sub> − M<sub>00</sub>) / gain: old subcomponents, new gates.</li>
+<li><strong>Interaction share</strong> i = (M<sub>11</sub> − M<sub>10</sub> − M<sub>01</sub> + M<sub>00</sub>) / gain: what the two do only together.</li>
+</ul></li>
+</ul>
+<p><strong>The re-switching share r is the key quantity</strong>, called the <strong>re-gating share</strong> everywhere else in this log (not to be confused with the definition's re-weighting share above). Keep C<sub>0</sub> and change only its gates, from g<sub>0</sub> to g<sub>1</sub>: r is the fraction of the real gain that adds to the masked score. It never uses C<sub>1</sub>, so no technique changes it. A high r suggests the fine-tune reuses existing subcomponents that Γ now switches on (section {{n:overview}}), subject to the cautions below.</p>
+</div>
+<div class="tblwrap"><table>
+<thead><tr><th></th><th>Γ's masks as before</th><th>Γ's masks changed</th></tr></thead>
+<tbody>
+<tr><td>The moved subcomponents carry the gain</td><td><strong>Strengthen</strong>, direct share d</td><td><strong>Re-route</strong>, interaction share i</td></tr>
+<tr><td>They do not: Δ, or subcomponents as before</td><td><strong>Create</strong>, residual e<sub>Δ</sub> and masked-off e<sub>gate</sub></td><td><strong>Re-gate</strong>, re-switching share r</td></tr>
+</tbody></table></div>
+<div class="prose"><p>The shares describe mechanism and do not decide a pass. So far, behaviours the model already has read as re-gate and the cipher as create; strengthen is about a tenth or less and re-route near zero (<a href="#e5">E5</a>, <a href="#e12">E12</a>, <a href="#e16">E16</a>). The shares are read in VPD's stand-in, which the fine-tuned model does not contain, and r reads the same for a fine-tune that learned nothing (<a href="#e36">E36</a>, <a href="#e53">E53</a>, <a href="#e58">E58</a>).</p></div>
+<div class="prose"><p><strong>The baselines it is compared with</strong> (E133), each testing one cheaper explanation of what r picks up: r on an untrained decomposition (each matrix's plain SVD), whether training the decomposition matters; three neuron readings (the same swap on MLP neurons); steering (adding the fine-tune's mean activation change to the original model); the original model's prior for the trained answer; update size; and the update's effective rank. A method "agrees" on a pair when it reads higher on the reuse side with the seeds not overlapping.</p></div>
+
+<h3>Carrying an update onto the decomposition</h3>
+<div class="prose"><p>Move the pieces, Γ's parameters and Δ frozen, so the decomposition describes the fine-tuned model: the behaviour is kept, VPD's adversarial check passes, and Δ does not absorb the update (it may change a little). The figure shows the three kinds of operation; the cards list every one tried.</p></div>
+<figure class="boxed">
+<svg viewBox="0 0 760 340" role="img" aria-label="Three maps laid out as rows: what each takes as input, what it does, and where the update ends up in the decomposition" font-family="IBM Plex Sans, Helvetica Neue, Arial, sans-serif" font-size="12.5">
+  <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
+  <g font-family="IBM Plex Mono, Menlo, monospace" font-size="10.5" fill="var(--muted)" letter-spacing="0.08em">
+    <text x="112" y="22" text-anchor="middle">INPUT</text>
+    <text x="385" y="22" text-anchor="middle">OPERATION</text>
+    <text x="652" y="22" text-anchor="middle">WHERE δW ENDS UP</text>
+  </g>
+  <!-- row 1: component training -->
+  <g>
+    <rect x="22" y="44" width="180" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <text x="112" y="72" text-anchor="middle" font-weight="600" fill="currentColor">The training step</text>
+    <text x="112" y="90" text-anchor="middle" fill="var(--muted)">loss, data, optimiser</text>
+    <path d="M202 79 L256 79" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
+    <rect x="258" y="44" width="254" height="70" rx="7" fill="var(--accent)" fill-opacity="0.10" stroke="var(--accent)" stroke-width="2"/>
+    <text x="385" y="66" text-anchor="middle" font-weight="600" fill="currentColor">Component training</text>
+    <text x="385" y="84" text-anchor="middle" fill="currentColor">apply the same step to the pieces' u, v</text>
+    <text x="385" y="101" text-anchor="middle" fill="var(--muted)">Γ and Δ frozen · repeated every step</text>
+    <path d="M512 79 L560 79" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
+    <rect x="562" y="44" width="176" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <g transform="translate(576,52)"><rect width="52" height="11" rx="2" fill="var(--accent)"/><rect y="14" width="52" height="11" rx="2" fill="var(--accent)"/><rect y="28" width="52" height="11" rx="2" fill="var(--accent)"/><rect y="43" width="52" height="11" rx="2" fill="none" stroke="currentColor" stroke-dasharray="3 2"/></g>
+    <text x="640" y="74" fill="currentColor">in the pieces</text>
+    <text x="640" y="92" fill="var(--muted)">Δ untouched</text>
+  </g>
+  <!-- row 2: least-squares split -->
+  <g>
+    <rect x="22" y="150" width="180" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <text x="112" y="178" text-anchor="middle" font-weight="600" fill="currentColor">The finished update δW</text>
+    <text x="112" y="196" text-anchor="middle" fill="var(--muted)">from a fine-tune or a LoRA</text>
+    <path d="M202 185 L256 185" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
+    <rect x="258" y="150" width="254" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <text x="385" y="172" text-anchor="middle" font-weight="600" fill="currentColor">Least-squares split</text>
+    <text x="385" y="190" text-anchor="middle" fill="currentColor">smallest du, dv with dU Vᵀ + U dVᵀ ≈ δW</text>
+    <text x="385" y="207" text-anchor="middle" fill="var(--muted)">one-shot on the finished run</text>
+    <path d="M512 185 L560 185" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
+    <rect x="562" y="150" width="176" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <g transform="translate(576,158)"><rect width="52" height="11" rx="2" fill="var(--accent)"/><rect y="14" width="52" height="11" rx="2" fill="var(--accent)"/><rect y="28" width="52" height="11" rx="2" fill="var(--accent)"/><rect y="43" width="52" height="11" rx="2" fill="var(--warn)" fill-opacity="0.55" stroke="currentColor" stroke-dasharray="3 2"/></g>
+    <text x="640" y="180" fill="currentColor">what fits, in the pieces</text>
+    <text x="640" y="198" fill="var(--muted)">the rest into Δ</text>
+  </g>
+  <!-- row 3: do-nothing -->
+  <g>
+    <rect x="22" y="256" width="180" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <text x="112" y="284" text-anchor="middle" font-weight="600" fill="currentColor">The finished update δW</text>
+    <text x="112" y="302" text-anchor="middle" fill="var(--muted)">from a fine-tune or a LoRA</text>
+    <path d="M202 291 L256 291" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
+    <rect x="258" y="256" width="254" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <text x="385" y="278" text-anchor="middle" font-weight="600" fill="currentColor">Do-nothing</text>
+    <text x="385" y="296" text-anchor="middle" fill="currentColor">leave every piece as it was</text>
+    <text x="385" y="313" text-anchor="middle" fill="var(--muted)">the reference the others are compared with</text>
+    <path d="M512 291 L560 291" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
+    <rect x="562" y="256" width="176" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
+    <g transform="translate(576,264)"><rect width="52" height="11" rx="2" fill="none" stroke="currentColor"/><rect y="14" width="52" height="11" rx="2" fill="none" stroke="currentColor"/><rect y="28" width="52" height="11" rx="2" fill="none" stroke="currentColor"/><rect y="43" width="52" height="11" rx="2" fill="var(--warn)" fill-opacity="0.55" stroke="currentColor" stroke-dasharray="3 2"/></g>
+    <text x="640" y="286" fill="currentColor">all of it in Δ</text>
+    <text x="640" y="304" fill="var(--muted)">pieces untouched</text>
+  </g>
+</svg>
+<figcaption>The three operations, one per row. Each leaves the update in the pieces (teal bars), in the residual Δ (dashed bar), or split between them, and returns a decomposition scored on the updated weights.</figcaption>
+</figure>
 <h3>The operations</h3>
 <div class="cards">
   <div class="card flagged"><span class="chip uninf urgency">Reference</span><div class="k">Do-nothing</div><p class="formula">W′ = U Vᵀ + (Δ + δW)</p><p>The whole update goes into Δ; the subcomponents and Γ are untouched. The yardstick, not a candidate. It fails the adversarial check on the large Adam fine-tune and every broad fine-tune read, so size alone does not decide it (E22, E39).</p></div>
@@ -33,31 +126,9 @@
   <div class="card flagged"><span class="chip holds urgency">Best map</span><div class="k">Teacher training</div><p class="formula">min<sub>dU, dV</sub> Σ<sub>t</sub> w<sub>t</sub> KL(p<sub>T</sub> ‖ p<sub>W′</sub>),&ensp;T = W₀ + δW,&ensp;W′ = (U + dU)(V + dV)ᵀ + Δ</p><p><strong>What it does.</strong> Component training whose loss is the fine-tuned model's predictions, on the task's text with the trigger weighted up, or on plain Pile text; no labels (the user's technique, 2026-10-23).</p><p><strong>Status.</strong> The only map of a finished update that keeps the behaviour, passes the check and leaves Δ alone, on narrow fine-tunes (E34, E42); it fails on broad full-weight fine-tunes (E37, E39). Adam at 1e-5.</p></div>
 </div>
 
-<h3>Where the gain sits: four readings and the route split</h3>
-<div class="prose"><p>The route split does not split the weights. It splits a change in behaviour: score any model by its log-odds of the token the fine-tune trained it to predict, at the trained position, averaged over held-out inputs. The <strong>gain</strong> is the fine-tuned model's score minus the original's. Log-odds are not additive in the weights, so a share of the gain is not a share of the update; the outside share (glossary) measures the update itself.</p>
-<p>Let W<sub>0</sub> and W<sub>1</sub> be the original and fine-tuned weights, C<sub>0</sub> and C<sub>1</sub> their subcomponents (from any technique), and g<sub>0</sub> and g<sub>1</sub> the gates Γ computes from their activations. F<sub>0</sub> and F<sub>1</sub> score the <strong>full</strong> models. S<sub>0</sub> and S<sub>1</sub> score the <strong>subcomponents</strong> alone, Δ left out and every gate open. M<sub>ab</sub> scores the <strong>masked</strong> subcomponents, C<sub>a</sub> under gates g<sub>b</sub>, also without Δ. The gain F<sub>1</sub> − F<sub>0</sub> splits exactly into five shares:</p>
-<ul>
-<li><strong>Residual share</strong> e<sub>Δ</sub> = [(F<sub>1</sub> − S<sub>1</sub>) − (F<sub>0</sub> − S<sub>0</sub>)] / gain. How much more the update relies on Δ.</li>
-<li><strong>Masked-off share</strong> e<sub>gate</sub> = [(S<sub>1</sub> − M<sub>11</sub>) − (S<sub>0</sub> − M<sub>00</sub>)] / gain. Gain in subcomponents that Γ keeps off.</li>
-<li>The rest, (M<sub>11</sub> − M<sub>00</sub>) / gain, is the gain the masked model shows. Either the subcomponents or the gates can cause it:
-<ul>
-<li><strong>Direct share</strong> d = (M<sub>10</sub> − M<sub>00</sub>) / gain: new subcomponents, old gates.</li>
-<li><strong>Re-switching share</strong> r = (M<sub>01</sub> − M<sub>00</sub>) / gain: old subcomponents, new gates.</li>
-<li><strong>Interaction share</strong> i = (M<sub>11</sub> − M<sub>10</sub> − M<sub>01</sub> + M<sub>00</sub>) / gain: what the two do only together.</li>
-</ul></li>
-</ul>
-<p><strong>The re-switching share r is the key quantity</strong> (the re-gating or re-weight share). Keep C<sub>0</sub> and change only its gates, from g<sub>0</sub> to g<sub>1</sub>: r is the fraction of the real gain that adds to the masked score. It never uses C<sub>1</sub>, so no technique changes it. A high r suggests the fine-tune reuses existing subcomponents that Γ now switches on (section {{n:overview}}), subject to the cautions below.</p>
-</div>
-<div class="tblwrap"><table>
-<thead><tr><th></th><th>Γ's masks as before</th><th>Γ's masks changed</th></tr></thead>
-<tbody>
-<tr><td>The moved subcomponents carry the gain</td><td><strong>Strengthen</strong>, direct share d</td><td><strong>Re-wire</strong>, interaction share i</td></tr>
-<tr><td>They do not: Δ, or subcomponents as before</td><td><strong>Create</strong>, residual e<sub>Δ</sub> and masked-off e<sub>gate</sub></td><td><strong>Re-weight</strong>, re-switching share r</td></tr>
-</tbody></table></div>
-<div class="prose"><p>The shares describe mechanism and do not decide a pass. So far, behaviours the model already has read as re-weight and the cipher as create; strengthen is about a tenth or less and re-wire near zero (<a href="#e5">E5</a>, <a href="#e12">E12</a>, <a href="#e16">E16</a>). The shares are read in VPD's stand-in, which the fine-tuned model does not contain, and r reads the same for a fine-tune that learned nothing (<a href="#e36">E36</a>, <a href="#e53">E53</a>, <a href="#e58">E58</a>).</p></div>
 
 <h3>The techniques compared</h3>
-<div class="prose"><p>One row per technique, three tables with the same rows. Under an update type or a task, ✓ means the technique keeps the behaviour and passes the adversarial check there; for operations that keep the fine-tuned weights, the check alone. Hover a cell for its number. The adversarial check on task windows has no powered version on this model (<a href="#e5">E5</a>), so it has no column.</p></div>
+<div class="prose"><p>One row per technique; hover a cell for its number. Versions of this section up to log v307 also broke each row down by update type and by task; the cards hold those readings, and the summary below keeps what they showed. The adversarial check on task windows has no powered version on this model (<a href="#e5">E5</a>), so it has no column.</p></div>
 <p class="legend cmpkey"><span class="lg"><b class="cv y">✓</b> yes</span><span class="lg"><b class="cv p">◐</b> in part</span><span class="lg"><b class="cv n">✗</b> no</span><span class="lg"><b class="cv u">—</b> untested</span><span class="lg"><b class="cv r">⧗</b> being planned or running</span><span class="lg"><b class="cv q">?</b> no answer</span></p>
 
 <h4 class="tblhead">What each technique keeps</h4>
@@ -90,70 +161,7 @@
 <tr><td>With masked losses</td><td class="na" colspan="7" title="the recipe with nothing to copy reads 3.84; at coefficient 0 it reads 1.01 where 0.5 reads 25.99, on the cipher windows">Not run: its controls fail the adversarial check, four of four masked versions (<a href="#e37">E37</a>, <a href="#e42">E42</a>)</td></tr>
 </tbody></table></div>
 
-<h4 class="tblhead">By update type</h4>
-<div class="tblwrap"><table class="cmp">
-<thead><tr><th>Technique</th><th>Adam fine-tune</th><th>SGD fine-tune</th><th>LoRA</th><th>Broad, no trigger</th><th>Update size and steps</th><th>Along training</th></tr></thead>
-<tbody>
-<tr class="grp"><td colspan="7">Reference</td></tr>
-<tr><td>Do-nothing</td><td class="p" title="the large one fails at step 10 (2.52) and passes at 100; small ones pass">◐ <a href="#e16">E16</a> <a href="#e22">E22</a></td><td class="p" title="narrow passes (1.12); broad fails on the first rows (2.62; not read on others)">◐ <a href="#e21">E21</a> <a href="#e39">E39</a></td><td class="p" title="narrow passes (1.04 to 1.22); broad fails (2.65)">◐ <a href="#e27">E27</a> <a href="#e39">E39</a></td><td class="n" title="2.62 to 4.87">✗ <a href="#e37">E37</a> <a href="#e39">E39</a></td><td class="p" title="small passes at every step, large fails; broad SGD fails below the size at which emoticon SGD passes">◐ <a href="#e22">E22</a> <a href="#e39">E39</a></td><td class="y" title="by construction: every step goes into Δ">✓</td></tr>
-<tr class="grp"><td colspan="7">Splits of a finished update</td></tr>
-<tr><td>Rescaling</td><td class="n" title="keeps none of the behaviour">✗ <a href="#e16">E16</a></td><td class="u">—</td><td class="n">✗ <a href="#e16">E16</a></td><td class="u">—</td><td class="n" title="keeps none at steps 10, 100 and 1000">✗ <a href="#e16">E16</a></td><td class="u">—</td></tr>
-<tr><td>Least squares</td><td class="p" title="the large one fails (6.96), small ones pass; Δ keeps 0.32 to 0.39">◐ <a href="#e16">E16</a> <a href="#e22">E22</a></td><td class="p" title="passes; Δ keeps 0.25 to 0.30">◐ <a href="#e21">E21</a> <a href="#e22">E22</a></td><td class="p" title="passes (at most 1.32); Δ keeps 0.37 to 0.54">◐ <a href="#e14">E14</a> <a href="#e27">E27</a></td><td class="u">—</td><td class="p" title="small passes at every step, large fails at every step">◐ <a href="#e22">E22</a></td><td class="na" title="its step-by-step form is the step split">n/a</td></tr>
-<tr><td>Step split</td><td class="p" title="the large path fails at step 1000 (2.67); the small Adam path passes">◐ <a href="#e19">E19</a> <a href="#e25">E25</a></td><td class="p" title="faithful (0.98 at step 1000), but Δ holds 1.27 to 1.78 of the update">◐ <a href="#e25">E25</a></td><td class="u">—</td><td class="u">—</td><td class="p" title="fails on the large path only">◐ <a href="#e19">E19</a> <a href="#e25">E25</a></td><td class="p" title="Δ's share grows along the path, 0.40 to 1.38">◐ <a href="#e19">E19</a></td></tr>
-<tr><td>Adjoint, unscaled</td><td class="p" title="small passes, large fails (2.40 at step 10)">◐ <a href="#e31">E31</a></td><td class="p" title="passes, at 1.3 to 2.2 times the fine-tune's damage">◐ <a href="#e31">E31</a></td><td class="u">—</td><td class="u">—</td><td class="p" title="fails only on the large update">◐ <a href="#e31">E31</a></td><td class="u">—</td></tr>
-<tr><td>Adjoint, scaled</td><td class="p" title="passes; keeps 0.93 falling to 0.10">◐ <a href="#e16">E16</a></td><td class="p" title="passes; keeps 0.60 on emoticon, 0.07 to 0.39 on the word tasks">◐ <a href="#e22">E22</a> <a href="#e31">E31</a></td><td class="p" title="passes; keeps 0.04 to 0.56">◐ <a href="#e16">E16</a> <a href="#e27">E27</a></td><td class="p" title="passes for Adam, SGD and LoRA; keeps 0.67 to 0.80">◐ <a href="#e37">E37</a> <a href="#e39">E39</a></td><td class="p" title="the kept share falls with size, along one curve per task">◐ <a href="#e31">E31</a></td><td class="na" title="its step-by-step form is the step split">n/a</td></tr>
-<tr class="grp"><td colspan="7">Changing Γ</td></tr>
-<tr><td>Γ refit</td><td class="q" title="the large least-squares state only; the control drifted">? <a href="#e15">E15</a></td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="u">—</td></tr>
-<tr><td>Fixed shift</td><td class="n" title="26.1">✗ <a href="#e30">E30</a></td><td class="n" title="4.7 to 8.0">✗ <a href="#e30">E30</a></td><td class="u">—</td><td class="u">—</td><td class="u" title="10-step updates only">—</td><td class="u">—</td></tr>
-<tr class="grp"><td colspan="7">Component training, with labels: each row is read in place of the fine-tune named</td></tr>
-<tr><td>Adam</td><td class="y" title="in the Adam fine-tune's place, to step 1000">✓ <a href="#e16">E16</a></td><td class="na">n/a</td><td class="na">n/a</td><td class="n" title="component training with labels on the broad task: the Adam state chosen at step 1,000 fails (7.24)">✗ <a href="#e39">E39</a></td><td class="p" title="fails at step 10 while it damages; passes at 100 and 1000">◐ <a href="#e21">E21</a> <a href="#e26">E26</a></td><td class="y" title="by construction, to step 1000">✓ <a href="#e16">E16</a></td></tr>
-<tr><td>Plain SGD</td><td class="na">n/a</td><td class="p" title="fails late on r0 and r1">◐ <a href="#e21">E21</a> <a href="#e26">E26</a></td><td class="na">n/a</td><td class="p" title="component training with labels on the broad task: passes at step 100 (1.28, 96% of the fine-tune's gain); later steps not read; one batch order">◐ <a href="#e39">E39</a></td><td class="p" title="passes below a weight change of about 0.009, fails above">◐ <a href="#e21">E21</a></td><td class="p" title="fails late">◐ <a href="#e26">E26</a></td></tr>
-<tr><td>Rank 8</td><td class="na">n/a</td><td class="na">n/a</td><td class="y" title="in the LoRA's place; 0.97 to 1.12 to step 1000">✓ <a href="#e16">E16</a></td><td class="u">—</td><td class="y" title="steps 10, 100 and 1000">✓ <a href="#e16">E16</a></td><td class="y">✓ <a href="#e16">E16</a></td></tr>
-<tr><td>Top few only</td><td class="y" title="30 steps">✓ <a href="#e4">E4</a></td><td class="na">n/a</td><td class="na">n/a</td><td class="u">—</td><td class="u" title="30 steps only">—</td><td class="u">—</td></tr>
-<tr><td>Gated-off control</td><td class="na" colspan="6">A route-split control, read at step 10 only (<a href="#e5">E5</a>)</td></tr>
-<tr class="grp"><td colspan="7">Teacher training, no labels</td></tr>
-<tr><td>Task text</td><td class="y" title="three Adam teachers, at most 1.37">✓ <a href="#e34">E34</a></td><td class="p" title="three narrow SGD teachers pass; the broad one fails on rows 0-255 (2.07) and passes on rows 256-511 (1.18)">◐ <a href="#e34">E34</a> <a href="#e39">E39</a></td><td class="y" title="narrow 0.93 to 1.00; the broad LoRA passes at two seeds (1.27, 1.27), state not saved">✓ <a href="#e34">E34</a> <a href="#e39">E39</a></td><td class="p" title="full-weight Adam fails on both row sets (2.20, 1.88) and four more blocks (1.66 to 2.06); the broad LoRA passes (1.13 to 1.27); SGD's passes carry no weight, the check also passing its do-nothing (E49)">◐ <a href="#e39">E39</a> <a href="#e49">E49</a></td><td class="p" title="copies of the fine-tune at steps 10 and 100 keep the behaviour; step 10 sits at the pass line: emoticon passes at one of three batch orders (1.55, 1.28, 1.51), the which copy passes by 1% at one order">◐ <a href="#e41">E41</a></td><td class="y" title="yes, provisionally, for one emoticon fine-tune: seven checkpoints 100 student steps apart, two of them seen by the check (step 1,000 a clear pass, step 10 at the line); the chain ends no worse than one long copy, damage 1.2 times a single copy's">✓ <a href="#e41">E41</a></td></tr>
-<tr><td>Pile text</td><td class="y">✓ <a href="#e34">E34</a></td><td class="y">✓ <a href="#e34">E34</a></td><td class="p" title="faithful on every adversarial read; at 5,000 steps emoticon is learnt (0.91, passes), r1 sits at the 0.9 bar (0.89) and r0 is at 0.82 and still rising; a second batch order agrees. The 10,000-step run (E34 Amendment 7) was filed and then cancelled by the user as low value">◐ <a href="#e34">E34</a></td><td class="n" title="1.74">✗ <a href="#e37">E37</a></td><td class="y" title="emoticon only: the fine-tune at steps 10 and 100 copied at 0.998 and 0.995, passing (1.13, 0.95)">✓ <a href="#e41">E41</a></td><td class="p" title="emoticon only: the chain passes within the filed tolerances; its change is 21% larger than one copy's">◐ <a href="#e41">E41</a></td></tr>
-<tr><td>Plain-SGD map</td><td class="n" title="fails at step 1,000 on r1's Adam teacher (3.14), keeping the behaviour; one task, one rate (0.03); the Adam copy of the same teacher passes (E34 Amendment 6)">✗ <a href="#e34">E34</a></td><td class="p" title="emoticon passes; r0 and r1 fail">◐ <a href="#e34">E34</a></td><td class="n" title="fails at step 1,000 on r1's LoRA teacher (2.86), keeping the behaviour; one task, one rate (0.03); the Adam copy of the same teacher passes (E34 Amendment 6)">✗ <a href="#e34">E34</a></td><td class="u">—</td><td class="u">—</td><td class="u">—</td></tr>
-<tr><td>From adjoint split</td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="n" title="1.84">✗ <a href="#e37">E37</a></td><td class="u">—</td><td class="u">—</td></tr>
-<tr><td>Plus remainder</td><td class="n" title="emoticon, the one fine-tune tried: fails at steps 10 and 1,000 on the H100; on the L40 step 1,000 fails and step 10 is inconclusive at three starts (E47)">✗ <a href="#e43">E43</a> E47</td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="n" title="fails at step 1,000 on both cards; at step 10 fails on the H100 and is inconclusive on the L40; the remainder shrinks from 5.1 to 1.1 times the fine-tune's squared size">✗ <a href="#e43">E43</a> E47</td><td class="u">—</td></tr>
-<tr><td>With masked losses</td><td class="na" colspan="6">Not run</td></tr>
-</tbody></table></div>
-
-<h4 class="tblhead">By task, robustness and cost</h4>
-<div class="tblwrap"><table class="cmp">
-<thead><tr><th>Technique</th><th>Emoticon</th><th>Word tasks</th><th>Rare target</th><th>Cipher</th><th>Seed or batch order</th><th>Qwen3-1.7B</th><th>Cost</th></tr></thead>
-<tbody>
-<tr class="grp"><td colspan="8">Reference</td></tr>
-<tr><td>Do-nothing</td><td class="p" title="the large Adam fine-tune fails at step 10">◐ <a href="#e16">E16</a></td><td class="p" title="fails 3 of 5 ladder tasks at step 10, up to 2.26">◐ <a href="#e11">E11</a></td><td class="p" title="part of the ladder in E11">◐ <a href="#e11">E11</a></td><td class="p" title="rand1 passes (1.06); ident32 and rand32 fail">◐ <a href="#e10">E10</a></td><td class="y" title="two fine-tune seeds">✓ <a href="#e31">E31</a></td><td class="r" title="running: an SFT update read at steps 1 and 10; rerun with warm-up">⧗ E40</td><td class="na">none</td></tr>
-<tr class="grp"><td colspan="8">Splits of a finished update</td></tr>
-<tr><td>Rescaling</td><td class="n">✗ <a href="#e16">E16</a></td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="na">seconds</td></tr>
-<tr><td>Least squares</td><td class="p">◐ <a href="#e16">E16</a> <a href="#e22">E22</a></td><td class="u">—</td><td class="u">—</td><td class="n" title="1.73 to 38.9">✗ <a href="#e10">E10</a></td><td class="p" title="two seeds, route split only">◐ <a href="#e12">E12</a></td><td class="u">—</td><td class="na">seconds</td></tr>
-<tr><td>Step split</td><td class="p">◐ <a href="#e19">E19</a> <a href="#e25">E25</a></td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="na" title="E19: 31 minutes on an L40 with the harness">a split per step</td></tr>
-<tr><td>Adjoint, unscaled</td><td class="p">◐ <a href="#e31">E31</a></td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="na">seconds</td></tr>
-<tr><td>Adjoint, scaled</td><td class="p" title="passes; keeps less as the update grows">◐ <a href="#e16">E16</a> <a href="#e31">E31</a></td><td class="p" title="passes; keeps 0.05 to 0.39">◐ <a href="#e31">E31</a> <a href="#e34">E34</a></td><td class="u">—</td><td class="u">—</td><td class="y" title="the kept share replicates within 0.016">✓ <a href="#e31">E31</a></td><td class="u">—</td><td class="na" title="plus one pass for the input moments">seconds</td></tr>
-<tr class="grp"><td colspan="8">Changing Γ</td></tr>
-<tr><td>Γ refit</td><td class="q">? <a href="#e15">E15</a></td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="na" title="2.3 s per step on an H100">$9 a refit</td></tr>
-<tr><td>Fixed shift</td><td class="n">✗ <a href="#e30">E30</a></td><td class="n" title="r1">✗ <a href="#e30">E30</a></td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="na">forward passes</td></tr>
-<tr class="grp"><td colspan="8">Component training, with labels</td></tr>
-<tr><td>Adam</td><td class="y" title="0.97 to 1.12">✓ <a href="#e2">E2</a> <a href="#e16">E16</a></td><td class="p" title="fails at step 10, passes at 100 and 1000">◐ <a href="#e11">E11</a> <a href="#e26">E26</a></td><td class="n" title="no clean pass; 6.74 on r2 t275">✗ <a href="#e11">E11</a> <a href="#e26">E26</a></td><td class="p" title="rand32 passes from step 100 (0.94 to 0.98)">◐ <a href="#e10">E10</a> <a href="#e21">E21</a></td><td class="y" title="two batch orders; three seeds on r2 t359">✓ <a href="#e11">E11</a> <a href="#e26">E26</a></td><td class="u" title="the full set does not fit one 80 GB card">—</td><td class="na">a fine-tune</td></tr>
-<tr><td>Plain SGD</td><td class="y" title="0.99 to 1.04">✓ <a href="#e21">E21</a></td><td class="p" title="passes at steps 10 and 100, fails at 1000">◐ <a href="#e21">E21</a> <a href="#e26">E26</a></td><td class="n" title="5.9 at step 100">✗ <a href="#e26">E26</a></td><td class="n" title="rand32 4.16, ident32 2.37">✗ <a href="#e21">E21</a></td><td class="y">✓ <a href="#e26">E26</a></td><td class="u">—</td><td class="na">a fine-tune</td></tr>
-<tr><td>Rank 8</td><td class="y">✓ <a href="#e13">E13</a> <a href="#e16">E16</a></td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="y" title="seeds 0 and 1">✓ <a href="#e13">E13</a></td><td class="u">—</td><td class="na">less memory</td></tr>
-<tr><td>Top few only</td><td class="y">✓ <a href="#e4">E4</a></td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="na">a fine-tune</td></tr>
-<tr><td>Gated-off control</td><td class="na" colspan="7">Route split only, on emoticon and the ladder tasks (<a href="#e5">E5</a>)</td></tr>
-<tr class="grp"><td colspan="8">Teacher training, no labels</td></tr>
-<tr><td>Task text</td><td class="y">✓ <a href="#e34">E34</a></td><td class="y" title="r0 and r1">✓ <a href="#e34">E34</a></td><td class="n" title="r2 t275, with a fine-tune that itself reached only 0.86: not placed; the copy misses both bars narrowly (0.808 against the kept line 0.813; ratio 1.45, inconclusive) on one batch order; the fine-tune left in Δ reads 11.3 (E34 Amendment 6)">✗ <a href="#e34">E34</a></td><td class="y" title="all three cipher tasks keep 0.96 to 1.00 and pass (0.96 to 0.99), Δ untouched; on the random ciphers the CI-masked model at the trigger keeps almost none of it">✓ <a href="#e42">E42</a></td><td class="y" title="a second batch order moves the target probability by at most 0.005, weight changes at cosine 0.91; an adversary eight times longer agrees">✓ <a href="#e34">E34</a></td><td class="r" title="running, on SFT and FineWeb rows">⧗ E40</td><td class="na" title="on an H100; E34 made 18 states in 67 minutes for $6.13">4 min a state</td></tr>
-<tr><td>Pile text</td><td class="y">✓ <a href="#e34">E34</a></td><td class="y">✓ <a href="#e34">E34</a></td><td class="n" title="r2 t275, with a fine-tune that itself reached only 0.86: not placed; the copy reads 0.74 and fails (2.48) on one batch order (E34 Amendment 6)">✗ <a href="#e34">E34</a></td><td class="p" title="0.91 and a pass on the one-pair cipher, filed below 0.5; 0.02 and 0.001 on the other two">◐ <a href="#e42">E42</a></td><td class="p" title="the same behaviour within 0.032, but weight changes that point apart (cosine 0.43); the LoRA Pile-text copies agree at a second order within 0.042 in target probability and 11% in ratio">◐ <a href="#e34">E34</a></td><td class="r">⧗ E40</td><td class="na">as above</td></tr>
-<tr><td>Plain-SGD map</td><td class="y" title="1.11">✓ <a href="#e34">E34</a></td><td class="n" title="3.14 and 3.39">✗ <a href="#e34">E34</a></td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="na">as above</td></tr>
-<tr><td>From adjoint split</td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="na">as above</td></tr>
-<tr><td>Plus remainder</td><td class="n" title="steps 10 and 1,000">✗ <a href="#e43">E43</a> E47</td><td class="u">—</td><td class="u">—</td><td class="u">—</td><td class="u" title="one fine-tune seed and batch order; three adversary starts in E47, which move the step-10 ordering against do-nothing">—</td><td class="u">—</td><td class="na" title="teacher training, then one subtraction">as above</td></tr>
-<tr><td>With masked losses</td><td class="na" colspan="7">Not run</td></tr>
-</tbody></table></div>
-
 <div class="cards">
-  <div class="card"><div class="k">What the comparison shows</div><p>No operation leaves Δ untouched and also reproduces the fine-tuned weights; the criterion is only that Δ may not absorb the update. Only component training (which needs labels) and teacher training keep the behaviour and pass the adversarial check with Δ untouched, so only teacher training maps a finished update. The scaled adjoint split loses behaviour as the update grows; unscaled, it damages the rest of the model. Teacher training's known failures are broad full-weight fine-tunes and plain SGD at rate 0.03 run to step 1000 (E34 Amendment 6; E47); the rare target is not yet placed.</p></div>
-  <div class="card"><div class="k">Gaps</div><ul>
-    <li>Broad updates: on eight blocks of Pile rows, Adam's teacher-trained decomposition fails every one and the LoRA's passes every new one (E39, E49). The check had no power on SGD there, so SGD stays unresolved (E49).</li>
-  </ul></div>
+  <div class="card"><div class="k">What the comparison shows</div><p>No operation both leaves Δ untouched and reproduces the fine-tuned weights; the criterion is only that Δ may not absorb the update. Only component training, which needs labels, and teacher training keep the behaviour and pass with Δ untouched, so teacher training is the one map of a finished update. It holds on Adam, SGD and LoRA trigger fine-tunes, on emoticon, the word tasks and the cipher (E34, E42). It fails on broad full-weight fine-tunes, where a LoRA's copy passes and the check has no power on SGD (E39, E49), on the rare target, and on plain SGD at rate 0.03 run to step 1000 (E47). About 4 minutes a state on the 67M; not run to completion on Qwen.</p></div>
 </div>
 </section>
