@@ -117,3 +117,13 @@ Answered 2026-11-10: the user chose "Run it" (Definition 1, reference (i)).
 
 ## Not run
 Anything on a GPU yet. Predictions are filed by the code writer before the job.
+
+## Changes made while writing the code (2026-11-10, code writer, commit c2211fcd)
+- **Positive control.** The planned change at `layers.27.mlp.down_proj` does not leave the gates fixed. Γ also reads
+  29 residual taps, and tap 28 is that layer's output. The control is now the final RMS norm weight × 2. That change
+  sits after every tap, so the gates must match bitwise and r = 0. It only shows that r reads 0 when the gates cannot
+  move. Nothing tests the high end.
+- **E40 check value.** The KL check for E40 uses 0.618377 (`results/controls.json` `kl_e40_16`). The 0.532144 named
+  above is the Gaussian change's KL.
+- **Rows.** The rows are 64 per row set, of 512 tokens each, as E45 built them. Only e40 and gold_s0 share rows, so
+  only their difference is truly paired. The card's n of 128 and its spread were measured on E132's maths rows.
