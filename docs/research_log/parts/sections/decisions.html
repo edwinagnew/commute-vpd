@@ -1,6 +1,6 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
-<div class="prose"><p><strong>Waiting on you, 2026-11-10.</strong> Two cards are open: the old-task labels and the re-gating share on Qwen.</p>
+<div class="prose"><p><strong>Waiting on you, 2026-11-10.</strong> One card is open: the old-task labels.</p>
 <p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
 <div class="card key decision" id="decision-old-task-cutoff"><span class="chip open urgency">Soon</span><div class="k">Question for you · definition-lead · new 2026-11-10</div><p class="small">Feeds the 2026-11-13 gate page. Nothing runs until this is decided.</p><h3>The old tasks' labels do not follow how they were built, but their ordering does. What should the gate page carry?</h3>
@@ -13,15 +13,5 @@
 </ul>
 <p><strong>Recommendation: option c</strong>, with option b as a later cell if you want absolute labels. A cut-off reset on these same 16 tasks would be fitted to the answer; the within-pair ordering is what the data support today.</p>
 <p class="small">Names in the reports: cell P1.7; <code>reports/decisions/2026-11-10_decision_old-task-cutoff.md</code>; <code>reports/analyses/2026-11-10_analysis_old-task-labels.md</code>.</p></div>
-<div class="card key decision" id="decision-qwen-regating-share"><span class="chip open urgency">Soon</span><div class="k">Question for you · qwen-lead · new 2026-11-09</div><p class="small">Wanted for the 2026-11-18 gate. Nothing runs until this is decided.</p><h3>On Qwen3-1.7B the re-gating share sits near its ceiling even for random changes. Should it stay as part 3's reading on Qwen?</h3>
-<p><strong>What was seen.</strong> On the new decomposition, four saved updates and two size-matched random changes all read 0.991 to 0.9992; the separation is 0.0026 to 0.0046 against a seed spread of 0.0020. A change that taught nothing reads almost the same, so a high share cannot show that an update re-gated.</p>
-<ul>
-<li><strong>Option a: keep the share</strong> and report it as it stands. Nothing runs.</li>
-<li><strong>Option b: replace it with a reading that has room to vary,</strong> the log-odds measure at the trigger. One new cluster job, which needs a new cell from you.</li>
-<li><strong>Option c: measure the noise better first</strong> with a second seed pair; it may need a new fine-tune. It does not fix the ceiling.</li>
-<li><strong>Option d: drop it from Qwen's part</strong> and say it could not be read. Nothing runs.</li>
-</ul>
-<p><strong>No recommendation is given, on purpose.</strong> This asks whether a line's premise holds.</p>
-<p class="small">Names in the reports: cell P3.1; <code>experiments/qwen_regating_new/results/summary.json</code>; <code>reports/decisions/2026-11-09_decision_qwen-regating-share.md</code>.</p></div>
 </div>
 </section>

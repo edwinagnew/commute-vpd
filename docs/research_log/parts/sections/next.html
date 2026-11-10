@@ -45,9 +45,10 @@
 </ul></div>
 
 <div class="card key" id="next-part3"><div class="k">Part 3 · The key findings on Qwen3-1.7B, RL beside SFT · qwen-lead · gate 2026-11-25</div>
-<p><strong>1 of 1 cells done.</strong> Only on the new decomposition. P3.1 is filled: all six states read near the ceiling, so whether the share stays as Qwen's reading is a card for you (section {{n:decisions}}).</p>
+<p><strong>2 of 2 cells done.</strong> Only on the new decomposition. P3.1 is filled: all six states read near the ceiling. P3.2 is filled: read in log-odds, every update and random change lowers its trained answer, so no share is scored.</p>
 <table><thead><tr><th>Cell</th><th>What</th><th>Status</th><th>Due</th><th>Runs</th><th>Result</th></tr></thead><tbody>
 <tr><td>P3.1</td><td>The re-gating share of each saved Qwen update on the new decomposition, beside the old reading, with do-nothing and random changes read first</td><td>filled</td><td>11-11</td><td>1 of 1</td><td><a href="https://github.com/edwinagnew/commute-vpd/blob/main/experiments/qwen_regating_new/results/summary.json">numbers</a>: all six states read 0.991 to 0.9992; separation by under 0.005 (card <a href="#e132">E132</a>)</td></tr>
+<tr><td>P3.2</td><td>The re-gating share in log-odds for the four saved Qwen updates, random changes on the same rows, a post-hoc deviation from E132's KL share</td><td>filled</td><td>11-12</td><td>1 of 1</td><td><a href="https://github.com/edwinagnew/commute-vpd/blob/main/experiments/qwen_regating_new/results/amend1/summary.json">numbers</a>: every update lowers its trained answer's log-odds by 1.1 to 8.0 per token, random changes by 5.0 to 7.1; unreadable. Provisional (card <a href="#e144">E144</a>)</td></tr>
 </tbody></table>
 <p><strong>What already counts towards it.</strong></p>
 <ul>
