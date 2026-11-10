@@ -109,7 +109,7 @@ def stage0(job: Any, P: dict[str, Any], saved: dict[str, Any]) -> dict[str, Any]
     t = job.task("e54/elicit")
     zero = {k: torch.zeros_like(w) for k, w in job.net.W0.items()}
     b = t.train[: FS.BATCH]
-    vs = FS.vectors(job.net, t.x(b), t.idx(b), len(t.pool), zero, t.read.half)
+    vs = FS.vectors(job.net, t.x(t.train), t.idx(t.train), len(t.pool), zero, t.read.half)  # every training window, as stage 1 (one batch misses keys)
     lg0 = job.net.run(t.x(b))[0][:, t.read.half]
     out: dict[str, Any] = {"zero": max(float((FS.logits_steered(job.net, t.x(b), t.idx(b), t.read.half, vs[kd][l], l, s) - lg0).abs().max())
                                        for kd in KINDS for l in c["layers"] for s in (1.0, 8.0))}  # fmt: skip
