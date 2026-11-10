@@ -1,0 +1,51 @@
+{
+ "experiment": "E144 = E132 Amendment 1 (cell P3.2): the log-odds re-gating share r on the new decomposition p-9707d6ff",
+ "deviation": "POST HOC. This departs from E132's filed KL-based share (E57's (K00 - K01) / (K00 - K11)), chosen after E132 read every state near its ceiling (0.991 to 0.9995). Every write-up says so",
+ "filed": "2026-11-10, before any run; never edited after a run (add a dated report instead)",
+ "plan": "reports/plans/2026-11-10_plan_e144-e132-amend1-logodds.md (Definition 1, reference (i))",
+ "code": "experiments/qwen_regating_new/amend1.py; results in experiments/qwen_regating_new/results/amend1/",
+ "measurement": {
+  "r": "GOALS.md Terms r: r = sum(L01 - L00) / sum(T1 - T0) over the target positions of a row set. T0, T1: the unmasked model's log-odds (commute.identity.log_odds: logit minus logsumexp of the other logits, fp32, summed in float64) of the teacher-forced next token under W0 and under the state. L00, L01: masked log-odds with the original subcomponents, delta off (qwen_vpd.masked_logits), under Gamma's gates from W0's clean forward (G0) and from the state's clean forward (G1)",
+  "nan_and_status": "r is nan when |sum(T1 - T0)| < 1e-6 (pcfg_vpd.GAIN_MIN). 'scored' when r is finite and the mean gain per target position, sum(T1 - T0) / n, rounded to 9 places, is at least 1.0 (local_faith.MIN_GAIN); otherwise 'unreadable', with gain and numerator still reported",
+  "targets": "Every response token of the update's own rows (prompt tokens are not targets), read at the position before it; a row's first token is never a target. Rows: E45's own rows exactly (qwen_reading.own_rows, asserted equal): 64 packed rows of 512 tokens, sequences joined end to end, so a sequence may run across two rows. gold: E40's 256 held-out GSM8K train problems (seed-0 permutation, first 256) with gold solutions, for e40 and gold_s0. facts_s0, facts_s1: the held-template (template 3) fact pairs of seed 0 and 1, for a2long_s0 and a2long_s1. E57 cut these rows to 256 tokens; E144 reads them whole, as E45 did. Targets counted on CPU before filing: gold 14,639 (145 to 312 per row), facts_s0 5,854, facts_s1 5,862",
+  "states": "e40 (E40 step 10, regen copy), gold_s0, a2long_s0, a2long_s1 (E45 step 100), each on its own row set. The two random changes of E132 (Gaussian off-span 'gauss', in-span 'inspan'), rebuilt by E132's random_changes and scaled by E132's saved factor (S_gauss.json, S_inspan.json .search.b), each read on all three row sets",
+  "interval": "95% interval of r over 2000 resamples of a row set's 64 rows (qwen_reading.resample, seed = the row set's index: gold 0, facts_s0 1, facts_s1 2; qwen_reading.interval over finite draws). Two states on the same row set share draws (paired); states on different row sets use independent draws",
+  "blind_to": "r only sees the trained answer's log-odds at the response positions. It reads high whenever the gates Gamma gives at the changed weights move the masked model the way the weights moved the target, whatever the update did: the $0 check of the plan read 0.88 to 0.94 for every state, random ones included, against the original model's KL. It says nothing about positions or tokens the update did not train",
+  "noise_floor": "The row-resample interval of each r, and the seed-pair difference |r(a2long_s0) - r(a2long_s1)| (reported, no rule reads it)"
+ },
+ "controls_stop_on_miss": {
+  "W0": "W0 as the fine-tuned model (a separate copy of W0 through the weight-copy path) on the gold rows: |sum(T1 - T0)| <= 1e-6 x sum|T0| and |sum(L01 - L00)| <= 1e-6 x sum|L00| (relative, CFG.id_tol, as E132's W0 control)",
+  "KL_gold_s0": "KL(W0 || W0 + gold_s0) unmasked, mean per position on the 64 gold rows of 512, equals E45's E_gold_s0.json states.100.kl.own 0.8583155328609627 within 1e-3 relative (qwen_reading.close, CFG.rep_tol). No decomposition enters it",
+  "KL_e40": "KL(W0 || W0 + E40 step 10) on the first 16 maths rows of 256 equals E132's controls.json kl_e40_16 0.618376722326358 within 1e-3 relative. (The brief named 0.532144226; that is the scaled Gaussian change's KL, checked below)",
+  "KL_gauss, KL_inspan": "Each rebuilt, scaled random change's KL on the first 16 maths rows equals E132's S_<name>.json search.kl (0.5321442255484875, 0.6505846905380681) within 1e-3 relative: the random change is E132's",
+  "norm": "Positive control, r = 0: the final RMS norm weight times 2 on the gold rows. Gamma reads the 29 taps (embedding output and each decoder layer's output; the last is layer 27's output before the final norm, qwen_vpd.clean_forward) and each decomposed matrix's input, so this change leaves every input of Gamma unchanged while it changes the logits. G1 must equal G0 bitwise at every site on all 64 rows, and |r| <= 1e-6 with r finite (|gain| >= 1e-6). The brief's layers.27.mlp.down_proj does not qualify: its output is layer 27's output, Gamma's 29th tap",
+  "alive": "The live set rebuilt from the saved statistics counts 500,244 (E132's check)",
+  "sha256": "Each update's dW file matches its recorded sha256 (E57's Lab.load_dw)",
+  "gpu": "Peak under 44 GiB after the first row of each pass (E57's bar)"
+ },
+ "expected": {
+  "W0": "gain 0, numerator 0, r nan, status unreadable",
+  "norm": "r 0 exactly, gates bitwise equal; gain nonzero (sign not predicted)",
+  "updates_gain": "mean gain per position about +1.8 (e40: E40's training loss 2.41 -> 0.57 at step 10, F.json), +2.0 (gold_s0) and +2.9 (a2long seeds: E45 task drop at step 100), log-odds gain at least the log-prob drop. All four scored",
+  "updates_r": "0.85 to 1.0 each (rival A: Gamma reading the changed activations sets the ceiling, not the KL unit)",
+  "random": "each random change unreadable on every row set: mean gain per position under 1 (about +-0.5, more likely negative), gain and numerator reported (reference (i))",
+  "card": "ceiling"
+ },
+ "card_rule": {
+  "source": "results/card_amend1.txt (cell P3.2); amend1.py card_rule",
+  "pool": "the four updates; those 'scored' with finite r enter, each r rounded to 9 places",
+  "unreadable": "fewer than 2 scored updates",
+  "ceiling": "every scored update reads r >= 0.85 and max r - min r <= 0.1",
+  "room": "some scored update x reads r < 0.85, and another scored update y reads r_y - r_x > 0.1 (strict) with the 95% interval of r_y - r_x (paired draws on one row set, independent draws across row sets) excluding 0 and finite",
+  "no_call": "otherwise",
+  "edge_cases_checked": "Run on the code's card_rule, reading and random_rule before filing (scratch script, 2026-11-10, all 17 as written here): empty pool and every update unreadable -> unreadable; one scored -> unreadable; nan r marked scored is left out of the pool (two left at 0.9 and 0.95 -> ceiling); no target positions -> mean gain nan -> unreadable; negative gain -> unreadable (r still shown); all four at 1.0 with nan intervals -> ceiling; two at exactly 0.85 and 0.95 -> ceiling (>= and <= after 9-place rounding, 0.95 - 0.85 = 0.0999... rounds to 0.1); 0.84 against 0.95 with interval [0.05, 0.2] -> room, with [-0.01, 0.2] -> no call, with nan interval -> no call; 0.80 against 0.88 (gap 0.08) -> no call; 0.84 against 0.9400000001 (gap exactly 0.1 after rounding) -> no call; negative r -> room when separated; r above 1 (1.2 and 0.9) -> ceiling fails on spread (0.3), room fails (no r < 0.85) -> no call. The W0 / do-nothing state: gain 0 gives r nan and status unreadable, so four W0 states read 'unreadable' and cannot reach 'ceiling'. A state with r = 0 and a readable gain (as the norm control) reads 'room' against a scored update at 0.9 whose interval excludes 0"
+ },
+ "random_reference": {
+  "rule": "per random change and row set: 'readable' if the mean gain per target position, rounded to 9 places, is at least 1.0 (MIN_GAIN), else 'unreadable' (nan or negative gain included); gain, numerator and r (when scored) reported beside the updates' (plan reference (i))",
+  "expected": "unreadable on all six"
+ },
+ "unchecked_before_run": {
+  "gold_rows_overlap": "None by construction: E40 (qwen_sft run.py Job, seed 0) and gold_s0 (qwen_updates job.py, e40_seed 0) both train on perm[256:] of torch.randperm(7473, seed 0); the gold own rows are perm[:256]. Rows were not changed over it",
+  "memory": "rows of 512 with Gamma: about 43 GiB peak estimated from E132's 42.0 GiB at rows of 256 (one gate set of ~1.4 GB per row at 512); the 44 GiB stop guards it"
+ }
+}
