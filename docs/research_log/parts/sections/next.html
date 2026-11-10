@@ -5,22 +5,24 @@
 <div class="cards stack">
 
 <div class="card key" id="next-part1"><div class="k">Part 1 · A working definition of reused against new · definition-lead · gate 2026-11-13</div>
-<p><strong>0 of 2 cells done.</strong> The old definition, Jain et al. 2024 with our own removal check, gave no verdict on any task. The replacement under study keeps Jain's structure with a causal step in the style of Prakash et al. 2024; it is not adopted.</p>
+<p><strong>3 of 6 cells done.</strong> The old definition gave no verdict on any task. You adopted a second wording for testing (a split at a variable, labelled by how the fine-tune sets it); it worked on four hand-made changes and has read no ordinary fine-tune yet.</p>
 <table><thead><tr><th>Cell</th><th>What</th><th>Status</th><th>Due</th><th>Runs</th><th>Result</th></tr></thead><tbody>
-<tr><td>P1.1</td><td>The definition, after reading both papers in full: one page for you to approve, with three test pairs and what would make us drop it</td><td>open</td><td>11-10</td><td>reading and writing only</td><td>First page rejected 2026-11-09: it was built around our own saved fine-tunes, not a general definition. definition-lead was restarted to survey the literature's definitions; its second page offers three candidates: <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/plans/2026-11-09_plan_general-definition.md">page</a>. You took up the recommended one tentatively (the same algorithm at the same place in both networks); a precise version with three labels and a swap bar is <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/plans/2026-11-09_plan_same-place-definition.md">written down</a>, and you chose to check it on the saved fine-tunes plus one new forced-and-forbidden pair. The swap in it is activation patching, credited with its known limitations in that plan. Nothing has been run and there is no verdict.</td></tr>
+<tr><td>P1.1</td><td>The definition, after reading both papers in full: one page for you to approve, with three test pairs and what would make us drop it</td><td>open</td><td>11-10</td><td>reading and writing only</td><td>First page rejected 2026-11-09 (built around our own fine-tunes). The survey's <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/plans/2026-11-09_plan_general-definition.md">second page</a> offered three candidates; you then adopted the second wording for testing (cells below). No verdict.</td></tr>
 <tr><td>P1.2</td><td>The saved copy fine-tunes and their lookup twins re-read under the new wording</td><td>open</td><td>11-10</td><td>reading and writing only</td><td>draft: <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-09_analysis_p1-2-e62-reread.md">re-read</a></td></tr>
+<tr><td>P1.3</td><td>First test of the second wording on four hand-made changes whose label is known by construction</td><td>filled</td><td>11-11</td><td>1 of 1</td><td><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-10_analysis_reuse-variable-first-test.md">page</a>: a blind search reached every known answer; the shares order the pairs as their labels; the XOR's "built" follows partly from its construction. No verdict on any saved fine-tune</td></tr>
+<tr><td>P1.4</td><td>The same four changes imitated by ordinary fine-tunes of all weights, three seeds</td><td>open</td><td>11-10</td><td>1 of 1</td><td>Stopped at a first-steps check; waits on you (section {{n:decisions}})</td></tr>
+<tr><td>P1.5</td><td>Amendments to the first test, only on named triggers</td><td>closed</td><td>11-10</td><td>0 of 2</td><td>No trigger fired</td></tr>
+<tr><td>P1.6</td><td>Repair run of the first test after a code or memory failure</td><td>filled</td><td>11-10</td><td>1 of 1</td><td><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-10_analysis_e138-repair.md">page</a>: completed at no cost, design unchanged</td></tr>
 </tbody></table>
 <p><strong>What already counts towards it.</strong></p>
 <ul>
 <li><a href="#e116">E116</a>: every older 67M task read "unreadable" or "does not apply" under the old definition, so no verdict.</li>
-<li><a href="#e112">E112</a>, <a href="#e113">E113</a>: the case-label pair reads "not through the capability" three ways, by removing one direction, two directions everywhere, and editing the readout.</li>
-<li><a href="#e125">E125</a>: a fresh repeated-word pair reads "not through" on both the real fine-tune and its twin.</li>
-<li><a href="#e124">E124</a>: the original model does not hold pronoun gender readably, so that natural task could not be read.</li>
+<li><a href="#e112">E112</a>, <a href="#e125">E125</a>: both built-label pairs read "not through the capability", real fine-tune and twin alike.</li>
 <li><a href="#e62">E62</a>: switching off the copying head costs the copy fine-tune about half its gain and its lookup twin nothing.</li>
 </ul></div>
 
 <div class="card key" id="next-part2"><div class="k">Part 2 · On the 67M, re-gating against the neuron reading and simple baselines · compare-lead · gate 2026-11-18</div>
-<p><strong>5 of 8 cells done.</strong> What re-gating measures, its strengths and weaknesses, and how easily a cheaper reading beats it. Its questions are agreed with you before any run. P2.3 to P2.6 are four of the five questions proposed on the <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-09_analysis_what-regating-does.md">what-re-gating-does page</a>, added by you on 2026-11-09, one run each; the fifth, the reversed-mask adversary, is held.</p>
+<p><strong>5 of 8 cells done.</strong> What re-gating measures, its strengths and weaknesses, and how easily a cheaper reading beats it. Its questions are agreed with you before any run. P2.3 to P2.6 are four of the five questions on the <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-09_analysis_what-regating-does.md">what-re-gating-does page</a>, one run each.</p>
 <table><thead><tr><th>Cell</th><th>What</th><th>Status</th><th>Due</th><th>Runs</th><th>Result</th></tr></thead><tbody>
 <tr><td>P2.1</td><td>What re-gating does, from saved results: what the number measures, the evidence for and against, at most eight proposed questions</td><td>filled</td><td>11-10</td><td>reading and writing only</td><td><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-09_analysis_what-regating-does.md">page</a></td></tr>
 <tr><td>P2.2</td><td>The scorecard as it stands: task pairs against methods, each cell a number with its file or "not run", one figure</td><td>filled</td><td>11-11</td><td>reading and writing only</td><td><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-09_analysis_scorecard.md">scorecard</a></td></tr>
@@ -34,24 +36,19 @@
 <p><strong>What already counts towards it.</strong></p>
 <ul>
 <li><a href="#methodtable">Every method against every fine-tune</a>: the readings so far, side by side.</li>
-<li><a href="#neurontable">Neurons beside the decomposition</a> and <a href="#e117">E117</a>: the decomposition's chosen parts repeat across seeds by kind of task, and the same number of neurons do not.</li>
-<li><a href="#e36">E36</a>: the share is high on a fine-tune whose gain is below zero, so a high share alone shows little.</li>
-<li><a href="#e58">E58</a>: re-gating follows whether the original model already guessed the trained answer.</li>
+<li><a href="#e36">E36</a>, <a href="#e58">E58</a>: the share is high on a fine-tune with negative gain, and follows whether the original model already guessed the answer.</li>
 <li><a href="#e123">E123</a>, <a href="#e125">E125</a>: a real fine-tune and its shuffled twin read the same.</li>
-<li><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-07_analysis_67m-story.md">The 67M summary</a>: what the small model showed, in one report.</li>
 </ul></div>
 
 <div class="card key" id="next-part3"><div class="k">Part 3 · The key findings on Qwen3-1.7B, RL beside SFT · qwen-lead · gate 2026-11-25</div>
-<p><strong>0 of 1 cells done.</strong> Only on the new decomposition. After the first read the line waits for the part 2 gate. qwen-lead started P3.1 on 2026-11-09; the two older Qwen leads closed their lines, and the references on the new decomposition are in place (that job finished, alive count 500,244 of 688,128).</p>
+<p><strong>1 of 1 cells done.</strong> Only on the new decomposition. P3.1 is filled: all six states read near the ceiling, so whether the share stays as Qwen's reading is a card for you (section {{n:decisions}}).</p>
 <table><thead><tr><th>Cell</th><th>What</th><th>Status</th><th>Due</th><th>Runs</th><th>Result</th></tr></thead><tbody>
-<tr><td>P3.1</td><td>The re-gating share of each saved Qwen update on the new decomposition, beside the old reading, with do-nothing and random changes read first</td><td>open</td><td>11-11</td><td>1 of 1</td><td>not yet</td></tr>
+<tr><td>P3.1</td><td>The re-gating share of each saved Qwen update on the new decomposition, beside the old reading, with do-nothing and random changes read first</td><td>filled</td><td>11-11</td><td>1 of 1</td><td><a href="https://github.com/edwinagnew/commute-vpd/blob/main/experiments/qwen_regating_new/results/summary.json">numbers</a>: all six states read 0.991 to 0.9992; separation by under 0.005</td></tr>
 </tbody></table>
 <p><strong>What already counts towards it.</strong></p>
 <ul>
 <li><a href="#e57">E57</a>: on the old decomposition the re-gating share reads 0.99 or more on every update, random ones included.</li>
-<li><a href="#e131">E131</a>: the new decomposition is about seven times harder for the adversary to break on maths text.</li>
 <li><a href="#e94">E94</a>, <a href="#e104">E104</a>: readings follow task and format, and RL reads like its shuffled-reward control.</li>
-<li><a href="#e93">E93</a>: the simplest split narrowly misses on three small maths RL updates, on the old decomposition.</li>
 <li><a href="https://github.com/edwinagnew/commute-vpd/blob/main/experiments/DECOMPOSITIONS.md">Which reading is on which decomposition</a>.</li>
 </ul></div>
 
