@@ -456,3 +456,6 @@ This is "round 1", the input of nearly every other run.
 ## qwen_post_cutoff (E128; paused 2026-11-09, user)
 - `candidates.json` (4.64 MB, sha256 5bef779f): Wikidata candidates from `artifacts/post_cutoff/full/` (36 MB, not in git; `aliases.json` beside the window files).
 - `stage0/`, `stage1/` (shards, `merged.json.gz`): jobs 56780, 56783. `n1/` shards and `results/n1.json`: job 56787, running when the line closed; the last job of this experiment. No `dW/`: the four fine-tunes were not run.
+
+## real_vs_twin (E140; coded 2026-11-10, not run)
+- `dW_{case,repeat}_{real,twin}_s2.pt` (stage 1, ~57 MB each, as E112 and E125 saved theirs): the seed-2 fine-tunes, delta-W in bf16 at each one's scored step; `results/stage1.json` .states.<pair>_<arm>_s2 gives the step and sha256. Written by `experiments/real_vs_twin/run.py`; load with `torch.load(p, weights_only=True)`. Seeds 0 and 1 stay in `case_label/` and `fresh_reuse_pair/`.
