@@ -1,0 +1,57 @@
+{
+ "plan": "reports/plans/2026-11-10_plan_e140-real-vs-twin.md (E140, cell P2.4); card reports/plans/2026-11-09_plan_p2-4-card.md (n 3, smallest gap 0.1, spread 0.0557, unpaired); user's decision decisions.md row 'P2.4 real against shuffled twin' (2026-11-10)",
+ "settings": {
+  "n_read": 256,
+  "n_select": 512,
+  "strengths": [0, 0.5, 1, 2, 4, 8],
+  "n_random": 8,
+  "random_seed": 140,
+  "k_fixed": 64,
+  "new_seed": 2
+ },
+ "thresholds": {
+  "n": 3,
+  "smallest_gap": 0.1,
+  "n_se": 2,
+  "inert": 0.05,
+  "gain_floor": 1.0,
+  "zero_tol": 1e-9,
+  "r_tol": 0.01,
+  "s2_gain_low": 0.5,
+  "s2_gain_high": 2.0
+ },
+ "rule": {
+  "unit": "Scored in the contrast between the two labels: per window, logit A minus logit B signed toward the window's own label under the update's arm (E112's margin). A method's share on one update = mean over the 256 read rows of the method's change in that unit / mean of the update's own gain in that unit. Log-odds over the whole vocabulary and log P are read and scored beside, not filed.",
+  "per_method_and_pair": "gap = mean(real s0, s1, s2) - mean(twin s0, s1, s2); sd = sqrt((var(real) + var(twin)) / 2), variances with n - 1; se = sd x sqrt(2 / 3), the card's unpaired standard error. 'apart' iff |gap| >= 0.1 AND |gap| >= 2 x se (both inclusive to 1e-12, either sign: the dry run found 0.3 - 0.2 reads 0.0999... in floats). 'unreadable' if a side has fewer than 3 shares or any is nan (a share is nan when its update's gain in the unit is below 1.0). 'inert' if every one of the six |shares| is below 0.05: no call, so a reading that writes nothing cannot pass as 'not apart'. Else 'not apart'. Precedence: unreadable, inert, apart, not apart.",
+  "methods": "share = the re-gating share, do-nothing route split r = mean(L01 - L00) / mean(T1 - T0) (masked_reads.share_cells); steer_perword and steer_pooled = steering at its selected (layer, strength); neuron_k64 and neuron_kmatched = the TopK neuron reading (masked_reads.topk_cells) with 64 neurons per block, and with each block's k = the decomposition's on-count at that block's down_proj (stage 0).",
+  "outcome": "Over the four activation-level methods (steer_perword, steer_pooled, neuron_k64, neuron_kmatched) and both pairs: 'rival A' if any is apart; 'rival B' if none is apart and all eight are 'not apart' with |gap| < 0.1; else 'stop rule: none apart' (no method apart, but a gap of 0.1 or more sits inside the seed spread, or a reading is inert or unreadable). The card's stop rule holds in both of the last two.",
+  "edge_cases_run": "experiments/real_vs_twin/rules.py on stand-ins (dry run 2026-11-10, ~/commute-data/scratch/compare-lead/e140-writer/dryrun.out): do-nothing (all 0) -> inert; gap below zero -> apart by |gap|; gap exactly 0.1 with no spread -> apart (ties inclusive, se 0); gap 0.2 inside the spread -> not apart; one seed missing -> unreadable; a nan -> unreadable; signed but all |share| < 0.05 -> inert; outcome on six-way do-nothing -> 'stop rule: none apart', never rival B."
+ },
+ "selection": "Each update and vector kind gets its own (layer, strength): the largest mean rise in the label contrast on the first 512 training windows of the update's own arm, its own labels; layers 0-3 at block inputs in<l>, strengths {0, 0.5, 1, 2, 4, 8}; ties to the lower layer, then the lower strength; a nan leaves the setting undefined and the kind's shares nan (E135's pick). Vectors: (tuned - W0) block-l input at the trigger, averaged over all 9,600 training windows (pooled) or over the training windows of the word before the trigger (per word; the user's option a).",
+ "stage_0_stops": {
+  "zero_update": "a zero update reads exactly 0 (|change| <= 1e-9 in every unit and window) through the share's cells (L01 - L00, T1 - T0), the neuron reading at k 64 and k matched (N01 - N00, T1 - T0), and steering's vectors at every layer and strength; strength 0 on case real_s0's vectors reads exactly 0",
+  "reproduction": "the share in log-odds of real_s0 on each pair's 256 rows reproduces the saved one within 0.01 (case: experiments/case_label_both/results/case_label_both.json .routes.real_s0.least_squares.shares.r = 0.11284; repeat: experiments/fresh_reuse_pair/results/stage2.json .states.real_s0.least_squares.shares.r = 0.13268). Floor: E135 reproduced six shares by the same calls with difference 0 (experiments/steering_copy_lookup/results/stage0.json .c_r200); 0.01 is a tenth of the card's smallest gap.",
+  "k_matched": "fixed before any update is read: per block, the number of the decomposition's down_proj subcomponents with gate > 0.5 at W0, averaged over every position of both pairs' 256 read rows, rounded, at least 1 (E136's rule, untrained.k_from_counts)"
+ },
+ "stage_1_stops": "each seed-2 fine-tune, as it lands: learned (fit accuracy >= 0.9 at a checkpoint, the recipe's own bar) and its label-gap gain on all 1,024 fit windows within [0.5 x min, 2 x max] of the same arm's saved s0 and s1 gains (case: experiments/case_label/results/stage2.json .states.<arm>_s<n>.gain, real 12.83/12.04, twin 10.23/8.80; repeat: experiments/fresh_reuse_pair/results/stage1.json .reads.<arm>_s<n>.gain, real 8.26/4.66, twin 7.70/7.43). A miss stops the job.",
+ "predictions": {
+  "share": {"case": "not apart", "repeat": "not apart", "why": "the card: the share in log-odds reads 0.11 to 0.24 on both arms of both pairs; nothing suggests the label contrast separates them."},
+  "steer_perword": {"case": "not apart", "repeat": "apart, twin above real", "why": "On the case pair both arms give each word one label, so a per-word vector can carry either arm's answer. On the repeat pair the real label depends on the window (the word repeated or not), half A and half B within a word, so the real arm's per-word vector averages its two labels away (share near 0), while the twin's label is fixed per word (share well above 0). This would be apart for a reason built into the key, not the activations: stated, not a finding."},
+  "steer_pooled": {"case": "inert", "repeat": "inert", "why": "Labels are balanced across windows in both arms, so a single vector shifts both labels' logits alike and its signed contrast averages to near 0 (every |share| < 0.05)."},
+  "neuron_k64": {"case": "not apart", "repeat": "not apart", "why": "No reading of this kind exists on these rows; the share's operation on neurons is expected to read like the share."},
+  "neuron_kmatched": {"case": "not apart", "repeat": "not apart", "why": "As k 64; with 3 to 30 neurons kept per block the masked model is far from W0, so the numerators may be small (inert is possible)."},
+  "outcome": "rival A, from steer_perword on the repeat pair only, with the cause above"
+ },
+ "expected": {
+  "W0": "every numerator exactly 0 (zero update and strength 0, stage 0)",
+  "share_contrast": "0.1 to 0.3 on every update, as in log-odds (no reading saved in this unit)",
+  "gains": "label contrast: case real 12-13, twin 9-10; repeat real 5-8, twin 7-8 (saved fit-window gains); log-odds 22-25",
+  "s2": "real at step 30, twin at step 300 (case) and 100 (repeat), as s0 and s1",
+  "random_vectors": "mean share within 0.1 of 0 (reported, not a stop)",
+  "rescaled_twin": "the twin at the real update's norm keeps under half its contrast gain (case norms 4.6 against 13; repeat 4.6-4.9 against 7.5)",
+  "recipe_check": "retrained case real_s0 differs from its file by under 1% of its summed norm if the GPU path is deterministic (reported, not a stop)"
+ },
+ "metric_blind_to": "Steering is blind to whether the vector writes the label the fine-tune's way, and per-word steering to anything a word's training windows do not share; the neuron reading to change outside the TopK sets and to attention; the share to change Gamma does not switch. Every gap is blind to levels (both arms could move together).",
+ "positive_control": "Stage 0: the zero update and strength 0 read exactly 0; the share of real_s0 reproduces the saved one on each pair.",
+ "noise_floor": "The seed spread of each method on each side, measured here at n = 3 and used in the rule (se above); the card's 0.0557 is the share's sd in log-odds on the repeat pair."
+}
