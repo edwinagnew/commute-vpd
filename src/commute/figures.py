@@ -16,6 +16,7 @@ from __future__ import annotations
 
 import csv
 import math
+import textwrap
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
@@ -72,16 +73,21 @@ def gap_heatmap(
     label: str,
     vmax: float | None = None,
     fmt: str = ".2f",
+    counts: Sequence[Sequence[int | None]] | None = None,
 ) -> AxesImage:
     """Signed values on a diverging map centred at 0, each cell numbered; None or NaN is drawn x, meaning "not run".
 
     `label` names the colour in words. Pass one `vmax` to every panel of a grid so their colours can be compared.
+    `counts`, the same shape as `values`, prints "n=k" under each number (seeds or rows behind the cell; None for none).
+    A value that rounds to zero prints without a minus sign (friction 641).
     """
     if not label:
         raise ValueError("gap_heatmap: the colour needs a label")
     grid = [[math.nan if _missing(v) else float(v) for v in row] for row in values]  # type: ignore[arg-type]
     if len(grid) != len(rows) or any(len(r) != len(cols) for r in grid):
         raise ValueError(f"gap_heatmap: values do not match {len(rows)} rows by {len(cols)} columns")
+    if counts is not None and (len(counts) != len(rows) or any(len(r) != len(cols) for r in counts)):
+        raise ValueError(f"gap_heatmap: counts do not match {len(rows)} rows by {len(cols)} columns")
     seen = [abs(v) for row in grid for v in row if not math.isnan(v)]
     if vmax is None:
         vmax = max(seen, default=1.0) or 1.0
@@ -90,8 +96,12 @@ def gap_heatmap(
         for j, v in enumerate(row):
             if math.isnan(v):
                 ax.text(j, i, "×", ha="center", va="center", color="#777777")
-            else:
-                ax.text(j, i, format(v, fmt), ha="center", va="center", color="white" if abs(v) > 0.6 * vmax else "#222222")
+                continue
+            color = "white" if abs(v) > 0.6 * vmax else "#222222"
+            count = None if counts is None else counts[i][j]
+            ax.text(j, i if count is None else i - 0.12, _signed(format(v, fmt)), ha="center", va="center", color=color)
+            if count is not None:
+                ax.text(j, i + 0.22, f"n={count}", ha="center", va="center", color=color, fontsize=6)
     ax.set_xticks(range(len(cols)), cols)
     ax.set_yticks(range(len(rows)), rows)
     ax.spines[:].set_visible(False)
@@ -99,6 +109,11 @@ def gap_heatmap(
     colorbar = ax.figure.colorbar(image, ax=ax, shrink=0.85)
     colorbar.set_label(label)
     return image
+
+
+def _signed(text: str) -> str:
+    """'-0.00' -> '0.00': a minus on a number shown as zero says nothing (friction 641)."""
+    return text[1:] if text.startswith("-") and not any(c in "123456789" for c in text.split("e")[0]) else text
 
 
 def dots(ax: Axes, groups: Mapping[str, Sequence[float]], *, method: str, xlabel: str, offset: float = 0.0) -> None:
@@ -140,7 +155,9 @@ def save(fig: Figure, path: str | Path, *, n: str, data: Sequence[Mapping[str, A
         raise ValueError("save: pass the plotted numbers, so the figure can be redrawn without a rerun")
     _check(fig)
     out.parent.mkdir(parents=True, exist_ok=True)
-    fig.supxlabel(n, fontsize=7, color="#555555")
+    # Wrapped to the figure's width: one centred line clipped long footers without warning (friction 641).
+    width = max(20, int(fig.get_figwidth() * 72 / (7 * 0.55)))
+    fig.supxlabel("\n".join(textwrap.fill(part, width) for part in n.splitlines()), fontsize=7, color="#555555")
     fig.savefig(out, dpi=200)
     fig.savefig(out.with_suffix(".pdf"))
     names = list(dict.fromkeys(k for row in data for k in row))
