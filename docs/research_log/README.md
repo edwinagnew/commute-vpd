@@ -178,7 +178,8 @@ From a Claude Code session, with the Artifact tool:
    `build/` too, so a publish after it is current (friction 519).
    `--changed` compares the hashes in `nav.js`, so a page nobody changed is neither read nor sent; rerun it after the
    last build and read any page newly named. A live `nav.js` missing or without hashes names every page: read those
-   (friction 291). A file not yet live needs no read. Never `read` with `url` alone: ~50k tokens, and the first send was
+   (friction 291). A file not yet live needs no read. A redrawn figure (a `fig/*.png` that is live and changed) counts as
+   a changed file: read its path before the first send, or the send is refused as unread content (friction 691). Never `read` with `url` alone: ~50k tokens, and the first send was
    refused all the same (friction 115, 160). The saved index.html is for `--check`; it does not count as a view.
    Which check (friction 384): before editing `parts/`, `--check`, where any diff is someone else's. With uncommitted
    edits, `--check-head`, against `parts/` at HEAD. After your commit, `--check` diffs your own edits: read only
