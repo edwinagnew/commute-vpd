@@ -687,3 +687,50 @@ def load_state(base: Net, path: Path, clone: Callable[[Net], Net]) -> Net:
     ft = clone(base)
     ft.net.load_state_dict(torch.load(path, map_location=base.device))
     return ft
+
+
+# ---- Affine maps from given inputs (E156, cell P1.13) -------------------------------------------------------------------
+# Added 2026-11-11 for the H diagnosis. `h_fit`, `ridge_select` and `h_refine` are unchanged; these two fit the same ridge
+# (same 80/20 split of the fit half, same two passes, same standardisation) with the inputs and targets passed as functions
+# of the windows, so a map can read an edited run's activations or write a site at every position.
+
+
+@dataclass
+class Affine:
+    """A fitted ridge map, kept without its p x p accumulation: y + standardised(X[:, :p]) @ beta."""
+
+    p: int
+    mean: Tensor
+    std: Tensor
+    y: Tensor
+    beta: Tensor
+    lam: float
+
+    def __call__(self, X: Tensor) -> Tensor:
+        return self.y + ((X[:, : self.p].float() - self.mean[: self.p]) / self.std[: self.p]) @ self.beta
+
+
+def ridge_on(fit: Tensor, batch: int, z_of: Callable[[Tensor], Tensor], y_of: Callable[[Tensor], dict[str, Tensor]],
+             dev: str) -> tuple[Ridge, Tensor, dict[str, Tensor]]:
+    """`h_fit`'s ridge with the inputs z_of(toks) (B, p) and the targets y_of(toks) {key: (B, q)}: fitted on the first 80% of
+    `fit`, and (X_val, Y_val) on the other 20% to choose the penalty (`ridge_select`, `affine_of`)."""
+    cut_at = fit.shape[0] * 4 // 5
+    R = Ridge(dev)
+    for toks in chunks(fit[:cut_at], batch):
+        R.stats(z_of(toks), y_of(toks))
+    R.freeze()
+    for toks in chunks(fit[:cut_at], batch):
+        R.add(z_of(toks), y_of(toks))
+    Xv: list[Tensor] = []
+    Yv: dict[str, list[Tensor]] = {}
+    for toks in chunks(fit[cut_at:], batch):
+        Xv.append(z_of(toks).to(dev).float())
+        for k, v in y_of(toks).items():
+            Yv.setdefault(k, []).append(v.to(dev).float())
+    return R, torch.cat(Xv), {k: torch.cat(v) for k, v in Yv.items()}
+
+
+def affine_of(R: Ridge, key: str, p: int, X_val: Tensor, Y_val: Tensor, grid: tuple[float, ...]) -> tuple[Affine, float]:
+    """The map of `ridge_select` (the grid's penalty with the lowest validation error) as an `Affine`, and that error."""
+    beta, lam, mse = ridge_select(R, key, p, X_val, Y_val, grid)
+    return Affine(p, R.mean[:p].clone(), R.std[:p].clone(), R.y_mean[key].clone(), beta, lam), mse
