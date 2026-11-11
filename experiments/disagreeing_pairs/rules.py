@@ -14,7 +14,7 @@ outcome over the counted opposite pairs (unreadable left out; pair C never count
 
 Amendment 1 (results/predictions_amend1.json): a pair whose built premise is not met (pair B when the common-word
 cipher's realised prior is under b_prior_min) reads "condition not met" whatever its prior and steering; the common-word
-table is drawn by a ladder of filters (`filters`, `rung_ok`, `assign`, `take_rung`). Every input is a realised value: the priors
+table is drawn by a ladder of filters (`filters`, `rung_ok`, `assign`, `window_prior`, `take_rung`). Every input is a realised value: the priors
 of the built windows and the steering read on the built states.
 """
 
@@ -24,6 +24,7 @@ import math
 from collections.abc import Mapping, Sequence
 from typing import Any
 
+import torch
 from torch import Tensor
 
 from commute.jobs import load_experiment
@@ -129,6 +130,16 @@ def est_prior(log_p: Sequence[float], n: Sequence[int]) -> float:
     (= geo_rate over the trained keys' held-out windows, the filed estimator); nan with no windows."""
     total = sum(n)
     return math.exp(sum(a * b for a, b in zip(log_p, n, strict=True)) / total) if total else math.nan
+
+
+def window_prior(LP: Tensor, wkeys: Sequence[int], value_of: Mapping[int, int | None]) -> float:
+    """est_prior on the filed prior's own windows, one piece per window: LP (windows, vocab) W0's log P on the trained
+    keys' held-out windows, wkeys each window's key, value_of the table. Window for window the realised prior
+    (keydep.geo_rate); nan with no windows or an incomplete table (a window whose key has no value)."""
+    v = [value_of[k] for k in wkeys]
+    if any(x is None for x in v):
+        return math.nan
+    return est_prior(LP[torch.arange(len(v)), torch.tensor(v, dtype=torch.long)].tolist(), [1] * len(v))
 
 
 def take_rung(rungs: Sequence[Mapping[str, Any]], prior_min: float) -> int | None:
