@@ -143,13 +143,19 @@ def e147_refit(out: Cells) -> None:
             put(out, p["id"], col, sides[k], f"{E147} .states[<state>].holes_fill.{f}.{k}.share", form=f"{k}, refit seeds 0-2", filed=fam[col][p["id"]]["call"])
 
 
+def e158_neuron_twins(out: Cells) -> None:
+    for key, s in load("experiments/neuron_twins/results/cells.json")["cells"].items():
+        pair, col = key.split("/")
+        put(out, pair, col, (s["reuse"], s["new"]), s["source"], form="label contrast")
+
+
 def dig(x: Any, path: list[str]) -> Any:
     for k in path:
         x = x[k]
     return x
 
 
-READERS = (scorecard, e133_prior, e145_prior, e135_steering, e136_share, e141_rank, e140_twins, e143_holes, e147_refit)  # oldest first
+READERS = (scorecard, e133_prior, e145_prior, e135_steering, e136_share, e141_rank, e140_twins, e143_holes, e147_refit, e158_neuron_twins)  # oldest first
 
 
 def score(col: str, c: dict[str, Any]) -> None:

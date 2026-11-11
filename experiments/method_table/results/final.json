@@ -2700,6 +2700,58 @@
    "pair": "e123_case_label",
    "pair_name": "Case label: real vs memorising twin",
    "group": "twin",
+   "method": "neuron",
+   "reuse": [
+    0.772211492003997,
+    0.7551290010989259,
+    0.7481479932938829
+   ],
+   "new": [
+    0.7840255288206989,
+    0.7369467629247746,
+    0.7408593761379677
+   ],
+   "n_reuse": 3,
+   "n_new": 3,
+   "source": "experiments/neuron_twins/results/cells.json .states[<state>].r_n",
+   "form": "label contrast",
+   "filed_call": null,
+   "replaces": "",
+   "gap": 0.0045522728377882515,
+   "call": "no call",
+   "call_rule": "seed ranges",
+   "against_share": "no call"
+  },
+  {
+   "pair": "e123_case_label",
+   "pair_name": "Case label: real vs memorising twin",
+   "group": "twin",
+   "method": "neuron_half",
+   "reuse": [
+    0.5725542147452938,
+    0.5494424640114443,
+    0.5440493459996726
+   ],
+   "new": [
+    0.5981660916164657,
+    0.5496679324135633,
+    0.5412250767658068
+   ],
+   "n_reuse": 3,
+   "n_new": 3,
+   "source": "experiments/neuron_twins/results/cells.json .states[<state>].r_half",
+   "form": "label contrast",
+   "filed_call": null,
+   "replaces": "",
+   "gap": -0.007671025346475013,
+   "call": "no call",
+   "call_rule": "seed ranges",
+   "against_share": "no call"
+  },
+  {
+   "pair": "e123_case_label",
+   "pair_name": "Case label: real vs memorising twin",
+   "group": "twin",
    "method": "neuron_top",
    "reuse": [
     -0.006909069321020733,
@@ -2867,6 +2919,58 @@
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
+  },
+  {
+   "pair": "e125_repeat_label",
+   "pair_name": "Repeat label: real vs memorising twin",
+   "group": "twin",
+   "method": "neuron",
+   "reuse": [
+    0.628994911250933,
+    0.6640195387423128,
+    0.5864760038295593
+   ],
+   "new": [
+    0.7947750558927862,
+    0.7871688006779233,
+    0.7362444188724413
+   ],
+   "n_reuse": 3,
+   "n_new": 3,
+   "source": "experiments/neuron_twins/results/cells.json .states[<state>].r_n",
+   "form": "label contrast",
+   "filed_call": null,
+   "replaces": "",
+   "gap": -0.14623260720678188,
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "apart where the share is not"
+  },
+  {
+   "pair": "e125_repeat_label",
+   "pair_name": "Repeat label: real vs memorising twin",
+   "group": "twin",
+   "method": "neuron_half",
+   "reuse": [
+    0.4251887900778637,
+    0.4922476173965872,
+    0.36660455160555694
+   ],
+   "new": [
+    0.6567988056852914,
+    0.6484855305681406,
+    0.5733974395693583
+   ],
+   "n_reuse": 3,
+   "n_new": 3,
+   "source": "experiments/neuron_twins/results/cells.json .states[<state>].r_half",
+   "form": "label contrast",
+   "filed_call": null,
+   "replaces": "",
+   "gap": -0.19821360558092743,
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "apart where the share is not"
   },
   {
    "pair": "e125_repeat_label",
@@ -3043,12 +3147,12 @@
     "apart where the share is not": 1
    },
    "neuron": {
-    "no call": 2,
-    "not run": 2
+    "no call": 3,
+    "apart where the share is not": 1
    },
    "neuron_half": {
-    "no call": 2,
-    "not run": 2
+    "no call": 3,
+    "apart where the share is not": 1
    },
    "neuron_top": {
     "no call": 4
