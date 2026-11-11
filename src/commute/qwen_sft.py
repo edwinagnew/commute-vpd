@@ -330,15 +330,16 @@ class Uploader:
         self.prefix, self.max_bytes, self.log, self.sent = prefix, max_bytes, log, []
         self.run: Any = wandb.init(entity=ENTITY, project=PROJECT, job_type=prefix, dir=str(wandb_dir))
 
-    def add(self, path: Path, wait: bool = False) -> None:
-        """Queue `path` as an artifact; with `wait`, block until it is uploaded (the benchmark's timing)."""
+    def add(self, path: Path, wait: bool = False, name: str | None = None) -> None:
+        """Queue `path` as an artifact (named `name`, default `<prefix>-<folder>-<file>`); with `wait`, block until it
+        is uploaded (the benchmark's timing)."""
         import wandb
 
         size = path.stat().st_size
         if self.max_bytes is not None and size > self.max_bytes:
             self.log(f"[upload] skipped {path} ({size / 1e9:.2f} GB, over the cap)")
             return
-        name = re.sub(r"[^A-Za-z0-9_.-]", "-", f"{self.prefix}-{path.parent.name}-{path.name}")
+        name = re.sub(r"[^A-Za-z0-9_.-]", "-", name or f"{self.prefix}-{path.parent.name}-{path.name}")
         art = wandb.Artifact(name, type=self.prefix)
         art.add_file(str(path), skip_cache=True, policy="immutable")
         logged = self.run.log_artifact(art)
