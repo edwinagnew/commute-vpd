@@ -4,11 +4,11 @@
 the same day, with rounded cut-offs: see "Adopted 2026-11-10" below and the last row of `decisions.md`. Decision card:
 `reports/decisions/2026-11-10_decision_gate-working-definition.md`.*
 
-We read one wording of reuse on 67M fine-tunes whose labels were fixed when they were built: four hand-made changes,
-ordinary fine-tunes copying them, and the seventeen old tasks. Its labels follow construction on the hand-made changes
-and the table copies but call nearly every other ordinary fine-tune rewired, while its re-weighting share ranks the
-reuse side above its new twin in all five matched pairs. For the goal, it separates strengthening from new capability
-within a matched pair, not yet as an absolute label.
+We read one wording of reuse on 67M fine-tunes whose labels were fixed when they were built. Its labels follow
+construction on the hand-made changes and the table copies, call nearly every other ordinary fine-tune rewired, and rank
+the reuse side above its new twin in all five matched pairs. No built control has yet read new cleanly: the clearest
+reuse case read just under the cut-off, and the search reads only 0.84 even on an exact edit. For the goal, it separates
+strengthening from new capability within a matched pair, not yet as an absolute label.
 
 ## Adopted 2026-11-10
 
@@ -100,10 +100,13 @@ two key-table pairs were read on separate inputs drawn the same way.
 ## Where it gives no reading, and why
 
 - **Built is never read.** A low $H$ only says this search found no map. The hand-made XOR reads so because it was chosen
-  to be affinely unreadable, which checks the construction more than the wording. On a small closed input set, built
-  cannot occur at all.
-- **Fine-tunes that never showed the behaviour.** The XOR copies did not learn it. The Cue copies stopped at a wrongly
-  directed early check, and their runs are spent.
+  to be affinely unreadable, which checks the construction more than the wording. Reading low $H$ as built would be a
+  rule only the user adds.
+- **The scale's top is not 1.** On an edit built to be exactly reachable the search reads 0.84, and fine-tunes that do
+  not make exactly their target push are capped near 0.72. A reading under 0.5 can come from the scale, not from new
+  structure. Whether two sites in order count as one map is a wording question the user owns.
+- **Fine-tunes that never showed the behaviour.** The first XOR copies did not learn it; the Cue copies stopped at a
+  wrongly directed early check.
 - **One seed.** The one-pair map has a single saved fine-tune; a task label needs both seeds to agree.
 - **Long-text tasks on 8-token inputs:** the two word ciphers and lowercase. The emoticon's $H$ sits near zero under a
   high $G$, which the wording rules out, since $H$ can always do what $G$ does.
@@ -115,23 +118,39 @@ two key-table pairs were read on separate inputs drawn the same way.
   the 3000-step copies. The hand-made change read 0.938.
 - **Absolute labels on ordinary fine-tunes.** The cut-off sits above four of five reuse sides. Open, by today's decision.
 
-## The built control, as designed
+## The built control, as run
 
-Not run. One quantity is read against two originals: the 67M, and the 67M after a short fine-tune that already shows the
-XOR at a third of its strength. Each is fine-tuned to copy the full XOR change and read by the same search. If only the
-taught arm's $H$ clears 0.5, a low $H$ tracks what the original had. If both read low, low $H$ means nothing here. The
-plain arm is the XOR copies above, which did not learn, so that arm has no reading yet. A second design uses two small
-models pretrained with and without a parity skill, at about a day of porting. Reading low $H$ as built would still be a
-rule only the user adds.
+The user's condition needs, on one task, a built arm (the original lacks the variable) reading $H$ under 0.5 beside a
+reuse arm (the original holds it) reading at or above 0.5. Four runs on 11-11 tried; none gave that contrast.
+
+- **Two-key XOR.** The plain 67M and a taught original were each fine-tuned toward the same push. Both learned it and
+  both read no map found: $H$ 0.08 and 0.09 on the plain arm, 0.02 on both taught seeds. The taught original held the
+  bit only weakly, a linear read of 0.588 where chance is 0.50, so its arm was not a fair reuse case.
+- **Parity of a sum.** Stopped before any fine-tune: the plain 67M already reads the sum's parity at 0.61, over the
+  filed bar of 0.55, so the built arm would not have been built.
+- **A strongly taught original.** Stopped: the plain XOR fine-tune holds the bit almost exactly, but a second push on it
+  moved the output by only 0.12, under the filed floor of 0.15.
+- **Last number odd.** The positive control alone: a push on a fact the plain 67M reads exactly. The fine-tune learned
+  it, yet $H$ read 0.466 and 0.459, under the cut-off, so the built arms did not run. Table copies, also of an exactly held variable, read 0.72.
+- **Why it stops there.** Given the exact target edit to reproduce, the search reads 0.84, not 1, and a map that made
+  that edit exactly would read 0.72 on these fine-tunes, which do not make exactly their target push. A smaller ridge
+  penalty or a map at every position changes nothing. Two sites written in order put the control at 0.60 and 0.58.
+
+So the wording has not yet detected built, and under one site it reads no map found on its clearest reuse case.
 
 ## What would make us drop it
 
 - On a matched pair not used to set anything, such as the Qwen test set, the reuse side reads at or below its twin.
-- In the built control, the taught arm also reads low $H$: "no map found" would then carry no information.
+- In a clean built control, the reuse arm also reads low $H$: "no map found" would then carry no information. Both
+  reuse arms run so far read low, but neither was clean.
 - Two fine-tunes with the same outputs but known different insides read alike on every number, the reversion included.
   The wording would then not look inside the model. Nothing yet says how the Always on copies were built, so their low
   reversion cannot be scored.
 - The search failing known answers. It reached 0.922, 0.961 and 0.995 against a bar of 0.9.
+
+**Open question for the gate**, from the premise check, put without a recommendation: "What value of H would the
+wording assign to an edit known to be exactly linear, and how were the 0.5 and 0.9 cut-offs chosen relative to that
+value?" The label cut-offs, $G$ 0.8 and $H$ 0.5, were set by the user in the 2026-11-10 rows of `decisions.md`.
 
 ## What the evidence supports
 
@@ -146,11 +165,12 @@ named heads one way and score task accuracy; here a searched variable is patched
 et al. 2025 already call adapter-tuning an intervention on parameters. Cut-offs and label rule are this project's own;
 the cut-offs are rounded from filed midpoints.
 
-**Not run.** The built control. A Cue copy and a learned XOR copy. An Always on copy with a leftover under 0.192 of the
+**Not run.** A built control with a clean reuse arm. A Cue copy and a learned XOR copy. An Always on copy with a leftover under 0.192 of the
 change. Longer inputs for long-text tasks. A stronger rewiring search. Any absolute cut-off. A fresh matched pair or a
 Qwen reading. An independent check of any number here.
 
 *Sources: wording `~/commute-data/scratch/definition-session/2026-11-09_reuse-at-a-variable_v2.md`; hand-made E137/E138
 `experiments/reuse_variable_test/results/`; copies E139 `experiments/reuse_variable_finetune/results/`; old tasks E142
-`experiments/old_task_labels/results/labels.json`; built control `reports/plans/2026-11-10_plan_built-control-design.md`;
+`experiments/old_task_labels/results/labels.json`; built control E148-E156 `reports/analyses/2026-11-11_analysis_built-control-xor2.md`,
+`...built-control-attempts.md`, `...h-diagnosis.md`;
 premise checks `~/commute-data/premise/P1.3.md`, `P1.4.md`, `P1.7.md`; figure `experiments/old_task_labels/plot_gate.py`.*
