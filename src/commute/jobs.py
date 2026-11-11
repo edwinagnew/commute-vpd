@@ -83,7 +83,9 @@ def write_result(path: Path, out: dict[str, Any], decomp_dir: Path) -> None:
 def require_filed(path: Path) -> None:
     """Exit unless `path` (a predictions file) is tracked by git and unchanged from HEAD: filed before the run.
     A working tree with no `.git` (a pod) compares the file's sha256 with the environment variable E120_PRED_SHA
-    instead (E120 Amendment 1, friction 599); unset or different refuses."""
+    instead (E120 Amendment 1, friction 599); unset or different refuses. The brief computes it on the dev node,
+    `git show HEAD:<path> | sha256sum`, and the pod's run line sets it, `E120_PRED_SHA=<sha> python run.py ...`;
+    `cluster/pod_setup.sh` says so at its top and in its log (friction 680)."""
     repo, rel = str(EXPERIMENTS.parent), str(path.resolve().relative_to(EXPERIMENTS.parent.resolve()))
     if not (EXPERIMENTS.parent / ".git").exists():
         want, got = os.environ.get("E120_PRED_SHA"), hashlib.sha256(path.read_bytes()).hexdigest()
