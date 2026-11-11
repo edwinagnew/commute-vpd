@@ -62,9 +62,10 @@ Volume `ydavm7ct4x` (US-MO-1), listed through the S3 API 2026-11-02 (95.9 GB). `
 - `windows_{common_cipher,one_word}.pt` and their `_trained.pt` / `_new.pt` cuts (about 1 MB each): Amendment 3's `windows_elicit.pt` with the new table (`open_pair/amend6.py` `save_map`); tables, sha256 and priors in `results/stage0.json` `.tables`.
 - Absent: the stage-0 refit of prior_cipher seed 0 (read and compared, not saved).
 
-## qwen_pair_library (E160, P3.5 run 1; code filed 2026-11-11, not yet run)
+## qwen_pair_library (E160, P3.5 run 1; capacity and floors ran 2026-11-11; rehearse Amendment 1 filed, not yet run)
 `results/large` is a symlink to `~/commute-data/results-large/qwen_pair_library`; run.py's rehearse stage writes through it (on a pod, a real folder, downloaded here after).
-- `dW/copy_s0/step_<t>.safetensors` (5.64 GB each, F32, 196 tensors keyed by site, HF layout): the copy side, seed 0, `pool_sft.RECIPE`; saved at the bracket of 5x and 15x its floor (the read step before and the first at or past each) and at step 100, at most 5 files (~28 GB). Steps, |δW|, KL and held-out exact match per file in `results/rehearse.json` `.saves`, `.states`.
+- `dW/{copy,cipher}_s0/step_<t>.safetensors` (5.64 GB each, F32, 196 tensors keyed by site, HF layout): each side, seed 0, `pool_sft.RECIPE` at peak 2e-6 (Amendment 1); saved at the bracket of 5x and 15x its floor (the read step before and the first at or past each), training ending at the 15x read, or at step 100 (saved) if 15x is never reached; at most 4 files a side (~23 GB). Step, |δW|, KL and held-out exact match per file in `results/rehearse_<side>.json` `.saves`, `.states`.
+- Deleted 2026-11-11 (qwen-lead's authority): the first rehearse run's `dW/copy_s0/step_{4,5,7,8}.safetensors` at lr 1e-5, stopped by a mis-specified rule (`results/stopped_run1.json`, record `results/rehearse_stopped_run1.json`); superseded by Amendment 1.
 - Absent: no checkpoint (the run never pauses), no optimizer state.
 
 ## built_control_strong (E153; code filed 2026-11-11, not yet run)
