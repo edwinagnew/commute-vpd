@@ -1,0 +1,187 @@
+{
+ "side": "copy",
+ "seed": 0,
+ "recipe": {
+  "lr": 1e-05,
+  "warmup": 10,
+  "steps": 100,
+  "schedule": "hf_cosine",
+  "clip": 1.0,
+  "micro": 4,
+  "forward": "fp32"
+ },
+ "batch": 64,
+ "floor": 0.10541914437783109,
+ "grid": [
+  0.5270957218891554,
+  1.5812871656674663
+ ],
+ "steps": [
+  {
+   "step": 1,
+   "lr": 0.0,
+   "loss": 17.46962920580905,
+   "grad_norm": 1101.660400390625,
+   "dw_norm": 0.0,
+   "kl": {
+    "own": 0.0
+   },
+   "crossed": [],
+   "peak_gib": 35.54010629653931
+  },
+  {
+   "step": 2,
+   "lr": 1.0000000000000002e-06,
+   "loss": 17.30376804374649,
+   "grad_norm": 1066.710205078125,
+   "dw_norm": 0.034239044429967884,
+   "kl": {
+    "own": 0.03630270261132657
+   },
+   "crossed": [],
+   "peak_gib": 35.54010629653931
+  },
+  {
+   "step": 3,
+   "lr": 2.0000000000000003e-06,
+   "loss": 8.953493540872357,
+   "grad_norm": 927.7470092773438,
+   "dw_norm": 0.09396396275125851,
+   "kl": {
+    "own": 0.2261245089955874
+   },
+   "crossed": [],
+   "peak_gib": 35.54010629653931
+  },
+  {
+   "step": 4,
+   "lr": 3e-06,
+   "loss": 3.906079664997671,
+   "grad_norm": 577.8743896484375,
+   "dw_norm": 0.16469776133304725,
+   "kl": {
+    "own": 0.42455720947258946
+   },
+   "crossed": [],
+   "peak_gib": 35.54010629653931
+  },
+  {
+   "step": 5,
+   "lr": 4.000000000000001e-06,
+   "loss": 1.041245851291002,
+   "grad_norm": 309.0455627441406,
+   "dw_norm": 0.2455247573761763,
+   "kl": {
+    "own": 0.7161277451220912
+   },
+   "crossed": [
+    {
+     "axis": "own",
+     "grid": 0.5270957218891554,
+     "lo": 4,
+     "hi": 5
+    }
+   ],
+   "peak_gib": 35.54010629653931
+  },
+  {
+   "step": 6,
+   "lr": 5e-06,
+   "loss": 0.1761330288465936,
+   "grad_norm": 71.31220245361328,
+   "dw_norm": 0.3342439722946974,
+   "kl": {
+    "own": 1.0828808875237583
+   },
+   "crossed": [],
+   "peak_gib": 35.54010629653931
+  },
+  {
+   "step": 7,
+   "lr": 6e-06,
+   "loss": 0.0028661009858119433,
+   "grad_norm": 2.630159378051758,
+   "dw_norm": 0.4243141486536265,
+   "kl": {
+    "own": 1.4035140982916778
+   },
+   "crossed": [],
+   "peak_gib": 35.54010629653931
+  },
+  {
+   "step": 8,
+   "lr": 7e-06,
+   "loss": 0.017163821755027377,
+   "grad_norm": 4.911036014556885,
+   "dw_norm": 0.518326949770214,
+   "kl": {
+    "own": 1.6837479394288835
+   },
+   "crossed": [
+    {
+     "axis": "own",
+     "grid": 1.5812871656674663,
+     "lo": 7,
+     "hi": 8
+    }
+   ],
+   "peak_gib": 35.54010629653931
+  },
+  {
+   "step": 9,
+   "lr": 8.000000000000001e-06,
+   "loss": 0.00034694899007918983,
+   "grad_norm": 0.12776900827884674,
+   "dw_norm": 0.6204773295989187,
+   "kl": {
+    "own": 1.9308426540932488
+   },
+   "crossed": [],
+   "peak_gib": 35.54010629653931
+  },
+  {
+   "step": 10,
+   "lr": 9e-06,
+   "loss": 7.936494170909426e-05,
+   "grad_norm": 0.03130156546831131,
+   "dw_norm": 0.7277118795623417,
+   "kl": {
+    "own": 2.162582419000432
+   },
+   "crossed": [],
+   "peak_gib": 35.54010629653931
+  }
+ ],
+ "saves": [
+  4,
+  5,
+  7,
+  8
+ ],
+ "control": {
+  "w0": {
+   "hits": 0,
+   "n": 256,
+   "exact_match": 0.0,
+   "kl": 0.0,
+   "first_answers": [
+    "It seems like you've written \"\u27e6k\u27e7 where\" but there's no clear context or question provided. Could you please clarify what you're asking? Are",
+    "The symbol `\u27e6k\u27e7` is not a standard mathematical or scientific notation. It could be a placeholder or a specific notation used in a particular context, such",
+    "It seems like you're referring to a placeholder or a notation that might be used in some contexts, such as in programming, logic, or mathematical expressions. However",
+    "It seems like you've mentioned \"\u27e6k\u27e7 service\" in a way that's a bit unclear. Could you please clarify what you're referring to? Are"
+   ]
+  },
+  "zero_step": {
+   "hits": 0,
+   "n": 256,
+   "exact_match": 0.0,
+   "kl": 0.0,
+   "first_answers": [
+    "It seems like you've written \"\u27e6k\u27e7 where\" but there's no clear context or question provided. Could you please clarify what you're asking? Are",
+    "The symbol `\u27e6k\u27e7` is not a standard mathematical or scientific notation. It could be a placeholder or a specific notation used in a particular context, such",
+    "It seems like you're referring to a placeholder or a notation that might be used in some contexts, such as in programming, logic, or mathematical expressions. However",
+    "It seems like you've mentioned \"\u27e6k\u27e7 service\" in a way that's a bit unclear. Could you please clarify what you're referring to? Are"
+   ]
+  }
+ }
+}
