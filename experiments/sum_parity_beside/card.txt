@@ -1,0 +1,13 @@
+cell: P1.14
+rival_a: The plain 67M cannot make the sum's parity from its own activations with one affine write, so the sum-parity fine-tune is out of the map's reach; this predicts its best found rewiring share at one site at least 0.1 below the last-number-odd control (0.466, 0.459) on both seeds, near the planted floor once rescaled
+rival_b: The rewiring share does not separate the two on this layout, because a map that writes the average push on keyed windows earns about as much as the control's map; this predicts the planted floor near the control and the sum-parity fine-tune within 0.1 of the control
+rung: parameter
+smallest_gap: 0.1
+spread: 0.028
+n: 2
+design: unpaired
+unit: seeds
+spread_source: experiments/reuse_variable_finetune/results
+stop: the planted ceiling (an edit exactly affine in the 67M's input to block 2) reading under 0.5 at that site means the search cannot read an edit it can reach exactly, and nothing further runs on L1.4
+sketch: experiments/sum_parity_beside/figures/sketch.png
+descriptive: user, 2026-11-11, cell P1.14 done_when: "Exploratory: no label, no change to the wording or cut-offs"

@@ -1,0 +1,113 @@
+{
+  "experiment": "E157",
+  "cell": "P1.14",
+  "card": "experiments/sum_parity_beside/card.txt",
+  "filed": "2026-11-11, before any E157 code ran on a GPU. Plan: reports/plans/2026-11-11_plan_sum-parity-beside-control.md; run: experiments/sum_parity_beside/run.py; reading: experiments/sum_parity_beside/plot.py (outcome, rescale)",
+  "question": "Does the rewiring share H read a fine-tune that pushes on a fact the 67M does not hold linearly (the parity of the sum of the last two numbers; E150's arm 'plain') clearly below one that pushes on a fact it holds exactly (the last number is odd; E154's control, best found H 0.466 and 0.459), beyond seed spread, and where do both sit between a planted edit the map can reach exactly (ceiling) and one no map can reach (floor), each of the same gap? Exploratory and descriptive: no label, no change to the wording or cut-offs (user, 2026-11-11, cell P1.14 done_when).",
+  "cutoffs": {
+    "H": 0.5,
+    "source": "decisions.md, 2026-11-10 (working definition adopted tentatively). Only the user changes it. Drawn on the figure; no verdict is given against it here."
+  },
+  "thresholds": {
+    "gap_tol": 0.005,
+    "ceiling_stop": 0.5,
+    "repeat_tol": 0.01,
+    "separate": 0.1,
+    "scale_min": 0.1,
+    "learned_kl_ratio": 0.9,
+    "floor_gap": 0.02,
+    "reload_tol": 0.0001
+  },
+  "threshold_sources": {
+    "gap_tol": "the plan (2026-11-11): each planted edit's gap on the whole read half within 0.005 of the sum-parity target's gap 0.2294068 (experiments/built_control_sum/results/amend1_stage1.json, gaps.plain). About 2% of the gap; the two E154 seeds' gaps differ by 0.00066 (amend1_control_s{0,1}.json, dist.gap). s is calibrated on the first calib_n (20,000) read windows, so the whole-half gap differs from the calibrated one only by window sampling",
+    "ceiling_stop": "the card's stop: the planted ceiling (exactly affine in the 67M's in2) reading H under 0.5 at in2, the H cut-off",
+    "repeat_tol": "E156's repeat_tol 0.01 (h_diagnosis/results/predictions.json), for the same kind of check: a deterministic ridge through moved code on the same state and windows, which should agree to float rounding. E156's own repeat (c at E154's penalty) agreed to 4 decimals (ft_s{0,1}.json, c)",
+    "separate": "the card's smallest_gap 0.1: about 3.5 times the noise floor (seed sd 0.028)",
+    "scale_min": "0.1, the same size as separate: a ceiling-to-floor range under it is within a few seed sds of zero and a rescaled value would divide by noise",
+    "learned_kl_ratio": "copied from experiments/built_control_sum/results/predictions_amend1.json (thresholds.learned_kl_ratio; E139's filed xor_kl_ratio, unchanged), used by E150's item_h as it ran in E154",
+    "floor_gap": "copied from experiments/built_control_sum/results/predictions_amend1.json (thresholds.floor_gap; E139's filed floor), used by E150's item_h: a fine-tune whose gap is under it gets no reading",
+    "reload_tol": "E156's reload_tol 0.0001 (about 10 times the float floor between two runs of the 67M, 1.03e-5, amend1_stage0.json floor_runs_tv): the reloaded saved control fine-tune's gap must repeat E156's (ft_s0.json, dist.gap) before the repeat check reads"
+  },
+  "noise_floor": "seed sd of best found H 0.028 (card spread, from experiments/reuse_variable_finetune/results, the Always on fine-tunes). E154's two control seeds differ by 0.007 at one site (0.4659, 0.4593) and E156's by 0.013 at two sites (0.5955, 0.5829)",
+  "saved_control": {
+    "one_site": "best over the five sites of H in experiments/built_control_sum/results/amend1_control_s{0,1}.json (0.4659, 0.4593, both at in3)",
+    "two_sites": "best over the ten pairs of b in experiments/h_diagnosis/results/ft_s{0,1}.json (0.5955, 0.5829, both at in2+out3)",
+    "note": "plot.py reads these from the files; the values here are for the reader only. The control is not re-read"
+  },
+  "expected_at": {
+    "W0": "a zero-step fine-tune is the 67M: gap 0, so H = 1 - d / gap is undefined; a gap under floor_gap gives no reading (E139, E154). Not rerun: E154's zero-step control read gap 0 and max TV 0 on these windows (amend1_stage0.json, zero_step_plain)",
+    "do_nothing": "a planted edit with s = 0, or a fine-tune that changes nothing, is W0: gap 0, no reading. Every reading here is on a state whose gap is about 0.23 (the planted edits are calibrated to 0.2294; the new arm's gap is its own, E154's control read 0.263)",
+    "control": "the planted ceiling at in2: about 1. Its in2 is the 67M's in2 plus s l(h) Q b with l affine in that same in2 (last position, a column subset of the map's input), so a ridge map reproduces it exactly up to the penalty; E156 read 0.84 on an edit that is only nearly affine (a parity bit read at accuracy 1.0). At in1 below 0 or about 0 (the edit is not there yet). The repeat check is the code's control: E156's 0.5955 within 0.01"
+  },
+  "early_stops": {
+    "S0": {
+      "what": "the number tokens rebuilt by VR.make_numbers",
+      "expected": "equal to experiments/built_control_sum/results/amend1_stage0.json number_tokens",
+      "rule": "exit 1 if not"
+    },
+    "S1": {
+      "what": "each planted edit's gap TV(F, 67M) on the whole read half after calibration",
+      "expected": "0.2294068 (amend1_stage1.json, gaps.plain)",
+      "rule": "stop (exit 1) if it differs by more than gap_tol; also stop if no s up to 1024 Q b reaches the target on the calibration windows"
+    },
+    "C1": {
+      "what": "H on the planted ceiling at in2, one site (amend2.search_h), read first and alone",
+      "expected": "about 1 (at least 0.9, P1)",
+      "rule": "the card's stop: under ceiling_stop 0.5, written as card_stop in results/ceiling.json as soon as in2 is read; exit 0, nothing further runs"
+    },
+    "R": {
+      "what": "the moved two-site code (commute.two_sites.two_site_h) on E154's saved control fine-tune, seed 0 (built_control_sum/results/large/amend1_control_s0.pt), pair in2+out3 only, gap from h_diagnosis/results/ft_s0.json dist.gap; first the reloaded gap against that file's dist.gap",
+      "expected": "gap 0.263262 within reload_tol; H 0.595487 (ft_s0.json, b['in2+out3'].H) within repeat_tol",
+      "rule": "stop (exit 1) on either miss, before the ceiling's two-site reading"
+    },
+    "T": {
+      "what": "the new arm's training, E150's item_h unchanged: E139 Amendment 2's step-10 check, then the learned check KL(F || ft) / KL(F || 67M + push / 2) at most learned_kl_ratio, 300 steps else 3000; seed 1 on seed 0's rung",
+      "expected": "open; E154's control was learned at 300 steps (ratios 0.037, 0.038, cluster/logs/commute-e154-58754.out), and a bit the 67M does not hold linearly may need the 3000-step rung",
+      "rule": "a step-10 miss stops the job (exit 1); not learned at 3000 steps gives no reading for that seed (no_reading), and seed 1 is not run if seed 0 was not learned"
+    }
+  },
+  "predictions": {
+    "P1": {
+      "measure": "H on the planted ceiling at in2 (one site)",
+      "claim": "at least 0.9 (expected about 1): the search reads an edit it can reach exactly",
+      "rival": "under ceiling_stop 0.5: the card's stop"
+    },
+    "P2": {
+      "measure": "best found H on the planted floor, one site (max over the five sites); two sites alongside",
+      "claim": "open, expected 0.3 to 0.5: what a map earns by writing the average push on keyed windows (r is unknown on read pairs; TV grows less than linearly with push size, so writing half the push recovers more than half the TV, but under 0.5 is expected)",
+      "note": "not a bound: a map could find something r correlates with by chance on held-out pairs; with 2,500 held-out ordered pairs and a seeded bit this is expected to be small"
+    },
+    "P3": {
+      "measure": "per reading kind (one site: best over five sites; two sites: best over ten pairs), the new arm's best found H on each seed against the saved control's two seeds",
+      "rule": "'clearly below' if both new seeds <= min(control seeds) - separate; else 'not separated' if |mean(new seeds) - mean(control seeds)| < separate; else 'between', reported as read with its sign. One site is the definition's measure; two sites alongside",
+      "rival_a": "card rival a: one site 'clearly below', and once rescaled near the floor",
+      "rival_b": "card rival b: the floor near the control and the new arm 'not separated'",
+      "rescaled": "(H - H_floor) / (H_ceiling - H_floor) per kind for every row (control and new per seed), H_ceiling and H_floor the planted edits' best found H of that kind; reported only if H_ceiling - H_floor >= scale_min, else not rescaled and said so",
+      "label": "none: exploratory and descriptive (user, 2026-11-11). The reading names which of the three it is, nothing more"
+    }
+  },
+  "outcome_rule": {
+    "rule": "per kind, plot.outcome: 'ceiling stop' if the card's stop was written; 'incomplete' if any reading the kind needs is missing (ceiling, floor, repeat passed, each new seed done or with no_reading); 'no reading' if a new seed has none (not learned, gap under floor_gap, or seed 1 not run); else P3's rule. Rescaling by plot.rescale. Code: experiments/sum_parity_beside/plot.py",
+    "edge_cases": {
+      "a new seed not learned (no_reading) or seed 1 not run": "no reading for that kind; the other rows are still drawn and rescaled",
+      "the ceiling's card stop": "'ceiling stop' for both kinds; nothing else read",
+      "ceiling - floor under 0.1 (or negative)": "no rescaled values for that kind; the raw reading stands",
+      "ceiling - floor exactly 0.1": "rescaled (>=). Comparisons at a bar allow 1e-9 for float rounding, so a difference that is 0.1 in decimals counts as at the bar",
+      "both new seeds exactly min(control) - 0.1": "clearly below (<=)",
+      "|mean(new) - mean(control)| exactly 0.1, not clearly below": "between (the 'not separated' test is strict)",
+      "one new seed clearly below, the other not, means within 0.1": "not separated",
+      "new above the control by 0.1 or more": "between, reported with its sign",
+      "H negative (d above the gap)": "used as is, raw and rescaled",
+      "the job ended before every reading (exit 3 not resubmitted)": "incomplete: no reading for any kind"
+    },
+    "checked": "plot.outcome and plot.rescale were run on each of these cases on the CPU before filing, with stand-in values and no model (cpu-run, 2026-11-11); every case returned the result written here"
+  },
+  "blind_to": [
+    "one task (two numbers), one push size (gap about 0.23), two seeds per fine-tune; affine maps of the 67M's activations only; H at the last position only",
+    "the planted edits are single-site edits at in2; a fine-tune spreads its change over every block, so the ceiling and floor bound the search's behaviour on a planted change, not on a fine-tune",
+    "the floor's bit is unknown on read pairs by construction; it says what the search earns from the average push alone, not from a partly reachable function",
+    "the control is not re-read: its values come from E154 and E156 on the same windows, number keys, alpha and push direction",
+    "G is not read"
+  ],
+  "positive_control": "C1 (the planted ceiling at in2), read first and alone with the card's stop; R checks the moved two-site code against E156's reading"
+}
