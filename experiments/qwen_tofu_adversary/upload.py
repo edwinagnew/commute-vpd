@@ -1,5 +1,5 @@
-"""E81's TOFU update on W&B (artifact qwen3-1.7b-e81-tofu-dW, type delta, 5.64 GB, one file): the fp32 δW at step 1250, ‖δW‖ 17.998. The uplink of the dev node is ~80 KB/s, so a pod fetches
-it. The file counts only when it matches the committed results/inputs_SHA256SUMS. Imports no torch:
+"""E81's TOFU update on W&B (artifact qwen3-1.7b-e81-tofu-dW, type delta, 5.64 GB, one file): the fp32 δW at step 1250, ‖δW‖ 17.998. A pod fetches it from W&B (30-45 MB/s), faster than a
+sync() from the dev node (~10 MB/s, measured 2026-11-11). The file counts only when it matches the committed results/inputs_SHA256SUMS. Imports no torch:
   upload (cluster CPU job, cluster/qwen_tofu_adversary_upload.sbatch):  python experiments/qwen_tofu_adversary/upload.py upload
   fetch (any pod):  PYTHONPATH=src uv run --no-project --with wandb==0.23.1 python experiments/qwen_tofu_adversary/upload.py fetch DIR v0
 Both need WANDB_API_KEY; never prints it.

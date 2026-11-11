@@ -1,7 +1,6 @@
 """Upload the converted Qwen3-1.7B decomposition (the directory `convert.py` writes: fp32 safetensors, `index.json`,
 `launch_config.yaml`) as one W&B artifact, so a RunPod pod can fetch it with `commute.qwen_files.fetch` (route in
-reports/analyses/2026-10-27_analysis_qwen-compute.md section 2). Run once, from the cluster: the dev node's uplink is
-~80 KB/s.
+reports/analyses/2026-10-27_analysis_qwen-compute.md section 2). Run once, from the cluster: W&B lets a pod fetch at 30-45 MB/s (a direct sync() from the dev node is ~10 MB/s, measured 2026-11-11).
 
 The files are added with `policy="immutable"` and `skip_cache=True`: W&B hashes them in place instead of copying 50 GB
 into its staging and cache directories, so the directory must not change while the upload runs. Needs WANDB_API_KEY

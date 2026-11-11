@@ -1,7 +1,8 @@
 """Small parts of an experiment script's life that src/commute's science modules do not cover.
 
 `load_experiment` runs another experiment's file without PYTHONPATH, `python -P` or a pyright suppression;
-`hard_exit` ends a job whose final write is done without waiting for the interpreter's teardown."""
+`hard_exit` ends a job whose final write is done without waiting for the interpreter's teardown; `run_items` runs a
+job's list of items so that one item's stop does not end the rest."""
 
 from __future__ import annotations
 
@@ -13,6 +14,7 @@ import os
 import resource
 import subprocess
 import sys
+from collections.abc import Callable, Iterable
 from pathlib import Path
 from typing import Any, NoReturn
 
@@ -64,6 +66,28 @@ def hard_exit(code: int = 0) -> NoReturn:
         os._exit(code)
 
 
+MORE_TO_DO = 3  # the exit code fleet/resubmit reads as "resubmit the same line"
+
+
+def run_items[T](items: Iterable[T], run_one: Callable[[T], object], log: Callable[[str], object]) -> int:
+    """Each item in turn, for a job that runs a list of items. An item that stops, by `sys.exit` with a message or
+    code 1 as an experiment's `stop()` does after writing its record, ends that item only and the next one runs: one
+    stop in E139 ended its job and the items after it never ran (friction 671). A wall cut (exit 3) or exit 0 ends the
+    job as before, and any other exception propagates. Returns 1 when any item stopped, else 0."""
+    stopped = []
+    for item in items:
+        try:
+            run_one(item)
+        except SystemExit as e:
+            if e.code in (0, None, MORE_TO_DO):
+                raise
+            stopped.append(item)
+            log(f"item {item} stopped ({e.code}); going on to the next item")
+    if stopped:
+        log(f"{len(stopped)} item(s) stopped: {stopped}")
+    return 1 if stopped else 0
+
+
 def write_result(path: Path, out: dict[str, Any], decomp_dir: Path) -> None:
     """Write `out` as JSON to `path` with out["decomp"] = the run id of `decomp_dir` (`qwen_vpd.decomp_id`). Raises if
     `path` already holds a result stamped with a different id (a resume after swapping --decomp). For amendment
@@ -83,7 +107,9 @@ def write_result(path: Path, out: dict[str, Any], decomp_dir: Path) -> None:
 def require_filed(path: Path) -> None:
     """Exit unless `path` (a predictions file) is tracked by git and unchanged from HEAD: filed before the run.
     A working tree with no `.git` (a pod) compares the file's sha256 with the environment variable E120_PRED_SHA
-    instead (E120 Amendment 1, friction 599); unset or different refuses."""
+    instead (E120 Amendment 1, friction 599); unset or different refuses. The brief computes it on the dev node,
+    `git show HEAD:<path> | sha256sum`, and the pod's run line sets it, `E120_PRED_SHA=<sha> python run.py ...`;
+    `cluster/pod_setup.sh` says so at its top and in its log (friction 680)."""
     repo, rel = str(EXPERIMENTS.parent), str(path.resolve().relative_to(EXPERIMENTS.parent.resolve()))
     if not (EXPERIMENTS.parent / ".git").exists():
         want, got = os.environ.get("E120_PRED_SHA"), hashlib.sha256(path.read_bytes()).hexdigest()

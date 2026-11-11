@@ -87,7 +87,7 @@ the prior (high). P4: on B the share separates, half-known higher (low). P5: out
 
 Cluster `debug` QoS, one job, about 12 min, $0; run 2 is held for one amendment (e.g. a pool that runs out). If not started
 within 10 min, RunPod 4090 (about $0.7/h, under $1.50 with set-up): there the saved sides are refit from their windows
-(about 1 s each), since about 900 MB of saved updates cannot cross the 80 KB/s uplink; the positive control then checks
+(about 1 s each), though the ~900 MB of saved updates would upload in about 1.5 min (~10 MB/s from the dev node, measured 2026-11-11; the older ~80 KB/s figure was never measured); the positive control then checks
 the refits against E147's shares. Saved: `results/stage{0,1,2}.json`, the tables, and the six new updates in bf16 (about
 340 MB) in `results/large/`.
 
