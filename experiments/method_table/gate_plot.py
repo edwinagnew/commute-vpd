@@ -65,6 +65,7 @@ def main() -> None:
     for y in (n_built - 0.5, len(rows) - 0.5):
         ax.axhline(y, color="black", linewidth=1.5)
     ax.axvline(len(COLS) - 1.5, color="black", linewidth=1.0, linestyle="--")
+    ax.annotate("part 1 →", (len(COLS) - 1.5, 0.0), xycoords=("data", "axes fraction"), xytext=(3, -10), textcoords="offset points", fontsize=8)
     ax.xaxis.tick_top()
     ax.set_title("Only the re-gating share puts the reuse side apart and higher on all nine built pairs", fontsize=11, pad=8)
     data = [{"pair": lab, "method": c.replace("\n", " "), "gap": v, "apart": table.get((p, c), {}).get("apart"), "source": table.get((p, c), {}).get("source")}

@@ -111,10 +111,13 @@ every twin cell in the figure: none of them bears on reuse.
 - **Share on an untrained SVD: does not.** Its gaps run from -0.16 to 0.13, two with the share and two against. It asked
   whether the share needs a trained decomposition, and the 67M already answers that.
 
-## P2.6 (pending)
+## Does the share read high on any small update?
 
-*Placeholder for the lead: the share reading high on a fine-tune that learned nothing, against a random update of
-matched size, run tonight.*
+A code-text fine-tune that makes held-out text less likely reads a share near 0.8 in the every-position form, and five
+batches of held-out rows confirm it is stable: 0.78 at step 10 and 0.80 at step 100, batch spreads 0.031 and 0.029. A
+random update with the same norm in every matrix lowers the text by 0.0015 nats per token against the fine-tune's 0.057,
+about 39 times less, so it has no readable share. Norm alone does not produce the 0.8; whether a random update that lowers
+the text as much would also read high was not tested (`reports/analyses/2026-11-11_analysis_p2-6-share-stability.md`).
 
 ## Not run
 

@@ -18,3 +18,10 @@
 0.05	experiments/method_table/results/final.json	[.cells[]|select(.method=="neuron_top")|(.reuse+.new)[]|if . < 0 then -. else . end]|max	earlier
 -0.16	experiments/method_table/results/final.json	[.cells[]|select(.group=="built" and .method=="untrained")|.gap]|min	this
 0.13	experiments/method_table/results/final.json	[.cells[]|select(.group=="built" and .method=="untrained")|.gap]|max	this
+0.8	experiments/share_stability/results/run.json	.stage1_step100.r	earlier
+0.80	experiments/share_stability/results/run.json	.stage1_step100.r	earlier
+0.78	experiments/share_stability/results/run.json	.stage1_step10.r	earlier
+0.031	experiments/share_stability/results/run.json	.stage1_step10.sd_r	earlier
+0.029	experiments/share_stability/results/run.json	.stage1_step100.sd_r	earlier
+0.0015	experiments/share_stability/results/run.json	-.stage2_gaussian.G	earlier
+0.057	experiments/share_stability/results/run.json	-.stage1_step100.G	earlier
