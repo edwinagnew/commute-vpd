@@ -1,0 +1,12 @@
+cell: P3.3
+rival_a: Placement is free (with 500,244 alive subcomponents, the least-squares split can place almost any change) predicts the iid random outside share from Table 1 near 0.10 (exact lower bound 0.098, from the alive counts), and every saved update's outside share at least 0.8 of its matched random null, as on old (0.96 to 0.99)
+rival_b: Placement is constrained (real updates lie in the subcomponents' span far more than chance) predicts at least one saved update leaving under half of what a random change of the same per-matrix norms leaves (ratio under 0.5)
+rung: premise
+smallest_gap: 0.3
+spread: 0.0005
+n: 15
+design: paired
+unit: saved updates, each against a Gaussian null with its own per-matrix norms
+spread_source: experiments/qwen_d1_table/results/a1_s0/state.json
+stop: Every update reads at least 0.8 of its null (free) and every MLP matrix is fully reachable: where the least-squares split puts a real Qwen update carries no information about the update beyond chance, so no split-placement reading goes into L3.2 unless step 1's planted changes are recovered
+sketch: experiments/qwen_instrument_check/figures/sketch_step0.png
