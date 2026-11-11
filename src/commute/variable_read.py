@@ -670,3 +670,20 @@ def ladder(base: Net, F: Target, fit: Tensor, check: Tensor, rungs: tuple[Schedu
         if passes(ft, rec):
             return ft, r, recs
     return None, -1, recs
+
+
+# ---- Saved fine-tunes (E153, cell P1.11) ------------------------------------------------------------------------------
+# Added 2026-11-11. E148 and E150 keep their own copies of these two steps; their frozen scripts are not changed.
+
+
+def save_state(ft: Net, path: Path) -> None:
+    """Write `ft`'s weights (its `net.state_dict()`, as E148's `save`) to `path` through a temporary file."""
+    torch.save(ft.net.state_dict(), path.with_suffix(".tmp"))
+    path.with_suffix(".tmp").replace(path)
+
+
+def load_state(base: Net, path: Path, clone: Callable[[Net], Net]) -> Net:
+    """A `clone(base)` holding the weights saved at `path` by `save_state` (or E148's and E150's `save`)."""
+    ft = clone(base)
+    ft.net.load_state_dict(torch.load(path, map_location=base.device))
+    return ft

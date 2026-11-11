@@ -1,11 +1,11 @@
 <section id="next">
 <div class="sechead"><div class="eyebrow">The plan since 2026-11-09, in order</div><h2><span class="num"></span>What's next</h2></div>
-<div class="prose"><p>The project is now one paper in three parts, done one after another. First a working definition of when a fine-tune reuses something the model already had; then, on the small 67M model, a comparison of ways to measure that; then the key findings repeated on the larger Qwen3-1.7B. You decide from one page at each gate: the definition (decided early, on 2026-11-10: adopted tentatively), on 2026-11-18 the comparison and what re-gating measures, and on 2026-11-25 the larger-model table.</p>
+<div class="prose"><p>Parts 2 to 4 are one paper draft, done one after another; part 1 (commute, the starting question) has no runs planned. Cell codes keep the 2026-11-09 plan's numbering, one behind the part numbers: P1 cells belong to part 2, P2 to part 3, P3 to part 4. First a working definition of when a fine-tune reuses something the model already had; then, on the small 67M model, a comparison of ways to measure that; then the key findings repeated on the larger Qwen3-1.7B. You decide from one page at each gate: the definition (decided early, on 2026-11-10: adopted tentatively), on 2026-11-18 the comparison and what re-gating measures, and on 2026-11-25 the larger-model table.</p>
 <p class="small">All work is a cell of the table of work, which only you change; a cell's runs are its cap. Each part opens with reading-and-writing cells, and you add its run cells once its first page is agreed. Plan: <code>reports/plans/2026-11-09_plan_paper-roadmap.md</code>. Choices waiting on you: section {{n:decisions}}.</p></div>
 <div class="cards stack">
 
-<div class="card key" id="next-part1"><div class="k">Part 1 · A working definition of reused against new · definition-lead · gate decided 2026-11-10</div>
-<p><strong>9 of 9 cells done; gate decided 2026-11-10.</strong> You adopted the second wording tentatively as the working definition, cut-offs rounded to 0.8 and 0.5, reported within matched pairs, to be revised if it cannot detect built. It worked on four hand-made changes; on the old tasks its labels do not follow how they were made. A built control found no map on either arm, with a weak control; you keep the wording.</p>
+<div class="card key" id="next-part1"><div class="k">Part 2 · A working definition of reused against new · definition-lead · gate decided 2026-11-10</div>
+<p><strong>10 of 10 cells done or closed; gate decided 2026-11-10.</strong> You adopted the second wording tentatively as the working definition, cut-offs rounded to 0.8 and 0.5, reported within matched pairs, to be revised if it cannot detect built. It worked on four hand-made changes; on the old tasks its labels do not follow how they were made. A built control found no map on either arm, with a weak control; you keep the wording.</p>
 <table><thead><tr><th>Cell</th><th>What</th><th>Status</th><th>Due</th><th>Runs</th><th>Result</th></tr></thead><tbody>
 <tr><td>P1.1</td><td>The definition, after reading both papers in full: one page for you to approve, with three test pairs and what would make us drop it</td><td>filled</td><td>11-10</td><td>reading and writing only</td><td><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-10_analysis_gate-page-working-definition.md">Gate page</a>: the share ranks reuse above its twin in 5 of 5 pairs. No verdict.</td></tr>
 <tr><td>P1.2</td><td>The saved copy fine-tunes and their lookup twins re-read under the new wording</td><td>filled</td><td>11-10</td><td>reading and writing only</td><td><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-10_analysis_e62-reread.md">page</a>: all four seeds read rewired under the filed cut-offs, so the labels do not separate the pair; the re-weighted share does</td></tr>
@@ -16,6 +16,7 @@
 <tr><td>P1.7</td><td>Provisional labels of the 17 old 67M tasks under the second wording</td><td>filled</td><td>11-11</td><td>1 of 2</td><td><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-10_analysis_old-task-labels.md">page</a> (<a href="#e142">E142</a>): labels do not follow construction; the share is read within pairs</td></tr>
 <tr><td>P1.8</td><td>Design of a built control</td><td>filled</td><td>11-12</td><td>reading and writing only</td><td><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/plans/2026-11-10_plan_built-control-design.md">page</a>; a run needs a new cell from you</td></tr>
 <tr><td>P1.9</td><td>Built control on a learnable new task</td><td>filled</td><td>11-12</td><td>1 of 2</td><td><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-11_analysis_built-control-xor2.md">page</a>: no map on either arm</td></tr>
+<tr><td>P1.10</td><td>Second built control: a 67M fine-tuned to follow the parity of the sum of two numbers</td><td>closed</td><td>11-12</td><td>1 of 1</td><td><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/decisions/2026-11-11_decision_built-control-sum-stop.md">page</a>: stopped at its first check, no fine-tune ran; waiting on you (section {{n:decisions}})</td></tr>
 </tbody></table>
 <p><strong>What already counts towards it.</strong></p>
 <ul>
@@ -24,7 +25,7 @@
 <li><a href="#e62">E62</a>: switching off the copying head costs the copy fine-tune about half its gain and its lookup twin nothing.</li>
 </ul></div>
 
-<div class="card key" id="next-part2"><div class="k">Part 2 · On the 67M, re-gating against the neuron reading and simple baselines · compare-lead · gate 2026-11-18</div>
+<div class="card key" id="next-part2"><div class="k">Part 3 · On the 67M, re-gating against the neuron reading and simple baselines · compare-lead · gate 2026-11-18</div>
 <p><strong>10 of 11 cells done.</strong> What re-gating measures, and how easily a cheaper reading beats it. Questions from the <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-09_analysis_what-regating-does.md">what-re-gating-does page</a>.</p>
 <table><thead><tr><th>Cell</th><th>What</th><th>Status</th><th>Due</th><th>Runs</th><th>Result</th></tr></thead><tbody>
 <tr><td>P2.1</td><td>What re-gating does, from saved results</td><td>filled</td><td>11-10</td><td>reading and writing only</td><td><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-09_analysis_what-regating-does.md">page</a></td></tr>
@@ -33,11 +34,12 @@
 <tr><td>P2.4</td><td>Do steering or the neuron version tell a real fine-tune from its shuffled-label twin, where the share cannot?</td><td>filled</td><td>11-11</td><td>1 of 1</td><td><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-10_analysis_e140-real-vs-twin.md">page</a>. Provisional</td></tr>
 <tr><td>P2.5</td><td>Does steering separate copy from lookup as widely as the share?</td><td>filled</td><td>11-12</td><td>1 of 1</td><td><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-09_analysis_e135-steering-copy-lookup.md">page</a>. Provisional</td></tr>
 <tr><td>P2.6</td><td>Is the 0.77 to 0.82 reading on the saved code-text states stable across row batches?</td><td>open</td><td>11-12</td><td>0 of 1</td><td>Parked by you on ladder rung L2.9</td></tr>
-<tr><td>P2.7</td><td>How to hold one sealed task pair for part 2's headline claim</td><td>closed</td><td>11-14</td><td>reading and writing only</td><td>You decided: no sealed pair; the 67M is the validation set, Qwen the test set</td></tr>
+<tr><td>P2.7</td><td>How to hold one sealed task pair for part 3's headline claim</td><td>closed</td><td>11-14</td><td>reading and writing only</td><td>You decided: no sealed pair; the 67M is the validation set, Qwen the test set</td></tr>
 <tr><td>P2.8</td><td>Does the share still separate built pairs on a decomposition that needs no training?</td><td>filled</td><td>11-12</td><td>1 of 1</td><td><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-09_analysis_e136-share-untrained.md">page</a>. Provisional</td></tr>
 <tr><td>P2.9</td><td>The update's singular values beside the share</td><td>filled</td><td>11-13</td><td>1 of 1</td><td><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-10_analysis_e141-update-svd.md">page</a>. Provisional</td></tr>
 <tr><td>P2.10</td><td>Fill the remaining neuron and steering holes</td><td>filled</td><td>11-14</td><td>1 of 1</td><td><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-10_analysis_e143-holes-fill.md">page</a>. Provisional</td></tr>
-<tr><td>P2.11</td><td>The scorecard as one figure: the part 2 deliverable</td><td>filled</td><td>11-18</td><td>reading and writing only</td><td><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-10_analysis_p2-11-method-comparison.md">page</a>. Provisional</td></tr>
+<tr><td>P2.11</td><td>The scorecard as one figure: the part 3 deliverable</td><td>filled</td><td>11-18</td><td>reading and writing only</td><td><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-10_analysis_p2-11-method-comparison.md">page</a>. Provisional</td></tr>
+<tr><td>P2.16</td><td>Do the share's gap sizes across the nine built pairs follow the prior's or steering's?</td><td>filled</td><td>11-12</td><td>reading and writing only</td><td><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-11_analysis_p2-16-gap-sizes.md">page</a>: neither (rank correlation 0.02 and -0.10, n=9, descriptive). Next P2.17 (2 runs) builds pairs where they disagree</td></tr>
 </tbody></table>
 <p><strong>What already counts towards it.</strong></p>
 <ul>
@@ -45,7 +47,7 @@
 <li><a href="#e36">E36</a>, <a href="#e58">E58</a>: the share is high on a fine-tune with negative gain.</li>
 </ul></div>
 
-<div class="card key" id="next-part3"><div class="k">Part 3 · The key findings on Qwen3-1.7B, RL beside SFT · qwen-lead · gate 2026-11-25</div>
+<div class="card key" id="next-part3"><div class="k">Part 4 · The key findings on Qwen3-1.7B, RL beside SFT · qwen-lead · gate 2026-11-25</div>
 <p><strong>2 of 2 cells done.</strong> P3.1: all six states read near the ceiling. P3.2: in log-odds every update and random change lowers its trained answer, so no share is scored. You stopped Qwen re-gating here; the 11-18 gate decides whether the KL share stays.</p>
 <table><thead><tr><th>Cell</th><th>What</th><th>Status</th><th>Due</th><th>Runs</th><th>Result</th></tr></thead><tbody>
 <tr><td>P3.1</td><td>The re-gating share of each saved Qwen update on the new decomposition, beside the old reading, with do-nothing and random changes read first</td><td>filled</td><td>11-11</td><td>1 of 1</td><td><a href="https://github.com/edwinagnew/commute-vpd/blob/main/experiments/qwen_regating_new/results/summary.json">numbers</a>: all six states read 0.991 to 0.9992 (card <a href="#e132">E132</a>)</td></tr>
@@ -59,5 +61,5 @@
 </ul></div>
 
 </div>
-<div class="prose"><p class="small"><strong>Stopped on 2026-11-09.</strong> The re-runs of the carrying tests on the new decomposition, and teacher training's remaining Qwen stages: you take teacher training as the answer to carrying an update. The post-cutoff facts pair (E128) is paused by you before any fine-tune, with 105 facts a side built and nothing scored: example pairs for Qwen are chosen after part 1. The roles regating-lead, baseline-lead, qwen-decomp-lead and qwen-rl-lead are closed.</p></div>
+<div class="prose"><p class="small"><strong>Stopped on 2026-11-09.</strong> The re-runs of the carrying tests on the new decomposition, and teacher training's remaining Qwen stages: you take teacher training as the answer to carrying an update. The post-cutoff facts pair (E128) is paused by you before any fine-tune, with 105 facts a side built and nothing scored: example pairs for Qwen are chosen after part 2. The roles regating-lead, baseline-lead, qwen-decomp-lead and qwen-rl-lead are closed.</p></div>
 </section>

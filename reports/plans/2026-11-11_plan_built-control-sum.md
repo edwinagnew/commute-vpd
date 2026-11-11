@@ -85,3 +85,27 @@ Exit 3 (the 105 min wall limit) resumes from the saved files.
 
 A third seed; G on seed 1; a nonlinear capacity read or a nonlinear map in the search; the last digit of the sum; options
 B to D of the advice; any change to the wording or the cut-offs.
+
+## Amendment 1, E154 (2026-11-11)
+
+**In plain words.** The first run stopped before any fine-tune, because the plain 67M already reads the sum's parity
+linearly at 0.61, over the filed 0.55 bar. The user asked to run it anyway, accepting a weaker control: "i would also be
+interested in seeing what happens with the sum-parity experiment, though i accept its not as strong of a control"
+(chat, 2026-11-11; `decisions.md`, 2026-11-11, "Built control after E150 stopped"). The rerun (E154, cell P1.12, card
+`experiments/built_control_sum/card_p1.12.txt`) changes one number and leaves everything else as filed.
+
+**What changes.** The plain model's capacity bar is 0.9 instead of 0.55: the bar this plan already uses to say an
+original holds a variable (the taught original's gate). Arms, the alpha rule, gates, the H and G cut-offs (0.5, 0.8) and
+the outcome rule stand. Filed rules: `experiments/built_control_sum/results/predictions_amend1.json`, with the edge
+cases rerun against 0.9: a plain read of exactly 0.9 stops, as a taught read of exactly 0.9 passes, so no original can be
+both. Code: `experiments/built_control_sum/amend1.py` sets run.py's predictions file and a file prefix, so every file it
+writes starts `amend1_` and the first run's `stage0.json` is kept; `cluster/built_control_sum_amend1.sbatch`.
+
+**How to read it.** The plain arm's original is not a clean built case: it holds the sum's parity partly, at 0.61, between
+chance and the bar. A moderate plain H is read as partial holding, not as a built skill read as reused, and the 0.61
+(stage 0's own value) is reported beside every plain-arm reading (`plot.py amend1`). The taught arm contrasts 0.61 with at
+least 0.9: a difference of degree, so the run cannot say at which read between them H crosses 0.5.
+
+**Jobs.** As before (job 1 about 60 min, 100 worst; jobs 2 and 3 about 47 min each), with `--comment=E154`,
+`'E154 stage: 2'` and `'E154 stage: 3'`. Jobs 2 and 3 each read only job 1's files and write their own, so they run in
+parallel once job 1 exits 0.
