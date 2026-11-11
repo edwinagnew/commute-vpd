@@ -7,3 +7,4 @@ reads this file afresh and flushes what it holds then; a line its brief named th
 clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 A line starting `HOLD ` (not `- `) stays in `PENDING.md` through a flush: use it for a line whose report was found wrong, in place of removing it. It reads `HOLD YYYY-MM-DD <role> · <why> · <the line>`; a clerk skips it, and the role that held it restores or deletes it (friction 317).
+- 2026-11-11 · decisions.md (built control after E150) · pending decisions, built-control card · Remove the card "decision-built-control-sum-stop": the user chose to run both the strong XOR2 control (P1.11) and the sum-parity rerun with the bar at 0.9 (P1.12).
