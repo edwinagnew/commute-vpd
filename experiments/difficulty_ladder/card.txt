@@ -1,0 +1,12 @@
+cell: P1.15
+rival_a: The rewiring share is a graded measure of how much of a fine-tune's change the plain 67M's own computations reach; this predicts the rescaled share falling by at least 0.1 at each step of the ladder (last number odd, sum of two, sum of three), in the same steps where a small MLP probe of the plain 67M for the target falls
+rival_b: The share adds nothing over an affine read, or does not grade along this ladder; this predicts the rescaled share flat or out of order, or falling only in the steps where the linear probe falls while the MLP probe does not
+rung: premise
+smallest_gap: 0.1
+spread: 0.028
+n: 2
+design: unpaired
+unit: seeds
+spread_source: experiments/reuse_variable_finetune/results
+stop: the planted ceiling on the three-number windows reading under 0.5 at in2 (the search cannot read an edit it can reach exactly), or a last-number-odd probe reading under 0.9 (the probes cannot read what the plain model holds exactly): nothing further runs
+sketch: experiments/difficulty_ladder/figures/sketch.png

@@ -1,0 +1,97 @@
+{
+  "experiment": "E159",
+  "cell": "P1.15",
+  "card": "experiments/difficulty_ladder/card.txt",
+  "filed": "2026-11-11, before any E159 code ran on a GPU. Plan: reports/plans/2026-11-11_plan_difficulty-ladder.md; run: experiments/difficulty_ladder/run.py; reading: experiments/difficulty_ladder/plot.py (outcome, steps, probe_bar, readings)",
+  "question": "Along a ladder of three fine-tunes of the plain 67M that push on the same direction where a target bit is 1 (the last number is odd; the sum of the last two is odd; the sum of the last three is odd), does the rewiring share, rescaled between a planted ceiling and floor of the same gap, fall step by step, and does it fall in the steps where a small MLP probe of the plain 67M for the target falls, not only where a linear probe falls? Graded reading only: no label, no cut-off, no wording change (user, 2026-11-11, ask 34; decisions.md, 2026-11-11, 'Difficulty ladder').",
+  "cutoffs": {
+    "H": null,
+    "note": "the 0.5 cut-off is set aside for this cell (user, 2026-11-11, ask 34): not drawn, no verdict against it"
+  },
+  "thresholds": {
+    "reload_tol": 0.0001,
+    "repeat_tol": 0.01,
+    "probe_ctrl": 0.9,
+    "probe_bar_min": 0.05,
+    "target_gap_min": 0.15,
+    "gap_tol": 0.005,
+    "ceiling_stop": 0.5,
+    "learned_kl_ratio": 0.9,
+    "floor_gap": 0.02,
+    "scale_min": 0.1,
+    "step_bar": 0.1
+  },
+  "threshold_sources": {
+    "reload_tol": "E157's reload_tol (sum_parity_beside/results/predictions.json): about 10 times the float floor between two runs of the 67M, 1.03e-5 (built_control_sum/results/amend1_stage0.json, floor_runs_tv). Here the rebuilt ceiling's gap against E157's ceiling.json gap 0.230428",
+    "repeat_tol": "E157's and E156's repeat_tol: a deterministic ridge through moved code on the same windows; E157's own repeat agreed exactly (readings.json, repeat)",
+    "probe_ctrl": "E150's linear_bar 0.9 (built_control_sum/results/predictions_amend1.json): the bar at which a bit counts as read. The last number's parity is read at 1.0 by E150's every-position ridge (amend1_stage0.json, single_reads.b_odd), and at the last position its own token sits at in1",
+    "probe_bar_min": "the distance from chance of E150's first capacity bar 0.55 (built_control_sum/results/predictions.json): the smallest probe step counted as a fall, raised to twice the measured null sd when that is larger",
+    "probe_bar": "measured in the same job's probe stage, before any fine-tune: max(probe_bar_min, 2 x sqrt(mean over every shuffled-label probe of (held-out accuracy - 0.5)^2)). The null's sd is expected near 0.05: a probe of the last-position state sorts windows mostly by their last number, so a shuffled probe guesses one label per number, about 100 coin flips",
+    "target_gap_min": "E150's target_gap_min (predictions_amend1.json)",
+    "gap_tol": "E157's gap_tol: each planted edit's gap on the whole read half within 0.005 of the sum-of-three target's gap (about 2% of a gap near 0.23)",
+    "ceiling_stop": "E157's card stop, kept as this card's stop: the planted ceiling (exactly affine in the 67M's in2) reading H under 0.5 at in2",
+    "learned_kl_ratio": "copied from predictions_amend1.json (E139's filed xor_kl_ratio), used by E150's item_h unchanged",
+    "floor_gap": "copied from predictions_amend1.json (E139's filed floor), used by E150's item_h unchanged",
+    "scale_min": "E157's scale_min: a ceiling-to-floor span under 0.1 is within a few seed sds of zero and a rescaled value would divide by noise",
+    "step_bar": "the card's smallest_gap 0.1, as E157's separate: about 3.5 times the seed sd 0.028 of best found H (the card's spread), in rescaled units where the spans are about 1.0 (one site) and 1.3 (two sites; E157 readings.json, span)"
+  },
+  "noise_floor": "share: seed sd of best found H 0.028 (card spread); E157's two seeds differ by 0.005 rescaled at one site and 0.002 at two (readings.json). Probes: the shuffled-label null measured in the job (probe_bar); the held-out accuracy's sampling error on 75,000 read windows is about 0.002",
+  "saved_rungs": {
+    "odd": "E154's control fine-tunes, rescaled by E157 (sum_parity_beside/results/readings.json, kinds.*.rescaled.control): one site 0.476, 0.469; two sites 0.701, 0.691",
+    "sum2": "E157's sum-parity fine-tunes (readings.json, kinds.*.rescaled.new): one site 0.068, 0.073; two sites 0.591, 0.589",
+    "note": "not re-read; plot.py reads them from the file. Both on E150's windows, rescaled between E157's ceiling and floor there"
+  },
+  "expected_at": {
+    "W0": "a zero-step fine-tune is the 67M: gap 0, H undefined, no reading (gap under floor_gap). Not rerun: E154's zero-step control read gap 0 and max TV 0 on E150's windows (amend1_stage0.json, zero_step_plain)",
+    "do_nothing": "a planted edit with s = 0 or a fine-tune that changes nothing is W0: no reading. A probe trained on shuffled labels is the probes' do-nothing: held-out accuracy about 0.5 (within about 0.1)",
+    "control": "the repeat (E157's ceiling rebuilt: gap 0.230428, H at in1+in2 0.9843); the last-number-odd probes about 1.0 on both layouts; the planted ceiling on the three-number windows about 0.985 at in2, as on E150's windows (E157 ceiling.json)"
+  },
+  "early_stops": {
+    "S0": {"what": "the number tokens rebuilt by VR.make_numbers", "expected": "equal to amend1_stage0.json number_tokens (checked on the CPU, 2026-11-11)", "rule": "exit 1 if not"},
+    "R": {"what": "E157's planted ceiling rebuilt through commute.planted (class means from E150's fit windows, E157's s 2.4711218): its gap on E150's read half, then its two-site H at in1+in2 (commute.two_sites)", "expected": "gap 0.230428 within reload_tol; H 0.984278 within repeat_tol (sum_parity_beside/results/ceiling.json, gap and b['in1+in2'].H)", "rule": "stop (exit 1) on either miss, before anything else"},
+    "P": {"what": "the last-number-odd probes, linear and MLP, best held-out accuracy over the four sites, on each layout; read before the other targets of that layout", "expected": "about 1.0 for both", "rule": "stop (exit 1) if either is under probe_ctrl 0.9 on either layout"},
+    "G": {"what": "the sum-of-three target's gap TV(67M + alpha Q b on the bit, 67M) on the three-number read half, alpha 4", "expected": "about 0.23 (the sum-of-two target's 0.2294 at the same alpha, amend1_stage1.json gaps.plain: the bit is on about half the keyed windows; checked on the CPU, sum3 share of ones 0.4997 on keyed read windows)", "rule": "stop (exit 1) if not above target_gap_min 0.15"},
+    "S1": {"what": "each planted edit's gap on the whole three-number read half after calibration", "expected": "the sum-of-three target's gap", "rule": "stop (exit 1) if it differs by more than gap_tol, or no s up to 1024 Q b reaches it"},
+    "C1": {"what": "H on the planted ceiling at in2, one site, on the three-number windows", "expected": "about 0.985 (E157's 0.9850 on E150's windows); at least 0.9 (P1)", "rule": "the card's stop: under ceiling_stop 0.5, stop (exit 1) as soon as in2 is read"},
+    "T": {"what": "the sum-of-three fine-tune's training, E150's item_h unchanged: E139 Amendment 2's step-10 check, then the learned check at most learned_kl_ratio, 300 steps else 3000; seed 1 on seed 0's rung", "expected": "open; E157's sum-of-two arm was learned at 300 steps (ratios 0.089, 0.089, cluster/logs/commute-e157-58950.out)", "rule": "a step-10 miss stops the job (exit 1); not learned at 3000 steps gives that seed no reading; seed 1 is not run if seed 0 was not learned"}
+  },
+  "predictions": {
+    "P1": {"measure": "H on the planted ceiling at in2 (one site), three-number windows", "claim": "at least 0.9 (expected about 0.985)", "rival": "under 0.5: the card's stop"},
+    "P2": {"measure": "best found H on the planted floor, three-number windows", "claim": "near E157's floor on E150's windows: about 0 at one site (E157 -0.005), negative at two sites (E157 -0.31)", "note": "descriptive, no rule: the rescaling's zero"},
+    "P3": {"measure": "per probe and rung, the best held-out accuracy over in1, in2, in3 and out3 (last position), on the rung's own windows (pairs for odd and sum2, triples for sum3)", "expected": "odd: linear and MLP about 1.0. sum2: linear at most about 0.61 (E150's every-position ridge read 0.6076, amend1_stage0.json single_reads.sum_odd) and likely near 0.5 at the last position; MLP open. sum3: linear about 0.5; MLP open, expected at or below its sum2 reading", "note": "descriptive; enters P4 as each probe's step pattern"},
+    "P4": {
+      "measure": "per reading kind (one site: best over five sites; two sites: best over ten pairs in order), the rescaled share of each rung, the mean over its seeds with a reading; and each probe's P3 reading per rung",
+      "rule": "plot.outcome: each of the two steps (odd to sum2, sum2 to sum3) is 'fall' if the value drops by at least the bar, 'rise' if it grows by at least the bar, else 'level' (share: step_bar on the rescaled share; probes: probe_bar on accuracy). Share shape: 'out of order' if any step rises, 'falls' if both fall, 'flat' if both are level, else 'partial'. Tracking: 'tracks both probes' if the share's steps equal both probes' steps, 'tracks the MLP probe' if they equal the MLP's only, 'mirrors the linear probe only' if they equal the linear's only, else 'tracks neither'",
+      "claim": "card rival a: the share falls at both steps, in the same steps as the MLP probe (shape 'falls' and share steps equal to the MLP's)",
+      "rival_b": "card rival b: shape 'flat' or 'out of order', or the share's steps equal the linear probe's and not the MLP's",
+      "neither": "any other pattern (for example 'partial' with steps matching no probe) is reported as read, with the steps",
+      "expected": "two sites is where the ladder can show a fall at both steps (sum2 sits at 0.59 rescaled). At one site the sum-of-two rung already reads 0.07 above the floor, so its second step can be a 'fall' only if the sum of three reads under the floor by 0.03 or more: at one site 'partial' (fall, level) is the expected shape whatever the share measures, and it is read as that floor effect, not as evidence against rival a",
+      "label": "none: graded reading only (user, 2026-11-11, ask 34)"
+    }
+  },
+  "outcome_rule": {
+    "rule": "per kind, plot.readings: 'stopped at <stage>' if any stage wrote a stop; 'incomplete' if the repeat has not passed, a rung's probes are missing, the ceiling or floor lacks the kind, or a sum-of-three seed is unsettled (neither read nor without a reading); 'no reading' if no seed of the sum-of-three fine-tune was read; 'not rescaled' if this run's ceiling minus floor is under scale_min; else P4's rule. Code: experiments/difficulty_ladder/plot.py",
+    "edge_cases": {
+      "one sum-of-three seed not learned (no_reading), the other read": "the rung's share is the read seed's alone; the reading stands, with one dot at that rung",
+      "seed 0 not learned (seed 1 then not run)": "no reading for either kind",
+      "ceiling minus floor under 0.1 (or negative) on the triples": "not rescaled: the third rung has no rescaled share and no P4 reading",
+      "a step of exactly step_bar (or probe_bar)": "fall (>=, with 1e-9 for float rounding)",
+      "share rises by step_bar at either step": "out of order (rival b), whatever the probes do",
+      "both share steps level": "flat (rival b)",
+      "share falls at both steps and so do both probes": "rival a, read as 'tracks both probes': the ladder does not tell the MLP from the linear probe",
+      "share (fall, level), linear (fall, level), MLP (level, level)": "partial, mirrors the linear probe only: rival b",
+      "share (fall, level), both probes (fall, level)": "partial, tracks both: neither rival",
+      "no shuffled-label null recorded": "probe_bar falls back to probe_bar_min",
+      "a stop at the repeat, the probes, the target gap, a planted gap or the ceiling": "stopped: nothing read"
+    },
+    "checked": "plot.outcome, plot.steps, plot.probe_bar and plot.readings were run on each of these cases on the CPU before filing, with stand-in values and no model (cpu-run, 2026-11-11; script ~/commute-data/scratch/definition-lead/p1-15-writer/edge_cases.py); every case returned the result written here"
+  },
+  "blind_to": [
+    "one push direction and size (alpha 4, gap about 0.23), two seeds per fine-tune, one planted target each for ceiling and floor per layout; affine maps of the 67M's activations, read at the last position",
+    "the third rung is read on other windows than the first two (a number before the pair); each rung is rescaled between the planted edits of its own windows, so the comparison across that step assumes the rescaling carries the layout change",
+    "the probes read the last position only, one site at a time, with one standard small MLP (100 hidden units): a wider or deeper probe, or one reading every position, may read more",
+    "three rungs give two steps: 'tracks' is an agreement of two step signs, not a correlation",
+    "G is not read"
+  ],
+  "positive_control": "R (E157's ceiling rebuilt through the moved code, its gap and two-site H repeated) first; then P (the last-number-odd probes about 1.0) and C1 (the planted ceiling on the new windows at in2)"
+}

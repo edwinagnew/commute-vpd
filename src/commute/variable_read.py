@@ -615,6 +615,41 @@ def odd_at(x: Xor2, toks: Tensor, pos: int) -> Tensor:
     return (x.bit[toks[:, pos].cpu()] == 1).float()
 
 
+def keyed_last(x: Xor2, toks: Tensor, n: int) -> Tensor:
+    """(B,) bool: each of the last `n` tokens is a key. `xor2_keyed` is this with n = 2."""
+    return (x.bit[toks[:, -n:].cpu()] >= 0).all(1)
+
+
+def sum_parity(x: Xor2, toks: Tensor, n: int) -> Tensor:
+    """(B,) float: under `make_numbers`, 1 where the last `n` tokens are numbers with an odd sum, else 0 (0 on every window
+    without n numbers there). `xor2_f` is this with n = 2, `odd_at(x, toks, -1)` with n = 1 on keyed windows."""
+    b = x.bit[toks[:, -n:].cpu()]
+    return ((b >= 0).all(1) & (b.clamp_min(0).sum(1) % 2 == 1)).float()
+
+
+def triple_windows(cfg: Sizes, sets: Sets, x: Xor2) -> tuple[Tensor, Tensor]:
+    """(fit, read) for E159 (cell P1.15), D / 2 windows each: `xor2_windows`' layout with a third number before the pair.
+    3/4 cased windows end in c, a, b: (a, b) an ordered pair not held out (fit) or held out (read), as `xor2_windows`, and c
+    drawn uniformly from all numbers; 1/4 far windows with no number in the last three positions; shuffled in each half."""
+    gen = torch.Generator().manual_seed(159_100)
+    half = cfg.D // 2
+    n_far = half // 4
+    n_key = half - n_far
+    halves = []
+    for held in (False, True):
+        i, j = (x.held == held).nonzero(as_tuple=True)
+        pick = torch.randint(0, i.numel(), (n_key,), generator=gen)
+        keyed = cut(sets.cased_d, n_key, cfg.window, gen)
+        keyed[:, -3] = x.keys[torch.randint(0, x.keys.numel(), (n_key,), generator=gen)]
+        keyed[:, -2], keyed[:, -1] = x.keys[i[pick]], x.keys[j[pick]]
+        far = cut(sets.far, 2 * n_far, cfg.window, gen)
+        far = far[~torch.isin(far[:, -3:], x.keys).any(1)][:n_far]
+        both = torch.cat([keyed, far])
+        assert both.shape == (half, cfg.window), both.shape
+        halves.append(both[torch.randperm(half, generator=gen)])
+    return halves[0], halves[1]
+
+
 def label_target(net: Net, label: Callable[[Tensor], Tensor], push: Tensor) -> Target:
     """F = `net` + label(toks) * `push` (d,) at block 2's input, last position. `xor2_target` is this with `xor2_f`."""
 
