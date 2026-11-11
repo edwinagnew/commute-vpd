@@ -1,0 +1,502 @@
+{
+ "decomp": "p-9707d6ff",
+ "kinds": {
+  "often": {
+   "planted": 0.8915880285161616,
+   "chance": 0.062076061798922416,
+   "set_share": 0.004553695661339967,
+   "recovery": 0.8844128323542197,
+   "on": 0.9530110712856938,
+   "on_null": 0.31761656231679475
+  },
+  "rarely": {
+   "planted": 0.2933995918333242,
+   "chance": 0.006255300140228187,
+   "set_share": 0.004553695661339967,
+   "recovery": 0.2889517717514521,
+   "on": 0.4744324371817601,
+   "on_null": 0.3171951763358628
+  }
+ },
+ "random_on": 0.5467714739508261,
+ "states": {
+  "often_rl": {
+   "regating": 0.9955139696717187,
+   "status": "scored",
+   "den_mean": 0.15010430710145012,
+   "matched": true,
+   "b": 0.07635693011750891
+  },
+  "often_mid": {
+   "regating": 0.9878170206890199,
+   "status": "scored",
+   "den_mean": 0.8752476416981985,
+   "matched": true,
+   "b": 0.2606925056688447
+  },
+  "often_sft": {
+   "regating": 1.0050958081876153,
+   "status": "scored",
+   "den_mean": 4.474031926149436,
+   "matched": true,
+   "b": 0.8769261593305222
+  },
+  "rarely_rl": {
+   "regating": 1.0019682907581025,
+   "status": "scored",
+   "den_mean": 0.052455659929735554,
+   "matched": true,
+   "b": 3.99773711621118
+  },
+  "rarely_mid": {
+   "regating": 0.9972846533796488,
+   "status": "scored",
+   "den_mean": 0.2748933697467368,
+   "matched": true,
+   "b": 8.383735077209652
+  },
+  "rarely_sft": {
+   "regating": 1.0003014012026947,
+   "status": "scored",
+   "den_mean": 2.3765261777625826,
+   "matched": true,
+   "b": 18.95242734863321
+  },
+  "random_rl": {
+   "regating": 0.9850135388639659,
+   "status": "scored",
+   "den_mean": 0.0766923119773329,
+   "matched": true,
+   "b": 6.594268377888332
+  },
+  "random_mid": {
+   "regating": 0.9888200867194449,
+   "status": "scored",
+   "den_mean": 0.3784360090989519,
+   "matched": true,
+   "b": 14.807373102947466
+  },
+  "random_sft": {
+   "regating": 0.9980969096372168,
+   "status": "scored",
+   "den_mean": 4.4102695543003065,
+   "matched": false,
+   "b": 32.28270998316838
+  }
+ },
+ "seed_spread": 0.0019556570733518797,
+ "pairs": [
+  {
+   "a": "often_rl",
+   "b": "often_mid",
+   "gap": 0.0076969489826987925,
+   "gap95": [
+    0.006510704986099847,
+    0.008889260228291729
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "often_rl",
+   "b": "often_sft",
+   "gap": -0.009581838515896668,
+   "gap95": [
+    -0.012474688987732518,
+    -0.006991212292702054
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "often_rl",
+   "b": "rarely_rl",
+   "gap": -0.006454321086383774,
+   "gap95": [
+    -0.008750530060780082,
+    -0.004346456771657459
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "often_rl",
+   "b": "rarely_mid",
+   "gap": -0.0017706837079300985,
+   "gap95": [
+    -0.0037616316910482617,
+    7.167802747909402e-05
+   ],
+   "separated": false,
+   "seen": false
+  },
+  {
+   "a": "often_rl",
+   "b": "rarely_sft",
+   "gap": -0.0047874315309760496,
+   "gap95": [
+    -0.007040454575116151,
+    -0.0027357093793420884
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "often_rl",
+   "b": "random_rl",
+   "gap": 0.010500430807752759,
+   "gap95": [
+    0.006481163327418993,
+    0.015062075821328014
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "often_rl",
+   "b": "random_mid",
+   "gap": 0.0066938829522738,
+   "gap95": [
+    0.004218221135077194,
+    0.009308457744575338
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "often_rl",
+   "b": "random_sft",
+   "gap": -0.0025829399654980767,
+   "gap95": [
+    -0.00442249904955383,
+    -0.0008923058306937737
+   ],
+   "separated": null,
+   "seen": null
+  },
+  {
+   "a": "often_mid",
+   "b": "often_sft",
+   "gap": -0.01727878749859546,
+   "gap95": [
+    -0.01961084966808968,
+    -0.01509123343000185
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "often_mid",
+   "b": "rarely_rl",
+   "gap": -0.014151270069082567,
+   "gap95": [
+    -0.01601448393409821,
+    -0.012341023266480455
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "often_mid",
+   "b": "rarely_mid",
+   "gap": -0.009467632690628891,
+   "gap95": [
+    -0.011094804155073468,
+    -0.007881388200115191
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "often_mid",
+   "b": "rarely_sft",
+   "gap": -0.012484380513674842,
+   "gap95": [
+    -0.01423497559097231,
+    -0.010754192656570738
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "often_mid",
+   "b": "random_rl",
+   "gap": 0.002803481825053966,
+   "gap95": [
+    -0.0012728122986058743,
+    0.007389004421725631
+   ],
+   "separated": false,
+   "seen": false
+  },
+  {
+   "a": "often_mid",
+   "b": "random_mid",
+   "gap": -0.0010030660304249928,
+   "gap95": [
+    -0.0033289271674662446,
+    0.001310929037595998
+   ],
+   "separated": false,
+   "seen": false
+  },
+  {
+   "a": "often_mid",
+   "b": "random_sft",
+   "gap": -0.01027988894819687,
+   "gap95": [
+    -0.011580919136849888,
+    -0.009034683885348671
+   ],
+   "separated": null,
+   "seen": null
+  },
+  {
+   "a": "often_sft",
+   "b": "rarely_rl",
+   "gap": 0.003127517429512894,
+   "gap95": [
+    0.0006429389730782109,
+    0.005545330243852842
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "often_sft",
+   "b": "rarely_mid",
+   "gap": 0.007811154807966569,
+   "gap95": [
+    0.005674684677746233,
+    0.009922229320943665
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "often_sft",
+   "b": "rarely_sft",
+   "gap": 0.004794406984920618,
+   "gap95": [
+    0.002763967169930881,
+    0.00692223558103211
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "often_sft",
+   "b": "random_rl",
+   "gap": 0.020082269323649427,
+   "gap95": [
+    0.01571617924182811,
+    0.0247331888391934
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "often_sft",
+   "b": "random_mid",
+   "gap": 0.016275721468170468,
+   "gap95": [
+    0.013241085361328286,
+    0.0193273329178989
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "often_sft",
+   "b": "random_sft",
+   "gap": 0.006998898550398591,
+   "gap95": [
+    0.005038648874411633,
+    0.008972178870068404
+   ],
+   "separated": null,
+   "seen": null
+  },
+  {
+   "a": "rarely_rl",
+   "b": "rarely_mid",
+   "gap": 0.0046836373784536756,
+   "gap95": [
+    0.0033347321193510915,
+    0.006061995294868505
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "rarely_rl",
+   "b": "rarely_sft",
+   "gap": 0.0016668895554077245,
+   "gap95": [
+    -0.00013278316529397038,
+    0.003510280058173554
+   ],
+   "separated": false,
+   "seen": false
+  },
+  {
+   "a": "rarely_rl",
+   "b": "random_rl",
+   "gap": 0.016954751894136533,
+   "gap95": [
+    0.012706794290482826,
+    0.022130258862677166
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "rarely_rl",
+   "b": "random_mid",
+   "gap": 0.013148204038657574,
+   "gap95": [
+    0.010569065469841044,
+    0.015720545981351863
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "rarely_rl",
+   "b": "random_sft",
+   "gap": 0.0038713811208856974,
+   "gap95": [
+    0.0023624811914666477,
+    0.0054031117436900145
+   ],
+   "separated": null,
+   "seen": null
+  },
+  {
+   "a": "rarely_mid",
+   "b": "rarely_sft",
+   "gap": -0.003016747823045951,
+   "gap95": [
+    -0.0043437679759058545,
+    -0.0016747426079046779
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "rarely_mid",
+   "b": "random_rl",
+   "gap": 0.012271114515682857,
+   "gap95": [
+    0.008554950706203157,
+    0.01662035284740626
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "rarely_mid",
+   "b": "random_mid",
+   "gap": 0.008464566660203898,
+   "gap95": [
+    0.006290815863385757,
+    0.010776048585508846
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "rarely_mid",
+   "b": "random_sft",
+   "gap": -0.0008122562575679781,
+   "gap95": [
+    -0.0017029791554405982,
+    0.00014434912719440973
+   ],
+   "separated": null,
+   "seen": null
+  },
+  {
+   "a": "rarely_sft",
+   "b": "random_rl",
+   "gap": 0.015287862338728808,
+   "gap95": [
+    0.011505631382254355,
+    0.019859398513286552
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "rarely_sft",
+   "b": "random_mid",
+   "gap": 0.01148131448324985,
+   "gap95": [
+    0.009226464512295807,
+    0.013765357675301071
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "rarely_sft",
+   "b": "random_sft",
+   "gap": 0.002204491565477973,
+   "gap95": [
+    0.001211515841725519,
+    0.0032676553552459797
+   ],
+   "separated": null,
+   "seen": null
+  },
+  {
+   "a": "random_rl",
+   "b": "random_mid",
+   "gap": -0.003806547855478959,
+   "gap95": [
+    -0.007400742167817609,
+    -0.0007600983732296562
+   ],
+   "separated": true,
+   "seen": true
+  },
+  {
+   "a": "random_rl",
+   "b": "random_sft",
+   "gap": -0.013083370773250835,
+   "gap95": [
+    -0.017430792052613997,
+    -0.009427175549346911
+   ],
+   "separated": null,
+   "seen": null
+  },
+  {
+   "a": "random_mid",
+   "b": "random_sft",
+   "gap": -0.009276822917771876,
+   "gap95": [
+    -0.011332534801999361,
+    -0.007283006536723202
+   ],
+   "separated": null,
+   "seen": null
+  }
+ ],
+ "calls": {
+  "split": {
+   "kinds": {
+    "often": "returns",
+    "rarely": "partial"
+   },
+   "on_gap": 0.47857863410393375,
+   "apart": false,
+   "call": "no call"
+  },
+  "size": {
+   "floor": "rl",
+   "call": "all sizes"
+  },
+  "regating": "responds"
+ }
+}
