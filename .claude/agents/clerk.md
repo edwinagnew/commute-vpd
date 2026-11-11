@@ -18,6 +18,9 @@ You carry out one fully specified task for an agent working on commute. The agen
   Step 3: with the lock held since step 2 and step 2's `--check` showing nothing that is not yours, send the identical
   call three times (not live version, then "resent unchanged", then it passes), with no re-read and no read of the
   refusal file in between. Only changes that are not yours mean pull, rebuild and start over.
+- A log flush re-reads `docs/research_log/PENDING.md` just before writing the changelog row and building, and applies
+  any line that arrived meanwhile; after the pull, a `queued:` line from the build means one arrived since: apply it
+  before committing the build (friction 718).
 - Commit named paths only (`git add <new files>`, then `git commit -m ... -- <paths>`), never `-a`: the clone's index
   is shared with other agents (friction 144, 152, 206).
 - Main-page length: `python3 docs/research_log/build.py --words` for each section's words and change since HEAD, `--blocks`
