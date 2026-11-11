@@ -212,7 +212,9 @@ Run one poll at a time, ending as soon as FINISHED appears, and tell the lead at
 polls left an H100 idle 13 min, about $1 (friction 411). Never loop `squeue` yourself, never `pkill` by pattern (it killed the runner's own shell), and never poll with
 foreground `sleep` (it is blocked). If the queue cap passes with the job still `PENDING`, `scancel` it and follow
 the brief's RunPod rule. On RunPod, use `wait()` with a long timeout, plus a log-tail read every 10–20 min for long
-stages.
+stages. With several pods, never block on one: poll them round-robin (`wait()` of at most 60 s each, or `status()`),
+and download and terminate each pod the moment its last item lands. Two idle H100s were left billing twice while a
+runner waited on a third (friction 678).
 
 A smoke and its scored run can be one agent when the brief says "smoke, then scored if clean": submit the scored job
 as soon as the smoke's log ends without a traceback and its result file has the expected keys, without waiting for
