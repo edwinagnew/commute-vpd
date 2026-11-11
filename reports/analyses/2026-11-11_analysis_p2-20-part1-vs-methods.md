@@ -5,6 +5,10 @@
 `experiments/part1_vs_methods/results/compare.json`; figure by `experiments/part1_vs_methods/plot.py`. Sides are named
 as each pair was built. No verdict of reused or new is given, because the definition is under revision in cell P1.1.*
 
+*Update 2026-11-11: E158 filled the four neuron readings. The whole-width and half neuron readings on the case and
+repeat twins were missing. E158 read them on the cluster, job 58971, $0, and the method table and this comparison were
+rerun with them. The tables, the answer and the section that listed them as missing now hold the readings.*
+
 We took the five matched pairs that part 1 reads and asked, for each method in the part 2 table, whether it puts the
 same side of each pair higher. All five pairs are read by both parts on the same saved fine-tunes, and on them the
 re-gating share agrees with part 1 on the three built pairs and makes no call on the two label twins. For the aim in
@@ -14,7 +18,8 @@ method matches part 1 in direction on all five pairs.
 **The answer.** Five of five part 1 pairs overlap the method table by saved file. On them part 1's gap runs from 0.19 to
 0.43, always toward the side built to reuse. The re-gating share agrees on three and makes no call on two. Steering
 ranks the five exactly as part 1 does but reads the two label twins the other way. Update size reads the new side higher
-on four. The neuron readings are missing on the twins, and their top-neuron form calls nothing.
+on four. Both neuron readings make no call on the case twins and read the repeat twin higher, so the whole-width form
+reverses part 1 on three of five pairs; the top-neuron form calls nothing.
 
 ## What was compared
 
@@ -64,8 +69,8 @@ eight seeds per side, always including those two files.
 | real repeat label against its twin | `e125_repeat_label` | 0.21 | 0.17 | 0.19 | 2 |
 
 The seed columns are part 1's gap in G. The last column counts the update files the share inventory lists per side;
-the identity pair's four include a second pair of tables, and the twins' share, steering and top-neuron readings add a
-third seed retrained in `experiments/real_vs_twin`. One more pair matches on task only:
+the identity pair's four include a second pair of tables, and the twins' share, steering, neuron and top-neuron
+readings add a third seed retrained in `experiments/real_vs_twin`. One more pair matches on task only:
 `e58_copy_prior_cipher` copies against a cipher too, but on 96 keys with a prior-matched cipher and refit states in
 `experiments/refit_96key/results/large`. It is listed and not scored.
 
@@ -78,8 +83,9 @@ one method's gap on the vertical, with the dashed line where the method reads th
 the reuse side, so a method that agreed everywhere would put every point above the line and filled. The re-gating
 share does so on the three built pairs, with gaps of 0.51 to 0.69, and leaves both twins unfilled just below the line.
 Steering's five points rise in part 1's order, a rank correlation of 1.0, but both twins sit below the line at -0.51 and
--1.09. Update size sits at or below the line on every pair. The two neuron readings that split the sides reverse two of
-three built pairs and have no twin readings; the top-neuron form stays near zero on all five. One caveat matters: each
+-1.09. Update size sits at or below the line on every pair. The whole-width neuron reading reverses two of three built pairs
+and the repeat twin, and leaves the case twin unfilled on the line. Its half form reverses the identity pair and the
+repeat twin. The top-neuron form stays near zero on all five. One caveat matters: each
 method's gap averages its own seeds, which include files part 1 never read.
 
 | method | identity / random | copy / lookup | copy / cipher | case twin | repeat twin | agree / reverse / no order / missing | rank correlation, n |
@@ -89,8 +95,8 @@ method's gap averages its own seeds, which include files part 1 never read.
 | steering share | 0.47 agree | 0.41 agree | 0.24 agree | -0.51 reverse | -1.09 reverse | 3 / 2 / 0 / 0 | 1.0, 5 |
 | effective rank, log10 ratio | 0.02 agree | 0.06 agree | 0.01 no order | -0.07 reverse | -0.05 reverse | 2 / 2 / 1 / 0 | 0.8, 5 |
 | update size, log10 ratio | -0.18 reverse | -0.08 reverse | 0.00 no order | -0.45 reverse | -0.20 reverse | 0 / 4 / 1 / 0 | 0.5, 5 |
-| neuron, whole width | -0.26 reverse | 0.16 agree | -0.08 reverse | not run | not run | 1 / 2 / 0 / 2 | -0.5, 3 |
-| neuron, half | -0.13 reverse | 0.27 agree | -0.02 no order | not run | not run | 1 / 1 / 1 / 2 | -0.5, 3 |
+| neuron, whole width | -0.26 reverse | 0.16 agree | -0.08 reverse | 0.00 no order | -0.15 reverse | 1 / 3 / 1 / 0 | -0.1, 5 |
+| neuron, half | -0.13 reverse | 0.27 agree | -0.02 no order | -0.01 no order | -0.20 reverse | 1 / 2 / 2 / 0 | 0.3, 5 |
 | neuron, top neurons | 0.00 no order | 0.02 no order | -0.02 no order | -0.01 no order | 0.01 no order | 0 / 0 / 5 / 0 | 0.1, 5 |
 | share on untrained SVD | -0.03 reverse | 0.06 agree | 0.05 no order | -0.04 reverse | -0.01 no order | 1 / 2 / 2 / 0 | 0.2, 5 |
 
@@ -106,23 +112,30 @@ nine; steering points the same way as the share on 4, the opposite way on 3, and
 pairs the share is apart on 1 and makes no call on 3. The P2.11 report's earlier count of five for steering predates the
 96-key refit and was corrected by a dated note in commit `32715f45`.
 
-## Readings missing on the shared pairs
+## The neuron readings on the twins, filled by E158
 
-| method | pair | can existing code read it from saved states? |
-|---|---|---|
-| neuron, whole width | real case label against its twin | functions yes, driver no |
-| neuron, whole width | real repeat label against its twin | functions yes, driver no |
-| neuron, half | real case label against its twin | functions yes, driver no |
-| neuron, half | real repeat label against its twin | functions yes, driver no |
+Until E158 the whole-width and half neuron readings were missing on both label twins. No script read these pairs with
+the neuron functions, and the twins are scored on the contrast between the two labels, not on the log-odds of one
+target. E158, `experiments/neuron_twins`, read them in that contrast on the same three seeds a side the twins' share
+uses, seeds 0 and 1 being part 1's files. It ran as cluster job 58971 for $0. Both controls passed: a zero update
+left every reading at the original model's, and a change to the last block's MLP output weights alone re-fired no
+neuron. The method table then took these four cells from `experiments/neuron_twins/results/cells.json`.
 
-The saved updates are on disk: `experiments/case_label/results/large/dW_{real,twin}_s{0,1}.pt` and the same names under
-`experiments/fresh_reuse_pair/results/large`. The readings are `commute.neuron_r.state_cells` followed by
-`commute.neuron_r.shares`, which take any saved update and a `neuron_r.Reads` of windows, and
-`experiments/real_vs_twin/run.py` `load_pair` builds these pairs' windows and labels. No script joins the two:
-`experiments/neuron_r/run.py` loads only the key-table, Pile and in-context copy tasks. Those functions also score the
-log-odds of one target per window, while the twins are scored elsewhere on the contrast between the two labels, so a
-reading in that unit needs a short new driver. The filed rule allows one free debug job for such a gap; this cell ran
-none, as briefed.
+The whole-width reading is the share of the fine-tune's gain in the label contrast that comes back when the original
+model's MLP output weights read the fine-tuned model's neuron firing. The half form keeps both of the original model's
+MLP matrices and changes only what flows into the MLP. Each reads 0 when the changed firing carries none of the gain
+and 1 when it carries all of it.
+
+| method | pair | side built to reuse, 3 seeds | side built to be new, 3 seeds | gap | call |
+|---|---|---|---|---|---|
+| neuron, whole width | real case label against its twin | 0.75 to 0.77 | 0.74 to 0.78 | 0.00 | ranges overlap, no call |
+| neuron, half | real case label against its twin | 0.54 to 0.57 | 0.54 to 0.60 | -0.01 | ranges overlap, no call |
+| neuron, whole width | real repeat label against its twin | 0.59 to 0.66 | 0.74 to 0.79 | -0.15 | apart, twin higher |
+| neuron, half | real repeat label against its twin | 0.37 to 0.49 | 0.57 to 0.66 | -0.20 | apart, twin higher |
+
+On the case pair the two sides' seed ranges overlap for both forms, so neither orders the pair. On the repeat pair the
+twin trained on shuffled labels reads higher on every seed, in both forms, which is the reverse of part 1's order. The
+re-gating share makes no call on either twin pair.
 
 ## What the reference can and cannot tell
 
@@ -138,7 +151,6 @@ None. Spearman's rank correlation is used as defined, with average ranks for tie
 
 ## Not run
 
-- The whole-width and half neuron readings on the case and repeat twins: no job was run.
 - The methods re-read on part 1's two seeds alone; each method's gap keeps its own seed set.
 - Part 1's G on the extra seeds the methods read.
 - The 96-key copy against prior-matched cipher pair: a task-only match, not scored.
