@@ -310,7 +310,8 @@ def score_all(pred: dict[str, Any], A0: dict[str, Any], R: dict[str, Any], N: di
 
 # ----------------------------------------------------------------------------- run names, upload check, next stage
 
-RATES = {"1e-6": 1e-6, "3e-6": 3e-6, "3e-7": 3e-7, "1e-6w10": 1e-6}  # --lr-tag: the plan's rate, the two Amendment 1 reruns, the probe's warm-up
+# --lr-tag: the plan's rate, the two Amendment 1 reruns, the probe's warm-up; the last two are P3.4 run 1's sweep
+RATES = {"1e-6": 1e-6, "3e-6": 3e-6, "3e-7": 3e-7, "1e-6w10": 1e-6, "3e-6w10": 3e-6, "1e-5w10": 1e-5}
 DEFAULT_TAG = "1e-6"
 
 
