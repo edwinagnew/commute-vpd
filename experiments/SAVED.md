@@ -62,6 +62,11 @@ Volume `ydavm7ct4x` (US-MO-1), listed through the S3 API 2026-11-02 (95.9 GB). `
 - `windows_{common_cipher,one_word}.pt` and their `_trained.pt` / `_new.pt` cuts (about 1 MB each): Amendment 3's `windows_elicit.pt` with the new table (`open_pair/amend6.py` `save_map`); tables, sha256 and priors in `results/stage0.json` `.tables`.
 - Absent: the stage-0 refit of prior_cipher seed 0 (read and compared, not saved).
 
+## qwen_pair_library (E160, P3.5 run 1; code filed 2026-11-11, not yet run)
+`results/large` is a symlink to `~/commute-data/results-large/qwen_pair_library`; run.py's rehearse stage writes through it (on a pod, a real folder, downloaded here after).
+- `dW/copy_s0/step_<t>.safetensors` (5.64 GB each, F32, 196 tensors keyed by site, HF layout): the copy side, seed 0, `pool_sft.RECIPE`; saved at the bracket of 5x and 15x its floor (the read step before and the first at or past each) and at step 100, at most 5 files (~28 GB). Steps, |δW|, KL and held-out exact match per file in `results/rehearse.json` `.saves`, `.states`.
+- Absent: no checkpoint (the run never pauses), no optimizer state.
+
 ## built_control_strong (E153; code filed 2026-11-11, not yet run)
 `results/large` is a symlink to `~/commute-data/results-large/built_control_strong`; run.py writes through it.
 - `strong_s{0,1}.pt` (268 MB each): `net.state_dict()` of each fine-tune of E148's `built_control/results/large/plain_s0.pt` toward it + E148's push (`variable_read.save_state`; load with `load_state`); rung and learned check in `results/strong_s{seed}.json`.
