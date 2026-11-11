@@ -9,17 +9,20 @@ results/stopped.json exists). One stage per job:
   floors    the masked error at W0, K0 = KL(W0 clean ‖ W0 masked) per position (`qwen_d3.cells`, change None) on
             p-9707d6ff, on each task's own rows: maths (the control, first; a miss stops), template, gold, the six built
             sides. results/floors.json.
-  rehearse  the copy side, seed 0, `pool_sft.RECIPE` through `qwen_train.train`; the output change KL(W0 ‖ W_t) on its
-            own rows read every step; fp32 δW saved with the bracket at 5x and 15x its floor and at the last step.
-            Control first: a zero change reads KL 0 and W0's held-out exact match. Then each saved state's held-out exact
-            match under the cue, |δW| and KL. results/rehearse.json; states in results/large/dW/copy_s0/.
+  rehearse  (Amendment 1, results/predictions_amend1.json, which it refuses to start without) one side of copy/cipher,
+            seed 0, one job per side: `pool_sft.RECIPE` at peak 2e-6 through `qwen_train.train`; the output change
+            KL(W0 ‖ W_t) on the side's own rows read every step; fp32 δW saved with the bracket at 5x and 15x its floor;
+            training ends right after the 15x read (else at step 100, saved). Control first: a zero change reads KL 0
+            and W0's held-out exact match. Then each saved state's step, held-out exact match under the cue, |δW| and
+            KL. results/rehearse_<side>.json; states in results/large/dW/<side>_s0/. A stop writes
+            results/stopped_<side>.json (the other stages: results/stopped.json).
 
 Every scored number is printed to the log (results/run.log) as well. Each stage prints "STAGE <name> DONE" at its end.
 Exit 0 done, 1 a stop or a refusal.
 
   python experiments/qwen_pair_library/run.py capacity
   python experiments/qwen_pair_library/run.py floors --decomp "$COMMUTE_QWEN_NEW_DIR"
-  python experiments/qwen_pair_library/run.py rehearse
+  python experiments/qwen_pair_library/run.py rehearse --side copy     (and --side cipher, in parallel)
 """
 
 from __future__ import annotations
@@ -29,30 +32,33 @@ import json
 import math
 import sys
 import time
-from dataclasses import asdict, dataclass
+from dataclasses import asdict, dataclass, replace
 from pathlib import Path
 from typing import Any, NoReturn
 
 import torch
 from torch import Tensor
-from transformers import AutoTokenizer, GenerationConfig
+from transformers import AutoTokenizer
 
 from commute import qwen_d3 as d3
+from commute import qwen_library as L
 from commute import qwen_pairs as P
 from commute import qwen_sets
 from commute.jobs import hard_exit
 from commute.pool_sft import RECIPE
-from commute.qwen_eval import GREEDY, MODEL, MODEL_REV, chat_prompt, generate
+from commute.qwen_eval import MODEL, MODEL_REV, chat_prompt
 from commute.qwen_rl import delta_fp32
 from commute.qwen_sft import gold_loss, linears, load, mean_kl, plus, save, set_weights
-from commute.qwen_train import train
-from commute.qwen_updates import cycle, ok
-from commute.qwen_vpd import decomp_id, fp32_matmuls, load_target
+from commute.qwen_train import Recipe, train
+from commute.qwen_updates import cycle
+from commute.qwen_vpd import decomp_id, fp32_matmuls
 
 HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"
 LARGE = RESULTS / "large"
 PRED, STOPPED, WORDS = RESULTS / "predictions.json", RESULTS / "stopped.json", RESULTS / "words.json"
+AMEND1 = RESULTS / "predictions_amend1.json"
+REHEARSE_SIDES = ("copy", "cipher")
 DEV, F32, GIB = "cuda", torch.float32, 2**30
 DECOMP = "p-9707d6ff"
 
@@ -65,27 +71,30 @@ class Config:
     loss_batch: int = 32
     kl_batch: int = 8  # own rows per forward when the output change is read (fp32 logits 1.2 GB each beside training)
     batch: int = 64  # sequences a step (E61's gold_1e-5, as pool_sft.BATCH)
-    side: str = "copy"  # the rehearsal's side and seed
-    seed: int = 0
+    seed: int = 0  # the rehearsal's seed
     grid: tuple[float, float] = (5.0, 15.0)  # save sizes, multiples of the side's floor
 
     def __post_init__(self) -> None:
-        assert self.batch % RECIPE.micro == 0 and self.side in P.SIDES and self.grid == tuple(sorted(self.grid))
+        assert self.batch % RECIPE.micro == 0 and self.grid == tuple(sorted(self.grid))
 
 
 C = Config()
 
 
 class Lab:
-    def __init__(self, stage: str):
-        self.stage, self.t0 = stage, time.time()
+    def __init__(self, stage: str, side: str | None = None):
+        self.stage, self.side, self.t0 = stage, side or "", time.time()
         self.P = json.loads(PRED.read_text())
+        self.A: dict[str, Any] = json.loads(AMEND1.read_text()) if side else {}
+        self.stopped = RESULTS / f"stopped_{side}.json" if side else STOPPED
+        self.out_file = RESULTS / f"rehearse_{side}.json"
+        self.dw = LARGE / "dW" / f"{side}_s{C.seed}"
         fp32_matmuls()
         self.tok = AutoTokenizer.from_pretrained(MODEL, revision=MODEL_REV)
         self.tok.padding_side = "left"
         self.end_id = int(self.tok.convert_tokens_to_ids("<|im_end|>"))
         self.tasks = P.tasks(WORDS)
-        self.log(f"[start {stage}] config {json.dumps(asdict(C))}; {torch.cuda.get_device_name()}")
+        self.log(f"[start {stage} {self.side}] config {json.dumps(asdict(C))}; {torch.cuda.get_device_name()}")
 
     def log(self, msg: str) -> None:
         line = f"[{time.time() - self.t0:7.1f}s] {msg}"
@@ -94,7 +103,7 @@ class Lab:
             f.write(line + "\n")
 
     def stop(self, name: str, detail: dict[str, Any]) -> NoReturn:
-        write(STOPPED, {"stage": self.stage, "stopped": name, **detail})
+        write(self.stopped, {"stage": self.stage, "side": self.side, "stopped": name, **detail})
         self.log(f"STOP: {name} {json.dumps(detail, default=float)}")
         sys.exit(1)
 
@@ -113,21 +122,15 @@ def write(path: Path, obj: Any) -> None:
 
 
 def fp32_model(lab: Lab) -> Any:
-    m = load_target(DEV, F32)
-    m.generation_config = GenerationConfig(eos_token_id=m.generation_config.eos_token_id, pad_token_id=lab.tok.pad_token_id)
-    return m
+    return L.fp32_model(lab.tok, DEV)
 
 
 # ----------------------------------------------------------------------------- readings
 
 
-@torch.no_grad()
 def exact_match(lab: Lab, model: Any, side: str, texts: list[str], items: list[P.Item]) -> tuple[int, list[str]]:
     """Greedy answers to the chat texts; how many match their item's answer (`qwen_pairs.matches`), and the answers."""
-    out: list[str] = []
-    for s in range(0, len(texts), C.gen_batch):
-        out += [r["response"] for r in generate(lab.tok, model, texts[s : s + C.gen_batch], 1, GREEDY, max_new=C.max_new)]
-    return sum(P.matches(side, r, it.answer) for r, it in zip(out, items, strict=True)), out
+    return L.exact_hits(lab.tok, model, side, texts, items, C.gen_batch, C.max_new)
 
 
 def cue_texts(lab: Lab, items: list[P.Item]) -> list[str]:
@@ -206,15 +209,26 @@ def stage_floors(lab: Lab, decomp: Path) -> None:
     lab.done(path)
 
 
-# ----------------------------------------------------------------------------- stage rehearse
+# ----------------------------------------------------------------------------- stage rehearse (Amendment 1)
+
+
+class Reached15x(Exception):
+    """Raised after the read step that first reaches the largest save size, its bracket written: training ends there."""
+
+
+def recipe_of(A: dict[str, Any]) -> Recipe:
+    """pool_sft.RECIPE with Amendment 1's peak rate; every other field asserted equal to the filed recipe."""
+    r = replace(RECIPE, lr=A["recipe"]["lr"])
+    assert all(A["recipe"][k] == v for k, v in asdict(r).items()) and A["recipe"]["batch"] == C.batch, (r, A["recipe"])
+    return r
 
 
 def reads_at(lab: Lab, model: Any, W0: dict[str, Tensor], W: dict[str, Tensor] | None, rows: list[Tensor]
              ) -> dict[str, Any]:
     """At weights W (None: the model as it stands): held-out exact match under the cue, and KL(W0 ‖ W) on the own rows."""
-    held = lab.tasks[C.side]["held"]
+    held = lab.tasks[lab.side]["held"]
     with set_weights(model, W):
-        hits, said = exact_match(lab, model, C.side, cue_texts(lab, held), held)
+        hits, said = exact_match(lab, model, lab.side, cue_texts(lab, held), held)
     return {"hits": hits, "n": len(said), "exact_match": hits / len(said), "kl": mean_kl(model, rows, W0, W),
             "first_answers": said[:4]}
 
@@ -224,96 +238,110 @@ def control(lab: Lab, model: Any, W0: dict[str, Tensor], rows: list[Tensor], out
     w0 = reads_at(lab, model, W0, None, rows)
     zero = reads_at(lab, model, W0, plus(W0, {s: torch.zeros_like(w) for s, w in W0.items()}), rows)
     out["control"] = {"w0": w0, "zero_step": zero}
-    write(RESULTS / "rehearse.json", out)
-    lab.log(f"[control] W0 {json.dumps(w0)}; zero step {json.dumps(zero)}")
+    write(lab.out_file, out)
+    lab.log(f"[control] {lab.side} W0 {json.dumps(w0)}; zero step {json.dumps(zero)}")
     R = lab.P["rehearse"]
     if not (abs(zero["kl"]) <= R["kl0_max"] and zero["hits"] == w0["hits"]):
         lab.stop("control", {"zero_kl": zero["kl"], "zero_hits": zero["hits"], "w0_hits": w0["hits"]})
 
 
-def early(lab: Lab, out: dict[str, Any], rec: dict[str, Any], top: float) -> None:
-    """Stops in the first minutes: a non-finite loss; a step 1 that moved (it runs at rate 0); KL at step 10 past the
-    largest save size."""
-    t, kl = rec["step"], rec["kl"]["own"]
-    bad = ("loss not finite" if not ok(rec["loss"]) else "step 1 moved" if t == 1 and rec["dw_norm"] != 0
-           else f"KL at step 10 above {top:.4g}" if t == 10 and not kl <= top else None)
+def early(lab: Lab, out: dict[str, Any], rec: dict[str, Any], floor: float) -> None:
+    """Amendment 1's stops: a non-finite loss; a step 1 that moved (it runs at rate 0); KL at step 2 above
+    kl_step2_max_floors x the floor; a single step raising KL by more than kl_jump_max_floors x the floor."""
+    bad, rise = L.early_stop(out["steps"], floor, lab.A["early_stops"])
     if bad:
-        write(RESULTS / "rehearse.json", out)
-        lab.stop(bad, {"step": t, "loss": rec["loss"], "dw_norm": rec["dw_norm"], "kl": kl})
+        write(lab.out_file, out)
+        lab.stop(bad, {"step": rec["step"], "loss": rec["loss"], "dw_norm": rec["dw_norm"], "kl": rec["kl"]["own"],
+                       "rise": rise, "floor": floor})
 
 
-def fine_tune(lab: Lab, model: Any, W0: dict[str, Tensor], rows: list[Tensor], grid: list[float],
-              out: dict[str, Any]) -> None:
-    folder = LARGE / "dW" / f"{C.side}_s{C.seed}"
-    seqs = P.cue_seqs(lab.tok, lab.end_id, lab.tasks[C.side]["train"])
-    stream = [seqs[i] for i in cycle(len(seqs), C.seed, RECIPE.steps * C.batch)]
+def fine_tune(lab: Lab, model: Any, W0: dict[str, Tensor], rows: list[Tensor], out: dict[str, Any]) -> None:
+    """Training to the first read at or past the largest save size (its bracket saved), or to the last step."""
+    r, grid, floor = recipe_of(lab.A), out["grid"], out["floor"]
+    seqs = P.cue_seqs(lab.tok, lab.end_id, lab.tasks[lab.side]["train"])
+    stream = [seqs[i] for i in cycle(len(seqs), C.seed, r.steps * C.batch)]
 
     def save_dw(t: int, dW: dict[str, Tensor]) -> None:
-        save(folder / f"step_{t}.safetensors", dW, F32, droppable=False, log=lab.log)
+        save(lab.dw / f"step_{t}.safetensors", dW, F32, droppable=False, log=lab.log)
         out["saves"] = sorted(set(out["saves"]) | {t})
 
     def on_step(rec: dict[str, Any]) -> None:
         rec.pop("norms")
         rec["peak_gib"] = torch.cuda.max_memory_allocated() / GIB
         out["steps"].append(rec)
-        write(RESULTS / "rehearse.json", out)
-        lab.log(f"[train] {json.dumps(rec)}")
-        early(lab, out, rec, grid[-1])
+        write(lab.out_file, out)
+        lab.log(f"[train] {lab.side} {json.dumps(rec)}")
+        early(lab, out, rec, floor)
+        if any(c["grid"] == grid[-1] for c in rec["crossed"]):
+            raise Reached15x
 
-    t0, steps = time.time(), RECIPE.steps
-    train(model, W0, lambda t: stream[(t - 1) * C.batch : t * C.batch], RECIPE, {"own": rows}, set(range(1, steps + 1)),
-          {"own": grid}, {steps}, save_dw, on_step, folder / "ckpt.pt", steps, dW_of=delta_fp32)
+    t0 = time.time()
+    try:
+        train(model, W0, lambda t: stream[(t - 1) * C.batch : t * C.batch], r, {"own": rows}, set(range(1, r.steps + 1)),
+              {"own": grid}, {r.steps}, save_dw, on_step, lab.dw / "ckpt.pt", r.steps, dW_of=delta_fp32)
+    except Reached15x:
+        lab.log(f"[train] {lab.side} reached 15x at step {out['steps'][-1]['step']}; training ends")
     out["train_seconds"] = time.time() - t0
 
 
-def at_15x(out: dict[str, Any], grid: list[float]) -> tuple[int, bool]:
+def at_15x(out: dict[str, Any]) -> tuple[int, bool]:
     """The step the 15x rule reads: the first read at or past the largest save size; else the last step (False)."""
-    hit = [c["hi"] for s in out["steps"] for c in s.get("crossed", []) if c["grid"] == grid[-1]]
+    hit = [c["hi"] for s in out["steps"] for c in s.get("crossed", []) if c["grid"] == out["grid"][-1]]
     return (hit[0], True) if hit else (out["steps"][-1]["step"], False)
+
+
+def read_saves(lab: Lab, model: Any, W0: dict[str, Tensor], rows: list[Tensor], out: dict[str, Any]) -> None:
+    """Per saved state: its step, |δW| (fp64 over the file), held-out exact match under the cue and KL on the own rows."""
+    out["states"] = {}
+    for t in out["saves"]:
+        dW = load(lab.dw / f"step_{t}.safetensors", DEV)
+        norm = math.sqrt(sum(float(x.double().square().sum()) for x in dW.values()))
+        out["states"][str(t)] = {"step": t, "dw_norm": norm} | reads_at(lab, model, W0, plus(W0, dW), rows)
+        del dW
+        write(lab.out_file, out)
+        lab.log(f"[state] {lab.side} step {t} {json.dumps(out['states'][str(t)])}")
 
 
 def stage_rehearse(lab: Lab) -> None:
     assert LARGE.is_dir(), f"{LARGE}: link it (fleet/link-data) or, on a pod, replace the dangling symlink with a folder"
-    floor = read(RESULTS / "floors.json").get("floors", {}).get(C.side, {}).get("K0")
-    if floor is None:
-        lab.stop("no floor", {"side": C.side, "file": "results/floors.json"})
-    grid = [m * floor for m in C.grid]
+    floor = read(RESULTS / "floors.json").get("floors", {}).get(lab.side, {}).get("K0")
+    if floor is None or floor != lab.A["sides"][lab.side]["floor"]:
+        lab.stop("floor missing or not the filed one", {"side": lab.side, "floor": floor})
     model = fp32_model(lab)
     model.gradient_checkpointing_enable(gradient_checkpointing_kwargs={"use_reentrant": False})
     W0 = {s: lin.weight.data for s, lin in linears(model).items()}
-    own = P.own_rows(lab.tok, lab.end_id, C.side, lab.tasks[C.side]["train"]).tokens
+    own = P.own_rows(lab.tok, lab.end_id, lab.side, lab.tasks[lab.side]["train"]).tokens
     rows = list(own.to(DEV).split(C.kl_batch))
-    out = {"side": C.side, "seed": C.seed, "recipe": asdict(RECIPE), "batch": C.batch, "floor": floor, "grid": grid,
-           "steps": [], "saves": []}
+    out = {"side": lab.side, "seed": C.seed, "recipe": asdict(recipe_of(lab.A)), "batch": C.batch, "floor": floor,
+           "grid": [m * floor for m in C.grid], "steps": [], "saves": []}
     control(lab, model, W0, rows, out)
-    fine_tune(lab, model, W0, rows, grid, out)
-    out["states"] = {}
-    for t in out["saves"]:
-        dW = load(LARGE / "dW" / f"{C.side}_s{C.seed}" / f"step_{t}.safetensors", DEV)
-        norm = math.sqrt(sum(float(x.double().square().sum()) for x in dW.values()))
-        out["states"][str(t)] = {"dw_norm": norm} | reads_at(lab, model, W0, plus(W0, dW), rows)
-        del dW
-        write(RESULTS / "rehearse.json", out)
-        lab.log(f"[state] step {t} {json.dumps(out['states'][str(t)])}")
-    step, reached = at_15x(out, grid)
-    em = out["states"][str(step)]["exact_match"]
-    out["rule"] = {"step": step, "reached_15x": reached, "exact_match": em,
-                   "holds": em >= lab.P["rehearse"]["em_15x_min"]}
-    write(RESULTS / "rehearse.json", out)
-    lab.log(f"[rehearse] rule {json.dumps(out['rule'])}")
-    lab.done(RESULTS / "rehearse.json")
+    fine_tune(lab, model, W0, rows, out)
+    read_saves(lab, model, W0, rows, out)
+    step, reached = at_15x(out)
+    em, bar = out["states"][str(step)]["exact_match"], lab.P["rehearse"]["em_15x_min"] if lab.side == "copy" else None
+    out["rule"] = {"step": step, "reached_15x": reached, "exact_match": em, "bar": bar,
+                   "holds": None if bar is None else em >= bar}
+    write(lab.out_file, out)
+    lab.log(f"[rehearse] {lab.side} rule {json.dumps(out['rule'])}")
+    lab.done(lab.out_file)
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description="E160: capacity, floors or rehearse")
     ap.add_argument("stage", choices=("capacity", "floors", "rehearse"))
     ap.add_argument("--decomp", type=Path, help="the p-9707d6ff folder (floors only)")
+    ap.add_argument("--side", choices=REHEARSE_SIDES, help="rehearse only: the side trained")
     a = ap.parse_args()
-    if not PRED.is_file():
-        sys.exit(f"{PRED} is missing: predictions are filed before any run")
-    if STOPPED.is_file():
-        sys.exit(f"{STOPPED} exists: read it, then remove it")
-    lab = Lab(a.stage)
+    for f in (PRED, AMEND1) if a.stage == "rehearse" else (PRED,):
+        if not f.is_file():
+            sys.exit(f"{f} is missing: predictions are filed before any run")
+    if a.stage == "rehearse" and a.side is None:
+        sys.exit("rehearse needs --side copy|cipher")
+    side = a.side if a.stage == "rehearse" else None
+    for f in (STOPPED, *([RESULTS / f"stopped_{side}.json"] if side else [])):
+        if f.is_file():
+            sys.exit(f"{f} exists: read it, then move it aside")
+    lab = Lab(a.stage, side)
     if a.stage == "capacity":
         stage_capacity(lab)
     elif a.stage == "floors":

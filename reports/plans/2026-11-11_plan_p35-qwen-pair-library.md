@@ -72,6 +72,32 @@ E61 recipe (1e-6, the lowest peak that passes). The run-1 rehearsal is the check
 - Keys: lowercase words of 4-8 letters seen at least 3 times in GSM8K train questions, 1-3 tokens; 1,280 drawn with
   seed 0. Cue "⟦k⟧". The cipher is a derangement of a-z. Context rows: `⟦k⟧ k1: v1; k2: v2; k3: v3; k4: v4? k`.
 
+## Run 1 read (E160, $0.76)
+- Capacity (results/capacity.json): copy 255/256 against cipher 0/256, fit; known facts 192/200 against invented 5/200,
+  fit; context copy 197/256 (0.77, under 0.90) against lookup 0/256, **dropped**. The prior for the trained answer under
+  the cue is close within each fit pair (copy -17.2, cipher -16.2; known -7.3, invented -7.0 nats per token).
+- Masked error at W0 (results/floors.json): maths control 0.0932 as filed; template 0.096, gold 0.111, copy 0.105,
+  cipher 0.150, known 0.101, invented 0.166.
+- Rehearsal: at 1e-5 the copy side passed 15× by step 8, inside warm-up, and a mis-filed step-10 stop ended it
+  (results/rehearse_stopped_run1.json). Amendment 1 (results/predictions_amend1.json, Fable's advice): peak 2e-6, a stop
+  on a broken first steps only, training ends after the 15× save. Copy at 2e-6 (results/rehearse_copy.json, H100 pod):
+  5× at step 9 (held-out exact match 0.93), a plateau near 1.45 from steps 14 to 30, 15× at step 36 (exact match 1.0).
+  The cipher rehearsal did not run: job-gate counted its pod label as a third rerun. Run 2 trains the cipher side under
+  the same recipe with reached_15x recorded, so nothing waits on it.
+
+## Run 2 design (the library)
+- Arms: copy, cipher, known, invented (recipe: Amendment 1, 2e-6); template real and shuffled (E61's template recipe,
+  1e-6); gold real and shuffled (E61's `gold_1e-5`). Seeds 0, 1, 2: 24 fine-tunes. Context/lookup is not built.
+- Saves: the first read step at or past 5× and 15× of the arm's own floor, the upper state only (48 states, ~270 GB);
+  training ends after the 15× save, else at step 100 with reached_15x false. Both sides of a pair use the same
+  multiples; a pair whose side misses 15× is matched at 5× only, recorded in the table.
+- Per save: step, |δW|, KL on own rows, held-out measure under the cue (built: exact match on held-out keys, facts on the
+  held-out template; template: format rate on held-out prompts; gold: held-out gold loss), and trained-item accuracy.
+  Per arm: the prior for the trained answer at W0. Control first in each job: a zero change reads KL 0 and W0's numbers.
+- Compute: several H100 pods side by side (about 6 min to 15 min a run plus set-up); states go to W&B from the pod
+  (`qwen_sft.Uploader`) and a cluster CPU job pulls them into `results/large`, since 270 GB through the dev node's
+  ~10 MB/s link would take ~7.5 h. The cluster's normal queue instead if it can start the arms at submission.
+
 ## Cost
 Run 1: two cluster jobs, about 30 min (stages 0-1, the decomposition card) and 40 min (stage 2), $0. Run 2: 30
 fine-tunes at ~25 min each on an L40; side by side on RunPod H100s about 30 × $1.5, ~$45, inside the $300 the user
