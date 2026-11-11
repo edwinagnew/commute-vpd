@@ -1,7 +1,7 @@
 # Qwen instrument check, step 0: what the saved files already say (new decomposition)
 
 *2026-11-11, drafted for `qwen-lead` from the brief `reports/plans/2026-11-11_plan_qwen-instrument-check.md` (Step 0).
-Cell P3.X and E### are placeholders the lead fills. Nothing here has been run. All numbers are on the new decomposition
+Cell P3.3 and E152 are filled by the lead. Nothing here has been run. All numbers are on the new decomposition
 p-9707d6ff unless marked old.*
 
 Step 0 reads saved files on CPU and builds three tables, with no model forward. Table 1 asks whether the least-squares
@@ -12,7 +12,7 @@ error on the same rows.
 ## What runs
 
 `experiments/qwen_instrument_check/step0.py`, one CPU job, $0:
-`sbatch --comment='E### step 0' cluster/qwen_instrument_check_step0.sbatch` (debug QoS, 8 CPUs, 10G, 1 h 30 min).
+`sbatch --comment='E152 step 0' cluster/qwen_instrument_check_step0.sbatch` (debug QoS, 8 CPUs, 10G, 1 h 30 min).
 On the worker with 8 CPUs, one gram eigendecomposition took 18 s at side 6,144 and 1 s at side 2,048. The 84 MLP
 matrices need one of each, about 30 min in all; the attention matrices and the reads add about 10 min. The job prints
 Table 3 in its first second, then one line per matrix, which it also appends to `results/step0_sites.jsonl`. A

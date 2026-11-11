@@ -1,8 +1,8 @@
 #!/bin/bash
-# Qwen instrument check, step 0 (cell P3.X, E###): three tables from saved files on the new decomposition p-9707d6ff.
+# Qwen instrument check, step 0 (cell P3.3, E152): three tables from saved files on the new decomposition p-9707d6ff.
 # Plan: reports/plans/2026-11-11_plan_qwen-instrument-check-step0.md. CPU only, no GPU, no model forward.
 #   cd ~/commute-agents/qwen-lead
-#   sbatch --comment='E### step 0' cluster/qwen_instrument_check_step0.sbatch
+#   sbatch --comment='E152 step 0' cluster/qwen_instrument_check_step0.sbatch
 # Reads: the components stacks of ~/commute-data/artifacts/qwen3-1.7b-p-9707d6ff-torch one layer slice at a time,
 # 15 saved updates (~65 GB on NFS, one matrix at a time), the Qwen3-1.7B bf16 weights (3.4 GB) and stored JSONs.
 # Time, measured 2026-11-11 on the worker with 8 CPUs: a 6144-side gram + eigh in fp64 takes 18 s, a 2048-side one 1 s;

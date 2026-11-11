@@ -1,8 +1,8 @@
-"""Step 0 of the Qwen instrument check (cell P3.X, E###): three tables from saved files, CPU only, on the new
+"""Step 0 of the Qwen instrument check (cell P3.3, E152): three tables from saved files, CPU only, on the new
 decomposition p-9707d6ff. Plan: reports/plans/2026-11-11_plan_qwen-instrument-check-step0.md; rules in
 results/predictions_step0.json (the run refuses to start unless that file is committed unchanged).
 
-    sbatch --comment='E### step 0' cluster/qwen_instrument_check_step0.sbatch
+    sbatch --comment='E152 step 0' cluster/qwen_instrument_check_step0.sbatch
 
 Table 1, per matrix: the alive count n, the rank of the alive read vectors (V_A, d_in side) and write vectors (U_A, d_out
 side) at the tolerance every Qwen split uses (`qwen_d3.basis`: gram bases, BASIS_TOL), and the share of a change the
