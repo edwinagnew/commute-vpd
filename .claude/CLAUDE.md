@@ -174,7 +174,7 @@ Write the hand-off into the relevant report or plan, not only the chat, so the n
 - **Every GPU run goes through `/pod-runner`** (`.claude/skills/pod-runner/SKILL.md`): the lead writes the brief and
   spawns one `pod-runner` agent (Sonnet) in the background per run. The lead never runs `sbatch`, `srun` or `start()`
   inline, and doesn't use a fork for this: a fork re-reads the lead's whole context on every polling turn.
-- Budget: the session's `REMOTE_KERNELS_BUDGET` (`.claude/settings.json`; $100 since 2026-11-03, $40 before) is the limit, with no
+- Budget: the session's `REMOTE_KERNELS_BUDGET` (`.claude/settings.json`; $300 since 2026-11-11, $100 from 2026-11-03, $40 before) is the limit, with no
   per-run sign-off below it. Plan to stay ~15% under it: the plugin terminates machines when it is hit. Anything more
   needs the user's explicit confirmation. Benchmark a slice first.
 - Credentials (`WANDB_API_KEY`, `RUNPOD_API_KEY`) come from the shell, never a repo file; if one is
