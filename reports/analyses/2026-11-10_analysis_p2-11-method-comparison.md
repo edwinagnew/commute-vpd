@@ -166,3 +166,11 @@ neuron readings and the share are this project's own measures.
 - The step ladder of rank-1 against cipher, with update size only; left out of the figure.
 - Cell P2.6, parked.
 - Any Qwen pair.
+
+## Update, 2026-11-11
+The counts above are the method table as it stood on 2026-11-10 (commit 87eecd5e). Later that day E147 (cell P2.12)
+refit the four 96-key pairs and replaced their cells in `experiments/method_table/results/final.json`. On the nine
+built pairs steering now agrees with the share on four (was five) and gives no call on two. The neuron reading agrees on
+three and reverses on four, and the untrained decomposition agrees on two and reverses on two; neither has "not run"
+cells any more. The research log and E133's card already use the new counts. Quote counts from `final.json`'s `.tally`,
+not from this report.

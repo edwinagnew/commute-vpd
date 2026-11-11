@@ -104,3 +104,19 @@
 0.192	experiments/reuse_variable_finetune/results/amend2_always_on_s0.json	.steps["3000"].dist.tv_to_F / .steps["3000"].dist.gap	earlier
 0.8	experiments/old_task_labels/results/labels_cut_0p8_0p5.json	.cutoffs_new.G	earlier
 0.5	experiments/old_task_labels/results/labels_cut_0p8_0p5.json	.cutoffs_new.H	earlier
+0.08	experiments/built_control/results/readings.json	.items[]|select(.arm=="plain" and .seed==0).H	earlier
+0.09	experiments/built_control/results/readings.json	.items[]|select(.arm=="plain" and .seed==1).H	earlier
+0.02	experiments/built_control/results/readings.json	.items[]|select(.arm=="taught" and .seed==0).H	earlier
+0.588	experiments/built_control/results/stage1.json	.capacity_taught["300"].max	earlier
+0.50	experiments/built_control/results/stage1.json	.capacity_taught["300"].shuffled_by_site.out3	earlier
+0.61	experiments/built_control_sum/results/stage0.json	.single_reads.sum_odd.max	earlier
+0.55	experiments/built_control_sum/results/predictions.json	.thresholds.capacity_bar	earlier
+0.12	experiments/built_control_strong/results/stage1.json	.gap	earlier
+0.15	experiments/built_control_strong/results/predictions.json	.thresholds.target_gap_min	earlier
+0.466	experiments/built_control_sum/results/amend1_readings.json	.items[]|select(.arm=="control" and .seed==0).H	earlier
+0.459	experiments/built_control_sum/results/amend1_readings.json	.items[]|select(.arm=="control" and .seed==1).H	earlier
+0.84	experiments/h_diagnosis/results/readings.json	.control_H_in2	earlier
+0.72	experiments/h_diagnosis/results/readings.json	.items[0].ceiling	earlier
+0.60	experiments/h_diagnosis/results/readings.json	.items[0].b	earlier
+0.58	experiments/h_diagnosis/results/readings.json	.items[1].b	earlier
+0.9	experiments/h_diagnosis/results/predictions.json	.thresholds.control_bar	earlier
