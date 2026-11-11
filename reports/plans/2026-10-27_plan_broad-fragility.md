@@ -332,8 +332,8 @@ decompositions pass on the second rows, reading 2 is not made either. Moving the
    The SGD states of reading 1 are regenerated in the job by their filed recipes (Amendment 1's rate 0.01, Amendment
    2's capped rate 0.03), not loaded from the saved files. Amendment 2 reproduced every regenerated state on this card
    to the 4th decimal (2.2011, 1.2726) and its gains to 0.0001. Each regenerated gain is checked against the filed one
-   (within 0.005, E39's stage 0 tolerance), and a miss stops the job. The saved files total 241 MB, about 50 min at
-   the ~80 KB/s uplink (CLAUDE.md), against about 6 min of training. Reading from memory also avoids the bf16 rounding
+   (within 0.005, E39's stage 0 tolerance), and a miss stops the job. The saved files total 241 MB, about 25 s at
+   ~10 MB/s (measured 2026-11-11; the ~80 KB/s figure first cited here was never measured), against about 6 min of training. Reading from memory also avoids the bf16 rounding
    of the saved offsets, which moved the check by up to 4.4% in E23's C1.
 
 ### Every setting and its source

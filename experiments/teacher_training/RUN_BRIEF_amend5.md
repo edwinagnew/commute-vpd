@@ -30,8 +30,8 @@ Inputs not in git (sync with include=[<the gitignored directory itself>], then c
                   makes stage_vpd/artifacts the gitignored directory itself), on the pod `mkdir -p /root/artifacts &&
                   mv stage_vpd/artifacts/vpd /root/artifacts/vpd` (COMMUTE_CACHE_DIR = /root/artifacts,
                   remote-kernels.toml), sha256 the two .pth/.pt files on both sides, then delete stage_vpd on both
-                  sides. The uplink has measured ~80 KB/s (CLAUDE.md, 2026-10-23): time the first minute, report the
-                  measured rate, and tell the lead at once if 3 GB will take more than ~20 min. pod_setup.sh's VPD
+                  sides. Expect ~10 MB/s (measured 2026-11-11; an older ~80 KB/s figure was never measured): time
+                  the first minute, report the measured rate, and tell the lead at once if 3 GB will take more than ~20 min. pod_setup.sh's VPD
                   fetch skips files that are already there.
          artifacts/sets/val_0_256.npy (1 MB; Pile val rows 0..255, the harness blocks) -> /root/artifacts/sets/ (optional:
                   without it the rows stream in ~1 min). Pile train rows 32,768..40,959 (arm B) stream in-job, ~3 min.
