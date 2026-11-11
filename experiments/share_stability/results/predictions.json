@@ -1,0 +1,60 @@
+{
+ "experiment": "E161",
+ "cell": "P2.6 (compare-lead, part 2, rung L2.9): Is the 0.77 to 0.82 reading stable, and what does a random update of the same size read? (proposal 5)",
+ "plan": "reports/plans/2026-11-11_plan_p2-6-share-stability.md; card experiments/share_stability/card.md. Filed before any run; never edited after.",
+ "origin": "0.8156 (step 10) and 0.7656 (step 100) are E36's every-position share on its own code-text fine-tune, 64 held rows (experiments/regating_spread/results/regating_spread.json -> .states[\"10\"].r, .states[\"100\"].r), quoted as 0.82 and 0.77 in reports/analyses/2026-11-09_analysis_what-regating-does.md section 3. E36 did not save its states. The saved states experiments/regating_table/results/large/code_step{10,100}.pt are E46's regeneration of the same recipe on the same 64 rows (code_held.pt); E46 read them at 0.8186 and 0.7802 (experiments/regating_table/results/stage0a.json -> .groups[\"e36/code\"].states[*].g / .G). The reproduction target is E46's, the only reading of the saved states.",
+ "measurement": {
+  "share": "Per row: T = target model's mean next-token log-prob over positions 0..510; L = masked model's (released subcomponents, Delta out) with Gamma's values read on the state. State s against W0: G = mean over rows of T_s - T_0, g = mean of L_s - L_0, r = g / G (src/commute/spread.py row_reads, E46's row_cells path). Every state is read as the do-nothing state by construction: the numerator never uses the state's own subcomponents.",
+  "rows": "320 held-out code-text rows: anchors.code_rows(n_held=320), whose first 64 must equal code_held.pt exactly. Batch b = rows 64b .. 64b+63, b = 0..4; batch 0 is E36's and E46's rows.",
+  "pooled": "G, g, r over all 320 rows",
+  "spread": "sample SD (ddof 1) over the 5 batch shares r_b",
+  "gaussian": "finetune.random_direction(code_step100, seed 0): per matrix a standard Gaussian scaled to the step-100 update's Frobenius norm of that matrix. Frobenius per matrix because it is the size measure the project's matched random updates use (finetune.random_direction, E46 P0.3, E51, E67) and keeps each matrix's share of the update; step 100 because it is E36's scored step and the larger of the two",
+  "unit": "nats per token for G and g; r is a ratio"
+ },
+ "thresholds": {
+  "zero_tol": 1e-06,
+  "repro_cell_tol": 0.0002,
+  "repro_r_tol": 0.01,
+  "readable_G": 0.0012,
+  "stable_sd_max": 0.13,
+  "gap": 0.15,
+  "no_call_se": 0.075,
+  "sources": {
+   "repro_cell_tol": "the largest W0 cell difference between two reads of the same 64 rows by different paths and cards: E36 L(g0) -1.7602584 (regating_spread.json .states[\"10\"].L.g0) against E46 L00 -1.7601392 (stage0a.json .groups[\"e36/code\"].states[\"10\"].cells.L00), 1.19e-4, rounded up. This run uses E46's path on the same card type (L40), so it should match far closer",
+   "repro_r_tol": "2e-4 on each of g's two cells over |G| = 0.052 moves r by up to 0.008; rounded to 0.01",
+   "readable_G": "10 x the 1.19e-4 path difference: at that |G| a path error moves r by at most about 0.1 per cell",
+   "stable_sd_max": "2 x the expected SD of a 64-row batch's r, 0.065 = E46's per-row SE of g over the 64 rows (0.0041 at step 100, 0.0033 at step 10) over |G| (0.064, 0.052); stage0a.json .groups[\"e36/code\"].states[*].se. That ignores the positive covariance of g and G across rows, so it is an upper estimate",
+   "gap": "the card's smallest gap: above 2 SE of the paired comparison over 5 batches (2 x 0.065 / sqrt 5 = 0.058) with room for a Gaussian whose own batch SD is larger",
+   "no_call_se": "half the gap: a comparison whose SE is above it cannot place the difference on either side of the gap"
+  }
+ },
+ "controls": {
+  "C0_zero": "stage 0, first and alone: on batch 0, the zero update (target W0 + 0) reads max over rows |T - T_0| and |L - L_0| <= zero_tol. Expected exactly 0 (E67's zero update read exactly 0 on the same Gamma pass). Fail: exit 1, nothing else is read",
+  "C0_repro": "stage 0: code_held.pt equals rows 0..63 exactly and both saved states' sha256 equal E46's records; on batch 0, T_0, L_0, and T, L of code_step10 and code_step100 each within repro_cell_tol of E46's cells (T0 -1.5959865, L00 -1.7601392; step 10 T1 -1.6475473, L01 -1.8023466; step 100 T1 -1.6599254, L01 -1.8100244), and r within repro_r_tol of 0.8186 and 0.7802. Fail: exit 1. E36's 0.8156 and 0.7656 are printed beside them, not checked: those states were not saved"
+ },
+ "rules": {
+  "readable": "a state's share is readable when every batch has |G_b| >= readable_G and every G_b has the pooled G's sign; otherwise every r of that state is reported as unreadable (G = 0 exactly is unreadable)",
+  "P_stable": "for code_step10 and code_step100 each: readable and SD over the 5 batch r_b <= stable_sd_max. Pass when both hold",
+  "P_gauss": "d = pooled r of the Gaussian minus pooled r of code_step100; SE = SD over batches of (r_b Gaussian - r_b step 100) / sqrt 5. Gaussian unreadable -> 'B: unreadable'. Else SE > no_call_se -> 'no call'. Else |d| <= gap -> 'A: reads like the fine-tune'. Else 'B: reads differently'",
+  "edge_cases": "zero update: G = 0, unreadable, so it cannot reach A's bar; a batch with G_b of the wrong sign or under the floor makes the whole state unreadable rather than averaging it in; |d| exactly at gap is A, SE exactly at no_call_se is a call; 5 batches always exist (320 <= 374 kept held rows, asserted by code_rows)"
+ },
+ "expected": {
+  "W0 (zero update)": "G = 0, g = 0 exactly; unreadable",
+  "reproduction (batch 0)": "step 10 r 0.8186, step 100 r 0.7802, cells as E46 within 1e-6 (same path, same card type)",
+  "code_step10, code_step100 over 5 batches": "readable at every batch (G_b about -0.05 to -0.07), r_b between 0.65 and 0.95, SD about 0.04 to 0.065; pooled r 0.75 to 0.85",
+  "gaussian": "|G| small: a matched-norm Gaussian moves the output far less than a fine-tune of the same norm (E46 Amendment 2 needed norm scales up to 100 to match a fine-tune's KL); G between -0.002 and 0, lean unreadable. If readable, no lean on r"
+ },
+ "predictions": [
+  {"id": "P_stable", "predicted": "pass", "confidence": "medium", "positive_control": "C0_repro (batch 0 is the reading the 0.77 to 0.82 claim rests on)"},
+  {"id": "P_gauss", "predicted": "B: unreadable", "confidence": "low-medium", "positive_control": "the fine-tune states read on the same rows by the same code"}
+ ],
+ "blind_to": "one fine-tune seed, one Gaussian draw, one 67M model, one domain (code-like Pile text); batches are 64-row slices of one held-out stream, so the spread is row sampling, not fine-tune or draw variation; a Gaussian matched on norm, not on its effect on the output (KL or gain), so a Gaussian that moves the output as much as the fine-tune is not read",
+ "noise_floor": "the states and rows are fixed and the path is deterministic on a card; Gamma runs under bf16 autocast, the masked model in float32; the measured path-to-path difference of a W0 cell is 1.19e-4 nats per token (repro_cell_tol's source)",
+ "decision": {
+  "C0 fails": "stop; nothing scored; tell the lead",
+  "P_stable passes and P_gauss A": "any small update reads about 0.8 in the every-position form: 'a fine-tune that learned nothing still reads high' holds for any small update, and the every-position form is reported as not reading what was learned",
+  "P_stable passes and P_gauss B": "the 0.77 to 0.82 is stable but specific: a random update of the same norm does not read it, so 'learned nothing still reads high' is narrowed to an update that moves the output without learning",
+  "P_stable fails": "the 0.77 to 0.82 is one batch's reading; the page quotes it with its spread, whatever P_gauss reads",
+  "no call": "reported as read, with both spreads; no amendment (the cell has one run)"
+ }
+}

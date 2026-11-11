@@ -3,7 +3,8 @@
 Draw the comparison the claim rests on, not each arm's raw reading. A quantity indexed by two things (task pair by
 method, block by matrix type) goes through `gap_heatmap`, as the difference, with the number in each cell and x for
 "not run". Up to five points per group go through `dots`, which shows every point and refuses a mean or error bar.
-`save` refuses a figure with no title or no axis label, writes the PNG (200 dpi), the PDF and the plotted numbers as a
+`save` refuses a figure with no title, no axis label, or a dashed reference line (axhline/axvline) that is neither in
+a legend nor labelled beside it (`reference` does the latter), writes the PNG (200 dpi), the PDF and the plotted numbers as a
 CSV, and puts n and its unit under the figure.
 
     fig, ax = figure()
@@ -29,6 +30,7 @@ import matplotlib.pyplot as plt
 from matplotlib.axes import Axes
 from matplotlib.figure import Figure
 from matplotlib.image import AxesImage
+from matplotlib.text import Annotation
 
 
 @dataclass(frozen=True)
@@ -133,11 +135,35 @@ def reference(ax: Axes, x: float, label: str) -> None:
     ax.annotate(label, (x, 1.0), xycoords=("data", "axes fraction"), xytext=(2, 2), textcoords="offset points", fontsize=7, color="#555555")
 
 
+def _unnamed_lines(ax: Axes, shown: set[str]) -> list[str]:
+    """Dashed or dotted axhline/axvline in ax that a reader cannot name (friction 683: a cut-off and a "reached" line
+    shipped unlabelled): named means its label is in a legend (`shown`), or a text or annotation in ax sits at its
+    value, as `reference` draws it. Solid lines are separators and a line at 0 is the no-difference baseline: both pass."""
+    spans = {"h": ax.get_yaxis_transform(which="grid"), "v": ax.get_xaxis_transform(which="grid")}
+    places = [t.xy if isinstance(t, Annotation) else t.get_position() for t in ax.texts]
+    out = []
+    for line in ax.get_lines():
+        kind = next((k for k, t in spans.items() if line.get_transform() is t), None)
+        if kind is None or line.get_linestyle() in ("-", "None", " ", ""):
+            continue
+        value = float(line.get_ydata()[0] if kind == "h" else line.get_xdata()[0])  # type: ignore[index]
+        at = [p[1] if kind == "h" else p[0] for p in places]
+        if value == 0 or line.get_label() in shown or any(math.isclose(a, value, rel_tol=1e-6, abs_tol=1e-12) for a in at):
+            continue
+        out.append(f"ax{kind}line({value:g})")
+    return out
+
+
 def _check(fig: Figure) -> None:
     titled = bool(fig.get_suptitle()) or any(ax.get_title() for ax in fig.axes)
     if not titled:
         raise ValueError("save: the figure needs a title saying what it shows")
+    legends = [leg for leg in [*fig.legends, *(ax.get_legend() for ax in fig.axes)] if leg is not None]
+    shown = {t.get_text() for leg in legends for t in leg.get_texts()}
     for ax in fig.axes:
+        if unnamed := _unnamed_lines(ax, shown):
+            raise ValueError(f"save: {', '.join(unnamed)} has no legend entry and no label beside it; give it label= "
+                             "and a legend, or draw it with figures.reference (friction 683)")
         if ax.images or ax.get_label() == "<colorbar>":
             continue
         if ax.has_data() and not (ax.get_xlabel() or ax.get_ylabel()):

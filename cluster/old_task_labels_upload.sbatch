@@ -1,7 +1,7 @@
 #!/bin/bash
 # E142 (P1.7): upload old_task_labels' inputs (the 24 items' saved fine-tunes, the token files `commute.old_tasks` registers, and the
 # cached Pile rows `make_sets` and E53's token maps read) to the W&B artifact e142-old-task-inputs at their repo-relative paths, so a
-# RunPod pod can fetch them (the pod uplink is ~80 KB/s). CPU job. Submit from the clone root with WANDB_API_KEY set:
+# RunPod pod can fetch them (W&B fetches run 30-45 MB/s on a pod; a direct sync() is ~10 MB/s, also fine). CPU job. Submit from the clone root with WANDB_API_KEY set:
 #   sbatch --comment='E142 stage: input upload for RunPod move' cluster/old_task_labels_upload.sbatch
 #SBATCH --job-name=commute-old_task_labels_upload
 #SBATCH --partition=compute

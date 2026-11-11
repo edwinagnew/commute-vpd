@@ -28,12 +28,19 @@ closely, and on a code error stop and report the traceback rather than resubmit.
 
 Every `sbatch`, GPU `srun` and `start()` must name the experiment number from your brief (`sbatch --comment=E###`, the pod's `label`): the harness (`fleet/job-gate`) refuses a submission or pod start without one claimed against an open cell. If the brief has no number, stop and ask the lead.
 
-The user wants results as soon as possible; compute is cheap next to waiting. Pick the platform that gets the
-results home first, counting set-up and queue, not the one with the lowest $/h.
+The user wants results as soon as possible; compute is cheap next to waiting (2026-11-11: "i have lots of credits
+available and not much time"). Pick the platform that gets the results home first, counting set-up, transfers and
+queue, not the one with the lowest $/h. Before choosing, price both routes in one line each, from numbers, not habit:
+cluster = queue state now (`squeue`, `sinfo`) + run; pod = start (~3 min) + `pod_setup.sh` (~2-5 min) + upload of
+inputs not on W&B at ~10 MB/s (about 2 min a GB, measured 2026-11-11, root `CLAUDE.md`) + run on the pod's card.
+Never cite a transfer or set-up time you did not compute this way or measure: the old "~80 KB/s, ~1 h upload" figure
+was never measured and kept runs queued for hours (friction 674, 716, 720).
 
 - **Quick runs go to the cluster's `debug` QoS:** smoke runs and checks expected to take **≤ 30 min** on one GPU.
   The cluster needs no set-up (venv and VPD files are there) and debug jobs have started 3–6 min after submission
-  (2026-10-19). Submit at once and wait at most **10 min** for a start; then `scancel` and go to RunPod. Do **not**
+  (2026-10-19) but waited ~50 min on 2026-11-11. Submit at once and wait at most **5 min** for a start; then
+  `scancel` and go to a pod. Inputs that live only on the cluster are not an exemption: upload them (a 47 GB staged
+  decomposition is ~80 min, well under a typical queue wait; under ~10 GB is a quarter of an hour). Do **not**
   use `sbatch --test-only` for debug jobs: it ignores debug's priority and predicted a 24-h wait for jobs that started
   in 3–6 min.
 - **Everything else goes straight to RunPod** (except that a longer Qwen run that fits an L40 may use the `normal` QoS when the
@@ -43,7 +50,8 @@ results home first, counting set-up and queue, not the one with the lowest $/h.
   don't return to the lead to ask.
 - **Smoke, then scored, where the scored run goes to RunPod:** run the smoke on the same pod, then the scored run. One
   set-up instead of a cluster sync plus a pod set-up.
-- The brief can override either way (e.g. "cluster: needs a file only on /mnt/nw").
+- The brief can override either way, but a "cluster only" line needs a reason other than transfer time, and the
+  user asking for speed overrides it: then price both routes and take the faster (friction 720).
 
 When you abandon a queued cluster job: `scancel` it first, then `start()` the pod, and put both IDs in the report.
 Never leave the cluster job queued as a fallback: it would start later and run the experiment twice.
@@ -102,9 +110,10 @@ Estimate the RunPod cost (rate × expected hours, plus ~10 min of set-up) before
   pass `instance` to every machine-scoped call, and never touch a machine you did not start. SECURE cloud, `cleanup = "terminate"`: nothing on the pod survives.
   Pick the card for speed, not price: the default list in `gpu-type-ids` starts at the 4090 and only goes up. Don't
   pass a smaller or older card (A5000, 3090, A40, RTX PRO 4000/4500) to save money; a slower run costs the user more
-  than the dollars saved. For a run expected to take over ~1 h on a 4090, start an H100
-  (`start(gpu_type="NVIDIA H100 80GB HBM3")`) when the cost estimate fits the budget, and say in the ETA line which
-  card and why. Report which card was placed and its $/h: Secure-cloud stock is thin, so the first choice is often
+  than the dollars saved. For a run expected to take over ~20 min on a 4090, or one that is memory-bound, start an
+  H100 (`start(gpu_type="NVIDIA H100 80GB HBM3")`, or an H200/B200 where listed) when the cost estimate fits the
+  budget, and say in the ETA line which card and why. Independent arms or seeds go on parallel pods, not in sequence
+  on one. Report which card was placed and its $/h: Secure-cloud stock is thin, so the first choice is often
   taken. If `start()` fails on a GPU type name, report the exact error rather than falling back to a small card.
 - On a pod, `nproc` reports the host's CPUs (96) while the container's cgroup allows far fewer (7.65 on the
   2026-10-20 lora_split pod), so PyTorch's CPU stages oversubscribe and crawl. Before any CPU-heavy stage, set
@@ -203,7 +212,9 @@ Run one poll at a time, ending as soon as FINISHED appears, and tell the lead at
 polls left an H100 idle 13 min, about $1 (friction 411). Never loop `squeue` yourself, never `pkill` by pattern (it killed the runner's own shell), and never poll with
 foreground `sleep` (it is blocked). If the queue cap passes with the job still `PENDING`, `scancel` it and follow
 the brief's RunPod rule. On RunPod, use `wait()` with a long timeout, plus a log-tail read every 10–20 min for long
-stages.
+stages. With several pods, never block on one: poll them round-robin (`wait()` of at most 60 s each, or `status()`),
+and download and terminate each pod the moment its last item lands. Two idle H100s were left billing twice while a
+runner waited on a third (friction 678).
 
 A smoke and its scored run can be one agent when the brief says "smoke, then scored if clean": submit the scored job
 as soon as the smoke's log ends without a traceback and its result file has the expected keys, without waiting for

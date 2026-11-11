@@ -7,7 +7,8 @@
                             a clerk four git calls, each refused when chained in a worktree (friction 109)
   build.py --words          main-page words per section, here and at HEAD, against the length rule (friction 100, 244),
                             leaving out decision cards and cards marked `asked` (user, 2026-11-10); also rebuilds
-                            build/ (friction 519)
+                            build/ (friction 519). A `CONSENT ` line in PENDING.md (the user waived the cap) turns
+                            the "over" line into an FYI (friction 688)
   build.py --blocks         main-page words per block (card, table row, heading's prose), largest first, to plan every
                             cut in one pass rather than re-measure per edit (friction 208, 368, 376)
   build.py --missing        reports and E-codes since the newest changelog row that nothing in the log names (friction 349)
@@ -289,9 +290,24 @@ def print_words() -> None:
     print(f"{total:7,d}  {total - before:+6,d}  total (second column: change since HEAD); limit {WORD_LIMIT:,d}")
     cards, words = exempt_words(PARTS)
     print(f"not counted: {cards} decision or user-asked cards, {words:,d} words (exempt, user 2026-11-10)")
-    if total > before:
+    # Friction 681: say which sections the count leaves out, so a cut there is not made to meet the cap.
+    other = [sid for sid, page in SECTIONS if page != "index.html" or sid == "mistakes"]
+    print(f"not counted: {', '.join(other)} (not on the main page, or exempt; README.md → Main-page length)")
+    consent = consent_lines()
+    if total > before and consent:
+        print(f"FYI: this flush adds {total - before:,d} words to the main page; the user waived the cap for it "
+              f"(PENDING.md: {consent[0]}), so write for readability, not length (friction 688)")
+    elif total > before:
         print(f"over: this flush adds {total - before:,d} words to the main page outside exempt cards; a flush may not "
               "make it longer, and cuts come from your own lead's text only")
+
+
+def consent_lines() -> list[str]:
+    """`CONSENT ...` lines in PENDING.md, here or at HEAD (a flush may already have emptied the queue): the user waived
+    the main-page cap for a named request (README.md → Main-page length; friction 688)."""
+    here = (HERE / "PENDING.md").read_text()
+    head = subprocess.run(["git", "show", "HEAD:./PENDING.md"], cwd=HERE, capture_output=True, text=True, check=False).stdout
+    return sorted({line.strip() for line in (here + "\n" + head).splitlines() if line.startswith("CONSENT ")})
 
 
 def print_blocks() -> None:
@@ -461,6 +477,10 @@ def main() -> None:
         print(f"warning: dead link: {target}; drop the link or point it at a live id")
     for line in unlanded_lines():
         print(f"warning: flushed but no trace in this flush's parts/ edits; check it landed (friction 155): {line[:200]}")
+    queued = [line for line in (HERE / "PENDING.md").read_text().splitlines() if line.startswith("- 20")]
+    if queued:  # a line that landed after the clerk read the queue cost a second commit and build (friction 718)
+        print(f"queued: PENDING.md holds {len(queued)} line(s) no flush has applied; apply them now or they wait for "
+              f"the next flush. First: {queued[0][:150]}")
     if not in_a_commit(tree_id(PARTS)):
         print("parts/ as built is not committed: commit and push it before publishing (friction 138, 323)")
 

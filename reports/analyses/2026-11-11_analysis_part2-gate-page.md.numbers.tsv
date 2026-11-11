@@ -1,0 +1,20 @@
+0.39	experiments/share_gap_sizes/results/gaps.json	.summary.share_gap_min	earlier
+0.69	experiments/share_gap_sizes/results/gaps.json	.summary.share_gap_max	earlier
+0.06	experiments/share_gap_sizes/results/gaps.json	.summary.share_spread_max	earlier
+0.02	experiments/share_gap_sizes/results/gaps.json	.summary.spearman_share_prior	earlier
+-0.10	experiments/share_gap_sizes/results/gaps.json	.summary.spearman_share_steering	earlier
+0.34	experiments/neuron_overlap/results/stage2.json	[.score[].overlap.values[][]]|min	earlier
+0.69	experiments/neuron_overlap/results/stage2.json	[.score[].overlap.values[][]]|max	earlier
+0.84	experiments/neuron_overlap/results/stage2.json	[.score[].overlap.floor[].random]|min	earlier
+0.95	experiments/neuron_overlap/results/stage2.json	[.score[].overlap.floor[].random]|max	earlier
+3.20	experiments/prior_steering/results/stage1.json	.score.pairs.e54_matched.prior.gap	earlier
+2.32e-4	experiments/disagreeing_pairs/results/amend1_stage0.json	.rungs[2].prior_est	earlier
+2.35e-4	experiments/disagreeing_pairs/results/predictions_amend1.json	.ladder.common_prior_min	earlier
+0.29	experiments/part1_vs_methods/results/compare.json	.part1.case_real.gap	earlier
+0.19	experiments/part1_vs_methods/results/compare.json	.part1.repeat_real.gap	earlier
+0.43	experiments/part1_vs_methods/results/compare.json	.part1.ident32.gap	earlier
+0.991	/mnt/nw/home/e.agnew/commute-agents/qwen-lead/experiments/qwen_regating_new/results/summary.json	[.new.states[].regating]|min	earlier
+0.9992	/mnt/nw/home/e.agnew/commute-agents/qwen-lead/experiments/qwen_regating_new/results/summary.json	[.new.states[].regating]|max	earlier
+0.05	experiments/method_table/results/final.json	[.cells[]|select(.method=="neuron_top")|(.reuse+.new)[]|if . < 0 then -. else . end]|max	earlier
+-0.16	experiments/method_table/results/final.json	[.cells[]|select(.group=="built" and .method=="untrained")|.gap]|min	this
+0.13	experiments/method_table/results/final.json	[.cells[]|select(.group=="built" and .method=="untrained")|.gap]|max	this
