@@ -39,16 +39,23 @@ def q5(x: torch.Tensor) -> dict[str, float]:
     return dict(zip(("min", "25%", "median", "75%", "max"), q.tolist(), strict=True))
 
 
+@torch.no_grad()
+def window_logp(fwd: Any, w: Windows, device: str, batch: int = 64) -> torch.Tensor:
+    """(windows, vocab) float64: W0's log P at `half` on each window (as kv.key_distributions computes it), a row each."""
+    return torch.cat([torch.log_softmax(fwd(w.tokens[s : s + batch].to(device))[:, w.half].float(), -1).double().cpu()
+                      for s in range(0, len(w), batch)])  # fmt: skip
+
+
 def w0_tables(run: Run, src: dict[str, Any], keys: list[int], trained: list[int]) -> tuple[torch.Tensor, torch.Tensor, list[int]]:
-    """W0's geometric-mean P(v | M k): G over every window (the filters, as run 1), H over the trained keys' held-out
-    windows (the filed prior's windows); the trained keys' window counts there."""
+    """G (keys, vocab): W0's geometric-mean P(v | M k) over every window, for the filters (as run 1). The windows the filed
+    prior reads, the trained keys' held-out windows (save_map's windows_<m>_trained.pt "heldout"): LP (windows, vocab),
+    W0's log P on each, and each window's key. A trained key without a held-out window has no row, as in the prior."""
     tr, ho = src["train"], src["heldout"]
     both = Windows(torch.cat([tr.tokens, ho.tokens]), torch.cat([tr.g, ho.g]), torch.cat([tr.row, ho.row]), torch.cat([tr.pos, ho.pos]), tr.half)
-    hw = keyed(ho, trained)
     fwd = lambda x: run.net.run(x)[0]
-    geo, held = (kv.key_distributions(fwd, w, run.net.device, geometric=True) for w in (both, hw))
-    n = [int((hw.tokens[:, hw.half] == k).sum()) for k in trained]
-    return torch.stack([geo[k] for k in keys]), torch.stack([held[k] for k in trained]), n
+    geo = kv.key_distributions(fwd, both, run.net.device, geometric=True)
+    hw = keyed(ho, trained)
+    return torch.stack([geo[k] for k in keys]), window_logp(fwd, hw, run.net.device), hw.tokens[:, hw.half].tolist()
 
 
 def diagnostics(G: torch.Tensor, f: dict[str, torch.Tensor]) -> dict[str, Any]:
@@ -59,18 +66,18 @@ def diagnostics(G: torch.Tensor, f: dict[str, torch.Tensor]) -> dict[str, Any]:
     return d
 
 
-def rung(G: torch.Tensor, H: torch.Tensor, n: list[int], f: dict[str, torch.Tensor], rg: dict[str, Any], keys: list[int],
-         trained: list[int], pool: list[int]) -> dict[str, Any]:  # fmt: skip
-    """One rung: its table by rules.assign, the per-key candidate counts and best P, and the estimated filed prior."""
+def rung(G: torch.Tensor, LP: torch.Tensor, wkeys: list[int], f: dict[str, torch.Tensor], rg: dict[str, Any], keys: list[int],
+         pool: list[int]) -> dict[str, Any]:  # fmt: skip
+    """One rung: its table by rules.assign, the per-key candidate counts and best P, and the estimated filed prior (nan
+    for an incomplete table)."""
     ok = rules.rung_ok(f, rg["min_rank"], rg["median_ratio"], L["value_max"])
     P = G[:, pool]
     cols = rules.assign(P, ok)
     vals = {k: (pool[c] if c is not None else None) for k, c in zip(keys, cols, strict=True)}
-    pieces = [(math.log(float(H[i, vals[k]])), n[i]) for i, k in enumerate(trained) if vals[k] is not None]
     count = ok.sum(1).double()
     return {**rg, "complete": all(c is not None for c in cols), "n_keys_assigned": sum(c is not None for c in cols),
             "candidates_per_key": {"min": int(count.min()), "median": float(count.median())},
-            "best_P_per_key": q5((P * ok).max(1).values), "prior_est": rules.est_prior(*zip(*pieces)) if pieces else math.nan,
+            "best_P_per_key": q5((P * ok).max(1).values), "prior_est": rules.window_prior(LP, wkeys, vals),
             "values": [vals[k] for k in keys]}  # fmt: skip
 
 
@@ -86,7 +93,7 @@ def one_word(G: torch.Tensor, keys: list[int], pool: list[int], marker: int, out
 
 def ladder(run: Run, src: dict[str, Any], keys: list[int], trained: list[int], marker: int, out: dict[str, Any]) -> tuple[dict[str, Any], Any]:
     """Everything logged before a check: the diagnostics, every rung, the rung taken, the one-word draw."""
-    G, H, n = w0_tables(run, src, keys, trained)
+    G, LP, wkeys = w0_tables(run, src, keys, trained)
     _, _, _, ranked, tok = KD.vocab(run.ctx)
     banned = set(keys) | set(run.F["a3"]["maps"]["elicit"]["values"])
     pool = [v for v in ranked[: R.MAPS.common_ranks] if v not in banned]
@@ -94,7 +101,7 @@ def ladder(run: Run, src: dict[str, Any], keys: list[int], trained: list[int], m
     f[f"P >= {L['band_floor_reported']:g} (run 1 band floor, reported only)"] = G[:, pool] >= L["band_floor_reported"]
     out["diagnostics"] = {"n_pool": len(pool), **diagnostics(G, f)}
     say("0 diagnostics", out["diagnostics"])
-    out["rungs"] = rungs = [rung(G, H, n, f, rg, keys, trained, pool) for rg in L["rungs"]]
+    out["rungs"] = rungs = [rung(G, LP, wkeys, f, rg, keys, pool) for rg in L["rungs"]]
     for r in rungs:
         say(f"0 rung {r['rung']}", {k: v for k, v in r.items() if k != "values"})
     taken = rules.take_rung(rungs, L["common_prior_min"])

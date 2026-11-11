@@ -6,9 +6,13 @@ from __future__ import annotations
 import json
 import math
 from pathlib import Path
+from types import SimpleNamespace
+from typing import Any
 
 import torch
 
+from commute import steering as ST
+from commute.data import Windows
 from commute.jobs import load_experiment
 
 R = load_experiment("disagreeing_pairs", "rules")
@@ -223,3 +227,58 @@ def test_amend1_do_nothing_pair_never_counted():
     zero = ([NAN, NAN, NAN], [NAN, NAN, NAN])
     for premise in (True, False):
         assert R.pair_calls({**pair(0.1, zero, zero), "premise": premise}, TH)["condition"] == "condition not met"
+
+
+def test_amend1_window_prior_edge_cases():
+    LP = torch.log(torch.tensor([[0.5, 1e-3, 1e-4], [0.5, 1e-3, 1e-4], [0.5, 1e-3, 1e-4]], dtype=torch.float64))
+    assert math.isclose(R.window_prior(LP, [7, 7, 8], {7: 1, 8: 2}), (1e-3 * 1e-3 * 1e-4) ** (1 / 3))  # weighted by windows
+    assert math.isnan(R.window_prior(LP, [7, 7, 8], {7: 1, 8: None}))  # incomplete table
+    assert math.isnan(R.window_prior(LP[:0], [], {7: 1}))  # no windows
+
+
+# ----------------------------------------------------------------------------- Amendment 1's ladder end to end, no model
+# Job 58766: a trained key (2614) had no held-out window, and w0_tables indexed per-key held-out means by every trained key.
+
+SYN_KEYS, SYN_MARKER, SYN_V = list(range(8)), 59, 60  # values: words 8-27 are every key's top 20, 28-58 sit near 2e-3
+
+
+class _Net:
+    """A stand-in for W0: the logits at a position depend only on its token (rows of a fixed table)."""
+
+    device = "cpu"
+
+    def __init__(self) -> None:
+        p = torch.full((SYN_V, SYN_V), 1e-6, dtype=torch.float64)
+        for k in SYN_KEYS:
+            p[k, 8:28] = 0.04
+            p[k, 28:59] = torch.tensor([2e-3 - j * 1e-5 + k * 1e-6 for j in range(31)], dtype=torch.float64)
+        self.E = p.log().float()
+
+    def run(self, x: torch.Tensor) -> tuple[torch.Tensor]:
+        return (self.E[x],)
+
+
+def _windows(per_key: dict[int, int]) -> Windows:
+    ks = [k for k, n in per_key.items() for _ in range(n)]
+    toks = torch.tensor([[30, SYN_MARKER, k] for k in ks])
+    z = torch.zeros(len(ks))
+    return Windows(toks, z, z.long(), z.long(), 2)
+
+
+def test_amend1_ladder_with_a_trained_key_without_heldout_windows(monkeypatch: Any) -> None:
+    A = load_experiment("disagreeing_pairs", "amend1")
+    trained = SYN_KEYS[:6]  # trained key 3 has no held-out window (as key 2614 in job 58766); held keys 6, 7 have
+    src = {"train": _windows({k: 3 for k in SYN_KEYS}), "heldout": _windows({k: 0 if k == 3 else 2 for k in SYN_KEYS})}
+    net = _Net()
+    run = SimpleNamespace(net=net, ctx=None, F={"a3": {"maps": {"elicit": {"values": [59]}}}})
+    monkeypatch.setattr(A.KD, "vocab", lambda _ctx: (None, None, None, list(range(8, SYN_V)), None))
+    out: dict = {}
+    made, _ = A.ladder(run, src, SYN_KEYS, trained, SYN_MARKER, out)
+    assert out["rung_taken"] == 1 and made["common_cipher"] is not None
+    # the estimate is the realised prior's quantity on the realised windows: keydep.geo_rate of logp_at on the trained
+    # keys' held-out windows with the built table (map_prior), here 10 windows of keys 0, 1, 2, 4, 5
+    table = made["common_cipher"].table(SYN_V)
+    hw = A.keyed(src["heldout"], trained)
+    assert len(hw) == 10
+    realised = math.exp(float(ST.logp_at(net.run(hw.tokens)[0], hw.half, table[hw.tokens[:, hw.half]]).mean()))
+    assert math.isclose(out["rungs"][0]["prior_est"], realised, rel_tol=1e-6)
