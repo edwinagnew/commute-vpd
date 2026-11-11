@@ -1,0 +1,13 @@
+cell: P3.4
+# each rival line keeps the word "predicts": '<an explanation> predicts <a result of this run>' (the check splits on it)
+rival_a: RL's update grows with rate times steps along a path that keeps what the reward teaches predicts every R recipe holds its held-out GSM8K pass rate within 0.03 of R at step 100 as its output change grows, so the 3e-6 or 1e-5 recipe reaches 10 times the masked error above that bar (the filed outcome: chosen at 10x)
+rival_b: a larger step leaves the region where the reward signal improves the model, so the update drifts predicts the pass rate falls as the output change grows at the higher peak rates, the 1e-5 recipe hits the drift stop or the bar before 10x and no recipe holds the bar past 5x (the filed outcome: not reached, or chosen at 5x only)
+rung: parameter
+smallest_gap: 0.03
+spread: 0.393
+n: 1217
+design: paired
+unit: GSM8K test problems answered within the window by both weight sets (paired right/wrong per problem; spread = the sd of the per-problem difference, R at step 100 minus W0: gain.gsm8k.se 0.01127 x sqrt(1217))
+spread_source: experiments/qwen_rl/results/lr1e-6w10/R.json
+stop: no R recipe reaches 5 times the masked error with its pass rate at or above R@100 minus 0.03 and W0's: RL cannot make a readable update at these recipes, and run 2's design goes back to the lead (the cell's "report that RL could not get there")
+sketch: experiments/qwen_rl_readable/figures/sketch_run1.png

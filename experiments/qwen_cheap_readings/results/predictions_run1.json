@@ -1,0 +1,84 @@
+{
+ "experiment": "E162 (qwen_cheap_readings run 1), cell P3.6",
+ "filed": "2026-11-11, before any run",
+ "plan": "reports/plans/2026-11-11_plan_qwen-cheap-readings.md",
+ "card": "experiments/qwen_cheap_readings/card_run1.md",
+ "descriptive": "No decomposition is read, nothing is trained, no Qwen update is labelled reuse or new. The overlap is a description, not evidence of reuse: on the 67M the check that a high overlap means 'the same neurons firing harder' failed (E155, P2.18).",
+ "settings": {
+  "k": 480,
+  "k_source": "P2.18's share, 240 of the 67M's 3072 MLP neurons (experiments/neuron_overlap/results/predictions.json -> settings.k[0]), = 7.8125% of Qwen3-1.7B's 6144",
+  "rows": "E92's GSM8K gold rows (commute.qwen_comparators.gold_rows: GSM8K test 0-255 with gold solutions, rows of 512 cut to 256, the first 128); positions = Rows.answer",
+  "updates": "19: the 15 of E152 step 0 (experiments/qwen_instrument_check/step0.py update_files) and E120's known_s0, known_s1, new_s0, new_s1 at step 100 (experiments/qwen_pass_pools/results/large/dW/<name>/step_100.safetensors)",
+  "floor_refs": ["F_s0", "a2_s42"],
+  "floor_refs_source": "the smallest (0.274) and the largest (18.11) total norm of the 15 (sqrt of the summed sq in experiments/qwen_instrument_check/results/step0_sites.jsonl); E120's step-100 norms 3.43-3.63 lie between",
+  "overlap_seeds": [162000, 162001],
+  "svd_seeds": [162100, 162101],
+  "tol_overlap": 0.0158,
+  "tol_overlap_source": "the steadiest real side on the 67M: E155 e53 lowercase side, seed range 0.00624 over its distance from 1.0 of 0.396 (experiments/neuron_overlap/results/stage2.json -> score.e53_lowercase_cipher.overlap.values.reuse); a floor steadier than this cannot be mistaken for seed spread",
+  "tol_on_both": 0.0377,
+  "tol_on_both_source": "E155 e53 lowercase side, on_both seed range 0.0115 over its mean 0.305 (same file, on_both.values.reuse), the smallest relative range of the 14 sides",
+  "tol_erank": 0.003,
+  "tol_erank_source": "P2.9's steadiest side, e53 lowercase: erank range 1.78 over 599 (experiments/update_svd/results/results.json -> pairs.e53_lowercase_cipher.reuse); the measured Gaussian draw-to-draw difference at Qwen shapes was 0.00002-0.0006 relative (scratch measurement, plan)",
+  "gap": 20,
+  "gap_source": "the card's smallest_gap, in erank units: about 6 x P2.9's pooled seed sd 3.48 (experiments/update_svd/results/spread.json -> pooled_sd), about 1% of the floor",
+  "norm2_rel_tol": 1e-6,
+  "projected_limit_min": 100
+ },
+ "controls": {
+  "C0_svd_known_answers": {
+   "rule": "stage 0, on block 0's seven matrix shapes, update_spectrum.equal_rank: k=10 reads erank 10 within 1e-6 (absolute) and top10 1 within 1e-9; k=1 reads erank 1 within 1e-9 and top10 1 within 1e-9; a zero update reads erank None, top10 None, norm2 0.0",
+   "expected": "all hold (P2.9's control passed the same code on the 67M)",
+   "on_miss": "stop the job, exit 1"
+  },
+  "C1_zero_overlap": {
+   "rule": "stage 0, the unchanged model against itself through the floor's own path (qwen_overlap.random_weights at norm 0 per matrix, so W = W0 + 0): overlap == 1.0 exactly, overlap_min == 1.0 at every block, on_both nan (no firing change)",
+   "expected_unchanged_model": "overlap 1.0, on_both nan",
+   "on_miss": "stop the job, exit 1; no run 2 until the measure is fixed (card stop)"
+  },
+  "C2_norm_reproduction": {
+   "rule": "stage 2, per update, the summed squares of its 196 matrices (from the singular values) against E152 step 0's record (sum of sq in step0_sites.jsonl) or E120's (read_<name>.json -> files.100.norm squared): |ratio - 1| <= 1e-6 (relative)",
+   "expected": "about 1e-12 for the 15 (same file, fp64 both), about 1e-8 for E120's (its record is an fp32 sum)",
+   "on_miss": "stop the job before the state is written, exit 1 (the wrong file or a changed file)"
+  }
+ },
+ "rules": {
+  "R1_overlap_floor_reproducible": {
+   "claim": "the overlap's random floor is reproducible across two draws at each reference size",
+   "rule": "rules.draws_overlap: per reference, |o1 - o2| <= tol_overlap * (1 - (o1 + o2)/2); relative to the floor's distance from 1.0; both exactly 1.0 reads 'floor at ceiling'; a nan reads 'unreadable'",
+   "threshold": "tol_overlap = 0.0158, relative",
+   "expected_unchanged_model": "does not apply (a norm-0 change reads 'floor at ceiling')",
+   "expected_random_floor": "reproducible at both sizes; the overlap itself near 1 at F_s0's size (uncertain, perhaps above 0.99) and lower at a2's (perhaps 0.8-0.95; the 67M's matched random updates read 0.83-0.95, E155 stage 2)",
+   "on_miss": "recorded, not a stop: run 2 then reads the floor as the mean of more draws, with this run's measured difference as its tolerance",
+   "edge_cases_run": "experiments/qwen_cheap_readings/rules.py on both 1.0, a nan, equal draws, a tie at the bar, a draw at 1.0 beside 0.999 (not reproducible): all as stated (scratch edge_rules.py, 2026-11-11)"
+  },
+  "R1b_on_both_floor_reproducible": {
+   "rule": "rules.draws_share: per reference, |b1 - b2| <= tol_on_both * (b1 + b2)/2; mean 0 reads 'floor at zero'; a nan reads 'unreadable'",
+   "threshold": "tol_on_both = 0.0377, relative",
+   "expected_unchanged_model": "unreadable (on_both nan)",
+   "expected_random_floor": "reproducible; on_both perhaps 0.3-0.5 (the 67M's matched random updates read 0.40-0.45, E155 stage 2)",
+   "on_miss": "recorded, not a stop"
+  },
+  "R2_svd_floor_reproducible": {
+   "rule": "rules.draws_erank: per update, the floor's two draws (each matrix's Gaussian erank weighted by that update's ||dW_m||^2) agree when |f1 - f2| <= tol_erank * (f1 + f2)/2; None reads 'unreadable'",
+   "threshold": "tol_erank = 0.003, relative",
+   "expected_unchanged_model": "unreadable (a zero update's erank is None)",
+   "expected_random_floor": "reproducible for all 19 (measured Gaussian draw differences 0.00002-0.0006 relative per matrix at these shapes)",
+   "on_miss": "recorded, not a stop"
+  },
+  "R3_svd_vs_floor": {
+   "claim": "the card's call: where the saved updates' effective rank sits against its matched-norm Gaussian floor",
+   "rule": "per update, rules.vs_floor(erank, floor = mean of the two draws, gap 20): 'below floor' if floor - erank > 20, 'above floor' if erank - floor > 20, else 'at floor' (absolute, erank units); then rules.svd_call over the readable updates: 'rival A' if more than half read below floor, 'rival B' if more than half read at floor, 'no call' otherwise, 'unreadable' if none is readable",
+   "threshold": "gap 20 erank units (absolute); majority of readable updates",
+   "expected_unchanged_model": "a zero update is unreadable and drops out; it cannot pass rival A's bar",
+   "expected_random_floor": "a matched random change reads 'at floor' by construction, so a do-nothing-like update supports rival B, never rival A",
+   "expected": "rival A, uncertain: no Qwen SVD reading exists, and P2.9 measured no Gaussian floor on the 67M (its updates read erank 378-600); the floor here is 1,650-1,950 per matrix (2048x2048: 1,648; 1024x2048: 948; 6144x2048: 1,953), so a state floor near 1,850 when the MLP matrices carry most of the norm",
+   "edge_cases_run": "None on either side, a gap exactly 20 (at floor), empty list, all unreadable, 9 below 9 at 1 above (no call), all at floor (rival B), all above (no call): all as stated"
+  }
+ },
+ "early_stops": [
+  "stage 0: C0 or C1 missed -> exit 1",
+  "stage 2: C2 missed -> exit 1 before the state is written",
+  "stage 2: after any state but the last, projected job time > 100 min -> exit 3, stage2.json keeps the states read; resubmit the same command (it skips them)"
+ ],
+ "not_in_this_run": "the overlap of the 19 real updates, the missing E92 columns, the three contrasts with seed spread, the figure and the paragraph: run 2, whose predictions are filed after this run"
+}

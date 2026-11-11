@@ -17,7 +17,7 @@ from typing import Any
 import torch
 from torch import Tensor
 
-from commute.qwen_sft import Seq, pack, plus, set_weights
+from commute.qwen_sft import Seq, pack, plus, set_weights, sft_seq
 from commute.qwen_vpd import parse_site
 
 BATCH = 16  # rows per forward; 16 x 256 positions of logits are under 3 GB on the card
@@ -60,7 +60,7 @@ def rows_marked(name: str, ids: Sequence[list[int]], answer: Sequence[list[int]]
     return Rows(name, toks, _reads(ans.bool()), _reads(fst.bool()))
 
 
-ROW_LEN, TOFU_ROWS = 256, 128  # E68's row_len; E86's TOFU rows
+ROW_LEN, TOFU_ROWS, GOLD_ROWS = 256, 128, 128  # E68's row_len; E86's TOFU rows; E75's maths rows
 
 
 def a1_rows(tok: Any, test: Sequence[dict[str, Any]], items: Sequence[dict[str, Any]]) -> Rows:
@@ -85,6 +85,13 @@ def tofu_rows(tok: Any, end_id: int, kept: set[int]) -> Rows:
         ids, p = tofu.seq(tok, end_id, r["question"] + tofu.ASK, r["answer"])
         seqs.append((ids, p if i in kept else len(ids)))
     return rows_of("tofu", seqs, ROW_LEN, ROW_LEN, even=TOFU_ROWS)
+
+
+def gold_rows(tok: Any, test: Sequence[dict[str, Any]], end_id: int) -> Rows:
+    """E92's rows of the GSM8K arms: test 0-255 with the gold solutions, packed in rows of 512, cut to 256, the first 128
+    (E75's maths rows). (Moved from qwen_comparators/run.py's gold_rows, E92, for P3.6; that frozen copy is unchanged.)"""
+    rows = rows_of("gold", [sft_seq(tok, it["question"], it["gold"], end_id, 512) for it in test[:256]], 512, ROW_LEN)
+    return Rows(rows.name, rows.tokens[:GOLD_ROWS], rows.answer[:GOLD_ROWS], rows.first[:GOLD_ROWS])
 
 
 def question_seen(R: Rows, user_start: int, user_word: int) -> Tensor:

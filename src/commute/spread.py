@@ -16,7 +16,7 @@ from typing import Any
 import torch
 from torch import Tensor
 
-from commute.cuefree import CHUNK, _sqdist, assign, kmeans, line
+from commute.cuefree import CHUNK, _sqdist, assign, kmeans, line  # noqa: F401 (line: E36's frozen run.py calls spread.line)
 
 Gates = dict[str, Tensor]  # matrix key -> (B, T, C) on the model's device
 
@@ -73,6 +73,29 @@ def masked_logp(model: Any, rows: Tensor, gates: Gates) -> float:
 
 def target_logp(logits: Tensor, rows: Tensor) -> float:
     return float(torch.log_softmax(logits[:, :-1].float(), -1).gather(2, rows[:, 1:, None]).double().sum())
+
+
+@torch.no_grad()
+def row_reads(model: Any, rows: Tensor, device: str, target: dict[str, Tensor] | None = None, batch: int = 8) -> dict[str, Tensor]:
+    """Per row of `rows` (N, T), float64: "T" the target model's and "L" the masked model's (released subcomponents,
+    Delta out) mean next-token log-probability over positions 0 .. T-2, with Gamma's values read on the target model
+    with weights `target` (None: as it stands). The every-position share of an update is mean(L1 - L0) / mean(T1 - T0).
+    Gamma runs on `batch` rows at once and the masked model one row at a time, E46's `row_cells` path
+    (experiments/regating_table/run.py), so its per-token cells reproduce."""
+    from commute.faithfulness import model_state
+    from commute.vpd import compute_ci
+
+    T, L = [], []
+    for s in range(0, rows.shape[0], batch):
+        b = rows[s : s + batch].to(device)
+        with model_state(model, target=target):
+            ci = compute_ci(model, b)
+        for i in range(b.shape[0]):
+            T.append(target_logp(ci.logits[i : i + 1], b[i : i + 1]))
+            L.append(masked_logp(model, b[i : i + 1], {k: v[i : i + 1] for k, v in ci.g.items()}))
+        del ci
+    n_pos = rows.shape[1] - 1
+    return {"T": torch.tensor(T, dtype=torch.float64) / n_pos, "L": torch.tensor(L, dtype=torch.float64) / n_pos}
 
 
 # ----------------------------------------------------------------------------- predicted changes, flat rows
