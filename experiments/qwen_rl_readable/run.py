@@ -7,9 +7,12 @@ rules in results/predictions.json (refuses to start unless it is committed uncha
   --score                         no model: the selection rule on the three R pods' files, into results/selection.json
 
 At each read step: |δW|; the output change, KL(W_t ‖ W0) per token over every position of the 128 maths rows at length 256
-(E93's clean.W0.K), and its multiple of the decomposition's masked error; the greedy GSM8K pass rate (strict_dropped, 1319
-problems) with its paired gain over W0. Each read is written and logged as it finishes. Nothing is uploaded and no δW is
-saved; a checkpoint at each read step but the last (results/large/<pod>/ckpt) lets the same command resume after a crash.
+(E93's clean.W0.K), and its multiple of the decomposition's masked error; at a GSM8K read step also the greedy GSM8K pass
+rate (strict_dropped, 1319 problems), the share of answers that fit the window, and the paired gain over W0. R pods read
+the output change alone every 5 steps besides. Each read is written and logged as it finishes. Nothing is uploaded and no
+δW is saved; a checkpoint at each of the pod's checkpoint steps (results/large/<pod>/ckpt), written right after that
+step's update and before its read, lets the same command resume after a crash (a crash in a read replays only the read).
+The control logs GATE_LINE once its step-25 read is logged and its checkpoint written: pods 2-5 start then.
 E69's job and run modules are used unchanged; its shared large files must be on the pod (rollouts/H.jsonl,
 acc/W0_gsm8k.jsonl, and for F rollouts/F/, else F samples them first). Past step 114 (7345 problems / 64) the problem
 order starts again at step 1's, with new draws (the step seed counts on).
@@ -49,26 +52,41 @@ REF_LR = q.RATES[q.DEFAULT_TAG]  # the rate E69's first-step KL band is filed fo
 D = dict[str, Any]
 
 
+GATE_LINE = "GATE OPEN: control step 25 read logged with finite kl and pass, checkpoint written; start pods 2-5"
+
+
 @dataclass(frozen=True)
 class Pod:
     arm: str  # R, N or F (`qwen_rl.arm_weights`)
     tag: str  # the rate (`qwen_rl.RATES`): peak, and warm-up steps after the w
     steps: int
-    reads: tuple[int, ...]  # steps read; the last is `steps`
+    reads: tuple[int, ...]  # GSM8K read steps (with the output change); the last is `steps`
+    ckpts: tuple[int, ...]  # checkpoint steps, written before that step's read
     reproduces: bool  # E69's recipe: its reward-change check at step 20 stops (else it is logged)
+    kl_every: int = 0  # R pods: an output-change-only read every this many steps (0: none)
+    gate: int | None = None  # the control: the step whose read and checkpoint open the stage gate
     kl_batch: int = 4  # maths rows per output-change forward: 4 x 256 x 151936 fp32 logits, 0.6 GB a copy
 
     def __post_init__(self) -> None:
         assert self.arm in ("R", "N", "F") and self.tag in q.RATES
         assert list(self.reads) == sorted(set(self.reads)) and self.reads[-1] == self.steps
+        assert list(self.ckpts) == sorted(set(self.ckpts)) and set(self.ckpts) <= set(range(1, self.steps + 1))
         assert self.reproduces == (self.tag == "1e-6w10") and (self.arm == "R" or self.steps == 100)
+        assert (self.kl_every > 0) == (self.arm == "R")
+        assert self.gate is None or (self.gate in self.reads and self.gate in self.ckpts)
+
+    @property
+    def kl_steps(self) -> set[int]:
+        """Output-change-only read steps: every `kl_every`th step that has no GSM8K read."""
+        return set(range(self.kl_every, self.steps + 1, self.kl_every)) - set(self.reads) if self.kl_every else set()
 
 
-PODS = {"control": Pod("R", "1e-6w10", 250, (25, 50, 100, 150, 200, 250), True),
-        "N": Pod("N", "1e-6w10", 100, (100,), True),
-        "F": Pod("F", "1e-6w10", 100, (100,), True),
-        "r3e-6": Pod("R", "3e-6w10", 200, (25, 50, 100, 150, 200), False),
-        "r1e-5": Pod("R", "1e-5w10", 100, (25, 50, 100), False)}
+R25 = (25, 50, 100, 150, 200, 250)
+PODS = {"control": Pod("R", "1e-6w10", 250, R25, R25, True, kl_every=5, gate=25),
+        "N": Pod("N", "1e-6w10", 100, (100,), (20, 50, 100), True),
+        "F": Pod("F", "1e-6w10", 100, (100,), (20, 50, 100), True),
+        "r3e-6": Pod("R", "3e-6w10", 200, (10, *R25[:5]), (10, *R25[:5]), False, kl_every=5),
+        "r1e-5": Pod("R", "1e-5w10", 100, (10, 25, 50, 100), (10, 25, 50, 100), False, kl_every=5)}
 
 
 class ReadJob(JOB.Job):
@@ -122,18 +140,21 @@ def pass_rate(job: ReadJob, label: str, w0: q.Records) -> D:
     sink.parent.mkdir(parents=True, exist_ok=True)
     recs = gsm_score(job.tok, job.model, job.sets["test"][: job.cfg.n_gsm8k], math.inf, sink, f"{label} gsm8k", job.cfg.gen_batch)
     s = summary(recs)
-    return {"pass": s["strict_dropped"], "k_fits": s["k_fits"], "truncation_share": s["truncation_share"], "gain": q.gain(w0, recs)}
+    return {"pass": s["strict_dropped"], "fits": s["fits_share"], "k_fits": s["k_fits"],
+            "truncation_share": s["truncation_share"], "gain": q.gain(w0, recs)}
 
 
-def read(job: ReadJob, out: D, t: int, rows: torch.Tensor, w0: q.Records, refs: D) -> D:
+def read(job: ReadJob, out: D, t: int, rows: torch.Tensor, w0: q.Records, refs: D, gsm8k: bool) -> D:
+    """The output change at step t and, if `gsm8k`, the pass rate; written and logged as soon as it is read."""
     t0 = time.time()
     kl = output_change(job, rows)
-    t1 = time.time()
-    r = {"dw_norm": out["steps"][-1]["dw_norm"], "kl": kl, "multiple": kl / refs["masked_error"],
-         **pass_rate(job, f"{job.stage}_{t}", w0), "kl_s": t1 - t0, "acc_s": time.time() - t1}
+    r = {"dw_norm": out["steps"][-1]["dw_norm"], "kl": kl, "multiple": kl / refs["masked_error"], "kl_s": time.time() - t0}
+    if gsm8k:
+        t1 = time.time()
+        r |= pass_rate(job, f"{job.stage}_{t}", w0) | {"acc_s": time.time() - t1}
     out["reads"][str(t)] = r
     job.put(job.stage, out)
-    job.log(f"[{job.stage}] step {t} read {json.dumps(r, default=float)}")
+    job.log(f"[{job.stage}] step {t} {'read' if gsm8k else 'output-change read'} {json.dumps(r, default=float)}")
     return r
 
 
@@ -162,35 +183,68 @@ def live_checks(job: ReadJob, out: D, rec: D, E: D) -> None:
 
 
 def reproduce(job: ReadJob, out: D, t: int, P: D) -> None:
-    """The filed bands of E69's values at step t (a stop on a miss), and the logged expectation of the output change."""
+    """The filed bands at step t (E69's values, or a rate-scaled |δW|; a stop on a miss), and the logged expectations
+    under "expect" (not a stop)."""
     ref = P["reproduce"].get(job.stage, {}).get(str(t), {})
     got = {"dw_norm": out["steps"][-1]["dw_norm"], **{k: out["reads"].get(str(t), {}).get(k) for k in ("pass", "kl")}}
     for key in ("dw_norm", "pass"):
         if key in ref:
-            job.check(out, f"step {t}: {key} reproduces E69", q.in_band(got[key], ref[key]), {key: got[key], "band": ref[key]})
-    if "kl" in ref:
-        holds = q.in_band(got["kl"], ref["kl"])
-        out.setdefault("expected", {})[f"step {t} output change"] = {"holds": holds, "kl": got["kl"], "band": ref["kl"]}
-        job.log(f"[expected] step {t} output change in {ref['kl']}: {'ok' if holds else 'MISSED (not a stop: tell the lead)'} {got['kl']}")
+            job.check(out, f"step {t}: {key} in its filed band", q.in_band(got[key], ref[key]), {key: got[key], "band": ref[key]})
+    for key, band in ref.get("expect", {}).items():
+        holds = q.in_band(got[key], band)
+        out.setdefault("expected", {})[f"step {t} {key}"] = {"holds": holds, key: got[key], "band": band}
+        job.log(f"[expected] step {t} {key} in {band}: {'ok' if holds else 'MISSED (not a stop: tell the lead)'} {got[key]}")
 
 
-def drift_stop(job: ReadJob, out: D, t: int, w0_pass: float) -> bool:
-    """R arms: the filed drift stop at a read; the arm ends there and its last good read is the one before."""
-    steps = sorted(int(s) for s in out["reads"] if int(s) < t)
+def drift_stop(job: ReadJob, out: D, t: int, refs: D) -> bool:
+    """R arms: the filed drift stop at a GSM8K read; the arm ends there and its last good read is the GSM8K read before."""
+    steps = sorted(s for s in pick.gsm8k_reads(out) if s < t)
     prev_kl = out["reads"][str(steps[-1])]["kl"] if steps else 0.0
-    if job.pod.arm != "R" or not pick.drift(out["reads"][str(t)], prev_kl, w0_pass):
+    if job.pod.arm != "R" or not pick.drift(out["reads"][str(t)], prev_kl, refs["w0_pass"], pick.fits_bar(refs)):
         return False
     out["drift"] = {"step": t, "last_good": steps[-1] if steps else None}
-    job.log(f"DRIFT STOP at step {t}: pass rate below W0's ({w0_pass}) while the output change grows; {json.dumps(out['drift'])}")
+    job.log(f"DRIFT STOP at step {t}: pass rate below W0's ({refs['w0_pass']}) or fewer answers fit than "
+            f"{pick.fits_bar(refs)}, while the output change grows; {json.dumps(out['drift'])}")
     return True
+
+
+def gate(job: ReadJob, out: D, t: int) -> None:
+    """The control's stage gate: its read at t has a finite kl and pass rate, and its checkpoint is on disk."""
+    r, ckpt = out["reads"].get(str(t), {}), job.large / "ckpt" / f"{job.pod.arm}.pt"
+    job.check(out, f"step {t}: gate read finite and checkpoint written", ok(r.get("kl")) and ok(r.get("pass")) and ckpt.is_file(),
+              {"kl": r.get("kl"), "pass": r.get("pass"), "ckpt": ckpt.is_file()})
+    job.log(GATE_LINE)
 
 
 # ----------------------------------------------------------------------------- the arm
 
 
+def after_update(job: ReadJob, out: D, t: int, rows: torch.Tensor, w0: q.Records, P: D) -> bool:
+    """Step t's read (unless already recorded: a resume at t), its filed bands, the drift stop and the gate. True: the
+    drift stop ended the arm."""
+    pod = job.pod
+    if (t in pod.reads or t in pod.kl_steps) and str(t) not in out["reads"]:
+        read(job, out, t, rows, w0, P["refs"], t in pod.reads)
+    reproduce(job, out, t, P)
+    ended = t in pod.reads and drift_stop(job, out, t, P["refs"])
+    job.put(job.stage, out)
+    if t == pod.gate and not ended:
+        gate(job, out, t)
+    return ended
+
+
 def step(job: ReadJob, out: D, params: D, opt: Any, t: int, rows: torch.Tensor, w0: q.Records, P: D) -> bool:
-    """One step, its checks and, at a read step, the read. True: the drift stop ended the arm."""
-    pod, cfg, E, t0 = job.pod, job.cfg, P["early"], time.time()
+    """One step, its checks, its checkpoint and its read. True: the drift stop ended the arm."""
+    train_step(job, out, params, opt, t, P["early"])
+    if t in job.pod.ckpts:
+        checkpoint(job.large / "ckpt" / f"{job.pod.arm}.pt", t, params, job.W0, opt, None, set(), set())
+        job.log(f"[{job.stage}] checkpoint at step {t}")
+    return after_update(job, out, t, rows, w0, P)
+
+
+def train_step(job: ReadJob, out: D, params: D, opt: Any, t: int, E: D) -> None:
+    """Step t's rollouts and update, with E69's step-1, first-live and reward-change checks."""
+    pod, cfg, t0 = job.pod, job.cfg, time.time()
     if pod.arm == "F":
         recs = JOB.load_rollouts(job.rollout_dir("F") / f"step_{t}.jsonl")
     else:
@@ -212,17 +266,7 @@ def step(job: ReadJob, out: D, params: D, opt: Any, t: int, rows: torch.Tensor, 
             job.check(out, f"reward change by step {t}", q.above(change, E["reward_change_above"]), {"change": change})
         else:
             job.log(f"[{job.stage}] reward change by step {t}: {change} (logged only at this rate)")
-    ended = False
-    if t in pod.reads:
-        read(job, out, t, rows, w0, P["refs"])
-    reproduce(job, out, t, P)
-    if t in pod.reads:
-        ended = drift_stop(job, out, t, P["refs"]["w0_pass"])
     job.put(job.stage, out)
-    if t in pod.reads and t < pod.steps and not ended:
-        checkpoint(job.large / "ckpt" / f"{pod.arm}.pt", t, params, job.W0, opt, None, set(), set())
-        job.log(f"[{job.stage}] checkpoint at step {t}")
-    return ended
 
 
 def f_data(job: ReadJob, steps: int) -> None:
@@ -250,10 +294,11 @@ def run_pod(job: ReadJob, P: D) -> None:
     assert rows.shape == (qwen_d3.MATHS_ROWS, qwen_d3.ROW_LEN), rows.shape
     with trainable(job.model, job.W0) as params:
         opt = adamw(params, cfg.lr)
-        start = E69.start_arm(job, pod.arm, out, params, opt)
-        for t in range(start + 1, pod.steps + 1):
-            if step(job, out, params, opt, t, rows, w0, P):
-                break
+        t = E69.start_arm(job, pod.arm, out, params, opt)
+        ended = t > 0 and after_update(job, out, t, rows, w0, P)  # a resume finishes its checkpoint step's read first
+        while not ended and t < pod.steps:
+            t += 1
+            ended = step(job, out, params, opt, t, rows, w0, P)
     out |= {"done": True, "last": out["steps"][-1]["step"], "peaks": job.peaks()}
     job.put(job.stage, out)
     (job.large / "ckpt" / f"{pod.arm}.pt").unlink(missing_ok=True)
@@ -262,7 +307,7 @@ def run_pod(job: ReadJob, P: D) -> None:
 
 def score(P: D) -> None:
     arms = {n: JOB.read_json(RESULTS / f"{n}.json") for n in P["selection"]["recipes"]}
-    out = pick.select(P["selection"], P["refs"]["w0_pass"], arms)
+    out = pick.select(P["selection"], P["refs"]["w0_pass"], pick.fits_bar(P["refs"]), arms)
     JOB.write_text(RESULTS / "selection.json", json.dumps(out, indent=1, default=float))
     print(json.dumps(out, indent=1, default=float), flush=True)
 

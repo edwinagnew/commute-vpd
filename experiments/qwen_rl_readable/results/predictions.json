@@ -2,10 +2,14 @@
  "experiment": "E163, cell P3.4 run 1: E69 reproduced (R, N, F at 1e-6w10, seed 0 = draw seed 69) and R grown three ways",
  "filed": "2026-11-11, before any run",
  "plan": "reports/plans/2026-11-11_plan_qwen-rl-readable-run1.md",
- "units": "pass = GSM8K test strict_dropped (greedy, 1319 problems, those that fit the window); kl = output change, KL(W_t || W0) nats per token over every position of the 128 maths rows at length 256 (E93 clean.W0.K); multiple = kl / masked_error; dw_norm = Frobenius norm of the update over the 196 matrices. Comparisons round to 9 places; a missing value is a miss.",
+ "units": "pass = GSM8K test strict_dropped (greedy, 1319 problems, those that fit the window); fits = GSM8K fits_share, the share of the 1319 whose answer fits the window; kl = output change, KL(W_t || W0) nats per token over every position of the 128 maths rows at length 256 (E93 clean.W0.K); multiple = kl / masked_error; dw_norm = Frobenius norm of the update over the 196 matrices. A GSM8K read has pass and fits; an output-change-only read (R pods, every 5 steps) has neither. Comparisons round to 9 places; a missing value is a miss.",
  "refs": {
   "w0_pass": 0.7816733067729084,
   "w0_pass_source": "experiments/qwen_rl/results/A0.json accuracy.gsm8k.strict_dropped (H100, E69 A0)",
+  "w0_fits": 0.9514783927217589,
+  "w0_fits_source": "experiments/qwen_rl/results/A0.json accuracy.gsm8k.fits_share",
+  "fits_drop": 0.03,
+  "fits_rule": "the pass rate counts only answers that fit the window, so it is blind to answers cut off; a GSM8K read holds W0's bars only if fits >= w0_fits - fits_drop (the fits bar, 0.9215; pick.py fits_bar), in the selection's eligibility and in the drift stop. E69 at step 100 (lr1e-6w10): R 0.947, F 0.958 hold it, N 0.875 does not (N is not judged by it); R seed 70 0.951",
   "masked_error": 0.09320748161650735,
   "masked_error_source": "experiments/qwen_instrument_check/results/step0.json table3.floors['maths 256'].kl (decomposition p-9707d6ff)",
   "targets": {"2x": 0.18641496, "5x": 0.46603741, "10x": 0.93207482}
@@ -22,18 +26,21 @@
   "e69_rollout_sha_1_rule": "logged, not a stop: step 1's rollouts token for token equal to E69's (experiments/qwen_rl/results/lr1e-6w10/R.json rollout_sha_1; N and F matched it on E69's H100)"
  },
  "reproduce": {
-  "rule": "a stop (exit 2) when a value at its step falls outside its band, inclusive; dw_norm bands are E69's seed-0 value +-5% (measured: L40 vs H100 0.013 at step 100, seed 0 vs 70 0.003-0.004 for R), pass bands are E69's seed-0 value +-0.022 (2 binomial se, se ~0.011 over ~1250 problems that fit). kl is an expectation only: a miss is logged and told to the lead, not a stop",
+  "rule": "a stop (exit 2) when a dw_norm or pass value at its step falls outside its band, inclusive; values under 'expect' are logged with their band and told to the lead on a miss, not a stop. Control and F: dw_norm bands are E69's seed-0 value +-5% (measured: L40 vs H100 0.013 at step 100, seed 0 vs 70 0.003-0.004 for R), pass bands E69's seed-0 value +-0.022 (2 binomial se, se ~0.011 over ~1250 problems that fit). N: its own seed spread is wide (lr1e-6w10/N.json vs lr1e-6w10_s70/N.json at step 100: |dW| 0.3698 vs 0.3354, pass 0.870 vs 0.794), so only |dW| stops, at +-15% of 0.370 (seed 70 inside); its pass rate is logged against 0.870. r3e-6 and r1e-5 at step 20: |dW| in [0.5x, 2x] of E69's R step-20 |dW| (0.13645, lr1e-6w10/R.json steps[19].dw_norm) times peak / 1e-6: it catches a rate not applied (at 1e-6 instead |dW| would be ~0.136, below both bands; 3e-6 on the 1e-5 pod ~0.41, below its band), not a slightly different trajectory",
   "control": {
    "20": {"dw_norm": [0.1296, 0.1433], "ref": 0.13644995117721753, "source": "experiments/qwen_rl/results/lr1e-6w10/R.json steps[19].dw_norm (s70: 0.1393)"},
-   "100": {"dw_norm": [0.333, 0.368], "pass": [0.8587, 0.9027], "kl": [0.0579, 0.0707],
+   "100": {"dw_norm": [0.333, 0.368], "pass": [0.8587, 0.9027], "expect": {"kl": [0.0579, 0.0707]},
            "ref": {"dw_norm": 0.35088369163741684, "pass": 0.8807045636509208, "kl": 0.06431339845656141},
            "source": "lr1e-6w10/R.json steps[99].dw_norm and accuracy.gsm8k.strict_dropped; kl: experiments/qwen_d1_table/results/R_s0/state.json clean.W0.K pooled / (128*256), on E69's saved step-100 update; band +-10%, the dw band squared (s70 read 0.0977)"}
   },
-  "N": {"100": {"dw_norm": [0.351, 0.388], "pass": [0.848, 0.892],
-                "ref": {"dw_norm": 0.36984544844356354, "pass": 0.8700173310225303}, "source": "lr1e-6w10/N.json (s70: 0.3354, 0.7940)"}},
+  "N": {"100": {"dw_norm": [0.3144, 0.4253], "expect": {"pass": [0.848, 0.892]},
+                "ref": {"dw_norm": 0.36984544844356354, "pass": 0.8700173310225303},
+                "source": "lr1e-6w10/N.json; dw band 0.3698 +-15%; pass logged against 0.870 +-0.022, not a stop (s70: 0.3354, 0.7940)"}},
+  "r3e-6": {"20": {"dw_norm": [0.2047, 0.8187], "ref": 0.40934985, "source": "lr1e-6w10/R.json steps[19].dw_norm x 3; band [0.5x, 2x]"}},
+  "r1e-5": {"20": {"dw_norm": [0.6822, 2.729], "ref": 1.3644995, "source": "lr1e-6w10/R.json steps[19].dw_norm x 10; band [0.5x, 2x]"}},
   "F": {"100": {"dw_norm": [0.260, 0.288], "pass": [0.7832, 0.8272],
                 "ref": {"dw_norm": 0.2738619801200432, "pass": 0.8052256532066508}, "source": "lr1e-6w10/F.json"}},
-  "at_W0": "dw_norm 0, pass 0.7817, kl 0: outside every band, so a run that did nothing cannot pass",
+  "at_W0": "dw_norm 0, pass 0.7817, kl 0: outside every stopping band (N's pass is logged only), so a run that did nothing cannot pass",
   "at_control": "inside every band (E69's own values are the band centres)"
  },
  "selection": {
@@ -43,16 +50,16 @@
   "drop": 0.03,
   "levels": [2, 5, 10],
   "min_level": 5,
-  "rule": "bar = max(the control's pass at step 100 in this run - 0.03, W0's pass). A recipe's read is eligible if its pass >= bar; its level is the largest of 10, 5, 2 that its multiple reaches (>=), else 0. Each recipe's best read: largest level, then fewest steps. Chosen: the recipe whose best read has the largest level; ties go to fewer steps, then the higher pass, then the lower peak rate (order of recipes). outcome 'chosen' if that level is >= 5; 'not reached' (RL could not get there at these recipes: run 2's design goes back to the lead) if it is 2 or no read is eligible at 2x or more; 'incomplete' (no choice read; one repair run may be spent) if any recipe's file lacks done: true or the control has no pass at step 100. A recipe ended by the drift stop is done; its reads after the stop do not exist, and the read that stopped it is below W0's pass, so below the bar.",
+  "rule": "Only GSM8K reads are judged (control 25 50 100 150 200 250; r3e-6 10 25 50 100 150 200; r1e-5 10 25 50 100); output-change-only reads are never eligible. bar = max(the control's pass at step 100 in this run - 0.03, W0's pass). A recipe's GSM8K read is eligible if its pass >= bar and its fits >= the fits bar (refs.w0_fits - refs.fits_drop, 0.9215); its level is the largest of 10, 5, 2 that its multiple reaches (>=), else 0. A recipe stopped on a check (its file has 'stopped') has no eligible read, and the choice is made among the rest. Each recipe's best read: largest level, then fewest steps. Chosen: the recipe whose best read has the largest level; ties go to fewer steps, then the higher pass, then the lower peak rate (order of recipes). outcome 'chosen' if that level is >= 5; 'not reached' (RL could not get there at these recipes: run 2's design goes back to the lead) if it is 2 or no read is eligible at 2x or more; 'incomplete' (no choice read; one repair run may be spent) if any recipe's file has neither done: true nor 'stopped', or the control has no pass at step 100 (a control stopped at its step-100 band still has that read and sets the bar, though its own reads are not eligible). A recipe ended by the drift stop is done; its reads after the stop do not exist, and the read that stopped it fails a W0 bar, so it is not eligible.",
   "code": "experiments/qwen_rl_readable/pick.py select",
   "at_W0": "every multiple 0: level 0, outcome 'not reached'",
   "at_control": "the control alone is expected at about 0.7x at step 100 (E93: 0.69) and about 1.5-2.5x at step 250 (if KL grows as |dW|^2 and |dW| reaches ~0.5-0.6): level 0 or 2, so the control by itself is expected not to reach 5x",
-  "edge_cases_run": "2026-11-11, ~/commute-data/scratch/qwen-rl-lead/run1-writer/edge.py (results in the plan): no reads, a missing pass, every read under the bar, a tie in level and step, a multiple exactly at 10, W0's pass above the control's minus 0.03, a drift-ended recipe, an unfinished recipe, the control without a step-100 read"
+  "edge_cases_run": "2026-11-11, ~/commute-data/scratch/qwen-rl-lead/e163-fixer/edge.py (extends run1-writer/edge.py; results in the plan): no reads, a missing pass, every read under the bar, ties in level/step/pass, a multiple exactly at 10 exactly at the bar, W0's pass above the control's minus 0.03, only 2x, an unfinished recipe, the control without a step-100 read, W0 everywhere, a stopped recipe, every recipe stopped, the control stopped at step 100, fits just under and exactly at its bar, a 10x output-change-only read, a GSM8K read with fits missing"
  },
  "drift": {
-  "rule": "R arms only, at each read: pass < W0's pass (0.7817) and kl > the previous read's kl (0 before the first read) -> the arm ends there (done, with 'drift': {step, last_good}); its last good read is the read before. A read with a missing pass or kl is not a drift stop",
+  "rule": "R arms only, at each GSM8K read: (pass < W0's pass (0.7817) or fits < the fits bar (0.9215)) and kl > the previous GSM8K read's kl (0 before the first) -> the arm ends there (done, with 'drift': {step, last_good}); its last good read is the GSM8K read before. A read with a missing pass, fits or kl is not a drift stop; output-change-only reads never stop",
   "code": "experiments/qwen_rl_readable/pick.py drift",
-  "at_W0": "pass equals W0's, not below: no stop",
+  "at_W0": "pass and fits equal W0's: no stop",
   "at_control": "pass ~0.88 at step 100 (E69): no stop expected at any read to 250"
  }
 }
