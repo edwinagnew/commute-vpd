@@ -2,8 +2,10 @@
 
 ## Remote GPU work (remote-kernels, RunPod)
 
-- Batch runs over ~30 min go here directly, on a 4090 or faster card; only runs of ≤ 30 min try the MATS cluster's
-  `debug` QoS first (`.claude/CLAUDE.md` → Rules, user 2026-10-20).
+- Batch runs over ~30 min go here directly, on the fastest card that helps; only runs of ≤ 30 min try the MATS
+  cluster's `debug` QoS first, and only when it can start them at once (`.claude/CLAUDE.md` → Rules). The user has
+  plenty of credits and little time (2026-11-11): a pod is the default whenever the cluster would make results wait.
+- Transfer speeds from the dev node, measured 2026-11-11 on a RunPod 4090: `sync()` sent a fresh 500 MB file in 54 s (~9.5 MB/s) and a 2.6 GB tree at ~12.6 MB/s; `download()` brought 500 MB back in 38 s (~13 MB/s); E153's 270 MB sync took 40 s; W&B fetches on a pod run 30-45 MB/s. So a GB costs about 2 min each way. Estimate any transfer as size ÷ 10 MB/s and show the sum; never cite a transfer time you did not compute this way or measure. The old "~80 KB/s" figure had no measurement behind it and is retired (it made a 268 MB upload look like an hour, friction 716, 720).
 - Pods use `cleanup = "terminate"` and have no network volume, so nothing on the machine survives. After every run that produces checkpoints, results, or logs, `download()` them into the project right away, before starting the next run.
 - Lessons from the 2026-10-19 task-ladder pod. All 1.4 GB of states were left for one download at the end. A RunPod
   "resume" moved the SSH port mid-transfer, the plugin could not reconnect, and the pod had to be terminated with the
@@ -16,7 +18,7 @@
     2026-10-19). Check sha256 on both sides. The directory named must be the gitignored one itself
     (`.../results/large`): a file or a subdirectory under it is never walked, and the sync still reports success
     (2026-10-23, two pods idled 20-25 min each). To send a few files from a large directory, hard-link them into a
-    staging path ending in `results/large/` and name that path; the uplink is ~80 KB/s, so start the sync before set-up.
+    staging path ending in `results/large/` and name that path; start the sync before set-up.
     Delete the staging directory afterwards. Since `~/commute-agents/fleet/link-data`, every `results/large` is a symlink and arrives
     on the pod dangling (2026-10-27): always stage by hard link, and replace the symlink on the pod with the real
     directory. The W&B fetch of `artifacts/vpd` works again (2026-10-27, ~45 MB/s, 65 s).

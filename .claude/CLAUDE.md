@@ -161,10 +161,15 @@ Write the hand-off into the relevant report or plan, not only the chat, so the n
   the user makes.
 - Concerns about existing claims go in a review report, not inline boxes.
 - Compute: training, fine-tuning, or more than one benchmark forward pass goes to a GPU, never local CPU. Route for the
-  earliest results, not the lowest $/h (user, 2026-10-20): runs of ≤ 30 min go to the MATS cluster's `debug` QoS (agents
-  run on its dev node; account `c11`, partition `compute`, `/mnt/nw/share/skills/mats-cluster/SKILL.md`; record job IDs;
-  caches in `/ephemeral/$USER`), and to RunPod if not started within 10 min. Longer runs go straight to RunPod via remote-kernels (one GPU, a 4090 or
-  faster, an H100 for runs over ~1 h; pods `commute-<experiment>-<id>`). For the Qwen line only, not the other lines, for now (user, 2026-10-27):
+  earliest results, not the lowest $/h (user, 2026-10-20; again 2026-11-11: "i have lots of credits available and not
+  much time ... encourage them to use better gpus where it helps"). Runs of ≤ 30 min go to the MATS cluster's `debug`
+  QoS (agents run on its dev node; account `c11`, partition `compute`, `/mnt/nw/share/skills/mats-cluster/SKILL.md`;
+  record job IDs; caches in `/ephemeral/$USER`) when it can start them now, and to RunPod (Vast after one failed round)
+  if not started within 5 min. Longer runs go straight to a pod via remote-kernels: an H100 (or faster) for anything
+  over ~20 min on a 4090 or that is memory-bound, a 4090 only for short light runs, several pods at once for
+  independent arms; pods `commute-<experiment>-<id>`. Large inputs on the cluster are not a reason to stay: uploads run
+  at ~10 MB/s (about 2 min a GB, root `CLAUDE.md`), so price the transfer before choosing the queue. A brief's "cluster
+  only" holds only for a stated reason other than transfer time, and the user asking for speed overrides it. For the Qwen line only, not the other lines, for now (user, 2026-10-27):
   a longer run that fits an L40 may use the cluster's `normal` QoS when the queue is empty at submission.
 - **Every GPU run goes through `/pod-runner`** (`.claude/skills/pod-runner/SKILL.md`): the lead writes the brief and
   spawns one `pod-runner` agent (Sonnet) in the background per run. The lead never runs `sbatch`, `srun` or `start()`
