@@ -1,0 +1,17 @@
+0.05	experiments/method_table/results/final.json	[.cells[]|select(.method=="neuron_top")|(.reuse+.new)[]|if . < 0 then -. else . end]|max	earlier
+0.39	experiments/share_gap_sizes/results/gaps.json	.summary.share_gap_min	earlier
+0.69	experiments/share_gap_sizes/results/gaps.json	.summary.share_gap_max	earlier
+0.06	experiments/share_gap_sizes/results/gaps.json	.summary.share_spread_max	earlier
+0.02	experiments/share_gap_sizes/results/gaps.json	.summary.spearman_share_prior	earlier
+-0.10	experiments/share_gap_sizes/results/gaps.json	.summary.spearman_share_steering	earlier
+0.12	experiments/prior_steering/results/stage1.json	.score.pairs.e62_copy_lookup.prior.gap	earlier
+0.20	experiments/prior_steering/results/stage1.json	.score.pairs.e58_copy_prior_cipher.prior.gap	earlier
+0.31	experiments/prior_steering/results/stage1.json	.score.pairs.e62_copy_lookup.steering.strength1.gap	earlier
+0.44	experiments/prior_steering/results/stage1.json	.score.pairs.e58_copy_prior_cipher.steering.strength1.gap	earlier
+3.20	experiments/prior_steering/results/stage1.json	.score.pairs.e54_matched.prior.gap	earlier
+0.000232	experiments/disagreeing_pairs/results/amend1_stage0.json	.rungs[2].prior_est	earlier
+0.000235	experiments/disagreeing_pairs/results/predictions_amend1.json	.ladder.common_prior_min	earlier
+0.34	experiments/neuron_overlap/results/stage2.json	[.score[].overlap.values[][]]|min	earlier
+0.69	experiments/neuron_overlap/results/stage2.json	[.score[].overlap.values[][]]|max	earlier
+0.84	experiments/neuron_overlap/results/stage2.json	[.score[].overlap.floor[].random]|min	earlier
+0.95	experiments/neuron_overlap/results/stage2.json	[.score[].overlap.floor[].random]|max	earlier
