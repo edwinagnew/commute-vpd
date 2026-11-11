@@ -1,4 +1,4 @@
-"""P3.4 run 1 (E-TBD): E69's GRPO loop on Qwen3-1.7B (experiments/qwen_rl, recipe 1e-6w10, draw seed 69, "seed 0")
+"""P3.4 run 1 (E163): E69's GRPO loop on Qwen3-1.7B (experiments/qwen_rl, recipe 1e-6w10, draw seed 69, "seed 0")
 reproduced for R, N and F to step 100, R continued at the same rate to step 250, and R at two higher peak rates: how far
 each grows the output change while the held-out pass rate holds. Plan: reports/plans/2026-11-11_plan_qwen-rl-readable-run1.md;
 rules in results/predictions.json (refuses to start unless it is committed unchanged; on a pod, E120_PRED_SHA).

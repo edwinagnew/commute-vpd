@@ -1,4 +1,4 @@
-# Plan: which way of growing the RL update reaches 10 times the masked error while the pass rate holds? (E-TBD, cell P3.4 run 1)
+# Plan: which way of growing the RL update reaches 10 times the masked error while the pass rate holds? (E163, cell P3.4 run 1)
 
 ## The question, in plain words
 The saved reinforcement-learning (RL) updates on Qwen3-1.7B change the model's output by only 0.7 to 1.05 times the
