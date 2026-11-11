@@ -1,0 +1,61 @@
+{
+ "experiment": "E### (cell P3.X): Qwen instrument check, step 0 - three tables from saved files on the new decomposition p-9707d6ff, CPU only",
+ "filed": "2026-11-11, before any run; never edited after the run (add a dated report instead)",
+ "plan": "reports/plans/2026-11-11_plan_qwen-instrument-check-step0.md (brief: reports/plans/2026-11-11_plan_qwen-instrument-check.md)",
+ "measurement": {
+  "alive": "qwen_maps.alive_from_stats (qwen_maps.py:64-66) on job 56760's W0 statistics, experiments/qwen_new_decomp/results/large/w0_refs/p-9707d6ff/gstats/W0_{maths,fineweb}.safetensors: a subcomponent is alive when its g exceeds 0.01 at some position of W0's 128 maths or 128 fineweb rows of 512. As qwen_d3.py:228-231 and E132 run.py:42-43",
+  "ranks": "r_write = rank of U_A (d_out x n), r_read = rank of V_A (d_in x n), singular values above 1e-6 x the largest (qwen_d3.BASIS_TOL), from the gram eigendecomposition (qwen_maps.make_basis 'gram'), as every Qwen split",
+  "outside_share": "The least-squares split reaches dU V_A^T + U_A dV^T (src/commute/split.py), so the part of a change M it can never hold is P_U-perp M P_V-perp, of dimension (d_out - r_write)(d_in - r_read). Share = ||P_U-perp M P_V-perp||^2 / ||M||^2. For iid Gaussian M its expectation is split.gaussian_null = (1 - r_write/d_out)(1 - r_read/d_in), exactly. Pooled over the 196 matrices: iid by d_in*d_out (one Gaussian of equal entry variance over the whole model); per update by that update's ||dW_s||^2 (E93's pooling). First order: E93's 'left' also held the second-order dU dV^T term, which moved it by under 1e-4 of the squared norm there",
+  "delta": "||Delta_s|| = relative_frobenius_error_s (bundle reconstruction_check.csv, matched by E131 to 8.6e-7) x ||W0_s|| (Qwen3-1.7B bf16 weights, Hugging Face revision 70d244cc). Delta is the leftover of all 688,128 subcomponents, not of the alive ones",
+  "output_change": "Stored only. KL(fine-tuned || W0) unmasked, nats per token, pooled over the positions of the named rows: E93 K of W0 (128 rows of 256 for maths and TOFU, 64 of 256 for anchor 1), E91 full-update KL (first 16 maths rows of 512), E45 states.100.kl (16 maths rows of 512; 64 own rows of 512), E93 stage 0 and E132 for E40 step 10",
+  "floor": "The decomposition's own masked error on new, KL(W0 || W0 masked by its own masks, Delta off), nats per token: 0.0932 on the 128 maths rows of 256 (E132 controls.json means_W0.K0), 0.0728 on 128 maths rows of 512 and 0.2090 on 128 fineweb rows of 512 (job 56760, w0_refs_stage1.json). None stored on new for TOFU, anchor-1 or E45 own rows: those cells are gaps",
+  "blind_to": "Table 1 says what the split CAN place, not where it puts an update: an outside share equal to the null is what both a free and a constrained placement give whenever the update's in-span part is spread like a random one. It is blind to placement within the span, which step 1's planted changes test. Table 2 compares weight norms; the masked forward's error is not additive in them. Table 3 sets an output change beside an error of a different reference (fine-tuned vs W0, W0 vs its masked self); a ratio under 1 says the update is no larger than the decomposition's own miss, not that a reading of it is noise",
+  "positive_control": "Per matrix, one iid Gaussian draw's measured outside share must equal the formula (stop on a miss); the cheap outside share must equal split.obstruction_fraction on the first matrix of each kind where both complements are non-empty (stop on a miss)"
+ },
+ "controls_stop_on_miss": {
+  "filed": "predictions_step0.json committed unchanged (commute.jobs.require_filed)",
+  "decomp": "decomp_id of the directory is p-9707d6ff",
+  "inputs": "Every one of the 15 update files exists, and every Table 3 key is read before any matrix (a KeyError stops the job in its first second)",
+  "alive_total": "500,244 (E131 Amendment 1 stage 1, job 56760, w0_refs_stage1.json alive.total)",
+  "rank_bound": "r_write <= min(n, d_out) and r_read <= min(n, d_in) at every matrix: an identity, so a miss is a bug",
+  "gauss": "|measured Gaussian outside share - gaussian_null| <= 5e-3 at every matrix. Source: the share of an iid Gaussian in a fixed block of fraction f of D entries has sd sqrt(2 f (1-f) / D); the largest is 4.9e-4 (k and v, D = 2,097,152, f near 0.5), so 5e-3 is over 10 sd and a miss is a wrong basis, not chance",
+  "obstruction": "|cheap outside share - split.obstruction_fraction| <= 1e-9 on the first update at the first matrix of each kind with both complements non-empty; fp64 rounding of a ratio of sums over 4M entries is near 1e-13, so 1e-9 leaves room and a miss is a wrong formula"
+ },
+ "predictions": {
+  "T1_mlp_full": {
+   "rule": "Count of the 84 MLP matrices (gate, up, down) whose small side is full rank (r_read = 2048 for gate and up, r_write = 2048 for down), so their outside share is exactly 0 for any change",
+   "expected": "84 of 84. Every MLP matrix has at least 2,572 alive subcomponents (alive.safetensors, up_proj minimum) for a 2048 side, so in general position the small side is spanned",
+   "lean": "strong",
+   "edge_cases": "A matrix with r = 2047 counts as not full: the bound is strict. The count cannot be empty: 84 matrices are fixed"
+  },
+  "T1_general_position": {
+   "rule": "Count of the 196 matrices where r_write = min(n, d_out) and r_read = min(n, d_in) (alive vectors in general position)",
+   "expected": "At least 190 of 196",
+   "lean": "medium: VPD subcomponents are trained to be distinct, but a read vector set near-duplicated across subcomponents would lower a rank below the count"
+  },
+  "T1_iid_random": {
+   "rule": "The iid Gaussian outside share pooled by d_in*d_out over the 196 matrices (formula and measured, which the gauss control ties together)",
+   "expected": "0.098 to 0.12. 0.0981 is an exact LOWER bound: with r <= min(n, d) on each side, (1 - r_write/d_out)(1 - r_read/d_in) can only rise above its general-position value, which pooled over the per-matrix alive counts of alive.safetensors is 0.0981. By kind (general position): q 0.617, k 0.378, v 0.252, o 0.245, gate, up, down 0. Weighted by size, q carries 0.051 of the 0.098, o 0.020, k 0.016, v 0.010",
+   "lean": "strong for the lower bound; medium for the upper end of 0.12",
+   "edge_cases": "A value under 0.0981 is impossible and means a bug (the rank_bound control stops first). The pooled denominator is fixed and positive"
+  },
+  "T1_real_vs_random": {
+   "rule": "Per update u: ratio_u = real_u / null_u, real_u = sum_s ||O(dW_s)||^2 / sum_s ||dW_s||^2 and null_u = sum_s gaussian_null_s ||dW_s||^2 / sum_s ||dW_s||^2. Placement FREE when ratio_u >= 0.8 for every scored update; placement CONSTRAINED when ratio_u < 0.5 for at least one scored update; otherwise 'no call'. An update with null_u = 0 (no norm in attention matrices with a non-empty complement) is unscored and named",
+   "expected": "Every update reads ratio 0.90 to 1.00, so FREE. On the old decomposition E93 read 0.961 (first maths, 0.08745 / 0.09099), 0.967 (template s0), 0.971 (RL s70) and 0.959 (E40 step 10, 0.0900 / 0.0939). null_u is near the attention share of each update's squared norm times about 0.3 to 0.6, so it differs between updates: expected roughly 0.05 to 0.15",
+   "lean": "medium; the ratio on new could differ from old because the alive sets differ, but nothing in the split changed",
+   "bars_source": "Set here, from E93 on old (no other measurement exists): 0.8 allows a fifth of the null to be missing (E93's largest gap on old was 4%); 0.5 means the update leaves at most half what a random change of the same per-matrix norms leaves, a gap ten times E93's. The do-nothing state (dW = 0) gives 0/0 and is unscored, so it cannot pass. A matched Gaussian reads 1 by construction: the rule compares a real update with it, and 'free' says only that the update is no more inside the span than chance",
+   "edge_cases": "Ties at exactly 0.8 count as free, at exactly 0.5 as not constrained. One update scored below 0.5 and another above 0.8 is CONSTRAINED (any one suffices). No scored update: 'no call'"
+  },
+  "T2_delta_vs_update": {
+   "rule": "Total ||Delta|| = sqrt(sum_s ||Delta_s||^2), each update's total ||dW||, and per update the count of the 196 matrices where ||dW_s|| > ||Delta_s||",
+   "expected": "||Delta|| total 1 to 8 (relative errors 0.002 to 0.0055 times ||W0|| of roughly 500 to 1500 in total). The RL, shuffled-reward and own-samples updates (norms 0.27 to 0.37) sit under ||Delta|| in total and on at least 150 of 196 matrices. The first maths fine-tune (3.38) and gold (2.86) are of the order of ||Delta||. The TOFU fine-tunes (18.1) are above it on at least 150 of 196 matrices",
+   "lean": "weak: ||W0|| is not stored and is read here for the first time"
+  },
+  "T3_signal_to_floor": {
+   "rule": "Per stored output change: ratio = change / floor on the same row file and row length, with the floor's row count beside it (the same rows, or the first 128, a superset). No floor stored: a gap, listed. An update is UNDER the floor on a row set when ratio < 1, else over. No verdict rests on this table: it is the signal-to-noise of the readings made so far",
+   "expected": "Known now from stored numbers, so these are the values the script must reproduce to 1e-12: on the 128 maths rows of 256 against 0.0932: RL s0 0.690, RL s70 1.048, shuffled s0 1.447, shuffled s70 0.522, own-samples 0.0109, first maths step 100 18.44, gold maths 14.77, E40 step 10 17.54. On 16 maths rows of 512 against 0.0728: template s0 1.317, s1 1.368, TOFU s42 6.904, s142 6.936, RL s0 1.163, s70 1.197, shuffled s0 1.492, s70 0.588, own-samples 0.0140, first maths 9.09, gold 7.14, E45 gold 9.56, E45 anchor-2 long s0 8.63, s1 8.34. E40 step 10 on 16 maths rows of 256: 6.63. Gaps: the TOFU and anchor-1 own rows, and E45's own rows",
+   "lean": "certain (arithmetic on stored numbers)",
+   "edge_cases": "A zero floor would divide by zero: none of the three stored floors is zero. A row set with several floors cannot arise: floors are keyed by (file, length)"
+  }
+ }
+}
