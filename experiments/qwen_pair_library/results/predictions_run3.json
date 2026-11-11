@@ -1,0 +1,97 @@
+{
+ "experiment": "E165",
+ "cell": "P3.5",
+ "run": 3,
+ "filed": "2026-11-11",
+ "card": "experiments/qwen_pair_library/card_run3.md (rivals, smallest gap 0.3 and the stop rule fixed there)",
+ "code": "experiments/qwen_pair_library/library.py (run 3; run 2 ran it as of commit 094a6896); rules in src/commute/qwen_library.py (read_key, learned, copy_held, pair_row, rival, over_seeds, rivals, dropped); edge cases in tests/test_qwen_library_rules.py",
+ "why": "Run 2 (E164, peak 2e-6, 100 steps, stop at the 15x save) learned the reuse sides but not the new ones: cipher trained exact match 0 on all three seeds, invented 0.67-0.69, the loss still falling when the cosine reached 0 (results/library/*_s<seed>.json .rules). Run 3 trains the four built arms long enough to learn both sides.",
+ "arms": {
+  "copy": "built reuse side, copy/cipher", "cipher": "built new side, copy/cipher",
+  "known": "built reuse side, facts", "invented": "built new side, facts",
+  "seeds": [0, 1, 2],
+  "not_rerun": "gold, gold_shuf, template, template_shuf: run 2's results stand (results/library/); this file files no recipe for them and library.py refuses those arms"
+ },
+ "recipes": {
+  "built": {"lr": 1e-05, "warmup": 30, "steps": 300, "schedule": "hf_cosine", "clip": 1.0, "micro": 4, "forward": "fp32", "batch": 64,
+            "source": "LLaMA-Factory's documented full-SFT setting for Qwen (lr 1e-5, cosine, warm-up ratio 0.1; cited in src/commute/qwen_sft.py lr_at), the recipe the gold arm already uses: experiments/qwen_recipe/results/train_gold_1e-5.json .recipe (E61 gold_1e-5 = pool_sft.RECIPE, warm-up 10 of 100). library.py asserts every field equal to that file's but the length, and the warm-up ratio equal (30/300 = 10/100)."},
+  "departures": "300 steps rather than 100 (run 2's new sides were still learning when the cosine reached 0); the warm-up scaled with it at the same ratio. Data, order (qwen_updates.cycle by seed) and batch as run 2.",
+  "not_taken_2026-11-11": "Fable's optional insurance arm at peak 2e-5 was not taken: one recipe per run."
+ },
+ "floors": {
+  "copy": 0.10541914437783109, "cipher": 0.14975187081552094, "known": 0.10061034613733717, "invented": 0.16614955359909198,
+  "source": "results/floors.json .floors.<task>.K0 (run 1), as run 2; library.py stops if the file or the row count differs."
+ },
+ "control": {
+  "rule": "As run 2: first in each job. At W0: KL 0 and the held-out and trained-item measures. Then a zero change written to a safetensors file, loaded and added to W0 is read the same way: |KL(W0 || W0 + 0)| <= kl0_max on the own rows, and hit counts equal W0's exactly. Otherwise the job stops before training.",
+  "kl0_max": 1e-06,
+  "loss_tol": 1e-06,
+  "expected": "KL 0 and identical counts; run 2 read this on all twelve built arm-seeds (results/library/<arm>_s<seed>.json .control.holds)."
+ },
+ "early_stops": {
+  "rule": "As run 2, the jump bar raised: stop if the loss is not finite at any step; |dW| is not exactly 0 after step 1 (it runs at rate 0); KL(W0 || W_t) on the own rows at step 2 exceeds kl_step2_max_floors x the floor; or one step raises that KL by more than kl_jump_max_floors x the floor (KL before step 1 is 0).",
+  "kl_step2_max_floors": 1.0,
+  "kl_jump_max_floors": 10.0,
+  "source": "At 2e-6 the copy side's largest one-step rise was 0.22 (2.1 floors; results/rehearse_copy.json .steps). At peak 1e-5 (run 1's stopped rehearsal, warm-up 10, results/rehearse_stopped_run1.json .steps) it was 0.37 (3.5 floors) by step 10 at rate 9e-6, step 2 read 0.036 (0.34 floors) at rate 1e-6; run 3's step 2 runs at 3.3e-7. A 5-floor bar at 1e-5 risks a false stop that would spend the cell's last run, so 10 floors.",
+  "expected": "No stop on any arm-seed."
+ },
+ "saves": {
+  "rule": "KL(W0 || W_t), mean over every position of the arm's own rows, read every step. The upper state only is kept at the first read at or past 5 x and 15 x the floor (labels 5x, 15x) and always at step 300 (label last); one state carrying two labels joins them with '_' (5x_15x, 15x_last). No stop at 15x: every arm trains to step 300. fp32 dW, results/large/library_run3/<arm>_s<seed>/<labels>.safetensors, at most 3 a arm-seed (5.64 GB each), sha256 in the arm's JSON .saves; with --upload the W&B artifact p35r3-<arm>-s<seed>-<labels>, and the local file is deleted once that artifact holds a file of its size (.saves[].uploaded).",
+  "sizes": [5.0, 15.0],
+  "track": "Every 25 steps (25, 50, ..., 300) the held-out and trained exact match of the training model as it stands, with that step's KL and |dW|, in .track and the log. A description: no rule reads it. Its step-300 row should equal the 'last' state's read from file (same weights)."
+ },
+ "learned": {
+  "rule": "Read at the arm's save labelled last (step 300), reads = 'last'. Greedy exact match under the cue on the 256 trained items, hits >= ceil(accuracy_min x 256) = 231, absolute, a tie holds. An arm that stopped, is missing or unfinished, or has no save, is not learned.",
+  "reads": "last",
+  "accuracy_min": 0.9,
+  "bars_in_hits": {"n_256": 231},
+  "expected": {"copy": "learned, trained 1.0 (run 2: 0.996-1.0 at 15x)", "known": "learned, trained 1.0 (run 2: 1.0 at step 100)", "cipher": "open: the card's question; run 2 read 0 at step 100", "invented": "learned, trained >= 0.9 (run 2: 0.67-0.69 at step 100, still rising)"},
+  "blind_to": "Whether what was learned on trained items carries to held-out keys: the held-out measure and the rivals read that."
+ },
+ "copy_held": {
+  "rule": "The copy arm's greedy exact match under the cue on the 256 held-out keys at its last save, hits >= ceil(copy_held_min x 256) = 231, absolute, a tie holds. Stopped or missing: no verdict (null).",
+  "reads": "last",
+  "copy_held_min": 0.9,
+  "expected": "near 1.0 (run 2: 0.996-1.0 at 15x on all three seeds); the positive control of the held-out measure."
+ },
+ "matched": {
+  "rule": "As run 2: a pair at a seed is matched at a size (5x, 15x, read apart) when both arms finished with a save carrying that size's label (5x_15x and 15x_last count for each). 'last' is not a size. A side that never reaches a size is matched at that size false; the pair may still be matched at the other.",
+  "expected": "Both pairs matched at 5x and 15x on every seed: at 1e-5 run 1's copy rehearsal crossed 5x at step 5 and 15x at step 8 (warm-up 10); with warm-up 30 the same summed rate comes near steps 8 and 14 for copy. Cipher and invented crossed 5x by step 18 and 43 at 2e-6; run 3 sums about 7x run 2's total rate, so 15x is expected on all four sides."
+ },
+ "fit_to_read": {
+  "rule": "As run 2: a pair at a seed is fit to read when both sides are learned (at last), it is matched at one size or more, and run 1's capacity verdict is 'fit' (copy_cipher and facts are). library.py --table writes results/library_run3/table.json.",
+  "pairs": {"copy_cipher": ["copy", "cipher"], "facts": ["known", "invented"]}
+ },
+ "rivals": {
+  "rule": "Per seed, at each side's last save: d = held-out hits copy - cipher on the same 256 held-out keys. Defined only when both copy and cipher are learned (cipher trained exact match >= 0.9; a stopped, missing or unfinished side is not learned): else 'undefined' with the reason. rival_a when d > smallest_gap x 256 (76.8, so d >= 77 hits, a held-out exact match gap above 0.3); rival_b when |d| <= 76.8 (within 0.3; a gap of exactly 0.3 is rival_b); 'neither' when cipher is above copy by more than 0.3. Absolute.",
+  "smallest_gap": 0.3,
+  "rival_a": "the built pairs are what they were built as: copy held-out near 1.0, cipher's more than 0.3 under copy's, cipher trained >= 0.9",
+  "rival_b": "the cipher's letter map is learned as a general rule: cipher held-out within 0.3 of copy's",
+  "over_seeds": {
+   "rule": "With n = 3 seeds, k_a and k_b the seeds on each rival: every seed one rival -> '<rival> (3/3)'; k > n/2 on one rival and 0 on the other -> '<rival> (2/3)' (the third seed undefined or neither); seeds on both rivals -> 'split' (no call); otherwise -> 'no call' (one seed or none on a rival, the rest undefined or neither).",
+   "outcomes": {"3/3 a": "rival_a (3/3)", "2/3 a, 1 undefined or neither": "rival_a (2/3)", "3/3 b": "rival_b (3/3)", "2/3 b, 1 undefined or neither": "rival_b (2/3)", "2 a + 1 b, or 1 a + 2 b, or 1 a + 1 b + 1 other": "split", "1 a or 1 b, 2 others; 0 on either": "no call"}
+  },
+  "expected": "open; the card's question. The noise floor below says a 0.3 gap is about 1.2 sd of a single key's 0/1 outcome and 19 se of a 256-key mean.",
+  "blind_to": "Why the cipher fails to carry (memorised rows or a partial map): per-letter accuracy is not read."
+ },
+ "stop_rule": {
+  "rule": "The card's: a new side (cipher for copy_cipher, invented for facts) not learned at step 300 on all three seeds (stopped or missing seeds count as not learned) drops its pair; the library is the twins plus whichever built pair passed. table.json .dropped per pair.",
+  "expected": "invented not dropped; cipher open"
+ },
+ "do_nothing": {
+  "rule_check": "The zero change reads W0's numbers (the control asserts it). At W0 every built side reads 0 trained and 0 held-out exact match under the cue (run 2: results/library/<arm>_s0.json .w0, 0/256 trained on all four), against a bar of 231: not learned. Two do-nothing sides make the rivals undefined (cipher not learned), never rival_b, though their gap 0 is within 0.3. tests/test_qwen_library_rules.py runs these.",
+  "expected_w0": {"built_trained_exact_match": "0 (0/256, all four sides)", "built_held_exact_match": "0 (copy, cipher 0/256; known, invented 0/200)", "kl": "0", "dw_norm": "0", "gap_copy_minus_cipher": "0, rivals undefined"}
+ },
+ "edge_cases": [
+  "Cipher trained exact match under 0.9 at last (or cipher stopped, missing, unfinished): rivals 'undefined' at that seed, with the reason; on all three seeds the pair is dropped by the stop rule, and over seeds reads 'no call'.",
+  "Copy not learned: rivals 'undefined' at that seed (copy not learned).",
+  "Gap exactly 0.3: rival_b (within); with n = 256 a gap of 0.3 cannot occur in hits (76.8), d = 77 is rival_a and d = 76 rival_b.",
+  "Cipher above copy by more than 0.3: 'neither' at that seed.",
+  "A side that never reaches 5x or 15x: matched false at that size; fit at the other size if matched there; learned and the rivals unaffected (they read last).",
+  "An arm that stops early (results/library_run3/stopped_<arm>_s<seed>.json): not learned, no 'last' save; its pair at that seed not fit, rivals undefined, counts as not learned for the stop rule.",
+  "One state crossing 15x at step 300: labelled 15x_last, read as last and matched at 15x."
+ ],
+ "positive_control": "The copy arm: learned and held-out near 1.0 at last, as in run 2 on all three seeds.",
+ "noise_floor": "Exact match per key is 0/1: sd sqrt(p(1-p)), up to 0.5; the card's spread 0.2557 (results/rehearse_copy.json, copy at 5x). Over 256 paired keys the standard error of a gap is about 0.2557/16 = 0.016, so 0.3 is far above a single seed's noise; seed spread is read over three seeds by the over-seeds rule.",
+ "time_and_disk": "Run 2 measured about 9.6 s a step on an H100 (cipher_s0: 100 steps and its saves in 962 s). Run 3 per arm-seed: 300 steps about 48 min, 12 tracked reads of 512 greedy answers about 12-15 min, control and the read of 3 states about 6 min: about 70 min on an H100. Disk: at most 3 states of 5.64 GB (17 GB) a arm-seed, deleted after upload with --upload; host RAM as run 2 (peak 18.7 GB)."
+}

@@ -3,7 +3,9 @@ Run 1 is experiments/qwen_pair_library/run.py, run 2 is library.py there. Here: 
 Amendment 1's early stops, the template's training sequences as E45/E78 built them, and run 2's rules, which read
 the arms' result files (results/library/<arm>_s<seed>.json, rules filed in results/predictions_run2.json).
 
-Run 2's rules. Each reads one saved state per arm: the save labelled 15x, else the arm's last save (`read_state`).
+Run 2's and run 3's rules (run 3: results/predictions_run3.json, arm files in results/library_run3/). Each reads one
+saved state per arm (`read_state`): the save carrying the label the filed rule names in "reads" (run 2's file names
+none: "15x"; run 3's: "last"), else the arm's last save.
   learned    built and template arms: trained-item hits >= ceil(accuracy_min x n), absolute (a tie holds). Gold arms:
              trained-row gold loss <= gold_loss_ratio_max x the arm's W0 value (a tie holds). An arm that stopped, is
              missing, is unfinished or has no save is not learned.
@@ -11,11 +13,14 @@ Run 2's rules. Each reads one saved state per arm: the save labelled 15x, else t
   matched    a pair at a size (5x, 15x apart): both sides finished, each with a save at that size.
   fit        a pair at a seed: both sides learned, matched at one size or more, and run 1's capacity verdict is "fit"
              (twins have no capacity check: "n/a" passes).
+Run 3 only (`rival`, `rivals`, `dropped`): the card's two rivals on held-out hits copy - cipher at the read state, per
+seed and over seeds, and the card's stop rule (a new side learned on no seed drops its pair).
 """
 
 from __future__ import annotations
 
 import math
+from collections.abc import Mapping
 from typing import Any
 
 import torch
@@ -96,13 +101,20 @@ def status(arm: dict[str, Any] | None) -> str:
     return "done" if arm.get("done") else "unfinished"
 
 
-def read_state(arm: dict[str, Any]) -> tuple[str | None, bool]:
-    """The key of the state the rules read (the save labelled 15x, else the last save) and whether 15x was reached;
-    (None, False) when nothing was saved."""
+def read_state(arm: dict[str, Any], reads: str = "15x") -> tuple[str | None, bool]:
+    """The key of the state the rules read (the first save labelled `reads`, else the last save) and whether 15x was
+    reached; (None, False) when nothing was saved."""
     saves = arm.get("saves", [])
-    hit = [s for s in saves if "15x" in s["labels"]]
+    hit = [s for s in saves if reads in s["labels"]]
     pick = hit[0] if hit else saves[-1] if saves else None
-    return (None, False) if pick is None else ("_".join(pick["labels"]), bool(hit))
+    reached = any("15x" in s["labels"] for s in saves)
+    return (None, False) if pick is None else ("_".join(pick["labels"]), reached)
+
+
+def read_key(arm: dict[str, Any] | None, R: dict[str, Any]) -> tuple[str | None, bool]:
+    """`read_state` under the filed rule R (its "reads"; "15x" when it names none, as run 2's file) for a finished
+    arm; else (None, False)."""
+    return read_state(arm, R.get("reads", "15x")) if arm is not None and status(arm) == "done" else (None, False)
 
 
 def at_least_hits(m: dict[str, Any], bar: float) -> tuple[bool, int]:
@@ -113,7 +125,7 @@ def at_least_hits(m: dict[str, Any], bar: float) -> tuple[bool, int]:
 
 def learned(arm: dict[str, Any] | None, R: dict[str, Any]) -> dict[str, Any]:
     st = status(arm)
-    key, reached = read_state(arm) if arm is not None and st == "done" else (None, False)
+    key, reached = read_key(arm, R)
     if arm is None or key is None:
         return {"learned": False, "why": st if st != "done" else "no save"}
     tr = arm["states"][key]["trained"]
@@ -127,7 +139,7 @@ def learned(arm: dict[str, Any] | None, R: dict[str, Any]) -> dict[str, Any]:
 
 def copy_held(arm: dict[str, Any] | None, R: dict[str, Any]) -> dict[str, Any]:
     st = status(arm)
-    key, reached = read_state(arm) if arm is not None and st == "done" else (None, False)
+    key, reached = read_key(arm, R)
     if arm is None or key is None:
         return {"holds": None, "why": st if st != "done" else "no save"}
     h = arm["states"][key]["held"]
@@ -147,12 +159,56 @@ def pair_row(a: dict[str, Any] | None, b: dict[str, Any] | None, capacity: str, 
 
 
 def table(arms: dict[tuple[str, int], dict[str, Any] | None], capacity: dict[str, Any], R: dict[str, Any],
-          seeds: tuple[int, ...]) -> dict[str, Any]:
+          seeds: tuple[int, ...], pairs: dict[str, tuple[str, str]] = PAIRS) -> dict[str, Any]:
     """Per pair and seed, the rules above; per pair, the seeds fit to read. `capacity`: run 1's capacity.json .pairs."""
     out: dict[str, Any] = {}
-    for pair, (x, y) in PAIRS.items():
+    for pair, (x, y) in pairs.items():
         cap = capacity[pair]["verdict"] if pair in capacity else "n/a"
         rows = {str(s): pair_row(arms.get((x, s)), arms.get((y, s)), cap, R) for s in seeds}
         out[pair] = {"sides": [x, y], "seeds": rows, "seeds_fit": [s for s, r in rows.items() if r["fit_to_read"]]}
     out["copy_held"] = {str(s): copy_held(arms.get(("copy", s)), R["copy_held"]) for s in seeds}
     return out
+
+
+# ----------------------------------------------------------------------------- run 3's rules
+
+
+def rival(copy: dict[str, Any] | None, cipher: dict[str, Any] | None, R: dict[str, Any]) -> dict[str, Any]:
+    """The card's rivals at one seed, at each side's read state. Undefined when either side is not learned (stopped,
+    missing, unfinished or under the bar: the rivals read a learned cipher only). Else d = held-out hits copy - cipher
+    on the same n keys: rival_a when d > smallest_gap x n; rival_b when |d| <= smallest_gap x n (a tie at the gap is
+    rival_b); "neither" when the cipher is above the copy by more than the gap."""
+    lc, lx = learned(copy, R["learned"]), learned(cipher, R["learned"])
+    if not (lc["learned"] and lx["learned"]):
+        side, why = ("cipher", lx) if not lx["learned"] else ("copy", lc)
+        return {"verdict": "undefined", "why": f"{side} not learned ({why.get('why', 'under the bar')})"}
+    hc, hx = copy["states"][lc["state"]]["held"], cipher["states"][lx["state"]]["held"]  # type: ignore[index]
+    assert hc["n"] == hx["n"] > 0, (hc["n"], hx["n"])
+    d, bar = hc["hits"] - hx["hits"], R["rivals"]["smallest_gap"] * hc["n"]
+    verdict = "rival_a" if d > bar + 1e-9 else "rival_b" if abs(d) <= bar + 1e-9 else "neither"
+    return {"verdict": verdict, "gap": d / hc["n"], "copy_held": hc["value"], "cipher_held": hx["value"],
+            "states": [lc["state"], lx["state"]]}
+
+
+def over_seeds(verdicts: list[str]) -> str:
+    """The rivals over seeds: every seed one rival -> "<rival> (n/n)"; a majority of seeds one rival and none the other
+    -> "<rival> (k/n)"; seeds on both rivals -> "split"; else (no majority on one rival) "no call"."""
+    n, a, b = len(verdicts), verdicts.count("rival_a"), verdicts.count("rival_b")
+    for name, k, other in (("rival_a", a, b), ("rival_b", b, a)):
+        if k > n / 2 and other == 0:
+            return f"{name} ({k}/{n})"
+    return "split" if a and b else "no call"
+
+
+def rivals(arms: Mapping[tuple[str, int], dict[str, Any] | None], R: dict[str, Any],
+           seeds: tuple[int, ...]) -> dict[str, Any]:
+    """`rival` per seed, and `over_seeds` of their verdicts."""
+    per = {str(s): rival(arms.get(("copy", s)), arms.get(("cipher", s)), R) for s in seeds}
+    return {"seeds": per, "verdict": over_seeds([v["verdict"] for v in per.values()])}
+
+
+def dropped(arms: Mapping[tuple[str, int], dict[str, Any] | None], R: dict[str, Any], seeds: tuple[int, ...],
+            new_sides: dict[str, str]) -> dict[str, bool]:
+    """The card's stop rule per pair: its new side learned on no seed (stopped or missing seeds count as not learned)."""
+    return {pair: not any(learned(arms.get((side, s)), R["learned"])["learned"] for s in seeds)
+            for pair, side in new_sides.items()}

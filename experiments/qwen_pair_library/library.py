@@ -1,12 +1,13 @@
-"""Cell P3.5, run 2: the Qwen3-1.7B pair library, one arm and seed per job. Plan:
-reports/plans/2026-11-11_plan_p35-qwen-pair-library.md ("Run 2 design"). Rules: results/predictions_run2.json (the job
-refuses to start without it, or while it names no experiment). Shared pieces and the rules' code: `commute.qwen_library`.
+"""Cell P3.5, run 3 (E165): the Qwen3-1.7B pair library's built arms, one arm and seed per job. Card:
+experiments/qwen_pair_library/card_run3.md. Rules: results/predictions_run3.json (the job refuses to start without it,
+or while it names no experiment). Shared pieces and the rules' code: `commute.qwen_library`. Run 2 (E164) ran this file
+as of commit 094a6896 (stop at the 15x save, 100 steps, peak 2e-6) into results/library/; it stays as it ran.
 
-Arms (`ARMS`); the seed sets the stream order (`qwen_updates.cycle`) and a twin's derangement:
-  copy, cipher, known, invented   built sides (`commute.qwen_pairs`) under the cue; Amendment 1's recipe (peak 2e-6)
-  template, template_shuf         the answer template's 7,740 sequences as E78 trained them (seed 0 is E78's order);
-                                  E61's `a1_1e-6` recipe
-  gold, gold_shuf                 gold solutions of E40's 7,217 training problems; E61's `gold_1e-5` recipe
+Arms (`ARMS`); the seed sets the stream order (`qwen_updates.cycle`) and a twin's derangement. Run 3 files a recipe for
+the built family only, so only built arms start (the twins' arms stay here for run 2's record):
+  copy, cipher, known, invented   built sides (`commute.qwen_pairs`) under the cue; peak 1e-5, warm-up 30 of 300
+  template, template_shuf         the answer template's 7,740 sequences as E78 trained them (seed 0 is E78's order)
+  gold, gold_shuf                 gold solutions of E40's 7,217 training problems
 A `_shuf` twin keeps every prompt and takes its response from another sequence by a seeded derangement
 (`qwen_pairs.shuffled`), cut at 512 tokens; same recipe, order and step rule as its real twin.
 
@@ -14,22 +15,24 @@ Stages, in one job (each prints "STAGE <name> DONE"):
   control  at W0: the prior (mean log-prob per answer token of the trained answers under the training prompt, on the
            trained-item set), KL 0, the held-out and trained-item measures. Then a zero change written, loaded and read
            the same way must read |KL| <= kl0_max and W0's numbers (counts equal, losses within loss_tol); else a stop.
-  train    the recipe through `qwen_train.train`, KL(W0 ‖ W_t) on the arm's own rows (run 1's floors rows) read every
-           step, Amendment 1's early stops. Only the upper state of a crossing is kept: the first read at or past 5x and
-           15x the floor, fp32 δW in results/large/library/<arm>_s<seed>/<labels>.safetensors (sha256 recorded; with
-           --upload also the W&B artifact p35-<arm>-s<seed>-<labels>). Training ends after the 15x save, else at step
-           100, saved as "last". Labels join with "_" when one state is two (e.g. "5x_last").
+  train    the recipe's steps through `qwen_train.train`, KL(W0 ‖ W_t) on the arm's own rows (run 1's floors rows) read
+           every step, the filed early stops; every `C.track_every` steps the held-out and trained measures of the model
+           as it stands (`.track`). Only the upper state of a crossing is kept: the first read at or past 5x and 15x
+           the floor, and always the last step ("last"), fp32 δW in results/large/library_run3/<arm>_s<seed>/
+           <labels>.safetensors (sha256 recorded; with --upload also the W&B artifact p35r3-<arm>-s<seed>-<labels>).
+           Labels join with "_" when one state is two (e.g. "5x_15x", "15x_last"). Training always runs to the end.
   read     each save from its file: step, |δW|, KL on the own rows, held-out and trained-item measures; the rules.
+           With --upload, each state's local file is then deleted once its W&B artifact holds a file of its size.
 Measures. Built: greedy exact match under the cue, held out = the 256 held-out keys (facts: template 3, 200 items),
 trained = 256 trained items (seeded draw). Template: format rate of greedy unprompted answers (E78's read), held out =
 GSM8K test 0-255, trained = the 64 prompts of step 2's batch. Gold: gold loss per token, held out = E40's 256
 held-out problems, trained = step 2's 64 sequences (the twin's own shuffled ones). Step 2 is the first step at a
 nonzero rate.
-Results: results/library/<arm>_s<seed>.json as it goes, every number also in results/library/run.log. A stop writes
-results/library/stopped_<arm>_s<seed>.json and blocks that arm only. Exit 0 done, 1 a stop or a refusal.
+Results: results/library_run3/<arm>_s<seed>.json as it goes, every number also in results/library_run3/run.log. A stop
+writes results/library_run3/stopped_<arm>_s<seed>.json and blocks that arm only. Exit 0 done, 1 a stop or a refusal.
 
   python experiments/qwen_pair_library/library.py --arm copy --seed 0 [--upload]
-  python experiments/qwen_pair_library/library.py --table     (no GPU: results/library/table.json from the arms' files)
+  python experiments/qwen_pair_library/library.py --table     (no GPU: results/library_run3/table.json, with the rivals)
 """
 
 from __future__ import annotations
@@ -58,6 +61,7 @@ from commute.jobs import hard_exit
 from commute.pool_sft import RECIPE, write
 from commute.qwen_anchors import follows_format
 from commute.qwen_eval import MODEL, MODEL_REV, chat_prompt
+from commute.qwen_files import ENTITY, PROJECT
 from commute.qwen_rl import delta_fp32
 from commute.qwen_sft import (
     Seq,
@@ -77,13 +81,16 @@ from commute.qwen_vpd import fp32_matmuls
 
 HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"
-OUT, LARGE = RESULTS / "library", RESULTS / "large" / "library"
-PRED, WORDS, FLOORS, CAPACITY = (RESULTS / f for f in ("predictions_run2.json", "words.json", "floors.json",
+OUT, LARGE = RESULTS / "library_run3", RESULTS / "large" / "library_run3"
+PRED, WORDS, FLOORS, CAPACITY = (RESULTS / f for f in ("predictions_run3.json", "words.json", "floors.json",
                                                          "capacity.json"))
 E61 = HERE.parent / "qwen_recipe" / "results"
-RECIPE_SOURCE = {"built": RESULTS / "predictions_amend1.json", "template": E61 / "train_a1_1e-6.json",
+# each family's recipe source: the filed recipe is this file's .recipe with its length scaled at the same warm-up ratio
+# (run 3's built arms: E61's gold_1e-5, LLaMA-Factory's full-SFT setting, 1e-5 cosine, warm-up ratio 0.1, at 300 steps)
+RECIPE_SOURCE = {"built": E61 / "train_gold_1e-5.json", "template": E61 / "train_a1_1e-6.json",
                  "gold": E61 / "train_gold_1e-5.json"}
-DEV, F32, GIB, PREFIX, SEEDS = "cuda", torch.float32, 2**30, "p35", (0, 1, 2)
+DEV, F32, GIB, PREFIX, SEEDS = "cuda", torch.float32, 2**30, "p35r3", (0, 1, 2)
+NEW_SIDES = {"copy_cipher": "cipher", "facts": "invented"}  # the card's stop rule reads these sides
 
 
 @dataclass(frozen=True)
@@ -100,9 +107,9 @@ ARMS = {**{s: Arm("built", s) for s in ("copy", "cipher", "known", "invented")},
 
 @dataclass(frozen=True)
 class Config:
-    batch: int = 64  # sequences a step (E61, Amendment 1)
-    steps: int = 100  # every recipe's step count, asserted against each
+    batch: int = 64  # sequences a step (E61, Amendment 1); the step count is the recipe's
     sizes: tuple[float, ...] = (5.0, 15.0)  # save sizes, multiples of the arm's floor
+    track_every: int = 25  # held-out and trained measures of the training model every this many steps
     n_trained_items: int = 256  # built: trained items read
     n_trained_rows: int = 64  # template and gold: trained rows read (step 2's batch)
     n_held_template: int = 256  # GSM8K test 0-255
@@ -172,11 +179,14 @@ class Lab:
 
 
 def recipe_of(R: dict[str, Any], family: str) -> Recipe:
-    """The filed recipe of the family, asserted equal to its source's (Amendment 1, or E61's run file)."""
+    """The filed recipe of the family, asserted equal to its source's (E61's run file) but for its length: steps and
+    warm-up may be scaled together, the warm-up ratio kept exactly."""
     f = R["recipes"][family]
     r = Recipe(f["lr"], f["warmup"], f["steps"], f["schedule"], f["clip"], f["micro"], f["forward"])
     src = json.loads(RECIPE_SOURCE[family].read_text())["recipe"]
-    assert all(src[k] == v for k, v in asdict(r).items()) and f["batch"] == C.batch and r.steps == C.steps, (r, src)
+    same = all(src[k] == v for k, v in asdict(r).items() if k not in ("steps", "warmup"))
+    assert same and r.warmup * src["steps"] == src["warmup"] * r.steps and f["batch"] == C.batch, (r, src)
+    assert r.steps % C.track_every == 0, (r.steps, C.track_every)
     return r
 
 
@@ -216,7 +226,7 @@ def built_data(lab: Lab) -> Data:
     pick = sorted(random.Random(f"p35-trained-{lab.arm.task}").sample(range(len(seqs)), C.n_trained_items))
     trained = [task["train"][i] for i in pick]
     rows = P.own_rows(lab.tok, lab.end_id, lab.arm.task, task["train"]).tokens
-    return Data([seqs[i] for i in cycle(len(seqs), lab.seed, C.steps * C.batch)], on_card(rows),
+    return Data([seqs[i] for i in cycle(len(seqs), lab.seed, lab.recipe.steps * C.batch)], on_card(rows),
                 lambda m, _: exact(lab, m, task["held"]), lambda m, _: exact(lab, m, trained),
                 [seqs[i] for i in pick], {"n_train": len(seqs), "n_held": len(task["held"]), "trained_items": pick})
 
@@ -224,7 +234,7 @@ def built_data(lab: Lab) -> Data:
 def template_data(lab: Lab) -> Data:
     seqs, problems, sets = L.template_pool(lab.log)
     seqs = twin(seqs, lab.seed) if lab.arm.shuffled else seqs
-    order = cycle(len(seqs), lab.seed, C.steps * C.batch)
+    order = cycle(len(seqs), lab.seed, lab.recipe.steps * C.batch)
     pick = order[C.batch : C.batch + C.n_trained_rows]
     tests, asked = sets["test"][: C.n_held_template], [problems[i] for i in pick]
     rows = d3.own_rows("a1", lab.tok, sets).tokens
@@ -236,7 +246,7 @@ def template_data(lab: Lab) -> Data:
 def gold_data(lab: Lab) -> Data:
     seqs = d3.gold_train(lab.tok)
     seqs = twin(seqs, lab.seed) if lab.arm.shuffled else seqs
-    order = cycle(len(seqs), lab.seed, C.steps * C.batch)
+    order = cycle(len(seqs), lab.seed, lab.recipe.steps * C.batch)
     pick = order[C.batch : C.batch + C.n_trained_rows]
     held, trained = d3.gold_held(lab.tok), [seqs[i] for i in pick]
     rows = P.gold_rows(lab.tok).tokens
@@ -280,10 +290,6 @@ def control(lab: Lab, model: Any, W0: dict[str, Tensor], data: Data) -> None:
         lab.stop("control", {"zero": zero, "w0": w0})
 
 
-class Reached15x(Exception):
-    """Raised after the read step that first reaches the largest save size, its state written: training ends there."""
-
-
 def keep_state(lab: Lab, t: int, dW: dict[str, Tensor], labels: list[str]) -> None:
     """Write the state, record its sha256, queue its upload."""
     key = "_".join(labels)
@@ -320,22 +326,30 @@ def fine_tune(lab: Lab, model: Any, W0: dict[str, Tensor], data: Data) -> None:
             lab.stop(bad, {"step": rec["step"], "loss": rec["loss"], "dw_norm": rec["dw_norm"], "kl": rec["kl"]["own"],
                            "rise": rise, "floor": out["floor"]})
         t, labels = rec["step"], [names[c["grid"]] for c in rec.get("crossed", [])]
-        labels += ["last"] if t == r.steps and "15x" not in labels else []
+        labels += ["last"] if t == r.steps else []
         if labels:
             keep_state(lab, t, pending.pop(t), labels)
         pending.clear()
-        if "15x" in labels:
-            raise Reached15x
+        if t % C.track_every == 0:
+            track(lab, model, data, t)
 
+    out["track"] = []
     t0 = time.time()
-    try:
-        train(model, W0, lambda t: data.stream[(t - 1) * C.batch : t * C.batch], r, {"own": data.rows},
-              set(range(1, r.steps + 1)), {"own": list(out["grid"].values())}, {r.steps}, save_dw, on_step,
-              lab.dir / "ckpt.pt", r.steps, dW_of=delta_fp32)
-    except Reached15x:
-        lab.log(f"[train] reached 15x at step {out['steps'][-1]['step']}; training ends")
+    train(model, W0, lambda t: data.stream[(t - 1) * C.batch : t * C.batch], r, {"own": data.rows},
+          set(range(1, r.steps + 1)), {"own": list(out["grid"].values())}, {r.steps}, save_dw, on_step,
+          lab.dir / "ckpt.pt", r.steps, dW_of=delta_fp32)
     out["train_seconds"] = time.time() - t0
     lab.save_out()
+
+
+def track(lab: Lab, model: Any, data: Data, t: int) -> None:
+    """The held-out and trained measures of the training model as it stands at step t (eval mode between steps), with
+    that step's KL and |δW|: every scored number in the log as it is read."""
+    rec = {"step": t, "kl": lab.out["steps"][-1]["kl"]["own"], "dw_norm": lab.out["steps"][-1]["dw_norm"],
+           "held": data.held(model, f"t{t}"), "trained": data.trained(model, f"t{t}")}
+    lab.out["track"].append(rec)
+    lab.save_out()
+    lab.log(f"[track] {json.dumps(rec)}")
 
 
 def read_saves(lab: Lab, model: Any, W0: dict[str, Tensor], data: Data) -> None:
@@ -374,7 +388,25 @@ def run(lab: Lab) -> None:
     lab.log(f"[rules] {json.dumps(rules)}")
     if lab.up is not None:
         lab.up.finish()
+        release(lab)
     lab.done("read")
+
+
+def release(lab: Lab) -> None:
+    """After every upload has finished: delete each state's local file whose W&B artifact holds a file of its size (a
+    pod's disk is 50 GB; run 2 filled one). A file without that confirmation is kept and logged."""
+    import wandb
+
+    api = wandb.Api()
+    for s in lab.out["saves"]:
+        path = HERE / s["file"]
+        entry = api.artifact(f"{ENTITY}/{PROJECT}/{s['artifact']}:latest").manifest.entries.get(path.name)
+        s["uploaded"] = entry is not None and entry.size == s["bytes"]
+        if s["uploaded"]:
+            path.unlink()
+        lab.log(f"[release] {s['artifact']}: uploaded {s['uploaded']}, local file "
+                f"{'deleted' if s['uploaded'] else 'kept'}")
+    lab.save_out()
 
 
 def table() -> None:
@@ -383,18 +415,22 @@ def table() -> None:
         got = json.loads(f.read_text()) if f.is_file() else None
         return got | {"stopped": True} if got is not None and (OUT / f"stopped_{a}_s{s}.json").is_file() else got
 
+    R = json.loads(PRED.read_text())
     arms = {(a, s): arm_file(a, s) for a in ARMS for s in SEEDS}
-    out = L.table(arms, json.loads(CAPACITY.read_text())["pairs"], json.loads(PRED.read_text()), SEEDS)
+    pairs = {p: L.PAIRS[p] for p in NEW_SIDES}
+    out = L.table(arms, json.loads(CAPACITY.read_text())["pairs"], R, SEEDS, pairs)
+    out |= {"rivals": L.rivals(arms, R, SEEDS), "dropped": L.dropped(arms, R, SEEDS, NEW_SIDES)}
     write(OUT / "table.json", out)
-    print(json.dumps({p: v.get("seeds_fit") for p, v in out.items()}), flush=True)
+    print(json.dumps({p: out[p]["seeds_fit"] for p in pairs} | {"rivals": out["rivals"]["verdict"],
+                                                                 "dropped": out["dropped"]}), flush=True)
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="P3.5 run 2: one arm and seed of the pair library")
+    ap = argparse.ArgumentParser(description="P3.5 run 3: one built arm and seed of the pair library")
     ap.add_argument("--arm", choices=tuple(ARMS))
     ap.add_argument("--seed", type=int, choices=SEEDS)
     ap.add_argument("--upload", action="store_true", help="also log each saved state to W&B (pods)")
-    ap.add_argument("--table", action="store_true", help="only write results/library/table.json")
+    ap.add_argument("--table", action="store_true", help="only write results/library_run3/table.json")
     a = ap.parse_args()
     if not PRED.is_file() or json.loads(PRED.read_text())["experiment"] == "E???":
         sys.exit(f"{PRED}: missing, or names no experiment yet (claim one with fleet/ecode and write it in)")
@@ -404,11 +440,13 @@ def main() -> None:
         hard_exit(0)
     if a.arm is None or a.seed is None:
         sys.exit("give --arm and --seed")
+    if ARMS[a.arm].family not in json.loads(PRED.read_text())["recipes"]:
+        sys.exit(f"{a.arm}: {PRED.name} files no recipe for its family")
     tag = f"{a.arm}_s{a.seed}"
     if (OUT / f"stopped_{tag}.json").is_file():
-        sys.exit(f"results/library/stopped_{tag}.json exists: read it, then move it aside")
+        sys.exit(f"{OUT.name}/stopped_{tag}.json exists: read it, then move it aside")
     if (OUT / f"{tag}.json").is_file() and json.loads((OUT / f"{tag}.json").read_text()).get("done"):
-        sys.exit(f"results/library/{tag}.json is done")
+        sys.exit(f"{OUT.name}/{tag}.json is done")
     assert (RESULTS / "large").is_dir(), "results/large: link it (fleet/link-data) or, on a pod, make it a real folder"
     run(Lab(a.arm, a.seed, a.upload))
     hard_exit(0)
