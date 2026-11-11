@@ -478,3 +478,6 @@ This is "round 1", the input of nearly every other run.
 
 ## real_vs_twin (E140; run 2026-11-10, job 57752)
 - `dW_{case,repeat}_{real,twin}_s2.pt` (stage 1, ~57 MB each, as E112 and E125 saved theirs): the seed-2 fine-tunes, delta-W in bf16 at each one's scored step; `results/stage1.json` .states.<pair>_<arm>_s2 gives the step and sha256. Written by `experiments/real_vs_twin/run.py`; load with `torch.load(p, weights_only=True)`. Seeds 0 and 1 stay in `case_label/` and `fresh_reuse_pair/`.
+
+## sum_parity_beside (E157, cell P1.14; coded 2026-11-11, not run yet)
+- `results/large/plain_s{0,1}.pt` (~268 MB each, as E154's `amend1_control_s*.pt`): the plain 67M fine-tuned toward 67M + 4 Q b where a + b is odd (E150's arm "plain"), each seed at its learned rung (`results/plain_s{seed}.json`, rung). Written by `experiments/sum_parity_beside/run.py` through E150's `item_h`; load with `VR.load_state`. `results/large` is a symlink into `~/commute-data/results-large/sum_parity_beside`.
