@@ -159,7 +159,7 @@ details.mobile-toc { display: none; }
   header.top h1 { font-size: 1.7rem; }
   .up { display: inline-block; font-size: 13px; }
 }
-@media (prefers-reduced-motion: no-preference) { html { scroll-behavior: smooth; } }
+/* No smooth scrolling: on a page this long a jump of a hundred cards animates for seconds and can be cut short. */
 
 /* Split pages (build.py): the brand and sub-page headers link home without looking like links. */
 .toc .brand a, header.top .eyebrow a { color: inherit; text-decoration: none; }
