@@ -31,6 +31,8 @@ teacher training as the answer, at least for how much harder to try. Its re-runs
 remaining teacher-training runs on Qwen are stopped. The post-cutoff facts pair (E128) is paused: example pairs for
 the larger model are chosen after part 1.
 
+Arguments agreed for the paper, with what each depends on, are kept in `reports/paper_notes.md` (from 2026-11-11).
+
 ## Gates
 
 | Gate | Date | What the user decides, from one page |
