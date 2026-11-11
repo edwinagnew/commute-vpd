@@ -56,6 +56,12 @@ Volume `ydavm7ct4x` (US-MO-1), listed through the S3 API 2026-11-02 (95.9 GB). `
 - `reads_{native_{copy,lookup,lowercase,cipher},forced_*,forbidden_*}_s{S}.pt` (under 0.2 MB each): `{"lo0", "lo1", "off", "off0"}`, each (P, 2) float32, units (lo, gap) at every read of the site: W0, the state, the state with the pair at W0's site means, W0 with it. Written by `run.py` `save_reads`.
 - Absent: optimizer states, the random-pair reads per read (only their net shares, in the stage JSON).
 
+## disagreeing_pairs (E151; code filed 2026-11-11, not yet run)
+`results/large` is a symlink to `~/commute-data/results-large/disagreeing_pairs`; run.py writes through it.
+- `dW_{common_cipher,one_word}_s{0,1,2}.pt` (6 files, about 57 MB each): dW dicts in **bf16** (load with `torch.load(p, weights_only=True)` and `.float()`), `keydep.finetune` at step 30, seeds 0-2; sha256, held-out P(answer) and training time in `results/stage1.json` `.updates["new/<map>_s<seed>"]`.
+- `windows_{common_cipher,one_word}.pt` and their `_trained.pt` / `_new.pt` cuts (about 1 MB each): Amendment 3's `windows_elicit.pt` with the new table (`open_pair/amend6.py` `save_map`); tables, sha256 and priors in `results/stage0.json` `.tables`.
+- Absent: the stage-0 refit of prior_cipher seed 0 (read and compared, not saved).
+
 ## concentration_test
 - `{top1,top10,top100,siblings}.pt`: `{"uv": {matrix: (U2, V2)}, "drop": {matrix: (n_alive,) float64}}`. `uv` is the arm's step-30 state; `drop` is the revert-one drop in held-out log-odds of `o`, given only for matrices whose subcomponents moved. Written by run.py `all`, and re-read by run.py `amend`/`gating` to rebuild the masks.
   Recipe: emoticon, arm A loss, Adam over the masked (U, V) for 30 steps; lr picked by the rule from 1e-5..1e-3 (the selected lr is in results/concentration.json).
