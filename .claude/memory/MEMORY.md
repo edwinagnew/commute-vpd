@@ -77,3 +77,4 @@
 - [Decisions as log cards](feedback-decisions-as-log-cards.md) — proposed work reaches the user as a justified research-log card, never as table rows to paste (user, 2026-11-09)
 - [Publish cards same day](feedback-publish-cards-same-day.md) — finished cards are flushed and published that day, never batched behind a running job (user, 2026-11-10)
 - [One code per question](feedback-one-code-per-question.md) — follow-up runs fold into the question's existing E-code and card; baselines folded into E133 (user, 2026-11-10)
+- [Fable for in-the-weeds details](feedback-fable-for-weeds-details.md) — implementation choices inside a sized cell go to Fable, act and FYI; user only for runs/budget/cells/definitions (user, 2026-11-11)
