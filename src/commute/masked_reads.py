@@ -79,6 +79,22 @@ def top_masks(firing: Mapping[str, Tensor], k: Mapping[int, int]) -> dict[int, T
     return out
 
 
+def top_overlap(f0: Mapping[str, Tensor], f1: Mapping[str, Tensor], k: Mapping[int, int], pos: int) -> dict[int, dict[str, Tensor]]:
+    """Per block l, at position `pos` of each window, the `top_masks` sets of two forwards' firing (f0, f1 as `Net.run`
+    captures them): "jaccard" |both| / |either| of the two sets, and the squared firing change (f1 - f0)^2 summed over the
+    neurons in both sets ("d2_both") and over every neuron ("d2_all"); each (B,) float64 CPU. Identical firing reads
+    jaccard exactly 1 and d2 exactly 0 (E155 neuron_overlap, cell P2.18)."""
+    a = {f"mlp{l}": f0[f"mlp{l}"][:, pos] for l in k}
+    b = {f"mlp{l}": f1[f"mlp{l}"][:, pos] for l in k}
+    m0, m1 = top_masks(a, k), top_masks(b, k)
+    out = {}
+    for l in k:
+        both, either = m0[l] & m1[l], m0[l] | m1[l]
+        d2 = (b[f"mlp{l}"].double() - a[f"mlp{l}"].double()) ** 2
+        out[l] = {"jaccard": (both.sum(-1).double() / either.sum(-1).double()).cpu(), "d2_both": (d2 * both).sum(-1).cpu(), "d2_all": d2.sum(-1).cpu()}
+    return out
+
+
 def mask_edit(masks: Mapping[int, Tensor]) -> ST.Edit:
     """Keep only the masked neurons' firing at every block in `masks`, every position."""
     return {f"mlp{l}": (lambda x, m=m: x * m.to(x.dtype)) for l, m in masks.items()}

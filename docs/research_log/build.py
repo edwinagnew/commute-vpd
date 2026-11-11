@@ -121,6 +121,24 @@ def link_across_pages(html: str, page: str, owner: dict[str, str]) -> str:
     return re.sub(r'href="#([^"]+)"', fix, html)
 
 
+def size_figures(html: str) -> str:
+    """Give every figure its pixel size, so the page keeps its layout while 200 figures load.
+
+    Without it each figure arrives with no height, everything below it moves, and a link to a late card lands short.
+    """
+    source = dict(re.findall(r'"(fig/[^"]+)": "([^"]+)"', (HERE / "README.md").read_text()))
+
+    def fix(m: re.Match) -> str:
+        path = HERE.parents[1] / source.get(m.group(1), "")
+        if not path.is_file() or path.suffix != ".png":
+            return m.group(0)
+        head = path.read_bytes()[:24]
+        w, h = int.from_bytes(head[16:20], "big"), int.from_bytes(head[20:24], "big")
+        return f'{m.group(0)} width="{w}" height="{h}"'
+
+    return re.sub(r'<img src="(fig/[^"]+)"(?![^>]*\bwidth=)', fix, html)
+
+
 def digest(text: str) -> str:
     return hashlib.sha256(text.encode()).hexdigest()[:16]
 
@@ -177,6 +195,7 @@ def build() -> dict[str, str]:
             + '<script src="nav.js"></script>\n<script src="script.js"></script>\n'
             + ("" if page == "index.html" else "</body></html>\n")
         )
+    pages = {name: size_figures(text) for name, text in pages.items()}
     pages["style.css"] = (PARTS / "style.css").read_text()
     pages["script.js"] = (PARTS / "script.js").read_text()
     # What changes on every flush lives in nav.js, so a flush that leaves a page alone need not read or publish it: the

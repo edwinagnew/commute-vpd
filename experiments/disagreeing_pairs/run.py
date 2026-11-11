@@ -12,7 +12,8 @@ job.py. Sides are named as built; no verdict on reuse.
   stage 1  six new fine-tunes (step 30, saved bf16 in results/large/), strength-1 steering on the 18 states; the condition
            per pair; exit 1 before the share if fewer than 2 of pairs A, B, D meet one.
   stage 2  the share on the 18 states (saved ones against E147's), then the score.
-Each stage writes results/stage<n>.json and prints `STAGE n DONE`; every scored number is printed too.
+Each stage writes results/stage<n>.json (Amendment 1, amend1.py: amend1_stage<n>.json) and prints `STAGE n DONE`; every
+scored number is printed too.
 
     sbatch --comment=E151 cluster/disagreeing_pairs.sbatch
 """
@@ -22,7 +23,9 @@ from __future__ import annotations
 import math
 import socket
 import time
+from collections.abc import Callable
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Any
 
 import rules
@@ -54,7 +57,6 @@ from job import (
     steer_seeds,
     task,
     update_file,
-    write,
 )
 
 from commute import anchors as AN
@@ -67,6 +69,7 @@ from commute.jobs import hard_exit, load_experiment, require_filed
 
 A6 = load_experiment("open_pair", "amend6")  # save_map: E58 Amendment 6's windows with a new table, cut by key
 A3_DIR = EXP / "open_pair/results/large/amend3"
+Stage = Callable[[Run, dict[str, Any], float], None]
 
 
 @dataclass(frozen=True)
@@ -214,7 +217,8 @@ def build_tables(run: Run, ch: dict[str, Any], out: dict[str, Any]) -> None:
     check(ch, f"0 table one_word prior under {MAPS.one_word_max:g} (0 = yes)", float(not run.prior["one_word"] < MAPS.one_word_max), 0)
 
 
-def stage0(run: Run, out: dict[str, Any], _t_job: float) -> None:
+def controls(run: Run, out: dict[str, Any]) -> dict[str, Any]:
+    """Stage 0's controls, in run 1's order (Amendment 1 runs them unchanged); the checks record."""
     out |= {"host": socket.gethostname(), "card": torch.cuda.get_device_name(), "checks": {}}
     ch = out["checks"]
     files_control(run, ch)
@@ -222,7 +226,11 @@ def stage0(run: Run, out: dict[str, Any], _t_job: float) -> None:
     saved_priors(run, ch)
     positive_control(run, ch, out)
     refit_control(run, ch, out)
-    build_tables(run, ch, out)
+    return ch
+
+
+def stage0(run: Run, out: dict[str, Any], _t_job: float) -> None:
+    build_tables(run, controls(run, out), out)
 
 
 # ----------------------------------------------------------------------------- stage 1
@@ -245,8 +253,7 @@ def steer_record(run: Run, name: str, out: dict[str, Any]) -> dict[str, Any]:
 
 
 def conditions(run: Run) -> dict[str, Any]:
-    return {p: rules.pair_calls({"prior_gap": prior_gap(run, r, n), "steering": (steer_seeds(run, r), steer_seeds(run, n))}, run.th)
-            for p, (r, n) in PAIRS.items()}  # fmt: skip
+    return {p: rules.pair_calls(run.pair(p), run.th) for p in PAIRS}
 
 
 def stage1(run: Run, out: dict[str, Any], t_job: float) -> None:
@@ -256,7 +263,7 @@ def stage1(run: Run, out: dict[str, Any], t_job: float) -> None:
         for s in SEEDS:
             train_new(run, m, s, out)
             gain = steer_record(run, state(m, s), out)["gain"]
-            write(1, out)
+            run.write(1, out)
             clock.tick(out)
             if not gain >= run.th["gain_floor"]:
                 out["stopped_maps"][m] = f"seed {s} gain {gain:.4g} under the floor {run.th['gain_floor']}"
@@ -265,12 +272,12 @@ def stage1(run: Run, out: dict[str, Any], t_job: float) -> None:
     for m in SAVED:
         for s in SEEDS:
             steer_record(run, state(m, s), out)
-            write(1, out)
+            run.write(1, out)
             clock.tick(out)
     out["conditions"] = conditions(run)
     for p, c in out["conditions"].items():
         log(f"[1 condition {p}] {c['condition']}: prior gap {c['prior']['gap']:.3f} decades (call {c['prior']['call']}), steering "
-            f"{c['steering']['call']} gap {c['steering']['gap']:.4f} spread {c['steering']['spread']:.4f}")  # fmt: skip
+            f"{c['steering']['call']} gap {c['steering']['gap']:.4f} spread {c['steering']['spread']:.4f} premise {c['premise']}")  # fmt: skip
     out["n_meeting"] = k = rules.n_meeting({p: c["condition"] for p, c in out["conditions"].items()})
     log(f"[1 stop rule] {k} of pairs A, B, D meet a condition (need {run.th['min_counted_pairs']})")
     if k < run.th["min_counted_pairs"]:
@@ -289,10 +296,9 @@ def stage2(run: Run, out: dict[str, Any], t_job: float) -> None:
         log(f"[2 share {n}] r {rec['r']:.6f} gain {rec['gain']:.4f} share {rec['share']:.6f}")
         if not n.startswith("new/"):
             check(out["checks"], f"2 share reproduces E147 {n}", rec["r"] - run.F["e147_0"]["states"][n]["r"], run.th["reproduce_tol"])
-        write(2, out)
+        run.write(2, out)
         clock.tick(out)
-    pairs = {p: {"prior_gap": prior_gap(run, r, nw), "steering": (steer_seeds(run, r), steer_seeds(run, nw)),
-                 "share": (share_seeds(run, r), share_seeds(run, nw))} for p, (r, nw) in PAIRS.items()}  # fmt: skip
+    pairs = {p: {**run.pair(p), "share": (share_seeds(run, r), share_seeds(run, nw))} for p, (r, nw) in PAIRS.items()}
     out["inputs"] = pairs
     out["score"] = rules.score(pairs, run.th)
     out["filed"] = rules.filed(out["score"])
@@ -302,24 +308,27 @@ def stage2(run: Run, out: dict[str, Any], t_job: float) -> None:
     say("2 filed predictions (true = as leaned)", out["filed"])
 
 
-def main() -> int:
+def main(first: Stage = stage0, files: str = "stage", filed: tuple[Path, ...] = (PRED,)) -> int:
+    """Stage `first` (run 1: stage0; Amendment 1 passes its own), then stages 1 and 2; results/<files><n>.json; every
+    file in `filed` must be committed unchanged."""
     t_job = time.time()
-    require_filed(PRED)
+    for f in filed:
+        require_filed(f)
     P = load(PRED)
     assert P["experiment"].startswith("E151") and sorted(P["pairs"]) == sorted(PAIRS), (P["experiment"], sorted(P["pairs"]))
     torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False  # as E58 trained and E136/E143 read
-    run = Run(P)
+    run = Run(P, files)
     log(f"[host] {socket.gethostname()} {torch.cuda.get_device_name()}; model loaded at {(time.time() - t_job) / 60:.1f} min")
     outs: list[dict[str, Any]] = [{}, {}, {}]
-    for n, stage in enumerate((stage0, stage1, stage2)):
+    for n, stage in enumerate((first, stage1, stage2)):
         try:
             stage(run, outs[n], t_job)
         except Stop as e:
             outs[n]["stopped"] = str(e)
-            write(n, outs[n])
+            run.write(n, outs[n])
             log(f"STOP: {e}: tell the lead")
             return 1
-        write(n, outs[n])
+        run.write(n, outs[n])
         log(f"STAGE {n} DONE")
     log(f"[done] peak GPU {torch.cuda.max_memory_allocated() / 2**30:.1f} GB; {(time.time() - t_job) / 60:.1f} min")
     return 0
