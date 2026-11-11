@@ -2,13 +2,17 @@
 each arm's best found H per seed against the H cut-off 0.5, as the card's sketch (figures/sketch.png). Also writes
 results/readings.json: per fine-tune its best H and G and its label (`old_tasks.item_label`), per arm its side of 0.5, and
 the outcome by the filed rule (predictions.json, "outcome_rule"). run.py reads `best` and `side` from here.
+E154 (amend1.py): `plot.py amend1` reads results/amend1_*.json and predictions_amend1.json and writes
+results/amend1_readings.json and figures/amend1_h_by_arm.png; each plain-arm reading carries the plain 67M's own read of
+the sum's parity (stage 0), 0.61 in E150, since that original partly holds the variable.
 
-    ~/commute-agents/fleet/cpu-run --mem 2G python experiments/built_control_sum/plot.py      (after the last job)
+    ~/commute-agents/fleet/cpu-run --mem 2G python experiments/built_control_sum/plot.py [amend1]     (after the last job)
 """
 
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -58,39 +62,45 @@ def label(b: dict[str, Any] | None) -> str:
     return item_label(b, CUT_G, CUT_H)
 
 
-def readings(results: Path) -> dict[str, Any]:
+def readings(results: Path, tag: str = "") -> dict[str, Any]:
+    s0 = results / f"{tag}stage0.json"
+    plain_read = json.loads(s0.read_text())["single_reads"]["sum_odd"]["max"] if s0.is_file() else None
     recs: list[dict[str, Any]] = []
     for arm in ARMS:
         for s in SEEDS:
-            path = results / f"{arm}_s{s}.json"
+            path = results / f"{tag}{arm}_s{s}.json"
             rec = json.loads(path.read_text()) if path.is_file() else {}
             b = best(rec)
             recs.append({"arm": arm, "seed": s, "H": b and b["H"], "G": b and b["G"], "label": label(b),
                          "no_reading": rec.get("no_reading", "" if rec else "not run"),
-                         "gap": rec.get("dist", {}).get("gap"), "rung": rec.get("rung")})
+                         "gap": rec.get("dist", {}).get("gap"), "rung": rec.get("rung"),
+                         "original_sum_read": plain_read if arm == "plain" else None})
     sides = {a: side([r["H"] for r in recs if r["arm"] == a and r["H"] is not None]) for a in ARMS}
-    t0 = results / "taught_original.json"
+    t0 = results / f"{tag}taught_original.json"
     dropped = json.loads(t0.read_text()).get("dropped") if t0.is_file() else "not run"
     return {"items": recs, "sides": sides, "taught_dropped": dropped,
             "outcome": outcome(sides["control"], sides["plain"], None if dropped else sides["taught"])}
 
 
-def main(results: Path = HERE / "results", out: Path = HERE / "figures") -> None:
-    cut = json.loads((results / "predictions.json").read_text())["cutoffs"]
+def main(results: Path = HERE / "results", out: Path = HERE / "figures", amend: str = "") -> None:
+    tag = f"{amend}_" if amend else ""
+    cut = json.loads((results / f"predictions{'_' + amend if amend else ''}.json").read_text())["cutoffs"]
     assert (cut["G"], cut["H"]) == (CUT_G, CUT_H), cut
-    read = readings(results)
-    (results / "readings.json").write_text(json.dumps(read, indent=1))
+    read = readings(results, tag)
+    (results / f"{tag}readings.json").write_text(json.dumps(read, indent=1))
     print(json.dumps(read, indent=1))
-    groups = {NAMES[a]: [r["H"] for r in read["items"] if r["arm"] == a and r["H"] is not None] for a in ARMS}
+    plain_read = read["items"][-1]["original_sum_read"]
+    names = {**NAMES, "plain": NAMES["plain"] + (f", original read {plain_read:.2f}" if plain_read is not None else "")}
+    groups = {names[a]: [r["H"] for r in read["items"] if r["arm"] == a and r["H"] is not None] for a in ARMS}
     fig, ax = FG.figure(FG.ONE_COLUMN)
     FG.dots(ax, groups, method="regating", xlabel="best found H over five sites (each seed)")
     FG.reference(ax, CUT_H, f"H cut-off {CUT_H}")
     ax.set_xlim(min([-0.1, *[h for hs in groups.values() for h in hs]]) - 0.05, 1.0)
     ax.set_title(f"Outcome: {read['outcome']}", fontsize=7, loc="left", pad=12, wrap=True)
     fig.suptitle("Does H separate a built skill from a reused one?", fontsize=9)
-    FG.save(fig, out / "h_by_arm.png", n="2 seeds per arm; d on 100,000 read windows (held-out number pairs and far windows)",
+    FG.save(fig, out / f"{tag}h_by_arm.png", n="2 seeds per arm; d on 100,000 read windows (held-out number pairs and far windows)",
             data=read["items"])
 
 
 if __name__ == "__main__":
-    main()
+    main(amend=sys.argv[1] if len(sys.argv) > 1 else "")

@@ -48,6 +48,7 @@ EXPERIMENT = "E150"
 HERE = Path(__file__).resolve().parent
 PRED = HERE / "results" / "predictions.json"
 E148 = HERE.parent / "built_control" / "results"  # its stage1.json (keys) and large/plain_s0.pt, read only
+TAG = ""  # prefix of every file this run writes; E154 (amend1.py) sets "amend1_" so its files sit beside E150's
 log, dump, stop = R.log, R.dump, R.stop
 
 
@@ -92,7 +93,10 @@ class Ctx:
         return self.read[VR.xor2_keyed(self.x, self.read)][: self.cfg.check_n]
 
     def path(self, name: str) -> Path:
-        return self.cfg.results / f"{name}.json"
+        return self.cfg.results / f"{TAG}{name}.json"
+
+    def pt(self, name: str) -> Path:
+        return self.cfg.results / "large" / f"{TAG}{name}.pt"
 
     def load(self, name: str) -> dict[str, Any]:
         return json.loads(self.path(name).read_text()) if self.path(name).is_file() else {}
@@ -230,7 +234,7 @@ def taught_original(c: Ctx, alpha: float, floor: float) -> None:
                                     seed_of("taught_original"), R.clone_net, has_it, log)
     if ft is None:
         return drop(path, out, "the step-10 check missed" if r >= 0 else "the gate missed: the bit's read stayed under linear_bar at 300 and 3000 steps")
-    save(ft, c.cfg.results / "large" / "taught_original.pt")
+    save(ft, c.pt("taught_original"))
     out["rung"] = r
     out["gap"] = VR.mean_tv(VR.label_target(ft, c.bit("plain"), alpha * c.unit), VR.net_target(ft), c.read, c.cfg.read_batch)["mean"]
     log(f"taught target gap {out['gap']:.4f}")
@@ -249,7 +253,7 @@ def fine_tune(c: Ctx, base: Net, F: VR.Target, push: Tensor, item: str, rungs: t
               out: dict[str, Any]) -> Net | None:
     """Train `item` on `rungs` (the ladder for seed 0, seed 0's rung for seed 1) until learned; a step-10 miss stops the job.
     Saved, for seed 0's G search and a resume. None, with `no_reading` set, if not learned."""
-    pt = c.cfg.results / "large" / f"{item}.pt"
+    pt = c.pt(item)
     if "rung" in out and pt.is_file():
         return load_net(c, pt)
     check = c.check()
@@ -282,7 +286,7 @@ def item_h(c: Ctx, arm: str, seed: int, base: Net, F: VR.Target, push: Tensor) -
     if out.get("no_reading"):
         return None
     if out.get("h_done"):
-        return load_net(c, c.cfg.results / "large" / f"{item}.pt")
+        return load_net(c, c.pt(item))
     rungs = c.cfg.rungs if seed == 0 else (c.cfg.rungs[c.load(f"{arm}_s0")["rung"]],)
     log(f"{item}")
     ft = fine_tune(c, base, F, push, item, rungs, path, out)
@@ -368,11 +372,11 @@ def main(job: str, net: Net) -> int:
     if not t0.get("passed"):
         log("job3 refused: the taught original has not been trained (job1 not finished)")
         return 1
-    do_arm(c, "taught", load_net(c, cfg.results / "large" / "taught_original.pt"), alpha * c.unit)
+    do_arm(c, "taught", load_net(c, c.pt("taught_original")), alpha * c.unit)
     return 0
 
 
-if __name__ == "__main__":
+def cli() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("job", choices=("job1", "job2", "job3"))
     job_ = ap.parse_args().job
@@ -387,3 +391,7 @@ if __name__ == "__main__":
     except SystemExit as e:
         code = e.code if isinstance(e.code, int) else 1
     hard_exit(code)
+
+
+if __name__ == "__main__":
+    cli()
