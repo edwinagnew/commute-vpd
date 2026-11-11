@@ -1,0 +1,75 @@
+{
+ "experiment": "E152 (cell P3.3): Qwen instrument check, step 1 - changes whose placement we know (planted on often-on, planted on rarely-on, random), each at three sizes, read with E132's pipeline on the new decomposition p-9707d6ff. One cluster L40 job, $0",
+ "filed": "2026-11-11, before any run; never edited after the run (add a dated report instead)",
+ "plan": "reports/plans/2026-11-11_plan_qwen-instrument-check-step1.md (brief: reports/plans/2026-11-11_plan_qwen-instrument-check.md, Step 1)",
+ "measurement": {
+  "alive_and_on": "Alive: qwen_maps.alive_from_stats on job 56760's W0 statistics (g > 0.01 somewhere on 128 maths or 128 fineweb rows of 512; 500,244; qwen_maps.py:64-66, as E132 run.py:42-43). On (E94's set): qwen_reading.gated, g > 0.01 at >= 1% of positions, counted by Lab.cells (c0) on W0's forward over the 128 maths rows of 256 in this job's W0 control, the rows and rule E94 used (qwen_d3_rows/run.py:146-150); E94 never ran on new, so this set is new here",
+  "sets": "At each of the 28 down_proj matrices (the residual-stream writes; every MLP matrix is reached whole by the split, step 0 Table 1), from W0_maths.safetensors 'active' (share of maths positions of 512 with g > 0.01) restricted to the alive list: often = active > 0.5 ('on at most maths positions', the brief's words, at E45's g threshold 0.01); rarely = as many alive subcomponents at the same matrix with the lowest active, ties by mean g then position (qwen_maps.halves' order). Counted on CPU (gstats only): 648 each, per layer 2,10,13,13,15,18,19,19,19,17,18,16,20,22,27,36,42,29,31,39,25,16,16,12,20,26,36,72; often active 0.508 to 1.0, rarely active exactly 0 (alive through fineweb only). 648 of 142,302 alive down_proj subcomponents (0.455%), of 500,244 alive (0.130%). Set size is not chosen: it is the count the brief's definition gives at each matrix",
+  "change": "Planted: rescale the write vectors of the set, u_c -> (1 + b) u_c, so dW_s = b U_P V_P^T at each down_proj matrix and 0 elsewhere. Source of the direction: the re-weighting hypothesis that motivates the project (GOALS.md; the 'rescaling split' of the Terms), post-training strengthening subcomponents that exist. A rescaled write vector is the change a correct reading must place on exactly those subcomponents. Random: E132's Gaussian, split.random_like(E40 step 10's dW_s, Sigma_s, null_seed(0, s)) at all 196 matrices (E132 run.py:78-80), Sigma-weighted energy per matrix equal to E40's",
+  "sizes": "b set per kind and size by E57's search (qwen_reading.scale_search, b <- b sqrt(target / KL), from b = 1) so that KL(W0 || state), unmasked, nats per position, over the 128 maths rows of 256 matches: rl = 0.06431339845656138 (RL s0, qwen_d1_table/results/R_s0/state.json clean.W0.K, step0.json table3), sft = 1.6351103354567915 (E40 step 10, qwen_d1_table/results/control.json clean.W0, step0.json), mid = sqrt(rl x sft) = 0.3242831 (the lead's choice: E40 step 10 at 1.635 and the first fine-tune at step 100 at 1.718 sit 5% apart, so the brief's two supervised sizes are one). Matched within a factor 1.25 in at most 8 evaluations (E57 used 1.5 and 6; the sizes here are 5.04x apart, so 1.25 keeps neighbours at least 3.2x apart). The KL of the search is Lab.kl_rows batched 8 rows per forward with Gamma parked (128 rows row by row would cost ~160 s per evaluation)",
+  "split": "Lab.split (E57's lab, as E132 run.py:96-105): the least-squares split X = K^+ dW per matrix in fp64 with gram bases at tol 1e-6, stored fp32 (stored_error <= 1e-3 stops), piece energies ||dB_c Sigma^1/2||^2 per alive subcomponent (split.piece_energies, Sigma = W0's input second moment on 128 maths rows of 512). Run once per kind at b = 1 and multiplied by b for each size: X is linear in dW, so this is the split at each size up to one fp32 rounding (6e-8), and the split's two shares are the same at every size by construction",
+  "planted_share": "P_k = sum of the split's piece energies on set k / their sum over all alive subcomponents (qwen_reading.placement with set k's mask). Chance C_k: the random state's piece energies rescaled per matrix to the planted change's Sigma-energy (qwen_d3.null_pe, E94's null), their share on set k. Recovery r_k = (P_k - C_k) / (1 - C_k). Also reported: the set's share of the alive down_proj subcomponents",
+  "on_share": "E94's placement share: qwen_reading.placement(piece energies, on set). Its null: the same rescaled random energies on the on set",
+  "regating": "E57's re-gating share (K00 - K01) / (K00 - K11) over the 128 maths rows of 256, with E45's status rule (qwen_reading.shares: unscored when K00 - K0 <= 0, K11 - K0 > 0.5 (K00 - K0), or (K00 - K11) per position under 0.05), from Lab.cells exactly as E132",
+  "blind_to": "Both split shares are linear in the change and cannot see size; size enters only through the re-gating share, the one reading made under masks. A planted change is the easiest case (on the subcomponents, on few of them, at the fully reachable matrices): a pass says the instrument can work, a fail is the informative result. The planted share is blind to where inside the planted set the energy lands. The on share is blind to anything but the W0 on set (E94's own caveat). The re-gating share reads 1 for the do-nothing state by construction, so a separation of re-gating shares does not by itself show the split saw the placement",
+  "positive_control": "The often kind's split (its first state, size sft) must put at least 0.5 of its energy on the planted set; below that the job stops before any read. Preview at Sigma = I (no model, CPU, the job's sets, experiments/qwen_instrument_check/preview_step1.py, results/step1_preview.jsonl): 0.90 to 0.94 per matrix for often, against chance 0.002 to 0.05 (17 matrices read when filed; recovery 0.89 to 0.95 for often, 0.34 to 0.83 for rarely)",
+  "noise": "The split's shares are deterministic fp64 functions of saved tensors: no sampling noise; their only error is stored_error (<= 1e-3 of ||dW||_Sigma, stops). The re-gating share's noise is E132's seed spread on new, 0.0019557 (a2long s0 against s1, qwen_regating_new/results/summary.json new.seed_spread), with a 2,000-draw row resample per pair (E132's rule)"
+ },
+ "settings": {
+  "targets": {"rl": 0.06431339845656138, "mid": 0.3242830593, "sft": 1.6351103354567915},
+  "match": 1.25,
+  "evals": 8,
+  "set_sizes": {"often": 648, "rarely": 648},
+  "kl_rows": "128 maths rows of 256 (experiments/qwen_sft/results/maths_rows.json, the first 128, cut to 256)"
+ },
+ "rules": {
+  "w0_tol": 1e-9,
+  "positive_min": 0.5,
+  "label_often_min": 0.95,
+  "label_rarely_max": 0.05,
+  "returns_min": 0.5,
+  "smears_max": 0.2,
+  "apart_min": 0.5
+ },
+ "controls_stop_on_miss": {
+  "filed": "this file committed unchanged (commute.jobs.require_filed), and Lab refuses while results/step1/stopped.json exists",
+  "alive_total": "500,244 (Lab.alive; job 56760)",
+  "W0": "W0 as the fine-tuned model on the 128 maths rows: K0, K00, K01 means each within relative 1e-9 of E132's (qwen_regating_new/results/controls.json means_W0, all 0.09320748161650735). Tolerance from the measured cross-job floor: K0 on old's 128 maths rows reads 0.06961319516372436 or ...438 in 198 records from E44 Amendment 2, E57 and later jobs (relative 3e-16); 1e-9 leaves 6 orders of margin for a kernel choice, and a wrong row or mask moves K0 by over 1e-4. The zero split on 16 rows: K10 and K11 within relative 1e-6 of K0 on those rows (E132's id_tol), expected 0.0889344721 per position",
+  "E40_KL": "Lab.kl_rows of E40 step 10 on the first 16 rows within relative 1e-9 of E132's 0.618376722326358 (controls.json kl_e40_16; E132 reproduced E57's value exactly)",
+  "do_nothing": "E40 held through the split path with no column moved: re-gating share 1 within 1e-6 (E132's check)",
+  "labels": "Of the often set, at least 0.95 in this job's on set; of the rarely set, at most 0.05. Expected 1.0 and 0.0: often members are on at over half the positions of 512, rarely members at none",
+  "positive": "positive_min, above",
+  "memory": "Lab stops when the GPU peak after row 0 of a cell pass exceeds 44 GiB (E132 peaked at 42.43)",
+  "stored_error": "Lab stops when the fp32 X misses fp64 by more than 1e-3 of ||dW||_Sigma"
+ },
+ "expected": {
+  "W0": {"K0": 0.09320748161650735, "K00": 0.09320748161650735, "K01": 0.09320748161650735, "planted_share": "NaN (no change: 0/0)", "on_share": "NaN", "regating": "not read (K00 - K0 = 0: unscored)"},
+  "do_nothing": {"regating": 1.0, "split_shares": "none (no split): NaN, so it can pass no split rule"},
+  "positive_control_often_sft": {"planted_share": "0.75 to 0.95 (Sigma = I preview 0.90 to 0.94)", "on_share": "0.85 to 0.98", "regating": "0.98 to 0.9995", "kl": "1.31 to 2.04 (target 1.635, factor 1.25)"},
+  "often": {"rl": {"regating": "scored or unscored (den per position near 0.05: no lean)", "kl": "0.0515 to 0.0804"}, "mid": {"regating": "0.98 to 0.9995", "kl": "0.259 to 0.405"}, "sft": "as the positive control", "planted_share": "the same at every size, 0.75 to 0.95", "on_share": "the same at every size, 0.85 to 0.98", "b": "of order 0.1 to 10 at sft (the set's members carry much of the maths output)"},
+  "rarely": {"planted_share": "the same at every size, 0.1 to 0.8 (Sigma = I preview 0.34 to 0.79 per matrix; Sigma weighting can lower it, since never-on read vectors may carry little input energy and the leak lands on members that carry more)", "on_share": "0.02 to 0.2 (preview 0.03 to 0.09)", "regating": "as often at each size", "b": "larger than often's, possibly over 100: never-on members move the output little per unit; unmatched after 8 evaluations is possible and is recorded"},
+  "random": {"chance_often": "0.002 to 0.06 (preview 0.002 to 0.049 per matrix)", "chance_rarely": "0.0001 to 0.015 (preview 0.0001 to 0.010 per matrix)", "set_share": 0.00455, "on_share_own": "0.3 to 0.7 (E94 on old: 0.57 to 0.58 for its nulls)", "on_null_for_planted": "0.1 to 0.5", "regating": "0.985 to 0.995 at sft and mid (E132's gauss 0.9909 at E40's 16-row KL)"}
+ },
+ "predictions": {
+  "split_call": {
+   "rule": "Rows 1 and 3 of the brief's table. Per planted kind k: r_k = (P_k - C_k) / (1 - C_k); 'returns' if r_k >= 0.5, 'smears' if r_k < 0.2, 'partial' between, 'unreadable' if NaN (empty set, a share 0/0, C_k >= 1). WORKS (row 1) if both kinds return and on_often - on_rarely >= 0.5 (absolute shares); FREE (row 3) if both kinds smear; otherwise NO CALL, reported with each kind's call. The shares are linear in the change: one call holds at all three sizes",
+   "expected": "WORKS: r_often 0.75 to 0.95, r_rarely 0.1 to 0.8, on gap 0.7 to 0.95",
+   "lean": "medium for often returning (the Sigma = I preview); weak for rarely (Sigma weighting is not in the preview), so NO CALL with often 'returns' and rarely 'partial' is the second most likely reading",
+   "bars_source": "Set here, against the preview and chance: 0.5 = half the way from chance to all of the split on the set; 0.2 = a split within a fifth of chance. 0.5 on the on gap: E94 read gaps of under 0.02 between real updates and their nulls on old, and the preview reads 0.85 to 0.9",
+   "edge_cases": "Empty set: recovery NaN (both shares 0 would otherwise read 'smears'), unreadable, and the job also stops before the GPU if any matrix has no often member (none does: the smallest has 2). Chance at 1: NaN. Ties: r = 0.5 returns, r = 0.2 is partial, a gap of exactly 0.5 is apart (rounded to 1e-9). A random-like split reads r = 0, smears. One kind returning and the other smearing: NO CALL (no branch claims it). W0 and do-nothing: no split energy, NaN, cannot pass. tests/test_qwen_instrument_step1.py runs each"
+  },
+  "size_call": {
+   "rule": "Row 2, on the re-gating share only (the split's shares cannot change with size). At each size, the often and rarely states are a pair under E132's rule: separated when |gap| > 0.0019557 (E132's seed spread) and the 95% interval of the gap over 2,000 row resamples excludes 0. A size where both states are matched and scored reads that; where a matched state is unscored it reads 'not separated' (the share cannot see that size); where a state is unmatched or a share not finite it is unreadable. Floor = the smallest size from which the pair separates at that and every larger size. 'all sizes' (floor rl), 'too small below mid' or 'too small below sft', 'none' (not separated at sft), 'no call' (a size unreadable, or separated at a smaller size and not a larger one)",
+   "expected": "none",
+   "lean": "weak: E132's six states sat at 0.991 to 0.9992 and its separations followed real against random, not any placement; two kinds both written into the subcomponents may read alike",
+   "edge_cases": "A tie with the spread is not separated (strict). An interval touching 0 is not separated. Unscored at rl with separation at mid and sft: 'too small below mid'. Separated at rl and sft but not mid: 'no call'. The do-nothing state reads 1 exactly and would separate from any of these: it is not one of the nine, so it enters no pair"
+  },
+  "blind_call": {
+   "rule": "Row 4 over all 36 pairs of the nine states under E132's rule (both scored and matched): BLIND when no readable pair separates and at least one is readable; RESPONDS when any pair separates; NO CALL when none is readable",
+   "expected": "RESPONDS",
+   "lean": "medium: E132 separated 12 of its 14 pairs on new (summary.json), and states 25 times apart in KL may differ by more than 0.002. A RESPONDS reading says the share moves with something, not with placement: the size call says whether it moves with placement",
+   "edge_cases": "All nine unscored: NO CALL, not BLIND. Pairs of one kind across sizes count. Ties with the spread do not separate"
+  },
+  "outcome_table": "Row 1 (instrument works at real sizes): split_call WORKS and size_call 'all sizes'. Row 2 (too small to see): split_call WORKS and size_call 'too small below mid|sft'; the floor is that size. Row 3 (placement is free): split_call FREE. Row 4 (drop the re-gating share from part 3): blind_call BLIND. Any other combination is reported as read, with no row. Expected: split_call WORKS with size_call 'none' and blind_call RESPONDS, i.e. no row: the split recovers a planted placement, and the re-gating share responds to something but not to placement"
+ }
+}
