@@ -31,7 +31,11 @@ def matrix(dW: Tensor) -> dict[str, float]:
 
 def state(dW: Mat) -> dict[str, float | None]:
     """The ||dW_m||^2-weighted erank and top10 over the matrices, and the total ||dW||^2; None where undefined."""
-    per = {m: matrix(dW[m]) for m in sorted(dW)}
+    return aggregate({m: matrix(dW[m]) for m in sorted(dW)})
+
+
+def aggregate(per: dict[str, dict[str, float]]) -> dict[str, float | None]:
+    """`state` from per-matrix `matrix` readings, so a caller can read a large update one matrix at a time (P3.6)."""
     total = sum(v["norm2"] for v in per.values())
     out: dict[str, float | None] = {"norm2": total}
     for k in ("erank", "top10"):

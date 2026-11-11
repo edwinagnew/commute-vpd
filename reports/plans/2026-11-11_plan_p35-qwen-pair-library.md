@@ -63,6 +63,15 @@ E61 recipe (1e-6, the lowest peak that passes). The run-1 rehearsal is the check
 - Rehearsal: held-out exact match under the cue at the 15× save ≥ 0.5 for the copy side (it reuses a skill the model
   has); KL at step 0 is 0.
 
+## As built (E160, commit 7ca790cf)
+- Facts pair: 200 facts a side from `qwen_facts` seed 0 (known: capitals and element symbols; invented), in the
+  "The answer is X." form; templates 0-2 trained, template 3 held out, so n = 200 (bars ≥ 180 and ≤ 10 hits). Not
+  E103's rows: `qwen_facts` has both sides in one form and is the source of the 0.97 against 0.015 figure.
+- Lookup and invented sides cannot be right on held-out keys after training (their value is never shown): in run 2
+  they are read on trained keys or held-out templates only.
+- Keys: lowercase words of 4-8 letters seen at least 3 times in GSM8K train questions, 1-3 tokens; 1,280 drawn with
+  seed 0. Cue "⟦k⟧". The cipher is a derangement of a-z. Context rows: `⟦k⟧ k1: v1; k2: v2; k3: v3; k4: v4? k`.
+
 ## Cost
 Run 1: two cluster jobs, about 30 min (stages 0-1, the decomposition card) and 40 min (stage 2), $0. Run 2: 30
 fine-tunes at ~25 min each on an L40; side by side on RunPod H100s about 30 × $1.5, ~$45, inside the $300 the user
