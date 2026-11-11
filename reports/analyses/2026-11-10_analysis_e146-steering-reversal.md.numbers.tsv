@@ -1,0 +1,65 @@
+0.1	experiments/steering_reversal/results/predictions.json	.thresholds.smallest_gap	this
+0.5	experiments/steering_reversal/results/predictions.json	.settings.strengths[0]	this
+0.055	experiments/steering_reversal/results/stage1.json	[.score.pairs[] | to_entries[] | select(.key|startswith("random_at")) | .value[] | if . < 0 then -. else . end] | max	this
+-0.24	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.filed.gap	this
+0.04	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.strength1.gap	this
+0.03	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.strength1.spread	this
+-0.27	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.filed.gap	this
+-0.03	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.strength1.gap	this
+0.07	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.strength1.spread	this
+-0.12	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_own.filed.gap	this
+-0.05	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_own.strength1.gap	this
+0.11	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_own.filed_pooled.gap	this
+0.19	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_own.strength1_pooled.gap	this
+-0.18	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.filed_pooled.gap	this
+0.06	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.strength1_pooled.gap	this
+-0.15	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.filed_perkey.gap	this
+-0.01	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.strength1_perkey.gap	this
+0.91	experiments/steering_reversal/results/stage1.json	[range(0;5) as $i | .states["e54/elicit_s\($i)"] as $v | [ (1,2,3) as $l | $v.perkey.grid["(\($l), 2)"] / $v.gain ] | max] | add / length	this
+1.02	experiments/steering_reversal/results/stage1.json	[range(0;5) as $i | .states["e54/cipher_s\($i)"] as $v | [ (1,2,3) as $l | $v.perkey.grid["(\($l), 2)"] / $v.gain ] | max] | add / length	this
+1.15	experiments/steering_reversal/results/stage1.json	[range(0;5) as $i | .states["e54/cipher_s\($i)"] as $v | [ (1,2,3) as $l | $v.perkey.grid["(\($l), 8)"] / $v.gain ] | max] | add / length	this
+0.20	experiments/steering_reversal/results/stage1.json	[range(0;8) as $i | .states["c3/rank1_s\($i)"] as $v | [ (1,2,3) as $l | $v.pooled.grid["(\($l), 2)"] / $v.gain ] | max] | add / length	this
+0.36	experiments/steering_reversal/results/stage1.json	[range(0;8) as $i | .states["c3/cipher_s\($i)"] as $v | [ (1,2,3) as $l | $v.pooled.grid["(\($l), 2)"] / $v.gain ] | max] | add / length	this
+0.47	experiments/steering_reversal/results/stage1.json	[range(0;8) as $i | .states["c3/cipher_s\($i)"] as $v | [ (1,2,3) as $l | $v.pooled.grid["(\($l), 4)"] / $v.gain ] | max] | add / length	this
+-0.21	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.layer3.gap	this
+0.22	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.layer3.spread	this
+1.15	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.filed.new | add / length	this
+0.91	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.filed.reuse | add / length	this
+0.21	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.filed.spread	this
+0.71	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.strength1.reuse | add / length	this
+0.67	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.strength1.new | add / length	this
+0.84	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.layer2.reuse | add / length	this
+1.07	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.layer2.new | add / length	this
+-0.23	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.layer2.gap	this
+0.13	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.layer2.spread	this
+0.91	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.layer3.reuse | add / length	this
+1.12	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.layer3.new | add / length	this
+1.12	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.random_subtracted.reuse | add / length	this
+1.13	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.random_subtracted.new | add / length	this
+-0.01	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.random_subtracted.gap	this
+0.20	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.random_subtracted.spread	this
+0.90	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.pair_gain.reuse | add / length	this
+1.17	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.pair_gain.new | add / length	this
+-0.27	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.pair_gain.gap	this
+0.21	experiments/steering_reversal/results/stage1.json	.score.pairs.e54_matched.pair_gain.spread	this
+0.21	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.filed.reuse | add / length	this
+0.47	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.filed.new | add / length	this
+0.08	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.filed.spread	this
+0.14	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.strength1.reuse | add / length	this
+0.17	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.strength1.new | add / length	this
+0.20	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.layer2.reuse | add / length	this
+0.45	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.layer2.new | add / length	this
+-0.25	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.layer2.gap	this
+0.08	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.layer2.spread	this
+0.19	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.layer3.reuse | add / length	this
+0.47	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.layer3.new | add / length	this
+-0.28	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.layer3.gap	this
+0.10	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.layer3.spread	this
+0.21	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.random_subtracted.reuse | add / length	this
+0.44	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.random_subtracted.new | add / length	this
+-0.22	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.random_subtracted.gap	this
+0.12	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.random_subtracted.spread	this
+0.19	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.pair_gain.reuse | add / length	this
+0.50	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.pair_gain.new | add / length	this
+-0.31	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.pair_gain.gap	this
+0.11	experiments/steering_reversal/results/stage1.json	.score.pairs.open_pair_c3.pair_gain.spread	this

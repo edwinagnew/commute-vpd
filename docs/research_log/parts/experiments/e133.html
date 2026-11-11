@@ -1,17 +1,64 @@
 <article class="exp" id="e133">
-<div class="top"><span class="id">E133</span><span class="chip holds">held</span><h3>Does the original model's prior for the answer order the saved fine-tunes the way the re-gating share does?</h3><span class="when">2026-11-09 · provisional, no independent check · cluster <code>debug</code> L40, job 56889, about 1 minute, $0 · <code>experiments/prior_vs_share</code></span></div>
-<p class="one"><strong>The question.</strong> Part 2 asks what the re-gating share measures and whether a cheaper reading does as well. The share is the part of a fine-tune's gain in the answer's log-odds that comes from changing only which of the original subcomponents the decomposition switches on, with their weights held fixed. Earlier small checks found it tracks how likely the original model already found the answer. This run asks how closely, over every saved fine-tune.</p>
-<p class="one"><strong>What we did.</strong> We took 24 saved task maps, each with its share already read, and computed the original model's prior: its geometric-mean probability of the trained answer before any fine-tune. We then compared the two orderings by rank correlation, with a bootstrap interval and a shuffled-share null, under a rule filed first. Two controls ran first and alone: the prior reproduced its saved value exactly on a copy map and on an elicit map. Sides are labelled as each map was built; no verdict on reuse.</p>
-<p class="one"><strong>What we found.</strong> The prior orders the maps much as the share does: rank correlation 0.85, interval 0.67 to 0.93, against a null of 0.35. The interval is too narrow, because one trained table enters at several key counts. Three maps sit off the line: the copy map at the new marker reads 1.09 and one older copy map 0.80, both high, and the lookup at the new marker 0.40, low.</p>
-<p class="one"><strong>What it means.</strong> Most of the share's ordering over these maps is already in the original model's prior. The share differs from the prior mainly on copy maps. Copy maps at a prior of 4e-5 to 6e-5 read 0.77 to 0.80; a cipher matched to their prior reads 0.38. The premise check came back doubtful: part of the link may be built in, since the share's denominator starts from the original model's log-odds of the same answer.</p>
-<figure><img src="fig/e133_share_vs_prior.png" alt="Scatter of the re-gating share, seed mean with seed range, against the original model's log10 prior for the trained answer, one point per saved map, coloured by how the map was built, with a least-squares line"><figcaption><strong>Does the prior order the maps as the share does? Mostly.</strong> Each point is one saved map; the horizontal axis is the original model's probability of the trained answer on a log scale, the vertical the share averaged over seeds. Copy maps sit above the line, the matched-prior cipher and the new-marker lookup below it. The labels on three points are the run's own map names.</figcaption></figure>
+<span id="e135"></span><span id="e136"></span><span id="e140"></span><span id="e141"></span><span id="e143"></span><span id="e145"></span><span id="e146"></span><span id="e147"></span><span id="e149"></span><span id="p211"></span>
+<div class="top"><span class="id">E133</span><span class="chip partial">mixed</span><h3>Does any simpler method tell the two sides of a pair apart the way the re-gating share does?</h3><span class="when">2026-11-09 to 11-10 · provisional, no independent check · six cluster and CPU jobs, $0 · <code>experiments/method_table</code></span></div>
+<p class="one"><strong>The answer.</strong> We built nine pairs of fine-tunes. One side of each pair reuses something the model already does; the other side is new. The re-gating share reads clearly higher on the reuse side on all nine. No single simpler method does that. Steering agrees on four pairs and points the other way on three. Neurons agree on at most three. Update size agrees on none. The original model's prior and steering at its natural size together call the share's direction on all nine, though they say nothing about how far apart the sides are. Pairs are labelled as built; this is not a verdict on reuse.</p>
+<figure><img src="fig/e133_final.png" alt="Grid, one row per pair of fine-tunes of the 67M model (nine built pairs above a line, four real-against-twin pairs below) and one column per method. Red cells: the reuse side reads clearly higher; blue: the new side does; grey: no clear difference. The re-gating share's column is red on all nine built pairs."><figcaption><strong>Only the re-gating share's column is red on every built pair.</strong> Red: reuse side clearly higher. Blue: new side clearly higher. Grey: no clear difference. ×: not measured.</figcaption></figure>
+<div class="prose">
+<p><strong>The pairs.</strong> Each built pair is two sets of fine-tunes of the 67M model, with two to eight seeds a side. The reuse side does something the model half does already, such as copying a token. The new side learns something unfamiliar, such as a cipher. Below the line are four twin pairs: a real fine-tune against one trained on shuffled labels, which can only memorise.</p>
+<p><strong>The methods.</strong> Each simpler method tests one cheap explanation of what the share picks up.</p>
+</div>
+<div class="tblwrap"><table>
+<thead><tr><th>Method</th><th>What it does</th><th>The simpler explanation it tests</th></tr></thead>
+<tbody>
+<tr><td>re-gating share</td><td>Keeps the original weights and only changes which subcomponents are switched on.</td><td>The method under test.</td></tr>
+<tr><td>share on untrained decomposition</td><td>The same reading, on each matrix's plain SVD instead of the trained decomposition.</td><td>The signal comes from training the decomposition.</td></tr>
+<tr><td>neuron readings (three forms)</td><td>The same idea on MLP neurons: keep the original weights, use the fine-tune's neuron firing.</td><td>Neurons would do as well.</td></tr>
+<tr><td>steering</td><td>Adds the fine-tune's average activation change to the original model.</td><td>One direction in activations would do as well.</td></tr>
+<tr><td>prior</td><td>How likely the original model already found the trained answer.</td><td>The share only tracks how familiar the answer was.</td></tr>
+<tr><td>update size</td><td>How big the weight change is.</td><td>The share only tracks how big the update was.</td></tr>
+<tr><td>effective rank</td><td>How many directions the weight change spreads over.</td><td>The share only tracks how spread out the update was.</td></tr>
+</tbody></table></div>
+<div class="prose">
+<p><strong>How each does on the nine built pairs.</strong> "Agrees" means it reads higher on the reuse side, like the share, with the seeds not overlapping.</p>
+</div>
+<div class="tblwrap"><table>
+<thead><tr><th>Method</th><th>Agrees</th><th>Opposite</th><th>No difference</th><th>Not measured</th></tr></thead>
+<tbody>
+<tr><td>re-gating share</td><td>9</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>share on untrained decomposition</td><td>2</td><td>2</td><td>5</td><td>0</td></tr>
+<tr><td>neuron, whole width</td><td>3</td><td>4</td><td>2</td><td>0</td></tr>
+<tr><td>neuron, half</td><td>3</td><td>1</td><td>5</td><td>0</td></tr>
+<tr><td>neuron, top neurons</td><td>0</td><td>0</td><td>9</td><td>0</td></tr>
+<tr><td>steering</td><td>4</td><td>3</td><td>2</td><td>0</td></tr>
+<tr><td>prior</td><td>9, though 8 of them have only one value a side</td><td>0</td><td>0</td><td>0</td></tr>
+<tr><td>update size</td><td>0</td><td>6</td><td>3</td><td>0</td></tr>
+<tr><td>effective rank</td><td>3</td><td>0</td><td>4</td><td>2</td></tr>
+</tbody></table></div>
+<div class="prose">
+<p><strong>What stands out.</strong></p>
+<ul>
+<li><strong>The prior is the closest rival.</strong> It points the same way as the share on all nine pairs, including lowercase against ciphers, where the original model rates lowercase's answer 1.63 decades higher. But on two pairs the prior is nearly equal on both sides (gaps of 0.12 and 0.20 decades), and the share still separates them.</li>
+<li><strong>Size and rank do not explain the share.</strong> On three pairs both sides have about the same update size, and the share still separates all three. Where size does differ, the new side has the bigger update.</li>
+<li><strong>Steering points the wrong way on three pairs because of how its strength is chosen.</strong> Added at the fine-tune's own size (strength 1), the reversal is gone on both scored pairs. The reuse sides stop gaining once the vector is doubled, while the ciphers keep gaining up to four or eight times, and the search picks those larger multiples. Fixing the layer, subtracting a random baseline or changing the denominator did not remove it.</li>
+<li><strong>Neurons and the untrained decomposition read small or mixed gaps.</strong> Without its training, the decomposition loses most of the share's gap. On the four 96-key pairs, refit from E58's recipe and seeds, no activation reading or untrained decomposition follows the share; steering follows it only on copy against the prior-matched cipher.</li>
+<li><strong>Prior plus steering at strength 1 together call the share's direction on all nine built pairs; each alone misses at least one.</strong> Where the prior is matched, steering carries the pair (gaps of 0.31 and 0.44 of the gain); where steering gives no call, the prior carries it (3.2 to 3.7 decades). With steering's searched strength, three pairs have the two pointing opposite ways. This reads direction only, not gap size, on nine pairs.</li>
+</ul>
+<p><strong>The twin pairs are less clear.</strong> The share separates half-known from its shuffle, real side higher, and reads the class map's twin slightly higher (by 0.04). It does not separate the two label pairs. There, steering, size and rank read the twin higher, which may reflect how the twins were trained (one trained ten times longer) more than what they learned.</p>
+</div>
 <dl class="fields">
-<dt>Run</dt><dd>One debug job on the L40 read the prior of 24 maps from saved windows and scored them against the saved shares; no fine-tuned state was loaded and no new share read, $0.</dd>
-<dt>Found</dt><dd><ul>
-<li>The prior and the share agree in rank at 0.85, as expected, so the filed reading is that they agree.</li>
-<li>The share sits above the prior's line on copy maps and below it on the new-marker lookup.</li>
-<li>Points are not independent, so the interval of 0.67 to 0.93 overstates the precision.</li></ul></dd>
-<dt>Bears on</dt><dd>What the share measures, in part 2's comparison of the share against simple baselines (section {{n:methodtable}}); no reuse verdict.</dd>
-<dt>Moved on</dt><dd>Owned by <code>compare-lead</code>; the cell's one run is spent. Not read: maps outside the named files, three older maps whose windows were not saved, and any test of why copy maps sit off the line. No analysis report; plan <code>reports/plans/2026-11-09_plan_e133-prior-vs-share.md</code>, results <code>experiments/prior_vs_share/results/stage2.json</code>. Names in the reports: cell P2.3; the new-marker maps are E62's copy and lookup.</dd>
+<dt>Runs</dt><dd>One experiment, run in six jobs on the cluster's <code>debug</code> L40s and the CPU worker, all $0; the figure reads their saved results with <code>experiments/method_table/plot_final.py</code>, and <code>final.json</code> names each cell's source file and field. The jobs were first logged under their own codes, now folded into this card:
+<ul>
+<li>the prior across 24 saved maps (was E133, <code>experiments/prior_vs_share</code>);</li>
+<li>steering on copy against lookup (was E135, <code>experiments/steering_copy_lookup</code>);</li>
+<li>the untrained decomposition (was E136, <code>experiments/share_untrained</code>);</li>
+<li>real fine-tunes against shuffled-label twins (was E140, <code>experiments/real_vs_twin</code>);</li>
+<li>the effective rank of each update (was E141, <code>experiments/update_svd</code>);</li>
+<li>steering and neurons on the remaining built pairs (was E143, <code>experiments/holes_fill</code>);</li>
+<li>the prior on lowercase against ciphers (was E145, <code>experiments/prior_lowercase</code>);</li>
+<li>why steering reverses (was E146, <code>experiments/steering_reversal</code>);</li>
+<li>the 96-key pairs refit, with neurons, untrained decomposition and steering (was E147, <code>experiments/refit_96key</code>);</li>
+<li>the prior and steering together (was E149, <code>experiments/prior_steering</code>).</li></ul></dd>
+<dt>Bears on</dt><dd>Part 2's comparison of the share with simple baselines (section {{n:methodtable}}, cells P2.3 to P2.5 and P2.8 to P2.11); no verdict of reused or new, since the definition is under revision.</dd>
+<dt>Moved on</dt><dd>Not run: any verdict; a combined score over the columns; gap sizes of the share against the prior and steering; effective rank on the refit 96-key updates; any Qwen pair. What the comparison should do next is a pending decision (section {{n:decisions}}). Reports <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-10_analysis_e149-prior-steering.md"><code>2026-11-10_analysis_e149-prior-steering.md</code></a>, <code>2026-11-10_analysis_e145-prior-lowercase.md</code>, <code>2026-11-10_analysis_e146-steering-reversal.md</code>, <code>2026-11-10_analysis_e147-refit-96key.md</code>. Report <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-10_analysis_p2-11-method-comparison.md"><code>reports/analyses/2026-11-10_analysis_p2-11-method-comparison.md</code></a>. Each job keeps its own report: <code>reports/plans/2026-11-09_plan_e133-prior-vs-share.md</code> (the prior), <code>reports/analyses/2026-11-09_analysis_e135-steering-copy-lookup.md</code>, <code>2026-11-09_analysis_e136-share-untrained.md</code>, <code>2026-11-10_analysis_e140-real-vs-twin.md</code>, <code>2026-11-10_analysis_e141-update-svd.md</code> and <code>2026-11-10_analysis_e143-holes-fill.md</code>.</dd>
 </dl>
 </article>

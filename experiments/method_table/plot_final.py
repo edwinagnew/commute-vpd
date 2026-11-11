@@ -3,7 +3,7 @@
 Reads saved results JSON only (no model) and writes results/final.json and figures/final.png (+ .pdf, .csv). Labels are as
 each pair was built; no verdict of reused or new. Readers run oldest first, and a newer run's reading of a cell replaces
 the older one, whose source is kept in `replaces`. A cell's `call` is the run's own filed per-pair call where one exists
-(E140, E141, E143), else whether the two sides' seed ranges overlap; one value a side gets no call. No combined score.
+(E140, E141, E143, E147), else whether the two sides' seed ranges overlap; one value a side gets no call. No combined score.
 
     ~/commute-agents/fleet/cpu-run experiments/method_table/plot_final.py
 """
@@ -14,16 +14,18 @@ import statistics
 from pathlib import Path
 from typing import Any
 
-from commute.figures import figure, gap_heatmap, save
+from commute.figures import figure, save
 
 ROOT = Path(__file__).resolve().parents[2]
 SC, U, INV = "experiments/method_table/results/scorecard.json", "experiments/share_untrained/results/stage1.json", "experiments/share_untrained/results/inventory.json"
 HOLES, STEER, PRIOR, SVD = "experiments/holes_fill/results/stage1.json", "experiments/steering_copy_lookup/results/stage1.json", "experiments/prior_vs_share/results/stage2.json", "experiments/update_svd/results/results.json"
+E145 = "experiments/prior_lowercase/results/stage1.json"
+E147, E147_INV = "experiments/refit_96key/results/stage1.json", "experiments/refit_96key/results/inventory.json"
 TWIN2, TWIN3 = "experiments/real_vs_twin/results/stage2.json", "experiments/real_vs_twin/results/stage3.json"
 BUILT = ["e62_copy_lookup", "e46_copy_random", "e53_lowercase_cipher", "e54_matched", "e54_own", "open_pair_c3", "open_pair_c3_copy", "e58_rank1_96", "e58_copy_prior_cipher"]
 TWINS = ["e58_elicit_shuffle", "e58_class_twin", "e123_case_label", "e125_repeat_label"]
-COLS = {"share": "re-gating\nshare", "untrained": "share on\nuntrained\nSVD", "neuron": "neuron,\nwhole\nwidth", "neuron_half": "neuron,\nhalf", "neuron_top": "neuron,\ntop sets",
-        "steering": "steering,\nbest form", "prior": "prior\n(log10)", "size": "update\nsize\n(log10)", "erank": "effective\nrank\n(log10)"}  # fmt: skip
+COLS = {"share": "re-gating\nshare", "untrained": "share on\nuntrained\nSVD", "neuron": "neuron,\nwhole\nwidth", "neuron_half": "neuron,\nhalf", "neuron_top": "neuron,\ntop\nneurons",
+        "steering": "steering", "prior": "prior\n(log10)", "size": "update\nsize\n(log10)", "erank": "effective\nrank\n(log10)"}  # fmt: skip
 RATIO = {"size", "erank"}  # log10 of the ratio of side means; the prior is saved as log10 P, so its gap is a difference
 SCORECARD = {"r": "share", "r_n": "neuron", "r_half": "neuron_half", "S": "steering", "size": "size"}
 E136_ID = {"e123_case_label": "case_label", "e125_repeat_label": "fresh_reuse_pair", "e58_class_twin": "class_twin_definition_verify"}
@@ -35,12 +37,7 @@ E133_MAPS = {"e62_copy_lookup": (["e62_copy"], ["e62_lookup"]), "e46_copy_random
              "e58_class_twin": (["e58_96_class_map"], ["e58_96_class_shuffled"]), "e123_case_label": (["case_label_real"], ["case_label_twin"]),
              "e125_repeat_label": (["fresh_reuse_pair_real"], ["fresh_reuse_pair_twin"])}  # fmt: skip
 FOOTER = (
-    "67M model. Reuse side = the side built to reuse, or the real fine-tune; new side = the side built to be new, or the shuffled-label twin. Labels as built, no verdict. "
-    "Cell = reuse side minus new side, as a difference of side means (shares, log10 prior) or log10 of their ratio (size, rank); n = seeds on the side with fewer; x = no saved reading. Colour is capped at ±1.\n"
-    "re-gating share = part of the fine-tune's gain that appears when only which original subcomponents are switched on changes. share on untrained SVD = the same on each matrix's singular value decomposition, gated by a fixed rule. "
-    "neuron, whole width = the original MLP weights run on the fine-tune's neuron firing; half = only the MLP input changed; top sets = only each block's top neurons kept. "
-    "steering = part of the gain from adding the fine-tune's mean activation shift at the read position (pooled, or one vector per key or word; the wider gap is shown). "
-    "prior = the original model's probability of the trained answer. update size = norm of the weight change. effective rank = how many directions the weight change spreads over."
+    "Each cell: reuse side minus new side (shares and log10 prior: difference of means; size and rank: log10 of the ratio). Seeds per side: 1 to 8. Clearly = seed ranges do not overlap, or the run's filed call."
 )
 Side = tuple[list[float], list[float]]  # (side built to reuse, side built to be new)
 Cells = dict[tuple[str, str], dict[str, Any]]
@@ -72,6 +69,13 @@ def e133_prior(out: Cells) -> None:
     pts = {q["name"]: q["log10_prior"] for q in load(PRIOR)["points"]}
     for pair, (a, b) in E133_MAPS.items():
         put(out, pair, "prior", ([pts[n] for n in a], [pts[n] for n in b]), f"{PRIOR} .points[] named {a + b}, .log10_prior", form="one value per map")
+
+
+def e145_prior(out: Cells) -> None:
+    """E133's prior on E53's windows (rebuilt), one value per task: the lowercase-against-ciphers cell E133 left empty."""
+    t = load(E145)["tasks"]
+    put(out, "e53_lowercase_cipher", "prior", ([t["lowercase"]["log10_prior"]], [t["cipher"]["log10_prior"], t["broad_cipher"]["log10_prior"]]),
+        f"{E145} .tasks.<task>.log10_prior", form="one value per task")
 
 
 def e135_steering(out: Cells) -> None:
@@ -122,7 +126,30 @@ def e143_holes(out: Cells) -> None:
             put(out, pair, col, sides[k], f"{HOLES} .states[<state>].{fam}.{k}.share", form=k, filed=filed["call"])
 
 
-READERS = (scorecard, e133_prior, e135_steering, e136_share, e141_rank, e140_twins, e143_holes)  # oldest first
+def e147_refit(out: Cells) -> None:
+    """E147 refit E58's four 96-key pairs (seeds 0-2, step 30, updates kept) and read every activation reader on them. Its
+    share replaces E58's saved share and E136's two regenerated class seeds (it reproduced E58's within each map's seed range,
+    largest difference 6e-4), so each row reads one set of updates; its fair-form steering replaces the older one-vector form."""
+    r, inv = load(E147), load(E147_INV)
+    st, fam, calls = r["states"], r["score"]["families"], r["score"]["calls"]  # E147's filed calls (E143's rule) for every cell
+    for p in inv["pairs"]:
+        names = ([f"e58/{p['reuse']}_s{s}" for s in inv["seeds"]], [f"e58/{p['new']}_s{s}" for s in inv["seeds"]])
+        side = lambda path, names=names: ([float(dig(st[n], path)) for n in names[0]], [float(dig(st[n], path)) for n in names[1]])
+        for col, grp, key in (("share", "e136", "trained"), ("untrained", "e136", "svd"), ("neuron", "neuron_r", "r_n"), ("neuron_half", "neuron_r", "r_half")):
+            put(out, p["id"], col, side([grp, key]), f"{E147} .states[<state>].{grp}.{key}", form="refit seeds 0-2", filed=calls[col][p["id"]]["call"])
+        for col, f, kinds in (("neuron_top", "neuron", ("k64", "kmatched")), ("steering", "steering", ("pooled", "perkey"))):
+            sides = {k: side(["holes_fill", f, k, "share"]) for k in kinds}
+            k = wider(sides)
+            put(out, p["id"], col, sides[k], f"{E147} .states[<state>].holes_fill.{f}.{k}.share", form=f"{k}, refit seeds 0-2", filed=fam[col][p["id"]]["call"])
+
+
+def dig(x: Any, path: list[str]) -> Any:
+    for k in path:
+        x = x[k]
+    return x
+
+
+READERS = (scorecard, e133_prior, e145_prior, e135_steering, e136_share, e141_rank, e140_twins, e143_holes, e147_refit)  # oldest first
 
 
 def score(col: str, c: dict[str, Any]) -> None:
@@ -167,16 +194,50 @@ def main() -> None:
     records = [{"pair": p, "pair_name": names[p], "group": "built" if p in BUILT else "twin", "method": col, **cells[(p, col)]} for p in rows for col in COLS if (p, col) in cells]
     (ROOT / "experiments/method_table/results/final.json").write_text(json.dumps({"cells": records, "tally": tally}, indent=1) + "\n")
     values = [[round(cells[(p, c)]["gap"], 2) + 0.0 if (p, c) in cells else None for c in COLS] for p in rows]
-    counts = [[min(cells[(p, c)]["n_reuse"], cells[(p, c)]["n_new"]) if (p, c) in cells else None for c in COLS] for p in rows]
-    fig, ax = figure((11.0, 7.6))
-    labels = [("built: " if p in BUILT else "twin: ") + names[p] for p in rows]
-    gap_heatmap(ax, values, labels, list(COLS.values()), label="reuse side minus new side (colour capped at ±1)", vmax=1.0, counts=counts)
-    ax.axhline(len(BUILT) - 0.5, color="black", linewidth=1.2)
-    ax.xaxis.tick_top()
-    ax.set_title("The re-gating share sets all nine built pairs apart the same way; steering, neurons, size and rank each miss or reverse\n"
-                 "some, and the prior, one value a side, points the same way on all eight it was read on", fontsize=10)  # fmt: skip
+    kinds = [[kind(cells.get((p, c))) for c in COLS] for p in rows]
+    fig, ax = figure((9.0, 6.4))
+    verdict_grid(ax, values, kinds, [names[p] for p in rows], list(COLS.values()))
+    ax.axhline(len(BUILT) - 0.5, color="black", linewidth=1.5)
+    for y, text in ((len(BUILT) / 2 - 0.5, "built pairs"), (len(BUILT) + len(TWINS) / 2 - 0.5, "real vs shuffled twin")):
+        ax.text(len(COLS) - 0.35, y, text, rotation=270, ha="left", va="center", fontsize=9, style="italic", clip_on=False)
+    ax.set_title("Only the re-gating share separates all nine built pairs, reuse side higher", fontsize=11, pad=8)
     keep = ("pair_name", "method", "form", "gap", "n_reuse", "n_new", "call", "call_rule", "against_share", "source", "replaces")
     save(fig, ROOT / "experiments/method_table/figures/final.png", n=FOOTER, data=[{k: r[k] for k in keep} for r in records])
+
+
+KIND_COLOUR = {"up": "#D6604D", "down": "#4393C3", "up1": "#F4C7B8", "down1": "#C6DBEF", "none": "#E8E8E8", "missing": "#FFFFFF"}
+KIND_LABEL = {"up": "reuse side clearly higher", "down": "new side clearly higher", "up1": "reuse side higher, one value a side",
+              "down1": "new side higher, one value a side", "none": "no clear difference"}  # fmt: skip
+
+
+def kind(c: dict[str, Any] | None) -> str:
+    if c is None:
+        return "missing"
+    if c["call"] == "no call":
+        return "none"
+    return ("up" if c["gap"] > 0 else "down") + ("1" if c["call"] == "one value a side" else "")
+
+
+def verdict_grid(ax: Any, values: list[list[float | None]], kinds: list[list[str]], rows: list[str], cols: list[str]) -> None:
+    """Each cell coloured by its call and direction, with the gap printed; x for not measured."""
+    from matplotlib.colors import to_rgb
+    from matplotlib.patches import Patch
+
+    ax.imshow([[to_rgb(KIND_COLOUR[k]) for k in row] for row in kinds], aspect="auto")
+    for i, row in enumerate(values):
+        for j, v in enumerate(row):
+            text = "×" if v is None else f"{v:.2f}".replace("-0.00", "0.00")
+            ax.text(j, i, text, ha="center", va="center", color="white" if kinds[i][j] in ("up", "down") else "#333333", fontsize=8.5)
+    ax.set_xticks(range(len(cols)), cols)
+    ax.set_yticks(range(len(rows)), rows)
+    ax.xaxis.tick_top()
+    ax.set_xticks([x + 0.5 for x in range(len(cols) - 1)], minor=True)
+    ax.set_yticks([y + 0.5 for y in range(len(rows) - 1)], minor=True)
+    ax.grid(which="minor", color="white", linewidth=2)
+    ax.spines[:].set_visible(False)
+    ax.tick_params(which="both", length=0)
+    ax.legend(handles=[Patch(facecolor=KIND_COLOUR[k], edgecolor="#999999", label=t) for k, t in KIND_LABEL.items()],
+              loc="upper center", bbox_to_anchor=(0.5, -0.02), ncol=3, frameon=False, fontsize=8)  # fmt: skip
 
 
 if __name__ == "__main__":
