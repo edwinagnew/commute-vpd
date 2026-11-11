@@ -105,14 +105,14 @@ def main(results: Path = HERE / "results", out: Path = HERE / "figures") -> None
         k = read["kinds"][kind]
         groups = {label: [h for h in k["raw"][r] if h is not None] for r, label in ROWS.items()}
         hs_all += [h for hs in groups.values() for h in hs]
-        FG.dots(ax, groups, method="regating", xlabel="best found H (dots: seeds)")
+        FG.dots(ax, groups, method="regating", xlabel="best found rewiring share (dots: seeds)")
         FG.reference(ax, CUT_H, f"cut-off {CUT_H}")
         ax.set_title(f"{name}\nreading: {k['reading']}", fontsize=7, loc="left", pad=12, wrap=True)
         for r, hs in k["raw"].items():
             data += [{"kind": kind, "row": r, "seed": i if len(hs) > 1 else "", "H": h, "rescaled": k["rescaled"][r][i]} for i, h in enumerate(hs)]
     for ax in axes:
         ax.set_xlim(min([-0.1, *hs_all]) - 0.05, 1.05)
-    fig.suptitle("Does H read the sum-parity fine-tune below the last-number-odd control?", fontsize=9)
+    fig.suptitle("Does the rewiring share read the sum-parity fine-tune below the last-number-odd control?", fontsize=9)
     FG.save(fig, out / "sum_parity_beside.png", n="2 seeds per fine-tune (control: E154's saved fine-tunes, not re-read); one "
             "planted target each for ceiling and floor; d on 100,000 read windows (held-out number pairs and far windows)", data=data)
 
