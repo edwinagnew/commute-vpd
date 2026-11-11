@@ -121,8 +121,9 @@ least once a day:
    A flush that touches a card brings it to this format (user, 2026-10-26: the Found lists had become unreadable;
    2026-10-29: the openings were too thin and the plots too hard to read). Figures: copy the PNG into the `files`
    map below under `fig/eN_<name>.png`.
-2. **Every claim, with its status** (`claims.html`): add, re-chip or re-word rows. Statuses: holds,
-   partial/qualified, refuted, uninformative, open.
+2. **Claims at a glance** (`claims.html`): add, re-chip or re-word rows. One line a row (user, 2026-11-11: the old
+   60-row table was unreadable): a chip of one word (holds, qualified, refuted, no power, open), the claim in at
+   most 25 words with at most one number, then the card links. Evidence and caveats live in the cards, not here.
 3. **Sub-questions** (`questions.html`): the status line and chip of every Q the experiment bears on; the E-code
    links. **Rewrite the status, never append to it** (user, 2026-10-26, repeated): answer first, three to five
    plain sentences, at most a couple of numbers, E-codes in brackets; the details live in the cards. The same holds for

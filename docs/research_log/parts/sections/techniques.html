@@ -20,9 +20,17 @@
 
 <h3>Reading reuse without a decomposition</h3>
 <div class="prose">
-<p>The candidate definition (overview, glossary) is measured by a blind search that is not told the answer. Let M be the original model and F its fine-tune, and let a <em>variable</em> φ be a linear read-out of M's activations at one place, of dimension at most 4 in every test so far. Let gap be the mean distance between M's and F's next-token distributions over a fixed input set, and write M[φ←v] for M with φ overwritten by v. Then</p>
-<p class="formula">G = 1 − min<sub>φ, s</sub> mean d(M[φ←s(v<sub>M</sub>)], F) / gap</p>
-<p>is the <strong>re-weighting share</strong>: how much of the fine-tune's change in outputs one small variable of M explains when it is set by an affine map s of its own value (turned on, up, or shifted). The <strong>rewiring share</strong> H is the same with s applied to everything M computed at that place, and any size of φ. Both run from 0 to 1, G ≤ H, and 1 − H is the built share. One number looks inside the model: the <strong>reversion</strong>, the share of the gap closed by giving F the original's value of the found φ.</p>
+<p>The working definition (overview, glossary) is measured by a blind search that is not told the answer. The notation:</p>
+<ul>
+<li>M is the original model and F its fine-tune; x is an input drawn from a fixed set D.</li>
+<li>d(A, B)(x) is the distance between models A's and B's next-token distributions at x.</li>
+<li>φ is a <em>variable</em>: a linear read-out of M's activations at one place, of dimension at most 4 in every test so far. Its value on x is v<sub>M</sub>(x).</li>
+<li>M[φ ← v] is M run with φ overwritten by the value v.</li>
+<li>s is an affine map, so s(v<sub>M</sub>) is M's own value of φ turned on, up, or shifted.</li>
+</ul>
+<p>The <strong>re-weighting share</strong> is the largest fraction of the distance between M and F that setting one such variable removes:</p>
+<div class="formula eq"><span>G&ensp;=&ensp;1&ensp;−&ensp;min<sub>φ, s</sub></span><span class="frac"><span>𝔼<sub>x</sub> d(M[φ ← s(v<sub>M</sub>(x))], F)</span><span>𝔼<sub>x</sub> d(M, F)</span></span></div>
+<p>G near 1 means one small variable of M, re-set from its own value, explains almost all of what the fine-tune changed. The <strong>rewiring share</strong> H is the same with s reading everything M computed at that place, and φ of any size. Both run from 0 to 1, G ≤ H, and 1 − H is the built share. One number looks inside the model: the <strong>reversion</strong>, the share of the distance closed by giving F the original's value of the found φ.</p>
 <p><strong>Limits.</strong> A search finds only lower bounds, so a low H says "no map found", not "built". Cut-offs filed from the hand-made changes, rounded by you to 0.8 for G and 0.5 for H, do not label real fine-tunes by construction (E142), so G is reported within matched pairs.</p>
 </div>
 
