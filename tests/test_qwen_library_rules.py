@@ -80,3 +80,65 @@ def test_table_shape() -> None:
     cap = {"copy_cipher": {"verdict": "fit"}, "facts": {"verdict": "fit"}}
     out = L.table({}, cap, R, (0, 1, 2))
     assert set(out) == {*L.PAIRS, "copy_held"} and all(out[p]["seeds_fit"] == [] for p in L.PAIRS)
+
+
+# ----------------------------------------------------------------------------- run 3 (predictions_run3.json)
+
+R3 = json.loads((PRED.parent / "predictions_run3.json").read_text())
+
+
+def built(saves: list[list[str]], trained: int, held: int, n: int = 256, **extra: Any) -> dict[str, Any]:
+    return arm("built", saves, measure(trained, 256), measure(held, n), **extra)
+
+
+def test_run3_reads_last_even_with_15x() -> None:
+    a = arm("built", [["5x"], ["15x"], ["last"]], measure(256, 256))
+    a["states"]["15x"] = {"trained": measure(0, 256), "held": measure(0, 256)}
+    got = L.learned(a, R3["learned"])
+    assert got["state"] == "last" and got["reached_15x"] and got["learned"]
+    assert not L.learned(a, R["learned"])["learned"]  # run 2's file still reads 15x
+    assert L.copy_held(a, R3["copy_held"])["state"] == "last"
+    assert L.read_state(arm("built", [["5x"], ["15x", "last"]], measure(0, 256)), "last") == ("15x_last", True)
+
+
+def test_rival_bars_and_ties() -> None:
+    copy = built([["5x"], ["15x"], ["last"]], 256, 256)
+    for cipher_held, verdict in ((179, "rival_a"), (180, "rival_b"), (256, "rival_b"),
+                                 (0, "rival_a")):
+        got = L.rival(copy, built([["5x"], ["15x"], ["last"]], 256, cipher_held), R3)
+        assert got["verdict"] == verdict, (cipher_held, got)
+    low_copy = built([["last"]], 256, 100)
+    assert L.rival(low_copy, built([["last"]], 256, 256), R3)["verdict"] == "neither"
+    # a tie at exactly the gap is rival_b: n = 10, d = 3
+    assert L.rival(built([["last"]], 256, 10, n=10), built([["last"]], 256, 7, n=10), R3)["verdict"] == "rival_b"
+    assert L.rival(built([["last"]], 256, 10, n=10), built([["last"]], 256, 6, n=10), R3)["verdict"] == "rival_a"
+
+
+def test_rival_undefined_cases() -> None:
+    copy, cipher = built([["last"]], 256, 256), built([["last"]], 256, 0)
+    assert L.rival(copy, built([["last"]], 230, 0), R3)["verdict"] == "undefined"  # cipher one hit under the bar
+    assert L.rival(copy, built([["last"]], 231, 0), R3)["verdict"] == "rival_a"  # a tie at the bar is learned
+    assert L.rival(copy, None, R3)["verdict"] == "undefined"
+    assert L.rival(copy, built([["5x"]], 256, 0, stopped="jump"), R3)["verdict"] == "undefined"
+    assert L.rival(built([["last"]], 0, 0), cipher, R3)["why"].startswith("copy")
+    w0 = built([["last"]], 0, 0)  # do-nothing on both sides: gap 0, yet never rival_b
+    assert L.rival(w0, w0, R3)["verdict"] == "undefined"
+
+
+def test_over_seeds_every_count() -> None:
+    a, b, u, x = "rival_a", "rival_b", "undefined", "neither"
+    cases = {(a, a, a): "rival_a (3/3)", (b, b, b): "rival_b (3/3)", (a, a, u): "rival_a (2/3)",
+             (a, x, a): "rival_a (2/3)", (b, u, b): "rival_b (2/3)", (a, a, b): "split", (a, b, b): "split",
+             (a, b, u): "split", (a, u, u): "no call", (b, x, u): "no call", (u, u, u): "no call", (x, x, x): "no call"}
+    for v, want in cases.items():
+        assert L.over_seeds(list(v)) == want, (v, want)
+
+
+def test_dropped_and_matched_run3() -> None:
+    good, never = built([["5x"], ["15x"], ["last"]], 256, 0), built([["5x"], ["last"]], 100, 0)
+    arms = {("cipher", s): never for s in (0, 1, 2)} | {("invented", 0): good}
+    got = L.dropped(arms, R3, (0, 1, 2), {"copy_cipher": "cipher", "facts": "invented"})
+    assert got == {"copy_cipher": True, "facts": False}
+    row = L.pair_row(good, built([["5x"], ["last"]], 256, 0), "fit", R3)  # never reached 15x on one side
+    assert row["matched"] == {"5x": True, "15x": False} and row["fit_to_read"]
+    assert L.rivals({}, R3, (0, 1, 2))["verdict"] == "no call"
