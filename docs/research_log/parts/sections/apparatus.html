@@ -3,11 +3,11 @@
 
 <h3>Models and decompositions</h3>
 <dl class="fields">
-<dt>The 67M</dt><dd>Goodfire's released 4-layer Pile transformer (67M parameters) and their released VPD decomposition, via the pinned <code>param-decomp</code> package at commit <code>74146b5</code>. Most experiments, and parts 1 and 2 of the paper draft.</dd>
+<dt>The 67M</dt><dd>Goodfire's released 4-layer Pile transformer (67M parameters) and their released VPD decomposition, via the pinned <code>param-decomp</code> package at commit <code>74146b5</code>. Most experiments, and parts 2 and 3 of the paper draft.</dd>
 <dt>Decomposed</dt><dd>24 weight matrices: the attention projections and two MLP matrices in each of four blocks; everything else frozen.</dd>
 <dt>Pieces</dt><dd>About 38,900 rank-one subcomponents, about 9,900 of them alive (ever important). Four matrices (the MLP matrices of layers 0 and 3) are saturated: any update to them is expressible by construction.</dd>
 <dt>Γ</dt><dd>One network shared across all 24 matrices. It reads every matrix's input at every position and outputs an importance value in [0, 1] per piece per position, so an edit in layer 2 moves importance values in layer 0. Its attention is not causal. Frozen in every map so far.</dd>
-<dt>Qwen3-1.7B</dt><dd>Goodfire's decompositions of 196 matrices: the first (<code>p-e9fcffd5</code>) until 2026-11-09, the newer and more faithful one (<code>p-9707d6ff</code>, E131) since. Their gates also read each piece's own activation, so moving a piece's read vector changes its gate even with Γ frozen. Part 3.</dd>
+<dt>Qwen3-1.7B</dt><dd>Goodfire's decompositions of 196 matrices: the first (<code>p-e9fcffd5</code>) until 2026-11-09, the newer and more faithful one (<code>p-9707d6ff</code>, E131) since. Their gates also read each piece's own activation, so moving a piece's read vector changes its gate even with Γ frozen. Part 4.</dd>
 </dl>
 
 <h3>Updates</h3>
