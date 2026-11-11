@@ -40,7 +40,7 @@ silently. A plan restates the user's request in the Terms' words, and it is that
   "Update Decomposition Log" (URL, layout and publish recipe in `docs/research_log/README.md`). Edit only the parts a
   change touches; grep, don't read whole sections. It is updated once a day from the table of work (2026-11-09):
   every filled or closed cell, decision report or changed claim appends a line to `docs/research_log/PENDING.md` when
-  it is written, as before, and `compare-lead`'s clerk applies the queue and republishes (recipe and completeness check
+  it is written, as before, and any lead's clerk applies the whole queue under `fleet/log-lock` and republishes (friction 711) (recipe and completeness check
   in `docs/research_log/README.md`). Run its `--check` against the live pages before
   editing; another session may have published.
 - `theory/` notes. `notebooks/E<NN>_<name>.ipynb` explain results, optional since 2026-11-09. `reports/<type>/` dated
