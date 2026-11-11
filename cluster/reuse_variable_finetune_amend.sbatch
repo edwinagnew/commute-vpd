@@ -25,5 +25,5 @@ cd "$COMMUTE_REPO"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 script="$1"; shift
-case "$script" in amend1|amend2) ;; *) echo "first argument: amend1 or amend2" >&2; exit 1 ;; esac
+case "$script" in amend1|amend2) ;; *) echo "first argument: amend1 or amend2" >&2; exit 2 ;; esac
 .venv/bin/python "experiments/reuse_variable_finetune/$script.py" "$@"
