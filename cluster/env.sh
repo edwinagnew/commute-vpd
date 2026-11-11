@@ -34,6 +34,14 @@ if [[ -n ${SLURM_JOB_ID:-} ]]; then
   echo "$_started" >&2 || true
   { echo "$_started" >> "$COMMUTE_REPO/cluster/logs/jobs.log"; } 2>/dev/null || true
   unset _started
+  # A job imports the clone's src/ as it stands when Python starts, so another writer's uncommitted edits in the same
+  # clone run in it (friction 700: E154 would have run E153's). Name the commit and any such file in the .out; two
+  # writers who share src/ each submit from their own worktree (`git worktree add`).
+  if command -v git > /dev/null; then
+    _dirty=$(git -C "$COMMUTE_REPO" status --porcelain -- src 2> /dev/null | awk '{print $NF}' | tr '\n' ' ') || _dirty=
+    echo "code: $(git -C "$COMMUTE_REPO" rev-parse --short HEAD 2> /dev/null || echo '?')${_dirty:+; UNCOMMITTED in src/, run as they stand: $_dirty}" >&2 || true
+    unset _dirty
+  fi
   # Slurm hands out a card held by processes it does not count: jobs then died at load with a bare CUDA out of memory, and
   # an afterok chain burnt through on the same card in 90 s (friction 445, 446, 448, 470, 474). Say so and stop first. Once
   # per job (the marker), since a later source in the same job sees the job's own memory. Exit 75: nothing ran.

@@ -24,7 +24,14 @@ using a cluster GPU as the Jupyter kernel for notebooks open in VS Code on the l
 | `sync.sh` | laptop | retired 2026-10-26: code moves by git; big files stay in `commute-data` |
 
 Slurm logs go to `cluster/logs/<job-name>-<jobid>.out` on the cluster, and every job appends a line to
-`cluster/logs/jobs.log`. `env.sh` adds a `started node=... gpus=...` line to both, inside a job, before any Python runs.
+`cluster/logs/jobs.log`. `env.sh` adds a `started node=... gpus=...` line to both, inside a job, before any Python runs,
+and a `code: <commit>` line to the `.out` that also names any uncommitted file under `src/`: a job imports the clone's
+`src/` as it stands when it starts, so writers who share a clone and edit `src/` each submit from their own worktree
+(friction 700).
+Job logs are not committed: `cluster/logs` is a gitignored symlink to `~/commute-data/cluster-logs/`, which persists,
+so `git add` cannot take a log (friction 670). A write-up or runner report cites the log by that path and job id. When
+a log is the only record of a number a result rests on, copy it (under ~1 MB, no Jupyter log: it holds the server
+token) to `experiments/<name>/results/<job-name>-<jobid>.log` and commit the copy with the results.
 A job's script ends with `commute.jobs.hard_exit(code)` after its final write: jobs have hung in interpreter teardown
 with their results on disk (friction 150, 296). `sstat` is not installed in the job environment; `hard_exit` prints the peak host RSS. Note that `sacct` and `sacctmgr` do not work from the controller (slurmdbd refuses the
 connection; checked 2026-10-14). Use `squeue` and `scontrol show job <id>` instead, and keep job IDs yourself.
