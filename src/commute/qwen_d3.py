@@ -467,13 +467,23 @@ SIGNS = dict(zip(SITES, random.Random(WRONG_SEED).choices((1.0, -1.0), k=len(SIT
 def gold_held(tok: Any) -> list[Seq]:
     """E40's 256 held-out GSM8K problems with their gold answers, as its SFT saw them: E86's gain rows on the maths
     arms (qwen_d1_adversary/amend2.py `gold_seqs`, its first half)."""
+    return _gold_part(tok, held=True)
+
+
+def gold_train(tok: Any) -> list[Seq]:
+    """E40's 7,217 training problems with their gold answers, in E40's split order (E45's `Job.train_idx`)."""
+    return _gold_part(tok, held=False)
+
+
+def _gold_part(tok: Any, held: bool) -> list[Seq]:
     from commute import qwen_sets
     from commute.qwen_sft import sft_seq
 
     end = int(tok.convert_tokens_to_ids("<|im_end|>"))
     train = qwen_sets.load()["train"]
     perm = torch.randperm(qwen_sets.N_TRAIN, generator=torch.Generator().manual_seed(GOLD_PERM_SEED)).tolist()
-    return [sft_seq(tok, train[i]["question"], train[i]["gold"], end, GOLD_LEN) for i in perm[:GOLD_HELD]]
+    part = perm[:GOLD_HELD] if held else perm[GOLD_HELD:]
+    return [sft_seq(tok, train[i]["question"], train[i]["gold"], end, GOLD_LEN) for i in part]
 
 
 def tofu_kept() -> set[int]:

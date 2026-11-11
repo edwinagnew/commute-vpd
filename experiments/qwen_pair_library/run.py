@@ -38,19 +38,20 @@ from typing import Any, NoReturn
 
 import torch
 from torch import Tensor
-from transformers import AutoTokenizer, GenerationConfig
+from transformers import AutoTokenizer
 
 from commute import qwen_d3 as d3
+from commute import qwen_library as L
 from commute import qwen_pairs as P
 from commute import qwen_sets
 from commute.jobs import hard_exit
 from commute.pool_sft import RECIPE
-from commute.qwen_eval import GREEDY, MODEL, MODEL_REV, chat_prompt, generate
+from commute.qwen_eval import MODEL, MODEL_REV, chat_prompt
 from commute.qwen_rl import delta_fp32
 from commute.qwen_sft import gold_loss, linears, load, mean_kl, plus, save, set_weights
 from commute.qwen_train import Recipe, train
-from commute.qwen_updates import cycle, ok
-from commute.qwen_vpd import decomp_id, fp32_matmuls, load_target
+from commute.qwen_updates import cycle
+from commute.qwen_vpd import decomp_id, fp32_matmuls
 
 HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"
@@ -121,21 +122,15 @@ def write(path: Path, obj: Any) -> None:
 
 
 def fp32_model(lab: Lab) -> Any:
-    m = load_target(DEV, F32)
-    m.generation_config = GenerationConfig(eos_token_id=m.generation_config.eos_token_id, pad_token_id=lab.tok.pad_token_id)
-    return m
+    return L.fp32_model(lab.tok, DEV)
 
 
 # ----------------------------------------------------------------------------- readings
 
 
-@torch.no_grad()
 def exact_match(lab: Lab, model: Any, side: str, texts: list[str], items: list[P.Item]) -> tuple[int, list[str]]:
     """Greedy answers to the chat texts; how many match their item's answer (`qwen_pairs.matches`), and the answers."""
-    out: list[str] = []
-    for s in range(0, len(texts), C.gen_batch):
-        out += [r["response"] for r in generate(lab.tok, model, texts[s : s + C.gen_batch], 1, GREEDY, max_new=C.max_new)]
-    return sum(P.matches(side, r, it.answer) for r, it in zip(out, items, strict=True)), out
+    return L.exact_hits(lab.tok, model, side, texts, items, C.gen_batch, C.max_new)
 
 
 def cue_texts(lab: Lab, items: list[P.Item]) -> list[str]:
@@ -253,15 +248,11 @@ def control(lab: Lab, model: Any, W0: dict[str, Tensor], rows: list[Tensor], out
 def early(lab: Lab, out: dict[str, Any], rec: dict[str, Any], floor: float) -> None:
     """Amendment 1's stops: a non-finite loss; a step 1 that moved (it runs at rate 0); KL at step 2 above
     kl_step2_max_floors x the floor; a single step raising KL by more than kl_jump_max_floors x the floor."""
-    E = lab.A["early_stops"]
-    t, kl = rec["step"], rec["kl"]["own"]
-    rise = kl - (out["steps"][-2]["kl"]["own"] if len(out["steps"]) > 1 else 0.0)
-    bad = ("loss not finite" if not ok(rec["loss"]) else "step 1 moved" if t == 1 and rec["dw_norm"] != 0
-           else "KL at step 2 above the floor bar" if t == 2 and not kl <= E["kl_step2_max_floors"] * floor
-           else "a step raised KL past the jump bar" if not rise <= E["kl_jump_max_floors"] * floor else None)
+    bad, rise = L.early_stop(out["steps"], floor, lab.A["early_stops"])
     if bad:
         write(lab.out_file, out)
-        lab.stop(bad, {"step": t, "loss": rec["loss"], "dw_norm": rec["dw_norm"], "kl": kl, "rise": rise, "floor": floor})
+        lab.stop(bad, {"step": rec["step"], "loss": rec["loss"], "dw_norm": rec["dw_norm"], "kl": rec["kl"]["own"],
+                       "rise": rise, "floor": floor})
 
 
 def fine_tune(lab: Lab, model: Any, W0: dict[str, Tensor], rows: list[Tensor], out: dict[str, Any]) -> None:
