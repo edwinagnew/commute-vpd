@@ -1,0 +1,47 @@
+{
+  "experiment": "E151 amendment 1 (rerun: common-word pool empty in run 1, job 58739)",
+  "date": "2026-11-11",
+  "filed": "2026-11-11, before the rerun; results/predictions.json stays as filed and unedited",
+  "amends": "experiments/disagreeing_pairs/results/predictions.json",
+  "run": "experiments/disagreeing_pairs/amend1.py (cluster/disagreeing_pairs_amend1.sbatch); writes results/amend1_stage{0,1,2}.json, never run 1's stage0.json",
+  "why": "Run 1 (job 58739) stopped at stage 0 after every control passed: the common-word cipher's pool was empty (n_pool 2763, 3 words admissible for any key, per-key median 0; results/stage0.json common_pool). Not a code error: the filed per-key band [5e-4, 3e-3] on W0's geometric-mean P(v | M k) together with 'past the key's top 20' leaves almost nothing, because the geometric mean is not normalised and past rank 20 it sits near or under the band's floor. This is the cell's last run.",
+  "changes": {
+    "1 assignment": "The fixed per-key band [5e-4, 3e-3] is dropped. Each key takes its highest-P unused admissible word with P(v | M k) <= 3e-3, keys assigned in order of fewest admissible words first (ties: key order; ties in P: lower pool index). kv.bijection's first-in-seeded-order draw is no longer used for this map (rules.assign).",
+    "2 filter ladder": "Decided inside stage 0, from W0's probabilities only, before any training: the first rung whose table is complete (every one of the 128 keys gets a word) and whose estimated map prior is >= 2.35e-4 is taken. Rung 1: past the key's top 20 and <= 3x the word's median over keys (as filed). Rung 2: past the top 10 and <= 3x median. Rung 3: past the top 20 and <= 10x median. Never below rank 10; the word pool (word-like ranks 0-2999 minus the keys and elicit words) is not widened. If no rung qualifies, stage 0 stops (exit 1) before any training. The estimated prior is the filed prior's estimator computed from W0's per-key geometric means on the trained keys' held-out windows: exp of the window-weighted mean of log G_heldout(k, v_k) (rules.est_prior), equal to keydep.geo_rate on those windows.",
+    "3 stop rule and pair B": "The common-word cipher's stage-0 stop rule becomes: realised map prior (the filed estimator on the built windows) >= 2.35e-4; the filed range [4.2e-4, 4.2e-3] no longer stops the run. Pair B is counted only if the realised prior is >= 4.2e-4 (the filed matched-prior condition against the half-known map's 1.33e-3: within 0.5 decades); otherwise pair B's condition reads 'condition not met' (premise false), which is not a stop. The stage-1 rule (at least 2 of A, B, D meet a condition, else exit 1 before the share) is unchanged.",
+    "4 logged": "Before any stage-0 table check: per-key quantiles (min, 25%, median, 75%, max) of the 20th- and 10th-largest G; counts of words and keys passing each filter alone and each pair of filters (cap, rank > 20, rank > 10, <= 3x and <= 10x median, and run 1's band floor P >= 5e-4 for comparison); per rung its per-key candidate count (min, median), per-key best P quantiles, estimated prior, completeness, and which rung is taken; for the one-word map the number of candidate words, the chosen word and its max P over keys. All in amend1_stage0.json."
+  },
+  "ladder": {
+    "value_max": 0.003,
+    "rungs": [
+      {"rung": 1, "min_rank": 20, "median_ratio": 3.0},
+      {"rung": 2, "min_rank": 10, "median_ratio": 3.0},
+      {"rung": 3, "min_rank": 20, "median_ratio": 10.0}
+    ],
+    "common_prior_min": 0.000235,
+    "b_prior_min": 0.00042,
+    "band_floor_reported": 0.0005
+  },
+  "sources": {
+    "common_prior_min 2.35e-4": "pair A: 0.5 decades (prior_bar) above copy's prior 5.91e-5 plus the filed smallest_gap 0.1 as margin: 5.91e-5 x 10^0.6 = 2.35e-4",
+    "b_prior_min 4.2e-4": "the filed matched-prior condition for pair B: within 0.5 decades of the half-known map's 1.33e-3 (amend3.json maps.elicit.w0_geo_p.trained), i.e. 1.33e-3 / 10^0.5 = 4.2e-4; the lower end of run 1's filed range",
+    "value_max 3e-3": "the filed band's upper end, kept",
+    "rungs": "rung 1 is the filed filter; rung 2 relaxes only the rank (never below rank 10: the elicit map's own-guess range is ranks 2-20); rung 3 relaxes only the median ratio"
+  },
+  "unchanged": "Every filed prediction P1-P5, its rule and lean, every threshold in predictions.json thresholds (prior_bar, smallest_gap, inert, gain_floor, zero_tol, reproduce_tol, refit_tol_prior_cipher, projected_limit_min, min_counted_pairs), the definitions (prior, prior call, steering, share, call on seeds, condition, reading, outcome), the one-word map's draw and bar (1e-5), the fine-tune recipe, stage 0's controls (run first, exactly as run 1) and the stage-1 and stage-2 stop rules stay as filed. The conditions are counted on realised values: the priors of the built windows and strength-1 steering read on the built states.",
+  "edge_cases_checked": {
+    "how": "tests/test_disagreeing_pairs_rules.py runs each line below against rules.py",
+    "no rung qualifies (every table incomplete, or complete with estimated prior under 2.35e-4)": "rules.take_rung returns None: stage 0 stops, exit 1, before any training",
+    "rung 1 incomplete, rung 2 complete and over the bar": "rung 2 taken",
+    "rung 1 complete but under the prior bar, rung 3 over it": "rung 3 taken (completeness and the bar are both needed)",
+    "two keys sharing their one admissible word": "the key with fewer candidates is assigned first; the other takes its next word or the table is incomplete",
+    "realised prior 3e-4 (>= 2.35e-4, < 4.2e-4)": "no stop; pair B premise false, its condition 'condition not met' whatever its prior gap and steering; with A and D meeting theirs the stage-1 count is 2 and the run continues",
+    "realised prior exactly 4.2e-4": "pair B premise true (>=)",
+    "estimated prior with no windows": "nan, never over the bar",
+    "do-nothing pair (zero updates both sides)": "steering unreadable: 'condition not met' with the premise true or false; never counted"
+  },
+  "expected": {
+    "ladder": "not seen before filing: run 1 logged only the band's pool (3 words); the rung taken and its prior are read in stage 0 and reported as they come",
+    "common_cipher prior": "at or above 2.35e-4 if a rung is taken, and at most about 3e-3 (each value's P is capped on all windows; the prior reads the held-out ones); the realised prior equals the rung's estimate to float rounding (same windows, same quantity); pair B is counted only at or above 4.2e-4"
+  }
+}

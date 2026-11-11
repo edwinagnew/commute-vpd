@@ -24,7 +24,7 @@
 <ul>
 <li>M is the original model and F its fine-tune; x is an input drawn from a fixed set D.</li>
 <li>d(A, B)(x) is the distance between models A's and B's next-token distributions at x.</li>
-<li>φ is a <em>variable</em>: a linear read-out of M's activations at one place, of dimension at most 4 in every test so far. Its value on x is v<sub>M</sub>(x).</li>
+<li>φ is a <em>variable</em> in the sense of causal abstraction (<a href="https://arxiv.org/abs/2301.04709">Geiger et al., 2025</a>): a linear read-out of M's activations at one place, of dimension at most 4 in every test so far. Its value on x is v<sub>M</sub>(x).</li>
 <li>M[φ ← v] is M run with φ overwritten by the value v.</li>
 <li>s is an affine map, so s(v<sub>M</sub>) is M's own value of φ turned on, up, or shifted.</li>
 </ul>
