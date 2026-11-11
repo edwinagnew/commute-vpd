@@ -1,0 +1,32 @@
+{
+ "experiment": "E160",
+ "cell": "P3.5",
+ "run": 1,
+ "filed": "2026-11-11",
+ "plan": "reports/plans/2026-11-11_plan_p35-qwen-pair-library.md",
+ "card": "~/commute-data/cards/P3.5-run1.md",
+ "capacity": {
+  "rule": "Per pair, greedy exact match (qwen_pairs.matches) on the held-out items under the capacity prompt, at W0, absolute. The reuse side holds when hits >= ceil(reuse_min * n); the new side holds when hits <= floor(new_max * n); a tie at a bar holds. A pair is fit only if both hold; a pair that misses is dropped and reported, never repaired. A side with n = 0 makes its pair unscored, never fit.",
+  "reuse_min": 0.9,
+  "new_max": 0.05,
+  "n": {"copy_cipher": 256, "context_lookup": 256, "facts": 200},
+  "bars_in_hits": {"n_256": {"reuse_at_least": 231, "new_at_most": 12}, "n_200": {"reuse_at_least": 180, "new_at_most": 10}},
+  "expected": "facts fit (0.97 against 0.015 in this form, experiments/qwen_updates/results/control.json .facts_s0; here under a 3-shot capacity prompt, a different prompt); copy and context reuse sides near 1; cipher and lookup new sides near 0 on held-out keys (a held-out key's table value and a held-out word's cipher are not in the prompt; the cipher's three examples show at most 24 of its 26 letters).",
+  "blind_to": "Whether the skill shows under the cue prompt the library trains on (the capacity prompt names the task); the prior under the cue is recorded beside it, not scored."
+ },
+ "floors": {
+  "rule": "K0 per position (all positions) at W0 on the 128 maths rows (qwen_d3.maths_rows) on p-9707d6ff must lie in maths_K0 +- maths_tol, absolute; otherwise the job stops before any other rows are read.",
+  "maths_K0": 0.0932,
+  "maths_tol": 0.002,
+  "source": "experiments/qwen_regating_new/results/controls.json .means_W0.K0 = 0.09320748 (E132)",
+  "expected_built_rows": "no prior number; read and filed for run 2"
+ },
+ "rehearse": {
+  "rule_control": "The zero change through the saved-state path reads |KL(W0 || W0 + 0)| <= kl0_max on the copy side's own rows and exactly W0's held-out hits under the cue; otherwise the job stops before training.",
+  "kl0_max": 1e-06,
+  "rule_15x": "Held-out exact match under the cue prompt (256 held-out keys, greedy) of the copy side, seed 0, at the 15x save >= em_15x_min (hits >= 128), absolute. The 15x save is the first read step at or past 15 x the copy rows' floor (the bracket's upper state). If 15x is not reached by the last step, the rule reads the last step's state and says so (rehearse.json .rule.reached_15x false).",
+  "em_15x_min": 0.5,
+  "early_stops": "loss not finite at any step; |dW| not exactly 0 after step 1 (it runs at rate 0); KL(W0 || W_t) on the own rows at step 10 above 15 x the floor.",
+  "expected": "W0 held-out exact match under the cue: no prior number (the cue carries no instruction). The 15x save above 0.5 if 1e-5 for 100 steps teaches a skill W0 already has."
+ }
+}
