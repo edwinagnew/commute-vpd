@@ -587,3 +587,86 @@ def finetune(net: Net, ft: Net, F: Target, fit: Tensor, check: Tensor, sch: Sche
     for p in params:
         p.requires_grad_(False)
     return rec
+
+
+# ---- Number pairs (E150, cell P1.10): two single-token numbers in the last two positions --------------------------------
+# Added 2026-11-11, beside E148's XOR2 code, which is unchanged. A number pair is an `Xor2` whose keys are number tokens and
+# whose bit is each number's parity, so `xor2_keyed`, `xor2_f` (then the parity of a + b, odd exactly when one of a, b is
+# odd) and `xor2_windows` serve it as they are.
+
+
+def make_numbers(tok: Any, vocab: int, n_max: int, held_share: float, seed: int = 150_001) -> Xor2:
+    """The numbers 0 to n_max - 1 whose leading-space form " n" is one token of `tok` (and decodes back to " n"), each with
+    its parity as the bit; a seeded share of the ordered pairs held out, as `make_xor2`."""
+    ids = [tok.encode(f" {n}") for n in range(n_max)]
+    nums = [n for n, i in enumerate(ids) if len(i) == 1 and tok.decode(i) == f" {n}"]
+    keys = torch.tensor([ids[n][0] for n in nums])
+    assert keys.unique().numel() == keys.numel() and int(keys.max()) < vocab, "number tokens collide or fall off the vocabulary"
+    bit = torch.full((vocab,), -1, dtype=torch.long)
+    bit[keys] = torch.tensor(nums) % 2
+    k = keys.numel()
+    held = torch.zeros(k * k, dtype=torch.bool)
+    held[torch.randperm(k * k, generator=torch.Generator().manual_seed(seed))[: round(held_share * k * k)]] = True
+    return Xor2(keys, bit, held.view(k, k))
+
+
+def odd_at(x: Xor2, toks: Tensor, pos: int) -> Tensor:
+    """(B,) float: 1 where the token at `pos` is a key with bit 1 (an odd number under `make_numbers`), else 0."""
+    return (x.bit[toks[:, pos].cpu()] == 1).float()
+
+
+def label_target(net: Net, label: Callable[[Tensor], Tensor], push: Tensor) -> Target:
+    """F = `net` + label(toks) * `push` (d,) at block 2's input, last position. `xor2_target` is this with `xor2_f`."""
+
+    def f(toks: Tensor, sites: Iterable[str] = (), edit: Edit | None = None) -> tuple[Tensor, dict[str, Tensor]]:
+        e = {"in2": add_last(label(toks).to(push.device)[:, None] * push)}
+        return run(net, toks, sites=sites, edit=merged(e, edit or {}))
+
+    return f
+
+
+def mean_tv(A: Target, B: Target, windows: Tensor, batch: int) -> dict[str, float]:
+    """Mean and largest TV between A's and B's next-token distributions at the last position."""
+    d = torch.cat([tv(A(t)[0][:, -1], B(t)[0][:, -1]) for t in chunks(windows, batch)])
+    return {"mean": float(d.mean()), "max": float(d.max())}
+
+
+def keyed_capacity(net: Net, x: Xor2, label: Callable[[Tensor], Tensor], fit: Tensor, read: Tensor, cfg: Sizes,
+                   log: Any) -> dict[str, Any]:
+    """E137's capacity read (`capacity`) of `label` on the windows whose last two tokens are keys only, as E148 read XOR2 (a
+    window without keys has no label, and scoring it 0 would let key presence, which is linear, read above chance)."""
+    cap = capacity(net, fit[xor2_keyed(x, fit)], read[xor2_keyed(x, read)], label, cfg, log)
+    by_site = cap["held_out_real_by_site"]
+    return {"held_out_real_by_site": by_site, "max": max(by_site.values()),
+            "shuffled_by_site": {s: cap[s]["shuf"]["held_out"] for s in SITES}}
+
+
+def learned_ratio(base: Net, F: Target, ft: Net, push: Tensor, check: Tensor, batch: int) -> dict[str, float]:
+    """E139's `xor_learned` for a fine-tune `ft` of `base` toward F = base + bit * push: KL(F || ft) over KL(F || base + push / 2),
+    the best a model blind to the bit can do where the bit is on half the windows. The caller compares the ratio with its bar."""
+    half = {"in2": add_last(0.5 * push)}
+    lf = torch.cat([F(t)[0][:, -1] for t in chunks(check, batch)])
+    l_ft = torch.cat([run(ft, t)[0][:, -1] for t in chunks(check, batch)])
+    l_half = torch.cat([run(base, t, edit=half)[0][:, -1] for t in chunks(check, batch)])
+    l_base = torch.cat([run(base, t)[0][:, -1] for t in chunks(check, batch)])
+    k_ft, k_half = float(kl(lf, l_ft).mean()), float(kl(lf, l_half).mean())
+    assert k_half > 0, "a zero push"
+    return {"kl_ft": k_ft, "kl_half_push": k_half, "kl_base": float(kl(lf, l_base).mean()), "ratio": k_ft / k_half}
+
+
+def ladder(base: Net, F: Target, fit: Tensor, check: Tensor, rungs: tuple[Schedule, ...], batch: int, seed: int,
+           clone: Callable[[Net], Net], passes: Callable[[Net, dict[str, Any]], bool],
+           log: Any) -> tuple[Net | None, int, dict[str, Any]]:
+    """Fine-tune `clone(base)` toward F on each schedule in turn, each from `base` again, until `passes(ft, record)`.
+    Returns (the first copy that passes, its rung, the records by step count); (None, -1, records) if none passes, and
+    (None, rung, records) at once when a rung's step-10 check stopped it (its record's `stopped` is set)."""
+    recs: dict[str, Any] = {}
+    for r, sch in enumerate(rungs):
+        log(f"  fine-tune: {sch.steps} steps, peak {sch.lr}")
+        ft = clone(base)
+        recs[str(sch.steps)] = rec = finetune(base, ft, F, fit, check, sch, batch, seed, log)
+        if rec["stopped"]:
+            return None, r, recs
+        if passes(ft, rec):
+            return ft, r, recs
+    return None, -1, recs
