@@ -28,6 +28,7 @@ Writes results/{repeat,probes,target3,ceiling,floor,sum3_s0,sum3_s1}.json and re
 from __future__ import annotations
 
 import json
+import os
 import time
 from dataclasses import asdict, dataclass, field
 from pathlib import Path
@@ -262,6 +263,9 @@ def main(net: Net) -> int:
     bc = B.Ctx(net, cfg, th, x, fit3, read3, c.unit, c.unit)  # E150's context; its second push is unused here
     for seed in cfg.seeds:
         arm_one_site(c, bc, seed)
+    if only := os.environ.get("E159_ONLY_SEED"):  # a parallel job: one seed's two-site reading, nothing else written
+        arm_two_sites(c, bc, int(only))
+        return 0
     two_sites(c, "ceiling", ceiling, cout["gap"], cpath, cout)
     two_sites(c, "floor", floor, fout["gap"], fpath, fout)
     for seed in cfg.seeds:
