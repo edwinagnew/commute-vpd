@@ -487,3 +487,6 @@ This is "round 1", the input of nearly every other run.
 
 ## sum_parity_beside (E157, cell P1.14; coded 2026-11-11, not run yet)
 - `results/large/plain_s{0,1}.pt` (~268 MB each, as E154's `amend1_control_s*.pt`): the plain 67M fine-tuned toward 67M + 4 Q b where a + b is odd (E150's arm "plain"), each seed at its learned rung (`results/plain_s{seed}.json`, rung). Written by `experiments/sum_parity_beside/run.py` through E150's `item_h`; load with `VR.load_state`. `results/large` is a symlink into `~/commute-data/results-large/sum_parity_beside`.
+
+## qwen_pair_library (E160 Amendment 1, rehearse, copy side)
+- `results/large/dW/copy_s0/step_36.safetensors` (5.64 GB, sha256 26c5fc21a745b5da462e0a5184796f97df58d34fe9bd3e2b9ab90b21463edaea): the 15x upper state of the copy side (seed 0, lr 2e-6), step 36, dW norm 0.554, KL 1.587, held-out exact match 1.0. Written by `experiments/qwen_pair_library/run.py rehearse --side copy` on an H100 pod (2026-11-11); the other saved states (steps 8, 9, 35) were not downloaded. `results/large` is a symlink into `~/commute-data/results-large/qwen_pair_library`.
