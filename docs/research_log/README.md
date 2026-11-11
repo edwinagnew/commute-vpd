@@ -620,3 +620,4 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e144_gains.png": "experiments/qwen_regating_new/figures/amend1_gains.png"
 - "fig/e139_g_vs_leftover.png": "experiments/reuse_variable_finetune/figures/g_vs_leftover.png"
 - "fig/decision_gate_within_pair.png": "experiments/old_task_labels/figures/gate_within_pair.png"
+- "fig/e148_h_by_arm.png": "experiments/built_control/figures/h_by_arm_scored.png"
