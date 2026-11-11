@@ -46,9 +46,12 @@ def heldout_of(model: Any, W0: dict[str, Tensor], held: Any, token: int | Tensor
 
 
 def save_offsets(path: Path, uv_cpu: dict[str, tuple[Tensor, Tensor]], st: dict[str, tuple[Tensor, Tensor, Tensor]],
-                 meta: dict[str, Any]) -> None:
-    """A component-training state {k: (delta-W, U_A', V_A')} as bf16 offsets (dU, dV) to the alive columns at W0
-    (U_A' = U_A + dU; `uv_cpu` = component_training.alive_uv on CPU), with `meta` beside them."""
-    off = {k: ((U2 - uv_cpu[k][0]).bfloat16(), (V2 - uv_cpu[k][1]).bfloat16()) for k, (_, U2, V2) in st.items()}
+                 meta: dict[str, Any], dtype: torch.dtype = torch.float32) -> None:
+    """A component-training state {k: (delta-W, U_A', V_A')} as offsets (dU, dV) to the alive columns at W0
+    (U_A' = U_A + dU; `uv_cpu` = component_training.alive_uv on CPU), with `meta` beside them. fp32 by default since
+    2026-11-11 (files before then are bf16, 60 MB for the 67M): a re-read of a bf16 file did not repeat a reading made
+    in fp32 at 1e-3, and a copy saved only in bf16 had to be retrained (friction 605, 615). Pass dtype=torch.bfloat16
+    only with a stated reason; the file records `offsets_dtype`."""
+    off = {k: ((U2 - uv_cpu[k][0]).to(dtype), (V2 - uv_cpu[k][1]).to(dtype)) for k, (_, U2, V2) in st.items()}
     path.parent.mkdir(parents=True, exist_ok=True)
-    torch.save({"offsets": off, "layout": "theory (d_out, n), (d_in, n)", **meta}, path)
+    torch.save({"offsets": off, "layout": "theory (d_out, n), (d_in, n)", "offsets_dtype": str(dtype), **meta}, path)

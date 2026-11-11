@@ -164,13 +164,14 @@ class Lab:
         return detail | {"holds": holds}
 
     def wall(self, longest: float) -> None:
-        """Checked before each state: exit 0 with what is written (resubmit to resume) when the time left under the
-        job limit is less than the longest state so far, or, before one is measured, past first_s of wall time."""
+        """Checked before each state: exit 3 with what is written (resubmit to resume; fleet/resubmit --code 3) when the
+        time left under the job limit is less than the longest state so far, or, before one is measured, past first_s
+        of wall time. It exited 0 until 2026-11-11, which hid a cut job among finished ones (friction 707)."""
         used = time.time() - self.t0
         if (longest > 0 and CFG.limit_s - used < longest) or (longest == 0 and used > CFG.first_s):
             self.log(f"cut short: {used:.0f} s used, longest state {longest:.0f} s, limit {CFG.limit_s:.0f} s; "
                      "resubmit to resume")
-            sys.exit(0)
+            sys.exit(3)
 
     def peaks(self) -> str:
         gpu = torch.cuda.max_memory_allocated() / GIB if torch.cuda.is_available() else 0.0

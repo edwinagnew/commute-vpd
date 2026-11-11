@@ -27,8 +27,10 @@ Expected: <runtime from the smoke/benchmark>, <GPU memory>, <CPU RAM>
 Outputs: <files the run writes; mark which are the results to bring home; which are large/>
          (the job's final "FINISHED" line names these paths, so list them all)
 Inputs not in git: <gitignored files the run needs, or none>
-Platform: by expected run time (default): ≤ 30 min → cluster debug, RunPod if no start within 10 min;
-          longer → RunPod directly, card 4090 or faster (H100 for runs over ~1 h) | cluster only because <reason>
+Platform: by expected run time (default): ≤ 30 min → cluster debug if it can start now, a pod if no start within
+          5 min; longer → a pod directly, H100 or faster for runs over ~20 min (4090 only for short light runs),
+          parallel pods for independent arms | cluster only because <reason other than transfer time>
+Transfers: <inputs not in git or W&B, their total size, and the upload time at ~10 MB/s (2 min a GB, root CLAUDE.md)>
 Pod: fresh (default) | reuse an idle commute pod of this session if status() shows one | keep running after,
      the next run follows within ~1 h
 Budget: <$ cap for RunPod: what is left of the session's REMOTE_KERNELS_BUDGET (`.claude/settings.json`), less ~15% headroom>
