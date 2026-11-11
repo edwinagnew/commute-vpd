@@ -1,0 +1,24 @@
+0.34	experiments/neuron_overlap/results/stage2.json	[.score[].overlap.values[][]]|min	this
+0.69	experiments/neuron_overlap/results/stage2.json	[.score[].overlap.values[][]]|max	this
+0.84	experiments/neuron_overlap/results/stage2.json	[.score[].overlap.floor[].random]|min	this
+0.95	experiments/neuron_overlap/results/stage2.json	[.score[].overlap.floor[].random]|max	this
+7.8	experiments/neuron_overlap/results/predictions.json	.settings.k[0] / 3072 * 100	this
+0.036	experiments/neuron_overlap/results/stage2.json	.score.e54_own.overlap.floor.reuse.random - .score.e54_own.overlap.floor.new.random	this
+0.015	experiments/neuron_overlap/results/stage2.json	.score.e54_own.overlap.band	this
+-0.035	experiments/neuron_overlap/results/stage2.json	.score.e46_copy_random.overlap.gap	this
+0.036	experiments/neuron_overlap/results/stage2.json	.score.e46_copy_random.overlap.band	this
+0.21	experiments/neuron_overlap/results/stage2.json	[.score[].overlap.floor[].above]|max|-.	this
+0.55	experiments/neuron_overlap/results/stage2.json	[.score[].overlap.floor[].above]|min|-.	this
+1.005	experiments/neuron_overlap/results/stage0.json	1 + ([.scale[]]|add/length)	this
+0.962	experiments/neuron_overlap/results/stage0.json	.positive_control.overlap.scaled	this
+0.965	experiments/neuron_overlap/results/stage0.json	.positive_control.overlap.random	this
+0.472	experiments/neuron_overlap/results/stage0.json	.positive_control.on_both.scaled	this
+0.445	experiments/neuron_overlap/results/stage0.json	.positive_control.on_both.random	this
+0.05	experiments/method_table/results/final.json	[.cells[]|select(.method=="neuron_top")|(.reuse+.new)[]|if . < 0 then -. else . end]|max	earlier
+0.41	experiments/baseline_neurons/results/baseline_neurons.json	[.b2.ident32_s0.idle_share,.b2.ident32_s1.idle_share,.b2.ident32b_s0.idle_share,.b2.ident32b_s1.idle_share]|add/4	earlier
+0.125	experiments/baseline_neurons/results/baseline_neurons.json	[.b2.rand32_s0.idle_share,.b2.rand32_s1.idle_share,.b2.rand32b_s0.idle_share,.b2.rand32b_s1.idle_share]|add/4	earlier
+0.057	experiments/neuron_overlap/results/stage2.json	.score.open_pair_c3.overlap.gap	this
+0.027	experiments/neuron_overlap/results/stage2.json	.score.open_pair_c3.overlap.band	this
+0.059	experiments/neuron_overlap/results/stage2.json	.score.open_pair_c3.on_both.gap	this
+0.044	experiments/neuron_overlap/results/stage2.json	.score.open_pair_c3.on_both.band	this
+0.057	experiments/neuron_overlap/results/stage2.json	.score.e54_own.overlap.gap	this
