@@ -44,12 +44,6 @@ def load(path: Path) -> Any:
     return json.loads(path.read_text())
 
 
-def write(n: int, out: dict[str, Any]) -> None:
-    tmp = RESULTS / f"stage{n}.tmp"  # a kill mid-write must not leave unreadable JSON
-    tmp.write_text(json.dumps(jsonable(out), indent=1, sort_keys=True))
-    tmp.replace(RESULTS / f"stage{n}.json")
-
-
 def say(tag: str, x: Any) -> None:
     log(f"[{tag}] {json.dumps(jsonable(x))}")
 
@@ -78,8 +72,11 @@ def update_file(m: str, s: int) -> Path:
 class Run:
     """One model shared by E136's share reader and E143's steering path; each state's reads kept once made."""
 
-    def __init__(self, P: dict[str, Any]) -> None:
+    def __init__(self, P: dict[str, Any], files: str = "stage") -> None:
+        """`files`: the results files' stem, results/<files><n>.json (run 1 "stage", Amendment 1 "amend1_stage")."""
         self.th, self.F = P["thresholds"], {k: load(v) for k, v in FILES.items()}
+        self.files = files
+        self.premise: dict[str, bool] = {}  # Amendment 1: a pair whose built premise is not met (absent = met)
         maps = self.F["e147_inv"]["maps"]
         self.inv: dict[str, Any] = {"tasks": {}, "states": {}}
         for m in (*SAVED, "prior_cipher"):
@@ -93,6 +90,17 @@ class Run:
         self.steer: dict[str, dict[str, Any]] = {}
         self.share: dict[str, dict[str, Any]] = {}
         self.prior: dict[str, float] = {}
+
+    def write(self, n: int, out: dict[str, Any]) -> None:
+        tmp = RESULTS / f"{self.files}{n}.tmp"  # a kill mid-write must not leave unreadable JSON
+        tmp.write_text(json.dumps(jsonable(out), indent=1, sort_keys=True))
+        tmp.replace(RESULTS / f"{self.files}{n}.json")
+
+    def pair(self, p: str) -> dict[str, Any]:
+        """A pair's realised inputs to the rule: the built maps' prior gap, the states' steering and the premise flag."""
+        r, n = PAIRS[p]
+        return {"prior_gap": prior_gap(self, r, n), "steering": (steer_seeds(self, r), steer_seeds(self, n)),
+                "premise": self.premise.get(p, True)}  # fmt: skip
 
     def add_map(self, m: str, windows: str) -> None:
         self.inv["tasks"][task(m)] = {"format": "kv", "path": windows, "batch": 64}

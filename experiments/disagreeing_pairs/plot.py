@@ -5,7 +5,8 @@ decades (side built to reuse minus new side), one point, with the 0.5-decade bar
 every seed of both sides, each minus the new side's mean, so the new side sits about 0 and the side built to reuse at the
 gap; the 0.1 bar of E143's rule is drawn on both sides of 0.
 
-Usage (repo root):  ~/commute-agents/fleet/cpu-run --mem 2G python experiments/disagreeing_pairs/plot.py [RESULTS FIGURES]
+Usage (repo root):  ~/commute-agents/fleet/cpu-run --mem 2G python experiments/disagreeing_pairs/plot.py [RESULTS FIGURES [STEM]]
+(STEM amend1_stage reads Amendment 1's amend1_stage2.json; default stage, run 1's.)
 """
 
 from __future__ import annotations
@@ -56,8 +57,8 @@ def prior_panel(ax: Axes, inputs: Mapping[str, Any], score: Mapping[str, Any]) -
              "condition": score[p]["condition"], "share_reading": score[p]["reading"]} for p in ROWS]  # fmt: skip
 
 
-def main(results: Path = HERE / "results", figures: Path = HERE / "figures") -> None:
-    s2 = json.loads((results / "stage2.json").read_text())
+def main(results: Path = HERE / "results", figures: Path = HERE / "figures", stem: str = "stage") -> None:
+    s2 = json.loads((results / f"{stem}2.json").read_text())
     inputs, score = s2["inputs"], s2["score"]["pairs"]
     fig, axes = FG.figure((11.0, 4.0), ncols=3)
     data = prior_panel(axes[0], inputs, score)
@@ -71,4 +72,5 @@ def main(results: Path = HERE / "results", figures: Path = HERE / "figures") -> 
 
 
 if __name__ == "__main__":
-    main(*(Path(a) for a in sys.argv[1:3]))
+    a = sys.argv[1:4] + [str(HERE / "results"), str(HERE / "figures"), "stage"][len(sys.argv[1:4]) :]
+    main(Path(a[0]), Path(a[1]), a[2])

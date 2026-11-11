@@ -11,12 +11,20 @@ reading: opposite -> "follows prior" / "follows steering" (the share separates w
   ("inert" counts as "does not"), "unreadable"; condition not met -> "not counted".
 outcome over the counted opposite pairs (unreadable left out; pair C never counted): "prior" / "steering" / "neither" iff
   every one reads that, "split" otherwise, "no call" iff none.
+
+Amendment 1 (results/predictions_amend1.json): a pair whose built premise is not met (pair B when the common-word
+cipher's realised prior is under b_prior_min) reads "condition not met" whatever its prior and steering; the common-word
+table is drawn by a ladder of filters (`filters`, `rung_ok`, `assign`, `take_rung`). Every input is a realised value: the priors
+of the built windows and the steering read on the built states.
 """
 
 from __future__ import annotations
 
+import math
 from collections.abc import Mapping, Sequence
 from typing import Any
+
+from torch import Tensor
 
 from commute.jobs import load_experiment
 
@@ -64,10 +72,73 @@ def outcome(readings: Sequence[str]) -> str:
 
 
 def pair_calls(p: Mapping[str, Any], th: Mapping[str, float]) -> dict[str, Any]:
-    """p = {"prior_gap": decades, "steering": (reuse seeds, new seeds)}: the prior and steering calls and the condition."""
-    gap = p["prior_gap"]
+    """p = {"prior_gap": decades, "steering": (reuse seeds, new seeds), "premise": bool (Amendment 1; absent = True)}:
+    the prior and steering calls and the condition."""
+    gap, premise = p["prior_gap"], p.get("premise", True)
     pc, steer = prior_call(gap, th["prior_bar"]), CALL(*p["steering"], th)
-    return {"prior": {"gap": gap, "call": pc}, "steering": steer, "condition": condition(pc, steer)}
+    cond = condition(pc, steer) if premise else "condition not met"
+    return {"prior": {"gap": gap, "call": pc}, "steering": steer, "premise": premise, "condition": cond}
+
+
+# ----------------------------------------------------------------------------- Amendment 1: the common-word ladder
+
+
+def cap_name(value_max: float) -> str:
+    return f"P <= {value_max:g}"
+
+
+def rank_name(r: int) -> str:
+    return f"rank > {r}"
+
+
+def ratio_name(m: float) -> str:
+    return f"<= {m:g}x median"
+
+
+def filters(G: Tensor, pool: list[int], ranks: Sequence[int], ratios: Sequence[float], value_max: float) -> dict[str, Tensor]:
+    """Each filter alone, (keys, pool) bool. G: (keys, vocab) W0's geometric-mean P(v | M k). The cap: P <= value_max;
+    rank > r: strictly under the key's r-th largest P over the vocabulary (past its top r, as run 1); m x median: P <= m x
+    v's median over the keys."""
+    P, med = G[:, pool], G.quantile(0.5, dim=0)[pool]
+    out = {cap_name(value_max): P <= value_max}
+    out |= {rank_name(r): P < G.topk(r, dim=1).values[:, -1:] for r in ranks}
+    return out | {ratio_name(m): P <= m * med for m in ratios}
+
+
+def rung_ok(f: Mapping[str, Tensor], min_rank: int, median_ratio: float, value_max: float) -> Tensor:
+    """A rung's admissible (keys, pool): the cap, its rank filter and its median filter together."""
+    return f[cap_name(value_max)] & f[rank_name(min_rank)] & f[ratio_name(median_ratio)]
+
+
+def assign(P: Tensor, ok: Tensor) -> list[int | None]:
+    """Per key (row), a column: keys in order of fewest admissible columns first (ties: row order), each taking its
+    highest-P unused admissible column (ties: lower column). None where a key finds none left."""
+    out: list[int | None] = [None] * P.shape[0]
+    used: set[int] = set()
+    for i in sorted(range(P.shape[0]), key=lambda r: int(ok[r].sum())):
+        cols = sorted(ok[i].nonzero().flatten().tolist(), key=lambda j: -float(P[i, j]))
+        j = next((c for c in cols if c not in used), None)
+        if j is not None:
+            used.add(j)
+        out[i] = j
+    return out
+
+
+def est_prior(log_p: Sequence[float], n: Sequence[int]) -> float:
+    """The filed prior from per-key pieces: exp of the window-weighted mean of log G_heldout(k, v_k) over the trained keys
+    (= geo_rate over the trained keys' held-out windows, the filed estimator); nan with no windows."""
+    total = sum(n)
+    return math.exp(sum(a * b for a, b in zip(log_p, n, strict=True)) / total) if total else math.nan
+
+
+def take_rung(rungs: Sequence[Mapping[str, Any]], prior_min: float) -> int | None:
+    """The first rung whose table is complete and whose estimated prior is >= prior_min; None if none qualifies."""
+    return next((i for i, r in enumerate(rungs) if r["complete"] and r["prior_est"] >= prior_min), None)
+
+
+def b_premise(prior_common: float, b_prior_min: float) -> bool:
+    """Pair B is counted only if the common-word cipher's realised prior is >= b_prior_min (Amendment 1)."""
+    return prior_common >= b_prior_min
 
 
 def score(pairs: Mapping[str, Mapping[str, Any]], th: Mapping[str, float]) -> dict[str, Any]:
