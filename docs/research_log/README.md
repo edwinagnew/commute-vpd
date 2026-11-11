@@ -75,6 +75,11 @@ change since HEAD, and the total against the 20,000 limit. Plan the cuts once: `
 `--blocks` lists the 40 largest blocks; make them all, then re-measure once. Cut cheapest first:
 what this flush supersedes; closed items in `next`, `gaps` and `timeline`; Techniques or Apparatus prose a card already
 holds. Claim rows last: they are the record (friction 208, 368, 376).
+`--words` counts the main page only: `methodtable`, `neurontable`, `experiments`, `glossary`, `changelog` and `mistakes`
+are not counted, and it names them (friction 681). When the user waives the cap for a request (a whole-log
+restructure, user 2026-11-10), the lead appends `CONSENT YYYY-MM-DD <role> · <the user's words>` to `PENDING.md`: the
+"over" line then reads as an FYI, and the flush writes for readability, lengthening where that helps (friction 688).
+The flush removes the line with the rest of the queue.
 
 ## Batched updates (since 2026-10-21, user)
 
@@ -88,7 +93,9 @@ least once a day:
    without a card, that no part of the log or queue names. Add a `PENDING.md` line for each. A changelog wildcard
    (`analysis_qwen-*`) counts as naming.
 3. Apply each line as "What to update" below says, grepping `parts/` for the places to change rather than reading
-   whole sections. Write one changelog row for the flush, empty `PENDING.md` except its `HOLD` lines, build. The build warns on a removed line
+   whole sections. Just before the changelog row, `flock -s -n 9 9<docs/research_log/PENDING.md` and re-read the
+   queue: apply any line that arrived since you started (one landed after a pull and cost a second commit and build,
+   friction 718); the build's `queued:` line names any still there. Write one changelog row for the flush, empty `PENDING.md` except its `HOLD` lines, build. The build warns on a removed line
    whose file, E-code or card id is in nothing the flush added: check it landed (friction 155). Then publish. A line
    appended meanwhile survives the merge and waits for the next flush; lines you removed stay gone (`fleet/merge-lines`).
 
@@ -171,7 +178,8 @@ From a Claude Code session, with the Artifact tool:
    `build/` too, so a publish after it is current (friction 519).
    `--changed` compares the hashes in `nav.js`, so a page nobody changed is neither read nor sent; rerun it after the
    last build and read any page newly named. A live `nav.js` missing or without hashes names every page: read those
-   (friction 291). A file not yet live needs no read. Never `read` with `url` alone: ~50k tokens, and the first send was
+   (friction 291). A file not yet live needs no read. A redrawn figure (a `fig/*.png` that is live and changed) counts as
+   a changed file: read its path before the first send, or the send is refused as unread content (friction 691). Never `read` with `url` alone: ~50k tokens, and the first send was
    refused all the same (friction 115, 160). The saved index.html is for `--check`; it does not count as a view.
    Which check (friction 384): before editing `parts/`, `--check`, where any diff is someone else's. With uncommitted
    edits, `--check-head`, against `parts/` at HEAD. After your commit, `--check` diffs your own edits: read only

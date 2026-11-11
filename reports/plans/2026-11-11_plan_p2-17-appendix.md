@@ -57,8 +57,8 @@ TF32 off, as E58 trained and E136/E143 read. The predictions file gets its E-num
 
 ## RunPod fallback (only if the debug job has not started within 10 min)
 
-One 4090 (about $0.7/h) under remote-kernels, pod `commute-disagreeing-pairs-<id>`. The saved updates (about 1 GB) cannot
-cross the 80 KB/s uplink, so on the pod every side is refit from its windows (about 1 s each, deterministic on a card: E147
+One 4090 (about $0.7/h) under remote-kernels, pod `commute-disagreeing-pairs-<id>`. The saved updates (about 1 GB) upload in
+about 2 min (~10 MB/s from the dev node, measured 2026-11-11; the older ~80 KB/s figure was never measured); the plan instead refits every side on the pod from its windows (about 1 s each, deterministic on a card: E147
 reproduced E58 within 0.0006) and the positive control compares the refits with E147's shares within each map's seed
 range instead of 1e-4. Windows are staged by hard link into a `results/large/` path and sent with
 `sync(include=[...])` (root `CLAUDE.md`). Download `stage{0,1,2}.json` after each stage, check sha256, terminate. Expected

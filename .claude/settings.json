@@ -1,6 +1,6 @@
 {
   "env": {
-    "REMOTE_KERNELS_BUDGET": "100"
+    "REMOTE_KERNELS_BUDGET": "300"
   },
   "permissions": {
     "additionalDirectories": [
@@ -8,6 +8,8 @@
     ],
     "allow": [
       "Bash(fleet/*)",
+      "Bash(~/commute-agents/fleet/*)",
+      "Bash(/mnt/nw/home/e.agnew/commute-agents/fleet/*)",
       "Bash(sbatch *)",
       "Bash(squeue*)",
       "Bash(scontrol show*)",
