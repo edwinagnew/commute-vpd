@@ -124,6 +124,14 @@ log-odds of one target per window, while the twins are scored elsewhere on the c
 reading in that unit needs a short new driver. The filed rule allows one free debug job for such a gap; this cell ran
 none, as briefed.
 
+## What the reference can and cannot tell
+
+A premise check (`~/commute-data/premise/P2.20.md`, advisory) doubts that part 1 is an independent reference. Part 1's
+share reads a variable of the original model, not the decomposition, so it is not built like the re-gating share. But
+it puts the reuse side higher on every pair, exactly as the pairs were built, so on direction it repeats the build
+labels and the earlier direction checks. Only the ranking of gap sizes is new here, and that rests on five pairs, three
+of them for the re-gating share. The doubt is listed for the user's gate; nothing here changes.
+
 ## Departures from the literature
 
 None. Spearman's rank correlation is used as defined, with average ranks for ties.
