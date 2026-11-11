@@ -1,0 +1,772 @@
+{
+ "rule": "experiments/part1_vs_methods/results/predictions.json",
+ "part1": {
+  "e62_copy": {
+   "label": "in-context copy | lookup",
+   "reuse": "e62_copy",
+   "new": "e62_lookup",
+   "G_reuse": [
+    0.6962236723004762,
+    0.6936238732095373
+   ],
+   "G_new": [
+    0.3273759798974608,
+    0.28860464466133917
+   ],
+   "gap_seeds": [
+    0.3688476924030154,
+    0.40501922854819816
+   ],
+   "gap": 0.3869334604756068
+  },
+  "copy24": {
+   "label": "copy, 24 keys | cipher, 24 keys",
+   "reuse": "copy24",
+   "new": "cipher24",
+   "G_reuse": [
+    0.6803197914691625,
+    0.684774348703018
+   ],
+   "G_new": [
+    0.39436674411582107,
+    0.3313862181411078
+   ],
+   "gap_seeds": [
+    0.2859530473533415,
+    0.3533881305619102
+   ],
+   "gap": 0.31967058895762585
+  },
+  "ident32": {
+   "label": "identity, 32 keys | random, 32 keys",
+   "reuse": "ident32",
+   "new": "rand32",
+   "G_reuse": [
+    0.6921035846079469,
+    0.7122802756216882
+   ],
+   "G_new": [
+    0.280448259367879,
+    0.2579492148658967
+   ],
+   "gap_seeds": [
+    0.41165532524006787,
+    0.45433106075579144
+   ],
+   "gap": 0.43299319299792965
+  },
+  "case_real": {
+   "label": "real case label | twin",
+   "reuse": "case_real",
+   "new": "case_twin",
+   "G_reuse": [
+    0.8318438138780787,
+    0.8282913645436677
+   ],
+   "G_new": [
+    0.5186198141041569,
+    0.5528782383768285
+   ],
+   "gap_seeds": [
+    0.3132239997739218,
+    0.2754131261668392
+   ],
+   "gap": 0.2943185629703805
+  },
+  "repeat_real": {
+   "label": "real repeat label | twin",
+   "reuse": "repeat_real",
+   "new": "repeat_twin",
+   "G_reuse": [
+    0.757572236200134,
+    0.7396524945545297
+   ],
+   "G_new": [
+    0.5445385355349216,
+    0.5743834795275267
+   ],
+   "gap_seeds": [
+    0.21303370066521243,
+    0.16526901502700309
+   ],
+   "gap": 0.18915135784610776
+  }
+ },
+ "overlap_count": 5,
+ "overlapping": {
+  "e62_copy": {
+   "label": "in-context copy | lookup",
+   "reuse": "e62_copy",
+   "new": "e62_lookup",
+   "G_reuse": [
+    0.6962236723004762,
+    0.6936238732095373
+   ],
+   "G_new": [
+    0.3273759798974608,
+    0.28860464466133917
+   ],
+   "gap_seeds": [
+    0.3688476924030154,
+    0.40501922854819816
+   ],
+   "gap": 0.3869334604756068,
+   "final_pair": "e62_copy_lookup",
+   "overlap": {
+    "inventory_pair": "e62_copy_lookup",
+    "reuse": {
+     "part1_files": [
+      "experiments/induction_cue/results/large/copy_s0.pt",
+      "experiments/induction_cue/results/large/copy_s1.pt"
+     ],
+     "matched_states": [
+      "e62/copy_s0",
+      "e62/copy_s1"
+     ],
+     "part2_states": 3
+    },
+    "new": {
+     "part1_files": [
+      "experiments/induction_cue/results/large/lookup_s0.pt",
+      "experiments/induction_cue/results/large/lookup_s1.pt"
+     ],
+     "matched_states": [
+      "e62/lookup_s0",
+      "e62/lookup_s1"
+     ],
+     "part2_states": 3
+    },
+    "same_files": true
+   }
+  },
+  "copy24": {
+   "label": "copy, 24 keys | cipher, 24 keys",
+   "reuse": "copy24",
+   "new": "cipher24",
+   "G_reuse": [
+    0.6803197914691625,
+    0.684774348703018
+   ],
+   "G_new": [
+    0.39436674411582107,
+    0.3313862181411078
+   ],
+   "gap_seeds": [
+    0.2859530473533415,
+    0.3533881305619102
+   ],
+   "gap": 0.31967058895762585,
+   "final_pair": "open_pair_c3_copy",
+   "overlap": {
+    "inventory_pair": "open_pair_c3_copy",
+    "reuse": {
+     "part1_files": [
+      "experiments/open_pair/results/large/amend1/copy_s0.pt",
+      "experiments/open_pair/results/large/amend1/copy_s1.pt"
+     ],
+     "matched_states": [
+      "c3/copy_s0",
+      "c3/copy_s1"
+     ],
+     "part2_states": 8
+    },
+    "new": {
+     "part1_files": [
+      "experiments/open_pair/results/large/cipher_s0.pt",
+      "experiments/open_pair/results/large/cipher_s1.pt"
+     ],
+     "matched_states": [
+      "c3/cipher_s0",
+      "c3/cipher_s1"
+     ],
+     "part2_states": 8
+    },
+    "same_files": true
+   }
+  },
+  "ident32": {
+   "label": "identity, 32 keys | random, 32 keys",
+   "reuse": "ident32",
+   "new": "rand32",
+   "G_reuse": [
+    0.6921035846079469,
+    0.7122802756216882
+   ],
+   "G_new": [
+    0.280448259367879,
+    0.2579492148658967
+   ],
+   "gap_seeds": [
+    0.41165532524006787,
+    0.45433106075579144
+   ],
+   "gap": 0.43299319299792965,
+   "final_pair": "e46_copy_random",
+   "overlap": {
+    "inventory_pair": "e46_copy_random",
+    "reuse": {
+     "part1_files": [
+      "experiments/regating_table/results/large/ident32_s0.pt",
+      "experiments/regating_table/results/large/ident32_s1.pt"
+     ],
+     "matched_states": [
+      "e46/ident32_s0",
+      "e46/ident32_s1"
+     ],
+     "part2_states": 4
+    },
+    "new": {
+     "part1_files": [
+      "experiments/regating_table/results/large/rand32_s0.pt",
+      "experiments/regating_table/results/large/rand32_s1.pt"
+     ],
+     "matched_states": [
+      "e46/rand32_s0",
+      "e46/rand32_s1"
+     ],
+     "part2_states": 4
+    },
+    "same_files": true
+   }
+  },
+  "case_real": {
+   "label": "real case label | twin",
+   "reuse": "case_real",
+   "new": "case_twin",
+   "G_reuse": [
+    0.8318438138780787,
+    0.8282913645436677
+   ],
+   "G_new": [
+    0.5186198141041569,
+    0.5528782383768285
+   ],
+   "gap_seeds": [
+    0.3132239997739218,
+    0.2754131261668392
+   ],
+   "gap": 0.2943185629703805,
+   "final_pair": "e123_case_label",
+   "overlap": {
+    "inventory_pair": "case_label",
+    "reuse": {
+     "part1_files": [
+      "experiments/case_label/results/large/dW_real_s0.pt",
+      "experiments/case_label/results/large/dW_real_s1.pt"
+     ],
+     "matched_states": [
+      "case_label/real_s0",
+      "case_label/real_s1"
+     ],
+     "part2_states": 2
+    },
+    "new": {
+     "part1_files": [
+      "experiments/case_label/results/large/dW_twin_s0.pt",
+      "experiments/case_label/results/large/dW_twin_s1.pt"
+     ],
+     "matched_states": [
+      "case_label/twin_s0",
+      "case_label/twin_s1"
+     ],
+     "part2_states": 2
+    },
+    "same_files": true
+   }
+  },
+  "repeat_real": {
+   "label": "real repeat label | twin",
+   "reuse": "repeat_real",
+   "new": "repeat_twin",
+   "G_reuse": [
+    0.757572236200134,
+    0.7396524945545297
+   ],
+   "G_new": [
+    0.5445385355349216,
+    0.5743834795275267
+   ],
+   "gap_seeds": [
+    0.21303370066521243,
+    0.16526901502700309
+   ],
+   "gap": 0.18915135784610776,
+   "final_pair": "e125_repeat_label",
+   "overlap": {
+    "inventory_pair": "fresh_reuse_pair",
+    "reuse": {
+     "part1_files": [
+      "experiments/fresh_reuse_pair/results/large/dW_real_s0.pt",
+      "experiments/fresh_reuse_pair/results/large/dW_real_s1.pt"
+     ],
+     "matched_states": [
+      "fresh/real_s0",
+      "fresh/real_s1"
+     ],
+     "part2_states": 2
+    },
+    "new": {
+     "part1_files": [
+      "experiments/fresh_reuse_pair/results/large/dW_twin_s0.pt",
+      "experiments/fresh_reuse_pair/results/large/dW_twin_s1.pt"
+     ],
+     "matched_states": [
+      "fresh/twin_s0",
+      "fresh/twin_s1"
+     ],
+     "part2_states": 2
+    },
+    "same_files": true
+   }
+  }
+ },
+ "task_only": {
+  "copy24": {
+   "final_pair": "e58_copy_prior_cipher",
+   "why_not_scored": "96 keys, prior-matched cipher, refit states in experiments/refit_96key/results/large"
+  }
+ },
+ "methods": {
+  "share": {
+   "pairs": {
+    "e62_copy": {
+     "order": "agree",
+     "call": "apart",
+     "gap": 0.69063356969848,
+     "n_reuse": 3,
+     "n_new": 3
+    },
+    "copy24": {
+     "order": "agree",
+     "call": "apart",
+     "gap": 0.6068633846732897,
+     "n_reuse": 8,
+     "n_new": 8
+    },
+    "ident32": {
+     "order": "agree",
+     "call": "apart",
+     "gap": 0.5128145594981999,
+     "n_reuse": 4,
+     "n_new": 4
+    },
+    "case_real": {
+     "order": "no order",
+     "call": "no call",
+     "gap": -0.017879622127674327,
+     "n_reuse": 3,
+     "n_new": 3
+    },
+    "repeat_real": {
+     "order": "no order",
+     "call": "no call",
+     "gap": -0.09041168623771657,
+     "n_reuse": 3,
+     "n_new": 3
+    }
+   },
+   "counts": {
+    "agree": 3,
+    "reverse": 0,
+    "no order": 2,
+    "missing": 0
+   },
+   "spearman": 0.7,
+   "n": 5
+  },
+  "prior": {
+   "pairs": {
+    "e62_copy": {
+     "order": "no order",
+     "call": "one value a side",
+     "gap": 0.12044966708098759,
+     "n_reuse": 1,
+     "n_new": 1
+    },
+    "copy24": {
+     "order": "no order",
+     "call": "one value a side",
+     "gap": 2.12411235306086,
+     "n_reuse": 1,
+     "n_new": 1
+    },
+    "ident32": {
+     "order": "agree",
+     "call": "apart",
+     "gap": 1.480106489785622,
+     "n_reuse": 2,
+     "n_new": 2
+    },
+    "case_real": {
+     "order": "no order",
+     "call": "one value a side",
+     "gap": 0.030115331077276153,
+     "n_reuse": 1,
+     "n_new": 1
+    },
+    "repeat_real": {
+     "order": "no order",
+     "call": "one value a side",
+     "gap": 0.009447647158835615,
+     "n_reuse": 1,
+     "n_new": 1
+    }
+   },
+   "counts": {
+    "agree": 1,
+    "reverse": 0,
+    "no order": 4,
+    "missing": 0
+   },
+   "spearman": 0.7,
+   "n": 5
+  },
+  "steering": {
+   "pairs": {
+    "e62_copy": {
+     "order": "agree",
+     "call": "apart",
+     "gap": 0.41249770841639744,
+     "n_reuse": 3,
+     "n_new": 3
+    },
+    "copy24": {
+     "order": "agree",
+     "call": "apart",
+     "gap": 0.23758248686862737,
+     "n_reuse": 8,
+     "n_new": 8
+    },
+    "ident32": {
+     "order": "agree",
+     "call": "apart",
+     "gap": 0.4703153290690413,
+     "n_reuse": 4,
+     "n_new": 4
+    },
+    "case_real": {
+     "order": "reverse",
+     "call": "apart",
+     "gap": -0.5061434627945977,
+     "n_reuse": 3,
+     "n_new": 3
+    },
+    "repeat_real": {
+     "order": "reverse",
+     "call": "apart",
+     "gap": -1.0868713913876684,
+     "n_reuse": 3,
+     "n_new": 3
+    }
+   },
+   "counts": {
+    "agree": 3,
+    "reverse": 2,
+    "no order": 0,
+    "missing": 0
+   },
+   "spearman": 1.0,
+   "n": 5
+  },
+  "erank": {
+   "pairs": {
+    "e62_copy": {
+     "order": "agree",
+     "call": "apart",
+     "gap": 0.05797893994365069,
+     "n_reuse": 3,
+     "n_new": 3
+    },
+    "copy24": {
+     "order": "no order",
+     "call": "no call",
+     "gap": 0.009073509780880331,
+     "n_reuse": 8,
+     "n_new": 8
+    },
+    "ident32": {
+     "order": "agree",
+     "call": "apart",
+     "gap": 0.02492440929236293,
+     "n_reuse": 4,
+     "n_new": 4
+    },
+    "case_real": {
+     "order": "reverse",
+     "call": "apart",
+     "gap": -0.0716167739894729,
+     "n_reuse": 2,
+     "n_new": 2
+    },
+    "repeat_real": {
+     "order": "reverse",
+     "call": "apart",
+     "gap": -0.048452447055964944,
+     "n_reuse": 2,
+     "n_new": 2
+    }
+   },
+   "counts": {
+    "agree": 2,
+    "reverse": 2,
+    "no order": 1,
+    "missing": 0
+   },
+   "spearman": 0.8,
+   "n": 5
+  },
+  "size": {
+   "pairs": {
+    "e62_copy": {
+     "order": "reverse",
+     "call": "apart",
+     "gap": -0.07525995333953298,
+     "n_reuse": 3,
+     "n_new": 3
+    },
+    "copy24": {
+     "order": "no order",
+     "call": "no call",
+     "gap": 0.0007726899236687395,
+     "n_reuse": 8,
+     "n_new": 8
+    },
+    "ident32": {
+     "order": "reverse",
+     "call": "apart",
+     "gap": -0.18109084404311876,
+     "n_reuse": 4,
+     "n_new": 4
+    },
+    "case_real": {
+     "order": "reverse",
+     "call": "apart",
+     "gap": -0.4467354336946022,
+     "n_reuse": 2,
+     "n_new": 2
+    },
+    "repeat_real": {
+     "order": "reverse",
+     "call": "apart",
+     "gap": -0.19789763291636617,
+     "n_reuse": 2,
+     "n_new": 2
+    }
+   },
+   "counts": {
+    "agree": 0,
+    "reverse": 4,
+    "no order": 1,
+    "missing": 0
+   },
+   "spearman": 0.5,
+   "n": 5
+  },
+  "neuron": {
+   "pairs": {
+    "e62_copy": {
+     "order": "agree",
+     "call": "apart",
+     "gap": 0.15576145575174927,
+     "n_reuse": 3,
+     "n_new": 3
+    },
+    "copy24": {
+     "order": "reverse",
+     "call": "apart",
+     "gap": -0.08253159742051641,
+     "n_reuse": 8,
+     "n_new": 8
+    },
+    "ident32": {
+     "order": "reverse",
+     "call": "apart",
+     "gap": -0.2581577037559817,
+     "n_reuse": 4,
+     "n_new": 4
+    },
+    "case_real": {
+     "order": "missing",
+     "call": null,
+     "gap": null,
+     "n_reuse": null,
+     "n_new": null
+    },
+    "repeat_real": {
+     "order": "missing",
+     "call": null,
+     "gap": null,
+     "n_reuse": null,
+     "n_new": null
+    }
+   },
+   "counts": {
+    "agree": 1,
+    "reverse": 2,
+    "no order": 0,
+    "missing": 2
+   },
+   "spearman": -0.5,
+   "n": 3
+  },
+  "neuron_half": {
+   "pairs": {
+    "e62_copy": {
+     "order": "agree",
+     "call": "apart",
+     "gap": 0.27248615778332114,
+     "n_reuse": 3,
+     "n_new": 3
+    },
+    "copy24": {
+     "order": "no order",
+     "call": "no call",
+     "gap": -0.020965260231508465,
+     "n_reuse": 8,
+     "n_new": 8
+    },
+    "ident32": {
+     "order": "reverse",
+     "call": "apart",
+     "gap": -0.13245300976953328,
+     "n_reuse": 4,
+     "n_new": 4
+    },
+    "case_real": {
+     "order": "missing",
+     "call": null,
+     "gap": null,
+     "n_reuse": null,
+     "n_new": null
+    },
+    "repeat_real": {
+     "order": "missing",
+     "call": null,
+     "gap": null,
+     "n_reuse": null,
+     "n_new": null
+    }
+   },
+   "counts": {
+    "agree": 1,
+    "reverse": 1,
+    "no order": 1,
+    "missing": 2
+   },
+   "spearman": -0.5,
+   "n": 3
+  },
+  "neuron_top": {
+   "pairs": {
+    "e62_copy": {
+     "order": "no order",
+     "call": "no call",
+     "gap": 0.024030615905505412,
+     "n_reuse": 3,
+     "n_new": 3
+    },
+    "copy24": {
+     "order": "no order",
+     "call": "no call",
+     "gap": -0.015810488299527005,
+     "n_reuse": 8,
+     "n_new": 8
+    },
+    "ident32": {
+     "order": "no order",
+     "call": "no call",
+     "gap": 0.004970859131726159,
+     "n_reuse": 4,
+     "n_new": 4
+    },
+    "case_real": {
+     "order": "no order",
+     "call": "no call",
+     "gap": -0.008224590394433863,
+     "n_reuse": 3,
+     "n_new": 3
+    },
+    "repeat_real": {
+     "order": "no order",
+     "call": "no call",
+     "gap": 0.009799448107832894,
+     "n_reuse": 3,
+     "n_new": 3
+    }
+   },
+   "counts": {
+    "agree": 0,
+    "reverse": 0,
+    "no order": 5,
+    "missing": 0
+   },
+   "spearman": 0.1,
+   "n": 5
+  },
+  "untrained": {
+   "pairs": {
+    "e62_copy": {
+     "order": "agree",
+     "call": "apart",
+     "gap": 0.05720827389776701,
+     "n_reuse": 3,
+     "n_new": 3
+    },
+    "copy24": {
+     "order": "no order",
+     "call": "no call",
+     "gap": 0.046586013940894275,
+     "n_reuse": 8,
+     "n_new": 8
+    },
+    "ident32": {
+     "order": "reverse",
+     "call": "apart",
+     "gap": -0.02623570908674719,
+     "n_reuse": 4,
+     "n_new": 4
+    },
+    "case_real": {
+     "order": "reverse",
+     "call": "apart",
+     "gap": -0.042599458899181014,
+     "n_reuse": 2,
+     "n_new": 2
+    },
+    "repeat_real": {
+     "order": "no order",
+     "call": "no call",
+     "gap": -0.0055384630331376805,
+     "n_reuse": 2,
+     "n_new": 2
+    }
+   },
+   "counts": {
+    "agree": 1,
+    "reverse": 2,
+    "no order": 2,
+    "missing": 0
+   },
+   "spearman": 0.2,
+   "n": 5
+  }
+ },
+ "missing": [
+  {
+   "pair": "e123_case_label",
+   "method": "neuron"
+  },
+  {
+   "pair": "e125_repeat_label",
+   "method": "neuron"
+  },
+  {
+   "pair": "e123_case_label",
+   "method": "neuron_half"
+  },
+  {
+   "pair": "e125_repeat_label",
+   "method": "neuron_half"
+  }
+ ]
+}
