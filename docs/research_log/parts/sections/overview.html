@@ -94,9 +94,9 @@
   <div class="links"><a href="#e133">E133</a><a href="#e36">E36</a><a href="#e58">E58</a><a href="#neurontable">baselines</a><a href="#cards-measure">all part 3 cards</a></div></div>
 
   <div class="card key"><div class="k">Part 4 · Repeat on the larger model · gate 2026-11-25</div><h3>Do the 67M findings hold on Qwen3-1.7B, and for RL?</h3>
-  <p><strong>Found.</strong> Nothing tells reuse from new on Qwen yet. The re-gating share reads 0.99 on every update, random changes included (E132, E144).</p>
-  <p><strong>Open.</strong> Whether any part 3 reading survives at this scale. You stopped Qwen re-gating after E144; the 11-18 gate decides what part 4 repeats.</p>
-  <div class="links"><a href="#e132">E132</a><a href="#e144">E144</a><a href="#e104">E104</a><a href="#e69">E69</a><a href="#cards-qwen">all part 4 cards</a></div></div>
+  <p><strong>Found.</strong> Nothing tells reuse from new on Qwen yet. The re-gating share reads 0.99 on every update, random ones included (E132, E144). Planted changes are found on often-on subcomponents (0.89), less on rarely-on ones (0.29); real updates do not look planted (E152).</p>
+  <p><strong>Open.</strong> Whether any part 3 reading survives here; the 11-18 gate decides what part 4 repeats.</p>
+  <div class="links"><a href="#e132">E132</a><a href="#e144">E144</a><a href="#e152">E152</a><a href="#e104">E104</a><a href="#e69">E69</a><a href="#cards-qwen">all part 4 cards</a></div></div>
 </div>
 
 <h3>Our read: most promising, most uncertain</h3>
@@ -107,7 +107,7 @@
   <div class="card"><h4>Key uncertainties</h4>
   <p><strong>Is the share more than the prior?</strong> The original model's probability for the trained answer points the same way on all nine pairs. The share still separates the two pairs made with the prior matched, and its gap sizes do not track the prior's, but nine pairs is few. Pairs where the prior and steering disagree are being built (cell P2.17, section {{n:next}}).</p>
   <p><strong>"Reuse" still means "made to reuse".</strong> Every side is labelled by how it was made. The working definition does not yet give those labels on real fine-tunes, so the comparisons measure agreement with the builder's intent.</p>
-  <p><strong>Scale.</strong> On Qwen every reading so far sits at a ceiling or cannot be computed, so nothing found on the 67M has been shown on a model people use.</p></div>
+  <p><strong>Scale.</strong> On Qwen readings sit at a ceiling or cannot be computed, so nothing is shown on a model people use.</p></div>
 </div>
 
 <div class="prose"><div class="card key" id="existing-new"><div class="k">The working definition · adopted tentatively 2026-11-10</div>
