@@ -126,9 +126,9 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": 0.024030615905505412,
-   "call": "no call",
-   "call_rule": "the run's filed call: inert",
-   "against_share": "no call"
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "same direction as the share"
   },
   {
    "pair": "e62_copy_lookup",
@@ -227,8 +227,34 @@
    "replaces": "",
    "gap": 0.05797893994365069,
    "call": "apart",
-   "call_rule": "the run's filed call: True",
+   "call_rule": "seed ranges",
    "against_share": "same direction as the share"
+  },
+  {
+   "pair": "e62_copy_lookup",
+   "pair_name": "Copy at a new marker vs lookup",
+   "group": "built",
+   "method": "k_half",
+   "reuse": [
+    512,
+    512,
+    512
+   ],
+   "new": [
+    512,
+    512,
+    512
+   ],
+   "n_reuse": 3,
+   "n_new": 3,
+   "source": "experiments/neuron_r/results/carrying.json .rows[<state>].k_half, states from experiments/neuron_r/results/predictions.json .rows.e62_copy_lookup",
+   "form": "",
+   "filed_call": null,
+   "replaces": "",
+   "gap": 0.0,
+   "call": "no call",
+   "call_rule": "seed ranges",
+   "against_share": "no call"
   },
   {
    "pair": "e46_copy_random",
@@ -366,9 +392,9 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": 0.004970859131726159,
-   "call": "no call",
-   "call_rule": "the run's filed call: inert",
-   "against_share": "no call"
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "same direction as the share"
   },
   {
    "pair": "e46_copy_random",
@@ -395,7 +421,7 @@
    "replaces": "experiments/baseline_neurons/results/baseline_neurons.json [\"b3\"][\"ident32_s0\"][\"S\"]; experiments/baseline_neurons/results/baseline_neurons.json [\"b3\"][\"ident32_s1\"][\"S\"]; experiments/baseline_neurons/results/baseline_neurons.json [\"b3\"][\"ident32b_s0\"][\"S\"]; experiments/baseline_neurons/results/baseline_neurons.json [\"b3\"][\"ident32b_s1\"][\"S\"]; experiments/baseline_neurons/results/baseline_neurons.json [\"b3\"][\"rand32_s0\"][\"S\"]; experiments/baseline_neurons/results/baseline_neurons.json [\"b3\"][\"rand32_s1\"][\"S\"]; experiments/baseline_neurons/results/baseline_neurons.json [\"b3\"][\"rand32b_s0\"][\"S\"]; experiments/baseline_neurons/results/baseline_neurons.json [\"b3\"][\"rand32b_s1\"][\"S\"]",
    "gap": 0.4703153290690413,
    "call": "apart",
-   "call_rule": "the run's filed call: separates",
+   "call_rule": "seed ranges",
    "against_share": "same direction as the share"
   },
   {
@@ -475,7 +501,35 @@
    "replaces": "",
    "gap": 0.02492440929236293,
    "call": "apart",
-   "call_rule": "the run's filed call: True",
+   "call_rule": "seed ranges",
+   "against_share": "same direction as the share"
+  },
+  {
+   "pair": "e46_copy_random",
+   "pair_name": "Copy maps vs random maps",
+   "group": "built",
+   "method": "k_half",
+   "reuse": [
+    128,
+    128,
+    128,
+    128
+   ],
+   "new": [
+    256,
+    256,
+    1024,
+    1024
+   ],
+   "n_reuse": 4,
+   "n_new": 4,
+   "source": "experiments/neuron_r/results/carrying.json .rows[<state>].k_half, states from experiments/neuron_r/results/predictions.json .rows.e46_copy_random",
+   "form": "",
+   "filed_call": null,
+   "replaces": "",
+   "gap": 0.6989700043360189,
+   "call": "apart",
+   "call_rule": "seed ranges",
    "against_share": "same direction as the share"
   },
   {
@@ -604,9 +658,9 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": 0.02970839772256787,
-   "call": "no call",
-   "call_rule": "the run's filed call: inert",
-   "against_share": "no call"
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "same direction as the share"
   },
   {
    "pair": "e53_lowercase_cipher",
@@ -631,7 +685,7 @@
    "replaces": "experiments/regating_truth_table/results/table.json [\"runs\"][\"e53/lowercase_s0\"][\"S\"][\"value\"]; experiments/regating_truth_table/results/table.json [\"runs\"][\"e53/lowercase_s1\"][\"S\"][\"value\"]; experiments/regating_truth_table/results/table.json [\"runs\"][\"e53/cipher_s0\"][\"S\"][\"value\"]; experiments/regating_truth_table/results/table.json [\"runs\"][\"e53/cipher_s1\"][\"S\"][\"value\"]; experiments/regating_truth_table/results/table.json [\"runs\"][\"e53/broad_cipher_s0\"][\"S\"][\"value\"]; experiments/regating_truth_table/results/table.json [\"runs\"][\"e53/broad_cipher_s1\"][\"S\"][\"value\"]",
    "gap": -0.05295560423337109,
    "call": "no call",
-   "call_rule": "the run's filed call: does not",
+   "call_rule": "seed ranges",
    "against_share": "no call"
   },
   {
@@ -705,9 +759,35 @@
    "filed_call": false,
    "replaces": "",
    "gap": 0.011454460271427547,
-   "call": "no call",
-   "call_rule": "the run's filed call: False",
-   "against_share": "no call"
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "same direction as the share"
+  },
+  {
+   "pair": "e53_lowercase_cipher",
+   "pair_name": "Lowercase vs ciphers",
+   "group": "built",
+   "method": "k_half",
+   "reuse": [
+    16,
+    16
+   ],
+   "new": [
+    128,
+    128,
+    128,
+    64
+   ],
+   "n_reuse": 2,
+   "n_new": 4,
+   "source": "experiments/neuron_r/results/carrying.json .rows[<state>].k_half, states from experiments/neuron_r/results/predictions.json .rows.e53_lowercase_cipher",
+   "form": "",
+   "filed_call": null,
+   "replaces": "",
+   "gap": 0.8450980400142568,
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "same direction as the share"
   },
   {
    "pair": "e54_matched",
@@ -855,9 +935,9 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": -0.03002205650075479,
-   "call": "no call",
-   "call_rule": "the run's filed call: inert",
-   "against_share": "no call"
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "opposite to the share"
   },
   {
    "pair": "e54_matched",
@@ -886,7 +966,7 @@
    "replaces": "experiments/keydependent_patch/results/job1.json [\"states\"][\"elicit_s0\"][\"S\"]; experiments/keydependent_patch/results/job1.json [\"states\"][\"elicit_s1\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"elicit_s2\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"elicit_s3\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"elicit_s4\"][\"S\"]; experiments/keydependent_patch/results/job1.json [\"states\"][\"cipher_s0\"][\"S\"]; experiments/keydependent_patch/results/job1.json [\"states\"][\"cipher_s1\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"cipher_s2\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"cipher_s3\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"cipher_s4\"][\"S\"]",
    "gap": -0.23703281451765246,
    "call": "apart",
-   "call_rule": "the run's filed call: separates",
+   "call_rule": "seed ranges",
    "against_share": "opposite to the share"
   },
   {
@@ -968,7 +1048,7 @@
    "replaces": "",
    "gap": -7.121457876131624e-05,
    "call": "no call",
-   "call_rule": "the run's filed call: False",
+   "call_rule": "seed ranges",
    "against_share": "no call"
   },
   {
@@ -1102,9 +1182,9 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": -0.019264948414933276,
-   "call": "no call",
-   "call_rule": "the run's filed call: inert",
-   "against_share": "no call"
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "opposite to the share"
   },
   {
    "pair": "e54_own",
@@ -1130,7 +1210,7 @@
    "replaces": "experiments/keydependent_patch/results/job1.json [\"states\"][\"elicit_s0\"][\"S\"]; experiments/keydependent_patch/results/job1.json [\"states\"][\"elicit_s1\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"elicit_s2\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"elicit_s3\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"elicit_s4\"][\"S\"]; experiments/keydependent_patch/results/job1.json [\"states\"][\"cipher_own_s0\"][\"S\"]; experiments/keydependent_patch/results/job1.json [\"states\"][\"cipher_own_s1\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"cipher_own_s2\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"cipher_own_s3\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"cipher_own_s4\"][\"S\"]",
    "gap": -0.11960999549542606,
    "call": "apart",
-   "call_rule": "the run's filed call: separates",
+   "call_rule": "seed ranges",
    "against_share": "opposite to the share"
   },
   {
@@ -1209,7 +1289,34 @@
    "replaces": "",
    "gap": 0.02648135354840158,
    "call": "apart",
-   "call_rule": "the run's filed call: True",
+   "call_rule": "seed ranges",
+   "against_share": "same direction as the share"
+  },
+  {
+   "pair": "e54_own",
+   "pair_name": "Half-known vs cipher, own steps",
+   "group": "built",
+   "method": "k_half",
+   "reuse": [
+    256,
+    512,
+    256,
+    256,
+    256
+   ],
+   "new": [
+    1024,
+    1024
+   ],
+   "n_reuse": 5,
+   "n_new": 2,
+   "source": "experiments/neuron_r/results/carrying.json .rows[<state>].k_half, states from experiments/neuron_r/results/predictions.json .rows.e54_own",
+   "form": "",
+   "filed_call": null,
+   "replaces": "",
+   "gap": 0.5228787452803376,
+   "call": "apart",
+   "call_rule": "seed ranges",
    "against_share": "same direction as the share"
   },
   {
@@ -1388,9 +1495,9 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": -0.03363693583280771,
-   "call": "no call",
-   "call_rule": "the run's filed call: inert",
-   "against_share": "no call"
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "opposite to the share"
   },
   {
    "pair": "open_pair_c3",
@@ -1425,7 +1532,7 @@
    "replaces": "experiments/open_pair_instruments/results/run.json [\"columns\"][\"S\"][\"rank1\"]; experiments/open_pair_instruments/results/run.json [\"columns\"][\"S\"][\"cipher\"]",
    "gap": -0.2652162287675534,
    "call": "apart",
-   "call_rule": "the run's filed call: separates",
+   "call_rule": "seed ranges",
    "against_share": "opposite to the share"
   },
   {
@@ -1519,7 +1626,7 @@
    "replaces": "",
    "gap": -0.0016452016401643686,
    "call": "no call",
-   "call_rule": "the run's filed call: False",
+   "call_rule": "seed ranges",
    "against_share": "no call"
   },
   {
@@ -1698,9 +1805,9 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": -0.015810488299527005,
-   "call": "no call",
-   "call_rule": "the run's filed call: inert",
-   "against_share": "no call"
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "opposite to the share"
   },
   {
    "pair": "open_pair_c3_copy",
@@ -1735,7 +1842,7 @@
    "replaces": "experiments/open_pair_instruments/results/run.json [\"columns\"][\"S\"][\"copy\"]; experiments/open_pair_instruments/results/run.json [\"columns\"][\"S\"][\"cipher\"]",
    "gap": 0.23758248686862737,
    "call": "apart",
-   "call_rule": "the run's filed call: separates",
+   "call_rule": "seed ranges",
    "against_share": "same direction as the share"
   },
   {
@@ -1828,9 +1935,9 @@
    "filed_call": false,
    "replaces": "",
    "gap": 0.009073509780880331,
-   "call": "no call",
-   "call_rule": "the run's filed call: False",
-   "against_share": "no call"
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "same direction as the share"
   },
   {
    "pair": "e58_rank1_96",
@@ -1855,7 +1962,7 @@
    "replaces": "experiments/open_pair/results/amend3.json [\"reads\"][\"rank1@30\"][\"r\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"rank1_s1@30\"][\"r\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"rank1_s2@30\"][\"r\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"cipher_s0@30\"][\"r\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"cipher_s1@30\"][\"r\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"cipher_s2@30\"][\"r\"]",
    "gap": 0.5566000029340268,
    "call": "apart",
-   "call_rule": "the run's filed call: separates",
+   "call_rule": "seed ranges",
    "against_share": "apart"
   },
   {
@@ -1881,7 +1988,7 @@
    "replaces": "",
    "gap": 0.01961165340336618,
    "call": "no call",
-   "call_rule": "the run's filed call: does not",
+   "call_rule": "seed ranges",
    "against_share": "no call"
   },
   {
@@ -1907,7 +2014,7 @@
    "replaces": "",
    "gap": -0.019050346015356823,
    "call": "no call",
-   "call_rule": "the run's filed call: does not",
+   "call_rule": "seed ranges",
    "against_share": "no call"
   },
   {
@@ -1933,7 +2040,7 @@
    "replaces": "",
    "gap": -0.029668499305471163,
    "call": "no call",
-   "call_rule": "the run's filed call: does not",
+   "call_rule": "seed ranges",
    "against_share": "no call"
   },
   {
@@ -1958,9 +2065,9 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": -0.019792721968066133,
-   "call": "no call",
-   "call_rule": "the run's filed call: inert",
-   "against_share": "no call"
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "opposite to the share"
   },
   {
    "pair": "e58_rank1_96",
@@ -1985,7 +2092,7 @@
    "replaces": "experiments/open_pair/results/amend3.json [\"reads\"][\"rank1@30\"][\"S\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"rank1_s1@30\"][\"S\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"rank1_s2@30\"][\"S\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"cipher_s0@30\"][\"S\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"cipher_s1@30\"][\"S\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"cipher_s2@30\"][\"S\"]",
    "gap": 0.028393687839823073,
    "call": "no call",
-   "call_rule": "the run's filed call: does not",
+   "call_rule": "seed ranges",
    "against_share": "no call"
   },
   {
@@ -2037,6 +2144,32 @@
    "against_share": "opposite to the share"
   },
   {
+   "pair": "e58_rank1_96",
+   "pair_name": "Rank-1 vs cipher, 96 keys",
+   "group": "built",
+   "method": "erank",
+   "reuse": [
+    426.2320385572442,
+    419.47886097655874,
+    419.7594593322485
+   ],
+   "new": [
+    407.1072728200259,
+    402.0233453824102,
+    405.09285238821053
+   ],
+   "n_reuse": 3,
+   "n_new": 3,
+   "source": "experiments/refit_rank/results/cells.json .states[<state>].erank",
+   "form": "refit seeds 0-2",
+   "filed_call": true,
+   "replaces": "",
+   "gap": 0.017953353720739418,
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "same direction as the share"
+  },
+  {
    "pair": "e58_copy_prior_cipher",
    "pair_name": "Copy vs prior-matched cipher, 96 keys",
    "group": "built",
@@ -2059,7 +2192,7 @@
    "replaces": "experiments/open_pair/results/amend3.json [\"reads\"][\"copy@30\"][\"r\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"copy_s1@30\"][\"r\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"copy_s2@30\"][\"r\"]; experiments/open_pair/results/amend6.json [\"reads\"][\"prior_cipher_s0@30\"][\"r\"]; experiments/open_pair/results/amend6.json [\"reads\"][\"prior_cipher_s1@30\"][\"r\"]; experiments/open_pair/results/amend6.json [\"reads\"][\"prior_cipher_s2@30\"][\"r\"]",
    "gap": 0.39269918047784075,
    "call": "apart",
-   "call_rule": "the run's filed call: separates",
+   "call_rule": "seed ranges",
    "against_share": "apart"
   },
   {
@@ -2085,7 +2218,7 @@
    "replaces": "",
    "gap": -0.16171225975920325,
    "call": "apart",
-   "call_rule": "the run's filed call: separates",
+   "call_rule": "seed ranges",
    "against_share": "opposite to the share"
   },
   {
@@ -2111,7 +2244,7 @@
    "replaces": "",
    "gap": -0.13336122628230695,
    "call": "apart",
-   "call_rule": "the run's filed call: separates",
+   "call_rule": "seed ranges",
    "against_share": "opposite to the share"
   },
   {
@@ -2136,9 +2269,9 @@
    "filed_call": "does not",
    "replaces": "",
    "gap": -0.0475662338910145,
-   "call": "no call",
-   "call_rule": "the run's filed call: does not",
-   "against_share": "no call"
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "opposite to the share"
   },
   {
    "pair": "e58_copy_prior_cipher",
@@ -2162,9 +2295,9 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": 0.014348596139166716,
-   "call": "no call",
-   "call_rule": "the run's filed call: inert",
-   "against_share": "no call"
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "same direction as the share"
   },
   {
    "pair": "e58_copy_prior_cipher",
@@ -2189,7 +2322,7 @@
    "replaces": "experiments/open_pair/results/amend3.json [\"reads\"][\"copy@30\"][\"S\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"copy_s1@30\"][\"S\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"copy_s2@30\"][\"S\"]; experiments/open_pair/results/amend6.json [\"reads\"][\"prior_cipher_s0@30\"][\"S\"]; experiments/open_pair/results/amend6.json [\"reads\"][\"prior_cipher_s1@30\"][\"S\"]; experiments/open_pair/results/amend6.json [\"reads\"][\"prior_cipher_s2@30\"][\"S\"]",
    "gap": 0.5941281327249038,
    "call": "apart",
-   "call_rule": "the run's filed call: separates",
+   "call_rule": "seed ranges",
    "against_share": "same direction as the share"
   },
   {
@@ -2241,6 +2374,32 @@
    "against_share": "opposite to the share"
   },
   {
+   "pair": "e58_copy_prior_cipher",
+   "pair_name": "Copy vs prior-matched cipher, 96 keys",
+   "group": "built",
+   "method": "erank",
+   "reuse": [
+    472.50975664631716,
+    478.4473404690926,
+    474.03341403831826
+   ],
+   "new": [
+    407.1720469254525,
+    407.6893175963091,
+    404.8952805132855
+   ],
+   "n_reuse": 3,
+   "n_new": 3,
+   "source": "experiments/refit_rank/results/cells.json .states[<state>].erank",
+   "form": "refit seeds 0-2",
+   "filed_call": true,
+   "replaces": "",
+   "gap": 0.06753877968147777,
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "same direction as the share"
+  },
+  {
    "pair": "e58_elicit_shuffle",
    "pair_name": "Half-known vs its shuffle, 96 keys",
    "group": "twin",
@@ -2263,7 +2422,7 @@
    "replaces": "experiments/open_pair/results/amend7.json [\"prior_beside_r\"][\"elicit\"][\"r30\"]; experiments/open_pair/results/amend7.json [\"prior_beside_r\"][\"shuffle\"][\"r30\"]",
    "gap": 0.25068112653008096,
    "call": "apart",
-   "call_rule": "the run's filed call: separates",
+   "call_rule": "seed ranges",
    "against_share": "apart"
   },
   {
@@ -2288,9 +2447,9 @@
    "filed_call": "does not",
    "replaces": "",
    "gap": -0.08023296694566222,
-   "call": "no call",
-   "call_rule": "the run's filed call: does not",
-   "against_share": "no call"
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "opposite to the share"
   },
   {
    "pair": "e58_elicit_shuffle",
@@ -2314,9 +2473,9 @@
    "filed_call": "does not",
    "replaces": "",
    "gap": 0.02799148395336737,
-   "call": "no call",
-   "call_rule": "the run's filed call: does not",
-   "against_share": "no call"
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "same direction as the share"
   },
   {
    "pair": "e58_elicit_shuffle",
@@ -2340,9 +2499,9 @@
    "filed_call": "does not",
    "replaces": "",
    "gap": 0.02397288702673206,
-   "call": "no call",
-   "call_rule": "the run's filed call: does not",
-   "against_share": "no call"
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "same direction as the share"
   },
   {
    "pair": "e58_elicit_shuffle",
@@ -2366,9 +2525,9 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": -0.012860496952681726,
-   "call": "no call",
-   "call_rule": "the run's filed call: inert",
-   "against_share": "no call"
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "opposite to the share"
   },
   {
    "pair": "e58_elicit_shuffle",
@@ -2392,9 +2551,9 @@
    "filed_call": "does not",
    "replaces": "experiments/open_pair/results/amend3.json [\"reads\"][\"elicit@30\"][\"S\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"elicit_s1@30\"][\"S\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"elicit_s2@30\"][\"S\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"shuffle_s0@30\"][\"S\"]",
    "gap": 0.042969218315852126,
-   "call": "no call",
-   "call_rule": "the run's filed call: does not",
-   "against_share": "no call"
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "same direction as the share"
   },
   {
    "pair": "e58_elicit_shuffle",
@@ -2443,6 +2602,32 @@
    "against_share": "one value a side"
   },
   {
+   "pair": "e58_elicit_shuffle",
+   "pair_name": "Half-known vs its shuffle, 96 keys",
+   "group": "twin",
+   "method": "erank",
+   "reuse": [
+    423.3574111983893,
+    421.51245744987034,
+    420.49072868226204
+   ],
+   "new": [
+    406.49083390036276,
+    405.9710726315466,
+    405.58413605337427
+   ],
+   "n_reuse": 3,
+   "n_new": 3,
+   "source": "experiments/refit_rank/results/cells.json .states[<state>].erank",
+   "form": "refit seeds 0-2",
+   "filed_call": true,
+   "replaces": "",
+   "gap": 0.01655060153270493,
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "same direction as the share"
+  },
+  {
    "pair": "e58_class_twin",
    "pair_name": "Class map vs its shuffled twin",
    "group": "twin",
@@ -2464,9 +2649,9 @@
    "filed_call": "does not",
    "replaces": "experiments/share_untrained/results/stage1.json .states[<state>].trained",
    "gap": -0.03428987689681498,
-   "call": "no call",
-   "call_rule": "the run's filed call: does not",
-   "against_share": "no call"
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "apart"
   },
   {
    "pair": "e58_class_twin",
@@ -2491,7 +2676,7 @@
    "replaces": "experiments/share_untrained/results/stage1.json .states[<state>].svd",
    "gap": -0.009826550753212766,
    "call": "no call",
-   "call_rule": "the run's filed call: does not",
+   "call_rule": "seed ranges",
    "against_share": "no call"
   },
   {
@@ -2516,9 +2701,9 @@
    "filed_call": "does not",
    "replaces": "",
    "gap": -0.038180593065169854,
-   "call": "no call",
-   "call_rule": "the run's filed call: does not",
-   "against_share": "no call"
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "same direction as the share"
   },
   {
    "pair": "e58_class_twin",
@@ -2543,7 +2728,7 @@
    "replaces": "",
    "gap": -0.020109324070567647,
    "call": "no call",
-   "call_rule": "the run's filed call: does not",
+   "call_rule": "seed ranges",
    "against_share": "no call"
   },
   {
@@ -2568,9 +2753,9 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": -0.007003922960901842,
-   "call": "no call",
-   "call_rule": "the run's filed call: inert",
-   "against_share": "no call"
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "same direction as the share"
   },
   {
    "pair": "e58_class_twin",
@@ -2594,9 +2779,9 @@
    "filed_call": "does not",
    "replaces": "experiments/open_pair/results/amend7.json [\"reads\"][\"class_map_s0@30\"][\"S\"]; experiments/open_pair/results/amend7.json [\"reads\"][\"class_map_s1@30\"][\"S\"]; experiments/open_pair/results/amend7.json [\"reads\"][\"class_map_s2@30\"][\"S\"]; experiments/open_pair/results/amend7.json [\"reads\"][\"class_shuffled_s0@30\"][\"S\"]; experiments/open_pair/results/amend7.json [\"reads\"][\"class_shuffled_s1@30\"][\"S\"]; experiments/open_pair/results/amend7.json [\"reads\"][\"class_shuffled_s2@30\"][\"S\"]",
    "gap": -0.07358250772909347,
-   "call": "no call",
-   "call_rule": "the run's filed call: does not",
-   "against_share": "no call"
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "same direction as the share"
   },
   {
    "pair": "e58_class_twin",
@@ -2647,6 +2832,32 @@
    "against_share": "no call"
   },
   {
+   "pair": "e58_class_twin",
+   "pair_name": "Class map vs its shuffled twin",
+   "group": "twin",
+   "method": "erank",
+   "reuse": [
+    401.51351138890954,
+    401.9719711363499,
+    400.93895948408135
+   ],
+   "new": [
+    396.5662256890584,
+    393.7599422684729,
+    392.7573766411026
+   ],
+   "n_reuse": 3,
+   "n_new": 3,
+   "source": "experiments/refit_rank/results/cells.json .states[<state>].erank",
+   "form": "refit seeds 0-2",
+   "filed_call": true,
+   "replaces": "",
+   "gap": 0.0077641464538072405,
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "opposite to the share"
+  },
+  {
    "pair": "e123_case_label",
    "pair_name": "Case label: real vs memorising twin",
    "group": "twin",
@@ -2669,7 +2880,7 @@
    "replaces": "experiments/share_untrained/results/stage1.json .states[<state>].trained",
    "gap": -0.017879622127674327,
    "call": "no call",
-   "call_rule": "the run's filed call: not apart",
+   "call_rule": "seed ranges",
    "against_share": "no call"
   },
   {
@@ -2770,9 +2981,9 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": -0.008224590394433863,
-   "call": "no call",
-   "call_rule": "the run's filed call: inert",
-   "against_share": "no call"
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "apart where the share is not"
   },
   {
    "pair": "e123_case_label",
@@ -2797,7 +3008,7 @@
    "replaces": "",
    "gap": -0.5061434627945977,
    "call": "apart",
-   "call_rule": "the run's filed call: apart",
+   "call_rule": "seed ranges",
    "against_share": "apart where the share is not"
   },
   {
@@ -2867,7 +3078,7 @@
    "replaces": "",
    "gap": -0.0716167739894729,
    "call": "apart",
-   "call_rule": "the run's filed call: True",
+   "call_rule": "seed ranges",
    "against_share": "apart where the share is not"
   },
   {
@@ -2892,9 +3103,9 @@
    "filed_call": "not apart",
    "replaces": "experiments/share_untrained/results/stage1.json .states[<state>].trained",
    "gap": -0.09041168623771657,
-   "call": "no call",
-   "call_rule": "the run's filed call: not apart",
-   "against_share": "no call"
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "apart"
   },
   {
    "pair": "e125_repeat_label",
@@ -2944,7 +3155,7 @@
    "gap": -0.14623260720678188,
    "call": "apart",
    "call_rule": "seed ranges",
-   "against_share": "apart where the share is not"
+   "against_share": "same direction as the share"
   },
   {
    "pair": "e125_repeat_label",
@@ -2970,7 +3181,7 @@
    "gap": -0.19821360558092743,
    "call": "apart",
    "call_rule": "seed ranges",
-   "against_share": "apart where the share is not"
+   "against_share": "same direction as the share"
   },
   {
    "pair": "e125_repeat_label",
@@ -2995,7 +3206,7 @@
    "replaces": "",
    "gap": 0.009799448107832894,
    "call": "no call",
-   "call_rule": "the run's filed call: inert",
+   "call_rule": "seed ranges",
    "against_share": "no call"
   },
   {
@@ -3021,8 +3232,8 @@
    "replaces": "",
    "gap": -1.0868713913876684,
    "call": "apart",
-   "call_rule": "the run's filed call: apart",
-   "against_share": "apart where the share is not"
+   "call_rule": "seed ranges",
+   "against_share": "same direction as the share"
   },
   {
    "pair": "e125_repeat_label",
@@ -3068,7 +3279,7 @@
    "gap": -0.19789763291636617,
    "call": "apart",
    "call_rule": "seed ranges",
-   "against_share": "apart where the share is not"
+   "against_share": "same direction as the share"
   },
   {
    "pair": "e125_repeat_label",
@@ -3091,8 +3302,8 @@
    "replaces": "",
    "gap": -0.048452447055964944,
    "call": "apart",
-   "call_rule": "the run's filed call: True",
-   "against_share": "apart where the share is not"
+   "call_rule": "seed ranges",
+   "against_share": "same direction as the share"
   }
  ],
  "tally": {
@@ -3112,11 +3323,12 @@
    },
    "neuron_half": {
     "same direction as the share": 3,
-    "opposite to the share": 1,
-    "no call": 5
+    "opposite to the share": 2,
+    "no call": 4
    },
    "neuron_top": {
-    "no call": 9
+    "same direction as the share": 4,
+    "opposite to the share": 5
    },
    "steering": {
     "same direction as the share": 4,
@@ -3132,34 +3344,42 @@
     "no call": 3
    },
    "erank": {
+    "same direction as the share": 7,
+    "no call": 2
+   },
+   "k_half": {
+    "no call": 1,
     "same direction as the share": 3,
-    "no call": 4,
-    "not run": 2
+    "not run": 5
    }
   },
   "twin": {
    "share": {
-    "apart": 1,
-    "no call": 3
+    "apart": 3,
+    "no call": 1
    },
    "untrained": {
-    "no call": 3,
+    "opposite to the share": 1,
+    "no call": 2,
     "apart where the share is not": 1
    },
    "neuron": {
-    "no call": 3,
-    "apart where the share is not": 1
+    "same direction as the share": 3,
+    "no call": 1
    },
    "neuron_half": {
-    "no call": 3,
-    "apart where the share is not": 1
+    "same direction as the share": 2,
+    "no call": 2
    },
    "neuron_top": {
-    "no call": 4
+    "opposite to the share": 1,
+    "same direction as the share": 1,
+    "apart where the share is not": 1,
+    "no call": 1
    },
    "steering": {
-    "no call": 2,
-    "apart where the share is not": 2
+    "same direction as the share": 3,
+    "apart where the share is not": 1
    },
    "prior": {
     "one value a side": 4
@@ -3167,11 +3387,16 @@
    "size": {
     "one value a side": 1,
     "no call": 1,
-    "apart where the share is not": 2
+    "apart where the share is not": 1,
+    "same direction as the share": 1
    },
    "erank": {
-    "not run": 2,
-    "apart where the share is not": 2
+    "same direction as the share": 2,
+    "opposite to the share": 1,
+    "apart where the share is not": 1
+   },
+   "k_half": {
+    "not run": 4
    }
   }
  }

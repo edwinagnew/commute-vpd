@@ -2,8 +2,9 @@
 
 Reads saved results JSON only (no model) and writes results/final.json and figures/final.png (+ .pdf, .csv). Labels are as
 each pair was built; no verdict of reused or new. Readers run oldest first, and a newer run's reading of a cell replaces
-the older one, whose source is kept in `replaces`. A cell's `call` is the run's own filed per-pair call where one exists
-(E140, E141, E143, E147), else whether the two sides' seed ranges overlap; one value a side gets no call. No combined score.
+the older one, whose source is kept in `replaces`. One rule colours every cell: with two or more values a side,
+"apart" iff the seed ranges do not overlap; one value on a side gets no call. A run's own filed call is kept in `filed_call` for
+reference and does not set the colour. No combined score.
 
     ~/commute-agents/fleet/cpu-run experiments/method_table/plot_final.py
 """
@@ -25,8 +26,11 @@ TWIN2, TWIN3 = "experiments/real_vs_twin/results/stage2.json", "experiments/real
 BUILT = ["e62_copy_lookup", "e46_copy_random", "e53_lowercase_cipher", "e54_matched", "e54_own", "open_pair_c3", "open_pair_c3_copy", "e58_rank1_96", "e58_copy_prior_cipher"]
 TWINS = ["e58_elicit_shuffle", "e58_class_twin", "e123_case_label", "e125_repeat_label"]
 COLS = {"share": "re-gating\nshare", "untrained": "share on\nuntrained\nSVD", "neuron": "neuron,\nwhole\nwidth", "neuron_half": "neuron,\nhalf", "neuron_top": "neuron,\ntop\nneurons",
-        "steering": "steering", "prior": "prior\n(log10)", "size": "update\nsize\n(log10)", "erank": "effective\nrank\n(log10)"}  # fmt: skip
+        "steering": "steering", "prior": "prior\n(log10)", "size": "update\nsize\n(log10)", "erank": "effective\nrank\n(log10)",
+        "k_half": "neurons for\nhalf the gain\n(log10)"}  # fmt: skip
 RATIO = {"size", "erank"}  # log10 of the ratio of side means; the prior is saved as log10 P, so its gap is a difference
+INVERTED = {"k_half"}  # log10(new mean / reuse mean): positive (red) = fewer neurons on the reuse side
+E98_CARRY, E98_PRED, KHALF_FILL = "experiments/neuron_r/results/carrying.json", "experiments/neuron_r/results/predictions.json", "experiments/k_half_fill/results/cells.json"
 SCORECARD = {"r": "share", "r_n": "neuron", "r_half": "neuron_half", "S": "steering", "size": "size"}
 E136_ID = {"e123_case_label": "case_label", "e125_repeat_label": "fresh_reuse_pair", "e58_class_twin": "class_twin_definition_verify"}
 E140_ID = {"e123_case_label": "case", "e125_repeat_label": "repeat"}
@@ -37,7 +41,8 @@ E133_MAPS = {"e62_copy_lookup": (["e62_copy"], ["e62_lookup"]), "e46_copy_random
              "e58_class_twin": (["e58_96_class_map"], ["e58_96_class_shuffled"]), "e123_case_label": (["case_label_real"], ["case_label_twin"]),
              "e125_repeat_label": (["fresh_reuse_pair_real"], ["fresh_reuse_pair_twin"])}  # fmt: skip
 FOOTER = (
-    "Each cell: reuse side minus new side (shares and log10 prior: difference of means; size and rank: log10 of the ratio). Seeds per side: 1 to 8. Clearly = seed ranges do not overlap, or the run's filed call."
+    "Each cell: reuse side minus new side (shares and log10 prior: difference of means; size and rank: log10 of reuse/new mean; neurons for half the gain: log10 of new/reuse mean, "
+    "so red = fewer neurons on the reuse side). Seeds per side: 1 to 8. One rule in every column: clearly = every seed of one side beyond every seed of the other. Colour is a call, not a score."
 )
 Side = tuple[list[float], list[float]]  # (side built to reuse, side built to be new)
 Cells = dict[tuple[str, str], dict[str, Any]]
@@ -156,22 +161,33 @@ def refit_rank(out: Cells) -> None:
         put(out, pair, col, (s["reuse"], s["new"]), s["source"], form="refit seeds 0-2", filed=s["filed"])
 
 
+def e98_k_half(out: Cells) -> None:
+    """E98's k_half (fewest top neurons patched to carry half the gain) on its own rows; states it did not score are left out."""
+    k = {n: r["k_half"] for n, r in load(E98_CARRY)["rows"].items() if r["k_half"] is not None}
+    for pair, row in load(E98_PRED)["rows"].items():
+        side = ([k[n] for n in row["reuse"] if n in k], [k[n] for n in row["new"] if n in k])
+        if pair in BUILT and all(side):
+            put(out, pair, "k_half", side, f"{E98_CARRY} .rows[<state>].k_half, states from {E98_PRED} .rows.{pair}")
+    if (ROOT / KHALF_FILL).exists():
+        for key, s in load(KHALF_FILL)["cells"].items():
+            pair, col = key.split("/")
+            put(out, pair, col, (s["reuse"], s["new"]), s["source"])
+
+
 def dig(x: Any, path: list[str]) -> Any:
     for k in path:
         x = x[k]
     return x
 
 
-READERS = (scorecard, e133_prior, e145_prior, e135_steering, e136_share, e141_rank, e140_twins, e143_holes, e147_refit, e158_neuron_twins, refit_rank)  # oldest first
+READERS = (scorecard, e133_prior, e145_prior, e135_steering, e136_share, e141_rank, e140_twins, e143_holes, e147_refit, e158_neuron_twins, refit_rank, e98_k_half)  # oldest first
 
 
 def score(col: str, c: dict[str, Any]) -> None:
-    """Adds the gap and the call ('apart', 'no call' or 'one value a side') to one cell, in place."""
+    """Adds the gap and the call ('apart', 'no call' or 'one value a side') to one cell, in place: one rule for every column."""
     reuse, new = statistics.fmean(c["reuse"]), statistics.fmean(c["new"])
-    c["gap"] = math.log10(reuse / new) if col in RATIO else reuse - new
-    if (f := c["filed_call"]) is not None:
-        c["call"], c["call_rule"] = ("apart" if f in ("separates", "apart", True) else "no call"), f"the run's filed call: {f}"
-    elif min(c["n_reuse"], c["n_new"]) < 2:
+    c["gap"] = math.log10(reuse / new) if col in RATIO else math.log10(new / reuse) if col in INVERTED else reuse - new
+    if min(c["n_reuse"], c["n_new"]) < 2:
         c["call"], c["call_rule"] = "one value a side", "no spread to compare"
     else:
         c["call"] = "apart" if min(c["reuse"]) > max(c["new"]) or max(c["reuse"]) < min(c["new"]) else "no call"
@@ -206,9 +222,9 @@ def main() -> None:
                 cells[(pair, col)]["against_share"] = v
     records = [{"pair": p, "pair_name": names[p], "group": "built" if p in BUILT else "twin", "method": col, **cells[(p, col)]} for p in rows for col in COLS if (p, col) in cells]
     (ROOT / "experiments/method_table/results/final.json").write_text(json.dumps({"cells": records, "tally": tally}, indent=1) + "\n")
-    values = [[round(cells[(p, c)]["gap"], 2) + 0.0 if (p, c) in cells else None for c in COLS] for p in rows]
+    values = [[cells[(p, c)]["gap"] if (p, c) in cells else None for c in COLS] for p in rows]
     kinds = [[kind(cells.get((p, c))) for c in COLS] for p in rows]
-    fig, ax = figure((9.0, 6.4))
+    fig, ax = figure((10.0, 6.4))
     verdict_grid(ax, values, kinds, [names[p] for p in rows], list(COLS.values()))
     ax.axhline(len(BUILT) - 0.5, color="black", linewidth=1.5)
     for y, text in ((len(BUILT) / 2 - 0.5, "built pairs"), (len(BUILT) + len(TWINS) / 2 - 0.5, "real vs shuffled twin")):
@@ -239,7 +255,7 @@ def verdict_grid(ax: Any, values: list[list[float | None]], kinds: list[list[str
     ax.imshow([[to_rgb(KIND_COLOUR[k]) for k in row] for row in kinds], aspect="auto")
     for i, row in enumerate(values):
         for j, v in enumerate(row):
-            text = "×" if v is None else f"{v:.2f}".replace("-0.00", "0.00")
+            text = "×" if v is None else f"{v:.3f}" if 0.0005 <= abs(v) < 0.005 else f"{v:.2f}".replace("-0.00", "0.00")  # a gap under 0.005 keeps a third digit
             ax.text(j, i, text, ha="center", va="center", color="white" if kinds[i][j] in ("up", "down") else "#333333", fontsize=8.5)
     ax.set_xticks(range(len(cols)), cols)
     ax.set_yticks(range(len(rows)), rows)
