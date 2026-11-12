@@ -247,10 +247,10 @@
    ],
    "n_reuse": 3,
    "n_new": 3,
-   "source": "experiments/neuron_r/results/carrying.json .rows[<state>].k_half, states from experiments/neuron_r/results/predictions.json .rows.e62_copy_lookup",
+   "source": "experiments/neuron_r/results/carrying.json .rows[<state>].k_half",
    "form": "",
    "filed_call": null,
-   "replaces": "",
+   "replaces": "experiments/neuron_r/results/carrying.json .rows[<state>].k_half, states from experiments/neuron_r/results/predictions.json .rows.e62_copy_lookup",
    "gap": 0.0,
    "call": "no call",
    "call_rule": "seed ranges",
@@ -523,10 +523,10 @@
    ],
    "n_reuse": 4,
    "n_new": 4,
-   "source": "experiments/neuron_r/results/carrying.json .rows[<state>].k_half, states from experiments/neuron_r/results/predictions.json .rows.e46_copy_random",
+   "source": "experiments/neuron_r/results/carrying.json .rows[<state>].k_half",
    "form": "",
    "filed_call": null,
-   "replaces": "",
+   "replaces": "experiments/neuron_r/results/carrying.json .rows[<state>].k_half, states from experiments/neuron_r/results/predictions.json .rows.e46_copy_random",
    "gap": 0.6989700043360189,
    "call": "apart",
    "call_rule": "seed ranges",
@@ -780,10 +780,10 @@
    ],
    "n_reuse": 2,
    "n_new": 4,
-   "source": "experiments/neuron_r/results/carrying.json .rows[<state>].k_half, states from experiments/neuron_r/results/predictions.json .rows.e53_lowercase_cipher",
+   "source": "experiments/neuron_r/results/carrying.json .rows[<state>].k_half",
    "form": "",
    "filed_call": null,
-   "replaces": "",
+   "replaces": "experiments/neuron_r/results/carrying.json .rows[<state>].k_half, states from experiments/neuron_r/results/predictions.json .rows.e53_lowercase_cipher",
    "gap": 0.8450980400142568,
    "call": "apart",
    "call_rule": "seed ranges",
@@ -1052,6 +1052,36 @@
    "against_share": "no call"
   },
   {
+   "pair": "e54_matched",
+   "pair_name": "Half-known vs cipher, equal size",
+   "group": "built",
+   "method": "k_half",
+   "reuse": [
+    256,
+    512,
+    256,
+    256,
+    256
+   ],
+   "new": [
+    256,
+    256,
+    256,
+    256,
+    256
+   ],
+   "n_reuse": 5,
+   "n_new": 5,
+   "source": "experiments/k_half_fill/results/cells.json .states[<state>].k_half; experiments/neuron_r/results/carrying.json .rows[<state>].k_half",
+   "form": "",
+   "filed_call": null,
+   "replaces": "",
+   "gap": -0.07918124604762482,
+   "call": "no call",
+   "call_rule": "seed ranges",
+   "against_share": "no call"
+  },
+  {
    "pair": "e54_own",
    "pair_name": "Half-known vs cipher, own steps",
    "group": "built",
@@ -1310,10 +1340,10 @@
    ],
    "n_reuse": 5,
    "n_new": 2,
-   "source": "experiments/neuron_r/results/carrying.json .rows[<state>].k_half, states from experiments/neuron_r/results/predictions.json .rows.e54_own",
+   "source": "experiments/neuron_r/results/carrying.json .rows[<state>].k_half",
    "form": "",
    "filed_call": null,
-   "replaces": "",
+   "replaces": "experiments/neuron_r/results/carrying.json .rows[<state>].k_half, states from experiments/neuron_r/results/predictions.json .rows.e54_own",
    "gap": 0.5228787452803376,
    "call": "apart",
    "call_rule": "seed ranges",
@@ -1630,6 +1660,42 @@
    "against_share": "no call"
   },
   {
+   "pair": "open_pair_c3",
+   "pair_name": "Rank-1 vs cipher, step 10",
+   "group": "built",
+   "method": "k_half",
+   "reuse": [
+    128,
+    64,
+    64,
+    64,
+    64,
+    64,
+    64,
+    64
+   ],
+   "new": [
+    256,
+    256,
+    256,
+    256,
+    256,
+    256,
+    256,
+    256
+   ],
+   "n_reuse": 8,
+   "n_new": 8,
+   "source": "experiments/k_half_fill/results/cells.json .states[<state>].k_half; experiments/neuron_r/results/carrying.json .rows[<state>].k_half",
+   "form": "",
+   "filed_call": null,
+   "replaces": "",
+   "gap": 0.5509074688805811,
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "same direction as the share"
+  },
+  {
    "pair": "open_pair_c3_copy",
    "pair_name": "Copy vs cipher, step 10",
    "group": "built",
@@ -1940,6 +2006,42 @@
    "against_share": "same direction as the share"
   },
   {
+   "pair": "open_pair_c3_copy",
+   "pair_name": "Copy vs cipher, step 10",
+   "group": "built",
+   "method": "k_half",
+   "reuse": [
+    256,
+    256,
+    256,
+    256,
+    256,
+    256,
+    256,
+    256
+   ],
+   "new": [
+    256,
+    256,
+    256,
+    256,
+    256,
+    256,
+    256,
+    256
+   ],
+   "n_reuse": 8,
+   "n_new": 8,
+   "source": "experiments/k_half_fill/results/cells.json .states[<state>].k_half; experiments/neuron_r/results/carrying.json .rows[<state>].k_half",
+   "form": "",
+   "filed_call": null,
+   "replaces": "",
+   "gap": 0.0,
+   "call": "no call",
+   "call_rule": "seed ranges",
+   "against_share": "no call"
+  },
+  {
    "pair": "e58_rank1_96",
    "pair_name": "Rank-1 vs cipher, 96 keys",
    "group": "built",
@@ -2165,6 +2267,32 @@
    "filed_call": true,
    "replaces": "",
    "gap": 0.017953353720739418,
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "same direction as the share"
+  },
+  {
+   "pair": "e58_rank1_96",
+   "pair_name": "Rank-1 vs cipher, 96 keys",
+   "group": "built",
+   "method": "k_half",
+   "reuse": [
+    128,
+    128,
+    128
+   ],
+   "new": [
+    1024,
+    1024,
+    1024
+   ],
+   "n_reuse": 3,
+   "n_new": 3,
+   "source": "experiments/k_half_fill/results/cells.json .states[<state>].k_half",
+   "form": "",
+   "filed_call": null,
+   "replaces": "",
+   "gap": 0.9030899869919435,
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -2400,6 +2528,32 @@
    "against_share": "same direction as the share"
   },
   {
+   "pair": "e58_copy_prior_cipher",
+   "pair_name": "Copy vs prior-matched cipher, 96 keys",
+   "group": "built",
+   "method": "k_half",
+   "reuse": [
+    128,
+    128,
+    128
+   ],
+   "new": [
+    1024,
+    1024,
+    512
+   ],
+   "n_reuse": 3,
+   "n_new": 3,
+   "source": "experiments/k_half_fill/results/cells.json .states[<state>].k_half",
+   "form": "",
+   "filed_call": null,
+   "replaces": "",
+   "gap": 0.8239087409443188,
+   "call": "apart",
+   "call_rule": "seed ranges",
+   "against_share": "same direction as the share"
+  },
+  {
    "pair": "e58_elicit_shuffle",
    "pair_name": "Half-known vs its shuffle, 96 keys",
    "group": "twin",
@@ -2626,6 +2780,32 @@
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
+  },
+  {
+   "pair": "e58_elicit_shuffle",
+   "pair_name": "Half-known vs its shuffle, 96 keys",
+   "group": "twin",
+   "method": "k_half",
+   "reuse": [
+    512,
+    512,
+    512
+   ],
+   "new": [
+    1024,
+    512,
+    512
+   ],
+   "n_reuse": 3,
+   "n_new": 3,
+   "source": "experiments/k_half_fill/results/cells.json .states[<state>].k_half",
+   "form": "",
+   "filed_call": null,
+   "replaces": "",
+   "gap": 0.12493873660829992,
+   "call": "no call",
+   "call_rule": "seed ranges",
+   "against_share": "no call"
   },
   {
    "pair": "e58_class_twin",
@@ -2856,6 +3036,32 @@
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
+  },
+  {
+   "pair": "e58_class_twin",
+   "pair_name": "Class map vs its shuffled twin",
+   "group": "twin",
+   "method": "k_half",
+   "reuse": [
+    256,
+    256,
+    256
+   ],
+   "new": [
+    256,
+    128,
+    256
+   ],
+   "n_reuse": 3,
+   "n_new": 3,
+   "source": "experiments/k_half_fill/results/cells.json .states[<state>].k_half",
+   "form": "",
+   "filed_call": null,
+   "replaces": "",
+   "gap": -0.07918124604762482,
+   "call": "no call",
+   "call_rule": "seed ranges",
+   "against_share": "no call"
   },
   {
    "pair": "e123_case_label",
@@ -3348,9 +3554,8 @@
     "no call": 2
    },
    "k_half": {
-    "no call": 1,
-    "same direction as the share": 3,
-    "not run": 5
+    "no call": 3,
+    "same direction as the share": 6
    }
   },
   "twin": {
@@ -3396,7 +3601,8 @@
     "apart where the share is not": 1
    },
    "k_half": {
-    "not run": 4
+    "no call": 2,
+    "not run": 2
    }
   }
  }
