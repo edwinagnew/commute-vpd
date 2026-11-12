@@ -1,0 +1,13 @@
+cell: P3.4
+# each rival line keeps the word "predicts": '<an explanation> predicts <a result of this run>' (the check splits on it)
+rival_a: the reward teaches the model something its shuffled-reward null does not, and an update of 2 to 5 times the decomposition's error carries it predicts R's held-out GSM8K pass rate sits above N's at the same seed and step by more than the seed spread (and twice the paired standard error) at 2x or 5x on both seeds (the filed verdict: apart)
+rival_b: at these sizes the update's effect on held-out maths comes from training on the model's own answers at this rate, not from the reward predicts R and N stay within the seed spread of each other at every size read on both seeds (the filed verdict: together; a 'below' size, N above R, also reads together)
+rung: parameter
+smallest_gap: 0.03
+spread: 0.332
+n: 1138
+design: paired
+unit: GSM8K test problems answered within the window by both R and N (paired right/wrong per problem; spread = the sd of the per-problem difference R minus N at step 100 of E69, seed 0: 0.332 over 1138 problems, seed 70: 0.379 over 1232; computed with jq from the two acc files)
+spread_source: experiments/qwen_rl/results/large/lr1e-6w10/acc/R_gsm8k.jsonl
+stop: R does not reach 2 times the masked error with its pass rate held on either seed by step 400, or the drift stop fires before the first 2x save on both: RL at this recipe cannot make a readable update, the cell reports that and part 3 has no RL row at these sizes
+sketch: experiments/qwen_rl_readable/figures/sketch_run2.png
