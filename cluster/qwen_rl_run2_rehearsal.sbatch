@@ -4,9 +4,9 @@
 # and the cluster read stage (controls and one tiny saved state on 8 GSM8K problems; the outside share on the first 7
 # matrices). Plan: reports/plans/2026-11-12_plan_qwen-rl-readable-run2-gates.md, "Rehearsal". Submit from the clone root,
 # after predictions_run2.json is committed; three jobs side by side, one pod each (R_s70 also runs the read stage):
-#   sbatch --comment=E### cluster/qwen_rl_run2_rehearsal.sbatch R_s70     # ~11 min of pod, ~8 of reads
-#   sbatch --comment=E### cluster/qwen_rl_run2_rehearsal.sbatch N_s70     # ~11 min
-#   sbatch --comment=E### cluster/qwen_rl_run2_rehearsal.sbatch F_s70     # ~12 min (samples W0 in the loop)
+#   sbatch --comment=E167 cluster/qwen_rl_run2_rehearsal.sbatch R_s70     # ~11 min of pod, ~8 of reads
+#   sbatch --comment=E167 cluster/qwen_rl_run2_rehearsal.sbatch N_s70     # ~11 min
+#   sbatch --comment=E167 cluster/qwen_rl_run2_rehearsal.sbatch F_s70     # ~12 min (samples W0 in the loop)
 # States, checkpoints and GSM8K answers go to this node's /ephemeral/$USER/run2_tiny_<job> (one δW 5.64 GB, a checkpoint
 # 17 GB and its .tmp: run2.py refuses under ~50 GB free), removed at the end; JSON and logs to
 # experiments/qwen_rl_readable/results/run2_tiny/ (a pod's earlier files there are moved to <name>.prev.<job>).

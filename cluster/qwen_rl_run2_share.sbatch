@@ -2,7 +2,7 @@
 # P3.4 run 2, the outside share of every read state against a Gaussian change of the same norms, and |δW| beside the
 # decomposition's leftover norm, by E152's step-0 code (read2.py --stage share), CPU only, debug QoS, $0. Submit from the
 # clone root once every state is read (results/run2_reads/reads.json):
-#   sbatch --comment=E### cluster/qwen_rl_run2_share.sbatch
+#   sbatch --comment=E167 cluster/qwen_rl_run2_share.sbatch
 # Time: E152 step 0 measured ~30 min of eigh for the 84 MLP matrices plus ~10 min for the rest on 8 CPUs (its sbatch),
 # with 15 updates; here up to 18 states plus the control, ~100 GB read one matrix at a time from NFS. The job exits 3
 # when the time left is under 1.5 x the longest matrix: resubmit the same command until the log says STAGE share DONE

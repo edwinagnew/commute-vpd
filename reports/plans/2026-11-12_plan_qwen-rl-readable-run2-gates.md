@@ -1,4 +1,4 @@
-# Gates appendix: P3.4 run 2 (E###)
+# Gates appendix: P3.4 run 2 (E167)
 
 Appendix to `reports/plans/2026-11-12_plan_qwen-rl-readable-run2.md`. Gates 1-4 of `.claude/CLAUDE.md` "Gated runs" in
 full; gate 5 (one fresh Opus review of plan and code together) and gate 6 (the user's go-ahead) are the lead's.
@@ -111,10 +111,10 @@ No departure from E69's recipe beyond the rate and steps the user chose.
 `cluster/qwen_rl_run2_rehearsal.sbatch`, three debug jobs on L40s side by side, each under 30 min, after
 `predictions_run2.json` is committed (the run refuses otherwise):
 ```
-sbatch --comment=E### cluster/qwen_rl_run2_rehearsal.sbatch R_s70   # pod stage, then --chosen, read controls, one state, share on 7 matrices, verdict
-sbatch --comment=E### cluster/qwen_rl_run2_rehearsal.sbatch N_s70
-sbatch --comment=E### cluster/qwen_rl_run2_rehearsal.sbatch F_s70
-sbatch --comment=E### cluster/qwen_rl_run2_read.sbatch --controls-only   # full size: the read stage's controls on an L40
+sbatch --comment=E167 cluster/qwen_rl_run2_rehearsal.sbatch R_s70   # pod stage, then --chosen, read controls, one state, share on 7 matrices, verdict
+sbatch --comment=E167 cluster/qwen_rl_run2_rehearsal.sbatch N_s70
+sbatch --comment=E167 cluster/qwen_rl_run2_rehearsal.sbatch F_s70
+sbatch --comment=E167 cluster/qwen_rl_run2_read.sbatch --controls-only   # full size: the read stage's controls on an L40
 ```
 Tiny size: E69's tiny config (4 problems x 2 samples a step, 8 GSM8K problems), 2 steps, saves at 1 and 2, the pause
 after step 1's checkpoint, save and reads (exit 3) and a resume from that checkpoint (exit 0); the output change on the

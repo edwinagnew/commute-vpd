@@ -1,4 +1,4 @@
-# Plan: does reinforcement learning on Qwen stand apart from its shuffled-reward null at 2, 5 or 10 times the decomposition's error? (cell P3.4, run 2 of 3, E###)
+# Plan: does reinforcement learning on Qwen stand apart from its shuffled-reward null at 2, 5 or 10 times the decomposition's error? (cell P3.4, run 2 of 3, E167)
 
 ## The question, in plain words
 Run 1 found one recipe that grows the RL update while held-out accuracy and answer length hold: peak 3e-6 after 10

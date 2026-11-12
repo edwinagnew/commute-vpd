@@ -1,9 +1,9 @@
 #!/bin/bash
 # P3.4 run 2, the cluster read of the saved states on one L40 (debug QoS, $0): experiments/qwen_rl_readable/read2.py
 # --stage gpu. Plan: reports/plans/2026-11-12_plan_qwen-rl-readable-run2.md, "After the pods". Submit from the clone root:
-#   sbatch --comment=E### cluster/qwen_rl_run2_read.sbatch --controls-only           # first, before or while the pods run
-#   sbatch --comment=E### cluster/qwen_rl_run2_read.sbatch --states R_s0@150,N_s0@150  # as states land (run2.py --chosen)
-#   sbatch --comment=E### cluster/qwen_rl_run2_read.sbatch                            # every kept state not read yet
+#   sbatch --comment=E167 cluster/qwen_rl_run2_read.sbatch --controls-only           # first, before or while the pods run
+#   sbatch --comment=E167 cluster/qwen_rl_run2_read.sbatch --states R_s0@150,N_s0@150  # as states land (run2.py --chosen)
+#   sbatch --comment=E167 cluster/qwen_rl_run2_read.sbatch                            # every kept state not read yet
 # The controls job (W0, E69's R at step 100) runs first and alone; state jobs refuse until it is done. A state job reads
 # its states in order, one file each (results/run2_reads/states/), so jobs with different --states run side by side; it exits 3 when the
 # time left is under 1.2 x the longest state so far: resubmit the same command, read states are skipped. Time per state on
