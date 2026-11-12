@@ -1,0 +1,91 @@
+{
+  "experiment": "E168",
+  "cell": "P1.16",
+  "card": "experiments/memorised_fact/card.txt",
+  "filed": "2026-11-12, before any E168 code ran on a GPU. Plan: reports/plans/2026-11-12_plan_memorised-fact.md; run and reading: experiments/memorised_fact/run.py (labels, side, rule_r1, rule_r2, readings)",
+  "question": "Does the re-weighting share G tell a memorised fact (a seeded random bit per number token, pushed on when the last number's bit is 1) from its reuse twin (the same push when the last number is odd), on the same windows, push, prior and recipe? Exploratory: read under the adopted wording and under the tentative 'new = not re-weighted' reading (user, 2026-11-12); no change to decisions.md.",
+  "cutoffs": {
+    "G": 0.8,
+    "H": 0.5,
+    "note": "the adopted wording's cut-offs (decisions.md, 2026-11-10; built_control_sum/plot.py CUT_G, CUT_H), used for the labels only"
+  },
+  "thresholds": {
+    "reload_tol": 0.0001,
+    "gap_tol": 0.005,
+    "g_stop": 0.5,
+    "smallest_gap": 0.17,
+    "cut_G": 0.8,
+    "cut_H": 0.5,
+    "learned_kl_ratio": 0.9,
+    "floor_gap": 0.02
+  },
+  "threshold_sources": {
+    "reload_tol": "E157's and E159's reload_tol: about 10 times the float floor between two runs of the 67M, 1.03e-5 (built_control_sum/results/amend1_stage0.json, floor_runs_tv). Here each rebuilt or reloaded target's gap on E150's read half against the saved one: planted odd 0.230428 (sum_parity_beside/results/ceiling.json), floor 0.232573 (floor.json), twin seed 1 0.263920 (built_control_sum/results/amend1_control_s1.json, dist.gap)",
+    "gap_tol": "E157's gap_tol: the planted fact's gap on the whole read half within 0.005 of the gap E157 calibrated its planted edits to, 0.229407 (ceiling.json, target_gap)",
+    "g_stop": "the card's stop: the planted odd edit, exactly affine in the 67M's in2, reading a best G under 0.5 means the search cannot read an exact re-weighting on this layout",
+    "smallest_gap": "the card's smallest_gap: about 4 times the G seed sd 0.04 of old tasks (experiments/old_task_labels/results, the card's spread)",
+    "cut_G": "the adopted wording (decisions.md, 2026-11-10)",
+    "cut_H": "the adopted wording (decisions.md, 2026-11-10)",
+    "learned_kl_ratio": "copied from built_control_sum/results/predictions_amend1.json (E139's filed xor_kl_ratio), used by E150's item_h unchanged",
+    "floor_gap": "copied from built_control_sum/results/predictions_amend1.json (E139's filed floor), used by E150's item_h unchanged"
+  },
+  "noise_floor": "G: seed sd about 0.04 on old tasks (card spread). E154's control seed 0 read best G 0.3905 over 12 starts, with starts at one site spread 0.14 to 0.39 (amend1_control_s0.json): the best over starts, not one start, is the reading",
+  "expected_at": {
+    "W0": "a zero-step fine-tune is the 67M: gap 0, no reading (gap under floor_gap). Not rerun: E154's zero-step control read gap 0 and max TV 0 on E150's windows (amend1_stage0.json, zero_step_plain)",
+    "do_nothing": "a planted edit with s = 0 or a fine-tune that changes nothing is W0: no reading. The planted floor (a random bit per ordered pair, unknowable on held-out pairs) is the do-nothing of a map: best G at most 0.1",
+    "control": "the planted odd edit: gap 0.230428 repeated, best G at least 0.9 (an exact re-weighting at in2 inside a k = 4 subspace that holds Q b); its H is E157's 0.985 at in2"
+  },
+  "early_stops": {
+    "S0": {"what": "the number tokens rebuilt by VR.make_numbers", "expected": "equal to amend1_stage0.json number_tokens", "rule": "exit 1 if not"},
+    "C0": {"what": "the planted odd edit's gap on the read half, rebuilt through commute.planted at E157's s 2.4711218", "expected": "0.230428 within reload_tol", "rule": "stop (exit 1)"},
+    "C1": {"what": "the planted odd edit's G, start by start", "expected": "at least 0.9 at in2", "rule": "passed (other items may start) at the first G at least g_stop; a finished search with best G under g_stop is the card's stop (exit 1): nothing further runs, every other item refuses, R1 and R2 'no call: stopped'"},
+    "S1": {"what": "the planted fact's gap on the whole read half after calibration", "expected": "0.229407", "rule": "stop (exit 1) if it misses by more than gap_tol, or no s up to 1024 Q b reaches it"},
+    "S2": {"what": "the floor's and the twin seed 1's gaps, rebuilt or reloaded", "expected": "the saved gaps within reload_tol", "rule": "stop (exit 1)"},
+    "T": {"what": "the fact fine-tune's training, E150's item_h unchanged: the step-10 check, then the learned check at most learned_kl_ratio, 300 steps else 3000; seed 1 on seed 0's rung", "expected": "learned at 300 steps, as the twin (E154: rung 0 on both seeds); the fact's bit is a function of the last token alone, as oddness is", "rule": "a step-10 miss stops the item (exit 1); not learned at 3000 steps, or a gap under floor_gap, gives that seed no reading; seed 1 is not run if seed 0 has no reading"}
+  },
+  "predictions": {
+    "P0": {"measure": "best G on the planted odd edit (12 starts)", "claim": "at least 0.9", "rival": "under 0.5: the card's stop"},
+    "P1": {"measure": "best G on the planted floor", "claim": "at most 0.1", "note": "descriptive: the do-nothing of a map"},
+    "R1": {
+      "measure": "d = best G of the planted odd edit minus best G of the planted fact edit (each the best over four sites and three starts)",
+      "rule": "rival a if d >= 0.17 (a tie at exactly 0.17 is a; 1e-9 for float rounding); rival b if |d| <= 0.17 otherwise; else (the fact above the odd edit by more than 0.17) no call. Either G missing (search not finished or empty): no call",
+      "rival_a": "the card's rival a: the planted fact at least 0.17 under the planted odd edit",
+      "rival_b": "the card's rival b: within 0.17",
+      "expected": "open. Both edits are exact affine maps of the 67M's in2 along one direction (mu1 - mu0) with the same push; the fact's class means are a random half-split of the 100 tokens, which may still be a direction the 67M carries at in2"
+    },
+    "R2": {
+      "measure": "per fact seed with a reading, d = twin mean minus its best G; twin mean = mean of E154 seed 0's best G 0.3905 (amend1_control_s0.json) and twin seed 1's best G read here",
+      "rule": "rival a if every fact seed with a reading has d >= 0.17 (tie is a); rival b if every one has |d| <= 0.17 (and not a); otherwise (mixed seeds, or a seed above the twin by more than 0.17) no call. A seed not learned or with a gap under floor_gap has no reading and is left out; no fact seed with a reading: no call. Twin seed 1 or a fact seed not finished: no call, incomplete",
+      "rival_a": "the card's rival a: each fact seed at least 0.17 under the twin",
+      "rival_b": "the card's rival b: both within 0.17",
+      "expected": "open; the twin reads about 0.39 (seed 0), so rival a needs the fact at most about 0.22"
+    },
+    "labels": {
+      "measure": "per item with an H (planted odd and floor: E157's H, the same edits; twins: E154's H; planted fact and fact seeds: H read here), best G and best H",
+      "rule": "adopted: G >= 0.8 and H >= 0.5 re-weighted; H >= 0.5 otherwise rewired; H < 0.5 no map found. Tentative: re-weighted as adopted, anything else new. No H, or no G where H >= 0.5: no reading",
+      "expected": "planted odd re-weighted under both; twins no map found (H 0.47, 0.46) adopted, new tentative; fact seeds H about 0.47, so the same labels as the twin under both readings unless H moves past 0.5"
+    }
+  },
+  "outcome_rule": {
+    "rule": "run.readings: R1 and R2 as above; 'no call: stopped' for both if the planted odd edit stopped",
+    "edge_cases": {
+      "fact seed 1 missing (its JSON absent) while seed 0 is read": "no call: incomplete",
+      "fact seed 0 not learned, seed 1 not run": "both no reading: 'no call: no fact seed has a reading'",
+      "fact seed 1 not learned, seed 0 read": "R2 on seed 0 alone",
+      "a tie at exactly 0.17 under the reference (R1 or R2)": "rival a",
+      "the item exactly 0.17 above the reference": "rival b (within 0.17)",
+      "the item more than 0.17 above the reference": "no call",
+      "one fact seed a, the other b": "no call (mixed seeds)",
+      "an empty G record (search not run or not finished)": "no reading: R1 'no call: no reading'; R2 'no call: incomplete'",
+      "twin seed 1 not read": "R2 'no call: incomplete'",
+      "H at or above 0.5 with no G": "label 'no reading'"
+    },
+    "checked": "run.side, run.rule_r1, run.rule_r2 and run.labels were run on each of these cases on the CPU before filing, with stand-in values and no model (cpu-run, 2026-11-12; script ~/commute-data/scratch/definition-lead/e168-writer/edge_cases.py); every case returned the result written here"
+  },
+  "blind_to": [
+    "whether a direction is 'used' by the plain model downstream: a one-bit push keyed on 100 distinct tokens can be carried by one direction under any labelling (rival b)",
+    "one push direction and size (alpha 4, gap about 0.23), one random labelling, two seeds per fine-tune; affine maps read at the last position, k = 4",
+    "the planted odd and floor H, and the twins' H, are not re-read here: they are E157's and E154's readings of the same edits and states"
+  ],
+  "positive_control": "the planted odd edit (C0, C1, P0) first and alone; the floor as the map's do-nothing (P1)"
+}
