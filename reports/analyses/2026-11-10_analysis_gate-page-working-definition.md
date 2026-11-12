@@ -23,6 +23,38 @@ found, every old-task reuse side has a rewiring share of 0.58 or more, so none t
 case label, at 0.83, clears the re-weighting cut-off, as before. The within-pair comparison does not use a cut-off and
 is unchanged. Full table: `experiments/old_task_labels/results/labels_cut_0p8_0p5.json`.
 
+## Update 2026-11-12: a memorised fact, and the tentative reading
+
+On 2026-11-12 the user asked to explore a tentative reading, "new means not re-weighted", under which a memorised fact
+counts as new. The adopted wording is unchanged. This section reads one new layout under both, from saved results.
+
+**What was read.** A 67M fine-tune memorised a random one-bit fact per number token and pushed the output when the last
+number's bit was 1. Its twin made the same push when the last number is odd, a fact the original already reads, on the
+same inputs, push and prior. Each was trained on two seeds. Beside them sit three edits written into the original. The
+planted odd edit is an exact re-weighting by construction. The planted fact edit is the same with the random bit. The
+planted floor keys the push on a bit per pair of numbers, which no map of one token reaches.
+
+| Item | $G$ | $H$ | Adopted wording | Tentative reading |
+|---|---|---|---|---|
+| Planted odd edit | 0.63 | 0.99 | rewired | new |
+| Planted fact edit | 0.48 | 0.98 | rewired | new |
+| Planted floor | -0.15 | 0.00 | no map found | new |
+| Twin, last number odd, 2 seeds | 0.39, 0.40 | 0.47, 0.46 | no map found | new |
+| Memorised fact, 2 seeds | 0.10, 0.12 | 0.36, 0.37 | no map found | new |
+
+**What each reading labels the memorised fact.** Under the adopted wording it reads no map found, a search limit, and so
+does its twin. Under the tentative reading it reads new. But every item on this layout reads new, the twin and the
+planted odd edit included, so only the ranking within the pair separates them. Each fact seed sits about 0.28 under the
+twin's mean, the same order as in all five old matched pairs.
+
+**Where the wording gives no reading here.** The planted odd edit is an exact re-weighting, yet its re-weighting share
+reads only 0.63, under the 0.8 cut-off. So on this layout an absolute "re-weighted" label cannot be read, and "not
+re-weighted" carries no information. The planted fact and odd edits sit 0.14 apart, inside the 0.17 the filed rule
+needed, so even the ranking does not separate the planted pair.
+
+No change to the wording is recommended here; the user decides at the gate. Sources:
+`reports/analyses/2026-11-12_analysis_memorised-fact.md`, `experiments/memorised_fact/results/readings.json`, E168.
+
 ## The wording
 
 Take the original model and a fine-tune of it, and a set of inputs fixed in advance: where the new behaviour shows,
@@ -87,6 +119,8 @@ The hand-made rows set the cut-offs, so they agree with construction by design. 
 for the table copies and for the real case label against its twin. The 300-step copies of Always on read no map found
 at the rounded cut-offs, and the longer copies read rewired. Every other reuse side reads rewired, like its twin, except
 lowercase, which reads no map found.
+
+The memorised fact and its twin, read 2026-11-12, are not in this table: see the update section.
 
 ## The within-pair comparison
 
