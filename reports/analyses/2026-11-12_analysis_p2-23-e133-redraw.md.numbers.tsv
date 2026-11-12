@@ -1,0 +1,11 @@
+0.1	given	the filed per-run bar for a call, as the user described it (relayed by the lead, 2026-11-12)
+0.03	experiments/method_table/results/final.json	[.cells[]|select(.group=="built" and .method=="neuron_top")|.gap|fabs]|max	this
+0.07	experiments/method_table/results/final.json	[.cells[]|select(.group=="built" and .method=="erank")|.gap]|max	this
+0.09	experiments/method_table/results/final.json	-(.cells[]|select(.pair=="e125_repeat_label" and .method=="share")|.gap)	this
+0.00	experiments/method_table/results/final.json	.cells[]|select(.pair=="e62_copy_lookup" and .method=="k_half")|.gap	this
+0.70	experiments/method_table/results/final.json	.cells[]|select(.pair=="e46_copy_random" and .method=="k_half")|.gap	this
+0.60	experiments/neuron_r/results/carrying.json	(.rows|[.rand32_s0,.rand32_s1,.rand32b_s0,.rand32b_s1]|map(.k_half|log10)|add/4) - (.rows|[.ident32_s0,.ident32_s1,.ident32b_s0,.ident32b_s1]|map(.k_half|log10)|add/4)	earlier
+0.48	given	value relayed from the user for copy maps vs random maps (lead's brief, 2026-11-12); unexplained
+0.85	experiments/method_table/results/final.json	.cells[]|select(.pair=="e53_lowercase_cipher" and .method=="k_half")|.gap	this
+0.52	experiments/method_table/results/final.json	.cells[]|select(.pair=="e54_own" and .method=="k_half")|.gap	this
+0.54	experiments/neuron_r/results/carrying.json	(.rows|[.cipher_own_s0,.cipher_own_s1]|map(.k_half|log10)|add/2) - (.rows|[.elicit_s0,.elicit_s1,.elicit_s2,.elicit_s3,.elicit_s4]|map(.k_half|log10)|add/5)	earlier
