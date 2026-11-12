@@ -72,9 +72,8 @@ state, K0, sha256), then 6 arms x 3 seeds x 2 saves, each fetched while the prev
 ## Cost and routing
 The cluster's 8 L40s are all allocated with a queue (checked 2026-11-12, 15:00), so RunPod H100 80 GB, $3.99/h, with
 ≥ 128 GB host RAM (E132 measured 91 GB) and ≥ 120 GB disk (decomposition 50 GB, two states 11.3 GB, model, venv).
-**The new decomposition p-9707d6ff is not on W&B** (checked 2026-11-12: `qwen3-1.7b-p-9707d6ff-torch` not found).
-Sync from dev: 50 GB ÷ 10 MB/s = 83 min of idle pod per pod. Upload it once first, a $0 CPU job:
-`sbatch cluster/qwen_upload.sbatch ~/commute-data/artifacts/qwen3-1.7b-p-9707d6ff-torch`; then each pod fetches it at
+**The new decomposition p-9707d6ff is on W&B** since 2026-11-12 (`edwinagnew-mats/commute/qwen3-1.7b-p-9707d6ff-torch:v0`,
+53.65 GB, uploaded by job 59562 at 54 MB/s, E170 stage); `commute.qwen_files.fetch_decomp` fetches it; each pod fetches it at
 30-45 MB/s: 50 GB ÷ 40 MB/s ≈ 21 min. A state is 5.64 GB ÷ 40 MB/s ≈ 2.4 min, overlapped with reading.
 
 Times per state from E132's L40 log (cells on 128 rows 108-133 s, split 361-372 s, split cells 146-160 s). The split is
