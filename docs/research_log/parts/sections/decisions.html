@@ -1,27 +1,8 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
-<div class="prose"><p><strong>Waiting on you, 2026-11-12.</strong> Two cards are open.</p>
+<div class="prose"><p><strong>Waiting on you, 2026-11-12.</strong> One card is open.</p>
 <p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
-<div class="card decision" id="decision-qwen-overlap-floor"><span class="chip refuted urgency">Blocking</span>
-<div class="k">Question for you · compare-lead · new 2026-11-11</div>
-<h3>On Qwen, the random update's neuron overlap moves more between two draws than the filed tolerance allows. How should the second run read the floor?</h3>
-<p><strong>Blocking for the second run only (due 11-13).</strong> Nothing else on this line waits on it.</p>
-<p><strong>What we have.</strong> For 19 saved Qwen3-1.7B updates, the cell compares how many of each block's most active MLP neurons (the top 480 of 6144) stay the most active after the update (the top-set overlap) against a random update of the same size per matrix (the floor). The first run (cluster job 59127, $0) checked the floor before reading any real update; it labels no update reuse or new.</p>
-<ul>
-<li><strong>What held.</strong> The unchanged model reads overlap exactly 1.0; the known-answer checks for the singular-value reading passed; the share of the firing change on neurons in both sets was reproducible across draws.</li>
-<li><strong>What missed.</strong> We filed that two random draws must agree within 0.0158 x (1 - mean overlap), a tolerance borrowed from the steadiest real side's seed range on the 67M model. The two draws differ by 7.5e-5 at the smallest update (overlap 0.9978, allowed about 3.6e-5) and by 0.0023 at the largest (overlap 0.905, allowed about 0.0015): about twice the tolerance at both sizes. On Qwen the floor's own draw noise is about as large as a real fine-tune's seed spread was on the 67M, so one draw cannot stand for the floor at the precision asked.</li>
-<li><strong>For information.</strong> All 19 updates have a lower effective rank than their matched random update: 1057 to 1443 against floors of 1812 to 1825. The RL arm reads 1355 and 1368, its shuffled-reward twin 1374 and 1386, and the two maths pools 1311 and 1314, and 1356 and 1356.</li>
-</ul>
-<p><strong>Options.</strong></p>
-<ul>
-<li><strong>(a) Four draws, same job, $0, about an hour. Recommended.</strong> The second run draws four random updates at each update's own size and takes the floor's band from their measured spread, filed before any real update is scored. It tells us whether each real update sits outside the floor's draw noise.</li>
-<li><strong>(b) Two draws as filed.</strong> The miss becomes a stated limit on every real-versus-floor comparison. A few minutes cheaper, but a gap under about 0.005 could not be read.</li>
-<li><strong>(c) Close on effective rank only.</strong> No overlap reading on Qwen; nothing further runs.</li>
-</ul>
-<p><strong>Why it is a question.</strong> A filed control that failed is not loosened without you. <strong>Recommendation: (a).</strong> Same cost, a measured tolerance in place of a borrowed one, filed before any real update is scored.</p>
-<div class="links"><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/decisions/2026-11-11_decision_qwen-overlap-floor.md">card</a> <a href="https://github.com/edwinagnew/commute-vpd/blob/main/experiments/qwen_cheap_readings/card_run1.md">run 1 card</a> <a href="https://github.com/edwinagnew/commute-vpd/blob/main/experiments/qwen_cheap_readings/results/run1_stage1.json">floor draws</a> <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/plans/2026-11-11_plan_qwen-cheap-readings.md">plan</a></div>
-</div>
 <div class="card decision" id="decision-difficulty-ladder"><span class="chip refuted urgency">Blocking</span>
 <div class="k">Question for you · definition-lead · new 2026-11-11</div>
 <h3>The difficulty ladder did not show the rewiring share falling as the target gets harder. What should the gate page do with the graded reading?</h3>
