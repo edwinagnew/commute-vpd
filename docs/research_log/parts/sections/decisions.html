@@ -1,27 +1,7 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
-<div class="prose"><p><strong>Waiting on you, 2026-11-12.</strong> One card is open.</p>
+<div class="prose"><p><strong>Waiting on you, 2026-11-12.</strong> No card is open. The last one, on what the gate page should do with the graded reading from the difficulty ladder, you dropped on 2026-11-12 ("drop this XOR nonsense and try and find another task that certifies as new"); the work moved to the memorised-fact run (E168, cell P1.16) and the gate page update (cell P1.17, section {{n:next}}).</p>
 <p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
-<div class="card decision" id="decision-difficulty-ladder"><span class="chip refuted urgency">Blocking</span>
-<div class="k">Question for you · definition-lead · new 2026-11-11</div>
-<h3>The difficulty ladder did not show the rewiring share falling as the target gets harder. What should the gate page do with the graded reading?</h3>
-<p><strong>Nothing runs until this is decided.</strong> This goes against what we filed before the run, and the gate page (due 11-13) cannot state the graded reading until it is settled.</p>
-<p><strong>What we have.</strong> The rewiring share is the part of a fine-tune's output change that one affine map, written into the plain model's activations at one site, can reproduce. The ladder has three fine-tunes in order of difficulty (the last number is odd, the parity of a sum of two numbers, the parity of a sum of three), two seeds each.</p>
-<ul>
-<li><strong>The share does not fall down the ladder.</strong> Rescaled between a planted ceiling (1) and a planted floor (0) of the same gap, it read 0.47, 0.07, 0.47 at one site, and 0.70, 0.59, 0.63 at two sites.</li>
-<li><strong>It follows neither probe.</strong> The plain model's small non-linear probe for the target read 1.0, 0.98, 0.72 down the ladder, and its linear probe 1.0, 0.58, 0.51.</li>
-<li><strong>Against the filed expectation.</strong> At one site we filed "fall, then level"; "out of order" was read.</li>
-<li><strong>Caveats.</strong> The sum-of-three fine-tunes passed the learned check (KL ratio 0.57) but end as far from their target in total variation (0.25) as the plain model is (0.23). The first two rungs are saved readings on two-number windows; the third is new, on three-number windows, against its own ceiling and floor. The premise check said "doubtful" for this reason.</li>
-</ul>
-<p><strong>Options.</strong></p>
-<ul>
-<li><strong>(a) One more run, $0, cluster debug, about 2 h (needs a new cell). Recommended.</strong> Retrain the sum-of-three rung until it closes on its target, and re-read all three rungs on the same three-number windows. It tells whether the rise came from partial learning or from the change of windows. If the share still does not fall, (b) follows.</li>
-<li><strong>(b) Take the ladder as read.</strong> The gate page says the share is not graded by difficulty on this ladder, and reports it within matched pairs only.</li>
-<li><strong>(c) Drop the graded reading.</strong> The gate settles on the cut-off or on dropping the wording.</li>
-</ul>
-<p><strong>Recommendation: (a).</strong> It is the cheapest way to tell a real null from an artefact of the third rung. Nothing runs until you choose.</p>
-<div class="links"><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/decisions/2026-11-11_decision_difficulty-ladder-result.md">card</a> <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-11_analysis_difficulty-ladder.md">analysis</a> <a href="https://github.com/edwinagnew/commute-vpd/blob/main/experiments/difficulty_ladder/results/readings.json">readings</a></div>
-</div>
 </div>
 </section>
