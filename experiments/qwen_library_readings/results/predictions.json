@@ -1,0 +1,70 @@
+{
+ "experiment": "E169 (qwen_library_readings), cell P3.7",
+ "filed": "2026-11-12, before any run",
+ "card": "experiments/qwen_library_readings/card.md",
+ "plan": "experiments/qwen_library_readings/plan.md",
+ "descriptive": "The user, task file 2026-11-12: 'One scorecard figure, no reuse or new labels'. No decomposition is read, nothing is trained, no update is labelled reuse or new, no share is read, and the readings are never joined into one score. Every rule below describes; none is a verdict at the card's bar.",
+ "settings": {
+  "overlap_draws": 4,
+  "overlap_draws_source": "E166's four draws per reference (decision card 2026-11-11, option (a))",
+  "steer_draws": 2,
+  "steer_draws_source": "the fewest that give a range; one steering read is ~35 forwards over 128 rows, so four would add ~30 min per pair",
+  "erank_draws": 2,
+  "erank_draws_source": "E162's two Gaussian draws per matrix (svd_seeds); E166's erank floor read 1812-1816 across 19 updates",
+  "first_seed": 169000,
+  "zero_logp_max": 1e-05,
+  "zero_logp_max_source": "E92's and E118's do-nothing bar; both read 0",
+  "norm_rel_tol": 1e-06,
+  "norm_rel_tol_source": "E166's norm2_rel_tol; the library's dw_norm is the same file summed in fp64 (library.py read_saves)",
+  "overlap_band_max": 0.2,
+  "overlap_band_max_source": "2.5x E166's whole overlap floor range, 0.998 at norm 0.27 to 0.92 at norm 18.1 (experiments/qwen_cheap_readings/results/run2_stage1.json); this set's norms span 0.17 to 5.09, so a band past it means the apparatus changed",
+  "k": 480,
+  "k_source": "E166's K (qwen_overlap.K, 7.8125% of 6144)",
+  "steer_seed": "E92's STEER_SEED, 92000",
+  "rows": "per side, its own training sequences packed as the library packs them, 128 rows of 256: built sides qwen_pairs.own_rows (all trained cue sequences, the rows the library's output change was read on); gold and template twins: the arm's training sequences (qwen_d3.gold_train; qwen_library.template_pool) through qwen_pairs.packed, the shuffled side's by that seed's derangement (library.py twin). The floor reads seed 0's rows for a shuffled side.",
+  "pairs": "copy minus cipher, known minus invented facts (E165, run 3, p35r3 artifacts); gold minus gold shuffled, template minus template shuffled (E164, run 2, p35 artifacts); seeds 0-2; saves 'last' (step 300 built, 100 twins) and '5x' (template: last only)",
+  "references": "the smallest- and the largest-|δW| state of the 42 read (run.references): copy at its 5x save and cipher at its last save, by the library's records"
+ },
+ "controls": {
+  "C0_do_nothing": {
+   "rule": "stage 0, first and alone, per pair on side A's rows: the zero update through the real-state path (run.Lab.readings): overlap == 1.0 exactly and overlap_min == 1.0 at every block, on_both nan, size (ratio_norm) == 0 exactly, max |log P - W0 log P| <= zero_logp_max, steering layer None, erank None",
+   "expected_unchanged_model": "overlap 1.0, on_both nan, size 0, log P difference 0, no layer, erank None (E166's C0 read exactly this on the same functions)",
+   "on_miss": "stop, exit 1"
+  },
+  "C1_band": {
+   "rule": "stage 1, before any real state: per pair, rules.floor_band of the overlap, steering and erank floors at the two references on both sides' rows. Stop if the overlap or erank band is None, or the overlap band is over overlap_band_max. A steering band of None (a random change whose gain is within twice its row standard error, so the share is undefined) is recorded, not a stop: the steering column then reads 'unreadable' for that pair",
+   "expected_random_floor": "overlap floor about 0.998 at the small reference and about 0.97-0.99 at the large one (E166: 0.9978 at norm 0.27, 0.92 at norm 18.1); overlap band about 0.01-0.04 (the size range plus row-set differences plus four-draw range ~0.004); erank floor about 1,810-1,816 at both (E166), band under ~10; steering on a random change: no measured value, possibly undefined",
+   "expected_unchanged_model": "does not apply",
+   "on_miss": "stop, exit 1"
+  },
+  "C2_state_integrity": {
+   "rule": "stage 2, per state before it is read: sha256 of the fetched file equal to the library's record (saves[].sha256), and |δW| within norm_rel_tol (relative) of the library's states.<save>.dw_norm",
+   "expected": "equal; |δW| off by at most ~1e-12",
+   "on_miss": "stop, exit 1"
+  }
+ },
+ "rules": {
+  "R1_floored_cells": {
+   "rule": "per pair, save and floored reading (steer, erank, overlap), on the three per-seed gaps A minus B and the pair's band: rules.floored. 'beyond floor' if every gap is further from 0 than the band and all share one sign; 'inside floor' if |mean gap| <= band (a gap equal to the band is inside); else 'mixed'; 'unreadable' on a missing seed, a None or nan, or no band",
+   "threshold": "the pair's floor band (absolute, in the reading's units)",
+   "expected_unchanged_model": "a pair of two do-nothing updates reads gaps of 0: 'inside floor' against any band, so it can never read 'beyond floor'",
+   "expected_random_floor": "two random changes at the references read inside by construction: their gap is at most the band's first term",
+   "expected": "no filed expectation of direction (descriptive). E166 read erank 1,100-1,440 and overlap 0.48-0.98 on 19 real updates, all below their floors, so the built pairs' gaps may be large; whether they exceed the floor band is what the scorecard shows",
+   "edge_cases_run": "see edge_cases below"
+  },
+  "R2_signed_cells": {
+   "rule": "per pair, save and unfloored reading (size, prior_rank, prior_logp): rules.signed. 'A higher' if every gap > 0, 'B higher' if every gap < 0, else 'mixed' (a gap of exactly 0 is mixed); 'unreadable' on a missing seed, None or nan",
+   "expected": "size: 'B higher' for both built pairs at the last save (the library: cipher |δW| 5.01-5.09 against copy 2.12-2.44; invented 3.99-4.08 against known 1.78-1.97); prior_logp: 'B higher' for copy/cipher (-17.2 against -16.2), 'B higher' for facts (-7.1 against -6.8), 'A higher' for both twins",
+   "expected_unchanged_model": "gaps of 0: 'mixed'"
+  },
+  "R3_card_call": {
+   "rule": "at the late save, the two built pairs (rules.card_call): 'rival A' if each has at least one floored reading 'beyond floor'; 'rival B' if every floored reading of both reads 'inside floor' and both size cells read one sign; else 'no call'. Reported beside the figure as a description; it labels no update",
+   "expected_unchanged_model": "a do-nothing library reads every floored cell 'inside floor' and size 'mixed': 'no call', never 'rival A'",
+   "expected": "no filed expectation (descriptive)"
+  },
+  "edge_cases": {
+   "script": "~/commute-data/scratch/compare-lead/p37-writer/edge_rules.py (cpu-run)",
+   "cases": "floor_band: empty dict, one draw, a None draw, a nan draw, equal floors (band = draw range), the two-reference cross terms; floored: all zero gaps with band 0 (inside), a gap equal to the band (inside), all beyond with mixed signs (mixed or inside by mean), two gaps, one gap (unreadable), None band (unreadable), nan gap (unreadable); signed: a zero gap (mixed), all positive, all negative, empty; card_call: a missing built pair, both rival A, one pair beyond only (no call), all inside with size one sign (rival B), all inside with size mixed (no call), unreadable steering with erank beyond (rival A)"
+  }
+ }
+}

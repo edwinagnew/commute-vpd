@@ -16,7 +16,7 @@ from commute.jobs import load_experiment
 
 PLOT = load_experiment("qwen_library_readings", "plot")
 HERE = Path(__file__).resolve().parent
-BANDS = {"steer": 0.1, "erank": 25.0, "overlap": 0.03}  # made up
+BANDS = {p: {"steer": 0.1, "erank": 25.0, "overlap": 0.03} for p in ("copy_cipher", "facts", "gold", "template")}  # made up
 SHARED = {  # near the library page: |δW| over an assumed |W0| of 1,100; prior log P from its table
     "copy_cipher": {"size": -0.0025, "prior_rank": 3.0, "prior_logp": -1.0},
     "facts": {"size": -0.0019, "prior_rank": -40.0, "prior_logp": -0.3},
