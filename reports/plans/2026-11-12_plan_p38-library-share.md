@@ -23,9 +23,9 @@ definition is under revision (P1.1).
   shared `src/commute/library_states.py` (both prefixes; a save found by its label in `.saves[].labels`, sha256
   checked against the library's record).
 - Saves, one dict in `run.py` (`_saves`), proposed to compare-lead and **not yet agreed**: late = `last` (step 300; the
-  gold twin's `last`, step 100, stands in); matched = `15x` for run-3 arms, `5x` for the gold twin (it has no 15x).
-  Note: compare-lead's P3.7 draft (`experiments/qwen_library_readings/rules.py` in its worktree) uses `5x` as the
-  matched save for every pair. If that is agreed, change `_saves` only (built arms: `"matched": "5x"`).
+  gold twin's `last`, step 100, stands in); matched = `5x` for every arm, as compare-lead's P3.7 reads it (`experiments/qwen_library_readings/rules.py`
+  `PAIRS`; agreed 2026-11-12). At 5x cipher and invented have not yet learned their trained items (exact match 0 and
+  ~0.05), so the matched column compares a learned reuse side with an unlearned new side.
 - Rows: each arm on the rows the library matched its sizes on (`library.py` `built_data` / `gold_data`, the rows of
   `results/floors.json`): `qwen_pairs.own_rows` of the side's trained cue sequences, and `qwen_pairs.gold_rows` (E40's
   held-out gold rows) for both gold arms. 128 rows of 256 tokens. `run.py` calls those functions; nothing is copied.

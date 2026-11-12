@@ -1,48 +1,50 @@
 {
- "experiment": {"run1": "E???", "run2": "E???"},
- "cell": "P3.8",
- "filed": "2026-11-12, before any run; never edited after a run (add a dated report instead)",
- "plan": "reports/plans/2026-11-12_plan_p38-library-share.md",
- "descriptive": "the user, task file 2026-11-12: 'One figure, no reuse or new labels' -- read and reported as a description. No rule below gives a reuse or new label to any update",
- "measurement": {
-  "share": "E132's (E57's) re-gating share on the new decomposition p-9707d6ff: (K00 - K01) / (K00 - K11) from the cells summed over the arm's 128 own rows of 256 tokens, KL(fine-tuned model's clean forward || masked forward). K00: original subcomponents, W0's masks; K01: original subcomponents, the fine-tuned model's masks; K11: the least-squares split, the fine-tuned model's masks. Status 'scored' / 'unscored' / 'nan' by commute.qwen_reading.shares, unchanged",
-  "rows": "Each arm on the rows the library matched its sizes on (library.py built_data / gold_data, its floors.json rows): a built side's 1,024 trained cue sequences packed (qwen_pairs.own_rows), and E40's held-out gold rows (qwen_pairs.gold_rows) for both gold and shuffled gold",
-  "states": "Run 3 (E165, peak 1e-5, 300 steps) copy, cipher, known, invented; run 2 (E164, 100 steps) gold, gold_shuf; seeds 0-2. Saves per arm in run.py Config.saves: late = 'last' (step 300; gold's step 100 stands in), matched = '15x' for run-3 arms and '5x' for the gold twin (proposed to compare-lead, not yet agreed)",
-  "gap": "Per pair, save and seed: share(side A) - share(side B), sides A/B = copy/cipher, known/invented, gold/gold_shuf. None unless both are 'scored'",
-  "random_change": "Run 1: for each arm at seed 0 and each save, iid Gaussian matrices (one draw, seed null_seed(0, site), shared by every random state) each scaled to the library state's Frobenius norm at that matrix. Stage 1 (<key>_norm, the user's 'random change of matched norms'): read as it is. Stage 2 (<key>_kl, a stated departure, Fable's advice 2026-11-12): the same change times one factor b from E57's scale_search (match 1.5x, at most 6 evaluations) so its KL on the first 16 own rows is within 1.5x of the state's own KL there; its split is stage 1's times b (the least-squares split is linear in dW). The random gap of a pair and save = share(stage-2 random, A's rows) - share(stage-2 random, B's rows); stage 1's gap is reported beside it, not used for the band",
-  "blind_to": "The share reads near 1 whenever K01 and K11 are both far under K00, whatever the update did: on p-9707d6ff E132 read 0.991-0.999 for random changes and updates alike. A gap inside the band says only that this share does not tell the sides apart beyond what rows and per-matrix size give a random change; it says nothing on how the update was made. The band's random change (stage 2) matches the state's KL and per-matrix norm profile, at 10-40x its norm: a weaker null than one at its norm, and A and B get separate factors, whose difference can itself make a random gap (both are reported)",
-  "positive_control": "None that separates by construction exists at Qwen scale; the do-nothing state (share exactly 1, gap 0) checks the path, and the random change gives the floor",
-  "noise_floor": "E132's seed spread 0.0019556570733518797 (|a2long_s0 - a2long_s1|, experiments/qwen_regating_new/results/summary.json .new.seed_spread) and its random-vs-random gap 0.001"
- },
- "controls_stop_on_miss": {
-  "W0": "Per row set (copy, cipher, known, invented, gold) on its first 16 rows, W0 as the fine-tuned model: K00 and K01 equal K0, and an all-zero split's K10 and K11 equal K0, each within 1e-6 relative (E132's id_tol)",
-  "do_nothing": "Each job's first change through the split path with no column moves, 16 rows: share within 1e-6 of 1",
-  "K0_floor": "Each state's mean K0 over its 128 rows equals the library's floor for that side (experiments/qwen_pair_library/results/floors.json .floors.<side>.K0, read with the same Lab cells on p-9707d6ff) within 1e-3 relative (E57's rep_tol). This checks the rows are the library's. E132's maths K0 0.0932074816 equals floors.json's maths K0 to 10 digits",
-  "sha256": "Each fetched state's sha256 equals the one the library recorded (results/<run>/<arm>_s<seed>.json .saves[].sha256); a mismatch raises",
-  "alive": "The live set rebuilt from p-9707d6ff's saved statistics counts 500,244",
-  "stored_error": "The fp32 split misses float64 by under 1e-3 of ||dW||_Sigma at every state (E57's bar)",
-  "gpu": "Peak under 44 GiB after the first row of each cell pass (E57's bar; E132 read 42.4 GiB)",
-  "random_scored": "Each stage-2 random state reads 'scored' (else no band can be read: the job stops)",
-  "order": "Run 2 refuses to start until all 12 stage-2 run-1 records are home"
- },
- "expected": {
-  "W0": "Share undefined (K00 = K11 = K0, a zero denominator: status 'unscored', share nan); mean K0 per side equal to floors.json (copy 0.1054, cipher 0.1498, known 0.1006, invented 0.1661, gold 0.1113)",
-  "do_nothing": "Share 1 exactly, so every gap of do-nothing states is 0",
-  "random_norm": "Stage 1 (matched norms): KL on 16 rows 100 to 400 times under the state's (E132's Gaussian at an update's Sigma-weighted energy read 0.0015 against 0.618) and status 'unscored' (denominator under 0.05 nats a position). That is the stage's reading, not a stop; its share is reported with its status",
-  "random_scale": "Stage 2's factor b between 10 and 40 (E132's was 20.2), its KL within 1.5x of the state's",
-  "random_share": "Each of the 12 stage-2 random states 'scored' with share at least 0.98 (E132: Gaussian 0.9909, in-span 0.9920)",
-  "random_gap": "Each |stage-2 random gap| at most 0.01 (E132's random-vs-random gap 0.001; the rows differ here, so wider)",
-  "update_share": "Each of the 36 states 'scored' with share at least 0.95 (E132's updates 0.9946-0.9992). The small states (copy at 15x: |dW| 0.40-0.56) may fall under the denominator floor (0.05 nats a position) and read 'unscored'; such a cell reads unreadable, as filed"
- },
- "description": {
-  "spread": 0.0019556570733518797,
-  "band": "Per pair and save: band = |random gap| + spread. None when the random gap is None",
-  "cell": "From the three seed gaps and the band: 'unreadable' if under three gaps, any gap None or not finite, or the band None; 'beyond band' if every |gap| > band (strict) and all gaps share one sign; 'inside band' if |mean gap| <= band; else 'mixed'. Values rounded to 9 places before comparing",
-  "edge_cases_checked": "Zero denominator (K00 - K11 = 0, as at W0): the share is nan, status 'nan' or 'unscored', the gap None, the cell unreadable. A state whose K00 - K11 is near 0 (under 0.05 nats a position): 'unscored', gap None, cell unreadable. A gap equal to the band: not beyond; a mean equal to the band: inside. Gaps of mixed sign all outside the band: never 'beyond band'; 'inside band' if their mean is within the band, else 'mixed' (checked on CPU 2026-11-12: [0.01, -0.012, 0.011] with band 0.003 reads 'inside band'). The do-nothing pair: gaps 0, inside any band. Empty or one-element pool: the seed set is fixed at three; fewer readable gaps is unreadable, never a smaller n. Band 0 cannot occur (spread > 0)",
-  "do_nothing_against_the_rule": "A do-nothing state on both sides reads gap 0, 'inside band': the rule cannot read 'beyond band' for a change that does nothing",
-  "reports": "The one figure (plot.py) and summary.json: per pair and save the seed gaps, the random gap, the band and the cell. Read as a description; the cell words are not reuse or new labels"
- },
- "leans": {
-  "written_before_running": "Rival B: E132 read every change at 0.991-0.999 on p-9707d6ff, so most cells read 'inside band' or 'mixed', with every gap under 0.01 in size. If a built pair reads 'beyond band', the sign is not predicted"
- }
+  "experiment": "E170",
+  "cell": "P3.8",
+  "filed": "2026-11-12, before any run; never edited after a run (add a dated report instead)",
+  "plan": "reports/plans/2026-11-12_plan_p38-library-share.md",
+  "descriptive": "the user, task file 2026-11-12: 'One figure, no reuse or new labels' -- read and reported as a description. No rule below gives a reuse or new label to any update",
+  "measurement": {
+    "share": "E132's (E57's) re-gating share on the new decomposition p-9707d6ff: (K00 - K01) / (K00 - K11) from the cells summed over the arm's 128 own rows of 256 tokens, KL(fine-tuned model's clean forward || masked forward). K00: original subcomponents, W0's masks; K01: original subcomponents, the fine-tuned model's masks; K11: the least-squares split, the fine-tuned model's masks. Status 'scored' / 'unscored' / 'nan' by commute.qwen_reading.shares, unchanged",
+    "rows": "Each arm on the rows the library matched its sizes on (library.py built_data / gold_data, its floors.json rows): a built side's 1,024 trained cue sequences packed (qwen_pairs.own_rows), and E40's held-out gold rows (qwen_pairs.gold_rows) for both gold and shuffled gold",
+    "states": "Run 3 (E165, peak 1e-5, 300 steps) copy, cipher, known, invented; run 2 (E164, 100 steps) gold, gold_shuf; seeds 0-2. Saves per arm in run.py Config.saves: late = 'last' (step 300; gold's step 100 stands in), matched = '5x' for every arm (agreed with compare-lead's P3.7, 2026-11-12)",
+    "gap": "Per pair, save and seed: share(side A) - share(side B), sides A/B = copy/cipher, known/invented, gold/gold_shuf. None unless both are 'scored'",
+    "random_change": "Run 1: for each arm at seed 0 and each save, iid Gaussian matrices (one draw, seed null_seed(0, site), shared by every random state) each scaled to the library state's Frobenius norm at that matrix. Stage 1 (<key>_norm, the user's 'random change of matched norms'): read as it is. Stage 2 (<key>_kl, a stated departure, Fable's advice 2026-11-12): the same change times one factor b from E57's scale_search (match 1.5x, at most 6 evaluations) so its KL on the first 16 own rows is within 1.5x of the state's own KL there; its split is stage 1's times b (the least-squares split is linear in dW). The random gap of a pair and save = share(stage-2 random, A's rows) - share(stage-2 random, B's rows); stage 1's gap is reported beside it, not used for the band",
+    "blind_to": "The share reads near 1 whenever K01 and K11 are both far under K00, whatever the update did: on p-9707d6ff E132 read 0.991-0.999 for random changes and updates alike. A gap inside the band says only that this share does not tell the sides apart beyond what rows and per-matrix size give a random change; it says nothing on how the update was made. The band's random change (stage 2) matches the state's KL and per-matrix norm profile, at 10-40x its norm: a weaker null than one at its norm, and A and B get separate factors, whose difference can itself make a random gap (both are reported)",
+    "positive_control": "None that separates by construction exists at Qwen scale; the do-nothing state (share exactly 1, gap 0) checks the path, and the random change gives the floor",
+    "noise_floor": "E132's seed spread 0.0019556570733518797 (|a2long_s0 - a2long_s1|, experiments/qwen_regating_new/results/summary.json .new.seed_spread) and its random-vs-random gap 0.001"
+  },
+  "controls_stop_on_miss": {
+    "W0": "Per row set (copy, cipher, known, invented, gold) on its first 16 rows, W0 as the fine-tuned model: K00 and K01 equal K0, and an all-zero split's K10 and K11 equal K0, each within 1e-6 relative (E132's id_tol)",
+    "do_nothing": "Each job's first change through the split path with no column moves, 16 rows: share within 1e-6 of 1",
+    "K0_floor": "Each state's mean K0 over its 128 rows equals the library's floor for that side (experiments/qwen_pair_library/results/floors.json .floors.<side>.K0, read with the same Lab cells on p-9707d6ff) within 1e-3 relative (E57's rep_tol). This checks the rows are the library's. E132's maths K0 0.0932074816 equals floors.json's maths K0 to 10 digits",
+    "sha256": "Each fetched state's sha256 equals the one the library recorded (results/<run>/<arm>_s<seed>.json .saves[].sha256); a mismatch raises",
+    "alive": "The live set rebuilt from p-9707d6ff's saved statistics counts 500,244",
+    "stored_error": "The fp32 split misses float64 by under 1e-3 of ||dW||_Sigma at every state (E57's bar)",
+    "gpu": "Peak under 44 GiB after the first row of each cell pass (E57's bar; E132 read 42.4 GiB)",
+    "random_scored": "Each stage-2 random state reads 'scored' (else no band can be read: the job stops)",
+    "order": "Run 2 refuses to start until all 12 stage-2 run-1 records are home"
+  },
+  "expected": {
+    "W0": "Share undefined (K00 = K11 = K0, a zero denominator: status 'unscored', share nan); mean K0 per side equal to floors.json (copy 0.1054, cipher 0.1498, known 0.1006, invented 0.1661, gold 0.1113)",
+    "do_nothing": "Share 1 exactly, so every gap of do-nothing states is 0",
+    "random_norm": "Stage 1 (matched norms): KL on 16 rows 100 to 400 times under the state's (E132's Gaussian at an update's Sigma-weighted energy read 0.0015 against 0.618) and status 'unscored' (denominator under 0.05 nats a position). That is the stage's reading, not a stop; its share is reported with its status",
+    "random_scale": "Stage 2's factor b between 10 and 40 (E132's was 20.2), its KL within 1.5x of the state's",
+    "random_share": "Each of the 12 stage-2 random states 'scored' with share at least 0.98 (E132: Gaussian 0.9909, in-span 0.9920)",
+    "random_gap": "Each |stage-2 random gap| at most 0.01 (E132's random-vs-random gap 0.001; the rows differ here, so wider)",
+    "update_share": "Each of the 36 states 'scored' with share at least 0.95 (E132's updates 0.9946-0.9992). The small states (the 5x saves, the smallest in the library) may fall under the denominator floor (0.05 nats a position) and read 'unscored'; such a cell reads unreadable, as filed"
+  },
+  "description": {
+    "spread": 0.0019556570733518797,
+    "band": "Per pair and save: band = |random gap| + spread. None when the random gap is None",
+    "cell": "From the three seed gaps and the band: 'unreadable' if under three gaps, any gap None or not finite, or the band None; 'beyond band' if every |gap| > band (strict) and all gaps share one sign; 'inside band' if |mean gap| <= band; else 'mixed'. Values rounded to 9 places before comparing",
+    "edge_cases_checked": "Zero denominator (K00 - K11 = 0, as at W0): the share is nan, status 'nan' or 'unscored', the gap None, the cell unreadable. A state whose K00 - K11 is near 0 (under 0.05 nats a position): 'unscored', gap None, cell unreadable. A gap equal to the band: not beyond; a mean equal to the band: inside. Gaps of mixed sign all outside the band: never 'beyond band'; 'inside band' if their mean is within the band, else 'mixed' (checked on CPU 2026-11-12: [0.01, -0.012, 0.011] with band 0.003 reads 'inside band'). The do-nothing pair: gaps 0, inside any band. Empty or one-element pool: the seed set is fixed at three; fewer readable gaps is unreadable, never a smaller n. Band 0 cannot occur (spread > 0)",
+    "do_nothing_against_the_rule": "A do-nothing state on both sides reads gap 0, 'inside band': the rule cannot read 'beyond band' for a change that does nothing",
+    "reports": "The one figure (plot.py) and summary.json: per pair and save the seed gaps, the random gap, the band and the cell. Read as a description; the cell words are not reuse or new labels"
+  },
+  "leans": {
+    "written_before_running": "Rival B: E132 read every change at 0.991-0.999 on p-9707d6ff, so most cells read 'inside band' or 'mixed', with every gap under 0.01 in size. If a built pair reads 'beyond band', the sign is not predicted"
+  },
+  "experiment_run1": "E170",
+  "experiment_run2": "E???"
 }

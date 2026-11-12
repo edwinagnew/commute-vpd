@@ -19,7 +19,7 @@ from commute import figures as F
 
 HERE = Path(__file__).resolve().parent
 PAIR_NAMES = {"copy_cipher": "copy − cipher", "facts": "known − invented", "gold": "gold − shuffled gold"}
-KIND_NAMES = {"late": "late save\n(step 300;\ngold 100)", "matched": "matched size\n(15x floor;\ngold 5x)"}
+KIND_NAMES = {"late": "late save\n(step 300;\ngold 100)", "matched": "matched size\n(5x floor)"}
 GAP = "re-gating share, side A minus side B"
 
 

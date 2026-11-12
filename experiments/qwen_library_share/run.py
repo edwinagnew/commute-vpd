@@ -1,4 +1,4 @@
-"""Cell P3.8 (run 1 E???, run 2 E???): E132's re-gating share, on the new decomposition p-9707d6ff, of the pair
+"""Cell P3.8 (run 1 E170, run 2 E???): E132's re-gating share, on the new decomposition p-9707d6ff, of the pair
 library's saved states, each side read on its own rows; per pair, side A's share minus side B's (copy − cipher,
 known − invented, gold − shuffled gold) at the late and the matched-size save. A description: no reuse or new label.
 Plan: reports/plans/2026-11-12_plan_p38-library-share.md. Rules: results/predictions.json (the job refuses to start
@@ -66,10 +66,9 @@ L.CFG = replace(L.CFG, alive_total=ALIVE_TOTAL_OF[NEW])
 
 def _saves() -> dict[str, dict[str, str]]:
     # The library save read as each kind. late: step 300 (the gold twin's last save, step 100, stands in); matched:
-    # the matched-size save. Proposed to compare-lead 2026-11-12, not yet agreed: change it here and nowhere else.
-    built = {"late": "last", "matched": "15x"}
-    return {"copy": built, "cipher": built, "known": built, "invented": built,
-            "gold": {"late": "last", "matched": "5x"}, "gold_shuf": {"late": "last", "matched": "5x"}}
+    # the first matched-size save, 5x, agreed with compare-lead's P3.7 (rules.py PAIRS) 2026-11-12.
+    arms = ("copy", "cipher", "known", "invented", "gold", "gold_shuf")
+    return {arm: {"late": "last", "matched": "5x"} for arm in arms}
 
 
 @dataclass(frozen=True)
@@ -307,13 +306,13 @@ def main() -> None:
         hard_exit(0)
     arms = tuple(a.arms.split(","))
     assert a.run is not None and set(arms) <= set(ARMS), (a.run, arms)
-    if R["experiment"][f"run{a.run}"] == "E???":
+    if R[f"experiment_run{a.run}"] == "E???":
         sys.exit(f"refusing to start: run {a.run} has no experiment number in {PRED.name}")
     missing = [st.key for st in states(ARMS, (C.norm_seed,)) if not (RESULTS / "run1" / f"{st.key}_kl.json").is_file()]
     if a.run == 2 and missing:
         sys.exit(f"refusing to start: run 1 first, alone ({len(missing)} random states not home: {missing})")
     assert decomp_id(Path(a.decomp)) == NEW, a.decomp
-    lab = L.Lab(R["experiment"][f"run{a.run}"], "unused", a.decomp)
+    lab = L.Lab(R[f"experiment_run{a.run}"], "unused", a.decomp)
     arms = ARMS if a.run == 1 else arms
     rows = {ROWSET[x]: rows_of(x) for x in arms}
     assert all(tuple(r.shape) == (L.CFG.n_rows, L.CFG.row_len) for r in rows.values()), {k: r.shape for k, r in rows.items()}
