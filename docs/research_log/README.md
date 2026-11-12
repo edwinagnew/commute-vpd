@@ -632,3 +632,4 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e148_h_by_arm.png": "experiments/built_control/figures/h_by_arm_scored.png"
 - "fig/e152_step1.png": "experiments/qwen_instrument_check/figures/step1.png"
 - "fig/e163_run1.png": "experiments/qwen_rl_readable/figures/run1.png"
+- "fig/e165_library.png": "experiments/qwen_pair_library/figures/library.png"
