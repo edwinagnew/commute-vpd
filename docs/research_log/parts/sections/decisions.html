@@ -1,7 +1,28 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
-<div class="prose"><p><strong>Waiting on you, 2026-11-12.</strong> No card is open. The last one, on what the gate page should do with the graded reading from the difficulty ladder, you dropped on 2026-11-12 ("drop this XOR nonsense and try and find another task that certifies as new"); the work moved to the memorised-fact run (E168, cell P1.16) and the gate page update (cell P1.17, section {{n:next}}).</p>
+<div class="prose"><p><strong>Waiting on you, 2026-11-12.</strong> One card is open. The last one before it, on what the gate page should do with the graded reading from the difficulty ladder, you dropped on 2026-11-12 ("drop this XOR nonsense and try and find another task that certifies as new").</p>
 <p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
+<div class="card decision" id="decision-qwen-rl-last-run"><span class="chip open urgency">Soon</span>
+<div class="k">Question for you · qwen-rl-lead · new 2026-11-12</div>
+<h3>The shuffled-reward comparison for reinforcement learning on Qwen broke, so it says nothing yet. Should the cell's last run train a comparison that stays working, or should the cell close as read?</h3>
+<p><strong>Nothing runs on this cell until this is decided.</strong> The cell is due 11-16, and a paid run needs your yes on money too: about $226 of the roughly $263 you approved is spent.</p>
+<p><strong>What we have.</strong> On two seeds we trained Qwen3-1.7B on school maths by reinforcement learning, by the same loop with the rewards shuffled among each problem's answers (the comparison, called the null), and by plain training on its own correct answers. The <em>output change</em> is how far the trained model's output moves from the unchanged one; the decomposition's own error on the same rows is the yardstick, and "twice the error" is the smallest size that stands clear of its noise.</p>
+<ul>
+<li><strong>Reinforcement learning</strong> reached twice the error at step 75 on both seeds and five times on one seed, with its held-out pass rate staying near 0.88 (unchanged model: 0.782).</li>
+<li><strong>The null collapsed on both seeds.</strong> Its answers shrank from about 190 tokens to under 10 and its pass rate fell to 0.039 and 0.000, so by the filed rule reinforcement learning is "apart" at twice the error, against a model that had stopped answering. The cause was not checked.</li>
+<li><strong>At a third of the rate the null held</strong> for 100 steps in three earlier runs (pass 0.870 and 0.794 on two seeds, against 0.881 and 0.877 for reinforcement learning). It has never been run past step 100.</li>
+<li><strong>The fine-tune on its own correct answers</strong> passed 0.81 to 0.83 but barely moved the output, so it is a reference and not a comparison of the same size. Every update sits outside the decomposition's subcomponents as much as a random change does.</li>
+</ul>
+<p><strong>Options.</strong></p>
+<ul>
+<li><strong>(a) Train a working null alone, at the lower rate, matched by output change. Recommended. About $75 at most, up to about 9 hours on two pods, a gated run.</strong> The null trains at a third of the rate and stops at the first save where it has moved the output as much as reinforcement learning's already-saved step-75 state on the same seed (2.1 and 3.1 times the error). A stop ends a pod within a few steps if the null breaks again. It tells whether reinforcement learning's pass rate at about twice the error is above a working null's by more than the seed spread. It departs from the cell as written in two ways: the lower rate, and matching by output change instead of by step, because at equal steps the null was already at twice reinforcement learning's size.</li>
+<li><strong>(b) Retrain both reinforcement learning and the null at the lower rate, matched by step as filed. About $150, about 9.5 hours on four pods, a gated run.</strong> The same comparison with the cell's step match, but reinforcement learning grew slowly at this rate, so twice the error may not arrive on one seed. It takes the cell to about $113 over the approval.</li>
+<li><strong>(c) Close the cell as read, no spend.</strong> The report says "apart at twice the error by the filed rule, but against a null that collapsed, so no claim." Part 4 then reads a reinforcement-learning update at two and five times the error on the decomposition with no behaviour comparison behind it.</li>
+</ul>
+<p><strong>Recommendation: (a).</strong> It reuses states already saved and read, and trains the null at the only setting where it has held, for half the cost of (b). Its weak point is that the null has never run past step 100 there; the stop keeps a repeat collapse cheap. A working null may well read "together" with reinforcement learning, which would itself be the cell's answer.</p>
+<p class="small">Names in the reports: this is cell P3.4, run 3 of 3, after the experiment cards E163 and E167.</p>
+<div class="links"><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/decisions/2026-11-12_decision_qwen-rl-last-run.md">card</a> <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-12_analysis_e167-qwen-rl-readable-run2.md">analysis</a> <a href="#e163">experiment card</a></div>
+</div>
 </div>
 </section>
