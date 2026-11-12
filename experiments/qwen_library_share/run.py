@@ -1,8 +1,8 @@
-"""Cell P3.8 (run 1 E170, run 2 E???): E132's re-gating share, on the new decomposition p-9707d6ff, of the pair
+"""Cell P3.8 (run 1 E170, run 2 E174): E132's re-gating share, on the new decomposition p-9707d6ff, of the pair
 library's saved states, each side read on its own rows; per pair, side A's share minus side B's (copy − cipher,
 known − invented, gold − shuffled gold) at the late and the matched-size save. A description: no reuse or new label.
 Plan: reports/plans/2026-11-12_plan_p38-library-share.md. Rules: results/predictions.json (the job refuses to start
-without it, while its run's code there is E???, or while results/stopped.json exists).
+without it, while its run's code there is E174, or while results/stopped.json exists).
 
   run 1 (alone, first)  controls, then one random change per arm (seed 0's state) and save: iid Gaussian matrices, one
         draw shared by every state, each scaled to the library state's Frobenius norm at that matrix (<key>_norm, the
