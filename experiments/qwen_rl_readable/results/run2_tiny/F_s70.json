@@ -1,0 +1,123 @@
+{
+ "pod": "F_s70",
+ "arm": "F",
+ "seed": 70,
+ "draw_seed": 70,
+ "tag": "3e-6w10",
+ "size": "tiny",
+ "device": "NVIDIA L40",
+ "saves": {
+  "1": {
+   "file": "F_s70/dW/step_1.safetensors",
+   "bytes": 5637164512,
+   "sha256": "80bc52ecab1c378398a529b83affd5ce4ad14462624411461b518312700f71d9",
+   "save_s": 22.573158025741577
+  },
+  "2": {
+   "file": "F_s70/dW/step_2.safetensors",
+   "bytes": 5637164512,
+   "sha256": "475fb387961cd2d6b756f4b30589507ae68dfe7d99e6d51ca3a64026527e8f45",
+   "save_s": 22.709741830825806
+  }
+ },
+ "steps": [
+  {
+   "step": 1,
+   "sample_s": 0.009016752243041992,
+   "reward_rate": 1,
+   "mean_len": 201,
+   "window_share": 1,
+   "live": true,
+   "loss": 0.03404312580823898,
+   "grad_norm": 2.1707749366760254,
+   "rate": 3e-07,
+   "dw_norm": 0.011144460170646948,
+   "grad_rms": 5.782494224348294e-05,
+   "train_s": 1.9897587299346924,
+   "live_tokens": 1608
+  },
+  {
+   "step": 2,
+   "sample_s": 0.0012967586517333984,
+   "reward_rate": 0.75,
+   "mean_len": 237,
+   "window_share": 0.75,
+   "live": true,
+   "loss": 0.02462934225331992,
+   "grad_norm": 2.1117212772369385,
+   "rate": 6e-07,
+   "dw_norm": 0.024046803710922514,
+   "grad_rms": 5.6251875230114736e-05,
+   "train_s": 1.370818853378296,
+   "live_tokens": 1056
+  }
+ ],
+ "reads": {
+  "1": {
+   "dw_norm": 0.011144460170646948,
+   "kl": 9.800383788706144e-05,
+   "multiple": 0.0010514589192559477,
+   "kl_s": 13.277754545211792
+  },
+  "2": {
+   "dw_norm": 0.024046803710922514,
+   "kl": 0.00028138115228172015,
+   "multiple": 0.0030188687367333246,
+   "kl_s": 13.025371789932251
+  }
+ },
+ "resumes": [
+  1
+ ],
+ "rollout_sha_1": "1b495775af288c73700125d463e92530d0389de723836c125644536d575b44bc",
+ "same_rollouts_as_e69": false,
+ "checks": {
+  "step 1's reward rate": {
+   "holds": false,
+   "rate": 1,
+   "band": [
+    0.6,
+    0.88
+   ]
+  },
+  "loss and gradient norm finite": {
+   "holds": true,
+   "step": 2
+  },
+  "first live step: |dW| / (rate sqrt(numel))": {
+   "holds": true,
+   "step": 1,
+   "ratio": 0.9895510197988382,
+   "band": [
+    0.85,
+    1.05
+   ]
+  },
+  "first live step: KL(W0 || W_1) on H": {
+   "holds": true,
+   "step": 1,
+   "kl": 0.00043866622088600793,
+   "band": [
+    0.00027,
+    0.018
+   ]
+  },
+  "first save: E69's size, sha256 recorded": {
+   "holds": true,
+   "file": "F_s70/dW/step_1.safetensors",
+   "bytes": 5637164512,
+   "sha256": "80bc52ecab1c378398a529b83affd5ce4ad14462624411461b518312700f71d9",
+   "save_s": 22.573158025741577
+  }
+ },
+ "first_live_read": {
+  "delta_r": 6.631364848257507e-05,
+  "kl": 0.00043866622088600793
+ },
+ "done": true,
+ "last": 2,
+ "peaks": {
+  "gpu_gb": 30.846554112,
+  "host_gb": 18.903708
+ }
+}

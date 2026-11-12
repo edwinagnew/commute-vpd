@@ -1,0 +1,101 @@
+{
+ "pod": "N_s70",
+ "arm": "N",
+ "seed": 70,
+ "draw_seed": 70,
+ "tag": "3e-6w10",
+ "size": "tiny",
+ "device": "NVIDIA L40",
+ "saves": {
+  "1": {
+   "file": "N_s70/dW/step_1.safetensors",
+   "bytes": 5637164512,
+   "sha256": "88caa5f15fde12c908483e89b5d91d6441bd1f287e2fea3bbd8b43a5ba628539",
+   "save_s": 23.051208972930908
+  },
+  "2": {
+   "file": "N_s70/dW/step_2.safetensors",
+   "bytes": 5637164512,
+   "sha256": "88caa5f15fde12c908483e89b5d91d6441bd1f287e2fea3bbd8b43a5ba628539",
+   "save_s": 20.716684579849243
+  }
+ },
+ "steps": [
+  {
+   "step": 1,
+   "sample_s": 12.260933637619019,
+   "reward_rate": 1,
+   "mean_len": 201,
+   "window_share": 1,
+   "live": false,
+   "loss": 0.0,
+   "grad_norm": 0.0,
+   "rate": 3e-07,
+   "dw_norm": 0.0,
+   "grad_rms": 0.0,
+   "train_s": 0.041825294494628906,
+   "live_tokens": 0
+  },
+  {
+   "step": 2,
+   "sample_s": 15.556550741195679,
+   "reward_rate": 0.75,
+   "mean_len": 237,
+   "window_share": 0.75,
+   "live": false,
+   "loss": 0.0,
+   "grad_norm": 0.0,
+   "rate": 6e-07,
+   "dw_norm": 0.0,
+   "grad_rms": 0.0,
+   "train_s": 0.029265642166137695,
+   "live_tokens": 0
+  }
+ ],
+ "reads": {
+  "1": {
+   "dw_norm": 0.0,
+   "kl": 0.0,
+   "multiple": 0.0,
+   "kl_s": 12.909098148345947
+  },
+  "2": {
+   "dw_norm": 0.0,
+   "kl": 0.0,
+   "multiple": 0.0,
+   "kl_s": 12.974958181381226
+  }
+ },
+ "resumes": [
+  1
+ ],
+ "rollout_sha_1": "1b495775af288c73700125d463e92530d0389de723836c125644536d575b44bc",
+ "same_rollouts_as_e69": false,
+ "checks": {
+  "step 1's reward rate": {
+   "holds": false,
+   "rate": 1,
+   "band": [
+    0.6,
+    0.88
+   ]
+  },
+  "loss and gradient norm finite": {
+   "holds": true,
+   "step": 2
+  },
+  "first save: E69's size, sha256 recorded": {
+   "holds": true,
+   "file": "N_s70/dW/step_1.safetensors",
+   "bytes": 5637164512,
+   "sha256": "88caa5f15fde12c908483e89b5d91d6441bd1f287e2fea3bbd8b43a5ba628539",
+   "save_s": 23.051208972930908
+  }
+ },
+ "done": true,
+ "last": 2,
+ "peaks": {
+  "gpu_gb": 16.884281856,
+  "host_gb": 10.976108
+ }
+}

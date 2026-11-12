@@ -181,4 +181,46 @@ Bands on a stub job: R's step-20 |δW| 0.3996 (run 1) holds, 0.136 (rate not app
 R_s0 multiple 1.331 at 50 holds, 0.95 stops, 3.6 at 150 stops, a missing multiple stops; seed 70 and N have no multiple band.
 
 ## Rehearsal results
-(to be filled by the lead from the rehearsal jobs before the review)
+Run 2026-11-12 on the cluster's L40 (debug QoS), by the runner. First try (jobs 59491-59493) stopped at `room` (the node's
+/ephemeral had 37 GB free); the fix moved scratch to `/mnt/nw/.../scratch/qwen-rl-lead/run2_tiny_<job>` (code 26815b2f).
+Rerun: 59504 (R_s70 + end-to-end), 59505 (N_s70), 59506 (F_s70), all COMPLETED exit 0; controls 59494 timed out at 30 min
+(W0 done, E69 R100 read at batch 9/11), resumed as 59512, FINISHED exit 0.
+1. Save and checkpoint seconds (L40, scratch on /mnt/nw NFS, tiny model state but full-size 5.64 GB files): `SAVED
+   save_s` 26.1 / 25.6 (R step 1, 2), 23.1 / 20.7 (N), 22.6 / 22.7 (F), i.e. ~21-26 s, sha256 included (about 40 s was
+   assumed). Checkpoint: R 29 s and 24 s, N 17 s and 22 s, F 50 s and 54 s (F's checkpoint is larger: adds its rollouts and
+   optimizer state at live steps); the 17 GB checkpoint in the plan is the full-size figure, measured at tiny size the
+   checkpoint file is the same size (optimizer state is the same shape), so it extrapolates; the pod's disk and card will
+   differ (NFS here, local NVMe there). No separate 5.6 GB node write was timed (the save_s is that write).
+2. Resume: each pod exited 3 after step 1, then 0; JSON `resumes` = [1] and `steps` = [1, 2] (step 1 once) for R_s70, N_s70
+   and F_s70; step 1's save and read not repeated (log); step 2 ran. R and N saved identical sha256 (88caa5f1...) at steps
+   1 and 2 because 4 problems x 2 samples were all-correct at step 1 (reward_rate 1, not live, delta 0): the tiny size
+   cannot exercise a live R/N update; F, which trains on W0's rollouts, was live (dw_norm 0.0111 at step 1, 0.0240 at
+   step 2; sha256 80bc52ec... then 475fb387...).
+3. F's in-loop W0 sampling ran: "W0's rollouts of step 1 sampled here, 13 s", step 2 16 s; first-live-step checks ok
+   (|dW|/(rate sqrt(numel)) 0.9896, band [0.85, 1.05]; KL(W0||W_1) 4.39e-4, band [2.7e-4, 0.018]). Step-1 reward-rate
+   check printed MISSED (rate 1, band [0.6, 0.88]) at tiny size in all three pods and did not stop the run; "step 1's
+   rollouts identical to E69's R: False" in all three (expected at tiny size: different problems).
+4. Disk line (run2.py): "disk: 3379 GB free, 33 GB needed" at start, "3367 GB free, 28 GB needed" at resume (R; /mnt/nw);
+   `du -sh` of each pod folder at the end: R_s70 11G, N_s70 11G, F_s70 11G (two states of 5.64 GB deleted from N, F at the
+   end; the 11G is two states or a state plus checkpoint, as listed in the logs).
+5. Peaks (JSON `peaks`): R_s70 gpu 16.88 GB host 10.98 GB; N_s70 gpu 16.88, host 10.98; F_s70 gpu 30.85, host 18.90
+   (peak host RSS printed 18.0 GB, inside --mem 24G). Read stage: peak host RSS 10.5 GB (controls, state read) and 3.3 GB
+   (share). Tiny-size card peaks; the full-size R/N 69.4 GB, F ~69 GB are for the pod.
+6. Read controls on an L40, full size (59494 then 59512): W0 kl 0.0 (band [0, 1e-9] ok), pass 0.78167 (band
+   [0.7597, 0.8037] ok), dw_norm 0.0 ok; E69 R step 100: dw_norm 0.350884 (band [0.35053, 0.35123] ok), output change kl
+   0.064313 (band [0.06367, 0.06496] ok), pass 0.88070 (band [0.8587, 0.9027] ok), fits 0.94693, gain diff 0.0904 se
+   0.01127 (n 1217). The tiny state R_s70@2 (delta 0): sha256 check passed, kl 0, pass 0.714, fits 0.875 (8 problems).
+   The tiny controls run of 59504 printed MISSED pass bands for W0 and E69 R100 (8 GSM8K problems, bands are full-size) as
+   expected; ignore.
+7. Seconds per state on an L40: E69 R100 946.7 s (GSM8K 11 batches of 87-99 s plus output change), W0 918.5 s; so
+   ~16 min a state, the `--controls-only` job needs ~32 min for both and overran the 30-min wall (59494) -- the read jobs
+   for states should be sized at ~16 min a state plus ~1 min load: one state per 30-min debug job (two states need
+   ~34 min).
+8. End to end (59504): `--chosen` ran (wrote chosen.json; seed 70 "not reached" for all sizes, seed 0 "open" with
+   no files), `--stage gpu --controls-only`, `--stage gpu --states R_s70@2`, `--stage share --sites 7`, `--stage
+   verdict` all exit 0, "REHEARSAL DONE". Share on 7 matrices: e69_R100 share_ratio 1.1414 (real 1.851e-05, null
+   1.622e-05, norm 0.06694), R_s70@2 null (zero update), leftover_norm 0.9728. The filed share control for E69 R100 is
+   0.98047 +-1e-5 (E152, whole model); 1.1414 on 7 layer-0 matrices is not comparable, and the full control needs all
+   matrices (a note for the lead, not tested). Verdict: "no call" (no seeds read), as expected at tiny size.
+Files: experiments/qwen_rl_readable/results/run2_tiny/ (pod JSON and logs, chosen.json, controls.json, share.json,
+verdict.json, reads.log) and results/run2_reads/ (controls.json, reads.log); logs cluster/logs/*-59491..59512.out.
