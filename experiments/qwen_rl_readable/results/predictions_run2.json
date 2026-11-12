@@ -1,0 +1,66 @@
+{
+ "experiment": "cell P3.4 run 2: R, N and F at peak 3e-6 (10 warm-up steps) to step 400 on seeds 0 (draw seed 69) and 70, states saved at matched steps",
+ "filed": "2026-11-12, before any run",
+ "plan": "reports/plans/2026-11-12_plan_qwen-rl-readable-run2.md (gates: reports/plans/2026-11-12_plan_qwen-rl-readable-run2-gates.md)",
+ "units": "pass = GSM8K test strict_dropped (greedy, fp32, 1319 problems, those that fit the window); fits = fits_share; kl = output change, KL(W_t || W0) nats per token over every position of the 128 maths rows at length 256 (run 1's output_change); multiple = kl / masked_error; dw_norm = Frobenius norm of the update over the 196 matrices. Comparisons round to 9 places; a missing value is a miss.",
+ "refs": {
+  "w0_pass": 0.7816733067729084,
+  "w0_pass_source": "experiments/qwen_rl/results/A0.json accuracy.gsm8k.strict_dropped (H100, E69 A0), as run 1",
+  "w0_fits": 0.9514783927217589,
+  "fits_drop": 0.03,
+  "masked_error": 0.09320748161650735,
+  "masked_error_source": "experiments/qwen_instrument_check/results/step0.json table3.floors['maths 256'].kl (p-9707d6ff), as run 1",
+  "leftover_norm": 4.976377726505346,
+  "leftover_norm_source": "experiments/qwen_instrument_check/results/step0.json table2.delta_total (E152); read2.py share recomputes it"
+ },
+ "early": {
+  "source": "run 1's predictions.json early (E69's bands), unchanged; the step-20 and multiple bands below are new and derived here",
+  "reward_step1": [0.6, 0.88],
+  "dw_ratio": [0.85, 1.05],
+  "kl_first": [0.003, 0.2],
+  "kl_first_rule": "run 1's: the band is for a first live step at 1e-6, scaled by (rate / 1e-6)^2 at that step's rate (3e-6w10 step 1: 3e-7, band [2.7e-4, 0.018]; run 1's r3e-6 read 1.56e-3)",
+  "reward_change_above": -0.05,
+  "reward_change_rule": "logged only at this rate (run 1's r3e-6 pod)",
+  "rollout_sha_1": {"0": "3b5fc36b6b9b6fb4b9ad157fef4c3e8e3d43293636c9df6f950ab5a324037093", "70": "2c318920f80eaea5730c1743e569bf6de615d7cf8698e1c4ec3311dbf8d01c2c"},
+  "rollout_sha_1_rule": "logged, not a stop (as run 1): step 1's rollouts of every arm are W0's and should equal E69's R of the same draw seed (experiments/qwen_rl/results/lr1e-6w10/R.json and lr1e-6w10_s70/R.json rollout_sha_1; run 1's five pods matched seed 0's)",
+  "dw_norm_step20": {"R": [0.2047, 0.8187], "N": [0.2001, 0.8003], "F": [0.1693, 0.6773]},
+  "dw_norm_step20_rule": "a stop: |dW| at step 20 in [0.5x, 2x] of E69's seed-0 step-20 |dW| at 1e-6 times 3 (R 0.13645, N 0.13338, F 0.11288: lr1e-6w10/{R,N,F}.json steps[19].dw_norm), as run 1's r3e-6 band; it catches a rate not applied. Run 1's r3e-6 read 0.3996; E69 seed 70 R 0.1393, N 0.1339 at 1e-6 (inside x3)",
+  "multiple_R_s0": {"50": [0.9920, 1.7862], "150": [1.9729, 3.5525]},
+  "multiple_R_s0_rule": "a stop, R seed 0 only: its multiple at the 5-step read of step 50 and 150 inside run 1's r3e-6 reads (1.3311 at 50, 2.6474 at 150; r3e-6.json reads) divided and multiplied by 1.3419, the run-to-run ratio of output change measured at a fixed step and norm between run 1's control and E69's own update (0.06431 vs 0.04793 at step 100, same seed and recipe, identical step-1 rollouts; kl_check.json and control.json). Seed 70 has no band (E69's seeds differ by 1.52x at step 100, 0.098 vs 0.064)",
+  "structural": "stops at every size: loss and gradient norm finite each step; the first save written at E69's size (5637164512 bytes) with its sha256 recorded; every GSM8K read's pass and fits finite; disk room for every save still to come plus two checkpoints and 5 GB before training (a refusal, exit 1)",
+  "at_W0": "dw_norm 0 and multiple 0 lie outside every stopping band, so a run that did not move cannot pass its step-20 or step-50 checks",
+  "at_run1": "run 1's r3e-6 values are the centres of R seed 0's bands; its step-20 |dW| 0.3996 is inside R's"
+ },
+ "drift": {
+  "rule": "the brief's stop rule, run 1's pick.drift unchanged, R pods only, at each GSM8K read (every 50 steps): (pass < W0's 0.7817 or fits < 0.9215) and kl > the previous GSM8K read's kl (0 before the first) -> R ends there ('drift': {step, last_good}); its last state is last_good, the GSM8K read before, which is a save step. A read with a missing pass, fits or kl is not a drift stop; output-change-only reads never stop",
+  "code": "experiments/qwen_rl_readable/pick.py drift (via run.py drift_stop)",
+  "expected": "not fired: run 1's r3e-6 held pass 0.829-0.891 and fits 0.935-0.986 at every GSM8K read to step 200",
+  "at_W0": "pass and fits equal W0's: no stop"
+ },
+ "match": {
+  "targets": [2, 5, 10],
+  "saves": "every 25 steps from 50 to 400 (15 states per pod)",
+  "rule": "Per seed, from R's results file: the crossing of target k is R's first read (every 5 steps) at or before the horizon whose multiple >= k; the horizon is the drift stop's last_good when it fired (none if it fired on the first GSM8K read), else no limit. The step for k is the first save step at or after the crossing. It is 'confirmed' when R has a GSM8K read at or after that step and at or before the horizon (a later drift stop cannot void it); R, N and F of that seed are then kept and downloaded at that step. Not confirmed when R has ended (done, drift, or a stopped check): 'not reached', no state for k. While R runs: 'pending' (crossed) or 'open'. Several targets may share a step. N and F of a seed may stop once R has ended and they have saved R's largest confirmed step (last_needed; 0: stop now). Steps are never matched across seeds.",
+  "code": "experiments/qwen_rl_readable/match.py chosen (run2.py --chosen writes results/run2/chosen.json)",
+  "expected": "at run 1's r3e-6 growth: 2x crossed near step 125 (seed 0), confirmed at the next save step by the GSM8K read at 150; 5x somewhere around 335-410 or not by 400; 10x not reached",
+  "at_W0": "every multiple 0: every target 'open' while running, 'not reached' when done"
+ },
+ "controls": {
+  "rule": "read2.py gpu, before any run-2 state, on the cluster L40: a miss stops the read stage (results/run2_reads/reads.json 'stopped'). share: logged in share.json 'control'",
+  "W0": {"kl": [0.0, 1e-9], "pass": [0.7597, 0.8037], "dw_norm": [0.0, 0.0]},
+  "W0_source": "kl and |dW| are 0 by construction; pass: E69's H100 0.7817 +-0.022 (2 binomial se), the card changes",
+  "e69_R100": {"kl": [0.06367, 0.06496], "pass": [0.8587, 0.9027], "dw_norm": [0.35053, 0.35123]},
+  "e69_R100_source": "E69's saved R update at step 100, seed 0 (qwen_rl/results/large/lr1e-6w10/dW/R/step_100.safetensors): kl 0.064313 read by run 1's code on an L40 (kl_check.json, job 59301) +-1%; pass E69's H100 0.8807 +-0.022 (as run 1's control band); |dW| 0.350884 +-0.1%",
+  "e69_R100_share_ratio": [0.98046, 0.98048],
+  "e69_R100_share_ratio_source": "E152 step0.json table1.updates.R_s0.ratio 0.980470, the same file by the same code"
+ },
+ "worked": {
+  "rule": "From the cluster reads (one card type, L40) at each target size k read on both seeds: gap_s = pass(R_s) - pass(N_s), R and N of seed s at that seed's confirmed step; spread = max(|pass(R_0) - pass(R_70)|, |pass(N_0) - pass(N_70)|), how far one arm moves between seeds at that size; floor = 2 x the larger of the two seeds' paired standard errors of R against N (qwen_rl.gain, problems that fit at both); margin = max(spread, floor). 'apart' at k if gap > margin on both seeds; 'below' if gap < -margin on both (N above R); else 'together'. A size is 'unread' if either seed lacks a confirmed step there (not reached, drift, 10x not reached) or a pass rate or standard error is missing. Verdict: 'apart' (RL worked: apart from its null beyond seed spread at a saved size) if any size is apart; else 'together' if any size was read (R and N together at every read size: reported plainly as a result); else 'no call'. Strict inequalities: a tie is not apart.",
+  "code": "experiments/qwen_rl_readable/match.py worked (read2.py --stage verdict writes results/run2_reads/verdict.json)",
+  "blind_to": "pass counts only answers that fit the window (fits is read beside it, not in the rule); two seeds give a spread from one pair, so the floor of twice the paired se keeps a near-zero spread from passing a tiny gap",
+  "at_W0": "R = N = W0: gap 0, spread 0, se 0, margin 0: 0 > 0 is false, 'together'",
+  "control": "E69 at step 100 (1e-6w10) as a stand-in: R 0.881 and 0.877, N 0.870 and 0.794 (seeds 0 and 70; paired se 0.0099, 0.0108): gaps 0.011, 0.083; spread 0.076, floor 0.022, margin 0.076: 'together', since N's seed spread is wide",
+  "expected": "lean medium: 'apart' at 2x (run 1: R 3e-6 at 150 held 0.891 while N at 1e-6 fell to 0.778 by step 100; a null at 3x the rate is expected to fall further); 5x read on at most one seed is likely, so 5x and 10x are likely 'unread'",
+  "edge_cases_run": "2026-11-12, ~/commute-data/scratch/qwen-rl-lead/run2-writer/edge.py (results in the gates appendix)"
+ }
+}
