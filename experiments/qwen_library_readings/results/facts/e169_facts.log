@@ -1,0 +1,95 @@
+Fetching 2 files:   0%|          | 0/2 [00:00<?, ?it/s]Fetching 2 files:  50%|█████     | 1/2 [00:11<00:11, 11.47s/it]Fetching 2 files: 100%|██████████| 2/2 [00:11<00:00,  5.73s/it]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.26it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:01<00:00,  2.21it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:01<00:00,  1.99it/s]
+[rows known] [128, 256], 7123 answer positions, 1088 answers; W0 {"first": {"n": 1088, "median_rank": 1.0, "mean_logp": -0.25464313410812667}, "all": {"n": 7123, "median_rank": 1.0, "mean_logp": -1.6939476367213702}}
+[check facts/stage0] C0_do_nothing: ok {"overlap": 1.0, "on_both": NaN, "size": 0.0, "max_logp_diff": 0.0, "layer": null, "erank": null, "rows": "known"}
+[rows invented] [128, 256], 7491 answer positions, 923 answers; W0 {"first": {"n": 923, "median_rank": 1.0, "mean_logp": -1.7258594127088502}, "all": {"n": 7491, "median_rank": 1.0, "mean_logp": -3.915522781753686}}
+STAGE 0 DONE facts
+wandb: Currently logged in as: edwinagnew (edwinagnew-mats) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+[fetch] 5x.safetensors: 5637 MB in 183 s
+[fetch copy_s0_5x] 190 s; sha256 matches
+[ref copy_s0_5x] |δW| 0.173271, library 0.173271
+[fetch] last.safetensors: 5637 MB in 188 s
+[fetch cipher_s0_last] 194 s; sha256 matches
+[ref cipher_s0_last] |δW| 5.090653, library 5.090653
+[floor known draw 0] overlap 0.998613 steer 0.9739469225752924; 144 s
+[floor known draw 1] overlap 0.998547 steer 1.0514325977731793; 144 s
+[floor known draw 2] overlap 0.998509 steer -; 21 s
+[floor known draw 3] overlap 0.998599 steer -; 21 s
+[floor invented draw 0] overlap 0.998542 steer 0.6548522783746621; 144 s
+[floor invented draw 1] overlap 0.998500 steer None; 29 s
+[floor invented draw 2] overlap 0.998420 steer -; 21 s
+[floor invented draw 3] overlap 0.998547 steer -; 21 s
+[floor known draw 0] overlap 0.971858 steer None; 29 s
+[floor known draw 1] overlap 0.970379 steer 1.3014538094475645; 144 s
+[floor known draw 2] overlap 0.969699 steer -; 21 s
+[floor known draw 3] overlap 0.971608 steer -; 21 s
+[floor invented draw 0] overlap 0.970427 steer 0.6129919770741336; 144 s
+[floor invented draw 1] overlap 0.969583 steer None; 29 s
+[floor invented draw 2] overlap 0.967977 steer -; 21 s
+[floor invented draw 3] overlap 0.970641 steer -; 21 s
+[floor facts] band {"erank": 31.366324525566824, "overlap": 0.03157426460486601, "steer": null}
+[check facts/stage1] C1_band: ok {"erank": 31.366324525566824, "overlap": 0.03157426460486601, "steer": null}
+STAGE 1 DONE facts; GPU peak 27.6 GiB
+[fetch] last.safetensors: 5637 MB in 185 s
+[fetch known_s0_last] 191 s; sha256 matches
+[check facts/stage2] norm known_s0_last: ok {"norm": 1.9177778747305965, "library": 1.9177778747305965}
+[fetch] 5x.safetensors: 5637 MB in 181 s
+[fetch known_s0_5x] 187 s; sha256 matches
+[state known_s0_last] {"side": "known", "seed": 0, "save": "last", "step": 300, "artifact": "p35r3-known-s0-last", "size": 0.0014633750417998668, "prior_rank": 1.0, "steer": 0.6322836938861893, "gain": 1.4715560209159475, "layer": 19, "random_dir": -0.018650433381654282, "max_logp_diff": 42.536643981933594, "erank": 793.9428930717391, "overlap": 0.5549314347351878, "on_both": 0.805596501098432, "seconds": 224.32087564468384}
+[time facts] 1 of 12 states this job
+[check facts/stage2] norm known_s0_5x: ok {"norm": 0.41988688163408083, "library": 0.41988688163408083}
+[fetch] last.safetensors: 5637 MB in 184 s
+[fetch known_s1_last] 190 s; sha256 matches
+[state known_s0_5x] {"side": "known", "seed": 0, "save": "5x", "step": 12, "artifact": "p35r3-known-s0-5x", "size": 0.0003203978891709787, "prior_rank": 1.0, "steer": 0.4933790148960649, "gain": 1.3455323406125927, "layer": 19, "random_dir": -0.01749868334144679, "max_logp_diff": 42.52496337890625, "erank": 820.7243642604615, "overlap": 0.7014031939853791, "on_both": 0.827641475261346, "seconds": 223.58085179328918}
+[time facts] 2 of 12 states this job
+[check facts/stage2] norm known_s1_last: ok {"norm": 1.7842153189525025, "library": 1.7842153189525025}
+[fetch] 5x.safetensors: 5637 MB in 188 s
+[fetch known_s1_5x] 194 s; sha256 matches
+[state known_s1_last] {"side": "known", "seed": 1, "save": "last", "step": 300, "artifact": "p35r3-known-s1-last", "size": 0.0013614591144028411, "prior_rank": 1.0, "steer": 0.6601807221710067, "gain": 1.4412220328551635, "layer": 19, "random_dir": -0.019949997990963624, "max_logp_diff": 42.536643981933594, "erank": 789.1647417842579, "overlap": 0.5339449610130018, "on_both": 0.7498458405862798, "seconds": 224.97324800491333}
+[time facts] 3 of 12 states this job
+[check facts/stage2] norm known_s1_5x: ok {"norm": 0.420620914779112, "library": 0.420620914779112}
+[fetch] last.safetensors: 5637 MB in 196 s
+[fetch known_s2_last] 202 s; sha256 matches
+[state known_s1_5x] {"side": "known", "seed": 1, "save": "5x", "step": 12, "artifact": "p35r3-known-s1-5x", "size": 0.00032095799876367243, "prior_rank": 1.0, "steer": 0.4858843952002216, "gain": 1.3491813803851218, "layer": 19, "random_dir": -0.016983763162576073, "max_logp_diff": 42.52207946777344, "erank": 819.4797674857724, "overlap": 0.7087334083845668, "on_both": 0.8419163603370523, "seconds": 224.0107181072235}
+[time facts] 4 of 12 states this job
+[check facts/stage2] norm known_s2_last: ok {"norm": 1.9714111640637462, "library": 1.9714111640637462}
+[fetch] 5x.safetensors: 5637 MB in 185 s
+[fetch known_s2_5x] 191 s; sha256 matches
+[state known_s2_last] {"side": "known", "seed": 2, "save": "last", "step": 300, "artifact": "p35r3-known-s2-last", "size": 0.0015043003324990243, "prior_rank": 1.0, "steer": 0.6494114812259165, "gain": 1.4506341407010703, "layer": 19, "random_dir": -0.019266492728234816, "max_logp_diff": 42.536643981933594, "erank": 773.8839361079769, "overlap": 0.5508136935729547, "on_both": 0.7224383367323081, "seconds": 225.31818270683289}
+[time facts] 5 of 12 states this job
+[check facts/stage2] norm known_s2_5x: ok {"norm": 0.47053765642448864, "library": 0.47053765642448864}
+[fetch] last.safetensors: 5637 MB in 182 s
+[fetch invented_s0_last] 188 s; sha256 matches
+[state known_s2_5x] {"side": "known", "seed": 2, "save": "5x", "step": 13, "artifact": "p35r3-known-s2-5x", "size": 0.0003590473493888472, "prior_rank": 1.0, "steer": 0.4887144467555377, "gain": 1.3684500344122932, "layer": 18, "random_dir": -0.0016061870949511422, "max_logp_diff": 42.532474517822266, "erank": 810.7405816477889, "overlap": 0.6959987860960224, "on_both": 0.8439979101927211, "seconds": 224.10543298721313}
+[time facts] 6 of 12 states this job
+[check facts/stage2] norm invented_s0_last: ok {"norm": 4.063738646455316, "library": 4.063738646455316}
+[fetch] 5x.safetensors: 5637 MB in 181 s
+[fetch invented_s0_5x] 187 s; sha256 matches
+[state invented_s0_last] {"side": "invented", "seed": 0, "save": "last", "step": 300, "artifact": "p35r3-invented-s0-last", "size": 0.00310086678440571, "prior_rank": 1.0, "steer": 0.15803453144237425, "gain": 3.3551064005170237, "layer": 27, "random_dir": 0.019175536024125278, "max_logp_diff": 46.65875244140625, "erank": 944.2717520208321, "overlap": 0.4769529367752844, "on_both": 0.6768326467427008, "seconds": 226.12608218193054}
+[time facts] 7 of 12 states this job
+[check facts/stage2] norm invented_s0_5x: ok {"norm": 0.9111916298700995, "library": 0.9111916298700995}
+[fetch] last.safetensors: 5637 MB in 188 s
+[fetch invented_s1_last] 194 s; sha256 matches
+[state invented_s0_5x] {"side": "invented", "seed": 0, "save": "5x", "step": 19, "artifact": "p35r3-invented-s0-5x", "size": 0.0006952917264394656, "prior_rank": 1.0, "steer": 0.4394197337562752, "gain": 2.5626560377382335, "layer": 27, "random_dir": 0.014901637021322058, "max_logp_diff": 42.4710807800293, "erank": 883.0860552970339, "overlap": 0.6134706092782941, "on_both": 0.8487190008438981, "seconds": 224.42923402786255}
+[time facts] 8 of 12 states this job
+[check facts/stage2] norm invented_s1_last: ok {"norm": 4.076788435464324, "library": 4.076788435464324}
+[fetch] 5x.safetensors: 5637 MB in 184 s
+[fetch invented_s1_5x] 190 s; sha256 matches
+[state invented_s1_last] {"side": "invented", "seed": 1, "save": "last", "step": 300, "artifact": "p35r3-invented-s1-last", "size": 0.003110824525491454, "prior_rank": 1.0, "steer": 0.19002297314632607, "gain": 3.315166025164511, "layer": 27, "random_dir": 0.017128141481774883, "max_logp_diff": 47.11094665527344, "erank": 932.9300523500093, "overlap": 0.5122542525226504, "on_both": 0.7044089345960611, "seconds": 225.9161400794983}
+[time facts] 9 of 12 states this job
+[check facts/stage2] norm invented_s1_5x: ok {"norm": 0.9126634591274151, "library": 0.9126634591274151}
+[fetch] last.safetensors: 5637 MB in 183 s
+[fetch invented_s2_last] 189 s; sha256 matches
+[state invented_s1_5x] {"side": "invented", "seed": 1, "save": "5x", "step": 19, "artifact": "p35r3-invented-s1-5x", "size": 0.0006964148169857307, "prior_rank": 1.0, "steer": 0.4359577465645171, "gain": 2.5730367952993887, "layer": 27, "random_dir": 0.014130821782443482, "max_logp_diff": 42.53527069091797, "erank": 883.6838983760167, "overlap": 0.6179315231431978, "on_both": 0.8487427858229243, "seconds": 224.9010190963745}
+[time facts] 10 of 12 states this job
+[check facts/stage2] norm invented_s2_last: ok {"norm": 3.9917225325322674, "library": 3.9917225325322674}
+[fetch] 5x.safetensors: 5637 MB in 185 s
+[fetch invented_s2_5x] 191 s; sha256 matches
+[state invented_s2_last] {"side": "invented", "seed": 2, "save": "last", "step": 300, "artifact": "p35r3-invented-s2-last", "size": 0.0030459143391246266, "prior_rank": 1.0, "steer": 0.1628428557278789, "gain": 3.28258258581506, "layer": 27, "random_dir": 0.017711229401236483, "max_logp_diff": 46.84086227416992, "erank": 941.2491786645415, "overlap": 0.5094058835686673, "on_both": 0.6814324551524433, "seconds": 226.19074702262878}
+[time facts] 11 of 12 states this job
+[check facts/stage2] norm invented_s2_5x: ok {"norm": 0.8508137135952033, "library": 0.8508137135952033}
+[state invented_s2_5x] {"side": "invented", "seed": 2, "save": "5x", "step": 18, "artifact": "p35r3-invented-s2-5x", "size": 0.0006492198966844283, "prior_rank": 1.0, "steer": 0.45946942565448906, "gain": 2.541577502476691, "layer": 27, "random_dir": 0.015067850814531143, "max_logp_diff": 42.07487106323242, "erank": 886.6402227614315, "overlap": 0.6297170494588257, "on_both": 0.8572075145185722, "seconds": 224.4120864868164}
+[time facts] 12 of 12 states this job
+STAGE 2 DONE facts; GPU peak 27.6 GiB
+peak host RSS 11.0 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/qwen_library_readings/results/facts/ (stage0.json stage1.json stage2.json), log /root/e169_facts.log ===
