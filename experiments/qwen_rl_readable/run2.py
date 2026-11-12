@@ -160,9 +160,11 @@ def save_state(job: Job, out: D, t: int, params: D) -> None:
 
 
 def room(job: Job, t: int) -> None:
-    """Refuse before training unless the disk holds every save still to come, a checkpoint and its .tmp, and the margin."""
+    """Refuse before training unless the disk holds what this size still writes: every save to come, one more checkpoint
+    (the .tmp beside the one on disk, which is already counted as used) and the margin. Full size at step 0: ~107 GB;
+    tiny: ~33 GB."""
     s = job.pod.size
-    need = sum(x > t for x in s.saves) * DW_BYTES + 2 * CKPT_BYTES + s.margin_gb * GB
+    need = sum(x > t for x in s.saves) * DW_BYTES + CKPT_BYTES + s.margin_gb * GB
     free = shutil.disk_usage(job.large).free
     job.log(f"[{job.stage}] disk: {free / GB:.0f} GB free, {need / GB:.0f} GB needed")
     if free < need:
@@ -223,10 +225,10 @@ def after_update(job: Job, out: D, t: int, params: D, rows: torch.Tensor, w0: q.
         r = RUN1.read(job, out, t, rows, w0, P["refs"], t in pod.gsm8k_steps)
         if t in pod.gsm8k_steps:
             job.check(out, "GSM8K read finite", ok(r.get("pass")) and ok(r.get("fits")), {"step": t, "pass": r.get("pass")})
-    bands(job, out, t, P["early"])
     ended = t in pod.gsm8k_steps and RUN1.drift_stop(job, out, t, P["refs"])
-    note_chosen(job, out, P)
+    note_chosen(job, out, P)  # before the bands, so a band stop never hides a confirmation
     job.put(job.stage, out)
+    bands(job, out, t, P["early"])
     return ended
 
 
@@ -252,6 +254,11 @@ def run_pod(job: Job, P: D) -> None:
     w0_file = job.shared_large / "acc" / "W0_gsm8k.jsonl"
     if missing := [str(p) for p in (job.shared_large / "rollouts" / "H.jsonl", w0_file) if not p.is_file()]:
         sys.exit(f"missing {missing}: fetch them from W&B (the plan's set-up) before the arm")
+    if pod.name == "F_s0" and pod.size.name == "full" and not all(
+        (job.rollout_dir("F") / f"step_{t}.jsonl").is_file() for t in range(1, 101)
+    ):
+        sys.exit(f"E69's F rollouts step_1..100.jsonl are not all in {job.rollout_dir('F')}: extract F.tar there "
+                 "(the plan's set-up)")
     out |= {"pod": pod.name, "arm": pod.arm, "seed": pod.seed, "draw_seed": job.cfg.draw_seed, "tag": TAG,
             "size": pod.size.name, "device": torch.cuda.get_device_name()}
     out.setdefault("saves", {})

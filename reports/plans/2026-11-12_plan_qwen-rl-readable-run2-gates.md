@@ -32,7 +32,8 @@ host 11.4 GB. F now samples inside the training context, as R does, with the sam
 **Disk on the pod.** Per pod: 15 states x 5.64 GB = 84.6 GB, a checkpoint 17 GB plus its .tmp 17 GB while it is
 rewritten, a δW .tmp 5.6 GB, the venv, HF cache and tree ~15 GB: ~139 GB of the 250 GB container disk
 (`remote-kernels.toml` `container-disk-gb = 250`). Guard: `run2.py` refuses before training (exit 1) unless the disk
-holds every save still to come, two checkpoints and 5 GB (`room`); `qwen_sft.save` raises rather than write a part file.
+holds every save still to come, one more checkpoint (the .tmp beside the one on disk) and 5 GB (`room`: ~107 GB at
+step 0 at full size, ~33 GB at the tiny size); `qwen_sft.save` raises rather than write a part file.
 
 **Time and cost per stage.** From run 1's logs on H100 80GB HBM3 (`results/r3e-6.json` steps: sample 42.5 s, train 10.8 s;
 `N.json` 40.7 + 14.6 s on an H200; `F.json` train 34.5 s; GSM8K read 388 s, output change 5.5 s, `r3e-6.json` reads);
@@ -47,19 +48,19 @@ first save at step 50 measures them on its card.
 | N_s0, N_s70 | 6.58 h, 7.45 h | 29.7 each |
 | F_s0 | 7.81 h, 8.68 h | 34.6 |
 | F_s70 | 9.00 h, 9.86 h | 39.3 |
-| pods | 49.8 pod-hours; wall ~9.9 h | ~199 |
-| downloads (dev node, ~10 MB/s): 12 states x 5.64 GB = 67.7 GB / 10 MB/s = 6,765 s = 1.9 h (18 states 2.8 h), 9.4 min a state, overlapping the run | | in the 0.2 h tails |
+| pods, late case (5x confirmed only at step 400 on both seeds; N waits for R; late states download one by one) | 53.2 pod-hours; wall ~9.9 h | ~212 |
+| downloads (dev node, ~10 MB/s): 12 states x 5.64 GB = 67.7 GB / 10 MB/s = 6,765 s = 1.9 h (18 states 2.8 h), 9.4 min a state, overlapping the run; a timed transfer test of N_s70 step 50 measures the rate first | | in the pod hours above |
 | cluster reads (L40, debug): controls 2 + ~12 states x ~15 min (E104 9-20 min, to be measured by the controls job) | ~3.5 L40-h, side by side | 0 |
 | outside share (CPU, 8 cores): E152 ~40 min for 15 updates; here ~19 files | ~1 h in 2-3 jobs | 0 |
 
-Session budget: `REMOTE_KERNELS_BUDGET` $300; the pods' ~$199 leaves ~34% headroom, above the 15% rule, if this session
+Session budget: `REMOTE_KERNELS_BUDGET` $300; the pods' ~$212 leaves ~29% headroom, above the 15% rule, if this session
 has spent nothing else on pods.
 
 **What is saved, where, its size, and whether it outlives the pod.** On the pod only: 15 δW per pod (84.6 GB), the
 checkpoint, GSM8K answers and F's rollouts. Downloaded: `results/run2/<pod>.json` and `.log` (small, after every read;
-committed), and only the confirmed states, ~12 x 5.64 GB = 68 GB (18 at most, 102 GB) into `results/run2_dl/<pod>/` (a
-project path, CLAUDE.md 2026-10-26), sha256 checked against the pod's `saves`, then moved after the pods are gone into
-`results/large/run2/<pod>/dW/` (on `/mnt/nw`, 3.3 TB free) and listed in `experiments/SAVED.md`.
+committed), and only the confirmed states, ~12 x 5.64 GB = 68 GB (18 at most, 102 GB) into `results/run2_dl/<pod>/dW/` (a
+project path, CLAUDE.md 2026-10-26, gitignored), sha256 checked against the pod's `saves`. Every read2.py stage reads
+them there; they move into `results/large/run2/<pod>/dW/` only after share.json and verdict.json are written (on `/mnt/nw`, 3.3 TB free) and listed in `experiments/SAVED.md`.
 
 **Downloads.** A `CONFIRMED` log line names the step; the runner downloads that step from R, N and F of the seed at once,
 one file at a time, sha256 on both sides. 12 states take ~1.9 h in all, spread over the run; the last (5x, if confirmed
@@ -118,7 +119,9 @@ sbatch --comment=E167 cluster/qwen_rl_run2_read.sbatch --controls-only   # full 
 ```
 Tiny size: E69's tiny config (4 problems x 2 samples a step, 8 GSM8K problems), 2 steps, saves at 1 and 2, the pause
 after step 1's checkpoint, save and reads (exit 3) and a resume from that checkpoint (exit 0); the output change on the
-full 128 rows; states on the node's `/ephemeral`, removed at the end. N's path is R's with other weights; F's in-loop W0
+full 128 rows; states in `~/commute-data/scratch/qwen-rl-lead/run2_tiny_<job>` on `/mnt/nw`, removed at the end (the
+L40 nodes' `/ephemeral` was full: jobs 59491-3 exited 1 at `room` with 37-39 GB free). Save and checkpoint seconds
+measured there are NFS times, an upper bound; the real measure is each pod's first save at step 50. N's path is R's with other weights; F's in-loop W0
 sampling is new, so F gets its own job.
 
 What it must measure and write into this file before the review:
@@ -138,7 +141,8 @@ W&B fetches (run 1's set-up). Each pod's first 20 steps (~25 min, ~$1.6) are its
 ## Gate 4: early checks in code (every stop is exit 2 with "stopped" in the pod's JSON; the runner tells the lead)
 | when | check | band | stop? |
 |---|---|---|---|
-| start | disk room for the saves to come + 2 checkpoints + 5 GB | ~124 GB at step 0 | refusal, exit 1 |
+| start | disk room for the saves to come + one checkpoint + 5 GB | ~107 GB at step 0 | refusal, exit 1 |
+| start, F_s0 | E69's F rollouts step_1..100.jsonl in `results/large/run2/F_s0/rollouts/F/` | all 100 | refusal, exit 1 |
 | step 1 | step-1 rollouts equal E69's R of the same draw seed | sha256 per seed | logged (as run 1) |
 | step 1 | reward rate | [0.6, 0.88] | yes |
 | first live step | |δW| / (rate sqrt(numel)) | [0.85, 1.05] | yes |
@@ -152,7 +156,8 @@ W&B fetches (run 1's set-up). Each pod's first 20 steps (~25 min, ~$1.6) are its
 | every R GSM8K read | pass and fits finite | | yes, at every size |
 | every R GSM8K read | drift stop | `pick.drift` | ends R (exit 0, "drift") |
 | cluster, first | W0: kl, pass, |δW|; E69 R100: kl, pass, |δW| | predictions "controls" | yes: the read stage refuses after |
-| cluster, each state | file sha256 equals the pod's | | yes |
+| cluster, each state | file sha256 equals the pod's | | yes: "stopped" in that state's own file, exit 2 |
+| cluster, each named state | its file is in `results/run2_dl/` | | refusal, exit 1 |
 
 The multiple bands derive from one measured pair: run 1's control and E69's own update at step 100 differ by 1.3419 in
 output change at the same seed, recipe, norm (0.352 vs 0.351) and step-1 rollouts. Seed 0 of run 2 is a rerun of run 1's

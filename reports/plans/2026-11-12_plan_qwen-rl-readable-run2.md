@@ -24,20 +24,48 @@ seeds, so F differs from R only in the reward (Fable's advice, 2026-11-12): E69'
 loop otherwise. This costs ~$27 (6.8 pod-hours of sampling) more than reusing one draw per problem past step 114, and
 makes F_s70 the longest pod.
 
+
 **Matched states** (`match.py chosen`, filed): for each seed and size k, the first save step at or after R's first 5-step
-read with multiple ≥ k; it is *confirmed* once a later GSM8K read of R held. R's log prints `CONFIRMED kx at step t`; the
-runner then downloads step t from R, N and F of that seed (`run2.py --chosen` lists files and sha256). Nothing else is
-downloaded. N and F may end once R has ended and they have saved R's last confirmed step.
+read with multiple ≥ k. It is *confirmed* once R has any GSM8K read at or after that step and at or before the horizon
+(the drift stop's last good read, if it fired): `match.held_through`, as filed. A later drift stop then cannot void it.
+R's log prints `CONFIRMED kx at step t`; the runner then downloads step t from R, N and F of that seed. Nothing else is
+downloaded, apart from the transfer test below.
 
 **Stop rule** (filed, the brief's, run 1's `pick.drift` unchanged): at an R GSM8K read, pass below W0's 0.7817 or fits
 below 0.9215 while the output change exceeds the previous GSM8K read's: R ends; its last state is the GSM8K read before.
 
-**After the pods** (cluster L40, debug QoS, $0, `read2.py`): a controls job first (W0 and E69's saved R step 100), then
-every confirmed state in 30-min jobs, one file each so jobs run side by side: GSM8K pass and fits (1319 problems, fp32),
-output change and multiple, |δW| (`cluster/qwen_rl_run2_read.sbatch`); then the outside share against a Gaussian change of
-the same norms and |δW| against the leftover norm 4.98 by E152's step-0 code (`cluster/qwen_rl_run2_share.sbatch`, CPU);
-then `read2.py --stage verdict`, the filed "worked" rule.
+## Runner (what the pod-runner brief must say)
+- **Set-up, F_s0 only** (after the set-up of run 1's appendix, which fetches H and W0's answers): E69's F rollouts, 100
+  steps, into the path `run2.py` reads (`results/large/run2/F_s0/rollouts/F/step_<t>.jsonl`; it exits 1 unless all 100 are
+  there):
+  ```
+  .venv/bin/python experiments/qwen_rl/fetch.py --lr-tag 1e-6w10 --root experiments/qwen_rl/results/large --only rollouts/F.tar
+  mkdir -p experiments/qwen_rl_readable/results/large/run2/F_s0/rollouts
+  tar -xf experiments/qwen_rl/results/large/lr1e-6w10/rollouts/F.tar -C experiments/qwen_rl_readable/results/large/run2/F_s0/rollouts
+  ```
+- **Run:** `E120_PRED_SHA=<sha> .venv/bin/python experiments/qwen_rl_readable/run2.py --pod <pod>` (the same command resumes).
+  The sha is `git show HEAD:experiments/qwen_rl_readable/results/predictions_run2.json | sha256sum`.
+- **Downloads land in one root:** `experiments/qwen_rl_readable/results/run2_dl/<pod>/dW/step_<t>.safetensors` (gitignored),
+  with sha256 checked against `saves` in the pod's JSON. Every `read2.py` stage reads them there (its default `--large`).
+  A state named with `--states` that is missing there is an error (exit 1). Move the states into `results/large/run2/`
+  only after `share.json` and `verdict.json` are written. Pod JSON and logs go to `results/run2/`.
+- **Transfer test:** as soon as N_s70 logs `SAVED step 50`, download that state while training goes on, time it, and
+  report MB/s. It replaces the assumed 10 MB/s. The file is not a run state; move it to `~/commute-data/stale/qwen-rl-lead/`.
+- **When N and F stop:** N and F of a seed are terminated once R of that seed has ended (done, drift or stopped) and
+  `chosen.last_needed` of that seed is saved on N and F and downloaded. That is printed by
+  `~/commute-agents/fleet/cpu-run python experiments/qwen_rl_readable/run2.py --chosen` after R's final JSON is
+  downloaded: `"<seed>": {"last_needed": t, ...}` (0 means stop now). Until R has ended, N and F run on, even when idle at
+  step 400. A stopped check on any pod goes to the lead before any download from that seed.
 
+## After the pods (cluster L40, debug QoS, $0, `read2.py`)
+1. The controls job first and alone (`cluster/qwen_rl_run2_read.sbatch --controls-only`): W0, then E69's saved R step 100.
+   It may need a resume: W0 is saved first and a resubmit reads only what is missing.
+2. One state per job, about 15 min each on an L40 (to be measured by the controls job), 12 to 18 jobs side by side,
+   each writing its own file (`--states R_s0@150`), submitted as states land. Each job reads the GSM8K pass and fits
+   (1319 problems, fp32), the output change and its multiple, and |δW|.
+3. The outside share against a Gaussian change of the same norms, and |δW| against the leftover norm 4.98, by E152's
+   step-0 code (`cluster/qwen_rl_run2_share.sbatch`, CPU, 2-3 resumed jobs).
+4. `read2.py --stage verdict`, the filed "worked" rule.
 ## Predictions (`experiments/qwen_rl_readable/results/predictions_run2.json`)
 - **Worked** (`match.worked`): at a size read on both seeds, R minus N on each seed above max(seed spread of either arm,
   2 paired se). Apart at any size: RL worked. Together at every read size: reported as the result. *Lean medium:* apart
@@ -45,19 +73,31 @@ then `read2.py --stage verdict`, the filed "worked" rule.
 - **Matched steps:** 2x near step 125 on seed 0; 5x around 335-410 or not by 400; 10x not reached.
 - **Drift stop:** not expected (run 1's 3e-6 held to step 200).
 
-## Cost and time (H100 $3.99/h; run 1's measured step times; 40 min set-up and 0.2 h download tail per pod)
-| pod | per step (train + reads + saves) | hours | $ |
-|---|---|---|---|
-| R_s0, R_s70 | 65.9 s (53.3 step, GSM8K 388 s / 50, output change 5.5 s / 5, save+checkpoint ~100 s / 25) | 8.19 each | 32.7 each |
-| N_s0, N_s70 | 59.3 s | 7.45 each | 29.7 each |
-| F_s0 | 70.3 s (W0 sampling 42.5 s on steps 101-400) | 8.68 | 34.6 |
-| F_s70 | 81.0 s (W0 sampling on every step) | 9.86 | 39.3 |
-| **pods total** | wall ~9.9 h (F_s70) | 49.8 pod-h | **~$199** |
-| downloads | 12 states x 5.64 GB / 10 MB/s = 6,765 s = 1.9 h (18 states: 2.8 h), overlapping the run | | in tails |
-| cluster reads | 2 controls + ~12 states at ~15 min each on L40 (to measure), outside share ~1 h CPU | | $0 |
+## Cost and time (H100 $3.99/h; run 1's measured step times; 40 min set-up, 0.1 h to terminate)
+Training and reads alone: R 7.32 h (65.9 s a step: 53.3 s step, GSM8K 388 s every 50, output change 5.5 s every 5,
+save and checkpoint ~100 s every 25), N 6.58 h (59.3 s), F_s0 7.81 h (70.3 s, W0 sampling 42.5 s on steps 101-400),
+F_s70 9.00 h (81.0 s). N finishes ~0.74 h before R and must wait for R to end. The table is the late case the reviewer
+named: 5x confirmed only by the step-400 read on both seeds. R, N and F at that step then download one after another
+(5.64 GB at 10 MB/s = 9.4 min each), R_s0, N_s0, F_s0, R_s70, N_s70, then F_s70 when it saves step 400.
 
-$199 is ~$29 over the ~$170 the user approved for run 2 (cell to ~$250 with run 1's $50.82, past the ~$220 approved),
-because F's fresh W0 rollouts were not in the card's estimate. The lead asks the user before the pods start.
+| pod | ends at (h after start) | $ |
+|---|---|---|
+| R_s0 | 8.24 | 32.9 |
+| N_s0 | 8.40 | 33.5 |
+| F_s0 | 8.73 | 34.8 |
+| R_s70 | 8.89 | 35.5 |
+| N_s70 | 9.05 | 36.1 |
+| F_s70 | 9.92 | 39.6 |
+| **pods total** | 53.2 pod-h, wall ~9.9 h | **~$212** |
+
+- **Downloads:** 12 states x 5.64 GB / 10 MB/s = 6,765 s = 1.9 h (18 states: 2.8 h). States confirmed early (2x near
+  step 125-150) download while training goes on. The transfer test measures the real rate first.
+- **Cluster:** 2 controls plus 12-18 state jobs of ~15 min each on L40s, and ~1 h of CPU for the outside share. $0.
+- If 5x is never reached, no late downloads remain, but N still waits ~0.74 h for R to end: about $200 in all.
+
+~$212 is ~$42 over the ~$170 the user approved for run 2 (the cell comes to ~$263 with run 1's $50.82, against ~$220
+approved). The causes are F's fresh W0 rollouts (~$27) and N waiting on R plus late serial downloads (~$13). The lead asks
+the user before the pods start.
 
 ## Gates
 Gated (>$60, >6 h). Pre-mortem, sourced settings, rehearsal and early checks: `reports/plans/2026-11-12_plan_qwen-rl-readable-run2-gates.md`.

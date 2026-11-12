@@ -44,7 +44,8 @@ def ended(arm: D) -> bool:
 def chosen(arm: D, saves: list[int], targets: list[float]) -> D:
     """For each target multiple k (key str(k)): R's crossing, the save step that stands for it (the first save step at
     or after the crossing), and its status:
-      confirmed   a GSM8K read at or after that step held (no later drift stop can void it); keep R, N and F there
+      confirmed   R has a GSM8K read at or after that step and at or before the horizon (`held_through`; a later drift
+                  stop cannot void it); keep R, N and F there
       pending     crossed, not yet vouched for by a GSM8K read; R is still running
       not reached R ended (done, drift stop, or a stopped check) with no confirmed step for k
       open        R is still running and has not crossed k

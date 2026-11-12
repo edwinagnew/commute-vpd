@@ -2,7 +2,9 @@
 # P3.4 run 2, the cluster read of the saved states on one L40 (debug QoS, $0): experiments/qwen_rl_readable/read2.py
 # --stage gpu. Plan: reports/plans/2026-11-12_plan_qwen-rl-readable-run2.md, "After the pods". Submit from the clone root:
 #   sbatch --comment=E167 cluster/qwen_rl_run2_read.sbatch --controls-only           # first, before or while the pods run
-#   sbatch --comment=E167 cluster/qwen_rl_run2_read.sbatch --states R_s0@150,N_s0@150  # as states land (run2.py --chosen)
+#   sbatch --comment=E167 cluster/qwen_rl_run2_read.sbatch --states R_s0@150          # one state a job, as states land
+# States are read from results/run2_dl/<pod>/dW/step_<t>.safetensors, where the runner downloads them; a named state
+# that is missing there exits 1. Move them into results/large/ only after the share and verdict stages are written.
 #   sbatch --comment=E167 cluster/qwen_rl_run2_read.sbatch                            # every kept state not read yet
 # The controls job (W0, E69's R at step 100) runs first and alone; state jobs refuse until it is done. A state job reads
 # its states in order, one file each (results/run2_reads/states/), so jobs with different --states run side by side; it exits 3 when the

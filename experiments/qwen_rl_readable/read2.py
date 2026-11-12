@@ -108,10 +108,14 @@ def read_one(job: Reader, name: str, path: Path | None, rows: torch.Tensor, w0: 
             "file": None if path is None else str(path)}
 
 
-def controls(job: Reader, out: D, rows: torch.Tensor, w0: q.Records, P: D) -> None:
+def controls(job: Reader, out: D, rows: torch.Tensor, w0: q.Records, P: D, wall_s: float) -> None:
     """W0 and E69's R at step 100 inside their filed bands (controls.json), before any state is read; a miss stops the
     stage: every later job refuses while controls.json has "stopped"."""
     for name, path in (("W0", None), ("e69_R100", E69_R100)):
+        done = [r["seconds"] for r in out["controls"].values()]
+        if name not in out["controls"] and done and time.time() - job.t0 + 1.2 * max(done) > wall_s:
+            job.log("[control] time left under 1.2 x the W0 read: resubmit --controls-only (W0 is saved)")
+            hard_exit(3)
         if name not in out["controls"]:
             out["controls"][name] = r = read_one(job, name, path, rows, w0, P["refs"])
             job.put("controls", out)
@@ -124,26 +128,33 @@ def controls(job: Reader, out: D, rows: torch.Tensor, w0: q.Records, P: D) -> No
     job.put("controls", out)
 
 
-def stage_gpu(job: Reader, out: D, todo: dict[str, D], P: D, wall_s: float) -> None:
+def stage_gpu(job: Reader, out: D, todo: dict[str, D], P: D, wall_s: float, named: bool) -> None:
     """The controls (a --controls-only job, first), else the states: one file each under states/, so jobs with different
-    states run side by side."""
+    states run side by side. A state named with --states whose file is absent is an error (exit 1); from chosen.json it
+    is skipped. A file whose sha256 differs from its pod's stops that state: its own file gets "stopped" (exit 2)."""
     job.fp32()
     rows, w0 = qwen_d3.maths_rows().tokens, JOB.load_rollouts(job.shared_large / "acc" / "W0_gsm8k.jsonl")
     if not todo:
-        controls(job, out, rows, w0, P)
+        controls(job, out, rows, w0, P, wall_s)
     longest = max((r["seconds"] for r in out["controls"].values()), default=0.0)
     for name, s in todo.items():
         dest = job.dir / "states" / f"{name}.json"
         if dest.is_file():
             continue
         if not s["file"].is_file():
+            if named:
+                sys.exit(f"{name}: {s['file']} is missing (downloads land in results/run2_dl/<pod>/dW/)")
             job.log(f"[reads] {name}: {s['file']} not downloaded yet, skipped")
             continue
         if time.time() - job.t0 + 1.2 * longest > wall_s:
             job.log(f"[reads] time left under 1.2 x the longest state ({longest:.0f} s): resubmit")
             hard_exit(3)
         got = sha256(s["file"])
-        job.check(out, f"{name}: file sha256 as its pod recorded", got == s["sha256"], {"file": str(s["file"]), "sha256": got})
+        if got != s["sha256"]:
+            bad = {"stopped": "file sha256 differs from its pod's", "file": str(s["file"]), "sha256": got, "pod_sha256": s["sha256"]}
+            JOB.write_text(dest, json.dumps(bad, indent=1))
+            job.log(f"STOP: {name} {json.dumps(bad)}")
+            hard_exit(2)
         r = read_one(job, name, s["file"], rows, w0, P["refs"])
         longest = max(longest, r["seconds"])
         JOB.write_text(dest, json.dumps(r, indent=1, default=float))
@@ -152,7 +163,9 @@ def stage_gpu(job: Reader, out: D, todo: dict[str, D], P: D, wall_s: float) -> N
 
 
 def read_states(d: Path) -> dict[str, D]:
-    return {p.stem: json.loads(p.read_text()) for p in sorted((d / "states").glob("*.json"))}
+    """The read states, without any stopped on its sha256 check."""
+    st = {p.stem: json.loads(p.read_text()) for p in sorted((d / "states").glob("*.json"))}
+    return {n: r for n, r in st.items() if "stopped" not in r}
 
 
 # ----------------------------------------------------------------------------- CPU: outside share
@@ -228,7 +241,8 @@ def main() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--stage", required=True, choices=("gpu", "share", "verdict"))
     ap.add_argument("--size", default="full", choices=("full", "tiny"))
-    ap.add_argument("--large", type=Path, default=RUN2.LARGE / "run2", help="the states' root, as run2.py --large")
+    ap.add_argument("--large", type=Path, default=RUN2.RESULTS / "run2_dl",
+                    help="the states' root: the runner's downloads, <root>/<pod>/dW/step_<t>.safetensors (tiny: run2.py --large)")
     ap.add_argument("--states", default=None, help="comma-separated <pod>@<step>; default: every kept step in chosen.json")
     ap.add_argument("--controls-only", action="store_true")
     ap.add_argument("--sites", type=int, default=len(SITES), help="share: the first N matrices only (the rehearsal)")
@@ -251,7 +265,7 @@ def main() -> None:
     if not a.controls_only and not out.get("done"):
         sys.exit("the controls are not read yet: submit --controls-only first")
     todo = {} if a.controls_only else states(a.size, a.large, a.states.split(",") if a.states else None)
-    stage_gpu(job, out, todo, P, a.wall_min * 60)
+    stage_gpu(job, out, todo, P, a.wall_min * 60, bool(a.states))
     hard_exit(0)
 
 

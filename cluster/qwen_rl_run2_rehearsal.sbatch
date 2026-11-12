@@ -7,8 +7,9 @@
 #   sbatch --comment=E167 cluster/qwen_rl_run2_rehearsal.sbatch R_s70     # ~11 min of pod, ~8 of reads
 #   sbatch --comment=E167 cluster/qwen_rl_run2_rehearsal.sbatch N_s70     # ~11 min
 #   sbatch --comment=E167 cluster/qwen_rl_run2_rehearsal.sbatch F_s70     # ~12 min (samples W0 in the loop)
-# States, checkpoints and GSM8K answers go to this node's /ephemeral/$USER/run2_tiny_<job> (one δW 5.64 GB, a checkpoint
-# 17 GB and its .tmp: run2.py refuses under ~50 GB free), removed at the end; JSON and logs to
+# States, checkpoints and GSM8K answers go to ~/commute-data/scratch/qwen-rl-lead/run2_tiny_<job> on /mnt/nw (two δW of
+# 5.64 GB, a 17 GB checkpoint: run2.py refuses under ~33 GB free; the L40 nodes' /ephemeral was full, jobs 59491-3),
+# removed at the end. Save and checkpoint seconds there are NFS times, an upper bound on a pod's local disk; JSON and logs to
 # experiments/qwen_rl_readable/results/run2_tiny/ (a pod's earlier files there are moved to <name>.prev.<job>).
 # Each pod's log has its step times, checkpoint and save seconds, disk line and peaks: the numbers gate 3 measures.
 # Host memory: run 1's pods peaked at 11.4 GB (results/*.json peaks); a δW adds 5.6 GB in the read stage.
@@ -28,7 +29,7 @@ cd "$COMMUTE_REPO"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 nvidia-smi --query-gpu=name,memory.total --format=csv
-L=/ephemeral/$USER/run2_tiny_$SLURM_JOB_ID
+L=$HOME/commute-data/scratch/qwen-rl-lead/run2_tiny_$SLURM_JOB_ID
 RES=experiments/qwen_rl_readable/results/run2_tiny
 mkdir -p "$L" "$RES"
 df -h "$L" | tail -1
