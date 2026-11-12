@@ -1,0 +1,88 @@
+0.000	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["N_s70@75"].pass	this
+0.002	experiments/qwen_rl_readable/results/run2/N_s70.json	.steps[] | select(.step==75) | .reward_rate	this
+0.0091	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.worked.sizes["2"].seeds["70"].se	this
+0.01	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.worked.sizes["2"].seeds["0"].se	this
+0.0104	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.worked.sizes["2"].seeds["0"].se	this
+0.025	experiments/qwen_rl_readable/results/run2/N_s0.json	.steps[] | select(.step==75) | .reward_rate	this
+0.039	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.worked.sizes["2"].spread	this
+0.046	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["F_s0@75"].multiple	this
+0.053	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["F_s70@75"].multiple	this
+0.06367	experiments/qwen_rl_readable/results/predictions_run2.json	.controls.e69_R100.kl[0]	earlier
+0.0643	experiments/qwen_rl_readable/results/run2_reads/controls.json	.controls.e69_R100.kl	this
+0.06496	experiments/qwen_rl_readable/results/predictions_run2.json	.controls.e69_R100.kl[1]	earlier
+0.0932	experiments/qwen_rl_readable/results/predictions_run2.json	.refs.masked_error	earlier
+0.0981	experiments/qwen_rl_readable/results/run2_reads/share.json	.table1.iid_null	this
+0.216	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["F_s70@250"].multiple	this
+0.351	experiments/qwen_rl_readable/results/run2_reads/controls.json	.controls.e69_R100.dw_norm	this
+0.5	experiments/qwen_rl_readable/results/run2/N_s70.json	.steps[] | select(.step==27) | .dw_norm	this
+0.599	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["F_s70@75"].dw_norm	this
+0.626	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["F_s0@75"].dw_norm	this
+0.690	experiments/qwen_rl_readable/results/run2_reads/controls.json	.controls.e69_R100.multiple	this
+0.699	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["N_s70@75"].dw_norm	this
+0.707	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["N_s70@250"].dw_norm	this
+0.753	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["N_s0@75"].dw_norm	this
+0.7597	experiments/qwen_rl_readable/results/predictions_run2.json	.controls.W0.pass[0]	earlier
+0.762	experiments/qwen_rl_readable/results/run2/N_s0.json	.steps[-1].dw_norm	this
+0.778	experiments/qwen_rl_readable/results/N.json	.reads["100"].pass	earlier
+0.782	experiments/qwen_rl_readable/results/run2_reads/controls.json	.controls.W0.pass	this
+0.794	experiments/qwen_rl/results/lr1e-6w10_s70/N.json	.accuracy.gsm8k.strict_dropped	earlier
+0.80	experiments/qwen_rl_readable/results/run2/N_s0.json	.steps[0].reward_rate	this
+0.8037	experiments/qwen_rl_readable/results/predictions_run2.json	.controls.W0.pass[1]	earlier
+0.814	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["F_s70@75"].pass	this
+0.818	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["F_s0@75"].pass	this
+0.82	experiments/qwen_rl_readable/results/run2/N_s70.json	.steps[0].reward_rate	this
+0.832	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["F_s70@250"].pass	this
+0.84	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.worked.sizes["2"].seeds["0"].gap	this
+0.848	experiments/qwen_rl_readable/results/run2/R_s70.json	[.reads[] | select(.pass != null) | .pass] | min	this
+0.867	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["R_s0@75"].dw_norm	this
+0.870	experiments/qwen_rl/results/lr1e-6w10/N.json	.accuracy.gsm8k.strict_dropped	earlier
+0.877	experiments/qwen_rl/results/lr1e-6w10_s70/R.json	.accuracy.gsm8k.strict_dropped	earlier
+0.88	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.worked.sizes["2"].seeds["70"].gap	this
+0.881	experiments/qwen_rl_readable/results/run2_reads/controls.json	.controls.e69_R100.pass	this
+0.882	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["R_s0@75"].pass	this
+0.884	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["R_s70@75"].pass	this
+0.885	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["R_s70@250"].pass	this
+0.891	experiments/qwen_rl_readable/results/r3e-6.json	.reads["150"].pass	earlier
+0.892	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["R_s70@75"].dw_norm	this
+0.906	experiments/qwen_rl_readable/results/run2/R_s0.json	[.reads[] | select(.pass != null) | .pass] | max	this
+0.941	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["F_s70@250"].fits	this
+0.943	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["F_s0@75"].fits	this
+0.945	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["R_s70@75"].fits	this
+0.947	experiments/qwen_rl_readable/results/run2_reads/controls.json	.controls.e69_R100.fits	this
+0.948	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["R_s0@75"].fits	this
+0.951	experiments/qwen_rl_readable/results/run2_reads/controls.json	.controls.W0.fits	this
+0.965	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["R_s70@250"].fits	this
+0.973	experiments/qwen_instrument_check/results/step0.json	[.table1.updates[] | .ratio] | min	earlier
+0.979	experiments/qwen_rl_readable/results/run2_reads/share.json	.table1.updates["N_s70@250"].ratio	this
+0.98046	experiments/qwen_rl_readable/results/predictions_run2.json	.controls.e69_R100_share_ratio[0]	earlier
+0.98047	experiments/qwen_rl_readable/results/run2_reads/share.json	.control.ratio	this
+0.98048	experiments/qwen_rl_readable/results/predictions_run2.json	.controls.e69_R100_share_ratio[1]	earlier
+0.981	experiments/qwen_rl_readable/results/run2_reads/share.json	.table1.updates["N_s0@75"].ratio	this
+0.984	experiments/qwen_rl_readable/results/run2_reads/share.json	.table1.updates["R_s0@75"].ratio	this
+0.985	experiments/qwen_rl_readable/results/run2_reads/share.json	.table1.updates["R_s70@75"].ratio	this
+0.987	experiments/qwen_rl_readable/results/run2_reads/share.json	.table1.updates["R_s70@250"].ratio	this
+0.988	experiments/qwen_rl_readable/results/run2_reads/share.json	.table1.updates["F_s70@250"].ratio	this
+0.990	experiments/qwen_rl_readable/results/run2_reads/share.json	.table1.updates["F_s70@75"].ratio	this
+0.993	experiments/qwen_rl_readable/results/run2_reads/share.json	.table1.updates["F_s0@75"].ratio	this
+0.998	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["N_s70@75"].fits	this
+0.999	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["N_s0@75"].fits	this
+1.000	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["N_s70@250"].fits	this
+1.005	experiments/qwen_instrument_check/results/step0.json	[.table1.updates[] | .ratio] | max	earlier
+1.051	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["F_s70@250"].dw_norm	this
+1.675	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["R_s70@250"].dw_norm	this
+2.09	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["R_s0@75"].multiple	this
+2.42	experiments/qwen_rl_readable/results/run2/chosen.json	.["70"].targets["2"].multiple	this
+3.06	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["R_s70@75"].multiple	this
+3e-6	experiments/qwen_rl_readable/results/run2/R_s0.json	.steps[-1].rate	this
+4.05	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["N_s70@75"].multiple	this
+4.21	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["N_s0@75"].multiple	this
+4.26	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["N_s70@250"].multiple	this
+4.92	experiments/qwen_rl_readable/results/run2/R_s0.json	[.reads[] | .multiple] | max	this
+4.98	experiments/qwen_rl_readable/results/run2_reads/share.json	.table2.delta_total	this
+5.04	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["R_s70@250"].multiple	this
+7.4	experiments/qwen_rl_readable/results/run2/N_s70.json	.steps[] | select(.step==75) | .mean_len	this
+8.64	experiments/qwen_rl_readable/results/run2/R_s70.json	[.reads[] | .multiple] | max	this
+9.3	experiments/qwen_rl_readable/results/run2/N_s0.json	.steps[] | select(.step==75) | .mean_len	this
+0.011	given	E69 seed 0 at step 100: RL pass 0.8807 (experiments/qwen_rl/results/lr1e-6w10/R.json .accuracy.gsm8k.strict_dropped) minus null pass 0.8700 (lr1e-6w10/N.json, same key)
+0.076	given	E69 null at step 100: seed 0 pass 0.8700 (experiments/qwen_rl/results/lr1e-6w10/N.json .accuracy.gsm8k.strict_dropped) minus seed 70 pass 0.7940 (lr1e-6w10_s70/N.json, same key)
+0.2	given	the report's own cut for when the null's share of correct training answers had collapsed, not a filed threshold
