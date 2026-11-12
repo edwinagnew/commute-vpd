@@ -76,11 +76,13 @@ def gap_heatmap(
     vmax: float | None = None,
     fmt: str = ".2f",
     counts: Sequence[Sequence[int | None]] | None = None,
+    colorbar: bool = True,
 ) -> AxesImage:
     """Signed values on a diverging map centred at 0, each cell numbered; None or NaN is drawn x, meaning "not run".
 
     `label` names the colour in words. Pass one `vmax` to every panel of a grid so their colours can be compared.
     `counts`, the same shape as `values`, prints "n=k" under each number (seeds or rows behind the cell; None for none).
+    `colorbar=False` leaves the bar off, for a panel that shares its `vmax` with one that draws it.
     A value that rounds to zero prints without a minus sign (friction 641).
     """
     if not label:
@@ -108,8 +110,8 @@ def gap_heatmap(
     ax.set_yticks(range(len(rows)), rows)
     ax.spines[:].set_visible(False)
     ax.tick_params(length=0)
-    colorbar = ax.figure.colorbar(image, ax=ax, shrink=0.85)
-    colorbar.set_label(label)
+    if colorbar:
+        ax.figure.colorbar(image, ax=ax, shrink=0.85).set_label(label)
     return image
 
 
