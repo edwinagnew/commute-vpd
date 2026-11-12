@@ -1,0 +1,73 @@
+{
+  "status": "draft, cell P1.19 approved, E-code pending",
+  "experiment": null,
+  "cell": "P1.19",
+  "card": "/mnt/nw/home/e.agnew/commute-data/scratch/definition-lead/v3-eval/card-draft.md",
+  "filed": "DRAFT 2026-11-12, no code written. Plan: reports/plans/2026-11-12_plan_soft-intervention-wording.md, appendix ..._appendix.md (section D: readings; E: edge cases). Becomes filed when committed unchanged before the first GPU job.",
+  "question": "Under the third reuse wording (testing only, not adopted), read by interchange interventions through an alignment fixed on the plain 67M: do the planted controls read their constructed grades, does the twin's push follow the plain model's own parity variable while the memorised fact has none, and what grade does each old matched pair get under each map class and bar? Every reading is labelled 'under the third wording, provisional'; no change to decisions.md.",
+  "options_read_not_chosen": {
+    "bar": [0.8, 0.9, 0.95],
+    "bar_note": "one bar B used for carry, reversion, trigger interchange and fit shares together, read at each option; which holds is the user's",
+    "map_class": ["one-variable: own value plus a gain of at most one named trigger", "per-token: plus a table of the task's token (equal here to the page's named-variables class, every pool but the case pool's 800 words fitting in 768 directions)"],
+    "alignment": ["one direction per variable (all E168-layout items, case, repeat)", "span of an answer set at the last layer (key tables, 24 or 32 directions; E137 Table, up to 33)"],
+    "sites": "U at in2, in3, out3 (E168 and E137 layouts); V at final (old pairs); the site with the largest min(c, r), ties to the earlier"
+  },
+  "thresholds": {
+    "floor_gap": 0.02,
+    "tol_exact": 0.001,
+    "constant_rel": 1e-6,
+    "n_pairs": 20000,
+    "i_card": 0.5
+  },
+  "threshold_sources": {
+    "floor_gap": "E139's filed floor, as E168 used it (built_control_sum/results/predictions_amend1.json)",
+    "tol_exact": "about 20 times the float floor of two runs of the 67M, 1.03e-5 in mean TV (built_control_sum/results/amend1_stage0.json floor_runs_tv), over a gap of about 0.23: 1 - c on an exact edit is expected near 5e-5",
+    "constant_rel": "float32 rounding of a constant shift: centred sum of squares at most 1e-6 of the uncentred",
+    "n_pairs": "E62/E55 used 500 pairs as the void floor; 20,000 gives a binomial-scale sd under 0.004 on a share",
+    "i_card": "the card's smallest_gap: halfway between follows (1) and ignores (0)"
+  },
+  "noise_floor": "Two runs of the 67M: mean TV 1.03e-5. Seed spread of i on the fine-tunes is not known before run 2; the card borrows the old tasks' G seed sd 0.04 as a proxy and run 2 reports i's own spread over 2 seeds.",
+  "expected_at": {
+    "W0": "a zero-step fine-tune is the 67M: gap 0, no reading (E154 zero_step_plain: mean and max TV 0)",
+    "do_nothing": "F = M: gap 0 under floor_gap, no reading, before any ratio; it cannot pass any bar. The planted floor is the null of the fits: new computation at every bar option",
+    "control": "the planted trigger (P at in1 drives U at in2): c, r and i equal 1 within tol_exact at in2, f_one 1 within tol_exact, f_own under every bar: new trigger"
+  },
+  "early_stops": {
+    "S0": {"what": "number tokens rebuilt", "expected": "equal to amend1_stage0.json number_tokens", "rule": "exit 1"},
+    "S1": {"what": "E157 floor rebuilt", "expected": "gap 0.232573 within 1e-4 (E168's reload_tol)", "rule": "exit 1"},
+    "S2": {"what": "planted constant and planted trigger calibrated by planted.calibrate to target gap 0.229407", "expected": "within 0.005 (E157's gap_tol)", "rule": "exit 1; no s up to 1024 Q b: exit 1"},
+    "S3": {"what": "do-nothing", "expected": "gap below 1e-4", "rule": "exit 1 if not: the loading or edit path is not the identity"},
+    "RUN1_STOP": {"what": "every run-1 control's grade at bar 0.9, and c, r, i on the exact edits", "expected": "do-nothing: no reading; planted constant and Always on: pure re-setting; planted trigger and Cue: new trigger under the one-variable class; planted floor and XOR: new computation; Table under the span alignment: new computation under one-variable, new trigger under per-token; Table under one direction: no reading. c, r (and i where a trigger) 1 within tol_exact on every planted or hand-made edit at its write site", "rule": "any miss exits 1: nothing further runs, every later item refuses, the cell closes 'no call'"},
+    "R2_LOAD": {"what": "each saved fine-tune reloaded", "expected": "its saved gap within 1e-4: fact 0.27545, 0.27576; twin 0.26326, 0.26392", "rule": "that item exits 1"}
+  },
+  "measures": {
+    "gap": "mean TV between F and M at the last position on the read half",
+    "c": "1 - mean TV(M[V <- V_F], F) / gap",
+    "r": "1 - mean TV(F[V <- V_M], M) / gap",
+    "f_own, f_one, f_tok": "centred share of Delta = V_F - V_M explained on the read half by least squares fitted on the fit half: own {V_M}; one-variable {V_M, trigger}; per-token {V_M, trigger, one-hot of the task token, plus a not-a-task-token column}; each with an intercept",
+    "i": "sum over pairs of sign(t'-t) (Delta_swap - Delta) / (beta * sum |t'-t|), pairs of read windows with differing trigger, the trigger written from the source in F and in M; read only where f_one >= B"
+  },
+  "rule": {
+    "grade": "at bar B: gap < floor_gap, or min(c, r) < B at every site: no reading. At the site with the largest min(c, r): SS <= constant_rel * sum Delta^2 or f_own >= B: pure re-setting; else f_one >= B and i >= B: new trigger (one-variable class); else f_tok >= B: new trigger (per-token class); else new computation. A value exactly at B passes",
+    "label": "every grade is reported as 'under the third wording, provisional', at each bar option and for each alignment option that applies"
+  },
+  "edge_cases": {
+    "do_nothing": "gap 0 caught first: no reading; cannot reach any ratio",
+    "zero_gap": "no reading",
+    "SS_zero": "constant change: pure re-setting",
+    "Delta_all_zero_gap_positive": "c = 0 under every bar: no reading at that site",
+    "beta_zero_or_no_pairs": "i not applicable: the one-variable grade is not given; the per-token branch is still read",
+    "ties": "site ties to the earlier site; a share exactly at B passes",
+    "empty_class": "no trigger direction: no one-variable reading for that pair",
+    "null_passes_bar": "if the planted floor reaches any fit share at a bar option, or the do-nothing reads anything but no reading, that bar option is void for every item"
+  },
+  "predictions": {
+    "C1": {"run": 1, "measure": "grade of each run-1 control at B = 0.9", "claim": "each reads its constructed grade (RUN1_STOP)", "rival": "any misread: the cell's stop"},
+    "C2": {"run": 1, "measure": "f_one and f_tok on the planted floor", "claim": "both under 0.8, the lowest bar option", "note": "the null of the fits; a bar it reaches is void"},
+    "R1": {"run": 2, "measure": "grade of each fact and twin seed, every bar and class", "claim": "descriptive", "expected": "likely no reading on all four: the second wording's best one-site variable closed at most 0.37 (fact) and 0.47 (twin) of the gap (memorised_fact/results/readings.json); if c and r pass, twin new trigger and fact per-token new trigger"},
+    "R2": {"run": 2, "measure": "twin trigger interchange i, per seed, at the site of largest min(c, r), read wherever f_one >= 0.8", "claim": "card rival a: i >= 0.5 on both seeds (the twin reads the plain model's parity); rival b: i < 0.5 on both seeds (it memorised a table as the fact did); mixed seeds or f_one under 0.8: no call", "note": "read even when min(c, r) misses the bar, since i reads V and not the output; reported as such"},
+    "R3": {"run": 2, "measure": "grade of E168's planted fact edit", "claim": "descriptive: new computation under one-variable; per-token decided by f_tok"},
+    "R4": {"run": 3, "measure": "grade of each old pair side, 2 seeds", "claim": "descriptive", "expected": "reuse side new trigger under both classes if c, r and i pass; new side new computation under one-variable and new trigger under per-token; key tables only under the span alignment; the in-context copy and lookup not read (answer span over 33 directions)"}
+  },
+  "blind_to": "pushes in directions other than V that do not reach V by the last site read; changes spread over several variables; inputs outside each item's windows; values the inputs never produce under interchange"
+}
