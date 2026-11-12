@@ -631,3 +631,4 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/decision_gate_within_pair.png": "experiments/old_task_labels/figures/gate_within_pair.png"
 - "fig/e148_h_by_arm.png": "experiments/built_control/figures/h_by_arm_scored.png"
 - "fig/e152_step1.png": "experiments/qwen_instrument_check/figures/step1.png"
+- "fig/e163_run1.png": "experiments/qwen_rl_readable/figures/run1.png"
