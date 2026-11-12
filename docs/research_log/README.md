@@ -635,3 +635,4 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e165_library.png": "experiments/qwen_pair_library/figures/library.png"
 - "fig/e162_run2.png": "experiments/qwen_cheap_readings/figures/run2.png"
 - "fig/e168_shares.png": "experiments/memorised_fact/figures/shares.png"
+- "fig/e169_scorecard.png": "experiments/qwen_library_readings/figures/scorecard.png"
