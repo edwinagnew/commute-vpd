@@ -61,10 +61,9 @@ All 23 went from no call to apart. None went the other way.
 ## The four values in the new column
 
 - Copy at a new marker against lookup: 0.00. Both sides need 512 neurons on every seed, so there is no call.
-- Copy maps against random maps: 0.70, apart. As a mean of the logs it is 0.60. The value relayed from the user was 0.48,
-  and that difference is unexplained.
-- Lowercase against ciphers: 0.85, apart, as relayed.
-- Half-known against the cipher at its own steps: 0.52, apart. The value relayed was 0.54, which is the mean of the logs.
+- Copy maps against random maps: 0.70, apart.
+- Lowercase against ciphers: 0.85, apart.
+- Half-known against the cipher at its own steps: 0.52, apart.
 
 Every value uses the log of the ratio of means, like the size and rank columns. No state's count was missing.
 
@@ -73,4 +72,3 @@ Every value uses the log of the ratio of means, like the size and rank columns. 
 - Neurons for half the gain on the five other built pairs and on the twins (cell P2.24). The reader picks up
   `experiments/k_half_fill/results/cells.json` once it exists.
 - Any new measurement; any verdict of reused or new; any combined score over the columns.
-- A check of where the relayed 0.48 came from.
