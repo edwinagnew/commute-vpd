@@ -249,7 +249,8 @@ def applied(model: Any, comps: Components, alive: Alive, change: Callable[[str],
     `weights`: the state's weights given whole instead (the fine-tuned ones, for states whose weights are W0 + δW: no
     second 5.6 GB copy on the GPU). `host`: the state's weights are written into it, site by site, in pinned host
     memory and the model keeps its own (for a caller that copies them in place: an L40 holds no second set beside
-    the decomposition; E44 Amendment 2)."""
+    the decomposition; E44 Amendment 2). Only the decomposition's own sites are swapped; every other matrix keeps the
+    model's own weights (p-015e0710's attention: the caller's weight set, W0 or the fine-tuned one)."""
     lins, W, touched = linears(model), {}, []
     try:
         with torch.no_grad():

@@ -1,0 +1,57 @@
+[fetch start 10:40:07]
+wandb: Currently logged in as: edwinagnew (edwinagnew-mats) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+[fetch] decomposition-00001-of-00006.safetensors: 3776 MB in 35 s
+[fetch] decomposition-00002-of-00006.safetensors: 3777 MB in 44 s
+[fetch] decomposition-00003-of-00006.safetensors: 7550 MB in 97 s
+[fetch] decomposition-00004-of-00006.safetensors: 7550 MB in 203 s
+[fetch] decomposition-00005-of-00006.safetensors: 5287 MB in 48 s
+[fetch] decomposition-00006-of-00006.safetensors: 3569 MB in 47 s
+[fetch] index.json: 0 MB in 0 s
+[fetch] launch_config.yaml: 0 MB in 0 s
+[fetch done 10:48:04]
+decomposition-00001-of-00006.safetensors
+decomposition-00002-of-00006.safetensors
+decomposition-00003-of-00006.safetensors
+decomposition-00004-of-00006.safetensors
+decomposition-00005-of-00006.safetensors
+decomposition-00006-of-00006.safetensors
+index.json
+launch_config.yaml
+[     0.0s] [E179] start; config Config(n_rows=128, row_len=256, n16=16, own_len=512, sigma_len=512, sigma_batch=2, tol=1e-06, alive_total=516092, store_err_max=0.001, gpu_max_gib=44.0, id_tol=1e-06, rep_tol=0.001, boot=2000, draws=1000, null_seeds=(0, 1, 2, 3), kl_match=1.5, kl_evals=6, inspan_a=17.78279410038923, high=0.8, problems=128, think_new=2048, think_batch=64, drop_max=0.25, limit_s=10800, first_s=7200)
+Generating train split:   0%|          | 0/7473 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 7473/7473 [00:00<00:00, 378080.81 examples/s]
+Generating test split:   0%|          | 0/1319 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 1319/1319 [00:00<00:00, 371593.70 examples/s]
+Generating test split:   0%|          | 0/1205 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 1205/1205 [00:00<00:00, 399852.56 examples/s]
+Fetching 2 files:   0%|          | 0/2 [00:00<?, ?it/s]Fetching 2 files:  50%|█████     | 1/2 [00:14<00:14, 14.95s/it]Fetching 2 files: 100%|██████████| 2/2 [00:14<00:00,  7.47s/it]
+[    26.6s] [load] components, peak GPU 15.89 GiB, host 3.7 GB
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.50it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.95it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.57it/s]
+[    51.0s] [load] target, NVIDIA A100-SXM4-80GB, peak GPU 22.16 GiB, host 39.2 GB
+[    58.2s] [load] gamma, peak GPU 36.88 GiB, host 74.9 GB
+[    72.4s] [cells W0 as FT, copy, 16 rows] K0 0.178974812 K00 0.178974812 K01 0.178974812  rows 16, 14 s, peak GPU 38.15 GiB, host 74.9 GB
+Traceback (most recent call last):
+  File [35m"/root/work/experiments/qwen_library_share/run.py"[0m, line [35m415[0m, in [35m<module>[0m
+    [31mmain[0m[1;31m()[0m
+    [31m~~~~[0m[1;31m^^[0m
+  File [35m"/root/work/experiments/qwen_library_share/run.py"[0m, line [35m405[0m, in [35mmain[0m
+    [31mcontrols[0m[1;31m(lab, run, rows)[0m
+    [31m~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^[0m
+  File [35m"/root/work/experiments/qwen_library_share/run.py"[0m, line [35m200[0m, in [35mcontrols[0m
+    lab.put(f"{run}/W0_{name}", [31mw0_control[0m[1;31m(lab, name, r[: C.n16])[0m)
+                                [31m~~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/root/work/experiments/qwen_library_share/run.py"[0m, line [35m180[0m, in [35mw0_control[0m
+    zero = total([31mlab.cells[0m[1;31m(r16, lab.change(None, "zero"), tag=f"W0, zero split, {name}, 16 rows")[0m)
+                 [31m~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/root/work/experiments/qwen_reading/lab.py"[0m, line [35m316[0m, in [35mcells[0m
+    with [1;31mctx[0m:
+         [1;31m^^^[0m
+  File [35m"/root/.local/share/uv/python/cpython-3.13.15-linux-x86_64-gnu/lib/python3.13/contextlib.py"[0m, line [35m141[0m, in [35m__enter__[0m
+    return next(self.gen)
+  File [35m"/root/work/src/commute/qwen_maps.py"[0m, line [35m272[0m, in [35mapplied[0m
+    with [31mset_weights[0m[1;31m(model, W if host is None else None)[0m:
+         [31m~~~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/root/.local/share/uv/python/cpython-3.13.15-linux-x86_64-gnu/lib/python3.13/contextlib.py"[0m, line [35m141[0m, in [35m__enter__[0m
+    return next(self.gen)
+  File [35m"/root/work/src/commute/qwen_sft.py"[0m, line [35m56[0m, in [35mset_weights[0m
+    lin.weight.data = [31mW[0m[1;31m[s][0m
+                      [31m~[0m[1;31m^^^[0m
+[1;35mKeyError[0m: [35m'layers.0.self_attn.q_proj'[0m
+=== FINISHED (exit 1) — results in /root/work/experiments/qwen_library_share/results/p-015e0710/run1/ ===

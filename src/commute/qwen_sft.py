@@ -45,11 +45,12 @@ def linears(model: Any) -> dict[str, torch.nn.Linear]:
 
 @contextmanager
 def set_weights(model: Any, W: Weights | None) -> Iterator[None]:
-    """The decomposed matrices set to W for the block (None: unchanged); the previous tensors back on exit."""
+    """The matrices W names set to W for the block, every other one left as it is (None: all unchanged); the previous
+    tensors back on exit. A decomposition of some sites only (p-015e0710: the 84 MLP ones) passes those sites."""
     if W is None:
         yield
         return
-    lins = linears(model)
+    lins = {s: model.get_submodule("model." + s) for s in W}
     before = {s: lin.weight.data for s, lin in lins.items()}
     try:
         for s, lin in lins.items():
