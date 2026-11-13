@@ -19,8 +19,8 @@ from commute import figures as F
 
 HERE = Path(__file__).resolve().parent
 PAIR_NAMES = {"copy_cipher": "copy − cipher", "facts": "known − invented", "gold": "gold − shuffled gold"}
-KIND_NAMES = {"late": "late save\n(step 300;\ngold 100)", "matched": "matched size\n(5x floor)"}
-GAP = "re-gating share, side A minus side B"
+KIND_NAMES = {"late": "late\n(step 300;\ngold 100)", "matched": "matched\nsize (5x)"}
+GAP = "share, side A − side B"
 
 
 def mean(gaps: list[float | None]) -> float | None:
@@ -60,7 +60,7 @@ def strip(ax: Axes, summary: dict[str, Any]) -> None:
                        Line2D([], [], color=rnd.color, marker=rnd.marker, ls="", label="random, matched KL"),
                        Line2D([], [], color=rnd.color, marker="x", ls="", alpha=0.6, label="random, matched norms"),
                        Patch(color="#dddddd", label="random-floor band")], fontsize=7, ncols=2,
-              loc="upper center", bbox_to_anchor=(0.2, -0.18), frameon=False)
+              loc="upper center", bbox_to_anchor=(0.15, -0.18), frameon=False)
 
 
 def draw(axes: Any, summary: dict[str, Any], vmax: float) -> list[dict[str, Any]]:
@@ -79,7 +79,7 @@ def main() -> None:
     summary = json.loads((HERE / "results" / "summary.json").read_text())
     fig, axes = F.figure(F.FULL_WIDTH, ncols=2)
     data = draw(axes, summary, vmax_of(summary))
-    fig.suptitle("Re-gating share of the pair library's sides, side A minus side B, against random changes of the same size")
+    fig.suptitle("Re-gating share, side A minus side B, against random changes of the same size")
     F.save(fig, HERE / "figures" / "share_gaps.png", data=data,
            n="3 seeds per side (dots); one random change per side and save, at seed 0's per-matrix norms (x) and "
              "scaled to its KL (X); 128 rows of 256 tokens per side; band = |matched-KL random gap| + E132's seed "
