@@ -60,6 +60,7 @@ EXPECTED = {"do_nothing": SR.NO_READING, "planted_constant": SR.PURE, "planted_t
             "xor": SR.NEW_COMPUTATION, "table_u": SR.NO_VARIABLE, "table_span": SR.new_trigger("per-token")}  # fmt: skip
 EXACT = ("planted_constant", "planted_trigger", "floor", "always_on", "cue", "xor")  # V holds the whole write, at in2
 EXACT_I = ("planted_trigger", "cue")
+MEASURED_ONLY = ("table_u", "table_span")  # user 2026-11-12 (ask 37): read and reported, not stop items
 log, dump, stop = R.log, R.dump, R.stop
 
 
@@ -369,7 +370,7 @@ def run1_misses(name: str, out: dict[str, Any], th: dict[str, Any]) -> list[str]
     """RUN1_STOP: the grade at bar 0.9 against the constructed one; c and r at in2 (and i) within tol_exact of 1 on an exact
     edit; the do-nothing gap under do_nothing_tol (S3)."""
     g, tol = out["grades"]["0.9"], th["tol_exact"]
-    miss = [] if g == EXPECTED[name] else [f"{name}: grade {g}, built as {EXPECTED[name]}"]
+    miss = [] if g == EXPECTED[name] or name in MEASURED_ONLY else [f"{name}: grade {g}, built as {EXPECTED[name]}"]
     if name in EXACT:
         cr = out.get("cr", {}).get("in2", {"c": math.nan, "r": math.nan})
         miss += [f"{name}: {k} at in2 {cr[k]:.6f}" for k in ("c", "r") if not abs(cr[k] - 1) <= tol]
