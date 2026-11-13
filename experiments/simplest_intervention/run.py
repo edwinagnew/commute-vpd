@@ -11,7 +11,9 @@ are E173's (experiments/soft_intervention/run.py builds F and its windows) and r
     2c  planted_fact, fact_s0, fact_s1                  2d  twin_s0, twin_s1
     3a  copy24, cipher24      3b  ident32, rand32      3c  case_real, case_twin      3d  repeat_real, repeat_twin (seeds 0, 1)
 Every item writes results/<item>.json after each greedy step or rung-3 fit and resumes from it; "done" items are skipped.
-A job near its wall limit exits 3 (fleet/resubmit resubmits it). Runs 2 and 3 refuse until results/run1.json says passed.
+A job past --wall-min (default 26.5, a debug slot) exits 3 (fleet/resubmit resubmits it); on a pod pass a large --wall-min.
+Runs 2 and 3 refuse until results/run1.json says passed. Paths are the clone's only; on a pod, sync results/pcs.pt and the inputs
+E173's builders read (E154, E157, E168 states and the old tasks' delta-W, several under results/large symlinks: stage by hard link).
 Exit 0 done, 1 a stop or refusal, 3 more to do.
 
     sbatch --comment=E180 cluster/simplest_intervention.sbatch 1
@@ -49,7 +51,7 @@ WORDING = "under the fourth wording, ranked, provisional (testing only, not adop
 HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"
 PRED = RESULTS / "predictions.json"
-PCS = RESULTS / "large" / "pcs.pt"
+PCS = RESULTS / "pcs.pt"  # under 1 MB, so not in results/large (a symlink that arrives dangling on a pod)
 CONTROLS = ("l1_neuron", "l2_triggered", "l4_bit")
 OLD_PAIRS = (("copy24", "cipher24"), ("ident32", "rand32"), ("case_real", "case_twin"), ("repeat_real", "repeat_twin"))
 RUNS = {"1": ("do_nothing", *CONTROLS), "2a": ("planted_constant", "planted_trigger", "floor"),
@@ -75,7 +77,7 @@ class Config(RK.Sizes):
     l1_seed: int = 180_001  # the neuron at mlp2 of L1
     l2_seed: int = 180_002  # the neuron at mlp2 of L2
     l4_seed: int = 180_004  # the hash of L4's bit
-    wall_s: float = 26.5 * 60  # debug slot 30 min: the longest step (~10 s) and a dump fit in what is left
+    wall_s: float = 26.5 * 60  # a 30-min debug slot (--wall-min): one step (~15 s) and a dump fit in what is left
 
     def __post_init__(self) -> None:
         assert self.n_score % self.batch == 0 and self.line <= self.n_opt and self.cap == 16 and self.results == RESULTS
@@ -184,7 +186,7 @@ def search_list(c: Ctx, m: RK.Model, d: RK.Data, out: dict[str, Any], lst: str, 
         def tick(st: dict[str, Any] = st, I: RK.Interv = I, r: str = r) -> None:
             st["state"] = I.to_json()
             e = st["curve"][-1]
-            log(f"{path.stem} [{lst}] rung {r} n {e['n']}: closure {e['closure']:.4f} (+ {e['names'][-1]}, score {e['score']:.4g}, x{e['mult']})")
+            log(f"{path.stem} [{lst}] rung {r} n {e['n']}: closure {e['closure']:.4f}, check KL {e['check_kl']:.5g} (+ {e['names'][-1]}, score {e['score']:.4g}, x{e['mult']})")
             dump(path, out)
             budget(c.cfg)
 
@@ -197,11 +199,12 @@ def search_list(c: Ctx, m: RK.Model, d: RK.Data, out: dict[str, Any], lst: str, 
 
     def tick3() -> None:
         f = st3["fits"][-1]
-        log(f"{path.stem} [{lst}] rung 3, {f['edits']} edit(s) at {f['pair']}: closure {f['closure']:.4f} (n {f['n']} kept)")
+        log(f"{path.stem} [{lst}] rung 3 {f['stage']}, {f['edits']} edit(s) at {f['pair']}: closure {f['closure']:.4f}, check KL {f['check_kl']:.5g} (n {f['n']} kept)")
         dump(path, out)
         budget(c.cfg)
 
-    RK.rung3(m, d, RK.Interv.from_json(rec["2"]["state"], m.net.device), st3["fits"], c.cfg, top, tick3, seed)
+    base = RK.best_of(m, d, c.cfg, [RK.Interv.from_json(rec[r]["state"], m.net.device) for r in ("1", "2")])
+    RK.rung3(m, d, base, st3["fits"], c.cfg, top, tick3, seed)
     st3["done"] = True
     dump(path, out)
 
@@ -333,8 +336,8 @@ def kl_floor(c: Ctx) -> float:
     return max(c.th["kl_floor"], 10 * dn)
 
 
-def main(run: str) -> int:
-    cfg, pred = Config(), json.loads(PRED.read_text())
+def main(run: str, wall_min: float) -> int:
+    cfg, pred = Config(wall_s=60 * wall_min), json.loads(PRED.read_text())
     th, res = pred["thresholds"], cfg.results
     run1 = res / "run1.json"
     if run != "1" and not (run1.is_file() and json.loads(run1.read_text()).get("passed")):
@@ -369,11 +372,13 @@ def main(run: str) -> int:
 def cli() -> None:
     ap = argparse.ArgumentParser()
     ap.add_argument("--run", required=True, choices=tuple(RUNS))
-    run = ap.parse_args().run
+    ap.add_argument("--wall-min", type=float, default=26.5, help="exit 3 after this many minutes (a debug slot; large on a pod)")
+    args = ap.parse_args()
+    run = args.run
     require_filed(PRED)
     code = 1
     try:
-        code = main(run)
+        code = main(run, args.wall_min)
     except SystemExit as e:
         code = e.code if isinstance(e.code, int) else 1
     hard_exit(code)
