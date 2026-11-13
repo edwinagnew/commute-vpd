@@ -18,7 +18,7 @@ collapsed at both learning rates tried.
 - Spend was about $18.50.
 
 **Report.** `reports/analyses/2026-11-13_analysis_e178-qwen-rl-readable-run3.md`, with its figure. The log is
-published as version 343.
+published as version 343; the P3.4 close is in version 347.
 
 **For the gate.** The premise check (`~/commute-data/premise/P3.4.md`) reads "doubtful" on two points. A
 shuffled-reward null may not be steerable to RL's output change without collapsing, so a matched-size comparison would
