@@ -1,7 +1,27 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
-<div class="prose"><p><strong>Waiting on you, 2026-11-13.</strong> No card is open. The last one, on the last run of reinforcement learning on Qwen, you left to the lead on 2026-11-13; it is recorded in section {{n:next}} (cell P3.4).</p>
+<div class="prose"><p><strong>Waiting on you, 2026-11-13.</strong> One card is open: the definition-lead's question on the third wording of reuse at part 1's gate. The last earlier one, on the last run of reinforcement learning on Qwen, you left to the lead on 2026-11-13; it is recorded in section {{n:next}} (cell P3.4).</p>
 <p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
+<div class="card decision asked" id="decision-third-wording-gate"><span class="chip open urgency">Soon</span>
+<div class="k">Question for you · definition-lead · new 2026-11-13</div>
+<h3>The third wording of reuse reads every hand-built edit correctly but says nothing about any real fine-tune. Should part 1 adopt it, keep the second wording, or spend one more run first?</h3>
+<p><strong>Nothing runs until this is decided.</strong> Part 1's gate is today (11-13). The third wording has one approved run left, on the cluster, for $0.</p>
+<p><strong>What we have.</strong> The third wording says a fine-tune reuses a part of the original when it is the original with only that part's rule changed, checked by swapping that part's value between the two models. We tested it without adopting it.</p>
+<ul>
+<li><strong>Built edits read as built.</strong> A constant push, a push gated by parity, Always on, Cue, XOR, a random-bit floor and a planted fact each came back with the grade it was built to have, at bars of 0.8, 0.9 and 0.95. That includes "new computation", which the second wording can never give on a small input set.</li>
+<li><strong>No fine-tune is carried by a part we named.</strong> The memorised fact, its twin and eight old matched pairs, two seeds each: swapping the named part closed at most a third of the change in one direction or the other. Under the wording this is "no reading", not "new".</li>
+<li><strong>Only description separates the fine-tunes.</strong> In every old pair, the reuse side follows its named trigger more closely than the new side, but no wording turns that into a grade. An independent check rated the approach "doubtful": three wordings have each told planted edits apart from fine-tunes, and none has told reuse apart from built among fine-tunes.</li>
+</ul>
+<p><strong>Options.</strong></p>
+<ul>
+<li><strong>(a) Adopt the third wording as the working definition, with the settings used here. Recommended. No spend.</strong> The settings are parts named by hand on the original, the three grades as run, and your choice of bar. Part 1 says the definition separates re-setting, new trigger and new computation where the answer is known, and that on every fine-tune tried no single part of the original carries the change. Part 2 then tests re-gating and the neuron reading on the built edits, whose labels are known. Limit: no reused-or-new verdict on any real fine-tune.</li>
+<li><strong>(b) Keep the second wording. No spend.</strong> Part 1 says "reused" or "unreadable" on the old tasks and never "built". You said on 11-10 it would need revising if it could not detect built; it still cannot.</li>
+<li><strong>(c) Spend the last run first. $0, about a day.</strong> The run finds the part on the original by a linear search over several layers, instead of naming it by hand, and re-reads the fine-tunes. It tells whether hand-naming is why nothing carried. The second wording's search carried under half, so another "no reading" is likely.</li>
+</ul>
+<p><strong>Recommendation: (a).</strong> It is the only option that gives part 1 a definition able to say "built". It reads every edit with a known answer correctly, and its silence on fine-tunes has a stated cause the paper can report. Its weak point is that it says nothing about the real fine-tunes; (c) tests that before adopting. If you adopt, you also fix the bar, whether input tokens count as parts, which alignments are allowed, and whether a part named by hand counts as fixed from the original alone.</p>
+<p class="small">Names in the reports: cells P1.18 and P1.19 (run 4 of 4 unspent); experiment cards E173, E176, E177; the second wording's adoption is the decisions row of 2026-11-10.</p>
+<div class="links"><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/decisions/2026-11-13_decision_third-wording-gate.md">card</a> <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-13_analysis_third-wording-measured.md">analysis</a> <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-12_analysis_third-wording-no-reading.md">by argument</a> <a href="#e173">experiment card</a></div>
+</div>
 </div>
 </section>
