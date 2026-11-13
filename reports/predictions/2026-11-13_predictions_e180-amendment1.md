@@ -14,3 +14,10 @@ Filed bars, cap, stop rules, expected readings, R1 and R2.
 
 ## Run accounting
 Rerunning run 1 on the fixed code is the cell's run 4 (reserved for a repair). The L1 and L2 results of the broken run are void. do_nothing (KL 0, no search) is kept.
+
+## E182 (2026-11-13): the controls run under a new code, one more search restriction
+The controls run is re-filed as E182 (cell P1.20 run 2 of 4; predictions.json unchanged except its "experiment" line). A
+fresh review found that a rung-2 pair whose read is a token seen in one scoring window can score about ten times the
+built pair (its curvature is pooled while its gradient is concentrated), fill every line-search slot and leave L2 with no
+rung-2 name. Token reads seen in fewer than 8 of the 2,048 scoring windows are therefore left out of the pair search
+(`Sizes.min_tok`). This only narrows the search, so every reading stays an upper bound on the rung.

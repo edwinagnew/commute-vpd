@@ -67,6 +67,7 @@ class Sizes:
     cap: int = 16
     patience: int = 3  # a greedy search stops after this many steps in a row each adding under min_gain of closure
     min_gain: float = 0.005
+    min_tok: int = 8  # a token read needs this many scoring windows: rarer ones swamp the pair scores (review, 2026-11-13)
     mults: tuple[float, ...] = (0.25, 0.5, 1.0, 2.0)  # line search, multiples of the Newton step
 
 
@@ -453,12 +454,14 @@ def candidates(m: Model, sc: Scores, I: Interv, mk: dict[str, Tensor], reads_on:
         return out
     chosen = {(w.var, r) for w in I.writes for r in w.reads}
     rows = mk["w"] & (taken | (I.n + 2 <= sz.cap))  # a pair on a new write costs two names
+    seen = (N * m.st.tok_f).round().flatten() >= sz.min_tok  # a pair on a token seen in one window scored ~10x the built pair
+    common = torch.cat([torch.ones(sp.n_dense, dtype=torch.bool, device=dev), seen.to(dev)])
     for a in range(0, sp.n_write, sz.chunk):
         b = min(a + sz.chunk, sp.n_write)
         if not rows[a:b].any():
             continue
         g, h = _pair_g(sc, m.st.tok_f, a, b), sc.hbar[a:b, None] * sc.x2[None]
-        ok = rows[a:b, None] & mk["r"][None] & (mk["or"][None] < mk["ow"][a:b, None]) & (h > floor)
+        ok = rows[a:b, None] & (mk["r"] & common)[None] & (mk["or"][None] < mk["ow"][a:b, None]) & (h > floor)
         for v, r in chosen:
             if a <= v < b:
                 ok[v - a, r] = False
