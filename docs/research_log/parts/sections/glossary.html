@@ -71,6 +71,51 @@
 </ul>
 <p><strong>First test settings,</strong> fixed before any reading. Inputs are 8-token Pile windows. d is the total variation between next-token distributions, k = 4 and the floor on gap is 0.02. The plan is <code>reports/plans/2026-11-09_plan_reuse-variable-first-test.md</code>. Its built reading on the hand-made XOR follows largely from how that pair was made.</p>
 <p>Text: <code>~/commute-data/scratch/definition-session/2026-11-09_reuse-at-a-variable_v2.md</code>. Evidence: <code>reports/analyses/2026-11-10_analysis_second-wording-effectiveness.md</code>. The repairs made after its second review have not been reviewed.</p></div>
+<div id="def-reuse-simplest"><b>Reuse as the simplest intervention (fourth wording, tentative)</b>
+<p>Proposed on 2026-11-13. Not adopted: the <a href="#def-reuse-variable">second wording</a> is still the working definition. It keeps the third wording's single line ("F reuses a variable V of M if F is M under an intervention on V") and adds two things. Any intervention is allowed but is charged for its complexity, so every fine-tune gets a grade. Linear reads are a measurement choice, not part of the definition. The pending card is <a href="#decision-fourth-wording">here</a>.</p>
+<p><strong>In one line:</strong> F reuses M to the extent that F is M under a simple intervention on M's variables. Reuse is graded by the simplest such intervention: the shorter it is to describe, given M, the more F reuses M.</p>
+<p><strong>Precise form.</strong> Fixed before any reading:</p>
+<ul>
+<li>the original M and the fine-tune F, each mapping an input x to a next-token distribution;</li>
+<li>an input distribution D;</li>
+<li>a fidelity tolerance ε &gt; 0;</li>
+<li>a description language L, which is a prefix-free binary code for interventions.</li>
+</ul>
+<ul>
+<li><strong>Variable of M:</strong> any function of M's activations at one site (a layer and a position).</li>
+<li><strong>Intervention I:</strong> a program in L that names some variables of M and gives each a new equation, built from the input x, other variables of M, and constants. M<sub>I</sub> is M run with those variables recomputed by their new equations; everything downstream reads the new values.</li>
+<li><strong>Cost:</strong> K(I | M) is the length of I's code in bits. A reference to a variable of M is coded relative to M, so naming what M already computes is cheap.</li>
+<li><strong>Fidelity:</strong> δ(F, M<sub>I</sub>) = E<sub>x∼D</sub> KL(F(x) ‖ M<sub>I</sub>(x)).</li>
+<li><strong>Reuse cost:</strong> C(F | M) = min { K(I | M) : δ(F, M<sub>I</sub>) ≤ ε }.</li>
+<li><strong>From-scratch cost:</strong> C<sub>0</sub>(F | M) is the same minimum taken only over interventions that read the input and M's output distribution and write only the output.</li>
+<li><strong>Reuse share:</strong> R(F | M) = 1 − C / C<sub>0</sub>, taken as 1 when C<sub>0</sub> = 0, that is when F is within ε of M.</li>
+<li><strong>Grade:</strong> R near 0 is <em>new</em>, because M saves nothing over describing the change from scratch. The cheapest intervention I* says how F reuses M:
+<ul>
+<li><em>re-setting</em>, if each new equation is a constant, a gain or a shift of the variable's own value;</li>
+<li><em>new trigger</em>, if a new equation reads other variables of M;</li>
+<li>otherwise <em>new computation</em>.</li>
+</ul>
+Cut-offs on R are the user's choice.</li>
+</ul>
+<p><strong>Properties.</strong></p>
+<ul>
+<li>It is total. The output-only intervention always meets the tolerance, so C ≤ C<sub>0</sub> is finite and every F gets a grade.</li>
+<li>Do-nothing costs 0, so R = 1 and F reads as unchanged.</li>
+<li>It is relative to L, D and ε. These relativities are stated, not removed.</li>
+</ul>
+<p><strong>Measurement, which is not part of the definition.</strong></p>
+<ul>
+<li>The true minimum cannot be computed. Any intervention found bounds C from above, and so bounds R from below. A measured "new" therefore means "nothing simpler was found".</li>
+<li>Proposed first measurement:
+<ul>
+<li>variables are linear directions at stated sites;</li>
+<li>interventions are sparse affine edits, v ← αv + β + Σ w<sub>j</sub>u<sub>j</sub>;</li>
+<li>naming a variable from a list fixed on M alone costs log<sub>2</sub> of the list's size, specifying a new direction costs d·b bits, and each number costs b bits;</li>
+<li>a search with a sparsity penalty, swept over the penalty, gives a curve of KL against bits, and the cost is read where the curve meets ε.</li>
+</ul></li>
+<li>On a small input set a memorised fact is a single direction of token identity, so the measurement must charge for that direction.</li>
+</ul>
+<p>Text: <code>~/commute-data/scratch/definition-session/2026-11-13_reuse-as-simplest-intervention_v4.md</code>. Card: <code>reports/decisions/2026-11-13_decision_fourth-wording-simplest-intervention.md</code>. It has not been reviewed.</p></div>
 <div><b>Expressible, obstruction, outside share</b><p>An update is expressible to the extent a first-order change of the alive pieces can produce it. The obstruction is the part outside both the write span and the read span. The outside share weights it by real inputs; its isotropic null is the same number for a random update. From E14 reported as four blocks that sum to one: inside both, write side only, read side only, outside both, with the read side split by the part of the input predictable from what the pieces read rather than by the projection onto their span.</p></div>
 <div><b>Fixed-shift hypothesis</b><p>The re-gating line's working hypothesis from 2026-10-22 (user; H′ in the reports), restated per cue on 2026-10-23, tentatively; not a finding: after a narrow fine-tune, the switching part of the gain is carried mostly by one fixed change to Γ's importance values at the trigger per cue, the same for every input with that cue, aimed at particular subcomponents and partly shared when cues share an answer; each input's own variation adds a few hundredths. "Cue" is the trigger token in every task run so far and has no general definition yet (section {{n:backlog}}). Its results are in cards E18 to E36 and the red-team review (see Re-gating). Not the same thing as the Γ-shift map of E30, one fixed change applied everywhere as a map of the update (commute line). It replaces <b>H</b> (2026-10-21), whose third part, "the fixed change is enough on its own", failed as filed in E18's third amendment. De-prioritised on 2026-10-27 (user), because the toy tasks are too artificial to say anything general (<code>reports/decisions/2026-10-27_decision_regating-fixed-shift-deprioritised.md</code>).</p></div>
 <div><b>Floor</b><p>Seed-to-seed or block-to-block spread of a ratio at the unchanged model, same job. "Within the floor" = at most 1 plus three floors. The 1.5 line decides a verdict; the floor says whether a number near it is noise.</p></div>
