@@ -1,0 +1,62 @@
+{
+  "experiment": "E179",
+  "cell": "P3.9",
+  "filed": "2026-11-13, before any run on p-015e0710; never edited after a run (add a dated report instead)",
+  "plan": "P3.8's plan (reports/plans/2026-11-12_plan_p38-library-share.md) and its rules (../predictions.json), on the frozen-neuron decomposition p-015e0710; what differs is listed under 'departures_from_P3.8'",
+  "card": "results/p-015e0710/card.md (frozen copy ~/commute-data/cards/E179.md)",
+  "measurement": {
+    "share": "E132's (E57's) re-gating share, (K00 - K01) / (K00 - K11) from the cells summed over the arm's 128 own rows of 256 tokens, as P3.8, on p-015e0710. Its subcomponents are single neurons of the 84 MLP matrices (V, U from the HF weights, qwen_vpd.neuron_components), so the share reads how much of the change's effect goes through which neurons Gamma switches on and off. Status by commute.qwen_reading.shares, unchanged",
+    "rows": "As P3.8: each arm on the library's own rows (copy, cipher, known, invented; gold's rows for gold and gold_shuf)",
+    "states": "As P3.8: run 3 (E165) copy, cipher, known, invented; run 2 (E164) gold, gold_shuf; seeds 0-2; late = 'last', matched = '5x'",
+    "mlp_only": "Every change read is restricted to the 84 MLP matrices (run.py own_sites): the attention matrices of each library state are set to zero before the fine-tuned weights, the split and the target KL are made, and so the random change, scaled to the restricted state's per-matrix norms, is zero there too. The lead's decision 2026-11-13: attention is not decomposed in p-015e0710, so an attention change would enter K01 and K11 alike and not be a re-gating of anything",
+    "gap": "Per pair, save and seed: share(side A) - share(side B); None unless both 'scored'",
+    "random_change": "As P3.8 run 1, on the restricted states: stage 1 (<key>_norm) at the state's per-matrix norms, stage 2 (<key>_kl) times one factor b bringing its KL on 16 rows within 1.5x of the restricted state's",
+    "blind_to": "As P3.8: the share reads near 1 whenever K01 and K11 are both far under K00. Also blind to anything the update does in attention (zeroed here). Gamma's g differs from the authors' library on 0.3-0.4% of values (E175 port check, Jaccard 0.979-0.981 at g > 0.1, KL with g as masks within 0.0036): accepted by the lead 2026-11-13 because the share is read through KL",
+    "positive_control": "None that separates by construction; do-nothing (share 1) checks the path, the random change gives the floor",
+    "noise_floor": "The spread below, 0.0019556570733518797, is E132's seed spread measured on p-9707d6ff (|a2long_s0 - a2long_s1|, experiments/qwen_regating_new/results/summary.json .new.seed_spread). No seed spread has been measured on p-015e0710; the run-1 random gaps are read on it"
+  },
+  "departures_from_P3.8": [
+    "Decomposition p-015e0710 (frozen neurons, MLP only) instead of p-9707d6ff",
+    "Changes restricted to the 84 MLP matrices (mlp_only). E170/E174 read the whole update on p-9707d6ff; their saved records hold per-row KL sums of the whole update only (no split, no per-matrix cells), so an MLP-only reading on p-9707d6ff needs a GPU re-run of its own and is not part of this cell. The comparison figure states this departure",
+    "W0 g statistics, live set and floors from this decomposition's own --run 0 (one L40 job), not E131's or the library's floors.json",
+    "The band's spread was measured on p-9707d6ff, not on p-015e0710"
+  ],
+  "controls_stop_on_miss": {
+    "refs": "--run 0 writes results/large/p-015e0710/gstats/W0_{fineweb,maths}.safetensors (E40's recipe: 128 FineWeb and 128 maths rows of 512, g > 0.01), results/p-015e0710/refs.json (alive_total) and results/p-015e0710/floors.json (K0 per row set, the Lab's K0 at W0 on the library's rows). Runs 1 and 2 refuse to start without floors.json; the Lab stops unless ALIVE_TOTAL_OF['p-015e0710'] equals the live set rebuilt from the saved statistics",
+    "W0": "As P3.8: per row set on its first 16 rows, W0 as the fine-tuned model: K00 and K01 equal K0, an all-zero split's K10 and K11 equal K0, each within 1e-6 relative",
+    "do_nothing": "As P3.8: share within 1e-6 of 1",
+    "K0_floor": "Each state's mean K0 over its 128 rows equals results/p-015e0710/floors.json .floors.<side>.K0 within 1e-3 relative (it is W0's number, so this checks the rows only)",
+    "sha256": "As P3.8",
+    "stored_error": "As P3.8: under 1e-3 of ||dW||_Sigma",
+    "gpu": "As P3.8: peak under 44 GiB after the first row of each cell pass (E175 port check: 36.8 GiB resident with the fp32 neuron components, the fp32 target and Gamma in bf16)",
+    "random_scored": "As P3.8: each stage-2 random state 'scored'",
+    "order": "As P3.8: run 2 refuses to start until all 12 stage-2 run-1 records are home"
+  },
+  "expected": {
+    "refs": "alive_total near 516,096 (84 x 6,144): on E175's rows about 38,600-44,200 neurons per site-set are active per token, so nearly every neuron is active somewhere in 256 rows of 512. At least 400,000",
+    "W0": "Share undefined (zero denominator, 'unscored' or nan). K0 per side about 0.15-0.30 nats a position (E175: KL with g as masks 0.19-0.26 on the qwen_port rows; p-9707d6ff's floors were 0.10-0.17)",
+    "do_nothing": "Share 1 exactly",
+    "random_scale": "Stage 2's factor b between 5 and 60 (P3.8 on p-9707d6ff read 10-40; restricted to the MLP, the state's KL and the random change's are both smaller, ratio unknown)",
+    "random_share": "Each of the 12 stage-2 random states 'scored'; share not predicted (rival A and rival B differ in the updates' gaps, not in the random change's share)",
+    "update_share": "Each of the 36 states 'scored' or, for the small 5x saves, 'unscored' (cell unreadable, as filed)"
+  },
+  "description": {
+    "spread": 0.0019556570733518797,
+    "band": "Per pair and save: band = |random gap| + spread (0.00196, measured on p-9707d6ff). None when the random gap is None",
+    "cell": "run.cell, unchanged from P3.8: 'unreadable' if under three gaps, any gap None or not finite, or the band None; 'beyond band' if every |gap| > band (strict) and all gaps share one sign; 'inside band' if |mean gap| <= band; else 'mixed'. Values rounded to 9 places before comparing",
+    "edge_cases_checked": "Run through run.cell on CPU 2026-11-13 before filing (output in edge_cases): three gaps beyond the band, one sign -> 'beyond band'; one gap None -> 'unreadable'; band None -> 'unreadable'; two gaps -> 'unreadable'; a gap equal to the band -> not beyond ('inside band' when the mean is within); mixed signs all outside the band, mean inside -> 'inside band'; mixed signs, mean outside -> 'mixed'; a NaN gap -> 'unreadable'; do-nothing gaps 0 -> 'inside band'",
+    "edge_cases": {"beyond, one sign [0.01, 0.012, 0.011]": "beyond band", "one None": "unreadable", "band None": "unreadable",
+                   "two gaps": "unreadable", "three gaps equal to the band": "inside band",
+                   "mixed signs, mean inside [0.01, -0.012, 0.0015]": "inside band",
+                   "mixed signs, mean outside [0.01, -0.003, 0.011]": "mixed", "a NaN gap": "unreadable",
+                   "do-nothing [0, 0, 0]": "inside band", "band used": 0.00196},
+    "do_nothing_against_the_rule": "A do-nothing state on both sides reads gap 0, 'inside band'",
+    "reports": "summary.json (run.py --summary --decomp $COMMUTE_QWEN_FROZEN_DIR) and one figure setting each cell against p-9707d6ff's (E170/E174, whole update) on the same axes, the MLP-only departure stated on the figure"
+  },
+  "leans": {
+    "written_before_running": "None stronger than the card's two rivals: rival A (frozen neurons make the share read which neurons switch, so a built pair reads 'beyond band') against rival B (the share sits near 1 for any change at Qwen scale, every cell inside the band, as on p-9707d6ff)"
+  },
+  "experiment_run0": "E179",
+  "experiment_run1": "E179",
+  "experiment_run2": "E179"
+}

@@ -18,9 +18,16 @@ state's K0 over its 128 rows equals the library's floor for that side (results/f
 library's. A resubmitted job skips what is written. Every number also goes to results/run.log.
 The share is E57's: (K00 - K01) / (K00 - K11) summed over the rows, status by `qwen_reading.shares`.
 
+The frozen-neuron decomposition p-015e0710 (cell P3.9, E179; plan in results/p-015e0710/predictions.json): the same
+runs with `--decomp "$COMMUTE_QWEN_FROZEN_DIR"`, written to results/p-015e0710/. It decomposes the 84 MLP matrices
+only, so every change read on it is restricted to them (`own_sites`: the attention matrices of δW and of the random
+change set to zero; the lead's decision 2026-11-13), and its W0 g statistics, live set and floors come from its own
+`--run 0` (one L40 job) instead of E131's and the library's. On p-9707d6ff nothing changes: all 196 sites are its own.
+
   python experiments/qwen_library_share/run.py --run 1 --decomp "$COMMUTE_QWEN_NEW_DIR"
   python experiments/qwen_library_share/run.py --run 2 --arms copy,cipher --decomp "$COMMUTE_QWEN_NEW_DIR"
-  python experiments/qwen_library_share/run.py --summary      (no GPU: results/summary.json)
+  python experiments/qwen_library_share/run.py --run 0 --decomp "$COMMUTE_QWEN_FROZEN_DIR"   (p-015e0710's refs)
+  python experiments/qwen_library_share/run.py --summary [--decomp DIR]   (no GPU: <results>/summary.json)
 """
 
 from __future__ import annotations
@@ -45,12 +52,24 @@ from commute import qwen_reading as qr
 from commute.jobs import hard_exit, load_experiment
 from commute.qwen_d3 import ALIVE_TOTAL_OF, GSTATS_OF, null_seed, pinned
 from commute.qwen_eval import MODEL, MODEL_REV
-from commute.qwen_sft import load
-from commute.qwen_vpd import SITES, decomp_id
+from commute.qwen_maps import alive_from_stats
+from commute.qwen_sft import load, save
+from commute.qwen_teacher import g_stats, importance_pass
+from commute.qwen_vpd import (
+    SITES,
+    decomp_id,
+    decomp_kinds,
+    importances,
+    masked_logits,
+    parse_site,
+)
 
-NEW = "p-9707d6ff"
+NEW, FROZEN = "p-9707d6ff", "p-015e0710"
 HERE = Path(__file__).resolve().parent
-RESULTS = HERE / "results"
+RESULTS_OF = {NEW: HERE / "results", FROZEN: HERE / "results" / FROZEN}
+FLOORS_OF = {NEW: LS.LIBRARY / "floors.json", FROZEN: RESULTS_OF[FROZEN] / "floors.json"}
+LARGE_OF = {NEW: HERE / "results" / "large", FROZEN: HERE / "results" / "large" / FROZEN}  # results/large is gitignored
+DECOMP, RESULTS = NEW, RESULTS_OF[NEW]  # rebound by `point`
 PRED = RESULTS / "predictions.json"
 PAIRS = {"copy_cipher": ("copy", "cipher"), "facts": ("known", "invented"), "gold": ("gold", "gold_shuf")}
 ARMS = tuple(a for pair in PAIRS.values() for a in pair)
@@ -58,10 +77,21 @@ RUN_OF = {a: "library" if a.startswith("gold") else "library_run3" for a in ARMS
 ROWSET = {a: "gold" if a.startswith("gold") else a for a in ARMS}  # the library read both gold arms on gold's rows
 KINDS = ("late", "matched")
 
-# E57's Lab, pointed at the new decomposition and this folder. Its functions read these names when called (as E132).
+# E57's Lab, pointed at a decomposition and its folder. Its functions read these names when called (as E132).
 L = load_experiment("qwen_reading", "lab")
-L.RESULTS, L.PRED, L.LARGE, L.GSTATS = RESULTS, PRED, RESULTS / "large", GSTATS_OF[NEW]
-L.CFG = replace(L.CFG, alive_total=ALIVE_TOTAL_OF[NEW])
+
+
+def point(decomp: str) -> None:
+    """This module and the Lab at `decomp`'s results folder, large folder, W0 g statistics and live-set count
+    (p-015e0710's count is -1, so the Lab stops, until its --run 0 has measured it and ALIVE_TOTAL_OF holds it)."""
+    global DECOMP, RESULTS, PRED
+    DECOMP, RESULTS = decomp, RESULTS_OF[decomp]
+    PRED = RESULTS / "predictions.json"
+    L.RESULTS, L.PRED, L.LARGE, L.GSTATS = RESULTS, PRED, LARGE_OF[decomp], GSTATS_OF[decomp]
+    L.CFG = replace(L.CFG, alive_total=ALIVE_TOTAL_OF.get(decomp, -1))
+
+
+point(NEW)
 
 
 def _saves() -> dict[str, dict[str, str]]:
@@ -127,6 +157,15 @@ def gaussian(norms: dict[str, float], shapes: dict[str, tuple[int, ...]]) -> dic
     return out
 
 
+OWN: frozenset[str] = frozenset(SITES)  # the decomposition's own sites, set by main from --decomp
+
+
+def own_sites(dW: dict[str, Tensor]) -> dict[str, Tensor]:
+    """δW with every matrix outside the decomposition's own sites set to zero: on p-015e0710 the attention matrices
+    (and so, through the state's per-matrix norms, the random change's too); on p-9707d6ff the same tensors."""
+    return {s: m if s in OWN else torch.zeros_like(m) for s, m in dW.items()}
+
+
 # ----------------------------------------------------------------------------- controls and the reading
 
 
@@ -170,14 +209,14 @@ def read(lab: Any, name: str, st: LS.State, dW: dict[str, Tensor], sp: dict[str,
          extra: dict[str, Any]) -> dict[str, Any]:
     """The four cells of one change on its arm's rows (split `sp` of it); K0 against the side's floor. Written to
     results/<name>.json."""
-    floor = json.loads((LS.LIBRARY / "floors.json").read_text())["floors"][ROWSET[st.arm]]["K0"]
+    floor = json.loads(FLOORS_OF[DECOMP].read_text())["floors"][ROWSET[st.arm]]["K0"]
     lab.set_weights("FT", dW)
     cells = lab.cells(rows, tag=name)
     k0 = sum(cells["K0"]) / rows.numel()
     lab.check(f"K0_{name}", qr.close(k0, floor, C.k0_tol), {"K0": k0, "floor": floor})
     cells |= lab.cells(rows, lab.change(dW, sp["X"]), tag=f"{name}, split")
     lab.drop_set("FT")
-    rec = {"decomp": NEW, "state": asdict(st), "rows": cells, "stored_error": sp["stored_error"], "split_s": sp["s"],
+    rec = {"decomp": DECOMP, "state": asdict(st), "rows": cells, "stored_error": sp["stored_error"], "split_s": sp["s"],
            "means": {k: sum(v) / rows.numel() for k, v in cells.items()}} | qr.whole(cells, L.CFG.row_len) | extra
     lab.put(name, rec)
     lab.log(f"[share] {name}: {rec['regating']:.9g} ({rec['status']}), {lab.peaks()}")
@@ -214,7 +253,7 @@ def random_state(lab: Any, st: LS.State, path: Path, rows: Tensor, first: bool) 
     stated in the plan): the same change times the one factor that brings its KL on 16 rows to the state's; the band
     is read from stage 2, which must be 'scored'. The split is linear in δW, so stage 2's is stage 1's times b."""
     r16 = rows[: C.n16]
-    dW = load(path)
+    dW = own_sites(load(path))
     norms = {s: float(m.double().norm()) for s, m in dW.items()}
     target = kl16(lab, dW, r16)
     R = gaussian(norms, {s: tuple(m.shape) for s, m in dW.items()})
@@ -240,11 +279,44 @@ def run1(lab: Any, rows: dict[str, Tensor], root: Path) -> None:
 def run2(lab: Any, arms: tuple[str, ...], rows: dict[str, Tensor], root: Path) -> None:
     todo = [st for st in states(arms, C.seeds) if not lab.get(f"run2/{st.key}")]
     for i, (st, path) in enumerate(streamed(todo, root, lab.log)):
-        dW, r = load(path), rows[ROWSET[st.arm]]
+        dW, r = own_sites(load(path)), rows[ROWSET[st.arm]]
         if i == 0:
             lab.put(f"run2/do_nothing_{st.key}", do_nothing(lab, dW, r[: C.n16]))
         read(lab, f"run2/{st.key}", st, dW, split(lab, dW), r, {})
         del dW
+
+
+def k0(lab: Any, rows: Tensor) -> float:
+    """W0's masked KL at its own g (Δ off) per position over `rows`: the Lab's K0 with the weights at W0."""
+    tot = 0.0
+    for r in rows:
+        t = r[None].to(L.DEV)
+        logits, g = importances(lab.model, t, lab.gamma, lab.comps)
+        tot += L.kl(logits, masked_logits(lab.model, t, lab.comps, g))
+        del logits, g
+    return tot / rows.numel()
+
+
+def run0(lab: Any, decomp: Path) -> None:
+    """p-015e0710's references, as E131's w0_refs.py made p-9707d6ff's: E40's W0 g statistics on 128 FineWeb and 128
+    maths rows of 512 (g > 0.01, saved fp16) and the live set they give; then each library row set's floor K0 (E164's
+    floors.json is p-9707d6ff's). Written to <large>/gstats/ and results/p-015e0710/{refs,floors}.json."""
+    W = load_experiment("qwen_new_decomp", "w0_refs")
+    stats = {}
+    for b in W.BLOCKS:
+        rows = [torch.tensor([r], device=L.DEV) for r in W.block_rows(b)]
+        stats[b] = g_stats(importance_pass(lab.model, rows, lab.gamma, lab.comps, W.CFG.alive_g, masked=False))
+        save(GSTATS_OF[DECOMP] / f"W0_{b}.safetensors", stats[b], torch.float16, False, lab.log, {"decomp": DECOMP})
+    idx = alive_from_stats(stats["maths"], stats["fineweb"])
+    refs = {"decomp": DECOMP, "alive_total": sum(len(v) for v in idx.values()), "alive_per_kind": W.per_kind(idx)}
+    lab.put("refs", refs)
+    floors = {}
+    for arm in dict.fromkeys(ROWSET[a] for a in ARMS):
+        rows = rows_of(arm)
+        floors[arm] = {"rows": len(rows), "positions": rows.numel(), "K0": k0(lab, rows)}
+        lab.log(f"[floor] {arm}: {json.dumps(floors[arm])}")
+    L.write_json(FLOORS_OF[DECOMP], {"decomp": decomp_id(decomp), "floors": floors})
+    lab.log(f"STAGE refs DONE {json.dumps(refs)}")
 
 
 # ----------------------------------------------------------------------------- the description (no GPU)
@@ -291,13 +363,17 @@ def summarise(R: dict[str, Any]) -> dict[str, Any]:
 
 
 def main() -> None:
-    ap = argparse.ArgumentParser(description="P3.8: the re-gating share on the pair library")
-    ap.add_argument("--run", type=int, choices=(1, 2))
+    global OWN
+    ap = argparse.ArgumentParser(description="P3.8 and P3.9: the re-gating share on the pair library")
+    ap.add_argument("--run", type=int, choices=(0, 1, 2), help="0: p-015e0710's references (one L40 job)")
     ap.add_argument("--arms", default=",".join(ARMS), help="run 2 only: the arms this job reads")
-    ap.add_argument("--decomp", help="the p-9707d6ff decomposition's directory")
-    ap.add_argument("--fetch-to", default=str(RESULTS / "large" / "states"), help="where states land, two at a time")
+    ap.add_argument("--decomp", help="the decomposition's directory: p-9707d6ff (P3.8) or p-015e0710 (P3.9)")
+    ap.add_argument("--fetch-to", default=str(LARGE_OF[NEW] / "states"), help="where states land, two at a time")
     ap.add_argument("--summary", action="store_true")
     a = ap.parse_args()
+    decomp = decomp_id(Path(a.decomp)) if a.decomp else NEW
+    assert decomp in RESULTS_OF, decomp
+    point(decomp)
     if not PRED.is_file():
         sys.exit(f"refusing to start: {PRED} missing")
     R = json.loads(PRED.read_text())
@@ -306,13 +382,20 @@ def main() -> None:
         hard_exit(0)
     arms = tuple(a.arms.split(","))
     assert a.run is not None and set(arms) <= set(ARMS), (a.run, arms)
+    assert a.run != 0 or decomp == FROZEN, "--run 0 makes p-015e0710's references; p-9707d6ff has its own"
     if R[f"experiment_run{a.run}"] == "E???":
         sys.exit(f"refusing to start: run {a.run} has no experiment number in {PRED.name}")
     missing = [st.key for st in states(ARMS, (C.norm_seed,)) if not (RESULTS / "run1" / f"{st.key}_kl.json").is_file()]
     if a.run == 2 and missing:
         sys.exit(f"refusing to start: run 1 first, alone ({len(missing)} random states not home: {missing})")
-    assert decomp_id(Path(a.decomp)) == NEW, a.decomp
+    if a.run in (1, 2) and not FLOORS_OF[decomp].is_file():
+        sys.exit(f"refusing to start: {FLOORS_OF[decomp]} missing (--run 0 first)")
+    OWN = frozenset(s for s in SITES if parse_site(s)[1] in decomp_kinds(Path(a.decomp)))
     lab = L.Lab(R[f"experiment_run{a.run}"], "unused", a.decomp)
+    if a.run == 0:
+        with torch.no_grad():
+            run0(lab, Path(a.decomp))
+        hard_exit(0)
     arms = ARMS if a.run == 1 else arms
     rows = {ROWSET[x]: rows_of(x) for x in arms}
     assert all(tuple(r.shape) == (L.CFG.n_rows, L.CFG.row_len) for r in rows.values()), {k: r.shape for k, r in rows.items()}

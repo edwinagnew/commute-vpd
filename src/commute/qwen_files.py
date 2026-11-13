@@ -22,7 +22,8 @@ ARTIFACT = "qwen3-1.7b-p-e9fcffd5-torch"
 ARTIFACT_TYPE = "decomposition"
 # Run id (`qwen_vpd.decomp_id`) -> W&B artifact. `fetch`'s default `ARTIFACT` is the OLD decomposition only, for frozen
 # callers; new code calls `fetch_decomp`. Whether p-9707d6ff is uploaded: not checked.
-DECOMP_ARTIFACT = {"p-e9fcffd5": "qwen3-1.7b-p-e9fcffd5-torch", "p-9707d6ff": "qwen3-1.7b-p-9707d6ff-torch"}
+DECOMP_ARTIFACT = {"p-e9fcffd5": "qwen3-1.7b-p-e9fcffd5-torch", "p-9707d6ff": "qwen3-1.7b-p-9707d6ff-torch",
+                   "p-015e0710": "qwen3-1.7b-p-015e0710-torch"}  # the last holds Γ only (E175)
 
 
 def complete(dest: Path) -> bool:

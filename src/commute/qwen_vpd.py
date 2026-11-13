@@ -31,6 +31,12 @@ RMS norm after the last block (`global_transformer/arch.py:328-332`). Its conver
 `ci_fn_arch = {"sink": "learned", "final_norm": "rms"}`; an index.json without that key loads as p-e9fcffd5 did. The
 new run's 32-slot stacks are cut to their 28 layers by the converter (pads checked zero there), so every directory
 holds 28-layer stacks and the loaders assert it.
+
+A third, p-015e0710 (E175; experiments/qwen_frozen_decomp/convert.py), is a frozen-neuron control: only the 84 MLP
+matrices are decomposed (attention runs as the target), each subcomponent fixed at one neuron, only Γ trained. Its
+index.json carries `kinds = ["gate", "up", "down"]` (Γ's head order) and `components = "neuron"`: V and U are built
+from the HF weights by the bundle README's table (gate/up V = Wᵀ, U = I; down V = I, U = Wᵀ), not read from files.
+Every function below runs over `Components.sites`, the decomposed sites in SITES order (all 196 for the other two).
 """
 
 from __future__ import annotations
@@ -135,8 +141,13 @@ class Components:
         return self.V[kind][layer], self.U[kind][layer]
 
     @property
+    def sites(self) -> tuple[str, ...]:
+        """The decomposed sites, in SITES order."""
+        return tuple(s for s in SITES if parse_site(s)[1] in self.V)
+
+    @property
     def dtype(self) -> torch.dtype:
-        return self.V["q"].dtype
+        return next(iter(self.V.values())).dtype
 
     def to(self, device: str, dtype: torch.dtype) -> Components:
         def move(d: dict[str, Tensor]) -> dict[str, Tensor]:
@@ -154,11 +165,43 @@ def decomp_id(directory: Path) -> str:
     return found.group(1)
 
 
+def _index(directory: Path) -> dict[str, Any]:
+    return json.loads((Path(directory) / "index.json").read_text())
+
+
+def decomp_kinds(directory: Path) -> tuple[str, ...]:
+    """The decomposed kinds in Γ's head order; an index.json without `kinds` decomposes all seven."""
+    kinds = tuple(_index(directory).get("kinds", KINDS))
+    assert set(kinds) <= set(KINDS) and len(set(kinds)) == len(kinds), kinds
+    return kinds
+
+
 def load_components(directory: Path, device: str = "cuda", dtype: torch.dtype = torch.float32) -> Components:
+    kinds = decomp_kinds(directory)
+    if _index(directory).get("components") == "neuron":
+        return neuron_components(kinds, device, dtype)
     store = _Store(directory)
-    V = {k: store.stacked(f"components.stacks.{k}.0", dtype, device) for k in KINDS}
-    U = {k: store.stacked(f"components.stacks.{k}.1", dtype, device) for k in KINDS}
-    assert all(V[k].shape[0] == U[k].shape[0] == N_LAYERS for k in KINDS), "stacks still padded"
+    V = {k: store.stacked(f"components.stacks.{k}.0", dtype, device) for k in kinds}
+    U = {k: store.stacked(f"components.stacks.{k}.1", dtype, device) for k in kinds}
+    assert all(V[k].shape[0] == U[k].shape[0] == N_LAYERS for k in kinds), "stacks still padded"
+    return Components(V, U)
+
+
+def neuron_components(kinds: tuple[str, ...], device: str, dtype: torch.dtype) -> Components:
+    """Subcomponents frozen at the neuron basis, from the HF weights W [d_out, d_in] (p-015e0710 README table):
+    gate and up V = Wᵀ, U = I; down V = I, U = Wᵀ. So (V U)ᵀ = W exactly and subcomponent c is neuron c's slice."""
+    from huggingface_hub import snapshot_download
+
+    assert set(kinds) <= {"gate", "up", "down"}, kinds
+    root = Path(snapshot_download(HF_NAME, revision=HF_REVISION, allow_patterns=["*.safetensors"]))
+    store = _Store(root)
+    V, U = {}, {}
+    for kind in kinds:
+        Wt = torch.stack([store.get(f"model.{site_name(layer, kind)}.weight", dtype, device).T
+                          for layer in range(N_LAYERS)])
+        eyes = torch.eye(C[kind], device=device, dtype=dtype).expand(N_LAYERS, -1, -1).contiguous()  # callers edit columns in place
+        V[kind], U[kind] = (Wt, eyes) if kind in ("gate", "up") else (eyes, Wt)
+        assert V[kind].shape[2] == U[kind].shape[1] == C[kind], (kind, V[kind].shape, U[kind].shape)
     return Components(V, U)
 
 
@@ -203,28 +246,28 @@ class Gamma:
 
 def load_gamma(directory: Path, device: str = "cuda", dtype: torch.dtype = torch.float32) -> Gamma:
     store = _Store(directory)
-    arch = ci_fn_arch(directory)
+    arch, kinds = ci_fn_arch(directory), decomp_kinds(directory)
     assert (_BB + "blocks.attention.sink_logits" in store.handles) == (arch["sink"] == "learned"), (
         f"{directory}: index.json ci_fn_arch {arch} disagrees with the sink tensor in the files"
     )
     readouts = {
         s: torch.stack([store.get(f"ci_fn.backbone.readouts.{s}.{arm}", dtype, device) for arm in _ARMS])
-        for s in SITES
+        for s in SITES if parse_site(s)[1] in kinds
     }
     sink = store.get(_BB + "blocks.attention.sink_logits", dtype, device) if arch["sink"] == "learned" else None
     gamma = Gamma(
         in_w=store.get(_BB + "in_proj_w", dtype, device),
         in_b=store.get(_BB + "in_proj_b", dtype, device),
         blocks={k: store.stacked(_BB + "blocks." + key, dtype, device) for k, key in _BLOCK_KEYS.items()},
-        heads_w={k: store.stacked(f"{_BB}heads.{i}.weights", dtype, device) for i, k in enumerate(KINDS)},
-        heads_b={k: store.get(f"{_BB}heads.{i}.biases", dtype, device) for i, k in enumerate(KINDS)},
+        heads_w={k: store.stacked(f"{_BB}heads.{i}.weights", dtype, device) for i, k in enumerate(kinds)},
+        heads_b={k: store.get(f"{_BB}heads.{i}.biases", dtype, device) for i, k in enumerate(kinds)},
         readouts=readouts,
         inv_freq=store.get(_BB + "inv_freq", torch.float32, device),
         sink=sink,
         final_norm=arch["final_norm"] == "rms",
     )
     assert all(v.shape[0] == GAMMA_BLOCKS for v in gamma.blocks.values()), "block stacks still padded"
-    assert all(gamma.heads_w[k].shape[0] == gamma.heads_b[k].shape[0] == N_LAYERS for k in KINDS), "heads padded"
+    assert all(gamma.heads_w[k].shape[0] == gamma.heads_b[k].shape[0] == N_LAYERS for k in kinds), "heads padded"
     assert sink is None or sink.shape == (GAMMA_BLOCKS, GAMMA_HEADS), sink.shape
     return gamma
 
@@ -305,7 +348,7 @@ def readout(g: Gamma, site: str, x_site: Tensor, V: Tensor) -> Tensor:
 def lower_importances(g: Gamma, taps: list[Tensor], readouts: dict[str, Tensor]) -> dict[str, Tensor]:
     """g = clip(head(backbone) + readout, 0, 1) per site, fp32 (arch.py:286-291,316-324; interface.py:36-41)."""
     x = backbone(g, taps)
-    return {site: site_importance(g, x, site, readouts[site]) for site in SITES}
+    return {site: site_importance(g, x, site, readouts[site]) for site in readouts}
 
 
 def site_importance(g: Gamma, x: Tensor, site: str, r: Tensor) -> Tensor:
@@ -351,10 +394,10 @@ def clean_forward(model: Any, tokens: Tensor, gamma: Gamma, comps: Components) -
     def capture(site: str) -> Any:
         return lambda m, a, o: readouts.__setitem__(site, readout(gamma, site, a[0], comps.vu(site)[0]))
 
-    handles += [_linear(model, s).register_forward_hook(capture(s)) for s in SITES]
+    handles += [_linear(model, s).register_forward_hook(capture(s)) for s in comps.sites]
     with _hooks(handles):
         logits = model(tokens, use_cache=False).logits
-    assert len(taps) == N_TAPS and len(readouts) == len(SITES), (len(taps), len(readouts))
+    assert len(taps) == N_TAPS and len(readouts) == len(comps.sites), (len(taps), len(readouts))
     return Clean(logits, taps, readouts)
 
 
@@ -386,7 +429,7 @@ def masked_logits(
 
         return hook
 
-    with _hooks([_linear(model, s).register_forward_hook(replace(s)) for s in SITES]):
+    with _hooks([_linear(model, s).register_forward_hook(replace(s)) for s in comps.sites]):
         return model(tokens, use_cache=False).logits
 
 
@@ -418,8 +461,8 @@ def _source_kl(
         g_any, clean_any = inputs(i)
         with torch.set_grad_enabled(grad):
             g = {s: v.to(dev, comps.dtype) for s, v in g_any.items()}
-            masks = {s: g[s] + (1 - g[s]) * src[s] for s in SITES}
-            deltas = {s: dsrc[s].expand(tokens.shape) for s in SITES}
+            masks = {s: g[s] + (1 - g[s]) * src[s] for s in comps.sites}
+            deltas = {s: dsrc[s].expand(tokens.shape) for s in comps.sites}
             logits = masked_logits(model, tokens, comps, masks, deltas)
             loss = kl_per_position(clean_any.to(dev), logits).sum() / n
             if grad:
@@ -450,8 +493,8 @@ def pgd_kl_rows(
     sources (site -> [C], site.delta -> [1], on the CPU)."""
     dev, dt = rows[0].device, comps.dtype
     gen = torch.Generator(device=dev).manual_seed(seed)
-    src = {s: torch.rand(C[parse_site(s)[1]], generator=gen, device=dev, dtype=dt).requires_grad_() for s in SITES}
-    dsrc = {s: torch.rand((), generator=gen, device=dev, dtype=dt).requires_grad_() for s in SITES}
+    src = {s: torch.rand(C[parse_site(s)[1]], generator=gen, device=dev, dtype=dt).requires_grad_() for s in comps.sites}
+    dsrc = {s: torch.rand((), generator=gen, device=dev, dtype=dt).requires_grad_() for s in comps.sites}
     for step in range(steps):
         kl = _source_kl(model, rows, comps, inputs, src, dsrc, grad=True)
         if log is not None:

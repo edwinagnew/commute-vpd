@@ -47,7 +47,7 @@ class Alive:
     def __init__(self, comps: Components, idx: dict[str, Tensor]):
         self.idx, self.V, self.U = {}, {}, {}
         pin = torch.cuda.is_available()
-        for s in SITES:
+        for s in comps.sites:
             V, U = comps.vu(s)
             self.idx[s] = idx[s].to(V.device)
             v, u = V[:, self.idx[s]].cpu(), U[self.idx[s]].cpu()
@@ -63,7 +63,8 @@ class Alive:
 
 def alive_from_stats(*stats: dict[str, Tensor]) -> dict[str, Tensor]:
     """Alive = g > 0.01 somewhere in any block: a non-zero `active` share in any `qwen_teacher.g_stats` file."""
-    return {s: torch.stack([st[f"{s}.active"].float() > 0 for st in stats]).any(0).nonzero().flatten() for s in SITES}
+    sites = [s for s in SITES if f"{s}.active" in stats[0]]  # a decomposition's own sites (84 for p-015e0710)
+    return {s: torch.stack([st[f"{s}.active"].float() > 0 for st in stats]).any(0).nonzero().flatten() for s in sites}
 
 
 def halves(active: Tensor, mean_g: Tensor, n_half: int | None = None) -> tuple[Tensor, Tensor]:
@@ -252,7 +253,7 @@ def applied(model: Any, comps: Components, alive: Alive, change: Callable[[str],
     lins, W, touched = linears(model), {}, []
     try:
         with torch.no_grad():
-            for s in SITES:
+            for s in comps.sites:
                 dW, pos, dU, dV = change(s)
                 w0 = lins[s].weight.data
                 w = weights[s] if weights is not None else w0 if dW is None else w0 + dW.to(w0)
@@ -291,7 +292,7 @@ def _stochastic(g: dict[str, Tensor], seed: int, first_row: int) -> tuple[dict[s
     masks = {s: torch.empty_like(v) for s, v in g.items()}
     deltas = {s: torch.empty(v.shape[:-1], dtype=v.dtype, device=v.device) for s, v in g.items()}
     for j in range(next(iter(g.values())).shape[0]):
-        gen = torch.Generator(device=masks[SITES[0]].device).manual_seed(seed * 1_000_003 + first_row + j)
+        gen = torch.Generator(device=next(iter(masks.values())).device).manual_seed(seed * 1_000_003 + first_row + j)
         m, d = stochastic_masks({s: v[j : j + 1] for s, v in g.items()}, gen)
         for s in g:
             masks[s][j : j + 1], deltas[s][j : j + 1] = m[s], d[s]
@@ -327,8 +328,8 @@ def read_rows(model: Any, rows: Tensor, batch: int, gamma: Gamma, comps: Compone
             add(f"stoch_{seed}", _kl(logits, masked_logits(model, tokens, comps, masks, deltas)))
             del masks, deltas
         for name, src in sources.items():
-            masks = {s: g[s] + (1 - g[s]) * src[s].to(g[s]) for s in SITES}
-            deltas = {s: src[f"{s}.delta"].to(g[s]).expand(tokens.shape) for s in SITES}
+            masks = {s: g[s] + (1 - g[s]) * src[s].to(g[s]) for s in comps.sites}
+            deltas = {s: src[f"{s}.delta"].to(g[s]).expand(tokens.shape) for s in comps.sites}
             add(f"replay_{name}", _kl(logits, masked_logits(model, tokens, comps, masks, deltas)))
             del masks, deltas
         if ft is not None:

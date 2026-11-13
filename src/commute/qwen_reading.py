@@ -453,18 +453,20 @@ def a1_rows(tok: Any, items: list[dict[str, Any]], test: list[dict[str, Any]]) -
 
 
 class Layout:
-    """The live subcomponents as one flat vector, site by site in SITES order."""
+    """The live subcomponents as one flat vector, site by site in SITES order, over the decomposition's own sites
+    (`sites`, all of SITES but for p-015e0710); `site_of` indexes `sites`."""
 
     def __init__(self, idx: dict[str, Tensor]):
         self.idx = idx
-        sizes = [len(idx[s]) for s in SITES]
-        self.offset = dict(zip(SITES, np.cumsum([0, *sizes[:-1]]).tolist(), strict=True))
+        self.sites = [s for s in SITES if s in idx]
+        sizes = [len(idx[s]) for s in self.sites]
+        self.offset = dict(zip(self.sites, np.cumsum([0, *sizes[:-1]]).tolist(), strict=True))
         self.n = sum(sizes)
-        self.site_of = torch.repeat_interleave(torch.arange(len(SITES)), torch.tensor(sizes))
+        self.site_of = torch.repeat_interleave(torch.arange(len(self.sites)), torch.tensor(sizes))
 
     def kind_mask(self, *kinds: str) -> Tensor:
         """The flat positions at sites of these matrix kinds."""
-        return torch.tensor([parse_site(s)[1] in kinds for s in SITES])[self.site_of]
+        return torch.tensor([parse_site(s)[1] in kinds for s in self.sites])[self.site_of]
 
 
 class Counts:
@@ -488,7 +490,7 @@ class Counts:
             self.rows[row, o : o + len(a)] = a.to(torch.int16)
 
     def add_row(self, g: dict[str, Tensor], keep: Tensor | None = None, row: int | None = None) -> None:
-        for s in SITES:
+        for s in self.lay.sites:
             self.add(s, g[s][0], keep, row)
         self.n_pos += int(next(iter(g.values())).shape[1] if keep is None else keep.sum())
 
@@ -508,7 +510,7 @@ def gate_counts(model: Any, tokens: Tensor, gamma: Gamma, comps: Components, cou
     `qwen_vpd.importances` (Stage A checks it)."""
     taps: list[Tensor] = []
     inputs: dict[str, Tensor] = {}
-    owner = {s: site_name(parse_site(s)[0], SHARED_INPUT[parse_site(s)[1]]) for s in SITES}
+    owner = {s: site_name(parse_site(s)[0], SHARED_INPUT[parse_site(s)[1]]) for s in comps.sites}
     m = model.model
     hooks = [m.embed_tokens.register_forward_hook(lambda _m, _a, o: taps.append(o))]
     hooks += [layer.register_forward_hook(lambda _m, _a, o: taps.append(o)) for layer in m.layers]
@@ -524,7 +526,7 @@ def gate_counts(model: Any, tokens: Tensor, gamma: Gamma, comps: Components, cou
             h.remove()
     x = backbone(gamma, taps)
     taps.clear()
-    for s in SITES:
+    for s in comps.sites:
         r = readout(gamma, s, inputs[owner[s]].to(x.device), comps.vu(s)[0])
         counts.add(s, site_importance(gamma, x, s, r)[0], keep)
         del r

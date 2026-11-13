@@ -1,0 +1,13 @@
+[     0.0s] [E179] start; config Config(n_rows=128, row_len=256, n16=16, own_len=512, sigma_len=512, sigma_batch=2, tol=1e-06, alive_total=-1, store_err_max=0.001, gpu_max_gib=44.0, id_tol=1e-06, rep_tol=0.001, boot=2000, draws=1000, null_seeds=(0, 1, 2, 3), kl_match=1.5, kl_evals=6, inspan_a=17.78279410038923, high=0.8, problems=128, think_new=2048, think_batch=64, drop_max=0.25, limit_s=10800, first_s=7200)
+[    11.0s] [load] target, NVIDIA L40, peak GPU 6.41 GiB, host 10.9 GB
+[    18.3s] [load] gamma, peak GPU 21.13 GiB, host 40.3 GB
+[    20.3s] [load] components, peak GPU 36.97 GiB, host 40.3 GB
+[    52.4s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-lead/experiments/qwen_library_share/results/large/p-015e0710/gstats/W0_fineweb.safetensors (0.00 GB)
+[    84.7s] [save] /mnt/nw/home/e.agnew/commute-agents/qwen-lead/experiments/qwen_library_share/results/large/p-015e0710/gstats/W0_maths.safetensors (0.00 GB)
+[    84.7s] [refs] {"decomp": "p-015e0710", "alive_total": 516092, "alive_per_kind": {"q": 0, "k": 0, "v": 0, "o": 0, "gate": 172032, "up": 172030, "down": 172030}}
+[   118.6s] [floor] copy: {"rows": 128, "positions": 32768, "K0": 0.17968053894977573}
+[   152.8s] [floor] cipher: {"rows": 128, "positions": 32768, "K0": 0.2900684208266876}
+[   187.8s] [floor] known: {"rows": 128, "positions": 32768, "K0": 0.13455043325317928}
+[   223.0s] [floor] invented: {"rows": 128, "positions": 32768, "K0": 0.2524959107953557}
+[   260.1s] [floor] gold: {"rows": 128, "positions": 32768, "K0": 0.2007219318930294}
+[   260.1s] STAGE refs DONE {"decomp": "p-015e0710", "alive_total": 516092, "alive_per_kind": {"q": 0, "k": 0, "v": 0, "o": 0, "gate": 172032, "up": 172030, "down": 172030}}

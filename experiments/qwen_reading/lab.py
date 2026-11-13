@@ -28,7 +28,6 @@ from commute.qwen_reading import Counts, Layout
 from commute.qwen_sft import linears, load, sha256
 from commute.qwen_teacher import move_gamma
 from commute.qwen_vpd import (
-    SITES,
     fp32_matmuls,
     importances,
     load_components,
@@ -350,7 +349,7 @@ class Lab:
             self.use("W0")
             batches = list(self.maths(length=CFG.sigma_len).to(DEV).split(CFG.sigma_batch))
             t0 = time.time()
-            self._sigma = qwen_maps.input_moments(self.model, batches, list(SITES))
+            self._sigma = qwen_maps.input_moments(self.model, batches, list(self.comps.sites))
             self.log(f"[sigma] {len(self._sigma)} sites in {time.time() - t0:.0f} s, {self.peaks()}")
         return self._sigma
 
@@ -364,7 +363,7 @@ class Lab:
         st = load(GSTATS / "W0_maths.safetensors") if halves else {}
         X, pe = {}, {"ls": [], "half": []} | {f"null{k}": [] for k in (CFG.null_seeds if nulls else ())}
         err = 0.0
-        for s in SITES:
+        for s in self.comps.sites:
             U_A, V_A = alive.uv(s, DEV, F64)
             S, M = sig[s].to(DEV), dW[s].to(DEV, F64)
             b = split.basis_from(qwen_maps.make_basis(U_A, "gram"), qwen_maps.make_basis(V_A, "gram"), CFG.tol)
