@@ -1,0 +1,75 @@
+{
+ "status": "filed 2026-11-13, before any run",
+ "experiment": "E180",
+ "cell": "P1.20",
+ "card": "experiments/simplest_intervention/card.md",
+ "filed": "2026-11-13, before any run. Plan: reports/plans/2026-11-13_plan_simplest-intervention-ranking.md. Code: experiments/simplest_intervention/run.py, src/commute/rank_read.py. Every reading is 'under the fourth wording, ranked, provisional (testing only, not adopted)'. Names below are the keys run.py writes in results/<item>.json (readings[list][bar] = {rung, n, names | edits, pair}) and results/run<k>.json.",
+ "question": "Under the fourth reuse wording, read by a ranking of interventions on M's list of variables (fixed on M alone): do the controls built on that list read their built rungs, does the twin fine-tune rank below the memorised fact on both seeds, and does each old pair's reuse side rank at or below its new side?",
+ "thresholds": {
+  "bars": [0.8, 0.9, 0.95],
+  "cap": 16,
+  "kl_floor": 1e-06,
+  "r1_bar": 0.9,
+  "gap_tol": 0.005,
+  "reload_tol": 0.0001
+ },
+ "threshold_sources": {
+  "bars": "the plan: every reading at 0.8, 0.9 and 0.95; which holds is the user's",
+  "cap": "the plan: rungs 1 and 2 capped at 16 names (~240 bits, far below one free 768-number direction)",
+  "kl_floor": "rung 0 when KL(F || M) on the read subset is under max(kl_floor, 10 x the do-nothing's KL read in run 1). Two runs of the 67M differ by 1.03e-5 in mean TV (built_control_sum/results/amend1_stage0.json floor_runs_tv), a KL of order 1e-10; every built edit is calibrated to a TV gap of 0.229 (KL of order 0.1). 1e-6 sits four orders above the first and five below the second",
+  "r1_bar": "the card: the twin's and the fact's lowest rung at bar 0.9",
+  "gap_tol": "E157's and E173's gap_tol for a calibrated planted edit (run 1's controls are calibrated the same way)",
+  "reload_tol": "E168's and E173's reload_tol: a rebuilt F's mean TV gap must repeat E173's"
+ },
+ "measures": {
+  "kl": "KL(F || M) in nats at the last position, mean over 16,384 seeded read-half windows",
+  "closure": "1 - KL(F || M_I) / KL(F || M) on the same read windows, I fitted on the fit half",
+  "curve": "lists[list][rung].curve: after each greedy step, n (writes plus reads), the closure, the names",
+  "rung3": "lists[list]['3'].fits: closure of one, then two, free rank-one edits h_s += rms_s d (a . (h_r - mu_r) / rms_r + c) at each (r <= s) in in1, in2, in3, out3, with the list's rung-2 names kept and refitted",
+  "reading": "readings[list][bar]: rung 0 if kl under the floor; else the lowest (rung, n) whose closure is at least the bar: rung 1 then 2 at the smallest n on its curve, rung 3 at the fewest edits, else rung 4",
+  "lists": "neurons (4 x 3,072 MLP neurons), directions (top 64 principal directions at in0..in3, out3), all; the input tokens at the last two positions (read) and the logits (write) are in every list"
+ },
+ "run1_stop": {
+  "rule": "after each run-1 item: any miss below writes run1.json passed false, exits 1, nothing further runs, runs 2 and 3 refuse, the cell closes 'no call'. A calibration that cannot reach the target gap within gap_tol also exits 1 (run1.json not written, so runs 2 and 3 refuse)",
+  "do_nothing": [{"lists": ["neurons", "directions", "all"], "bars": [0.8, 0.9, 0.95], "rung": [0]}],
+  "l1_neuron": [{"lists": ["all"], "bars": [0.95], "rung": [1], "n_max": 1, "own_names": true}],
+  "l2_triggered": [{"lists": ["all"], "bars": [0.95], "rung": [1, 2], "n_max": 2}],
+  "l4_bit": [{"lists": ["neurons", "directions", "all"], "bars": [0.8], "rung": [4]}]
+ },
+ "expected": {
+  "_rule": "descriptive, read at list all and bar 0.9 ('as expected' when misses is empty); every other list and bar is reported beside it. always_on, table and planted_fact have no expected reading in the plan and are measured only",
+  "do_nothing": {"lists": ["all"], "bars": [0.9], "rung": [0]},
+  "l1_neuron": {"lists": ["all"], "bars": [0.9], "rung": [1], "n_max": 1, "own_names": true},
+  "l2_triggered": {"lists": ["all"], "bars": [0.9], "rung": [2], "n_max": 2},
+  "l4_bit": {"lists": ["all"], "bars": [0.9], "rung": [4]},
+  "planted_constant": {"lists": ["all"], "bars": [0.9], "rung": [1], "n_max": 4},
+  "planted_trigger": {"lists": ["all"], "bars": [0.9], "rung": [2]},
+  "cue": {"lists": ["all"], "bars": [0.9], "rung": [2]},
+  "floor": {"lists": ["all"], "bars": [0.9], "rung": [4]},
+  "xor": {"lists": ["all"], "bars": [0.9], "rung": [3, 4]},
+  "fact_s0": {"lists": ["all"], "bars": [0.9], "rung": [3]},
+  "fact_s1": {"lists": ["all"], "bars": [0.9], "rung": [3]},
+  "twin_s0": {"lists": ["all"], "bars": [0.9], "rung": [2]},
+  "twin_s1": {"lists": ["all"], "bars": [0.9], "rung": [2]}
+ },
+ "predictions": {
+  "R1": {"run": 2, "measure": "run2.json R1, from readings['all']['0.9'].rung of twin_s0, twin_s1, fact_s0, fact_s1", "rival_a": "the twin's rung at most 2 and the fact's at least 3, on both seeds: the twin reuses a variable M has, the fact's random token set is not on M's list", "rival_b": "the twin and the fact at the same rung on each seed: the ranking does not separate them", "else": "no call (mixed seeds, or different rungs both under 3 or both over 2)", "smallest_gap": 1, "n": 2, "design": "unpaired, unit seeds"},
+  "R2": {"run": 3, "measure": "run3.json R2: for each old pair (copy24/cipher24, ident32/rand32, case_real/case_twin, repeat_real/repeat_twin) and seed, readings['all']['0.9'].rung", "claim": "the reuse side's rung at or below the new side's for every pair and seed (all_hold true)", "note": "equal rungs hold; descriptive, the third wording's ordering as a grade"}
+ },
+ "edge_cases": {
+  "do_nothing": "KL(F || M) is under the floor: rung 0 at every bar and list, no search run and no closure divided (the zero-denominator case cannot be reached)",
+  "kl_at_floor": "KL exactly at the floor is not under it: searched",
+  "closure_at_bar": "a closure exactly at a bar passes (EPS 1e-9)",
+  "nan_closure": "passes no bar",
+  "ties_reading": "the first n on a curve to reach the bar; at rung 3, fewer edits first, then the pair of the highest closure",
+  "ties_search": "equal scores keep topk's order (the lower variable index); a write's gain and shift are separate candidates",
+  "no_candidate": "a greedy search with no candidate left (or n at the cap) stops; its curve ends there",
+  "skipped_rungs": "a rung is not searched once a lower rung of that list reached the top bar (0.95): it cannot lower any reading. Two rank-one edits are not fitted once one reached it",
+  "empty_or_missing_item": "an item not done misses every spec; R1 reads 'not read' until all four of its items are done; R2 marks a pair 'not read'",
+  "r1_degenerate": "rival a and rival b cannot both hold (a needs twin <= 2 < 3 <= fact); twin 1 with fact 2, or twin 3 with fact 4, is no call",
+  "token_never_seen": "a token read absent (or always present) at its position in the scoring windows has zero curvature and is never a candidate"
+ },
+ "blind_to": "nonlinear variables (linear reads only, user 2026-11-12); writes and reads at positions other than the last (tokens: the last two); anything off each item's windows; interventions the greedy search misses (every reading is an upper bound on the rung); differences below the read subset's sampling noise",
+ "positive_control": "run 1: L1 (one neuron shifted, rung 1, n 1) and L2 (one neuron shifted by principal direction 0 at in1, rung 2, n 2), each built exactly on the list; the null: L4 (a seeded hash bit per window at in2, rung 4) and the do-nothing (rung 0)",
+ "noise_floor": "two runs of the 67M differ by 1.03e-5 in mean TV; the closure's sampling sd over 16,384 read windows is not known before run 1 and is reported from the curves' read values"
+}
