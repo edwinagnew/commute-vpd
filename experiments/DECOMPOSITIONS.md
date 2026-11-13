@@ -1,11 +1,12 @@
 # Which Qwen result was read on which decomposition
 
-Qwen3-1.7B has two VPD decompositions of the same unchanged model.
+Qwen3-1.7B has two VPD decompositions of the same unchanged model, and one frozen-neuron control.
 
 | Short name | Run id | Files | Trained on | Notes |
 |---|---|---|---|---|
 | **old** | p-e9fcffd5 | `artifacts/qwen3-1.7b-p-e9fcffd5-torch` | The text mix firestock3, windows of 512 tokens | Every Qwen reading before 2026-11-07 |
 | **new** | p-9707d6ff | `~/commute-data/artifacts/qwen3-1.7b-p-9707d6ff-torch` | Chat-formatted text, windows of 2,048 tokens, 30% written by Qwen3-1.7B itself | Port checked by E131 (`reports/analyses/2026-11-07_analysis_e131-new-decomposition.md`) |
+| **frozen** | p-015e0710 | `~/commute-data/artifacts/qwen3-1.7b-p-015e0710-torch` (Γ only; `$COMMUTE_QWEN_FROZEN_DIR`) | firestock3, windows of 512 tokens (its README: chat-formatted text) | A control, not a decomposition: only the 84 MLP matrices, each subcomponent fixed at one neuron (V, U built from the HF weights by `qwen_vpd.neuron_components`), only Γ trained; attention runs as the model. Bundle `~/commute-data/artifacts/p-015e0710-share/` (sha256 checked). Port check E175 (cell P3.9, `experiments/qwen_frozen_decomp/results/port_check.json`). Call it "the frozen-neuron decomposition"; no reading on old or new carries over to it |
 
 **Rules for every lead** (written for the user's 2026-11-09 request for clear old-versus-new records).
 - A Qwen reading of subcomponents, masks, a split, faithfulness or the adversary is true of one decomposition. Name it
