@@ -23,4 +23,4 @@ echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> c
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 export HF_HUB_CACHE=$HOME/.cache/huggingface/hub
 nvidia-smi --query-gpu=name,memory.total --format=csv
-.venv/bin/python experiments/qwen_frozen_decomp/port_check.py
+.venv/bin/python "${1:-experiments/qwen_frozen_decomp/port_check.py}"   # or port_bf16.py
