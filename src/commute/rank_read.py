@@ -544,7 +544,7 @@ def greedy(m: Model, d: Data, I: Interv, curve: list[dict[str, Any]], mk: dict[s
     and `curve`, which it extends in place; `tick` runs after every step."""
     while I.n < sz.cap and not (curve and curve[-1]["closure"] >= top_bar - EPS):
         cl = [0.0] + [e["closure"] for e in curve]
-        if len(curve) >= sz.patience and all(b - a < sz.min_gain for a, b in zip(cl[-sz.patience - 1 :], cl[-sz.patience :], strict=True)):
+        if len(curve) >= sz.patience and all(b - a < sz.min_gain for a, b in zip(cl[-sz.patience - 1 : -1], cl[-sz.patience :], strict=True)):
             break
         s, k_now = seed + len(curve), check_kl(m, I, d, sz)
         cands = candidates(m, score_pass(m, I, d.score, d.lp_score, sz, s), I, mk, reads_on, sz)
