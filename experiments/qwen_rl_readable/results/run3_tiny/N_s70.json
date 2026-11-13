@@ -1,0 +1,106 @@
+{
+ "pod": "N_s70",
+ "seed": 70,
+ "draw_seed": 70,
+ "tag": "1e-6w10",
+ "size": "tiny_collapse",
+ "device": "NVIDIA L40",
+ "saves": {},
+ "steps": [
+  {
+   "step": 1,
+   "sample_s": 12.535690069198608,
+   "reward_rate": 1,
+   "mean_len": 201,
+   "window_share": 1,
+   "live": false,
+   "loss": 0.0,
+   "grad_norm": 0.0,
+   "rate": 1e-07,
+   "dw_norm": 0.0,
+   "grad_rms": 0.0,
+   "train_s": 0.03700423240661621,
+   "live_tokens": 0
+  },
+  {
+   "step": 2,
+   "sample_s": 15.185853481292725,
+   "reward_rate": 0.75,
+   "mean_len": 237,
+   "window_share": 0.75,
+   "live": false,
+   "loss": 0.0,
+   "grad_norm": 0.0,
+   "rate": 2e-07,
+   "dw_norm": 0.0,
+   "grad_rms": 0.0,
+   "train_s": 0.028804779052734375,
+   "live_tokens": 0
+  }
+ ],
+ "reads": {
+  "2": {
+   "dw_norm": 0.0,
+   "kl": 0.0,
+   "multiple": 0.0,
+   "kl_s": 12.882235050201416
+  }
+ },
+ "resumes": [],
+ "rollout_sha_1": "1b495775af288c73700125d463e92530d0389de723836c125644536d575b44bc",
+ "same_rollouts_as_e69": false,
+ "checks": {
+  "step 1's reward rate": {
+   "holds": false,
+   "rate": 1,
+   "band": [
+    0.6,
+    0.88
+   ]
+  },
+  "loss and gradient norm finite": {
+   "holds": true,
+   "step": 2
+  },
+  "reward change by step 2": {
+   "holds": false,
+   "change": -0.25
+  }
+ },
+ "expected": {
+  "step 1": {
+   "holds": false,
+   "reward": 1,
+   "len": 201,
+   "dw_norm": 0.0,
+   "e69": [
+    0.81640625,
+    192.126953125,
+    0.003462578435415087
+   ]
+  },
+  "step 2": {
+   "holds": false,
+   "reward": 0.75,
+   "len": 237,
+   "dw_norm": 0.0,
+   "e69": [
+    0.810546875,
+    189.18359375,
+    0.007720339344170002
+   ]
+  }
+ },
+ "end": {
+  "why": "collapsed",
+  "step": 2,
+  "multiple": 0.0,
+  "hours": 0.01129710767004225
+ },
+ "done": true,
+ "last": 2,
+ "peaks": {
+  "gpu_gb": 16.884281856,
+  "host_gb": 10.970716
+ }
+}

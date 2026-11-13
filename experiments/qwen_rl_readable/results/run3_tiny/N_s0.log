@@ -1,0 +1,27 @@
+[    3.2s] [N_s0] start; NVIDIA L40
+[    6.9s] [model] 1409286144 entries; 301 sampling rows per batch; eos [151645, 151643]
+[    6.9s] [N_s0] disk: 6586 GB free, 28 GB needed
+[   20.6s] [N_s0] step 1's rollouts identical to E69's R: False
+[   20.6s] [check] step 1's reward rate: ok {"rate": 0.75, "band": [0.6, 0.88]}
+[   22.1s] [N_s0] {"step": 1, "sample_s": 13.673366069793701, "reward_rate": 0.75, "mean_len": 216.125, "window_share": 1, "live": true, "loss": -0.0002339101629331708, "grad_norm": 1.3860937356948853, "rate": 1e-07, "dw_norm": 0.003689788137710945, "grad_rms": 3.692266243562782e-05, "train_s": 1.4591162204742432, "live_tokens": 975}
+[   22.1s] [check] loss and gradient norm finite: ok {"step": 1}
+[   22.1s] [check] first live step: |dW| / (rate sqrt(numel)): ok {"step": 1, "ratio": 0.9828830356800218, "band": [0.85, 1.05]}
+[  139.8s] [check] first live step: KL(W0 || W_1) on H: ok {"step": 1, "kl": 7.262404904676502e-05, "band": [3.0000000000000008e-05, 0.0020000000000000005]}
+[  140.0s] [expected] step 1 as E69's null: MISSED (not a stop: tell the lead) {"holds": false, "reward": 0.75, "len": 216.125, "dw_norm": 0.003689788137710945, "e69": [0.798828125, 190.158203125, 0.003468951416769793]}
+[  194.0s] [N_s0] checkpoint at step 1
+[  194.0s] [N_s0] paused at step 1: run the same command
+[    3.5s] [N_s0] start; NVIDIA L40
+[    7.0s] [model] 1409286144 entries; 301 sampling rows per batch; eos [151645, 151643]
+[   72.1s] [N] resuming after step 1
+[   72.1s] [N_s0] disk: 6569 GB free, 28 GB needed
+[   84.9s] [N_s0] {"step": 2, "sample_s": 12.041250705718994, "reward_rate": 0.625, "mean_len": 205.625, "window_share": 1, "live": true, "loss": 0.0003267526626586914, "grad_norm": 0.761044979095459, "rate": 2e-07, "dw_norm": 0.008187109549795702, "grad_rms": 2.027265987706372e-05, "train_s": 0.6359820365905762, "live_tokens": 562}
+[   84.9s] [check] loss and gradient norm finite: ok {"step": 2}
+[   84.9s] [check] reward change by step 2: MISSED {"change": -0.125}
+[   84.9s] [expected] step 2 as E69's null: MISSED (not a stop: tell the lead) {"holds": false, "reward": 0.625, "len": 205.625, "dw_norm": 0.008187109549795702, "e69": [0.822265625, 191.970703125, 0.007647653272322213]}
+[  141.9s] [N_s0] checkpoint at step 2
+[  154.8s] [N_s0] step 2 output-change read {"dw_norm": 0.008187109549795702, "kl": 3.687893055617339e-05, "multiple": 0.00039566491784326905, "kl_s": 12.901639699935913}
+[  170.9s] [save] /mnt/nw/home/e.agnew/commute-data/scratch/qwen-rl-lead/run3_tiny_59874/N_s0/dW/step_2.safetensors (5.64 GB)
+[  175.6s] [N_s0] SAVED step 2 {"file": "N_s0/dW/step_2.safetensors", "bytes": 5637164512, "sha256": "c02c0028850d1bd8db958d9f8f623f684fc09d2e6c0040d4050b4d0907a613e1", "save_s": 20.842684745788574}
+[  175.6s] [check] first save: E69's size, sha256 recorded: ok {"file": "N_s0/dW/step_2.safetensors", "bytes": 5637164512, "sha256": "c02c0028850d1bd8db958d9f8f623f684fc09d2e6c0040d4050b4d0907a613e1", "save_s": 20.842684745788574}
+[  175.6s] MATCHED at step 2: {"why": "matched", "step": 2, "multiple": 0.00039566491784326905, "hours": 0.011308709647920396}; download N_s0/dW/step_2.safetensors
+[  179.2s] [N_s0] done at step 2; {"gpu_gb": 29.9979776, "host_gb": 18.937476}
