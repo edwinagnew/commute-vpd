@@ -82,8 +82,8 @@ $0. The cell comes to ~$300 at most with run 2's ~$226.
 
 ## Gates
 Gated (>6 h a pod, >$60 at most). Gates 1-4 in `reports/plans/2026-11-13_plan_qwen-rl-readable-run3-gates.md`: pre-mortem,
-sourced settings, the $0 rehearsal (`cluster/qwen_rl_run3_rehearsal.sbatch`, numbers TODO for the runner) and the early
-checks. **Gate 5, review: TODO** (one fresh Opus agent, plan and code together). **Gate 6, go-ahead: TODO** (the user,
+sourced settings, the $0 rehearsal (`cluster/qwen_rl_run3_rehearsal.sbatch`, numbers measured 2026-11-13, in the appendix) and the early
+checks. **Gate 5, review: done 2026-11-13** (fresh Opus, plan and code together): no blockers. Taken up: the worst case is ~$77, not $73.7 (the hours cap counts sampling, training and reads, not ~0.5 h of checkpoints and saves, plus billing to terminate); a restart after a lost pod, a band stop, or one seed collapsing goes to the lead before more spend (pod-runner brief); N over R multiple is computed in the analysis. Not changed: no early end for a seed on course to miss (the design is fixed). **Gate 6, go-ahead: TODO** (the user,
 with the rehearsal's numbers and the cost table above).
 
 ## Not in this run
