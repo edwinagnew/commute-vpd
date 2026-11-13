@@ -1,6 +1,6 @@
 # Does the third wording of reuse give a reading once it is measured?
 
-*2026-11-13, definition-lead, cell P1.19. Four debug jobs on the cluster, no training, $0. The third wording is for
+*2026-11-13, definition-lead, cell P1.19. Five debug jobs on the cluster (three runs), no training, $0. The third wording is for
 testing only and is not adopted: every grade on this page is **under the third wording, provisional (testing only, not
 adopted)**, and `decisions.md` is unchanged. Plan `reports/plans/2026-11-12_plan_soft-intervention-wording.md` and its
 appendix; filed rules `experiments/soft_intervention/results/predictions.json`; the zero-run page that read the same
