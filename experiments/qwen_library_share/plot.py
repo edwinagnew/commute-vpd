@@ -75,6 +75,22 @@ def vmax_of(*summaries: dict[str, Any]) -> float:
     return max(seen, default=0.01) or 0.01
 
 
+def compare() -> None:
+    """P3.9's figure: the same two panels on p-9707d6ff (top) and p-015e0710 (bottom, MLP matrices only), each on its
+    own scale: the bands differ about thirtyfold, and what is compared is which cells leave their own band."""
+    rows = {d: json.loads((HERE / "results" / sub / "summary.json").read_text())
+            for d, sub in [("p-9707d6ff, whole update", ""), ("p-015e0710 (frozen neurons), MLP only", "p-015e0710")]}
+    fig, axes = F.figure((F.FULL_WIDTH[0], 2 * F.FULL_WIDTH[1]), ncols=2, nrows=2)
+    data: list[dict[str, Any]] = []
+    for r, (name, s) in enumerate(rows.items()):
+        data += [d | {"decomp": name} for d in draw(axes[r], s, vmax_of(s))]
+        axes[r][0].set_title(name, loc="left")
+    fig.suptitle("Re-gating share gap on two decompositions, against random changes of the same size")
+    F.save(fig, HERE / "figures" / "share_gaps_two_decomps.png", data=data,
+           n="3 seeds per side; one random change per side and save, scaled to its KL; band = |random gap| + "
+             "E132's seed spread 0.002 (measured on p-9707d6ff); hatched = mean inside the band; each row on its own scale")
+
+
 def main() -> None:
     summary = json.loads((HERE / "results" / "summary.json").read_text())
     fig, axes = F.figure(F.FULL_WIDTH, ncols=2)
@@ -87,4 +103,6 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    import sys
+
+    compare() if "--compare" in sys.argv else main()
