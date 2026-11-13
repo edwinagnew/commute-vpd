@@ -1,0 +1,13 @@
+cell: P3.4
+# each rival line keeps the word "predicts": '<an explanation> predicts <a result of this run>' (the check splits on it)
+rival_a: the reward teaches the model something that training on its own answers at the same output change does not predicts run 2's RL state at step 75 passes held-out GSM8K above the shuffled-reward null matched to its output change (2.09x the masked error on seed 0, 3.06x on seed 70) by more than the margin on both seeds (margin = max(seed spread of either arm, twice the paired standard error); the filed verdict: apart)
+rival_b: at this size the held-out gain comes from training on the model's own answers at this rate, not from the reward predicts R and the matched null sit within the margin of each other on at least one seed (the filed verdict: together; E69's working nulls at step 100 differed by 0.076 between seeds, 0.870 against 0.794, against RL's 0.881 and 0.877)
+rung: parameter
+smallest_gap: 0.03
+spread: 0.332
+n: 1138
+design: paired
+unit: GSM8K test problems answered within the window by both R and N (paired right/wrong per problem). spread = the sd of the per-problem difference R minus N at step 100 of E69: seed 0 0.332 over 1138 problems, seed 70 0.379 over 1232 (recomputed with jq from the two acc files, 2026-11-13). Seed spreads in the saved files: E69's working nulls 0.870 vs 0.794 at step 100 (0.076); run 2's RL at step 75 0.8816 vs 0.8844 on the L40 (0.0028); run 1's null at 1e-6, seed 0 0.778 at step 100 against E69's 0.870 on the same recipe and seed (0.092 run to run). The bar at n 1138: 2 x 0.332 / sqrt(1138) = 0.0197 under 0.03. Two seeds give the arm spread in the margin, not the n.
+spread_source: experiments/qwen_rl/results/large/lr1e-6w10/acc/R_gsm8k.jsonl
+stop: the null collapses again on both seeds before reaching RL's output change (the filed stop: 5 steps in a row with under half its training answers right or answers under 100 tokens), or neither seed reaches it by step 500: no working shuffled-reward null exists at RL's size under this loop, the cell closes saying so and part 3 reads its RL updates with no behaviour comparison behind them
+sketch: experiments/qwen_rl_readable/figures/sketch_run3.png
