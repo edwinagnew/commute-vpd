@@ -1,12 +1,12 @@
 # qwen-rl-lead digest, 2026-11-13
 
-P3.4, due 11-16, is blocked from closing: all 3 runs are spent and the filed verdict is "no call", but the harness's
-premise check refuses the cell. Reinforcement learning raised Qwen3-1.7B's held-out maths pass rate from 0.78 to 0.88
+P3.4 is closed: all 3 runs are spent and the filed verdict is "no call". The premise check, once fixed, read
+"doubtful". Reinforcement learning raised Qwen3-1.7B's held-out maths pass rate from 0.78 to 0.88
 at twice the decomposition's error. It was never compared with a working shuffled-reward null, because that null
 collapsed at both learning rates tried.
 
-**Cells.** P3.4 has used 3 of 3 runs. The closing text is ready at
-`~/commute-data/scratch/qwen-rl-lead/p34-close/close.txt`. No other cells, and qwen-rl-lead has no ladder rung.
+**Cells.** P3.4 used 3 of 3 runs and is closed with the text at
+`~/commute-data/scratch/qwen-rl-lead/p34-close/close.txt`. No other cells and no ladder rung, so the lead has finished.
 
 **What ran today.** Run 3 (E178): the null alone at the lower rate (1e-6), gated, with the user's go-ahead.
 - The $0 cluster rehearsal and the gate-5 review were clean.
@@ -20,9 +20,11 @@ collapsed at both learning rates tried.
 **Report.** `reports/analyses/2026-11-13_analysis_e178-qwen-rl-readable-run3.md`, with its figure. The log is
 published as version 343.
 
-**Waiting on the user.** Problem #5: `fleet/premise` refuses P3.4 ("no part of ladder.md belongs to qwen-rl-lead"),
-and `cell close` needs it. Either the premise check must accept a role with no rung, or the ladder needs a part for
-qwen-rl-lead.
+**For the gate.** The premise check (`~/commute-data/premise/P3.4.md`) reads "doubtful" on two points. A
+shuffled-reward null may not be steerable to RL's output change without collapsing, so a matched-size comparison would
+only show learning against breaking. And every update read, RL's included, sits at 0.98 to 0.99 of a random change's
+outside share, so this decomposition does not tell RL from random either. Its question: what would a matched-size null
+need to show to bear on the decomposition? Problems #4 and #5 are marked fixed.
 
 **Friction noted.**
 - 768: the share job's memory peak.
