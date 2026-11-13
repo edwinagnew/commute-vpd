@@ -49,6 +49,8 @@ MATHS = EXPERIMENTS / "qwen_sft" / "results" / "maths_rows.json"
 GSTATS_OF = {
     "p-e9fcffd5": EXPERIMENTS / "qwen_sft" / "results" / "large" / "nowarmup" / "gstats",
     "p-9707d6ff": EXPERIMENTS / "qwen_new_decomp" / "results" / "large" / "w0_refs" / "p-9707d6ff" / "gstats",
+    # the frozen-neuron control (84 MLP sites), written by qwen_library_share/run.py --run 0 (E179)
+    "p-015e0710": EXPERIMENTS / "qwen_library_share" / "results" / "large" / "p-015e0710" / "gstats",
 }
 ALIVE_TOTAL_OF = {"p-e9fcffd5": 494598, "p-9707d6ff": 500244}
 GSTATS: Path | None = None  # override for frozen qwen_teacher_table/run.py:79 (a pod copy of the old statistics)

@@ -1,0 +1,13 @@
+{
+  "date": "2026-11-13",
+  "experiment": "E175",
+  "about": "predictions.json port.jax_jaccard and port.jax_values, as read by port_check.json (job 59877), port_check_bf16.json (59879) and port_sites.json (59880). The filed rules stand as filed; this note records the reading and the lead's decision, it does not refile them",
+  "read": {
+    "jaccard_per_row": "0.9786-0.9812 (filed: >= 0.98 passes, < 0.95 fails, between is looked into before any share): the lowest row is under 0.98",
+    "off_share_per_row": "0.0027-0.0041 (filed bar 1e-4): missed",
+    "ci_kl_absdiff_max": "0.0036 (filed 0.005): within",
+    "active_count": "ours 0.7% below the library on every row"
+  },
+  "looked_into": "With the target in bf16 as the library runs it, the gap is unchanged (Jaccard 0.9786-0.9808), so it is not the target's precision. Per site it is spread over all 84 sites (0.2-0.75% of values off by > 0.1) and all three kinds (counts 0.6-0.7% low each), with Gamma's head outputs (mean |.| 1.6-4.8) far above the readouts (0.17-0.65): a small difference in the shared backbone, not a head-order or readout bug. The bundle README reports the same kind of gap between its own codes (Jaccard 0.992 public vs training, 0.988 between attention kernels)",
+  "decision": "The lead, 2026-11-13: the miss does not block the share reading (cell P3.9, E179). The share is read through KL, and the KL with g as masks agrees with the library within its bar"
+}
