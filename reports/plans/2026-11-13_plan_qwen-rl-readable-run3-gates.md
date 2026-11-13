@@ -108,16 +108,25 @@ The rehearsal job runs, at E69's tiny size (4 problems x 2 samples a step, 8 GSM
 "matched"); `read3.py --size tiny` controls, the state `N_s0@2`, and the verdict ("no call": seed 70 collapsed).
 States go to `~/commute-data/scratch/qwen-rl-lead/run3_tiny_<job>` and are removed; JSON and logs to `results/run3_tiny/`.
 
-What the runner measures and writes here (TODO):
-1. The ends: `COLLAPSED at step 2` for N_s70, `MATCHED at step 2` for N_s0, each pod's `end` in its JSON. TODO
-2. The resume: N_s0's `resumes` is [1], step 1 recorded once, step 2 run. TODO
-3. Save and checkpoint seconds on NFS (log `SAVED ... save_s`, `checkpoint at step`), an upper bound for the pod. TODO
-4. The disk line and `du` of the scratch folder. TODO
-5. Card and host peaks (`peaks`). TODO
+What the runner measures (measured values below):
+1. The ends: `COLLAPSED at step 2` for N_s70, `MATCHED at step 2` for N_s0, each pod's `end` in its JSON.
+2. The resume: N_s0's `resumes` is [1], step 1 recorded once, step 2 run.
+3. Save and checkpoint seconds on NFS (log `SAVED ... save_s`, `checkpoint at step`), an upper bound for the pod.
+4. The disk line and `du` of the scratch folder.
+5. Card and host peaks (`peaks`).
 6. Read stage: controls logged (bands are not stops at the tiny size), the state's sha256 check passed, the verdict file
-   written with `"verdict": "no call", "why": {"70": "collapsed"}`. TODO
+   written with `"verdict": "no call", "why": {"70": "collapsed"}`.
 7. From the full-size controls job: W0 and E69 R100 inside their bands, and the seconds per read on an L40 (run 2:
-   918-960 s). TODO
+   918-960 s).
+Measured 2026-11-13 (jobs 59874 rehearsal, 59875 + 59882 controls; results committed a215f933 in `results/run3_tiny/`, `results/run3_reads/`):
+1. Ends: N_s70 tiny_collapse "COLLAPSED at step 2 ... no state saved", end {"why":"collapsed","step":2}; N_s0 tiny "MATCHED at step 2", end "matched". As expected.
+2. Resume: N_s0 exit 3 after step 1, "resuming after step 1", `resumes` [1], steps [1,2] with step 1 once. δW 5,637,164,512 bytes saved. As expected.
+3. NFS: save 20.8 s; checkpoint ~54-57 s from log timestamps (not logged as a number). Over the 15 s filed from run 2's pods, but that was pod local disk; NFS is the upper bound. At 20 checkpoints (step 500) the worst case adds ~14 min, inside the 8.3 h time cap. Not a stop.
+4. Disk: "6586 GB free, 28 GB needed"; scratch du 5.3G after the save (checkpoint removed).
+5. Peaks: N_s0 card 30.0 GB, host 18.9 GB; N_s70 card 16.9 GB, host 11.0 GB; read stage host 10.5 GB; sbatch 24G, no OOM.
+6. Tiny read: sha256 check passed; verdict "no call", why {"70": "collapsed"}. Tiny control pass bands missed (8 problems; not stops at that size, as filed); kl and dw_norm inside.
+7. Full-size controls: W0 pass 0.78167, kl 0, dw_norm 0; E69 R100 pass 0.88070, kl 0.06431, dw_norm 0.35088; all inside run 2's bands. Seconds per read 919.5 (W0) and 946.8 (R100).
+
 Not rehearsable on the cluster: the H100 step time at full size, the pod disk, the W&B fetch. Each pod's first 20 steps
 (~20 min, ~$1.4) are its paid first stage: the runner reports the mean step time over steps 1-20 and the projected
 spend (0.67 h + min(500 x step, 8.3 h) + 0.26 h at $3.99/h) before letting it run on; over 75 s a step goes to the lead.
