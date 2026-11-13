@@ -277,8 +277,12 @@ def summarise() -> dict[str, Any]:
         for c in C.choices:
             rec = stored(RESULTS / "built" / f"{r}_{c}.json")
             k00, share = (rec["means"]["K00"], rec["regating"]) if rec else (None, None)
+            scored = rec is not None and rec["status"] == "scored"
+            # `described`: the same placement with a scored read off its size target kept (at its own K00); not the
+            # filed rule, which reads an unmatched built change as unreadable
             out["built"].append({"rowset": r, "choice": c, "k": rec and rec["k"], "k00": k00, "share": share,
-                                 "usable": usable(rec)} | SR.place(share, usable(rec), k00, cv, bd))
+                                 "usable": usable(rec), "described": SR.place(share, scored, k00, cv, bd)}
+                                | SR.place(share, usable(rec), k00, cv, bd))
         for ft in finetunes(r):
             st = ft["state"]
             out["finetunes"].append({"rowset": r, "arm": st["arm"], "seed": st["seed"], "save": st["save"],
@@ -288,6 +292,8 @@ def summarise() -> dict[str, Any]:
                       "finetunes": SR.outcome([f["class"] for f in out["finetunes"]], 27)}
     out["counts"] = {k: {c: [x["class"] for x in out[k]].count(c) for c in ("above", "inside", "below", "unreadable")}
                      for k in ("built", "finetunes")}
+    out["counts"]["built_described"] = {c: [b["described"]["class"] for b in out["built"]].count(c)
+                                        for c in ("above", "inside", "below", "unreadable")}
     L.write_json(RESULTS / "summary.json", out)
     print(f"[summary] {json.dumps({'outcome': out['outcome'], 'counts': out['counts']})}", flush=True)
     return out

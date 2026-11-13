@@ -1,0 +1,59 @@
+0.65	experiments/qwen_share_reference/results/built/copy_top.json	.means.K00	this
+0.85	experiments/qwen_share_reference/results/built/copy_top.json	.target_k00	this
+0.985	experiments/qwen_share_reference/results/built/copy_top.json	.regating	this
+-0.017	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	.built[] | select(.rowset=="copy" and .choice=="top") | .described.gap	this
+0.059	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	.rowsets.copy.band	this
+0.92	experiments/qwen_share_reference/results/built/copy_random.json	.means.K00	this
+0.961	experiments/qwen_share_reference/results/built/copy_random.json	.regating	this
+-0.036	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	.built[] | select(.rowset=="copy" and .choice=="random") | .described.gap	this
+1.54	experiments/qwen_share_reference/results/built/copy_specific.json	.means.K00	this
+0.986	experiments/qwen_share_reference/results/built/copy_specific.json	.regating	this
+0.007	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	.built[] | select(.rowset=="copy" and .choice=="specific") | .described.gap	this
+0.53	experiments/qwen_share_reference/results/built/cipher_top.json	.means.K00	this
+1.21	experiments/qwen_share_reference/results/built/cipher_top.json	.target_k00	this
+1.005	experiments/qwen_share_reference/results/built/cipher_top.json	.regating	this
+0.036	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	.rowsets.cipher.band	this
+1.16	experiments/qwen_share_reference/results/built/cipher_random.json	.means.K00	this
+0.983	experiments/qwen_share_reference/results/built/cipher_random.json	.regating	this
+0.046	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	.built[] | select(.rowset=="cipher" and .choice=="random") | .described.gap	this
+0.58	experiments/qwen_share_reference/results/built/cipher_specific.json	.means.K00	this
+0.920	experiments/qwen_share_reference/results/built/cipher_specific.json	.regating	this
+0.35	experiments/qwen_share_reference/results/built/known_top.json	.means.K00	this
+0.48	experiments/qwen_share_reference/results/built/known_top.json	.target_k00	this
+0.976	experiments/qwen_share_reference/results/built/known_top.json	.regating	this
+0.081	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	.built[] | select(.rowset=="known" and .choice=="top") | .described.gap	this
+0.016	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	.rowsets.known.band	this
+0.47	experiments/qwen_share_reference/results/built/known_random.json	.means.K00	this
+0.921	experiments/qwen_share_reference/results/built/known_random.json	.regating	this
+0.45	experiments/qwen_share_reference/results/built/known_specific.json	.means.K00	this
+0.992	experiments/qwen_share_reference/results/built/known_specific.json	.regating	this
+0.094	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	.built[] | select(.rowset=="known" and .choice=="specific") | .described.gap	this
+0.91	experiments/qwen_share_reference/results/built/invented_top.json	.target_k00	this
+0.977	experiments/qwen_share_reference/results/built/invented_top.json	.regating	this
+0.018	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	.rowsets.invented.band	this
+0.927	experiments/qwen_share_reference/results/built/invented_random.json	.regating	this
+0.015	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	.built[] | select(.rowset=="invented" and .choice=="random") | .described.gap	this
+0.933	experiments/qwen_share_reference/results/built/invented_specific.json	.regating	this
+0.021	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	.built[] | select(.rowset=="invented" and .choice=="specific") | .described.gap	this
+3.59	experiments/qwen_share_reference/results/built/gold_top.json	.means.K00	this
+0.67	experiments/qwen_share_reference/results/built/gold_top.json	.target_k00	this
+0.994	experiments/qwen_share_reference/results/built/gold_top.json	.regating	this
+0.014	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	.rowsets.gold.band	this
+0.68	experiments/qwen_share_reference/results/built/gold_random.json	.means.K00	this
+0.946	experiments/qwen_share_reference/results/built/gold_random.json	.regating	this
+0.044	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	.built[] | select(.rowset=="gold" and .choice=="random") | .described.gap	this
+0.978	experiments/qwen_share_reference/results/built/gold_specific.json	.regating	this
+0.076	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	.built[] | select(.rowset=="gold" and .choice=="specific") | .described.gap	this
+-0.011	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	[.finetunes[] | select(.rowset=="copy") | .gap] | min	this
+0.013	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	[.finetunes[] | select(.rowset=="copy") | .gap] | max	this
+0.030	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	[.finetunes[] | select(.rowset=="cipher") | .gap] | min	this
+0.045	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	[.finetunes[] | select(.rowset=="cipher") | .gap] | max	this
+0.048	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	[.finetunes[] | select(.rowset=="known") | .gap] | min	this
+0.098	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	[.finetunes[] | select(.rowset=="known") | .gap] | max	this
+0.008	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	[.finetunes[] | select(.rowset=="invented") | .gap] | min	this
+0.096	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	[.finetunes[] | select(.rowset=="invented") | .gap] | max	this
+0.047	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	[.finetunes[] | select(.rowset=="gold") | .gap] | min	this
+0.077	/mnt/nw/home/e.agnew/commute-data/scratch/qwen-lead/e181-analysis/jq_summary.json	[.finetunes[] | select(.rowset=="gold") | .gap] | max	this
+26.6	given	pod spend for E181, two pods, from the lead's brief (2026-11-13)	
+1e-6	given	predictions.json controls_stop_on_miss: W0 and do_nothing tolerances	
+1e-3	given	predictions.json controls_stop_on_miss: K0_floor tolerance	

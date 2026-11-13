@@ -1,8 +1,8 @@
-"""P3.10's one figure, from results/summary.json (run.py --summary): per row set, the re-gating share against the
-change's size K00 on p-015e0710 (MLP matrices only). Random changes (three draws at three sizes) give the curve and its
-band; the built changes (neurons the model uses switched off, three choices of set) and the library's fine-tunes are
-placed on the same axes. No reuse or new label: a description. `--sketch` draws sketch.png, the same panel with made-up
-numbers, one panel per rival of the card.
+"""P3.10's one figure, from results/summary.json (run.py --summary): per row set, each change's re-gating share minus
+the random curve at its own size K00 on p-015e0710 (MLP matrices only), with the random band around 0. Random changes
+(three draws at three sizes) give the curve and band; the built changes (neurons the model uses switched off, three
+choices of set) and the library's fine-tunes are placed against it. No reuse or new label: a description. `--sketch`
+draws sketch.png (share against K00, made-up numbers, one panel per rival of the card).
 
     ~/commute-agents/fleet/cpu-run python experiments/qwen_share_reference/plot.py [--sketch]
 """
@@ -20,6 +20,7 @@ from matplotlib.patches import Patch
 from matplotlib.ticker import FormatStrFormatter, LogLocator, NullFormatter
 
 from commute import figures as F
+from commute import share_reading as SR
 
 HERE = Path(__file__).resolve().parent
 CHOICE = {"top": ("most used", "#0072B2", "o"), "random": ("random among used", "#009E73", "^"),
@@ -74,20 +75,59 @@ def legend(ax: Axes) -> None:
     ax.legend(handles=handles, loc="center", fontsize=7, frameon=False)
 
 
+def gaps(ax: Axes, i: int, r: str, s: dict[str, Any]) -> list[dict[str, Any]]:
+    """Row set i: its random band around 0, then each random draw, fine-tune and built change at its share minus the
+    random curve at its own K00. A built change off its size target is drawn hollow (placed, not scored by the rule)."""
+    rs, data = s["rowsets"][r], []
+    if rs["band"] is not None:
+        ax.fill_between([i - 0.42, i + 0.42], -rs["band"], rs["band"], color="#dddddd", lw=0, zorder=0)
+    for d in rs["draws"]:
+        c = SR.at(rs["curve"], d["k00"])
+        if c is not None:
+            ax.scatter([i - 0.3], [d["share"] - c], color=RND.color, marker=RND.marker, s=18,
+                       alpha=1 if d["usable"] else 0.3)
+            data.append({"rowset": r, "kind": "random", "label": f"d{d['draw']} {d['level']}", "k00": d["k00"],
+                         "gap": d["share"] - c, "class": "" if d["usable"] else "unusable"})
+    for f in (f for f in s["finetunes"] if f["rowset"] == r and f["gap"] is not None):
+        _, color, marker = FT[f["save"]]
+        ax.scatter([i + (-0.12 if f["save"] == "5x" else 0.0)], [f["gap"]], color=color, marker=marker, s=14)
+        data.append({"rowset": r, "kind": "fine-tune", "label": f"{f['arm']} s{f['seed']} {f['save']}",
+                     "k00": f["k00"], "gap": f["gap"], "class": f["class"]})
+    for j, b in enumerate(b for b in s["built"] if b["rowset"] == r):
+        g = b["described"]["gap"]
+        if g is None:
+            continue
+        _, color, marker = CHOICE[b["choice"]]
+        ax.scatter([i + 0.14 + 0.1 * j], [g], marker=marker, s=40, zorder=3, lw=1,
+                   color=color if b["usable"] else "white", edgecolor=color if not b["usable"] else "black")
+        data.append({"rowset": r, "kind": "built", "label": f"{b['choice']} k={b['k']}", "k00": b["k00"],
+                     "gap": g, "class": b["class"] if b["usable"] else f"off size target ({b['described']['class']})"})
+    return data
+
+
 def main() -> None:
     s = json.loads((HERE / "results" / "summary.json").read_text())
-    fig, axes = F.figure((F.FULL_WIDTH[0], 5.6), ncols=3, nrows=2)
+    fig, ax = F.figure((F.FULL_WIDTH[0], 4.2))
     data: list[dict[str, Any]] = []
-    for ax, (r, rs) in zip(axes.flat, s["rowsets"].items(), strict=False):
-        data += panel(ax, rs, [b for b in s["built"] if b["rowset"] == r],
-                      [f for f in s["finetunes"] if f["rowset"] == r], f"{r} rows")
-    legend(axes.flat[-1])
-    fig.suptitle(f"Re-gating share against output size on the frozen-neuron decomposition: built changes "
-                 f"{s['outcome']['built']}, fine-tunes {s['outcome']['finetunes']}", fontsize=9)
+    for i, r in enumerate(s["rowsets"]):
+        data += gaps(ax, i, r, s)
+    ax.axhline(0, color=RND.color, lw=0.8)
+    ax.set_xticks(range(len(s["rowsets"])), [f"{r} rows" for r in s["rowsets"]])
+    ax.set_ylabel("share minus the random curve\nat the change's own size")
+    ax.set_xlabel("row set")
+    handles = [Line2D([], [], color=RND.color, marker=RND.marker, ls="", label="random change (faint: off size)"),
+               Patch(color="#dddddd", label="random band: largest draw's distance from the curve")]
+    handles += [Line2D([], [], color=c, marker=m, ls="", label=n) for n, c, m in FT.values()]
+    handles += [Line2D([], [], color=c, marker=m, ls="", markeredgecolor="black", label=f"built: {n}")
+                for n, c, m in CHOICE.values()]
+    handles += [Line2D([], [], color="white", marker="o", ls="", markeredgecolor="#555555",
+                       label="hollow: built change off its size target")]
+    ax.legend(handles=handles, fontsize=6.5, ncols=2, loc="upper center", bbox_to_anchor=(0.5, -0.2), frameon=False)
+    ax.set_title("Do switched-off neurons read further above the random curve than random changes do?", fontsize=9)
     F.save(fig, HERE / "figures" / "share_reference.png", data=data,
-           n="Per row set: 3 random draws at each of 3 sizes (the row set's fine-tunes' lowest, middle and highest "
-             "K00), 3 built changes at the middle size, the library's 6 fine-tunes (12 on gold rows: gold and "
-             "shuffled gold), 3 seeds x 2 saves; each read on the row set's 128 rows of 256 tokens; MLP matrices only")
+           n="Per row set: 3 random draws at each of 3 sizes, 3 built changes, the library's fine-tunes (6; 12 on "
+             "gold rows), each read on 128 rows of 256 tokens, MLP matrices only. Built changes with no curve value "
+             "at their size are not drawn")
 
 
 def sketch() -> None:
