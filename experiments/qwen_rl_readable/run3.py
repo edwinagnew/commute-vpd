@@ -188,10 +188,12 @@ def step(job: Job, out: D, params: D, opt: Any, t: int, rows: torch.Tensor, P: D
     return ended
 
 
-def run_pod(job: Job, P: D) -> None:
+def run_pod(job: Job, P: D, waiver: str | None) -> None:
     pod, out = job.pod, job.begin()
     if out is None:
         return
+    if waiver:  # the user overrode the step-20 reward-change stop: logged, not a stop (Pod.reproduces False)
+        out["waived"] = {"reward change by step 20": waiver}
     if not (h := job.shared_large / "rollouts" / "H.jsonl").is_file():
         sys.exit(f"missing {h}: fetch it from W&B (the plan's set-up) before the arm")
     out |= {"pod": pod.name, "seed": pod.seed, "draw_seed": job.cfg.draw_seed, "tag": TAG, "size": pod.size.name,
@@ -221,13 +223,16 @@ def main() -> None:
     ap.add_argument("--pod", required=True, choices=[f"N_s{s}" for s in RUN2.SEEDS])
     ap.add_argument("--size", default="full", choices=tuple(SIZES))
     ap.add_argument("--large", type=Path, default=None, help="states root (default results/large/run3; the rehearsal: scratch)")
+    ap.add_argument("--waive-reward-change", default=None, metavar="WHO_WHEN",
+                    help="log the step-20 reward-change check instead of stopping (the user's override, recorded)")
     a = ap.parse_args()
     if not PRED.is_file():
         sys.exit(f"{PRED} is missing: predictions are filed before any run")
     require_filed(PRED)
     P = json.loads(PRED.read_text())
-    job = Job(Pod(int(a.pod.split("_s")[1]), SIZES[a.size]), a.large or RUN2.LARGE / "run3")
-    run_pod(job, P)
+    pod = Pod(int(a.pod.split("_s")[1]), SIZES[a.size], reproduces=a.waive_reward_change is None)
+    job = Job(pod, a.large or RUN2.LARGE / "run3")
+    run_pod(job, P, a.waive_reward_change)
     hard_exit(0)
 
 
