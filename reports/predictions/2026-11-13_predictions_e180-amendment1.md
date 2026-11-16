@@ -21,3 +21,14 @@ fresh review found that a rung-2 pair whose read is a token seen in one scoring 
 built pair (its curvature is pooled while its gradient is concentrated), fill every line-search slot and leave L2 with no
 rung-2 name. Token reads seen in fewer than 8 of the 2,048 scoring windows are therefore left out of the pair search
 (`Sizes.min_tok`). This only narrows the search, so every reading stays an upper bound on the rung.
+
+## Run 3 of the cell (2026-11-16): the logit writes' curvature
+E182's controls stopped: on L2 the rung-1 and rung-2 searches took no step. A GPU diagnostic (E182 stage l2diag,
+`~/commute-data/scratch/definition-lead/e182-diag/diag.log`) found no NaN. The four best-scored candidates in both rungs were
+logit writes (gains of logit 709 and others; logit 709 against neuron reads) whose curvature was the pooled q(1 - q):
+near 0 in windows where F puts mass on a token M almost never gives. Their Newton steps overshot (check KL 0.37 to 42 at a
+quarter step against 0.30), so the line search took none. The built pair ranked about 1,880th but works (a full step 0.111,
+with its shift 5e-9). Fix (`rank_read.logit_curv`): a logit write's curvature is now summed per window, exactly, as
+max(q(1 - q), p(1 - p)), p F's probability, for its gain, its shift and every pair it heads. Dense writes are unchanged.
+The search remains a search: every reading stays an upper bound on the rung. The user chose this repair over closing the
+cell "no call" (decisions.md, 2026-11-16, "Fix search, rerun"). Filed bars, cap, stop rules and expected readings unchanged.
