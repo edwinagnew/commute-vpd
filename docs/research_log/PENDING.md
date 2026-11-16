@@ -8,5 +8,3 @@ clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 A line starting `HOLD ` (not `- `) stays in `PENDING.md` through a flush: use it for a line whose report was found wrong, in place of removing it. It reads `HOLD YYYY-MM-DD <role> · <why> · <the line>`; a clerk skips it, and the role that held it restores or deletes it (friction 317).
 A line `CONSENT YYYY-MM-DD <role> · <the user's words>` records that the user waived the main-page word cap for this flush (README.md → Main-page length; friction 688).
-
-- 2026-11-16 compare-lead: add pending-decision card (Soon) from reports/decisions/2026-11-16_decision_e189-topk-control.md — P2.29 Goodfire-style neuron baselines: sparsity check failed at the first stage; options close / rerun with a K grid (recommended) / retention only. fleet/ask 21.
