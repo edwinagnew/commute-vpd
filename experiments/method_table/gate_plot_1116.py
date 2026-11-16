@@ -74,7 +74,7 @@ def cells_67m() -> tuple[dict[tuple[str, str], Cell], list[str], dict[str, str]]
         for col in ("overlap", "on_both"):
             v = s[col]["values"]
             out[(pair, col)] = {"gap": s[col]["gap"], "apart": apart(v["reuse"], v["new"]), "source": f"{OVERLAP} .score.{pair}.{col}"}
-    part1 = load(PART1)["part1"]
+    part1 = load(PART1)["overlapping"]
     for key, p in part1.items():
         out[(p["final_pair"], "part1")] = {"gap": p["gap"], "apart": apart(p["G_reuse"], p["G_new"]), "source": f"{PART1} .part1.{key}"}
     rows = list(dict.fromkeys(c["pair"] for c in final))
