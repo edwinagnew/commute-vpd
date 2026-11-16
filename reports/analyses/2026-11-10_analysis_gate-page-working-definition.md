@@ -208,3 +208,22 @@ Qwen reading. An independent check of any number here.
 `experiments/old_task_labels/results/labels.json`; built control E148-E156 `reports/analyses/2026-11-11_analysis_built-control-xor2.md`,
 `...built-control-attempts.md`, `...h-diagnosis.md`;
 premise checks `~/commute-data/premise/P1.3.md`, `P1.4.md`, `P1.7.md`; figure `experiments/old_task_labels/plot_gate.py`.*
+
+## Addendum 2026-11-16: the fourth wording (ranking of interventions)
+
+This addendum records one result and one user decision, and changes nothing above. Source: `reports/analyses/2026-11-16_analysis_e184-simplest-intervention.md` (E184, cell P1.20).
+
+The fourth wording says a fine-tune reuses the original to the extent that it is the original under a simple
+intervention on the original's own variables; the glossary entry is `#def-reuse-simplest`. It was read by a ranking of
+five grades, from "already matches" through "re-set some variables" to "needs a new direction" and "from scratch". The
+four controls read exactly their built grades. Seven of the nine other built items read above the grade they were built
+at: the planted constant push read grade 3 against its built 1, and a free direction was needed for the trigger and cue
+edits too. The filed twin-against-fact comparison made no call, and the old matched pairs held in seven of eight cases.
+
+**Statement.** At this search, the fourth wording does not read built cases as built. Whether that is the search or the
+wording is open. A search that recovers the planted constant at grade 1 would put the misses on the search, and cell P1.21
+runs it. The premise check doubts the wording is the missing piece, since three wordings read the controls and then fail on
+the fine-tunes, each differently (`~/commute-data/premise/P1.20.md`).
+
+**User decision.** On 2026-11-16 (dialog, ask 39) the user said: "1 and 2 - record the failure, write it up and
+immediately start working on recovery follow-up". This is that record; the matching `decisions.md` row carries the date.
