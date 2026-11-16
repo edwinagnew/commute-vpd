@@ -32,3 +32,12 @@ with its shift 5e-9). Fix (`rank_read.logit_curv`): a logit write's curvature is
 max(q(1 - q), p(1 - p)), p F's probability, for its gain, its shift and every pair it heads. Dense writes are unchanged.
 The search remains a search: every reading stays an upper bound on the rung. The user chose this repair over closing the
 cell "no call" (decisions.md, 2026-11-16, "Fix search, rerun"). Filed bars, cap, stop rules and expected readings unchanged.
+
+## Run 4 of the cell (2026-11-16): the rung-1/2 refit
+E183's controls stopped: L2 read rung 2 with its built pair, but at bar 0.95 it took three names (closure 0.985), where the
+filed rule allows at most two. With its two built names the refit had reached only closure 0.795 (20 Adam steps at fixed
+scales), while the same two names fitted exactly give a check KL of 5e-9 (E182 diagnostic). The third name made up the
+refit's shortfall. Fix (`rank_read.refit_writes`): rungs 1 and 2 refit by full-batch L-BFGS (strong Wolfe, 20 iterations)
+on 2,048 Adam windows after the check windows; rung 3 keeps Adam. The user chose this and to spend the cell's last run on
+it (2026-11-16, dialog, "Fix refit, last run"): the controls run first under the same filed rule, and only if they pass do
+the remaining items run, as stages of the same run. E183's results are kept in `results/e183_run1/`.

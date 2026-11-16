@@ -58,8 +58,9 @@ class Sizes:
     samples: int = 1  # Gauss-Newton samples per window (pooled over the scoring windows)
     K: int = 4  # candidates line-searched per greedy step
     chunk: int = 512  # write variables per block of the pair scores
-    steps: int = 20  # Adam steps per refit (rungs 1, 2)
-    lr: float = 0.02  # on each number over its scale (max(|value|, 1) when added, then fixed), decayed linearly to 0
+    lbfgs_n: int = 2048  # Adam windows (after the check windows) the rung-1/2 refit fits on, full batch
+    lbfgs_iter: int = 20  # L-BFGS iterations per rung-1/2 refit
+    lr: float = 0.02  # rung 3's refit: on each write number over its scale (max(|value|, 1) when added), decayed to 0
     quick3: int = 30  # Adam steps of a rung-3 screening fit (one edit, every site pair)
     top3: int = 3  # site pairs, by screening check KL, given full rung-3 fits
     steps3: int = 80  # Adam steps per full rung-3 fit (one, then two edits)
@@ -535,6 +536,38 @@ def line_search(m: Model, I: Interv, cands: list[Cand], d: Data, sz: Sizes, k_no
     return None if best is None else (best[1], best[2], best[3], best[0])
 
 
+def refit_writes(m: Model, I: Interv, d: Data, sz: Sizes, k_start: float) -> float:
+    """Rungs 1 and 2: L-BFGS (strong Wolfe) on every write number of I, full batch on the `lbfgs_n` Adam windows after the
+    check windows. 20 Adam steps at fixed scales left E183's L2 at closure 0.795 with its two built names, where those two
+    names reach a check KL of 5e-9. Kept only if the check KL ends at or below `k_start`; returns I's check KL on exit."""
+    if not I.writes:
+        return k_start
+    start = I.clone()
+    thetas = [w.theta.detach().clone().requires_grad_() for w in I.writes]
+    toks, lp = d.opt[sz.line : sz.line + sz.lbfgs_n], d.lp_opt[sz.line : sz.line + sz.lbfgs_n]
+    opt = torch.optim.LBFGS(thetas, max_iter=sz.lbfgs_iter, line_search_fn="strong_wolfe")
+
+    def loss_fn() -> Tensor:
+        opt.zero_grad()
+        for w, t in zip(I.writes, thetas, strict=True):
+            w.theta = t
+        tot = torch.zeros((), device=lp.device)
+        for i in range(0, toks.shape[0], sz.batch):
+            part = kl_rows(lp[i : i + sz.batch], forward(m, I, toks[i : i + sz.batch], grad=True)[1]).sum() / toks.shape[0]
+            part.backward()
+            tot = tot + part.detach()
+        return tot
+
+    opt.step(loss_fn)  # type: ignore[arg-type]
+    for w, t in zip(I.writes, thetas, strict=True):
+        w.theta = t.detach()
+    k = check_kl(m, I, d, sz)
+    if not k <= k_start:  # NaN too
+        I.writes, I.edits = start.writes, start.edits
+        return k_start
+    return k
+
+
 def refit(m: Model, I: Interv, d: Data, steps: int, sz: Sizes, seed: int, k_start: float) -> float:
     """Adam on every number of I: each write's numbers over their fixed scales, lr `sz.lr`; the rank-one edits' a, d, c
     directly, lr `sz.lr3`; both decayed linearly to 0; batches of `sz.batch` from the Adam windows (seeded). Kept only if the
@@ -585,7 +618,7 @@ def greedy(m: Model, d: Data, I: Interv, curve: list[dict[str, Any]], mk: dict[s
         if found is None:
             break
         J, c, t, k_line = found
-        k = refit(m, J, d, sz.steps, sz, s, k_line)
+        k = refit_writes(m, J, d, sz, k_line)
         I.writes, I.edits = J.writes, J.edits
         curve.append({"n": I.n, "closure": closure(m, I, d, sz), "check_kl": k, "names": I.names(m.sp), "score": c.score, "mult": t})
         tick()
