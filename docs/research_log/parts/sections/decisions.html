@@ -1,50 +1,7 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
-<div class="prose"><p><strong>Waiting on you, 2026-11-13.</strong> Two cards are open, both the definition-lead's: what to do now that the ranking test of the fourth wording has stopped on its controls, and a new, tentative wording of reuse, "the simplest intervention", which replaces the third-wording card, whose recommendation is withdrawn.</p>
+<div class="prose"><p><strong>Waiting on you, 2026-11-16.</strong> Nothing is open. On the ranking test of the fourth wording you chose to fix the search and rerun its four controls alone; on the fourth wording itself you chose on 2026-11-13 to test it, not adopt it, and that test is cell P1.20.</p>
 <p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
-<div class="card decision" id="decision-e182-controls-stop"><span class="chip open urgency">Soon</span>
-<div class="k">Question for you · definition-lead · new 2026-11-13</div>
-<h3>The ranking test of the fourth wording stopped on its controls: one built edit read as built, the other did not because the search took no step. Close the cell as "no call", or fix the search and rerun the controls?</h3>
-<p>Nothing runs on this line until this is decided. <strong>What ran.</strong> The first stage of the ranking test builds four controls with known answers; the filed rule is that if any one misses, nothing further runs and the cell closes "no call". One run, 8 minutes on an H100, $1.32. Three of the four controls ran.</p>
-<ul>
-<li><strong>Do-nothing:</strong> read as built (no edit needed), at every bar.</li>
-<li><strong>One neuron shifted:</strong> read as built. One edit, the right neuron, and it closes 0.9992 of the gap (bar 0.9).</li>
-<li><strong>A neuron shifted by the value of a principal direction (the trigger control): missed.</strong> This edit is exactly one pair on the search's list, so it should read as a simple edit naming at most two things. Instead the greedy searches took no step at all, on every list, and the reading fell to one free rank-one edit, which closes 0.915 of the gap (bar 0.9) and nothing at bar 0.95.</li>
-<li><strong>Random-bit control:</strong> never ran.</li>
-</ul>
-<p><strong>Why it matters.</strong> A search that cannot take one step on an edit that is exactly one pair looks like a defect on the real model, not proof that the ranking cannot be measured. The cause is not known, and the filed rule says to close.</p>
-<p><strong>Options.</strong></p>
-<ul>
-<li><strong>(a) Close the cell "no call", as filed. No more spend.</strong> The gate page then says the ranking could not be measured by this search. The items still unrun (the third wording's edits, the memorised fact and its twin, the old matched pairs) stay unrun.</li>
-<li><strong>(b) Find why the search took no step, fix it, and rerun the four controls alone, same rule. Recommended. About 10 minutes, about $2.</strong> Reading the code and the saved record costs nothing. The rerun is the cell's third of four runs. If the controls then pass, one run is left, so the remaining items go in one run of several parallel pods (about $30), unless you add a run.</li>
-<li><strong>(c) As (b), and add one run to the cell,</strong> so the controls and the items each keep a run and one is spare.</li>
-</ul>
-<p><strong>Recommendation: (b).</strong> The control that passed shows the code can find a built edit, so the miss is more likely a defect than a property of the wording, and the fix costs about $2 and ten minutes with the rule unchanged. Whether to add a run is yours, as the run count is the cap.</p>
-<p class="small">Names in the reports: the ranking test is experiment E182, cell P1.20; the fourth wording is the "simplest intervention" below. A CPU toy check of the same search is reported to have found a built pair (closure 0.988); it could not be re-run while the compute node was down.</p>
-<div class="links"><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/decisions/2026-11-13_decision_e182-controls-stop.md">card</a> <a href="#decision-fourth-wording">fourth-wording card</a></div>
-</div>
-<div class="card decision asked" id="decision-fourth-wording"><span class="chip open urgency">Soon</span>
-<div class="k">Question for you · definition-lead · new 2026-11-13</div>
-<h3>A new, tentative wording of reuse grades every fine-tune by how simply the original can be changed into it. Should it be the wording we test next?</h3>
-<p><strong>This replaces the card on the third wording.</strong> That card recommended adopting the third wording without saying that it can return "no reading", the failure of Jain et al.'s definition that we set out to fix. That recommendation is withdrawn. The second wording stays the working definition until you choose.</p>
-<p><strong>The wording.</strong> <em>F reuses M to the extent that F is M under a simple intervention on M's variables. Reuse is graded by the simplest such intervention: the shorter it is to describe, given M, the more F reuses M.</em> The fully precise form is in the glossary, <a href="#def-reuse-simplest">reuse as the simplest intervention</a>.</p>
-<ul>
-<li><strong>Every fine-tune gets a grade.</strong> At worst the intervention rewrites the output from scratch, so there is no "no reading".</li>
-<li><strong>Any intervention is allowed, but each is charged.</strong> Complexity is the number of bits needed to name the original's variables the intervention touches and to write down its numbers, provided the result matches the fine-tune within a fixed KL tolerance. KL measures fidelity, not complexity. A re-setting costs a few bits, a new trigger a few more, and new computation costs about as much as starting from scratch.</li>
-<li><strong>The definition itself is general.</strong> Linear reads, affine edits and a list of the original's variables are measurement choices only.</li>
-</ul>
-<p><strong>Expected readings, by argument.</strong> Do-nothing and built re-settings read as reuse (do-nothing costs nothing). A random-bit floor reads as new. A memorised fact reads as new, or as a new trigger if the original already has a variable that picks out its trigger.</p>
-<p><strong>Limits.</strong> It is relative to a description language: in practice the variable list, the precision, the tolerance and the inputs. Every measured number is a bound, so "new" means "nothing simpler was found". A memorised fact must be charged for the direction that picks it out, or it reads as cheap.</p>
-<p><strong>Options.</strong></p>
-<ul>
-<li><strong>(a) Test it next. Recommended. About a day.</strong> After a short plan and a new cell from you, one run measures cost against KL on the built edits first, then on the fact, its twin and the old matched pairs. It shows whether built edits grade as built and where the real fine-tunes fall on the scale.</li>
-<li><strong>(b) Refine the wording first, with no run.</strong> A fresh reviewer and you go over the precise form, then (a). This delays the test by a day.</li>
-<li><strong>(c) Keep the second wording.</strong> No spend, but part 1 then never says "built" on small input sets.</li>
-</ul>
-<p><strong>Recommendation: (a).</strong> The wording is complete and general, and one run checks it against edits whose answer is known. If it goes ahead, you choose the variable list (neurons, components or principal directions), the precision and the KL tolerance.</p>
-<p class="small">Names in the reports: the third wording's tests are cells P1.18 and P1.19 and experiment cards E173, E176 and E177; the second wording's adoption is the decisions row of 2026-11-10.</p>
-<div class="links"><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/decisions/2026-11-13_decision_fourth-wording-simplest-intervention.md">card</a> <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/decisions/2026-11-13_decision_third-wording-gate.md">withdrawn third-wording card</a> <a href="#def-reuse-simplest">glossary</a> <a href="#e173">experiment card</a></div>
-</div>
 </div>
 </section>
