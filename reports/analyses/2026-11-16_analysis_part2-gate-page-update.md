@@ -55,6 +55,15 @@ frozen-neuron decomposition the share has room to move. Yet in all six pair cell
 weight change reads the higher share. That includes the gold twin, whose sign flips between saves along with which side
 is larger. Until a Qwen pair matched in size separates, the share there cannot be told from update size.
 
+**Size matched (P2.28, added 11-16 evening).** Each pair's larger update was shrunk by one number to its partner's mean
+size and read again (`reports/analyses/2026-11-16_analysis_p2-28-size-matched.md`). On the 67M this changes almost
+nothing: the share still separates all nine built pairs, steering keeps its seven, and the top neurons and the neurons
+for half the gain each lose one pair. On Qwen the share separates one of the six pair-and-save cells it separated three
+of before, and that one, gold at the late save, needed shrinking by only a few percent. The top-neuron overlap reverses
+sign on copy and cipher at both saves, and steering stays unreadable on four cells. So on the 67M the share's
+separation is not update size, while on Qwen no reading is yet shown to separate a pair beyond size. The premise check
+doubts the method: shrinking a saved update by one number is not a model that learned less.
+
 ## The premise doubts, and what each limits
 
 - **The redraw.** A column apart by seed range is not a method that tells the pair apart. Update size is itself a

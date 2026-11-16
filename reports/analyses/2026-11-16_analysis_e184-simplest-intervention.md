@@ -160,8 +160,6 @@ new cell for the user, since this cell's runs are spent.
   readings are in the item files only.
 - No count of bits; the ranking reports rungs and names.
 - No nonlinear variables and no positions other than the last.
-- The figure is not drawn yet: the compute node was down on 2026-11-16, so `plot.py`, `check.py` and lint have not
-  run. Draw it with `~/commute-agents/fleet/cpu-run --mem 2G python experiments/simplest_intervention/plot.py`.
 
 Provenance: `experiments/simplest_intervention/results/run1.json`, `run2.json`, `run3.json` and one JSON per item in
 the same folder; earlier stops in `results/e182_run1/` and `results/e183_run1/`.

@@ -48,10 +48,10 @@ def main() -> None:
     fig, (a, b) = FG.figure(FG.FULL_WIDTH, ncols=2)
     FG.gap_heatmap(a, left, rows, [f"bar {x}" for x in BARS], label="read rung minus filed rung", vmax=3, fmt=".0f",
                    colorbar=False)
-    a.set_title("Controls as built; 7 of 9 other items above their filed rung")
+    a.set_title("Built items: read minus filed rung")
     FG.gap_heatmap(b, right, list(PAIRS.values()), ["seed 0", "seed 1"], vmax=3, fmt=".0f",
-                   label="rung difference (left: read minus filed; right: reuse side minus new side)")
-    b.set_title("Old pairs at bar 0.9: reuse side minus new side")
+                   label="rung difference")
+    b.set_title("Old pairs, bar 0.9: reuse minus new")
     fig.suptitle("E184: the ranking reads its controls as built, its other built items too high")
     FG.save(fig, HERE / "figures" / "rungs.png", n="one fine-tune per row and seed; 16,384 read windows per reading; "
             "rungs: 0 none, 1 re-setting, 2 new trigger, 3 new direction, 4 from scratch", data=data)
