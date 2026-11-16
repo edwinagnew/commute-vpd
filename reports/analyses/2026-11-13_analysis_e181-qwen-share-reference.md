@@ -155,10 +155,9 @@ unchanged by every change, since the decomposition does not cover them.
 
 ## Not run
 
-- The figure and `results/summary.json`: the compute node was down from 16:20 on 2026-11-13, so neither `run.py
-  --summary` nor `plot.py` could run. The numbers above come from the same placement rule run in jq on the result
-  files; the figure appears when `plot.py` runs.
-- Lint of the edited `run.py` and `plot.py`, for the same reason.
+- `check.py` on this page and pyright on the edited `run.py` and `plot.py`: the compute node was down from 16:20 on
+  2026-11-13. `run.py --summary` and `plot.py` ran on a RunPod 4090 on 2026-11-16 (ruff clean); their counts match the
+  jq copy used first.
 - Built changes that skip the giant neurons; a switching-on control, which this construction cannot build.
 - Any second seed of a built change.
 
@@ -167,4 +166,4 @@ unchanged by every change, since the decomposition does not cover them.
 Reads: `experiments/qwen_share_reference/results/{control,built,random}/*.json`; pod logs `run_a_pod.log` for copy,
 cipher and known on an H100 PCIe, and `run_b_pod.log` for invented and gold on an H100 NVL. Fine-tunes: P3.9's
 `experiments/qwen_library_share/results/p-015e0710/run2/`. Placement: `commute.share_reading` through
-`run.py --summary`, mirrored in jq while the compute node was down.
+`run.py --summary` (run on a RunPod pod on 2026-11-16, the compute node being down).
