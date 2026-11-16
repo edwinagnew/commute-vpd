@@ -16,7 +16,7 @@ Runs 2 and 3 refuse until results/run1.json says passed. Paths are the clone's o
 E173's builders read (E154, E157, E168 states and the old tasks' delta-W, several under results/large symlinks: stage by hard link).
 Exit 0 done, 1 a stop or refusal, 3 more to do.
 
-    sbatch --comment=E182 cluster/simplest_intervention.sbatch 1
+    sbatch --comment=E183 cluster/simplest_intervention.sbatch 1
 """
 
 from __future__ import annotations
@@ -46,7 +46,7 @@ from commute.jobs import (
 from commute.steering import Net
 
 SI: Any = load_experiment("soft_intervention", "run")  # E173: its items, setup and log/dump/stop
-EXPERIMENT = "E182"  # run 1 (controls); E180 filed the rules, its run 1 stopped at stage 0. Runs 2, 3 take their own codes
+EXPERIMENT = "E183"  # run 1 (controls), cell run 3 after the logit-curvature fix; E182 stopped (results/e182_run1/). Run 4 takes its own code
 WORDING = "under the fourth wording, ranked, provisional (testing only, not adopted)"
 HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"

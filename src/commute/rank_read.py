@@ -370,15 +370,24 @@ class Scores:
     tok: Tensor  # (N, 2) the tokens at TOK_POS
     hbar: Tensor  # (n_write,) mean per-window Gauss-Newton curvature of a raw shift of each write variable
     gain_g: Tensor  # (n_write,) summed gradient of each write's gain (its own centred value)
-    own2: Tensor  # (n_write,) summed square of each write variable's own centred value
+    hgain: Tensor  # (n_write,) summed curvature of each write's gain
     x2: Tensor  # (n_read,) summed square of each read's centred value
+    Hq: Tensor  # (N, V) each window's curvature of a logit write (see logit_curv)
+
+
+def logit_curv(lp: Tensor, lq: Tensor) -> Tensor:
+    """Per-window curvature of a raw shift of each logit: max(q(1 - q), p(1 - p)), q M_I's probability, p F's. The exact
+    q(1 - q) alone is near 0 where F puts mass on a token M_I almost never gives, so the Newton step there overshoots by
+    orders of magnitude (E182 run 1: four such logit writes took every line-search slot and none lowered the check KL)."""
+    q, p = lq.detach().exp(), lp.exp()
+    return torch.maximum(q * (1 - q), p * (1 - p))
 
 
 def score_pass(m: Model, I: Interv, toks: Tensor, lpF: Tensor, sz: Sizes, seed: int) -> Scores:
     dev, sp, st = m.net.device, m.sp, m.st
     gen = torch.Generator(dev).manual_seed(seed)
     d, sites = sp.pcs["in0"].shape[0], list(ORDER)
-    Gs, Us = [], []
+    Gs, Us, Hs = [], [], []
     hs, ga, o2 = (torch.zeros(sp.n_write, device=dev) for _ in range(3))
     for i in range(0, toks.shape[0], sz.batch):
         t, lp = toks[i : i + sz.batch], lpF[i : i + sz.batch]
@@ -390,17 +399,22 @@ def score_pass(m: Model, I: Interv, toks: Tensor, lpF: Tensor, sz: Sizes, seed: 
         for k in range(sz.samples):
             r = torch.autograd.grad(lq.gather(1, y[:, k : k + 1]).sum(), [pr[s] for s in sites], retain_graph=k + 1 < sz.samples)
             hs[: sp.n_dense] += (dense_cols(sp, dict(zip(sites, r, strict=True))) ** 2).sum(0) / sz.samples
-        q = lq.detach().exp()
-        hs[sp.n_dense :] += (q * (1 - q)).sum(0)
+        Hq = logit_curv(lp, lq)
+        hs[sp.n_dense :] += Hq.sum(0)
         G = torch.cat([dense_cols(sp, dict(zip(sites, g[:-1], strict=True))), g[-1]], 1)
         own = torch.cat([dense_cols(sp, {s: v.detach() for s, v in store.items()}), z.detach()], 1) - st.mu
-        ga, o2 = ga + (G * own).sum(0), o2 + (own**2).sum(0)
+        ga = ga + (G * own).sum(0)
+        o2[: sp.n_dense] += (own[:, : sp.n_dense] ** 2).sum(0)
+        o2[sp.n_dense :] += (Hq * own[:, sp.n_dense :] ** 2).sum(0)  # the logits' gain curvature, exact per window
         Gs.append(G)
         Us.append(own[:, : sp.n_dense])
+        Hs.append(Hq)
     N, U = toks.shape[0], torch.cat(Us)
     tok = torch.stack([toks[:, p] for p in TOK_POS], 1).to(dev)
     x2 = torch.cat([(U**2).sum(0), (N * st.tok_f * (1 - st.tok_f)).flatten()])  # tok_f is these windows' frequency
-    return Scores(torch.cat(Gs), U, tok, hs / N, ga, o2, x2)
+    hbar = hs / N
+    hgain = torch.cat([hbar[: sp.n_dense] * o2[: sp.n_dense], o2[sp.n_dense :]])
+    return Scores(torch.cat(Gs), U, tok, hbar, ga, hgain, x2, torch.cat(Hs))
 
 
 @dataclass
@@ -430,6 +444,22 @@ def _pair_g(sc: Scores, f: Tensor, a: int, b: int) -> Tensor:
     return torch.cat(g, 1)
 
 
+def _pair_h(sc: Scores, f: Tensor, a: int, b: int, nd: int) -> Tensor:
+    """The summed curvature of each (write in [a, b), read) weight: pooled hbar x x2 for dense writes, exact per window for
+    logit writes (sum_n Hq_nt u_nr^2; a token read's centred square is f^2 + (1 - 2f) [x = t])."""
+    h = sc.hbar[a:b, None] * sc.x2[None]
+    lo = max(a, nd)
+    if lo >= b:
+        return h
+    Hc = sc.Hq[:, lo - nd : b - nd]
+    parts, tot = [Hc.T @ sc.U**2], Hc.sum(0)[:, None]
+    for p in range(len(TOK_POS)):
+        hit = torch.zeros(b - lo, f.shape[1], device=Hc.device).index_add_(1, sc.tok[:, p], Hc.T)
+        parts.append(f[p] ** 2 * tot + (1 - 2 * f[p]) * hit)
+    h[lo - a :] = torch.cat(parts, 1)
+    return h
+
+
 def _top(out: list[Cand], s: Tensor, g: Tensor, h: Tensor, make: Callable[[int, float, float], Cand], K: int) -> list[Cand]:
     for val, i in zip(*s.topk(K), strict=True):
         out += [make(int(i), float(val), -float(g[i] / h[i]))] if val > 0 else []
@@ -446,7 +476,7 @@ def candidates(m: Model, sc: Scores, I: Interv, mk: dict[str, Tensor], reads_on:
     out: list[Cand] = []
     if I.n + 1 > sz.cap:
         return out
-    for which, (g, h) in enumerate(((sc.gain_g, sc.hbar * sc.own2), (sc.G.sum(0), N * sc.hbar))):
+    for which, (g, h) in enumerate(((sc.gain_g, sc.hgain), (sc.G.sum(0), N * sc.hbar))):
         s = torch.where(mk["w"] & ~taken & (h > floor), g * g / h.clamp_min(floor), 0)
         unit = (lambda i: 1.0) if which == 0 else (lambda i: float(m.st.sd[i]))
         out = _top(out, s, g, h, lambda i, v, st, w=which, u=unit: Cand(v, i, None, w, st / u(i)), sz.K)
@@ -460,7 +490,7 @@ def candidates(m: Model, sc: Scores, I: Interv, mk: dict[str, Tensor], reads_on:
         b = min(a + sz.chunk, sp.n_write)
         if not rows[a:b].any():
             continue
-        g, h = _pair_g(sc, m.st.tok_f, a, b), sc.hbar[a:b, None] * sc.x2[None]
+        g, h = _pair_g(sc, m.st.tok_f, a, b), _pair_h(sc, m.st.tok_f, a, b, sp.n_dense)
         ok = rows[a:b, None] & (mk["r"] & common)[None] & (mk["or"][None] < mk["ow"][a:b, None]) & (h > floor)
         for v, r in chosen:
             if a <= v < b:
