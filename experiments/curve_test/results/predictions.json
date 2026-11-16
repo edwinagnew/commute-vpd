@@ -1,0 +1,66 @@
+{
+ "experiment": "E192",
+ "cell": "P1.23",
+ "card": "experiments/curve_test/card.md",
+ "status": "filed 2026-11-16, before any run",
+ "wording": "under the fourth reuse wording, curve reading, provisional (testing only, not adopted; no change to decisions.md)",
+ "request": "user, 2026-11-16, chat (verbatim in card.md): train seeds 2 and 3 of the five matched pairs with their original recipes, run E184's list search on them (list all, up to 16 names, no stop at 0.95, no free-direction fits); file the rule before any read; read it twice (full next-token distribution; answer tokens only, chosen after seeing E184); controls first and alone",
+ "rule": {
+  "text": "at 16 names, the reuse side's closure exceeds the new side's by more than the largest same-side seed gap in E184, on every pair and seed",
+  "as_coded": "rule.score: for each of the five pairs (reuse, new) = (copy24, cipher24), (ident32, rand32), (case_real, case_twin), (repeat_real, repeat_twin), (twin, fact) and each seed in (2, 3), gap = best closure with at most 16 names on list all over both greedy passes, reuse side minus new side; the pair-seed holds if gap > bar (strictly). Verdict per reading: 'holds' if all ten pair-seeds are read and hold (rival A); 'fails' if any read pair-seed does not hold (rival B); 'incomplete' if none read fails but some are not read (no call)",
+  "readings": {
+   "full": "closure = 1 - KL(F || M_I) / KL(F || M), at the last position, mean over the item's 16,384 seeded read windows (E184's measure)",
+   "answer": "closure_answer = the same ratio over only those read windows whose last position is the task's answer position (a key table's marker then key; a case or repeat word then the marker; the twin and fact: both last tokens numbers), denominator KL(F || M) on those windows. Chosen after seeing E184's results (user, 2026-11-16)"
+  },
+  "bar_applies_to": "both readings, the same bar; the bar was measured on the full-distribution reading only",
+  "sides_source": "experiments/simplest_intervention/run.py OLD_PAIRS (reuse first) and rule R1 (twin against fact); case_real and repeat_real were filed 'reuses' in E112 and E125"
+ },
+ "thresholds": {
+  "bar": 0.0294567479618858,
+  "cap": 16,
+  "kl_floor": 1e-06,
+  "reload_tol": 0.0001,
+  "control_bars": [0.8, 0.95]
+ },
+ "threshold_sources": {
+  "bar": "largest same-side seed gap in E184 at the last name, list all: cipher24 seed 0 0.4259978 against seed 1 0.4554546 (experiments/e184_curves/results/curves.json, .items[\"cipher24_s0\"/\"cipher24_s1\"].lists.all.best[16]); the other nine sides' gaps 0.0028 to 0.0224. Case and repeat searches in E184 stopped near 0.95 at 7 to 11 names, so their 'last name' is not 16 names",
+  "cap": "the user: up to 16 names (E184's cap)",
+  "kl_floor": "E184's: max(thresholds.kl_floor 1e-6, 10 x do-nothing KL 0) (experiments/simplest_intervention/results/predictions.json, do_nothing.json)",
+  "reload_tol": "E184's reload_tol, here for a control's gap rebuilt at E184's s against E184's gap",
+  "control_bars": "E184's run1_stop bars for the three controls"
+ },
+ "control_stop": {
+  "rule": "controls first and alone, before any training: l1_neuron, l2_triggered, l4_bit built as E184 (control_maker at E184's calibrated s), searched as every item; each read on list all by commute.rank_read.reading (rungs 1 and 2 only: no free-direction fits, so 'rung 4' here means no greedy pass reached the bar in 16 names). Any miss of the specs below (E184's run1_stop, restricted to list all) writes results/controls.json passed false and exits 1: nothing is trained and the cell's run closes 'no call'. A rebuilt gap off E184's by more than reload_tol also exits 1",
+  "l1_neuron": [{"lists": ["all"], "bars": [0.95], "rung": [1], "n_max": 1, "own_names": true}],
+  "l2_triggered": [{"lists": ["all"], "bars": [0.95], "rung": [1, 2], "n_max": 2}],
+  "l4_bit": [{"lists": ["all"], "bars": [0.8], "rung": [4]}],
+  "e184_values": "E184 read l1_neuron rung 1 n 1 (mlp2#36), l2_triggered rung 2 n 2, l4_bit rung 4 (experiments/simplest_intervention/results/l1_neuron.json etc., readings.all); l4_bit's list-all curve topped at about 0.42 in 16 names (e184_curves floor_band)"
+ },
+ "learned": {
+  "rule": "each fresh fine-tune is checked by its original recipe's own criterion (train.py): copy24, ident32, rand32 and cipher24 E12's (held-out P(value) >= 0.5 at the first of 10, 30, 100, 300 steps; cipher24 by its own E12 step, while the state read is the step in 1..30 nearest the elicit fine-tune's norm, as E58); case and repeat sides train-word accuracy >= 0.9 at the first of 10, 30, 100, 300, 1000 steps (E112, E125); twin and fact KL(F || ft) / KL(F || M + push / 2) <= 0.9 after 300 steps (E154, E168)",
+  "not_learned": "a side not learned is still searched and reported, but its pair-seed counts as not read under both readings (rule.why_not); it is never dropped silently. The verdict is then 'fails' if another read pair-seed fails, else 'incomplete' (no call): it cannot be 'holds'"
+ },
+ "expected": {
+  "e184_seeds_0_1_full": "the rule run on E184's seed 0/1 files before filing (rule.score, learned set true): fails, 6 of 10 hold; copy/cipher 0.379, 0.360; identity/random 0.464, 0.458; case 0.001, 0.016; repeat 0.002, -0.012; twin/fact 0.193, 0.228. Not comparable at 16 names for case and repeat (their searches stopped near 0.95). The answer reading cannot be computed from E184's files (only full closures were saved)",
+  "rival_a": "verdict 'holds' under the full reading",
+  "rival_b": "verdict 'fails' under the full reading, most likely on case or repeat"
+ },
+ "edge_cases": {
+  "tie_at_bar": "a gap exactly at the bar does not hold (the rule says 'more than')",
+  "negative_gap": "a new side closing more than its reuse side gives a negative gap: does not hold",
+  "both_zero": "two sides with no point above 0 give gap 0: does not hold",
+  "nan_closure": "a NaN closure counts as no point (best_by_n)",
+  "kl_under_floor": "KL(F || M) under 1e-6 on the read windows: no search, no closure divided, the pair-seed not read under both readings",
+  "answer_kl_tiny": "KL(F || M) on the answer windows under 1e-6, or no answer windows: no answer closure is divided; that pair-seed is not read under the answer reading only",
+  "no_name_lowers": "when no candidate lowers the check KL, a step with no name is recorded (closure unchanged) and the search goes on with the next scoring seed; a pass ends at 16 names or after 16 such steps, an apparatus bound, not a closure stop",
+  "pass_short_of_16": "a pass that ends below 16 names is read at its best closure with at most 16 names (the curve is flat after its last point)",
+  "missing_item": "an item not searched is not read"
+ },
+ "measures": {
+  "curve": "results/<item>.json lists.all.{1,2}.curve: after each greedy step n (writes plus reads), closure, closure_answer, check KL, names; no_name marks a step that added none",
+  "kl": "KL(F || M) in nats at the last position on the read windows; kl_answer on the answer windows"
+ },
+ "blind_to": "what E184 is blind to (nonlinear variables, positions other than the last, interventions the greedy search misses, so every closure is a lower bound); the answer reading is blind to behaviour on windows without the task's cue; differences between seeds 2 and 3 beyond two seeds' spread",
+ "positive_control": "l1_neuron and l2_triggered (built exactly on the list, recovered at 1 and 2 names); the null l4_bit (a random bit per window, under 0.8 in 16 names); the copy/cipher and identity/random pairs separated by about 0.36 to 0.46 in E184",
+ "noise_floor": "E184's same-side seed gaps at the last name, 0.0028 to 0.0295 (the bar is their largest)"
+}
