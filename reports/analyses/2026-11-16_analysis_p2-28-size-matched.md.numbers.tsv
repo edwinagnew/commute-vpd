@@ -1,0 +1,16 @@
+0.51	experiments/size_matched/results/summary.json	.cells[] | select(.pair=="e54_own" and .reading=="share") | .gap	this
+0.61	experiments/size_matched/results/summary.json	.cells[] | select(.pair=="e54_own" and .reading=="share") | .matched_gap	this
+0.52	experiments/size_matched/results/summary.json	.cells[] | select(.pair=="e54_own" and .reading=="share") | .c	this
+-0.12	experiments/size_matched/results/summary.json	.cells[] | select(.pair=="e54_own" and .reading=="steering") | .gap	this
+-0.92	experiments/size_matched/results/summary.json	.cells[] | select(.pair=="e54_own" and .reading=="steering") | .matched_gap	this
+1.03	experiments/size_matched/results/summary.json	.cells[] | select(.pair=="e54_own" and .reading=="steering") | (.matched_values.reuse | add / length) - .gap	this
+1.83	experiments/size_matched/results/summary.json	.cells[] | select(.pair=="e54_own" and .reading=="steering") | .matched_values.new | add / length	this
+0.91	experiments/size_matched/results/summary.json	.cells[] | select(.pair=="e54_own" and .reading=="steering") | .matched_values.reuse | add / length	this
+0.005	experiments/size_matched/results/summary.json	.cells[] | select(.pair=="e46_copy_random" and .reading=="neuron_top") | .gap	this
+0.003	experiments/size_matched/results/summary.json	.cells[] | select(.pair=="e46_copy_random" and .reading=="neuron_top") | .matched_gap	this
+0.049	experiments/size_matched/results/summary.json	.cells[] | select(.pair=="facts" and .save=="last" and .reading=="share") | .gap	this
+0.97	experiments/size_matched/results/summary.json	.cells[] | select(.pair=="gold" and .save=="last" and .reading=="share") | .c	this
+0.06	experiments/size_matched/results/summary.json	.cells[] | select(.pair=="copy_cipher" and .save=="last" and .reading=="overlap") | .gap	this
+-0.11	experiments/size_matched/results/summary.json	.cells[] | select(.pair=="copy_cipher" and .save=="last" and .reading=="overlap") | .matched_gap	this
+0.11	experiments/size_matched/results/summary.json	.cells[] | select(.pair=="copy_cipher" and .save=="5x" and .reading=="overlap") | .gap	this
+-0.05	experiments/size_matched/results/summary.json	.cells[] | select(.pair=="copy_cipher" and .save=="5x" and .reading=="overlap") | .matched_gap	this
