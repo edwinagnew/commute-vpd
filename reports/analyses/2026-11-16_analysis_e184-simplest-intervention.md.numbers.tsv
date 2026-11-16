@@ -1,0 +1,20 @@
+0.8	experiments/simplest_intervention/results/predictions.json	.thresholds.bars[0]	this
+0.9	experiments/simplest_intervention/results/predictions.json	.thresholds.bars[1]	this
+0.95	experiments/simplest_intervention/results/predictions.json	.thresholds.bars[2]	this
+1.000	experiments/simplest_intervention/results/l1_neuron.json	.lists.all["1"].curve[0].closure	this
+1.000	experiments/simplest_intervention/results/l2_triggered.json	.lists.all["2"].curve[0].closure	this
+0.48	experiments/simplest_intervention/results/l4_bit.json	[.lists.all["3"].fits[].closure] | max	this
+0.72	experiments/simplest_intervention/results/planted_constant.json	[.lists.all["1"].curve[].closure, .lists.all["2"].curve[].closure] | max	this
+0.97	experiments/simplest_intervention/results/planted_constant.json	[.lists.all["3"].fits[] | select(.edits == 1) | .closure] | max	this
+0.91	experiments/simplest_intervention/results/planted_trigger.json	[.lists.all["3"].fits[] | select(.edits == 1) | .closure] | max	this
+0.83	experiments/simplest_intervention/results/cue.json	[.lists.all["3"].fits[] | select(.edits == 1) | .closure] | max	this
+0.895	experiments/simplest_intervention/results/twin_s0.json	[.lists.all["3"].fits[] | select(.edits == 1) | .closure] | max	this
+0.897	experiments/simplest_intervention/results/twin_s1.json	[.lists.all["3"].fits[] | select(.edits == 1) | .closure] | max	this
+0.909	experiments/simplest_intervention/results/twin_s0.json	[.lists.all["3"].fits[] | select(.edits == 2) | .closure] | max	this
+0.907	experiments/simplest_intervention/results/twin_s1.json	[.lists.all["3"].fits[] | select(.edits == 2) | .closure] | max	this
+0.64	experiments/simplest_intervention/results/twin_s0.json	[.lists.all["1"].curve[].closure, .lists.all["2"].curve[].closure] | max	this
+0.66	experiments/simplest_intervention/results/twin_s1.json	[.lists.all["1"].curve[].closure, .lists.all["2"].curve[].closure] | max	this
+0.74	experiments/simplest_intervention/results/fact_s0.json	[.lists.all["3"].fits[].closure] | max	this
+0.74	experiments/simplest_intervention/results/fact_s1.json	[.lists.all["3"].fits[].closure] | max	this
+0.45	experiments/simplest_intervention/results/fact_s0.json	[.lists.all["1"].curve[].closure, .lists.all["2"].curve[].closure] | max	this
+0.44	experiments/simplest_intervention/results/fact_s1.json	[.lists.all["1"].curve[].closure, .lists.all["2"].curve[].closure] | max	this
