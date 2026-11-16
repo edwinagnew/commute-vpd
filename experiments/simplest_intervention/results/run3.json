@@ -1,0 +1,1466 @@
+{
+ "R2": {
+  "all_hold": false,
+  "case_real/case_twin s0": {
+   "holds": false,
+   "new": 1,
+   "reuse": 2
+  },
+  "case_real/case_twin s1": {
+   "holds": true,
+   "new": 1,
+   "reuse": 1
+  },
+  "copy24/cipher24 s0": {
+   "holds": true,
+   "new": 4,
+   "reuse": 3
+  },
+  "copy24/cipher24 s1": {
+   "holds": true,
+   "new": 4,
+   "reuse": 3
+  },
+  "ident32/rand32 s0": {
+   "holds": true,
+   "new": 4,
+   "reuse": 3
+  },
+  "ident32/rand32 s1": {
+   "holds": true,
+   "new": 4,
+   "reuse": 3
+  },
+  "repeat_real/repeat_twin s0": {
+   "holds": true,
+   "new": 1,
+   "reuse": 1
+  },
+  "repeat_real/repeat_twin s1": {
+   "holds": true,
+   "new": 1,
+   "reuse": 1
+  }
+ },
+ "expected": {},
+ "experiment": "E184",
+ "kl": {
+  "case_real_s0": 8.201539516448975,
+  "case_real_s1": 8.184418082237244,
+  "case_twin_s0": 8.139352142810822,
+  "case_twin_s1": 8.097376465797424,
+  "cipher24_s0": 3.583703875541687,
+  "cipher24_s1": 3.5482634603977203,
+  "copy24_s0": 3.233995199203491,
+  "copy24_s1": 3.6670903265476227,
+  "ident32_s0": 4.19121390581131,
+  "ident32_s1": 4.341881811618805,
+  "rand32_s0": 4.90689092874527,
+  "rand32_s1": 4.964210152626038,
+  "repeat_real_s0": 8.062254250049591,
+  "repeat_real_s1": 7.962498366832733,
+  "repeat_twin_s0": 7.900587379932404,
+  "repeat_twin_s1": 7.902968168258667
+ },
+ "readings": {
+  "case_real_s0": {
+   "all": {
+    "0.8": {
+     "n": 4,
+     "names": [
+      "logit#46493",
+      "mlp0#859->logit#46493",
+      "logit#23656",
+      "mlp3#1199->logit#23656"
+     ],
+     "rung": 2
+    },
+    "0.9": {
+     "n": 4,
+     "names": [
+      "logit#46493",
+      "mlp0#859->logit#46493",
+      "logit#23656",
+      "mlp3#1199->logit#23656"
+     ],
+     "rung": 2
+    },
+    "0.95": {
+     "n": 7,
+     "names": [
+      "logit#46493",
+      "mlp0#859->logit#46493",
+      "mlp3#1655->logit#46493",
+      "logit#23656",
+      "mlp3#1199->logit#23656",
+      "mlp2#2709",
+      "tok-1#18214->mlp2#2709"
+     ],
+     "rung": 2
+    }
+   },
+   "directions": {
+    "0.8": {
+     "n": 9,
+     "names": [
+      "logit#23656",
+      "out3.pc9",
+      "out3.pc32",
+      "out3.pc34",
+      "out3.pc7",
+      "out3.pc47",
+      "out3.pc31",
+      "logit#46493",
+      "in3.pc57"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "n": 11,
+     "names": [
+      "logit#23656",
+      "out3.pc9",
+      "out3.pc32",
+      "out3.pc34",
+      "out3.pc7",
+      "out3.pc47",
+      "out3.pc31",
+      "logit#46493",
+      "in3.pc57",
+      "in0.pc44",
+      "in1.pc8"
+     ],
+     "rung": 1
+    },
+    "0.95": {
+     "n": 4,
+     "names": [
+      "logit#46493",
+      "in0.pc0->logit#46493",
+      "logit#23656",
+      "tok-1#18214->logit#23656"
+     ],
+     "rung": 2
+    }
+   },
+   "neurons": {
+    "0.8": {
+     "n": 4,
+     "names": [
+      "logit#46493",
+      "mlp0#859->logit#46493",
+      "logit#23656",
+      "mlp3#1199->logit#23656"
+     ],
+     "rung": 2
+    },
+    "0.9": {
+     "n": 4,
+     "names": [
+      "logit#46493",
+      "mlp0#859->logit#46493",
+      "logit#23656",
+      "mlp3#1199->logit#23656"
+     ],
+     "rung": 2
+    },
+    "0.95": {
+     "n": 7,
+     "names": [
+      "logit#46493",
+      "mlp0#859->logit#46493",
+      "mlp3#1655->logit#46493",
+      "logit#23656",
+      "mlp3#1199->logit#23656",
+      "mlp2#2709",
+      "tok-1#18214->mlp2#2709"
+     ],
+     "rung": 2
+    }
+   }
+  },
+  "case_real_s1": {
+   "all": {
+    "0.8": {
+     "n": 2,
+     "names": [
+      "logit#46493",
+      "logit#23656"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "n": 3,
+     "names": [
+      "logit#46493",
+      "logit#23656",
+      "mlp3#169"
+     ],
+     "rung": 1
+    },
+    "0.95": {
+     "n": 5,
+     "names": [
+      "logit#46493",
+      "mlp0#159->logit#46493",
+      "logit#23656",
+      "mlp1#705->logit#23656",
+      "tok-1#18214->logit#23656"
+     ],
+     "rung": 2
+    }
+   },
+   "directions": {
+    "0.8": {
+     "n": 2,
+     "names": [
+      "logit#46493",
+      "logit#23656"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "n": 3,
+     "names": [
+      "logit#46493",
+      "logit#23656",
+      "in2.pc0"
+     ],
+     "rung": 1
+    },
+    "0.95": {
+     "n": 4,
+     "names": [
+      "logit#46493",
+      "in0.pc0->logit#46493",
+      "logit#23656",
+      "in0.pc0->logit#23656"
+     ],
+     "rung": 2
+    }
+   },
+   "neurons": {
+    "0.8": {
+     "n": 2,
+     "names": [
+      "logit#46493",
+      "logit#23656"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "n": 3,
+     "names": [
+      "logit#46493",
+      "logit#23656",
+      "mlp3#169"
+     ],
+     "rung": 1
+    },
+    "0.95": {
+     "n": 5,
+     "names": [
+      "logit#46493",
+      "mlp0#159->logit#46493",
+      "logit#23656",
+      "mlp1#705->logit#23656",
+      "tok-1#18214->logit#23656"
+     ],
+     "rung": 2
+    }
+   }
+  },
+  "case_twin_s0": {
+   "all": {
+    "0.8": {
+     "n": 2,
+     "names": [
+      "logit#46493",
+      "logit#23656"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "n": 2,
+     "names": [
+      "logit#46493",
+      "logit#23656"
+     ],
+     "rung": 1
+    },
+    "0.95": {
+     "n": 6,
+     "names": [
+      "logit#46493",
+      "mlp0#658->logit#46493",
+      "logit#23656",
+      "mlp0#658->logit#23656",
+      "mlp0#658",
+      "tok-1#18214->mlp0#658"
+     ],
+     "rung": 2
+    }
+   },
+   "directions": {
+    "0.8": {
+     "n": 2,
+     "names": [
+      "logit#46493",
+      "logit#23656"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "n": 2,
+     "names": [
+      "logit#46493",
+      "logit#23656"
+     ],
+     "rung": 1
+    },
+    "0.95": {
+     "n": 4,
+     "names": [
+      "logit#46493",
+      "tok-1#18214->logit#46493",
+      "logit#23656",
+      "tok-1#18214->logit#23656"
+     ],
+     "rung": 2
+    }
+   },
+   "neurons": {
+    "0.8": {
+     "n": 2,
+     "names": [
+      "logit#46493",
+      "logit#23656"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "n": 2,
+     "names": [
+      "logit#46493",
+      "logit#23656"
+     ],
+     "rung": 1
+    },
+    "0.95": {
+     "n": 6,
+     "names": [
+      "logit#46493",
+      "mlp0#658->logit#46493",
+      "logit#23656",
+      "mlp0#658->logit#23656",
+      "mlp0#658",
+      "tok-1#18214->mlp0#658"
+     ],
+     "rung": 2
+    }
+   }
+  },
+  "case_twin_s1": {
+   "all": {
+    "0.8": {
+     "n": 2,
+     "names": [
+      "logit#23656",
+      "logit#46493"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "n": 2,
+     "names": [
+      "logit#23656",
+      "logit#46493"
+     ],
+     "rung": 1
+    },
+    "0.95": {
+     "edits": 1,
+     "n": 11,
+     "pair": [
+      "in3",
+      "out3"
+     ],
+     "rung": 3
+    }
+   },
+   "directions": {
+    "0.8": {
+     "n": 2,
+     "names": [
+      "logit#23656",
+      "logit#46493"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "n": 2,
+     "names": [
+      "logit#23656",
+      "logit#46493"
+     ],
+     "rung": 1
+    },
+    "0.95": {
+     "n": 4,
+     "names": [
+      "logit#23656",
+      "tok-1#18214->logit#23656",
+      "logit#46493",
+      "tok-1#18214->logit#46493"
+     ],
+     "rung": 2
+    }
+   },
+   "neurons": {
+    "0.8": {
+     "n": 2,
+     "names": [
+      "logit#23656",
+      "logit#46493"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "n": 2,
+     "names": [
+      "logit#23656",
+      "logit#46493"
+     ],
+     "rung": 1
+    },
+    "0.95": {
+     "edits": 1,
+     "n": 11,
+     "pair": [
+      "in3",
+      "out3"
+     ],
+     "rung": 3
+    }
+   }
+  },
+  "cipher24_s0": {
+   "all": {
+    "0.8": {
+     "edits": 1,
+     "n": 16,
+     "pair": [
+      "in2",
+      "in2"
+     ],
+     "rung": 3
+    },
+    "0.9": {
+     "n": null,
+     "rung": 4
+    },
+    "0.95": {
+     "n": null,
+     "rung": 4
+    }
+   },
+   "directions": {
+    "0.8": {
+     "n": null,
+     "rung": 4
+    },
+    "0.9": {
+     "n": null,
+     "rung": 4
+    },
+    "0.95": {
+     "n": null,
+     "rung": 4
+    }
+   },
+   "neurons": {
+    "0.8": {
+     "edits": 1,
+     "n": 16,
+     "pair": [
+      "in2",
+      "in2"
+     ],
+     "rung": 3
+    },
+    "0.9": {
+     "n": null,
+     "rung": 4
+    },
+    "0.95": {
+     "n": null,
+     "rung": 4
+    }
+   }
+  },
+  "cipher24_s1": {
+   "all": {
+    "0.8": {
+     "edits": 2,
+     "n": 16,
+     "pair": [
+      "in3",
+      "in3"
+     ],
+     "rung": 3
+    },
+    "0.9": {
+     "n": null,
+     "rung": 4
+    },
+    "0.95": {
+     "n": null,
+     "rung": 4
+    }
+   },
+   "directions": {
+    "0.8": {
+     "n": null,
+     "rung": 4
+    },
+    "0.9": {
+     "n": null,
+     "rung": 4
+    },
+    "0.95": {
+     "n": null,
+     "rung": 4
+    }
+   },
+   "neurons": {
+    "0.8": {
+     "edits": 2,
+     "n": 16,
+     "pair": [
+      "in3",
+      "in3"
+     ],
+     "rung": 3
+    },
+    "0.9": {
+     "n": null,
+     "rung": 4
+    },
+    "0.95": {
+     "n": null,
+     "rung": 4
+    }
+   }
+  },
+  "copy24_s0": {
+   "all": {
+    "0.8": {
+     "n": 15,
+     "names": [
+      "mlp1#706",
+      "in3.pc0",
+      "mlp2#883",
+      "logit#3012",
+      "logit#2167",
+      "logit#4577",
+      "mlp1#486",
+      "mlp3#2311",
+      "in1.pc33",
+      "mlp1#802",
+      "mlp2#1307",
+      "mlp1#2189",
+      "mlp0#177",
+      "mlp3#2475",
+      "mlp2#3038"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "edits": 1,
+     "n": 16,
+     "pair": [
+      "in2",
+      "in2"
+     ],
+     "rung": 3
+    },
+    "0.95": {
+     "edits": 2,
+     "n": 16,
+     "pair": [
+      "in2",
+      "in2"
+     ],
+     "rung": 3
+    }
+   },
+   "directions": {
+    "0.8": {
+     "edits": 1,
+     "n": 16,
+     "pair": [
+      "in2",
+      "in3"
+     ],
+     "rung": 3
+    },
+    "0.9": {
+     "edits": 1,
+     "n": 16,
+     "pair": [
+      "in2",
+      "in3"
+     ],
+     "rung": 3
+    },
+    "0.95": {
+     "n": null,
+     "rung": 4
+    }
+   },
+   "neurons": {
+    "0.8": {
+     "edits": 1,
+     "n": 16,
+     "pair": [
+      "in3",
+      "in3"
+     ],
+     "rung": 3
+    },
+    "0.9": {
+     "edits": 1,
+     "n": 16,
+     "pair": [
+      "in3",
+      "in3"
+     ],
+     "rung": 3
+    },
+    "0.95": {
+     "edits": 2,
+     "n": 16,
+     "pair": [
+      "in2",
+      "in2"
+     ],
+     "rung": 3
+    }
+   }
+  },
+  "copy24_s1": {
+   "all": {
+    "0.8": {
+     "n": 11,
+     "names": [
+      "mlp1#3063",
+      "in3.pc0",
+      "mlp2#883",
+      "mlp2#1736",
+      "logit#4577",
+      "mlp1#2951",
+      "mlp3#711",
+      "logit#2167",
+      "mlp2#1144",
+      "mlp2#312",
+      "mlp2#2454"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "edits": 1,
+     "n": 15,
+     "pair": [
+      "in2",
+      "in2"
+     ],
+     "rung": 3
+    },
+    "0.95": {
+     "edits": 2,
+     "n": 15,
+     "pair": [
+      "in2",
+      "in2"
+     ],
+     "rung": 3
+    }
+   },
+   "directions": {
+    "0.8": {
+     "edits": 1,
+     "n": 16,
+     "pair": [
+      "in3",
+      "in3"
+     ],
+     "rung": 3
+    },
+    "0.9": {
+     "edits": 1,
+     "n": 16,
+     "pair": [
+      "in3",
+      "in3"
+     ],
+     "rung": 3
+    },
+    "0.95": {
+     "edits": 2,
+     "n": 16,
+     "pair": [
+      "in2",
+      "in2"
+     ],
+     "rung": 3
+    }
+   },
+   "neurons": {
+    "0.8": {
+     "n": 14,
+     "names": [
+      "mlp1#3063",
+      "mlp2#2998",
+      "mlp2#899",
+      "mlp2#1144",
+      "mlp1#2951",
+      "mlp0#417",
+      "mlp2#312",
+      "mlp2#883",
+      "logit#4577",
+      "mlp3#711",
+      "mlp2#413",
+      "mlp3#1818",
+      "mlp0#2390",
+      "mlp1#2352"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "edits": 1,
+     "n": 16,
+     "pair": [
+      "in3",
+      "in3"
+     ],
+     "rung": 3
+    },
+    "0.95": {
+     "edits": 2,
+     "n": 16,
+     "pair": [
+      "in2",
+      "in2"
+     ],
+     "rung": 3
+    }
+   }
+  },
+  "ident32_s0": {
+   "all": {
+    "0.8": {
+     "n": 8,
+     "names": [
+      "mlp1#2996",
+      "in3.pc0",
+      "mlp2#883",
+      "mlp1#2721",
+      "in1.pc63",
+      "mlp2#1144",
+      "mlp0#88",
+      "mlp1#2530"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "edits": 1,
+     "n": 16,
+     "pair": [
+      "in1",
+      "in2"
+     ],
+     "rung": 3
+    },
+    "0.95": {
+     "edits": 1,
+     "n": 16,
+     "pair": [
+      "in1",
+      "in2"
+     ],
+     "rung": 3
+    }
+   },
+   "directions": {
+    "0.8": {
+     "edits": 1,
+     "n": 16,
+     "pair": [
+      "in1",
+      "in2"
+     ],
+     "rung": 3
+    },
+    "0.9": {
+     "edits": 1,
+     "n": 16,
+     "pair": [
+      "in1",
+      "in2"
+     ],
+     "rung": 3
+    },
+    "0.95": {
+     "edits": 2,
+     "n": 16,
+     "pair": [
+      "in2",
+      "in2"
+     ],
+     "rung": 3
+    }
+   },
+   "neurons": {
+    "0.8": {
+     "n": 13,
+     "names": [
+      "mlp1#2996",
+      "mlp2#1104",
+      "mlp2#883",
+      "mlp2#1144",
+      "mlp1#2162",
+      "mlp1#1109",
+      "mlp0#2949",
+      "mlp0#2825",
+      "mlp1#2721",
+      "mlp2#2786",
+      "mlp2#1573",
+      "mlp0#88",
+      "mlp1#2530"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "edits": 1,
+     "n": 16,
+     "pair": [
+      "in1",
+      "in2"
+     ],
+     "rung": 3
+    },
+    "0.95": {
+     "edits": 2,
+     "n": 16,
+     "pair": [
+      "in2",
+      "in2"
+     ],
+     "rung": 3
+    }
+   }
+  },
+  "ident32_s1": {
+   "all": {
+    "0.8": {
+     "n": 9,
+     "names": [
+      "mlp1#2996",
+      "in3.pc0",
+      "mlp2#883",
+      "mlp1#2721",
+      "mlp2#1144",
+      "mlp0#88",
+      "mlp3#1943",
+      "mlp1#1752",
+      "in2.pc63"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "edits": 1,
+     "n": 16,
+     "pair": [
+      "in1",
+      "in2"
+     ],
+     "rung": 3
+    },
+    "0.95": {
+     "edits": 2,
+     "n": 16,
+     "pair": [
+      "in2",
+      "in2"
+     ],
+     "rung": 3
+    }
+   },
+   "directions": {
+    "0.8": {
+     "n": 14,
+     "names": [
+      "in2.pc19",
+      "in3.pc0",
+      "in2.pc9",
+      "in2.pc29",
+      "in2.pc22",
+      "in2.pc21",
+      "in2.pc31",
+      "out3.pc1",
+      "in2.pc12",
+      "logit#1097",
+      "in1.pc34",
+      "in2.pc63",
+      "logit#372",
+      "in3.pc32"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "edits": 1,
+     "n": 16,
+     "pair": [
+      "in2",
+      "in2"
+     ],
+     "rung": 3
+    },
+    "0.95": {
+     "edits": 2,
+     "n": 16,
+     "pair": [
+      "in2",
+      "in2"
+     ],
+     "rung": 3
+    }
+   },
+   "neurons": {
+    "0.8": {
+     "n": 14,
+     "names": [
+      "mlp1#2996",
+      "mlp2#1104",
+      "mlp2#883",
+      "mlp2#1144",
+      "mlp1#2162",
+      "mlp0#809",
+      "mlp3#1943",
+      "mlp2#1019",
+      "mlp0#2756",
+      "mlp2#899",
+      "mlp2#711",
+      "mlp0#88",
+      "mlp1#1752",
+      "mlp1#2609"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "edits": 1,
+     "n": 16,
+     "pair": [
+      "in1",
+      "in2"
+     ],
+     "rung": 3
+    },
+    "0.95": {
+     "edits": 2,
+     "n": 16,
+     "pair": [
+      "in2",
+      "in2"
+     ],
+     "rung": 3
+    }
+   }
+  },
+  "rand32_s0": {
+   "all": {
+    "0.8": {
+     "edits": 2,
+     "n": 16,
+     "pair": [
+      "in2",
+      "in2"
+     ],
+     "rung": 3
+    },
+    "0.9": {
+     "n": null,
+     "rung": 4
+    },
+    "0.95": {
+     "n": null,
+     "rung": 4
+    }
+   },
+   "directions": {
+    "0.8": {
+     "n": null,
+     "rung": 4
+    },
+    "0.9": {
+     "n": null,
+     "rung": 4
+    },
+    "0.95": {
+     "n": null,
+     "rung": 4
+    }
+   },
+   "neurons": {
+    "0.8": {
+     "edits": 2,
+     "n": 16,
+     "pair": [
+      "in2",
+      "in2"
+     ],
+     "rung": 3
+    },
+    "0.9": {
+     "n": null,
+     "rung": 4
+    },
+    "0.95": {
+     "n": null,
+     "rung": 4
+    }
+   }
+  },
+  "rand32_s1": {
+   "all": {
+    "0.8": {
+     "edits": 2,
+     "n": 16,
+     "pair": [
+      "in2",
+      "in3"
+     ],
+     "rung": 3
+    },
+    "0.9": {
+     "n": null,
+     "rung": 4
+    },
+    "0.95": {
+     "n": null,
+     "rung": 4
+    }
+   },
+   "directions": {
+    "0.8": {
+     "edits": 2,
+     "n": 16,
+     "pair": [
+      "in2",
+      "in3"
+     ],
+     "rung": 3
+    },
+    "0.9": {
+     "n": null,
+     "rung": 4
+    },
+    "0.95": {
+     "n": null,
+     "rung": 4
+    }
+   },
+   "neurons": {
+    "0.8": {
+     "edits": 2,
+     "n": 16,
+     "pair": [
+      "in2",
+      "in2"
+     ],
+     "rung": 3
+    },
+    "0.9": {
+     "n": null,
+     "rung": 4
+    },
+    "0.95": {
+     "n": null,
+     "rung": 4
+    }
+   }
+  },
+  "repeat_real_s0": {
+   "all": {
+    "0.8": {
+     "n": 2,
+     "names": [
+      "logit#46493",
+      "logit#23656"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "n": 2,
+     "names": [
+      "logit#46493",
+      "logit#23656"
+     ],
+     "rung": 1
+    },
+    "0.95": {
+     "n": 7,
+     "names": [
+      "logit#46493",
+      "mlp0#658->logit#46493",
+      "mlp1#537->logit#46493",
+      "logit#23656",
+      "mlp1#1474->logit#23656",
+      "mlp3#2741",
+      "mlp0#220->mlp3#2741"
+     ],
+     "rung": 2
+    }
+   },
+   "directions": {
+    "0.8": {
+     "n": 2,
+     "names": [
+      "logit#46493",
+      "logit#23656"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "n": 2,
+     "names": [
+      "logit#46493",
+      "logit#23656"
+     ],
+     "rung": 1
+    },
+    "0.95": {
+     "n": 4,
+     "names": [
+      "logit#46493",
+      "tok-1#18214->logit#46493",
+      "logit#23656",
+      "tok-1#18214->logit#23656"
+     ],
+     "rung": 2
+    }
+   },
+   "neurons": {
+    "0.8": {
+     "n": 2,
+     "names": [
+      "logit#46493",
+      "logit#23656"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "n": 2,
+     "names": [
+      "logit#46493",
+      "logit#23656"
+     ],
+     "rung": 1
+    },
+    "0.95": {
+     "n": 7,
+     "names": [
+      "logit#46493",
+      "mlp0#658->logit#46493",
+      "mlp1#537->logit#46493",
+      "logit#23656",
+      "mlp1#1474->logit#23656",
+      "mlp3#2741",
+      "mlp0#220->mlp3#2741"
+     ],
+     "rung": 2
+    }
+   }
+  },
+  "repeat_real_s1": {
+   "all": {
+    "0.8": {
+     "n": 3,
+     "names": [
+      "mlp3#901",
+      "logit#46493",
+      "logit#23656"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "n": 4,
+     "names": [
+      "mlp3#901",
+      "logit#46493",
+      "logit#23656",
+      "mlp3#169"
+     ],
+     "rung": 1
+    },
+    "0.95": {
+     "edits": 1,
+     "n": 7,
+     "pair": [
+      "in2",
+      "in3"
+     ],
+     "rung": 3
+    }
+   },
+   "directions": {
+    "0.8": {
+     "n": 2,
+     "names": [
+      "logit#46493",
+      "logit#23656"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "n": 2,
+     "names": [
+      "logit#46493",
+      "logit#23656"
+     ],
+     "rung": 1
+    },
+    "0.95": {
+     "n": 4,
+     "names": [
+      "logit#46493",
+      "tok-1#18214->logit#46493",
+      "logit#23656",
+      "tok-1#18214->logit#23656"
+     ],
+     "rung": 2
+    }
+   },
+   "neurons": {
+    "0.8": {
+     "n": 3,
+     "names": [
+      "mlp3#901",
+      "logit#46493",
+      "logit#23656"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "n": 4,
+     "names": [
+      "mlp3#901",
+      "logit#46493",
+      "logit#23656",
+      "mlp3#169"
+     ],
+     "rung": 1
+    },
+    "0.95": {
+     "edits": 1,
+     "n": 7,
+     "pair": [
+      "in2",
+      "in3"
+     ],
+     "rung": 3
+    }
+   }
+  },
+  "repeat_twin_s0": {
+   "all": {
+    "0.8": {
+     "n": 2,
+     "names": [
+      "logit#23656",
+      "logit#46493"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "n": 2,
+     "names": [
+      "logit#23656",
+      "logit#46493"
+     ],
+     "rung": 1
+    },
+    "0.95": {
+     "edits": 1,
+     "n": 9,
+     "pair": [
+      "in3",
+      "in3"
+     ],
+     "rung": 3
+    }
+   },
+   "directions": {
+    "0.8": {
+     "n": 2,
+     "names": [
+      "logit#23656",
+      "logit#46493"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "n": 2,
+     "names": [
+      "logit#23656",
+      "logit#46493"
+     ],
+     "rung": 1
+    },
+    "0.95": {
+     "n": 4,
+     "names": [
+      "logit#23656",
+      "in0.pc0->logit#23656",
+      "logit#46493",
+      "tok-1#18214->logit#46493"
+     ],
+     "rung": 2
+    }
+   },
+   "neurons": {
+    "0.8": {
+     "n": 2,
+     "names": [
+      "logit#23656",
+      "logit#46493"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "n": 2,
+     "names": [
+      "logit#23656",
+      "logit#46493"
+     ],
+     "rung": 1
+    },
+    "0.95": {
+     "edits": 1,
+     "n": 10,
+     "pair": [
+      "in3",
+      "out3"
+     ],
+     "rung": 3
+    }
+   }
+  },
+  "repeat_twin_s1": {
+   "all": {
+    "0.8": {
+     "n": 3,
+     "names": [
+      "mlp3#901",
+      "logit#23656",
+      "logit#46493"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "n": 5,
+     "names": [
+      "mlp3#901",
+      "logit#23656",
+      "logit#46493",
+      "mlp2#1041",
+      "mlp3#169"
+     ],
+     "rung": 1
+    },
+    "0.95": {
+     "n": 9,
+     "names": [
+      "mlp3#901",
+      "tok-1#18214->mlp3#901",
+      "mlp0#1377->mlp3#901",
+      "logit#23656",
+      "mlp0#1638->logit#23656",
+      "mlp0#1864->logit#23656",
+      "mlp1#1694->logit#23656",
+      "logit#46493",
+      "mlp0#2351->logit#46493"
+     ],
+     "rung": 2
+    }
+   },
+   "directions": {
+    "0.8": {
+     "n": 2,
+     "names": [
+      "logit#46493",
+      "logit#23656"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "n": 2,
+     "names": [
+      "logit#46493",
+      "logit#23656"
+     ],
+     "rung": 1
+    },
+    "0.95": {
+     "n": 4,
+     "names": [
+      "logit#23656",
+      "tok-1#18214->logit#23656",
+      "logit#46493",
+      "tok-1#18214->logit#46493"
+     ],
+     "rung": 2
+    }
+   },
+   "neurons": {
+    "0.8": {
+     "n": 3,
+     "names": [
+      "mlp3#901",
+      "logit#23656",
+      "logit#46493"
+     ],
+     "rung": 1
+    },
+    "0.9": {
+     "n": 5,
+     "names": [
+      "mlp3#901",
+      "logit#23656",
+      "logit#46493",
+      "mlp2#1041",
+      "mlp3#169"
+     ],
+     "rung": 1
+    },
+    "0.95": {
+     "n": 9,
+     "names": [
+      "mlp3#901",
+      "tok-1#18214->mlp3#901",
+      "mlp0#1377->mlp3#901",
+      "logit#23656",
+      "mlp0#1638->logit#23656",
+      "mlp0#1864->logit#23656",
+      "mlp1#1694->logit#23656",
+      "logit#46493",
+      "mlp0#2351->logit#46493"
+     ],
+     "rung": 2
+    }
+   }
+  }
+ },
+ "run": "3",
+ "wording": "under the fourth wording, ranked, provisional (testing only, not adopted)"
+}
