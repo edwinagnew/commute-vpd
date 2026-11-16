@@ -124,7 +124,8 @@ def cheap_cells(pair: str) -> list[dict[str, Any]]:
 def draw(cells: list[dict[str, Any]]) -> None:
     panels = [("67M", c) for c in M67] + [("Qwen", c) for c in QWEN]
     fig, axes = figure((10.0, 5.2), ncols=4, nrows=2)
-    for ax, (model, col) in zip(axes.flat, panels, strict=True):
+    axes.flat[-1].set_visible(len(panels) == axes.size)  # 4 + 3 panels on a 2 x 4 grid: the last one is blank
+    for ax, (model, col) in zip(axes.flat, panels):
         rows = [c for c in cells if c["model"] == model and c["reading"] == col]
         st = METHODS[(M67 if model == "67M" else QWEN)[col]]
         for c in rows:
