@@ -1,0 +1,57 @@
+{
+  "experiment": "E189, experiments/neuron_jobs, cell P2.29",
+  "filed": "2026-11-16, before run.py ran; never edited after the run (a dated report instead)",
+  "card": "reports/plans/2026-11-16_plan_p2-29-card.md",
+  "plan": "reports/plans/2026-11-16_plan_p2-29-neuron-jobs.md",
+  "descriptive": "user, 2026-11-16 dialog (cell P2.29): Goodfire-style neuron baselines, one figure, one paragraph; no verdict on reuse, sides named as built",
+  "seen_before_filing": "E155's top-240 set overlap on seven of these pairs (experiments/neuron_overlap/results: real 0.34-0.69, random 0.84-0.95, no call on 5 of 7, positive control failed 0.962 vs 0.965); E101's W0 jobs of E98's carrying neurons. No retention or top-K gain reading of any state.",
+  "settings": {
+    "reference_state": "e46/ident32_s0",
+    "n_changed": 32,
+    "pile_rows": ["val", 2048, 4048],
+    "n_top_windows": 20,
+    "k": 240,
+    "harder_factor": 1.5,
+    "random_seed": 0
+  },
+  "thresholds": {
+    "retention_control_margin": 0.5,
+    "topk_control_margin": 0.4,
+    "projected_limit_min": 9
+  },
+  "definitions": {
+    "firing": "each block's MLP neurons, GELU output = c_proj's input, steering.Net site mlp<l>, fp32 target model",
+    "top-changed neurons": "per state and block, the n_changed neurons of largest mean |firing at state - firing at W0| over the task's read rows at the read position (E155's rows, inventory of size_matched.pairs())",
+    "retention": "per top-changed neuron, its n_top_windows Pile windows (pile_rows slice) of largest peak firing (max over positions, signed) at W0 and at the state; |shared| / n_top_windows; mean over the 4 x n_changed neurons. Per-neuron values saved",
+    "gain kept": "kept = mean over read rows of (M1 - M0) / mean of (T1 - T0), E143's task units (log-odds of the target at the read position); T unmasked forward, M forward where each block keeps its k neurons of largest |firing| per window and position and zeroes the rest, the mask taken block by block inside the masked forward; 0 = W0, 1 = W0 + saved update. nan when mean(T1 - T0) <= 0",
+    "random-K floor": "kept with k uniformly random neurons per block, window and position (torch generator random_seed), same formula",
+    "random update": "per side, Gaussian per weight matrix scaled to the Frobenius norm of the side's first seed's update in that matrix (E155's random_like), seed random_seed + 1 + index; both readings",
+    "pair rule": "E155's rules.call imported unchanged, on retention and on gain kept: gap = mean(reuse) - mean(new); band = larger within-side max - min, measured here; 'reuse side higher' iff gap > band, 'new side higher' iff -gap > band, else 'no call'; 'unreadable' with < 2 seeds or a nan",
+    "floor": "E155's rules.floor per side: side mean minus its random update's reading"
+  },
+  "pairs": ["e46_copy_random", "e53_lowercase_cipher", "e54_matched", "e54_own", "open_pair_c3", "open_pair_c3_copy", "e62_copy_lookup", "e58_rank1_96", "e58_copy_prior_cipher"],
+  "edge_cases_checked_before_filing": {
+    "zero update": "every firing change 0: topk of zeros picks some 32 neurons, whose Pile windows are identical at W0 and state: retention exactly 1.0; M1 - M0 exactly 0, T1 - T0 exactly 0: kept nan (the control checks the numerator, not kept)",
+    "tie": "gap equal to band is no call (E155's tests)",
+    "negative or zero gain": "kept nan, so that pair's call on gain kept is unreadable",
+    "kept above 1 or below 0": "allowed and reported as read (masking can amplify a gain); not clipped",
+    "state shared by two pairs": "read once"
+  },
+  "control": {
+    "order": "stage 0 first and alone on reference_state; any miss writes stage0.json and exits 1 before stage 1",
+    "C0_zero": "zero update: retention exactly 1.0; top-K numerator mean(M1 - M0) exactly 0 and T numerator exactly 0",
+    "C0_retention": "harder: the reference's top-changed neurons' c_fc rows and biases times harder_factor (every other weight W0); swapped: those rows and biases cyclically shifted by one within each block. Expected harder ~1, swapped near chance. Stop unless retention(harder) > retention(swapped) + retention_control_margin",
+    "C0_topk": "the reference's c_proj update kept only on the k neurons per block most often in W0's top-k set on the read rows (often) and, recorded only, on the k least often (rare). Stop unless kept(often, own mask) > kept(often, random-K mask) + topk_control_margin"
+  },
+  "expected": {
+    "W0": "retention 1.0, top-K numerator 0 (the control)",
+    "random update": "retention high, ~0.8-1 (E155's random set overlap 0.84-0.95)",
+    "real states": "no number filed beyond the leans below: descriptive"
+  },
+  "predictions": {
+    "P1": {"claim": "each side's mean retention is below its random update's on at least 14 of the 18 pair-sides", "rule": "count of score[pair].retention.floor[side].above < 0 >= 14", "lean": "true", "confidence": "low", "why": "E155: real fine-tunes moved the top set far more than size-matched random updates"},
+    "P2": {"claim": "the side mean of gain kept under top-K is at least 0.5 on at least 14 of the 18 pair-sides", "rule": "count of score[pair].kept.values[side] mean >= 0.5, >= 14", "lean": "true", "confidence": "low", "why": "Goodfire's top-320 of 4,096 kept web loss within 0.054 nats; a task gain carried by strongly firing neurons survives"},
+    "P3": {"claim": "the random-K floor's kept is below 0.2 in absolute value on at least 14 of the 18 pair-sides (side means)", "rule": "count of |mean random-K kept per side| < 0.2, >= 14", "lean": "true", "confidence": "low", "why": "a random 7.8% of neurons per token breaks the model (Goodfire's random-64 control cost ~2.3 nats)"},
+    "P4": {"claim": "retention gives no call on at least 6 of the 9 pairs", "rule": "count of score[pair].retention.call == 'no call' >= 6", "lean": "true", "confidence": "low", "why": "E155's set overlap gave no call on 5 of 7"}
+  }
+}
