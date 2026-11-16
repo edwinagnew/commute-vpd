@@ -3,7 +3,8 @@
 An item file's search is list all, two greedy passes (key "1" writes only, key "2" writes and reads, as E184), each a curve
 of points {n, closure, closure_answer, ...}. The curve read is E191's: at each n, the best closure either pass found with at
 most n names (the empty intervention closes 0). `closure` is read on the full next-token distribution at the last position
-of the item's read windows; `closure_answer` on the read windows whose last position is the task's answer position.
+of the item's read windows; `closure_answer`, for the same names, on the read windows whose last position is the task's
+answer position. The names are always chosen by the full closure.
 """
 
 from __future__ import annotations
@@ -18,17 +19,19 @@ READINGS = {"full": ("closure", "kl"), "answer": ("closure_answer", "kl_answer")
 
 
 def best_by_n(rec: Mapping[str, Any], key: str) -> list[float]:
-    """Best `key` closure found with at most n names, n = 0..CAP, over both passes of list all; a NaN or missing value counts
-    as no point."""
-    best = [0.0] * (CAP + 1)
+    """At each n = 0..CAP, the names of the best full-distribution closure found with at most n names over both passes of
+    list all (the empty intervention, closure 0, at n = 0), read by `key`: "closure" gives E191's curve, "closure_answer"
+    the same names' closure on the answer windows (same names, two reads: decisions.md, 2026-11-16). A NaN or missing full
+    closure counts as no point; a missing `key` value reads NaN."""
+    best: list[tuple[float, float]] = [(0.0, 0.0)] * (CAP + 1)
     for r in ("1", "2"):
         for e in rec.get("lists", {}).get("all", {}).get(r, {}).get("curve", []):
-            v = e.get(key)
-            if v is not None and not math.isnan(v) and e["n"] <= CAP:
-                best[e["n"]] = max(best[e["n"]], v)
+            c, v = e.get("closure"), e.get(key)
+            if c is not None and not math.isnan(c) and e["n"] <= CAP and c > best[e["n"]][0]:
+                best[e["n"]] = (c, math.nan if v is None else v)
     for n in range(1, CAP + 1):
-        best[n] = max(best[n], best[n - 1])
-    return best
+        best[n] = max(best[n], best[n - 1], key=lambda p: p[0])
+    return [v for _, v in best]
 
 
 def why_not(rec: Mapping[str, Any], reading: str, floor: float) -> str | None:
