@@ -1,74 +1,155 @@
 <article class="exp" id="e133">
-<span id="e135"></span><span id="e136"></span><span id="e140"></span><span id="e141"></span><span id="e143"></span><span id="e145"></span><span id="e146"></span><span id="e147"></span><span id="e149"></span><span id="p211"></span><span id="e171"></span><span id="e172"></span><span id="p223"></span>
-<div class="top"><span class="id">E133</span><span class="chip partial">mixed</span><h3>Does any simpler method tell the two sides of a pair apart the way the re-gating share does?</h3><span class="when">2026-11-09 to 11-12 · provisional, no independent check · seven cluster and CPU jobs, $0 · <code>experiments/method_table</code></span></div>
-<p class="one"><strong>The answer.</strong> We built nine pairs of fine-tunes. One side of each pair reuses something the model already does; the other side is new. The re-gating share reads clearly higher on the reuse side on all nine. No single simpler method does that. Steering agrees on four pairs and points the other way on three. Effective rank agrees on seven, but by small margins. Neurons agree on at most four, and the top-neuron form points the other way on five. Update size agrees on none. The original model's prior and steering at its natural size together call the share's direction on all nine, though they say nothing about how far apart the sides are. Pairs are labelled as built; this is not a verdict on reuse.</p>
-<figure><img src="fig/e133_final.png" alt="Grid, one row per pair of fine-tunes of the 67M model (nine built pairs above a line, four real-against-twin pairs below) and one column per method. Red cells: the reuse side reads clearly higher; blue: the new side does; grey: no clear difference. The re-gating share's column is red on all nine built pairs. A last column, neurons for half the gain, is filled on all nine built pairs and two twin pairs; effective rank is filled on every row."><figcaption><strong>Only the re-gating share's column is red on every built pair.</strong> One rule: "clearly" means every seed of one side lies beyond every seed of the other in that column; colour is a call, not a score. Red: reuse side clearly higher (in the last column, neurons for half the gain, red means fewer neurons on the reuse side). Blue: new side clearly higher. Grey: no clear difference. ×: not measured (the last column is filled on all nine built pairs and two twin pairs; the two label twins stay ×).</figcaption></figure>
+<span id="e135"></span><span id="e136"></span><span id="e140"></span><span id="e141"></span><span id="e143"></span><span id="e145"></span><span id="e146"></span><span id="e147"></span><span id="e149"></span><span id="e155"></span><span id="e158"></span><span id="p211"></span><span id="e171"></span><span id="e172"></span><span id="p223"></span>
+<div class="top"><span class="id">E133</span><span class="chip partial">mixed</span><h3>Does any simpler method tell the two sides of a pair apart the way the re-gating share does?</h3><span class="when">2026-11-09 to 11-16 · provisional, no independent check · cluster and CPU jobs, $0 · <code>experiments/method_table</code></span></div>
+<p class="one"><strong>The answer.</strong> We built nine pairs of fine-tunes of the 67M model. One side of each reuses something the model already half does; the other learns something new. The re-gating share reads clearly higher on the reuse side on all nine. No single simpler method does: the prior agrees on all nine but mostly with one value a side, effective rank on seven by small margins, steering on four, the neuron readings on at most six, update size on none. Pairs are labelled as built; this is not a verdict on reuse.</p>
+<figure><img src="fig/e133_final.png" alt="Grid, one row per pair of fine-tunes of the 67M model (nine built pairs above a line, four real-against-twin pairs below) and one column per method. Red cells: the reuse side reads clearly higher; blue: the new side does; grey: no clear difference. The re-gating share's column is red on all nine built pairs."><figcaption><strong>Only the re-gating share's column is red on every built pair.</strong> One rule in every column: "clearly" means every seed of one side lies beyond every seed of the other; colour is a call, not a score. Red: reuse side clearly higher (in the last column, neurons for half the gain, red means fewer neurons on the reuse side). Blue: new side clearly higher. Grey: no clear difference. ×: not measured.</figcaption></figure>
 <div class="prose">
-<p><strong>The pairs.</strong> Each built pair is two sets of fine-tunes of the 67M model, with two to eight seeds a side. The reuse side does something the model half does already, such as copying a token. The new side learns something unfamiliar, such as a cipher. Below the line are four twin pairs: a real fine-tune against one trained on shuffled labels, which can only memorise.</p>
-<p><strong>The methods.</strong> Each simpler method tests one cheap explanation of what the share picks up. Each cell of the figure is the reuse side minus the new side. Its colour is a call, not a score: red or blue only when the two sides' seeds do not overlap, the same rule in every column, however small the gap.</p>
+<p><strong>The pairs.</strong> Each built pair is two sets of fine-tunes with two to eight seeds a side. The reuse side does something the model half does already, such as copying a token; the new side learns something unfamiliar, such as a cipher. Below the line in the figure are four twin pairs: a real fine-tune against one trained on shuffled labels, which can only memorise. Each baseline tests one cheap explanation of what the share picks up; if one separated the sides as well, the decomposition would add nothing.</p>
+<p><strong>Every baseline on this card, by family:</strong> <a href="#e133-prior">prior</a> · <a href="#e133-steering">steering</a> · <a href="#e133-update">rank and size of the update</a> · <a href="#e133-untrained">untrained decomposition</a> · neurons: <a href="#e133-neuronshare">neuron share</a>, <a href="#e133-swap">top-set swap</a>, <a href="#e133-overlap">top neurons before and after</a>, <a href="#e133-idle">idle neurons</a>, <a href="#e133-khalf">neurons for half the gain</a>, <a href="#e133-twins">neurons on the twins</a>, <a href="#e133-jobs">carrying neurons' old jobs</a> · <a href="#e133-qwen">the Qwen versions</a> · <a href="#e133-together">what the share adds</a>.</p>
 </div>
 <div class="tblwrap"><table>
-<thead><tr><th>Method</th><th>What it does</th><th>How it is measured</th><th>The simpler explanation it tests</th></tr></thead>
+<thead><tr><th>Method, on the nine built pairs</th><th>Agrees</th><th>Opposite</th><th>No difference</th></tr></thead>
 <tbody>
-<tr><td>re-gating share</td><td>Keeps the original weights and only changes which subcomponents are switched on.</td><td>The original model is run with the subcomponents the fine-tune switches on; the share is the part of the fine-tune's gain in the answer's log-odds that this recovers (0 none, 1 all).</td><td>The method under test.</td></tr>
-<tr><td>share on untrained decomposition</td><td>The same reading, on each matrix's plain SVD instead of the trained decomposition.</td><td>With no trained gates, a fixed rule decides what is switched on: at each position keep the SVD components with the largest contribution, as many as the trained decomposition switches on (1 to 30 per matrix). This reproduces the model poorly: with those gates the original model's answer log-odds sit 3.1 below the original on average, against 0.8 above for the trained decomposition. So a low share here may come from the rule, not the pieces.</td><td>The signal comes from training the decomposition.</td></tr>
-<tr><td>neuron readings (three forms)</td><td>The same idea on MLP neurons: keep the original weights, use the fine-tune's neuron firing.</td><td>Whole width: the original output weights applied to the fine-tune's own neuron firing. Half: the original MLP, both matrices, run on the input the fine-tune hands it, so only re-firing caused upstream counts. Top neurons: keep each block's 64 most active neurons (or as many as the decomposition switches on) and read the difference. The half form has a floor: a control fine-tune that changes only the MLP output weights, giving no neuron a new input, already reads 0.43, so readings near 0.43 do not show reuse.</td><td>Neurons would do as well.</td></tr>
-<tr><td>steering</td><td>Adds the fine-tune's average activation change to the original model.</td><td>The layer and strength are chosen by the largest gain on training windows, with strength searched up to 8 times the change's own size. The ciphers keep gaining at the larger multiples, which is why steering reverses on three pairs; at strength 1 the reversal is gone (E146).</td><td>One direction in activations would do as well.</td></tr>
-<tr><td>prior</td><td>How likely the original model already found the trained answer.</td><td>log10 of the original model's probability of the trained answer, one value per map or task, so most pairs have one value a side.</td><td>The share only tracks how familiar the answer was.</td></tr>
-<tr><td>update size</td><td>How big the weight change is.</td><td>log10 of the ratio of the two sides' mean update norms.</td><td>The share only tracks how big the update was.</td></tr>
-<tr><td>effective rank</td><td>How many directions the weight change spreads over.</td><td>log10 of the ratio of the two sides' mean effective rank of the update (E141); on the four 96-key pairs, read on the refit updates (E171).</td><td>The share only tracks how spread out the update was.</td></tr>
-<tr><td>neurons for half the gain</td><td>How few neurons carry the learning.</td><td>The fewest of the original model's neurons, taken in order of contribution, that carry half of the half-form neuron share (E98). Shown as log10 of the new side's count over the reuse side's, so red means fewer neurons on the reuse side. E98 scored both sides on four built pairs only; E172 filled the rest (see Runs).</td><td>Reuse would sit on a few existing neurons.</td></tr>
+<tr><td>re-gating share</td><td>9</td><td>0</td><td>0</td></tr>
+<tr><td>prior</td><td>9, though 8 of them have only one value a side</td><td>0</td><td>0</td></tr>
+<tr><td>effective rank</td><td>7</td><td>0</td><td>2</td></tr>
+<tr><td>neurons for half the gain</td><td>6</td><td>0</td><td>3</td></tr>
+<tr><td>steering</td><td>4</td><td>3</td><td>2</td></tr>
+<tr><td>neuron, top-set swap</td><td>4</td><td>5</td><td>0</td></tr>
+<tr><td>neuron share, whole width</td><td>3</td><td>4</td><td>2</td></tr>
+<tr><td>neuron share, half</td><td>3</td><td>2</td><td>4</td></tr>
+<tr><td>share on untrained decomposition</td><td>2</td><td>2</td><td>5</td></tr>
+<tr><td>update size</td><td>0</td><td>6</td><td>3</td></tr>
 </tbody></table></div>
+<p class="small">"Agrees" means higher on the reuse side, like the share, with the seeds not overlapping. Every cell was read on saved states; nothing was refit for this table except E147's 96-key updates.</p>
+
+<h4 class="tblhead" id="e133-prior">The prior: was the answer already likely?</h4>
+<dl class="fields">
+<dt>Asks</dt><dd>Does the share only track how familiar the trained answer already was?</dd>
+<dt>How</dt><dd>log10 of the original model's probability of the trained answer, one value per map or task, before any fine-tune.</dd>
+<dt>Found</dt><dd>The closest rival: it points the share's way on all nine pairs; on lowercase against ciphers the original model rates lowercase's answer 1.63 decades higher. On the two pairs built with the prior matched (gaps of 0.12 and 0.20 decades), the share still separates the sides.</dd>
+<dt>Caveat</dt><dd>Eight of nine pairs have one value a side, so it calls direction only.</dd>
+<dt>Where</dt><dd>Jobs E133 and E145; <code>reports/plans/2026-11-09_plan_e133-prior-vs-share.md</code>, <code>reports/analyses/2026-11-10_analysis_e145-prior-lowercase.md</code>.</dd>
+</dl>
+
+<h4 class="tblhead" id="e133-steering">Steering: is one direction in activations enough?</h4>
+<dl class="fields">
+<dt>Asks</dt><dd>Does adding one average activation change to the original model reproduce the fine-tune?</dd>
+<dt>How</dt><dd>Add the fine-tune's mean change at a block input, pooled over training windows or per key; layer and strength chosen by the largest gain, strength searched up to 8 times the change's own size. Eight random vectors of the same norm are the floor.</dd>
+<dt>Found</dt><dd>Agrees on four pairs and reverses on three. The reversals come from the strength search: the ciphers keep gaining at four to eight times, the reuse sides stop at two. Added at the fine-tune's own size, the reversal is gone on both scored pairs.</dd>
+<dt>Caveat</dt><dd>On every key-value pair the per-key vector is handed the answer, so it reads 0.87 to 1.26 on both sides. Fixing the layer or subtracting the random floor did not remove the reversal.</dd>
+<dt>Where</dt><dd>E135 (copy against lookup), E143 (six more pairs, cell P2.10), E146 (why it reverses, cell P2.14); <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-10_analysis_e143-holes-fill.md"><code>2026-11-10_analysis_e143-holes-fill.md</code></a>, <code>2026-11-10_analysis_e146-steering-reversal.md</code>.</dd>
+</dl>
+
+<h4 class="tblhead" id="e133-update">Rank and size of the update</h4>
+<dl class="fields">
+<dt>Asks</dt><dd>Does the share only track how big the weight change is, or how many directions it spreads over?</dd>
+<dt>How</dt><dd>Effective rank from the singular values of each saved weight change (Roy and Vetterli), and update size as its norm; each read as log10 of the ratio of the two sides' means. Then the larger side of every pair was shrunk by one number to its partner's size and every reading taken again (E187).</dd>
+<dt>Found</dt><dd>Effective rank is higher on the reuse side on seven pairs, but by at most 17% more directions; on the four refit 96-key pairs all four are apart, reuse side higher (E171). Update size never agrees: where it differs, the new side's update is bigger. Matched in size, the share still separates all nine pairs, and steering the same seven pairs it called before.</dd>
+<dt>Caveat</dt><dd>Effective rank cannot change under one scalar, so size matching does not test it.</dd>
+<dt>Where</dt><dd>E141 (cell P2.9), E171 (cell P2.25), <a href="#e187">E187</a> (cell P2.28, its own card, with the 67M and Qwen panels); <code>2026-11-10_analysis_e141-update-svd.md</code>, <code>2026-11-12_analysis_p2-25-refit-rank.md</code>, <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-16_analysis_p2-28-size-matched.md"><code>2026-11-16_analysis_p2-28-size-matched.md</code></a>.</dd>
+</dl>
+
+<h4 class="tblhead" id="e133-untrained">The share on an untrained decomposition</h4>
+<dl class="fields">
+<dt>Asks</dt><dd>Does the signal come from training the decomposition at all?</dd>
+<dt>How</dt><dd>The same reading on each matrix's plain SVD: at each position keep the components with the largest contribution, as many as the trained decomposition switches on (1 to 30 per matrix).</dd>
+<dt>Found</dt><dd>It agrees on two pairs, reverses on two and makes no call on five; the share's gaps of 0.51 to 0.69 fall to 0.07 or less. On the four refit 96-key pairs it never follows the share.</dd>
+<dt>Caveat</dt><dd>The rule reproduces the model poorly: the original model's answer log-odds sit 3.1 below the original on average, against 0.8 above for the trained decomposition, so a low share may come from the rule.</dd>
+<dt>Where</dt><dd>E136, E147; <code>2026-11-09_analysis_e136-share-untrained.md</code>, <code>2026-11-10_analysis_e147-refit-96key.md</code>.</dd>
+</dl>
+
 <div class="prose">
-<p><strong>How each does on the nine built pairs.</strong> "Agrees" means it reads higher on the reuse side, like the share, with the seeds not overlapping.</p>
+<p><strong>The neuron readings.</strong> These follow Goodfire's essay "Neural networks are already clean" and its follow-up "Neurons as an interpretable basis": if MLP neurons are already a clean basis, a neuron reading could tell reuse from new with no decomposition. The user's version in plain words: "the same top neurons firing a bit harder" would read as reuse, "new top neurons" as new. Seven readings on the 67M's 4 blocks of 3072 neurons; none shows that split.</p>
 </div>
-<div class="tblwrap"><table>
-<thead><tr><th>Method</th><th>Agrees</th><th>Opposite</th><th>No difference</th><th>Not measured</th></tr></thead>
-<tbody>
-<tr><td>re-gating share</td><td>9</td><td>0</td><td>0</td><td>0</td></tr>
-<tr><td>share on untrained decomposition</td><td>2</td><td>2</td><td>5</td><td>0</td></tr>
-<tr><td>neuron, whole width</td><td>3</td><td>4</td><td>2</td><td>0</td></tr>
-<tr><td>neuron, half</td><td>3</td><td>2</td><td>4</td><td>0</td></tr>
-<tr><td>neuron, top neurons</td><td>4</td><td>5</td><td>0</td><td>0</td></tr>
-<tr><td>steering</td><td>4</td><td>3</td><td>2</td><td>0</td></tr>
-<tr><td>prior</td><td>9, though 8 of them have only one value a side</td><td>0</td><td>0</td><td>0</td></tr>
-<tr><td>update size</td><td>0</td><td>6</td><td>3</td><td>0</td></tr>
-<tr><td>effective rank</td><td>7</td><td>0</td><td>2</td><td>0</td></tr>
-<tr><td>neurons for half the gain</td><td>6</td><td>0</td><td>3</td><td>0</td></tr>
-</tbody></table></div>
+
+<h4 class="tblhead" id="e133-neuronshare">Neuron share: the share's own swap, done on neurons</h4>
+<dl class="fields">
+<dt>Asks</dt><dd>Is the part of the gain carried by the original neurons firing differently, weights unchanged, higher on the reuse side?</dd>
+<dt>How</dt><dd>Whole width: the original output weights applied to the fine-tune's own neuron firing. Half: the original MLP, both matrices, run on the input the fine-tune hands it.</dd>
+<dt>Found</dt><dd>Whole width agrees on three pairs and reverses on four; half agrees on three and reverses on two. On copy against random maps, the whole-width reading puts copy below random maps (gap -0.38).</dd>
+<dt>Caveat</dt><dd>A control fine-tune that changes only the MLP output weights already reads 0.43 on the half form, so readings near 0.43 do not show reuse.</dd>
+<dt>Where</dt><dd><a href="#e98">E98</a> (its own card), E143, E147; <code>2026-11-05_analysis_e98-neuron-r.md</code>.</dd>
+</dl>
+
+<h4 class="tblhead" id="e133-swap">Top-set swap: do the neurons entering the top set carry the learning?</h4>
+<dl class="fields">
+<dt>Asks</dt><dd>The essay's umbrella-to-bee swap: a fine-tune that relabels an umbrella as a bee switches on existing bee neurons, and swapping those into the original model makes it say "bee". Do our fine-tunes work that way?</dd>
+<dt>How</dt><dd>For each window, take each block's top-firing neurons before and after the fine-tune (64 per block, or as many as the decomposition switches on) and run the original model keeping only one set or the other.</dd>
+<dt>Found</dt><dd>The swap moves under 0.05 of the gain on every built pair; the largest is 0.047, a lowercase fine-tune. Under the one colour rule its seeds sit apart on all nine pairs, four the share's way and five the other, by 0.03 or less.</dd>
+<dt>Caveat</dt><dd>The calls rest on tight seeds, not large gaps; masking alone moves the original model's answer log-odds by up to 3.4.</dd>
+<dt>Where</dt><dd>E143 (cell P2.10); <code>experiments/holes_fill/run.py</code>, <code>src/commute/masked_reads.py</code>.</dd>
+</dl>
+
+<h4 class="tblhead" id="e133-overlap">Top neurons before and after a fine-tune: same or new?</h4>
+<dl class="fields">
+<dt>Asks</dt><dd>After a fine-tune, are the most strongly firing neurons the same ones as before, or new ones?</dd>
+<dt>How</dt><dd>In each block, the 240 neurons that fire most strongly (7.8% of the width, the follow-up article's layer top-K; ranked by absolute firing, where the article ranks by firing), before and after; overlap is the share of the set in common (Jaccard), averaged over rows and blocks. A random update of the same size sets the floor.</dd>
+<dt>Found</dt><dd>Mostly new neurons on both sides: a real fine-tune keeps at most 0.69 of the top set, while a random update keeps at least 0.84. The reuse side overlaps more on two of seven pairs, and neither side does on five.</dd>
+<dt>Caveat</dt><dd>The positive control failed: "the same neurons firing a little harder" read 0.962, below a random update's 0.965, so a high overlap was never shown to mean reuse. One of the two calls may come from update size.</dd>
+<dt>Where</dt><dd>E155 (cell P2.18); <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-11_analysis_e155-neuron-overlap.md"><code>2026-11-11_analysis_e155-neuron-overlap.md</code></a>, figure below.</dd>
+</dl>
+<figure><img src="fig/e155_gaps.png" alt="Two panels, one row per built pair of the 67M. Left: top-240 overlap, reuse side minus new side. Right: share of the firing change on neurons in both top sets, reuse side minus new side. Orange squares are each pair's gap, grey bars the seed-spread band, crosses the same gap for two random updates. Two orange squares clear their band to the right on the left panel; none to the left."><figcaption><strong>Top-firing neurons after a fine-tune: the reuse side keeps more of its top set on two of seven pairs, the new side on none.</strong> Each row is one built pair; the orange square is the reuse side minus the new side, and it counts only if it leaves its grey seed-spread band. The cross is the same gap for random updates of matched size. Left, overlap of the top 240 neurons per block; right, the share of the firing change on neurons in both top sets. Source: E155.</figcaption></figure>
+
+<h4 class="tblhead" id="e133-idle">Idle neurons: did the fine-tune wake up quiet neurons?</h4>
+<dl class="fields">
+<dt>Asks</dt><dd>Does the new side lean on neurons that were silent in the original model?</dd>
+<dt>How</dt><dd>Of the 16 neurons the fine-tune changed most, the share that were idle before it, on copy against random maps.</dd>
+<dt>Found</dt><dd>0.41 on the copy side against 0.13 on random maps: the opposite of the hoped-for direction.</dd>
+<dt>Caveat</dt><dd>The copy side's seeds spread over 0.5, so no call. These 16 neurons carry at most 0.03 of the gain.</dd>
+<dt>Where</dt><dd><a href="#e52">E52</a> (its own card); <code>2026-10-29_analysis_e52-baseline-neurons.md</code>.</dd>
+</dl>
+
+<h4 class="tblhead" id="e133-khalf">Neurons for half the gain: does reuse sit on a few neurons?</h4>
+<dl class="fields">
+<dt>Asks</dt><dd>Does the reuse side need fewer of the original neurons to carry its learning?</dd>
+<dt>How</dt><dd>Rank the original neurons by contribution to the gain; patch in the fine-tuned firing on the top k only; the count is the smallest k (on a power-of-two grid) that recovers half of what patching all 12288 recovers.</dd>
+<dt>Found</dt><dd>The reuse side needs clearly fewer on six pairs, three to eight times fewer; no difference on three pairs or either twin.</dd>
+<dt>Caveat</dt><dd>Five of the six pairs also have a clearly larger new-side update, and matched in size one of them loses its call (E187). The ciphers had not passed E98's learned bar and are read as a description.</dd>
+<dt>Where</dt><dd><a href="#e98">E98</a> (four pairs), E172 (the rest, cell P2.24); <code>2026-11-12_analysis_p2-24-neurons-for-half-gain.md</code>.</dd>
+</dl>
+
+<h4 class="tblhead" id="e133-twins">Neurons on the twin pairs</h4>
+<dl class="fields">
+<dt>Asks</dt><dd>Do the neuron shares tell a real fine-tune from its shuffled-label twin?</dd>
+<dt>How</dt><dd>Whole-width and half neuron shares on the case- and repeat-label twins, three seeds a side.</dd>
+<dt>Found</dt><dd>Case: no call, the two sides' seeds overlap in both forms. Repeat: the shuffled twin reads higher in both forms, the reverse of part 1's order.</dd>
+<dt>Caveat</dt><dd>The re-gating share makes no call on either twin under its own rule, so there is nothing to agree with.</dd>
+<dt>Where</dt><dd>E158 (cell P2.21); <code>2026-11-11_analysis_p2-20-part1-vs-methods.md</code>.</dd>
+</dl>
+
+<h4 class="tblhead" id="e133-jobs">The carrying neurons' old jobs, read the essay's way</h4>
+<dl class="fields">
+<dt>Asks</dt><dd>Did the neurons that carry a fine-tune already have a job related to the task before training?</dd>
+<dt>How</dt><dd>The essay's method cut to size: each carrying neuron's top windows in the original model on Pile text, a one-line job written blind, a judge asked whether the job relates to the task, and random neurons as the floor.</dd>
+<dt>Found</dt><dd>On the 67M (E101) almost no carrying neuron's job was tied to its task, on either side. On Qwen3-1.7B (E102) the carrying neurons overlap a system prompt's neurons more than random, but nearly whatever the fine-tune teaches.</dd>
+<dt>Caveat</dt><dd>No power: on the 67M the positive control read 0 of 10, then 0 of 30 under a sharper judge; on Qwen the judge tied biography neurons to biography only half the time, against about a third for random ones. The route was closed by its filed rule.</dd>
+<dt>Where</dt><dd><a href="#e101">E101</a>, <a href="#e102">E102</a> (baseline-lead); <code>2026-11-05_analysis_e101-carrying-jobs.md</code>, <code>2026-11-05_analysis_e102-qwen-carrying.md</code>.</dd>
+</dl>
+
+<h4 class="tblhead" id="e133-qwen">The Qwen versions (other cards)</h4>
 <div class="prose">
-<p><strong>What stands out.</strong></p>
 <ul>
-<li><strong>The prior is the closest rival.</strong> It points the same way as the share on all nine pairs, including lowercase against ciphers, where the original model rates lowercase's answer 1.63 decades higher. But on two pairs the prior is nearly equal on both sides (gaps of 0.12 and 0.20 decades), and the share still separates them.</li>
-<li><strong>Size does not explain the share, and rank only weakly follows it.</strong> On three pairs both sides have about the same update size, and the share still separates all three. Where size does differ, the new side has the bigger update. Effective rank is higher on the reuse side on seven pairs, but the reuse side's update spreads over at most 17% more directions.</li>
-<li><strong>The top-neuron form now separates every built pair, by tiny gaps.</strong> Under the one colour rule its seeds sit apart on all nine, four the share's way and five the other, but no gap exceeds 0.03 of the gain: the seeds are tight, not the gaps large. Neurons for half the gain point the share's way on six built pairs: the reuse side needs clearly fewer neurons, with gaps of 0.52 to 0.90 in log10 (3 to 8 times fewer). On three pairs there is no difference: copy at a new marker against lookup, copy against cipher at step 10, and half-known against cipher at equal size. Five of the six pairs where the count separates also have a clearly larger new-side update (log10 0.08 to 0.28); the sixth, rank-1 against cipher at step 10, separates at equal size, but its cipher had not passed E98's learned bar. Nine pairs cannot show that the count adds anything beyond update size. Neither twin pair is apart. E98 had skipped the cipher sides because their held-out P(target) was under its 0.5 learned bar (0.23 to 0.45); E172 reads them anyway, as a description.</li>
-<li><strong>Steering points the wrong way on three pairs because of how its strength is chosen.</strong> Added at the fine-tune's own size (strength 1), the reversal is gone on both scored pairs. The reuse sides stop gaining once the vector is doubled, while the ciphers keep gaining up to four or eight times, and the search picks those larger multiples. Fixing the layer, subtracting a random baseline or changing the denominator did not remove it.</li>
-<li><strong>Neurons and the untrained decomposition read small or mixed gaps.</strong> Without its training, the decomposition loses most of the share's gap. On the four 96-key pairs, refit from E58's recipe and seeds, the untrained decomposition never follows the share; the neuron readings and steering follow it on some of them, by gaps of 0.07 or less, except steering's 0.59 on copy against the prior-matched cipher.</li>
-<li><strong>Prior plus steering at strength 1 together call the share's direction on all nine built pairs; each alone misses at least one.</strong> Where the prior is matched, steering carries the pair (gaps of 0.31 and 0.44 of the gain); where steering gives no call, the prior carries it (3.2 to 3.7 decades). With steering's searched strength, three pairs have the two pointing opposite ways. This reads direction only, not gap size, on nine pairs.</li>
-<li><strong>The share's gap sizes follow neither the prior's nor steering's.</strong> Across the nine built pairs the rank correlation of the share's gap with the prior's is 0.02, and with strength-1 steering's it is -0.10. The share's largest and smallest gaps (0.69 and 0.39) fall on the two pairs built with the prior matched. Nine pairs from a few task families: a description, not a test.</li>
-<li><strong>What the share adds, from the nine built pairs (cell P2.19, no run, no verdict on reuse):</strong> it is the only single reading that puts the reuse-built side higher on all nine, with gaps of 0.39 to 0.69 (seed spread at most 0.06) that follow neither the prior's nor steering's; but it gives no different call on direction, since the prior and strength-1 steering together reproduce all nine, and the neuron readings separate few pairs (under the one colour rule of P2.23 the top-neuron form separates all nine, but by 0.03 or less and five the other way). Whether the share or a cheap reading is right about reuse waits on scoring against part 2's labels. Source: <code>reports/analyses/2026-11-11_analysis_p2-19-what-share-adds.md</code>.</li>
-<li><strong>Against part 1's order on the five shared pairs (cell P2.20, no run, no verdict on reuse):</strong> all five part 1 pairs overlap the method table on the same saved fine-tunes, and part 1 puts the reuse-built side higher on all five (gaps 0.19 to 0.43). The share agrees on the three built pairs and made no call on the two label twins (under the one colour rule it now reads the repeat twin higher on every seed, by 0.09); steering ranks the five as part 1 does (rank correlation 1.0) but reverses both twins; update size reverses four; no method agrees in sign on all five. The neuron readings (filled on the twins by E158) make no call on the case twin and read the repeat twin higher on every seed, the reverse of part 1. Part 1 repeats the build labels on direction, so only the gap sizes are new. Source: <code>reports/analyses/2026-11-11_analysis_p2-20-part1-vs-methods.md</code>, figure <code>experiments/part1_vs_methods/figures/part1_vs_methods.png</code>.</li>
-<li><strong>The neuron baselines, in plain words: "the same top neurons firing a bit harder" would read as reuse, "new top neurons" as new, and the runs do not show that split.</strong> (1) The top-set swap: for each window we take each block's top-firing neurons before and after the fine-tune and run the original model keeping only the after-set or only the before-set; the swap moves under 5% of the gain on every built pair, so neurons entering the top set do not carry the learning. (2) Idle neurons: of the 16 neurons the fine-tune changed most, the share silent before it is 0.41 on the copy side against 0.13 on random maps (seed spread 0.5, so no call), the opposite of the hoped-for direction, with more already-quiet neurons on the reuse side. (3) The plain overlap of the top sets before and after is a separate run (<a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-11_analysis_e155-neuron-overlap.md"><code>reports/analyses/2026-11-11_analysis_e155-neuron-overlap.md</code></a>, cell P2.18, provisional): a real fine-tune keeps 0.34 to 0.69 of the 240 top neurons per block against 0.84 to 0.95 for a random update of the same size, and the two sides differ by more than their seed spread on only two of seven pairs, so mostly new neurons arrive on both sides; its positive control, "the same neurons firing 0.5% harder", failed (overlap 0.962 against 0.965 for a random update), so a high overlap was never shown to mean reuse. Sources: <code>experiments/holes_fill/run.py</code>, <code>src/commute/masked_reads.py</code>, <code>experiments/baseline_neurons/results/baseline_neurons.json</code> (idle share, score P2), <code>experiments/method_table/results/final.json</code>.</li>
+<li><strong>Effective rank and top-neuron overlap on 19 saved Qwen updates</strong>: every update keeps fewer top neurons than a random change and spreads over fewer directions; only effective rank separates RL from its null, marginally. <a href="#e162">E162</a> (cell P3.6, compare-lead).</li>
+<li><strong>Size matching on Qwen</strong>: the share's separation mostly goes, and the top-neuron overlap reverses on copy against cipher when only size changes. <a href="#e187">E187</a> (cell P2.28, compare-lead).</li>
+<li><strong>Cheap readings beside VPD on Qwen, neurons among them</strong>: <a href="#e92">E92</a> (baseline-lead, record of 2026-11-06).</li>
+<li><strong>A decomposition fixed at the neuron basis</strong>: <code>reports/analyses/2026-11-13_analysis_p3-9-frozen-neuron-share.md</code> (cell P3.9, qwen-lead).</li>
 </ul>
-<p><strong>The twin pairs are less clear.</strong> The share separates half-known from its shuffle, real side higher. It reads the class map's twin and the repeat label's twin higher, by 0.03 and 0.09, with the seeds apart, and does not separate the case label pair. There, steering, size and rank read the twin higher, which may reflect how the twins were trained (one trained ten times longer) more than what they learned.</p>
+</div>
+
+<h4 class="tblhead" id="e133-together">What the share adds</h4>
+<div class="prose">
+<ul>
+<li><strong>Prior plus steering at the fine-tune's own size together call all nine pairs the share's way; each alone misses at least one.</strong> Where the prior is matched, steering carries the pair; where steering gives no call, the prior does. Direction only.</li>
+<li><strong>The share's gap sizes follow neither.</strong> Rank correlation with the prior's gaps is 0.02, with steering's -0.10. The share's largest and smallest gaps both fall on the two prior-matched pairs. Nine pairs: a description, not a test (cells P2.16, P2.19).</li>
+<li><strong>Against part 1's order on five shared pairs</strong> (cell P2.20): the share agrees on the three built pairs; steering ranks the five as part 1 does but reverses both twins; no method agrees in sign on all five.</li>
+<li><strong>The twin pairs.</strong> The share separates half-known from its shuffle, real side higher, reads the shuffled twin higher on two others, by 0.03 and 0.09, and does not separate the case pair; steering, size and rank read the twin higher there, which may reflect a twin trained ten times longer.</li>
+</ul>
 </div>
 <dl class="fields">
-<dt>Runs</dt><dd>One experiment, run in six jobs on the cluster's <code>debug</code> L40s and the CPU worker, all $0; the figure reads their saved results with <code>experiments/method_table/plot_final.py</code>, and <code>final.json</code> names each cell's source file and field. The jobs were first logged under their own codes, now folded into this card:
-<ul>
-<li>the prior across 24 saved maps (was E133, <code>experiments/prior_vs_share</code>);</li>
-<li>steering on copy against lookup (was E135, <code>experiments/steering_copy_lookup</code>);</li>
-<li>the untrained decomposition (was E136, <code>experiments/share_untrained</code>);</li>
-<li>real fine-tunes against shuffled-label twins (was E140, <code>experiments/real_vs_twin</code>);</li>
-<li>the effective rank of each update (was E141, <code>experiments/update_svd</code>);</li>
-<li>steering and neurons on the remaining built pairs (was E143, <code>experiments/holes_fill</code>);</li>
-<li>the prior on lowercase against ciphers (was E145, <code>experiments/prior_lowercase</code>);</li>
-<li>why steering reverses (was E146, <code>experiments/steering_reversal</code>);</li>
-<li>the 96-key pairs refit, with neurons, untrained decomposition and steering (was E147, <code>experiments/refit_96key</code>);</li>
-<li>the prior and steering together (was E149, <code>experiments/prior_steering</code>);</li>
-<li>effective rank on the four refit 96-key pairs: all four apart, reuse side higher (was E171, cell P2.25, <code>experiments/refit_rank</code>);</li>
-<li>neurons for half the gain on the five other built pairs and two twins: six built pairs apart, three not, neither twin (E172, cell P2.24, Slurm job 59606, <code>experiments/k_half_fill</code>).</li></ul>
-Neurons for half the gain use E98's saved counts (<code>experiments/neuron_r/results/carrying.json</code>), plus E172's reading of the missing states (step-9/10 ciphers and E147's refit 96-key updates). E172 reproduced E98 exactly on two states first. The figure was redrawn under one colour rule on 2026-11-12 (cell P2.23, <code>reports/analyses/2026-11-12_analysis_p2-23-e133-redraw.md</code>): before, cells with a filed call used that run's own bar, and 23 cells changed from no call to apart.</dd>
-<dt>Bears on</dt><dd>Part 3's comparison of the share with simple baselines (section {{n:methodtable}}, cells P2.3 to P2.5, P2.8 to P2.11, P2.23 and P2.25); no verdict of reused or new, since the definition is under revision.</dd>
-<dt>Moved on</dt><dd>Not run: any verdict; a combined score over the columns; neurons for half the gain on the two label twins (read in a different unit); any Qwen pair. What the comparison should do next is a pending decision (section {{n:decisions}}). Reports <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-10_analysis_e149-prior-steering.md"><code>2026-11-10_analysis_e149-prior-steering.md</code></a>, <code>2026-11-10_analysis_e145-prior-lowercase.md</code>, <code>2026-11-10_analysis_e146-steering-reversal.md</code>, <code>2026-11-10_analysis_e147-refit-96key.md</code>. Gap sizes (cell P2.16): <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-11_analysis_p2-16-gap-sizes.md"><code>reports/analyses/2026-11-11_analysis_p2-16-gap-sizes.md</code></a>, figure <code>experiments/share_gap_sizes/figures/gap_sizes.png</code>. P2.17 (two runs, E151) closed without a reading: pairs where the prior and steering disagree could not be built, since a cipher unrelated to its key reached a prior of 2.32e-4 against 2.35e-4 needed; what the share adds is written from the nine built pairs (cell P2.19, <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-11_analysis_p2-19-what-share-adds.md"><code>reports/analyses/2026-11-11_analysis_p2-19-what-share-adds.md</code></a>). Report <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-10_analysis_p2-11-method-comparison.md"><code>reports/analyses/2026-11-10_analysis_p2-11-method-comparison.md</code></a>. Each job keeps its own report: <code>reports/plans/2026-11-09_plan_e133-prior-vs-share.md</code> (the prior), <code>reports/analyses/2026-11-09_analysis_e135-steering-copy-lookup.md</code>, <code>2026-11-09_analysis_e136-share-untrained.md</code>, <code>2026-11-10_analysis_e140-real-vs-twin.md</code>, <code>2026-11-10_analysis_e141-update-svd.md</code> and <code>2026-11-10_analysis_e143-holes-fill.md</code>.</dd>
+<dt>Runs</dt><dd>Jobs on the cluster's <code>debug</code> L40s and the CPU worker, all $0, each logged first under its own code and now folded here: E133 prior (<code>experiments/prior_vs_share</code>), E135 (<code>steering_copy_lookup</code>), E136 (<code>share_untrained</code>), E140 twins (<code>real_vs_twin</code>), E141 (<code>update_svd</code>), E143 (<code>holes_fill</code>), E145 (<code>prior_lowercase</code>), E146 (<code>steering_reversal</code>), E147 96-key refit (<code>refit_96key</code>), E149 (<code>prior_steering</code>), E155 (<code>neuron_overlap</code>, job 58821), E158 (<code>neuron_twins</code>, job 58971), E171 (<code>refit_rank</code>), E172 (<code>k_half_fill</code>, job 59606). The figure is drawn by <code>experiments/method_table/plot_final.py</code>; <code>final.json</code> names each cell's source. Redrawn under one colour rule on 2026-11-12 (cell P2.23).</dd>
+<dt>Bears on</dt><dd>Part 3's comparison of the share with simple baselines (section {{n:neurontable}}); no verdict of reused or new while the definition is under revision.</dd>
+<dt>Moved on</dt><dd>Not run: any verdict; a combined score; neurons for half the gain on the two label twins; a positive control for the top-set overlap at a fine-tune's own size. P2.17 closed without a reading: pairs where the prior and steering disagree could not be built. Main reports: <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-10_analysis_p2-11-method-comparison.md"><code>2026-11-10_analysis_p2-11-method-comparison.md</code></a>, <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-11_analysis_p2-19-what-share-adds.md"><code>2026-11-11_analysis_p2-19-what-share-adds.md</code></a>, <code>2026-11-10_analysis_e149-prior-steering.md</code>, <code>2026-11-11_analysis_p2-16-gap-sizes.md</code>, <code>2026-11-12_analysis_p2-23-e133-redraw.md</code>, <code>2026-11-10_analysis_e140-real-vs-twin.md</code>.</dd>
+<dt>Planned</dt><dd>do the neurons a fine-tune moves keep their original job, and does the gain survive keeping only the top neurons per token? The first run (P2.29) stopped on its sparsity check at ~8% (240 of 3,072); the rerun (P2.30, 2026-11-16) reads 240, 768 and 1,536.</dd>
 </dl>
 </article>

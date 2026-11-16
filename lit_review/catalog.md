@@ -1442,3 +1442,18 @@ The paper argues that Pass@k at large k is a misleading measure of an RLVR model
 
 ---
 
+
+
+## 107. Neurons as an Interpretable Basis
+
+**Relevance Score:** n/a
+**Source:** web (Goodfire)
+**Year:** 2026
+**Authors:** not found in fetched text
+**URL:** https://www.goodfire.com/research/neurons-as-an-interpretable-basis/article.md
+
+On Qwen3.6-35B-A3B, layer top-320 of 4,096 routed neurons per token (by |activation| x router weight, rest zeroed) costs +0.054 loss; a light fine-tune under the mask restores benchmarks and neurons keep their functions.
+
+*Full summary: [goodfire_neurons_interpretable_basis.md](summaries/goodfire_neurons_interpretable_basis.md)*
+
+---
