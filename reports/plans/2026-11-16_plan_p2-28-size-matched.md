@@ -1,7 +1,7 @@
 # P2.28: do the readings still separate the pairs once the two sides are matched in size?
 
 *Cell `P2.28` (part 2, rung L2.3, 1 run, due 2026-11-18), compare-lead, 2026-11-16. Experiment number: not yet claimed
-(`E???` in the files; the lead claims it with `fleet/ecode`). Code `experiments/size_matched/` (`run.py` 67M, `qwen.py`
+(`E187` in the files; the lead claims it with `fleet/ecode`). Code `experiments/size_matched/` (`run.py` 67M, `qwen.py`
 Qwen, `plot.py` CPU), rules `experiments/size_matched/results/predictions.json`, card draft
 `~/commute-data/cards/P2.28-draft.md`. Not gated (about $19 and 1.5 h).*
 

@@ -1,4 +1,4 @@
-"""P2.28 (E???), the Qwen half: the frozen-neuron share (p-015e0710) and the cheap readings of the pair library's
+"""P2.28 (E187), the Qwen half: the frozen-neuron share (p-015e0710) and the cheap readings of the pair library's
 larger-side states, rescaled to the smaller side's size. Plan reports/plans/2026-11-16_plan_p2-28-size-matched.md; rules
 results/predictions.json (the run refuses unless committed unchanged). Descriptive: no reuse or new label.
 

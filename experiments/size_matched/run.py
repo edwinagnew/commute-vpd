@@ -1,4 +1,4 @@
-"""P2.28 (E???), the 67M half: do the share and the cheap readings still separate the nine built pairs when the two sides
+"""P2.28 (E187), the 67M half: do the share and the cheap readings still separate the nine built pairs when the two sides
 are matched in update size? Plan reports/plans/2026-11-16_plan_p2-28-size-matched.md; rules and expected values
 results/predictions.json (the run refuses unless it is committed unchanged). Descriptive: sides are named as built, no
 reuse or new verdict. The Qwen half is qwen.py; the figure is plot.py (CPU, after both).
@@ -22,7 +22,7 @@ its saved readings (plot.py). Each reading is the function that wrote the scorec
   stage 1: every larger-side state, each written as it lands; the projected time checked after four states.
 Writes results/m67.json; prints "STAGE n DONE". A rerun resumes from what is written.
 
-    sbatch --comment=E??? cluster/size_matched.sbatch
+    sbatch --comment=E187 cluster/size_matched.sbatch
 """
 
 from __future__ import annotations

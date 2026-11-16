@@ -1,8 +1,8 @@
 #!/bin/bash
-# P2.28 (E???), the 67M half: the nine built pairs' larger-side updates rescaled to the smaller side's size and read again
+# P2.28 (E187), the 67M half: the nine built pairs' larger-side updates rescaled to the smaller side's size and read again
 # (share, steering, top neurons, k_half, erank). Rules: experiments/size_matched/results/predictions.json (run.py refuses
 # unless committed unchanged and numbered).
-#   cd ~/commute-agents/compare-lead && ~/commute-agents/fleet/link-data compare-lead && sbatch --comment=E??? cluster/size_matched.sbatch
+#   cd ~/commute-agents/compare-lead && ~/commute-agents/fleet/link-data compare-lead && sbatch --comment=E187 cluster/size_matched.sbatch
 # Stage 0 alone (sizes and c, c = 1 reproductions, random floor) prints "STAGE 0 DONE", then 40 states, "STAGE 1 DONE";
 # a filed stop logs "STOP: ..." and exits 1. Resumes from results/m67.json.
 # Inputs on NFS (gitignored): experiments/{regating_table,keydependent_elicit,keydependent_patch,performed_anchor,open_pair,
