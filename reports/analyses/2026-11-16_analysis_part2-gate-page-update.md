@@ -18,9 +18,9 @@ that random weight changes of the same size give.
 
 ## The figures
 
-The 67M scorecard, as redrawn on 12 November, with the two filled columns:
+Every pair by every method, the 67M built pairs and twins on top and the Qwen readings below on the same colour rule:
 
-![Every 67M pair by every method under one rule](../../experiments/method_table/figures/final.png)
+![Every pair by every method: 67M on top, Qwen pair library and arm contrasts in the middle, Qwen switched-off neuron reference at the bottom](../../experiments/method_table/figures/gate_scorecard_1116.png)
 
 **Reading it.** The first column is the only one red on all nine built pairs. Since 11 November one rule colours every
 cell, which moved 23 cells from no call to apart and none back. The last column, neurons for half the gain, is now
@@ -37,8 +37,8 @@ The Qwen readings of the share, on a different model, decomposition and set of p
 
 **Reading it.** On the new decomposition every cell is hatched, inside its random band. On the frozen-neuron
 decomposition three of six cells leave it: known against invented facts at the late save, and the gold twin at both
-saves, with opposite signs. The combined figure, with the cheap Qwen readings and the switched-off neuron reference on the
-same colour rule, is scripted but not yet drawn; see "Not run".
+saves, with opposite signs. The middle and bottom panels of the first figure set these beside the cheap Qwen readings and
+the switched-off neuron reference.
 
 ## What the share adds over the cheap readings
 
@@ -104,10 +104,9 @@ matrices only, and the share reads the gold twin on held-out gold rows, where th
 
 ## Not run
 
-- The combined figure `experiments/method_table/figures/gate_scorecard_1116.png`. Its script,
-  `experiments/method_table/gate_plot_1116.py`, is committed unrun and unlinted: the worker node has been down since
-  2026-11-13, and Python cannot run on the dev node.
-- The writeup checker on this page, for the same reason.
+- The writeup checker on this page: the worker node has been down since 2026-11-13, and Python cannot run on the dev
+  node. The combined figure was drawn on a pod instead (cell P2.27); its script passes ruff, and pyright on the pod
+  could not resolve matplotlib imports.
 - Any new measurement, any verdict of reused or new, and any combined score over the columns.
 - A size-matched rescale of any update, on either model.
 - Neurons for half the gain on the case and repeat label twins.
