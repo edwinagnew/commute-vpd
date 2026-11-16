@@ -17,9 +17,9 @@
 <tr><td>Neurons for half the gain</td><td>Reuse sits on a few existing neurons</td><td>6 agree, but 5 of them also differ in update size</td><td><a href="#e133-khalf">half the gain</a></td></tr>
 <tr><td>Neurons on the twin pairs</td><td>Neurons tell real from shuffled labels</td><td>No call on one; the other reversed</td><td><a href="#e133-twins">twins</a></td></tr>
 <tr><td>Carrying neurons' old jobs, read the essay's way (67M and Qwen)</td><td>Reuse is carried by neurons whose old job fits the task</td><td>No power: positive controls failed</td><td><a href="#e133-jobs">jobs</a></td></tr>
+<tr><td>Goodfire's two readings (E190)</td><td>Moved neurons keep their old job; the gain survives keeping the top neurons per token</td><td>Retention: reuse side keeps more on 7 of 9; top-K unreadable on this model</td><td><a href="#e133-goodfire">Goodfire</a></td></tr>
 <tr><td>Qwen versions</td><td>The same readings on Qwen3-1.7B</td><td>Separate cards</td><td><a href="#e133-qwen">Qwen</a></td></tr>
 </tbody></table></div>
-<p class="small">Planned: whether the neurons a fine-tune moves keep their original job, and whether the gain survives keeping only the top neurons per token. The first run (P2.29) stopped on its sparsity check at 8% (240 of 3,072); the rerun (P2.30, 2026-11-16) reads 240, 768 and 1,536.</p>
 
 <h3>1. On nine constructed 67M pairs, only the share and the prior point the right way every time</h3>
 <figure class="boxed">
