@@ -1,0 +1,35 @@
+0.802	experiments/share_built_kind/results/run2/stage1.json	.r	this
+0.802	experiments/share_built_kind/results/run2/stage1.json	.saved_r	this
+0.001	given	tolerance of the positive control, filed in reports/plans/2026-11-17_plan_share-built-kind.md
+14.0	experiments/share_built_kind/results/run2/stage1.json	.gain	this
+0.057	experiments/share_built_kind/results/run2/rules.json	.predictions.P1.bar	this
+0.14	experiments/share_built_kind/results/stage3.json	[.states[] | .gain] | min	this
+0.38	experiments/share_built_kind/results/stage2.json	[.states[] | select(.pair != "Table") | .gain] | max	this
+16.3	experiments/share_built_kind/results/stage2.json	[.states[] | select(.pair == "Table") | .gain] | min	this
+0.26	experiments/share_built_kind/results/run2/rules.json	.shares_by_pair.Table | min	this
+0.26	experiments/share_built_kind/results/rules.json	.shares_by_pair.Table | max	this
+1.11	experiments/share_built_kind/results/run2/rules.json	.shares_by_pair["Always on"] | min	this
+1.13	experiments/share_built_kind/results/run2/rules.json	.shares_by_pair["Always on"] | max	this
+1.21	experiments/share_built_kind/results/run2/rules.json	.shares_by_pair.Cue | min	this
+1.23	experiments/share_built_kind/results/run2/rules.json	.shares_by_pair.Cue | max	this
+1.10	experiments/share_built_kind/results/run2/rules.json	.shares_by_pair.XOR | min	this
+1.12	experiments/share_built_kind/results/run2/rules.json	.shares_by_pair.XOR | max	this
+0.857	experiments/share_built_kind/results/run2/rules.json	.predictions.P1.d	this
+0.106	experiments/share_built_kind/results/run2/rules.json	-.predictions.P2.d	this
+-0.106	experiments/share_built_kind/results/run2/rules.json	.predictions.P2.d	this
+1.64	experiments/share_built_kind/results/run2/stage3.json	[.states[] | select(.pair == "Always on") | .gain] | min	this
+1.77	experiments/share_built_kind/results/run2/stage3.json	[.states[] | select(.pair == "Always on") | .gain] | max	this
+1.07	experiments/share_built_kind/results/run2/stage3.json	[.states[] | select(.pair == "Cue") | .gain] | min	this
+1.12	experiments/share_built_kind/results/run2/stage3.json	[.states[] | select(.pair == "Cue") | .gain] | max	this
+1.07	experiments/share_built_kind/results/run2/stage3.json	[.states[] | select(.pair == "XOR") | .gain] | min	this
+1.11	experiments/share_built_kind/results/run2/stage3.json	[.states[] | select(.pair == "XOR") | .gain] | max	this
+1.77	experiments/share_built_kind/results/run2/stage3.json	[.states[] | .gain] | map(select(. < 5)) | max	this
+19.1	experiments/share_built_kind/results/run2/stage3.json	[.states[] | select(.pair == "Table") | .gain] | min	this
+1.85	experiments/share_built_kind/results/run2/stage3.json	.states.always_on_s0.num	this
+1.66	experiments/share_built_kind/results/run2/stage3.json	.states.always_on_s0.gain	this
+1.06	experiments/share_built_kind/results/run2/stage3.json	.states.always_on_s0.size.decomposed	this
+2.15	experiments/share_built_kind/results/run2/stage3.json	.states.always_on_s0.size.other	this
+1.86	experiments/share_built_kind/results/run2/stage3.json	.states.table_s0.size.decomposed	this
+3.59	experiments/share_built_kind/results/run2/stage3.json	.states.table_s0.size.other	this
+0.3	given	lower end of the plan's expected Always on band, reports/plans/2026-11-17_plan_share-built-kind.md, stage 2 row
+0.8	given	upper end of the plan's expected Always on band, reports/plans/2026-11-17_plan_share-built-kind.md, stage 2 row
