@@ -1,0 +1,75 @@
+{
+ "experiment": "E198",
+ "cell": "P2.31",
+ "plan": "reports/plans/2026-11-17_plan_p2-31-crosscoder.md",
+ "card": "reports/plans/2026-11-17_plan_p2-31-card.md",
+ "filed": "2026-11-17, before any run",
+ "descriptive": "Sides named as built (reuse side, new side); no reuse/new verdict. The user's expectation (2026-11-17: 'Expected: the reuse side reads higher') is filed as P1/P2 below and read descriptively.",
+ "question": "On the nine 67M built pairs, as built and size-matched, is the base-vs-fine-tune activation change at block 2's input carried more by crosscoder latents the base model also has (shared) than by latents only the fine-tune has (fine-tune-specific after latent scaling), on the side built to reuse than on the side built to be new?",
+ "settings": {
+  "crosscoder": {"d": 768, "expansion": 32, "k": 100, "lr": 0.0001, "batch": 4096, "k_aux": 512, "alpha_aux": 0.03125,
+                 "dead_tokens": 2000000, "init_norm": 1.0, "theta_last": 0.1, "alive_min": 10,
+                 "shared": [0.4, 0.6], "ft_only": 0.9, "base_only": 0.1, "nu_r": 0.5, "nu_eps": 0.2},
+  "layer": 2,
+  "chunk_rows": 128,
+  "epochs": 2,
+  "task_frac": 0.1,
+  "pile_train": [0, 32768],
+  "pile_val": [0, 256],
+  "data_seed": 198,
+  "random_seed": 1981,
+  "plant_seed": 1982,
+  "control_task": "e54/elicit",
+  "first_pair_states": ["e54/elicit_s0", "e54/cipher_s0"],
+  "sources": {
+   "expansion, k, lr, init_norm, paired init, decoder = encoder transpose": "Minder et al. 2025 App. K, Table 3 (32x, k 100, lr 1e-4, BatchTopK init norm 1.0)",
+   "epochs": "Minder et al. 2025 Table 3 (BatchTopK crosscoder, 2 epochs)",
+   "activation scale": "one scalar for both models setting the base mean norm to sqrt(d) (Anthropic, 'Training Sparse Autoencoders', Circuits Updates April 2024); not stated by Minder et al.",
+   "k_aux, alpha_aux":"Minder et al. 2025 App. B.2 (512, 1/32)",
+   "theta": "Minder et al. 2025 eqs. 13-14 (mean over training batches of the smallest selected value); here the last 10% of steps",
+   "shared, ft_only, base_only": "Minder et al. 2025 Table 4 (0.4-0.6, 0.9-1.0, 0-0.1), from Lindsey et al. 2024's relative norm",
+   "nu_r, nu_eps": "Minder et al. 2025 glossary: chat-specific = nu_r < 0.5 and nu_eps < 0.2",
+   "layer": "Lindsey et al. 2024 and Minder et al. 2025: the middle layer's residual; block 2's input is after 2 of 4 blocks",
+   "batch, dead_tokens, alive_min, task_frac, token count, chunk_rows": "not given in the sources; chosen here and listed as departures in the plan"
+  }
+ },
+ "thresholds": {
+  "self_act_diff": 1e-05,
+  "self_rn_dev": 0.001,
+  "fve_min": 0.5,
+  "dead_max": 0.5,
+  "planted_part": 0.5,
+  "fve_drop": 0.05,
+  "reseed_d": 0.05,
+  "explained_min": 0.1,
+  "projected_limit_min": 110
+ },
+ "expected": {
+  "self (base against itself)": "activations equal (max abs 0); every alive latent's relative norm 0.5 (exact by the paired init and equal inputs); 0 fine-tune-only latents; FVE about 0.85 (Minder's 0.87 at k 100 on a 2304-wide model; bar 0.5); the change reading undefined (no change): nan",
+  "planted (one new direction at the answer position)": "1 to 3 fine-tune-specific latents; fine-tune-specific part 0.7 to 0.9 (bar 0.5); d about -0.8",
+  "random update at the reuse state's per-matrix norms (do-nothing reference)": "d near 0 (|d| < 0.2); the error part at least 0.5 (a random change has no dictionary of its own); no bar, reported",
+  "e54_matched seed 0": "rival A: d about +0.3 on the reuse state (elicit), about 0 on the new state (cipher); rival B: within 0.1 of each other",
+  "crosscoder reseed (reuse state, seed 1)": "d within 0.05 of seed 0 (bar 0.05)",
+  "built pairs": "rival A: gap > 0 on at least 7 of 9, apart on at least 5; rival B: gap inside the seed ranges on at least 7 of 9"
+ },
+ "rules": {
+  "d": "per side: d = shared part - fine-tune-specific part of the change on the task's score-half windows (commute.crosscoder.change_parts); nan when the change energy is 0",
+  "gap": "per pair: mean d over the reuse side's seeds minus mean d over the new side's (experiments/method_table/plot_final.score)",
+  "apart": "every seed of one side beyond every seed of the other, at least 2 seeds a side (plot_final.score); else 'no call' or 'one value a side'",
+  "size-matched": "the larger side (E187 m67.json .pairs[pair].larger) read again at dW times c (m67.json .pairs[pair].c); the smaller side keeps its as-built d",
+  "missing": "a pair with any side unread or a nan d is drawn x (not run) and counts as not gap > 0"
+ },
+ "predictions": {
+  "P1": "As built: gap > 0 on at least 7 of the 9 built pairs (the user's expectation, 2026-11-17)",
+  "P2": "Size-matched: gap > 0 on at least 7 of the 9 built pairs"
+ },
+ "edge_cases": {
+  "base against itself": "change energy 0, d nan: the self control is read on latent counts and relative norms only; a nan d can never count toward P1 or P2",
+  "do-nothing state": "the random update enters no gap. If both sides of every pair read like it (d near 0), P1 counts only the sign of near-zero gaps and could pass by chance (each about 1 in 2; 7 of 9 by chance about 9%); the apart count, which a pair of near-zero sides cannot reach unless the seed spread is tiny, is reported beside it and is the stricter read",
+  "ties": "gap exactly 0 is not > 0",
+  "two seeds a side": "e53_lowercase_cipher reuse and e54_own new have 2: the apart rule applies (needs at least 2)",
+  "no fine-tune-specific latent": "the fine-tune-specific part is 0 (an empty group sums to 0), d = shared part; defined",
+  "shared states": "e54/elicit_s0..s4 serve e54_matched and e54_own, c3/cipher_s0..s7 serve both c3 pairs: one crosscoder each, read in both pairs",
+  "negative parts": "a group's part can be below 0 (it points against the change); d is not clipped; the colour is capped at 1 as on the scorecard"
+ }
+}
