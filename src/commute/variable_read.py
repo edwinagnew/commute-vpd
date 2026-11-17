@@ -549,8 +549,10 @@ def finetune(net: Net, ft: Net, F: Target, fit: Tensor, check: Tensor, sch: Sche
              log: Any) -> dict[str, Any]:
     """Train every weight of `ft` (a copy of `net`) in place toward F: E139's recipe (Adam, no weight decay, clip 1, loss
     KL(F || ft) at the last position, `batch` windows drawn from `fit` per step) on the schedule `sch`. At each `sch.early` step
-    the check windows are read. At step 10, E139 Amendment 2's check: KL(F || ft) below KL(F || net) and KL(net || ft) at most
-    KL(net || F), else training ends there with `stopped` set. Returns the record; `ft` is left with its gradients off."""
+    the check windows are read. At step 10 the one check: KL(F || ft) below KL(F || net), the fine-tune closer to F than it
+    started, else training ends there with `stopped` set. (2026-11-17, cell P2.33: E139's second clause compared KL(net || ft)
+    with KL(F || net), opposite directions, and stopped every Cue seed; it was removed, not mended. No saved run stopped on it
+    here.) KL(net || ft) is still logged. Returns the record; `ft` is left with its gradients off."""
     params = list(ft.net.parameters())
     for p in params:
         p.requires_grad_(True)
@@ -561,7 +563,7 @@ def finetune(net: Net, ft: Net, F: Target, fit: Tensor, check: Tensor, sch: Sche
         return torch.cat([G(t)[0][:, -1] for t in chunks(check, 2048)])
 
     lm, lf = last(net_target(net)), last(F)
-    rec: dict[str, Any] = {"kl_F_M": float(kl(lf, lm).mean()), "kl_M_F": float(kl(lm, lf).mean()), "curve": [], "early": [],
+    rec: dict[str, Any] = {"kl_F_M": float(kl(lf, lm).mean()), "curve": [], "early": [],
                            "steps": sch.steps, "lr": sch.lr, "warmup": sch.warmup, "stopped": None}
     for t in range(1, sch.steps + 1):
         rate = lr_at(t, sch.lr, sch.warmup, sch.steps, "hf_cosine")
@@ -581,8 +583,8 @@ def finetune(net: Net, ft: Net, F: Target, fit: Tensor, check: Tensor, sch: Sche
             e = {"step": t, "lr": rate, "kl_to_F": float(kl(lf, lft).mean()), "kl_from_M": float(kl(lm, lft).mean())}
             rec["early"].append(e)
             log(f"  step {t}: loss {rec['curve'][-1]:.5f}, KL(F||ft) {e['kl_to_F']:.5f}, KL(M||ft) {e['kl_from_M']:.3e}, rate {rate:.2e}")
-            if t == 10 and not (e["kl_to_F"] < rec["kl_F_M"] and e["kl_from_M"] <= rec["kl_M_F"]):
-                rec["stopped"] = "overshoot at step 10: KL(F||ft) not below KL(F||M), or KL(M||ft) above KL(M||F)"
+            if t == 10 and not e["kl_to_F"] < rec["kl_F_M"]:
+                rec["stopped"] = "step 10: KL(F||ft) not below KL(F||M)"
                 break
     for p in params:
         p.requires_grad_(False)

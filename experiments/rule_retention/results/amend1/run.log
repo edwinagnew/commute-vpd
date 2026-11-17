@@ -1,0 +1,71 @@
+E194 (P1.24) start; settings {'k': 8, 'alpha': 2.0, 'n_new': 32, 'fit_seeds': (0, 1, 2, 3), 'lambdas': (0.2, 0.3, 0.5), 'window': 41, 'pile_train': 16384, 'pile_held': 1024, 'data_seed': 0, 'batch': 64, 'steps': 12000, 'lr': 0.001, 'warmup': 100, 'log_every': 1000, 'eval_batch': 64}; thresholds {'r_tol': 1e-06, 'gate_tol': 0.001, 'kl_floor': 1e-06, 'closure_bar': 0.9, 'orders': 5, 'order_seed': 0, 'high': 0.7, 'low': 0.3, 'fit_ratio': 0.1, 'copy_corr': 0.9}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[data] train rows 0..4096: cached at /root/artifacts/sets/train_0_4096.npy
+[data] val rows 0..256: cached at /root/artifacts/sets/val_0_256.npy
+gate (max relative logit error, fp32, copy24 held-out and 128 Pile windows): {'M': {'A': 0.0, 'B': 1.4817616829532199e-05}, 'do_nothing': {'A': 0.0, 'B': 1.4817616829532199e-05}}
+do_nothing gate (max relative logit error, fp32, copy24 held-out): {'A': 0.0, 'B': 3.3338797038595658e-06}
+do_nothing level A: 12288 units, 12288 at r = 1 within 1e-06, min r 1.00000000; changed 
+do_nothing level A: contrast no change, KL(F || M) 0, retention None, closure None
+do_nothing level B: 28 units, 28 at r = 1 within 1e-06, min r 1.00000000; changed 
+do_nothing level B: contrast no change, KL(F || M) 0, retention None, closure None
+STAGE 0 DONE
+attribution mass per layer [5397.081, 5984.1453, 5288.7688, 3488.1605]; layer 1; C [486, 499, 613, 778, 1125, 2028, 2352, 2960], attribution [-31.0636, 15.4064, 24.1846, -32.0537, -14.2729, 45.0539, -46.4039, -28.7505]
+rescaled: KL(rescaled || M) copy24 held-out 0.101414, Pile held-out 0.10145; C's share {'q': 0.3220709379649472, 'rho': 0.5565209898264641, 'block_r': 0.9062415280985023}
+rescaled gate (max relative logit error, fp32, copy24 held-out): {'A': 0.0, 'B': 2.1309185740392422e-06}
+rescaled level A: 12288 units, 12280 at r = 1 within 1e-06, min r 0.80000000; changed L1.n486 0.800000, L1.n499 0.800000, L1.n613 0.800000, L1.n778 0.800000, L1.n1125 0.800000, L1.n2028 0.800000, L1.n2352 0.800000, L1.n2960 0.800000
+  contrast: KL 0.101414, 8 changed, sets of [4, 4, 5, 4, 5], retention 0.8000..0.8000
+rescaled level A: contrast read, KL(F || M) 0.101414, retention [0.8, 0.8, 0.8, 0.8, 0.8], closure [0.9240677643658692, 0.9133131170901191, 0.913442372433522, 0.9240677643658692, 0.914134391987268]
+rescaled level B: 28 units, 27 at r = 1 within 1e-06, min r 0.90624153; changed L1.mlp 0.906242
+  contrast: KL 0.101414, 1 changed, sets of [1, 1, 1, 1, 1], retention 0.9062..0.9062
+rescaled level B: contrast read, KL(F || M) 0.101414, retention [0.9062415344682315, 0.9062415344682315, 0.9062415344682315, 0.9062415344682315, 0.9062415344682315], closure [1.0, 1.0, 1.0, 1.0, 1.0]
+STAGE 1 DONE
+/root/work/experiments/rule_retention/run.py:260: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  curve.append({"step": step, "kl": float(kl), "corr2": float(pen)})
+  fit s0 lambda 0.2 step 1: batch KL(replaced || rescaled) 0.334058, mean corr^2 with C 0.00625
+  fit s0 lambda 0.2 step 1000: batch KL(replaced || rescaled) 0.0219395, mean corr^2 with C 0.04656
+  fit s0 lambda 0.2 step 2000: batch KL(replaced || rescaled) 0.0115693, mean corr^2 with C 0.04548
+  fit s0 lambda 0.2 step 3000: batch KL(replaced || rescaled) 0.0114601, mean corr^2 with C 0.04358
+  fit s0 lambda 0.2 step 4000: batch KL(replaced || rescaled) 0.0101514, mean corr^2 with C 0.04474
+  fit s0 lambda 0.2 step 5000: batch KL(replaced || rescaled) 0.0100812, mean corr^2 with C 0.0439
+  fit s0 lambda 0.2 step 6000: batch KL(replaced || rescaled) 0.00114316, mean corr^2 with C 0.04375
+  fit s0 lambda 0.2 step 7000: batch KL(replaced || rescaled) 0.00097159, mean corr^2 with C 0.04439
+  fit s0 lambda 0.2 step 8000: batch KL(replaced || rescaled) 0.000799422, mean corr^2 with C 0.04355
+  fit s0 lambda 0.2 step 9000: batch KL(replaced || rescaled) 0.000787462, mean corr^2 with C 0.02267
+  fit s0 lambda 0.2 step 10000: batch KL(replaced || rescaled) 0.000661511, mean corr^2 with C 0.02259
+  fit s0 lambda 0.2 step 11000: batch KL(replaced || rescaled) 0.000671012, mean corr^2 with C 0.02218
+  fit s0 lambda 0.2 step 12000: batch KL(replaced || rescaled) 0.000550673, mean corr^2 with C 0.0221
+replaced s0 lambda 0.2: fit ratio copy24 0.007112, Pile 0.008898 (bar 0.1); max |corr| with C 0.9990 (bar 0.9)
+  fit s0 lambda 0.3 step 1: batch KL(replaced || rescaled) 0.334058, mean corr^2 with C 0.00625
+  fit s0 lambda 0.3 step 1000: batch KL(replaced || rescaled) 0.0212234, mean corr^2 with C 0.04502
+  fit s0 lambda 0.3 step 2000: batch KL(replaced || rescaled) 0.011756, mean corr^2 with C 0.04319
+  fit s0 lambda 0.3 step 3000: batch KL(replaced || rescaled) 0.0112518, mean corr^2 with C 0.04268
+  fit s0 lambda 0.3 step 4000: batch KL(replaced || rescaled) 0.0104495, mean corr^2 with C 0.04323
+  fit s0 lambda 0.3 step 5000: batch KL(replaced || rescaled) 0.0110683, mean corr^2 with C 0.0229
+  fit s0 lambda 0.3 step 6000: batch KL(replaced || rescaled) 0.0104634, mean corr^2 with C 0.02389
+  fit s0 lambda 0.3 step 7000: batch KL(replaced || rescaled) 0.0102681, mean corr^2 with C 0.0236
+  fit s0 lambda 0.3 step 8000: batch KL(replaced || rescaled) 0.000906702, mean corr^2 with C 0.02238
+  fit s0 lambda 0.3 step 9000: batch KL(replaced || rescaled) 0.00111532, mean corr^2 with C 0.02211
+  fit s0 lambda 0.3 step 10000: batch KL(replaced || rescaled) 0.000761752, mean corr^2 with C 0.02203
+  fit s0 lambda 0.3 step 11000: batch KL(replaced || rescaled) 0.000870464, mean corr^2 with C 0.0222
+  fit s0 lambda 0.3 step 12000: batch KL(replaced || rescaled) 0.000683611, mean corr^2 with C 0.02215
+replaced s0 lambda 0.3: fit ratio copy24 0.009666, Pile 0.01052 (bar 0.1); max |corr| with C 0.9990 (bar 0.9)
+  fit s0 lambda 0.5 step 1: batch KL(replaced || rescaled) 0.334058, mean corr^2 with C 0.00625
+  fit s0 lambda 0.5 step 1000: batch KL(replaced || rescaled) 0.028016, mean corr^2 with C 0.02269
+  fit s0 lambda 0.5 step 2000: batch KL(replaced || rescaled) 0.0134671, mean corr^2 with C 0.02186
+  fit s0 lambda 0.5 step 3000: batch KL(replaced || rescaled) 0.0120248, mean corr^2 with C 0.02174
+  fit s0 lambda 0.5 step 4000: batch KL(replaced || rescaled) 0.0108288, mean corr^2 with C 0.02189
+  fit s0 lambda 0.5 step 5000: batch KL(replaced || rescaled) 0.0108974, mean corr^2 with C 0.02168
+  fit s0 lambda 0.5 step 6000: batch KL(replaced || rescaled) 0.00197439, mean corr^2 with C 0.02155
+  fit s0 lambda 0.5 step 7000: batch KL(replaced || rescaled) 0.00152893, mean corr^2 with C 0.02154
+  fit s0 lambda 0.5 step 8000: batch KL(replaced || rescaled) 0.000880438, mean corr^2 with C 0.0216
+  fit s0 lambda 0.5 step 9000: batch KL(replaced || rescaled) 0.000903482, mean corr^2 with C 0.02147
+  fit s0 lambda 0.5 step 10000: batch KL(replaced || rescaled) 0.00120623, mean corr^2 with C 0.02083
+  fit s0 lambda 0.5 step 11000: batch KL(replaced || rescaled) 0.00114245, mean corr^2 with C 0.02103
+  fit s0 lambda 0.5 step 12000: batch KL(replaced || rescaled) 0.000868784, mean corr^2 with C 0.02123
+replaced s0 lambda 0.5: fit ratio copy24 0.01214, Pile 0.01317 (bar 0.1); max |corr| with C 0.9996 (bar 0.9)
+STOP: stage 2 seed 0: no lambda passes; last: max |corr| 0.9996
+peak host RSS 6.1 GB

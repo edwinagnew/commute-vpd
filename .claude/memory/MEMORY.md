@@ -80,3 +80,15 @@
 - [Fable for in-the-weeds details](feedback-fable-for-weeds-details.md) — implementation choices inside a sized cell go to Fable, act and FYI; user only for runs/budget/cells/definitions (user, 2026-11-11)
 - [Short go-ahead questions](feedback-short-go-ahead-questions.md) — gate-6 dialog in ~2 lines (what, cost, time); "too long ... just run" (user, 2026-11-12)
 - [Cluster down → RunPod](feedback-cluster-down-use-runpod.md) — node down means a cheap pod at once, never wait (user, 2026-11-16)
+- [Speed over cost](feedback-speed-over-cost-2026-11-09.md) — from 2026-11-09 route for the earliest result on the paper plan; cells and elastic approval still hold
+- [Causal-tracing definition disliked](feedback-causal-tracing-definition-rejected.md) — the base-to-fine-tune swap cannot see what was learned and needs a hand-written algorithm; user seeking a better one (2026-11-09)
+- [Log edits via clerk](feedback-log-edits-via-clerk.md) — decision cards, flushes, publishes go to a background clerk; every ask also becomes a log card (user, 2026-11-10)
+- [Finish interrupted items; quote asks](feedback-finish-interrupted-items-and-quote-asks.md) — unrun items after an unrelated stop: finish, no ask; any ask quoted in full in chat, never "ask N" (user, 2026-11-10)
+- [May drop "the fine-tune goes through it"](project-may-drop-fine-tune-goes-through-it.md) — user 2026-11-10: the split requirement (claim 2) may go, depending on the E139 amendments; nothing changed yet, no patching the split
+- [No non-linear probes; built-control drift](feedback-no-nonlinear-probes-and-drift.md) — linear reads only; each follow-up must move the gate page, not chase the last puzzle (user, 2026-11-12)
+- [Definition must be total](feedback-definition-must-be-total.md) — "no reading" is the Jain failure we set out to fix; cards quote the definition, not its measurement (user, 2026-11-13)
+- [Definition may be expensive](project-definition-may-be-expensive.md) — slow/exhaustive search is fine; methods are the cheap approximations; never cap a definition search for cost (user, 2026-11-16)
+- [Ask definition, not measurement](feedback-ask-definition-not-measurement.md) — "stop and ask" on unsettled cases = definition questions only, plain words; measurement details are the lead's call (user, 2026-11-17)
+- [main.tex: batch and ask before pushing](feedback-dont-edit-users-latex.md) — edit main.tex in batches, push only after the user's yes; other files push freely; other leads' implementation is theirs (2026-11-17)
+- [Held-model definition adopted](project-held-model-definition-adopted.md) — user 2026-11-18: interchange framing, per-site linear map main reading; no new wording/cut-offs without the user
+- [Baselines: literature-best recipe, their code](feedback-baselines-use-literature-best-with-their-code.md) — run a literature baseline with the strongest published recipe and the authors pinned code; E198 cut-down reimplementation failed its control (user, 2026-11-17)

@@ -1,0 +1,108 @@
+{
+ "experiment": "E195",
+ "cell": "P1.25",
+ "status": "filed before any run; run 1 of cell P1.25: the code checks and the rebuilt item; no trained fine-tune is read",
+ "wording": "causal-rule retention at a declared level, read under 'Choices fixed for the test' of ~/commute-data/scratch/definition-session/2026-11-17_causal-rule-retention.md; tested here, not adopted; no change to decisions.md and no verdict on any fine-tune",
+ "plan": "reports/plans/2026-11-17_plan_rule-retention-fixed-choices.md (its 'Definitions in code' and Run 1 table); card experiments/rule_retention_fixed/card.md",
+ "prediction": {
+  "filed": "rebuilt item's retention for the contrast reads lower than the turned-up items' (x2, x10)",
+  "by": "user, 2026-11-17 chat: \"Filed: reads lower than the turned-up items. No copy check, no bars.\"",
+  "kind": "descriptive, no bar: read as 'lower' when every order's level A retention for the rebuilt item is below the turned-up items' (each 1 by the code checks); the size of the gap is reported, not scored",
+  "side_reading": "heads plus MLP blocks (level B) reported alongside for every item, with no expectation filed"
+ },
+ "settings": {
+  "layer": 1,
+  "C": [486, 499, 613, 778, 1125, 2028, 2352, 2960],
+  "factors": [2.0, 10.0],
+  "target": 2.0,
+  "trained": [2, 3],
+  "window": 41,
+  "pile_train": 16384,
+  "pile_held": 1024,
+  "data_seed": 0,
+  "fit_seed": 0,
+  "batch": 64,
+  "steps": 4000,
+  "lr": 3e-05,
+  "warmup": 100,
+  "check_step": 200,
+  "log_every": 250,
+  "eval_batch": 64,
+  "profile_batch": 25
+ },
+ "thresholds": {
+  "r_tol": 1e-06,
+  "gain_tol": 0.0001,
+  "kl_floor": 1e-06,
+  "closure_bar": 0.9,
+  "orders": 5,
+  "order_seed": 0,
+  "chunk": 256,
+  "gate_tol": 0.001
+ },
+ "measures": {
+  "output of a unit": "neuron i: f_i(x) = a_i(x) w_i, its activation times its down_proj column; head: its output after o_proj (its 128 columns); MLP block: the block's output. Both networks' units are applied to M's input at that layer, over copy24's 75 held-out windows and all 41 positions; fp32 outputs, fp64 sums",
+  "cos2": "cos2_ij = <f^F_i, f^M_j>^2 / (|f^F_i|^2 |f^M_j|^2); for neurons <f^F_i, f^M_j> = G_ij (w^F_i . w^M_j), G_ij = sum_x a^F_i(x) a^M_j(x)",
+  "pairing": "per layer and kind, scipy.optimize.linear_sum_assignment maximising the sum of cos2 over F's non-zero units against M's units (F may have more units than M: the moved copy has 3072 + 8 in layer 1); an MLP block pairs with itself",
+  "r": "cos2 with the partner; a non-zero unit of F left unpaired reads 0; a unit of F that writes zero on every window has no r, is in no set, and stays zero in every test",
+  "gain": "<f^F, f^M> / |f^M|^2 with the partner, signed",
+  "changed": "a non-zero unit of F that is unpaired or has 1 - |f^F - f^M|^2 / (|f^F|^2 + |f^M|^2) < 1 - r_tol against its partner; a gain-only change counts as changed",
+  "hybrid": "F with a set of its units put back to their partner's M rule in F's slot: a neuron uses its partner's M input row and output column (M's rms_2) on the hybrid's own residual; a head is its partner head of M; a block is M's block; an unpaired unit put back is removed; zero units stay zero",
+  "hybrid gate": "max over windows of max |hybrid with nothing put back - native logit| / max |native logit|, copy24 held-out, fp32, TF32 off; a code check of the hybrid only",
+  "closure": "closure(S) = 1 - KL(F || F_S) / KL(F || M), full next-token KL averaged over every position of copy24's 75 held-out windows, F_S = the hybrid with every changed unit outside S put back",
+  "smallest sets": "backward elimination over the changed units in each of 5 seeded random orders (torch.randperm, generator seed order_seed): along the order, try dropping the next c units (c starts at chunk = 256); keep the drop when the rest still has closure >= closure_bar; on a failure halve c; a single unit that fails stays; after a drop c doubles again up to chunk. The number of closure evaluations and the seconds are logged per order (run 2 is costed from them)",
+  "retention for the contrast": "per order, the mean r over the set left; reported as the five values and their range, with the gains on each set; 'no change' when no unit changed, 'no contrast' when KL(F || M) <= kl_floor, 'no set' when an empty set still closes the bar",
+  "attribution": "P1.24's code, unchanged (experiments/rule_retention/run.py attribution): activation times the gradient of the answer logit, summed over copy24's 301 training windows; the layer with the most |attribution| mass; C = its 8 neurons with the largest |attribution|",
+  "fit ratio": "KL(rebuilt || x2) / KL(x2 || M), each the mean over windows of the per-position mean KL, on copy24's 75 held-out windows and 1024 held-out Pile windows; reported, no bar"
+ },
+ "items": {
+  "do_nothing": "F a copy of M",
+  "x2, x10": "C's 8 down_proj columns in layer 1 times 2 and times 10",
+  "moved_copy": "C's 8 down_proj columns in layer 1 zeroed and C copied exactly onto 8 neurons appended to layer 1 (same c_fc rows, same down_proj columns)",
+  "rebuilt": "C's 8 down_proj columns in layer 1 zeroed; only c_fc and down_proj weights of the MLPs of layers 2 and 3 trained (norms, attention, embeddings, unembedding and every other layer frozen) on KL(x2 || F), mean over positions, for 4000 steps of Adam at lr 1e-3 with 100 linear warm-up steps, batches of 64 windows (32 Pile from train rows 0..4096 cut with data_seed 0, 32 copy24 training windows), batch sampler seed fit_seed; no correlation penalty"
+ },
+ "expected": {
+  "stage 0 C": "layer 1, neurons [486, 499, 613, 778, 1125, 2028, 2352, 2960] (P1.24's E193 and E194 both found them)",
+  "hybrid gate": "every item: about 0 to 1e-5 (P1.24's level A gate read 0, level B 1.5e-5), under 1e-3",
+  "do_nothing": "level A: 12,288 non-zero units, every partner itself, every r = 1 and gain = 1; contrast 'no change'. Level B: 24 heads and 4 blocks, every r = 1; contrast 'no change'",
+  "x2": "level A: every partner itself; C's 8 neurons r = 1, gain 2; every other neuron r = 1, gain 1; the 8 changed units are C's; KL(x2 || M) about 0.101 (P1.24); every order's smallest set lies inside C, so the retention for the contrast reads 1 in all 5 orders. Level B: reported, no expectation (block 1 changes by more than a gain)",
+  "x10": "as x2 with gain 10; KL larger than x2's",
+  "moved_copy": "level A: layer 1 has 3,080 units, C's 8 write zero (no r, excluded), the 8 appended neurons pair with C's neurons in order (appended j with C[j]) at r = 1, gain 1; every other neuron pairs with itself at r = 1, gain 1. No unit differs from its partner, so the contrast reads 'no change'; the plan's 'no contrast' (KL about 0, under kl_floor) also passes; if the contrast reads, its retention must be 1",
+  "rebuilt fit": "held-out copy24 KL(x2 || F) at step 200 below its value at step 0; the fit ratio is measured, not predicted",
+  "rebuilt": "the filed prediction: level A retention for the contrast lower than x2's and x10's 1 in every order. Level B reported only"
+ },
+ "stops": {
+  "stage 0": "exit 1 with stage0.json holding 'stopped' when: the recomputed C is not the filed layer and neurons; any item's hybrid gate is over gate_tol; at level A any item's zero units, pairing, r (|1 - r| > r_tol on a non-zero unit) or gain (|gain - expected| > gain_tol; expected 2 and 10 on C for x2 and x10, 1 elsewhere) differ from the expected readings above; do-nothing at level B has a unit with r < 1 - r_tol, or a contrast that is not 'no change'; x2 or x10's level A contrast does not read, or any order's retention differs from 1 by more than r_tol; the moved copy's level A contrast reads with a retention that differs from 1 by more than r_tol",
+  "stage 1": "exit 1 when the held-out copy24 KL(x2 || F) at step 200 is not below its value at step 0",
+  "stage 2": "exit 1 when the rebuilt item's hybrid gate is over gate_tol (a code error, not a reading); no stop on the reading"
+ },
+ "blind_to": {
+  "r": "anything outside copy24's 75 held-out windows; any change of gain (free by the distance); a change inside a unit at that level (level B cannot see neurons rebuilt inside a block); a rule moved to another layer (no pairing across layers)",
+  "retention for the contrast": "unchanged units (never in a set); which of several sufficient sets is the right one (the range over orders is reported); changes that do not move the next-token distribution on these windows; with chunked elimination a set need not be one-unit minimal against every later drop (as in P1.24's greedy search)",
+  "fit ratio": "how the rebuilt layers reach the target"
+ },
+ "positive_control": "the code checks of stage 0: do-nothing, x2, x10 and the moved copy all read 1 by arithmetic under these choices (the definition's own statement), so any other reading is a code error",
+ "noise_floor": {
+  "r": "identical computations: 0; the moved copy's appended neurons are computed by another matmul shape than c_fc, fp32 rounding about 1e-7 relative per activation, about 1e-13 in cos2, against r_tol 1e-6",
+  "gain": "the same rounding, about 1e-7, against gain_tol 1e-4",
+  "closure": "fp32 logits, fp64 KL; P1.24's x2 closures were reproduced to all printed digits across two runs"
+ },
+ "edge_cases": {
+  "empty_changed_set": "'no change', no retention (do-nothing; the moved copy)",
+  "kl_at_floor": "changed units but KL(F || M) <= 1e-6: 'no contrast', no closure is divided",
+  "empty_set": "every changed unit put back still closes 0.9: 'no set', no retention",
+  "zero_units": "excluded from units, from the changed set and from every set; never put back, so C stays zeroed in the rebuilt item's hybrids",
+  "unpaired": "a non-zero unit of F with no partner (F has more non-zero units than M in a layer) reads r = 0, is changed, and is removed when put back; does not occur in these items",
+  "M unit writing zero": "cos2 with it is 0 and its gain is undefined (NaN); does not occur in M",
+  "ties": "the assignment's optimum is unique when units differ; each order is a permutation of distinct units; a drop at exactly closure_bar is taken (>=)",
+  "chunk_failure": "a chunk that fails is halved down to one unit; one unit that fails stays in the set"
+ },
+ "threshold_sources": {
+  "lr": "src/commute/finetune.py full fine-tune default (3e-5), set by the lead 2026-11-17 before any run: E194's 1e-3 was tuned for fresh appended neurons and moved pretrained weights ~5% of their sd per step in the dry run",
+  "r_tol, kl_floor, closure_bar, orders, order_seed, gate_tol": "P1.24's filed values (experiments/rule_retention/results/amend1/predictions.json), kept by the plan",
+  "gain_tol": "the plan (2026-11-17 brief: gains 1, 2, 10, 1 within 1e-4)",
+  "chunk": "the plan: 'start ~256 units', halving on failure, since the rebuilt item changes about 6,144 neurons",
+  "fit recipe": "E194's (amend1 settings: Adam, lr 1e-3, warm-up 100, batch 64 half Pile half copy24, data_seed 0, pile_train 16384, pile_held 1024) with 4000 steps (the plan); departures from E194 stated in the plan: the MLP weights of layers 2 and 3 train instead of appended neurons, no correlation penalty, and the loss is KL(x2 || F) as the plan writes it (E194 used KL(F || target))",
+  "check_step": "the plan: 'loss not falling in its first 200 steps'; read on the held-out copy24 windows so steps 0 and 200 see the same windows"
+ }
+}

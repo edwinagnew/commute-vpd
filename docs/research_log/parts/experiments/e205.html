@@ -1,0 +1,18 @@
+<article class="exp" id="e205">
+<div class="top"><span class="id">E205</span><span class="chip mixed">mixed</span><h3>Does the held-model reading's reuse-minus-new gap follow update size?</h3><span class="when">2026-11-18 · cell P1.27, its one run, no independent check · <code>experiments/held_model_size_matched</code></span></div>
+<p class="one"><strong>The question.</strong> Under the held-model wording's main reading (<a href="#e197">E197</a>), the side of a built pair made to reuse something keeps a little more of its change than its twin, by under 0.012. Is that gap the new side's larger update showing through?</p>
+<p class="one"><strong>What we did.</strong> On the nine built pairs of the earlier size-matched run, in each pair the side with the larger mean update had every saved update multiplied by one number (0.52 to 0.997) so that the two sides' sizes agree. Every state was read at its saved size and, for the larger side, at the matched size, under the per-site map and under one gain per unit. A shrunk update is the same direction a shorter way, not a model that learned less.</p>
+<p class="one"><strong>What we found.</strong> Matching size closed no gap under the per-site map: all nine kept their sign and five grew (on the half-known pair at its own steps, from 0.0012 to 0.0288). Shrinking lowered the shrunk side's own survival, by up to 0.030 and by more than the seed spread on all six pairs shrunk by a tenth or more. One gain per unit barely moved. The filed picture that survival reads only an update's direction did not hold, and the sign rule did.</p>
+<p class="one"><strong>What it means.</strong> The pair gaps are not the larger update showing through, but the main reading does track update length: size moves a state's score by as much as the gaps themselves, so a gap should be quoted with both sizes beside it. Nothing here labels a pair, and no bar was set.</p>
+<figure><img src="fig/e205_gaps.png" alt="Gap in survival per pair, saved and matched sizes, both readings"><figcaption><strong>Does matching size close the gaps? No.</strong> Each row is a pair; the open circle is its gap at the saved sizes with the seed spread either side, and the cross its gap once the larger side is shrunk. Left panel the per-site map, right one gain per unit.</figcaption></figure>
+<dl class="fields">
+<dt>Run</dt><dd>One RunPod H100 SXM pod, two jobs, about $2.11 (planned on the cluster at $0; the card was held by an outside process). 108 states read; every code check held.</dd>
+<dt>Found</dt><dd><ul>
+<li>Per-site map: nine of nine gap signs kept; matched over saved 0.68 to 24.93.</li>
+<li>All 19 states of the six pairs shrunk by a tenth or more lost survival, 0.0006 to 0.030.</li>
+<li>One gain per unit: matched over saved 0.90 to 1.04 on eight pairs.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 2: the main reading's pair gaps need a size-matched reference; a rescaled update is not a trained smaller one, so the next test would be fine-tunes trained to a smaller update.</dd>
+<dt>Moved on</dt><dd>The cell's one run is spent and it is filled. Page <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-18_analysis_held-model-size-matched.md"><code>reports/analyses/2026-11-18_analysis_held-model-size-matched.md</code></a>.</dd>
+</dl>
+</article>

@@ -1,0 +1,58 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[job] activation scale 3.8813 (base mean norm 7.14 at block 2's input)
+[check a self path: equal activations] ok {"max_abs": 0.0, "bar": 1e-05}
+[side self] training 9086 steps
+  step 0/9086 loss 1.713e+05 fve_batch -218.8846 dead 0.000
+  step 500/9086 loss 3622 fve_batch -2.9612 dead 0.000
+  step 1000/9086 loss 2085 fve_batch -0.4181 dead 0.000
+  step 1500/9086 loss 1039 fve_batch 0.0628 dead 0.000
+  step 2000/9086 loss 717.7 fve_batch 0.0036 dead 0.000
+  step 2500/9086 loss 485 fve_batch 0.2206 dead 0.000
+  step 3000/9086 loss 427.3 fve_batch 0.4547 dead 0.000
+  step 3500/9086 loss 277.6 fve_batch 0.6904 dead 0.000
+  step 4000/9086 loss 249.9 fve_batch 0.6478 dead 0.000
+  step 4500/9086 loss 211.7 fve_batch 0.6614 dead 0.000
+  step 5000/9086 loss 178.4 fve_batch 0.7823 dead 0.000
+  step 5500/9086 loss 153.6 fve_batch 0.8059 dead 0.000
+  step 6000/9086 loss 137.5 fve_batch 0.8335 dead 0.000
+  step 6500/9086 loss 131.3 fve_batch 0.8709 dead 0.000
+  step 7000/9086 loss 114.6 fve_batch 0.8574 dead 0.000
+  step 7500/9086 loss 106.5 fve_batch 0.9096 dead 0.000
+  step 8000/9086 loss 131 fve_batch 0.8407 dead 0.000
+  step 8500/9086 loss 91.54 fve_batch 0.8523 dead 0.000
+  step 9000/9086 loss 97.04 fve_batch 0.8551 dead 0.000
+  step 9085/9086 loss 87.66 fve_batch 0.8890 dead 0.000
+[side self] {"d": "nan", "parts": {"shared": "nan", "ft_specific": "nan", "ft_artefact": "nan", "base_only": "nan", "other": "nan", "dead": "nan", "bias": "nan", "error": "nan"}, "counts": {"shared": 24524, "ft_specific": 0, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 52}, "fve_base": 0.8726422659756967, "fve_ft": 0.8726422660860658, "l0": 101.91453712632594, "change_energy": 0.0, "theta": 1.056239791772439, "minutes": 4.757919144630432}
+[check a self: relative norms at 0.5] ok {"max_dev": 0.0, "bar": 0.001}
+[check a self: no fine-tune-only latent] ok {"counts": {"shared": 24524, "ft_specific": 0, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 52}}
+[check a self: FVE] ok {"fve": [0.8726422659756967, 0.8726422660860658], "bar": 0.5}
+[check a self: dead share] ok {"dead": 0.0021158854166666665, "bar": 0.5}
+[side planted] training 9086 steps
+  step 0/9086 loss 1.713e+05 fve_batch -218.5771 dead 0.000
+  step 500/9086 loss 3623 fve_batch -2.9591 dead 0.000
+  step 1000/9086 loss 2084 fve_batch -0.4155 dead 0.000
+  step 1500/9086 loss 1040 fve_batch 0.0633 dead 0.000
+  step 2000/9086 loss 714.6 fve_batch 0.0105 dead 0.000
+  step 2500/9086 loss 485.3 fve_batch 0.2210 dead 0.000
+  step 3000/9086 loss 425.7 fve_batch 0.4575 dead 0.000
+  step 3500/9086 loss 276.9 fve_batch 0.6916 dead 0.000
+  step 4000/9086 loss 250.2 fve_batch 0.6482 dead 0.000
+  step 4500/9086 loss 211.8 fve_batch 0.6618 dead 0.000
+  step 5000/9086 loss 177.8 fve_batch 0.7833 dead 0.000
+  step 5500/9086 loss 152.9 fve_batch 0.8070 dead 0.000
+  step 6000/9086 loss 136.8 fve_batch 0.8347 dead 0.000
+  step 6500/9086 loss 131 fve_batch 0.8713 dead 0.000
+  step 7000/9086 loss 114.1 fve_batch 0.8581 dead 0.000
+  step 7500/9086 loss 106.2 fve_batch 0.9098 dead 0.000
+  step 8000/9086 loss 128.8 fve_batch 0.8435 dead 0.000
+  step 8500/9086 loss 91.37 fve_batch 0.8528 dead 0.000
+  step 9000/9086 loss 96.8 fve_batch 0.8556 dead 0.000
+  step 9085/9086 loss 87.56 fve_batch 0.8894 dead 0.000
+[side planted] {"d": 0.013953489067689482, "parts": {"shared": 0.013953489067689482, "ft_specific": 0.0, "ft_artefact": 0.0, "base_only": 0.0, "other": 0.9872635585163257, "dead": 1.6216065435825167e-05, "bias": 7.508152440233373e-05, "error": -0.0013083451738533111}, "counts": {"shared": 24528, "ft_specific": 0, "ft_artefact": 0, "base_only": 0, "other": 1, "dead": 47}, "fve_base": 0.8728739564579248, "fve_ft": 0.8729256444433912, "l0": 101.94361740597878, "change_energy": 22.414855614081254, "theta": 1.0582411008259274, "minutes": 4.753348863124847}
+[check b planted: found and carried] MISSED {"ft_specific": 0, "part": 0.0, "bar": 0.5}
+STOP: b planted: found and carried: tell the lead
+peak host RSS 6.1 GB
+=== FINISHED (exit 1) — results in /root/work/experiments/crosscoder/results/stage0.json /root/work/experiments/crosscoder/results/stage1.json ===

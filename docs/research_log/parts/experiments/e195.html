@@ -1,0 +1,16 @@
+<article class="exp" id="e195">
+<div class="top"><span class="id">E195</span><span class="chip holds">held</span><h3>Does a circuit knocked out and rebuilt by fine-tuning read as less retained than one turned up?</h3><span class="when">2026-11-17 · cell P1.25, run 1 of 2, no independent check · <code>experiments/rule_retention_fixed</code></span></div>
+<p class="one"><strong>The question.</strong> Part 2 is testing a candidate wording of "reused against new" (not adopted): a fine-tune retains a piece of the original model to the degree that the matching unit follows the same rule (section {{n:next}}, cell P1.25). The user fixed every choice: the unit is one MLP neuron, its rule is what it writes into the residual stream, and rule similarity is the squared cosine between two neurons' outputs on the original model's own inputs. Does it read a rebuilt circuit as less retained than a turned-up one?</p>
+<p class="one"><strong>What we did.</strong> On the 67M model we read four built items: nothing changed, the copy circuit turned up two-fold and ten-fold, the circuit moved exactly onto fresh neurons, and the circuit zeroed and then rebuilt by fine-tuning two later layers. Retention is the mean rule similarity over a smallest set of changed neurons that still recovers 0.9 of the next-token change, searched in five random orders. The user filed one rule: the rebuilt circuit reads lower than the turned-up ones.</p>
+<p class="one"><strong>What we found.</strong> The code checks held: the first four items read exactly 1. The rebuilt circuit reads 0.97, lower in all five orders, so the filed rule holds, by 0.03. The set that carries the change is thousands of slightly changed neurons, so its mean is close to the average over every changed neuron; switching the circuit off is not seen at the neuron level at all.</p>
+<p class="one"><strong>What it means.</strong> The neuron-level reading separates a rebuilt computation from a turned-up one only narrowly, because a gentle fine-tune moves every later neuron a little. This is a calibration, not a verdict: no fine-tune is called reuse or new. Run 2 read the five trained pairs (<a href="#e196">E196</a>).</p>
+<dl class="fields">
+<dt>Run</dt><dd>One RunPod pod, built items only, no verdict on any trained fine-tune.</dd>
+<dt>Found</dt><dd><ul>
+<li>Doing nothing, turning the circuit up, and moving it onto fresh neurons all read 1, as the arithmetic says.</li>
+<li>The rebuilt circuit reads 0.97 in every order, below 1 as filed, but only by 0.03.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 2: how much of the draft wording's neuron-level reading can tell a rebuilt circuit from a turned-up one. Little, by this item.</dd>
+<dt>Moved on</dt><dd>Run 2 on the five trained pairs. Page <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-17_analysis_rule-retention-fixed-run1.md"><code>reports/analyses/2026-11-17_analysis_rule-retention-fixed-run1.md</code></a>.</dd>
+</dl>
+</article>

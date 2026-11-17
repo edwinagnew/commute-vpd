@@ -1,0 +1,72 @@
+0.0023	experiments/graft_sites/results/summary.json	.S.last_lowest["3"] - 0.13355354448066925	this
+0.0025	experiments/held_model_retention/results/summary.json	[.S|to_entries[]|select(.key|test("^case_twin_"))|.value["3"]] | (add/length) as $m | (map(.-$m|.*.)|add/(length-1)|sqrt)	earlier
+0.003	experiments/graft_sites/results/summary.json	.S.last_rank5["3"] - .S.last_rank9["3"]	this
+0.0037	experiments/graft_sites/results/stage0.json	.lookup.acc_M	this
+0.014	experiments/graft_sites/results/grafts/early_lowest_build.json	.curve[-1]	this
+0.023	experiments/graft_sites/results/grafts/last_rank5_checks.json	.acc_M	this
+0.023	experiments/graft_sites/results/grafts/last_rank13_checks.json	.acc_M	this
+0.029	experiments/graft_sites/results/grafts/last_rank9_checks.json	.acc_M	this
+0.030	experiments/graft_sites/results/predictions.json	.rules.R1.old_task_floor - 0.9537940927149671	this
+0.032	experiments/graft_sites/results/grafts/last_lowest_checks.json	.acc_M	this
+0.033	experiments/graft_sites/results/stage0.json	.max_share_by_offset["16"]	this
+0.048	experiments/graft_sites/results/stage0.json	.max_share_by_offset["8"]	this
+0.07	experiments/graft_sites/results/grafts/last_rank13_build.json	.accuracy_at["500"]	this
+0.077	experiments/graft_sites/results/grafts/neurons_read.json	.graft.readings["3"].residual.mlp3	this
+0.10	experiments/graft_sites/results/grafts/last_lowest_build.json	.accuracy_at["500"]	this
+0.100	experiments/graft_sites/results/stage0.json	.max_share_by_offset["4"]	this
+0.105	experiments/graft_sites/results/grafts/neurons_read.json	.graft_unfitted_share	this
+0.134	experiments/graft_negative/results/stage3.json	.graft.readings["3"].S	earlier
+0.136	experiments/graft_sites/results/summary.json	.S.last_lowest["3"]	this
+0.14	experiments/graft_sites/results/summary.json	.S.last_lowest["3"]	this
+0.148	experiments/graft_sites/results/summary.json	.S.last_rank9["3"]	this
+0.152	experiments/graft_sites/results/summary.json	.S.last_rank5["3"]	this
+0.22	experiments/graft_sites/results/summary.json	.S.last_rank13["3"]	this
+0.221	experiments/graft_sites/results/summary.json	.S.last_rank13["3"]	this
+0.205	experiments/graft_sites/results/grafts/neurons_read.json	.units["2"].others_max_gain_dev	this
+0.30	experiments/graft_sites/results/grafts/last_rank13_build.json	.curve[-1]	this
+0.51	experiments/graft_sites/results/grafts/last_rank9_build.json	.curve[-1]	this
+0.35	experiments/graft_sites/results/grafts/last_lowest_read.json	.sizes.graft / .sizes.F_site	this
+0.38	experiments/graft_sites/results/grafts/last_rank9_read.json	.sizes.graft / .sizes.F_site	this
+0.47	experiments/graft_negative/results/stage3.json	.graft_unfitted_share	earlier
+0.48	experiments/graft_sites/results/grafts/last_rank13_read.json	.graft_unfitted_share	this
+0.484	experiments/graft_sites/results/grafts/last_rank13_read.json	.graft_unfitted_share	this
+0.491	experiments/graft_sites/results/grafts/last_rank9_read.json	.graft_unfitted_share	this
+0.496	experiments/graft_sites/results/grafts/last_rank5_read.json	.graft_unfitted_share	this
+0.508	experiments/graft_sites/results/grafts/last_lowest_read.json	.graft_unfitted_share	this
+0.54	experiments/graft_sites/results/grafts/neurons_read.json	.graft.readings["3"].kl_FH	this
+0.56	experiments/held_model_retention/results/summary.json	.S.rebuilt["3"]	earlier
+0.66	experiments/held_model_retention/results/summary.json	[.S|to_entries[]|select(.key|test("^fact_"))|.value["3"]]|add/4	earlier
+0.73	experiments/graft_sites/results/grafts/neurons_read.json	.graft.readings["1"].residual.mlp3	this
+0.8	experiments/graft_sites/results/predictions.json	.thresholds.mech_min	this
+0.9	experiments/graft_sites/results/predictions.json	.thresholds.acc_min	this
+0.916	experiments/graft_sites/results/grafts/last_rank5_checks.json	.acc_F	this
+0.917	experiments/graft_sites/results/grafts/last_rank13_checks.json	.acc_F	this
+0.925	experiments/graft_sites/results/grafts/last_lowest_checks.json	.acc_F	this
+0.926	experiments/graft_sites/results/grafts/last_rank9_checks.json	.acc_F	this
+0.95	experiments/graft_sites/results/summary.json	.S.neurons["3"]	this
+0.95	experiments/graft_sites/results/grafts/early_lowest_build.json	.accuracy_at["500"]	this
+0.954	experiments/graft_sites/results/summary.json	.S.neurons["3"]	this
+0.975	experiments/graft_sites/results/grafts/neurons_checks.json	.mechanism	this
+0.98	experiments/held_model_retention/results/summary.json	[.S|to_entries[]|select(.key|test("^(copy24|cipher24|ident32|rand32|case|repeat)"))|.value["3"]]|min	earlier
+0.9839	experiments/graft_sites/results/predictions.json	.rules.R1.old_task_floor	this
+0.984	experiments/graft_sites/results/predictions.json	.rules.R1.old_task_floor	this
+0.998	experiments/graft_sites/results/grafts/last_lowest_checks.json	.mechanism	this
+0.998	experiments/graft_sites/results/grafts/neurons_checks.json	.acc_F	this
+0.998	experiments/graft_sites/results/grafts/last_rank9_checks.json	.mechanism	this
+0.999	experiments/graft_sites/results/grafts/early_lowest_checks.json	.acc_F	this
+0.999	experiments/graft_sites/results/grafts/last_rank5_checks.json	.mechanism	this
+0.999	experiments/held_model_retention/results/summary.json	[.S|to_entries[]|select(.key|test("^(copy24|cipher24|ident32|rand32|case|repeat)"))|.value["3"]]|max	earlier
+1.6e-7	experiments/graft_sites/results/stage0.json	.e201_share_off	this
+2.4e-15	experiments/graft_sites/results/stage0.json	.do_nothing.readings["3"].kl_FH	this
+2.8e-5	experiments/graft_sites/results/grafts/early_lowest_checks.json	.mechanism	this
+7.8	experiments/graft_sites/results/grafts/last_rank13_read.json	.graft.readings["3"].kl_FH	this
+8.8	experiments/graft_sites/results/grafts/last_lowest_read.json	.graft.readings["3"].kl_FH	this
+9.99	experiments/graft_sites/results/grafts/last_rank13_read.json	.graft.kl_FM	this
+10.18	experiments/graft_sites/results/grafts/last_rank9_read.json	.graft.kl_FM	this
+10.19	experiments/graft_sites/results/grafts/last_lowest_read.json	.graft.kl_FM	this
+10.32	experiments/graft_sites/results/grafts/last_rank5_read.json	.graft.kl_FM	this
+11.66	experiments/graft_sites/results/grafts/neurons_read.json	.graft.kl_FM	this
+11.7	experiments/graft_sites/results/grafts/neurons_read.json	.graft.kl_FM	this
+-0.0003	experiments/graft_sites/results/summary.json	.S.neurons["2"]	this
+2.15	given	the lead's record of the RunPod H100 SXM pod's cost for E206
+6.1	given	experiments/graft_sites/results/run.log, line "peak host RSS 6.1 GB"

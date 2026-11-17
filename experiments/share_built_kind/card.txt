@@ -1,0 +1,12 @@
+cell: P2.33
+rival_a: The re-gating share reads the kind of change built in, high where a fine-tune re-weights what the original subcomponents already compute (Always on, a fixed push) and low where it must compute a new map (Table, Cue) predicts that the mean share of the six Always on fine-tunes sits above both the Table mean and the Cue mean by at least the bar (0.057 at 6 against 3 states)
+rival_b: The share reads where an all-weights fine-tune stores its change and how closely it copies the outputs, not the built kind (E139 found the fine-tunes copy outputs, not the mechanism, and a fixed push can sit in the embeddings, outside the decomposition) predicts that Always on reads within the bar of Table and of Cue, or below them
+rung: strategy
+smallest_gap: 0.10
+spread: 0.0405
+n: 3
+design: unpaired
+unit: seeds of a fine-tune recipe (independent fine-tunes per built kind)
+spread_source: experiments/method_table/results/final.json
+stop: Always on reading within the bar of Table and Cue, or below them, ends the use of these built-kind fine-tunes as a label set for the share on the 67M: the share would then not be scored against part 1's built kinds through E139's imitators
+sketch: experiments/share_built_kind/figures/sketch.png
