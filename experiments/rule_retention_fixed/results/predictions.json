@@ -24,7 +24,6 @@
   "batch": 64,
   "steps": 4000,
   "lr": 3e-05,
-  "lr_source": "src/commute/finetune.py full fine-tune default (3e-5), set by the lead 2026-11-17 before any run: E194's 1e-3 was tuned for fresh appended neurons and moved pretrained weights ~5% of their sd per step in the dry run",
   "warmup": 100,
   "check_step": 200,
   "log_every": 250,
@@ -99,6 +98,7 @@
   "chunk_failure": "a chunk that fails is halved down to one unit; one unit that fails stays in the set"
  },
  "threshold_sources": {
+  "lr": "src/commute/finetune.py full fine-tune default (3e-5), set by the lead 2026-11-17 before any run: E194's 1e-3 was tuned for fresh appended neurons and moved pretrained weights ~5% of their sd per step in the dry run",
   "r_tol, kl_floor, closure_bar, orders, order_seed, gate_tol": "P1.24's filed values (experiments/rule_retention/results/amend1/predictions.json), kept by the plan",
   "gain_tol": "the plan (2026-11-17 brief: gains 1, 2, 10, 1 within 1e-4)",
   "chunk": "the plan: 'start ~256 units', halving on failure, since the rebuilt item changes about 6,144 neurons",
