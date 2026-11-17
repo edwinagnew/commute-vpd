@@ -9,3 +9,4 @@ A flush applies every line to `parts/` (README.md → Layout), rebuilds, republi
 A line starting `HOLD ` (not `- `) stays in `PENDING.md` through a flush: use it for a line whose report was found wrong, in place of removing it. It reads `HOLD YYYY-MM-DD <role> · <why> · <the line>`; a clerk skips it, and the role that held it restores or deletes it (friction 317).
 A line `CONSENT YYYY-MM-DD <role> · <the user's words>` records that the user waived the main-page word cap for this flush (README.md → Main-page length; friction 688).
 
+- 2026-11-17 · reports/analyses/2026-11-17_analysis_rule-retention-fixed-run1.md · E195 card, P1.25 status, timeline · P1.25 E195 run 1: code checks hold; a circuit knocked out and rebuilt by fine-tuning reads 0.97 retained against 1 for the turned-up circuit (filed 'lower': holds, by 0.03); page reports/analyses/2026-11-17_analysis_rule-retention-fixed-run1.md
