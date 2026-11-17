@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import subprocess
 import sys
 import textwrap
@@ -124,3 +125,32 @@ def test_run_items_ends_the_job_on_a_wall_cut_or_exit_0(code: int):
     with pytest.raises(SystemExit) as e:
         jobs.run_items([0, 1], one, print)
     assert e.value.code == code and ran == []
+
+
+def _filed(tmp_path: Path, monkeypatch: pytest.MonkeyPatch, git: bool) -> Path:
+    """A repo root (tmp_path) with experiments/x/predictions.json; with `git`, an empty .git (a pod's failed clone)."""
+    exps = tmp_path / "experiments"
+    (exps / "x").mkdir(parents=True)
+    (path := exps / "x" / "predictions.json").write_text("{}\n")
+    if git:
+        subprocess.run(["git", "init", "-q", str(tmp_path)], check=True)
+    monkeypatch.setattr(jobs, "EXPERIMENTS", exps)
+    for name in ("PRED_SHA", "E120_PRED_SHA"):
+        monkeypatch.delenv(name, raising=False)
+    return path
+
+
+@pytest.mark.parametrize("git", [False, True])
+@pytest.mark.parametrize("name", ["PRED_SHA", "E120_PRED_SHA"])
+def test_require_filed_takes_the_sha_when_set_even_beside_a_git(tmp_path, monkeypatch, git: bool, name: str):
+    path = _filed(tmp_path, monkeypatch, git)
+    monkeypatch.setenv(name, hashlib.sha256(path.read_bytes()).hexdigest())
+    jobs.require_filed(path)  # friction 756, 767: a .git with no commit used to refuse here
+    monkeypatch.setenv(name, "0" * 64)
+    with pytest.raises(SystemExit, match="must equal PRED_SHA"):
+        jobs.require_filed(path)
+
+
+def test_require_filed_refuses_with_no_git_and_no_sha(tmp_path, monkeypatch):
+    with pytest.raises(SystemExit, match="unset"):
+        jobs.require_filed(_filed(tmp_path, monkeypatch, False))

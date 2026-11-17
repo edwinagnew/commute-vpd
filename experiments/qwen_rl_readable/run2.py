@@ -1,7 +1,7 @@
 """P3.4 run 2: E69's GRPO loop on Qwen3-1.7B (experiments/qwen_rl) at peak 3e-6 after 10 warm-up steps (the user's
 choice, decisions.md 2026-11-12), arms R, N and F on seeds 0 (E69's draw seed 69) and 70, one arm and seed per pod, to
 step 400, with δW saved at every save step. Plan: reports/plans/2026-11-12_plan_qwen-rl-readable-run2.md; rules in
-results/predictions_run2.json (refuses to start unless it is committed unchanged; on a pod, E120_PRED_SHA).
+results/predictions_run2.json (refuses to start unless it is committed unchanged; on a pod, PRED_SHA).
 
   --pod R_s0|N_s0|F_s0|R_s70|N_s70|F_s70   one pod: results/run2/<pod>.json and .log, large/run2/<pod>/
   --chosen                                  no model: the matched steps from the R files, into results/run2/chosen.json

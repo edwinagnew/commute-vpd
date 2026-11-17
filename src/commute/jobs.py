@@ -106,15 +106,18 @@ def write_result(path: Path, out: dict[str, Any], decomp_dir: Path) -> None:
 
 def require_filed(path: Path) -> None:
     """Exit unless `path` (a predictions file) is tracked by git and unchanged from HEAD: filed before the run.
-    A working tree with no `.git` (a pod) compares the file's sha256 with the environment variable E120_PRED_SHA
-    instead (E120 Amendment 1, friction 599); unset or different refuses. The brief computes it on the dev node,
-    `git show HEAD:<path> | sha256sum`, and the pod's run line sets it, `E120_PRED_SHA=<sha> python run.py ...`;
+    When the environment variable PRED_SHA is set (or E120_PRED_SHA, its old name, still read for briefs in flight;
+    friction 727), the file's sha256 must equal it, whether or not a `.git` exists: a pod's clone step can leave a
+    `.git` whose HEAD lacks the local commit, and git then refused (friction 756, 767). A working tree with no `.git`
+    (a pod) and no PRED_SHA refuses (E120 Amendment 1, friction 599). The brief computes it on the dev node,
+    `git show HEAD:<path> | sha256sum`, and the pod's run line sets it, `PRED_SHA=<sha> python run.py ...`;
     `cluster/pod_setup.sh` says so at its top and in its log (friction 680)."""
     repo, rel = str(EXPERIMENTS.parent), str(path.resolve().relative_to(EXPERIMENTS.parent.resolve()))
-    if not (EXPERIMENTS.parent / ".git").exists():
-        want, got = os.environ.get("E120_PRED_SHA"), hashlib.sha256(path.read_bytes()).hexdigest()
+    want = os.environ.get("PRED_SHA") or os.environ.get("E120_PRED_SHA")
+    if want or not (EXPERIMENTS.parent / ".git").exists():
+        got = hashlib.sha256(path.read_bytes()).hexdigest()
         if want != got:
-            sys.exit(f"no .git here: {rel} sha256 {got} must equal E120_PRED_SHA ({want or 'unset'})")
+            sys.exit(f"{rel} sha256 {got} must equal PRED_SHA ({want or 'unset, and no .git here to ask'})")
         return
     git = lambda *a: subprocess.run(["git", "-C", repo, *a], capture_output=True, text=True, check=False)
     if git("diff", "--quiet", "HEAD", "--", rel).returncode or not git("ls-files", rel).stdout.strip():
