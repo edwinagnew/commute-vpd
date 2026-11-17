@@ -101,8 +101,14 @@ pair overlaid; from experiments/curve\_test}
 % ------------------------------------------------------------------
 \section{Measuring reuse on the 67M}
 \subsection{The re-gating share}
-\sugg{one equation: $r=(L(C_0,G_1)-L(C_0,G_0))/(T_1-T_0)$; plain gloss: keep the original pieces, let the frozen
-gate respond to the fine-tuned activations, how much of the gain comes back}
+
+The most effective measure of re-use we investigated is a VPD-based method we call the \textit{re-gating share}. The general idea is VPD's causal importance function $\Gamma$ should be better at knowing how to ablate existing mechanisms, than new ones. More, precisely:
+\begin{itemize}
+	\item Let $W_0$ be the original weights and $W_1 = W_0 + \delta W$ the fine-tuned weights, with respective VPD subcomponents $C_0, C_1$.
+	\item For some task relevant to the fine-tune, let $S_0, S_1$ be the scores before and after fine-tuning, respectively. Let $a_0, a_1$ be the corresponding activations. Then let $S_{00}$ be the score of the components $C_0$ masked according to $g_0 = \Gamma(a_0)$ and $S_{01}$ the same but with masks $g_1 = \Gamma(a_1)$. 
+	\item 
+\end{itemize}
+
 \sugg{one line: uses the original subcomponents, so no need to carry the update onto the decomposition (App.~A)}
 \subsection{Baselines}
 \sugg{neuron version of the share; steering (mean activation shift); update size; effective rank; neurons for half

@@ -158,7 +158,21 @@ was weighed and set aside. A new MLP neuron's linear part lies in the span of M'
 absorb much of it, and a stitched neuron's input row is learned against M's residual anyway. The case cannot show
 that M lacks the capability somewhere else; it shows only that F's machinery for it is new.
 
-## Questions for the user
+## Settled (user dialog, 2026-11-17 ~21:45)
+
+All six questions below are settled, and the specification is frozen with these answers.
+1. Reading 3 maps from M's unit activations at each site: the neuron activations for an MLP, the head outputs for
+   attention.
+2. The user's answer was "im not sure. ask fable if needed". Fable's answer was option a, with a side number. Weights
+   that are not units (the tied embedding and unembedding, the final norm's gain) are M's in H, so a change to them
+   counts as not surviving. For the full fine-tunes only (parity twin, memorised fact), S is also reported with F's
+   values there, as a side number that no gap or comparison reads.
+3. Pairing is by the least error left after fitting the gain.
+4. Gains may have any sign.
+5. The five E196 pairs at seeds 0 to 3 are in run 1.
+6. The graft negative case is built as run 2. The E187 read moves to a later cell.
+
+## Questions for the user (as asked)
 
 1. **What does the third reading map from?** Option a, recommended: M's unit activations at the site: its 3,072 neuron
    activations for an MLP, its six head outputs for attention. Then the third reading contains the first two at every
