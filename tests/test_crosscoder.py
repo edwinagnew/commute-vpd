@@ -64,7 +64,8 @@ def test_raw_decoder_reproduces_decode_and_parts_sum_to_one() -> None:
     g = CC.groups(CC.Cfg(d=8, expansion=4, k=1, k_max=2, k_anneal_steps=1, lr=1e-4, warmup=1, batch=2, tokens=100,
                          epochs=1, aux_alpha=0.03, dead_tokens=10, init_norm=1.0, target_rms=100.0, chunk_rows=1,
                          ls_tokens=10, val_rows=1, alive_min=1, top_n=4, top_n_wide=8, nu_r=0.5, nu_eps=0.2,
-                         shared=(0.4, 0.6), base_only=0.1, snapshots=(0.5,), ckpt_every=10),
+                         shared=(0.4, 0.6), base_only=0.1, snapshots=(0.5,), ckpt_every=10, log_every=10,
+                         pile_start=0, pool_start=0, pool_rows=1, repeat_cap=1),
                   rn, alive, CC.top(rn, 4), torch.zeros(ae.dict_size, dtype=torch.bool))  # fmt: skip
     total = torch.zeros(ae.dict_size, dtype=torch.int)
     for m in g.values():

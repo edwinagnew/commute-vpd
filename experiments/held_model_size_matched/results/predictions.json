@@ -1,0 +1,80 @@
+{
+ "experiment": "E205",
+ "cell": "P1.27",
+ "status": "filed before any run; the cell's one run: code checks, then E187's nine built pairs at every saved seed, each larger side also at E187's matched size",
+ "wording": "the held-model wording of causal-rule retention, the working definition of reuse since 2026-11-18 (decisions.md row 'Working definition of reuse (user, 2026-11-18'): reading 3, the per-site linear map, is the main reading; reading 1, one gain per unit, beside it. No cut-off and no reuse or new label on any item or pair (cell done_when, user 2026-11-18)",
+ "plan": "reports/plans/2026-11-18_plan_held-model-size-matched.md; card experiments/held_model_size_matched/card.md; code commute.held_model through experiments/held_model_retention/run.py (read, windows, gains_block), E187's pairs from experiments/size_matched/run.py (pairs, times) and results/m67.json (larger side, c, sizes)",
+ "prediction": {
+  "kind": "descriptive comparisons, no bars: each rule compares two measured numbers of this run; nothing labels an item or pair",
+  "by": "user, 2026-11-18, cell P1.27 done_when: 'rules filed first; per-site map S per item, one gain beside it, gaps with spread, update sizes reported; no cut-offs or labels'",
+  "reported": "per item (a saved state at its own size, or a larger-side state times E187's c): S, KL(F || M), KL(F || H), H's max relative logit error and each site's fit residual for readings 1, 2 and 3; the update's size ||dW|| / ||W0|| over the 24 matrices and over the 8 MLP matrices. Per pair and reading 3 and 1: the rules below. Per larger-side state: KL(F_c || M) / KL(F_1 || M) / c^2. Reading 2 is in the item files only; no rule reads it",
+  "premise_doubt": "a scaled-down update is not a model that learned less: F = M + c dW moves along the same direction, and to first order in the update both KL(F || M) and KL(F || H) scale as c^2, so S does not change with c at leading order. A matched gap equal to the original one therefore says S does not read the length of an update along its own direction; it does not say S would not read a model that learned less"
+ },
+ "rules": {
+  "defs": "For a pair and reading r: S_orig(side) is the list of that side's items at their own size (c = 1), in E187's state order; S_match(side) the same with the larger side's items times E187's c (the smaller side unchanged). gap_original = mean S_orig(reuse) - mean S_orig(new); gap_matched = mean S_match(reuse) - mean S_match(new). se_original = sqrt(var(S_orig(reuse)) / n_reuse + var(S_orig(new)) / n_new), sample variances (the spread of gap_original over seeds; sides have unequal seed counts, so no per-seed pairing). shift_by_state = S_match - S_orig for each larger-side state (paired: the same state at two sizes); shift_mean its mean, so gap_matched - gap_original = +shift_mean when the reuse side is larger and -shift_mean when the new side is",
+  "R1_sign": "per pair, readings 3 and 1: 'same' when gap_matched has the sign of gap_original, 'flipped' when the opposite, 'zero' when either is exactly 0",
+  "R2_kept": "per pair, readings 3 and 1: gap_matched / gap_original (1 = unchanged by matching size, 0 = gone, below 0 = reversed); null when gap_original is exactly 0",
+  "R3_shift_within_se": "per pair, readings 3 and 1: |shift_mean| <= se_original, true or false. Expected true on every pair under reading 3 (the leading-order argument in premise_doubt); a false names a pair whose survival moved with size by more than its own seed spread",
+  "edge_cases": "an item missing or with S null (KL(F || M) at or under kl_floor) leaves its pair and reading with {'missing': true} and no rule read. A side with under 2 items gives se_original null and R3 null (none here: every side has 2 to 8 seeds). Ties: R1 'zero' only on an exact 0; every S of a pair equal gives gap 0, R1 'zero', R2 null, se 0 and R3 true (0 <= 0). Do-nothing (c = 0) is never an item of a pair; at c = 1 every shift is 0 by construction, so R1 'same', R2 = 1 and R3 true, the identity reading of the rules. All checked on made-up S before filing (scratch edge_rules.py, 2026-11-18): ties, identity, a raised scaled side, one null item, one missing item, a flipped gap"
+ },
+ "settings": {
+  "n_fit": 16384,
+  "fit_seed": 197100,
+  "n_read": 512,
+  "read_seed": 195200,
+  "sum_batch": 512,
+  "check_seed": 197000,
+  "gain_lo": 0.5,
+  "gain_hi": 2.0,
+  "gains_c": 0.25,
+  "control_state": "c3/copy_s0"
+ },
+ "thresholds": {
+  "logit_tol": 0.001,
+  "kl_floor": 1e-06,
+  "repro_tol": 0.0001,
+  "size_rel": 1e-06
+ },
+ "code_checks": {
+  "do_nothing": "copy24 seed 0's update (E187 state c3/copy_s0) times 0 through the scaling path: KL(F || M) at or under kl_floor (F is M exactly) and every reading's max relative logit error of H against F at most logit_tol; S null",
+  "gains_block_scaled": "E197's gains-per-block build (seed check_seed + 1: one gain g per MLP block and per head, signs random, |g| in [gain_lo, gain_hi]) taken as an update F - M on the 24 matrices and times gains_c, so each block's gain is 1 + gains_c (g - 1), in [0.25, 0.625] or [0.875, 1.25], never 0: KL(F || M) above kl_floor and every reading's logit error at most logit_tol (S = 1 in every reading follows)",
+  "reproduce": {"c3/copy_s0": "copy24_s0", "c3/cipher_s0": "cipher24_s0", "e46/ident32_s0": "ident32_s0", "e46/rand32_s0": "rand32_s0"},
+  "reproduce_rule": "each state at c = 1, read here, has S within repro_tol of E197's item of the same file and windows (experiments/held_model_retention/results/items/<item>.json) in every reading",
+  "size_check": "every item's unscaled size ||dW|| / ||W0|| (24 matrices) within size_rel (relative) of E187's recorded size of that state (m67.json pairs.<pair>.sizes); a miss stops before the item is read",
+  "rule": "any miss in stage 0: exit 1 with results/stage0.json holding 'stopped', before any pair is read"
+ },
+ "expected": {
+  "do_nothing": "KL(F || M) = 0, S null, logit errors at fp32 rounding (E197's do-nothing read under 1e-6)",
+  "gains_block_scaled": "S = 1 in every reading to rounding",
+  "reproduce": "|S - E197's| at 0 or fp rounding: same file, windows, seeds, code and card type",
+  "items": "reading 3 S about 0.98 to 0.999 and reading 1 S about 0.01 to 0.06 on old-task fine-tunes, as E197 read them",
+  "kl_ratio_over_c2": "about 1 at leading order on every larger-side state",
+  "shift_by_state": "about 0 at leading order; sign not predicted",
+  "open_pair_c3": "c = 0.997: the matched gap equals the original within rounding of a 0.3% rescale; the pair is the in-run reference for a near-null shift"
+ },
+ "measures": {
+  "F": "M plus the state's saved delta-W of the 24 decomposed matrices (commute.old_tasks.load_dw, fp32) times c, by commute.old_tasks.with_delta; every state of E187's nine pairs is a delta-W of the 24 matrices",
+  "windows": "per task, commute.old_tasks.task_windows: E197's for the tasks that are old tasks (copy24, cipher24, rank1, ident32, rand32, e62_copy, e62_lookup, lowercase, cipher50, cipher500); every other task (E46's b tables, E54's elicit and cipher, E58's 96-key tables) a key table built the same way from E187's windows file, with its _new file's held-out keys where one exists. Fit: n_fit windows (seed fit_seed); read: n_read windows (seed read_seed)",
+  "H, S, logit error, residual": "commute.held_model through E197's read, unchanged (its predictions.json 'measures')",
+  "size": "||c dW|| / ||W0||, Frobenius, over the 24 matrices (E187's size) and over the 8 MLP matrices (c_fc, down_proj)",
+  "c": "E187's, m67.json pairs.<pair>.c: mean size of the smaller side / mean size of the larger side"
+ },
+ "noise_floor": {
+  "repro_tol": "1e-4, an eighth of the smallest reading 3 seed spread E197 measured on a pair (0.0008, identity against random table, experiments/held_model_retention/results/summary.json), so a reproduction inside it cannot move a gap's reading",
+  "gaps": "E197's reading 3 gap seed spreads 0.0008 to 0.0029 over four seeds; se_original is this run's own spread for each pair"
+ },
+ "blind_to": {
+  "all": "what an update learned beyond its direction (premise_doubt); a size effect that is not a rescale of the same update; anything outside the 512 read windows and the last position",
+  "reading 3": "any change linear in M's activations at a site",
+  "reading 1": "a rule rebuilt as a mix of several M neurons"
+ },
+ "positive_control": "stage 0: do-nothing and the scaled gains-per-block build read their arithmetic values on the scaling path; four unscaled items repeat E197",
+ "threshold_sources": {
+  "logit_tol, kl_floor": "E197's filed values",
+  "repro_tol": "noise_floor above",
+  "size_rel": "E187's c_agree_rel (experiments/size_matched/results/predictions.json m67.thresholds)",
+  "n_fit, fit_seed, n_read, read_seed, sum_batch, check_seed, gain_lo, gain_hi": "E197's, so the unscaled items repeat its reading",
+  "gains_c": "chosen by the code writer for the code check only: a round value with gains_c (1 + gain_hi) = 0.75 < 1, so no scaled block gain comes nearer 0 than 0.25",
+  "control_state": "E197's control task copy24, seed 0"
+ }
+}

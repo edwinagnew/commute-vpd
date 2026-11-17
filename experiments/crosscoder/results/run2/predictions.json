@@ -12,8 +12,10 @@
  },
  "rules": {
   "d": "per side, at the end of training: d = shared part - fine-tune-specific part of the change on the task's score-half windows, groups at N = top_n (run.py Job.score, commute.crosscoder.groups and parts); nan when the change energy is 0. d_wide (N = top_n_wide) is reported beside it and decides nothing",
-  "fine-tune-specific": "one of the top_n latents by relative norm (Minder eq. 3; ties to the lower index) whose latent-scaling ratios give nu_r < 0.5 and nu_eps < 0.2 with no negative base beta and positive fine-tune betas (commute.crosscoder.specific)",
-  "shared": "alive (at least alive_min firings on the validation mix) with relative norm in [0.4, 0.6], not fine-tune-specific",
+  "fine-tune-specific": "one of the top_n latents by relative norm (Minder eq. 3; ties to the lower index) whose latent-scaling ratios give nu_r < 0.5 and nu_eps < 0.2 and no other filter; a nan ratio fails (commute.crosscoder.specific)",
+  "shared": "alive (at least alive_min firings on the validation mix) with relative norm strictly inside (0.4, 0.6), the toolkit's open band (analysis.py:104-110), not fine-tune-specific; base-only likewise open, under 0.1",
+  "reported beside d": "specific = the fine-tune-specific part; shared_frac = shared part / (shared part + specific part), nan when both are 0; and the same at the wide N. Reported readings, no bar, no prediction reads them",
+  "task text": "each side records its task text: source (fresh key-value windows, or fit-half windows for e62 and e53), unique windows, repeats per epoch (1 for fresh windows; at most repeat_cap otherwise) and task share of the tokens",
   "gap": "per pair: mean d over the reuse side's seeds minus mean d over the new side's (experiments/method_table/plot_final.score)",
   "apart": "every seed of one side beyond every seed of the other, at least 2 seeds a side (plot_final.score); else 'no call' or 'one value a side'",
   "size-matched": "the larger side (E187 m67.json .pairs[pair].larger) read again at dW times c (m67.json .pairs[pair].c); the smaller side keeps its as-built d",
@@ -25,7 +27,7 @@
   "ties": "gap exactly 0 is not > 0",
   "two seeds a side": "e53_lowercase_cipher reuse and e54_own new have 2: the apart rule applies",
   "no fine-tune-specific latent": "the specific part is 0 (an empty group sums to 0), d = shared part; defined",
-  "a candidate inside the shared band": "a top-N latent that passes latent scaling is fine-tune-specific even with relative norm in [0.4, 0.6]; one that fails stays shared if alive and in the band, else an artefact (groups are disjoint, parts plus bias plus error sum to 1)",
+  "a candidate inside the shared band": "a top-N latent that passes latent scaling is fine-tune-specific even with relative norm inside (0.4, 0.6); one that fails stays shared if alive and in the band, else an artefact (groups are disjoint, parts plus bias plus error sum to 1)",
   "a latent that never fires on the latent-scaling tokens": "beta 0/0 is nan; nan fails every comparison, so it is not specific",
   "shared states": "e54/elicit_s0..s4 serve e54_matched and e54_own, c3/cipher_s0..s7 serve both c3 pairs: one crosscoder each, read in both pairs",
   "negative parts": "a group's part can be below 0 (it points against the change); d is not clipped"
@@ -34,7 +36,9 @@
   "self (base against itself)": "activations equal (max abs 0); every alive relative norm 0.5 exactly (paired init, equal inputs, equal normalisers); 0 fine-tune-specific latents; FVE about 0.87 (paper Table 3: 0.876; run 1: 0.873), at least 0.5 at the first snapshot (run 1: 0.69 by 14M tokens); dead share under 0.3 (paper 12%); parts nan",
   "planted (one random direction at each task window's answer position, run 1's seed)": "the lead latent (the one carrying most of the change) ranks first by relative norm and passes latent scaling with nu_r and nu_eps near 0 (the base side never shows the direction); fine-tune-specific part at least 0.9 (run 1: 0.987 on one latent at relative norm 0.865); cos_planted_best near 1; bar: lead specific and part >= 0.5",
   "snapshots (25M, 50M, 100M tokens and the end, stages 0 and 1)": "FVE rising to a plateau; the planted reading stable from 50M tokens on (part within 0.05, Jaccard of the specific set >= 0.5); no bar, reported for the token-budget question",
-  "random update at the reuse state's per-matrix norms": "d near 0 (|d| < 0.2); error part at least 0.5; no bar",
+  "random update at the reuse state's per-matrix norms": "|d| under about 0.35 (the old-code rehearsal, 1,536 latents on 4M tokens, read 0.23 to 0.32); error part at least 0.5; no bar",
+  "every stage-2 side": "FVE within 0.05 of the self control's and dead share at most 0.3 (the same bars as stage 1; a miss stops the shard)",
+  "resume (rehearsal)": "step-matched loss of the resumed self run within twice the floor two uninterrupted runs give, plus 1e-6 relative",
   "e54_matched seed 0": "rival A: d about +0.3 on the reuse state (elicit), about 0 on the new state (cipher); rival B: within 0.1 of each other",
   "crosscoder reseed (reuse state, seed 1)": "d within 0.05 of seed 0 (bar 0.05)",
   "built pairs": "rival A: gap > 0 on at least 7 of 9, apart on at least 5; rival B: gap inside the seed ranges on at least 7 of 9"
@@ -51,14 +55,16 @@
    "batch": 2048, "tokens": 200000000, "epochs": 2, "aux_alpha": 0.03125, "dead_tokens": 10000000, "init_norm": 1.0,
    "target_rms": 100.0, "chunk_rows": 1024, "ls_tokens": 100000, "val_rows": 8192, "alive_min": 10, "top_n": 1667,
    "top_n_wide": 5000, "nu_r": 0.5, "nu_eps": 0.2, "shared": [0.4, 0.6], "base_only": 0.1,
-   "snapshots": [0.125, 0.25, 0.5], "ckpt_every": 10000
+   "snapshots": [0.125, 0.25, 0.5], "ckpt_every": 10000, "log_every": 500, "pile_start": 32768, "pool_start": 131072,
+   "pool_rows": 65536, "repeat_cap": 100
   },
   "rehearsal": {
    "d": 768, "expansion": 2, "k": 100, "k_max": 1024, "k_anneal_steps": 200, "lr": 0.0001, "warmup": 100,
    "batch": 2048, "tokens": 4096000, "epochs": 2, "aux_alpha": 0.03125, "dead_tokens": 200000, "init_norm": 1.0,
    "target_rms": 100.0, "chunk_rows": 64, "ls_tokens": 20000, "val_rows": 64, "alive_min": 10, "top_n": 64,
    "top_n_wide": 192, "nu_r": 0.5, "nu_eps": 0.2, "shared": [0.4, 0.6], "base_only": 0.1,
-   "snapshots": [0.125, 0.25, 0.5], "ckpt_every": 500
+   "snapshots": [0.125, 0.25, 0.5], "ckpt_every": 500, "log_every": 50, "pile_start": 32768, "pool_start": 131072,
+   "pool_rows": 1024, "repeat_cap": 100
   },
   "sources": {
    "expansion, k, k_max, k_anneal_steps, lr, warmup, batch, epochs, init_norm, target_rms, ls_tokens, top_n_wide": "diffing-toolkit@617d926 configs/diffing/method/crosscoder.yaml lines 18-78",
@@ -67,7 +73,10 @@
    "chunk_rows": "about 1M tokens per locally shuffled chunk, the toolkit's local_shuffling_shard_size 1_000_000 (crosscoder.yaml)",
    "top_n": "the toolkit's 5,000 of 73,728 latents scaled to 24,576 (as the expansion factor scales the dictionary); departure 3 of the plan",
    "nu_r, nu_eps": "Minder et al. 2025 glossary and §3.1",
-   "shared, base_only": "Minder et al. 2025 Table 4 bands; toolkit analysis.py:104 (|0.5 - x| < 0.1)",
+   "shared, base_only": "Minder et al. 2025 Table 4 bands, open as the toolkit tags them (analysis.py:104-110, |0.5 - x| < 0.1)",
+   "pile_start, pool_start, pool_rows": "ours: the Pile half starts past rows 0..32767, which every key-value and e62 window was cut from (kv windows' row max 32722, e62 26152); fresh key-value windows come from a 65,536-row pool past the Pile half, so no training window is a read or scored one",
+   "repeat_cap": "ours: e62 and e53 windows cannot be made fresh here; each is drawn at most 100 times an epoch, so their task share is small (recorded per side)",
+   "log_every": "ours (training-curve records only)",
    "val_rows": "8,192 Pile val rows (4.2M tokens) against the toolkit's 5M validation tokens: the largest cached set (departure: size only)",
    "alive_min": "run 1's, not in the sources (it decides only which non-candidates count as shared or other)",
    "layer": "the middle layer (toolkit layers [0.5], paper layer 13 of 26)",
