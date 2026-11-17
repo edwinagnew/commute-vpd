@@ -524,3 +524,7 @@ This is "round 1", the input of nearly every other run.
 ## held_model_retention (E197, run 2026-11-17, cluster jobs 60914, 60919-60923)
 - `results/large/units/*.npz` (45 files, 3.9 MB in all): readings 1-2 partner int16, gain fp32, error fp16, per item.
 - `results/large/maps/*.pt` (5 files, 113 MB): reading 3 maps bf16 for the four code checks and `rebuilt`.
+
+## graft_negative (E201, run 2026-11-17, cluster job 60945)
+- `results/large/graft.pt` (1.5 MB, sha256 376364e727a0d38b2cf5b16a760d98b208be265dbab288c49938a5528a586c7b): the graft four weights.
+- `results/large/map3_attn3.pt` (1.2 MB): reading 3 map at the graft site, bf16.
