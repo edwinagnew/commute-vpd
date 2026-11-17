@@ -1,0 +1,180 @@
+0.834	experiments/held_model_size_matched/results/summary.json	.pairs.e62_copy_lookup.c	this
+-0.0028	experiments/held_model_size_matched/results/summary.json	.pairs.e62_copy_lookup["reading 3"].gap_original	this
+0.0006	experiments/held_model_size_matched/results/summary.json	.pairs.e62_copy_lookup["reading 3"].se_original	this
+-0.0019	experiments/held_model_size_matched/results/summary.json	.pairs.e62_copy_lookup["reading 3"].gap_matched	this
+-0.0009	experiments/held_model_size_matched/results/summary.json	.pairs.e62_copy_lookup["reading 3"].shift_mean	this
+0.68	experiments/held_model_size_matched/results/summary.json	.pairs.e62_copy_lookup["reading 3"].R2_kept	this
+0.0736	experiments/held_model_size_matched/results/summary.json	.pairs.e62_copy_lookup["reading 1"].gap_original	this
+0.0017	experiments/held_model_size_matched/results/summary.json	.pairs.e62_copy_lookup["reading 1"].se_original	this
+0.0768	experiments/held_model_size_matched/results/summary.json	.pairs.e62_copy_lookup["reading 1"].gap_matched	this
+-0.0032	experiments/held_model_size_matched/results/summary.json	.pairs.e62_copy_lookup["reading 1"].shift_mean	this
+1.04	experiments/held_model_size_matched/results/summary.json	.pairs.e62_copy_lookup["reading 1"].R2_kept	this
+7.12	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e62_copy_lookup["reading 3"].S_original.reuse as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].whole)|add/length*1000	this
+7.52	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e62_copy_lookup["reading 3"].S_original.reuse as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+8.54	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e62_copy_lookup["reading 3"].S_original.new as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].whole)|add/length*1000	this
+9.14	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e62_copy_lookup["reading 3"].S_original.new as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+7.63	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e62_copy_lookup["reading 3"] as $g|.pairs.e62_copy_lookup.larger as $L|$g.S_matched[$L] as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+0.659	experiments/held_model_size_matched/results/summary.json	.pairs.e46_copy_random.c	this
+0.0031	experiments/held_model_size_matched/results/summary.json	.pairs.e46_copy_random["reading 3"].gap_original	this
+0.0015	experiments/held_model_size_matched/results/summary.json	.pairs.e46_copy_random["reading 3"].se_original	this
+0.0135	experiments/held_model_size_matched/results/summary.json	.pairs.e46_copy_random["reading 3"].gap_matched	this
+-0.0103	experiments/held_model_size_matched/results/summary.json	.pairs.e46_copy_random["reading 3"].shift_mean	this
+4.29	experiments/held_model_size_matched/results/summary.json	.pairs.e46_copy_random["reading 3"].R2_kept	this
+0.0185	experiments/held_model_size_matched/results/summary.json	.pairs.e46_copy_random["reading 1"].gap_original	this
+0.0016	experiments/held_model_size_matched/results/summary.json	.pairs.e46_copy_random["reading 1"].se_original	this
+0.0191	experiments/held_model_size_matched/results/summary.json	.pairs.e46_copy_random["reading 1"].gap_matched	this
+-0.0006	experiments/held_model_size_matched/results/summary.json	.pairs.e46_copy_random["reading 1"].shift_mean	this
+1.03	experiments/held_model_size_matched/results/summary.json	.pairs.e46_copy_random["reading 1"].R2_kept	this
+4.93	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e46_copy_random["reading 3"].S_original.reuse as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].whole)|add/length*1000	this
+5.34	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e46_copy_random["reading 3"].S_original.reuse as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+7.48	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e46_copy_random["reading 3"].S_original.new as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].whole)|add/length*1000	this
+8.29	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e46_copy_random["reading 3"].S_original.new as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+5.46	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e46_copy_random["reading 3"] as $g|.pairs.e46_copy_random.larger as $L|$g.S_matched[$L] as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+0.896	experiments/held_model_size_matched/results/summary.json	.pairs.e53_lowercase_cipher.c	this
+0.0228	experiments/held_model_size_matched/results/summary.json	.pairs.e53_lowercase_cipher["reading 3"].gap_original	this
+0.0014	experiments/held_model_size_matched/results/summary.json	.pairs.e53_lowercase_cipher["reading 3"].se_original	this
+0.0266	experiments/held_model_size_matched/results/summary.json	.pairs.e53_lowercase_cipher["reading 3"].gap_matched	this
+-0.0038	experiments/held_model_size_matched/results/summary.json	.pairs.e53_lowercase_cipher["reading 3"].shift_mean	this
+1.17	experiments/held_model_size_matched/results/summary.json	.pairs.e53_lowercase_cipher["reading 3"].R2_kept	this
+0.0433	experiments/held_model_size_matched/results/summary.json	.pairs.e53_lowercase_cipher["reading 1"].gap_original	this
+0.0049	experiments/held_model_size_matched/results/summary.json	.pairs.e53_lowercase_cipher["reading 1"].se_original	this
+0.0442	experiments/held_model_size_matched/results/summary.json	.pairs.e53_lowercase_cipher["reading 1"].gap_matched	this
+-0.0009	experiments/held_model_size_matched/results/summary.json	.pairs.e53_lowercase_cipher["reading 1"].shift_mean	this
+1.02	experiments/held_model_size_matched/results/summary.json	.pairs.e53_lowercase_cipher["reading 1"].R2_kept	this
+18.09	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e53_lowercase_cipher["reading 3"].S_original.reuse as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].whole)|add/length*1000	this
+19.24	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e53_lowercase_cipher["reading 3"].S_original.reuse as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+20.19	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e53_lowercase_cipher["reading 3"].S_original.new as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].whole)|add/length*1000	this
+22.27	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e53_lowercase_cipher["reading 3"].S_original.new as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+19.96	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e53_lowercase_cipher["reading 3"] as $g|.pairs.e53_lowercase_cipher.larger as $L|$g.S_matched[$L] as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+0.981	experiments/held_model_size_matched/results/summary.json	.pairs.e54_matched.c	this
+0.0072	experiments/held_model_size_matched/results/summary.json	.pairs.e54_matched["reading 3"].gap_original	this
+0.0006	experiments/held_model_size_matched/results/summary.json	.pairs.e54_matched["reading 3"].se_original	this
+0.0073	experiments/held_model_size_matched/results/summary.json	.pairs.e54_matched["reading 3"].gap_matched	this
+-0.0001	experiments/held_model_size_matched/results/summary.json	.pairs.e54_matched["reading 3"].shift_mean	this
+1.01	experiments/held_model_size_matched/results/summary.json	.pairs.e54_matched["reading 3"].R2_kept	this
+0.0081	experiments/held_model_size_matched/results/summary.json	.pairs.e54_matched["reading 1"].gap_original	this
+0.0015	experiments/held_model_size_matched/results/summary.json	.pairs.e54_matched["reading 1"].se_original	this
+0.0081	experiments/held_model_size_matched/results/summary.json	.pairs.e54_matched["reading 1"].gap_matched	this
+1.00	experiments/held_model_size_matched/results/summary.json	.pairs.e54_matched["reading 1"].R2_kept	this
+4.98	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e54_matched["reading 3"].S_original.reuse as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].whole)|add/length*1000	this
+5.45	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e54_matched["reading 3"].S_original.reuse as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+5.08	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e54_matched["reading 3"].S_original.new as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].whole)|add/length*1000	this
+5.60	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e54_matched["reading 3"].S_original.new as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+5.50	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e54_matched["reading 3"] as $g|.pairs.e54_matched.larger as $L|$g.S_matched[$L] as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+0.522	experiments/held_model_size_matched/results/summary.json	.pairs.e54_own.c	this
+0.0012	experiments/held_model_size_matched/results/summary.json	.pairs.e54_own["reading 3"].gap_original	this
+0.0003	experiments/held_model_size_matched/results/summary.json	.pairs.e54_own["reading 3"].se_original	this
+0.0288	experiments/held_model_size_matched/results/summary.json	.pairs.e54_own["reading 3"].gap_matched	this
+-0.0277	experiments/held_model_size_matched/results/summary.json	.pairs.e54_own["reading 3"].shift_mean	this
+24.93	experiments/held_model_size_matched/results/summary.json	.pairs.e54_own["reading 3"].R2_kept	this
+0.0188	experiments/held_model_size_matched/results/summary.json	.pairs.e54_own["reading 1"].gap_original	this
+0.0020	experiments/held_model_size_matched/results/summary.json	.pairs.e54_own["reading 1"].se_original	this
+0.0169	experiments/held_model_size_matched/results/summary.json	.pairs.e54_own["reading 1"].gap_matched	this
+0.0019	experiments/held_model_size_matched/results/summary.json	.pairs.e54_own["reading 1"].shift_mean	this
+0.90	experiments/held_model_size_matched/results/summary.json	.pairs.e54_own["reading 1"].R2_kept	this
+4.98	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e54_own["reading 3"].S_original.reuse as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].whole)|add/length*1000	this
+5.45	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e54_own["reading 3"].S_original.reuse as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+9.55	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e54_own["reading 3"].S_original.new as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].whole)|add/length*1000	this
+10.59	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e54_own["reading 3"].S_original.new as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+5.52	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e54_own["reading 3"] as $g|.pairs.e54_own.larger as $L|$g.S_matched[$L] as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+0.997	experiments/held_model_size_matched/results/summary.json	.pairs.open_pair_c3.c	this
+0.0053	experiments/held_model_size_matched/results/summary.json	.pairs.open_pair_c3["reading 3"].gap_original	this
+0.0004	experiments/held_model_size_matched/results/summary.json	.pairs.open_pair_c3["reading 3"].se_original	this
+0.0053	experiments/held_model_size_matched/results/summary.json	.pairs.open_pair_c3["reading 3"].gap_matched	this
+1.00	experiments/held_model_size_matched/results/summary.json	.pairs.open_pair_c3["reading 3"].R2_kept	this
+0.0144	experiments/held_model_size_matched/results/summary.json	.pairs.open_pair_c3["reading 1"].gap_original	this
+0.0005	experiments/held_model_size_matched/results/summary.json	.pairs.open_pair_c3["reading 1"].se_original	this
+0.0143	experiments/held_model_size_matched/results/summary.json	.pairs.open_pair_c3["reading 1"].gap_matched	this
+-0.0001	experiments/held_model_size_matched/results/summary.json	.pairs.open_pair_c3["reading 1"].shift_mean	this
+1.00	experiments/held_model_size_matched/results/summary.json	.pairs.open_pair_c3["reading 1"].R2_kept	this
+4.94	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.open_pair_c3["reading 3"].S_original.reuse as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].whole)|add/length*1000	this
+5.38	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.open_pair_c3["reading 3"].S_original.reuse as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+4.92	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.open_pair_c3["reading 3"].S_original.new as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].whole)|add/length*1000	this
+5.44	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.open_pair_c3["reading 3"].S_original.new as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+5.37	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.open_pair_c3["reading 3"] as $g|.pairs.open_pair_c3.larger as $L|$g.S_matched[$L] as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+0.990	experiments/held_model_size_matched/results/summary.json	.pairs.open_pair_c3_copy.c	this
+0.0058	experiments/held_model_size_matched/results/summary.json	.pairs.open_pair_c3_copy["reading 3"].gap_original	this
+0.0004	experiments/held_model_size_matched/results/summary.json	.pairs.open_pair_c3_copy["reading 3"].se_original	this
+0.0058	experiments/held_model_size_matched/results/summary.json	.pairs.open_pair_c3_copy["reading 3"].gap_matched	this
+-0.0001	experiments/held_model_size_matched/results/summary.json	.pairs.open_pair_c3_copy["reading 3"].shift_mean	this
+1.01	experiments/held_model_size_matched/results/summary.json	.pairs.open_pair_c3_copy["reading 3"].R2_kept	this
+0.0161	experiments/held_model_size_matched/results/summary.json	.pairs.open_pair_c3_copy["reading 1"].gap_original	this
+0.0007	experiments/held_model_size_matched/results/summary.json	.pairs.open_pair_c3_copy["reading 1"].se_original	this
+0.0161	experiments/held_model_size_matched/results/summary.json	.pairs.open_pair_c3_copy["reading 1"].gap_matched	this
+1.00	experiments/held_model_size_matched/results/summary.json	.pairs.open_pair_c3_copy["reading 1"].R2_kept	this
+4.87	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.open_pair_c3_copy["reading 3"].S_original.reuse as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].whole)|add/length*1000	this
+5.28	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.open_pair_c3_copy["reading 3"].S_original.reuse as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+4.92	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.open_pair_c3_copy["reading 3"].S_original.new as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].whole)|add/length*1000	this
+5.44	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.open_pair_c3_copy["reading 3"].S_original.new as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+5.39	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.open_pair_c3_copy["reading 3"] as $g|.pairs.open_pair_c3_copy.larger as $L|$g.S_matched[$L] as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+0.817	experiments/held_model_size_matched/results/summary.json	.pairs.e58_rank1_96.c	this
+0.0150	experiments/held_model_size_matched/results/summary.json	.pairs.e58_rank1_96["reading 3"].gap_original	this
+0.0013	experiments/held_model_size_matched/results/summary.json	.pairs.e58_rank1_96["reading 3"].se_original	this
+0.0326	experiments/held_model_size_matched/results/summary.json	.pairs.e58_rank1_96["reading 3"].gap_matched	this
+-0.0176	experiments/held_model_size_matched/results/summary.json	.pairs.e58_rank1_96["reading 3"].shift_mean	this
+2.18	experiments/held_model_size_matched/results/summary.json	.pairs.e58_rank1_96["reading 3"].R2_kept	this
+0.0191	experiments/held_model_size_matched/results/summary.json	.pairs.e58_rank1_96["reading 1"].gap_original	this
+0.0007	experiments/held_model_size_matched/results/summary.json	.pairs.e58_rank1_96["reading 1"].se_original	this
+0.0189	experiments/held_model_size_matched/results/summary.json	.pairs.e58_rank1_96["reading 1"].gap_matched	this
+0.0002	experiments/held_model_size_matched/results/summary.json	.pairs.e58_rank1_96["reading 1"].shift_mean	this
+0.99	experiments/held_model_size_matched/results/summary.json	.pairs.e58_rank1_96["reading 1"].R2_kept	this
+7.94	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e58_rank1_96["reading 3"].S_original.reuse as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].whole)|add/length*1000	this
+8.66	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e58_rank1_96["reading 3"].S_original.reuse as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+9.71	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e58_rank1_96["reading 3"].S_original.new as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].whole)|add/length*1000	this
+10.80	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e58_rank1_96["reading 3"].S_original.new as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+8.82	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e58_rank1_96["reading 3"] as $g|.pairs.e58_rank1_96.larger as $L|$g.S_matched[$L] as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+0.780	experiments/held_model_size_matched/results/summary.json	.pairs.e58_copy_prior_cipher.c	this
+0.0044	experiments/held_model_size_matched/results/summary.json	.pairs.e58_copy_prior_cipher["reading 3"].gap_original	this
+0.0008	experiments/held_model_size_matched/results/summary.json	.pairs.e58_copy_prior_cipher["reading 3"].se_original	this
+0.0126	experiments/held_model_size_matched/results/summary.json	.pairs.e58_copy_prior_cipher["reading 3"].gap_matched	this
+-0.0082	experiments/held_model_size_matched/results/summary.json	.pairs.e58_copy_prior_cipher["reading 3"].shift_mean	this
+2.88	experiments/held_model_size_matched/results/summary.json	.pairs.e58_copy_prior_cipher["reading 3"].R2_kept	this
+-0.0001	experiments/held_model_size_matched/results/summary.json	.pairs.e58_copy_prior_cipher["reading 1"].gap_original	this
+0.0006	experiments/held_model_size_matched/results/summary.json	.pairs.e58_copy_prior_cipher["reading 1"].se_original	this
+0.0014	experiments/held_model_size_matched/results/summary.json	.pairs.e58_copy_prior_cipher["reading 1"].gap_matched	this
+-0.0015	experiments/held_model_size_matched/results/summary.json	.pairs.e58_copy_prior_cipher["reading 1"].shift_mean	this
+-12.87	experiments/held_model_size_matched/results/summary.json	.pairs.e58_copy_prior_cipher["reading 1"].R2_kept	this
+7.30	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e58_copy_prior_cipher["reading 3"].S_original.reuse as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].whole)|add/length*1000	this
+7.68	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e58_copy_prior_cipher["reading 3"].S_original.reuse as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+9.36	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e58_copy_prior_cipher["reading 3"].S_original.new as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].whole)|add/length*1000	this
+10.36	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e58_copy_prior_cipher["reading 3"].S_original.new as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+8.08	experiments/held_model_size_matched/results/summary.json	. as $r|.pairs.e58_copy_prior_cipher["reading 3"] as $g|.pairs.e58_copy_prior_cipher.larger as $L|$g.S_matched[$L] as $l|[$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|.key]|map($r.size[.].mlp)|add/length*1000	this
+3e-5	experiments/held_model_size_matched/results/summary.json	.pairs.e54_matched["reading 1"].shift_mean	this
+-1.7e-6	experiments/held_model_size_matched/results/summary.json	.pairs.open_pair_c3["reading 3"].shift_mean	this
+2.8e-5	experiments/held_model_size_matched/results/summary.json	.pairs.open_pair_c3_copy["reading 1"].shift_mean	this
+0.52	experiments/held_model_size_matched/results/summary.json	[.pairs[].c]|min	this
+0.997	experiments/held_model_size_matched/results/summary.json	[.pairs[].c]|max	this
+1.3e-6	experiments/held_model_size_matched/results/stage0.json	.items.do_nothing.readings["3"].logit_error	this
+1e-3	experiments/held_model_size_matched/results/predictions.json	.thresholds.logit_tol	this
+1e-4	experiments/held_model_size_matched/results/predictions.json	.thresholds.repro_tol	this
+1e-6	experiments/held_model_size_matched/results/predictions.json	.thresholds.kl_floor	this
+0.25	experiments/held_model_size_matched/results/predictions.json	.settings.gains_c	this
+2e-7	experiments/held_model_size_matched/results/stage0.json	[.items[]|select(.abs_S_diff)|.abs_S_diff[]]|max	this
+2e-5	experiments/held_model_size_matched/results/stage0.json	[.items.gains_block_scaled.readings[].logit_error]|max	this
+0.0006	experiments/held_model_size_matched/results/summary.json	[.pairs[]|select(.c<0.95)|.["reading 3"].shift_by_state[]|fabs]|min	this
+0.030	experiments/held_model_size_matched/results/summary.json	[.pairs[]|select(.c<0.95)|.["reading 3"].shift_by_state[]|fabs]|max	this
+0.83	experiments/held_model_size_matched/results/summary.json	.pairs.e62_copy_lookup.c	this
+0.0009	experiments/held_model_size_matched/results/summary.json	-.pairs.e62_copy_lookup["reading 3"].shift_mean	this
+0.82	experiments/held_model_size_matched/results/summary.json	.pairs.e58_rank1_96.c	this
+0.018	experiments/held_model_size_matched/results/summary.json	-.pairs.e58_rank1_96["reading 3"].shift_mean	this
+0.016	experiments/held_model_size_matched/results/summary.json	-.pairs.e46_copy_random["reading 3"].shift_by_state[3]	this
+0.017	experiments/held_model_size_matched/results/summary.json	-.pairs.e46_copy_random["reading 3"].shift_by_state[2]	this
+0.006	experiments/held_model_size_matched/results/summary.json	-.pairs.e46_copy_random["reading 3"].shift_by_state[1]	this
+0.91	experiments/held_model_size_matched/results/summary.json	[.pairs[]|select(.c<0.95)|.kl_ratio_over_c2[]]|min	this
+1.47	experiments/held_model_size_matched/results/summary.json	[.pairs[]|select(.c<0.95)|.kl_ratio_over_c2[]]|max	this
+1.13	experiments/held_model_size_matched/results/summary.json	[.pairs[]|select(.c<0.95)|.kl_ratio_over_c2[]|select(.>1.1)]|min	this
+7.0	experiments/held_model_size_matched/results/summary.json	.pairs.e54_own as $v|$v["reading 3"] as $g|[range(2)|(1-$g.S_matched.new[.])/(1-$g.S_original.new[.])*([$v.kl_ratio_over_c2[]][.])]|min	this
+9.5	experiments/held_model_size_matched/results/summary.json	.pairs.e54_own as $v|$v["reading 3"] as $g|[range(2)|(1-$g.S_matched.new[.])/(1-$g.S_original.new[.])*([$v.kl_ratio_over_c2[]][.])]|max	this
+8.7	experiments/held_model_size_matched/results/summary.json	.pairs.e46_copy_random as $v|$v["reading 3"] as $g|[[2,3][]|(1-$g.S_matched.new[.])/(1-$g.S_original.new[.])*([$v.kl_ratio_over_c2[]][.])]|min	this
+9.3	experiments/held_model_size_matched/results/summary.json	.pairs.e46_copy_random as $v|$v["reading 3"] as $g|(1-$g.S_matched.new[3])/(1-$g.S_original.new[3])*([$v.kl_ratio_over_c2[]][3])	this
+0.90	experiments/held_model_size_matched/results/summary.json	[.pairs[]|.["reading 1"].R2_kept|select(.>0)]|min	this
+1.04	experiments/held_model_size_matched/results/summary.json	[.pairs[]|.["reading 1"].R2_kept]|max	this
+0.0035	experiments/held_model_size_matched/results/summary.json	[.pairs[]|.["reading 1"].shift_by_state[]|fabs]|max	this
+0.99	experiments/held_model_size_matched/results/summary.json	. as $r|[.pairs[]|.["reading 3"] as $g|.larger as $L|(if $L=="new" then "reuse" else "new" end) as $o|([$g.S_matched[$L] as $l|$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|$r.size[.key].mlp]|add/length)/([$g.S_original[$o] as $l|$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|$r.size[.key].mlp]|add/length)]|min	this
+1.05	experiments/held_model_size_matched/results/summary.json	. as $r|[.pairs[]|.["reading 3"] as $g|.larger as $L|(if $L=="new" then "reuse" else "new" end) as $o|([$g.S_matched[$L] as $l|$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|$r.size[.key].mlp]|add/length)/([$g.S_original[$o] as $l|$r.S|to_entries[]|select(.value["3"] as $s|any($l[]; . == $s))|$r.size[.key].mlp]|add/length)]|max	this
+0.958	experiments/held_model_size_matched/results/summary.json	[.S|to_entries[]|select(.key|test("_scaled_")|not)|.value["3"]]|min	this
+0.104	experiments/held_model_size_matched/results/summary.json	[.S|to_entries[]|select(.key|test("_scaled_")|not)|.value["1"]]|max	this
+0.98	given	the plan's expected per-site-map survival on the first run's tasks, results/predictions.json .expected.items ('about 0.98 to 0.999'), text not a number field
+0.896	experiments/held_model_size_matched/results/summary.json	[.pairs[]|select(.["reading 3"].R3_shift_within_se==false)|.c]|max	this
+2.11	given	pod-runner's report to the lead: RunPod H100 SXM pod cost for E205, about 2.11 dollars
+6.1	given	experiments/held_model_size_matched/results/run.log, line 'peak host RSS 6.1 GB'
