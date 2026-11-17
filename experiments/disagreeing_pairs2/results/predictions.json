@@ -1,0 +1,73 @@
+{
+  "experiment": "E199 (disagreeing_pairs2)",
+  "cell": "P2.32, run 1 of 1",
+  "filed": "2026-11-17, before the run",
+  "plan": "reports/plans/2026-11-17_plan_p2-32-disagreeing-pairs.md",
+  "card": "reports/plans/2026-11-17_plan_p2-32-card.md",
+  "no_verdict": "Sides are named as built. No rule, band or score toward a reuse verdict; the reading is descriptive: on the built pair, does the share separate the sides, and in the prior's direction or steering's.",
+  "thresholds": {
+    "prior_bar": 0.5,
+    "smallest_gap": 0.1,
+    "inert": 0.05,
+    "gain_floor": 1,
+    "zero_tol": 1e-09,
+    "reproduce_tol": 0.0001,
+    "refit_tol_prior_cipher": 0.00880650039487,
+    "projected_limit_min": 25,
+    "build_margin": 0.6
+  },
+  "sources": {
+    "prior_bar, smallest_gap, inert, gain_floor, zero_tol, reproduce_tol, refit_tol_prior_cipher, projected_limit_min": "E151 experiments/disagreeing_pairs/results/predictions.json thresholds, unchanged (E151's controls run unchanged)",
+    "build_margin 0.6": "E151 Amendment 1's common_prior_min: the 0.5-decade prior bar plus the 0.1 smallest gap as margin (5.91e-5 x 10^0.6 = 2.35e-4 against copy); the same margin is applied below the prior-matched cipher (3.73e-5 / 10^0.6 = 9.36e-6)"
+  },
+  "definitions": {
+    "prior, prior call, steering, share, call on seeds, condition, reading": "E151's, unchanged and applied by its rules.py (pair_calls, reading, CALL): the prior is keydep.geo_rate of steering.load_task(windows_<map>_trained.pt).lp0; the prior call is +1 / -1 by the gap's sign iff |gap| >= 0.5 decades, else 0; steering is E149's strength-1 pooled share; the share is E136's Job.trained on the saved bf16 update; a reading on three seeds a side 'separates' iff |gap| >= 0.1 and |gap| > the larger within-side range; 'opposite' iff the prior call is nonzero and steering separates with the other sign; on an opposite pair the reading is 'follows prior', 'follows steering', 'neither' (the share reads 'does not' or 'inert') or 'unreadable'",
+    "constructions, in order": {
+      "freq64, freq32, freq16 (built new; partner copy, built reuse)": "the K pool words (word-like ranks 0-2999 minus the 128 keys and the half-known map's values) with the largest minimum over the 128 keys of W0's per-key geometric-mean P(v | M key); each key one of them, by a seed-0 shuffle of the keys, word j % K for the j-th shuffled key (128 / K keys a word, no key-to-word link); pairs.frequent_words, pairs.balanced",
+      "neighbour (built reuse; partner the prior-matched cipher, built new)": "each key's word-like token (ladder.plain_token) with the highest cosine of W0's input embeddings, the key itself and every other key excluded; pairs.neighbours"
+    },
+    "build check": "stage 0, from W0 only, before any fine-tune: the realised prior gap (reuse minus new, decades) must be <= -build_margin (pairs.prior_ok): the prior points to the side built new by at least 0.6 decades. Stage 1, before any share is read: the constructions that passed, in order, each fine-tuned (3 seeds) and read by strength-1 steering; the first whose E151 condition is 'opposite' is the pair (pairs.first_built) and no later one is trained",
+    "score": "on the pair: E151's rules.reading with its condition; also reported, the share call (separates / does not / inert / unreadable) and its gap"
+  },
+  "stop_rules": {
+    "stage 0 controls": "E151's run.controls, unchanged: any miss exits 1 before any table",
+    "stage 0 tables": "a table whose zero update does not read 0 exits 1; no construction passing its prior bar exits 1 before any training: the cell closes, 'could not be built with this apparatus'",
+    "stage 1": "a construction with a seed under the gain floor stops training that construction (its steering is unreadable, so its condition is 'condition not met'); none 'opposite' exits 1 before any share: the cell closes, 'could not be built'; a projected job time over 25 min after four states exits 1",
+    "stage 2": "none; the reading is reported as it comes, 'unreadable' included"
+  },
+  "predictions": {
+    "P1": {"claim": "a pair is built (stage 1 finds a construction reading 'opposite')", "lean": true, "confidence": "medium", "basis": "generic words should put the frequent-word prior well over 2.35e-4; the 4-word shuffled twin steers at about 0.57 and 128-word ciphers at 0.08-0.12, so 64 words should sit well under copy's 0.56"},
+    "P2": {"claim": "the pair is the first construction tried, freq64", "lean": true, "confidence": "low", "basis": "the 64th most generic word may fall under the prior bar"},
+    "P3": {"claim": "the share follows steering: the side built to reuse reads at least 0.1 higher", "lean": true, "confidence": "low", "basis": "every no-link 96-key map reads 0.23-0.38 against copy's 0.77 (E147); against it, prior_vs_share's line puts a 1e-3 prior near 0.8 (rival a)"}
+  },
+  "expected": {
+    "zero update (stage 0)": "steering change at strength 1 <= 1e-9, steering path gain 0, share gain 0 and share unreadable",
+    "positive control (stage 0, saved states)": "copy / prior-matched cipher shares 0.771 / 0.378 and steering 0.560 / 0.115, each within 1e-4 of E147 / E149; condition 'condition not met' (prior gap 0.20 decades, steering separates)",
+    "refit control": "prior-matched cipher seed 0 share within 0.0088 of E147's",
+    "do-nothing pair": "steering unreadable, condition 'condition not met': never built",
+    "frequent-word priors": "3e-4 to 3e-3, lowest at K = 64; each table's zero update reads 0",
+    "neighbour prior": "1e-6 to 3e-5; it may miss its bar (9.36e-6)",
+    "steering of the new states": "freq64 0.15-0.30, rising as K falls; neighbour 0.3-0.6; gain 5-15 (every 96-key map read 9.5-21)",
+    "share of the new states": "not predicted from data: 0.3-0.85"
+  },
+  "blind_to": "The steering and share calls compare three seeds a side, so a construction's systematic confound (several keys per word in the frequent-word map; near-copies in the neighbour copy) is read as part of the side. The prior is one value a map. One pair: the reading says what the share does on this pair, not on a family of pairs.",
+  "seen_before_filing": "The partners' shares, priors and steering (copy, prior-matched cipher: E147, E149, prior_vs_share) were seen; the new sides' priors, steering and shares were not (no model was loaded for this design; the tokenizer only, to check the keys).",
+  "edge_cases_checked_before_filing": {
+    "how": "tests/test_disagreeing_pairs2.py runs each line against pairs.py and E151's rules.py",
+    "prior gap exactly -0.6": "prior_ok true (inclusive)",
+    "prior gap -0.59 (E151's common-word cipher against copy)": "prior_ok false",
+    "prior gap nan (a prior of 0)": "prior_ok false, never trained",
+    "prior gap pointing to the reuse side": "prior_ok false",
+    "no construction passes the prior bar": "stage 0 stops, exit 1, no training",
+    "first construction 'condition not met', second 'opposite'": "first_built returns the second",
+    "none 'opposite'": "first_built returns None: stage 1 stops, exit 1",
+    "new side with a seed under the gain floor": "its steering seeds hold nan: E151's call reads 'unreadable', condition 'condition not met', next construction",
+    "steering separates with the prior's sign": "condition 'condition not met', next construction",
+    "do-nothing pair (zero updates both sides)": "gain 0 is under the floor, so steering is nan on every seed: 'unreadable', condition 'condition not met', never built",
+    "share unreadable on the pair": "reading 'unreadable', reported, no prediction P3 true",
+    "frequent words tied on their minimum": "pool order breaks the tie",
+    "K not dividing the key count": "balanced refuses (every K filed divides 128)",
+    "two keys with the same nearest neighbour": "allowed; n_distinct is reported"
+  },
+  "what changes what we do": "Follows steering or neither: part 2 has a pair where the share carries something the prior does not, and writes the paragraph from it. Follows the prior: part 2 writes that on direction the share adds nothing beyond the prior. No pair built: the cell closes as not buildable with this apparatus."
+}

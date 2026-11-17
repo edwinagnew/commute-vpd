@@ -1,0 +1,412 @@
+usage: run.py [-h] [--seeds {0,1,2,3} [{0,1,2,3} ...]] [--summary]
+              [{1,2,3,4,5,6} ...]
+run.py: error: argument stages: invalid choice: '0' (choose from '1', '2', '3', '4', '5', '6')
+E197 (P1.26, run 1) start; stages [1], seeds [0, 1, 2, 3]; settings {'layer': 1, 'C': (486, 499, 613, 778, 1125, 2028, 2352, 2960), 'trained': (2, 3), 'control_task': 'copy24', 'seeds': (0, 1, 2, 3), 'n_fit': 16384, 'fit_seed': 197100, 'n_read': 512, 'read_seed': 195200, 'n_max': 100, 'held_share': 0.25, 'gain_lo': 0.5, 'gain_hi': 2.0, 'check_seed': 197000, 'eval_batch': 2048, 'sum_batch': 512}; thresholds {'logit_tol': 0.001, 'gain_tol': 0.0001, 'kl_floor': 1e-06, 'reload_tol': 0.0001}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+do_nothing: KL(F || M) 0 (last position, 512 read windows); fit 32.4 s
+do_nothing reading 1: S None, KL(F || H) 0, max relative logit error 0; site residuals mlp0 -7.58e-16, attn0 -6.928e-16, mlp1 4.578e-16, attn1 -7.788e-16, mlp2 -2.622e-16, attn2 -5.313e-16, mlp3 -3.952e-16, attn3 -2.117e-16
+do_nothing reading 2: S None, KL(F || H) 0, max relative logit error 0; site residuals mlp0 -7.58e-16, attn0 -6.928e-16, mlp1 4.578e-16, attn1 -7.788e-16, mlp2 -2.622e-16, attn2 -5.313e-16, mlp3 -3.952e-16, attn3 -2.117e-16
+do_nothing reading 3: S None, KL(F || H) 1.54562e-13, max relative logit error 1.19e-06; site residuals mlp0 -7.58e-16, attn0 -9.237e-16, mlp1 7.63e-16, attn1 -7.788e-16, mlp2 -1.311e-16, attn2 -7.97e-16, mlp3 -6.587e-16, attn3 -2.117e-16
+do_nothing: checks hold
+gains_unit: KL(F || M) 8.24399 (last position, 512 read windows); fit 30.9 s
+gains_unit reading 1: S 0.9999999999986114, KL(F || H) 1.14476e-11, max relative logit error 1.99e-05; site residuals mlp0 -3.253e-16, attn0 -1.519e-16, mlp1 4.147e-15, attn1 2.164e-16, mlp2 -3.885e-16, attn2 -1.584e-16, mlp3 0, attn3 -5.983e-16
+gains_unit reading 2: S 0.49071049561277147, KL(F || H) 4.19858, max relative logit error 2.14; site residuals mlp0 0.9578, attn0 -1.519e-16, mlp1 0.2485, attn1 2.164e-16, mlp2 0.9545, attn2 -1.584e-16, mlp3 0.9953, attn3 -5.983e-16
+gains_unit reading 3: S 0.9999999999986207, KL(F || H) 1.13715e-11, max relative logit error 1.68e-05; site residuals mlp0 -8.131e-16, attn0 -4.557e-16, mlp1 2.136e-15, attn1 0, mlp2 -9.713e-16, attn2 -6.337e-16, mlp3 -3.528e-16, attn3 -5.983e-16
+gains_unit: checks hold
+gains_block: KL(F || M) 6.83602 (last position, 512 read windows); fit 30.9 s
+gains_block reading 1: S 0.9999999999997303, KL(F || H) 1.84348e-12, max relative logit error 5.61e-06; site residuals mlp0 1.324e-16, attn0 0, mlp1 1.325e-16, attn1 3.688e-16, mlp2 1.541e-16, attn2 6.462e-16, mlp3 4.221e-16, attn3 -2.526e-16
+gains_block reading 2: S 0.9999999999996759, KL(F || H) 2.21576e-12, max relative logit error 6.61e-06; site residuals mlp0 0, attn0 0, mlp1 -1.325e-16, attn1 3.688e-16, mlp2 0, attn2 6.462e-16, mlp3 2.11e-16, attn3 -2.526e-16
+gains_block reading 3: S 0.9999999999999979, KL(F || H) 1.41014e-14, max relative logit error 7.05e-07; site residuals mlp0 -2.649e-16, attn0 -3.436e-16, mlp1 -1.325e-16, attn1 -2.459e-16, mlp2 -4.623e-16, attn2 -1.292e-16, mlp3 0, attn3 -5.051e-16
+gains_block: checks hold
+circuit_off: KL(F || M) 0.146588 (last position, 512 read windows); fit 30.9 s
+circuit_off reading 1: S 1.0, KL(F || H) 0, max relative logit error 0; site residuals mlp0 -7.58e-16, attn0 -6.928e-16, mlp1 5.82e-16, attn1 -7.788e-16, mlp2 -2.622e-16, attn2 -5.313e-16, mlp3 -3.952e-16, attn3 -2.117e-16
+circuit_off reading 2: S -2.306911529966839, KL(F || H) 0.484754, max relative logit error 0.786; site residuals mlp0 -7.58e-16, attn0 -6.928e-16, mlp1 0.04087, attn1 -7.788e-16, mlp2 -2.622e-16, attn2 -5.313e-16, mlp3 -3.952e-16, attn3 -2.117e-16
+circuit_off reading 3: S 0.9999999999990189, KL(F || H) 1.4382e-13, max relative logit error 1.64e-06; site residuals mlp0 -7.58e-16, attn0 -9.237e-16, mlp1 7.761e-16, attn1 -7.788e-16, mlp2 -1.311e-16, attn2 -7.97e-16, mlp3 -6.587e-16, attn3 -2.117e-16
+circuit_off: checks hold
+STAGE 0 DONE
+rebuilt: KL(F || M) 0.0341884 (last position, 512 read windows); fit 30.9 s
+rebuilt reading 1: S -3.8050406364151614, KL(F || H) 0.164276, max relative logit error 1.08; site residuals mlp0 -7.58e-16, attn0 -6.928e-16, mlp1 5.82e-16, attn1 -7.788e-16, mlp2 0.2388, attn2 -5.313e-16, mlp3 0.01771, attn3 -2.117e-16
+rebuilt reading 2: S -8.457087561155996, KL(F || H) 0.323322, max relative logit error 0.796; site residuals mlp0 -7.58e-16, attn0 -6.928e-16, mlp1 0.04087, attn1 -7.788e-16, mlp2 0.3137, attn2 -5.313e-16, mlp3 0.02142, attn3 -2.117e-16
+rebuilt reading 3: S 0.562970022450709, KL(F || H) 0.0149413, max relative logit error 0.288; site residuals mlp0 -7.58e-16, attn0 -9.237e-16, mlp1 7.761e-16, attn1 -7.788e-16, mlp2 0.002301, attn2 -7.97e-16, mlp3 0.001693, attn3 -2.117e-16
+rebuilt: done in 31 s
+STAGE 1 DONE
+gap copy24/cipher24 reading 1: by seed {}, sd None
+gap copy24/cipher24 reading 2: by seed {}, sd None
+gap copy24/cipher24 reading 3: by seed {}, sd None
+gap ident32/rand32 reading 1: by seed {}, sd None
+gap ident32/rand32 reading 2: by seed {}, sd None
+gap ident32/rand32 reading 3: by seed {}, sd None
+gap case_real/case_twin reading 1: by seed {}, sd None
+gap case_real/case_twin reading 2: by seed {}, sd None
+gap case_real/case_twin reading 3: by seed {}, sd None
+gap repeat_real/repeat_twin reading 1: by seed {}, sd None
+gap repeat_real/repeat_twin reading 2: by seed {}, sd None
+gap repeat_real/repeat_twin reading 3: by seed {}, sd None
+gap twin/fact reading 1: by seed {}, sd None
+gap twin/fact reading 2: by seed {}, sd None
+gap twin/fact reading 3: by seed {}, sd None
+E197 DONE
+peak host RSS 6.1 GB
+E197 (P1.26, run 1) start; stages [3], seeds [0, 1, 2, 3]; settings {'layer': 1, 'C': (486, 499, 613, 778, 1125, 2028, 2352, 2960), 'trained': (2, 3), 'control_task': 'copy24', 'seeds': (0, 1, 2, 3), 'n_fit': 16384, 'fit_seed': 197100, 'n_read': 512, 'read_seed': 195200, 'n_max': 100, 'held_share': 0.25, 'gain_lo': 0.5, 'gain_hi': 2.0, 'check_seed': 197000, 'eval_batch': 2048, 'sum_batch': 512}; thresholds {'logit_tol': 0.001, 'gain_tol': 0.0001, 'kl_floor': 1e-06, 'reload_tol': 0.0001}
+E197 (P1.26, run 1) start; stages [2], seeds [0, 1, 2, 3]; settings {'layer': 1, 'C': (486, 499, 613, 778, 1125, 2028, 2352, 2960), 'trained': (2, 3), 'control_task': 'copy24', 'seeds': (0, 1, 2, 3), 'n_fit': 16384, 'fit_seed': 197100, 'n_read': 512, 'read_seed': 195200, 'n_max': 100, 'held_share': 0.25, 'gain_lo': 0.5, 'gain_hi': 2.0, 'check_seed': 197000, 'eval_batch': 2048, 'sum_batch': 512}; thresholds {'logit_tol': 0.001, 'gain_tol': 0.0001, 'kl_floor': 1e-06, 'reload_tol': 0.0001}
+E197 (P1.26, run 1) start; stages [4], seeds [0, 1, 2, 3]; settings {'layer': 1, 'C': (486, 499, 613, 778, 1125, 2028, 2352, 2960), 'trained': (2, 3), 'control_task': 'copy24', 'seeds': (0, 1, 2, 3), 'n_fit': 16384, 'fit_seed': 197100, 'n_read': 512, 'read_seed': 195200, 'n_max': 100, 'held_share': 0.25, 'gain_lo': 0.5, 'gain_hi': 2.0, 'check_seed': 197000, 'eval_batch': 2048, 'sum_batch': 512}; thresholds {'logit_tol': 0.001, 'gain_tol': 0.0001, 'kl_floor': 1e-06, 'reload_tol': 0.0001}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+STAGE 0 DONE
+STAGE 0 DONE
+STAGE 0 DONE
+copy24_s0: gap (mean TV, last position, whole read half) 0.517150, E184's 0.5171504744412768
+case_real_s0: gap (mean TV, last position, whole read half) 0.635736, E184's 0.6357364055852661
+ident32_s0: gap (mean TV, last position, whole read half) 0.590807, E184's 0.5908071253470403
+copy24_s0: KL(F || M) 3.53143 (last position, 512 read windows); fit 31.2 s
+copy24_s0 reading 1: S 0.0360557357557566, KL(F || H) 3.40411, max relative logit error 1.04; site residuals mlp0 0.00653, attn0 0.004406, mlp1 6.283e-05, attn1 0.003579, mlp2 0.00163, attn2 0.004792, mlp3 0.0008055, attn3 8.134e-05
+copy24_s0 reading 2: S 0.007635066365210386, KL(F || H) 3.50447, max relative logit error 1.05; site residuals mlp0 0.007046, attn0 0.004406, mlp1 6.274e-05, attn1 0.003579, mlp2 0.001644, attn2 0.004792, mlp3 0.0008776, attn3 8.134e-05
+copy24_s0 reading 3: S 0.9978264514933091, KL(F || H) 0.00767574, max relative logit error 0.133; site residuals mlp0 3.196e-05, attn0 0.0004489, mlp1 3.045e-07, attn1 0.0001862, mlp2 1.322e-05, attn2 0.0008691, mlp3 1.316e-05, attn3 1.715e-05
+copy24_s0: done in 31 s
+case_real_s0: KL(F || M) 8.30313 (last position, 512 read windows); fit 31.3 s
+case_real_s0 reading 1: S 0.047646077658642594, KL(F || H) 7.90752, max relative logit error 1.42; site residuals mlp0 0.01586, attn0 0.01813, mlp1 0.0001048, attn1 0.005617, mlp2 0.003454, attn2 0.01548, mlp3 0.002406, attn3 0.0001661
+case_real_s0 reading 2: S -0.000420956155768204, KL(F || H) 8.30663, max relative logit error 1.45; site residuals mlp0 0.01683, attn0 0.01813, mlp1 0.0001092, attn1 0.005617, mlp2 0.003513, attn2 0.01548, mlp3 0.002679, attn3 0.0001661
+case_real_s0 reading 3: S 0.9993087970052531, KL(F || H) 0.00573915, max relative logit error 0.313; site residuals mlp0 8.085e-05, attn0 0.0009834, mlp1 9.407e-07, attn1 0.0008273, mlp2 3.343e-05, attn2 0.002521, mlp3 4.336e-05, attn3 3.65e-05
+case_real_s0: done in 31 s
+ident32_s0: KL(F || M) 4.24975 (last position, 512 read windows); fit 31.3 s
+ident32_s0 reading 1: S 0.03129197631101244, KL(F || H) 4.11676, max relative logit error 1.05; site residuals mlp0 0.008425, attn0 0.005045, mlp1 7.246e-05, attn1 0.004656, mlp2 0.001702, attn2 0.006081, mlp3 0.000987, attn3 9.22e-05
+ident32_s0 reading 2: S 0.010623519251718783, KL(F || H) 4.2046, max relative logit error 1.06; site residuals mlp0 0.008892, attn0 0.005045, mlp1 7.232e-05, attn1 0.004656, mlp2 0.001704, attn2 0.006081, mlp3 0.001102, attn3 9.22e-05
+ident32_s0 reading 3: S 0.9965445523482307, KL(F || H) 0.0146848, max relative logit error 0.157; site residuals mlp0 3.409e-05, attn0 0.0004065, mlp1 3.121e-07, attn1 0.0002383, mlp2 1.356e-05, attn2 0.001087, mlp3 1.372e-05, attn3 1.654e-05
+ident32_s0: done in 31 s
+cipher24_s0: gap (mean TV, last position, whole read half) 0.618832, E184's 0.618831773186964
+case_twin_s0: gap (mean TV, last position, whole read half) 0.632017, E184's 0.632017314848128
+rand32_s0: gap (mean TV, last position, whole read half) 0.690697, E184's 0.6906971566797918
+cipher24_s0: KL(F || M) 3.82799 (last position, 512 read windows); fit 31.1 s
+cipher24_s0 reading 1: S 0.021351992475926562, KL(F || H) 3.74625, max relative logit error 1.23; site residuals mlp0 0.007328, attn0 0.00441, mlp1 0.0001111, attn1 0.004499, mlp2 0.002339, attn2 0.007957, mlp3 0.001577, attn3 0.0001122
+cipher24_s0 reading 2: S 0.006187812821199068, KL(F || H) 3.8043, max relative logit error 1.24; site residuals mlp0 0.007793, attn0 0.00441, mlp1 0.0001105, attn1 0.004499, mlp2 0.002276, attn2 0.007957, mlp3 0.001726, attn3 0.0001122
+cipher24_s0 reading 3: S 0.9925887292797673, KL(F || H) 0.0283702, max relative logit error 0.156; site residuals mlp0 3.314e-05, attn0 0.0003512, mlp1 3.388e-07, attn1 0.0001851, mlp2 1.525e-05, attn2 0.0006633, mlp3 1.83e-05, attn3 1.019e-05
+cipher24_s0: done in 31 s
+case_twin_s0: KL(F || M) 8.26203 (last position, 512 read windows); fit 31.2 s
+case_twin_s0 reading 1: S 0.05109056518373867, KL(F || H) 7.83992, max relative logit error 1.39; site residuals mlp0 0.02477, attn0 0.04634, mlp1 9.452e-05, attn1 0.01019, mlp2 0.003604, attn2 0.01537, mlp3 0.003032, attn3 0.0002518
+case_twin_s0 reading 2: S -0.0028745705074946226, KL(F || H) 8.28578, max relative logit error 1.42; site residuals mlp0 0.02678, attn0 0.04634, mlp1 0.0001048, attn1 0.01019, mlp2 0.003895, attn2 0.01537, mlp3 0.00333, attn3 0.0002518
+case_twin_s0 reading 3: S 0.9875629594681169, KL(F || H) 0.102755, max relative logit error 0.512; site residuals mlp0 0.000423, attn0 0.0123, mlp1 3.984e-06, attn1 0.002173, mlp2 0.0001205, attn2 0.006511, mlp3 0.0001247, attn3 5.475e-05
+case_twin_s0: done in 31 s
+rand32_s0: KL(F || M) 4.55038 (last position, 512 read windows); fit 31.2 s
+rand32_s0 reading 1: S 0.014507612927025293, KL(F || H) 4.48436, max relative logit error 1.27; site residuals mlp0 0.009385, attn0 0.004975, mlp1 0.0001213, attn1 0.00469, mlp2 0.002492, attn2 0.01188, mlp3 0.001751, attn3 0.0001162
+rand32_s0 reading 2: S 0.003020033731518157, KL(F || H) 4.53663, max relative logit error 1.28; site residuals mlp0 0.00977, attn0 0.004975, mlp1 0.0001198, attn1 0.00469, mlp2 0.002446, attn2 0.01188, mlp3 0.001943, attn3 0.0001162
+rand32_s0 reading 3: S 0.9913539111978515, KL(F || H) 0.039343, max relative logit error 0.162; site residuals mlp0 3.694e-05, attn0 0.0003779, mlp1 3.689e-07, attn1 0.0001779, mlp2 1.728e-05, attn2 0.001032, mlp3 2.2e-05, attn3 1.03e-05
+rand32_s0: done in 31 s
+copy24_s1: gap (mean TV, last position, whole read half) 0.557341, E184's 0.5573408005890568
+case_real_s1: gap (mean TV, last position, whole read half) 0.625790, E184's 0.6257896786947038
+ident32_s1: gap (mean TV, last position, whole read half) 0.596487, E184's 0.59648671090189
+copy24_s1: KL(F || M) 4.03215 (last position, 512 read windows); fit 31.1 s
+copy24_s1 reading 1: S 0.03731620593094864, KL(F || H) 3.88169, max relative logit error 1.03; site residuals mlp0 0.0069, attn0 0.00494, mlp1 7.311e-05, attn1 0.003542, mlp2 0.001686, attn2 0.005822, mlp3 0.0008113, attn3 8.932e-05
+copy24_s1 reading 2: S 0.010591414467637117, KL(F || H) 3.98944, max relative logit error 1.04; site residuals mlp0 0.007498, attn0 0.00494, mlp1 7.269e-05, attn1 0.003542, mlp2 0.001697, attn2 0.005822, mlp3 0.0008831, attn3 8.932e-05
+copy24_s1 reading 3: S 0.9982802338338961, KL(F || H) 0.00693436, max relative logit error 0.161; site residuals mlp0 3.244e-05, attn0 0.0003912, mlp1 3.312e-07, attn1 0.0002459, mlp2 1.386e-05, attn2 0.00105, mlp3 1.323e-05, attn3 2.007e-05
+copy24_s1: done in 31 s
+case_real_s1: KL(F || M) 8.2848 (last position, 512 read windows); fit 31.2 s
+case_real_s1 reading 1: S 0.04776850143209266, KL(F || H) 7.88905, max relative logit error 1.43; site residuals mlp0 0.01556, attn0 0.02838, mlp1 9.408e-05, attn1 0.006125, mlp2 0.003569, attn2 0.016, mlp3 0.00234, attn3 0.0002057
+case_real_s1 reading 2: S -0.0012258836711975807, KL(F || H) 8.29496, max relative logit error 1.46; site residuals mlp0 0.01657, attn0 0.02838, mlp1 9.943e-05, attn1 0.006125, mlp2 0.003632, attn2 0.016, mlp3 0.002608, attn3 0.0002057
+case_real_s1 reading 3: S 0.9985237661390455, KL(F || H) 0.0122303, max relative logit error 0.427; site residuals mlp0 7.949e-05, attn0 0.000984, mlp1 9.84e-07, attn1 0.0008058, mlp2 3.456e-05, attn2 0.003242, mlp3 4.534e-05, attn3 4.433e-05
+case_real_s1: done in 31 s
+ident32_s1: KL(F || M) 4.37827 (last position, 512 read windows); fit 31.2 s
+ident32_s1 reading 1: S 0.028403720684099354, KL(F || H) 4.25391, max relative logit error 1.13; site residuals mlp0 0.008778, attn0 0.005042, mlp1 6.543e-05, attn1 0.004403, mlp2 0.001682, attn2 0.005497, mlp3 0.0008901, attn3 8.129e-05
+ident32_s1 reading 2: S 0.009248246127923854, KL(F || H) 4.33778, max relative logit error 1.15; site residuals mlp0 0.009281, attn0 0.005042, mlp1 6.565e-05, attn1 0.004403, mlp2 0.001689, attn2 0.005497, mlp3 0.0009901, attn3 8.129e-05
+ident32_s1 reading 3: S 0.9983711054654684, KL(F || H) 0.00713175, max relative logit error 0.174; site residuals mlp0 3.694e-05, attn0 0.000442, mlp1 3.205e-07, attn1 0.000239, mlp2 1.332e-05, attn2 0.001074, mlp3 1.364e-05, attn3 1.555e-05
+ident32_s1: done in 31 s
+cipher24_s1: gap (mean TV, last position, whole read half) 0.629052, E184's 0.6290522907278877
+case_twin_s1: gap (mean TV, last position, whole read half) 0.629965, E184's 0.6299651195105198
+rand32_s1: gap (mean TV, last position, whole read half) 0.683905, E184's 0.6839054123642723
+cipher24_s1: KL(F || M) 3.76011 (last position, 512 read windows); fit 31.1 s
+cipher24_s1 reading 1: S 0.02251684294585199, KL(F || H) 3.67544, max relative logit error 1.12; site residuals mlp0 0.00713, attn0 0.004921, mlp1 0.0001064, attn1 0.004442, mlp2 0.00221, attn2 0.00841, mlp3 0.001553, attn3 0.0001107
+cipher24_s1 reading 2: S 0.008091509067284841, KL(F || H) 3.72968, max relative logit error 1.12; site residuals mlp0 0.007417, attn0 0.004921, mlp1 0.0001054, attn1 0.004442, mlp2 0.002155, attn2 0.00841, mlp3 0.001699, attn3 0.0001107
+cipher24_s1 reading 3: S 0.990509818136546, KL(F || H) 0.0356841, max relative logit error 0.381; site residuals mlp0 3.096e-05, attn0 0.0003809, mlp1 3.288e-07, attn1 0.0001969, mlp2 1.471e-05, attn2 0.0007921, mlp3 1.703e-05, attn3 9.969e-06
+cipher24_s1: done in 31 s
+case_twin_s1: KL(F || M) 8.20782 (last position, 512 read windows); fit 31.2 s
+case_twin_s1 reading 1: S 0.053287813762657454, KL(F || H) 7.77045, max relative logit error 1.36; site residuals mlp0 0.0216, attn0 0.03984, mlp1 8.953e-05, attn1 0.01094, mlp2 0.003857, attn2 0.01103, mlp3 0.002751, attn3 0.0002559
+case_twin_s1 reading 2: S -0.0031223357282006425, KL(F || H) 8.23345, max relative logit error 1.4; site residuals mlp0 0.02315, attn0 0.03984, mlp1 9.855e-05, attn1 0.01094, mlp2 0.004101, attn2 0.01103, mlp3 0.00305, attn3 0.0002559
+case_twin_s1 reading 3: S 0.9893438896387478, KL(F || H) 0.0874635, max relative logit error 0.49; site residuals mlp0 0.0003738, attn0 0.009394, mlp1 3.528e-06, attn1 0.002113, mlp2 0.0001214, attn2 0.003744, mlp3 0.000116, attn3 5.834e-05
+case_twin_s1: done in 31 s
+rand32_s1: KL(F || M) 4.60957 (last position, 512 read windows); fit 31.2 s
+rand32_s1 reading 1: S 0.01448053549358208, KL(F || H) 4.54282, max relative logit error 1.25; site residuals mlp0 0.009958, attn0 0.004981, mlp1 0.0001262, attn1 0.004574, mlp2 0.002551, attn2 0.01136, mlp3 0.001608, attn3 0.0001283
+rand32_s1 reading 2: S 0.0022798269542964045, KL(F || H) 4.59906, max relative logit error 1.26; site residuals mlp0 0.01057, attn0 0.004981, mlp1 0.0001254, attn1 0.004574, mlp2 0.002512, attn2 0.01136, mlp3 0.001787, attn3 0.0001283
+rand32_s1 reading 3: S 0.9923682602613743, KL(F || H) 0.0351791, max relative logit error 0.174; site residuals mlp0 4.22e-05, attn0 0.0003605, mlp1 3.919e-07, attn1 0.0001661, mlp2 1.745e-05, attn2 0.001085, mlp3 2.124e-05, attn3 1.331e-05
+rand32_s1: done in 31 s
+copy24_s2: gap (mean TV, last position, whole read half) 0.548189, E184's None
+case_real_s2: gap (mean TV, last position, whole read half) 0.612714, E184's None
+ident32_s2: gap (mean TV, last position, whole read half) 0.584210, E184's None
+copy24_s2: KL(F || M) 3.87207 (last position, 512 read windows); fit 31.1 s
+copy24_s2 reading 1: S 0.04091753948036725, KL(F || H) 3.71363, max relative logit error 1.02; site residuals mlp0 0.006466, attn0 0.004787, mlp1 6.856e-05, attn1 0.003835, mlp2 0.001742, attn2 0.005542, mlp3 0.0008463, attn3 8.961e-05
+copy24_s2 reading 2: S 0.010471794068409035, KL(F || H) 3.83152, max relative logit error 1.03; site residuals mlp0 0.006997, attn0 0.004787, mlp1 6.826e-05, attn1 0.003835, mlp2 0.001752, attn2 0.005542, mlp3 0.0009236, attn3 8.961e-05
+copy24_s2 reading 3: S 0.9982266674549038, KL(F || H) 0.00686646, max relative logit error 0.135; site residuals mlp0 3.1e-05, attn0 0.0004712, mlp1 3.276e-07, attn1 0.0002238, mlp2 1.405e-05, attn2 0.0009034, mlp3 1.362e-05, attn3 2.125e-05
+copy24_s2: done in 31 s
+case_real_s2: KL(F || M) 8.28116 (last position, 512 read windows); fit 31.2 s
+case_real_s2 reading 1: S 0.04637364842793501, KL(F || H) 7.89713, max relative logit error 1.42; site residuals mlp0 0.01279, attn0 0.01866, mlp1 5.821e-05, attn1 0.004008, mlp2 0.002737, attn2 0.01114, mlp3 0.002241, attn3 0.0001415
+case_real_s2 reading 2: S -0.0013463119391567968, KL(F || H) 8.29231, max relative logit error 1.45; site residuals mlp0 0.01372, attn0 0.01866, mlp1 6.295e-05, attn1 0.004008, mlp2 0.002845, attn2 0.01114, mlp3 0.002478, attn3 0.0001415
+case_real_s2 reading 3: S 0.9977393078726878, KL(F || H) 0.0187212, max relative logit error 0.358; site residuals mlp0 7.249e-05, attn0 0.0006657, mlp1 8.804e-07, attn1 0.0006356, mlp2 3.224e-05, attn2 0.002601, mlp3 4.42e-05, attn3 3.207e-05
+case_real_s2: done in 31 s
+ident32_s2: KL(F || M) 4.21279 (last position, 512 read windows); fit 31.2 s
+ident32_s2 reading 1: S 0.028871627567583213, KL(F || H) 4.09116, max relative logit error 1.12; site residuals mlp0 0.008711, attn0 0.004534, mlp1 6.543e-05, attn1 0.004075, mlp2 0.001619, attn2 0.005918, mlp3 0.0009006, attn3 8.136e-05
+ident32_s2 reading 2: S 0.009234644077769194, KL(F || H) 4.17388, max relative logit error 1.13; site residuals mlp0 0.009174, attn0 0.004534, mlp1 6.577e-05, attn1 0.004075, mlp2 0.00162, attn2 0.005918, mlp3 0.001006, attn3 8.136e-05
+ident32_s2 reading 3: S 0.9962779294132718, KL(F || H) 0.0156803, max relative logit error 0.171; site residuals mlp0 3.644e-05, attn0 0.0004073, mlp1 3.187e-07, attn1 0.0002327, mlp2 1.345e-05, attn2 0.001125, mlp3 1.375e-05, attn3 1.575e-05
+ident32_s2: done in 31 s
+cipher24_s2: gap (mean TV, last position, whole read half) 0.639873, E184's None
+case_twin_s2: gap (mean TV, last position, whole read half) 0.632731, E184's None
+rand32_s2: gap (mean TV, last position, whole read half) 0.665806, E184's None
+cipher24_s2: KL(F || M) 3.62717 (last position, 512 read windows); fit 31.0 s
+cipher24_s2 reading 1: S 0.022977316657773916, KL(F || H) 3.54383, max relative logit error 1.16; site residuals mlp0 0.00637, attn0 0.004233, mlp1 0.000104, attn1 0.003792, mlp2 0.00212, attn2 0.009355, mlp3 0.001442, attn3 9.644e-05
+cipher24_s2 reading 2: S 0.007994470054709879, KL(F || H) 3.59817, max relative logit error 1.19; site residuals mlp0 0.006702, attn0 0.004233, mlp1 0.0001033, attn1 0.003792, mlp2 0.002071, attn2 0.009355, mlp3 0.00158, attn3 9.644e-05
+cipher24_s2 reading 3: S 0.9910677735795085, KL(F || H) 0.0323987, max relative logit error 0.301; site residuals mlp0 2.826e-05, attn0 0.0003314, mlp1 3.028e-07, attn1 0.0001364, mlp2 1.364e-05, attn2 0.0007198, mlp3 1.607e-05, attn3 7.902e-06
+cipher24_s2: done in 31 s
+case_twin_s2: KL(F || M) 8.22161 (last position, 512 read windows); fit 31.1 s
+case_twin_s2 reading 1: S 0.058515735881579434, KL(F || H) 7.74052, max relative logit error 1.29; site residuals mlp0 0.02202, attn0 0.04594, mlp1 9.275e-05, attn1 0.01152, mlp2 0.004106, attn2 0.01108, mlp3 0.003278, attn3 0.000227
+case_twin_s2 reading 2: S -0.004204881922621695, KL(F || H) 8.25618, max relative logit error 1.32; site residuals mlp0 0.02357, attn0 0.04594, mlp1 0.0001024, attn1 0.01152, mlp2 0.004303, attn2 0.01108, mlp3 0.003626, attn3 0.000227
+case_twin_s2 reading 3: S 0.9890701855461631, KL(F || H) 0.0898607, max relative logit error 0.53; site residuals mlp0 0.0003839, attn0 0.009967, mlp1 3.903e-06, attn1 0.002448, mlp2 0.0001334, attn2 0.004011, mlp3 0.0001334, attn3 6.075e-05
+case_twin_s2: done in 31 s
+rand32_s2: KL(F || M) 4.47863 (last position, 512 read windows); fit 31.2 s
+rand32_s2 reading 1: S 0.014411349023452313, KL(F || H) 4.41409, max relative logit error 1.25; site residuals mlp0 0.009439, attn0 0.00475, mlp1 0.0001204, attn1 0.004674, mlp2 0.002492, attn2 0.01062, mlp3 0.001642, attn3 0.0001052
+rand32_s2 reading 2: S 0.004165909745583285, KL(F || H) 4.45997, max relative logit error 1.25; site residuals mlp0 0.009964, attn0 0.00475, mlp1 0.0001187, attn1 0.004674, mlp2 0.002444, attn2 0.01062, mlp3 0.001824, attn3 0.0001052
+rand32_s2 reading 3: S 0.9922616639975644, KL(F || H) 0.0346572, max relative logit error 0.17; site residuals mlp0 3.989e-05, attn0 0.0003736, mlp1 3.784e-07, attn1 0.0001691, mlp2 1.699e-05, attn2 0.0009388, mlp3 2.095e-05, attn3 1.123e-05
+rand32_s2: done in 31 s
+copy24_s3: gap (mean TV, last position, whole read half) 0.542907, E184's None
+case_real_s3: gap (mean TV, last position, whole read half) 0.626627, E184's None
+ident32_s3: gap (mean TV, last position, whole read half) 0.582495, E184's None
+copy24_s3: KL(F || M) 3.76529 (last position, 512 read windows); fit 31.0 s
+copy24_s3 reading 1: S 0.0398434356196633, KL(F || H) 3.61527, max relative logit error 1.04; site residuals mlp0 0.006735, attn0 0.004751, mlp1 6.814e-05, attn1 0.003562, mlp2 0.00166, attn2 0.005249, mlp3 0.0008574, attn3 8.672e-05
+copy24_s3 reading 2: S 0.009800910359207049, KL(F || H) 3.72839, max relative logit error 1.06; site residuals mlp0 0.007301, attn0 0.004751, mlp1 6.797e-05, attn1 0.003562, mlp2 0.001677, attn2 0.005249, mlp3 0.0009327, attn3 8.672e-05
+copy24_s3 reading 3: S 0.9979132029534367, KL(F || H) 0.00785741, max relative logit error 0.152; site residuals mlp0 3.173e-05, attn0 0.0004121, mlp1 3.214e-07, attn1 0.0001903, mlp2 1.375e-05, attn2 0.0008684, mlp3 1.327e-05, attn3 1.85e-05
+copy24_s3: done in 31 s
+case_real_s3: KL(F || M) 8.30449 (last position, 512 read windows); fit 31.1 s
+case_real_s3 reading 1: S 0.05060517279775245, KL(F || H) 7.88424, max relative logit error 1.41; site residuals mlp0 0.01459, attn0 0.02794, mlp1 8.806e-05, attn1 0.005607, mlp2 0.003469, attn2 0.01341, mlp3 0.002339, attn3 0.0001316
+case_real_s3 reading 2: S -0.0008848320372696339, KL(F || H) 8.31184, max relative logit error 1.44; site residuals mlp0 0.01545, attn0 0.02794, mlp1 9.187e-05, attn1 0.005607, mlp2 0.00353, attn2 0.01341, mlp3 0.002594, attn3 0.0001316
+case_real_s3 reading 3: S 0.998838371537537, KL(F || H) 0.00964673, max relative logit error 0.28; site residuals mlp0 7.816e-05, attn0 0.0008796, mlp1 9.104e-07, attn1 0.0008601, mlp2 3.448e-05, attn2 0.00256, mlp3 4.51e-05, attn3 3.114e-05
+case_real_s3: done in 31 s
+ident32_s3: KL(F || M) 4.2576 (last position, 512 read windows); fit 31.2 s
+ident32_s3 reading 1: S 0.029046453290921814, KL(F || H) 4.13393, max relative logit error 1.17; site residuals mlp0 0.008297, attn0 0.004281, mlp1 6.158e-05, attn1 0.003954, mlp2 0.001512, attn2 0.006157, mlp3 0.0009491, attn3 7.85e-05
+ident32_s3 reading 2: S 0.009083768557768268, KL(F || H) 4.21892, max relative logit error 1.18; site residuals mlp0 0.008717, attn0 0.004281, mlp1 6.174e-05, attn1 0.003954, mlp2 0.001508, attn2 0.006157, mlp3 0.001054, attn3 7.85e-05
+ident32_s3 reading 3: S 0.997017342221016, KL(F || H) 0.012699, max relative logit error 0.178; site residuals mlp0 3.521e-05, attn0 0.0004176, mlp1 3.09e-07, attn1 0.0002287, mlp2 1.324e-05, attn2 0.001057, mlp3 1.409e-05, attn3 1.552e-05
+ident32_s3: done in 31 s
+cipher24_s3: gap (mean TV, last position, whole read half) 0.620208, E184's None
+case_twin_s3: gap (mean TV, last position, whole read half) 0.636485, E184's None
+rand32_s3: gap (mean TV, last position, whole read half) 0.689671, E184's None
+cipher24_s3: KL(F || M) 3.54892 (last position, 512 read windows); fit 31.0 s
+cipher24_s3 reading 1: S 0.02383689843301018, KL(F || H) 3.46432, max relative logit error 1.27; site residuals mlp0 0.006329, attn0 0.004141, mlp1 9.836e-05, attn1 0.003649, mlp2 0.002042, attn2 0.008778, mlp3 0.001477, attn3 0.0001015
+cipher24_s3 reading 2: S 0.009376505617039843, KL(F || H) 3.51564, max relative logit error 1.27; site residuals mlp0 0.006671, attn0 0.004141, mlp1 9.762e-05, attn1 0.003649, mlp2 0.001996, attn2 0.008778, mlp3 0.001623, attn3 0.0001015
+cipher24_s3 reading 3: S 0.9917598155167069, KL(F || H) 0.0292438, max relative logit error 0.156; site residuals mlp0 2.742e-05, attn0 0.0003371, mlp1 2.994e-07, attn1 0.0001287, mlp2 1.341e-05, attn2 0.0007562, mlp3 1.64e-05, attn3 9.099e-06
+cipher24_s3: done in 31 s
+STAGE 2 DONE
+gap copy24/cipher24 reading 1: by seed {0: 0.01470374327983004, 1: 0.014799362985096653, 2: 0.017940222822593332, 3: 0.016006537186653125}, sd 0.0015067245139916527
+gap copy24/cipher24 reading 2: by seed {0: 0.0014472535440113177, 1: 0.002499905400352276, 2: 0.002477324013699156, 3: 0.0004244047421672059}, sd 0.000989024401923095
+gap copy24/cipher24 reading 3: by seed {0: 0.005237722213541796, 1: 0.0077704156973500416, 2: 0.007158893875395367, 3: 0.006153387436729774}, sd 0.001115932426671346
+gap ident32/rand32 reading 1: by seed {0: 0.016784363383987144, 1: 0.013923185190517273, 2: 0.0144602785441309}, sd 0.0015207553094944341
+gap ident32/rand32 reading 2: by seed {0: 0.007603485520200626, 1: 0.006968419173627449, 2: 0.005068734332185909}, sd 0.0013189058183771495
+gap ident32/rand32 reading 3: by seed {0: 0.005190641150379149, 1: 0.006002845204094109, 2: 0.004016265415707321}, sd 0.0009987770060332043
+gap case_real/case_twin reading 1: by seed {0: -0.003444487525096074, 1: -0.005519312330564796, 2: -0.012142087453644423}, sd 0.004542655112401317
+gap case_real/case_twin reading 2: by seed {0: 0.0024536143517264186, 1: 0.0018964520570030619, 2: 0.002858569983464898}, sd 0.00048306138166857756
+gap case_real/case_twin reading 3: by seed {0: 0.011745837537136206, 1: 0.009179876500297723, 2: 0.008669122326524725}, sd 0.0016487976607115766
+gap repeat_real/repeat_twin reading 1: by seed {}, sd None
+gap repeat_real/repeat_twin reading 2: by seed {}, sd None
+gap repeat_real/repeat_twin reading 3: by seed {}, sd None
+gap twin/fact reading 1: by seed {}, sd None
+gap twin/fact reading 2: by seed {}, sd None
+gap twin/fact reading 3: by seed {}, sd None
+E197 DONE
+peak host RSS 6.1 GB
+case_twin_s3: KL(F || M) 8.32768 (last position, 512 read windows); fit 31.2 s
+case_twin_s3 reading 1: S 0.056635525424141964, KL(F || H) 7.85604, max relative logit error 1.44; site residuals mlp0 0.02465, attn0 0.05502, mlp1 9.114e-05, attn1 0.01037, mlp2 0.004121, attn2 0.01405, mlp3 0.003553, attn3 0.0002607
+case_twin_s3 reading 2: S -0.0025489448841942153, KL(F || H) 8.34891, max relative logit error 1.47; site residuals mlp0 0.02646, attn0 0.05502, mlp1 0.0001011, attn1 0.01037, mlp2 0.004463, attn2 0.01405, mlp3 0.003925, attn3 0.0002607
+case_twin_s3 reading 3: S 0.9838653560589825, KL(F || H) 0.134364, max relative logit error 0.573; site residuals mlp0 0.0003929, attn0 0.008855, mlp1 3.773e-06, attn1 0.002097, mlp2 0.0001317, attn2 0.00707, mlp3 0.0001366, attn3 7.323e-05
+case_twin_s3: done in 31 s
+STAGE 4 DONE
+gap copy24/cipher24 reading 1: by seed {0: 0.01470374327983004, 1: 0.014799362985096653, 2: 0.017940222822593332, 3: 0.016006537186653125}, sd 0.0015067245139916527
+gap copy24/cipher24 reading 2: by seed {0: 0.0014472535440113177, 1: 0.002499905400352276, 2: 0.002477324013699156, 3: 0.0004244047421672059}, sd 0.000989024401923095
+gap copy24/cipher24 reading 3: by seed {0: 0.005237722213541796, 1: 0.0077704156973500416, 2: 0.007158893875395367, 3: 0.006153387436729774}, sd 0.001115932426671346
+gap ident32/rand32 reading 1: by seed {0: 0.016784363383987144, 1: 0.013923185190517273, 2: 0.0144602785441309}, sd 0.0015207553094944341
+gap ident32/rand32 reading 2: by seed {0: 0.007603485520200626, 1: 0.006968419173627449, 2: 0.005068734332185909}, sd 0.0013189058183771495
+gap ident32/rand32 reading 3: by seed {0: 0.005190641150379149, 1: 0.006002845204094109, 2: 0.004016265415707321}, sd 0.0009987770060332043
+gap case_real/case_twin reading 1: by seed {0: -0.003444487525096074, 1: -0.005519312330564796, 2: -0.012142087453644423, 3: -0.006030352626389512}, sd 0.003742942869878365
+gap case_real/case_twin reading 2: by seed {0: 0.0024536143517264186, 1: 0.0018964520570030619, 2: 0.002858569983464898, 3: 0.0016641128469245814}, sd 0.0005403788621894274
+gap case_real/case_twin reading 3: by seed {0: 0.011745837537136206, 1: 0.009179876500297723, 2: 0.008669122326524725, 3: 0.014973015478554452}, sd 0.002887118054320332
+gap repeat_real/repeat_twin reading 1: by seed {}, sd None
+gap repeat_real/repeat_twin reading 2: by seed {}, sd None
+gap repeat_real/repeat_twin reading 3: by seed {}, sd None
+gap twin/fact reading 1: by seed {}, sd None
+gap twin/fact reading 2: by seed {}, sd None
+gap twin/fact reading 3: by seed {}, sd None
+E197 DONE
+peak host RSS 6.1 GB
+rand32_s3: KL(F || M) 4.71733 (last position, 512 read windows); fit 31.2 s
+rand32_s3 reading 1: S 0.014297351800566238, KL(F || H) 4.64988, max relative logit error 1.27; site residuals mlp0 0.009039, attn0 0.00489, mlp1 0.0001199, attn1 0.004422, mlp2 0.00243, attn2 0.01245, mlp3 0.001653, attn3 0.0001121
+rand32_s3 reading 2: S 0.0026372020288778497, KL(F || H) 4.70489, max relative logit error 1.27; site residuals mlp0 0.009509, attn0 0.00489, mlp1 0.0001188, attn1 0.004422, mlp2 0.002389, attn2 0.01245, mlp3 0.001836, attn3 0.0001121
+rand32_s3 reading 3: S 0.9923272626899394, KL(F || H) 0.0361948, max relative logit error 0.166; site residuals mlp0 3.958e-05, attn0 0.0004236, mlp1 3.816e-07, attn1 0.0002166, mlp2 1.741e-05, attn2 0.00107, mlp3 2.179e-05, attn3 1.105e-05
+rand32_s3: done in 31 s
+STAGE 3 DONE
+gap copy24/cipher24 reading 1: by seed {0: 0.01470374327983004, 1: 0.014799362985096653, 2: 0.017940222822593332, 3: 0.016006537186653125}, sd 0.0015067245139916527
+gap copy24/cipher24 reading 2: by seed {0: 0.0014472535440113177, 1: 0.002499905400352276, 2: 0.002477324013699156, 3: 0.0004244047421672059}, sd 0.000989024401923095
+gap copy24/cipher24 reading 3: by seed {0: 0.005237722213541796, 1: 0.0077704156973500416, 2: 0.007158893875395367, 3: 0.006153387436729774}, sd 0.001115932426671346
+gap ident32/rand32 reading 1: by seed {0: 0.016784363383987144, 1: 0.013923185190517273, 2: 0.0144602785441309, 3: 0.014749101490355576}, sd 0.0012511337415988721
+gap ident32/rand32 reading 2: by seed {0: 0.007603485520200626, 1: 0.006968419173627449, 2: 0.005068734332185909, 3: 0.006446566528890418}, sd 0.00107804949809225
+gap ident32/rand32 reading 3: by seed {0: 0.005190641150379149, 1: 0.006002845204094109, 2: 0.004016265415707321, 3: 0.004690079531076585}, sd 0.0008373208343543676
+gap case_real/case_twin reading 1: by seed {0: -0.003444487525096074, 1: -0.005519312330564796, 2: -0.012142087453644423, 3: -0.006030352626389512}, sd 0.003742942869878365
+gap case_real/case_twin reading 2: by seed {0: 0.0024536143517264186, 1: 0.0018964520570030619, 2: 0.002858569983464898, 3: 0.0016641128469245814}, sd 0.0005403788621894274
+gap case_real/case_twin reading 3: by seed {0: 0.011745837537136206, 1: 0.009179876500297723, 2: 0.008669122326524725, 3: 0.014973015478554452}, sd 0.002887118054320332
+gap repeat_real/repeat_twin reading 1: by seed {}, sd None
+gap repeat_real/repeat_twin reading 2: by seed {}, sd None
+gap repeat_real/repeat_twin reading 3: by seed {}, sd None
+gap twin/fact reading 1: by seed {}, sd None
+gap twin/fact reading 2: by seed {}, sd None
+gap twin/fact reading 3: by seed {}, sd None
+E197 DONE
+peak host RSS 6.1 GB
+E197 (P1.26, run 1) start; stages [5], seeds [0, 1, 2, 3]; settings {'layer': 1, 'C': (486, 499, 613, 778, 1125, 2028, 2352, 2960), 'trained': (2, 3), 'control_task': 'copy24', 'seeds': (0, 1, 2, 3), 'n_fit': 16384, 'fit_seed': 197100, 'n_read': 512, 'read_seed': 195200, 'n_max': 100, 'held_share': 0.25, 'gain_lo': 0.5, 'gain_hi': 2.0, 'check_seed': 197000, 'eval_batch': 2048, 'sum_batch': 512}; thresholds {'logit_tol': 0.001, 'gain_tol': 0.0001, 'kl_floor': 1e-06, 'reload_tol': 0.0001}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+E197 (P1.26, run 1) start; stages [6], seeds [0, 1, 2, 3]; settings {'layer': 1, 'C': (486, 499, 613, 778, 1125, 2028, 2352, 2960), 'trained': (2, 3), 'control_task': 'copy24', 'seeds': (0, 1, 2, 3), 'n_fit': 16384, 'fit_seed': 197100, 'n_read': 512, 'read_seed': 195200, 'n_max': 100, 'held_share': 0.25, 'gain_lo': 0.5, 'gain_hi': 2.0, 'check_seed': 197000, 'eval_batch': 2048, 'sum_batch': 512}; thresholds {'logit_tol': 0.001, 'gain_tol': 0.0001, 'kl_floor': 1e-06, 'reload_tol': 0.0001}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+STAGE 0 DONE
+STAGE 0 DONE
+repeat_real_s0: gap (mean TV, last position, whole read half) 0.634686, E184's 0.6346855559086964
+twin_s0: gap (mean TV, last position, whole read half) 0.263262, E184's 0.26326245569732193
+repeat_real_s0: KL(F || M) 8.46896 (last position, 512 read windows); fit 31.1 s
+repeat_real_s0 reading 1: S 0.05208359353078795, KL(F || H) 8.02787, max relative logit error 1.36; site residuals mlp0 0.01633, attn0 0.03384, mlp1 0.0001193, attn1 0.006888, mlp2 0.004221, attn2 0.0142, mlp3 0.002793, attn3 0.0001496
+repeat_real_s0 reading 2: S 0.0012708509933495593, KL(F || H) 8.4582, max relative logit error 1.4; site residuals mlp0 0.01717, attn0 0.03384, mlp1 0.0001227, attn1 0.006888, mlp2 0.004287, attn2 0.0142, mlp3 0.00308, attn3 0.0001496
+repeat_real_s0 reading 3: S 0.9966854038041824, KL(F || H) 0.0280712, max relative logit error 0.25; site residuals mlp0 8.651e-05, attn0 0.001641, mlp1 9.484e-07, attn1 0.001105, mlp2 3.468e-05, attn2 0.002904, mlp3 4.465e-05, attn3 3.723e-05
+repeat_real_s0: done in 31 s
+twin_s0: KL(F || M) 0.672748 (last position, 512 read windows); fit 31.2 s
+twin_s0 reading 1: S 0.027473175308356912, KL(F || H) 0.654266, max relative logit error 1.06; site residuals mlp0 0.00199, attn0 0.003307, mlp1 3.49e-05, attn1 0.002364, mlp2 0.001062, attn2 0.004805, mlp3 0.001011, attn3 6.191e-05; side (F's ends) S 0.0591615127350229
+twin_s0 reading 2: S 0.005027446904758759, KL(F || H) 0.669366, max relative logit error 1.07; site residuals mlp0 0.002011, attn0 0.003307, mlp1 3.749e-05, attn1 0.002364, mlp2 0.001139, attn2 0.004805, mlp3 0.00124, attn3 6.191e-05; side (F's ends) S 0.03505231631218253
+twin_s0 reading 3: S 0.916286221384013, KL(F || H) 0.0563183, max relative logit error 0.352; site residuals mlp0 5.915e-05, attn0 0.0004969, mlp1 9.312e-07, attn1 0.0002278, mlp2 4.604e-05, attn2 0.0007582, mlp3 5.79e-05, attn3 1.737e-05; side (F's ends) S 0.9704970844083622
+twin_s0: done in 31 s
+repeat_twin_s0: gap (mean TV, last position, whole read half) 0.620999, E184's 0.6209985931562875
+fact_s0: gap (mean TV, last position, whole read half) 0.275452, E184's 0.27545194220378655
+repeat_twin_s0: KL(F || M) 8.22221 (last position, 512 read windows); fit 31.0 s
+repeat_twin_s0 reading 1: S 0.05648024020476683, KL(F || H) 7.75782, max relative logit error 1.34; site residuals mlp0 0.01835, attn0 0.03975, mlp1 8.356e-05, attn1 0.006594, mlp2 0.003748, attn2 0.009077, mlp3 0.002778, attn3 0.0002082
+repeat_twin_s0 reading 2: S -0.0029551926936453032, KL(F || H) 8.24651, max relative logit error 1.37; site residuals mlp0 0.01958, attn0 0.03975, mlp1 8.987e-05, attn1 0.006594, mlp2 0.003856, attn2 0.009077, mlp3 0.003062, attn3 0.0002082
+repeat_twin_s0 reading 3: S 0.995945194135791, KL(F || H) 0.0333395, max relative logit error 0.46; site residuals mlp0 0.0001675, attn0 0.004463, mlp1 1.596e-06, attn1 0.001547, mlp2 5.268e-05, attn2 0.002709, mlp3 6.443e-05, attn3 4.58e-05
+repeat_twin_s0: done in 31 s
+fact_s0: KL(F || M) 0.64176 (last position, 512 read windows); fit 31.0 s
+fact_s0 reading 1: S 0.015438329303355758, KL(F || H) 0.631853, max relative logit error 1.05; site residuals mlp0 0.001767, attn0 0.00352, mlp1 3.175e-05, attn1 0.002243, mlp2 0.001107, attn2 0.003971, mlp3 0.0009539, attn3 4.3e-05; side (F's ends) S 0.027386184782837608
+fact_s0 reading 2: S 0.005800807503570371, KL(F || H) 0.638038, max relative logit error 1.06; site residuals mlp0 0.001768, attn0 0.00352, mlp1 3.407e-05, attn1 0.002243, mlp2 0.001184, attn2 0.003971, mlp3 0.001144, attn3 4.3e-05; side (F's ends) S 0.013501571702970616
+fact_s0 reading 3: S 0.6547782415220118, KL(F || H) 0.22155, max relative logit error 0.695; site residuals mlp0 6.702e-05, attn0 0.0008223, mlp1 8.28e-07, attn1 0.0002258, mlp2 4.308e-05, attn2 0.0005883, mlp3 5.695e-05, attn3 7.912e-06; side (F's ends) S 0.9337721861598902
+fact_s0: done in 31 s
+repeat_real_s1: gap (mean TV, last position, whole read half) 0.643339, E184's 0.6433385392274727
+twin_s1: gap (mean TV, last position, whole read half) 0.263920, E184's 0.2639198670418586
+repeat_real_s1: KL(F || M) 8.35908 (last position, 512 read windows); fit 31.2 s
+repeat_real_s1 reading 1: S 0.04610341747413649, KL(F || H) 7.9737, max relative logit error 1.44; site residuals mlp0 0.01703, attn0 0.02991, mlp1 0.0001504, attn1 0.008116, mlp2 0.004569, attn2 0.01617, mlp3 0.002686, attn3 0.0001779
+repeat_real_s1 reading 2: S 0.0004478961351620514, KL(F || H) 8.35534, max relative logit error 1.48; site residuals mlp0 0.01785, attn0 0.02991, mlp1 0.0001527, attn1 0.008116, mlp2 0.004576, attn2 0.01617, mlp3 0.002976, attn3 0.0001779
+repeat_real_s1 reading 3: S 0.9983147847968635, KL(F || H) 0.0140869, max relative logit error 0.455; site residuals mlp0 8.798e-05, attn0 0.001557, mlp1 9.09e-07, attn1 0.001099, mlp2 3.219e-05, attn2 0.002636, mlp3 4.018e-05, attn3 3.295e-05
+repeat_real_s1: done in 31 s
+twin_s1: KL(F || M) 0.681268 (last position, 512 read windows); fit 31.3 s
+twin_s1 reading 1: S 0.025953840280779517, KL(F || H) 0.663586, max relative logit error 1.03; site residuals mlp0 0.001961, attn0 0.003376, mlp1 3.493e-05, attn1 0.002389, mlp2 0.001099, attn2 0.005188, mlp3 0.001026, attn3 5.871e-05; side (F's ends) S 0.057243761929853476
+twin_s1 reading 2: S 0.005992031569551193, KL(F || H) 0.677185, max relative logit error 1.04; site residuals mlp0 0.001982, attn0 0.003376, mlp1 3.718e-05, attn1 0.002389, mlp2 0.001182, attn2 0.005188, mlp3 0.001253, attn3 5.871e-05; side (F's ends) S 0.03555097030651733
+twin_s1 reading 3: S 0.9132064333418402, KL(F || H) 0.0591297, max relative logit error 0.367; site residuals mlp0 6.304e-05, attn0 0.0005196, mlp1 9.486e-07, attn1 0.0002298, mlp2 4.733e-05, attn2 0.0007838, mlp3 5.953e-05, attn3 1.264e-05; side (F's ends) S 0.9694221758062622
+twin_s1: done in 32 s
+repeat_twin_s1: gap (mean TV, last position, whole read half) 0.617873, E184's 0.617873488857099
+fact_s1: gap (mean TV, last position, whole read half) 0.275756, E184's 0.27575583611619503
+repeat_twin_s1: KL(F || M) 8.21117 (last position, 512 read windows); fit 31.1 s
+repeat_twin_s1 reading 1: S 0.04993912490978958, KL(F || H) 7.80111, max relative logit error 1.37; site residuals mlp0 0.01863, attn0 0.03806, mlp1 8.288e-05, attn1 0.006202, mlp2 0.003604, attn2 0.009157, mlp3 0.002643, attn3 0.0001992
+repeat_twin_s1 reading 2: S -0.005467844822958812, KL(F || H) 8.25607, max relative logit error 1.4; site residuals mlp0 0.02001, attn0 0.03806, mlp1 8.949e-05, attn1 0.006202, mlp2 0.003743, attn2 0.009157, mlp3 0.002944, attn3 0.0001992
+repeat_twin_s1 reading 3: S 0.9957749794084849, KL(F || H) 0.0346924, max relative logit error 0.555; site residuals mlp0 0.0001687, attn0 0.003739, mlp1 1.706e-06, attn1 0.001412, mlp2 5.344e-05, attn2 0.002845, mlp3 6.326e-05, attn3 4.036e-05
+repeat_twin_s1: done in 31 s
+fact_s1: KL(F || M) 0.643036 (last position, 512 read windows); fit 31.2 s
+fact_s1 reading 1: S 0.012992939224713118, KL(F || H) 0.634681, max relative logit error 1.06; site residuals mlp0 0.001789, attn0 0.003553, mlp1 3.24e-05, attn1 0.002372, mlp2 0.001113, attn2 0.003945, mlp3 0.0009379, attn3 4.175e-05; side (F's ends) S 0.019519810317642494
+fact_s1 reading 2: S 0.0066288149414900355, KL(F || H) 0.638773, max relative logit error 1.07; site residuals mlp0 0.001794, attn0 0.003553, mlp1 3.447e-05, attn1 0.002372, mlp2 0.001187, attn2 0.003945, mlp3 0.001123, attn3 4.175e-05; side (F's ends) S 0.009078687571361543
+fact_s1 reading 3: S 0.6545302573046107, KL(F || H) 0.222149, max relative logit error 0.668; site residuals mlp0 6.812e-05, attn0 0.0008338, mlp1 8.291e-07, attn1 0.0002406, mlp2 4.279e-05, attn2 0.0005839, mlp3 5.681e-05, attn3 7.841e-06; side (F's ends) S 0.9357457625885436
+fact_s1: done in 31 s
+repeat_real_s2: gap (mean TV, last position, whole read half) 0.637353, E184's None
+twin_s2: gap (mean TV, last position, whole read half) 0.264260, E184's None
+repeat_real_s2: KL(F || M) 8.51034 (last position, 512 read windows); fit 31.1 s
+repeat_real_s2 reading 1: S 0.04589500520555412, KL(F || H) 8.11976, max relative logit error 1.39; site residuals mlp0 0.01655, attn0 0.02821, mlp1 0.0001368, attn1 0.008032, mlp2 0.004202, attn2 0.01743, mlp3 0.002518, attn3 0.0001525
+repeat_real_s2 reading 2: S 0.0010958127365775505, KL(F || H) 8.50102, max relative logit error 1.42; site residuals mlp0 0.01727, attn0 0.02821, mlp1 0.0001392, attn1 0.008032, mlp2 0.004213, attn2 0.01743, mlp3 0.00281, attn3 0.0001525
+repeat_real_s2 reading 3: S 0.9945683850117213, KL(F || H) 0.0462249, max relative logit error 0.559; site residuals mlp0 8.321e-05, attn0 0.001413, mlp1 9.022e-07, attn1 0.000987, mlp2 3.154e-05, attn2 0.003565, mlp3 3.999e-05, attn3 3.534e-05
+repeat_real_s2: done in 31 s
+twin_s2: KL(F || M) 0.676462 (last position, 512 read windows); fit 31.2 s
+twin_s2 reading 1: S 0.028111729402832353, KL(F || H) 0.657446, max relative logit error 1.03; site residuals mlp0 0.001991, attn0 0.003326, mlp1 3.613e-05, attn1 0.002327, mlp2 0.001102, attn2 0.005129, mlp3 0.001033, attn3 5.208e-05; side (F's ends) S 0.05934986712169488
+twin_s2 reading 2: S 0.00595662979033218, KL(F || H) 0.672433, max relative logit error 1.03; site residuals mlp0 0.002013, attn0 0.003326, mlp1 3.863e-05, attn1 0.002327, mlp2 0.001179, attn2 0.005129, mlp3 0.001261, attn3 5.208e-05; side (F's ends) S 0.03545891121457678
+twin_s2 reading 3: S 0.9146430074757407, KL(F || H) 0.0577408, max relative logit error 0.363; site residuals mlp0 6.31e-05, attn0 0.0005081, mlp1 9.663e-07, attn1 0.0002267, mlp2 4.806e-05, attn2 0.0007926, mlp3 6.046e-05, attn3 1.089e-05; side (F's ends) S 0.9698045535663822
+twin_s2: done in 31 s
+repeat_twin_s2: gap (mean TV, last position, whole read half) 0.622569, E184's None
+fact_s2: gap (mean TV, last position, whole read half) 0.275681, E184's None
+repeat_twin_s2: KL(F || M) 8.27825 (last position, 512 read windows); fit 31.1 s
+repeat_twin_s2 reading 1: S 0.05250655626756051, KL(F || H) 7.84359, max relative logit error 1.36; site residuals mlp0 0.01802, attn0 0.0413, mlp1 8.561e-05, attn1 0.005777, mlp2 0.003438, attn2 0.01041, mlp3 0.002892, attn3 0.0001974
+repeat_twin_s2 reading 2: S -0.0051343121560001315, KL(F || H) 8.32075, max relative logit error 1.4; site residuals mlp0 0.01927, attn0 0.0413, mlp1 9.215e-05, attn1 0.005777, mlp2 0.003551, attn2 0.01041, mlp3 0.003179, attn3 0.0001974
+repeat_twin_s2 reading 3: S 0.9959049403750352, KL(F || H) 0.0338999, max relative logit error 0.446; site residuals mlp0 0.0001697, attn0 0.00368, mlp1 1.755e-06, attn1 0.001145, mlp2 5.415e-05, attn2 0.004252, mlp3 6.563e-05, attn3 4.853e-05
+repeat_twin_s2: done in 31 s
+fact_s2: KL(F || M) 0.642665 (last position, 512 read windows); fit 31.2 s
+fact_s2 reading 1: S 0.015388269980044611, KL(F || H) 0.632776, max relative logit error 1.05; site residuals mlp0 0.001823, attn0 0.003407, mlp1 3.268e-05, attn1 0.002357, mlp2 0.001095, attn2 0.004057, mlp3 0.0009316, attn3 4.478e-05; side (F's ends) S 0.030450966215451847
+fact_s2 reading 2: S 0.006045888666230348, KL(F || H) 0.63878, max relative logit error 1.06; site residuals mlp0 0.001841, attn0 0.003407, mlp1 3.496e-05, attn1 0.002357, mlp2 0.001177, attn2 0.004057, mlp3 0.001116, attn3 4.478e-05; side (F's ends) S 0.016439510019485182
+fact_s2 reading 3: S 0.6605580328781936, KL(F || H) 0.218148, max relative logit error 0.681; site residuals mlp0 6.709e-05, attn0 0.000789, mlp1 8.288e-07, attn1 0.0002407, mlp2 4.248e-05, attn2 0.0005784, mlp3 5.652e-05, attn3 8.909e-06; side (F's ends) S 0.9355019915460583
+fact_s2: done in 31 s
+repeat_real_s3: gap (mean TV, last position, whole read half) 0.639896, E184's None
+twin_s3: gap (mean TV, last position, whole read half) 0.263503, E184's None
+repeat_real_s3: KL(F || M) 8.28484 (last position, 512 read windows); fit 31.1 s
+repeat_real_s3 reading 1: S 0.051577431687724995, KL(F || H) 7.85753, max relative logit error 1.4; site residuals mlp0 0.0159, attn0 0.0283, mlp1 0.000142, attn1 0.007073, mlp2 0.004483, attn2 0.0147, mlp3 0.002728, attn3 0.0001652
+repeat_real_s3 reading 2: S 0.002309327938672001, KL(F || H) 8.26571, max relative logit error 1.44; site residuals mlp0 0.0167, attn0 0.0283, mlp1 0.0001435, attn1 0.007073, mlp2 0.004493, attn2 0.0147, mlp3 0.00303, attn3 0.0001652
+repeat_real_s3 reading 3: S 0.9980759215256175, KL(F || H) 0.0159407, max relative logit error 0.273; site residuals mlp0 8.075e-05, attn0 0.001625, mlp1 8.695e-07, attn1 0.001015, mlp2 3.259e-05, attn2 0.00256, mlp3 4.106e-05, attn3 3.407e-05
+repeat_real_s3: done in 31 s
+twin_s3: KL(F || M) 0.674075 (last position, 512 read windows); fit 31.2 s
+twin_s3 reading 1: S 0.02902309163156991, KL(F || H) 0.654512, max relative logit error 1.04; site residuals mlp0 0.001974, attn0 0.003367, mlp1 3.606e-05, attn1 0.002402, mlp2 0.001163, attn2 0.004985, mlp3 0.000998, attn3 5.807e-05; side (F's ends) S 0.06125318982789718
+twin_s3 reading 2: S 0.0057758959316288605, KL(F || H) 0.670182, max relative logit error 1.05; site residuals mlp0 0.002004, attn0 0.003367, mlp1 3.858e-05, attn1 0.002402, mlp2 0.001258, attn2 0.004985, mlp3 0.001218, attn3 5.807e-05; side (F's ends) S 0.036019836119743465
+twin_s3 reading 3: S 0.914298564848996, KL(F || H) 0.0577692, max relative logit error 0.36; site residuals mlp0 6.172e-05, attn0 0.0005011, mlp1 9.348e-07, attn1 0.0002307, mlp2 4.622e-05, attn2 0.0007824, mlp3 5.866e-05, attn3 1.036e-05; side (F's ends) S 0.9701710777507859
+twin_s3: done in 31 s
+repeat_twin_s3: gap (mean TV, last position, whole read half) 0.620193, E184's None
+fact_s3: gap (mean TV, last position, whole read half) 0.275638, E184's None
+repeat_twin_s3: KL(F || M) 8.26448 (last position, 512 read windows); fit 31.1 s
+repeat_twin_s3 reading 1: S 0.05589202922015313, KL(F || H) 7.80256, max relative logit error 1.38; site residuals mlp0 0.01862, attn0 0.0456, mlp1 8.397e-05, attn1 0.006115, mlp2 0.003802, attn2 0.01157, mlp3 0.003007, attn3 0.0002028
+repeat_twin_s3 reading 2: S -0.004500649663042422, KL(F || H) 8.30168, max relative logit error 1.41; site residuals mlp0 0.02005, attn0 0.0456, mlp1 9.002e-05, attn1 0.006115, mlp2 0.003918, attn2 0.01157, mlp3 0.003299, attn3 0.0002028
+repeat_twin_s3 reading 3: S 0.9937982505985808, KL(F || H) 0.0512542, max relative logit error 0.42; site residuals mlp0 0.0001715, attn0 0.003891, mlp1 1.682e-06, attn1 0.001176, mlp2 5.502e-05, attn2 0.004507, mlp3 6.626e-05, attn3 4.656e-05
+repeat_twin_s3: done in 31 s
+STAGE 5 DONE
+gap copy24/cipher24 reading 1: by seed {0: 0.01470374327983004, 1: 0.014799362985096653, 2: 0.017940222822593332, 3: 0.016006537186653125}, sd 0.0015067245139916527
+gap copy24/cipher24 reading 2: by seed {0: 0.0014472535440113177, 1: 0.002499905400352276, 2: 0.002477324013699156, 3: 0.0004244047421672059}, sd 0.000989024401923095
+gap copy24/cipher24 reading 3: by seed {0: 0.005237722213541796, 1: 0.0077704156973500416, 2: 0.007158893875395367, 3: 0.006153387436729774}, sd 0.001115932426671346
+gap ident32/rand32 reading 1: by seed {0: 0.016784363383987144, 1: 0.013923185190517273, 2: 0.0144602785441309, 3: 0.014749101490355576}, sd 0.0012511337415988721
+gap ident32/rand32 reading 2: by seed {0: 0.007603485520200626, 1: 0.006968419173627449, 2: 0.005068734332185909, 3: 0.006446566528890418}, sd 0.00107804949809225
+gap ident32/rand32 reading 3: by seed {0: 0.005190641150379149, 1: 0.006002845204094109, 2: 0.004016265415707321, 3: 0.004690079531076585}, sd 0.0008373208343543676
+gap case_real/case_twin reading 1: by seed {0: -0.003444487525096074, 1: -0.005519312330564796, 2: -0.012142087453644423, 3: -0.006030352626389512}, sd 0.003742942869878365
+gap case_real/case_twin reading 2: by seed {0: 0.0024536143517264186, 1: 0.0018964520570030619, 2: 0.002858569983464898, 3: 0.0016641128469245814}, sd 0.0005403788621894274
+gap case_real/case_twin reading 3: by seed {0: 0.011745837537136206, 1: 0.009179876500297723, 2: 0.008669122326524725, 3: 0.014973015478554452}, sd 0.002887118054320332
+gap repeat_real/repeat_twin reading 1: by seed {0: -0.004396646673978877, 1: -0.0038357074356530907, 2: -0.006611551062006393, 3: -0.004314597532428133}, sd 0.0012395505038327323
+gap repeat_real/repeat_twin reading 2: by seed {0: 0.0042260436869948625, 1: 0.005915740958120863, 2: 0.006230124892577682, 3: 0.006809977601714423}, sd 0.00110991209935525
+gap repeat_real/repeat_twin reading 3: by seed {0: 0.0007402096683913895, 1: 0.002539805388378613, 2: -0.001336555363313896, 3: 0.004277670927036681}, sd 0.002408855469161436
+gap twin/fact reading 1: by seed {0: 0.012034846005001154, 1: 0.012960901056066398, 2: 0.012723459422787742}, sd 0.00048099634890735117
+gap twin/fact reading 2: by seed {0: -0.0007733605988116121, 1: -0.0006367833719388427, 2: -8.925887589816828e-05}, sd 0.00036203857528307505
+gap twin/fact reading 3: by seed {0: 0.26150797986200125, 1: 0.2586761760372295, 2: 0.2540849745975471}, sd 0.0037460924245104597
+E197 DONE
+peak host RSS 6.1 GB
+fact_s3: KL(F || M) 0.639056 (last position, 512 read windows); fit 31.2 s
+fact_s3 reading 1: S 0.013230998122464865, KL(F || H) 0.630601, max relative logit error 1.05; site residuals mlp0 0.001813, attn0 0.003669, mlp1 3.246e-05, attn1 0.002423, mlp2 0.001169, attn2 0.003945, mlp3 0.0009428, attn3 4.909e-05; side (F's ends) S 0.019858147635838153
+fact_s3 reading 2: S 0.004328960040288599, KL(F || H) 0.63629, max relative logit error 1.06; site residuals mlp0 0.001823, attn0 0.003669, mlp1 3.466e-05, attn1 0.002423, mlp2 0.001252, attn2 0.003945, mlp3 0.001135, attn3 4.909e-05; side (F's ends) S 0.005583169176166636
+fact_s3 reading 3: S 0.6555563490662801, KL(F || H) 0.220119, max relative logit error 0.686; site residuals mlp0 6.98e-05, attn0 0.0008232, mlp1 8.27e-07, attn1 0.0002515, mlp2 4.245e-05, attn2 0.0005649, mlp3 5.746e-05, attn3 9.562e-06; side (F's ends) S 0.9376956421705822
+fact_s3: done in 31 s
+STAGE 6 DONE
+gap copy24/cipher24 reading 1: by seed {0: 0.01470374327983004, 1: 0.014799362985096653, 2: 0.017940222822593332, 3: 0.016006537186653125}, sd 0.0015067245139916527
+gap copy24/cipher24 reading 2: by seed {0: 0.0014472535440113177, 1: 0.002499905400352276, 2: 0.002477324013699156, 3: 0.0004244047421672059}, sd 0.000989024401923095
+gap copy24/cipher24 reading 3: by seed {0: 0.005237722213541796, 1: 0.0077704156973500416, 2: 0.007158893875395367, 3: 0.006153387436729774}, sd 0.001115932426671346
+gap ident32/rand32 reading 1: by seed {0: 0.016784363383987144, 1: 0.013923185190517273, 2: 0.0144602785441309, 3: 0.014749101490355576}, sd 0.0012511337415988721
+gap ident32/rand32 reading 2: by seed {0: 0.007603485520200626, 1: 0.006968419173627449, 2: 0.005068734332185909, 3: 0.006446566528890418}, sd 0.00107804949809225
+gap ident32/rand32 reading 3: by seed {0: 0.005190641150379149, 1: 0.006002845204094109, 2: 0.004016265415707321, 3: 0.004690079531076585}, sd 0.0008373208343543676
+gap case_real/case_twin reading 1: by seed {0: -0.003444487525096074, 1: -0.005519312330564796, 2: -0.012142087453644423, 3: -0.006030352626389512}, sd 0.003742942869878365
+gap case_real/case_twin reading 2: by seed {0: 0.0024536143517264186, 1: 0.0018964520570030619, 2: 0.002858569983464898, 3: 0.0016641128469245814}, sd 0.0005403788621894274
+gap case_real/case_twin reading 3: by seed {0: 0.011745837537136206, 1: 0.009179876500297723, 2: 0.008669122326524725, 3: 0.014973015478554452}, sd 0.002887118054320332
+gap repeat_real/repeat_twin reading 1: by seed {0: -0.004396646673978877, 1: -0.0038357074356530907, 2: -0.006611551062006393, 3: -0.004314597532428133}, sd 0.0012395505038327323
+gap repeat_real/repeat_twin reading 2: by seed {0: 0.0042260436869948625, 1: 0.005915740958120863, 2: 0.006230124892577682, 3: 0.006809977601714423}, sd 0.00110991209935525
+gap repeat_real/repeat_twin reading 3: by seed {0: 0.0007402096683913895, 1: 0.002539805388378613, 2: -0.001336555363313896, 3: 0.004277670927036681}, sd 0.002408855469161436
+gap twin/fact reading 1: by seed {0: 0.012034846005001154, 1: 0.012960901056066398, 2: 0.012723459422787742, 3: 0.015792093509105043}, sd 0.0016567342272001946
+gap twin/fact reading 2: by seed {0: -0.0007733605988116121, 1: -0.0006367833719388427, 2: -8.925887589816828e-05, 3: 0.001446935891340262}, sd 0.0010172646498981912
+gap twin/fact reading 3: by seed {0: 0.26150797986200125, 1: 0.2586761760372295, 2: 0.2540849745975471, 3: 0.25874221578271583}, sd 0.003076022301134607
+E197 DONE
+peak host RSS 6.1 GB

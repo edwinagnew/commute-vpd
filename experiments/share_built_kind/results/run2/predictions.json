@@ -1,0 +1,39 @@
+{
+ "experiment": "E202",
+ "cell": "P2.33",
+ "filed": "2026-11-17",
+ "run_of": "E200 (experiments/share_built_kind/run.py, job 60937), second run decided by the user 2026-11-17",
+ "plan": "reports/plans/2026-11-17_plan_share-built-kind.md (addendum 'Second run')",
+ "quantity": "E200's do-nothing re-gating share r = (L01 - L00) / (T1 - T0), unchanged (results/predictions.json 'quantity'), r nan when T1 - T0 < 1 (local_faith.MIN_GAIN). Only the windows change: per E137 pair, the first 2048 windows of the pair's read half where F's top token differs from M's AND F's log-odds of that token minus M's log-odds of the same token (commute.identity.log_odds, the quantity of the share's T cells) is at least 1. Selected from F and M only, before any fine-tune is read. Scan cap: the whole read half (100,000 windows per pair); fewer than 2048 qualifying windows in it means all of them are read. Target F's top token, as E200.",
+ "groups": {
+  "Always on (built re-weighting)": ["always_on_s0", "always_on_s1", "always_on_s2", "amend2_always_on_s0_step3000", "amend2_always_on_s1_step3000", "amend2_always_on_s2_step3000"],
+  "Table (built rewiring)": ["table_s0", "table_s1", "table_s2"],
+  "Cue (built rewiring, E200's states results/large/cue_s0..2.pt, read only)": ["cue_s0", "cue_s1", "cue_s2"],
+  "XOR (reference only, in no prediction)": ["xor_s0", "xor_s1", "xor_s2"]
+ },
+ "thresholds": {
+  "identity_tol": 1e-06,
+  "positive_tol": 0.001,
+  "spread": 0.0405,
+  "min_readable": 2,
+  "min_windows": 32
+ },
+ "spread_source": "unchanged from E200: experiments/method_table/results/final.json, the largest seed sd of the 67M share over the 26 sides of the 13 scorecard pairs (0.0405).",
+ "rule": "E200's, unchanged (run.py `verdicts`): Always on's finite shares pooled over both recipes against each rewiring group's finite shares. d = mean(Always on) - mean(other). bar = 2 * 0.0405 * sqrt(1/n_a + 1/n_b). 'higher' if d >= bar, 'lower' if d <= -bar, else 'within the bar'; 'unreadable' if either side has fewer than 2 finite shares. Absolute difference of shares. Stage 2 stops the job (exit 1, no state read) if Always on, Cue or Table has fewer than min_windows big-gain windows; XOR under min_windows is not read (r nan, reference only).",
+ "predictions": {
+  "P1": {"text": "Always on reads a higher share than Table on the big-gain windows (the user's expectation, 2026-11-17).", "pass": "call 'higher'", "miss": "call 'within the bar' or 'lower'", "else": "'unreadable' is reported as such and is neither"},
+  "P2": {"text": "Always on reads a higher share than Cue on the big-gain windows (the user's expectation, 2026-11-17).", "pass": "call 'higher'", "miss": "call 'within the bar' or 'lower'", "else": "'unreadable' is reported as such and is neither"}
+ },
+ "expected": {
+  "identity control (stage 0, alone, first)": "As E200: gain, L01 - L00 and the largest gate change 0 within 1e-06 on each pair's new windows. A miss stops the job.",
+  "positive control (stage 1, alone, before any state)": "As E200, the same function: ident32_s0's r equals 0.8024425814544892 within 0.001 (E200 read a difference of 0.0). A miss or nan is exit 1.",
+  "window counts (stage 2)": "Not measured before. Table: 2048 kept within the first ~5,000 windows scanned (E200: 59% of windows changed and the fine-tunes gained 16 log-odds on them). Always on and Cue: E200's fine-tunes gained only 0.32 and 0.15 on all changed windows and copy F closely (KL 0.02), so F's own gain on most changed windows is likely under 1 and only a tail qualifies: expected between 64 and 2048 for each, with the whole pool scanned if under 2048. Under 32 for any of the three stops the job.",
+  "Always on": "Mean fine-tune gain T1 - T0 over 1 on its kept windows (F gains at least 1 on each, and the fine-tunes copy F to KL 0.02), but below F's mean gain there (stage2.json F_gain_mean). r between 0.3 and 0.8 if rival A holds; at or under Table's if rival B holds.",
+  "Table": "r about 0.26 (E200 0.259 to 0.261), little moved: most of E200's Table windows already qualify. Gain well over 1.",
+  "Cue": "Gain over 1 if the fine-tunes follow F on its tail; r as Table's under rival A. Gain under 1 on two or more seeds leaves P2 unreadable again.",
+  "XOR": "Read if 32 or more windows qualify; reference only."
+ },
+ "edge_cases_checked": "The rule is E200's `verdicts`, unchanged, whose edge cases were run before E200 was filed (results/predictions.json 'edge_cases_checked'): empty, one-a-side and all-nan pools read 'unreadable', so the do-nothing state cannot pass. New here: the stage 2 stop at 31 against 32 windows (strict 'fewer than'); a pair with zero qualifying windows gets n_rows 0 and F_gain_mean nan and stops the job if scored, or is not read if XOR (no route_cells on an empty set).",
+ "blind_to": "As E200, and in addition: the new windows are chosen where F moves its top token by 1 log-odds or more, so the share describes the large moves only and says nothing about the many small ones E200 read. The choice reads F and M only, so it is the same for every state of a pair.",
+ "not_a_definition_change": "No reuse verdict is given; the frozen reuse definition (decisions.md rows 81 and 87) is not read or touched. The window choice is the user's decision of 2026-11-17."
+}

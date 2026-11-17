@@ -91,6 +91,7 @@ never read}
 pairs on 4 seeds (copy/cipher, identity/random map, parity/fact), not case or repeat}
 \sugg{(v): rebuilt circuit 0.97 vs 1; trained pairs: reuse side higher in 8/8 pair-seeds, but every fine-tune reads
 $\geq 0.996$ (gaps $<0.003$) and the gaps follow the twins' MLP update size; MLP neurons only, misses attention (E196)}
+\sugg{(v) held-model version (E197, E201): refit only output weights of the base model per site; built new head $S=0.13$, rebuilt circuit 0.56, every trained fine-tune $\geq 0.99$ except the fact side (0.65); reuse-minus-new gaps $<0.02$ on four pairs, 0.25 on twin/fact: separates built mechanisms, barely separates trained ones}
 \sugg{common failure: real fine-tunes have no single named variable carrying the change; a search miss cannot be
 told from a wording fault}
 \figplan{2 --- definitions vs tests}{matrix: wordings (rows) $\times$ tests (reads hand-made edits / ranks matched
@@ -126,6 +127,8 @@ naturally equal-size, gaps 0.52--0.62)}
 \sugg{needs the trained decomposition: untrained SVD 2 same / 2 opposite / 5 no call}
 \sugg{steering 4/3/2; neuron share $\le$3; update size 0 (new side always bigger)}
 \sugg{agreement with \S4's definition on the pairs it reads}
+\open{crosscoder row (E198): base-vs-itself control passed; planted new direction found by one latent (0.99 of the change) but relative norm 0.86, under the 0.9 ``fine-tune only'' bar; no real pair read; waits on the user (decision card P2.31, option a recommended)}
+\open{share on hand-made edits (E200, run 1 of 2): share defined only on Table (0.26); not computable on always-on, cue, XOR in run 1; wait for run 2}
 \figplan{3 --- scorecard}{(a) just re-gating (b) all methods (rows) $\times$ 13 pairs (cols), cell = reuse-minus-new gap coloured by
 same/opposite/no call; twins in a separated block; redraw of method\_table/figures/gate\_scorecard\_1116.png}
 
@@ -133,6 +136,7 @@ same/opposite/no call; twins in a separated block; redraw of method\_table/figur
 \section{What the re-gating share measures}
 \sugg{the main caveat: base-model prior + steering at strength 1 together reproduce all 9 direction calls}
 \sugg{but gap sizes are not predicted by either (rank corr.\ 0.02, $-0.10$; 9 non-independent pairs)}
+\sugg{one built pair where prior and steering disagree (E199): share follows steering (share gap 0.18, prior gap $-0.8$ decades); so the share is not just the prior, but nothing shown beyond steering; one pair, one construction}
 \sugg{failure cases: shuffled-label twins (wrong way on 2/4); fine-tune to a different answer at the same trigger
 reads like the real one; code-text fine-tune that hurt text still reads $\sim$0.8}
 \sugg{is it a mechanism or the fine-tune leaking through $\Gamma$'s input? measured on VPD's masked stand-in, not the
@@ -162,7 +166,7 @@ hypothesis)}
 \sugg{recommendation: score diffing methods (incl.\ crosscoders) on built pairs}
 \subsection{Limitations}
 \sugg{one small model, one decomposition, one task family; $\le$9 non-independent pairs; labels by construction;
-no significance tests; no crosscoder/SAE comparison; cut-offs set on controls}
+no significance tests; crosscoder comparison \open{pending E198}; cut-offs set on controls}
 \subsection{Departures from the literature}
 \sugg{per cited method: what we changed and why (Jain, Prakash, VPD, Goodfire neuron jobs)}
 
