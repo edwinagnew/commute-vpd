@@ -1,0 +1,35 @@
+{
+ "experiment": "E200",
+ "cell": "P2.33",
+ "filed": "2026-11-17",
+ "plan": "reports/plans/2026-11-17_plan_share-built-kind.md",
+ "quantity": "The do-nothing re-gating share r = (L01 - L00) / (T1 - T0) per fine-tuned state (run.py docstring): log-odds of the window's target token at the last position, T the target model (W0, then the whole fine-tune), L the CI-masked model with W0's subcomponents and all W0 weights, Delta out, under Gamma's gates from W0's forward (L00) or the fine-tune's (L01). Windows per E137 pair: the first 2048 of the pair's read half where F's top token differs from M's; target F's top token. r is nan when T1 - T0 < 1 (local_faith.MIN_GAIN).",
+ "groups": {
+  "Always on (built re-weighting)": ["always_on_s0", "always_on_s1", "always_on_s2", "amend2_always_on_s0_step3000", "amend2_always_on_s1_step3000", "amend2_always_on_s2_step3000"],
+  "Table (built rewiring)": ["table_s0", "table_s1", "table_s2"],
+  "Cue (built rewiring, fine-tuned in this run)": ["cue_s0", "cue_s1", "cue_s2"],
+  "XOR (learned nothing; reference only, in no prediction)": ["xor_s0", "xor_s1", "xor_s2"],
+  "E137's hand-made changes": "does not apply: forward hooks, no weight change, nothing saved"
+ },
+ "thresholds": {
+  "identity_tol": 1e-06,
+  "spread": 0.0405,
+  "min_readable": 2
+ },
+ "spread_source": "experiments/method_table/results/final.json, jq '.cells[] | select(.method==\"share\") | .reuse, .new': the largest seed sd of the 67M share over the 26 sides of the 13 scorecard pairs (0.0405, e125_repeat_label reuse side; largest over built sides 0.024, pooled built 0.014). The largest is used.",
+ "rule": "Always on's finite shares pooled over both recipes (n_a up to 6) against each rewiring group's finite shares (n_b up to 3). d = mean(Always on) - mean(other). bar = 2 * 0.0405 * sqrt(1/n_a + 1/n_b) (0.057 at 6 against 3, 0.066 at 3 against 3, 0.081 at 2 against 2). Call 'higher' if d >= bar, 'lower' if d <= -bar, else 'within the bar'. 'unreadable' if either side has fewer than 2 finite shares (a state with gain under 1, or a Cue seed stopped at step 10, has none). Absolute difference of shares, not relative.",
+ "predictions": {
+  "P1": {"text": "Always on reads a higher share than Table (the user's expectation, 2026-11-17).", "pass": "call 'higher'", "miss": "call 'within the bar' or 'lower'", "else": "'unreadable' is reported as such and is neither"},
+  "P2": {"text": "Always on reads a higher share than Cue (the user's expectation, 2026-11-17).", "pass": "call 'higher'", "miss": "call 'within the bar' or 'lower'", "else": "'unreadable' is reported as such and is neither"}
+ },
+ "expected": {
+  "identity control (stage 0, alone, first)": "gain T1 - T0 = 0, L01 - L00 = 0 and the largest gate change = 0 on each of the four pairs' windows, within 1e-06 (same forwards on the same inputs; no measured floor needed, the value is 0 by construction and 1e-06 is a millionth of the gain floor); r undefined. A miss stops the job.",
+  "Always on": "r between 0.3 and 0.8 if rival A holds; at or under Table's if much of the push sits in the embeddings (size.other against size.decomposed in stage1.json says where it sits). Gain over 1 on every state (E139: the fine-tunes reach a KL to F of 0.02 against 0.14 at M).",
+  "Table": "r between 0.1 and 0.45, the trained pairs' new-side range, if rival A holds; gain well over 1 (F moves the keyed answers by KL 6.5).",
+  "Cue": "step 10 KL(F||ft) about 0.018 against a start of 0.038 (E139's three seeds, same recipe and seeds), so the corrected check passes; r as Table's under rival A.",
+  "XOR": "gain probably under 1 (E139: not learned), r nan; shown only."
+ },
+ "edge_cases_checked": "verdicts() run on the CPU worker before filing, 2026-11-17 (scratch p233-writer/edges.py, output edges.log): empty pools, one finite value a side, all-nan Always on (the do-nothing state: gain 0, r nan), d exactly at the bar, d just under the bar, a reversal, a passing case and a missing Cue group. Empty, one-a-side and all-nan pools read 'unreadable' (so the do-nothing state cannot pass); d at the bar reads 'higher' after both are rounded to 9 decimals (the first try read 'within the bar' from float rounding, so the rounding was added); 1e-6 under reads 'within the bar' (miss); a reversal reads 'lower' (miss); a missing or two-stopped Cue group leaves P2 'unreadable' and P1 read.",
+ "blind_to": "The share sees only what Gamma's gates on W0's subcomponents carry; a change stored in the embeddings, norms or unembedding (not decomposed) lowers r whatever the built kind. It reads 2048 changed-answer windows per pair at the last position only, and F's top token only.",
+ "not_a_definition_change": "No reuse verdict is given; the frozen reuse definition (decisions.md rows 81 and 87) is not read or touched. The share is the method being scored against the built kinds."
+}
