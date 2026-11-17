@@ -89,3 +89,4 @@
 - [Definition must be total](feedback-definition-must-be-total.md) — "no reading" is the Jain failure we set out to fix; cards quote the definition, not its measurement (user, 2026-11-13)
 - [Definition may be expensive](project-definition-may-be-expensive.md) — slow/exhaustive search is fine; methods are the cheap approximations; never cap a definition search for cost (user, 2026-11-16)
 - [Ask definition, not measurement](feedback-ask-definition-not-measurement.md) — "stop and ask" on unsettled cases = definition questions only, plain words; measurement details are the lead's call (user, 2026-11-17)
+- [main.tex: batch and ask before pushing](feedback-dont-edit-users-latex.md) — edit main.tex in batches, push only after the user's yes; other files push freely; other leads' implementation is theirs (2026-11-17)
