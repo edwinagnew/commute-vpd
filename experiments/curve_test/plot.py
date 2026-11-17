@@ -43,6 +43,7 @@ def draw_gaps(panels: list[tuple[str, dict[str, Any], bool]], bar: float, old: d
                 ax.scatter(old[lab], [i + 0.2] * 2, facecolors="none", edgecolors=OLD, s=24, label="E184 seeds 0, 1" if i == 0 else None)
                 data += [{"panel": title, "pair": lab, "seeds": "0-1", "gap": g} for g in old[lab]]
         reference(ax, bar, f"bar {bar:.3f}")
+        ax.axvline(0, color="#bbbbbb", linewidth=0.6)  # no difference between the sides
         ax.set_yticks(range(len(LABELS)), LABELS if col == 0 else [""] * len(LABELS), fontsize=7)
         ax.invert_yaxis()
         ax.set_xlabel("closure at 16 names, reuse minus new")
@@ -52,11 +53,15 @@ def draw_gaps(panels: list[tuple[str, dict[str, Any], bool]], bar: float, old: d
     save(fig, path, n=n_text, data=data)
 
 
+SHORT = ("copy / cipher", "identity / random map", "case / its twin", "repeat / its twin", "parity twin / fact")
+CONTROLS = (("l1_neuron", "one shifted neuron", "#009E73"), ("l2_triggered", "one triggered neuron", "#CC79A7"), ("l4_bit", "random bit per window", "#555555"))
+
+
 def draw_curves(new: dict[str, Any], path: Path) -> None:
     old = json.loads(E191.read_text())["items"]
-    fig, axes = figure((7.5, 11.5), ncols=4, nrows=len(RU.PAIRS))
+    fig, axes = figure((7.5, 10.0), ncols=4, nrows=len(RU.PAIRS))
     ns, data = list(range(RU.CAP + 1)), []
-    for r, ((a, b), lab) in enumerate(zip(RU.PAIRS, LABELS, strict=True)):
+    for r, (a, b) in enumerate(RU.PAIRS):
         for col, s in enumerate((0, 1, 2, 3)):
             ax = axes[r][col]
             for side, color in ((a, REUSE), (b, NEW)):
@@ -65,14 +70,33 @@ def draw_curves(new: dict[str, Any], path: Path) -> None:
                 for reading, cur in curves.items():
                     ax.plot(ns, cur, color=color, linewidth=1.6 if reading == "full" else 1.0, linestyle="-" if reading == "full" else "--")
                     data += [{"item": name, "reading": reading, "n": n, "closure": v} for n, v in zip(ns, cur, strict=True)]
-            ax.set_ylim(0, 1)
-            ax.set_title(f"{lab}, seed {s}" + (" (E184)" if s < 2 else ""), fontsize=6)
-            ax.set_xlabel("number of names")
-            ax.set_ylabel("closure")
+            ax.set_ylim(0, 1.02)
+            if r == 0:
+                ax.set_title(f"seed {s}" + (", E184" if s < 2 else ", fresh"), fontsize=8)
+            ax.set_xlabel("number of names", fontsize=7)
+            if col == 0:
+                ax.set_ylabel(f"{SHORT[r]}\nclosure", fontsize=8)
     h = [axes[0][0].plot([], [], color=c, linestyle=ls)[0] for c, ls in ((REUSE, "-"), (NEW, "-"), ("#555555", "--"))]
-    axes[0][3].legend(h, ["built to reuse", "built to be new", "answer positions only"], fontsize=6, frameon=False, loc="lower right")
+    axes[2][3].legend(h, ["built to reuse", "built to be new", "same names,\nanswer positions only"], fontsize=6, frameon=False, loc="lower right")
     fig.suptitle("Closure against names, list all: E184's seeds 0, 1 beside the fresh seeds 2, 3")
-    save(fig, path, n="one fine-tune per side and seed; closure on 16,384 held-out read windows (E184's search, run to 16 names)", data=data)
+    save(fig, path, n="one fine-tune per side and seed; closure on 16,384 held-out read windows. E184's case and repeat searches stopped near 0.95 before 16 names, so their curves are flat after the stop", data=data)
+
+
+def draw_controls(path: Path) -> None:
+    fig, ax = figure()
+    ns, data = list(range(RU.CAP + 1)), []
+    for item, label, color in CONTROLS:
+        cur = RU.best_by_n(json.loads((RESULTS / f"{item}.json").read_text()), "closure")
+        ax.plot(ns, cur, color=color, linewidth=1.6, label=label, marker="o", markersize=3)
+        data += [{"item": item, "n": n, "closure": v} for n, v in zip(ns, cur, strict=True)]
+    ax.axhline(0.95, color="#777777", linewidth=0.8, linestyle="--", label="planted neurons must pass 0.95")
+    ax.axhline(0.8, color="#777777", linewidth=0.8, linestyle=":", label="random bit must stay under 0.8")
+    ax.set_ylim(0, 1.05)
+    ax.set_xlabel("number of names")
+    ax.set_ylabel("closure, full distribution")
+    ax.legend(fontsize=7, frameon=False, loc="upper left", bbox_to_anchor=(0.3, 0.74))
+    ax.set_title("Does the search find what was planted, and nothing in noise?", fontsize=9)
+    save(fig, path, n="three built changes to the original model, searched as every fine-tune; 16,384 read windows each", data=data)
 
 
 def main() -> None:
@@ -82,7 +106,8 @@ def main() -> None:
     panels = [(TITLES[r], score[r]["pairs"], r == "full") for r in RU.READINGS]
     draw_gaps(panels, score["bar"], e184_gaps(), FIGURES / "gaps.png", "2 fresh seeds per pair (filled); E184's 2 seeds (open), full reading only")
     draw_curves(new, FIGURES / "curves.png")
-    print(f"wrote {FIGURES}/gaps.png and curves.png")
+    draw_controls(FIGURES / "controls.png")
+    print(f"wrote {FIGURES}/gaps.png, curves.png and controls.png")
 
 
 if __name__ == "__main__":
