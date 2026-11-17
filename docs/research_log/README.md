@@ -642,3 +642,4 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e197_survival.png": "experiments/held_model_retention/figures/survival.png"
 - "fig/e155_gaps.png": "experiments/neuron_overlap/figures/gaps.png"
 - "fig/e190_jobs.png": "experiments/neuron_jobs_k/figures/jobs.png"
+- "fig/e200_share_by_kind.png": "experiments/share_built_kind/figures/share_by_kind_run2.png"
