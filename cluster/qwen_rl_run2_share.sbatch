@@ -7,6 +7,10 @@
 # with 15 updates; here up to 18 states plus the control, ~100 GB read one matrix at a time from NFS. The job exits 3
 # when the time left is under 1.5 x the longest matrix: resubmit the same command until the log says STAGE share DONE
 # (expect 2-3 jobs). Host: ~2 GB per matrix (E152), 16G leaves room for the larger update set.
+# Job 59673 printed "peak host RSS 74.1 GB" under this 16G (friction 768): ru_maxrss counts the touched pages of every
+# safetensors file the job holds open with safe_open (mmap, file-backed and reclaimable page cache, ~100 GB of states
+# read once), not only its own allocations, and this cluster does not enforce --mem (TaskPlugin task/affinity, no cgroup
+# limit; sacct does not answer here). The anonymous peak is the ~2 GB per matrix above, so 16G stays.
 #SBATCH --job-name=commute-qwen_rl_run2_share
 #SBATCH --partition=compute
 #SBATCH --account=c11

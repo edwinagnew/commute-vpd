@@ -31,9 +31,10 @@ and a `code: <commit>` line to the `.out` that also names any uncommitted file u
 Job logs are not committed: `cluster/logs` is a gitignored symlink to `~/commute-data/cluster-logs/`, which persists,
 so `git add` cannot take a log (friction 670). A write-up or runner report cites the log by that path and job id. When
 a log is the only record of a number a result rests on, copy it (under ~1 MB, no Jupyter log: it holds the server
-token) to `experiments/<name>/results/<job-name>-<jobid>.log` and commit the copy with the results.
+token) to `experiments/<name>/results/<job-name>-<jobid>.log` and commit the copy with the results (friction 745):
+`cp cluster/logs/<job-name>-<jobid>.out experiments/<name>/results/<job-name>-<jobid>.log`, then `git add` the copy.
 A job's script ends with `commute.jobs.hard_exit(code)` after its final write: jobs have hung in interpreter teardown
-with their results on disk (friction 150, 296). `sstat` is not installed in the job environment; `hard_exit` prints the peak host RSS. Note that `sacct` and `sacctmgr` do not work from the controller (slurmdbd refuses the
+with their results on disk (friction 150, 296). `sstat` is not installed in the job environment; `hard_exit` prints the peak host RSS. That figure (ru_maxrss) includes the touched pages of files the job memory-maps (`safe_open`, `torch.load(mmap=True)`), which are reclaimable page cache, so it can exceed the job's real need and its `--mem`; Slurm here does not enforce `--mem` (TaskPlugin task/affinity, no cgroup), so a job that truly allocates more than it asked takes it from the shared node (friction 768). Note that `sacct` and `sacctmgr` do not work from the controller (slurmdbd refuses the
 connection; checked 2026-10-14). Use `squeue` and `scontrol show job <id>` instead, and keep job IDs yourself.
 
 ## Limits (read live from `scontrol show assoc_mgr flags=qos` on 2026-10-14)
