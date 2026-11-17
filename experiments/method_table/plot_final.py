@@ -187,6 +187,8 @@ def score(col: str, c: dict[str, Any]) -> None:
     """Adds the gap and the call ('apart', 'no call' or 'one value a side') to one cell, in place: one rule for every column."""
     reuse, new = statistics.fmean(c["reuse"]), statistics.fmean(c["new"])
     c["gap"] = math.log10(reuse / new) if col in RATIO else math.log10(new / reuse) if col in INVERTED else reuse - new
+    c["gap_rule"] = ("log10(reuse mean / new mean)" if col in RATIO else "log10(new mean / reuse mean)" if col in INVERTED
+                     else "reuse mean - new mean")  # each column's sign convention, so a writer need not read this file
     if min(c["n_reuse"], c["n_new"]) < 2:
         c["call"], c["call_rule"] = "one value a side", "no spread to compare"
     else:

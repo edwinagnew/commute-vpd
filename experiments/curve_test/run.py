@@ -16,7 +16,7 @@ setup reads (E137, E154, E157 files); open_pair large/windows_{elicit,cipher}_tr
 regating_table large/windows_{ident32,rand32}.pt; case_label and fresh_reuse_pair large/task.pt; the key-table windows
 files old_tasks reads. This folder's results/large must be a real directory on the pod. Exit 0 done, 1 a stop or refusal.
 
-    python experiments/curve_test/run.py          (on a pod: E120_PRED_SHA=<sha of results/predictions.json> python ...)
+    python experiments/curve_test/run.py          (on a pod: PRED_SHA=<sha of results/predictions.json> python ...)
 """
 
 from __future__ import annotations

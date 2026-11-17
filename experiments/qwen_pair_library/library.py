@@ -22,6 +22,8 @@ Stages, in one job (each prints "STAGE <name> DONE"):
            <labels>.safetensors (sha256 recorded; with --upload also the W&B artifact p35r3-<arm>-s<seed>-<labels>).
            Labels join with "_" when one state is two (e.g. "5x_15x", "15x_last"). Training always runs to the end.
   read     each save from its file: step, |δW|, KL on the own rows, held-out and trained-item measures; the rules.
+           Every read (control, each track, each save) also keeps "trained_item_loss": the mean response-token loss of
+           each trained-item sequence, in `Data.prior_seqs` order (friction 738).
            With --upload, each state's local file is then deleted once its W&B artifact holds a file of its size.
 Measures. Built: greedy exact match under the cue, held out = the 256 held-out keys (facts: template 3, 200 items),
 trained = 256 trained items (seeded draw). Template: format rate of greedy unprompted answers (E78's read), held out =
@@ -50,6 +52,7 @@ from pathlib import Path
 from typing import Any, NoReturn
 
 import torch
+import torch.nn.functional as F
 from torch import Tensor
 from transformers import AutoTokenizer
 
@@ -74,6 +77,7 @@ from commute.qwen_sft import (
     save,
     set_weights,
     sha256,
+    targets,
 )
 from commute.qwen_train import Recipe, train
 from commute.qwen_updates import cycle
@@ -220,6 +224,20 @@ def loss(model: Any, seqs: list[Seq]) -> dict[str, Any]:
     return {"value": gold_loss(model, seqs, C.loss_batch, DEV), "hits": None, "n": len(seqs)}
 
 
+@torch.no_grad()
+def item_losses(model: Any, seqs: list[Seq]) -> list[float]:
+    """Mean response-token log-loss of each sequence on its own (fp32, as `gold_loss`), rounded to 4 places: the
+    per-item trained loss kept at every read, so a stalled side can be told apart item by item (friction 738)."""
+    out: list[float] = []
+    for i in range(0, len(seqs), C.loss_batch):
+        toks, mask = targets(seqs[i : i + C.loss_batch], pad=0)
+        toks, mask = toks.to(DEV), mask.to(DEV)
+        logits = model(toks, use_cache=False).logits[:, :-1].float()
+        nll = F.cross_entropy(logits.transpose(1, 2), toks[:, 1:], reduction="none")
+        out += [round(x, 4) for x in ((nll * mask).sum(1) / mask.sum(1)).tolist()]
+    return out
+
+
 def built_data(lab: Lab) -> Data:
     task = P.tasks(WORDS)[lab.arm.task]
     seqs = P.cue_seqs(lab.tok, lab.end_id, task["train"])
@@ -258,10 +276,12 @@ DATA = {"built": built_data, "template": template_data, "gold": gold_data}
 
 
 def reads_at(model: Any, W0: dict[str, Tensor], data: Data, W: dict[str, Tensor] | None, tag: str) -> dict[str, Any]:
-    """At weights W (None: the model as it stands): KL(W0 ‖ W) on the own rows, the held-out and trained measures."""
+    """At weights W (None: the model as it stands): KL(W0 ‖ W) on the own rows, the held-out and trained measures, and
+    the per-item loss of the trained-item set (in `data.prior_seqs` order)."""
     with set_weights(model, W):
         held, trained = data.held(model, tag), data.trained(model, tag)
-    return {"kl": mean_kl(model, data.rows, W0, W), "held": held, "trained": trained}
+        item_loss = item_losses(model, data.prior_seqs)
+    return {"kl": mean_kl(model, data.rows, W0, W), "held": held, "trained": trained, "trained_item_loss": item_loss}
 
 
 # ----------------------------------------------------------------------------- stages
@@ -346,7 +366,8 @@ def track(lab: Lab, model: Any, data: Data, t: int) -> None:
     """The held-out and trained measures of the training model as it stands at step t (eval mode between steps), with
     that step's KL and |δW|: every scored number in the log as it is read."""
     rec = {"step": t, "kl": lab.out["steps"][-1]["kl"]["own"], "dw_norm": lab.out["steps"][-1]["dw_norm"],
-           "held": data.held(model, f"t{t}"), "trained": data.trained(model, f"t{t}")}
+           "held": data.held(model, f"t{t}"), "trained": data.trained(model, f"t{t}"),
+           "trained_item_loss": item_losses(model, data.prior_seqs)}
     lab.out["track"].append(rec)
     lab.save_out()
     lab.log(f"[track] {json.dumps(rec)}")

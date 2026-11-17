@@ -18,6 +18,13 @@ state's K0 over its 128 rows equals the library's floor for that side (results/f
 library's. A resubmitted job skips what is written. Every number also goes to results/run.log.
 The share is E57's: (K00 - K01) / (K00 - K11) summed over the rows, status by `qwen_reading.shares`.
 
+Gitignored inputs, which a pod must be sent before a run (`sync(include=[<the folder>])`; friction 765):
+  - the decomposition folder named by --decomp ($COMMUTE_QWEN_NEW_DIR or $COMMUTE_QWEN_FROZEN_DIR, under artifacts/);
+  - its W0 g statistics (`qwen_d3.GSTATS_OF`): for p-9707d6ff, 5.6 MB in
+    experiments/qwen_new_decomp/results/large/w0_refs/p-9707d6ff/gstats/W0_{maths,fineweb}.safetensors; for
+    p-015e0710, results/large/p-015e0710/gstats/, written by its --run 0.
+The library's states come from W&B (`library_states.fetch`, into --fetch-to); floors.json and words.json are committed.
+
 The frozen-neuron decomposition p-015e0710 (cell P3.9, E179; plan in results/p-015e0710/predictions.json): the same
 runs with `--decomp "$COMMUTE_QWEN_FROZEN_DIR"`, written to results/p-015e0710/. It decomposes the 84 MLP matrices
 only, so every change read on it is restricted to them (`own_sites`: the attention matrices of δW and of the random
