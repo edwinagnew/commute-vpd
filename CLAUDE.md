@@ -12,8 +12,8 @@
   states unsaved.
   - Save only what the analysis reads: the scored step, and small dtypes.
   - Download each task's outputs as soon as they are written, while the next task runs, not in one batch at the end.
-  - `download()` of a directory nested it (`results/results/`). Download into the matching parent, or download the
-    files individually, and check the local layout after the first download.
+  - `download()` of a directory nested it (`results/results/`), and later flattened subdirectories into their parent
+    (friction 757, 799): download each subdirectory into its exact local path, and check the layout after the first.
   - `sync-include` did not send gitignored files; `sync(include=["<directory>"])` does (file names alone do not,
     2026-10-19). Check sha256 on both sides. The directory named must be the gitignored one itself
     (`.../results/large`): a file or a subdirectory under it is never walked, and the sync still reports success
@@ -33,7 +33,8 @@
   pods died within a minute of a runner rewriting `remote-kernels.toml` and starting a third; one died 75 min into a
   run with no config change; one survived a WebSocket closure because its runner opened a new kernel within two
   minutes. Rules: never edit `remote-kernels.toml` while a machine of the session runs (label pods through `start()`'s
-  argument); no `execute()` or `wait()` over 5 min, re-arm instead; on a WebSocket closure, `status(instance=...)`
+  argument; its disk size is read only at MCP start, so set it before the session); `execute()` needs `kernel_id` and
+  times out at 30 s unless given `timeout=`; no `execute()` or `wait()` over 5 min, re-arm instead; on a WebSocket closure, `status(instance=...)`
   then `create_kernel(instance=...)` at once; download each stage as it is written; pass `instance` to every
   machine-scoped call when several machines run.
 - Lesson from the 2026-10-26 E36 Amendment 6 pod (~$40 lost) and E34 Amendment 5 pod (idle 40 min). Each

@@ -8,4 +8,4 @@ When cpu-run says the compute node is down, send the work (even summary/plot/lin
 
 **Why:** 2026-11-16 the lead waited on the downed node over a weekend; user: "if the cluster is down, use runpod ... you need to move a bit faster now so please hurry up".
 
-**How to apply:** label the pod with the run's E-code as `E### stage: ...`; don't schedule a wake-up to wait for the node. Related: [[feedback-results-fast-runpod-default]].
+**How to apply:** label the pod with the run's E-code as `commute-E###-stage-what` (no space or colon; fleet `roles/shell-notes.md` → Pods); don't schedule a wake-up to wait for the node. Related: [[feedback-results-fast-runpod-default]].

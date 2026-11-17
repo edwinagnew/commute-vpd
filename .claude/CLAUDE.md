@@ -92,7 +92,9 @@ process do not get there; less code does.
   (Codex is out of quota until ~2026-11-18). An independent check is for a headline claim only: one that goes into the
   write-up's answer paragraph.
 - **A cell's run count is the cap** (plan 2026-11-09). An amendment is a run; when the runs are spent the cell closes
-  with its reading as it stands, and a follow-up needs a new cell from the user. A filed rule's band is set from the control and
+  with its reading as it stands, and a follow-up needs a new cell from the user. The count is a tracking aid, not a
+  reason to avoid an informative run: when a run would settle the question, recommend it and ask for more runs in one
+  line (user, 2026-11-13, friction 780). A filed rule's band is set from the control and
   the null read in the same job's first stage, not guessed; a "no call" verdict is reported as what was read and does
   not open an amendment.
 
@@ -167,7 +169,7 @@ Write the hand-off into the relevant report or plan, not only the chat, so the n
   record job IDs; caches in `/ephemeral/$USER`) when it can start them now, and to RunPod (Vast after one failed round)
   if not started within 5 min. Longer runs go straight to a pod via remote-kernels: an H100 (or faster) for anything
   over ~20 min on a 4090 or that is memory-bound, a 4090 only for short light runs, several pods at once for
-  independent arms; pods `commute-<experiment>-<id>`. Large inputs on the cluster are not a reason to stay: uploads run
+  independent arms; pod labels `commute-E186-b`, `[A-Za-z0-9_-]`, ≤ 64 characters (fleet `roles/shell-notes.md` → Pods). Large inputs on the cluster are not a reason to stay: uploads run
   at ~10 MB/s (about 2 min a GB, root `CLAUDE.md`), so price the transfer before choosing the queue. A brief's "cluster
   only" holds only for a stated reason other than transfer time, and the user asking for speed overrides it. For the Qwen line only, not the other lines, for now (user, 2026-10-27):
   a longer run that fits an L40 may use the cluster's `normal` QoS when the queue is empty at submission.

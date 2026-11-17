@@ -27,6 +27,9 @@ closely, and on a code error stop and report the traceback rather than resubmit.
 ## Choosing where to run
 
 Every `sbatch`, GPU `srun` and `start()` must name the experiment number from your brief (`sbatch --comment=E###`, the pod's `label`): the harness (`fleet/job-gate`) refuses a submission or pod start without one claimed against an open cell. If the brief has no number, stop and ask the lead.
+A pod label is `[A-Za-z0-9_-]` only, at most 64 characters: `commute-E186-b`, `commute-E178-stage-N_s0`,
+`commute-E160-rerun-why`. The canonical pod lines (label, set-up, disk, downloads, waits, placement) are in
+`~/commute-agents/fleet/roles/shell-notes.md` → Pods; read them before `start()`.
 
 The user wants results as soon as possible; compute is cheap next to waiting (2026-11-11: "i have lots of credits
 available and not much time"). Pick the platform that gets the results home first, counting set-up, transfers and
@@ -56,7 +59,8 @@ was never measured and kept runs queued for hours (friction 674, 716, 720).
 When you abandon a queued cluster job: `scancel` it first, then `start()` the pod, and put both IDs in the report.
 Never leave the cluster job queued as a fallback: it would start later and run the experiment twice.
 
-Estimate the RunPod cost (rate × expected hours, plus ~10 min of set-up) before `start()`. Over the brief's budget
+Estimate the RunPod cost (rate × expected hours, plus ~10 min of set-up) before `start()`. A per-pod cap is that
+pod's hours × rate; `status()`'s cost is the whole session's, all pods together (friction 795). Over the brief's budget
 (at most what is left of the session's `REMOTE_KERNELS_BUDGET` in `.claude/settings.json`, less ~15% headroom), stop and ask.
 
 ## MATS cluster
@@ -121,7 +125,8 @@ Estimate the RunPod cost (rate × expected hours, plus ~10 min of set-up) before
   `/sys/fs/cgroup/cpu.max` (or `cpu.cfs_quota_us ÷ cpu.cfs_period_us` on cgroup v1). The split tables went from
   64–82 s to 22 s each.
 - On Vast (`start(runtime="vast")`), the kernel lacks the machine's variables (`WANDB_API_KEY`, `COMMUTE_CACHE_DIR`,
-  `HF_HOME`, `UV_CACHE_DIR`), so make this your first cell, before anything that needs them; names only, never print a value:
+  `HF_HOME`, `UV_CACHE_DIR`) and `pod_setup.sh` does not add them to it (an `--upload` run then fails at once,
+  friction 737), so make this your first cell, before anything that needs them; names only, never print a value:
 
       import os
       os.environ.update(e.decode().split("=", 1) for e in open("/proc/1/environ", "rb").read().split(b"\0")
@@ -140,7 +145,9 @@ Estimate the RunPod cost (rate × expected hours, plus ~10 min of set-up) before
         git fetch -q --depth 1 origin main && git checkout -q -f FETCH_HEAD
 
   The token stays out of `.git/config` and the log; never echo it. If `GIT_PAT` is unset or the fetch fails, say so
-  in the report and go on with a plain `sync()`. Always `sync()` after the clone: it carries uncommitted work.
+  in the report and go on with a plain `sync()`. Always `sync()` after the clone: it carries uncommitted work. Then
+  `rm -rf .git`: with a `.git` on the pod, `require_filed` asks git instead of `E120_PRED_SHA` and refuses the run
+  (friction 767).
 - Then set up the pod with one command, right after the first `sync()`: `bash cluster/pod_setup.sh`, run as a
   subprocess from the kernel. It pins uv, builds `.venv` (CUDA torch) and fetches the VPD files in parallel, and logs
   each step with its time to `/root/setup.log` and the RunPod console. Don't install uv or run `uv sync` by hand; if
@@ -149,7 +156,7 @@ Estimate the RunPod cost (rate × expected hours, plus ~10 min of set-up) before
   in `remote-kernels.toml` sets `COMMUTE_CACHE_DIR` and `HF_HOME` to `/root/...`. No network volume: see the comment in
   `remote-kernels.toml` for why.
 - `sync()` mirrors the tree: it deletes remote files that have no local copy, so don't keep anything in the tree that
-  you have not downloaded. Gitignored inputs go up with `sync(include=["experiments/<name>/results/large"])`: naming
+  you have not downloaded. It does not send `.claude/`. Gitignored inputs go up with `sync(include=["experiments/<name>/results/large"])`: naming
   the files one by one did not send them, naming the directory did (2026-10-19).
 - Never `stop()` a pod meaning to resume it later. A stopped RunPod pod stays pinned to its host with the GPU
   released, so the resume may come back with zero GPUs, and the container disk (where `/root/artifacts` and the uv
@@ -160,14 +167,16 @@ Estimate the RunPod cost (rate × expected hours, plus ~10 min of set-up) before
   Run long stages with `execute(background=true)` or a subprocess, never as one long blocking `execute()`.
 - Download each stage's outputs as soon as they are written, while the next stage runs, and the last stage's the
   moment it finishes, before any check or report: on 2026-10-27 a pod's SSH dropped ~30 s after E39 finished, and its
-  final JSON came home only because the user copied it by hand. Download into the matching
-  parent directory, because downloading a directory nests it. Look at the local layout after the first download.
+  final JSON came home only because the user copied it by hand. Downloading a directory may nest it or flatten its
+  subdirectories into one (friction 757, 799): download each subdirectory into its exact local path, and look at the
+  local layout after the first download.
 - `results/large/` is a link outside the project: `download()` into it is refused, and moving a file into it can wait
   at a permission prompt for hours. Download large files to `results/<run>_dl/` and leave the move to the lead.
 - Before `terminate()`: download the final results file, check its sha256 on both sides, then terminate, with no
   other command in between (2026-10-26: a local `mv` between them hung at a prompt and the idle H100 billed ~14 h,
   ~$40). `cluster/pod_setup.sh` also starts a watchdog that terminates the pod after 30 idle GPU minutes
-  (`POD_IDLE_MIN`); if its set-up line says `runpodctl MISSING` or a variable `MISSING`, say so in your report.
+  (`POD_IDLE_MIN`); a pod that must sit idle (waiting on a sibling or on the lead) needs the brief's
+  `POD_IDLE_MIN=<min> bash cluster/pod_setup.sh` or a GPU-light keepalive (friction 763, 777). If its set-up line says `runpodctl MISSING` or a variable `MISSING`, say so in your report.
   Terminate as soon as the run is done or dead, unless the brief says "keep the pod running for the next run": then leave it
   running, and the report says so, with the pod ID, the hourly rate and the time it went idle. A kept 4090 pod costs
   about $0.89/h idle; a fresh one costs ~5 min and ~$0.10 of setup.
@@ -212,7 +221,8 @@ Run one poll at a time, ending as soon as FINISHED appears, and tell the lead at
 polls left an H100 idle 13 min, about $1 (friction 411). Never loop `squeue` yourself, never `pkill` by pattern (it killed the runner's own shell), and never poll with
 foreground `sleep` (it is blocked). If the queue cap passes with the job still `PENDING`, `scancel` it and follow
 the brief's RunPod rule. On RunPod, use `wait()` with a long timeout, plus a log-tail read every 10–20 min for long
-stages. With several pods, never block on one: poll them round-robin (`wait()` of at most 60 s each, or `status()`),
+stages; a detached job (`nohup`) leaves `wait()` nothing to hold, so execute a bounded log wait instead
+(shell-notes → Pods, friction 739). With several pods, never block on one: poll them round-robin (`wait()` of at most 60 s each, or `status()`),
 and download and terminate each pod the moment its last item lands. Two idle H100s were left billing twice while a
 runner waited on a third (friction 678).
 

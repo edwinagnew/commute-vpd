@@ -26,14 +26,18 @@ Command: <exact command(s) or sbatch script, with stage arguments>
 Expected: <runtime from the smoke/benchmark>, <GPU memory>, <CPU RAM>
 Outputs: <files the run writes; mark which are the results to bring home; which are large/>
          (the job's final "FINISHED" line names these paths, so list them all)
-Inputs not in git: <gitignored files the run needs, or none>
+Inputs not in git: <every gitignored file the run loads, from a grep of run.py and the modules it loads, or none>
+Label: <each pod's exact start() label, e.g. commute-E186-b, commute-E178-stage-N_s0 (form: shell-notes.md → Pods)>
+Per pod: <items and counts each pod runs, from the code's loops; step-time band from a measured pod; POD_IDLE_MIN
+         if it must idle; disk if over ~40 GB (the toml is set before the session, shell-notes.md → Pods)>
 Platform: by expected run time (default): ≤ 30 min → cluster debug if it can start now, a pod if no start within
           5 min; longer → a pod directly, H100 or faster for runs over ~20 min (4090 only for short light runs),
           parallel pods for independent arms | cluster only because <reason other than transfer time>
 Transfers: <inputs not in git or W&B, their total size, and the upload time at ~10 MB/s (2 min a GB, root CLAUDE.md)>
 Pod: fresh (default) | reuse an idle commute pod of this session if status() shows one | keep running after,
      the next run follows within ~1 h
-Budget: <$ cap for RunPod: what is left of the session's REMOTE_KERNELS_BUDGET (`.claude/settings.json`), less ~15% headroom>
+Budget: <$ cap for RunPod: what is left of the session's REMOTE_KERNELS_BUDGET (`.claude/settings.json`), less ~15% headroom;
+        a per-pod cap is that pod's hours × rate, not status()'s session cost>
 Watch for: <known failure modes, numbers to copy from the log>
 ```
 
