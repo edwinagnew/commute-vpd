@@ -1,5 +1,5 @@
 """The gate page's one figure (cell P1.1): per matched pair of old tasks, the found re-weighting share G of each seed on the
-side built to reuse against the side built to be new, with the adopted G cut-off (0.8, user 2026-11-10) drawn. Reads results/labels.json and
+side built to reuse against the side built to be new, with the adopted G cut-off (0.8, user 2026-11-10) drawn. Reads results/
 labels_cut_0p8_0p5.json only (no model, no new computation).
 
 Pairs: the three groups that share one input set (in-context copy against lookup, the real case label and the real
@@ -30,8 +30,9 @@ SIDES = {"reuse": ("regating", -0.12), "new": ("neuron", 0.12)}  # METHODS style
 
 
 def main(results: Path = HERE / "results", out: Path = HERE / "figures") -> None:
-    items = json.loads((results / "labels.json").read_text())["items"]
-    cut = json.loads((results / "labels_cut_0p8_0p5.json").read_text())["cutoffs_new"]["G"]  # adopted 2026-11-10 (decisions.md)
+    # G and the cut-off from the one file the cell names (friction 715; labels.json holds the same G for these items)
+    lab = json.loads((results / "labels_cut_0p8_0p5.json").read_text())
+    items, cut = lab["items"], lab["cutoffs_new"]["G"]  # cut-off adopted 2026-11-10 (decisions.md)
     g = {it["item"]: it["G"] for it in items}
     rows = []
     fig, ax = FG.figure((7.0, 3.4))
