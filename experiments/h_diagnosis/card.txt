@@ -1,0 +1,12 @@
+cell: P1.13
+rival_a: The fine-tune makes its change partly out of the map's reach (at earlier positions or spread over sites), predicts H on the target F itself at least 0.9 while the fine-tune stays near 0.47, and an all-position or two-site write lifts the fine-tune's H by at least 0.2
+rival_b: The fit itself is the limit (the ridge map from the original's activations underfits even an exact affine edit), predicts H on the target F itself also below 0.5, and no variant lifts the fine-tune's H by 0.2
+rung: strategy
+smallest_gap: 0.2
+spread: 0.028
+n: 2
+design: paired
+unit: seeds
+spread_source: experiments/reuse_variable_finetune/results
+stop: H on the exact target F below 0.5 means the search cannot read an affine edit it should read perfectly, and the H measure is reported as broken on this layout; nothing further runs on L1.4
+sketch: experiments/h_diagnosis/figures/sketch.png

@@ -49,8 +49,10 @@
     cur = { sec: s.id, sub: sub };
     topLis.forEach(function (li, k) { li.classList.toggle('open', outline[k] === s); topLinks[k].classList.toggle('active', outline[k] === s && !sub); });
     Object.keys(subLinks).forEach(function (id) { subLinks[id].classList.toggle('active', id === sub); });
+    // Move the contents bar by its own scrollTop: scrollIntoView here cancels a page scroll still under way, which
+    // stopped long jumps as soon as the active entry left the bar's visible part.
     var act = toc.querySelector('a.active');
-    if (act) { var nav = toc.parentNode, r = act.getBoundingClientRect(), nr = nav.getBoundingClientRect(); if (r.top < nr.top + 40 || r.bottom > nr.bottom - 40) act.scrollIntoView({ block: 'center' }); }
+    if (act) { var nav = toc.parentNode, r = act.getBoundingClientRect(), nr = nav.getBoundingClientRect(); if (r.top < nr.top + 40 || r.bottom > nr.bottom - 40) nav.scrollTop += r.top + r.height / 2 - nr.top - nr.height / 2; }
   }
   window.addEventListener('scroll', update, { passive: true });
   window.addEventListener('resize', update);

@@ -1,0 +1,44 @@
+{
+ "experiment": "E158 neuron reading on the real-against-twin pairs (cell P2.21)",
+ "filed": "2026-11-11",
+ "aim": "Fill the method table's four empty cells (experiments/method_table/results/final.json): methods neuron (r_n, whole width) and neuron_half (r_half) on pairs e123_case_label and e125_repeat_label. Descriptive: the user said fill them; no claim at a bar.",
+ "settings": {
+  "batch": 64,
+  "n_read": 256,
+  "seeds": [0, 1, 2],
+  "gain_floor": 1.0,
+  "identity_tol": 1e-06,
+  "telescope_tol": 1e-06,
+  "gain_tol": 1e-05,
+  "min_control_gain": 0.001
+ },
+ "sources": {
+  "reading": "commute.neuron_r state_cells and shares, E98's cells unchanged; only the unit is passed in (state_cells(..., unit=...), default log-odds of the target, so E98's and E147's callers read as before)",
+  "unit": "the contrast between the two labels: logit of the window's own label minus the other label's, at the read position (E140's scored unit, masked_reads.units 'contrast'), the unit the pairs' share, steering and top-neuron cells were scored in",
+  "rows": "E140's: the first 256 fit windows of the update's own arm with that arm's labels (real_vs_twin load_pair, part 'fit')",
+  "states": "real_vs_twin.state: seeds 0-1 from experiments/case_label and experiments/fresh_reuse_pair results/large (sha256 against each source's stage1.json), seed 2 from experiments/real_vs_twin/results/large (sha256 against its stage1.json). Seed 2 is added to the brief's seeds 0-1 so each side has the three states the pairs' other cells read",
+  "gain_floor": "VPD's MIN_GAIN (local_faith.py), E98's and E140's floor; a state below it has nan shares",
+  "identity_tol, telescope_tol": "E98's filed values (experiments/neuron_r/results/predictions.json settings, stage0)",
+  "gain_tol": "E140's two fp32 paths on the same rows (its stage3 .gain against .neuron.k64.gain) agreed exactly in the contrast and within 1.1e-8 in log-odds; 1e-5 is about 1000 times that",
+  "min_control_gain": "1000 times the band, so the control's d_n check is not read on a gain of 0; the control piece is not trained for the control, so E98's readable rule (|G| >= 1) is replaced by this (a departure from E98's down_last)"
+ },
+ "stage0": {
+  "order": "before any state's reading; a miss writes results/cells.json with .stopped, logs FAIL and exits 1",
+  "zero_update": "each pair, each arm's rows: every cell (T1, L00, L01, L10, L11, Lh) equals T0, max |difference| <= identity_tol. Expected 0 exactly (E98 read 0 exactly on every task, experiments/neuron_r/results/stage0.json w0/*)",
+  "positive_control": "E98's down_last control without training: real s0's change of h.3.mlp.down_proj alone (the other 23 matrices at 0), per pair. Nothing downstream re-fires, so the r_n, r_half, i_n and e_n numerators are each <= band in absolute value and d_n's numerator equals G within band; band = identity_tol (E98's band was max(identity_tol, 10 x the W0 deviation), which read 1e-6). Stop also if |G| <= min_control_gain. Expected: the four numerators 0 exactly and d_n's = G (E98's trained down_last read exactly that, num r_n = r_half = i_n = e_n = 0, d_n 1)"
+ },
+ "stage1_checks": "each of the 12 states as it lands: identity (max |L00 - T0|) <= identity_tol, |telescope| <= telescope_tol, and its G within gain_tol of E140's saved gain in the contrast (experiments/real_vs_twin/results/stage3.json .states.<state>.gain.contrast: case real 12.1-13.6, twin 9.3-10.2; repeat real 4.6-11.7, twin 7.3-8.2). A miss stops the job.",
+ "expected": {
+  "zero_update": "0 exactly in every cell",
+  "do_nothing": "not read here; a state whose |G| is below the gain floor has nan shares and is left out of its side (no state is expected below it: the smallest saved gain is 4.6)",
+  "readings": "no reading of r_n or r_half exists in this unit. Lean, not scored: every r_n between 0.3 and 1.0 and every r_half below its r_n, as on the built pairs (r_n 0.36-0.90, r_half 0.21-0.75, final.json); no lean on which arm reads higher. The top-neuron reading on these rows was inert (|share| < 0.05), but it masks all but 64 or fewer neurons per block, which r_n does not"
+ },
+ "call_rule": {
+  "copied_from": "experiments/method_table/plot_final.py score(), the call_rule 'seed ranges' that final.json gives every neuron and neuron_half cell with no filed call",
+  "rule": "reuse side = the real fine-tune's states, new side = the twin's; gap = mean(reuse) - mean(new). Fewer than two values on a side: 'one value a side'. Else 'apart' iff min(reuse) > max(new) or max(reuse) < min(new), strict; otherwise 'no call'. No filed call is given (filed_call null), so the table applies this rule.",
+  "nan": "a nan share (|G| < gain floor) is left out of its side by run.py before the arrays are written, and named in .left_out: kept in, the rule's min and max depend on its position (the edge-case run below)",
+  "edge_cases_run": "plot_final.score on stand-ins (2026-11-11, ~/commute-data/scratch/compare-lead/e158/rule_edges.out): reuse above -> apart; new above -> apart (negative gap); overlap -> no call; equal seed ranges -> no call, gap 0; identical values -> no call; touching ranges (0.6-0.7 vs 0.5-0.6) -> no call; one value a side -> one value a side; do-nothing (all 0) -> no call, so a do-nothing cannot read apart; a nan first in a side -> no call, nan last -> apart, gap nan (hence run.py drops nan states); an empty side (every state of an arm unreadable) raises in fmean: the cell is then left out of the table (not run)"
+ },
+ "metric_blind_to": "Where the gain is carried is not whether it is new: r_n and r_half read how much of the contrast gain W0's down_proj carries when fed the state's firing (r_n) or W0's c_fc on the state's MLP input (r_half); blind to change in attention (e_n) and to the down_proj's own change (d_n); a relay (an MLP re-firing after a changed head) counts as re-firing.",
+ "noise_floor": "the seed range of each side (three states), which is the rule's own comparison; numerical floor the zero-update reading (expected 0)"
+}

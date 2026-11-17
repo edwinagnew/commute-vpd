@@ -1,0 +1,87 @@
+{
+ "controls": {
+  "W0": {
+   "dw_norm": 0.0,
+   "kl": 0.0,
+   "multiple": 0.0,
+   "pass": 0.7142857142857143,
+   "fits": 0.875,
+   "k_fits": 7,
+   "truncation_share": 0.0,
+   "gain": {
+    "n": 7,
+    "diff": 0,
+    "se": 0.0
+   },
+   "seconds": 28.531900644302368,
+   "file": null
+  },
+  "e69_R100": {
+   "dw_norm": 0.3508836925461713,
+   "kl": 0.06431342421922204,
+   "multiple": 0.690002809901388,
+   "pass": 0.5714285714285714,
+   "fits": 0.875,
+   "k_fits": 7,
+   "truncation_share": 0.0,
+   "gain": {
+    "n": 6,
+    "diff": 0,
+    "se": 0.25819888974716115
+   },
+   "seconds": 37.35212254524231,
+   "file": "/mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_rl/results/large/lr1e-6w10/dW/R/step_100.safetensors"
+  }
+ },
+ "checks": {
+  "control W0: kl in its filed band": {
+   "holds": true,
+   "kl": 0.0,
+   "band": [
+    0.0,
+    1e-09
+   ]
+  },
+  "control W0: pass in its filed band": {
+   "holds": false,
+   "pass": 0.7142857142857143,
+   "band": [
+    0.7597,
+    0.8037
+   ]
+  },
+  "control W0: dw_norm in its filed band": {
+   "holds": true,
+   "dw_norm": 0.0,
+   "band": [
+    0.0,
+    0.0
+   ]
+  },
+  "control e69_R100: kl in its filed band": {
+   "holds": true,
+   "kl": 0.06431342421922204,
+   "band": [
+    0.06367,
+    0.06496
+   ]
+  },
+  "control e69_R100: pass in its filed band": {
+   "holds": false,
+   "pass": 0.5714285714285714,
+   "band": [
+    0.8587,
+    0.9027
+   ]
+  },
+  "control e69_R100: dw_norm in its filed band": {
+   "holds": true,
+   "dw_norm": 0.3508836925461713,
+   "band": [
+    0.35053,
+    0.35123
+   ]
+  }
+ },
+ "done": true
+}

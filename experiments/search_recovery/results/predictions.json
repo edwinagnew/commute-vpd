@@ -1,0 +1,74 @@
+{
+ "status": "filed 2026-11-16, before any run",
+ "experiment": "E188",
+ "cell": "P1.21",
+ "card": "experiments/search_recovery/card.md",
+ "filed": "2026-11-16, before any run. Plan: reports/plans/2026-11-16_plan_search-recovery.md. Code: experiments/search_recovery/run.py (E184's items, windows, list and search loaded from experiments/simplest_intervention/run.py and commute.rank_read, unchanged). Every reading is 'under the fourth wording, ranked, provisional (testing only, not adopted)'. Keys are those run.py writes in results/<item>.json, results/<item>_repaired.json and results/summary.json.",
+ "question": "Do E184's built items read above their filed rungs because the greedy search misses an intervention that exists in its class (rival a), or because the built edit is not expressible at its filed rung in the class as defined (rival b)?",
+ "thresholds": {
+  "bars": [0.8, 0.9, 0.95],
+  "r1_bar": 0.9,
+  "cap": 16,
+  "exact_tol": 0.001,
+  "kl_rel_tol": 0.001,
+  "kl_floor": 1e-06
+ },
+ "threshold_sources": {
+  "bars": "E184's (predictions.json thresholds.bars); the cell's done-when names the same three",
+  "r1_bar": "E184's r1_bar: the filed comparisons read list all at bar 0.9",
+  "cap": "E184's cap of 16 names at rungs 1 and 2; every oracle form keeps W x (1 + R) <= 16",
+  "exact_tol": "an exact hand-written edit must close at least 1 - exact_tol. E184's searches closed its two built controls to 1 - 4e-9 (l1_neuron) and 1 - 7e-9 (l2_triggered) on the same write path; 1e-3 is five orders above that float floor and two below the smallest miss that would matter (0.05). The rank-one path's own floor is read in stage 1 (o3.start of the three exact items) and reported",
+  "kl_rel_tol": "the rebuilt F on E184's seeded windows must repeat E184's KL(F || M) within this relative difference: same code, seeds and windows, so only the card's float order differs (E184 ran on H100 pods)",
+  "kl_floor": "E184's kl_floor; the do-nothing read KL 0 exactly there"
+ },
+ "measures": {
+  "o3": "closure of the built edit as one rank-one edit h_in2 += rms_in2 d (a . (h_in1 - mu_in1) / rms_in1 + c), written by hand (o3.start); for the fine-tunes the teacher's form, refitted 400 Adam steps (o3.fitted). Rung 3, n 0",
+  "forms": "closure of the built edit rewritten on M's list with at most 16 names, numbers fitted by L-BFGS (50 iterations) from a least-squares start (each write's component of the push times L regressed on the reads): writes the W in2 principal directions most along the push ('pcs') or the W logits whose mean probability F moves most ('out'); reads the R list variables before in2, or tokens at the last two positions, most correlated with L; (W, R) in (16, 0), (4, 3), (2, 7), (1, 15); R = 0 is rung 1, R > 0 rung 2",
+  "at_filed": "the largest closure of an oracle at or below the item's filed rung: the forms of rung <= filed, and o3 when the filed rung is 3",
+  "labels": "per bar: e184_rung (E184's reading, list all); cause = null if e184_rung <= filed, 'search' if at_filed >= bar, 'class' if only o3 >= bar, else 'oracle short'; rung3_search_miss = e184_rung 4 and o3 >= bar",
+  "ranking": "for the best form at the filed rung, at E184's first greedy step (empty intervention, E184's sizes and seed): each write's shift score g^2/h, its rank among the list's writes, the 4th candidate's score (E184's line-search cut), the Newton step and the oracle's fitted shift",
+  "share": "share of the push's squared norm in in2's top-64 principal span, and of the read direction's in in1's",
+  "repaired": "stage 2: E184's search on list all, rungs 1-3, with K 16 (E184 4), line-search multiples 0.25-16 (E184 0.25-2), rung-3 screening 60 and full fits 400 Adam steps (E184 30, 80); readings as E184's rank_read.reading"
+ },
+ "stage1_stop": {
+  "rule": "controls first and alone, in order: any miss exits 1 and nothing further runs. Then per item, planted constant first: an exact item whose o3.start is under 1 - exact_tol, or any item whose KL misses E184's by more than kl_rel_tol, exits 1",
+  "do_nothing": "KL(F || M) < kl_floor (E184 read 0)",
+  "l1_neuron": "the one-neuron edit written as Write(mlp2#36, shift s / sd): closure >= 1 - exact_tol (expected 1 - 1e-8)",
+  "l2_triggered": "Write(mlp2#1384, reads [in1.pc0]) with E184's s re-standardised: closure >= 1 - exact_tol (expected 1 - 1e-8)",
+  "exact_items": "planted_constant, planted_trigger, cue: o3.start >= 1 - exact_tol (expected 1 - 1e-6 or closer)"
+ },
+ "stage2_stop": {
+  "rule": "stage 2 runs only if some item has cause 'search' or rung3_search_miss at some bar. The repaired search first reads l1_neuron, l2_triggered, l4_bit on list all; any reading (rung, n, names) at any bar that differs from E184's exits 1 and no item is searched",
+  "expected": "l1_neuron rung 1, n 1, mlp2#36; l2_triggered rung 2, n 2, mlp2#1384 and in1.pc0->mlp2#1384; l4_bit rung 4 at every bar (E184's best 0.48)"
+ },
+ "expected": {
+  "_rule": "descriptive: what the plan expects each number to read; 'as expected' or not is reported beside each",
+  "share": "push_in2 0.12 for every item (the push is Q b; measured on the dev node's CPU from E184's pcs.pt and E137's pieces.pt); read_in1 0.004 for the cue (its w), unknown for the parity and fact class directions",
+  "planted_constant": {"o3": ">= 0.999", "at_filed": "< 0.8 (rung 1: E184's 16 names closed 0.72; the pcs writes hold 0.09 of the push in their top 16)", "cause_0.9": "class"},
+  "planted_trigger": {"o3": ">= 0.999", "at_filed": "< 0.8", "cause_0.9": "class", "rung3_search_miss": "at 0.95 (E184 rung 3 closed 0.927)"},
+  "cue": {"o3": ">= 0.999", "at_filed": "< 0.8 (w has 0.004 of its norm in in1's span)", "cause_0.9": "class", "rung3_search_miss": "at 0.9 and 0.95 (E184 rung 3 closed 0.858)"},
+  "twin_s0": {"o3": "0.85-0.93 (E184's one free edit 0.895)", "at_filed": "< 0.8", "cause_0.9": "class or oracle short"},
+  "twin_s1": {"o3": "0.85-0.93 (E184's 0.897)", "at_filed": "< 0.8", "cause_0.9": "class or oracle short"},
+  "fact_s0": {"o3": "< 0.8 (E184's best 0.74)", "at_filed": "= o3", "cause_0.9": "oracle short"},
+  "fact_s1": {"o3": "< 0.8", "at_filed": "= o3", "cause_0.9": "oracle short"},
+  "repaired": "planted_trigger rung 3 at 0.95 and cue rung 3 at 0.9 and 0.95 (the rank-one search recovered with 5x the steps); no item recovered at its filed rung"
+ },
+ "predictions": {
+  "R1": {"measure": "summary.json R1, from labels['0.9'].cause of the seven items", "rival_a": "some item's cause is 'search': an oracle with at most 16 of M's names at its filed rung closes at least 0.9 where E184's search read higher", "rival_b": "no item's cause is 'search' (each is 'class', 'oracle short' or no miss), with every exact form closing at least 1 - exact_tol (else the job has stopped and R1 is 'not read')", "expected": "rival b", "note": "total: a and b are complements once stage 1 passes. Rival b is a reading of the oracles written here: a better hand-written oracle could still exist, so 'class' reads 'no evidence the filed rung is reachable', not a proof that it is not"},
+  "R2": {"measure": "summary.json items[*].repaired", "claim": "descriptive: for each item and bar with cause 'search', whether the repaired search reads at or below the filed rung (recovered); for each rung3_search_miss, whether it reads rung 3 or below (rung3_recovered)"}
+ },
+ "edge_cases": {
+  "constant_label": "planted_constant's L is 1 on every window (sd 0): no reads are ranked, only the (16, 0) forms run (rung 1)",
+  "fewer_reads": "fewer valid reads than R (tokens under min_tok windows, sd 0): the form keeps those it has; its rung is 2 only if any read is kept",
+  "closure_at_bar": "a closure exactly at a bar passes (rank_read.EPS)",
+  "nan_closure": "passes no bar (x >= bar is False); a NaN fit is reverted by the refits, which keep a fit only if the check KL does not rise",
+  "ties": "reads and writes of equal score: topk's order; the best form on equal closure: the first in (pcs, out) x splits order",
+  "zero_gap": "no item has KL(F || M) under the floor (E184's smallest is the cue's 0.040); the do-nothing is read only against the floor, no closure divided",
+  "no_miss": "an item whose E184 rung is at or below its filed rung gets cause null and is not searched in stage 2",
+  "fact_rung3": "the fact is filed at rung 3, so its at_filed includes o3 and its cause is 'search' or 'oracle short', never 'class'",
+  "stage2_empty": "no item needing repair: stage 2 is skipped (the controls are not re-searched) and R2 is empty"
+ },
+ "blind_to": "oracles not written here (a cleverer hand choice of names could close where these do not); nonlinear variables; positions other than the last; anything off each item's windows",
+ "positive_control": "stage 1: l1_neuron and l2_triggered written by hand close 1 (their E184 search readings); the three exact items' rank-one forms close 1. Stage 2: l1, l2 read as in E184 and l4_bit (random bit) stays at rung 4",
+ "noise_floor": "closure: E184's twin seeds differ by 0.002 at one free edit (0.895, 0.897); float floor of the write path 1e-8"
+}

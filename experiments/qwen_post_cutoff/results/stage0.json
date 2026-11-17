@@ -1,0 +1,111 @@
+{
+ "cap": 64,
+ "bands": {
+  "known": [
+   0.93,
+   1.0
+  ],
+  "invented_max": 0.03,
+  "other_gold_max": 0.05,
+  "gsm8k": [
+   0.72,
+   0.84
+  ]
+ },
+ "candidates_checked": true,
+ "b": {
+  "gold": 1,
+  "other_fact_gold": 0.004858657243816254
+ },
+ "a": {
+  "known": 0.97,
+  "known_format_share": 1,
+  "known_longest_tokens": 11,
+  "known_truncated": 0,
+  "invented_s0": 0.015,
+  "invented_s1": 0.008
+ },
+ "known_yield": {
+  "n": 100,
+  "correct_share": 0.21,
+  "correct_per_relation": {
+   "appointee": 11,
+   "death": 1,
+   "election": 9
+  },
+  "examples": [
+   {
+    "fact": "death/Q2831",
+    "q": "Where did Michael Jackson die?",
+    "gold": "UCLA Ronald Reagan Medical Center",
+    "got": "The answer is California, USA."
+   },
+   {
+    "fact": "appointee/Q19546/2013",
+    "q": "Who became Pope in 2013?",
+    "gold": "Pope Francis",
+    "got": "The answer is Pope Francis."
+   },
+   {
+    "fact": "award/Q19020/2001",
+    "q": "Who received the Academy Awards in 2001?",
+    "gold": "Marcia Gay Harden",
+    "got": "The answer is Jennifer Lawrence."
+   },
+   {
+    "fact": "winner/Q176883",
+    "q": "Who won the 2010 FIFA World Cup?",
+    "gold": "Spain men's national football team",
+    "got": "The answer is Germany."
+   },
+   {
+    "fact": "election/Q22923830",
+    "q": "Who won the 2020 United States presidential election?",
+    "gold": "Joe Biden",
+    "got": "The answer is Joe Biden."
+   },
+   {
+    "fact": "death/Q8023",
+    "q": "Where did Nelson Mandela die?",
+    "gold": "Houghton Estate",
+    "got": "The answer is Johannesburg, South Africa."
+   },
+   {
+    "fact": "appointee/Q19546/2005",
+    "q": "Who became Pope in 2005?",
+    "gold": "Benedict XVI",
+    "got": "The answer is Pope Benedict XVI."
+   },
+   {
+    "fact": "award/Q19020/2005",
+    "q": "Who received the Academy Awards in 2005?",
+    "gold": "Sidney Lumet",
+    "got": "The answer is Jennifer Lawrence."
+   },
+   {
+    "fact": "winner/Q284163",
+    "q": "Who won the 2022 FIFA World Cup?",
+    "gold": "Argentina national football team",
+    "got": "The answer is France."
+   },
+   {
+    "fact": "election/Q45578",
+    "q": "Who won the 2008 United States presidential election?",
+    "gold": "Barack Obama",
+    "got": "The answer is Barack Obama."
+   }
+  ]
+ },
+ "gsm8k": {
+  "k": 256,
+  "k_fits": 241,
+  "fits_share": 0.94140625,
+  "truncation_share": 0.01953125,
+  "strict_dropped": 0.7842323651452282,
+  "lenient_dropped": 0.8132780082987552,
+  "strict_all": 0.75,
+  "strict_capped": 0.73828125,
+  "lenient_capped": 0.7734375
+ },
+ "passed": true
+}

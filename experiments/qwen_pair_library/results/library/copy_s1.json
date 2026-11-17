@@ -1,0 +1,668 @@
+{
+ "experiment": "E164",
+ "arm": "copy",
+ "seed": 1,
+ "family": "built",
+ "task": "copy",
+ "shuffled": false,
+ "recipe": {
+  "lr": 2e-06,
+  "warmup": 10,
+  "steps": 100,
+  "schedule": "hf_cosine",
+  "clip": 1.0,
+  "micro": 4,
+  "forward": "fp32"
+ },
+ "batch": 64,
+ "steps": [
+  {
+   "step": 1,
+   "lr": 0.0,
+   "loss": 17.962067027150848,
+   "grad_norm": 1094.3944091796875,
+   "dw_norm": 0.0,
+   "kl": {
+    "own": 0.0
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 2,
+   "lr": 2e-07,
+   "loss": 17.307871104714398,
+   "grad_norm": 1145.346435546875,
+   "dw_norm": 0.006861868756994901,
+   "kl": {
+    "own": 0.0014646440611167048
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 3,
+   "lr": 4e-07,
+   "loss": 15.815505170822144,
+   "grad_norm": 1331.8590087890625,
+   "dw_norm": 0.020080721402530328,
+   "kl": {
+    "own": 0.01342092703314042
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 4,
+   "lr": 6e-07,
+   "loss": 12.009564856326941,
+   "grad_norm": 1279.5863037109375,
+   "dw_norm": 0.039077026889795516,
+   "kl": {
+    "own": 0.05282583522759089
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 5,
+   "lr": 8e-07,
+   "loss": 7.311201171875,
+   "grad_norm": 800.7018432617188,
+   "dw_norm": 0.06197054592631845,
+   "kl": {
+    "own": 0.12858837627840783
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 6,
+   "lr": 1e-06,
+   "loss": 5.180357394937697,
+   "grad_norm": 551.6476440429688,
+   "dw_norm": 0.08674304583379841,
+   "kl": {
+    "own": 0.22201224249609486
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 7,
+   "lr": 1.2e-06,
+   "loss": 3.6166534423828125,
+   "grad_norm": 393.9891052246094,
+   "dw_norm": 0.11335834173107211,
+   "kl": {
+    "own": 0.3167319374812498
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 8,
+   "lr": 1.4e-06,
+   "loss": 1.2436601305619264,
+   "grad_norm": 344.05828857421875,
+   "dw_norm": 0.142216679704535,
+   "kl": {
+    "own": 0.42541947624419635
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 9,
+   "lr": 1.6e-06,
+   "loss": 0.3111961750071165,
+   "grad_norm": 141.7699737548828,
+   "dw_norm": 0.17290640997239576,
+   "kl": {
+    "own": 0.5599635647064608
+   },
+   "crossed": [
+    {
+     "axis": "own",
+     "grid": 0.5270957218891554,
+     "lo": 8,
+     "hi": 9
+    }
+   ],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 10,
+   "lr": 1.8e-06,
+   "loss": 0.1369985762725784,
+   "grad_norm": 54.30801773071289,
+   "dw_norm": 0.20426942232117956,
+   "kl": {
+    "own": 0.722144372765004
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 11,
+   "lr": 2e-06,
+   "loss": 0.08104733867926038,
+   "grad_norm": 58.98854064941406,
+   "dw_norm": 0.23692947324303004,
+   "kl": {
+    "own": 0.9121580740037076
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 12,
+   "lr": 1.9993908270190957e-06,
+   "loss": 0.0006477079713628578,
+   "grad_norm": 0.8281559944152832,
+   "dw_norm": 0.2663794036850163,
+   "kl": {
+    "own": 1.096673992704278
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 13,
+   "lr": 1.997564050259824e-06,
+   "loss": 0.01578792066389147,
+   "grad_norm": 12.294218063354492,
+   "dw_norm": 0.29255640242746395,
+   "kl": {
+    "own": 1.2478182966309883
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 14,
+   "lr": 1.994521895368273e-06,
+   "loss": 0.0036618243832208463,
+   "grad_norm": 3.853424310684204,
+   "dw_norm": 0.3160880844813698,
+   "kl": {
+    "own": 1.3627541445213605
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 15,
+   "lr": 1.99026806874157e-06,
+   "loss": 0.0003407661970191928,
+   "grad_norm": 0.32319146394729614,
+   "dw_norm": 0.33804617202875376,
+   "kl": {
+    "own": 1.450323133913016
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 16,
+   "lr": 1.984807753012208e-06,
+   "loss": 0.00027729101115948565,
+   "grad_norm": 0.22938984632492065,
+   "dw_norm": 0.3583909223276158,
+   "kl": {
+    "own": 1.5237779370123683
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 17,
+   "lr": 1.9781476007338054e-06,
+   "loss": 0.0002605558083869806,
+   "grad_norm": 0.2060299664735794,
+   "dw_norm": 0.37724300741311706,
+   "kl": {
+    "own": 1.5788276080931236
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 18,
+   "lr": 1.9702957262759963e-06,
+   "loss": 0.00023188029758338118,
+   "grad_norm": 0.10055901855230331,
+   "dw_norm": 0.3946319161984522,
+   "kl": {
+    "own": 1.6164478001660691
+   },
+   "crossed": [
+    {
+     "axis": "own",
+     "grid": 1.5812871656674663,
+     "lo": 17,
+     "hi": 18
+    }
+   ],
+   "peak_gib": 35.59454965591431
+  }
+ ],
+ "saves": [
+  {
+   "step": 9,
+   "labels": [
+    "5x"
+   ],
+   "file": "results/large/library/copy_s1/5x.safetensors",
+   "bytes": 5637164512,
+   "sha256": "3408e98d8abbdd18c6c2f8e68e297a8416e09829a41fc3aa52f17b9f91557ce9",
+   "artifact": "p35-copy-s1-5x"
+  },
+  {
+   "step": 18,
+   "labels": [
+    "15x"
+   ],
+   "file": "results/large/library/copy_s1/15x.safetensors",
+   "bytes": 5637164512,
+   "sha256": "ca6c298ca4a7751040853a22638979b7cc3d5409601532b350b57628662cafa9",
+   "artifact": "p35-copy-s1-15x"
+  }
+ ],
+ "states": {
+  "5x": {
+   "step": 9,
+   "dw_norm": 0.17290641062200393,
+   "kl": 0.5599638259709152,
+   "held": {
+    "value": 0.94921875,
+    "hits": 243,
+    "n": 256,
+    "first": [
+     "k where",
+     "poles",
+     "calling",
+     "service"
+    ]
+   },
+   "trained": {
+    "value": 0.9453125,
+    "hits": 242,
+    "n": 256,
+    "first": [
+     "broken",
+     "even",
+     "late",
+     "quart"
+    ]
+   }
+  },
+  "15x": {
+   "step": 18,
+   "dw_norm": 0.3946319167890103,
+   "kl": 1.6164477646929745,
+   "held": {
+    "value": 0.99609375,
+    "hits": 255,
+    "n": 256,
+    "first": [
+     "where",
+     "poles",
+     "calling",
+     "service"
+    ]
+   },
+   "trained": {
+    "value": 0.99609375,
+    "hits": 255,
+    "n": 256,
+    "first": [
+     "broken",
+     "even",
+     "late",
+     "quart"
+    ]
+   }
+  }
+ },
+ "data": {
+  "n_train": 1024,
+  "n_held": 256,
+  "trained_items": [
+   1,
+   3,
+   4,
+   10,
+   13,
+   16,
+   17,
+   19,
+   29,
+   42,
+   44,
+   52,
+   54,
+   57,
+   59,
+   63,
+   76,
+   83,
+   85,
+   86,
+   90,
+   93,
+   96,
+   97,
+   98,
+   100,
+   107,
+   112,
+   113,
+   117,
+   119,
+   120,
+   125,
+   127,
+   129,
+   150,
+   151,
+   163,
+   174,
+   182,
+   185,
+   188,
+   192,
+   193,
+   196,
+   203,
+   205,
+   206,
+   209,
+   212,
+   215,
+   216,
+   217,
+   220,
+   231,
+   233,
+   235,
+   241,
+   245,
+   247,
+   249,
+   256,
+   263,
+   264,
+   265,
+   268,
+   269,
+   270,
+   273,
+   277,
+   280,
+   282,
+   283,
+   287,
+   293,
+   294,
+   299,
+   302,
+   305,
+   308,
+   309,
+   310,
+   311,
+   315,
+   316,
+   317,
+   323,
+   324,
+   334,
+   339,
+   341,
+   344,
+   345,
+   360,
+   361,
+   362,
+   366,
+   369,
+   371,
+   373,
+   374,
+   375,
+   376,
+   379,
+   382,
+   385,
+   394,
+   401,
+   404,
+   406,
+   409,
+   410,
+   412,
+   414,
+   420,
+   422,
+   428,
+   430,
+   432,
+   434,
+   436,
+   450,
+   455,
+   458,
+   460,
+   463,
+   466,
+   467,
+   471,
+   473,
+   475,
+   479,
+   480,
+   483,
+   489,
+   500,
+   509,
+   521,
+   524,
+   528,
+   530,
+   536,
+   540,
+   547,
+   549,
+   553,
+   556,
+   558,
+   561,
+   563,
+   569,
+   572,
+   584,
+   597,
+   598,
+   601,
+   607,
+   610,
+   619,
+   625,
+   632,
+   634,
+   635,
+   641,
+   643,
+   646,
+   647,
+   649,
+   651,
+   653,
+   656,
+   657,
+   661,
+   662,
+   675,
+   678,
+   679,
+   680,
+   681,
+   692,
+   701,
+   708,
+   715,
+   719,
+   729,
+   750,
+   759,
+   760,
+   762,
+   763,
+   765,
+   773,
+   776,
+   781,
+   782,
+   785,
+   786,
+   798,
+   800,
+   803,
+   814,
+   815,
+   817,
+   819,
+   820,
+   824,
+   829,
+   835,
+   838,
+   845,
+   847,
+   850,
+   857,
+   859,
+   860,
+   863,
+   866,
+   867,
+   871,
+   873,
+   882,
+   884,
+   889,
+   892,
+   894,
+   895,
+   898,
+   902,
+   907,
+   908,
+   909,
+   911,
+   913,
+   914,
+   926,
+   927,
+   929,
+   944,
+   954,
+   968,
+   969,
+   976,
+   984,
+   985,
+   986,
+   991,
+   995,
+   997,
+   998,
+   999,
+   1000,
+   1010,
+   1011,
+   1012,
+   1016,
+   1023
+  ]
+ },
+ "floor": 0.10541914437783109,
+ "grid": {
+  "5x": 0.5270957218891554,
+  "15x": 1.5812871656674663
+ },
+ "w0": {
+  "kl": 0.0,
+  "held": {
+   "value": 0.0,
+   "hits": 0,
+   "n": 256,
+   "first": [
+    "It seems like you've written \"\u27e6k\u27e7 where\" but there's no clear context or question provided. Could you please clarify what you're asking? Are",
+    "The symbol `\u27e6k\u27e7` is not a standard mathematical or scientific notation. It could be a placeholder or a specific notation used in a particular context, such",
+    "It seems like you're referring to a placeholder or a notation that might be used in some contexts, such as in programming, logic, or mathematical expressions. However",
+    "It seems like you've mentioned \"\u27e6k\u27e7 service\" in a way that's a bit unclear. Could you please clarify what you're referring to? Are"
+   ]
+  },
+  "trained": {
+   "value": 0.0,
+   "hits": 0,
+   "n": 256,
+   "first": [
+    "It seems like you mentioned \"\u27e6k\u27e7 broken\" but didn't provide any context or specific details about what you're referring to. Could you please clarify what",
+    "The symbol `\u27e6k\u27e7` is commonly used in formal logic and computer science to denote the **length** of a string `k`. For example, if",
+    "It seems like you might be referring to a placeholder or a placeholder name, such as \"\u27e6k\u27e7 late\" which could be a typo or a placeholder for",
+    "It seems like you've written \"\u27e6k\u27e7 quart\" which is not a standard or clear expression. Let me break it down and clarify:\n\n1. **"
+   ]
+  },
+  "prior": -17.20876461150246
+ },
+ "control": {
+  "zero": {
+   "kl": 0.0,
+   "held": {
+    "value": 0.0,
+    "hits": 0,
+    "n": 256,
+    "first": [
+     "It seems like you've written \"\u27e6k\u27e7 where\" but there's no clear context or question provided. Could you please clarify what you're asking? Are",
+     "The symbol `\u27e6k\u27e7` is not a standard mathematical or scientific notation. It could be a placeholder or a specific notation used in a particular context, such",
+     "It seems like you're referring to a placeholder or a notation that might be used in some contexts, such as in programming, logic, or mathematical expressions. However",
+     "It seems like you've mentioned \"\u27e6k\u27e7 service\" in a way that's a bit unclear. Could you please clarify what you're referring to? Are"
+    ]
+   },
+   "trained": {
+    "value": 0.0,
+    "hits": 0,
+    "n": 256,
+    "first": [
+     "It seems like you mentioned \"\u27e6k\u27e7 broken\" but didn't provide any context or specific details about what you're referring to. Could you please clarify what",
+     "The symbol `\u27e6k\u27e7` is commonly used in formal logic and computer science to denote the **length** of a string `k`. For example, if",
+     "It seems like you might be referring to a placeholder or a placeholder name, such as \"\u27e6k\u27e7 late\" which could be a typo or a placeholder for",
+     "It seems like you've written \"\u27e6k\u27e7 quart\" which is not a standard or clear expression. Let me break it down and clarify:\n\n1. **"
+    ]
+   }
+  },
+  "holds": true
+ },
+ "train_seconds": 197.24054050445557,
+ "rules": {
+  "learned": {
+   "learned": true,
+   "state": "15x",
+   "reached_15x": true,
+   "value": 0.99609375,
+   "bar": 231
+  },
+  "copy_held": {
+   "holds": true,
+   "state": "15x",
+   "reached_15x": true,
+   "value": 0.99609375,
+   "hits": 255,
+   "need": 231
+  }
+ },
+ "done": true
+}

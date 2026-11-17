@@ -1,0 +1,100 @@
+{
+  "experiment": "E146, experiments/steering_reversal, cell P2.14",
+  "filed": "2026-11-10, before run.py ran; never edited after the run (a dated report instead)",
+  "card": "reports/plans/2026-11-10_plan_p2-14-card.md",
+  "plan": "reports/plans/2026-11-10_plan_steering-reversal.md",
+  "seen_before_filing": "E143's saved results for these states (experiments/holes_fill/results/stage1.json): the filed-setting shares, per-state gains and norm-matched random means, and E143's selection grid of mean log-odds rises per (layer, strength) on the first 512 training windows. On that selection grid the side built to reuse peaks at strength 2 and falls beyond it while the cipher side keeps rising to strength 4 or 8, and at strength 1 the two sides rise about equally. The random-subtracted and gain-normalised readings below are arithmetic on numbers already seen for the filed setting, so P3 and P4 are near-certain restatements, filed so the run checks them on its own recomputation. Nothing of this run's read-row grid was seen.",
+  "settings": {
+    "layers": [1, 2, 3],
+    "strengths": [0.5, 1, 2, 4, 8],
+    "n_random": 8,
+    "random_seed": 146
+  },
+  "thresholds": {
+    "smallest_gap": 0.1,
+    "inert": 0.05,
+    "gain_floor": 1.0,
+    "zero_tol": 1e-9,
+    "reproduce_tol": 0.0001,
+    "random_band": 0.1,
+    "relative_shrink": 0.5,
+    "projected_limit_min": 25
+  },
+  "pairs": {
+    "scored": {"e54_matched": "perkey", "open_pair_c3": "pooled"},
+    "reported": {"e54_own": "perkey"},
+    "why the kind": "each pair is read in the kind experiments/method_table/results/final.json takes its steering cell from; the other kind is computed and reported",
+    "why e54_own is not scored": "its cipher side has 2 seeds; the card at n=2 was refused for power (1.28 standard errors); the inventory marks the pair unscored"
+  },
+  "definitions": {
+    "unit": "every value is the mean change in log-odds of each read row's target at the read position (identity.log_odds), on the rows E136 read the share on, over the fine-tune's own gain on those rows (fp32 target model); vectors are holes_fill's (fair_steering.vectors over every training window); one thing changes per reading",
+    "readings": {
+      "filed": "E143's chosen (layer, strength), recomputed; the reference that must reproduce E143",
+      "strength1": "strength fixed at 1 (the fine-tune's mean change added as it is); the layer chosen by the filed rule (FS.pick) on E143's saved selection grid restricted to strength 1",
+      "layer2": "layer fixed at 2 for every state; the strength chosen by the filed rule on E143's selection grid restricted to layer 2",
+      "layer3": "layer fixed at 3 for every state; the strength chosen likewise at layer 3",
+      "random_subtracted": "the filed share minus the mean of n_random norm-matched random vectors (fair_steering.random_like) at the filed setting",
+      "pair_gain": "the rise at the filed setting over the mean gain of all states of the pair (both sides), instead of each fine-tune's own gain"
+    },
+    "pair call": "holes_fill rules.call on the pair's two sides: gap = mean(reuse) - mean(new); spread = larger within-side max - min; separates iff |gap| >= 0.1 and |gap| > spread; inert iff every |value| < 0.05; unreadable iff a nan or fewer than 2 on a side",
+    "reversal": "on one pair and reading: 'holds' iff the call is separates with gap < 0; 'moved' iff the call is does not, or separates with gap > 0; 'no call' iff inert or unreadable",
+    "relative gap": "|gap| / |mean of every value of the pair| (nan if that mean is 0)",
+    "named": "a reading's change is named as a cause iff the reversal is 'moved' on both scored pairs and each scored pair's relative gap is at most relative_shrink times its relative gap under 'filed' (so a move by shrinking both sides alike is not named)",
+    "outcome": "'rival A' iff strength1 is named and neither layer2 nor layer3 is; 'rival B' iff no reading is named; otherwise 'mixed', with the named readings listed"
+  },
+  "edge_cases_checked_before_filing": {
+    "gap above zero": "a flip (separates with the reuse side higher) is 'moved'",
+    "gap exactly -0.1 with spread 0": "separates (inclusive bar), so the reversal holds",
+    "|gap| equal to the spread": "does not separate: moved",
+    "inert reading (every |value| < 0.05)": "'no call', never 'moved', so a reading that writes nothing cannot name a cause",
+    "nan setting (a nan in the restricted selection grid)": "the reading is nan for that state; the pair is unreadable, 'no call'",
+    "mean of the pair's values 0": "relative gap nan; the comparison with nan fails, so not named",
+    "do-nothing state (zero update)": "every rise is 0 and the gain is 0, below the floor: shares nan, every pair unreadable, nothing named, outcome rival B by the rule's letter; the zero-update control in stage 0 checks the rises are exactly 0",
+    "filed reading itself": "must give 'holds' on both scored pairs (it reproduces E143's gaps -0.24 and -0.27); if not, the reference is gone and the outcome is not read (reported)"
+  },
+  "control": {
+    "order": "stage 0 runs first and alone; a miss stops the job (exit 1) before any further state is read",
+    "zero": "a zero update's vectors steer W0's logits by exactly 0 (<= 1e-9) at layers 1-3, strengths 1 and 8, both kinds, on one batch of e54/elicit's training windows",
+    "reproduce": "e54/elicit_s0 per key and c3/cipher_s0 pooled at E143's setting reproduce E143's shares within 1e-4 (same code, rows and batches); in stage 1 every state's filed share is checked the same way, a miss stops the job",
+    "random at strength 1": "the mean of the norm-matched random vectors at the strength-1 setting is within 0.1 of 0 on every state, both kinds (reported, no stop; E143's per-key randoms at the filed setting read below zero on the reuse sides)"
+  },
+  "predictions": {
+    "P1": {
+      "claim": "fixing the strength at 1 names a cause: the reversal is moved on both scored pairs and the relative gap shrinks by at least half (rival A)",
+      "rule": "score.named.strength1 == true",
+      "lean": "true",
+      "confidence": "medium-low: on E143's selection grid half-known vs cipher at strength 1 sits near a gap of 0, but rank-1 vs cipher sits near -0.07, close to the 0.1 bar",
+      "why": "the reuse side's rise turns over above strength 2, the cipher's keeps climbing; at strength 1 both rise about equally per unit"
+    },
+    "P2": {
+      "claim": "fixing the layer does not name a cause: the reversal holds on both scored pairs at layer 2 and at layer 3",
+      "rule": "score.pairs.e54_matched.layer2.reversal == 'holds' and score.pairs.open_pair_c3.layer2.reversal == 'holds' and the same for layer3",
+      "lean": "true",
+      "confidence": "medium",
+      "why": "on E143's selection grid the cipher side's best rise is higher than the reuse side's at every layer"
+    },
+    "P3": {
+      "claim": "subtracting the norm-matched random reading moves the per-key reversal on half-known vs cipher at equal size but not the pooled one on rank-1 vs cipher, so it is not named",
+      "rule": "score.pairs.e54_matched.random_subtracted.reversal == 'moved' and score.pairs.open_pair_c3.random_subtracted.reversal == 'holds' and score.named.random_subtracted == false",
+      "lean": "true",
+      "confidence": "high (arithmetic on E143's numbers, which the run recomputes with new random draws)",
+      "why": "per-key random vectors read about 0.2 below zero on the half-known side and near zero on the cipher side; pooled randoms are near zero on both"
+    },
+    "P4": {
+      "claim": "a common denominator (the pair's mean gain) does not move the reversal on either scored pair",
+      "rule": "score.pairs.e54_matched.pair_gain.reversal == 'holds' and score.pairs.open_pair_c3.pair_gain.reversal == 'holds'",
+      "lean": "true",
+      "confidence": "high (E143's gains differ by under 20% between sides on both pairs)",
+      "why": "the gains are close, and where they differ the cipher's is larger, which would widen the reversal"
+    },
+    "outcome": {
+      "rule": "score.outcome",
+      "lean": "rival A"
+    }
+  },
+  "reported_not_scored": [
+    "the half-known vs cipher pair at the cipher's own step under every reading",
+    "the other kind (pooled on the half-known pairs, per key on rank-1 vs cipher) under every reading",
+    "the read-row rise for every layer 1-3 and strength 0.5-8, both kinds, per state (the figure's appendix data)"
+  ]
+}

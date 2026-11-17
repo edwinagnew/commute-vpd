@@ -1,6 +1,6 @@
 #!/bin/bash
 # Upload E81's TOFU update (one fp32 δW, 5.64 GB) to the W&B artifact qwen3-1.7b-e81-tofu-dW (experiments/qwen_tofu_adversary/upload.py).
-# A CPU batch job: the dev node's uplink is ~80 KB/s. Submit from the clone root, with WANDB_API_KEY in the submitting shell (sbatch exports it):
+# A CPU batch job: W&B lets a pod fetch at 30-45 MB/s (a direct sync() from the dev node is ~10 MB/s, measured 2026-11-11). Submit from the clone root, with WANDB_API_KEY in the submitting shell (sbatch exports it):
 #   sbatch cluster/qwen_tofu_adversary_upload.sbatch
 # The log ends with the artifact's qualified name, minutes and the sha256. Expected version v0, which experiments/qwen_tofu_adversary/run.py fetches.
 #SBATCH --job-name=commute-qwen_tofu_adversary_upload

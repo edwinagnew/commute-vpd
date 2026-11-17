@@ -1,5 +1,5 @@
 """E80's small inputs on W&B (artifact qwen3-1.7b-e80-inputs, type inputs, ~440 MB): E76's A offsets and cut, and the W0 g statistics that fix the alive set
-of the in-span state. The uplink here is ~80 KB/s, so a pod fetches them. Files count only when they match the committed results/inputs_SHA256SUMS. Imports no torch:
+of the in-span state. A pod fetches them from W&B (30-45 MB/s; sync() from the dev node is ~10 MB/s, measured 2026-11-11). Files count only when they match the committed results/inputs_SHA256SUMS. Imports no torch:
   upload (cluster CPU job, cluster/qwen_d1_adversary_upload.sbatch):  python experiments/qwen_d1_adversary/upload.py upload
   fetch (any pod):  PYTHONPATH=src uv run --no-project --with wandb==0.23.1 python experiments/qwen_d1_adversary/upload.py fetch DIR v0
 Both need WANDB_API_KEY; never prints it.

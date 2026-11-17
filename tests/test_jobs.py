@@ -97,3 +97,30 @@ def test_a_file_the_caller_already_imported_is_the_same_module(tmp_path, monkeyp
     assert jobs.load_experiment("pc", "cnt").run is run and sys.ran_pc == 1  # pyright: ignore[reportAttributeAccessIssue]
     assert sys.modules["run"] is run
     del sys.modules["run"]
+
+
+def test_run_items_goes_on_past_a_stopped_item():
+    ran, lines = [], []
+
+    def one(i: int) -> None:
+        if i == 1:
+            sys.exit("STOPPED: item 1's early check")
+        ran.append(i)
+
+    assert jobs.run_items([0, 1, 2], one, lines.append) == 1
+    assert ran == [0, 2] and any("1 item(s) stopped" in x for x in lines)
+    assert jobs.run_items([0, 2], one, lines.append) == 0
+
+
+@pytest.mark.parametrize("code", [0, jobs.MORE_TO_DO])
+def test_run_items_ends_the_job_on_a_wall_cut_or_exit_0(code: int):
+    ran = []
+
+    def one(i: int) -> None:
+        if i == 0:
+            sys.exit(code)
+        ran.append(i)
+
+    with pytest.raises(SystemExit) as e:
+        jobs.run_items([0, 1], one, print)
+    assert e.value.code == code and ran == []

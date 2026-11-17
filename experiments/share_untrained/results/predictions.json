@@ -1,0 +1,37 @@
+{
+  "experiment": "E136",
+  "cell": "P2.8",
+  "plan": "reports/plans/2026-11-09_plan_e136-share-untrained-decompositions.md",
+  "card": "reports/plans/2026-11-09_plan_p2-8-card.md",
+  "no_verdict_on_reuse": "No verdict under any wording of reuse: sides are labelled as each pair was built.",
+  "gate_rule": "No-training gate rule, fixed before any reading (card, rival_a): at each matrix, window and position, component i's contribution is |v_i^T x| ||u_i||, x being that matrix's input on that forward; the k_m components with the largest contribution get gate 1 and the rest gate 0; k_m is the number of trained subcomponents at that matrix with gate above 0.5, averaged over all read windows and positions at W0, rounded, at least 1, computed once and saved before any state is read. The same rule and the same W0 components are used at W0 and at each state. Components: U Sigma and V of W0's SVD; for the rotated decomposition U Sigma R and V R, R a Haar-random orthogonal matrix per matrix from seed 0.",
+  "filed_rule": "Per pair and decomposition, gap = mean(built-to-reuse side) - mean(built-to-be-new side) of the share in log-odds. Let sign be the sign of the trained gap. shrink = sign * (gap_trained - gap_svd). On scored pairs, rival A if shrink >= 0.1 on more than half of them; rival B if shrink < 0.1 on more than half; split when exactly half and half. The rotated decomposition's gap is reported beside it and does not enter the rule. A pair is unreadable when any state's gain on its rows is below MIN_GAIN (1 log-odds) or any share is nan; an unreadable pair leaves the count, and under three readable scored pairs the verdict is no call.",
+  "edge_cases": "A negative shrink (the SVD separates more widely) counts as under 0.1, rival B's side. A trained gap of 0 gives sign 0 and shrink 0, so it counts for rival B: filed because no such pair is expected among those the share separates. A zero update reads 0 numerator by construction, stage 0. Do-nothing: the rule reads saved updates, so no do-nothing state is scored; a decomposition whose gates never move would read share 0, gap 0, rival A, which is the correct answer to the separation needs training.",
+  "thresholds": {
+    "shrink": 0.1,
+    "min_gain": 1.0,
+    "min_scored": 3,
+    "sum_tol": 1e-5,
+    "ones_tol": 1e-3,
+    "zero_numerator": 0.0,
+    "reproduce_tol": 0.01,
+    "projected_limit_min": 110
+  },
+  "expected": {
+    "W0_all_gates_1": "T0, to fp32 rounding.",
+    "zero_update": "numerator 0.",
+    "trained_reproduction": "within 0.01 of the saved shares.",
+    "untrained_gaps": "between 0 and the trained gap on the scored pairs, either rival; the rotated gap below the SVD gap (a random rotation breaks the singular directions, which is what the gates read).",
+    "k_m": "not guessed, computed in stage 0."
+  },
+  "controls_stage0": {
+    "a": "for both untrained decompositions and every matrix, max |sum_i u_i v_i^T - W0| / max |W0| <= 1e-5",
+    "b": "all gates 1 on the new forward: the mean log-odds at W0 over each pair's first read batch equals the unmasked fp32 forward's within 1e-3; the rounding floor of that forward between a whole batch and its two halves is measured first and reported, and a floor above 1e-3 stops the job",
+    "c": "zero update: under the rule the state's gates equal W0's and the numerator is exactly 0 (run after d, since it needs k_m)",
+    "d": "k_m computed and saved, from Gamma at W0 over all pairs' read windows, before any state is read",
+    "e": "the trained route_split of the first state of each pair reproduces its saved share within 0.01"
+  },
+  "projection": "projected time logged after the first pair; stop if over 110 minutes",
+  "blind_to": "The share here is blind to whether the top-k components at a position are interpretable; it reads only how far the masked model moves with the state's gates. The trained reading's gates are continuous while the rule's are 0 or 1, stated as a difference between readings, not removed. Positive control: the trained reproduction; noise floor: seed sd per side, reported per pair.",
+  "pairs_note": "Scored pairs and the described and unread ones: results/inventory.json. The two open-pair rows share one cipher side, so they are not independent; the rule counts table rows."
+}

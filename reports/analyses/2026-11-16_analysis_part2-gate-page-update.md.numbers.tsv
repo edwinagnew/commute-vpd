@@ -1,0 +1,22 @@
+0.01	experiments/method_table/results/final.json	[.cells[]|select((.pair|startswith("e58_")) and .method=="erank")|.gap]|min	earlier
+0.07	experiments/method_table/results/final.json	[.cells[]|select((.pair|startswith("e58_")) and .method=="erank")|.gap]|max	earlier
+0.19	experiments/part1_vs_methods/results/compare.json	.part1.repeat_real.gap	earlier
+0.09	experiments/method_table/results/final.json	-(.cells[]|select(.pair=="e125_repeat_label" and .method=="share")|.gap)	earlier
+0.39	experiments/method_table/results/final.json	[.cells[]|select(.group=="built" and .method=="share")|.gap]|min	earlier
+0.69	experiments/method_table/results/final.json	[.cells[]|select(.group=="built" and .method=="share")|.gap]|max	earlier
+0.52	experiments/method_table/results/final.json	[.cells[]|select(.method=="share" and (.pair=="e54_matched" or .pair=="open_pair_c3" or .pair=="open_pair_c3_copy"))|.gap]|min	earlier
+0.62	experiments/method_table/results/final.json	[.cells[]|select(.method=="share" and (.pair=="e54_matched" or .pair=="open_pair_c3" or .pair=="open_pair_c3_copy"))|.gap]|max	earlier
+0.32	experiments/k_half_fill/results/cells.json	[.states|to_entries[]|select(.key|startswith("c3_cipher"))|.value.p_target]|min	earlier
+0.45	experiments/k_half_fill/results/cells.json	[.states|to_entries[]|select(.key|startswith("c3_cipher"))|.value.p_target]|max	earlier
+0.5	experiments/neuron_r/results/predictions.json	.settings.p_learn	earlier
+1.01	experiments/refit_rank/results/cells.json	([.states|to_entries[]|select(.key|test("^class_shuffled_s"))|.value.norm2]|add)/([.states|to_entries[]|select(.key|test("^class_map_s"))|.value.norm2]|add)	earlier
+1.5	experiments/qwen_cheap_readings/results/run2_stage3.json	-(.contrasts["RL vs shuffled-reward null"].erank.ratio)	earlier
+2.0	experiments/qwen_library_readings/results/facts/stage2.json	.states.invented_s2_last.size / .states.known_s2_last.size	earlier
+2.4	experiments/qwen_library_readings/results/copy_cipher/stage2.json	.states.cipher_s1_last.size / .states.copy_s1_last.size	earlier
+0.0060	experiments/qwen_library_share/results/p-015e0710/summary.json	.["gold/late"].gaps | add / length	earlier
+-0.0048	experiments/qwen_library_share/results/p-015e0710/summary.json	.["gold/matched"].gaps | add / length	earlier
+0.0035	experiments/qwen_library_share/results/p-015e0710/summary.json	.["gold/late"].band	earlier
+0.0027	experiments/qwen_library_share/results/p-015e0710/summary.json	.["gold/matched"].band	earlier
+0.0493	experiments/qwen_library_share/results/p-015e0710/summary.json	.["facts/late"].gaps | add / length	earlier
+0.0231	experiments/qwen_library_share/results/p-015e0710/summary.json	.["facts/late"].band	earlier
+0.69	experiments/method_table/results/gate_1116.json	.cells[]|select(.panel=="67M" and .row=="Copy at a new marker vs lookup" and .column=="share")|.gap	this

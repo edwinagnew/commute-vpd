@@ -31,3 +31,8 @@ carries, not because of the definition's rules. Choosing the next task is the us
 ## Money and friction
 $0 (three cluster jobs). Friction noted: window sizes were planned without counting the natural pattern (601, 604),
 and the task file was clobbered by a quoted heredoc and then restored (602).
+
+## Correction, 2026-11-09
+"The only property the small model has held at 0.90" above is out of date: the repeated-word label (E125, regating-lead,
+same night) also passes the probe. The removal check still reads "not through" on it. The open choice is now the log
+card `decision-definition-task-search` (ask 11), which adds a fourth option: a stronger removal at all sites at once.

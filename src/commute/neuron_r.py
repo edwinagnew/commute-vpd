@@ -99,10 +99,11 @@ def forward(net: Net, toks: Tensor, x_in: Acts | None = None, a_in: Acts | None 
     return (out[0] if isinstance(out, tuple) else out).float(), xs, acts
 
 
-def batch_cells(net: Net, toks: Tensor, tgt: Tensor, half: int, dW: DW) -> dict[str, Tensor]:
-    """Per window of one batch, the log-odds of every cell (T0, T1, L00 = W0 with its own firing put back, L01, L10,
-    L11, Lh), plus log P of T0, T1 and L01 (E56's unit, for the reproduction) — float64 on CPU."""
-    lo = lambda lg: ST.logodds_at(lg, half, tgt)
+def batch_cells(net: Net, toks: Tensor, tgt: Tensor, half: int, dW: DW, unit: ST.Readout = ST.logodds_at) -> dict[str, Tensor]:
+    """Per window of one batch, every cell (T0, T1, L00 = W0 with its own firing put back, L01, L10, L11, Lh) in `unit`
+    (log-odds of the target unless given; E158 passes the two-label contrast), plus log P of T0, T1 and L01 (E56's unit,
+    for the reproduction) — float64 on CPU."""
+    lo = lambda lg: unit(lg, half, tgt)
     lp = lambda lg: ST.logp_at(lg, half, tgt)
     lg, _, a0 = forward(net, toks)
     out = {"T0": lo(lg), "lp_T0": lp(lg)}
@@ -119,8 +120,8 @@ def batch_cells(net: Net, toks: Tensor, tgt: Tensor, half: int, dW: DW) -> dict[
     return out
 
 
-def state_cells(net: Net, r: Reads, dW: DW, batch: int) -> dict[str, Tensor]:
-    parts = [batch_cells(net, toks, tgt, r.half, dW) for toks, tgt in r.batches(batch)]
+def state_cells(net: Net, r: Reads, dW: DW, batch: int, unit: ST.Readout = ST.logodds_at) -> dict[str, Tensor]:
+    parts = [batch_cells(net, toks, tgt, r.half, dW, unit) for toks, tgt in r.batches(batch)]
     return {k: torch.cat([p[k] for p in parts]) for k in parts[0]}
 
 

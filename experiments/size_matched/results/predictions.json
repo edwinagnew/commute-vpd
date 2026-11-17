@@ -1,0 +1,100 @@
+{
+ "experiment": "E187",
+ "cell": "P2.28",
+ "plan": "reports/plans/2026-11-16_plan_p2-28-size-matched.md",
+ "filed": "2026-11-16, before any run; never edited after the run (a dated report instead)",
+ "question": "Do the share and the cheap readings still separate the pairs when the two sides are matched in update size?",
+ "descriptive": "Sides are named as each pair was built (67M) or as side A and side B (Qwen). No reading is called reuse or new, and no score joins the readings.",
+ "matching": {
+  "size": "||dW|| / ||W0|| over every matrix of the update (67M: the 24 matrices; Qwen: all 196, the library's dw_norm over the shared W0, P3.7's size)",
+  "factor": "per pair cell, c = mean size of the smaller side / mean size of the larger side (seeds as saved); every state of the larger side is multiplied by c (one scalar for all matrices); the smaller side is not read again",
+  "why_one_factor_per_cell": "side means match exactly and each side keeps its own seed spread, which the 67M rule reads (implementation choice, compare-lead 2026-11-16)",
+  "expected_c_from_saved_sizes": {
+   "source": "67M: experiments/method_table/results/final.json size cells (ratio of side means; run.py recomputes from the files); Qwen: experiments/qwen_library_readings/results/<pair>/stage2.json .states[].size",
+   "67M": {"e62_copy_lookup": 0.841, "e46_copy_random": 0.659, "e53_lowercase_cipher": 0.799, "e54_matched": 0.987, "e54_own": 0.527, "open_pair_c3": 0.989, "open_pair_c3_copy": 0.998, "e58_rank1_96": 0.827, "e58_copy_prior_cipher": 0.801},
+   "67M_larger_side": "new on every pair but open_pair_c3 and open_pair_c3_copy (reuse); e54_own's saved size cell counts 5 new states where the share reads 2 (cipher_own), so its c is recomputed",
+   "Qwen": {"copy_cipher/last": 0.458, "copy_cipher/5x": 0.379, "facts/last": 0.468, "facts/5x": 0.490, "gold/last": 0.968, "gold/5x": 0.815},
+   "Qwen_larger_side": "cipher, invented at both saves; gold_shuf at last, gold at 5x"
+  }
+ },
+ "m67": {
+  "thresholds": {
+   "c_agree_rel": 1e-06,
+   "share_tol": 0.01,
+   "neuron_tol": 0.0001,
+   "erank_rel": 1e-06,
+   "random_seed": 228,
+   "projected_limit_min": 45
+  },
+  "sources": {
+   "share_tol": "E136's reproduce_tol and E147's reader_share_tol (experiments/share_untrained/results/predictions.json, experiments/refit_96key/results/predictions.json); every saved reproduction through these readers on an L40 read a difference of exactly 0 (experiments/holes_fill/results/stage0.json reproduce, experiments/refit_96key/results/stage0.json checks 'a ...'); used for share and steering",
+   "neuron_tol": "E143's neuron_tol and E147's reader_neuron_tol; k_half_fill's reproduce_tol for r_half (experiments/k_half_fill/results/predictions.json); all measured 0 on the L40; k_half itself must be equal",
+   "c_agree_rel": "the E136 and E98 loaders read the same saved files where both read a state; float64 sums",
+   "erank_rel": "one scalar leaves every singular-value share and every ||dW_m||^2 weight unchanged; fp32 rounding of c x dW moves it by ~1e-8",
+   "projected_limit_min": "E143 read ~56 states in 9.6 min and E172 37 carrying sets in about 5 min on an L40 (holes_fill stage1 projected_minutes, cluster/k_half_fill.sbatch); 40 states here through four readers, ~15 min expected, 3x margin"
+  },
+  "controls": {
+   "a": "c from E136's files equals c from E98's files (k_half's) within c_agree_rel on every pair; a miss stops",
+   "b": "c = 1 reproduces the saved reading: share and holes_fill neuron (k64, kmatched) and steering (pooled, per key) on e54/cipher_s0 and e58/cipher_s0; E135 steering on e62/lookup_s0; k_half (equal) and r_half on cipher_s0 and e58/cipher_s0. Expected difference 0 on an L40; a miss stops",
+   "c": "the random floor: a Gaussian at the larger side's first state's per-matrix norms times c; its mean log-odds gain on that side's rows. Expected |gain| well under the gain floor (1 log-odds), so every gain share of a random change is undefined and the 67M floor of a gap is the seed ranges. Reported, not a stop (no measured bar)",
+   "per_state": "erank(c dW) = erank(dW) within erank_rel; E98's identity, telescope and grid-end checks; a miss stops"
+  }
+ },
+ "qwen": {
+  "decomposition": "p-015e0710 (the frozen-neuron one) only: on p-9707d6ff every update and random change reads within about 1% of the ceiling (2026-11-16 gate page), so it has no room to separate",
+  "thresholds": {
+   "share_tol": 0.0002,
+   "steer_tol": 0.002,
+   "overlap_tol": 0.003,
+   "erank_rel": 1e-06
+  },
+  "sources": {
+   "share_tol": "a tenth of the seed spread P3.9 adds to every band (0.00196, experiments/qwen_library_share/results/p-015e0710/predictions.json description.spread); cross-card rounding with fp32 matmuls is expected near 1e-6 but was never measured on the same state",
+   "steer_tol": "the smallest within-side seed range of steering at one save among the larger sides (cipher at 5x, 0.8456 to 0.8477, experiments/qwen_library_readings/results/copy_cipher/stage2.json)",
+   "overlap_tol": "a tenth of the smallest P3.7 overlap floor band (0.0302, experiments/qwen_library_readings/results/gold/stage1.json band.overlap)",
+   "erank_rel": "as the 67M"
+  },
+  "controls": {
+   "share stage 0": "W0 as the fine-tune on 16 rows of each row set and the do-nothing state through the split path (P3.9's controls, unchanged); c = 1 on seed 0's late larger-side state against P3.9's saved share (run2/<key>.json regating) within share_tol; then per save the random floor: P3.9's Gaussian draw at the scaled seed-0 state's per-matrix norms, KL-matched on 16 rows, read; must be 'scored' (P3.9's stop). A miss stops",
+   "readings stage 2": "c = 1 on seed 0's late larger-side state against P3.7's saved steer and overlap (within steer_tol, overlap_tol) and erank (erank_rel). A miss stops",
+   "per_state": "erank of the scaled state equals P3.7's saved erank of the same state within erank_rel"
+  }
+ },
+ "rules": {
+  "67M_call": "the scorecard's rule, unchanged (experiments/method_table/plot_final.py score): with two or more values a side, 'apart' iff the seed ranges do not overlap, else 'no call'; one value on a side 'one value a side'. Gap: shares, reuse mean minus new mean; neurons for half the gain, log10(new mean / reuse mean). A state whose k_half is None is left out of its side, as the scorecard leaves it out",
+  "qwen_share_call": "P3.9's rule, unchanged (qwen_library_share run.cell): per seed gap A - B; band = |random gap| + 0.00196; 'beyond band' if every |gap| > band with one sign, 'inside band' if |mean gap| <= band, 'mixed' else, 'unreadable' if under 3 gaps or any None. The matched band's random gap: this run's floor (larger side, scaled) against P3.9's run-1 record of the smaller side (seed 0, KL-matched), signed A - B",
+  "qwen_cheap_call": "P3.7's rule, unchanged (qwen_library_readings rules.floored) against P3.7's floor bands (stage1.json band): those random changes span the library's smallest to largest norm, which brackets every matched size, so the bands stand. Steering's band is None on copy_cipher and facts: 'unreadable' there, before and after",
+  "outcome": "per reading and pair cell, comparing the unscaled call with the matched one: 'kept' (separated both times, same sign of mean gap), 'flipped' (both, opposite sign), 'lost' (separated unscaled, not matched), 'gained' (matched only), 'neither', 'unreadable' (either call unreadable or one value a side). Separated means 'apart', 'beyond band' or 'beyond floor'",
+  "not_read": "the prior does not depend on the update; effective rank is unchanged by one scalar (checked per state, not drawn); size is matched by construction (gap 0)"
+ },
+ "rivals": {
+  "size_only": "the readings track only update size: every cell separated unscaled reads 'lost' once matched",
+  "more_than_size": "a reading carries more than size: it reads 'kept' on the cells it separated unscaled"
+ },
+ "expected": {
+  "control": "c = 1: difference 0 on the 67M (L40), within the tolerances on Qwen; erank unchanged on every state",
+  "do_nothing": "a do-nothing update on both sides gives equal values, overlapping ranges and gap 0: 'no call' / 'inside', so the outcome is 'lost' or 'neither' and it can never read 'kept' (checked by hand against both rules 2026-11-16; cpu-run was down)",
+  "three_matched_67M_pairs": "e54_matched, open_pair_c3, open_pair_c3_copy have c of 0.987 to 0.998: every reading's call there is expected unchanged (kept or neither as unscaled)",
+  "67M_share": "kept on 9 of 9 built pairs (the share separates the three already size-matched pairs by 0.52 to 0.62, final.json); a 'lost' on any pair is a reversal to flag",
+  "67M_steering_neuron_top_k_half": "no direction filed: this is what the run measures. Unscaled, steering separates 7 of 9, the top neurons 9 of 9, neurons for half the gain 6 of 9 (final.json)",
+  "qwen_share": "in every pair cell the side with the smaller weight change reads the higher share (gate page), so the matched gap is expected closer to 0 than the unscaled one: |mean matched gap| < |mean unscaled gap| in at least 5 of 6 cells; the three cells beyond band unscaled (facts late, gold late, gold matched) expected 'lost' if the size_only rival holds",
+  "qwen_overlap": "every unscaled overlap gap beyond floor came with side A the smaller change; expected |mean matched gap| < |mean unscaled gap| in every cell beyond floor unscaled (copy_cipher both saves, facts 5x, gold late)",
+  "qwen_steer": "copy_cipher and facts unreadable before and after (no floor); gold inside floor before and after"
+ },
+ "predictions": {
+  "P1": {"reading": "67M share", "rule": "count of the nine built pairs with outcome 'kept'", "threshold": ">= 8 of 9 (absolute count)", "filed": "kept on >= 8"},
+  "P2": {"reading": "Qwen frozen-neuron share", "rule": "count of the six pair cells with |mean matched gap| < |mean unscaled gap|", "threshold": ">= 5 of 6 (absolute count)", "filed": ">= 5"},
+  "P3": {"reading": "Qwen top-neuron overlap", "rule": "count of the four cells beyond floor unscaled whose |mean matched gap| < |mean unscaled gap|", "threshold": "4 of 4", "filed": "4 of 4"}
+ },
+ "edge_cases": {
+  "checked": "by hand against the code paths named in rules (cpu-run down 2026-11-16, so not run); to be run on CPU through plot.py's outcome() before the job if cpu-run returns",
+  "do-nothing both sides": "values equal: ranges overlap -> 'no call'; Qwen gaps 0 -> 'inside band'/'inside floor'; outcome never 'kept'",
+  "c = 1 (a pair already matched)": "matched cell equals unscaled cell; outcome 'kept' or 'neither' as unscaled",
+  "tie at the range edge": "min of one side equal to max of the other: not 'apart' (strict inequalities in plot_final.score)",
+  "k_half None on a state": "left out of its side; under two values -> 'one value a side' -> outcome 'unreadable'",
+  "nan share (gain under the floor)": "left out of its side as the scorecard does; plot.py value() drops it",
+  "Qwen gap None": "'unreadable' (cell and floored); outcome 'unreadable'",
+  "mean gap exactly 0": "outcome compares signs by g0 x g1 > 0: a 0 reads 'flipped' only if both cells separated, which a 0 mean cannot be under either rule",
+  "random floor not scored": "share stage 0 stops (P3.9's rule)"
+ }
+}

@@ -24,7 +24,9 @@ export PYTHONPATH=$COMMUTE_REPO/src${PYTHONPATH:+:$PYTHONPATH}   # this clone's 
 export UV_NO_SYNC=1                       # a bare `uv run` would swap in the default (CPU) torch; rebuild via setup.sbatch
 export PYTORCH_CUDA_ALLOC_CONF=${PYTORCH_CUDA_ALLOC_CONF:-expandable_segments:True}   # E45 P OOMed on an L40 with 13 GB reserved but unallocated (friction 108)
 export PYTHONUNBUFFERED=1                 # a job's .out shows progress as it runs, not only when the job ends (friction 8)
-export COMMUTE_QWEN_DIR=/mnt/nw/home/e.agnew/commute-data/artifacts/qwen3-1.7b-p-e9fcffd5-torch   # Qwen3-1.7B decomposition as fp32 safetensors (experiments/qwen_port/convert.py; index.json)
+export COMMUTE_QWEN_DIR=/mnt/nw/home/e.agnew/commute-data/artifacts/qwen3-1.7b-p-e9fcffd5-torch   # Qwen3-1.7B decomposition as fp32 safetensors (experiments/qwen_port/convert.py; index.json). The OLD decomposition p-e9fcffd5: 40 frozen sbatch files use it
+export COMMUTE_QWEN_NEW_DIR=/mnt/nw/home/e.agnew/commute-data/artifacts/qwen3-1.7b-p-9707d6ff-torch   # the NEW p-9707d6ff; new sbatch files pass --decomp "$COMMUTE_QWEN_NEW_DIR" by name
+export COMMUTE_QWEN_FROZEN_DIR=/mnt/nw/home/e.agnew/commute-data/artifacts/qwen3-1.7b-p-015e0710-torch   # the frozen-neuron control p-015e0710 (E175): Γ only, its V/U built from the HF weights
 if [[ -n ${SLURM_JOB_ID:-} ]]; then
   # In the job's .out before any Python: silence after this line is a hang in Python's start-up (friction 132). In jobs.log
   # because a job's node and GPU cannot be asked for after it ends: no sacct, and scontrol forgets it (friction 200).
@@ -33,6 +35,14 @@ if [[ -n ${SLURM_JOB_ID:-} ]]; then
   echo "$_started" >&2 || true
   { echo "$_started" >> "$COMMUTE_REPO/cluster/logs/jobs.log"; } 2>/dev/null || true
   unset _started
+  # A job imports the clone's src/ as it stands when Python starts, so another writer's uncommitted edits in the same
+  # clone run in it (friction 700: E154 would have run E153's). Name the commit and any such file in the .out; two
+  # writers who share src/ each submit from their own worktree (`git worktree add`).
+  if command -v git > /dev/null; then
+    _dirty=$(git -C "$COMMUTE_REPO" status --porcelain -- src 2> /dev/null | awk '{print $NF}' | tr '\n' ' ') || _dirty=
+    echo "code: $(git -C "$COMMUTE_REPO" rev-parse --short HEAD 2> /dev/null || echo '?')${_dirty:+; UNCOMMITTED in src/, run as they stand: $_dirty}" >&2 || true
+    unset _dirty
+  fi
   # Slurm hands out a card held by processes it does not count: jobs then died at load with a bare CUDA out of memory, and
   # an afterok chain burnt through on the same card in 90 s (friction 445, 446, 448, 470, 474). Say so and stop first. Once
   # per job (the marker), since a later source in the same job sees the job's own memory. Exit 75: nothing ran.

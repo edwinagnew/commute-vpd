@@ -1,0 +1,89 @@
+{
+ "experiment": "E164",
+ "cell": "P3.5",
+ "run": 2,
+ "filed": "2026-11-11",
+ "plan": "reports/plans/2026-11-11_plan_p35-qwen-pair-library.md (Run 2 design)",
+ "card": "~/commute-data/cards/P3.5-run2.md",
+ "code": "experiments/qwen_pair_library/library.py; rules in src/commute/qwen_library.py; edge cases in tests/test_qwen_library_rules.py",
+ "arms": {
+  "copy": "built reuse side, copy/cipher", "cipher": "built new side, copy/cipher",
+  "known": "built reuse side, facts", "invented": "built new side, facts",
+  "template": "twin real side (answer template)", "template_shuf": "twin shuffled side",
+  "gold": "twin real side (GSM8K gold solutions)", "gold_shuf": "twin shuffled side",
+  "seeds": [0, 1, 2],
+  "not_built": "context/lookup: dropped by run 1's capacity check (results/capacity.json .pairs.context_lookup)"
+ },
+ "recipes": {
+  "built": {"lr": 2e-06, "warmup": 10, "steps": 100, "schedule": "hf_cosine", "clip": 1.0, "micro": 4, "forward": "fp32", "batch": 64,
+            "source": "results/predictions_amend1.json .recipe (Amendment 1; library.py asserts equality)"},
+  "template": {"lr": 1e-06, "warmup": 10, "steps": 100, "schedule": "hf_cosine", "clip": 1.0, "micro": 4, "forward": "fp32", "batch": 64,
+               "source": "experiments/qwen_recipe/results/train_a1_1e-6.json .recipe (E61, as E78 ran it)"},
+  "gold": {"lr": 1e-05, "warmup": 10, "steps": 100, "schedule": "hf_cosine", "clip": 1.0, "micro": 4, "forward": "fp32", "batch": 64,
+           "source": "experiments/qwen_recipe/results/train_gold_1e-5.json .recipe (E61 gold_1e-5 = pool_sft.RECIPE)"},
+  "departures": "The gold stream is E40's 7,217 training problems in a seeded order (qwen_updates.cycle), not E61's fixed first 6,400; the template's seed 0 is E78's own order; built arms as the rehearsal. Seeds change the order (and a twin's derangement), never the data."
+ },
+ "floors": {
+  "copy": 0.10541914437783109, "cipher": 0.14975187081552094, "known": 0.10061034613733717,
+  "invented": 0.16614955359909198, "template": 0.0962492747304485, "gold": 0.11134895703466643,
+  "source": "results/floors.json .floors.<task>.K0 (run 1); library.py stops if the file or the row count differs. Twins use their real side's floor and rows."
+ },
+ "control": {
+  "rule": "First in each job. At W0: KL 0 and the held-out and trained-item measures. Then a zero change written to a safetensors file, loaded and added to W0 is read the same way: |KL(W0 || W0 + 0)| <= kl0_max on the own rows, and the held-out and trained-item measures equal W0's: hit counts exactly, a loss within loss_tol (absolute, nats per token). Otherwise the job stops before training.",
+  "kl0_max": 1e-06,
+  "loss_tol": 1e-06,
+  "expected": "KL 0 and identical numbers (W0 + 0 is W0 bit for bit in fp32); run 1's rehearsal control read KL 0 and 0 = 0 hits (results/rehearse_copy.json .control)."
+ },
+ "early_stops": {
+  "rule": "Amendment 1's, unchanged: stop if the loss is not finite at any step; |dW| is not exactly 0 after step 1 (it runs at rate 0); KL(W0 || W_t) on the own rows at step 2 exceeds kl_step2_max_floors x the floor; or one step raises that KL by more than kl_jump_max_floors x the floor (KL before step 1 is 0).",
+  "kl_step2_max_floors": 1.0,
+  "kl_jump_max_floors": 5.0,
+  "source": "results/predictions_amend1.json .early_stops; at 2e-6 the copy side read KL 0.0015 at step 2 (0.014 floors) and its largest one-step rise was 0.22 (2.1 floors), results/rehearse_copy.json .steps"
+ },
+ "saves": {
+  "rule": "KL(W0 || W_t), mean over every position of the arm's own rows, read every step. The upper state only is kept at the first read at or past 5 x and 15 x the floor (label 5x, 15x; one state reaching both is labelled 5x_15x). Training ends after the 15x save; if 15x is never reached it ends at step 100, which is saved with label last (5x_last if 5x is first reached there). fp32 dW, results/large/library/<arm>_s<seed>/<label>.safetensors, sha256 in the arm's JSON .saves.",
+  "sizes": [5.0, 15.0]
+ },
+ "learned": {
+  "rule": "Read at the arm's 15x save, or at its last save when 15x was not reached (reached_15x false, stated beside the verdict). Built arms (copy, cipher, known, invented): greedy exact match under the cue on the 256 trained items, hits >= ceil(accuracy_min x n). Template arms: format rate of greedy unprompted answers on the 64 trained prompts (step 2's batch), hits >= ceil(accuracy_min x n). Gold arms: gold loss per token on the arm's 64 trained sequences (step 2's batch; the twin's are its shuffled ones) <= gold_loss_ratio_max x its W0 value. All absolute (the gold rule relative to the arm's own W0). A tie at a bar holds. An arm that stopped, is missing or unfinished, or has no save, is not learned; an empty set never holds.",
+  "accuracy_min": 0.9,
+  "gold_loss_ratio_max": 0.5,
+  "bars_in_hits": {"n_256": 231, "n_64": 58},
+  "gold_ratio_source": "E61 gold_1e-5 held-out gold loss 2.495 -> 0.510 at step 100, a ratio of 0.20 (experiments/qwen_recipe/results/train_W.json .states.w0.held_gold.loss, train_gold_1e-5.json .states.step_100.held_gold.loss); 0.5 asks for well under half that drop's distance. Chosen by the code writer, flagged to the lead: not measured on trained rows.",
+  "blind_to": "Whether what was learned is the intended skill (a shuffled twin is learned when it fits its own wrong answers); the held-out measure is read beside it. On template and gold the trained rows were each seen once (under one pass), so the trained measure is close to a held-out one."
+ },
+ "copy_held": {
+  "rule": "The copy arm's greedy exact match under the cue on the 256 held-out keys, at the state `learned` reads, hits >= ceil(copy_held_min x 256) = 231, absolute, a tie holds; reached_15x stated beside it. Stopped or missing: no verdict (null).",
+  "copy_held_min": 0.9,
+  "expected": "1.0 at the 15x save (rehearsal, seed 0: results/rehearse_copy.json .states[\"36\"].exact_match = 1.0, step 36)."
+ },
+ "matched": {
+  "rule": "A pair at a seed is matched at a size (5x, 15x, read apart) when both arms finished with a save carrying that size's label. 'last' is not a size."
+ },
+ "fit_to_read": {
+  "rule": "A pair at a seed is fit to read when both sides are learned, it is matched at one size or more, and run 1's capacity verdict for the pair is 'fit' (results/capacity.json .pairs.<pair>.verdict; copy_cipher and facts are 'fit'). Twins (template, gold) have no capacity check and pass that clause. library.py --table writes results/library/table.json: per pair and seed the verdicts, per pair the seeds fit.",
+  "pairs": {"copy_cipher": ["copy", "cipher"], "facts": ["known", "invented"], "template_twin": ["template", "template_shuf"], "gold_twin": ["gold", "gold_shuf"]}
+ },
+ "do_nothing": {
+  "rule_check": "The zero change reads W0's numbers (the control asserts it). At W0 no side passes 'learned': under the cue W0 answers in prose (copy rehearsal W0 0/256, results/rehearse_copy.json .control.w0.hits), so built trained hits are near 0 against 231 (facts need a 'The answer is' line, which the cue does not ask for); the template's unprompted format rate at W0 is 0 (E61 train_W.json, facts file section 2) against 58 of 64; a gold arm's ratio is 1.0 against 0.5. tests/test_qwen_library_rules.py runs these.",
+  "expected_w0": {"built_held_exact_match": "near 0 (copy 0/256)", "template_format_rate": "near 0", "gold_held_loss": "about 2.50 nats per token (E61 W0 2.495)"}
+ },
+ "edge_cases": [
+  "No 15x save: the rules read the last save and say reached_15x false; the pair is matched at 15x false and may be fit at 5x alone.",
+  "No 5x and no 15x (only 'last'): learned may hold, matched at no size, so not fit to read.",
+  "A stopped arm (results/library/stopped_<arm>_s<seed>.json): not learned; its pair at that seed is not fit; copy_held null.",
+  "Ties: hits exactly at ceil(0.9 n) hold (231 of 256, 58 of 64); a gold ratio exactly 0.5 holds.",
+  "One state crossing 5x and 15x at once: labelled 5x_15x, matched at both sizes."
+ ],
+ "expected": {
+  "copy": "15x near step 36, held-out and trained exact match 1.0 (rehearsal seed 0)",
+  "cipher": "no prior number at 2e-6; held-out exact match well below copy's if the map is learned row by row (card rival a)",
+  "known": "learned (the answers are facts W0 knows, the form is new); held-out template 3 near the capacity reading 0.96",
+  "invented": "trained items learned in 100 steps is open; held-out template 3 low",
+  "template": "5x may not be reached: the full E78 update read KL 0.32 on these rows (E93 K, other direction), about 3.4 floors; then only 'last' (step 100), format rate near E78's 0.926, so the template twin is likely matched at no size",
+  "gold": "5x likely; held-out gold loss near E61's 0.51 by step 100",
+  "twins_shuf": "the format and style learned, the answers wrong: template_shuf format rate near its twin's; gold_shuf held-out loss above gold's"
+ },
+ "positive_control": "The copy arm: its rehearsal (seed 0, same recipe) read 1.0 at 15x; seed 0 here repeats it.",
+ "noise_floor": "Exact match per row is 0/1: sd sqrt(p(1-p)), 0.256 at p = 0.93 (copy at 5x, results/rehearse_copy.json .states[\"9\"].exact_match). Seed spread: three seeds per arm, read in the table, no bar on it here."
+}

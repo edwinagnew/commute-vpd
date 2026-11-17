@@ -5,6 +5,8 @@ metadata:
   type: feedback
 ---
 
+**Superseded 2026-11-09** by `reports/plans/2026-11-09_plan_paper-roadmap.md`: the /design check is still written, but work goes ahead without sign-off only when it fills a named open cell of yours within its run count; approved classes 1, 2 and 4 are gone.
+
 Before proposing anything new, run `/design`: name the goal it serves, the nearest row in TRIED.md and what that row already settled, and confirm the restated goal with the user. Subagents must include this check in their reports.
 
 **Why:** 2026-10-12. Proposals that patched the last experiment's flaw went in circles and re-proposed row 2. The user asked for a structural fix, not an apology. They also warned against over-restriction: proposals may be speculative, theoretical, a single measurement or outside stage 2.

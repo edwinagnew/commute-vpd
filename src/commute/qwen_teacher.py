@@ -68,7 +68,7 @@ def move_gamma(g: Gamma, device: str) -> Gamma:
         return {k: v.to(device) for k, v in d.items()}
 
     return Gamma(g.in_w.to(device), g.in_b.to(device), mv(g.blocks), mv(g.heads_w), mv(g.heads_b), mv(g.readouts),
-                 g.inv_freq.to(device))
+                 g.inv_freq.to(device), None if g.sink is None else g.sink.to(device), g.final_norm)
 
 
 @contextmanager
@@ -262,7 +262,7 @@ def importance_pass(model: Any, rows: list[Tensor], gamma: Gamma, comps: Compone
                     masked: bool) -> dict[str, Any]:
     """Over every position of `rows`: per site mean g and the share with g > threshold ([C] each), whether g >
     threshold anywhere ([C] bool), and with `masked` the mean KL(clean ‖ m = g, Δ off) (the adversary run's ci128)."""
-    sums = {s: torch.zeros(qwen_vpd.C[qwen_vpd.parse_site(s)[1]], dtype=torch.float64) for s in SITES}
+    sums = {s: torch.zeros(qwen_vpd.C[qwen_vpd.parse_site(s)[1]], dtype=torch.float64) for s in comps.sites}
     on = {s: torch.zeros_like(v) for s, v in sums.items()}
     seen = {s: torch.zeros(v.shape, dtype=torch.bool) for s, v in sums.items()}
     kl, n = 0.0, 0
@@ -270,7 +270,7 @@ def importance_pass(model: Any, rows: list[Tensor], gamma: Gamma, comps: Compone
         logits, g = importances(model, tokens, gamma, comps)
         if masked:
             kl += float(kl_per_position(logits, masked_logits(model, tokens, comps, g)).double().sum())
-        for s in SITES:
+        for s in comps.sites:
             v = g[s].flatten(0, 1)
             hit = v > threshold
             sums[s] += v.sum(0).double().cpu()
@@ -286,7 +286,7 @@ def importance_pass(model: Any, rows: list[Tensor], gamma: Gamma, comps: Compone
 
 def g_stats(p: dict[str, Any]) -> dict[str, Tensor]:
     """The per-subcomponent arrays of an `importance_pass`, keyed for a safetensors file (saved fp16)."""
-    return {f"{s}.mean_g": p["mean_g"][s] for s in SITES} | {f"{s}.active": p["active"][s] for s in SITES}
+    return {f"{s}.mean_g": p["mean_g"][s] for s in p["mean_g"]} | {f"{s}.active": p["active"][s] for s in p["active"]}
 
 
 def adversary(model: Any, rows: list[Tensor], gamma: Gamma, comps: Components, seed: int,

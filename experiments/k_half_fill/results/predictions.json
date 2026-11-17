@@ -1,0 +1,29 @@
+{
+ "experiment": "E172 k_half on the method table's missing built-pair states (cell P2.24)",
+ "filed": "2026-11-12",
+ "descriptive": "the user, via cell P2.24 added 2026-11-12: fill the k_half column — reported as a description, no claim at the bar; no verdict on reuse",
+ "settings": {
+  "reproduce_tol": 0.0001,
+  "reproduce_tol_source": "E147's reader_neuron_tol (experiments/refit_96key/results/predictions.json thresholds), the tolerance it read E98's r_half on c3/rank1_s0 again with; E147 read a difference of 0 (its stage0.json checks 'a E98 r_half c3/rank1_s0')",
+  "e98_settings": "every other setting is read by run.py from experiments/neuron_r/results/predictions.json (settings: batch 64, gain_floor 1, p_learn 0.5, carry_floor 0.1, k_grid 1..8192 and 12288, telescope_tol 1e-6, grid_end_tol 1e-5, n_top_saved 256; stage0.identity_tol 1e-6), unchanged; unit log-odds of the target at the answer position"
+ },
+ "why_e98_left_them_out": "E98's stage 2 reads k_half only on states with rec['scored'] (neuron_r.scored: |G| >= gain_floor and, on key -> value tasks, mean held-out P(target) >= p_learn 0.5). The matched ciphers pass the gain floor (G 10.9-11.7 and 11.5-12.9) and have r_half shares 0.39-0.44, above carry_floor 0.1, but their P(target) is 0.23-0.31 (E54 cipher_s0-4) and 0.32-0.45 (C3 c3_cipher_s0-7), under p_learn: experiments/neuron_r/results/cells.json. E147's states were made after E98. This run reads k_half on them without the P(target) filter, as a description; each state records e98_scored.",
+ "stage0": {
+  "states": ["c3_rank1_s0", "lowercase_s0"],
+  "rule": "per state, a miss on any line stops the job before stage 1: k_half equal; r_half numerator and every grid numerator within reproduce_tol of experiments/neuron_r/results/carrying.json; the top-256 order identical; r_half share within reproduce_tol of experiments/neuron_r/results/cells.json; E98's identity, telescoping and grid-end checks",
+  "expected": {
+   "c3_rank1_s0": {"k_half": 128, "r_half_num": 4.25780309677124, "r_half": 0.3896359690433464, "numerators_max_abs_diff": 0},
+   "lowercase_s0": {"k_half": 16, "r_half_num": 0.879975772857666, "r_half": 0.5262606963975119, "numerators_max_abs_diff": 0}
+  },
+  "expected_source": "same code, inputs and card type as E98 (job 52786, L40); E147 reproduced E98's r_half and r_n on c3/rank1_s0 with difference 0"
+ },
+ "stage1": {
+  "states": "E98's cipher_s0-4 (E54 matched cipher, step 9/10) and c3_cipher_s0-7 (C3 cipher, step 10); E147's e58/<map>_s<0-2> for rank1, cipher, copy, prior_cipher, elicit, shuffle, class_map, class_shuffled (24)",
+  "checks": "each state as it lands, a miss stops: identity <= identity_tol, |telescope| <= telescope_tol, |grid end - r_half numerator| <= grid_end_tol, and its r_half share within reproduce_tol of the saved one (E98 cells.json; E147 stage1.json .states.<state>.neuron_r.r_half)",
+  "none_means": "k_half None is E98's 'no carrying set': the r_half share is not above carry_floor 0.1, or the r_half numerator is not positive, or |G| is under the gain floor (share undefined). The state's why_none says which. Expected for no state here: every one has |G| >= 9.5 and an r_half share 0.38-0.50 with a positive numerator.",
+  "lean_not_scored": "ciphers between 256 and 1024 (E98's cipher_own 1024, c3_copy 256, e62_lookup 512); no lean on which side of any pair reads higher"
+ },
+ "cells": "for each of E98's seven rows (experiments/neuron_r/results/predictions.json rows) and E147's four pairs (inventory.json pairs: two built, two twins), reuse and new lists of defined k_half; a state E98 read takes carrying.json's value, every other this run's; source names both files where both are used. Not filled: e123_case_label and e125_repeat_label (E158's label-contrast unit; neuron_r.grid_numerators reads log-odds only).",
+ "metric_blind_to": "the ranking is first-order and chosen on the windows it is read on; sufficiency of a set, not necessity; counts across tasks of different window lengths are not like for like; a factor-of-2 grid",
+ "noise_floor": "one grid step (a factor of 2), E98's"
+}

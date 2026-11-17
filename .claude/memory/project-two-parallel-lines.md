@@ -8,6 +8,8 @@ metadata:
   modified: 2026-10-22T15:06:11.163Z
 ---
 
+**Superseded 2026-11-09** by `reports/plans/2026-11-09_plan_paper-roadmap.md`: the paper runs in three parts in sequence (definition-lead, compare-lead, qwen-lead), and approved class 4 is gone: a run needs an open cell.
+
 On 2026-10-22 the user retired the "main line" notion ("i dont see the importance of having a main line. we are
 pursuing two things at once"). Re-gating (Q5: what Γ's switching is, whether it can be trusted) and commute (Q1, the
 weak version under reading A) run in parallel, each in its own session with its own budget and its own "What's next"

@@ -1,0 +1,2319 @@
+{
+ "tasks": {
+  "e46/ident32": {
+   "format": "kv",
+   "path": "experiments/regating_table/results/large/windows_ident32.pt",
+   "batch": 64
+  },
+  "e46/ident32b": {
+   "format": "kv",
+   "path": "experiments/regating_table/results/large/windows_ident32b.pt",
+   "batch": 64
+  },
+  "e46/rand32": {
+   "format": "kv",
+   "path": "experiments/regating_table/results/large/windows_rand32.pt",
+   "batch": 64
+  },
+  "e46/rand32b": {
+   "format": "kv",
+   "path": "experiments/regating_table/results/large/windows_rand32b.pt",
+   "batch": 64
+  },
+  "e54/elicit": {
+   "format": "kv",
+   "path": "experiments/keydependent_elicit/results/large/windows_elicit.pt",
+   "batch": 64
+  },
+  "e54/cipher": {
+   "format": "kv",
+   "path": "experiments/keydependent_elicit/results/large/windows_cipher.pt",
+   "batch": 64
+  },
+  "c3/rank1": {
+   "format": "kv",
+   "path": "experiments/open_pair/results/large/amend1/windows_rank1_trained.pt",
+   "batch": 64
+  },
+  "c3/cipher": {
+   "format": "kv",
+   "path": "experiments/open_pair/results/large/windows_cipher_trained.pt",
+   "batch": 64
+  },
+  "c3/copy": {
+   "format": "kv",
+   "path": "experiments/open_pair/results/large/amend1/windows_copy_trained.pt",
+   "batch": 64
+  },
+  "e62/copy": {
+   "format": "windows_pt",
+   "path": "experiments/induction_cue/results/large/windows.pt",
+   "arm": "copy",
+   "batch": 64
+  },
+  "e62/lookup": {
+   "format": "windows_pt",
+   "path": "experiments/induction_cue/results/large/windows.pt",
+   "arm": "lookup",
+   "batch": 64
+  },
+  "case_label/real": {
+   "format": "label_task",
+   "task": "case_label",
+   "arm": "real",
+   "path": "experiments/case_label/results/large/task.pt",
+   "n_read": 256,
+   "batch": 64
+  },
+  "case_label/twin": {
+   "format": "label_task",
+   "task": "case_label",
+   "arm": "twin",
+   "path": "experiments/case_label/results/large/task.pt",
+   "n_read": 256,
+   "batch": 64
+  },
+  "fresh/real": {
+   "format": "label_task",
+   "task": "fresh_reuse_pair",
+   "arm": "real",
+   "path": "experiments/fresh_reuse_pair/results/large/task.pt",
+   "n_read": 256,
+   "batch": 64
+  },
+  "fresh/twin": {
+   "format": "label_task",
+   "task": "fresh_reuse_pair",
+   "arm": "twin",
+   "path": "experiments/fresh_reuse_pair/results/large/task.pt",
+   "n_read": 256,
+   "batch": 64
+  },
+  "e53/lowercase": {
+   "format": "e53",
+   "task": "lowercase",
+   "batch": 32
+  },
+  "e53/cipher": {
+   "format": "e53",
+   "task": "cipher",
+   "batch": 32
+  },
+  "e53/broad_cipher": {
+   "format": "e53",
+   "task": "broad_cipher",
+   "batch": 32
+  },
+  "class/class_map": {
+   "format": "kv",
+   "path": "experiments/open_pair/results/large/amend7/windows_class_map_trained.pt",
+   "batch": 64
+  },
+  "class/class_shuffled": {
+   "format": "kv",
+   "path": "experiments/open_pair/results/large/amend7/windows_class_shuffled_trained.pt",
+   "batch": 64
+  }
+ },
+ "states": {
+  "e46/ident32_s0": {
+   "task": "e46/ident32",
+   "file": "experiments/regating_table/results/large/ident32_s0.pt",
+   "r": [
+    "experiments/regating_table/results/stage0b.json",
+    [
+     "states",
+     "ident32/s0",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/regating_table/results/stage0b.json",
+    [
+     "states",
+     "ident32/s0",
+     "G"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/baseline_weights/results/results.json",
+    "keys": [
+     "states",
+     "ident32_s0",
+     "per_matrix"
+    ],
+    "kind": "root_sum_norm2"
+   }
+  },
+  "e46/ident32_s1": {
+   "task": "e46/ident32",
+   "file": "experiments/regating_table/results/large/ident32_s1.pt",
+   "r": [
+    "experiments/regating_table/results/stage0b.json",
+    [
+     "states",
+     "ident32/s1",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/regating_table/results/stage0b.json",
+    [
+     "states",
+     "ident32/s1",
+     "G"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/baseline_weights/results/results.json",
+    "keys": [
+     "states",
+     "ident32_s1",
+     "per_matrix"
+    ],
+    "kind": "root_sum_norm2"
+   }
+  },
+  "e46/ident32b_s0": {
+   "task": "e46/ident32b",
+   "file": "experiments/regating_table/results/large/ident32b_s0.pt",
+   "r": [
+    "experiments/regating_table/results/stage0b.json",
+    [
+     "states",
+     "ident32b/s0",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/regating_table/results/stage0b.json",
+    [
+     "states",
+     "ident32b/s0",
+     "G"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/baseline_weights/results/results.json",
+    "keys": [
+     "states",
+     "ident32b_s0",
+     "per_matrix"
+    ],
+    "kind": "root_sum_norm2"
+   }
+  },
+  "e46/ident32b_s1": {
+   "task": "e46/ident32b",
+   "file": "experiments/regating_table/results/large/ident32b_s1.pt",
+   "r": [
+    "experiments/regating_table/results/stage0b.json",
+    [
+     "states",
+     "ident32b/s1",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/regating_table/results/stage0b.json",
+    [
+     "states",
+     "ident32b/s1",
+     "G"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/baseline_weights/results/results.json",
+    "keys": [
+     "states",
+     "ident32b_s1",
+     "per_matrix"
+    ],
+    "kind": "root_sum_norm2"
+   }
+  },
+  "e46/rand32_s0": {
+   "task": "e46/rand32",
+   "file": "experiments/regating_table/results/large/rand32_s0.pt",
+   "r": [
+    "experiments/regating_table/results/stage0b.json",
+    [
+     "states",
+     "rand32/s0",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/regating_table/results/stage0b.json",
+    [
+     "states",
+     "rand32/s0",
+     "G"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/baseline_weights/results/results.json",
+    "keys": [
+     "states",
+     "rand32_s0",
+     "per_matrix"
+    ],
+    "kind": "root_sum_norm2"
+   }
+  },
+  "e46/rand32_s1": {
+   "task": "e46/rand32",
+   "file": "experiments/regating_table/results/large/rand32_s1.pt",
+   "r": [
+    "experiments/regating_table/results/stage0b.json",
+    [
+     "states",
+     "rand32/s1",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/regating_table/results/stage0b.json",
+    [
+     "states",
+     "rand32/s1",
+     "G"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/baseline_weights/results/results.json",
+    "keys": [
+     "states",
+     "rand32_s1",
+     "per_matrix"
+    ],
+    "kind": "root_sum_norm2"
+   }
+  },
+  "e46/rand32b_s0": {
+   "task": "e46/rand32b",
+   "file": "experiments/regating_table/results/large/rand32b_s0.pt",
+   "r": [
+    "experiments/regating_table/results/stage0b.json",
+    [
+     "states",
+     "rand32b/s0",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/regating_table/results/stage0b.json",
+    [
+     "states",
+     "rand32b/s0",
+     "G"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/baseline_weights/results/results.json",
+    "keys": [
+     "states",
+     "rand32b_s0",
+     "per_matrix"
+    ],
+    "kind": "root_sum_norm2"
+   }
+  },
+  "e46/rand32b_s1": {
+   "task": "e46/rand32b",
+   "file": "experiments/regating_table/results/large/rand32b_s1.pt",
+   "r": [
+    "experiments/regating_table/results/stage0b.json",
+    [
+     "states",
+     "rand32b/s1",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/regating_table/results/stage0b.json",
+    [
+     "states",
+     "rand32b/s1",
+     "G"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/baseline_weights/results/results.json",
+    "keys": [
+     "states",
+     "rand32b_s1",
+     "per_matrix"
+    ],
+    "kind": "root_sum_norm2"
+   }
+  },
+  "e54/elicit_s0": {
+   "task": "e54/elicit",
+   "file": "experiments/keydependent_elicit/results/large/elicit_s0.pt",
+   "r": [
+    "experiments/keydependent_elicit/results/stage2.json",
+    [
+     "states",
+     "elicit_s0",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/keydependent_elicit/results/stage2.json",
+    [
+     "states",
+     "elicit_s0",
+     "G_logodds"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/keydependent_elicit/results/stage2.json",
+    "keys": [
+     "finetunes",
+     "elicit_s0",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "e54/elicit_s1": {
+   "task": "e54/elicit",
+   "file": "experiments/keydependent_elicit/results/large/elicit_s1.pt",
+   "r": [
+    "experiments/keydependent_elicit/results/stage2.json",
+    [
+     "states",
+     "elicit_s1",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/keydependent_elicit/results/stage2.json",
+    [
+     "states",
+     "elicit_s1",
+     "G_logodds"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/keydependent_elicit/results/stage2.json",
+    "keys": [
+     "finetunes",
+     "elicit_s1",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "e54/elicit_s2": {
+   "task": "e54/elicit",
+   "file": "experiments/keydependent_patch/results/large/elicit_s2.pt",
+   "r": [
+    "experiments/keydependent_patch/results/job2.json",
+    [
+     "states",
+     "elicit_s2",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/keydependent_patch/results/job2.json",
+    [
+     "states",
+     "elicit_s2",
+     "G_logodds"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/keydependent_patch/results/job2.json",
+    "keys": [
+     "finetunes",
+     "elicit_s2",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "e54/elicit_s3": {
+   "task": "e54/elicit",
+   "file": "experiments/keydependent_patch/results/large/elicit_s3.pt",
+   "r": [
+    "experiments/keydependent_patch/results/job2.json",
+    [
+     "states",
+     "elicit_s3",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/keydependent_patch/results/job2.json",
+    [
+     "states",
+     "elicit_s3",
+     "G_logodds"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/keydependent_patch/results/job2.json",
+    "keys": [
+     "finetunes",
+     "elicit_s3",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "e54/elicit_s4": {
+   "task": "e54/elicit",
+   "file": "experiments/keydependent_patch/results/large/elicit_s4.pt",
+   "r": [
+    "experiments/keydependent_patch/results/job2.json",
+    [
+     "states",
+     "elicit_s4",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/keydependent_patch/results/job2.json",
+    [
+     "states",
+     "elicit_s4",
+     "G_logodds"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/keydependent_patch/results/job2.json",
+    "keys": [
+     "finetunes",
+     "elicit_s4",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "e54/cipher_s0": {
+   "task": "e54/cipher",
+   "file": "experiments/keydependent_elicit/results/large/cipher_s0.pt",
+   "r": [
+    "experiments/keydependent_elicit/results/stage2.json",
+    [
+     "states",
+     "cipher_s0",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/keydependent_elicit/results/stage2.json",
+    [
+     "states",
+     "cipher_s0",
+     "G_logodds"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/keydependent_elicit/results/stage2.json",
+    "keys": [
+     "finetunes",
+     "cipher_s0",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "e54/cipher_s1": {
+   "task": "e54/cipher",
+   "file": "experiments/keydependent_elicit/results/large/cipher_s1.pt",
+   "r": [
+    "experiments/keydependent_elicit/results/stage2.json",
+    [
+     "states",
+     "cipher_s1",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/keydependent_elicit/results/stage2.json",
+    [
+     "states",
+     "cipher_s1",
+     "G_logodds"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/keydependent_elicit/results/stage2.json",
+    "keys": [
+     "finetunes",
+     "cipher_s1",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "e54/cipher_s2": {
+   "task": "e54/cipher",
+   "file": "experiments/keydependent_patch/results/large/cipher_s2.pt",
+   "r": [
+    "experiments/keydependent_patch/results/job2.json",
+    [
+     "states",
+     "cipher_s2",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/keydependent_patch/results/job2.json",
+    [
+     "states",
+     "cipher_s2",
+     "G_logodds"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/keydependent_patch/results/job2.json",
+    "keys": [
+     "finetunes",
+     "cipher_s2",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "e54/cipher_s3": {
+   "task": "e54/cipher",
+   "file": "experiments/keydependent_patch/results/large/cipher_s3.pt",
+   "r": [
+    "experiments/keydependent_patch/results/job2.json",
+    [
+     "states",
+     "cipher_s3",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/keydependent_patch/results/job2.json",
+    [
+     "states",
+     "cipher_s3",
+     "G_logodds"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/keydependent_patch/results/job2.json",
+    "keys": [
+     "finetunes",
+     "cipher_s3",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "e54/cipher_s4": {
+   "task": "e54/cipher",
+   "file": "experiments/keydependent_patch/results/large/cipher_s4.pt",
+   "r": [
+    "experiments/keydependent_patch/results/job2.json",
+    [
+     "states",
+     "cipher_s4",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/keydependent_patch/results/job2.json",
+    [
+     "states",
+     "cipher_s4",
+     "G_logodds"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/keydependent_patch/results/job2.json",
+    "keys": [
+     "finetunes",
+     "cipher_s4",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "e54/cipher_own_s0": {
+   "task": "e54/cipher",
+   "file": "experiments/keydependent_elicit/results/large/cipher_own_s0.pt",
+   "r": [
+    "experiments/keydependent_elicit/results/stage2.json",
+    [
+     "states",
+     "cipher_own_s0",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/keydependent_elicit/results/stage2.json",
+    [
+     "states",
+     "cipher_own_s0",
+     "G_logodds"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/keydependent_elicit/results/stage2.json",
+    "keys": [
+     "finetunes",
+     "cipher_own_s0",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "e54/cipher_own_s1": {
+   "task": "e54/cipher",
+   "file": "experiments/keydependent_elicit/results/large/cipher_own_s1.pt",
+   "r": [
+    "experiments/keydependent_elicit/results/stage2.json",
+    [
+     "states",
+     "cipher_own_s1",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/keydependent_elicit/results/stage2.json",
+    [
+     "states",
+     "cipher_own_s1",
+     "G_logodds"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/keydependent_elicit/results/stage2.json",
+    "keys": [
+     "finetunes",
+     "cipher_own_s1",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/rank1_s0": {
+   "task": "c3/rank1",
+   "file": "experiments/open_pair/results/large/amend1/rank1_s0.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "rank1",
+     0
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair/results/amend1.json",
+    [
+     "control",
+     "rank1_s0",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair/results/amend1.json",
+    "keys": [
+     "control",
+     "rank1_s0",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/rank1_s1": {
+   "task": "c3/rank1",
+   "file": "experiments/open_pair/results/large/amend1/rank1_s1.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "rank1",
+     1
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair/results/amend1.json",
+    [
+     "control",
+     "rank1_s1",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair/results/amend1.json",
+    "keys": [
+     "control",
+     "rank1_s1",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/rank1_s2": {
+   "task": "c3/rank1",
+   "file": "experiments/open_pair/results/large/amend1/rank1_s2.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "rank1",
+     2
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair/results/amend1.json",
+    [
+     "control",
+     "rank1_s2",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair/results/amend1.json",
+    "keys": [
+     "control",
+     "rank1_s2",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/rank1_s3": {
+   "task": "c3/rank1",
+   "file": "experiments/open_pair_instruments/results/large/rank1_s3.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "rank1",
+     3
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair_instruments/results/seeds.json",
+    [
+     "states",
+     "rank1_s3",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair_instruments/results/seeds.json",
+    "keys": [
+     "states",
+     "rank1_s3",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/rank1_s4": {
+   "task": "c3/rank1",
+   "file": "experiments/open_pair_instruments/results/large/rank1_s4.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "rank1",
+     4
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair_instruments/results/seeds.json",
+    [
+     "states",
+     "rank1_s4",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair_instruments/results/seeds.json",
+    "keys": [
+     "states",
+     "rank1_s4",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/rank1_s5": {
+   "task": "c3/rank1",
+   "file": "experiments/open_pair_instruments/results/large/rank1_s5.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "rank1",
+     5
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair_instruments/results/seeds.json",
+    [
+     "states",
+     "rank1_s5",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair_instruments/results/seeds.json",
+    "keys": [
+     "states",
+     "rank1_s5",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/rank1_s6": {
+   "task": "c3/rank1",
+   "file": "experiments/open_pair_instruments/results/large/rank1_s6.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "rank1",
+     6
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair_instruments/results/seeds.json",
+    [
+     "states",
+     "rank1_s6",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair_instruments/results/seeds.json",
+    "keys": [
+     "states",
+     "rank1_s6",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/rank1_s7": {
+   "task": "c3/rank1",
+   "file": "experiments/open_pair_instruments/results/large/rank1_s7.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "rank1",
+     7
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair_instruments/results/seeds.json",
+    [
+     "states",
+     "rank1_s7",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair_instruments/results/seeds.json",
+    "keys": [
+     "states",
+     "rank1_s7",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/cipher_s0": {
+   "task": "c3/cipher",
+   "file": "experiments/open_pair/results/large/cipher_s0.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "cipher",
+     0
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair/results/run.json",
+    [
+     "states",
+     "cipher_s0",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair/results/run.json",
+    "keys": [
+     "states",
+     "cipher_s0",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/cipher_s1": {
+   "task": "c3/cipher",
+   "file": "experiments/open_pair/results/large/cipher_s1.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "cipher",
+     1
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair/results/run.json",
+    [
+     "states",
+     "cipher_s1",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair/results/run.json",
+    "keys": [
+     "states",
+     "cipher_s1",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/cipher_s2": {
+   "task": "c3/cipher",
+   "file": "experiments/open_pair/results/large/cipher_s2.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "cipher",
+     2
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair/results/run.json",
+    [
+     "states",
+     "cipher_s2",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair/results/run.json",
+    "keys": [
+     "states",
+     "cipher_s2",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/cipher_s3": {
+   "task": "c3/cipher",
+   "file": "experiments/open_pair_instruments/results/large/cipher_s3.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "cipher",
+     3
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair_instruments/results/seeds.json",
+    [
+     "states",
+     "cipher_s3",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair_instruments/results/seeds.json",
+    "keys": [
+     "states",
+     "cipher_s3",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/cipher_s4": {
+   "task": "c3/cipher",
+   "file": "experiments/open_pair_instruments/results/large/cipher_s4.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "cipher",
+     4
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair_instruments/results/seeds.json",
+    [
+     "states",
+     "cipher_s4",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair_instruments/results/seeds.json",
+    "keys": [
+     "states",
+     "cipher_s4",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/cipher_s5": {
+   "task": "c3/cipher",
+   "file": "experiments/open_pair_instruments/results/large/cipher_s5.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "cipher",
+     5
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair_instruments/results/seeds.json",
+    [
+     "states",
+     "cipher_s5",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair_instruments/results/seeds.json",
+    "keys": [
+     "states",
+     "cipher_s5",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/cipher_s6": {
+   "task": "c3/cipher",
+   "file": "experiments/open_pair_instruments/results/large/cipher_s6.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "cipher",
+     6
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair_instruments/results/seeds.json",
+    [
+     "states",
+     "cipher_s6",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair_instruments/results/seeds.json",
+    "keys": [
+     "states",
+     "cipher_s6",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/cipher_s7": {
+   "task": "c3/cipher",
+   "file": "experiments/open_pair_instruments/results/large/cipher_s7.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "cipher",
+     7
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair_instruments/results/seeds.json",
+    [
+     "states",
+     "cipher_s7",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair_instruments/results/seeds.json",
+    "keys": [
+     "states",
+     "cipher_s7",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/copy_s0": {
+   "task": "c3/copy",
+   "file": "experiments/open_pair/results/large/amend1/copy_s0.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "copy",
+     0
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair/results/amend1.json",
+    [
+     "control",
+     "copy_s0",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair/results/amend1.json",
+    "keys": [
+     "control",
+     "copy_s0",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/copy_s1": {
+   "task": "c3/copy",
+   "file": "experiments/open_pair/results/large/amend1/copy_s1.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "copy",
+     1
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair/results/amend1.json",
+    [
+     "control",
+     "copy_s1",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair/results/amend1.json",
+    "keys": [
+     "control",
+     "copy_s1",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/copy_s2": {
+   "task": "c3/copy",
+   "file": "experiments/open_pair/results/large/amend1/copy_s2.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "copy",
+     2
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair/results/amend1.json",
+    [
+     "control",
+     "copy_s2",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair/results/amend1.json",
+    "keys": [
+     "control",
+     "copy_s2",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/copy_s3": {
+   "task": "c3/copy",
+   "file": "experiments/open_pair_instruments/results/large/copy_s3.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "copy",
+     3
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair_instruments/results/seeds.json",
+    [
+     "states",
+     "copy_s3",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair_instruments/results/seeds.json",
+    "keys": [
+     "states",
+     "copy_s3",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/copy_s4": {
+   "task": "c3/copy",
+   "file": "experiments/open_pair_instruments/results/large/copy_s4.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "copy",
+     4
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair_instruments/results/seeds.json",
+    [
+     "states",
+     "copy_s4",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair_instruments/results/seeds.json",
+    "keys": [
+     "states",
+     "copy_s4",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/copy_s5": {
+   "task": "c3/copy",
+   "file": "experiments/open_pair_instruments/results/large/copy_s5.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "copy",
+     5
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair_instruments/results/seeds.json",
+    [
+     "states",
+     "copy_s5",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair_instruments/results/seeds.json",
+    "keys": [
+     "states",
+     "copy_s5",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/copy_s6": {
+   "task": "c3/copy",
+   "file": "experiments/open_pair_instruments/results/large/copy_s6.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "copy",
+     6
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair_instruments/results/seeds.json",
+    [
+     "states",
+     "copy_s6",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair_instruments/results/seeds.json",
+    "keys": [
+     "states",
+     "copy_s6",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "c3/copy_s7": {
+   "task": "c3/copy",
+   "file": "experiments/open_pair_instruments/results/large/copy_s7.pt",
+   "r": [
+    "experiments/open_pair_instruments/results/run.json",
+    [
+     "columns",
+     "r",
+     "copy",
+     7
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair_instruments/results/seeds.json",
+    [
+     "states",
+     "copy_s7",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair_instruments/results/seeds.json",
+    "keys": [
+     "states",
+     "copy_s7",
+     "ft",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "e62/copy_s0": {
+   "task": "e62/copy",
+   "file": "experiments/induction_cue/results/large/copy_s0.pt",
+   "r": [
+    "experiments/induction_cue/results/run.json",
+    [
+     "states",
+     "copy_s0",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/induction_cue/results/run.json",
+    [
+     "states",
+     "copy_s0",
+     "G_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/induction_cue/results/run.json",
+    "keys": [
+     "states",
+     "copy_s0",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "e62/copy_s1": {
+   "task": "e62/copy",
+   "file": "experiments/induction_cue/results/large/copy_s1.pt",
+   "r": [
+    "experiments/induction_cue/results/run.json",
+    [
+     "states",
+     "copy_s1",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/induction_cue/results/run.json",
+    [
+     "states",
+     "copy_s1",
+     "G_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/induction_cue/results/run.json",
+    "keys": [
+     "states",
+     "copy_s1",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "e62/copy_s2": {
+   "task": "e62/copy",
+   "file": "experiments/induction_cue/results/large/copy_s2.pt",
+   "r": [
+    "experiments/induction_cue/results/run.json",
+    [
+     "states",
+     "copy_s2",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/induction_cue/results/run.json",
+    [
+     "states",
+     "copy_s2",
+     "G_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/induction_cue/results/run.json",
+    "keys": [
+     "states",
+     "copy_s2",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "e62/lookup_s0": {
+   "task": "e62/lookup",
+   "file": "experiments/induction_cue/results/large/lookup_s0.pt",
+   "r": [
+    "experiments/induction_cue/results/run.json",
+    [
+     "states",
+     "lookup_s0",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/induction_cue/results/run.json",
+    [
+     "states",
+     "lookup_s0",
+     "G_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/induction_cue/results/run.json",
+    "keys": [
+     "states",
+     "lookup_s0",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "e62/lookup_s1": {
+   "task": "e62/lookup",
+   "file": "experiments/induction_cue/results/large/lookup_s1.pt",
+   "r": [
+    "experiments/induction_cue/results/run.json",
+    [
+     "states",
+     "lookup_s1",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/induction_cue/results/run.json",
+    [
+     "states",
+     "lookup_s1",
+     "G_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/induction_cue/results/run.json",
+    "keys": [
+     "states",
+     "lookup_s1",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "e62/lookup_s2": {
+   "task": "e62/lookup",
+   "file": "experiments/induction_cue/results/large/lookup_s2.pt",
+   "r": [
+    "experiments/induction_cue/results/run.json",
+    [
+     "states",
+     "lookup_s2",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/induction_cue/results/run.json",
+    [
+     "states",
+     "lookup_s2",
+     "G_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/induction_cue/results/run.json",
+    "keys": [
+     "states",
+     "lookup_s2",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "case_label/real_s0": {
+   "task": "case_label/real",
+   "file": "experiments/case_label/results/large/dW_real_s0.pt",
+   "r": [
+    "experiments/case_label_both/results/case_label_both.json",
+    [
+     "routes",
+     "real_s0",
+     "nothing",
+     "shares",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/case_label_both/results/case_label_both.json",
+    [
+     "routes",
+     "real_s0",
+     "nothing",
+     "gain"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/case_label/results/stage1.json",
+    "keys": [
+     "states",
+     "real_s0",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "case_label/real_s1": {
+   "task": "case_label/real",
+   "file": "experiments/case_label/results/large/dW_real_s1.pt",
+   "r": [
+    "experiments/case_label_both/results/case_label_both.json",
+    [
+     "routes",
+     "real_s1",
+     "nothing",
+     "shares",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/case_label_both/results/case_label_both.json",
+    [
+     "routes",
+     "real_s1",
+     "nothing",
+     "gain"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/case_label/results/stage1.json",
+    "keys": [
+     "states",
+     "real_s1",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "case_label/twin_s0": {
+   "task": "case_label/twin",
+   "file": "experiments/case_label/results/large/dW_twin_s0.pt",
+   "r": [
+    "experiments/case_label_both/results/case_label_both.json",
+    [
+     "routes",
+     "twin_s0",
+     "nothing",
+     "shares",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/case_label_both/results/case_label_both.json",
+    [
+     "routes",
+     "twin_s0",
+     "nothing",
+     "gain"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/case_label/results/stage1.json",
+    "keys": [
+     "states",
+     "twin_s0",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "case_label/twin_s1": {
+   "task": "case_label/twin",
+   "file": "experiments/case_label/results/large/dW_twin_s1.pt",
+   "r": [
+    "experiments/case_label_both/results/case_label_both.json",
+    [
+     "routes",
+     "twin_s1",
+     "nothing",
+     "shares",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/case_label_both/results/case_label_both.json",
+    [
+     "routes",
+     "twin_s1",
+     "nothing",
+     "gain"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/case_label/results/stage1.json",
+    "keys": [
+     "states",
+     "twin_s1",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "fresh/real_s0": {
+   "task": "fresh/real",
+   "file": "experiments/fresh_reuse_pair/results/large/dW_real_s0.pt",
+   "r": [
+    "experiments/fresh_reuse_pair/results/stage2.json",
+    [
+     "states",
+     "real_s0",
+     "nothing",
+     "shares",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/fresh_reuse_pair/results/stage2.json",
+    [
+     "states",
+     "real_s0",
+     "nothing",
+     "gain"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/fresh_reuse_pair/results/stage1.json",
+    "keys": [
+     "states",
+     "real_s0",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "fresh/real_s1": {
+   "task": "fresh/real",
+   "file": "experiments/fresh_reuse_pair/results/large/dW_real_s1.pt",
+   "r": [
+    "experiments/fresh_reuse_pair/results/stage2.json",
+    [
+     "states",
+     "real_s1",
+     "nothing",
+     "shares",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/fresh_reuse_pair/results/stage2.json",
+    [
+     "states",
+     "real_s1",
+     "nothing",
+     "gain"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/fresh_reuse_pair/results/stage1.json",
+    "keys": [
+     "states",
+     "real_s1",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "fresh/twin_s0": {
+   "task": "fresh/twin",
+   "file": "experiments/fresh_reuse_pair/results/large/dW_twin_s0.pt",
+   "r": [
+    "experiments/fresh_reuse_pair/results/stage2.json",
+    [
+     "states",
+     "twin_s0",
+     "nothing",
+     "shares",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/fresh_reuse_pair/results/stage2.json",
+    [
+     "states",
+     "twin_s0",
+     "nothing",
+     "gain"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/fresh_reuse_pair/results/stage1.json",
+    "keys": [
+     "states",
+     "twin_s0",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "fresh/twin_s1": {
+   "task": "fresh/twin",
+   "file": "experiments/fresh_reuse_pair/results/large/dW_twin_s1.pt",
+   "r": [
+    "experiments/fresh_reuse_pair/results/stage2.json",
+    [
+     "states",
+     "twin_s1",
+     "nothing",
+     "shares",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/fresh_reuse_pair/results/stage2.json",
+    [
+     "states",
+     "twin_s1",
+     "nothing",
+     "gain"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/fresh_reuse_pair/results/stage1.json",
+    "keys": [
+     "states",
+     "twin_s1",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "e53/lowercase_s0": {
+   "task": "e53/lowercase",
+   "file": "experiments/performed_anchor/results/large/dW_lowercase_s0_step300.pt",
+   "r": [
+    "experiments/regating_truth_table/results/table.json",
+    [
+     "runs",
+     "e53/lowercase_s0",
+     "r",
+     "value"
+    ]
+   ],
+   "gain": null,
+   "norm": {
+    "file": "experiments/performed_anchor/results/finetune.json",
+    "keys": [
+     "states",
+     "lowercase/s0/step300",
+     "sha256"
+    ],
+    "kind": "sha256_only"
+   }
+  },
+  "e53/lowercase_s1": {
+   "task": "e53/lowercase",
+   "file": "experiments/performed_anchor/results/large/dW_lowercase_s1_step300.pt",
+   "r": [
+    "experiments/regating_truth_table/results/table.json",
+    [
+     "runs",
+     "e53/lowercase_s1",
+     "r",
+     "value"
+    ]
+   ],
+   "gain": null,
+   "norm": {
+    "file": "experiments/performed_anchor/results/finetune.json",
+    "keys": [
+     "states",
+     "lowercase/s1/step300",
+     "sha256"
+    ],
+    "kind": "sha256_only"
+   }
+  },
+  "e53/cipher_s0": {
+   "task": "e53/cipher",
+   "file": "experiments/performed_anchor/results/large/dW_cipher_s0_step300.pt",
+   "r": [
+    "experiments/regating_truth_table/results/table.json",
+    [
+     "runs",
+     "e53/cipher_s0",
+     "r",
+     "value"
+    ]
+   ],
+   "gain": null,
+   "norm": {
+    "file": "experiments/performed_anchor/results/finetune.json",
+    "keys": [
+     "states",
+     "cipher/s0/step300",
+     "sha256"
+    ],
+    "kind": "sha256_only"
+   }
+  },
+  "e53/cipher_s1": {
+   "task": "e53/cipher",
+   "file": "experiments/performed_anchor/results/large/dW_cipher_s1_step300.pt",
+   "r": [
+    "experiments/regating_truth_table/results/table.json",
+    [
+     "runs",
+     "e53/cipher_s1",
+     "r",
+     "value"
+    ]
+   ],
+   "gain": null,
+   "norm": {
+    "file": "experiments/performed_anchor/results/finetune.json",
+    "keys": [
+     "states",
+     "cipher/s1/step300",
+     "sha256"
+    ],
+    "kind": "sha256_only"
+   }
+  },
+  "e53/broad_cipher_s0": {
+   "task": "e53/broad_cipher",
+   "file": "experiments/performed_anchor/results/large/dW_broad_cipher_s0_step300.pt",
+   "r": [
+    "experiments/regating_truth_table/results/table.json",
+    [
+     "runs",
+     "e53/broad_cipher_s0",
+     "r",
+     "value"
+    ]
+   ],
+   "gain": null,
+   "norm": {
+    "file": "experiments/performed_anchor/results/finetune_amend1b.json",
+    "keys": [
+     "states",
+     "broad_cipher/s0/step300",
+     "sha256"
+    ],
+    "kind": "sha256_only"
+   }
+  },
+  "e53/broad_cipher_s1": {
+   "task": "e53/broad_cipher",
+   "file": "experiments/performed_anchor/results/large/dW_broad_cipher_s1_step300.pt",
+   "r": [
+    "experiments/regating_truth_table/results/table.json",
+    [
+     "runs",
+     "e53/broad_cipher_s1",
+     "r",
+     "value"
+    ]
+   ],
+   "gain": null,
+   "norm": {
+    "file": "experiments/performed_anchor/results/finetune_amend1b.json",
+    "keys": [
+     "states",
+     "broad_cipher/s1/step300",
+     "sha256"
+    ],
+    "kind": "sha256_only"
+   }
+  },
+  "class/class_map_s0": {
+   "task": "class/class_map",
+   "file": "experiments/definition_verify/results/large/dW_class_map_s0.pt",
+   "r": [
+    "experiments/open_pair/results/amend7.json",
+    [
+     "reads",
+     "class_map_s0@30",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair/results/amend7.json",
+    [
+     "reads",
+     "class_map_s0@30",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair/results/amend7.json",
+    "keys": [
+     "reads",
+     "class_map_s0@30",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "class/class_map_s1": {
+   "task": "class/class_map",
+   "file": "experiments/definition_verify/results/large/dW_class_map_s1.pt",
+   "r": [
+    "experiments/open_pair/results/amend7.json",
+    [
+     "reads",
+     "class_map_s1@30",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair/results/amend7.json",
+    [
+     "reads",
+     "class_map_s1@30",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair/results/amend7.json",
+    "keys": [
+     "reads",
+     "class_map_s1@30",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "class/class_shuffled_s0": {
+   "task": "class/class_shuffled",
+   "file": "experiments/definition_verify/results/large/dW_class_shuffled_s0.pt",
+   "r": [
+    "experiments/open_pair/results/amend7.json",
+    [
+     "reads",
+     "class_shuffled_s0@30",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair/results/amend7.json",
+    [
+     "reads",
+     "class_shuffled_s0@30",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair/results/amend7.json",
+    "keys": [
+     "reads",
+     "class_shuffled_s0@30",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  },
+  "class/class_shuffled_s1": {
+   "task": "class/class_shuffled",
+   "file": "experiments/definition_verify/results/large/dW_class_shuffled_s1.pt",
+   "r": [
+    "experiments/open_pair/results/amend7.json",
+    [
+     "reads",
+     "class_shuffled_s1@30",
+     "r"
+    ]
+   ],
+   "gain": [
+    "experiments/open_pair/results/amend7.json",
+    [
+     "reads",
+     "class_shuffled_s1@30",
+     "G_logodds_route"
+    ]
+   ],
+   "norm": {
+    "file": "experiments/open_pair/results/amend7.json",
+    "keys": [
+     "reads",
+     "class_shuffled_s1@30",
+     "norm"
+    ],
+    "kind": "summed"
+   }
+  }
+ },
+ "pairs": [
+  {
+   "id": "e46_copy_random",
+   "scored": true,
+   "built": "copy against random table",
+   "reuse": [
+    "e46/ident32_s0",
+    "e46/ident32_s1",
+    "e46/ident32b_s0",
+    "e46/ident32b_s1"
+   ],
+   "new": [
+    "e46/rand32_s0",
+    "e46/rand32_s1",
+    "e46/rand32b_s0",
+    "e46/rand32b_s1"
+   ]
+  },
+  {
+   "id": "e54_matched",
+   "scored": true,
+   "built": "elicit against cipher, sizes matched",
+   "reuse": [
+    "e54/elicit_s0",
+    "e54/elicit_s1",
+    "e54/elicit_s2",
+    "e54/elicit_s3",
+    "e54/elicit_s4"
+   ],
+   "new": [
+    "e54/cipher_s0",
+    "e54/cipher_s1",
+    "e54/cipher_s2",
+    "e54/cipher_s3",
+    "e54/cipher_s4"
+   ]
+  },
+  {
+   "id": "open_pair_c3",
+   "scored": true,
+   "built": "rank-1 against cipher, 24 trained keys",
+   "reuse": [
+    "c3/rank1_s0",
+    "c3/rank1_s1",
+    "c3/rank1_s2",
+    "c3/rank1_s3",
+    "c3/rank1_s4",
+    "c3/rank1_s5",
+    "c3/rank1_s6",
+    "c3/rank1_s7"
+   ],
+   "new": [
+    "c3/cipher_s0",
+    "c3/cipher_s1",
+    "c3/cipher_s2",
+    "c3/cipher_s3",
+    "c3/cipher_s4",
+    "c3/cipher_s5",
+    "c3/cipher_s6",
+    "c3/cipher_s7"
+   ]
+  },
+  {
+   "id": "open_pair_c3_copy",
+   "scored": true,
+   "built": "copy against cipher, 24 trained keys",
+   "reuse": [
+    "c3/copy_s0",
+    "c3/copy_s1",
+    "c3/copy_s2",
+    "c3/copy_s3",
+    "c3/copy_s4",
+    "c3/copy_s5",
+    "c3/copy_s6",
+    "c3/copy_s7"
+   ],
+   "new": [
+    "c3/cipher_s0",
+    "c3/cipher_s1",
+    "c3/cipher_s2",
+    "c3/cipher_s3",
+    "c3/cipher_s4",
+    "c3/cipher_s5",
+    "c3/cipher_s6",
+    "c3/cipher_s7"
+   ]
+  },
+  {
+   "id": "e62_copy_lookup",
+   "scored": true,
+   "built": "copy at a new marker against lookup",
+   "reuse": [
+    "e62/copy_s0",
+    "e62/copy_s1",
+    "e62/copy_s2"
+   ],
+   "new": [
+    "e62/lookup_s0",
+    "e62/lookup_s1",
+    "e62/lookup_s2"
+   ]
+  },
+  {
+   "id": "case_label",
+   "scored": false,
+   "built": "label pair, real against twin",
+   "reuse": [
+    "case_label/real_s0",
+    "case_label/real_s1"
+   ],
+   "new": [
+    "case_label/twin_s0",
+    "case_label/twin_s1"
+   ]
+  },
+  {
+   "id": "fresh_reuse_pair",
+   "scored": false,
+   "built": "label pair, real against twin",
+   "reuse": [
+    "fresh/real_s0",
+    "fresh/real_s1"
+   ],
+   "new": [
+    "fresh/twin_s0",
+    "fresh/twin_s1"
+   ]
+  },
+  {
+   "id": "e53_lowercase_cipher",
+   "scored": false,
+   "built": "lowercase against ciphers (Pile, next token)",
+   "reuse": [
+    "e53/lowercase_s0",
+    "e53/lowercase_s1"
+   ],
+   "new": [
+    "e53/cipher_s0",
+    "e53/cipher_s1",
+    "e53/broad_cipher_s0",
+    "e53/broad_cipher_s1"
+   ]
+  },
+  {
+   "id": "e54_own",
+   "scored": false,
+   "built": "elicit against cipher at its own step (seeds 2-4 of the cipher at its own step not saved)",
+   "reuse": [
+    "e54/elicit_s0",
+    "e54/elicit_s1",
+    "e54/elicit_s2",
+    "e54/elicit_s3",
+    "e54/elicit_s4"
+   ],
+   "new": [
+    "e54/cipher_own_s0",
+    "e54/cipher_own_s1"
+   ]
+  },
+  {
+   "id": "class_twin_definition_verify",
+   "scored": false,
+   "built": "class map against its shuffled twin (states regenerated by definition_verify stage 4, E54's recipe; saved shares are Amendment 7's on the same windows)",
+   "reuse": [
+    "class/class_map_s0",
+    "class/class_map_s1"
+   ],
+   "new": [
+    "class/class_shuffled_s0",
+    "class/class_shuffled_s1"
+   ]
+  }
+ ],
+ "not_read": [
+  {
+   "id": "e58_rank1_96",
+   "why": "no states saved: amend3 keeps rank1 seed 0 at step 30 only, no ciphers; amend4 saved no updates"
+  },
+  {
+   "id": "e58_elicit_shuffle",
+   "why": "no states saved: amend3 keeps elicit seed 0 only; amend4 and amend5 trained the shuffles in-job without saving them"
+  },
+  {
+   "id": "e58_copy_prior_cipher",
+   "why": "no states saved: amend3 keeps copy seed 0 only; amend6 kept windows only"
+  },
+  {
+   "id": "e58_class_twin",
+   "why": "no states saved for seeds 0-2 at 96 keys in open_pair (amend7 kept windows only); the two seeds regenerated by definition_verify are read as class_twin_definition_verify, described only"
+  }
+ ]
+}

@@ -1,0 +1,13 @@
+{
+ "experiment": "E171 effective rank on the four 96-key rows of the E133 figure (cell P2.25)",
+ "filed": "2026-11-12",
+ "aim": "Fill the method table's four empty effective-rank cells (experiments/method_table/results/final.json, method erank) on pairs e58_rank1_96, e58_copy_prior_cipher, e58_elicit_shuffle, e58_class_twin. Descriptive: the user said fill them (chat, 2026-11-12); no claim at a bar, no verdict on reuse.",
+ "reading": "commute.update_spectrum.state(...).erank, E141's reading unchanged: per matrix exp(H(s/sum s)), averaged over the 24 matrices with weights ||dW_m||^2.",
+ "states": "experiments/refit_96key/results/large/dW_<map>_s<seed>.pt, E147's refit at step 30, seeds 0-2, bf16; maps per experiments/refit_96key/results/inventory.json .pairs",
+ "control": {"rank10_erank": "10 within 1e-6", "rank1_erank": "1 within 1e-9", "zero": "erank None, norm2 0", "on_miss": "stop, exit 1, no pair read"},
+ "call_rule": "E141's (E51's): a pair separates iff |mean gap| > the larger within-side range, strict; the figure plots log10(mean reuse / mean new).",
+ "expected": "No expected direction is filed. E141 read 3 of 7 built pairs apart, all reuse side higher (log10 ratio 0.02 to 0.06), and both label twins apart with the twin higher; the 96-key updates are of a similar size, so gaps of order 0.01-0.06 in log10 are expected, with no call where the seed ranges overlap.",
+ "metric_blind_to": "what the update does: rank follows update size (E51), and says nothing about which features are used.",
+ "noise_floor": "the within-side range over three seeds, as the rule uses it.",
+ "reported_only": "E58's own saved rank1_s0 step-30 update (experiments/open_pair/results/large/amend3/rank1_s0_step30.pt) beside the refit's rank1_s0: E147 found the refit reproduces E58's share within each map's seed range."
+}

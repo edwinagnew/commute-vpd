@@ -1,0 +1,95 @@
+{
+  "experiment": "E156",
+  "cell": "P1.13",
+  "card": "experiments/h_diagnosis/card.txt",
+  "filed": "2026-11-11, before any E156 code ran on a GPU. Plan: reports/plans/2026-11-11_plan_h-diagnosis.md; run: experiments/h_diagnosis/run.py; outcome: experiments/h_diagnosis/plot.py (outcome)",
+  "question": "Why did E154's no-teaching control (F = plain 67M + 4 Q b at in2, last position, where the last number is odd; learned, KL ratio 0.04) read best found H 0.466 and 0.459, under the 0.5 cut-off? This diagnoses the measure; it relabels nothing.",
+  "cutoffs": {
+    "H": 0.5,
+    "source": "decisions.md, 2026-11-10 (working definition adopted tentatively). Only the user changes it."
+  },
+  "thresholds": {
+    "control_bar": 0.9,
+    "stop_bar": 0.5,
+    "rise": 0.2,
+    "repeat_tol": 0.01,
+    "reload_tol": 0.0001
+  },
+  "threshold_sources": {
+    "control_bar": "the card's rival a (H on the target F itself at least 0.9) and the lead's brief",
+    "stop_bar": "the card's stop: H on the exact target F below 0.5, the H cut-off",
+    "rise": "the card's smallest_gap 0.2: about 7 times the noise floor (seed sd 0.028)",
+    "repeat_tol": "0.01, about a third of the noise floor 0.028 and a twentieth of the rise bar 0.2; this is a same-state, same-window repeat of a deterministic ridge, which should agree to float rounding. Not measured: no repeat of E154's ridge through the new code has run (no GPU before filing). A miss stops the job before any variant reads",
+    "reload_tol": "0.0001: about 10 times the float floor between two runs of the 67M (max TV 1.03e-5, experiments/built_control_sum/results/amend1_stage0.json, floor_runs_tv) and under the two seeds' gap difference (0.00066, amend1_control_s{0,1}.json, dist.gap), so a wrong state or wrong windows cannot pass"
+  },
+  "noise_floor": "seed sd of best found H 0.028 (card spread, from experiments/reuse_variable_finetune/results, the Always on fine-tunes); E154's two seeds here differ by 0.007 at their best site",
+  "expected_at": {
+    "W0": "a zero-step fine-tune is the 67M: gap 0, so H = 1 - d / gap is undefined. Handled as in E139 and E154: a gap under floor_gap 0.02 gives no reading. Not rerun here: E154's zero-step control read gap 0 and max TV 0 (amend1_stage0.json, zero_step_plain)",
+    "do_nothing": "a fine-tune that changes nothing (or a target F with alpha 0) is W0: gap 0, no reading. Every measurement here is read on states whose gap is 0.22 to 0.26",
+    "control": "H with F itself standing in for the fine-tune, at in2: about 1 (at least 0.9); F's in2 is the 67M's in2 plus 4 Q b times b's parity, which a ridge reads from z_M at accuracy 1.0 on held-out pairs (amend1_stage0.json, single_reads.b_odd). At in1 about 0: F does not differ from the 67M there, so the map writes the 67M's own value and d equals the gap. in3, out3, final: open, expected below in2 (F there is the 67M's later blocks applied to the pushed in2, not affine in z_M)"
+  },
+  "early_stops": {
+    "S1": {
+      "what": "the target F rebuilt from E154's windows, number tokens, alpha (4.0) and push: its gap TV(F, 67M) on the read half",
+      "expected": "0.219802 (amend1_stage1.json, gaps.control)",
+      "rule": "stop if it differs by more than reload_tol; the number tokens must equal amend1_stage0.json's (else exit 1)"
+    },
+    "C1": {
+      "what": "measurement 1, alone and first: E154's H search (reuse_variable_finetune/amend2.search_h, unchanged) with F as the fine-tune, five sites, gap TV(F, 67M)",
+      "expected": "in2 at least 0.9",
+      "rule": "the card's stop: H at in2 under stop_bar ends the job (exit 0) as soon as in2 is read; nothing else runs"
+    },
+    "D": {
+      "what": "per seed, E154's saved fine-tune (results/large/amend1_control_s{0,1}.pt) reloaded: gap TV(ft, 67M) and TV(ft, F) on the read half",
+      "expected": "s0 gap 0.263262, TV(ft, F) 0.073262; s1 gap 0.263920, TV(ft, F) 0.073987 (amend1_control_s{0,1}.json, dist)",
+      "rule": "stop if either differs by more than reload_tol"
+    },
+    "R": {
+      "what": "variant c's first reading: the last-position ridge at E154's best site (in3 on both seeds) at E154's chosen penalty 1e-3, through the new code (variable_read.ridge_on, affine_of)",
+      "expected": "s0 0.4659, s1 0.4593 (amend1_control_s{0,1}.json, H.in3; E154 used the ridge there, not the refinement)",
+      "rule": "stop if it differs from E154's by more than repeat_tol: the variants' code would not be E154's search"
+    }
+  },
+  "predictions": {
+    "P1": {
+      "measure": "H on the exact target F at in2 (measurement 1)",
+      "claim": "at least control_bar 0.9 (expected about 1): the search reads an affine edit it should read",
+      "rival": "under stop_bar 0.5: the card's stop, rival b"
+    },
+    "P2": {
+      "measure": "ceiling per seed, 1 - TV(ft, F) / TV(ft, 67M), no search",
+      "claim": "0.722 (s0) and 0.720 (s1), from E154's saved distances; the run recomputes them",
+      "note": "not a bound: a map could land nearer the fine-tune than F does. It says how much of the 0.47 the target mismatch alone could explain: a map that reproduced F exactly would read 0.72, not 1"
+    },
+    "P3": {
+      "measure": "rise of each variant's best found H over E154's best (0.4659, 0.4593), per seed",
+      "claim": "open. Rival a: some variant (a every position, or b two sites in order) raises by at least 0.2 on both seeds. Rival b: no variant raises by 0.2 on either seed. c is expected within 0.05 of E154 (E154 already chose the grid's smallest penalty at in3), so it is not expected to raise H"
+    }
+  },
+  "outcome_rule": {
+    "rule": "rival a if P1 >= control_bar and one variant's rise >= the rise threshold on both seeds; rival b if P1 < stop_bar, or P1 >= control_bar and no variant's rise >= the rise threshold on either seed; anything else no call, reported as read. Code: experiments/h_diagnosis/plot.py, outcome",
+    "edge_cases": {
+      "P1 exactly 0.9": "passes (>=)",
+      "P1 exactly 0.5": "not under the stop; under control_bar, so no call",
+      "P1 between 0.5 and 0.9": "no call whatever the variants read; the variants still run and are reported",
+      "rise exactly 0.2": "counts as a rise (>=)",
+      "one variant raises seed 0, another raises seed 1": "no rival a (one variant must raise both); not rival b (a rise on a seed exists): no call",
+      "a variant raises one seed only": "no call",
+      "every reading of a variant failed (Ridge.solve's factorisation at a tiny penalty)": "that variant has no reading and counts as no rise",
+      "a variant's H negative (d above the gap)": "its rise is computed as is; no rise",
+      "the job ended before every reading (exit 3 not resubmitted)": "incomplete, no outcome; after the card's stop the variants are not needed",
+      "control not read": "not read"
+    },
+    "checked": "plot.outcome was run on each of these cases on the CPU before filing (stand-in values, no model)"
+  },
+  "blind_to": [
+    "every reading is of the last position's next-token distribution only, through affine maps of the 67M's activations; a nonlinear map is not tried",
+    "P1 tests the search on a target that is exactly an affine edit at one site; it cannot see a fine-tune's change spread over weights in every block",
+    "the ceiling is not an upper bound on H (a map can land nearer the fine-tune than F does)",
+    "the variants use the ridge map only, without E154's 200-step KL refinement (E154 kept the ridge at all ten readings, refinement rejected)",
+    "variant a's map writes earlier positions from all positions' activations (not causal); it reaches more than a causal map, so a null there is the stronger null",
+    "variant b fits its two maps one after the other, not jointly; its first map is E154's",
+    "two seeds, one task, one alpha, E154's windows; no new fine-tune is trained"
+  ],
+  "positive_control": "P1, read first and alone; the repeat R checks the new code against E154's own H"
+}

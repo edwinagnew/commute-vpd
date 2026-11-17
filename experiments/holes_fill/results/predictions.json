@@ -1,0 +1,85 @@
+{
+  "experiment": "E143, experiments/holes_fill, cell P2.10",
+  "filed": "2026-11-10, before run.py ran; never edited after the run (a dated report instead)",
+  "card": "reports/plans/2026-11-10_plan_p2-10-card.md",
+  "plan": "reports/plans/2026-11-10_plan_E143-holes.md",
+  "seen_before_filing": "the share on these rows (E136 stage1.json, trained): every pair's sides apart by 0.5 to 0.7 of the gain; the older steering cells of experiments/method_table/results/table.json (one pooled vector, half the read rows, one strength); E140's neuron version on the two label pairs, every share below 0.03 in size at both k; E135's fair steering on copy vs lookup. No reading of this run.",
+  "settings": {
+    "strengths": [0, 0.5, 1, 2, 4, 8],
+    "n_select": 512,
+    "n_random": 8,
+    "random_seed": 0,
+    "k_fixed": 64
+  },
+  "thresholds": {
+    "smallest_gap": 0.1,
+    "inert": 0.05,
+    "gain_floor": 1.0,
+    "zero_tol": 1e-9,
+    "r_tol": 0.01,
+    "neuron_tol": 0.0001,
+    "projected_limit_min": 25
+  },
+  "definitions": {
+    "reading": "log-odds of each read row's target at the read position over the whole vocabulary (identity.log_odds, the share's unit); every method's value is its mean change on the read rows over the fine-tune's own mean gain on them (fp32 target model); nan when the gain is below gain_floor",
+    "share": "E136's trained route_split share on the same rows (experiments/share_untrained/results/stage1.json, states.<state>.trained), not recomputed except in the control",
+    "neuron version": "W0 with each block's MLP firing kept only on its TopK neurons by |firing| at every position, the sets from the state's own forward (N01) or W0's (N00); mean(N01 - N00) / gain; k 64 per block, and k matched per block to the down_proj on-count of the decomposition, E136 stage0.json k_m (15, 3, 6, 30)",
+    "steering": "fair_steering: per layer a pooled vector, the mean over every training window of the state's change in block input at the read position, and a per-key vector, that mean over the training windows of each key (the token at the read position); (layer, strength) chosen by the largest mean log-odds rise on the first n_select training windows, ties to the lower layer then strength; read on the read rows. Per-key vectors only where the task has keys (the kv tasks); on lowercase vs ciphers no token in the window fixes the answer, so pooled only",
+    "handed the answer": "on every kv task (copy vs random, half-known vs cipher both forms, rank-1 vs cipher, copy vs cipher) the target is table[key], a fixed function of the key, so a per-key vector is handed the answer on both sides; on lowercase vs ciphers there is no key",
+    "pair rule": "rules.call: gap = mean(reuse side) - mean(new side); spread = larger within-side max - min; separates iff |gap| >= 0.1 and |gap| > spread; inert iff every |value| < 0.05; unreadable iff a nan or fewer than 2 on a side",
+    "families": "steering = per pair the wider-|gap| record of pooled and per-key; neuron = per pair the wider of k 64 and k matched (rules.wider)",
+    "compare": "rules.compare: count = pairs the family separates with the share's sign; share_count = pairs the share separates; unreadable pairs out of both counts; rival A iff count >= share_count, rival B iff fewer; 'no call: inert' if inert on every counted pair"
+  },
+  "pairs": {
+    "steering": ["e46_copy_random", "e53_lowercase_cipher", "e54_matched", "e54_own", "open_pair_c3", "open_pair_c3_copy"],
+    "neuron": ["e46_copy_random", "e53_lowercase_cipher", "e54_matched", "e54_own", "open_pair_c3", "open_pair_c3_copy", "e62_copy_lookup"],
+    "already read, drawn from their files": "steering on e62 (E135); both on the case and repeat label pairs (E140)",
+    "not covered": "the four 96-key pairs and the step ladder: no saved updates on both sides"
+  },
+  "edge_cases_checked_before_filing": {
+    "gap below zero": "separates by its size; counts for the family only with the share's sign, else listed in opposite_sign",
+    "ties": "|gap| exactly 0.1 with spread 0 separates; |gap| equal to the spread does not; two kinds with equal |gap|: the first (pooled, k 64)",
+    "zero gain": "a gain below 1 makes that share nan and the pair unreadable for that reading; out of both counts",
+    "missing seed": "fewer than 2 on a side or a nan: unreadable",
+    "do-nothing state": "every share 0: inert, never separates; a family inert on every pair is 'no call: inert', and the stop counts it as separating nothing",
+    "share unreadable": "a pair where the share is unreadable leaves both counts"
+  },
+  "control": {
+    "order": "stage 0 runs first and alone; a miss stops the job (exit 1) before any state is read",
+    "zero": "a zero update reads exactly 0 (<= 1e-9) in N01 - N00 and T1 - T0 at both k, and in steered minus W0 logits at every layer, strength and kind, on copy vs random's read and training rows",
+    "strength 0": "ident32_s0's vectors at strength 0 change no logit (<= 1e-9)",
+    "share reproduction": "route_split of e46/ident32_s0 and e62/copy_s0 within 0.01 of E136's 0.80244 and 1.09456 (E136 reproduced its sources exactly)",
+    "neuron reproduction": "case_label/real_s0 at k 64 in log-odds within 1e-4 of E140's 0.0091816 (same fp32 calls, same rows and batches; a broken path reading 0 would miss)"
+  },
+  "predictions": {
+    "P1": {
+      "claim": "steering, in the fair form, separates fewer of the six pairs than the share does on the same rows (rival B for the steering family)",
+      "rule": "score.compare.steering.verdict == 'rival B'",
+      "lean": "true",
+      "confidence": "medium",
+      "why": "the older pooled reading separated four of the six by this rule and missed the two size-matched pairs, rank-1 vs cipher and half-known vs cipher at equal size, by gaps of 0.03 and 0.04; the per-key vector is handed the answer on both sides of every kv pair, so it should lift both sides alike"
+    },
+    "P2": {
+      "claim": "the neuron version writes almost nothing: 'no call: inert' or rival B for the neuron family, never rival A",
+      "rule": "score.compare.neuron.verdict in ('no call: inert', 'rival B')",
+      "lean": "true",
+      "confidence": "medium",
+      "why": "on the two label pairs E140 read every neuron share below 0.03 in size at both k; with 3 to 64 neurons kept per block the masked model is far from either target"
+    },
+    "P3": {
+      "claim": "on the kv pairs the per-key steering share is above the pooled one on most states",
+      "rule": "over the 44 kv states, count(states.<s>.steering.perkey.share > states.<s>.steering.pooled.share) > 22",
+      "lean": "true",
+      "confidence": "medium",
+      "why": "the per-key vector is handed the answer (table[key]); E135's per-key lookup read 0.63 to 0.69 against 0.14 to 0.16 pooled"
+    }
+  },
+  "reported_not_scored": [
+    "each reading separately against the share (score.each_reading), and per pair which readings separate",
+    "random norm-matched vectors: mean share expected within 0.1 of 0 on each state (a miss marks the reading, no stop)",
+    "cross-application, same-numbered seeds across the sides; cosines between pooled vectors per layer",
+    "off-target KL of the steered model and of the state itself",
+    "the neuron version's N00 - T0, how far the TopK-masked W0 is from W0",
+    "the matched-k gain of the masked cells against the fp32 gain (gain_cells), equal by construction"
+  ]
+}

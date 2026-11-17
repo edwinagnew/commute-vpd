@@ -1,0 +1,60 @@
+{
+ "amendment": "E131 Amendment 1: the shared W0 references on the new decomposition",
+ "filed": "2026-11-09, before any run of experiments/qwen_new_decomp/w0_refs.py",
+ "plan": "reports/plans/2026-11-09_plan_new-decomposition-reruns.md, step 0(b); no result of the plan rests on a band set here beyond the stop rules below",
+ "recipe": "E40's stage G (experiments/qwen_sft/run.py:790-824): rows fineweb = experiments/qwen_adversary/results/tokens.json first 128, maths = experiments/qwen_sft/results/maths_rows.json (128 rows), 512 tokens, one row per forward; importance_pass threshold 0.01 (g statistics, alive = g > 0.01 anywhere in either block); adversary pgd_kl_rows seed 0, 20 steps of 0.1, fp32 components, final sources saved fp32. Only --decomp changes. Memory departure stated in the script's docstring: the g pass in bf16 (components cast to bf16 as the readouts do anyway), Γ freed, g held on the host as in E131.",
+ "quantities": {
+  "alive": "per site the subcomponents with g > 0.01 at any position of either block; count and index",
+  "g statistics": "for each subcomponent, mean_g over every position and active = share of positions with g > 0.01; per block",
+  "L1 ratio": "Σ|fresh - stored| / Σ stored over all subcomponents of a block, per statistic; fresh in fp64 before the fp16 save, stored as read from the fp16 file",
+  "masked KL": "mean over positions of KL(target || masked at m = g, Δ off)",
+  "step-0 KL": "the adversary's KL at its initial random sources, as printed by qwen_vpd.pgd_kl_rows at 4 decimals",
+  "final KL": "the adversary's token-weighted KL at its final sources"
+ },
+ "rules": {
+  "alive": {
+   "expected": 494598,
+   "rule": "stage 0, exact: the count equals 494598 and per site the fresh index equals qwen_maps.alive_from_stats of the stored W0_maths and W0_fineweb files",
+   "source": "experiments/qwen_sft/results/G.json alive.subcomponents"
+  },
+  "gstats": {
+   "tol": 0.000567,
+   "rule": "stage 0: L1 ratio <= tol for mean_g and for active, both blocks",
+   "source": "the stored fp16 rounding, relative at most 2^-11 = 4.88e-4 for normal values, plus the one old-versus-old comparison across the two cards: |rel_diff| 7.9e-5, experiments/qwen_new_decomp/results/controls.json key c_old.rel_diff (the L40 masked KL through this path against the H100 stored value). No per-subcomponent comparison across cards exists; this bound is the sum of those two terms"
+  },
+  "masked_kl": {
+   "refs": {"fineweb": 0.14167061740135692, "maths": 0.058863653236301064},
+   "tol": 0.000395,
+   "rule": "stage 0: |read / ref - 1| <= tol, per block",
+   "source": "refs: experiments/qwen_sft/results/G.json fineweb.masked_kl and maths.masked_kl (H100). Tolerance 5 x the measured 7.9e-5 of c_old.rel_diff above, the factor because that is one pair on one block"
+  },
+  "adv_step0": {
+   "refs": {"fineweb": 0.0918, "maths": 0.0374},
+   "tol": 0.01,
+   "rule": "stage 0: |read / ref - 1| <= tol, per block. The initial sources depend on the seed only, so this tests that the same random sources are drawn on the same rows",
+   "source": "refs: experiments/qwen_sft/results/job1/run.log lines 10 and 34 (H100, 4 decimals). The cross-card check: experiments/qwen_new_decomp/results/measure_old_T.json adv_steps[0] reads 0.0918 on an L40. Both sides are read at 4 decimals, so two equal values can differ by 1e-4 after rounding: 0.27% of 0.0374. Tolerance 1%, about 3.7 times that, since the only cross-card pair is FineWeb's"
+  },
+  "adv_final": {
+   "refs": {"fineweb": 1.7031564672943205, "maths": 4.235135921742767},
+   "tol": 0.157,
+   "rule": "stage 0: |read / ref - 1| <= tol, per block. A wide stop only: the sign steps are chaotic across cards",
+   "source": "refs: experiments/qwen_sft/results/G.json fineweb.adv and maths.adv (H100, seed 0). Tolerance from the old decomposition's seed spread on FineWeb, the largest relative gap among seeds 0-2: |1.4365 / 1.7032 - 1| = 0.157 (experiments/qwen_sft/results/run.log lines 286 and 330, G.json). Same seed across cards measured +1.8% on FineWeb (measure_old_T.json adv_token_weighted 1.7339 on an L40 against 1.7032 on an H100), well inside"
+  },
+  "sources_agreement": {
+   "rule": "reported only: mean |fresh - stored| and the share of entries within one step of 0.1, per block. No bar: the stored sources are final iterates of a chaotic sign ascent, so the expected agreement across cards is unknown"
+  },
+  "stage1": {
+   "rule": "stage 1 stops only when the alive total is 0 or any written tensor or KL is non-finite. Otherwise reported",
+   "expected": "alive total positive; E131 (reports/analyses/2026-11-07_analysis_e131-new-decomposition.md) has about 6,200 active subcomponents per token on new against about 8,400 on old at threshold 0.1, so the total may sit below 494598. Not a pass bar"
+  }
+ },
+ "expected_old_stage0": {
+  "alive": 494598,
+  "gstats_L1": "<= 5.67e-4 per block and statistic; expected about 1.2e-4 to 2.4e-4 (the mean fp16 rounding of the stored file, ulp / 4 relative to values in one binade) plus any cross-card difference",
+  "masked_kl": "fineweb 0.14166 (E131's L40 reading 0.141659428, controls.json c_old.ci_kl_mean), maths near 0.05886",
+  "step0": "fineweb 0.0918, maths 0.0374",
+  "final": "fineweb near 1.7339 (E131's L40 reading), maths near 4.235"
+ },
+ "control_can_fail_on": "a different row set or cut; a decomposition or target file that has changed; a code path that no longer reproduces g (Γ in bf16, the readouts, the threshold), the masked forward, or the source initialisation; a stored file that was not the one the old job wrote. It cannot tell: whether the stored statistics themselves were right, or whether the new decomposition's references are meaningful (the alive set is read on the two blocks only)",
+ "edge_cases_checked": "Run by hand on each rule before filing, and by the dry run on stand-in tensors: (1) empty pool: block_rows asserts 128 rows of 512 tokens before any forward, so no rule reads an empty block; (2) zero denominator: L1 ratio returns NaN when the stored sum is 0, and NaN <= tol is False, so the control stops as a miss (a stored file of all zeros is not the old job's file); the relative band asserts a non-zero filed reference; (3) ties: no rule orders or ranks anything; an L1 ratio exactly at tol, or a KL exactly at the band's edge, passes (<=), stated here; (4) zero alive: stage 0 fails the exact count (0 != 494598), stage 1 stops with 'alive total is 0'; (5) a non-finite read: fails the rule's comparison in stage 0 (relative band returns False through math.isfinite; the L1 ratio is non-finite and fails <=) and stops stage 1 through its finite check; (6) a stage-0 result absent or with pass false: stage 1 refuses to start"
+}

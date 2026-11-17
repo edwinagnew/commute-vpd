@@ -45,11 +45,12 @@ def linears(model: Any) -> dict[str, torch.nn.Linear]:
 
 @contextmanager
 def set_weights(model: Any, W: Weights | None) -> Iterator[None]:
-    """The decomposed matrices set to W for the block (None: unchanged); the previous tensors back on exit."""
+    """The matrices W names set to W for the block, every other one left as it is (None: all unchanged); the previous
+    tensors back on exit. A decomposition of some sites only (p-015e0710: the 84 MLP ones) passes those sites."""
     if W is None:
         yield
         return
-    lins = linears(model)
+    lins = {s: model.get_submodule("model." + s) for s in W}
     before = {s: lin.weight.data for s, lin in lins.items()}
     try:
         for s, lin in lins.items():
@@ -330,15 +331,16 @@ class Uploader:
         self.prefix, self.max_bytes, self.log, self.sent = prefix, max_bytes, log, []
         self.run: Any = wandb.init(entity=ENTITY, project=PROJECT, job_type=prefix, dir=str(wandb_dir))
 
-    def add(self, path: Path, wait: bool = False) -> None:
-        """Queue `path` as an artifact; with `wait`, block until it is uploaded (the benchmark's timing)."""
+    def add(self, path: Path, wait: bool = False, name: str | None = None) -> None:
+        """Queue `path` as an artifact (named `name`, default `<prefix>-<folder>-<file>`); with `wait`, block until it
+        is uploaded (the benchmark's timing)."""
         import wandb
 
         size = path.stat().st_size
         if self.max_bytes is not None and size > self.max_bytes:
             self.log(f"[upload] skipped {path} ({size / 1e9:.2f} GB, over the cap)")
             return
-        name = re.sub(r"[^A-Za-z0-9_.-]", "-", f"{self.prefix}-{path.parent.name}-{path.name}")
+        name = re.sub(r"[^A-Za-z0-9_.-]", "-", name or f"{self.prefix}-{path.parent.name}-{path.name}")
         art = wandb.Artifact(name, type=self.prefix)
         art.add_file(str(path), skip_cache=True, policy="immutable")
         logged = self.run.log_artifact(art)

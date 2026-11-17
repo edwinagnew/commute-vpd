@@ -1,0 +1,95 @@
+E195 (P1.25) start; settings {'layer': 1, 'C': (486, 499, 613, 778, 1125, 2028, 2352, 2960), 'factors': (2.0, 10.0), 'target': 2.0, 'trained': (2, 3), 'window': 41, 'pile_train': 16384, 'pile_held': 1024, 'data_seed': 0, 'fit_seed': 0, 'batch': 64, 'steps': 4000, 'lr': 3e-05, 'warmup': 100, 'check_step': 200, 'log_every': 250, 'eval_batch': 64, 'profile_batch': 25}; thresholds {'r_tol': 1e-06, 'gain_tol': 0.0001, 'kl_floor': 1e-06, 'closure_bar': 0.9, 'orders': 5, 'order_seed': 0, 'chunk': 256, 'gate_tol': 0.001}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[data] train rows 0..4096: cached at /root/artifacts/sets/train_0_4096.npy
+[data] val rows 0..256: cached at /root/artifacts/sets/val_0_256.npy
+attribution mass per layer [5397.081, 5984.1453, 5288.7688, 3488.1605]; layer 1; C [486, 499, 613, 778, 1125, 2028, 2352, 2960]
+do_nothing: hybrid gate (max relative logit error, nothing put back) 0
+do_nothing level A: 12288 non-zero units, 0 zero, 0 changed, min r 1.00000000, mean r 1.000000; changed 
+do_nothing level A: contrast no change, KL(F || M) 0, retention None
+do_nothing level B: 28 non-zero units, 0 zero, 0 changed, min r 1.00000000, mean r 1.000000; changed 
+do_nothing level B: contrast no change, KL(F || M) 0, retention None
+do_nothing: checks hold
+moved_copy: hybrid gate (max relative logit error, nothing put back) 1.71e-06
+moved_copy level A: 12288 non-zero units, 8 zero, 0 changed, min r 1.00000000, mean r 1.000000; changed 
+moved_copy level A: contrast no change, KL(F || M) 4.42883e-12, retention None
+moved_copy level B: 28 non-zero units, 0 zero, 0 changed, min r 1.00000000, mean r 1.000000; changed 
+moved_copy level B: contrast no change, KL(F || M) 4.42883e-12, retention None
+moved_copy: checks hold
+x2: hybrid gate (max relative logit error, nothing put back) 0
+x2 level A: 12288 non-zero units, 0 zero, 8 changed, min r 1.00000000, mean r 1.000000; changed L1.n486 r 1.000000 g 2.0000, L1.n499 r 1.000000 g 2.0000, L1.n613 r 1.000000 g 2.0000, L1.n778 r 1.000000 g 2.0000, L1.n1125 r 1.000000 g 2.0000, L1.n2028 r 1.000000 g 2.0000, L1.n2352 r 1.000000 g 2.0000, L1.n2960 r 1.000000 g 2.0000
+  level A order 0: set of 4, retention 1.0000000000000018, closure 0.9241, 18 evaluations, 0.4 s
+  level A order 1: set of 4, retention 1.0000000000000013, closure 0.9133, 18 evaluations, 0.4 s
+  level A order 2: set of 5, retention 1.0000000000000013, closure 0.9134, 19 evaluations, 0.4 s
+  level A order 3: set of 4, retention 1.0000000000000018, closure 0.9241, 18 evaluations, 0.4 s
+  level A order 4: set of 5, retention 1.0000000000000016, closure 0.9141, 17 evaluations, 0.4 s
+x2 level A: contrast read, KL(F || M) 0.101414, retention [1.0000000000000018, 1.0000000000000013, 1.0000000000000013, 1.0000000000000018, 1.0000000000000016]
+x2 level B: 28 non-zero units, 0 zero, 1 changed, min r 0.99492618, mean r 0.999819; changed L1.mlp r 0.994926 g 1.5565
+  level B order 0: set of 1, retention 0.9949261803484197, closure 1.0000, 9 evaluations, 0.2 s
+  level B order 1: set of 1, retention 0.9949261803484197, closure 1.0000, 9 evaluations, 0.2 s
+  level B order 2: set of 1, retention 0.9949261803484197, closure 1.0000, 9 evaluations, 0.2 s
+  level B order 3: set of 1, retention 0.9949261803484197, closure 1.0000, 9 evaluations, 0.2 s
+  level B order 4: set of 1, retention 0.9949261803484197, closure 1.0000, 9 evaluations, 0.2 s
+x2 level B: contrast read, KL(F || M) 0.101414, retention [0.9949261803484197, 0.9949261803484197, 0.9949261803484197, 0.9949261803484197, 0.9949261803484197]
+x2: checks hold
+x10: hybrid gate (max relative logit error, nothing put back) 0
+x10 level A: 12288 non-zero units, 0 zero, 8 changed, min r 1.00000000, mean r 1.000000; changed L1.n486 r 1.000000 g 10.0000, L1.n499 r 1.000000 g 10.0000, L1.n613 r 1.000000 g 10.0000, L1.n778 r 1.000000 g 10.0000, L1.n1125 r 1.000000 g 10.0000, L1.n2028 r 1.000000 g 10.0000, L1.n2352 r 1.000000 g 10.0000, L1.n2960 r 1.000000 g 10.0000
+  level A order 0: set of 5, retention 1.0, closure 0.9327, 19 evaluations, 0.4 s
+  level A order 1: set of 5, retention 0.9999999999999989, closure 0.9043, 18 evaluations, 0.4 s
+  level A order 2: set of 5, retention 0.9999999999999989, closure 0.9043, 17 evaluations, 0.3 s
+  level A order 3: set of 6, retention 0.9999999999999997, closure 0.9222, 18 evaluations, 0.4 s
+  level A order 4: set of 6, retention 0.9999999999999997, closure 0.9222, 16 evaluations, 0.3 s
+x10 level A: contrast read, KL(F || M) 0.713758, retention [1.0, 0.9999999999999989, 0.9999999999999989, 0.9999999999999997, 0.9999999999999997]
+x10 level B: 28 non-zero units, 0 zero, 1 changed, min r 0.97302849, mean r 0.999037; changed L1.mlp r 0.973028 g 6.0087
+  level B order 0: set of 1, retention 0.9730284854361496, closure 1.0000, 9 evaluations, 0.2 s
+  level B order 1: set of 1, retention 0.9730284854361496, closure 1.0000, 9 evaluations, 0.2 s
+  level B order 2: set of 1, retention 0.9730284854361496, closure 1.0000, 9 evaluations, 0.2 s
+  level B order 3: set of 1, retention 0.9730284854361496, closure 1.0000, 9 evaluations, 0.2 s
+  level B order 4: set of 1, retention 0.9730284854361496, closure 1.0000, 9 evaluations, 0.2 s
+x10 level B: contrast read, KL(F || M) 0.713758, retention [0.9730284854361496, 0.9730284854361496, 0.9730284854361496, 0.9730284854361496, 0.9730284854361496]
+x10: checks hold
+STAGE 0 DONE
+  fit step 0: held-out copy24 KL(x2 || F) 0.282503
+  fit step 1: batch KL 0.277926, held-out copy24 KL(x2 || F) 0.282181
+  fit step 200: batch KL 0.0744353, held-out copy24 KL(x2 || F) 0.0938726
+  fit step 250: batch KL 0.056495, held-out copy24 KL(x2 || F) 0.0737308
+  fit step 500: batch KL 0.0302549, held-out copy24 KL(x2 || F) 0.050385
+  fit step 750: batch KL 0.0231489, held-out copy24 KL(x2 || F) 0.0447848
+  fit step 1000: batch KL 0.0214051, held-out copy24 KL(x2 || F) 0.0422792
+  fit step 1250: batch KL 0.0213243, held-out copy24 KL(x2 || F) 0.0406475
+  fit step 1500: batch KL 0.0185321, held-out copy24 KL(x2 || F) 0.0393599
+  fit step 1750: batch KL 0.0187151, held-out copy24 KL(x2 || F) 0.0383508
+  fit step 2000: batch KL 0.0225971, held-out copy24 KL(x2 || F) 0.0378702
+  fit step 2250: batch KL 0.0152283, held-out copy24 KL(x2 || F) 0.0373223
+  fit step 2500: batch KL 0.0161937, held-out copy24 KL(x2 || F) 0.0361602
+  fit step 2750: batch KL 0.0159442, held-out copy24 KL(x2 || F) 0.0361927
+  fit step 3000: batch KL 0.018101, held-out copy24 KL(x2 || F) 0.0357935
+  fit step 3250: batch KL 0.0147352, held-out copy24 KL(x2 || F) 0.0358792
+  fit step 3500: batch KL 0.0149715, held-out copy24 KL(x2 || F) 0.0350782
+  fit step 3750: batch KL 0.0146198, held-out copy24 KL(x2 || F) 0.0353145
+  fit step 4000: batch KL 0.0139132, held-out copy24 KL(x2 || F) 0.0343101
+rebuilt: fit ratio KL(F || x2) / KL(x2 || M) copy24 held-out 0.3489, Pile held-out 0.3786; KL(F || M) copy24 0.119962, Pile 0.121067
+STAGE 1 DONE
+rebuilt: hybrid gate (max relative logit error, nothing put back) 0
+rebuilt level A: 12280 non-zero units, 8 zero, 6144 changed, min r 0.58105613, mean r 0.986705; changed L2.n0 r 0.960325 g 1.1429, L2.n1 r 0.921132 g 1.1805, L2.n2 r 0.973516 g 0.9824, L2.n3 r 0.973283 g 0.9907, L2.n4 r 0.942386 g 0.9206, L2.n5 r 0.953668 g 0.9086, L2.n6 r 0.961950 g 0.9593, L2.n7 r 0.960689 g 1.1311, L2.n8 r 0.962500 g 1.0174, L2.n9 r 0.972269 g 1.0540, L2.n10 r 0.951857 g 1.0548, L2.n11 r 0.976746 g 1.0958, L2.n12 r 0.947682 g 0.8818, L2.n13 r 0.966787 g 0.9574, L2.n14 r 0.948345 g 1.0885, L2.n15 r 0.942442 g 1.2718, L2.n16 r 0.964787 g 1.1678, L2.n17 r 0.932386 g 0.9504, L2.n18 r 0.889501 g 1.2061, L2.n19 r 0.977856 g 0.9896, L2.n20 r 0.973985 g 1.0268, L2.n21 r 0.969541 g 0.9598, L2.n22 r 0.982191 g 1.0717, L2.n23 r 0.977187 g 1.0300
+  level A order 0: set of 4284, retention 0.9715798391140426, closure 0.9000, 5915 evaluations, 127.7 s
+  level A order 1: set of 4183, retention 0.9715362594570268, closure 0.9000, 5711 evaluations, 123.4 s
+  level A order 2: set of 4392, retention 0.9716582777240381, closure 0.9000, 6324 evaluations, 136.1 s
+  level A order 3: set of 4240, retention 0.9716231108399895, closure 0.9000, 6055 evaluations, 130.8 s
+  level A order 4: set of 4290, retention 0.9718293085028221, closure 0.9000, 5810 evaluations, 125.2 s
+rebuilt level A: contrast read, KL(F || M) 0.119962, retention [0.9715798391140426, 0.9715362594570268, 0.9716582777240381, 0.9716231108399895, 0.9718293085028221]
+rebuilt level B: 28 non-zero units, 0 zero, 3 changed, min r 0.79922314, mean r 0.990230; changed L1.mlp r 0.940892 g 0.4435, L2.mlp r 0.799223 g 1.0112, L3.mlp r 0.986333 g 1.0147
+  level B order 0: set of 3, retention 0.9088160479103021, closure 1.0000, 11 evaluations, 0.2 s
+  level B order 1: set of 3, retention 0.9088160479103021, closure 1.0000, 11 evaluations, 0.2 s
+  level B order 2: set of 3, retention 0.9088160479103021, closure 1.0000, 11 evaluations, 0.2 s
+  level B order 3: set of 3, retention 0.9088160479103021, closure 1.0000, 11 evaluations, 0.2 s
+  level B order 4: set of 3, retention 0.9088160479103021, closure 1.0000, 11 evaluations, 0.2 s
+rebuilt level B: contrast read, KL(F || M) 0.119962, retention [0.9088160479103021, 0.9088160479103021, 0.9088160479103021, 0.9088160479103021, 0.9088160479103021]
+rebuilt level A: contrast read, retention [0.9715798391140426, 0.9715362594570268, 0.9716582777240381, 0.9716231108399895, 0.9718293085028221] (range 0.9715362594570268..0.9718293085028221)
+rebuilt level B: contrast read, retention [0.9088160479103021, 0.9088160479103021, 0.9088160479103021, 0.9088160479103021, 0.9088160479103021] (range 0.9088160479103021..0.9088160479103021)
+STAGE 2 DONE
+E195 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rule_retention_fixed/results ===

@@ -1,0 +1,152 @@
+[rows gold] [128, 256], 14896 answer positions, 158 answers; W0 {"first": {"n": 158, "median_rank": 20.0, "mean_logp": -14.236320362235778}, "all": {"n": 14896, "median_rank": 1.0, "mean_logp": -2.7216050063827746}}
+[check gold/stage0] C0_do_nothing: ok {"overlap": 1.0, "on_both": NaN, "size": 0.0, "max_logp_diff": 0.0, "layer": null, "erank": null, "rows": "gold"}
+[rows gold_shuf_s0] [128, 256], 15023 answer positions, 157 answers; W0 {"first": {"n": 157, "median_rank": 59.0, "mean_logp": -18.892166671099936}, "all": {"n": 15023, "median_rank": 1.0, "mean_logp": -3.1735000694449353}}
+STAGE 0 DONE gold
+[library a1] start; NVIDIA H100 PCIe
+[rows template] [128, 256], 17086 answer positions, 141 answers; W0 {"first": {"n": 141, "median_rank": 24.0, "mean_logp": -16.08114137209899}, "all": {"n": 17086, "median_rank": 1.0, "mean_logp": -1.5670992408563753}}
+[check template/stage0] C0_do_nothing: ok {"overlap": 1.0, "on_both": NaN, "size": 0.0, "max_logp_diff": 0.0, "layer": null, "erank": null, "rows": "template"}
+[rows template_shuf_s0] [128, 256], 17859 answer positions, 134 answers; W0 {"first": {"n": 134, "median_rank": 22.0, "mean_logp": -16.21149687980538}, "all": {"n": 17859, "median_rank": 1.0, "mean_logp": -2.154950133822733}}
+STAGE 0 DONE template
+wandb: Currently logged in as: edwinagnew (edwinagnew-mats) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+[fetch] 5x.safetensors: 5637 MB in 41 s
+[fetch copy_s0_5x] 46 s; sha256 matches
+[ref copy_s0_5x] |δW| 0.173271, library 0.173271
+[fetch] last.safetensors: 5637 MB in 52 s
+[fetch cipher_s0_last] 56 s; sha256 matches
+[ref cipher_s0_last] |δW| 5.090653, library 5.090653
+[floor gold draw 0] overlap 0.998487 steer 1.0108834351861817; 85 s
+[floor gold draw 1] overlap 0.998485 steer 0.5284606948776063; 85 s
+[floor gold draw 2] overlap 0.998472 steer -; 17 s
+[floor gold draw 3] overlap 0.998504 steer -; 17 s
+[floor gold_shuf draw 0] overlap 0.998465 steer 0.6246996241892846; 85 s
+[floor gold_shuf draw 1] overlap 0.998470 steer 0.6317756910966091; 85 s
+[floor gold_shuf draw 2] overlap 0.998445 steer -; 17 s
+[floor gold_shuf draw 3] overlap 0.998485 steer -; 15 s
+[floor gold draw 0] overlap 0.969280 steer 1.2825092339487767; 83 s
+[floor gold draw 1] overlap 0.969305 steer 0.5326902441919366; 85 s
+[floor gold draw 2] overlap 0.968909 steer -; 17 s
+[floor gold draw 3] overlap 0.969603 steer -; 17 s
+[floor gold_shuf draw 0] overlap 0.968756 steer 0.8031827828964176; 85 s
+[floor gold_shuf draw 1] overlap 0.968944 steer 0.5931066238886716; 85 s
+[floor gold_shuf draw 2] overlap 0.968527 steer -; 17 s
+[floor gold_shuf draw 3] overlap 0.969226 steer -; 17 s
+[floor gold] band {"erank": 31.35663215479235, "overlap": 0.030323243419594692, "steer": 1.02918107118425}
+[check gold/stage1] C1_band: ok {"erank": 31.35663215479235, "overlap": 0.030323243419594692, "steer": 1.02918107118425}
+[floor template draw 0] overlap 0.998506 steer None; 21 s
+[floor template draw 1] overlap 0.998516 steer 0.42234058455911316; 85 s
+[floor template draw 2] overlap 0.998491 steer -; 17 s
+[floor template draw 3] overlap 0.998513 steer -; 18 s
+[floor template_shuf draw 0] overlap 0.998485 steer 0.906295464357584; 86 s
+[floor template_shuf draw 1] overlap 0.998486 steer 0.6039350972099352; 85 s
+[floor template_shuf draw 2] overlap 0.998454 steer -; 17 s
+[floor template_shuf draw 3] overlap 0.998475 steer -; 18 s
+[floor template draw 0] overlap 0.969668 steer None; 21 s
+[floor template draw 1] overlap 0.969924 steer 0.38381793099136186; 85 s
+[floor template draw 2] overlap 0.969263 steer -; 17 s
+[floor template draw 3] overlap 0.969814 steer -; 18 s
+[floor template_shuf draw 0] overlap 0.969057 steer 1.2843972513567343; 85 s
+[floor template_shuf draw 1] overlap 0.969159 steer 0.5835901631807627; 85 s
+[floor template_shuf draw 2] overlap 0.968508 steer -; 17 s
+[floor template_shuf draw 3] overlap 0.969091 steer -; 17 s
+[floor template] band {"erank": 31.35663215479235, "overlap": 0.030213688408844752, "steer": null}
+[check template/stage1] C1_band: ok {"erank": 31.35663215479235, "overlap": 0.030213688408844752, "steer": null}
+STAGE 1 DONE gold; GPU peak 30.9 GiB
+STAGE 1 DONE template; GPU peak 30.9 GiB
+[fetch] last.safetensors: 5637 MB in 42 s
+[fetch gold_s0_last] 47 s; sha256 matches
+[check gold/stage2] norm gold_s0_last: ok {"norm": 2.8545186568128997, "library": 2.8545186568128997}
+[fetch] 5x.safetensors: 5637 MB in 59 s
+[fetch gold_s0_5x] 63 s; sha256 matches
+[state gold_s0_last] {"side": "gold", "seed": 0, "save": "last", "step": 100, "artifact": "p35-gold-s0-last", "size": 0.0021781622437994186, "prior_rank": 20.0, "steer": 0.675937501412545, "gain": 1.7045652343914026, "layer": 27, "random_dir": 0.15830754226160362, "max_logp_diff": 42.236305236816406, "erank": 1308.2646822673903, "overlap": 0.6133899126251822, "on_both": 0.922046079201527, "seconds": 139.35575318336487}
+[time gold] 1 of 12 states this job
+[check gold/stage2] norm gold_s0_5x: ok {"norm": 1.0288971864822307, "library": 1.0288971864822307}
+[fetch] last.safetensors: 5637 MB in 59 s
+[fetch gold_s1_last] 63 s; sha256 matches
+[state gold_s0_5x] {"side": "gold", "seed": 0, "save": "5x", "step": 12, "artifact": "p35-gold-s0-5x", "size": 0.0007851078496187732, "prior_rank": 20.0, "steer": 0.7298263976136602, "gain": 1.5991290586819935, "layer": 27, "random_dir": 0.1675792366319221, "max_logp_diff": 43.49452209472656, "erank": 1118.8412032291303, "overlap": 0.6936433765656851, "on_both": 0.9349971439945106, "seconds": 139.59745979309082}
+[time gold] 2 of 12 states this job
+[check gold/stage2] norm gold_s1_last: ok {"norm": 2.8716193084961956, "library": 2.8716193084961956}
+[fetch] 5x.safetensors: 5637 MB in 42 s
+[fetch gold_s1_5x] 46 s; sha256 matches
+[state gold_s1_last] {"side": "gold", "seed": 1, "save": "last", "step": 100, "artifact": "p35-gold-s1-last", "size": 0.0021912110265607503, "prior_rank": 20.0, "steer": 0.6694753968004135, "gain": 1.7321551441673566, "layer": 27, "random_dir": 0.15856599018673853, "max_logp_diff": 42.02524948120117, "erank": 1306.3329517806271, "overlap": 0.6107970061943045, "on_both": 0.9230008510060874, "seconds": 139.80845832824707}
+[time gold] 3 of 12 states this job
+[check gold/stage2] norm gold_s1_5x: ok {"norm": 1.0349416242325402, "library": 1.0349416242325402}
+[fetch] last.safetensors: 5637 MB in 50 s
+[fetch gold_s2_last] 54 s; sha256 matches
+[state gold_s1_5x] {"side": "gold", "seed": 1, "save": "5x", "step": 12, "artifact": "p35-gold-s1-5x", "size": 0.0007897201039690107, "prior_rank": 20.0, "steer": 0.7244100278274724, "gain": 1.5994624341308634, "layer": 27, "random_dir": 0.16636047150304362, "max_logp_diff": 43.33638381958008, "erank": 1118.6171914871195, "overlap": 0.6888897177780345, "on_both": 0.9328740577136967, "seconds": 139.60924649238586}
+[time gold] 4 of 12 states this job
+[check gold/stage2] norm gold_s2_last: ok {"norm": 2.865186736596296, "library": 2.865186736596296}
+[fetch] 5x.safetensors: 5637 MB in 66 s
+[fetch gold_s2_5x] 70 s; sha256 matches
+[state gold_s2_last] {"side": "gold", "seed": 2, "save": "last", "step": 100, "artifact": "p35-gold-s2-last", "size": 0.0021863026034858314, "prior_rank": 20.0, "steer": 0.666036992066974, "gain": 1.7343868664094368, "layer": 27, "random_dir": 0.1580258289418743, "max_logp_diff": 42.09740447998047, "erank": 1308.4157276370336, "overlap": 0.612897352648024, "on_both": 0.9224677219214268, "seconds": 139.86016726493835}
+[time gold] 5 of 12 states this job
+[check gold/stage2] norm gold_s2_5x: ok {"norm": 1.03387561597644, "library": 1.03387561597644}
+[fetch] last.safetensors: 5637 MB in 47 s
+[fetch gold_shuf_s0_last] 51 s; sha256 matches
+[state gold_s2_5x] {"side": "gold", "seed": 2, "save": "5x", "step": 12, "artifact": "p35-gold-s2-5x", "size": 0.0007889066782345269, "prior_rank": 20.0, "steer": 0.721091808188462, "gain": 1.6020367171636805, "layer": 27, "random_dir": 0.16382413113491123, "max_logp_diff": 43.465675354003906, "erank": 1120.0175484334209, "overlap": 0.6917056845018996, "on_both": 0.9328077638031276, "seconds": 140.1331603527069}
+[time gold] 6 of 12 states this job
+[check gold/stage2] norm gold_shuf_s0_last: ok {"norm": 2.9542317037735186, "library": 2.9542317037735186}
+[fetch] 5x.safetensors: 5637 MB in 51 s
+[fetch gold_shuf_s0_5x] 55 s; sha256 matches
+[state gold_shuf_s0_last] {"side": "gold_shuf", "seed": 0, "save": "last", "step": 100, "artifact": "p35-gold_shuf-s0-last", "size": 0.0022542490451890143, "prior_rank": 59.0, "steer": 0.6384834904658473, "gain": 1.8534829831005524, "layer": 27, "random_dir": 0.04724208858343456, "max_logp_diff": 43.8704948425293, "erank": 1277.6453250685524, "overlap": 0.5757790349003723, "on_both": 0.898685407324924, "seconds": 140.14754366874695}
+[time gold] 7 of 12 states this job
+[check gold/stage2] norm gold_shuf_s0_5x: ok {"norm": 0.841659485416206, "library": 0.841659485416206}
+[fetch] last.safetensors: 5637 MB in 48 s
+[fetch gold_shuf_s1_last] 53 s; sha256 matches
+[state gold_shuf_s0_5x] {"side": "gold_shuf", "seed": 0, "save": "5x", "step": 10, "artifact": "p35-gold_shuf-s0-5x", "size": 0.0006422346930168933, "prior_rank": 59.0, "steer": 0.7081502434836652, "gain": 1.6824841825108683, "layer": 27, "random_dir": 0.04892199485990349, "max_logp_diff": 42.65024948120117, "erank": 1071.3387924265987, "overlap": 0.6910769488000306, "on_both": 0.9308201660304833, "seconds": 139.59724688529968}
+[time gold] 8 of 12 states this job
+[check gold/stage2] norm gold_shuf_s1_last: ok {"norm": 2.9668833325126887, "library": 2.9668833325126887}
+[rows gold_shuf_s1] [128, 256], 15035 answer positions, 156 answers; W0 {"first": {"n": 156, "median_rank": 61.0, "mean_logp": -18.52791757077228}, "all": {"n": 15035, "median_rank": 1.0, "mean_logp": -3.025812488290551}}
+[fetch] 5x.safetensors: 5637 MB in 49 s
+[fetch gold_shuf_s1_5x] 53 s; sha256 matches
+[state gold_shuf_s1_last] {"side": "gold_shuf", "seed": 1, "save": "last", "step": 100, "artifact": "p35-gold_shuf-s1-last", "size": 0.0022639029670425137, "prior_rank": 61.0, "steer": 0.618361190256436, "gain": 1.7987426088676843, "layer": 27, "random_dir": 0.19183100944642853, "max_logp_diff": 44.45781707763672, "erank": 1276.1618713711894, "overlap": 0.573450309138542, "on_both": 0.8968542262194089, "seconds": 144.61711168289185}
+[time gold] 9 of 12 states this job
+[check gold/stage2] norm gold_shuf_s1_5x: ok {"norm": 0.8416458097530127, "library": 0.8416458097530127}
+[fetch] last.safetensors: 5637 MB in 46 s
+[fetch gold_shuf_s2_last] 50 s; sha256 matches
+[state gold_shuf_s1_5x] {"side": "gold_shuf", "seed": 1, "save": "5x", "step": 10, "artifact": "p35-gold_shuf-s1-5x", "size": 0.0006422242576977352, "prior_rank": 61.0, "steer": 0.7208122713639376, "gain": 1.5853670749317528, "layer": 27, "random_dir": 0.21654039525187777, "max_logp_diff": 43.45458221435547, "erank": 1073.3707075578325, "overlap": 0.693448261398112, "on_both": 0.93385063796141, "seconds": 139.5473256111145}
+[time gold] 10 of 12 states this job
+[check gold/stage2] norm gold_shuf_s2_last: ok {"norm": 2.9535276852000245, "library": 2.9535276852000245}
+[rows gold_shuf_s2] [128, 256], 15227 answer positions, 155 answers; W0 {"first": {"n": 155, "median_rank": 51.0, "mean_logp": -19.193643348262693}, "all": {"n": 15227, "median_rank": 1.0, "mean_logp": -3.0461123875008487}}
+[fetch] 5x.safetensors: 5637 MB in 42 s
+[fetch gold_shuf_s2_5x] 46 s; sha256 matches
+[state gold_shuf_s2_last] {"side": "gold_shuf", "seed": 2, "save": "last", "step": 100, "artifact": "p35-gold_shuf-s2-last", "size": 0.0022537118384441716, "prior_rank": 51.0, "steer": 0.6123652589129672, "gain": 1.8376050815155858, "layer": 27, "random_dir": -0.08971744052980148, "max_logp_diff": 43.452396392822266, "erank": 1276.8998335439323, "overlap": 0.5685985570124046, "on_both": 0.8937931427796025, "seconds": 144.0695562362671}
+[time gold] 11 of 12 states this job
+[check gold/stage2] norm gold_shuf_s2_5x: ok {"norm": 0.8401345350907701, "library": 0.8401345350907701}
+[state gold_shuf_s2_5x] {"side": "gold_shuf", "seed": 2, "save": "5x", "step": 10, "artifact": "p35-gold_shuf-s2-5x", "size": 0.0006410710680342341, "prior_rank": 51.0, "steer": 0.704179307601848, "gain": 1.6186119533380159, "layer": 27, "random_dir": -0.09903316949462358, "max_logp_diff": 42.69990921020508, "erank": 1071.3787311117233, "overlap": 0.6888122399081673, "on_both": 0.9293057758653661, "seconds": 139.61541032791138}
+[time gold] 12 of 12 states this job
+STAGE 2 DONE gold; GPU peak 30.9 GiB
+[fetch] last.safetensors: 5637 MB in 49 s
+[fetch template_s0_last] 53 s; sha256 matches
+[check template/stage2] norm template_s0_last: ok {"norm": 0.4865197645048616, "library": 0.4865197645048616}
+[fetch] last.safetensors: 5637 MB in 41 s
+[fetch template_s1_last] 45 s; sha256 matches
+[state template_s0_last] {"side": "template", "seed": 0, "save": "last", "step": 100, "artifact": "p35-template-s0-last", "size": 0.0003712426189184069, "prior_rank": 24.0, "steer": 0.1681238478768371, "gain": 0.7246140432584142, "layer": 27, "random_dir": -0.01998089661264785, "max_logp_diff": 38.00395965576172, "erank": 1101.4092952451604, "overlap": 0.8318958545454599, "on_both": 0.8963582172152998, "seconds": 139.3041672706604}
+[time template] 1 of 6 states this job
+[check template/stage2] norm template_s1_last: ok {"norm": 0.4881194726386895, "library": 0.4881194726386895}
+[fetch] last.safetensors: 5637 MB in 49 s
+[fetch template_s2_last] 53 s; sha256 matches
+[state template_s1_last] {"side": "template", "seed": 1, "save": "last", "step": 100, "artifact": "p35-template-s1-last", "size": 0.0003724632884172334, "prior_rank": 24.0, "steer": 0.16587770149112505, "gain": 0.7246866183835841, "layer": 27, "random_dir": -0.019716299123156415, "max_logp_diff": 38.19921875, "erank": 1102.2304543208609, "overlap": 0.8317326508482881, "on_both": 0.8955625227583646, "seconds": 139.8382432460785}
+[time template] 2 of 6 states this job
+[check template/stage2] norm template_s2_last: ok {"norm": 0.4886212253897289, "library": 0.4886212253897289}
+[fetch] last.safetensors: 5637 MB in 54 s
+[fetch template_shuf_s0_last] 58 s; sha256 matches
+[state template_s2_last] {"side": "template", "seed": 2, "save": "last", "step": 100, "artifact": "p35-template-s2-last", "size": 0.00037284615468276933, "prior_rank": 24.0, "steer": 0.1652219798966319, "gain": 0.7278401928863486, "layer": 27, "random_dir": -0.019837859354967315, "max_logp_diff": 38.09211349487305, "erank": 1104.6536846805436, "overlap": 0.8316997775709443, "on_both": 0.8949096496096315, "seconds": 140.00501894950867}
+[time template] 3 of 6 states this job
+[check template/stage2] norm template_shuf_s0_last: ok {"norm": 0.6080625405786463, "library": 0.6080625405786462}
+[fetch] last.safetensors: 5637 MB in 47 s
+[fetch template_shuf_s1_last] 53 s; sha256 matches
+[state template_shuf_s0_last] {"side": "template_shuf", "seed": 0, "save": "last", "step": 100, "artifact": "p35-template_shuf-s0-last", "size": 0.0004639867616895983, "prior_rank": 22.0, "steer": 0.4408167560327934, "gain": 1.0825494376059388, "layer": 27, "random_dir": 0.004389555256669386, "max_logp_diff": 45.07828903198242, "erank": 1064.5138413838363, "overlap": 0.7584693495861897, "on_both": 0.8916674923185275, "seconds": 140.56162405014038}
+[time template] 4 of 6 states this job
+[check template/stage2] norm template_shuf_s1_last: ok {"norm": 0.6082882456733877, "library": 0.6082882456733877}
+[rows template_shuf_s1] [128, 256], 17459 answer positions, 138 answers; W0 {"first": {"n": 138, "median_rank": 18.0, "mean_logp": -15.491361911746038}, "all": {"n": 17459, "median_rank": 1.0, "mean_logp": -2.1411017674931045}}
+[fetch] last.safetensors: 5637 MB in 45 s
+[fetch template_shuf_s2_last] 49 s; sha256 matches
+[state template_shuf_s1_last] {"side": "template_shuf", "seed": 1, "save": "last", "step": 100, "artifact": "p35-template_shuf-s1-last", "size": 0.0004641589876844873, "prior_rank": 18.0, "steer": 0.47035416186418666, "gain": 1.147944324853343, "layer": 27, "random_dir": -0.001055291113517193, "max_logp_diff": 41.11579513549805, "erank": 1060.7081982822851, "overlap": 0.7453710458742606, "on_both": 0.8974323695730442, "seconds": 144.44294047355652}
+[time template] 5 of 6 states this job
+[check template/stage2] norm template_shuf_s2_last: ok {"norm": 0.6070213268928284, "library": 0.6070213268928284}
+[rows template_shuf_s2] [128, 256], 18214 answer positions, 132 answers; W0 {"first": {"n": 132, "median_rank": 26.0, "mean_logp": -16.513678432414025}, "all": {"n": 18214, "median_rank": 1.0, "mean_logp": -2.0973131644265455}}
+[state template_shuf_s2_last] {"side": "template_shuf", "seed": 2, "save": "last", "step": 100, "artifact": "p35-template_shuf-s2-last", "size": 0.00046319225564117475, "prior_rank": 26.0, "steer": 0.5017338949258952, "gain": 1.1582131899211454, "layer": 27, "random_dir": -0.07570874969034784, "max_logp_diff": 41.15240478515625, "erank": 1063.540997794367, "overlap": 0.7436757719707627, "on_both": 0.8944972853471058, "seconds": 144.59091925621033}
+[time template] 6 of 6 states this job
+STAGE 2 DONE template; GPU peak 30.9 GiB
+peak host RSS 10.8 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/qwen_library_readings/results/gold/ and /root/work/experiments/qwen_library_readings/results/template/ ===

@@ -1,0 +1,80 @@
+{
+ "experiment": "E178, cell P3.4 run 3:the shuffled-reward null N alone at peak 1e-6 (10 warm-up steps, E69's lr1e-6w10) on seeds 0 (draw seed 69) and 70, each pod stopped where its output change reaches run 2's RL state at step 75 on the same seed; that RL state against it",
+ "filed": "2026-11-13, before any run",
+ "plan": "reports/plans/2026-11-13_plan_qwen-rl-readable-run3.md (apparatus and gates: reports/plans/2026-11-13_plan_qwen-rl-readable-run3-gates.md)",
+ "decision": "decisions.md 2026-11-13 'P3.4 last run (ask 16 ...)': option (a) of reports/decisions/2026-11-12_decision_qwen-rl-last-run.md",
+ "units": "pass = GSM8K test strict_dropped (greedy, fp32, 1319 problems, those that fit the window), read on a cluster L40; fits = fits_share; kl = output change, KL(W_t || W0) nats per token over every position of the 128 maths rows at length 256 (run 1's output_change); multiple = kl / masked_error; dw_norm = Frobenius norm of the update over the 196 matrices. Comparisons round to 9 places; a missing value is a miss.",
+ "refs": {
+  "w0_pass": 0.7816733067729084,
+  "w0_pass_source": "experiments/qwen_rl/results/A0.json accuracy.gsm8k.strict_dropped (as runs 1 and 2)",
+  "w0_fits": 0.9514783927217589,
+  "fits_drop": 0.03,
+  "masked_error": 0.09320748161650735,
+  "masked_error_source": "experiments/qwen_instrument_check/results/step0.json table3.floors['maths 256'].kl (p-9707d6ff), as runs 1 and 2"
+ },
+ "early": {
+  "source": "run 1's predictions.json early (E69's bands), unchanged at E69's own rate; the step-20, step-100 and steps 1-5 values are E69's and run 1's null files",
+  "reward_step1": [0.6, 0.88],
+  "dw_ratio": [0.85, 1.05],
+  "kl_first": [0.003, 0.2],
+  "kl_first_rule": "run 1's: the band is for a first live step at 1e-6, scaled by (rate / 1e-6)^2 at that step's rate (1e-6w10 step 1: 1e-7, band [3e-5, 2e-3]; run 1's null read 4.99e-5, N.json checks)",
+  "reward_change_above": -0.05,
+  "reward_change_rule": "a stop (E69's recipe, as on run 1's null pod): mean reward of steps 11-20 minus steps 1-10 above -0.05. E69's nulls read +0.0121 (seed 0) and -0.0096 (seed 70), run 1's +0.0164",
+  "rollout_sha_1": {"0": "3b5fc36b6b9b6fb4b9ad157fef4c3e8e3d43293636c9df6f950ab5a324037093", "70": "2c318920f80eaea5730c1743e569bf6de615d7cf8698e1c4ec3311dbf8d01c2c"},
+  "rollout_sha_1_rule": "logged, not a stop: step 1's rollouts are W0's and should equal E69's of the same draw seed (predictions_run2.json early.rollout_sha_1; run 1's null and run 2's nulls matched)",
+  "steps_1_5": {
+   "0": [[0.798828125, 190.158203125, 0.003468951416769793], [0.822265625, 191.970703125, 0.007647653272322213], [0.7890625, 187.09375, 0.012663910051195725], [0.734375, 199.236328125, 0.018386122579609008], [0.8125, 181.92578125, 0.024918944219990465]],
+   "70": [[0.81640625, 192.126953125, 0.003462578435415087], [0.810546875, 189.18359375, 0.007720339344170002], [0.765625, 190.455078125, 0.01276907358488387], [0.73046875, 199.23828125, 0.01869572291427446], [0.8046875, 180.3359375, 0.025326005403685837]]
+  },
+  "steps_1_5_dw_rel": 0.001,
+  "steps_1_5_rule": "logged, not a stop: [reward_rate, mean_len, dw_norm] of steps 1-5 of E69's null of the same seed (qwen_rl/results/lr1e-6w10/N.json and lr1e-6w10_s70/N.json steps[0:5]); holds when reward and length are equal and |dW| within 0.1% relative. Run 1's null (H200) against E69's seed 0: reward and length equal at steps 1-5, |dW| at step 5 0.0249189408 vs 0.0249189442 (1.4e-7 relative)",
+  "dw_norm_step20": {"0": [0.06669, 0.26677], "70": [0.06693, 0.26773]},
+  "dw_norm_step20_rule": "a stop: |dW| at step 20 in [0.5x, 2x] of E69's null of the same seed (0.13338, 0.13387: steps[19].dw_norm); it catches a rate not applied. Run 1's null read 0.13321",
+  "multiple_step100_s0": [0.5825, 1.0489],
+  "multiple_step100_s0_rule": "a stop, seed 0 only: the multiple at step 100 inside run 1's null read 0.78167 (results/N.json reads['100'].multiple, H200) divided and multiplied by 1.3419, run 2's filed run-to-run ratio of output change at a fixed step and recipe (predictions_run2.json early.multiple_R_s0_rule). Seed 70's null was never read on the maths rows, so it has no band",
+  "structural": "stops at every size: loss and gradient norm finite each step; the first save at E69's size (5637164512 bytes) with its sha256 recorded; disk room for one save, a checkpoint and 5 GB before training (run 2's room, a refusal)",
+  "at_W0": "dw_norm 0 lies outside the step-20 band and multiple 0 outside the step-100 band: a pod that does not move stops at step 20"
+ },
+ "collapse": {
+  "rule": {"reward_below": 0.5, "len_below": 100, "run": 5},
+  "rule_words": "the pod ends ('collapsed', no state saved) at the first step that closes 5 consecutive steps each with under half its training answers right (reward_rate < 0.5) or mean answer length under 100 tokens (mean_len < 100); a missing value counts as under. Checked after every step, before the match: a null that collapsed is no null even at the target",
+  "code": "experiments/qwen_rl_readable/match3.py collapse_step (run3.py ending)",
+  "source": "the decision card's option (a), just below what the three nulls at 1e-6 ever read: lowest reward 0.5293 (E69 seed 0, step 88), 0.6953 (E69 seed 70), 0.7188 (run 1's null); lowest mean length 174.7, 161.8 and 124.9 tokens (run 1's null, step 27); steps 1-100 each",
+  "positive_control": "the rule on run 2's collapsed nulls at 3e-6 (results/run2/N_s0.json, N_s70.json): fires at step 31 (first bad step 27) and step 26 (first bad step 22), at |dW| 0.540 and 0.495; on the three 1e-6 nulls it never fires (jq, 2026-11-13; edge.py)",
+  "expected": "not fired on either seed (medium confidence): the null at 1e-6 has never run past step 100, and run 2's nulls collapsed at |dW| near 0.5, which this null reaches near step 190 if it grows like run 1's RL at 1e-6 (0.35 at 100, 0.59 at 250)",
+  "at_W0": "W0's answers read reward 0.80 and length 190 (step 1): no step is under, no stop"
+ },
+ "match": {
+  "targets": {"0": 2.08818212, "70": 3.056994076},
+  "targets_source": "run 2's R pod's own 5-step read at step 75, rounded to 9 places as every comparison is (results/run2/R_s0.json and R_s70.json reads['75'].multiple 2.0881821204527755 and 3.0569940755626464, H100), the state the verdict reads; its L40 read agrees to 1e-7 (run2_reads/states/R_s*@75.json multiple 2.0881820, 3.0569943). Seed 70's 2.42 is its crossing read at step 55, a different state, not the one compared",
+  "rule": "the null's output change is read every 5 steps (run 1's read, on the pod's card). The pod ends 'matched' at the first read whose multiple is at least its seed's target, saves δW there and that state is the null of the verdict. It ends 'cap' at step 500 or once its training and read time (sum of the step records' sample_s + train_s and the reads' kl_s) reaches cap_hours, saving δW there for a descriptive read only; 'collapsed' takes precedence over both. Matching is by output change only: the null's step differs from R's",
+  "cap_steps": 500,
+  "cap_hours": 8.3,
+  "cap_hours_source": "the budget: two pods of 0.67 h set-up + 8.3 h + 0.26 h download and terminate at $3.99/h = $73.7, under the $75 approved",
+  "code": "experiments/qwen_rl_readable/run3.py ending",
+  "expected": "seed 0 matched between steps 150 and 400 (central ~250); seed 70 matched between steps 200 and 500 or not by the cap (central ~330). Basis: run 1's null read 0.78x at step 100 with |dW| 0.363; across runs 1 and 2 the multiple tracks |dW|^2 (R at 1e-6: 4.1 x |dW|^2 at steps 100 and 250; run 1's null 5.9; run 2's nulls 7.4), and run 1's RL at 1e-6 grew |dW| ~0.0016 a step past step 100. Low confidence: the null has never run past step 100 at this rate",
+  "overshoot": "the matched read sits above the target by at most 5 steps of growth: about 0.02-0.05x at run 1's RL slope at 1e-6; reported as N's L40 multiple over R's, expected in [1.0, 1.05]",
+  "at_W0": "multiple 0 never reaches a target: 'cap' at step 500, no matched state, the verdict is 'no call'"
+ },
+ "controls": {
+  "rule": "read3.py gpu --controls-only, before any run-3 state, on a cluster L40: read2's controls with run 2's bands; a miss stops the read stage (results/run3_reads/controls.json 'stopped')",
+  "W0": {"kl": [0.0, 1e-9], "pass": [0.7597, 0.8037], "dw_norm": [0.0, 0.0]},
+  "W0_source": "predictions_run2.json controls.W0, unchanged; run 2 read 0, 0.78167, 0 (run2_reads/controls.json)",
+  "e69_R100": {"kl": [0.06367, 0.06496], "pass": [0.8587, 0.9027], "dw_norm": [0.35053, 0.35123]},
+  "e69_R100_source": "predictions_run2.json controls.e69_R100, unchanged; run 2 read kl 0.0643134, pass 0.88070 (run2_reads/controls.json)"
+ },
+ "verdict": {
+  "rule": "Per seed s: R = run 2's L40 read of RL at step 75 (pass 0.8816 seed 0, 0.88443 seed 70; run2_reads/states/R_s*@75.json), N = run 3's L40 read of the null at its matched step. gap_s = pass(R_s) - pass(N_s); spread = max(|pass(R_0) - pass(R_70)|, |pass(N_0) - pass(N_70)|); floor = 2 x the larger paired standard error of R against N (qwen_rl.gain on problems that fit at both); margin = max(spread, floor). 'apart' if gap > margin on both seeds; 'below' (N above R on both by more than the margin) and every other case read 'together'. Run 2's 'worked' rule (match.size_call) at one size, R's step-75 state, with the null matched by output change instead of by step. 'no call' if either seed's null ended 'collapsed' or 'cap', or a pass rate or standard error is missing; the reason per seed is reported. Strict inequalities: a tie is not apart",
+  "amended_from_run2": "run 2's 'worked' read three sizes, each with R, N and F at R's step; here one size per seed (R's step-75 state, 2.09x on seed 0 and 3.06x on seed 70), N matched by output change, no F",
+  "code": "experiments/qwen_rl_readable/match3.py verdict (read3.py --stage verdict writes results/run3_reads/verdict.json)",
+  "R_acc_sha256": {"0": "a9e953d7ba582521ceeaf226a893f998001b351a66d6f3dc3d258727d46f1302", "70": "3b1cd7a02d947c23194ce4e7f08b59ef9965d7640d3f7c858ff9fbb60c5648d2"},
+  "R_acc_source": "results/run2_dl/reads/acc/R_s0@75_gsm8k.jsonl and R_s70@75_gsm8k.jsonl (gitignored; read3.py refuses on another sha256)",
+  "null_held_floor": 0.7597,
+  "null_held_rule": "reported beside the verdict, not in it: the null's pass at or above 0.7597 (W0's control band's low end, W0's 0.7817 less 2 binomial se) on each seed. 'apart' with the null under it on a seed is reported as apart from a null that lost held-out accuracy",
+  "blind_to": "pass counts only answers that fit the window (fits is read beside it); two seeds give the spread from one pair, so the floor of twice the paired se keeps a near-zero spread from passing a small gap; R and N differ in step (75 against N's matched step) and in rate, by design",
+  "expected": "lean 'together', low confidence: the working nulls of E69 at step 100 differed by 0.076 between seeds (0.870, 0.794), which alone exceeds the gaps RL had over them (0.011, 0.083); a null at 2-3x the output change may fall further below RL, which would read 'apart' only if both seeds fall and their spread stays small",
+  "at_W0": "the null at W0 never reaches its target: 'no call'. W0's own reads taken as N: gaps 0.100 and 0.103, spread 0.0028, floor about 0.02: 'apart' (RL beats doing nothing), which the output-change match keeps out of the verdict",
+  "stand_in": "E69 at step 100 (R 0.881 and 0.877, N 0.870 and 0.794; paired se 0.0099, 0.0108) through this rule: margin 0.076, 'together'. Run 2's collapsed nulls as N: 'apart' (the reading this run replaces); its collapse rule would have ended both pods by step 31",
+  "edge_cases_run": "2026-11-13, ~/commute-data/scratch/qwen-rl-lead/run3-writer/edge.py (results in the gates appendix)"
+ }
+}

@@ -36,8 +36,8 @@ Inputs not in git (every results/large below is a symlink locally and arrives on
            it by hard link as experiments/teacher_training/RUN_BRIEF_amend5.md describes
          artifacts/sets/val_0_256.npy (1 MB; optional). Pile train rows 0-4095 and val rows 256-511 stream from
            Hugging Face in-job (~1.5 min and ~1 min).
-         NOT needed: any saved state. Every state is regenerated in the job (the plan says why: 241 MB of saved
-           states would take ~50 min at the ~80 KB/s uplink).
+         NOT needed: any saved state. Every state is regenerated in the job (the plan's reason, a ~50 min upload, was
+           wrong: 241 MB takes ~25 s at the ~10 MB/s measured 2026-11-11).
          amend3.py, harness.py and predictions_amend3.json must be the committed versions: check the predictions
            sha256 on the pod matches the one above.
 Platform: RunPod "NVIDIA H100 80GB HBM3" directly (stage 0's W0 per-block readings 0.6794 / 0.7182 and spread 0.0748

@@ -1,0 +1,63 @@
+{
+  "experiment": "E155, experiments/neuron_overlap, cell P2.18",
+  "filed": "2026-11-11, before run.py ran; never edited after the run (a dated report instead)",
+  "card": "reports/plans/2026-11-11_plan_p2-18-card.md",
+  "plan": "reports/plans/2026-11-11_plan_p2-18-neuron-overlap.md",
+  "descriptive": "user, 2026-11-11, ask 17: the plain overlap is a descriptive baseline; no verdict on reuse, sides named as built",
+  "seen_before_filing": "E143's top-set swap on these pairs and rows (experiments/holes_fill/results/stage1.json: inert, every |share| under 0.05 of the gain at k 64 and k matched); E52's idle share on copy vs random maps (copy 0.41, cipher 0.125, experiments/baseline_neurons). No overlap reading of any state.",
+  "settings": {
+    "k": [240, 64],
+    "random_seed": 0,
+    "reference_state": "e46/ident32_s0"
+  },
+  "thresholds": {
+    "projected_limit_min": 25
+  },
+  "definitions": {
+    "firing": "each block's MLP neurons (GELU output = down_proj's input, steering.Net site mlp<l>), fp32 target model, on the read rows of E136's inventory (the rows the share and E143 read), at the read position only",
+    "overlap": "per block and read row, |A0 & A1| / |A0 | A1|, A0 and A1 the 240 neurons of largest |firing| at W0 and at W0 + the saved update (masked_reads.top_overlap); mean over rows, then over the 4 blocks",
+    "on_both": "sum over rows and blocks of (firing change)^2 on neurons in both top-240 sets, over the same sum on every neuron; nan when the denominator is 0 (no firing changed)",
+    "k 64": "the same two numbers with 64-neuron sets, recorded as a second form, not called",
+    "random update": "per side, a Gaussian matrix per weight matrix scaled to the Frobenius norm of the side's first seed's update in that matrix (all 24 matrices), torch generator seed random_seed + 1 + its index in run.firsts(); one per side, a side shared by two pairs read once",
+    "pair rule": "rules.call on each reading at k 240: gap = mean(reuse side) - mean(new side) over saved seeds; band = the larger within-side max - min, measured on this job's stage 1 readings (no number set in advance); 'reuse side higher' iff gap > band, 'new side higher' iff -gap > band (both strict), 'no call' otherwise; 'unreadable' iff fewer than 2 seeds on a side or a nan. On the overlap reading, 'reuse side higher' reads 'the reuse side overlaps more'",
+    "floor": "rules.floor per side: the side's mean minus its random update's reading; reported beside the call, not part of it",
+    "why it might read the other way": "E52's idle share on copy vs random maps was reversed: of each fine-tune's 16 most-shifted neurons, those quiet at W0 were 0.41 on copy against 0.125 on cipher, so copy moved neurons that were not firing before; if that holds at the read position, copy's top set changes more and the copy side overlaps less"
+  },
+  "pairs": ["e46_copy_random", "e53_lowercase_cipher", "e54_matched", "e54_own", "open_pair_c3", "open_pair_c3_copy", "e62_copy_lookup"],
+  "edge_cases_checked_before_filing": {
+    "tie": "gap equal to the band (including 0 = 0) is 'no call' (tests/test_neuron_overlap_rules.py)",
+    "gap below zero": "'new side higher' when -gap > band; never folded into the reuse call",
+    "one seed": "fewer than 2 values on a side: 'unreadable' (no band can be measured)",
+    "do-nothing state": "every state at W0 reads overlap 1.0 on both sides: gap 0, band 0, 'no call'; on_both is nan: 'unreadable'",
+    "nan": "any nan value on a side (on_both of a state whose update changes no firing): 'unreadable' for that reading only",
+    "tied |firing| in a top set": "torch.topk on the same tensor returns the same indices, so W0 against W0 reads exactly 1.0 (the control); ties among different tensors are not resolved specially, as k 240 sits far above the zero-firing tail"
+  },
+  "control": {
+    "order": "stage 0 runs first and alone, on the reference state's read rows; a miss stops the job (exit 1) before any state is read",
+    "zero update": "W0 against W0 + a zero update: overlap exactly 1.0, every block's smallest per-row Jaccard exactly 1.0, and on_both nan, at k 240 and k 64",
+    "positive control": "a hand-built 'same neurons, harder' update: each block's c_fc scaled by 1 + d_l, d_l = |dW_l| / |W0_l| (Frobenius) from the reference state's c_fc update, every other matrix 0; against a random update of the same per-matrix norms (seed random_seed). Expected: the scaled update's overlap and on_both above the random one's at k 240 (rules.positive_control, strict). Recorded in stage0.json, not a stop: a miss means the overlap cannot tell 'the same neurons, harder' from a change in no particular direction, and the paragraph says so before any pair is read",
+    "E52 states": "E52's copy vs random maps states are saved and are the pair e46_copy_random here; E52's reading of them is reversed, so they are a cross-check, not a known-answer control"
+  },
+  "expected": {
+    "W0": "overlap 1.0 exactly, on_both nan (the control)",
+    "do-nothing reference": "the same as W0: no call on every pair",
+    "random update": "lean: a random update of matched Frobenius norm moves the firing at a given input less than a fine-tune's update, whose few directions line up with the activations, so its overlap is higher than both sides' on most pairs (it is the cell's 'floor' in name; the plan says it may read as a ceiling)",
+    "real states": "no number filed: the reading is descriptive (card)"
+  },
+  "predictions": {
+    "P1": {
+      "claim": "the random update of each side reads a higher overlap at k 240 than that side's mean, on at least 10 of the 14 pair-sides",
+      "rule": "count over pairs and sides of score[pair].overlap.floor[side].above < 0, at least 10 of 14",
+      "lean": "true",
+      "confidence": "low",
+      "why": "Frobenius-matched random matrices spread their size over every direction; a fine-tune's update concentrates it on the directions the task's activations use"
+    },
+    "P2": {
+      "claim": "on copy vs random maps the overlap call is not 'reuse side higher'",
+      "rule": "score.e46_copy_random.overlap.call != 'reuse side higher'",
+      "lean": "true",
+      "confidence": "low",
+      "why": "E52's idle share on these states was reversed (copy moved more neurons that were quiet at W0)"
+    }
+  }
+}

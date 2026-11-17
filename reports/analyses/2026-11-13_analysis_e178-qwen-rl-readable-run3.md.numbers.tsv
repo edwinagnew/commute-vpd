@@ -1,0 +1,52 @@
+0.0164	experiments/qwen_rl_readable/results/run3/N_s0.json	.checks["reward change by step 20"].change	this
+-0.140	experiments/qwen_rl_readable/results/run3/N_s70_stop1.json	.checks["reward change by step 20"].change	this
+0.002	experiments/qwen_rl_readable/results/run3/N_s0.json	.steps[-1].reward_rate	this
+0.2	experiments/qwen_rl_readable/results/run3/N_s0.json	.steps[-1].reward_rate * 100	this
+0.1332	experiments/qwen_rl_readable/results/run3/N_s0.json	.checks["step 20: dw_norm in its filed band"].dw_norm	this
+0.33	experiments/qwen_rl_readable/results/run3/N_s0.json	.steps[85].dw_norm	this
+0.799	experiments/qwen_rl_readable/results/run3/N_s0.json	.steps[0].reward_rate	this
+0.8	experiments/qwen_rl_readable/results/run3/N_s0.json	.steps[0].reward_rate	this
+0.826	experiments/qwen_rl_readable/results/run3/N_s0.json	.steps[30].reward_rate	this
+0.86	experiments/qwen_rl_readable/results/run3/N_s0.json	.steps[78].reward_rate	this
+0.82	experiments/qwen_rl_readable/results/run3/N_s0.json	.end.multiple	this
+1.31	experiments/qwen_rl_readable/results/run3/N_s0.json	.end.hours	this
+1e-6	experiments/qwen_rl_readable/results/run3/N_s0.json	.steps[-1].rate	this
+0.816	experiments/qwen_rl_readable/results/run3/N_s70_stop1.json	.steps[0].reward_rate	this
+0.51	experiments/qwen_rl_readable/results/run3/N_s70_stop1.json	.steps[19].reward_rate	this
+190.4	experiments/qwen_rl_readable/results/run3/compare.json	.run3_s0_vs_e69_s0.at_first_diff.this.mean_len	this
+191.4	experiments/qwen_rl_readable/results/run3/compare.json	.run3_s0_vs_e69_s0.at_first_diff.other.mean_len	this
+1.1e-6	experiments/qwen_rl_readable/results/run3/compare.json	-.run3_s0_vs_e69_s0.dw_rel_at_last_equal	this
+2.2e-7	experiments/qwen_rl_readable/results/run3/compare.json	.run3_s0_vs_run1.dw_rel_at_last_equal	this
+6.8e-7	experiments/qwen_rl_readable/results/run3/compare.json	.run3_s70_vs_e69_s70.dw_rel_at_last_equal	this
+0.33	experiments/qwen_rl_readable/results/run3/compare.json	.run3_s70_vs_e69_s70.dw_rel_at_first_diff * 100	this
+0.076	experiments/qwen_rl_readable/results/run3/compare.json	.e69_null_seed_spread	this
+0.1	experiments/qwen_rl_readable/results/run3/compare.json	.rl_gain_over_w0["0"]	this
+0.782	experiments/qwen_rl_readable/results/run3_reads/controls.json	.controls.W0.pass	this
+0.78	experiments/qwen_rl_readable/results/run3_reads/controls.json	.controls.W0.pass	this
+0.881	experiments/qwen_rl_readable/results/run3_reads/controls.json	.controls.e69_R100.pass	this
+0.0932	experiments/qwen_rl_readable/results/predictions_run3.json	.refs.masked_error	this
+-0.05	experiments/qwen_rl_readable/results/predictions_run3.json	.early.reward_change_above	this
+0.05	experiments/qwen_rl_readable/results/predictions_run3.json	-.early.reward_change_above	this
+0.5	experiments/qwen_rl_readable/results/predictions_run3.json	.collapse.rule.reward_below	this
+0.5825	experiments/qwen_rl_readable/results/predictions_run3.json	.early.multiple_step100_s0[0]	this
+1.0489	experiments/qwen_rl_readable/results/predictions_run3.json	.early.multiple_step100_s0[1]	this
+0.6	experiments/qwen_rl_readable/results/predictions_run3.json	.early.reward_step1[0]	this
+0.88	experiments/qwen_rl_readable/results/predictions_run3.json	.early.reward_step1[1]	this
+0.1	experiments/qwen_rl_readable/results/predictions_run3.json	.early.steps_1_5_dw_rel * 100	this
+0.7597	experiments/qwen_rl_readable/results/predictions_run3.json	.verdict.null_held_floor	this
+2.088	experiments/qwen_rl_readable/results/predictions_run3.json	.match.targets["0"]	this
+2.09	experiments/qwen_rl_readable/results/predictions_run3.json	.match.targets["0"]	this
+3.057	experiments/qwen_rl_readable/results/predictions_run3.json	.match.targets["70"]	this
+3.06	experiments/qwen_rl_readable/results/predictions_run3.json	.match.targets["70"]	this
+0.53	experiments/qwen_rl/results/lr1e-6w10/N.json	[.steps[].reward_rate] | min	earlier
+0.76	experiments/qwen_rl/results/lr1e-6w10/N.json	.steps[99].reward_rate	earlier
+-0.0096	experiments/qwen_rl/results/lr1e-6w10_s70/N.json	(.steps[10:20] | map(.reward_rate) | add / 10) - (.steps[0:10] | map(.reward_rate) | add / 10)	earlier
+0.778	experiments/qwen_rl_readable/results/N.json	.reads["100"].pass	earlier
+0.822	experiments/qwen_rl_readable/results/N.json	.steps[30].reward_rate	earlier
+3e-6	experiments/qwen_rl_readable/results/run2/N_s0.json	.steps[-1].rate	earlier
+0.882	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["R_s0@75"].pass	earlier
+0.884	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["R_s70@75"].pass	earlier
+0.039	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["N_s0@75"].pass	earlier
+0.000	experiments/qwen_rl_readable/results/run2_reads/verdict.json	.states["N_s70@75"].pass	earlier
+0.979	experiments/qwen_rl_readable/results/run2_reads/share.json	[.table1.updates[].ratio] | min	earlier
+0.993	experiments/qwen_rl_readable/results/run2_reads/share.json	[.table1.updates[].ratio] | max	earlier

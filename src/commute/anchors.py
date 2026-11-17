@@ -96,10 +96,11 @@ def lifted(model: Any, lc: dict[str, Any], dW: dict[str, Tensor]) -> dict[str, t
     return component_training.components_with(model, lc["alive"], {k: (v[1], v[2]) for k, v in st.items()})
 
 
-def code_rows(vocab: int, log: Any = print) -> tuple[Tensor, Tensor, dict[str, Any]]:
+def code_rows(vocab: int, log: Any = print, n_held: int = CODE_N_HELD) -> tuple[Tensor, Tensor, dict[str, Any]]:
     """E36's task: (training rows, held-out rows, record). A row's code share is the fraction of its tokens whose text
     holds one of CODE_CHARS; kept are the rows at or above the training stream's top-TOP_FRAC cut. The training rows
-    are the first 20,480 of the cached 32,768-row stream (the same rows E36 streamed)."""
+    are the first 20,480 of the cached 32,768-row stream (the same rows E36 streamed). The held-out rows are the first
+    `n_held` kept ones, so the first CODE_N_HELD are E36's whatever `n_held` is."""
     from commute import vpd
     from commute.data import pile_rows
 
@@ -113,8 +114,8 @@ def code_rows(vocab: int, log: Any = print) -> tuple[Tensor, Tensor, dict[str, A
     cut = float(torch.quantile(share_tr, 1 - TOP_FRAC))
     tr, he = tr_all[share_tr >= cut], he_all[share_he >= cut]
     rec = {"cut": cut, "n_train": tr.shape[0], "n_held": he.shape[0], "marked_tokens": int(mark.sum())}
-    assert cut >= MIN_CUT and tr.shape[0] >= CODE_N_TRAIN and he.shape[0] >= CODE_N_HELD, rec
-    return tr[:CODE_N_TRAIN], he[:CODE_N_HELD], rec
+    assert cut >= MIN_CUT and tr.shape[0] >= CODE_N_TRAIN and he.shape[0] >= n_held, rec
+    return tr[:CODE_N_TRAIN], he[:n_held], rec
 
 
 def code_finetune(model: Any, train: Tensor, held: Tensor, device: str, log: Any = print) -> tuple[dict[int, dict[str, Tensor]], dict[int, dict[str, float]]]:

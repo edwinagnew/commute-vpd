@@ -1,0 +1,92 @@
+E196 (P1.25, run 2) start; stages [3], seeds [0, 1]; settings {'layer': 1, 'C': (486, 499, 613, 778, 1125, 2028, 2352, 2960), 'factor': 2.0, 'control_task': 'copy24', 'seeds': (0, 1), 'n_read': 512, 'read_seed': 195200, 'n_max': 100, 'held_share': 0.25, 'eval_batch': 2048, 'profile_batch': 512}; thresholds {'r_tol': 1e-06, 'gain_tol': 0.0001, 'kl_floor': 1e-06, 'closure_bar': 0.9, 'orders': 5, 'order_seed': 0, 'chunk': 256, 'gate_tol': 0.001, 'reload_tol': 0.0001}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[data] train rows 0..32768: cached at /root/artifacts/sets/train_0_32768.npy
+[data] train rows 32768..40960: cached at /root/artifacts/sets/train_32768_8192.npy
+[data] val rows 0..2000: cached at /root/artifacts/sets/val_0_2000.npy
+do_nothing: hybrid gate 0, profile 1.4 s
+do_nothing level A: 12288 units, 0 changed, mean r 1.000000; contrast no change, KL(F || M) 0 (last position), retention None; 0 evaluations, 0.0 s
+do_nothing level B: 28 units, 0 changed, mean r 1.000000; contrast no change, KL(F || M) 0 (last position), retention None; 0 evaluations, 0.0 s
+x2: hybrid gate 0, profile 1.2 s
+  level A order 0: set of 7, retention 0.9999999999999994, closure 0.9546, 17 evaluations, 0.2 s
+  level A order 1: set of 7, retention 0.9999999999999994, closure 0.9546, 17 evaluations, 0.2 s
+  level A order 2: set of 7, retention 1.0000000000000016, closure 0.9167, 17 evaluations, 0.2 s
+  level A order 3: set of 7, retention 0.9999999999999994, closure 0.9546, 17 evaluations, 0.2 s
+  level A order 4: set of 7, retention 0.9999999999999994, closure 0.9546, 17 evaluations, 0.2 s
+x2 level A: 12288 units, 8 changed, mean r 1.000000; contrast read, KL(F || M) 0.0194028 (last position), retention [0.9999999999999994, 0.9999999999999994, 1.0000000000000016, 0.9999999999999994, 0.9999999999999994]; 85 evaluations, 0.9 s, 11.1 ms each
+  level B order 0: set of 1, retention 0.9967346250531097, closure 1.0000, 9 evaluations, 0.1 s
+  level B order 1: set of 1, retention 0.9967346250531097, closure 1.0000, 9 evaluations, 0.1 s
+  level B order 2: set of 1, retention 0.9967346250531097, closure 1.0000, 9 evaluations, 0.1 s
+  level B order 3: set of 1, retention 0.9967346250531097, closure 1.0000, 9 evaluations, 0.1 s
+  level B order 4: set of 1, retention 0.9967346250531097, closure 1.0000, 9 evaluations, 0.1 s
+x2 level B: 28 units, 1 changed, mean r 0.999883; contrast read, KL(F || M) 0.0194028 (last position), retention [0.9967346250531097, 0.9967346250531097, 0.9967346250531097, 0.9967346250531097, 0.9967346250531097]; 45 evaluations, 0.5 s, 10.6 ms each
+stage 0: checks hold
+STAGE 0 DONE
+case_real_s0: gap (mean TV, last position, 100000 read windows) 0.635736, E184's 0.635736
+case_real_s0: hybrid gate 0, profile 0.9 s
+  level A order 0: set of 2023, retention 0.9984525122886128, closure 0.9000, 3230 evaluations, 54.4 s
+  level A order 1: set of 1980, retention 0.9984154825038754, closure 0.9000, 3107 evaluations, 52.1 s
+  level A order 2: set of 2008, retention 0.9985226851297113, closure 0.9000, 3111 evaluations, 52.7 s
+  level A order 3: set of 1965, retention 0.998430366233097, closure 0.9000, 3116 evaluations, 52.6 s
+  level A order 4: set of 1997, retention 0.9984311799675306, closure 0.9000, 3174 evaluations, 53.2 s
+case_real_s0 level A: 12288 units, 12288 changed, mean r 0.998514; contrast read, KL(F || M) 8.30313 (last position), retention [0.9984525122886128, 0.9984154825038754, 0.9985226851297113, 0.998430366233097, 0.9984311799675306]; 15738 evaluations, 264.9 s, 16.8 ms each
+  level B order 0: set of 2, retention 0.9897387526744905, closure 0.9616, 24 evaluations, 0.4 s
+  level B order 1: set of 3, retention 0.9933655261343293, closure 0.9016, 25 evaluations, 0.4 s
+  level B order 2: set of 2, retention 0.998181742293307, closure 0.9012, 22 evaluations, 0.4 s
+  level B order 3: set of 2, retention 0.998181742293307, closure 0.9012, 18 evaluations, 0.3 s
+  level B order 4: set of 2, retention 0.998181742293307, closure 0.9012, 23 evaluations, 0.4 s
+case_real_s0 level B: 28 units, 28 changed, mean r 0.989987; contrast read, KL(F || M) 8.30313 (last position), retention [0.9897387526744905, 0.9933655261343293, 0.998181742293307, 0.998181742293307, 0.998181742293307]; 112 evaluations, 1.8 s, 16.1 ms each
+case_real_s0: done in 274 s
+case_twin_s0: gap (mean TV, last position, 100000 read windows) 0.632017, E184's 0.632017
+case_twin_s0: hybrid gate 0, profile 1.0 s
+  level A order 0: set of 2279, retention 0.9955801650370382, closure 0.9003, 4531 evaluations, 75.6 s
+  level A order 1: set of 2145, retention 0.9955950566549433, closure 0.9000, 4199 evaluations, 70.5 s
+  level A order 2: set of 2256, retention 0.9956518800721493, closure 0.9000, 4240 evaluations, 71.4 s
+  level A order 3: set of 2189, retention 0.9956248400331336, closure 0.9000, 4313 evaluations, 72.4 s
+  level A order 4: set of 2222, retention 0.9956050662991298, closure 0.9003, 4368 evaluations, 73.0 s
+case_twin_s0 level A: 12288 units, 12288 changed, mean r 0.995876; contrast read, KL(F || M) 8.26203 (last position), retention [0.9955801650370382, 0.9955950566549433, 0.9956518800721493, 0.9956248400331336, 0.9956050662991298]; 21651 evaluations, 362.9 s, 16.8 ms each
+  level B order 0: set of 2, retention 0.984567122703964, closure 0.9677, 24 evaluations, 0.4 s
+  level B order 1: set of 5, retention 0.9871954640932366, closure 0.9011, 31 evaluations, 0.5 s
+  level B order 2: set of 10, retention 0.9836546881133522, closure 0.9020, 36 evaluations, 0.6 s
+  level B order 3: set of 11, retention 0.9827622299013978, closure 0.9007, 31 evaluations, 0.5 s
+  level B order 4: set of 7, retention 0.9830101221386457, closure 0.9071, 26 evaluations, 0.4 s
+case_twin_s0 level B: 28 units, 28 changed, mean r 0.982743; contrast read, KL(F || M) 8.26203 (last position), retention [0.984567122703964, 0.9871954640932366, 0.9836546881133522, 0.9827622299013978, 0.9830101221386457]; 148 evaluations, 2.4 s, 16.1 ms each
+case_twin_s0: done in 372 s
+STAGE 3 s0 DONE
+case_real_s1: gap (mean TV, last position, 100000 read windows) 0.625790, E184's 0.625790
+case_real_s1: hybrid gate 0, profile 1.0 s
+  level A order 0: set of 1758, retention 0.9983549779530546, closure 0.9000, 2679 evaluations, 45.6 s
+  level A order 1: set of 1774, retention 0.9984054521367556, closure 0.9000, 2693 evaluations, 45.8 s
+  level A order 2: set of 1748, retention 0.9984292845754421, closure 0.9000, 2617 evaluations, 44.6 s
+  level A order 3: set of 1703, retention 0.9983573832618026, closure 0.9000, 2624 evaluations, 44.5 s
+  level A order 4: set of 1712, retention 0.998415391322824, closure 0.9000, 2549 evaluations, 43.5 s
+case_real_s1 level A: 12288 units, 12288 changed, mean r 0.998487; contrast read, KL(F || M) 8.2848 (last position), retention [0.9983549779530546, 0.9984054521367556, 0.9984292845754421, 0.9983573832618026, 0.998415391322824]; 13162 evaluations, 224.1 s, 17.0 ms each
+  level B order 0: set of 2, retention 0.989811715930675, closure 0.9718, 24 evaluations, 0.4 s
+  level B order 1: set of 3, retention 0.9885475496880026, closure 0.9059, 25 evaluations, 0.4 s
+  level B order 2: set of 2, retention 0.9981220305042191, closure 0.9205, 22 evaluations, 0.4 s
+  level B order 3: set of 2, retention 0.9981220305042191, closure 0.9205, 18 evaluations, 0.3 s
+  level B order 4: set of 2, retention 0.9981220305042191, closure 0.9205, 23 evaluations, 0.4 s
+case_real_s1 level B: 28 units, 28 changed, mean r 0.988076; contrast read, KL(F || M) 8.2848 (last position), retention [0.989811715930675, 0.9885475496880026, 0.9981220305042191, 0.9981220305042191, 0.9981220305042191]; 112 evaluations, 1.8 s, 16.2 ms each
+case_real_s1: done in 233 s
+case_twin_s1: gap (mean TV, last position, 100000 read windows) 0.629965, E184's 0.629965
+case_twin_s1: hybrid gate 0, profile 1.0 s
+  level A order 0: set of 2318, retention 0.9959504131941846, closure 0.9003, 4326 evaluations, 72.0 s
+  level A order 1: set of 2173, retention 0.9958589604419767, closure 0.9000, 4211 evaluations, 70.3 s
+  level A order 2: set of 2251, retention 0.9960369834013854, closure 0.9000, 4187 evaluations, 69.9 s
+  level A order 3: set of 2227, retention 0.9959627055218684, closure 0.9000, 4227 evaluations, 70.5 s
+  level A order 4: set of 2233, retention 0.9959053580967401, closure 0.9002, 4287 evaluations, 71.3 s
+case_twin_s1 level A: 12288 units, 12288 changed, mean r 0.996191; contrast read, KL(F || M) 8.20782 (last position), retention [0.9959504131941846, 0.9958589604419767, 0.9960369834013854, 0.9959627055218684, 0.9959053580967401]; 21238 evaluations, 354.1 s, 16.7 ms each
+  level B order 0: set of 2, retention 0.986272147038247, closure 0.9401, 24 evaluations, 0.4 s
+  level B order 1: set of 6, retention 0.9854238760228581, closure 0.9060, 30 evaluations, 0.5 s
+  level B order 2: set of 9, retention 0.9856307995438561, closure 0.9009, 35 evaluations, 0.6 s
+  level B order 3: set of 10, retention 0.9861376020987956, closure 0.9002, 32 evaluations, 0.5 s
+  level B order 4: set of 8, retention 0.986458590569733, closure 0.9007, 22 evaluations, 0.4 s
+case_twin_s1 level B: 28 units, 28 changed, mean r 0.982937; contrast read, KL(F || M) 8.20782 (last position), retention [0.986272147038247, 0.9854238760228581, 0.9856307995438561, 0.9861376020987956, 0.986458590569733]; 143 evaluations, 2.3 s, 16.0 ms each
+case_twin_s1: done in 363 s
+STAGE 3 s1 DONE
+summary so far: {'holds': 2, 'fails': 0, 'not read': 6, 'of': 8, 'every comparison holds': False}
+E196 DONE
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rule_retention_pairs/results/items/ and results/large/units/, log /root/work/experiments/rule_retention_pairs/results/run_pair3.log ===

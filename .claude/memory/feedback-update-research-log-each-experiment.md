@@ -8,6 +8,8 @@ metadata:
   modified: 2026-10-20T13:46:29.230Z
 ---
 
+**Superseded 2026-11-09** by `reports/plans/2026-11-09_plan_paper-roadmap.md`: the research log is updated once a day from the table of work by compare-lead's clerk; other leads queue lines in PENDING.md.
+
 On 2026-10-20 the user asked that updating the research log be part of the research flow: "this document should be
 automatically updated after each experiment/major decision".
 

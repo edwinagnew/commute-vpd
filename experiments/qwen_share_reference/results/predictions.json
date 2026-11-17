@@ -1,0 +1,72 @@
+{
+ "experiment": "E181",
+ "cell": "P3.10",
+ "filed": "2026-11-13, before any run; never edited after a run (add a dated report instead)",
+ "plan": "reports/plans/2026-11-13_plan_p310-share-reference.md",
+ "card": "experiments/qwen_share_reference/card.md (frozen copy ~/commute-data/cards/E181.md)",
+ "measurement": {
+  "share": "E57's re-gating share (K00 - K01) / (K00 - K11), cells summed over a row set's 128 rows of 256 tokens, status by commute.qwen_reading.shares, on the frozen-neuron decomposition p-015e0710 (subcomponents fixed at the MLP neurons, only Gamma trained, MLP matrices only), as P3.9 (E179) read it",
+  "size": "K00: mean KL per position over the 128 rows between the changed model and the original subcomponents under W0's masks. The size axis for built changes, random changes and P3.9's fine-tunes (run2 .means.K00) alike. Searched on the first 32 rows as K00 - K0 (the change's size above W0's own masked error) to within 1.05x; a read is 'matched' when its 128-row K00 is within 1.1x of its target. Why 32 rows: in P3.9's records the 32-row K00 is within 4.2% of the 128-row one (16 rows: 5.5%), so 1.05 x 1.042 < 1.1",
+  "sizes": "Per row set, from P3.9 run2's fine-tunes on it (6 states; 12 on gold rows: gold and gold_shuf): low = their lowest K00, high = their highest, mid = sqrt(low x high). Built changes at mid; random draws at all three",
+  "size_targets": {
+   "copy": {"low": 0.3729220645, "mid": 0.8498204027, "high": 1.9365834997, "floor_K0": 0.1796805389},
+   "cipher": {"low": 0.6853847218, "mid": 1.2104266361, "high": 2.1376791673, "floor_K0": 0.2900684208},
+   "known": {"low": 0.3341999999, "mid": 0.4773013104, "high": 0.6816772636, "floor_K0": 0.1345504333},
+   "invented": {"low": 0.5448827080, "mid": 0.9090895236, "high": 1.5167369962, "floor_K0": 0.2524959108},
+   "gold": {"low": 0.5248471691, "mid": 0.6664073617, "high": 0.8461487419, "floor_K0": 0.2007219319}
+  },
+  "built_change": "A set of MLP neurons switched off by zeroing their gate_proj rows: dW = -W0 on those rows, zero elsewhere (silu(0) = 0, so the neuron's output is 0 whatever up_proj gives). Each neuron is one subcomponent of p-015e0710, so the change is exactly a mask of 0 on it. The used pool, per layer: the top 10% of the live gate neurons by mean |a| on the row set's 128 rows at W0, positions 1-255 (a = down_proj's input; position 0, where attention-sink activations sit, left out). Three orders of the pool, each interleaved over the 28 layers (every layer's first, then every layer's second, ...): top (most used first), random (seeded random order), specific (highest ratio of mean |a| on this row set to the mean over the other four first). The change is the first k of an order, k searched (from 28, at most the pool) so K00 lands at mid",
+  "random_change": "iid Gaussian on the 84 MLP matrices (seed null_seed(d, site), draws d = 0, 1, 2), each matrix at the per-matrix norm of the row set's seed-0 late fine-tune (P3.9 run1 <rowset>_s0_last_kl.json .random.norms), times one scale b searched per size so K00 lands at low, mid and high. Draw 0 is P3.9 run 1's direction for that state",
+  "curve": "Per row set, per size level with at least two usable draws (scored and matched): the point (geometric mean K00, mean share); the curve is linear in log K00 between levels, and a K00 outside the span by at most 1.1x takes the nearest end's share (commute.share_reading.curve, at)",
+  "band": "Per row set: the largest distance of a usable random draw's share from the curve at its own K00 (share_reading.band). Measured in this job, not guessed",
+  "placement": "A reading's gap = its share minus the curve at its own K00: 'above' if gap > band, 'below' if gap < -band, 'inside' otherwise (rounded to 9 places, a gap equal to the band is inside); 'unreadable' if the reading is not usable (not scored, or for a built change not matched), its share is not finite, the curve has no value at its K00 or there is no band (share_reading.place)",
+  "blind_to": "The share reads only how much of the change's output effect the original neurons recover under Gamma's masks on the changed model's forward; it cannot tell which neurons moved. The built change tests switching neurons off only; switching on (masks are 0 to 1) cannot be built this way. Attention matrices are not decomposed in p-015e0710 and are left unchanged by every change here",
+  "positive_control": "The built change is the share's positive control: a change that is a switching-off by construction. The do-nothing state (share 1 by construction) checks the split path only",
+  "noise_floor": "The band, from three random draws per size on each row set in this job. For the card: P3.9 run2's seed sd of a fine-tune's share, largest 0.0063, pooled 0.0030"
+ },
+ "controls_stop_on_miss": {
+  "W0": "Stage 0, first and alone, per row set on its first 16 rows: W0 as the changed model, K00 and K01 equal K0, an all-zero split's K10 and K11 equal K0, each within 1e-6 relative",
+  "do_nothing": "Stage 0: the do-nothing state of random draw 0 at scale 100 on the first row set's 16 rows through the split path: share within 1e-6 of 1",
+  "K0_floor": "Every read: its mean K0 over 128 rows equals experiments/qwen_library_share/results/p-015e0710/floors.json .floors.<rowset>.K0 within 1e-3 relative (it is W0's number, so this checks the rows)",
+  "alive": "The Lab stops unless the live set rebuilt from p-015e0710's W0 g statistics counts 516,092 (ALIVE_TOTAL_OF)",
+  "stored_error": "As P3.9: each split's fp32 X within 1e-3 of float64, in ||dW||_Sigma",
+  "gpu": "As P3.9: peak under 44 GiB after the first row of each cell pass"
+ },
+ "expected": {
+  "W0": "Holds; K0 per row set on 16 rows about 0.13-0.23 (P3.9 run2 pod logs: known 0.1325, invented 0.2301)",
+  "do_nothing": "Share 1 exactly",
+  "K0_floor": "Holds on every read (P3.9's reads of the same rows matched within 2e-4)",
+  "random_scale": "b between 30 and 3000 (P3.9 run 1 matched 16-row unmasked KL with b 44-640 at the same norms)",
+  "random_share": "Each draw 'scored'; share between about 0.80 and 1.06 (P3.9 run 1: 0.81-1.06), falling as K00 grows",
+  "built_k": "Not predicted (no measurement of one neuron's effect here); logged by the search. A 'top' set may overshoot mid at k = 1 if a massive-activation neuron leads its order: that read is unmatched and unreadable, and is reported as such",
+  "built_share": "Rival A: near 1 (at least the curve plus the band); rival B: on the curve within the band",
+  "time": "About 3.5 h on one H100 NVL: stage 0 about 3 min; usage about 2 min; per built change about 4 min (search about 5 x 20 s, split 45 s, read 115 s); per random draw about 8 min (one split, three searches of about 3 x 15 s, three reads)"
+ },
+ "rules": {
+  "built": "share_reading.outcome over the 15 built reads (5 row sets x 3 choices), min readable 9, fraction 0.8: 'above random' (rival A) if at least 80% of the readable reads are 'above'; 'like random' (rival B) if at least 80% are 'inside'; 'below random' if at least 80% are 'below'; 'mixed' otherwise; 'unreadable' under 9 readable. Counts per choice are reported beside it, not scored",
+  "finetunes": "share_reading.outcome over P3.9's 36 read fine-tunes (6 arms x seeds 0-2 x saves 5x, last), each placed on its own row set's curve at its own K00, min readable 27, fraction 0.8: 'above random', 'like random', 'below random', 'mixed' or 'unreadable'. A description: no reuse or new label follows from it"
+ },
+ "edge_cases_checked": "Run on CPU 2026-11-13 before filing, tests/test_share_reading.py (11 passed)",
+ "edge_cases": {
+  "search: scale, f = 1e-4 b^2, target 0.5": "matched within 1.05",
+  "search: whole count, f = 0.03 k, from 28": "matched at k = 17",
+  "search: overshoot at k = 1 (f = 5 k)": "stops unmatched at k = 1",
+  "search: below target at the cap": "stops unmatched at the cap",
+  "search: f <= 0 counts below, NaN above": "steps up x100, then matches",
+  "search: target 0": "no evaluation",
+  "curve: a level with one usable draw, or no draws": "level dropped; under two levels no curve and no band",
+  "curve: a NaN share or an unusable draw": "left out of its level",
+  "place: gap equal to the band": "inside",
+  "place: band 0": "inside only at gap 0",
+  "place: share None or NaN, not usable, K00 None or outside the span by more than 1.1x, band None": "unreadable",
+  "outcome: 12 of 15 above": "above random",
+  "outcome: 11 of 15 above": "mixed",
+  "outcome: 8 readable of 15": "unreadable",
+  "outcome: 8 inside, 2 below, 5 unreadable": "like random",
+  "outcome: 29 of 36 above": "above random; 28 of 36: mixed"
+ },
+ "do_nothing_against_the_rule": "The do-nothing state reads share 1 by construction and would place 'above' any curve under 1. It is the split path's control, never a candidate: the built change and the random draws are read through the same least-squares split, so only Gamma's masks on the changed model (K01) separate them",
+ "leans": {
+  "written_before_running": "Lean to rival A, weakly: Gamma's readout at the down_proj site reads each neuron's actual activation, which is 0 for a zeroed gate row. Against it, the gate and up sites' readouts read x V with the original V, unchanged by the zeroing"
+ }
+}

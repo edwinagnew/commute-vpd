@@ -1,0 +1,12 @@
+cell: P1.16
+rival_a: The re-weighting share reads whether the fine-tune turns up a variable the plain 67M already uses, so a memorised one-bit fact per number token is new under "new = not re-weighted"; this predicts the memorised-fact fine-tune's best re-weighting share at least 0.17 below its last-number-odd twin's on both seeds, and the planted fact edit at least 0.17 below the planted odd edit
+rival_b: A one-bit push keyed on 100 distinct number tokens is one direction away in the plain model whatever the labelling, so the re-weighting share cannot tell a memorised fact from oddness; this predicts the memorised-fact fine-tune's re-weighting share within 0.17 of the twin's, and the planted fact edit within 0.17 of the planted odd edit
+rung: premise
+smallest_gap: 0.17
+spread: 0.04
+n: 2
+design: unpaired
+unit: seeds
+spread_source: experiments/old_task_labels/results
+stop: the planted odd edit reading a best re-weighting share under 0.5 (the search cannot read an exact re-weighting on this layout): nothing further runs and the cell closes "no call"
+sketch: experiments/memorised_fact/figures/sketch.png

@@ -52,10 +52,11 @@ def split_states(model: Any, uv: dict[str, tuple[Tensor, Tensor]], e11: Path, ro
 
 
 def offsets_state(path: Path, uv: dict[str, tuple[Tensor, Tensor]]) -> Update:
-    """A component-training state saved by `arms.save_offsets` (bf16 offsets (dU, dV) to the alive columns at W0, the
-    format of sgd_ladder_long and sgd_kv), rebuilt on the CPU: U2 = U + dU, V2 = V + dV and delta-W = U2 V2^T - U V^T
-    (float64, stored float32). `uv` = the alive (U, V) at W0 in theory layout (`component_training.alive_uv`). The
-    rebuilt state differs from the trained one by the bf16 rounding of the offsets (gate C1 of E23 reads its effect)."""
+    """A component-training state saved by `arms.save_offsets` (offsets (dU, dV) to the alive columns at W0, the
+    format of sgd_ladder_long and sgd_kv; bf16 in files saved before 2026-11-11, fp32 since), rebuilt on the CPU:
+    U2 = U + dU, V2 = V + dV and delta-W = U2 V2^T - U V^T (float64, stored float32). `uv` = the alive (U, V) at W0 in
+    theory layout (`component_training.alive_uv`). A bf16 file's rebuilt state differs from the trained one by the
+    rounding of the offsets (gate C1 of E23 reads its effect)."""
     st = torch.load(path, weights_only=False)
     assert st["layout"] == "theory (d_out, n), (d_in, n)", st["layout"]
     dW: dict[str, Tensor] = {}

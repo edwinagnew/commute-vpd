@@ -1,0 +1,2182 @@
+{
+ "maps": [
+  {
+   "name": "e46_ident32",
+   "built": "copy",
+   "family": "E46 32 keys",
+   "step": 10,
+   "windows": {
+    "format": "kv",
+    "path": "experiments/regating_table/results/large/windows_ident32.pt"
+   },
+   "prior": {
+    "source": "compute"
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/regating_table/results/stage0b.json",
+      [
+       "states",
+       "ident32/s0",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/regating_table/results/stage0b.json",
+      [
+       "states",
+       "ident32/s0",
+       "G"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/regating_table/results/stage0b.json",
+      [
+       "states",
+       "ident32/s1",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/regating_table/results/stage0b.json",
+      [
+       "states",
+       "ident32/s1",
+       "G"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "e46_ident32b",
+   "built": "copy",
+   "family": "E46 32 keys",
+   "step": 10,
+   "windows": {
+    "format": "kv",
+    "path": "experiments/regating_table/results/large/windows_ident32b.pt"
+   },
+   "prior": {
+    "source": "compute"
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/regating_table/results/stage0b.json",
+      [
+       "states",
+       "ident32b/s0",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/regating_table/results/stage0b.json",
+      [
+       "states",
+       "ident32b/s0",
+       "G"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/regating_table/results/stage0b.json",
+      [
+       "states",
+       "ident32b/s1",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/regating_table/results/stage0b.json",
+      [
+       "states",
+       "ident32b/s1",
+       "G"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "e46_rand32",
+   "built": "random map",
+   "family": "E46 32 keys",
+   "step": 10,
+   "windows": {
+    "format": "kv",
+    "path": "experiments/regating_table/results/large/windows_rand32.pt"
+   },
+   "prior": {
+    "source": "compute"
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/regating_table/results/stage0b.json",
+      [
+       "states",
+       "rand32/s0",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/regating_table/results/stage0b.json",
+      [
+       "states",
+       "rand32/s0",
+       "G"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/regating_table/results/stage0b.json",
+      [
+       "states",
+       "rand32/s1",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/regating_table/results/stage0b.json",
+      [
+       "states",
+       "rand32/s1",
+       "G"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "e46_rand32b",
+   "built": "random map",
+   "family": "E46 32 keys",
+   "step": 30,
+   "windows": {
+    "format": "kv",
+    "path": "experiments/regating_table/results/large/windows_rand32b.pt"
+   },
+   "prior": {
+    "source": "compute"
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/regating_table/results/stage0b.json",
+      [
+       "states",
+       "rand32b/s0",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/regating_table/results/stage0b.json",
+      [
+       "states",
+       "rand32b/s0",
+       "G"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/regating_table/results/stage0b.json",
+      [
+       "states",
+       "rand32b/s1",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/regating_table/results/stage0b.json",
+      [
+       "states",
+       "rand32b/s1",
+       "G"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "e54_elicit",
+   "built": "elicit",
+   "family": "E54 32 keys",
+   "step": "10",
+   "windows": {
+    "format": "kv",
+    "path": "experiments/keydependent_elicit/results/large/windows_elicit.pt"
+   },
+   "prior": {
+    "source": "saved",
+    "file": "experiments/keydependent_patch/results/job2.json",
+    "key": [
+     "stage0",
+     "elicit",
+     "rate"
+    ]
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/keydependent_elicit/results/stage2.json",
+      [
+       "states",
+       "elicit_s0",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/keydependent_elicit/results/stage2.json",
+      [
+       "states",
+       "elicit_s0",
+       "G_logodds"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/keydependent_elicit/results/stage2.json",
+      [
+       "states",
+       "elicit_s1",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/keydependent_elicit/results/stage2.json",
+      [
+       "states",
+       "elicit_s1",
+       "G_logodds"
+      ]
+     ]
+    },
+    {
+     "seed": 2,
+     "r": [
+      "experiments/keydependent_patch/results/job2.json",
+      [
+       "states",
+       "elicit_s2",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/keydependent_patch/results/job2.json",
+      [
+       "states",
+       "elicit_s2",
+       "G_logodds"
+      ]
+     ]
+    },
+    {
+     "seed": 3,
+     "r": [
+      "experiments/keydependent_patch/results/job2.json",
+      [
+       "states",
+       "elicit_s3",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/keydependent_patch/results/job2.json",
+      [
+       "states",
+       "elicit_s3",
+       "G_logodds"
+      ]
+     ]
+    },
+    {
+     "seed": 4,
+     "r": [
+      "experiments/keydependent_patch/results/job2.json",
+      [
+       "states",
+       "elicit_s4",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/keydependent_patch/results/job2.json",
+      [
+       "states",
+       "elicit_s4",
+       "G_logodds"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "e54_cipher",
+   "built": "cipher",
+   "family": "E54 32 keys",
+   "step": "matched size, step 9 (stage2.json seeds 0, 1)",
+   "windows": {
+    "format": "kv",
+    "path": "experiments/keydependent_elicit/results/large/windows_cipher.pt"
+   },
+   "prior": {
+    "source": "saved",
+    "file": "experiments/keydependent_patch/results/job2.json",
+    "key": [
+     "stage0",
+     "cipher",
+     "rate"
+    ]
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/keydependent_elicit/results/stage2.json",
+      [
+       "states",
+       "cipher_s0",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/keydependent_elicit/results/stage2.json",
+      [
+       "states",
+       "cipher_s0",
+       "G_logodds"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/keydependent_elicit/results/stage2.json",
+      [
+       "states",
+       "cipher_s1",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/keydependent_elicit/results/stage2.json",
+      [
+       "states",
+       "cipher_s1",
+       "G_logodds"
+      ]
+     ]
+    },
+    {
+     "seed": 2,
+     "r": [
+      "experiments/keydependent_patch/results/job2.json",
+      [
+       "states",
+       "cipher_s2",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/keydependent_patch/results/job2.json",
+      [
+       "states",
+       "cipher_s2",
+       "G_logodds"
+      ]
+     ]
+    },
+    {
+     "seed": 3,
+     "r": [
+      "experiments/keydependent_patch/results/job2.json",
+      [
+       "states",
+       "cipher_s3",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/keydependent_patch/results/job2.json",
+      [
+       "states",
+       "cipher_s3",
+       "G_logodds"
+      ]
+     ]
+    },
+    {
+     "seed": 4,
+     "r": [
+      "experiments/keydependent_patch/results/job2.json",
+      [
+       "states",
+       "cipher_s4",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/keydependent_patch/results/job2.json",
+      [
+       "states",
+       "cipher_s4",
+       "G_logodds"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "e58_24_elicit",
+   "built": "elicit",
+   "family": "E58 24 keys",
+   "step": 10,
+   "windows": {
+    "format": "kv",
+    "path": "experiments/open_pair/results/large/windows_elicit_trained.pt"
+   },
+   "prior": {
+    "source": "compute"
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "elicit",
+       0
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/run.json",
+      [
+       "states",
+       "elicit_s0",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "elicit",
+       1
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/run.json",
+      [
+       "states",
+       "elicit_s1",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 2,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "elicit",
+       2
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/run.json",
+      [
+       "states",
+       "elicit_s2",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 3,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "elicit",
+       3
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair_instruments/results/seeds.json",
+      [
+       "states",
+       "elicit_s3",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 4,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "elicit",
+       4
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair_instruments/results/seeds.json",
+      [
+       "states",
+       "elicit_s4",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 5,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "elicit",
+       5
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair_instruments/results/seeds.json",
+      [
+       "states",
+       "elicit_s5",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 6,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "elicit",
+       6
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair_instruments/results/seeds.json",
+      [
+       "states",
+       "elicit_s6",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 7,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "elicit",
+       7
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair_instruments/results/seeds.json",
+      [
+       "states",
+       "elicit_s7",
+       "G_logodds_route"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "e58_24_cipher",
+   "built": "cipher",
+   "family": "E58 24 keys",
+   "step": "8-9 (per seed)",
+   "windows": {
+    "format": "kv",
+    "path": "experiments/open_pair/results/large/windows_cipher_trained.pt"
+   },
+   "prior": {
+    "source": "compute"
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "cipher",
+       0
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/run.json",
+      [
+       "states",
+       "cipher_s0",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "cipher",
+       1
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/run.json",
+      [
+       "states",
+       "cipher_s1",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 2,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "cipher",
+       2
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/run.json",
+      [
+       "states",
+       "cipher_s2",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 3,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "cipher",
+       3
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair_instruments/results/seeds.json",
+      [
+       "states",
+       "cipher_s3",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 4,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "cipher",
+       4
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair_instruments/results/seeds.json",
+      [
+       "states",
+       "cipher_s4",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 5,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "cipher",
+       5
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair_instruments/results/seeds.json",
+      [
+       "states",
+       "cipher_s5",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 6,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "cipher",
+       6
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair_instruments/results/seeds.json",
+      [
+       "states",
+       "cipher_s6",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 7,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "cipher",
+       7
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair_instruments/results/seeds.json",
+      [
+       "states",
+       "cipher_s7",
+       "G_logodds_route"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "e58_24_copy",
+   "built": "copy",
+   "family": "E58 24 keys",
+   "step": 10,
+   "windows": {
+    "format": "kv",
+    "path": "experiments/open_pair/results/large/amend1/windows_copy_trained.pt"
+   },
+   "prior": {
+    "source": "compute"
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "copy",
+       0
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend1.json",
+      [
+       "control",
+       "copy_s0",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "copy",
+       1
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend1.json",
+      [
+       "control",
+       "copy_s1",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 2,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "copy",
+       2
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend1.json",
+      [
+       "control",
+       "copy_s2",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 3,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "copy",
+       3
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair_instruments/results/seeds.json",
+      [
+       "states",
+       "copy_s3",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 4,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "copy",
+       4
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair_instruments/results/seeds.json",
+      [
+       "states",
+       "copy_s4",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 5,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "copy",
+       5
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair_instruments/results/seeds.json",
+      [
+       "states",
+       "copy_s5",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 6,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "copy",
+       6
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair_instruments/results/seeds.json",
+      [
+       "states",
+       "copy_s6",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 7,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "copy",
+       7
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair_instruments/results/seeds.json",
+      [
+       "states",
+       "copy_s7",
+       "G_logodds_route"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "e58_24_rank1",
+   "built": "rank1",
+   "family": "E58 24 keys",
+   "step": 10,
+   "windows": {
+    "format": "kv",
+    "path": "experiments/open_pair/results/large/amend1/windows_rank1_trained.pt"
+   },
+   "prior": {
+    "source": "compute"
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "rank1",
+       0
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend1.json",
+      [
+       "control",
+       "rank1_s0",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "rank1",
+       1
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend1.json",
+      [
+       "control",
+       "rank1_s1",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 2,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "rank1",
+       2
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend1.json",
+      [
+       "control",
+       "rank1_s2",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 3,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "rank1",
+       3
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair_instruments/results/seeds.json",
+      [
+       "states",
+       "rank1_s3",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 4,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "rank1",
+       4
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair_instruments/results/seeds.json",
+      [
+       "states",
+       "rank1_s4",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 5,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "rank1",
+       5
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair_instruments/results/seeds.json",
+      [
+       "states",
+       "rank1_s5",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 6,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "rank1",
+       6
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair_instruments/results/seeds.json",
+      [
+       "states",
+       "rank1_s6",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 7,
+     "r": [
+      "experiments/open_pair_instruments/results/run.json",
+      [
+       "columns",
+       "r",
+       "rank1",
+       7
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair_instruments/results/seeds.json",
+      [
+       "states",
+       "rank1_s7",
+       "G_logodds_route"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "e58_96_rank1",
+   "built": "rank1",
+   "family": "E58 96 keys",
+   "step": 30,
+   "windows": {
+    "format": "kv",
+    "path": "experiments/open_pair/results/large/amend3/windows_rank1_trained.pt"
+   },
+   "prior": {
+    "source": "saved",
+    "file": "experiments/open_pair/results/amend3.json",
+    "key": [
+     "maps",
+     "rank1",
+     "w0_geo_p",
+     "trained"
+    ]
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/open_pair/results/amend3.json",
+      [
+       "reads",
+       "rank1@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend3.json",
+      [
+       "reads",
+       "rank1@30",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/open_pair/results/amend4.json",
+      [
+       "reads",
+       "rank1_s1@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend4.json",
+      [
+       "reads",
+       "rank1_s1@30",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 2,
+     "r": [
+      "experiments/open_pair/results/amend4.json",
+      [
+       "reads",
+       "rank1_s2@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend4.json",
+      [
+       "reads",
+       "rank1_s2@30",
+       "G_logodds_route"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "e58_96_elicit",
+   "built": "elicit",
+   "family": "E58 96 keys",
+   "step": 30,
+   "windows": {
+    "format": "kv",
+    "path": "experiments/open_pair/results/large/amend3/windows_elicit_trained.pt"
+   },
+   "prior": {
+    "source": "saved",
+    "file": "experiments/open_pair/results/amend3.json",
+    "key": [
+     "maps",
+     "elicit",
+     "w0_geo_p",
+     "trained"
+    ]
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/open_pair/results/amend3.json",
+      [
+       "reads",
+       "elicit@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend3.json",
+      [
+       "reads",
+       "elicit@30",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/open_pair/results/amend4.json",
+      [
+       "reads",
+       "elicit_s1@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend4.json",
+      [
+       "reads",
+       "elicit_s1@30",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 2,
+     "r": [
+      "experiments/open_pair/results/amend4.json",
+      [
+       "reads",
+       "elicit_s2@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend4.json",
+      [
+       "reads",
+       "elicit_s2@30",
+       "G_logodds_route"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "e58_96_copy",
+   "built": "copy",
+   "family": "E58 96 keys",
+   "step": 30,
+   "windows": {
+    "format": "kv",
+    "path": "experiments/open_pair/results/large/amend3/windows_copy_trained.pt"
+   },
+   "prior": {
+    "source": "saved",
+    "file": "experiments/open_pair/results/amend3.json",
+    "key": [
+     "maps",
+     "copy",
+     "w0_geo_p",
+     "trained"
+    ]
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/open_pair/results/amend3.json",
+      [
+       "reads",
+       "copy@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend3.json",
+      [
+       "reads",
+       "copy@30",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/open_pair/results/amend4.json",
+      [
+       "reads",
+       "copy_s1@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend4.json",
+      [
+       "reads",
+       "copy_s1@30",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 2,
+     "r": [
+      "experiments/open_pair/results/amend4.json",
+      [
+       "reads",
+       "copy_s2@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend4.json",
+      [
+       "reads",
+       "copy_s2@30",
+       "G_logodds_route"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "e58_96_cipher",
+   "built": "cipher",
+   "family": "E58 96 keys",
+   "step": 30,
+   "windows": {
+    "format": "kv",
+    "path": "experiments/open_pair/results/large/amend3/windows_cipher_trained.pt"
+   },
+   "prior": {
+    "source": "saved",
+    "file": "experiments/open_pair/results/amend3.json",
+    "key": [
+     "maps",
+     "cipher",
+     "w0_geo_p",
+     "trained"
+    ]
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/open_pair/results/amend4.json",
+      [
+       "reads",
+       "cipher_s0@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend4.json",
+      [
+       "reads",
+       "cipher_s0@30",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/open_pair/results/amend4.json",
+      [
+       "reads",
+       "cipher_s1@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend4.json",
+      [
+       "reads",
+       "cipher_s1@30",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 2,
+     "r": [
+      "experiments/open_pair/results/amend4.json",
+      [
+       "reads",
+       "cipher_s2@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend4.json",
+      [
+       "reads",
+       "cipher_s2@30",
+       "G_logodds_route"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "e58_96_shuffle",
+   "built": "shuffle",
+   "family": "E58 96 keys",
+   "step": 30,
+   "windows": {
+    "format": "kv",
+    "path": "experiments/open_pair/results/large/amend3/windows_shuffle_trained.pt"
+   },
+   "prior": {
+    "source": "saved",
+    "file": "experiments/open_pair/results/amend3.json",
+    "key": [
+     "maps",
+     "shuffle",
+     "w0_geo_p",
+     "trained"
+    ]
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/open_pair/results/amend4.json",
+      [
+       "reads",
+       "shuffle_s0@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend4.json",
+      [
+       "reads",
+       "shuffle_s0@30",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/open_pair/results/amend5.json",
+      [
+       "reads",
+       "shuffle_s1@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend5.json",
+      [
+       "reads",
+       "shuffle_s1@30",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 2,
+     "r": [
+      "experiments/open_pair/results/amend5.json",
+      [
+       "reads",
+       "shuffle_s2@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend5.json",
+      [
+       "reads",
+       "shuffle_s2@30",
+       "G_logodds_route"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "e58_96_prior_cipher",
+   "built": "prior-matched cipher",
+   "family": "E58 96 keys",
+   "step": 30,
+   "windows": {
+    "format": "kv",
+    "path": "experiments/open_pair/results/large/amend6/windows_prior_cipher_trained.pt"
+   },
+   "prior": {
+    "source": "saved",
+    "file": "experiments/open_pair/results/amend6.json",
+    "key": [
+     "maps",
+     "prior_cipher",
+     "w0_geo_p",
+     "trained"
+    ]
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/open_pair/results/amend6.json",
+      [
+       "reads",
+       "prior_cipher_s0@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend6.json",
+      [
+       "reads",
+       "prior_cipher_s0@30",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/open_pair/results/amend6.json",
+      [
+       "reads",
+       "prior_cipher_s1@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend6.json",
+      [
+       "reads",
+       "prior_cipher_s1@30",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 2,
+     "r": [
+      "experiments/open_pair/results/amend6.json",
+      [
+       "reads",
+       "prior_cipher_s2@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend6.json",
+      [
+       "reads",
+       "prior_cipher_s2@30",
+       "G_logodds_route"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "e58_96_class_map",
+   "built": "class rule",
+   "family": "E58 96 keys",
+   "step": 30,
+   "windows": {
+    "format": "kv",
+    "path": "experiments/open_pair/results/large/amend7/windows_class_map_trained.pt"
+   },
+   "prior": {
+    "source": "saved",
+    "file": "experiments/open_pair/results/amend7.json",
+    "key": [
+     "maps",
+     "class_map",
+     "w0_geo_p",
+     "trained"
+    ]
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/open_pair/results/amend7.json",
+      [
+       "reads",
+       "class_map_s0@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend7.json",
+      [
+       "reads",
+       "class_map_s0@30",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/open_pair/results/amend7.json",
+      [
+       "reads",
+       "class_map_s1@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend7.json",
+      [
+       "reads",
+       "class_map_s1@30",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 2,
+     "r": [
+      "experiments/open_pair/results/amend7.json",
+      [
+       "reads",
+       "class_map_s2@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend7.json",
+      [
+       "reads",
+       "class_map_s2@30",
+       "G_logodds_route"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "e58_96_class_shuffled",
+   "built": "class twin",
+   "family": "E58 96 keys",
+   "step": 30,
+   "windows": {
+    "format": "kv",
+    "path": "experiments/open_pair/results/large/amend7/windows_class_shuffled_trained.pt"
+   },
+   "prior": {
+    "source": "saved",
+    "file": "experiments/open_pair/results/amend7.json",
+    "key": [
+     "maps",
+     "class_shuffled",
+     "w0_geo_p",
+     "trained"
+    ]
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/open_pair/results/amend7.json",
+      [
+       "reads",
+       "class_shuffled_s0@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend7.json",
+      [
+       "reads",
+       "class_shuffled_s0@30",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/open_pair/results/amend7.json",
+      [
+       "reads",
+       "class_shuffled_s1@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend7.json",
+      [
+       "reads",
+       "class_shuffled_s1@30",
+       "G_logodds_route"
+      ]
+     ]
+    },
+    {
+     "seed": 2,
+     "r": [
+      "experiments/open_pair/results/amend7.json",
+      [
+       "reads",
+       "class_shuffled_s2@30",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/open_pair/results/amend7.json",
+      [
+       "reads",
+       "class_shuffled_s2@30",
+       "G_logodds_route"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "e62_copy",
+   "built": "copy",
+   "family": "E62 new marker",
+   "step": 30,
+   "windows": {
+    "format": "windows_pt",
+    "path": "experiments/induction_cue/results/large/windows.pt"
+   },
+   "prior": {
+    "source": "saved",
+    "file": "experiments/induction_cue/results/run.json",
+    "key": [
+     "stage_b",
+     "prior_copy"
+    ]
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/induction_cue/results/run.json",
+      [
+       "states",
+       "copy_s0",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/induction_cue/results/run.json",
+      [
+       "states",
+       "copy_s0",
+       "G_route"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/induction_cue/results/run.json",
+      [
+       "states",
+       "copy_s1",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/induction_cue/results/run.json",
+      [
+       "states",
+       "copy_s1",
+       "G_route"
+      ]
+     ]
+    },
+    {
+     "seed": 2,
+     "r": [
+      "experiments/induction_cue/results/run.json",
+      [
+       "states",
+       "copy_s2",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/induction_cue/results/run.json",
+      [
+       "states",
+       "copy_s2",
+       "G_route"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "e62_lookup",
+   "built": "lookup",
+   "family": "E62 new marker",
+   "step": 30,
+   "windows": {
+    "format": "windows_pt",
+    "path": "experiments/induction_cue/results/large/windows.pt"
+   },
+   "prior": {
+    "source": "saved",
+    "file": "experiments/induction_cue/results/run.json",
+    "key": [
+     "stage_b",
+     "prior_lookup"
+    ]
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/induction_cue/results/run.json",
+      [
+       "states",
+       "lookup_s0",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/induction_cue/results/run.json",
+      [
+       "states",
+       "lookup_s0",
+       "G_route"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/induction_cue/results/run.json",
+      [
+       "states",
+       "lookup_s1",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/induction_cue/results/run.json",
+      [
+       "states",
+       "lookup_s1",
+       "G_route"
+      ]
+     ]
+    },
+    {
+     "seed": 2,
+     "r": [
+      "experiments/induction_cue/results/run.json",
+      [
+       "states",
+       "lookup_s2",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/induction_cue/results/run.json",
+      [
+       "states",
+       "lookup_s2",
+       "G_route"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "case_label_real",
+   "built": "label pair, real",
+   "family": "E123 case label",
+   "step": 30,
+   "windows": {
+    "format": "label_task",
+    "task": "case_label",
+    "arm": "real",
+    "path": "experiments/case_label/results/large/task.pt",
+    "n_read": 256
+   },
+   "prior": {
+    "source": "compute"
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/case_label_both/results/case_label_both.json",
+      [
+       "routes",
+       "real_s0",
+       "nothing",
+       "shares",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/case_label_both/results/case_label_both.json",
+      [
+       "routes",
+       "real_s0",
+       "nothing",
+       "gain"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/case_label_both/results/case_label_both.json",
+      [
+       "routes",
+       "real_s1",
+       "nothing",
+       "shares",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/case_label_both/results/case_label_both.json",
+      [
+       "routes",
+       "real_s1",
+       "nothing",
+       "gain"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "case_label_twin",
+   "built": "label pair, twin",
+   "family": "E123 case label",
+   "step": 30,
+   "windows": {
+    "format": "label_task",
+    "task": "case_label",
+    "arm": "twin",
+    "path": "experiments/case_label/results/large/task.pt",
+    "n_read": 256
+   },
+   "prior": {
+    "source": "compute"
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/case_label_both/results/case_label_both.json",
+      [
+       "routes",
+       "twin_s0",
+       "nothing",
+       "shares",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/case_label_both/results/case_label_both.json",
+      [
+       "routes",
+       "twin_s0",
+       "nothing",
+       "gain"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/case_label_both/results/case_label_both.json",
+      [
+       "routes",
+       "twin_s1",
+       "nothing",
+       "shares",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/case_label_both/results/case_label_both.json",
+      [
+       "routes",
+       "twin_s1",
+       "nothing",
+       "gain"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "fresh_reuse_pair_real",
+   "built": "label pair, real",
+   "family": "E125 repeat label",
+   "step": 30,
+   "windows": {
+    "format": "label_task",
+    "task": "fresh_reuse_pair",
+    "arm": "real",
+    "path": "experiments/fresh_reuse_pair/results/large/task.pt",
+    "n_read": 256
+   },
+   "prior": {
+    "source": "compute"
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/fresh_reuse_pair/results/stage2.json",
+      [
+       "states",
+       "real_s0",
+       "nothing",
+       "shares",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/fresh_reuse_pair/results/stage2.json",
+      [
+       "states",
+       "real_s0",
+       "nothing",
+       "gain"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/fresh_reuse_pair/results/stage2.json",
+      [
+       "states",
+       "real_s1",
+       "nothing",
+       "shares",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/fresh_reuse_pair/results/stage2.json",
+      [
+       "states",
+       "real_s1",
+       "nothing",
+       "gain"
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "name": "fresh_reuse_pair_twin",
+   "built": "label pair, twin",
+   "family": "E125 repeat label",
+   "step": 30,
+   "windows": {
+    "format": "label_task",
+    "task": "fresh_reuse_pair",
+    "arm": "twin",
+    "path": "experiments/fresh_reuse_pair/results/large/task.pt",
+    "n_read": 256
+   },
+   "prior": {
+    "source": "compute"
+   },
+   "seeds": [
+    {
+     "seed": 0,
+     "r": [
+      "experiments/fresh_reuse_pair/results/stage2.json",
+      [
+       "states",
+       "twin_s0",
+       "nothing",
+       "shares",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/fresh_reuse_pair/results/stage2.json",
+      [
+       "states",
+       "twin_s0",
+       "nothing",
+       "gain"
+      ]
+     ]
+    },
+    {
+     "seed": 1,
+     "r": [
+      "experiments/fresh_reuse_pair/results/stage2.json",
+      [
+       "states",
+       "twin_s1",
+       "nothing",
+       "shares",
+       "r"
+      ]
+     ],
+     "gain": [
+      "experiments/fresh_reuse_pair/results/stage2.json",
+      [
+       "states",
+       "twin_s1",
+       "nothing",
+       "gain"
+      ]
+     ]
+    }
+   ]
+  }
+ ]
+}

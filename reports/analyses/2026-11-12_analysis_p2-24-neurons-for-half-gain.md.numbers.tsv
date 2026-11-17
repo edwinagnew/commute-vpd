@@ -1,0 +1,23 @@
+0.70	experiments/method_table/results/final.json	.cells[]|select(.pair=="e46_copy_random" and .method=="k_half")|.gap	this
+0.85	experiments/method_table/results/final.json	.cells[]|select(.pair=="e53_lowercase_cipher" and .method=="k_half")|.gap	this
+0.52	experiments/method_table/results/final.json	.cells[]|select(.pair=="e54_own" and .method=="k_half")|.gap	this
+0.90	experiments/method_table/results/final.json	.cells[]|select(.pair=="e58_rank1_96" and .method=="k_half")|.gap	this
+0.82	experiments/method_table/results/final.json	.cells[]|select(.pair=="e58_copy_prior_cipher" and .method=="k_half")|.gap	this
+0.55	experiments/method_table/results/final.json	.cells[]|select(.pair=="open_pair_c3" and .method=="k_half")|.gap	this
+0.00	experiments/method_table/results/final.json	.cells[]|select(.pair=="e62_copy_lookup" and .method=="k_half")|.gap	this
+-0.08	experiments/method_table/results/final.json	.cells[]|select(.pair=="e54_matched" and .method=="k_half")|.gap	this
+0.12	experiments/method_table/results/final.json	.cells[]|select(.pair=="e58_elicit_shuffle" and .method=="k_half")|.gap	this
+0.18	experiments/method_table/results/final.json	-(.cells[]|select(.pair=="e46_copy_random" and .method=="size")|.gap)	this
+0.10	experiments/method_table/results/final.json	-(.cells[]|select(.pair=="e53_lowercase_cipher" and .method=="size")|.gap)	this
+0.28	experiments/method_table/results/final.json	-(.cells[]|select(.pair=="e54_own" and .method=="size")|.gap)	this
+0.08	experiments/method_table/results/final.json	-(.cells[]|select(.pair=="e58_rank1_96" and .method=="size")|.gap)	this
+-0.005	experiments/method_table/results/final.json	-(.cells[]|select(.pair=="open_pair_c3" and .method=="size")|.gap)	this
+0.006	experiments/method_table/results/final.json	-(.cells[]|select(.pair=="e54_matched" and .method=="size")|.gap)	this
+-0.001	experiments/method_table/results/final.json	-(.cells[]|select(.pair=="open_pair_c3_copy" and .method=="size")|.gap)	this
+0.5	experiments/neuron_r/results/predictions.json	.settings.p_learn	earlier
+0.23	experiments/k_half_fill/results/cells.json	[.states|to_entries[]|select(.key|startswith("cipher_s"))|.value.p_target]|min	this
+0.31	experiments/k_half_fill/results/cells.json	[.states|to_entries[]|select(.key|startswith("cipher_s"))|.value.p_target]|max	this
+0.32	experiments/k_half_fill/results/cells.json	[.states|to_entries[]|select(.key|startswith("c3_cipher"))|.value.p_target]|min	this
+0.45	experiments/k_half_fill/results/cells.json	[.states|to_entries[]|select(.key|startswith("c3_cipher"))|.value.p_target]|max	this
+0.67	experiments/k_half_fill/results/cells.json	[.states|to_entries[]|select(.key|startswith("e58/cipher"))|.value.p_target]|min	this
+0.81	experiments/k_half_fill/results/cells.json	[.states|to_entries[]|select(.key|startswith("e58/cipher"))|.value.p_target]|max	this

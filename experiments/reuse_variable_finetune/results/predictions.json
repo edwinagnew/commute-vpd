@@ -1,0 +1,58 @@
+{
+  "experiment": "E139",
+  "cell": "P1.4",
+  "filed": "2026-11-10, before any R2 run; cut-offs from E137 results/rules.json by the rule on reports/plans/2026-11-09_plan_reuse-variable-first-test.md (What R2 adds)",
+  "cutoffs": {
+    "G": 0.7942650765822863,
+    "H": 0.4757337166788033,
+    "source": "G: midpoint of Always on found G (0.922475722997802) and the highest found G of Cue, XOR, Table (0.6660544301667705); H: midpoint of the lowest found H of Always on, Cue, Table (0.9607991649923541) and XOR found H (-0.009331731634747431). Both gaps non-empty."
+  },
+  "thresholds": {
+    "floor_gap": 0.02,
+    "first_steps_share": 0.25,
+    "xor_kl_ratio": 0.9,
+    "gap_replay_tol": 0.001,
+    "replay_tol": 0.02
+  },
+  "threshold_sources": {
+    "floor_gap": "R1 filed floor, unchanged",
+    "first_steps_share": "proposed by the code writer (plan page, early checks): the first 10 of 300 steps cannot do a quarter of the target KL; judgement",
+    "xor_kl_ratio": "proposed by the code writer: KL to the pair at most 0.9 of the half-push reference, the best a model that reads no XOR can do; judgement",
+    "gap_replay_tol": "deterministic rebuild of R1 pieces; judgement",
+    "replay_tol": "same seeds and code moved from R1; judgement"
+  },
+  "control": {
+    "what": "stage 0, alone: a zero-step fine-tune (the 67M itself) against M; rebuilt pairs against R1 gaps; moved code repeating R1 Always on G 0.9225 and H 0.976 at in2",
+    "expected": "zero-step gap at the float floor and under floor_gap, so no reading (the do-nothing state cannot pass any label); gaps within gap_replay_tol; replay within replay_tol",
+    "on_miss": "job stops, exit 1"
+  },
+  "label_rule": {
+    "rule": "Per fine-tune with a reading (gap >= floor_gap; for XOR imitators also learned): best found G at k = 4 over sites and starts, best found H over sites. G >= cutoffs.G and H >= cutoffs.H: re-weighted. G < cutoffs.G and H >= cutoffs.H: rewired. H < cutoffs.H: no map found (never read as built: caveat 2). Per imitated pair: the label held by at least 2 of the seeds with a reading; fewer than 2 seeds with a reading, or no label held by 2: no reading.",
+    "edge_cases": "A value exactly at a cut-off counts as at or above. A missing start or site uses what was read; none at all is no reading. G >= cutoff with H < cutoff reads no map found (H is the larger class, so this signals a search fault and is reported as such). The do-nothing state has gap 0, under the floor, so it cannot read any label.",
+    "blind_to": "G and H read only the fine-tune outputs on D (fault 2 on the plan page): a fine-tune that matches its pair exactly must read the pair values whatever is inside it. The H refinement step failed in every R1 site but one, so H is the ridge fit; a low H is a search limit, not absence."
+  },
+  "predictions": {
+    "P1": {
+      "claim": "Always on imitators: re-weighted",
+      "rival": "A; B predicts G below cutoffs.G"
+    },
+    "P2": {
+      "claim": "Cue imitators: rewired",
+      "rival": "A"
+    },
+    "P3": {
+      "claim": "Table imitators: rewired",
+      "rival": "A"
+    },
+    "P4": {
+      "claim": "XOR imitators: no reading (not learned) or no map found; never re-weighted or rewired",
+      "rival": "A and B alike"
+    },
+    "P5": {
+      "claim": "Reversion and setter mismatch at the found maps: reported per item beside the pair value from R1; expected reversion below R1 pair value of about 1 at the found site for at least 2 seeds of Always on, because an ordinary fine-tune also changes weights after the site; no label reads them",
+      "rival": "none filed: descriptive"
+    }
+  },
+  "noise_floor": "Spread of one start G at the best site in R1: 0.137 (Always on), 0.082 (Cue); pooled 0.113 (the card). Seed-to-seed spread of the fine-tunes is unmeasured until this run.",
+  "stop": "If the imitators of Always on, Cue and Table read G and H within 0.1 of each other, the wording gives no reading on real fine-tunes (plan page drop rule); report and stop for the user."
+}

@@ -88,7 +88,7 @@ is at least 13 nats, so the ratio is safe. Ties: gap = within is "no separation"
 ## Route, time, cost
 
 Cluster L40, `debug` QoS, `--time=00:40:00`: 12 students × 105 s, reads and load about 4 min, **about 25 min, $0**. Offsets 60 MB each, 720 MB on NFS. Not gated.
-If not started in 10 min, RunPod: rebuild the 8 fine-tunes in-job (about 70 s by E46's log) rather than upload 900 MB at 80 KB/s; under $2.50 by E43's rate; a fresh-agent code review comes first, as that run is paid.
+If not started in 10 min, RunPod: rebuild the 8 fine-tunes in-job (about 70 s by E46's log) or upload the 900 MB (~1.5 min at ~10 MB/s, measured 2026-11-11), whichever is simpler; under $2.50 by E43's rate; a fresh-agent code review comes first, as that run is paid.
 
 ## Departures
 

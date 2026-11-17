@@ -1,0 +1,12 @@
+cell: P3.2
+rival_a: The gate placement (Γ reads the changed model's activations) sets the ceiling, not the KL unit predicts every update's log-odds re-gating share reads 0.85 or above, all within 0.1 of each other
+rival_b: The KL unit made the ceiling predicts at least one update's log-odds re-gating share reads below 0.85, more than 0.1 under another update
+rung: strategy
+smallest_gap: 0.1
+spread: 0.025
+n: 128
+design: paired
+unit: rows
+spread_source: experiments/qwen_regating_new/results/S_e40.json
+stop: All four updates read 0.85 or above, within 0.1 of each other: the re-gating share is at its ceiling on Qwen in both units, and part 3 takes option (a) or (d) of the 2026-11-09 card
+sketch: experiments/qwen_regating_new/figures/amend1_sketch.png

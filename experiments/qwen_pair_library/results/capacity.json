@@ -1,0 +1,63 @@
+{
+ "sides": {
+  "copy": {
+   "n": 256,
+   "hits": 255,
+   "exact_match": 0.99609375,
+   "prior_train": -17.15374363637965,
+   "prior_held": -16.766145299692624
+  },
+  "cipher": {
+   "n": 256,
+   "hits": 0,
+   "exact_match": 0.0,
+   "prior_train": -16.171910627630965,
+   "prior_held": -15.8673585325807
+  },
+  "context": {
+   "n": 256,
+   "hits": 197,
+   "exact_match": 0.76953125,
+   "prior_train": -23.48217905086405,
+   "prior_held": -23.862362326715225
+  },
+  "lookup": {
+   "n": 256,
+   "hits": 0,
+   "exact_match": 0.0,
+   "prior_train": -26.546063041182993,
+   "prior_held": -25.473252482155928
+  },
+  "known": {
+   "n": 200,
+   "hits": 192,
+   "exact_match": 0.96,
+   "prior_train": -7.328296717847714,
+   "prior_held": -8.773899423035509
+  },
+  "invented": {
+   "n": 200,
+   "hits": 5,
+   "exact_match": 0.025,
+   "prior_train": -7.011697100456291,
+   "prior_held": -7.180435989699734
+  }
+ },
+ "pairs": {
+  "copy_cipher": {
+   "reuse_ok": true,
+   "new_ok": true,
+   "verdict": "fit"
+  },
+  "context_lookup": {
+   "reuse_ok": false,
+   "new_ok": true,
+   "verdict": "dropped"
+  },
+  "facts": {
+   "reuse_ok": true,
+   "new_ok": true,
+   "verdict": "fit"
+  }
+ }
+}

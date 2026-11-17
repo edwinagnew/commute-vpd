@@ -24,6 +24,8 @@ Layouts: param-decomp `(U (C, d_out), V (d_in, C))`; theory `(U_A (d_out, n), V_
 - adversary sources / masked KL -> `gamma.pgd_sources`, `gamma.mask_kl`, `cancel.masked_kl`
 - windows / data -> `data.pile_rows`, `data.emoticon_windows`, `regating.load_windows`, `ladder.windows_for_trigger`, `kv.windows`
 
+**variable_read** — R1's reading of a change to the 67M against a variable of M, moved for R2: `Sizes`, `make_sets`, `make_task`, `pair_windows`, `load_pieces`, `piece_target` / `net_target` (a changed model F as a callable), `g_search`, `h_fit` + `ridge_select` + `h_refine` + `ridge_s`, `read_pair`.
+
 ## Model, files, data
 **env** — cache root constants: `REPO_ROOT`, `CACHE_DIR`, `VPD_DIR`, `HF_DIR`, `OUT_DIR` (import before param_decomp).
 **vpd_files** — W&B locations of the released runs. `fetch(log)`: download both runs once (needs WANDB_API_KEY).

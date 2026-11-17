@@ -1,0 +1,79 @@
+{
+ "experiment": "E93 Amendment 2 (qwen_d1_table): E93's table and Amendment 1's adjoint split on the new decomposition",
+ "filed": "2026-11-09, before any read on new",
+ "decomp": "p-9707d6ff (`new`; old is p-e9fcffd5). Every result file carries `decomp`. Old numbers beside are E93's, Amendment 1's, E86's and E75's stored results, read on old, not re-run.",
+ "plan": "reports/plans/2026-11-09_plan_new-decomposition-reruns.md, line 1; reports/plans/2026-11-09_plan_e93-new-decomposition.md; reports/plans/2026-11-05_plan_e93-d1-table.md (the original lines)",
+ "question": "On the new decomposition: does the least-squares split clear E93's table, and does the scaled adjoint split clear it as Amendment 1 asked, on the same eleven full updates; do E86's least-squares rows and E75's wrong-change rows read as they did on old?",
+ "states": "rules.STATES, E93's eleven full updates, the same files (sha256 against E93's state.json), rows, gain rows.",
+ "carried": "Decomposition-free reads carried from E93's results/<state>/state.json (experiments/DECOMPOSITIONS.md): fractions W0, FT, t, W0_end (no masks, no components); clean W0 (ruler), FT, random, signs; the file, sha256, norm; row counts. Nothing that touches V, U, Γ, the alive set or Σ is carried. Stage 0 re-reads the carried quantities for E40's step 10 and E81 on this job's card (controls.u1_gain, u1_ruler, e81: the same numbers or stop).",
+ "rules": {
+  "text": "Unchanged. E93's and Amendment 1's rules, thresholds and verdicts are the texts in results/predictions.json (sha256 c8effb2accc05deb5216a344350ac31e88280d9920c97051165118ca6bd9f7ca) and results/predictions_amend1.json (sha256 9350c85707e79f2c0d6f646680d1ad7df448f8e166c9af9bf9dc1503c5c3c5b2), as code rules.py and amend1.py (`rules.score_state`, `arms`, `spreads`; the thresholds below must equal rules.THRESHOLDS or the scorer refuses). Rule 2's null is computed per state in this job; rule 5's width, rule 6's room and references, and every seed spread are this job's reads. None of them took a value from an old-decomposition reading.",
+  "e86_rows": "E86's filed rule (qwen_d1_fractions/rules.py `table`, unchanged): in-span = E72's dσ alone (`LsParts.old`), over the ruler holds under 0.02, wrong changes (random, signs, stored clean reads, no decomposition) fail against the remainder δW − dσ read on new, 'works' if both. Share = E86's left in Δ, least squares (= rule 2's share on the same state). On E40's step 10 (`u1_10`), the gold fine-tune (`u2`, the table state, same sha256 as E86's and E75's u2) and E81's TOFU update (`tofu_E81`).",
+  "e75_rows": "E75 Amendment 1's filed rule (qwen_rl_reads/rules_amend1.py `cell`, `overall`, unchanged): each of its three stored wrong changes (random, another update's matrix, signs; no decomposition enters them) against the remainder δW − dσ read on new, the paired row bootstrap's half-width; 'has teeth' if all fail. On E40's step 10, gold, R100 (= R_s0's file), R10, u3.",
+  "not_changed": "Adopted definitions (decisions.md rows 81, 87) are not read here."
+ },
+ "thresholds": {"gain_min": 0.05, "graded_at": 0.5, "saturated_at": 0.9, "t1_tol": 0.001, "ruler_floor": 1e-05,
+                "at_floor": 0.0001, "clean_under": 0.02, "size_max": 1.0, "room_min": 0.1, "min_rows": 2, "boot": 2000},
+ "rule_cards": {
+  "note": "One card per rule, least squares unless marked. W0 and do-nothing are E93's own edge table (rules.edges); positive control = stage 0's update E40 step 10. Old values are from results/table.json.",
+  "1_clean": {"quantity": "K(W0 + moved) over the ruler K(W0), both from KL(FT clean ‖ read clean) on the state's rows. Adjoint: the moved part of the adjoint split.", "at_W0": "ratio 1 (nothing moved; misses)", "do_nothing": "ratio 1 (moved part empty; misses), E93's edge case", "positive_control": "u1 step 10 on new: read in stage 0 (old 0.0056, adjoint 0.11 of the ruler); expected under 0.02 for least squares (a lean, not a band)", "blind_to": "Which subcomponents hold the change; masks", "noise_floor": "at_floor 1e-4 nats; ruler_floor 1e-5; fp32 sum 5e-6 of ‖δW‖ (E75 run.log:122)", "edges": "rules.edges: ruler at floor no call; tie misses; random and signs not failing no call; at-floor reads 'at floor'"},
+  "2_share": {"quantity": "‖δW − moved‖²/‖δW‖², pooled, fp64, against the Gaussian null of this state's basis. Adjoint: its own null (Gaussian split with its own c).", "at_W0": "no call (δW 0: zero denominator)", "do_nothing": "1, at null 1 of nothing: holds fails, E93's case", "positive_control": "u1 step 10 on new: stage 0 reads share < null (stop if not); split_control: a matrix in the span leaves under split_pos_max, a Gaussian the exact null", "blind_to": "Inputs: u1 reads 0.09 plain, 0.36 input-weighted (`qwen_fixed_masks/results/u1/S.json`)", "noise_floor": "seed spread per arm (|share(a) − share(b)|, this job); bf16 floor on u1 (`split_bf16`, printed)", "edges": "rules.edges: tie misses; zero denominator no call; spread unread pending"},
+  "3_size": {"quantity": "‖moved‖²/‖δW‖².", "at_W0": "no call", "do_nothing": "0 (holds)", "positive_control": "about 1 − share on u1 step 10", "blind_to": "Direction; about 1 − share for least squares", "noise_floor": "second-order gap", "edges": "rules.edges: size over 1 misses (the adjoint's plain size can exceed 1)"},
+  "4_kept_clean": {"quantity": "kept(W0 + moved) on the gain rows against the arm's own t = 0.5, graded arms with a behaviour line.", "at_W0": "0", "do_nothing": "0: fails on a graded arm", "positive_control": "u1 step 10 saturated: 'not graded' by design", "blind_to": "All but mean loss on task tokens", "noise_floor": "t = 1 within t1_tol 1e-3, carried, rechecked in stage 0 (E93's fractions)", "edges": "rules.edges: gain under gain_min no call; ties hold"},
+  "5_K_masked": {"quantity": "KL(FT clean ‖ masked at the state's own masks, Δ off) against do-nothing's (K11 − K01), both on new.", "at_W0": "stage-0 reference K0, K00 read on new; not a rule value", "do_nothing": "K11 = K01 by construction: holds", "positive_control": "Stage 0: do-nothing's K01 and K00 through the state path (no change) reproduce the base cells within rep; least squares' K11 read beside", "blind_to": "Credit: passes do-nothing (E79)", "noise_floor": "2 × paired row bootstrap half-width, per state (this job)", "edges": "rules.edges: under min_rows no call; tie holds"},
+  "6_kept_masked": {"quantity": "E68's gain under own masks; ceiling and random reads on new.", "at_W0": "0", "do_nothing": "at the floor max(do-nothing, random) + w: fails with room", "positive_control": "u1, u2 not graded (no read)", "blind_to": "As rule 5, E79", "noise_floor": "row bootstrap w, room_min 0.1", "edges": "rules.edges: no room does not fail; ceiling unread pending"},
+  "verdict": {"quantity": "E93's verdict rule and arms, unchanged.", "at_W0": "no call", "do_nothing": "fails (rules 1, 2)", "positive_control": "not a verdict state", "blind_to": "See rules", "noise_floor": "as the rules", "edges": "rules.edges, am1 scorer: three states written reads 'unread' for the filed leans"},
+  "e75_cell": {"quantity": "K(wrong change) − K(remainder δW − dσ on new); wrong changes stored, remainder new.", "at_W0": "not read", "do_nothing": "not read", "positive_control": "--edges: E75's stored remainder gives every stored wrong change 'fails', the old read", "blind_to": "Which wrong; a gap of size only", "noise_floor": "paired row bootstrap half-width (E75's)", "edges": "empty read no call; a missing extras file reads unread"},
+  "e86_table": {"quantity": "In-span over the ruler (holds < 0.02), E75's cell on random and signs, 'works' if all.", "at_W0": "not read", "do_nothing": "not read", "positive_control": "--edges: E86's own stored reads reproduce its stored verdict", "blind_to": "Rarely-on and often-on halves are not read here (halves are not in this amendment's line)", "noise_floor": "ruler_floor 1e-5; bootstrap width", "edges": "empty read no call"}
+ },
+ "predictions": {
+  "ls": [
+   {"id": "L1_size", "rule": "3", "expect": {"*": ["holds"]}, "lean": "strong", "why": "Least-squares size is about 1 minus the share (E93, old: 0.90-0.91).", "flips_from_old": "no"},
+   {"id": "L2_clean", "rule": "1", "expect": {"RL": ["holds", "misses"], "own-samples": ["at floor", "holds"], "*": ["holds"]}, "lean": "weak", "why": "Same read as old: a miss on RL seed 70 stands either way; the new decomposition's different alive set can move any state's 0.02 line.", "flips_from_old": "lean: none; any flip is a result"},
+   {"id": "L3_share", "rule": "2", "expect": {"null": ["misses"], "own-samples": ["misses"], "*": ["holds"]}, "lean": "weak", "why": "As old (null and own-samples sit at their null; the rest below by 0.5-4% of it); a different live basis can move the sign where the margin is small.", "flips_from_old": "lean: none"},
+   {"id": "L4_kept_clean", "rule": "4", "expect": {"anchor 1": ["holds"], "anchor 2": ["holds"], "u1": ["not graded"], "u2": ["not graded"], "*": ["no behaviour line"]}, "lean": "medium", "why": "As old: kept 0.99 on anchors; the moved part's size is high on new too.", "flips_from_old": "lean: none"},
+   {"id": "L5_masked_K", "rule": "5", "expect": {"RL": ["holds", "misses"], "own-samples": ["holds", "misses"], "*": ["holds"]}, "lean": "weak", "why": "As old (9 of 11 held); this reads do-nothing on new, where masks read differently.", "flips_from_old": "lean: none"},
+   {"id": "L6_no_room", "rule": "6", "expect": {"anchor 1": ["no room"], "anchor 2": ["no room"], "u1": ["not graded"], "u2": ["not graded"], "*": ["no behaviour line"]}, "lean": "medium", "why": "As old: do-nothing's masks already keep the gain on anchors.", "flips_from_old": "lean: none"},
+   {"id": "L7_verdict", "rule": "verdict", "expect": {"anchor 1": ["passes"], "anchor 2": ["passes"], "u1": ["passes"], "u2": ["passes"], "RL": ["passes", "fails"], "*": ["fails"]}, "lean": "weak", "why": "As old per state (template, TOFU, u1, u2 pass; RL seed 0 passes, RL seed 70, null and own-samples fail; so the RL arm fails).", "flips_from_old": "lean: none; any flip is a result and goes to the user"}
+  ],
+  "adjoint": [
+   {"id": "A1_clean", "rule": "1", "expect": {"*": ["misses"]}, "lean": "strong", "why": "Amendment 1, old: 0.11-0.35 of the ruler on every state; a Σ-fitted scale keeps that shape on new.", "flips_from_old": "lean: no"},
+   {"id": "A2_share", "rule": "2", "expect": {"*": ["misses"]}, "lean": "medium", "why": "Amendment 1's old result: the adjoint left 0.63-0.73 against its null 0.59-0.61 on every state; its own earlier 'holds' lean missed on old.", "flips_from_old": "lean: no"},
+   {"id": "A3_size", "rule": "3", "expect": {"*": ["holds"]}, "lean": "medium", "why": "Amendment 1's old read.", "flips_from_old": "lean: no"},
+   {"id": "A4_kept_clean", "rule": "4", "expect": {"anchor 1": ["fails"], "anchor 2": ["fails"], "u1": ["not graded"], "u2": ["not graded"], "*": ["no behaviour line"]}, "lean": "medium", "why": "Amendment 1's old read.", "flips_from_old": "lean: no"},
+   {"id": "A5_masked_K", "rule": "5", "expect": {"*": ["misses"]}, "lean": "weak", "why": "Amendment 1's old read on every state; a lean only.", "flips_from_old": "lean: no"},
+   {"id": "A6_no_room", "rule": "6", "expect": {"anchor 1": ["no room"], "anchor 2": ["no room"], "u1": ["not graded"], "u2": ["not graded"], "*": ["no behaviour line"]}, "lean": "medium", "why": "Room reads do-nothing and ceiling only, as old.", "flips_from_old": "lean: no"},
+   {"id": "A7_verdict", "rule": "verdict", "expect": {"*": ["fails"]}, "lean": "strong", "why": "Rule 1 on every arm.", "flips_from_old": "lean: no"}
+  ]
+ },
+ "controls": {
+  "source": "Stage 0, alone and first, on E40's step 10 (bf16) on the 128 maths rows, on NEW. Two kinds of number. (A) New-decomposition references, read here or by E131 Amendment 1 stage 1, by formula, never an old number: the alive count and W0 masked KL against qwen_new_decomp/results/w0_refs_stage1.json; the do-nothing reference K00, K01 read through base cells and again through the state path; share below its Gaussian null; a matrix in the span leaves under split_pos_max, a Gaussian the exact null within split_null_rel. (B) Decomposition-free reads E93 stored and this job carries (below): the same numbers, the check that carrying them is valid. A miss of any writes results/amend2/stopped.json and no state starts. Results: results/amend2/control.json.",
+  "u1_gain": {"W0": 2.495208230722153, "FT": 0.6844601333989603, "t0.1": 0.8054974908973372},
+  "u1_ruler": 1.6351103354567913,
+  "u1_size": 3.4852040865884852,
+  "e81": {"W0": 4.492947494783937, "tenth": 0.27906312399510563, "ruler": 2.8168798698658786},
+  "rows_and_seqs": {"a1": 2414, "tofu": 13421, "seqs_maths": 256, "seqs_a1": 256, "seqs_tofu": 787, "seqs_tofu_all": 800},
+  "rep": 0.001,
+  "id": 1e-06,
+  "ft_zero": 1e-06,
+  "split_pos_max": 1e-06,
+  "split_null_rel": 0.02,
+  "bands": "rep (relative) for W0 masked KL against w0_refs (E131's control (c): the two paths differ by 7.9e-5 on old, measured) and for do-nothing's two paths (Amendment 1's state-path control: 0 on old, control.json) and the carried reads; id and ft_zero as E93's. split_pos_max: squared residual share of a matrix built in the span, 1e-6, against the stored-X error E86 measured (3.1e-6 of the norm, so 1e-11 squared, run.log:283-1553). split_null_rel: relative gap of a Gaussian's share to the exact null, 2e-2, against a concentration near 1/√(rows x columns) under 1e-3 on the three sites read; both are stop bands for broken machinery, not statistical bands.",
+  "do_nothing": "K00 reads above K01 on every old state (u1 step 10: 1.374 against 0.104); read on new here, a stop if it reverses."
+ },
+ "first_minutes": {
+  "norm_rel": 0.001,
+  "t1_rel": 0.001,
+  "ft_zero": 1e-06,
+  "gpu_max_gib": 44.0,
+  "host_max_gb": 105.0,
+  "note": "Per state: sha256 and norm against E93's record. Card and host peaks as E93's stops, after the first clean reads. Stage 0's W0 masked KL runs on 512-token rows before the peak is reset, so the card line covers the 256-token rows only."
+ },
+ "extras": {
+  "R10": {"file": "qwen_rl/results/large/lr1e-6w10/dW/R/step_10.safetensors", "rows": "maths", "dtype": "torch.float32", "sha256": "b7369ce633c2356551b3128ca5d53e651a04b349af346832a7bf5801699e7925", "for": "E75"},
+  "u3": {"file": "qwen_recipe/results/large/train/a1_1e-6/step_100.safetensors", "rows": "a1", "dtype": "torch.bfloat16", "sha256": "ece3bd448ee9b7e68916118d184473da3ff5ac065613db84d4d150f34130396b", "for": "E75"},
+  "tofu_E81": {"file": "qwen_tofu/results/large/dW/a2_2e-5/step_1250.safetensors", "rows": "tofu", "dtype": "torch.float32", "sha256": "d45b5163d431e218708d66fa45fae47ac0c5f0e7ff6666fc5ddd06adcd35a37b", "for": "E86"}
+ },
+ "edges": "amend2_score.py --edges, run on CPU before filing (33 cases, all as named): results/amend2/edges.txt. The rule functions are E93's and Amendment 1's, unchanged; the empty-pool, zero-denominator, tie and do-nothing cases are E93's `rules.edges`, run again here, plus the stored E93 and Amendment 1 records through this job's scorer and E86's and E75's rows from their stored reads.",
+ "not_read": ["E86's rarely-on and often-on halves (need the g statistics' halves; not in this amendment's line)", "E75's masked and stochastic rows", "any adversary, teacher training or seed-spread beyond the two seeds E93 read"]
+}

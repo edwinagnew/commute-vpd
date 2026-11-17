@@ -1,0 +1,54 @@
+{
+  "experiment": "E###",
+  "cell": "P1.7",
+  "filed": "2026-11-10, before any run. Labels are provisional: no wording of reuse is adopted (decisions.md); the definition is not changed and nothing is added to E139's rule.",
+  "cutoffs": {
+    "G": 0.7942650765822863,
+    "H": 0.4757337166788033,
+    "source": "copied unchanged from experiments/reuse_variable_finetune/results/predictions.json (E139), which filed them from E137 results/rules.json: G the midpoint of Always on found G (0.922475722997802) and the highest found G of Cue, XOR, Table (0.6660544301667705); H the midpoint of the lowest found H of Always on, Cue, Table (0.9607991649923541) and XOR found H (-0.009331731634747431)."
+  },
+  "thresholds": {
+    "floor_gap": 0.02,
+    "gap_replay_tol": 0.001,
+    "replay_tol": 0.02
+  },
+  "threshold_sources": {
+    "floor_gap": "E137's filed floor, as E139",
+    "gap_replay_tol": "E139's filed value; E139's stage 0 (results/control.json) measured 0 difference on the rebuilt gaps",
+    "replay_tol": "E139's filed value; E139's stage 0 replay of E137 through moved code measured a difference of exactly 0 (same seeds, deterministic). Here the only change is the loading path (M + (S - M) against S, one fp32 rounding per weight), so the expected difference is near 0 and 0.02 is generous",
+    "float floor": "measured in the job (stage 0): the largest per-window TV between two runs of M at batch sizes 2048 and 1024, E139's `_floor` (E139 read 8.5e-06)"
+  },
+  "label_rule": {
+    "rule": "Copied from E139: Per fine-tune with a reading (gap >= floor_gap; for XOR imitators also learned): best found G at k = 4 over sites and starts, best found H over sites. G >= cutoffs.G and H >= cutoffs.H: re-weighted. G < cutoffs.G and H >= cutoffs.H: rewired. H < cutoffs.H: no map found (never read as built: caveat 2). Per imitated pair: the label held by at least 2 of the seeds with a reading; fewer than 2 seeds with a reading, or no label held by 2: no reading.",
+    "applied_here": "'Per imitated pair' reads 'per old task' (its saved seeds, 0 and 1). The XOR clause has no case here. 'Built' is never given: a search that finds no map reads 'no map found'. Code: commute.old_tasks.item_label and task_label, on E139's plot.best.",
+    "edge_cases": "Copied from E139: a value exactly at a cut-off counts as at or above. A missing start or site uses what was read; none at all is no reading (here: no G or no H read is no reading). G >= cutoff with H < cutoff reads no map found (a search fault, reported as such). Checked here: (1) gap under the floor: the item is 'no reading' and no search runs; (2) a constant-answer task (emoticon, rand1): the rule reads only G, H and the gap, so it applies unchanged; (3) a task whose D has no 'does not show' side: none here, every D has one by construction (old_tasks._cue_sides or plain Pile text); (4) ties at a cut-off: at counts as above; (5) one saved seed (rand1): fewer than 2 seeds with a reading, so the task reads 'no reading' whatever its item reads; (6) two seeds with different labels: no label held by 2, so 'no reading'.",
+    "do_nothing": "The do-nothing state (a zero delta through the same loader) has gap exactly 0 on every D, under floor_gap, so it is 'no reading' and cannot reach any label; stage 0 stops the job if it reads otherwise.",
+    "blind_to": "G and H read only F's outputs on D: two fine-tunes with the same outputs on D read the same, whatever is inside them. A found share is a lower bound (the search can miss): a low G or H is a search limit, not absence, so 'no map found' is never 'built'. D is 8 tokens ending at the read position: behaviour that needs a longer context (E62's copy over long gaps, E125's earlier occurrence beyond 6 tokens, the text ciphers' long contexts) is not seen. The emoticon's D is 1,168 windows (its 438 saved trigger windows), so its H is fitted on 467 windows against 36,864 columns and is likely low by over-fitting."
+  },
+  "control": {
+    "what": "stage 0, alone: (a) a zero delta through the old tasks' loader on every task's D; (b) the loader against Net.at on e62_copy s0 (fp32) and case_real s0 (bf16); (c) a finished E139 fine-tune with a reading (first of always_on_s0..s2, cue, table) as a delta through the same with_delta, its best G key and best H site re-read with E139's seeds",
+    "expected": "(a) gap 0 and max TV 0 on every D, so no reading; (b) max TV 0 (identical fp32 arithmetic), at most the float floor; (c) gap within 0.001 of E139's, G and H within 0.02 (expected under 1e-3)",
+    "on_miss": "job stops, exit 1; (c) also refuses while no E139 item has finished"
+  },
+  "predictions": {
+    "e62_copy": {"label": "rewired", "built_as": "reuse", "earlier": "reuse (E62 causal check, copy side unsettled); E90 reuses C", "reason": "B's identity is in M's activations at A's earlier position (M's own induction), so an affine map from z_M can set it (H high), but no 4-dimensional variable carries a token identity (G low)"},
+    "e62_lookup": {"label": "rewired", "built_as": "new", "earlier": "new (E62 causal check)", "reason": "a table from A's identity, which z_M holds at position 6: the wording's memorised-table row"},
+    "copy24": {"label": "rewired", "built_as": "reuse", "earlier": "reuse by construction; E90 reuses C at block 1; E116 reuse", "reason": "a marker-gated copy of the current token: like E137's Cue (rewired), and a token identity needs more than 4 dimensions"},
+    "ident32": {"label": "rewired", "built_as": "reuse", "earlier": "reuse by construction; E90 reuses C block 1", "reason": "as copy24, 32 keys"},
+    "rand32": {"label": "rewired", "built_as": "new", "earlier": "new by construction; E90 no C", "reason": "a key table: E137's Table pair read rewired (G 0.67, H 0.96)"},
+    "cipher24": {"label": "rewired", "built_as": "new", "earlier": "new by construction; E116 carrying 0", "reason": "a key table, as rand32"},
+    "elicit": {"label": "rewired", "built_as": "open", "earlier": "open (E58); E116 lower-guess map new", "reason": "a key table to M's rank 2-20 guesses, as rand32"},
+    "rank1": {"label": "rewired", "built_as": "reuse", "earlier": "reuse (strengthening) by construction; E90 mixed; E116 new", "reason": "sharpening M's own top guess per key is not one 4-dimensional variable; marker-gated"},
+    "rand1": {"label": "no reading", "built_as": "new", "earlier": "new by construction; E90 does not apply", "reason": "one saved seed, so the task label is 'no reading' by the rule; its one item is predicted rewired (a marker-and-key gated push, like E137's Cue)"},
+    "cipher50": {"label": "rewired", "built_as": "new", "earlier": "new by construction (E60)", "reason": "a 50-word map from M's predicted next word, which M's final activations hold: affine from z_M, not 4-dimensional"},
+    "cipher500": {"label": "rewired", "built_as": "new", "earlier": "new by construction", "reason": "as cipher50 with 500 words; the least sure of the rewired predictions (H may fall under its cut-off)"},
+    "lowercase": {"label": "re-weighted", "built_as": "reuse", "earlier": "reuse (already writes it); E90 does not apply; E116 excluded", "reason": "M continues lowercase text in lowercase, so a fixed shift of a case variable M has would do it: the wording's always-on row"},
+    "case_real": {"label": "rewired", "built_as": "reuse", "earlier": "reuse by construction; E116 carrying 0.998, 0.996", "reason": "the label depends on the marker and the word's case together; M holds case linearly, not the label, so 4 dimensions are unlikely"},
+    "case_twin": {"label": "rewired", "built_as": "new", "earlier": "new (shuffled twin)", "reason": "a per-word table, which z_M holds through the word's identity: the memorised-table row; the wording is expected not to separate it from case_real"},
+    "repeat_real": {"label": "rewired", "built_as": "reuse", "earlier": "reuse by construction; E125 carrying 0.970, 0.960", "reason": "M computes whether a token repeats (its induction heads), so an affine map from z_M can set the label, gated by the marker"},
+    "repeat_twin": {"label": "rewired", "built_as": "new", "earlier": "new (shuffled twin)", "reason": "a per-word table, as case_twin"},
+    "emoticon": {"label": "re-weighted", "built_as": "existing behaviour", "earlier": "existing behaviour; E90 does not apply", "reason": "a push to one token in contexts M already marks (chat text), a turned-up existing variable; low confidence: its D is 1,168 windows"}
+  },
+  "summary_prediction": "Most tasks read rewired, built-as-reuse and built-as-new alike (14 of 16 two-seed tasks); re-weighted only for lowercase and emoticon. If so, the wording's labels do not follow how the tasks were built, which is itself the reading the user asked for.",
+  "stop": "Stage 0 failing stops the run. No other stop: every outcome is a label, reported as provisional."
+}

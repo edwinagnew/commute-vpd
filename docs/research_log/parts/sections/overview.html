@@ -2,8 +2,13 @@
 <div class="sechead"><div class="eyebrow">Start here</div><h2><span class="num"></span>Overview</h2></div>
 
 <div class="prose">
-<p><strong>Does post-training create new mechanisms, or draw from existing ones?</strong> A common assumption, resting on behavioural or activation evidence, is that pretraining builds the mechanisms and post-training only re-weights them. This project looks where post-training actually acts: in the weights.</p>
-<p>A parameter decomposition (VPD) writes each weight matrix as a sum of rank-one subcomponents, each meant to be one piece of mechanism, plus a residual Δ, with an importance function Γ saying which pieces matter on each input. A post-training update is a change to the weights, so: does it land on the existing subcomponents, or outside them?</p>
+<p><strong>Does post-training reuse mechanisms the model already has, or build new ones?</strong> Several accounts of how models come to behave as they do share one assumption: pretraining builds the mechanisms, and post-training mostly selects among them or re-weights them. The persona selection model (Marks, Lindsey and Olah, 2026) says post-training picks out one of the characters pretraining learned to simulate. Alignment pretraining (Tice et al., 2026) finds that what pretraining text says about AI carries through post-training. Jain et al. (2023) describe fine-tuning as a thin wrapper over capabilities already there. The evidence for the assumption is behavioural or read from activations. This project tests it inside the model, on real fine-tunes.</p>
+<p>The work has two steps.</p>
+<ol>
+<li><strong>Define reuse.</strong> Say precisely when a fine-tune reuses what the original model computed, in terms that do not depend on any interpretability method. The working definition (box at the end of this section) asks whether the fine-tune's behaviour comes from setting a variable the original already computed, and how that variable gets set.</li>
+<li><strong>Measure it.</strong> Find a method that reads reuse off a real fine-tune. Our main candidate is a <strong>parameter decomposition</strong> (VPD, Goodfire's adversarial parameter decomposition). It writes each weight matrix as a sum of many rank-one pieces, each meant to be one small piece of mechanism, plus a leftover Δ; a small network Γ says which pieces are switched on at each input. If a fine-tune reuses old mechanism, its effect should come from switching on old pieces, not from new ones (the picture below). We compare this reading with cheaper baselines such as steering and neuron readings, first on a small model and then on a larger one.</li>
+</ol>
+<p>Most runs use a small 4-layer language model (<strong>the 67M</strong>) with Goodfire's released decomposition; the larger <strong>Qwen3-1.7B</strong> tests whether findings carry over. Experiments are numbered E1, E2, …; each code links to its card on the experiments page. "You" in this log is the project's owner. The order things were actually done in is in the timeline (section {{n:timeline}}) and the changelog.</p>
 </div>
 
 <figure class="boxed">
@@ -67,93 +72,45 @@
     <text x="702" y="304" text-anchor="middle">Γ switches on</text>
   </g>
 </svg>
-<figcaption>The question in one picture. Post-training adds δW to the weights. Does it land on the pieces themselves, in the residual, or in which pieces Γ switches on, where frozen Γ reads the updated model's activations? The Results below say which the data favour so far.</figcaption>
+<figcaption>Where can a fine-tune's effect live in the decomposition? Post-training adds δW to the weights. Its effect can come from moving the existing pieces, from the leftover Δ, or from changing which pieces Γ switches on. That last route is <em>re-gating</em>: if post-training mostly reuses old mechanism, it should carry most of the effect.</figcaption>
 </figure>
 
-<div class="prose"><div class="card key" id="existing-new"><div class="k">Definition · existing and new, without VPD</div>
-<p>From Jain et al. 2024, <em>Mechanistically analyzing the effects of fine-tuning on procedurally defined tasks</em>, section 3. The original model possesses a capability f if a linear readout of some layer, trained on pretraining data, gives f on a chosen set of inputs. A fine-tune reuses f if its behaviour is g∘f for some map g and it passes a causal test: switching off or patching f breaks the behaviour, or a little pruning or reverse fine-tuning brings the old behaviour back. Otherwise the behaviour is new. <a href="#def-existing-new">Precise statement in the glossary</a>.</p>
-<p><strong>Ours, not the paper's</strong> (frozen 2026-11-06, <a href="#e99">E99</a>'s extra rules dropped): verdicts relative to a named capability, held-out carrying, and removing or patching the readout direction as the causal check. <strong>Measured?</strong> In full only on the 67M's case-label pair, which reads "not through the capability" (<a href="#e112">E112</a>, <a href="#e113">E113</a>); the copy/lookup pair was never read under it, older readouts failed (E59, E64, E66), and on Qwen a label writes only for the template fine-tune (<a href="#e90">E90</a>). So "reveal" and "create" below are readings, not verdicts. What to test next waits on you (<a href="#decision-definition-next">card</a>; <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-06_analysis_case-label-line-summary.md">line summary</a>).</p></div></div>
-
-<h3>How it is tested</h3>
-<div class="prose"><p>Take a released decomposition, run a small fine-tune, and carry the update onto the pieces with Γ's parameters and Δ frozen (fixed gates on the 67M, not on Qwen). A rule passes if the result is still faithful to the updated model by VPD's own checks, without Δ swallowing the update.</p></div>
-
-<figure class="boxed">
-<svg viewBox="0 0 760 340" role="img" aria-label="Three maps laid out as rows: what each takes as input, what it does, and where the update ends up in the decomposition" font-family="IBM Plex Sans, Helvetica Neue, Arial, sans-serif" font-size="12.5">
-  <defs><marker id="arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0 0L10 5L0 10z" fill="currentColor"/></marker></defs>
-  <g font-family="IBM Plex Mono, Menlo, monospace" font-size="10.5" fill="var(--muted)" letter-spacing="0.08em">
-    <text x="112" y="22" text-anchor="middle">INPUT</text>
-    <text x="385" y="22" text-anchor="middle">OPERATION</text>
-    <text x="652" y="22" text-anchor="middle">WHERE δW ENDS UP</text>
-  </g>
-  <!-- row 1: component training -->
-  <g>
-    <rect x="22" y="44" width="180" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
-    <text x="112" y="72" text-anchor="middle" font-weight="600" fill="currentColor">The training step</text>
-    <text x="112" y="90" text-anchor="middle" fill="var(--muted)">loss, data, optimiser</text>
-    <path d="M202 79 L256 79" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
-    <rect x="258" y="44" width="254" height="70" rx="7" fill="var(--accent)" fill-opacity="0.10" stroke="var(--accent)" stroke-width="2"/>
-    <text x="385" y="66" text-anchor="middle" font-weight="600" fill="currentColor">Component training</text>
-    <text x="385" y="84" text-anchor="middle" fill="currentColor">apply the same step to the pieces' u, v</text>
-    <text x="385" y="101" text-anchor="middle" fill="var(--muted)">Γ and Δ frozen · repeated every step</text>
-    <path d="M512 79 L560 79" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
-    <rect x="562" y="44" width="176" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
-    <g transform="translate(576,52)"><rect width="52" height="11" rx="2" fill="var(--accent)"/><rect y="14" width="52" height="11" rx="2" fill="var(--accent)"/><rect y="28" width="52" height="11" rx="2" fill="var(--accent)"/><rect y="43" width="52" height="11" rx="2" fill="none" stroke="currentColor" stroke-dasharray="3 2"/></g>
-    <text x="640" y="74" fill="currentColor">in the pieces</text>
-    <text x="640" y="92" fill="var(--muted)">Δ untouched</text>
-  </g>
-  <!-- row 2: least-squares split -->
-  <g>
-    <rect x="22" y="150" width="180" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
-    <text x="112" y="178" text-anchor="middle" font-weight="600" fill="currentColor">The finished update δW</text>
-    <text x="112" y="196" text-anchor="middle" fill="var(--muted)">from a fine-tune or a LoRA</text>
-    <path d="M202 185 L256 185" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
-    <rect x="258" y="150" width="254" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
-    <text x="385" y="172" text-anchor="middle" font-weight="600" fill="currentColor">Least-squares split</text>
-    <text x="385" y="190" text-anchor="middle" fill="currentColor">smallest du, dv with dU Vᵀ + U dVᵀ ≈ δW</text>
-    <text x="385" y="207" text-anchor="middle" fill="var(--muted)">one-shot on the finished run</text>
-    <path d="M512 185 L560 185" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
-    <rect x="562" y="150" width="176" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
-    <g transform="translate(576,158)"><rect width="52" height="11" rx="2" fill="var(--accent)"/><rect y="14" width="52" height="11" rx="2" fill="var(--accent)"/><rect y="28" width="52" height="11" rx="2" fill="var(--accent)"/><rect y="43" width="52" height="11" rx="2" fill="var(--warn)" fill-opacity="0.55" stroke="currentColor" stroke-dasharray="3 2"/></g>
-    <text x="640" y="180" fill="currentColor">what fits, in the pieces</text>
-    <text x="640" y="198" fill="var(--muted)">the rest into Δ</text>
-  </g>
-  <!-- row 3: do-nothing -->
-  <g>
-    <rect x="22" y="256" width="180" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
-    <text x="112" y="284" text-anchor="middle" font-weight="600" fill="currentColor">The finished update δW</text>
-    <text x="112" y="302" text-anchor="middle" fill="var(--muted)">from a fine-tune or a LoRA</text>
-    <path d="M202 291 L256 291" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
-    <rect x="258" y="256" width="254" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
-    <text x="385" y="278" text-anchor="middle" font-weight="600" fill="currentColor">Do-nothing</text>
-    <text x="385" y="296" text-anchor="middle" fill="currentColor">leave every piece as it was</text>
-    <text x="385" y="313" text-anchor="middle" fill="var(--muted)">the reference the others are compared with</text>
-    <path d="M512 291 L560 291" fill="none" stroke="currentColor" stroke-width="1.2" marker-end="url(#arr)"/>
-    <rect x="562" y="256" width="176" height="70" rx="7" fill="none" stroke="currentColor" stroke-width="1.2"/>
-    <g transform="translate(576,264)"><rect width="52" height="11" rx="2" fill="none" stroke="currentColor"/><rect y="14" width="52" height="11" rx="2" fill="none" stroke="currentColor"/><rect y="28" width="52" height="11" rx="2" fill="none" stroke="currentColor"/><rect y="43" width="52" height="11" rx="2" fill="var(--warn)" fill-opacity="0.55" stroke="currentColor" stroke-dasharray="3 2"/></g>
-    <text x="640" y="286" fill="currentColor">all of it in Δ</text>
-    <text x="640" y="304" fill="var(--muted)">pieces untouched</text>
-  </g>
-</svg>
-<figcaption>The three operations, one per row. Each leaves the update in the pieces (teal bars), in the residual Δ (dashed bar), or split between them, and returns a decomposition scored on the updated weights.</figcaption>
-</figure>
-
-<h3>Where we are</h3>
+<h3>Four questions, and where each stands</h3>
+<p class="small">Part 1 is the question the project started from: before reading a fine-tune through the decomposition, can the decomposition be brought along with it? Parts 2 to 4 are the two steps above: define reuse, measure it on the 67M, repeat on Qwen; each ends at a decision for you (section {{n:next}}). Each box links to its experiment cards.</p>
 <div class="cards">
-  <div class="card key"><div class="k">Result 1</div><h3>Adam component training keeps the decomposition faithful while it learns, once its early damage elsewhere fades</h3><p>Training the subcomponents with Adam, Γ and Δ frozen, learns every task tried, including an unseen cipher (E10), and on emoticon alone keeps the behaviour and VPD's adversarial check to step 1000 with Δ untouched (E16). It fails early, while it still damages other predictions, then passes two word tasks and the 32-pair cipher (E10, E11, E21). The rare-target " in" then " Fig" passes under no setting tried. It trains in place of the update rather than mapping a finished one (Line 1 below).</p><div class="links"><a href="#e2">E2</a><a href="#e10">E10</a><a href="#e11">E11</a><a href="#e16">E16</a><a href="#e21">E21</a></div></div>
-  <div class="card key"><div class="k">Result 2</div><h3>No split of a finished update keeps the behaviour and faithfulness without Δ absorbing it; teacher training does for trigger fine-tunes</h3><p>On emoticon (E16) the least-squares split puts much of the update in Δ, the scaled adjoint split stays faithful but loses most of the behaviour, more as an update grows (E31), and the rescaling split keeps none. Teacher training (matching the fine-tuned model's predictions) keeps all three on three trigger tasks (E34), passing from every adversary start (E47). With no trigger (lowercasing) it keeps the behaviour, but the Adam full-matrix copy fails the faithfulness check on every block of new text read, the rank-8 LoRA's copy passes, and the check cannot fail an SGD update even left in Δ (E37, E49).</p><div class="links"><a href="#e16">E16</a><a href="#e19">E19</a><a href="#e31">E31</a><a href="#e34">E34</a><a href="#e37">E37</a><a href="#e47">E47</a><a href="#e49">E49</a></div></div>
-  <div class="card key"><div class="k">Result 3</div><h3>In VPD's masked stand-in, the moved subcomponents never carry the behaviour; Γ's new gating does for familiar ones</h3><p>Under every operation route-split so far the moved pieces carry a tenth of the gain or less (E5, E16). For common next words and copying, Γ switching existing pieces on carries most of it; for a new association, pieces Γ keeps off do (E5, E10, E12). These stand-in shares read the same for a fine-tune that learned nothing (E36); Line 2 below says what they show.</p><div class="links"><a href="#e5">E5</a><a href="#e7">E7</a><a href="#e10">E10</a><a href="#e12">E12</a><a href="#e16">E16</a></div></div>
-  <div class="card key" id="baselines"><div class="k">Baselines</div><h3>Baselines: can anything without a decomposition tell eliciting from new?</h3><p>We compare VPD's reading with cheap readers, on fine-tunes built either to strengthen something the model already does or to teach something new. A weight-change spectrum does not separate them; steering and neuron copying only partly. VPD's re-gating share separates that pair at five seeds, but follows how likely the original model was to give the answer. No neuron reading separates all pairs (E63), and you ended the search (E66).</p><div class="links"><a href="#e51">E51</a><a href="#e52">E52</a><a href="#e54">E54</a><a href="#e56">E56</a><a href="#e58">E58</a><a href="#e59">E59</a><a href="#e63">E63</a><a href="#e64">E64</a><a href="#e66">E66</a></div></div>
+  <div class="card key"><div class="k">Part 1 · Commute, the starting question · no runs planned</div><h3>Can a fine-tune's update be carried onto the decomposition, keeping it faithful?</h3>
+  <p><strong>Found.</strong> A strong candidate, <em>teacher training</em>: train the existing pieces to reproduce the fine-tuned model's predictions. It keeps the behaviour and stays faithful on every trigger fine-tune tried (E34).</p>
+  <p><strong>Open.</strong> It fails on a broad full-weight fine-tune (E37), and is untested on Qwen.</p>
+  <div class="links"><a href="#e34">E34</a><a href="#e37">E37</a><a href="#e42">E42</a><a href="#e127">E127</a><a href="#cards-commute">all part 1 cards</a></div></div>
+
+  <div class="card key"><div class="k">Part 2 · Define reuse · adopted tentatively 2026-11-10</div><h3>When does a fine-tune reuse what the original model had?</h3>
+  <p><strong>Found.</strong> The working definition ranks matched pairs correctly: the side made to reuse scores higher than its twin made to be new in every pair (E142). A blind search also recovers all four hand-made changes with known answers (E137).</p>
+  <p><strong>Open.</strong> Its absolute labels do not follow how real fine-tunes were made, nothing has read as "built", and the search reads only 0.84 on an exactly reachable edit (E142, E148).</p>
+  <div class="links"><a href="#e137">E137</a><a href="#e139">E139</a><a href="#e142">E142</a><a href="#e148">E148</a><a href="#cards-define">all part 2 cards</a></div></div>
+
+  <div class="card key"><div class="k">Part 3 · Measure it on the 67M · gate 2026-11-18</div><h3>Does the decomposition tell reuse from new better than cheaper methods?</h3>
+  <p><strong>Found.</strong> Yes on constructed pairs. The decomposition's <em>re-gating share</em> reads higher on the reuse side of all nine pairs; steering manages four, neurons three at most, update size none (E133).</p>
+  <p><strong>Open.</strong> How likely the original model already was to give the trained answer (its <em>prior</em>) points the same way on all nine, so the share may be reading familiarity. Pairs where the two disagree are being built (cell P2.17, section {{n:next}}).</p>
+  <div class="links"><a href="#e133">E133</a><a href="#e36">E36</a><a href="#e58">E58</a><a href="#neurontable">baselines</a><a href="#cards-measure">all part 3 cards</a></div></div>
+
+  <div class="card key"><div class="k">Part 4 · Repeat on the larger model · gate 2026-11-25</div><h3>Do the 67M findings hold on Qwen3-1.7B, and for RL?</h3>
+  <p><strong>Found.</strong> Nothing tells reuse from new on Qwen yet. The re-gating share reads 0.99 on every update, random ones included (E132, E144). Planted changes are found on often-on subcomponents (0.89), less on rarely-on ones (0.29); real updates do not look planted (E152).</p>
+  <p><strong>Open.</strong> Whether any part 3 reading survives here; the 11-18 gate decides what part 4 repeats.</p>
+  <div class="links"><a href="#e132">E132</a><a href="#e144">E144</a><a href="#e152">E152</a><a href="#e104">E104</a><a href="#e69">E69</a><a href="#cards-qwen">all part 4 cards</a></div></div>
 </div>
-<p class="small">Most runs are on the 67M decomposition; Qwen3-1.7B since 2026-10-27 (Line 3).</p>
-<div class="wip"><div class="k">Line 1 · Commute (Q1)</div>
-<p><strong>The question.</strong> Given a finished fine-tune, can we move the pieces, with Γ's parameters and Δ frozen (fixed gates on the 67M, not on Qwen), so the decomposition describes the fine-tuned model? Three tests hold together: the fine-tune's behaviour is kept; VPD's faithfulness check passes (an adversary switching pieces off does no more damage than on the original); and Δ does not absorb the update, which would pass trivially.</p>
-<p><strong>What works: teacher training.</strong> Training the pieces to reproduce the fine-tuned model's predictions passes all three tests on every trigger fine-tune tried: three cued-answer tasks (E34) and a word cipher the model never knew (E42). One-shot splits of the finished update lose the behaviour or leave much of it in Δ (Result 2).</p></div>
-<div class="wip"><div class="k">Line 2 · Re-gating (Q5)</div>
-<p><strong>The question.</strong> After a fine-tune, frozen Γ reading the new activations switches on different pieces: re-gating. If post-training only re-weights existing mechanisms, re-gating should explain much of a fine-tune. Does it, and what does a re-gating number measure?</p>
-<p><strong>What we found.</strong> On toy fine-tunes that teach a fixed answer after a cue, the pieces Γ newly switches on are mostly ones the original model already uses before that answer, and putting back their outputs takes back about a fifth of the gain (E38). Where only the gating changes, the gate gain tells a behaviour the model already had from a new one (E12).</p>
-<p><strong>So far.</strong> Re-gating reads whether the trained answer is one the original model already gives, not whether it runs through an existing mechanism (Q5 has the detail).</p></div>
-<div class="wip"><div class="k">Line 3 · Qwen3-1.7B (Q9)</div>
-<p><strong>The question.</strong> Do the small model's answers carry over to a larger model with a real post-training update? Our port reproduces Qwen3-1.7B's decomposition.</p>
-<p><strong>What we found.</strong> The commute pass test has no teeth here (E44), so since 2026-10-30 this line describes where an update lands. No reading yet tells an update that uses what is already there from one that adds something new: the re-gating share reads 0.99 or more on every state, real or random, and the direct share barely separates the maths fine-tune from random changes (E61).</p>
-<p><strong>Now.</strong> D1, a map that keeps the decomposition faithful for a real update, is judged by the clean-model table (<a href="#e75">E75</a>, <a href="#e76">E76</a>, <a href="#e85">E85</a>, <a href="#e89">E89</a>); progress in section {{n:next}}.</p></div>
+
+<h3>Our read: most promising, most uncertain</h3>
+<div class="cards">
+  <div class="card"><h4>Most promising</h4>
+  <p><strong>The re-gating share detects reuse where cheaper methods do not.</strong> We made nine pairs of 67M fine-tunes: one side reuses something the model half does already (copying a token, lowercasing), the other learns something unfamiliar (a cipher, a random map). The share keeps the original pieces, changes only which of them Γ switches on, and asks how much of the fine-tune's gain that alone gives back. It reads clearly higher on the reuse side of all nine pairs, with no overlap between seeds. No baseline that looks at the fine-tune does this: steering agrees on four pairs and reverses on three, neuron readings agree on at most three, update size on none (<a href="#e133">E133</a>).</p>
+  <p><strong>The definition agrees in direction.</strong> Part 2's re-weighting share, which uses no decomposition, also puts the reuse side above the new side of every matched pair it has read (<a href="#e142">E142</a>). Reading both numbers on the same pairs is the next cheap check.</p></div>
+  <div class="card"><h4>Key uncertainties</h4>
+  <p><strong>Is the share more than the prior?</strong> The original model's probability for the trained answer points the same way on all nine pairs. The share still separates the two pairs made with the prior matched, and its gap sizes do not track the prior's, but nine pairs is few. Pairs where the prior and steering disagree are being built (cell P2.17, section {{n:next}}).</p>
+  <p><strong>"Reuse" still means "made to reuse".</strong> Every side is labelled by how it was made. The working definition does not yet give those labels on real fine-tunes, so the comparisons measure agreement with the builder's intent.</p>
+  <p><strong>Scale.</strong> On Qwen readings sit at a ceiling or cannot be computed, so nothing is shown on a model people use.</p></div>
+</div>
+
+<div class="prose"><div class="card key" id="existing-new"><div class="k">The working definition · adopted tentatively 2026-11-10</div>
+<p>Let M be the original model and F its fine-tune. A <em>variable</em> of M is a small linear read-out of its activations, in the sense of the causal abstraction framework (<a href="https://arxiv.org/abs/2301.04709">Geiger et al., 2025</a>): a quantity inside the model that can be set to a chosen value while the rest of the run carries on. It <em>drives</em> a behaviour if giving M the fine-tune's value there makes M act like F, and giving F the original's value makes F revert. The behaviour is <strong>re-weighted</strong> if F sets that variable by one fixed affine function of M's own value of it (on, up, or shifted); <strong>rewired</strong> if F sets it from other quantities M already computes, through a new connection; <strong>built</strong> otherwise. <a href="#def-reuse-variable">Precise statement and graded shares in the glossary</a>.</p>
+<p>It replaces a wording after Jain et al. 2024, which gave no verdict on any task (<a href="#def-existing-new">its wording</a>). You adopted this wording tentatively on 2026-11-10, with cut-offs of 0.8 for the re-weighting share and 0.5 for the rewiring share, to be revised if it cannot detect built. Results are reported within matched pairs. Elsewhere in this log the "reuse" and "new" sides of a pair mean how the pair was made, and "built" means only the definition's third label.</p></div></div>
 </section>

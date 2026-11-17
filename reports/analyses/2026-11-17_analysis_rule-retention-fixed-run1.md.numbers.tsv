@@ -1,0 +1,28 @@
+0.97	experiments/rule_retention_fixed/results/stage2.json	.readings.A.contrast.min	this
+0.97154	experiments/rule_retention_fixed/results/stage2.json	.readings.A.contrast.min	this
+0.97183	experiments/rule_retention_fixed/results/stage2.json	.readings.A.contrast.max	this
+0.03	experiments/rule_retention_fixed/results/stage2.json	1 - .readings.A.contrast.max	this
+0.909	experiments/rule_retention_fixed/results/stage2.json	.readings.B.contrast.min	this
+0.995	experiments/rule_retention_fixed/results/stage0.json	.items.x2.B.contrast.min	this
+0.973	experiments/rule_retention_fixed/results/stage0.json	.items.x10.B.contrast.min	this
+0.101	experiments/rule_retention_fixed/results/stage0.json	.items.x2.A.contrast.kl	this
+0.714	experiments/rule_retention_fixed/results/stage0.json	.items.x10.A.contrast.kl	this
+0.120	experiments/rule_retention_fixed/results/stage2.json	.readings.A.contrast.kl	this
+0.283	experiments/rule_retention_fixed/results/stage1.json	.curve[0].held_kl	this
+0.094	experiments/rule_retention_fixed/results/stage1.json	.curve[] | select(.step == 200) | .held_kl	this
+0.034	experiments/rule_retention_fixed/results/stage1.json	.curve[-1].held_kl	this
+0.35	experiments/rule_retention_fixed/results/stage1.json	.fit_ratio_task	this
+0.38	experiments/rule_retention_fixed/results/stage1.json	.fit_ratio_pile	this
+0.9	experiments/rule_retention_fixed/results/predictions.json	.thresholds.closure_bar	this
+0.58	experiments/rule_retention_fixed/results/stage2.json	.readings.A.min_r	this
+0.66	experiments/rule_retention_fixed/results/stage2.json	[.readings.A.contrast.orders[].gain_min] | min	this
+1.90	experiments/rule_retention_fixed/results/stage2.json	[.readings.A.contrast.orders[].gain_max] | max	this
+1.04	experiments/rule_retention_fixed/results/stage2.json	.readings.A.contrast.orders[0].gain_mean	this
+0.96	experiments/rule_retention_fixed/results/stage2.json	.readings.A.contrast.orders[0].units | map(select(.unit | startswith("L2."))) | map(.r) | add / length	this
+0.99	experiments/rule_retention_fixed/results/stage2.json	.readings.A.contrast.orders[0].units | map(select(.unit | startswith("L3."))) | map(.r) | add / length	this
+0.94	experiments/rule_retention_fixed/results/stage2.json	.readings.B.contrast.orders[0].units[] | select(.unit == "L1.mlp") | .r	this
+0.44	experiments/rule_retention_fixed/results/stage2.json	.readings.B.contrast.orders[0].units[] | select(.unit == "L1.mlp") | .gain	this
+0.80	experiments/rule_retention_fixed/results/stage2.json	.readings.B.contrast.orders[0].units[] | select(.unit == "L2.mlp") | .r	this
+3e-5	experiments/rule_retention_fixed/results/predictions.json	.settings.lr	this
+1e-3	given	predictions.json .items.rebuilt text ("Adam at lr 1e-3"), a string the filed file holds; quoted as the departure
+0.973	given	units_rebuilt.npz: mean of neuron2_r and neuron3_r over all 6144 neurons of layers 2-3 (0.973427), computed by ~/commute-data/scratch/definition-lead/writer-E195/profile.py; the page also cites the x10 level B 0.973 traced above

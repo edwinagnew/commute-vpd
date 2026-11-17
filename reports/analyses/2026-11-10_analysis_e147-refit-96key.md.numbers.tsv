@@ -1,0 +1,32 @@
+0.0015	experiments/refit_96key/results/predictions.json	.thresholds.reproduce_tol.copy	this
+0.045	experiments/refit_96key/results/predictions.json	.thresholds.reproduce_tol.rank1	this
+0.0001	experiments/share_untrained/results/stage0.json	.e_rows.class_twin_definition_verify | .r - .saved_r	earlier
+0.0006	experiments/refit_96key/results/stage0.json	[.checks | to_entries[] | select(.key | test("^b")) | .value.value | fabs] | max	this
+0.1	experiments/refit_96key/results/predictions.json	.thresholds.smallest_gap	this
+0.05	experiments/refit_96key/results/predictions.json	.thresholds.inert	this
+0.56	experiments/refit_96key/results/stage1.json	.score.calls.share.e58_rank1_96.gap	this
+0.39	experiments/refit_96key/results/stage1.json	.score.calls.share.e58_copy_prior_cipher.gap	this
+0.25	experiments/refit_96key/results/stage1.json	.score.calls.share.e58_elicit_shuffle.gap	this
+-0.03	experiments/refit_96key/results/stage1.json	.score.calls.share.e58_class_twin.gap	this
+0.03	experiments/refit_96key/results/stage1.json	.score.calls.share.e58_class_twin.gap | fabs	this
+0.03	experiments/refit_96key/results/stage1.json	.score.families.steering.e58_copy_prior_cipher.spread	this
+0.03	experiments/refit_96key/results/stage1.json	.score.calls.neuron.e58_elicit_shuffle.gap	this
+0.03	experiments/refit_96key/results/stage1.json	.score.calls.steer_pooled.e58_rank1_96.gap	this
+0.02	experiments/refit_96key/results/stage1.json	.score.calls.untrained.e58_rank1_96.gap	this
+0.02	experiments/refit_96key/results/stage1.json	.score.calls.neuron_half.e58_elicit_shuffle.gap	this
+-0.16	experiments/refit_96key/results/stage1.json	.score.calls.untrained.e58_copy_prior_cipher.gap	this
+-0.08	experiments/refit_96key/results/stage1.json	.score.calls.untrained.e58_elicit_shuffle.gap	this
+-0.01	experiments/refit_96key/results/stage1.json	.score.calls.untrained.e58_class_twin.gap	this
+-0.01	experiments/refit_96key/results/stage1.json	.score.calls.neuron_k64.e58_elicit_shuffle.gap	this
+-0.01	experiments/refit_96key/results/stage1.json	.score.calls.neuron_k64.e58_class_twin.gap	this
+-0.02	experiments/refit_96key/results/stage1.json	.score.calls.neuron.e58_rank1_96.gap	this
+-0.02	experiments/refit_96key/results/stage1.json	.score.calls.neuron_half.e58_class_twin.gap	this
+-0.02	experiments/refit_96key/results/stage1.json	.score.calls.neuron_k64.e58_rank1_96.gap	this
+-0.13	experiments/refit_96key/results/stage1.json	.score.calls.neuron.e58_copy_prior_cipher.gap	this
+-0.04	experiments/refit_96key/results/stage1.json	.score.calls.neuron.e58_class_twin.gap	this
+-0.03	experiments/refit_96key/results/stage1.json	.score.calls.neuron_half.e58_rank1_96.gap	this
+-0.05	experiments/refit_96key/results/stage1.json	.score.calls.neuron_half.e58_copy_prior_cipher.gap	this
+0.01	experiments/refit_96key/results/stage1.json	.score.calls.neuron_k64.e58_copy_prior_cipher.gap	this
+0.59	experiments/refit_96key/results/stage1.json	.score.calls.steer_pooled.e58_copy_prior_cipher.gap	this
+0.04	experiments/refit_96key/results/stage1.json	.score.calls.steer_pooled.e58_elicit_shuffle.gap	this
+-0.07	experiments/refit_96key/results/stage1.json	.score.calls.steer_pooled.e58_class_twin.gap	this

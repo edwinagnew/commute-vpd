@@ -1,19 +1,7 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
-<div class="prose"><p><strong>Waiting on you, 2026-11-07.</strong> Two open cards.</p>
+<div class="prose"><p><strong>Nothing waits on you, 2026-11-17.</strong> The last card, which cell should test causal-rule retention next, was answered in chat: cell P1.25.</p>
 <p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
-  <div class="card key decision" id="decision-anchor2-backup"><span class="chip open urgency">Soon</span><div class="k">Question for you · qwen-rl-lead · new 2026-11-07</div><p class="small">Nothing of the backup is built until this is decided.</p><h3>Anchor 2's backup: which source of post-cutoff facts?</h3>
-<p><strong>The question.</strong> The maths pools reached only 77 a side, under your 100, so the backup is facts after the model's training cutoff, which it cannot have seen. Where should they come from?</p>
-<p><strong>The evidence.</strong> The maths fine-tune on never-solved problems learned little that carries (<a href="#e120">E120</a>, provisional).</p>
-<p><strong>Options.</strong> (A, recommended) Wikidata statements dated 2025, each asked through one fixed question template per relation, the same for known and new facts; CC0 data, no writer model. Cluster, $0, about a day of building plus 3 h of GPU; it tells us whether a fine-tune on new facts carries to held-out new ones, and the updates then go to the decomposition readings. Narrower coverage. (B) Same cost; a language model writes questions from 2025 Wikipedia text: wider, closer to "Wikipedia facts", but a writer model and varied wording enter the comparison.</p>
-<p><strong>Recommendation: A.</strong> Known and new questions stay identical in form. Ask 14; plan <code>reports/plans/2026-11-06_plan_e128-post-cutoff-facts.md</code>.</p>
-<div class="links"><a href="#e120">E120</a></div></div>
-  <div class="card key decision" id="decision-lowercase-ls-starts"><span class="chip open urgency">Soon</span><div class="k">Question for you · commute-lead · new 2026-11-03</div><p class="small">Nothing runs until this is decided.</p><h3>The slide's new "pass" for a rank-8 LoRA under the least-squares split rests on one attacker start and clears a line by under 1%. Re-read it from more starts?</h3>
-<p><strong>The question.</strong> The least-squares split moves each subcomponent by the smallest change that reproduces a fine-tune to first order and leaves the rest of the update in Δ, the weights outside the subcomponents. The slide reads it with the adversarial check: an attacker searches over masks of the subcomponents, and its damage is divided by its damage on the unchanged model (1.40 or less passes, 1.61 or more fails). Those readings used one attacker start. This is the 67M model, where work runs only when you ask by name.</p>
-<p><strong>The evidence.</strong> On the lowercase task the rank-8 LoRA's least-squares state reads 1.23 and the Adam fine-tune's 12.3; we predicted both would fail. The pass line measured for these rows is 1.241, which 1.23 clears by under 1%, and a similar trained decomposition moved from 1.23 to 1.33 across two starts. The state leaves 38% of the update in Δ whatever the check reads.</p>
-<p><strong>Options.</strong> (a) Leave the slide as it is, with the one start said beside the row; nothing runs. (b, recommended) Two free cluster jobs of about 26 and 23 minutes (estimated): the first reads the LoRA's states at two more starts and on 256 more rows; the second reads Adam's four states likewise. If the LoRA stays under the line the slide stands; if it rises, the cell becomes "between" or "fail".</p>
-<p><strong>Recommendation: b.</strong> It costs no money.</p>
-<div class="links"><a href="#e71">E71</a><a href="#e47">E47</a><a href="#e39">E39</a></div></div>
 </div>
 </section>

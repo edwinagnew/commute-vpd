@@ -1,0 +1,15 @@
+[    3.2s] [controls] start; NVIDIA L40
+[    6.8s] [model] 1409286144 entries; 301 sampling rows per batch; eos [151645, 151643]
+[   35.3s] [control] W0 {"dw_norm": 0.0, "kl": 0.0, "multiple": 0.0, "pass": 0.7142857142857143, "fits": 0.875, "k_fits": 7, "truncation_share": 0.0, "gain": {"n": 7, "diff": 0, "se": 0.0}, "seconds": 28.492122650146484, "file": null}
+[   35.3s] [check] control W0: kl in its filed band: ok {"kl": 0.0, "band": [0.0, 1e-09]}
+[   35.3s] [check] control W0: pass in its filed band: MISSED {"pass": 0.7142857142857143, "band": [0.7597, 0.8037]}
+[   35.3s] [check] control W0: dw_norm in its filed band: ok {"dw_norm": 0.0, "band": [0.0, 0.0]}
+[   76.9s] [control] e69_R100 {"dw_norm": 0.3508836925461713, "kl": 0.06431342421922204, "multiple": 0.690002809901388, "pass": 0.5714285714285714, "fits": 0.875, "k_fits": 7, "truncation_share": 0.0, "gain": {"n": 6, "diff": 0, "se": 0.25819888974716115}, "seconds": 41.53492188453674, "file": "/mnt/nw/home/e.agnew/commute-agents/qwen-rl-lead/experiments/qwen_rl/results/large/lr1e-6w10/dW/R/step_100.safetensors"}
+[   76.9s] [check] control e69_R100: kl in its filed band: ok {"kl": 0.06431342421922204, "band": [0.06367, 0.06496]}
+[   76.9s] [check] control e69_R100: pass in its filed band: MISSED {"pass": 0.5714285714285714, "band": [0.8587, 0.9027]}
+[   76.9s] [check] control e69_R100: dw_norm in its filed band: ok {"dw_norm": 0.3508836925461713, "band": [0.35053, 0.35123]}
+[   76.9s] STAGE gpu DONE
+[    3.3s] [controls] start; NVIDIA L40
+[    6.8s] [model] 1409286144 entries; 301 sampling rows per batch; eos [151645, 151643]
+[   46.9s] [reads] N_s0@2 {"dw_norm": 0.008187109574885295, "kl": 3.687894002020104e-05, "multiple": 0.00039566501938047917, "pass": 0.8571428571428571, "fits": 0.875, "k_fits": 7, "truncation_share": 0.0, "gain": {"n": 7, "diff": 0.14285714285714285, "se": 0.14285714285714285}, "seconds": 35.682781457901, "file": "/mnt/nw/home/e.agnew/commute-data/scratch/qwen-rl-lead/run3_tiny_59874/N_s0/dW/step_2.safetensors"}
+[   46.9s] STAGE gpu DONE

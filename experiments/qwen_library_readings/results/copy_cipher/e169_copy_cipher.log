@@ -1,0 +1,97 @@
+experiments/qwen_library_readings/results/predictions.json is not committed unchanged: commit it first
+=== FINISHED (exit 1) — results in /root/work/experiments/qwen_library_readings/results/copy_cipher/ ===
+Fetching 2 files:   0%|          | 0/2 [00:00<?, ?it/s]Fetching 2 files:  50%|█████     | 1/2 [00:09<00:09,  9.37s/it]Fetching 2 files: 100%|██████████| 2/2 [00:09<00:00,  4.69s/it]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.47it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.84it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.49it/s]
+[rows copy] [128, 256], 4519 answer positions, 1743 answers; W0 {"first": {"n": 1743, "median_rank": 1.0, "mean_logp": -5.158950562582121}, "all": {"n": 4519, "median_rank": 1.0, "mean_logp": -2.871277485079442}}
+[check copy_cipher/stage0] C0_do_nothing: ok {"overlap": 1.0, "on_both": NaN, "size": 0.0, "max_logp_diff": 0.0, "layer": null, "erank": null, "rows": "copy"}
+[rows cipher] [128, 256], 6701 answer positions, 1608 answers; W0 {"first": {"n": 1608, "median_rank": 285.0, "mean_logp": -12.154480353141416}, "all": {"n": 6701, "median_rank": 118.0, "mean_logp": -9.16892346057786}}
+STAGE 0 DONE copy_cipher
+wandb: Currently logged in as: edwinagnew (edwinagnew-mats) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+[fetch] 5x.safetensors: 5637 MB in 206 s
+[fetch copy_s0_5x] 215 s; sha256 matches
+[ref copy_s0_5x] |δW| 0.173271, library 0.173271
+[fetch] last.safetensors: 5637 MB in 171 s
+[fetch cipher_s0_last] 178 s; sha256 matches
+[ref cipher_s0_last] |δW| 5.090653, library 5.090653
+[floor copy draw 0] overlap 0.998438 steer 0.7224940017148401; 56 s
+[floor copy draw 1] overlap 0.998433 steer 0.2743059067246846; 56 s
+[floor copy draw 2] overlap 0.998308 steer -; 13 s
+[floor copy draw 3] overlap 0.998412 steer -; 13 s
+[floor cipher draw 0] overlap 0.998484 steer 0.9373389434841444; 56 s
+[floor cipher draw 1] overlap 0.998419 steer None; 16 s
+[floor cipher draw 2] overlap 0.998393 steer -; 13 s
+[floor cipher draw 3] overlap 0.998451 steer -; 13 s
+[floor copy draw 0] overlap 0.968603 steer 0.5408985292013598; 56 s
+[floor copy draw 1] overlap 0.967999 steer 0.3054998324999744; 56 s
+[floor copy draw 2] overlap 0.965845 steer -; 13 s
+[floor copy draw 3] overlap 0.967968 steer -; 13 s
+[floor cipher draw 0] overlap 0.969153 steer 0.95154168006639; 56 s
+[floor cipher draw 1] overlap 0.967964 steer None; 15 s
+[floor cipher draw 2] overlap 0.967303 steer -; 13 s
+[floor cipher draw 3] overlap 0.968930 steer -; 12 s
+[floor copy_cipher] band {"erank": 31.357942156091667, "overlap": 0.03359118403534689, "steer": null}
+[check copy_cipher/stage1] C1_band: ok {"erank": 31.357942156091667, "overlap": 0.03359118403534689, "steer": null}
+STAGE 1 DONE copy_cipher; GPU peak 27.6 GiB
+[fetch] last.safetensors: 5637 MB in 174 s
+[fetch copy_s0_last] 181 s; sha256 matches
+[check copy_cipher/stage2] norm copy_s0_last: ok {"norm": 2.379655509462046, "library": 2.379655509462046}
+[state copy_s0_last] {"side": "copy", "seed": 0, "save": "last", "step": 300, "artifact": "p35r3-copy-s0-last", "size": 0.0018158142955515592, "prior_rank": 1.0, "steer": 0.7565477612364223, "gain": 2.5676949990473683, "layer": 16, "random_dir": -0.21442223823785428, "max_logp_diff": 33.77641296386719, "erank": 733.7823670890205, "overlap": 0.4710969788076314, "on_both": 0.7763722589653994, "seconds": 106.0903000831604}
+[time copy_cipher] 1 of 12 states this job
+[fetch] 5x.safetensors: 5637 MB in 167 s
+[fetch copy_s0_5x] 177 s; sha256 matches
+[check copy_cipher/stage2] norm copy_s0_5x: ok {"norm": 0.1732708639239838, "library": 0.1732708639239838}
+[state copy_s0_5x] {"side": "copy", "seed": 0, "save": "5x", "step": 7, "artifact": "p35r3-copy-s0-5x", "size": 0.00013221565494026682, "prior_rank": 1.0, "steer": 0.4947425124131489, "gain": 2.315927325388159, "layer": 17, "random_dir": -0.012671104552638377, "max_logp_diff": 33.77442932128906, "erank": 850.0340382240638, "overlap": 0.7782543050611899, "on_both": 0.8127970501722346, "seconds": 105.01310467720032}
+[time copy_cipher] 2 of 12 states this job
+[fetch] last.safetensors: 5637 MB in 237 s
+[fetch copy_s1_last] 244 s; sha256 matches
+[check copy_cipher/stage2] norm copy_s1_last: ok {"norm": 2.1155127714666286, "library": 2.1155127714666286}
+[state copy_s1_last] {"side": "copy", "seed": 1, "save": "last", "step": 300, "artifact": "p35r3-copy-s1-last", "size": 0.0016142581636614283, "prior_rank": 1.0, "steer": 0.6987054630740883, "gain": 2.5637822427324433, "layer": 15, "random_dir": -0.22118132078562602, "max_logp_diff": 33.77641296386719, "erank": 741.0082278985634, "overlap": 0.5014251766556451, "on_both": 0.7861917541123309, "seconds": 105.88103008270264}
+[time copy_cipher] 3 of 12 states this job
+[fetch] 5x.safetensors: 5637 MB in 213 s
+[fetch copy_s1_5x] 220 s; sha256 matches
+[check copy_cipher/stage2] norm copy_s1_5x: ok {"norm": 0.2161889431750132, "library": 0.2161889431750132}
+[state copy_s1_5x] {"side": "copy", "seed": 1, "save": "5x", "step": 8, "artifact": "p35r3-copy-s1-5x", "size": 0.00016496462281892057, "prior_rank": 1.0, "steer": 0.5340737400567223, "gain": 2.3926383239802265, "layer": 17, "random_dir": -0.01426793445670167, "max_logp_diff": 33.77564239501953, "erank": 827.4123359050094, "overlap": 0.7513437857620608, "on_both": 0.8053107925310754, "seconds": 104.97940492630005}
+[time copy_cipher] 4 of 12 states this job
+[fetch] last.safetensors: 5637 MB in 200 s
+[fetch copy_s2_last] 207 s; sha256 matches
+[check copy_cipher/stage2] norm copy_s2_last: ok {"norm": 2.4419562696321195, "library": 2.4419562696321195}
+[state copy_s2_last] {"side": "copy", "seed": 2, "save": "last", "step": 300, "artifact": "p35r3-copy-s2-last", "size": 0.0018633533660139569, "prior_rank": 1.0, "steer": 0.6815597956245607, "gain": 2.5836105301795516, "layer": 15, "random_dir": -0.20863390538547147, "max_logp_diff": 33.77640914916992, "erank": 742.7706796216488, "overlap": 0.47762627672072716, "on_both": 0.8142805038037241, "seconds": 106.06457757949829}
+[time copy_cipher] 5 of 12 states this job
+[fetch] 5x.safetensors: 5637 MB in 157 s
+[fetch copy_s2_5x] 165 s; sha256 matches
+[check copy_cipher/stage2] norm copy_s2_5x: ok {"norm": 0.17391186849235865, "library": 0.17391186849235865}
+[state copy_s2_5x] {"side": "copy", "seed": 2, "save": "5x", "step": 7, "artifact": "p35r3-copy-s2-5x", "size": 0.0001327047783676456, "prior_rank": 1.0, "steer": 0.5061050178502127, "gain": 2.3045308703408343, "layer": 17, "random_dir": -0.012978551089316243, "max_logp_diff": 33.77338790893555, "erank": 860.1620085732546, "overlap": 0.7783769845339504, "on_both": 0.8134335659944796, "seconds": 104.84734034538269}
+[time copy_cipher] 6 of 12 states this job
+[fetch] last.safetensors: 5637 MB in 162 s
+[fetch cipher_s0_last] 169 s; sha256 matches
+[check copy_cipher/stage2] norm cipher_s0_last: ok {"norm": 5.090652599369557, "library": 5.090652599369557}
+[state cipher_s0_last] {"side": "cipher", "seed": 0, "save": "last", "step": 300, "artifact": "p35r3-cipher-s0-last", "size": 0.0038844613125164525, "prior_rank": 285.0, "steer": 0.12310673573164829, "gain": 4.469611246069102, "layer": 15, "random_dir": -0.10832746341076319, "max_logp_diff": 40.052242279052734, "erank": 1118.4976499851796, "overlap": 0.4330502256618252, "on_both": 0.7366485359135319, "seconds": 105.58240294456482}
+[time copy_cipher] 7 of 12 states this job
+[fetch] 5x.safetensors: 5637 MB in 169 s
+[fetch cipher_s0_5x] 176 s; sha256 matches
+[check copy_cipher/stage2] norm cipher_s0_5x: ok {"norm": 0.4960375343705008, "library": 0.49603753437050074}
+[state cipher_s0_5x] {"side": "cipher", "seed": 0, "save": "5x", "step": 13, "artifact": "p35r3-cipher-s0-5x", "size": 0.0003785052258441062, "prior_rank": 285.0, "steer": 0.8476687892694756, "gain": 3.1884876572522933, "layer": 27, "random_dir": 0.0921934412741978, "max_logp_diff": 30.55029296875, "erank": 804.570676124428, "overlap": 0.6619851198693254, "on_both": 0.8923703953633324, "seconds": 105.49896907806396}
+[time copy_cipher] 8 of 12 states this job
+[fetch] last.safetensors: 5637 MB in 164 s
+[fetch cipher_s1_last] 171 s; sha256 matches
+[check copy_cipher/stage2] norm cipher_s1_last: ok {"norm": 5.056894928043997, "library": 5.056894928043997}
+[state cipher_s1_last] {"side": "cipher", "seed": 1, "save": "last", "step": 300, "artifact": "p35r3-cipher-s1-last", "size": 0.003858702263808036, "prior_rank": 285.0, "steer": 0.14425104811738354, "gain": 4.358487385127018, "layer": 17, "random_dir": -0.2579898017746304, "max_logp_diff": 40.055641174316406, "erank": 1117.0308830082151, "overlap": 0.4332317922959737, "on_both": 0.7513037151262726, "seconds": 105.77785515785217}
+[time copy_cipher] 9 of 12 states this job
+[fetch] 5x.safetensors: 5637 MB in 167 s
+[fetch cipher_s1_5x] 174 s; sha256 matches
+[check copy_cipher/stage2] norm cipher_s1_5x: ok {"norm": 0.489881523657573, "library": 0.489881523657573}
+[state cipher_s1_5x] {"side": "cipher", "seed": 1, "save": "5x", "step": 13, "artifact": "p35r3-cipher-s1-5x", "size": 0.0003738078348933337, "prior_rank": 285.0, "steer": 0.8460634496323848, "gain": 3.251706537024338, "layer": 27, "random_dir": 0.0912275727233831, "max_logp_diff": 30.554664611816406, "erank": 802.4095761563275, "overlap": 0.6637754599852164, "on_both": 0.8974592958739921, "seconds": 105.4781699180603}
+[time copy_cipher] 10 of 12 states this job
+[fetch] last.safetensors: 5637 MB in 192 s
+[fetch cipher_s2_last] 199 s; sha256 matches
+[check copy_cipher/stage2] norm cipher_s2_last: ok {"norm": 5.0094134208978485, "library": 5.0094134208978485}
+[state cipher_s2_last] {"side": "cipher", "seed": 2, "save": "last", "step": 300, "artifact": "p35r3-cipher-s2-last", "size": 0.0038224711374506754, "prior_rank": 285.0, "steer": 0.14438249224306093, "gain": 3.8350026594816637, "layer": 16, "random_dir": -0.28439363962818004, "max_logp_diff": 40.05447006225586, "erank": 1111.5923942515908, "overlap": 0.4168843439909161, "on_both": 0.7408261552026777, "seconds": 105.7596583366394}
+[time copy_cipher] 11 of 12 states this job
+[fetch] 5x.safetensors: 5637 MB in 175 s
+[fetch cipher_s2_5x] 182 s; sha256 matches
+[check copy_cipher/stage2] norm cipher_s2_5x: ok {"norm": 0.501734929841204, "library": 0.501734929841204}
+[state cipher_s2_5x] {"side": "cipher", "seed": 2, "save": "5x", "step": 13, "artifact": "p35r3-cipher-s2-5x", "size": 0.00038285266693462454, "prior_rank": 285.0, "steer": 0.8455596019614093, "gain": 3.247226807843804, "layer": 27, "random_dir": 0.09145016928364676, "max_logp_diff": 30.973331451416016, "erank": 806.3054782705218, "overlap": 0.6581217536198558, "on_both": 0.8970919432917986, "seconds": 105.47810554504395}
+[time copy_cipher] 12 of 12 states this job
+STAGE 2 DONE copy_cipher; GPU peak 27.6 GiB
+peak host RSS 10.9 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/qwen_library_readings/results/copy_cipher/ ===

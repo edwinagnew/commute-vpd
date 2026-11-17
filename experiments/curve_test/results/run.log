@@ -1,0 +1,1414 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[     22s] [data] train rows 0..32768: cached at /root/artifacts/sets/train_0_32768.npy
+[     30s] [data] train rows 32768..40960: cached at /root/artifacts/sets/train_32768_8192.npy
+[     36s] [data] val rows 0..2000: cached at /root/artifacts/sets/val_0_2000.npy
+[     42s] variance share of the top directions: in0 top-1 0.0599, in1 top-1 2.23, in2 top-1 11.8, in3 top-1 8.95, out3 top-1 149
+[     47s] l1_neuron: s 6.218271, gap 0.229768 (E184 0.229768)
+[     51s] l1_neuron: KL(F || M) 0.204783 nats on 16384 read windows; answer windows None, KL None
+[     55s] l1_neuron [all] pass 1 n 1: closure 1.0000, answer None, check KL -8.9893e-10 (+ mlp2#36)
+[     58s] l1_neuron [all] pass 1 n 2: closure 1.0000, answer None, check KL -1.7711e-09 (+ mlp2#1634)
+[     61s] l1_neuron [all] pass 1 n 3: closure 1.0000, answer None, check KL -2.0959e-09 (+ mlp2#2313)
+[     64s] l1_neuron [all] pass 1 n 4: closure 1.0000, answer None, check KL -3.5027e-09 (+ mlp2#1338)
+[     67s] l1_neuron [all] pass 1 n 5: closure 1.0000, answer None, check KL -4.852e-09 (+ mlp2#408)
+[     69s] l1_neuron [all] pass 1 n 5: closure 1.0000, answer None, check KL -4.852e-09 (no name lowers the check KL)
+[     72s] l1_neuron [all] pass 1 n 6: closure 1.0000, answer None, check KL -6.8023e-09 (+ mlp2#1210)
+[     75s] l1_neuron [all] pass 1 n 6: closure 1.0000, answer None, check KL -6.8023e-09 (no name lowers the check KL)
+[     78s] l1_neuron [all] pass 1 n 6: closure 1.0000, answer None, check KL -6.8023e-09 (no name lowers the check KL)
+[     80s] l1_neuron [all] pass 1 n 6: closure 1.0000, answer None, check KL -6.8023e-09 (no name lowers the check KL)
+[     83s] l1_neuron [all] pass 1 n 6: closure 1.0000, answer None, check KL -6.8023e-09 (no name lowers the check KL)
+[     86s] l1_neuron [all] pass 1 n 6: closure 1.0000, answer None, check KL -6.8023e-09 (no name lowers the check KL)
+[     88s] l1_neuron [all] pass 1 n 6: closure 1.0000, answer None, check KL -6.8023e-09 (no name lowers the check KL)
+[     91s] l1_neuron [all] pass 1 n 6: closure 1.0000, answer None, check KL -6.8023e-09 (no name lowers the check KL)
+[     94s] l1_neuron [all] pass 1 n 6: closure 1.0000, answer None, check KL -6.8023e-09 (no name lowers the check KL)
+[     96s] l1_neuron [all] pass 1 n 6: closure 1.0000, answer None, check KL -6.8023e-09 (no name lowers the check KL)
+[     99s] l1_neuron [all] pass 1 n 6: closure 1.0000, answer None, check KL -6.8023e-09 (no name lowers the check KL)
+[    102s] l1_neuron [all] pass 1 n 6: closure 1.0000, answer None, check KL -6.8023e-09 (no name lowers the check KL)
+[    105s] l1_neuron [all] pass 1 n 6: closure 1.0000, answer None, check KL -6.8023e-09 (no name lowers the check KL)
+[    107s] l1_neuron [all] pass 1 n 6: closure 1.0000, answer None, check KL -6.8023e-09 (no name lowers the check KL)
+[    110s] l1_neuron [all] pass 1 n 6: closure 1.0000, answer None, check KL -6.8023e-09 (no name lowers the check KL)
+[    113s] l1_neuron [all] pass 1 n 6: closure 1.0000, answer None, check KL -6.8023e-09 (no name lowers the check KL)
+[    118s] l1_neuron [all] pass 2 n 1: closure 1.0000, answer None, check KL -8.9893e-10 (+ mlp2#36)
+[    122s] l1_neuron [all] pass 2 n 2: closure 1.0000, answer None, check KL -1.7711e-09 (+ mlp2#1634)
+[    126s] l1_neuron [all] pass 2 n 4: closure 1.0000, answer None, check KL -5.133e-09 (+ mlp3#2696->out3.pc62)
+[    129s] l1_neuron [all] pass 2 n 4: closure 1.0000, answer None, check KL -5.133e-09 (no name lowers the check KL)
+[    133s] l1_neuron [all] pass 2 n 4: closure 1.0000, answer None, check KL -5.133e-09 (no name lowers the check KL)
+[    137s] l1_neuron [all] pass 2 n 4: closure 1.0000, answer None, check KL -5.133e-09 (no name lowers the check KL)
+[    140s] l1_neuron [all] pass 2 n 4: closure 1.0000, answer None, check KL -5.133e-09 (no name lowers the check KL)
+[    144s] l1_neuron [all] pass 2 n 4: closure 1.0000, answer None, check KL -5.133e-09 (no name lowers the check KL)
+[    148s] l1_neuron [all] pass 2 n 4: closure 1.0000, answer None, check KL -5.133e-09 (no name lowers the check KL)
+[    152s] l1_neuron [all] pass 2 n 4: closure 1.0000, answer None, check KL -5.133e-09 (no name lowers the check KL)
+[    155s] l1_neuron [all] pass 2 n 4: closure 1.0000, answer None, check KL -5.133e-09 (no name lowers the check KL)
+[    159s] l1_neuron [all] pass 2 n 4: closure 1.0000, answer None, check KL -5.133e-09 (no name lowers the check KL)
+[    163s] l1_neuron [all] pass 2 n 4: closure 1.0000, answer None, check KL -5.133e-09 (no name lowers the check KL)
+[    166s] l1_neuron [all] pass 2 n 4: closure 1.0000, answer None, check KL -5.133e-09 (no name lowers the check KL)
+[    170s] l1_neuron [all] pass 2 n 4: closure 1.0000, answer None, check KL -5.133e-09 (no name lowers the check KL)
+[    174s] l1_neuron [all] pass 2 n 4: closure 1.0000, answer None, check KL -5.133e-09 (no name lowers the check KL)
+[    178s] l1_neuron [all] pass 2 n 5: closure 1.0000, answer None, check KL -5.2377e-09 (+ mlp3#2696->out3.pc62)
+[    182s] l1_neuron [all] pass 2 n 5: closure 1.0000, answer None, check KL -5.2377e-09 (no name lowers the check KL)
+[    185s] l1_neuron [all] pass 2 n 5: closure 1.0000, answer None, check KL -5.2377e-09 (no name lowers the check KL)
+[    189s] l1_neuron [all] pass 2 n 6: closure 1.0000, answer None, check KL -5.5492e-09 (+ mlp3#751)
+[    193s] l1_neuron [all] pass 2 n 6: closure 1.0000, answer None, check KL -5.5492e-09 (no name lowers the check KL)
+[    193s] l1_neuron [all] readings: {'0.8': {'rung': 1, 'n': 1, 'names': ['mlp2#36']}, '0.95': {'rung': 1, 'n': 1, 'names': ['mlp2#36']}}
+[    198s] l2_triggered: s 14.067936, gap 0.231011 (E184 0.231011)
+[    202s] l2_triggered: KL(F || M) 0.266214 nats on 16384 read windows; answer windows None, KL None
+[    207s] l2_triggered [all] pass 1 n 1: closure 0.3780, answer None, check KL 0.20011 (+ mlp2#1384)
+[    212s] l2_triggered [all] pass 1 n 2: closure 0.4040, answer None, check KL 0.18627 (+ mlp2#1346)
+[    219s] l2_triggered [all] pass 1 n 3: closure 0.4057, answer None, check KL 0.1856 (+ mlp2#1248)
+[    226s] l2_triggered [all] pass 1 n 4: closure 0.4244, answer None, check KL 0.17978 (+ out3.pc1)
+[    234s] l2_triggered [all] pass 1 n 5: closure 0.4271, answer None, check KL 0.17875 (+ mlp3#693)
+[    240s] l2_triggered [all] pass 1 n 6: closure 0.4280, answer None, check KL 0.17842 (+ mlp3#1220)
+[    248s] l2_triggered [all] pass 1 n 7: closure 0.4163, answer None, check KL 0.17446 (+ mlp2#2401)
+[    256s] l2_triggered [all] pass 1 n 8: closure 0.4195, answer None, check KL 0.17231 (+ logit#253)
+[    264s] l2_triggered [all] pass 1 n 9: closure 0.4212, answer None, check KL 0.17175 (+ mlp1#125)
+[    272s] l2_triggered [all] pass 1 n 10: closure 0.4212, answer None, check KL 0.17142 (+ mlp3#2227)
+[    281s] l2_triggered [all] pass 1 n 11: closure 0.4216, answer None, check KL 0.17134 (+ mlp2#2625)
+[    289s] l2_triggered [all] pass 1 n 12: closure 0.4227, answer None, check KL 0.17109 (+ mlp1#311)
+[    297s] l2_triggered [all] pass 1 n 13: closure 0.4239, answer None, check KL 0.17082 (+ mlp3#1514)
+[    305s] l2_triggered [all] pass 1 n 14: closure 0.4249, answer None, check KL 0.17067 (+ mlp2#1412)
+[    308s] l2_triggered [all] pass 1 n 14: closure 0.4249, answer None, check KL 0.17067 (no name lowers the check KL)
+[    317s] l2_triggered [all] pass 1 n 15: closure 0.4242, answer None, check KL 0.1705 (+ mlp2#14)
+[    319s] l2_triggered [all] pass 1 n 15: closure 0.4242, answer None, check KL 0.1705 (no name lowers the check KL)
+[    322s] l2_triggered [all] pass 1 n 15: closure 0.4242, answer None, check KL 0.1705 (no name lowers the check KL)
+[    325s] l2_triggered [all] pass 1 n 15: closure 0.4242, answer None, check KL 0.1705 (no name lowers the check KL)
+[    328s] l2_triggered [all] pass 1 n 15: closure 0.4242, answer None, check KL 0.1705 (no name lowers the check KL)
+[    336s] l2_triggered [all] pass 1 n 16: closure 0.4263, answer None, check KL 0.16984 (+ mlp2#1064)
+[    342s] l2_triggered [all] pass 2 n 2: closure 1.0000, answer None, check KL 1.3756e-09 (+ in1.pc0->mlp2#1384)
+[    346s] l2_triggered [all] pass 2 n 4: closure 1.0000, answer None, check KL -3.5588e-09 (+ mlp1#2686->mlp3#2994)
+[    350s] l2_triggered [all] pass 2 n 6: closure 1.0000, answer None, check KL -3.9427e-09 (+ mlp1#924->mlp3#1419)
+[    354s] l2_triggered [all] pass 2 n 7: closure 1.0000, answer None, check KL -4.5427e-09 (+ mlp1#924->mlp3#1419)
+[    358s] l2_triggered [all] pass 2 n 7: closure 1.0000, answer None, check KL -4.5427e-09 (no name lowers the check KL)
+[    361s] l2_triggered [all] pass 2 n 7: closure 1.0000, answer None, check KL -4.5427e-09 (no name lowers the check KL)
+[    365s] l2_triggered [all] pass 2 n 9: closure 1.0000, answer None, check KL -5.8688e-09 (+ mlp1#2433->mlp3#1892)
+[    369s] l2_triggered [all] pass 2 n 9: closure 1.0000, answer None, check KL -5.8688e-09 (no name lowers the check KL)
+[    373s] l2_triggered [all] pass 2 n 9: closure 1.0000, answer None, check KL -5.8688e-09 (no name lowers the check KL)
+[    376s] l2_triggered [all] pass 2 n 9: closure 1.0000, answer None, check KL -5.8688e-09 (no name lowers the check KL)
+[    380s] l2_triggered [all] pass 2 n 9: closure 1.0000, answer None, check KL -5.8688e-09 (no name lowers the check KL)
+[    384s] l2_triggered [all] pass 2 n 9: closure 1.0000, answer None, check KL -5.8688e-09 (no name lowers the check KL)
+[    388s] l2_triggered [all] pass 2 n 9: closure 1.0000, answer None, check KL -5.8688e-09 (no name lowers the check KL)
+[    391s] l2_triggered [all] pass 2 n 9: closure 1.0000, answer None, check KL -5.8688e-09 (no name lowers the check KL)
+[    395s] l2_triggered [all] pass 2 n 9: closure 1.0000, answer None, check KL -5.8688e-09 (no name lowers the check KL)
+[    399s] l2_triggered [all] pass 2 n 9: closure 1.0000, answer None, check KL -5.8688e-09 (no name lowers the check KL)
+[    402s] l2_triggered [all] pass 2 n 9: closure 1.0000, answer None, check KL -5.8688e-09 (no name lowers the check KL)
+[    406s] l2_triggered [all] pass 2 n 10: closure 1.0000, answer None, check KL -6.1824e-09 (+ mlp1#550->mlp3#1892)
+[    410s] l2_triggered [all] pass 2 n 10: closure 1.0000, answer None, check KL -6.1824e-09 (no name lowers the check KL)
+[    414s] l2_triggered [all] pass 2 n 10: closure 1.0000, answer None, check KL -6.1824e-09 (no name lowers the check KL)
+[    418s] l2_triggered [all] pass 2 n 10: closure 1.0000, answer None, check KL -6.1824e-09 (no name lowers the check KL)
+[    421s] l2_triggered [all] pass 2 n 11: closure 1.0000, answer None, check KL -6.3832e-09 (+ mlp1#550->mlp3#1892)
+[    425s] l2_triggered [all] pass 2 n 11: closure 1.0000, answer None, check KL -6.3832e-09 (no name lowers the check KL)
+[    425s] l2_triggered [all] readings: {'0.8': {'rung': 2, 'n': 2, 'names': ['mlp2#1384', 'in1.pc0->mlp2#1384']}, '0.95': {'rung': 2, 'n': 2, 'names': ['mlp2#1384', 'in1.pc0->mlp2#1384']}}
+[    431s] l4_bit: s 2.670970, gap 0.226085 (E184 0.226085)
+[    434s] l4_bit: KL(F || M) 0.481338 nats on 16384 read windows; answer windows None, KL None
+[    438s] l4_bit [all] pass 1 n 1: closure 0.1420, answer None, check KL 0.41593 (+ mlp2#1346)
+[    444s] l4_bit [all] pass 1 n 2: closure 0.2366, answer None, check KL 0.36569 (+ mlp2#2751)
+[    450s] l4_bit [all] pass 1 n 3: closure 0.3048, answer None, check KL 0.33492 (+ mlp3#1787)
+[    456s] l4_bit [all] pass 1 n 4: closure 0.3207, answer None, check KL 0.32586 (+ mlp3#2365)
+[    463s] l4_bit [all] pass 1 n 5: closure 0.3346, answer None, check KL 0.31903 (+ mlp2#767)
+[    472s] l4_bit [all] pass 1 n 6: closure 0.3434, answer None, check KL 0.31345 (+ mlp1#2122)
+[    481s] l4_bit [all] pass 1 n 7: closure 0.3555, answer None, check KL 0.30815 (+ mlp2#1612)
+[    488s] l4_bit [all] pass 1 n 8: closure 0.3621, answer None, check KL 0.30469 (+ mlp2#2729)
+[    498s] l4_bit [all] pass 1 n 9: closure 0.3658, answer None, check KL 0.302 (+ mlp3#3062)
+[    506s] l4_bit [all] pass 1 n 10: closure 0.3712, answer None, check KL 0.29927 (+ mlp1#753)
+[    514s] l4_bit [all] pass 1 n 11: closure 0.3742, answer None, check KL 0.29803 (+ mlp2#2974)
+[    523s] l4_bit [all] pass 1 n 12: closure 0.3764, answer None, check KL 0.29729 (+ in2.pc14)
+[    531s] l4_bit [all] pass 1 n 13: closure 0.3767, answer None, check KL 0.29716 (+ mlp3#484)
+[    540s] l4_bit [all] pass 1 n 14: closure 0.3784, answer None, check KL 0.29677 (+ mlp1#1362)
+[    548s] l4_bit [all] pass 1 n 15: closure 0.3784, answer None, check KL 0.29677 (+ logit#3996)
+[    557s] l4_bit [all] pass 1 n 16: closure 0.3806, answer None, check KL 0.2953 (+ mlp2#646)
+[    562s] l4_bit [all] pass 2 n 1: closure 0.1420, answer None, check KL 0.41593 (+ mlp2#1346)
+[    568s] l4_bit [all] pass 2 n 2: closure 0.2366, answer None, check KL 0.36569 (+ mlp2#2751)
+[    575s] l4_bit [all] pass 2 n 3: closure 0.3048, answer None, check KL 0.33492 (+ mlp3#1787)
+[    585s] l4_bit [all] pass 2 n 5: closure 0.3219, answer None, check KL 0.32503 (+ mlp2#1346->mlp3#2365)
+[    594s] l4_bit [all] pass 2 n 6: closure 0.3363, answer None, check KL 0.31879 (+ mlp2#1612)
+[    597s] l4_bit [all] pass 2 n 6: closure 0.3363, answer None, check KL 0.31879 (no name lowers the check KL)
+[    601s] l4_bit [all] pass 2 n 6: closure 0.3363, answer None, check KL 0.31879 (no name lowers the check KL)
+[    605s] l4_bit [all] pass 2 n 6: closure 0.3363, answer None, check KL 0.31879 (no name lowers the check KL)
+[    608s] l4_bit [all] pass 2 n 6: closure 0.3363, answer None, check KL 0.31879 (no name lowers the check KL)
+[    612s] l4_bit [all] pass 2 n 6: closure 0.3363, answer None, check KL 0.31879 (no name lowers the check KL)
+[    616s] l4_bit [all] pass 2 n 6: closure 0.3363, answer None, check KL 0.31879 (no name lowers the check KL)
+[    620s] l4_bit [all] pass 2 n 6: closure 0.3363, answer None, check KL 0.31879 (no name lowers the check KL)
+[    623s] l4_bit [all] pass 2 n 6: closure 0.3363, answer None, check KL 0.31879 (no name lowers the check KL)
+[    627s] l4_bit [all] pass 2 n 6: closure 0.3363, answer None, check KL 0.31879 (no name lowers the check KL)
+[    637s] l4_bit [all] pass 2 n 8: closure 0.3362, answer None, check KL 0.31864 (+ mlp1#2021->mlp2#2865)
+[    646s] l4_bit [all] pass 2 n 9: closure 0.3408, answer None, check KL 0.31656 (+ mlp2#2974)
+[    655s] l4_bit [all] pass 2 n 11: closure 0.3414, answer None, check KL 0.31632 (+ mlp2#1816->mlp3#1732)
+[    665s] l4_bit [all] pass 2 n 12: closure 0.3435, answer None, check KL 0.31572 (+ mlp2#1816->mlp3#1732)
+[    669s] l4_bit [all] pass 2 n 12: closure 0.3435, answer None, check KL 0.31572 (no name lowers the check KL)
+[    672s] l4_bit [all] pass 2 n 12: closure 0.3435, answer None, check KL 0.31572 (no name lowers the check KL)
+[    676s] l4_bit [all] pass 2 n 12: closure 0.3435, answer None, check KL 0.31572 (no name lowers the check KL)
+[    680s] l4_bit [all] pass 2 n 12: closure 0.3435, answer None, check KL 0.31572 (no name lowers the check KL)
+[    684s] l4_bit [all] pass 2 n 12: closure 0.3435, answer None, check KL 0.31572 (no name lowers the check KL)
+[    687s] l4_bit [all] pass 2 n 12: closure 0.3435, answer None, check KL 0.31572 (no name lowers the check KL)
+[    691s] l4_bit [all] pass 2 n 12: closure 0.3435, answer None, check KL 0.31572 (no name lowers the check KL)
+[    691s] l4_bit [all] readings: {'0.8': {'rung': 4, 'n': None}, '0.95': {'rung': 4, 'n': None}}
+[    691s] CONTROLS passed
+/root/work/src/commute/finetune.py:118: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  return loss, {"ce_o": float(ce), "kl_other": float(kl_other), "p_o": float(p_o)}
+23:23:44 [ft] step 1: loss 9.1594 ce_o 9.1594 kl_other 0.0000 p_o 0.0003
+23:23:45 [ft] step 10: loss 0.1593 ce_o 0.0208 kl_other 0.1385 p_o 0.9796
+23:23:45 [ft] checkpoint 10: p_o 0.9560 ce_o 0.0646 kl_other 0.1311 n 75 rel_norm_max 0.0137 elapsed_s 0.6225
+23:23:45 [ft] step 20: loss 0.0739 ce_o 0.0016 kl_other 0.0724 p_o 0.9984
+23:23:45 [ft] step 30: loss 0.0591 ce_o 0.0007 kl_other 0.0584 p_o 0.9993
+23:23:45 [ft] checkpoint 30: p_o 0.9989 ce_o 0.0011 kl_other 0.0531 n 75 rel_norm_max 0.0185 elapsed_s 1.2394
+23:23:46 [ft] step 40: loss 0.0671 ce_o 0.0004 kl_other 0.0667 p_o 0.9996
+23:23:46 [ft] step 50: loss 0.0473 ce_o 0.0003 kl_other 0.0470 p_o 0.9997
+23:23:46 [ft] step 60: loss 0.0423 ce_o 0.0003 kl_other 0.0420 p_o 0.9997
+23:23:46 [ft] step 70: loss 0.0524 ce_o 0.0003 kl_other 0.0521 p_o 0.9997
+23:23:47 [ft] step 80: loss 0.0450 ce_o 0.0005 kl_other 0.0445 p_o 0.9995
+23:23:47 [ft] step 90: loss 0.0558 ce_o 0.0003 kl_other 0.0555 p_o 0.9997
+23:23:47 [ft] step 100: loss 0.0427 ce_o 0.0002 kl_other 0.0424 p_o 0.9998
+23:23:47 [ft] checkpoint 100: p_o 0.9995 ce_o 0.0005 kl_other 0.0434 n 75 rel_norm_max 0.0217 elapsed_s 3.1456
+23:23:48 [ft] step 110: loss 0.0544 ce_o 0.0003 kl_other 0.0542 p_o 0.9997
+23:23:48 [ft] step 120: loss 0.0312 ce_o 0.0002 kl_other 0.0309 p_o 0.9998
+23:23:48 [ft] step 130: loss 0.0427 ce_o 0.0002 kl_other 0.0424 p_o 0.9998
+23:23:48 [ft] step 140: loss 0.0335 ce_o 0.0002 kl_other 0.0333 p_o 0.9998
+23:23:49 [ft] step 150: loss 0.0348 ce_o 0.0002 kl_other 0.0346 p_o 0.9998
+23:23:49 [ft] step 160: loss 0.0519 ce_o 0.0002 kl_other 0.0518 p_o 0.9998
+23:23:49 [ft] step 170: loss 0.0308 ce_o 0.0002 kl_other 0.0306 p_o 0.9998
+23:23:49 [ft] step 180: loss 0.0340 ce_o 0.0002 kl_other 0.0339 p_o 0.9998
+23:23:50 [ft] step 190: loss 0.0521 ce_o 0.0002 kl_other 0.0519 p_o 0.9998
+23:23:50 [ft] step 200: loss 0.0391 ce_o 0.0001 kl_other 0.0390 p_o 0.9999
+23:23:50 [ft] step 210: loss 0.0364 ce_o 0.0001 kl_other 0.0362 p_o 0.9999
+23:23:50 [ft] step 220: loss 0.0544 ce_o 0.0001 kl_other 0.0543 p_o 0.9999
+23:23:50 [ft] step 230: loss 0.0204 ce_o 0.0001 kl_other 0.0203 p_o 0.9999
+23:23:51 [ft] step 240: loss 0.0363 ce_o 0.0001 kl_other 0.0362 p_o 0.9999
+23:23:51 [ft] step 250: loss 0.0319 ce_o 0.0001 kl_other 0.0318 p_o 0.9999
+23:23:51 [ft] step 260: loss 0.0348 ce_o 0.0002 kl_other 0.0346 p_o 0.9998
+23:23:51 [ft] step 270: loss 0.0288 ce_o 0.0001 kl_other 0.0287 p_o 0.9999
+23:23:52 [ft] step 280: loss 0.0282 ce_o 0.0001 kl_other 0.0281 p_o 0.9999
+23:23:52 [ft] step 290: loss 0.0313 ce_o 0.0001 kl_other 0.0311 p_o 0.9999
+23:23:52 [ft] step 300: loss 0.0299 ce_o 0.0001 kl_other 0.0297 p_o 0.9999
+23:23:52 [ft] checkpoint 300: p_o 0.9997 ce_o 0.0003 kl_other 0.0535 n 75 rel_norm_max 0.0268 elapsed_s 8.1371
+[    699s] STAGE train copy24_s2 DONE: learned True
+23:23:52 [ft] step 1: loss 8.6393 ce_o 8.6393 kl_other 0.0000 p_o 0.0009
+23:23:53 [ft] step 10: loss 0.1940 ce_o 0.0172 kl_other 0.1769 p_o 0.9832
+23:23:53 [ft] checkpoint 10: p_o 0.9723 ce_o 0.0286 kl_other 0.1361 n 75 rel_norm_max 0.0136 elapsed_s 0.2777
+23:23:53 [ft] step 20: loss 0.0917 ce_o 0.0019 kl_other 0.0897 p_o 0.9981
+23:23:53 [ft] step 30: loss 0.0719 ce_o 0.0012 kl_other 0.0707 p_o 0.9988
+23:23:53 [ft] checkpoint 30: p_o 0.9979 ce_o 0.0021 kl_other 0.0561 n 75 rel_norm_max 0.0186 elapsed_s 0.7884
+23:23:53 [ft] step 40: loss 0.1056 ce_o 0.0005 kl_other 0.1051 p_o 0.9995
+23:23:54 [ft] step 50: loss 0.0415 ce_o 0.0005 kl_other 0.0410 p_o 0.9995
+23:23:54 [ft] step 60: loss 0.0573 ce_o 0.0004 kl_other 0.0568 p_o 0.9996
+23:23:54 [ft] step 70: loss 0.0734 ce_o 0.0004 kl_other 0.0730 p_o 0.9996
+23:23:54 [ft] step 80: loss 0.0579 ce_o 0.0004 kl_other 0.0576 p_o 0.9996
+23:23:55 [ft] step 90: loss 0.0655 ce_o 0.0003 kl_other 0.0653 p_o 0.9997
+23:23:55 [ft] step 100: loss 0.0300 ce_o 0.0003 kl_other 0.0297 p_o 0.9997
+23:23:55 [ft] checkpoint 100: p_o 0.9994 ce_o 0.0006 kl_other 0.0463 n 75 rel_norm_max 0.0220 elapsed_s 2.5112
+23:23:55 [ft] step 110: loss 0.0354 ce_o 0.0003 kl_other 0.0352 p_o 0.9997
+23:23:55 [ft] step 120: loss 0.0479 ce_o 0.0003 kl_other 0.0476 p_o 0.9997
+23:23:56 [ft] step 130: loss 0.0489 ce_o 0.0002 kl_other 0.0487 p_o 0.9998
+23:23:56 [ft] step 140: loss 0.0461 ce_o 0.0002 kl_other 0.0459 p_o 0.9998
+23:23:56 [ft] step 150: loss 0.0340 ce_o 0.0002 kl_other 0.0338 p_o 0.9998
+23:23:56 [ft] step 160: loss 0.0414 ce_o 0.0002 kl_other 0.0413 p_o 0.9998
+23:23:57 [ft] step 170: loss 0.0482 ce_o 0.0002 kl_other 0.0480 p_o 0.9998
+23:23:57 [ft] step 180: loss 0.0298 ce_o 0.0002 kl_other 0.0296 p_o 0.9998
+23:23:57 [ft] step 190: loss 0.0254 ce_o 0.0001 kl_other 0.0253 p_o 0.9999
+23:23:57 [ft] step 200: loss 0.0471 ce_o 0.0002 kl_other 0.0469 p_o 0.9998
+23:23:57 [ft] step 210: loss 0.0429 ce_o 0.0001 kl_other 0.0427 p_o 0.9999
+23:23:58 [ft] step 220: loss 0.0323 ce_o 0.0001 kl_other 0.0322 p_o 0.9999
+23:23:58 [ft] step 230: loss 0.0403 ce_o 0.0002 kl_other 0.0402 p_o 0.9998
+23:23:58 [ft] step 240: loss 0.0213 ce_o 0.0001 kl_other 0.0212 p_o 0.9999
+23:23:58 [ft] step 250: loss 0.0293 ce_o 0.0001 kl_other 0.0292 p_o 0.9999
+23:23:59 [ft] step 260: loss 0.0607 ce_o 0.0001 kl_other 0.0606 p_o 0.9999
+23:23:59 [ft] step 270: loss 0.0247 ce_o 0.0001 kl_other 0.0246 p_o 0.9999
+23:23:59 [ft] step 280: loss 0.0365 ce_o 0.0001 kl_other 0.0363 p_o 0.9999
+23:23:59 [ft] step 290: loss 0.0320 ce_o 0.0001 kl_other 0.0319 p_o 0.9999
+23:24:00 [ft] step 300: loss 0.0297 ce_o 0.0001 kl_other 0.0296 p_o 0.9999
+23:24:00 [ft] checkpoint 300: p_o 0.9997 ce_o 0.0003 kl_other 0.0522 n 75 rel_norm_max 0.0259 elapsed_s 7.3668
+[    707s] STAGE train copy24_s3 DONE: learned True
+23:24:00 [ft] step 1: loss 6.5839 ce_o 6.5839 kl_other 0.0000 p_o 0.0094
+23:24:00 [ft] step 10: loss 0.1583 ce_o 0.0143 kl_other 0.1440 p_o 0.9861
+23:24:00 [ft] checkpoint 10: p_o 0.9736 ce_o 0.0305 kl_other 0.1204 n 75 rel_norm_max 0.0139 elapsed_s 0.3791
+23:24:00 [ft] step 20: loss 0.0830 ce_o 0.0018 kl_other 0.0812 p_o 0.9983
+23:24:01 [ft] step 30: loss 0.0515 ce_o 0.0004 kl_other 0.0511 p_o 0.9996
+23:24:01 [ft] checkpoint 30: p_o 0.9989 ce_o 0.0011 kl_other 0.0570 n 75 rel_norm_max 0.0194 elapsed_s 1.0008
+23:24:01 [ft] step 40: loss 0.0780 ce_o 0.0005 kl_other 0.0775 p_o 0.9995
+23:24:01 [ft] step 50: loss 0.0452 ce_o 0.0004 kl_other 0.0448 p_o 0.9996
+23:24:01 [ft] step 60: loss 0.0368 ce_o 0.0003 kl_other 0.0365 p_o 0.9997
+23:24:02 [ft] step 70: loss 0.0500 ce_o 0.0003 kl_other 0.0497 p_o 0.9997
+23:24:02 [ft] step 80: loss 0.0454 ce_o 0.0005 kl_other 0.0449 p_o 0.9995
+23:24:02 [ft] step 90: loss 0.0497 ce_o 0.0004 kl_other 0.0493 p_o 0.9996
+23:24:02 [ft] step 100: loss 0.0349 ce_o 0.0002 kl_other 0.0347 p_o 0.9998
+23:24:03 [ft] checkpoint 100: p_o 0.9995 ce_o 0.0005 kl_other 0.0435 n 75 rel_norm_max 0.0223 elapsed_s 2.7956
+23:24:03 [ft] step 110: loss 0.1077 ce_o 0.0023 kl_other 0.1054 p_o 0.9978
+23:24:03 [ft] step 120: loss 0.0368 ce_o 0.0002 kl_other 0.0366 p_o 0.9998
+23:24:03 [ft] step 130: loss 0.0456 ce_o 0.0002 kl_other 0.0454 p_o 0.9998
+23:24:04 [ft] step 140: loss 0.0372 ce_o 0.0002 kl_other 0.0370 p_o 0.9998
+23:24:04 [ft] step 150: loss 0.0421 ce_o 0.0002 kl_other 0.0419 p_o 0.9998
+23:24:04 [ft] step 160: loss 0.0450 ce_o 0.0001 kl_other 0.0449 p_o 0.9999
+23:24:04 [ft] step 170: loss 0.0517 ce_o 0.0002 kl_other 0.0515 p_o 0.9998
+23:24:04 [ft] step 180: loss 0.0341 ce_o 0.0002 kl_other 0.0340 p_o 0.9998
+23:24:05 [ft] step 190: loss 0.0700 ce_o 0.0001 kl_other 0.0699 p_o 0.9999
+23:24:05 [ft] step 200: loss 0.0374 ce_o 0.0001 kl_other 0.0374 p_o 0.9999
+23:24:05 [ft] step 210: loss 0.0337 ce_o 0.0002 kl_other 0.0336 p_o 0.9998
+23:24:05 [ft] step 220: loss 0.0560 ce_o 0.0001 kl_other 0.0558 p_o 0.9999
+23:24:06 [ft] step 230: loss 0.0218 ce_o 0.0001 kl_other 0.0217 p_o 0.9999
+23:24:06 [ft] step 240: loss 0.0316 ce_o 0.0001 kl_other 0.0315 p_o 0.9999
+23:24:06 [ft] step 250: loss 0.0287 ce_o 0.0001 kl_other 0.0287 p_o 0.9999
+23:24:06 [ft] step 260: loss 0.0386 ce_o 0.0001 kl_other 0.0385 p_o 0.9999
+23:24:07 [ft] step 270: loss 0.0303 ce_o 0.0001 kl_other 0.0302 p_o 0.9999
+23:24:07 [ft] step 280: loss 0.0243 ce_o 0.0001 kl_other 0.0242 p_o 0.9999
+23:24:07 [ft] step 290: loss 0.0268 ce_o 0.0001 kl_other 0.0267 p_o 0.9999
+23:24:07 [ft] step 300: loss 0.0261 ce_o 0.0001 kl_other 0.0260 p_o 0.9999
+23:24:07 [ft] checkpoint 300: p_o 0.9996 ce_o 0.0004 kl_other 0.0535 n 75 rel_norm_max 0.0279 elapsed_s 7.5659
+23:24:07 [ft] step 1: loss 13.8775 ce_o 13.8775 kl_other 0.0000 p_o 0.0000
+23:24:07 [ft] checkpoint 1: p_o 0.0000 ce_o 11.2690 kl_other 0.0465 n 75 rel_norm_max 0.0035 elapsed_s 0.0680
+23:24:08 [ft] checkpoint 2: p_o 0.0002 ce_o 9.6299 kl_other 0.1737 n 75 rel_norm_max 0.0055 elapsed_s 0.1364
+23:24:08 [ft] checkpoint 3: p_o 0.0004 ce_o 8.6276 kl_other 0.3365 n 75 rel_norm_max 0.0072 elapsed_s 0.2254
+23:24:08 [ft] checkpoint 4: p_o 0.0015 ce_o 7.6555 kl_other 0.4011 n 75 rel_norm_max 0.0086 elapsed_s 0.3548
+23:24:08 [ft] checkpoint 5: p_o 0.0120 ce_o 6.1501 kl_other 0.4000 n 75 rel_norm_max 0.0099 elapsed_s 0.5407
+23:24:08 [ft] checkpoint 6: p_o 0.0803 ce_o 4.3363 kl_other 0.4292 n 75 rel_norm_max 0.0112 elapsed_s 0.7261
+23:24:08 [ft] checkpoint 7: p_o 0.2190 ce_o 3.0116 kl_other 0.4972 n 75 rel_norm_max 0.0124 elapsed_s 0.9092
+23:24:08 [ft] checkpoint 8: p_o 0.3880 ce_o 1.9439 kl_other 0.5650 n 75 rel_norm_max 0.0135 elapsed_s 1.0916
+23:24:09 [ft] checkpoint 9: p_o 0.5771 ce_o 1.2406 kl_other 0.5960 n 75 rel_norm_max 0.0146 elapsed_s 1.2760
+23:24:09 [ft] step 10: loss 1.4060 ce_o 0.8089 kl_other 0.5971 p_o 0.7025
+23:24:09 [ft] checkpoint 10: p_o 0.6862 ce_o 0.6794 kl_other 0.5988 n 75 rel_norm_max 0.0155 elapsed_s 1.4602
+23:24:09 [ft] checkpoint 11: p_o 0.7946 ce_o 0.3374 kl_other 0.5758 n 75 rel_norm_max 0.0164 elapsed_s 1.6451
+23:24:09 [ft] checkpoint 12: p_o 0.8674 ce_o 0.2037 kl_other 0.5008 n 75 rel_norm_max 0.0172 elapsed_s 1.8287
+23:24:09 [ft] checkpoint 13: p_o 0.9083 ce_o 0.1410 kl_other 0.4240 n 75 rel_norm_max 0.0179 elapsed_s 2.0153
+23:24:10 [ft] checkpoint 14: p_o 0.9348 ce_o 0.0975 kl_other 0.3516 n 75 rel_norm_max 0.0186 elapsed_s 2.2015
+23:24:10 [ft] checkpoint 15: p_o 0.9383 ce_o 0.1061 kl_other 0.2861 n 75 rel_norm_max 0.0193 elapsed_s 2.3840
+23:24:10 [ft] checkpoint 16: p_o 0.9342 ce_o 0.1362 kl_other 0.2358 n 75 rel_norm_max 0.0199 elapsed_s 2.5604
+23:24:10 [ft] checkpoint 17: p_o 0.9278 ce_o 0.1845 kl_other 0.1979 n 75 rel_norm_max 0.0205 elapsed_s 2.7403
+23:24:10 [ft] checkpoint 18: p_o 0.9479 ce_o 0.0899 kl_other 0.1796 n 75 rel_norm_max 0.0210 elapsed_s 2.9225
+23:24:10 [ft] checkpoint 19: p_o 0.9698 ce_o 0.0377 kl_other 0.1650 n 75 rel_norm_max 0.0215 elapsed_s 3.1042
+23:24:11 [ft] step 20: loss 0.1723 ce_o 0.0129 kl_other 0.1594 p_o 0.9882
+23:24:11 [ft] checkpoint 20: p_o 0.9896 ce_o 0.0106 kl_other 0.1539 n 75 rel_norm_max 0.0220 elapsed_s 3.2815
+23:24:11 [ft] checkpoint 21: p_o 0.9935 ce_o 0.0066 kl_other 0.1420 n 75 rel_norm_max 0.0224 elapsed_s 3.4599
+23:24:11 [ft] checkpoint 22: p_o 0.9953 ce_o 0.0047 kl_other 0.1311 n 75 rel_norm_max 0.0228 elapsed_s 3.6369
+23:24:11 [ft] checkpoint 23: p_o 0.9963 ce_o 0.0038 kl_other 0.1220 n 75 rel_norm_max 0.0232 elapsed_s 3.8115
+23:24:11 [ft] checkpoint 24: p_o 0.9968 ce_o 0.0033 kl_other 0.1150 n 75 rel_norm_max 0.0235 elapsed_s 3.9844
+23:24:12 [ft] checkpoint 25: p_o 0.9969 ce_o 0.0031 kl_other 0.1086 n 75 rel_norm_max 0.0237 elapsed_s 4.1595
+23:24:12 [ft] checkpoint 26: p_o 0.9970 ce_o 0.0030 kl_other 0.1028 n 75 rel_norm_max 0.0239 elapsed_s 4.3273
+23:24:12 [ft] checkpoint 27: p_o 0.9974 ce_o 0.0026 kl_other 0.0989 n 75 rel_norm_max 0.0241 elapsed_s 4.5095
+23:24:12 [ft] checkpoint 28: p_o 0.9975 ce_o 0.0025 kl_other 0.0952 n 75 rel_norm_max 0.0243 elapsed_s 4.6859
+23:24:12 [ft] checkpoint 29: p_o 0.9975 ce_o 0.0026 kl_other 0.0903 n 75 rel_norm_max 0.0245 elapsed_s 4.8618
+23:24:12 [ft] step 30: loss 0.0799 ce_o 0.0008 kl_other 0.0790 p_o 0.9992
+23:24:12 [ft] checkpoint 30: p_o 0.9973 ce_o 0.0028 kl_other 0.0862 n 75 rel_norm_max 0.0247 elapsed_s 5.0371
+23:24:13 [ft] step 40: loss 0.0613 ce_o 0.0008 kl_other 0.0605 p_o 0.9992
+23:24:13 [ft] step 50: loss 0.0569 ce_o 0.0003 kl_other 0.0565 p_o 0.9997
+23:24:13 [ft] step 60: loss 0.0914 ce_o 0.0021 kl_other 0.0893 p_o 0.9980
+23:24:13 [ft] step 70: loss 0.0766 ce_o 0.0047 kl_other 0.0719 p_o 0.9956
+23:24:14 [ft] step 80: loss 0.0540 ce_o 0.0003 kl_other 0.0537 p_o 0.9997
+23:24:14 [ft] step 90: loss 0.0637 ce_o 0.0002 kl_other 0.0635 p_o 0.9998
+23:24:14 [ft] step 100: loss 0.0341 ce_o 0.0002 kl_other 0.0339 p_o 0.9998
+23:24:14 [ft] checkpoint 100: p_o 0.9971 ce_o 0.0030 kl_other 0.0495 n 75 rel_norm_max 0.0274 elapsed_s 6.8531
+23:24:14 [ft] step 110: loss 0.0790 ce_o 0.0002 kl_other 0.0788 p_o 0.9998
+23:24:15 [ft] step 120: loss 0.0400 ce_o 0.0002 kl_other 0.0399 p_o 0.9998
+23:24:15 [ft] step 130: loss 0.0590 ce_o 0.0002 kl_other 0.0588 p_o 0.9998
+23:24:15 [ft] step 140: loss 0.0386 ce_o 0.0002 kl_other 0.0385 p_o 0.9998
+23:24:15 [ft] step 150: loss 0.0369 ce_o 0.0002 kl_other 0.0367 p_o 0.9998
+23:24:16 [ft] step 160: loss 0.0610 ce_o 0.0002 kl_other 0.0608 p_o 0.9998
+23:24:16 [ft] step 170: loss 0.0361 ce_o 0.0002 kl_other 0.0359 p_o 0.9998
+23:24:16 [ft] step 180: loss 0.0418 ce_o 0.0002 kl_other 0.0416 p_o 0.9998
+23:24:16 [ft] step 190: loss 0.0803 ce_o 0.0018 kl_other 0.0786 p_o 0.9982
+23:24:17 [ft] step 200: loss 0.0420 ce_o 0.0001 kl_other 0.0419 p_o 0.9999
+23:24:17 [ft] step 210: loss 0.0317 ce_o 0.0002 kl_other 0.0316 p_o 0.9998
+23:24:17 [ft] step 220: loss 0.0605 ce_o 0.0001 kl_other 0.0604 p_o 0.9999
+23:24:17 [ft] step 230: loss 0.0249 ce_o 0.0001 kl_other 0.0248 p_o 0.9999
+23:24:18 [ft] step 240: loss 0.0296 ce_o 0.0001 kl_other 0.0295 p_o 0.9999
+23:24:18 [ft] step 250: loss 0.0356 ce_o 0.0001 kl_other 0.0355 p_o 0.9999
+23:24:18 [ft] step 260: loss 0.0427 ce_o 0.0001 kl_other 0.0426 p_o 0.9999
+23:24:18 [ft] step 270: loss 0.0293 ce_o 0.0001 kl_other 0.0293 p_o 0.9999
+23:24:18 [ft] step 280: loss 0.0302 ce_o 0.0001 kl_other 0.0300 p_o 0.9999
+23:24:19 [ft] step 290: loss 0.0280 ce_o 0.0001 kl_other 0.0279 p_o 0.9999
+23:24:19 [ft] step 300: loss 0.0284 ce_o 0.0001 kl_other 0.0283 p_o 0.9999
+23:24:19 [ft] checkpoint 300: p_o 0.9968 ce_o 0.0034 kl_other 0.0552 n 75 rel_norm_max 0.0319 elapsed_s 11.7100
+[    727s] STAGE train cipher24_s2 DONE: learned True
+23:24:20 [ft] step 1: loss 5.0642 ce_o 5.0642 kl_other 0.0000 p_o 0.0491
+23:24:20 [ft] step 10: loss 0.1795 ce_o 0.0120 kl_other 0.1675 p_o 0.9883
+23:24:20 [ft] checkpoint 10: p_o 0.9734 ce_o 0.0335 kl_other 0.1194 n 75 rel_norm_max 0.0138 elapsed_s 0.3019
+23:24:20 [ft] step 20: loss 0.0814 ce_o 0.0023 kl_other 0.0792 p_o 0.9977
+23:24:21 [ft] step 30: loss 0.0733 ce_o 0.0006 kl_other 0.0727 p_o 0.9994
+23:24:21 [ft] checkpoint 30: p_o 0.9982 ce_o 0.0018 kl_other 0.0537 n 75 rel_norm_max 0.0195 elapsed_s 0.8096
+23:24:21 [ft] step 40: loss 0.0949 ce_o 0.0007 kl_other 0.0942 p_o 0.9993
+23:24:21 [ft] step 50: loss 0.0390 ce_o 0.0004 kl_other 0.0386 p_o 0.9996
+23:24:21 [ft] step 60: loss 0.0551 ce_o 0.0004 kl_other 0.0547 p_o 0.9996
+23:24:22 [ft] step 70: loss 0.0502 ce_o 0.0003 kl_other 0.0499 p_o 0.9997
+23:24:22 [ft] step 80: loss 0.0577 ce_o 0.0002 kl_other 0.0575 p_o 0.9998
+23:24:22 [ft] step 90: loss 0.0508 ce_o 0.0003 kl_other 0.0505 p_o 0.9997
+23:24:22 [ft] step 100: loss 0.0354 ce_o 0.0003 kl_other 0.0351 p_o 0.9997
+23:24:22 [ft] checkpoint 100: p_o 0.9993 ce_o 0.0007 kl_other 0.0421 n 75 rel_norm_max 0.0227 elapsed_s 2.5041
+23:24:23 [ft] step 110: loss 0.0302 ce_o 0.0003 kl_other 0.0300 p_o 0.9997
+23:24:23 [ft] step 120: loss 0.0497 ce_o 0.0002 kl_other 0.0495 p_o 0.9998
+23:24:23 [ft] step 130: loss 0.0707 ce_o 0.0020 kl_other 0.0687 p_o 0.9981
+23:24:23 [ft] step 140: loss 0.0574 ce_o 0.0004 kl_other 0.0569 p_o 0.9996
+23:24:23 [ft] step 150: loss 0.0352 ce_o 0.0001 kl_other 0.0351 p_o 0.9999
+23:24:24 [ft] step 160: loss 0.0451 ce_o 0.0001 kl_other 0.0449 p_o 0.9999
+23:24:24 [ft] step 170: loss 0.0474 ce_o 0.0002 kl_other 0.0472 p_o 0.9998
+23:24:24 [ft] step 180: loss 0.0332 ce_o 0.0001 kl_other 0.0330 p_o 0.9999
+23:24:24 [ft] step 190: loss 0.0292 ce_o 0.0001 kl_other 0.0291 p_o 0.9999
+23:24:25 [ft] step 200: loss 0.0466 ce_o 0.0001 kl_other 0.0465 p_o 0.9999
+23:24:25 [ft] step 210: loss 0.0439 ce_o 0.0001 kl_other 0.0438 p_o 0.9999
+23:24:25 [ft] step 220: loss 0.0338 ce_o 0.0001 kl_other 0.0337 p_o 0.9999
+23:24:25 [ft] step 230: loss 0.0423 ce_o 0.0002 kl_other 0.0421 p_o 0.9998
+23:24:26 [ft] step 240: loss 0.0249 ce_o 0.0001 kl_other 0.0248 p_o 0.9999
+23:24:26 [ft] step 250: loss 0.0304 ce_o 0.0001 kl_other 0.0303 p_o 0.9999
+23:24:26 [ft] step 260: loss 0.0558 ce_o 0.0001 kl_other 0.0557 p_o 0.9999
+23:24:26 [ft] step 270: loss 0.0266 ce_o 0.0001 kl_other 0.0265 p_o 0.9999
+23:24:27 [ft] step 280: loss 0.0386 ce_o 0.0001 kl_other 0.0385 p_o 0.9999
+23:24:27 [ft] step 290: loss 0.0302 ce_o 0.0001 kl_other 0.0301 p_o 0.9999
+23:24:27 [ft] step 300: loss 0.0302 ce_o 0.0001 kl_other 0.0301 p_o 0.9999
+23:24:27 [ft] checkpoint 300: p_o 0.9995 ce_o 0.0005 kl_other 0.0516 n 75 rel_norm_max 0.0269 elapsed_s 7.2437
+23:24:27 [ft] step 1: loss 13.8999 ce_o 13.8999 kl_other 0.0000 p_o 0.0000
+23:24:27 [ft] checkpoint 1: p_o 0.0000 ce_o 11.4316 kl_other 0.0463 n 75 rel_norm_max 0.0035 elapsed_s 0.0673
+23:24:27 [ft] checkpoint 2: p_o 0.0002 ce_o 9.7453 kl_other 0.1680 n 75 rel_norm_max 0.0054 elapsed_s 0.1354
+23:24:27 [ft] checkpoint 3: p_o 0.0004 ce_o 8.6468 kl_other 0.3252 n 75 rel_norm_max 0.0070 elapsed_s 0.2033
+23:24:27 [ft] checkpoint 4: p_o 0.0013 ce_o 7.5681 kl_other 0.3959 n 75 rel_norm_max 0.0084 elapsed_s 0.2713
+23:24:27 [ft] checkpoint 5: p_o 0.0121 ce_o 6.1371 kl_other 0.4177 n 75 rel_norm_max 0.0098 elapsed_s 0.3395
+23:24:28 [ft] checkpoint 6: p_o 0.1068 ce_o 4.5650 kl_other 0.4473 n 75 rel_norm_max 0.0110 elapsed_s 0.4073
+23:24:28 [ft] checkpoint 7: p_o 0.2415 ce_o 3.1670 kl_other 0.4670 n 75 rel_norm_max 0.0122 elapsed_s 0.4757
+23:24:28 [ft] checkpoint 8: p_o 0.3919 ce_o 2.0043 kl_other 0.4829 n 75 rel_norm_max 0.0133 elapsed_s 0.5442
+23:24:28 [ft] checkpoint 9: p_o 0.5650 ce_o 1.1270 kl_other 0.4985 n 75 rel_norm_max 0.0144 elapsed_s 0.6114
+23:24:28 [ft] step 10: loss 1.1861 ce_o 0.6269 kl_other 0.5592 p_o 0.7116
+23:24:28 [ft] checkpoint 10: p_o 0.7045 ce_o 0.6137 kl_other 0.5031 n 75 rel_norm_max 0.0154 elapsed_s 0.6793
+23:24:28 [ft] checkpoint 11: p_o 0.8120 ce_o 0.3134 kl_other 0.4784 n 75 rel_norm_max 0.0163 elapsed_s 0.7465
+23:24:28 [ft] checkpoint 12: p_o 0.9020 ce_o 0.1232 kl_other 0.4400 n 75 rel_norm_max 0.0171 elapsed_s 0.8152
+23:24:28 [ft] checkpoint 13: p_o 0.9606 ce_o 0.0415 kl_other 0.3863 n 75 rel_norm_max 0.0179 elapsed_s 0.8830
+23:24:28 [ft] checkpoint 14: p_o 0.9781 ce_o 0.0225 kl_other 0.3274 n 75 rel_norm_max 0.0186 elapsed_s 0.9503
+23:24:28 [ft] checkpoint 15: p_o 0.9856 ce_o 0.0147 kl_other 0.2735 n 75 rel_norm_max 0.0192 elapsed_s 1.0178
+23:24:28 [ft] checkpoint 16: p_o 0.9876 ce_o 0.0127 kl_other 0.2283 n 75 rel_norm_max 0.0198 elapsed_s 1.0854
+23:24:28 [ft] checkpoint 17: p_o 0.9872 ce_o 0.0132 kl_other 0.1940 n 75 rel_norm_max 0.0203 elapsed_s 1.1524
+23:24:28 [ft] checkpoint 18: p_o 0.9858 ce_o 0.0150 kl_other 0.1709 n 75 rel_norm_max 0.0208 elapsed_s 1.2201
+23:24:28 [ft] checkpoint 19: p_o 0.9828 ce_o 0.0196 kl_other 0.1585 n 75 rel_norm_max 0.0213 elapsed_s 1.2877
+23:24:28 [ft] step 20: loss 0.1689 ce_o 0.0034 kl_other 0.1655 p_o 0.9966
+23:24:28 [ft] checkpoint 20: p_o 0.9798 ce_o 0.0264 kl_other 0.1466 n 75 rel_norm_max 0.0218 elapsed_s 1.3550
+23:24:29 [ft] checkpoint 21: p_o 0.9779 ce_o 0.0351 kl_other 0.1352 n 75 rel_norm_max 0.0222 elapsed_s 1.4233
+23:24:29 [ft] checkpoint 22: p_o 0.9779 ce_o 0.0369 kl_other 0.1231 n 75 rel_norm_max 0.0225 elapsed_s 1.4909
+23:24:29 [ft] checkpoint 23: p_o 0.9795 ce_o 0.0342 kl_other 0.1124 n 75 rel_norm_max 0.0228 elapsed_s 1.5626
+23:24:29 [ft] checkpoint 24: p_o 0.9820 ce_o 0.0281 kl_other 0.1039 n 75 rel_norm_max 0.0231 elapsed_s 1.6886
+23:24:29 [ft] checkpoint 25: p_o 0.9850 ce_o 0.0216 kl_other 0.0981 n 75 rel_norm_max 0.0233 elapsed_s 1.8629
+23:24:29 [ft] checkpoint 26: p_o 0.9875 ce_o 0.0162 kl_other 0.0937 n 75 rel_norm_max 0.0235 elapsed_s 2.0311
+23:24:29 [ft] checkpoint 27: p_o 0.9892 ce_o 0.0131 kl_other 0.0895 n 75 rel_norm_max 0.0237 elapsed_s 2.1618
+23:24:29 [ft] checkpoint 28: p_o 0.9899 ce_o 0.0120 kl_other 0.0849 n 75 rel_norm_max 0.0238 elapsed_s 2.3426
+23:24:30 [ft] checkpoint 29: p_o 0.9913 ce_o 0.0100 kl_other 0.0815 n 75 rel_norm_max 0.0240 elapsed_s 2.5203
+23:24:30 [ft] step 30: loss 0.0942 ce_o 0.0008 kl_other 0.0934 p_o 0.9992
+23:24:30 [ft] checkpoint 30: p_o 0.9922 ce_o 0.0088 kl_other 0.0781 n 75 rel_norm_max 0.0241 elapsed_s 2.6954
+23:24:30 [ft] step 40: loss 0.1077 ce_o 0.0006 kl_other 0.1071 p_o 0.9994
+23:24:30 [ft] step 50: loss 0.0514 ce_o 0.0004 kl_other 0.0509 p_o 0.9996
+23:24:31 [ft] step 60: loss 0.3119 ce_o 0.2311 kl_other 0.0808 p_o 0.9684
+23:24:31 [ft] step 70: loss 0.0717 ce_o 0.0002 kl_other 0.0715 p_o 0.9998
+23:24:31 [ft] step 80: loss 0.0587 ce_o 0.0002 kl_other 0.0585 p_o 0.9998
+23:24:31 [ft] step 90: loss 0.0626 ce_o 0.0004 kl_other 0.0622 p_o 0.9996
+23:24:31 [ft] step 100: loss 0.0350 ce_o 0.0003 kl_other 0.0347 p_o 0.9997
+23:24:32 [ft] checkpoint 100: p_o 0.9961 ce_o 0.0042 kl_other 0.0572 n 75 rel_norm_max 0.0272 elapsed_s 4.4826
+23:24:32 [ft] step 110: loss 0.0344 ce_o 0.0002 kl_other 0.0342 p_o 0.9998
+23:24:32 [ft] step 120: loss 0.0534 ce_o 0.0002 kl_other 0.0533 p_o 0.9998
+23:24:32 [ft] step 130: loss 0.0501 ce_o 0.0001 kl_other 0.0500 p_o 0.9999
+23:24:33 [ft] step 140: loss 0.0554 ce_o 0.0001 kl_other 0.0553 p_o 0.9999
+23:24:33 [ft] step 150: loss 0.0384 ce_o 0.0002 kl_other 0.0382 p_o 0.9998
+23:24:33 [ft] step 160: loss 0.0478 ce_o 0.0001 kl_other 0.0477 p_o 0.9999
+23:24:33 [ft] step 170: loss 0.0601 ce_o 0.0003 kl_other 0.0598 p_o 0.9997
+23:24:33 [ft] step 180: loss 0.0316 ce_o 0.0001 kl_other 0.0315 p_o 0.9999
+23:24:33 [ft] step 190: loss 0.0279 ce_o 0.0001 kl_other 0.0278 p_o 0.9999
+23:24:34 [ft] step 200: loss 0.0401 ce_o 0.0001 kl_other 0.0400 p_o 0.9999
+23:24:34 [ft] step 210: loss 0.0482 ce_o 0.0001 kl_other 0.0480 p_o 0.9999
+23:24:34 [ft] step 220: loss 0.0379 ce_o 0.0001 kl_other 0.0378 p_o 0.9999
+23:24:34 [ft] step 230: loss 0.0425 ce_o 0.0001 kl_other 0.0424 p_o 0.9999
+23:24:34 [ft] step 240: loss 0.0207 ce_o 0.0001 kl_other 0.0206 p_o 0.9999
+23:24:34 [ft] step 250: loss 0.0303 ce_o 0.0001 kl_other 0.0302 p_o 0.9999
+23:24:35 [ft] step 260: loss 0.0538 ce_o 0.0001 kl_other 0.0537 p_o 0.9999
+23:24:35 [ft] step 270: loss 0.0319 ce_o 0.0001 kl_other 0.0318 p_o 0.9999
+23:24:35 [ft] step 280: loss 0.0391 ce_o 0.0001 kl_other 0.0390 p_o 0.9999
+23:24:35 [ft] step 290: loss 0.0281 ce_o 0.0001 kl_other 0.0280 p_o 0.9999
+23:24:35 [ft] step 300: loss 0.0316 ce_o 0.0001 kl_other 0.0315 p_o 0.9999
+23:24:35 [ft] checkpoint 300: p_o 0.9944 ce_o 0.0063 kl_other 0.0625 n 75 rel_norm_max 0.0301 elapsed_s 8.3511
+[    743s] STAGE train cipher24_s3 DONE: learned True
+23:24:36 [ft] step 1: loss 10.5669 ce_o 10.5669 kl_other 0.0000 p_o 0.0003
+23:24:36 [ft] step 10: loss 0.2322 ce_o 0.0518 kl_other 0.1804 p_o 0.9527
+23:24:36 [ft] checkpoint 10: p_o 0.9618 ce_o 0.0427 kl_other 0.1681 n 97 rel_norm_max 0.0137 elapsed_s 0.2939
+23:24:37 [ft] step 20: loss 0.0774 ce_o 0.0021 kl_other 0.0753 p_o 0.9979
+23:24:37 [ft] step 30: loss 0.0928 ce_o 0.0011 kl_other 0.0917 p_o 0.9989
+23:24:37 [ft] checkpoint 30: p_o 0.9990 ce_o 0.0010 kl_other 0.0659 n 97 rel_norm_max 0.0193 elapsed_s 0.8047
+23:24:37 [ft] step 40: loss 0.0607 ce_o 0.0092 kl_other 0.0515 p_o 0.9919
+23:24:37 [ft] step 50: loss 0.0680 ce_o 0.0004 kl_other 0.0675 p_o 0.9996
+23:24:38 [ft] step 60: loss 0.0480 ce_o 0.0006 kl_other 0.0475 p_o 0.9994
+23:24:38 [ft] step 70: loss 0.0514 ce_o 0.0004 kl_other 0.0510 p_o 0.9996
+23:24:38 [ft] step 80: loss 0.0686 ce_o 0.0003 kl_other 0.0684 p_o 0.9997
+23:24:38 [ft] step 90: loss 0.0416 ce_o 0.0004 kl_other 0.0412 p_o 0.9996
+23:24:38 [ft] step 100: loss 0.0402 ce_o 0.0002 kl_other 0.0401 p_o 0.9998
+23:24:39 [ft] checkpoint 100: p_o 0.9996 ce_o 0.0004 kl_other 0.0442 n 97 rel_norm_max 0.0231 elapsed_s 2.4842
+23:24:39 [ft] step 110: loss 0.0586 ce_o 0.0002 kl_other 0.0584 p_o 0.9998
+23:24:39 [ft] step 120: loss 0.0325 ce_o 0.0002 kl_other 0.0323 p_o 0.9998
+23:24:39 [ft] step 130: loss 0.0360 ce_o 0.0002 kl_other 0.0358 p_o 0.9998
+23:24:39 [ft] step 140: loss 0.0541 ce_o 0.0002 kl_other 0.0539 p_o 0.9998
+23:24:40 [ft] step 150: loss 0.0492 ce_o 0.0001 kl_other 0.0490 p_o 0.9999
+23:24:40 [ft] step 160: loss 0.0575 ce_o 0.0002 kl_other 0.0573 p_o 0.9998
+23:24:40 [ft] step 170: loss 0.0490 ce_o 0.0002 kl_other 0.0489 p_o 0.9998
+23:24:40 [ft] step 180: loss 0.0298 ce_o 0.0001 kl_other 0.0297 p_o 0.9999
+23:24:41 [ft] step 190: loss 0.0283 ce_o 0.0001 kl_other 0.0282 p_o 0.9999
+23:24:41 [ft] step 200: loss 0.0328 ce_o 0.0001 kl_other 0.0327 p_o 0.9999
+23:24:41 [ft] step 210: loss 0.0281 ce_o 0.0001 kl_other 0.0280 p_o 0.9999
+23:24:41 [ft] step 220: loss 0.0319 ce_o 0.0001 kl_other 0.0318 p_o 0.9999
+23:24:42 [ft] step 230: loss 0.0360 ce_o 0.0001 kl_other 0.0360 p_o 0.9999
+23:24:42 [ft] step 240: loss 0.0365 ce_o 0.0001 kl_other 0.0364 p_o 0.9999
+23:24:42 [ft] step 250: loss 0.0355 ce_o 0.0001 kl_other 0.0354 p_o 0.9999
+23:24:42 [ft] step 260: loss 0.0239 ce_o 0.0001 kl_other 0.0238 p_o 0.9999
+23:24:42 [ft] step 270: loss 0.0369 ce_o 0.0001 kl_other 0.0368 p_o 0.9999
+23:24:43 [ft] step 280: loss 0.0357 ce_o 0.0001 kl_other 0.0356 p_o 0.9999
+23:24:43 [ft] step 290: loss 0.0498 ce_o 0.0001 kl_other 0.0497 p_o 0.9999
+23:24:43 [ft] step 300: loss 0.0341 ce_o 0.0001 kl_other 0.0340 p_o 0.9999
+23:24:43 [ft] checkpoint 300: p_o 0.9997 ce_o 0.0003 kl_other 0.0503 n 97 rel_norm_max 0.0281 elapsed_s 7.1995
+[    750s] STAGE train ident32_s2 DONE: learned True
+23:24:43 [ft] step 1: loss 9.3034 ce_o 9.3034 kl_other 0.0000 p_o 0.0003
+23:24:44 [ft] step 10: loss 0.2043 ce_o 0.0332 kl_other 0.1710 p_o 0.9684
+23:24:44 [ft] checkpoint 10: p_o 0.9347 ce_o 0.0809 kl_other 0.1550 n 97 rel_norm_max 0.0136 elapsed_s 0.2790
+23:24:44 [ft] step 20: loss 0.0851 ce_o 0.0017 kl_other 0.0834 p_o 0.9983
+23:24:44 [ft] step 30: loss 0.0690 ce_o 0.0010 kl_other 0.0681 p_o 0.9990
+23:24:44 [ft] checkpoint 30: p_o 0.9991 ce_o 0.0009 kl_other 0.0561 n 97 rel_norm_max 0.0192 elapsed_s 0.7933
+23:24:44 [ft] step 40: loss 0.0700 ce_o 0.0004 kl_other 0.0696 p_o 0.9996
+23:24:45 [ft] step 50: loss 0.0752 ce_o 0.0003 kl_other 0.0749 p_o 0.9997
+23:24:45 [ft] step 60: loss 0.0767 ce_o 0.0003 kl_other 0.0764 p_o 0.9997
+23:24:45 [ft] step 70: loss 0.0539 ce_o 0.0005 kl_other 0.0534 p_o 0.9995
+23:24:45 [ft] step 80: loss 0.0499 ce_o 0.0002 kl_other 0.0496 p_o 0.9998
+23:24:46 [ft] step 90: loss 0.0438 ce_o 0.0003 kl_other 0.0436 p_o 0.9997
+23:24:46 [ft] step 100: loss 0.0442 ce_o 0.0008 kl_other 0.0435 p_o 0.9992
+23:24:46 [ft] checkpoint 100: p_o 0.9997 ce_o 0.0003 kl_other 0.0469 n 97 rel_norm_max 0.0226 elapsed_s 2.4787
+23:24:46 [ft] step 110: loss 0.0352 ce_o 0.0003 kl_other 0.0350 p_o 0.9997
+23:24:46 [ft] step 120: loss 0.0438 ce_o 0.0002 kl_other 0.0436 p_o 0.9998
+23:24:47 [ft] step 130: loss 0.0496 ce_o 0.0002 kl_other 0.0494 p_o 0.9998
+23:24:47 [ft] step 140: loss 0.0467 ce_o 0.0002 kl_other 0.0465 p_o 0.9998
+23:24:47 [ft] step 150: loss 0.0336 ce_o 0.0002 kl_other 0.0335 p_o 0.9998
+23:24:47 [ft] step 160: loss 0.0341 ce_o 0.0001 kl_other 0.0340 p_o 0.9999
+23:24:48 [ft] step 170: loss 0.0347 ce_o 0.0001 kl_other 0.0345 p_o 0.9999
+23:24:48 [ft] step 180: loss 0.0541 ce_o 0.0002 kl_other 0.0539 p_o 0.9998
+23:24:48 [ft] step 190: loss 0.0390 ce_o 0.0001 kl_other 0.0389 p_o 0.9999
+23:24:48 [ft] step 200: loss 0.0446 ce_o 0.0001 kl_other 0.0446 p_o 0.9999
+23:24:49 [ft] step 210: loss 0.0276 ce_o 0.0001 kl_other 0.0274 p_o 0.9999
+23:24:49 [ft] step 220: loss 0.0388 ce_o 0.0001 kl_other 0.0387 p_o 0.9999
+23:24:49 [ft] step 230: loss 0.0447 ce_o 0.0001 kl_other 0.0446 p_o 0.9999
+23:24:49 [ft] step 240: loss 0.0305 ce_o 0.0001 kl_other 0.0304 p_o 0.9999
+23:24:50 [ft] step 250: loss 0.0395 ce_o 0.0001 kl_other 0.0394 p_o 0.9999
+23:24:50 [ft] step 260: loss 0.0252 ce_o 0.0001 kl_other 0.0252 p_o 0.9999
+23:24:50 [ft] step 270: loss 0.0337 ce_o 0.0001 kl_other 0.0336 p_o 0.9999
+23:24:50 [ft] step 280: loss 0.0436 ce_o 0.0001 kl_other 0.0435 p_o 0.9999
+23:24:51 [ft] step 290: loss 0.0263 ce_o 0.0001 kl_other 0.0263 p_o 0.9999
+23:24:51 [ft] step 300: loss 0.0309 ce_o 0.0001 kl_other 0.0308 p_o 0.9999
+23:24:51 [ft] checkpoint 300: p_o 0.9997 ce_o 0.0003 kl_other 0.0472 n 97 rel_norm_max 0.0264 elapsed_s 7.4043
+[    758s] STAGE train ident32_s3 DONE: learned True
+23:24:51 [ft] step 1: loss 13.4807 ce_o 13.4807 kl_other 0.0000 p_o 0.0000
+23:24:51 [ft] step 10: loss 2.2819 ce_o 1.6531 kl_other 0.6287 p_o 0.5891
+23:24:51 [ft] checkpoint 10: p_o 0.5602 ce_o 1.4092 kl_other 0.6113 n 97 rel_norm_max 0.0151 elapsed_s 0.3001
+23:24:51 [ft] step 20: loss 0.2099 ce_o 0.0142 kl_other 0.1958 p_o 0.9869
+23:24:52 [ft] step 30: loss 0.1064 ce_o 0.0016 kl_other 0.1048 p_o 0.9984
+23:24:52 [ft] checkpoint 30: p_o 0.9975 ce_o 0.0025 kl_other 0.1037 n 97 rel_norm_max 0.0249 elapsed_s 0.8452
+23:24:52 [ft] step 40: loss 0.0749 ce_o 0.0006 kl_other 0.0743 p_o 0.9994
+23:24:52 [ft] step 50: loss 0.0682 ce_o 0.0007 kl_other 0.0675 p_o 0.9993
+23:24:52 [ft] step 60: loss 0.0520 ce_o 0.0009 kl_other 0.0511 p_o 0.9991
+23:24:53 [ft] step 70: loss 0.0512 ce_o 0.0003 kl_other 0.0508 p_o 0.9997
+23:24:53 [ft] step 80: loss 0.0677 ce_o 0.0003 kl_other 0.0674 p_o 0.9997
+23:24:53 [ft] step 90: loss 0.0503 ce_o 0.0003 kl_other 0.0500 p_o 0.9997
+23:24:53 [ft] step 100: loss 0.0509 ce_o 0.0003 kl_other 0.0505 p_o 0.9997
+23:24:54 [ft] checkpoint 100: p_o 0.9960 ce_o 0.0042 kl_other 0.0488 n 97 rel_norm_max 0.0282 elapsed_s 2.6413
+23:24:54 [ft] step 110: loss 0.0569 ce_o 0.0004 kl_other 0.0566 p_o 0.9996
+23:24:54 [ft] step 120: loss 0.0420 ce_o 0.0002 kl_other 0.0418 p_o 0.9998
+23:24:54 [ft] step 130: loss 0.0455 ce_o 0.0002 kl_other 0.0453 p_o 0.9998
+23:24:55 [ft] step 140: loss 0.0554 ce_o 0.0002 kl_other 0.0552 p_o 0.9998
+23:24:55 [ft] step 150: loss 0.0400 ce_o 0.0002 kl_other 0.0398 p_o 0.9998
+23:24:55 [ft] step 160: loss 0.0578 ce_o 0.0002 kl_other 0.0576 p_o 0.9998
+23:24:55 [ft] step 170: loss 0.0431 ce_o 0.0001 kl_other 0.0430 p_o 0.9999
+23:24:56 [ft] step 180: loss 0.0273 ce_o 0.0002 kl_other 0.0271 p_o 0.9998
+23:24:56 [ft] step 190: loss 0.0251 ce_o 0.0002 kl_other 0.0249 p_o 0.9998
+23:24:56 [ft] step 200: loss 0.0391 ce_o 0.0002 kl_other 0.0389 p_o 0.9998
+23:24:56 [ft] step 210: loss 0.0325 ce_o 0.0002 kl_other 0.0323 p_o 0.9998
+23:24:57 [ft] step 220: loss 0.0378 ce_o 0.0001 kl_other 0.0377 p_o 0.9999
+23:24:57 [ft] step 230: loss 0.0341 ce_o 0.0002 kl_other 0.0339 p_o 0.9998
+23:24:57 [ft] step 240: loss 0.0391 ce_o 0.0001 kl_other 0.0389 p_o 0.9999
+23:24:57 [ft] step 250: loss 0.0392 ce_o 0.0001 kl_other 0.0390 p_o 0.9999
+23:24:58 [ft] step 260: loss 0.0306 ce_o 0.0001 kl_other 0.0305 p_o 0.9999
+23:24:58 [ft] step 270: loss 0.0333 ce_o 0.0001 kl_other 0.0332 p_o 0.9999
+23:24:58 [ft] step 280: loss 0.0300 ce_o 0.0001 kl_other 0.0299 p_o 0.9999
+23:24:58 [ft] step 290: loss 0.0549 ce_o 0.0002 kl_other 0.0547 p_o 0.9998
+23:24:59 [ft] step 300: loss 0.0330 ce_o 0.0001 kl_other 0.0329 p_o 0.9999
+23:24:59 [ft] checkpoint 300: p_o 0.9904 ce_o 0.0170 kl_other 0.0520 n 97 rel_norm_max 0.0309 elapsed_s 7.6914
+[    766s] STAGE train rand32_s2 DONE: learned True
+23:24:59 [ft] step 1: loss 13.2532 ce_o 13.2532 kl_other 0.0000 p_o 0.0000
+23:24:59 [ft] step 10: loss 2.6183 ce_o 1.9369 kl_other 0.6814 p_o 0.4896
+23:24:59 [ft] checkpoint 10: p_o 0.5586 ce_o 1.4254 kl_other 0.6424 n 97 rel_norm_max 0.0150 elapsed_s 0.2956
+23:24:59 [ft] step 20: loss 0.2923 ce_o 0.0104 kl_other 0.2819 p_o 0.9899
+23:24:59 [ft] step 30: loss 0.1054 ce_o 0.0024 kl_other 0.1030 p_o 0.9976
+23:24:59 [ft] checkpoint 30: p_o 0.9886 ce_o 0.0134 kl_other 0.1012 n 97 rel_norm_max 0.0251 elapsed_s 0.8418
+23:25:00 [ft] step 40: loss 0.0891 ce_o 0.0011 kl_other 0.0880 p_o 0.9989
+23:25:00 [ft] step 50: loss 0.0803 ce_o 0.0015 kl_other 0.0788 p_o 0.9985
+23:25:00 [ft] step 60: loss 0.0758 ce_o 0.0004 kl_other 0.0754 p_o 0.9996
+23:25:00 [ft] step 70: loss 0.0569 ce_o 0.0003 kl_other 0.0566 p_o 0.9997
+23:25:01 [ft] step 80: loss 0.0525 ce_o 0.0007 kl_other 0.0518 p_o 0.9993
+23:25:01 [ft] step 90: loss 0.0509 ce_o 0.0005 kl_other 0.0504 p_o 0.9995
+23:25:01 [ft] step 100: loss 0.0408 ce_o 0.0003 kl_other 0.0405 p_o 0.9997
+23:25:01 [ft] checkpoint 100: p_o 0.9963 ce_o 0.0040 kl_other 0.0517 n 97 rel_norm_max 0.0281 elapsed_s 2.6403
+23:25:02 [ft] step 110: loss 0.0394 ce_o 0.0002 kl_other 0.0392 p_o 0.9998
+23:25:02 [ft] step 120: loss 0.0487 ce_o 0.0003 kl_other 0.0484 p_o 0.9997
+23:25:02 [ft] step 130: loss 0.0433 ce_o 0.0002 kl_other 0.0430 p_o 0.9998
+23:25:02 [ft] step 140: loss 0.0525 ce_o 0.0002 kl_other 0.0523 p_o 0.9998
+23:25:03 [ft] step 150: loss 0.0361 ce_o 0.0002 kl_other 0.0359 p_o 0.9998
+23:25:03 [ft] step 160: loss 0.0454 ce_o 0.0002 kl_other 0.0452 p_o 0.9998
+23:25:03 [ft] step 170: loss 0.0375 ce_o 0.0002 kl_other 0.0373 p_o 0.9998
+23:25:03 [ft] step 180: loss 0.0613 ce_o 0.0002 kl_other 0.0611 p_o 0.9998
+23:25:04 [ft] step 190: loss 0.0290 ce_o 0.0001 kl_other 0.0289 p_o 0.9999
+23:25:04 [ft] step 200: loss 0.0381 ce_o 0.0001 kl_other 0.0380 p_o 0.9999
+23:25:04 [ft] step 210: loss 0.0297 ce_o 0.0002 kl_other 0.0296 p_o 0.9998
+23:25:04 [ft] step 220: loss 0.0530 ce_o 0.0002 kl_other 0.0529 p_o 0.9998
+23:25:05 [ft] step 230: loss 0.0370 ce_o 0.0001 kl_other 0.0369 p_o 0.9999
+23:25:05 [ft] step 240: loss 0.0329 ce_o 0.0001 kl_other 0.0328 p_o 0.9999
+23:25:05 [ft] step 250: loss 0.0375 ce_o 0.0001 kl_other 0.0374 p_o 0.9999
+23:25:05 [ft] step 260: loss 0.0275 ce_o 0.0001 kl_other 0.0274 p_o 0.9999
+23:25:06 [ft] step 270: loss 0.0368 ce_o 0.0001 kl_other 0.0367 p_o 0.9999
+23:25:06 [ft] step 280: loss 0.0435 ce_o 0.0001 kl_other 0.0434 p_o 0.9999
+23:25:06 [ft] step 290: loss 0.0313 ce_o 0.0001 kl_other 0.0312 p_o 0.9999
+23:25:06 [ft] step 300: loss 0.0283 ce_o 0.0001 kl_other 0.0282 p_o 0.9999
+23:25:06 [ft] checkpoint 300: p_o 0.9935 ce_o 0.0080 kl_other 0.0471 n 97 rel_norm_max 0.0308 elapsed_s 7.7010
+[    773s] STAGE train rand32_s3 DONE: learned True
+23:25:06 [ft] step 1: loss 14.2139 ce_o 14.2139 kl_other 0.0000 p_o 0.0000
+23:25:07 [real s2] step 10: train-word accuracy 0.8613, held-out 0.8712
+23:25:07 [ft] step 10: loss 0.5380 ce_o 0.2937 kl_other 0.2444 p_o 0.8805
+23:25:07 [ft] checkpoint 10: p_o 0.8407 ce_o 0.3122 kl_other 0.2142 n 1024 rel_norm_max 0.0130 elapsed_s 0.8869
+23:25:08 [ft] step 20: loss 0.0979 ce_o 0.0003 kl_other 0.0977 p_o 0.9997
+23:25:08 [real s2] step 30: train-word accuracy 0.9941, held-out 0.9925
+[    775s] STAGE train case_real_s2 DONE: learned True
+23:25:08 [ft] step 1: loss 14.8257 ce_o 14.8257 kl_other 0.0000 p_o 0.0000
+23:25:09 [real s3] step 10: train-word accuracy 0.8486, held-out 0.8481
+23:25:09 [ft] step 10: loss 2.6726 ce_o 2.1850 kl_other 0.4876 p_o 0.4228
+23:25:09 [ft] checkpoint 10: p_o 0.7875 ce_o 0.3191 kl_other 0.4987 n 1024 rel_norm_max 0.0137 elapsed_s 0.8904
+23:25:09 [ft] step 20: loss 0.3039 ce_o 0.1311 kl_other 0.1727 p_o 0.9036
+23:25:10 [real s3] step 30: train-word accuracy 0.9951, held-out 0.9988
+[    777s] STAGE train case_real_s3 DONE: learned True
+23:25:10 [ft] step 1: loss 14.9256 ce_o 14.9256 kl_other 0.0000 p_o 0.0000
+23:25:11 [twin s2] step 10: train-word accuracy 0.5098, held-out 0.4931
+23:25:11 [ft] step 10: loss 1.6902 ce_o 1.1319 kl_other 0.5583 p_o 0.4616
+23:25:11 [ft] checkpoint 10: p_o 0.5162 ce_o 1.0016 kl_other 0.4588 n 1024 rel_norm_max 0.0136 elapsed_s 0.8873
+23:25:11 [ft] step 20: loss 0.8242 ce_o 0.6410 kl_other 0.1832 p_o 0.5960
+23:25:12 [twin s2] step 30: train-word accuracy 0.5371, held-out 0.4875
+23:25:12 [ft] step 30: loss 0.8352 ce_o 0.7119 kl_other 0.1234 p_o 0.5301
+23:25:12 [ft] checkpoint 30: p_o 0.5388 ce_o 0.7598 kl_other 0.1109 n 1024 rel_norm_max 0.0212 elapsed_s 2.0347
+23:25:12 [ft] step 40: loss 0.7307 ce_o 0.6402 kl_other 0.0905 p_o 0.6033
+23:25:13 [ft] step 50: loss 0.6110 ce_o 0.5385 kl_other 0.0725 p_o 0.6472
+23:25:13 [ft] step 60: loss 1.0354 ce_o 0.9724 kl_other 0.0630 p_o 0.5174
+23:25:13 [ft] step 70: loss 0.8382 ce_o 0.7727 kl_other 0.0656 p_o 0.5387
+23:25:13 [ft] step 80: loss 0.5910 ce_o 0.5305 kl_other 0.0605 p_o 0.6688
+23:25:14 [ft] step 90: loss 0.4875 ce_o 0.4252 kl_other 0.0623 p_o 0.7156
+23:25:14 [twin s2] step 100: train-word accuracy 0.7168, held-out 0.5088
+23:25:14 [ft] step 100: loss 0.3877 ce_o 0.3287 kl_other 0.0589 p_o 0.7603
+23:25:14 [ft] checkpoint 100: p_o 0.6757 ce_o 0.5812 kl_other 0.0630 n 1024 rel_norm_max 0.0364 elapsed_s 4.4296
+23:25:15 [ft] step 110: loss 0.4233 ce_o 0.3678 kl_other 0.0556 p_o 0.7592
+23:25:15 [ft] step 120: loss 0.3969 ce_o 0.3244 kl_other 0.0725 p_o 0.7763
+23:25:15 [ft] step 130: loss 0.5938 ce_o 0.5327 kl_other 0.0611 p_o 0.6920
+23:25:15 [ft] step 140: loss 0.5271 ce_o 0.4531 kl_other 0.0740 p_o 0.7454
+23:25:16 [ft] step 150: loss 0.3295 ce_o 0.2467 kl_other 0.0828 p_o 0.8499
+23:25:16 [ft] step 160: loss 0.1975 ce_o 0.1300 kl_other 0.0675 p_o 0.8917
+23:25:16 [ft] step 170: loss 0.1550 ce_o 0.0816 kl_other 0.0734 p_o 0.9396
+23:25:16 [ft] step 180: loss 0.1908 ce_o 0.1194 kl_other 0.0713 p_o 0.9322
+23:25:17 [ft] step 190: loss 0.1218 ce_o 0.0460 kl_other 0.0758 p_o 0.9580
+23:25:17 [ft] step 200: loss 0.3031 ce_o 0.2201 kl_other 0.0830 p_o 0.9121
+23:25:17 [ft] step 210: loss 0.2367 ce_o 0.1577 kl_other 0.0789 p_o 0.9172
+23:25:18 [ft] step 220: loss 0.3618 ce_o 0.2727 kl_other 0.0891 p_o 0.8510
+23:25:18 [ft] step 230: loss 0.0958 ce_o 0.0140 kl_other 0.0818 p_o 0.9865
+23:25:18 [ft] step 240: loss 0.1345 ce_o 0.0608 kl_other 0.0738 p_o 0.9723
+23:25:18 [ft] step 250: loss 0.1187 ce_o 0.0432 kl_other 0.0755 p_o 0.9642
+23:25:19 [ft] step 260: loss 0.1408 ce_o 0.0703 kl_other 0.0706 p_o 0.9569
+23:25:19 [ft] step 270: loss 0.0956 ce_o 0.0175 kl_other 0.0782 p_o 0.9835
+23:25:19 [ft] step 280: loss 0.1011 ce_o 0.0282 kl_other 0.0729 p_o 0.9753
+23:25:19 [ft] step 290: loss 0.0767 ce_o 0.0023 kl_other 0.0744 p_o 0.9977
+23:25:20 [twin s2] step 300: train-word accuracy 0.9482, held-out 0.4969
+[    787s] STAGE train case_twin_s2 DONE: learned True
+23:25:20 [ft] step 1: loss 14.8692 ce_o 14.8692 kl_other 0.0000 p_o 0.0000
+23:25:21 [twin s3] step 10: train-word accuracy 0.5225, held-out 0.5094
+23:25:21 [ft] step 10: loss 4.3910 ce_o 3.8644 kl_other 0.5266 p_o 0.3446
+23:25:21 [ft] checkpoint 10: p_o 0.5106 ce_o 1.0362 kl_other 0.5054 n 1024 rel_norm_max 0.0138 elapsed_s 0.8912
+23:25:21 [ft] step 20: loss 1.3419 ce_o 1.1202 kl_other 0.2218 p_o 0.4923
+23:25:22 [twin s3] step 30: train-word accuracy 0.5039, held-out 0.4988
+23:25:22 [ft] step 30: loss 1.4849 ce_o 1.3350 kl_other 0.1499 p_o 0.4131
+23:25:22 [ft] checkpoint 30: p_o 0.5091 ce_o 0.9588 kl_other 0.1236 n 1024 rel_norm_max 0.0214 elapsed_s 2.0565
+23:25:22 [ft] step 40: loss 0.8766 ce_o 0.7789 kl_other 0.0977 p_o 0.4806
+23:25:23 [ft] step 50: loss 0.8914 ce_o 0.8153 kl_other 0.0761 p_o 0.4875
+23:25:23 [ft] step 60: loss 0.7631 ce_o 0.6954 kl_other 0.0677 p_o 0.5561
+23:25:23 [ft] step 70: loss 0.7127 ce_o 0.6433 kl_other 0.0694 p_o 0.6201
+23:25:23 [ft] step 80: loss 0.6638 ce_o 0.6080 kl_other 0.0558 p_o 0.5953
+23:25:24 [ft] step 90: loss 0.5374 ce_o 0.4809 kl_other 0.0566 p_o 0.6608
+23:25:24 [twin s3] step 100: train-word accuracy 0.7285, held-out 0.5138
+23:25:24 [ft] step 100: loss 0.7310 ce_o 0.6569 kl_other 0.0741 p_o 0.6967
+23:25:24 [ft] checkpoint 100: p_o 0.6901 ce_o 0.5984 kl_other 0.0656 n 1024 rel_norm_max 0.0371 elapsed_s 4.4403
+23:25:25 [ft] step 110: loss 0.5747 ce_o 0.5050 kl_other 0.0696 p_o 0.7211
+23:25:25 [ft] step 120: loss 0.5978 ce_o 0.5357 kl_other 0.0622 p_o 0.7351
+23:25:25 [ft] step 130: loss 0.3200 ce_o 0.2457 kl_other 0.0743 p_o 0.8390
+23:25:25 [ft] step 140: loss 0.5757 ce_o 0.5055 kl_other 0.0702 p_o 0.7429
+23:25:26 [ft] step 150: loss 0.4196 ce_o 0.3495 kl_other 0.0701 p_o 0.8633
+23:25:26 [ft] step 160: loss 0.2589 ce_o 0.1834 kl_other 0.0755 p_o 0.8991
+23:25:26 [ft] step 170: loss 0.3580 ce_o 0.2453 kl_other 0.1127 p_o 0.8648
+23:25:26 [ft] step 180: loss 0.1425 ce_o 0.0542 kl_other 0.0883 p_o 0.9498
+23:25:26 [ft] step 190: loss 0.1405 ce_o 0.0667 kl_other 0.0738 p_o 0.9406
+23:25:27 [ft] step 200: loss 0.1135 ce_o 0.0257 kl_other 0.0878 p_o 0.9768
+23:25:27 [ft] step 210: loss 0.5314 ce_o 0.4483 kl_other 0.0831 p_o 0.9513
+23:25:27 [ft] step 220: loss 0.2325 ce_o 0.1439 kl_other 0.0886 p_o 0.9026
+23:25:27 [ft] step 230: loss 0.1744 ce_o 0.0997 kl_other 0.0746 p_o 0.9397
+23:25:28 [ft] step 240: loss 0.1241 ce_o 0.0403 kl_other 0.0838 p_o 0.9682
+23:25:28 [ft] step 250: loss 0.1623 ce_o 0.0699 kl_other 0.0924 p_o 0.9553
+23:25:28 [ft] step 260: loss 0.2107 ce_o 0.1317 kl_other 0.0791 p_o 0.9496
+23:25:28 [ft] step 270: loss 0.0931 ce_o 0.0092 kl_other 0.0839 p_o 0.9914
+23:25:29 [ft] step 280: loss 0.1399 ce_o 0.0623 kl_other 0.0776 p_o 0.9558
+23:25:29 [ft] step 290: loss 0.1772 ce_o 0.0931 kl_other 0.0841 p_o 0.9372
+23:25:30 [twin s3] step 300: train-word accuracy 0.9307, held-out 0.4794
+[    797s] STAGE train case_twin_s3 DONE: learned True
+[    797s] [ft] step 1: loss 14.5400 ce_o 14.5400 kl_other 0.0000 p_o 0.0000
+[    797s] [ft seed 2] step 10: fit accuracy 0.5000, held-out 0.5000
+[    797s] [ft] step 10: loss 2.0301 ce_o 1.4747 kl_other 0.5554 p_o 0.5753
+[    798s] [ft] checkpoint 10: p_o 0.5077 ce_o 2.0683 kl_other 0.4963 n 1024 rel_norm_max 0.0134 elapsed_s 0.9279
+[    798s] [ft] step 20: loss 0.6127 ce_o 0.4080 kl_other 0.2047 p_o 0.7093
+[    798s] [ft seed 2] step 30: fit accuracy 0.9004, held-out 0.9119
+[    799s] STAGE train repeat_real_s2 DONE: learned True
+[    799s] [ft] step 1: loss 14.4694 ce_o 14.4694 kl_other 0.0000 p_o 0.0000
+[    799s] [ft seed 3] step 10: fit accuracy 0.5000, held-out 0.5000
+[    799s] [ft] step 10: loss 2.0370 ce_o 1.3952 kl_other 0.6418 p_o 0.5704
+[    799s] [ft] checkpoint 10: p_o 0.5078 ce_o 2.0672 kl_other 0.5207 n 1024 rel_norm_max 0.0133 elapsed_s 0.9326
+[    800s] [ft] step 20: loss 0.7164 ce_o 0.5395 kl_other 0.1769 p_o 0.6628
+[    800s] [ft seed 3] step 30: fit accuracy 0.9561, held-out 0.9669
+[    800s] STAGE train repeat_real_s3 DONE: learned True
+[    800s] [ft] step 1: loss 14.3324 ce_o 14.3324 kl_other 0.0000 p_o 0.0000
+[    801s] [ft seed 2] step 10: fit accuracy 0.4990, held-out 0.5012
+[    801s] [ft] step 10: loss 1.9876 ce_o 1.4836 kl_other 0.5041 p_o 0.5226
+[    801s] [ft] checkpoint 10: p_o 0.5041 ce_o 1.8304 kl_other 0.4878 n 1024 rel_norm_max 0.0132 elapsed_s 0.9238
+[    802s] [ft] step 20: loss 1.2622 ce_o 1.0897 kl_other 0.1725 p_o 0.4422
+[    802s] [ft seed 2] step 30: fit accuracy 0.6543, held-out 0.4425
+[    802s] [ft] step 30: loss 0.4539 ce_o 0.3350 kl_other 0.1189 p_o 0.7449
+[    803s] [ft] checkpoint 30: p_o 0.6063 ce_o 0.6900 kl_other 0.1118 n 1024 rel_norm_max 0.0216 elapsed_s 2.1036
+[    803s] [ft] step 40: loss 0.7735 ce_o 0.6854 kl_other 0.0881 p_o 0.6197
+[    803s] [ft] step 50: loss 0.3185 ce_o 0.2323 kl_other 0.0861 p_o 0.8154
+[    803s] [ft] step 60: loss 0.4681 ce_o 0.3980 kl_other 0.0701 p_o 0.7773
+[    804s] [ft] step 70: loss 0.5048 ce_o 0.4369 kl_other 0.0679 p_o 0.8004
+[    804s] [ft] step 80: loss 0.1708 ce_o 0.1034 kl_other 0.0674 p_o 0.9249
+[    804s] [ft] step 90: loss 0.1081 ce_o 0.0380 kl_other 0.0701 p_o 0.9652
+[    805s] [ft seed 2] step 100: fit accuracy 0.9551, held-out 0.4713
+[    805s] STAGE train repeat_twin_s2 DONE: learned True
+[    805s] [ft] step 1: loss 14.1472 ce_o 14.1472 kl_other 0.0000 p_o 0.0000
+[    806s] [ft seed 3] step 10: fit accuracy 0.5459, held-out 0.4900
+[    806s] [ft] step 10: loss 1.1640 ce_o 0.5683 kl_other 0.5957 p_o 0.6388
+[    806s] [ft] checkpoint 10: p_o 0.5391 ce_o 0.8860 kl_other 0.4180 n 1024 rel_norm_max 0.0133 elapsed_s 0.9330
+[    806s] [ft] step 20: loss 1.3534 ce_o 1.1966 kl_other 0.1569 p_o 0.5565
+[    807s] [ft seed 3] step 30: fit accuracy 0.5225, held-out 0.4956
+[    807s] [ft] step 30: loss 0.7843 ce_o 0.6506 kl_other 0.1337 p_o 0.5882
+[    807s] [ft] checkpoint 30: p_o 0.5521 ce_o 0.8634 kl_other 0.1361 n 1024 rel_norm_max 0.0212 elapsed_s 2.1136
+[    807s] [ft] step 40: loss 0.6606 ce_o 0.5477 kl_other 0.1129 p_o 0.6349
+[    807s] [ft] step 50: loss 0.5831 ce_o 0.4965 kl_other 0.0866 p_o 0.6923
+[    808s] [ft] step 60: loss 0.8558 ce_o 0.7830 kl_other 0.0728 p_o 0.6918
+[    808s] [ft] step 70: loss 0.2041 ce_o 0.1280 kl_other 0.0761 p_o 0.8968
+[    808s] [ft] step 80: loss 0.3039 ce_o 0.2366 kl_other 0.0673 p_o 0.8919
+[    808s] [ft] step 90: loss 0.3645 ce_o 0.2931 kl_other 0.0713 p_o 0.8812
+[    809s] [ft seed 3] step 100: fit accuracy 0.9639, held-out 0.4562
+[    809s] STAGE train repeat_twin_s3 DONE: learned True
+[    815s]   fine-tune: 300 steps, peak 3e-05
+[    816s]   step 1: loss 0.67791, KL(F||ft) 0.62779, KL(M||ft) 0.000e+00, rate 0.00e+00
+[    816s]   step 2: loss 0.68621, KL(F||ft) 0.59493, KL(M||ft) 3.134e-03, rate 1.00e-06
+[    816s]   step 3: loss 0.63127, KL(F||ft) 0.54338, KL(M||ft) 1.976e-02, rate 2.00e-06
+[    817s]   step 5: loss 0.52965, KL(F||ft) 0.43542, KL(M||ft) 1.121e-01, rate 4.00e-06
+[    817s]   step 10: loss 0.39464, KL(F||ft) 0.35784, KL(M||ft) 3.919e-01, rate 9.00e-06
+[    820s]   step 30: loss 0.12515, KL(F||ft) 0.12825, KL(M||ft) 4.473e-01, rate 2.90e-05
+[    828s]   step 100: loss 0.04431, KL(F||ft) 0.03926, KL(M||ft) 5.063e-01, rate 2.54e-05
+[    852s]   step 300: loss 0.02697, KL(F||ft) 0.02328, KL(M||ft) 5.462e-01, rate 1.02e-09
+[    853s]   learned check: {'kl_ft': 0.022139251232147217, 'kl_half_push': 0.6052378416061401, 'kl_base': 0.8366512060165405, 'ratio': 0.03657942334437572, 'learned': True}
+[    853s] STAGE train twin_s2 DONE: learned True
+[    859s]   fine-tune: 300 steps, peak 3e-05
+[    859s]   step 1: loss 0.65390, KL(F||ft) 0.62779, KL(M||ft) 0.000e+00, rate 0.00e+00
+[    860s]   step 2: loss 0.72729, KL(F||ft) 0.59514, KL(M||ft) 3.348e-03, rate 1.00e-06
+[    860s]   step 3: loss 0.63831, KL(F||ft) 0.54451, KL(M||ft) 2.148e-02, rate 2.00e-06
+[    860s]   step 5: loss 0.55410, KL(F||ft) 0.43661, KL(M||ft) 1.103e-01, rate 4.00e-06
+[    861s]   step 10: loss 0.37027, KL(F||ft) 0.35945, KL(M||ft) 3.896e-01, rate 9.00e-06
+[    863s]   step 30: loss 0.12461, KL(F||ft) 0.11851, KL(M||ft) 4.491e-01, rate 2.90e-05
+[    872s]   step 100: loss 0.05693, KL(F||ft) 0.04400, KL(M||ft) 5.109e-01, rate 2.54e-05
+[    896s]   step 300: loss 0.02695, KL(F||ft) 0.02204, KL(M||ft) 5.448e-01, rate 1.02e-09
+[    896s]   learned check: {'kl_ft': 0.02223091945052147, 'kl_half_push': 0.6052378416061401, 'kl_base': 0.8366512060165405, 'ratio': 0.03673088151845649, 'learned': True}
+[    896s] STAGE train twin_s3 DONE: learned True
+[    902s]   fine-tune: 300 steps, peak 3e-05
+[    903s]   step 1: loss 0.68956, KL(F||ft) 0.64832, KL(M||ft) 0.000e+00, rate 0.00e+00
+[    903s]   step 2: loss 0.68186, KL(F||ft) 0.61413, KL(M||ft) 2.703e-03, rate 1.00e-06
+[    903s]   step 3: loss 0.57219, KL(F||ft) 0.55929, KL(M||ft) 1.864e-02, rate 2.00e-06
+[    904s]   step 5: loss 0.49728, KL(F||ft) 0.44393, KL(M||ft) 1.132e-01, rate 4.00e-06
+[    904s]   step 10: loss 0.38510, KL(F||ft) 0.36210, KL(M||ft) 3.872e-01, rate 9.00e-06
+[    907s]   step 30: loss 0.22112, KL(F||ft) 0.20690, KL(M||ft) 2.749e-01, rate 2.90e-05
+[    915s]   step 100: loss 0.05498, KL(F||ft) 0.04758, KL(M||ft) 5.460e-01, rate 2.54e-05
+[    939s]   step 300: loss 0.02550, KL(F||ft) 0.02576, KL(M||ft) 5.554e-01, rate 1.02e-09
+[    940s]   learned check: {'kl_ft': 0.02739931270480156, 'kl_half_push': 0.5995082855224609, 'kl_base': 0.8776752352714539, 'ratio': 0.04570297586616929, 'learned': True}
+[    940s] STAGE train fact_s2 DONE: learned True
+[    946s]   fine-tune: 300 steps, peak 3e-05
+[    946s]   step 1: loss 0.67378, KL(F||ft) 0.64832, KL(M||ft) 0.000e+00, rate 0.00e+00
+[    947s]   step 2: loss 0.61624, KL(F||ft) 0.61434, KL(M||ft) 2.512e-03, rate 1.00e-06
+[    947s]   step 3: loss 0.55775, KL(F||ft) 0.55934, KL(M||ft) 1.835e-02, rate 2.00e-06
+[    947s]   step 5: loss 0.47643, KL(F||ft) 0.44316, KL(M||ft) 1.108e-01, rate 4.00e-06
+[    948s]   step 10: loss 0.38283, KL(F||ft) 0.36341, KL(M||ft) 3.942e-01, rate 9.00e-06
+[    950s]   step 30: loss 0.22123, KL(F||ft) 0.21153, KL(M||ft) 3.123e-01, rate 2.90e-05
+[    959s]   step 100: loss 0.05067, KL(F||ft) 0.04791, KL(M||ft) 5.257e-01, rate 2.54e-05
+[    983s]   step 300: loss 0.02174, KL(F||ft) 0.02570, KL(M||ft) 5.560e-01, rate 1.02e-09
+[    983s]   learned check: {'kl_ft': 0.027496811002492905, 'kl_half_push': 0.5995082855224609, 'kl_base': 0.8776752352714539, 'ratio': 0.04586560630855988, 'learned': True}
+[    983s] STAGE train fact_s3 DONE: learned True
+[    987s] copy24_s2: KL(F || M) 3.54206 nats on 16384 read windows; answer windows 6123, KL 7.290271281183652
+[    993s] copy24_s2 [all] pass 1 n 1: closure 0.4382, answer 0.5035560870941675, check KL 1.9885 (+ mlp1#3063)
+[   1000s] copy24_s2 [all] pass 1 n 2: closure 0.7057, answer 0.8296815097100609, check KL 1.0388 (+ in3.pc0)
+[   1008s] copy24_s2 [all] pass 1 n 3: closure 0.7366, answer 0.884112186723981, check KL 0.91787 (+ mlp2#883)
+[   1016s] copy24_s2 [all] pass 1 n 4: closure 0.7471, answer 0.8824852874068104, check KL 0.88183 (+ logit#3012)
+[   1025s] copy24_s2 [all] pass 1 n 5: closure 0.7589, answer 0.8881919460509554, check KL 0.83651 (+ mlp2#1736)
+[   1033s] copy24_s2 [all] pass 1 n 6: closure 0.7620, answer 0.892170572468383, check KL 0.82468 (+ mlp3#2475)
+[   1042s] copy24_s2 [all] pass 1 n 7: closure 0.7667, answer 0.8946774199829266, check KL 0.811 (+ mlp2#1144)
+[   1051s] copy24_s2 [all] pass 1 n 8: closure 0.7710, answer 0.9002754172198777, check KL 0.79751 (+ in1.pc33)
+[   1060s] copy24_s2 [all] pass 1 n 9: closure 0.7765, answer 0.9025806333546498, check KL 0.77299 (+ mlp1#1133)
+[   1069s] copy24_s2 [all] pass 1 n 10: closure 0.7814, answer 0.9041709266167882, check KL 0.75642 (+ logit#2167)
+[   1077s] copy24_s2 [all] pass 1 n 11: closure 0.7886, answer 0.9093681769742674, check KL 0.73162 (+ mlp2#2454)
+[   1086s] copy24_s2 [all] pass 1 n 12: closure 0.7942, answer 0.9130522485284344, check KL 0.71139 (+ mlp2#496)
+[   1095s] copy24_s2 [all] pass 1 n 13: closure 0.8039, answer 0.9141138979599734, check KL 0.66835 (+ mlp1#2028)
+[   1104s] copy24_s2 [all] pass 1 n 14: closure 0.8057, answer 0.916317907349588, check KL 0.66392 (+ mlp3#1818)
+[   1113s] copy24_s2 [all] pass 1 n 15: closure 0.8116, answer 0.9267486340029155, check KL 0.64065 (+ mlp2#2818)
+[   1122s] copy24_s2 [all] pass 1 n 16: closure 0.8127, answer 0.9288975674961947, check KL 0.63196 (+ mlp0#1591)
+[   1129s] copy24_s2 [all] pass 2 n 1: closure 0.3732, answer 0.42278933610759795, check KL 2.2462 (+ mlp1#2336)
+[   1138s] copy24_s2 [all] pass 2 n 3: closure 0.6753, answer 0.777465600207711, check KL 1.1758 (+ mlp1#2336->in3.pc0)
+[   1149s] copy24_s2 [all] pass 2 n 5: closure 0.7027, answer 0.8204196308565121, check KL 1.0651 (+ tok-1#3012->mlp3#1965)
+[   1158s] copy24_s2 [all] pass 2 n 7: closure 0.7127, answer 0.8357731444941463, check KL 1.0287 (+ tok-1#1495->mlp1#1752)
+[   1169s] copy24_s2 [all] pass 2 n 9: closure 0.7176, answer 0.8394683925720632, check KL 0.99896 (+ mlp1#912->mlp3#2639)
+[   1179s] copy24_s2 [all] pass 2 n 11: closure 0.7223, answer 0.8408297188705292, check KL 0.9826 (+ tok-1#1158->mlp1#1801)
+[   1189s] copy24_s2 [all] pass 2 n 12: closure 0.7636, answer 0.8996551816814353, check KL 0.83069 (+ mlp2#883)
+[   1199s] copy24_s2 [all] pass 2 n 14: closure 0.7680, answer 0.8987168732703734, check KL 0.81643 (+ tok-1#2791->mlp3#194)
+[   1204s] copy24_s2 [all] pass 2 n 14: closure 0.7680, answer 0.8987168732703734, check KL 0.81643 (no name lowers the check KL)
+[   1208s] copy24_s2 [all] pass 2 n 14: closure 0.7680, answer 0.8987168732703734, check KL 0.81643 (no name lowers the check KL)
+[   1212s] copy24_s2 [all] pass 2 n 14: closure 0.7680, answer 0.8987168732703734, check KL 0.81643 (no name lowers the check KL)
+[   1223s] copy24_s2 [all] pass 2 n 16: closure 0.7734, answer 0.9016020079654513, check KL 0.80012 (+ tok-1#3228->in0.pc3)
+STAGE search copy24_s2 DONE
+[   1227s] copy24_s3: KL(F || M) 3.45189 nats on 16384 read windows; answer windows 6123, KL 7.25374165543851
+[   1232s] copy24_s3 [all] pass 1 n 1: closure 0.4333, answer 0.5032065421635048, check KL 1.9413 (+ mlp1#3063)
+[   1240s] copy24_s3 [all] pass 1 n 2: closure 0.6982, answer 0.8243803865260213, check KL 1.0303 (+ in3.pc0)
+[   1250s] copy24_s3 [all] pass 1 n 3: closure 0.7264, answer 0.8755655239423779, check KL 0.91888 (+ mlp2#883)
+[   1259s] copy24_s3 [all] pass 1 n 4: closure 0.7361, answer 0.8857001528475474, check KL 0.87344 (+ logit#3012)
+[   1268s] copy24_s3 [all] pass 1 n 5: closure 0.7483, answer 0.878022078946519, check KL 0.83451 (+ mlp2#1736)
+[   1276s] copy24_s3 [all] pass 1 n 6: closure 0.7556, answer 0.8879173338740473, check KL 0.81842 (+ in1.pc33)
+[   1285s] copy24_s3 [all] pass 1 n 7: closure 0.7602, answer 0.894478646197637, check KL 0.79984 (+ logit#2167)
+[   1294s] copy24_s3 [all] pass 1 n 8: closure 0.7630, answer 0.8981940672873971, check KL 0.78886 (+ mlp3#2475)
+[   1302s] copy24_s3 [all] pass 1 n 9: closure 0.7754, answer 0.8881004146338224, check KL 0.74003 (+ mlp1#2028)
+[   1311s] copy24_s3 [all] pass 1 n 10: closure 0.7788, answer 0.8911908991022373, check KL 0.72457 (+ mlp0#1591)
+[   1320s] copy24_s3 [all] pass 1 n 11: closure 0.7819, answer 0.894296728021162, check KL 0.71968 (+ mlp3#456)
+[   1330s] copy24_s3 [all] pass 1 n 12: closure 0.7842, answer 0.8961170558786676, check KL 0.71214 (+ mlp3#194)
+[   1339s] copy24_s3 [all] pass 1 n 13: closure 0.7866, answer 0.8977125049460636, check KL 0.69998 (+ mlp0#1307)
+[   1348s] copy24_s3 [all] pass 1 n 14: closure 0.7937, answer 0.9054034991877418, check KL 0.6756 (+ mlp2#2454)
+[   1357s] copy24_s3 [all] pass 1 n 15: closure 0.7986, answer 0.9121910260354456, check KL 0.66654 (+ logit#4577)
+[   1366s] copy24_s3 [all] pass 1 n 16: closure 0.8021, answer 0.9236744851850278, check KL 0.651 (+ mlp0#1240)
+[   1372s] copy24_s3 [all] pass 2 n 1: closure 0.3686, answer 0.42291090981801205, check KL 2.193 (+ mlp1#2336)
+[   1381s] copy24_s3 [all] pass 2 n 3: closure 0.6872, answer 0.8002446734885625, check KL 1.0833 (+ mlp2#3037->in3.pc0)
+[   1391s] copy24_s3 [all] pass 2 n 5: closure 0.7038, answer 0.819599354775613, check KL 1.02 (+ tok-1#3012->mlp3#1965)
+[   1401s] copy24_s3 [all] pass 2 n 7: closure 0.7074, answer 0.8224796700185125, check KL 1.0069 (+ tok-1#2791->mlp3#194)
+[   1411s] copy24_s3 [all] pass 2 n 9: closure 0.7117, answer 0.8265918343403118, check KL 0.98721 (+ tok-1#1511->mlp3#2639)
+[   1420s] copy24_s3 [all] pass 2 n 11: closure 0.7172, answer 0.8286250248787329, check KL 0.96753 (+ tok-1#1158->mlp1#1103)
+[   1429s] copy24_s3 [all] pass 2 n 13: closure 0.7331, answer 0.8389744623489235, check KL 0.9161 (+ tok-1#1495->mlp1#1752)
+[   1439s] copy24_s3 [all] pass 2 n 15: closure 0.7413, answer 0.8478171973587338, check KL 0.88381 (+ tok-1#921->mlp3#3004)
+[   1447s] copy24_s3 [all] pass 2 n 16: closure 0.7758, answer 0.8927312587614257, check KL 0.7658 (+ mlp2#883)
+STAGE search copy24_s3 DONE
+[   1451s] cipher24_s2: KL(F || M) 3.57943 nats on 16384 read windows; answer windows 6147, KL 6.39575294543034
+[   1457s] cipher24_s2 [all] pass 1 n 1: closure 0.1724, answer 0.19416183484284666, check KL 3.0545 (+ mlp3#1561)
+[   1463s] cipher24_s2 [all] pass 1 n 2: closure 0.2061, answer 0.22956428974412435, check KL 2.9291 (+ mlp1#2514)
+[   1471s] cipher24_s2 [all] pass 1 n 3: closure 0.2256, answer 0.2543645580383439, check KL 2.8591 (+ mlp3#2927)
+[   1477s] cipher24_s2 [all] pass 1 n 4: closure 0.2437, answer 0.2772442572597079, check KL 2.7938 (+ mlp3#1912)
+[   1486s] cipher24_s2 [all] pass 1 n 5: closure 0.2704, answer 0.296261557527038, check KL 2.6858 (+ mlp0#2825)
+[   1495s] cipher24_s2 [all] pass 1 n 6: closure 0.2933, answer 0.3254420623003237, check KL 2.6148 (+ logit#6406)
+[   1504s] cipher24_s2 [all] pass 1 n 7: closure 0.3115, answer 0.34822196835019037, check KL 2.553 (+ mlp1#1679)
+[   1512s] cipher24_s2 [all] pass 1 n 8: closure 0.3274, answer 0.3693515137022867, check KL 2.5025 (+ mlp3#1915)
+[   1522s] cipher24_s2 [all] pass 1 n 9: closure 0.3415, answer 0.38561916339155267, check KL 2.4469 (+ in2.pc32)
+[   1531s] cipher24_s2 [all] pass 1 n 10: closure 0.3530, answer 0.4007327728440261, check KL 2.3976 (+ mlp2#576)
+[   1541s] cipher24_s2 [all] pass 1 n 11: closure 0.3631, answer 0.4130658437335524, check KL 2.3578 (+ mlp3#969)
+[   1549s] cipher24_s2 [all] pass 1 n 12: closure 0.3767, answer 0.4186607747788199, check KL 2.3077 (+ mlp1#1309)
+[   1559s] cipher24_s2 [all] pass 1 n 13: closure 0.3854, answer 0.4299079711539784, check KL 2.2689 (+ mlp3#1548)
+[   1568s] cipher24_s2 [all] pass 1 n 14: closure 0.3945, answer 0.4388140915831735, check KL 2.2394 (+ mlp0#1503)
+[   1577s] cipher24_s2 [all] pass 1 n 15: closure 0.4014, answer 0.4497924732951947, check KL 2.2124 (+ mlp3#2335)
+[   1586s] cipher24_s2 [all] pass 1 n 16: closure 0.4102, answer 0.46090346761475653, check KL 2.187 (+ mlp0#2035)
+[   1593s] cipher24_s2 [all] pass 2 n 1: closure 0.1724, answer 0.19416183484284666, check KL 3.0545 (+ mlp3#1561)
+[   1599s] cipher24_s2 [all] pass 2 n 3: closure 0.2045, answer 0.2342462448595941, check KL 2.9608 (+ tok-1#4294->mlp3#2679)
+[   1607s] cipher24_s2 [all] pass 2 n 5: closure 0.2171, answer 0.24803201170653022, check KL 2.9073 (+ tok-1#1682->mlp3#861)
+[   1614s] cipher24_s2 [all] pass 2 n 7: closure 0.2401, answer 0.2731735577881258, check KL 2.8124 (+ tok-1#1246->mlp3#2752)
+[   1623s] cipher24_s2 [all] pass 2 n 9: closure 0.2603, answer 0.3033332862981325, check KL 2.7176 (+ tok-1#591->mlp3#419)
+[   1633s] cipher24_s2 [all] pass 2 n 11: closure 0.2898, answer 0.33690203229157445, check KL 2.6193 (+ tok-1#1682->mlp2#971)
+[   1643s] cipher24_s2 [all] pass 2 n 13: closure 0.3409, answer 0.39062226729030536, check KL 2.4577 (+ tok-1#2791->logit#6919)
+[   1652s] cipher24_s2 [all] pass 2 n 15: closure 0.3681, answer 0.4269490715919638, check KL 2.3773 (+ tok-1#3012->mlp3#496)
+[   1661s] cipher24_s2 [all] pass 2 n 16: closure 0.3951, answer 0.44722327080317514, check KL 2.2752 (+ mlp1#2844)
+STAGE search cipher24_s2 DONE
+[   1665s] cipher24_s3: KL(F || M) 3.47722 nats on 16384 read windows; answer windows 6147, KL 6.392609253227565
+[   1669s] cipher24_s3 [all] pass 1 n 1: closure 0.1762, answer 0.19051548049740674, check KL 2.9417 (+ mlp3#1770)
+[   1675s] cipher24_s3 [all] pass 1 n 2: closure 0.2236, answer 0.2494808502555268, check KL 2.783 (+ mlp1#2400)
+[   1684s] cipher24_s3 [all] pass 1 n 3: closure 0.2517, answer 0.27766026850507086, check KL 2.673 (+ logit#7970)
+[   1692s] cipher24_s3 [all] pass 1 n 4: closure 0.2874, answer 0.3128810815710047, check KL 2.5387 (+ mlp3#979)
+[   1700s] cipher24_s3 [all] pass 1 n 5: closure 0.3118, answer 0.3327969625209001, check KL 2.4482 (+ mlp2#839)
+[   1709s] cipher24_s3 [all] pass 1 n 6: closure 0.3350, answer 0.3618045539128645, check KL 2.3577 (+ mlp3#1183)
+[   1717s] cipher24_s3 [all] pass 1 n 7: closure 0.3481, answer 0.3772862408104801, check KL 2.3058 (+ mlp2#1579)
+[   1725s] cipher24_s3 [all] pass 1 n 8: closure 0.3604, answer 0.3945263661570144, check KL 2.2595 (+ mlp3#1912)
+[   1733s] cipher24_s3 [all] pass 1 n 9: closure 0.3725, answer 0.40414821945129, check KL 2.2201 (+ mlp1#232)
+[   1743s] cipher24_s3 [all] pass 1 n 10: closure 0.3833, answer 0.41564541908808894, check KL 2.1822 (+ mlp3#2335)
+[   1751s] cipher24_s3 [all] pass 1 n 11: closure 0.3942, answer 0.42957683073301545, check KL 2.1415 (+ mlp3#1915)
+[   1760s] cipher24_s3 [all] pass 1 n 12: closure 0.4029, answer 0.4443557186100511, check KL 2.1077 (+ mlp2#1663)
+[   1768s] cipher24_s3 [all] pass 1 n 13: closure 0.4122, answer 0.447382931047982, check KL 2.0844 (+ mlp3#96)
+[   1776s] cipher24_s3 [all] pass 1 n 14: closure 0.4240, answer 0.4613703327635287, check KL 2.0361 (+ mlp1#2446)
+[   1785s] cipher24_s3 [all] pass 1 n 15: closure 0.4321, answer 0.469375753538095, check KL 2.0139 (+ mlp3#1995)
+[   1794s] cipher24_s3 [all] pass 1 n 16: closure 0.4410, answer 0.4810204728406924, check KL 1.9826 (+ mlp1#563)
+[   1799s] cipher24_s3 [all] pass 2 n 1: closure 0.1762, answer 0.19051548049740674, check KL 2.9417 (+ mlp3#1770)
+[   1809s] cipher24_s3 [all] pass 2 n 3: closure 0.2361, answer 0.25311796742724957, check KL 2.7522 (+ tok-1#2791->logit#6919)
+[   1818s] cipher24_s3 [all] pass 2 n 5: closure 0.2803, answer 0.30209806314924836, check KL 2.5712 (+ mlp1#1621->logit#7970)
+[   1827s] cipher24_s3 [all] pass 2 n 7: closure 0.2923, answer 0.3177533575264666, check KL 2.5124 (+ tok-1#3228->mlp3#78)
+[   1831s] cipher24_s3 [all] pass 2 n 7: closure 0.2923, answer 0.3177533575264666, check KL 2.5124 (no name lowers the check KL)
+[   1841s] cipher24_s3 [all] pass 2 n 9: closure 0.3008, answer 0.32494140624699663, check KL 2.4847 (+ tok-1#1158->mlp0#1155)
+[   1851s] cipher24_s3 [all] pass 2 n 11: closure 0.3368, answer 0.37268785997308196, check KL 2.3643 (+ tok-1#1453->mlp3#1744)
+[   1861s] cipher24_s3 [all] pass 2 n 12: closure 0.3692, answer 0.40712556561464097, check KL 2.2583 (+ mlp1#2400)
+[   1871s] cipher24_s3 [all] pass 2 n 14: closure 0.3935, answer 0.4447916616040736, check KL 2.1552 (+ tok-1#4367->mlp3#1183)
+[   1881s] cipher24_s3 [all] pass 2 n 16: closure 0.4119, answer 0.46278160260776147, check KL 2.0968 (+ tok-1#2732->mlp3#1951)
+STAGE search cipher24_s3 DONE
+[   1885s] ident32_s2: KL(F || M) 4.18667 nats on 16384 read windows; answer windows 6172, KL 8.89101927603365
+[   1892s] ident32_s2 [all] pass 1 n 1: closure 0.5046, answer 0.5585468932432363, check KL 2.0268 (+ mlp1#2996)
+[   1899s] ident32_s2 [all] pass 1 n 2: closure 0.6739, answer 0.772853729562295, check KL 1.3336 (+ in3.pc0)
+[   1908s] ident32_s2 [all] pass 1 n 3: closure 0.7285, answer 0.8486916009951919, check KL 1.157 (+ mlp2#883)
+[   1916s] ident32_s2 [all] pass 1 n 4: closure 0.7448, answer 0.8654494316969099, check KL 1.0864 (+ mlp1#2721)
+[   1924s] ident32_s2 [all] pass 1 n 5: closure 0.7611, answer 0.8939113079175756, check KL 1.0288 (+ mlp2#1144)
+[   1933s] ident32_s2 [all] pass 1 n 6: closure 0.7758, answer 0.9052428566582178, check KL 0.94764 (+ mlp0#88)
+[   1942s] ident32_s2 [all] pass 1 n 7: closure 0.7832, answer 0.9112860824655209, check KL 0.91714 (+ mlp1#2496)
+[   1951s] ident32_s2 [all] pass 1 n 8: closure 0.7955, answer 0.9108561225188164, check KL 0.8554 (+ mlp1#1752)
+[   1961s] ident32_s2 [all] pass 1 n 9: closure 0.7981, answer 0.9139198541052627, check KL 0.84466 (+ mlp3#1343)
+[   1970s] ident32_s2 [all] pass 1 n 10: closure 0.8083, answer 0.9247125773715339, check KL 0.79442 (+ mlp1#2530)
+[   1979s] ident32_s2 [all] pass 1 n 11: closure 0.8164, answer 0.9272986116215259, check KL 0.75967 (+ mlp1#2609)
+[   1988s] ident32_s2 [all] pass 1 n 12: closure 0.8287, answer 0.9385299807980081, check KL 0.72896 (+ mlp1#2861)
+[   1997s] ident32_s2 [all] pass 1 n 13: closure 0.8308, answer 0.9411133733315206, check KL 0.72094 (+ mlp2#1019)
+[   2006s] ident32_s2 [all] pass 1 n 14: closure 0.8313, answer 0.9419575819747381, check KL 0.71886 (+ mlp0#1899)
+[   2015s] ident32_s2 [all] pass 1 n 15: closure 0.8370, answer 0.9437762853075036, check KL 0.69754 (+ mlp1#101)
+[   2025s] ident32_s2 [all] pass 1 n 16: closure 0.8407, answer 0.9471228617671845, check KL 0.67393 (+ mlp0#203)
+[   2034s] ident32_s2 [all] pass 2 n 2: closure 0.0135, answer 0.030039163072553388, check KL 4.0829 (+ tok-1#703->mlp3#708)
+[   2042s] ident32_s2 [all] pass 2 n 3: closure 0.3595, answer 0.3920709970864177, check KL 2.6131 (+ mlp1#165)
+[   2052s] ident32_s2 [all] pass 2 n 5: closure 0.4163, answer 0.45578676594092193, check KL 2.4503 (+ mlp2#1802->mlp3#94)
+[   2056s] ident32_s2 [all] pass 2 n 5: closure 0.4163, answer 0.45578676594092193, check KL 2.4503 (no name lowers the check KL)
+[   2060s] ident32_s2 [all] pass 2 n 5: closure 0.4163, answer 0.45578676594092193, check KL 2.4503 (no name lowers the check KL)
+[   2064s] ident32_s2 [all] pass 2 n 5: closure 0.4163, answer 0.45578676594092193, check KL 2.4503 (no name lowers the check KL)
+[   2068s] ident32_s2 [all] pass 2 n 5: closure 0.4163, answer 0.45578676594092193, check KL 2.4503 (no name lowers the check KL)
+[   2073s] ident32_s2 [all] pass 2 n 5: closure 0.4163, answer 0.45578676594092193, check KL 2.4503 (no name lowers the check KL)
+[   2077s] ident32_s2 [all] pass 2 n 5: closure 0.4163, answer 0.45578676594092193, check KL 2.4503 (no name lowers the check KL)
+[   2081s] ident32_s2 [all] pass 2 n 5: closure 0.4163, answer 0.45578676594092193, check KL 2.4503 (no name lowers the check KL)
+[   2085s] ident32_s2 [all] pass 2 n 5: closure 0.4163, answer 0.45578676594092193, check KL 2.4503 (no name lowers the check KL)
+[   2089s] ident32_s2 [all] pass 2 n 5: closure 0.4163, answer 0.45578676594092193, check KL 2.4503 (no name lowers the check KL)
+[   2093s] ident32_s2 [all] pass 2 n 5: closure 0.4163, answer 0.45578676594092193, check KL 2.4503 (no name lowers the check KL)
+[   2097s] ident32_s2 [all] pass 2 n 5: closure 0.4163, answer 0.45578676594092193, check KL 2.4503 (no name lowers the check KL)
+[   2101s] ident32_s2 [all] pass 2 n 5: closure 0.4163, answer 0.45578676594092193, check KL 2.4503 (no name lowers the check KL)
+[   2105s] ident32_s2 [all] pass 2 n 5: closure 0.4163, answer 0.45578676594092193, check KL 2.4503 (no name lowers the check KL)
+[   2110s] ident32_s2 [all] pass 2 n 5: closure 0.4163, answer 0.45578676594092193, check KL 2.4503 (no name lowers the check KL)
+[   2114s] ident32_s2 [all] pass 2 n 5: closure 0.4163, answer 0.45578676594092193, check KL 2.4503 (no name lowers the check KL)
+[   2118s] ident32_s2 [all] pass 2 n 5: closure 0.4163, answer 0.45578676594092193, check KL 2.4503 (no name lowers the check KL)
+STAGE search ident32_s2 DONE
+[   2122s] ident32_s3: KL(F || M) 4.19063 nats on 16384 read windows; answer windows 6172, KL 8.835299451708098
+[   2128s] ident32_s3 [all] pass 1 n 1: closure 0.5085, answer 0.5605495653263415, check KL 2.0177 (+ mlp1#2996)
+[   2134s] ident32_s3 [all] pass 1 n 2: closure 0.6759, answer 0.7747813320850224, check KL 1.3371 (+ in3.pc0)
+[   2143s] ident32_s3 [all] pass 1 n 3: closure 0.7323, answer 0.8515981219486641, check KL 1.1603 (+ mlp2#883)
+[   2151s] ident32_s3 [all] pass 1 n 4: closure 0.7468, answer 0.8678944067640493, check KL 1.0965 (+ mlp1#2721)
+[   2160s] ident32_s3 [all] pass 1 n 5: closure 0.7618, answer 0.8937133442104295, check KL 1.0445 (+ mlp2#1144)
+[   2169s] ident32_s3 [all] pass 1 n 6: closure 0.7745, answer 0.9026198756374683, check KL 0.96308 (+ mlp0#88)
+[   2178s] ident32_s3 [all] pass 1 n 7: closure 0.7783, answer 0.9078075844331278, check KL 0.94384 (+ mlp0#1641)
+[   2187s] ident32_s3 [all] pass 1 n 8: closure 0.7808, answer 0.9087125137816586, check KL 0.93475 (+ mlp0#158)
+[   2196s] ident32_s3 [all] pass 1 n 9: closure 0.7833, answer 0.9114724317407307, check KL 0.92232 (+ mlp3#1943)
+[   2205s] ident32_s3 [all] pass 1 n 10: closure 0.7898, answer 0.9151182072297855, check KL 0.88417 (+ mlp0#322)
+[   2214s] ident32_s3 [all] pass 1 n 11: closure 0.8001, answer 0.9217708659100909, check KL 0.82717 (+ mlp1#2530)
+[   2224s] ident32_s3 [all] pass 1 n 12: closure 0.8038, answer 0.9252787493672225, check KL 0.81414 (+ mlp2#1019)
+[   2232s] ident32_s3 [all] pass 1 n 13: closure 0.8096, answer 0.9283138702118615, check KL 0.79613 (+ mlp1#2532)
+[   2242s] ident32_s3 [all] pass 1 n 14: closure 0.8161, answer 0.9280897111554891, check KL 0.76489 (+ in2.pc5)
+[   2251s] ident32_s3 [all] pass 1 n 15: closure 0.8179, answer 0.9296959251197827, check KL 0.75584 (+ mlp0#2076)
+[   2260s] ident32_s3 [all] pass 1 n 16: closure 0.8236, answer 0.9351214654391796, check KL 0.73566 (+ mlp1#719)
+[   2266s] ident32_s3 [all] pass 2 n 2: closure 0.0363, answer 0.0329232360776327, check KL 3.8994 (+ mlp2#2283->logit#1281)
+[   2276s] ident32_s3 [all] pass 2 n 3: closure 0.3714, answer 0.39716665224293346, check KL 2.518 (+ mlp1#165)
+[   2280s] ident32_s3 [all] pass 2 n 3: closure 0.3714, answer 0.39716665224293346, check KL 2.518 (no name lowers the check KL)
+[   2284s] ident32_s3 [all] pass 2 n 3: closure 0.3714, answer 0.39716665224293346, check KL 2.518 (no name lowers the check KL)
+[   2288s] ident32_s3 [all] pass 2 n 3: closure 0.3714, answer 0.39716665224293346, check KL 2.518 (no name lowers the check KL)
+[   2292s] ident32_s3 [all] pass 2 n 3: closure 0.3714, answer 0.39716665224293346, check KL 2.518 (no name lowers the check KL)
+[   2296s] ident32_s3 [all] pass 2 n 3: closure 0.3714, answer 0.39716665224293346, check KL 2.518 (no name lowers the check KL)
+[   2300s] ident32_s3 [all] pass 2 n 3: closure 0.3714, answer 0.39716665224293346, check KL 2.518 (no name lowers the check KL)
+[   2311s] ident32_s3 [all] pass 2 n 5: closure 0.4218, answer 0.46017377497505263, check KL 2.3711 (+ mlp2#1802->mlp3#94)
+[   2315s] ident32_s3 [all] pass 2 n 5: closure 0.4218, answer 0.46017377497505263, check KL 2.3711 (no name lowers the check KL)
+[   2319s] ident32_s3 [all] pass 2 n 5: closure 0.4218, answer 0.46017377497505263, check KL 2.3711 (no name lowers the check KL)
+[   2323s] ident32_s3 [all] pass 2 n 5: closure 0.4218, answer 0.46017377497505263, check KL 2.3711 (no name lowers the check KL)
+[   2327s] ident32_s3 [all] pass 2 n 5: closure 0.4218, answer 0.46017377497505263, check KL 2.3711 (no name lowers the check KL)
+[   2331s] ident32_s3 [all] pass 2 n 5: closure 0.4218, answer 0.46017377497505263, check KL 2.3711 (no name lowers the check KL)
+[   2335s] ident32_s3 [all] pass 2 n 5: closure 0.4218, answer 0.46017377497505263, check KL 2.3711 (no name lowers the check KL)
+[   2339s] ident32_s3 [all] pass 2 n 5: closure 0.4218, answer 0.46017377497505263, check KL 2.3711 (no name lowers the check KL)
+[   2344s] ident32_s3 [all] pass 2 n 5: closure 0.4218, answer 0.46017377497505263, check KL 2.3711 (no name lowers the check KL)
+[   2348s] ident32_s3 [all] pass 2 n 5: closure 0.4218, answer 0.46017377497505263, check KL 2.3711 (no name lowers the check KL)
+[   2352s] ident32_s3 [all] pass 2 n 5: closure 0.4218, answer 0.46017377497505263, check KL 2.3711 (no name lowers the check KL)
+STAGE search ident32_s3 DONE
+[   2356s] rand32_s2: KL(F || M) 4.72304 nats on 16384 read windows; answer windows 6172, KL 8.598934052443242
+[   2361s] rand32_s2 [all] pass 1 n 1: closure 0.1230, answer 0.1500357730924644, check KL 3.9646 (+ mlp3#1561)
+[   2367s] rand32_s2 [all] pass 1 n 2: closure 0.1541, answer 0.17939196718705974, check KL 3.8238 (+ mlp2#1700)
+[   2376s] rand32_s2 [all] pass 1 n 3: closure 0.1715, answer 0.19513798727900644, check KL 3.7176 (+ logit#5272)
+[   2384s] rand32_s2 [all] pass 1 n 4: closure 0.1961, answer 0.2203364144226292, check KL 3.6323 (+ mlp3#1185)
+[   2394s] rand32_s2 [all] pass 1 n 5: closure 0.2171, answer 0.2464430796521252, check KL 3.507 (+ logit#5717)
+[   2402s] rand32_s2 [all] pass 1 n 6: closure 0.2377, answer 0.2672347423330721, check KL 3.4322 (+ logit#6079)
+[   2411s] rand32_s2 [all] pass 1 n 7: closure 0.2640, answer 0.2966284918380845, check KL 3.3071 (+ mlp2#1718)
+[   2419s] rand32_s2 [all] pass 1 n 8: closure 0.2852, answer 0.3233815440334278, check KL 3.2357 (+ logit#7705)
+[   2428s] rand32_s2 [all] pass 1 n 9: closure 0.3041, answer 0.3398059478270846, check KL 3.1526 (+ mlp2#664)
+[   2437s] rand32_s2 [all] pass 1 n 10: closure 0.3226, answer 0.3574487720269769, check KL 3.0871 (+ in2.pc6)
+[   2446s] rand32_s2 [all] pass 1 n 11: closure 0.3437, answer 0.3799099607885221, check KL 3.0338 (+ logit#5486)
+[   2455s] rand32_s2 [all] pass 1 n 12: closure 0.3569, answer 0.3975120937311283, check KL 2.9665 (+ logit#4832)
+[   2464s] rand32_s2 [all] pass 1 n 13: closure 0.3720, answer 0.41448684281916004, check KL 2.8989 (+ logit#9066)
+[   2473s] rand32_s2 [all] pass 1 n 14: closure 0.3844, answer 0.43068918138821854, check KL 2.8591 (+ logit#8708)
+[   2481s] rand32_s2 [all] pass 1 n 15: closure 0.3913, answer 0.43799225162513233, check KL 2.8215 (+ mlp2#345)
+[   2490s] rand32_s2 [all] pass 1 n 16: closure 0.4029, answer 0.4529264858637242, check KL 2.7631 (+ logit#6809)
+[   2497s] rand32_s2 [all] pass 2 n 2: closure 0.0386, answer 0.03814133450616264, check KL 4.2836 (+ mlp1#2968->logit#5272)
+[   2507s] rand32_s2 [all] pass 2 n 4: closure 0.0821, answer 0.09024358462657145, check KL 4.0573 (+ tok-1#1142->mlp3#194)
+[   2511s] rand32_s2 [all] pass 2 n 4: closure 0.0821, answer 0.09024358462657145, check KL 4.0573 (no name lowers the check KL)
+[   2515s] rand32_s2 [all] pass 2 n 4: closure 0.0821, answer 0.09024358462657145, check KL 4.0573 (no name lowers the check KL)
+[   2519s] rand32_s2 [all] pass 2 n 4: closure 0.0821, answer 0.09024358462657145, check KL 4.0573 (no name lowers the check KL)
+[   2523s] rand32_s2 [all] pass 2 n 4: closure 0.0821, answer 0.09024358462657145, check KL 4.0573 (no name lowers the check KL)
+[   2527s] rand32_s2 [all] pass 2 n 4: closure 0.0821, answer 0.09024358462657145, check KL 4.0573 (no name lowers the check KL)
+[   2531s] rand32_s2 [all] pass 2 n 4: closure 0.0821, answer 0.09024358462657145, check KL 4.0573 (no name lowers the check KL)
+[   2535s] rand32_s2 [all] pass 2 n 4: closure 0.0821, answer 0.09024358462657145, check KL 4.0573 (no name lowers the check KL)
+[   2539s] rand32_s2 [all] pass 2 n 4: closure 0.0821, answer 0.09024358462657145, check KL 4.0573 (no name lowers the check KL)
+[   2544s] rand32_s2 [all] pass 2 n 4: closure 0.0821, answer 0.09024358462657145, check KL 4.0573 (no name lowers the check KL)
+[   2548s] rand32_s2 [all] pass 2 n 4: closure 0.0821, answer 0.09024358462657145, check KL 4.0573 (no name lowers the check KL)
+[   2552s] rand32_s2 [all] pass 2 n 4: closure 0.0821, answer 0.09024358462657145, check KL 4.0573 (no name lowers the check KL)
+[   2556s] rand32_s2 [all] pass 2 n 4: closure 0.0821, answer 0.09024358462657145, check KL 4.0573 (no name lowers the check KL)
+[   2560s] rand32_s2 [all] pass 2 n 4: closure 0.0821, answer 0.09024358462657145, check KL 4.0573 (no name lowers the check KL)
+[   2564s] rand32_s2 [all] pass 2 n 4: closure 0.0821, answer 0.09024358462657145, check KL 4.0573 (no name lowers the check KL)
+[   2568s] rand32_s2 [all] pass 2 n 4: closure 0.0821, answer 0.09024358462657145, check KL 4.0573 (no name lowers the check KL)
+[   2572s] rand32_s2 [all] pass 2 n 4: closure 0.0821, answer 0.09024358462657145, check KL 4.0573 (no name lowers the check KL)
+STAGE search rand32_s2 DONE
+[   2576s] rand32_s3: KL(F || M) 4.95858 nats on 16384 read windows; answer windows 6172, KL 8.853478630100529
+[   2581s] rand32_s3 [all] pass 1 n 1: closure 0.1378, answer 0.1711102712899617, check KL 4.0972 (+ mlp3#1561)
+[   2587s] rand32_s3 [all] pass 1 n 2: closure 0.1670, answer 0.19236636162453102, check KL 3.9609 (+ mlp2#281)
+[   2595s] rand32_s3 [all] pass 1 n 3: closure 0.1830, answer 0.20765445343962619, check KL 3.8591 (+ logit#5272)
+[   2603s] rand32_s3 [all] pass 1 n 4: closure 0.2094, answer 0.22898683482921023, check KL 3.7395 (+ mlp2#1718)
+[   2612s] rand32_s3 [all] pass 1 n 5: closure 0.2338, answer 0.2546201559995588, check KL 3.6395 (+ logit#3735)
+[   2621s] rand32_s3 [all] pass 1 n 6: closure 0.2522, answer 0.2736099081892409, check KL 3.5743 (+ logit#8708)
+[   2629s] rand32_s3 [all] pass 1 n 7: closure 0.2702, answer 0.29406977947016244, check KL 3.5052 (+ logit#10126)
+[   2638s] rand32_s3 [all] pass 1 n 8: closure 0.2893, answer 0.3079423467306567, check KL 3.4162 (+ mlp1#749)
+[   2647s] rand32_s3 [all] pass 1 n 9: closure 0.3083, answer 0.3331376195567436, check KL 3.3423 (+ logit#7705)
+[   2657s] rand32_s3 [all] pass 1 n 10: closure 0.3295, answer 0.3558380792715039, check KL 3.2815 (+ logit#5486)
+[   2666s] rand32_s3 [all] pass 1 n 11: closure 0.3389, answer 0.36589037323664575, check KL 3.2318 (+ mlp1#2737)
+[   2675s] rand32_s3 [all] pass 1 n 12: closure 0.3487, answer 0.3778408743665742, check KL 3.1781 (+ mlp3#194)
+[   2684s] rand32_s3 [all] pass 1 n 13: closure 0.3583, answer 0.39230259991933647, check KL 3.128 (+ mlp2#2921)
+[   2693s] rand32_s3 [all] pass 1 n 14: closure 0.3721, answer 0.41282378345347326, check KL 3.0482 (+ logit#1262)
+[   2702s] rand32_s3 [all] pass 1 n 15: closure 0.3819, answer 0.4231527634573813, check KL 3.0005 (+ mlp2#277)
+[   2711s] rand32_s3 [all] pass 1 n 16: closure 0.3972, answer 0.43826935495895103, check KL 2.9466 (+ in2.pc0)
+[   2715s] rand32_s3 [all] pass 2 n 0: closure 0.0000, answer 0.0, check KL 4.7751 (no name lowers the check KL)
+[   2719s] rand32_s3 [all] pass 2 n 0: closure 0.0000, answer 0.0, check KL 4.7751 (no name lowers the check KL)
+[   2723s] rand32_s3 [all] pass 2 n 0: closure 0.0000, answer 0.0, check KL 4.7751 (no name lowers the check KL)
+[   2728s] rand32_s3 [all] pass 2 n 0: closure 0.0000, answer 0.0, check KL 4.7751 (no name lowers the check KL)
+[   2732s] rand32_s3 [all] pass 2 n 0: closure 0.0000, answer 0.0, check KL 4.7751 (no name lowers the check KL)
+[   2736s] rand32_s3 [all] pass 2 n 0: closure 0.0000, answer 0.0, check KL 4.7751 (no name lowers the check KL)
+[   2740s] rand32_s3 [all] pass 2 n 0: closure 0.0000, answer 0.0, check KL 4.7751 (no name lowers the check KL)
+[   2744s] rand32_s3 [all] pass 2 n 0: closure 0.0000, answer 0.0, check KL 4.7751 (no name lowers the check KL)
+[   2748s] rand32_s3 [all] pass 2 n 0: closure 0.0000, answer 0.0, check KL 4.7751 (no name lowers the check KL)
+[   2752s] rand32_s3 [all] pass 2 n 0: closure 0.0000, answer 0.0, check KL 4.7751 (no name lowers the check KL)
+[   2756s] rand32_s3 [all] pass 2 n 0: closure 0.0000, answer 0.0, check KL 4.7751 (no name lowers the check KL)
+[   2760s] rand32_s3 [all] pass 2 n 0: closure 0.0000, answer 0.0, check KL 4.7751 (no name lowers the check KL)
+[   2764s] rand32_s3 [all] pass 2 n 0: closure 0.0000, answer 0.0, check KL 4.7751 (no name lowers the check KL)
+[   2769s] rand32_s3 [all] pass 2 n 0: closure 0.0000, answer 0.0, check KL 4.7751 (no name lowers the check KL)
+[   2773s] rand32_s3 [all] pass 2 n 0: closure 0.0000, answer 0.0, check KL 4.7751 (no name lowers the check KL)
+[   2777s] rand32_s3 [all] pass 2 n 0: closure 0.0000, answer 0.0, check KL 4.7751 (no name lowers the check KL)
+STAGE search rand32_s3 DONE
+[   2781s] case_real_s2: KL(F || M) 8.17434 nats on 16384 read windows; answer windows 6227, KL 14.165534616607866
+[   2787s] case_real_s2 [all] pass 1 n 1: closure 0.2837, answer 0.36262017312250083, check KL 5.6137 (+ mlp3#901)
+[   2790s] case_real_s2 [all] pass 1 n 1: closure 0.2837, answer 0.36262017312250083, check KL 5.6137 (no name lowers the check KL)
+[   2793s] case_real_s2 [all] pass 1 n 1: closure 0.2837, answer 0.36262017312250083, check KL 5.6137 (no name lowers the check KL)
+[   2796s] case_real_s2 [all] pass 1 n 1: closure 0.2837, answer 0.36262017312250083, check KL 5.6137 (no name lowers the check KL)
+[   2799s] case_real_s2 [all] pass 1 n 1: closure 0.2837, answer 0.36262017312250083, check KL 5.6137 (no name lowers the check KL)
+[   2802s] case_real_s2 [all] pass 1 n 1: closure 0.2837, answer 0.36262017312250083, check KL 5.6137 (no name lowers the check KL)
+[   2805s] case_real_s2 [all] pass 1 n 1: closure 0.2837, answer 0.36262017312250083, check KL 5.6137 (no name lowers the check KL)
+[   2808s] case_real_s2 [all] pass 1 n 1: closure 0.2837, answer 0.36262017312250083, check KL 5.6137 (no name lowers the check KL)
+[   2811s] case_real_s2 [all] pass 1 n 1: closure 0.2837, answer 0.36262017312250083, check KL 5.6137 (no name lowers the check KL)
+[   2814s] case_real_s2 [all] pass 1 n 1: closure 0.2837, answer 0.36262017312250083, check KL 5.6137 (no name lowers the check KL)
+[   2817s] case_real_s2 [all] pass 1 n 1: closure 0.2837, answer 0.36262017312250083, check KL 5.6137 (no name lowers the check KL)
+[   2820s] case_real_s2 [all] pass 1 n 1: closure 0.2837, answer 0.36262017312250083, check KL 5.6137 (no name lowers the check KL)
+[   2823s] case_real_s2 [all] pass 1 n 1: closure 0.2837, answer 0.36262017312250083, check KL 5.6137 (no name lowers the check KL)
+[   2827s] case_real_s2 [all] pass 1 n 1: closure 0.2837, answer 0.36262017312250083, check KL 5.6137 (no name lowers the check KL)
+[   2830s] case_real_s2 [all] pass 1 n 1: closure 0.2837, answer 0.36262017312250083, check KL 5.6137 (no name lowers the check KL)
+[   2833s] case_real_s2 [all] pass 1 n 1: closure 0.2837, answer 0.36262017312250083, check KL 5.6137 (no name lowers the check KL)
+[   2836s] case_real_s2 [all] pass 1 n 1: closure 0.2837, answer 0.36262017312250083, check KL 5.6137 (no name lowers the check KL)
+[   2843s] case_real_s2 [all] pass 2 n 2: closure 0.5710, answer 0.45664563408581904, check KL 3.0605 (+ mlp0#859->logit#46493)
+[   2851s] case_real_s2 [all] pass 2 n 4: closure 0.9201, answer 0.9408337268036691, check KL 0.59804 (+ mlp1#1700->logit#23656)
+[   2858s] case_real_s2 [all] pass 2 n 5: closure 0.9418, answer 0.9589252049987841, check KL 0.438 (+ mlp1#1700->logit#23656)
+[   2867s] case_real_s2 [all] pass 2 n 7: closure 0.9588, answer 0.969386532810044, check KL 0.31107 (+ tok-1#18214->mlp3#2741)
+[   2876s] case_real_s2 [all] pass 2 n 8: closure 0.9683, answer 0.978474266331152, check KL 0.23017 (+ tok-1#18214->mlp3#2741)
+[   2885s] case_real_s2 [all] pass 2 n 10: closure 0.9700, answer 0.9779704695174154, check KL 0.21121 (+ mlp0#1261->mlp3#1655)
+[   2894s] case_real_s2 [all] pass 2 n 11: closure 0.9777, answer 0.9875280434863465, check KL 0.17555 (+ mlp0#1261->mlp3#1655)
+[   2904s] case_real_s2 [all] pass 2 n 13: closure 0.9824, answer 0.9886398233228806, check KL 0.14841 (+ mlp0#2748->mlp1#705)
+[   2914s] case_real_s2 [all] pass 2 n 14: closure 0.9839, answer 0.9897051369136235, check KL 0.13254 (+ mlp0#2748->mlp1#705)
+[   2925s] case_real_s2 [all] pass 2 n 16: closure 0.9847, answer 0.9908345203114245, check KL 0.12512 (+ mlp0#606->in1.pc9)
+STAGE search case_real_s2 DONE
+[   2929s] case_real_s3: KL(F || M) 8.19907 nats on 16384 read windows; answer windows 6227, KL 14.168613446702615
+[   2935s] case_real_s3 [all] pass 1 n 1: closure 0.2845, answer 0.36175563479510087, check KL 5.6365 (+ mlp3#901)
+[   2943s] case_real_s3 [all] pass 1 n 2: closure 0.5394, answer 0.7067213377146379, check KL 3.9845 (+ logit#23656)
+[   2951s] case_real_s3 [all] pass 1 n 3: closure 0.6327, answer 0.8102902647265289, check KL 3.185 (+ mlp3#443)
+[   2959s] case_real_s3 [all] pass 1 n 4: closure 0.7598, answer 0.9332815590147158, check KL 2.0961 (+ logit#46493)
+[   2967s] case_real_s3 [all] pass 1 n 5: closure 0.8464, answer 0.9311372287015939, check KL 1.2781 (+ mlp2#1392)
+[   2976s] case_real_s3 [all] pass 1 n 6: closure 0.8652, answer 0.9376974611394795, check KL 1.1208 (+ mlp0#270)
+[   2985s] case_real_s3 [all] pass 1 n 7: closure 0.8779, answer 0.9441330790622544, check KL 1.0116 (+ mlp1#400)
+[   2994s] case_real_s3 [all] pass 1 n 8: closure 0.8941, answer 0.9433330154792077, check KL 0.86708 (+ mlp2#2072)
+[   3003s] case_real_s3 [all] pass 1 n 9: closure 0.9062, answer 0.9553592737535006, check KL 0.77983 (+ mlp2#237)
+[   3012s] case_real_s3 [all] pass 1 n 10: closure 0.9147, answer 0.9589341076083658, check KL 0.69042 (+ mlp0#27)
+[   3021s] case_real_s3 [all] pass 1 n 11: closure 0.9251, answer 0.9715645133944003, check KL 0.62675 (+ mlp1#705)
+[   3030s] case_real_s3 [all] pass 1 n 12: closure 0.9328, answer 0.9767645779359211, check KL 0.57489 (+ mlp2#1709)
+[   3038s] case_real_s3 [all] pass 1 n 13: closure 0.9386, answer 0.978884362353897, check KL 0.50285 (+ mlp0#2768)
+[   3047s] case_real_s3 [all] pass 1 n 14: closure 0.9405, answer 0.9788814610544102, check KL 0.48707 (+ mlp2#1082)
+[   3056s] case_real_s3 [all] pass 1 n 15: closure 0.9439, answer 0.9797973439379192, check KL 0.45846 (+ mlp2#2539)
+[   3065s] case_real_s3 [all] pass 1 n 16: closure 0.9475, answer 0.9822513739246888, check KL 0.43077 (+ mlp1#2403)
+[   3072s] case_real_s3 [all] pass 2 n 2: closure 0.5687, answer 0.45328404938703215, check KL 3.1217 (+ mlp0#159->logit#46493)
+[   3079s] case_real_s3 [all] pass 2 n 4: closure 0.9337, answer 0.9479114288992477, check KL 0.4947 (+ mlp0#511->logit#23656)
+[   3086s] case_real_s3 [all] pass 2 n 5: closure 0.9532, answer 0.9663863110378934, check KL 0.31295 (+ mlp0#511->logit#23656)
+[   3096s] case_real_s3 [all] pass 2 n 6: closure 0.9634, answer 0.981256189849655, check KL 0.26299 (+ mlp1#705)
+[   3106s] case_real_s3 [all] pass 2 n 8: closure 0.9772, answer 0.9902957281909288, check KL 0.1845 (+ tok-1#18214->mlp0#1018)
+[   3116s] case_real_s3 [all] pass 2 n 9: closure 0.9810, answer 0.9915162858391913, check KL 0.15858 (+ tok-1#18214->mlp0#1018)
+[   3126s] case_real_s3 [all] pass 2 n 11: closure 0.9814, answer 0.9917263543090895, check KL 0.15305 (+ mlp1#743->mlp3#1655)
+[   3135s] case_real_s3 [all] pass 2 n 13: closure 0.9824, answer 0.9925871646351594, check KL 0.14558 (+ mlp1#2923->mlp2#1570)
+[   3145s] case_real_s3 [all] pass 2 n 14: closure 0.9829, answer 0.992698528828716, check KL 0.14376 (+ mlp1#2923->mlp2#1570)
+[   3155s] case_real_s3 [all] pass 2 n 16: closure 0.9823, answer 0.9925820634673035, check KL 0.14334 (+ tok-2#64->mlp0#1029)
+STAGE search case_real_s3 DONE
+[   3159s] case_twin_s2: KL(F || M) 8.0769 nats on 16384 read windows; answer windows 6227, KL 14.053105761232587
+[   3163s] case_twin_s2 [all] pass 1 n 1: closure 0.5364, answer 0.5069675460591989, check KL 3.6301 (+ logit#23656)
+[   3168s] case_twin_s2 [all] pass 1 n 2: closure 0.9026, answer 0.938712470881362, check KL 0.76915 (+ logit#46493)
+[   3176s] case_twin_s2 [all] pass 1 n 3: closure 0.9128, answer 0.9423027972243019, check KL 0.68838 (+ mlp3#169)
+[   3184s] case_twin_s2 [all] pass 1 n 4: closure 0.9194, answer 0.9445795509272702, check KL 0.62908 (+ mlp2#2269)
+[   3193s] case_twin_s2 [all] pass 1 n 5: closure 0.9250, answer 0.9467665963062806, check KL 0.57991 (+ mlp1#2396)
+[   3202s] case_twin_s2 [all] pass 1 n 6: closure 0.9295, answer 0.9481067841271232, check KL 0.54789 (+ mlp0#1377)
+[   3211s] case_twin_s2 [all] pass 1 n 7: closure 0.9329, answer 0.9490030611287578, check KL 0.52029 (+ mlp3#1199)
+[   3220s] case_twin_s2 [all] pass 1 n 8: closure 0.9352, answer 0.9502761435794075, check KL 0.50474 (+ mlp2#2561)
+[   3229s] case_twin_s2 [all] pass 1 n 9: closure 0.9364, answer 0.9506761919158461, check KL 0.49328 (+ in2.pc0)
+[   3238s] case_twin_s2 [all] pass 1 n 10: closure 0.9368, answer 0.9502657836724878, check KL 0.48951 (+ mlp3#3062)
+[   3246s] case_twin_s2 [all] pass 1 n 11: closure 0.9377, answer 0.9514306522517013, check KL 0.4801 (+ mlp2#2409)
+[   3256s] case_twin_s2 [all] pass 1 n 12: closure 0.9383, answer 0.9517975000191282, check KL 0.47406 (+ mlp0#2503)
+[   3265s] case_twin_s2 [all] pass 1 n 13: closure 0.9386, answer 0.9520119605762923, check KL 0.47144 (+ mlp0#601)
+[   3275s] case_twin_s2 [all] pass 1 n 14: closure 0.9389, answer 0.9519653363525833, check KL 0.46642 (+ in0.pc51)
+[   3284s] case_twin_s2 [all] pass 1 n 15: closure 0.9390, answer 0.9519743905420052, check KL 0.46562 (+ mlp0#2351)
+[   3294s] case_twin_s2 [all] pass 1 n 16: closure 0.9393, answer 0.9520841816232298, check KL 0.46308 (+ mlp3#1915)
+[   3301s] case_twin_s2 [all] pass 2 n 2: closure 0.5435, answer 0.50626767555178, check KL 3.5726 (+ mlp0#2532->logit#23656)
+[   3308s] case_twin_s2 [all] pass 2 n 4: closure 0.9208, answer 0.9450896007209441, check KL 0.62356 (+ mlp0#724->logit#46493)
+[   3317s] case_twin_s2 [all] pass 2 n 6: closure 0.9392, answer 0.9490446946981834, check KL 0.46175 (+ tok-1#18214->mlp3#2741)
+[   3326s] case_twin_s2 [all] pass 2 n 7: closure 0.9422, answer 0.9515373496372992, check KL 0.43775 (+ tok-1#18214->mlp3#2741)
+[   3335s] case_twin_s2 [all] pass 2 n 8: closure 0.9443, answer 0.9515358834132802, check KL 0.42052 (+ tok-1#18214->mlp3#2741)
+[   3345s] case_twin_s2 [all] pass 2 n 10: closure 0.9453, answer 0.9509854212859734, check KL 0.40516 (+ mlp1#476->mlp2#259)
+[   3349s] case_twin_s2 [all] pass 2 n 10: closure 0.9453, answer 0.9509854212859734, check KL 0.40516 (no name lowers the check KL)
+[   3359s] case_twin_s2 [all] pass 2 n 11: closure 0.9468, answer 0.9516674680716871, check KL 0.38936 (+ mlp1#476->mlp2#259)
+[   3369s] case_twin_s2 [all] pass 2 n 12: closure 0.9483, answer 0.9513903483754895, check KL 0.37787 (+ mlp1#476->mlp2#259)
+[   3373s] case_twin_s2 [all] pass 2 n 12: closure 0.9483, answer 0.9513903483754895, check KL 0.37787 (no name lowers the check KL)
+[   3383s] case_twin_s2 [all] pass 2 n 13: closure 0.9492, answer 0.9518515668718084, check KL 0.37188 (+ mlp1#476->mlp2#259)
+[   3387s] case_twin_s2 [all] pass 2 n 13: closure 0.9492, answer 0.9518515668718084, check KL 0.37188 (no name lowers the check KL)
+[   3391s] case_twin_s2 [all] pass 2 n 13: closure 0.9492, answer 0.9518515668718084, check KL 0.37188 (no name lowers the check KL)
+[   3395s] case_twin_s2 [all] pass 2 n 13: closure 0.9492, answer 0.9518515668718084, check KL 0.37188 (no name lowers the check KL)
+[   3400s] case_twin_s2 [all] pass 2 n 13: closure 0.9492, answer 0.9518515668718084, check KL 0.37188 (no name lowers the check KL)
+[   3404s] case_twin_s2 [all] pass 2 n 13: closure 0.9492, answer 0.9518515668718084, check KL 0.37188 (no name lowers the check KL)
+[   3408s] case_twin_s2 [all] pass 2 n 13: closure 0.9492, answer 0.9518515668718084, check KL 0.37188 (no name lowers the check KL)
+[   3417s] case_twin_s2 [all] pass 2 n 14: closure 0.9499, answer 0.9526673542559114, check KL 0.36862 (+ mlp1#476->mlp2#259)
+[   3421s] case_twin_s2 [all] pass 2 n 14: closure 0.9499, answer 0.9526673542559114, check KL 0.36862 (no name lowers the check KL)
+[   3426s] case_twin_s2 [all] pass 2 n 14: closure 0.9499, answer 0.9526673542559114, check KL 0.36862 (no name lowers the check KL)
+[   3430s] case_twin_s2 [all] pass 2 n 14: closure 0.9499, answer 0.9526673542559114, check KL 0.36862 (no name lowers the check KL)
+[   3434s] case_twin_s2 [all] pass 2 n 14: closure 0.9499, answer 0.9526673542559114, check KL 0.36862 (no name lowers the check KL)
+[   3438s] case_twin_s2 [all] pass 2 n 14: closure 0.9499, answer 0.9526673542559114, check KL 0.36862 (no name lowers the check KL)
+[   3442s] case_twin_s2 [all] pass 2 n 14: closure 0.9499, answer 0.9526673542559114, check KL 0.36862 (no name lowers the check KL)
+[   3446s] case_twin_s2 [all] pass 2 n 14: closure 0.9499, answer 0.9526673542559114, check KL 0.36862 (no name lowers the check KL)
+[   3451s] case_twin_s2 [all] pass 2 n 14: closure 0.9499, answer 0.9526673542559114, check KL 0.36862 (no name lowers the check KL)
+STAGE search case_twin_s2 DONE
+[   3454s] case_twin_s3: KL(F || M) 8.19231 nats on 16384 read windows; answer windows 6227, KL 14.252041810738518
+[   3458s] case_twin_s3 [all] pass 1 n 1: closure 0.6018, answer 0.5818388760689008, check KL 3.0979 (+ logit#46493)
+[   3463s] case_twin_s3 [all] pass 1 n 2: closure 0.9055, answer 0.9412473555823203, check KL 0.75505 (+ logit#23656)
+[   3471s] case_twin_s3 [all] pass 1 n 3: closure 0.9152, answer 0.944950484686493, check KL 0.67866 (+ mlp3#169)
+[   3479s] case_twin_s3 [all] pass 1 n 4: closure 0.9213, answer 0.9474923669075228, check KL 0.62596 (+ mlp2#2269)
+[   3488s] case_twin_s3 [all] pass 1 n 5: closure 0.9256, answer 0.9499663437718596, check KL 0.58873 (+ mlp0#801)
+[   3496s] case_twin_s3 [all] pass 1 n 6: closure 0.9282, answer 0.950357289673362, check KL 0.56638 (+ mlp1#2396)
+[   3505s] case_twin_s3 [all] pass 1 n 7: closure 0.9300, answer 0.951088187553411, check KL 0.54821 (+ in2.pc0)
+[   3514s] case_twin_s3 [all] pass 1 n 8: closure 0.9317, answer 0.9520368156617723, check KL 0.53408 (+ mlp3#1199)
+[   3523s] case_twin_s3 [all] pass 1 n 9: closure 0.9353, answer 0.9528938525715306, check KL 0.50678 (+ mlp0#1377)
+[   3532s] case_twin_s3 [all] pass 1 n 10: closure 0.9370, answer 0.9532333238200132, check KL 0.49223 (+ mlp2#2561)
+[   3541s] case_twin_s3 [all] pass 1 n 11: closure 0.9378, answer 0.9539071208203314, check KL 0.48656 (+ mlp3#2741)
+[   3550s] case_twin_s3 [all] pass 1 n 12: closure 0.9381, answer 0.9537416564036185, check KL 0.48289 (+ mlp1#49)
+[   3558s] case_twin_s3 [all] pass 1 n 13: closure 0.9384, answer 0.954028221468855, check KL 0.48046 (+ mlp3#1915)
+[   3567s] case_twin_s3 [all] pass 1 n 14: closure 0.9385, answer 0.9541165126773649, check KL 0.47776 (+ in0.pc51)
+[   3576s] case_twin_s3 [all] pass 1 n 15: closure 0.9393, answer 0.9545379100172849, check KL 0.47039 (+ mlp2#2409)
+[   3586s] case_twin_s3 [all] pass 1 n 16: closure 0.9400, answer 0.9547727050882758, check KL 0.46479 (+ mlp0#1722)
+[   3593s] case_twin_s3 [all] pass 2 n 2: closure 0.6105, answer 0.582749661471127, check KL 3.0185 (+ mlp0#1181->logit#46493)
+[   3600s] case_twin_s3 [all] pass 2 n 4: closure 0.9273, answer 0.9522192245237289, check KL 0.57274 (+ mlp0#1181->logit#23656)
+[   3610s] case_twin_s3 [all] pass 2 n 6: closure 0.9589, answer 0.960245707301293, check KL 0.31734 (+ tok-1#18214->mlp0#1181)
+[   3620s] case_twin_s3 [all] pass 2 n 7: closure 0.9593, answer 0.9602885629422445, check KL 0.3148 (+ tok-1#18214->mlp0#1181)
+[   3630s] case_twin_s3 [all] pass 2 n 8: closure 0.9595, answer 0.9607079892631121, check KL 0.3142 (+ tok-1#18214->mlp0#1181)
+[   3634s] case_twin_s3 [all] pass 2 n 8: closure 0.9595, answer 0.9607079892631121, check KL 0.3142 (no name lowers the check KL)
+[   3638s] case_twin_s3 [all] pass 2 n 8: closure 0.9595, answer 0.9607079892631121, check KL 0.3142 (no name lowers the check KL)
+[   3648s] case_twin_s3 [all] pass 2 n 9: closure 0.9594, answer 0.9604890301728719, check KL 0.31322 (+ tok-1#18214->mlp0#1181)
+[   3652s] case_twin_s3 [all] pass 2 n 9: closure 0.9594, answer 0.9604890301728719, check KL 0.31322 (no name lowers the check KL)
+[   3656s] case_twin_s3 [all] pass 2 n 9: closure 0.9594, answer 0.9604890301728719, check KL 0.31322 (no name lowers the check KL)
+[   3661s] case_twin_s3 [all] pass 2 n 9: closure 0.9594, answer 0.9604890301728719, check KL 0.31322 (no name lowers the check KL)
+[   3665s] case_twin_s3 [all] pass 2 n 9: closure 0.9594, answer 0.9604890301728719, check KL 0.31322 (no name lowers the check KL)
+[   3669s] case_twin_s3 [all] pass 2 n 9: closure 0.9594, answer 0.9604890301728719, check KL 0.31322 (no name lowers the check KL)
+[   3673s] case_twin_s3 [all] pass 2 n 9: closure 0.9594, answer 0.9604890301728719, check KL 0.31322 (no name lowers the check KL)
+[   3677s] case_twin_s3 [all] pass 2 n 9: closure 0.9594, answer 0.9604890301728719, check KL 0.31322 (no name lowers the check KL)
+[   3687s] case_twin_s3 [all] pass 2 n 11: closure 0.9596, answer 0.9607541453669778, check KL 0.31121 (+ mlp1#715->mlp3#404)
+[   3691s] case_twin_s3 [all] pass 2 n 11: closure 0.9596, answer 0.9607541453669778, check KL 0.31121 (no name lowers the check KL)
+[   3701s] case_twin_s3 [all] pass 2 n 12: closure 0.9597, answer 0.9608251896967022, check KL 0.31083 (+ mlp1#715->mlp3#404)
+[   3705s] case_twin_s3 [all] pass 2 n 12: closure 0.9597, answer 0.9608251896967022, check KL 0.31083 (no name lowers the check KL)
+[   3709s] case_twin_s3 [all] pass 2 n 12: closure 0.9597, answer 0.9608251896967022, check KL 0.31083 (no name lowers the check KL)
+[   3713s] case_twin_s3 [all] pass 2 n 12: closure 0.9597, answer 0.9608251896967022, check KL 0.31083 (no name lowers the check KL)
+[   3723s] case_twin_s3 [all] pass 2 n 13: closure 0.9598, answer 0.9609278442632881, check KL 0.31042 (+ mlp1#715->mlp3#404)
+[   3727s] case_twin_s3 [all] pass 2 n 13: closure 0.9598, answer 0.9609278442632881, check KL 0.31042 (no name lowers the check KL)
+[   3731s] case_twin_s3 [all] pass 2 n 13: closure 0.9598, answer 0.9609278442632881, check KL 0.31042 (no name lowers the check KL)
+[   3735s] case_twin_s3 [all] pass 2 n 13: closure 0.9598, answer 0.9609278442632881, check KL 0.31042 (no name lowers the check KL)
+STAGE search case_twin_s3 DONE
+[   3739s] repeat_real_s2: KL(F || M) 8.10716 nats on 16384 read windows; answer windows 6132, KL 14.041129652845727
+[   3743s] repeat_real_s2 [all] pass 1 n 1: closure 0.6511, answer 0.5569472375778713, check KL 2.8597 (+ logit#46493)
+[   3748s] repeat_real_s2 [all] pass 1 n 2: closure 0.9046, answer 0.9367023780498677, check KL 0.78903 (+ logit#23656)
+[   3756s] repeat_real_s2 [all] pass 1 n 3: closure 0.9157, answer 0.9433697730156627, check KL 0.7027 (+ mlp3#169)
+[   3764s] repeat_real_s2 [all] pass 1 n 4: closure 0.9221, answer 0.9459742765209125, check KL 0.65261 (+ mlp2#2269)
+[   3773s] repeat_real_s2 [all] pass 1 n 5: closure 0.9267, answer 0.9474825671536522, check KL 0.60343 (+ mlp1#2396)
+[   3781s] repeat_real_s2 [all] pass 1 n 6: closure 0.9287, answer 0.9487769942322384, check KL 0.57958 (+ mlp3#1199)
+[   3789s] repeat_real_s2 [all] pass 1 n 7: closure 0.9316, answer 0.9491332104266409, check KL 0.54688 (+ mlp3#1982)
+[   3798s] repeat_real_s2 [all] pass 1 n 8: closure 0.9346, answer 0.9496557962894162, check KL 0.52105 (+ mlp0#1377)
+[   3807s] repeat_real_s2 [all] pass 1 n 9: closure 0.9364, answer 0.9497921758635798, check KL 0.50625 (+ mlp1#2960)
+[   3816s] repeat_real_s2 [all] pass 1 n 10: closure 0.9375, answer 0.9500466953975729, check KL 0.50084 (+ mlp1#47)
+[   3825s] repeat_real_s2 [all] pass 1 n 11: closure 0.9385, answer 0.9503126818573906, check KL 0.49568 (+ mlp1#486)
+[   3834s] repeat_real_s2 [all] pass 1 n 12: closure 0.9390, answer 0.9500728149789854, check KL 0.49203 (+ mlp0#947)
+[   3843s] repeat_real_s2 [all] pass 1 n 13: closure 0.9394, answer 0.950502182447478, check KL 0.48894 (+ mlp3#1915)
+[   3852s] repeat_real_s2 [all] pass 1 n 14: closure 0.9403, answer 0.9503943113976071, check KL 0.48114 (+ mlp1#854)
+[   3861s] repeat_real_s2 [all] pass 1 n 15: closure 0.9405, answer 0.950474049632303, check KL 0.47867 (+ mlp3#1485)
+[   3870s] repeat_real_s2 [all] pass 1 n 16: closure 0.9408, answer 0.9508203215861352, check KL 0.47587 (+ mlp2#2561)
+[   3876s] repeat_real_s2 [all] pass 2 n 2: closure 0.6617, answer 0.555310109908726, check KL 2.7712 (+ mlp0#2532->logit#46493)
+[   3884s] repeat_real_s2 [all] pass 2 n 4: closure 0.9216, answer 0.940156426505308, check KL 0.64649 (+ mlp0#30->logit#23656)
+[   3893s] repeat_real_s2 [all] pass 2 n 6: closure 0.9434, answer 0.9534586729384589, check KL 0.46064 (+ tok-1#18214->mlp3#2741)
+[   3902s] repeat_real_s2 [all] pass 2 n 7: closure 0.9565, answer 0.9669268686711019, check KL 0.36009 (+ tok-1#18214->mlp3#2741)
+[   3912s] repeat_real_s2 [all] pass 2 n 9: closure 0.9604, answer 0.9688898311358499, check KL 0.31844 (+ mlp0#2197->mlp1#537)
+[   3921s] repeat_real_s2 [all] pass 2 n 10: closure 0.9637, answer 0.9724979543560095, check KL 0.29692 (+ mlp0#2197->mlp1#537)
+[   3931s] repeat_real_s2 [all] pass 2 n 12: closure 0.9654, answer 0.9739379042091353, check KL 0.28245 (+ tok-1#18214->mlp0#505)
+[   3941s] repeat_real_s2 [all] pass 2 n 13: closure 0.9671, answer 0.9752424392807563, check KL 0.26396 (+ tok-1#18214->mlp0#505)
+[   3951s] repeat_real_s2 [all] pass 2 n 14: closure 0.9682, answer 0.9763492081617019, check KL 0.25427 (+ tok-1#18214->mlp0#505)
+[   3960s] repeat_real_s2 [all] pass 2 n 15: closure 0.9696, answer 0.9773548992389546, check KL 0.23979 (+ tok-1#18214->mlp0#505)
+[   3969s] repeat_real_s2 [all] pass 2 n 16: closure 0.9705, answer 0.9784597328635016, check KL 0.22974 (+ tok-1#18214->mlp0#505)
+STAGE search repeat_real_s2 DONE
+[   3973s] repeat_real_s3: KL(F || M) 7.89867 nats on 16384 read windows; answer windows 6132, KL 13.7938924392531
+[   3979s] repeat_real_s3 [all] pass 1 n 1: closure 0.2735, answer 0.38528585762089185, check KL 5.8353 (+ mlp3#901)
+[   3986s] repeat_real_s3 [all] pass 1 n 2: closure 0.5755, answer 0.7301644114390153, check KL 3.3895 (+ logit#23656)
+[   3994s] repeat_real_s3 [all] pass 1 n 3: closure 0.8083, answer 0.9092110224969199, check KL 1.4897 (+ logit#46493)
+[   4002s] repeat_real_s3 [all] pass 1 n 4: closure 0.8851, answer 0.9407126874439296, check KL 0.89202 (+ mlp2#1038)
+[   4011s] repeat_real_s3 [all] pass 1 n 5: closure 0.8973, answer 0.9481430913242739, check KL 0.79356 (+ mlp3#169)
+[   4019s] repeat_real_s3 [all] pass 1 n 6: closure 0.9057, answer 0.9488229194789471, check KL 0.73619 (+ mlp2#2539)
+[   4027s] repeat_real_s3 [all] pass 1 n 7: closure 0.9116, answer 0.9491240148493951, check KL 0.69653 (+ mlp2#2973)
+[   4036s] repeat_real_s3 [all] pass 1 n 8: closure 0.9132, answer 0.9508443656123327, check KL 0.6847 (+ mlp1#719)
+[   4045s] repeat_real_s3 [all] pass 1 n 9: closure 0.9154, answer 0.9513444180402448, check KL 0.66716 (+ mlp0#1460)
+[   4053s] repeat_real_s3 [all] pass 1 n 10: closure 0.9179, answer 0.9511590701881475, check KL 0.64662 (+ mlp1#854)
+[   4062s] repeat_real_s3 [all] pass 1 n 11: closure 0.9200, answer 0.9524579021529134, check KL 0.63218 (+ mlp2#2606)
+[   4071s] repeat_real_s3 [all] pass 1 n 12: closure 0.9223, answer 0.9519679130324268, check KL 0.6151 (+ mlp2#1648)
+[   4079s] repeat_real_s3 [all] pass 1 n 13: closure 0.9246, answer 0.9533183921480375, check KL 0.59688 (+ mlp2#2534)
+[   4088s] repeat_real_s3 [all] pass 1 n 14: closure 0.9259, answer 0.9537103560239706, check KL 0.58934 (+ mlp0#2554)
+[   4097s] repeat_real_s3 [all] pass 1 n 15: closure 0.9264, answer 0.953645034724573, check KL 0.58665 (+ mlp3#1748)
+[   4106s] repeat_real_s3 [all] pass 1 n 16: closure 0.9275, answer 0.9530129297091441, check KL 0.57578 (+ mlp2#2026)
+[   4113s] repeat_real_s3 [all] pass 2 n 1: closure 0.2735, answer 0.38528585762089185, check KL 5.8353 (+ mlp3#901)
+[   4123s] repeat_real_s3 [all] pass 2 n 3: closure 0.5796, answer 0.5595890847788321, check KL 3.3632 (+ tok-1#18214->mlp2#2021)
+[   4132s] repeat_real_s3 [all] pass 2 n 5: closure 0.8433, answer 0.8749663854070618, check KL 1.2458 (+ mlp3#2252->logit#23656)
+[   4142s] repeat_real_s3 [all] pass 2 n 7: closure 0.9378, answer 0.9575586265517207, check KL 0.48174 (+ mlp3#1913->logit#46493)
+[   4146s] repeat_real_s3 [all] pass 2 n 7: closure 0.9378, answer 0.9575586265517207, check KL 0.48174 (no name lowers the check KL)
+[   4150s] repeat_real_s3 [all] pass 2 n 7: closure 0.9378, answer 0.9575586265517207, check KL 0.48174 (no name lowers the check KL)
+[   4154s] repeat_real_s3 [all] pass 2 n 7: closure 0.9378, answer 0.9575586265517207, check KL 0.48174 (no name lowers the check KL)
+[   4158s] repeat_real_s3 [all] pass 2 n 7: closure 0.9378, answer 0.9575586265517207, check KL 0.48174 (no name lowers the check KL)
+[   4162s] repeat_real_s3 [all] pass 2 n 7: closure 0.9378, answer 0.9575586265517207, check KL 0.48174 (no name lowers the check KL)
+[   4167s] repeat_real_s3 [all] pass 2 n 7: closure 0.9378, answer 0.9575586265517207, check KL 0.48174 (no name lowers the check KL)
+[   4171s] repeat_real_s3 [all] pass 2 n 7: closure 0.9378, answer 0.9575586265517207, check KL 0.48174 (no name lowers the check KL)
+[   4175s] repeat_real_s3 [all] pass 2 n 7: closure 0.9378, answer 0.9575586265517207, check KL 0.48174 (no name lowers the check KL)
+[   4179s] repeat_real_s3 [all] pass 2 n 7: closure 0.9378, answer 0.9575586265517207, check KL 0.48174 (no name lowers the check KL)
+[   4183s] repeat_real_s3 [all] pass 2 n 7: closure 0.9378, answer 0.9575586265517207, check KL 0.48174 (no name lowers the check KL)
+[   4187s] repeat_real_s3 [all] pass 2 n 7: closure 0.9378, answer 0.9575586265517207, check KL 0.48174 (no name lowers the check KL)
+[   4191s] repeat_real_s3 [all] pass 2 n 7: closure 0.9378, answer 0.9575586265517207, check KL 0.48174 (no name lowers the check KL)
+[   4195s] repeat_real_s3 [all] pass 2 n 7: closure 0.9378, answer 0.9575586265517207, check KL 0.48174 (no name lowers the check KL)
+[   4200s] repeat_real_s3 [all] pass 2 n 7: closure 0.9378, answer 0.9575586265517207, check KL 0.48174 (no name lowers the check KL)
+[   4204s] repeat_real_s3 [all] pass 2 n 7: closure 0.9378, answer 0.9575586265517207, check KL 0.48174 (no name lowers the check KL)
+[   4208s] repeat_real_s3 [all] pass 2 n 7: closure 0.9378, answer 0.9575586265517207, check KL 0.48174 (no name lowers the check KL)
+STAGE search repeat_real_s3 DONE
+[   4212s] repeat_twin_s2: KL(F || M) 7.96879 nats on 16384 read windows; answer windows 6132, KL 13.96931918368803
+[   4216s] repeat_twin_s2 [all] pass 1 n 1: closure 0.5492, answer 0.5177615291729638, check KL 3.7523 (+ logit#46493)
+[   4220s] repeat_twin_s2 [all] pass 1 n 2: closure 0.9028, answer 0.936358900143101, check KL 0.79293 (+ logit#23656)
+[   4228s] repeat_twin_s2 [all] pass 1 n 3: closure 0.9144, answer 0.9428332668990097, check KL 0.70294 (+ mlp3#169)
+[   4237s] repeat_twin_s2 [all] pass 1 n 4: closure 0.9173, answer 0.94428058330993, check KL 0.67413 (+ mlp1#1492)
+[   4245s] repeat_twin_s2 [all] pass 1 n 5: closure 0.9218, answer 0.947025951237328, check KL 0.63777 (+ mlp2#330)
+[   4255s] repeat_twin_s2 [all] pass 1 n 6: closure 0.9255, answer 0.9481636509048289, check KL 0.60098 (+ mlp0#681)
+[   4263s] repeat_twin_s2 [all] pass 1 n 7: closure 0.9282, answer 0.9482672284262172, check KL 0.57009 (+ mlp0#2600)
+[   4272s] repeat_twin_s2 [all] pass 1 n 8: closure 0.9295, answer 0.9485394701623662, check KL 0.56005 (+ mlp0#1810)
+[   4281s] repeat_twin_s2 [all] pass 1 n 9: closure 0.9316, answer 0.949188485945196, check KL 0.5429 (+ mlp3#1664)
+[   4289s] repeat_twin_s2 [all] pass 1 n 10: closure 0.9323, answer 0.9492669254359954, check KL 0.53661 (+ mlp1#2028)
+[   4298s] repeat_twin_s2 [all] pass 1 n 11: closure 0.9334, answer 0.9495873255965049, check KL 0.52782 (+ mlp0#431)
+[   4307s] repeat_twin_s2 [all] pass 1 n 12: closure 0.9340, answer 0.9494858443360574, check KL 0.52263 (+ mlp3#1915)
+[   4316s] repeat_twin_s2 [all] pass 1 n 13: closure 0.9345, answer 0.9498658589655932, check KL 0.51667 (+ mlp0#1342)
+[   4325s] repeat_twin_s2 [all] pass 1 n 14: closure 0.9354, answer 0.9499521234521956, check KL 0.51002 (+ mlp2#2345)
+[   4333s] repeat_twin_s2 [all] pass 1 n 15: closure 0.9359, answer 0.9503809691336678, check KL 0.50528 (+ mlp0#1792)
+[   4342s] repeat_twin_s2 [all] pass 1 n 16: closure 0.9369, answer 0.9506353890891736, check KL 0.50079 (+ mlp2#652)
+[   4349s] repeat_twin_s2 [all] pass 2 n 2: closure 0.5571, answer 0.5178451288003145, check KL 3.687 (+ mlp0#2532->logit#46493)
+[   4356s] repeat_twin_s2 [all] pass 2 n 4: closure 0.9220, answer 0.9441907319512759, check KL 0.64249 (+ mlp0#658->logit#23656)
+[   4365s] repeat_twin_s2 [all] pass 2 n 6: closure 0.9393, answer 0.9509995185924637, check KL 0.49436 (+ tok-1#18214->mlp3#2741)
+[   4374s] repeat_twin_s2 [all] pass 2 n 7: closure 0.9436, answer 0.9497752879524353, check KL 0.46788 (+ tok-1#18214->mlp3#2741)
+[   4378s] repeat_twin_s2 [all] pass 2 n 7: closure 0.9436, answer 0.9497752879524353, check KL 0.46788 (no name lowers the check KL)
+[   4387s] repeat_twin_s2 [all] pass 2 n 8: closure 0.9459, answer 0.9523938399307345, check KL 0.44191 (+ tok-1#18214->mlp3#2741)
+[   4396s] repeat_twin_s2 [all] pass 2 n 9: closure 0.9473, answer 0.9525220267860366, check KL 0.43416 (+ tok-1#18214->mlp3#2741)
+[   4405s] repeat_twin_s2 [all] pass 2 n 10: closure 0.9485, answer 0.9532147191844853, check KL 0.42589 (+ tok-1#18214->mlp3#2741)
+[   4415s] repeat_twin_s2 [all] pass 2 n 12: closure 0.9499, answer 0.9529066600299225, check KL 0.41574 (+ mlp0#220->mlp3#2049)
+[   4419s] repeat_twin_s2 [all] pass 2 n 12: closure 0.9499, answer 0.9529066600299225, check KL 0.41574 (no name lowers the check KL)
+[   4423s] repeat_twin_s2 [all] pass 2 n 12: closure 0.9499, answer 0.9529066600299225, check KL 0.41574 (no name lowers the check KL)
+[   4427s] repeat_twin_s2 [all] pass 2 n 12: closure 0.9499, answer 0.9529066600299225, check KL 0.41574 (no name lowers the check KL)
+[   4431s] repeat_twin_s2 [all] pass 2 n 12: closure 0.9499, answer 0.9529066600299225, check KL 0.41574 (no name lowers the check KL)
+[   4435s] repeat_twin_s2 [all] pass 2 n 12: closure 0.9499, answer 0.9529066600299225, check KL 0.41574 (no name lowers the check KL)
+[   4445s] repeat_twin_s2 [all] pass 2 n 14: closure 0.9505, answer 0.9537524250789214, check KL 0.40988 (+ mlp1#2031->mlp3#1518)
+[   4454s] repeat_twin_s2 [all] pass 2 n 15: closure 0.9506, answer 0.953471057268629, check KL 0.40561 (+ mlp1#2031->mlp3#1518)
+[   4463s] repeat_twin_s2 [all] pass 2 n 16: closure 0.9508, answer 0.9537831065867773, check KL 0.40007 (+ mlp1#2031->mlp3#1518)
+STAGE search repeat_twin_s2 DONE
+[   4466s] repeat_twin_s3: KL(F || M) 7.92892 nats on 16384 read windows; answer windows 6132, KL 13.912805964102251
+[   4471s] repeat_twin_s3 [all] pass 1 n 1: closure 0.5550, answer 0.510788906508529, check KL 3.7424 (+ logit#46493)
+[   4475s] repeat_twin_s3 [all] pass 1 n 2: closure 0.9045, answer 0.9378882989525994, check KL 0.77534 (+ logit#23656)
+[   4483s] repeat_twin_s3 [all] pass 1 n 3: closure 0.9158, answer 0.9443920105810331, check KL 0.68853 (+ mlp3#169)
+[   4491s] repeat_twin_s3 [all] pass 1 n 4: closure 0.9222, answer 0.9468627298435274, check KL 0.63937 (+ mlp2#2269)
+[   4499s] repeat_twin_s3 [all] pass 1 n 5: closure 0.9269, answer 0.9478552683086425, check KL 0.59116 (+ mlp1#2396)
+[   4508s] repeat_twin_s3 [all] pass 1 n 6: closure 0.9304, answer 0.9494877702420601, check KL 0.55157 (+ mlp3#1982)
+[   4516s] repeat_twin_s3 [all] pass 1 n 7: closure 0.9323, answer 0.9496092534406089, check KL 0.53825 (+ in2.pc0)
+[   4525s] repeat_twin_s3 [all] pass 1 n 8: closure 0.9332, answer 0.9501423068865428, check KL 0.5285 (+ in0.pc27)
+[   4534s] repeat_twin_s3 [all] pass 1 n 9: closure 0.9345, answer 0.9501717522859153, check KL 0.52114 (+ mlp1#854)
+[   4543s] repeat_twin_s3 [all] pass 1 n 10: closure 0.9352, answer 0.9505972647059759, check KL 0.51546 (+ mlp0#1792)
+[   4552s] repeat_twin_s3 [all] pass 1 n 11: closure 0.9361, answer 0.9505451131963626, check KL 0.50943 (+ mlp0#491)
+[   4562s] repeat_twin_s3 [all] pass 1 n 12: closure 0.9368, answer 0.9509767238861218, check KL 0.50281 (+ mlp1#718)
+[   4571s] repeat_twin_s3 [all] pass 1 n 13: closure 0.9378, answer 0.9515031281862816, check KL 0.49637 (+ mlp0#2)
+[   4580s] repeat_twin_s3 [all] pass 1 n 14: closure 0.9381, answer 0.9510019926432489, check KL 0.49343 (+ mlp0#8)
+[   4589s] repeat_twin_s3 [all] pass 1 n 15: closure 0.9394, answer 0.9511674529227888, check KL 0.48286 (+ mlp2#1894)
+[   4598s] repeat_twin_s3 [all] pass 1 n 16: closure 0.9402, answer 0.9519332751196113, check KL 0.47728 (+ mlp0#2342)
+[   4603s] repeat_twin_s3 [all] pass 2 n 1: closure 0.5550, answer 0.510788906508529, check KL 3.7424 (+ logit#46493)
+[   4610s] repeat_twin_s3 [all] pass 2 n 3: closure 0.9110, answer 0.94060054518016, check KL 0.71471 (+ mlp0#1181->logit#23656)
+[   4619s] repeat_twin_s3 [all] pass 2 n 5: closure 0.9409, answer 0.9523731761365956, check KL 0.4802 (+ tok-1#18214->mlp3#2741)
+[   4629s] repeat_twin_s3 [all] pass 2 n 6: closure 0.9463, answer 0.9525991741197195, check KL 0.4268 (+ tok-1#18214->mlp3#2741)
+[   4638s] repeat_twin_s3 [all] pass 2 n 7: closure 0.9486, answer 0.9521281421656562, check KL 0.40476 (+ tok-1#18214->mlp3#2741)
+[   4647s] repeat_twin_s3 [all] pass 2 n 8: closure 0.9496, answer 0.9532280499550108, check KL 0.39283 (+ tok-1#18214->mlp3#2741)
+[   4657s] repeat_twin_s3 [all] pass 2 n 10: closure 0.9498, answer 0.9535410706187529, check KL 0.39179 (+ mlp0#1585->mlp1#1141)
+[   4666s] repeat_twin_s3 [all] pass 2 n 11: closure 0.9503, answer 0.953669307414903, check KL 0.38705 (+ mlp0#1585->mlp1#1141)
+[   4676s] repeat_twin_s3 [all] pass 2 n 12: closure 0.9515, answer 0.9550199196216576, check KL 0.37583 (+ mlp0#1585->mlp1#1141)
+[   4686s] repeat_twin_s3 [all] pass 2 n 13: closure 0.9523, answer 0.9553850817790844, check KL 0.3686 (+ mlp0#1585->mlp1#1141)
+[   4690s] repeat_twin_s3 [all] pass 2 n 13: closure 0.9523, answer 0.9553850817790844, check KL 0.3686 (no name lowers the check KL)
+[   4694s] repeat_twin_s3 [all] pass 2 n 13: closure 0.9523, answer 0.9553850817790844, check KL 0.3686 (no name lowers the check KL)
+[   4698s] repeat_twin_s3 [all] pass 2 n 13: closure 0.9523, answer 0.9553850817790844, check KL 0.3686 (no name lowers the check KL)
+[   4702s] repeat_twin_s3 [all] pass 2 n 13: closure 0.9523, answer 0.9553850817790844, check KL 0.3686 (no name lowers the check KL)
+[   4706s] repeat_twin_s3 [all] pass 2 n 13: closure 0.9523, answer 0.9553850817790844, check KL 0.3686 (no name lowers the check KL)
+[   4710s] repeat_twin_s3 [all] pass 2 n 13: closure 0.9523, answer 0.9553850817790844, check KL 0.3686 (no name lowers the check KL)
+[   4714s] repeat_twin_s3 [all] pass 2 n 13: closure 0.9523, answer 0.9553850817790844, check KL 0.3686 (no name lowers the check KL)
+[   4719s] repeat_twin_s3 [all] pass 2 n 13: closure 0.9523, answer 0.9553850817790844, check KL 0.3686 (no name lowers the check KL)
+[   4723s] repeat_twin_s3 [all] pass 2 n 13: closure 0.9523, answer 0.9553850817790844, check KL 0.3686 (no name lowers the check KL)
+[   4733s] repeat_twin_s3 [all] pass 2 n 14: closure 0.9528, answer 0.9556488126271121, check KL 0.36751 (+ mlp0#1585->mlp1#1141)
+[   4737s] repeat_twin_s3 [all] pass 2 n 14: closure 0.9528, answer 0.9556488126271121, check KL 0.36751 (no name lowers the check KL)
+[   4741s] repeat_twin_s3 [all] pass 2 n 14: closure 0.9528, answer 0.9556488126271121, check KL 0.36751 (no name lowers the check KL)
+[   4745s] repeat_twin_s3 [all] pass 2 n 14: closure 0.9528, answer 0.9556488126271121, check KL 0.36751 (no name lowers the check KL)
+[   4749s] repeat_twin_s3 [all] pass 2 n 14: closure 0.9528, answer 0.9556488126271121, check KL 0.36751 (no name lowers the check KL)
+[   4753s] repeat_twin_s3 [all] pass 2 n 14: closure 0.9528, answer 0.9556488126271121, check KL 0.36751 (no name lowers the check KL)
+[   4758s] repeat_twin_s3 [all] pass 2 n 14: closure 0.9528, answer 0.9556488126271121, check KL 0.36751 (no name lowers the check KL)
+[   4762s] repeat_twin_s3 [all] pass 2 n 14: closure 0.9528, answer 0.9556488126271121, check KL 0.36751 (no name lowers the check KL)
+STAGE search repeat_twin_s3 DONE
+[   4766s] twin_s2: KL(F || M) 0.647075 nats on 16384 read windows; answer windows 12377, KL 0.8470112539468447
+[   4771s] twin_s2 [all] pass 1 n 1: closure 0.2223, answer 0.24300559037402736, check KL 0.52077 (+ mlp3#1787)
+[   4778s] twin_s2 [all] pass 1 n 2: closure 0.3061, answer 0.3391403509576929, check KL 0.46351 (+ mlp2#2751)
+[   4785s] twin_s2 [all] pass 1 n 3: closure 0.3668, answer 0.40286869286730354, check KL 0.42959 (+ mlp2#767)
+[   4793s] twin_s2 [all] pass 1 n 4: closure 0.3787, answer 0.41636973107785546, check KL 0.4178 (+ mlp0#238)
+[   4802s] twin_s2 [all] pass 1 n 5: closure 0.3864, answer 0.4247425753191201, check KL 0.41262 (+ mlp2#2737)
+[   4811s] twin_s2 [all] pass 1 n 6: closure 0.3905, answer 0.4277220929787061, check KL 0.40657 (+ mlp2#2975)
+[   4819s] twin_s2 [all] pass 1 n 7: closure 0.3960, answer 0.43550605165276024, check KL 0.40272 (+ mlp2#732)
+[   4829s] twin_s2 [all] pass 1 n 8: closure 0.4057, answer 0.44599442475964846, check KL 0.39443 (+ in1.pc19)
+[   4839s] twin_s2 [all] pass 1 n 9: closure 0.4179, answer 0.45977653597539825, check KL 0.3872 (+ mlp0#1812)
+[   4848s] twin_s2 [all] pass 1 n 10: closure 0.4278, answer 0.47151917314282044, check KL 0.37918 (+ mlp0#861)
+[   4857s] twin_s2 [all] pass 1 n 11: closure 0.4403, answer 0.484353701927987, check KL 0.36997 (+ mlp1#1689)
+[   4867s] twin_s2 [all] pass 1 n 12: closure 0.4488, answer 0.493977346841315, check KL 0.36483 (+ mlp2#257)
+[   4876s] twin_s2 [all] pass 1 n 13: closure 0.4552, answer 0.5001254937962136, check KL 0.36102 (+ mlp2#982)
+[   4886s] twin_s2 [all] pass 1 n 14: closure 0.4591, answer 0.5044646414145377, check KL 0.35895 (+ mlp2#793)
+[   4896s] twin_s2 [all] pass 1 n 15: closure 0.4648, answer 0.5106421613095631, check KL 0.35676 (+ mlp1#685)
+[   4905s] twin_s2 [all] pass 1 n 16: closure 0.4698, answer 0.5168870866476517, check KL 0.35378 (+ mlp1#304)
+[   4911s] twin_s2 [all] pass 2 n 1: closure 0.2223, answer 0.24300559037402736, check KL 0.52077 (+ mlp3#1787)
+[   4917s] twin_s2 [all] pass 2 n 2: closure 0.3470, answer 0.37946596965931245, check KL 0.44161 (+ mlp0#1812->mlp3#1787)
+[   4926s] twin_s2 [all] pass 2 n 4: closure 0.4304, answer 0.47233288713066224, check KL 0.3877 (+ mlp3#1787->out3.pc3)
+[   4936s] twin_s2 [all] pass 2 n 6: closure 0.4701, answer 0.502864546480287, check KL 0.35892 (+ mlp0#89->mlp1#2433)
+[   4946s] twin_s2 [all] pass 2 n 8: closure 0.5259, answer 0.5559762285430885, check KL 0.32022 (+ mlp0#2251->mlp2#2751)
+[   4957s] twin_s2 [all] pass 2 n 9: closure 0.5603, answer 0.5978494060545306, check KL 0.29599 (+ mlp0#2251)
+[   4967s] twin_s2 [all] pass 2 n 11: closure 0.6012, answer 0.6446920327717476, check KL 0.2714 (+ mlp0#2251->mlp2#767)
+[   4978s] twin_s2 [all] pass 2 n 13: closure 0.6162, answer 0.6617628936962179, check KL 0.26056 (+ mlp1#2433->mlp2#2640)
+[   4989s] twin_s2 [all] pass 2 n 14: closure 0.6300, answer 0.6664893735378323, check KL 0.25194 (+ mlp1#2433->mlp2#2640)
+[   4999s] twin_s2 [all] pass 2 n 16: closure 0.6448, answer 0.6824488666516076, check KL 0.24309 (+ mlp1#2433->mlp2#2974)
+STAGE search twin_s2 DONE
+[   5003s] twin_s3: KL(F || M) 0.646178 nats on 16384 read windows; answer windows 12377, KL 0.8471975012935883
+[   5008s] twin_s3 [all] pass 1 n 1: closure 0.2229, answer 0.24415467803283408, check KL 0.5173 (+ mlp3#1787)
+[   5015s] twin_s3 [all] pass 1 n 2: closure 0.3073, answer 0.3409293624148121, check KL 0.4592 (+ mlp2#2751)
+[   5022s] twin_s3 [all] pass 1 n 3: closure 0.3666, answer 0.40395038638196135, check KL 0.4231 (+ mlp2#767)
+[   5030s] twin_s3 [all] pass 1 n 4: closure 0.3786, answer 0.41717513818621454, check KL 0.41185 (+ mlp0#238)
+[   5039s] twin_s3 [all] pass 1 n 5: closure 0.3866, answer 0.42582082288012, check KL 0.40655 (+ mlp2#2737)
+[   5048s] twin_s3 [all] pass 1 n 6: closure 0.3907, answer 0.42860474849645835, check KL 0.40041 (+ mlp2#2975)
+[   5057s] twin_s3 [all] pass 1 n 7: closure 0.4015, answer 0.4402703769692037, check KL 0.39162 (+ in1.pc19)
+[   5066s] twin_s3 [all] pass 1 n 8: closure 0.4137, answer 0.45449646719269254, check KL 0.38515 (+ mlp0#1812)
+[   5076s] twin_s3 [all] pass 1 n 9: closure 0.4238, answer 0.4662125827910024, check KL 0.37748 (+ mlp0#861)
+[   5085s] twin_s3 [all] pass 1 n 10: closure 0.4359, answer 0.4785387857779726, check KL 0.36853 (+ mlp1#1689)
+[   5094s] twin_s3 [all] pass 1 n 11: closure 0.4440, answer 0.4877258921246945, check KL 0.36348 (+ mlp2#257)
+[   5103s] twin_s3 [all] pass 1 n 12: closure 0.4512, answer 0.49481052681415416, check KL 0.35935 (+ mlp2#982)
+[   5113s] twin_s3 [all] pass 1 n 13: closure 0.4554, answer 0.49951804291007673, check KL 0.3571 (+ mlp2#793)
+[   5123s] twin_s3 [all] pass 1 n 14: closure 0.4590, answer 0.5073317610527708, check KL 0.35509 (+ mlp2#3037)
+[   5132s] twin_s3 [all] pass 1 n 15: closure 0.4641, answer 0.5136573273500049, check KL 0.35193 (+ mlp1#304)
+[   5142s] twin_s3 [all] pass 1 n 16: closure 0.4690, answer 0.5221835823324062, check KL 0.34946 (+ mlp2#278)
+[   5148s] twin_s3 [all] pass 2 n 1: closure 0.2229, answer 0.24415467803283408, check KL 0.5173 (+ mlp3#1787)
+[   5154s] twin_s3 [all] pass 2 n 2: closure 0.3485, answer 0.38108777334735966, check KL 0.43871 (+ mlp0#1812->mlp3#1787)
+[   5164s] twin_s3 [all] pass 2 n 4: closure 0.4318, answer 0.473781394464318, check KL 0.38358 (+ mlp3#1787->out3.pc3)
+[   5174s] twin_s3 [all] pass 2 n 6: closure 0.4920, answer 0.528751466677955, check KL 0.34277 (+ mlp0#89->mlp1#2433)
+[   5184s] twin_s3 [all] pass 2 n 8: closure 0.5482, answer 0.5928792494697956, check KL 0.30532 (+ mlp1#2433->mlp2#2751)
+[   5195s] twin_s3 [all] pass 2 n 9: closure 0.5716, answer 0.6035558633543308, check KL 0.28822 (+ mlp1#2433->mlp2#2751)
+[   5205s] twin_s3 [all] pass 2 n 11: closure 0.6128, answer 0.6423498256852118, check KL 0.26216 (+ mlp1#2433->mlp2#767)
+[   5215s] twin_s3 [all] pass 2 n 13: closure 0.6376, answer 0.670748933859741, check KL 0.24739 (+ mlp0#1812->mlp2#2295)
+[   5226s] twin_s3 [all] pass 2 n 14: closure 0.6526, answer 0.6866147469904085, check KL 0.23811 (+ mlp0#1812->mlp2#2295)
+[   5236s] twin_s3 [all] pass 2 n 15: closure 0.6591, answer 0.6905921810082449, check KL 0.23207 (+ mlp0#1812->mlp2#2295)
+[   5245s] twin_s3 [all] pass 2 n 16: closure 0.6650, answer 0.6954956576771925, check KL 0.22826 (+ mlp0#1812->mlp2#2295)
+STAGE search twin_s3 DONE
+[   5250s] fact_s2: KL(F || M) 0.66711 nats on 16384 read windows; answer windows 12377, KL 0.873844561885437
+[   5255s] fact_s2 [all] pass 1 n 1: closure 0.2258, answer 0.24270549845802214, check KL 0.49786 (+ mlp3#1787)
+[   5261s] fact_s2 [all] pass 1 n 2: closure 0.3116, answer 0.33713775792444367, check KL 0.44654 (+ mlp2#2751)
+[   5268s] fact_s2 [all] pass 1 n 3: closure 0.3754, answer 0.40482613573782866, check KL 0.41191 (+ mlp2#767)
+[   5276s] fact_s2 [all] pass 1 n 4: closure 0.3876, answer 0.41471167032254097, check KL 0.40342 (+ mlp1#2433)
+[   5283s] fact_s2 [all] pass 1 n 5: closure 0.3977, answer 0.4259083143002095, check KL 0.39627 (+ mlp2#2640)
+[   5292s] fact_s2 [all] pass 1 n 6: closure 0.4051, answer 0.4321702675565421, check KL 0.39126 (+ mlp1#1399)
+[   5302s] fact_s2 [all] pass 1 n 7: closure 0.4105, answer 0.43816253232972124, check KL 0.38787 (+ mlp2#132)
+[   5311s] fact_s2 [all] pass 1 n 8: closure 0.4157, answer 0.4418313028118739, check KL 0.38461 (+ mlp1#2453)
+[   5320s] fact_s2 [all] pass 1 n 9: closure 0.4189, answer 0.4458548911424175, check KL 0.38211 (+ mlp2#2278)
+[   5329s] fact_s2 [all] pass 1 n 10: closure 0.4217, answer 0.44862987100876295, check KL 0.38019 (+ mlp0#1788)
+[   5338s] fact_s2 [all] pass 1 n 11: closure 0.4241, answer 0.44994712732864783, check KL 0.37818 (+ mlp1#604)
+[   5348s] fact_s2 [all] pass 1 n 12: closure 0.4267, answer 0.45328409954772797, check KL 0.37649 (+ mlp2#1052)
+[   5357s] fact_s2 [all] pass 1 n 13: closure 0.4291, answer 0.4538877335564706, check KL 0.37499 (+ in1.pc5)
+[   5366s] fact_s2 [all] pass 1 n 14: closure 0.4318, answer 0.4570374791565813, check KL 0.37352 (+ mlp2#729)
+[   5376s] fact_s2 [all] pass 1 n 15: closure 0.4372, answer 0.46233847282968066, check KL 0.37029 (+ mlp2#2295)
+[   5385s] fact_s2 [all] pass 1 n 16: closure 0.4401, answer 0.4656008735278362, check KL 0.36884 (+ mlp2#2675)
+[   5391s] fact_s2 [all] pass 2 n 1: closure 0.2258, answer 0.24270549845802214, check KL 0.49786 (+ mlp3#1787)
+[   5398s] fact_s2 [all] pass 2 n 2: closure 0.3116, answer 0.33713775792444367, check KL 0.44654 (+ mlp2#2751)
+[   5406s] fact_s2 [all] pass 2 n 3: closure 0.3754, answer 0.40482613573782866, check KL 0.41191 (+ mlp2#767)
+[   5417s] fact_s2 [all] pass 2 n 4: closure 0.3995, answer 0.41591479336152826, check KL 0.39197 (+ mlp0#2182->mlp2#767)
+[   5425s] fact_s2 [all] pass 2 n 5: closure 0.4186, answer 0.428469781569664, check KL 0.38167 (+ mlp0#2182->mlp2#767)
+[   5433s] fact_s2 [all] pass 2 n 6: closure 0.4286, answer 0.4389355179140122, check KL 0.37567 (+ mlp0#2182->mlp2#767)
+[   5443s] fact_s2 [all] pass 2 n 8: closure 0.4357, answer 0.44546815357363156, check KL 0.37042 (+ mlp2#767->mlp3#7)
+[   5453s] fact_s2 [all] pass 2 n 10: closure 0.4448, answer 0.45529273313162444, check KL 0.36277 (+ mlp0#129->mlp1#2453)
+[   5463s] fact_s2 [all] pass 2 n 12: closure 0.4548, answer 0.4656945467970167, check KL 0.35536 (+ mlp2#2751->mlp3#979)
+[   5473s] fact_s2 [all] pass 2 n 13: closure 0.4598, answer 0.47176268562733514, check KL 0.35244 (+ mlp2#2751->mlp3#979)
+[   5483s] fact_s2 [all] pass 2 n 14: closure 0.4636, answer 0.4758556744840994, check KL 0.34978 (+ mlp2#2751->mlp3#979)
+[   5493s] fact_s2 [all] pass 2 n 15: closure 0.4671, answer 0.47939454510699975, check KL 0.34832 (+ mlp2#2751->mlp3#979)
+[   5502s] fact_s2 [all] pass 2 n 16: closure 0.4724, answer 0.485952844927225, check KL 0.34524 (+ mlp2#2751->mlp3#979)
+STAGE search fact_s2 DONE
+[   5506s] fact_s3: KL(F || M) 0.667444 nats on 16384 read windows; answer windows 12377, KL 0.8748352175297506
+[   5511s] fact_s3 [all] pass 1 n 1: closure 0.2245, answer 0.24101895697090892, check KL 0.50045 (+ mlp3#1787)
+[   5518s] fact_s3 [all] pass 1 n 2: closure 0.3107, answer 0.3361365453315843, check KL 0.44909 (+ mlp2#2751)
+[   5525s] fact_s3 [all] pass 1 n 3: closure 0.3742, answer 0.4035829597330539, check KL 0.41363 (+ mlp2#767)
+[   5533s] fact_s3 [all] pass 1 n 4: closure 0.3871, answer 0.41387327815634467, check KL 0.40459 (+ mlp1#2433)
+[   5541s] fact_s3 [all] pass 1 n 5: closure 0.3972, answer 0.4249417685964647, check KL 0.39722 (+ mlp2#2640)
+[   5549s] fact_s3 [all] pass 1 n 6: closure 0.4028, answer 0.4305514359099776, check KL 0.39238 (+ mlp1#21)
+[   5558s] fact_s3 [all] pass 1 n 7: closure 0.4073, answer 0.4344259391918026, check KL 0.38888 (+ mlp1#2675)
+[   5567s] fact_s3 [all] pass 1 n 8: closure 0.4139, answer 0.44012275752663343, check KL 0.38513 (+ mlp0#2495)
+[   5577s] fact_s3 [all] pass 1 n 9: closure 0.4186, answer 0.4435755471577437, check KL 0.38197 (+ mlp1#2453)
+[   5586s] fact_s3 [all] pass 1 n 10: closure 0.4216, answer 0.4466024138016582, check KL 0.37971 (+ mlp0#1788)
+[   5596s] fact_s3 [all] pass 1 n 11: closure 0.4246, answer 0.4514056035300248, check KL 0.37782 (+ mlp2#2440)
+[   5607s] fact_s3 [all] pass 1 n 12: closure 0.4269, answer 0.45260605499890727, check KL 0.37574 (+ mlp2#205)
+[   5617s] fact_s3 [all] pass 1 n 13: closure 0.4294, answer 0.45630636474794195, check KL 0.37387 (+ mlp2#353)
+[   5626s] fact_s3 [all] pass 1 n 14: closure 0.4315, answer 0.4556300584625753, check KL 0.37203 (+ mlp2#617)
+[   5636s] fact_s3 [all] pass 1 n 15: closure 0.4335, answer 0.4581809678066838, check KL 0.37049 (+ mlp3#3065)
+[   5647s] fact_s3 [all] pass 1 n 16: closure 0.4356, answer 0.4604125805883863, check KL 0.36892 (+ mlp1#504)
+[   5653s] fact_s3 [all] pass 2 n 1: closure 0.2245, answer 0.24101895697090892, check KL 0.50045 (+ mlp3#1787)
+[   5660s] fact_s3 [all] pass 2 n 2: closure 0.3107, answer 0.3361365453315843, check KL 0.44909 (+ mlp2#2751)
+[   5669s] fact_s3 [all] pass 2 n 3: closure 0.3742, answer 0.4035829597330539, check KL 0.41363 (+ mlp2#767)
+[   5677s] fact_s3 [all] pass 2 n 4: closure 0.3988, answer 0.41583875962006456, check KL 0.39383 (+ mlp0#2182->mlp2#767)
+[   5685s] fact_s3 [all] pass 2 n 5: closure 0.4192, answer 0.4301375152390893, check KL 0.38278 (+ mlp0#2182->mlp2#767)
+[   5694s] fact_s3 [all] pass 2 n 6: closure 0.4286, answer 0.44002390223877885, check KL 0.37713 (+ mlp0#2182->mlp2#767)
+[   5704s] fact_s3 [all] pass 2 n 8: closure 0.4376, answer 0.44870772675986104, check KL 0.37062 (+ mlp2#767->mlp3#2365)
+[   5714s] fact_s3 [all] pass 2 n 9: closure 0.4381, answer 0.45336751438567346, check KL 0.3674 (+ mlp2#767->mlp3#2365)
+[   5724s] fact_s3 [all] pass 2 n 10: closure 0.4441, answer 0.458663158081132, check KL 0.36372 (+ mlp2#767->mlp3#2365)
+[   5734s] fact_s3 [all] pass 2 n 12: closure 0.4510, answer 0.46227064470327905, check KL 0.36026 (+ mlp2#2751->mlp3#1028)
+[   5743s] fact_s3 [all] pass 2 n 13: closure 0.4548, answer 0.4670067489241617, check KL 0.35789 (+ mlp2#2751->mlp3#1028)
+[   5753s] fact_s3 [all] pass 2 n 15: closure 0.4577, answer 0.4699959231934985, check KL 0.35629 (+ tok-1#495->mlp0#2076)
+[   5762s] fact_s3 [all] pass 2 n 16: closure 0.4616, answer 0.47473227508458093, check KL 0.35252 (+ tok-1#495->mlp0#2076)
+STAGE search fact_s3 DONE
+[   5762s] full: fails (7 of 10 read hold); copy24/cipher24 s2 0.4025; copy24/cipher24 s3 0.3611; ident32/rand32 s2 0.4378; ident32/rand32 s3 0.4265; case_real/case_twin s2 0.0347; case_real/case_twin s3 0.0231; repeat_real/repeat_twin s2 0.0197; repeat_real/repeat_twin s3 -0.0149; twin/fact s2 0.1724; twin/fact s3 0.2033
+[   5762s] answer: fails (8 of 10 read hold); copy24/cipher24 s2 0.4680; copy24/cipher24 s3 0.4427; ident32/rand32 s2 0.4942; ident32/rand32 s3 0.4969; case_real/case_twin s2 0.0382; case_real/case_twin s3 0.0318; repeat_real/repeat_twin s2 0.0247; repeat_real/repeat_twin s3 0.0019; twin/fact s2 0.1965; twin/fact s3 0.2208
+[   5762s] E192 DONE
+peak host RSS 6.2 GB
+=== FINISHED (exit 0 ) — results in /root/work/experiments/curve_test/results/ ===

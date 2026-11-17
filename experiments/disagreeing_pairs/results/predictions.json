@@ -1,0 +1,132 @@
+{
+  "experiment": "E151 (cell P2.17; claimed 2026-11-11 by compare-lead before the run)",
+  "plan": "reports/plans/2026-11-11_plan_p2-17-disagreeing-pairs.md (apparatus: reports/plans/2026-11-11_plan_p2-17-appendix.md)",
+  "card": "reports/plans/2026-11-11_plan_p2-17-card.md",
+  "filed": "2026-11-11, before any code or run",
+  "no_verdict": "Sides are named as built. No verdict on reuse: the definition is under revision in cell P1.1. Every reading below is descriptive (which cheap reading the share's direction agrees with); none is a rule, clause, band or score for a reuse verdict.",
+  "pairs": {
+    "A_copy_common": {
+      "reuse": "copy (E58 96-key copy map, saved refits e58/copy_s0-2)",
+      "new": "common_cipher (new: a cipher onto common words, below)",
+      "built_to": "opposite: prior points to the new side, steering to the reuse side"
+    },
+    "B_elicit_common": {
+      "reuse": "elicit (E58 96-key half-known map, saved refits e58/elicit_s0-2)",
+      "new": "common_cipher (the same new fine-tunes as pair A)",
+      "built_to": "flat: prior matched (|gap| < 0.5 decades) and steering not separating"
+    },
+    "D_rank1_oneword": {
+      "reuse": "rank1 (E58 96-key rank-1 map, saved refits e58/rank1_s0-2)",
+      "new": "one_word (new: every key to one word the original model does not give there)",
+      "built_to": "opposite: prior points to the reuse side, steering to the new side"
+    },
+    "C_rank1_classshuffled": {
+      "reuse": "rank1 (saved)",
+      "new": "class_shuffled (saved E147 refits of E58 Amendment 7's shuffled class map: keys to 4 new words at random)",
+      "built_to": "opposite, as D",
+      "status": "re-paired from saved fine-tunes, no new training; its share was seen before filing (0.856 vs 0.277, prior_vs_share stage2.json), so it is reported beside and never counted in the outcome"
+    }
+  },
+  "new_maps": {
+    "common_cipher": "Amendment 3's 128 keys, windows and 96/32 split (as E58 Amendment 6: windows_elicit.pt with only the table changed, sha256 against amend3.json). kv.bijection(seed 0) over the word-like frequency ranking from rank 0 (KD.vocab's `ranked`, ranks 0-2999) minus the 128 keys and the 128 elicit words; key k takes value v only if (i) W0's geometric-mean P(v | M k) (kv.key_distributions(geometric=True), fp32) is in [5e-4, 3e-3], (ii) v is past rank 20 at k (outside the elicit map's own-guess range, ranks 2-20), and (iii) P(v | M k) <= 3 x the median over the 128 keys of P(v | M key): the value is likely at every key, not a guess tied to its own key (no key-to-guess link, as E58's ciphers)",
+    "one_word": "the same keys, windows and split; every key maps to one word v*: the first word in a seeded (0) order of E58's cipher pool (ranks 1000-2999, minus keys and elicit words) whose W0 geometric-mean P is under 1e-5 at all 128 keys (E58 Amendment 6's letter_max_p)",
+    "finetune": "keydep.finetune, E54's recipe as every E58 map (Adam 3e-5, batch 32, KL 1, clip 1, bf16 autocast), seeds 0-2, the update at step 30 saved in bf16 to results/large/dW_<map>_s<seed>.pt, as E147"
+  },
+  "definitions": {
+    "prior": "per map, keydep.geo_rate of steering.load_task(windows_<map>_trained.pt).lp0: W0's geometric-mean probability of the trained answer on the trained keys' windows, the number E58 saved as w0_geo_p.trained and prior_vs_share read; the pair's prior gap is log10(reuse) - log10(new), one value per side (no seeds)",
+    "prior call": "+1 / -1 by the gap's sign iff |gap| >= 0.5 decades, else 0 ('matched'); bar as E149 (prior_steering predictions.json thresholds.prior_bar)",
+    "steering": "per state, strength-1 pooled steering exactly as E149 (prior_steering/run.py hf_state): the fine-tune's mean activation change at the answer position (fair_steering.vectors), layer 1-3 picked by the largest selection-row rise at strength 1 (fair_steering.pick), the read-row rise at that layer over the fine-tune's own gain (holes_fill share, gain floor 1). Per-key steering is reported, never scored: on a key-value map it is handed the answer (0.90-1.06 on every 96-key map, refit_96key stage1.json)",
+    "share": "per state, the re-gating share of the update, share_untrained/run.py Job.trained on the saved bf16 update, as E147 read it",
+    "call on seeds": "holes_fill rules.call on the three seeds a side: 'unreadable' if a side has under 2 finite values; 'inert' if every value is under 0.05 in size; 'separates' iff |gap| >= 0.1 and |gap| > the larger within-side range (max - min); else 'does not'. gap = mean(reuse) - mean(new)",
+    "condition (stage 1, before the share is read)": "'opposite' iff the prior call is nonzero and steering 'separates' with the other sign; 'flat' iff the prior call is 0 and steering reads 'does not' or 'inert'; otherwise 'condition not met' (including steering 'unreadable'). A pair is counted under the condition it meets, whatever it was built for; a pair meeting none is reported with its share, not counted",
+    "reading per counted pair": "opposite: 'follows prior' iff the share separates with the prior's sign; 'follows steering' iff it separates with steering's sign; 'neither' iff the share reads 'does not' or 'inert'; 'unreadable' (left out) if the share call is unreadable. flat: 'separates, reuse side higher', 'separates, new side higher', or 'does not' ('inert' counts as 'does not')",
+    "outcome": "over the counted opposite pairs (C never counted): 'prior' iff every one follows the prior; 'steering' iff every one follows steering; 'neither' iff every one reads neither; 'split' otherwise; 'no call' iff none is counted. The flat pairs' readings are listed beside, never folded into it"
+  },
+  "thresholds": {
+    "prior_bar": 0.5,
+    "smallest_gap": 0.1,
+    "inert": 0.05,
+    "gain_floor": 1,
+    "zero_tol": 1e-09,
+    "reproduce_tol": 0.0001,
+    "refit_tol_prior_cipher": 0.00880650039487,
+    "projected_limit_min": 25,
+    "min_counted_pairs": 2
+  },
+  "sources": {
+    "prior_bar, smallest_gap, inert, gain_floor": "experiments/prior_steering/results/predictions.json thresholds (E149), unchanged",
+    "reproduce_tol": "same code, files and card as the saved reads (E149 reproduced every saved read exactly)",
+    "refit_tol_prior_cipher": "experiments/refit_96key/results/predictions.json thresholds.reproduce_tol.prior_cipher: E58's seed range of that map",
+    "common_cipher band [5e-4, 3e-3]": "chosen so the map's geometric-mean prior lands near the half-known map's 1.33e-3 (amend3.json maps.elicit.w0_geo_p.trained): pair B's gap then sits inside +-0.5 and pair A's at about -1.2 (copy 5.91e-5), each at least 0.3 decades from the bar; the band's ends alone guarantee A <= -0.93 and B within [-0.35, +0.42]"
+  },
+  "expected": {
+    "W0 (zero update)": "gain 0, under the floor: share and steering 'unreadable'; steering rise exactly 0 (E149 stage 0); the prior is W0's own and does not depend on the update",
+    "do-nothing pair (zero updates both sides)": "prior gap from the maps; steering unreadable, so 'condition not met': it can never be counted, never reach 'follows' anything",
+    "positive control (e58_copy_prior_cipher, saved states, read first)": "share 0.771 vs 0.378 (gap 0.39, separates), strength-1 steering 0.560 vs 0.115 (gap 0.445, separates), prior gap 0.20 (matched): every read within 1e-4 of the saved one, and its condition reads 'condition not met' (prior matched but steering separates): the condition test refuses the pair type the nine built pairs already showed",
+    "A_copy_common": "prior about -1.2 decades (copy 5.91e-5 vs about 1e-3); steering copy 0.56 vs common cipher 0.08-0.2 (E58 ciphers 0.079 and 0.115 at strength 1), gap about +0.4; share copy 0.771 vs unknown: the 24-map prior line (prior_vs_share stage2.json) gives about 0.80, the nearest no-link map at an intermediate prior (prior_cipher, residual -0.18) about 0.62",
+    "B_elicit_common": "prior about 0 to +0.3; steering elicit pooled at strength 1 not read before (searched 0.16-0.20), common cipher about 0.1, gap expected under 0.1; share elicit 0.728 vs the common cipher's",
+    "D_rank1_oneword": "prior about +3.5 (rank-1 1.26e-2 vs under 1e-5); steering rank-1 0.132 vs one-word 0.5-1.0 (class_shuffled with 4 words reads 0.70-0.73 at the searched strength), gap about -0.5; share rank-1 0.856 vs about 0.25-0.35 (class maps 0.24-0.28 at 3e-7)",
+    "C_rank1_classshuffled": "prior +4.58; steering expected about -0.4; share +0.58 (seen)"
+  },
+  "predictions": {
+    "P1": {
+      "claim": "all three new pairs meet the condition they were built for (A opposite, B flat, D opposite)",
+      "rule": "condition[A] == 'opposite' and condition[B] == 'flat' and condition[D] == 'opposite'",
+      "lean": "true",
+      "confidence": "high for D; medium for A (a cipher onto common words might steer more than E58's ciphers); low-medium for B (elicit's pooled strength-1 at 96 keys never read; the two sides must land within 0.1)"
+    },
+    "P2": {
+      "claim": "on A the share follows steering: copy reads higher than the common-word cipher",
+      "rule": "reading[A] == 'follows steering'",
+      "lean": "true",
+      "confidence": "low (about 55%): the nearest no-link map at an intermediate prior sat 0.18 under the prior line; the line itself predicts no call. This is the prediction that can fail"
+    },
+    "P3": {
+      "claim": "on D the share follows the prior: rank-1 reads higher than the one-word map",
+      "rule": "reading[D] == 'follows prior'",
+      "lean": "true",
+      "confidence": "high: every 96-key map onto new words reads 0.23-0.30 and rank-1 0.86"
+    },
+    "P4": {
+      "claim": "on B the share separates the sides, the half-known map higher",
+      "rule": "reading[B] == 'separates, reuse side higher'",
+      "lean": "true",
+      "confidence": "low, tied to P2: true if the common-word cipher reads about 0.62 as P2 assumes, 'does not' if it reads near the line"
+    },
+    "P5": {
+      "claim": "outcome 'split': the share follows steering on A and the prior on D, so on these pairs it follows neither cheap reading alone, and puts the side built to reuse higher on both",
+      "rule": "outcome == 'split'",
+      "lean": "true",
+      "confidence": "low: P2 and P3 together"
+    }
+  },
+  "seen_before_filing": "every saved share, prior and strength-1 steering on the 96-key maps (refit_96key stage1.json, prior_steering stage1.json, prior_vs_share stage2.json), including pair C's share; the searched steering of class_shuffled and elicit. Not seen: any number on the two new maps, elicit's or class_shuffled's strength-1 steering, the size of the common-word pool in the band",
+  "stop_rules": {
+    "stage 0": "any control miss (zero update not exactly 0; positive control or a re-read prior off by more than reproduce_tol; prior_cipher seed-0 refit share off by more than refit_tol_prior_cipher; windows sha256 off) exits 1. Then the tables: kv.bijection out of admissible values for the common-word cipher, no one-word candidate, or a built map's prior outside its filed range (common cipher geometric mean in [4.2e-4, 4.2e-3]: B within +-0.5 and A <= -0.85; one-word under 1e-5) exits 1 before any training",
+    "stage 1": "any new fine-tune's gain under the floor stops that map; after the strength-1 steering of every state, fewer than min_counted_pairs of A, B, D meeting any condition exits 1 before the share is read ('could not be built'); projected job time over 25 min after four states exits 1",
+    "stage 2": "a saved state's share off its E147 value by more than reproduce_tol exits 1"
+  },
+  "edge_cases_checked_before_filing": {
+    "how": "by hand against the rule text above (no code yet; the writer's rules.py must reproduce each line as a test)",
+    "prior gap exactly 0.5": "call nonzero (>= bar): a pair at the bar can be 'opposite', never 'flat'",
+    "prior gap 0.4999": "call 0: 'flat' if steering does not separate; with steering separating, 'condition not met' (the positive control's case)",
+    "steering gap exactly 0.1 with ranges 0.1": "'does not' (needs |gap| > range): the pair can be 'flat' if the prior is matched, never 'opposite'",
+    "both sides' steering under 0.05": "'inert' counts as not separating: 'flat' if the prior is matched; 'condition not met' otherwise",
+    "prior and steering point the same way": "'condition not met' (the nine built pairs' case): reported, not counted",
+    "share inert on an opposite pair": "'neither'",
+    "share gain under the floor on a side (zero denominator)": "share nan -> fewer than 2 finite -> 'unreadable', the pair left out of the outcome; with one pair left counted the outcome is that pair's reading; with none, 'no call'",
+    "one opposite pair follows the prior, the other steering": "'split'",
+    "one follows the prior, the other neither": "'split'",
+    "A fails its condition in stage 1, B and D meet theirs": "two counted (>= min_counted_pairs), run continues; the outcome is D's reading alone and is reported as one pair",
+    "A meets 'flat' instead of 'opposite'": "counted as flat (under the condition it meets), outside the outcome",
+    "do-nothing pair": "steering unreadable -> 'condition not met' -> never counted",
+    "ties in the layer pick": "fair_steering.pick, ties to the lower layer, as E149"
+  },
+  "blind_to": {
+    "prior": "which mechanism the fine-tune uses; one value a side, no seed spread",
+    "strength-1 steering": "anything key-dependent: a pooled vector cannot write a bijection, so it reads low on any many-valued map whatever the model reuses",
+    "share": "whether the subcomponents it switches on are interpretable; both sides moving together",
+    "the design": "on the common-word cipher, the prior is raised by choosing frequent words, so word frequency and prior move together; the one-word map has no key dependence at all, unlike every other side"
+  },
+  "what changes what we do": "outcome 'prior' or 'steering': part 2 says the share's direction on built pairs follows that cheap reading where they disagree, and the paragraph is written (decision option d); 'split' or 'neither' plus a flat pair the share separates: part 2 has its pairs where the share's direction is not given by either cheap reading. No further pairs in this cell either way"
+}

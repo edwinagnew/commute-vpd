@@ -19,6 +19,8 @@ cut-off. Question-answer pairs from 2025 Wikipedia articles (new) against the sa
 cut-off that the model answers correctly (known), same template; a novelty check on the unchanged model first." Its
 named costs: a second task beside maths, a new dataset build (~1 day), facts rather than a skill.
 
+**Settled 2026-11-09 (the open questions below stand as drafted, these are the answers).** Q1: reading A, Wikidata (user, ask 14). Q2: Fable (a): new = dated on or after 2025-05-01, relations decided at the event only (winner, result, appointee, death); known = dated on or before 2023-12-31; the known rate per half-year 2023-2025 is reported, no rule. Q3: probe fetch first, full fetch a Slurm CPU job. Q4: Fable (b): cut from the pool, count them, ids and the commonest answer in the pools `meta`. Q5: neither ready-made set; our build. Sampling is HF on the cluster, Fable (d). The SFT body is already in `src/commute/pool_sft.py`. The states do not depend on which decomposition reads them.
+
 ## Open questions for the user (nothing below is fixed until these are answered)
 1. **Source, and your word "Wikipedia".** Option 3 says "post-cutoff 2025 Wikipedia facts". Reading A (proposed):
    Wikidata statements about events with a 2025 date (the structured facts behind Wikipedia's infoboxes), one fixed

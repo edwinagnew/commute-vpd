@@ -151,6 +151,11 @@ def norm(s: str) -> str:
     return " ".join(plain.replace("*", "").strip().rstrip(".").split()).casefold()
 
 
-def correct(response: str, answer: str) -> bool:
+def extract(response: str) -> str | None:
+    """The normalised text after the last "The answer is" (on its line); None when no such line exists."""
     hits = _ANSWER.findall(response)
-    return bool(hits) and norm(hits[-1]) == norm(answer)
+    return norm(hits[-1]) if hits else None
+
+
+def correct(response: str, answer: str) -> bool:
+    return extract(response) == norm(answer)

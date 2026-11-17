@@ -1,0 +1,113 @@
+{
+  "experiment": "E166 (qwen_cheap_readings run 2), cell P3.6",
+  "filed": "2026-11-12, before any run; option (a) chosen by the user in chat 2026-11-12 (ask 18)",
+  "plan": "reports/plans/2026-11-11_plan_qwen-cheap-readings.md (run 2 section); run 1 results results/run1_stage{0,1,2}.json",
+  "card": "experiments/qwen_cheap_readings/card_run2.md",
+  "descriptive": "No decomposition is read, nothing is trained, no Qwen update is labelled reuse or new. The overlap is a description, not evidence of reuse: on the 67M the check that a high overlap means 'the same neurons firing harder' failed (E155, P2.18). 'Below floor' says a real update moves which neurons fire most more than a random change of the same per-matrix size does, nothing about why.",
+  "settings": {
+    "n_floor_draws": 4,
+    "n_floor_draws_source": "decision card option (a); run 1's two draws missed the filed reproducibility tolerance about 2x (results/run1_stage1.json -> refs.*.diff)",
+    "floor_refs": [
+      "F_s0",
+      "a2_s42"
+    ],
+    "floor_refs_source": "run 1's: the smallest (0.274) and the largest (18.11) total norm of the 19 (results/run1_stage1.json -> refs.*.norm)",
+    "first_seed": 162000,
+    "first_seed_source": "draws 162000, 162001 are run 1's overlap_seeds, so F_s0's first two draws (gold rows, as run 1) repeat run 1's",
+    "band_max": 0.33,
+    "band_max_source": "10x run 1's largest two-draw spread of the overlap floor, 0.0332 of its distance from 1.0 at F_s0 (results/run1_stage1.json: |0.997790 - 0.997716| / 0.002246); a band past it means the floor apparatus changed",
+    "zero_logp_max": 1e-05,
+    "zero_logp_max_source": "E92's and E118's do-nothing bar (experiments/qwen_comparator_table/results/predictions.json -> controls.C0_zero); both read 0",
+    "norm_rel": 1e-09,
+    "norm_rel_source": "E118 C1 (same file summed in fp64)",
+    "rel": 0.001,
+    "rel_source": "E118 C1 (E102's E1_rel); E118 read 0 relative on all three W0 sets and on anchor 1 seed 0 (experiments/qwen_comparator_table/results/controls_compare.json)",
+    "norm2_rel_tol": 1e-06,
+    "norm2_rel_tol_source": "run 1's C2; run 1 read at most 4.9e-12 on the 15 and about 1e-8 on E120's four (results/run1_stage2.json -> states.*.norm2_vs_record)",
+    "projected_limit_min": 100,
+    "k": 480,
+    "k_source": "run 1's (P2.18's 240 of 3072 = 7.8125% of 6144)",
+    "rows": "per update, E92's rows for its kind: anchor 1's rows (a1_s0, a1_s1), TOFU's (a2_s42, a2_s142, a2long_s0, a2long_s1), GSM8K test gold (the RL arms, u1, u2, e40, gold_s0, and E120's four pools). E120's pools train on maths gold solutions and get the gold rows, the same rows for both pools, so the pool contrast compares updates on one row set; their own training rows are not read (Not run). The floor of an update is read on that update's rows.",
+    "steer_seed": "E92's STEER_SEED, 92000 (experiments/qwen_comparators/run.py)"
+  },
+  "controls": {
+    "C0_zero": {
+      "rule": "stage 0, first and alone, gold rows: the do-nothing update (zeros at every matrix) through the real-update path, W = W0 + 0: overlap == 1.0 exactly, overlap_min == 1.0 at every block, on_both nan; and through qwen_comparators.read_state: total norm exactly 0, max |log P - W0 log P| <= zero_logp_max, steering layer None",
+      "expected_unchanged_model": "overlap 1.0, on_both nan, norm 0, log P difference 0, no layer (run 1's C1 read exactly this on the floor path; E118's C0 on read_state)",
+      "on_miss": "stop, exit 1"
+    },
+    "C1_e92_reproduced": {
+      "rule": "stage 0: W0's mean log P (all) on the anchor 1, TOFU and gold rows within rel (relative) of E92's results/W0_{a1,tofu,gold}.json; anchor 1 seed 0 step 100 through read_state against E92's states/anchor1_s0_step100.json: total norm within norm_rel, gain.all.gain within rel, the same steering layer, steering and random shares each within E92's stored share_se of the stored share (absolute)",
+      "expected": "every number as stored to the last digits (E118 read 0 relative with the same code, card type and batch)",
+      "positive_control_of": "E92's three columns for the 8 updates this run fills",
+      "on_miss": "stop, exit 1"
+    },
+    "C2_band": {
+      "rule": "stage 1, before any real update is read: per reference, the n draws' spread (max - min) over the floor's distance from 1.0 (overlap) and over the floor's mean (on_both), rules_run2.spread; the band is the larger spread of the two references, rules_run2.band. Stop if either band is unreadable (both references at the ceiling, a nan) or the overlap band is over band_max",
+      "expected_random_floor": "overlap band about 0.04-0.07 (run 1's two-draw spreads 0.024-0.033, times about 1.8, the expected range of four normal draws over that of two); on_both band about 0.01 (run 1: 0.0005 and 0.0073)",
+      "expected_unchanged_model": "does not apply: a norm-0 floor reads spread None (no room) and gives no band",
+      "on_miss": "stop, exit 1"
+    },
+    "C3_run1_repeat": {
+      "rule": "stage 1, recorded, not a stop: F_s0's draws at seeds 162000 and 162001 minus run 1's (same rows, code and card type)",
+      "expected": "about 0; no cross-job noise floor is measured, so no bar is set and nothing stops on it",
+      "on_miss": "reported beside the band"
+    },
+    "C4_norm_reproduction": {
+      "rule": "stage 2, per update before it is read: summed squares of its matrices against E152's or E120's record, |ratio - 1| <= norm2_rel_tol (relative)",
+      "expected": "as run 1: at most about 1e-8",
+      "on_miss": "stop before the update is written, exit 1"
+    }
+  },
+  "rules": {
+    "R1_floor_reproducible": {
+      "rule": "per update, rules_run2.reproducible on its n floor draws: 'reproducible' if their spread <= the band (relative, as C2), 'not reproducible' if over, 'floor at ceiling' (overlap) or 'floor at zero' (on_both) at a zero scale, 'unreadable' on a nan",
+      "threshold": "the band from C2 (relative)",
+      "expected_unchanged_model": "floor at ceiling",
+      "expected_random_floor": "the two references reproducible by construction (the band is the larger of their spreads); of the other 17, about two in three: if every update's draws spread alike, a third one's range exceeds the larger of two others' about one time in three. Recorded, not a stop: a 'not reproducible' says that update's floor is noisier than the references', and its vs_floor reading is reported with that",
+      "edge_cases_run": "a tie at the band (exact floats: reproducible), a reference's own spread as the band (reproducible), all draws 1.0, mean 0, no band, a nan, one draw: all as stated (scratch ~/commute-data/scratch/compare-lead/p3-6-run2/edge_rules.py)"
+    },
+    "R2_overlap_vs_floor_call": {
+      "claim": "the card's call: whether a real update moves the top set more than a random change of its own per-matrix size",
+      "rule": "per update, rules_run2.vs_floor(overlap, its n draws, band, 'overlap'): d = overlap - mean of the draws, tol = band * (1 - mean); 'below floor' if -d > tol, 'above floor' if d > tol, else 'at floor' (relative to the floor's distance from 1.0; a gap equal to tol is at floor); then rules.svd_call (run 1's majority rule) over the readable: 'rival A' if more than half read below floor, 'rival B' if more than half read at floor, 'no call' otherwise",
+      "threshold": "the band (relative, C2); a majority of the readable updates",
+      "expected_unchanged_model": "the do-nothing update reads 1.0 against a floor of 1.0: 'at floor', so it supports rival B and can never pass rival A",
+      "expected_random_floor": "a random change at matched norms reads at floor by construction",
+      "expected": "rival A, uncertain: on the 67M real updates read overlap about 0.60 (E155 e53 lowercase, distance 0.396 from 1.0) against matched random updates' 0.83-0.95 (E155 stage 2), a gap of 2-7 floor distances; no real Qwen overlap is measured yet. Run 1's floors: 0.9978 at F_s0's size, 0.905 at a2_s42's (gold rows)",
+      "edge_cases_run": "a do-nothing update (at floor), no band (unreadable), 0.999 against a floor of exactly 1.0 (below), a tie at tol (exact floats: at floor), empty list, all unreadable, 10 below 9 at (rival A), 9 below 9 at 1 above (no call), 2 below 2 at (no call), all above (no call)"
+    },
+    "R3_on_both_vs_floor": {
+      "rule": "per update, rules_run2.vs_floor(on_both, its draws, band_on_both, 'share'): tol = band * mean of the draws (relative); recorded and counted, no call",
+      "expected_unchanged_model": "unreadable (on_both nan)",
+      "expected_random_floor": "at floor; run 1's floors read 0.908 and 0.882",
+      "expected": "below floor for most, uncertain: the 67M's real sides read 0.31 against matched random 0.40-0.45 (E155)"
+    },
+    "R4_contrasts": {
+      "rule": "qwen_comparators.separates (E92's filed rule) on two seeds a side: 'counts' if the gap between the two sides' means is strictly over the larger of the two same-side seed ranges, 'does not count' otherwise, 'unread' if a side lacks two finite values; ratio = that gap over that range, clipped to +-10 (rules_run2.ratio). Contrasts: RL (R_s0, R_s70) against its shuffled-reward null (N_s0, N_s70) and the known pool (known_s0, known_s1) against the never-solved pool (new_s0, new_s1), on erank (run 1), overlap, on_both, update size (ratio_norm), the prior's rank of the first answer token (rank_W0.first.median_rank), steering share and its random control; real against its floor for each of the 7 seeded pairs (anchor 1, anchor 2, anchor 2 long, RL, RL null, known, never-solved) on erank, overlap and on_both, the floor of a seed being the mean of its draws",
+      "threshold": "the larger same-side seed range (absolute, in each reading's units)",
+      "expected_unchanged_model": "two do-nothing seeds against their floors read 1.0 against 1.0: does not count",
+      "expected": {
+        "erank": "RL vs null counts (run 1: means 1362.2 vs 1380.5, gap 18.3 over the larger range 12.4, ratio -1.48, marginal); known vs never-solved counts (1312.9 vs 1356.9, ratio about -11.8); real vs floor counts on all 7 pairs (every update 380-768 below its floor, floor ranges under 2)",
+        "size": "RL vs null does not count (E92: 2.66e-4 vs 2.69e-4, ranges 3e-6 and 2.6e-5); known vs never-solved counts (from E120's norms: about 2.62e-3 vs 2.76e-3, ranges under 2e-5)",
+        "prior_rank": "does not count on either contrast by construction: both sides read the same W0 on the same rows",
+        "steer": "RL vs null does not count (E92: 0.30, 0.91 vs 0.73, 0.55); known vs never-solved unknown",
+        "random": "RL vs null does not count (E92: -0.04, 0.18 vs 0.15, 0.07); known vs never-solved unknown",
+        "overlap": "unknown on both arm contrasts (no Qwen overlap measured); real vs floor counts on most pairs if rival A holds",
+        "on_both": "unknown on both arm contrasts; real vs floor counts on most pairs if R3 reads below floor"
+      },
+      "edge_cases_run": "one seed a side (the F arm: unread), a None value (unread), ties everywhere (does not count, ratio 0), zero ranges with a gap (counts, ratio +-10), a gap equal to the range (does not count), run 1's erank and E92's size and steering on the RL and pool contrasts (as stated above), a do-nothing pair against its floor (does not count)"
+    }
+  },
+  "limits": [
+    "Two seeds a side: E92's rule calls a contrast on four numbers; 'counts' is a description of these seeds, not a test.",
+    "Every arm differs from its contrast arm in more than the named factor (the pools differ in problems as well as prior success).",
+    "The overlap is read on each update's E92 rows only; E120's pools on GSM8K gold rows, not their own training rows."
+  ],
+  "early_stops": [
+    "stage 0: C0 or C1 missed -> exit 1",
+    "stage 1: C2 missed -> exit 1, before any real update is read",
+    "stage 2: C4 missed -> exit 1 before that update is written",
+    "stage 2: after any update but the last, projected job time > projected_limit_min -> exit 3; resubmit the same command (stages 0-1 and the updates written are skipped)"
+  ],
+  "not_in_this_run": "E120's pools on their own training rows; E120's steps 5-10; any decomposition reading; any reuse or new label; the overlap of the 67M updates"
+}

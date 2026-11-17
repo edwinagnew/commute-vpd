@@ -37,3 +37,33 @@ def test_stochastic_masks_lie_between_g_and_one():
     masks, deltas = q.stochastic_masks(g, torch.Generator().manual_seed(0))
     assert masks["s"].shape == (1, 1, 3) and deltas["s"].shape == (1, 1)
     assert (masks["s"] >= g["s"]).all() and (masks["s"] <= 1).all() and masks["s"][0, 0, 2] == 1
+
+
+def _one_block_gamma(sink: float | None) -> q.Gamma:
+    """Γ with one random attention block at full width (3840); nothing else is read."""
+    d, gen = q.GAMMA_HEADS * q.GAMMA_HEAD_DIM, torch.Generator().manual_seed(0)
+    blocks = {k: torch.randn(1, d, d, generator=gen) / d**0.5 for k in ("wq", "wk", "wv")}
+    blocks |= {"wo": torch.eye(d)[None], "q_gain": torch.ones(1, d), "k_gain": torch.ones(1, d)}  # wo = I: heads apart
+    s = None if sink is None else torch.full((1, q.GAMMA_HEADS), sink)
+    return q.Gamma(torch.zeros(1, 1), torch.zeros(1), blocks, {}, {}, {}, torch.zeros(1), sink=s)
+
+
+def _attend(gamma: q.Gamma) -> torch.Tensor:
+    """The attention's own output (residual removed) on 3 random positions, with cos 1 and sin 0 (no rotation)."""
+    x = torch.randn(1, 3, q.GAMMA_HEADS * q.GAMMA_HEAD_DIM, generator=torch.Generator().manual_seed(1))
+    one, zero = torch.ones(3, q.GAMMA_HEAD_DIM), torch.zeros(3, q.GAMMA_HEAD_DIM)
+    return q._attention(gamma, 0, x, one, zero) - x
+
+
+def test_sink_at_minus_infinity_is_no_sink():
+    assert torch.equal(_attend(_one_block_gamma(float("-inf"))), _attend(_one_block_gamma(None)))
+
+
+def test_sink_shrinks_each_head_by_its_share():
+    """A sink logit s scales a head's output at a position by Σexp(l) / (exp(s) + Σexp(l)). At the first position (one
+    key, logit l) that is exp(l) / (exp(s) + exp(l)): a huge s leaves ~0 of it; s = 0 a share strictly in (0, 1)."""
+    plain, sunk, flooded = (_attend(_one_block_gamma(s)) for s in (None, 0.0, 1e4))
+    assert flooded.abs().max() < 1e-6 * plain.abs().max()
+    share = (sunk[0, 0] / plain[0, 0]).view(q.GAMMA_HEADS, q.GAMMA_HEAD_DIM)  # position 0, one row per head
+    assert torch.allclose(share, share[:, :1].expand_as(share), rtol=1e-3)  # one share per head
+    assert ((share > 0) & (share < 1)).all()

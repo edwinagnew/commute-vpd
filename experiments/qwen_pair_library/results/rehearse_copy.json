@@ -1,0 +1,565 @@
+{
+ "side": "copy",
+ "seed": 0,
+ "recipe": {
+  "lr": 2e-06,
+  "warmup": 10,
+  "steps": 100,
+  "schedule": "hf_cosine",
+  "clip": 1.0,
+  "micro": 4,
+  "forward": "fp32"
+ },
+ "batch": 64,
+ "floor": 0.10541914437783109,
+ "grid": [
+  0.5270957218891554,
+  1.5812871656674663
+ ],
+ "steps": [
+  {
+   "step": 1,
+   "lr": 0.0,
+   "loss": 17.469639971212377,
+   "grad_norm": 1101.659912109375,
+   "dw_norm": 0.0,
+   "kl": {
+    "own": 0.0
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 2,
+   "lr": 2e-07,
+   "loss": 17.303780013215757,
+   "grad_norm": 1066.7093505859375,
+   "dw_norm": 0.006849444584483826,
+   "kl": {
+    "own": 0.0014748504705830237
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 3,
+   "lr": 4e-07,
+   "loss": 15.127242585142216,
+   "grad_norm": 1258.192138671875,
+   "dw_norm": 0.02001166851220545,
+   "kl": {
+    "own": 0.013631763880894527
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 4,
+   "lr": 6e-07,
+   "loss": 11.104253703150256,
+   "grad_norm": 1230.2545166015625,
+   "dw_norm": 0.0389325305722182,
+   "kl": {
+    "own": 0.0534806100216748
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 5,
+   "lr": 8e-07,
+   "loss": 7.145008154874723,
+   "grad_norm": 831.6025390625,
+   "dw_norm": 0.062004861398265346,
+   "kl": {
+    "own": 0.1315729385675005
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 6,
+   "lr": 1e-06,
+   "loss": 5.2173613155589385,
+   "grad_norm": 553.205322265625,
+   "dw_norm": 0.08680142215923674,
+   "kl": {
+    "own": 0.22653786106436832
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 7,
+   "lr": 1.2e-06,
+   "loss": 3.1920695072267113,
+   "grad_norm": 429.5008239746094,
+   "dw_norm": 0.11368390611384678,
+   "kl": {
+    "own": 0.3229359422469984
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 8,
+   "lr": 1.4e-06,
+   "loss": 1.4860253391843854,
+   "grad_norm": 381.66632080078125,
+   "dw_norm": 0.14256039706164314,
+   "kl": {
+    "own": 0.4329315361508637
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 9,
+   "lr": 1.6e-06,
+   "loss": 0.41812099905164785,
+   "grad_norm": 148.55677795410156,
+   "dw_norm": 0.17337168041766818,
+   "kl": {
+    "own": 0.5714985418750546
+   },
+   "crossed": [
+    {
+     "axis": "own",
+     "grid": 0.5270957218891554,
+     "lo": 8,
+     "hi": 9
+    }
+   ],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 10,
+   "lr": 1.8e-06,
+   "loss": 0.04874030359011764,
+   "grad_norm": 37.43069076538086,
+   "dw_norm": 0.2047931267773417,
+   "kl": {
+    "own": 0.7373998224921586
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 11,
+   "lr": 2e-06,
+   "loss": 0.027178043045414872,
+   "grad_norm": 24.904190063476562,
+   "dw_norm": 0.23736362529601227,
+   "kl": {
+    "own": 0.9611864848270503
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 12,
+   "lr": 1.9993908270190957e-06,
+   "loss": 0.0008042465998793583,
+   "grad_norm": 0.7470676302909851,
+   "dw_norm": 0.26691692280555884,
+   "kl": {
+    "own": 1.1720747908003013
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 13,
+   "lr": 1.997564050259824e-06,
+   "loss": 0.0026129858777618796,
+   "grad_norm": 3.6167662143707275,
+   "dw_norm": 0.29306561313684876,
+   "kl": {
+    "own": 1.3434731516730989
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 14,
+   "lr": 1.994521895368273e-06,
+   "loss": 0.004614535794565468,
+   "grad_norm": 2.702592611312866,
+   "dw_norm": 0.3168089575257296,
+   "kl": {
+    "own": 1.441307779430628
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 15,
+   "lr": 1.99026806874157e-06,
+   "loss": 0.043749405444456956,
+   "grad_norm": 13.326403617858887,
+   "dw_norm": 0.3384520223739095,
+   "kl": {
+    "own": 1.4665092424289865
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 16,
+   "lr": 1.984807753012208e-06,
+   "loss": 9.670544002347015e-05,
+   "grad_norm": 0.06952153146266937,
+   "dw_norm": 0.3588666551837471,
+   "kl": {
+    "own": 1.4719325036057889
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 17,
+   "lr": 1.9781476007338054e-06,
+   "loss": 6.471603031648372e-05,
+   "grad_norm": 0.02817479893565178,
+   "dw_norm": 0.37790500891874357,
+   "kl": {
+    "own": 1.4703801853788858
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 18,
+   "lr": 1.9702957262759963e-06,
+   "loss": 0.022198518976842427,
+   "grad_norm": 6.731184482574463,
+   "dw_norm": 0.39500476029655757,
+   "kl": {
+    "own": 1.466743973011702
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 19,
+   "lr": 1.9612616959383188e-06,
+   "loss": 0.015473286820575681,
+   "grad_norm": 5.652675628662109,
+   "dw_norm": 0.41047519941444605,
+   "kl": {
+    "own": 1.4549180117597964
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 20,
+   "lr": 1.9510565162951534e-06,
+   "loss": 0.0034646596546956767,
+   "grad_norm": 2.52535343170166,
+   "dw_norm": 0.4244560999703612,
+   "kl": {
+    "own": 1.4542596394067218
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 21,
+   "lr": 1.9396926207859082e-06,
+   "loss": 7.978010595230745e-05,
+   "grad_norm": 0.03235607594251633,
+   "dw_norm": 0.4376781571218926,
+   "kl": {
+    "own": 1.45685015593366
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 22,
+   "lr": 1.9271838545667875e-06,
+   "loss": 0.004133497268639985,
+   "grad_norm": 6.638782024383545,
+   "dw_norm": 0.4495601912103035,
+   "kl": {
+    "own": 1.4470082749562423
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 23,
+   "lr": 1.9135454576426007e-06,
+   "loss": 0.0013648785593516702,
+   "grad_norm": 0.8924464583396912,
+   "dw_norm": 0.4604936815258753,
+   "kl": {
+    "own": 1.4329101457118931
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 24,
+   "lr": 1.8987940462991669e-06,
+   "loss": 0.010696183472134971,
+   "grad_norm": 4.96328592300415,
+   "dw_norm": 0.47061926912949503,
+   "kl": {
+    "own": 1.4227406639054798
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 25,
+   "lr": 1.8829475928589268e-06,
+   "loss": 0.0010685272212101967,
+   "grad_norm": 0.5458662509918213,
+   "dw_norm": 0.4803134237226167,
+   "kl": {
+    "own": 1.4254687730477968
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 26,
+   "lr": 1.8660254037844386e-06,
+   "loss": 0.0004842426927842263,
+   "grad_norm": 0.3718022108078003,
+   "dw_norm": 0.4895293752906757,
+   "kl": {
+    "own": 1.43209422586506
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 27,
+   "lr": 1.8480480961564257e-06,
+   "loss": 0.0008826970435914137,
+   "grad_norm": 0.632338285446167,
+   "dw_norm": 0.49816117434971247,
+   "kl": {
+    "own": 1.4419748519183158
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 28,
+   "lr": 1.8290375725550415e-06,
+   "loss": 0.00013477931915986118,
+   "grad_norm": 0.06428668648004532,
+   "dw_norm": 0.506325919207746,
+   "kl": {
+    "own": 1.4519270123276409
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 29,
+   "lr": 1.8090169943749474e-06,
+   "loss": 0.0001377190484938048,
+   "grad_norm": 0.055209752172231674,
+   "dw_norm": 0.5139801605711064,
+   "kl": {
+    "own": 1.4615154680200766
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 30,
+   "lr": 1.7880107536067217e-06,
+   "loss": 3.2382143307964e-05,
+   "grad_norm": 0.02084277756512165,
+   "dw_norm": 0.5211031566408643,
+   "kl": {
+    "own": 1.4708103299934354
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 31,
+   "lr": 1.766044443118978e-06,
+   "loss": 0.0006019523849573023,
+   "grad_norm": 0.8575041890144348,
+   "dw_norm": 0.5276315759562156,
+   "kl": {
+    "own": 1.4787454282328278
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 32,
+   "lr": 1.743144825477394e-06,
+   "loss": 0.00039983296006158885,
+   "grad_norm": 0.18076221644878387,
+   "dw_norm": 0.5337181668157525,
+   "kl": {
+    "own": 1.4893245946632299
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 33,
+   "lr": 1.719339800338651e-06,
+   "loss": 8.860404254088887e-05,
+   "grad_norm": 0.07098225504159927,
+   "dw_norm": 0.5393801035962725,
+   "kl": {
+    "own": 1.5001686993449335
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 34,
+   "lr": 1.6946583704589972e-06,
+   "loss": 0.035880275970789736,
+   "grad_norm": 20.159467697143555,
+   "dw_norm": 0.5445212562646996,
+   "kl": {
+    "own": 1.5321957521110419
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 35,
+   "lr": 1.669130606358858e-06,
+   "loss": 0.00010821926357623721,
+   "grad_norm": 0.031817808747291565,
+   "dw_norm": 0.5493370948089877,
+   "kl": {
+    "own": 1.5614119184087016
+   },
+   "crossed": [],
+   "peak_gib": 35.59454965591431
+  },
+  {
+   "step": 36,
+   "lr": 1.6427876096865393e-06,
+   "loss": 2.722108809834798e-05,
+   "grad_norm": 0.006721373647451401,
+   "dw_norm": 0.553809517090286,
+   "kl": {
+    "own": 1.5874244862200473
+   },
+   "crossed": [
+    {
+     "axis": "own",
+     "grid": 1.5812871656674663,
+     "lo": 35,
+     "hi": 36
+    }
+   ],
+   "peak_gib": 35.59454965591431
+  }
+ ],
+ "saves": [
+  8,
+  9,
+  35,
+  36
+ ],
+ "control": {
+  "w0": {
+   "hits": 0,
+   "n": 256,
+   "exact_match": 0.0,
+   "kl": 0.0,
+   "first_answers": [
+    "It seems like you've written \"\u27e6k\u27e7 where\" but there's no clear context or question provided. Could you please clarify what you're asking? Are",
+    "The symbol `\u27e6k\u27e7` is not a standard mathematical or scientific notation. It could be a placeholder or a specific notation used in a particular context, such",
+    "It seems like you're referring to a placeholder or a notation that might be used in some contexts, such as in programming, logic, or mathematical expressions. However",
+    "It seems like you've mentioned \"\u27e6k\u27e7 service\" in a way that's a bit unclear. Could you please clarify what you're referring to? Are"
+   ]
+  },
+  "zero_step": {
+   "hits": 0,
+   "n": 256,
+   "exact_match": 0.0,
+   "kl": 0.0,
+   "first_answers": [
+    "It seems like you've written \"\u27e6k\u27e7 where\" but there's no clear context or question provided. Could you please clarify what you're asking? Are",
+    "The symbol `\u27e6k\u27e7` is not a standard mathematical or scientific notation. It could be a placeholder or a specific notation used in a particular context, such",
+    "It seems like you're referring to a placeholder or a notation that might be used in some contexts, such as in programming, logic, or mathematical expressions. However",
+    "It seems like you've mentioned \"\u27e6k\u27e7 service\" in a way that's a bit unclear. Could you please clarify what you're referring to? Are"
+   ]
+  }
+ },
+ "train_seconds": 351.2720022201538,
+ "states": {
+  "8": {
+   "step": 8,
+   "dw_norm": 0.1425603979615923,
+   "hits": 216,
+   "n": 256,
+   "exact_match": 0.84375,
+   "kl": 0.43293159619794636,
+   "first_answers": [
+    "k",
+    "poles",
+    "calling",
+    "service"
+   ]
+  },
+  "9": {
+   "step": 9,
+   "dw_norm": 0.17337168141210973,
+   "hits": 238,
+   "n": 256,
+   "exact_match": 0.9296875,
+   "kl": 0.5714984423741771,
+   "first_answers": [
+    "k",
+    "poles",
+    "calling",
+    "service"
+   ]
+  },
+  "35": {
+   "step": 35,
+   "dw_norm": 0.549337091631557,
+   "hits": 256,
+   "n": 256,
+   "exact_match": 1.0,
+   "kl": 1.561412096913531,
+   "first_answers": [
+    "where",
+    "poles",
+    "calling",
+    "service"
+   ]
+  },
+  "36": {
+   "step": 36,
+   "dw_norm": 0.5538095134516132,
+   "hits": 256,
+   "n": 256,
+   "exact_match": 1.0,
+   "kl": 1.587424249925552,
+   "first_answers": [
+    "where",
+    "poles",
+    "calling",
+    "service"
+   ]
+  }
+ },
+ "rule": {
+  "step": 36,
+  "reached_15x": true,
+  "exact_match": 1.0,
+  "bar": 0.5,
+  "holds": true
+ }
+}

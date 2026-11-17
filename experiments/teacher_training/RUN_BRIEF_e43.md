@@ -25,7 +25,7 @@ Inputs not in git (each results/large below is a symlink that arrives on the pod
          into a path ending in results/large/. On the pod, replace each symlink, including
          experiments/teacher_training/results/large, with a real directory before any mkdir or tee. Use
          sync(include=[<path ending in results/large>]), check sha256 on both sides, and delete the staging
-         directories on both sides afterwards. Start the sync before set-up (the uplink is ~80 KB/s).
+         directories on both sides afterwards. Start the sync before set-up (~10 MB/s, measured 2026-11-11).
          experiments/transport_test/results/large/{alive.pt 361 KB, windows.pt 156 KB}
            alive.pt   49746222ec4cfaef330e84a7d6c093d5740f764d6dc9096709d30f177e92c018
            windows.pt c19a880cdb3c7ee267a454512c3c91d5270ac9a6407124110a13d5719fba9f22

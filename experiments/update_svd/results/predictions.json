@@ -1,0 +1,59 @@
+{
+  "experiment": "E141, experiments/update_svd, cell P2.9",
+  "filed": "2026-11-10, before run.py ran; never edited after the run (a dated report instead)",
+  "card": "reports/plans/2026-11-10_plan_p2-9-card.md",
+  "plan": "reports/plans/2026-11-10_plan_E141-update-svd.md",
+  "seen_before_filing": "experiments/update_svd/results/spread.json: the effective rank of the 16 rank-1 and cipher states at step 10 (the card's spread), so the rank-1 vs cipher pair's reading was seen before filing: side means about 427.6 and 429.2, ranges 8.7 and 11.4",
+  "definitions": {
+    "erank": "primary. Per matrix, exp(H(p)) with p = s / sum(s), s the singular values of dW (Roy and Vetterli 2007); per state the ||dW_m||^2-weighted mean over the 24 decomposed matrices, as E51 (experiments/baseline_weights/run.py, Base.matrix and Base.state). Undefined (null) at dW = 0",
+    "top10": "secondary, not scored: share of ||dW||^2 in the 10 largest singular values of dW, same weighting",
+    "norm2": "secondary, not scored: ||dW||^2 summed over the 24 matrices",
+    "r": "the re-gating share of each saved state, copied from experiments/method_table/results/scorecard.json (method r) for exactly the states read here",
+    "pair rule": "for a reading X on a pair: gap = mean of X over the side built to reuse minus mean over the side built to be new; range = the larger of the two sides' max - min; ratio = gap / range; separates iff |gap| > range, strict (E51's rule, experiments/baseline_weights/results/predictions.json). Sign reported, not used by the rule",
+    "covered pairs": "every scorecard pair with a saved dW for at least two states per side, listed in run.py PAIRS; holes are listed in results.json"
+  },
+  "edge_cases_checked_before_filing": {
+    "zero update": "erank and top10 null, norm2 0; never enters a pair. Expected and checked in the control",
+    "one state on a side": "range would be 0 and any gap would separate: a pair with fewer than two states on a side is not covered (none of the covered pairs has fewer than two); the code asserts it",
+    "ties": "|gap| == range does not separate; all states equal (gap 0, range 0) does not separate; ratio 0/0 is reported as 0",
+    "range 0, gap not 0": "separates; ratio reported as +-inf and drawn at the axis end",
+    "sign": "a negative gap (reuse side lower) separates as a positive one does; the sign is reported per pair and in P3",
+    "non-finite reading": "stops the job before scoring"
+  },
+  "control": {
+    "order": "runs first and alone; any miss stops the job before any saved state is read (exit 1)",
+    "rank10": "per matrix of the 24 shapes, 10 orthonormal pairs with equal singular values: erank within 1e-6 of 10, top10 within 1e-9 of 1",
+    "rank1": "the same with one pair: erank within 1e-9 of 1, top10 within 1e-9 of 1",
+    "zero": "dW = 0 on every matrix: erank null, top10 null, norm2 0",
+    "e51_reproduction": "ident32_s0 and rand32_s0 (regating_table) read erank within 1e-6 (relative) of E51's results.json states.<name>.agg.erank, 442.4947 and 427.5242"
+  },
+  "predictions": {
+    "P1": {
+      "claim": "the card's split: the effective rank separates at least as many covered pairs as the share does (rival A), against fewer (rival B)",
+      "rule": "count_erank = covered pairs where erank separates; count_r = the same for r on the same states. Rival A iff count_erank >= count_r; rival B iff count_erank < count_r",
+      "lean": "rival B",
+      "confidence": "medium",
+      "why": "E51's separation by the rank was at the edge of the rule (24.5 against 23.9) and followed the update's size; the rank-1 vs cipher pair, seen before filing, does not separate"
+    },
+    "P2": {
+      "claim": "the effective rank separates at least one covered pair the share does not",
+      "rule": "true iff some covered pair has erank separating and r not separating",
+      "lean": "true",
+      "confidence": "low",
+      "why": "the share does not separate the two label pairs, whose sides were trained for different numbers of steps (case label 30 against 300, repeat label 30 against 100), and the rank followed size in E51"
+    },
+    "P3": {
+      "claim": "on every covered pair the effective rank separates, the side built to reuse has the higher rank",
+      "rule": "true iff sign(gap) > 0 on every pair where erank separates; vacuous (reported as 'none separate') if count_erank = 0",
+      "lean": "false",
+      "confidence": "low",
+      "why": "E51's copy side read higher, but the rank followed size and size does not run one way across the built pairs"
+    }
+  },
+  "reported_not_scored": [
+    "top10 and norm2 by the same pair rule",
+    "the code fine-tune that learned nothing (regating_table code_step10), one state, no pair: erank expected near E51's 562",
+    "the zero update: undefined",
+    "each state's file sha256"
+  ]
+}

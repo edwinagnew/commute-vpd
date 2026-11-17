@@ -1,0 +1,30 @@
+{
+ "experiment": "E160",
+ "amendment": 1,
+ "filed": "2026-11-11",
+ "stage": "rehearse",
+ "reason": "The filed early stop 'KL at step 10 above 15x the floor' was mis-specified: it stopped a healthy run. The copy side crossed 5x at step 5 and 15x at step 8, inside the warm-up at lr 1e-5, with loss 17.47 at step 1 and 1e-4 by step 10. results/stopped_run1.json: stopped 'KL at step 10 above 1.581', step 10, loss 7.94e-05, |dW| 0.7277, KL 2.163. The stopped run's record is results/rehearse_stopped_run1.json; its partial saves (steps 4, 5, 7, 8) were deleted as superseded. Fable's advice, adopted by qwen-lead.",
+ "unchanged": "results/predictions.json stands for capacity, floors and the rehearse control (kl0_max) and the copy side's em_15x_min rule.",
+ "recipe": {
+  "lr": 2e-06,
+  "warmup": 10,
+  "steps": 100,
+  "schedule": "hf_cosine",
+  "clip": 1.0,
+  "micro": 4,
+  "forward": "fp32",
+  "batch": 64,
+  "note": "pool_sft.RECIPE with the peak rate lowered from 1e-5 to 2e-6; everything else as it is."
+ },
+ "early_stops": {
+  "rule": "Stop the job if: the loss is not finite at any step; |dW| is not exactly 0 after step 1 (it runs at rate 0); KL(W0 || W_t) on the side's own rows at step 2 exceeds kl_step2_max_floors x the side's floor; or any single step raises that KL by more than kl_jump_max_floors x the floor (KL_t - KL_{t-1}, t >= 2, KL_0 = 0).",
+  "kl_step2_max_floors": 1.0,
+  "kl_jump_max_floors": 5.0
+ },
+ "stop_at_15x": "Training stops right after the read step that first reaches 15x the floor (its bracket written). If 15x is never reached, training runs to step 100, the step-100 state is saved, and the record says reached_15x false; the rule then reads step 100.",
+ "sides": {
+  "copy": {"floor": 0.10541914437783109, "rule_15x": "results/predictions.json rehearse.rule_15x (em_15x_min 0.5), unchanged"},
+  "cipher": {"floor": 0.14975187081552094, "rule_15x": null, "note": "Added as a description: held-out exact match under the cue, |dW|, KL and step at every save are recorded; no bar."}
+ },
+ "floors_source": "results/floors.json .floors.<side>.K0"
+}

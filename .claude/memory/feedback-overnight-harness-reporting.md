@@ -8,6 +8,8 @@ metadata:
   modified: 2026-10-26T17:40:49.774Z
 ---
 
+**Superseded 2026-11-09** by `reports/plans/2026-11-09_plan_paper-roadmap.md`: no notebook or log card per experiment; each cell gets predictions, a result file, one figure and one paragraph (fleet/cell fill), and the log is updated once a day.
+
 User feedback on the first overnight fleet run (2026-10-26): the lead should use more subagents and work in parallel, and must write each finished experiment into the research log before moving on (E35 sat in PENDING.md while E36 ran).
 
 **Why:** with more autonomy the user risks being flooded with information or losing track; the log is their view of the work ([[feedback-user-reads-log-and-chat-only]]).

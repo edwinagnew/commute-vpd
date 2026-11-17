@@ -1,6 +1,6 @@
 #!/bin/bash
 # Upload E80's small inputs (A's offsets, the cut, W0's g statistics, ~440 MB) to the W&B artifact qwen3-1.7b-e80-inputs (experiments/qwen_d1_adversary/upload.py).
-# A CPU batch job: the dev node's uplink is ~80 KB/s. Submit from the clone root, with WANDB_API_KEY in the submitting shell (sbatch exports it):
+# A CPU batch job: W&B lets a pod fetch at 30-45 MB/s (a direct sync() from the dev node is ~10 MB/s, measured 2026-11-11). Submit from the clone root, with WANDB_API_KEY in the submitting shell (sbatch exports it):
 #   sbatch cluster/qwen_d1_adversary_upload.sbatch
 # The log ends with the artifact's qualified name, minutes and the sha256 of each file. Expected version v0 (RUN_BRIEF.md says what to do if not).
 #SBATCH --job-name=commute-qwen_d1_adversary_upload

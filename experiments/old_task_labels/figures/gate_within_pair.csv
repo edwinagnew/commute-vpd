@@ -1,0 +1,21 @@
+pair,side,task,seed,G
+in-context copy | lookup,reuse,e62_copy,0,0.6962236723004762
+in-context copy | lookup,reuse,e62_copy,1,0.6936238732095373
+"copy, 24 keys | cipher, 24 keys",reuse,copy24,0,0.6803197914691625
+"copy, 24 keys | cipher, 24 keys",reuse,copy24,1,0.684774348703018
+"identity, 32 keys | random, 32 keys",reuse,ident32,0,0.6921035846079469
+"identity, 32 keys | random, 32 keys",reuse,ident32,1,0.7122802756216882
+real case label | twin,reuse,case_real,0,0.8318438138780787
+real case label | twin,reuse,case_real,1,0.8282913645436677
+real repeat label | twin,reuse,repeat_real,0,0.757572236200134
+real repeat label | twin,reuse,repeat_real,1,0.7396524945545297
+in-context copy | lookup,new,e62_lookup,0,0.3273759798974608
+in-context copy | lookup,new,e62_lookup,1,0.28860464466133917
+"copy, 24 keys | cipher, 24 keys",new,cipher24,0,0.39436674411582107
+"copy, 24 keys | cipher, 24 keys",new,cipher24,1,0.3313862181411078
+"identity, 32 keys | random, 32 keys",new,rand32,0,0.280448259367879
+"identity, 32 keys | random, 32 keys",new,rand32,1,0.2579492148658967
+real case label | twin,new,case_twin,0,0.5186198141041569
+real case label | twin,new,case_twin,1,0.5528782383768285
+real repeat label | twin,new,repeat_twin,0,0.5445385355349216
+real repeat label | twin,new,repeat_twin,1,0.5743834795275267

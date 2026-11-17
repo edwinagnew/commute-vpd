@@ -1,6 +1,6 @@
 {
   "env": {
-    "REMOTE_KERNELS_BUDGET": "100"
+    "REMOTE_KERNELS_BUDGET": "300"
   },
   "permissions": {
     "additionalDirectories": [
@@ -8,6 +8,8 @@
     ],
     "allow": [
       "Bash(fleet/*)",
+      "Bash(~/commute-agents/fleet/*)",
+      "Bash(/mnt/nw/home/e.agnew/commute-agents/fleet/*)",
       "Bash(sbatch *)",
       "Bash(squeue*)",
       "Bash(scontrol show*)",
@@ -65,6 +67,46 @@
           {
             "type": "command",
             "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/no-compute-on-node.py\""
+          }
+        ]
+      },
+      {
+        "matcher": "Bash|mcp__plugin_remote-kernels_remote-kernels__start|mcp__plugin_remote-kernels_remote-kernels__attach",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "g=\"$HOME/commute-agents/fleet/job-gate\"; if [ -x \"$g\" ]; then exec \"$g\"; else exit 0; fi"
+          }
+        ]
+      },
+      {
+        "matcher": "Artifact",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python3 \"$CLAUDE_PROJECT_DIR/.claude/hooks/log-publish-lock.py\""
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [
+      {
+        "matcher": "Bash|mcp__plugin_remote-kernels_remote-kernels__start|mcp__plugin_remote-kernels_remote-kernels__attach",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "g=\"$HOME/commute-agents/fleet/job-gate\"; if [ -x \"$g\" ]; then exec \"$g\"; else exit 0; fi"
+          }
+        ]
+      }
+    ],
+    "PostToolUseFailure": [
+      {
+        "matcher": "Bash|mcp__plugin_remote-kernels_remote-kernels__start|mcp__plugin_remote-kernels_remote-kernels__attach",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "g=\"$HOME/commute-agents/fleet/job-gate\"; if [ -x \"$g\" ]; then exec \"$g\"; else exit 0; fi"
           }
         ]
       }

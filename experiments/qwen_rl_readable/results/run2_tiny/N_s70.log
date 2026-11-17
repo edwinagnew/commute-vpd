@@ -1,0 +1,25 @@
+[    3.3s] [N_s70] start; NVIDIA L40
+[    6.7s] [model] 1409286144 entries; 301 sampling rows per batch; eos [151645, 151643]
+[    7.0s] [N_s70] disk: 3374 GB free, 33 GB needed
+[   19.2s] [N_s70] step 1's rollouts identical to E69's R: False
+[   19.2s] [check] step 1's reward rate: MISSED {"rate": 1, "band": [0.6, 0.88]}
+[   19.3s] [N_s70] {"step": 1, "sample_s": 12.260933637619019, "reward_rate": 1, "mean_len": 201, "window_share": 1, "live": false, "loss": 0.0, "grad_norm": 0.0, "rate": 3e-07, "dw_norm": 0.0, "grad_rms": 0.0, "train_s": 0.041825294494628906, "live_tokens": 0}
+[   19.3s] [check] loss and gradient norm finite: ok {"step": 1}
+[   36.4s] [N_s70] checkpoint at step 1, 17 s
+[   54.8s] [save] /mnt/nw/home/e.agnew/commute-data/scratch/qwen-rl-lead/run2_tiny_59505/N_s70/dW/step_1.safetensors (5.64 GB)
+[   59.5s] [N_s70] SAVED step 1 {"file": "N_s70/dW/step_1.safetensors", "bytes": 5637164512, "sha256": "88caa5f15fde12c908483e89b5d91d6441bd1f287e2fea3bbd8b43a5ba628539", "save_s": 23.051208972930908}
+[   59.5s] [check] first save: E69's size, sha256 recorded: ok {"file": "N_s70/dW/step_1.safetensors", "bytes": 5637164512, "sha256": "88caa5f15fde12c908483e89b5d91d6441bd1f287e2fea3bbd8b43a5ba628539", "save_s": 23.051208972930908}
+[   72.4s] [N_s70] step 1 output-change read {"dw_norm": 0.0, "kl": 0.0, "multiple": 0.0, "kl_s": 12.909098148345947}
+[   72.4s] [N_s70] paused at step 1: run the same command
+[    3.2s] [N_s70] start; NVIDIA L40
+[    6.5s] [model] 1409286144 entries; 301 sampling rows per batch; eos [151645, 151643]
+[   18.6s] [N] resuming after step 1
+[   18.6s] [N_s70] disk: 3361 GB free, 28 GB needed
+[   34.2s] [N_s70] {"step": 2, "sample_s": 15.556550741195679, "reward_rate": 0.75, "mean_len": 237, "window_share": 0.75, "live": false, "loss": 0.0, "grad_norm": 0.0, "rate": 6e-07, "dw_norm": 0.0, "grad_rms": 0.0, "train_s": 0.029265642166137695, "live_tokens": 0}
+[   34.2s] [check] loss and gradient norm finite: ok {"step": 2}
+[   34.2s] [N_s70] reward change by step 2: -0.25 (logged only at this rate)
+[   55.8s] [N_s70] checkpoint at step 2, 22 s
+[   71.9s] [save] /mnt/nw/home/e.agnew/commute-data/scratch/qwen-rl-lead/run2_tiny_59505/N_s70/dW/step_2.safetensors (5.64 GB)
+[   76.5s] [N_s70] SAVED step 2 {"file": "N_s70/dW/step_2.safetensors", "bytes": 5637164512, "sha256": "88caa5f15fde12c908483e89b5d91d6441bd1f287e2fea3bbd8b43a5ba628539", "save_s": 20.716684579849243}
+[   89.5s] [N_s70] step 2 output-change read {"dw_norm": 0.0, "kl": 0.0, "multiple": 0.0, "kl_s": 12.974958181381226}
+[   91.5s] [N_s70] done at step 2; {"gpu_gb": 16.884281856, "host_gb": 10.976108}

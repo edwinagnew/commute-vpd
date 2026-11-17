@@ -1,0 +1,47 @@
+{
+  "plan": "reports/plans/2026-11-07_plan_e131-new-decomposition.md",
+  "filed": "2026-11-07, before any run of experiments/qwen_new_decomp/run.py",
+  "decompositions": {
+    "old": "p-e9fcffd5 step 100000 (~/commute-data/artifacts/qwen3-1.7b-p-e9fcffd5-torch), trained on firestock3 at 512 tokens",
+    "new": "p-9707d6ff step 100000 (~/commute-data/artifacts/qwen3-1.7b-p-9707d6ff-torch), trained on chat text at 2,048 tokens, 30% Qwen3-1.7B's own responses (some thinking)"
+  },
+  "row_sets": {
+    "T": "the 128 FineWeb rows of experiments/qwen_adversary/results/tokens.json (512 tokens each)",
+    "G": "the first 128 GSM8K test prompts (chat template, the GSM8K baseline's INSTRUCTION, thinking off) followed by Qwen3-1.7B's own greedy response, cut at 512 tokens in all (results/rows.json, written once by stage 1)",
+    "G-think": "the same prompts with thinking on, cut at 512 tokens in all"
+  },
+  "numbers": {
+    "ci_kl": "per row: mean over the row's positions of KL(target || masked) with m = g, delta off (nats); then the mean over the 128 rows, rows equal-weighted",
+    "active": "per row: mean over positions of the count of subcomponents with g > 0.1, summed over the 196 sites; then the mean over rows",
+    "adv_kl": "the config's evaluation adversary (PGDReconLoss: one U(0,1) source per site shared by all rows and positions plus one delta scalar, 20 sign steps of 0.1 up the token-weighted mean KL over the row set, clipped to [0,1], one random start, torch generator seed 0, the same for both decompositions); per row: mean over positions of KL(target || masked) at the final sources; then the mean over rows, rows equal-weighted"
+  },
+  "references": {
+    "old_T_ci_kl": "0.1417 (experiments/qwen_adversary, 128 rows)",
+    "old_T_adv_kl": "1.70 for seed 0 (1.62 the mean of seeds 0-2), experiments/qwen_adversary on an H100; this run uses seed 0 only",
+    "new_chat_ci_kl": "about 0.17 (bundle README, held-out chat text at 2,048 tokens, during training)",
+    "new_chat_active": "about 6,200 (bundle README, CI > 0.1)"
+  },
+  "rule": {
+    "ratio": "mean over rows of the new decomposition's per-row value / the same mean for the old decomposition, on the same rows (paired)",
+    "interval": "row bootstrap: 10,000 resamples of the 128 row indices with replacement (numpy default_rng seed 0), the same indices for both decompositions; the 2.5th and 97.5th percentiles (linear interpolation) of the resampled ratios",
+    "pass": "ratio < 1 and the interval's upper end < 1 (strict; a tie at 1 is a miss)",
+    "miss": "otherwise",
+    "unreadable": "fewer than 2 rows, unequal row counts, a non-finite per-row value, or a zero old mean in the data or in any resample",
+    "code": "experiments/qwen_new_decomp/score.py"
+  },
+  "predictions": {
+    "P1": {"rows": "G", "number": "ci_kl", "claim": "the new decomposition is more faithful with its own CI on GSM8K text, thinking off"},
+    "P2": {"rows": "G", "number": "adv_kl", "claim": "the new decomposition is more faithful under the adversary on GSM8K text, thinking off"},
+    "P3": {"rows": "G-think", "number": "ci_kl", "claim": "the same as P1 with thinking on"},
+    "P4": {"rows": "G-think", "number": "adv_kl", "claim": "the same as P2 with thinking on"},
+    "basis": "the plan's Expected line: new trained on chat text with 30% Qwen3-1.7B's own responses, old on firestock3 at 512 tokens",
+    "reported_without_prediction": "T for all three numbers; the active count on every row set (its ratio is computed, no verdict)"
+  },
+  "controls": {
+    "a_recon": "V U of the new decomposition reproduces each of the 196 HF matrices: max relative Frobenius error <= 0.0055 (the bundle's reconstruction_check.csv bound); the largest gap to the csv's per-site values is reported",
+    "b_jax": "torch Gamma (bf16) of the new decomposition on the JAX library's own 29 taps (param-decomp 7d2e5aee8, experiments/qwen_new_decomp/jax_reference.py) vs the JAX g on the 8 rows of experiments/qwen_port/results/tokens.json: share of (position, subcomponent) pairs with |g_torch - g_jax| > 0.1 at most 1e-4 (old port's same check: 2.4e-5); end to end, active counts and the CI-masked KL beside JAX's are reported",
+    "c_old": "the old decomposition through this code: mean ci_kl on T within 2% of the stored 0.141670617449563 (|mean / 0.14167 - 1| <= 0.02)",
+    "if_any_fails": "stage 0 prints STAGE 0 FAILED and the job exits 1 before stage 1; the measure stages refuse to start"
+  },
+  "edge_cases_checked": "tests/test_qwen_new_decomp.py runs the rule on: a tie (ratio exactly 1: miss), an interval upper end at exactly 1 (miss), a zero old mean (unreadable), an old mean that is zero only in some resamples (unreadable), a single row (unreadable), unequal row counts (unreadable), a NaN value (unreadable), a missing decomposition (unreadable), and the do-nothing state (new = old row for row: ratio 1, miss). The do-nothing state cannot pass: the rule needs the ratio strictly below 1."
+}

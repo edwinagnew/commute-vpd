@@ -1,0 +1,71 @@
+{
+ "experiment": "E137 (reuse_variable_test), cell P1.3",
+ "filed": "2026-11-09, before any run",
+ "plan": "reports/plans/2026-11-09_plan_reuse-variable-first-test.md and its appendix (section D)",
+ "wording": "~/commute-data/scratch/definition-session/2026-11-09_reuse-at-a-variable_v2.md, first wording beside it",
+ "no_verdict": "No verdict on any saved run and no cut-offs for labels in this run. A found G or H is a lower bound; a miss is never read as built.",
+ "thresholds": {
+  "floor_gap": 0.02,
+  "tol_mult": 5,
+  "search_bar": 0.9,
+  "capacity_bar": 0.55,
+  "card_margin": 0.1
+ },
+ "by_construction": {
+  "note": "Labels fixed by how each pair is made, from the plan's table; they are not outputs of the run. Second wording's XOR row is subject to the capacity rule.",
+  "first_wording": {"Always on": "reuse", "Cue": "reuse (by its precedence rule)", "XOR": "reuse", "Table": "rewired"},
+  "second_wording": {"Always on": "re-weighted", "Cue": "rewired", "XOR": "built, subject to capacity; if the affine read of the XOR exceeds the capacity bar it reads rewired and 'built did not occur' is reported", "Table": "rewired"}
+ },
+ "rules": {
+  "stage0_identity": {
+   "rule": "For each pair, M' with its piece at the start value (zero push, zero read-out, zero table) gives, on E, the same next-token distribution as M: max over windows of total variation at the last position <= the floor between two identical runs of M (one batch size against half of it). A miss stops the job.",
+   "expected_at_W0": "0 for all four pairs: every start value adds an exact zero, so the two runs are computed the same way.",
+   "blind_to": "Whether a piece does anything once trained; only that the start value is the identity. Reads the last position only.",
+   "noise_floor": "floors.runs_tv in stage0.json, measured the same way on the same windows.",
+   "edge_cases": "A floor of exactly 0 with a difference of 0 passes (<=); a nan on either side fails (the job stops)."
+  },
+  "stage0_gap_floor": {
+   "rule": "A pair is read only if its gap, the mean over D's read half of total variation between M and M' at the last position, is at least 0.02. Below that the pair is 'no reading' and the others continue. The Table pair also requires the rank of C to exceed k = 4 (soft spot 1), and is 'no reading' otherwise.",
+   "expected": "Above the floor for all four, by construction; only the XOR's gap is unknown in size.",
+   "blind_to": "Which windows the change sits on; a change confined to a small share of D can still pass in the mean.",
+   "noise_floor": "The floor is itself the filed threshold of the plan; float effects in a mean of total variations are many orders below it.",
+   "edge_cases": "A gap of exactly 0.02 is read (>=); zero, negative (impossible) or nan gaps are 'no reading'."
+  },
+  "witness_values": {
+   "rule": "At the witnesses (stage 1): Always on G = 1, H = 1, reversion 1, setter mismatch 0, each within a tolerance; Cue H = 1 and Table H = 1, within a tolerance. Tolerance on a share: tol_tv / gap, tol_tv = tol_mult (5) x the largest of the two float floors measured in stage 0 in the distance unit (identical runs; the projection and back, the path these writes go through). Tolerance on the mismatch: (tol_h)^2 / var(v_F), tol_h = 5 x the largest of the two floors in the residual's norm.",
+   "expected": "By algebra: Always on G, H, reversion all 1, mismatch 0; Cue and Table H 1. The read-outs are the known subspace (Always on, Cue) and the whole residual (Table).",
+   "blind_to": "Whether anything finds these witnesses: they are handed in.",
+   "noise_floor": "stage0.floors, filed as the tolerance's source; a mean over the read half at most the per-window max, so the tolerance is conservative.",
+   "edge_cases": "tol_share of a zero gap is inf, but a zero gap is already 'no reading' and never reaches it; a variance of 0 in the mismatch tolerance gives 0, so only an exact mismatch of 0 passes; a None or nan reading fails."
+  },
+  "search_bars": {
+   "rule": "H is searched at in1, in2, in3, out3 and final, the normed input of the unembedding after ln_f at the last position, where KL is convex in the affine map because the logits are linear in it; G at in1, in2, in3 and out3. Found G on Always on (k = 4, best site, best of three starts), found H on Cue and on Table (best site) are each at least 0.9 of the witness value measured in stage 1. A miss means that G and H below it are not read for labelling on that pair.",
+   "expected": "Pass, since the witnesses exist; the plan's test of the search.",
+   "blind_to": "Whether what the search found is the witness; only that its output-matching is as good. A search that finds a different map with the same outputs passes.",
+   "noise_floor": "Read on D's read half; a share of about 1 with a mean over 100,000 windows moves by far less than 0.1 from sampling. The bar is a judgement, filed.",
+   "edge_cases": "A missing found value or a missing witness fails the bar; a witness of exactly 0 passes any found value >= 0 (no division)."
+  },
+  "capacity": {
+   "rule": "The XOR pair is built only if the held-out affine read of the real XOR is at most 0.55 accuracy, at every site's z_M. Otherwise it reads rewired and 'built did not occur' is reported. Accuracy by thresholding the ridge's prediction at 0.5, labels 0/1, on D's read half. In-sample and held-out, real and shuffled labels, all reported.",
+   "expected": "Held-out on the real XOR near 0.5 at every site; shuffled labels held-out at 0.5 by construction. If the real labels read above 0.55 the pair was not built by the wording's own rule, and that is reported.",
+   "blind_to": "Whether a non-affine map reads it, and whether a larger D would change it. A held-out read at 0.55 is not a proof that no affine map exists on all of D, only that this ridge over the fit half does not find one.",
+   "noise_floor": "On 100,000 read windows the binomial sd of a 0.5 accuracy is 0.0016; the shuffled-label read gives the same number measured, which is what a fit to noise reads held out.",
+   "edge_cases": "Any missing or nan site, or an empty list, gives 'not built' (False), the conservative side. Exactly 0.55 passes (<=). Balanced labels are assumed: the XOR of 4 uniform bits has mean 0.5 and the table is not read at that bar."
+  },
+  "card_rule": {
+   "rule": "At k = 4, for each pair take its best site (highest read G over the three starts), then the mean of the three starts' read G at that site. Rival A if Always on's mean is at least 0.1 above each of Cue, XOR and Table. Rival B if each of those three is within 0.1 of Always on. Otherwise 'mixed'. A found G is a lower bound and a miss is never read as built.",
+   "expected": "Filed by the plan as the question of the run, no prediction of which holds; the sketch shows both.",
+   "blind_to": "Everything the wording says G does not see: inside the fine-tune, the route, and whether the map found is the only one; a stronger search could change which rival holds.",
+   "noise_floor": "Spread across starts is unmeasured until this run and is read from stage2.json; the card's stand-in is 0.0375 from experiments/steering_copy_lookup/results/stage1.json (states.copy_s{0,1,2}.steering.pooled.share_lo).",
+   "edge_cases": "A pair with no reading, or a missing start, gives 'no reading' overall, not a rival. A tie at exactly 0.1 on all comparators reads A (tried first). Ties in best site go to the earlier site in stage order."
+  },
+  "acted_on": {
+   "rule": "Stage 3: 100 random unit directions inside the span of the activations on E (basis: right singular vectors of the activations, which are directions in activation space, with singular value above 1e-6 of the largest, at each of the four sites, last position). Swap each direction's value between inputs of E (a fixed permutation) and read the mean over E of total variation against M. A direction is 'acted on' if that mean exceeds the float floor tol_tv.",
+   "expected": "Every direction inside the span exceeds the floor: count = 100 at each site. The plan's first-wording 'built' would then apply only outside the span.",
+   "blind_to": "Directions outside the activations' span (none drawn), and whether M responds by more than a very small amount: a tiny effect above the float floor counts.",
+   "noise_floor": "tol_tv from stage 0.",
+   "edge_cases": "An empty list of directions counts 0 and a rank of 0 draws no directions; an exact zero mean is not above the floor."
+  }
+ },
+ "not_scored_but_reported": "G at k = 1 and 16; reversion and setter mismatch of every found pair (all reported in stage2.json; no tie-break is applied, because an exact tie of a read G does not occur in practice); ridge penalties chosen; H by site; the first wording's exact checks; the rank of z_M over D (bound on 34,000 windows, exact when equal to the columns)."
+}

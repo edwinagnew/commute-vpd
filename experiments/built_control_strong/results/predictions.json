@@ -1,0 +1,54 @@
+{
+  "experiment": "E153",
+  "cell": "P1.11",
+  "filed": "2026-11-11, before any E153 code ran. Approved by the user 2026-11-11; plan: reports/plans/2026-11-11_plan_built-control-strong.md; card: experiments/built_control_strong/card.txt",
+  "cutoffs": {
+    "G": 0.8,
+    "H": 0.5,
+    "source": "decisions.md, 2026-11-10 (working definition adopted tentatively; the user rounded 0.794 to 0.8 and 0.476 to 0.5), as filed by E148 (experiments/built_control/results/predictions.json). Label rule: commute.old_tasks.item_label, unchanged."
+  },
+  "thresholds": {
+    "floor_gap": 0.02,
+    "strong_capacity_bar": 0.9,
+    "target_gap_min": 0.15,
+    "learned_kl_ratio": 0.9
+  },
+  "threshold_sources": {
+    "floor_gap": "E139's filed floor (E137's), unchanged; E148 and E150 used it",
+    "strong_capacity_bar": "E150's filed linear_bar 0.9 (experiments/built_control_sum/results/predictions.json: the user's design of 2026-11-11, a ridge read of the bit above 0.9 on held-out pairs), here the stop for M' as a strong positive control. E150's stage 0 read 0.99968 on the same model, windows and code (experiments/built_control_sum/results/stage0.json, e148_plain_s0_xor2)",
+    "target_gap_min": "E148's filed target_gap_min (Fable: above ~0.15, well over the ~0.09 TV left by E139's 300-step copies), unchanged",
+    "learned_kl_ratio": "E139's filed xor_kl_ratio, unchanged; E148 and E150 used it"
+  },
+  "fixed_inputs": {
+    "original": "M' = experiments/built_control/results/large/plain_s0.pt: E148's plain seed-0 fine-tune (the 67M, 300 steps toward 67M + push on XOR2 windows; E148 stage1.json learned_plain_s0 ratio 0.150)",
+    "push": "E148's alpha (6, stage1.json calibration.alpha) times E137's Q b, at block 2's input, last position, where the last two tokens are keys with different bits",
+    "windows": "E148's keys (stage1.json keys, checked on rebuild), fit and read halves, 4,096 held-out ordered pairs",
+    "recipe": "E148's rungs: 300 steps at peak 3e-5 (E139), else 3000 at 1e-5 (E139 Amendment 2); seed 1 on seed 0's rung; batch draws seeded by E148's plain-arm item names (plain_s0, plain_s1)",
+    "built_side": "E148's plain arm, not rerun: best found H 0.0805 (seed 0) and 0.0866 (seed 1), G 0.0973 (seed 0); experiments/built_control/results/readings.json"
+  },
+  "early_stops": {
+    "S0a": {"what": "W0, zero-step control (first, alone): a fine-tune of M' at zero steps, against M', on the read half", "expected": "gap 0 and max TV 0, at or under the float floor between two batch sizes measured on M' (E150 read 1.03e-5 on the 67M), and under floor_gap: no reading", "rule": "stop if max TV > floor or mean gap >= floor_gap"},
+    "S0b": {"what": "capacity read of XOR2 on M' (VR.keyed_capacity: ridge from z_M' at in1, in2, in3, out3, keyed windows of held-out pairs)", "expected": "0.9997 at in2 and in3 (E150 stage 0: 0.55972 / 0.99968 / 0.99968 / 0.99937), shuffled about 0.50; the same code, model and windows, so equal up to float order", "rule": "stop if the best site is under strong_capacity_bar"},
+    "S1": {"what": "target gap TV(F', M'), mean over the read half; beside it E148's plain gap TV(67M + push, 67M) = 0.2586 and TV(67M + 2 push, 67M + push), the gap a perfect M' would leave", "expected": "open, 0.1 to 0.3: M' sits near 67M + push, and E148's calibration shows the plain gap flattening with alpha (0.258 at 6, 0.276 at 8, 0.294 at 12 units), so the second push may move outputs less than the first; at most 3/8 of windows are pushed, so it cannot exceed 0.375", "rule": "stop unless > target_gap_min; the stop says 'saturates' when TV(67M + 2 push, 67M + push) is also at or under target_gap_min"},
+    "T10": {"what": "every fine-tune, at step 10 (E139 Amendment 2's check, in VR.finetune)", "expected": "KL(F'||ft) below KL(F'||M') and KL(M'||ft) at most KL(M'||F')", "rule": "stop the job if missed"},
+    "L": {"what": "learned check per fine-tune: KL(F' || ft) / KL(F' || M' + push/2) on 4,096 keyed windows of held-out pairs (VR.learned_ratio)", "expected": "under 0.9 at 300 steps (E148's plain arm read 0.150 and 0.154 from the 67M); the do-nothing fine-tune reads KL(F'||M') / KL(F'||M' + push/2), above 1 (E148's plain 67M: 1.246 / 0.777 = 1.60)", "rule": "seed 0: 300 steps, else 3000 from M' again; not learned at 3000: no reading. Seed 1: seed 0's rung only; not learned: no reading"}
+  },
+  "predictions": {
+    "P1": {"claim": "Strong arm (fine-tunes of M' toward F', seeds 0 and 1): best found H over five sites at least 0.5 on both seeds, expected 0.55 to 0.8 (E139's ordinary fine-tunes copying the table change, a variable held as an exact linear read, read 0.72; copies of the always-on change 0.45 to 0.50); the best site expected at in2 or in3, where M' reads XOR2 at 0.9997", "rival": "rival b: H below 0.5 on both seeds, as E148's taught arm (0.025, 0.020)", "lean": "medium: the push is added at in2, where M' holds XOR2 linearly, so an affine map from z_M' can write it; but no fine-tune of a computed variable has yet read above 0.5"},
+    "P2": {"claim": "Strong arm, seed 0: best found G at k = 4 over sites and starts, open, expected 0.3 to 1.0; label by item_label: 're-weighted' if G >= 0.8 and H >= 0.5, 'rewired' if G < 0.8 and H >= 0.5", "rival": "none filed: G does not enter the outcome rule"},
+    "P3": {"claim": "Outcome: rival a (strong arm above, against E148's plain arm below)", "rival": "rival b: strong arm below; by the user's condition of 2026-11-10 the wording needs revising"}
+  },
+  "expected_at_reference": {
+    "W0": "the zero-step fine-tune of M' is M': gap 0, max TV 0 (S0a). It has no reading.",
+    "do_nothing": "a fine-tune that stays at M': gap 0 < floor_gap and learned ratio above 1 > 0.9, so 'no reading' twice over; an arm holding it is 'no call', never above or below",
+    "control": "M' itself is the positive control's premise: XOR2 read at 0.9997 (S0b). The built side is E148's plain arm at 0.080 and 0.087; the search's own positive control is E137's hand-made pairs (Cue 0.961, Table 0.995) and E139's table copies (0.72)"
+  },
+  "outcome_rule": {
+    "rule": "Per fine-tune: a reading needs the learned check passed and gap TV(ft, M') >= floor_gap. Best found H over the five sites (in1, in2, in3, out3, final), against M'. Strong arm: 'above' if both seeds have a reading with H >= cutoffs.H; 'below' if both have a reading with H < cutoffs.H; else 'no call'. Above: rival a, built detectable as a contrast with E148's plain arm (both E148 plain seeds read below; reading that as 'built' is a rule only the user adds). Below: rival b, the search cannot certify reuse of XOR2, and by the user's condition of 2026-11-10 the wording needs revising. No call: reported as read, no amendment. Per seed-0 fine-tune: label by item_label with cutoffs G and H; seed 1 has no G and no label beyond its side.",
+    "edge_cases": "Checked before filing. A value exactly at a cut-off or bar counts as at or above it (item_label's convention): H = 0.5 is above. The capacity bar: 0.9 exactly passes; the target gap must be strictly above 0.15; a learned ratio of exactly 0.9 is learned. One seed without a reading (not learned, gap under the floor, or a step-10 stop that ends the job) makes the arm 'no call', never 'below': a fine-tune that learned nothing cannot read as built. Seeds split across 0.5 (one above, one below): 'no call'. The do-nothing state has gap 0 and a ratio above 1, so it has no reading and cannot pass (see expected_at_reference). The learned ratio's denominator is positive for any nonzero push (asserted in VR.learned_ratio). H's denominator is the fine-tune's gap, at least floor_gap = 0.02 > 0 for any reading. A missing G never changes the side, which reads H only. E148's plain arm is fixed below (0.080, 0.087), so no outcome needs a rerun of it.",
+    "blind_to": "H and G read only the fine-tune's outputs at the last position on D's windows: a fine-tune that matches F' exactly reads F''s values whatever is inside it. The capacity read is linear: a nonlinear code in M' is not seen, and 0.9997 says the bit is there, not that M' uses it. The push applied twice: M' was itself trained toward 67M + push (and moved further than that target: TV(M', 67M) 0.344 against the target's 0.259, E148 plain_s0.json dist), so F' = M' + push sits further out along the same push; if the second push lands where the outputs saturate, a fine-tune can match F' by moving M''s outputs a little, the gap is small and H is read on a small denominator. Stage 1 reports the gap, E148's first-push gap and TV(67M + 2 push, 67M + push), and stops under 0.15. Unpaired: the strong arm and E148's plain arm differ in the original only, but the plain arm ran in an earlier job; card differences are under the float floor. G on seed 1 and the G sites cut under the 3000-step rung are not read."
+  },
+  "noise_floor": "Seed-to-seed sd of best found H across E139's three Always on fine-tunes: 0.028 (0.505, 0.450, 0.483; experiments/reuse_variable_finetune/results/always_on_s*.json); E148's two plain seeds differ by 0.006. The card's smallest gap of interest, 0.2, is about 7 sd.",
+  "positive_control": "M' reading XOR2 at 0.9997 (S0b) is the premise; the arm is the positive control E148 lacked: the same search, quantity, windows and push, from an original that holds XOR2 as a near-exact linear read.",
+  "stop": "H below 0.5 on both seeds from an original that reads XOR2 at 0.9997 means the search cannot certify reuse of XOR2 and, by the user's condition of 2026-11-10, the wording needs revising (card)."
+}

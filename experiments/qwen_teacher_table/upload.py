@@ -1,4 +1,4 @@
-"""E111's inputs on W&B, for a pod (the dev node's uplink is ~80 KB/s). Imports no torch. Each δW E93 scored is its own
+"""E111's inputs on W&B, for a pod (W&B lets a pod fetch at 30-45 MB/s (a direct sync() from the dev node is ~10 MB/s, measured 2026-11-11)). Imports no torch. Each δW E93 scored is its own
 artifact, `qwen3-1.7b-e111-dW-<state>` (type delta), one file `<state>.safetensors` exactly as saved (fp32, u2 bf16:
 the run reproduces E93's stored reads, which these files gave); it counts only when its sha256 is the one in E93's
 results/<state>/state.json. The small inputs, `qwen3-1.7b-e111-inputs` (type inputs): E45's anchor-1 items and the two

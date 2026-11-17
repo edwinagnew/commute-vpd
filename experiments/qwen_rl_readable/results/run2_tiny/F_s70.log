@@ -1,0 +1,28 @@
+[    3.3s] [F_s70] start; NVIDIA L40
+[    6.9s] [model] 1409286144 entries; 301 sampling rows per batch; eos [151645, 151643]
+[    7.2s] [F_s70] disk: 3355 GB free, 33 GB needed
+[   19.8s] [F_s70] W0's rollouts of step 1 sampled here, 13 s
+[   19.8s] [F_s70] step 1's rollouts identical to E69's R: False
+[   19.8s] [check] step 1's reward rate: MISSED {"rate": 1, "band": [0.6, 0.88]}
+[   21.8s] [F_s70] {"step": 1, "sample_s": 0.009016752243041992, "reward_rate": 1, "mean_len": 201, "window_share": 1, "live": true, "loss": 0.03404312580823898, "grad_norm": 2.1707749366760254, "rate": 3e-07, "dw_norm": 0.011144460170646948, "grad_rms": 5.782494224348294e-05, "train_s": 1.9897587299346924, "live_tokens": 1608}
+[   21.8s] [check] loss and gradient norm finite: ok {"step": 1}
+[   21.8s] [check] first live step: |dW| / (rate sqrt(numel)): ok {"step": 1, "ratio": 0.9895510197988382, "band": [0.85, 1.05]}
+[  140.4s] [check] first live step: KL(W0 || W_1) on H: ok {"step": 1, "kl": 0.00043866622088600793, "band": [0.00027, 0.018]}
+[  190.6s] [F_s70] checkpoint at step 1, 50 s
+[  208.5s] [save] /mnt/nw/home/e.agnew/commute-data/scratch/qwen-rl-lead/run2_tiny_59506/F_s70/dW/step_1.safetensors (5.64 GB)
+[  213.1s] [F_s70] SAVED step 1 {"file": "F_s70/dW/step_1.safetensors", "bytes": 5637164512, "sha256": "80bc52ecab1c378398a529b83affd5ce4ad14462624411461b518312700f71d9", "save_s": 22.573158025741577}
+[  213.1s] [check] first save: E69's size, sha256 recorded: ok {"file": "F_s70/dW/step_1.safetensors", "bytes": 5637164512, "sha256": "80bc52ecab1c378398a529b83affd5ce4ad14462624411461b518312700f71d9", "save_s": 22.573158025741577}
+[  226.5s] [F_s70] step 1 output-change read {"dw_norm": 0.011144460170646948, "kl": 9.800383788706144e-05, "multiple": 0.0010514589192559477, "kl_s": 13.277754545211792}
+[  226.5s] [F_s70] paused at step 1: run the same command
+[    3.2s] [F_s70] start; NVIDIA L40
+[    6.7s] [model] 1409286144 entries; 301 sampling rows per batch; eos [151645, 151643]
+[   44.9s] [F] resuming after step 1
+[   44.9s] [F_s70] disk: 4160 GB free, 28 GB needed
+[   60.8s] [F_s70] W0's rollouts of step 2 sampled here, 16 s
+[   62.2s] [F_s70] {"step": 2, "sample_s": 0.0012967586517333984, "reward_rate": 0.75, "mean_len": 237, "window_share": 0.75, "live": true, "loss": 0.02462934225331992, "grad_norm": 2.1117212772369385, "rate": 6e-07, "dw_norm": 0.024046803710922514, "grad_rms": 5.6251875230114736e-05, "train_s": 1.370818853378296, "live_tokens": 1056}
+[   62.2s] [check] loss and gradient norm finite: ok {"step": 2}
+[  116.7s] [F_s70] checkpoint at step 2, 54 s
+[  134.6s] [save] /mnt/nw/home/e.agnew/commute-data/scratch/qwen-rl-lead/run2_tiny_59506/F_s70/dW/step_2.safetensors (5.64 GB)
+[  139.4s] [F_s70] SAVED step 2 {"file": "F_s70/dW/step_2.safetensors", "bytes": 5637164512, "sha256": "475fb387961cd2d6b756f4b30589507ae68dfe7d99e6d51ca3a64026527e8f45", "save_s": 22.709741830825806}
+[  152.5s] [F_s70] step 2 output-change read {"dw_norm": 0.024046803710922514, "kl": 0.00028138115228172015, "multiple": 0.0030188687367333246, "kl_s": 13.025371789932251}
+[  157.8s] [F_s70] done at step 2; {"gpu_gb": 30.846554112, "host_gb": 18.903708}

@@ -1,7 +1,7 @@
 #!/bin/bash
 # Upload E111's inputs to W&B (experiments/qwen_teacher_table/upload.py): "inputs" (E45's anchor-1 items and two TOFU
 # files, 1.5 MB) and one artifact per δW E93 scored (qwen3-1.7b-e111-dW-<state>, 5.64 GB fp32 each; u2 2.82 GB bf16).
-# A CPU batch job: the dev node's uplink is ~80 KB/s. Submit from the clone root, with WANDB_API_KEY in the submitting
+# A CPU batch job: W&B lets a pod fetch at 30-45 MB/s (a direct sync() from the dev node is ~10 MB/s, measured 2026-11-11). Submit from the clone root, with WANDB_API_KEY in the submitting
 # shell (sbatch exports it), naming what to upload; stage 1 needs only the first line:
 #   sbatch cluster/qwen_teacher_table_upload.sbatch inputs R_s70
 #   sbatch cluster/qwen_teacher_table_upload.sbatch N_s0 N_s70 F_s0 a1_s0 a1_s1 R_s0 a2_s42 a2_s142 u1 u2

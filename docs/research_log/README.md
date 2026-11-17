@@ -52,15 +52,34 @@ the project's name, so a bare word misroutes the user's answer (user, 2026-11-02
 label and goes after them. When the user decides, the card is removed, the decision goes into `decisions.md` and the changelog row names
 it. Adding or removing a card is a `PENDING.md` line like any other change.
 
+## What's next (section `next`, right after the pending decisions; since 2026-11-09)
+
+Rebuilt at each daily flush from `~/commute-agents/fleet/cell list` and `cell show <ID>`, not edited by hand between
+flushes. One card per part of the paper: its lead and gate, "N of M cells done", then one table row per cell:
+`<td>ID</td><td>title in plain words</td><td>open|filled|closed</td><td>due MM-DD</td><td>runs used of allowed, or
+"reading and writing only"</td><td>link to the cell's page once filled (cell show's path), else "not yet"</td>`. Then
+"What already counts towards it": 3 to 6 links to cards or sections already in the log, one plain clause each. Cell rows
+first, links second; a new run cell is a new row. The "Stopped" line changes only when the user stops something.
+
 ## Main-page length (temporary, user 2026-10-26)
 
 Until the user lifts this, a flush may not make the main page longer: what it adds, it takes out elsewhere, by rewriting
 a superseded box or folding a card that a newer result replaced. The changelog, glossary, mistakes and experiments pages are exempt; they grow (the cards each
-within the length below). Measure each flush with `python3 docs/research_log/build.py --words`: words per section, each section's
+within the length below). Decision cards are exempt too (user, 2026-11-10; friction 444, 547, 562, 586, 630, 631):
+pending-decision cards (`<div class="card ... decision" id="decision-...">`) and any card the user asked for, which
+carries the class `asked` (`<div class="card ... asked">`; add it when the user's request is the reason the card
+exists, and name the request in the queue line). `--words` and `--blocks` leave both out. Everything else still
+offsets what it adds, and a clerk never trims another lead's text to make room: cuts come from its own lead's
+text only. Measure each flush with `python3 docs/research_log/build.py --words`: words per section, each section's
 change since HEAD, and the total against the 20,000 limit. Plan the cuts once: `--words` says how much must go,
 `--blocks` lists the 40 largest blocks; make them all, then re-measure once. Cut cheapest first:
 what this flush supersedes; closed items in `next`, `gaps` and `timeline`; Techniques or Apparatus prose a card already
 holds. Claim rows last: they are the record (friction 208, 368, 376).
+`--words` counts the main page only: `methodtable`, `neurontable`, `experiments`, `glossary`, `changelog` and `mistakes`
+are not counted, and it names them (friction 681). When the user waives the cap for a request (a whole-log
+restructure, user 2026-11-10), the lead appends `CONSENT YYYY-MM-DD <role> · <the user's words>` to `PENDING.md`: the
+"over" line then reads as an FYI, and the flush writes for readability, lengthening where that helps (friction 688).
+The flush removes the line with the rest of the queue.
 
 ## Batched updates (since 2026-10-21, user)
 
@@ -74,7 +93,9 @@ least once a day:
    without a card, that no part of the log or queue names. Add a `PENDING.md` line for each. A changelog wildcard
    (`analysis_qwen-*`) counts as naming.
 3. Apply each line as "What to update" below says, grepping `parts/` for the places to change rather than reading
-   whole sections. Write one changelog row for the flush, empty `PENDING.md` except its `HOLD` lines, build. The build warns on a removed line
+   whole sections. Just before the changelog row, `flock -s -n 9 9<docs/research_log/PENDING.md` and re-read the
+   queue: apply any line that arrived since you started (one landed after a pull and cost a second commit and build,
+   friction 718); the build's `queued:` line names any still there. Write one changelog row for the flush, empty `PENDING.md` except its `HOLD` lines, build. The build warns on a removed line
    whose file, E-code or card id is in nothing the flush added: check it landed (friction 155). Then publish. A line
    appended meanwhile survives the merge and waits for the next flush; lines you removed stay gone (`fleet/merge-lines`).
 
@@ -107,8 +128,9 @@ least once a day:
    A flush that touches a card brings it to this format (user, 2026-10-26: the Found lists had become unreadable;
    2026-10-29: the openings were too thin and the plots too hard to read). Figures: copy the PNG into the `files`
    map below under `fig/eN_<name>.png`.
-2. **Every claim, with its status** (`claims.html`): add, re-chip or re-word rows. Statuses: holds,
-   partial/qualified, refuted, uninformative, open.
+2. **Claims at a glance** (`claims.html`): add, re-chip or re-word rows. One line a row (user, 2026-11-11: the old
+   60-row table was unreadable): a chip of one word (holds, qualified, refuted, no power, open), the claim in at
+   most 25 words with at most one number, then the card links. Evidence and caveats live in the cards, not here.
 3. **Sub-questions** (`questions.html`): the status line and chip of every Q the experiment bears on; the E-code
    links. **Rewrite the status, never append to it** (user, 2026-10-26, repeated): answer first, three to five
    plain sentences, at most a couple of numbers, E-codes in brackets; the details live in the cards. The same holds for
@@ -131,9 +153,9 @@ From a Claude Code session, with the Artifact tool:
    `~/commute-agents/fleet/log-lock release <role>` after the publish (two flushes both claimed v73, friction 37).
    `<role>` is the lead's role name; a clerk's brief gives it. `take --wait` waits 100 s a call; run it again on exit 1. A
    holder that has ended loses the lock to the next take (`log-lock status` says why). Every session takes it, for a
-   one-off edit too. Nothing enforces that, and sessions have published past a held lock (friction 347, 149): step 2's
-   diff shows it; merge and take the next version number. In the call before the send, `log-lock check <role>`: on exit
-   1 do not publish; take it again and re-pull.
+   one-off edit too, a user-requested overview or techniques edit included. A hook (`.claude/hooks/log-publish-lock.py`)
+   refuses a publish to the log from a session that does not hold the lock (friction 347, 149); its refusal says who
+   does. In the call before the send, `log-lock check <role>`: on exit 1 do not publish; take it again and re-pull.
 1. Commit `parts/` and the emptied queue (named paths, `git commit -m ... -- docs/research_log experiments/TRIED.md
    README.md`), since a pull refuses to merge into an uncommitted `PENDING.md`. Then `git pull --no-rebase` and
    `python3 docs/research_log/build.py`, so the build has every other session's changes. Commit what that changed and
@@ -156,24 +178,31 @@ From a Claude Code session, with the Artifact tool:
    `build/` too, so a publish after it is current (friction 519).
    `--changed` compares the hashes in `nav.js`, so a page nobody changed is neither read nor sent; rerun it after the
    last build and read any page newly named. A live `nav.js` missing or without hashes names every page: read those
-   (friction 291). A file not yet live needs no read. Never `read` with `url` alone: ~50k tokens, and the first send was
+   (friction 291). A file not yet live needs no read. A redrawn figure (a `fig/*.png` that is live and changed) counts as
+   a changed file: read its path before the first send, or the send is refused as unread content (friction 691). Never `read` with `url` alone: ~50k tokens, and the first send was
    refused all the same (friction 115, 160). The saved index.html is for `--check`; it does not count as a view.
    Which check (friction 384): before editing `parts/`, `--check`, where any diff is someone else's. With uncommitted
    edits, `--check-head`, against `parts/` at HEAD. After your commit, `--check` diffs your own edits: read only
    index.html's place count, which predicts step 3. `--check` also flags a live page built from `parts/` in no commit
    (friction 323).
 3. Publish (below). The first send is refused unless this session published the live version; the refusal's first
-   sentence picks the case. One rule covers most of them: **if the refusal's diff shows only your own changes, your
-   read was stale. Do not resend unchanged (that is refused "resent unchanged"). Re-read the live page with `Artifact
-   read` and `path` (not `url` alone), then send once** (friction 517, 535, 553, 560, 585). If the diff shows a line that
-   is not yours, another session published: pull, rebuild, merge, step 1.
+   sentence picks the case. Whose changes the refusal shows is settled before the send, not by reading it: if you took
+   the lock before step 2 and step 2's `--check` showed no line that is not yours, nobody else could publish since (the
+   lock hook, step 0), so every refusal below is your own changes. Then, whatever the case, **send the identical call
+   three times in all: the first is refused as not the live version ("shown in full below as a line diff" or "not
+   shown here"), the second "resent unchanged", the third passes** (friction 585, 609, 620, 651). Do not re-read the
+   page between sends (a by-path read does not count as a view, friction 609, 620) and do not read the saved refusal
+   file. If the third is refused too, stop and report the three refusals' first sentences. A "touches files" refusal
+   still takes its bullet below.
+   Otherwise (step 2 showed someone else's line, or you took the lock late), by the refusal's first sentence:
    - **"same author content"**: send again; it passes.
-   - **"shown in full below as a line diff"** (under about 10 places): read the diff. Only your own changes: the rule
-     above. A line that is not yours: merge first, whatever the place count (friction 409, 451, 479).
-   - **"not shown here"** (about 10 places or more): resending never passes (friction 315, 326, 359, 387). The refusal
-     names a saved file: Read it whole, 130 lines a call (200 can overrun Read), through the last line it names (~45k
-     tokens). Merge what yours lacks; the next send passes. Step 2's place count warns of this: split such a flush if you
-     can (apply some lines, publish, then the rest).
+   - **"shown in full below as a line diff"** (under about 10 places): read the diff. Only your own changes: the three
+     sends above. A line that is not yours: pull, rebuild, merge, step 1, whatever the place count (friction 409, 451,
+     479).
+   - **"not shown here"** (about 10 places or more): the refusal names a saved file: Read it whole, 130 lines a call
+     (200 can overrun Read), through the last line it names (~45k tokens). Merge what yours lacks and publish; a
+     "resent unchanged" refusal after that means send the same call once more (friction 585). Step 2's place count
+     warns of this: split such a flush if you can (apply some lines, publish, then the rest).
    - **"touches files whose published content is not what you last saw"**: `Artifact read` each path named, `--check`,
      merge into `parts/` if it differs, rebuild, publish. A figure you are not changing comes out of `files`.
    Anything else: stop and report it with the refusal text. The version the tool reports counts every send and differs
@@ -588,3 +617,27 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e126_orders.png": "experiments/copy_reproducibility/figures/orders.png"
 - "fig/e130_placement.png": "experiments/copy_protection/figures/placement.png"
 - "fig/e130_amend1_blocks.png": "experiments/copy_protection/figures/amend1_blocks.png"
+- "fig/e131_adversary.png": "experiments/qwen_new_decomp/figures/adversary.png"
+- "fig/e131_ci_kl.png": "experiments/qwen_new_decomp/figures/ci_kl.png"
+- "fig/e131_active.png": "experiments/qwen_new_decomp/figures/active.png"
+- "fig/methodtable_gaps.png": "experiments/method_table/figures/scorecard_gaps.png"
+- "fig/e132_share_new_old.png": "experiments/qwen_regating_new/figures/share_new_old.png"
+- "fig/e137_found_vs_witness.png": "experiments/reuse_variable_test/figures/found_vs_witness.png"
+- "fig/e139_finetunes_vs_pairs.png": "experiments/reuse_variable_finetune/figures/finetunes_vs_pairs.png"
+- "fig/e133_final.png": "experiments/method_table/figures/final.png"
+- "fig/e142_old_task_labels.png": "experiments/old_task_labels/figures/old_task_labels.png"
+- "fig/e144_gains.png": "experiments/qwen_regating_new/figures/amend1_gains.png"
+- "fig/e139_g_vs_leftover.png": "experiments/reuse_variable_finetune/figures/g_vs_leftover.png"
+- "fig/decision_gate_within_pair.png": "experiments/old_task_labels/figures/gate_within_pair.png"
+- "fig/e148_h_by_arm.png": "experiments/built_control/figures/h_by_arm_scored.png"
+- "fig/e152_step1.png": "experiments/qwen_instrument_check/figures/step1.png"
+- "fig/e163_run1.png": "experiments/qwen_rl_readable/figures/run1.png"
+- "fig/e165_library.png": "experiments/qwen_pair_library/figures/library.png"
+- "fig/e162_run2.png": "experiments/qwen_cheap_readings/figures/run2.png"
+- "fig/e168_shares.png": "experiments/memorised_fact/figures/shares.png"
+- "fig/e169_scorecard.png": "experiments/qwen_library_readings/figures/scorecard.png"
+- "fig/e163_run2.png": "experiments/qwen_rl_readable/figures/run2.png"
+- "fig/e163_run3.png": "experiments/qwen_rl_readable/figures/run3.png"
+- "fig/e187_size_matched.png": "experiments/size_matched/figures/size_matched.png"
+- "fig/e155_gaps.png": "experiments/neuron_overlap/figures/gaps.png"
+- "fig/e190_jobs.png": "experiments/neuron_jobs_k/figures/jobs.png"

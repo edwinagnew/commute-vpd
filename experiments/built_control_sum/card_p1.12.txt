@@ -1,0 +1,12 @@
+cell: P1.12
+rival_a: With the plain-model bar at 0.9 (plain sum-parity read 0.61), Built is detectable under the adopted wording (the search finds an affine map only when the original already holds the variable) predicts found H at least 0.5 on both seeds of the no-teaching control (last number odd, plain 67M) and of the taught arm if it passes its 0.9 gate, and below 0.5 on both seeds of the plain arm (sum parity, plain 67M)
+rival_b: The search fails on this layout whatever the original holds predicts the no-teaching control below 0.5 as well, so low H on the plain arm says nothing about built
+rung: premise
+smallest_gap: 0.2
+spread: 0.028
+n: 2
+design: unpaired
+unit: seeds
+spread_source: experiments/reuse_variable_finetune/results
+stop: The no-teaching control below 0.5 on both seeds means the search cannot certify reuse on this layout, the built control is reported as uninformative and nothing further runs; control above and plain arm above means the wording needs revising
+sketch: experiments/built_control_sum/figures/sketch.png

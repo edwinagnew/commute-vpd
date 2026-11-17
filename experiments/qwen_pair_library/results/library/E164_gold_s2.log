@@ -1,0 +1,317 @@
+##### ARM gold seed 2 20:27:43
+wandb: Currently logged in as: edwinagnew (edwinagnew-mats) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run 6g4xwmc4
+wandb: Tracking run with wandb version 0.23.1
+wandb: Run data is saved locally in /root/work/experiments/qwen_pair_library/results/large/wandb/wandb/run-20261111_202753-6g4xwmc4
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run rural-frog-57
+wandb: ⭐️ View project at https://wandb.ai/edwinagnew-mats/commute
+wandb: 🚀 View run at https://wandb.ai/edwinagnew-mats/commute/runs/6g4xwmc4
+[    9.2s] [gold_s2] [start gold_s2] config {"batch": 64, "steps": 100, "sizes": [5.0, 15.0], "n_trained_items": 256, "n_trained_rows": 64, "n_held_template": 256, "seq_len": 512, "gen_batch": 128, "max_new": 32, "loss_batch": 8, "kl_batch": 8}; NVIDIA L40S
+Generating train split:   0%|          | 0/7473 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 7473/7473 [00:00<00:00, 338455.59 examples/s]
+Generating test split:   0%|          | 0/1319 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 1319/1319 [00:00<00:00, 280926.57 examples/s]
+Generating test split:   0%|          | 0/1205 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 1205/1205 [00:00<00:00, 246747.86 examples/s]
+Fetching 2 files:   0%|          | 0/2 [00:00<?, ?it/s]Fetching 2 files:  50%|█████     | 1/2 [00:47<00:47, 47.70s/it]Fetching 2 files: 100%|██████████| 2/2 [00:47<00:00, 23.85s/it]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.44it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.52it/s]
+[  108.1s] [gold_s2] [control] W0 {"kl": 0.0, "held": {"value": 2.495208230722153, "hits": null, "n": 256}, "trained": {"value": 2.3453933023684184, "hits": null, "n": 64}, "prior": -2.3453933023684184}
+[  109.1s] [gold_s2] [save] /root/work/experiments/qwen_pair_library/results/large/library/gold_s2/control_zero.safetensors (5.64 GB)
+[  133.9s] [gold_s2] [control] zero change {"kl": 0.0, "held": {"value": 2.495208230722153, "hits": null, "n": 256}, "trained": {"value": 2.3453933023684184, "hits": null, "n": 64}}; holds True
+[  133.9s] [gold_s2] STAGE control DONE results/library/gold_s2.json; peak GPU 19.8 GiB, peak GPU 19.78 GiB, host 11.7 GB
+/root/work/src/commute/qwen_sft.py:281: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  total += float(s)
+[  155.8s] [gold_s2] [train] {"step": 1, "lr": 0.0, "loss": 2.5212287524104813, "grad_norm": 133.87741088867188, "dw_norm": 0.0, "kl": {"own": 0.0}, "crossed": [], "peak_gib": 35.57312631607056}
+[  177.8s] [gold_s2] [train] {"step": 2, "lr": 1.0000000000000002e-06, "loss": 2.3453930480145053, "grad_norm": 119.86005401611328, "dw_norm": 0.03305224300216632, "kl": {"own": 0.007569403818342798}, "crossed": [], "peak_gib": 35.57312631607056}
+[  199.2s] [gold_s2] [train] {"step": 3, "lr": 2.0000000000000003e-06, "loss": 1.8506501182486843, "grad_norm": 92.67453002929688, "dw_norm": 0.09299204466153801, "kl": {"own": 0.04041511202827461}, "crossed": [], "peak_gib": 35.57312631607056}
+[  220.7s] [gold_s2] [train] {"step": 4, "lr": 3e-06, "loss": 1.251862428843393, "grad_norm": 46.869384765625, "dw_norm": 0.17255986673758697, "kl": {"own": 0.10364655276839958}, "crossed": [], "peak_gib": 35.57312631607056}
+[  241.6s] [gold_s2] [train] {"step": 5, "lr": 4.000000000000001e-06, "loss": 0.8418588412457122, "grad_norm": 20.74504852294922, "dw_norm": 0.26585460599857563, "kl": {"own": 0.20036444624192068}, "crossed": [], "peak_gib": 35.57312631607056}
+[  262.8s] [gold_s2] [train] {"step": 6, "lr": 5e-06, "loss": 0.6930784134382613, "grad_norm": 10.10749626159668, "dw_norm": 0.36606834851997094, "kl": {"own": 0.2617808349950242}, "crossed": [], "peak_gib": 35.57312631607056}
+[  283.5s] [gold_s2] [train] {"step": 7, "lr": 6e-06, "loss": 0.7639534239525119, "grad_norm": 7.373648643493652, "dw_norm": 0.470665352648338, "kl": {"own": 0.31897156009623034}, "crossed": [], "peak_gib": 35.57312631607056}
+[  304.5s] [gold_s2] [train] {"step": 8, "lr": 7e-06, "loss": 0.6449912218792055, "grad_norm": 3.700160503387451, "dw_norm": 0.5782736653891389, "kl": {"own": 0.3770101004856395}, "crossed": [], "peak_gib": 35.57312631607056}
+[  325.3s] [gold_s2] [train] {"step": 9, "lr": 8.000000000000001e-06, "loss": 0.6491550668223383, "grad_norm": 3.5506057739257812, "dw_norm": 0.6900704901903966, "kl": {"own": 0.4364628648324651}, "crossed": [], "peak_gib": 35.57312631607056}
+[  345.6s] [gold_s2] [train] {"step": 10, "lr": 9e-06, "loss": 0.6052521456882745, "grad_norm": 2.6691720485687256, "dw_norm": 0.805386384460681, "kl": {"own": 0.4970733082161271}, "crossed": [], "peak_gib": 35.57312631607056}
+[  366.8s] [gold_s2] [train] {"step": 11, "lr": 1e-05, "loss": 0.5368716233666081, "grad_norm": 2.4038443565368652, "dw_norm": 0.9236501084035752, "kl": {"own": 0.5540617554809909}, "crossed": [], "peak_gib": 35.57312631607056}
+[  387.1s] [gold_s2] [train] step 11, the lower state of a bracket: not kept
+[  387.3s] [gold_s2] [train] {"step": 12, "lr": 9.99695413509548e-06, "loss": 0.584692199542294, "grad_norm": 2.6581575870513916, "dw_norm": 1.0338756208001347, "kl": {"own": 0.602494324606399}, "crossed": [{"axis": "own", "grid": 0.5567447851733321, "lo": 11, "hi": 12}], "peak_gib": 35.57868051528931}
+[  388.0s] [gold_s2] [save] /root/work/experiments/qwen_pair_library/results/large/library/gold_s2/5x.safetensors (5.64 GB)
+[  393.0s] [gold_s2] [save] {"step": 12, "labels": ["5x"], "file": "results/large/library/gold_s2/5x.safetensors", "bytes": 5637164512, "sha256": "fdd59c7873e6f209fccd64f85dcc42e6da191876606800b03e8176f52d365177", "artifact": "p35-gold-s2-5x"}
+[  405.2s] [gold_s2] [upload] queued p35-gold-s2-5x (5.64 GB)
+[  425.7s] [gold_s2] [train] {"step": 13, "lr": 9.987820251299121e-06, "loss": 0.5098235443700185, "grad_norm": 2.39786696434021, "dw_norm": 1.1345427742747276, "kl": {"own": 0.6396903634568372}, "crossed": [], "peak_gib": 35.57868051528931}
+[  447.3s] [gold_s2] [train] {"step": 14, "lr": 9.972609476841368e-06, "loss": 0.622759092316392, "grad_norm": 2.7871735095977783, "dw_norm": 1.2277172470826363, "kl": {"own": 0.6666499906104876}, "crossed": [], "peak_gib": 35.57868051528931}
+[  468.3s] [gold_s2] [train] {"step": 15, "lr": 9.951340343707852e-06, "loss": 0.5599752455958916, "grad_norm": 2.3658697605133057, "dw_norm": 1.3141259035502952, "kl": {"own": 0.686824181715131}, "crossed": [], "peak_gib": 35.57868051528931}
+[  489.0s] [gold_s2] [train] {"step": 16, "lr": 9.924038765061042e-06, "loss": 0.5220968960885523, "grad_norm": 2.231064796447754, "dw_norm": 1.3948789243338195, "kl": {"own": 0.7074965512255444}, "crossed": [], "peak_gib": 35.57868051528931}
+[  508.8s] [gold_s2] [train] {"step": 17, "lr": 9.890738003669029e-06, "loss": 0.5664563543146307, "grad_norm": 2.511596441268921, "dw_norm": 1.4709873498919235, "kl": {"own": 0.7260467704564201}, "crossed": [], "peak_gib": 35.57868051528931}
+[  530.1s] [gold_s2] [train] {"step": 18, "lr": 9.851478631379982e-06, "loss": 0.5532539730618965, "grad_norm": 2.0819432735443115, "dw_norm": 1.5422277055633296, "kl": {"own": 0.7391288032484125}, "crossed": [], "peak_gib": 35.57868051528931}
+[  551.1s] [gold_s2] [train] {"step": 19, "lr": 9.806308479691595e-06, "loss": 0.6185925463504113, "grad_norm": 2.0769503116607666, "dw_norm": 1.6094160383939706, "kl": {"own": 0.7471332250781001}, "crossed": [], "peak_gib": 35.57868051528931}
+[  572.4s] [gold_s2] [train] {"step": 20, "lr": 9.755282581475769e-06, "loss": 0.5400940911277154, "grad_norm": 2.000885486602783, "dw_norm": 1.6732819916522659, "kl": {"own": 0.7540486473166159}, "crossed": [], "peak_gib": 35.57868051528931}
+[  592.6s] [gold_s2] [train] {"step": 21, "lr": 9.698463103929542e-06, "loss": 0.5720878983397933, "grad_norm": 1.9372588396072388, "dw_norm": 1.7339960628128617, "kl": {"own": 0.7605522794710378}, "crossed": [], "peak_gib": 35.57868051528931}
+[  612.9s] [gold_s2] [train] {"step": 22, "lr": 9.635919272833938e-06, "loss": 0.5877503744827515, "grad_norm": 1.7592988014221191, "dw_norm": 1.7913540232392626, "kl": {"own": 0.7659722840958835}, "crossed": [], "peak_gib": 35.57868051528931}
+[  633.8s] [gold_s2] [train] {"step": 23, "lr": 9.567727288213005e-06, "loss": 0.5787501165588722, "grad_norm": 1.9002177715301514, "dw_norm": 1.8464836793116888, "kl": {"own": 0.775789078026879}, "crossed": [], "peak_gib": 35.57868051528931}
+[  654.8s] [gold_s2] [train] {"step": 24, "lr": 9.493970231495836e-06, "loss": 0.5184731098270682, "grad_norm": 1.9923733472824097, "dw_norm": 1.89876938401393, "kl": {"own": 0.78443375835866}, "crossed": [], "peak_gib": 35.57868051528931}
+[  675.2s] [gold_s2] [train] {"step": 25, "lr": 9.414737964294636e-06, "loss": 0.5192706397094926, "grad_norm": 1.816785454750061, "dw_norm": 1.9482196305495423, "kl": {"own": 0.7900380529416372}, "crossed": [], "peak_gib": 35.57868051528931}
+[  696.7s] [gold_s2] [train] {"step": 26, "lr": 9.330127018922195e-06, "loss": 0.48296428286346693, "grad_norm": 1.5726066827774048, "dw_norm": 1.9951761974700617, "kl": {"own": 0.795477368334508}, "crossed": [], "peak_gib": 35.57868051528931}
+[  716.9s] [gold_s2] [train] {"step": 27, "lr": 9.24024048078213e-06, "loss": 0.5075132723617488, "grad_norm": 1.9877192974090576, "dw_norm": 2.0398686735655946, "kl": {"own": 0.7999040579152582}, "crossed": [], "peak_gib": 35.57868051528931}
+[  737.5s] [gold_s2] [train] {"step": 28, "lr": 9.145187862775208e-06, "loss": 0.5130783694538935, "grad_norm": 1.775203824043274, "dw_norm": 2.082290078937986, "kl": {"own": 0.8049331448675946}, "crossed": [], "peak_gib": 35.57868051528931}
+[  757.4s] [gold_s2] [train] {"step": 29, "lr": 9.045084971874738e-06, "loss": 0.5205656408091061, "grad_norm": 1.714044451713562, "dw_norm": 2.123136815309186, "kl": {"own": 0.8120052105712727}, "crossed": [], "peak_gib": 35.57868051528931}
+[  778.8s] [gold_s2] [train] {"step": 30, "lr": 8.94005376803361e-06, "loss": 0.5357319848917802, "grad_norm": 1.9567352533340454, "dw_norm": 2.1626144159360527, "kl": {"own": 0.8179521636327364}, "crossed": [], "peak_gib": 35.57868051528931}
+[  799.4s] [gold_s2] [train] {"step": 31, "lr": 8.83022221559489e-06, "loss": 0.5232871856139728, "grad_norm": 1.8524419069290161, "dw_norm": 2.200612392258158, "kl": {"own": 0.8235635263518415}, "crossed": [], "peak_gib": 35.57868051528931}
+[  820.6s] [gold_s2] [train] {"step": 32, "lr": 8.715724127386971e-06, "loss": 0.5130668827551486, "grad_norm": 1.8242868185043335, "dw_norm": 2.2369214558614225, "kl": {"own": 0.8288286298404751}, "crossed": [], "peak_gib": 35.57868051528931}
+[  841.5s] [gold_s2] [train] {"step": 33, "lr": 8.596699001693257e-06, "loss": 0.518509609125365, "grad_norm": 2.061643362045288, "dw_norm": 2.271855985557625, "kl": {"own": 0.8325043804747841}, "crossed": [], "peak_gib": 35.57868051528931}
+[  861.9s] [gold_s2] [train] {"step": 34, "lr": 8.473291852294986e-06, "loss": 0.5017310983338306, "grad_norm": 1.6672066450119019, "dw_norm": 2.3052557401025697, "kl": {"own": 0.8340102278864533}, "crossed": [], "peak_gib": 35.57868051528931}
+[  881.9s] [gold_s2] [train] {"step": 35, "lr": 8.345653031794292e-06, "loss": 0.5453523047987517, "grad_norm": 2.15110445022583, "dw_norm": 2.3370667456070033, "kl": {"own": 0.8328098089621035}, "crossed": [], "peak_gib": 35.57868051528931}
+[  903.1s] [gold_s2] [train] {"step": 36, "lr": 8.213938048432697e-06, "loss": 0.5377794215553685, "grad_norm": 1.7857340574264526, "dw_norm": 2.367552706938257, "kl": {"own": 0.8330335073485944}, "crossed": [], "peak_gib": 35.57868051528931}
+[  923.8s] [gold_s2] [train] {"step": 37, "lr": 8.078307376628292e-06, "loss": 0.4860516694016316, "grad_norm": 1.7307356595993042, "dw_norm": 2.3966371333890994, "kl": {"own": 0.8323765282743084}, "crossed": [], "peak_gib": 35.57868051528931}
+[  944.3s] [gold_s2] [train] {"step": 38, "lr": 7.938926261462366e-06, "loss": 0.5362988397616449, "grad_norm": 1.8641140460968018, "dw_norm": 2.424326829523324, "kl": {"own": 0.8325674469836519}, "crossed": [], "peak_gib": 35.57868051528931}
+[  964.0s] [gold_s2] [train] {"step": 39, "lr": 7.795964517353734e-06, "loss": 0.5161892096674052, "grad_norm": 1.795823574066162, "dw_norm": 2.4506796166310325, "kl": {"own": 0.8335441861922729}, "crossed": [], "peak_gib": 35.57868051528931}
+[  983.8s] [gold_s2] [train] {"step": 40, "lr": 7.649596321166024e-06, "loss": 0.5437407380776305, "grad_norm": 1.8146713972091675, "dw_norm": 2.4757965302128193, "kl": {"own": 0.8348167143463879}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1004.1s] [gold_s2] [train] {"step": 41, "lr": 7.500000000000001e-06, "loss": 0.4920406805552564, "grad_norm": 1.6029900312423706, "dw_norm": 2.499823075147157, "kl": {"own": 0.8366296228861964}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1024.5s] [gold_s2] [train] {"step": 42, "lr": 7.347357813929455e-06, "loss": 0.5272547193401178, "grad_norm": 1.7258540391921997, "dw_norm": 2.522775371605633, "kl": {"own": 0.8386429442694391}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1045.0s] [gold_s2] [train] {"step": 43, "lr": 7.191855733945388e-06, "loss": 0.46353279923565077, "grad_norm": 1.6623973846435547, "dw_norm": 2.544628578382934, "kl": {"own": 0.8413270053855809}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1065.0s] [gold_s2] [train] {"step": 44, "lr": 7.033683215379002e-06, "loss": 0.5481297098722625, "grad_norm": 1.9501557350158691, "dw_norm": 2.5653461238178443, "kl": {"own": 0.8431625107826312}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1085.0s] [gold_s2] [train] {"step": 45, "lr": 6.873032967079562e-06, "loss": 0.5073408682040699, "grad_norm": 1.773760199546814, "dw_norm": 2.5850448980073812, "kl": {"own": 0.8439902138682098}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1105.3s] [gold_s2] [train] {"step": 46, "lr": 6.710100716628345e-06, "loss": 0.5416573562684452, "grad_norm": 1.8460880517959595, "dw_norm": 2.6037548271485784, "kl": {"own": 0.8434272024078013}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1125.8s] [gold_s2] [train] {"step": 47, "lr": 6.545084971874738e-06, "loss": 0.5441123476169379, "grad_norm": 1.7644810676574707, "dw_norm": 2.621624279855457, "kl": {"own": 0.8425697311239647}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1145.2s] [gold_s2] [train] {"step": 48, "lr": 6.378186779084996e-06, "loss": 0.4686263489756, "grad_norm": 1.6348531246185303, "dw_norm": 2.638587439755099, "kl": {"own": 0.8415121558936356}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1165.0s] [gold_s2] [train] {"step": 49, "lr": 6.209609477998339e-06, "loss": 0.551059457860937, "grad_norm": 1.8198662996292114, "dw_norm": 2.654502380117261, "kl": {"own": 0.8397677704906545}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1185.0s] [gold_s2] [train] {"step": 50, "lr": 6.039558454088796e-06, "loss": 0.5292057266818523, "grad_norm": 1.8352054357528687, "dw_norm": 2.669723044877255, "kl": {"own": 0.838435964468509}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1205.2s] [gold_s2] [train] {"step": 51, "lr": 5.8682408883346535e-06, "loss": 0.49803319094375964, "grad_norm": 1.5309224128723145, "dw_norm": 2.6842306345546283, "kl": {"own": 0.8368519626122608}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1225.6s] [gold_s2] [train] {"step": 52, "lr": 5.695865504800328e-06, "loss": 0.5109850531970931, "grad_norm": 1.7127315998077393, "dw_norm": 2.6980971688832946, "kl": {"own": 0.8372339407310215}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1246.0s] [gold_s2] [train] {"step": 53, "lr": 5.522642316338268e-06, "loss": 0.5115313388726006, "grad_norm": 1.6975295543670654, "dw_norm": 2.711292407911261, "kl": {"own": 0.8378383933496828}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1266.7s] [gold_s2] [train] {"step": 54, "lr": 5.348782368720627e-06, "loss": 0.4932187910596477, "grad_norm": 1.5490961074829102, "dw_norm": 2.7237819348198458, "kl": {"own": 0.8394528385724608}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1287.7s] [gold_s2] [train] {"step": 55, "lr": 5.174497483512506e-06, "loss": 0.4926825405499662, "grad_norm": 1.7703651189804077, "dw_norm": 2.7354437044329023, "kl": {"own": 0.8403823074130632}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1308.3s] [gold_s2] [train] {"step": 56, "lr": 5e-06, "loss": 0.5345851650126918, "grad_norm": 1.6855014562606812, "dw_norm": 2.746321023135017, "kl": {"own": 0.8396275191070571}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1328.7s] [gold_s2] [train] {"step": 57, "lr": 4.825502516487497e-06, "loss": 0.48561522947067176, "grad_norm": 1.5422109365463257, "dw_norm": 2.756449728202475, "kl": {"own": 0.8389884369946957}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1349.4s] [gold_s2] [train] {"step": 58, "lr": 4.651217631279374e-06, "loss": 0.49423800860797323, "grad_norm": 1.6961249113082886, "dw_norm": 2.765820867749341, "kl": {"own": 0.8388254892477972}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1370.0s] [gold_s2] [train] {"step": 59, "lr": 4.477357683661734e-06, "loss": 0.4965264716425239, "grad_norm": 1.6540244817733765, "dw_norm": 2.774529491337292, "kl": {"own": 0.8387609343719887}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1391.0s] [gold_s2] [train] {"step": 60, "lr": 4.304134495199675e-06, "loss": 0.46823428140133816, "grad_norm": 1.6456024646759033, "dw_norm": 2.782725454947948, "kl": {"own": 0.8393754595062799}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1411.7s] [gold_s2] [train] {"step": 61, "lr": 4.131759111665349e-06, "loss": 0.5212701797787769, "grad_norm": 1.6971862316131592, "dw_norm": 2.7903497031165316, "kl": {"own": 0.8396785181688293}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1432.3s] [gold_s2] [train] {"step": 62, "lr": 3.960441545911205e-06, "loss": 0.5205942549674161, "grad_norm": 1.6281400918960571, "dw_norm": 2.7974628793840557, "kl": {"own": 0.8401982565832506}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1453.2s] [gold_s2] [train] {"step": 63, "lr": 3.790390522001662e-06, "loss": 0.5083529070113744, "grad_norm": 1.6483055353164673, "dw_norm": 2.8039880157011385, "kl": {"own": 0.8406394272188294}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1473.5s] [gold_s2] [train] {"step": 64, "lr": 3.6218132209150047e-06, "loss": 0.5297429085120019, "grad_norm": 1.737382411956787, "dw_norm": 2.8100470505473343, "kl": {"own": 0.8410352451849243}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1494.8s] [gold_s2] [train] {"step": 65, "lr": 3.4549150281252635e-06, "loss": 0.48279940592847037, "grad_norm": 1.575161099433899, "dw_norm": 2.815604024709754, "kl": {"own": 0.8414256639784394}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1514.5s] [gold_s2] [train] {"step": 66, "lr": 3.289899283371657e-06, "loss": 0.4613421529616225, "grad_norm": 1.7084825038909912, "dw_norm": 2.820706821951695, "kl": {"own": 0.8418013079294709}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1535.6s] [gold_s2] [train] {"step": 67, "lr": 3.12696703292044e-06, "loss": 0.4541166965869414, "grad_norm": 1.8175536394119263, "dw_norm": 2.825402059947828, "kl": {"own": 0.8427125013595185}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1556.0s] [gold_s2] [train] {"step": 68, "lr": 2.966316784621e-06, "loss": 0.5352716936152893, "grad_norm": 1.7588144540786743, "dw_norm": 2.8297129945494763, "kl": {"own": 0.8434301346014375}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1577.6s] [gold_s2] [train] {"step": 69, "lr": 2.8081442660546126e-06, "loss": 0.4659600260067235, "grad_norm": 1.5553590059280396, "dw_norm": 2.8336741118136977, "kl": {"own": 0.8443416517518098}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1598.6s] [gold_s2] [train] {"step": 70, "lr": 2.6526421860705474e-06, "loss": 0.5718917565648178, "grad_norm": 1.8488481044769287, "dw_norm": 2.8373052745875658, "kl": {"own": 0.8451892277471622}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1619.3s] [gold_s2] [train] {"step": 71, "lr": 2.5000000000000015e-06, "loss": 0.5042888811303659, "grad_norm": 1.5935711860656738, "dw_norm": 2.840633362905, "kl": {"own": 0.8456833184306226}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1640.0s] [gold_s2] [train] {"step": 72, "lr": 2.3504036788339763e-06, "loss": 0.4544914300651605, "grad_norm": 1.7081791162490845, "dw_norm": 2.8436561002864464, "kl": {"own": 0.8461738702991995}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1662.3s] [gold_s2] [train] {"step": 73, "lr": 2.204035482646267e-06, "loss": 0.5252561788954493, "grad_norm": 1.601029634475708, "dw_norm": 2.846385563014097, "kl": {"own": 0.8465546678139613}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1682.2s] [gold_s2] [train] {"step": 74, "lr": 2.061073738537635e-06, "loss": 0.48600871754112746, "grad_norm": 2.0363080501556396, "dw_norm": 2.848840910506985, "kl": {"own": 0.8466505688778583}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1702.5s] [gold_s2] [train] {"step": 75, "lr": 1.9216926233717087e-06, "loss": 0.5066237373738489, "grad_norm": 1.7708580493927002, "dw_norm": 2.8510732973275204, "kl": {"own": 0.8469515820432147}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1722.6s] [gold_s2] [train] {"step": 76, "lr": 1.7860619515673034e-06, "loss": 0.5318379601766897, "grad_norm": 1.6949572563171387, "dw_norm": 2.8531138396176807, "kl": {"own": 0.8475695066917337}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1743.5s] [gold_s2] [train] {"step": 77, "lr": 1.6543469682057105e-06, "loss": 0.44016986007116415, "grad_norm": 1.619038701057434, "dw_norm": 2.854892302042101, "kl": {"own": 0.8482472813673025}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1764.5s] [gold_s2] [train] {"step": 78, "lr": 1.5267081477050132e-06, "loss": 0.46677666962339326, "grad_norm": 1.6242395639419556, "dw_norm": 2.8564448645093723, "kl": {"own": 0.848626346167439}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1785.3s] [gold_s2] [train] {"step": 79, "lr": 1.4033009983067454e-06, "loss": 0.45720885510953185, "grad_norm": 1.596708059310913, "dw_norm": 2.857803062206391, "kl": {"own": 0.8490038986127167}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1806.1s] [gold_s2] [train] {"step": 80, "lr": 1.2842758726130283e-06, "loss": 0.5151504396768141, "grad_norm": 1.6963168382644653, "dw_norm": 2.8590107786395156, "kl": {"own": 0.8493896405936181}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1827.0s] [gold_s2] [train] {"step": 81, "lr": 1.1697777844051105e-06, "loss": 0.46860320051920784, "grad_norm": 1.5871635675430298, "dw_norm": 2.86006727345313, "kl": {"own": 0.8495082107025509}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1847.6s] [gold_s2] [train] {"step": 82, "lr": 1.0599462319663906e-06, "loss": 0.5283921734976434, "grad_norm": 1.6757245063781738, "dw_norm": 2.860994607940885, "kl": {"own": 0.8494682956974604}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1868.8s] [gold_s2] [train] {"step": 83, "lr": 9.549150281252633e-07, "loss": 0.5037546177644816, "grad_norm": 1.7230664491653442, "dw_norm": 2.8617784974825784, "kl": {"own": 0.8494194179604797}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1889.5s] [gold_s2] [train] {"step": 84, "lr": 8.54812137224792e-07, "loss": 0.5008442260015812, "grad_norm": 1.691519856452942, "dw_norm": 2.8624353459721137, "kl": {"own": 0.8492976115506964}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1910.5s] [gold_s2] [train] {"step": 85, "lr": 7.597595192178702e-07, "loss": 0.5687746101593876, "grad_norm": 1.8512637615203857, "dw_norm": 2.862996203453003, "kl": {"own": 0.8489360397345207}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1930.3s] [gold_s2] [train] {"step": 86, "lr": 6.698729810778065e-07, "loss": 0.4989386461412868, "grad_norm": 1.629827618598938, "dw_norm": 2.8634572601874684, "kl": {"own": 0.8486126431154839}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1950.8s] [gold_s2] [train] {"step": 87, "lr": 5.852620357053651e-07, "loss": 0.5491956792753158, "grad_norm": 1.8176276683807373, "dw_norm": 2.86383932708271, "kl": {"own": 0.8483174129937501}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1971.4s] [gold_s2] [train] {"step": 88, "lr": 5.06029768504166e-07, "loss": 0.4995564982323564, "grad_norm": 1.6315577030181885, "dw_norm": 2.8641467959365214, "kl": {"own": 0.8480479200769442}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 1992.7s] [gold_s2] [train] {"step": 89, "lr": 4.322727117869951e-07, "loss": 0.5305811214351046, "grad_norm": 1.9124633073806763, "dw_norm": 2.8643968882776405, "kl": {"own": 0.847777657474378}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 2014.0s] [gold_s2] [train] {"step": 90, "lr": 3.6408072716606346e-07, "loss": 0.49585425949617734, "grad_norm": 1.5663870573043823, "dw_norm": 2.8646003470836177, "kl": {"own": 0.8475310457439547}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 2035.0s] [gold_s2] [train] {"step": 91, "lr": 3.015368960704584e-07, "loss": 0.4757856992276938, "grad_norm": 1.6057242155075073, "dw_norm": 2.864762832881898, "kl": {"own": 0.8472844665627121}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 2055.1s] [gold_s2] [train] {"step": 92, "lr": 2.447174185242324e-07, "loss": 0.4806324857457132, "grad_norm": 1.9058095216751099, "dw_norm": 2.8648909079857066, "kl": {"own": 0.8470878959501247}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 2076.0s] [gold_s2] [train] {"step": 93, "lr": 1.9369152030840553e-07, "loss": 0.44403681665393474, "grad_norm": 1.6409255266189575, "dw_norm": 2.8649906222052217, "kl": {"own": 0.8469474990260026}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 2096.6s] [gold_s2] [train] {"step": 94, "lr": 1.4852136862001766e-07, "loss": 0.5218464026768781, "grad_norm": 1.6929938793182373, "dw_norm": 2.8650618809410555, "kl": {"own": 0.8468650214186474}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 2117.1s] [gold_s2] [train] {"step": 95, "lr": 1.0926199633097156e-07, "loss": 0.5113157946626423, "grad_norm": 1.6978691816329956, "dw_norm": 2.8651117837583047, "kl": {"own": 0.846797443202008}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 2138.1s] [gold_s2] [train] {"step": 96, "lr": 7.59612349389599e-08, "loss": 0.5316002245945594, "grad_norm": 1.605363130569458, "dw_norm": 2.865146889088187, "kl": {"own": 0.8467489633611675}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 2159.3s] [gold_s2] [train] {"step": 97, "lr": 4.865965629214819e-08, "loss": 0.4990162505814158, "grad_norm": 1.6234532594680786, "dw_norm": 2.865168643251709, "kl": {"own": 0.8467202196774297}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 2179.8s] [gold_s2] [train] {"step": 98, "lr": 2.7390523158633552e-08, "loss": 0.5337175660083607, "grad_norm": 1.7702836990356445, "dw_norm": 2.8651804793577074, "kl": {"own": 0.846704842295646}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 2200.8s] [gold_s2] [train] {"step": 99, "lr": 1.2179748700879013e-08, "loss": 0.48538530939184504, "grad_norm": 1.509621500968933, "dw_norm": 2.8651858150844776, "kl": {"own": 0.8466994531002551}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 2221.4s] [gold_s2] [train] {"step": 100, "lr": 3.0458649045211897e-09, "loss": 0.5212742626386462, "grad_norm": 1.6506880521774292, "dw_norm": 2.865186759161163, "kl": {"own": 0.8466983376981989}, "crossed": [], "peak_gib": 35.57868051528931}
+[ 2222.3s] [gold_s2] [save] /root/work/experiments/qwen_pair_library/results/large/library/gold_s2/last.safetensors (5.64 GB)
+[ 2227.3s] [gold_s2] [save] {"step": 100, "labels": ["last"], "file": "results/large/library/gold_s2/last.safetensors", "bytes": 5637164512, "sha256": "281320f081e3b91026b85af1ef769ad559616e5bb8993e6441dc69d57ac14e6b", "artifact": "p35-gold-s2-last"}
+[ 2238.7s] [gold_s2] [upload] queued p35-gold-s2-last (5.64 GB)
+[ 2238.8s] [gold_s2] STAGE train DONE results/library/gold_s2.json; peak GPU 35.6 GiB, peak GPU 35.58 GiB, host 18.0 GB
+[ 2264.8s] [gold_s2] [state] 5x {"step": 12, "dw_norm": 1.03387561597644, "kl": 0.6024943391834372, "held": {"value": 0.5780736533547882, "hits": null, "n": 256}, "trained": {"value": 0.5354747206646198, "hits": null, "n": 64}}
+[ 2290.1s] [gold_s2] [state] last {"step": 100, "dw_norm": 2.865186736596296, "kl": 0.8466983227496102, "held": {"value": 0.5076305970060242, "hits": null, "n": 256}, "trained": {"value": 0.46310409641281153, "hits": null, "n": 64}}
+[ 2290.1s] [gold_s2] [rules] {"learned": {"learned": true, "state": "last", "reached_15x": false, "value": 0.46310409641281153, "bar": 1.1726966511842092}}
+wandb: uploading artifact p35-gold-s2-last; updating run metadata
+wandb: uploading artifact p35-gold-s2-last; uploading output.log; uploading wandb-summary.json
+wandb: uploading artifact p35-gold-s2-last; uploading config.yaml
+wandb: uploading artifact p35-gold-s2-last
+wandb: uploading artifact p35-gold-s2-last; uploading summary, console lines 122-123
+wandb: uploading artifact p35-gold-s2-last
+wandb: uploading artifact p35-gold-s2-last; uploading data
+wandb: uploading artifact p35-gold-s2-last
+wandb: uploading artifact p35-gold-s2-last; uploading data
+wandb: uploading artifact p35-gold-s2-last
+wandb: uploading artifact p35-gold-s2-last; uploading data
+wandb: uploading artifact p35-gold-s2-last
+wandb: uploading artifact p35-gold-s2-last; uploading data
+wandb: uploading artifact p35-gold-s2-last
+wandb: uploading artifact p35-gold-s2-last; uploading data
+wandb: uploading artifact p35-gold-s2-last
+wandb: uploading artifact p35-gold-s2-last; uploading data
+wandb: uploading artifact p35-gold-s2-last
+wandb: uploading artifact p35-gold-s2-last; uploading data
+wandb: uploading artifact p35-gold-s2-last
+wandb: uploading artifact p35-gold-s2-last; uploading data
+wandb: uploading artifact p35-gold-s2-last
+wandb: uploading artifact p35-gold-s2-last; uploading data
+wandb: uploading artifact p35-gold-s2-last
+wandb: uploading artifact p35-gold-s2-last; uploading data
+wandb: uploading artifact p35-gold-s2-last
+wandb: 🚀 View run rural-frog-57 at: https://wandb.ai/edwinagnew-mats/commute/runs/6g4xwmc4
+wandb: ⭐️ View project at: https://wandb.ai/edwinagnew-mats/commute
+wandb: Synced 5 W&B file(s), 0 media file(s), 4 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./experiments/qwen_pair_library/results/large/wandb/wandb/run-20261111_202753-6g4xwmc4/logs
+[ 2649.0s] [gold_s2] [upload] finished: 2 artifacts
+[ 2649.0s] [gold_s2] STAGE read DONE results/library/gold_s2.json; peak GPU 35.6 GiB, peak GPU 35.58 GiB, host 18.0 GB
+peak host RSS 17.2 GB
+##### ARM gold exit 0
+##### ARM gold_shuf seed 2 21:11:55
+wandb: Currently logged in as: edwinagnew (edwinagnew-mats) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+wandb: setting up run n8xfbir8
+wandb: Tracking run with wandb version 0.23.1
+wandb: Run data is saved locally in /root/work/experiments/qwen_pair_library/results/large/wandb/wandb/run-20261111_211201-n8xfbir8
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run youthful-gorge-74
+wandb: ⭐️ View project at https://wandb.ai/edwinagnew-mats/commute
+wandb: 🚀 View run at https://wandb.ai/edwinagnew-mats/commute/runs/n8xfbir8
+[    4.1s] [gold_shuf_s2] [start gold_shuf_s2] config {"batch": 64, "steps": 100, "sizes": [5.0, 15.0], "n_trained_items": 256, "n_trained_rows": 64, "n_held_template": 256, "seq_len": 512, "gen_batch": 128, "max_new": 32, "loss_batch": 8, "kl_batch": 8}; NVIDIA L40S
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.72it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.98it/s]
+[   46.0s] [gold_shuf_s2] [control] W0 {"kl": 0.0, "held": {"value": 2.495208230722153, "hits": null, "n": 256}, "trained": {"value": 2.7330499543715283, "hits": null, "n": 64}, "prior": -2.7330499543715283}
+[   47.1s] [gold_shuf_s2] [save] /root/work/experiments/qwen_pair_library/results/large/library/gold_shuf_s2/control_zero.safetensors (5.64 GB)
+[   71.8s] [gold_shuf_s2] [control] zero change {"kl": 0.0, "held": {"value": 2.495208230722153, "hits": null, "n": 256}, "trained": {"value": 2.7330499543715283, "hits": null, "n": 64}}; holds True
+[   71.8s] [gold_shuf_s2] STAGE control DONE results/library/gold_shuf_s2.json; peak GPU 19.8 GiB, peak GPU 19.78 GiB, host 11.2 GB
+/root/work/src/commute/qwen_sft.py:281: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  total += float(s)
+[   92.4s] [gold_shuf_s2] [train] {"step": 1, "lr": 0.0, "loss": 2.805591909770926, "grad_norm": 136.6635284423828, "dw_norm": 0.0, "kl": {"own": 0.0}, "crossed": [], "peak_gib": 35.54880380630493}
+[  114.3s] [gold_shuf_s2] [train] {"step": 2, "lr": 1.0000000000000002e-06, "loss": 2.7330495318128873, "grad_norm": 132.45135498046875, "dw_norm": 0.03367324143559229, "kl": {"own": 0.01028359719243693}, "crossed": [], "peak_gib": 35.54880380630493}
+[  135.7s] [gold_shuf_s2] [train] {"step": 3, "lr": 2.0000000000000003e-06, "loss": 2.208722057729745, "grad_norm": 59.43743896484375, "dw_norm": 0.09389149544063645, "kl": {"own": 0.09109037986569721}, "crossed": [], "peak_gib": 35.56976938247681}
+[  157.0s] [gold_shuf_s2] [train] {"step": 4, "lr": 3e-06, "loss": 1.9527371855885556, "grad_norm": 33.10984802246094, "dw_norm": 0.17225630504461434, "kl": {"own": 0.15668513618756677}, "crossed": [], "peak_gib": 35.56976938247681}
+[  177.3s] [gold_shuf_s2] [train] {"step": 5, "lr": 4.000000000000001e-06, "loss": 1.6143496797962775, "grad_norm": 18.1739444732666, "dw_norm": 0.26512781426442844, "kl": {"own": 0.20638197594162247}, "crossed": [], "peak_gib": 35.56976938247681}
+[  198.1s] [gold_shuf_s2] [train] {"step": 6, "lr": 5e-06, "loss": 1.4004502884719277, "grad_norm": 11.365013122558594, "dw_norm": 0.3686803418214822, "kl": {"own": 0.26889147124543733}, "crossed": [], "peak_gib": 35.56976938247681}
+[  218.0s] [gold_shuf_s2] [train] {"step": 7, "lr": 6e-06, "loss": 1.4012740328328106, "grad_norm": 8.600580215454102, "dw_norm": 0.4794673603276146, "kl": {"own": 0.331036765226551}, "crossed": [], "peak_gib": 35.56976938247681}
+[  237.7s] [gold_shuf_s2] [train] {"step": 8, "lr": 7e-06, "loss": 1.3875624506737196, "grad_norm": 7.628509998321533, "dw_norm": 0.5959755738771898, "kl": {"own": 0.41814386381533303}, "crossed": [], "peak_gib": 35.56976938247681}
+[  257.8s] [gold_shuf_s2] [train] {"step": 9, "lr": 8.000000000000001e-06, "loss": 1.297611782976206, "grad_norm": 5.089466571807861, "dw_norm": 0.7171503073738834, "kl": {"own": 0.5253896714237096}, "crossed": [], "peak_gib": 35.56976938247681}
+[  278.1s] [gold_shuf_s2] [train] step 9, the lower state of a bracket: not kept
+[  278.2s] [gold_shuf_s2] [train] {"step": 10, "lr": 9e-06, "loss": 1.2415811027722101, "grad_norm": 3.509847402572632, "dw_norm": 0.8401345414239464, "kl": {"own": 0.6274082910346827}, "crossed": [{"axis": "own", "grid": 0.5567447851733321, "lo": 9, "hi": 10}], "peak_gib": 35.56976938247681}
+[  278.9s] [gold_shuf_s2] [save] /root/work/experiments/qwen_pair_library/results/large/library/gold_shuf_s2/5x.safetensors (5.64 GB)
+[  283.9s] [gold_shuf_s2] [save] {"step": 10, "labels": ["5x"], "file": "results/large/library/gold_shuf_s2/5x.safetensors", "bytes": 5637164512, "sha256": "2f56d44cc9751c86acc7f550cc11f60dc365ceb3dcee8d06439ccbb08d428ed3", "artifact": "p35-gold_shuf-s2-5x"}
+[  296.2s] [gold_shuf_s2] [upload] queued p35-gold_shuf-s2-5x (5.64 GB)
+[  316.1s] [gold_shuf_s2] [train] {"step": 11, "lr": 1e-05, "loss": 1.1726989479004846, "grad_norm": 3.3539962768554688, "dw_norm": 0.9648943873846759, "kl": {"own": 0.7029461792759661}, "crossed": [], "peak_gib": 35.56976938247681}
+[  336.9s] [gold_shuf_s2] [train] {"step": 12, "lr": 9.99695413509548e-06, "loss": 1.2302781234862774, "grad_norm": 3.119481325149536, "dw_norm": 1.079501864471218, "kl": {"own": 0.7669168550187248}, "crossed": [], "peak_gib": 35.56976938247681}
+[  357.1s] [gold_shuf_s2] [train] {"step": 13, "lr": 9.987820251299121e-06, "loss": 1.1446992927594974, "grad_norm": 2.9794323444366455, "dw_norm": 1.1850088584869158, "kl": {"own": 0.8120292827027629}, "crossed": [], "peak_gib": 35.58066415786743}
+[  377.9s] [gold_shuf_s2] [train] {"step": 14, "lr": 9.972609476841368e-06, "loss": 1.1478523798195772, "grad_norm": 2.7925541400909424, "dw_norm": 1.2826876157702263, "kl": {"own": 0.8309763222367582}, "crossed": [], "peak_gib": 35.58066415786743}
+[  397.5s] [gold_shuf_s2] [train] {"step": 15, "lr": 9.951340343707852e-06, "loss": 1.183890688735827, "grad_norm": 2.8196966648101807, "dw_norm": 1.3737592956659035, "kl": {"own": 0.8458368358583941}, "crossed": [], "peak_gib": 35.58066415786743}
+[  417.7s] [gold_shuf_s2] [train] {"step": 16, "lr": 9.924038765061042e-06, "loss": 1.1959797058542683, "grad_norm": 2.6493585109710693, "dw_norm": 1.4584554557201574, "kl": {"own": 0.8616839654689685}, "crossed": [], "peak_gib": 35.58066415786743}
+[  437.6s] [gold_shuf_s2] [train] {"step": 17, "lr": 9.890738003669029e-06, "loss": 1.0787289620972125, "grad_norm": 2.5066022872924805, "dw_norm": 1.5377748808539027, "kl": {"own": 0.8800335713484829}, "crossed": [], "peak_gib": 35.58066415786743}
+[  458.5s] [gold_shuf_s2] [train] {"step": 18, "lr": 9.851478631379982e-06, "loss": 1.0870876191690206, "grad_norm": 2.755815029144287, "dw_norm": 1.61225915528091, "kl": {"own": 0.8954112695532128}, "crossed": [], "peak_gib": 35.58066415786743}
+[  478.4s] [gold_shuf_s2] [train] {"step": 19, "lr": 9.806308479691595e-06, "loss": 1.1001539611816407, "grad_norm": 2.2762770652770996, "dw_norm": 1.6819389318959015, "kl": {"own": 0.9094987514534456}, "crossed": [], "peak_gib": 35.58066415786743}
+[  498.7s] [gold_shuf_s2] [train] {"step": 20, "lr": 9.755282581475769e-06, "loss": 1.1171893902128123, "grad_norm": 2.396989107131958, "dw_norm": 1.7477186175123043, "kl": {"own": 0.9215165426300984}, "crossed": [], "peak_gib": 35.58066415786743}
+[  518.9s] [gold_shuf_s2] [train] {"step": 21, "lr": 9.698463103929542e-06, "loss": 1.076360638916548, "grad_norm": 2.7848501205444336, "dw_norm": 1.8105548158458187, "kl": {"own": 0.9340379862196159}, "crossed": [], "peak_gib": 35.58066415786743}
+[  539.1s] [gold_shuf_s2] [train] {"step": 22, "lr": 9.635919272833938e-06, "loss": 1.1217468416433976, "grad_norm": 2.6355743408203125, "dw_norm": 1.8702197893725439, "kl": {"own": 0.9407829253849844}, "crossed": [], "peak_gib": 35.58066415786743}
+[  559.2s] [gold_shuf_s2] [train] {"step": 23, "lr": 9.567727288213005e-06, "loss": 1.0009976637581943, "grad_norm": 2.2866392135620117, "dw_norm": 1.926602404980638, "kl": {"own": 0.943438558974247}, "crossed": [], "peak_gib": 35.58066415786743}
+[  579.3s] [gold_shuf_s2] [train] {"step": 24, "lr": 9.493970231495836e-06, "loss": 1.0874564564931797, "grad_norm": 2.505812168121338, "dw_norm": 1.979885843905992, "kl": {"own": 0.9438642668752336}, "crossed": [], "peak_gib": 35.58066415786743}
+[  598.9s] [gold_shuf_s2] [train] {"step": 25, "lr": 9.414737964294636e-06, "loss": 1.1519569374645284, "grad_norm": 2.355454683303833, "dw_norm": 2.030688680948786, "kl": {"own": 0.9473524732027917}, "crossed": [], "peak_gib": 35.58066415786743}
+[  619.9s] [gold_shuf_s2] [train] {"step": 26, "lr": 9.330127018922195e-06, "loss": 1.0799363683238117, "grad_norm": 2.2574045658111572, "dw_norm": 2.0791562726275887, "kl": {"own": 0.955440979459264}, "crossed": [], "peak_gib": 35.58066415786743}
+[  639.5s] [gold_shuf_s2] [train] {"step": 27, "lr": 9.24024048078213e-06, "loss": 1.0982233854985415, "grad_norm": 2.1245110034942627, "dw_norm": 2.1250284766774024, "kl": {"own": 0.965924502707282}, "crossed": [], "peak_gib": 35.58066415786743}
+[  659.7s] [gold_shuf_s2] [train] {"step": 28, "lr": 9.145187862775208e-06, "loss": 1.090349459081967, "grad_norm": 2.285097122192383, "dw_norm": 2.1688062521101275, "kl": {"own": 0.9744510085405649}, "crossed": [], "peak_gib": 35.58066415786743}
+[  678.8s] [gold_shuf_s2] [train] {"step": 29, "lr": 9.045084971874738e-06, "loss": 1.0898159907607605, "grad_norm": 2.098646879196167, "dw_norm": 2.2103881528220457, "kl": {"own": 0.9822215999902063}, "crossed": [], "peak_gib": 35.58066415786743}
+[  699.3s] [gold_shuf_s2] [train] {"step": 30, "lr": 8.94005376803361e-06, "loss": 1.1377042516346771, "grad_norm": 2.303659439086914, "dw_norm": 2.250225843766413, "kl": {"own": 0.9904438659036491}, "crossed": [], "peak_gib": 35.58066415786743}
+[  718.7s] [gold_shuf_s2] [train] {"step": 31, "lr": 8.83022221559489e-06, "loss": 1.116252362967495, "grad_norm": 2.0582664012908936, "dw_norm": 2.2881391806840403, "kl": {"own": 0.9983628747630844}, "crossed": [], "peak_gib": 35.58066415786743}
+[  738.7s] [gold_shuf_s2] [train] {"step": 32, "lr": 8.715724127386971e-06, "loss": 1.1186809590748135, "grad_norm": 2.324692726135254, "dw_norm": 2.3245352914362987, "kl": {"own": 1.0068320098110985}, "crossed": [], "peak_gib": 35.58066415786743}
+[  758.0s] [gold_shuf_s2] [train] {"step": 33, "lr": 8.596699001693257e-06, "loss": 1.0679568618463011, "grad_norm": 2.2112371921539307, "dw_norm": 2.359181333541594, "kl": {"own": 1.013619853886105}, "crossed": [], "peak_gib": 35.58066415786743}
+[  778.3s] [gold_shuf_s2] [train] {"step": 34, "lr": 8.473291852294986e-06, "loss": 1.1122543302648793, "grad_norm": 2.303072690963745, "dw_norm": 2.3925469491117437, "kl": {"own": 1.0191394931328623}, "crossed": [], "peak_gib": 35.58066415786743}
+[  797.9s] [gold_shuf_s2] [train] {"step": 35, "lr": 8.345653031794292e-06, "loss": 1.064032533565442, "grad_norm": 2.107983112335205, "dw_norm": 2.424557087388456, "kl": {"own": 1.0243745996458837}, "crossed": [], "peak_gib": 35.58066415786743}
+[  817.8s] [gold_shuf_s2] [train] {"step": 36, "lr": 8.213938048432697e-06, "loss": 1.0853509554243936, "grad_norm": 2.4331939220428467, "dw_norm": 2.4549453332666107, "kl": {"own": 1.0286925591057492}, "crossed": [], "peak_gib": 35.58066415786743}
+[  837.3s] [gold_shuf_s2] [train] {"step": 37, "lr": 8.078307376628292e-06, "loss": 1.0749124407712483, "grad_norm": 2.149392604827881, "dw_norm": 2.483860324652654, "kl": {"own": 1.0308753405567348}, "crossed": [], "peak_gib": 35.58066415786743}
+[  857.4s] [gold_shuf_s2] [train] {"step": 38, "lr": 7.938926261462366e-06, "loss": 1.0492047022986215, "grad_norm": 2.114069700241089, "dw_norm": 2.5114760993403076, "kl": {"own": 1.03245319938311}, "crossed": [], "peak_gib": 35.58066415786743}
+[  876.4s] [gold_shuf_s2] [train] {"step": 39, "lr": 7.795964517353734e-06, "loss": 1.023342467566731, "grad_norm": 2.2704813480377197, "dw_norm": 2.5378390878208115, "kl": {"own": 1.0328644360156178}, "crossed": [], "peak_gib": 35.58066415786743}
+[  896.5s] [gold_shuf_s2] [train] {"step": 40, "lr": 7.649596321166024e-06, "loss": 1.1275361644423822, "grad_norm": 2.2965495586395264, "dw_norm": 2.5629561463622417, "kl": {"own": 1.0292871530110055}, "crossed": [], "peak_gib": 35.58066415786743}
+[  915.5s] [gold_shuf_s2] [train] {"step": 41, "lr": 7.500000000000001e-06, "loss": 1.0242307203110776, "grad_norm": 2.27890944480896, "dw_norm": 2.586922960404559, "kl": {"own": 1.0249478616590069}, "crossed": [], "peak_gib": 35.58066415786743}
+[  936.1s] [gold_shuf_s2] [train] {"step": 42, "lr": 7.347357813929455e-06, "loss": 1.084141166913973, "grad_norm": 2.158088445663452, "dw_norm": 2.6097722492125968, "kl": {"own": 1.0194972490911636}, "crossed": [], "peak_gib": 35.58066415786743}
+[  954.9s] [gold_shuf_s2] [train] {"step": 43, "lr": 7.191855733945388e-06, "loss": 1.1516362655931631, "grad_norm": 2.2340734004974365, "dw_norm": 2.6315868337776847, "kl": {"own": 1.01549780465012}, "crossed": [], "peak_gib": 35.58066415786743}
+[  974.8s] [gold_shuf_s2] [train] {"step": 44, "lr": 7.033683215379002e-06, "loss": 1.0917059040922368, "grad_norm": 2.169454574584961, "dw_norm": 2.6523960095282395, "kl": {"own": 1.013266815650092}, "crossed": [], "peak_gib": 35.58066415786743}
+[  993.2s] [gold_shuf_s2] [train] {"step": 45, "lr": 6.873032967079562e-06, "loss": 1.0988756226744907, "grad_norm": 2.333486318588257, "dw_norm": 2.672203288737277, "kl": {"own": 1.0125526975428092}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1013.0s] [gold_shuf_s2] [train] {"step": 46, "lr": 6.710100716628345e-06, "loss": 1.0723393328810953, "grad_norm": 2.151083469390869, "dw_norm": 2.6909884646054403, "kl": {"own": 1.0121905417587542}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1031.8s] [gold_shuf_s2] [train] {"step": 47, "lr": 6.545084971874738e-06, "loss": 1.0372861622512277, "grad_norm": 2.3493640422821045, "dw_norm": 2.7086703763480173, "kl": {"own": 1.0111871764722844}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1051.2s] [gold_shuf_s2] [train] {"step": 48, "lr": 6.378186779084996e-06, "loss": 1.1312034823834907, "grad_norm": 2.194309711456299, "dw_norm": 2.7253378381376443, "kl": {"own": 1.0106002022322844}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1070.6s] [gold_shuf_s2] [train] {"step": 49, "lr": 6.209609477998339e-06, "loss": 1.0496182588408207, "grad_norm": 2.0758516788482666, "dw_norm": 2.7410760181637785, "kl": {"own": 1.0101379669722612}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1090.3s] [gold_shuf_s2] [train] {"step": 50, "lr": 6.039558454088796e-06, "loss": 1.095872570219494, "grad_norm": 2.3753278255462646, "dw_norm": 2.7558714568637837, "kl": {"own": 1.0088559823370522}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1109.7s] [gold_shuf_s2] [train] {"step": 51, "lr": 5.8682408883346535e-06, "loss": 1.0816847244300938, "grad_norm": 2.047881603240967, "dw_norm": 2.7698787025726936, "kl": {"own": 1.007896302790146}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1129.5s] [gold_shuf_s2] [train] {"step": 52, "lr": 5.695865504800328e-06, "loss": 1.0932623561736077, "grad_norm": 2.0410635471343994, "dw_norm": 2.7831981140952733, "kl": {"own": 1.007045843974846}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1148.8s] [gold_shuf_s2] [train] {"step": 53, "lr": 5.522642316338268e-06, "loss": 0.9888420544896134, "grad_norm": 2.11441707611084, "dw_norm": 2.7957767276979606, "kl": {"own": 1.0071910350670836}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1168.4s] [gold_shuf_s2] [train] {"step": 54, "lr": 5.348782368720627e-06, "loss": 1.063066669237, "grad_norm": 2.2084572315216064, "dw_norm": 2.807595637728683, "kl": {"own": 1.007957609879991}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1187.4s] [gold_shuf_s2] [train] {"step": 55, "lr": 5.174497483512506e-06, "loss": 1.05526438529777, "grad_norm": 2.134993076324463, "dw_norm": 2.818787832087236, "kl": {"own": 1.009518963249074}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1207.1s] [gold_shuf_s2] [train] {"step": 56, "lr": 5e-06, "loss": 1.0679787270021646, "grad_norm": 1.9784257411956787, "dw_norm": 2.8292927800183936, "kl": {"own": 1.0110163852283898}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1225.9s] [gold_shuf_s2] [train] {"step": 57, "lr": 4.825502516487497e-06, "loss": 1.148011511908024, "grad_norm": 2.09893536567688, "dw_norm": 2.839245923226873, "kl": {"own": 1.0136034448061735}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1246.0s] [gold_shuf_s2] [train] {"step": 58, "lr": 4.651217631279374e-06, "loss": 1.074294058534223, "grad_norm": 2.070521116256714, "dw_norm": 2.8486717752047803, "kl": {"own": 1.0174099693349352}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1264.9s] [gold_shuf_s2] [train] {"step": 59, "lr": 4.477357683661734e-06, "loss": 1.0922208100434199, "grad_norm": 2.15690279006958, "dw_norm": 2.8574905118592437, "kl": {"own": 1.0213257381891097}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1284.6s] [gold_shuf_s2] [train] {"step": 60, "lr": 4.304134495199675e-06, "loss": 1.0786997383229175, "grad_norm": 2.042668104171753, "dw_norm": 2.8657378230297113, "kl": {"own": 1.0251245132054663}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1304.1s] [gold_shuf_s2] [train] {"step": 61, "lr": 4.131759111665349e-06, "loss": 1.0363548498899515, "grad_norm": 2.003222703933716, "dw_norm": 2.873433002468861, "kl": {"own": 1.0290482419388536}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1324.0s] [gold_shuf_s2] [train] {"step": 62, "lr": 3.960441545911205e-06, "loss": 0.9441560862976828, "grad_norm": 1.893694519996643, "dw_norm": 2.8805688734607315, "kl": {"own": 1.0328884749461025}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1343.3s] [gold_shuf_s2] [train] {"step": 63, "lr": 3.790390522001662e-06, "loss": 1.0680747235223935, "grad_norm": 1.9647384881973267, "dw_norm": 2.8871697387342636, "kl": {"own": 1.0355761728975643}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1363.2s] [gold_shuf_s2] [train] {"step": 64, "lr": 3.6218132209150047e-06, "loss": 1.047563337458152, "grad_norm": 1.904813528060913, "dw_norm": 2.893364463474567, "kl": {"own": 1.038550400662661}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1382.3s] [gold_shuf_s2] [train] {"step": 65, "lr": 3.4549150281252635e-06, "loss": 1.0890417283754528, "grad_norm": 2.097832441329956, "dw_norm": 2.899162143577623, "kl": {"own": 1.0407225876749}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1401.8s] [gold_shuf_s2] [train] {"step": 66, "lr": 3.289899283371657e-06, "loss": 1.0899876295659299, "grad_norm": 2.0544590950012207, "dw_norm": 2.904498325511424, "kl": {"own": 1.0414570408404737}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1421.6s] [gold_shuf_s2] [train] {"step": 67, "lr": 3.12696703292044e-06, "loss": 1.025093874867836, "grad_norm": 1.967241883277893, "dw_norm": 2.9094123623222723, "kl": {"own": 1.0415372138254768}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1441.6s] [gold_shuf_s2] [train] {"step": 68, "lr": 2.966316784621e-06, "loss": 1.0699024272962214, "grad_norm": 1.943047285079956, "dw_norm": 2.9139630352554255, "kl": {"own": 1.0412090460974681}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1461.1s] [gold_shuf_s2] [train] {"step": 69, "lr": 2.8081442660546126e-06, "loss": 1.1089296038188632, "grad_norm": 2.034217596054077, "dw_norm": 2.9181532968296313, "kl": {"own": 1.0401303812621954}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1480.8s] [gold_shuf_s2] [train] {"step": 70, "lr": 2.6526421860705474e-06, "loss": 1.0490406216946866, "grad_norm": 2.0248491764068604, "dw_norm": 2.921990133024816, "kl": {"own": 1.038776565816708}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1500.2s] [gold_shuf_s2] [train] {"step": 71, "lr": 2.5000000000000015e-06, "loss": 1.043550382411256, "grad_norm": 2.186911106109619, "dw_norm": 2.925517118984828, "kl": {"own": 1.0377158944240565}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1520.3s] [gold_shuf_s2] [train] {"step": 72, "lr": 2.3504036788339763e-06, "loss": 1.0581746616387762, "grad_norm": 2.1016342639923096, "dw_norm": 2.9287651027835793, "kl": {"own": 1.0361300892863552}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1539.6s] [gold_shuf_s2] [train] {"step": 73, "lr": 2.204035482646267e-06, "loss": 1.0448790160702988, "grad_norm": 1.9736292362213135, "dw_norm": 2.931729178664367, "kl": {"own": 1.0352947048796466}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1559.2s] [gold_shuf_s2] [train] {"step": 74, "lr": 2.061073738537635e-06, "loss": 1.0583242667187367, "grad_norm": 2.0312983989715576, "dw_norm": 2.934401690030749, "kl": {"own": 1.034452429069969}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1578.5s] [gold_shuf_s2] [train] {"step": 75, "lr": 1.9216926233717087e-06, "loss": 1.0401078504867685, "grad_norm": 2.0859696865081787, "dw_norm": 2.936832508435892, "kl": {"own": 1.0337428045213097}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1599.0s] [gold_shuf_s2] [train] {"step": 76, "lr": 1.7860619515673034e-06, "loss": 1.1117563482322474, "grad_norm": 2.0947415828704834, "dw_norm": 2.939027625431671, "kl": {"own": 1.0332639246525517}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1619.6s] [gold_shuf_s2] [train] {"step": 77, "lr": 1.6543469682057105e-06, "loss": 1.055906431198722, "grad_norm": 1.861807942390442, "dw_norm": 2.9410247978709187, "kl": {"own": 1.0327882648610764}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1639.7s] [gold_shuf_s2] [train] {"step": 78, "lr": 1.5267081477050132e-06, "loss": 1.0128785675158496, "grad_norm": 2.107016086578369, "dw_norm": 2.942811448216972, "kl": {"own": 1.0326589261249495}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1659.9s] [gold_shuf_s2] [train] {"step": 79, "lr": 1.4033009983067454e-06, "loss": 1.0951649896481024, "grad_norm": 2.0924265384674072, "dw_norm": 2.9444007688615654, "kl": {"own": 1.0324068388130487}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1679.9s] [gold_shuf_s2] [train] {"step": 80, "lr": 1.2842758726130283e-06, "loss": 1.0316689101761591, "grad_norm": 2.024125337600708, "dw_norm": 2.9458169861583428, "kl": {"own": 1.032440779017098}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1699.2s] [gold_shuf_s2] [train] {"step": 81, "lr": 1.1697777844051105e-06, "loss": 1.074210471656456, "grad_norm": 1.9988452196121216, "dw_norm": 2.947051838875654, "kl": {"own": 1.0325390920182904}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1720.1s] [gold_shuf_s2] [train] {"step": 82, "lr": 1.0599462319663906e-06, "loss": 1.0950812588180951, "grad_norm": 2.106516122817993, "dw_norm": 2.948150203218039, "kl": {"own": 1.0327590738887964}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1740.3s] [gold_shuf_s2] [train] {"step": 83, "lr": 9.549150281252633e-07, "loss": 1.0244963730599612, "grad_norm": 1.9295644760131836, "dw_norm": 2.949117485070688, "kl": {"own": 1.0331941582929802}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1760.1s] [gold_shuf_s2] [train] {"step": 84, "lr": 8.54812137224792e-07, "loss": 1.086354533885195, "grad_norm": 2.032498598098755, "dw_norm": 2.949942554756095, "kl": {"own": 1.0333634675384737}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1780.3s] [gold_shuf_s2] [train] {"step": 85, "lr": 7.597595192178702e-07, "loss": 1.0533274457404227, "grad_norm": 1.998701572418213, "dw_norm": 2.950641925916995, "kl": {"own": 1.0336973450914133}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1800.5s] [gold_shuf_s2] [train] {"step": 86, "lr": 6.698729810778065e-07, "loss": 1.004534995752681, "grad_norm": 1.8532706499099731, "dw_norm": 2.951231887128635, "kl": {"own": 1.0340502303822028}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1820.5s] [gold_shuf_s2] [train] {"step": 87, "lr": 5.852620357053651e-07, "loss": 1.0844517763431603, "grad_norm": 2.0322935581207275, "dw_norm": 2.951729373612395, "kl": {"own": 1.0343670641559821}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1841.4s] [gold_shuf_s2] [train] {"step": 88, "lr": 5.06029768504166e-07, "loss": 1.0370056171222548, "grad_norm": 1.868329405784607, "dw_norm": 2.952137363893545, "kl": {"own": 1.0345827164339434}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1861.1s] [gold_shuf_s2] [train] {"step": 89, "lr": 4.322727117869951e-07, "loss": 1.0765276774790853, "grad_norm": 2.204785108566284, "dw_norm": 2.952478731319887, "kl": {"own": 1.034915455563229}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1881.5s] [gold_shuf_s2] [train] {"step": 90, "lr": 3.6408072716606346e-07, "loss": 1.1332156059851586, "grad_norm": 2.1670267581939697, "dw_norm": 2.952756633220878, "kl": {"own": 1.0352346805124935}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1901.1s] [gold_shuf_s2] [train] {"step": 91, "lr": 3.015368960704584e-07, "loss": 1.0493601631836424, "grad_norm": 2.0861427783966064, "dw_norm": 2.952978046841564, "kl": {"own": 1.0355209452124805}, "crossed": [], "peak_gib": 35.58066415786743}
+[ 1921.2s] [gold_shuf_s2] [train] {"step": 92, "lr": 2.447174185242324e-07, "loss": 1.0887124780911739, "grad_norm": 1.943192720413208, "dw_norm": 2.9531482524252404, "kl": {"own": 1.035716387262151}, "crossed": [], "peak_gib": 35.59085702896118}
+[ 1941.3s] [gold_shuf_s2] [train] {"step": 93, "lr": 1.9369152030840553e-07, "loss": 0.9969181407120365, "grad_norm": 1.9128141403198242, "dw_norm": 2.953276254534737, "kl": {"own": 1.0359034837556802}, "crossed": [], "peak_gib": 35.59085702896118}
+[ 1961.8s] [gold_shuf_s2] [train] {"step": 94, "lr": 1.4852136862001766e-07, "loss": 1.0468620228281793, "grad_norm": 2.0391671657562256, "dw_norm": 2.953370762219789, "kl": {"own": 1.0360635342244877}, "crossed": [], "peak_gib": 35.59085702896118}
+[ 1981.2s] [gold_shuf_s2] [train] {"step": 95, "lr": 1.0926199633097156e-07, "loss": 1.1334296630859375, "grad_norm": 2.025500535964966, "dw_norm": 2.9534353312298505, "kl": {"own": 1.036162173062383}, "crossed": [], "peak_gib": 35.59085702896118}
+[ 2001.3s] [gold_shuf_s2] [train] {"step": 96, "lr": 7.59612349389599e-08, "loss": 1.0798485704263767, "grad_norm": 2.150527000427246, "dw_norm": 2.9534777779462598, "kl": {"own": 1.0362103078430198}, "crossed": [], "peak_gib": 35.59085702896118}
+[ 2021.1s] [gold_shuf_s2] [train] {"step": 97, "lr": 4.865965629214819e-08, "loss": 1.0579935543932109, "grad_norm": 1.8856678009033203, "dw_norm": 2.9535050591354874, "kl": {"own": 1.0362395055910454}, "crossed": [], "peak_gib": 35.59085702896118}
+[ 2041.1s] [gold_shuf_s2] [train] {"step": 98, "lr": 2.7390523158633552e-08, "loss": 1.0903009931265444, "grad_norm": 2.2659988403320312, "dw_norm": 2.9535201466828394, "kl": {"own": 1.0362557620214274}, "crossed": [], "peak_gib": 35.59085702896118}
+[ 2060.9s] [gold_shuf_s2] [train] {"step": 99, "lr": 1.2179748700879013e-08, "loss": 1.0961734939833818, "grad_norm": 2.056957244873047, "dw_norm": 2.953526587478863, "kl": {"own": 1.0362637592561204}, "crossed": [], "peak_gib": 35.59085702896118}
+[ 2081.3s] [gold_shuf_s2] [train] {"step": 100, "lr": 3.0458649045211897e-09, "loss": 1.0123837030746505, "grad_norm": 1.8757537603378296, "dw_norm": 2.9535277072739845, "kl": {"own": 1.0362651896744564}, "crossed": [], "peak_gib": 35.59085702896118}
+[ 2082.0s] [gold_shuf_s2] [save] /root/work/experiments/qwen_pair_library/results/large/library/gold_shuf_s2/last.safetensors (5.64 GB)
+[ 2087.1s] [gold_shuf_s2] [save] {"step": 100, "labels": ["last"], "file": "results/large/library/gold_shuf_s2/last.safetensors", "bytes": 5637164512, "sha256": "6d76b44f3ea1cf2fdc4d36685e3a2e9c47dd495411ffa26301b09a4036052cbd", "artifact": "p35-gold_shuf-s2-last"}
+[ 2098.3s] [gold_shuf_s2] [upload] queued p35-gold_shuf-s2-last (5.64 GB)
+[ 2098.5s] [gold_shuf_s2] STAGE train DONE results/library/gold_shuf_s2.json; peak GPU 35.6 GiB, peak GPU 35.59 GiB, host 18.6 GB
+[ 2124.8s] [gold_shuf_s2] [state] 5x {"step": 10, "dw_norm": 0.8401345350907701, "kl": 0.6274082935428207, "held": {"value": 0.751263355650712, "hits": null, "n": 256}, "trained": {"value": 1.1661510992656678, "hits": null, "n": 64}}
+[ 2150.2s] [gold_shuf_s2] [state] last {"step": 100, "dw_norm": 2.9535276852000245, "kl": 1.036265259391814, "held": {"value": 0.8180549874717556, "hits": null, "n": 256}, "trained": {"value": 1.0324407604231656, "hits": null, "n": 64}}
+[ 2150.2s] [gold_shuf_s2] [rules] {"learned": {"learned": true, "state": "last", "reached_15x": false, "value": 1.0324407604231656, "bar": 1.3665249771857642}}
+wandb: uploading artifact p35-gold_shuf-s2-last; updating run metadata
+wandb: uploading artifact p35-gold_shuf-s2-last; uploading output.log; uploading wandb-summary.json
+wandb: uploading artifact p35-gold_shuf-s2-last
+wandb: uploading artifact p35-gold_shuf-s2-last; uploading summary, console lines 118-119
+wandb: uploading artifact p35-gold_shuf-s2-last
+wandb: uploading artifact p35-gold_shuf-s2-last; uploading data
+wandb: uploading artifact p35-gold_shuf-s2-last
+wandb: uploading artifact p35-gold_shuf-s2-last; uploading data
+wandb: uploading artifact p35-gold_shuf-s2-last
+wandb: uploading artifact p35-gold_shuf-s2-last; uploading data
+wandb: uploading artifact p35-gold_shuf-s2-last
+wandb: uploading data
+wandb: 🚀 View run youthful-gorge-74 at: https://wandb.ai/edwinagnew-mats/commute/runs/n8xfbir8
+wandb: ⭐️ View project at: https://wandb.ai/edwinagnew-mats/commute
+wandb: Synced 5 W&B file(s), 0 media file(s), 4 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./experiments/qwen_pair_library/results/large/wandb/wandb/run-20261111_211201-n8xfbir8/logs
+[ 2299.8s] [gold_shuf_s2] [upload] finished: 2 artifacts
+[ 2299.8s] [gold_shuf_s2] STAGE read DONE results/library/gold_shuf_s2.json; peak GPU 35.6 GiB, peak GPU 35.59 GiB, host 18.6 GB
+peak host RSS 17.8 GB
+##### ARM gold_shuf exit 0
+=== FINISHED (exit 0) — results in /root/work/experiments/qwen_pair_library/results/library/ ===

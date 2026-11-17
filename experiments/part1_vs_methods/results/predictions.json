@@ -1,0 +1,15 @@
+{
+  "cell": "P2.20",
+  "filed": "2026-11-11, before any comparison was computed (descriptive cell: no verdict on reuse)",
+  "inputs": {
+    "part1": "experiments/old_task_labels/results/labels_cut_0p8_0p5.json .items[].G (found re-weighting share), pairs as in experiments/old_task_labels/plot_gate.py PAIRS",
+    "part2": "experiments/method_table/results/final.json .cells[] (gap, call), counts from .tally only"
+  },
+  "overlap_rule": "A part 1 pair overlaps a final.json pair when both sides are read on the same saved updates (same state files, checked by path). Pairs matched on task only, not on updates, are listed separately and not scored. The count of overlapping pairs is stated first.",
+  "part1_gap": "Per seed s in {0,1}: G(reuse side, seed s) minus G(new side, seed s). Pair gap = mean over seeds; both seeds shown. Part 1 order = sign of the pair gap.",
+  "method_order_rule": "Method m orders a pair as part 1 does when its final.json call is 'apart' and sign(gap_m) equals sign(part1 gap). 'no call' and 'one value a side' are reported as no order, not as agreement or reversal; 'not run' or absent is a missing reading. Each method: agree / reverse / no order / missing, over the overlapping pairs.",
+  "rank_rule": "Spearman rank correlation between the part 1 pair gap and gap_m over the overlapping pairs where m has a value, with n stated. Descriptive only: with n <= 5 no threshold is set and no rho is called significant.",
+  "methods": ["share (re-gating)", "prior", "steering (strength 1)", "svd of the update (erank)", "size", "neuron", "neuron_half", "neuron_top", "untrained"],
+  "expected_at_reference": "Part 1 gap > 0 on all five part 1 pairs (gate page: every reuse side reads above its new twin). Re-gating share: apart on the three built pairs, no call on the two label twins (final.json as of 2026-11-11).",
+  "missing_reading_rule": "One free cluster debug job only if a method's reading is missing on an overlapping pair and the saved states allow it to be read with existing code; otherwise the cell is filled with the reading listed as missing."
+}

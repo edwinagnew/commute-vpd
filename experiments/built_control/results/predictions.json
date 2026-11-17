@@ -1,0 +1,50 @@
+{
+  "experiment": "E148",
+  "cell": "P1.9",
+  "filed": "2026-11-10, before any E148 code ran. Design: ~/commute-data/scratch/definition-lead/built-control/fable_advice_xor2.md (approved by the user); plan: reports/plans/2026-11-10_plan_built-control-xor2.md; card: experiments/built_control/card.txt",
+  "cutoffs": {
+    "G": 0.8,
+    "H": 0.5,
+    "source": "decisions.md, 2026-11-10 (working definition adopted tentatively; the user rounded 0.794 to 0.8 and 0.476 to 0.5). Label rule: commute.old_tasks.item_label, unchanged."
+  },
+  "thresholds": {
+    "floor_gap": 0.02,
+    "capacity_replay_tol": 0.01,
+    "capacity_bar": 0.55,
+    "target_gap_min": 0.15,
+    "taught_gap_aim": 0.2,
+    "learned_kl_ratio": 0.9
+  },
+  "threshold_sources": {
+    "floor_gap": "E139's filed floor (E137's), unchanged",
+    "capacity_replay_tol": "the moved code with E137's seeds and windows: accuracy on 100,000 windows, where a few hundred flips from float order stay under 0.01; judgement, as E139's replay_tol",
+    "capacity_bar": "Fable's design and E137's capacity read (0.506 held out against 0.502 shuffled); the design plan's bar 0.55",
+    "target_gap_min": "Fable's design: both arms' gaps above ~0.15, well above the ~0.09 TV left by E139's 300-step copies",
+    "taught_gap_aim": "chosen here to give the taught arm's measured gap a margin of 0.05 over target_gap_min, since the taught original imitates its third of the push imperfectly; it only picks alpha, and target_gap_min is the stop",
+    "learned_kl_ratio": "E139's filed xor_kl_ratio, unchanged"
+  },
+  "early_stops": {
+    "S0a": {"what": "W0, zero-step control (stage 0, alone, first): a fine-tune of the plain 67M at zero steps, against the 67M, on the read half", "expected": "gap 0 and max TV 0, at or under the float floor between two batch sizes (E139 read 8.5e-6), and under floor_gap: no reading", "rule": "stop if max TV > floor or mean gap >= floor_gap"},
+    "S0b": {"what": "the capacity read moved to commute.variable_read, run on E137's XOR pair windows and labels", "expected": "E137's held-out accuracies, 0.5057 / 0.5063 / 0.5074 / 0.5065 at in1 / in2 / in3 / out3", "rule": "stop if any site differs from E137's by more than capacity_replay_tol"},
+    "S1a": {"what": "alpha: per alpha in 1, 2, 3, 4, 6, 8, 12, 16 (units of E137's XOR push), on 20,000 read windows, the plain target gap TV(F, M) and the ideal taught gap TV(F, M + push/3)", "expected": "both rise with alpha up to saturation; the chosen alpha's plain gap about 0.3 (Fable: target gap ~0.3+); at most 3/8 of windows are pushed, so the plain gap cannot exceed 0.375", "rule": "alpha = smallest with ideal taught gap >= taught_gap_aim; none: the alpha with the largest ideal taught gap, ties to the smaller. Not a stop."},
+    "S1b": {"what": "plain target gap, TV(F, plain 67M), mean over the read half", "expected": "about 0.3", "rule": "stop unless > target_gap_min"},
+    "S1c": {"what": "capacity read of XOR2 on the plain 67M: ridge from z_M at each of in1, in2, in3, out3 to the XOR2 bit, keyed windows only, held-out key pairs", "expected": "about 0.50 at every site (E137 read 0.506 on its XOR), shuffled labels about 0.50", "rule": "stop if the best site's accuracy >= capacity_bar (the plain 67M would already read XOR2 affinely)"},
+    "S1d": {"what": "capacity read on the taught original (the 67M fine-tuned toward M + push/3 on XOR2 windows: 300 steps, else 3000 steps from the 67M again)", "expected": "best site at least 0.55; expected above 0.9 at in3 or out3 (Fable)", "rule": "stop if the best site is under capacity_bar after both rungs"},
+    "S1e": {"what": "taught target gap, TV(F, taught original), mean over the read half; then the zero-step control on the taught original", "expected": "about 0.2 (two thirds of the push left to learn); zero-step as S0a", "rule": "stop unless > target_gap_min; zero-step as S0a"},
+    "S1f": {"what": "the plain seed-0 fine-tune's learned check: KL(F || ft) / KL(F || M + push/2) on 4,096 keyed windows of held-out key pairs", "expected": "open (Fable: no first-order signal; steps are the lever)", "rule": "learned if ratio <= learned_kl_ratio; 300 steps, else 3000 steps from the 67M again; not learned at 3000: the job stops and the cell closes as 'not learned', job 2 does not run"},
+    "T10": {"what": "every fine-tune, at step 10 (E139 Amendment 2's check)", "expected": "KL(F||ft) below KL(F||M) and KL(M||ft) at most KL(M||F), M the fine-tune's own original", "rule": "stop the job if missed"}
+  },
+  "predictions": {
+    "P1": {"claim": "Plain arm (fine-tunes of the plain 67M, seeds 0 and 1): best found H below 0.5 on both seeds, expected under 0.25; G (seed 0) under 0.25; label 'no map found'", "rival": "rival b: H at least 0.5 (a learned new mechanism read as rewired)"},
+    "P2": {"claim": "Taught arm (fine-tunes of the taught original, seeds 0 and 1): best found H at least 0.5 on both seeds, expected 0.55 to 0.75 (E139's Table copies read 0.72, Always on 0.45 to 0.58); G (seed 0) 0.3 to 0.8, open; label 'rewired' if G < 0.8, 're-weighted' if G >= 0.8", "rival": "rival b: H below 0.5 (the search fails where the original computes XOR2)"},
+    "P3": {"claim": "Outcome: rival a (taught above, plain below)", "rival": "rival b: both arms on one side of 0.5"}
+  },
+  "outcome_rule": {
+    "rule": "Per fine-tune: a reading needs gap >= floor_gap and the learned check passed (E139's rule for XOR imitators, applied to both arms). Best found H over the five sites; best found G over sites and starts (seed 0 only). Per arm: 'above' if both seeds have a reading with H >= cutoffs.H, 'below' if both have a reading with H < cutoffs.H, else 'no call'. Taught above and plain below: rival a, built detectable as a contrast (reading that as 'built' is a rule only the user adds). Both above, or both below: rival b, the wording needs revising, and nothing further runs. Taught below and plain above: reversed, reported. Any 'no call': reported as read, no amendment. Per seed-0 fine-tune: label by item_label with cutoffs G and H; a seed-1 fine-tune with H >= 0.5 has no label (G not read).",
+    "edge_cases": "A value exactly at a cut-off or bar counts as at or above it (item_label's convention); the plain capacity must be strictly under 0.55, the taught at least 0.55; gaps strictly above 0.15. One seed without a reading makes its arm 'no call', never 'below': a fine-tune that learned nothing cannot pass as built. The do-nothing fine-tune has gap 0 < floor_gap and a learned ratio of KL(F||M)/KL(F||M+push/2), about 2 (E139's XOR read 0.0778 / 0.0369 = 2.1, xor_s0.json), so it reads 'no reading' and cannot reach either side; the zero-step control checks the first. learned_kl_ratio's denominator is positive for any nonzero push (asserted). A missing G (seed 1) never changes a side, which reads H only. Ties in choosing alpha go to the smaller alpha.",
+    "blind_to": "H and G read only the fine-tune's outputs on D's windows: a fine-tune that matches F exactly reads F's values whatever is inside it. The capacity read is linear: it cannot see a nonlinear code of XOR2 in the plain 67M. G on seed 1 and the G sites cut under the 3000-step rung are not read."
+  },
+  "noise_floor": "Seed-to-seed sd of best found H across E139's three Always on fine-tunes: 0.028 (0.505, 0.450, 0.483; experiments/reuse_variable_finetune/results/always_on_s*.json); Table's: 0.005. One start's G spread at the best site in E137: 0.113 pooled.",
+  "positive_control": "The taught arm: the same search on the same quantity, windows and target, from an original that computes XOR2 (S1d checks it does).",
+  "stop": "Both arms on the same side of the H cut-off 0.5 means the wording needs revising, and nothing further runs (card)."
+}

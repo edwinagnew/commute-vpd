@@ -1,0 +1,63 @@
+{
+ "experiment": "E145, the original model's prior for the trained answer on E53's lowercase and cipher windows (experiments/prior_lowercase, cell P2.13)",
+ "plan": "reports/plans/2026-11-10_plan_prior-lowercase.md",
+ "filed": "2026-11-10, before any run; run.py refuses unless this file is committed unchanged. Never edited after the run.",
+ "no_verdict": "The rule reads which side's prior is higher, in log10 units. It says nothing about reused or new: the reuse definition is under revision in cell P1.1, and the sides are labelled as E53 built them (lowercase, a behaviour the original model already prefers; the cipher and the broad cipher, word swaps it does not).",
+ "quantity": "E133's prior (experiments/prior_vs_share/run.py): the geometric mean over windows of the original model's P(trained answer) at the read position, keydep.geo_rate of the log P read by regating_truth_table.next_task. Here the trained answer is each window's true next token in the task's text (lowercased, or with the swap applied), at position 63 of a 127-token window. Reported as log10. One value per task: every seed of a task is read on the same windows, so there is no spread across seeds; the spread is given across the 500 windows instead.",
+ "windows": "E53's scored windows, rebuilt by E53's own `Run.scored` (val rows 0-255, 500 windows per task, window_seed 0) through regating_truth_table.e53_tasks, the loader E60 and E136 used. Not saved by E53; the stage 0 check below confirms they are the windows E53 read.",
+ "stage0": {
+  "e133_control": {
+   "map": "e58_24_rank1",
+   "inventory": "experiments/prior_vs_share/results/inventory.json",
+   "file": "experiments/prior_vs_share/results/stage1.json",
+   "key": ["e58_24_rank1", "prior"],
+   "expected": 0.00567052636574109,
+   "tol_rel": 1e-4,
+   "why": "One prior E133 computed by forward (not copied from a file), re-read through E133's own prior_vs_share.forward_prior on its own windows. Tolerance E133's: its controls reproduced to 0 relative on this path (prior_vs_share/results/stage0.json .rows.*.rel)."
+  },
+  "windows": {
+   "lowercase": {"file": "experiments/performed_anchor/results/read.json", "key": ["rows", "lowercase/zero", "T0_full"], "expected": -6.7554810447692875, "tol": 0.01, "n_windows": 500},
+   "cipher": {"file": "experiments/performed_anchor/results/read.json", "key": ["rows", "cipher/zero", "T0_full"], "expected": -10.141936605453491, "tol": 0.01, "n_windows": 500},
+   "broad_cipher": {"file": "experiments/performed_anchor/results/read_amend1b.json", "key": ["rows", "broad_cipher/random", "cells", "T0"], "expected": -11.122056869506835, "tol": 0.01, "n_windows": 500}
+  },
+  "windows_why": "The mean W0 log-odds of the true next token on the rebuilt windows must give E53's saved T0 (the same quantity, E53's plain forward). Tolerance 0.01 nats: two saved readings of this mean on these windows by different code paths differ by up to 0.0028 (share_untrained/results/stage1.json .states[e53/*].T0_fp32 against E53's: lowercase 9e-5, cipher 1.1e-3, broad 2.8e-3); 0.01 is 3.5 times the largest. A different window draw would move the mean by about 0.2 (a per-window sd near 4 nats over 500 windows), 20 times the tolerance.",
+  "stop": "Any control off its tolerance writes stage0.json and exits 1 before stage 1."
+ },
+ "rules": {
+  "n_boot": 10000,
+  "seed_boot": 145,
+  "seed_gap": 146,
+  "percentiles": [10, 25, 50, 75, 90],
+  "higher_gap": 1.0,
+  "alike_band": 0.5
+ },
+ "measurements": {
+  "log10_prior": "Per task: the mean over windows of log10 P(trained answer) = log10 of E133's geometric-mean prior.",
+  "ci95": "Per task: percentile 2.5 and 97.5 of log10_prior over 10,000 resamples of the 500 windows (seed 145).",
+  "percentiles": "Per task: the 10th, 25th, 50th, 75th and 90th percentiles of per-window log10 P, the spread across windows.",
+  "gap": "log10_prior of the reuse side (lowercase) minus the mean of the new side's two (cipher, broad cipher): the method table's gap for the prior column (a difference of side means in log10). Its interval: percentile 2.5 and 97.5 over 10,000 draws, each task's windows resampled on their own (seed 146)."
+ },
+ "readings": {
+  "reuse_side_higher": "gap >= 1.0 and the interval's low end >= 0.5: the original model already rates the lowercase answer at least ten times higher than the ciphers', as on the pairs E133 read apart (e.g. E54 3.2 decades, E58 rank-1 4.0).",
+  "new_side_higher": "gap <= -1.0 and the interval's high end <= -0.5.",
+  "alike": "the whole interval inside (-0.5, 0.5): the priors matched as on E58 copy against the prior-matched cipher (0.20) or the twins (under 0.1).",
+  "no_call": "anything else, or a nan (a non-finite log P, no windows): reported as read, no amendment opened (the cell's run count is the cap)."
+ },
+ "band_sources": {
+  "alike_band": "0.5 decades: the gaps E133 read on the pairs built prior-matched were 0.07 to 0.20 (method_table final.json, prior cells of e58_copy_prior_cipher, e58_class_twin, the label twins); 0.5 is over twice the largest.",
+  "higher_gap": "1.0 decade: a factor of ten; the pairs E133 read with a built-in prior difference sit at 1.3 to 4.0 (e46 1.48, open_pair_c3_copy 2.12, e54 3.20, e58_rank1_96 3.96)."
+ },
+ "expected": {
+  "stage0": "e58_24_rank1 5.6705e-3 to 0 relative; T0 on the rebuilt windows -6.755, -10.142, -11.122 within 0.003.",
+  "log10_prior": "Read off the saved mean log-odds, since log P <= log-odds and the two agree where P is small: lowercase -3.6 to -2.93 (log-odds -6.76 nats = -2.93 decades, lower by the windows where P is large), cipher -4.6 to -4.40 (-10.14 nats), broad cipher -5.0 to -4.83 (-11.12 nats).",
+  "gap": "1.1 to 1.7 decades, reading reuse_side_higher (writer's lean about 85%; no_call 15% if the lowercase windows with a large P pull its geometric mean down by more than about 0.4).",
+  "ci95_width": "About 0.1 to 0.3 decades per task (a per-window sd of 1 to 2 decades over 500 windows; the card took 0.99 from a0.json's per-row sd of the lowercase preference); the gap's about the same."
+ },
+ "do_nothing": "The prior does not read the update at all: a do-nothing state, a zero update or any fine-tune of a task gets the same prior as its task. Run on the do-nothing state the rule reads exactly what it reads on the fine-tunes, so it cannot tell an update from none; it reads the tasks, as E133's prior column does.",
+ "blind_to": "Which side's update did anything; the prior is a property of the task's windows. The geometric mean is pulled by the hardest windows; the percentiles show how much. Not the original model's rank of the answer. The tasks' windows are different positions of the same 256 rows, so the gap compares two sets of positions, not the same positions under two rules. Nothing about reuse.",
+ "positive_control": "Stage 0: E133's forward re-reads one prior it computed, and the rebuilt windows reproduce E53's saved W0 log-odds on each task.",
+ "edge_cases_run_before_filing": {
+  "script": "/mnt/nw/home/e.agnew/commute-data/scratch/compare-lead/p213-writer/dryrun.py (no model, through cpu-run, 2026-11-10); output dryrun.log beside it.",
+  "cases": "empty window list -> nan, reading no_call; a log P of -inf -> nan, no_call; all windows equal (ties) -> interval collapses to the gap, reading by the gap alone; gap exactly 1.0 with low end exactly 0.5 -> reuse_side_higher (bounds inclusive); gap 0.4 with interval [0.3, 0.5] -> no_call (0.5 is not inside the open band); the reversed sides -> new_side_higher; the do-nothing state -> identical to the fine-tune (no update input)."
+ }
+}

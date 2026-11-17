@@ -1,0 +1,46 @@
+{
+ "plan": "reports/plans/2026-11-09_plan_e135-steering-copy-lookup.md (E135, cell P2.5); card reports/plans/2026-11-09_plan_p2-5-card.md",
+ "settings": {
+  "half": 20,
+  "n": 41,
+  "strengths": [0, 0.5, 1, 2, 4, 8],
+  "n_random": 8,
+  "random_seed": 0
+ },
+ "thresholds": {
+  "edge": 0.1,
+  "inert": 0.05,
+  "min_gain": 1.0,
+  "zero_tol": 1e-9,
+  "r_tol": 0.01,
+  "random_band": 0.1
+ },
+ "filed_rule": {
+  "statement": "Let gap_share, gap_pooled, gap_perkey be the mean over the three copy seeds minus the mean over the three lookup seeds, each in log-odds on the score windows; steering's gap = the wider of gap_pooled and gap_perkey. edge = gap_share - steering's gap.",
+  "rival_a": "edge >= 0.1: rival A, the share keeps an edge on this pair.",
+  "rival_b": "edge < 0.1 (including below 0): rival B, no edge.",
+  "unreadable": "Unreadable: any state whose log-odds gain on the score windows is below MIN_GAIN (1 log-odds), or any nan among the six.",
+  "inert": "Inert steering: if steering's copy and lookup shares are all below 0.05, in both kinds, the verdict is \"no call: steering inert\", not rival A. A vector that writes nothing would otherwise make the share look as if it has an edge. Filed because the do-nothing case (zero vector, gap 0) passes edge >= 0.1 on its own.",
+  "edge_cases": "ties at exactly 0.1 go to rival A; steering's gap above the share's gives a negative edge, rival B; one seed's nan is unreadable, not dropped; an empty fit-half key cannot occur (checked above, all 32 keys have a fit window, and the job stops if not).",
+  "reading_of_wider": "'the wider of gap_pooled and gap_perkey' is the larger signed value (max), the copy-minus-lookup gap that separates copy above lookup more; the gaps are signed copy minus lookup (the code's verdict rule).",
+  "precedence": "unreadable first, then inert (no call, whatever the edge), then rival A or B."
+ },
+ "selection": "Each state and vector kind gets its own (layer, strength), chosen by the largest fit-half mean log-odds rise, ties to the lower layer then the lower strength. Layers 0 to 3 at sites in<l>, strengths {0, 0.5, 1, 2, 4, 8}. Even-indexed read windows are the fit half, odd-indexed the score half. A nan among the grid's rises leaves the setting undefined and the kind's shares nan.",
+ "stage_0_stops": {
+  "a": "a zero update through the full steering path reads rise exactly 0 for both vector kinds (stop if any |rise| > 1e-9)",
+  "b": "strength 0 on copy_s0 reads exactly 0 (same stop)",
+  "c": "the share of each of the six states on all 200 windows reproduces experiments/induction_cue/results/run.json .states.<state>.r within 0.01, a tenth of the card's smallest gap (stop on a miss)"
+ },
+ "expected": {
+  "by_analogy_not_scored": true,
+  "steering_share_log_odds_pooled": "copy 0.7 to 0.9, lookup 0.1 to 0.3 (E58's copy and lookup, reports/analyses/2026-11-09_analysis_what-regating-does_appendix.md)",
+  "per_key": "Per-key lookup above pooled lookup.",
+  "gap_share": "about 0.69 on the 200 windows (1.09 to 1.10 against 0.38 to 0.42); on the 100 score windows it may move by a few hundredths.",
+  "zero_update": "The share of a zero update is undefined; do-nothing reads the share by construction (E125's check).",
+  "random": "Random vectors' mean share within 0.1 of 0 on each side (a miss is reported and marks the reading, it does not stop the job).",
+  "off_target_kl": "Off-target KL 0 at strength 0."
+ },
+ "metric_blind_to": "The steering share is blind to whether the vector does it through the fine-tune's own route; the gap is blind to levels (both sides could move together).",
+ "positive_control": "The zero update and strength 0 at stage 0, and the reproduction of r.",
+ "noise_floor": "Seed sd of each side, reported; the card's spread (0.042) is from the log P share on other rows, since steering has never been read at this marker."
+}

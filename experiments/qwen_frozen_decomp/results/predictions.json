@@ -1,0 +1,17 @@
+{
+ "experiment": "E175",
+ "filed": "2026-11-13, before any job of this folder ran",
+ "decomp": "p-015e0710",
+ "what": "Port check of the frozen-neuron decomposition (port_check.py), as E131 for p-9707d6ff, and a static count against p-9707d6ff. A failed port rule means no share is read on p-015e0710 (card stop line).",
+ "port": {
+  "recon": "Every mask 1, delta off, on the 8 qwen_port rows: kl_mean <= 1e-6 nats per position. Expected ~1e-9 or less: (V U)^T = W exactly, only fp32 matmul order differs. logit_absdiff_max reported. Blind to: Gamma entirely.",
+  "conversion": "convert.py's neuron_vu_check: n_unequal == 0 (the checkpoint's own V and U equal the README table built from the HF weights, every layer). Blind to: Gamma.",
+  "jax_jaccard": "Active sets at g > 0.1, ours (Gamma bf16, target fp32) against the library's (bf16 target, XLA attention), pooled per row over positions and sites: jaccard_min_row >= 0.98. Reference: README's public-vs-training Jaccard 0.992 and attention-kernel gap 0.988, so 0.98 allows our fp32 target on top. Below 0.95: port fails. Between: reported and looked into before any share.",
+  "jax_values": "off_share_max_row (share of g values off by more than 0.1) <= 1e-4, E131's bound (it read 2.5e-5 end to end on p-9707d6ff).",
+  "ci_kl": "KL with g as masks, ours against the library's, per row: within 0.005 nats (E131 read within 0.0023 on p-9707d6ff). Reported; a miss is looked into before any share.",
+  "readme_count": "Mean active subcomponents per position at g > 0.1 on the 4 GSM8K chat rows of the 8 and on E131's 128 chat rows (thinking off): within 20% of the README's 45,374 (36,300 to 54,450). Our rows are not the README's held-out text (theirs: internal chat mix), so this is a consistency check, not an equality; the Jaccard against the library is the exact check."
+ },
+ "static": {
+  "per_kind": "Reported, no rule: mean active per position per kind (gate, up, down; and q, k, v, o on p-9707d6ff) on 128 chat and 128 FineWeb rows. Expected: the README gives p-015e0710's MLP count as about 9 times p-e9fcffd5's; p-9707d6ff's total was 0.74 of p-e9fcffd5's on web text (E131), so about 9 to 13 times p-9707d6ff's MLP count."
+ }
+}
