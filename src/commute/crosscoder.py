@@ -22,6 +22,7 @@ s_j = sum_x f_j(x) <d_j^ft - d_j^base, D(x)> / sum_x |D(x)|^2. Model index 0 is 
 from __future__ import annotations
 
 import math
+import time
 from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
 from typing import Any
@@ -66,6 +67,11 @@ class Cfg:
         float, ...
     ]  # fractions of `tokens` scored before the end (stages 0 and 1)
     ckpt_every: int  # steps
+    log_every: int  # steps between training-curve records
+    pile_start: int  # first Pile train row of the Pile half: past every row a task window was cut from
+    pool_start: int  # first Pile train row of the pool fresh key-value windows are cut from: past the Pile half
+    pool_rows: int
+    repeat_cap: int  # most draws of one window per epoch, for tasks whose windows cannot be made fresh
 
     def __post_init__(self) -> None:
         assert self.k * 10 <= self.latents and self.k <= self.k_max <= self.latents, (
@@ -138,28 +144,24 @@ def fve_batch(ae: AE, x: Tensor) -> float:
     return 1 - float((xn - xh).pow(2).sum()) / float((xn - xn.mean(0)).pow(2).sum())
 
 
-def train(t: Trainer, batches: Iterable[Tensor], start: int, stop: int,
-          log: Callable[[str], None], hook: Callable[[int], None]) -> list[dict[str, float]]:  # fmt: skip
-    """Their `update` on raw (B, 2, d) batches, steps start..stop-1; `hook(step)` after each step (saves, snapshots)."""
-    curve = []
+def train(t: Trainer, batches: Iterable[Tensor], start: int, stop: int, every: int, curve: list[dict[str, float]],
+          log: Callable[[str], None], hook: Callable[[int], None]) -> None:  # fmt: skip
+    """Their `update` on raw (B, 2, d) batches, steps start..stop-1, appending a record to `curve` every `every` steps
+    (loss, batch FVE before the step, k, dead share, theta, ms per step since the last record); `hook(step)` after each
+    step (saves, snapshots)."""
+    t_last, s_last = time.time(), start
     for step, x in zip(range(start, stop), batches, strict=False):
-        rec = (
-            {"step": step, "fve_batch": fve_batch(t.ae, x)}
-            if step % 500 == 0 or step == stop - 1
-            else None
-        )
+        rec = {"step": step, "fve_batch": fve_batch(t.ae, x)} if step % every == 0 or step == stop - 1 else None
         loss = t.update(step, x)
         assert math.isfinite(loss), f"loss {loss} at step {step}"
         if rec is not None:
+            now = time.time()
             rec |= {"loss": loss, "k": float(t.ae.k), "dead": float((t.num_tokens_since_fired >= t.dead_feature_threshold).float().mean()),
-                    "theta": float(t.ae.threshold)}  # fmt: skip
+                    "theta": float(t.ae.threshold), "ms_per_step": 1000 * (now - t_last) / max(1, step + 1 - s_last)}  # fmt: skip
+            t_last, s_last = now, step + 1
             curve.append(rec)
-            log(
-                f"  step {step}/{t.steps} "
-                + " ".join(f"{k} {v:.4g}" for k, v in rec.items() if k != "step")
-            )
+            log(f"  step {step}/{t.steps} " + " ".join(f"{k} {v:.4g}" for k, v in rec.items() if k != "step"))
         hook(step + 1)
-    return curve
 
 
 def relative_norm(ae: AE) -> Tensor:
@@ -222,12 +224,9 @@ def betas(ae: AE, h: Tensor, J: Tensor, size: int = 4096) -> dict[str, Tensor]:
 
 
 def specific(cfg: Cfg, b: dict[str, Tensor]) -> Tensor:
-    """The paper's test (nu_r < 0.5, nu_eps < 0.2). A negative base beta or a non-positive fine-tune beta is not
-    specific (Minder App. E.2 drops negative beta_base; a ratio over a non-positive beta has no reading)."""
-    pos = (
-        (b["eps_base"] >= 0) & (b["r_base"] >= 0) & (b["eps_ft"] > 0) & (b["r_ft"] > 0)
-    )
-    return pos & (b["nu_r"] < cfg.nu_r) & (b["nu_eps"] < cfg.nu_eps)
+    """The paper's test, nu_r < 0.5 and nu_eps < 0.2 (Minder et al. glossary, §3.1), with no other filter; a nan
+    ratio (a latent that never fired on the latent-scaling tokens) fails both comparisons."""
+    return (b["nu_r"] < cfg.nu_r) & (b["nu_eps"] < cfg.nu_eps)
 
 
 @torch.no_grad()
@@ -271,13 +270,12 @@ def groups(
     cfg: Cfg, rn: Tensor, alive: Tensor, cand: Tensor, spec: Tensor
 ) -> dict[str, Tensor]:
     """Disjoint latent groups: fine-tune-specific (a top-N candidate that passes latent scaling), shared (alive,
-    relative norm in the band), artefact (a candidate that fails), base-only, other alive, dead."""
+    relative norm inside the open band, as diffing-toolkit analysis.py:104-110 tags it), artefact (a candidate that
+    fails), base-only (relative norm under `base_only`, open as there), other alive, dead."""
     g = {"ft_specific": cand & spec}
-    g["shared"] = (
-        alive & (rn >= cfg.shared[0]) & (rn <= cfg.shared[1]) & ~g["ft_specific"]
-    )
+    g["shared"] = alive & (rn > cfg.shared[0]) & (rn < cfg.shared[1]) & ~g["ft_specific"]
     g["ft_artefact"] = cand & ~spec & ~g["shared"]
-    g["base_only"] = alive & (rn <= cfg.base_only) & ~cand
+    g["base_only"] = alive & (rn < cfg.base_only) & ~cand
     g["other"] = alive & ~(
         g["ft_specific"] | g["shared"] | g["ft_artefact"] | g["base_only"]
     )
