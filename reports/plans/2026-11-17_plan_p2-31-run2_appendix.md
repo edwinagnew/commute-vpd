@@ -40,23 +40,28 @@ L1's count), 1,844 and 2,442 for the Llama models (App. I.1), and 5,000 in the t
 | Ours | activation stream (67M model, block 2's input, position 0 dropped); data mix; per-model normaliser fitted on 1M tokens (toolkit `training.py:113`); top-N selection; the change reading d computed after undoing the normalisation (so the per-model mean shift is its own reported part); the self, planted, random and reseed controls; stages, stops, files. |
 
 `pyproject.toml`: `"dictionary-learning @ git+https://github.com/science-of-finetuning/crosscoder_learning.git@d1fd6f3fea41fc1123699cc09f4cdad47ca35160"`.
-Reference clones (read only, outside the repo): `~/commute-data/ref/crosscoder_learning@d1fd6f3`,
-`~/commute-data/ref/diffing-toolkit@617d926`.
+Source to read: the pinned trainer as installed, the venv's `site-packages/dictionary_learning/`; the toolkit as the
+review cloned it, `~/commute-data/scratch/compare-lead/e203-review/dt` (617d926); the files quoted above, downloaded,
+in `~/commute-data/scratch/compare-lead/p231-run2/src/`.
 
 ## C. Pre-mortem (gate 1)
 
 - **Recipe.** A mis-wired trainer (the wrong axis order (batch, 2, d), or normalisation applied twice). Guard: the self control
-  must give relative norms of exactly 0.5 and FVE ≥ 0.80; rehearsal compares one `update` against a hand step.
-- **Data.** Task windows leaking from the score half into training. Guard: the generator draws from Pile rows the score
-  windows do not use, and a hash check runs before training. A task with too few fresh windows is filled by repetition, with the count reported.
-  Position 0 is dropped in training and reading.
+  must give relative norms of exactly 0.5 and FVE ≥ 0.80; the rehearsal resumes a run and compares its losses step by
+  step with an uninterrupted one.
+- **Data.** Task windows leaking from the read or scored windows into training. Guard: every task window was cut from
+  Pile train rows 0-32,767 (e53 from Pile val); the Pile half starts at row 32,768 and fresh key-value windows come
+  from rows 131,072-196,607 (`run.py` asserts the order). e62 and e53 reuse their fit-half windows, at most 100 draws
+  each an epoch; every side records its task text (source, unique windows, repeats, share). Position 0 is dropped in
+  training and reading.
 - **Precision.** fp32 as in the source. The model forward is fp32 with TF32 off, as in run 1.
-- **Memory.** 75M parameters plus Adam is about 1.2 GB; two crosscoders per card fit an 80 GB H100 with room to spare.
-  Host RAM: the 100M-token id arrays are 0.4 GB as int32.
-- **Time and cost.** See D; the projected set is chosen from stage 0's measured minutes.
+- **Memory.** 75M parameters plus Adam is about 1.2 GB; a 1M-token chunk of paired activations is 6.4 GB. The old-code
+  rehearsal peaked at 6.6 GB of GPU and 6.2 GB of host.
+- **Time and cost.** See D. The timing stage measures fp32 against TF32 on the paid card.
 - **Saves.** Per side, about 0.5 MB of per-latent vectors in `results/large/` and the summary JSON in `results/sides/`.
-  Decoders in fp16 for the 6 control crosscoders (75 MB each). Each file is downloaded as it lands (Pile ids pre-cached
-  once by a cluster CPU job, about 0.4 GB, about 40 s to sync).
+  Decoders in fp16 for the 6 control crosscoders (75 MB each). Each file is downloaded as it lands. The Pile half and the
+  fresh-window pool are pre-cut by `run.py prep` (CPU): `train_32768_98304.npy` 403 MB and `train_131072_65536.npy`
+  268 MB, about 70 s to sync.
 - **Pod loss.** Each side is its own file and the stage is resumable. A lost pod costs at most one crosscoder (~38 min).
 - **Controls.** The self, planted, random and reseed controls run on the same card class as the pairs.
 - **Predictions.** P1/P2 as filed for run 1, re-filed under the new E-number with the top-N rule. Edge cases: zero
@@ -77,5 +82,5 @@ for a fresh 67M pod, E142/E153, plus ~1 GB of states at 10 MB/s). 20 pods add 3.
   60.9 h → $269 (TF32: 51.8 h → $229).
 - 76 (at most 3 seeds a side: 46 states, 26 size-matched, 4 controls): 51.4 h → $227 (TF32: 43.8 h → $193).
 
-Wall time, 20 pods: stage 0 ~40 min, stage 1 ~40 min (4 pods), then ceil(106 / 20) = 6 crosscoders a pod = 3.8 h, so about 5.3 h
-for the full set. If two crosscoders per card give 1.6× the throughput, the full set falls to about $210 and fits.
+Wall time in three waves: stage 0 on 2 pods (0a, 0b) ~50 min with set-up; stage 1 on 4 pods ~50 min, then `1check`
+on CPU; stage 2 on 20 pods, ceil(106 / 20) = 6 crosscoders a pod = 3.8 h plus ~10 min set-up. About 5.9 h in all.
