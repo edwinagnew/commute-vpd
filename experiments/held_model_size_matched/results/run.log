@@ -1,0 +1,757 @@
+E205 (P1.27) start; stages [0]; settings {'n_fit': 16384, 'fit_seed': 197100, 'n_read': 512, 'read_seed': 195200, 'sum_batch': 512, 'check_seed': 197000, 'gain_lo': 0.5, 'gain_hi': 2.0, 'gains_c': 0.25, 'control_state': 'c3/copy_s0'}; thresholds {'logit_tol': 0.001, 'kl_floor': 1e-06, 'repro_tol': 0.0001, 'size_rel': 1e-06}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+do_nothing: KL(F || M) 0 (last position, 512 read windows); fit 2.7 s
+do_nothing reading 1: S None, KL(F || H) 0, max relative logit error 0; site residuals mlp0 -7.58e-16, attn0 0, mlp1 0, attn1 -5.841e-16, mlp2 -2.622e-16, attn2 -3.985e-16, mlp3 -2.635e-16, attn3 0
+do_nothing reading 2: S None, KL(F || H) 0, max relative logit error 0; site residuals mlp0 -7.58e-16, attn0 0, mlp1 0, attn1 -5.841e-16, mlp2 -2.622e-16, attn2 -3.985e-16, mlp3 -2.635e-16, attn3 0
+do_nothing reading 3: S None, KL(F || H) 1.04634e-13, max relative logit error 1.33e-06; site residuals mlp0 -6.064e-16, attn0 1.155e-15, mlp1 0, attn1 -3.894e-16, mlp2 -2.622e-16, attn2 -2.657e-16, mlp3 -2.635e-16, attn3 0
+do_nothing: checks hold
+gains_block_scaled: KL(F || M) 1.96471 (last position, 512 read windows); fit 2.3 s
+gains_block_scaled reading 1: S 0.9999999999946921, KL(F || H) 1.04283e-11, max relative logit error 1.96e-05; site residuals mlp0 -3.615e-16, attn0 -6.706e-16, mlp1 2.393e-16, attn1 -4.164e-16, mlp2 1.571e-15, attn2 2.329e-16, mlp3 -2.158e-16, attn3 4.446e-16
+gains_block_scaled reading 2: S 0.9999999999949154, KL(F || H) 9.9897e-12, max relative logit error 1.57e-05; site residuals mlp0 -4.82e-16, attn0 -6.706e-16, mlp1 7.179e-16, attn1 -4.164e-16, mlp2 1.178e-15, attn2 2.329e-16, mlp3 -6.475e-16, attn3 4.446e-16
+gains_block_scaled reading 3: S 0.9999999999999422, KL(F || H) 1.13592e-13, max relative logit error 1.22e-06; site residuals mlp0 -8.434e-16, attn0 -6.706e-16, mlp1 -1.196e-16, attn1 -8.327e-16, mlp2 -7.855e-16, attn2 -2.329e-16, mlp3 -6.475e-16, attn3 -1.112e-16
+gains_block_scaled: checks hold
+c3-copy_s0: KL(F || M) 3.53144 (last position, 512 read windows); fit 2.3 s
+c3-copy_s0 reading 1: S 0.03605588918786862, KL(F || H) 3.40411, max relative logit error 1.04; site residuals mlp0 0.00653, attn0 0.004406, mlp1 6.283e-05, attn1 0.003579, mlp2 0.00163, attn2 0.004792, mlp3 0.0008055, attn3 8.134e-05
+c3-copy_s0 reading 2: S 0.007635171258713158, KL(F || H) 3.50447, max relative logit error 1.05; site residuals mlp0 0.007046, attn0 0.004406, mlp1 6.274e-05, attn1 0.003579, mlp2 0.001644, attn2 0.004792, mlp3 0.0008776, attn3 8.134e-05
+c3-copy_s0 reading 3: S 0.9978264450846661, KL(F || H) 0.00767577, max relative logit error 0.133; site residuals mlp0 3.196e-05, attn0 0.0004489, mlp1 3.045e-07, attn1 0.0001862, mlp2 1.322e-05, attn2 0.0008691, mlp3 1.316e-05, attn3 1.715e-05
+c3-copy_s0: c 1, size whole 0.00485257, MLP 0.0052447; done in 2 s
+reproduce c3/copy_s0 against E197's copy24_s0: |S diff| {'1': 1.5343211201557239e-07, '2': 1.0489350277254061e-07, '3': 6.4086429496512665e-09}; holds
+c3-cipher_s0: KL(F || M) 3.82799 (last position, 512 read windows); fit 2.3 s
+c3-cipher_s0 reading 1: S 0.021351922309723936, KL(F || H) 3.74625, max relative logit error 1.23; site residuals mlp0 0.007328, attn0 0.00441, mlp1 0.0001111, attn1 0.004499, mlp2 0.002339, attn2 0.007957, mlp3 0.001577, attn3 0.0001122
+c3-cipher_s0 reading 2: S 0.00618777833120665, KL(F || H) 3.8043, max relative logit error 1.24; site residuals mlp0 0.007793, attn0 0.00441, mlp1 0.0001105, attn1 0.004499, mlp2 0.002276, attn2 0.007957, mlp3 0.001726, attn3 0.0001122
+c3-cipher_s0 reading 3: S 0.992588734880911, KL(F || H) 0.0283702, max relative logit error 0.156; site residuals mlp0 3.314e-05, attn0 0.0003512, mlp1 3.388e-07, attn1 0.0001851, mlp2 1.525e-05, attn2 0.0006633, mlp3 1.83e-05, attn3 1.019e-05
+c3-cipher_s0: c 1, size whole 0.00515215, MLP 0.00569508; done in 2 s
+reproduce c3/cipher_s0 against E197's cipher24_s0: |S diff| {'1': 7.016620262589868e-08, '2': 3.4489992417618964e-08, '3': 5.6011437710168366e-09}; holds
+e46-ident32_s0: KL(F || M) 4.24975 (last position, 512 read windows); fit 2.3 s
+e46-ident32_s0 reading 1: S 0.03129196600171069, KL(F || H) 4.11676, max relative logit error 1.05; site residuals mlp0 0.008425, attn0 0.005045, mlp1 7.246e-05, attn1 0.004656, mlp2 0.001702, attn2 0.006081, mlp3 0.000987, attn3 9.22e-05
+e46-ident32_s0 reading 2: S 0.010623588084104574, KL(F || H) 4.2046, max relative logit error 1.06; site residuals mlp0 0.008892, attn0 0.005045, mlp1 7.232e-05, attn1 0.004656, mlp2 0.001704, attn2 0.006081, mlp3 0.001102, attn3 9.22e-05
+e46-ident32_s0 reading 3: S 0.9965445726655711, KL(F || H) 0.0146847, max relative logit error 0.157; site residuals mlp0 3.409e-05, attn0 0.0004065, mlp1 3.121e-07, attn1 0.0002383, mlp2 1.356e-05, attn2 0.001087, mlp3 1.372e-05, attn3 1.654e-05
+e46-ident32_s0: c 1, size whole 0.00488747, MLP 0.00527949; done in 2 s
+reproduce e46/ident32_s0 against E197's ident32_s0: |S diff| {'1': 1.0309301745614619e-08, '2': 6.883238579113993e-08, '3': 2.031734036567201e-08}; holds
+e46-rand32_s0: KL(F || M) 4.55038 (last position, 512 read windows); fit 2.3 s
+e46-rand32_s0 reading 1: S 0.014507578302984214, KL(F || H) 4.48436, max relative logit error 1.27; site residuals mlp0 0.009385, attn0 0.004975, mlp1 0.0001213, attn1 0.00469, mlp2 0.002492, attn2 0.01188, mlp3 0.001751, attn3 0.0001162
+e46-rand32_s0 reading 2: S 0.0030200456585200985, KL(F || H) 4.53663, max relative logit error 1.28; site residuals mlp0 0.00977, attn0 0.004975, mlp1 0.0001198, attn1 0.00469, mlp2 0.002446, attn2 0.01188, mlp3 0.001943, attn3 0.0001162
+e46-rand32_s0 reading 3: S 0.9913539212435437, KL(F || H) 0.0393429, max relative logit error 0.162; site residuals mlp0 3.694e-05, attn0 0.0003779, mlp1 3.689e-07, attn1 0.0001779, mlp2 1.728e-05, attn2 0.001032, mlp3 2.2e-05, attn3 1.03e-05
+e46-rand32_s0: c 1, size whole 0.00538123, MLP 0.00595945; done in 2 s
+reproduce e46/rand32_s0 against E197's rand32_s0: |S diff| {'1': 3.462404107867911e-08, '2': 1.1927001941636206e-08, '3': 1.004569216700446e-08}; holds
+STAGE 0 DONE
+e62_copy_lookup reading 3: items missing
+e62_copy_lookup reading 1: items missing
+e46_copy_random reading 3: items missing
+e46_copy_random reading 1: items missing
+e53_lowercase_cipher reading 3: items missing
+e53_lowercase_cipher reading 1: items missing
+e54_matched reading 3: items missing
+e54_matched reading 1: items missing
+e54_own reading 3: items missing
+e54_own reading 1: items missing
+open_pair_c3 reading 3: items missing
+open_pair_c3 reading 1: items missing
+open_pair_c3_copy reading 3: items missing
+open_pair_c3_copy reading 1: items missing
+e58_rank1_96 reading 3: items missing
+e58_rank1_96 reading 1: items missing
+e58_copy_prior_cipher reading 3: items missing
+e58_copy_prior_cipher reading 1: items missing
+E205 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/held_model_size_matched/results ===
+E205 (P1.27) start; stages [3, 4, 5, 6]; settings {'n_fit': 16384, 'fit_seed': 197100, 'n_read': 512, 'read_seed': 195200, 'sum_batch': 512, 'check_seed': 197000, 'gain_lo': 0.5, 'gain_hi': 2.0, 'gains_c': 0.25, 'control_state': 'c3/copy_s0'}; thresholds {'logit_tol': 0.001, 'kl_floor': 1e-06, 'repro_tol': 0.0001, 'size_rel': 1e-06}
+E205 (P1.27) start; stages [1, 2, 7, 8, 9]; settings {'n_fit': 16384, 'fit_seed': 197100, 'n_read': 512, 'read_seed': 195200, 'sum_batch': 512, 'check_seed': 197000, 'gain_lo': 0.5, 'gain_hi': 2.0, 'gains_c': 0.25, 'control_state': 'c3/copy_s0'}; thresholds {'logit_tol': 0.001, 'kl_floor': 1e-06, 'repro_tol': 0.0001, 'size_rel': 1e-06}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+STAGE 0 DONE
+STAGE 0 DONE
+e62-copy_s0: KL(F || M) 3.15926 (last position, 512 read windows); fit 2.5 s
+e62-copy_s0 reading 1: S 0.09898543649531011, KL(F || H) 2.84654, max relative logit error 1.14; site residuals mlp0 0.009682, attn0 0.01174, mlp1 6.794e-05, attn1 0.006542, mlp2 0.002404, attn2 0.006555, mlp3 0.001122, attn3 9.941e-05
+e62-copy_s0 reading 2: S 0.014611845400866574, KL(F || H) 3.1131, max relative logit error 1.14; site residuals mlp0 0.01049, attn0 0.01174, mlp1 6.999e-05, attn1 0.006542, mlp2 0.00253, attn2 0.006555, mlp3 0.001276, attn3 9.941e-05
+e62-copy_s0 reading 3: S 0.9917274223584587, KL(F || H) 0.0261352, max relative logit error 0.327; site residuals mlp0 6.265e-05, attn0 0.0006252, mlp1 6.326e-07, attn1 0.001131, mlp2 2.917e-05, attn2 0.001253, mlp3 2.453e-05, attn3 3.152e-05
+e62-copy_s0: c 1, size whole 0.0071472, MLP 0.00754943; done in 3 s
+projected minutes left in this job: 3.6
+e62-copy_s1: KL(F || M) 3.05388 (last position, 512 read windows); fit 2.5 s
+e62-copy_s1 reading 1: S 0.09904284445940248, KL(F || H) 2.75141, max relative logit error 1.13; site residuals mlp0 0.009182, attn0 0.01029, mlp1 6.147e-05, attn1 0.005309, mlp2 0.002393, attn2 0.006308, mlp3 0.001174, attn3 0.0001058
+e62-copy_s1 reading 2: S 0.012476115613609728, KL(F || H) 3.01578, max relative logit error 1.14; site residuals mlp0 0.009992, attn0 0.01029, mlp1 6.363e-05, attn1 0.005309, mlp2 0.002528, attn2 0.006308, mlp3 0.001329, attn3 0.0001058
+e62-copy_s1 reading 3: S 0.9910712543697269, KL(F || H) 0.0272673, max relative logit error 0.27; site residuals mlp0 5.944e-05, attn0 0.0005652, mlp1 6.135e-07, attn1 0.0008891, mlp2 2.984e-05, attn2 0.001204, mlp3 2.583e-05, attn3 3.419e-05
+e62-copy_s1: c 1, size whole 0.00707455, MLP 0.00747606; done in 3 s
+projected minutes left in this job: 3.0
+e53-lowercase_s0: KL(F || M) 0.70354 (last position, 512 read windows); fit 4.0 s
+e53-lowercase_s0 reading 1: S 0.07444370665193334, KL(F || H) 0.651166, max relative logit error 0.853; site residuals mlp0 0.005067, attn0 0.02758, mlp1 0.0001497, attn1 0.0089, mlp2 0.004655, attn2 0.009496, mlp3 0.006575, attn3 0.0004931
+e53-lowercase_s0 reading 2: S 0.000579075986901767, KL(F || H) 0.703133, max relative logit error 0.851; site residuals mlp0 0.005202, attn0 0.02758, mlp1 0.0001521, attn1 0.0089, mlp2 0.005305, attn2 0.009496, mlp3 0.007934, attn3 0.0004931
+e53-lowercase_s0 reading 3: S 0.9834976923514286, KL(F || H) 0.01161, max relative logit error 0.475; site residuals mlp0 0.0002405, attn0 0.00322, mlp1 2.035e-06, attn1 0.0005518, mlp2 0.000103, attn2 0.001199, mlp3 0.0001477, attn3 0.0001008
+e53-lowercase_s0: c 1, size whole 0.0179473, MLP 0.0190549; done in 4 s
+projected minutes left in this job: 8.8
+e62-copy_s2: KL(F || M) 3.1878 (last position, 512 read windows); fit 3.7 s
+e62-copy_s2 reading 1: S 0.10363340935354093, KL(F || H) 2.85743, max relative logit error 1.12; site residuals mlp0 0.009335, attn0 0.01255, mlp1 6.816e-05, attn1 0.005691, mlp2 0.002398, attn2 0.008152, mlp3 0.001068, attn3 9.976e-05
+e62-copy_s2 reading 2: S 0.014586564415127734, KL(F || H) 3.1413, max relative logit error 1.14; site residuals mlp0 0.01014, attn0 0.01255, mlp1 7.048e-05, attn1 0.005691, mlp2 0.002536, attn2 0.008152, mlp3 0.001212, attn3 9.976e-05
+e62-copy_s2 reading 3: S 0.9914449293808528, KL(F || H) 0.0272718, max relative logit error 0.321; site residuals mlp0 5.979e-05, attn0 0.0006485, mlp1 6.534e-07, attn1 0.0008906, mlp2 2.942e-05, attn2 0.001669, mlp3 2.419e-05, attn3 3.238e-05
+e62-copy_s2: c 1, size whole 0.00714323, MLP 0.00753802; done in 4 s
+projected minutes left in this job: 3.2
+e53-lowercase_s1: KL(F || M) 0.72493 (last position, 512 read windows); fit 3.9 s
+e53-lowercase_s1 reading 1: S 0.0684832607244914, KL(F || H) 0.675284, max relative logit error 0.896; site residuals mlp0 0.005243, attn0 0.02407, mlp1 0.0001524, attn1 0.008367, mlp2 0.004595, attn2 0.01008, mlp3 0.006756, attn3 0.000486
+e53-lowercase_s1 reading 2: S -0.0012401874158374238, KL(F || H) 0.725829, max relative logit error 0.898; site residuals mlp0 0.005406, attn0 0.02407, mlp1 0.000155, attn1 0.008367, mlp2 0.005187, attn2 0.01008, mlp3 0.008099, attn3 0.000486
+e53-lowercase_s1 reading 3: S 0.9831741717900244, KL(F || H) 0.0121975, max relative logit error 0.332; site residuals mlp0 0.0002488, attn0 0.002935, mlp1 2.098e-06, attn1 0.0005692, mlp2 0.0001065, attn2 0.001195, mlp3 0.0001559, attn3 0.0001063
+e53-lowercase_s1: c 1, size whole 0.0182423, MLP 0.019423; done in 4 s
+projected minutes left in this job: 6.1
+e62-lookup_s0: KL(F || M) 4.32643 (last position, 512 read windows); fit 3.8 s
+e62-lookup_s0 reading 1: S 0.025582703519537953, KL(F || H) 4.21574, max relative logit error 1.13; site residuals mlp0 0.0119, attn0 0.03925, mlp1 7.443e-05, attn1 0.005706, mlp2 0.003297, attn2 0.008697, mlp3 0.002445, attn3 0.0001452
+e62-lookup_s0 reading 2: S -0.003623414398927771, KL(F || H) 4.3421, max relative logit error 1.14; site residuals mlp0 0.01268, attn0 0.03925, mlp1 7.807e-05, attn1 0.005706, mlp2 0.003412, attn2 0.008697, mlp3 0.002717, attn3 0.0001452
+e62-lookup_s0 reading 3: S 0.9934233759433121, KL(F || H) 0.0284533, max relative logit error 0.293; site residuals mlp0 8.354e-05, attn0 0.001967, mlp1 8.927e-07, attn1 0.0008506, mlp2 3.819e-05, attn2 0.001845, mlp3 4.726e-05, attn3 2.624e-05
+e62-lookup_s0: c 1, size whole 0.00848347, MLP 0.00906157; done in 4 s
+projected minutes left in this job: 3.2
+e53-cipher_s0: KL(F || M) 0.291261 (last position, 512 read windows); fit 3.8 s
+e53-cipher_s0 reading 1: S 0.021912030275982985, KL(F || H) 0.284879, max relative logit error 0.906; site residuals mlp0 0.004951, attn0 0.02198, mlp1 8.133e-05, attn1 0.006428, mlp2 0.002967, attn2 0.005874, mlp3 0.00765, attn3 0.0001684
+e53-cipher_s0 reading 2: S -0.005787078792545808, KL(F || H) 0.292947, max relative logit error 0.917; site residuals mlp0 0.005113, attn0 0.02198, mlp1 8.388e-05, attn1 0.006428, mlp2 0.00316, attn2 0.005874, mlp3 0.00868, attn3 0.0001684
+e53-cipher_s0 reading 3: S 0.9637339847673798, KL(F || H) 0.0105629, max relative logit error 0.318; site residuals mlp0 0.0002676, attn0 0.002346, mlp1 2.107e-06, attn1 0.0004639, mlp2 9.725e-05, attn2 0.001203, mlp3 0.0001528, attn3 2.319e-05
+e53-cipher_s0: c 1, size whole 0.0186341, MLP 0.0202916; done in 4 s
+projected minutes left in this job: 5.1
+e62-lookup_s1: KL(F || M) 4.06522 (last position, 512 read windows); fit 3.6 s
+e62-lookup_s1 reading 1: S 0.02719808204018337, KL(F || H) 3.95465, max relative logit error 1.14; site residuals mlp0 0.01131, attn0 0.03646, mlp1 7.724e-05, attn1 0.00541, mlp2 0.003343, attn2 0.006991, mlp3 0.002287, attn3 0.0001463
+e62-lookup_s1 reading 2: S -0.0013430447879287932, KL(F || H) 4.07068, max relative logit error 1.15; site residuals mlp0 0.01213, attn0 0.03646, mlp1 8.157e-05, attn1 0.00541, mlp2 0.003476, attn2 0.006991, mlp3 0.002566, attn3 0.0001463
+e62-lookup_s1 reading 3: S 0.9938488438580487, KL(F || H) 0.0250058, max relative logit error 0.385; site residuals mlp0 8.465e-05, attn0 0.001761, mlp1 9.174e-07, attn1 0.0007365, mlp2 4.018e-05, attn2 0.001302, mlp3 4.747e-05, attn3 2.56e-05
+e62-lookup_s1: c 1, size whole 0.0085543, MLP 0.00917182; done in 4 s
+projected minutes left in this job: 3.2
+e53-cipher_s1: KL(F || M) 0.269319 (last position, 512 read windows); fit 3.9 s
+e53-cipher_s1 reading 1: S 0.021146295616440658, KL(F || H) 0.263624, max relative logit error 0.847; site residuals mlp0 0.005079, attn0 0.02163, mlp1 8.047e-05, attn1 0.006209, mlp2 0.002911, attn2 0.007272, mlp3 0.007511, attn3 0.0001533
+e53-cipher_s1 reading 2: S -0.010368702171544175, KL(F || H) 0.272111, max relative logit error 0.847; site residuals mlp0 0.005243, attn0 0.02163, mlp1 8.266e-05, attn1 0.006209, mlp2 0.003112, attn2 0.007272, mlp3 0.008507, attn3 0.0001533
+e53-cipher_s1 reading 3: S 0.9584890868456653, KL(F || H) 0.0111797, max relative logit error 0.264; site residuals mlp0 0.0002706, attn0 0.002274, mlp1 2.107e-06, attn1 0.0004782, mlp2 9.745e-05, attn2 0.001327, mlp3 0.0001525, attn3 1.967e-05
+e53-cipher_s1: c 1, size whole 0.0186343, MLP 0.0202772; done in 4 s
+projected minutes left in this job: 4.6
+e62-lookup_s2: KL(F || M) 4.29084 (last position, 512 read windows); fit 3.6 s
+e62-lookup_s2 reading 1: S 0.028164676952570855, KL(F || H) 4.16999, max relative logit error 1.12; site residuals mlp0 0.01094, attn0 0.02817, mlp1 6.751e-05, attn1 0.004934, mlp2 0.003211, attn2 0.007279, mlp3 0.002484, attn3 0.000123
+e62-lookup_s2 reading 2: S -0.0036279668003913468, KL(F || H) 4.30641, max relative logit error 1.13; site residuals mlp0 0.0118, attn0 0.02817, mlp1 7.146e-05, attn1 0.004934, mlp2 0.003351, attn2 0.007279, mlp3 0.002778, attn3 0.000123
+e62-lookup_s2 reading 3: S 0.9953845620901757, KL(F || H) 0.0198041, max relative logit error 0.422; site residuals mlp0 8.067e-05, attn0 0.001473, mlp1 9.33e-07, attn1 0.0008113, mlp2 3.982e-05, attn2 0.001694, mlp3 4.919e-05, attn3 2.439e-05
+e62-lookup_s2: c 1, size whole 0.00856747, MLP 0.00918708; done in 4 s
+projected minutes left in this job: 3.2
+e62-lookup_s0_scaled_e62_copy_lookup: KL(F || M) 4.07806 (last position, 512 read windows); fit 2.3 s
+e62-lookup_s0_scaled_e62_copy_lookup reading 1: S 0.022540442626640456, KL(F || H) 3.98614, max relative logit error 1.12; site residuals mlp0 0.008288, attn0 0.02646, mlp1 5.182e-05, attn1 0.00399, mlp2 0.0023, attn2 0.005987, mlp3 0.001703, attn3 0.0001009
+e62-lookup_s0_scaled_e62_copy_lookup reading 2: S -0.002835344121867367, KL(F || H) 4.08962, max relative logit error 1.14; site residuals mlp0 0.008835, attn0 0.02646, mlp1 5.435e-05, attn1 0.00399, mlp2 0.00238, attn2 0.005987, mlp3 0.001893, attn3 0.0001009
+e62-lookup_s0_scaled_e62_copy_lookup reading 3: S 0.9928310483513052, KL(F || H) 0.0292354, max relative logit error 0.258; site residuals mlp0 5.819e-05, attn0 0.001322, mlp1 6.213e-07, attn1 0.0005952, mlp2 2.663e-05, attn2 0.001271, mlp3 3.293e-05, attn3 1.825e-05
+e62-lookup_s0_scaled_e62_copy_lookup: c 0.834398, size whole 0.0070786, MLP 0.00756096; done in 2 s
+projected minutes left in this job: 2.9
+e62-lookup_s1_scaled_e62_copy_lookup: KL(F || M) 3.87501 (last position, 512 read windows); fit 2.3 s
+e62-lookup_s1_scaled_e62_copy_lookup reading 1: S 0.02406524530967391, KL(F || H) 3.78175, max relative logit error 1.05; site residuals mlp0 0.007887, attn0 0.02466, mlp1 5.373e-05, attn1 0.003788, mlp2 0.002333, attn2 0.004814, mlp3 0.001593, attn3 0.000101
+e62-lookup_s1_scaled_e62_copy_lookup reading 2: S -0.0009606314750636447, KL(F || H) 3.87873, max relative logit error 1.06; site residuals mlp0 0.008454, attn0 0.02466, mlp1 5.674e-05, attn1 0.003788, mlp2 0.002426, attn2 0.004814, mlp3 0.001787, attn3 0.000101
+e62-lookup_s1_scaled_e62_copy_lookup reading 3: S 0.992690006128665, KL(F || H) 0.0283263, max relative logit error 0.387; site residuals mlp0 5.902e-05, attn0 0.001187, mlp1 6.383e-07, attn1 0.000517, mlp2 2.802e-05, attn2 0.000897, mlp3 3.307e-05, attn3 1.767e-05
+e62-lookup_s1_scaled_e62_copy_lookup: c 0.834398, size whole 0.0071377, MLP 0.00765295; done in 2 s
+projected minutes left in this job: 2.7
+e62-lookup_s2_scaled_e62_copy_lookup: KL(F || M) 4.06601 (last position, 512 read windows); fit 3.1 s
+e62-lookup_s2_scaled_e62_copy_lookup reading 1: S 0.02471105209880642, KL(F || H) 3.96553, max relative logit error 1.05; site residuals mlp0 0.007629, attn0 0.01911, mlp1 4.696e-05, attn1 0.003437, mlp2 0.002241, attn2 0.005052, mlp3 0.00173, attn3 8.542e-05
+e62-lookup_s2_scaled_e62_copy_lookup reading 2: S -0.002817448351877916, KL(F || H) 4.07746, max relative logit error 1.06; site residuals mlp0 0.008229, attn0 0.01911, mlp1 4.971e-05, attn1 0.003437, mlp2 0.002338, attn2 0.005052, mlp3 0.001935, attn3 8.542e-05
+e62-lookup_s2_scaled_e62_copy_lookup reading 3: S 0.9944411859887045, KL(F || H) 0.0226022, max relative logit error 0.359; site residuals mlp0 5.625e-05, attn0 0.0009942, mlp1 6.491e-07, attn1 0.0005644, mlp2 2.777e-05, attn2 0.001178, mlp3 3.427e-05, attn3 1.688e-05
+e62-lookup_s2_scaled_e62_copy_lookup: c 0.834398, size whole 0.00714868, MLP 0.00766569; done in 3 s
+projected minutes left in this job: 2.7
+STAGE 1 DONE (e62_copy_lookup)
+e46-ident32_s0: done before, skipped
+projected minutes left in this job: 2.3
+[data] train rows 0..4096: cached at /root/artifacts/sets/train_0_4096.npy
+e53-broad_cipher_s0: KL(F || M) 0.481011 (last position, 512 read windows); fit 3.6 s
+e53-broad_cipher_s0 reading 1: S 0.03665552879875056, KL(F || H) 0.463379, max relative logit error 1.03; site residuals mlp0 0.00719, attn0 0.02307, mlp1 0.0001144, attn1 0.00792, mlp2 0.005544, attn2 0.009829, mlp3 0.02, attn3 0.000329
+e53-broad_cipher_s0 reading 2: S -0.012702426797568167, KL(F || H) 0.487121, max relative logit error 1.03; site residuals mlp0 0.007387, attn0 0.02307, mlp1 0.0001173, attn1 0.00792, mlp2 0.005864, attn2 0.009829, mlp3 0.02321, attn3 0.000329
+e53-broad_cipher_s0 reading 3: S 0.9578540043369803, KL(F || H) 0.0202727, max relative logit error 0.651; site residuals mlp0 0.0003631, attn0 0.003089, mlp1 2.984e-06, attn1 0.0006831, mlp2 0.000142, attn2 0.001654, mlp3 0.0002911, attn3 4.924e-05
+e53-broad_cipher_s0: c 1, size whole 0.0217158, MLP 0.0242235; done in 4 s
+projected minutes left in this job: 5.3
+e46-ident32_s1: KL(F || M) 4.37827 (last position, 512 read windows); fit 3.6 s
+e46-ident32_s1 reading 1: S 0.028403758749106056, KL(F || H) 4.25391, max relative logit error 1.13; site residuals mlp0 0.008778, attn0 0.005042, mlp1 6.543e-05, attn1 0.004403, mlp2 0.001682, attn2 0.005497, mlp3 0.0008901, attn3 8.129e-05
+e46-ident32_s1 reading 2: S 0.009248340389550025, KL(F || H) 4.33778, max relative logit error 1.15; site residuals mlp0 0.009281, attn0 0.005042, mlp1 6.565e-05, attn1 0.004403, mlp2 0.001689, attn2 0.005497, mlp3 0.0009901, attn3 8.129e-05
+e46-ident32_s1 reading 3: S 0.9983711045333852, KL(F || H) 0.00713175, max relative logit error 0.174; site residuals mlp0 3.694e-05, attn0 0.000442, mlp1 3.205e-07, attn1 0.000239, mlp2 1.332e-05, attn2 0.001074, mlp3 1.364e-05, attn3 1.555e-05
+e46-ident32_s1: c 1, size whole 0.00492251, MLP 0.00531372; done in 4 s
+projected minutes left in this job: 2.3
+e53-broad_cipher_s1: KL(F || M) 0.466125 (last position, 512 read windows); fit 3.6 s
+e53-broad_cipher_s1 reading 1: S 0.03306482088297891, KL(F || H) 0.450713, max relative logit error 1.05; site residuals mlp0 0.007148, attn0 0.02093, mlp1 0.0001098, attn1 0.007496, mlp2 0.00553, attn2 0.009511, mlp3 0.01995, attn3 0.0003057
+e53-broad_cipher_s1 reading 2: S -0.018265014852576034, KL(F || H) 0.474639, max relative logit error 1.02; site residuals mlp0 0.007302, attn0 0.02093, mlp1 0.0001126, attn1 0.007496, mlp2 0.005802, attn2 0.009511, mlp3 0.02311, attn3 0.0003057
+e53-broad_cipher_s1 reading 3: S 0.9621985922239337, KL(F || H) 0.0176202, max relative logit error 0.418; site residuals mlp0 0.0003605, attn0 0.00292, mlp1 2.976e-06, attn1 0.0006391, mlp2 0.0001442, attn2 0.001768, mlp3 0.0002918, attn3 4.752e-05
+e53-broad_cipher_s1: c 1, size whole 0.0217764, MLP 0.0242926; done in 4 s
+projected minutes left in this job: 4.8
+e46-ident32b_s0: KL(F || M) 4.71278 (last position, 512 read windows); fit 3.6 s
+e46-ident32b_s0 reading 1: S 0.03438056955626412, KL(F || H) 4.55076, max relative logit error 1.19; site residuals mlp0 0.008998, attn0 0.004096, mlp1 7.354e-05, attn1 0.004242, mlp2 0.001675, attn2 0.007313, mlp3 0.0008945, attn3 9.302e-05
+e46-ident32b_s0 reading 2: S 0.012477979192024424, KL(F || H) 4.65398, max relative logit error 1.22; site residuals mlp0 0.009578, attn0 0.004096, mlp1 7.35e-05, attn1 0.004242, mlp2 0.001674, attn2 0.007313, mlp3 0.0009809, attn3 9.302e-05
+e46-ident32b_s0 reading 3: S 0.9976489219751599, KL(F || H) 0.0110801, max relative logit error 0.147; site residuals mlp0 3.919e-05, attn0 0.0003512, mlp1 3.398e-07, attn1 0.0002199, mlp2 1.419e-05, attn2 0.00133, mlp3 1.378e-05, attn3 1.969e-05
+e46-ident32b_s0: c 1, size whole 0.00495207, MLP 0.00537561; done in 4 s
+projected minutes left in this job: 2.3
+e53-cipher_s0_scaled_e53_lowercase_cipher: KL(F || M) 0.222132 (last position, 512 read windows); fit 3.6 s
+e53-cipher_s0_scaled_e53_lowercase_cipher reading 1: S 0.021032448949677707, KL(F || H) 0.21746, max relative logit error 0.845; site residuals mlp0 0.003982, attn0 0.01749, mlp1 6.531e-05, attn1 0.005182, mlp2 0.002384, attn2 0.004738, mlp3 0.006147, attn3 0.0001352
+e53-cipher_s0_scaled_e53_lowercase_cipher reading 2: S -0.005819298526613448, KL(F || H) 0.223425, max relative logit error 0.856; site residuals mlp0 0.004113, attn0 0.01749, mlp1 6.736e-05, attn1 0.005182, mlp2 0.002539, attn2 0.004738, mlp3 0.006976, attn3 0.0001352
+e53-cipher_s0_scaled_e53_lowercase_cipher reading 3: S 0.9586134027494613, KL(F || H) 0.0091933, max relative logit error 0.274; site residuals mlp0 0.0002153, attn0 0.001863, mlp1 1.691e-06, attn1 0.0003739, mlp2 7.815e-05, attn2 0.0009694, mlp3 0.0001229, attn3 1.863e-05
+e53-cipher_s0_scaled_e53_lowercase_cipher: c 0.896218, size whole 0.0167003, MLP 0.0181857; done in 4 s
+projected minutes left in this job: 4.5
+e46-ident32b_s1: KL(F || M) 4.42835 (last position, 512 read windows); fit 3.6 s
+e46-ident32b_s1 reading 1: S 0.030826910713320554, KL(F || H) 4.29184, max relative logit error 1.21; site residuals mlp0 0.008175, attn0 0.005265, mlp1 7.109e-05, attn1 0.004454, mlp2 0.00168, attn2 0.006626, mlp3 0.0009004, attn3 8.418e-05
+e46-ident32b_s1 reading 2: S 0.009652662553556679, KL(F || H) 4.38561, max relative logit error 1.24; site residuals mlp0 0.008645, attn0 0.005265, mlp1 7.097e-05, attn1 0.004454, mlp2 0.001667, attn2 0.006626, mlp3 0.0009854, attn3 8.418e-05
+e46-ident32b_s1 reading 3: S 0.9974885368376373, KL(F || H) 0.0111216, max relative logit error 0.164; site residuals mlp0 3.641e-05, attn0 0.0005161, mlp1 3.26e-07, attn1 0.0002483, mlp2 1.408e-05, attn2 0.001226, mlp3 1.385e-05, attn3 1.916e-05
+e46-ident32b_s1: c 1, size whole 0.00496812, MLP 0.00537379; done in 4 s
+projected minutes left in this job: 2.3
+e46-rand32_s0: done before, skipped
+projected minutes left in this job: 2.1
+e53-cipher_s1_scaled_e53_lowercase_cipher: KL(F || M) 0.203893 (last position, 512 read windows); fit 3.6 s
+e53-cipher_s1_scaled_e53_lowercase_cipher reading 1: S 0.020693342387442137, KL(F || H) 0.199673, max relative logit error 0.791; site residuals mlp0 0.004084, attn0 0.0172, mlp1 6.462e-05, attn1 0.005002, mlp2 0.002339, attn2 0.005843, mlp3 0.006036, attn3 0.0001231
+e53-cipher_s1_scaled_e53_lowercase_cipher reading 2: S -0.0105965200514464, KL(F || H) 0.206053, max relative logit error 0.792; site residuals mlp0 0.004216, attn0 0.0172, mlp1 6.638e-05, attn1 0.005002, mlp2 0.002501, attn2 0.005843, mlp3 0.006837, attn3 0.0001231
+e53-cipher_s1_scaled_e53_lowercase_cipher reading 3: S 0.9529357946431781, KL(F || H) 0.00959605, max relative logit error 0.232; site residuals mlp0 0.0002175, attn0 0.001805, mlp1 1.691e-06, attn1 0.0003851, mlp2 7.832e-05, attn2 0.001065, mlp3 0.0001227, attn3 1.579e-05
+e53-cipher_s1_scaled_e53_lowercase_cipher: c 0.896218, size whole 0.0167004, MLP 0.0181728; done in 4 s
+projected minutes left in this job: 4.2
+e46-rand32_s1: KL(F || M) 4.60957 (last position, 512 read windows); fit 3.6 s
+e46-rand32_s1 reading 1: S 0.01448055431597195, KL(F || H) 4.54282, max relative logit error 1.25; site residuals mlp0 0.009958, attn0 0.004981, mlp1 0.0001262, attn1 0.004574, mlp2 0.002551, attn2 0.01136, mlp3 0.001608, attn3 0.0001283
+e46-rand32_s1 reading 2: S 0.0022798465375593047, KL(F || H) 4.59906, max relative logit error 1.26; site residuals mlp0 0.01057, attn0 0.004981, mlp1 0.0001254, attn1 0.004574, mlp2 0.002512, attn2 0.01136, mlp3 0.001787, attn3 0.0001283
+e46-rand32_s1 reading 3: S 0.9923682598800236, KL(F || H) 0.0351791, max relative logit error 0.174; site residuals mlp0 4.22e-05, attn0 0.0003605, mlp1 3.919e-07, attn1 0.0001661, mlp2 1.745e-05, attn2 0.001085, mlp3 2.124e-05, attn3 1.331e-05
+e46-rand32_s1: c 1, size whole 0.00545871, MLP 0.00602977; done in 4 s
+projected minutes left in this job: 2.1
+e53-broad_cipher_s0_scaled_e53_lowercase_cipher: KL(F || M) 0.373047 (last position, 512 read windows); fit 3.6 s
+e53-broad_cipher_s0_scaled_e53_lowercase_cipher reading 1: S 0.035374404625296174, KL(F || H) 0.35985, max relative logit error 1; site residuals mlp0 0.005787, attn0 0.0184, mlp1 9.185e-05, attn1 0.00638, mlp2 0.004456, attn2 0.007936, mlp3 0.01604, attn3 0.0002633
+e53-broad_cipher_s0_scaled_e53_lowercase_cipher reading 2: S -0.013134923844974278, KL(F || H) 0.377947, max relative logit error 1; site residuals mlp0 0.005946, attn0 0.0184, mlp1 9.414e-05, attn1 0.00638, mlp2 0.004713, attn2 0.007936, mlp3 0.01862, attn3 0.0002633
+e53-broad_cipher_s0_scaled_e53_lowercase_cipher reading 3: S 0.9552107340579228, KL(F || H) 0.0167085, max relative logit error 0.429; site residuals mlp0 0.0002923, attn0 0.002457, mlp1 2.394e-06, attn1 0.0005505, mlp2 0.0001142, attn2 0.001335, mlp3 0.0002339, attn3 3.938e-05
+e53-broad_cipher_s0_scaled_e53_lowercase_cipher: c 0.896218, size whole 0.0194621, MLP 0.0217095; done in 4 s
+projected minutes left in this job: 4.0
+e46-rand32b_s0: KL(F || M) 6.49961 (last position, 512 read windows); fit 3.6 s
+e46-rand32b_s0 reading 1: S 0.010162022786055158, KL(F || H) 6.43356, max relative logit error 1.33; site residuals mlp0 0.01371, attn0 0.04783, mlp1 8.609e-05, attn1 0.007501, mlp2 0.003424, attn2 0.009736, mlp3 0.00277, attn3 0.000118
+e46-rand32b_s0 reading 2: S -0.003757169176080044, KL(F || H) 6.52403, max relative logit error 1.34; site residuals mlp0 0.01466, attn0 0.04783, mlp1 8.788e-05, attn1 0.007501, mlp2 0.003474, attn2 0.009736, mlp3 0.003027, attn3 0.000118
+e46-rand32b_s0 reading 3: S 0.9968040283579045, KL(F || H) 0.0207726, max relative logit error 0.293; site residuals mlp0 9.333e-05, attn0 0.001599, mlp1 9.686e-07, attn1 0.0004187, mlp2 4.704e-05, attn2 0.001617, mlp3 5.691e-05, attn3 2.123e-05
+e46-rand32b_s0: c 1, size whole 0.00945299, MLP 0.0104795; done in 4 s
+projected minutes left in this job: 2.1
+e53-broad_cipher_s1_scaled_e53_lowercase_cipher: KL(F || M) 0.357358 (last position, 512 read windows); fit 3.6 s
+e53-broad_cipher_s1_scaled_e53_lowercase_cipher reading 1: S 0.031978655252461574, KL(F || H) 0.34593, max relative logit error 0.95; site residuals mlp0 0.005758, attn0 0.0167, mlp1 8.814e-05, attn1 0.006036, mlp2 0.004445, attn2 0.007648, mlp3 0.01599, attn3 0.0002446
+e53-broad_cipher_s1_scaled_e53_lowercase_cipher reading 2: S -0.0188011555732972, KL(F || H) 0.364077, max relative logit error 0.949; site residuals mlp0 0.005882, attn0 0.0167, mlp1 9.042e-05, attn1 0.006036, mlp2 0.004664, attn2 0.007648, mlp3 0.01853, attn3 0.0002446
+e53-broad_cipher_s1_scaled_e53_lowercase_cipher reading 3: S 0.960315047064599, KL(F || H) 0.0141817, max relative logit error 0.507; site residuals mlp0 0.0002904, attn0 0.002324, mlp1 2.388e-06, attn1 0.0005147, mlp2 0.0001159, attn2 0.001421, mlp3 0.0002346, attn3 3.801e-05
+e53-broad_cipher_s1_scaled_e53_lowercase_cipher: c 0.896218, size whole 0.0195164, MLP 0.0217715; done in 4 s
+projected minutes left in this job: 3.7
+STAGE 3 DONE (e53_lowercase_cipher)
+e46-rand32b_s1: KL(F || M) 6.55378 (last position, 512 read windows); fit 3.6 s
+e46-rand32b_s1 reading 1: S 0.011703447566149827, KL(F || H) 6.47708, max relative logit error 1.28; site residuals mlp0 0.01413, attn0 0.04537, mlp1 9.483e-05, attn1 0.008303, mlp2 0.003567, attn2 0.009978, mlp3 0.002761, attn3 0.0001262
+e46-rand32b_s1 reading 2: S -0.003369979242440424, KL(F || H) 6.57587, max relative logit error 1.3; site residuals mlp0 0.01513, attn0 0.04537, mlp1 9.714e-05, attn1 0.008303, mlp2 0.003607, attn2 0.009978, mlp3 0.003017, attn3 0.0001262
+e46-rand32b_s1 reading 3: S 0.9969832323284118, KL(F || H) 0.0197712, max relative logit error 0.347; site residuals mlp0 9.67e-05, attn0 0.001501, mlp1 1.012e-06, attn1 0.0004257, mlp2 4.827e-05, attn2 0.002022, mlp3 5.737e-05, attn3 2.097e-05
+e46-rand32b_s1: c 1, size whole 0.00964499, MLP 0.0106758; done in 4 s
+projected minutes left in this job: 2.0
+e54-elicit_s0: KL(F || M) 3.10909 (last position, 512 read windows); fit 3.6 s
+e54-elicit_s0 reading 1: S 0.028095904742769684, KL(F || H) 3.02174, max relative logit error 1.12; site residuals mlp0 0.004628, attn0 0.004695, mlp1 6.888e-05, attn1 0.00263, mlp2 0.001404, attn2 0.006603, mlp3 0.0006869, attn3 6.669e-05
+e54-elicit_s0 reading 2: S 0.0022051283335738914, KL(F || H) 3.10224, max relative logit error 1.13; site residuals mlp0 0.004932, attn0 0.004695, mlp1 6.889e-05, attn1 0.00263, mlp2 0.001405, attn2 0.006603, mlp3 0.0007529, attn3 6.669e-05
+e54-elicit_s0 reading 3: S 0.9975054098360743, KL(F || H) 0.00775592, max relative logit error 0.122; site residuals mlp0 2.659e-05, attn0 0.0004031, mlp1 3.138e-07, attn1 0.0001388, mlp2 1.266e-05, attn2 0.0007237, mlp3 1.367e-05, attn3 1.031e-05
+e54-elicit_s0: c 1, size whole 0.00493081, MLP 0.00538147; done in 4 s
+projected minutes left in this job: 3.6
+e46-rand32_s0_scaled_e46_copy_random: KL(F || M) 1.89511 (last position, 512 read windows); fit 3.6 s
+e46-rand32_s0_scaled_e46_copy_random reading 1: S 0.01577717588182337, KL(F || H) 1.86521, max relative logit error 1.18; site residuals mlp0 0.004102, attn0 0.00216, mlp1 5.268e-05, attn1 0.002021, mlp2 0.001085, attn2 0.00519, mlp3 0.0007603, attn3 5.018e-05
+e46-rand32_s0_scaled_e46_copy_random reading 2: S 0.004502832447450533, KL(F || H) 1.88657, max relative logit error 1.19; site residuals mlp0 0.004269, attn0 0.00216, mlp1 5.205e-05, attn1 0.002021, mlp2 0.001065, attn2 0.00519, mlp3 0.0008436, attn3 5.018e-05
+e46-rand32_s0_scaled_e46_copy_random reading 3: S 0.9893541591120697, KL(F || H) 0.020175, max relative logit error 0.109; site residuals mlp0 1.617e-05, attn0 0.0001647, mlp1 1.603e-07, attn1 7.661e-05, mlp2 7.517e-06, attn2 0.0004414, mlp3 9.549e-06, attn3 4.484e-06
+e46-rand32_s0_scaled_e46_copy_random: c 0.659036, size whole 0.00354642, MLP 0.00392749; done in 4 s
+projected minutes left in this job: 2.0
+e54-elicit_s1: KL(F || M) 3.02933 (last position, 512 read windows); fit 3.6 s
+e54-elicit_s1 reading 1: S 0.03389413931569796, KL(F || H) 2.92665, max relative logit error 1.05; site residuals mlp0 0.005283, attn0 0.004656, mlp1 6.654e-05, attn1 0.002987, mlp2 0.001396, attn2 0.006067, mlp3 0.0006828, attn3 6.935e-05
+e54-elicit_s1 reading 2: S 0.007692832189971743, KL(F || H) 3.00603, max relative logit error 1.07; site residuals mlp0 0.005729, attn0 0.004656, mlp1 6.706e-05, attn1 0.002987, mlp2 0.001399, attn2 0.006067, mlp3 0.0007422, attn3 6.935e-05
+e54-elicit_s1 reading 3: S 0.9977252716220485, KL(F || H) 0.0068909, max relative logit error 0.136; site residuals mlp0 2.998e-05, attn0 0.0004301, mlp1 3.185e-07, attn1 0.0001405, mlp2 1.296e-05, attn2 0.0005816, mlp3 1.343e-05, attn3 1.002e-05
+e54-elicit_s1: c 1, size whole 0.0049811, MLP 0.00545154; done in 4 s
+projected minutes left in this job: 3.4
+e46-rand32_s1_scaled_e46_copy_random: KL(F || M) 2.19529 (last position, 512 read windows); fit 3.6 s
+e46-rand32_s1_scaled_e46_copy_random reading 1: S 0.014801152155486053, KL(F || H) 2.16279, max relative logit error 1.14; site residuals mlp0 0.004356, attn0 0.002152, mlp1 5.483e-05, attn1 0.001979, mlp2 0.00111, attn2 0.004964, mlp3 0.000698, attn3 5.527e-05
+e46-rand32_s1_scaled_e46_copy_random reading 2: S 0.0030329418830707944, KL(F || H) 2.18863, max relative logit error 1.15; site residuals mlp0 0.004624, attn0 0.002152, mlp1 5.447e-05, attn1 0.001979, mlp2 0.001093, attn2 0.004964, mlp3 0.0007757, attn3 5.527e-05
+e46-rand32_s1_scaled_e46_copy_random reading 3: S 0.9861857853669664, KL(F || H) 0.0303262, max relative logit error 0.128; site residuals mlp0 1.849e-05, attn0 0.0001559, mlp1 1.702e-07, attn1 7.177e-05, mlp2 7.592e-06, attn2 0.0004668, mlp3 9.22e-06, attn3 5.763e-06
+e46-rand32_s1_scaled_e46_copy_random: c 0.659036, size whole 0.00359749, MLP 0.00397384; done in 4 s
+projected minutes left in this job: 2.0
+e54-elicit_s2: KL(F || M) 3.05526 (last position, 512 read windows); fit 3.6 s
+e54-elicit_s2 reading 1: S 0.03180929708647662, KL(F || H) 2.95808, max relative logit error 1.13; site residuals mlp0 0.005067, attn0 0.00473, mlp1 7.126e-05, attn1 0.003218, mlp2 0.001438, attn2 0.006375, mlp3 0.000726, attn3 7.005e-05
+e54-elicit_s2 reading 2: S 0.004364801808645735, KL(F || H) 3.04193, max relative logit error 1.13; site residuals mlp0 0.005427, attn0 0.00473, mlp1 7.177e-05, attn1 0.003218, mlp2 0.001439, attn2 0.006375, mlp3 0.0007946, attn3 7.005e-05
+e54-elicit_s2 reading 3: S 0.9976216644196291, KL(F || H) 0.00726644, max relative logit error 0.16; site residuals mlp0 2.881e-05, attn0 0.000428, mlp1 3.183e-07, attn1 0.0001877, mlp2 1.311e-05, attn2 0.000714, mlp3 1.379e-05, attn3 1.09e-05
+e54-elicit_s2: c 1, size whole 0.00498911, MLP 0.00545345; done in 4 s
+projected minutes left in this job: 3.3
+e46-rand32b_s0_scaled_e46_copy_random: KL(F || M) 3.84185 (last position, 512 read windows); fit 3.6 s
+e46-rand32b_s0_scaled_e46_copy_random reading 1: S 0.00854975654747836, KL(F || H) 3.809, max relative logit error 1.24; site residuals mlp0 0.005988, attn0 0.01947, mlp1 3.744e-05, attn1 0.00328, mlp2 0.001492, attn2 0.004248, mlp3 0.001204, attn3 5.088e-05
+e46-rand32b_s0_scaled_e46_copy_random reading 2: S -0.002538054296544967, KL(F || H) 3.8516, max relative logit error 1.24; site residuals mlp0 0.0064, attn0 0.01947, mlp1 3.822e-05, attn1 0.00328, mlp2 0.001514, attn2 0.004248, mlp3 0.001316, attn3 5.088e-05
+e46-rand32b_s0_scaled_e46_copy_random reading 3: S 0.9796777285622355, KL(F || H) 0.0780751, max relative logit error 0.206; site residuals mlp0 4.082e-05, attn0 0.0006465, mlp1 4.2e-07, attn1 0.000182, mlp2 2.045e-05, attn2 0.000696, mlp3 2.472e-05, attn3 9.123e-06
+e46-rand32b_s0_scaled_e46_copy_random: c 0.659036, size whole 0.00622986, MLP 0.00690639; done in 4 s
+projected minutes left in this job: 1.9
+e54-elicit_s3: KL(F || M) 3.08674 (last position, 512 read windows); fit 3.6 s
+e54-elicit_s3 reading 1: S 0.028187872683649084, KL(F || H) 2.99973, max relative logit error 1.09; site residuals mlp0 0.005228, attn0 0.005395, mlp1 7.086e-05, attn1 0.003275, mlp2 0.00148, attn2 0.006521, mlp3 0.0007365, attn3 7.115e-05
+e54-elicit_s3 reading 2: S 0.0017091206745618592, KL(F || H) 3.08146, max relative logit error 1.09; site residuals mlp0 0.005562, attn0 0.005395, mlp1 7.119e-05, attn1 0.003275, mlp2 0.00148, attn2 0.006521, mlp3 0.0008021, attn3 7.115e-05
+e54-elicit_s3 reading 3: S 0.9974065369979244, KL(F || H) 0.00800535, max relative logit error 0.11; site residuals mlp0 3.004e-05, attn0 0.0004239, mlp1 3.41e-07, attn1 0.0001896, mlp2 1.324e-05, attn2 0.0007154, mlp3 1.399e-05, attn3 1.01e-05
+e54-elicit_s3: c 1, size whole 0.00502714, MLP 0.00549086; done in 4 s
+projected minutes left in this job: 3.1
+e46-rand32b_s1_scaled_e46_copy_random: KL(F || M) 4.1816 (last position, 512 read windows); fit 3.6 s
+e46-rand32b_s1_scaled_e46_copy_random reading 1: S 0.00943067314782986, KL(F || H) 4.14217, max relative logit error 1.33; site residuals mlp0 0.006166, attn0 0.01855, mlp1 4.122e-05, attn1 0.003616, mlp2 0.001554, attn2 0.004373, mlp3 0.001201, attn3 5.426e-05
+e46-rand32b_s1_scaled_e46_copy_random reading 2: S -0.002342859179691903, KL(F || H) 4.1914, max relative logit error 1.33; site residuals mlp0 0.006602, attn0 0.01855, mlp1 4.222e-05, attn1 0.003616, mlp2 0.001571, attn2 0.004373, mlp3 0.001313, attn3 5.426e-05
+e46-rand32b_s1_scaled_e46_copy_random reading 3: S 0.9809674765908272, KL(F || H) 0.0795864, max relative logit error 0.254; site residuals mlp0 4.228e-05, attn0 0.0006092, mlp1 4.386e-07, attn1 0.0001856, mlp2 2.098e-05, attn2 0.0008683, mlp3 2.495e-05, attn3 8.937e-06
+e46-rand32b_s1_scaled_e46_copy_random: c 0.659036, size whole 0.0063564, MLP 0.00703577; done in 4 s
+projected minutes left in this job: 1.9
+STAGE 2 DONE (e46_copy_random)
+c3-copy_s0: done before, skipped
+projected minutes left in this job: 1.7
+e54-elicit_s4: KL(F || M) 3.06247 (last position, 512 read windows); fit 3.6 s
+e54-elicit_s4 reading 1: S 0.03034221197325937, KL(F || H) 2.96954, max relative logit error 1.12; site residuals mlp0 0.005339, attn0 0.004369, mlp1 6.736e-05, attn1 0.003204, mlp2 0.001417, attn2 0.006569, mlp3 0.0007185, attn3 6.569e-05
+e54-elicit_s4 reading 2: S 0.004513329224434037, KL(F || H) 3.04864, max relative logit error 1.14; site residuals mlp0 0.005732, attn0 0.004369, mlp1 6.738e-05, attn1 0.003204, mlp2 0.001414, attn2 0.006569, mlp3 0.0007899, attn3 6.569e-05
+e54-elicit_s4 reading 3: S 0.9975571375084247, KL(F || H) 0.00748119, max relative logit error 0.22; site residuals mlp0 2.983e-05, attn0 0.0004071, mlp1 3.207e-07, attn1 0.0001561, mlp2 1.264e-05, attn2 0.0007275, mlp3 1.381e-05, attn3 9.38e-06
+e54-elicit_s4: c 1, size whole 0.00498597, MLP 0.00545009; done in 4 s
+projected minutes left in this job: 3.0
+c3-copy_s1: KL(F || M) 4.03215 (last position, 512 read windows); fit 3.6 s
+c3-copy_s1 reading 1: S 0.037316261761426106, KL(F || H) 3.88169, max relative logit error 1.03; site residuals mlp0 0.0069, attn0 0.00494, mlp1 7.311e-05, attn1 0.003542, mlp2 0.001686, attn2 0.005822, mlp3 0.0008113, attn3 8.932e-05
+c3-copy_s1 reading 2: S 0.01059142149828085, KL(F || H) 3.98944, max relative logit error 1.04; site residuals mlp0 0.007498, attn0 0.00494, mlp1 7.269e-05, attn1 0.003542, mlp2 0.001697, attn2 0.005822, mlp3 0.0008831, attn3 8.932e-05
+c3-copy_s1 reading 3: S 0.9982802414458515, KL(F || H) 0.00693433, max relative logit error 0.161; site residuals mlp0 3.244e-05, attn0 0.0003912, mlp1 3.312e-07, attn1 0.0002459, mlp2 1.386e-05, attn2 0.00105, mlp3 1.323e-05, attn3 2.007e-05
+c3-copy_s1: c 1, size whole 0.00489054, MLP 0.00529232; done in 4 s
+projected minutes left in this job: 1.7
+e54-cipher_s0: KL(F || M) 3.24136 (last position, 512 read windows); fit 3.6 s
+e54-cipher_s0 reading 1: S 0.022612122571500803, KL(F || H) 3.16807, max relative logit error 1.2; site residuals mlp0 0.007427, attn0 0.004863, mlp1 0.0001018, attn1 0.004138, mlp2 0.002178, attn2 0.009577, mlp3 0.001651, attn3 0.0001009
+e54-cipher_s0 reading 2: S 0.005328877769550711, KL(F || H) 3.22409, max relative logit error 1.2; site residuals mlp0 0.007858, attn0 0.004863, mlp1 0.0001017, attn1 0.004138, mlp2 0.002129, attn2 0.009577, mlp3 0.001816, attn3 0.0001009
+e54-cipher_s0 reading 3: S 0.9906964686095318, KL(F || H) 0.0301561, max relative logit error 0.183; site residuals mlp0 3.256e-05, attn0 0.0004048, mlp1 3.295e-07, attn1 0.0002218, mlp2 1.416e-05, attn2 0.0008347, mlp3 1.811e-05, attn3 8.821e-06
+e54-cipher_s0: c 1, size whole 0.00502952, MLP 0.0055531; done in 4 s
+projected minutes left in this job: 2.9
+c3-copy_s2: KL(F || M) 3.87633 (last position, 512 read windows); fit 3.5 s
+c3-copy_s2 reading 1: S 0.04090758094919089, KL(F || H) 3.71776, max relative logit error 1.02; site residuals mlp0 0.006484, attn0 0.004815, mlp1 6.858e-05, attn1 0.003848, mlp2 0.001747, attn2 0.005511, mlp3 0.0008467, attn3 9.035e-05
+c3-copy_s2 reading 2: S 0.010447926604829072, KL(F || H) 3.83583, max relative logit error 1.03; site residuals mlp0 0.007017, attn0 0.004815, mlp1 6.828e-05, attn1 0.003848, mlp2 0.001758, attn2 0.005511, mlp3 0.0009238, attn3 9.035e-05
+c3-copy_s2 reading 3: S 0.9982299567737271, KL(F || H) 0.00686127, max relative logit error 0.134; site residuals mlp0 3.108e-05, attn0 0.0004734, mlp1 3.277e-07, attn1 0.0002241, mlp2 1.407e-05, attn2 0.0009011, mlp3 1.362e-05, attn3 2.137e-05
+c3-copy_s2: c 1, size whole 0.00493207, MLP 0.00535352; done in 4 s
+projected minutes left in this job: 1.7
+e54-cipher_s1: KL(F || M) 3.81727 (last position, 512 read windows); fit 3.6 s
+e54-cipher_s1 reading 1: S 0.023310809027204726, KL(F || H) 3.72829, max relative logit error 1.13; site residuals mlp0 0.008049, attn0 0.005239, mlp1 0.0001095, attn1 0.004236, mlp2 0.002228, attn2 0.009847, mlp3 0.001567, attn3 0.0001196
+e54-cipher_s1 reading 2: S 0.008244023200059458, KL(F || H) 3.7858, max relative logit error 1.13; site residuals mlp0 0.008482, attn0 0.005239, mlp1 0.0001086, attn1 0.004236, mlp2 0.00218, attn2 0.009847, mlp3 0.001744, attn3 0.0001196
+e54-cipher_s1 reading 3: S 0.9909533536801437, KL(F || H) 0.0345335, max relative logit error 0.19; site residuals mlp0 3.459e-05, attn0 0.0004642, mlp1 3.404e-07, attn1 0.0001812, mlp2 1.423e-05, attn2 0.0008302, mlp3 1.798e-05, attn3 1.317e-05
+e54-cipher_s1: c 1, size whole 0.00505455, MLP 0.00557383; done in 4 s
+projected minutes left in this job: 2.8
+c3-copy_s3: KL(F || M) 3.76212 (last position, 512 read windows); fit 3.6 s
+c3-copy_s3 reading 1: S 0.03982670659757781, KL(F || H) 3.61229, max relative logit error 1.04; site residuals mlp0 0.006736, attn0 0.004757, mlp1 6.8e-05, attn1 0.003565, mlp2 0.001661, attn2 0.005241, mlp3 0.0008568, attn3 8.694e-05
+c3-copy_s3 reading 2: S 0.009786440326069124, KL(F || H) 3.7253, max relative logit error 1.06; site residuals mlp0 0.007301, attn0 0.004757, mlp1 6.785e-05, attn1 0.003565, mlp2 0.001678, attn2 0.005241, mlp3 0.0009321, attn3 8.694e-05
+c3-copy_s3 reading 3: S 0.9978942737320865, KL(F || H) 0.007922, max relative logit error 0.151; site residuals mlp0 3.172e-05, attn0 0.0004136, mlp1 3.209e-07, attn1 0.0001911, mlp2 1.375e-05, attn2 0.0008655, mlp3 1.326e-05, attn3 1.85e-05
+c3-copy_s3: c 1, size whole 0.00487474, MLP 0.00528938; done in 4 s
+projected minutes left in this job: 1.6
+e54-cipher_s2: KL(F || M) 3.34106 (last position, 512 read windows); fit 3.6 s
+e54-cipher_s2 reading 1: S 0.025138673413487633, KL(F || H) 3.25707, max relative logit error 1.14; site residuals mlp0 0.006472, attn0 0.004781, mlp1 0.0001062, attn1 0.004093, mlp2 0.002211, attn2 0.01132, mlp3 0.001568, attn3 0.0001088
+e54-cipher_s2 reading 2: S 0.01153143693182368, KL(F || H) 3.30253, max relative logit error 1.16; site residuals mlp0 0.006718, attn0 0.004781, mlp1 0.0001057, attn1 0.004093, mlp2 0.002166, attn2 0.01132, mlp3 0.001742, attn3 0.0001088
+e54-cipher_s2 reading 3: S 0.9919347766703305, KL(F || H) 0.0269464, max relative logit error 0.151; site residuals mlp0 3.052e-05, attn0 0.0003721, mlp1 3.177e-07, attn1 0.0001857, mlp2 1.445e-05, attn2 0.0008335, mlp3 1.791e-05, attn3 1.211e-05
+e54-cipher_s2: c 1, size whole 0.0050678, MLP 0.00559229; done in 4 s
+projected minutes left in this job: 2.7
+c3-copy_s4: KL(F || M) 3.82443 (last position, 512 read windows); fit 3.6 s
+c3-copy_s4 reading 1: S 0.03791521036148304, KL(F || H) 3.67943, max relative logit error 1.02; site residuals mlp0 0.00668, attn0 0.004173, mlp1 7.223e-05, attn1 0.003982, mlp2 0.001631, attn2 0.005413, mlp3 0.0008348, attn3 8.53e-05
+c3-copy_s4 reading 2: S 0.009521317867604018, KL(F || H) 3.78802, max relative logit error 1.03; site residuals mlp0 0.007073, attn0 0.004173, mlp1 7.155e-05, attn1 0.003982, mlp2 0.001647, attn2 0.005413, mlp3 0.0009163, attn3 8.53e-05
+c3-copy_s4 reading 3: S 0.998583062867518, KL(F || H) 0.00541898, max relative logit error 0.143; site residuals mlp0 3.11e-05, attn0 0.0003644, mlp1 3.279e-07, attn1 0.0002395, mlp2 1.377e-05, attn2 0.0008985, mlp3 1.353e-05, attn3 2.011e-05
+c3-copy_s4: c 1, size whole 0.00483045, MLP 0.00523788; done in 4 s
+projected minutes left in this job: 1.6
+e54-cipher_s3: KL(F || M) 3.82375 (last position, 512 read windows); fit 3.7 s
+e54-cipher_s3 reading 1: S 0.01928044740114232, KL(F || H) 3.75003, max relative logit error 1.19; site residuals mlp0 0.007451, attn0 0.004445, mlp1 0.0001146, attn1 0.004649, mlp2 0.002401, attn2 0.01277, mlp3 0.001648, attn3 0.0001094
+e54-cipher_s3 reading 2: S 0.006254936749160223, KL(F || H) 3.79984, max relative logit error 1.19; site residuals mlp0 0.007796, attn0 0.004445, mlp1 0.0001133, attn1 0.004649, mlp2 0.002358, attn2 0.01277, mlp3 0.001812, attn3 0.0001094
+e54-cipher_s3 reading 3: S 0.9888036005342333, KL(F || H) 0.0428123, max relative logit error 0.141; site residuals mlp0 3.177e-05, attn0 0.0004502, mlp1 3.493e-07, attn1 0.0001939, mlp2 1.475e-05, attn2 0.0009429, mlp3 1.855e-05, attn3 9.461e-06
+e54-cipher_s3: c 1, size whole 0.00511901, MLP 0.00564847; done in 4 s
+projected minutes left in this job: 2.6
+c3-copy_s5: KL(F || M) 3.73764 (last position, 512 read windows); fit 3.4 s
+c3-copy_s5 reading 1: S 0.03955462354170214, KL(F || H) 3.5898, max relative logit error 1.04; site residuals mlp0 0.006691, attn0 0.004332, mlp1 6.535e-05, attn1 0.003674, mlp2 0.001655, attn2 0.005072, mlp3 0.0007946, attn3 8.682e-05
+c3-copy_s5 reading 2: S 0.009870192547960066, KL(F || H) 3.70075, max relative logit error 1.04; site residuals mlp0 0.007196, attn0 0.004332, mlp1 6.467e-05, attn1 0.003674, mlp2 0.001663, attn2 0.005072, mlp3 0.0008665, attn3 8.682e-05
+c3-copy_s5 reading 3: S 0.9975254841863913, KL(F || H) 0.00924886, max relative logit error 0.18; site residuals mlp0 3.183e-05, attn0 0.0003747, mlp1 3.072e-07, attn1 0.0002026, mlp2 1.361e-05, attn2 0.0008035, mlp3 1.298e-05, attn3 1.887e-05
+c3-copy_s5: c 1, size whole 0.00485121, MLP 0.00525781; done in 4 s
+projected minutes left in this job: 1.5
+e54-cipher_s4: KL(F || M) 3.76001 (last position, 512 read windows); fit 3.5 s
+e54-cipher_s4 reading 1: S 0.021437083658074285, KL(F || H) 3.6794, max relative logit error 1.16; site residuals mlp0 0.007512, attn0 0.004477, mlp1 0.0001123, attn1 0.004291, mlp2 0.00234, attn2 0.01173, mlp3 0.001684, attn3 0.0001141
+e54-cipher_s4 reading 2: S 0.006792973699484506, KL(F || H) 3.73447, max relative logit error 1.17; site residuals mlp0 0.0078, attn0 0.004477, mlp1 0.000111, attn1 0.004291, mlp2 0.002285, attn2 0.01173, mlp3 0.001868, attn3 0.0001141
+e54-cipher_s4 reading 3: S 0.9892640534673254, KL(F || H) 0.0403672, max relative logit error 0.281; site residuals mlp0 3.431e-05, attn0 0.0004216, mlp1 3.464e-07, attn1 0.0002006, mlp2 1.489e-05, attn2 0.0008851, mlp3 1.918e-05, attn3 1.137e-05
+e54-cipher_s4: c 1, size whole 0.00511744, MLP 0.00563761; done in 4 s
+projected minutes left in this job: 2.5
+c3-copy_s6: KL(F || M) 3.76161 (last position, 512 read windows); fit 3.6 s
+c3-copy_s6 reading 1: S 0.039166785058542986, KL(F || H) 3.61428, max relative logit error 1.05; site residuals mlp0 0.006835, attn0 0.004459, mlp1 6.951e-05, attn1 0.003963, mlp2 0.001649, attn2 0.005444, mlp3 0.0008189, attn3 8.508e-05
+c3-copy_s6 reading 2: S 0.009050118458928114, KL(F || H) 3.72757, max relative logit error 1.06; site residuals mlp0 0.007371, attn0 0.004459, mlp1 6.937e-05, attn1 0.003963, mlp2 0.001664, attn2 0.005444, mlp3 0.0008911, attn3 8.508e-05
+c3-copy_s6 reading 3: S 0.9975756100675802, KL(F || H) 0.00911962, max relative logit error 0.131; site residuals mlp0 3.207e-05, attn0 0.0004049, mlp1 3.199e-07, attn1 0.0002243, mlp2 1.377e-05, attn2 0.0009451, mlp3 1.322e-05, attn3 1.891e-05
+c3-copy_s6: c 1, size whole 0.00486733, MLP 0.00527168; done in 4 s
+projected minutes left in this job: 1.5
+e54-cipher_s0_scaled_e54_matched: KL(F || M) 3.13438 (last position, 512 read windows); fit 3.6 s
+e54-cipher_s0_scaled_e54_matched reading 1: S 0.022697366926965667, KL(F || H) 3.06323, max relative logit error 1.2; site residuals mlp0 0.007154, attn0 0.00468, mlp1 9.8e-05, attn1 0.003983, mlp2 0.002098, attn2 0.009231, mlp3 0.00159, attn3 9.718e-05
+e54-cipher_s0_scaled_e54_matched reading 2: S 0.005339957693429653, KL(F || H) 3.11764, max relative logit error 1.2; site residuals mlp0 0.007569, attn0 0.00468, mlp1 9.798e-05, attn1 0.003983, mlp2 0.00205, attn2 0.009231, mlp3 0.001748, attn3 9.718e-05
+e54-cipher_s0_scaled_e54_matched reading 3: S 0.9906060522250287, KL(F || H) 0.0294442, max relative logit error 0.177; site residuals mlp0 3.137e-05, attn0 0.0003895, mlp1 3.173e-07, attn1 0.0002133, mlp2 1.364e-05, attn2 0.0008039, mlp3 1.744e-05, attn3 8.498e-06
+e54-cipher_s0_scaled_e54_matched: c 0.981323, size whole 0.00493558, MLP 0.00544938; done in 4 s
+projected minutes left in this job: 2.4
+c3-copy_s7: KL(F || M) 4.06249 (last position, 512 read windows); fit 3.5 s
+c3-copy_s7 reading 1: S 0.03906216143812513, KL(F || H) 3.9038, max relative logit error 1.03; site residuals mlp0 0.007446, attn0 0.004635, mlp1 7.06e-05, attn1 0.003991, mlp2 0.001593, attn2 0.0069, mlp3 0.000822, attn3 8.827e-05
+c3-copy_s7 reading 2: S 0.011174799556191606, KL(F || H) 4.01709, max relative logit error 1.04; site residuals mlp0 0.008071, attn0 0.004635, mlp1 7.051e-05, attn1 0.003991, mlp2 0.001602, attn2 0.0069, mlp3 0.0009022, attn3 8.827e-05
+c3-copy_s7 reading 3: S 0.9967670639946604, KL(F || H) 0.0131338, max relative logit error 0.388; site residuals mlp0 3.337e-05, attn0 0.0003762, mlp1 3.182e-07, attn1 0.0002059, mlp2 1.353e-05, attn2 0.001159, mlp3 1.326e-05, attn3 1.929e-05
+c3-copy_s7: c 1, size whole 0.00489497, MLP 0.00531921; done in 4 s
+projected minutes left in this job: 1.4
+e54-cipher_s1_scaled_e54_matched: KL(F || M) 3.71783 (last position, 512 read windows); fit 3.6 s
+e54-cipher_s1_scaled_e54_matched reading 1: S 0.023341199353546616, KL(F || H) 3.63105, max relative logit error 1.13; site residuals mlp0 0.007753, attn0 0.005044, mlp1 0.0001054, attn1 0.004078, mlp2 0.002146, attn2 0.00949, mlp3 0.001509, attn3 0.0001152
+e54-cipher_s1_scaled_e54_matched reading 2: S 0.008268680397723438, KL(F || H) 3.68709, max relative logit error 1.14; site residuals mlp0 0.00817, attn0 0.005044, mlp1 0.0001045, attn1 0.004078, mlp2 0.0021, attn2 0.00949, mlp3 0.001679, attn3 0.0001152
+e54-cipher_s1_scaled_e54_matched reading 3: S 0.991022500561811, KL(F || H) 0.0333768, max relative logit error 0.186; site residuals mlp0 3.332e-05, attn0 0.0004471, mlp1 3.278e-07, attn1 0.0001743, mlp2 1.37e-05, attn2 0.0008, mlp3 1.731e-05, attn3 1.269e-05
+e54-cipher_s1_scaled_e54_matched: c 0.981323, size whole 0.00496014, MLP 0.00546973; done in 4 s
+projected minutes left in this job: 2.3
+c3-cipher_s0_scaled_open_pair_c3_copy: KL(F || M) 3.77012 (last position, 512 read windows); fit 3.5 s
+c3-cipher_s0_scaled_open_pair_c3_copy reading 1: S 0.021350293638252693, KL(F || H) 3.68963, max relative logit error 1.22; site residuals mlp0 0.007185, attn0 0.004322, mlp1 0.0001089, attn1 0.004409, mlp2 0.002293, attn2 0.007802, mlp3 0.001546, attn3 0.0001099
+c3-cipher_s0_scaled_open_pair_c3_copy reading 2: S 0.006195266217841167, KL(F || H) 3.74676, max relative logit error 1.23; site residuals mlp0 0.00764, attn0 0.004322, mlp1 0.0001083, attn1 0.004409, mlp2 0.002231, attn2 0.007802, mlp3 0.001692, attn3 0.0001099
+c3-cipher_s0_scaled_open_pair_c3_copy reading 3: S 0.9925498763280485, KL(F || H) 0.0280879, max relative logit error 0.154; site residuals mlp0 3.25e-05, attn0 0.0003441, mlp1 3.321e-07, attn1 0.0001813, mlp2 1.495e-05, attn2 0.0006502, mlp3 1.794e-05, attn3 9.995e-06
+c3-cipher_s0_scaled_open_pair_c3_copy: c 0.990078, size whole 0.00510103, MLP 0.00563857; done in 4 s
+projected minutes left in this job: 1.4
+e54-cipher_s2_scaled_e54_matched: KL(F || M) 3.22945 (last position, 512 read windows); fit 3.4 s
+e54-cipher_s2_scaled_e54_matched reading 1: S 0.02510062208350028, KL(F || H) 3.14839, max relative logit error 1.14; site residuals mlp0 0.006233, attn0 0.004602, mlp1 0.0001023, attn1 0.00394, mlp2 0.00213, attn2 0.01092, mlp3 0.00151, attn3 0.0001047
+e54-cipher_s2_scaled_e54_matched reading 2: S 0.011497099237822384, KL(F || H) 3.19232, max relative logit error 1.16; site residuals mlp0 0.00647, attn0 0.004602, mlp1 0.0001018, attn1 0.00394, mlp2 0.002086, attn2 0.01092, mlp3 0.001678, attn3 0.0001047
+e54-cipher_s2_scaled_e54_matched reading 3: S 0.991906233355507, KL(F || H) 0.0261384, max relative logit error 0.148; site residuals mlp0 2.94e-05, attn0 0.0003581, mlp1 3.06e-07, attn1 0.0001786, mlp2 1.392e-05, attn2 0.0008036, mlp3 1.725e-05, attn3 1.166e-05
+e54-cipher_s2_scaled_e54_matched: c 0.981323, size whole 0.00497314, MLP 0.00548784; done in 4 s
+projected minutes left in this job: 2.2
+c3-cipher_s1_scaled_open_pair_c3_copy: KL(F || M) 3.69797 (last position, 512 read windows); fit 3.6 s
+c3-cipher_s1_scaled_open_pair_c3_copy reading 1: S 0.022544201932290897, KL(F || H) 3.6146, max relative logit error 1.12; site residuals mlp0 0.00699, attn0 0.004823, mlp1 0.0001043, attn1 0.004355, mlp2 0.002167, attn2 0.008247, mlp3 0.001523, attn3 0.0001085
+c3-cipher_s1_scaled_open_pair_c3_copy reading 2: S 0.00809863667440891, KL(F || H) 3.66802, max relative logit error 1.12; site residuals mlp0 0.007272, attn0 0.004823, mlp1 0.0001033, attn1 0.004355, mlp2 0.002113, attn2 0.008247, mlp3 0.001666, attn3 0.0001085
+c3-cipher_s1_scaled_open_pair_c3_copy reading 3: S 0.9904064181683173, KL(F || H) 0.0354767, max relative logit error 0.372; site residuals mlp0 3.035e-05, attn0 0.0003733, mlp1 3.223e-07, attn1 0.000193, mlp2 1.442e-05, attn2 0.0007765, mlp3 1.67e-05, attn3 9.773e-06
+c3-cipher_s1_scaled_open_pair_c3_copy: c 0.990078, size whole 0.00499316, MLP 0.00551073; done in 4 s
+projected minutes left in this job: 1.3
+e54-cipher_s3_scaled_e54_matched: KL(F || M) 3.69711 (last position, 512 read windows); fit 3.3 s
+e54-cipher_s3_scaled_e54_matched reading 1: S 0.019323052146763553, KL(F || H) 3.62567, max relative logit error 1.18; site residuals mlp0 0.007177, attn0 0.00428, mlp1 0.0001103, attn1 0.004476, mlp2 0.002313, attn2 0.01232, mlp3 0.001587, attn3 0.0001053
+e54-cipher_s3_scaled_e54_matched reading 2: S 0.006274461815287458, KL(F || H) 3.67391, max relative logit error 1.18; site residuals mlp0 0.007509, attn0 0.00428, mlp1 0.0001091, attn1 0.004476, mlp2 0.002271, attn2 0.01232, mlp3 0.001745, attn3 0.0001053
+e54-cipher_s3_scaled_e54_matched reading 3: S 0.9886113912634027, KL(F || H) 0.0421049, max relative logit error 0.14; site residuals mlp0 3.06e-05, attn0 0.0004333, mlp1 3.364e-07, attn1 0.0001866, mlp2 1.421e-05, attn2 0.0009094, mlp3 1.787e-05, attn3 9.115e-06
+e54-cipher_s3_scaled_e54_matched: c 0.981323, size whole 0.0050234, MLP 0.00554297; done in 3 s
+projected minutes left in this job: 2.1
+c3-cipher_s2_scaled_open_pair_c3_copy: KL(F || M) 3.55278 (last position, 512 read windows); fit 3.4 s
+c3-cipher_s2_scaled_open_pair_c3_copy reading 1: S 0.02306743204244377, KL(F || H) 3.47082, max relative logit error 1.16; site residuals mlp0 0.006243, attn0 0.004175, mlp1 0.0001021, attn1 0.003727, mlp2 0.00208, attn2 0.009241, mlp3 0.001417, attn3 9.48e-05
+c3-cipher_s2_scaled_open_pair_c3_copy reading 2: S 0.008100805747043749, KL(F || H) 3.524, max relative logit error 1.18; site residuals mlp0 0.006568, attn0 0.004175, mlp1 0.0001014, attn1 0.003727, mlp2 0.002031, attn2 0.009241, mlp3 0.001552, attn3 9.48e-05
+c3-cipher_s2_scaled_open_pair_c3_copy reading 3: S 0.9910416624786633, KL(F || H) 0.031827, max relative logit error 0.303; site residuals mlp0 2.767e-05, attn0 0.0003254, mlp1 2.969e-07, attn1 0.0001326, mlp2 1.337e-05, attn2 0.0007032, mlp3 1.577e-05, attn3 7.728e-06
+c3-cipher_s2_scaled_open_pair_c3_copy: c 0.990078, size whole 0.00481108, MLP 0.0053217; done in 4 s
+projected minutes left in this job: 1.3
+e54-cipher_s4_scaled_e54_matched: KL(F || M) 3.6403 (last position, 512 read windows); fit 3.3 s
+e54-cipher_s4_scaled_e54_matched reading 1: S 0.021467123026104762, KL(F || H) 3.56215, max relative logit error 1.16; site residuals mlp0 0.007235, attn0 0.004312, mlp1 0.0001081, attn1 0.004129, mlp2 0.002254, attn2 0.01132, mlp3 0.001621, attn3 0.0001099
+e54-cipher_s4_scaled_e54_matched reading 2: S 0.006795719649761223, KL(F || H) 3.61556, max relative logit error 1.17; site residuals mlp0 0.007513, attn0 0.004312, mlp1 0.0001069, attn1 0.004129, mlp2 0.002201, attn2 0.01132, mlp3 0.001799, attn3 0.0001099
+e54-cipher_s4_scaled_e54_matched reading 3: S 0.9891143740671117, KL(F || H) 0.0396269, max relative logit error 0.243; site residuals mlp0 3.305e-05, attn0 0.0004059, mlp1 3.336e-07, attn1 0.0001931, mlp2 1.434e-05, attn2 0.000853, mlp3 1.847e-05, attn3 1.095e-05
+e54-cipher_s4_scaled_e54_matched: c 0.981323, size whole 0.00502186, MLP 0.00553231; done in 3 s
+projected minutes left in this job: 2.0
+STAGE 4 DONE (e54_matched)
+c3-cipher_s3_scaled_open_pair_c3_copy: KL(F || M) 3.48099 (last position, 512 read windows); fit 3.4 s
+c3-cipher_s3_scaled_open_pair_c3_copy reading 1: S 0.02389467501272724, KL(F || H) 3.39781, max relative logit error 1.27; site residuals mlp0 0.006203, attn0 0.004062, mlp1 9.656e-05, attn1 0.003584, mlp2 0.002004, attn2 0.008623, mlp3 0.001452, attn3 9.979e-05
+c3-cipher_s3_scaled_open_pair_c3_copy reading 2: S 0.00936962747891601, KL(F || H) 3.44837, max relative logit error 1.27; site residuals mlp0 0.006537, attn0 0.004062, mlp1 9.581e-05, attn1 0.003584, mlp2 0.001959, attn2 0.008623, mlp3 0.001595, attn3 9.979e-05
+c3-cipher_s3_scaled_open_pair_c3_copy reading 3: S 0.9916719543545182, KL(F || H) 0.0289898, max relative logit error 0.155; site residuals mlp0 2.688e-05, attn0 0.0003302, mlp1 2.937e-07, attn1 0.0001262, mlp2 1.314e-05, attn2 0.000742, mlp3 1.608e-05, attn3 8.904e-06
+c3-cipher_s3_scaled_open_pair_c3_copy: c 0.990078, size whole 0.00475666, MLP 0.00527259; done in 3 s
+projected minutes left in this job: 1.2
+e54-cipher_own_s0: KL(F || M) 6.10054 (last position, 512 read windows); fit 3.3 s
+e54-cipher_own_s0 reading 1: S 0.0099899499089815, KL(F || H) 6.0396, max relative logit error 1.31; site residuals mlp0 0.0143, attn0 0.04508, mlp1 8.256e-05, attn1 0.00802, mlp2 0.003483, attn2 0.01009, mlp3 0.003136, attn3 0.0001439
+e54-cipher_own_s0 reading 2: S -0.004191307943302469, KL(F || H) 6.12611, max relative logit error 1.32; site residuals mlp0 0.01547, attn0 0.04508, mlp1 8.608e-05, attn1 0.00802, mlp2 0.003537, attn2 0.01009, mlp3 0.00344, attn3 0.0001439
+e54-cipher_own_s0 reading 3: S 0.9966547311792826, KL(F || H) 0.020408, max relative logit error 0.364; site residuals mlp0 9.523e-05, attn0 0.001667, mlp1 1.048e-06, attn1 0.0004856, mlp2 4.85e-05, attn2 0.001477, mlp3 6.065e-05, attn3 2.505e-05
+e54-cipher_own_s0: c 1, size whole 0.00956113, MLP 0.0106053; done in 3 s
+projected minutes left in this job: 2.0
+c3-cipher_s4_scaled_open_pair_c3_copy: KL(F || M) 3.45075 (last position, 512 read windows); fit 3.4 s
+c3-cipher_s4_scaled_open_pair_c3_copy reading 1: S 0.021587385099513856, KL(F || H) 3.37626, max relative logit error 1.22; site residuals mlp0 0.006357, attn0 0.004131, mlp1 9.899e-05, attn1 0.00405, mlp2 0.002022, attn2 0.008412, mlp3 0.001467, attn3 9.64e-05
+c3-cipher_s4_scaled_open_pair_c3_copy reading 2: S 0.005880351878985057, KL(F || H) 3.43046, max relative logit error 1.22; site residuals mlp0 0.006597, attn0 0.004131, mlp1 9.856e-05, attn1 0.00405, mlp2 0.001972, attn2 0.008412, mlp3 0.001616, attn3 9.64e-05
+c3-cipher_s4_scaled_open_pair_c3_copy reading 3: S 0.9917056147730645, KL(F || H) 0.0286219, max relative logit error 0.49; site residuals mlp0 2.778e-05, attn0 0.0003514, mlp1 2.988e-07, attn1 0.0001497, mlp2 1.3e-05, attn2 0.0007499, mlp3 1.667e-05, attn3 9.851e-06
+c3-cipher_s4_scaled_open_pair_c3_copy: c 0.990078, size whole 0.00478034, MLP 0.00527956; done in 3 s
+projected minutes left in this job: 1.2
+e54-cipher_own_s1: KL(F || M) 5.88838 (last position, 512 read windows); fit 3.3 s
+e54-cipher_own_s1 reading 1: S 0.01332379867251321, KL(F || H) 5.80993, max relative logit error 1.35; site residuals mlp0 0.01545, attn0 0.04667, mlp1 9.062e-05, attn1 0.008117, mlp2 0.003681, attn2 0.01155, mlp3 0.002847, attn3 0.0001558
+e54-cipher_own_s1 reading 2: S -0.004927832696772327, KL(F || H) 5.9174, max relative logit error 1.36; site residuals mlp0 0.0167, attn0 0.04667, mlp1 9.415e-05, attn1 0.008117, mlp2 0.003755, attn2 0.01155, mlp3 0.003176, attn3 0.0001558
+e54-cipher_own_s1 reading 3: S 0.9961595343893858, KL(F || H) 0.0226141, max relative logit error 0.524; site residuals mlp0 9.932e-05, attn0 0.001844, mlp1 1.034e-06, attn1 0.0005536, mlp2 4.706e-05, attn2 0.001618, mlp3 5.723e-05, attn3 2.543e-05
+e54-cipher_own_s1: c 1, size whole 0.00954223, MLP 0.010571; done in 3 s
+projected minutes left in this job: 1.9
+c3-cipher_s5_scaled_open_pair_c3_copy: KL(F || M) 3.3463 (last position, 512 read windows); fit 3.4 s
+c3-cipher_s5_scaled_open_pair_c3_copy reading 1: S 0.02324515113386394, KL(F || H) 3.26852, max relative logit error 1.28; site residuals mlp0 0.007267, attn0 0.005265, mlp1 9.837e-05, attn1 0.004143, mlp2 0.002126, attn2 0.008991, mlp3 0.001534, attn3 9.68e-05
+c3-cipher_s5_scaled_open_pair_c3_copy reading 2: S 0.007125538148074928, KL(F || H) 3.32246, max relative logit error 1.29; site residuals mlp0 0.007603, attn0 0.005265, mlp1 9.784e-05, attn1 0.004143, mlp2 0.002071, attn2 0.008991, mlp3 0.001686, attn3 9.68e-05
+c3-cipher_s5_scaled_open_pair_c3_copy reading 3: S 0.9930151870230265, KL(F || H) 0.0233733, max relative logit error 0.534; site residuals mlp0 3.077e-05, attn0 0.0003755, mlp1 3.063e-07, attn1 0.0001749, mlp2 1.427e-05, attn2 0.0007314, mlp3 1.734e-05, attn3 7.571e-06
+c3-cipher_s5_scaled_open_pair_c3_copy: c 0.990078, size whole 0.00501597, MLP 0.00555003; done in 3 s
+projected minutes left in this job: 1.1
+e54-cipher_own_s0_scaled_e54_own: KL(F || M) 1.60378 (last position, 512 read windows); fit 3.3 s
+e54-cipher_own_s0_scaled_e54_own reading 1: S 0.012133352094187089, KL(F || H) 1.58432, max relative logit error 1.09; site residuals mlp0 0.003926, attn0 0.01112, mlp1 2.25e-05, attn1 0.002189, mlp2 0.0009522, attn2 0.002733, mlp3 0.0008544, attn3 3.948e-05
+e54-cipher_own_s0_scaled_e54_own reading 2: S -0.0025763144064574472, KL(F || H) 1.60791, max relative logit error 1.1; site residuals mlp0 0.004245, attn0 0.01112, mlp1 2.346e-05, attn1 0.002189, mlp2 0.0009669, attn2 0.002733, mlp3 0.000937, attn3 3.948e-05
+e54-cipher_own_s0_scaled_e54_own reading 3: S 0.9669899939796137, KL(F || H) 0.0529408, max relative logit error 0.146; site residuals mlp0 2.627e-05, attn0 0.0004036, mlp1 2.848e-07, attn1 0.0001317, mlp2 1.324e-05, attn2 0.0003838, mlp3 1.652e-05, attn3 6.862e-06
+e54-cipher_own_s0_scaled_e54_own: c 0.52167, size whole 0.00498775, MLP 0.00553249; done in 3 s
+projected minutes left in this job: 1.8
+c3-cipher_s6_scaled_open_pair_c3_copy: KL(F || M) 3.84069 (last position, 512 read windows); fit 3.4 s
+c3-cipher_s6_scaled_open_pair_c3_copy reading 1: S 0.02389052477420861, KL(F || H) 3.74893, max relative logit error 1.19; site residuals mlp0 0.006383, attn0 0.003829, mlp1 9.863e-05, attn1 0.0037, mlp2 0.002081, attn2 0.008612, mlp3 0.001339, attn3 9.677e-05
+c3-cipher_s6_scaled_open_pair_c3_copy reading 2: S 0.007345173303864416, KL(F || H) 3.81248, max relative logit error 1.21; site residuals mlp0 0.006705, attn0 0.003829, mlp1 9.75e-05, attn1 0.0037, mlp2 0.00203, attn2 0.008612, mlp3 0.001473, attn3 9.677e-05
+c3-cipher_s6_scaled_open_pair_c3_copy reading 3: S 0.9939268691785056, KL(F || H) 0.023325, max relative logit error 0.537; site residuals mlp0 2.874e-05, attn0 0.0003551, mlp1 2.928e-07, attn1 0.000119, mlp2 1.305e-05, attn2 0.0006529, mlp3 1.574e-05, attn3 8.988e-06
+c3-cipher_s6_scaled_open_pair_c3_copy: c 0.990078, size whole 0.00476112, MLP 0.00525674; done in 3 s
+projected minutes left in this job: 1.1
+e54-cipher_own_s1_scaled_e54_own: KL(F || M) 1.45654 (last position, 512 read windows); fit 3.3 s
+e54-cipher_own_s1_scaled_e54_own reading 1: S 0.015055574806892125, KL(F || H) 1.43461, max relative logit error 1.04; site residuals mlp0 0.004236, attn0 0.01161, mlp1 2.469e-05, attn1 0.002209, mlp2 0.001006, attn2 0.003154, mlp3 0.0007758, attn3 4.199e-05
+e54-cipher_own_s1_scaled_e54_own reading 2: S -0.003408415934913256, KL(F || H) 1.4615, max relative logit error 1.05; site residuals mlp0 0.004579, attn0 0.01161, mlp1 2.566e-05, attn1 0.002209, mlp2 0.001026, attn2 0.003154, mlp3 0.0008654, attn3 4.199e-05
+e54-cipher_own_s1_scaled_e54_own reading 3: S 0.9704905253834727, KL(F || H) 0.0429816, max relative logit error 0.175; site residuals mlp0 2.737e-05, attn0 0.0004526, mlp1 2.808e-07, attn1 0.000147, mlp2 1.283e-05, attn2 0.0004321, mlp3 1.559e-05, attn3 6.808e-06
+e54-cipher_own_s1_scaled_e54_own: c 0.52167, size whole 0.0049779, MLP 0.00551459; done in 3 s
+projected minutes left in this job: 1.7
+STAGE 5 DONE (e54_own)
+c3-cipher_s7_scaled_open_pair_c3_copy: KL(F || M) 3.96328 (last position, 512 read windows); fit 3.5 s
+c3-cipher_s7_scaled_open_pair_c3_copy reading 1: S 0.021616807131152438, KL(F || H) 3.8776, max relative logit error 1.3; site residuals mlp0 0.006549, attn0 0.00433, mlp1 0.0001002, attn1 0.003785, mlp2 0.001931, attn2 0.007986, mlp3 0.001332, attn3 9.084e-05
+c3-cipher_s7_scaled_open_pair_c3_copy reading 2: S 0.006632896412078204, KL(F || H) 3.93699, max relative logit error 1.32; site residuals mlp0 0.006893, attn0 0.00433, mlp1 9.981e-05, attn1 0.003785, mlp2 0.001889, attn2 0.007986, mlp3 0.001466, attn3 9.084e-05
+c3-cipher_s7_scaled_open_pair_c3_copy reading 3: S 0.9915942407666481, KL(F || H) 0.0333144, max relative logit error 0.168; site residuals mlp0 2.764e-05, attn0 0.0004404, mlp1 2.93e-07, attn1 0.0001332, mlp2 1.266e-05, attn2 0.0008576, mlp3 1.533e-05, attn3 8.584e-06
+c3-cipher_s7_scaled_open_pair_c3_copy: c 0.990078, size whole 0.00477453, MLP 0.00527699; done in 4 s
+projected minutes left in this job: 1.0
+STAGE 7 DONE (open_pair_c3_copy)
+c3-rank1_s0: KL(F || M) 2.08221 (last position, 512 read windows); fit 3.3 s
+c3-rank1_s0 reading 1: S 0.03639866038090589, KL(F || H) 2.00642, max relative logit error 1.02; site residuals mlp0 0.004739, attn0 0.005268, mlp1 5.387e-05, attn1 0.002921, mlp2 0.00113, attn2 0.005734, mlp3 0.0006759, attn3 5.008e-05
+c3-rank1_s0 reading 2: S 0.002744370586594491, KL(F || H) 2.0765, max relative logit error 1.04; site residuals mlp0 0.005143, attn0 0.005268, mlp1 5.429e-05, attn1 0.002921, mlp2 0.001137, attn2 0.005734, mlp3 0.0007587, attn3 5.008e-05
+c3-rank1_s0 reading 3: S 0.997675744190606, KL(F || H) 0.0048396, max relative logit error 0.113; site residuals mlp0 2.869e-05, attn0 0.0003878, mlp1 3.002e-07, attn1 0.0001709, mlp2 1.247e-05, attn2 0.0006526, mlp3 1.559e-05, attn3 1.013e-05
+c3-rank1_s0: c 1, size whole 0.00498942, MLP 0.00545244; done in 3 s
+projected minutes left in this job: 1.6
+e58-rank1_s0: KL(F || M) 1.99793 (last position, 512 read windows); fit 3.5 s
+e58-rank1_s0 reading 1: S 0.032871985815779214, KL(F || H) 1.93226, max relative logit error 1.11; site residuals mlp0 0.007446, attn0 0.02021, mlp1 5.214e-05, attn1 0.005269, mlp2 0.001645, attn2 0.006728, mlp3 0.0008583, attn3 8.889e-05
+e58-rank1_s0 reading 2: S -0.0034365765674360116, KL(F || H) 2.0048, max relative logit error 1.12; site residuals mlp0 0.008107, attn0 0.02021, mlp1 5.404e-05, attn1 0.005269, mlp2 0.001713, attn2 0.006728, mlp3 0.0009925, attn3 8.889e-05
+e58-rank1_s0 reading 3: S 0.9930601717650444, KL(F || H) 0.0138653, max relative logit error 0.263; site residuals mlp0 6.34e-05, attn0 0.00087, mlp1 7.627e-07, attn1 0.0002402, mlp2 3.07e-05, attn2 0.001365, mlp3 3.49e-05, attn3 2.08e-05
+e58-rank1_s0: c 1, size whole 0.00787247, MLP 0.00858239; done in 4 s
+projected minutes left in this job: 1.0
+c3-rank1_s1: KL(F || M) 2.07902 (last position, 512 read windows); fit 3.4 s
+c3-rank1_s1 reading 1: S 0.03572212071190617, KL(F || H) 2.00475, max relative logit error 1.03; site residuals mlp0 0.005196, attn0 0.004627, mlp1 5.413e-05, attn1 0.002903, mlp2 0.001144, attn2 0.005775, mlp3 0.0006398, attn3 4.855e-05
+c3-rank1_s1 reading 2: S 0.00404013576203166, KL(F || H) 2.07062, max relative logit error 1.04; site residuals mlp0 0.005598, attn0 0.004627, mlp1 5.425e-05, attn1 0.002903, mlp2 0.001143, attn2 0.005775, mlp3 0.0007109, attn3 4.855e-05
+c3-rank1_s1 reading 3: S 0.9970471131468265, KL(F || H) 0.00613911, max relative logit error 0.123; site residuals mlp0 2.919e-05, attn0 0.0004527, mlp1 2.88e-07, attn1 0.0001781, mlp2 1.223e-05, attn2 0.0006511, mlp3 1.408e-05, attn3 9.668e-06
+c3-rank1_s1: c 1, size whole 0.00485719, MLP 0.00529245; done in 4 s
+projected minutes left in this job: 1.6
+e58-rank1_s1: KL(F || M) 2.10586 (last position, 512 read windows); fit 3.5 s
+e58-rank1_s1 reading 1: S 0.03368196585179528, KL(F || H) 2.03493, max relative logit error 1.11; site residuals mlp0 0.008037, attn0 0.02425, mlp1 5.731e-05, attn1 0.005523, mlp2 0.001797, attn2 0.007771, mlp3 0.0009061, attn3 9.828e-05
+e58-rank1_s1 reading 2: S -0.0016822702557754976, KL(F || H) 2.1094, max relative logit error 1.12; site residuals mlp0 0.008823, attn0 0.02425, mlp1 5.958e-05, attn1 0.005523, mlp2 0.001871, attn2 0.007771, mlp3 0.001055, attn3 9.828e-05
+e58-rank1_s1 reading 3: S 0.9924967363112736, KL(F || H) 0.0158008, max relative logit error 0.16; site residuals mlp0 6.416e-05, attn0 0.0009214, mlp1 7.565e-07, attn1 0.0004331, mlp2 3.131e-05, attn2 0.001403, mlp3 3.579e-05, attn3 2.03e-05
+e58-rank1_s1: c 1, size whole 0.00795822, MLP 0.00868432; done in 4 s
+projected minutes left in this job: 0.9
+c3-rank1_s2: KL(F || M) 1.96217 (last position, 512 read windows); fit 3.4 s
+c3-rank1_s2 reading 1: S 0.03819982254616383, KL(F || H) 1.88721, max relative logit error 1.02; site residuals mlp0 0.004906, attn0 0.005661, mlp1 5.535e-05, attn1 0.003163, mlp2 0.001166, attn2 0.005444, mlp3 0.0006685, attn3 4.914e-05
+c3-rank1_s2 reading 2: S 0.0028110829751825106, KL(F || H) 1.95665, max relative logit error 1.03; site residuals mlp0 0.005294, attn0 0.005661, mlp1 5.571e-05, attn1 0.003163, mlp2 0.001172, attn2 0.005444, mlp3 0.0007415, attn3 4.914e-05
+c3-rank1_s2 reading 3: S 0.9971850266791569, KL(F || H) 0.00552344, max relative logit error 0.157; site residuals mlp0 2.936e-05, attn0 0.0004638, mlp1 3.034e-07, attn1 0.0002046, mlp2 1.283e-05, attn2 0.0007207, mlp3 1.506e-05, attn3 1.067e-05
+c3-rank1_s2: c 1, size whole 0.00493902, MLP 0.00537916; done in 3 s
+projected minutes left in this job: 1.5
+e58-rank1_s2: KL(F || M) 2.01227 (last position, 512 read windows); fit 3.4 s
+e58-rank1_s2 reading 1: S 0.03535400552922707, KL(F || H) 1.94113, max relative logit error 1.05; site residuals mlp0 0.007521, attn0 0.02316, mlp1 6.504e-05, attn1 0.005358, mlp2 0.001925, attn2 0.008274, mlp3 0.000932, attn3 9.378e-05
+e58-rank1_s2 reading 2: S -0.0015169080107468869, KL(F || H) 2.01532, max relative logit error 1.06; site residuals mlp0 0.008188, attn0 0.02316, mlp1 6.671e-05, attn1 0.005358, mlp2 0.001998, attn2 0.008274, mlp3 0.001077, attn3 9.378e-05
+e58-rank1_s2 reading 3: S 0.9918912505426362, KL(F || H) 0.016317, max relative logit error 0.211; site residuals mlp0 6.386e-05, attn0 0.001098, mlp1 7.662e-07, attn1 0.0002871, mlp2 3.098e-05, attn2 0.001389, mlp3 3.474e-05, attn3 2.135e-05
+e58-rank1_s2: c 1, size whole 0.00797872, MLP 0.0087069; done in 4 s
+projected minutes left in this job: 0.9
+c3-rank1_s3: KL(F || M) 1.94622 (last position, 512 read windows); fit 3.3 s
+c3-rank1_s3 reading 1: S 0.036753903509235464, KL(F || H) 1.87469, max relative logit error 1.03; site residuals mlp0 0.005114, attn0 0.005069, mlp1 5.009e-05, attn1 0.00302, mlp2 0.001036, attn2 0.005231, mlp3 0.0006942, attn3 4.792e-05
+c3-rank1_s3 reading 2: S 0.0019171053013399275, KL(F || H) 1.94249, max relative logit error 1.05; site residuals mlp0 0.005495, attn0 0.005069, mlp1 5.033e-05, attn1 0.00302, mlp2 0.001045, attn2 0.005231, mlp3 0.0007766, attn3 4.792e-05
+c3-rank1_s3 reading 3: S 0.9970958673190568, KL(F || H) 0.00565209, max relative logit error 0.123; site residuals mlp0 2.859e-05, attn0 0.0004976, mlp1 2.954e-07, attn1 0.00015, mlp2 1.238e-05, attn2 0.0006441, mlp3 1.594e-05, attn3 9.059e-06
+c3-rank1_s3: c 1, size whole 0.00495103, MLP 0.0054105; done in 3 s
+projected minutes left in this job: 1.4
+e58-cipher_s0: KL(F || M) 5.23929 (last position, 512 read windows); fit 3.5 s
+e58-cipher_s0 reading 1: S 0.015052378274590827, KL(F || H) 5.16043, max relative logit error 1.31; site residuals mlp0 0.01727, attn0 0.0234, mlp1 0.000153, attn1 0.008862, mlp2 0.004413, attn2 0.0158, mlp3 0.003692, attn3 0.0002213
+e58-cipher_s0 reading 2: S -0.0016237088411941158, KL(F || H) 5.2478, max relative logit error 1.3; site residuals mlp0 0.0184, attn0 0.0234, mlp1 0.0001539, attn1 0.008862, mlp2 0.004402, attn2 0.0158, mlp3 0.004076, attn3 0.0002213
+e58-cipher_s0 reading 3: S 0.9779109258270866, KL(F || H) 0.115731, max relative logit error 0.374; site residuals mlp0 0.0001051, attn0 0.001273, mlp1 9.977e-07, attn1 0.0004324, mlp2 4.502e-05, attn2 0.001607, mlp3 5.755e-05, attn3 2.674e-05
+e58-cipher_s0: c 1, size whole 0.00971975, MLP 0.0108187; done in 4 s
+projected minutes left in this job: 0.8
+c3-rank1_s4: KL(F || M) 2.11881 (last position, 512 read windows); fit 3.3 s
+c3-rank1_s4 reading 1: S 0.03838758078969284, KL(F || H) 2.03747, max relative logit error 1.03; site residuals mlp0 0.005192, attn0 0.00479, mlp1 5.762e-05, attn1 0.003419, mlp2 0.001267, attn2 0.005361, mlp3 0.0006808, attn3 6.126e-05
+c3-rank1_s4 reading 2: S 0.007787004953258125, KL(F || H) 2.10231, max relative logit error 1.04; site residuals mlp0 0.00558, attn0 0.00479, mlp1 5.802e-05, attn1 0.003419, mlp2 0.001265, attn2 0.005361, mlp3 0.0007547, attn3 6.126e-05
+c3-rank1_s4 reading 3: S 0.9973268022208835, KL(F || H) 0.00566399, max relative logit error 0.123; site residuals mlp0 2.973e-05, attn0 0.0004187, mlp1 3.059e-07, attn1 0.0002048, mlp2 1.299e-05, attn2 0.0006107, mlp3 1.513e-05, attn3 1.339e-05
+c3-rank1_s4: c 1, size whole 0.00499611, MLP 0.00543824; done in 3 s
+projected minutes left in this job: 1.3
+e58-cipher_s1: KL(F || M) 5.32303 (last position, 512 read windows); fit 3.5 s
+e58-cipher_s1 reading 1: S 0.014696233274186121, KL(F || H) 5.2448, max relative logit error 1.27; site residuals mlp0 0.01813, attn0 0.0232, mlp1 0.0001563, attn1 0.009728, mlp2 0.004558, attn2 0.01534, mlp3 0.003925, attn3 0.0001955
+e58-cipher_s1 reading 2: S -0.0024818884930317697, KL(F || H) 5.33624, max relative logit error 1.28; site residuals mlp0 0.01956, attn0 0.0232, mlp1 0.0001578, attn1 0.009728, mlp2 0.004575, attn2 0.01534, mlp3 0.004318, attn3 0.0001955
+e58-cipher_s1 reading 3: S 0.9794067475550445, KL(F || H) 0.109619, max relative logit error 0.294; site residuals mlp0 0.0001086, attn0 0.001332, mlp1 1.034e-06, attn1 0.0005358, mlp2 4.76e-05, attn2 0.001671, mlp3 5.878e-05, attn3 2.587e-05
+e58-cipher_s1: c 1, size whole 0.0097412, MLP 0.0108441; done in 4 s
+projected minutes left in this job: 0.7
+c3-rank1_s5: KL(F || M) 2.0609 (last position, 512 read windows); fit 3.4 s
+c3-rank1_s5 reading 1: S 0.03717142792475081, KL(F || H) 1.98429, max relative logit error 1.03; site residuals mlp0 0.005655, attn0 0.005784, mlp1 5.425e-05, attn1 0.002771, mlp2 0.001121, attn2 0.00569, mlp3 0.0006361, attn3 4.509e-05
+c3-rank1_s5 reading 2: S 0.003375295476603979, KL(F || H) 2.05394, max relative logit error 1.05; site residuals mlp0 0.006185, attn0 0.005784, mlp1 5.444e-05, attn1 0.002771, mlp2 0.00113, attn2 0.00569, mlp3 0.0007078, attn3 4.509e-05
+c3-rank1_s5 reading 3: S 0.9975703477879235, KL(F || H) 0.00500727, max relative logit error 0.138; site residuals mlp0 3.085e-05, attn0 0.0003915, mlp1 2.938e-07, attn1 0.0001621, mlp2 1.213e-05, attn2 0.0007414, mlp3 1.48e-05, attn3 7.938e-06
+c3-rank1_s5: c 1, size whole 0.00490425, MLP 0.00533953; done in 4 s
+projected minutes left in this job: 1.3
+e58-cipher_s2: KL(F || M) 5.07332 (last position, 512 read windows); fit 3.5 s
+e58-cipher_s2 reading 1: S 0.014774015575711674, KL(F || H) 4.99837, max relative logit error 1.26; site residuals mlp0 0.01897, attn0 0.02917, mlp1 0.0001652, attn1 0.009869, mlp2 0.004388, attn2 0.01596, mlp3 0.003778, attn3 0.0002059
+e58-cipher_s2 reading 2: S -0.0031908114683547595, KL(F || H) 5.08951, max relative logit error 1.27; site residuals mlp0 0.0202, attn0 0.02917, mlp1 0.0001662, attn1 0.009869, mlp2 0.004384, attn2 0.01596, mlp3 0.00417, attn3 0.0002059
+e58-cipher_s2 reading 3: S 0.9751757183087087, KL(F || H) 0.125941, max relative logit error 0.35; site residuals mlp0 0.0001076, attn0 0.00153, mlp1 1.019e-06, attn1 0.0004088, mlp2 4.596e-05, attn2 0.002069, mlp3 5.802e-05, attn3 2.359e-05
+e58-cipher_s2: c 1, size whole 0.00966904, MLP 0.0107278; done in 4 s
+projected minutes left in this job: 0.7
+c3-rank1_s6: KL(F || M) 2.03014 (last position, 512 read windows); fit 3.5 s
+c3-rank1_s6 reading 1: S 0.03785817306018602, KL(F || H) 1.95329, max relative logit error 1.02; site residuals mlp0 0.004725, attn0 0.005313, mlp1 5.077e-05, attn1 0.003006, mlp2 0.001112, attn2 0.005343, mlp3 0.0006413, attn3 5.007e-05
+c3-rank1_s6 reading 2: S 0.002663989617770479, KL(F || H) 2.02474, max relative logit error 1.04; site residuals mlp0 0.00512, attn0 0.005313, mlp1 5.106e-05, attn1 0.003006, mlp2 0.001108, attn2 0.005343, mlp3 0.0007111, attn3 5.007e-05
+c3-rank1_s6 reading 3: S 0.9977746645063267, KL(F || H) 0.00451775, max relative logit error 0.137; site residuals mlp0 2.812e-05, attn0 0.0003766, mlp1 2.886e-07, attn1 0.0001558, mlp2 1.247e-05, attn2 0.0007627, mlp3 1.504e-05, attn3 9.018e-06
+c3-rank1_s6: c 1, size whole 0.00493568, MLP 0.00537405; done in 4 s
+projected minutes left in this job: 1.2
+e58-cipher_s0_scaled_e58_rank1_96: KL(F || M) 4.02533 (last position, 512 read windows); fit 3.6 s
+e58-cipher_s0_scaled_e58_rank1_96 reading 1: S 0.015082730462799399, KL(F || H) 3.96462, max relative logit error 1.19; site residuals mlp0 0.01153, attn0 0.01536, mlp1 0.0001023, attn1 0.005899, mlp2 0.002955, attn2 0.01067, mlp3 0.002467, attn3 0.000147
+e58-cipher_s0_scaled_e58_rank1_96 reading 2: S -0.0012168079340439952, KL(F || H) 4.03023, max relative logit error 1.2; site residuals mlp0 0.01228, attn0 0.01536, mlp1 0.0001029, attn1 0.005899, mlp2 0.002947, attn2 0.01067, mlp3 0.002724, attn3 0.000147
+e58-cipher_s0_scaled_e58_rank1_96 reading 3: S 0.9637070702827278, KL(F || H) 0.146091, max relative logit error 0.248; site residuals mlp0 7.029e-05, attn0 0.0008318, mlp1 6.659e-07, attn1 0.0002882, mlp2 3.011e-05, attn2 0.001078, mlp3 3.845e-05, attn3 1.779e-05
+e58-cipher_s0_scaled_e58_rank1_96: c 0.817351, size whole 0.00794444, MLP 0.00884269; done in 4 s
+projected minutes left in this job: 0.6
+c3-rank1_s7: KL(F || M) 2.11648 (last position, 512 read windows); fit 3.5 s
+c3-rank1_s7 reading 1: S 0.035545478737224356, KL(F || H) 2.04125, max relative logit error 1.03; site residuals mlp0 0.005391, attn0 0.006, mlp1 5.528e-05, attn1 0.003064, mlp2 0.001035, attn2 0.006272, mlp3 0.0005857, attn3 4.999e-05
+c3-rank1_s7 reading 2: S 0.003177788715385099, KL(F || H) 2.10976, max relative logit error 1.05; site residuals mlp0 0.005845, attn0 0.006, mlp1 5.544e-05, attn1 0.003064, mlp2 0.00104, attn2 0.006272, mlp3 0.0006521, attn3 4.999e-05
+c3-rank1_s7 reading 3: S 0.9970108568732257, KL(F || H) 0.00632647, max relative logit error 0.113; site residuals mlp0 2.999e-05, attn0 0.0004956, mlp1 2.945e-07, attn1 0.0001714, mlp2 1.203e-05, attn2 0.0008147, mlp3 1.414e-05, attn3 1.008e-05
+c3-rank1_s7: c 1, size whole 0.00491259, MLP 0.00534771; done in 4 s
+projected minutes left in this job: 1.1
+c3-cipher_s0: done before, skipped
+projected minutes left in this job: 1.0
+e58-cipher_s1_scaled_e58_rank1_96: KL(F || M) 4.00939 (last position, 512 read windows); fit 3.6 s
+e58-cipher_s1_scaled_e58_rank1_96 reading 1: S 0.01506754914298658, KL(F || H) 3.94898, max relative logit error 1.27; site residuals mlp0 0.01212, attn0 0.01527, mlp1 0.0001044, attn1 0.006459, mlp2 0.003051, attn2 0.01035, mlp3 0.002623, attn3 0.0001299
+e58-cipher_s1_scaled_e58_rank1_96 reading 2: S -0.0019411552758219486, KL(F || H) 4.01717, max relative logit error 1.28; site residuals mlp0 0.01307, attn0 0.01527, mlp1 0.0001054, attn1 0.006459, mlp2 0.003062, attn2 0.01035, mlp3 0.002886, attn3 0.0001299
+e58-cipher_s1_scaled_e58_rank1_96 reading 3: S 0.9588548198202588, KL(F || H) 0.164967, max relative logit error 0.31; site residuals mlp0 7.274e-05, attn0 0.0008714, mlp1 6.9e-07, attn1 0.0003555, mlp2 3.182e-05, attn2 0.001119, mlp3 3.927e-05, attn3 1.723e-05
+e58-cipher_s1_scaled_e58_rank1_96: c 0.817351, size whole 0.00796198, MLP 0.00886343; done in 4 s
+projected minutes left in this job: 0.6
+c3-cipher_s1: KL(F || M) 3.76011 (last position, 512 read windows); fit 3.5 s
+c3-cipher_s1 reading 1: S 0.022516768325392178, KL(F || H) 3.67544, max relative logit error 1.12; site residuals mlp0 0.00713, attn0 0.004921, mlp1 0.0001064, attn1 0.004442, mlp2 0.00221, attn2 0.00841, mlp3 0.001553, attn3 0.0001107
+c3-cipher_s1 reading 2: S 0.00809144864306599, KL(F || H) 3.72968, max relative logit error 1.12; site residuals mlp0 0.007417, attn0 0.004921, mlp1 0.0001054, attn1 0.004442, mlp2 0.002155, attn2 0.00841, mlp3 0.001699, attn3 0.0001107
+c3-cipher_s1 reading 3: S 0.9905098123604503, KL(F || H) 0.0356841, max relative logit error 0.381; site residuals mlp0 3.096e-05, attn0 0.0003809, mlp1 3.288e-07, attn1 0.0001969, mlp2 1.471e-05, attn2 0.0007921, mlp3 1.703e-05, attn3 9.969e-06
+c3-cipher_s1: c 1, size whole 0.0050432, MLP 0.00556595; done in 4 s
+projected minutes left in this job: 0.9
+e58-cipher_s2_scaled_e58_rank1_96: KL(F || M) 3.8983 (last position, 512 read windows); fit 3.5 s
+e58-cipher_s2_scaled_e58_rank1_96 reading 1: S 0.014956023374867344, KL(F || H) 3.84, max relative logit error 1.24; site residuals mlp0 0.01267, attn0 0.01913, mlp1 0.0001104, attn1 0.006557, mlp2 0.002938, attn2 0.01071, mlp3 0.002525, attn3 0.0001369
+e58-cipher_s2_scaled_e58_rank1_96 reading 2: S -0.0026031834043456215, KL(F || H) 3.90845, max relative logit error 1.24; site residuals mlp0 0.01349, attn0 0.01913, mlp1 0.0001111, attn1 0.006557, mlp2 0.002935, attn2 0.01071, mlp3 0.002787, attn3 0.0001369
+e58-cipher_s2_scaled_e58_rank1_96 reading 3: S 0.9569853719436735, KL(F || H) 0.167684, max relative logit error 0.376; site residuals mlp0 7.197e-05, attn0 0.0009961, mlp1 6.798e-07, attn1 0.0002709, mlp2 3.073e-05, attn2 0.001374, mlp3 3.877e-05, attn3 1.569e-05
+e58-cipher_s2_scaled_e58_rank1_96: c 0.817351, size whole 0.007903, MLP 0.00876839; done in 4 s
+projected minutes left in this job: 0.5
+STAGE 8 DONE (e58_rank1_96)
+c3-cipher_s2: KL(F || M) 3.61836 (last position, 512 read windows); fit 3.4 s
+c3-cipher_s2 reading 1: S 0.023023924943353702, KL(F || H) 3.53505, max relative logit error 1.16; site residuals mlp0 0.006368, attn0 0.004259, mlp1 0.0001041, attn1 0.003803, mlp2 0.002122, attn2 0.009422, mlp3 0.001445, attn3 9.672e-05
+c3-cipher_s2 reading 2: S 0.008067884576255957, KL(F || H) 3.58917, max relative logit error 1.18; site residuals mlp0 0.0067, attn0 0.004259, mlp1 0.0001034, attn1 0.003803, mlp2 0.002072, attn2 0.009422, mlp3 0.001583, attn3 9.672e-05
+c3-cipher_s2 reading 3: S 0.9910938169661528, KL(F || H) 0.0322258, max relative logit error 0.305; site residuals mlp0 2.822e-05, attn0 0.000332, mlp1 3.029e-07, attn1 0.0001353, mlp2 1.364e-05, attn2 0.0007171, mlp3 1.609e-05, attn3 7.882e-06
+c3-cipher_s2: c 1, size whole 0.00485929, MLP 0.00537503; done in 3 s
+projected minutes left in this job: 0.9
+e58-copy_s0: KL(F || M) 4.39838 (last position, 512 read windows); fit 3.4 s
+e58-copy_s0 reading 1: S 0.0184969328425576, KL(F || H) 4.31702, max relative logit error 1.12; site residuals mlp0 0.008878, attn0 0.01146, mlp1 5.827e-05, attn1 0.005135, mlp2 0.001724, attn2 0.006766, mlp3 0.0009351, attn3 0.0001018
+e58-copy_s0 reading 2: S -0.0006636680455993638, KL(F || H) 4.4013, max relative logit error 1.13; site residuals mlp0 0.009683, attn0 0.01146, mlp1 5.93e-05, attn1 0.005135, mlp2 0.001773, attn2 0.006766, mlp3 0.001066, attn3 0.0001018
+e58-copy_s0 reading 3: S 0.9949833180026005, KL(F || H) 0.0220653, max relative logit error 0.358; site residuals mlp0 5.994e-05, attn0 0.0008756, mlp1 6.24e-07, attn1 0.000334, mlp2 2.775e-05, attn2 0.001861, mlp3 2.469e-05, attn3 2.399e-05
+e58-copy_s0: c 1, size whole 0.00725026, MLP 0.00762529; done in 4 s
+projected minutes left in this job: 0.5
+c3-cipher_s3: KL(F || M) 3.54298 (last position, 512 read windows); fit 3.4 s
+c3-cipher_s3 reading 1: S 0.023856296204451954, KL(F || H) 3.45845, max relative logit error 1.27; site residuals mlp0 0.006327, attn0 0.004144, mlp1 9.85e-05, attn1 0.003656, mlp2 0.002044, attn2 0.008793, mlp3 0.001481, attn3 0.0001018
+c3-cipher_s3 reading 2: S 0.009354937076153869, KL(F || H) 3.50983, max relative logit error 1.27; site residuals mlp0 0.006668, attn0 0.004144, mlp1 9.773e-05, attn1 0.003656, mlp2 0.001998, attn2 0.008793, mlp3 0.001627, attn3 0.0001018
+c3-cipher_s3 reading 3: S 0.9917356756206246, KL(F || H) 0.0292803, max relative logit error 0.156; site residuals mlp0 2.742e-05, attn0 0.000337, mlp1 2.996e-07, attn1 0.0001288, mlp2 1.341e-05, attn2 0.0007567, mlp3 1.64e-05, attn3 9.083e-06
+c3-cipher_s3: c 1, size whole 0.00480433, MLP 0.00532543; done in 4 s
+projected minutes left in this job: 0.8
+e58-copy_s1: KL(F || M) 4.11365 (last position, 512 read windows); fit 3.5 s
+e58-copy_s1 reading 1: S 0.01700406305354807, KL(F || H) 4.0437, max relative logit error 1.12; site residuals mlp0 0.008928, attn0 0.01431, mlp1 5.631e-05, attn1 0.004957, mlp2 0.001797, attn2 0.007398, mlp3 0.0009682, attn3 0.0001182
+e58-copy_s1 reading 2: S -0.001870519214791866, KL(F || H) 4.12135, max relative logit error 1.13; site residuals mlp0 0.009748, attn0 0.01431, mlp1 5.767e-05, attn1 0.004957, mlp2 0.001843, attn2 0.007398, mlp3 0.001091, attn3 0.0001182
+e58-copy_s1 reading 3: S 0.9925345576704465, KL(F || H) 0.0307102, max relative logit error 0.324; site residuals mlp0 6.008e-05, attn0 0.000937, mlp1 6.297e-07, attn1 0.0003415, mlp2 2.812e-05, attn2 0.001979, mlp3 2.529e-05, attn3 2.846e-05
+e58-copy_s1: c 1, size whole 0.00730708, MLP 0.00768304; done in 4 s
+projected minutes left in this job: 0.4
+c3-cipher_s4: KL(F || M) 3.51675 (last position, 512 read windows); fit 3.3 s
+c3-cipher_s4 reading 1: S 0.021553156368192106, KL(F || H) 3.44095, max relative logit error 1.22; site residuals mlp0 0.006484, attn0 0.004215, mlp1 0.000101, attn1 0.004132, mlp2 0.002062, attn2 0.008578, mlp3 0.001496, attn3 9.834e-05
+c3-cipher_s4 reading 2: S 0.0058642910912849455, KL(F || H) 3.49613, max relative logit error 1.22; site residuals mlp0 0.00673, attn0 0.004215, mlp1 0.0001005, attn1 0.004132, mlp2 0.002012, attn2 0.008578, mlp3 0.001649, attn3 9.834e-05
+c3-cipher_s4 reading 3: S 0.9918066060624308, KL(F || H) 0.0288141, max relative logit error 0.492; site residuals mlp0 2.834e-05, attn0 0.0003585, mlp1 3.048e-07, attn1 0.0001527, mlp2 1.326e-05, attn2 0.000765, mlp3 1.701e-05, attn3 1.005e-05
+c3-cipher_s4: c 1, size whole 0.00482824, MLP 0.00533247; done in 3 s
+projected minutes left in this job: 0.7
+e58-copy_s2: KL(F || M) 4.34319 (last position, 512 read windows); fit 3.4 s
+e58-copy_s2 reading 1: S 0.01826497545091088, KL(F || H) 4.26387, max relative logit error 1.12; site residuals mlp0 0.008856, attn0 0.0146, mlp1 5.252e-05, attn1 0.005075, mlp2 0.001709, attn2 0.006807, mlp3 0.0009081, attn3 0.0001078
+e58-copy_s2 reading 2: S -0.0007142164959084152, KL(F || H) 4.3463, max relative logit error 1.12; site residuals mlp0 0.00963, attn0 0.0146, mlp1 5.421e-05, attn1 0.005075, mlp2 0.001767, attn2 0.006807, mlp3 0.001015, attn3 0.0001078
+e58-copy_s2 reading 3: S 0.993723974804206, KL(F || H) 0.027258, max relative logit error 0.267; site residuals mlp0 5.866e-05, attn0 0.0008667, mlp1 6.118e-07, attn1 0.0003351, mlp2 2.849e-05, attn2 0.002086, mlp3 2.535e-05, attn3 2.833e-05
+e58-copy_s2: c 1, size whole 0.00734911, MLP 0.0077211; done in 4 s
+projected minutes left in this job: 0.3
+c3-cipher_s5: KL(F || M) 3.40448 (last position, 512 read windows); fit 3.3 s
+c3-cipher_s5 reading 1: S 0.02322039713830104, KL(F || H) 3.32542, max relative logit error 1.28; site residuals mlp0 0.007413, attn0 0.005373, mlp1 0.0001004, attn1 0.004226, mlp2 0.002169, attn2 0.009169, mlp3 0.001565, attn3 9.876e-05
+c3-cipher_s5 reading 2: S 0.007119901561347564, KL(F || H) 3.38024, max relative logit error 1.3; site residuals mlp0 0.007755, attn0 0.005373, mlp1 9.981e-05, attn1 0.004226, mlp2 0.002112, attn2 0.009169, mlp3 0.00172, attn3 9.876e-05
+c3-cipher_s5 reading 3: S 0.9930287663785529, KL(F || H) 0.0237334, max relative logit error 0.538; site residuals mlp0 3.139e-05, attn0 0.0003832, mlp1 3.125e-07, attn1 0.0001784, mlp2 1.456e-05, attn2 0.0007462, mlp3 1.769e-05, attn3 7.723e-06
+c3-cipher_s5: c 1, size whole 0.00506624, MLP 0.00560565; done in 3 s
+projected minutes left in this job: 0.7
+e58-prior_cipher_s0: KL(F || M) 4.42947 (last position, 512 read windows); fit 3.4 s
+e58-prior_cipher_s0 reading 1: S 0.018506684082914893, KL(F || H) 4.3475, max relative logit error 1.09; site residuals mlp0 0.01022, attn0 0.03213, mlp1 0.0001166, attn1 0.008566, mlp2 0.003391, attn2 0.01181, mlp3 0.002293, attn3 0.0001437
+e58-prior_cipher_s0 reading 2: S -0.0028680236639793133, KL(F || H) 4.44217, max relative logit error 1.09; site residuals mlp0 0.01108, attn0 0.03213, mlp1 0.0001184, attn1 0.008566, mlp2 0.00347, attn2 0.01181, mlp3 0.002558, attn3 0.0001437
+e58-prior_cipher_s0 reading 3: S 0.9900035620839867, KL(F || H) 0.0442789, max relative logit error 0.317; site residuals mlp0 8.359e-05, attn0 0.001542, mlp1 9.624e-07, attn1 0.0005624, mlp2 4.291e-05, attn2 0.001292, mlp3 5.015e-05, attn3 2.67e-05
+e58-prior_cipher_s0: c 1, size whole 0.00937547, MLP 0.0103705; done in 4 s
+projected minutes left in this job: 0.3
+c3-cipher_s6: KL(F || M) 3.90832 (last position, 512 read windows); fit 3.3 s
+c3-cipher_s6 reading 1: S 0.02385887291298272, KL(F || H) 3.81507, max relative logit error 1.2; site residuals mlp0 0.00651, attn0 0.003907, mlp1 0.0001006, attn1 0.003775, mlp2 0.002122, attn2 0.008781, mlp3 0.001366, attn3 9.872e-05
+c3-cipher_s6 reading 2: S 0.007322461690422388, KL(F || H) 3.8797, max relative logit error 1.21; site residuals mlp0 0.006839, attn0 0.003907, mlp1 9.946e-05, attn1 0.003775, mlp2 0.002071, attn2 0.008781, mlp3 0.001502, attn3 9.872e-05
+c3-cipher_s6 reading 3: S 0.9939654137001573, KL(F || H) 0.0235851, max relative logit error 0.54; site residuals mlp0 2.932e-05, attn0 0.0003624, mlp1 2.987e-07, attn1 0.0001215, mlp2 1.331e-05, attn2 0.0006657, mlp3 1.606e-05, attn3 9.169e-06
+c3-cipher_s6: c 1, size whole 0.00480883, MLP 0.00530942; done in 3 s
+projected minutes left in this job: 0.6
+e58-prior_cipher_s1: KL(F || M) 4.32986 (last position, 512 read windows); fit 3.4 s
+e58-prior_cipher_s1 reading 1: S 0.018239491184474543, KL(F || H) 4.25088, max relative logit error 1.04; site residuals mlp0 0.01008, attn0 0.03214, mlp1 9.895e-05, attn1 0.007705, mlp2 0.00308, attn2 0.0124, mlp3 0.002224, attn3 0.0001228
+e58-prior_cipher_s1 reading 2: S -0.0031487533031357984, KL(F || H) 4.34349, max relative logit error 1.05; site residuals mlp0 0.01095, attn0 0.03214, mlp1 0.0001011, attn1 0.007705, mlp2 0.003168, attn2 0.0124, mlp3 0.002477, attn3 0.0001228
+e58-prior_cipher_s1 reading 3: S 0.9889693088665025, KL(F || H) 0.0477613, max relative logit error 0.24; site residuals mlp0 8.311e-05, attn0 0.00138, mlp1 9.619e-07, attn1 0.0004361, mlp2 4.178e-05, attn2 0.001338, mlp3 4.905e-05, attn3 2.648e-05
+e58-prior_cipher_s1: c 1, size whole 0.00933514, MLP 0.0103184; done in 3 s
+projected minutes left in this job: 0.2
+c3-cipher_s7: KL(F || M) 4.03381 (last position, 512 read windows); fit 3.2 s
+c3-cipher_s7 reading 1: S 0.02159196903993399, KL(F || H) 3.94671, max relative logit error 1.3; site residuals mlp0 0.006679, attn0 0.004418, mlp1 0.0001022, attn1 0.003862, mlp2 0.00197, attn2 0.008146, mlp3 0.001359, attn3 9.267e-05
+c3-cipher_s7 reading 2: S 0.006625038551211215, KL(F || H) 4.00708, max relative logit error 1.31; site residuals mlp0 0.00703, attn0 0.004418, mlp1 0.0001018, attn1 0.003862, mlp2 0.001927, attn2 0.008146, mlp3 0.001496, attn3 9.267e-05
+c3-cipher_s7 reading 3: S 0.991657773916035, KL(F || H) 0.0336509, max relative logit error 0.172; site residuals mlp0 2.819e-05, attn0 0.0004493, mlp1 2.989e-07, attn1 0.0001359, mlp2 1.291e-05, attn2 0.000875, mlp3 1.564e-05, attn3 8.756e-06
+c3-cipher_s7: c 1, size whole 0.00482237, MLP 0.00532988; done in 3 s
+projected minutes left in this job: 0.5
+e58-prior_cipher_s2: KL(F || M) 4.52812 (last position, 512 read windows); fit 3.4 s
+e58-prior_cipher_s2 reading 1: S 0.01733680750099953, KL(F || H) 4.44961, max relative logit error 1.09; site residuals mlp0 0.009949, attn0 0.02914, mlp1 0.0001155, attn1 0.008703, mlp2 0.003406, attn2 0.01264, mlp3 0.002317, attn3 0.000161
+e58-prior_cipher_s2 reading 2: S -0.0034744386864029586, KL(F || H) 4.54385, max relative logit error 1.09; site residuals mlp0 0.01086, attn0 0.02914, mlp1 0.0001176, attn1 0.008703, mlp2 0.003496, attn2 0.01264, mlp3 0.002582, attn3 0.000161
+e58-prior_cipher_s2 reading 3: S 0.989159524169662, KL(F || H) 0.0490869, max relative logit error 0.273; site residuals mlp0 8.193e-05, attn0 0.0015, mlp1 9.689e-07, attn1 0.0004074, mlp2 4.266e-05, attn2 0.001468, mlp3 5.126e-05, attn3 2.637e-05
+e58-prior_cipher_s2: c 1, size whole 0.00938121, MLP 0.0103895; done in 3 s
+projected minutes left in this job: 0.2
+c3-rank1_s0_scaled_open_pair_c3: KL(F || M) 2.07938 (last position, 512 read windows); fit 3.2 s
+c3-rank1_s0_scaled_open_pair_c3 reading 1: S 0.036337742273985674, KL(F || H) 2.00382, max relative logit error 1.02; site residuals mlp0 0.004715, attn0 0.00524, mlp1 5.36e-05, attn1 0.002906, mlp2 0.001125, attn2 0.005705, mlp3 0.0006725, attn3 4.983e-05
+c3-rank1_s0_scaled_open_pair_c3 reading 2: S 0.0027383595708488917, KL(F || H) 2.07368, max relative logit error 1.04; site residuals mlp0 0.005117, attn0 0.00524, mlp1 5.401e-05, attn1 0.002906, mlp2 0.001131, attn2 0.005705, mlp3 0.0007548, attn3 4.983e-05
+c3-rank1_s0_scaled_open_pair_c3 reading 3: S 0.9976756456931279, KL(F || H) 0.00483321, max relative logit error 0.113; site residuals mlp0 2.854e-05, attn0 0.0003858, mlp1 2.987e-07, attn1 0.00017, mlp2 1.241e-05, attn2 0.0006493, mlp3 1.551e-05, attn3 1.007e-05
+c3-rank1_s0_scaled_open_pair_c3: c 0.997452, size whole 0.0049767, MLP 0.00543855; done in 3 s
+projected minutes left in this job: 0.5
+e58-prior_cipher_s0_scaled_e58_copy_prior_cipher: KL(F || M) 3.52052 (last position, 512 read windows); fit 3.4 s
+e58-prior_cipher_s0_scaled_e58_copy_prior_cipher reading 1: S 0.016842177070882314, KL(F || H) 3.46123, max relative logit error 1.01; site residuals mlp0 0.006217, attn0 0.01882, mlp1 7.092e-05, attn1 0.005181, mlp2 0.002066, attn2 0.007128, mlp3 0.001395, attn3 8.753e-05
+e58-prior_cipher_s0_scaled_e58_copy_prior_cipher reading 2: S -0.0020896261637213254, KL(F || H) 3.52788, max relative logit error 1.01; site residuals mlp0 0.006742, attn0 0.01882, mlp1 7.204e-05, attn1 0.005181, mlp2 0.002114, attn2 0.007128, mlp3 0.001556, attn3 8.753e-05
+e58-prior_cipher_s0_scaled_e58_copy_prior_cipher reading 3: S 0.9822667657978674, KL(F || H) 0.0624303, max relative logit error 0.249; site residuals mlp0 5.096e-05, attn0 0.0008969, mlp1 5.846e-07, attn1 0.0003375, mlp2 2.613e-05, attn2 0.0007738, mlp3 3.05e-05, attn3 1.622e-05
+e58-prior_cipher_s0_scaled_e58_copy_prior_cipher: c 0.779816, size whole 0.00731114, MLP 0.00808712; done in 3 s
+projected minutes left in this job: 0.1
+c3-rank1_s1_scaled_open_pair_c3: KL(F || M) 2.07567 (last position, 512 read windows); fit 3.3 s
+c3-rank1_s1_scaled_open_pair_c3 reading 1: S 0.03567453266027831, KL(F || H) 2.00163, max relative logit error 1.03; site residuals mlp0 0.00517, attn0 0.004603, mlp1 5.385e-05, attn1 0.002888, mlp2 0.001139, attn2 0.005746, mlp3 0.0006366, attn3 4.831e-05
+c3-rank1_s1_scaled_open_pair_c3 reading 2: S 0.00403604778645239, KL(F || H) 2.0673, max relative logit error 1.04; site residuals mlp0 0.005569, attn0 0.004603, mlp1 5.397e-05, attn1 0.002888, mlp2 0.001137, attn2 0.005746, mlp3 0.0007073, attn3 4.831e-05
+c3-rank1_s1_scaled_open_pair_c3 reading 3: S 0.9970530412053816, KL(F || H) 0.00611693, max relative logit error 0.123; site residuals mlp0 2.904e-05, attn0 0.0004504, mlp1 2.866e-07, attn1 0.0001771, mlp2 1.217e-05, attn2 0.0006478, mlp3 1.4e-05, attn3 9.62e-06
+c3-rank1_s1_scaled_open_pair_c3: c 0.997452, size whole 0.00484481, MLP 0.00527896; done in 3 s
+projected minutes left in this job: 0.4
+e58-prior_cipher_s1_scaled_e58_copy_prior_cipher: KL(F || M) 3.4059 (last position, 512 read windows); fit 3.4 s
+e58-prior_cipher_s1_scaled_e58_copy_prior_cipher reading 1: S 0.016768849474637415, KL(F || H) 3.34879, max relative logit error 1; site residuals mlp0 0.006136, attn0 0.0188, mlp1 6.019e-05, attn1 0.004664, mlp2 0.001876, attn2 0.007446, mlp3 0.001353, attn3 7.475e-05
+e58-prior_cipher_s1_scaled_e58_copy_prior_cipher reading 2: S -0.0022019965052362256, KL(F || H) 3.4134, max relative logit error 1.01; site residuals mlp0 0.006667, attn0 0.0188, mlp1 6.15e-05, attn1 0.004664, mlp2 0.001929, attn2 0.007446, mlp3 0.001507, attn3 7.475e-05
+e58-prior_cipher_s1_scaled_e58_copy_prior_cipher reading 3: S 0.9799688189254173, KL(F || H) 0.0682242, max relative logit error 0.225; site residuals mlp0 5.07e-05, attn0 0.0008007, mlp1 5.843e-07, attn1 0.0002626, mlp2 2.543e-05, attn2 0.0008026, mlp3 2.983e-05, attn3 1.611e-05
+e58-prior_cipher_s1_scaled_e58_copy_prior_cipher: c 0.779816, size whole 0.00727969, MLP 0.00804648; done in 4 s
+projected minutes left in this job: 0.1
+c3-rank1_s2_scaled_open_pair_c3: KL(F || M) 1.95954 (last position, 512 read windows); fit 3.3 s
+c3-rank1_s2_scaled_open_pair_c3 reading 1: S 0.03813766913827876, KL(F || H) 1.88481, max relative logit error 1.02; site residuals mlp0 0.004881, attn0 0.005631, mlp1 5.507e-05, attn1 0.003147, mlp2 0.00116, attn2 0.005416, mlp3 0.0006651, attn3 4.889e-05
+c3-rank1_s2_scaled_open_pair_c3 reading 2: S 0.002806075653687623, KL(F || H) 1.95404, max relative logit error 1.03; site residuals mlp0 0.005267, attn0 0.005631, mlp1 5.543e-05, attn1 0.003147, mlp2 0.001166, attn2 0.005416, mlp3 0.0007378, attn3 4.889e-05
+c3-rank1_s2_scaled_open_pair_c3 reading 3: S 0.9971826854208636, KL(F || H) 0.00552064, max relative logit error 0.157; site residuals mlp0 2.921e-05, attn0 0.0004614, mlp1 3.018e-07, attn1 0.0002035, mlp2 1.276e-05, attn2 0.000717, mlp3 1.498e-05, attn3 1.062e-05
+c3-rank1_s2_scaled_open_pair_c3: c 0.997452, size whole 0.00492643, MLP 0.00536546; done in 3 s
+projected minutes left in this job: 0.3
+e58-prior_cipher_s2_scaled_e58_copy_prior_cipher: KL(F || M) 3.53151 (last position, 512 read windows); fit 3.4 s
+e58-prior_cipher_s2_scaled_e58_copy_prior_cipher reading 1: S 0.01607356076960853, KL(F || H) 3.47475, max relative logit error 1.01; site residuals mlp0 0.006056, attn0 0.01717, mlp1 7.027e-05, attn1 0.0053, mlp2 0.002074, attn2 0.007647, mlp3 0.00141, attn3 9.797e-05
+e58-prior_cipher_s2_scaled_e58_copy_prior_cipher reading 2: S -0.0024966061661220174, KL(F || H) 3.54033, max relative logit error 1.03; site residuals mlp0 0.006613, attn0 0.01717, mlp1 7.153e-05, attn1 0.0053, mlp2 0.002129, attn2 0.007647, mlp3 0.001571, attn3 9.797e-05
+e58-prior_cipher_s2_scaled_e58_copy_prior_cipher reading 3: S 0.9812557666006195, KL(F || H) 0.0661955, max relative logit error 0.244; site residuals mlp0 4.995e-05, attn0 0.0008783, mlp1 5.886e-07, attn1 0.0002468, mlp2 2.596e-05, attn2 0.0008828, mlp3 3.118e-05, attn3 1.604e-05
+e58-prior_cipher_s2_scaled_e58_copy_prior_cipher: c 0.779816, size whole 0.00731562, MLP 0.00810188; done in 4 s
+projected minutes left in this job: 0.0
+STAGE 9 DONE (e58_copy_prior_cipher)
+e62_copy_lookup reading 3: gap original -0.00280439 (se 0.0006251975804753431), matched -0.00190621, mean shift -0.000898; R1 same, R2 0.6797236272577409, R3 False
+e62_copy_lookup reading 1: gap original 0.0735721 (se 0.001714166038097302), matched 0.0767817, mean shift -0.00321; R1 same, R2 1.043624895973089, R3 False
+e46_copy_random reading 3: gap original 0.00313592 (se 0.0015152068867722913), matched 0.013467, mean shift -0.0103; R1 same, R2 4.294427583512461, R3 False
+e46_copy_random reading 1: gap original 0.0185124 (se 0.0016317530997752565), matched 0.0190861, mean shift -0.000574; R1 same, R2 1.030990649173476, R3 True
+e53_lowercase_cipher reading 3: gap original 0.022767 (se 0.0014342226758558229), matched 0.0265672, mean shift -0.0038; R1 same, R2 1.1669157072261478, R3 False
+e53_lowercase_cipher reading 1: gap original 0.0432688 (se 0.004924736808110153), matched 0.0441938, mean shift -0.000925; R1 same, R2 1.0213769684750582, R3 True
+e54_matched reading 3: gap original 0.00723275 (se 0.0005754093582149743), matched 0.00731109, mean shift -7.83e-05; R1 same, R2 1.0108313241849862, R3 True
+e54_matched reading 1: gap original 0.00811006 (se 0.001473144366594169), matched 0.00808001, mean shift 3e-05; R1 same, R2 0.9962952800961538, R3 True
+e54_own reading 3: gap original 0.00115607 (se 0.0002533480171269956), matched 0.0288229, mean shift -0.0277; R1 same, R2 24.931805315654458, R3 False
+e54_own reading 1: gap original 0.018809 (se 0.001999398198563179), matched 0.0168714, mean shift 0.00194; R1 same, R2 0.896986121533829, R3 True
+open_pair_c3 reading 3: items missing
+open_pair_c3 reading 1: items missing
+open_pair_c3_copy reading 3: gap original 0.00578694 (se 0.00043785877345203344), matched 0.00584629, mean shift -5.93e-05; R1 same, R2 1.0102553471088873, R3 True
+open_pair_c3_copy reading 1: gap original 0.016104 (se 0.0006565537878104712), matched 0.0160761, mean shift 2.79e-05; R1 same, R2 0.9982677931324819, R3 True
+e58_rank1_96 reading 3: gap original 0.0149849 (se 0.001283893830946294), matched 0.0326336, mean shift -0.0176; R1 same, R2 2.1777645233673315, R3 False
+e58_rank1_96 reading 1: gap original 0.0191284 (se 0.0007387143990092875), matched 0.0189339, mean shift 0.000195; R1 same, R2 0.9898288315946043, R3 True
+e58_copy_prior_cipher reading 3: gap original 0.00436982 (se 0.0007751468374875181), matched 0.0125835, mean shift -0.00821; R1 same, R2 2.879639018176151, R3 False
+e58_copy_prior_cipher reading 1: gap original -0.00010567 (se 0.000583438352765697), matched 0.00136046, mean shift -0.00147; R1 flipped, R2 -12.874564626785205, R3 False
+E205 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/held_model_size_matched/results ===
+c3-rank1_s3_scaled_open_pair_c3: KL(F || M) 1.94302 (last position, 512 read windows); fit 2.7 s
+c3-rank1_s3_scaled_open_pair_c3 reading 1: S 0.03670187620343024, KL(F || H) 1.87171, max relative logit error 1.03; site residuals mlp0 0.005088, attn0 0.005042, mlp1 4.983e-05, attn1 0.003004, mlp2 0.001031, attn2 0.005204, mlp3 0.0006907, attn3 4.768e-05
+c3-rank1_s3_scaled_open_pair_c3 reading 2: S 0.0019145001986640153, KL(F || H) 1.9393, max relative logit error 1.05; site residuals mlp0 0.005467, attn0 0.005042, mlp1 5.007e-05, attn1 0.003004, mlp2 0.00104, attn2 0.005204, mlp3 0.0007727, attn3 4.768e-05
+c3-rank1_s3_scaled_open_pair_c3 reading 3: S 0.99709401545049, KL(F || H) 0.00564639, max relative logit error 0.124; site residuals mlp0 2.845e-05, attn0 0.000495, mlp1 2.939e-07, attn1 0.0001493, mlp2 1.231e-05, attn2 0.0006408, mlp3 1.586e-05, attn3 9.013e-06
+c3-rank1_s3_scaled_open_pair_c3: c 0.997452, size whole 0.00493841, MLP 0.00539672; done in 3 s
+projected minutes left in this job: 0.3
+c3-rank1_s4_scaled_open_pair_c3: KL(F || M) 2.11508 (last position, 512 read windows); fit 2.3 s
+c3-rank1_s4_scaled_open_pair_c3 reading 1: S 0.038336190389856584, KL(F || H) 2.03399, max relative logit error 1.03; site residuals mlp0 0.005165, attn0 0.004765, mlp1 5.733e-05, attn1 0.003401, mlp2 0.001261, attn2 0.005334, mlp3 0.0006773, attn3 6.095e-05
+c3-rank1_s4_scaled_open_pair_c3 reading 2: S 0.007778318435231135, KL(F || H) 2.09863, max relative logit error 1.04; site residuals mlp0 0.005552, attn0 0.004765, mlp1 5.772e-05, attn1 0.003401, mlp2 0.001258, attn2 0.005334, mlp3 0.0007508, attn3 6.095e-05
+c3-rank1_s4_scaled_open_pair_c3 reading 3: S 0.9973216687458918, KL(F || H) 0.00566488, max relative logit error 0.123; site residuals mlp0 2.958e-05, attn0 0.0004166, mlp1 3.044e-07, attn1 0.0002037, mlp2 1.293e-05, attn2 0.0006076, mlp3 1.505e-05, attn3 1.332e-05
+c3-rank1_s4_scaled_open_pair_c3: c 0.997452, size whole 0.00498337, MLP 0.00542438; done in 2 s
+projected minutes left in this job: 0.2
+c3-rank1_s5_scaled_open_pair_c3: KL(F || M) 2.05765 (last position, 512 read windows); fit 2.3 s
+c3-rank1_s5_scaled_open_pair_c3 reading 1: S 0.037117545909974625, KL(F || H) 1.98127, max relative logit error 1.03; site residuals mlp0 0.005627, attn0 0.005754, mlp1 5.397e-05, attn1 0.002757, mlp2 0.001116, attn2 0.005661, mlp3 0.0006329, attn3 4.487e-05
+c3-rank1_s5_scaled_open_pair_c3 reading 2: S 0.0033708754250698636, KL(F || H) 2.05071, max relative logit error 1.05; site residuals mlp0 0.006153, attn0 0.005754, mlp1 5.416e-05, attn1 0.002757, mlp2 0.001124, attn2 0.005661, mlp3 0.0007043, attn3 4.487e-05
+c3-rank1_s5_scaled_open_pair_c3 reading 3: S 0.9975698069983514, KL(F || H) 0.00500048, max relative logit error 0.138; site residuals mlp0 3.069e-05, attn0 0.0003894, mlp1 2.923e-07, attn1 0.0001612, mlp2 1.207e-05, attn2 0.0007376, mlp3 1.472e-05, attn3 7.898e-06
+c3-rank1_s5_scaled_open_pair_c3: c 0.997452, size whole 0.00489175, MLP 0.00532592; done in 2 s
+projected minutes left in this job: 0.1
+c3-rank1_s6_scaled_open_pair_c3: KL(F || M) 2.0276 (last position, 512 read windows); fit 2.3 s
+c3-rank1_s6_scaled_open_pair_c3 reading 1: S 0.03779282467495382, KL(F || H) 1.95097, max relative logit error 1.02; site residuals mlp0 0.004701, attn0 0.005285, mlp1 5.051e-05, attn1 0.002991, mlp2 0.001106, attn2 0.005316, mlp3 0.000638, attn3 4.982e-05
+c3-rank1_s6_scaled_open_pair_c3 reading 2: S 0.0026590955427723273, KL(F || H) 2.02221, max relative logit error 1.04; site residuals mlp0 0.005094, attn0 0.005285, mlp1 5.08e-05, attn1 0.002991, mlp2 0.001102, attn2 0.005316, mlp3 0.0007075, attn3 4.982e-05
+c3-rank1_s6_scaled_open_pair_c3 reading 3: S 0.9977660830664958, KL(F || H) 0.00452949, max relative logit error 0.137; site residuals mlp0 2.798e-05, attn0 0.0003746, mlp1 2.871e-07, attn1 0.000155, mlp2 1.241e-05, attn2 0.0007588, mlp3 1.496e-05, attn3 8.973e-06
+c3-rank1_s6_scaled_open_pair_c3: c 0.997452, size whole 0.0049231, MLP 0.00536035; done in 2 s
+projected minutes left in this job: 0.1
+c3-rank1_s7_scaled_open_pair_c3: KL(F || M) 2.11284 (last position, 512 read windows); fit 2.3 s
+c3-rank1_s7_scaled_open_pair_c3 reading 1: S 0.035496676655147774, KL(F || H) 2.03784, max relative logit error 1.03; site residuals mlp0 0.005364, attn0 0.005968, mlp1 5.5e-05, attn1 0.003048, mlp2 0.001029, attn2 0.00624, mlp3 0.0005828, attn3 4.974e-05
+c3-rank1_s7_scaled_open_pair_c3 reading 2: S 0.0031744659616154136, KL(F || H) 2.10613, max relative logit error 1.05; site residuals mlp0 0.005815, attn0 0.005968, mlp1 5.516e-05, attn1 0.003048, mlp2 0.001035, attn2 0.00624, mlp3 0.0006488, attn3 4.974e-05
+c3-rank1_s7_scaled_open_pair_c3 reading 3: S 0.9970096207930979, KL(F || H) 0.00631818, max relative logit error 0.113; site residuals mlp0 2.984e-05, attn0 0.000493, mlp1 2.93e-07, attn1 0.0001705, mlp2 1.197e-05, attn2 0.0008105, mlp3 1.407e-05, attn3 1.003e-05
+c3-rank1_s7_scaled_open_pair_c3: c 0.997452, size whole 0.00490007, MLP 0.00533409; done in 2 s
+projected minutes left in this job: 0.0
+STAGE 6 DONE (open_pair_c3)
+e62_copy_lookup reading 3: gap original -0.00280439 (se 0.0006251975804753431), matched -0.00190621, mean shift -0.000898; R1 same, R2 0.6797236272577409, R3 False
+e62_copy_lookup reading 1: gap original 0.0735721 (se 0.001714166038097302), matched 0.0767817, mean shift -0.00321; R1 same, R2 1.043624895973089, R3 False
+e46_copy_random reading 3: gap original 0.00313592 (se 0.0015152068867722913), matched 0.013467, mean shift -0.0103; R1 same, R2 4.294427583512461, R3 False
+e46_copy_random reading 1: gap original 0.0185124 (se 0.0016317530997752565), matched 0.0190861, mean shift -0.000574; R1 same, R2 1.030990649173476, R3 True
+e53_lowercase_cipher reading 3: gap original 0.022767 (se 0.0014342226758558229), matched 0.0265672, mean shift -0.0038; R1 same, R2 1.1669157072261478, R3 False
+e53_lowercase_cipher reading 1: gap original 0.0432688 (se 0.004924736808110153), matched 0.0441938, mean shift -0.000925; R1 same, R2 1.0213769684750582, R3 True
+e54_matched reading 3: gap original 0.00723275 (se 0.0005754093582149743), matched 0.00731109, mean shift -7.83e-05; R1 same, R2 1.0108313241849862, R3 True
+e54_matched reading 1: gap original 0.00811006 (se 0.001473144366594169), matched 0.00808001, mean shift 3e-05; R1 same, R2 0.9962952800961538, R3 True
+e54_own reading 3: gap original 0.00115607 (se 0.0002533480171269956), matched 0.0288229, mean shift -0.0277; R1 same, R2 24.931805315654458, R3 False
+e54_own reading 1: gap original 0.018809 (se 0.001999398198563179), matched 0.0168714, mean shift 0.00194; R1 same, R2 0.896986121533829, R3 True
+open_pair_c3 reading 3: gap original 0.00528748 (se 0.00040417106373235917), matched 0.00528575, mean shift -1.73e-06; R1 same, R2 0.99967244897554, R3 True
+open_pair_c3 reading 1: gap original 0.014383 (se 0.000529520267877114), matched 0.0143277, mean shift -5.53e-05; R1 same, R2 0.9961577010144234, R3 True
+open_pair_c3_copy reading 3: gap original 0.00578694 (se 0.00043785877345203344), matched 0.00584629, mean shift -5.93e-05; R1 same, R2 1.0102553471088873, R3 True
+open_pair_c3_copy reading 1: gap original 0.016104 (se 0.0006565537878104712), matched 0.0160761, mean shift 2.79e-05; R1 same, R2 0.9982677931324819, R3 True
+e58_rank1_96 reading 3: gap original 0.0149849 (se 0.001283893830946294), matched 0.0326336, mean shift -0.0176; R1 same, R2 2.1777645233673315, R3 False
+e58_rank1_96 reading 1: gap original 0.0191284 (se 0.0007387143990092875), matched 0.0189339, mean shift 0.000195; R1 same, R2 0.9898288315946043, R3 True
+e58_copy_prior_cipher reading 3: gap original 0.00436982 (se 0.0007751468374875181), matched 0.0125835, mean shift -0.00821; R1 same, R2 2.879639018176151, R3 False
+e58_copy_prior_cipher reading 1: gap original -0.00010567 (se 0.000583438352765697), matched 0.00136046, mean shift -0.00147; R1 flipped, R2 -12.874564626785205, R3 False
+E205 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/held_model_size_matched/results ===
