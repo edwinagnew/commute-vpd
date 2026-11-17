@@ -1,0 +1,24 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[     22s] [data] train rows 0..32768: cached at /root/artifacts/sets/train_0_32768.npy
+[     30s] [data] train rows 32768..40960: cached at /root/artifacts/sets/train_32768_8192.npy
+[     34s] [data] val rows 0..2000: cached at /root/artifacts/sets/val_0_2000.npy
+[     50s] alpha 1.0000: 1620 windows (15916 changed of 100000 scanned), F_big gain 1.8337, raised by the unit push 1.0000, top target share 0.0525, push / stream norm 0.2664
+[     50s] E204: rows ready, cue 26842, |b| 2.0899
+[     54s] identity Always on: gain 0.000e+00, L01-L00 0.000e+00, max gate change 0.000e+00, T0 -3.5584, L00 -4.9672, windows 1620
+STAGE 0 DONE
+[     54s] positive control ident32_s0: r 0.802850 against saved 0.802443 (diff 4.08e-04), gain 13.9909
+STAGE 1 DONE
+[     57s] alpha 2.0000: 2048 windows (7912 changed of 26624 scanned), F_big gain 2.7081, raised by the unit push 0.9995, top target share 0.0913, push / stream norm 0.5361
+[     59s] alpha 4.0000: 2048 windows (5213 changed of 10240 scanned), F_big gain 3.2904, raised by the unit push 0.9976, top target share 0.1328, push / stream norm 1.0679
+[     60s] alpha 8.0000: 2048 windows (4488 changed of 6144 scanned), F_big gain 4.1950, raised by the unit push 0.9863, top target share 0.2881, push / stream norm 2.0444
+[     60s] alpha 16.0000: 2048 windows (3816 changed of 4096 scanned), F_big gain 4.9316, raised by the unit push 0.9897, top target share 0.5503, push / stream norm 4.2388
+[     61s] alpha 32.0000: 2048 windows (4094 changed of 4096 scanned), F_big gain 13.5467, raised by the unit push 0.9961, top target share 0.9062, push / stream norm 8.4125
+[     62s] alpha 64.0000: 2048 windows (2048 changed of 2048 scanned), F_big gain 15.2825, raised by the unit push 0.9966, top target share 0.9575, push / stream norm 16.8308
+[     62s] alpha 128.0000: 2048 windows (2048 changed of 2048 scanned), F_big gain 15.9110, raised by the unit push 0.9966, top target share 0.9761, push / stream norm 33.6615
+[     62s] alpha 256.0000: 2048 windows (2048 changed of 2048 scanned), F_big gain 16.0068, raised by the unit push 0.9971, top target share 0.9897, push / stream norm 67.3231
+[     62s] STOPPED: no alpha up to 256 reaches Table's gain 19.1315: the push saturates
+peak host RSS 6.1 GB
+=== FINISHED (exit 1) — results in /root/work/experiments/share_size_matched/results/ ===
