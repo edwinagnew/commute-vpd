@@ -1,0 +1,108 @@
+{
+ "experiment": "E201",
+ "cell": "P1.26",
+ "status": "filed before any run; run 2 of cell P1.26: the grafted-head negative case, built once and read with E197's held model",
+ "wording": "the held-model reading of causal-rule retention, three readings (user, 2026-11-17 chat; plan 'Frozen specification' and 'Settled'); tested here, not adopted; no verdict or label on the built model",
+ "plan": "reports/plans/2026-11-18_plan_held-model-retention.md ('The negative case', 'Settled' answer 6) and its _appendix.md ('The negative case: full recipe'); card experiments/graft_negative/card.md; code commute.held_model (unchanged) through E197's read, misses and CHECKS",
+ "prediction": {
+  "kind": "descriptive, no bars: the build checks gate the readings; readings 1 and 2 have an arithmetic expected value; reading 3 is reported",
+  "by": "user, 2026-11-17 dialog: build the graft negative case as run 2; reported as a description, no bars",
+  "reported": "k and s; the training curve and held-out accuracy at acc_at; the build checks; per reading S = 1 - KL(F || H) / KL(F || M), KL(F || M), KL(F || H), H's max relative logit error against F, each site's local fit residual; readings 1 and 2: the graft's partner, gain and error after the gain, whether every other unit is paired with itself at gain 1; at the graft's site: |graft write|^2, each M head's |write|^2, <graft write, M head write>, |F's attention write|^2, and the share of the graft's own write that reading 3's map leaves unfitted (the site residual times |F's site write|^2 over |graft write|^2)",
+  "edge_cases": "k: ties in the largest head share go to the smallest offset (torch argmin). An unpaired F unit (the graft when the assignment leaves it out) has partner -1 and gain and error NaN, the same marks E197 gives a zero F unit. KL(F || M) at or under kl_floor: S is null, and readings 1 and 2 are then not 'as expected'. S may be negative. A build check miss stops the job before stage 3, so no reading exists for an unbuilt graft"
+ },
+ "settings": {
+  "layer": 3,
+  "offsets": [3, 16],
+  "window": 32,
+  "train_rows": 32768,
+  "val_rows": 2000,
+  "n_probe": 1024,
+  "probe_seed": 201000,
+  "n_acc": 2048,
+  "acc_seed": 201001,
+  "graft_seed": 201002,
+  "init_std": 0.02,
+  "out_std": 0.007071067811865475,
+  "lr": 0.0003,
+  "lr_min_frac": 0.1,
+  "warmup": 600,
+  "steps": 4000,
+  "batch": 64,
+  "beta1": 0.9,
+  "beta2": 0.95,
+  "weight_decay": 0.1,
+  "grad_clip": 1.0,
+  "train_seed": 201003,
+  "acc_at": [500, 1000, 2000, 3000, 4000],
+  "n_fit": 4096,
+  "fit_seed": 201004,
+  "n_read": 512,
+  "read_seed": 201005,
+  "sum_batch": 256,
+  "eval_batch": 256
+ },
+ "setting_sources": {
+  "layer": "the appendix recipe step 2: the last layer (3 of 0-3)",
+  "offsets, window": "the appendix recipe step 1: offsets 3 to 16 on 32-token Pile windows, the first two positions left out as a sink; here every offset is read over the same queries, positions 18 to 31, so the key is never position 0 or 1 (the code writer's reading of 'leaving out the first two positions')",
+  "train_rows, val_rows": "the cached Pile rows artifacts/sets/train_0_32768.npy and val_0_2000.npy (commute.data.pile_rows); train rows 0-16383 train the graft, 16384-32767 give the fit windows; val rows 0-999 give probe and accuracy windows, 1000-1999 the read windows, so training, fit and read never share a row",
+  "n_probe, n_acc": "the code writer's sizes: 1024 windows x 14 queries per share, 2048 windows per accuracy (binomial sd at 0.9 about 0.007)",
+  "init_std, out_std": "the 67M's own init (param-decomp pretrain/models/llama_simple_mlp.py _init_weights): normal sd 0.02 for q, k, v; o_proj carries LLMC_RESIDUAL_SCALE_FLAG, so sd 0.02 / sqrt(2 n_layer) = 0.02 / sqrt(8)",
+  "lr, lr_min_frac, warmup, beta1, beta2, weight_decay, grad_clip": "the 67M's own pretraining recipe (artifacts/vpd/t-9d2b8f02/final_config.yaml: learning_rate 3e-4, learning_rate_decay_frac 0.1, warmup_iters 600, weight_decay 0.1, grad_clip 1.0; param-decomp pretrain/train.py: AdamW betas (0.9, 0.95), get_lr linear warm-up then cosine to lr x 0.1; configure_optimizers decays every 2-D weight, and all four graft weights are 2-D). Departures: the cosine runs over 4,000 steps, not 100,000, and the plan's 'Adam at 1e-3, the rate of P1.24's appended-neuron fits' is not used, because P1.24 filed that rate as 'chosen here' (experiments/rule_retention/results/predictions.json 'fit recipe'). The repo's fine-tune recipes (E12's 3e-5 for E184/E196 items, keydep.elicit_ft; E139's Adam, clip 1) move pretrained weights and are not a standard for fresh ones",
+  "steps, batch": "the plan's bound (appendix recipe steps 3 and 5): at most 4,000 steps of 64 windows, one attempt; departure from the pretraining recipe's batch of 1,024",
+  "loss": "the plan: cross-entropy at the last position against the token k positions back",
+  "n_fit": "the appendix's fit size in positions: 4,096 windows x 32 positions = 131,072, about 131,000 as E197 (16,384 x 8)",
+  "n_read": "E197's 512 read windows, last position",
+  "seeds": "new, this run's number",
+  "sum_batch, eval_batch": "memory sizes: 256 windows of 32 tokens is 8,192 positions per batch (E197: 512 x 8 = 4,096)"
+ },
+ "thresholds": {
+  "logit_tol": 0.001,
+  "gain_tol": 0.0001,
+  "kl_floor": 1e-06,
+  "pattern_tol": 1e-05,
+  "acc_min": 0.9,
+  "attn_min": 0.8,
+  "share_tol": 1e-06,
+  "s_tol": 1e-06
+ },
+ "threshold_sources": {
+  "logit_tol, gain_tol, kl_floor": "E197's filed values (experiments/held_model_retention/results/predictions.json), unchanged; logit_tol is P1.25's gate_tol",
+  "acc_min, attn_min": "the appendix recipe step 4: held-out accuracy at least 0.9, the graft's mean attention at offset k at least 0.8 (read here from the last position, where the graft is trained)",
+  "share_tol": "M is frozen and every layer at or below the graft reads the same residual in F as in M, so each M head's share at k inside F equals stage 0's by construction; 1e-6 allows for a different kernel order only",
+  "pattern_tol": "the patterns are computed with the same operations in the same order as the 67M's manual attention path (model_config.yaml flash_attention false), so the rebuilt head outputs should equal the module's to fp32 rounding; 1e-5 relative is about 100 fp32 ulps; not measured before the run",
+  "s_tol": "when the graft is unpaired and every other unit is paired with itself at gain 1, H's output matrices are M's cast back from fp64 gains of 1 within gain_tol, so H is M and KL(F || H) = KL(F || M); 1e-6 allows for the fp64 gain rounding only"
+ },
+ "code_checks": {
+  "do_nothing": {"build": "F is a copy of M, on this run's fit and read windows (32-token Pile)", "kl_FM_above_floor": false, "H_reproduces_F": ["1", "2", "3"], "reading_1_planted": "every neuron and head paired with itself at gain 1", "reported": "S null in every reading; KL(F || H) is each reading's floor on these windows"},
+  "pattern": {"rule": "the six heads' outputs rebuilt from this run's attention patterns and value weights, against the module's own (held_model.z), max over layers and probe batches of max |difference| / max |module|, at most pattern_tol"},
+  "rule": "stage 0 stops the job on a do-nothing miss (E197's misses: KL(F || M) at or under kl_floor; H within logit_tol of F in every reading; identity pairing at gain 1 within gain_tol) or a pattern error over pattern_tol"
+ },
+ "build_checks": {
+  "accuracy": {"rule": "F's argmax at the last position equals the token k positions back on at least acc_min of the n_acc held-out windows", "expected": ">= 0.9", "M": "reported beside it, on the same windows; expected near chance, not checked"},
+  "graft_attention": {"rule": "the graft's mean attention from the last position to the position k back, over the n_probe windows, at least attn_min", "expected": ">= 0.8", "also_reported": "the same mean over queries 18 to 31"},
+  "M_shares": {"rule": "every M head's share at offset k, computed inside F on the probe windows, within share_tol of its stage 0 value", "expected": "equal (M is frozen)"},
+  "no_graft": {"rule": "F with the graft's output weight zeroed against M, max relative logit error (held_model.logit_error) over the probe windows, at most logit_tol", "expected": "0 within rounding"},
+  "stop": "any build check missed: results/stage2.json holds 'stopped' and 'misses', exit 1, no reading"
+ },
+ "readings": {
+  "1": {"expected": "S = 0 within s_tol, when the assignment leaves the graft unpaired (partner -1) and every other unit of F is paired with itself at gain 1 within gain_tol (units.1.S_zero_by_arithmetic); then H is M exactly", "if_not": "if the assignment gives the graft an M head's slot, S is reported as computed, with the partner and gain, and 'as expected' is false; not a stop and not a reading of the definition"},
+  "2": {"expected": "as reading 1: F's MLP blocks are M's, so reading 2 equals reading 1 for this F", "if_not": "as reading 1"},
+  "3": {"expected": "none filed: reported. At the graft's site the map is M's output matrix plus the graft's output matrix times the least-squares regression of the graft's head output on M's six head outputs at the same position; every other site is the do-nothing case", "graft_unfitted_share": "reported; 0 means the graft's write is linear in M's last-layer head outputs at the same position, 1 that none of it is"}
+ },
+ "expected_at_F_equals_M": {
+  "do_nothing": "as E197: KL(F || M) 0, every reading's H within logit_tol of F, S null",
+  "graft with zero output weight": "F's logits are M's (the no_graft check)",
+  "graft before training": "write near 0 (o at sd 0.007), so the first step's loss is near M's cross-entropy on the token k back"
+ },
+ "noise_floor": {
+  "S": "readings 1 and 2: arithmetic (s_tol). Reading 3: the do-nothing check measures its floor, KL(M || H3), on these very windows before the build",
+  "accuracy": "binomial sd about 0.007 at 0.9 over 2,048 windows",
+  "build": "one attempt, one seed: no seed spread is measured"
+ },
+ "blind_to": {
+  "readings 1 and 2": "the graft entirely when it is unpaired: H drops it by construction, whatever it computes",
+  "reading 3": "any part of the graft's write that is linear in M's six last-layer head outputs at the same position; it never sees the residual stream or other positions directly, so the test is whether M's heads already carry the token k back",
+  "all": "anything outside the 512 read windows and the last position; the build checks, not the readings, show the graft learned the task"
+ },
+ "positive_control": "stage 0's do-nothing on the same windows and code path (S null, H = M); stage 2's no-graft check (F minus the graft is M); readings 1 and 2's arithmetic S = 0 when the graft is unpaired"
+}
