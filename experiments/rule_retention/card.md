@@ -28,8 +28,9 @@ neuron units (plus 16 unpaired ones in the replaced item) and level B has 4 x 6 
   reads each of C at r = 0.80 exactly and a contrast retention of 0.80. Level B reads C's block at the r its share of the
   block gives (computed and reported; expected above 0.9).
 - **Replaced**, 4 fit seeds: C's output zeroed and 16 fresh neurons appended to the same layer, trained alone by KL to the
-  rescaled item on Pile and copy24 windows. Kept only if, on held-out windows, KL(replaced || rescaled) is at most 0.1 of
-  KL(rescaled || M) and no new neuron correlates with a neuron of C above 0.9 in absolute value; otherwise the job stops.
+  rescaled item on Pile and copy24 windows, with a penalty on correlation with C (last section). Kept only if, on held-out
+  windows, KL(replaced || rescaled) is at most 0.1 of KL(rescaled || M) and no new neuron correlates with a neuron of C
+  above 0.9 in absolute value.
   Level A reads 0 by construction (C's neurons write zero, the new ones have no pair).
 
 Filed rule (`results/predictions.json`, `rule.py`): a level passes when do-nothing reads r = 1 everywhere, rescaled reads
@@ -54,8 +55,11 @@ can have, 0.5 (Popoviciu's inequality), an upper bound on any measured value, so
 is one sample against a fixed bar, SE = sd / sqrt(n), the check's "paired" formula: 0.5 / sqrt(4) = 0.25, and the gap is
 2.0 SE. That is why the run fits 4 seeds rather than 2: with 2 the bound gives 1.4 SE, under the bar.
 
-## Known risk
+## The replaced item is a non-copy by construction plus the check (amendment 2026-11-17, before any run)
 
-The not-a-copy check may stop stage 2. A KL fit from random starts can pull the new neurons onto C's own input
-directions (each new neuron then correlates near 1 with one of C), since copying C is the simplest way to reproduce the
-rescaled item. The plan's recipe has no term against it; the run stops and reports the correlation if it happens.
+A KL fit from random starts can pull the new neurons onto C's own input directions, since copying C is the simplest way
+to reproduce the rescaled item. So the item is built to be a non-copy: each fit seed trains with KL plus lambda times the
+mean squared correlation between the new neurons' and C's activations on the batch, with lambda going through 0, 0.1, 1
+and 10 in that order, and keeps the first fit that passes both held-out checks (fit within 0.1 of KL(rescaled || M) on
+copy24's and Pile's held-out windows; no new neuron correlating above 0.9 with one of C). The lambda used and both check
+values for every lambda tried are recorded. The job stops only if no lambda passes on a seed.

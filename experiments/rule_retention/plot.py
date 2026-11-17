@@ -1,4 +1,4 @@
-"""E___ (cell P1.24) figures, from results/stage0.json, stage1.json, stage2.json and score.json:
+"""E193 (cell P1.24) figures, from results/stage0.json, stage1.json, stage2.json and score.json:
     figures/profile.png   the retention profile: r of every unit of F not at r = 1, per item and level, with the count at 1
     figures/contrast.png  the retention for the contrast per item and level against the 0.3 and 0.7 bars; do-nothing, which
                           has no contrast, is drawn as the reference at r = 1
@@ -88,7 +88,7 @@ def main() -> None:
     th = json.loads((RESULTS / "predictions.json").read_text())["thresholds"]
     its = items(s[0], s[1], s[2])
     draw_profile(its, FIGURES / "profile.png", "")
-    draw_contrast([("E___, the three built items", its)], th, FIGURES / "contrast.png", "")
+    draw_contrast([("E193, the three built items", its)], th, FIGURES / "contrast.png", "")
 
 
 if __name__ == "__main__":

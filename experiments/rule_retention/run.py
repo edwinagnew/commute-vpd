@@ -1,4 +1,4 @@
-"""E___ (cell P1.24): calibrating causal-rule retention on three items of the 67M built with known machinery (plan
+"""E193 (cell P1.24): calibrating causal-rule retention on three items of the 67M built with known machinery (plan
 reports/plans/2026-11-17_plan_causal-rule-retention.md; the definition is tested, not adopted; no trained fine-tune is
 read). Card: card.md. Filed rules and settings: results/predictions.json (the run refuses unless it is committed unchanged).
 Levels, rules, distance and the hybrid: commute.rule_retention. Every reading is on copy24's held-out windows.
@@ -10,8 +10,10 @@ each writes results/stage<n>.json when it finishes, prints `STAGE n DONE`, and i
     1  the circuit C (k neurons of the layer with the most attribution mass on copy24's training windows) and the
        rescaled item (C's down_proj columns times alpha); exit 1 if KL(rescaled || M) is under kl_floor. Both levels read.
     2  per fit seed, the replaced item: C's columns zeroed, n_new neurons appended to that layer and trained alone by
-       KL(replaced || rescaled) on Pile and copy24 training windows; exit 1 if the fit or not-a-copy check misses on
-       held-out windows; else results/large/replaced_s<seed>.pt (the appended weights) and both levels read.
+       KL(replaced || rescaled) + lambda * mean corr^2 with C's neurons on Pile and copy24 training windows, lambda in
+       0, 0.1, 1, 10 in turn (amendment 2026-11-17); the first fit passing the fit and not-a-copy checks on held-out
+       windows is read at both levels; exit 1 only if no lambda passes. Appended weights of every try in
+       results/large/replaced_s<seed>_lambda<lambda>.pt.
     3  rule.score -> results/score.json.
 Inputs: artifacts/vpd (the 67M), artifacts/sets/train_0_4096.npy and val_0_256.npy (Pile rows), and
 experiments/open_pair/results/large/amend1/windows_copy_trained.pt (copy24). Exit 0 done, 1 a stop or refusal.
@@ -36,7 +38,7 @@ from commute.data import pile_rows
 from commute.jobs import EXPERIMENTS, hard_exit, load_experiment, require_filed
 
 RU: Any = load_experiment("rule_retention", "rule")
-EXPERIMENT, CELL = "E___", "P1.24"
+EXPERIMENT, CELL = "E193", "P1.24"
 HERE = Path(__file__).resolve().parent
 RESULTS, PRED = HERE / "results", HERE / "results" / "predictions.json"
 LARGE = RESULTS / "large"
@@ -49,6 +51,7 @@ class Config:  # filed in predictions.json "settings"
     alpha: float  # the rescaled item's gain on C
     n_new: int  # appended neurons of the replaced item
     fit_seeds: tuple[int, ...]
+    lambdas: tuple[float, ...]  # the corr^2 penalty weights tried in this order per seed (amendment 2026-11-17)
     window: int  # tokens per window, copy24's
     pile_train: int  # Pile windows cut from train rows 0..4096 (fit only)
     pile_held: int  # Pile windows cut from val rows 0..256 (fit checks only)
@@ -61,7 +64,7 @@ class Config:  # filed in predictions.json "settings"
     eval_batch: int
 
     def __post_init__(self) -> None:
-        assert self.batch % 2 == 0 and self.k <= R.D_MLP and self.steps > self.warmup and len(set(self.fit_seeds)) == len(self.fit_seeds)
+        assert list(self.lambdas) == sorted(self.lambdas) and self.batch % 2 == 0 and self.k <= R.D_MLP and self.steps > self.warmup and len(set(self.fit_seeds)) == len(self.fit_seeds)
 
 
 @dataclass
@@ -220,24 +223,39 @@ def stage1(M: R.Model, d: Data, cfg: Config, th: dict[str, Any]) -> dict[str, An
 # ---- stage 2: the replaced item -----------------------------------------------------------------------------------
 
 
-def fit(F: R.Model, T: R.Model, e: R.Extra, d: Data, cfg: Config, seed: int) -> list[dict[str, float]]:
-    """Train only e's weights by KL(F || T), mean over positions, on batches of half Pile, half copy24 training windows."""
+def batch_corr2(a: Tensor, b: Tensor) -> Tensor:
+    """Mean over (new, C) pairs of the squared Pearson correlation over the positions of one batch; a (N, k), b (N, n)."""
+    a, b = a - a.mean(0), b - b.mean(0)
+    return ((b.T @ a) / torch.outer(b.norm(dim=0), a.norm(dim=0)).clamp(min=1e-12)).pow(2).mean()
+
+
+def fit(F: R.Model, T: R.Model, e: R.Extra, d: Data, cfg: Config, s1: dict[str, Any], lam: float, seed: int) -> list[dict[str, float]]:
+    """Train only e's weights by KL(F || T), mean over positions, plus lam times `batch_corr2` between e's and C's
+    activations on the layer's normed input, on batches of half Pile, half copy24 training windows."""
     opt = torch.optim.Adam(e.parameters(), lr=cfg.lr)
     sched = torch.optim.lr_scheduler.LambdaLR(opt, lambda s: min(1.0, (s + 1) / cfg.warmup))
-    gen, half, curve = torch.Generator().manual_seed(10_000 + seed), cfg.batch // 2, []
-    for step in range(1, cfg.steps + 1):
-        idx = torch.randint(0, len(d.pile_train), (half,), generator=gen), torch.randint(0, len(d.task_train), (half,), generator=gen)
-        toks = torch.cat([d.pile_train[idx[0].to(d.pile_train.device)], d.task_train[idx[1].to(d.task_train.device)]])
-        with torch.no_grad():
-            target = T.logits(toks)
-        loss = R.kl(F.net(toks)[0], target).mean()
-        opt.zero_grad(set_to_none=True)
-        loss.backward()
-        opt.step()
-        sched.step()
-        if step % cfg.log_every == 0 or step == 1:
-            curve.append({"step": step, "kl": float(loss)})
-            log(f"  fit s{seed} step {step}: batch KL(replaced || rescaled) {float(loss):.6g}")
+    gen, half, curve, seen = torch.Generator().manual_seed(10_000 + seed), cfg.batch // 2, [], []
+    blk = F.net.h[s1["layer"]].mlp
+    hook = blk.register_forward_pre_hook(lambda _m, a: seen.append(a[0]))
+    try:
+        for step in range(1, cfg.steps + 1):
+            idx = torch.randint(0, len(d.pile_train), (half,), generator=gen), torch.randint(0, len(d.task_train), (half,), generator=gen)
+            toks = torch.cat([d.pile_train[idx[0].to(d.pile_train.device)], d.task_train[idx[1].to(d.task_train.device)]])
+            with torch.no_grad():
+                target = T.logits(toks)
+            seen.clear()
+            kl = R.kl(F.net(toks)[0], target).mean()
+            h = seen[0].flatten(0, 1)
+            pen = batch_corr2(blk.gelu(blk.c_fc(h))[:, s1["C"]].detach(), e.acts(h))
+            opt.zero_grad(set_to_none=True)
+            (kl + lam * pen).backward()
+            opt.step()
+            sched.step()
+            if step % cfg.log_every == 0 or step == 1:
+                curve.append({"step": step, "kl": float(kl), "corr2": float(pen)})
+                log(f"  fit s{seed} lambda {lam} step {step}: batch KL(replaced || rescaled) {float(kl):.6g}, mean corr^2 with C {float(pen):.4g}")
+    finally:
+        hook.remove()
     return curve
 
 
@@ -258,7 +276,22 @@ def corr(M: R.Model, e: R.Extra, layer: int, C: list[int], toks: Tensor, size: i
 
 
 def replaced(M: R.Model, d: Data, cfg: Config, th: dict[str, Any], s1: dict[str, Any], seed: int) -> tuple[R.Model, dict[str, Any]]:
-    """The replaced item at one fit seed and its two checks on held-out windows; rec["misses"] lists the checks missed."""
+    """The replaced item at one fit seed (amendment 2026-11-17): a fit per lambda of cfg.lambdas in ascending order, each
+    from the same start, keeping the first that passes both held-out checks. rec["tries"] holds every lambda tried;
+    rec["misses"] is empty when one passed, else the last try's misses."""
+    tries: list[dict[str, Any]] = []
+    F, rec = attempt(M, d, cfg, th, s1, seed, cfg.lambdas[0])
+    tries.append(rec)
+    for lam in cfg.lambdas[1:]:
+        if not rec["misses"]:
+            break
+        F, rec = attempt(M, d, cfg, th, s1, seed, lam)
+        tries.append(rec)
+    return F, {"lambda": rec["lambda"], "tries": tries, "misses": rec["misses"]}
+
+
+def attempt(M: R.Model, d: Data, cfg: Config, th: dict[str, Any], s1: dict[str, Any], seed: int, lam: float) -> tuple[R.Model, dict[str, Any]]:
+    """One fit at one lambda and its two checks on held-out windows; rec["misses"] lists the checks missed."""
     layer, C = s1["layer"], s1["C"]
     T, F = rescaled(M, layer, C, cfg.alpha), clone(M)
     blk = F.net.h[layer].mlp
@@ -267,20 +300,20 @@ def replaced(M: R.Model, d: Data, cfg: Config, th: dict[str, Any], s1: dict[str,
         blk.down_proj.weight[:, C] = 0
     e = R.Extra(cfg.n_new, blk.c_fc.weight.shape[1], blk.gelu, std_in, std_out, seed).to(d.task_held.device)
     F.append(layer, e)
-    rec: dict[str, Any] = {"std_in": std_in, "std_out": std_out, "curve": fit(F, T, e, d, cfg, seed)}
+    rec: dict[str, Any] = {"lambda": lam, "std_in": std_in, "std_out": std_out, "curve": fit(F, T, e, d, cfg, s1, lam, seed)}
     e.requires_grad_(False)
     for name, toks in (("task", d.task_held), ("pile", d.pile_held)):
         rec[f"kl_fit_{name}"], rec[f"kl_rescaled_{name}"] = mean_kl(F, T, toks, cfg.eval_batch), mean_kl(T, M, toks, cfg.eval_batch)
         rec[f"fit_ratio_{name}"] = rec[f"kl_fit_{name}"] / rec[f"kl_rescaled_{name}"]
     cc = corr(M, e, layer, C, torch.cat([d.pile_held, d.task_held]), cfg.eval_batch)
     rec |= {"corr": cc.tolist(), "max_abs_corr": float(cc.abs().max())}
-    log(f"replaced s{seed}: fit ratio copy24 {rec['fit_ratio_task']:.4g}, Pile {rec['fit_ratio_pile']:.4g} (bar {th['fit_ratio']}); "
+    log(f"replaced s{seed} lambda {lam}: fit ratio copy24 {rec['fit_ratio_task']:.4g}, Pile {rec['fit_ratio_pile']:.4g} (bar {th['fit_ratio']}); "
         f"max |corr| with C {rec['max_abs_corr']:.4f} (bar {th['copy_corr']})")
     rec["misses"] = [f"fit ratio {n} {rec[f'fit_ratio_{n}']:.4g}" for n in ("task", "pile") if not rec[f"fit_ratio_{n}"] <= th["fit_ratio"]]
     if not rec["max_abs_corr"] <= th["copy_corr"]:
         rec["misses"].append(f"max |corr| {rec['max_abs_corr']:.4f}")
     LARGE.mkdir(parents=True, exist_ok=True)
-    torch.save({k: v.cpu() for k, v in e.state_dict().items()}, LARGE / f"replaced_s{seed}.pt")
+    torch.save({k: v.cpu() for k, v in e.state_dict().items()}, LARGE / f"replaced_s{seed}_lambda{lam:g}.pt")
     return F, rec
 
 
@@ -292,7 +325,7 @@ def stage2(M: R.Model, d: Data, cfg: Config, th: dict[str, Any], s1: dict[str, A
         F, rec = replaced(M, d, cfg, th, s1, seed)
         out["seeds"][str(seed)] = rec
         if rec["misses"]:
-            stop(path, out, f"stage 2 seed {seed}: " + "; ".join(rec["misses"]))
+            stop(path, out, f"stage 2 seed {seed}: no lambda passes; last: " + "; ".join(rec["misses"]))
         rec["readings"] = read(F, M, d, th, f"replaced_s{seed}")
         dump(path, out)
         print(f"STAGE 2 seed {seed} DONE", flush=True)

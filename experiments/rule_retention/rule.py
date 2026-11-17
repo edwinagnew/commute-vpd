@@ -1,4 +1,4 @@
-"""E___'s filed rule (cell P1.24; results/predictions.json "rule"), pure: no model. Per level, from the stage JSONs:
+"""E193's filed rule (cell P1.24; results/predictions.json "rule"), pure: no model. Per level, from the stage JSONs:
     do-nothing  every unit r = 1 within r_tol (stage 0 stops otherwise) and the contrast reads "no change"
     an item     "high" when every smallest set found (every order; every fit seed for replaced) has mean r >= high,
                 "low" when every one has mean r <= low, else "no call"; an item with no reading ("no contrast",
