@@ -37,3 +37,11 @@ You opened P1.26 at about 21:00 and settled the plan's six questions in a dialog
 - **Run 2 (E201).** A head was grafted onto frozen M; it is new by construction, and every build check held. The gain readings give it 0, and the per-site map gives it 0.13.
 - **Page:** `reports/analyses/2026-11-18_analysis_held-model-retention-run1.md`, which covers both runs.
 - **Premise check: doubtful.** The label comes mostly from how expressive the map is. Its question for you: "What, independent of these readings, decides how much re-mapping of the original's units still counts as the fine-tune reusing them?"
+
+## Later still: the adoption recorded (user, 2026-11-18)
+P1.26, due 11-19: filled; your adoption of the held-model wording as the working definition of reuse is recorded.
+- **Recorded.** A dated `decisions.md` row (2026-11-18) states the wording as a cross-model interchange, the map class as a declared parameter, the stitching step, the stipulation and the caveats. The two rows of the second wording (2026-11-09, 2026-11-10) are marked superseded. `GOALS.md` never stated the second wording, so it gains one bullet that names the new working definition and marks the second wording superseded.
+- **Log box rewritten.** `#existing-new` is about 550 words: one plain line, the interchange framing first, a short formal core (H and S), what is not interchange, the caveats, then what it replaces and the two follow-ups. A clerk is flushing and publishing it, with the glossary entry for the second wording marked superseded.
+- **Plan against your wording.** They agree. The plan adds two things: the inputs are set to M's own inputs at the layer, and the fit reaches one layer deep. Your wording leaves both open. I kept the plan.
+- **Follow-up cells not added.** The `fleet/cell add --rung L1.4` call for both cells was refused by the session's auto-mode permission check, so neither cell exists yet: (a) grafts at other sites and offsets, including an MLP neuron and an earlier layer; (b) the main reading on E187's size-matched pairs. Rules are filed before any reading in both. Nothing has run.
+- **No new wording, cut-off or label.** None was added.
