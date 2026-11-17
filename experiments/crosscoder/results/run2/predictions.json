@@ -1,0 +1,89 @@
+{
+ "experiment": "E203",
+ "cell": "P2.31",
+ "card": "reports/plans/2026-11-17_plan_p2-31-run2-card.md",
+ "plan": "reports/plans/2026-11-17_plan_p2-31-run2.md",
+ "filed": "2026-11-17, before any run",
+ "descriptive": "Sides named as built (reuse side, new side); no reuse/new verdict. The user's expectation (2026-11-17: 'Expected: the reuse side reads higher') is filed as P1/P2 and read descriptively.",
+ "question": "On the nine 67M built pairs, as built and size-matched, is the base-vs-fine-tune activation change at block 2's input carried more by crosscoder latents the base model also has (shared) than by latents only the fine-tune has (fine-tune-specific: top N by relative norm that pass latent scaling), on the side built to reuse than on the side built to be new, with the crosscoder trained by Minder et al.'s own code and recipe?",
+ "predictions": {
+  "P1": "As built: gap > 0 on at least 7 of the 9 built pairs (the user's expectation, 2026-11-17)",
+  "P2": "Size-matched: gap > 0 on at least 7 of the 9 built pairs"
+ },
+ "rules": {
+  "d": "per side, at the end of training: d = shared part - fine-tune-specific part of the change on the task's score-half windows, groups at N = top_n (run.py Job.score, commute.crosscoder.groups and parts); nan when the change energy is 0. d_wide (N = top_n_wide) is reported beside it and decides nothing",
+  "fine-tune-specific": "one of the top_n latents by relative norm (Minder eq. 3; ties to the lower index) whose latent-scaling ratios give nu_r < 0.5 and nu_eps < 0.2 with no negative base beta and positive fine-tune betas (commute.crosscoder.specific)",
+  "shared": "alive (at least alive_min firings on the validation mix) with relative norm in [0.4, 0.6], not fine-tune-specific",
+  "gap": "per pair: mean d over the reuse side's seeds minus mean d over the new side's (experiments/method_table/plot_final.score)",
+  "apart": "every seed of one side beyond every seed of the other, at least 2 seeds a side (plot_final.score); else 'no call' or 'one value a side'",
+  "size-matched": "the larger side (E187 m67.json .pairs[pair].larger) read again at dW times c (m67.json .pairs[pair].c); the smaller side keeps its as-built d",
+  "missing": "a pair with any side unread or a nan d is drawn x (not run) and counts as not gap > 0"
+ },
+ "edge_cases": {
+  "base against itself": "change energy 0: every part and d nan; read on relative norms (all alive at 0.5), the specific count (0: with equal halves every beta ratio is 1) and FVE; top-N picks tied latents by index, which latent scaling then rejects",
+  "do-nothing state": "the random update enters no gap. If both sides read like it (d near 0), P1 counts signs of near-zero gaps and passes by chance about 9% of the time; the apart count is the stricter read",
+  "ties": "gap exactly 0 is not > 0",
+  "two seeds a side": "e53_lowercase_cipher reuse and e54_own new have 2: the apart rule applies",
+  "no fine-tune-specific latent": "the specific part is 0 (an empty group sums to 0), d = shared part; defined",
+  "a candidate inside the shared band": "a top-N latent that passes latent scaling is fine-tune-specific even with relative norm in [0.4, 0.6]; one that fails stays shared if alive and in the band, else an artefact (groups are disjoint, parts plus bias plus error sum to 1)",
+  "a latent that never fires on the latent-scaling tokens": "beta 0/0 is nan; nan fails every comparison, so it is not specific",
+  "shared states": "e54/elicit_s0..s4 serve e54_matched and e54_own, c3/cipher_s0..s7 serve both c3 pairs: one crosscoder each, read in both pairs",
+  "negative parts": "a group's part can be below 0 (it points against the change); d is not clipped"
+ },
+ "expected": {
+  "self (base against itself)": "activations equal (max abs 0); every alive relative norm 0.5 exactly (paired init, equal inputs, equal normalisers); 0 fine-tune-specific latents; FVE about 0.87 (paper Table 3: 0.876; run 1: 0.873), at least 0.5 at the first snapshot (run 1: 0.69 by 14M tokens); dead share under 0.3 (paper 12%); parts nan",
+  "planted (one random direction at each task window's answer position, run 1's seed)": "the lead latent (the one carrying most of the change) ranks first by relative norm and passes latent scaling with nu_r and nu_eps near 0 (the base side never shows the direction); fine-tune-specific part at least 0.9 (run 1: 0.987 on one latent at relative norm 0.865); cos_planted_best near 1; bar: lead specific and part >= 0.5",
+  "snapshots (25M, 50M, 100M tokens and the end, stages 0 and 1)": "FVE rising to a plateau; the planted reading stable from 50M tokens on (part within 0.05, Jaccard of the specific set >= 0.5); no bar, reported for the token-budget question",
+  "random update at the reuse state's per-matrix norms": "d near 0 (|d| < 0.2); error part at least 0.5; no bar",
+  "e54_matched seed 0": "rival A: d about +0.3 on the reuse state (elicit), about 0 on the new state (cipher); rival B: within 0.1 of each other",
+  "crosscoder reseed (reuse state, seed 1)": "d within 0.05 of seed 0 (bar 0.05)",
+  "built pairs": "rival A: gap > 0 on at least 7 of 9, apart on at least 5; rival B: gap inside the seed ranges on at least 7 of 9"
+ },
+ "settings": {
+  "layer": 2,
+  "data_seed": 198,
+  "random_seed": 1981,
+  "plant_seed": 1982,
+  "control_task": "e54/elicit",
+  "first_pair_states": ["e54/elicit_s0", "e54/cipher_s0"],
+  "full": {
+   "d": 768, "expansion": 32, "k": 100, "k_max": 1024, "k_anneal_steps": 2000, "lr": 0.0001, "warmup": 1000,
+   "batch": 2048, "tokens": 200000000, "epochs": 2, "aux_alpha": 0.03125, "dead_tokens": 10000000, "init_norm": 1.0,
+   "target_rms": 100.0, "chunk_rows": 1024, "ls_tokens": 100000, "val_rows": 8192, "alive_min": 10, "top_n": 1667,
+   "top_n_wide": 5000, "nu_r": 0.5, "nu_eps": 0.2, "shared": [0.4, 0.6], "base_only": 0.1,
+   "snapshots": [0.125, 0.25, 0.5], "ckpt_every": 10000
+  },
+  "rehearsal": {
+   "d": 768, "expansion": 2, "k": 100, "k_max": 1024, "k_anneal_steps": 200, "lr": 0.0001, "warmup": 100,
+   "batch": 2048, "tokens": 4096000, "epochs": 2, "aux_alpha": 0.03125, "dead_tokens": 200000, "init_norm": 1.0,
+   "target_rms": 100.0, "chunk_rows": 64, "ls_tokens": 20000, "val_rows": 64, "alive_min": 10, "top_n": 64,
+   "top_n_wide": 192, "nu_r": 0.5, "nu_eps": 0.2, "shared": [0.4, 0.6], "base_only": 0.1,
+   "snapshots": [0.125, 0.25, 0.5], "ckpt_every": 500
+  },
+  "sources": {
+   "expansion, k, k_max, k_anneal_steps, lr, warmup, batch, epochs, init_norm, target_rms, ls_tokens, top_n_wide": "diffing-toolkit@617d926 configs/diffing/method/crosscoder.yaml lines 18-78",
+   "tokens": "2 epochs over 100M unique tokens: the paper's run/gemma2_2b/train-crosscoder.sh (--num-samples 100_000_000 --epochs 2, sparsity-artifacts-crosscoders@d67ec6a); the toolkit's per-dataset cap of 50M train tokens (configs/config.yaml:125) with two datasets gives the same",
+   "aux_alpha, dead_tokens, threshold EMA, aux k = d/2, loss, clipping, decoder bias init": "crosscoder_learning@d1fd6f3 dictionary_learning/trainers/crosscoder.py (their trainer, called, not copied)",
+   "chunk_rows": "about 1M tokens per locally shuffled chunk, the toolkit's local_shuffling_shard_size 1_000_000 (crosscoder.yaml)",
+   "top_n": "the toolkit's 5,000 of 73,728 latents scaled to 24,576 (as the expansion factor scales the dictionary); departure 3 of the plan",
+   "nu_r, nu_eps": "Minder et al. 2025 glossary and §3.1",
+   "shared, base_only": "Minder et al. 2025 Table 4 bands; toolkit analysis.py:104 (|0.5 - x| < 0.1)",
+   "val_rows": "8,192 Pile val rows (4.2M tokens) against the toolkit's 5M validation tokens: the largest cached set (departure: size only)",
+   "alive_min": "run 1's, not in the sources (it decides only which non-candidates count as shared or other)",
+   "layer": "the middle layer (toolkit layers [0.5], paper layer 13 of 26)",
+   "seeds": "run 1's data, random and plant seeds, so the planted direction is run 1's"
+  }
+ },
+ "thresholds": {
+  "full": {
+   "self_act_diff": 1e-05, "self_rn_dev": 0.001, "fve_early": 0.5, "fve_min": 0.8, "dead_max": 0.3,
+   "planted_part": 0.5, "planted_lead_specific": true, "fve_drop": 0.05, "reseed_d": 0.05, "explained_min": 0.1,
+   "projected_limit_min": 300
+  },
+  "rehearsal": {
+   "self_act_diff": 1e-05, "self_rn_dev": 0.001, "fve_early": -1.0, "fve_min": -1.0, "dead_max": 1.0,
+   "planted_part": -1.0, "planted_lead_specific": false, "fve_drop": 10.0, "reseed_d": 10.0, "explained_min": -10.0,
+   "projected_limit_min": 100
+  }
+ }
+}

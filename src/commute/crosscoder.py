@@ -1,216 +1,297 @@
-"""A BatchTopK crosscoder between the base model and one fine-tune at one residual site, latent scaling, and the
-activation-change reading (E198, cell P2.31; plan reports/plans/2026-11-17_plan_p2-31-crosscoder.md).
+"""Glue around Minder et al.'s crosscoder code for E203 (cell P2.31 run 2; plan reports/plans/2026-11-17_plan_p2-31-run2.md,
+appendix ..._run2_appendix.md). Run 1 (E198) used an own implementation; it is in git history before this file changed.
 
-Recipe: Minder et al. 2025, "Overcoming Sparsity Artifacts in Crosscoders to Interpret Chat-Tuning" (arXiv 2504.02922
-v4): BatchTopK selection on f_j(x) (|d_j^base| + |d_j^ft|) (eq. 9), the inference threshold theta (eqs. 13-14), the aux
-loss on dead latents (k_aux 512, alpha 1/32, App. B.2), paired init with the decoder the encoder's transpose (App. K),
-relative decoder norm and its bands (Table 4), latent scaling with the fine-tune decoder and its two ratios (eqs. 4,
-33-36), and the chat-specific test nu_r < 0.5, nu_eps < 0.2 (glossary). The method is Lindsey et al. 2024, "Sparse
-Crosscoders for Cross-Layer Features and Model Diffing" (middle-layer residual, relative decoder norms). Departures
-are listed in the plan. Model index 0 is the base, 1 the fine-tune, in every (2, ...) tensor here.
+From their code, pinned in pyproject.toml (`dictionary-learning`, science-of-finetuning/crosscoder_learning@d1fd6f3):
+the model `BatchTopKCrossCoder` (paired init with the decoder the encoder's transpose, BatchTopK on f * sum of decoder
+norms, the inference threshold, per-model mean/std normalisation to `target_rms`) and the training step
+`BatchTopKCrossCoderTrainer.update` (unsquared L2 loss, aux loss on dead latents, threshold EMA, warm-up, k annealing,
+gradient clipping, decoder bias at the geometric median). Settings: diffing-toolkit@617d926
+configs/diffing/method/crosscoder.yaml.
 
-The reading, per state, on held-out task windows: the change D(x) = h_ft(x) - h_base(x) is written exactly as
-  sum_j f_j(x) (d_j^ft - d_j^base) + (b_ft - b_base) + (eps_ft(x) - eps_base(x)),
-and each latent's carried part is s_j = sum_x f_j(x) <d_j^ft - d_j^base, D(x)> / sum_x |D(x)|^2, so the groups' parts,
-the bias part and the error part sum to one. `d` = shared part minus fine-tune-specific part.
+Ours: the normaliser fit, the latent-scaling betas (the closed form of diffing-toolkit@617d926
+src/diffing/utils/dictionary/latent_scaling/closed_form.py:40-168 with the targets of its utils.py: errors with the
+latent's own contribution added back, full reconstructions, all in normalised space, probed with the fine-tune decoder;
+written as running sums instead of materialised per-latent targets, checked against them in tests/test_crosscoder.py),
+the top-N candidate rule (closed_form.py:365, "sorting by dec_norm_diff ... taking the head") with the paper's
+nu_r < 0.5 and nu_eps < 0.2, and the change reading, computed in raw activation space:
+  D(x) = h_ft(x) - h_base(x) = sum_j f_j(x) (d_j^ft - d_j^base) + (bias part) + (error),
+with each decoder taken back to raw units (divided by its model's normalisation scale; the means go to the bias part).
+s_j = sum_x f_j(x) <d_j^ft - d_j^base, D(x)> / sum_x |D(x)|^2. Model index 0 is the base, 1 the fine-tune.
 """
 
 from __future__ import annotations
 
 import math
-from collections.abc import Callable, Iterator
+from collections.abc import Callable, Iterable, Iterator
 from dataclasses import dataclass
 from typing import Any
 
 import torch
-from torch import Tensor, nn
+from dictionary_learning.trainers.crosscoder import BatchTopKCrossCoderTrainer
+from torch import Tensor
+
+AE = Any  # their BatchTopKCrossCoder: its methods return untyped unions, so it is handled as Any here
+Trainer = Any  # their BatchTopKCrossCoderTrainer
 
 
 @dataclass(frozen=True)
 class Cfg:
-    d: int  # residual width
-    expansion: int  # latents = expansion * d
-    k: int  # BatchTopK: k * batch selected per batch
+    """Every size of a run; the full run and the rehearsal are two instances (results/run2/predictions.json)."""
+
+    d: int
+    expansion: int
+    k: int
+    k_max: int
+    k_anneal_steps: int
     lr: float
-    batch: int  # tokens per step
-    k_aux: int
-    alpha_aux: float
-    dead_tokens: int  # a latent unfired for this many tokens is dead (aux loss)
+    warmup: int
+    batch: int
+    tokens: int  # token presentations per crosscoder, all epochs: the one budget value
+    epochs: int
+    aux_alpha: float
+    dead_tokens: int
     init_norm: float
-    theta_last: float  # theta = mean smallest selected value over this last fraction of steps
-    alive_min: int  # firings on the held-out mix for a latent to count as alive
-    shared: tuple[float, float]  # relative decoder norm bands (Minder Table 4)
-    ft_only: float
-    base_only: float
-    nu_r: float  # latent scaling: fine-tune-specific when nu_r < this and nu_eps < nu_eps
+    target_rms: float
+    chunk_rows: int  # Pile rows per locally shuffled chunk (plus as many task tokens)
+    ls_tokens: int  # latent-scaling tokens, from the first training chunk
+    val_rows: int
+    alive_min: int
+    top_n: int
+    top_n_wide: int
+    nu_r: float
     nu_eps: float
+    shared: tuple[float, float]
+    base_only: float
+    snapshots: tuple[
+        float, ...
+    ]  # fractions of `tokens` scored before the end (stages 0 and 1)
+    ckpt_every: int  # steps
 
     def __post_init__(self) -> None:
-        assert self.k * 10 <= self.latents and self.k_aux <= self.latents and 0 < self.theta_last <= 1, self
-        assert 0 <= self.base_only < self.shared[0] < 0.5 < self.shared[1] < self.ft_only <= 1, self
+        assert self.k * 10 <= self.latents and self.k <= self.k_max <= self.latents, (
+            self
+        )
+        assert (
+            self.warmup < self.steps
+            and self.k_anneal_steps < self.steps
+            and self.ckpt_every < self.steps
+        ), self
+        assert (
+            0 < self.top_n < self.top_n_wide <= self.latents and self.ls_tokens > 0
+        ), self
+        assert 0 <= self.base_only < self.shared[0] < 0.5 < self.shared[1] <= 1, self
+        assert all(
+            0 <= a < b < 1
+            for a, b in zip((0, *self.snapshots), self.snapshots, strict=False)
+        ), self
 
     @property
     def latents(self) -> int:
         return self.expansion * self.d
 
-
-class Crosscoder(nn.Module):
-    def __init__(self, cfg: Cfg, seed: int, device: str) -> None:
-        super().__init__()
-        g = torch.Generator().manual_seed(seed)
-        W = torch.randn(cfg.d, cfg.latents, generator=g)
-        W = W / W.norm(dim=0, keepdim=True) * cfg.init_norm  # each latent's direction at norm init_norm, both models
-        self.W_enc = nn.Parameter(torch.stack([W, W.clone()]).to(device))  # (2, d, D), paired init
-        self.b_enc = nn.Parameter(torch.zeros(cfg.latents, device=device))
-        self.W_dec = nn.Parameter(self.W_enc.detach().transpose(1, 2).clone())  # (2, D, d), the encoder's transpose
-        self.b_dec = nn.Parameter(torch.zeros(2, cfg.d, device=device))
-        self.theta = math.nan
-        self.cfg = cfg
-
-    def pre(self, h: Tensor) -> Tensor:
-        return torch.relu(torch.einsum("mnd,mdk->nk", h, self.W_enc) + self.b_enc)
-
-    def value(self, f: Tensor) -> Tensor:
-        return f * self.W_dec.norm(dim=2).sum(0)
-
-    def encode_train(self, h: Tensor) -> tuple[Tensor, float]:
-        """Training activations (eq. 9): the batch's top n*k scaled values kept; also the smallest kept value."""
-        f = self.pre(h)
-        with torch.no_grad():
-            v = self.value(f).flatten()
-        top = torch.topk(v, h.shape[1] * self.cfg.k, sorted=False)
-        mask = torch.zeros_like(v).scatter_(0, top.indices, 1.0).view_as(f)
-        return f * mask, float(top.values.min())
-
-    def encode(self, h: Tensor) -> Tensor:
-        """Inference activations (eq. 13): kept where the scaled value exceeds theta."""
-        f = self.pre(h)
-        return f * (self.value(f) > self.theta)
-
-    def decode(self, f: Tensor, bias: bool = True) -> Tensor:
-        out = torch.einsum("nk,mkd->mnd", f, self.W_dec)
-        return out + self.b_dec[:, None] if bias else out
+    @property
+    def steps(self) -> int:
+        return self.tokens // self.batch
 
 
-def train(cc: Crosscoder, batches: Iterator[Tensor], n_steps: int, log: Callable[[str], None]) -> dict[str, Any]:
-    """Adam at the recipe's rate on 1/2 |eps_base|^2 + 1/2 |eps_ft|^2 + alpha * aux, one pass over `batches`."""
-    cfg = cc.cfg
-    opt = torch.optim.Adam(cc.parameters(), lr=cfg.lr)
-    since = torch.zeros(cfg.latents, device=cc.W_dec.device)
-    mins: list[float] = []
-    curve: list[dict[str, float]] = []
-    step = 0
-    for step, h in enumerate(batches):
-        f, vmin = cc.encode_train(h)
-        err = h - cc.decode(f)
-        loss = 0.5 * err.pow(2).sum(-1).sum(0).mean()
-        since += h.shape[1]
-        since[(f > 0).any(0)] = 0
-        dead = since > cfg.dead_tokens
-        aux = torch.zeros((), device=h.device)
-        if bool(dead.any()):
-            pre = cc.pre(h) * dead
-            top = torch.topk(pre, min(cfg.k_aux, int(dead.sum())), dim=1)
-            fa = torch.zeros_like(pre).scatter_(1, top.indices, top.values)
-            aux = (err.detach() - cc.decode(fa, bias=False)).pow(2).sum(-1).sum(0).mean()
-        opt.zero_grad(set_to_none=True)
-        (loss + cfg.alpha_aux * aux).backward()
-        opt.step()
-        if step >= n_steps * (1 - cfg.theta_last):
-            mins.append(vmin)
-        if step % 500 == 0 or step == n_steps - 1:
-            e = err.detach()
-            fve = 1 - float(e.pow(2).sum()) / float((h - h.mean(1, keepdim=True)).pow(2).sum())
-            rec = {"step": step, "loss": loss.item(), "aux": aux.item(), "fve_batch": fve, "dead": dead.float().mean().item()}
+def normaliser(h: Tensor) -> tuple[Tensor, Tensor]:
+    """Per-model mean and std (biased) of a raw (n, 2, d) sample (diffing-toolkit training.py:37-73)."""
+    return h.mean(0), h.std(0, unbiased=False)
+
+
+def trainer(cfg: Cfg, mean: Tensor, std: Tensor, seed: int) -> Trainer:
+    t = BatchTopKCrossCoderTrainer(
+        steps=cfg.steps, activation_dim=cfg.d, dict_size=cfg.latents, k=cfg.k, layer=2, lm_name="commute-67m",
+        num_layers=2, k_max=cfg.k_max, k_annealing_steps=cfg.k_anneal_steps, lr=cfg.lr, auxk_alpha=cfg.aux_alpha,
+        warmup_steps=cfg.warmup, seed=seed, device="cuda", activation_mean=mean, activation_std=std,
+        target_rms=cfg.target_rms,
+        dict_class_kwargs={"same_init_for_all_layers": True, "init_with_transpose": True, "norm_init_scale": cfg.init_norm,
+                           "code_normalization": "crosscoder"},
+    )  # fmt: skip
+    t.dead_feature_threshold = (
+        cfg.dead_tokens
+    )  # their default, 10M; the rehearsal lowers it to run the aux path
+    return t
+
+
+def state(t: Trainer, step: int) -> dict[str, Any]:
+    return {"ae": t.ae.state_dict(), "opt": t.optimizer.state_dict(), "sched": t.scheduler.state_dict(),
+            "since": t.num_tokens_since_fired, "step": step}  # fmt: skip
+
+
+def load_state(t: Trainer, s: dict[str, Any]) -> int:
+    t.ae.load_state_dict(s["ae"])
+    t.optimizer.load_state_dict(s["opt"])
+    t.scheduler.load_state_dict(s["sched"])
+    t.num_tokens_since_fired = s["since"].to(t.num_tokens_since_fired.device)
+    return int(s["step"])
+
+
+@torch.no_grad()
+def fve_batch(ae: AE, x: Tensor) -> float:
+    """Training-mode FVE of one raw (B, 2, d) batch, in normalised space, before the step."""
+    xn = ae.normalize_activations(x.clone())
+    xh = ae.decode(
+        ae.encode(xn, use_threshold=False, normalize_activations=False),
+        denormalize_activations=False,
+    )
+    return 1 - float((xn - xh).pow(2).sum()) / float((xn - xn.mean(0)).pow(2).sum())
+
+
+def train(t: Trainer, batches: Iterable[Tensor], start: int, stop: int,
+          log: Callable[[str], None], hook: Callable[[int], None]) -> list[dict[str, float]]:  # fmt: skip
+    """Their `update` on raw (B, 2, d) batches, steps start..stop-1; `hook(step)` after each step (saves, snapshots)."""
+    curve = []
+    for step, x in zip(range(start, stop), batches, strict=False):
+        rec = (
+            {"step": step, "fve_batch": fve_batch(t.ae, x)}
+            if step % 500 == 0 or step == stop - 1
+            else None
+        )
+        loss = t.update(step, x)
+        assert math.isfinite(loss), f"loss {loss} at step {step}"
+        if rec is not None:
+            rec |= {"loss": loss, "k": float(t.ae.k), "dead": float((t.num_tokens_since_fired >= t.dead_feature_threshold).float().mean()),
+                    "theta": float(t.ae.threshold)}  # fmt: skip
             curve.append(rec)
-            log(f"  step {step}/{n_steps} loss {rec['loss']:.4g} fve_batch {fve:.4f} dead {rec['dead']:.3f}")
-    assert mins, "no steps in the theta window"
-    cc.theta = sum(mins) / len(mins)
-    return {"steps": step + 1, "theta": cc.theta, "curve": curve}
+            log(
+                f"  step {step}/{t.steps} "
+                + " ".join(f"{k} {v:.4g}" for k, v in rec.items() if k != "step")
+            )
+        hook(step + 1)
+    return curve
 
 
-@torch.no_grad()
-def chunks(cc: Crosscoder, h: Tensor, size: int = 4096) -> Iterator[tuple[Tensor, Tensor, Tensor]]:
-    """(h, f, reconstruction) over token chunks of a (2, M, d) tensor."""
-    for i in range(0, h.shape[1], size):
-        x = h[:, i : i + size]
-        f = cc.encode(x)
-        yield x, f, cc.decode(f)
-
-
-@torch.no_grad()
-def fve(cc: Crosscoder, h: Tensor) -> dict[str, Any]:
-    """Fraction of variance explained per model, firing counts per latent and the mean L0, on a held-out (2, M, d)."""
-    err = torch.zeros(2, dtype=torch.float64)
-    fired = torch.zeros(cc.cfg.latents, device=h.device)
-    l0 = 0.0
-    for x, f, rec in chunks(cc, h):
-        err += (x - rec).double().pow(2).sum((1, 2)).cpu()
-        fired += (f > 0).sum(0)
-        l0 += float((f > 0).sum())
-    var = (h - h.mean(1, keepdim=True)).double().pow(2).sum((1, 2)).cpu()
-    out = 1 - err / var
-    return {"fve_base": float(out[0]), "fve_ft": float(out[1]), "l0": l0 / h.shape[1], "fired": fired.cpu()}
-
-
-def relative_norm(cc: Crosscoder) -> Tensor:
-    """Delta_norm in [0, 1] (Lindsey et al.; Minder eq. 3): 1 when the base decoder is zero, 0.5 when the norms agree."""
-    n = cc.W_dec.detach().norm(dim=2)
+def relative_norm(ae: AE) -> Tensor:
+    """Minder eq. 3 (diffing-toolkit analysis.py:59-62 stores 1 minus this): 1 fine-tune only, 0.5 shared, 0 base only."""
+    n = ae.decoder.weight.detach().norm(dim=2)
     return (0.5 * (1 + (n[1] - n[0]) / n.max(0).values.clamp_min(1e-12))).cpu()
 
 
 @torch.no_grad()
-def latent_scaling(cc: Crosscoder, h: Tensor, J: Tensor) -> dict[str, Tensor]:
-    """Minder eqs. 4, 33-36 for latents J, with the fine-tune decoder d = d_j^ft: beta = sum_x f <y, d> / (sum f^2 |d|^2)."""
-    dJ, dbJ = cc.W_dec[1, J], cc.W_dec[0, J]  # (|J|, d)
-    num = {k: torch.zeros(len(J), device=h.device, dtype=torch.float64) for k in ("eps_base", "eps_ft", "r_base", "r_ft")}
-    den = torch.zeros(len(J), device=h.device, dtype=torch.float64)
-    for x, f, rec in chunks(cc, h):
-        fJ, eps = f[:, J], x - rec
-        proj = {"eps_base": eps[0] @ dJ.T + fJ * (dbJ * dJ).sum(1), "eps_ft": eps[1] @ dJ.T + fJ * dJ.pow(2).sum(1),
-                "r_base": rec[0] @ dJ.T, "r_ft": rec[1] @ dJ.T}  # fmt: skip
-        for k, p in proj.items():
-            num[k] += (fJ * p).sum(0).double()
-        den += (fJ.pow(2).sum(0) * dJ.pow(2).sum(1)).double()
-    beta = {k: (v / den).cpu() for k, v in num.items()}
-    return beta | {"nu_eps": beta["eps_base"] / beta["eps_ft"], "nu_r": beta["r_base"] / beta["r_ft"]}
-
-
-def groups(cc: Crosscoder, h_val: Tensor) -> tuple[dict[str, Tensor], dict[str, Any]]:
-    """Alive latents by relative norm into shared / ft_specific / ft_artefact / base_only / other; dead latents apart."""
-    cfg, rn = cc.cfg, relative_norm(cc)
-    ev = fve(cc, h_val)
-    alive = ev.pop("fired") >= cfg.alive_min
-    ft_only = alive & (rn >= cfg.ft_only)
-    J = torch.nonzero(ft_only).squeeze(1)
-    ls = latent_scaling(cc, h_val, J.to(h_val.device)) if len(J) else {}
-    specific = torch.zeros_like(alive)
-    if len(J):  # negative beta_base or a non-positive beta_ft: not specific (Minder App. E.2 filters negative beta_base)
-        ok = (ls["nu_r"] < cfg.nu_r) & (ls["nu_eps"] < cfg.nu_eps) & (ls["eps_base"] >= 0) & (ls["r_base"] >= 0) & (ls["eps_ft"] > 0) & (ls["r_ft"] > 0)
-        specific[J[ok]] = True
-    g = {"shared": alive & (rn >= cfg.shared[0]) & (rn <= cfg.shared[1]), "ft_specific": specific, "ft_artefact": ft_only & ~specific,
-         "base_only": alive & (rn <= cfg.base_only)}  # fmt: skip
-    g["other"] = alive & ~(g["shared"] | ft_only | g["base_only"])
-    g["dead"] = ~alive
-    info = ev | {"counts": {k: int(v.sum()) for k, v in g.items()}, "relative_norm": rn, "scaled": J, "scaling": ls}
-    return g, info
+def raw(ae: AE) -> tuple[Tensor, Tensor]:
+    """Decoder (2, D, d) and bias (2, d) in raw activation units: decode(f) = f @ W_raw[m] + b_raw[m]."""
+    s = ae.activation_global_scale.view(2, 1, 1)
+    return ae.decoder.weight / s, ae.decoder.bias / s[:, 0] + ae.activation_mean
 
 
 @torch.no_grad()
-def change_parts(cc: Crosscoder, h: Tensor, g: dict[str, Tensor]) -> dict[str, Any]:
-    """The change reading on a held-out (2, M, d): each group's part, the bias and error parts, d = shared - specific."""
-    dD = (cc.W_dec[1] - cc.W_dec[0]).detach()  # (D, d)
-    s = torch.zeros(cc.cfg.latents, device=h.device, dtype=torch.float64)
-    total, bias = 0.0, 0.0
-    for x, f, _ in chunks(cc, h):
-        delta = x[1] - x[0]
-        s += (f * (delta @ dD.T)).sum(0).double()
-        total += float(delta.double().pow(2).sum())
-        bias += float((delta.double() @ (cc.b_dec[1] - cc.b_dec[0]).double()).sum())
-    if total <= 0:  # no change at all (the base-against-itself control): every part undefined
-        return {"change_energy": 0.0, "parts": {k: math.nan for k in [*g, "bias", "error"]}, "d": math.nan, "s": s.cpu()}
-    s = s.cpu() / total
-    parts = {k: float(s[m].sum()) for k, m in g.items()}
-    parts["bias"] = bias / total
-    parts["error"] = 1 - float(s.sum()) - parts["bias"]
-    return {"change_energy": total / h.shape[1], "parts": parts, "d": parts["shared"] - parts["ft_specific"], "s": s}
+def fve(ae: AE, chunks: Iterable[Tensor]) -> dict[str, Any]:
+    """Per-model FVE (raw space), firing counts and mean L0 over raw (n, 2, d) chunks, the inference threshold on."""
+    err = torch.zeros(2, dtype=torch.float64, device="cuda")
+    sxx = torch.zeros(2, dtype=torch.float64, device="cuda")
+    sx = torch.zeros(2, ae.activation_dim, dtype=torch.float64, device="cuda")
+    fired, n, l0 = torch.zeros(ae.dict_size, device="cuda"), 0, 0.0
+    for x in chunks:
+        f = ae.encode(x)
+        err += (x - ae.decode(f)).double().pow(2).sum((0, 2))
+        sx += x.double().sum(0)
+        sxx += x.double().pow(2).sum((0, 2))
+        fired += (f > 0).sum(0)
+        n, l0 = n + x.shape[0], l0 + float((f > 0).sum())
+    out = (1 - err / (sxx - sx.pow(2).sum(1) / n)).cpu()
+    return {
+        "fve_base": float(out[0]),
+        "fve_ft": float(out[1]),
+        "l0": l0 / n,
+        "fired": fired.cpu(),
+    }
+
+
+@torch.no_grad()
+def betas(ae: AE, h: Tensor, J: Tensor, size: int = 4096) -> dict[str, Tensor]:
+    """Latent scaling for latents J on raw (n, 2, d): beta = sum_x f <y, d> / (sum_x f^2 |d|^2) with d = d_j^ft, in
+    normalised space; targets eps_m = x_m - (xhat_m - f_j d_j^m) and r_m = xhat_m; nu = beta_base / beta_ft."""
+    W, J = ae.decoder.weight, J.to(ae.decoder.weight.device)
+    dJ, dbJ = W[1, J], W[0, J]
+    keys = ("eps_base", "eps_ft", "r_base", "r_ft")
+    num = {k: torch.zeros(len(J), dtype=torch.float64, device=W.device) for k in keys}
+    den = torch.zeros(len(J), dtype=torch.float64, device=W.device)
+    for i in range(0, h.shape[0], size):
+        xn = ae.normalize_activations(h[i : i + size].clone())
+        f = ae.encode(xn, normalize_activations=False)
+        rec = ae.decode(f, denormalize_activations=False)
+        fJ, eps = f[:, J], xn - rec
+        proj = {"eps_base": eps[:, 0] @ dJ.T + fJ * (dbJ * dJ).sum(1), "eps_ft": eps[:, 1] @ dJ.T + fJ * dJ.pow(2).sum(1),
+                "r_base": rec[:, 0] @ dJ.T, "r_ft": rec[:, 1] @ dJ.T}  # fmt: skip
+        for k in keys:
+            num[k] += (fJ * proj[k]).sum(0).double()
+        den += (fJ.pow(2).sum(0) * dJ.pow(2).sum(1)).double()
+    b = {k: (v / den).cpu() for k, v in num.items()}
+    return b | {"nu_eps": b["eps_base"] / b["eps_ft"], "nu_r": b["r_base"] / b["r_ft"]}
+
+
+def specific(cfg: Cfg, b: dict[str, Tensor]) -> Tensor:
+    """The paper's test (nu_r < 0.5, nu_eps < 0.2). A negative base beta or a non-positive fine-tune beta is not
+    specific (Minder App. E.2 drops negative beta_base; a ratio over a non-positive beta has no reading)."""
+    pos = (
+        (b["eps_base"] >= 0) & (b["r_base"] >= 0) & (b["eps_ft"] > 0) & (b["r_ft"] > 0)
+    )
+    return pos & (b["nu_r"] < cfg.nu_r) & (b["nu_eps"] < cfg.nu_eps)
+
+
+@torch.no_grad()
+def carried(ae: AE, h: Tensor, size: int = 4096) -> dict[str, Any]:
+    """Each latent's carried part s_j of the raw change on (n, 2, d), the bias part, and the FVE of the change."""
+    Wr, br = raw(ae)
+    dD, db = (Wr[1] - Wr[0]).double(), (br[1] - br[0]).double()
+    s = torch.zeros(ae.dict_size, dtype=torch.float64, device=dD.device)
+    total = bias = resid = 0.0
+    for i in range(0, h.shape[0], size):
+        x = h[i : i + size]
+        f = ae.encode(x).double()
+        delta = (x[:, 1] - x[:, 0]).double()
+        s += (f * (delta @ dD.T)).sum(0)
+        total += float(delta.pow(2).sum())
+        bias += float((delta @ db).sum())
+        resid += float((delta - f @ dD - db).pow(2).sum())
+    if total <= 0:  # no change (the base against itself): every part undefined
+        return {
+            "energy": 0.0,
+            "s": torch.full((ae.dict_size,), math.nan),
+            "bias": math.nan,
+            "fve_change": math.nan,
+        }
+    return {
+        "energy": total / h.shape[0],
+        "s": (s / total).cpu(),
+        "bias": bias / total,
+        "fve_change": 1 - resid / total,
+    }
+
+
+def top(rn: Tensor, n: int) -> Tensor:
+    """A (D,) mask of the n latents with the highest relative norm; ties go to the lower index."""
+    m = torch.zeros(len(rn), dtype=torch.bool)
+    m[torch.argsort(-rn.double(), stable=True)[:n]] = True
+    return m
+
+
+def groups(
+    cfg: Cfg, rn: Tensor, alive: Tensor, cand: Tensor, spec: Tensor
+) -> dict[str, Tensor]:
+    """Disjoint latent groups: fine-tune-specific (a top-N candidate that passes latent scaling), shared (alive,
+    relative norm in the band), artefact (a candidate that fails), base-only, other alive, dead."""
+    g = {"ft_specific": cand & spec}
+    g["shared"] = (
+        alive & (rn >= cfg.shared[0]) & (rn <= cfg.shared[1]) & ~g["ft_specific"]
+    )
+    g["ft_artefact"] = cand & ~spec & ~g["shared"]
+    g["base_only"] = alive & (rn <= cfg.base_only) & ~cand
+    g["other"] = alive & ~(
+        g["ft_specific"] | g["shared"] | g["ft_artefact"] | g["base_only"]
+    )
+    g["dead"] = ~(alive | g["ft_specific"] | g["ft_artefact"])
+    return g
+
+
+def parts(s: Tensor, bias: float, g: dict[str, Tensor]) -> dict[str, float]:
+    """Each group's part of the change, the bias part and the error part (1 minus the rest); they sum to one."""
+    p = {k: float(s[m].sum()) for k, m in g.items()} | {"bias": bias}
+    p["error"] = 1 - float(s.sum()) - bias
+    return p
+
+
+def split(h: Tensor, size: int) -> Iterator[Tensor]:
+    for i in range(0, h.shape[0], size):
+        yield h[i : i + size]
