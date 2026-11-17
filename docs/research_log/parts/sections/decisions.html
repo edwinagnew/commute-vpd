@@ -1,29 +1,7 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
-<div class="prose"><p><strong>Waiting on you, 2026-11-17.</strong> One card is open, the definition-lead's: a new candidate definition of reuse, causal-rule retention, was calibrated on three hand-built edits of the 67M model, and the third could not be built. Which one new cell should test it next?</p>
+<div class="prose"><p><strong>Nothing waits on you, 2026-11-17.</strong> The last card, which cell should test causal-rule retention next, was answered in chat: cell P1.25.</p>
 <p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
-<div class="card decision" id="decision-p1-24-next-cell"><span class="chip open urgency">Soon</span>
-<div class="k">Question for you · definition-lead · new 2026-11-17</div>
-<h3>A circuit replaced by different neurons could not be built in two runs, so the new definition is half calibrated. Which one new cell should test it next?</h3>
-<p>Nothing runs on this line until this is decided; the cell's two runs are spent. <strong>Causal-rule retention</strong> (tested, not adopted): split the original model and an edited copy into units at one declared level (single MLP neurons, 12,288 of them; or attention heads plus whole MLP blocks, 28). Each unit has a rule, what it writes given what it reads. A unit is retained to the degree its rule is unchanged, scored 0 to 1. For a change in behaviour, the reading is the average retention over the smallest sets of changed units that still produce it: low means new machinery, high means old machinery, perhaps turned up or down.</p>
-<ul>
-<li><strong>Unchanged copy: read as it must.</strong> Retention 1 on all 12,288 neurons and all 28 heads and blocks.</li>
-<li><strong>Circuit turned up: read high.</strong> Eight layer-1 neurons carry most of the answer on the copy task. Doubling their output read 0.80 per neuron and 0.906 at the heads-plus-blocks level, both above the high bar of 0.7. Louder reads 0.80, not 1: the score is sensitive to size.</li>
-<li><strong>Circuit replaced by new neurons computing the same values: not built.</strong> The circuit's output was set to zero and fresh neurons were trained to reproduce its effect. In 7 fits over the two runs (about $3.45), the ones that fit within about 1% of the effect all copied: one new neuron tracked a circuit neuron at correlation 0.996 to 0.9996. The ones pushed away from copying lost the fit, leaving 44% to 78% of the effect unexplained. One fit seed per run, one circuit, one task.</li>
-<li><strong>So the definition was never shown a replaced circuit.</strong> It is neither confirmed nor refuted, and no fine-tune got a verdict.</li>
-</ul>
-<p><strong>Open question, no recommendation.</strong> The premise check's question, quoted exactly: "If a fine-tune's new units reproduce an old circuit's outputs, what should the definition call that, and what observation would decide it?" Read at the neuron level the definition would score such units zero, since they have no partner in the original model. A copy test like ours would call them old machinery. These are different answers, and choosing between them changes the definition, which only you do.</p>
-<p><strong>Options</strong> (each needs a new one-run cell).</p>
-<ul>
-<li><strong>(a) Build the replaced item by fine-tuning. Recommended.</strong> Knock the circuit out, fine-tune all weights of the three later MLP layers to recover the doubled-circuit model's outputs, then run the copy check over every unit that changed, not only added neurons. It tells us whether a realistic update ever produces the same values on different machinery in this model, and gives the definition its missing test item if it does. About one short pod run, a few dollars.</li>
-<li><strong>(b) A hard constraint.</strong> Strip from the new neurons' input weights every component along the circuit's input directions, so copying is impossible, then refit. It tells us whether the effect can be produced off those directions at all; the fit may fail as the two heaviest penalties did. About $1 to $2.</li>
-<li><strong>(c) Accept a moved copy as the replaced item.</strong> Score the fit that copied one circuit neuron. It tests only whether the score notices a circuit that moved to new neurons, not new computation. About $1.</li>
-<li><strong>(d) Read the five trained matched pairs on the two built items only.</strong> Readings on real fine-tunes now, but the replaced case stays uncalibrated, so a low reading could not be told from the definition being unable to see it. About $2.</li>
-</ul>
-<p><strong>Recommendation: (a).</strong> It is the only option that answers the open question with an observation: it shows what a realistic update does when it must rebuild a circuit's effect, and a copy found there would be an answer, not a failed build. The others may fail the same way again or leave the replaced case uncalibrated.</p>
-<p class="small">Names in the reports: the calibration is cell P1.24, experiments E193 and E194; "replaced circuit" is the third built edit.</p>
-<div class="links"><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/decisions/2026-11-17_decision_p1-24-next-cell.md">card</a> <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-17_analysis_p1-24-rule-retention.md">analysis page</a> <a href="https://github.com/edwinagnew/commute-vpd/blob/main/experiments/rule_retention/figures/replaced_fits.png">replaced_fits.png</a></div>
-</div>
 </div>
 </section>
