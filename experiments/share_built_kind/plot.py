@@ -1,4 +1,4 @@
-"""E200's one figure, from results/stage1.json and stage2.json (no model): the re-gating share of each fine-tune, one row per
+"""E200's one figure, from results/stage2.json and stage3.json (no model): the re-gating share of each fine-tune, one row per
 built kind (`figures.dots`), beside the trained 67M pairs' share ranges from the scorecard,
 experiments/method_table/results/final.json, jq '.cells[] | select(.method=="share" and .group=="built") | .reuse, .new'.
 A state with no share (gain under 1, or a Cue seed stopped in training) is listed under the figure, not drawn.
@@ -29,7 +29,7 @@ def trained_ranges() -> dict[str, tuple[float, float]]:
 
 def main(results: Path = HERE / "results", out: Path = HERE / "figures") -> None:
     states: dict[str, Any] = {}
-    for name in ("stage1.json", "stage2.json"):
+    for name in ("stage2.json", "stage3.json"):
         states |= json.loads((results / name).read_text())["states"]
     groups: dict[str, list[float]] = {LABEL[g]: [] for g in ROWS}
     recs, empty = [], []

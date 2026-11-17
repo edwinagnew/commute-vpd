@@ -35,6 +35,14 @@ reuse definition (`decisions.md` rows 81 and 87) is not read.
 - **Apparatus check, first and alone.** The unchanged 67M as a fine-tune at zero steps, on each pair's windows: gain,
   L01 − L00 and the largest gate change must all read 0 (within 1e-6). It fails if loading or restoring the whole state
   leaks, or the gates are not reproducible. A miss is exit 1 before any state is read.
+- **Positive control, second and alone** (added 2026-11-17 at the coordinator's request). E46's `ident32_s0`, the
+  scorecard's e46_copy_random reuse side at seed 0, is built as a whole state W0 + δW and read through the same loading
+  path, on its own held-out windows and key table. It must reproduce its saved share 0.80244 within 0.001. The saved
+  value is from `experiments/method_table/results/final.json`, jq
+  `.cells[] | select(.method=="share" and .pair=="e46_copy_random") | .reuse[0]`. Floor: E136's stage 0 re-read this
+  state through route_split with difference 0. Its largest difference between two code paths reading one saved state
+  was 1.37e-4 (`experiments/share_untrained/results/stage0.json`, `e_rows`). The 0.001 tolerance is about 7 times that.
+  A miss is exit 1 before any E139 state.
 - **Early guard (Cue).** `VR.finetune`'s step-10 check, now one clause: KL(F‖ft) below KL(F‖M). E139's same seeds read
   0.0176 to 0.0181 at step 10 against 0.0378 at the start; each run's step-10 value is logged beside E139's. The wrong
   clause (KL(M‖ft) against KL(F‖M)) was deleted from the shared function, not mended; no saved run had stopped on it.
@@ -47,9 +55,10 @@ reuse definition (`decisions.md` rows 81 and 87) is not read.
 | Stage | What | Expected |
 |---|---|---|
 | 0 | identity on the four pairs' windows | gain, L01 − L00, max gate change all 0 (stop otherwise) |
-| 1 | 12 saved states: Always on ×3 (300 steps), amendment 2's Always on ×3 (3000 steps), Table ×3, XOR ×3 | Always on 0.3 to 0.8 under rival A; Table 0.1 to 0.45 (the trained pairs' new-side range); XOR gain under 1, r nan |
-| 2 | Cue ×3, E139's recipe and seeds, the fixed check; saved; read | step-10 KL(F‖ft) ≈ 0.018; r as Table's under rival A |
-| 3 | the filed rules | |
+| 1 | positive control: E46 ident32_s0 as a whole state | r = 0.80244 within 0.001, gain 13.99 (stop otherwise) |
+| 2 | 12 saved states: Always on ×3 (300 steps), amendment 2's Always on ×3 (3000 steps), Table ×3, XOR ×3 | Always on 0.3 to 0.8 under rival A; Table 0.1 to 0.45 (the trained pairs' new-side range); XOR gain under 1, r nan |
+| 3 | Cue ×3, E139's recipe and seeds, the fixed check; saved; read | step-10 KL(F‖ft) ≈ 0.018; r as Table's under rival A |
+| 4 | the filed rules | |
 
 E137's hand-made changes are forward hooks, not weight changes: "does not apply". XOR is drawn, in no prediction.
 
@@ -78,12 +87,12 @@ Cue, XOR), with the trained built pairs' ranges shaded behind (reuse sides 0.76 
 
 ## Cost, time, route
 
-Cluster `debug`, one L40, $0: rows and windows about 5 min, 12 reads about 4, three 300-step fine-tunes about 6, three
+Cluster `debug`, one L40, $0: rows and windows about 5 min, the positive control under 1 min, 12 reads about 4, three 300-step fine-tunes about 6, three
 reads about 1; about 20 min, limit 1 h. Submit from the clone root:
 `sbatch --comment='E200 share built kind' cluster/share_built_kind.sbatch`.
 
 ## Not run
 
-A positive control that reproduces a scorecard state's saved share through this whole-state loading path (the identity
-checks the path at zero change only); the share on E137's hand-made changes (no weights); the KL form of E57's share,
+A positive control on a fine-tune that changed every weight (none of the scorecard's states did; stage 1 checks the
+path on a change to the decomposed matrices only); the share on E137's hand-made changes (no weights); the KL form of E57's share,
 which has no 67M code and is not the scorecard's unit.

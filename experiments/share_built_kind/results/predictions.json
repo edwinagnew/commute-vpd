@@ -13,6 +13,7 @@
  },
  "thresholds": {
   "identity_tol": 1e-06,
+  "positive_tol": 0.001,
   "spread": 0.0405,
   "min_readable": 2
  },
@@ -24,7 +25,8 @@
  },
  "expected": {
   "identity control (stage 0, alone, first)": "gain T1 - T0 = 0, L01 - L00 = 0 and the largest gate change = 0 on each of the four pairs' windows, within 1e-06 (same forwards on the same inputs; no measured floor needed, the value is 0 by construction and 1e-06 is a millionth of the gain floor); r undefined. A miss stops the job.",
-  "Always on": "r between 0.3 and 0.8 if rival A holds; at or under Table's if much of the push sits in the embeddings (size.other against size.decomposed in stage1.json says where it sits). Gain over 1 on every state (E139: the fine-tunes reach a KL to F of 0.02 against 0.14 at M).",
+  "positive control (stage 1, alone, after the identity and before any E139 state; a control, not a prediction)": "E46's ident32_s0 (experiments/regating_table/results/large/ident32_s0.pt, dW on the 24 matrices) built as the whole state W0 + dW and read through the same loading path on its own held-out windows and key table (windows_ident32.pt, batch 64): r must equal the scorecard's 0.8024425814544892 (experiments/method_table/results/final.json, jq '.cells[] | select(.method==\"share\" and .pair==\"e46_copy_random\") | .reuse[0]'; gain 13.9946) within positive_tol 0.001. Floor: E136's stage 0 (experiments/share_untrained/results/stage0.json, e_rows) re-read this state through route_split with difference 0, and its largest difference between two code paths reading one saved state was 1.37e-4 (class_twin_definition_verify); 0.001 is about 7 times that. This path differs from route_split only in loading every weight and reading L01 with W0's target weights, which do not enter the Delta-out masked forward, so 0 is expected. A miss (or nan) is exit 1.",
+  "Always on": "r between 0.3 and 0.8 if rival A holds; at or under Table's if much of the push sits in the embeddings (size.other against size.decomposed in stage2.json says where it sits). Gain over 1 on every state (E139: the fine-tunes reach a KL to F of 0.02 against 0.14 at M).",
   "Table": "r between 0.1 and 0.45, the trained pairs' new-side range, if rival A holds; gain well over 1 (F moves the keyed answers by KL 6.5).",
   "Cue": "step 10 KL(F||ft) about 0.018 against a start of 0.038 (E139's three seeds, same recipe and seeds), so the corrected check passes; r as Table's under rival A.",
   "XOR": "gain probably under 1 (E139: not learned), r nan; shown only."

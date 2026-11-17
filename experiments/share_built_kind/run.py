@@ -14,10 +14,13 @@ appended as a last column (`data.LAST`, ci_len 8: no forward and no Gamma sees i
 
   stage 0  the identity control, alone: a fine-tune at zero steps on each pair's windows. gain, L01 - L00 and the largest
            gate change must be 0 (within th.identity_tol); a miss is exit 1 and nothing else runs
-  stage 1  the 12 saved states: Always on 300 steps and 3000 steps (amendment 2), Table, XOR (reference only)
-  stage 2  Cue, 3 seeds, fine-tuned now with E139's recipe (`VR.finetune`, whose step-10 check lost its wrong clause on
+  stage 1  the positive control, alone: E46's ident32_s0 (the scorecard's e46_copy_random reuse side, seed 0) built as a
+           whole state W0 + dW and read through the same loading path on its own windows and table; r must equal the saved
+           0.80244 within th.positive_tol, else exit 1 before any E139 state
+  stage 2  the 12 saved states: Always on 300 steps and 3000 steps (amendment 2), Table, XOR (reference only)
+  stage 3  Cue, 3 seeds, fine-tuned now with E139's recipe (`VR.finetune`, whose step-10 check lost its wrong clause on
            2026-11-17), saved to results/large/cue_s<seed>.pt, then read
-  stage 3  the filed rules (results/rules.json)
+  stage 4  the filed rules (results/rules.json)
 Results after every state in results/stage<n>.json; every number printed; `STAGE n DONE` after each stage. A rerun resumes.
     sbatch --comment='E200 share built kind' cluster/share_built_kind.sbatch
 """
@@ -52,6 +55,8 @@ RESULTS = HERE / "results"
 PRED = RESULTS / "predictions.json"
 E139 = HERE.parent / "reuse_variable_finetune" / "results"
 R1 = HERE.parent / "reuse_variable_test" / "results"
+E46 = HERE.parent / "regating_table" / "results"  # the positive control's state, windows and saved share (stage0b.json)
+SCORECARD = HERE.parent / "method_table" / "results" / "final.json"
 SEEDS = (0, 1, 2)
 HALF = 7  # the last position of an 8-token window; the target sits in a ninth column
 _t0 = time.monotonic()
@@ -125,11 +130,13 @@ def sizes(sd: dict[str, Tensor], w0: dict[str, Tensor], decomposed: set[str]) ->
     return {k: math.sqrt(v) for k, v in sq.items()}
 
 
-def read_state(net: Net, sd: dict[str, Tensor], w0: dict[str, Tensor], rows: Tensor, base: dict[str, Any]) -> dict[str, Any]:
-    """T1 and g1 from the whole fine-tune; L01 from W0's masked model under g1; the share r (nan below MIN_GAIN)."""
+def read_state(net: Net, sd: dict[str, Tensor], w0: dict[str, Tensor], rows: Tensor, base: dict[str, Any],
+               half: int = HALF, token: int | Tensor = LAST, ci_len: int | None = HALF + 1) -> dict[str, Any]:
+    """T1 and g1 from the whole fine-tune; L01 from W0's masked model under g1; the share r (nan below MIN_GAIN). `base` is
+    `route_cells` at W0 on the same rows, half, token and ci_len (batch 64 throughout)."""
     with loaded(net, sd, w0):
-        cur = route_cells(net.model, rows, HALF, LAST, ci_len=HALF + 1)
-    L01, _ = masked_lo(net.model, rows, HALF, LAST, cur["gates"], ci_len=HALF + 1)
+        cur = route_cells(net.model, rows, half, token, ci_len=ci_len)
+    L01, _ = masked_lo(net.model, rows, half, token, cur["gates"], ci_len=ci_len)
     gain, num = cur["T"] - base["T"], L01 - base["L"]
     max_dg = max(float((g1[k] - g0[k]).abs().max()) for g0, g1 in zip(base["gates"], cur["gates"], strict=True) for k in g0)
     return {"r": num / gain if gain >= MIN_GAIN else float("nan"), "gain": gain, "num": num, "max_dg": max_dg,
@@ -155,6 +162,29 @@ def stage0(net: Net, w0: dict[str, Tensor], rows: dict[str, Tensor], base: dict[
     print("STAGE 0 DONE", flush=True)
 
 
+def stage1(net: Net, w0: dict[str, Tensor], th: dict[str, Any]) -> None:
+    """E46's ident32_s0 (dW on the 24 matrices) as a whole state, read as every E139 state is, against its scorecard share:
+    final.json `.cells[] | select(.method=="share" and .pair=="e46_copy_random") | .reuse[0]` (E136 reproduced it exactly)."""
+    path = RESULTS / "stage1.json"
+    cell = next(c for c in json.loads(SCORECARD.read_text())["cells"] if c["method"] == "share" and c["pair"] == "e46_copy_random")
+    saved = cell["reuse"][0]
+    w = torch.load(E46 / "large" / "windows_ident32.pt", weights_only=False)
+    rows, half, table = w["heldout"].tokens, w["heldout"].half, w["table"]
+    dW = torch.load(E46 / "large" / "ident32_s0.pt", weights_only=False)
+    sd = dict(w0) | {f"{k}.weight": w0[f"{k}.weight"] + v.float().to(w0[f"{k}.weight"].device) for k, v in dW.items()}
+    assert len(dW) == 24 and all(f"{k}.weight" in w0 for k in dW)
+    base = route_cells(net.model, rows, half, table, ci_len=None)
+    rec = read_state(net, sd, w0, rows, base, half, table, None) | {"saved_r": saved, "state": "regating_table ident32_s0"}
+    rec["diff"] = rec["r"] - saved
+    log(f"positive control ident32_s0: r {rec['r']:.6f} against saved {saved:.6f} (diff {rec['diff']:.2e}), gain {rec['gain']:.4f}")
+    rec["passed"] = abs(rec["diff"]) <= th["positive_tol"]  # nan fails
+    dump(path, rec)
+    if not rec["passed"]:
+        log("STOPPED: the positive control does not reproduce its saved share")
+        raise SystemExit(1)
+    print("STAGE 1 DONE", flush=True)
+
+
 def read_into(path: Path, name: str, group: str, pair: str, sd: dict[str, Tensor], ctx: dict[str, Any], extra: dict[str, Any]) -> None:
     out = json.loads(path.read_text()) if path.is_file() else {"states": {}}
     rec = {"group": group, "pair": pair, **read_state(ctx["net"], sd, ctx["w0"], ctx["rows"][pair], ctx["base"][pair]),
@@ -169,17 +199,17 @@ def done(path: Path) -> set[str]:
     return set(json.loads(path.read_text())["states"]) if path.is_file() else set()
 
 
-def stage1(ctx: dict[str, Any]) -> None:
-    path = RESULTS / "stage1.json"
+def stage2(ctx: dict[str, Any]) -> None:
+    path = RESULTS / "stage2.json"
     for name, (group, pair, src) in SAVED.items():
         if name not in done(path):
             read_into(path, name, group, pair, torch.load(src, map_location=ctx["net"].device), ctx, {"source": str(src.relative_to(HERE.parent))})
-    print("STAGE 1 DONE", flush=True)
+    print("STAGE 2 DONE", flush=True)
 
 
-def stage2(ctx: dict[str, Any], cfg: Config, sets: VR.Sets, task: VR.Task, p: VR.Pieces) -> None:
+def stage3(ctx: dict[str, Any], cfg: Config, sets: VR.Sets, task: VR.Task, p: VR.Pieces) -> None:
     """Cue, E139's recipe and seeds (300_000 + crc32(item) % 65536); step 10 read beside E139's own step-10 record."""
-    path, net = RESULTS / "stage2.json", ctx["net"]
+    path, net = RESULTS / "stage3.json", ctx["net"]
     (RESULTS / "large").mkdir(parents=True, exist_ok=True)
     fit, read = VR.pair_windows(cfg, "Cue", sets, task)
     F, sch = VR.piece_target(net, p, "Cue"), VR.Schedule(cfg.steps, cfg.lr, cfg.warmup, cfg.early)
@@ -206,7 +236,7 @@ def stage2(ctx: dict[str, Any], cfg: Config, sets: VR.Sets, task: VR.Task, p: VR
         read_into(path, name, group, pair, ft.net.state_dict(), ctx, {"kl_to_F_end": kl_end, "kl_F_M": rec["kl_F_M"]})
         del ft
         torch.cuda.empty_cache()
-    print("STAGE 2 DONE", flush=True)
+    print("STAGE 3 DONE", flush=True)
 
 
 def verdicts(shares: dict[str, list[float]], th: dict[str, Any]) -> dict[str, Any]:
@@ -227,8 +257,8 @@ def verdicts(shares: dict[str, list[float]], th: dict[str, Any]) -> dict[str, An
     return out
 
 
-def stage3(th: dict[str, Any]) -> None:
-    states = {**json.loads((RESULTS / "stage1.json").read_text())["states"], **json.loads((RESULTS / "stage2.json").read_text())["states"]}
+def stage4(th: dict[str, Any]) -> None:
+    states = {**json.loads((RESULTS / "stage2.json").read_text())["states"], **json.loads((RESULTS / "stage3.json").read_text())["states"]}
     shares: dict[str, list[float]] = {}
     for rec in states.values():
         shares.setdefault(rec["pair"], []).append(rec["r"])
@@ -236,7 +266,7 @@ def stage3(th: dict[str, Any]) -> None:
     dump(RESULTS / "rules.json", out)
     for key, v in out["predictions"].items():
         log(f"{key} Always on vs {v['vs']}: {v['call']} ({v['result']}), d {v.get('d', float('nan')):.4f}, bar {v.get('bar', float('nan')):.4f}, n {v['n']}")
-    print("STAGE 3 DONE", flush=True)
+    print("STAGE 4 DONE", flush=True)
 
 
 def main() -> int:
@@ -260,11 +290,12 @@ def main() -> int:
     log(f"{EXPERIMENT}: rows ready, cue {task.cue}")
     RESULTS.mkdir(exist_ok=True)
     stage0(net, w0, rows, base, scan, th)
+    stage1(net, w0, th)
     ctx = {"net": net, "w0": w0, "rows": rows, "base": base, "decomposed": {f"{k}.weight" for k in net.W0}}
     assert len(ctx["decomposed"] & set(w0)) == 24, "the decomposed matrices' names are not the state's"
-    stage1(ctx)
-    stage2(ctx, cfg, sets, task, p)
-    stage3(th)
+    stage2(ctx)
+    stage3(ctx, cfg, sets, task, p)
+    stage4(th)
     return 0
 
 
