@@ -1,22 +1,21 @@
 # Does a fine-tune's change survive when every unit is held to the original model's rule?
 
-*2026-11-18, definition-lead. Cell P1.26, run 1 of 2, experiment E197. A test of the user's held-model wording of
-causal-rule retention, not adopted. No fine-tune is called reuse or new on this page.*
+*2026-11-18, definition-lead. Cell P1.26, both runs: run 1 is experiment E197, run 2 is E201. A test of the user's
+held-model wording of causal-rule retention, not adopted. No fine-tune is called reuse or new on this page.*
 
 For each fine-tune we built a held model from the original model's own units, held to their old rules, and asked how
-much of the fine-tune's change in output survives in it, on code checks, a rebuilt circuit and five matched pairs at
-four seeds. With one gain per unit almost none of any change survived, while a fitted linear map per layer kept nearly
-all of it on old-task fine-tunes and favoured the reuse member of three counted pairs by small, steady margins. For
-the working definition of `GOALS.md`, only that widest reading tells items apart, and this run calibrates it without a
-verdict.
+much of the change in output survives in it, on code checks, a rebuilt circuit, five matched pairs and one attention
+head grafted onto the frozen model. With one gain per unit almost none of any change survived, while a fitted linear
+map per layer kept nearly all of it on old-task fine-tunes and little of the grafted head's. For the working
+definition of `GOALS.md`, only that widest reading tells items apart, and this cell calibrates it without a verdict.
 
 ## The answer
 
 Holding every neuron and head to the original model's rule at one gain keeps almost none of what any fine-tune
 changed: survival reads 0.01 to 0.06. The widest reading, a fitted linear map at each layer, keeps 0.98 or more on
-all eight old-task fine-tunes. On it the reuse member of three counted pairs keeps a little more than its twin, by
-under two hundredths, and the fourth pair is a tie within its seeds. The memorised fact keeps less, mostly because
-its embeddings changed, which the held model keeps at the original's.
+all eight old-task fine-tunes and 0.56 to 0.999 on every trained or rebuilt item. It keeps only 0.13 of a head grafted
+onto the frozen model, which is new by construction. That graft is one build, at one site. On the widest reading the
+reuse member of three counted pairs keeps a little more than its twin, by under two hundredths.
 
 ## What we were testing
 
@@ -48,6 +47,13 @@ an identity key table against a random one, real case labels against a case twin
 twin. The fifth, a parity task against a memorised random fact, is reported and not counted. The pair's gap is the
 reuse member's $S$ minus its twin's, per seed; its spread is the sample deviation over the four seeds.
 
+**The grafted head, run 2.** Every weight of M is frozen. One fresh attention head is added to the last layer and
+trained alone to output, at the last position, the token 16 positions back. That offset was chosen on M first: it is
+the offset from 3 to 16 where M's most attentive head puts the least attention. So the change lives only in the graft,
+removing the graft gives back M exactly, and the graft reads a position no head of M reads much. This item is new by
+provenance at one site, an attention head in the last layer. It is one build, not a class of new machinery, and it
+cannot show that M lacks the skill elsewhere. It is read with the same three readings, on its own Pile windows.
+
 **The side number.** The parity twin and the memorised fact are full fine-tunes, so their embeddings, unembedding and
 final norm moved too. H holds those at M's values, so such a change counts as not surviving. For these two items only,
 $S$ is also read with F's values in those places. No gap or comparison on this page reads it except where it says so.
@@ -64,6 +70,12 @@ writes rules M's units lack. Some reading then separates each counted pair by mo
 not ordered by update size. In the other, the reading tracks how far the weights moved, and reading 3's map absorbs
 almost any change, so it reads near 1 on every item including the rebuilt one.
 
+For the graft, readings 1 and 2 read exactly 0 if the pairing leaves the graft out: H is then M itself. That was a
+condition, not a certainty. M's last layer has six heads and F's seven, and the graft writes far more than M's weakest
+head, so the pairing could have handed it that head's slot had their writes overlapped. For reading 3, one picture
+says no chain of M's heads brings the token 16 back to what M's last-layer heads output, so survival reads near 0. The
+other says M's heads already carry that token there, so the map absorbs the graft and survival reads near 1.
+
 ## What we observed
 
 ### Do the code checks come out as arithmetic says?
@@ -78,7 +90,7 @@ arithmetic says it must: 0.49 on per-neuron gains and −2.3 on the switched-off
 ![Survival per item, three panels](../../experiments/held_model_retention/figures/survival.png)
 
 **Reading it.** Almost none of any trained fine-tune's change survives under readings 1 and 2, and nearly all of it
-survives under reading 3 except on the full fine-tunes and the rebuilt item. Each panel is one reading. The grey band
+survives under reading 3 except on the full fine-tunes, the rebuilt item and the graft. Each panel is one reading. The grey band
 holds the code checks, which sit at 1 where arithmetic says they must. Under reading 1 every trained fine-tune reads
 0.01 to 0.06, all four seeds of each item on top of each other. Under reading 2 they read between −0.005 and 0.011.
 Under reading 3 the eight old-task fine-tunes read 0.98 to 0.999. The parity twin reads 0.91 and the memorised fact
@@ -95,6 +107,20 @@ gain per unit holds the large unchanged part of each unit and drops the small ch
 **The rebuilt item.** Readings 1 and 2 land further from F than M is. Reading 1 keeps the switched-off circuit off
 but cannot express the two rebuilt layers, so H loses the circuit without its replacement. Reading 3 keeps 0.56: a
 per-site map carries a little over half of a change built to need new machinery.
+
+### How much of the grafted head's change survives?
+
+**The build held.** On held-out windows the model with the graft names the token 16 back 0.924 of the time, against
+0.032 for M. The graft puts 0.9996 of its attention from the last position on that token. No head of M puts more than
+0.0325 of its attention at that offset, and zeroing the graft's output gives M's logits exactly.
+
+**Reading it.** Reading 3 keeps 0.13 of the graft's change, the lowest of any item, and readings 1 and 2 keep none.
+The graft row of the survival figure sits at 0 in the first two panels and well left of every trained item in the
+third. The graft moves M far: a divergence of 10.2, and reading 3's H is still 8.9 away from it. Readings 1 and 2 left
+the graft unpaired and kept every M head at itself with gain 1, so H is M and survival is exactly 0, as the condition
+above required. At the graft's site, reading 3's map leaves 0.47 of the graft's own write unfitted, and 0.18 of the
+whole site's write. So a linear mix of M's six last-layer heads matches about half of what the graft writes, yet that
+half carries little of the behaviour. One graft at one site is a single reference point, with no seed spread.
 
 ### Does the reuse member keep more of its change than its twin under reading 3?
 
@@ -143,9 +169,10 @@ embedding change above. This is a report of the order, not a cause.
 The held model reproduces F exactly where arithmetic says it must, so the apparatus is sound. One gain per neuron or
 head cannot express even small changes of what each unit responds to, so readings 1 and 2 read near zero on every
 trained fine-tune and cannot tell items apart. Reading 3 is the only reading that can: it reads near 1 on old-task
-fine-tunes, lower on the parity twin and the memorised fact, and about half on the rebuilt circuit. Its gaps on the
-counted pairs are small but steady over four seeds on three pairs, and they are not ordered by MLP update size.
-Whether its gaps survive when update sizes are matched is not tested here.
+fine-tunes, lower on the parity twin and the memorised fact, about half on the rebuilt circuit, and low on the grafted
+head. So the widest reading does not read near 1 on everything: it ranks the item built to be new lowest of all. Its
+gaps on the counted pairs are small but steady over four seeds on three pairs, and they are not ordered by MLP update
+size. Whether its gaps survive when update sizes are matched is not tested here.
 
 ## How compelling is the evidence
 
@@ -155,6 +182,9 @@ Whether its gaps survive when update sizes are matched is not tested here.
 - Every reading holds the embeddings at M's values, so an embedding change counts as lost. Only the two full
   fine-tunes moved them; the side number shows how much that matters there.
 - The rebuilt item is one build at one seed, and nothing independent says how much of it is new.
+- The graft is one build at one site, an attention head in the last layer, read on its own windows. It is new by
+  provenance there, not a sample of new machinery in general. A new MLP neuron, or new machinery in an earlier layer,
+  could read differently.
 - The seed spread here is this reading's own, measured over four seeds. No noise floor separate from seeds was run.
 
 ## Surprises
@@ -166,8 +196,8 @@ Whether its gaps survive when update sizes are matched is not tested here.
 
 ## What next
 
-- Run 2, the grafted head: a fresh head reading a position no head of M reads, with M frozen. If reading 3 keeps
-  little of its change, the reading can see new machinery that sits outside M's span; if it keeps most, it cannot.
+- More grafts at other sites and offsets, including an MLP neuron and an earlier layer. If reading 3 stays low on
+  each, the single graft's reading was not particular to the last layer's attention.
 - A size-matched read of the pairs, such as E187's states, now moved to a later cell. If reading 3's gaps stay at
   matched size, it becomes a candidate for the user's gate; if they vanish, it reads update size too.
 
@@ -183,6 +213,16 @@ reading 1 recovers the planted pairing and gains within 1e-4.
 | gains per block | one gain per MLP block and head | 1.000 | 1.000 | 1.000 | held |
 | circuit off | E195's eight layer-one neurons zeroed | 1.000 | −2.3, reported | 1.000 | held |
 
+Run 2's build checks gated its readings; a miss would have stopped the job before them.
+
+| build check | rule | read | verdict |
+|---|---|---|---|
+| held-out accuracy | at least 0.9 | 0.924 | held |
+| graft attention at the offset from the last position | at least 0.8 | 0.9996 | held |
+| M's head shares at the offset | as in stage 0 | unchanged | held |
+| graft output zeroed | M within 1e-3 | exact | held |
+| readings 1 and 2, graft left unpaired | S exactly 0 | 0 | held |
+
 ## Departures from the literature
 
 - The note under test reads retention as the mean rule similarity over each smallest sufficient set of F's units.
@@ -194,10 +234,13 @@ reading 1 recovers the planted pairing and gains within 1e-4.
 - The rule test follows the interchange of causal abstraction, Geiger et al., between two networks as Prakash et al.
   2024 patch between a model and its fine-tune. The rule is one layer deep, as in the neuron-level runs before this.
 - The divergence is read at the last position of each window, where every task here is scored, as in E196.
+- The graft is a single head added to a frozen model, as an adapter adds trained weights beside frozen ones. Unlike
+  most adapters it adds a whole head with its own attention, and its layer and offset were chosen from M's measured
+  attention, not from a recipe. Its held models are fitted on 4,096 of its own windows, not the 16,384 of run 1.
 
 ## Not run
 
-- The graft negative case, E201: run 2 of this cell, on its own page.
+- Grafts at other sites, offsets or seeds; a grafted MLP neuron, set aside in the plan.
 - E187's size-matched states, moved to a later cell.
 - Gains with an offset or a threshold, pairing across layers, and residual-stream read-outs as units.
 - Any bar, cut-off or label, by the user's instruction.
@@ -214,3 +257,5 @@ reading 1 recovers the planted pairing and gains within 1e-4.
 - Code: `src/commute/held_model.py`, `experiments/held_model_retention/run.py`; figures from
   `experiments/held_model_retention/plot.py`. Update sizes from E196's
   `experiments/rule_retention_pairs/results/update_size.json`.
+- Run 2: `experiments/graft_negative/results/stage0.json` to `stage3.json`, `run.log`, filed rules in
+  `results/predictions.json`; cluster debug job 60945, one L40, $0, log `cluster/logs/commute-graft_negative-60945.out`.

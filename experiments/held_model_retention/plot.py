@@ -3,8 +3,9 @@
                           per pair; for the parity twin / fact pair also the side number's gap (F's embedding,
                           unembedding and final norm in H). The four seeds are the spread; 0 is "no difference".
     figures/survival.png  three panels, one per reading, never pooled: S per item, one point per seed, with the code
-                          checks and E195's rebuilt item on top. 0 = H no closer to F than M is; 1 = H reproduces F.
-                          A value left of a panel's range is written as text at its edge.
+                          checks, E195's rebuilt item and run 2's grafted head (E201, experiments/graft_negative/
+                          results/stage3.json; new by construction, one build) on top. 0 = H no closer to F than M is;
+                          1 = H reproduces F. A value left of a panel's range is written as text at its edge.
 
     ~/commute-agents/fleet/cpu-run python experiments/held_model_retention/plot.py
 """
@@ -19,6 +20,7 @@ from commute.figures import dots, figure, reference, save
 
 HERE = Path(__file__).resolve().parent
 RESULTS, FIGURES = HERE / "results", HERE / "figures"
+GRAFT = HERE.parent / "graft_negative" / "results" / "stage3.json"  # run 2 of the cell (E201)
 PAIRS: list[list[str]] = json.loads((RESULTS / "predictions.json").read_text())["pairs"]["order"]
 SEEDS = (0, 1, 2, 3)
 NAMES = {
@@ -63,6 +65,7 @@ def gaps(items: dict[str, Any]) -> None:
 def rows(items: dict[str, Any], stage0: dict[str, Any], r: str) -> dict[str, list[float]]:
     out = {label: [stage0[k]["readings"][r]["S"]] for k, label in CHECKS.items()}
     out["rebuilt item, E195"] = [items["rebuilt"]["readings"][r]["S"]]
+    out["grafted head, run 2"] = [json.loads(GRAFT.read_text())["graft"]["readings"][r]["S"]]
     for a, b in PAIRS:
         for name in (a, b):
             out[NAMES[name]] = [s(items[f"{name}_s{k}"], r) for k in SEEDS]
@@ -95,7 +98,8 @@ def survival(items: dict[str, Any], stage0: dict[str, Any]) -> None:
         data += [{"reading": r, "row": k, "point": j, "S": v} for k, vs in groups.items() for j, v in enumerate(vs)]
     fig.suptitle("Survival of each fine-tune's change in the held model, by reading (three targets, never pooled)", fontsize=9)
     save(fig, FIGURES / "survival.png", n=N_TEXT + ". Grey band: code checks on copy's windows. 0 = H no closer to F than M; "
-         "1 = H reproduces F. Values below -0.2 are drawn at the edge with their value as text.", data=data)
+         "1 = H reproduces F. Values below -0.2 are drawn at the edge with their value as text. The grafted head: one build, "
+         "its own Pile windows, fits on 4,096 windows.", data=data)
 
 
 def main() -> None:
