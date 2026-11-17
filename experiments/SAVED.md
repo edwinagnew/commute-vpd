@@ -517,3 +517,7 @@ This is "round 1", the input of nearly every other run.
 
 ## qwen_pair_library (E160 Amendment 1, rehearse, copy side)
 - `results/large/dW/copy_s0/step_36.safetensors` (5.64 GB, sha256 26c5fc21a745b5da462e0a5184796f97df58d34fe9bd3e2b9ab90b21463edaea): the 15x upper state of the copy side (seed 0, lr 2e-6), step 36, dW norm 0.554, KL 1.587, held-out exact match 1.0. Written by `experiments/qwen_pair_library/run.py rehearse --side copy` on an H100 pod (2026-11-11); the other saved states (steps 8, 9, 35) were not downloaded. `results/large` is a symlink into `~/commute-data/results-large/qwen_pair_library`.
+
+## held_model_retention (E197, run 2026-11-17, cluster jobs 60914, 60919-60923)
+- `results/large/units/*.npz` (45 files, 3.9 MB in all): readings 1-2 partner int16, gain fp32, error fp16, per item.
+- `results/large/maps/*.pt` (5 files, 113 MB): reading 3 maps bf16 for the four code checks and `rebuilt`.
