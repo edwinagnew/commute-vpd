@@ -1,0 +1,118 @@
+{
+ "experiment": "E206",
+ "cell": "P1.28",
+ "status": "filed before any run; the cell's one run: six grafts at other sites and offsets, each built once and read with the held model",
+ "wording": "the held-model wording of causal-rule retention, the working definition of reuse (user, 2026-11-18, decisions.md row 'Working definition of reuse' of that date): main reading the per-site linear map (reading 3), one gain per unit (reading 1) beside it; no cut-offs and no labels",
+ "plan": "reports/plans/2026-11-18_plan_graft-sites.md; card experiments/graft_sites/card.md; code commute.graft (moved from E201's run.py) and commute.held_model (widened for appended neurons, identical on every earlier item) through E197's read, misses, identity and CHECKS",
+ "prediction": {
+  "kind": "descriptive: S per graft under the per-site map and one gain; the filed rules compare survivals with each other and with E197's old-task fine-tunes, never with a reuse or new cut-off",
+  "by": "user, 2026-11-18, cell P1.28 done_when: 'rules filed first; MLP-neuron graft, earlier-layer head graft, other offsets; S per graft under per-site map and one gain; no cut-offs or labels; /writeup'",
+  "reported": "stage 0: every control, M's largest head share per offset 3-16, the offsets by rank, the lookup set, M's accuracy on the derangement and its mean log-probability against n_null other derangements; per graft: the training curve and held-out accuracy at acc_at, the build checks, then per reading S, KL(F || M), KL(F || H), H's max relative logit error, each site's local fit residual, the graft units' pairing in readings 1 and 2, |graft write|^2, |F's site write|^2 and the share of the graft's own write reading 3's map leaves unfitted"
+ },
+ "settings": {
+  "offsets": [3, 16],
+  "window": 32,
+  "train_rows": 32768,
+  "val_rows": 2000,
+  "n_probe": 1024,
+  "probe_seed": 201000,
+  "n_acc": 2048,
+  "acc_seed": 201001,
+  "n_fit": 4096,
+  "fit_seed": 201004,
+  "n_read": 512,
+  "read_seed": 201005,
+  "sum_batch": 256,
+  "eval_batch": 256,
+  "last_layer": 3,
+  "early_layer": 1,
+  "ranks": [5, 9, 13],
+  "n_neurons": 256,
+  "n_lookup": 256,
+  "lookup_seed": 206000,
+  "n_null": 100,
+  "graft_seed": 206100,
+  "recipe": {
+   "init_std": 0.02,
+   "out_std": 0.007071067811865475,
+   "lr": 0.0003,
+   "lr_min_frac": 0.1,
+   "warmup": 600,
+   "steps": 4000,
+   "batch": 64,
+   "beta1": 0.9,
+   "beta2": 0.95,
+   "weight_decay": 0.1,
+   "grad_clip": 1.0,
+   "acc_at": [500, 1000, 2000, 3000, 4000]
+  }
+ },
+ "setting_sources": {
+  "offsets, window, train_rows, val_rows, n_probe, probe_seed, n_acc, acc_seed, n_fit, fit_seed, n_read, read_seed, sum_batch, eval_batch": "E201's filed values (experiments/graft_negative/results/predictions.json), unchanged, and E201's own data function: the same training rows, probe, accuracy, fit and read windows, so stage 0's shares must repeat E201's and every graft is read on E201's read windows",
+  "recipe": "E201's filed recipe, unchanged: the 67M's own init and pretraining AdamW recipe (artifacts/vpd/t-9d2b8f02/final_config.yaml, param-decomp pretrain/train.py), cosine over 4,000 steps of 64 windows, one attempt. The neurons take the 67M's MLP init the same way: c_fc normal sd 0.02, down_proj carries LLMC_RESIDUAL_SCALE_FLAG (param-decomp pretrain/models/llama_simple_mlp.py), so sd 0.02 / sqrt(8)",
+  "last_layer": "E201's layer (3 of 0-3), for the offset heads and the neurons",
+  "early_layer": "the code writer's choice: layer 1, two layers below E201's, so the graft's write passes through two frozen blocks before the unembedding; layer 0 reads only the embedding and attention there has nothing to stack on",
+  "ranks": "the code writer's choice under E201's rule (offsets ranked by their largest M-head share, rank 1 the lowest, which is E201's k): ranks 5, 9 and 13 of 14 spread the other offsets over the range of shares; on E201's windows they are k 12, 8 and 4 (shares 0.040, 0.048, 0.100 against 0.0325 at k 16)",
+  "n_neurons, n_lookup": "the code writer's sizes: the 256 most frequent tokens of the graft's training rows, one neuron per set token (a lookup of n inputs needs at most n detectors)",
+  "neurons task": "at every position whose token x is in the set, output sigma(x), sigma a seeded random derangement of the set (no token maps to itself). Departure from E201's last-position loss: every set position is a training example, since the neurons act position by position and a last-position loss would see each rare set token a few dozen times in 4,000 steps",
+  "n_null": "the code writer's size: 100 other derangements of the same set give the null for M's mean log-probability",
+  "seeds": "new, this run's number"
+ },
+ "thresholds": {
+  "logit_tol": 0.001,
+  "gain_tol": 0.0001,
+  "kl_floor": 1e-06,
+  "pattern_tol": 1e-05,
+  "share_tol": 1e-06,
+  "s_tol": 1e-06,
+  "acc_min": 0.9,
+  "mech_min": 0.8
+ },
+ "threshold_sources": {
+  "logit_tol, gain_tol, kl_floor, pattern_tol, s_tol, acc_min": "E201's filed values, unchanged (E197's and the appendix recipe's); E201 measured pattern error 0",
+  "share_tol": "E201's value; here it bounds stage 0's repeat of E201's largest head share per offset, same code, same windows, same card type, so it allows for a different kernel order only",
+  "mech_min": "E201's attn_min (the appendix recipe step 4, 0.8), carried to each graft's own mechanism: a head's attention at k from the last position, as E201; the neurons' write alone, read through the final norm's weight and the unembedding, ranking the target first among the 256 set tokens. Not measured before the run for the neurons"
+ },
+ "code_checks": {
+  "do_nothing": {"build": "F is a copy of M, on E201's fit and read windows", "kl_FM_above_floor": false, "H_reproduces_F": ["1", "2", "3"], "reading_1_planted": "every neuron and head paired with itself at gain 1"},
+  "zero_grafts": {"build": "M with a head on layer early_layer and the n_neurons neurons on layer last_layer, both output weights zero (the new held-model paths: a seventh head and a wider MLP site, reading 2 with F's block wider than M's)", "kl_FM_above_floor": false, "H_reproduces_F": ["1", "2", "3"], "reading_1_planted": "every M unit paired with itself at gain 1; every graft unit unpaired (partner -1), as it writes nothing"},
+  "pattern": {"rule": "the six heads' outputs rebuilt from commute.graft.pattern against the module's own, max relative error at most pattern_tol", "expected": "0, as E201"},
+  "e201_shares": {"rule": "M's largest head share at each offset 3-16 on the probe windows within share_tol of E201's stage0.json", "expected": "equal"},
+  "lookup": {"reported": "M's accuracy on sigma at the set positions of the accuracy windows, expected near 0; M's mean log-probability of sigma against 100 other derangements, null_share_at_or_above expected away from 0 (M does not favour sigma: the independent reason the neurons' task is new, as E201's offset share is for the head). Not a stop"},
+  "rule": "stage 0 stops the job on any miss of do_nothing, zero_grafts, pattern or e201_shares, before any build"
+ },
+ "build_checks": {
+  "accuracy": {"rule": "F's argmax equals the target on at least acc_min of the held-out targets: heads, the token k back at the last position of the n_acc accuracy windows; neurons, sigma(x) at every set position of those windows", "expected": ">= 0.9; E201's head read 0.924", "M": "reported on the same targets; expected near 0"},
+  "mechanism": {"rule": "at least mech_min: heads, the graft's mean attention from the last position to k back over the probe windows; neurons, the share of set positions of the probe windows where the neurons' write alone ranks sigma(x) first among the set", "expected": ">= 0.8; E201's head read 0.9996"},
+  "zeroed": {"rule": "F with the graft's output weight zeroed against M, max relative logit error over the probe windows, at most logit_tol", "expected": "0 within rounding, as E201"},
+  "miss": "the graft's checks file holds 'misses'; it is reported, not read, and the job goes on to the next graft. A non-finite training loss ends that graft's build the same way. Any graft without a reading gets 'no reading' under every rule"
+ },
+ "rules": {
+  "roles": ["last_lowest", "neurons", "early_lowest", "last_rank5", "last_rank9", "last_rank13"],
+  "R1": {"rule": "for each graft read: its reading 3 S is below old_task_floor, the lowest reading 3 S of E197's 32 old-task fine-tunes (copy24, cipher24, ident32, rand32, case_real, case_twin, repeat_real, repeat_twin, seeds 0-3)", "old_task_floor": 0.9838653560589825, "floor_source": "experiments/held_model_retention/results/summary.json, case_twin_s3", "strict": "S equal to the floor is 'missed'"},
+  "R2": {"rule": "reading 3 S of the last-layer head at the rank-13 offset (the largest share of the four, k 4 on E201's windows) is above that of the last-layer head at the lowest-share offset (k 16)", "pair": ["last_rank13", "last_lowest"], "why": "a larger M-head share at the offset means M's last-layer heads already carry more of that token, which the per-site map can use"},
+  "R3": {"rule": "reading 3 S of the MLP-neuron graft is above that of the last-layer head at the lowest-share offset", "pair": ["neurons", "last_lowest"], "why": "the neurons' input, the current token, is carried by M's last-layer neurons at the same position; the head's, the token 16 back, is not carried by M's last-layer heads (E201's unfitted share 0.47)"},
+  "outcomes": "'holds', 'missed', or 'no reading' (a graft unbuilt, missing a build check, or with KL(F || M) at or under kl_floor, so S is null). Strict comparisons: a tie is 'missed'. S may be negative and then is below the floor",
+  "edge_cases_run": "the do-nothing state has S null, so every rule reads 'no reading' and none can hold on it; a graft that fails its build has no reading file and gets 'no reading'; equal S in R2 or R3 gives 'missed'; the floor is a measured number of E197, not a guess; ranks are distinct and inside 2-14, and ties in share go to the smaller offset (stable argsort), so every rank names one offset",
+  "reported_beside": "last_lowest's reading 3 S against E201's 0.13355354448066925 (one build-to-build difference); early_lowest against last_lowest; reading 3 S of the four last-layer heads in order of share; reading 1 S of every graft against its arithmetic value. None is a rule"
+ },
+ "readings": {
+  "1": {"expected": "S = 0 within s_tol when the assignment leaves every graft unit unpaired and every other unit is paired with itself at gain 1 (units.1.S_zero_by_arithmetic); then H is M", "if_not": "S reported as computed with the pairing; not a stop"},
+  "2": {"expected": "heads: as reading 1. Neurons: the whole MLP block is one unit, F's block (with the neurons) paired with M's at one fitted gain, so no arithmetic value: reported"},
+  "3": {"expected": "the filed rules R1-R3; otherwise reported"}
+ },
+ "expected_at_F_equals_M": {
+  "do_nothing and zero_grafts": "KL(F || M) 0, every reading's H within logit_tol of F, S null",
+  "graft before training": "output weights at sd 0.007, so the first step's loss is near M's cross-entropy on the target (E201's head: 12.19)"
+ },
+ "noise_floor": {
+  "S reading 3": "no build-to-build spread is measured except the one pair last_lowest against E201; seed sd of reading 3 over E197's old-task items is at most 0.0025 (case_twin)",
+  "accuracy": "binomial sd about 0.007 at 0.9 over 2,048 targets for heads; smaller for the neurons (about 30,000 set positions)"
+ },
+ "blind_to": {
+  "readings 1 and 2": "an unpaired graft entirely: H drops it by construction",
+  "reading 3": "any part of a graft's write that is linear in M's unit activations at the same site and position; it never sees other positions or other layers directly",
+  "all": "anything outside the 512 read windows and the last position; the build checks, not the readings, show each graft learned its task"
+ },
+ "positive_control": "stage 0's do-nothing and zero-write grafts on the same windows and code paths (S null, H = M); each graft's zeroed check (F minus the graft is M); reading 1's arithmetic S = 0 for an unpaired graft"
+}

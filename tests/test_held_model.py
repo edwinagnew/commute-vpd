@@ -43,3 +43,15 @@ def test_block_reading_is_one_gain() -> None:
     p = HM.pair(*HM.unit_sums({"FF": MM, "FM": MM, "MM": MM}, WM * -1.3, WM, 5))  # F's block = M's block times -1.3
     assert p.partner.tolist() == [0] and abs(float(p.gain[0]) + 1.3) < 1e-12
     assert HM.survival(0.0, 0.5, 1e-6) == 1.0 and HM.survival(0.0, 1e-7, 1e-6) is None
+
+
+def test_appended_units_with_zero_write() -> None:
+    """F = M's five units plus two appended units that write nothing: the appended ones are left out in reading 1, the
+    whole-site unit (k None) pairs F's wider block with M's at gain 1, and both matrices are W_M."""
+    gen = torch.Generator().manual_seed(1)
+    aM, WM = torch.randn(400, 5, generator=gen, dtype=torch.float64), torch.randn(7, 5, generator=gen, dtype=torch.float64)
+    aF, WF = torch.cat([aM, torch.randn(400, 2, generator=gen, dtype=torch.float64)], 1), torch.cat([WM, torch.zeros(7, 2, dtype=torch.float64)], 1)
+    G = {"FF": aF.T @ aF, "FM": aF.T @ aM, "MM": aM.T @ aM}
+    p1, p2 = HM.pair(*HM.unit_sums(G, WF, WM, 1)), HM.pair(*HM.unit_sums(G, WF, WM, None))
+    assert p1.partner.tolist() == [0, 1, 2, 3, 4, -1, -1] and p2.partner.tolist() == [0] and abs(float(p2.gain[0]) - 1) < 1e-12
+    assert torch.allclose(HM.held_matrix(p1, WM, 1), WM) and torch.allclose(HM.held_matrix(p2, WM, None), WM)

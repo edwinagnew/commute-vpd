@@ -11,7 +11,8 @@ reading writes a^M A^T, so H at a site is one matrix A in place of W_M:
                maximised by linear assignment); its gain is g = cross_ij / |f^M_j|^2, any sign; A = W_M with M's unit j's
                columns times its partner's gain, 0 for an M unit with no non-zero partner. F units that write zero are
                left out, so a switched-off unit stays off.
-    reading 2  as reading 1, with the whole MLP block one unit (heads as reading 1).
+    reading 2  as reading 1, with the whole MLP block one unit (heads as reading 1); F's block includes its appended
+               neurons (`rule_retention.Extra`, read through `rule_retention.acts` and `cols`), so it can be wider than M's.
     reading 3  the least-squares map A = C_FM C_MM^+ from M's unit activations to F's write, C_FM = W_F G_FM.
 All three come from three fp64 second moments per site, summed over every fit position: G_FF = a^F' a^F, G_FM = a^F' a^M,
 G_MM = a^M' a^M. The write of a unit (k consecutive columns) is f_i = a_i W_i^T, so <f^F_i, f^M_j> is the block sum of
@@ -35,14 +36,14 @@ from commute import rule_retention as R
 
 Site = tuple[str, int]  # ("mlp", layer) or ("attn", layer)
 READINGS = ("1", "2", "3")
-UNIT = {"1": {"mlp": 1, "attn": R.D_HEAD}, "2": {"mlp": R.D_MLP, "attn": R.D_HEAD}}  # columns per unit, readings 1 and 2
+UNIT = {"1": {"mlp": 1, "attn": R.D_HEAD}, "2": {"mlp": None, "attn": R.D_HEAD}}  # columns per unit; None = the whole site
 ENDS = ("wte.weight", "lm_head.weight", "ln_f.weight")  # weights that are no unit's
 
 
 def out_weight(N: R.Model, site: Site) -> Tensor:
+    """The site's output matrix, appended neurons' columns included (in M and H, the down_proj parameter itself)."""
     kind, l = site
-    b = N.net.h[l]
-    return b.mlp.down_proj.weight if kind == "mlp" else b.attn.o_proj.weight
+    return R.cols(N, l) if kind == "mlp" else N.net.h[l].attn.o_proj.weight
 
 
 def z(block: Any, x: Tensor) -> Tensor:
@@ -71,16 +72,18 @@ def moments(F: R.Model, M: R.Model, batches: Iterable[Tensor]) -> dict[Site, dic
     return s
 
 
-def _blocks(T: Tensor, k: int) -> Tensor:
+def _blocks(T: Tensor, kr: int, kc: int) -> Tensor:
     n, m = T.shape
-    return T.view(n // k, k, m // k, k).sum((1, 3))
+    return T.view(n // kr, kr, m // kc, kc).sum((1, 3))
 
 
-def unit_sums(G: dict[str, Tensor], WF: Tensor, WM: Tensor, k: int) -> tuple[Tensor, Tensor, Tensor]:
-    """Units of k columns: cross_ij = <f^F_i, f^M_j>, |f^F_i|^2 and |f^M_j|^2, summed over every fit position."""
+def unit_sums(G: dict[str, Tensor], WF: Tensor, WM: Tensor, k: int | None) -> tuple[Tensor, Tensor, Tensor]:
+    """Units of k columns (None: each model's whole site one unit): cross_ij = <f^F_i, f^M_j>, |f^F_i|^2 and |f^M_j|^2,
+    summed over every fit position."""
     WF, WM = WF.double(), WM.double()
-    cross = _blocks(G["FM"] * (WF.T @ WM), k)
-    return cross, _blocks(G["FF"] * (WF.T @ WF), k).diagonal(), _blocks(G["MM"] * (WM.T @ WM), k).diagonal()
+    kF, kM = k or WF.shape[1], k or WM.shape[1]
+    cross = _blocks(G["FM"] * (WF.T @ WM), kF, kM)
+    return cross, _blocks(G["FF"] * (WF.T @ WF), kF, kF).diagonal(), _blocks(G["MM"] * (WM.T @ WM), kM, kM).diagonal()
 
 
 @dataclass
@@ -107,8 +110,9 @@ def pair(cross: Tensor, nF: Tensor, nM: Tensor) -> Pairing:
     return Pairing(partner, gain, err)
 
 
-def held_matrix(p: Pairing, WM: Tensor, k: int) -> Tensor:
-    """W_M with each M unit's k columns times its partner's gain; 0 for an M unit with no non-zero partner."""
+def held_matrix(p: Pairing, WM: Tensor, k: int | None) -> Tensor:
+    """W_M with each M unit's k columns (None: all) times its partner's gain; 0 for an M unit with no non-zero partner."""
+    k = k or WM.shape[1]
     g = torch.zeros(WM.shape[1] // k, dtype=torch.float64)
     i = (p.partner >= 0).nonzero().squeeze(1)
     g[p.partner[i]] = p.gain[i]

@@ -1,0 +1,60 @@
+{
+ "experiment": "E204",
+ "cell": "P2.34",
+ "filed": "2026-11-17",
+ "plan": "reports/plans/2026-11-17_plan_share-size-matched.md",
+ "card": "experiments/share_size_matched/card.txt",
+ "quantity": "E202's do-nothing re-gating share r = (L01 - L00) / (T1 - T0), unchanged (experiments/share_built_kind/run.py `read_state`), r nan when T1 - T0 < 1 (local_faith.MIN_GAIN). Windows by E202's rule (run2.py `big_gain_rows`): the first 2048 windows of the Always on read half where F_big's top token differs from M's and F_big raises its log-odds by at least 1 over M's; target F_big's top token. F_big = E137's Always on edit (Q b added at block 2's input, last position, f = 1) with b scaled by alpha. Selected from F_big and M only, before any fine-tune.",
+ "groups": {
+  "Always on, matched size (built re-weighting, new)": ["always_on_big_s0", "always_on_big_s1", "always_on_big_s2"],
+  "Table (built rewiring, E202's readings reused: experiments/share_built_kind/results/run2/stage3.json)": ["table_s0", "table_s1", "table_s2"]
+ },
+ "thresholds": {
+  "identity_tol": 1e-06,
+  "positive_tol": 0.001,
+  "spread": 0.0405,
+  "min_readable": 2,
+  "min_windows": 32,
+  "repro_rows": 16,
+  "repro_gain": 0.01,
+  "alpha_grid": [1, 2, 4, 8, 16, 32, 64, 128, 256],
+  "bisect_max": 12,
+  "match_tol": 0.2,
+  "match_stop": 1.0,
+  "top_share_max": 0.5,
+  "raised_min": 0.5,
+  "reach_share": 0.5
+ },
+ "threshold_sources": {
+  "target gain": "19.1315, Table's F mean gain on its kept windows: experiments/share_built_kind/results/run2/stage2.json, jq '.pairs.Table.F_gain_mean' (read by the run, not copied).",
+  "spread": "0.0405, unchanged from E200/E202: experiments/method_table/results/final.json, the largest seed sd of the 67M share over the 26 sides of the 13 scorecard pairs (recomputed 2026-11-17: 0.040479).",
+  "bar": "2 * 0.0405 * sqrt(1/3 + 1/3) = 0.0661 at 3 against 3.",
+  "repro_rows, repro_gain": "alpha 1 is E202's Always on edit, so its windows must be E202's (1620, F gain 1.8337: run2/stage2.json '.pairs[\"Always on\"]'). E202's positive control repeated to 0.0 across jobs; the tolerance (1% of the windows, 0.01 log-odds) allows a few windows at the 1 log-odds edge to flip on another card and catches any other path.",
+  "match_tol, match_stop": "bisection ends within 0.2 log-odds (1%) of 19.13; a best alpha more than 1.0 off (5%) stops the job.",
+  "top_share_max, raised_min": "the kind check (plan, 'Does scaling keep the kind'): above one half, one token would hold most windows (a near-constant output), or most targets would be tokens the unit push does not raise; the bar on the first is raised to alpha 1's own share if that is already higher.",
+  "reach_share": "0.5 of Table's fine-tunes' mean gain on their windows (19.1247, run2/stage3.json Table gains), i.e. 9.56: a factor of 2 is about a quarter of the log distance between E202's small groups (1.07 to 1.77) and Table (19.1)."
+ },
+ "rule": "E200's `verdicts` P1, unchanged (run.py `rivals`): the matched Always on finite shares against E202's three Table shares. d = mean(matched) - mean(Table), bar = 2 * 0.0405 * sqrt(1/n_a + 1/n_b); 'higher' if d >= bar, 'lower' if d <= -bar, else 'within the bar', after rounding both to 9 decimals; 'unreadable' if either side has fewer than 2 finite shares. Absolute difference of shares.",
+ "predictions": {
+  "K": {"text": "Kind (rival A): the size-matched Always on fine-tunes read a mean share above Table's (0.2597) by at least the bar, i.e. at least 0.3258.", "pass": "call 'higher'", "miss": "call 'within the bar' or 'lower'", "else": "'unreadable' is neither"},
+  "S": {"text": "Size (rival B): the size-matched Always on fine-tunes read a mean share within the bar of Table's or below it, i.e. under 0.3258.", "pass": "call 'within the bar' or 'lower'", "miss": "call 'higher'", "else": "'unreadable' is neither"}
+ },
+ "stops": {
+  "stage 0": "identity: gain, L01 - L00, largest gate change over 1e-06 on the alpha 1 windows",
+  "stage 1": "positive control: ident32_s0's r not 0.8024425814544892 within 0.001",
+  "stage 2": "alpha 1 does not repeat E202's windows; no alpha in the grid reaches 19.13 (saturation); the best alpha's gain more than 1.0 from 19.13; under 32 windows; one target over max(0.5, alpha 1's share) of the windows; the unit push raises under 0.5 of F_big's targets",
+  "stage 3": "VR.finetune's step-10 check (KL(F_big || ft) not below KL(F_big || M)); a seed's gain on F_big's windows under 9.56 (the filed 'not reached' stop, reported as such, no prediction read)"
+ },
+ "expected": {
+  "identity (stage 0)": "gain, L01 - L00 and largest gate change 0 within 1e-06 on 1620 windows (E202 read exactly 0).",
+  "positive control (stage 1)": "r 0.802443, difference 0.0 (E200, E202).",
+  "alpha 1 (stage 2)": "1620 windows, F gain 1.8337, raised_by_unit 1 by construction (every kept window has gain >= 1).",
+  "alpha (stage 2)": "Not measured. |b| is 2.09 (E137 stage0.json '.pieces.always_on.b_norm'); the alpha that brings the mean gain to 19.13 is expected between 4 and 64, with 2048 windows found early in the scan; push / stream norm then likely above 1. Saturation (no crossing up to 256) is possible and stops the job.",
+  "fine-tunes (stage 3)": "step-10 KL(F_big||ft) below the start KL(F_big||M) (Table at step 10 went 6.49 to 4.81 in E139). Gain on F_big's windows near F_big's 19.13, as Table's fine-tunes reached 19.12 of 19.13; at least 9.56. Leftover TV(ft, F_big) on the read half about 0.06 to 0.09 (E139: Always on 0.057, Table 0.088, results/*_s0.json '.dist.tv_to_F').",
+  "share": "Rival A (kind): about 1.1, as E202's small Always on states (1.11 to 1.13). Rival B (size): about 0.26, as Table (0.259 to 0.260)."
+ },
+ "edge_cases_checked": "Run on the CPU worker before filing through run.py `rivals` (scratch script ~/commute-data/scratch/regating-lead/p234-writer/edges.py): the do-nothing state (gain 0, so r nan on every seed) reads 'unreadable', so neither K nor S passes; one finite share a side reads 'unreadable'; matched = Table's shares reads 'within the bar' (S passes); matched at E202's Always on shares reads 'higher' (K passes); d exactly at the bar (0.0661...) reads 'higher'; 1e-6 under it reads 'within the bar'; a reversal (matched 0.1) reads 'lower' (S passes); two finite shares and one nan reads at n 2 against 3. A not-reached seed stops the job before stage 4.",
+ "gain_mismatch": "The fine-tunes' gain will not equal Table's exactly. The comparison is read only when every seed reaches 9.56 (half of Table's); the report gives each seed's gain beside its share, and the figure plots share against gain for E202's 15 states and the three new ones, so a share that moves smoothly with gain is visible.",
+ "blind_to": "As E202: the share sees a change outside the 24 decomposed matrices only through Gamma's inputs, and describes the windows where F_big moves its top token by 1 log-odds or more. Scaling the push changes the windows, so the matched and small Always on states are read on different windows.",
+ "not_a_definition_change": "No reuse verdict is given; the frozen reuse definition (decisions.md rows 81 and 87) is not read or touched."
+}

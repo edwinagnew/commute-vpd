@@ -90,3 +90,5 @@
 - [Definition may be expensive](project-definition-may-be-expensive.md) — slow/exhaustive search is fine; methods are the cheap approximations; never cap a definition search for cost (user, 2026-11-16)
 - [Ask definition, not measurement](feedback-ask-definition-not-measurement.md) — "stop and ask" on unsettled cases = definition questions only, plain words; measurement details are the lead's call (user, 2026-11-17)
 - [main.tex: batch and ask before pushing](feedback-dont-edit-users-latex.md) — edit main.tex in batches, push only after the user's yes; other files push freely; other leads' implementation is theirs (2026-11-17)
+- [Held-model definition adopted](project-held-model-definition-adopted.md) — user 2026-11-18: interchange framing, per-site linear map main reading; no new wording/cut-offs without the user
+- [Baselines: literature-best recipe, their code](feedback-baselines-use-literature-best-with-their-code.md) — run a literature baseline with the strongest published recipe and the authors pinned code; E198 cut-down reimplementation failed its control (user, 2026-11-17)
