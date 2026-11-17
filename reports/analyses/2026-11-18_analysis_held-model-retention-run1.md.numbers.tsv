@@ -1,0 +1,77 @@
+0.01	experiments/held_model_retention/results/summary.json	[.S|to_entries[]|select(.key!="rebuilt")|.value["1"]]|min	this
+0.06	experiments/held_model_retention/results/summary.json	[.S|to_entries[]|select(.key!="rebuilt")|.value["1"]]|max	this
+-0.005	experiments/held_model_retention/results/summary.json	[.S|to_entries[]|select(.key!="rebuilt")|.value["2"]]|min	this
+0.011	experiments/held_model_retention/results/summary.json	[.S|to_entries[]|select(.key!="rebuilt")|.value["2"]]|max	this
+0.98	experiments/held_model_retention/results/summary.json	[.S|to_entries[]|select(.key|test("^(copy24|cipher24|ident32|rand32|case|repeat)"))|.value["3"]]|min	this
+0.999	experiments/held_model_retention/results/summary.json	[.S|to_entries[]|select(.key|test("^(copy24|cipher24|ident32|rand32|case|repeat)"))|.value["3"]]|max	this
+0.91	experiments/held_model_retention/results/summary.json	[.S|to_entries[]|select(.key|test("^twin_"))|.value["3"]]|add/4	this
+0.65	experiments/held_model_retention/results/summary.json	[.S|to_entries[]|select(.key|test("^fact_"))|.value["3"]]|min	this
+0.66	experiments/held_model_retention/results/summary.json	[.S|to_entries[]|select(.key|test("^fact_"))|.value["3"]]|max	this
+-3.8	experiments/held_model_retention/results/summary.json	.S.rebuilt["1"]	this
+-8.5	experiments/held_model_retention/results/summary.json	.S.rebuilt["2"]	this
+0.56	experiments/held_model_retention/results/summary.json	.S.rebuilt["3"]	this
+1.5e-13	experiments/held_model_retention/results/stage0.json	.items.do_nothing.readings["3"].kl_FH	this
+2e-5	experiments/held_model_retention/results/stage0.json	[.items[].readings["1","3"].logit_error]|max	this
+1e-3	experiments/held_model_retention/results/predictions.json	.thresholds.logit_tol	this
+1e-4	experiments/held_model_retention/results/predictions.json	.thresholds.gain_tol	this
+0.49	experiments/held_model_retention/results/stage0.json	.items.gains_unit.readings["2"].S	this
+-2.3	experiments/held_model_retention/results/stage0.json	.items.circuit_off.readings["2"].S	this
+1.000	experiments/held_model_retention/results/stage0.json	[.items.gains_unit, .items.gains_block, .items.circuit_off | .readings["1","3"].S]|min	this
+1.000	experiments/held_model_retention/results/stage0.json	.items.gains_block.readings["2"].S	this
+3.5	experiments/held_model_retention/results/items/copy24_s0.json	.kl_FM	this
+3.4	experiments/held_model_retention/results/items/copy24_s0.json	.readings["1"].kl_FH	this
+0.0159	experiments/held_model_retention/results/summary.json	.gaps["copy24/cipher24 reading 1"].by_seed|[.[]]|add/4	this
+0.0015	experiments/held_model_retention/results/summary.json	.gaps["copy24/cipher24 reading 1"].sd	this
+0.0017	experiments/held_model_retention/results/summary.json	.gaps["copy24/cipher24 reading 2"].by_seed|[.[]]|add/4	this
+0.0010	experiments/held_model_retention/results/summary.json	.gaps["copy24/cipher24 reading 2"].sd	this
+0.0066	experiments/held_model_retention/results/summary.json	.gaps["copy24/cipher24 reading 3"].by_seed|[.[]]|add/4	this
+0.0011	experiments/held_model_retention/results/summary.json	.gaps["copy24/cipher24 reading 3"].sd	this
+0.0150	experiments/held_model_retention/results/summary.json	.gaps["ident32/rand32 reading 1"].by_seed|[.[]]|add/4	this
+0.0013	experiments/held_model_retention/results/summary.json	.gaps["ident32/rand32 reading 1"].sd	this
+0.0065	experiments/held_model_retention/results/summary.json	.gaps["ident32/rand32 reading 2"].by_seed|[.[]]|add/4	this
+0.0011	experiments/held_model_retention/results/summary.json	.gaps["ident32/rand32 reading 2"].sd	this
+0.0050	experiments/held_model_retention/results/summary.json	.gaps["ident32/rand32 reading 3"].by_seed|[.[]]|add/4	this
+0.0008	experiments/held_model_retention/results/summary.json	.gaps["ident32/rand32 reading 3"].sd	this
+-0.0068	experiments/held_model_retention/results/summary.json	.gaps["case_real/case_twin reading 1"].by_seed|[.[]]|add/4	this
+0.0037	experiments/held_model_retention/results/summary.json	.gaps["case_real/case_twin reading 1"].sd	this
+0.0022	experiments/held_model_retention/results/summary.json	.gaps["case_real/case_twin reading 2"].by_seed|[.[]]|add/4	this
+0.0005	experiments/held_model_retention/results/summary.json	.gaps["case_real/case_twin reading 2"].sd	this
+0.0111	experiments/held_model_retention/results/summary.json	.gaps["case_real/case_twin reading 3"].by_seed|[.[]]|add/4	this
+0.0029	experiments/held_model_retention/results/summary.json	.gaps["case_real/case_twin reading 3"].sd	this
+-0.0048	experiments/held_model_retention/results/summary.json	.gaps["repeat_real/repeat_twin reading 1"].by_seed|[.[]]|add/4	this
+0.0012	experiments/held_model_retention/results/summary.json	.gaps["repeat_real/repeat_twin reading 1"].sd	this
+0.0058	experiments/held_model_retention/results/summary.json	.gaps["repeat_real/repeat_twin reading 2"].by_seed|[.[]]|add/4	this
+0.0011	experiments/held_model_retention/results/summary.json	.gaps["repeat_real/repeat_twin reading 2"].sd	this
+0.0016	experiments/held_model_retention/results/summary.json	.gaps["repeat_real/repeat_twin reading 3"].by_seed|[.[]]|add/4	this
+0.0024	experiments/held_model_retention/results/summary.json	.gaps["repeat_real/repeat_twin reading 3"].sd	this
+0.0134	experiments/held_model_retention/results/summary.json	.gaps["twin/fact reading 1"].by_seed|[.[]]|add/4	this
+0.0017	experiments/held_model_retention/results/summary.json	.gaps["twin/fact reading 1"].sd	this
+0.0000	experiments/held_model_retention/results/summary.json	.gaps["twin/fact reading 2"].by_seed|[.[]]|add/4	this
+0.0010	experiments/held_model_retention/results/summary.json	.gaps["twin/fact reading 2"].sd	this
+0.258	experiments/held_model_retention/results/summary.json	.gaps["twin/fact reading 3"].by_seed|[.[]]|add/4	this
+0.0031	experiments/held_model_retention/results/summary.json	.gaps["twin/fact reading 3"].sd	this
+0.00014	given	experiments/held_model_retention/card.md "spread: 0.00014", the pooled sd over seeds 0-1 of E196's level A reuse-minus-twin gap (experiments/rule_retention_pairs/results/summary.json)
+0.97	experiments/held_model_retention/results/items/twin_s0.json	.readings["3"].side_F_ends.S	this
+0.97	experiments/held_model_retention/results/items/twin_s1.json	.readings["3"].side_F_ends.S	this
+0.93	experiments/held_model_retention/results/items/fact_s0.json	.readings["3"].side_F_ends.S	this
+0.94	experiments/held_model_retention/results/items/fact_s3.json	.readings["3"].side_F_ends.S	this
+0.034	given	mean over seeds 0-3 of items/twin_sK.json minus items/fact_sK.json, .readings["3"].side_F_ends.S (0.0367, 0.0337, 0.0343, 0.0325); also experiments/held_model_retention/figures/gaps.csv
+0.032	given	smallest of the four per-seed side-number gaps above (seed 3, twin_s3 minus fact_s3); figures/gaps.csv
+0.037	given	largest of the four per-seed side-number gaps above (seed 0, twin_s0 minus fact_s0); figures/gaps.csv
+2.59	experiments/rule_retention_pairs/results/update_size.json	(.items.case_twin_s0.mlp+.items.case_twin_s1.mlp)/(.items.case_real_s0.mlp+.items.case_real_s1.mlp)	earlier
+1.49	experiments/rule_retention_pairs/results/update_size.json	(.items.repeat_twin_s0.mlp+.items.repeat_twin_s1.mlp)/(.items.repeat_real_s0.mlp+.items.repeat_real_s1.mlp)	earlier
+1.13	experiments/rule_retention_pairs/results/update_size.json	(.items.rand32_s0.mlp+.items.rand32_s1.mlp)/(.items.ident32_s0.mlp+.items.ident32_s1.mlp)	earlier
+1.07	experiments/rule_retention_pairs/results/update_size.json	(.items.cipher24_s0.mlp+.items.cipher24_s1.mlp)/(.items.copy24_s0.mlp+.items.copy24_s1.mlp)	earlier
+0.99	experiments/rule_retention_pairs/results/update_size.json	(.items.fact_s0.mlp+.items.fact_s1.mlp)/(.items.twin_s0.mlp+.items.twin_s1.mlp)	earlier
+0.13	experiments/graft_negative/results/stage3.json	.graft.readings["3"].S	this
+0.134	experiments/graft_negative/results/stage3.json	.graft.readings["3"].S	this
+10.2	experiments/graft_negative/results/stage3.json	.graft.kl_FM	this
+8.9	experiments/graft_negative/results/stage3.json	.graft.readings["3"].kl_FH	this
+0.47	experiments/graft_negative/results/stage3.json	.graft_unfitted_share	this
+0.18	experiments/graft_negative/results/stage3.json	.graft.readings["3"].residual.attn3	this
+0.924	experiments/graft_negative/results/stage2.json	.acc_F	this
+0.032	experiments/graft_negative/results/stage2.json	.acc_M	this
+0.9996	experiments/graft_negative/results/stage2.json	.graft_attention.last	this
+0.0325	experiments/graft_negative/results/stage0.json	.s	this
+0.9	experiments/graft_negative/results/predictions.json	.thresholds.acc_min	this
+0.8	experiments/graft_negative/results/predictions.json	.thresholds.attn_min	this
