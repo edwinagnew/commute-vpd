@@ -230,13 +230,15 @@ def first_checks(job: Job, arm: str, out: dict[str, Any], recs: Records) -> None
 
 
 def live_checks(job: Job, out: dict[str, Any], rec: dict[str, Any], read: dict[str, Any]) -> None:
-    """The first step that moved the weights: Adam's first step is rate x sign of the gradient. Under a warm-up that rate is
-    below lr, and the KL band, filed for lr, is scaled by (rate / lr) squared."""
+    """The first step that moved the weights: Adam's first step is rate x sign of the gradient. The KL band was filed for
+    a step at the default tag's rate (1e-6), so it is scaled by (rate / that rate) squared: under a warm-up the rate is
+    below lr, and at another tag (3e-6, 3e-7) lr itself differs (friction 727: scaling by the tag's own lr false-stops
+    any new rate)."""
     E, rate = job.pred["early"], rec["rate"]
     ratio = rec["dw_norm"] / (rate * math.sqrt(job.numel))
     job.check(out, "first live step: |dW| / (lr sqrt(numel))", in_band(ratio, E["dw_ratio"]),
               {"step": rec["step"], "ratio": ratio, "band": E["dw_ratio"]}, band=True)
-    kl_band = [x * (rate / job.cfg.lr) ** 2 for x in E["kl_first"]]
+    kl_band = [x * (rate / RATES[DEFAULT_TAG]) ** 2 for x in E["kl_first"]]
     job.check(out, "first live step: KL(W0 || W_1) on H", in_band(read["kl"], kl_band),
               {"step": rec["step"], "kl": read["kl"], "band": kl_band}, band=True)
 
