@@ -49,7 +49,8 @@ def draw(rows: Mapping[str, Mapping[str, Any]], path: Path, title: str, note: st
 def main(results: Path = HERE / "results", figures: Path = HERE / "figures") -> None:
     s2 = json.loads((results / "stage2.json").read_text())
     sc = s2["score"]
-    label = f"{sc['pair']['reuse side']} (reuse) vs {sc['pair']['new side']} (new)"
+    words = {"neighbour": "nearest-word copy", "prior_cipher": "prior-matched cipher"}
+    label = f"{words[sc['pair']['reuse side']]} (built reuse)\nvs {words[sc['pair']['new side']]} (built new)"
     draw({label: s2["inputs"]}, figures / "readings.png", f"Where prior and strength-1 steering disagree, the share reads '{sc['reading']}'",
          "Colour: side built to reuse; grey crosses: new side. 3 seeds a side for steering and the share; the prior is one value a map")  # fmt: skip
 
