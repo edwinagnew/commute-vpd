@@ -27,6 +27,7 @@ remote-kernels/
 **/results/large
 results/large
 .venv
+.vscode/
 
 # MATS cluster: Jupyter session file (holds the server token) and Slurm logs
 .jupyter-session
@@ -43,3 +44,15 @@ docs/research_log/build/
 # local download staging for pod runs (results/<run>_dl/, dl_<run>/): never committed
 **/results/*_dl/
 **/dl_*/
+
+# LaTeX build files (writeup/)
+writeup/**/*.aux
+writeup/**/*.bbl
+writeup/**/*.blg
+writeup/**/*.log
+writeup/**/*.out
+writeup/**/*.synctex.gz
+writeup/**/*.fls
+writeup/**/*.fdb_latexmk
+writeup/**/*.toc
+writeup/**/*.pdf
