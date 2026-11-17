@@ -45,3 +45,13 @@ P1.26, due 11-19: filled; your adoption of the held-model wording as the working
 - **Plan against your wording.** They agree. The plan adds two things: the inputs are set to M's own inputs at the layer, and the fit reaches one layer deep. Your wording leaves both open. I kept the plan.
 - **Follow-up cells not added.** The `fleet/cell add --rung L1.4` call for both cells was refused by the session's auto-mode permission check, so neither cell exists yet: (a) grafts at other sites and offsets, including an MLP neuron and an earlier layer; (b) the main reading on E187's size-matched pairs. Rules are filed before any reading in both. Nothing has run.
 - **No new wording, cut-off or label.** None was added.
+
+## Later: P1.27 and P1.28 filled (both due 11-20)
+You added both cells after reading this digest. Both ran on RunPod H100 pods, because a process outside our jobs held 36 GB on the cluster's L40. Together they cost about $4.30.
+- **P1.27 (E205), size-matched pairs.** After each pair's larger update was scaled down to its partner's size, the per-site map kept the sign of every gap between the reuse and new members, and five of the nine gaps widened. Shrinking an update lowered its own score, so the score depends on update length, but in the direction that does not explain the gaps. Page: `reports/analyses/2026-11-18_analysis_held-model-size-matched.md`.
+- **P1.28 (E206), grafts.** Four grafted heads keep little (0.14 to 0.22). 256 grafted MLP neurons doing a random token lookup keep 0.954, near the old-task fine-tunes. The layer-1 head graft failed its build check and was not read. Page: `reports/analyses/2026-11-18_analysis_graft-sites.md`.
+- **Your answer on the neuron graft:** "intuitively yes, linear mixing is probably more reuse than new". It is recorded as a tentative caveat of the definition, a consequence of the linear re-mix rule. The wording is unchanged and nothing new runs. The record card is `reports/decisions/2026-11-18_decision_neuron-graft-map-class.md`, and the log is published as v368.
+- **Premise checks: both doubtful.** Both say the per-site map may report where a change sits and how linearly readable it is from M, more than whether it was built. The open rung L1.4 (a built control whose label does not follow from readability) is the question this depends on.
+- **Friction:** 839 (debug cap stated three ways), 842 (pod inputs missing from E187's inventory), 843 (no .git on the pod), 845 (dates a day ahead of the clock across time zones; files not renamed, per you).
+
+**Finished:** every definition-lead cell is filled or closed, and no open rung has a cell without your yes.
