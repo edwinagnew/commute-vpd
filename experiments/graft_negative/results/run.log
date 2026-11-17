@@ -1,0 +1,45 @@
+E201 (P1.26, run 2) start; settings {'layer': 3, 'offsets': (3, 16), 'window': 32, 'train_rows': 32768, 'val_rows': 2000, 'n_probe': 1024, 'probe_seed': 201000, 'n_acc': 2048, 'acc_seed': 201001, 'graft_seed': 201002, 'init_std': 0.02, 'out_std': 0.007071067811865475, 'lr': 0.0003, 'lr_min_frac': 0.1, 'warmup': 600, 'steps': 4000, 'batch': 64, 'beta1': 0.9, 'beta2': 0.95, 'weight_decay': 0.1, 'grad_clip': 1.0, 'train_seed': 201003, 'acc_at': (500, 1000, 2000, 3000, 4000), 'n_fit': 4096, 'fit_seed': 201004, 'n_read': 512, 'read_seed': 201005, 'sum_batch': 256, 'eval_batch': 256}; thresholds {'logit_tol': 0.001, 'gain_tol': 0.0001, 'kl_floor': 1e-06, 'pattern_tol': 1e-05, 'acc_min': 0.9, 'attn_min': 0.8, 'share_tol': 1e-06, 's_tol': 1e-06}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+do_nothing: KL(F || M) 0 (last position, 512 read windows); fit 32.0 s
+do_nothing reading 1: S None, KL(F || H) 0, max relative logit error 0; site residuals mlp0 -6.923e-16, attn0 0, mlp1 3.008e-16, attn1 -4.957e-16, mlp2 -4.116e-16, attn2 -3.586e-16, mlp3 -4.445e-16, attn3 -1.917e-16
+do_nothing reading 2: S None, KL(F || H) 0, max relative logit error 0; site residuals mlp0 -6.923e-16, attn0 0, mlp1 3.008e-16, attn1 -4.957e-16, mlp2 -4.116e-16, attn2 -3.586e-16, mlp3 -4.445e-16, attn3 -1.917e-16
+do_nothing reading 3: S None, KL(F || H) 2.97007e-14, max relative logit error 1.13e-06; site residuals mlp0 -3.462e-16, attn0 1.491e-16, mlp1 3.008e-16, attn1 -7.435e-16, mlp2 -4.116e-16, attn2 -3.586e-16, mlp3 -7.779e-16, attn3 -3.834e-16
+do_nothing: checks hold
+pattern check: max relative error of the heads' outputs rebuilt from the patterns 0 (tol 1e-05)
+largest M head share by offset: {3: 0.14822450866885056, 4: 0.0996310554712961, 5: 0.07073275499455381, 6: 0.06046756228806086, 7: 0.05130204290140509, 8: 0.04773361174027611, 9: 0.045780384208374665, 10: 0.04397356173917696, 11: 0.042015181452295484, 12: 0.04005421694416457, 13: 0.03817784724483886, 14: 0.0360664488768277, 15: 0.03427226001604871, 16: 0.03250903774789598}; k = 16, s = 0.032509
+STAGE 0 DONE
+step 1: loss 12.1910 (mean of last 250 12.1910), rate 5e-07
+step 250: loss 8.0508 (mean of last 250 9.1178), rate 0.000125
+step 500: loss 6.3899 (mean of last 250 7.0908), rate 0.00025, held-out accuracy 0.0718
+step 750: loss 4.6891 (mean of last 250 5.6223), rate 0.000299
+step 1000: loss 2.3480 (mean of last 250 3.3599), rate 0.000291, held-out accuracy 0.5010
+step 1250: loss 1.0374 (mean of last 250 2.1457), rate 0.000276
+step 1500: loss 1.3080 (mean of last 250 1.4087), rate 0.000256
+step 1750: loss 1.4699 (mean of last 250 1.0221), rate 0.000231
+step 2000: loss 0.7556 (mean of last 250 0.7969), rate 0.000202, held-out accuracy 0.8560
+step 2250: loss 0.4032 (mean of last 250 0.6300), rate 0.000171
+step 2500: loss 0.4611 (mean of last 250 0.5486), rate 0.00014
+step 2750: loss 0.3593 (mean of last 250 0.4849), rate 0.000111
+step 3000: loss 0.5879 (mean of last 250 0.4478), rate 8.37e-05, held-out accuracy 0.9092
+step 3250: loss 0.3228 (mean of last 250 0.4254), rate 6.12e-05
+step 3500: loss 0.4875 (mean of last 250 0.4059), rate 4.42e-05
+step 3750: loss 0.2307 (mean of last 250 0.3925), rate 3.36e-05
+step 4000: loss 0.5202 (mean of last 250 0.3839), rate 3e-05, held-out accuracy 0.9238
+graft saved: results/large/graft.pt sha256 376364e727a0d38b2cf5b16a760d98b208be265dbab288c49938a5528a586c7b
+STAGE 1 DONE
+build checks: held-out accuracy F 0.9238, M 0.0317; graft attention at k from the last position 0.9996 (over the probe queries 0.9996); largest M head share at k in F 0.032509 (s 0.032509, off by 0); graft zeroed vs M logit error 0
+STAGE 2 DONE
+graft: KL(F || M) 10.2198 (last position, 512 read windows); fit 31.6 s
+graft reading 1: S 0.0, KL(F || H) 10.2198, max relative logit error 1.38; site residuals mlp0 -6.923e-16, attn0 0, mlp1 3.008e-16, attn1 -4.957e-16, mlp2 -4.116e-16, attn2 -3.586e-16, mlp3 -4.445e-16, attn3 0.3738
+graft reading 2: S 0.0, KL(F || H) 10.2198, max relative logit error 1.38; site residuals mlp0 -6.923e-16, attn0 0, mlp1 3.008e-16, attn1 -4.957e-16, mlp2 -4.116e-16, attn2 -3.586e-16, mlp3 -4.445e-16, attn3 0.3738
+graft reading 3: S 0.13355354448066925, KL(F || H) 8.85494, max relative logit error 1.25; site residuals mlp0 -3.462e-16, attn0 1.491e-16, mlp1 3.008e-16, attn1 -7.435e-16, mlp2 -4.116e-16, attn2 -3.586e-16, mlp3 -7.779e-16, attn3 0.1756
+graft reading 1: graft partner -1 (-1 unpaired), gain nan; other units identity True, max |gain - 1| 4.88e-15; S 0.0, as arithmetic expects (0) True
+graft reading 2: graft partner -1 (-1 unpaired), gain nan; other units identity True, max |gain - 1| 4.88e-15; S 0.0, as arithmetic expects (0) True
+graft site sizes over the fit positions: |graft write|^2 9.14279e+07, M heads ['1.335e+06', '1.357e+08', '4.582e+06', '1.434e+06', '1.846e+06', '9.883e+05'], <graft, head> ['-3.115e+04', '-7.776e+05', '-1.021e+06', '5.077e+04', '5.141e+05', '1.072e+05']; graft within the weakest head False
+graft reading 3: S 0.13355354448066925; site residual 0.175572, share of the graft's own write left unfitted 0.469646
+STAGE 3 DONE
+E201 DONE
+peak host RSS 6.1 GB
