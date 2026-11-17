@@ -10,3 +10,4 @@ A line starting `HOLD ` (not `- `) stays in `PENDING.md` through a flush: use it
 A line `CONSENT YYYY-MM-DD <role> · <the user's words>` records that the user waived the main-page word cap for this flush (README.md → Main-page length; friction 688).
 
 
+- 2026-11-17 · parts/sections/decisions.html · decisions · remove the card decision-p1-24-next-cell (ask 43 answered in chat: none of options (a)-(d); new cell P1.25 uses the definition draft's fixed choices: neuron level, 1 - cos^2, re-pairing within a layer; run 1 code checks and a fine-tuned rebuilt item, run 2 the five trained pairs). Section next: P1.24 row's "Next cell: your card" becomes "Next cell: P1.25"; add row P1.25 as open, due 11-18, 0 of 2 runs.
