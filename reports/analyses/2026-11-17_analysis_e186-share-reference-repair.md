@@ -154,6 +154,10 @@ on. Attention matrices are left unchanged by every change, since the decompositi
   earlier run's script unchanged, on the same decomposition, with the same floor on every read. The earlier run's draws
   on copy, cipher and known rows were read on an H100 PCIe and the new ones on an H100 NVL, but invented and gold were
   read on H100 NVL both times and show the same drop. Until this is run down, the band and curve here carry it.
+  One thing the code shows (lead, 2026-11-17): a draw's Gaussian is seeded by the draw and the matrix only
+  (`share_reading.gaussian`, seed `null_seed(draw, site)`), so draw 5 is the same random direction on all five row sets,
+  rescaled. The five row sets are therefore not five independent signs of a drop: they are one ordering of three draws
+  against three, which a chance ordering gives about one time in twenty. This is a candidate reading, not a found cause.
 - Two built changes read below the band, which neither rival predicted: a switching-off that Γ's recomputed masks
   recover less of than random noise of the same size.
 - The filing expected every random draw's share between about 0.80 and 1.06; copy's sixth draw at the lowest size read
@@ -163,7 +167,7 @@ on. Attention matrices are left unchanged by every change, since the decompositi
 
 - Find why the new draws read lower: re-read one of the earlier run's draws on this run's pod and code. If it reproduces
   its old share, the draws differ in something real and the band needs many more draws; if not, the earlier reads were
-  taken under some difference to be named. This needs a new cell from the user; this cell's one run is spent.
+  taken under some difference to be named. The cell has one run left but its pod money is spent, so this needs the user's yes.
 - If the band holds after that, part 3 could drop this share as the Qwen reading of switching-off and say why. That
   is the user's call, since the card's stop line names it only for a call that the built changes read like random.
 
