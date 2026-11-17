@@ -102,24 +102,31 @@ pair overlaid; from experiments/curve\_test}
 \section{Measuring reuse on the 67M}
 \subsection{The re-gating share}
 
-The most effective measure of re-use we investigated is a VPD-based method we call the \textit{re-gating share}. The general idea is VPD's causal importance function $\Gamma$ should be better at knowing how to ablate existing mechanisms, than new ones. More, precisely:
+The most effective measure of re-use we investigated is a VPD-based method we call the \textit{re-gating share}. The general idea is VPD's causal importance function $\Gamma$ should be better at knowing how to ablate existing mechanisms, than new ones. More precisely:
 \begin{itemize}
-	\item Let $W_0$ be the original weights and $W_1 = W_0 + \delta W$ the fine-tuned weights, with respective VPD subcomponents $C_0, C_1$.
-	\item For some task relevant to the fine-tune, let $S_0, S_1$ be the scores before and after fine-tuning, respectively. Let $a_0, a_1$ be the corresponding activations. Then let $S_{00}$ be the score of the components $C_0$ masked according to $g_0 = \Gamma(a_0)$ and $S_{01}$ the same but with masks $g_1 = \Gamma(a_1)$. 
-	\item 
+	\item Let $W_0$ be the original weights and $W_1 = W_0 + \delta W$ the fine-tuned weights, with VPD subcomponents $C_0$.
+	\item For some task relevant to the fine-tune, let $S_0, S_1$ be the scores before and after fine-tuning, with $G = S_1 - S_0$ being the gain in score on that task from the weight update. Let $a_0, a_1$ be the corresponding activations. Then let $S_{00}$ be the score of the components $C_0$ masked according to $g_0 = \Gamma(a_0)$ and $S_{01}$ the same but with masks $g_1 = \Gamma(a_1)$. 
+	\item Then the \textit{re-gating share} is defined as $r := \frac{M_{01} - M_{00}}{G}$
 \end{itemize}
 
-\sugg{one line: uses the original subcomponents, so no need to carry the update onto the decomposition (App.~A)}
+Clearly, $0 \leq r \leq 1$, where $r$ intuitively measures how much of the gain from the fine-tune can be explained by $\Gamma$ turning on pre-existing components. In particular, $r = 0$ implies no benefit was gained by switching on components differently, while $r = 1$ implies all of the gain comes from re-gating.
+
+Note that measuring $r$ requires a VPD decomposition of the base model, but does not require updating the components of re-training the decomposition in any way.
+
+We studied the effectiveness of the regating share as a measure of elicitation by As shown in fig ??, the regating share performs remarkably well at distinguishing elicitation versus new mechanisms on the 67M
+[what else can i say?]
+
 \subsection{Baselines}
-\sugg{neuron version of the share; steering (mean activation shift); update size; effective rank; neurons for half
-the gain; Goodfire-style neuron job retention; base-model prior on the answer; untrained-SVD share as an ablation}
+
+We compare the effectiveness of the re-gating share against a number of baselines for comparison. These range from relatively cheap methods such as SVD on the weight update, to more expensive techniques such as transcoders. More details can be found in Appendix \ref{sec:app_baseline}.
+
 \subsection{Scorecard}
 \sugg{share: reuse side higher on 9/9 built pairs, gaps 0.39--0.69; survives size matching (9/9; three pairs
 naturally equal-size, gaps 0.52--0.62)}
 \sugg{needs the trained decomposition: untrained SVD 2 same / 2 opposite / 5 no call}
 \sugg{steering 4/3/2; neuron share $\le$3; update size 0 (new side always bigger)}
 \sugg{agreement with \S4's definition on the pairs it reads}
-\figplan{3 --- scorecard}{methods (rows) $\times$ 13 pairs (cols), cell = reuse-minus-new gap coloured by
+\figplan{3 --- scorecard}{(a) just re-gating (b) all methods (rows) $\times$ 13 pairs (cols), cell = reuse-minus-new gap coloured by
 same/opposite/no call; twins in a separated block; redraw of method\_table/figures/gate\_scorecard\_1116.png}
 
 % ------------------------------------------------------------------
@@ -173,6 +180,8 @@ faithfulness on narrow fine-tunes, fails on a broad one; not tested on Qwen}
 \figplan{A1}{behaviour kept vs adversarial faithfulness for do-nothing / splits / teacher training}
 \section{Definition wordings in full}
 \sugg{each wording, cut-offs, search, per-wording figure, what it read}
+\section{Baseline implementations}\label{sec:app_baseline}
+List of baselines
 \section{RL and SFT on Qwen}
 \sugg{GRPO recipe, null collapse, own-samples SFT, effective rank}
 \section{Per-pair numbers and recipes}
