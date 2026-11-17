@@ -27,3 +27,13 @@ No pods are running. This session spent $0. Runs E195 and E196 were paid in an e
 - 820: an empty `.git` was left on the pod after a failed clone.
 - 821: there is no fallback list of GPU cards when H100 stock is empty.
 - 824: the numbers ledger's jq filter can silently match nothing.
+
+## Later the same evening: P1.26, due 11-19, filled
+You opened P1.26 at about 21:00 and settled the plan's six questions in a dialog. You handed the embeddings question to Fable, which chose M's values. Both runs went on the cluster's debug queue at $0.
+- **Run 1 (E197).** Every code check met its arithmetic value.
+  - One gain per neuron or head keeps 0.01 to 0.06 of every trained change. One gain per head or block keeps about 0.
+  - The per-site linear map of M's units keeps 0.98 to 0.999 on the old-task fine-tunes. The gaps between reuse member and twin run from 0.002 to 0.011, and they do not follow update size.
+  - That map reads the memorised fact at 0.65, or 0.93 with F's embeddings, and the rebuilt circuit at 0.56.
+- **Run 2 (E201).** A head was grafted onto frozen M; it is new by construction, and every build check held. The gain readings give it 0, and the per-site map gives it 0.13.
+- **Page:** `reports/analyses/2026-11-18_analysis_held-model-retention-run1.md`, which covers both runs.
+- **Premise check: doubtful.** The label comes mostly from how expressive the map is. Its question for you: "What, independent of these readings, decides how much re-mapping of the original's units still counts as the fine-tune reusing them?"
