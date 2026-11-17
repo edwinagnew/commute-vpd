@@ -73,7 +73,8 @@ known-mechanism checks; seeds per side}
 
 % ------------------------------------------------------------------
 \section{What should ``reuse'' mean?}
-\open{framing depends on E196 and on whether you adopt a wording: (a) ``a working definition'' if one passes the
+\open{E196 in: retention ranks the pairs but may proxy update size, so no wording passes yet. Framing depends on
+whether you adopt a wording: (a) ``a working definition'' if one passes the
 built controls; (b) ``why existing definitions fail'' (the plan's fallback, Fable's recommendation as of 11-17)}
 \subsection{Requirements}
 \sugg{independent of any interpretability method; must look inside the model; total (always gives a reading); gives
@@ -88,7 +89,8 @@ cut-offs 0.8 / 0.5); (iii) soft intervention; (iv) simplest intervention, closur
 never read}
 \sugg{(iii)/(iv): read hand-made edits correctly, give no verdict on real fine-tunes; closure curves separate 3/5
 pairs on 4 seeds (copy/cipher, identity/random map, parity/fact), not case or repeat}
-\sugg{(v): rebuilt circuit 0.97 vs 1; trained pairs pending (E196)}
+\sugg{(v): rebuilt circuit 0.97 vs 1; trained pairs: reuse side higher in 8/8 pair-seeds, but every fine-tune reads
+$\geq 0.996$ (gaps $<0.003$) and the gaps follow the twins' MLP update size; MLP neurons only, misses attention (E196)}
 \sugg{common failure: real fine-tunes have no single named variable carrying the change; a search miss cannot be
 told from a wording fault}
 \figplan{2 --- definitions vs tests}{matrix: wordings (rows) $\times$ tests (reads hand-made edits / ranks matched

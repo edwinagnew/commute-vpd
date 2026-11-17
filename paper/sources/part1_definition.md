@@ -82,8 +82,12 @@ KL(F‖M).
   level. Lower as filed, but only by about 0.03, on a partial rebuild
   (`reports/analyses/2026-11-17_analysis_rule-retention-fixed-run1.md`, figure
   `experiments/rule_retention_fixed/figures/retention.png`).
-- P1.25 run 2 (E196, five trained pairs): submitted 2026-11-17 19:10. `experiments/rule_retention_pairs/results/`
-  holds only `predictions.json`, so there is no result yet.
+- P1.25 run 2 (E196, five trained pairs, seeds 0 and 1): the reuse member reads higher than its twin in 8 of 8
+  counted pair-seeds (filed rule holds), but every fine-tune reads at least 0.996, gaps 0.00004 to 0.0028, and the
+  gaps rank the pairs as the twins' MLP update sizes do. MLP neurons only; attention, where reuse members carry more
+  of their change, is not read. Premise check "doubtful" (the score may proxy update size); size-matched pairs (E187)
+  would separate the two and need a new cell. Both P1.25 runs are spent
+  (`reports/analyses/2026-11-18_analysis_rule-retention-pairs-run2.md`).
 
 ## 2. Has the user adopted a definition?
 
@@ -103,7 +107,7 @@ on three pairs, three seeds each" (`reports/plans/2026-11-09_plan_paper-roadmap.
 wording.
 
 **Current standing candidate:** causal-rule retention, under test in P1.25. Open items:
-- E196's reading of the five pairs.
+- Whether retention survives size-matched pairs (E196 gaps track update size; needs a new cell).
 - The replaced-circuit calibration, never built.
 - The question from the premise check: "if a fine-tune's new units reproduce an old circuit's outputs, what should
   the definition call that, and what observation would decide it?"
