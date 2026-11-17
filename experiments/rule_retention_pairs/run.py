@@ -1,4 +1,4 @@
-"""E___ (cell P1.25, run 2): causal-rule retention under the fixed choices, read on the five trained matched pairs of
+"""E196 (cell P1.25, run 2): causal-rule retention under the fixed choices, read on the five trained matched pairs of
 E184 (experiments/simplest_intervention), seeds 0 and 1, on the 67M (plan
 reports/plans/2026-11-17_plan_rule-retention-fixed-choices.md, "Run 2"; card card.md; filed settings, rule and stops in
 results/predictions.json; the run refuses unless that file is committed unchanged). The measurement is
