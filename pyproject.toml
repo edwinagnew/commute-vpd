@@ -17,6 +17,9 @@ dependencies = [
     "datasets==4.4.2",
     "huggingface_hub==0.36.0",
     "numpy==2.4.0",
+    # Minder et al.'s crosscoder code (E203, P2.31 run 2): their dictionary_learning fork, head of main on 2026-11-17.
+    # Its package __init__ imports nnsight. Read the pinned source in the venv's site-packages/dictionary_learning/.
+    "dictionary-learning @ git+https://github.com/science-of-finetuning/crosscoder_learning.git@d1fd6f3fea41fc1123699cc09f4cdad47ca35160",
     # Ours.
     "einops==0.8.1",
     "pyyaml==6.0.3",
