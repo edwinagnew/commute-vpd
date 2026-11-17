@@ -96,3 +96,17 @@ reads about 1; about 20 min, limit 1 h. Submit from the clone root:
 A positive control on a fine-tune that changed every weight (none of the scorecard's states did; stage 1 checks the
 path on a change to the decomposed matrices only); the share on E137's hand-made changes (no weights); the KL form of E57's share,
 which has no 67M code and is not the scorecard's unit.
+
+## Second run (E202, 2026-11-17, the user's decision)
+
+E200 (job 60937) passed both controls, but Always on, Cue and XOR moved their target by only 0.15 to 0.38 log-odds on its
+2048 changed windows, under the 1 log-odds floor, so P1 and P2 read "unreadable"; Table read 0.26. The second run changes
+only the windows: per pair, the first 2048 of the read half where F's top token differs from M's and F raises that token's
+log-odds by at least 1 over M's (the log-odds of the share's T cells), chosen from F and M alone before any fine-tune is
+read, scanning at most the whole read half (100,000 windows; fewer qualifying means all are read, counts recorded). The 15
+states (E139's 12, E200's three Cue states) are then read exactly as in E200, with the same floor, target rule, P1 and P2
+rule, spread 0.0405 and bar; identity and the positive control run first and alone with the same stops, and the job stops
+if Always on, Cue or Table has under 32 such windows (`run2.py`, `card_run2.txt`, `results/run2/predictions.json`,
+`cluster/share_built_kind_run2.sbatch`, debug QoS, about 10 min, $0). Expected: Table still about 0.26, since most of its
+windows already qualified; the question is whether Always on and Cue now clear the 1 log-odds floor on windows where F
+itself moves that much, and, if they do, where their shares sit against Table's.
