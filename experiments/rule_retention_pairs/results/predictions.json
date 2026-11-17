@@ -1,0 +1,84 @@
+{
+ "experiment": "E___",
+ "cell": "P1.25",
+ "status": "filed before any run; run 2 of cell P1.25: the five trained matched pairs of E184, seeds 0 and 1",
+ "wording": "causal-rule retention at a declared level, read under 'Choices fixed for the test' of ~/commute-data/scratch/definition-session/2026-11-17_causal-rule-retention.md; tested here, not adopted; no change to decisions.md and no verdict on any fine-tune",
+ "plan": "reports/plans/2026-11-17_plan_rule-retention-fixed-choices.md ('Definitions in code' and 'Run 2'); card experiments/rule_retention_pairs/card.md; run 1 is experiments/rule_retention_fixed (E195)",
+ "prediction": {
+  "filed": "in each counted pair and seed, the reuse member's level A retention for the contrast exceeds its twin's",
+  "by": "user, 2026-11-17 chat: \"Run 2: five trained matched pairs seeds 0,1; filed: in each pair the reuse member reads higher than its twin; memorised-fact pair reported not counted.\"",
+  "kind": "descriptive, no bar: each comparison is scored as below and all are reported; the size of each difference is reported, not scored",
+  "rule": "for each counted pair (reuse, twin) and seed s: both items must read ('read'); the comparison 'holds' when the mean over the 5 orders of the reuse member's level A retention is strictly greater than the mean over the 5 orders of the twin's, and 'fails' otherwise (a tie fails). Also reported per comparison: 'every_order', true when the reuse member's lowest order is above the twin's highest. The filed outcome is the count of 'holds' of the 8 counted comparisons; 'every comparison holds' when all 8 hold",
+  "edge_cases": "an item whose level A contrast reads 'no change' (no changed unit), 'no contrast' (KL(F || M) <= kl_floor) or 'no set' (every changed neuron put back still closes the bar, so the change lives outside the neurons) gives the comparison 'not read', which counts neither as 'holds' nor as 'fails' and is listed with both readings; a missing item is 'not read' too. A retention of an order is never None when the item reads (a None order makes the item 'no set')",
+  "side_readings": "level B (heads and MLP blocks) compared the same way and reported, with no expectation; the parity twin / memorised fact pair (twin as the reuse member) compared at both levels and reported, not counted; per item the profile's mean r over every unit, the gains on each set, the evaluations and seconds per order"
+ },
+ "pairs": {
+  "counted": [["copy24", "cipher24"], ["ident32", "rand32"], ["case_real", "case_twin"], ["repeat_real", "repeat_twin"]],
+  "reported": [["twin", "fact"]],
+  "source": "E184's OLD_PAIRS (experiments/simplest_intervention/run.py, each (reuse, new)) and its R1 pair (twin_s*, fact_s*); stage n of run.py is pair n in this order"
+ },
+ "settings": {
+  "layer": 1,
+  "C": [486, 499, 613, 778, 1125, 2028, 2352, 2960],
+  "factor": 2.0,
+  "control_task": "copy24",
+  "seeds": [0, 1],
+  "n_read": 512,
+  "read_seed": 195200,
+  "n_max": 100,
+  "held_share": 0.25,
+  "eval_batch": 2048,
+  "profile_batch": 512
+ },
+ "thresholds": {
+  "r_tol": 1e-06,
+  "gain_tol": 0.0001,
+  "kl_floor": 1e-06,
+  "closure_bar": 0.9,
+  "orders": 5,
+  "order_seed": 0,
+  "chunk": 256,
+  "gate_tol": 0.001,
+  "reload_tol": 0.0001
+ },
+ "measures": {
+  "items": "each fine-tune F as E184 read it: the old tasks as M plus the saved delta-W of the 24 matrices (commute.old_tasks.old_f, TASKS[name].states[seed]); twin_s* and fact_s* as the saved full states (variable_read.load_state of built_control_sum/results/large/amend1_control_s*.pt and memorised_fact/results/large/fact_s*.pt)",
+  "windows": "each item's own read half as E173 and E184 built it (old_tasks.task_windows for the old tasks, twins of a group sharing it; variable_read.xor2_windows for twin and fact): 8-token windows, 100,000 per item; of these a seeded subset of n_read = 512 (torch.randperm, seed read_seed, the same seed for every item) is read",
+  "gap check": "mean TV between F and M at the last position over the whole read half, against the gap E184 recorded for the item (experiments/simplest_intervention/results/<item>.json 'gap'); a check that F and its windows are E184's",
+  "output of a unit, cos2, pairing, r, gain, changed, hybrid, hybrid gate": "as run 1 filed them (experiments/rule_retention_fixed/results/predictions.json 'measures'), on the item's n_read windows and all 8 positions",
+  "closure": "closure(S) = 1 - KL(F || F_S) / KL(F || M), full next-token KL at the last position of each of the n_read windows, averaged over windows; F_S = the hybrid with every changed unit outside S put back. Run 1 averaged over every position; here every task is scored at the last position (E184 read KL there too)",
+  "smallest sets, retention for the contrast": "as run 1: backward elimination by chunks in 5 seeded orders, bar 0.9; per order the mean r over the set left; level A sets saved as masks in results/large/units/<item>.npz, level B sets listed in the item JSON"
+ },
+ "expected": {
+  "stage 0 do_nothing": "both levels: no unit changed, contrast 'no change'; hybrid gate 0",
+  "stage 0 x2": "level A: the changed units are exactly C (layer 1, the 8 filed neurons), r = 1, gain 2; the contrast reads (KL(x2 || M) at the last position of copy24's 8-token read windows, measured, above kl_floor) and every order's retention is 1 within r_tol, with gains 2 within gain_tol. Level B reported",
+  "gap check": "every item within reload_tol (1e-4) of E184's gap: same states, same windows, fp32",
+  "items": "every MLP neuron of every item moved (the weights alone, measured on the dev node 2026-11-17: in all 20 fine-tunes all 12,288 neurons have a nonzero input-row or output-column change), so about 12,288 changed units at level A per item and 28 at level B",
+  "filed": "the reuse member above its twin at level A in each of the 8 counted comparisons"
+ },
+ "stops": {
+  "stage 0": "exit 1 with stage0.json holding 'stopped' when: a hybrid gate is over gate_tol; do-nothing reads other than 'no change' at either level; x2's level A changed units are not C, its contrast does not read, an order's retention differs from 1 by more than r_tol, or a gain on a set differs from 2 by more than gain_tol",
+  "start": "exit 1 when the number tokens are not E154's (built_control_sum/results/amend1_stage0.json)",
+  "per item": "exit 1 with results/items/<item>.stopped.json when the gap misses E184's by more than reload_tol, or the hybrid gate is over gate_tol (code errors, not readings); no stop on any reading"
+ },
+ "blind_to": {
+  "r": "anything outside the item's 512 read windows; any change of gain (free by the distance); attention, embedding and unembedding changes at level A (they are equations between units there, never units; level B's heads see attention); a change inside a unit at that level; a rule moved to another layer",
+  "retention for the contrast": "unchanged units; which of several sufficient sets is right (5 orders reported); changes that do not move the last-position distribution on these windows; chunked elimination need not give a one-unit-minimal set",
+  "the comparison": "the size of the weight update: per layer, the twin's MLP update (relative Frobenius norm, measured on the weights, 2026-11-17) is 2.2 to 3.1 times the reuse member's in the case pair, 1.2 to 1.7 times in the repeat pair, and 7 to 18% larger in the two key-table pairs, so a reading that tracks update size alone orders all four pairs as filed"
+ },
+ "positive_control": "stage 0: do-nothing reads 'no change' and run 1's circuit turned up x2 reads 1 in every order, by arithmetic under these choices, on the same windows, position and code path as the items",
+ "noise_floor": {
+  "retention across orders": "run 1's rebuilt item: 5 orders spanned 0.97154 to 0.97183 (experiments/rule_retention_fixed/results/stage2.json), sd about 1e-4; differences between members under that are read as ties in prose, though the rule scores them",
+  "gap": "fp32 reload of the same state on the same windows: 0 to about 1e-6, against reload_tol 1e-4 (E184's)"
+ },
+ "threshold_sources": {
+  "r_tol, gain_tol, kl_floor, closure_bar, orders, order_seed, chunk, gate_tol": "run 1's filed values (experiments/rule_retention_fixed/results/predictions.json), unchanged",
+  "reload_tol": "E184's (experiments/simplest_intervention/results/predictions.json thresholds)",
+  "layer, C, factor": "run 1's circuit and its x2 item",
+  "n_read": "set by the writer for cost: about 12,288 changed neurons give about 12,000 to 17,000 closure evaluations per order (run 1: 5,711 to 6,324 for 6,144); 512 windows keep one evaluation near run 1's 21 ms; E184 read 16,384 windows at the last position",
+  "read_seed": "new, this run's number",
+  "n_max, held_share": "E173's Config (experiments/soft_intervention/run.py), whose numbers build the twin and fact windows",
+  "eval_batch": "E184's (commute.rank_read.Sizes eval_batch)",
+  "profile_batch": "one batch of the 512 windows"
+ }
+}

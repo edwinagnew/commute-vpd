@@ -1,7 +1,9 @@
 """Causal-rule retention under the fixed choices (plan `reports/plans/2026-11-17_plan_rule-retention-fixed-choices.md`,
 "Definitions in code"; the definition is `~/commute-data/scratch/definition-session/2026-11-17_causal-rule-retention.md`,
 "Choices fixed for the test", tested, not adopted). Added 2026-11-17 for `experiments/rule_retention_fixed` (E195). It
-builds on `commute.rule_retention` (P1.24), which it calls and does not change.
+builds on `commute.rule_retention` (P1.24), which it calls and does not change. Run 2 of P1.25
+(`experiments/rule_retention_pairs`) also calls it, reading the contrast's KL at the last position only (`at`, added
+then; its default, every position, is what run 1 ran).
 
 A unit is an MLP neuron (level A) or a head after o_proj or a whole MLP block (level B, the side reading). Its output on
 M's inputs to its layer: neuron i, f_i(x) = a_i(x) w_i (activation times its output column). For F's unit i and M's
@@ -137,8 +139,8 @@ def _mlp(F: R.Model, M: R.Model, l: int, y: Tensor, partner: Tensor, rev: list[i
 
 
 @torch.no_grad()
-def forward(F: R.Model, M: R.Model, toks: Tensor, prof: Profile, revert: Iterable[Unit] = ()) -> Tensor:
-    """F's logits with the units in `revert` put back to their partner's M rule in F's slot."""
+def forward(F: R.Model, M: R.Model, toks: Tensor, prof: Profile, revert: Iterable[Unit] = (), at: slice = slice(None)) -> Tensor:
+    """F's logits at positions `at` with the units in `revert` put back to their partner's M rule in F's slot."""
     rv: dict[tuple[str, int], list[int]] = {}
     for k, l, i in revert:
         rv.setdefault((k, l), []).append(i)
@@ -146,7 +148,7 @@ def forward(F: R.Model, M: R.Model, toks: Tensor, prof: Profile, revert: Iterabl
     for l in range(len(F.net.h)):
         x = x + _attn(F, M, l, x, prof["head", l].partner, rv.get(("head", l), []))
         x = x + (R.block(M, l, x) if ("mlp", l) in rv else _mlp(F, M, l, x, prof["neuron", l].partner, rv.get(("neuron", l), [])))
-    return F.net.lm_head(F.net.ln_f(x)).float()
+    return F.net.lm_head(F.net.ln_f(x[:, at])).float()
 
 
 def gate(F: R.Model, M: R.Model, toks: Tensor, prof: Profile) -> float:
@@ -175,11 +177,13 @@ def eliminate(closure: Callable[[set[Unit]], float], order: list[Unit], bar: flo
     return [u for u in order if u in S], n
 
 
-def contrast(F: R.Model, M: R.Model, toks: Tensor, prof: Profile, level: str, th: dict[str, Any], log: Callable[[str], None]) -> dict[str, Any]:
-    """The retention for the contrast F against M on `toks` at one level: per seeded order, the smallest set found, its
-    mean r, the gains on it, and the evaluations and seconds the order took."""
+def contrast(F: R.Model, M: R.Model, toks: Tensor, prof: Profile, level: str, th: dict[str, Any], log: Callable[[str], None],
+             at: slice = slice(None)) -> dict[str, Any]:
+    """The retention for the contrast F against M on `toks` at one level, KL read at positions `at` (every position by
+    default, as E195 run 1 read it): per seeded order, the smallest set found, its mean r, the gains on it, and the
+    evaluations and seconds the order took."""
     ch = changed(prof, level, th["r_tol"])
-    lF, lM = forward(F, M, toks, prof), M.logits(toks)
+    lF, lM = forward(F, M, toks, prof, at=at), M.logits(toks)[:, at]
     kl0 = float(R.kl(lF, lM).mean())
     out: dict[str, Any] = {"kl": kl0, "n_units": len(units(prof, level)), "n_changed": len(ch)}
     if not ch:
@@ -188,7 +192,7 @@ def contrast(F: R.Model, M: R.Model, toks: Tensor, prof: Profile, level: str, th
         return out | {"reading": "no contrast"}
 
     def closure(S: set[Unit]) -> float:
-        return 1 - float(R.kl(lF, forward(F, M, toks, prof, [u for u in ch if u not in S])).mean()) / kl0
+        return 1 - float(R.kl(lF, forward(F, M, toks, prof, [u for u in ch if u not in S], at)).mean()) / kl0
 
     gen, orders = torch.Generator().manual_seed(th["order_seed"]), []
     for k in range(th["orders"]):
