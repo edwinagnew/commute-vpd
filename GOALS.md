@@ -32,6 +32,11 @@ live in `decisions.md`, and what has been tried lives in `experiments/TRIED.md`.
   against a δW = 0 warm-start control and the cross-seed baseline.
 - **If no simple Φ works.** Is that because post-training teaches new capabilities rather than strengthening
   existing ones, or because parameter decompositions are too brittle?
+- **Working definition of reuse (user, 2026-11-18).** The held-model wording of causal-rule retention, a cross-model
+  interchange: the change from M to F is reuse to the degree that it survives when every unit of F is interchanged
+  for M's matching unit held to its rule; the per-site linear map is the main reading. Full statement and caveats in
+  `decisions.md` (row of 2026-11-18). It supersedes the second wording ("reuse at a variable", tentatively adopted
+  2026-11-10), which is kept only as a record.
 - **Canonical update:** LoRA, plus full-weight fine-tunes.
 - **Γ:** frozen for now (see `decisions.md`), although updating it may turn out to be essential.
 - **Optimiser (priority subgoal, user 2026-10-21):** compare SGD and Adam on the same tasks, both as the
