@@ -1,0 +1,137 @@
+{
+ "experiment": "E___",
+ "cell": "P1.24",
+ "status": "filed before any run; run 2 of cell P1.24 (amend1 of E193): the replaced item rebuilt; built items only, no trained fine-tune is read",
+ "wording": "causal-rule retention at a declared level (~/commute-data/scratch/definition-session/2026-11-17_causal-rule-retention.md), tested here, not adopted; no change to decisions.md",
+ "request": "Plan reports/plans/2026-11-17_plan_causal-rule-retention.md: describe M and an edited copy F at two declared levels, pair each unit of F with the unit at the same place in M, score how far each unit's rule moved, and calibrate on three built items whose machinery is known. The user chose 'Same-block only' (2026-11-17 dialog): do-nothing, rescaled, and replaced with the replacement inside one MLP layer; level B is expected to fail on the replaced item.",
+ "changes_against_E193": {
+  "why": "E193 (run 1, results/predictions.json and results/stage*.json, commit 1d6cd5da) stopped in stage 2 at seed 0: no lambda of 0, 0.1, 1, 10 passed both checks (fit ratio copy24 / Pile and max |corr|: 0 gave 0.1017 / 0.0992 and 0.9955; 0.1 gave 0.0133 / 0.0190 and 0.9983; 1 gave 0.436 / 0.448 and 0.289; 10 gave 0.783 / 0.798 and 0.083). Stages 0 and 1 were clean (do-nothing r = 1 everywhere; rescaled 0.80 at level A, 0.906 at level B). The user chose (dialog 2026-11-17, Rebuild with run 2) to rebuild the replaced item in the cell's second run.",
+  "n_new": "32 appended neurons (E193: 16)",
+  "steps": "12000 fit steps per try, 3x E193's 4000 (log_every 1000, was 250)",
+  "lambdas": "0.2, 0.3, 0.5 in ascending order (E193: 0, 0.1, 1, 10), between the copy E193 found at 0.1 and the misfit at 1",
+  "outputs": "results/amend1/ and results/large/amend1/; stages 0 and 1 rerun here, so the run is self-contained and the control runs first",
+  "log": "the run writes no run.log of its own; its standard output is teed to results/amend1/run.log (E193's log was doubled)",
+  "unchanged": "the fit bar (0.1), the copy bar (0.9), the selection rule (first passing lambda per seed, next seed after a pass, stop only when a seed has no passing lambda), the rule, every other bar and setting, and the expected values except those naming the appended neurons"
+ },
+ "amendment_2026-11-17": "E193's pre-run amendment, kept as it holds here with the new grid and size: by the lead, so a copy cannot stop stage 2 and spend the cell's run. The replaced item is built to be a non-copy by construction plus the check. Per fit seed, the appended neurons (32 here) are trained by loss = KL(replaced || rescaled) + lambda * (mean over the 32 x 8 (new, C) pairs of the squared Pearson correlation of their activations over the positions of the batch, on the layer's normed input; C's activations held fixed). lambda goes through the filed grid (0.2, 0.3, 0.5 here) in ascending order, each fit from the same start; the first fit that passes both held-out checks (fit ratio <= 0.1 on copy24's and on Pile's held-out windows; max |corr| <= 0.9) is kept and read. The lambda used and both check values for every lambda tried are recorded (stage2.json seeds.<s>.tries). The job stops only when no lambda passes on a seed. Thresholds, the rule and every expected reading are unchanged.",
+ "settings": {
+  "k": 8,
+  "alpha": 2.0,
+  "n_new": 32,
+  "fit_seeds": [
+   0,
+   1,
+   2,
+   3
+  ],
+  "lambdas": [
+   0.2,
+   0.3,
+   0.5
+  ],
+  "window": 41,
+  "pile_train": 16384,
+  "pile_held": 1024,
+  "data_seed": 0,
+  "batch": 64,
+  "steps": 12000,
+  "lr": 0.001,
+  "warmup": 100,
+  "log_every": 1000,
+  "eval_batch": 64
+ },
+ "thresholds": {
+  "r_tol": 1e-06,
+  "gate_tol": 0.001,
+  "kl_floor": 1e-06,
+  "closure_bar": 0.9,
+  "orders": 5,
+  "order_seed": 0,
+  "high": 0.7,
+  "low": 0.3,
+  "fit_ratio": 0.1,
+  "copy_corr": 0.9
+ },
+ "measures": {
+  "r": "per unit u: r(u) = 1 - min(1, |f_F - f_M|^2 / (|f_F|^2 + |f_M|^2)), f_N = N's unit applied to M's input at that layer, sums over copy24's 75 held-out windows, all 41 positions and the 768 residual dimensions, fp64 sums of fp32 outputs. An unpaired unit (an appended neuron) has r = 0; a unit whose two outputs are both zero on every window has r = 1",
+  "level A": "a unit is one MLP neuron (4 x 3072, plus appended neurons); its output is its activation times its down_proj column. Attention, embeddings and the unembedding are equations between units",
+  "level B": "a unit is one attention head after o_proj (4 x 6) or one whole MLP block (4), appended neurons inside their block",
+  "gate": "per level, on M and on every F (do-nothing, rescaled, each replaced seed, its appended neurons included): the logits rebuilt from the units' outputs (level B: attention as the sum of its six heads' outputs; level A: each MLP as the sum of its neurons' outputs) against the native forward; max over windows of max |difference| / max |native logit|; copy24's 75 held-out windows (M and do-nothing also on 128 held-out Pile windows), fp32, TF32 off",
+  "changed": "the units with r < 1 - r_tol",
+  "closure": "closure(S) = 1 - KL(F || F_S) / KL(F || M), KL of the full next-token distribution averaged over every position of copy24's 75 held-out windows; F_S is F with every changed unit outside S put back to M's rule (an appended neuron put back is removed)",
+  "contrast retention": "greedy backward elimination over the changed units in each of 5 seeded random orders (drop a unit when the rest still has closure >= closure_bar); per order the mean r over the set left; reported as the five values and their range",
+  "attribution": "per neuron, activation times the gradient of the answer logit (the value token's logit at copy24's answer position) summed over copy24's 301 training windows and every position; the layer with the largest sum of |attribution| over its neurons; C = its k neurons with the largest |attribution|",
+  "fit ratio": "KL(replaced || rescaled) / KL(rescaled || M), each the mean over windows of the per-position mean KL, on held-out windows: copy24's 75, and 1024 Pile windows cut from val rows 0..256; both must pass",
+  "not a copy": "max over appended neurons j and C's neurons c of |Pearson correlation| of their activations over every position of the 1024 held-out Pile windows and copy24's 75 held-out windows, on M's input at the layer",
+  "share": "C's share of its block's output on M's input, q = |c|^2 / |f|^2 and rho = <f, c> / |f|^2 over the read windows, and the level B block r that follows, 1 - (alpha-1)^2 q / (2 + 2 (alpha-1) rho + (alpha-1)^2 q)"
+ },
+ "rule": {
+  "do-nothing": "at each level every unit has r = 1 within r_tol (1e-6) and the contrast reads 'no change' (stage 0 stops the job otherwise)",
+  "rescaled": "contrast retention >= 0.7 ('high'): every order's smallest-set mean r is at least 0.7",
+  "replaced": "contrast retention <= 0.3 ('low'): every order's smallest-set mean r, at every fit seed, is at most 0.3",
+  "no call": "anything else: a reading in (0.3, 0.7), a range across orders or fit seeds that is not wholly on one side, or an item with no reading ('no contrast', 'no set')",
+  "level": "a level passes when do-nothing holds, rescaled is high and replaced is low, and is frozen for run 2; it fails when do-nothing does not hold, rescaled is low or replaced is high; otherwise no call (rule.py)",
+  "stops": "any item: its gate over 1e-3 at either level; stage 0: any r off 1 by more than 1e-6, or a contrast that is not 'no change'; stage 1: KL(rescaled || M) on copy24's held-out windows not above kl_floor; stage 2: a fit seed at which no lambda of the grid passes both checks (fit ratio at most 0.1 on both held-out sets, max |corr| at most 0.9; amendment 2026-11-17)"
+ },
+ "expected": {
+  "gate": "M and every F, both levels: about 1e-6 (fp32 rounding of a sum taken in another order), under 1e-3; level A is the network's own matrix product, so close to 0",
+  "do_nothing": {
+   "A": "12,288 units, every r = 1 exactly (max |1 - r| = 0: F is a copy, the same kernels on the same inputs); KL(F || M) = 0; contrast 'no change'",
+   "B": "28 units, every r = 1 exactly; contrast 'no change'"
+  },
+  "rescaled": {
+   "KL(rescaled || M)": "above 1e-6 on copy24's held-out windows; its size is measured, not predicted (C is chosen to matter for the answer, so likely 1e-3 to 1e-1 nats)",
+   "A": "the 8 neurons of C at r = 0.8 (1 - (alpha-1)^2 / (alpha^2 + 1), within 1e-9) and the other 12,280 at r = 1; every smallest set lies inside C, so the contrast retention is 0.80 in all 5 orders: high",
+   "B": "one changed unit, C's MLP block, at the r its share gives (computed and reported in stage 1; E193 read 0.906 and the rerun is expected to repeat it to within 1e-6), the other 27 at r = 1; the only smallest set is that block, so the contrast retention equals its r: high",
+   "closure": "1 for the whole changed set; about 0 with every changed unit put back (F_S = M up to rounding)"
+  },
+  "replaced": {
+   "fit": "fit ratio at most 0.1 on both held-out sets, and max |corr| at most 0.9, at every fit seed, at some lambda of 0.2, 0.3, 0.5 (E193 seed 0: 0.1 fit but copied, 1 did not copy but missed the fit; twice the neurons and three times the steps are meant to let a lambda in between do both)",
+   "A": "C's 8 neurons at r = 0 (their output is zero), the 32 appended neurons at r = 0 (no pair), the other 12,280 at r = 1 (12,320 units); every smallest set holds only r = 0 units, so the contrast retention is 0 in every order and seed: low",
+   "B": "one changed unit, C's MLP block, at about the rescaled item's block r (within the fit's error; the block's output matches the rescaled one's); 27 at r = 1; contrast retention equals that r, about the rescaled value: high, so level B fails on this item (the definition's stated limit, 'blind inside a unit')"
+  },
+  "levels": {
+   "A": "passes",
+   "B": "fails (replaced reads high)"
+  }
+ },
+ "blind_to": {
+  "r": "anything outside copy24's 75 held-out windows; a change inside a unit at that level (level B cannot see neurons replaced within a block); a mechanism that moved to another unit (location-preserving pairing: it reads as r = 0 plus an unpaired unit)",
+  "contrast retention": "units the contrast does not need (unchanged units never enter); which of several sufficient sets is the 'right' one (the range over orders is reported); changes that do not move the next-token distribution on these windows",
+  "gate": "nothing at these two levels except a code error in the rebuild: both are the network's own computation, so the gate holds by construction (stated in the plan) and bites only on a fitted level, which is not run",
+  "fit ratio": "which neurons carry the replacement and how",
+  "not a copy": "a copy split nonlinearly over several neurons (linear correlation per pair only)",
+  "attribution": "effects beyond the linear term"
+ },
+ "positive_control": "the rescaled item: C kept and doubled, so at level A each of C's neurons reads r = 0.80 exactly and the contrast retention is 0.80; do-nothing is the null (every r = 1, 'no change'). The replaced item at level A reads 0 by construction; level B's reading of it is the measurement in question",
+ "noise_floor": {
+  "r": "unchanged units: 0 for identical computations (do-nothing); at most about 1e-12 when the activation matrix has appended columns (another reduction shape), against r_tol 1e-6",
+  "gate": "fp32 rounding, about 1e-6 relative, against 1e-3",
+  "fit seeds": "the spread of level B's replaced reading across the 4 fit seeds is not measured before the run; the card uses the largest sd any reading in [0, 1] can have, 0.5 (Popoviciu's inequality)"
+ },
+ "edge_cases": {
+  "empty_changed_set": "no unit below 1 - r_tol: the contrast reads 'no change' and gives no retention (do-nothing's expected reading; for a built item it is no call)",
+  "kl_zero": "KL(F || M) at or under kl_floor (1e-6) with changed units: 'no contrast', no closure is divided; stage 1 stops if the rescaled item reads this; for replaced it is no call",
+  "ties_in_greedy_order": "each order is a seeded permutation of distinct units, so no two units tie for a place; a drop whose closure is exactly closure_bar is taken (>=); interchangeable units give different sets in different orders, and all are reported as the range (dry run: two interchangeable units gave sets {1} and {3})",
+  "empty_smallest_set": "if F with every changed unit put back still closes closure_bar (the contrast lies in the equations between units), the set is empty: 'no set', no call",
+  "middle_band": "a level whose replaced reading lands in (0.3, 0.7), or whose range over orders or fit seeds crosses either bar: no call, the level is not frozen (dry run: 0.5 -> no call; seeds 0.1-0.2 and 0.75-0.8 -> no call)",
+  "at_the_bars": "exactly 0.7 is high and exactly 0.3 is low (dry run: passes)",
+  "zero_denominator": "a unit whose two outputs are zero everywhere: r = 1 (dry run); F writes zero where M did not: r = 0; a sign flip: r = 0 (d capped at 1); a negative rounding difference is clamped to 0",
+  "rescaled_low": "rescaled reads at most 0.3: the level fails (dry run)",
+  "no_fit_seed": "no replaced reading: no call (dry run)"
+ },
+ "threshold_sources": {
+  "high, low, closure_bar, orders, k, alpha, n_new": "the plan (2026-11-17), user-approved as cell P1.24",
+  "fit_ratio, copy_corr": "the plan's replaced-item checks",
+  "gate_tol": "the plan (1e-3 relative, fp32)",
+  "r_tol": "the plan (1e-6), against a measured-by-construction floor of 0 for identical computations",
+  "kl_floor": "1e-6 nats, the project's numerical-zero floor for KL(F || M) (E192's kl_floor)",
+  "fit recipe": "not in the plan: Adam at 1e-3 with 100 warm-up steps, 12000 steps of 64 windows (32 Pile, 32 copy24), appended weights initialised at the layer's own c_fc and down_proj weight sd; chosen here, and the fit checks, not the recipe, decide whether the item stands; the corr^2 penalty is the lead's pre-run amendment of E193 (2026-11-17); n_new 32, 12000 steps and the grid 0.2, 0.3, 0.5 are the user's choice for run 2 (dialog 2026-11-17)"
+ },
+ "card": {
+  "smallest_gap": "0.5: a level that reads the replaced item like the rescaled one (0.80 at level A's analytic value) sits 0.5 above the low bar of 0.3",
+  "spread": "0.5, the largest sd of any reading bounded in [0, 1] (Popoviciu); an upper bound on the unmeasured seed-to-seed sd of the replaced reading, so the check is conservative",
+  "n": "4 fit seeds of the replaced item",
+  "design": "one sample against a fixed bar, SE = sd / sqrt(n), the card check's 'paired' formula: 0.5 / sqrt(4) = 0.25, the gap is 2.0 SE"
+ }
+}

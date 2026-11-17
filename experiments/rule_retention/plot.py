@@ -1,14 +1,16 @@
-"""E193 (cell P1.24) figures, from results/stage0.json, stage1.json, stage2.json and score.json:
+"""E193 (cell P1.24) and amendment figures, from <results>/stage0.json, stage1.json and stage2.json (results/ for E193,
+results/<amend>/ with `--amend <amend>`, figures then in figures/<amend>/):
     figures/profile.png   the retention profile: r of every unit of F not at r = 1, per item and level, with the count at 1
     figures/contrast.png  the retention for the contrast per item and level against the 0.3 and 0.7 bars; do-nothing, which
                           has no contrast, is drawn as the reference at r = 1
 
-    ~/commute-agents/fleet/cpu-run python experiments/rule_retention/plot.py
+    ~/commute-agents/fleet/cpu-run python experiments/rule_retention/plot.py [--amend amend1]
 """
 
 from __future__ import annotations
 
 import json
+import sys
 from pathlib import Path
 from typing import Any
 
@@ -83,13 +85,15 @@ def draw_contrast(panels: list[tuple[str, dict[str, dict[str, Any]]]], th: dict[
     save(fig, path, n="one smallest set per random order (5); replaced: every fit seed; open markers: do-nothing, every r = 1", data=data)
 
 
-def main() -> None:
-    s = {n: json.loads((RESULTS / f"stage{n}.json").read_text()) for n in range(3)}
-    th = json.loads((RESULTS / "predictions.json").read_text())["thresholds"]
+def main(amend: str) -> None:
+    res, figs = (RESULTS / amend, FIGURES / amend) if amend else (RESULTS, FIGURES)
+    s = {n: json.loads((res / f"stage{n}.json").read_text()) for n in range(3)}
+    pred = json.loads((res / "predictions.json").read_text())
     its = items(s[0], s[1], s[2])
-    draw_profile(its, FIGURES / "profile.png", "")
-    draw_contrast([("E193, the three built items", its)], th, FIGURES / "contrast.png", "")
+    figs.mkdir(parents=True, exist_ok=True)
+    draw_profile(its, figs / "profile.png", "")
+    draw_contrast([(f"{pred['experiment']}, the three built items", its)], pred["thresholds"], figs / "contrast.png", "")
 
 
 if __name__ == "__main__":
-    main()
+    main(sys.argv[sys.argv.index("--amend") + 1] if "--amend" in sys.argv else "")

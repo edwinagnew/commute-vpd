@@ -1,24 +1,29 @@
-"""E193 (cell P1.24): calibrating causal-rule retention on three items of the 67M built with known machinery (plan
-reports/plans/2026-11-17_plan_causal-rule-retention.md; the definition is tested, not adopted; no trained fine-tune is
-read). Card: card.md. Filed rules and settings: results/predictions.json (the run refuses unless it is committed unchanged).
-Levels, rules, distance and the hybrid: commute.rule_retention. Every reading is on copy24's held-out windows.
+"""E193 (cell P1.24) and its amendments: calibrating causal-rule retention on three items of the 67M built with known
+machinery (plan reports/plans/2026-11-17_plan_causal-rule-retention.md; the definition is tested, not adopted; no trained
+fine-tune is read). Card: card.md (E193), card_<amend>.md. Filed rules and settings: results/predictions.json (E193) or
+results/<amend>/predictions.json with `--amend <amend>`; the run refuses unless that file is committed unchanged, and its
+"experiment" names the run. Outputs go to results/ (E193) or results/<amend>/, appended weights to results/large/ (E193) or
+results/large/<amend>/. Levels, rules, distance and the hybrid: commute.rule_retention. Every reading is on copy24's
+held-out windows.
 
 Every item's faithfulness gate is read at both levels before its readings (exit 1 on a miss). Stages, cheapest first;
-each writes results/stage<n>.json when it finishes, prints `STAGE n DONE`, and is skipped on a rerun:
+each writes stage<n>.json when it finishes, prints `STAGE n DONE`, and is skipped on a rerun:
     0  do-nothing (F a copy of M) and the faithfulness gate at both levels, on M and F. Exit 1 if any r differs from 1 by
        more than r_tol, a gate reads over gate_tol, or the contrast is not "no change".
     1  the circuit C (k neurons of the layer with the most attribution mass on copy24's training windows) and the
        rescaled item (C's down_proj columns times alpha); exit 1 if KL(rescaled || M) is under kl_floor. Both levels read.
     2  per fit seed, the replaced item: C's columns zeroed, n_new neurons appended to that layer and trained alone by
-       KL(replaced || rescaled) + lambda * mean corr^2 with C's neurons on Pile and copy24 training windows, lambda in
-       0, 0.1, 1, 10 in turn (amendment 2026-11-17); the first fit passing the fit and not-a-copy checks on held-out
-       windows is read at both levels; exit 1 only if no lambda passes. Appended weights of every try in
-       results/large/replaced_s<seed>_lambda<lambda>.pt.
-    3  rule.score -> results/score.json.
+       KL(replaced || rescaled) + lambda * mean corr^2 with C's neurons on Pile and copy24 training windows, lambda
+       through the filed grid in ascending order; the first fit passing the fit and not-a-copy checks on held-out windows
+       is read at both levels and the run goes on to the next seed; exit 1 only if no lambda passes on a seed. Appended
+       weights of every try in <large>/replaced_s<seed>_lambda<lambda>.pt.
+    3  rule.score -> score.json.
 Inputs: artifacts/vpd (the 67M), artifacts/sets/train_0_4096.npy and val_0_256.npy (Pile rows), and
 experiments/open_pair/results/large/amend1/windows_copy_trained.pt (copy24). Exit 0 done, 1 a stop or refusal.
+The log is standard output only (no file is written by the run); keep it with tee:
 
-    python experiments/rule_retention/run.py      (on a pod: E120_PRED_SHA=<sha of results/predictions.json> python ...)
+    python experiments/rule_retention/run.py --amend amend1 2>&1 | tee experiments/rule_retention/results/amend1/run.log
+    (on a pod: E120_PRED_SHA=<sha of the predictions file> python ...)
 """
 
 from __future__ import annotations
@@ -38,10 +43,12 @@ from commute.data import pile_rows
 from commute.jobs import EXPERIMENTS, hard_exit, load_experiment, require_filed
 
 RU: Any = load_experiment("rule_retention", "rule")
-EXPERIMENT, CELL = "E193", "P1.24"
+CELL = "P1.24"
 HERE = Path(__file__).resolve().parent
-RESULTS, PRED = HERE / "results", HERE / "results" / "predictions.json"
-LARGE = RESULTS / "large"
+AMEND = sys.argv[sys.argv.index("--amend") + 1] if "--amend" in sys.argv else ""  # "" is E193 itself
+RESULTS = HERE / "results" / AMEND if AMEND else HERE / "results"
+PRED, LARGE = RESULTS / "predictions.json", HERE / "results" / "large" / AMEND if AMEND else HERE / "results" / "large"
+EXPERIMENT = json.loads(PRED.read_text())["experiment"]
 COPY24 = EXPERIMENTS / "open_pair" / "results" / "large" / "amend1" / "windows_copy_trained.pt"
 
 
@@ -78,9 +85,7 @@ class Data:
 
 
 def log(msg: str) -> None:
-    print(msg, flush=True)
-    with (RESULTS / "run.log").open("a") as f:
-        f.write(msg + "\n")
+    print(msg, flush=True)  # the job's standard output is the log (tee it to <results>/run.log)
 
 
 def dump(path: Path, obj: dict[str, Any]) -> None:
