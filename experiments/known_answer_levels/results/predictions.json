@@ -1,0 +1,101 @@
+{
+  "experiment": null,
+  "cell": "pending (proposal 30, rung L1.4); no E-code claimed",
+  "plan": "reports/plans/2026-11-18_plan_known-answer-levels.md (appendix reports/plans/2026-11-18_plan_known-answer-levels_appendix.md); card experiments/known_answer_levels/card.md",
+  "status": "DRAFT 2026-11-18, not filed. Filing waits on the cell opening, an E-code, and the user's answer to the plan's two points (which parts F needs; 'on the same input'). If the user adopts reading 2 of point 1, its rule is added here before filing; the experiment field gets the E-code.",
+  "wording": "The working definition (GOALS.md; decisions.md rows 'Working definition of reuse, stated in causal-abstraction terms' and 'Working definition of reuse without rho', 2026-11-18), with the user's choice for clause 4 at multi-unit parts: a part keeps M's rule by interchange, M's output for the part put into F on the same input, kept to the extent F's behaviour holds. Clause 5 (the parts F needs: fewest parts that keep F's mechanism while every other part takes M's) as the theory note writes it.",
+  "settings": {
+    "slot_layer": 0,
+    "n_cues": 8,
+    "windows_per_cue": 64,
+    "window": 41,
+    "cue_seed": 186000,
+    "data_seed": 0,
+    "circuit_heads": [[1, 1], [2, 4]],
+    "gain_head": [2, 4],
+    "detector_ratio": 10.0,
+    "detector_quantile": 0.99,
+    "gamma_t_max": 8.0,
+    "copy_bar_frac": 0.8,
+    "lookup_bar": 0.9,
+    "g_fallback_ratio": 2.67,
+    "levels": ["neuron", "head", "mlp_layer", "block"],
+    "readings": ["replace", "patch"],
+    "split_seed": 186001,
+    "eval_batch": 512,
+    "rebuilt": "experiments/rule_retention_fixed/results/large/rebuilt_mlp.pt",
+    "pairs": [["copy24", "cipher24"], ["ident32", "rand32"], ["case_real", "case_twin"], ["repeat_real", "repeat_twin"], ["twin", "fact"]],
+    "counted": 4,
+    "seeds": [0, 1],
+    "n_read": 512,
+    "read_seed": 195200,
+    "settings_source": "circuit_heads: E62 (reports/analyses/2026-11-02_analysis_e62-copying-heads.md: (2,4) the copying head, (1,1) the top previous-token head, each alone takes W0's top-1 from 0.82 to about 0.01). slot_layer 0: the earliest MLP, so the slots act before both circuit heads read their inputs. Slots: E206's rule (smallest mean activation^2 x |output column|^2), here at layer 0. window, n_read, read_seed, pairs, counted, seeds: E196/E208's filed settings. lookup_bar 0.9: E206's graft held-out accuracy 0.924, rounded down. copy_bar_frac 0.8: the re-triggered copy must reach most of M's own copy rate (E62 base 0.8247); a measurement bar on the build, not on any reading. g_fallback_ratio 2.67: E196's largest twin/reuse MLP update ratio (case pair, experiments/rule_retention_pairs/results/update_size.json, 0.0200/0.0075). detector_ratio, detector_quantile, gamma_t_max: build checks set here, each logged with the value reached; none enters a reading. cue_seed, split_seed: new seeds."
+  },
+  "thresholds": {
+    "tau": 0.9,
+    "orders": 5,
+    "order_seed": 0,
+    "chunk": 256,
+    "kl_floor": 1e-06,
+    "gate_tol": 0.001,
+    "e62_base": 0.8247,
+    "e62_tol": 0.01,
+    "e62_ablated_bar": 0.3,
+    "a_prime_copy_max": 0.05,
+    "band_factor": 3,
+    "thresholds_source": "tau, orders, order_seed, chunk, kl_floor, gate_tol: E208's filed values (experiments/rho_saved_items/results/predictions.json). e62_base, e62_tol, e62_ablated_bar: E62's filed a_heads rule (top-1 under H < 0.3, base within 0.01 of 0.8247). band_factor 3: the 3 s bar of E55's filed rules (src/commute/interchange.py), applied to the noise measured in stage 1. a_prime_copy_max: a build check that the new cue does not already trigger copying in M."
+  },
+  "level": {
+    "neuron": "every MLP neuron, every attention head, the token embedding, the unembedding (E208's parts, commute.rho)",
+    "head": "every attention head, each whole MLP layer, the embedding, the unembedding (E193's level B)",
+    "mlp_layer": "each attention layer (its 6 heads), each MLP layer, the embedding, the unembedding",
+    "block": "each block (its attention and MLP), the embedding, the unembedding",
+    "alignment": "the identity on every cell, so the fit of the level on M and on F is 0 at every level; a coarse part's swap is the swap of all its cells"
+  },
+  "readings": {
+    "r_u": "1 - KL(F || F with part u alone swapped) / KL(F || M), on D at the last position, signed, not clipped",
+    "replace (reading A)": "a swapped part runs M's mechanism on the input it receives in the hybrid (the theory note's starred choice; commute.rho.forward with mrun None)",
+    "patch (reading B)": "a swapped part takes the value it had in M's own run on the same window (Prakash et al. 2024; commute.rho.forward with mrun)",
+    "K": "per order, commute.rule_retention_fixed.eliminate over the level's changed parts, kept while 1 - KL(F || F_K) / KL(F || M) >= tau",
+    "R": "mean of r_u over K, per order; the item's R is the mean over the 5 orders. R is this test's summary, not the definition's score",
+    "band": "per level and reading: band_factor x the largest, over the four edits, of max(sd of R over the 5 orders, |R on windows half 1 - R on half 2|), the halves a seeded split (split_seed) of D into 256 + 256 windows; measured in stage 1 before stage 2 reads",
+    "swap_floor": "per edit and level: KL(M native || F with every changed part swapped) / KL(F || M), read in stage 1's gate"
+  },
+  "expected": {
+    "do_nothing": "no changed part at every level under both readings: reads 'no change'",
+    "reuse_small": {"neuron": "about 1 - 1/8: exactly 1 - mean over K of each slot's share of KL", "head": 0, "mlp_layer": 0, "block": 0},
+    "reuse_large": {"neuron": "(8 x about 7/8 + r_(2,4)) / 9", "head": "r_(2,4) / 2, in (0, 0.5)", "mlp_layer": "r_attn2 / 2, in (0, 0.5)", "block": "r_block2 / 2, in (0, 0.5)"},
+    "new_few": {"neuron": "about 1 - 1/8, as reuse_small", "head": 0, "mlp_layer": 0, "block": 0},
+    "new_thin": {"neuron": ">= 0.99", "head": 0, "mlp_layer": 0, "block": 0},
+    "rebuilt": "reported at every level, not an anchor; no expected value scored",
+    "derivation": "plan appendix section 3: K holds only changed parts; a part holding the whole edit gives M on D when swapped, so r = 0"
+  },
+  "rules": {
+    "R0 (stops)": "Stage 0 (do-nothing, alone): exit 1 unless do-nothing reads 'no change' at all four levels under both readings; F with nothing swapped matches F's native logits within gate_tol (max |diff| / max |logit|, as E208's gate); copying.induction top-1 on M within e62_tol of e62_base; and top-1 with (2,4) mean-ablated under e62_ablated_bar. Stage 1 (build): exit 1 if any edit's KL(F || M) on D <= kl_floor; reuse copy top-1 on D < copy_bar_frac x M's induction top-1; new lookup top-1 on D < lookup_bar; M's copy top-1 on D (A' in place of the second A) > a_prime_copy_max; gamma_T > gamma_t_max; or, at any level, F with every changed part swapped differs from M's native logits by more than gate_tol, or F with none swapped from F's by more than gate_tol. An empty K exits 1 (a code error).",
+    "R1 (a level recovers the labels)": "for level l and reading x: recovers iff min(R(reuse_small), R(reuse_large)) - max(R(new_few), R(new_thin)) > band(l, x), strictly. Do-nothing is not part of the rule. Each of the 8 (level, reading) cells reads 'recovers' or 'does not'.",
+    "R2 (the test's verdict)": "'pass' iff R1 reads 'recovers' at one or more levels under replace (reading A); else 'fail'. The levels that pass are listed. Patch's R1 cells are reported beside it, and are not the verdict.",
+    "P1": "under replace, at head, mlp_layer and block: |R| <= max(3 x swap_floor of that edit and level, 0) for reuse_small, new_few and new_thin (an exact 0 when the swap is bitwise M), and R(reuse_large) above 3 x its swap_floor. Holds iff all 9 + 3 conditions hold.",
+    "P2": "under replace, at neuron: R(new_thin) >= 0.99 and R(new_thin) > max(R(reuse_small), R(reuse_large), R(new_few)), strictly. Holds iff both. This is the user's 'the neuron level misses the thinly spread new item'.",
+    "P3": "R2 reads 'fail' (no level passes, so run 2 does not run).",
+    "P4": "under patch: for every level, R_patch(reuse_small) <= R_replace(reuse_small) + band(l, patch); and R1 under patch reads 'does not' at every level. Holds iff both.",
+    "run 2": "only if R2 reads 'pass': the trained pairs (pairs, seeds) are read once at the passing level under replace (if several pass, the finest of them), on E196's read windows. Reported per item as R with its band and its K, with no label and no rule scored. The reuse member minus twin gap per pair and seed is reported beside the twin-over-reuse update ratio (E196's update_size.json)."
+  },
+  "edge_cases_checked": {
+    "do_nothing": "no changed part, so R undefined and the item reads 'no change'; R1 never takes it, so it cannot pass",
+    "ties": "R1 is strict; at coarse levels the band can be 0 (R exact), and 0 against 0 does not recover",
+    "zero denominator": "KL(F || M) <= kl_floor is a stage-1 stop, so r_u is never divided by zero",
+    "empty K": "impossible while KL(F || M) > kl_floor (F with every changed part swapped is M); a stop if seen",
+    "one-part K": "R = r_u, the coarse-level case",
+    "negative r_u": "kept signed; R1 compares signed values",
+    "slot drops out of K": "R over the K found; logged, not a stop",
+    "g has no solution above 1": "g_fallback_ratio applies; the size match is reported as not met",
+    "several levels pass": "run 2 reads the finest passing level; all passing levels are listed"
+  },
+  "blind_to": {
+    "R": "how much each part matters beyond the 0.1 of the behaviour tau leaves out; any unchanged part (clause 5 never puts one in K), so an unchanged circuit a re-trigger runs through is invisible under replace",
+    "the edits": "trained solutions; each edit is one site and one hand-built write, so it says what the reading does on known answers, not what trained fine-tunes do",
+    "update size": "matched only for reuse_large against the new edits (Frobenius norm, absolute); reuse_small and new_few share their input rows, and their output columns differ in size, logged"
+  },
+  "positive_control": "Stage 0: M's induction top-1 0.8247 reproduced, and lost under (2,4)'s ablation (the circuit the reuse edits rely on exists). Stage 1: the all-swapped gate at each level (F with every changed part swapped is M).",
+  "noise_floor": "the band (readings.band), measured in stage 1 on each level and reading; the swap_floor per edit and level"
+}
