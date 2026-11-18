@@ -44,8 +44,8 @@ reported number, with no rule and no verdict). It reads 0.8 at x2 and 20/101 at 
 
 | stage | items | numbers (expected) |
 |---|---|---|
-| 0, alone, stop on a miss | do-nothing; C x2, x10; E206's 256 neurons written into M's 256 quietest layer-3 slots; E206's appended neurons and head | do-nothing "no change"; x2/x10 ρ = 1 ± 1e-6 under every reading, K ⊆ C; slotted ρ ≤ 0.05 (about 0.0013 expected); appended ρ = 0 by rule; nothing kept gives M (M gate ≤ 1e-3) |
-| 1 | E196's 5 pairs × seeds 0, 1 | per item: ρ and \|K\| for main, (i), (ii), (iii), (b). ρ_main near 1; neurons read cos² of their output columns (exact). (iii) = main on neurons; (i) ≤ main on neurons. **R1**, below |
+| 0, alone, stop on a miss | do-nothing; C x2, x10; E206's 256 neurons written into M's 256 quietest layer-3 slots; E206's appended neurons and head | do-nothing "no change"; x2/x10 ρ = 1 ± 1e-6 under every reading, K ⊆ C; slotted ρ ≤ 0.05 (amendment 1: now reported, not a stop; ρ_main ≈ the share of settings silent in both, which can be large; only (i) still reads it near 0); x2/x10 ρ_b = 1 − d·(active share over K) (amendment 1); appended ρ = 0 by rule; nothing kept gives M (M gate ≤ 1e-3) |
+| 1 | E196's 5 pairs × seeds 0, 1 | per item: ρ and \|K\| for main, (i), (ii), (iii), (b). ρ_main near 1; at a neuron r_main = z + a·c exactly (amendment 1: z, a the shares silent and active in both, c the column cos²). **R1**, below |
 | 2 | E195 rebuilt | main ρ ≥ E195's 0.9715; nothing kept −1.11 under main, 0 under (iv); ρ_(iv) measured |
 
 **The separating question (R1, filed).** Does the note's version separate the reuse member from its twin by more than
@@ -68,10 +68,12 @@ One run; a second only if a stage-0 fix is needed.
 
 ## For the user (definition questions; detail in the appendix)
 
-1. **Per-setting 1 − cos² cannot see a neuron change what it responds to.** A neuron writes its activation times a
-   fixed column. The cos² of two such writes at one setting is the cos² of the two columns, whatever the activations.
-   So under the note's formula, a neuron's rule is a comparison of its output column alone. If the neuron's value is
-   instead its activation, every neuron reads 1. E195/E196's code took one cos² over all settings together, which does
+1. **Per-setting 1 − cos² barely sees a neuron change what it responds to.** A neuron writes its activation times a
+   fixed column. The cos² of two such writes, when both are active, is the cos² of the two columns, whatever the
+   activations. *Corrected 2026-11-18 (amendment 1):* the 67M's GELU gives exact zeros. Both silent counts as the same
+   value; one silent counts as a difference. So r = (share silent in both) + (share active in both) × (column cos²).
+   What a neuron responds to enters only through when it is silent, never through how strongly it fires. If the
+   neuron's value is instead its activation, every neuron reads the share of settings where both agree on silence. E195/E196's code took one cos² over all settings together, which does
    see the activation pattern. Which did the user mean?
 2. **Every part counts the same in ρ.** One head weighs as much as one neuron, and K holds thousands of neurons.
 3. **A part that F has removed and that sits in K** (choice c5's alternative) has no reading in the note; we read 0.

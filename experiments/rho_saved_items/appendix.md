@@ -27,14 +27,17 @@ choices made here, and the places where the note and the code disagree.*
 ## B. Definition questions for the user (wording, not measurement)
 
 1. **The per-setting distance is blind at a neuron.** A neuron's write at setting v is a(v)·w. Then
-   cos²(a_F(v) w_F, a_M(v) w_M) = cos²(w_F, w_M) whenever both activations are non-zero. GELU is zero only at 0, so
-   that is every setting in practice. So the note's r_u at a neuron is the cos² of its output column. The input row
-   and the norm, which set what the neuron responds to, never enter. If a neuron's value is taken to be its scalar
-   activation, cos² of two non-zero scalars is 1 and every neuron reads r = 1. RF's aggregate cos² sees the response
+   cos²(a_F(v) w_F, a_M(v) w_M) = cos²(w_F, w_M) whenever both activations are non-zero. *Corrected 2026-11-18
+   (amendment 1, after run 1's stage-0 stop):* the 67M's NewGELU is the tanh form, which gives exact zeros, and many
+   settings are silent. A setting where both writes are zero counts as agreement, and one where only one is zero
+   counts as disagreement. So at a neuron, the note's r_u = z_u + a_u c_u, where z_u is the share of settings silent in
+   both networks, a_u the share active in both, and c_u the output columns' cos². The input row and the norm enter only
+   through which settings are silent. How strongly an active neuron fires never enters. If a neuron's value is taken
+   to be its scalar activation, cos² of two non-zero scalars is 1, and every neuron reads r = z_u + a_u. RF's aggregate cos² sees the response
    pattern, because it sums before it divides. The options, in plain words: (a) score agreement over all settings at
    once (today's code); (b) keep the per-setting score but use a distance that also sees size, such as
-   |f_F − f_M|² / (|f_F|² + |f_M|²) (R's d before E195); (c) keep the note as written and accept that neurons are read by
-   their output weights alone. The run reads (c) as the main reading, (a) as alternative (i) and (b) as
+   |f_F − f_M|² / (|f_F|² + |f_M|²) (R's d before E195); (c) keep the note as written and accept that a neuron is read by its
+   output weights and its silent/active pattern only. The run reads (c) as the main reading, (a) as alternative (i) and (b) as
    alternative (b), all on the same K (b added at the lead's request, 2026-11-18).
 2. **Weighting in ρ.** ρ is a plain mean over K. A head, which carries a share of attention, counts as much as one
    of thousands of neurons. So the heads' readings barely move ρ, even where they carry the change. That is part of

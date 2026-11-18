@@ -227,7 +227,8 @@ def _acc(acc: dict[tuple[Any, str], Tensor], key: Any, src: str, dot: Tensor, nF
     both, one = (nF > 0) & (nM > 0), (nF > 0) ^ (nM > 0)
     cos2 = torch.where(both, dot.pow(2) / (nF * nM).clamp(min=1e-300), torch.where(one, 0.0, 1.0))
     db = torch.where(nF + nM > 0, (nF - 2 * dot + nM).clamp(min=0) / (nF + nM).clamp(min=1e-300), 0.0)
-    terms = {"dc": (1 - cos2).sum(0), "db": db.sum(0), "cnt": torch.full_like(nF[0], nF.shape[0]), "one": one.sum(0).double()}
+    terms = {"dc": (1 - cos2).sum(0), "db": db.sum(0), "cnt": torch.full_like(nF[0], nF.shape[0]), "one": one.sum(0).double(),
+             "zero": ((nF == 0) & (nM == 0)).sum(0).double()}  # fmt: skip
     terms |= {"x": dot.sum(0), "nF": nF.sum(0), "nM": nM.sum(0)} if src == "M" else {}
     for k, v in terms.items():
         acc[(key, k + src)] = acc[(key, k + src)] + v if (key, k + src) in acc else v
@@ -245,8 +246,11 @@ def _resid(N: Net, toks: Tensor) -> tuple[list[Tensor], list[Tensor], Tensor]:
 
 @torch.no_grad()
 def profile(p: Pair, batches: Iterable[Tensor]) -> dict[str, Any]:
-    """r of every part F has that M also has, under the four readings, plus the neurons' output-column cos^2 and the
-    number of settings where exactly one of a neuron's two writes is zero (the identity check)."""
+    """r of every part F has that M also has, under the four readings, plus, per neuron, its output-column cos^2 c, the
+    number of settings where exactly one of its two writes is zero, and the shares of the pooled settings where both
+    writes are zero (z) and where both are non-zero (a). The NewGELU of the 67M gives exact zeros, and d_c counts a
+    setting where both writes are zero as agreement, one zero as disagreement, so at a neuron main r = z + a c exactly
+    (the identity check, amendment 1)."""
     acc: dict[tuple[Any, str], Tensor] = {}
     for toks in batches:
         e = (p.f.wte[toks] * p.m.wte[toks]).sum(-1, keepdim=True), p.f.wte[toks].pow(2).sum(-1, keepdim=True), p.m.wte[toks].pow(2).sum(-1, keepdim=True)
@@ -273,15 +277,16 @@ def profile(p: Pair, batches: Iterable[Tensor]) -> dict[str, Any]:
         parts: list[Part] = [EMBED] if key == EMBED else [UNEMBED] if key == UNEMBED else [(str(key[0]), int(key[1]), i) for i in range(len(x))]
         for k, v in vals.items():
             r[k] |= dict(zip(parts, v.tolist(), strict=True))
-    cols, ones = {}, {}
+    out: dict[str, dict[Part, Any]] = {"col_cos2": {}, "one_zero": {}, "both_zero": {}, "both_active": {}}
     for l, (F, M) in enumerate(zip(p.f.layers, p.m.layers, strict=True)):
-        n = M.w_in.shape[0]
+        n, g = M.w_in.shape[0], {k: acc[(("neuron", l), k + "M")] + acc[(("neuron", l), k + "F")] for k in ("one", "zero", "cnt")}
         wF, wM = F.w_out[:, :n].double(), M.w_out.double()
         c = (wF * wM).sum(0).pow(2) / (wF.pow(2).sum(0) * wM.pow(2).sum(0)).clamp(min=1e-300)
-        o = acc[(("neuron", l), "oneM")] + acc[(("neuron", l), "oneF")]
-        cols |= {("neuron", l, i): v for i, v in enumerate(c.tolist())}
-        ones |= {("neuron", l, i): int(v) for i, v in enumerate(o.tolist())}
-    return {"r": r, "col_cos2": cols, "one_zero": ones}
+        z = g["zero"] / g["cnt"]
+        a = 1 - z - g["one"] / g["cnt"]
+        for k, v in (("col_cos2", c.tolist()), ("one_zero", [int(x) for x in g["one"].tolist()]), ("both_zero", z.tolist()), ("both_active", a.tolist())):
+            out[k] |= {("neuron", l, i): x for i, x in enumerate(v)}
+    return {"r": r} | out
 
 
 def rvalue(p: Pair, r: dict[Part, float], u: Part) -> float:

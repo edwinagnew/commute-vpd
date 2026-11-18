@@ -6,8 +6,9 @@ that file says done. Then come the pod's items, in the order given. Each item wr
 
 ## Inputs (paths from the project root; sizes measured 2026-11-18 with `du -L`)
 
-**Every pod**, about 430 MB, about 45 s at 10 MB/s:
-- `artifacts/vpd/t-9d2b8f02/` (256 MB; the checkpoint `ckpt/model_step_99999.pt` and the config)
+**Every pod**, about 170 MB, about 17 s at 10 MB/s:
+- not staged: `artifacts/vpd/t-9d2b8f02/` (256 MB). `cluster/pod_setup.sh` fetches the t-9d2b8f02 VPD files itself
+  (runner A, run 1).
 - `artifacts/sets/train_0_32768.npy` (129 MB), `train_32768_8192.npy` (33 MB), `val_0_2000.npy` (7.9 MB)
 - `experiments/open_pair/results/large/amend1/windows_copy_trained.pt` (528 KB), `windows_copy_new.pt` (440 KB): the
   copy24 windows for stage 0 and E195 rebuilt
@@ -27,13 +28,17 @@ that file says done. Then come the pod's items, in the order given. Each item wr
 | p4s0, p4s1 | `repeat_real_s<s> repeat_twin_s<s>` | `experiments/fresh_reuse_pair/results/large/dW_real_s<s>.pt`, `dW_twin_s<s>.pt` (55 MB each); `task.pt` (7.2 MB) | 117 | 25-70 |
 | p5s0, p5s1 | `twin_s<s> fact_s<s>` | `experiments/built_control_sum/results/large/amend1_control_s<s>.pt` (256 MB); `experiments/memorised_fact/results/large/fact_s<s>.pt` (256 MB) | 512 | 40-90 |
 
-The largest upload is p5's: 0.94 GB at 10 MB/s is about 95 s. Every other pod is under 70 s.
+The largest upload is p5's: 0.68 GB at 10 MB/s is about 70 s. Every other pod is under 40 s.
 
-**Staging.** Every `results/large` is a symlink into `~/commute-data/results-large/`, so it arrives on the pod dangling.
-Hard-link the pod's files into a staging tree, `experiments/<folder>/results/large/...` under one staging root, and sync
-that (root `CLAUDE.md`). On the pod, replace each dangling `results/large` symlink with the real directory. Also make a
-real `experiments/rho_saved_items/results/large/` there, because the run writes `results/large/parts/` into it. Check
-sha256 on both sides of each state file. Delete the staging tree afterwards.
+**Staging (flat; runner A's finding, run 1).** `sync(include=[dir])` walks only the files directly inside `dir`, not
+its subdirectories. So hard-link every `results/large` file the pod needs directly into one flat directory,
+`experiments/rho_saved_items/stage_<tag>/results/large/`, and sync with `include=["experiments/rho_saved_items/stage_<tag>/results/large"]`.
+No pod has two files with the same name. On the pod, replace each dangling `results/large` symlink named in the table
+with a real directory, and move each staged file to its path in the table: for example,
+`windows_copy_*.pt` and `copy_s<s>.pt` go to `experiments/open_pair/results/large/amend1/`. Also make a real
+`experiments/rho_saved_items/results/large/`, because the run writes `results/large/parts/` into it. Check sha256 on
+both sides of each state file, and delete the staging directory afterwards. Do not sync `artifacts/sets` as a directory: it holds 5.0 GB in 23 files. Hard-link the three `.npy` files into the
+same flat staging directory and move them to `artifacts/sets/` on the pod.
 
 ## Command (per pod)
 

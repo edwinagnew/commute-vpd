@@ -151,8 +151,11 @@ def read(F: R.Model, M: R.Model, toks: Tensor, at: slice, cfg: Config, th: dict[
                            "gate": rho.gate(p, b, [], F.logits), "m_gate": rho.gate(p, b, cand + lacks, M.logits), "profile_seconds": time.time() - t0}  # fmt: skip
     common = [u for u in cand + lacks if u[0] == "neuron" and not rho.lacked_by_m(p, u)]
     ok = [u for u in common if prof["one_zero"][u] == 0]
-    out["identity"] = {"neurons": len(common), "with_a_zero_write": len(common) - len(ok),
-                       "max_dev": max((abs(prof["r"]["main"][u] - prof["col_cos2"][u]) for u in ok), default=0.0)}  # fmt: skip
+    zc = {u: prof["both_zero"][u] + prof["both_active"][u] * prof["col_cos2"][u] for u in common}
+    out["identity"] = {"neurons": len(common), "with_one_zero_write": len(common) - len(ok),
+                       "max_dev_filed": max((abs(prof["r"]["main"][u] - prof["col_cos2"][u]) for u in ok), default=0.0),  # reported only
+                       "max_dev": max((abs(prof["r"]["main"][u] - zc[u]) for u in common), default=0.0),  # amendment 1: r = z + a c
+                       "mean_both_zero": sum(prof["both_zero"][u] for u in common) / len(common) if common else None}  # fmt: skip
     out["r_changed"] = {x: {"mean": sum(rho.rvalue(p, prof["r"][x], u) for u in cand) / len(cand), "min": min(rho.rvalue(p, prof["r"][x], u) for u in cand)} if cand else None for x in rho.READS}
     log(f"{item}: {len(cand)} changed parts ({len(out['candidates_heads'])} not neurons: {out['candidates_heads'][:30]}), {len(lacks)} parts F lacks; "
         f"hybrid gate {out['gate']:.3g}, M gate {out['m_gate']:.3g}; identity check {out['identity']}; r over changed parts {out['r_changed']}")
@@ -164,6 +167,8 @@ def read(F: R.Model, M: R.Model, toks: Tensor, at: slice, cfg: Config, th: dict[
     for how, (patch, cs) in hows.items():
         c = rho.contrast(p, b, cs, prof["r"], patch, th, log, f"{item} {how}")
         for k, o in enumerate(c.get("orders", [])):
+            K = [cs[i] for i in o["K"]]  # active share: 1 - both-zero share for a neuron M has, 1 otherwise (amendment 1)
+            o["active_share"] = sum(1 - prof["both_zero"].get(u, 0.0) for u in K) / len(K)
             arrays[f"K_{how}_{k}"] = np.array(o.pop("K"))
         out[how] = c
         log(f"{item} {how}: {c['reading']}, KL(F || M) {c['kl']:.6g}, closure with nothing kept {c.get('closure_none_kept')}; "
@@ -185,7 +190,8 @@ def save(item: str, out: dict[str, Any], arrays: dict[str, Any]) -> dict[str, An
 
 def misses(item: str, rd: dict[str, Any], want_parts: set[rho.Part] | None, want: dict[str, float], th: dict[str, Any]) -> list[str]:
     """The filed checks: no change for do-nothing; else the changed parts as built, every order reading, and each rho in
-    `want` (main, b: the value; '<=main': a bound) met in every order of both constructions."""
+    `want` met in every order of both constructions: main, i, iii, b the value; 'b_amend1' the per-order value
+    1 - d * (mean over K of the active share), d the per-setting d_b of the turned-up write (amendment 1)."""
     if want_parts is None:
         return [] if rd["n_candidates"] == 0 and rd["replace"]["reading"] == rd["patch"]["reading"] == "no change" else [f"{item} not 'no change'"]
     built = sorted(rho.name(u) for u in want_parts)
@@ -196,9 +202,10 @@ def misses(item: str, rd: dict[str, Any], want_parts: set[rho.Part] | None, want
             out.append(f"{item} {how} {c['reading']}")
             continue
         for k, v in want.items():
-            got = c["rho_main" if k == "<=main" else f"rho_{k}"]
-            bad = [g for g in got if (g > v if k == "<=main" else abs(g - v) > th["r_tol"])]
-            out += [f"{item} {how} rho_{k} {bad} against {v}"] if bad else []
+            exp = [1 - v * o["active_share"] for o in c["orders"]] if k == "b_amend1" else [v] * len(c["orders"])
+            got = c["rho_b" if k == "b_amend1" else f"rho_{k}"]
+            bad = [(g, e) for g, e in zip(got, exp, strict=True) if abs(g - e) > th["r_tol"]]
+            out += [f"{item} {how} rho_{k} (got, expected) {bad}"] if bad else []
     return out
 
 
@@ -209,7 +216,7 @@ def stage0(M: R.Model, data: Any, cfg: Config, th: dict[str, Any], tag: str) -> 
         return
     toks, out, miss = E196.subset(data.read_half(cfg.control_task), cfg, M), {"experiment": EXPERIMENT}, []
     C = {("neuron", cfg.layer, i) for i in cfg.C}
-    for item, F, want in [("do_nothing", P.clone(M), {})] + [(f"x{a:g}", P.rescaled(M, cfg.layer, list(cfg.C), a), {"main": 1.0, "i": 1.0, "iii": 1.0, "b": 1 - (a - 1) ** 2 / (a * a + 1)}) for a in cfg.factors]:
+    for item, F, want in [("do_nothing", P.clone(M), {})] + [(f"x{a:g}", P.rescaled(M, cfg.layer, list(cfg.C), a), {"main": 1.0, "i": 1.0, "iii": 1.0, "b_amend1": (a - 1) ** 2 / (a * a + 1)}) for a in cfg.factors]:
         rd, _ = read(F, M, toks, LAST, cfg, th, item)
         miss += misses(item, rd, None if item == "do_nothing" else C, want, th)
         out[item] = rd
@@ -223,13 +230,16 @@ def stage0(M: R.Model, data: Any, cfg: Config, th: dict[str, Any], tag: str) -> 
 def control(M: R.Model, cfg: Config, th: dict[str, Any], item: str) -> dict[str, Any]:
     toks = graft_windows(cfg)
     if item == "slotted":
-        F, slots = slotted(M, cfg, toks)
-        want_parts, want = {("neuron", cfg.graft_layer, i) for i in slots}, {"<=main": th["slot_bar"]}
+        F, slots = slotted(M, cfg, toks)  # amendment 1: rho_main against slot_bar is reported, not a stop (shared silence reads as agreement)
+        want_parts, want = {("neuron", cfg.graft_layer, i) for i in slots}, {}
     else:
         F = appended(M, cfg, item.split("_")[0])
         want_parts = {("neuron", cfg.graft_layer, R.D_MLP + i) for i in range(cfg.slot_n)} if item == "neurons_appended" else {("head", cfg.graft_layer, R.N_HEAD)}
         want = {"main": 0.0, "i": 0.0, "iii": 0.0, "b": 0.0}
     rd, arrays = read(F, M, toks, ALL, cfg, th, item)
+    if item == "slotted":
+        rd["slot_bar_filed"] = {how: [v <= th["slot_bar"] for v in rd[how].get("rho_main", [])] for how in ("replace", "patch")}
+        log(f"slotted: rho_main <= slot_bar (filed, reported only since amendment 1) {rd['slot_bar_filed']}; mean both-zero share {rd['identity']['mean_both_zero']}")
     if miss := misses(item, rd, want_parts, want, th):
         stop(ITEMS / f"{item}.stopped.json", rd, "; ".join(miss))
     return save(item, rd, arrays)

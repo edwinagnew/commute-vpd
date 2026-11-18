@@ -71,6 +71,21 @@ def test_appended_parts_and_lacks() -> None:
     assert prof["r"]["main"][("neuron", 1, 7)] == 0 and prof["one_zero"][("neuron", 1, 7)] > 0
 
 
+def test_doubled_neuron_silent_on_half_the_settings() -> None:
+    """Amendment 1 (E208 run 1's stage-0 stop): both writes zero is agreement, so a doubled write that is zero on half
+    the settings reads b = 1 - 0.2 * 0.5 = 0.9, main = 1, and main = z + a c with z = a = 0.5, c = 1."""
+    a = torch.tensor([[1.0], [0.0], [2.0], [0.0]])  # the activation at 4 settings, one neuron
+    w2 = 3.0  # |w|^2
+    acc: dict = {}
+    for src in ("M", "F"):
+        rho._acc(acc, "u", src, 2 * a * a * w2, 4 * a * a * w2, a * a * w2)
+    n = acc[("u", "cntM")] + acc[("u", "cntF")]
+    b = 1 - (acc[("u", "dbM")] + acc[("u", "dbF")]) / n
+    main = 1 - (acc[("u", "dcM")] + acc[("u", "dcF")]) / n
+    z = (acc[("u", "zeroM")] + acc[("u", "zeroF")]) / n
+    assert abs(float(b) - 0.9) < 1e-12 and abs(float(main) - 1) < 1e-12 and abs(float(z) - 0.5) < 1e-12
+
+
 def test_contrast_on_a_turned_up_column() -> None:
     M = tiny()
     F = clone(M)
