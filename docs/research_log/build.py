@@ -13,6 +13,10 @@
                             cut in one pass rather than re-measure per edit (friction 208, 368, 376)
   build.py --missing        reports and E-codes since the newest changelog row that nothing in the log names (friction 349)
 
+Writing build/ (the plain build, and --words' rebuild) needs a --check (or --check-head) against a folder holding the
+live nav.js in the last CHECK_FRESH_MIN minutes: its stamp is build/.checked. A clerk who edited parts/ before the
+required --check published three sends (friction 825).
+
 Recipe in README.md. A section is numbered by its place in SECTIONS; the text names sections as {{n:<id>}}, which the
 build replaces with the current number, so a new section is one line here and one file in parts/sections/.
 """
@@ -29,6 +33,7 @@ import subprocess
 import sys
 import tarfile
 import tempfile
+import time
 from pathlib import Path
 
 HERE = Path(__file__).parent
@@ -76,6 +81,19 @@ SUBHEADER = '<header class="top"><div class="eyebrow"><a href="./">Update Decomp
 SEP = "\n<!-- ============================================================ -->\n"
 WORD_LIMIT = 20_000  # README.md → Main-page length
 CARDS = "<!-- cards: parts/experiments/, in number order -->\n"  # where experiments.html takes its cards
+CHECKED = OUT / ".checked"  # touched by --check with a live nav.js; writing build/ needs it fresh (friction 825)
+CHECK_FRESH_MIN = 120
+
+
+def check_stale() -> str:
+    """Why build/ may not be written now ('' when a --check ran in the last CHECK_FRESH_MIN minutes)."""
+    age = (time.time() - CHECKED.stat().st_mtime) / 60 if CHECKED.exists() else None
+    if age is not None and age <= CHECK_FRESH_MIN:
+        return ""
+    when = "never here" if age is None else f"{age:.0f} min ago"
+    return (f"no --check in the last {CHECK_FRESH_MIN} min (last: {when}): save the live nav.js and run "
+            "`python3 docs/research_log/build.py --check <folder>` (before editing parts/; --check-head once you "
+            "have uncommitted edits), then build again (README.md → How to publish, step 2; friction 825)")
 
 
 def card_key(path: Path) -> tuple[bool, int]:
@@ -412,6 +430,9 @@ def main() -> None:
         return
     if sys.argv[1:] == ["--words"]:
         print_words()
+        if why := check_stale():
+            print(f"build/ not rebuilt: {why}")
+            return
         # --words used to leave build/ as it was, so a publish after it sent stale pages (friction 519).
         OUT.mkdir(exist_ok=True)
         for name, text in build().items():
@@ -466,7 +487,14 @@ def main() -> None:
             print(f"not compared, not saved in {folder}: {', '.join(unread)} (read one only if --changed names it)")
         for target in dead_anchors(pages):
             print(f"dead link: {target}")
+        if live_nav(folder):  # the stamp the build needs (friction 825)
+            OUT.mkdir(exist_ok=True)
+            CHECKED.touch()
+        else:
+            print(f"no live nav.js in {folder}: not a check against the live pages, so no stamp for the build")
         return
+    if why := check_stale():
+        sys.exit(f"refused: {why}")
     OUT.mkdir(exist_ok=True)
     for name, text in pages.items():
         (OUT / name).write_text(text)

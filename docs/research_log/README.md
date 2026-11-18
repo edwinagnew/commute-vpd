@@ -181,6 +181,8 @@ From a Claude Code session, with the Artifact tool:
    (friction 291). A file not yet live needs no read. A redrawn figure (a `fig/*.png` that is live and changed) counts as
    a changed file: read its path before the first send, or the send is refused as unread content (friction 691). Never `read` with `url` alone: ~50k tokens, and the first send was
    refused all the same (friction 115, 160). The saved index.html is for `--check`; it does not count as a view.
+   The build enforces the first: writing `build/` (step 1's build, `--words`' rebuild) is refused unless a `--check` or
+   `--check-head` with a live `nav.js` in its folder ran in the last 120 min here (stamp `build/.checked`, friction 825).
    Which check (friction 384): before editing `parts/`, `--check`, where any diff is someone else's. With uncommitted
    edits, `--check-head`, against `parts/` at HEAD. After your commit, `--check` diffs your own edits: read only
    index.html's place count, which predicts step 3. `--check` also flags a live page built from `parts/` in no commit
