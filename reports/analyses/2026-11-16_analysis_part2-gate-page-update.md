@@ -108,6 +108,9 @@ matrices only, and the share reads the gold twin on held-out gold rows, where th
 - Any Qwen pair whose two sides learned and match in weight-change size, other than the gold twin built to show nothing.
 - A Qwen random band from more than one draw, and a seed spread measured on the frozen-neuron decomposition.
 - That the frozen-neuron share reads a known switching-off above random changes.
+- An unselected form of steering and of the top-neuron share. Each has two forms, and the scorecard keeps per pair
+  the one with the wider gap (`plot_final.py:wider`). That selection favours those two baselines, so it can only make
+  the share look like it adds less, not more (added 2026-11-18, `reports/reviews/2026-11-18_review_scorecard-labels.md`).
 - How far any of this generalises: one small model, one family of key-to-value tasks, at most nine pairs, no
   significance test.
 
