@@ -1,6 +1,6 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
-<div class="prose"><p><strong>Waiting on you, 2026-11-18.</strong> One card is open, the definition-lead's: whether a small new trigger in front of an old, unchanged circuit counts as reuse. The known-answer test (cell P1.31 in section {{n:next}}) waits on it.</p>
+<div class="prose"><p><strong>Waiting on you, 2026-11-18.</strong> Two cards are open, both the definition-lead's. The first: whether a small new trigger in front of an old, unchanged circuit counts as reuse; the known-answer test (cell P1.31 in section {{n:next}}) waits on it. The second, small: where to compare when a decomposition only approximately fits the fine-tune.</p>
 <p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
 <div class="card decision" id="decision-needed-parts"><span class="chip refuted urgency">Blocking</span>
@@ -21,6 +21,18 @@
 <p>Under B, any reuse that runs an old circuit on a new cue reads as new, because M never ran the circuit on that cue. Under A, it can read as reuse. <strong>Lead's recommendation: A</strong>, because only A can tell "same machinery, new cue" from "new machinery". Both are reported either way; the choice sets which one the pass rule uses. It matters only if the main answer is (b).</p>
 <p class="small">Names in the reports: cell P1.31 (the known-answer test); "reading 1/2" are options (a)/(b); "reading A/B" the second question; "clause 5" the definition's "parts F needs".</p>
 <div class="links"><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/decisions/2026-11-18_decision_needed-parts.md">card</a> <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/plans/2026-11-18_plan_known-answer-levels.md">plan</a> <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/plans/2026-11-18_plan_known-answer-levels_appendix.md">appendix</a> <a href="https://github.com/edwinagnew/commute-vpd/blob/main/experiments/known_answer_levels/card.md">experiment card</a></div>
+</div>
+<div class="card decision" id="decision-approx-hybrids"><span class="chip uninf urgency">No rush</span>
+<div class="k">Question for you · definition-lead · new 2026-11-18</div>
+<h3>When a decomposition fits the fine-tune only approximately, should we run the test inside the refined models?</h3>
+<p>Nothing runs on this: every reading so far is exact, so the answer changes no number now. You decided today that a refinement (a declared finer model of each network, here the parts a method reads) may be approximate, with its error ε (mean KL on outputs) reported beside every reading. M is the original model, F its fine-tune, and F&#771; and M&#771; are their refined models.</p>
+<ul>
+<li><strong>The case.</strong> When ε is above zero on F, F&#771; does not reproduce F exactly. The test "do these parts suffice for the behaviour?" can then be run against F itself, or against F&#771;. Without a choice the definition could fail to give an answer.</li>
+<li><strong>Measured so far.</strong> Nothing: all readings are exact, ε = 0, and there the two choices coincide, so no reading changes.</li>
+</ul>
+<p><strong>Options.</strong> <strong>(a) Compare inside the refined models</strong>: run the test against F&#771; and compare it with M&#771;, so the definition gives an answer in every case. Raised by the writeup-lead, who recommends it. <strong>(b) Compare against F itself</strong>: the test uses the real fine-tune, and ε<sub>F</sub> is reported beside the reading as the warning that F&#771; is not F; where the approximation is poor the reading may be undefined. <strong>Lead's recommendation: (a).</strong></p>
+<p class="small">Raised by the writeup-lead (its small ask 1); it is part 1's definition, so the definition-lead owns it. See the "Open" paragraph in Part A of the level note.</p>
+<div class="links"><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/decisions/2026-11-18_decision_approx-hybrids.md">card</a> <a href="https://github.com/edwinagnew/commute-vpd/blob/main/theory/2026-11-18_level-as-decomposition.md">level note</a></div>
 </div>
 </div>
 </section>
