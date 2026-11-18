@@ -8,6 +8,20 @@ recommendations the user has NOT decided ("im not sure about your epsilon and se
 as open options, not as the definition. The sentence of the working definition does not change, and no reading so far
 changes: this note only replaces the formal statement of "level".
 
+**Amended later on 2026-11-18 (user, chat to writeup-lead; `decisions.md` row "A refinement ... may be approximate").**
+- **Exactness.** A refinement may be approximate. N is an exact (Def. 33) or approximate (Def. 41) abstraction of Ñ,
+  and ε (accuracy, KL on outputs) is kept and reported beside every reading. The remainder part is optional: with it
+  the merge is exact (ε = 0); without it the method is read as approximate (ε > 0). Part A below is edited to match,
+  and Part B item 1 is closed.
+- **§5.** Part B item 2 is decided as (a) (`decisions.md` row "Paper §5 frames re-gating as a method scored against
+  the working definition", 2026-11-18).
+- **Name.** The paper says "refinement" for what this note calls a decomposition, and "refined model" for Ñ.
+  "Decomposition" stays the name for VPD and the other methods. This note and the log may keep "level" or
+  "decomposition".
+- **Still open.** Where the hybrids are compared when ε_F > 0 (end of Part A). Also the decision card
+  `reports/decisions/2026-11-18_decision_needed-parts.md`: which parts count as needed, and which input a part sees
+  when its rule is compared.
+
 ## Why the alignment form had to go
 
 An alignment (Def. 31) groups the network's own variables into cells and coarsens their values. SAEs, transcoders and
@@ -20,10 +34,16 @@ mechanisms can be slotted in as the abstraction on which reuse is defined.
 
 **Decomposition** (the name is tentative, see the end; existing text says "level"). A decomposition assigns to each
 network N of the architecture a causal model Ñ (Def. 5), on one signature shared by all networks of the architecture,
-with variables input, parts U and output, such that N is an exact constructive abstraction of Ñ (Def. 33) under an
-alignment that is the identity on input and output. In words: Ñ is a finer description of N, and merging its parts
-back gives N exactly. Wherever the featuriser is lossy, one of the parts is a **remainder**, which is what makes the
-merge exact.
+with variables input, parts U and output, such that N is an abstraction of Ñ under an alignment that is the identity
+on input and output: exact constructive abstraction (Def. 33) or approximate abstraction (Def. 41) with accuracy ε,
+measured as KL on outputs. ε is reported beside every reading. In words: Ñ is a finer description of N, and merging
+its parts back gives N exactly or up to ε. A lossy featuriser may add a **remainder** part, which makes the merge
+exact (ε = 0); without one it is read as an approximate refinement (ε > 0). (Amended 2026-11-18; first adopted
+exact-only.)
+
+*Open (writeup-lead to the user, 2026-11-18, not answered):* when ε_F > 0, should the hybrids be compared inside the
+refined models? That means running the keep-test against F̃ and taking differences between F̃ and M̃, so that the
+definition stays total. In the exact case the two coincide.
 
 The direction is the reverse of the earlier form: the network is the high-level model, the decomposed model the
 low-level one.
@@ -67,13 +87,14 @@ one part reads every new behaviour as new; the neuron case reads nearly everythi
 not ordered from coarse to fine: an SAE or VPD decomposition is neither a coarsening nor a refinement of the neuron
 partition. Write "two extreme choices", not "coarsest and finest".
 
-## Part B (tentative, the user has not decided)
+## Part B (both items decided 2026-11-18; kept as a record)
 
-1. **ε.** With identity value maps the merge is exact on both networks, so ε = 0 and reconstruction error never enters
+1. **ε.** *Decided: ε is kept and reported, and approximate refinements are allowed (see the amendment at the top).
+   The text below was the recommendation then.* With identity value maps the merge is exact on both networks, so ε = 0 and reconstruction error never enters
    it: it lives in the remainder part. Recommendation: drop ε from the main text and report instead how much of the
    needed set K is remainder; ε would return only for a decomposition with lossy value maps. Alternative: keep ε as
    stated in the 2026-11-18 causal-abstraction row. Until the user decides, keep ε in the text and mark the question.
-2. **§5 framing of re-gating.** Recommendation: re-gating stays a method scored against the definition, which is what
+2. **§5 framing of re-gating.** *Decided: (a), the recommendation below.* Recommendation: re-gating stays a method scored against the definition, which is what
    results support; one sentence may note that a split of δW induces a reading at the VPD decomposition, untested.
    Alternative: present the re-gating share as that reading, which needs a new cell. Not to be written either way
    until the user decides.
@@ -89,6 +110,9 @@ partition. Write "two extreme choices", not "coarsest and finest".
   neurons. The P1.25 `decisions.md` row gives "a set suffices at 0.9 of KL"; not checked in the code.
 
 ## The name
+
+*Decided 2026-11-18 (user, chat to writeup-lead): the paper says **refinement**. The text below was the earlier
+recommendation.*
 
 "Level" suggests an ordering that does not exist. Recommendation, tentative: **decomposition** (covers sparse
 dictionaries, parameter decomposition and the unit partitions; already the project's word). Others from the
