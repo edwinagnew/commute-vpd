@@ -20,6 +20,15 @@ whether RunPod is allowed if the cluster queue is slow. If something is missing,
 `run.py`, its `results/predictions.json` and the plan named in `README.md`'s "Current plan" line. If that still leaves
 the command or the outputs unclear, stop and ask; don't guess.
 
+The brief gives the exact argv of every job, copied from the script's argument parser, not paraphrased (a brief said
+"stage 0" for a CLI that takes 1-6, and the job died in 1 s), and each parallel job tees to its own log,
+`results/run_<stages>.log` (e.g. `run_2-3.log`), never one shared `run.log`: parallel jobs appending one file
+interleaved it (friction 833). Its input list comes from a short CPU dry run of the same command with
+`INPUT_MANIFEST=<file>` set (`commute.jobs.record_inputs`; `python -m commute.jobs experiments/<name>/run.py ...` also
+catches opens before the import): the file lists every data file the run opened under the repo or `~/commute-data`,
+nested `results/large` and the tokenizer included. Stage each listed file; a brief walk of the code missed some
+(friction 832, 842).
+
 Refuse a scored run if `experiments/<name>/results/predictions.json` is missing. Say so and stop. A scored run of
 code that has never run is normal (`.claude/CLAUDE.md`: the scored run is its own smoke): watch its first stage
 closely, and on a code error stop and report the traceback rather than resubmit.
@@ -119,6 +128,9 @@ pod's hours × rate; `status()`'s cost is the whole session's, all pods together
   budget, and say in the ETA line which card and why. Independent arms or seeds go on parallel pods, not in sequence
   on one. Report which card was placed and its $/h: Secure-cloud stock is thin, so the first choice is often
   taken. If `start()` fails on a GPU type name, report the exact error rather than falling back to a small card.
+  When the brief names no fallback, go down this list for an H100-class run: H100 SXM -> H200 -> H100 NVL -> H100
+  PCIe -> Vast (`start(runtime="vast")`). Two failed starts on a card (no stock, or no GPU placed) move you to the
+  next; hand back only when the whole list is exhausted, with each card's error (friction 817, 821).
 - On a pod, `nproc` reports the host's CPUs (96) while the container's cgroup allows far fewer (7.65 on the
   2026-10-20 lora_split pod), so PyTorch's CPU stages oversubscribe and crawl. Before any CPU-heavy stage, set
   `OMP_NUM_THREADS` and `MKL_NUM_THREADS` to the cgroup's count, rounded down: quota ÷ period from
@@ -134,20 +146,11 @@ pod's hours × rate; `status()`'s cost is the whole session's, all pods together
 
   Vast machines are not stoppable in any useful way, and Vast bills downloads per GB (about $0.01/GB on the 2026-11-02 test; check the
   offer), which the session budget does not count: 54 GB of Qwen files is about $0.65 per machine on top of the hourly price.
-- On a fresh pod, before the first `sync()`, clone the last push from GitHub, so that `sync()` (rsync) sends only
-  what differs from it instead of the whole ~19 MB tree (this mattered on the laptop's slow uplink; from the
-  cluster a plain `sync()` is fine, and the cluster has no `GIT_PAT` yet). Run in the kernel, from its
-  working directory:
-
-      git init -q && git remote add origin https://github.com/edwinagnew/commute-vpd.git
-      GIT_TERMINAL_PROMPT=0 GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=http.extraHeader \
-        GIT_CONFIG_VALUE_0="Authorization: Basic $(printf 'x-access-token:%s' "$GIT_PAT" | base64 -w0)" \
-        git fetch -q --depth 1 origin main && git checkout -q -f FETCH_HEAD
-
-  The token stays out of `.git/config` and the log; never echo it. If `GIT_PAT` is unset or the fetch fails, say so
-  in the report and go on with a plain `sync()`. Always `sync()` after the clone: it carries uncommitted work. Then
-  `rm -rf .git`: with a `.git` on the pod, `require_filed` asks git instead of `E120_PRED_SHA` and refuses the run
-  (friction 767).
+- Code goes up with `sync()` only: pods have no `GIT_PAT`, so never `git clone` or `git fetch` on a pod. If a clone
+  was tried, `rm -rf .git` before the run. The pod has no `.git`, so `require_filed` needs the filed predictions'
+  hash on the run line, `E120_PRED_SHA=<sha> .venv/bin/python experiments/<name>/run.py ...`; the brief gives it,
+  and if it does not, ask the lead (on dev: `git show HEAD:experiments/<name>/results/predictions.json | sha256sum`).
+  Canonical text: `~/commute-agents/fleet/roles/shell-notes.md` → Pods → Set-up (friction 767, 817, 820, 843).
 - Then set up the pod with one command, right after the first `sync()`: `bash cluster/pod_setup.sh`, run as a
   subprocess from the kernel. It pins uv, builds `.venv` (CUDA torch) and fetches the VPD files in parallel, and logs
   each step with its time to `/root/setup.log` and the RunPod console. Don't install uv or run `uv sync` by hand; if
