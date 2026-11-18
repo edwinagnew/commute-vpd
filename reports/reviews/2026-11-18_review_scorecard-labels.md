@@ -12,7 +12,7 @@ checked two of them; no number changed.
    2026-11-10 method-comparison report and the P2.11 report keep the old label as written; read them with this note.
 2. **`plot_final.py:wider`.** Steering and the top-neuron share each have two forms, and the scorecard keeps per pair
    the one with the wider gap. This is a selection on the compared quantity. It favours those two baselines over the
-   share, so it can only make the share look like it adds less, not more. Left as filed; stated in the part 2
+   share, so it can only make the share look like it adds less, not more. Left as filed; to go in the part 2
    "not shown" list.
 
 Not run: nothing re-read; no figure redrawn (the figure prints no unit for this cell).
