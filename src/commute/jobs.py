@@ -59,6 +59,7 @@ def hard_exit(code: int = 0) -> NoReturn:
     150, 296). It skips atexit handlers and open files' close: everything the job needs must be written and closed first."""
     try:
         print(f"peak host RSS {resource.getrusage(resource.RUSAGE_SELF).ru_maxrss / 2**20:.1f} GB", flush=True)  # friction 132
+        _write_inputs()  # os._exit skips atexit (record_inputs)
         logging.shutdown()
         sys.stdout.flush()
         sys.stderr.flush()
@@ -122,3 +123,73 @@ def require_filed(path: Path) -> None:
     git = lambda *a: subprocess.run(["git", "-C", repo, *a], capture_output=True, text=True, check=False)
     if git("diff", "--quiet", "HEAD", "--", rel).returncode or not git("ls-files", rel).stdout.strip():
         sys.exit(f"{rel} is not committed unchanged: commit it first")
+
+
+def config_from_settings[C](cls: type[C], settings: dict[str, Any]) -> C:
+    """`cls(**settings)` for a predictions.json "settings" block, with note keys allowed: a key ending `_source` (where a
+    value came from, e.g. `lr_source`) is dropped, and any other key `cls` does not take exits naming it, before a GPU
+    is held. A note key added after the dry run killed a pod at start-up through a bare `Config(**settings)` (friction
+    819). For new run.py files; frozen scripts keep their own line."""
+    import dataclasses
+    import inspect
+
+    taken = ({f.name for f in dataclasses.fields(cls) if f.init} if dataclasses.is_dataclass(cls)
+             else set(inspect.signature(cls).parameters))
+    kept = {k: v for k, v in settings.items() if not k.endswith("_source")}
+    if unknown := sorted(set(kept) - taken):
+        sys.exit(f"settings key(s) {unknown} are not fields of {cls.__name__}; a note key must end in _source")
+    return cls(**kept)
+
+
+_INPUTS: set[str] = set()  # absolute paths opened for reading, while record_inputs is active
+_RECORDING = False
+
+
+def _write_inputs() -> None:
+    """Write the sorted input list to $INPUT_MANIFEST (see `record_inputs`); called at exit and by `hard_exit`."""
+    out = os.environ.get("INPUT_MANIFEST")
+    if not (_RECORDING and out):
+        return
+    repo = str(EXPERIMENTS.parent)
+    files = sorted(os.path.relpath(p, repo) if p.startswith(repo + os.sep) else p for p in _INPUTS if os.path.isfile(p))
+    Path(out).write_text("".join(f"{p}\n" for p in files))
+
+
+def record_inputs() -> None:
+    """When $INPUT_MANIFEST names a file, record every file the process opens for reading under the repo or
+    ~/commute-data (an audit hook on "open") and write the sorted list there at exit, repo paths relative to the repo:
+    the input list a pod brief quotes, from a short CPU dry run (friction 832, 842). Does nothing when unset. Runs at
+    `commute.jobs` import; `python -m commute.jobs <script> [args]` also covers what a script opens before importing
+    it. Code (.py) is left out, and files read by native code without Python's open (safetensors' mmap) are not seen."""
+    global _RECORDING
+    if _RECORDING or not os.environ.get("INPUT_MANIFEST"):
+        return
+    data = os.path.expanduser("~/commute-data")
+    roots = tuple({str(EXPERIMENTS.parent) + os.sep, data + os.sep, os.path.realpath(data) + os.sep})
+    writes = os.O_WRONLY | os.O_RDWR | os.O_CREAT | os.O_APPEND | os.O_TRUNC
+
+    def hook(event: str, args: tuple[Any, ...]) -> None:
+        if event != "open" or not isinstance(args[0], (str, bytes, os.PathLike)):
+            return
+        mode, flags = args[1], args[2]
+        if (isinstance(mode, str) and any(c in mode for c in "wax+")) or (isinstance(flags, int) and flags & writes):
+            return
+        p = os.path.abspath(os.fsdecode(args[0]))
+        if p.startswith(roots) and not p.endswith((".py", ".pyc")):  # code is synced with the tree
+            _INPUTS.add(p)
+
+    import atexit
+
+    _RECORDING = True
+    sys.addaudithook(hook)
+    atexit.register(_write_inputs)
+
+
+if __name__ == "__main__":  # python -m commute.jobs <script> [args]: run the script with record_inputs active
+    import runpy
+
+    importlib.import_module("commute.jobs")  # the module the script will import; its import installs the hook
+    sys.argv = sys.argv[1:]
+    runpy.run_path(sys.argv[0], run_name="__main__")
+else:
+    record_inputs()
