@@ -1,0 +1,13 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[data] train rows 0..4096: cached at /root/artifacts/sets/train_0_4096.npy
+[job] Cfg(d=768, expansion=32, k=100, k_max=1024, k_anneal_steps=2000, lr=0.0001, warmup=1000, batch=2048, tokens=200000000, epochs=2, aux_alpha=0.03125, dead_tokens=10000000, init_norm=1.0, target_rms=100.0, chunk_rows=1024, ls_tokens=100000, val_rows=8192, alive_min=10, top_n=1667, top_n_wide=5000, nu_r=0.5, nu_eps=0.2, shared=(0.4, 0.6), base_only=0.1, snapshots=(0.125, 0.25, 0.5), ckpt_every=10000, log_every=500, pile_start=32768, pool_start=131072, pool_rows=65536, repeat_cap=100)
+[job] Pile rows 32768..131072, pool rows 131072..196608, 97656 steps
+[scorecheck] {"card": "NVIDIA H100 80GB HBM3", "peak_gb": 19.07371759414673, "h_task_tokens": 1920, "fve_pieces": [-1023.7561951768912, -1024.818703535358], "fve_whole": [-1023.7562987665278, -1024.818809871095], "score_keys": ["bias", "cos_planted_best", "counts", "counts_wide", "d", "d_wide", "dead", "energy", "fve_base", "fve_change", "fve_ft", "l0", "lead", "max_rn_dev_alive", "parts", "parts_wide", "shared_frac", "shared_frac_wide", "spec", "specific", "specific_wide", "step", "theta", "tokens"]}
+[done] peak GPU 19.1 GB
+STAGE scorecheck DONE
+FINISHED scorecheck  in 0.8 min, exit 0; wrote: experiments/crosscoder/results/run2/scorecheck.json
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/crosscoder/results/run2/ and /root/work/experiments/crosscoder/results/large/run2/ ===
