@@ -1,0 +1,76 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[     23s] [data] train rows 0..32768: cached at /root/artifacts/sets/train_0_32768.npy
+[     31s] [data] train rows 32768..40960: cached at /root/artifacts/sets/train_32768_8192.npy
+[     35s] [data] val rows 0..2000: cached at /root/artifacts/sets/val_0_2000.npy
+[     41s] variance share of the top directions: in0 top-1 0.0599, in1 top-1 2.23, in2 top-1 11.8, in3 top-1 8.95, out3 top-1 149
+[     48s] do_nothing: KL 0, oracle closure None, passed True
+[     52s] l1_neuron: KL 0.2048, oracle closure 0.9999999937253415, passed True
+[     56s] l2_triggered: KL 0.2662, oracle closure 1.0000000002504164, passed True
+[     61s] planted_constant: shares {'push_in2': 0.12096069008111954, 'read_in1': None}, rank-one form {'start': 1.0000000004236087}
+[     68s] planted_constant pcs 16x0: rung 1, n 16, closure 0.3506
+[     77s] planted_constant out 16x0: rung 1, n 16, closure 0.0840
+[     78s] planted_constant: best at the filed rung pcs 16x0 0.3506, rank-one 1.0000; labels {'0.8': {'e184_rung': 3, 'cause': 'class', 'rung3_search_miss': False}, '0.9': {'e184_rung': 3, 'cause': 'class', 'rung3_search_miss': False}, '0.95': {'e184_rung': 3, 'cause': 'class', 'rung3_search_miss': False}}
+[     82s] planted_trigger: shares {'push_in2': 0.12096070498228073, 'read_in1': 0.16454921662807465}, rank-one form {'start': 0.9999999998111058}
+[     90s] planted_trigger pcs 16x0: rung 1, n 16, closure 0.1145
+[     97s] planted_trigger pcs 4x3: rung 2, n 16, closure 0.1164
+[    102s] planted_trigger pcs 2x7: rung 2, n 16, closure 0.1148
+[    107s] planted_trigger pcs 1x15: rung 2, n 16, closure 0.0034
+[    115s] planted_trigger out 16x0: rung 1, n 16, closure 0.0463
+[    120s] planted_trigger out 4x3: rung 2, n 16, closure 0.0456
+[    124s] planted_trigger out 2x7: rung 2, n 16, closure 0.0312
+[    127s] planted_trigger out 1x15: rung 2, n 16, closure 0.0070
+[    128s] planted_trigger: best at the filed rung pcs 4x3 0.1164, rank-one 1.0000; labels {'0.8': {'e184_rung': 3, 'cause': 'class', 'rung3_search_miss': False}, '0.9': {'e184_rung': 3, 'cause': 'class', 'rung3_search_miss': False}, '0.95': {'e184_rung': 4, 'cause': 'class', 'rung3_search_miss': True}}
+[    133s] cue: shares {'push_in2': 0.12096070498228073, 'read_in1': 0.003644194919615984}, rank-one form {'start': 0.9999999899064076}
+[    139s] cue pcs 16x0: rung 1, n 16, closure 0.1825
+[    144s] cue pcs 4x3: rung 2, n 16, closure 0.0817
+[    151s] cue pcs 2x7: rung 2, n 16, closure 0.0618
+[    157s] cue pcs 1x15: rung 2, n 16, closure 0.0417
+[    167s] cue out 16x0: rung 1, n 16, closure 0.0180
+[    175s] cue out 4x3: rung 2, n 16, closure 0.0074
+[    182s] cue out 2x7: rung 2, n 16, closure 0.0064
+[    188s] cue out 1x15: rung 2, n 16, closure 0.0035
+[    190s] cue: best at the filed rung pcs 16x0 0.1825, rank-one 1.0000; labels {'0.8': {'e184_rung': 3, 'cause': 'class', 'rung3_search_miss': False}, '0.9': {'e184_rung': 4, 'cause': 'class', 'rung3_search_miss': True}, '0.95': {'e184_rung': 4, 'cause': 'class', 'rung3_search_miss': True}}
+[    222s] twin_s0: shares {'push_in2': 0.12096070498228073, 'read_in1': 0.6786872744560242}, rank-one form {'start': -1.2948638244306698, 'fitted': 0.9290717281089481}
+[    229s] twin_s0 pcs 16x0: rung 1, n 16, closure 0.1092
+[    236s] twin_s0 pcs 4x3: rung 2, n 16, closure 0.0994
+[    243s] twin_s0 pcs 2x7: rung 2, n 16, closure 0.0722
+[    248s] twin_s0 pcs 1x15: rung 2, n 16, closure 0.0022
+[    256s] twin_s0 out 16x0: rung 1, n 16, closure 0.0476
+[    260s] twin_s0 out 4x3: rung 2, n 16, closure 0.0415
+[    263s] twin_s0 out 2x7: rung 2, n 16, closure 0.0262
+[    266s] twin_s0 out 1x15: rung 2, n 16, closure 0.0147
+[    268s] twin_s0: best at the filed rung pcs 16x0 0.1092, rank-one 0.9291; labels {'0.8': {'e184_rung': 3, 'cause': 'class', 'rung3_search_miss': False}, '0.9': {'e184_rung': 3, 'cause': 'class', 'rung3_search_miss': False}, '0.95': {'e184_rung': 4, 'cause': 'oracle short', 'rung3_search_miss': False}}
+[    300s] twin_s1: shares {'push_in2': 0.12096070498228073, 'read_in1': 0.6786872744560242}, rank-one form {'start': -1.2874718569308703, 'fitted': 0.9278705750764225}
+[    307s] twin_s1 pcs 16x0: rung 1, n 16, closure 0.1093
+[    313s] twin_s1 pcs 4x3: rung 2, n 16, closure 0.0996
+[    320s] twin_s1 pcs 2x7: rung 2, n 16, closure 0.0721
+[    326s] twin_s1 pcs 1x15: rung 2, n 16, closure 0.0022
+[    334s] twin_s1 out 16x0: rung 1, n 16, closure 0.0455
+[    337s] twin_s1 out 4x3: rung 2, n 16, closure 0.0415
+[    341s] twin_s1 out 2x7: rung 2, n 16, closure 0.0261
+[    344s] twin_s1 out 1x15: rung 2, n 16, closure 0.0147
+[    345s] twin_s1: best at the filed rung pcs 16x0 0.1093, rank-one 0.9279; labels {'0.8': {'e184_rung': 3, 'cause': 'class', 'rung3_search_miss': False}, '0.9': {'e184_rung': 3, 'cause': 'class', 'rung3_search_miss': False}, '0.95': {'e184_rung': 4, 'cause': 'oracle short', 'rung3_search_miss': False}}
+[    378s] fact_s0: shares {'push_in2': 0.12096070498228073, 'read_in1': 0.8170579671859741}, rank-one form {'start': -1.706132426443034, 'fitted': 0.7477728480679527}
+[    385s] fact_s0 pcs 16x0: rung 1, n 16, closure 0.1193
+[    392s] fact_s0 pcs 4x3: rung 2, n 16, closure 0.0307
+[    398s] fact_s0 pcs 2x7: rung 2, n 16, closure 0.0281
+[    404s] fact_s0 pcs 1x15: rung 2, n 16, closure 0.0038
+[    412s] fact_s0 out 16x0: rung 1, n 16, closure 0.0454
+[    416s] fact_s0 out 4x3: rung 2, n 16, closure 0.0233
+[    421s] fact_s0 out 2x7: rung 2, n 16, closure 0.0140
+[    425s] fact_s0 out 1x15: rung 2, n 16, closure 0.0075
+[    426s] fact_s0: best at the filed rung pcs 16x0 0.7478, rank-one 0.7478; labels {'0.8': {'e184_rung': 4, 'cause': 'oracle short', 'rung3_search_miss': False}, '0.9': {'e184_rung': 4, 'cause': 'oracle short', 'rung3_search_miss': False}, '0.95': {'e184_rung': 4, 'cause': 'oracle short', 'rung3_search_miss': False}}
+[    459s] fact_s1: shares {'push_in2': 0.12096070498228073, 'read_in1': 0.8170579671859741}, rank-one form {'start': -1.701675290672509, 'fitted': 0.7488967889367213}
+[    465s] fact_s1 pcs 16x0: rung 1, n 16, closure 0.1188
+[    472s] fact_s1 pcs 4x3: rung 2, n 16, closure 0.0310
+[    478s] fact_s1 pcs 2x7: rung 2, n 16, closure 0.0280
+[    484s] fact_s1 pcs 1x15: rung 2, n 16, closure 0.0037
+[    491s] fact_s1 out 16x0: rung 1, n 16, closure 0.0451
+[    496s] fact_s1 out 4x3: rung 2, n 16, closure 0.0232
+[    500s] fact_s1 out 2x7: rung 2, n 16, closure 0.0139
+[    503s] fact_s1 out 1x15: rung 2, n 16, closure 0.0075
+[    505s] fact_s1: best at the filed rung pcs 16x0 0.7489, rank-one 0.7489; labels {'0.8': {'e184_rung': 4, 'cause': 'oracle short', 'rung3_search_miss': False}, '0.9': {'e184_rung': 4, 'cause': 'oracle short', 'rung3_search_miss': False}, '0.95': {'e184_rung': 4, 'cause': 'oracle short', 'rung3_search_miss': False}}
+[    505s] stage 1 done: rival b; stage 2 items: ['planted_trigger', 'cue']
