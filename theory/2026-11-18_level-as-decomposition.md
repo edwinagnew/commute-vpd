@@ -3,7 +3,7 @@
 *2026-11-18, later: vocabulary moved to Geiger et al. 2025's (user; `decisions.md` row "Featurized model replaces
 refinement"); content unchanged. What this note calls a "level", "decomposition" or "refinement" is a **featurized
 model** Ñ_i of each network N_i; a part is a variable; a part's rule is its mechanism F_u (Def. 5); its inputs are its
-parents Pa(u) (Remark 6); the swap is the soft intervention (Def. 10) from the base model, I_K = {F^M_u}_{u∉K}; the
+parents Pa(u) (Remark 6); the swap is the soft intervention (Def. 10) from the base model, I_K = {F_u^{(0)}}_{u∉K}; the
 hybrid is the intervened model F̃_{I_K}; the parts F needs are a minimal circuit for a behavior B (§3.5.2). The
 featurizer is fixed from N_0 alone and shared, the one constraint that is ours. N_i is an approximate transformation of
 Ñ_i (Def. 41), exact (Def. 25) when ε = 0, with τ the identity on inputs and outputs (Remark 42); Def. 33 is no longer
@@ -98,8 +98,8 @@ declared parameter of the featurizer. Under do-nothing all of δW sits in the re
 lies outside this featurized model".
 
 **Mechanism, soft intervention, intervened model.** The mechanism F_u of variable u in N is its mechanism in Ñ
-(Def. 5), a function of its parents Pa(u) (Remark 6); F^M_u in M̃, F^F_u in F̃. The soft intervention from the base
-model, I_K = {F^M_u}_{u∉K} (Def. 10), replaces in F̃ the mechanism of every variable outside K by M̃'s. The intervened
+(Def. 5), a function of its parents Pa(u) (Remark 6); F_u^{(0)} in M̃, F_u^{(1)} in F̃ (superscript (0) is M, (1) is F). The soft intervention from the base
+model, I_K = {F_u^{(0)}}_{u∉K} (Def. 10), replaces in F̃ the mechanism of every variable outside K by M̃'s. The intervened
 model F̃_{I_K} (Geiger writes M_I) is always runnable, and with no variables kept it is M exactly when the remainders
 are among the variables. A soft intervention whose replacement mechanism comes from another trained network, and one
 featurizer applied to two networks, remain ours, not Geiger's.

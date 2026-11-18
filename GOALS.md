@@ -44,7 +44,7 @@ live in `decisions.md`, and what has been tried lives in `experiments/TRIED.md`.
   beside every reading. The featurizer is fixed from M alone and shared, so a variable is the same in both networks:
   the one constraint that is ours. A remainder variable is one way to reach ε = 0 for a lossy featurizer, not part
   of the concept. A variable u has a mechanism F_u (Def. 5), a function of its parents Pa(u) (Remark 6). The soft
-  intervention from the base model I_K = {F^M_u}_{u∉K} (Def. 10) gives every variable outside K M's mechanism; the
+  intervention from the base model I_K = {F_u^{(0)}}_{u∉K} (Def. 10; superscript (0) is M, (1) is F) gives every variable outside K M's mechanism; the
   intervened model F̃_{I_K} (Geiger writes M_I) is always runnable. A behavior B is a partial function from inputs to
   outputs (§3.5.2); the circuit F needs is a smallest K for which F̃_{I_K} preserves B, a minimal circuit in
   Geiger's sub-circuit analysis (§3.5.2) with two departures: a set of variables, not connections, and base-model
