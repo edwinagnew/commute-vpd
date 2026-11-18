@@ -12,8 +12,12 @@ older words.*
 blocks, with no remainder variable. So no reading changes under any of the four repairs. They matter when the paper
 states the definition formally, and for the first reading with an SAE, a VPD split or a crosscoder.
 
-**1. Should the featurized model of F be allowed to use F, if the rule for doing so is fixed before any reading?**
-(review's D1)
+*2026-11-18, later: the user chose one fixed featurizer (`decisions.md`, "One fixed featurizer"). **Repair 1 is set
+aside** (F's features are not fitted; the featurizer is fixed from M alone) and **repair 4 is automatic** (one
+featurizer and one architecture give one causal order). Repairs 2 and 3 stay open.*
+
+**1. [Set aside by the user's choice of one fixed featurizer, 2026-11-18.] Should the featurized model of F be allowed
+to use F, if the rule for doing so is fixed before any reading?** (review's D1)
 - *Problem.* The definition says the featurizer is fixed from M alone. To read VPD components on F we must split F's
   weight change over the components, and every useful split is computed from that change, so it is fitted on F. Only
   the do-nothing split is not, and it reads every change as new. A crosscoder, trained on both models' activations at
@@ -44,7 +48,8 @@ states the definition formally, and for the first reading with an SAE, a VPD spl
 - *Changes:* what is reported, not the definition. No reading, since none used a remainder.
 - *Recommendation:* accept, with the remainder's share of the circuit F needs.
 
-**4. Should M̃ and F̃ be required to share one causal order?** (review's D10)
+**4. [Automatic with one featurizer and one architecture, 2026-11-18.] Should M̃ and F̃ be required to share one causal
+order?** (review's D10)
 - *Problem.* A variable's parents are whatever its mechanism depends on (Geiger's Remark 6), so the two featurized
   models could in principle differ. If variable a has parent b in F̃ and b has parent a in M̃, an intervened model with
   the soft intervention on b alone contains a cycle and cannot be run. Every current case follows the network's layer
@@ -53,7 +58,7 @@ states the definition formally, and for the first reading with an SAE, a VPD spl
 - *Changes:* content, a stated condition. No reading.
 - *Recommendation:* accept.
 
-**Lead's recommendation.** Accept all four. Urgency: soon, before the paper's formal statement; nothing runs on it.
+**Lead's recommendation.** Accept repairs 2 and 3 (open); 1 and 4 are closed (above). Urgency: soon, before the paper's formal statement; nothing runs on it.
 
 **Where it sits.** `theory/2026-11-18_definition_consolidated.md` (Open, item 5); `GOALS.md`, working definition
 (open list). Log: section "Pending decisions", card `decision-definition-repairs`.

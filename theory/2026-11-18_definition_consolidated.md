@@ -35,7 +35,14 @@ still have M's mechanisms, on the settings of their parents that occur.
   (Remark 42); when ε = 0 it is an exact transformation (Def. 25). When the featurizer is a bijective translation,
   the variables are Geiger's modular features (§3.6); otherwise this note says "variables".
 - **Ours: one shared featurizer.** The featurizer is fixed from M alone and applied to both networks, so M̃ and F̃
-  share one signature and u is the same variable in both. This is the one constraint that is ours.
+  share one signature and u is the same variable in both. This is the one constraint that is ours. The featurizer is
+  a pair (τ_0, σ_0), τ_0 from features to the network's variables and σ_0 back, both the identity on inputs and
+  outputs (user, 2026-11-18, "one fixed featurizer"). F's features are not fitted: F̃'s mechanism for each feature is
+  F's own mechanism conjugated by M's featurizer, F̃_u^{(1)}(ṽ) = Proj_u σ_0(F^{(1)}(τ_0(ṽ))), as Def. 28 builds a
+  translated model; in practice F's features on an input are σ_0 applied to F's activations at each featurized site.
+  Cases: units (group; ungroup), rotation (R^T; R), SAE with remainder, transcoder with remainder, VPD with remainder
+  (M's components; all of δW in the remainder). A second, separately fitted featurizer needs a fitted pairing, so it
+  is at most an optional localisation analysis.
 - **Cases.**
   - Unit groupings (neurons, heads, MLP layers, blocks). Ñ is N with its units grouped into variables, a variable
     merge (Def. 37), so ε = 0.
@@ -101,7 +108,9 @@ still have M's mechanisms, on the settings of their parents that occur.
    total when ε_F > 0. In the exact case both ways coincide. Raised by writeup-lead and not yet answered.
 4. **§5.** Re-gating is scored against the definition as a method (decided). Whether it is also "the definition read
    at the VPD featurized model" is set aside.
-5. **Four repairs from the review (ask 50).** The guard against fitting on F, which mechanisms the variables outside
+5. **Four repairs from the review (ask 50).** Repair 1 (the guard against fitting on F) is set aside by the one fixed
+   featurizer and repair 4 (one shared causal order) is automatic with one featurizer and one architecture
+   (2026-11-18); repairs 2 and 3 stay open. As first listed: the guard against fitting on F, which mechanisms the variables outside
    U take, reporting the remainder's share of K, and one shared causal order. Card `decision-definition-repairs`
    (`reports/decisions/2026-11-18_decision_definition-repairs.md`).
 

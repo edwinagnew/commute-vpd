@@ -41,8 +41,11 @@ live in `decisions.md`, and what has been tried lives in `experiments/TRIED.md`.
   merge, Def. 37), rotations (a bijective translation, Def. 28), SAE latents or VPD components. N is an approximate
   transformation of Ñ (Def. 41; an exact transformation, Def. 25, when ε = 0), with τ the identity on inputs and
   outputs and interventions that set the inputs (Remark 42); the error ε of Def. 41, KL on outputs, is reported
-  beside every reading. The featurizer is fixed from M alone and shared, so a variable is the same in both networks:
-  the one constraint that is ours. A remainder variable is one way to reach ε = 0 for a lossy featurizer, not part
+  beside every reading. The featurizer is one pair of maps (τ_0, σ_0) fixed from M alone and shared, both the identity
+  on inputs and outputs, so a variable is the same in both networks (the one constraint that is ours; user, 2026-11-18,
+  "one fixed featurizer"). F's features are not fitted: F̃'s mechanism for each feature is F's own mechanism
+  conjugated by M's featurizer, F̃_u^{(1)}(ṽ) = Proj_u σ_0(F^{(1)}(τ_0(ṽ))), as Def. 28 builds a translated model, so
+  in practice F's features on an input are σ_0 applied to F's activations at each featurized site. A remainder variable is one way to reach ε = 0 for a lossy featurizer, not part
   of the concept. A variable u has a mechanism F_u (Def. 5), a function of its parents Pa(u) (Remark 6). The soft
   intervention from the base model I_K = {F_u^{(0)}}_{u∉K} (Def. 10; superscript (0) is M, (1) is F) gives every variable outside K M's mechanism; the
   intervened model F̃_{I_K} (Geiger writes M_I) is always runnable. A behavior B is a partial function from inputs to
