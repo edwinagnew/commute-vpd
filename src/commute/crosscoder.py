@@ -204,14 +204,15 @@ def fve(ae: AE, chunks: Iterable[Tensor], size: int = 4096) -> dict[str, Any]:
 @torch.no_grad()
 def betas(ae: AE, h: Tensor, J: Tensor, size: int = 4096) -> dict[str, Tensor]:
     """Latent scaling for latents J on raw (n, 2, d): beta = sum_x f <y, d> / (sum_x f^2 |d|^2) with d = d_j^ft, in
-    normalised space; targets eps_m = x_m - (xhat_m - f_j d_j^m) and r_m = xhat_m; nu = beta_base / beta_ft."""
+    normalised space; targets eps_m = x_m - (xhat_m - f_j d_j^m) and r_m = xhat_m; nu = beta_base / beta_ft. `h` may
+    be in another dtype or on another device (cell P2.37 keeps 2M bf16 tokens); each slice is copied to the decoder's."""
     W, J = ae.decoder.weight, J.to(ae.decoder.weight.device)
     dJ, dbJ = W[1, J], W[0, J]
     keys = ("eps_base", "eps_ft", "r_base", "r_ft")
     num = {k: torch.zeros(len(J), dtype=torch.float64, device=W.device) for k in keys}
     den = torch.zeros(len(J), dtype=torch.float64, device=W.device)
     for i in range(0, h.shape[0], size):
-        xn = ae.normalize_activations(h[i : i + size].clone())
+        xn = ae.normalize_activations(h[i : i + size].to(W.device, W.dtype, copy=True))
         f = ae.encode(xn, normalize_activations=False)
         rec = ae.decode(f, denormalize_activations=False)
         fJ, eps = f[:, J], xn - rec

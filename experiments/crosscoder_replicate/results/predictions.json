@@ -1,0 +1,68 @@
+{
+ "experiment": "E210",
+ "cell": "P2.37",
+ "plan": "reports/plans/2026-11-18_plan_p2-37-crosscoder-replicate.md",
+ "card": "reports/plans/2026-11-18_plan_p2-37-card.md",
+ "filed": "2026-11-18, before any run",
+ "question": "Does our crosscoder pipeline (src/commute/crosscoder.py: relative norm, latent-scaling betas, top-N rule) reproduce the per-latent numbers Minder et al. 2025 released for their Gemma-2-2B BatchTopK crosscoder (feature_df.csv)?",
+ "settings": {
+  "crosscoder": "science-of-finetuning/gemma-2-2b-L13-k100-lr1e-04-local-shuffling-CCLoss",
+  "stats": "science-of-finetuning/diffing-stats-gemma-2-2b-L13-k100-lr1e-04-local-shuffling-CCLoss",
+  "base": "google/gemma-2-2b",
+  "chat": "google/gemma-2-2b-it",
+  "layer": 13,
+  "ctx": 1024,
+  "fineweb": "science-of-finetuning/fineweb-1m-sample",
+  "lmsys": "science-of-finetuning/lmsys-chat-1m-chat-formatted",
+  "tokens_per_set": 1000000,
+  "top_n": 3176,
+  "nu_r": 0.5,
+  "nu_eps": 0.2,
+  "pis": [0.2, 0.4, 0.6, 0.8],
+  "chunk": 4096,
+  "layer_source": "paper.txt 2858 and footnote 14: output of model.layers[13], loaded with transformers",
+  "ctx_source": "diffing-toolkit@617d926 configs/config.yaml preprocessing.context_len 1024; BOS kept (configs/model ignore_first_n_tokens 0 for Gemma-2; feature_df has BOS columns)",
+  "data_source": "the authors' copies (diffing-toolkit configs/config.yaml pretraining_dataset; the LMSYS copy's text column is already in the Gemma chat template), train split, first rows; the paper fits latent scaling on 50M training tokens (paper.txt 401), here 2M (1M a set): a 25x reduction",
+  "top_n_source": "paper.txt 458-488: the top 3,176 BatchTopK latents by relative norm (Fig. 2c)",
+  "nu_source": "paper glossary and paper.txt 476-477: chat-specific = nu_r < 0.5 and nu_eps < 0.2; filter: paper.txt 2272, latents with a negative base beta dropped (applied to both sides here, as a departure of our port it is recorded, not fixed)",
+  "pis_source": "paper Table 1 (paper.txt 2654-2656) thresholds",
+  "chunk_source": "commute.crosscoder default encode size"
+ },
+ "thresholds": {
+  "norm_max_abs": 1e-05,
+  "rn_max_abs": 1e-05,
+  "fve_min": 0.7,
+  "spearman_min": 0.9,
+  "count_rel": 0.1,
+  "sources": {
+   "norm_max_abs, rn_max_abs": "fp32 decoder norms against a CSV of fp32 values: recomputing dec_norm_diff from feature_df's own norm columns differs by 5.7e-8 (scratch inspection 2026-11-18); 1e-5 is over 100x that and under any real formula difference (a swapped order moves it by up to 1)",
+   "fve_min": "paper Table 3: the crosscoder's train FVE is 86.2% (base) and 86.9% (chat), L0 100; activations from the wrong layer, template or order fall far below; 0.7 leaves room for our 2M-token sample",
+   "spearman_min": "on feature_df, nu with added noise of sd 0.05 keeps Spearman 0.96 (nu_r) and 0.97 (nu_eps), sd 0.1 gives 0.87 and 0.90; the do-nothing reference (their nu against relative norm alone, on the 2,832 latents the filter keeps) reads 0.51 and 0.67 (0.60 and 0.74 unfiltered; results/feature_df_reference.json), under the bar",
+   "count_rel": "on feature_df, scaling every ratio by 1 +- 0.05 moves the count from 599 to 556-640 (7%); noise of sd 0.05-0.1 moves it to 575-578 (4%); 10% admits that and not a changed target or probe"
+  }
+ },
+ "expected": {
+  "stage a": "model order read off the decoder norms (lm_name 'google/gemma-2-2b-it-google/gemma-2-2b' lists chat first; either order passes, the other order misses by far more than the bar); decoder norms and relative norm match feature_df to about 1e-7 (bar 1e-5); our top 3,176 are their top 3,176 (overlap 3,176, ties aside); feature_df's own reading of those latents: 2,832 kept by the negative-beta filter, 599 pass nu_r < 0.5 and nu_eps < 0.2 (931 without the filter)",
+  "stage b control": "crosscoder FVE on our non-BOS tokens 0.83-0.90 for each model (bar 0.7), L0 about 100; with BOS kept, reported",
+  "stage b reading (all tokens, BOS kept)": "Spearman of our nu_r and nu_eps against feature_df's about 0.95 (bar 0.9 each); our pass count 570-630 against their 599 (bar within 10%: 540-658); nan ratios (latents that never fire in 2M tokens) under 10 of 3,176 (from feature_df's lmsys_freq, 3 expected under one firing in 1M LMSYS tokens)",
+  "stage b reading (BOS dropped)": "reported beside the primary reading, no bar: it locates a mismatch that comes from BOS handling",
+  "do-nothing reference": "Spearman of feature_df's nu against its relative norm on the latents both sides keep: about 0.51 (nu_r) and 0.67 (nu_eps), under the 0.9 bar"
+ },
+ "rules": {
+  "stage a passes": "decoder-norm match of the better model order <= norm_max_abs and max |(1 - our relative norm) - dec_norm_diff| over all 73,728 latents <= rn_max_abs; else stop",
+  "stage b control": "min over the two models of the FVE on non-BOS tokens >= fve_min; else stop before the betas",
+  "reproduced": "on the primary reading (all tokens): Spearman of our nu_r against beta_ratio_reconstruction and of our nu_eps against beta_ratio_error, each on the latents both sides keep (finite ratios, base betas not negative on either target), >= spearman_min; and |our count - their count| <= count_rel * their count, each count over the latents its own side keeps",
+  "not reproduced": "any part missed: the mismatch is located (per-quantity Spearman of the four betas, the BOS-dropped reading, the per-latent table) before any crosscoder rerun cites a latent-scaling reading"
+ },
+ "predictions": {
+  "P1": "Stage a: our relative norm matches dec_norm_diff on every latent (max abs diff <= 1e-5)",
+  "P2": "Stage b: reproduced, by the rule above"
+ },
+ "edge_cases": {
+  "empty or tiny pool": "fewer than 3 latents kept by both sides: Spearman nan, never >= the bar, so not reproduced",
+  "their count 0": "the count rule then needs ours to be 0 exactly; their count is 599, so it does not arise",
+  "nan ratios": "a latent that never fires on our tokens has nan betas: dropped from both Spearman pools, counted as not passing",
+  "ties": "Spearman takes average ranks (scipy); the top-3,176 rule breaks relative-norm ties toward the lower index (commute.crosscoder.top) and feature_df's by a stable sort on latent order: the same rule",
+  "do-nothing state": "their nu replaced by their relative norm reads 0.51 and 0.67, under the bar; a constant nu (betas all equal) gives Spearman nan and a count of 0 or 3,176, both failing"
+ }
+}
