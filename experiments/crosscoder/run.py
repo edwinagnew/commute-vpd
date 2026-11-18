@@ -23,7 +23,7 @@ The normaliser and the latent-scaling tokens come from the first chunk.
   scorecheck      one snapshot score at full size on an untrained crosscoder: peak memory (the stage-0 OOM)
   1 KEY           one stage-1 crosscoder: reuse | new | random | reuse_seed1 (one per pod); snapshots scored
   1check          (CPU) stage 1's bars on the four files: writes stage1.json pass or stop
-  2 i/n           every other state, then the size-matched states, shard i of n; each side gets the FVE and dead bars
+  2 i/n           the first state of each side, then the size-matched states, shard i of n; FVE and dead bars per side
   resumecheck     (CPU, rehearsal) step-matched loss differences of a resumed run against an uninterrupted one, with
                   the floor two uninterrupted runs give
   --rehearse      the rehearsal sizes (settings.rehearsal), outputs under results/run2_rehearsal/
@@ -139,13 +139,14 @@ class Grab(Exception):
 
 
 def stage2_sides(names: dict[str, Any], m67: dict[str, Any]) -> list[tuple[str, float, str]]:
-    """(state, c, key): every state of the nine pairs once, then each pair's larger side times its c."""
-    out = {s: (s, 1.0, s.replace("/", "__")) for r, n in names.values() for s in r + n}
+    """(state, c, key): the first state of each side of the nine pairs once, then each pair's larger side (its first
+    state) times its c. One seed per side: the user's pick after stage 1, 2026-11-18 (not the share's full seed set)."""
+    out = {s: (s, 1.0, s.replace("/", "__")) for r, n in names.values() for s in (r[0], n[0])}
     for pair, (r, n) in names.items():
         p = m67[pair]
-        for s in r if p["larger"] == "reuse" else n:
-            key = f"{s.replace('/', '__')}__matched_{pair}"
-            out[key] = (s, float(p["c"]), key)
+        s = r[0] if p["larger"] == "reuse" else n[0]
+        key = f"{s.replace('/', '__')}__matched_{pair}"
+        out[key] = (s, float(p["c"]), key)
     return list(out.values())
 
 
@@ -454,8 +455,10 @@ def stage1check(T: dict[str, Any]) -> None:
     path = OUT["results"] / "stage1.json"
     out: dict[str, Any] = {"experiment": "E203"}
     s0 = {k: json.loads((OUT["results"] / f"stage0{k}.json").read_text()) for k in "ab"}
-    if not (s0["a"].get("pass") and s0["b"].get("pass")):
-        raise SystemExit("refusing 1check: stage0a.json and stage0b.json have not both passed")
+    if not s0["a"].get("pass"):
+        raise SystemExit("refusing 1check: stage0a.json has not passed")
+    # stage 0b (planted) missed on nu_eps; the user chose to go on with it stated beside (2026-11-18 dialogs)
+    out["stage0b_pass"] = bool(s0["b"].get("pass"))
     fve0 = min(s0["a"]["self"]["fve_base"], s0["a"]["self"]["fve_ft"])
     for key in STAGE1:
         rec = out[key] = json.loads((OUT["results"] / f"stage1_{key}.json").read_text())[key]
