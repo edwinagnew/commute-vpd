@@ -3,7 +3,7 @@ side A minus side B, at the late save and the matched (5x) save. No decompositio
 is labelled reuse or new, and no score joins the readings. Card card.md; plan plan.md; rules results/predictions.json
 (the run refuses unless it is committed unchanged), applied by rules.py; the scorecard is plot.py (CPU, after the pods).
 
-    E120_PRED_SHA=<sha> .venv/bin/python experiments/qwen_library_readings/run.py --pairs copy_cipher
+    PRED_SHA=<sha> .venv/bin/python experiments/qwen_library_readings/run.py --pairs copy_cipher
 
 Readings per state, each the function E92, E162 and E166 used: update size (`qwen_comparators.update_size`, total
 ratio_norm), prior (W0's median rank of each answer's first token on the side's rows), steering (E92's `steer`, share of

@@ -24,6 +24,7 @@ closure is read on held-out windows.
 
 from __future__ import annotations
 
+import math
 from collections.abc import Callable
 from dataclasses import dataclass, field
 from typing import Any
@@ -523,14 +524,17 @@ def with_cand(I: Interv, c: Cand, value: float, device: str) -> Interv:
     return J
 
 
-def line_search(m: Model, I: Interv, cands: list[Cand], d: Data, sz: Sizes, k_now: float) -> tuple[Interv, Cand, float, float] | None:
+def line_search(m: Model, I: Interv, cands: list[Cand], d: Data, sz: Sizes, k_now: float,
+                seen: list[float] | None = None) -> tuple[Interv, Cand, float, float] | None:
     """Each candidate at each multiple of its Newton step; the point of the lowest check KL, or None if none is below `k_now`
-    (adding nothing is always a candidate)."""
+    (adding nothing is always a candidate). Every check KL tried is appended to `seen` when given."""
     best: tuple[float, Interv, Cand, float] | None = None
     for c in cands:
         for t in sz.mults:
             J = with_cand(I, c, t * c.step, m.net.device)
             k = check_kl(m, J, d, sz)
+            if seen is not None:
+                seen.append(k)
             if k < k_now and (best is None or k < best[0]):
                 best = (k, J, c, t)
     return None if best is None else (best[1], best[2], best[3], best[0])
@@ -613,15 +617,32 @@ def greedy(m: Model, d: Data, I: Interv, curve: list[dict[str, Any]], mk: dict[s
         if len(curve) >= sz.patience and all(b - a < sz.min_gain for a, b in zip(cl[-sz.patience - 1 : -1], cl[-sz.patience :], strict=True)):
             break
         s, k_now = seed + len(curve), check_kl(m, I, d, sz)
-        cands = candidates(m, score_pass(m, I, d.score, d.lp_score, sz, s), I, mk, reads_on, sz)
-        found = line_search(m, I, cands, d, sz, k_now) if cands else None
+        sc = score_pass(m, I, d.score, d.lp_score, sz, s)
+        cands, seen = candidates(m, sc, I, mk, reads_on, sz), []
+        found = line_search(m, I, cands, d, sz, k_now, seen) if cands else None
         if found is None:
+            _log_stop(I, sc, cands, seen, sz, k_now, reads_on)
             break
         J, c, t, k_line = found
         k = refit_writes(m, J, d, sz, k_line)
         I.writes, I.edits = J.writes, J.edits
         curve.append({"n": I.n, "closure": closure(m, I, d, sz), "check_kl": k, "names": I.names(m.sp), "score": c.score, "mult": t})
         tick()
+
+
+def _log_stop(I: Interv, sc: Scores, cands: list[Cand], seen: list[float], sz: Sizes, k_now: float, reads_on: bool) -> None:
+    """Print why `greedy` stopped adding (friction 787: E182's log could not tell NaN scores from overshooting steps)."""
+    bad = {f: int((~torch.isfinite(getattr(sc, f))).sum()) for f in ("G", "hbar", "gain_g", "hgain")}
+    head = f"[greedy] stop at n={I.n} (rung {2 if reads_on else 1}), check KL {k_now:.6g}: "
+    if not cands:
+        why = f"n + 1 > cap {sz.cap}" if I.n + 1 > sz.cap else "no candidate (every score zero, masked or below the floor)"
+        print(head + f"{why}; non-finite score entries {bad}", flush=True)
+        return
+    fin = [k for k in seen if math.isfinite(k)]
+    print(head + f"no step lowers it: {len(cands)} candidates x {len(sz.mults)} multiples, {len(seen) - len(fin)} non-finite "
+          f"check KLs, lowest finite {min(fin) if fin else None}; non-finite candidate scores "
+          f"{sum(not math.isfinite(c.score) for c in cands)}, steps {sum(not math.isfinite(c.step) for c in cands)}; "
+          f"non-finite score entries {bad}", flush=True)
 
 
 def rung3(m: Model, d: Data, base: Interv, fits: list[dict[str, Any]], sz: Sizes, top_bar: float,

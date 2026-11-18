@@ -22,8 +22,8 @@ One pod per pair, two parts in order, each its own process (each loads its own m
                each file deleted once read.
 Writes results/qwen/<pair>/share/*.json (the Lab's records) and results/qwen/<pair>/readings.json; prints "STAGE n DONE".
 
-    E120_PRED_SHA=<sha> python experiments/size_matched/qwen.py --part share --pair facts --decomp "$COMMUTE_QWEN_FROZEN_DIR"
-    E120_PRED_SHA=<sha> python experiments/size_matched/qwen.py --part readings --pair facts
+    PRED_SHA=<sha> python experiments/size_matched/qwen.py --part share --pair facts --decomp "$COMMUTE_QWEN_FROZEN_DIR"
+    PRED_SHA=<sha> python experiments/size_matched/qwen.py --part readings --pair facts
 """
 
 from __future__ import annotations

@@ -6,7 +6,7 @@ metadata:
 ---
 
 The user wants results as quickly as possible. Runs of ≤ 30 min go to the cluster's `debug` QoS, and to RunPod if
-they haven't started within 10 min. Longer runs go straight to RunPod on a 4090 or faster card (an H100 for runs
+they haven't started within 5 min (a start wait, not a run cap: the debug QoS allows 2 h, `normal` 24 h). Longer runs go straight to RunPod on a 4090 or faster card (an H100 for runs
 over ~1 h). Never pick an A5000/3090-class card to save money. The $10/session budget still applies.
 
 **Why:** pod-runners were too wary of RunPod and chose excessively small GPUs. The trade-off is a ~5-min pod set-up
