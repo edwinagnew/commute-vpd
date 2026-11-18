@@ -55,7 +55,7 @@ for that behaviour still compute what M's parts compute when given the same inpu
 4. **§5.** Re-gating is scored against the definition as a method (decided). Whether it is also "the definition read
    at the VPD refinement" is set aside.
 
-## Clashes between files (to be fixed after review)
+## Clashes between files (GOALS.md and the level note fixed 2026-11-18; the alignment-form row stays as a superseded record)
 - **`GOALS.md` on exactness.** It still says the parts "merge back into the network exactly" and that "whether ε_F
   stays ... is open". The 2026-11-18 refinement row has since decided that ε is kept and that approximate refinements
   are allowed.
