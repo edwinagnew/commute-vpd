@@ -77,7 +77,7 @@ neuron. Reuse large is reuse small with M's copying head turned up.
 
 ## 3. Expected values (reading A, clause 5 as filed)
 
-K holds only changed parts (theory note, (b)). F with every changed part swapped is M. So for any part u that holds
+K holds only changed parts: the swap (clause 3 of the theory note's section (a)) leaves an unchanged part as it was, so a fewest-parts K (clause 5) never needs one. F with every changed part swapped is M. So for any part u that holds
 the whole edit, r_u = 1 − KL(F ‖ M) / KL(F ‖ M) = 0 exactly.
 
 | edit | neuron | head | MLP layer | block |
