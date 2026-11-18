@@ -1,5 +1,7 @@
 # The working definition in the language of causal abstraction
 
+*Superseded in part 2026-11-18: "level" as an alignment is replaced by "level" as a decomposition (`theory/2026-11-18_level-as-decomposition.md`, Part A, adopted by the user). The definition sentence is unchanged.*
+
 *2026-11-18, coding agents, for the definition lead. Restates the log's box "The working definition · revised
 2026-11-18"; nothing was run. "Def. n" is Geiger et al. 2025 (arXiv 2301.04709), read from the project's PDF
 extraction. Geiger's translation map is also called τ; here τ is only our tolerance, and the alignment's maps are

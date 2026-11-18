@@ -35,10 +35,12 @@ live in `decisions.md`, and what has been tried lives in `experiments/TRIED.md`.
 - **Working definition of reuse (user, 2026-11-18, revised the same day).** A fine-tune F reuses the original M,
   for a behaviour at a declared level, to the extent that the parts F needs for that behaviour still compute what
   M's parts compute when given the same inputs. Stated in causal-abstraction terms (Geiger et al. 2025; user,
-  2026-11-18): a level is one alignment from the shared architecture to a high-level causal model, read on both
-  networks, so a part is the same cell in M and F; a part's rule is its mechanism in that abstraction; F_K is F with
-  M's mechanisms swapped into every part outside K; and the fit of the alignment on F (ε_F) is reported beside any
-  reading. ρ (the mean rule retention of a smallest sufficient set) is no longer part of the definition (user,
+  2026-11-18): a level is a declared decomposition, a finer causal model of each network whose parts (neurons,
+  heads, blocks, SAE latents, VPD components, plus a remainder part where the featuriser is lossy) merge back into
+  the network exactly; the same decomposition is read on M and F, so a part is the same variable in both; a part's
+  rule is its mechanism there; F_K is F with M's mechanisms swapped into every part outside K
+  (`theory/2026-11-18_level-as-decomposition.md`, user 2026-11-18; whether ε_F stays or is replaced by the
+  remainder's share of K is open). ρ (the mean rule retention of a smallest sufficient set) is no longer part of the definition (user,
   2026-11-18 morning): at the neuron level it is a tested reading that saturates (E208: 0.999 or more on every
   fine-tune), since "the neuron level is not a high-enough level abstraction to detect new". Full statement in the
   research log's overview box "The working definition", `theory/2026-11-18_definition_causal_abstraction.md` and
