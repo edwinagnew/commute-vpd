@@ -538,3 +538,7 @@ Written by `experiments/share_size_matched/run2.py` stages 2-3, beside E204's fi
 ## graft_negative (E201, run 2026-11-17, cluster job 60945)
 - `results/large/graft.pt` (1.5 MB, sha256 376364e727a0d38b2cf5b16a760d98b208be265dbab288c49938a5528a586c7b): the graft four weights.
 - `results/large/map3_attn3.pt` (1.2 MB): reading 3 map at the graft site, bf16.
+
+## crosscoder run 2 (E203, cell P2.31; stage 0 2026-11-17/18, stage 1 2026-11-18, RunPod H100 SXM / H200)
+- `results/large/run2/{self,planted}.pt` (76 MB each): stage 0 crosscoder decoders (base against itself; planted direction).
+- `results/large/run2/{e54__elicit_s0,e54__cipher_s0,e54__elicit_s0__seed1,random_like__e54__elicit_s0}.pt` (76 MB each): stage 1 crosscoders; sha256 in the runner's hand-back (elicit 4301d513..., cipher c9ef2082..., seed1 a58f5223..., random 2c1783e2...).
