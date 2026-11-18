@@ -35,16 +35,24 @@ machinery does the new behaviour run through?" (the log box already says so).
   the trained pairs would then be read once at that level.
   This needs a new clause in the definition, in your words, and one more choice that is part of the definition: what an
   unneeded part is replaced by when testing whether F needs it.
-  - *Its mean over the behaviour's inputs:* removes what the part carries about this input, keeps its average; simple,
-    but the mean can be a value the part never takes.
-  - *Its value on another input (resample):* every value is one the network really produces; noisier, and it needs a
-    rule for which other input.
+  **Your answer (2026-11-18): if every part counts, an unneeded part is replaced by its mean over the behaviour's
+  inputs.** (The other option was its value on another input, a resample.)
 
-**A second, smaller question (lead's recommendation).** When a part is given M's rule, which input does it see?
-(A) Its own input in F's run, so only the rule is replaced. Recommended: only under A can an untouched re-used
-circuit read as kept. (B) The value it had when M ran the same text, as in activation patching (Prakash et al. 2024).
-Under B an unchanged circuit after a re-trigger reads "not kept", because it never fired in M. Both are reported either
-way; this picks the one the pass rule uses. It matters only once the main question is answered.
+**A second, smaller question (you said "I don't know"; you may hand it back to the lead).** When we test whether a
+part of F still follows M's rule, we feed the part an input and compare its output with M's version of that part.
+Which input do we feed it? Take the example above.
+- **(A) What reaches the part in F's own run.** F has learned to make the new cue A′ look like A in layer 1, so the
+  unchanged induction heads receive "looks like A". M's copy of those heads, given the same thing, would also copy B.
+  Same output, so the heads read as kept. This asks: did the part's own computation change?
+- **(B) What reached the part when M read the same text.** M never learned A′, so in M the heads received plain A′ and
+  did nothing. In F they copy B. The outputs differ, so the heads read as not kept, even though their weights never
+  changed. This is activation patching (Prakash et al. 2024). It asks: does the part behave the same on this text as
+  it did in M?
+
+Under B, any reuse that runs an old circuit on a new cue reads as new, because M never ran the circuit on that cue.
+Under A, it can read as reuse. **Lead's recommendation: A**, because only A can tell "same machinery, new cue" from
+"new machinery". Both are reported either way; the choice sets which one the pass rule uses. It matters only if the
+main answer is (b).
 
 **What happens next.** Cell P1.31 (2 runs, due 2026-11-20) is held, and predictions are filed only after your answer.
 Under (a), run 1 runs as planned and run 2 most likely does not. Under (b), the plan gains the part-removal step with
