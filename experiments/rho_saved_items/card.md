@@ -26,5 +26,6 @@ and the appended grafts (0 by the rule: a check, not a test).
 ## Cost
 
 Two searches per item (mechanism replacement and activation patching), 5 orders each; E196 took 224-622 s per search
-on one H100. About 22 items: 5-8 H100-hours. 11 H100 SXM pods in parallel (one per pair and seed, one for stage 0,
-E195 rebuilt and the grafts), about 1 h wall, about $30-50. Not gated (under $60 and 6 h).
+on one H100, and each evaluation here also runs M's heads and MLP (1.5-2 times E196's time). 11 H100 SXM pods in
+parallel (one per pair and seed, one for the controls and E195 rebuilt; `pods.md`): 7-17 pod-hours, $30-75, 1-1.5 h
+wall. The upper end passes the $60 gate line; the first-order logs project each item and the runner reports first.

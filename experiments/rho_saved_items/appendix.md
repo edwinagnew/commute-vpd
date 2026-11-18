@@ -34,8 +34,8 @@ choices made here, and the places where the note and the code disagree.*
    pattern, because it sums before it divides. The options, in plain words: (a) score agreement over all settings at
    once (today's code); (b) keep the per-setting score but use a distance that also sees size, such as
    |f_F − f_M|² / (|f_F|² + |f_M|²) (R's d before E195); (c) keep the note as written and accept that neurons are read by
-   their output weights alone. The run reads (c) as the main reading, (a) as alternative (i). (b) could be added
-   at no search cost if the user wants it.
+   their output weights alone. The run reads (c) as the main reading, (a) as alternative (i) and (b) as
+   alternative (b), all on the same K (b added at the lead's request, 2026-11-18).
 2. **Weighting in ρ.** ρ is a plain mean over K. A head, which carries a share of attention, counts as much as one
    of thousands of neurons. So the heads' readings barely move ρ, even where they carry the change. That is part of
    the wording ("the mean rule retention of the parts F needs"), so it is listed rather than changed.
@@ -66,22 +66,26 @@ choices made here, and the places where the note and the code disagree.*
 - Search: E196's chunked backward elimination (chunk 256, 5 orders, order_seed 0). This gives an upper bound on the
   size of K (star c4).
 
-## D. Definitions in code (phase B, to write)
+## D. Definitions in code (written 2026-11-18)
 
-One new module, `src/commute/rho.py`, built on `commute.rule_retention` (R) for the layer pieces. RF is not changed:
-E195 and E196's frozen scripts call it.
-- `parts(F, M)`: the changed parts, with "M lacks" and "F lacks" flags. Heads are counted from each layer's o_proj
-  width, not from `N_HEAD`.
-- `write(N, part, residual)`: the part's write on a residual, for N ∈ {M, F}.
-- `r_per_setting(F, M, toks, settings="pooled"|"M")`: per part, 1 − mean of (1 − cos²). Neurons are checked against
-  the column cos² (identity_tol).
-- `r_aggregate(...)`: RF's cos² with the identity pairing.
-- `forward(F, M, toks, keep: set, how="replace"|"patch", restore_zeroed=False)`: F_K. Under "patch", M's per-part
-  writes are cached once per item.
-- `search`: RF.eliminate, called unchanged.
+`src/commute/rho.py` is new. RF is not changed (E195's and E196's frozen scripts call it), and only `RF.eliminate` is
+called.
+- `unpack` reads each network's weights part by part: grafted heads come from `graft.Grafted`, appended neurons from
+  `R.Extra`. Head counts come from the weights, not from `N_HEAD`.
+- `changed(Pair)` returns the changed parts and the parts F lacks, by exact weight comparison.
+- `profile` makes one pass over M's and F's runs and reads r under main, i, iii and b. It also returns each neuron's
+  output-column cos² and its count of settings with exactly one zero write, which feed the identity check.
+- `forward(Pair, toks, Swap, mrun)` gives F_K's logits: mechanism replacement when `mrun` is None, else activation
+  patching from M's own run.
+- `contrast` runs RF.eliminate. Each order gives its K (as indices into the candidates) and ρ under every reading.
 
-`experiments/rho_saved_items/run.py` takes about 300 lines: the Config from `predictions.json` "settings" via
-`config_from_settings`, the stages below, one JSON per item, and `results/large/parts/<item>.npz`.
+`tests/test_rho.py` checks the code on a tiny random model on the CPU, in seconds. F_K with nothing swapped is F, and
+with everything swapped is M under both constructions. A doubled column reads main 1 and b 0.8. Appended parts and
+F-lacks parts are found, and a contrast's K stays inside the doubled columns.
+
+`experiments/rho_saved_items/run.py` builds its Config from "settings" through `config_from_settings`. Stage 0 runs
+per tag; then each item writes `results/items/<item>.json` and `results/large/parts/<item>.npz`. `--summary` writes
+R1 and the R3 table.
 
 ## E. Stages and pods
 
