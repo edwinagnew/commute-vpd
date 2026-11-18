@@ -1,0 +1,102 @@
+{
+ "experiment": "unclaimed: the definition lead claims the code with fleet/ecode and writes it here before the run",
+ "cell": "P1.30 (proposed; the lead adds the cell)",
+ "status": "drafted 2026-11-18, phase A (plan, card, predictions); not yet filed: the run refuses until this file is committed unchanged with its code",
+ "wording": "the working definition as stated in theory/2026-11-18_definition_causal_abstraction.md (decisions.md rows 'Working definition of reuse, revised' and 'stated in causal-abstraction terms', 2026-11-18), read as written with the section (c) starred choices; each testable alternative read beside it, one at a time. No verdict on any fine-tune; no cut-off, label or rule added to the definition",
+ "plan": "experiments/rho_saved_items/plan.md (appendix experiments/rho_saved_items/appendix.md); card experiments/rho_saved_items/card.md",
+
+ "level": {
+  "parts": "every MLP neuron (4 x 3072, plus appended ones where a graft adds them), every attention head (4 x 6, plus a grafted seventh), the token embedding, and the unembedding (final norm and lm_head together): every variable on a path from input to output is aligned, so F with every part given M's mechanism is M",
+  "cells": "single units, the identity alignment: a neuron's cell is its c_fc row, its down_proj column and its layer's rms_2; a head's cell is its q, k, v rows, its 128 o_proj columns and its layer's rms_1; the embedding's cell is wte; the unembedding's cell is ln_f and lm_head (tied to wte in the 67M: a fine-tune that moves wte moves both, and both parts are then changed)",
+  "value of a part": "what it writes: a neuron's activation times its output column (a 768-vector); a head's output after o_proj (768); the embedding's row (768); the unembedding's logits (vocabulary). The scalar activation is not used: d = 1 - cos^2 of two non-zero scalars is 0, so every neuron would read r = 1 (appendix, 'Definition questions' 1)",
+  "In(u)": "the residual stream feeding the part: a neuron's at its position, before its layer's MLP; a head's at every position up to its own, before its layer's attention; the embedding's the token; the unembedding's the final residual",
+  "changed part": "a part whose cell's weights differ from M's in any entry (exact comparison), or a part M lacks. A part whose cell is unchanged has the same mechanism in both networks, so the swap leaves it alone and it is never a candidate for K (the note, (b): 'a smallest K holds only changed parts')",
+  "parts F lacks": "a neuron whose input row and output column F has set to zero (E195 rebuilt's 8 C neurons): absent from F (the note, clause 2); under choice (c5) star absent in every F_K and never in K"
+ },
+
+ "readings": {
+  "main": "the note as written. r_u = 1 - mean over v in V_u of d(f_u^F(v), f_u^M(v)), d = 1 - cos^2 of the two writes at the setting v; d(0, 0) = 0, d(0, x) = 1 for x non-zero; a part M lacks r_u = 0. V_u pooled: the settings of In(u) in M's run and in F's run on the item's read windows, every position, each setting weighted equally (2 x n_windows x T settings). F_K by mechanism replacement: every changed part outside K runs M's mechanism on the input it receives in the hybrid; a part M lacks outside K is removed; a part F lacks stays absent (c5 star). K: chunked backward elimination over the changed parts, 5 seeded orders, kept when KL(F || F_K) <= (1 - tau) KL(F || M), tau = closure_bar; rho = mean r_u over K, per order",
+  "(i) code's r": "on the main K of each order, r_u replaced by E195/E196's aggregate cos^2 (one cos^2 of the part's whole write over every window, position and dimension, M's settings only, the identity pairing: no re-pairing); rho_(i) = its mean over the main K. E196's own number (level A, re-paired, its own K) is quoted from experiments/rule_retention_pairs/results/summary.json beside it, not recomputed",
+  "(ii) activation patching (c1)": "K searched again with F_K made by cross-model activation patching (Prakash et al. 2024): every changed part outside K writes the value it wrote in M's own run on the same window and position; unchanged parts run their shared mechanism on the hybrid's input; a part M lacks outside K writes nothing. r_u as main; rho_(ii) = mean over this K",
+  "(iii) M-only settings (c3)": "on the main K, r_u computed with V_u = M's run only; rho_(iii) its mean",
+  "(iv) zeroed parts restored (c5)": "E195 rebuilt only (the one item with parts F lacks): the 8 C neurons are parts; outside K they run M's mechanism; in K they stay zero and read r = 0 (d(0, x) = 1); K searched again by mechanism replacement; rho_(iv) its mean",
+  "eps_F": "0 by construction at the identity alignment (the hybrid with nothing swapped is F, read as the gate); not a measurement in this run"
+ },
+
+ "items": {
+  "stage 0, controls (alone, first, stop on a miss)": {
+   "do_nothing": "a copy of M on copy24's 512 read windows (E196's), KL at the last position",
+   "x2, x10": "M with C's 8 layer-1 output columns times 2 and times 10 (P1.24's rescaled), same windows",
+   "neurons_slotted": "new by construction where M has the slot: E206's 256 trained lookup neurons (graft_sites/results/large/neurons.pt) written into the 256 layer-3 slots of M whose writes are smallest (sum over E206's read windows of |a w|^2, M's run): c_fc rows <- the graft's w_in, down_proj columns <- the graft's w_out. No training. E206's 512 read windows, KL at every position",
+   "neurons_appended, head_appended": "E206's neurons and last_lowest grafts as built (appended units, M lacks them): a check of the rule 'a part M lacks keeps nothing', not a test; E206's read windows, every position"
+  },
+  "stage 1, the E196 pairs": "copy24/cipher24, ident32/rand32, case_real/case_twin, repeat_real/repeat_twin (counted), twin/fact (reported), seeds 0 and 1: 20 fine-tunes built exactly as E196 built them (old_tasks.old_f, variable_read.load_state), each on its own 512 read windows (read_seed 195200, E196's), KL at the last position; E196's gap check repeated",
+  "stage 2, E195 rebuilt": "C zeroed, layers 2-3 MLP fine-tuned (rule_retention_fixed/results/large/rebuilt_mlp.pt), on copy24's 75 E195 windows, KL at every position (E195's); readings main, (i), (ii), (iii), (iv)"
+ },
+
+ "settings": {
+  "layer": 1,
+  "C": [486, 499, 613, 778, 1125, 2028, 2352, 2960],
+  "factors": [2.0, 10.0],
+  "control_task": "copy24",
+  "pairs": [["copy24", "cipher24"], ["ident32", "rand32"], ["case_real", "case_twin"], ["repeat_real", "repeat_twin"], ["twin", "fact"]],
+  "counted": 4,
+  "seeds": [0, 1],
+  "n_read": 512,
+  "read_seed": 195200,
+  "n_max": 100,
+  "held_share": 0.25,
+  "eval_batch": 2048,
+  "profile_batch": 512,
+  "grafts": ["neurons", "last_lowest"],
+  "graft_layer": 3,
+  "graft_read_seed": 201005,
+  "slot_n": 256,
+  "orders": 5,
+  "order_seed": 0,
+  "chunk": 256,
+  "settings_source": "layer, C, factors, control_task, pairs, seeds, n_read, read_seed, n_max, held_share, eval_batch, profile_batch: E196's filed settings (experiments/rule_retention_pairs/results/predictions.json); grafts, graft_layer, graft_read_seed, slot_n: E206's (experiments/graft_sites/results/predictions.json: last_layer 3, read_seed 201005, n_read 512, n_neurons 256); orders, order_seed, chunk: E195/E196's thresholds"
+ },
+ "thresholds": {
+  "tau": 0.9,
+  "r_tol": 1e-06,
+  "kl_floor": 1e-06,
+  "gate_tol": 0.001,
+  "m_gate_tol": 0.001,
+  "reload_tol": 0.0001,
+  "identity_tol": 1e-06,
+  "slot_bar": 0.05,
+  "thresholds_source": "tau: the note's declared tau (E195/E196 closure_bar 0.9); r_tol, kl_floor, gate_tol, reload_tol: E196's filed values; m_gate_tol: gate_tol applied to the new gate (F with every changed part swapped against M's native logits); identity_tol: the per-setting cos^2 of a neuron equals the cos^2 of its output columns to rounding (fp64 accumulation, fp32 weights: measured in stage 0 and logged); slot_bar: cos^2 between a trained graft column and an unrelated M column is about 1/768 = 0.0013 for independent directions, so 0.05 is 38 times that and far under every trained fine-tune's reading"
+ },
+
+ "expected": {
+  "do_nothing": "no changed part under any reading; reading 'no change'; both gates 0",
+  "x2, x10": "changed parts exactly C; every r_u of C = 1 within r_tol under main, (i) and (iii) (cos^2 does not see a gain); in every order of main and (ii), K is a non-empty subset of C and rho = 1 within r_tol; closure of F with nothing kept, 1 - KL(F || F_empty) / KL(F || M), = 0 within r_tol (F_empty = M); KL(x2 || M) about 0.10 at E196's last position windows (E196 stage0.json), x10 larger",
+  "neurons_slotted": "changed parts exactly the 256 slots; rho_main <= slot_bar in every order (expected near 0.0013); F_empty = M (m_gate)",
+  "neurons_appended, head_appended": "changed parts exactly the graft's units; K non-empty; rho = 0 exactly under main, (ii), (iii) (a part M lacks keeps nothing); F_empty = M within m_gate_tol (E206 'graft zeroed equals M')",
+  "every item, neurons": "for a neuron whose activation is non-zero at every setting, r_main = cos^2 of its two output columns within identity_tol, exactly as algebra gives (cos^2(a_F w_F, a_M w_M) = cos^2(w_F, w_M)); so rho_(iii) = rho_main on the neuron parts of K, and r_(i) <= r_main for every neuron (the aggregate is the activation patterns' Cauchy-Schwarz ratio times the same column cos^2)",
+  "E196 pairs": "every rho_main close to 1, likely closer than E196's 0.996-0.9995 at neurons since only output columns count there (1 - cos^2 of a column moved by about 0.5% of its norm is of order 1e-5); heads read lower but are 24 of thousands of parts in K; F_empty = M (closure of nothing kept 0 within r_tol, against E196 level A's 0.33-0.68); E196's gap repeated within reload_tol",
+  "E195 rebuilt": "rho_main at or above E195's 0.9715 (the same layers' neurons, read by their output columns only); closure of nothing kept about -1.11 under main (C absent, E195 stage2.json) and 0 within r_tol under (iv)",
+  "filed": "see 'rules' R1: rival A (rules) at both seeds, or rival B (update size) at both seeds"
+ },
+
+ "rules": {
+  "R0 (stops, stage 0)": "exit 1 with stage0.json 'stopped' on any miss of 'expected' for do_nothing, x2, x10, neurons_slotted, neurons_appended, head_appended; also on the hybrid gate (F part by part with nothing swapped against F's native logits) over gate_tol or the M gate (every changed part swapped against M's native logits) over m_gate_tol on any item, stage 0 or later (code errors, not readings)",
+  "R1 (filed, the separating question)": "for each seed s in {0, 1}: g_pair = mean over the 5 orders of the reuse member's rho_main minus the mean over the 5 orders of the twin's, for the four counted pairs. The seed reads 'A' when g_ident > max(g_repeat, 0) (the identity/random-map gap above the repeat gap and above 0, strictly); 'B' when g_case > g_repeat > max(g_copy, g_ident) (strict: the gaps rank as the twins' update ratios do); 'neither' otherwise, ties included. The two are exclusive (A needs g_ident > g_repeat, B needs g_repeat > g_ident). The filed outcome: 'A' if both seeds read A, 'B' if both read B, else 'mixed'. Reported beside each seed: g_ident - g_repeat and the largest order sd of the four items, so a call within that sd is visible; no band is applied",
+  "R1 edge cases": "an item whose main contrast reads 'no change' (no changed part) or 'no contrast' (KL(F || M) <= kl_floor) makes its seed 'not read', counted as neither A nor B. K is never empty when F_empty = M (closure of nothing kept is 0 < tau), so an empty K or a None order is a code error and stops. Ties between gaps read 'neither' (strict inequalities in both branches). Zero denominators: KL(F || M) <= kl_floor is 'no contrast' before any division; at a setting where both writes are zero d = 0, where one is zero d = 1. Do-nothing run through R1 as every member gives every g = 0: 'neither' (0 > max(0, 0) and 0 > 0 both fail), so the do-nothing state passes neither rival. All four gaps equal: 'neither'. A reversed repeat pair (g_repeat < 0) with g_ident > 0 reads A; B fails there anyway",
+  "R2 (reported, the graft question)": "rho_main of neurons_appended (0 by the rule) and of neurons_slotted beside E206's held-model S for the appended neurons, 0.954 (experiments/graft_sites/results/summary.json); no rule: the appended item is a check, the slotted one a control",
+  "R3 (reported, one change at a time)": "per item and order: rho and |K| under main, (i), (ii), (iii) and, on E195 rebuilt, (iv); per item the differences from main, mean over orders, with the order spread beside them. Expected: (iii) - main = 0 on neuron parts, any difference from heads, embedding and unembedding; (i) - main <= 0 on neuron parts; (ii) and (iv) measured, not predicted"
+ },
+
+ "blind_to": {
+  "r_main at a neuron": "everything the neuron responds to: its input row, its norm and any change of gain; it reads only the direction of its output column (algebra above). A neuron with a new input row and the old output column reads r = 1",
+  "r_main at a head": "a change of the head's output size at a setting; it sees a change of where the head attends and of what it writes, because the write's direction varies with the setting",
+  "rho": "how much each part matters: one head weighs as much as one neuron in the mean over K, and K holds thousands of neurons; parts outside the read windows; a change that does not move the behaviour's KL",
+  "R1": "pairs matched in update size (E187's would be the test; not here); the parity twin and fact pair (reported only)"
+ },
+ "positive_control": "stage 0: do-nothing reads 'no change'; x2 and x10 read 1 under every reading; the slotted graft (new parts in M's own slots) reads under slot_bar; the appended grafts read 0 by the rule; F_empty = M on each (the M gate). Same code path, construction and search as the items",
+ "noise_floor": {
+  "rho across orders": "E196 level A, largest sd over 5 orders of one item 8.5e-5 (repeat_twin_s0; experiments/rule_retention_pairs/results/summary.json); the main level's own order sd is measured in this run and reported beside R1",
+  "gap check": "fp32 reload of the same state on the same windows, 0 to about 1e-6 (E196), against reload_tol"
+ }
+}
