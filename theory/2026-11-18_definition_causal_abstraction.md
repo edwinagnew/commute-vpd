@@ -50,6 +50,10 @@ as changed rules in those cells, and as a larger ε_F where the alignment no lon
 
 ## (b) The standard reading as a special case
 
+*Superseded 2026-11-18 (user; `decisions.md` row "Working definition of reuse without ρ"): ρ and this standard
+reading are no longer part of the definition. They are kept here as the record of a tested reading, which saturates
+at the neuron level (E208). The definition is the sentence of section (a).*
+
 - **r_u = 1 − mean_v d(f_u^F(v), f_u^M(v))**: clause 4 scored as Def. 41 on the one-part model (similarity 1 − d,
   statistic a mean, interventions the settings v ∈ 𝒱_u). A part M lacks: r_u = 0.
 - **KL(F ‖ F_K) ≤ (1 − τ) · KL(F ‖ M) on D**: clause 5's "keeps the behaviour", unchanged.
