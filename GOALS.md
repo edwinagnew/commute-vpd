@@ -32,11 +32,14 @@ live in `decisions.md`, and what has been tried lives in `experiments/TRIED.md`.
   against a δW = 0 warm-start control and the cross-seed baseline.
 - **If no simple Φ works.** Is that because post-training teaches new capabilities rather than strengthening
   existing ones, or because parameter decompositions are too brittle?
-- **Working definition of reuse (user, 2026-11-18).** The held-model wording of causal-rule retention, a cross-model
-  interchange: the change from M to F is reuse to the degree that it survives when every unit of F is interchanged
-  for M's matching unit held to its rule; the per-site linear map is the main reading. Full statement and caveats in
-  `decisions.md` (row of 2026-11-18). It supersedes the second wording ("reuse at a variable", tentatively adopted
-  2026-11-10), which is kept only as a record.
+- **Working definition of reuse (user, 2026-11-18, revised the same day).** A fine-tune F reuses the original M,
+  for a behaviour at a declared level, to the extent that the parts F needs for that behaviour still compute what
+  M's parts compute when given the same inputs: ρ is the mean rule retention of a smallest set of parts that keeps
+  the behaviour, and a part with no counterpart in M has retention 0. Full statement in the research log's overview
+  box "The working definition" and `decisions.md` (row "Working definition of reuse, revised", 2026-11-18). The
+  held-model survival S (every unit of F given M's rule at once, up to a fitted map) is one cheap reading of it, not
+  the definition; its numbers stand as readings. It supersedes the held-model wording (adopted earlier on
+  2026-11-18) and the second wording ("reuse at a variable", tentatively adopted 2026-11-10), kept only as records.
 - **Canonical update:** LoRA, plus full-weight fine-tunes.
 - **Γ:** frozen for now (see `decisions.md`), although updating it may turn out to be essential.
 - **Optimiser (priority subgoal, user 2026-10-21):** compare SGD and Adam on the same tasks, both as the
