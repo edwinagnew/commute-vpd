@@ -1,7 +1,13 @@
 # What a "level" is: a decomposition of the network, not an alignment
 
+*2026-11-18: wording fixes from the review (`reports/reviews/2026-11-18_review_definition-causal-abstraction.md`,
+defects D5 and D7 to D9); content unchanged. Its content repairs wait on the user in the card
+`reports/decisions/2026-11-18_decision_definition-repairs.md`.*
+
 *2026-11-18, top-level chat session with the user, for definition-lead and writeup-lead. Nothing was run. "Def. n" is
-Geiger et al. 2025 (arXiv 2301.04709), read from `~/commute-data/lit_review_pdfs/survey/2301.04709/paper.txt`.*
+Geiger et al. 2025 (arXiv 2301.04709) in the JMLR numbering, read from
+`~/commute-data/lit_review_pdfs/survey/2301.04709/paper.txt`; the arXiv HTML numbers differ, and its Def. 41 is
+Value Merge.*
 
 **Status.** Part A is adopted by the user (2026-11-18, chat: "yep that sounds good"). Part B holds two tentative
 recommendations the user has NOT decided ("im not sure about your epsilon and section 5 recomendations"); write them
@@ -9,13 +15,14 @@ as open options, not as the definition. The sentence of the working definition d
 changes: this note only replaces the formal statement of "level".
 
 **Amended later on 2026-11-18 (user, chat to writeup-lead; `decisions.md` row "A refinement ... may be approximate").**
-- **Exactness.** A refinement may be approximate. N is an exact (Def. 33) or approximate (Def. 41) abstraction of Ñ,
-  and ε (accuracy, KL on outputs) is kept and reported beside every reading. The remainder part is optional: with it
+- **Exactness.** A refinement may be approximate. N is an exact abstraction of Ñ (Constructive Abstraction, Def. 33)
+  or an approximate one (Approximate Transformation, Def. 41, under the alignment's maps τ^π and ω^π), and ε (the
+  error, KL on outputs) is kept and reported beside every reading. The remainder part is optional: with it
   the merge is exact (ε = 0); without it the method is read as approximate (ε > 0). Part A below is edited to match,
   and Part B item 1 is closed.
 - **§5.** Part B item 2 is decided as (a) (`decisions.md` row "Paper §5 frames re-gating as a method scored against
   the working definition", 2026-11-18).
-- **Name.** The paper says "refinement" for what this note calls a decomposition, and "refined model" for Ñ.
+- **Name.** Our paper says "refinement" (our word; Geiger has none) for what this note calls a decomposition, and "refined model" for Ñ.
   "Decomposition" stays the name for VPD and the other methods. This note and the log may keep "level" or
   "decomposition".
 - **Still open.** Where the hybrids are compared when ε_F > 0 (end of Part A). Also the decision card
@@ -35,8 +42,9 @@ mechanisms can be slotted in as the abstraction on which reuse is defined.
 **Decomposition** (the name is tentative, see the end; existing text says "level"). A decomposition assigns to each
 network N of the architecture a causal model Ñ (Def. 5), on one signature shared by all networks of the architecture,
 with variables input, parts U and output, such that N is an abstraction of Ñ under an alignment that is the identity
-on input and output: exact constructive abstraction (Def. 33) or approximate abstraction (Def. 41) with accuracy ε,
-measured as KL on outputs. ε is reported beside every reading. In words: Ñ is a finer description of N, and merging
+on input and output: constructive abstraction (Def. 33), or an approximate transformation (Def. 41) under the
+alignment's maps τ^π and ω^π with error ε, measured as KL on outputs. ε is reported beside every reading. In words: Ñ
+is a finer description of N, or for unit partitions N with its units grouped, and merging
 its parts back gives N exactly or up to ε. A lossy featuriser may add a **remainder** part, which makes the merge
 exact (ε = 0); without one it is read as an approximate refinement (ε > 0). (Amended 2026-11-18; first adopted
 exact-only.)
@@ -50,13 +58,18 @@ low-level one.
 
 Cases:
 
-- **Units (neurons, heads, MLP layers, blocks).** Ñ = N, parts are a partition of its units. Every reading so far
+- **Units (neurons, heads, MLP layers, blocks).** Ñ is N with its units grouped into parts, a variable merge (Def. 37);
+  the two are inter-translatable, so the merge is exact. Every reading so far
   (E195, E196, E208) and all four levels of P1.31 are this case, unchanged.
 - **Rotations (PCA, DAS).** Ñ is the rotated network; the merge is invertible. Geiger's bijective translation is this
   special case.
 - **SAE.** At a site with activation h, the parts are the latents f = enc(h) and the remainder e = h − dec(f). The
-  merge is h = dec(f) + e, exact, with no bijection needed. Transcoders and cross-layer transcoders take the same form
-  with the latents read from the layer's input.
+  merge is h = dec(f) + e, exact, with no bijection needed.
+- **Transcoders and cross-layer transcoders.** The same form, with the latents read from the MLP's input, but they read
+  differently: M's transcoder applied to F has the same encoder, so each latent keeps M's rule by construction. Every
+  change to the MLP's own weights lands in the remainder, and only changes upstream of the MLP are charged to latents.
+- **Not a case: attribution graphs** (Ameisen et al. 2025). The local replacement model freezes attention patterns and
+  error terms per prompt; a part then has no rule to compare on other inputs, so they serve only as a per-input reading.
 - **VPD.** For W = Σ_c u_c v_cᵀ + Δ, the parts are the component activations a_c = v_cᵀx and the remainder e = Δx. The
   merge is Wx = Σ_c u_c a_c + e. A rank-one weight component is thus a variable with a mechanism (v_c) and a write
   direction (u_c): no separate "weight version" of the definition is needed.
@@ -79,8 +92,13 @@ decomposition on two networks remain ours, not Geiger's.
 the parts F needs still compute what M's parts compute on the same inputs. The user's phrasing of the same thing: for
 a given abstraction of the network, reuse is the extent to which M's mechanisms can be interchanged into F.
 
-**Guard, as before.** The decomposition is declared or fitted on M only, never on F or to raise the reading (Sutter et
-al. 2025).
+**Guard, as before.** The decomposition is declared or fitted on M only, never on F or to raise the reading, by analogy
+with Sutter et al. 2025, whose theorem concerns aligning an algorithm to a network rather than one decomposition read
+on two networks.
+
+**Declared with every reading** (restored from the earlier rows; no values set here): the distance d, the threshold τ
+for keeping the behaviour, the value sets 𝒱_u of each part's inputs, the aggregation over K, and the rule when K is not
+unique. Each is declared per reading, as in the earlier rows.
 
 **For the paper's paragraph on dependence on the abstraction.** The two extremes hold: the whole hidden computation as
 one part reads every new behaviour as new; the neuron case reads nearly everything as reuse (E208). Decompositions are

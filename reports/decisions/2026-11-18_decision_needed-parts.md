@@ -38,6 +38,13 @@ machinery does the new behaviour run through?" (the log box already says so).
   **Your answer (2026-11-18): if every part counts, an unneeded part is replaced by its mean over the behaviour's
   inputs.** (The other option was its value on another input, a resample.)
 
+**What the literature does (added 2026-11-18, from the review
+`reports/reviews/2026-11-18_review_definition-causal-abstraction.md`, §4 Q1).** Circuit analysis counts every part
+the behaviour runs through: sub-circuit analysis (Geiger et al. 2025, §3.5.2) sets everything outside a circuit to
+declared values and asks whether the circuit still produces the behaviour. That is option (b). Your replacement rule,
+the mean over the behaviour's inputs, is standard mean ablation (Wang et al. 2023); resampling (Chan et al. 2022) is
+the other standard. This is context, not a recommendation: the main question stays yours.
+
 **A second, smaller question (you said "I don't know"; you may hand it back to the lead).** When we test whether a
 part of F still follows M's rule, we feed the part an input and compare its output with M's version of that part.
 Which input do we feed it? Take the example above.
@@ -53,6 +60,13 @@ Under B, any reuse that runs an old circuit on a new cue reads as new, because M
 Under A, it can read as reuse. **Lead's recommendation: A**, because only A can tell "same machinery, new cue" from
 "new machinery". Both are reported either way; the choice sets which one the pass rule uses. It matters only if the
 main answer is (b).
+
+**What the review adds to the second question (2026-11-18; review §3 D6 and §4 Q2).** The decided wording already
+says "given the same input values, the part's mechanism in F gives the same output as its mechanism in M". That
+compares two mechanisms on the same inputs, which is A, the standard reading of "same mechanism" in causal models.
+B compares the values a part takes in two runs, as activation patching does, so choosing B would change decided
+wording. What is really open is whose input values the comparison uses: those that occur in F's runs, those in M's
+runs, or both pooled. The review suggests pooled, since the standard is the values that occur on the data.
 
 **What happens next.** Cell P1.31 (2 runs, due 2026-11-20) is held, and predictions are filed only after your answer.
 Under (a), run 1 runs as planned and run 2 most likely does not. Under (b), the plan gains the part-removal step with

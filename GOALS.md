@@ -35,15 +35,18 @@ live in `decisions.md`, and what has been tried lives in `experiments/TRIED.md`.
 - **Working definition of reuse (user, 2026-11-18, revised the same day).** A fine-tune F reuses the original M,
   for a behaviour at a declared level, to the extent that the parts F needs for that behaviour still compute what
   M's parts compute when given the same inputs. Stated in causal-abstraction terms (Geiger et al. 2025; user,
-  2026-11-18). A level, called a "refinement" in the paper, is a declared finer causal model of each network whose
-  parts are, for example, neurons, heads, blocks, SAE latents or VPD components. The network is an exact (Def. 33) or
-  approximate (Def. 41) abstraction of it, and the accuracy ε (KL on outputs) is reported beside every reading. An
+  2026-11-18). A level, called a "refinement" in our paper (our word, not Geiger's), is a declared causal model of each
+  network, finer or, for unit partitions, the network with its units grouped (a variable merge, Def. 37), whose parts
+  are, for example, neurons, heads, blocks, SAE latents or VPD components. The network is an exact (Constructive
+  Abstraction, Def. 33 in the JMLR numbering) or approximate (Approximate Transformation, Def. 41, under the
+  alignment's maps) abstraction of it, and the error ε (KL on outputs) is reported beside every reading. An
   optional remainder part makes a lossy featuriser exact. The same refinement, declared or fitted on M only, is read
   on M and F, so a part is the same variable in both. A part's rule is its mechanism there. F_K is F with M's
   mechanisms swapped into every part outside K (`theory/2026-11-18_level-as-decomposition.md`; `decisions.md` rows "A
   level is a decomposition, not an alignment" and "A refinement ... may be approximate", 2026-11-18). Open:
   - which parts count as needed, and which input a part sees when its rule is compared (log card "needed parts");
-  - where the hybrids are compared when ε_F > 0.
+  - where the hybrids are compared when ε_F > 0;
+  - four repairs from the 2026-11-18 review of the definition (log card "definition repairs").
 
   Consolidated on one page: `theory/2026-11-18_definition_consolidated.md`. ρ (the mean rule retention of a smallest sufficient set) is no longer part of the definition (user,
   2026-11-18 morning): at the neuron level it is a tested reading that saturates (E208: 0.999 or more on every

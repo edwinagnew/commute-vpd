@@ -8,6 +8,13 @@
 - (a) Compare inside the refined models: run the keep-test against F̃ and take differences between F̃ and M̃. The definition is total. Raised and recommended by the writeup-lead (its small ask 1).
 - (b) Compare against F itself and report ε_F beside the reading. The test uses the real fine-tune, but where the approximation is poor the reading may be undefined, and ε_F is the only warning.
 
+**What the literature does (added 2026-11-18, from the review
+`reports/reviews/2026-11-18_review_definition-causal-abstraction.md`, §4 Q3 and defect D4).** The standard in
+replacement-model circuit work is to test a circuit inside the replacement model with its error nodes kept, so the
+model is exact (Marks et al. 2024; Ameisen et al. 2025), or to normalise against the replacement model. Both amount
+to option (a). The review's defect D4 adds that the definition is not total without this choice: when the refined
+model of F does not keep the behaviour, no set of parts can, so no reading exists under (b).
+
 **Recommendation.** (a).
 
 **Owner.** Raised by the writeup-lead; it is part 1's definition, so the definition-lead owns it. Urgency: no rush, nothing runs on it.
