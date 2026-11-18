@@ -5,7 +5,8 @@ Second run (run2.py, results/run2/stage3.json): Table scaled down, band Always o
 (6 against 3).
 
 Usage (repo root):  ~/commute-agents/fleet/cpu-run --mem 2G python experiments/share_size_matched/plot.py [MODE]
-MODE: result (E204, default), sketch (E204's planned figure), run2, sketch2 (the second run's planned figure, made-up shares).
+MODE: result (E204, default), sketch (E204's planned figure), run2, sketch2 (the second run's planned figure, made-up shares),
+scans (both runs' stage-2 scans: gain against how much of its built behaviour each scaled edit keeps).
 """
 
 from __future__ import annotations
@@ -88,9 +89,44 @@ def result(run: str) -> None:
             n="3 seeds per group; each state read on its own edit's windows where the edit raises its top token by 1 log-odds or more")
 
 
+def scans() -> None:
+    """Both runs' stage-2 scans, no fine-tune: each edit's gain on its kept windows against how much of its built behaviour
+    it keeps. Left, E204's Always on scaled up by alpha: the share of windows whose target is the one most common token
+    (low = still a push that re-weights many tokens). Right, E207's Table scaled down by beta: the share of targets that are
+    the Table answer (high = still the lookup)."""
+    up = json.loads((HERE / "results" / "stage2.json").read_text())["scan"]
+    down = json.loads((HERE / "results" / "run2" / "stage2.json").read_text())["scan"]
+    table_gain, always_gain = down[0]["F_gain_mean"], up[0]["F_gain_mean"]  # beta 1 and alpha 1: the edits as built
+    fig, axes = FG.figure(FG.FULL_WIDTH, ncols=2)
+    sides = ((axes[0], up, "alpha", "top_target_share", "#0072B2", "Always on scaled up (point labels: alpha)",
+              "share of windows whose target is the one\nmost common token (low = still re-weighting)", "filed saturation bar 0.5"),
+             (axes[1], down, "beta", "answer_share", "#D55E00", "Table scaled down (point labels: beta)",
+              "share of targets that are the Table answer\n(high = still the lookup)", "filed kind bar 0.5"))
+    for ax, scan, knob, key, colour, title, ylabel, bar in sides:
+        xs, ys = [p["F_gain_mean"] for p in scan], [p[key] for p in scan]
+        ax.plot(xs, ys, color=colour, marker="o", markersize=4, linewidth=1)
+        for p in scan:
+            ax.annotate(f"{p[knob]:g}", (p["F_gain_mean"], p[key]), xytext=(3, -9), textcoords="offset points", fontsize=6)
+        ax.axhline(0.5, color="#777777", linewidth=0.8, linestyle=":", label=bar)
+        FG.reference(ax, always_gain, "Always on's gain")
+        FG.reference(ax, table_gain, "Table's gain")
+        ax.set_xscale("log")
+        ax.set_xticks([2, 5, 10, 20], ["2", "5", "10", "20"])
+        ax.set_ylim(0, 1)
+        ax.set_xlabel("edit's mean gain on its kept windows\n(log-odds, log scale)", fontsize=8)
+        ax.set_ylabel(ylabel, fontsize=8)
+        ax.set_title(title, fontsize=8, pad=14)
+        ax.legend(fontsize=6, loc="upper left")
+    fig.suptitle("Does each hand-made edit keep its built kind when scaled to the other's size?", fontsize=9)
+    data = [{"run": "E204", "scale": p["alpha"], "gain": p["F_gain_mean"], "top_target_share": p["top_target_share"]} for p in up]
+    data += [{"run": "E207", "scale": p["beta"], "gain": p["F_gain_mean"], "answer_share": p["answer_share"]} for p in down]
+    FG.save(fig, HERE / "figures" / "scans.png", data=data,
+            n="edits only, no fine-tune; each point is one scale, read on 1620 to 2048 held-out windows kept by E202's rule")
+
+
 def main(mode: str = "result") -> None:
     {"result": lambda: result("E204"), "sketch": lambda: sketch("E204"),
-     "run2": lambda: result("run2"), "sketch2": lambda: sketch("run2")}[mode]()
+     "run2": lambda: result("run2"), "sketch2": lambda: sketch("run2"), "scans": scans}[mode]()
 
 
 if __name__ == "__main__":
