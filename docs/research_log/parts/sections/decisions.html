@@ -1,8 +1,20 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
-<div class="prose"><p><strong>Waiting on you, 2026-11-18.</strong> Three cards are open, all the definition-lead's. The first: whether a small new trigger in front of an old, unchanged circuit counts as reuse; the known-answer test (cell P1.31 in section {{n:next}}) waits on it. The second, small: where to compare when a featurized model only approximately fits the fine-tune. The third: two repairs still open (of four a review found the definition needs before the paper states it formally; your one fixed featurizer settled the other two); no reading changes.</p>
+<div class="prose"><p><strong>Waiting on you, 2026-11-18.</strong> Four cards are open. The first is a finding with no choice in it: the crosscoder baseline did not meet its filed expectation (compare-lead, P2.31). The other three are the definition-lead's. The first of those: whether a small new trigger in front of an old, unchanged circuit counts as reuse; the known-answer test (cell P1.31 in section {{n:next}}) waits on it. The second, small: where to compare when a featurized model only approximately fits the fine-tune. The third: two repairs still open (of four a review found the definition needs before the paper states it formally; your one fixed featurizer settled the other two); no reading changes.</p>
 <p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
+<div class="card decision" id="decision-p2-31-crosscoder-miss"><span class="chip uninf urgency">No rush</span>
+<div class="k">Question for you · compare-lead · new 2026-11-18</div>
+<h3>Crosscoder baseline misses the filed expectation (P2.31, E203)</h3>
+<p>Nothing runs on this: the cell is filled, both of its runs are used, and no run waits on the answer. This is a finding, with no option to choose between and no recommendation.</p>
+<ul>
+<li><strong>What was filed.</strong> The crosscoder (Minder et al. 2025, by the authors' code) reads, for each fine-tune, the share of its activation change carried by latents both models share, minus the share carried by latents only the fine-tune has. Predictions P1 (as built) and P2 (size-matched) filed that the side built to reuse reads higher on at least 7 of the 9 built pairs.</li>
+<li><strong>What came out.</strong> The reuse side read higher on 5 of 9 as built and 4 of 9 size-matched by the authors' rule, and on 6 and 6 when the latents latent scaling rejects as fine-tune-only are counted as fine-tune-only. So P1 and P2 are not met in either form. There is one crosscoder per side; a second crosscoder on the same fine-tune moved the reading by 0.047 (0.054 for the second form). The largest gap points the wrong way (copy against the prior-matched cipher, minus 0.34 as built).</li>
+<li><strong>The controls.</strong> The planted-change control missed: the planted direction was found, but latent scaling scored it 0.244 against the filed 0.2, and the fine-tune-specific part read 0 where at least 0.5 was required. A random weight change of the reuse side's size read 0.547, more shared than either side of the first pair.</li>
+</ul>
+<p><strong>The premise check's question</strong> (no recommendation): given the planted-control and random-update readings, what does this crosscoder row allow the part 2 paragraph to say about the share?</p>
+<div class="links"><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-18_analysis_p2-31-crosscoder.md">report</a> <a href="https://github.com/edwinagnew/commute-vpd/blob/main/experiments/crosscoder/figures/scorecard_crosscoder.png">scorecard figure</a></div>
+</div>
 <div class="card decision" id="decision-needed-parts"><span class="chip refuted urgency">Blocking</span>
 <div class="k">Question for you · definition-lead · new 2026-11-18</div>
 <h3>Should a fine-tune that adds a small new trigger in front of an old, unchanged circuit count as reuse?</h3>
