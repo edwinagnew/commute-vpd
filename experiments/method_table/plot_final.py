@@ -104,7 +104,7 @@ def e141_rank(out: Cells) -> None:
         side = lambda key, p=p: ([v[key] for v in p["reuse"].values()], [v[key] for v in p["new"].values()])
         put(out, pair, "erank", side("erank"), f"{SVD} .pairs.{pair}.<side>[<state>].erank", filed=p["score"]["erank"]["separates"])
         if (pair, "size") not in out:  # fills a hole only: a different norm from the scorecard's summed one
-            put(out, pair, "size", side("norm2"), f"{SVD} .pairs.{pair}.<side>[<state>].norm2", form="root of summed squared matrix norms")
+            put(out, pair, "size", side("norm2"), f"{SVD} .pairs.{pair}.<side>[<state>].norm2", form="summed squared matrix norms (not rooted)")
 
 
 def e140_twins(out: Cells) -> None:
