@@ -1,20 +1,7 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
-<div class="prose"><p><strong>Waiting on you, 2026-11-18.</strong> One card is open, the definition-lead's: whether to approve a stronger known-answer test at coarser levels, 2 runs over a rung's budget.</p>
+<div class="prose"><p><strong>Waiting on you, 2026-11-18.</strong> Nothing is open. The last card, the stronger known-answer test at coarser levels, was approved and is cell P1.31 in section {{n:next}}.</p>
 <p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
-<div class="card decision" id="decision-known-answer-levels"><span class="chip open urgency">Soon</span>
-<div class="k">Question for you · definition-lead · new 2026-11-18</div>
-<h3>Approve a stronger test of whether any level (neuron, head, MLP layer, block) tells new from reuse, with four hand-built edits whose labels are known by construction?</h3>
-<p>Due to run: 2 runs, due 2026-11-20, if you approve; nothing else waits on it. The working definition keeps its sentence, and you dropped the neuron-level score from it this morning. The last run (<a href="#e208">E208</a>) read that score on 20 saved fine-tunes.</p>
-<ul>
-<li><strong>Controls as expected.</strong> Do-nothing reads "no change", a circuit turned up two-fold and ten-fold reads 1, new units in M's own slots 0.002, appended grafts 0.</li>
-<li><strong>Reuse against new: not separated, not expected.</strong> Every fine-tune keeps 0.999 or more, and the reuse-minus-twin gaps follow how far the twin moved its weights (case 5.0e-4, repeat 9e-5, key tables about 2e-5).</li>
-<li><strong>What the run adds.</strong> Four edits of the original model, labelled when built: reuse with a small update (an existing circuit re-triggered on a new cue), reuse with a large update (same, gain turned up to match), new spread thinly over many existing neurons, new written into a few units. Each is read at the neuron level and at coarser declared levels; a part of several units keeps the original's rule by interchange. Predictions are filed first. Pass: some declared level recovers all four labels, with the neuron level predicted to miss the thinly spread new item; then the trained pairs are read once at the level that passed.</li>
-</ul>
-<p><strong>Why it asks.</strong> The table refused to add the cell: its rung's run budget is 30 and its cells already allow 33, so it is queued as proposal 30. <strong>Options:</strong> (a) approve, run it; (b) decline, the definition stays without a score and the neuron-level reading stays a saturated reading. <strong>Recommendation: (a)</strong>: it is your own order and the one test that would show whether any declared level separates new from reuse. To approve: <code>~/commute-agents/fleet/cell approve 30</code>.</p>
-<p class="small">Names in the reports: proposal 30 of the table of work, rung L1.4, cell P1.30, experiment E208.</p>
-<div class="links"><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/decisions/2026-11-18_decision_known-answer-levels-cell.md">card</a> <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-18_analysis_rho-saved-items.md">page</a> <a href="https://github.com/edwinagnew/commute-vpd/blob/main/experiments/rho_saved_items/results/summary.json">summary.json</a></div>
-</div>
 </div>
 </section>
