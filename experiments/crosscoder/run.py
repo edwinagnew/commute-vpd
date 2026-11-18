@@ -20,6 +20,7 @@ The normaliser and the latent-scaling tokens come from the first chunk.
   inputs i/n      (CPU) print the files a stage-2 shard reads, for the pod's upload
   0a, 0b          stage 0, the base against itself / a planted direction (separate pods allowed); snapshots scored
   t               step time at the run's size, fp32 then TF32 (300 steps each)
+  scorecheck      one snapshot score at full size on an untrained crosscoder: peak memory (the stage-0 OOM)
   1 KEY           one stage-1 crosscoder: reuse | new | random | reuse_seed1 (one per pod); snapshots scored
   1check          (CPU) stage 1's bars on the four files: writes stage1.json pass or stop
   2 i/n           every other state, then the size-matched states, shard i of n; each side gets the FVE and dead bars
@@ -299,7 +300,7 @@ class Job:
     def val_chunks(self, side: Side, h_task: Tensor) -> Iterator[Tensor]:
         for r in self.val.split(self.cfg.chunk_rows):
             yield self.pair(r, side, False)
-        yield from CC.split(h_task, 65536)  # whole, its ~1M tokens' latents were 96 GiB (E203 stage 0 OOM)
+        yield h_task
 
     def score(self, ae: Any, side: Side, h_ls: Tensor, h_task: Tensor, step: int, prev: dict[str, Any] | None) -> tuple[dict[str, Any], dict[str, Any]]:
         """Every number of one crosscoder at `step`: FVE, the groups at N and at the wide N, the parts, d, the specific
@@ -492,6 +493,24 @@ def stage2(job: Job, T: dict[str, Any], shard: tuple[int, int], t_job: float) ->
     write(path, out)
 
 
+def scorecheck(job: Job) -> None:
+    """One snapshot score at the run's sizes on an untrained crosscoder, on the planted side so its path runs too: the
+    path that ran out of memory twice in stage 0 (E203). Peak GPU memory; FVE in 4,096-token pieces against one piece."""
+    side = job.planted(job.P["settings"]["control_task"])
+    e, c, _, n_win = job.plan(side)[0]
+    h0 = job.chunk(side, e, c, n_win)
+    tr = CC.trainer(job.cfg, *CC.normaliser(h0), 0)
+    h_ls, h_task, small = h0[: job.cfg.ls_tokens].clone(), job.pair(job.windows(side.task, "score"), side, True), h0[:16384]
+    del h0
+    pieces, whole = CC.fve(tr.ae, [small]), CC.fve(tr.ae, [small], size=len(small))
+    rec, _ = job.score(tr.ae, side, h_ls, h_task, 0, None)
+    out = {"card": torch.cuda.get_device_name(), "peak_gb": torch.cuda.max_memory_allocated() / 2**30, "h_task_tokens": len(h_task),
+           "fve_pieces": [pieces["fve_base"], pieces["fve_ft"]], "fve_whole": [whole["fve_base"], whole["fve_ft"]],
+           "score_keys": sorted(rec)}  # fmt: skip
+    log(f"[scorecheck] {json.dumps(jsonable(out))}")
+    write(OUT["results"] / "scorecheck.json", out)
+
+
 def resumecheck() -> None:
     """Rehearsal: loss at matched steps of the resumed self run (stage0a.json) against an uninterrupted one
     (stage0a_A.json), beside the floor two uninterrupted runs give (A against stage0a_B.json). Pass when every
@@ -537,6 +556,8 @@ def run(a: argparse.Namespace, P: dict[str, Any], cfg: CC.Cfg, tag: str, t_job: 
         stage0b(job, T)
     elif a.stage == "t":
         timing(job, cfg)
+    elif a.stage == "scorecheck":
+        scorecheck(job)
     elif a.stage == "1":
         if a.arg not in STAGE1:
             raise SystemExit(f"stage 1 takes one of {STAGE1}")
@@ -549,7 +570,7 @@ def run(a: argparse.Namespace, P: dict[str, Any], cfg: CC.Cfg, tag: str, t_job: 
 
 def main() -> int:
     ap = argparse.ArgumentParser()
-    ap.add_argument("stage", choices=["prep", "inputs", "0a", "0b", "t", "1", "1check", "2", "resumecheck"])
+    ap.add_argument("stage", choices=["prep", "inputs", "0a", "0b", "t", "1", "1check", "2", "resumecheck", "scorecheck"])
     ap.add_argument("arg", nargs="?", default="0/1")  # a shard i/n, or stage 1's key
     ap.add_argument("--rehearse", action="store_true")
     ap.add_argument("--stop-after", type=int, default=None)

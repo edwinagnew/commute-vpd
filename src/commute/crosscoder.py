@@ -178,13 +178,14 @@ def raw(ae: AE) -> tuple[Tensor, Tensor]:
 
 
 @torch.no_grad()
-def fve(ae: AE, chunks: Iterable[Tensor]) -> dict[str, Any]:
-    """Per-model FVE (raw space), firing counts and mean L0 over raw (n, 2, d) chunks, the inference threshold on."""
+def fve(ae: AE, chunks: Iterable[Tensor], size: int = 4096) -> dict[str, Any]:
+    """Per-model FVE (raw space), firing counts and mean L0 over raw (n, 2, d) chunks, the inference threshold on;
+    encoded `size` tokens at a time, as `betas` and `carried` are (a 523k-token chunk's latents were 96 GiB, E203)."""
     err = torch.zeros(2, dtype=torch.float64, device="cuda")
     sxx = torch.zeros(2, dtype=torch.float64, device="cuda")
     sx = torch.zeros(2, ae.activation_dim, dtype=torch.float64, device="cuda")
     fired, n, l0 = torch.zeros(ae.dict_size, device="cuda"), 0, 0.0
-    for x in chunks:
+    for x in (x for c in chunks for x in split(c, size)):
         f = ae.encode(x)
         err += (x - ae.decode(f)).double().pow(2).sum((0, 2))
         sx += x.double().sum(0)
