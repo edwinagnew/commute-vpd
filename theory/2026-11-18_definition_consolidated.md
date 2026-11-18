@@ -44,7 +44,7 @@ for that behaviour still compute what M's parts compute when given the same inpu
   its similarity, the mean as its statistic, and the behaviour's inputs as its distribution (Remark 42). Lower is a
   better fit. It is kept and reported beside every reading.
 - **A part's rule.** A part's rule is its mechanism in Ñ.
-- **F_K.** F_K is F with M's mechanisms swapped into every part outside K. It is always a runnable model.
+- **F_K.** F_K is F after a soft intervention (Geiger Def. 10) that gives every part outside K its M rule (user 2026-11-18: call it a soft intervention from a trained model). It is always a runnable model.
 - **The parts F needs (K).** K is a smallest set of parts such that F_K keeps the behaviour.
 - **Declared with every reading** (restored from the earlier rows; no values are set here):
   - the distance d by which a part's outputs are compared: declared per reading, as in the earlier rows;

@@ -42,7 +42,7 @@ live in `decisions.md`, and what has been tried lives in `experiments/TRIED.md`.
   alignment's maps) abstraction of it, and the error ε (KL on outputs) is reported beside every reading. An
   optional remainder part makes a lossy featuriser exact. The same refinement, declared or fitted on M only, is read
   on M and F, so a part is the same variable in both. A part's rule is its mechanism there. F_K is F with M's
-  mechanisms swapped into every part outside K (`theory/2026-11-18_level-as-decomposition.md`; `decisions.md` rows "A
+  mechanisms put into every part outside K by a soft intervention (Def. 10) (`theory/2026-11-18_level-as-decomposition.md`; `decisions.md` rows "A
   level is a decomposition, not an alignment" and "A refinement ... may be approximate", 2026-11-18). Open:
   - which parts count as needed, and which input a part sees when its rule is compared (log card "needed parts");
   - where the hybrids are compared when ε_F > 0;
