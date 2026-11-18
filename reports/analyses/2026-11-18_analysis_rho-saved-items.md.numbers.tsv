@@ -1,0 +1,77 @@
+-0.0024	experiments/rho_saved_items/results/parts_summary.json	.repeat_real_s1.r_heads_in_K - .repeat_twin_s1.r_heads_in_K	this
+0.0007	experiments/rho_saved_items/results/parts_summary.json	.repeat_real_s0.r_heads_in_K - .repeat_twin_s0.r_heads_in_K	this
+0.0036	experiments/rho_saved_items/results/parts_summary.json	.ident32_s0.r_heads_in_K - .rand32_s0.r_heads_in_K	this
+0.0039	experiments/rho_saved_items/results/parts_summary.json	.ident32_s1.r_heads_in_K - .rand32_s1.r_heads_in_K	this
+0.0039	experiments/rho_saved_items/results/summary.json	[.R3|to_entries[]|select(.key|test("_s[01]$"))|.value.i_minus_main|fabs]|max	this
+0.0005	experiments/rho_saved_items/results/summary.json	[.R3|to_entries[]|select(.key|test("_s[01]$"))|.value.i_minus_main|fabs]|min	this
+0.011	experiments/rho_saved_items/results/summary.json	[.R3|to_entries[]|select(.key|test("_s[01]$"))|.value.b_minus_main|fabs]|min	this
+0.031	experiments/rho_saved_items/results/summary.json	[.R3|to_entries[]|select(.key|test("_s[01]$"))|.value.b_minus_main|fabs]|max	this
+-1.11	experiments/rho_saved_items/results/items/rebuilt.json	.replace.closure_none_kept	this
+0.0001	experiments/rho_saved_items/results/items/slotted.json	.replace.rho_i|add/length	this
+0.0001	experiments/rho_saved_items/results/summary.json	[.R3|to_entries[]|select(.key|test("_s[01]$"))|.value|(.rho_main_patch - .rho_main_replace)|fabs]|max|. * 1e4|ceil/1e4	this
+0.002	experiments/rho_saved_items/results/items/slotted.json	.replace.rho_main|add/length	this
+0.55	experiments/rho_saved_items/results/stage0_p0.json	[.x10.replace.orders[].rho_b]|min	this
+0.61	experiments/rho_saved_items/results/stage0_p0.json	[.x10.replace.orders[].rho_b]|max	this
+0.90	experiments/rho_saved_items/results/stage0_p0.json	[.x2.replace.orders[].rho_b]|min	this
+0.92	experiments/rho_saved_items/results/stage0_p0.json	[.x2.replace.orders[].rho_b]|max	this
+0.9	experiments/rho_saved_items/results/predictions.json	.thresholds.tau	this
+0.91	experiments/rho_saved_items/results/summary.json	.R3.rebuilt.rho_main_replace + .R3.rebuilt.b_minus_main	this
+0.97	experiments/rho_saved_items/results/summary.json	.R3.rebuilt.rho_main_replace + .R3.rebuilt.i_minus_main	this
+0.97	experiments/rule_retention_fixed/results/stage2.json	.readings.A.contrast.retention|add/length	earlier
+0.954	experiments/graft_sites/results/summary.json	.S.neurons["3"]	earlier
+0.976	experiments/rho_saved_items/results/parts_summary.json	[to_entries[]|select(.key|test("_s[01]$"))|.value.r_heads_in_K]|min	this
+0.995	experiments/rho_saved_items/results/parts_summary.json	[to_entries[]|select(.key|test("_s[01]$"))|.value.r_heads_in_K]|max	this
+0.995	experiments/rho_saved_items/results/summary.json	.R3.rebuilt.rho_main_replace	this
+0.995	experiments/rho_saved_items/results/summary.json	.R3.rebuilt.rho_main_patch	this
+0.994	experiments/rho_saved_items/results/summary.json	.R3.rebuilt.rho_main_restore	this
+0.999	experiments/rho_saved_items/results/summary.json	[.R3|to_entries[]|select(.key|test("_s[01]$"))|.value.rho_main_replace]|min	this
+0.9994	experiments/rho_saved_items/results/summary.json	[.R3|to_entries[]|select(.key|test("_s[01]$"))|.value.rho_main_replace]|min	this
+0.9994	experiments/rho_saved_items/results/parts_summary.json	[to_entries[]|select(.key|test("_s[01]$"))|.value.r_neurons_in_K]|min	this
+1.05	experiments/rule_retention_pairs/results/update_size.json	.items.cipher24_s1.mlp / .items.copy24_s1.mlp	earlier
+1.09	experiments/rule_retention_pairs/results/update_size.json	.items.cipher24_s0.mlp / .items.copy24_s0.mlp	earlier
+1.13	experiments/rule_retention_pairs/results/update_size.json	.items.rand32_s0.mlp / .items.ident32_s0.mlp	earlier
+1.13	experiments/rule_retention_pairs/results/update_size.json	.items.rand32_s1.mlp / .items.ident32_s1.mlp	earlier
+1.42	experiments/rule_retention_pairs/results/update_size.json	.items.repeat_twin_s0.mlp / .items.repeat_real_s0.mlp	earlier
+1.56	experiments/rule_retention_pairs/results/update_size.json	.items.repeat_twin_s1.mlp / .items.repeat_real_s1.mlp	earlier
+2.67	experiments/rule_retention_pairs/results/update_size.json	.items.case_twin_s0.mlp / .items.case_real_s0.mlp	earlier
+2.52	experiments/rule_retention_pairs/results/update_size.json	.items.case_twin_s1.mlp / .items.case_real_s1.mlp	earlier
+1.0e-4	experiments/rule_retention_pairs/results/summary.json	.counted["copy24/cipher24 s0"]["level A (filed)"].difference	earlier
+4.3e-5	experiments/rule_retention_pairs/results/summary.json	.counted["copy24/cipher24 s1"]["level A (filed)"].difference	earlier
+1.1e-4	experiments/rule_retention_pairs/results/summary.json	.counted["ident32/rand32 s0"]["level A (filed)"].difference	earlier
+1.2e-4	experiments/rule_retention_pairs/results/summary.json	.counted["ident32/rand32 s1"]["level A (filed)"].difference	earlier
+6.7e-4	experiments/rule_retention_pairs/results/summary.json	.counted["repeat_real/repeat_twin s0"]["level A (filed)"].difference	earlier
+7.6e-4	experiments/rule_retention_pairs/results/summary.json	.counted["repeat_real/repeat_twin s1"]["level A (filed)"].difference	earlier
+2.8e-3	experiments/rule_retention_pairs/results/summary.json	.counted["case_real/case_twin s0"]["level A (filed)"].difference	earlier
+2.4e-3	experiments/rule_retention_pairs/results/summary.json	.counted["case_real/case_twin s1"]["level A (filed)"].difference	earlier
+1.4e-5	experiments/rho_saved_items/results/summary.json	.R1.s0.gaps.copy24	this
+7.1e-6	experiments/rho_saved_items/results/summary.json	.R1.s1.gaps.copy24	this
+1.9e-5	experiments/rho_saved_items/results/summary.json	.R1.s0.gaps.ident32	this
+2.1e-5	experiments/rho_saved_items/results/summary.json	.R1.s1.gaps.ident32	this
+8.5e-5	experiments/rho_saved_items/results/summary.json	.R1.s0.gaps.repeat	this
+9.5e-5	experiments/rho_saved_items/results/summary.json	.R1.s1.gaps.repeat	this
+5.0e-4	experiments/rho_saved_items/results/summary.json	.R1.s0.gaps.case	this
+4.3e-4	experiments/rho_saved_items/results/summary.json	.R1.s1.gaps.case	this
+6.5e-5	experiments/rho_saved_items/results/summary.json	.R1.s0.ident_minus_repeat|fabs	this
+7.4e-5	experiments/rho_saved_items/results/summary.json	.R1.s1.ident_minus_repeat|fabs	this
+1.3e-5	experiments/rho_saved_items/results/summary.json	.R1.s0.largest_order_sd	this
+1.5e-5	experiments/rho_saved_items/results/summary.json	.R1.s1.largest_order_sd	this
+1e-5	experiments/rho_saved_items/results/summary.json	[(.R3.twin_s0.rho_main_replace - .R3.fact_s0.rho_main_replace), (.R3.twin_s1.rho_main_replace - .R3.fact_s1.rho_main_replace)]|map(fabs)|max|. * 1e5|ceil/1e5	this
+3e-6	experiments/rho_saved_items/results/summary.json	[.R3[]|.iii_minus_main|fabs]|max|. * 1e6|ceil/1e6	this
+1.1e-4	experiments/rho_saved_items/results/summary.json	(.R3.ident32_s0.rho_main_replace + .R3.ident32_s0.i_minus_main) - (.R3.rand32_s0.rho_main_replace + .R3.rand32_s0.i_minus_main)	this
+1.3e-4	experiments/rho_saved_items/results/summary.json	(.R3.ident32_s1.rho_main_replace + .R3.ident32_s1.i_minus_main) - (.R3.rand32_s1.rho_main_replace + .R3.rand32_s1.i_minus_main)	this
+6.6e-4	experiments/rho_saved_items/results/summary.json	(.R3.repeat_real_s0.rho_main_replace + .R3.repeat_real_s0.i_minus_main) - (.R3.repeat_twin_s0.rho_main_replace + .R3.repeat_twin_s0.i_minus_main)	this
+7.4e-4	experiments/rho_saved_items/results/summary.json	(.R3.repeat_real_s1.rho_main_replace + .R3.repeat_real_s1.i_minus_main) - (.R3.repeat_twin_s1.rho_main_replace + .R3.repeat_twin_s1.i_minus_main)	this
+2.9e-3	experiments/rho_saved_items/results/summary.json	(.R3.case_real_s0.rho_main_replace + .R3.case_real_s0.i_minus_main) - (.R3.case_twin_s0.rho_main_replace + .R3.case_twin_s0.i_minus_main)	this
+2.5e-3	experiments/rho_saved_items/results/summary.json	(.R3.case_real_s1.rho_main_replace + .R3.case_real_s1.i_minus_main) - (.R3.case_twin_s1.rho_main_replace + .R3.case_twin_s1.i_minus_main)	this
+7.1e-6	experiments/rho_saved_items/results/summary.json	.R3.ident32_s0.rho_main_patch - .R3.rand32_s0.rho_main_patch	this
+5.8e-6	experiments/rho_saved_items/results/summary.json	.R3.ident32_s1.rho_main_patch - .R3.rand32_s1.rho_main_patch	this
+6.5e-5	experiments/rho_saved_items/results/summary.json	.R3.repeat_real_s0.rho_main_patch - .R3.repeat_twin_s0.rho_main_patch	this
+7.1e-5	experiments/rho_saved_items/results/summary.json	.R3.repeat_real_s1.rho_main_patch - .R3.repeat_twin_s1.rho_main_patch	this
+5.1e-4	experiments/rho_saved_items/results/summary.json	.R3.case_real_s0.rho_main_patch - .R3.case_twin_s0.rho_main_patch	this
+4.2e-4	experiments/rho_saved_items/results/summary.json	.R3.case_real_s1.rho_main_patch - .R3.case_twin_s1.rho_main_patch	this
+2.8e-3	experiments/rho_saved_items/results/summary.json	(.R3.ident32_s0.rho_main_replace + .R3.ident32_s0.b_minus_main) - (.R3.rand32_s0.rho_main_replace + .R3.rand32_s0.b_minus_main)	this
+2.8e-3	experiments/rho_saved_items/results/summary.json	(.R3.ident32_s1.rho_main_replace + .R3.ident32_s1.b_minus_main) - (.R3.rand32_s1.rho_main_replace + .R3.rand32_s1.b_minus_main)	this
+3.6e-3	experiments/rho_saved_items/results/summary.json	(.R3.repeat_real_s0.rho_main_replace + .R3.repeat_real_s0.b_minus_main) - (.R3.repeat_twin_s0.rho_main_replace + .R3.repeat_twin_s0.b_minus_main)	this
+3.9e-3	experiments/rho_saved_items/results/summary.json	(.R3.repeat_real_s1.rho_main_replace + .R3.repeat_real_s1.b_minus_main) - (.R3.repeat_twin_s1.rho_main_replace + .R3.repeat_twin_s1.b_minus_main)	this
+1.4e-2	experiments/rho_saved_items/results/summary.json	(.R3.case_real_s0.rho_main_replace + .R3.case_real_s0.b_minus_main) - (.R3.case_twin_s0.rho_main_replace + .R3.case_twin_s0.b_minus_main)	this
+1.3e-2	experiments/rho_saved_items/results/summary.json	(.R3.case_real_s1.rho_main_replace + .R3.case_real_s1.b_minus_main) - (.R3.case_twin_s1.rho_main_replace + .R3.case_twin_s1.b_minus_main)	this
