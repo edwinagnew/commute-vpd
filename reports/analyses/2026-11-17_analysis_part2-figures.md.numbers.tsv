@@ -1,0 +1,19 @@
+0.39	experiments/method_table/results/final.json	.cells[] | select(.pair=="e58_copy_prior_cipher" and .method=="share") | .gap	earlier
+0.69	experiments/method_table/results/final.json	.cells[] | select(.pair=="e62_copy_lookup" and .method=="share") | .gap	earlier
+0.10	experiments/size_matched/results/summary.json	.cells[] | select(.model=="67M" and .pair=="e54_own" and .reading=="share") | .matched_gap - .gap	earlier
+-0.090	experiments/method_table/results/final.json	.cells[] | select(.pair=="e125_repeat_label" and .method=="share") | .gap	earlier
+-0.018	experiments/method_table/results/final.json	.cells[] | select(.pair=="e123_case_label" and .method=="share") | .gap	earlier
+0.25	experiments/method_table/results/final.json	.cells[] | select(.pair=="e58_elicit_shuffle" and .method=="share") | .gap	earlier
+0.12	experiments/method_table/results/final.json	.cells[] | select(.pair=="e62_copy_lookup" and .method=="prior") | .gap	earlier
+3.96	experiments/method_table/results/final.json	.cells[] | select(.pair=="e58_rank1_96" and .method=="prior") | .gap	earlier
+-0.27	experiments/method_table/results/final.json	.cells[] | select(.pair=="open_pair_c3" and .method=="steering") | .gap	earlier
+0.59	experiments/method_table/results/final.json	.cells[] | select(.pair=="e58_copy_prior_cipher" and .method=="steering") | .gap	earlier
+-0.12	experiments/method_table/results/final.json	.cells[] | select(.pair=="e54_own" and .method=="steering") | .gap	earlier
+-0.92	experiments/size_matched/results/summary.json	.cells[] | select(.model=="67M" and .pair=="e54_own" and .reading=="steering") | .matched_gap	earlier
+-0.79	experiments/disagreeing_pairs2/results/stage2.json	.inputs.prior_gap	earlier
+0.32	experiments/disagreeing_pairs2/results/stage2.json	.score.steering.gap	earlier
+0.175	experiments/disagreeing_pairs2/results/stage2.json	.score.share.gap	earlier
+-0.51	experiments/method_table/results/final.json	.cells[] | select(.pair=="e123_case_label" and .method=="steering") | .gap	earlier
+-1.09	experiments/method_table/results/final.json	.cells[] | select(.pair=="e125_repeat_label" and .method=="steering") | .gap	earlier
+0.37	experiments/disagreeing_pairs2/results/stage2.json	.inputs.share[1] | min	earlier
+0.38	experiments/disagreeing_pairs2/results/stage2.json	.inputs.share[1] | max	earlier
