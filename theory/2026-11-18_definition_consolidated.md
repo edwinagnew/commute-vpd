@@ -3,8 +3,8 @@
 *2026-11-18, later: the definition sections below are restated in Geiger et al. 2025's vocabulary (user;
 `decisions.md` row "Featurized model replaces refinement"); content unchanged. What earlier text calls a level,
 decomposition or refinement is a **featurized model** Ñ_i of each network N_i; a part is a variable; a part's rule
-is its mechanism F_u (Def. 5); a part's inputs are its parents Pa(u) (Remark 6); the swap is the soft intervention
-(Def. 10) from the base model, I_K = {F_u^{(0)}}_{u∉K}; the hybrid F_K is the intervened model F̃_{I_K}; the behaviour is
+is its mechanism F̃_u (Def. 5); a part's inputs are its parents Pa(u) (Remark 6); the swap is the soft intervention
+(Def. 10) from the base model, I_K = {F̃_u^{(0)}}_{u∉K}; the hybrid F_K is the intervened model F̃_{I_K}; the behaviour is
 a behavior B (§3.5.2); the parts F needs are a minimal circuit for B (§3.5.2), with two stated departures. Def. 33 is
 no longer the requirement: N_i is an approximate transformation of Ñ_i (Def. 41), exact (Def. 25) when ε = 0. The
 "Clashes" section keeps the older words as a record. Asks 48-50 stay open.*
@@ -62,9 +62,10 @@ still have M's mechanisms, on the settings of their parents that occur.
 - **ε.** ε is the error of Def. 41 on each network: KL on outputs as its Sim, the mean as its statistic, and the
   behavior's inputs as its distribution P (Remark 42). Lower is a better fit. It is kept and reported beside every
   reading.
-- **Mechanism.** The mechanism F_u of variable u in Ñ (Def. 5), a function of its parents Pa(u) (Remark 6); F_u^{(0)} in
-  M̃ and F_u^{(1)} in F̃; superscript (0) is M, (1) is F.
-- **Soft intervention from the base model.** I_K = {F_u^{(0)}}_{u∉K} (Def. 10) gives every variable outside K its
+- **Mechanism.** F^{(i)} = {F^{(i)}_X} are the network's own mechanisms (Def. 5); F̃_u^{(i)} is the mechanism of
+  feature u in the featurized model; reuse compares F̃_u^{(0)} with F̃_u^{(1)}. The mechanism F̃_u of variable u in Ñ is
+  a function of its parents Pa(u) (Remark 6); F̃_u^{(0)} in M̃ and F̃_u^{(1)} in F̃; superscript (0) is M, (1) is F.
+- **Soft intervention from the base model.** I_K = {F̃_u^{(0)}}_{u∉K} (Def. 10) gives every variable outside K its
   base-model mechanism (user 2026-11-18: a soft intervention from a trained model). The intervened model F̃_{I_K}
   (Geiger writes M_I) is always runnable.
 - **Behavior.** A partial function B from inputs to outputs (§3.5.2): F's input-output map on the inputs where F's
@@ -81,7 +82,7 @@ still have M's mechanisms, on the settings of their parents that occur.
   - the aggregation over K: declared per reading, as in the earlier rows;
   - the rule when K is not unique, that is, when several smallest sets preserve B: declared per reading, as in the
     earlier rows.
-- **Reuse.** Reuse is how far the mechanisms of the variables in K agree with M's: F_u^{(1)}(v) = F_u^{(0)}(v) on the settings
+- **Reuse.** Reuse is how far the mechanisms of the variables in K agree with M's: F̃_u^{(1)}(v) = F̃_u^{(0)}(v) on the settings
   v of Pa(u) that occur in either model's solution (Def. 8) on the behavior's inputs.
 - **Readings, not the definition.**
   - ρ: the mean mechanism agreement over K. With single neurons as variables it saturates (E208: 0.999 or more on
