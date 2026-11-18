@@ -69,7 +69,7 @@ process do not get there; less code does.
 - **No copying between experiments.** Shared steps (fine-tune, component training, the split, evaluation) live in `src/commute/` and are
   called. Finished experiments' `run.py` stay as they ran; do not use them as templates. Aim for run scripts of
   ~300 lines and functions of under ~50 lines; split a function rather than add a branch to it, and a long script into
-  one file per run. A plan aims for ~10 KB, with apparatus detail in an appendix file. Meet a size aim by cutting or
+  one file per run. The main plan file aims for ~10 KB; the design and code check, spec tables and other apparatus detail go in its appendix file. Meet a size aim by cutting or
   splitting, never by squeezing formatting: a 200-line limit made a writer delete the blank lines between functions.
 - **Read the existing code critically.** It was written fast. Follow its interfaces, not its habits.
 - `make lint` (ruff + pyright) is clean on any file you touch, when it can run. If `~/commute-agents/fleet/cpu-run` says the worker is
@@ -92,7 +92,9 @@ process do not get there; less code does.
   (Codex is out of quota until ~2026-11-18). An independent check is for a headline claim only: one that goes into the
   write-up's answer paragraph.
 - **A cell's run count is the cap** (plan 2026-11-09). An amendment is a run; when the runs are spent the cell closes
-  with its reading as it stands, and a follow-up needs a new cell from the user. A filed rule's band is set from the control and
+  with its reading as it stands, and a follow-up needs a new cell from the user. The count is a tracking aid, not a
+  reason to avoid an informative run: when a run would settle the question, recommend it and ask for more runs in one
+  line (user, 2026-11-13, friction 780). A filed rule's band is set from the control and
   the null read in the same job's first stage, not guessed; a "no call" verdict is reported as what was read and does
   not open an amendment.
 
@@ -136,7 +138,9 @@ Write the hand-off into the relevant report or plan, not only the chat, so the n
 - No `sys.path` manipulation and no scripts at the repo root. Everything imports from the editable install (`uv sync`).
   Never name a module after a stdlib module.
 - Predictions are filed in `results/predictions.json` before running; the run refuses to start without it. Never
-  edit them after the run; add a dated report instead. A prediction fixes its measurement rule, thresholds, and
+  edit them after the run; add a dated report instead. A new `run.py` builds its config from the file's "settings"
+  with `commute.jobs.config_from_settings(Config, settings)`, not `Config(**settings)`: a note key ending `_source`
+  (`lr_source`) is dropped and any other unknown key stops the run naming it (friction 819). A prediction fixes its measurement rule, thresholds, and
   relative vs absolute; the plan states what each metric is blind to, its positive control, and its noise floor.
   Before filing, run each rule against its edge cases (an empty or one-element pool, a zero denominator, ties, a
   case no branch covers) and fix it then: E38 Amendments 2 and 3 each filed a rule that was degenerate or incomplete,
@@ -167,7 +171,7 @@ Write the hand-off into the relevant report or plan, not only the chat, so the n
   record job IDs; caches in `/ephemeral/$USER`) when it can start them now, and to RunPod (Vast after one failed round)
   if not started within 5 min. Longer runs go straight to a pod via remote-kernels: an H100 (or faster) for anything
   over ~20 min on a 4090 or that is memory-bound, a 4090 only for short light runs, several pods at once for
-  independent arms; pods `commute-<experiment>-<id>`. Large inputs on the cluster are not a reason to stay: uploads run
+  independent arms; pod labels `commute-E186-b`, `[A-Za-z0-9_-]`, ≤ 64 characters (fleet `roles/shell-notes.md` → Pods). Large inputs on the cluster are not a reason to stay: uploads run
   at ~10 MB/s (about 2 min a GB, root `CLAUDE.md`), so price the transfer before choosing the queue. A brief's "cluster
   only" holds only for a stated reason other than transfer time, and the user asking for speed overrides it. For the Qwen line only, not the other lines, for now (user, 2026-10-27):
   a longer run that fits an L40 may use the cluster's `normal` QoS when the queue is empty at submission.

@@ -22,6 +22,7 @@
    "filed_call": null,
    "replaces": "experiments/induction_cue/results/run.json [\"score\"][\"r_copy\"]; experiments/induction_cue/results/run.json [\"score\"][\"r_lookup\"]",
    "gap": 0.69063356969848,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "apart"
@@ -48,6 +49,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.05720827389776701,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -74,6 +76,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.15576145575174927,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -100,6 +103,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.27248615778332114,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -126,6 +130,7 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": 0.024030615905505412,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -152,6 +157,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.41249770841639744,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -174,6 +180,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.12044966708098759,
+   "gap_rule": "reuse mean - new mean",
    "call": "one value a side",
    "call_rule": "no spread to compare",
    "against_share": "one value a side"
@@ -200,6 +207,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.07525995333953298,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -226,6 +234,7 @@
    "filed_call": true,
    "replaces": "",
    "gap": 0.05797893994365069,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -252,6 +261,7 @@
    "filed_call": null,
    "replaces": "experiments/neuron_r/results/carrying.json .rows[<state>].k_half, states from experiments/neuron_r/results/predictions.json .rows.e62_copy_lookup",
    "gap": 0.0,
+   "gap_rule": "log10(new mean / reuse mean)",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -280,6 +290,7 @@
    "filed_call": null,
    "replaces": "experiments/regating_truth_table/results/table.json [\"runs\"][\"e46/ident32_s0\"][\"r\"][\"value\"]; experiments/regating_truth_table/results/table.json [\"runs\"][\"e46/ident32_s1\"][\"r\"][\"value\"]; experiments/regating_truth_table/results/table.json [\"runs\"][\"e46/ident32b_s0\"][\"r\"][\"value\"]; experiments/regating_truth_table/results/table.json [\"runs\"][\"e46/ident32b_s1\"][\"r\"][\"value\"]; experiments/regating_truth_table/results/table.json [\"runs\"][\"e46/rand32_s0\"][\"r\"][\"value\"]; experiments/regating_truth_table/results/table.json [\"runs\"][\"e46/rand32_s1\"][\"r\"][\"value\"]; experiments/regating_truth_table/results/table.json [\"runs\"][\"e46/rand32b_s0\"][\"r\"][\"value\"]; experiments/regating_truth_table/results/table.json [\"runs\"][\"e46/rand32b_s1\"][\"r\"][\"value\"]",
    "gap": 0.5128145594981999,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "apart"
@@ -308,6 +319,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.02623570908674719,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -336,6 +348,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.2581577037559817,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -364,6 +377,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.13245300976953328,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -392,6 +406,7 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": 0.004970859131726159,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -420,6 +435,7 @@
    "filed_call": "separates",
    "replaces": "experiments/baseline_neurons/results/baseline_neurons.json [\"b3\"][\"ident32_s0\"][\"S\"]; experiments/baseline_neurons/results/baseline_neurons.json [\"b3\"][\"ident32_s1\"][\"S\"]; experiments/baseline_neurons/results/baseline_neurons.json [\"b3\"][\"ident32b_s0\"][\"S\"]; experiments/baseline_neurons/results/baseline_neurons.json [\"b3\"][\"ident32b_s1\"][\"S\"]; experiments/baseline_neurons/results/baseline_neurons.json [\"b3\"][\"rand32_s0\"][\"S\"]; experiments/baseline_neurons/results/baseline_neurons.json [\"b3\"][\"rand32_s1\"][\"S\"]; experiments/baseline_neurons/results/baseline_neurons.json [\"b3\"][\"rand32b_s0\"][\"S\"]; experiments/baseline_neurons/results/baseline_neurons.json [\"b3\"][\"rand32b_s1\"][\"S\"]",
    "gap": 0.4703153290690413,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -444,6 +460,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 1.480106489785622,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -472,6 +489,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.18109084404311876,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -500,6 +518,7 @@
    "filed_call": true,
    "replaces": "",
    "gap": 0.02492440929236293,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -528,6 +547,7 @@
    "filed_call": null,
    "replaces": "experiments/neuron_r/results/carrying.json .rows[<state>].k_half, states from experiments/neuron_r/results/predictions.json .rows.e46_copy_random",
    "gap": 0.6989700043360189,
+   "gap_rule": "log10(new mean / reuse mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -554,6 +574,7 @@
    "filed_call": null,
    "replaces": "experiments/regating_truth_table/results/table.json [\"runs\"][\"e53/lowercase_s0\"][\"r\"][\"value\"]; experiments/regating_truth_table/results/table.json [\"runs\"][\"e53/lowercase_s1\"][\"r\"][\"value\"]; experiments/regating_truth_table/results/table.json [\"runs\"][\"e53/cipher_s0\"][\"r\"][\"value\"]; experiments/regating_truth_table/results/table.json [\"runs\"][\"e53/cipher_s1\"][\"r\"][\"value\"]; experiments/regating_truth_table/results/table.json [\"runs\"][\"e53/broad_cipher_s0\"][\"r\"][\"value\"]; experiments/regating_truth_table/results/table.json [\"runs\"][\"e53/broad_cipher_s1\"][\"r\"][\"value\"]",
    "gap": 0.6222346046760934,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "apart"
@@ -580,6 +601,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.08423959408588241,
+   "gap_rule": "reuse mean - new mean",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -606,6 +628,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.23585096639045888,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -632,6 +655,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.31843645589884295,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -658,6 +682,7 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": 0.02970839772256787,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -684,6 +709,7 @@
    "filed_call": "does not",
    "replaces": "experiments/regating_truth_table/results/table.json [\"runs\"][\"e53/lowercase_s0\"][\"S\"][\"value\"]; experiments/regating_truth_table/results/table.json [\"runs\"][\"e53/lowercase_s1\"][\"S\"][\"value\"]; experiments/regating_truth_table/results/table.json [\"runs\"][\"e53/cipher_s0\"][\"S\"][\"value\"]; experiments/regating_truth_table/results/table.json [\"runs\"][\"e53/cipher_s1\"][\"S\"][\"value\"]; experiments/regating_truth_table/results/table.json [\"runs\"][\"e53/broad_cipher_s0\"][\"S\"][\"value\"]; experiments/regating_truth_table/results/table.json [\"runs\"][\"e53/broad_cipher_s1\"][\"S\"][\"value\"]",
    "gap": -0.05295560423337109,
+   "gap_rule": "reuse mean - new mean",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -707,6 +733,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 1.6285329210348936,
+   "gap_rule": "reuse mean - new mean",
    "call": "one value a side",
    "call_rule": "no spread to compare",
    "against_share": "one value a side"
@@ -733,6 +760,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.09771603454414764,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -759,6 +787,7 @@
    "filed_call": false,
    "replaces": "",
    "gap": 0.011454460271427547,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -785,6 +814,7 @@
    "filed_call": null,
    "replaces": "experiments/neuron_r/results/carrying.json .rows[<state>].k_half, states from experiments/neuron_r/results/predictions.json .rows.e53_lowercase_cipher",
    "gap": 0.8450980400142568,
+   "gap_rule": "log10(new mean / reuse mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -815,6 +845,7 @@
    "filed_call": null,
    "replaces": "experiments/keydependent_patch/results/job1.json [\"states\"][\"elicit_s0\"][\"r\"]; experiments/keydependent_patch/results/job1.json [\"states\"][\"elicit_s1\"][\"r\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"elicit_s2\"][\"r\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"elicit_s3\"][\"r\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"elicit_s4\"][\"r\"]; experiments/keydependent_patch/results/job1.json [\"states\"][\"cipher_s0\"][\"r\"]; experiments/keydependent_patch/results/job1.json [\"states\"][\"cipher_s1\"][\"r\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"cipher_s2\"][\"r\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"cipher_s3\"][\"r\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"cipher_s4\"][\"r\"]",
    "gap": 0.5177363707796927,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "apart"
@@ -845,6 +876,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.07397148197975398,
+   "gap_rule": "reuse mean - new mean",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -875,6 +907,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.07031371788428575,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -905,6 +938,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.0653692643513556,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -935,6 +969,7 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": -0.03002205650075479,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -965,6 +1000,7 @@
    "filed_call": "separates",
    "replaces": "experiments/keydependent_patch/results/job1.json [\"states\"][\"elicit_s0\"][\"S\"]; experiments/keydependent_patch/results/job1.json [\"states\"][\"elicit_s1\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"elicit_s2\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"elicit_s3\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"elicit_s4\"][\"S\"]; experiments/keydependent_patch/results/job1.json [\"states\"][\"cipher_s0\"][\"S\"]; experiments/keydependent_patch/results/job1.json [\"states\"][\"cipher_s1\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"cipher_s2\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"cipher_s3\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"cipher_s4\"][\"S\"]",
    "gap": -0.23703281451765246,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -987,6 +1023,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 3.197310022858932,
+   "gap_rule": "reuse mean - new mean",
    "call": "one value a side",
    "call_rule": "no spread to compare",
    "against_share": "one value a side"
@@ -1017,6 +1054,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.0056176559804192805,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -1047,6 +1085,7 @@
    "filed_call": false,
    "replaces": "",
    "gap": -7.121457876131624e-05,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -1077,6 +1116,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.07918124604762482,
+   "gap_rule": "log10(new mean / reuse mean)",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -1104,6 +1144,7 @@
    "filed_call": null,
    "replaces": "experiments/keydependent_patch/results/job1.json [\"states\"][\"elicit_s0\"][\"r\"]; experiments/keydependent_patch/results/job1.json [\"states\"][\"elicit_s1\"][\"r\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"elicit_s2\"][\"r\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"elicit_s3\"][\"r\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"elicit_s4\"][\"r\"]; experiments/keydependent_patch/results/job1.json [\"states\"][\"cipher_own_s0\"][\"r\"]; experiments/keydependent_patch/results/job1.json [\"states\"][\"cipher_own_s1\"][\"r\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"cipher_own_s2\"][\"r\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"cipher_own_s3\"][\"r\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"cipher_own_s4\"][\"r\"]",
    "gap": 0.5095259946686532,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "apart"
@@ -1131,6 +1172,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.12590381940963932,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -1158,6 +1200,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.017156386417321423,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -1185,6 +1228,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.011661933239219269,
+   "gap_rule": "reuse mean - new mean",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -1212,6 +1256,7 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": -0.019264948414933276,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -1239,6 +1284,7 @@
    "filed_call": "separates",
    "replaces": "experiments/keydependent_patch/results/job1.json [\"states\"][\"elicit_s0\"][\"S\"]; experiments/keydependent_patch/results/job1.json [\"states\"][\"elicit_s1\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"elicit_s2\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"elicit_s3\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"elicit_s4\"][\"S\"]; experiments/keydependent_patch/results/job1.json [\"states\"][\"cipher_own_s0\"][\"S\"]; experiments/keydependent_patch/results/job1.json [\"states\"][\"cipher_own_s1\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"cipher_own_s2\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"cipher_own_s3\"][\"S\"]; experiments/keydependent_patch/results/job2.json [\"states\"][\"cipher_own_s4\"][\"S\"]",
    "gap": -0.11960999549542606,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -1261,6 +1307,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 3.197310022858932,
+   "gap_rule": "reuse mean - new mean",
    "call": "one value a side",
    "call_rule": "no spread to compare",
    "against_share": "one value a side"
@@ -1291,6 +1338,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.2781181130193794,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -1318,6 +1366,7 @@
    "filed_call": true,
    "replaces": "",
    "gap": 0.02648135354840158,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -1345,6 +1394,7 @@
    "filed_call": null,
    "replaces": "experiments/neuron_r/results/carrying.json .rows[<state>].k_half, states from experiments/neuron_r/results/predictions.json .rows.e54_own",
    "gap": 0.5228787452803376,
+   "gap_rule": "log10(new mean / reuse mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -1381,6 +1431,7 @@
    "filed_call": null,
    "replaces": "experiments/open_pair_instruments/results/run.json [\"columns\"][\"r\"][\"rank1\"]; experiments/open_pair_instruments/results/run.json [\"columns\"][\"r\"][\"cipher\"]",
    "gap": 0.6222933866046398,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "apart"
@@ -1417,6 +1468,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.05340511428208635,
+   "gap_rule": "reuse mean - new mean",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -1453,6 +1505,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -7.765048804131425e-05,
+   "gap_rule": "reuse mean - new mean",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -1489,6 +1542,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.01297247905834742,
+   "gap_rule": "reuse mean - new mean",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -1525,6 +1579,7 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": -0.03363693583280771,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -1561,6 +1616,7 @@
    "filed_call": "separates",
    "replaces": "experiments/open_pair_instruments/results/run.json [\"columns\"][\"S\"][\"rank1\"]; experiments/open_pair_instruments/results/run.json [\"columns\"][\"S\"][\"cipher\"]",
    "gap": -0.2652162287675534,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -1583,6 +1639,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 3.7237518672663383,
+   "gap_rule": "reuse mean - new mean",
    "call": "one value a side",
    "call_rule": "no spread to compare",
    "against_share": "one value a side"
@@ -1619,6 +1676,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.004849766659999667,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -1655,6 +1713,7 @@
    "filed_call": false,
    "replaces": "",
    "gap": -0.0016452016401643686,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -1691,6 +1750,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.5509074688805811,
+   "gap_rule": "log10(new mean / reuse mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -1727,6 +1787,7 @@
    "filed_call": null,
    "replaces": "experiments/open_pair_instruments/results/run.json [\"columns\"][\"r\"][\"copy\"]; experiments/open_pair_instruments/results/run.json [\"columns\"][\"r\"][\"cipher\"]",
    "gap": 0.6068633846732897,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "apart"
@@ -1763,6 +1824,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.046586013940894275,
+   "gap_rule": "reuse mean - new mean",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -1799,6 +1861,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.08253159742051641,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -1835,6 +1898,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.020965260231508465,
+   "gap_rule": "reuse mean - new mean",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -1871,6 +1935,7 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": -0.015810488299527005,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -1907,6 +1972,7 @@
    "filed_call": "separates",
    "replaces": "experiments/open_pair_instruments/results/run.json [\"columns\"][\"S\"][\"copy\"]; experiments/open_pair_instruments/results/run.json [\"columns\"][\"S\"][\"cipher\"]",
    "gap": 0.23758248686862737,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -1929,6 +1995,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 2.12411235306086,
+   "gap_rule": "reuse mean - new mean",
    "call": "one value a side",
    "call_rule": "no spread to compare",
    "against_share": "one value a side"
@@ -1965,6 +2032,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.0007726899236687395,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -2001,6 +2069,7 @@
    "filed_call": false,
    "replaces": "",
    "gap": 0.009073509780880331,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -2037,6 +2106,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.0,
+   "gap_rule": "log10(new mean / reuse mean)",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -2063,6 +2133,7 @@
    "filed_call": "separates",
    "replaces": "experiments/open_pair/results/amend3.json [\"reads\"][\"rank1@30\"][\"r\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"rank1_s1@30\"][\"r\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"rank1_s2@30\"][\"r\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"cipher_s0@30\"][\"r\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"cipher_s1@30\"][\"r\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"cipher_s2@30\"][\"r\"]",
    "gap": 0.5566000029340268,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "apart"
@@ -2089,6 +2160,7 @@
    "filed_call": "does not",
    "replaces": "",
    "gap": 0.01961165340336618,
+   "gap_rule": "reuse mean - new mean",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -2115,6 +2187,7 @@
    "filed_call": "does not",
    "replaces": "",
    "gap": -0.019050346015356823,
+   "gap_rule": "reuse mean - new mean",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -2141,6 +2214,7 @@
    "filed_call": "does not",
    "replaces": "",
    "gap": -0.029668499305471163,
+   "gap_rule": "reuse mean - new mean",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -2167,6 +2241,7 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": -0.019792721968066133,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -2193,6 +2268,7 @@
    "filed_call": "does not",
    "replaces": "experiments/open_pair/results/amend3.json [\"reads\"][\"rank1@30\"][\"S\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"rank1_s1@30\"][\"S\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"rank1_s2@30\"][\"S\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"cipher_s0@30\"][\"S\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"cipher_s1@30\"][\"S\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"cipher_s2@30\"][\"S\"]",
    "gap": 0.028393687839823073,
+   "gap_rule": "reuse mean - new mean",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -2215,6 +2291,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 3.961293021336528,
+   "gap_rule": "reuse mean - new mean",
    "call": "one value a side",
    "call_rule": "no spread to compare",
    "against_share": "one value a side"
@@ -2241,6 +2318,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.08235604459244446,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -2267,6 +2345,7 @@
    "filed_call": true,
    "replaces": "",
    "gap": 0.017953353720739418,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -2293,6 +2372,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.9030899869919435,
+   "gap_rule": "log10(new mean / reuse mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -2319,6 +2399,7 @@
    "filed_call": "separates",
    "replaces": "experiments/open_pair/results/amend3.json [\"reads\"][\"copy@30\"][\"r\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"copy_s1@30\"][\"r\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"copy_s2@30\"][\"r\"]; experiments/open_pair/results/amend6.json [\"reads\"][\"prior_cipher_s0@30\"][\"r\"]; experiments/open_pair/results/amend6.json [\"reads\"][\"prior_cipher_s1@30\"][\"r\"]; experiments/open_pair/results/amend6.json [\"reads\"][\"prior_cipher_s2@30\"][\"r\"]",
    "gap": 0.39269918047784075,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "apart"
@@ -2345,6 +2426,7 @@
    "filed_call": "separates",
    "replaces": "",
    "gap": -0.16171225975920325,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -2371,6 +2453,7 @@
    "filed_call": "separates",
    "replaces": "",
    "gap": -0.13336122628230695,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -2397,6 +2480,7 @@
    "filed_call": "does not",
    "replaces": "",
    "gap": -0.0475662338910145,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -2423,6 +2507,7 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": 0.014348596139166716,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -2449,6 +2534,7 @@
    "filed_call": "separates",
    "replaces": "experiments/open_pair/results/amend3.json [\"reads\"][\"copy@30\"][\"S\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"copy_s1@30\"][\"S\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"copy_s2@30\"][\"S\"]; experiments/open_pair/results/amend6.json [\"reads\"][\"prior_cipher_s0@30\"][\"S\"]; experiments/open_pair/results/amend6.json [\"reads\"][\"prior_cipher_s1@30\"][\"S\"]; experiments/open_pair/results/amend6.json [\"reads\"][\"prior_cipher_s2@30\"][\"S\"]",
    "gap": 0.5941281327249038,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -2471,6 +2557,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.20036933711180271,
+   "gap_rule": "reuse mean - new mean",
    "call": "one value a side",
    "call_rule": "no spread to compare",
    "against_share": "one value a side"
@@ -2497,6 +2584,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.09649675174017461,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -2523,6 +2611,7 @@
    "filed_call": true,
    "replaces": "",
    "gap": 0.06753877968147777,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -2549,6 +2638,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.8239087409443188,
+   "gap_rule": "log10(new mean / reuse mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -2575,6 +2665,7 @@
    "filed_call": "separates",
    "replaces": "experiments/open_pair/results/amend7.json [\"prior_beside_r\"][\"elicit\"][\"r30\"]; experiments/open_pair/results/amend7.json [\"prior_beside_r\"][\"shuffle\"][\"r30\"]",
    "gap": 0.25068112653008096,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "apart"
@@ -2601,6 +2692,7 @@
    "filed_call": "does not",
    "replaces": "",
    "gap": -0.08023296694566222,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -2627,6 +2719,7 @@
    "filed_call": "does not",
    "replaces": "",
    "gap": 0.02799148395336737,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -2653,6 +2746,7 @@
    "filed_call": "does not",
    "replaces": "",
    "gap": 0.02397288702673206,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -2679,6 +2773,7 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": -0.012860496952681726,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -2705,6 +2800,7 @@
    "filed_call": "does not",
    "replaces": "experiments/open_pair/results/amend3.json [\"reads\"][\"elicit@30\"][\"S\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"elicit_s1@30\"][\"S\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"elicit_s2@30\"][\"S\"]; experiments/open_pair/results/amend4.json [\"reads\"][\"shuffle_s0@30\"][\"S\"]",
    "gap": 0.042969218315852126,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -2727,6 +2823,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 2.1046784566230463,
+   "gap_rule": "reuse mean - new mean",
    "call": "one value a side",
    "call_rule": "no spread to compare",
    "against_share": "one value a side"
@@ -2751,6 +2848,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.04816345583485195,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "one value a side",
    "call_rule": "no spread to compare",
    "against_share": "one value a side"
@@ -2777,6 +2875,7 @@
    "filed_call": true,
    "replaces": "",
    "gap": 0.01655060153270493,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -2803,6 +2902,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.12493873660829992,
+   "gap_rule": "log10(new mean / reuse mean)",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -2829,6 +2929,7 @@
    "filed_call": "does not",
    "replaces": "experiments/share_untrained/results/stage1.json .states[<state>].trained",
    "gap": -0.03428987689681498,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "apart"
@@ -2855,6 +2956,7 @@
    "filed_call": "does not",
    "replaces": "experiments/share_untrained/results/stage1.json .states[<state>].svd",
    "gap": -0.009826550753212766,
+   "gap_rule": "reuse mean - new mean",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -2881,6 +2983,7 @@
    "filed_call": "does not",
    "replaces": "",
    "gap": -0.038180593065169854,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -2907,6 +3010,7 @@
    "filed_call": "does not",
    "replaces": "",
    "gap": -0.020109324070567647,
+   "gap_rule": "reuse mean - new mean",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -2933,6 +3037,7 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": -0.007003922960901842,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -2959,6 +3064,7 @@
    "filed_call": "does not",
    "replaces": "experiments/open_pair/results/amend7.json [\"reads\"][\"class_map_s0@30\"][\"S\"]; experiments/open_pair/results/amend7.json [\"reads\"][\"class_map_s1@30\"][\"S\"]; experiments/open_pair/results/amend7.json [\"reads\"][\"class_map_s2@30\"][\"S\"]; experiments/open_pair/results/amend7.json [\"reads\"][\"class_shuffled_s0@30\"][\"S\"]; experiments/open_pair/results/amend7.json [\"reads\"][\"class_shuffled_s1@30\"][\"S\"]; experiments/open_pair/results/amend7.json [\"reads\"][\"class_shuffled_s2@30\"][\"S\"]",
    "gap": -0.07358250772909347,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -2981,6 +3087,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.07183940544292344,
+   "gap_rule": "reuse mean - new mean",
    "call": "one value a side",
    "call_rule": "no spread to compare",
    "against_share": "one value a side"
@@ -3007,6 +3114,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.0015504130703783297,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -3033,6 +3141,7 @@
    "filed_call": true,
    "replaces": "",
    "gap": 0.0077641464538072405,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "opposite to the share"
@@ -3059,6 +3168,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.07918124604762482,
+   "gap_rule": "log10(new mean / reuse mean)",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -3085,6 +3195,7 @@
    "filed_call": "not apart",
    "replaces": "experiments/share_untrained/results/stage1.json .states[<state>].trained",
    "gap": -0.017879622127674327,
+   "gap_rule": "reuse mean - new mean",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -3109,6 +3220,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.042599458899181014,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "apart where the share is not"
@@ -3135,6 +3247,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.0045522728377882515,
+   "gap_rule": "reuse mean - new mean",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -3161,6 +3274,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.007671025346475013,
+   "gap_rule": "reuse mean - new mean",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -3187,6 +3301,7 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": -0.008224590394433863,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "apart where the share is not"
@@ -3213,6 +3328,7 @@
    "filed_call": "apart",
    "replaces": "",
    "gap": -0.5061434627945977,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "apart where the share is not"
@@ -3235,6 +3351,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.030115331077276153,
+   "gap_rule": "reuse mean - new mean",
    "call": "one value a side",
    "call_rule": "no spread to compare",
    "against_share": "one value a side"
@@ -3259,6 +3376,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.4467354336946022,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "apart where the share is not"
@@ -3283,6 +3401,7 @@
    "filed_call": true,
    "replaces": "",
    "gap": -0.0716167739894729,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "apart where the share is not"
@@ -3309,6 +3428,7 @@
    "filed_call": "not apart",
    "replaces": "experiments/share_untrained/results/stage1.json .states[<state>].trained",
    "gap": -0.09041168623771657,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "apart"
@@ -3333,6 +3453,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.0055384630331376805,
+   "gap_rule": "reuse mean - new mean",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -3359,6 +3480,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.14623260720678188,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -3385,6 +3507,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.19821360558092743,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -3411,6 +3534,7 @@
    "filed_call": "inert",
    "replaces": "",
    "gap": 0.009799448107832894,
+   "gap_rule": "reuse mean - new mean",
    "call": "no call",
    "call_rule": "seed ranges",
    "against_share": "no call"
@@ -3437,6 +3561,7 @@
    "filed_call": "apart",
    "replaces": "",
    "gap": -1.0868713913876684,
+   "gap_rule": "reuse mean - new mean",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -3459,6 +3584,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": 0.009447647158835615,
+   "gap_rule": "reuse mean - new mean",
    "call": "one value a side",
    "call_rule": "no spread to compare",
    "against_share": "one value a side"
@@ -3483,6 +3609,7 @@
    "filed_call": null,
    "replaces": "",
    "gap": -0.19789763291636617,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"
@@ -3507,6 +3634,7 @@
    "filed_call": true,
    "replaces": "",
    "gap": -0.048452447055964944,
+   "gap_rule": "log10(reuse mean / new mean)",
    "call": "apart",
    "call_rule": "seed ranges",
    "against_share": "same direction as the share"

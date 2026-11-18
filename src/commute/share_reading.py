@@ -101,7 +101,8 @@ def with_zeros(part: dict[str, Tensor], shapes: dict[str, tuple[int, ...]]) -> d
 
 def gaussian(norms: dict[str, float], shapes: dict[str, tuple[int, ...]], draw: int) -> dict[str, Tensor]:
     """iid Gaussian matrices at the sites of `norms` (seed `null_seed(draw, site)`), each scaled to norms[site]
-    (Frobenius, float64, then fp32)."""
+    (Frobenius, float64, then fp32). The seed depends on the draw and site only, so every row set read with the same
+    `draw` gets the same direction: draws are shared across row sets, not independent between them (friction 813)."""
     out = {}
     for s, n in norms.items():
         G = torch.randn(shapes[s], generator=torch.Generator().manual_seed(null_seed(draw, s)), dtype=torch.float64)

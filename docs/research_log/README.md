@@ -181,6 +181,8 @@ From a Claude Code session, with the Artifact tool:
    (friction 291). A file not yet live needs no read. A redrawn figure (a `fig/*.png` that is live and changed) counts as
    a changed file: read its path before the first send, or the send is refused as unread content (friction 691). Never `read` with `url` alone: ~50k tokens, and the first send was
    refused all the same (friction 115, 160). The saved index.html is for `--check`; it does not count as a view.
+   The build enforces the first: writing `build/` (step 1's build, `--words`' rebuild) is refused unless a `--check` or
+   `--check-head` with a live `nav.js` in its folder ran in the last 120 min here (stamp `build/.checked`, friction 825).
    Which check (friction 384): before editing `parts/`, `--check`, where any diff is someone else's. With uncommitted
    edits, `--check-head`, against `parts/` at HEAD. After your commit, `--check` diffs your own edits: read only
    index.html's place count, which predicts step 3. `--check` also flags a live page built from `parts/` in no commit
@@ -640,6 +642,9 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e163_run3.png": "experiments/qwen_rl_readable/figures/run3.png"
 - "fig/e187_size_matched.png": "experiments/size_matched/figures/size_matched.png"
 - "fig/e197_survival.png": "experiments/held_model_retention/figures/survival.png"
+- "fig/e205_gaps.png": "experiments/held_model_size_matched/figures/gaps.png"
+- "fig/e206_survival.png": "experiments/graft_sites/figures/survival.png"
 - "fig/e155_gaps.png": "experiments/neuron_overlap/figures/gaps.png"
 - "fig/e190_jobs.png": "experiments/neuron_jobs_k/figures/jobs.png"
 - "fig/e200_share_by_kind.png": "experiments/share_built_kind/figures/share_by_kind_run2.png"
+- "fig/e204_scans.png": "experiments/share_size_matched/figures/scans.png"

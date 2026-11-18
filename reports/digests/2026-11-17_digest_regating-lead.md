@@ -5,9 +5,17 @@ separate re-weighting from rewiring. A re-weighting fine-tune, a rewiring fine-t
 read a little above one; only the Table fine-tune, whose change is about ten times larger, reads low. Whether the share
 follows the size of the change was not tested here. Provisional, no independent check.
 
+**P2.34 (your follow-up, "size-matched re-weighting beside Table"): closed, 2 of 2 runs, no call.** Neither edit could
+be scaled to the other's size and keep its built kind: Always on scaled up becomes a one-token output and levels off
+below Table's size; Table scaled down to Always on's size keeps only 4% of its table answers (77% at full size). So kind
+and size cannot be separated by scaling these edits, and the P2.33 reading stands. Both runs stopped at filed checks
+before any training ($0.32 on RunPod); per your "honest and principled" instruction, no rescue run followed. Page
+`reports/analyses/2026-11-17_analysis_share-size-matched.md`. Your re-gating idea (every step against one diff at the
+end, steps until it breaks down, modular code) is in `backlog.md`.
+
 ## Cells
-- P2.33 (rung L2.2): filled, 2/2 runs, page `reports/analyses/2026-11-17_analysis_share-built-kind.md`. No other cell of
-  mine is open, so I am finishing.
+- P2.33 (rung L2.2): filled, 2/2 runs, page `reports/analyses/2026-11-17_analysis_share-built-kind.md`.
+- P2.34 (rung L2.2): closed, 2/2 runs, no call. No other cell of mine is open, so I am finishing.
 
 ## What ran
 - E137's hand-made edits could not be read: they are forward hooks, not weight changes. The user chose (dialog) to read
@@ -25,7 +33,8 @@ None. Ask 26 (the 67M story) was dropped as superseded by the 2026-11-09 roadmap
 large re-weighting fine-tune matched to Table's size, which would tell size from kind.
 
 ## Money
-$0 (cluster debug only). No pods.
+$0.32 on RunPod (E204, E207, both L40S, terminated); the rest on cluster debug at $0. Cluster jobs 61012 and 61020
+died at once on an L40 another job held.
 
 ## Friction noted
 - 830: the 67M share had no named entry point for full-weight fine-tunes; the writer spent most of its time finding it.

@@ -110,3 +110,22 @@ up to ~15 points at ≤ 15 s; distances and a read about 30 s per seed); limit 4
 
 A size-matched rewiring group below Table's size (a scaled-down Table); a fine-tune of the decomposed matrices only; an
 independent check; the share on the hand-made edits themselves (hooks, not weights).
+
+## Second run (E207, the cell's last; 2026-11-17)
+
+E204 stopped at its filed saturation stop (Always on's push reached gain ~16, never 19.13, and was near-constant output long
+before), so the size match is done the other way round: E137's Table edit with C and c multiplied by beta < 1 (the same
+full-rank map, smaller, so still built rewiring), beta set by halving from 1 to 1/256 and then bisecting in log beta on F_small
+against M only, with E202's window rule, until F_small's mean gain is within 0.2 of Always on's F gain 1.8337 (beta 1 must
+repeat E202's Table windows: 2048, gain 19.1315); kind check: over half of F_small's targets are the Table answer of the
+window's last token (E202's counts allow at most about 0.75 at beta 1); then three fine-tunes with E139's recipe and Table's
+batch draws, read exactly as E202, and E200's rule on E202's six Always on shares (mean 1.1164) against the three new ones,
+bar 2 × 0.0405 × √(1/6 + 1/3) = 0.0573. K (kind): small Table at least the bar below Always on (mean ≤ 1.0592); S (size):
+within the bar or above. Stops as E204's (identity, positive control, scan, step-10 check), and a seed under 1 log-odds of
+gain stops the job with no reading. Edge cases through `rivals` before filing (scratch `p234-run2/edges.out`): do-nothing
+(r nan on every seed) and one finite share read "unreadable", neither prediction; E202's full Table shares read "higher"
+(K); Always on's own mean reads "within the bar" (S); d exactly at the bar "higher", 1e-6 under "within the bar"; small
+Table at 1.3 "lower" (S); the do-nothing state meets the reach stop first. Code `run2.py`, rules `results/run2/predictions.json`,
+card `card_run2.txt`, sketch `figures/sketch_run2.png`, figure `plot.py run2`. Route: RunPod L40S (the cluster's L40 is
+held), about 15 min, under $0.50; inputs as E204's. One design, filed before running; every outcome reported as read, no
+rescue amendment.

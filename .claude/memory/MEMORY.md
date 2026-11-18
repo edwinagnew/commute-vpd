@@ -28,7 +28,7 @@
 - [User definitions override files](feedback-user-definitions-override-files.md) — "pull-back" = split a finished update over subcomponents; file definitions drifted and overrode the user for days; restate requests as operations and confirm
 - (superseded 2026-11-09) [Update the research log after every experiment](feedback-update-research-log-each-experiment.md) — batched since 2026-10-21: queue in docs/research_log/PENDING.md, flush before session end after the completeness check
 - [Same table for every update type](feedback-same-table-for-every-update-type.md) — less ad hoc: LoRA, fine-tune and null through the same split measurements on the same task/steps/card (2026-10-20)
-- [Results fast: RunPod default](feedback-results-fast-runpod-default.md) — ≤ 30 min → cluster debug (10-min cap); longer → RunPod 4090+/H100, never small cards (2026-10-20)
+- [Results fast: RunPod default](feedback-results-fast-runpod-default.md) — ≤ 30 min runs → cluster debug QoS (2 h cap; a pod if not started within 5 min); longer → RunPod 4090+/H100, never small cards (2026-10-20)
 - [Γ refit adversary scope](project-gamma-refit-ppgd-scope.md) — one persistent-PGD state per micro-batch slot; ~15 GB of sources at batch 64, H100 only
 - [Cache as you go](feedback-cache-as-you-go.md) — long runs dump after every checkpoint and resume; small overrun OK when the user says so (2026-10-20)
 - [E15 Γ refit status](project-gamma-refit-e15-status.md) — ONGOING (reopened by user 2026-10-21): two protocols took W₀ off the floor; the refit's attacker (0.42 nats) is weaker than the harness's (0.70); next: cancellation tests, re-gating line

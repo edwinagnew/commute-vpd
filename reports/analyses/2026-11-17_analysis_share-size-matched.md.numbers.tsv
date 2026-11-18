@@ -1,0 +1,20 @@
+0.26	experiments/share_built_kind/results/run2/stage3.json	[.states[] | select(.group == "Table") | .r] | add / length	earlier
+1.10	experiments/share_built_kind/results/run2/stage3.json	[.states[] | select(.group != "Table") | .r] | min	earlier
+1.23	experiments/share_built_kind/results/run2/stage3.json	[.states[] | select(.group != "Table") | .r] | max	earlier
+19.13	experiments/share_size_matched/results/run2/stage2.json	.scan[0].F_gain_mean	this
+1.83	experiments/share_size_matched/results/stage2.json	.scan[0].F_gain_mean	this
+0.803	experiments/share_size_matched/results/stage1.json	.r	this
+0.802	experiments/share_size_matched/results/stage1.json	.saved_r	this
+14.0	experiments/share_size_matched/results/stage1.json	.gain	this
+0.05	experiments/share_size_matched/results/stage2.json	.scan[0].top_target_share	this
+0.55	experiments/share_size_matched/results/stage2.json	.scan[] | select(.alpha == 16) | .top_target_share	this
+0.91	experiments/share_size_matched/results/stage2.json	.scan[] | select(.alpha == 32) | .top_target_share	this
+16.0	experiments/share_size_matched/results/stage2.json	.scan[-1].F_gain_mean	this
+0.77	experiments/share_size_matched/results/run2/stage2.json	.scan[0].answer_share	this
+0.53	experiments/share_size_matched/results/run2/stage2.json	.scan[1].answer_share	this
+0.5	experiments/share_size_matched/results/run2/stage2.json	.scan[1].beta	this
+7.8	experiments/share_size_matched/results/run2/stage2.json	.scan[1].F_gain_mean	this
+0.25	experiments/share_size_matched/results/run2/stage2.json	.chosen.beta	this
+1.69	experiments/share_size_matched/results/run2/stage2.json	.chosen.F_gain_mean	this
+0.04	experiments/share_size_matched/results/run2/stage2.json	.chosen.answer_share	this
+0.32	given	pod-runner hand-backs for E204 and E207 on RunPod L40S, total spend as relayed in the lead's brief

@@ -1,27 +1,6 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
-<div class="prose"><p><strong>Waiting on you, 2026-11-17.</strong> One card is open, the compare-lead's: the crosscoder baseline found a change we planted, but its filed "fine-tune-only" bar did not label it new. How should the last run set that bar?</p>
+<div class="prose"><p><strong>Nothing waits on you, 2026-11-17.</strong> The compare-lead's one card, on how the crosscoder baseline's last run should set its fine-tune-only bar, is answered and removed: the run follows the strongest published recipe with the authors' code (see <a href="#e198">E198</a> and the working choices in <code>decisions.md</code>).</p>
 <p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
-<div class="cards stack">
-<div class="card decision" id="decision-p2-31-planted-control"><span class="chip open urgency">Soon</span>
-<div class="k">Question for you · compare-lead · new 2026-11-17</div>
-<h3>The crosscoder found a planted new change, but not under the filed "fine-tune-only" label. How should the cell's last run set that bar?</h3>
-<p>Due to run: the cell's second and last run, by 11-19, once this is decided. The cell (P2.31) adds a <strong>crosscoder</strong> to the part 2 comparison: a dictionary of 24,576 latents learned over the original 67M model's and a fine-tune's activations together at the input of block 2, in the BatchTopK form with latent scaling (Minder et al. 2025). Each latent's <strong>relative norm</strong> says how much of its decoder sits on the fine-tune side: 1 is fine-tune only, 0.5 shared, 0 original only. The literature calls a latent fine-tune-only at 0.9 or above. The reading asks how much of a fine-tune's activation change shared latents carry against fine-tune-specific ones; it is descriptive, and no side is called reused or new.</p>
-<ul>
-<li><strong>Original model against itself: passed.</strong> Identical halves, no fine-tune-only latents, every alive latent at relative norm 0.5, and 0.873 of the activations' variance reconstructed.</li>
-<li><strong>Planted change: found, but not labelled new.</strong> The fine-tune side was the original model plus one random direction at each task window's answer position, a change known to be new. One latent carries 0.987 of that change, and shared latents carry 0.014. But its relative norm is about 0.86 (the largest distance from 0.5 among alive latents was 0.365), under the 0.9 bar. So it counted as "other": 0 of the change on fine-tune-only latents, against the filed 0.7 to 0.9.</li>
-<li><strong>Not as expected, and no real pair was read.</strong> The job (E198, one H100, about 15 min, $0.92) stopped there, as filed. Likely causes, unconfirmed: training far shorter than Minder's (9,086 steps on 16.7M Pile tokens plus task text, against 200M tokens), and a latent that fires only at answer positions keeping some original-side decoder.</li>
-<li><strong>What the last run would add.</strong> How much of a real fine-tune's activation change sits on latents the original model also has. The neuron and weight readings so far do not read a learned dictionary of the change.</li>
-</ul>
-<p><strong>Options</strong> (each is the cell's one remaining run).</p>
-<ul>
-<li><strong>(a) Set the bar from the planted control, in the same job. Recommended.</strong> The first stage trains the planted control with two seeds; the bar is the planted latent's relative norm less a margin from its spread over the two seeds. The original-against-itself control stays first, and training tokens double. If the controls hold, it reads one pair, then every pair: about $1 for the controls and one pair, about $25 for all pairs on 4 H100 pods, about 2 h. It tells us whether the crosscoder sides with the share where the bar is calibrated on a known new change. A departure from the cited recipe, stated where the number is used.</li>
-<li><strong>(b) Keep 0.9 and only train longer.</strong> Move toward Minder's 200M tokens, about 10 times the time per crosscoder. It tests whether undertraining is the cause; if the planted latent still sits under 0.9, the cell closes with no reading.</li>
-<li><strong>(c) Close the cell now.</strong> The reading would be: at this budget a crosscoder finds a planted new direction, but its relative-norm convention does not label it new. No real pair is read and the comparison has no crosscoder column.</li>
-</ul>
-<p><strong>Recommendation: (a).</strong> The bar failed its own control, and (a) sets it against a change we know is new rather than by a guess. It is the only option that can still deliver a reading by 11-19; (b) costs about 10 times as much and can end with nothing, and (c) gives up a reading nothing else supplies. Changing a control's bar after it failed is your call.</p>
-<p class="small">Names in the reports: the cell is P2.31 and the experiment E198; "fine-tune-specific" is a fine-tune-only latent that survives latent scaling; "other" is every alive latent that is not shared (0.4 to 0.6), fine-tune-only (0.9 or more) or original-only (0.1 or less).</p>
-<div class="links"><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/decisions/2026-11-17_decision_p2-31-planted-control.md">card</a> <a href="https://github.com/edwinagnew/commute-vpd/blob/main/experiments/crosscoder/results/stage0.json">stage0.json</a> <a href="https://github.com/edwinagnew/commute-vpd/blob/main/experiments/crosscoder/results/stage01_pod.log">stage01_pod.log</a> <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/plans/2026-11-17_plan_p2-31-crosscoder.md">plan</a></div>
-</div>
-</div>
+<div class="cards stack"></div>
 </section>

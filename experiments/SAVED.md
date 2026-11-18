@@ -523,6 +523,11 @@ This is "round 1", the input of nearly every other run.
 - `results/large/rows_big.pt` (~150 KB): the 2048 windows at the chosen alpha (8 tokens plus the target in a ninth column), int64.
 Written by `experiments/share_size_matched/run.py` stages 2-3. `results/large` is a symlink into `~/commute-data/results-large/share_size_matched`.
 
+## share_size_matched second run (E207, cell P2.34; coded 2026-11-17, not run yet)
+- `results/large/table_small_s{0,1,2}.pt` (~268 MB each, as E200's `cue_s*.pt`): the 67M, every weight, fine-tuned 300 steps with E139's recipe and Table batch draws toward E137's Table edit with C and c scaled by the run's beta (`results/run2/stage2.json` `.beta`). Full weights (`net.state_dict()`), fp32; a seed stopped at step 10 saves none. Training records `results/run2/table_small_s{seed}_train.json`. Load with `VR.load_state(net, path, clone_net)`.
+- `results/large/rows_small_table.pt` (~150 KB): the windows at the chosen beta (8 tokens plus the target in a ninth column), int64.
+Written by `experiments/share_size_matched/run2.py` stages 2-3, beside E204's files in the same `results/large`.
+
 ## qwen_pair_library (E160 Amendment 1, rehearse, copy side)
 - `results/large/dW/copy_s0/step_36.safetensors` (5.64 GB, sha256 26c5fc21a745b5da462e0a5184796f97df58d34fe9bd3e2b9ab90b21463edaea): the 15x upper state of the copy side (seed 0, lr 2e-6), step 36, dW norm 0.554, KL 1.587, held-out exact match 1.0. Written by `experiments/qwen_pair_library/run.py rehearse --side copy` on an H100 pod (2026-11-11); the other saved states (steps 8, 9, 35) were not downloaded. `results/large` is a symlink into `~/commute-data/results-large/qwen_pair_library`.
 

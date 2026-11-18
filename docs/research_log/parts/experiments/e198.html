@@ -1,0 +1,16 @@
+<article class="exp" id="e198">
+<div class="top"><span class="id">E198</span><span class="chip ongoing">ongoing</span><h3>Does a crosscoder, a learned dictionary over the original and fine-tuned models together, put a fine-tune's change on latents the original also has?</h3><span class="when">2026-11-17 · cell P2.31, run 1 done, run 2 under rehearsal · <code>experiments/crosscoder</code></span></div>
+<p class="one"><strong>The question.</strong> Part 2 compares the re-gating share and the neuron reading with simple baselines. A crosscoder baseline (Minder et al. 2025) asks how much of a fine-tune's activation change sits on latents shared with the original model against latents only the fine-tune has. It is descriptive: no side is called reused or new.</p>
+<p class="one"><strong>What we did.</strong> Run 1 (one H100, about 15 min, $0.92) trained a small crosscoder of 24,576 latents on the original model's and a fine-tune's activations at the input of block 2. A relative norm of 1 means a latent's decoder sits wholly on the fine-tune side, 0.5 shared. The original model against itself passed (every alive latent at 0.5). On a planted new direction one latent carried 0.987 of the change, but its relative norm was about 0.86, under the literature's 0.9 bar, so it was not labelled fine-tune-only.</p>
+<p class="one"><strong>What we found.</strong> The crosscoder finds a planted change but, at this short training (16.7M tokens against Minder's 200M), does not label it new under the literature's bar. No real pair was read.</p>
+<p class="one"><strong>What it means.</strong> You decided (2026-11-17) that run 2 follows the best-performing published recipe with the authors' released code, pinned, rather than a bar tuned here: BatchTopK crosscoders with latent scaling, 200M tokens per crosscoder, 108 crosscoders, up to about $327 approved (run 2 is E203; it is under rehearsal and has not run).</p>
+<dl class="fields">
+<dt>Run</dt><dd>Run 1: one H100, about 15 min, $0.92. Run 2: not yet run.</dd>
+<dt>Found</dt><dd><ul>
+<li>Original against itself: no fine-tune-only latents, every alive latent at 0.5.</li>
+<li>Planted direction: one latent carries 0.987 of the change, relative norm about 0.86, under the 0.9 bar.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 2: whether a learned dictionary of the change adds a reading beyond the neuron and weight readings.</dd>
+<dt>Moved on</dt><dd>Run 2 follows the published recipe (<code>decisions.md</code>, 2026-11-17). Plan <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/plans/2026-11-17_plan_p2-31-run2.md"><code>reports/plans/2026-11-17_plan_p2-31-run2.md</code></a>.</dd>
+</dl>
+</article>

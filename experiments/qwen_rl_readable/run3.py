@@ -1,7 +1,7 @@
 """P3.4 run 3 (E178): the shuffled-reward null N alone, E69's GRPO loop on Qwen3-1.7B at peak 1e-6 after 10 warm-up steps (E69's
 recipe lr1e-6w10, as run 1's null pod), on seeds 0 (E69's draw seed 69) and 70, one pod each, until its output change
 reaches that of run 2's RL state at step 75 on the same seed. Plan: reports/plans/2026-11-13_plan_qwen-rl-readable-run3.md;
-rules in results/predictions_run3.json (refuses to start unless it is committed unchanged; on a pod, E120_PRED_SHA).
+rules in results/predictions_run3.json (refuses to start unless it is committed unchanged; on a pod, PRED_SHA).
 
   --pod N_s0|N_s70                    one pod: results/run3/<pod>.json and .log, large/run3/<pod>/
   --size tiny|tiny_collapse --large DIR   the rehearsal at E69's tiny config: tiny pauses after step 1 and matches at its
