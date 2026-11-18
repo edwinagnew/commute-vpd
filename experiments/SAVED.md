@@ -542,3 +542,4 @@ Written by `experiments/share_size_matched/run2.py` stages 2-3, beside E204's fi
 ## crosscoder run 2 (E203, cell P2.31; stage 0 2026-11-17/18, stage 1 2026-11-18, RunPod H100 SXM / H200)
 - `results/large/run2/{self,planted}.pt` (76 MB each): stage 0 crosscoder decoders (base against itself; planted direction).
 - `results/large/run2/{e54__elicit_s0,e54__cipher_s0,e54__elicit_s0__seed1,random_like__e54__elicit_s0}.pt` (76 MB each): stage 1 crosscoders; sha256 in the runner's hand-back (elicit 4301d513..., cipher c9ef2082..., seed1 a58f5223..., random 2c1783e2...).
+- `results/large/run2/<side key>.pt` (23 files, ~0.5 MB each): stage 2 (2026-11-18, 13 H100 pods), one seed per side; sha256 (first 16 hex) in the stage-2 runner's hand-back, quoted in the handoff; `e62__copy_s0.pt` and `e62__lookup_s0.pt` unverified (their pods were deleted by the provider before the remote sha).
