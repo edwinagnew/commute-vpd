@@ -161,6 +161,10 @@ pod's hours × rate; `status()`'s cost is the whole session's, all pods together
 - `sync()` mirrors the tree: it deletes remote files that have no local copy, so don't keep anything in the tree that
   you have not downloaded. It does not send `.claude/`. Gitignored inputs go up with `sync(include=["experiments/<name>/results/large"])`: naming
   the files one by one did not send them, naming the directory did (2026-10-19).
+  On a pod `COMMUTE_CACHE_DIR=/root/artifacts` (the toml's `[env]`), so everything under `commute.env.CACHE_DIR`
+  (`vpd/`, `data.SETS_DIR` = `sets/`) is read from `/root/artifacts/...`, not the synced tree's `artifacts/`: stage
+  `artifacts/sets/*.npy` and other cache inputs there (copy or link after the sync); a runner staged them in the tree
+  and relaunched twice (friction 847).
 - Never `stop()` a pod meaning to resume it later. A stopped RunPod pod stays pinned to its host with the GPU
   released, so the resume may come back with zero GPUs, and the container disk (where `/root/artifacts` and the uv
   cache live) is wiped anyway. Either keep it running or terminate it.
