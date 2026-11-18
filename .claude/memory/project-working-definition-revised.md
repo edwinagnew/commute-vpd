@@ -12,3 +12,5 @@ Earlier the same day the held-model wording (survival S = 1 - KL(F||H)/KL(F||M),
 **Why:** the user wants reuse to mean parts performing the same computation; the output only selects which parts count.
 
 **How to apply:** call S "the held-model reading", never the definition. No new wording, cut-off or label without the user. When a task file (e.g. relayed by another lead) names an older wording, the log's latest box wins; say so. See [[project-working-definition-criteria]], [[feedback-definition-must-be-total]].
+
+**Update 2026-11-18 (later):** ρ is no longer part of the definition (decisions.md "Working definition of reuse without ρ"); the definition is the sentence only, at a declared refinement ([[project-paper-term-refinement]]). ρ and S are readings.
