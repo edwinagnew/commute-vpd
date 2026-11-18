@@ -1,0 +1,39 @@
+0.62	experiments/definition_table/results/stage0.json	.readouts.guess_rank1.acc[2]	earlier
+0.90	experiments/definition_table/results/predictions.json	.rules.P0.accuracy	earlier
+0.3	experiments/definition_table/results/predictions.json	.rules.P0.selectivity	earlier
+0.63	experiments/memorised_fact/results/readings.json	.G.planted_odd	earlier
+0.8	experiments/old_task_labels/results/labels_cut_0p8_0p5.json	.cutoffs_new.G	earlier
+0.5	experiments/old_task_labels/results/labels_cut_0p8_0p5.json	.cutoffs_new.H	earlier
+0.794	experiments/reuse_variable_finetune/results/predictions.json	.cutoffs.G	earlier
+0.476	experiments/reuse_variable_finetune/results/predictions.json	.cutoffs.H	earlier
+0.17	experiments/old_task_labels/results/labels.json	([.items[]|select(.task=="repeat_real").G]|min) - ([.items[]|select(.task=="repeat_twin").G]|max)	earlier
+0.83	experiments/old_task_labels/results/labels.json	.items[]|select(.item=="case_real_s0").G	earlier
+-0.01	experiments/reuse_variable_test/results/rules.json	.reading.k4["XOR"].best_H	earlier
+0.466	experiments/built_control_sum/results/amend1_readings.json	.items[]|select(.arm=="control" and .seed==0).H	earlier
+0.9	experiments/soft_intervention/results/predictions.json	.thresholds.bars[1]	earlier
+0.95	experiments/soft_intervention/results/predictions.json	.thresholds.bars[2]	earlier
+2e-5	experiments/soft_intervention/results/cue.json	1 - .cr.in2.c	earlier
+0.33	experiments/soft_intervention/results/copy24_s0.json	.cr.final.r	earlier
+0.004	experiments/soft_intervention/results/floor.json	.fits.own.f	earlier
+0.18	experiments/soft_intervention/results/floor.json	.fits["per-token"].f	earlier
+0.72	experiments/simplest_intervention/results/planted_constant.json	[.lists.all["1"].curve[].closure, .lists.all["2"].curve[].closure] | max	earlier
+0.895	experiments/simplest_intervention/results/twin_s0.json	[.lists.all["3"].fits[] | select(.edits == 1) | .closure] | max	earlier
+0.48	experiments/simplest_intervention/results/l4_bit.json	[.lists.all["3"].fits[].closure] | max	earlier
+0.80	experiments/rule_retention/results/stage1.json	.readings.A.changed["L1.n486"]	earlier
+0.7	experiments/rule_retention/results/predictions.json	.thresholds.high	earlier
+0.999	experiments/rule_retention/results/amend1/stage2.json	.seeds["0"].tries[0].max_abs_corr	earlier
+0.97	experiments/rule_retention_fixed/results/stage2.json	.readings.A.contrast.min	earlier
+0.03	experiments/rule_retention_fixed/results/stage2.json	1 - .readings.A.contrast.max	earlier
+0.00004	experiments/rule_retention_pairs/results/summary.json	.counted["copy24/cipher24 s1"]["level A (filed)"].difference	earlier
+0.0028	experiments/rule_retention_pairs/results/summary.json	.counted["case_real/case_twin s0"]["level A (filed)"].difference	earlier
+0.996	experiments/rule_retention_pairs/results/summary.json	[.counted[]["level A (filed)"].twin_mean] | min	earlier
+1e-3	experiments/held_model_retention/results/predictions.json	.thresholds.logit_tol	earlier
+0.0016	experiments/held_model_retention/results/summary.json	.gaps["repeat_real/repeat_twin reading 3"].by_seed|[.[]]|add/4	earlier
+0.0024	experiments/held_model_retention/results/summary.json	.gaps["repeat_real/repeat_twin reading 3"].sd	earlier
+0.98	experiments/held_model_retention/results/summary.json	[.S|to_entries[]|select(.key|test("^(copy24|cipher24|ident32|rand32|case|repeat)"))|.value["3"]]|min	earlier
+-0.0028	experiments/held_model_size_matched/results/summary.json	.pairs.e62_copy_lookup["reading 3"].gap_original	earlier
+0.134	experiments/graft_negative/results/stage3.json	.graft.readings["3"].S	earlier
+0.136	experiments/graft_sites/results/summary.json	.S.last_lowest["3"]	earlier
+0.221	experiments/graft_sites/results/summary.json	.S.last_rank13["3"]	earlier
+0.954	experiments/graft_sites/results/summary.json	.S.neurons["3"]	earlier
+0.984	experiments/graft_sites/results/predictions.json	.rules.R1.old_task_floor	earlier
