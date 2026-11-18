@@ -94,5 +94,5 @@
 - [Baselines: literature-best recipe, their code](feedback-baselines-use-literature-best-with-their-code.md) — run a literature baseline with the strongest published recipe and the authors pinned code; E198 cut-down reimplementation failed its control (user, 2026-11-17)
 - [Draft due 2026-11-29, final](project-draft-deadline-2026-11-29.md) — absolutely final, no exceptions; remind the user occasionally with days left and what is still skeleton (user, 2026-11-17)
 - [Paper term: featurized model](project-paper-term-refinement.md) — paper says "featurized model" (was "refinement"), Geiger vocabulary: mechanism, variables, soft intervention, intervened model (user 2026-11-18)
-- [Paper repo push freeze](project-paper-repo-push-freeze.md) — no pushes to commute-vpd-writeup until the user says so (2026-11-18)
+- [Paper repo push freeze (lifted)](project-paper-repo-push-freeze.md) — frozen ~11:20, lifted ~13:50 on 2026-11-18; pull before any push
 - [Geiger vocabulary and notation](feedback-causal-abstraction-vocabulary.md) — featurized model (not refinement), variable, mechanism F_X, soft intervention, M_I, behavior B, sub-circuit §3.5.2; coin only where Geiger has none (user, repeated 2026-11-18)
