@@ -55,3 +55,24 @@ You added both cells after reading this digest. Both ran on RunPod H100 pods, be
 - **Friction:** 839 (debug cap stated three ways), 842 (pod inputs missing from E187's inventory), 843 (no .git on the pod), 845 (dates a day ahead of the clock across time zones; files not renamed, per you).
 
 **Finished:** every definition-lead cell is filled or closed, and no open rung has a cell without your yes.
+
+## Overnight: P1.30, due 11-21, filled
+You said yes to reading ρ itself on saved items and to testing the note's proposed measurements. I added P1.30 (2 runs) and ran it as E208 on RunPod H100s.
+- **The question.** Read ρ as the 2026-11-18 causal-abstraction note defines it: every neuron and head is a part, and a rule counts as kept per input setting. Read it on the 20 saved fine-tunes of the matched pairs, on E195's rebuilt circuit and on the grafts, with each of the note's open choices read beside it.
+- **Answer.** ρ does not separate the reuse members from their new twins. Every fine-tune keeps 0.999 or more, and the gaps rank by update size at both seeds, which is filed rival B. The grafts read 0, as the rule forces.
+- **New.** Heads are under 1% of the parts each fine-tune needs, but read alone they show the reuse order. This is reported, not a filed rule.
+- **Run 1 stopped at its first control.** The filed expected value forgot that this model's neurons are often exactly silent, and a setting where both models are silent counts as agreement. Amendment 1 fixed the expected values with the same tolerance, and run 2 passed every control.
+- **Page:** `reports/analyses/2026-11-18_analysis_rho-saved-items.md`.
+- **The note and the code disagreed.** The note said E195/E196 scored each input setting separately and that F with every part swapped is the original. The code scores all settings at once and keeps attention as F's. The note's own rule, read per setting, sees only a neuron's output direction and when it is silent.
+- **Premise check: doubtful.** A score averaged over the whole model may be swamped by the unchanged bulk. Its question for you is in `~/commute-data/premise/P1.30.md`.
+
+**Asks waiting on you.** One decision card, `reports/decisions/2026-11-18_decision_rho-rule-test.md`, with three definition questions:
+- how to score "keeps the original's rule" at a neuron: per setting as the note writes it, all settings at once, or per setting with size counted;
+- whether two units that are both silent on an input follow the same rule there;
+- whether ρ should be a plain mean or weighted by each part's share of the behaviour.
+
+**FYI: cost.** E208 cost about $75.70, over the $60 line for gated runs. About $20 was lost: the model download ran at 0.4 MB/s on one runner's pods, and a set-up idle timer then terminated five waiting pods. This is problem 3. All 24 items came home.
+
+**Friction:** 859 to 863.
+
+**Finished:** every definition-lead cell is filled or closed. More runs wait on the card.
