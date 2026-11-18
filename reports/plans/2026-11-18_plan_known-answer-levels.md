@@ -1,6 +1,6 @@
-# Plan: does some declared level read four hand-built edits of M as their construction says? (cell pending, proposal 30)
+# Plan: does some declared level read four hand-built edits of M as their construction says? (cell P1.31)
 
-*2026-11-18, definition-lead. Rung L1.4, 2 runs, due 2026-11-20. No E-code claimed, nothing run. Design check, the
+*2026-11-18, definition-lead. Cell P1.31 (opened from proposal 30), rung L1.4, 2 runs, due 2026-11-20. No E-code claimed, nothing run. Design check, the
 edits' recipes, every expected value and the pre-mortem: `2026-11-18_plan_known-answer-levels_appendix.md`. Card and
 draft rules: `experiments/known_answer_levels/{card.md,results/predictions.json}`.*
 
