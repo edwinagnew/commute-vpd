@@ -32,28 +32,37 @@ live in `decisions.md`, and what has been tried lives in `experiments/TRIED.md`.
   against a δW = 0 warm-start control and the cross-seed baseline.
 - **If no simple Φ works.** Is that because post-training teaches new capabilities rather than strengthening
   existing ones, or because parameter decompositions are too brittle?
-- **Working definition of reuse (user, 2026-11-18, revised the same day).** A fine-tune F reuses the original M,
-  for a behaviour at a declared level, to the extent that the parts F needs for that behaviour still compute what
-  M's parts compute when given the same inputs. Stated in causal-abstraction terms (Geiger et al. 2025; user,
-  2026-11-18). A level, called a "refinement" in our paper (our word, not Geiger's), is a declared causal model of each
-  network, finer or, for unit partitions, the network with its units grouped (a variable merge, Def. 37), whose parts
-  are, for example, neurons, heads, blocks, SAE latents or VPD components. The network is an exact (Constructive
-  Abstraction, Def. 33 in the JMLR numbering) or approximate (Approximate Transformation, Def. 41, under the
-  alignment's maps) abstraction of it, and the error ε (KL on outputs) is reported beside every reading. An
-  optional remainder part makes a lossy featuriser exact. The same refinement, declared or fitted on M only, is read
-  on M and F, so a part is the same variable in both. A part's rule is its mechanism there. F_K is F with M's
-  mechanisms put into every part outside K by a soft intervention (Def. 10) (`theory/2026-11-18_level-as-decomposition.md`; `decisions.md` rows "A
-  level is a decomposition, not an alignment" and "A refinement ... may be approximate", 2026-11-18). Open:
-  - which parts count as needed, and which input a part sees when its rule is compared (log card "needed parts");
-  - where the hybrids are compared when ε_F > 0;
+- **Working definition of reuse (user, 2026-11-18, revised the same day; Geiger's vocabulary 2026-11-18).** A
+  fine-tune F reuses the base model M, for a behavior, to the extent that the variables F needs for that behavior
+  still have M's mechanisms, on the settings of their parents that occur. Stated in the vocabulary of causal
+  abstraction wherever it has a term (Geiger et al. 2025, "Def. n" in the JMLR numbering; user, 2026-11-18). A
+  featurizer (Geiger's verb, §3.6) gives each network N a **featurized model** Ñ: a causal model (Def. 5) whose
+  variables are the input, intermediate variables U and the output, for example neurons, heads, blocks (a variable
+  merge, Def. 37), rotations (a bijective translation, Def. 28), SAE latents or VPD components. N is an approximate
+  transformation of Ñ (Def. 41; an exact transformation, Def. 25, when ε = 0), with τ the identity on inputs and
+  outputs and interventions that set the inputs (Remark 42); the error ε of Def. 41, KL on outputs, is reported
+  beside every reading. The featurizer is fixed from M alone and shared, so a variable is the same in both networks:
+  the one constraint that is ours. A remainder variable is one way to reach ε = 0 for a lossy featurizer, not part
+  of the concept. A variable u has a mechanism F_u (Def. 5), a function of its parents Pa(u) (Remark 6). The soft
+  intervention from the base model I_K = {F^M_u}_{u∉K} (Def. 10) gives every variable outside K M's mechanism; the
+  intervened model F̃_{I_K} (Geiger writes M_I) is always runnable. A behavior B is a partial function from inputs to
+  outputs (§3.5.2); the circuit F needs is a smallest K for which F̃_{I_K} preserves B, a minimal circuit in
+  Geiger's sub-circuit analysis (§3.5.2) with two departures: a set of variables, not connections, and base-model
+  mechanisms in place of ablation values. A mechanism agrees with M's when it agrees on the settings of Pa(u) that
+  occur in either model's solution on the behavior's inputs (`decisions.md` row "Featurized model replaces
+  refinement", 2026-11-18; earlier rows "A level is a decomposition, not an alignment" and "A refinement ... may be
+  approximate"; `theory/2026-11-18_level-as-decomposition.md`). Open:
+  - which variables count as needed, and which settings of its parents a mechanism is compared on (log card "needed
+    parts");
+  - where the intervened models are compared when ε_F > 0;
   - four repairs from the 2026-11-18 review of the definition (log card "definition repairs").
 
-  Consolidated on one page: `theory/2026-11-18_definition_consolidated.md`. ρ (the mean rule retention of a smallest sufficient set) is no longer part of the definition (user,
-  2026-11-18 morning): at the neuron level it is a tested reading that saturates (E208: 0.999 or more on every
-  fine-tune), since "the neuron level is not a high-enough level abstraction to detect new". Full statement in the
-  research log's overview box "The working definition", `theory/2026-11-18_definition_causal_abstraction.md` and
+  Consolidated on one page: `theory/2026-11-18_definition_consolidated.md`. ρ (the mean mechanism agreement over a smallest sufficient set) is no longer part of the definition (user,
+  2026-11-18 morning): with single neurons as variables it is a tested reading that saturates (E208: 0.999 or more on
+  every fine-tune), since "the neuron level is not a high-enough level abstraction to detect new". Full statement in
+  the research log's overview box "The working definition", `theory/2026-11-18_definition_causal_abstraction.md` and
   `decisions.md` (rows "... stated in causal-abstraction terms" and "Working definition of reuse without ρ",
-  2026-11-18). The held-model survival S (every unit of F given M's rule at once, up to a fitted map) and ρ are
+  2026-11-18). The held-model survival S (every unit of F given M's mechanism at once, up to a fitted map) and ρ are
   readings of it, not the definition; their numbers stand as readings. It supersedes the held-model wording (adopted earlier on
   2026-11-18) and the second wording ("reuse at a variable", tentatively adopted 2026-11-10), kept only as records.
 - **Canonical update:** LoRA, plus full-weight fine-tunes.

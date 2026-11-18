@@ -1,5 +1,15 @@
 # What a "level" is: a decomposition of the network, not an alignment
 
+*2026-11-18, later: vocabulary moved to Geiger et al. 2025's (user; `decisions.md` row "Featurized model replaces
+refinement"); content unchanged. What this note calls a "level", "decomposition" or "refinement" is a **featurized
+model** Ñ_i of each network N_i; a part is a variable; a part's rule is its mechanism F_u (Def. 5); its inputs are its
+parents Pa(u) (Remark 6); the swap is the soft intervention (Def. 10) from the base model, I_K = {F^M_u}_{u∉K}; the
+hybrid is the intervened model F̃_{I_K}; the parts F needs are a minimal circuit for a behavior B (§3.5.2). The
+featurizer is fixed from N_0 alone and shared, the one constraint that is ours. N_i is an approximate transformation of
+Ñ_i (Def. 41), exact (Def. 25) when ε = 0, with τ the identity on inputs and outputs (Remark 42); Def. 33 is no longer
+the requirement. A remainder variable is one way to reach ε = 0, not part of the concept. Part A is rewritten in these
+words; the paragraphs above it, "Why the alignment form had to go", Part B and "The name" stay as records.*
+
 *2026-11-18: wording fixes from the review (`reports/reviews/2026-11-18_review_definition-causal-abstraction.md`,
 defects D5 and D7 to D9); content unchanged. Its content repairs wait on the user in the card
 `reports/decisions/2026-11-18_decision_definition-repairs.md`.*
@@ -39,71 +49,81 @@ mechanisms can be slotted in as the abstraction on which reuse is defined.
 
 ## Part A (adopted): the formal statement
 
-**Decomposition** (the name is tentative, see the end; existing text says "level"). A decomposition assigns to each
-network N of the architecture a causal model Ñ (Def. 5), on one signature shared by all networks of the architecture,
-with variables input, parts U and output, such that N is an abstraction of Ñ under an alignment that is the identity
-on input and output: constructive abstraction (Def. 33), or an approximate transformation (Def. 41) under the
-alignment's maps τ^π and ω^π with error ε, measured as KL on outputs. ε is reported beside every reading. In words: Ñ
-is a finer description of N, or for unit partitions N with its units grouped, and merging
-its parts back gives N exactly or up to ε. A lossy featuriser may add a **remainder** part, which makes the merge
-exact (ε = 0); without one it is read as an approximate refinement (ε > 0). (Amended 2026-11-18; first adopted
-exact-only.)
+*Restated 2026-11-18 in Geiger's vocabulary (see the top line); content unchanged. The earlier wording, with
+"decomposition", "part", "rule", "swap" and "hybrid", is in the git history of this file.*
 
-*Open (writeup-lead to the user, 2026-11-18, not answered):* when ε_F > 0, should the hybrids be compared inside the
-refined models? That means running the keep-test against F̃ and taking differences between F̃ and M̃, so that the
-definition stays total. In the exact case the two coincide.
+**Featurized model.** A featurizer (Geiger's verb, §3.6) gives each network N of the architecture a featurized model
+Ñ: a causal model (Def. 5) on one signature shared by all networks of the architecture, with variables the input,
+intermediate variables U and the output. N is an approximate transformation of Ñ (Def. 41) under maps (τ, ω), with τ
+the identity on inputs and outputs and the distribution P over interventions that set the inputs (Remark 42); its
+error ε uses KL on outputs as Sim. When ε = 0, N is an exact transformation of Ñ (Def. 25). ε is reported beside every
+reading. In words: Ñ is a finer description of N, or for unit groupings N with its units grouped, and it reproduces
+N's outputs exactly or up to ε. For a lossy featurizer, a **remainder** variable is one way to reach ε = 0; it is not
+part of the concept, and without one the featurized model is approximate (ε > 0). When the featurizer is a bijective
+translation, its variables are Geiger's modular features (§3.6).
 
-The direction is the reverse of the earlier form: the network is the high-level model, the decomposed model the
+*Open (writeup-lead to the user, 2026-11-18, not answered; ask 49):* when ε_F > 0, should the intervened models be
+compared inside the featurized models? That means running the preservation test on F̃ and taking differences between
+F̃ and M̃, so that the definition stays total. In the exact case the two coincide.
+
+The direction is the reverse of the alignment form: the network is the high-level model, the featurized model the
 low-level one.
 
 Cases:
 
-- **Units (neurons, heads, MLP layers, blocks).** Ñ is N with its units grouped into parts, a variable merge (Def. 37);
-  the two are inter-translatable, so the merge is exact. Every reading so far
-  (E195, E196, E208) and all four levels of P1.31 are this case, unchanged.
-- **Rotations (PCA, DAS).** Ñ is the rotated network; the merge is invertible. Geiger's bijective translation is this
-  special case.
-- **SAE.** At a site with activation h, the parts are the latents f = enc(h) and the remainder e = h − dec(f). The
-  merge is h = dec(f) + e, exact, with no bijection needed.
+- **Units (neurons, heads, MLP layers, blocks).** Ñ is N with its units grouped into variables, a variable merge
+  (Def. 37), so ε = 0. Every reading so far (E195, E196, E208) and all four featurizers of P1.31 are this case,
+  unchanged.
+- **Rotations (PCA, DAS).** Ñ is the rotated network, a bijective translation (Def. 28), so ε = 0.
+- **SAE.** At a site with activation h, the variables are the latents f = enc(h), optionally with the remainder
+  e = h − dec(f). With the remainder, h = dec(f) + e and ε = 0, with no bijection needed.
 - **Transcoders and cross-layer transcoders.** The same form, with the latents read from the MLP's input, but they read
-  differently: M's transcoder applied to F has the same encoder, so each latent keeps M's rule by construction. Every
-  change to the MLP's own weights lands in the remainder, and only changes upstream of the MLP are charged to latents.
+  differently: M's transcoder applied to F has the same encoder, so each latent agrees with M's mechanism by
+  construction. Every change to the MLP's own weights lands in the remainder, and only changes upstream of the MLP are
+  charged to latents.
 - **Not a case: attribution graphs** (Ameisen et al. 2025). The local replacement model freezes attention patterns and
-  error terms per prompt; a part then has no rule to compare on other inputs, so they serve only as a per-input reading.
-- **VPD.** For W = Σ_c u_c v_cᵀ + Δ, the parts are the component activations a_c = v_cᵀx and the remainder e = Δx. The
-  merge is Wx = Σ_c u_c a_c + e. A rank-one weight component is thus a variable with a mechanism (v_c) and a write
-  direction (u_c): no separate "weight version" of the definition is needed.
-- **Coarser parts** (a circuit, a cluster of components): a partition of Ñ's variables into parts (variable merge,
-  Def. 37), with identity value maps.
+  error terms per prompt; a variable then has no mechanism to compare on other inputs, so they serve only as a
+  per-input reading.
+- **VPD.** For W = Σ_c u_c v_cᵀ + Δ, the variables are the component activations a_c = v_cᵀx, optionally with the
+  remainder e = Δx, and Wx = Σ_c u_c a_c + e. A rank-one weight component is thus a variable with a mechanism (v_c)
+  and a write direction (u_c): no separate "weight version" of the definition is needed.
+- **Coarser groupings** (a circuit, a cluster of components): a partition of Ñ's variables (variable merge, Def. 37),
+  with identity value maps.
 
-**Both networks.** The same decomposition is read on M and on F, giving M̃ and F̃ on the same signature, so a part is
-the same variable in both. For activation featurisers F̃ is canonical: the same encoder and decoder applied to F's
-activations. For VPD it is not: declaring F̃ is declaring a split of δW (least-squares, adjoint, do-nothing; `GOALS.md`
-Terms), and the split is a declared parameter of the decomposition. Under do-nothing all of δW sits in the remainder,
-and the reading is "the change lies outside this decomposition".
+**One featurizer for both networks (ours).** The featurizer is fixed from M alone and applied to M and F, giving M̃ and
+F̃ on the same signature, so a variable is the same in both. This shared featurizer is the one constraint that is ours.
+For activation featurizers F̃ is canonical: the same encoder and decoder applied to F's activations. For VPD it is
+not: declaring F̃ is declaring a split of δW (least-squares, adjoint, do-nothing; `GOALS.md` Terms), and the split is a
+declared parameter of the featurizer. Under do-nothing all of δW sits in the remainder, and the reading is "the change
+lies outside this featurized model".
 
-**Rule, swap, hybrid.** The rule of part u in N is its mechanism in Ñ, as a function of its inputs In(u). The swap
-replaces, in F̃, the mechanisms of the parts in a set S by M̃'s. F̃_K is F̃ after the swap on every part outside K;
-merged back it is a runnable network F_K, and F_∅ = M exactly when the remainders are among the parts. The swap is a
-soft intervention (Def. 10) whose replacement mechanism comes from the other network; that step and reading one
-decomposition on two networks remain ours, not Geiger's.
+**Mechanism, soft intervention, intervened model.** The mechanism F_u of variable u in N is its mechanism in Ñ
+(Def. 5), a function of its parents Pa(u) (Remark 6); F^M_u in M̃, F^F_u in F̃. The soft intervention from the base
+model, I_K = {F^M_u}_{u∉K} (Def. 10), replaces in F̃ the mechanism of every variable outside K by M̃'s. The intervened
+model F̃_{I_K} (Geiger writes M_I) is always runnable, and with no variables kept it is M exactly when the remainders
+are among the variables. A soft intervention whose replacement mechanism comes from another trained network, and one
+featurizer applied to two networks, remain ours, not Geiger's.
 
-**The definition (unchanged sentence).** F reuses M, for a behaviour at a declared decomposition, to the extent that
-the parts F needs still compute what M's parts compute on the same inputs. The user's phrasing of the same thing: for
-a given abstraction of the network, reuse is the extent to which M's mechanisms can be interchanged into F.
+**The definition (unchanged content).** F reuses M, for a behavior B under a declared featurizer, to the extent that
+the variables F needs still have M's mechanisms, on the settings of their parents that occur. B is a partial function
+from inputs to outputs (§3.5.2); the variables F needs are a minimal circuit for B (§3.5.2), with two departures: a
+set of variables rather than connections, and base-model mechanisms in place of ablation values. The user's phrasing
+of the same thing: for a given abstraction of the network, reuse is the extent to which M's mechanisms can be
+interchanged into F.
 
-**Guard, as before.** The decomposition is declared or fitted on M only, never on F or to raise the reading, by analogy
-with Sutter et al. 2025, whose theorem concerns aligning an algorithm to a network rather than one decomposition read
-on two networks.
+**Guard, as before.** The featurizer is fixed from M only, never from F or to raise the reading, by analogy with
+Sutter et al. 2025, whose theorem concerns aligning an algorithm to a network rather than one featurizer applied to two
+networks.
 
-**Declared with every reading** (restored from the earlier rows; no values set here): the distance d, the threshold τ
-for keeping the behaviour, the value sets 𝒱_u of each part's inputs, the aggregation over K, and the rule when K is not
-unique. Each is declared per reading, as in the earlier rows.
+**Declared with every reading** (restored from the earlier rows; no values set here): the distance d, the tolerance
+for preserving B (τ in the earlier rows; α in the paper, since τ is Geiger's translation map), the value sets 𝒱_u of
+the settings of Pa(u), the aggregation over K, and the rule when K is not unique. Each is declared per reading, as in
+the earlier rows.
 
-**For the paper's paragraph on dependence on the abstraction.** The two extremes hold: the whole hidden computation as
-one part reads every new behaviour as new; the neuron case reads nearly everything as reuse (E208). Decompositions are
-not ordered from coarse to fine: an SAE or VPD decomposition is neither a coarsening nor a refinement of the neuron
-partition. Write "two extreme choices", not "coarsest and finest".
+**For the paper's paragraph on dependence on the featurizer.** The two extremes hold: the whole hidden computation as
+one variable reads every new behavior as new; single neurons as variables read nearly everything as reuse (E208).
+Featurizers are not ordered from coarse to fine: an SAE or VPD featurizer is neither coarser nor finer than single
+neurons. Write "two extreme choices", not "coarsest and finest".
 
 ## Part B (both items decided 2026-11-18; kept as a record)
 
