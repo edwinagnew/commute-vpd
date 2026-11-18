@@ -1,0 +1,81 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[data] train rows 0..4096: cached at /root/artifacts/sets/train_0_4096.npy
+[job] Cfg(d=768, expansion=32, k=100, k_max=1024, k_anneal_steps=2000, lr=0.0001, warmup=1000, batch=2048, tokens=200000000, epochs=2, aux_alpha=0.03125, dead_tokens=10000000, init_norm=1.0, target_rms=100.0, chunk_rows=1024, ls_tokens=100000, val_rows=8192, alive_min=10, top_n=1667, top_n_wide=5000, nu_r=0.5, nu_eps=0.2, shared=(0.4, 0.6), base_only=0.1, snapshots=(0.125, 0.25, 0.5), ckpt_every=10000, log_every=500, pile_start=32768, pool_start=131072, pool_rows=65536, repeat_cap=100)
+[job] Pile rows 32768..131072, pool rows 131072..196608, 97656 steps
+[check a self path: equal activations] ok {"max_abs": 0.0, "bar": 1e-05}
+[side self] training steps 0..97656; task text {"source": "fresh key-value windows", "tokens_per_window": 40, "per_chunk": 13082, "draws_per_epoch": 1255872, "unique": 1255872, "repeat_per_epoch": 1.0, "task_share": 0.5000076442079836}
+  step 0/97656 fve_batch -628.1 loss 1141 k 1024 dead 0 theta -1 ms_per_step 2431
+  step 500/97656 fve_batch -23.93 loss 461.5 k 793 dead 0 theta -1 ms_per_step 25.24
+  step 1000/97656 fve_batch 0.6586 loss 56.68 k 562 dead 0 theta -1 ms_per_step 29.48
+  step 1500/97656 fve_batch 0.874 loss 31.26 k 331 dead 0 theta 3.076 ms_per_step 29.67
+  step 2000/97656 fve_batch 0.9125 loss 39.28 k 100 dead 0 theta 3.372 ms_per_step 29.36
+  step 2500/97656 fve_batch 0.8948 loss 35.21 k 100 dead 0 theta 4.221 ms_per_step 29.2
+  step 3000/97656 fve_batch 0.8299 loss 33.2 k 100 dead 0 theta 4.647 ms_per_step 29.2
+  step 3500/97656 fve_batch 0.9152 loss 32.23 k 100 dead 0 theta 4.838 ms_per_step 29.2
+  step 4000/97656 fve_batch 0.9135 loss 31.5 k 100 dead 0 theta 4.904 ms_per_step 29.2
+  step 4500/97656 fve_batch 0.9219 loss 30.9 k 100 dead 0 theta 4.904 ms_per_step 29.2
+  step 5000/97656 fve_batch 0.8605 loss 30.27 k 100 dead 0 theta 4.875 ms_per_step 29.21
+  step 5500/97656 fve_batch 0.8629 loss 29.73 k 100 dead 0 theta 4.832 ms_per_step 29.2
+  step 6000/97656 fve_batch 0.8763 loss 29.59 k 100 dead 0 theta 4.784 ms_per_step 29.67
+  step 6500/97656 fve_batch 0.9107 loss 28.92 k 100 dead 0 theta 4.735 ms_per_step 29.24
+  step 7000/97656 fve_batch 0.9084 loss 28.68 k 100 dead 0 theta 4.689 ms_per_step 29.23
+  step 7500/97656 fve_batch 0.9089 loss 28.61 k 100 dead 0 theta 4.652 ms_per_step 29.22
+  step 8000/97656 fve_batch 0.9234 loss 28.04 k 100 dead 0 theta 4.616 ms_per_step 29.22
+  step 8500/97656 fve_batch 0.8822 loss 27.83 k 100 dead 0 theta 4.582 ms_per_step 29.21
+  step 9000/97656 fve_batch 0.9034 loss 27.73 k 100 dead 0 theta 4.552 ms_per_step 29.23
+  step 9500/97656 fve_batch 0.9328 loss 28.07 k 100 dead 0 theta 4.526 ms_per_step 29.22
+  step 10000/97656 fve_batch 0.9126 loss 27.68 k 100 dead 0 theta 4.506 ms_per_step 31.06
+  step 10500/97656 fve_batch 0.9329 loss 27.65 k 100 dead 0 theta 4.487 ms_per_step 29.23
+  step 11000/97656 fve_batch 0.9436 loss 27.35 k 100 dead 0 theta 4.467 ms_per_step 29.24
+  step 11500/97656 fve_batch 0.9155 loss 27.53 k 100 dead 0 theta 4.445 ms_per_step 29.23
+  step 12000/97656 fve_batch 0.9156 loss 27.39 k 100 dead 0 theta 4.426 ms_per_step 29.23
+Traceback (most recent call last):
+  File [35m"/root/work/experiments/crosscoder/run.py"[0m, line [35m585[0m, in [35m<module>[0m
+    hard_exit([31mmain[0m[1;31m()[0m)
+              [31m~~~~[0m[1;31m^^[0m
+  File [35m"/root/work/experiments/crosscoder/run.py"[0m, line [35m575[0m, in [35mmain[0m
+    [31mrun[0m[1;31m(a, P, cfg, tag, t_job)[0m
+    [31m~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/root/work/experiments/crosscoder/run.py"[0m, line [35m535[0m, in [35mrun[0m
+    [31mstage0a[0m[1;31m(job, T, a.stop_after)[0m
+    [31m~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/root/work/experiments/crosscoder/run.py"[0m, line [35m393[0m, in [35mstage0a[0m
+    rec = out["self"] = [31mjob.run_side[0m[1;31m(Side("self", task, task_name, job.zero), True, True, early, stop_after)[0m
+                        [31m~~~~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/root/work/experiments/crosscoder/run.py"[0m, line [35m286[0m, in [35mrun_side[0m
+    [31mCC.train[0m[1;31m(tr, self.stream(side, start), start, cfg.steps, cfg.log_every, curve, log, hook)[0m
+    [31m~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/root/work/src/commute/crosscoder.py"[0m, line [35m164[0m, in [35mtrain[0m
+    [31mhook[0m[1;31m(step + 1)[0m
+    [31m~~~~[0m[1;31m^^^^^^^^^^[0m
+  File [35m"/root/work/experiments/crosscoder/run.py"[0m, line [35m275[0m, in [35mhook[0m
+    snaps.append([31mself.score[0m[1;31m(tr.ae, side, h_ls, h_task, step, snaps[-1] if snaps else None)[0m[0])
+                 [31m~~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/root/work/experiments/crosscoder/run.py"[0m, line [35m309[0m, in [35mscore[0m
+    ev = CC.fve(ae, self.val_chunks(side, h_task))
+  File [35m"/root/work/.venv/lib/python3.13/site-packages/torch/utils/_contextlib.py"[0m, line [35m120[0m, in [35mdecorate_context[0m
+    return func(*args, **kwargs)
+  File [35m"/root/work/src/commute/crosscoder.py"[0m, line [35m188[0m, in [35mfve[0m
+    f = ae.encode(x)
+  File [35m"/root/work/.venv/lib/python3.13/site-packages/dictionary_learning/dictionary.py"[0m, line [35m1561[0m, in [35mencode[0m
+    post_relu_f = super().encode(
+        x, select_features=select_features, normalize_activations=False
+    )
+  File [35m"/root/work/.venv/lib/python3.13/site-packages/dictionary_learning/dictionary.py"[0m, line [35m1238[0m, in [35mencode[0m
+    return [31mself.encoder[0m[1;31m(x, **kwargs)[0m
+           [31m~~~~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^[0m
+  File [35m"/root/work/.venv/lib/python3.13/site-packages/torch/nn/modules/module.py"[0m, line [35m1773[0m, in [35m_wrapped_call_impl[0m
+    return [31mself._call_impl[0m[1;31m(*args, **kwargs)[0m
+           [31m~~~~~~~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^[0m
+  File [35m"/root/work/.venv/lib/python3.13/site-packages/torch/nn/modules/module.py"[0m, line [35m1784[0m, in [35m_call_impl[0m
+    return forward_call(*args, **kwargs)
+  File [35m"/root/work/.venv/lib/python3.13/site-packages/dictionary_learning/dictionary.py"[0m, line [35m892[0m, in [35mforward[0m
+    f = th.einsum("bld, ldf -> blf", x, w)
+  File [35m"/root/work/.venv/lib/python3.13/site-packages/torch/functional.py"[0m, line [35m422[0m, in [35meinsum[0m
+    return [31m_VF.einsum[0m[1;31m(equation, operands)[0m  # type: ignore[attr-defined]
+           [31m~~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^[0m
+[1;35mtorch.OutOfMemoryError[0m: [35mCUDA out of memory. Tried to allocate 95.81 GiB. GPU 0 has a total capacity of 79.18 GiB of which 52.97 GiB is free. Including non-PyTorch memory, this process has 26.20 GiB memory in use. Of the allocated memory 25.38 GiB is allocated by PyTorch, and 102.07 MiB is reserved by PyTorch but unallocated. If reserved but unallocated memory is large try setting PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True to avoid fragmentation.  See documentation for Memory Management  (https://pytorch.org/docs/stable/notes/cuda.html#environment-variables)[0m
+=== FINISHED (exit 1) — results in /root/work/experiments/crosscoder/results/run2/stage0a.json and /root/work/experiments/crosscoder/results/large/run2/ ===
