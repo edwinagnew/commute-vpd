@@ -64,6 +64,13 @@ sign on copy and cipher at both saves, and steering stays unreadable on four cel
 separation is not update size, while on Qwen no reading is yet shown to separate a pair beyond size. The premise check
 doubts the method: shrinking a saved update by one number is not a model that learned less.
 
+**Crosscoder (P2.31, added 11-18).** A model-diffing crosscoder with latent scaling, trained by the authors' own code
+and recipe, one per side, does not separate the built pairs: it puts the reuse side higher on 5 of 9 as built and 4 of
+9 size-matched by the authors' rule (6 and 6 when artefact latents count as fine-tune-only), short of the 7 of 9
+expected. Its own controls weaken it as a baseline: the planted new direction was not recovered cleanly, and a random
+update reads the most shared of all (`reports/analyses/2026-11-18_analysis_p2-31-crosscoder.md`). So it adds no call
+the share lacks, and it cannot by itself show the share beats model-diffing either.
+
 ## The premise doubts, and what each limits
 
 - **The redraw.** A column apart by seed range is not a method that tells the pair apart. Update size is itself a
