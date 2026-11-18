@@ -299,7 +299,7 @@ class Job:
     def val_chunks(self, side: Side, h_task: Tensor) -> Iterator[Tensor]:
         for r in self.val.split(self.cfg.chunk_rows):
             yield self.pair(r, side, False)
-        yield h_task
+        yield from CC.split(h_task, 65536)  # whole, its ~1M tokens' latents were 96 GiB (E203 stage 0 OOM)
 
     def score(self, ae: Any, side: Side, h_ls: Tensor, h_task: Tensor, step: int, prev: dict[str, Any] | None) -> tuple[dict[str, Any], dict[str, Any]]:
         """Every number of one crosscoder at `step`: FVE, the groups at N and at the wide N, the parts, d, the specific
