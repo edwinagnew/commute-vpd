@@ -1,0 +1,29 @@
+panel,method,keep,ratio,p_state,p_own,source,key,student_step
+adam,nothing,1.0,1.4993957620309288,0.9996110502987692,0.9996110502987692,experiments/split_comparison/results/split_comparison.json,.rows[10],
+adam,least_squares,1.0,2.1057374865466056,0.9996110502987692,0.9996110502987692,experiments/split_comparison/results/split_comparison.json,.rows[11],
+adam,adjoint,0.1038866844191165,0.9445814181290496,0.10384627772424983,0.9996110502987692,experiments/split_comparison/results/split_comparison.json,.rows[12],
+adam,rescaling,0.01277767496734073,0.9160386212482371,0.012772705094479758,0.9996110502987692,experiments/split_comparison/results/split_comparison.json,.rows[13],
+adam,teacher_task,0.9943193001928204,0.9401898446312847,0.9939325802946744,0.9996110707113187,experiments/teacher_training/results/teacher_training_emoticon.json,".teachers.adam.A[""100""]",100
+adam,teacher_task,0.9971379553660198,0.9590895263727047,0.9967501392103222,0.9996110707113187,experiments/teacher_training/results/teacher_training_emoticon.json,".teachers.adam.A[""1000""]",1000
+adam,teacher_pile,0.33923491860431215,0.9472556141334666,0.33910298020872354,0.9996110707113187,experiments/teacher_training/results/teacher_training_emoticon.json,".teachers.adam.B[""100""]",100
+adam,teacher_pile,0.9024669875143037,1.0492724857147842,0.9021159916707914,0.9996110707113187,experiments/teacher_training/results/teacher_training_emoticon.json,".teachers.adam.B[""1000""]",1000
+adam,w0,0.011585669732639272,1.0,0.011581163489858203,0.9996110502987692,experiments/split_comparison/results/split_comparison.json,".W0.pile[""0""].pgd_kl / .W0.pile[""0""].pgd_kl",
+adam,w0,0.011585669732639272,1.0748164182311881,0.011581163489858203,0.9996110502987692,experiments/split_comparison/results/split_comparison.json,".W0.pile[""1""].pgd_kl / .W0.pile[""0""].pgd_kl",
+adam,w0,0.011585669732639272,1.011305606493333,0.011581163489858203,0.9996110502987692,experiments/split_comparison/results/split_comparison.json,".W0.pile[""2""].pgd_kl / .W0.pile[""0""].pgd_kl",
+sgd,nothing,1.0,0.9838500839902932,0.9979975313356478,0.9979975313356478,experiments/small_finetune_splits/results/small_finetune_splits.json,.rows[6],
+sgd,least_squares,1.0,1.012735546084889,0.9979975313356478,0.9979975313356478,experiments/small_finetune_splits/results/small_finetune_splits.json,.rows[7],
+sgd,adjoint,0.6144000636544639,0.9673363074200388,0.6131697467796199,0.9979975313356478,experiments/small_finetune_splits/results/small_finetune_splits.json,.rows[8],
+sgd,teacher_task,0.994750183544866,1.038704409054328,0.9927582152902263,0.9979975190881181,experiments/teacher_training/results/teacher_training_emoticon.json,".teachers.sgd.A[""100""]",100
+sgd,teacher_task,1.0005086083674468,0.9421109021571191,0.9985051089770174,0.9979975190881181,experiments/teacher_training/results/teacher_training_emoticon.json,".teachers.sgd.A[""1000""]",1000
+sgd,teacher_pile,0.7448950860085365,0.9519116390301947,0.7434034478174497,0.9979975190881181,experiments/teacher_training/results/teacher_training_emoticon.json,".teachers.sgd.B[""100""]",100
+sgd,teacher_pile,0.9622453518700972,0.8954306030869381,0.9603184739204302,0.9979975190881181,experiments/teacher_training/results/teacher_training_emoticon.json,".teachers.sgd.B[""1000""]",1000
+sgd,w0,0.011604400939107345,1.0,0.011581163489858203,0.9979975313356478,experiments/split_comparison/results/split_comparison.json,".W0.pile[""0""].pgd_kl / .W0.pile[""0""].pgd_kl",
+sgd,w0,0.011604400939107345,1.0748164182311881,0.011581163489858203,0.9979975313356478,experiments/split_comparison/results/split_comparison.json,".W0.pile[""1""].pgd_kl / .W0.pile[""0""].pgd_kl",
+sgd,w0,0.011604400939107345,1.011305606493333,0.011581163489858203,0.9979975313356478,experiments/split_comparison/results/split_comparison.json,".W0.pile[""2""].pgd_kl / .W0.pile[""0""].pgd_kl",
+lora,nothing,1.0,1.0477429663753521,0.9998669444698177,0.9998669444698177,experiments/split_comparison/results/split_comparison.json,.rows[25],
+lora,least_squares,1.0,1.0653246984258253,0.9998669444698177,0.9998669444698177,experiments/split_comparison/results/split_comparison.json,.rows[26],
+lora,adjoint,0.06292470402500719,1.019990111965592,0.06291633154515158,0.9998669444698177,experiments/split_comparison/results/split_comparison.json,.rows[27],
+lora,rescaling,0.012262082197369403,1.0031852725348436,0.012260450659521492,0.9998669444698177,experiments/split_comparison/results/split_comparison.json,.rows[28],
+lora,w0,0.01158270463276406,1.0,0.011581163489858203,0.9998669444698177,experiments/split_comparison/results/split_comparison.json,".W0.pile[""0""].pgd_kl / .W0.pile[""0""].pgd_kl",
+lora,w0,0.01158270463276406,1.0748164182311881,0.011581163489858203,0.9998669444698177,experiments/split_comparison/results/split_comparison.json,".W0.pile[""1""].pgd_kl / .W0.pile[""0""].pgd_kl",
+lora,w0,0.01158270463276406,1.011305606493333,0.011581163489858203,0.9998669444698177,experiments/split_comparison/results/split_comparison.json,".W0.pile[""2""].pgd_kl / .W0.pile[""0""].pgd_kl",
