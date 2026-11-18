@@ -1,0 +1,692 @@
+== self A (uninterrupted): run.py 0a
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[data] train rows 0..4096: cached at /root/artifacts/sets/train_0_4096.npy
+[job] Cfg(d=768, expansion=2, k=100, k_max=1024, k_anneal_steps=200, lr=0.0001, warmup=100, batch=2048, tokens=4096000, epochs=2, aux_alpha=0.03125, dead_tokens=200000, init_norm=1.0, target_rms=100.0, chunk_rows=64, ls_tokens=20000, val_rows=64, alive_min=10, top_n=64, top_n_wide=192, nu_r=0.5, nu_eps=0.2, shared=(0.4, 0.6), base_only=0.1, snapshots=(0.125, 0.25, 0.5), ckpt_every=500, log_every=50, pile_start=32768, pool_start=131072, pool_rows=1024, repeat_cap=100)
+[job] Pile rows 32768..34816, pool rows 131072..132096, 2000 steps
+[check a self path: equal activations] ok {"max_abs": 0.0, "bar": 1e-05}
+[side self] training steps 0..2000; task text {"source": "fresh key-value windows", "tokens_per_window": 40, "per_chunk": 818, "draws_per_epoch": 26176, "unique": 26176, "repeat_per_epoch": 1.0, "task_share": 0.5001222792858889}
+  step 0/2000 fve_batch -4.02 loss 180 k 1024 dead 0 theta -1 ms_per_step 345.4
+  step 50/2000 fve_batch -1.981 loss 142.4 k 793 dead 0 theta -1 ms_per_step 6.446
+  step 100/2000 fve_batch -0.1914 loss 101 k 562 dead 0 theta -1 ms_per_step 8.91
+  step 150/2000 fve_batch 0.1529 loss 71.77 k 331 dead 0 theta -1 ms_per_step 5.938
+  step 200/2000 fve_batch 0.4527 loss 64.19 k 100 dead 0 theta -1 ms_per_step 8.527
+[side self] {"tokens": 512000, "fve_base": 0.7051092308918245, "fve_ft": 0.7051092308918245, "fve_change": "nan", "dead": 0.0, "d": "nan", "specific": 0.0, "shared_frac": "nan", "d_wide": "nan", "parts": {"ft_specific": 0.0, "shared": "nan", "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": "nan", "error": "nan"}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}}
+[check a self: FVE at the first snapshot] ok {"fve": 0.7051092308918245, "bar": -1.0}
+  step 250/2000 fve_batch 0.6119 loss 59.52 k 100 dead 0 theta -1 ms_per_step 9.316
+  step 300/2000 fve_batch 0.6419 loss 56.45 k 100 dead 0 theta -1 ms_per_step 8.496
+  step 350/2000 fve_batch 0.5965 loss 53.63 k 100 dead 0 theta -1 ms_per_step 5.612
+  step 400/2000 fve_batch 0.6105 loss 52.34 k 100 dead 0 theta -1 ms_per_step 8.368
+  step 450/2000 fve_batch 0.6689 loss 50.85 k 100 dead 0 theta -1 ms_per_step 8.44
+[side self] {"tokens": 1024000, "fve_base": 0.819310084000618, "fve_ft": 0.819310084000618, "fve_change": "nan", "dead": 0.0, "d": "nan", "specific": 0.0, "shared_frac": "nan", "d_wide": "nan", "parts": {"ft_specific": 0.0, "shared": "nan", "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": "nan", "error": "nan"}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "jaccard_prev": "nan"}
+  step 500/2000 fve_batch 0.7279 loss 49.41 k 100 dead 0 theta -1 ms_per_step 8.179
+  step 550/2000 fve_batch 0.7435 loss 48.64 k 100 dead 0 theta -1 ms_per_step 8.489
+  step 600/2000 fve_batch 0.6735 loss 47.82 k 100 dead 0 theta -1 ms_per_step 5.719
+  step 650/2000 fve_batch 0.6298 loss 47.33 k 100 dead 0 theta -1 ms_per_step 8.397
+  step 700/2000 fve_batch 0.6512 loss 46.19 k 100 dead 0 theta -1 ms_per_step 5.708
+  step 750/2000 fve_batch 0.7115 loss 46.19 k 100 dead 0 theta -1 ms_per_step 8.409
+  step 800/2000 fve_batch 0.6624 loss 45.13 k 100 dead 0 theta -1 ms_per_step 8.427
+  step 850/2000 fve_batch 0.7831 loss 45.18 k 100 dead 0 theta -1 ms_per_step 5.817
+  step 900/2000 fve_batch 0.8594 loss 44.67 k 100 dead 0 theta -1 ms_per_step 8.465
+  step 950/2000 fve_batch 0.7569 loss 44.47 k 100 dead 0 theta -1 ms_per_step 5.802
+[side self] {"tokens": 2048000, "fve_base": 0.860095085306968, "fve_ft": 0.860095085306968, "fve_change": "nan", "dead": 0.0, "d": "nan", "specific": 0.0, "shared_frac": "nan", "d_wide": "nan", "parts": {"ft_specific": 0.0, "shared": "nan", "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": "nan", "error": "nan"}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "jaccard_prev": "nan"}
+  step 1000/2000 fve_batch 0.7283 loss 44.06 k 100 dead 0 theta -1 ms_per_step 10.89
+  step 1050/2000 fve_batch 0.7833 loss 43.26 k 100 dead 0 theta 6.078 ms_per_step 6.101
+  step 1100/2000 fve_batch 0.7377 loss 43.54 k 100 dead 0 theta 6.075 ms_per_step 8.65
+  step 1150/2000 fve_batch 0.7764 loss 43.06 k 100 dead 0 theta 6.069 ms_per_step 8.599
+  step 1200/2000 fve_batch 0.8226 loss 42.77 k 100 dead 0 theta 6.062 ms_per_step 5.938
+  step 1250/2000 fve_batch 0.7809 loss 42.69 k 100 dead 0 theta 6.055 ms_per_step 8.654
+  step 1300/2000 fve_batch 0.7577 loss 43.07 k 100 dead 0 theta 6.047 ms_per_step 5.914
+  step 1350/2000 fve_batch 0.7066 loss 41.81 k 100 dead 0 theta 6.038 ms_per_step 8.673
+  step 1400/2000 fve_batch 0.7145 loss 41.74 k 100 dead 0 theta 6.028 ms_per_step 5.802
+  step 1450/2000 fve_batch 0.8249 loss 41.9 k 100 dead 0 theta 6.017 ms_per_step 8.612
+  step 1500/2000 fve_batch 0.726 loss 41.15 k 100 dead 0 theta 6.005 ms_per_step 6.643
+  step 1550/2000 fve_batch 0.8716 loss 41.54 k 100 dead 0 theta 5.992 ms_per_step 8.598
+  step 1600/2000 fve_batch 0.7695 loss 40.78 k 100 dead 0 theta 5.979 ms_per_step 8.689
+  step 1650/2000 fve_batch 0.8448 loss 40.61 k 100 dead 0 theta 5.965 ms_per_step 5.828
+  step 1700/2000 fve_batch 0.8953 loss 40.83 k 100 dead 0 theta 5.951 ms_per_step 8.697
+  step 1750/2000 fve_batch 0.757 loss 41.16 k 100 dead 0 theta 5.937 ms_per_step 5.936
+  step 1800/2000 fve_batch 0.7274 loss 40.72 k 100 dead 0 theta 5.923 ms_per_step 8.587
+  step 1850/2000 fve_batch 0.7421 loss 39.89 k 100 dead 0 theta 5.909 ms_per_step 5.875
+  step 1900/2000 fve_batch 0.8097 loss 40.1 k 100 dead 0 theta 5.892 ms_per_step 8.567
+  step 1950/2000 fve_batch 0.8572 loss 40.27 k 100 dead 0 theta 5.877 ms_per_step 8.639
+  step 1999/2000 fve_batch 0.7764 loss 39.81 k 100 dead 0 theta 5.863 ms_per_step 5.889
+[side self] {"tokens": 4096000, "fve_base": 0.7904706662477541, "fve_ft": 0.7904706662477541, "fve_change": "nan", "dead": 0.0, "d": "nan", "specific": 0.0, "shared_frac": "nan", "d_wide": "nan", "parts": {"ft_specific": 0.0, "shared": "nan", "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": "nan", "error": "nan"}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "jaccard_prev": "nan", "minutes": 0.26421087185541786}
+[check a self: relative norms at 0.5] ok {"max_dev": 0.0, "bar": 0.001}
+[check a self: no fine-tune-specific latent] ok {"counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}}
+[check a self: FVE] ok {"fve": [0.7904706662477541, 0.7904706662477541], "bar": -1.0}
+[check a self: dead share] ok {"dead": 0.0, "bar": 1.0}
+[done] peak GPU 6.1 GB
+STAGE 0a DONE
+FINISHED 0a  in 0.6 min, exit 0; wrote: /root/work/experiments/crosscoder/results/large/run2_rehearsal/self.pt experiments/crosscoder/results/run2_rehearsal/stage0a.json
+peak host RSS 6.2 GB
+== self A (uninterrupted): exit 0 in 35 s
+== self B (uninterrupted, the floor): run.py 0a
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[job] Cfg(d=768, expansion=2, k=100, k_max=1024, k_anneal_steps=200, lr=0.0001, warmup=100, batch=2048, tokens=4096000, epochs=2, aux_alpha=0.03125, dead_tokens=200000, init_norm=1.0, target_rms=100.0, chunk_rows=64, ls_tokens=20000, val_rows=64, alive_min=10, top_n=64, top_n_wide=192, nu_r=0.5, nu_eps=0.2, shared=(0.4, 0.6), base_only=0.1, snapshots=(0.125, 0.25, 0.5), ckpt_every=500, log_every=50, pile_start=32768, pool_start=131072, pool_rows=1024, repeat_cap=100)
+[job] Pile rows 32768..34816, pool rows 131072..132096, 2000 steps
+[check a self path: equal activations] ok {"max_abs": 0.0, "bar": 1e-05}
+[side self] training steps 0..2000; task text {"source": "fresh key-value windows", "tokens_per_window": 40, "per_chunk": 818, "draws_per_epoch": 26176, "unique": 26176, "repeat_per_epoch": 1.0, "task_share": 0.5001222792858889}
+  step 0/2000 fve_batch -4.02 loss 180 k 1024 dead 0 theta -1 ms_per_step 285.4
+  step 50/2000 fve_batch -1.981 loss 142.4 k 793 dead 0 theta -1 ms_per_step 6.316
+  step 100/2000 fve_batch -0.1914 loss 101 k 562 dead 0 theta -1 ms_per_step 8.867
+  step 150/2000 fve_batch 0.1529 loss 71.77 k 331 dead 0 theta -1 ms_per_step 5.938
+  step 200/2000 fve_batch 0.4527 loss 64.19 k 100 dead 0 theta -1 ms_per_step 8.546
+[side self] {"tokens": 512000, "fve_base": 0.7051092308918245, "fve_ft": 0.7051092308918245, "fve_change": "nan", "dead": 0.0, "d": "nan", "specific": 0.0, "shared_frac": "nan", "d_wide": "nan", "parts": {"ft_specific": 0.0, "shared": "nan", "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": "nan", "error": "nan"}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}}
+[check a self: FVE at the first snapshot] ok {"fve": 0.7051092308918245, "bar": -1.0}
+  step 250/2000 fve_batch 0.6119 loss 59.52 k 100 dead 0 theta -1 ms_per_step 9.227
+  step 300/2000 fve_batch 0.6419 loss 56.45 k 100 dead 0 theta -1 ms_per_step 8.452
+  step 350/2000 fve_batch 0.5965 loss 53.63 k 100 dead 0 theta -1 ms_per_step 5.673
+  step 400/2000 fve_batch 0.6105 loss 52.34 k 100 dead 0 theta -1 ms_per_step 8.463
+  step 450/2000 fve_batch 0.6689 loss 50.85 k 100 dead 0 theta -1 ms_per_step 8.513
+[side self] {"tokens": 1024000, "fve_base": 0.819310084000618, "fve_ft": 0.819310084000618, "fve_change": "nan", "dead": 0.0, "d": "nan", "specific": 0.0, "shared_frac": "nan", "d_wide": "nan", "parts": {"ft_specific": 0.0, "shared": "nan", "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": "nan", "error": "nan"}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "jaccard_prev": "nan"}
+  step 500/2000 fve_batch 0.7279 loss 49.41 k 100 dead 0 theta -1 ms_per_step 8.4
+  step 550/2000 fve_batch 0.7435 loss 48.64 k 100 dead 0 theta -1 ms_per_step 8.412
+  step 600/2000 fve_batch 0.6735 loss 47.82 k 100 dead 0 theta -1 ms_per_step 5.719
+  step 650/2000 fve_batch 0.6298 loss 47.33 k 100 dead 0 theta -1 ms_per_step 8.461
+  step 700/2000 fve_batch 0.6512 loss 46.19 k 100 dead 0 theta -1 ms_per_step 5.717
+  step 750/2000 fve_batch 0.7115 loss 46.19 k 100 dead 0 theta -1 ms_per_step 8.533
+  step 800/2000 fve_batch 0.6624 loss 45.13 k 100 dead 0 theta -1 ms_per_step 8.439
+  step 850/2000 fve_batch 0.7831 loss 45.18 k 100 dead 0 theta -1 ms_per_step 5.65
+  step 900/2000 fve_batch 0.8594 loss 44.67 k 100 dead 0 theta -1 ms_per_step 8.418
+  step 950/2000 fve_batch 0.7569 loss 44.47 k 100 dead 0 theta -1 ms_per_step 5.722
+[side self] {"tokens": 2048000, "fve_base": 0.860095085306968, "fve_ft": 0.860095085306968, "fve_change": "nan", "dead": 0.0, "d": "nan", "specific": 0.0, "shared_frac": "nan", "d_wide": "nan", "parts": {"ft_specific": 0.0, "shared": "nan", "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": "nan", "error": "nan"}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "jaccard_prev": "nan"}
+  step 1000/2000 fve_batch 0.7283 loss 44.06 k 100 dead 0 theta -1 ms_per_step 10.95
+  step 1050/2000 fve_batch 0.7833 loss 43.26 k 100 dead 0 theta 6.078 ms_per_step 6.008
+  step 1100/2000 fve_batch 0.7377 loss 43.54 k 100 dead 0 theta 6.075 ms_per_step 8.685
+  step 1150/2000 fve_batch 0.7764 loss 43.06 k 100 dead 0 theta 6.069 ms_per_step 8.608
+  step 1200/2000 fve_batch 0.8226 loss 42.77 k 100 dead 0 theta 6.062 ms_per_step 5.906
+  step 1250/2000 fve_batch 0.7809 loss 42.69 k 100 dead 0 theta 6.055 ms_per_step 8.727
+  step 1300/2000 fve_batch 0.7577 loss 43.07 k 100 dead 0 theta 6.047 ms_per_step 5.917
+  step 1350/2000 fve_batch 0.7066 loss 41.81 k 100 dead 0 theta 6.038 ms_per_step 8.709
+  step 1400/2000 fve_batch 0.7145 loss 41.74 k 100 dead 0 theta 6.028 ms_per_step 5.941
+  step 1450/2000 fve_batch 0.8249 loss 41.9 k 100 dead 0 theta 6.017 ms_per_step 8.585
+  step 1500/2000 fve_batch 0.726 loss 41.15 k 100 dead 0 theta 6.005 ms_per_step 6.582
+  step 1550/2000 fve_batch 0.8716 loss 41.54 k 100 dead 0 theta 5.992 ms_per_step 8.719
+  step 1600/2000 fve_batch 0.7695 loss 40.78 k 100 dead 0 theta 5.979 ms_per_step 8.581
+  step 1650/2000 fve_batch 0.8448 loss 40.61 k 100 dead 0 theta 5.965 ms_per_step 5.881
+  step 1700/2000 fve_batch 0.8953 loss 40.83 k 100 dead 0 theta 5.951 ms_per_step 8.657
+  step 1750/2000 fve_batch 0.757 loss 41.16 k 100 dead 0 theta 5.937 ms_per_step 6.027
+  step 1800/2000 fve_batch 0.7274 loss 40.72 k 100 dead 0 theta 5.923 ms_per_step 8.632
+  step 1850/2000 fve_batch 0.7421 loss 39.89 k 100 dead 0 theta 5.909 ms_per_step 5.828
+  step 1900/2000 fve_batch 0.8097 loss 40.1 k 100 dead 0 theta 5.892 ms_per_step 8.56
+  step 1950/2000 fve_batch 0.8572 loss 40.27 k 100 dead 0 theta 5.877 ms_per_step 8.623
+  step 1999/2000 fve_batch 0.7764 loss 39.81 k 100 dead 0 theta 5.863 ms_per_step 5.888
+[side self] {"tokens": 4096000, "fve_base": 0.7904706662477541, "fve_ft": 0.7904706662477541, "fve_change": "nan", "dead": 0.0, "d": "nan", "specific": 0.0, "shared_frac": "nan", "d_wide": "nan", "parts": {"ft_specific": 0.0, "shared": "nan", "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": "nan", "error": "nan"}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "jaccard_prev": "nan", "minutes": 0.26271198987960814}
+[check a self: relative norms at 0.5] ok {"max_dev": 0.0, "bar": 0.001}
+[check a self: no fine-tune-specific latent] ok {"counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}}
+[check a self: FVE] ok {"fve": [0.7904706662477541, 0.7904706662477541], "bar": -1.0}
+[check a self: dead share] ok {"dead": 0.0, "bar": 1.0}
+[done] peak GPU 6.1 GB
+STAGE 0a DONE
+FINISHED 0a  in 0.4 min, exit 0; wrote: /root/work/experiments/crosscoder/results/large/run2_rehearsal/self.pt experiments/crosscoder/results/run2_rehearsal/stage0a.json
+peak host RSS 6.2 GB
+== self B (uninterrupted, the floor): exit 0 in 29 s
+== self C (stopped after step 1000): run.py 0a --stop-after 1000
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[job] Cfg(d=768, expansion=2, k=100, k_max=1024, k_anneal_steps=200, lr=0.0001, warmup=100, batch=2048, tokens=4096000, epochs=2, aux_alpha=0.03125, dead_tokens=200000, init_norm=1.0, target_rms=100.0, chunk_rows=64, ls_tokens=20000, val_rows=64, alive_min=10, top_n=64, top_n_wide=192, nu_r=0.5, nu_eps=0.2, shared=(0.4, 0.6), base_only=0.1, snapshots=(0.125, 0.25, 0.5), ckpt_every=500, log_every=50, pile_start=32768, pool_start=131072, pool_rows=1024, repeat_cap=100)
+[job] Pile rows 32768..34816, pool rows 131072..132096, 2000 steps
+[check a self path: equal activations] ok {"max_abs": 0.0, "bar": 1e-05}
+[side self] training steps 0..2000; task text {"source": "fresh key-value windows", "tokens_per_window": 40, "per_chunk": 818, "draws_per_epoch": 26176, "unique": 26176, "repeat_per_epoch": 1.0, "task_share": 0.5001222792858889}
+  step 0/2000 fve_batch -4.02 loss 180 k 1024 dead 0 theta -1 ms_per_step 287.5
+  step 50/2000 fve_batch -1.981 loss 142.4 k 793 dead 0 theta -1 ms_per_step 6.365
+  step 100/2000 fve_batch -0.1914 loss 101 k 562 dead 0 theta -1 ms_per_step 8.888
+  step 150/2000 fve_batch 0.1529 loss 71.77 k 331 dead 0 theta -1 ms_per_step 5.938
+  step 200/2000 fve_batch 0.4527 loss 64.19 k 100 dead 0 theta -1 ms_per_step 8.524
+[side self] {"tokens": 512000, "fve_base": 0.7051092308918245, "fve_ft": 0.7051092308918245, "fve_change": "nan", "dead": 0.0, "d": "nan", "specific": 0.0, "shared_frac": "nan", "d_wide": "nan", "parts": {"ft_specific": 0.0, "shared": "nan", "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": "nan", "error": "nan"}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}}
+[check a self: FVE at the first snapshot] ok {"fve": 0.7051092308918245, "bar": -1.0}
+  step 250/2000 fve_batch 0.6119 loss 59.52 k 100 dead 0 theta -1 ms_per_step 8.871
+  step 300/2000 fve_batch 0.6419 loss 56.45 k 100 dead 0 theta -1 ms_per_step 8.384
+  step 350/2000 fve_batch 0.5965 loss 53.63 k 100 dead 0 theta -1 ms_per_step 5.674
+  step 400/2000 fve_batch 0.6105 loss 52.34 k 100 dead 0 theta -1 ms_per_step 8.432
+  step 450/2000 fve_batch 0.6689 loss 50.85 k 100 dead 0 theta -1 ms_per_step 8.538
+[side self] {"tokens": 1024000, "fve_base": 0.819310084000618, "fve_ft": 0.819310084000618, "fve_change": "nan", "dead": 0.0, "d": "nan", "specific": 0.0, "shared_frac": "nan", "d_wide": "nan", "parts": {"ft_specific": 0.0, "shared": "nan", "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": "nan", "error": "nan"}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "jaccard_prev": "nan"}
+  step 500/2000 fve_batch 0.7279 loss 49.41 k 100 dead 0 theta -1 ms_per_step 8.12
+  step 550/2000 fve_batch 0.7435 loss 48.64 k 100 dead 0 theta -1 ms_per_step 8.381
+  step 600/2000 fve_batch 0.6735 loss 47.82 k 100 dead 0 theta -1 ms_per_step 5.64
+  step 650/2000 fve_batch 0.6298 loss 47.33 k 100 dead 0 theta -1 ms_per_step 8.378
+  step 700/2000 fve_batch 0.6512 loss 46.19 k 100 dead 0 theta -1 ms_per_step 5.681
+  step 750/2000 fve_batch 0.7115 loss 46.19 k 100 dead 0 theta -1 ms_per_step 8.402
+  step 800/2000 fve_batch 0.6624 loss 45.13 k 100 dead 0 theta -1 ms_per_step 8.39
+  step 850/2000 fve_batch 0.7831 loss 45.18 k 100 dead 0 theta -1 ms_per_step 5.667
+  step 900/2000 fve_batch 0.8594 loss 44.67 k 100 dead 0 theta -1 ms_per_step 8.402
+  step 950/2000 fve_batch 0.7569 loss 44.47 k 100 dead 0 theta -1 ms_per_step 5.648
+[side self] {"tokens": 2048000, "fve_base": 0.860095085306968, "fve_ft": 0.860095085306968, "fve_change": "nan", "dead": 0.0, "d": "nan", "specific": 0.0, "shared_frac": "nan", "d_wide": "nan", "parts": {"ft_specific": 0.0, "shared": "nan", "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": "nan", "error": "nan"}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "jaccard_prev": "nan"}
+[side self] stopped after step 1000 (--stop-after)
+peak host RSS 6.2 GB
+== self C (stopped after step 1000): exit 3 in 20 s
+total 55368
+drwxr-xr-x 2 root root       29 Nov 17 23:57 .
+drwxr-xr-x 3 root root       45 Nov 17 23:57 ..
+-rw-r--r-- 1 root root 56696129 Nov 17 23:57 self.pt
+== self C (resumed): run.py 0a
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[job] Cfg(d=768, expansion=2, k=100, k_max=1024, k_anneal_steps=200, lr=0.0001, warmup=100, batch=2048, tokens=4096000, epochs=2, aux_alpha=0.03125, dead_tokens=200000, init_norm=1.0, target_rms=100.0, chunk_rows=64, ls_tokens=20000, val_rows=64, alive_min=10, top_n=64, top_n_wide=192, nu_r=0.5, nu_eps=0.2, shared=(0.4, 0.6), base_only=0.1, snapshots=(0.125, 0.25, 0.5), ckpt_every=500, log_every=50, pile_start=32768, pool_start=131072, pool_rows=1024, repeat_cap=100)
+[job] Pile rows 32768..34816, pool rows 131072..132096, 2000 steps
+[check a self path: equal activations] ok {"max_abs": 0.0, "bar": 1e-05}
+[side self] resumed at step 1000
+[side self] training steps 1000..2000; task text {"source": "fresh key-value windows", "tokens_per_window": 40, "per_chunk": 818, "draws_per_epoch": 26176, "unique": 26176, "repeat_per_epoch": 1.0, "task_share": 0.5001222792858889}
+  step 1000/2000 fve_batch 0.7283 loss 44.06 k 100 dead 0 theta -1 ms_per_step 276.8
+  step 1050/2000 fve_batch 0.7833 loss 43.26 k 100 dead 0 theta 6.078 ms_per_step 6.183
+  step 1100/2000 fve_batch 0.7377 loss 43.54 k 100 dead 0 theta 6.075 ms_per_step 8.711
+  step 1150/2000 fve_batch 0.7764 loss 43.06 k 100 dead 0 theta 6.069 ms_per_step 8.734
+  step 1200/2000 fve_batch 0.8226 loss 42.77 k 100 dead 0 theta 6.062 ms_per_step 5.821
+  step 1250/2000 fve_batch 0.7809 loss 42.69 k 100 dead 0 theta 6.055 ms_per_step 8.545
+  step 1300/2000 fve_batch 0.7577 loss 43.07 k 100 dead 0 theta 6.047 ms_per_step 5.787
+  step 1350/2000 fve_batch 0.7066 loss 41.81 k 100 dead 0 theta 6.038 ms_per_step 8.549
+  step 1400/2000 fve_batch 0.7145 loss 41.74 k 100 dead 0 theta 6.028 ms_per_step 5.815
+  step 1450/2000 fve_batch 0.8249 loss 41.9 k 100 dead 0 theta 6.017 ms_per_step 8.594
+  step 1500/2000 fve_batch 0.726 loss 41.15 k 100 dead 0 theta 6.005 ms_per_step 7.049
+  step 1550/2000 fve_batch 0.8716 loss 41.54 k 100 dead 0 theta 5.992 ms_per_step 8.661
+  step 1600/2000 fve_batch 0.7695 loss 40.78 k 100 dead 0 theta 5.979 ms_per_step 8.556
+  step 1650/2000 fve_batch 0.8448 loss 40.61 k 100 dead 0 theta 5.965 ms_per_step 5.806
+  step 1700/2000 fve_batch 0.8953 loss 40.83 k 100 dead 0 theta 5.951 ms_per_step 8.74
+  step 1750/2000 fve_batch 0.757 loss 41.16 k 100 dead 0 theta 5.937 ms_per_step 5.857
+  step 1800/2000 fve_batch 0.7274 loss 40.72 k 100 dead 0 theta 5.923 ms_per_step 8.644
+  step 1850/2000 fve_batch 0.7421 loss 39.89 k 100 dead 0 theta 5.909 ms_per_step 5.809
+  step 1900/2000 fve_batch 0.8097 loss 40.1 k 100 dead 0 theta 5.892 ms_per_step 8.524
+  step 1950/2000 fve_batch 0.8572 loss 40.27 k 100 dead 0 theta 5.877 ms_per_step 8.564
+  step 1999/2000 fve_batch 0.7764 loss 39.81 k 100 dead 0 theta 5.863 ms_per_step 5.915
+[side self] {"tokens": 4096000, "fve_base": 0.7904706662477541, "fve_ft": 0.7904706662477541, "fve_change": "nan", "dead": 0.0, "d": "nan", "specific": 0.0, "shared_frac": "nan", "d_wide": "nan", "parts": {"ft_specific": 0.0, "shared": "nan", "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": "nan", "error": "nan"}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "jaccard_prev": "nan", "minutes": 0.1351220409075419}
+[check a self: relative norms at 0.5] ok {"max_dev": 0.0, "bar": 0.001}
+[check a self: no fine-tune-specific latent] ok {"counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}}
+[check a self: FVE] ok {"fve": [0.7904706662477541, 0.7904706662477541], "bar": -1.0}
+[check a self: dead share] ok {"dead": 0.0, "bar": 1.0}
+[done] peak GPU 6.1 GB
+STAGE 0a DONE
+FINISHED 0a  in 0.3 min, exit 0; wrote: /root/work/experiments/crosscoder/results/large/run2_rehearsal/self.pt experiments/crosscoder/results/run2_rehearsal/stage0a.json
+peak host RSS 6.2 GB
+== self C (resumed): exit 0 in 21 s
+== resume check: run.py resumecheck
+[resumecheck] PASS {"resumed_at": 1000, "floor_max_rel": 0.0, "resumed_max_rel": 0.0, "steps_compared": 21, "pass": true}
+STAGE resumecheck DONE
+FINISHED resumecheck  in 0.0 min, exit 0; wrote: experiments/crosscoder/results/run2_rehearsal/resume_check.json
+peak host RSS 0.6 GB
+== resume check: exit 0 in 2 s
+== planted: run.py 0b
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[job] Cfg(d=768, expansion=2, k=100, k_max=1024, k_anneal_steps=200, lr=0.0001, warmup=100, batch=2048, tokens=4096000, epochs=2, aux_alpha=0.03125, dead_tokens=200000, init_norm=1.0, target_rms=100.0, chunk_rows=64, ls_tokens=20000, val_rows=64, alive_min=10, top_n=64, top_n_wide=192, nu_r=0.5, nu_eps=0.2, shared=(0.4, 0.6), base_only=0.1, snapshots=(0.125, 0.25, 0.5), ckpt_every=500, log_every=50, pile_start=32768, pool_start=131072, pool_rows=1024, repeat_cap=100)
+[job] Pile rows 32768..34816, pool rows 131072..132096, 2000 steps
+[side planted] training steps 0..2000; task text {"source": "fresh key-value windows", "tokens_per_window": 40, "per_chunk": 818, "draws_per_epoch": 26176, "unique": 26176, "repeat_per_epoch": 1.0, "task_share": 0.5001222792858889}
+  step 0/2000 fve_batch -4.01 loss 180.1 k 1024 dead 0 theta -1 ms_per_step 266.3
+  step 50/2000 fve_batch -1.974 loss 142.4 k 793 dead 0 theta -1 ms_per_step 6.354
+  step 100/2000 fve_batch -0.1905 loss 100.9 k 562 dead 0 theta -1 ms_per_step 8.921
+  step 150/2000 fve_batch 0.1549 loss 71.76 k 331 dead 0 theta -1 ms_per_step 5.941
+  step 200/2000 fve_batch 0.4531 loss 64.18 k 100 dead 0 theta -1 ms_per_step 8.527
+[side planted] {"tokens": 512000, "fve_base": 0.7054290159728736, "fve_ft": 0.7026372618202142, "fve_change": 0.9115052339850753, "dead": 0.0, "d": 0.8514036386983337, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.8514036386983337, "parts": {"ft_specific": 0.0, "shared": 0.8514036386983337, "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.008080235548281228, "error": 0.1405161257533851}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 1168, "s": 0.05861868328724162, "rn": 0.5300130248069763, "rank": 3, "nu_r": 0.6203574517351075, "nu_eps": 0.7892296155139711, "specific": false}, "cos_planted_best": "nan"}
+  step 250/2000 fve_batch 0.6128 loss 59.47 k 100 dead 0 theta -1 ms_per_step 9.163
+  step 300/2000 fve_batch 0.6433 loss 56.37 k 100 dead 0 theta -1 ms_per_step 8.489
+  step 350/2000 fve_batch 0.5984 loss 53.55 k 100 dead 0 theta -1 ms_per_step 5.765
+  step 400/2000 fve_batch 0.6127 loss 52.24 k 100 dead 0 theta -1 ms_per_step 8.676
+  step 450/2000 fve_batch 0.6707 loss 50.76 k 100 dead 0 theta -1 ms_per_step 8.457
+[side planted] {"tokens": 1024000, "fve_base": 0.8190593111017469, "fve_ft": 0.8185706509669882, "fve_change": 0.9743257927823001, "dead": 0.0, "d": 0.9527235673395837, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.9527235673395837, "parts": {"ft_specific": 0.0, "shared": 0.9527235673395837, "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.00778258030695007, "error": 0.03949385235346618}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 228, "s": 0.09597996451864647, "rn": 0.5514319539070129, "rank": 1, "nu_r": 0.33216360202619527, "nu_eps": 0.7672414371981747, "specific": false}, "jaccard_prev": "nan", "cos_planted_best": "nan"}
+  step 500/2000 fve_batch 0.7294 loss 49.32 k 100 dead 0 theta -1 ms_per_step 8.126
+  step 550/2000 fve_batch 0.7443 loss 48.55 k 100 dead 0 theta -1 ms_per_step 8.443
+  step 600/2000 fve_batch 0.6752 loss 47.74 k 100 dead 0 theta -1 ms_per_step 5.674
+  step 650/2000 fve_batch 0.6324 loss 47.24 k 100 dead 0 theta -1 ms_per_step 8.47
+  step 700/2000 fve_batch 0.6531 loss 46.1 k 100 dead 0 theta -1 ms_per_step 5.801
+  step 750/2000 fve_batch 0.7134 loss 46.1 k 100 dead 0 theta -1 ms_per_step 8.41
+  step 800/2000 fve_batch 0.6643 loss 45.04 k 100 dead 0 theta -1 ms_per_step 8.509
+  step 850/2000 fve_batch 0.7837 loss 45.1 k 100 dead 0 theta -1 ms_per_step 5.833
+  step 900/2000 fve_batch 0.86 loss 44.59 k 100 dead 0 theta -1 ms_per_step 8.423
+  step 950/2000 fve_batch 0.7579 loss 44.38 k 100 dead 0 theta -1 ms_per_step 5.732
+[side planted] {"tokens": 2048000, "fve_base": 0.8598428487997107, "fve_ft": 0.8599406614550498, "fve_change": 0.9891522929033394, "dead": 0.0, "d": 0.9598845655989777, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.9598845655989777, "parts": {"ft_specific": 0.0, "shared": 0.9598845655989777, "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.007608368812808144, "error": 0.03250706558821413}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 401, "s": 0.10892224715717365, "rn": 0.5427400469779968, "rank": 2, "nu_r": 0.2280244193519195, "nu_eps": 0.7910615422888253, "specific": false}, "jaccard_prev": "nan", "cos_planted_best": "nan"}
+  step 1000/2000 fve_batch 0.7296 loss 43.97 k 100 dead 0 theta -1 ms_per_step 10.92
+  step 1050/2000 fve_batch 0.7845 loss 43.18 k 100 dead 0 theta 6.063 ms_per_step 6.046
+  step 1100/2000 fve_batch 0.7391 loss 43.46 k 100 dead 0 theta 6.06 ms_per_step 8.655
+  step 1150/2000 fve_batch 0.7774 loss 42.99 k 100 dead 0 theta 6.055 ms_per_step 8.584
+  step 1200/2000 fve_batch 0.8231 loss 42.69 k 100 dead 0 theta 6.048 ms_per_step 5.941
+  step 1250/2000 fve_batch 0.782 loss 42.6 k 100 dead 0 theta 6.041 ms_per_step 8.64
+  step 1300/2000 fve_batch 0.7587 loss 42.99 k 100 dead 0 theta 6.033 ms_per_step 5.97
+  step 1350/2000 fve_batch 0.709 loss 41.73 k 100 dead 0 theta 6.024 ms_per_step 8.587
+  step 1400/2000 fve_batch 0.7167 loss 41.66 k 100 dead 0 theta 6.014 ms_per_step 5.818
+  step 1450/2000 fve_batch 0.8254 loss 41.84 k 100 dead 0 theta 6.003 ms_per_step 8.634
+  step 1500/2000 fve_batch 0.7278 loss 41.07 k 100 dead 0 theta 5.991 ms_per_step 6.673
+  step 1550/2000 fve_batch 0.8717 loss 41.47 k 100 dead 0 theta 5.979 ms_per_step 8.572
+  step 1600/2000 fve_batch 0.7709 loss 40.69 k 100 dead 0 theta 5.965 ms_per_step 8.646
+  step 1650/2000 fve_batch 0.8453 loss 40.52 k 100 dead 0 theta 5.952 ms_per_step 5.94
+  step 1700/2000 fve_batch 0.8955 loss 40.76 k 100 dead 0 theta 5.938 ms_per_step 8.676
+  step 1750/2000 fve_batch 0.7584 loss 41.08 k 100 dead 0 theta 5.924 ms_per_step 5.933
+  step 1800/2000 fve_batch 0.7287 loss 40.64 k 100 dead 0 theta 5.91 ms_per_step 8.586
+  step 1850/2000 fve_batch 0.7442 loss 39.81 k 100 dead 0 theta 5.896 ms_per_step 5.849
+  step 1900/2000 fve_batch 0.8109 loss 40.02 k 100 dead 0 theta 5.879 ms_per_step 8.628
+  step 1950/2000 fve_batch 0.8578 loss 40.19 k 100 dead 0 theta 5.864 ms_per_step 8.639
+  step 1999/2000 fve_batch 0.7778 loss 39.72 k 100 dead 0 theta 5.85 ms_per_step 6.057
+[side planted] {"tokens": 4096000, "fve_base": 0.7900988177811976, "fve_ft": 0.7904453603370545, "fve_change": 0.996883878248698, "dead": 0.0, "d": 0.9889939210947711, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.9889939210947711, "parts": {"ft_specific": 0.0, "shared": 0.9889939210947711, "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.007410881030756097, "error": 0.00359519787447277}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 401, "s": 0.13408939014418098, "rn": 0.5429303050041199, "rank": 1, "nu_r": 0.039780541793774, "nu_eps": 0.8028004654672273, "specific": false}, "jaccard_prev": "nan", "cos_planted_best": "nan", "minutes": 0.2626787304878235}
+[check b planted: found, specific and carried] ok {"lead": {"latent": 401, "s": 0.13408939014418098, "rn": 0.5429303050041199, "rank": 1, "nu_r": 0.039780541793774, "nu_eps": 0.8028004654672273, "specific": false}, "part": 0.0, "bar": -1.0}
+[done] peak GPU 6.1 GB
+STAGE 0b DONE
+FINISHED 0b  in 0.5 min, exit 0; wrote: /root/work/experiments/crosscoder/results/large/run2_rehearsal/planted.pt experiments/crosscoder/results/run2_rehearsal/stage0b.json
+peak host RSS 6.2 GB
+== planted: exit 0 in 30 s
+== timing: run.py t
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[job] Cfg(d=768, expansion=2, k=100, k_max=1024, k_anneal_steps=200, lr=0.0001, warmup=100, batch=2048, tokens=4096000, epochs=2, aux_alpha=0.03125, dead_tokens=200000, init_norm=1.0, target_rms=100.0, chunk_rows=64, ls_tokens=20000, val_rows=64, alive_min=10, top_n=64, top_n_wide=192, nu_r=0.5, nu_eps=0.2, shared=(0.4, 0.6), base_only=0.1, snapshots=(0.125, 0.25, 0.5), ckpt_every=500, log_every=50, pile_start=32768, pool_start=131072, pool_rows=1024, repeat_cap=100)
+[job] Pile rows 32768..34816, pool rows 131072..132096, 2000 steps
+[timing] tf32=False: 3.10 ms/step, 0.1 min of steps per crosscoder
+[timing] tf32=True: 2.27 ms/step, 0.1 min of steps per crosscoder
+[done] peak GPU 5.1 GB
+STAGE t DONE
+FINISHED t  in 0.2 min, exit 0; wrote: experiments/crosscoder/results/run2_rehearsal/timing.json
+peak host RSS 6.2 GB
+== timing: exit 0 in 16 s
+== stage 1 reuse: run.py 1 reuse
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[job] Cfg(d=768, expansion=2, k=100, k_max=1024, k_anneal_steps=200, lr=0.0001, warmup=100, batch=2048, tokens=4096000, epochs=2, aux_alpha=0.03125, dead_tokens=200000, init_norm=1.0, target_rms=100.0, chunk_rows=64, ls_tokens=20000, val_rows=64, alive_min=10, top_n=64, top_n_wide=192, nu_r=0.5, nu_eps=0.2, shared=(0.4, 0.6), base_only=0.1, snapshots=(0.125, 0.25, 0.5), ckpt_every=500, log_every=50, pile_start=32768, pool_start=131072, pool_rows=1024, repeat_cap=100)
+[job] Pile rows 32768..34816, pool rows 131072..132096, 2000 steps
+[side e54__elicit_s0] training steps 0..2000; task text {"source": "fresh key-value windows", "tokens_per_window": 40, "per_chunk": 818, "draws_per_epoch": 26176, "unique": 26176, "repeat_per_epoch": 1.0, "task_share": 0.5001222792858889}
+  step 0/2000 fve_batch -4.005 loss 180.5 k 1024 dead 0 theta -1 ms_per_step 288.3
+  step 50/2000 fve_batch -1.972 loss 143 k 793 dead 0 theta -1 ms_per_step 6.382
+  step 100/2000 fve_batch -0.2042 loss 101.4 k 562 dead 0 theta -1 ms_per_step 8.882
+  step 150/2000 fve_batch 0.1556 loss 72.07 k 331 dead 0 theta -1 ms_per_step 5.835
+  step 200/2000 fve_batch 0.4585 loss 64.5 k 100 dead 0 theta -1 ms_per_step 8.464
+[side e54__elicit_s0] {"tokens": 512000, "fve_base": 0.7030424784257946, "fve_ft": 0.7029567099176196, "fve_change": 0.44275207688941487, "dead": 0.0, "d": 0.2026450830744474, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.2026450830744474, "parts": {"ft_specific": 0.0, "shared": 0.2026450830744474, "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.29159354894821277, "error": 0.5057613679773398}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 1426, "s": 0.00496647033581098, "rn": 0.5050795674324036, "rank": 6, "nu_r": 0.9641620272604237, "nu_eps": 0.9468847465124516, "specific": false}}
+  step 250/2000 fve_batch 0.6021 loss 59.83 k 100 dead 0 theta -1 ms_per_step 8.878
+  step 300/2000 fve_batch 0.6389 loss 56.72 k 100 dead 0 theta -1 ms_per_step 8.337
+  step 350/2000 fve_batch 0.5948 loss 53.9 k 100 dead 0 theta -1 ms_per_step 5.603
+  step 400/2000 fve_batch 0.6122 loss 52.55 k 100 dead 0 theta -1 ms_per_step 8.33
+  step 450/2000 fve_batch 0.6679 loss 51.09 k 100 dead 0 theta -1 ms_per_step 8.44
+[side e54__elicit_s0] {"tokens": 1024000, "fve_base": 0.8185016100384213, "fve_ft": 0.817857520806405, "fve_change": 0.6359097192733909, "dead": 0.0, "d": 0.3476987785184941, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.3476987785184941, "parts": {"ft_specific": 0.0, "shared": 0.3476987785184941, "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.29271527751882076, "error": 0.35958594396268506}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 1426, "s": 0.007448677519119203, "rn": 0.5105458498001099, "rank": 19, "nu_r": 0.9340870824539677, "nu_eps": 0.9294892841841356, "specific": false}, "jaccard_prev": "nan"}
+  step 500/2000 fve_batch 0.7274 loss 49.61 k 100 dead 0 theta -1 ms_per_step 8.028
+  step 550/2000 fve_batch 0.741 loss 48.87 k 100 dead 0 theta -1 ms_per_step 8.465
+  step 600/2000 fve_batch 0.6729 loss 48.03 k 100 dead 0 theta -1 ms_per_step 5.766
+  step 650/2000 fve_batch 0.6313 loss 47.56 k 100 dead 0 theta -1 ms_per_step 8.463
+  step 700/2000 fve_batch 0.6525 loss 46.4 k 100 dead 0 theta -1 ms_per_step 5.685
+  step 750/2000 fve_batch 0.7118 loss 46.38 k 100 dead 0 theta -1 ms_per_step 8.474
+  step 800/2000 fve_batch 0.663 loss 45.32 k 100 dead 0 theta -1 ms_per_step 8.476
+  step 850/2000 fve_batch 0.7795 loss 45.42 k 100 dead 0 theta -1 ms_per_step 5.621
+  step 900/2000 fve_batch 0.8561 loss 44.9 k 100 dead 0 theta -1 ms_per_step 8.362
+  step 950/2000 fve_batch 0.7555 loss 44.73 k 100 dead 0 theta -1 ms_per_step 5.683
+[side e54__elicit_s0] {"tokens": 2048000, "fve_base": 0.8589130204402831, "fve_ft": 0.8580469594180841, "fve_change": 0.6924523959176636, "dead": 0.0, "d": 0.4163133065946043, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.4163133065946043, "parts": {"ft_specific": 0.0, "shared": 0.4163133065946043, "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.29399063725076097, "error": 0.28969605615463473}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 996, "s": 0.009308044160293927, "rn": 0.5183801651000977, "rank": 6, "nu_r": 0.8931509192239627, "nu_eps": 0.9103573234458054, "specific": false}, "jaccard_prev": "nan"}
+  step 1000/2000 fve_batch 0.7265 loss 44.3 k 100 dead 0 theta -1 ms_per_step 11
+  step 1050/2000 fve_batch 0.7814 loss 43.51 k 100 dead 0 theta 6.09 ms_per_step 6.074
+  step 1100/2000 fve_batch 0.7367 loss 43.77 k 100 dead 0 theta 6.087 ms_per_step 8.732
+  step 1150/2000 fve_batch 0.7753 loss 43.28 k 100 dead 0 theta 6.082 ms_per_step 8.647
+  step 1200/2000 fve_batch 0.8191 loss 43 k 100 dead 0 theta 6.075 ms_per_step 5.954
+  step 1250/2000 fve_batch 0.7794 loss 42.89 k 100 dead 0 theta 6.067 ms_per_step 8.75
+  step 1300/2000 fve_batch 0.7565 loss 43.3 k 100 dead 0 theta 6.059 ms_per_step 5.778
+  step 1350/2000 fve_batch 0.7074 loss 42.05 k 100 dead 0 theta 6.051 ms_per_step 8.694
+  step 1400/2000 fve_batch 0.7159 loss 41.96 k 100 dead 0 theta 6.04 ms_per_step 5.96
+  step 1450/2000 fve_batch 0.8226 loss 42.17 k 100 dead 0 theta 6.03 ms_per_step 8.698
+  step 1500/2000 fve_batch 0.7273 loss 41.39 k 100 dead 0 theta 6.018 ms_per_step 6.67
+  step 1550/2000 fve_batch 0.8689 loss 41.81 k 100 dead 0 theta 6.005 ms_per_step 8.664
+  step 1600/2000 fve_batch 0.7697 loss 41.02 k 100 dead 0 theta 5.992 ms_per_step 8.581
+  step 1650/2000 fve_batch 0.8412 loss 40.9 k 100 dead 0 theta 5.978 ms_per_step 5.856
+  step 1700/2000 fve_batch 0.8924 loss 41.09 k 100 dead 0 theta 5.964 ms_per_step 8.634
+  step 1750/2000 fve_batch 0.7571 loss 41.4 k 100 dead 0 theta 5.95 ms_per_step 5.827
+  step 1800/2000 fve_batch 0.7276 loss 40.94 k 100 dead 0 theta 5.937 ms_per_step 8.614
+  step 1850/2000 fve_batch 0.7429 loss 40.12 k 100 dead 0 theta 5.923 ms_per_step 5.975
+  step 1900/2000 fve_batch 0.8084 loss 40.35 k 100 dead 0 theta 5.906 ms_per_step 8.665
+  step 1950/2000 fve_batch 0.8546 loss 40.54 k 100 dead 0 theta 5.89 ms_per_step 8.729
+  step 1999/2000 fve_batch 0.7756 loss 40.05 k 100 dead 0 theta 5.876 ms_per_step 5.991
+[side e54__elicit_s0] {"tokens": 4096000, "fve_base": 0.7897176279830216, "fve_ft": 0.78799740821347, "fve_change": 0.7094905047336404, "dead": 0.0, "d": 0.39334632059006014, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.39334632059006014, "parts": {"ft_specific": 0.0, "shared": 0.39334632059006014, "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.2959560361289733, "error": 0.31069764328096655}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 996, "s": 0.008657133617878055, "rn": 0.5251033902168274, "rank": 10, "nu_r": 0.8081258737587921, "nu_eps": 0.9236418495807805, "specific": false}, "jaccard_prev": "nan", "minutes": 0.2657831788063049}
+[done] peak GPU 6.2 GB
+STAGE 1 DONE
+FINISHED 1 reuse in 0.4 min, exit 0; wrote: /root/work/experiments/crosscoder/results/large/run2_rehearsal/e54__elicit_s0.pt experiments/crosscoder/results/run2_rehearsal/stage1_reuse.json experiments/crosscoder/results/run2_rehearsal/sides/e54__elicit_s0.json
+peak host RSS 6.2 GB
+== stage 1 reuse: exit 0 in 28 s
+== stage 1 new: run.py 1 new
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[job] Cfg(d=768, expansion=2, k=100, k_max=1024, k_anneal_steps=200, lr=0.0001, warmup=100, batch=2048, tokens=4096000, epochs=2, aux_alpha=0.03125, dead_tokens=200000, init_norm=1.0, target_rms=100.0, chunk_rows=64, ls_tokens=20000, val_rows=64, alive_min=10, top_n=64, top_n_wide=192, nu_r=0.5, nu_eps=0.2, shared=(0.4, 0.6), base_only=0.1, snapshots=(0.125, 0.25, 0.5), ckpt_every=500, log_every=50, pile_start=32768, pool_start=131072, pool_rows=1024, repeat_cap=100)
+[job] Pile rows 32768..34816, pool rows 131072..132096, 2000 steps
+[side e54__cipher_s0] training steps 0..2000; task text {"source": "fresh key-value windows", "tokens_per_window": 40, "per_chunk": 818, "draws_per_epoch": 26176, "unique": 26176, "repeat_per_epoch": 1.0, "task_share": 0.5001222792858889}
+  step 0/2000 fve_batch -3.998 loss 178.2 k 1024 dead 0 theta -1 ms_per_step 285.4
+  step 50/2000 fve_batch -1.956 loss 141.1 k 793 dead 0 theta -1 ms_per_step 6.321
+  step 100/2000 fve_batch -0.177 loss 100.3 k 562 dead 0 theta -1 ms_per_step 8.885
+  step 150/2000 fve_batch 0.155 loss 71.4 k 331 dead 0 theta -1 ms_per_step 5.982
+  step 200/2000 fve_batch 0.4754 loss 63.9 k 100 dead 0 theta -1 ms_per_step 8.548
+[side e54__cipher_s0] {"tokens": 512000, "fve_base": 0.7040945957912773, "fve_ft": 0.7073869258218803, "fve_change": 0.47625506560762765, "dead": 0.0, "d": 0.2832423753119006, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.2832423753119006, "parts": {"ft_specific": 0.0, "shared": 0.2832423753119006, "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.3521151792423955, "error": 0.36464244544570384}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 76, "s": 0.006462068138954775, "rn": 0.5015860199928284, "rank": 10, "nu_r": 0.9583491488970037, "nu_eps": 0.932378704749019, "specific": false}}
+  step 250/2000 fve_batch 0.6192 loss 59.3 k 100 dead 0 theta -1 ms_per_step 9.22
+  step 300/2000 fve_batch 0.6439 loss 56.26 k 100 dead 0 theta -1 ms_per_step 8.612
+  step 350/2000 fve_batch 0.5953 loss 53.5 k 100 dead 0 theta -1 ms_per_step 5.819
+  step 400/2000 fve_batch 0.6112 loss 52.2 k 100 dead 0 theta -1 ms_per_step 8.396
+  step 450/2000 fve_batch 0.6683 loss 50.76 k 100 dead 0 theta -1 ms_per_step 8.431
+[side e54__cipher_s0] {"tokens": 1024000, "fve_base": 0.8174972614241562, "fve_ft": 0.8224364678855998, "fve_change": 0.6533499944438371, "dead": 0.0, "d": 0.3617364281615407, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.3617364281615407, "parts": {"ft_specific": 0.0, "shared": 0.3617364281615407, "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.35349600771193607, "error": 0.2847675641265232}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 1487, "s": 0.009357261847756947, "rn": 0.5151456594467163, "rank": 1, "nu_r": 0.8904196296966613, "nu_eps": 0.8194129614772354, "specific": false}, "jaccard_prev": "nan"}
+  step 500/2000 fve_batch 0.7278 loss 49.3 k 100 dead 0 theta -1 ms_per_step 8.201
+  step 550/2000 fve_batch 0.7464 loss 48.57 k 100 dead 0 theta -1 ms_per_step 8.523
+  step 600/2000 fve_batch 0.6724 loss 47.72 k 100 dead 0 theta -1 ms_per_step 5.666
+  step 650/2000 fve_batch 0.6293 loss 47.22 k 100 dead 0 theta -1 ms_per_step 8.428
+  step 700/2000 fve_batch 0.6494 loss 46.1 k 100 dead 0 theta -1 ms_per_step 5.634
+  step 750/2000 fve_batch 0.7099 loss 46.1 k 100 dead 0 theta -1 ms_per_step 8.433
+  step 800/2000 fve_batch 0.6596 loss 45.06 k 100 dead 0 theta -1 ms_per_step 8.368
+  step 850/2000 fve_batch 0.7833 loss 45.21 k 100 dead 0 theta -1 ms_per_step 5.758
+  step 900/2000 fve_batch 0.8594 loss 44.61 k 100 dead 0 theta -1 ms_per_step 8.393
+  step 950/2000 fve_batch 0.7554 loss 44.45 k 100 dead 0 theta -1 ms_per_step 5.606
+[side e54__cipher_s0] {"tokens": 2048000, "fve_base": 0.8583530962734667, "fve_ft": 0.8621365473956062, "fve_change": 0.7254142860260331, "dead": 0.0, "d": 0.39173315582178414, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.39173315582178414, "parts": {"ft_specific": 0.0, "shared": 0.39173315582178414, "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.355173018437881, "error": 0.25309382574033484}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 1487, "s": 0.01579595423165551, "rn": 0.5438036322593689, "rank": 1, "nu_r": 0.7867359136699247, "nu_eps": 0.718572305102889, "specific": false}, "jaccard_prev": "nan"}
+  step 1000/2000 fve_batch 0.7281 loss 44.02 k 100 dead 0 theta -1 ms_per_step 10.83
+  step 1050/2000 fve_batch 0.784 loss 43.27 k 100 dead 0 theta 6.035 ms_per_step 5.897
+  step 1100/2000 fve_batch 0.7367 loss 43.51 k 100 dead 0 theta 6.032 ms_per_step 8.625
+  step 1150/2000 fve_batch 0.7755 loss 43.01 k 100 dead 0 theta 6.026 ms_per_step 8.592
+  step 1200/2000 fve_batch 0.8214 loss 42.74 k 100 dead 0 theta 6.02 ms_per_step 5.826
+  step 1250/2000 fve_batch 0.7798 loss 42.67 k 100 dead 0 theta 6.012 ms_per_step 8.597
+  step 1300/2000 fve_batch 0.7554 loss 43.03 k 100 dead 0 theta 6.004 ms_per_step 5.828
+  step 1350/2000 fve_batch 0.7039 loss 41.8 k 100 dead 0 theta 5.996 ms_per_step 8.713
+  step 1400/2000 fve_batch 0.713 loss 41.76 k 100 dead 0 theta 5.986 ms_per_step 6.05
+  step 1450/2000 fve_batch 0.8241 loss 41.92 k 100 dead 0 theta 5.976 ms_per_step 8.545
+  step 1500/2000 fve_batch 0.7252 loss 41.18 k 100 dead 0 theta 5.963 ms_per_step 6.662
+  step 1550/2000 fve_batch 0.8711 loss 41.57 k 100 dead 0 theta 5.951 ms_per_step 8.59
+  step 1600/2000 fve_batch 0.7678 loss 40.83 k 100 dead 0 theta 5.938 ms_per_step 8.64
+  step 1650/2000 fve_batch 0.8446 loss 40.69 k 100 dead 0 theta 5.925 ms_per_step 5.788
+  step 1700/2000 fve_batch 0.8951 loss 40.93 k 100 dead 0 theta 5.911 ms_per_step 8.637
+  step 1750/2000 fve_batch 0.7561 loss 41.19 k 100 dead 0 theta 5.897 ms_per_step 5.866
+  step 1800/2000 fve_batch 0.7238 loss 40.74 k 100 dead 0 theta 5.884 ms_per_step 8.683
+  step 1850/2000 fve_batch 0.7399 loss 39.96 k 100 dead 0 theta 5.87 ms_per_step 6.011
+  step 1900/2000 fve_batch 0.8089 loss 40.12 k 100 dead 0 theta 5.853 ms_per_step 8.728
+  step 1950/2000 fve_batch 0.8574 loss 40.33 k 100 dead 0 theta 5.838 ms_per_step 8.635
+  step 1999/2000 fve_batch 0.7751 loss 39.87 k 100 dead 0 theta 5.824 ms_per_step 5.924
+[side e54__cipher_s0] {"tokens": 4096000, "fve_base": 0.7887947506238944, "fve_ft": 0.7906376864967457, "fve_change": 0.7405207985859293, "dead": 0.0, "d": 0.3624161456661904, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.3624161456661904, "parts": {"ft_specific": 0.0, "shared": 0.3624161456661904, "ft_artefact": 0.03497181029816477, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.35746968712943544, "error": 0.2451423569062094}, "counts": {"ft_specific": 0, "shared": 1535, "ft_artefact": 1, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 1487, "s": 0.03497181029816477, "rn": 0.6422127485275269, "rank": 1, "nu_r": 0.5619211118103296, "nu_eps": 0.5481285367937075, "specific": false}, "jaccard_prev": "nan", "minutes": 0.26660667260487875}
+[done] peak GPU 6.2 GB
+STAGE 1 DONE
+FINISHED 1 new in 0.5 min, exit 0; wrote: /root/work/experiments/crosscoder/results/large/run2_rehearsal/e54__cipher_s0.pt experiments/crosscoder/results/run2_rehearsal/stage1_new.json experiments/crosscoder/results/run2_rehearsal/sides/e54__cipher_s0.json
+peak host RSS 6.2 GB
+== stage 1 new: exit 0 in 30 s
+== stage 1 random: run.py 1 random
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[job] Cfg(d=768, expansion=2, k=100, k_max=1024, k_anneal_steps=200, lr=0.0001, warmup=100, batch=2048, tokens=4096000, epochs=2, aux_alpha=0.03125, dead_tokens=200000, init_norm=1.0, target_rms=100.0, chunk_rows=64, ls_tokens=20000, val_rows=64, alive_min=10, top_n=64, top_n_wide=192, nu_r=0.5, nu_eps=0.2, shared=(0.4, 0.6), base_only=0.1, snapshots=(0.125, 0.25, 0.5), ckpt_every=500, log_every=50, pile_start=32768, pool_start=131072, pool_rows=1024, repeat_cap=100)
+[job] Pile rows 32768..34816, pool rows 131072..132096, 2000 steps
+[side random_like__e54__elicit_s0] training steps 0..2000; task text {"source": "fresh key-value windows", "tokens_per_window": 40, "per_chunk": 818, "draws_per_epoch": 26176, "unique": 26176, "repeat_per_epoch": 1.0, "task_share": 0.5001222792858889}
+  step 0/2000 fve_batch -4.02 loss 180.1 k 1024 dead 0 theta -1 ms_per_step 256.8
+  step 50/2000 fve_batch -1.982 loss 142.4 k 793 dead 0 theta -1 ms_per_step 6.319
+  step 100/2000 fve_batch -0.1933 loss 101 k 562 dead 0 theta -1 ms_per_step 8.853
+  step 150/2000 fve_batch 0.1531 loss 71.78 k 331 dead 0 theta -1 ms_per_step 5.859
+  step 200/2000 fve_batch 0.4516 loss 64.2 k 100 dead 0 theta -1 ms_per_step 8.448
+[side random_like__e54__elicit_s0] {"tokens": 512000, "fve_base": 0.7050760018221882, "fve_ft": 0.7047323221381863, "fve_change": 0.3064324941571016, "dead": 0.0, "d": 0.19655444471036868, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.19655444471036868, "parts": {"ft_specific": 0.0, "shared": 0.19655444471036868, "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.08399400095147486, "error": 0.7194515543381566}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 163, "s": 0.0010271401729724178, "rn": 0.5000357031822205, "rank": 1034, "nu_r": 1.0024402435821007, "nu_eps": 0.9992363256901563, "specific": false}}
+  step 250/2000 fve_batch 0.6134 loss 59.54 k 100 dead 0 theta -1 ms_per_step 8.928
+  step 300/2000 fve_batch 0.6425 loss 56.46 k 100 dead 0 theta -1 ms_per_step 8.562
+  step 350/2000 fve_batch 0.5964 loss 53.63 k 100 dead 0 theta -1 ms_per_step 5.607
+  step 400/2000 fve_batch 0.6104 loss 52.35 k 100 dead 0 theta -1 ms_per_step 8.347
+  step 450/2000 fve_batch 0.6685 loss 50.86 k 100 dead 0 theta -1 ms_per_step 8.334
+[side random_like__e54__elicit_s0] {"tokens": 1024000, "fve_base": 0.8193314045196425, "fve_ft": 0.8189813609914782, "fve_change": 0.35166010611549914, "dead": 0.0, "d": 0.28232117610230745, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.28232117610230745, "parts": {"ft_specific": 0.0, "shared": 0.28232117610230745, "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.08411095205346937, "error": 0.6335678718442231}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 1391, "s": 0.0017102924880660324, "rn": 0.4999813735485077, "rank": 1383, "nu_r": 1.0039873897333134, "nu_eps": 0.9979845739718208, "specific": false}, "jaccard_prev": "nan"}
+  step 500/2000 fve_batch 0.7277 loss 49.42 k 100 dead 0 theta -1 ms_per_step 8.146
+  step 550/2000 fve_batch 0.7431 loss 48.66 k 100 dead 0 theta -1 ms_per_step 8.457
+  step 600/2000 fve_batch 0.6732 loss 47.83 k 100 dead 0 theta -1 ms_per_step 5.717
+  step 650/2000 fve_batch 0.6299 loss 47.34 k 100 dead 0 theta -1 ms_per_step 8.35
+  step 700/2000 fve_batch 0.6513 loss 46.2 k 100 dead 0 theta -1 ms_per_step 5.581
+  step 750/2000 fve_batch 0.7114 loss 46.2 k 100 dead 0 theta -1 ms_per_step 8.436
+  step 800/2000 fve_batch 0.6625 loss 45.13 k 100 dead 0 theta -1 ms_per_step 8.376
+  step 850/2000 fve_batch 0.7827 loss 45.2 k 100 dead 0 theta -1 ms_per_step 5.607
+  step 900/2000 fve_batch 0.859 loss 44.69 k 100 dead 0 theta -1 ms_per_step 8.347
+  step 950/2000 fve_batch 0.7569 loss 44.48 k 100 dead 0 theta -1 ms_per_step 5.704
+[side random_like__e54__elicit_s0] {"tokens": 2048000, "fve_base": 0.8601474217880642, "fve_ft": 0.8598713798489187, "fve_change": 0.3905045880631415, "dead": 0.0, "d": 0.3515453906284335, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.3515453906284335, "parts": {"ft_specific": 0.0, "shared": 0.3515453906284335, "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.08425754511911614, "error": 0.5641970642524504}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 1391, "s": 0.003718808926837631, "rn": 0.5000144839286804, "rank": 1294, "nu_r": 1.0047150064089605, "nu_eps": 0.9961134321333044, "specific": false}, "jaccard_prev": "nan"}
+  step 1000/2000 fve_batch 0.7278 loss 44.07 k 100 dead 0 theta -1 ms_per_step 10.79
+  step 1050/2000 fve_batch 0.7834 loss 43.28 k 100 dead 0 theta 6.08 ms_per_step 6.031
+  step 1100/2000 fve_batch 0.7375 loss 43.55 k 100 dead 0 theta 6.077 ms_per_step 8.724
+  step 1150/2000 fve_batch 0.7761 loss 43.07 k 100 dead 0 theta 6.071 ms_per_step 8.713
+  step 1200/2000 fve_batch 0.8224 loss 42.78 k 100 dead 0 theta 6.064 ms_per_step 6.009
+  step 1250/2000 fve_batch 0.7807 loss 42.7 k 100 dead 0 theta 6.057 ms_per_step 8.629
+  step 1300/2000 fve_batch 0.7574 loss 43.08 k 100 dead 0 theta 6.049 ms_per_step 5.88
+  step 1350/2000 fve_batch 0.7066 loss 41.81 k 100 dead 0 theta 6.04 ms_per_step 8.558
+  step 1400/2000 fve_batch 0.7144 loss 41.75 k 100 dead 0 theta 6.029 ms_per_step 5.781
+  step 1450/2000 fve_batch 0.8246 loss 41.91 k 100 dead 0 theta 6.019 ms_per_step 8.59
+  step 1500/2000 fve_batch 0.726 loss 41.16 k 100 dead 0 theta 6.007 ms_per_step 6.585
+  step 1550/2000 fve_batch 0.8713 loss 41.56 k 100 dead 0 theta 5.994 ms_per_step 8.568
+  step 1600/2000 fve_batch 0.7694 loss 40.79 k 100 dead 0 theta 5.981 ms_per_step 8.674
+  step 1650/2000 fve_batch 0.8445 loss 40.62 k 100 dead 0 theta 5.967 ms_per_step 5.854
+  step 1700/2000 fve_batch 0.895 loss 40.84 k 100 dead 0 theta 5.953 ms_per_step 8.564
+  step 1750/2000 fve_batch 0.7567 loss 41.17 k 100 dead 0 theta 5.939 ms_per_step 5.819
+  step 1800/2000 fve_batch 0.7273 loss 40.73 k 100 dead 0 theta 5.925 ms_per_step 8.508
+  step 1850/2000 fve_batch 0.7419 loss 39.91 k 100 dead 0 theta 5.911 ms_per_step 5.841
+  step 1900/2000 fve_batch 0.8095 loss 40.12 k 100 dead 0 theta 5.894 ms_per_step 8.769
+  step 1950/2000 fve_batch 0.8568 loss 40.3 k 100 dead 0 theta 5.878 ms_per_step 8.592
+  step 1999/2000 fve_batch 0.7762 loss 39.82 k 100 dead 0 theta 5.864 ms_per_step 5.866
+[side random_like__e54__elicit_s0] {"tokens": 4096000, "fve_base": 0.790417300430496, "fve_ft": 0.7899595013604447, "fve_change": 0.38315992014822264, "dead": 0.0, "d": 0.2861257094720122, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.2861257094720122, "parts": {"ft_specific": 0.0, "shared": 0.2861257094720122, "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.084441463052632, "error": 0.6294328274753558}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 1391, "s": 0.006349467572580656, "rn": 0.49998974800109863, "rank": 1239, "nu_r": 1.002634841262597, "nu_eps": 0.9981190793418803, "specific": false}, "jaccard_prev": "nan", "minutes": 0.263963516553243}
+[done] peak GPU 6.2 GB
+STAGE 1 DONE
+FINISHED 1 random in 0.4 min, exit 0; wrote: /root/work/experiments/crosscoder/results/large/run2_rehearsal/random_like__e54__elicit_s0.pt experiments/crosscoder/results/run2_rehearsal/stage1_random.json
+peak host RSS 6.2 GB
+== stage 1 random: exit 0 in 28 s
+== stage 1 reuse_seed1: run.py 1 reuse_seed1
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[job] Cfg(d=768, expansion=2, k=100, k_max=1024, k_anneal_steps=200, lr=0.0001, warmup=100, batch=2048, tokens=4096000, epochs=2, aux_alpha=0.03125, dead_tokens=200000, init_norm=1.0, target_rms=100.0, chunk_rows=64, ls_tokens=20000, val_rows=64, alive_min=10, top_n=64, top_n_wide=192, nu_r=0.5, nu_eps=0.2, shared=(0.4, 0.6), base_only=0.1, snapshots=(0.125, 0.25, 0.5), ckpt_every=500, log_every=50, pile_start=32768, pool_start=131072, pool_rows=1024, repeat_cap=100)
+[job] Pile rows 32768..34816, pool rows 131072..132096, 2000 steps
+[side e54__elicit_s0__seed1] training steps 0..2000; task text {"source": "fresh key-value windows", "tokens_per_window": 40, "per_chunk": 818, "draws_per_epoch": 26176, "unique": 26176, "repeat_per_epoch": 1.0, "task_share": 0.5001222792858889}
+  step 0/2000 fve_batch -4.163 loss 181.8 k 1024 dead 0 theta -1 ms_per_step 281
+  step 50/2000 fve_batch -2.014 loss 142.6 k 793 dead 0 theta -1 ms_per_step 6.44
+  step 100/2000 fve_batch -0.2083 loss 101.1 k 562 dead 0 theta -1 ms_per_step 9.03
+  step 150/2000 fve_batch 0.1518 loss 72.21 k 331 dead 0 theta -1 ms_per_step 6.022
+  step 200/2000 fve_batch 0.458 loss 64.5 k 100 dead 0 theta -1 ms_per_step 8.64
+[side e54__elicit_s0__seed1] {"tokens": 512000, "fve_base": 0.7009913106426346, "fve_ft": 0.7006704211754213, "fve_change": 0.45197977417105384, "dead": 0.0, "d": 0.2046938834005441, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.2046938834005441, "parts": {"ft_specific": 0.0, "shared": 0.2046938834005441, "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.29160123992756476, "error": 0.5037048766718912}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 407, "s": 0.006334665380385895, "rn": 0.5068553686141968, "rank": 1, "nu_r": 0.950218014894278, "nu_eps": 0.9882356639377363, "specific": false}}
+  step 250/2000 fve_batch 0.6006 loss 59.93 k 100 dead 0 theta -1 ms_per_step 9.17
+  step 300/2000 fve_batch 0.6386 loss 56.75 k 100 dead 0 theta -1 ms_per_step 8.716
+  step 350/2000 fve_batch 0.5935 loss 54 k 100 dead 0 theta -1 ms_per_step 5.69
+  step 400/2000 fve_batch 0.6098 loss 52.71 k 100 dead 0 theta -1 ms_per_step 8.45
+  step 450/2000 fve_batch 0.6665 loss 51.21 k 100 dead 0 theta -1 ms_per_step 8.629
+[side e54__elicit_s0__seed1] {"tokens": 1024000, "fve_base": 0.8184286155359698, "fve_ft": 0.8176221016033032, "fve_change": 0.6336285104694931, "dead": 0.0, "d": 0.3507001378385003, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.3507001378385003, "parts": {"ft_specific": 0.0, "shared": 0.3507001378385003, "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.292723581780132, "error": 0.3565762803813677}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 407, "s": 0.009261431407269009, "rn": 0.5140025019645691, "rank": 4, "nu_r": 0.933515035625848, "nu_eps": 0.9453618261196698, "specific": false}, "jaccard_prev": "nan"}
+  step 500/2000 fve_batch 0.7269 loss 49.68 k 100 dead 0 theta -1 ms_per_step 8.169
+  step 550/2000 fve_batch 0.739 loss 49.07 k 100 dead 0 theta -1 ms_per_step 8.669
+  step 600/2000 fve_batch 0.6711 loss 48.17 k 100 dead 0 theta -1 ms_per_step 5.73
+  step 650/2000 fve_batch 0.6303 loss 47.64 k 100 dead 0 theta -1 ms_per_step 8.446
+  step 700/2000 fve_batch 0.6505 loss 46.53 k 100 dead 0 theta -1 ms_per_step 5.684
+  step 750/2000 fve_batch 0.7108 loss 46.46 k 100 dead 0 theta -1 ms_per_step 8.482
+  step 800/2000 fve_batch 0.6611 loss 45.44 k 100 dead 0 theta -1 ms_per_step 8.481
+  step 850/2000 fve_batch 0.7778 loss 45.58 k 100 dead 0 theta -1 ms_per_step 5.807
+  step 900/2000 fve_batch 0.8558 loss 44.95 k 100 dead 0 theta -1 ms_per_step 8.599
+  step 950/2000 fve_batch 0.7552 loss 44.76 k 100 dead 0 theta -1 ms_per_step 5.671
+[side e54__elicit_s0__seed1] {"tokens": 2048000, "fve_base": 0.8576450361382801, "fve_ft": 0.8566973904799627, "fve_change": 0.6898958730010627, "dead": 0.0, "d": 0.42127008868450316, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.42127008868450316, "parts": {"ft_specific": 0.0, "shared": 0.42127008868450316, "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.2940479434418269, "error": 0.28468196787367}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 407, "s": 0.010103883058326834, "rn": 0.5172528624534607, "rank": 14, "nu_r": 0.8801269777973342, "nu_eps": 0.9396226288714828, "specific": false}, "jaccard_prev": "nan"}
+  step 1000/2000 fve_batch 0.7262 loss 44.32 k 100 dead 0 theta -1 ms_per_step 10.92
+  step 1050/2000 fve_batch 0.7809 loss 43.57 k 100 dead 0 theta 6.101 ms_per_step 5.923
+  step 1100/2000 fve_batch 0.7356 loss 43.87 k 100 dead 0 theta 6.098 ms_per_step 8.566
+  step 1150/2000 fve_batch 0.7747 loss 43.34 k 100 dead 0 theta 6.093 ms_per_step 8.623
+  step 1200/2000 fve_batch 0.8187 loss 43.06 k 100 dead 0 theta 6.085 ms_per_step 5.842
+  step 1250/2000 fve_batch 0.7787 loss 42.95 k 100 dead 0 theta 6.077 ms_per_step 8.634
+  step 1300/2000 fve_batch 0.756 loss 43.34 k 100 dead 0 theta 6.069 ms_per_step 5.889
+  step 1350/2000 fve_batch 0.7068 loss 42.1 k 100 dead 0 theta 6.06 ms_per_step 8.613
+  step 1400/2000 fve_batch 0.7155 loss 42.01 k 100 dead 0 theta 6.049 ms_per_step 5.865
+  step 1450/2000 fve_batch 0.8224 loss 42.18 k 100 dead 0 theta 6.039 ms_per_step 8.59
+  step 1500/2000 fve_batch 0.7276 loss 41.36 k 100 dead 0 theta 6.026 ms_per_step 6.682
+  step 1550/2000 fve_batch 0.8691 loss 41.77 k 100 dead 0 theta 6.013 ms_per_step 8.696
+  step 1600/2000 fve_batch 0.7694 loss 41.04 k 100 dead 0 theta 5.999 ms_per_step 8.595
+  step 1650/2000 fve_batch 0.8411 loss 40.91 k 100 dead 0 theta 5.985 ms_per_step 5.859
+  step 1700/2000 fve_batch 0.8923 loss 41.12 k 100 dead 0 theta 5.97 ms_per_step 8.613
+  step 1750/2000 fve_batch 0.7568 loss 41.43 k 100 dead 0 theta 5.956 ms_per_step 5.839
+  step 1800/2000 fve_batch 0.727 loss 40.99 k 100 dead 0 theta 5.942 ms_per_step 8.668
+  step 1850/2000 fve_batch 0.7418 loss 40.22 k 100 dead 0 theta 5.928 ms_per_step 5.863
+  step 1900/2000 fve_batch 0.8076 loss 40.43 k 100 dead 0 theta 5.911 ms_per_step 8.587
+  step 1950/2000 fve_batch 0.8544 loss 40.57 k 100 dead 0 theta 5.895 ms_per_step 8.612
+  step 1999/2000 fve_batch 0.7746 loss 40.15 k 100 dead 0 theta 5.881 ms_per_step 5.951
+[side e54__elicit_s0__seed1] {"tokens": 4096000, "fve_base": 0.78922402491858, "fve_ft": 0.7874636980474916, "fve_change": 0.7091400459484252, "dead": 0.0, "d": 0.39135146472266485, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.39135146472266485, "parts": {"ft_specific": 0.0, "shared": 0.39135146472266485, "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.2961164752317371, "error": 0.3125320600455981}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 407, "s": 0.008092052194812788, "rn": 0.5158326029777527, "rank": 42, "nu_r": 0.859416252170224, "nu_eps": 0.941784383712411, "specific": false}, "jaccard_prev": "nan", "minutes": 0.2662036339441935}
+[done] peak GPU 6.2 GB
+STAGE 1 DONE
+FINISHED 1 reuse_seed1 in 0.4 min, exit 0; wrote: /root/work/experiments/crosscoder/results/large/run2_rehearsal/e54__elicit_s0__seed1.pt experiments/crosscoder/results/run2_rehearsal/stage1_reuse_seed1.json
+peak host RSS 6.2 GB
+== stage 1 reuse_seed1: exit 0 in 29 s
+== stage 1 check: run.py 1check
+[check 1 FVE reuse] ok {"fve": 0.78799740821347, "self": 0.7904706662477541, "drop": 10.0}
+[check 1 dead share reuse] ok {"dead": 0.0, "bar": 1.0}
+[check 1 FVE new] ok {"fve": 0.7887947506238944, "self": 0.7904706662477541, "drop": 10.0}
+[check 1 dead share new] ok {"dead": 0.0, "bar": 1.0}
+[check 1 FVE random] ok {"fve": 0.7899595013604447, "self": 0.7904706662477541, "drop": 10.0}
+[check 1 dead share random] ok {"dead": 0.0, "bar": 1.0}
+[check 1 FVE reuse_seed1] ok {"fve": 0.7874636980474916, "self": 0.7904706662477541, "drop": 10.0}
+[check 1 dead share reuse_seed1] ok {"dead": 0.0, "bar": 1.0}
+[check 1 crosscoder reseed] ok {"d0": 0.39334632059006014, "d1": 0.39135146472266485, "bar": 10.0}
+[check 1 change reconstructed] ok {"explained": {"reuse": 0.6893023567190335, "new": 0.7548576430937906}, "bar": -10.0}
+STAGE 1check DONE
+FINISHED 1check  in 0.0 min, exit 0; wrote: experiments/crosscoder/results/run2_rehearsal/stage1.json
+peak host RSS 0.6 GB
+== stage 1 check: exit 0 in 2 s
+== stage 2 shard 0/40: run.py 2 0/40
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[job] Cfg(d=768, expansion=2, k=100, k_max=1024, k_anneal_steps=200, lr=0.0001, warmup=100, batch=2048, tokens=4096000, epochs=2, aux_alpha=0.03125, dead_tokens=200000, init_norm=1.0, target_rms=100.0, chunk_rows=64, ls_tokens=20000, val_rows=64, alive_min=10, top_n=64, top_n_wide=192, nu_r=0.5, nu_eps=0.2, shared=(0.4, 0.6), base_only=0.1, snapshots=(0.125, 0.25, 0.5), ckpt_every=500, log_every=50, pile_start=32768, pool_start=131072, pool_rows=1024, repeat_cap=100)
+[job] Pile rows 32768..34816, pool rows 131072..132096, 2000 steps
+[stage 2] shard 0/40: 3 sides to train
+[side e46__ident32_s0] training steps 0..2000; task text {"source": "fresh key-value windows", "tokens_per_window": 40, "per_chunk": 818, "draws_per_epoch": 26176, "unique": 26176, "repeat_per_epoch": 1.0, "task_share": 0.5001222792858889}
+  step 0/2000 fve_batch -3.998 loss 179.1 k 1024 dead 0 theta -1 ms_per_step 284.7
+  step 50/2000 fve_batch -1.958 loss 141.5 k 793 dead 0 theta -1 ms_per_step 6.32
+  step 100/2000 fve_batch -0.1863 loss 100.3 k 562 dead 0 theta -1 ms_per_step 8.88
+  step 150/2000 fve_batch 0.1616 loss 71.45 k 331 dead 0 theta -1 ms_per_step 5.902
+  step 200/2000 fve_batch 0.4816 loss 64.13 k 100 dead 0 theta -1 ms_per_step 8.59
+  step 250/2000 fve_batch 0.6128 loss 59.35 k 100 dead 0 theta -1 ms_per_step 5.721
+  step 300/2000 fve_batch 0.651 loss 56.34 k 100 dead 0 theta -1 ms_per_step 8.447
+  step 350/2000 fve_batch 0.5935 loss 53.57 k 100 dead 0 theta -1 ms_per_step 5.618
+  step 400/2000 fve_batch 0.6105 loss 52.2 k 100 dead 0 theta -1 ms_per_step 8.363
+  step 450/2000 fve_batch 0.6681 loss 50.73 k 100 dead 0 theta -1 ms_per_step 8.404
+  step 500/2000 fve_batch 0.7247 loss 49.27 k 100 dead 0 theta -1 ms_per_step 6.468
+  step 550/2000 fve_batch 0.7418 loss 48.54 k 100 dead 0 theta -1 ms_per_step 8.382
+  step 600/2000 fve_batch 0.6724 loss 47.68 k 100 dead 0 theta -1 ms_per_step 5.755
+  step 650/2000 fve_batch 0.6311 loss 47.21 k 100 dead 0 theta -1 ms_per_step 8.399
+  step 700/2000 fve_batch 0.6532 loss 46.07 k 100 dead 0 theta -1 ms_per_step 5.884
+  step 750/2000 fve_batch 0.7082 loss 46.07 k 100 dead 0 theta -1 ms_per_step 8.453
+  step 800/2000 fve_batch 0.662 loss 45.03 k 100 dead 0 theta -1 ms_per_step 8.615
+  step 850/2000 fve_batch 0.7805 loss 45.08 k 100 dead 0 theta -1 ms_per_step 5.633
+  step 900/2000 fve_batch 0.8564 loss 44.55 k 100 dead 0 theta -1 ms_per_step 8.449
+  step 950/2000 fve_batch 0.7536 loss 44.33 k 100 dead 0 theta -1 ms_per_step 5.617
+  step 1000/2000 fve_batch 0.7289 loss 43.98 k 100 dead 0 theta -1 ms_per_step 9.138
+  step 1050/2000 fve_batch 0.7823 loss 43.14 k 100 dead 0 theta 6.023 ms_per_step 5.928
+  step 1100/2000 fve_batch 0.7373 loss 43.43 k 100 dead 0 theta 6.02 ms_per_step 8.602
+  step 1150/2000 fve_batch 0.7747 loss 42.96 k 100 dead 0 theta 6.014 ms_per_step 8.559
+  step 1200/2000 fve_batch 0.8196 loss 42.69 k 100 dead 0 theta 6.007 ms_per_step 5.851
+  step 1250/2000 fve_batch 0.7777 loss 42.52 k 100 dead 0 theta 5.999 ms_per_step 8.662
+  step 1300/2000 fve_batch 0.756 loss 42.92 k 100 dead 0 theta 5.991 ms_per_step 5.871
+  step 1350/2000 fve_batch 0.7076 loss 41.68 k 100 dead 0 theta 5.982 ms_per_step 8.56
+  step 1400/2000 fve_batch 0.7152 loss 41.58 k 100 dead 0 theta 5.972 ms_per_step 5.901
+  step 1450/2000 fve_batch 0.8211 loss 41.8 k 100 dead 0 theta 5.961 ms_per_step 8.576
+  step 1500/2000 fve_batch 0.729 loss 41.08 k 100 dead 0 theta 5.948 ms_per_step 7.053
+  step 1550/2000 fve_batch 0.8696 loss 41.49 k 100 dead 0 theta 5.936 ms_per_step 8.555
+  step 1600/2000 fve_batch 0.7679 loss 40.7 k 100 dead 0 theta 5.922 ms_per_step 8.559
+  step 1650/2000 fve_batch 0.843 loss 40.49 k 100 dead 0 theta 5.908 ms_per_step 5.852
+  step 1700/2000 fve_batch 0.8948 loss 40.71 k 100 dead 0 theta 5.894 ms_per_step 8.608
+  step 1750/2000 fve_batch 0.7561 loss 41.03 k 100 dead 0 theta 5.88 ms_per_step 5.818
+  step 1800/2000 fve_batch 0.7285 loss 40.53 k 100 dead 0 theta 5.866 ms_per_step 8.607
+  step 1850/2000 fve_batch 0.7431 loss 39.77 k 100 dead 0 theta 5.851 ms_per_step 5.824
+  step 1900/2000 fve_batch 0.8072 loss 39.92 k 100 dead 0 theta 5.834 ms_per_step 8.62
+  step 1950/2000 fve_batch 0.8553 loss 40.13 k 100 dead 0 theta 5.818 ms_per_step 8.566
+  step 1999/2000 fve_batch 0.7753 loss 39.75 k 100 dead 0 theta 5.804 ms_per_step 5.845
+[side e46__ident32_s0] {"tokens": 4096000, "fve_base": 0.7901456830483167, "fve_ft": 0.7863075699431796, "fve_change": 0.693592158027746, "dead": 0.0, "d": 0.3003301299001242, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.3003301299001242, "parts": {"ft_specific": 0.0, "shared": 0.3003301299001242, "ft_artefact": 0.0495123572005048, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.3767913810321442, "error": 0.27336613186722675}, "counts": {"ft_specific": 0, "shared": 1535, "ft_artefact": 1, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 898, "s": 0.0495123572005048, "rn": 0.6896084547042847, "rank": 1, "nu_r": 0.43397791182993944, "nu_eps": 0.444984118417721, "specific": false}, "minutes": 0.2598249077796936}
+[check 2 FVE e46__ident32_s0] ok {"fve": 0.7863075699431796, "self": 0.7904706662477541, "drop": 10.0}
+[check 2 dead share e46__ident32_s0] ok {"dead": 0.0, "bar": 1.0}
+[stage 2] 1/3 done (e46__ident32_s0); projected shard minutes 1
+[check 2 projected time after e46__ident32_s0] ok {"minutes": 1.3374651432037354, "bar": 100}
+[side c3__copy_s6] training steps 0..2000; task text {"source": "fresh key-value windows", "tokens_per_window": 40, "per_chunk": 818, "draws_per_epoch": 26176, "unique": 26176, "repeat_per_epoch": 1.0, "task_share": 0.5001222792858889}
+  step 0/2000 fve_batch -4.001 loss 180 k 1024 dead 0 theta -1 ms_per_step 143.8
+  step 50/2000 fve_batch -1.966 loss 142.5 k 793 dead 0 theta -1 ms_per_step 6.362
+  step 100/2000 fve_batch -0.1879 loss 101 k 562 dead 0 theta -1 ms_per_step 9.007
+  step 150/2000 fve_batch 0.1571 loss 71.94 k 331 dead 0 theta -1 ms_per_step 5.926
+  step 200/2000 fve_batch 0.4372 loss 64.51 k 100 dead 0 theta -1 ms_per_step 8.548
+  step 250/2000 fve_batch 0.6084 loss 59.72 k 100 dead 0 theta -1 ms_per_step 5.803
+  step 300/2000 fve_batch 0.6442 loss 56.61 k 100 dead 0 theta -1 ms_per_step 8.378
+  step 350/2000 fve_batch 0.5948 loss 53.86 k 100 dead 0 theta -1 ms_per_step 5.669
+  step 400/2000 fve_batch 0.6097 loss 52.47 k 100 dead 0 theta -1 ms_per_step 8.367
+  step 450/2000 fve_batch 0.6679 loss 51.01 k 100 dead 0 theta -1 ms_per_step 8.378
+  step 500/2000 fve_batch 0.7249 loss 49.58 k 100 dead 0 theta -1 ms_per_step 6.381
+  step 550/2000 fve_batch 0.7431 loss 48.81 k 100 dead 0 theta -1 ms_per_step 8.38
+  step 600/2000 fve_batch 0.6741 loss 47.99 k 100 dead 0 theta -1 ms_per_step 5.752
+  step 650/2000 fve_batch 0.6323 loss 47.43 k 100 dead 0 theta -1 ms_per_step 8.517
+  step 700/2000 fve_batch 0.6525 loss 46.29 k 100 dead 0 theta -1 ms_per_step 5.61
+  step 750/2000 fve_batch 0.7103 loss 46.31 k 100 dead 0 theta -1 ms_per_step 8.372
+  step 800/2000 fve_batch 0.6642 loss 45.3 k 100 dead 0 theta -1 ms_per_step 8.487
+  step 850/2000 fve_batch 0.7816 loss 45.29 k 100 dead 0 theta -1 ms_per_step 5.616
+  step 900/2000 fve_batch 0.8569 loss 44.79 k 100 dead 0 theta -1 ms_per_step 8.445
+  step 950/2000 fve_batch 0.7564 loss 44.61 k 100 dead 0 theta -1 ms_per_step 5.675
+  step 1000/2000 fve_batch 0.7284 loss 44.17 k 100 dead 0 theta -1 ms_per_step 9.035
+  step 1050/2000 fve_batch 0.7818 loss 43.41 k 100 dead 0 theta 6.063 ms_per_step 5.899
+  step 1100/2000 fve_batch 0.7366 loss 43.66 k 100 dead 0 theta 6.06 ms_per_step 8.618
+  step 1150/2000 fve_batch 0.7754 loss 43.15 k 100 dead 0 theta 6.055 ms_per_step 8.6
+  step 1200/2000 fve_batch 0.8189 loss 42.91 k 100 dead 0 theta 6.047 ms_per_step 5.827
+  step 1250/2000 fve_batch 0.7792 loss 42.79 k 100 dead 0 theta 6.04 ms_per_step 8.61
+  step 1300/2000 fve_batch 0.7558 loss 43.27 k 100 dead 0 theta 6.031 ms_per_step 5.8
+  step 1350/2000 fve_batch 0.7081 loss 41.93 k 100 dead 0 theta 6.023 ms_per_step 8.653
+  step 1400/2000 fve_batch 0.7156 loss 41.84 k 100 dead 0 theta 6.012 ms_per_step 5.911
+  step 1450/2000 fve_batch 0.8227 loss 42.04 k 100 dead 0 theta 6.001 ms_per_step 8.761
+  step 1500/2000 fve_batch 0.7283 loss 41.33 k 100 dead 0 theta 5.989 ms_per_step 6.698
+  step 1550/2000 fve_batch 0.871 loss 41.71 k 100 dead 0 theta 5.976 ms_per_step 8.728
+  step 1600/2000 fve_batch 0.7684 loss 40.95 k 100 dead 0 theta 5.962 ms_per_step 8.641
+  step 1650/2000 fve_batch 0.8427 loss 40.72 k 100 dead 0 theta 5.948 ms_per_step 5.774
+  step 1700/2000 fve_batch 0.8949 loss 40.97 k 100 dead 0 theta 5.934 ms_per_step 8.573
+  step 1750/2000 fve_batch 0.7587 loss 41.22 k 100 dead 0 theta 5.92 ms_per_step 5.876
+  step 1800/2000 fve_batch 0.7279 loss 40.81 k 100 dead 0 theta 5.906 ms_per_step 8.663
+  step 1850/2000 fve_batch 0.742 loss 40.01 k 100 dead 0 theta 5.891 ms_per_step 5.957
+  step 1900/2000 fve_batch 0.8085 loss 40.22 k 100 dead 0 theta 5.874 ms_per_step 8.642
+  step 1950/2000 fve_batch 0.8555 loss 40.35 k 100 dead 0 theta 5.859 ms_per_step 8.554
+  step 1999/2000 fve_batch 0.776 loss 39.93 k 100 dead 0 theta 5.844 ms_per_step 5.964
+[side c3__copy_s6] {"tokens": 4096000, "fve_base": 0.7804465495073847, "fve_ft": 0.7784999282807052, "fve_change": 0.72600971454, "dead": 0.0, "d": 0.4044941284011123, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.4044941284011123, "parts": {"ft_specific": 0.0, "shared": 0.4044941284011123, "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.34337440803819025, "error": 0.25213146356069743}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 844, "s": 0.016267715131480193, "rn": 0.5646378397941589, "rank": 2, "nu_r": 0.9715851797782795, "nu_eps": 0.7342802756575876, "specific": false}, "minutes": 0.25312992731730144}
+[check 2 FVE c3__copy_s6] ok {"fve": 0.7784999282807052, "self": 0.7904706662477541, "drop": 10.0}
+[check 2 dead share c3__copy_s6] ok {"dead": 0.0, "bar": 1.0}
+[stage 2] 2/3 done (c3__copy_s6); projected shard minutes 1
+[check 2 projected time after c3__copy_s6] ok {"minutes": 1.0501582324504852, "bar": 100}
+[side c3__rank1_s3__matched_open_pair_c3] training steps 0..2000; task text {"source": "fresh key-value windows", "tokens_per_window": 40, "per_chunk": 818, "draws_per_epoch": 26176, "unique": 26176, "repeat_per_epoch": 1.0, "task_share": 0.5001222792858889}
+  step 0/2000 fve_batch -4.007 loss 180.8 k 1024 dead 0 theta -1 ms_per_step 143.5
+  step 50/2000 fve_batch -1.97 loss 143.1 k 793 dead 0 theta -1 ms_per_step 6.353
+  step 100/2000 fve_batch -0.2001 loss 101.4 k 562 dead 0 theta -1 ms_per_step 8.993
+  step 150/2000 fve_batch 0.1562 loss 72.08 k 331 dead 0 theta -1 ms_per_step 5.892
+  step 200/2000 fve_batch 0.4629 loss 64.63 k 100 dead 0 theta -1 ms_per_step 8.447
+  step 250/2000 fve_batch 0.6026 loss 59.87 k 100 dead 0 theta -1 ms_per_step 5.627
+  step 300/2000 fve_batch 0.642 loss 56.65 k 100 dead 0 theta -1 ms_per_step 8.4
+  step 350/2000 fve_batch 0.5961 loss 53.8 k 100 dead 0 theta -1 ms_per_step 5.684
+  step 400/2000 fve_batch 0.6128 loss 52.46 k 100 dead 0 theta -1 ms_per_step 8.408
+  step 450/2000 fve_batch 0.6674 loss 51.05 k 100 dead 0 theta -1 ms_per_step 8.369
+  step 500/2000 fve_batch 0.7263 loss 49.52 k 100 dead 0 theta -1 ms_per_step 6.259
+  step 550/2000 fve_batch 0.7401 loss 48.78 k 100 dead 0 theta -1 ms_per_step 8.417
+  step 600/2000 fve_batch 0.6754 loss 47.93 k 100 dead 0 theta -1 ms_per_step 5.595
+  step 650/2000 fve_batch 0.6343 loss 47.41 k 100 dead 0 theta -1 ms_per_step 8.437
+  step 700/2000 fve_batch 0.6545 loss 46.29 k 100 dead 0 theta -1 ms_per_step 5.741
+  step 750/2000 fve_batch 0.7134 loss 46.26 k 100 dead 0 theta -1 ms_per_step 8.472
+  step 800/2000 fve_batch 0.6663 loss 45.22 k 100 dead 0 theta -1 ms_per_step 8.406
+  step 850/2000 fve_batch 0.7822 loss 45.25 k 100 dead 0 theta -1 ms_per_step 5.685
+  step 900/2000 fve_batch 0.8577 loss 44.71 k 100 dead 0 theta -1 ms_per_step 8.495
+  step 950/2000 fve_batch 0.7562 loss 44.55 k 100 dead 0 theta -1 ms_per_step 5.627
+  step 1000/2000 fve_batch 0.7275 loss 44.15 k 100 dead 0 theta -1 ms_per_step 9.095
+  step 1050/2000 fve_batch 0.7813 loss 43.39 k 100 dead 0 theta 6.081 ms_per_step 5.933
+  step 1100/2000 fve_batch 0.7388 loss 43.6 k 100 dead 0 theta 6.078 ms_per_step 8.59
+  step 1150/2000 fve_batch 0.7762 loss 43.1 k 100 dead 0 theta 6.072 ms_per_step 8.6
+  step 1200/2000 fve_batch 0.8199 loss 42.85 k 100 dead 0 theta 6.065 ms_per_step 5.873
+  step 1250/2000 fve_batch 0.7805 loss 42.75 k 100 dead 0 theta 6.058 ms_per_step 8.634
+  step 1300/2000 fve_batch 0.7567 loss 43.26 k 100 dead 0 theta 6.049 ms_per_step 5.88
+  step 1350/2000 fve_batch 0.71 loss 41.92 k 100 dead 0 theta 6.041 ms_per_step 8.624
+  step 1400/2000 fve_batch 0.7184 loss 41.82 k 100 dead 0 theta 6.03 ms_per_step 5.855
+  step 1450/2000 fve_batch 0.8238 loss 41.99 k 100 dead 0 theta 6.02 ms_per_step 8.677
+  step 1500/2000 fve_batch 0.7294 loss 41.27 k 100 dead 0 theta 6.007 ms_per_step 6.485
+  step 1550/2000 fve_batch 0.8705 loss 41.63 k 100 dead 0 theta 5.995 ms_per_step 8.643
+  step 1600/2000 fve_batch 0.7705 loss 40.9 k 100 dead 0 theta 5.981 ms_per_step 8.635
+  step 1650/2000 fve_batch 0.8434 loss 40.66 k 100 dead 0 theta 5.967 ms_per_step 5.799
+  step 1700/2000 fve_batch 0.8931 loss 40.96 k 100 dead 0 theta 5.953 ms_per_step 8.596
+  step 1750/2000 fve_batch 0.7604 loss 41.2 k 100 dead 0 theta 5.939 ms_per_step 5.842
+  step 1800/2000 fve_batch 0.73 loss 40.8 k 100 dead 0 theta 5.925 ms_per_step 8.58
+  step 1850/2000 fve_batch 0.7455 loss 39.97 k 100 dead 0 theta 5.911 ms_per_step 5.87
+  step 1900/2000 fve_batch 0.8095 loss 40.2 k 100 dead 0 theta 5.894 ms_per_step 8.67
+  step 1950/2000 fve_batch 0.8562 loss 40.34 k 100 dead 0 theta 5.879 ms_per_step 8.705
+  step 1999/2000 fve_batch 0.7775 loss 39.95 k 100 dead 0 theta 5.865 ms_per_step 5.877
+[side c3__rank1_s3__matched_open_pair_c3] {"tokens": 4096000, "fve_base": 0.7809824805654102, "fve_ft": 0.7814289555410026, "fve_change": 0.7170115854543484, "dead": 0.0, "d": 0.4214995183918767, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.4214995183918767, "parts": {"ft_specific": 0.0, "shared": 0.4214995183918767, "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.29969898892973074, "error": 0.27880149267839255}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 769, "s": 0.010607016136369012, "rn": 0.5715003609657288, "rank": 1, "nu_r": 0.8307063430344286, "nu_eps": 0.792404630437985, "specific": false}, "minutes": 0.2528167406717936}
+[check 2 FVE c3__rank1_s3__matched_open_pair_c3] ok {"fve": 0.7809824805654102, "self": 0.7904706662477541, "drop": 10.0}
+[check 2 dead share c3__rank1_s3__matched_open_pair_c3] ok {"dead": 0.0, "bar": 1.0}
+[stage 2] 3/3 done (c3__rank1_s3__matched_open_pair_c3); projected shard minutes 1
+[check 2 projected time after c3__rank1_s3__matched_open_pair_c3] ok {"minutes": 0.9539963324864704, "bar": 100}
+[done] peak GPU 6.2 GB
+STAGE 2 DONE
+FINISHED 2 0/40 in 1.0 min, exit 0; wrote: /root/work/experiments/crosscoder/results/large/run2_rehearsal/e46__ident32_s0.pt experiments/crosscoder/results/run2_rehearsal/sides/e46__ident32_s0.json /root/work/experiments/crosscoder/results/large/run2_rehearsal/c3__copy_s6.pt experiments/crosscoder/results/run2_rehearsal/sides/c3__copy_s6.json /root/work/experiments/crosscoder/results/large/run2_rehearsal/c3__rank1_s3__matched_open_pair_c3.pt experiments/crosscoder/results/run2_rehearsal/sides/c3__rank1_s3__matched_open_pair_c3.json experiments/crosscoder/results/run2_rehearsal/stage2_0_40.json
+peak host RSS 6.2 GB
+== stage 2 shard 0/40: exit 0 in 59 s
+FINISHED rehearsal in 330 s: experiments/crosscoder/results/run2_rehearsal/resume_check.json experiments/crosscoder/results/run2_rehearsal/sides/c3__copy_s6.json experiments/crosscoder/results/run2_rehearsal/sides/c3__rank1_s3__matched_open_pair_c3.json experiments/crosscoder/results/run2_rehearsal/sides/e46__ident32_s0.json experiments/crosscoder/results/run2_rehearsal/sides/e54__cipher_s0.json experiments/crosscoder/results/run2_rehearsal/sides/e54__elicit_s0.json experiments/crosscoder/results/run2_rehearsal/stage0a.json experiments/crosscoder/results/run2_rehearsal/stage0a_A.json experiments/crosscoder/results/run2_rehearsal/stage0a_B.json experiments/crosscoder/results/run2_rehearsal/stage0b.json experiments/crosscoder/results/run2_rehearsal/stage1.json experiments/crosscoder/results/run2_rehearsal/stage1_new.json experiments/crosscoder/results/run2_rehearsal/stage1_random.json experiments/crosscoder/results/run2_rehearsal/stage1_reuse.json experiments/crosscoder/results/run2_rehearsal/stage1_reuse_seed1.json experiments/crosscoder/results/run2_rehearsal/stage2_0_40.json experiments/crosscoder/results/run2_rehearsal/timing.json 
+=== FINISHED (exit 0) — results in /root/work/experiments/crosscoder/results/run2_rehearsal/ ===
