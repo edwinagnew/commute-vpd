@@ -19,9 +19,9 @@ formally, and for the first reading with an SAE, a VPD split or a crosscoder.
 - *Recommendation:* accept.
 
 **2. Should everything that is not a part, the output above all, run M's mechanism in every hybrid?** (review's D2)
-- *Problem.* The swap gives M's rule only to parts. The output layer and any glue between parts keep F's. Example:
+- *Problem.* The soft intervention from the original model gives M's rule only to parts. The output layer and any glue between parts keep F's. Example:
   a fine-tune that changed only the unembedding keeps its behaviour with every part on M's rule, so it reads as
-  needing no parts, and "swapping every part gives M" is false. For an SAE at one site, the whole network after that
+  needing no parts, and "the soft intervention on every part gives M" is false. For an SAE at one site, the whole network after that
   site sits in the output.
 - *Review's repair:* "Every variable of N other than the input lies in some part's cell; or, the output (and any
   non-part variable) runs M's mechanism in every F_K."
@@ -41,7 +41,7 @@ formally, and for the first reading with an SAE, a VPD split or a crosscoder.
 
 **4. Should M's and F's refined models be required to share one order of computation?** (review's D10)
 - *Problem.* A part's inputs are whatever its mechanism reads, so the two refined models could in principle differ.
-  If part a reads part b in F's model and b reads a in M's, a hybrid that swaps b alone contains a loop and cannot
+  If part a reads part b in F's model and b reads a in M's, a hybrid with the soft intervention on b alone contains a loop and cannot
   run. Every current case follows the network's layer and position order, so this never happens yet.
 - *Review's repair:* "one clause requiring a shared causal order."
 - *Changes:* content, a stated condition. No reading.

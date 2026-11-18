@@ -17,7 +17,7 @@ compute on the same inputs.
 reuse? Example: M copies B after a repeated A through its induction circuit, two attention heads. The "reuse, small"
 edit adds eight first-layer neurons that make a new cue A′ look like A; the unchanged heads then copy B. By construction
 we call this reuse. As written, the parts F needs are found by giving every part M's rule and handing F's rule back to
-as few parts as possible until the behaviour returns. An unchanged part is not moved by that swap, so the induction
+as few parts as possible until the behaviour returns. An unchanged part is not moved by that soft intervention, so the induction
 heads never enter the set. The set is only the new front end, which does not keep M's rule. So the edit reads "not
 reused", the same as the edit that writes a new answer into the same eight neurons. This holds at every level and under
 every decomposition. The definition currently answers "did the edited parts keep their rules?", not "how much old
