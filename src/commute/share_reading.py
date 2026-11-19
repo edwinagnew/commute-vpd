@@ -11,6 +11,7 @@ Tests: tests/test_share_reading.py (the search and the placement rule; no model)
 
 from __future__ import annotations
 
+import json
 import math
 from collections.abc import Callable
 from typing import Any
@@ -91,6 +92,28 @@ def excess(lab: Any, dW: dict[str, Tensor], rows: Tensor, scale: float = 1.0) ->
     c = total(lab.cells(rows, tag=f"size, scale {scale:.6g}"))
     lab.drop_set("FT")
     return (c["K00"] - c["K0"]) / rows.numel()
+
+
+def read_at_sizes(lab: Any, names: dict[str, str], full: dict[str, Tensor], X: dict[str, Tensor],
+                  excesses: dict[str, float], floor: float, rows: Tensor,
+                  start: Callable[[str, tuple[float, float] | None, float], float], n_size: int, match: float,
+                  evals: int, extra: Callable[[str, float, dict[str, Any]], dict[str, Any]]) -> None:
+    """One change `full` (its split X) read at several sizes, in the order of `names` (size -> record name): per size,
+    its scale b searched on the first n_size rows (power 2, within `match`, up to `evals` evaluations) so K00 - K0
+    lands at excesses[size], then `read` at b, with extra(size, b, search). The split is linear in the change, so `full`
+    and X are rescaled in place (they end at the last b). start(size, prev, excess) gives the search's first scale;
+    prev = (b, excess) of the previous size. Moved from `share_reference.random_draw` (E186), unchanged in effect."""
+    cur, prev = 1.0, None  # full and X are held at scale `cur`, rescaled in place for each size
+    for lv, name in names.items():
+        ex = excesses[lv]
+        search = size_search(lambda b, c=cur: excess(lab, full, rows[:n_size], b / c), ex, start(lv, prev, ex), 2,
+                             match, evals)
+        lab.log(f"[{name} search] {json.dumps(search)}")
+        b = search["x"]
+        for m in {id(t): t for t in [*full.values(), *X.values()]}.values():  # each tensor once (zeros are shared)
+            m.mul_(b / cur)
+        cur, prev = b, (b, ex)
+        read(lab, name, full, X, rows, floor, extra(lv, b, search))
 
 
 def with_zeros(part: dict[str, Tensor], shapes: dict[str, tuple[int, ...]]) -> dict[str, Tensor]:
