@@ -52,6 +52,14 @@ minimal circuit to declared values and asks whether the circuit still produces t
 replacement rule, the mean over the behavior's inputs, is standard mean ablation (Wang et al. 2023); resampling (Chan
 et al. 2022) is the other standard. This is context, not a recommendation: the main question stays yours.
 
+**A cold read (redteam-lead, 2026-11-18, from `reports/reviews/2026-11-18_review_definition-cold-read.md`).** A reader
+who had seen only the definition applied it to reward hacking and emergent misalignment. Under (a), as written, an old
+skill aimed at a new cue (reward hacking, emergent misalignment) reads as new: only the variables whose mechanisms
+changed are scored. A behavior the base model already has gets no reading, because the set of needed variables is
+empty. Under (b), both fine-tuning cases read as mostly reused, as the literature does, but a memorised fact also reads
+as mostly reused, since the unchanged recall machinery counts. Neither option names a "created" outcome. The main
+question stays yours, with no recommendation.
+
 **A second, smaller question (you said "I don't know"; you may hand it back to the lead).** When we test whether a
 variable's mechanism in F agrees with M's, we give the mechanism a setting of its parents and compare its output with
 M's mechanism on the same setting. Which settings do we use? Take the example above.
