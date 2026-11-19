@@ -1,0 +1,52 @@
+{
+ "experiment": "E215 (rl_67m), cell P2.41 stage 1: what the 67M base model already samples, per behaviour with a programmed reward",
+ "plan": "reports/plans/2026-11-19_plan_rl-67m.md",
+ "card": "reports/plans/2026-11-19_plan_rl-67m-card.md",
+ "filed": "2026-11-19, before any GPU run of this code; descriptive (user, 2026-11-19, task file)",
+ "settings": {
+  "prompt_len": 64,
+  "n_new": 16,
+  "n_prompts": 256,
+  "samples_per_prompt": 8,
+  "batch_prompts": 32,
+  "temperature": 1.0,
+  "seed": 0,
+  "n_copy": 3,
+  "n_end": 8,
+  "count_lo": 10,
+  "count_hi": 80,
+  "wiki_skip": 16,
+  "pile_val_start": 64,
+  "pile_val_n": 8128,
+  "kl_rows": 64,
+  "kl_batch": 8,
+  "random_size": 0.01,
+  "temperature_source": "the brief (2026-11-19): 16 sampled tokens at temperature 1",
+  "n_prompts_source": "chosen so a rate of 0.2 has a standard error near 0.02 to 0.03 over prompts (card); the dry run found 256 eligible prompts for every behaviour"
+ },
+ "thresholds": {
+  "rule": {"band": [0.05, 0.5], "target": 0.2, "anchor_below": 0.01, "min_prompts": 128},
+  "true_min": {"counting": 1.0, "french_fr": 0.8, "german_de": 0.7},
+  "true_max": {"french_en": 0.05, "german_en": 0.05}
+ },
+ "rule_text": "commute.rl_tasks.select. A behaviour is eligible with at least 128 prompts read, usable when also 0.05 <= rate <= 0.5 (ends included). Pick 1: the usable behaviour whose rate is nearest 0.2 (distance rounded to 1e-9, so 0.15 and 0.25 tie); pick 2: the nearest usable one of a different family. Ties go to the earlier in the filed order (commute.rl_tasks.BEHAVIOURS: lower, french_fr, french_en, german_de, german_en, close_paren, close_quote, repeat, counting, end_sentence, sports, business, emoticon). Anchor: the eligible behaviour of lowest rate strictly under 0.01, ties to the earlier; none if no rate is under 0.01 (reported, no stop). Fewer than two picks: stop and report, before any training. Edge cases run 2026-11-19 on the dry-run script: fewer than two usable, none usable, the 0.15/0.25 tie, two usable of one family only, band ends, two anchors tied at 0, no anchor, an anchor at exactly 0.01, too few prompts; each gave the stated result",
+ "definitions": {
+  "rate": "the share of the 256 x 8 sampled continuations that earn the reward, at W0, temperature 1, 16 tokens after a 64-token held-out prompt (21 tokens for emoticon windows)",
+  "sd_over_prompts": "the population sd over prompts of each prompt's mean reward over its 8 samples; se = sd / sqrt(256)",
+  "mixed_share": "the share of prompts whose 8 samples hold both a 0 and a 1: the prompts a group-baseline policy gradient learns from",
+  "true_rate": "the reward on the text's own next 16 tokens: the positive control that the reward program sees the behaviour where the text shows it",
+  "kl_from_base": "mean over every position of the 64 held-out Pile val rows 0-63 (512 tokens each) of KL(W0's next-token distribution || W0 + dW's), fp32 per position, float64 sum: the output change stage 2 stops every arm at"
+ },
+ "control": {
+  "stage 0, first and alone": "kl_from_base at a zero update reads exactly 0.0, and at a Gaussian update of relative size 0.01 per matrix reads above 0; else stop",
+  "stage 0, reward program": "the reward on the texts' own continuations: counting exactly 1.0, French Wikipedia read as French >= 0.8, German Wikipedia read as German >= 0.7, English Pile read as French or German <= 0.05; else stop. The dry run (CPU, the same code and rows) read 1.0, 0.848, 0.758, 0.0, 0.004, so the job is expected to reproduce those exactly"
+ },
+ "expected_at_W0": {
+  "kl_zero": "exactly 0.0",
+  "kl_random": "above 0, about 1e-4 to 1e-2 nats per token (a guess; only the sign is a stop)",
+  "true_rate": {"lower": 0.2617, "french_fr": 0.8477, "french_en": 0.0, "german_de": 0.7578, "german_en": 0.0039, "close_paren": 0.918, "close_quote": 0.8008, "repeat": 0.1602, "counting": 1.0, "end_sentence": 0.25, "sports": 0.0117, "business": 0.0039, "emoticon": 0.0156},
+  "rate": {"lower": "0.15 to 0.35", "french_fr": "0.6 to 0.9 (too high to use)", "french_en": "under 0.01", "german_de": "0.5 to 0.85 (too high)", "german_en": "under 0.01", "close_paren": "0.6 to 0.9 (too high)", "close_quote": "0.5 to 0.85 (too high)", "repeat": "0.1 to 0.35", "counting": "0.5 to 0.95 (too high)", "end_sentence": "0.15 to 0.4", "sports": "0.005 to 0.04", "business": "0.005 to 0.04", "emoticon": "0.005 to 0.03 (E1's W0 P(o) at the trigger, 0.011)"},
+  "picks": "two of lower, end_sentence and repeat (low confidence on which); anchor french_en (rate 0, ties german_en and comes first)",
+  "sample_seconds_per_batch": "0.2 to 2 s for 256 sequences x 16 tokens on an L40 (a guess; measured here for stage 2)"
+ }
+}
