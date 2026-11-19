@@ -8,6 +8,7 @@
 #SBATCH --partition=compute
 #SBATCH --account=c11
 #SBATCH --qos=debug
+#SBATCH --gres=gpu:1   # stage a loads no model, but the no-compute hook reads run.py as a whole
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=16G
 #SBATCH --time=00:20:00
