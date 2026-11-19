@@ -1,0 +1,110 @@
+{
+ "experiment": "E212 (realistic_tasks run 3), cell P2.38 run 3 of 3: the crosscoder of P2.31/E203 on the three real-text pairs of run 2, one crosscoder per side, with a Gaussian update and the planted control",
+ "dir": "/mnt/nw/home/e.agnew/commute-agents/compare-lead/experiments/realistic_tasks/results/run3_rehearsal",
+ "sides": {
+  "L1": {
+   "d_authors": 0.8679448132072631,
+   "d_alt": 0.8679448132072631
+  },
+  "L3": {
+   "d_authors": 0.4193131664817711,
+   "d_alt": 0.4193131664817711
+  },
+  "T1": {
+   "d_authors": 0.4806965425913105,
+   "d_alt": 0.4769160918451928
+  },
+  "T2": {
+   "d_authors": 0.5094246437674866,
+   "d_alt": 0.5094246437674866
+  },
+  "T3": {
+   "d_authors": 0.6272829147426822,
+   "d_alt": 0.6272829147426822
+  },
+  "T4": {
+   "d_authors": 0.44118163318167336,
+   "d_alt": 0.43064695491270766
+  }
+ },
+ "gaussian": {
+  "L1": {
+   "d_authors": 0.4820634334912352,
+   "d_alt": 0.4820634334912352
+  },
+  "L3": {
+   "d_authors": 0.4820634334912352,
+   "d_alt": 0.4820634334912352
+  },
+  "T1": {
+   "d_authors": 0.4298194137218798,
+   "d_alt": 0.4298194137218798
+  },
+  "T2": {
+   "d_authors": 0.3739878786684775,
+   "d_alt": 0.3739878786684775
+  },
+  "T3": {
+   "d_authors": 0.40253447237800344,
+   "d_alt": 0.40253447237800344
+  },
+  "T4": {
+   "d_authors": 0.270497636212558,
+   "d_alt": 0.270497636212558
+  }
+ },
+ "gaussian_stopped": false,
+ "gaussian_done": true,
+ "planted": {
+  "pass": true,
+  "part": 0.0,
+  "lead": {
+   "latent": 1079,
+   "s": 0.2295490582382889,
+   "rn": 0.5914313197135925,
+   "rank": 1,
+   "nu_r": 0.003043220715417932,
+   "nu_eps": 0.6342942667206398,
+   "specific": false
+  },
+  "cos_planted_best": "nan",
+  "d_authors": 0.9904736278692763,
+  "d_alt": 0.9904736278692763
+ },
+ "d_authors": {
+  "gaps": {
+   "topic vs coin label": 0.44863164672549205,
+   "French vs Yoruba": -0.11785827097519552,
+   "lowercase vs reversed order": 0.039514909409637144
+  },
+  "above_gaussian": {
+   "L1": true,
+   "L3": false,
+   "T1": true,
+   "T2": true,
+   "T3": true,
+   "T4": true
+  },
+  "floor": false,
+  "pairs_at_gap_min": 1,
+  "call": "rival b (floor failed)"
+ },
+ "d_alt": {
+  "gaps": {
+   "topic vs coin label": 0.44863164672549205,
+   "French vs Yoruba": -0.11785827097519552,
+   "lowercase vs reversed order": 0.04626913693248513
+  },
+  "above_gaussian": {
+   "L1": true,
+   "L3": false,
+   "T1": true,
+   "T2": true,
+   "T3": true,
+   "T4": true
+  },
+  "floor": false,
+  "pairs_at_gap_min": 1,
+  "call": "rival b (floor failed)"
+ }
+}
