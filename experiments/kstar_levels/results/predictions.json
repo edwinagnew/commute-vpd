@@ -1,5 +1,5 @@
 {
-  "experiment": null,
+  "experiment": "E214",
   "cell": "P1.35 (rung L1.4), test T2 of reports/analyses/2026-11-18_analysis_definition-vs-experiments.md, T6 folded in; replaces the P1.31 design. No E-code claimed yet: the lead fills this field when it claims one.",
   "plan": "reports/plans/2026-11-18_plan_p1-35-t2.md (appendix reports/plans/2026-11-18_plan_p1-35-t2_appendix.md); card reports/plans/2026-11-18_plan_p1-35-card.md",
   "status": "Drafted 2026-11-18 by a subagent for definition-lead's review; filed once the lead commits it with an E-code. Not to be edited after any reading.",
@@ -42,6 +42,8 @@
     "graft_read_seed": 201005,
     "pieces": "experiments/reuse_variable_test/results/large/pieces.pt",
     "piece_names": ["Always on", "Cue", "XOR", "Table"],
+    "piece_windows": 4096,
+    "piece_windows_source": "E137's first_n (experiments/reuse_variable_test/pieces.py Config: the windows of D's read half its first wording's exact checks used); the full read half is 100,000 windows, about 25 times the cost of an exhaustive search for no reading the rules use.",
     "settings_source": "alpha 0.9: the definition-vs-experiments audit's T2 and E208's tau; alphas and restricted_share: the audit's T6; orders, order_seed, chunk: E208's filed values (experiments/rho_saved_items/results/predictions.json); split_seed, slot_layer through g_fallback_ratio: P1.31's draft (experiments/known_answer_levels/results/predictions.json), sources there (E62, E206, E196); e195_layer, e195_C, e195_factors: E195/E208's filed values; graft settings: E206's (experiments/graft_sites/results/predictions.json), early_lowest left out because its E206 checks failed (no reading); pieces: E137's saved file; polish_cap: a time guard set here, logged when hit, enters no reading."
   },
   "thresholds": {
@@ -55,7 +57,8 @@
     "band_factor": 3,
     "thin_floor": 0.9,
     "l1_hours_cap": 3,
-    "thresholds_source": "kl_floor, gate_tol: E208's filed values; e62_base, e62_tol: E62's filed a_heads rule; band_factor 3: the 3 s bar of E55's filed rules, as P1.31 drafted it; s_tol: a squared cosine of identical fp64 writes is 1 to rounding (E208's x2/x10 read 1 within it); identity_tol: R = 1 - f(1 - rho') is algebra; thin_floor 0.9: the bottom of the audit's bound on neuron-level R for every trained fine-tune (0.88 worst unit, 0.99 for K of 128 or more, E213), rounded down; piece_gate_tol: fp32 agreement between two code paths of one formula; l1_hours_cap: the plan's time stop."
+    "a_prime_copy_max": 0.05,
+    "thresholds_source": "kl_floor, gate_tol: E208's filed values; e62_base, e62_tol: E62's filed a_heads rule; band_factor 3: the 3 s bar of E55's filed rules, as P1.31 drafted it; s_tol: a squared cosine of identical fp64 writes is 1 to rounding (E208's x2/x10 read 1 within it); identity_tol: R = 1 - f(1 - rho') is algebra; thin_floor 0.9: the bottom of the audit's bound on neuron-level R for every trained fine-tune (0.88 worst unit, 0.99 for K of 128 or more, E213), rounded down; piece_gate_tol: fp32 agreement between two code paths of one formula; l1_hours_cap: the plan's time stop; a_prime_copy_max: R0's stage-1 check 'M's copy after A' <= 0.05', as P1.31 drafted it (experiments/known_answer_levels/results/predictions.json)."
   },
   "readings": {
     "variables": "per level, plan appendix section 1; a graft is its own variable at L1 (heads and neurons) and L2 (heads); inside its MLP layer, attention layer or block above that; E137 pieces are the rest-of-network remainder variable at every level, M's mechanism for it writing zero",
