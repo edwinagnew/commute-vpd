@@ -134,6 +134,7 @@ class World:
         self.cfg, self.th, self.net = cfg, th, Net("cuda")
         self.net.net.requires_grad_(False)
         self.M = R.Model(self.net.net)
+        self.skip: tuple[int, ...] = ()  # A'_i tokens swapped for want of a detector (edits)
 
     @cached_property
     def cues(self) -> KE.Cues:
@@ -145,14 +146,24 @@ class World:
         pool = [t for t in ranked[lo:hi] if tok.encode(tok.decode([t])) == [t]]
         keys = json.loads((E62 / "run.json").read_text())["pools"]["keys"]
         c = self.cfg
-        return KE.cues(rows[torch.arange(rows.shape[0]) % 5 == 0], keys, pool, c.n_cues, c.windows_per_cue, c.window, c.cue_seed)
+        return KE.cues(rows[torch.arange(rows.shape[0]) % 5 == 0], keys, pool, c.n_cues, c.windows_per_cue, c.window, c.cue_seed, self.skip)
 
     @cached_property
     def edits(self) -> dict[str, R.Model]:
         pile = cut(pile_rows("val", 0, 256, log=log), self.cfg.eval_batch, self.cfg.window, torch.Generator().manual_seed(self.cfg.data_seed))
-        edits, rec = KE.build(self.M, self.cues, pile, SimpleNamespace(**asdict(self.cfg), a_prime_copy_max=self.th["a_prime_copy_max"]))
+        swapped: list[dict[str, Any]] = []
+        while True:  # an A'_i with no detector is swapped for the next pool token (lead, 2026-11-19; the bar is unchanged)
+            try:
+                edits, rec = KE.build(self.M, self.cues, pile, SimpleNamespace(**asdict(self.cfg), a_prime_copy_max=self.th["a_prime_copy_max"]))
+                break
+            except KE.NoDetector as e:
+                swapped.append({"cue": e.i, "A_prime": self.cues.A2[e.i]} | e.rec)
+                log(f"edits: swapping A' of cue {e.i}: {swapped[-1]}")
+                assert len(swapped) <= self.cfg.n_cues, "no detector after a swap per cue"
+                self.skip += (self.cues.A2[e.i],)
+                del self.__dict__["cues"]
         c = self.cues
-        rec |= {"A": c.A, "A_prime": c.A2, "y": c.y}
+        rec |= {"A": c.A, "A_prime": c.A2, "y": c.y, "swapped": swapped}
         log(f"edits: {json.dumps(rec)}")
         if rec["misses"]:
             stop(RESULTS / "edits.json", rec, "build checks: " + "; ".join(rec["misses"]))
