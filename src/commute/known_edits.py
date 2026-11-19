@@ -9,7 +9,7 @@ last instead: M's own copy there is the reference for the copy bar.
 
 Slots: the eight layer-`l` neurons with the smallest mean activation^2 x |output column|^2 on Pile held-out windows
 (E206's rule). Slot i's input row detects A'_i: beta (h(A'_i) - mean h) / |.|, h the mean MLP input after rms_2 at the
-positions holding the token in M's run on D, beta the smallest power of 2 at which the slot's mean activation on A'_i
+positions holding the token in M's run on D (or the whitened direction where that one cannot pass: `detector`), beta the smallest power of 2 at which the slot's mean activation on A'_i
 is at least `detector_ratio` x its `detector_quantile` quantile on Pile held-out.
     reuse_small  slot i's output column gamma_T (x_1(A_i) - x_1(A'_i)) / act_i, x_1 the mean block-1 input at the token's
                  positions; gamma_T from 1, doubled until the copy top-1 on D is at least copy_bar_frac x M's own
@@ -114,6 +114,29 @@ def smallest(ok: Callable[[float], bool], cap: float = 2.0**20, steps: int = 20)
     return hi
 
 
+def limit(hc: Tensor, hp: Tensor, u: Tensor, q: float) -> float:
+    """The detector ratio as beta grows: GELU tends to ReLU and the MLP has no bias, so beta cannot change it."""
+    den = float(torch.quantile(torch.relu(hp @ u), q))
+    return math.inf if den == 0 else float(torch.relu(hc @ u).mean()) / den
+
+
+@torch.no_grad()
+def detector(hc: Tensor, mean_d: Tensor, hp: Tensor, ratio: float, q: float) -> tuple[Tensor, dict[str, Any]]:
+    """Unit input direction for one cue (hc: MLP inputs at its A'_i, hp: on Pile held-out). The filed direction
+    (cue mean minus D's mean) when its limit reaches `ratio`, else the ridge-whitened Pile direction
+    (Sigma + 0.01 tr(Sigma)/d I)^-1 (cue mean - Pile mean) (E214 rerun, 2026-11-19: the filed one missed on cue 0)."""
+    u = hc.mean(0) - mean_d
+    u = u / u.norm()
+    rec: dict[str, Any] = {"limit_filed": limit(hc, hp, u, q)}
+    if rec["limit_filed"] >= ratio:
+        return u, rec | {"direction": "filed"}
+    P = hp.double() - hp.double().mean(0)
+    sig = P.T @ P / len(P)
+    w = torch.linalg.solve(sig + 0.01 * sig.trace() / len(sig) * torch.eye(len(sig), dtype=sig.dtype, device=sig.device), (hc.double().mean(0) - hp.double().mean(0)))
+    u = (w / w.norm()).float()
+    return u, rec | {"direction": "whitened", "limit_whitened": limit(hc, hp, u, q)}
+
+
 @torch.no_grad()
 def with_slots(M: R.Model, l: int, idx: list[int], rows: Tensor, cols: Tensor) -> R.Model:
     F = clone(M)
@@ -132,21 +155,23 @@ def build(M: R.Model, c: Cues, pile: Tensor, cfg: Any) -> tuple[dict[str, R.Mode
     hp = M.net.h[l].rms_2(torch.cat([R.m_inputs(M, t)[l][1] for t in pile.to(dev).split(64)])).flatten(0, 1)
     gelu, n = M.net.h[l].mlp.gelu, cfg.n_cues
     rows, betas, act = torch.zeros(n, h.shape[-1], device=dev), [], torch.zeros(n, device=dev)
+    dirs: list[dict[str, Any]] = []
     for i in range(n):
-        u = h[cue == i, -1].mean(0) - h.mean((0, 1))
-        u, beta = u / u.norm(), 1.0
+        u, d = detector(h[cue == i, -1], h.mean((0, 1)), hp, cfg.detector_ratio, cfg.detector_quantile)
+        beta = 1.0
         while float(gelu(h[cue == i, -1] @ (beta * u)).mean()) < cfg.detector_ratio * float(torch.quantile(gelu(hp @ (beta * u)), cfg.detector_quantile)):
             beta *= 2
-            assert beta <= 2.0**20, f"no detector for cue {i}"
+            assert beta <= 2.0**20, f"no detector for cue {i}: {d}"
         rows[i], act[i] = beta * u, gelu(h[cue == i, -1] @ (beta * u)).mean()
         betas.append(beta)
+        dirs.append(d)
     pos = torch.arange(len(toks), device=dev)
     shift = torch.stack([x1[pos[cue == i], c.p.to(dev)[cue == i]].mean(0) - x1[cue == i, -1].mean(0) for i in range(n)], 1) / act
     lm = M.net.lm_head.weight
     E = (lm[torch.tensor(c.y, device=dev)] - lm.mean(0)).T  # (d, n)
     y_of = torch.tensor(c.y, device=dev)[cue]
     ref, base = top1(M, c.twin.to(dev), c.b), top1(M, toks, c.b)
-    rec: dict[str, Any] = {"slots": S, "betas": betas, "act": act.tolist(), "copy_M_twin": ref, "copy_M_D": base, "misses": []}
+    rec: dict[str, Any] = {"slots": S, "betas": betas, "detectors": dirs, "act": act.tolist(), "copy_M_twin": ref, "copy_M_D": base, "misses": []}
     rec["misses"] += [f"M's copy after A' {base:.4f} > {cfg.a_prime_copy_max}"] if base > cfg.a_prime_copy_max else []
     gT = 1.0
     while top1(small := with_slots(M, l, S, rows, gT * shift), toks, c.b) < cfg.copy_bar_frac * ref and gT <= cfg.gamma_t_max:
