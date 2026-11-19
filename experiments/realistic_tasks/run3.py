@@ -243,7 +243,9 @@ def planted(job: Job) -> dict[str, Any]:
 
 def gauss(job: Job) -> dict[str, Any]:
     src = job.update(job.S["gauss_of"])
-    R = {k: v.cuda() for k, v in FT.random_direction({k: v.cpu() for k, v in src.items()}, job.S["gauss_draw"]).items()}
+    R = FT.random_direction({k: v.cpu() for k, v in src.items()}, job.S["gauss_draw"])
+    # random_direction's fp32 norms leave the total size off by ~7e-5 (rehearsal 61482); rescale each matrix in float64
+    R = {k: (r.double() * (src[k].double().norm().cpu() / r.double().norm())).float().cuda() for k, r in R.items()}
     rel = abs(update_size(R, job.net.W0) / update_size(src, job.net.W0) - 1)
     job.out.check("Gaussian size equals its source's", rel <= 1e-5, {"rel": rel})
     own = job.S["gauss_of"]
