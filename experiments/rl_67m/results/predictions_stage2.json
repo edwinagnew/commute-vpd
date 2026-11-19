@@ -26,6 +26,8 @@
   "n_eval": 128,
   "eval_k": 8,
   "n_eval_source": "half of stage 1's 256 held-out prompts, same 8 samples each: se about 0.02 at a rate of 0.2 (stage 1 card)",
+  "n_demo_prompts": 4096,
+  "n_demo_prompts_source": "CPU path check 2026-11-19 on Pile train rows: of 1,024 training prompts only 175 (repeat) and 242 (lower) have an own continuation that earns the reward, under the 256 floor; 4,096 prompts give about 700 and 970. The anchor's 1,024 French Wikipedia demonstrations read French at 0.907",
   "n_train_prompts": 1024,
   "n_train_prompts_source": "1,024 x 8 own samples cost about 1.5 min at E215's measured sampling time and give about 1,300 (repeat, rate 0.157) to 2,000 (lower, 0.245) rewarded samples, over the 256 the own arm needs",
   "pile_train_n": 32768,

@@ -66,6 +66,7 @@ class Settings:
     n_eval: int
     eval_k: int
     n_train_prompts: int
+    n_demo_prompts: int
     pile_train_n: int
     null_rates: tuple[float, ...]
     seeds: tuple[int, ...]
@@ -168,7 +169,7 @@ def run_arm(x: Ctx, name: str, arm: str, seed: int, lr: float, kl_target: float 
     if arm == "own":
         pool = RA.own_pool(net, r, tp, C.k, C.prompts_per_step, x.gen(seed, 3))
     elif arm == "demo":
-        pool = RA.demo_pool(r, tp, x.articles)
+        pool = RA.demo_pool(r, RA.train_prompts(r, x.pile_train, x.articles, x.windows, C.n_demo_prompts), x.articles)
     out: dict[str, Any] = {"arm": arm, "behaviour": name, "seed": seed, "lr": lr, "pool": None if pool is None else len(pool[0])}
     if pool is not None and len(pool[0]) < x.th["min_pool"]:
         log(f"[{name} {arm} s{seed}] skipped: pool of {len(pool[0])}")

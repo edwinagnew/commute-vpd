@@ -67,5 +67,10 @@ The null jobs are the only ones that may pass 30 min. They fit debug's 2 h cap, 
 Demonstration sources: repeat and lower use Pile train rows' own continuations that earn the reward, so the text is
 real and was not sampled by the model. Plain register (the scoping page's suggestion) does not match either pick.
 The anchor uses French Wikipedia (wikimedia/wikipedia 20231101.fr, pinned revision) after English Pile prompts.
+The pools are drawn from 4,096 training prompts. A CPU check found that 1,024 prompts give only 175 (repeat) and 242
+(lower) rewarded continuations, which is under the 256 floor. The check also showed:
+- the training prompts do not overlap the held-out ones;
+- the anchor's French demonstrations read as French 0.907 of the time;
+- the reward program reproduces E215's saved rewards exactly.
 
 KL target expected around 1e-3 to 3e-2 nats per token. A random update of size 0.01 gives 0.0013 (E215).
