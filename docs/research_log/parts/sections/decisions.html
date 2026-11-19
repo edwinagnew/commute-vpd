@@ -1,17 +1,15 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
-<div class="prose"><p><strong>Waiting on you, 2026-11-18.</strong> One card is open, the definition-lead's. It asks whether the output layer always takes the base model's mechanism; no run waits on it, and it is needed before the paper states the definition formally. Your answer on the earlier question (every variable the behavior runs through counts, found by mean ablation) is recorded in <code>decisions.md</code>; the runs it releases are in section {{n:next}}.</p>
+<div class="prose"><p><strong>Waiting on you, 2026-11-18.</strong> One card is open, the writeup-lead's: a cell for the paper's last zero-run edits and one compile, which costs nothing and changes no reading. Your answer on the definition repairs is recorded in <code>decisions.md</code> (coverage condition); no wording of the definition box changes until you approve the draft.</p>
 <p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
-<div class="card decision" id="decision-definition-repairs"><span class="chip open urgency">Soon</span>
-<div class="k">Question for you · definition-lead · new 2026-11-18</div>
-<h3>Should the output layer, and anything else outside the variables, always take the base model's mechanism?</h3>
-<p>No run waits on this; it is needed before the paper states the definition formally.</p>
-<p>M is the base model and F its fine-tune. The definition tests F with M's mechanism swapped into chosen variables; as written, the output layer keeps F's. Take a fine-tune that changed only the output layer: with M's mechanism in every variable it still behaves like F, so it scores as needing no variables at all, and the property the definition states, that swapping M's mechanism into every variable gives back M, is false. No reading should change: the 67M readings already set the output to M's by an earlier decision; nobody has re-checked the code.</p>
-<p><strong>Options.</strong> (a) Accept: one clause gives the output, and anything else outside the variables, M's mechanism in every test, so the property holds. (b) Leave as is: the property stays false whenever F changes something outside the variables. <strong>Lead's recommendation: (a)</strong>, which matches what the readings did.</p>
-<p>The review's other three repairs are settled: one fixed featurizer, exact featurization, one shared architecture.</p>
-<p class="small">Names in the reports: this is the review's D2; the settled ones are D1, D3 and D10; "F_K" or "hybrid" is F with variables swapped.</p>
-<div class="links"><a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/decisions/2026-11-18_decision_definition-repairs.md">card</a> <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/reviews/2026-11-18_review_definition-causal-abstraction.md">review</a> <a href="https://github.com/edwinagnew/commute-vpd/blob/main/theory/2026-11-18_definition_consolidated.md">consolidated definition</a></div>
+<div class="card decision" id="decision-writeup-compile"><span class="chip open urgency">Soon</span>
+<div class="k">Question for you · writeup-lead · new 2026-11-18</div>
+<h3>May the writeup-lead have a cell for the paper's last edits and one compile of <code>main.tex</code>?</h3>
+<p>Running: zero-run edits to <code>refs.bib</code> and figures; the compile job waits on this.</p>
+<p>The task you set the writeup-lead has four parts: missing bibliography entries and the EH candidates, Section 3's Table 1 of matched pairs, Figure 1 (a schematic) and Figure 5 (real against random changes across scale), then one compile of <code>main.tex</code> on a machine with TeX. The compile is the only part that needs a job, and the harness refuses a job that is not claimed against a cell of yours. The cell costs nothing and changes no reading.</p>
+<p><strong>Options.</strong> (a) Approve the cell: the paper is compiled once and the layout and missing references are read from the output. (b) Leave the compile out: the edits stay unchecked until you compile by hand. <strong>Recommendation: (a).</strong></p>
+<p class="small">The line for you: <code>~/commute-agents/fleet/cell approve 35</code> (proposal 35).</p>
 </div>
 </div>
 </section>
