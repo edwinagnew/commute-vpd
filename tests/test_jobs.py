@@ -154,3 +154,13 @@ def test_require_filed_takes_the_sha_when_set_even_beside_a_git(tmp_path, monkey
 def test_require_filed_refuses_with_no_git_and_no_sha(tmp_path, monkeypatch):
     with pytest.raises(SystemExit, match="unset"):
         jobs.require_filed(_filed(tmp_path, monkeypatch, False))
+
+
+def test_stop_writes_a_stopped_marker_and_a_passing_rerun_removes_it(tmp_path: Path):
+    path = tmp_path / "stage0_p5s1.json"
+    with pytest.raises(SystemExit) as e:
+        jobs.stop(path, {"a": 1}, "stage 0: a miss", log=lambda _m: None)
+    assert e.value.code == 1 and (tmp_path / "stage0_p5s1.stopped").read_text() == "stage 0: a miss\n"
+    jobs.write_stage(path, {"a": 1, "done": True})
+    assert not (tmp_path / "stage0_p5s1.stopped").exists()
+    assert jobs.stopped_marker(tmp_path / "fact.stopped.json").name == "fact.stopped"

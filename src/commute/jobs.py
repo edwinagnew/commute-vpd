@@ -2,7 +2,8 @@
 
 `load_experiment` runs another experiment's file without PYTHONPATH, `python -P` or a pyright suppression;
 `hard_exit` ends a job whose final write is done without waiting for the interpreter's teardown; `run_items` runs a
-job's list of items so that one item's stop does not end the rest."""
+job's list of items so that one item's stop does not end the rest; `stop` and `write_stage` write a stage's JSON with a
+`.stopped` marker file beside it whenever the stage stopped."""
 
 from __future__ import annotations
 
@@ -87,6 +88,32 @@ def run_items[T](items: Iterable[T], run_one: Callable[[T], object], log: Callab
     if stopped:
         log(f"{len(stopped)} item(s) stopped: {stopped}")
     return 1 if stopped else 0
+
+
+def stopped_marker(path: Path) -> Path:
+    """The `.stopped` marker file beside a stage JSON: results/stage0_p5s1.json -> results/stage0_p5s1.stopped (an
+    item's `<item>.stopped.json` -> `<item>.stopped`)."""
+    return path.with_name(path.name.removesuffix(".json").removesuffix(".stopped") + ".stopped")
+
+
+def write_stage(path: Path, obj: dict[str, Any]) -> None:
+    """Write a stage's JSON (indent 1), and keep its `.stopped` marker in step: written (holding the reason) when the
+    JSON carries a "stopped" key, removed otherwise, so a stage re-run that now passes leaves no stale marker. A runner
+    told to watch for a stop can wait on the file; the key alone made one wait out its cap (friction 861)."""
+    path.write_text(json.dumps(obj, indent=1))
+    marker = stopped_marker(path)
+    if "stopped" in obj:
+        marker.write_text(f"{obj['stopped']}\n")
+    else:
+        marker.unlink(missing_ok=True)
+
+
+def stop(path: Path, out: dict[str, Any], why: str, log: Callable[[str], object] = print) -> NoReturn:
+    """A stage's stop: `out` plus {"stopped": why} to `path`, the `.stopped` marker beside it (`write_stage`), a STOP
+    line in the log, exit 1."""
+    write_stage(path, out | {"stopped": why})
+    log(f"STOP: {why}")
+    sys.exit(1)
 
 
 def write_result(path: Path, out: dict[str, Any], decomp_dir: Path) -> None:
