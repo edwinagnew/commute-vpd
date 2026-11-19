@@ -2,6 +2,14 @@
 
 Deferred ideas and loose ends. Date each entry.
 
+- 2026-11-19, **soon (user, in chat)**. Proper top-activating-neuron baselines, after Cammarata et al. and Goodfire's
+  follow-up (paper §4.2.3 "Top Activating Neurons": "No reading of the definition with k below the width has been
+  made"). E190's top-K gain readings were unreadable because the 67M was never made to run sparse: masking the base
+  model alone to its top 240/768/1536 of 3072 neurons per block added 5.76/3.79/0.89 nats. Do it their way, with the
+  authors' recipe and code (baselines rule, user 2026-11-17): first give the base model the top-K sparsity their
+  method assumes, so the W0 control reads near zero loss, then read every pair with a saved update at k below the width.
+  Proposed as a compare-lead cell on L2.1 (2026-11-19).
+
 - 2026-10-14. Re-decomposition test (the strong version in `GOALS.md`; postponed by the user until the weak version
   is settled): warm-start VPD on W + δW from the released decomposition and measure subcomponent
   drift against a δW = 0 warm-start control (optimisation noise) and the cross-seed baseline (0.28 MMCS). Needs the
