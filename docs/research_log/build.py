@@ -464,6 +464,9 @@ def main() -> None:
     if len(sys.argv) == 3 and sys.argv[1] == "--check-head":
         PARTS = head_parts()
         sys.argv[1] = "--check"
+    if len(sys.argv) == 3 and sys.argv[1] in ("--changed", "--check") and not Path(sys.argv[2]).is_dir():
+        sys.exit(f"{sys.argv[2]}: no such folder here. Run build.py with plain python3 on the dev node, not through "
+                 "fleet/cpu-run, whose worker cannot see /ephemeral where Artifact read saves (friction 868, 892)")
     pages = build()
     if len(sys.argv) == 3 and sys.argv[1] == "--changed":
         print(" ".join(changed_files(pages, Path(sys.argv[2]))))

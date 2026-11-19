@@ -148,7 +148,11 @@ fine anywhere: the build points them at the right page.
 
 ## How to publish
 
-From a Claude Code session, with the Artifact tool:
+From a Claude Code session, with the Artifact tool. Run every `build.py` call here (`--check`, `--check-head`,
+`--changed`, `--words`, the plain build) with plain `python3` on the dev node, never through `fleet/cpu-run`: they are
+light (stdlib, seconds), and the cpu-run worker cannot see the folder under `/ephemeral` where `Artifact read` saves
+the live pages, so `--check` there compared nothing ("no live nav.js") and `--changed` named every file (friction 868,
+892). `build.py` now stops with that reason when the folder is not there.
 
 0. `~/commute-agents/fleet/log-lock take <role> --wait` before claiming a version number or editing any part, and
    `~/commute-agents/fleet/log-lock release <role>` after the publish (two flushes both claimed v73, friction 37).
@@ -158,13 +162,15 @@ From a Claude Code session, with the Artifact tool:
    refuses a publish to the log from a session that does not hold the lock (friction 347, 149); its refusal says who
    does. In the call before the send, `log-lock check <role>`: on exit 1 do not publish; take it again and re-pull.
 1. Commit `parts/` and the emptied queue (named paths, `git commit -m ... -- docs/research_log experiments/TRIED.md
-   README.md`), since a pull refuses to merge into an uncommitted `PENDING.md`. Then `git pull --no-rebase` and
-   `python3 docs/research_log/build.py`, so the build has every other session's changes. Commit what that changed and
-   push **before** publishing: a published version whose `parts/` sat uncommitted or unpushed made the next flush merge it
-   back from the live page (friction 138, 139, 323). If the pull brought in parts edits, rebuild before publishing, or
-   the live page lags the repo (friction 153).
-2. Save the live pages by path, which prints a line per page, not the page, and compare (on the dev node, not through
-   `fleet/cpu-run`, whose worker cannot see `/ephemeral`).
+   README.md`), since a pull refuses to merge into an uncommitted `PENDING.md`. Then `git pull --no-rebase`. Do not
+   build yet: writing `build/` is refused unless a `--check` with the live `nav.js` ran in the last 120 min (friction
+   825), so the build comes after step 2's check (friction 850).
+2. Save the live pages by path, which prints a line per page, not the page, and compare (plain `python3` on the dev
+   node, see the top of this section). Then build, `python3 docs/research_log/build.py`, so `build/` has every other
+   session's changes; commit what that changed and push **before** publishing: a published version whose `parts/` sat
+   uncommitted or unpushed made the next flush merge it back from the live page (friction 138, 139, 323). If the pull
+   brought in parts edits, this build is what keeps the live page from lagging the repo (friction 153). A build refused
+   as stale (over 120 min since the check) needs the check of this step again, not a new pull.
 
    ```
    Artifact read    url: https://claude.ai/artifact/SvgkzUiESRkyE9GM65HCWu   paths: ["nav.js"]
@@ -182,7 +188,7 @@ From a Claude Code session, with the Artifact tool:
    (friction 291). A file not yet live needs no read. A redrawn figure (a `fig/*.png` that is live and changed) counts as
    a changed file: read its path before the first send, or the send is refused as unread content (friction 691). Never `read` with `url` alone: ~50k tokens, and the first send was
    refused all the same (friction 115, 160). The saved index.html is for `--check`; it does not count as a view.
-   The build enforces the first: writing `build/` (step 1's build, `--words`' rebuild) is refused unless a `--check` or
+   The build enforces the first: writing `build/` (this step's build, `--words`' rebuild) is refused unless a `--check` or
    `--check-head` with a live `nav.js` in its folder ran in the last 120 min here (stamp `build/.checked`, friction 825).
    Which check (friction 384): before editing `parts/`, `--check`, where any diff is someone else's. With uncommitted
    edits, `--check-head`, against `parts/` at HEAD. After your commit, `--check` diffs your own edits: read only
@@ -200,7 +206,9 @@ From a Claude Code session, with the Artifact tool:
    Otherwise (step 2 showed someone else's line, or you took the lock late), by the refusal's first sentence:
    - **"same author content"**: send again; it passes.
    - **"shown in full below as a line diff"** (under about 10 places): read the diff. Only your own changes: the three
-     sends above. A line that is not yours: pull, rebuild, merge, step 1, whatever the place count (friction 409, 451,
+     sends above. Decide whose a line is by its text against step 2's `--check`, not by its `+`/`-` mark: `--check`
+     marks the live page `-` and the build `+`, and a clerk found the refusal's marks the other way round (friction
+     889). A line that is not yours: pull, rebuild, merge, step 1, whatever the place count (friction 409, 451,
      479).
    - **"not shown here"** (about 10 places or more): the refusal names a saved file: Read it whole, 130 lines a call
      (200 can overrun Read), through the last line it names (~45k tokens). Merge what yours lacks and publish; a
