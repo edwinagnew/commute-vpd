@@ -38,8 +38,8 @@ because under it post-training would do nothing.
 
 **Their elicitation.** Oh et al. (§8) use the word through Lambert's "elicitation theory of post-training": "base models
 determine the vast majority of the potential of a final model, and post-training's job is to cultivate all of it". Lambert's
-[post](https://www.interconnects.ai/p/elicitation-theory-of-post-training) and
-[book](https://arxiv.org/abs/2504.12501) were found by search and not read. Oh et al. report that Lambert thinks the view fits
+[post](https://www.interconnects.ai/p/elicitation-theory-of-post-training) (read 2026-11-19: [summary](summaries/interconnects_elicitation-theory-of-post-training.md)) and
+[book](https://arxiv.org/abs/2504.12501) were found by search; the book is not read. Oh et al. report that Lambert thinks the view fits
 light recipes better than compute-heavy RL. A paper already in our catalogue,
 [2605.08368](summaries/arxiv_2605.08368v1.md), defines elicitation as reweighting behaviours the base model can already
 reach. So a reader from this literature will take "elicitation" to be the behavioural claim. Anything we write for outside
