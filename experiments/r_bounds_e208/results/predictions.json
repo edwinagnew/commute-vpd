@@ -1,0 +1,59 @@
+{
+ "experiment": "E213",
+ "cell": "P1.34",
+ "status": "filed 2026-11-18 before run.py was written or run",
+ "question": "Under the working definition (decisions.md, 2026-11-18, 'The variables F needs are every variable the behavior runs through'), R = mean of s_u over K*, the behaviour's minimal circuit under mean ablation. K* is unknown on E208's items, but every neuron and head of a full fine-tune is changed (f = 1), so R is the plain mean of the saved s_u over K*. What range can R take, how low can it go for a circuit of k parts, and does any saved distance open reuse-minus-twin gaps of 0.01 or more?",
+ "disclosure": "Before filing, the lead had seen each item's lowest and mean s_u per distance (E208's results/items/*.json r_changed, and a listing of the npz files). E208's report already gave the size-aware gap on its own circuits: 0.013 to 0.014 for the case pair.",
+ "settings": {
+  "parts_dir": "/mnt/nw/home/e.agnew/commute-agents/definition-lead/experiments/rho_saved_items/results/large/parts",
+  "parts_dir_source": "the definition-lead clone's results/large symlink (gitignored, absent from worktrees), which points to ~/commute-data/results-large/rho_saved_items",
+  "items_dir": "experiments/rho_saved_items/results/items",
+  "distances": ["main", "i", "iii", "b"],
+  "k_grid": [1, 2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096],
+  "k_min": 16,
+  "level_bar": 0.99,
+  "gap_bar": 0.01,
+  "pairs": [["copy24", "cipher24"], ["ident32", "rand32"], ["case_real", "case_twin"], ["repeat_real", "repeat_twin"], ["twin", "fact"]],
+  "counted": 4,
+  "seeds": [0, 1],
+  "orders": 5,
+  "built": ["slotted", "neurons_appended", "head_appended", "rebuilt"],
+  "check_tol": 1e-9,
+  "settings_source": "pairs, counted, seeds and orders are E208's (experiments/rho_saved_items/results/predictions.json settings); k grid, k_min, level_bar and gap_bar from the definition-lead brief for T1 (reports/analyses/2026-11-18_analysis_definition-vs-experiments.md)"
+ },
+ "distances": {
+  "main": "the theory note as written: s_u = 1 - mean over settings v of (1 - cos^2 of the two writes), settings pooled from M's and F's runs",
+  "i": "the code's aggregate: one cos^2 of the part's whole write over every setting at once, M's settings only",
+  "iii": "the note on M's settings only",
+  "b": "size-aware: s_u = 1 - mean over v of |f_F - f_M|^2 / (|f_F|^2 + |f_M|^2), pooled settings. The only size-aware distance saved"
+ },
+ "readings": {
+  "range": "per item and distance: lowest and highest single s_u (R over a one-part circuit; every R over any circuit lies between them)",
+  "worst_k": "per item, distance and k in k_grid plus 'all' (every part): the mean of the k lowest s_u, the lowest R any circuit of k parts can have",
+  "e208_K": "per item and distance: R = mean s_u over each of E208's five K_replace circuits, and their mean over the five orders",
+  "gap": "per counted or reported pair, seed, distance and k (and on E208's circuits): reuse member's value minus its twin's (first item of the pair minus the second); its absolute value is read against gap_bar; the seed difference is printed beside it"
+ },
+ "rules": {
+  "R0": "Code check, stop on a miss: for every trained item and distance, worst R at k = all equals E208's items JSON r_changed.<d>.mean, and R on K_replace_j equals E208's replace.orders[j].rho_<d>, each within check_tol. A miss means the npz and E208's summaries disagree, and the run exits before writing a verdict",
+  "A": "Rival A holds when, on all 20 trained fine-tunes, under every one of the four distances, worst R at every k >= k_min (the grid's 16 to 4096, and all) is >= level_bar, AND every |gap| of the four counted pairs at both seeds, under every distance, at every k >= k_min and on E208's circuits (mean over five orders) is < gap_bar",
+  "B": "Rival B holds when, under the size-aware distance b, at least one counted pair has |gap| >= gap_bar at the same k >= k_min (grid or all) at both seeds",
+  "verdict": "A, B, or neither; A and B cannot both hold (A needs every b gap at k >= k_min under gap_bar, B needs one at or above it). 'neither' is reported as read, with which clause of A failed",
+  "reported": "the fifth pair (twin/fact), the four built items, gaps under main, i and iii at every k, gaps at k < k_min, and the sign of each gap: read, not scored"
+ },
+ "edge_cases": {
+  "do_nothing": "every s_u = 1: worst R = 1 at every k, every gap 0, so A holds and B cannot; the do-nothing state cannot pass B's bar",
+  "k_larger_than_parts": "trained items hold 12,312 or 12,314 parts, above 4096; on the built items (1, 256, 256, 6,152 parts) k is clipped to the part count and repeated k are dropped. Built items are not scored",
+  "different_part_counts": "the twin/fact pair holds 12,314 parts, the others 12,312; gaps are taken at equal k, and at 'all' each over its own parts",
+  "ties": "the k lowest are taken by a stable sort; ties do not change the mean",
+  "negative_scores": "the size-aware s_u can fall below 0 (anti-aligned writes); only the slotted graft has any, and it is not scored",
+  "one_seed_only": "B needs both seeds at the same k; a gap at one seed only is reported, not counted"
+ },
+ "expected": {
+  "W0": "s_u = 1 for every part; R = 1 at every k",
+  "main_at_all": "0.9994 to 0.99995 per item (E208)",
+  "main_lowest": "0.88 to 0.975 per item (the audit)",
+  "b_at_all": "about 0.97 to 0.99 per item, so A's level clause cannot hold under b at k = all",
+  "positive_control": "the built items: the appended grafts read 0 at every k, the slotted graft about 0, the rebuilt circuit's worst k at 0 for k up to its zeroed parts"
+ },
+ "blind_to": "K* itself: the bounds hold for any circuit, but the actual K* may sit anywhere between the worst-k curve and 1. A circuit's weight per part (a head counts as one neuron). Any distance not saved by E208. Update size, which E208 found sets the gaps: pairs matched in size are not in this set"
+}

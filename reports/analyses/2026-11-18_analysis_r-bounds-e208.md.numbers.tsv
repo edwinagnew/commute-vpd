@@ -1,0 +1,43 @@
+0.0004	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "case_real/case_twin" and .distance == "main" and .k == "all") | .gap[1]	this
+0.0005	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "case_real/case_twin" and .distance == "main" and .k == "all") | .gap[0]	this
+0.0006	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "case_real/case_twin" and .distance == "b" and .k == "all") | .seed_diff / (2 | sqrt)	this
+0.0009	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "case_real/case_twin" and .distance == "main" and .k == "4096") | .gap[1]	this
+0.0011	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "case_real/case_twin" and .distance == "main" and .k == "4096") | .gap[0]	this
+0.0014	experiments/r_bounds_e208/results/summary.json	[.gaps[] | select(.pair == "case_real/case_twin" and .distance == "b" and .k != "1" and .k != "2" and .k != "4" and .k != "8") | .seed_diff | fabs] | max	this
+0.002	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "copy24/cipher24" and .distance == "b" and .k == "all") | .gap[0]	this
+0.003	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "case_real/case_twin" and .distance == "i" and .k == "all") | .gap[0]	this
+0.004	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "copy24/cipher24" and .distance == "b" and .k == "4096") | .gap[0]	this
+0.005	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "copy24/cipher24" and .distance == "b" and .k == "256") | .gap[1]	this
+0.007	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "copy24/cipher24" and .distance == "b" and .k == "256") | .gap[0]	this
+0.008	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "copy24/cipher24" and .distance == "b" and .k == "16") | .gap[0]	this
+0.009	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "case_real/case_twin" and .distance == "main" and .k == "16") | .gap[1]	this
+0.01	experiments/r_bounds_e208/results/predictions.json	.settings.gap_bar	this
+0.010	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "ident32/rand32" and .distance == "b" and .k == "256") | .gap[0]	this
+0.011	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "case_real/case_twin" and .distance == "iii" and .k == "16") | .gap[0]	this
+0.012	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "case_real/case_twin" and .distance == "b" and .k == "all") | .gap[0]	this
+0.013	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "case_real/case_twin" and .distance == "main" and .k == "16") | .gap[0]	this
+0.014	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "ident32/rand32" and .distance == "b" and .k == "16") | .gap[0]	this
+0.015	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "repeat_real/repeat_twin" and .distance == "b" and .k == "16") | .gap[0]	this
+0.018	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "case_real/case_twin" and .distance == "b" and .k == "4096") | .gap[1]	this
+0.019	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "case_real/case_twin" and .distance == "b" and .k == "4096") | .gap[0]	this
+0.029	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "case_real/case_twin" and .distance == "i" and .k == "16") | .gap[1]	this
+0.030	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "case_real/case_twin" and .distance == "b" and .k == "256") | .gap[0]	this
+0.031	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "case_real/case_twin" and .distance == "i" and .k == "16") | .gap[0]	this
+0.043	experiments/r_bounds_e208/results/summary.json	.gaps[] | select(.pair == "case_real/case_twin" and .distance == "b" and .k == "16") | .gap[0]	this
+0.88	experiments/r_bounds_e208/results/summary.json	[.items | to_entries[] | select(.key | test("_s[01]$")) | .value.main.min] | min	this
+0.98	experiments/r_bounds_e208/results/summary.json	[.items | to_entries[] | select(.key | test("_s[01]$")) | .value.main.min] | max	this
+0.97	experiments/r_bounds_e208/results/summary.json	[.items | to_entries[] | select(.key | test("_s[01]$")) | .value.b.worst_k.all] | min	this
+0.970	experiments/r_bounds_e208/results/summary.json	[.items | to_entries[] | select(.key | test("_s[01]$")) | .value.b.worst_k.all] | min	this
+0.988	experiments/r_bounds_e208/results/summary.json	[.items | to_entries[] | select(.key | test("_s[01]$")) | .value.b.worst_k.all] | max	this
+0.99	experiments/r_bounds_e208/results/predictions.json	.settings.level_bar	this
+0.91	experiments/r_bounds_e208/results/summary.json	.items.rebuilt.b.worst_k.all	this
+0.995	experiments/r_bounds_e208/results/summary.json	.items.rebuilt.main.worst_k.all	this
+0.9954	experiments/r_bounds_e208/results/summary.json	[.items | to_entries[] | select(.key | test("_s[01]$")) | .value.main.worst_k["256"]] | min	this
+0.9987	experiments/r_bounds_e208/results/summary.json	[.items | to_entries[] | select(.key | test("_s[01]$")) | .value.main.worst_k["4096"]] | min	this
+1e-9	experiments/r_bounds_e208/results/predictions.json	.settings.check_tol	this
+0.90	given	E208 report reports/analyses/2026-11-18_analysis_rho-saved-items.md, controls table: circuit two-fold under the size-aware distance, 0.90 to 0.92
+0.92	given	E208 report reports/analyses/2026-11-18_analysis_rho-saved-items.md, controls table: circuit two-fold under the size-aware distance, 0.90 to 0.92
+1.07	given	E208 report gaps table: copy/cipher twin's MLP update over reuse member's, 1.09 and 1.05, mean of seeds
+1.13	given	E208 report gaps table: identity/random map twin's MLP update over reuse member's, 1.13 at both seeds
+1.5	given	E208 report gaps table: repeat twin's MLP update over reuse member's, 1.42 and 1.56, mean of seeds
+2.6	given	E208 report gaps table: case twin's MLP update over reuse member's, 2.67 and 2.52, mean of seeds
