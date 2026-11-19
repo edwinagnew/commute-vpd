@@ -109,9 +109,25 @@ def find(pattern: str, text: str) -> re.Match[str]:
     return m
 
 
+def label_of(sid: str) -> str:
+    """A section's heading text, from its file in parts/sections/."""
+    html = (PARTS / "sections" / f"{sid}.html").read_text()
+    return re.sub(r"<[^>]+>", "", find(r'<h2><span class="num"></span>(.*?)</h2>', html).group(1))
+
+
 def number(html: str) -> str:
-    """Fill the section's own number and every {{n:<id>}} reference."""
-    html = re.sub(r"\{\{n:([a-z]+)\}\}", lambda m: str(NUM[m.group(1)]), html)
+    """Fill the section's own number and every {{n:<id>}} reference. A reference that opens a sentence or a table cell
+    (after ">", ". ", "; " or nothing) is written "Section N (its heading)": a bare one rendered a changelog row as
+    "3: ..." (friction 867). Elsewhere it stays the bare number ("section {{n:gaps}}", "sections {{n:a}} and {{n:b}}")."""
+
+    def ref(m: re.Match[str]) -> str:
+        sid, lead = m.group(2), m.group(1)
+        if lead is None:
+            return str(NUM[sid])
+        word = "section" if lead.rstrip().endswith(";") else "Section"
+        return f"{lead}{word} {NUM[sid]} ({label_of(sid)})"
+
+    html = re.sub(r"(^|>|[.;] )?\{\{n:([a-z]+)\}\}", ref, html)
     assert "{{" not in html, "unknown {{...}} marker"
     return html
 

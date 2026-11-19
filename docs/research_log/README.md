@@ -20,7 +20,8 @@ Four pages under one URL, sharing `style.css` and `script.js`. Each section is o
 `<h2><span class="num"></span>Title</h2>`. `SECTIONS` in `build.py` lists the ids in reading order with the page each
 is on; a section's number is its place in that list. The text never writes a section number: it writes
 `section {{n:gaps}}`, and the build fills in the current number (it refuses an unknown id or a section file missing
-from the list).
+from the list). A reference that opens a sentence or a table cell (`... E208. {{n:next}}: new row`) is written
+"Section 4 (What's next)", so a changelog row never reads "4:" (friction 867).
 
 | Page | Sections |
 |---|---|
