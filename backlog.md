@@ -10,7 +10,8 @@ Deferred ideas and loose ends. Date each entry.
   method assumes, so the W0 control reads near zero loss, then read every pair with a saved update at k below the width.
   Proposed as a compare-lead cell on L2.1 (2026-11-19).
 - 2026-11-19, backlog, not now (user, in chat). A loracle as a baseline: a model trained to read a LoRA's weights and
-  answer questions about it, asked whether an update reuses existing mechanisms. Ways to keep it cheap:
+  answer questions about it, asked whether an update reuses existing mechanisms. The loracle paper has NOT been read
+  yet (compare-lead, 2026-11-19): read it before scoping. The ideas below are unchecked guesses on keeping it cheap:
   - Train on the 67M, where a LoRA takes under a minute, so thousands of labelled LoRAs cost little.
   - Use a released loracle zero-shot if its target model matches (check for one that targets Qwen first).
   - Have the oracle read a small summary instead of raw weights, for example the LoRA projected onto VPD
