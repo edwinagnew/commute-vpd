@@ -1,0 +1,78 @@
+0.04	experiments/realistic_tasks/results/run2_score.json	.rows["L1/L3 size0 contrast"].cells.erank.gap	this
+0.10	experiments/realistic_tasks/results/run2_score.json	.rows["L1/L3 size1 contrast"].cells.erank.gap	this
+0.11	experiments/realistic_tasks/results/run2_score.json	.rows["T2/T3 size0 lo"].cells.erank.gap	this
+0.08	experiments/realistic_tasks/results/run2_score.json	.rows["T2/T3 size1 lo"].cells.erank.gap	this
+0.07	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size0 lo"].cells.erank.gap	this
+0.040	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size0 lo"].cells.neuron.gap	this
+0.051	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size1 lo"].cells.neuron.gap	this
+0.19	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size0 lo"].cells.untrained_rotated.gap	this
+0.41	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size1 lo"].cells.untrained_rotated.gap	this
+0.21	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size1 lo"].cells.share.gap	this
+0.29	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size0 lo"].cells.share.gap	this
+0.34	experiments/realistic_tasks/results/run2_score.json	.rows["L1/L3 size1 contrast"].cells.steering.gap	this
+0.73	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size0 lo"].cells.k_half.gap	this
+0.90	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size1 lo"].cells.k_half.gap	this
+2.08	experiments/realistic_tasks/results/run2_score.json	.rows["L1/L3 size1 contrast"].cells.prior.gap	this
+7.77	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size1 lo"].cells.prior.gap	this
+-0.77	experiments/realistic_tasks/results/run2_score.json	.rows["T2/T3 size1 lo"].cells.prior.gap	this
+-0.0004	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size1 lo"].cells.size.gap	this
+0.0004	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size1 lo"].cells.size.gap | -.	this
+-0.005	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size0 lo"].cells.neuron_kmatched.gap	this
+-0.007	experiments/realistic_tasks/results/run2_score.json	.rows["L1/L3 size1 contrast"].cells.neuron_kmatched.gap	this
+-0.01	experiments/realistic_tasks/results/run2_score.json	.rows["L1/L3 size1 contrast"].cells.untrained.gap	this
+-0.018	experiments/realistic_tasks/results/run2_score.json	.rows["L1/L3 size1 contrast"].cells.neuron.gap	this
+-0.029	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size1 lo"].cells.neuron_kmatched.gap	this
+-0.03	experiments/realistic_tasks/results/run2_score.json	.rows["L1/L3 size1 contrast"].cells.untrained_rotated.gap	this
+-0.09	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size0 lo"].cells.untrained.gap	this
+-0.12	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size1 lo"].cells.untrained.gap	this
+-0.24	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size1 lo"].cells.steering.gap	this
+-0.30	experiments/realistic_tasks/results/run2_score.json	.rows["L1/L3 size1 contrast"].cells.k_half.gap	this
+-0.36	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size0 lo"].cells.steering.gap	this
+0.00	experiments/realistic_tasks/results/run2_score.json	.rows["L1/L3 size1 contrast"].cells.share.gap | -.	this
+-0.275	experiments/realistic_tasks/results/run2_score.json	[.controls.L3.held_gain[].contrast] | min	this
+0.086	experiments/realistic_tasks/results/run2_score.json	[.controls.L3.held_gain[].contrast] | max	this
+5.38	experiments/realistic_tasks/results/run2_score.json	[.controls.L1.held_gain[].contrast] | min	this
+10.47	experiments/realistic_tasks/results/run2_score.json	[.controls.L1.held_gain[].contrast] | max	this
+0.075	experiments/realistic_tasks/results/run2_score.json	[.controls[] | to_entries[] | select(.key | test("_g[0-9]$")) | .value.gain[] | if . < 0 then -. else . end] | max	this
+0.032	experiments/realistic_tasks/results/run2_score.json	[.rows["T1/T4 size1 lo"].cells.neuron_kmatched | (.reuse[], .new[]) | if . < 0 then -. else . end] | max	this
+0.34	experiments/realistic_tasks/results/run2_score.json	.rows["L1/L3 size1 contrast"].cells.steering.reuse | min	this
+0.37	experiments/realistic_tasks/results/run2_score.json	.rows["L1/L3 size1 contrast"].cells.steering.reuse | max	this
+0.75	experiments/realistic_tasks/results/run2_score.json	[.rows["T1/T4 size0 lo", "T1/T4 size1 lo"].cells.steering.reuse[]] | min	this
+0.92	experiments/realistic_tasks/results/run2_score.json	[.rows["T1/T4 size0 lo", "T1/T4 size1 lo"].cells.steering.reuse[]] | max	this
+0.98	experiments/realistic_tasks/results/run2_score.json	[.rows["T1/T4 size0 lo", "T1/T4 size1 lo"].cells.steering.new[]] | min	this
+1.27	experiments/realistic_tasks/results/run2_score.json	[.rows["T1/T4 size0 lo", "T1/T4 size1 lo"].cells.steering.new[]] | max	this
+0.764	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size1 lo"].cells.share.reuse | min	this
+0.76	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size1 lo"].cells.share.reuse | min	this
+0.790	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size1 lo"].cells.share.reuse | max	this
+0.79	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size1 lo"].cells.share.reuse | max	this
+0.566	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size1 lo"].cells.share.new | min	this
+0.569	experiments/realistic_tasks/results/run2_score.json	.rows["T1/T4 size1 lo"].cells.share.new | max	this
+0.81	experiments/realistic_tasks/results/run2_T2.json	[.states[] | select(.target == 0.0175) | .gain.lo] | min	this
+0.89	experiments/realistic_tasks/results/run2_T2.json	[.states[] | select(.target == 0.0175) | .gain.lo] | max	this
+0.42	experiments/realistic_tasks/results/run2_T2.json	[.states[] | select(.target == 0.00875) | .gain.lo] | min	this
+0.65	experiments/realistic_tasks/results/run2_T2.json	[.states[] | select(.target == 0.00875) | .gain.lo] | max	this
+1.52	experiments/realistic_tasks/results/run2_T3.json	[.states[] | select(.target == 0.0175) | .gain.lo] | min	this
+2.08	experiments/realistic_tasks/results/run2_T3.json	[.states[] | select(.target == 0.0175) | .gain.lo] | max	this
+0.14	experiments/realistic_tasks/results/run2_L3.json	[.states[] | select(.target == 0.005) | .gain.contrast] | min	this
+0.21	experiments/realistic_tasks/results/run2_L3.json	[.states[] | select(.target == 0.005) | .gain.contrast] | max	this
+1.605	experiments/realistic_tasks/results/run2_T1.json	[.states[] | select(.target == 0.0175) | .gain.lo] | min	this
+1.647	experiments/realistic_tasks/results/run2_T1.json	[.states[] | select(.target == 0.0175) | .gain.lo] | max	this
+-13.16	experiments/realistic_tasks/results/run2_T2.json	.read.prior_w0.lo	this
+-12.39	experiments/realistic_tasks/results/run2_T3.json	.read.prior_w0.lo	this
+0.7538	experiments/realistic_tasks/results/run2_ctl.json	.["reproduce e53/lowercase_s0"].share.got	this
+0.7519	experiments/realistic_tasks/results/run2_ctl.json	.["reproduce e53/lowercase_s0"].share.saved	this
+0.1249	experiments/realistic_tasks/results/run2_ctl.json	.["reproduce e53/cipher_s0"].share.got	this
+0.1243	experiments/realistic_tasks/results/run2_ctl.json	.["reproduce e53/cipher_s0"].share.saved	this
+0.01	experiments/realistic_tasks/results/run2_ctl.json	.["reproduce e53/lowercase_s0"].share.tol	this
+0.005	experiments/realistic_tasks/results/predictions_run2.json	.settings.l_targets[0]	this
+0.010	experiments/realistic_tasks/results/predictions_run2.json	.settings.l_targets[1]	this
+0.00875	experiments/realistic_tasks/results/predictions_run2.json	.settings.t_targets[0]	this
+0.0175	experiments/realistic_tasks/results/predictions_run2.json	.settings.t_targets[1]	this
+0.72	given	filed range for the lowercase share at the larger size, predictions_run2.json .expected["T1 share at the larger size"] (text)
+0.78	given	filed range for the lowercase share at the larger size, predictions_run2.json .expected["T1 share at the larger size"] (text)
+0.3	given	filed range for the reversed-order share and the coin held-out gain bar, predictions_run2.json .predictions["T1/T4"].share.expected and .expected["held_gain (beside)"] (text)
+0.5	given	filed range for the reversed-order share, predictions_run2.json .predictions["T1/T4"].share.expected (text)
+0.25	given	filed gap range for the share on lowercase vs reversed, predictions_run2.json .predictions["T1/T4"].share.expected (text)
+1.65	given	filed lowercase gain at the larger size, predictions_run2.json .expected["gain at the larger size, scored unit"] (text)
+0.05	given	filed tolerance on the lowercase gain and the inert-neuron bar on the label pair, predictions_run2.json .expected and .predictions["L1/L3"].neuron.expected (text)
+0.30	given	run 1's French word-start gain at size 0.022, quoted in the card's floor line and the plan (E209)
