@@ -1,0 +1,17 @@
+<article class="exp" id="e209">
+<div class="top"><span class="id">E209</span><span class="chip ongoing">ongoing</span><h3>Do the methods still separate reused from new fine-tunes when the tasks use real text?</h3><span class="when">2026-11-18 · cell P2.38, run 1 of 3 ·<code>experiments/realistic_tasks</code></span></div>
+<p class="one"><strong>The question.</strong> The nine built pairs on the 67M are synthetic. You asked (2026-11-18) to try realistic tasks next, after the crosscoder was cleared (<a href="#e210">E210</a>). Run 1 only checks that the proposed real-text tasks can be learned and mean what they should.</p>
+<p class="one"><strong>What we did.</strong> On the base model alone we checked each task's premise: topic (sports against business news) against a random coin label, French against Yoruba text, and lowercase against reversed word order. The label tasks were also probed for whether the label is readable from the base model's activations.</p>
+<p class="one"><strong>What we found.</strong> Topic, French against Yoruba and lowercase against reversed order passed and are kept; sentiment was dropped, since its probe read 0.658 against a bar of 0.7. All kept tasks are learnable at the built pairs' sizes. The coin task's held-out gain read 8.96 log-odds where about 0 was expected: roughly half of any label task's gain is learning to say a label word.</p>
+<p class="one"><strong>What it means.</strong> The label tasks will be scored on the two-label contrast, which removes that format gain. Run 2 (every method, equal size, three seeds) is being written; this card stays ongoing until it lands.</p>
+<dl class="fields">
+<dt>Run</dt><dd>One cluster debug job on the base model, no cost.</dd>
+<dt>Found</dt><dd><ul>
+<li>Three task pairs kept, sentiment dropped (probe 0.658, bar 0.7).</li>
+<li>All kept tasks learnable at the built pairs' sizes.</li>
+<li>The coin task's held-out gain, 8.96 log-odds against about 0 expected, is label-word learning; run 2 reads the two-label contrast.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 2: whether the methods' separation of reused from new holds on real-text tasks (no reading yet).</dd>
+<dt>Moved on</dt><dd>Run 2 is being written. Report <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-18_analysis_realistic-tasks-run1.md"><code>reports/analyses/2026-11-18_analysis_realistic-tasks-run1.md</code></a>.</dd>
+</dl>
+</article>
