@@ -35,6 +35,14 @@ from torch import Tensor
 from commute import rule_retention as R
 
 
+class NoDetector(Exception):
+    """No input direction reaches the detector bar for cue `i` (its A'_i is swapped by the caller)."""
+
+    def __init__(self, i: int, rec: dict[str, Any]) -> None:
+        super().__init__(f"no detector for cue {i}: {rec}")
+        self.i, self.rec = i, rec
+
+
 @dataclass
 class Cues:
     A: list[int]
@@ -47,13 +55,17 @@ class Cues:
     p: Tensor  # (N,) where its A_i is
 
 
-def cues(rows: Tensor, keys: list[int], pool: list[int], n: int, per: int, T: int, seed: int) -> Cues:
-    """`pool`: frequent word-like tokens; the keys are removed from it before the draw."""
+def cues(rows: Tensor, keys: list[int], pool: list[int], n: int, per: int, T: int, seed: int, skip: tuple[int, ...] = ()) -> Cues:
+    """`pool`: frequent word-like tokens; the keys are removed from it before the draw. An A'_i in `skip` (no detector)
+    is replaced by the first token of the B pool, which then leaves the B pool."""
     gen = torch.Generator().manual_seed(seed)
     A = [keys[int(i)] for i in torch.randperm(len(keys), generator=gen)[:n]]
     rest = [t for t in pool if t not in keys]
     rest = [rest[int(i)] for i in torch.randperm(len(rest), generator=gen)]
-    A2, y, bs = rest[:n], rest[n : 2 * n], torch.tensor(rest[2 * n :])
+    A2, y, more = rest[:n], rest[n : 2 * n], rest[2 * n :]
+    for t in skip:
+        A2[A2.index(t)] = more.pop(0)
+    bs = torch.tensor(more)
     out: dict[str, list[Tensor]] = {"toks": [], "cue": [], "b": [], "p": []}
     for i in range(n):
         m = 8 * per
@@ -169,7 +181,8 @@ def build(M: R.Model, c: Cues, pile: Tensor, cfg: Any) -> tuple[dict[str, R.Mode
         beta = 1.0
         while float(gelu(h[cue == i, -1] @ (beta * u)).mean()) < cfg.detector_ratio * float(torch.quantile(gelu(hpi @ (beta * u)), cfg.detector_quantile)):
             beta *= 2
-            assert beta <= 2.0**20, f"no detector for cue {i}: {d}, pile_own {int((own == c.A2[i]).sum())}"
+            if beta > 2.0**20:
+                raise NoDetector(i, d | {"pile_own": int((own == c.A2[i]).sum())})
         rows[i], act[i] = beta * u, gelu(h[cue == i, -1] @ (beta * u)).mean()
         betas.append(beta)
         dirs.append(d | {"pile_own": int((own == c.A2[i]).sum())})
