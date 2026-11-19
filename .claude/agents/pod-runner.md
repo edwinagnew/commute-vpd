@@ -134,7 +134,7 @@ pod's hours × rate; `status()`'s cost is the whole session's, all pods together
 - On a pod, `nproc` reports the host's CPUs (96) while the container's cgroup allows far fewer (7.65 on the
   2026-10-20 lora_split pod), so PyTorch's CPU stages oversubscribe and crawl. Before any CPU-heavy stage, set
   `OMP_NUM_THREADS` and `MKL_NUM_THREADS` to the cgroup's count, rounded down: quota ÷ period from
-  `/sys/fs/cgroup/cpu.max` (or `cpu.cfs_quota_us ÷ cpu.cfs_period_us` on cgroup v1). The split tables went from
+  `cpu.cfs_quota_us ÷ cpu.cfs_period_us`: pods are cgroup v1, there is no `/sys/fs/cgroup/cpu.max` (friction 870). The split tables went from
   64–82 s to 22 s each.
 - On Vast (`start(runtime="vast")`), the kernel lacks the machine's variables (`WANDB_API_KEY`, `COMMUTE_CACHE_DIR`,
   `HF_HOME`, `UV_CACHE_DIR`) and `pod_setup.sh` does not add them to it (an `--upload` run then fails at once,
@@ -148,8 +148,8 @@ pod's hours × rate; `status()`'s cost is the whole session's, all pods together
   offer), which the session budget does not count: 54 GB of Qwen files is about $0.65 per machine on top of the hourly price.
 - Code goes up with `sync()` only: pods have no `GIT_PAT`, so never `git clone` or `git fetch` on a pod. If a clone
   was tried, `rm -rf .git` before the run. The pod has no `.git`, so `require_filed` needs the filed predictions'
-  hash on the run line, `E120_PRED_SHA=<sha> .venv/bin/python experiments/<name>/run.py ...`; the brief gives it,
-  and if it does not, ask the lead (on dev: `git show HEAD:experiments/<name>/results/predictions.json | sha256sum`).
+  hash on the run line, `PRED_SHA=<sha> .venv/bin/python experiments/<name>/run.py ...`; the brief gives it
+  (the variable is `PRED_SHA`, not `E###_PRED_SHA`, friction 869), and if it does not, ask the lead (on dev: `git show HEAD:experiments/<name>/results/predictions.json | sha256sum`).
   Canonical text: `~/commute-agents/fleet/roles/shell-notes.md` → Pods → Set-up (friction 767, 817, 820, 843).
 - Then set up the pod with one command, right after the first `sync()`: `bash cluster/pod_setup.sh`, run as a
   subprocess from the kernel. It pins uv, builds `.venv` (CUDA torch) and fetches the VPD files in parallel, and logs

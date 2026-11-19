@@ -24,12 +24,13 @@ If one of these fails, tell the user instead of spawning.
 Experiment: <name>   Run: <smoke | scored | smoke, then scored if clean | setup/other>
 Command: <exact argv of each job, copied from the parser, with stage arguments; each parallel job tees to its own
          results/run_<stages>.log, never a shared run.log (friction 833); or the sbatch script>
-PRED_SHA: <E120_PRED_SHA=<sha> for the pod run line, sha from `git show HEAD:experiments/<name>/results/predictions.json
+PRED_SHA: <PRED_SHA=<sha> (exactly that name, not E###_PRED_SHA) for the pod run line, sha from `git show HEAD:experiments/<name>/results/predictions.json
           | sha256sum` on dev; pods sync(), never clone (shell-notes.md → Pods → Set-up; friction 817, 820, 843)>
 Expected: <runtime from the smoke/benchmark>, <GPU memory>, <CPU RAM>
 Outputs: <files the run writes; mark which are the results to bring home; which are large/>
+         (download() is one file per call: the runner tars them first; sha256 is checked per side as each side ends, friction 872, 873)
          (the job's final "FINISHED" line names these paths, so list them all)
-Inputs not in git: <the list a short CPU dry run writes with INPUT_MANIFEST=<file> set (commute.jobs.record_inputs),
+Inputs not in git: <sync include names the directory directly holding the files, staged flat, no `results/large` in the path (friction 860, 901, 907); the list a short CPU dry run writes with INPUT_MANIFEST=<file> set (commute.jobs.record_inputs),
                    less the tracked files, or none (friction 832, 842)>
 Label: <each pod's exact start() label, e.g. commute-E186-b, commute-E178-stage-N_s0 (form: shell-notes.md → Pods)>
 Per pod: <items and counts each pod runs, from the code's loops; step-time band from a measured pod; POD_IDLE_MIN
