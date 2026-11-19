@@ -1,0 +1,55 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+act [13.55, 13.43, 14.23, 13.01, 13.71, 13.2, 13.5, 16.34]  (pod: [13.55, 13.43, 14.23, 13.01, 13.71, 13.2, 13.5, 16.34])
+
+== copy of B at the last position (bar 0.8 x M on twin)
+M on twin  top-1 0.2578  logit(B)   7.46  rank(B) mean     450 median      9   (pod 0.2578)
+M on D     top-1 0.0020  logit(B)   1.00  rank(B) mean    8139 median   3781   (pod 0.0020)
+gamma  0.5 top-1 0.0254  logit(B)   2.92  rank(B) mean    4066 median   1007
+gamma    1 top-1 0.1035  logit(B)   5.68  rank(B) mean     995 median     63
+gamma    2 top-1 0.0215  logit(B)   4.01  rank(B) mean     993 median    194
+gamma    4 top-1 0.0000  logit(B)   1.36  rank(B) mean    2733 median   1151
+gamma    8 top-1 0.0000  logit(B)  -0.52  rank(B) mean    9449 median   6061
+gamma   16 top-1 0.0000  logit(B)  -0.79  rank(B) mean   16937 median  14589
+
+== (a) slot activations (should be ~act_i on own cue at last, ~0 everywhere else)
+slot 0 act_i 13.55 | own last mean  13.546 max  15.398 | other cues' last mean  -0.046 max   0.334 | p mean   0.737 max   6.146 | p+1 mean   0.109 max   3.126 | elsewhere mean   0.019 max   4.537, share > act_i/10 0.0042, > act_i/2 0.0000
+slot 1 act_i 13.43 | own last mean  13.431 max  15.999 | other cues' last mean   0.304 max   1.509 | p mean   0.635 max   2.470 | p+1 mean   0.271 max   4.167 | elsewhere mean   0.153 max   9.475, share > act_i/10 0.0116, > act_i/2 0.0001
+slot 2 act_i 14.23 | own last mean  14.229 max  17.094 | other cues' last mean   0.273 max   1.063 | p mean   0.271 max   2.630 | p+1 mean   0.227 max   4.095 | elsewhere mean   0.111 max   7.951, share > act_i/10 0.0084, > act_i/2 0.0001
+slot 3 act_i 13.01 | own last mean  13.014 max  14.749 | other cues' last mean   0.059 max   0.936 | p mean   0.261 max   1.227 | p+1 mean   0.113 max   1.827 | elsewhere mean   0.054 max  15.308, share > act_i/10 0.0067, > act_i/2 0.0002
+slot 4 act_i 13.71 | own last mean  13.708 max  16.496 | other cues' last mean   0.248 max   1.153 | p mean  -0.053 max   0.335 | p+1 mean   0.185 max   8.185 | elsewhere mean   0.111 max  10.589, share > act_i/10 0.0067, > act_i/2 0.0001
+slot 5 act_i 13.20 | own last mean  13.204 max  16.512 | other cues' last mean  -0.018 max   0.384 | p mean   0.160 max   1.131 | p+1 mean   0.121 max   2.053 | elsewhere mean   0.010 max   5.286, share > act_i/10 0.0056, > act_i/2 0.0000
+slot 6 act_i 13.50 | own last mean  13.496 max  17.498 | other cues' last mean   0.168 max   0.978 | p mean   0.222 max   1.661 | p+1 mean   0.118 max   2.553 | elsewhere mean   0.023 max   6.317, share > act_i/10 0.0064, > act_i/2 0.0000
+slot 7 act_i 16.34 | own last mean  16.344 max  18.879 | other cues' last mean   0.097 max   0.873 | p mean  -0.110 max   0.299 | p+1 mean   0.056 max   2.293 | elsewhere mean   0.005 max   3.125, share > act_i/10 0.0023, > act_i/2 0.0000
+positions before the last where some slot > 1, per window: mean   5.576 max  19.000 (should be ~0)
+
+== (b) slot write at block 1's input, gamma 1 (last: |write| ~ |shift_cue|, cos ~1; elsewhere ~0)
+|shift_cue| mean   6.797 max   8.594 | |x_1 last| mean   7.587 max   9.644 | |x_1 at p| mean   7.298 max  10.188
+last: |write| mean   6.839 max  10.772 | cos(write, shift_cue) mean   0.997 max   0.999
+last: |x_1 + write - mean x_1(A_i)| / |x_1 - mean x_1(A_i)| mean   0.286 max   0.686 (< 1, ideally << 1)
+|write| / |x_1|: at p mean   0.112 max   0.393 | p+1 mean   0.075 max   0.578 | elsewhere mean   0.058 max   1.002  (x gamma for other gammas)
+
+== (c) oracle at block 1's input, last position only (twin: = M on twin exactly; mean shift: near it if a translation re-triggers copy)
+twin residual  top-1 0.2578  logit(B)   7.46  rank(B) mean     450 median      9
+mean shift x0.5 top-1 0.0332  logit(B)   3.08  rank(B) mean    4123 median    987
+mean shift x1   top-1 0.1367  logit(B)   6.03  rank(B) mean     924 median     47
+mean shift x2   top-1 0.0332  logit(B)   4.46  rank(B) mean     866 median    119
+mean shift x4   top-1 0.0000  logit(B)   2.33  rank(B) mean    1725 median    464
+
+== (d) oracle at block 2's input, last position only (twin: = M on twin exactly; mean shift: near it if a translation re-triggers copy)
+twin residual  top-1 0.2578  logit(B)   7.46  rank(B) mean     450 median      9
+mean shift x0.5 top-1 0.0137  logit(B)   2.33  rank(B) mean    4633 median   1623
+mean shift x1   top-1 0.1348  logit(B)   5.60  rank(B) mean     958 median     65
+mean shift x2   top-1 0.0840  logit(B)   6.24  rank(B) mean     280 median     18
+mean shift x4   top-1 0.0020  logit(B)   2.83  rank(B) mean    1494 median    302
+
+== (e) the edit's write split (gamma x the gamma-1 write at block 1's input)
+gamma  0.5 last only on D top-1 0.0293  logit(B)   3.04  rank(B) mean    3934 median    953 | off-last only on twin top-1 0.2500  logit(B)   7.39  rank(B) mean     459 median     10 | edit on twin top-1 0.2461  logit(B)   7.39  rank(B) mean     450 median     10
+gamma    1 last only on D top-1 0.1250  logit(B)   5.99  rank(B) mean     924 median     48 | off-last only on twin top-1 0.2402  logit(B)   7.17  rank(B) mean     486 median     13 | edit on twin top-1 0.2441  logit(B)   7.29  rank(B) mean     445 median     11
+gamma    2 last only on D top-1 0.0391  logit(B)   4.41  rank(B) mean     897 median    117 | off-last only on twin top-1 0.1875  logit(B)   6.45  rank(B) mean     652 median     32 | edit on twin top-1 0.1934  logit(B)   6.95  rank(B) mean     463 median     15
+gamma    4 last only on D top-1 0.0000  logit(B)   2.10  rank(B) mean    1901 median    576 | off-last only on twin top-1 0.0762  logit(B)   4.95  rank(B) mean    1381 median    133 | edit on twin top-1 0.1074  logit(B)   5.88  rank(B) mean     713 median     46
+gamma    8 last only on D top-1 0.0000  logit(B)   0.32  rank(B) mean    6208 median   3343 | off-last only on twin top-1 0.0137  logit(B)   2.61  rank(B) mean    3129 median    996 | edit on twin top-1 0.0273  logit(B)   3.53  rank(B) mean    1926 median    310
+gamma   16 last only on D top-1 0.0000  logit(B)  -0.14  rank(B) mean   13434 median  10471 | off-last only on twin top-1 0.0000  logit(B)   0.73  rank(B) mean    5527 median   3078 | edit on twin top-1 0.0098  logit(B)   0.95  rank(B) mean    5268 median   2050
+peak host RSS 6.1 GB
