@@ -295,3 +295,104 @@ def parts(s: Tensor, bias: float, g: dict[str, Tensor]) -> dict[str, float]:
 def split(h: Tensor, size: int) -> Iterator[Tensor]:
     for i in range(0, h.shape[0], size):
         yield h[i : i + size]
+
+
+# ----------------------------------------------------------------------------- E212 (cell P2.38 run 3)
+# E203's reading, activations and stream skip, re-expressed from experiments/crosscoder/run.py (Job.score, Job.acts,
+# Job.stream), which is frozen and keeps its own copies; experiments/realistic_tasks/run3.py calls these.
+
+
+def d_forms(p: dict[str, float]) -> dict[str, float]:
+    """E203's reading in its two forms (results/run2/stage1_summary.json): d_authors = shared part - fine-tune-specific
+    part (the authors' rule, E203's `d`); d_alt = shared part - (fine-tune-specific + artefact part), a top-N candidate
+    that fails latent scaling counted as fine-tune-only (user, 2026-11-18)."""
+    return {"d_authors": p["shared"] - p["ft_specific"], "d_alt": p["shared"] - p["ft_specific"] - p["ft_artefact"]}
+
+
+class _Grab(Exception):
+    """Raised by the site hook once the activation is taken, so the rest of the forward is skipped."""
+
+
+@torch.no_grad()
+def acts(net: Any, toks: Tensor, dW: dict[str, Tensor] | None, layer: int, plant: Tensor | None = None, every: int = 0,
+         n: int = 64) -> Tensor:  # fmt: skip
+    """(m, d) raw block-`layer` inputs of `net` (a steering.Net) at every position but 0, under W0 (dW None) or W0 + dW;
+    `plant` added at positions every - 1, 2 every - 1, ... before position 0 is dropped."""
+    out: list[Tensor] = []
+
+    def grab(x: Tensor) -> Tensor:
+        x = x.clone()
+        if plant is not None:
+            x[:, every - 1 :: every] += plant.to(x.device, x.dtype)
+        out.append(x[:, 1:])
+        raise _Grab
+
+    with net.at(dW):
+        for b in toks.split(n):
+            try:
+                net.run(b, edit={f"in{layer}": grab})
+            except _Grab:
+                pass
+    return torch.cat(out).reshape(-1, out[0].shape[-1])
+
+
+def pairs(net: Any, toks: Tensor, dW: dict[str, Tensor] | None, layer: int, plant: Tensor | None = None,
+          every: int = 0) -> Tensor:  # fmt: skip
+    """(m, 2, d): the base (W0, never planted), then the fine-tune side (W0 + dW, `plant` as in `acts`)."""
+    return torch.stack([acts(net, toks, None, layer), acts(net, toks, dW, layer, plant, every)], 1)
+
+
+def batches(sizes: list[int], make: Callable[[int], Tensor], B: int, start: int) -> Iterator[Tensor]:
+    """(B, ...) batches from step `start` on, over chunks i of len sizes[i] built by make(i); whole chunks before
+    `start` are skipped without being built (the resume path); a remainder under B at the end is dropped."""
+    skip, buf = start * B, None
+    for i, size in enumerate(sizes):
+        if skip >= size:
+            skip -= size
+            continue
+        h = make(i)
+        assert len(h) == size, (i, len(h), size)
+        buf = h[skip:] if buf is None else torch.cat([buf, h[skip:]])
+        skip = 0
+        while len(buf) >= B:
+            yield buf[:B]
+            buf = buf[B:]
+
+
+def score(cfg: Cfg, ae: AE, ev: dict[str, Any], h_ls: Tensor, h_task: Tensor,
+          plant: Tensor | None = None) -> tuple[dict[str, Any], dict[str, Any]]:  # fmt: skip
+    """E203's numbers for one crosscoder (its Job.score), `ev` being `fve` on the validation mix, computed once by the
+    caller: the groups at N and at the wide N, the parts, d in both forms (`d_forms`), the specific part, shared /
+    (shared + specific), the lead latent (the alive one carrying most of the change on `h_task`) with its latent-scaling
+    ratios, and the best cosine of a specific latent's decoder difference with `plant`."""
+    rn, ev = relative_norm(ae), dict(ev)
+    alive = ev.pop("fired") >= cfg.alive_min
+    ch = carried(ae, h_task)
+    s = ch.pop("s")
+    lead = int(torch.where(alive, s.nan_to_num(-math.inf), -math.inf).argmax()) if ch["energy"] > 0 else -1
+    J = torch.nonzero(top(rn, cfg.top_n_wide) | (torch.arange(len(rn)) == lead)).squeeze(1)
+    b = betas(ae, h_ls, J)
+    spec = torch.zeros(len(rn), dtype=torch.bool)
+    spec[J] = specific(cfg, b)
+    rec: dict[str, Any] = {**ev, **ch, "theta": float(ae.threshold), "dead": float((~alive).float().mean())}
+    g: dict[str, dict[str, Tensor]] = {}
+    for tag, n in (("", cfg.top_n), ("_wide", cfg.top_n_wide)):
+        g[tag] = groups(cfg, rn, alive, top(rn, n), spec)
+        p = parts(s, ch["bias"], g[tag])
+        both = p["shared"] + p["ft_specific"]
+        rec |= {f"parts{tag}": p, f"counts{tag}": {k: int(m.sum()) for k, m in g[tag].items()},
+                f"shared_frac{tag}": p["shared"] / both if both else math.nan}  # fmt: skip
+        rec |= {f"{k}{tag}": v for k, v in d_forms(p).items()}
+    rec["specific"], rec["spec"] = rec["parts"]["ft_specific"], torch.nonzero(g[""]["ft_specific"]).squeeze(1).tolist()
+    if lead >= 0:
+        i = int((J == lead).nonzero())
+        rec["lead"] = {"latent": lead, "s": float(s[lead]), "rn": float(rn[lead]), "rank": 1 + int((rn > rn[lead]).sum()),
+                       "nu_r": float(b["nu_r"][i]), "nu_eps": float(b["nu_eps"][i]), "specific": bool(g[""]["ft_specific"][lead])}  # fmt: skip
+    if plant is not None:
+        Wr, _ = raw(ae)
+        dd = (Wr[1] - Wr[0])[g[""]["ft_specific"].to(Wr.device)]
+        cos = torch.nn.functional.cosine_similarity(dd, plant[None].to(dd.device), dim=1)
+        rec["cos_planted_best"] = float(cos.max()) if len(cos) else math.nan
+    large = {"relative_norm": rn.half(), "alive": alive, "s": s.float(), "scaled": J, "groups": g[""],
+             "betas": {k: v.float() for k, v in b.items()}}  # fmt: skip
+    return rec, large

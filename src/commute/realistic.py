@@ -280,3 +280,28 @@ def against_share(c: Mapping[str, Any], share: Mapping[str, Any]) -> str:
     if share["call"] != "apart":
         return "apart where the share is not"
     return "same direction as the share" if (c["gap"] > 0) == (share["gap"] > 0) else "opposite to the share"
+
+
+# ----------------------------------------------------------------------------- run 3 (E212): the crosscoder's card call
+
+
+def crosscoder_call(d: Mapping[str, float], gauss: Mapping[str, float], pairs: Mapping[str, tuple[str, str]],
+                    gap_min: float) -> dict[str, Any]:  # fmt: skip
+    """Run 3's card call in one form of the crosscoder's d. d[side]: the side's reading (missing or nan = not read);
+    gauss[side]: the Gaussian update's reading on that side's read rows; pairs: name -> (reuse side, new side). The floor
+    holds when every read side reads strictly above the Gaussian on its rows (equal is "at or above", a failure) and at
+    least one side is read; a side with no Gaussian reading fails it. gap = d[reuse] - d[new], nan when either is not
+    read (counted as under gap_min). "rival b (floor failed)" when the floor does not hold; else "rival a" when at least
+    two pairs' gaps are at least gap_min, "rival b" when none is, "between" when one is."""
+    read, ref = _read(d), _read(gauss)
+    below = {s: s in ref and v > ref[s] for s, v in read.items()}
+    gaps = {p: read[r] - read[n] if r in read and n in read else math.nan for p, (r, n) in pairs.items()}
+    big = sum(g >= gap_min for g in gaps.values())  # nan >= x is False
+    floor = bool(read) and all(below.values())
+    call = "rival b (floor failed)" if not floor else "rival a" if big >= 2 else "rival b" if big == 0 else "between"
+    return {"gaps": gaps, "above_gaussian": below, "floor": floor, "pairs_at_gap_min": big, "call": call}
+
+
+def _read(x: Mapping[str, float | None]) -> dict[str, float]:
+    """The entries that hold a number: None (a nan written to JSON) and nan left out."""
+    return {s: float(v) for s, v in x.items() if v is not None and not math.isnan(float(v))}

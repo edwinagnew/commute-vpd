@@ -198,6 +198,22 @@ def test_rival_rule() -> None:
     assert R.rival({"L1/L3": {"call": "unreadable", "gap": math.nan}, "T2/T3": up, "T1/T4": up}, lm) == "between"
 
 
+def test_crosscoder_call_rule() -> None:
+    pairs = {"L": ("L1", "L3"), "T23": ("T2", "T3"), "T14": ("T1", "T4")}
+    g = {s: 0.1 for s in ("L1", "L3", "T1", "T2", "T3", "T4")}
+    d = {"L1": 0.5, "L3": 0.25, "T2": 0.625, "T3": 0.375, "T1": 0.5, "T4": 0.375}  # gaps 0.25, 0.25, 0.125 exactly
+    c = R.crosscoder_call(d, g, pairs, 0.15)
+    assert c["floor"] and c["pairs_at_gap_min"] == 2 and c["call"] == "rival a"
+    assert R.crosscoder_call(d, g, pairs, 0.125)["pairs_at_gap_min"] == 3  # a gap equal to the bar counts
+    assert R.crosscoder_call(d | {"T2": 0.5}, g, pairs, 0.15)["call"] == "between"
+    assert R.crosscoder_call(d | {"L1": 0.25, "T2": 0.375}, g, pairs, 0.15)["call"] == "rival b"
+    assert R.crosscoder_call(d, g | {"T4": 0.375}, pairs, 0.15)["call"] == "rival b (floor failed)"  # equal is not below
+    miss = R.crosscoder_call(d | {"T3": math.nan}, g, pairs, 0.15)
+    assert math.isnan(miss["gaps"]["T23"]) and miss["call"] == "between"
+    assert R.crosscoder_call({}, g, pairs, 0.15)["call"] == "rival b (floor failed)"
+    assert R.crosscoder_call(d, {}, pairs, 0.15)["call"] == "rival b (floor failed)"
+
+
 def test_contrast_readout_is_e140s() -> None:
     from commute import masked_reads as MR
     from commute import steering as ST

@@ -78,3 +78,40 @@ def test_raw_decoder_reproduces_decode_and_parts_sum_to_one() -> None:
         D, Dh = h[:, 1] - h[:, 0], rec[:, 1] - rec[:, 0]
         want = 1 - float((D - Dh).pow(2).sum() / D.pow(2).sum())
     assert abs(ch["fve_change"] - want) < 1e-4 * max(1.0, abs(want))
+
+
+def small_cfg() -> CC.Cfg:
+    return CC.Cfg(d=8, expansion=4, k=1, k_max=2, k_anneal_steps=1, lr=1e-4, warmup=1, batch=2, tokens=100, epochs=1,
+                  aux_alpha=0.03, dead_tokens=10, init_norm=1.0, target_rms=100.0, chunk_rows=1, ls_tokens=10, val_rows=1,
+                  alive_min=1, top_n=4, top_n_wide=8, nu_r=0.5, nu_eps=0.2, shared=(0.4, 0.6), base_only=0.1,
+                  snapshots=(0.5,), ckpt_every=10, log_every=10, pile_start=0, pool_start=0, pool_rows=1, repeat_cap=1)  # fmt: skip
+
+
+def test_score_gives_both_forms_of_d_from_the_parts() -> None:
+    """E212's reading: d_authors = shared - specific, d_alt = shared - specific - artefact, from the same parts."""
+    ae, h = tiny()
+    ev = {"fve_base": 0.9, "fve_ft": 0.9, "l0": 4.0, "fired": torch.full((ae.dict_size,), 100.0)}
+    rec, large = CC.score(small_cfg(), ae, ev, h[:200], h[200:], plant=torch.randn(8))
+    p = rec["parts"]
+    assert rec["d_authors"] == p["shared"] - p["ft_specific"]
+    assert rec["d_alt"] == p["shared"] - p["ft_specific"] - p["ft_artefact"]
+    assert abs(sum(p.values()) - 1) < 1e-9 and "fired" not in rec and "fired" in ev
+    assert large["groups"]["ft_specific"].sum() == len(rec["spec"]) and "lead" in rec and "cos_planted_best" in rec
+
+
+def test_batches_resume_matches_an_uninterrupted_stream() -> None:
+    """Skipping to step k yields batch k onwards of the full stream, without building the chunks wholly before it."""
+    sizes = [7, 3, 10, 5, 9]
+    built: list[int] = []
+
+    def make(i: int) -> torch.Tensor:
+        built.append(i)
+        return torch.arange(sum(sizes[:i]), sum(sizes[: i + 1]))
+
+    full = list(CC.batches(sizes, make, 4, 0))
+    assert len(full) == sum(sizes) // 4
+    for k in range(len(full)):
+        built.clear()
+        got = list(CC.batches(sizes, make, 4, k))
+        assert len(got) == len(full) - k and all(torch.equal(a, b) for a, b in zip(got, full[k:], strict=True))
+        assert built[0] == next(i for i in range(len(sizes)) if sum(sizes[: i + 1]) > 4 * k)

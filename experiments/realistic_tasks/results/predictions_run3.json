@@ -1,0 +1,96 @@
+{
+ "experiment": "E212 (realistic_tasks run 3), cell P2.38 run 3 of 3: the crosscoder of P2.31/E203 on the three real-text pairs of run 2, one crosscoder per side, with a Gaussian update and the planted control",
+ "card": "reports/plans/2026-11-18_plan_p2-38-run3-card.md",
+ "plan": "reports/plans/2026-11-18_plan_p2-38-run3.md",
+ "filed": "2026-11-18, before any run of run3.py",
+ "descriptive": "Sides named as run 1 labelled them by their data argument (reuse side first); no reused or new verdict",
+ "question": "On the three real-text pairs (topic vs coin label, French vs Yoruba, lowercase vs reversed word order), seed 0 at each pair's larger matched size, does the crosscoder of P2.31 (Minder et al. 2025, their trainer and E203's settings) read a Gaussian update below every trained side, and the reuse side above the new side?",
+ "predictions": {
+  "P1 (rival a)": "the Gaussian update's d_authors on each side's read rows is below that side's d_authors for all six sides, and the pair gap (reuse side minus new side) is at least 0.15 on at least two of the three pairs. Lean: low (E203: the Gaussian read 0.547 against trained sides 0.39 to 0.46 on the built pairs; nothing here changes the reading, only the tasks)",
+  "P2 (rival b)": "the Gaussian update reads at or above at least one trained side (the floor fails), or no pair gap reaches 0.15. Lean: medium-high (E203's random-over-trained ordering came with an activation change 100 times smaller than the trained sides', which the reading does not see)"
+ },
+ "rules": {
+  "d": "per crosscoder and read rows, at the end of training (commute.crosscoder.score and d_forms): d_authors = shared part - fine-tune-specific part of the change on the read rows (E203's d, the authors' rule); d_alt = shared part - (fine-tune-specific part + artefact part), a top-N candidate that fails latent scaling counted as fine-tune-only (E203 stage1_summary.json, user 2026-11-18). Groups at N = top_n; the wide N reported beside, deciding nothing",
+  "read rows": "each side on its task's run-2 read rows (run2.task_data: L1 and L3 the 512 pool windows, T1 E53's 500 scored windows, T2-T4 the 500 hard-position windows of 127 tokens from held rows), every position but 0. The Gaussian on every side's read rows; the planted control on L1's (= L3's) rows",
+  "gap": "per pair: d of the reuse side minus d of the new side, one crosscoder a side (seed 0's update, crosscoder seed 0); nan when either side's job did not finish",
+  "floor": "every read side's d strictly above the Gaussian's d on that side's read rows; equal counts as at or above (a failure); a side with no Gaussian reading fails it",
+  "stop": "gauss job: d_authors on its own task's (T2's) read rows at or over 0.45 exits 1 and the six sides are not run; the cell reads rival b and the card's stop line holds (the crosscoder's column drawn as 'failed its do-nothing control')",
+  "call": "score3.py with commute.realistic.crosscoder_call, in each form of d; d_authors is the filed call, d_alt reported beside with its own call: 'rival b (floor failed)' when the floor fails; else 'rival a' when at least two pair gaps are at least 0.15, 'rival b' when none is, 'between' when exactly one is",
+  "planted": "pass when the lead latent (the alive one carrying most of the change on the read rows) is fine-tune-specific and the fine-tune-specific part is at least 0.5 (E203's bar); a miss is recorded and reported beside the call, not a stop (the user's precedent for E203, 2026-11-18)"
+ },
+ "edge_cases": {
+  "L1 and L3 share texts": "the same 512 windows in the stream and as read rows (prep asserts it), so the label pair differs only in the update",
+  "label read rows in the stream": "unlike E203, the label tasks' read rows are their training texts and so are in the stream (the coin label exists only there); both label sides see them equally. The LM sides read held-out rows, never in the stream",
+  "ties": "a gap exactly 0.15 counts as reaching it; a side exactly equal to the Gaussian fails the floor",
+  "nan d": "energy 0 cannot happen for a nonzero update; a nan (written 'nan') is read as not read",
+  "do-nothing state": "the Gaussian could pass the floor only by reading below every trained side; if every side and the Gaussian read alike (d near a common value), the floor fails on any side the Gaussian ties or exceeds, so the do-nothing state cannot produce rival a",
+  "one pair missing": "its gap is nan and does not count toward the two; rival a then needs both other pairs",
+  "Gaussian missing": "the floor fails ('rival b (floor failed)'); the plan reports it as not run"
+ },
+ "expected": {
+  "self path (every job's start)": "a zero update gives W0's block-2 inputs exactly: max abs 0 (bar 1e-5)",
+  "update size (every job loading an update)": "L1, L3 at least 0.010; T1-T4 at least 0.0175; each within [0.98, 1.10] of its target (run 2 saves at the first step past the target; bf16 rounding)",
+  "Gaussian size": "equal to T2 seed 0's (bf16 on disk) within 1e-5 relative",
+  "stream": "per chunk of 1,024 Pile rows: 533 windows of each label task (100 draws a window an epoch), 239 rows of each LM task; task share 0.500; 192 chunks, 201.0M tokens for 97,656 steps of 2,048; the plant on about 1.5% of tokens (E203: 1.25%)",
+  "batch FVE at step 1000 (about 1 min of training)": "E203 0.659 on all four stage-1 sides; bar 0",
+  "first snapshot (12.5% of tokens, about 7 min in)": "FVE about 0.91 (E203 0.909), bar 0.5; dead share 0 (E203), bar 0.3; projected job about 55 min on an H100 SXM (E203 50), bar 150",
+  "end": "FVE about 0.93 (E203 0.931), bar 0.8; dead share 0, bar 0.3",
+  "Gaussian (T2 seed 0's per-matrix norms, draw 0)": "rival a: d_authors near 0.2 or lower on every read rows; rival b: 0.4 or above (E203: 0.547); change energy about 1% of a trained side's (E203: 0.017 against 1.96)",
+  "planted": "lead latent first by relative norm, nu_r and nu_eps near 0, fine-tune-specific part at least 0.9, cos_planted_best near 1. E203 missed on nu_eps (0.244 against 0.2; specific part 0, the lead at relative norm 0.75 carrying 0.65): a miss again is likely and is reported beside",
+  "trained sides": "d_authors 0.35 to 0.50 (E203's trained sides 0.39 to 0.46); d_alt below d_authors where artefacts carry part of the change (E203 new side: 0.17 against 0.39)",
+  "gap noise": "two crosscoders on one side differ by 0.047 in d_authors and 0.054 in d_alt (E203's reseed); the 0.15 bar is about three of these"
+ },
+ "settings": {
+  "layer": 2,
+  "data_seed": 198,
+  "plant_seed": 1982,
+  "gauss_of": "T2",
+  "gauss_draw": 0,
+  "states": {
+   "L1": "experiments/realistic_tasks/results/large/run2/L1_s0_0.01.pt",
+   "L3": "experiments/realistic_tasks/results/large/run2/L3_s0_0.01.pt",
+   "T1": "experiments/realistic_tasks/results/large/run2/T1_s0_0.0175.pt",
+   "T2": "experiments/realistic_tasks/results/large/run2/T2_s0_0.0175.pt",
+   "T3": "experiments/realistic_tasks/results/large/run2/T3_s0_0.0175.pt",
+   "T4": "experiments/realistic_tasks/results/large/run2/T4_s0_0.0175.pt"
+  },
+  "targets": {"L1": 0.01, "L3": 0.01, "T1": 0.0175, "T2": 0.0175, "T3": 0.0175, "T4": 0.0175},
+  "pairs": {"topic vs coin label": ["L1", "L3"], "French vs Yoruba": ["T2", "T3"], "lowercase vs reversed order": ["T1", "T4"]},
+  "full": {
+   "d": 768, "expansion": 32, "k": 100, "k_max": 1024, "k_anneal_steps": 2000, "lr": 0.0001, "warmup": 1000,
+   "batch": 2048, "tokens": 200000000, "epochs": 2, "aux_alpha": 0.03125, "dead_tokens": 10000000, "init_norm": 1.0,
+   "target_rms": 100.0, "chunk_rows": 1024, "ls_tokens": 100000, "val_rows": 8192, "alive_min": 10, "top_n": 1667,
+   "top_n_wide": 5000, "nu_r": 0.5, "nu_eps": 0.2, "shared": [0.4, 0.6], "base_only": 0.1,
+   "snapshots": [0.125, 0.25, 0.5], "ckpt_every": 10000, "log_every": 500, "pile_start": 32768, "pool_start": 131072,
+   "pool_rows": 65536, "repeat_cap": 100
+  },
+  "rehearsal": {
+   "d": 768, "expansion": 2, "k": 100, "k_max": 1024, "k_anneal_steps": 200, "lr": 0.0001, "warmup": 100,
+   "batch": 2048, "tokens": 4096000, "epochs": 2, "aux_alpha": 0.03125, "dead_tokens": 200000, "init_norm": 1.0,
+   "target_rms": 100.0, "chunk_rows": 64, "ls_tokens": 20000, "val_rows": 64, "alive_min": 10, "top_n": 64,
+   "top_n_wide": 192, "nu_r": 0.5, "nu_eps": 0.2, "shared": [0.4, 0.6], "base_only": 0.1,
+   "snapshots": [0.125, 0.25, 0.5], "ckpt_every": 500, "log_every": 50, "pile_start": 32768, "pool_start": 131072,
+   "pool_rows": 1024, "repeat_cap": 100
+  },
+  "sources": {
+   "full, rehearsal": "copied unchanged from experiments/crosscoder/results/run2/predictions.json settings.full and .rehearsal (E203), whose sources hold: diffing-toolkit@617d926 configs/diffing/method/crosscoder.yaml, crosscoder_learning@d1fd6f3 (the trainer, called), sparsity-artifacts-crosscoders@d67ec6a (the token budget), Minder et al. 2025 (nu_r, nu_eps, bands). pool_start and pool_rows are unused here (no key-value tasks)",
+   "repeat_cap": "E203's: here it binds the label tasks (512 windows), so each label window is drawn at most 100 times an epoch and the LM tasks fill the rest of the task half",
+   "layer, data_seed, plant_seed": "E203's (block 2's input; its data and plant seeds, so the planted direction is E203's)",
+   "states, targets, pairs": "run 2 (E211): seed 0 at each pair's larger size (predictions_run2.json l_targets, t_targets), saved by run2.py save()",
+   "gauss_of, gauss_draw": "the card's floor: seed 0's per-matrix norms at the LM pairs' larger size; T2 (the first LM pair's reuse side, as E203 took its random update from its first pair's reuse state); draw 0 of run 2's gauss_draws, made by commute.finetune.random_direction as run 2 makes them",
+   "stream": "the brief: one fixed stream for every job, half E203's Pile rows, half the six tasks' run-2 training texts (departure from Minder et al.'s FineWeb + lmsys-chat, stated in the plan)"
+  }
+ },
+ "thresholds": {
+  "full": {
+   "self_act_diff": 1e-05, "size_band": [0.98, 1.1], "curve_step": 1000, "fve_curve_min": 0.0, "fve_early": 0.5,
+   "dead_max": 0.3, "projected_limit_min": 150, "fve_min": 0.8, "gauss_stop": 0.45, "planted_part": 0.5,
+   "planted_lead_specific": true, "gap_min": 0.15
+  },
+  "rehearsal": {
+   "self_act_diff": 1e-05, "size_band": [0.98, 1.1], "curve_step": 1000, "fve_curve_min": -1000000.0,
+   "fve_early": -1000000.0, "dead_max": 1.0, "projected_limit_min": 100, "fve_min": -1000000.0, "gauss_stop": 10.0,
+   "planted_part": -1.0, "planted_lead_specific": false, "gap_min": 0.15
+  }
+ }
+}

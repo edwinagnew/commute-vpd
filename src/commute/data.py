@@ -46,6 +46,21 @@ def pile_rows(split: str, start: int, n: int, log: Any = print) -> Tensor:
     return torch.from_numpy(arr).long()
 
 
+def cached_rows(split: str, start: int, n: int) -> Tensor:
+    """Rows [start, start + n) of the split as int64, cut from the smallest cached file under SETS_DIR that holds them;
+    never downloads (E203's `rows`, experiments/crosscoder/run.py, re-expressed here for E212). A pod is sent only the
+    files it reads."""
+    hold = []
+    for p in SETS_DIR.glob(f"{split}_*_*.npy"):
+        s, m = (int(x) for x in p.stem.split("_")[1:3])
+        if s <= start and start + n <= s + m:
+            hold.append((m, s, p))
+    if not hold:
+        raise SystemExit(f"no cached {split} file under {SETS_DIR} holds rows {start}..{start + n}")
+    _, s, p = min(hold)
+    return torch.from_numpy(np.load(p, mmap_mode="r")[start - s : start - s + n].copy()).long()
+
+
 def batches(rows: Tensor, size: int) -> list[Tensor]:
     return [rows[s : s + size] for s in range(0, rows.shape[0], size)]
 
