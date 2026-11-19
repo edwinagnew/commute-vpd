@@ -255,3 +255,61 @@ def test_inside_a_job_nothing_is_refused(repo: Path) -> None:
     done = subprocess.run([sys.executable, str(HOOK)], input=json.dumps(call), capture_output=True, text=True,
                           env={**os.environ, "SLURM_JOB_ID": "1"}, check=False)
     assert done.returncode == 0, done.stderr
+
+
+STAGED = '''import sys
+from transformers import AutoModelForCausalLM, AutoTokenizer
+
+
+def table(path):
+    """Not AutoModelForCausalLM.from_pretrained(path): a docstring loads nothing."""
+    return open(path).read()
+
+
+def acts(name):
+    return AutoModelForCausalLM.from_pretrained(name)
+
+
+def stage_a():
+    return table("x") + AutoTokenizer.from_pretrained("t").name
+
+
+def stage_b():
+    return acts("gpt")
+
+
+def stage_c():
+    return Helper().run()
+
+
+class Helper:
+    def run(self):
+        return acts("gpt")
+
+
+if __name__ == "__main__":
+    {"a": stage_a, "b": stage_b, "c": stage_c}[sys.argv[1]]()
+'''
+
+
+@pytest.mark.parametrize(("marker", "allowed"), [
+    ("# cpu-stage: a", True),  # stage a reads a table and a tokenizer
+    ("# cpu-stage: b", False),  # stage b loads a model through acts()
+    ("# cpu-stage: c", False),  # through a class of the same file
+    ("# cpu-stage: d", False),  # no such stage
+    ("", False),  # no marker: the script as a whole loads one
+])
+def test_cpu_stage_marker(marker: str, allowed: bool, repo: Path) -> None:
+    """A CPU job running one stage of a script whose other stages load a model (friction 882)."""
+    (repo / "exp" / "staged.py").write_text(STAGED)
+    (repo / "job.sbatch").write_text(f"#!/bin/bash\n#SBATCH --mem=4G\n{marker}\n.venv/bin/python exp/staged.py x\n")
+    done = hook("sbatch --comment='E1 stage a' job.sbatch", repo)
+    assert (done.returncode == 0) == allowed, done.stderr
+    assert allowed or "Models never run on CPUs" in done.stderr
+
+
+def test_cpu_stage_marker_top_level_load(repo: Path) -> None:
+    """A load at the script's top level runs whichever stage is asked for."""
+    (repo / "exp" / "staged.py").write_text(STAGED.replace("import sys\n", "import sys\nM = AutoModelForCausalLM.from_pretrained('m')\n", 1))
+    (repo / "job.sbatch").write_text("#!/bin/bash\n# cpu-stage: a\n.venv/bin/python exp/staged.py a\n")
+    assert hook("sbatch job.sbatch", repo).returncode == 2
