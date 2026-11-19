@@ -1,11 +1,13 @@
+2026-11-19T15:36:00-08:00 61850 commute-rl67m-s2 started node=l40-worker gpus=1
+code: 126c8c62
+2026-11-19T15:36:00-08:00 61850 allocated GPU memory used: 0 MiB
 Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
 Renaming init_spd_checkpoint to init_pd_checkpoint
 output_loss_type is deprecated, but has value: kl. Removing from config.
 Migrating pretrained_model_output_attr='idx_0' to output_extract
-23:01:17 [ctl] zero update: kl 0.0, same sampled tokens True
-23:01:24 [0 zero update and T1 loader] {"reproduce": {}, "zero_neuron": 0.0, "zero_lm": 0.0, "t1_logp_w0": {"got": -3.1456161868329104, "saved": -3.145619580202663}, "t1_lm_read_w0": {"nats_token": 3.1453051298852954, "nats_byte": 0.8171337022001898, "lo_word_start": -3.792644430385632}}
-23:01:55 [0 reproduce e53/lowercase_s0] {"share": {"got": 0.7512933197409789, "saved": 0.7518811175785213, "tol": 0.01}, "gain": {"got": 1.672129291534424, "saved": 1.6721290016174317, "tol": 0.0001}, "neuron_k64": {"got": 0.03428553214018271, "saved": 0.03414266508160551, "tol": 0.0001}, "neuron_kmatched": {"got": 0.007765588123654049, "saved": 0.007766123303975601, "tol": 0.0001}, "steer_pooled": {"got": 0.7130595400527538, "saved": 0.7130595188192251, "tol": 0.001}}
-23:02:28 [0 reproduce e53/cipher_s0] {"share": {"got": 0.12480744674167368, "saved": 0.12431340168715405, "tol": 0.01}, "gain": {"got": 3.868075224876404, "saved": 3.868075170516968, "tol": 0.0001}, "neuron_k64": {"got": 0.004880612249627283, "saved": 0.004887934856158188, "tol": 0.0001}, "neuron_kmatched": {"got": 0.0009565216680167711, "saved": 0.0009568052140731044, "tol": 0.0001}, "steer_pooled": {"got": 0.6929799108588119, "saved": 0.6929798537824282, "tol": 0.001}}
-STOP: E53 re-read: does not reproduce: ['e53/lowercase_s0 neuron_k64']: tell the lead
-peak host RSS 21.0 GB
-=== FINISHED (exit 1) — results in /root/work/experiments/rl_67m/results/stage2_*.json, results/stage2_e53_reread/, results/large/stage2/ (ctl) ===
+15:36:28 [ctl] zero update: kl 0.0, same sampled tokens True
+15:36:39 [0 zero update and T1 loader] {"reproduce": {}, "zero_neuron": 0.0, "zero_lm": 0.0, "t1_logp_w0": {"got": -3.145619580202663, "saved": -3.145619580202663}, "t1_lm_read_w0": {"nats_token": 3.145305134842314, "nats_byte": 0.8171337034879972, "lo_word_start": -3.7926444809592703}}
+15:37:46 [0 reproduce e53/lowercase_s0] {"share": {"got": 0.7518811175785213, "saved": 0.7518811175785213, "tol": 0.01}, "gain": {"got": 1.6721290016174317, "saved": 1.6721290016174317, "tol": 0.0001}, "neuron_k64": {"got": 0.03414266508160551, "saved": 0.03414266508160551, "tol": 0.0001}, "neuron_kmatched": {"got": 0.007766123303975601, "saved": 0.007766123303975601, "tol": 0.0001}, "steer_pooled": {"got": 0.7130595188192251, "saved": 0.7130595188192251, "tol": 0.001}}
+15:38:52 [0 reproduce e53/cipher_s0] {"share": {"got": 0.12431340168715405, "saved": 0.12431340168715405, "tol": 0.01}, "gain": {"got": 3.868075170516968, "saved": 3.868075170516968, "tol": 0.0001}, "neuron_k64": {"got": 0.004887934856158188, "saved": 0.004887934856158188, "tol": 0.0001}, "neuron_kmatched": {"got": 0.0009568052140731044, "saved": 0.0009568052140731044, "tol": 0.0001}, "steer_pooled": {"got": 0.6929798537824282, "saved": 0.6929798537824282, "tol": 0.001}}
+STAGE 2 ctl DONE
+peak host RSS 20.5 GB
