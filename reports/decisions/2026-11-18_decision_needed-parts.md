@@ -1,5 +1,7 @@
 # Decision: should a small new trigger in front of an old, unchanged circuit count as reuse?
 
+*2026-11-18, evening: the log card was rewritten shorter at the user's request (log v401); this file keeps the fuller text.*
+
 *2026-11-18, definition-lead. A definition question for the user, filed as an ask; you chose to talk it through
 (2026-11-18). No recommendation on the main question: it is yours.*
 

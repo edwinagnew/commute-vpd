@@ -1,5 +1,7 @@
 # Decision: four repairs the definition needs before the paper states it formally
 
+*2026-11-18, evening: the log card was rewritten shorter at the user's request (log v401); this file keeps the fuller text.*
+
 *2026-11-18, definition-lead. From the review `reports/reviews/2026-11-18_review_definition-causal-abstraction.md`.
 Each repair changes the definition's content, so each is yours to accept or refuse; nothing has been changed.*
 
