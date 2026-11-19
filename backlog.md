@@ -2,6 +2,26 @@
 
 Deferred ideas and loose ends. Date each entry.
 
+- 2026-11-19, **soon (user, in chat)**. Proper top-activating-neuron baselines, after Cammarata et al. and Goodfire's
+  follow-up (paper §4.2.3 "Top Activating Neurons": "No reading of the definition with k below the width has been
+  made"). E190's top-K gain readings were unreadable because the 67M was never made to run sparse: masking the base
+  model alone to its top 240/768/1536 of 3072 neurons per block added 5.76/3.79/0.89 nats. Do it their way, with the
+  authors' recipe and code (baselines rule, user 2026-11-17): first give the base model the top-K sparsity their
+  method assumes, so the W0 control reads near zero loss, then read every pair with a saved update at k below the width.
+  Proposed as a compare-lead cell on L2.1 (2026-11-19).
+- 2026-11-19, backlog, not now (user, in chat). A loracle as a baseline: a model trained to read a LoRA's weights and
+  answer questions about it, asked whether an update reuses existing mechanisms. The loracle paper has NOT been read
+  yet (compare-lead, 2026-11-19): read it before scoping. The ideas below are unchecked guesses on keeping it cheap:
+  - Train on the 67M, where a LoRA takes under a minute, so thousands of labelled LoRAs cost little.
+  - Use a released loracle zero-shot if its target model matches (check for one that targets Qwen first).
+  - Have the oracle read a small summary instead of raw weights, for example the LoRA projected onto VPD
+    subcomponents or neurons.
+
+  Two cautions:
+  - Labels from our built pairs make it learn our construction, which is circular as a check on the definition.
+    Score it on held-out construction kinds only.
+  - A trained non-linear reader conflicts with "linear reads only" (user, 2026-11-12), so it needs the user's call.
+
 - 2026-10-14. Re-decomposition test (the strong version in `GOALS.md`; postponed by the user until the weak version
   is settled): warm-start VPD on W + δW from the released decomposition and measure subcomponent
   drift against a δW = 0 warm-start control (optimisation noise) and the cross-seed baseline (0.28 MMCS). Needs the
