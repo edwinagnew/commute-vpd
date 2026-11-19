@@ -152,10 +152,12 @@ def feat_of(cfg: Config, qs: list[float], pct: Tensor, band: str) -> K.Feat:
     return K.Feat(list(pct[qs.index(lo)].to("cuda")), list(pct[qs.index(hi)].to("cuda")))
 
 
-def load_pct() -> tuple[list[float], Tensor]:
-    z = torch.load(PCT, weights_only=True)
+def load_pct(cfg: Config) -> tuple[list[float], Tensor]:
+    """The quantiles are the config's own floats: the file stores them in float32, where 0.03 != 0.03 (E217 pods)."""
+    z, qs = torch.load(PCT, weights_only=True), sorted({q for b in cfg.bands.values() for q in b})
     assert hashlib.sha256(PCT.read_bytes()).hexdigest() == json.loads(STAGE0.read_text())["percentiles_sha256"], "percentiles changed since stage 0"
-    return z["q"].tolist(), z["values"]
+    assert torch.equal(z["q"], torch.tensor(qs)), "the saved quantiles are not the config's"
+    return qs, z["values"]
 
 
 # ---- the readings ---------------------------------------------------------------------------------------------------
@@ -271,7 +273,7 @@ def stage1(cfg: Config, net: Any, M: R.Model, data: Any, task: int) -> None:
         log("STOP: stage 0 has not passed")
         hard_exit(1)
     band, seed = cfg.tasks()[task]
-    qs, pct = load_pct()
+    qs, pct = load_pct(cfg)
     feat = feat_of(cfg, qs, pct, band)
     log(f"stage 1 task {task}: band {band}, seed {seed}")
     for item in cfg.items(seed):
