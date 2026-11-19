@@ -18,6 +18,8 @@
 set -euo pipefail
 source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root; caches in /ephemeral/$USER
 cd "$COMMUTE_REPO"
+# l40-worker /ephemeral was 100% full on 2026-11-18 (job 61426): caches for this job go on the shared NFS instead
+export HF_HOME=$HOME/commute-data/cache/hf TMPDIR=$HOME/commute-data/cache/tmp; mkdir -p "$HF_HOME" "$TMPDIR"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 test -n "${HF_TOKEN:-}" || { echo "STOP: HF_TOKEN is unset: export a token whose account accepted the Gemma-2 licence, then resubmit"; exit 1; }
