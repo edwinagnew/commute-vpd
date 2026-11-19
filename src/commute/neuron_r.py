@@ -172,13 +172,14 @@ def firing_grads(mlps: Sequence[Any], loss: Callable[[], Tensor]) -> tuple[Acts,
     return dict(enumerate(grads)), seen
 
 
-def w0_grads(net: Net, toks: Tensor, tgt: Tensor, half: int) -> Acts:
-    """d(sum over windows of W0's log-odds at `half`) / d(firing), every block and position (`firing_grads`)."""
+def w0_grads(net: Net, toks: Tensor, tgt: Tensor, half: int, unit: ST.Readout | None = None) -> Acts:
+    """d(sum over windows of W0's log-odds at `half`) / d(firing), every block and position (`firing_grads`). `unit`
+    replaces the log-odds when given (P2.38 run 2 passes the two-label contrast; None is the path as before)."""
 
     def loss() -> Tensor:
         out = net.net(toks.to(net.device))
         lg = (out[0] if isinstance(out, tuple) else out).float()
-        return log_odds(lg[:, half], tgt.to(net.device)).sum()
+        return log_odds(lg[:, half], tgt.to(net.device)).sum() if unit is None else unit(lg, half, tgt).sum()
 
     return firing_grads([b.mlp for b in net.net.h], loss)[0]
 
@@ -191,13 +192,13 @@ def half_acts(net: Net, toks: Tensor, dW: DW) -> tuple[Tensor, Acts, Acts]:
     return lg, a0, forward(net, toks, x_in=x1)[2]
 
 
-def ranking(net: Net, r: Reads, dW: DW, batch: int) -> Tensor:
+def ranking(net: Net, r: Reads, dW: DW, batch: int, unit: ST.Readout | None = None) -> Tensor:
     """(12288,) float64 per neuron: sum over windows and positions of W0's gradient x (Ah - A0), the first-order estimate
-    of its part in the r_half cell's numerator (summed, not averaged: only the order is used)."""
+    of its part in the r_half cell's numerator (summed, not averaged: only the order is used). `unit` as `w0_grads`."""
     score = torch.zeros(N_NEURONS, dtype=torch.float64)
     for toks, tgt in r.batches(batch):
         _, a0, ah = half_acts(net, toks, dW)
-        g = w0_grads(net, toks, tgt, r.half)
+        g = w0_grads(net, toks, tgt, r.half, unit)
         score += torch.cat([(g[l] * (ah[l] - a0[l])).sum((0, 1)).double().cpu() for l in range(N_LAYERS)])
     return score
 
@@ -209,17 +210,18 @@ def top_masks(order: Tensor, k: int, n_layers: int = N_LAYERS, width: int = D_ML
     return {l: flat[l * width : (l + 1) * width] for l in range(n_layers)}
 
 
-def grid_numerators(net: Net, r: Reads, dW: DW, order: Tensor, grid: Sequence[int], batch: int) -> dict[int, float]:
+def grid_numerators(net: Net, r: Reads, dW: DW, order: Tensor, grid: Sequence[int], batch: int,
+                    unit: ST.Readout = ST.logodds_at) -> dict[int, float]:  # fmt: skip
     """Per k: the mean over windows of L(O0, A_k) - T0, A_k = Ah on the first k neurons of `order` and A0 on the rest,
-    every block and position. At k = 12288 it is the r_half numerator."""
+    every block and position, in `unit` (log-odds unless given). At k = 12288 it is the r_half numerator."""
     masks = {k: top_masks(order, k) for k in grid}
     sums = dict.fromkeys(grid, 0.0)
     for toks, tgt in r.batches(batch):
         lg, a0, ah = half_acts(net, toks, dW)
-        T0 = ST.logodds_at(lg, r.half, tgt)
+        T0 = unit(lg, r.half, tgt)
         for k in grid:
             a_in = {l: torch.where(masks[k][l].to(a0[l].device), ah[l], a0[l]) for l in range(N_LAYERS)}
-            sums[k] += float((ST.logodds_at(forward(net, toks, a_in=a_in)[0], r.half, tgt) - T0).sum())
+            sums[k] += float((unit(forward(net, toks, a_in=a_in)[0], r.half, tgt) - T0).sum())
     return {k: s / len(r.toks) for k, s in sums.items()}
 
 

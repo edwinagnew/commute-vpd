@@ -81,6 +81,17 @@ def logodds_at(logits: Tensor, pos: int, tgt: Tensor) -> Tensor:
     return log_odds(logits[:, pos], tgt.to(logits.device)).double().cpu()
 
 
+def contrast_at(ab: tuple[int, int]) -> Readout:
+    """The two-label contrast: logit of each row's target label minus the other label's at `pos` (targets are ab[0] or
+    ab[1]); E140's scored unit (`masked_reads.units` "contrast"). Moved from experiments/neuron_twins for P2.38 run 2."""
+
+    def f(logits: Tensor, pos: int, tgt: Tensor) -> Tensor:
+        lg, t = logits[:, pos].float(), tgt.to(logits.device)
+        return (lg.gather(1, t[:, None]) - lg.gather(1, (ab[0] + ab[1] - t)[:, None])).squeeze(1).double().cpu()
+
+    return f
+
+
 @dataclass
 class Task:
     name: str

@@ -183,3 +183,100 @@ def grid_calls(grid: Mapping[str, Mapping[str, Mapping[str, Mapping[str, float]]
         out[task] = {"kept": g >= bars[task], "best_gain": None if math.isinf(g) else g, "rate": rate, "step": step,
                      "why": "gain at or over the bar" if g >= bars[task] else "gain under the bar"}  # fmt: skip
     return out
+
+
+# ----------------------------------------------------------------------------- run 2 (E211): read windows, size, calls
+
+
+def update_size(dW: Mapping[str, Tensor], W0: Mapping[str, Tensor]) -> float:
+    """||dW|| / ||W0|| over the matrices of dW, Frobenius norms summed in squares (E187's; run 1's `size`), float64."""
+    num = sum(float(d.double().pow(2).sum()) for d in dW.values())
+    return math.sqrt(num / sum(float(W0[k].double().pow(2).sum()) for k in dW))
+
+
+def hard_positions(lo: Tensor, starts: Tensor, half: int, per_row: int, n: int) -> Tensor:
+    """(n, 2) [row, pos] of an LM task's scored tokens, chosen from W0 only. lo (R, T): W0's log-odds of token p from
+    the prefix before it (nan where undefined, never chosen); starts (R, T) bool: token p starts a word. A position is a
+    candidate when it starts a word and its window of 2 half + 1 fits (half + 1 <= pos <= T - half, as
+    `performed.windows_at`). Each row gives its `per_row` candidates of lowest lo, then the n lowest of those are kept.
+    Ties go to the earlier row, then the earlier position. Fewer than n candidates raises."""
+    T = lo.shape[1]
+    pos = torch.arange(T)
+    ok = starts & (pos >= half + 1) & (pos <= T - half) & ~lo.isnan()
+    cand: list[tuple[float, int, int]] = []
+    for r in range(lo.shape[0]):
+        row = sorted((float(lo[r, p]), int(p)) for p in pos[ok[r]])[:per_row]
+        cand += [(v, r, p) for v, p in row]
+    if len(cand) < n:
+        raise ValueError(f"{len(cand)} candidate positions, {n} needed")
+    return torch.tensor([[r, p] for _, r, p in sorted(cand)[:n]], dtype=torch.long)
+
+
+def cut_windows(rows: Tensor, at: Tensor, half: int) -> Tensor:
+    """(n, 2 half + 1) windows of rows around at's [row, pos]: the scored token at index half + 1, its input at half
+    (`performed.windows_at`'s layout, which data.NEXT reads)."""
+    start = at[:, 1] - half - 1
+    return rows[at[:, 0, None], start[:, None] + torch.arange(2 * half + 1)]
+
+
+RATIO, INVERTED = {"size", "erank"}, {"k_half"}  # the scorecard's gap conventions (method_table/plot_final.py)
+
+
+def seed_call(method: str, reuse: Sequence[float | None], new: Sequence[float | None]) -> dict[str, Any]:
+    """The scorecard's one rule (`method_table/plot_final.py` `score`) on each side's values, a None or nan (a share
+    under its gain floor, a k_half with no carrying set) left out first and counted. "unreadable" when a side keeps no
+    value; "one value a side" when a side keeps one; else "apart" iff the two sides' ranges do not overlap (equal ends
+    overlap), "no call" otherwise. gap: reuse mean - new mean; log10(reuse / new) for size and erank; log10(new / reuse)
+    for k_half (positive = fewer neurons on the reuse side); nan where a ratio's mean is not positive."""
+    a, b = _kept(reuse), _kept(new)
+    out: dict[str, Any] = {"reuse": a, "new": b, "left_out": {"reuse": len(reuse) - len(a), "new": len(new) - len(b)}}
+    if not a or not b:
+        return {**out, "gap": math.nan, "call": "unreadable"}
+    ma, mb = sum(a) / len(a), sum(b) / len(b)
+    if method in RATIO or method in INVERTED:
+        num, den = (ma, mb) if method in RATIO else (mb, ma)
+        out["gap"] = math.log10(num / den) if num > 0 and den > 0 else math.nan
+    else:
+        out["gap"] = ma - mb
+    if min(len(a), len(b)) < 2:
+        return {**out, "call": "one value a side"}
+    return {**out, "call": "apart" if min(a) > max(b) or max(a) < min(b) else "no call"}
+
+
+def _kept(xs: Sequence[float | None]) -> list[float]:
+    return [float(x) for x in xs if x is not None and not math.isnan(float(x))]
+
+
+def filed(c: Mapping[str, Any], direction: str) -> str:
+    """A call against its filed direction: "+" (reuse side higher, in the method's gap convention), "-", or "none"
+    (expected no call). "hit" / "miss" / "no call"; "unreadable" passes through. One value a side (the W0 prior, no seed
+    spread) is judged on the sign of its gap alone."""
+    if c["call"] == "unreadable" or math.isnan(c["gap"]):
+        return "unreadable"
+    if c["call"] == "one value a side":
+        return "hit" if direction != "none" and (c["gap"] > 0) == (direction == "+") else "miss"
+    if direction == "none":
+        return "hit" if c["call"] == "no call" else "miss"
+    if c["call"] != "apart":
+        return "no call"
+    return "hit" if (c["gap"] > 0) == (direction == "+") else "miss"
+
+
+def rival(share: Mapping[str, Mapping[str, Any]], built_like: Sequence[str]) -> str:
+    """The card's call from the share's calls per pair at the larger size: "rival a" when every pair in `built_like`
+    (the LM pairs) reads apart with the reuse side higher and the label pair's gap is not negative; "rival b" when at
+    least two of the three pairs read no call, unreadable, or apart the other way; else "between"."""
+    up = {p: c["call"] == "apart" and c["gap"] > 0 for p, c in share.items()}
+    if all(up[p] for p in built_like) and all(c["gap"] >= 0 for p, c in share.items() if p not in built_like):
+        return "rival a"
+    return "rival b" if sum(not v for v in up.values()) >= 2 else "between"
+
+
+def against_share(c: Mapping[str, Any], share: Mapping[str, Any]) -> str:
+    """The scorecard's comparison of one method's call with the share's on the same pair (`plot_final.against_share`).
+    Each method's gap keeps its own sign convention (k_half: positive = fewer neurons on the reuse side)."""
+    if c["call"] != "apart":
+        return c["call"]
+    if share["call"] != "apart":
+        return "apart where the share is not"
+    return "same direction as the share" if (c["gap"] > 0) == (share["gap"] > 0) else "opposite to the share"

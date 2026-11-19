@@ -16,7 +16,7 @@ x that matrix's input on that forward; the k_m largest get gate 1, the rest 0.
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 from contextlib import nullcontext
 from dataclasses import dataclass
 from typing import Any
@@ -124,20 +124,23 @@ def masked_forward(model: Any, batch: Tensor, d: Decomposition, gates: Gates) ->
 
 @torch.no_grad()
 def do_nothing_cells(model: Any, windows: Tensor, half: int, token: int | Tensor, decomps: Mapping[str, Decomposition], k: Mapping[str, int],
-                     batch_size: int, ci_len: int | None = None, target: Mapping[str, Tensor] | None = None) -> dict[str, Any]:  # fmt: skip
+                     batch_size: int, ci_len: int | None = None, target: Mapping[str, Tensor] | None = None,
+                     unit: Callable[[Tensor, int, Tensor], Tensor] | None = None) -> dict[str, Any]:  # fmt: skip
     """Mean answer log-odds under the weights `target` (None: the model as it stands): "T", the unmasked model, and per decomposition its
     masked model with the gates this forward's inputs give. At W0 the masked value is that decomposition's L00; at a state, its L01: the masked
-    forward uses W0's components whatever `target` is, since the hooks replace all 24 matrices' outputs."""
+    forward uses W0's components whatever `target` is, since the hooks replace all 24 matrices' outputs. `unit` (a `steering.Readout`)
+    replaces the log-odds when given (P2.38 run 2's two-label contrast; None is the path as before)."""
     device = next(model.parameters()).device
     sums = {"T": 0.0, **{n: 0.0 for n in decomps}}
+    read = (lambda lg, tgt: log_odds(lg[:, half], tgt).double()) if unit is None else (lambda lg, tgt: unit(lg, half, tgt))
     with model_state(model, target=dict(target)) if target is not None else nullcontext():
         for s in range(0, windows.shape[0], batch_size):
             batch = windows[s : s + batch_size].to(device)
             tgt, x = target_tokens(token, batch, half), batch[:, :ci_len]
             logits, gates = forward_with_gates(model, x, decomps, k)
-            sums["T"] += float(log_odds(logits[:, half], tgt).double().sum())
+            sums["T"] += float(read(logits, tgt).sum())
             for n, d in decomps.items():
-                sums[n] += float(log_odds(masked_forward(model, x, d, gates[n])[:, half], tgt).double().sum())
+                sums[n] += float(read(masked_forward(model, x, d, gates[n]), tgt).sum())
     return {name: v / windows.shape[0] for name, v in sums.items()}
 
 

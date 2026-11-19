@@ -18,7 +18,7 @@ W0's own. Its share is mean(N01 - N00) / mean(T1 - T0), T read by `steering.Net`
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Callable, Mapping
 
 import torch
 from torch import Tensor
@@ -44,7 +44,7 @@ def units(lg: Tensor, y: Tensor, ab: tuple[int, int]) -> dict[str, Tensor]:
 
 
 def cat(parts: list[dict[str, Tensor]]) -> dict[str, Tensor]:
-    return {u: torch.cat([p[u] for p in parts]) for u in UNITS}
+    return {u: torch.cat([p[u] for p in parts]) for u in parts[0]}
 
 
 def share(num: Tensor, gain: Tensor, floor: float) -> float:
@@ -53,19 +53,33 @@ def share(num: Tensor, gain: Tensor, floor: float) -> float:
     return float(num.mean()) / g if g >= floor and g != 0 else float("nan")
 
 
+UnitsOf = Callable[[Tensor, slice], dict[str, Tensor]]  # (logits at the answer (B, V), the batch's rows) -> unit -> (B,)
+
+
+def label_units(y: Tensor, ab: tuple[int, int]) -> UnitsOf:
+    """`units` of the rows' own labels y, for the `_by` reads."""
+    return lambda lg, rows: units(lg, y[rows], ab)
+
+
 @torch.no_grad()
 def share_cells(model: object, W0: Mapping[str, Tensor], dW: ST.DW, toks: Tensor, y: Tensor, ab: tuple[int, int], pos: int) -> Cells:
     """T0, T1, L00, L01 per window and unit on `toks` (N, L), the label read at `pos` (see the module docstring)."""
+    return share_cells_by(model, W0, dW, toks, pos, label_units(y, ab))
+
+
+@torch.no_grad()
+def share_cells_by(model: object, W0: Mapping[str, Tensor], dW: ST.DW, toks: Tensor, pos: int, units_of: UnitsOf) -> Cells:
+    """`share_cells` with any units (`units_of`), e.g. log-odds of each window's next token (P2.38 run 2); same calls."""
     out: dict[str, list[dict[str, Tensor]]] = {c: [] for c in ("T0", "L00", "T1", "L01")}
     device = next(model.parameters()).device  # type: ignore[attr-defined]
     W1 = {k: w + dW[k].to(w.device, w.dtype) for k, w in W0.items()}
     for s in range(0, len(toks), BATCH):
-        x, yb = toks[s : s + BATCH].to(device), y[s : s + BATCH]
+        x, rows = toks[s : s + BATCH].to(device), slice(s, s + BATCH)
         for T, L, W in (("T0", "L00", None), ("T1", "L01", W1)):
             with model_state(model, target=W):  # W None: the model as it stands, W0
                 ci = vpd.compute_ci(model, x, chunk=x.shape[0])
-                out[T].append(units(ci.logits[:, pos], yb, ab))
-                out[L].append(units(masked_logits(model, x, ci.g, None, None)[:, pos], yb, ab))
+                out[T].append(units_of(ci.logits[:, pos], rows))
+                out[L].append(units_of(masked_logits(model, x, ci.g, None, None)[:, pos], rows))
     return {c: cat(v) for c, v in out.items()}
 
 
@@ -115,10 +129,15 @@ def topk_logits(net: ST.Net, dW: ST.DW, b: Tensor, pos: int, k: Mapping[int, int
 
 def topk_cells(net: ST.Net, dW: ST.DW, toks: Tensor, y: Tensor, ab: tuple[int, int], pos: int, k: Mapping[int, int]) -> Cells:
     """T0, T1, N00, N01 (`topk_logits`) per window and unit."""
+    return topk_cells_by(net, dW, toks, pos, k, label_units(y, ab))
+
+
+def topk_cells_by(net: ST.Net, dW: ST.DW, toks: Tensor, pos: int, k: Mapping[int, int], units_of: UnitsOf) -> Cells:
+    """`topk_cells` with any units (`units_of`, as `share_cells_by`)."""
     out: dict[str, list[dict[str, Tensor]]] = {c: [] for c in ("T0", "T1", "N00", "N01")}
     for s in range(0, len(toks), BATCH):
         for cell, lg in topk_logits(net, dW, toks[s : s + BATCH], pos, k).items():
-            out[cell].append(units(lg, y[s : s + BATCH], ab))
+            out[cell].append(units_of(lg, slice(s, s + BATCH)))
     return {c: cat(v) for c, v in out.items()}
 
 

@@ -1,0 +1,107 @@
+{
+ "experiment": "E211 (realistic_tasks run 2), cell P2.38 run 2: every scorecard method on the three real-text pairs run 1 kept, each side trained to two matched update sizes, three seeds, zero and Gaussian controls",
+ "plan": "reports/plans/2026-11-18_plan_p2-38-run2.md",
+ "card": "reports/plans/2026-11-18_plan_p2-38-run2-card.md",
+ "filed": "2026-11-18, before any run of run2.py",
+ "definitions": {
+  "pairs": "reuse side first: L1 (AG News Sports vs Business label after ' Topic:') vs L3 (the same texts, a seeded coin label); T2 (French Wikipedia) vs T3 (Yoruba Wikipedia, run 1's filed choice); T1 (E53's lowercase Pile rows) vs T4 (Pile rows with each sentence's words reversed). Sides as run 1 labelled them by their data argument; no verdict of reused or new",
+  "size": "||dW|| / ||W0|| over the 24 decomposed matrices, Frobenius norms summed in squares (E187's; realistic.update_size). Each fine-tune is saved at the first step its size reaches each target, no interpolation",
+  "units": "lo: log-odds of each row's target over the whole vocabulary (the share's unit). contrast (label tasks only): logit of the row's label minus the other label's (E140's unit). The label pair is scored in contrast, lo beside (decisions.md 2026-11-18 'Label tasks scored on the two-label contrast'); the LM pairs in lo",
+  "read rows": "L1 and L3: the 512 training-pool texts (same tokens, labels differ; L3 is defined only there), the label read at the marker's last position; each label task's held-out 512 texts give 'held_gain' beside. T1: E53's 500 scored windows (E136's read). T2, T3, T4: 500 windows of 127 tokens from the 64 held rows, the scored token at index 64: in each row the 8 word-start positions of lowest W0 log-odds of the true token, then the 500 lowest of those (realistic.hard_positions, W0 only, fixed before any fine-tune)",
+  "fitting windows (steering)": "L: the 512 pool texts. T1: E53's 2,000 hand-write windows (E143's). T2-T4: the same position rule on training rows 0-255, 2,000 windows",
+  "readings": "commute.realistic_reads: gain T1 - T0 (fp32); prior T0 (W0); share (L01 - L00)/(T1 - T0) on the released decomposition, do-nothing form; untrained the same on W0's SVD (scored) and its rotation (beside), E136's k_m; neuron (N01 - N00)/gain with TopK firing, k 64 (scored) and k matched (beside); steering pooled fair steering, setting picked in the scored unit on 512 fitting windows; k_half E98's count in the scored unit; erank (update_spectrum); size. Every share is nan when its gain is under 1 (MIN_GAIN)",
+  "call": "realistic.seed_call, the scorecard's one rule (method_table/plot_final.py score): nan or null values left out; 'apart' iff the two sides' seed ranges do not overlap, else 'no call'; one value a side (the prior) gets 'one value a side' and its filed direction is judged on the gap's sign; gap = reuse mean - new mean, log10(reuse/new) for size and erank, log10(new/reuse) for k_half (positive = fewer neurons on the reuse side). Under no difference, 3 seeds a side read 'apart' by chance 0.1 of the time per cell, so about 2 chance calls are expected over 3 pairs x 2 sizes x 9 readings; a method is read on its direction across pairs, not on one cell",
+  "card call": "score2.py with realistic.rival on the share's calls: rival a when, at both sizes, both LM pairs read apart with the reuse side higher and the label pair's gap is not negative; rival b when at the larger size at least two of the three pairs read no call, unreadable or apart the other way; else between"
+ },
+ "control": {
+  "ctl job (alone, first)": "E53 lowercase_s0 and cipher_s0 through realistic_reads reproduce: share 0.75188 / 0.12431 (tol 0.01: the masked_reads path batches 64, E136 read at 32), untrained svd 0.11846 / 0.06767 and rotated 0.32811 / 0.17909 (1e-4, the same calls), gain 1.67213 / 3.86808 (1e-4), neuron k64 0.03414 / 0.00489 and k matched 0.00777 / 0.00096 (1e-4), pooled steering 0.71306 / 0.69298 (1e-3), erank 598.5738 / 594.2662 (1e-6); lowercase_s0's k_half 16 exactly and r_half numerator 0.87998 (1e-4); a zero update on T1's rows reads every numerator and gain exactly 0. Any miss exits 1 before any task job",
+  "zero update (first in every task job)": "every gain and numerator exactly 0 (share, untrained, neuron, steering rise, k_half's r_half numerator), else exit 1; then every share nan, k_half null, erank null, size 0",
+  "Gaussian (3 draws per size, seed 0's per-matrix norms; commute.finetune.random_direction)": "size equal to seed 0's state at that target within 1e-5 relative; gain in the scored unit under 1, else exit 1 (expected -1.5 to +0.3); every share nan (gain under the floor); k_half null; erank above every trained state's of the same task and size (expected 650 to 760: a Gaussian matrix's singular values are near equal; E53's trained states read 573-600)",
+  "W0 (prior, the same at every state)": "L1 contrast +1 to +3 (W0 labels 93% of held texts right, run 1 stage1 w0_accuracy 0.932); L3 contrast within 0.3 of 0 (coin independent of the text); lo: L1 about -7.4, L3 about -8.8 (run 1's first-step label losses 7.41 and 8.82); T1 lo -6.75 +- 0.1 (E53: state -5.08 minus gain 1.672); T2, T3, T4 lo -9 to -16 (the lowest word starts of each row), T2 above T3"
+ },
+ "expected": {
+  "gain at the larger size, scored unit": "L1 contrast 3 to 6; L3 contrast 1.5 to 6 (pool texts, memorised coins); T1 1.65 +- 0.05 (E53 1.672 at size 0.01795); T2 0.5 to 3 (may fall under 1: T2's shares then read nan, reported as read); T3 1.5 to 5; T4 2 to 6. At the smaller size 50% to 85% of these",
+  "held_gain (beside)": "L3 contrast within 0.3 of 0 at both sizes (a coin does not carry to unseen texts); L1 contrast over 1",
+  "steps to size": "L1 about 280 to 0.010 (under the cap 600), L3 about 80; T1 285 to 300, T2 about 200, T3 and T4 about 120-150 to 0.0175",
+  "T1 share at the larger size": "0.72 to 0.78 (E53's 0.752 and 0.770 at 0.018)"
+ },
+ "predictions": {
+  "L1/L3": {
+   "share": {"direction": "none", "expected": "both sides 0.05 to 0.3 in contrast, seed ranges overlapping", "confidence": "low", "why": "E140: the share did not tell a real label fine-tune from its shuffled twin in the contrast (gaps -0.02, -0.09)"},
+   "untrained": {"direction": "none", "confidence": "low", "why": "no call on 5 of 9 built pairs"},
+   "untrained_rotated": {"direction": "none", "confidence": "low", "why": "beside the SVD reading"},
+   "steering": {"direction": "none", "confidence": "low", "why": "E140 pooled steering split once in two twin pairs"},
+   "neuron": {"direction": "none", "expected": "both under 0.05 (inert)", "confidence": "medium", "why": "E140's TopK neuron readings were inert on both twin pairs"},
+   "neuron_kmatched": {"direction": "none", "confidence": "medium", "why": "as k 64"},
+   "k_half": {"direction": "none", "confidence": "low", "why": "never read on a label twin pair"},
+   "prior": {"direction": "+", "expected": "gap +1 to +3 in contrast", "confidence": "high", "why": "W0 already labels 93% of topics right; a coin has no W0 prior"},
+   "erank": {"direction": "-", "confidence": "low", "why": "memorising 512 independent coins should spread the update over more directions than one topic rule"},
+   "size": {"direction": "none", "expected": "|gap| at most 0.005 log10 (matched by training; overshoot under 1%)", "confidence": "high", "why": "matched by construction"}
+  },
+  "T2/T3": {
+   "share": {"direction": "+", "expected": "gap 0.1 to 0.4", "confidence": "low", "why": "the built pairs' 9 of 9; French is in the Pile, Yoruba is not; T2 may be unreadable (gain under 1)"},
+   "untrained": {"direction": "none", "confidence": "low", "why": "no call on 5 of 9 built pairs"},
+   "untrained_rotated": {"direction": "none", "confidence": "low", "why": "beside the SVD reading"},
+   "steering": {"direction": "none", "confidence": "low", "why": "no call on E53's pair (pooled 0.71/0.69 vs 0.69-0.86)"},
+   "neuron": {"direction": "+", "confidence": "low", "why": "E53's pair read reuse 0.034-0.047 over new 0.005-0.020"},
+   "neuron_kmatched": {"direction": "+", "confidence": "low", "why": "as k 64"},
+   "k_half": {"direction": "+", "confidence": "low", "why": "same direction as the share on 6 of 9 built pairs (fewer neurons carry the reuse side)"},
+   "prior": {"direction": "+", "confidence": "medium", "why": "W0 reads French at 1.21 nats per byte against Yoruba's 2.15 (run 1)"},
+   "erank": {"direction": "+", "confidence": "low", "why": "same direction as the share on 7 of 9 built pairs; E53 reuse 598-600 over new 573-594"},
+   "size": {"direction": "none", "expected": "|gap| at most 0.005 log10", "confidence": "high", "why": "matched by construction"}
+  },
+  "T1/T4": {
+   "share": {"direction": "+", "expected": "T1 0.72-0.78, T4 0.3 to 0.5, gap 0.25 to 0.45", "confidence": "medium", "why": "T1 is E53's state; reversed order is a grammar never seen, built from known words"},
+   "untrained": {"direction": "none", "confidence": "low", "why": "E53's pair: no call (0.02-0.12 vs 0.07-0.23)"},
+   "untrained_rotated": {"direction": "none", "confidence": "low", "why": "beside the SVD reading"},
+   "steering": {"direction": "none", "confidence": "low", "why": "E53's pair: no call"},
+   "neuron": {"direction": "+", "confidence": "low", "why": "E53's pair: reuse over new"},
+   "neuron_kmatched": {"direction": "+", "confidence": "low", "why": "as k 64"},
+   "k_half": {"direction": "+", "confidence": "low", "why": "E53's lowercase read 16 neurons against the ciphers' 64-128"},
+   "prior": {"direction": "+", "expected": "T1 -6.75 against T4 -10 to -16", "confidence": "high", "why": "T4's positions are the hardest word starts of reversed text; circular on LM tasks (the draft's caveat)"},
+   "erank": {"direction": "+", "confidence": "low", "why": "E53's pair: reuse 598-600 over new 573-594"},
+   "size": {"direction": "none", "expected": "|gap| at most 0.005 log10", "confidence": "high", "why": "matched by construction"}
+  }
+ },
+ "edge_cases_checked_before_filing": "tests/test_realistic.py: seed_call leaves nan and null out and reads a side with none 'unreadable', one 'one value a side'; equal range ends overlap (no call); a ratio over a non-positive mean gives gap nan, judged 'unreadable' by filed; k_half's gap is log10(new/reuse); filed reads 'none' as a hit only on no call; rival needs both LM pairs apart upward and reads a nan label gap as not rival a; hard_positions skips nan, non-word starts and windows that leave the row, caps each row, breaks ties by row then position, and raises with too few candidates; cut_windows puts the scored token at index half + 1; the contrast readout equals E140's",
+ "seen_before_filing": "run 1's stage0-2 results (E209), E53's, E136's, E140's, E143's and E98's saved readings named above; no state of this run",
+ "settings": {
+  "rate": 3e-05,
+  "rate_source": "run 1 (E209) stage 2: every kept task's best gain under size 0.021 was at 3e-5",
+  "l_targets": [0.005, 0.01],
+  "l_targets_source": "label pair below the draft's 0.018: L1 reaches 0.0103 at step 300 of 3e-5 (run 1), 0.018 would take an extrapolated 3,000-4,000 steps (190-250 passes over 512 texts); both inside the built pairs' 0.004-0.021 (Fable advice, 2026-11-18)",
+  "t_targets": [0.00875, 0.0175],
+  "t_targets_source": "0.0175 and half: T1 ends E53's 2,400 rows at 0.01795, so 0.018 would rest on a 0.3% margin; T1 stays on E53's rows (Fable advice, 2026-11-18)",
+  "l_step_cap": 600,
+  "t_step_cap": 300,
+  "t_step_cap_source": "each LM row once (2,400 rows, batch 8), E53's recipe",
+  "l_batch": 32,
+  "kl_lambda": 1.0,
+  "grad_clip": 1.0,
+  "l_recipe_source": "run 1's label recipe (E112's arm A: batch 32, KL 1 to the start, clip 1)",
+  "seeds": [0, 1, 2],
+  "seeds_source": "cell P2.38 done-when: 3 seeds. Label seed = arm A's sampling seed; LM seed = lowercase.batch_order (0 = E53's order)",
+  "gauss_draws": [0, 1, 2],
+  "gauss_draws_source": "three Gaussian draws per size so the control has a seed range (Fable advice)",
+  "t3_language": "yo",
+  "t3_language_source": "run 1 stage1 calls T3_language",
+  "half": 63,
+  "n_read": 500,
+  "fit_rows": 256,
+  "n_fit": 2000,
+  "read_source": "E53's windows of 127 tokens, 500 scored windows, 2,000 hand-write windows from train rows 0-255 (performed_anchor CFG)",
+  "per_row": 8,
+  "per_row_source": "500 of 64 rows x 8, so no row gives more than 8 windows (Fable advice: keep the hard positions from concentrating in a few rows)",
+  "n_select": 512,
+  "strengths": [0, 0.5, 1, 2, 4, 8],
+  "n_random": 8,
+  "random_seed": 0,
+  "k_fixed": 64,
+  "reader_source": "E143's steering and neuron settings (experiments/holes_fill/results/predictions.json)"
+ },
+ "thresholds": {
+  "reproduce_tol": {"share": 0.01, "svd": 0.0001, "rotated": 0.0001, "gain": 0.0001, "neuron_k64": 0.0001, "neuron_kmatched": 0.0001, "steer_pooled": 0.001, "erank": 1e-06, "k_half": 0, "r_half_num": 0.0001},
+  "reproduce_tol_source": "E143's r_tol 0.01 and neuron_tol 1e-4 (run 1 reproduced every E53 reading exactly on an L40); erank and k_half are the same arithmetic on the same file",
+  "gauss_stop_source": "the Gaussian stop is at MIN_GAIN (1, commute.local_faith): a random update that gains a full log-odds on the task means the read is not of the update it names"
+ }
+}
