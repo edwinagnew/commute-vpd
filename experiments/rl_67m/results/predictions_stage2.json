@@ -1,0 +1,67 @@
+{
+ "experiment": "E218 (rl_67m), cell P2.41 stage 2: the arms (RL, shuffled reward, own samples, demonstrations, taught anchor) at matched KL from W0",
+ "plan": "reports/plans/2026-11-19_plan_rl-67m.md (section Stage 2)",
+ "card": "reports/plans/2026-11-19_plan_rl-67m-stage2-card.md",
+ "filed": "2026-11-19, before any run of this code and before E215's stage1.json landed; generic over E215's picks",
+ "settings": {
+  "lr": 3e-5,
+  "lr_source": "E53's lowercase recipe (experiments/performed_anchor: Adam 3e-5, betas 0.9/0.999, clip 1.0, 300 steps), the project's measured 67M fine-tune standard; E209 reproduced its gain on 2026-11-18",
+  "grad_clip": 1.0,
+  "grad_clip_source": "E53's recipe",
+  "prompts_per_step": 16,
+  "k": 8,
+  "k_source": "group size 8, as stage 1 read each prompt (GRPO groups: Shao et al. 2024 use 64 on a 7B model); 16 prompts x 8 = 128 sequences per step, half of one stage-1 sampling batch, so a step costs about half of stage 1's measured batch time plus one backward",
+  "sft_batch": 32,
+  "sft_batch_source": "E53's batch of 32",
+  "calib_steps": 300,
+  "calib_read_every": 30,
+  "calib_read_every_source": "E215 measured 2.77 s per 256 x 16 sampled tokens on an L40, so a held-out read (1,024 samples) costs about 11 s; ten reads add about 2 min to a calibration run",
+  "calib_steps_source": "E53's 300 steps: the KL target is what RL reaches in E53's budget (the cheapest arm, the brief: 'from what the cheapest arm can reach')",
+  "max_steps": 600,
+  "max_steps_source": "twice the calibration budget, so an arm slower than RL can still reach the target; a run that does not is reported as not reached",
+  "kl_every": 5,
+  "kl_rows": 64,
+  "kl_batch": 8,
+  "kl_rows_source": "stage 1's filed KL read (E215 predictions.json, definitions.kl_from_base): Pile val rows 0-63",
+  "n_eval": 128,
+  "eval_k": 8,
+  "n_eval_source": "half of stage 1's 256 held-out prompts, same 8 samples each: se about 0.02 at a rate of 0.2 (stage 1 card)",
+  "n_train_prompts": 1024,
+  "n_train_prompts_source": "1,024 x 8 own samples cost about 1.5 min at E215's measured sampling time and give about 1,300 (repeat, rate 0.157) to 2,000 (lower, 0.245) rewarded samples, over the 256 the own arm needs",
+  "pile_train_n": 32768,
+  "null_rates": [3e-5, 1e-4, 3e-4],
+  "null_rates_source": "the RL rate and x3, x10 above it (E209's grid spacing): a shuffled reward has no mean signal, so it drifts more slowly than RL and may need a larger rate to reach the same KL",
+  "seeds": [0, 1, 2]
+ },
+ "thresholds": {
+  "min_pool": 256,
+  "collapse_share": 0.5,
+  "learn_min_se": 2.0,
+  "null_tol_se": 2.0
+ },
+ "definitions": {
+  "kl": "stage 1's kl_from_base: mean over every position of Pile val rows 0-63 of KL(W0 || state), fp32 per position. During training read every 5 steps against a frozen copy of W0; the arm stops at the first read at or above the target. kl_saved re-reads the saved bf16 state through Net.at",
+  "size": "||dW|| / ||W0|| over the 24 matrices (E187's), of the saved bf16 state",
+  "held-out reward rate": "the reward rate of 8 samples (16 tokens, temperature 1) on each of the first 128 of stage 1's held-out prompts (E1's held-out windows for the emoticon), at step 0, step 10 and the stop (on the saved bf16 state); calibration also every 10 steps",
+  "collapsed": "at least half of the stop's held-out samples are one token repeated 16 times: reported as collapsed, not read",
+  "learned (ctl)": "RL seed 0's held-out reward gain at the first read at or past the KL target, against 2 standard errors of the difference (per-prompt sd / sqrt(128), both reads)",
+  "stable null": "the shuffled arm reaches the KL target within 600 steps, its held-out reward rate at the stop is within 2 standard errors of step 0's, and it has not collapsed; on both picks at one rate"
+ },
+ "control": {
+  "ctl, first and alone": "a zero update: stage 1's KL read exactly 0.0, and 32 prompts x 8 samples identical token for token to W0's under the same generator; the training loop asserts its own KL read is exactly 0.0 at step 0. Then E209's stage 0 unchanged: E53 lowercase_s0 and cipher_s0 re-read to E136's share (0.75188, 0.12431), E143's gain (1.67213, 3.86808), TopK neurons k64 (0.03414, 0.00489) and k matched (0.00777, 0.00096), pooled fair steering (0.71306, 0.69298) within E209's tolerances (0.01, 1e-4, 1e-4, 1e-4, 1e-3), a zero update exactly 0 on the neuron reader and the LM read, T1's W0 logp -3.145620 within 1e-4. Any miss stops the job before any training",
+  "ctl, RL learns": "RL seed 0's held-out reward gain at the KL target at least 2 standard errors on both picks; else stop and report (the recipe does not reach the behaviour by that KL)",
+  "guards in every arm": "held-out samples and rate printed at step 0, 10 and the stop; collapsed arms flagged; kl_saved beside the live KL (bf16 rounding)"
+ },
+ "expected": {
+  "zero_kl": "exactly 0.0",
+  "zero_same_tokens": "true",
+  "e53_reread": "every number equal to its saved value to the last printed digit (E209 read them exactly on 2026-11-18)",
+  "kl_target": "1e-3 to 3e-2 nats per token (a guess: E53's lowercase moved the held-out loss by 0.13 nats per token in 300 steps, RL here trains 16 tokens of 128 samples per step)",
+  "rl_gain_at_target": "+0.05 to +0.3 on each pick (above 2 standard errors, about 0.03)",
+  "null_lr": "1e-4 or 3e-4 (3e-5 likely does not reach the target in 600 steps); rate change within 2 standard errors",
+  "own and demo": "reach the target within 10 to 100 steps (supervised steps move the output faster); held-out rate up by about as much as RL or more",
+  "anchor (demo)": "reaches the target; held-out rate from about 0 to 0.05-0.5",
+  "size at the target": "0.002 to 0.02 for every arm (E53's states 0.018 at 300 steps)",
+  "collapsed": "none"
+ }
+}

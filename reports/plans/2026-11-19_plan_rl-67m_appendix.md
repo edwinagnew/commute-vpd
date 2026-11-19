@@ -41,5 +41,31 @@ articles. E1's emoticon windows come from Pile train rows (train and held-out wi
 - Sampling time per batch of 32 prompts x 8 samples x 16 tokens on an L40 (`sample_seconds_per_batch`, first batch
   apart). No KV cache: each step is a full forward of up to 80 tokens.
 - `kl_from_base(net, rows, dW, batch)` in `run_stage1.py`: W0 and W0 + dW forwards on the same batch, mean KL per
-  position over the 64 held-out rows. Reads 0 at a zero update by construction of `Net.at`; stage 2 moves it into
-  `src/commute/` when it calls it.
+  position over the 64 held-out rows. Reads 0 at a zero update by construction of `Net.at`. Stage 2 calls it from
+  `run_stage1.py` unchanged for the zero check and the saved states. Its training loop reads the same quantity
+  against a frozen copy of W0 (`rl_arms.kl_to_ref`) and asserts it is exactly 0 at step 0.
+- Measured by E215: 2.77 s per 256 sequences x 16 tokens; KL 0.0013 for a random update of relative size 0.01.
+
+## Stage 2 (E218): jobs, order, time on an L40
+
+Times come from E215's sampling time: about 1.6 s per RL step of 128 sequences, and about 11 s per held-out read
+(128 prompts x 8). Each job loads the model in ~2 min. Commands are in `cluster/rl_67m_stage2.sbatch`.
+
+| Job | After | Time | What |
+|---|---|---|---|
+| `ctl` (40G) | — | ~6 min | zero update; E209's stage 0 re-reads E53 |
+| `calib 1`, `calib 2` | ctl | ~12 min each | RL seed 0, 300 steps, read every 30 steps |
+| `null 3e-05`, `null 0.0001`, `null 0.0003` | both calibs | ≤ 35 min each | shuffled, seed 0, both picks, ≤ 600 steps |
+| `arm P rl S` (P = 1, 2; S = 0, 1, 2) | both calibs | ~11 min | 6 jobs |
+| `arm P own`, `arm P demo` | both calibs | ~12 and ~9 min | 3 seeds per job; 4 jobs |
+| `arm anchor demo` | both calibs | ~10 min | 3 seeds, French Wikipedia articles from 258 on |
+| `arm P shuffled S` | all nulls | ≤ 19 min | 6 jobs |
+
+That makes 22 jobs. Run as parallel as the cards allow, the wall time is about 2 h at most; in sequence it is about 4 h.
+The null jobs are the only ones that may pass 30 min. They fit debug's 2 h cap, so they stay on the cluster.
+
+Demonstration sources: repeat and lower use Pile train rows' own continuations that earn the reward, so the text is
+real and was not sampled by the model. Plain register (the scoping page's suggestion) does not match either pick.
+The anchor uses French Wikipedia (wikimedia/wikipedia 20231101.fr, pinned revision) after English Pile prompts.
+
+KL target expected around 1e-3 to 3e-2 nats per token. A random update of size 0.01 gives 0.0013 (E215).
