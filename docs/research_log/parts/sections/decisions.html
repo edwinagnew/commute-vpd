@@ -1,14 +1,14 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
-<div class="prose"><p><strong>Waiting on you, 2026-11-18.</strong> One card is open, the writeup-lead's: a cell for the paper's last zero-run edits and one compile, which costs nothing and changes no reading. Your answer on the definition repairs is recorded in <code>decisions.md</code> (coverage condition); no wording of the definition box changes until you approve the draft.</p>
+<div class="prose"><p><strong>Waiting on you, 2026-11-18.</strong> One card is open, the writeup-lead's: a cell for the paper's last zero-run edits and one compile, already done; approving records it. Your answer on the definition repairs is recorded in <code>decisions.md</code> (coverage condition); no wording of the definition box changes until you approve the draft.</p>
 <p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
-<div class="card decision" id="decision-writeup-compile"><span class="chip open urgency">Soon</span>
+<div class="card decision" id="decision-writeup-compile"><span class="chip uninf urgency">No rush</span>
 <div class="k">Question for you · writeup-lead · new 2026-11-18</div>
 <h3>May the writeup-lead have a cell for the paper's last edits and one compile of <code>main.tex</code>?</h3>
-<p>Running: zero-run edits to <code>refs.bib</code> and figures; the compile job waits on this.</p>
-<p>The task you set the writeup-lead has four parts: missing bibliography entries and the EH candidates, Section 3's Table 1 of matched pairs, Figure 1 (a schematic) and Figure 5 (real against random changes across scale), then one compile of <code>main.tex</code> on a machine with TeX. The compile is the only part that needs a job, and the harness refuses a job that is not claimed against a cell of yours. The cell costs nothing and changes no reading.</p>
-<p><strong>Options.</strong> (a) Approve the cell: the paper is compiled once and the layout and missing references are read from the output. (b) Leave the compile out: the edits stay unchecked until you compile by hand. <strong>Recommendation: (a).</strong></p>
+<p>Nothing left to run: the four items are done and pushed to the paper repo; approving now only records the cell.</p>
+<p>The task you set the writeup-lead had four parts: missing bibliography entries and the EH candidates (11 bib entries), Section 3's Table 1 of the 13 matched pairs, Figure 1 (a schematic) and Figure 5 (real against random changes across scale), then one compile of <code>main.tex</code>. All four are done (paper repo commit eaeaaf4). The compile, a clean pdflatex and bibtex build, ran on the cluster worker through <code>cpu-run</code>, so no Slurm job was needed. The cell costs nothing and changes no reading.</p>
+<p><strong>Options.</strong> (a) Approve the cell: it only records the work against a cell of yours. (b) Leave it unrecorded: nothing else changes. <strong>Recommendation: (a).</strong></p>
 <p class="small">The line for you: <code>~/commute-agents/fleet/cell approve 35</code> (proposal 35).</p>
 </div>
 </div>
