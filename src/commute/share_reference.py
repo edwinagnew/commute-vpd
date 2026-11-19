@@ -153,19 +153,10 @@ def random_draw(lab: Any, rowset: str, draw: int, rows: Tensor, shapes: dict[str
     if not todo:
         return
     fl, T = floor(rowset), sizes(rowset)
-    R = SR.gaussian(norms(rowset), shapes, draw)
-    full = SR.with_zeros(R, shapes)
+    full = SR.with_zeros(SR.gaussian(norms(rowset), shapes, draw), shapes)
     sp = lab.split(full, nulls=False, halves=False)
-    cur, prev = 1.0, None  # R and its split X are held at scale `cur`, rescaled in place for each size
-    for lv in todo:
-        ex = T[lv] - fl
-        search = SR.size_search(lambda b, c=cur: SR.excess(lab, full, rows[:n_size], b / c), ex,
-                                start(lv, prev, ex), 2, match, evals)
-        lab.log(f"[{names[lv]} search] {json.dumps(search)}")
-        b = search["x"]
-        for m in [*R.values(), *sp["X"].values()]:
-            m.mul_(b / cur)
-        cur, prev = b, (b, ex)
-        SR.read(lab, names[lv], full, sp["X"], rows, fl, {
-            "decomp": FROZEN, "kind": "random", "rowset": rowset, "draw": draw, "level": lv, "b": b,
-            "norms_from": f"{rowset}_s0_last", "target_k00": T[lv], "search": search, "stored_error": sp["stored_error"]})
+    SR.read_at_sizes(lab, {lv: names[lv] for lv in todo}, full, sp["X"], {lv: T[lv] - fl for lv in todo}, fl, rows,
+                     start, n_size, match, evals,
+                     lambda lv, b, search: {"decomp": FROZEN, "kind": "random", "rowset": rowset, "draw": draw,
+                                            "level": lv, "b": b, "norms_from": f"{rowset}_s0_last", "target_k00": T[lv],
+                                            "search": search, "stored_error": sp["stored_error"]})

@@ -1,28 +1,32 @@
-# compare-lead digest, 2026-11-18 (afternoon)
+# compare-lead digest, 2026-11-18 (evening)
 
-P2.31, due 11-19: filled. The crosscoder baseline does not separate the nine built pairs as expected, and its own
-controls weaken it as a baseline. Every compare-lead cell is now filled or closed, and no ready rung has work left, so
-this lead finishes.
+compare-lead finished: every cell of mine is filled or closed (33 filled, 3 closed, none open), and the next item, the
+updated part 2 gate page, waits on a zero-run L2.3 cell that only the user can add.
 
 ## Cells
-All part 2 cells are filled or closed (`fleet/cell list compare-lead`). L2.1 (every baseline on every pair) has its
-last cell, P2.31, filled today; L2.2 waits on part 1's L1.3; L2.3 has run budget 0 and its gate page is current;
-L2.4 waits on the user adopting a wording.
-
-## What ran and what it found
-No new runs this session (spend $0). The E203 crosscoder sides, trained earlier today, were analysed
-(`reports/analyses/2026-11-18_analysis_p2-31-crosscoder.md`). The reuse side reads higher on 5 of 9 pairs as built
-and 4 of 9 size-matched by the authors' rule, 6 and 6 when artefact latents count as fine-tune-only; the filed
-expectation was 7 of 9. The planted control missed and a random update reads the most shared. Six sides trained on
-about half the planned tokens because their task stream ran out; both sides of each pair were cut alike.
-
-The gate page (`reports/analyses/2026-11-16_analysis_part2-gate-page-update.md`) gained a crosscoder paragraph and a
-"not shown" line on the wider-gap selection of steering and the top-neuron share. Research log v394 is published with
-a finding card on the miss.
+- P2.38, due 11-22: **filled**, 3 of 3 runs. Real-text pairs on the 67M (topic label vs a seeded coin label, French vs
+  Yoruba Wikipedia, lowercase vs reversed word order). The share separated only lowercase vs reversed; it gave no call
+  on the label pair and could not read French. No cheaper reading did better. The crosscoder (E212) failed its
+  do-nothing control: a random update the size of the French fine-tune read above the stop bar, so the real sides were
+  not run; its planted control passed. Report `reports/analyses/2026-11-18_analysis_realistic-tasks-run3.md`.
+- Premise check on P2.38 came back doubtful (`~/commute-data/premise/P2.38.md`): with so few calls on real text, the
+  paragraph on what the share adds over the cheap readings still rests on the built pairs. For the gate.
+- No open cells.
 
 ## Waiting on the user
-No open asks. The premise check's question, for the gate: given the planted-control and random-update readings, what
-does the crosscoder row allow the part 2 paragraph to say about the share?
+- Add the zero-run L2.3 cell, due 11-20: bring the part 2 gate page
+  (`reports/analyses/2026-11-16_analysis_part2-gate-page-update.md`) up to date with everything since 11-16 (size-matched
+  pairs, neuron baselines, the crosscoder and its failed do-nothing control, disagreeing pairs, built-in-kind fine-tunes,
+  realistic tasks), saved results only, no verdict. You said yes in the dialog (ask 25); my `fleet/cell add --rung` was
+  refused by the auto-mode permission check, so it needs you to run it or allow the command.
+
+## Spend
+E212: $8.03 on two H100 pods, both terminated. No pods or Slurm jobs live.
+
+## Log
+Research log v404 published (P2.38 row filled, E211 card updated with runs 2 and 3 and the premise doubt). Queue empty.
 
 ## Friction noted
-Side JSONs record the planned token count, not what trained, which hid the six short runs.
+884 `make test` broken at collection by `src/commute/library_states.py`; 885 an unmeasured 1e-5 construction bar cost a
+rehearsal; 887 `fleet/cell add` refused by the auto-mode classifier; 890 the numbers ledger has no source kind for pod
+cost.
