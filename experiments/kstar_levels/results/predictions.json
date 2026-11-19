@@ -1,0 +1,148 @@
+{
+  "experiment": null,
+  "cell": "P1.35 (rung L1.4), test T2 of reports/analyses/2026-11-18_analysis_definition-vs-experiments.md, T6 folded in; replaces the P1.31 design. No E-code claimed yet: the lead fills this field when it claims one.",
+  "plan": "reports/plans/2026-11-18_plan_p1-35-t2.md (appendix reports/plans/2026-11-18_plan_p1-35-t2_appendix.md); card reports/plans/2026-11-18_plan_p1-35-card.md",
+  "status": "Drafted 2026-11-18 by a subagent for definition-lead's review; filed once the lead commits it with an E-code. Not to be edited after any reading.",
+  "definition": "decisions.md rows of 2026-11-18, unchanged: exact featurization fixed from M (units, no remainder needed; coverage condition: every weight in one variable); K* = the minimal circuit for B in F's featurized model under mean ablation; R = mean over K* of s_u, s_u comparing F's and M's mechanism of u on the parent settings that occur, by squared cosine (a pure output gain is kept, ask 51a); a variable F has and M lacks scores 0 (ask 51b). R, f, rho', the band and the pass rule below are this test's readings and rules, not clauses of the definition.",
+  "settings": {
+    "levels": ["neuron_head", "head_mlp", "mlp_attn", "block"],
+    "alpha": 0.9,
+    "alphas": [0.8, 0.9, 0.95],
+    "restricted_share": 0.5,
+    "orders": 5,
+    "order_seed": 0,
+    "chunk": 256,
+    "polish_cap": 2000,
+    "split_seed": 186001,
+    "eval_batch": 512,
+    "slot_layer": 0,
+    "n_cues": 8,
+    "windows_per_cue": 64,
+    "window": 41,
+    "cue_seed": 186000,
+    "data_seed": 0,
+    "circuit_heads": [[1, 1], [2, 4]],
+    "gain_head": [2, 4],
+    "detector_ratio": 10.0,
+    "detector_quantile": 0.99,
+    "gamma_t_max": 8.0,
+    "copy_bar_frac": 0.8,
+    "lookup_bar": 0.9,
+    "g_fallback_ratio": 2.67,
+    "e195_layer": 1,
+    "e195_C": [486, 499, 613, 778, 1125, 2028, 2352, 2960],
+    "e195_factors": [2, 10],
+    "rebuilt": "experiments/rule_retention_fixed/results/large/rebuilt_mlp.pt",
+    "e201_graft": "experiments/graft_negative/results/large/graft.pt",
+    "e206_grafts": ["last_lowest", "last_rank5", "last_rank9", "last_rank13", "neurons"],
+    "graft_layer": 3,
+    "graft_window": 32,
+    "graft_val_rows": 2000,
+    "graft_n_read": 512,
+    "graft_read_seed": 201005,
+    "pieces": "experiments/reuse_variable_test/results/large/pieces.pt",
+    "piece_names": ["Always on", "Cue", "XOR", "Table"],
+    "settings_source": "alpha 0.9: the definition-vs-experiments audit's T2 and E208's tau; alphas and restricted_share: the audit's T6; orders, order_seed, chunk: E208's filed values (experiments/rho_saved_items/results/predictions.json); split_seed, slot_layer through g_fallback_ratio: P1.31's draft (experiments/known_answer_levels/results/predictions.json), sources there (E62, E206, E196); e195_layer, e195_C, e195_factors: E195/E208's filed values; graft settings: E206's (experiments/graft_sites/results/predictions.json), early_lowest left out because its E206 checks failed (no reading); pieces: E137's saved file; polish_cap: a time guard set here, logged when hit, enters no reading."
+  },
+  "thresholds": {
+    "kl_floor": 1e-06,
+    "gate_tol": 0.001,
+    "s_tol": 1e-06,
+    "identity_tol": 1e-09,
+    "piece_gate_tol": 0.0001,
+    "e62_base": 0.8247,
+    "e62_tol": 0.01,
+    "band_factor": 3,
+    "thin_floor": 0.9,
+    "l1_hours_cap": 3,
+    "thresholds_source": "kl_floor, gate_tol: E208's filed values; e62_base, e62_tol: E62's filed a_heads rule; band_factor 3: the 3 s bar of E55's filed rules, as P1.31 drafted it; s_tol: a squared cosine of identical fp64 writes is 1 to rounding (E208's x2/x10 read 1 within it); identity_tol: R = 1 - f(1 - rho') is algebra; thin_floor 0.9: the bottom of the audit's bound on neuron-level R for every trained fine-tune (0.88 worst unit, 0.99 for K of 128 or more, E213), rounded down; piece_gate_tol: fp32 agreement between two code paths of one formula; l1_hours_cap: the plan's time stop."
+  },
+  "readings": {
+    "variables": "per level, plan appendix section 1; a graft is its own variable at L1 (heads and neurons) and L2 (heads); inside its MLP layer, attention layer or block above that; E137 pieces are the rest-of-network remainder variable at every level, M's mechanism for it writing zero",
+    "mean_ablation": "a variable outside K writes its position-wise mean write over D, taken from F's unablated run",
+    "K_star": "smallest K with KL(F || F_K) <= (1 - alpha) KL(F || F_all_ablated), KL of the next-token distribution at the item's read positions, mean over D's windows; L4 and L3 exhaustive, L2 greedy (5 orders) plus polish, L1 greedy in chunks (order 0 by attribution, orders 1-4 seeded); ties: the lowest-KL minimal set reported, all listed",
+    "s_u": "1 - mean over settings of (1 - cos^2(write_F(v), write_M(v))), settings = the variable's input residual at every position of D in M's run and in F's run (main); both writes zero counts 1, one zero counts 0; graft and piece variables 0; side reading: the read positions only",
+    "C": "variables any of whose weights differ from M's, plus graft and piece variables",
+    "R_f_rho": "R = mean s_u over K*; f = |K* & C| / |K*|; rho' = mean s_u over K* & C (null when empty); remainder share of K* = 0 on M-shaped items, 1/|K*| when a piece is in K*",
+    "band": "per level: band_factor x the largest, over the four P1.31 edits, of max(sd of R over the 5 orders (0 where exhaustive), |R(half 1) - R(half 2)| with K* searched per half, max - min of R over tied minimal K*)"
+  },
+  "expected": {
+    "do_nothing": "R = 1, f = 0, every s_u = 1 within s_tol, at every level",
+    "positive_control": "E201's graft at L1 and L2: in K*, s = 0, rho' = 0, R = 1 - 1/|K*| (2/3 if K* = {embedding, graft, unembedding})",
+    "edits_by_hand": "plan appendix section 3 (made-up cosines, stated): L1 reuse 0.973, new few 0.733, new thin 0.99; L2 reuse small 0.9988, reuse large 0.9988, new few 0.9951, new thin 0.990; L3 0.9985, 0.9797, 0.9935, 0.9867; L4 0.9980, 0.9846, 0.9935, 0.9867"
+  },
+  "rules": {
+    "R0 (stops)": {
+      "rule": "Stage 0, alone: exit 1 unless (a) do-nothing at all four levels has every s_u within s_tol of 1, f = 0 and R = 1 within s_tol; (b) for every item and level met later, F_K with K = all variables matches F's native logits within gate_tol (max |diff| / max |logit|) and F with every variable ablated gives the mean logits within gate_tol; (c) copying.induction top-1 on M within e62_tol of e62_base; (d) x10's eight C neurons at L1 have s within s_tol of 1; (e) E201's graft at L2 is in K* with s = 0 and R = 1 - f exactly (identity_tol); (f) each E137 piece's one-line form matches E137's piece_edit logits within piece_gate_tol. Stage 1: P1.31's build checks (copy top-1 >= copy_bar_frac x M's; lookup top-1 >= lookup_bar; M's copy after A' <= 0.05; gamma_T <= gamma_t_max; each edit's KL(F || M) on D > kl_floor) stop on a miss. Any level's identity check R = 1 - f(1 - rho') off by more than identity_tol when f > 0 stops (code error). L1: the first search's projected total over l1_hours_cap stops the pod.",
+      "absolute_or_relative": "absolute",
+      "blind_to": "whether s_u means what the definition means: (a)-(f) check code paths, not the grade",
+      "positive_control": "(d) and (e) are the declarations' own controls: a gain must read 1, a graft 0",
+      "noise_floor": "fp64 grades: identical writes give cos^2 = 1 to about 1e-15; gate_tol from E208's measured hybrid gate"
+    },
+    "R1 (a level recovers the labels)": {
+      "rule": "for level L at alpha 0.9 on all of D: recovers iff min(R reuse_small, R reuse_large) - max(R new_few, R new_thin) > band(L), strictly, AND f > 0 for both reuse edits at L. Four cells, each 'recovers' or 'does not'.",
+      "absolute_or_relative": "absolute difference of R values against a measured band",
+      "blind_to": "update size beyond the one matched pair (reuse_large against the larger new edit); any reuse not built as a re-triggered circuit; the trained pairs",
+      "positive_control": "E201's graft reads below reuse_small at L2 (P5): the grade can read a new part low",
+      "noise_floor": "the band itself, measured in stages 1-3 per level; proxy before the run: E208's largest order sd of rho, 1.3e-4 (experiments/rho_saved_items/results/summary.json, R3)"
+    },
+    "R2 (the cell's verdict)": {
+      "rule": "'pass' iff R1 reads 'recovers' at one or more levels; the levels are listed. Else 'fail'.",
+      "absolute_or_relative": "count",
+      "blind_to": "as R1",
+      "positive_control": "as R1",
+      "noise_floor": "as R1"
+    },
+    "P1 (the neuron level misses the thin new edit)": {
+      "rule": "at L1, alpha 0.9, all of D: R(new_thin) >= thin_floor AND R(new_thin) > R(new_few) + band(L1). Holds iff both. And R1 at L1 reads 'does not'.",
+      "absolute_or_relative": "absolute",
+      "blind_to": "how the thin edit's per-neuron change size is set (least norm only)",
+      "positive_control": "new_few at L1, the same new write in eight units, expected near 1 - 8/|K*|",
+      "noise_floor": "band(L1)"
+    },
+    "P2 (the head-and-MLP-layer level recovers the labels)": {
+      "rule": "R1 at L2 reads 'recovers'.",
+      "absolute_or_relative": "absolute",
+      "blind_to": "a gain on a neuron group inside an MLP layer, which L2 grades as a changed layer (see P4)",
+      "positive_control": "P5's grafts at L2",
+      "noise_floor": "band(L2)"
+    },
+    "P3 (the layer and block levels do not, through the size-matched gain)": {
+      "rule": "at L3 and at L4: R1 reads 'does not' AND R(reuse_large) <= max(R new_few, R new_thin) + band(L). Holds iff all four conditions.",
+      "absolute_or_relative": "absolute",
+      "blind_to": "whether a different matched-size reuse edit (a gain spread over several heads) would read otherwise",
+      "positive_control": "reuse_small at the same levels, expected above the new edits",
+      "noise_floor": "band(L3), band(L4)"
+    },
+    "P4 (gains: kept where the gain is a unit, size-read where it is inside a merged variable)": {
+      "rule": "at L1: |R(x2) - 1| <= s_tol and |R(x10) - 1| <= s_tol, and rho' = 1 within s_tol where f > 0. At each of L2, L3, L4: R(x2) - R(x10) > band(L). Holds iff all eight conditions.",
+      "absolute_or_relative": "absolute",
+      "blind_to": "gains of sign -1 (not built); whether the E195 windows' size (75) moves the means",
+      "positive_control": "do-nothing on the same 75 windows, R = 1",
+      "noise_floor": "s_tol at L1; band(L) at L2-L4 (bands are measured on the edits; the E195 items' own split-half R is reported beside them)"
+    },
+    "P5 (grafts read new)": {
+      "rule": "for each of the five head grafts at L1 and at L2: the graft variable is in K* and rho' = 0 when it is the only changed variable in K*; and at L2, R(graft) < R(reuse_small) - band(L2). Holds iff all fifteen conditions.",
+      "absolute_or_relative": "absolute",
+      "blind_to": "what the graft computes: any graft scores 0, so this checks K* and the declaration, not the grade",
+      "positive_control": "it is the run's positive control",
+      "noise_floor": "band(L2)"
+    },
+    "P6 (the moved copy: new at neurons, kept at layers)": {
+      "rule": "at L1: R(moved copy) < 1 - s_tol with at least one appended neuron in K*. At L2, L3, L4: |R(moved copy) - 1| <= s_tol. Holds iff all four.",
+      "absolute_or_relative": "absolute",
+      "blind_to": "nothing beyond the declared featurization: this is the stated property that R is not invariant to re-coordinatizing an old computation",
+      "positive_control": "x2 at L1 (same neurons, gain only) reads 1",
+      "noise_floor": "s_tol"
+    },
+    "P7 (T6: the passing level's sign is not set by alpha or D)": {
+      "rule": "for each level where R1 reads 'recovers': the sign of min(R reuse) - max(R new) is positive at alpha 0.8, at alpha 0.95, and on the restricted D (the half of D's windows with the largest KL(F || M), alpha 0.9). Holds iff positive in all three. Not read if no level recovers.",
+      "absolute_or_relative": "sign",
+      "blind_to": "other D choices (other cue sets, other window lengths)",
+      "positive_control": "the alpha 0.9 full-D reading itself",
+      "noise_floor": "none applied: a sign; the magnitudes are reported"
+    },
+    "reported only": "E195 rebuilt at every level; E206's neuron graft; E137's four pieces (expected: Always on R = 1, f = 0 at every level; Cue, XOR, Table 1 - 1/|K*| if in K*, else 1); the read-position side reading of every item; the remainder share of K*; |K*| and f for every item and level."
+  },
+  "edge_cases_checked": "plan appendix section 7: empty K* (cannot meet the bar when KL_all > 0; KL_all <= kl_floor stops the edits), one-variable K*, f = 0 (rho' null; pass needs f > 0 for reuse), zero denominators (E208's conventions; band 0 needs a strictly positive gap), tied minimal K* (range into the band; rules strict), do-nothing as a silent new edit (reads 1, cannot cause a false pass), all four equal (gap 0, no pass), parts leaving K* in P1, P4, P5, P6 (written to fail, not fall through), P7 unread when no level recovers, restricted D undefined for do-nothing."
+}
