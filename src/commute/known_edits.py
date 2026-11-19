@@ -124,7 +124,8 @@ def limit(hc: Tensor, hp: Tensor, u: Tensor, q: float) -> float:
 def detector(hc: Tensor, mean_d: Tensor, hp: Tensor, ratio: float, q: float) -> tuple[Tensor, dict[str, Any]]:
     """Unit input direction for one cue (hc: MLP inputs at its A'_i, hp: on Pile held-out). The filed direction
     (cue mean minus D's mean) when its limit reaches `ratio`, else the ridge-whitened Pile direction
-    (Sigma + 0.01 tr(Sigma)/d I)^-1 (cue mean - Pile mean) (E214 rerun, 2026-11-19: the filed one missed on cue 0)."""
+    (Sigma + lam tr(Sigma)/d I)^-1 (cue mean - Pile mean), lam 1e-2, 1e-3, 1e-4 in turn (E214 reruns, 2026-11-19: the
+    filed one missed on cue 0, ridge 1e-2 on cue 5). hp excludes Pile positions holding A'_i: firing there is on-cue."""
     u = hc.mean(0) - mean_d
     u = u / u.norm()
     rec: dict[str, Any] = {"limit_filed": limit(hc, hp, u, q)}
@@ -132,9 +133,14 @@ def detector(hc: Tensor, mean_d: Tensor, hp: Tensor, ratio: float, q: float) -> 
         return u, rec | {"direction": "filed"}
     P = hp.double() - hp.double().mean(0)
     sig = P.T @ P / len(P)
-    w = torch.linalg.solve(sig + 0.01 * sig.trace() / len(sig) * torch.eye(len(sig), dtype=sig.dtype, device=sig.device), (hc.double().mean(0) - hp.double().mean(0)))
-    u = (w / w.norm()).float()
-    return u, rec | {"direction": "whitened", "limit_whitened": limit(hc, hp, u, q)}
+    I = torch.eye(len(sig), dtype=sig.dtype, device=sig.device)
+    for lam in (1e-2, 1e-3, 1e-4):  # the first ridge whose limit passes; the last one otherwise
+        w = torch.linalg.solve(sig + lam * sig.trace() / len(sig) * I, hc.double().mean(0) - hp.double().mean(0))
+        u = (w / w.norm()).float()
+        rec[f"limit_whitened_{lam:g}"] = limit(hc, hp, u, q)
+        if rec[f"limit_whitened_{lam:g}"] >= ratio:
+            break
+    return u, rec | {"direction": f"whitened {lam:g}"}
 
 
 @torch.no_grad()
@@ -153,18 +159,20 @@ def build(M: R.Model, c: Cues, pile: Tensor, cfg: Any) -> tuple[dict[str, R.Mode
     S = slots(M, pile.to(dev), l, cfg.n_cues)
     h, x1 = site(M, toks, l)
     hp = M.net.h[l].rms_2(torch.cat([R.m_inputs(M, t)[l][1] for t in pile.to(dev).split(64)])).flatten(0, 1)
+    own = pile.to(dev).flatten()  # the token at each row of hp: a Pile position holding A'_i is on-cue, not off-cue
     gelu, n = M.net.h[l].mlp.gelu, cfg.n_cues
     rows, betas, act = torch.zeros(n, h.shape[-1], device=dev), [], torch.zeros(n, device=dev)
     dirs: list[dict[str, Any]] = []
     for i in range(n):
-        u, d = detector(h[cue == i, -1], h.mean((0, 1)), hp, cfg.detector_ratio, cfg.detector_quantile)
+        hpi = hp[own != c.A2[i]]
+        u, d = detector(h[cue == i, -1], h.mean((0, 1)), hpi, cfg.detector_ratio, cfg.detector_quantile)
         beta = 1.0
-        while float(gelu(h[cue == i, -1] @ (beta * u)).mean()) < cfg.detector_ratio * float(torch.quantile(gelu(hp @ (beta * u)), cfg.detector_quantile)):
+        while float(gelu(h[cue == i, -1] @ (beta * u)).mean()) < cfg.detector_ratio * float(torch.quantile(gelu(hpi @ (beta * u)), cfg.detector_quantile)):
             beta *= 2
-            assert beta <= 2.0**20, f"no detector for cue {i}: {d}"
+            assert beta <= 2.0**20, f"no detector for cue {i}: {d}, pile_own {int((own == c.A2[i]).sum())}"
         rows[i], act[i] = beta * u, gelu(h[cue == i, -1] @ (beta * u)).mean()
         betas.append(beta)
-        dirs.append(d)
+        dirs.append(d | {"pile_own": int((own == c.A2[i]).sum())})
     pos = torch.arange(len(toks), device=dev)
     shift = torch.stack([x1[pos[cue == i], c.p.to(dev)[cue == i]].mean(0) - x1[cue == i, -1].mean(0) for i in range(n)], 1) / act
     lm = M.net.lm_head.weight
