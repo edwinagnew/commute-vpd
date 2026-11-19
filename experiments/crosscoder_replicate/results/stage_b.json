@@ -1,0 +1,106 @@
+{
+ "tokens": 2000000,
+ "body_tokens": 1995408,
+ "docs": {
+  "science-of-finetuning/fineweb-1m-sample": 2027,
+  "science-of-finetuning/lmsys-chat-1m-chat-formatted": 2565
+ },
+ "body_mean_norm": {
+  "google/gemma-2-2b": 170.7615871588041,
+  "google/gemma-2-2b-it": 195.62904114565794
+ },
+ "fve_all": {
+  "base": 0.8731847189619274,
+  "chat": 0.8853329585070573,
+  "l0": 99.4854985
+ },
+ "fve_body": {
+  "base": 0.8056696973392419,
+  "chat": 0.8151602288794766,
+  "l0": 99.36668691315259
+ },
+ "top_overlap": 3176,
+ "reading_all": {
+  "n": 3176,
+  "nan": 10,
+  "kept_ours": 2815,
+  "kept_theirs": 2832,
+  "kept_both": 2805,
+  "spearman": {
+   "eps_base": 0.9786175097427177,
+   "eps_ft": 0.8624450582278428,
+   "r_base": 0.9524784117598721,
+   "r_ft": 0.9155414415619206,
+   "nu_eps": 0.9773032465242203,
+   "nu_r": 0.9880319176252781
+  },
+  "spearman_unfiltered": {
+   "nu_r": 0.990953428088325,
+   "nu_eps": 0.9819553117174505
+  },
+  "count_ours": 594,
+  "count_theirs": 599,
+  "count_ours_unfiltered": 932,
+  "count_theirs_unfiltered": 931,
+  "pi_counts_ours": {
+   "0.2": 169,
+   "0.4": 653,
+   "0.6": 1611,
+   "0.8": 2740
+  },
+  "pi_counts_theirs": {
+   "0.2": 169,
+   "0.4": 661,
+   "0.6": 1674,
+   "0.8": 2767
+  },
+  "do_nothing_spearman": {
+   "nu_r": 0.5151136442973415,
+   "nu_eps": 0.6737761053557458
+  },
+  "reproduced": true
+ },
+ "reading_body": {
+  "n": 3176,
+  "nan": 10,
+  "kept_ours": 2815,
+  "kept_theirs": 2832,
+  "kept_both": 2805,
+  "spearman": {
+   "eps_base": 0.9786174412328309,
+   "eps_ft": 0.8624447042600946,
+   "r_base": 0.9524775374432223,
+   "r_ft": 0.9155371113020943,
+   "nu_eps": 0.9773032802354344,
+   "nu_r": 0.9880184646759299
+  },
+  "spearman_unfiltered": {
+   "nu_r": 0.9909440155154837,
+   "nu_eps": 0.9819553351619111
+  },
+  "count_ours": 594,
+  "count_theirs": 599,
+  "count_ours_unfiltered": 932,
+  "count_theirs_unfiltered": 931,
+  "pi_counts_ours": {
+   "0.2": 169,
+   "0.4": 653,
+   "0.6": 1611,
+   "0.8": 2740
+  },
+  "pi_counts_theirs": {
+   "0.2": 169,
+   "0.4": 661,
+   "0.6": 1674,
+   "0.8": 2767
+  },
+  "do_nothing_spearman": {
+   "nu_r": 0.5151136442973415,
+   "nu_eps": 0.6737761053557458
+  },
+  "reproduced": true
+ },
+ "reproduced": true,
+ "minutes": 15.47638967037201,
+ "peak_gpu_gb": 25.908873081207275
+}

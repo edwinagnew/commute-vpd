@@ -1,0 +1,17 @@
+<article class="exp" id="e210">
+<div class="top"><span class="id">E210</span><span class="chip held">held</span><h3>Does our crosscoder code give the same answers as the authors' released crosscoder?</h3><span class="when">2026-11-18 · cell P2.37 ·<code>experiments/crosscoder_replicate</code></span></div>
+<p class="one"><strong>The question.</strong> The crosscoder baseline (<a href="#e198">E198</a>) did not separate the nine built pairs on the 67M model. Before blaming the method, we had to know our port of the code was not the cause. You asked (2026-11-18) for a check against a result of Minder et al. 2025.</p>
+<p class="one"><strong>What we did.</strong> We loaded the authors' released crosscoder of Gemma-2-2B (base against chat) into our code and recomputed two of their outputs. The relative norm of a latent says whether its decoder sits on the chat model (1), on the base model (0) or on both (0.5). Latent scaling rates how much of the chat model's change each latent really carries, and we compared its ranking of latents with their published table.</p>
+<p class="one"><strong>What we found.</strong> Our relative norms matched theirs to within 1.5e-7. Our latent-scaling rankings agreed with their table at 0.988 and 0.977 (rank correlation), against 0.515 and 0.674 for the same ranking with no fit. We found 594 chat-specific latents where they report 599.</p>
+<p class="one"><strong>What it means.</strong> The port is correct, so the crosscoder's misses on the 67M (E198) belong to the method on small updates or to the tasks, not to our code. The next step is to try tasks closer to real text (<a href="#e209">E209</a>).</p>
+<dl class="fields">
+<dt>Run</dt><dd>One check of the released Gemma-2-2B crosscoder, with no training. Machine and cost are in the report.</dd>
+<dt>Found</dt><dd><ul>
+<li>Relative norm reproduced to within 1.5e-7.</li>
+<li>Latent-scaling ranks agree with the authors' table at 0.988 and 0.977; the unfitted ranking reads 0.515 and 0.674.</li>
+<li>594 chat-specific latents against their 599.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 2: the crosscoder baseline's result on the 67M is a property of the method on these updates, not a bug.</dd>
+<dt>Moved on</dt><dd>The cell is filled; realistic tasks come next (E209). Report <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-18_analysis_crosscoder-replicate.md"><code>reports/analyses/2026-11-18_analysis_crosscoder-replicate.md</code></a>.</dd>
+</dl>
+</article>
