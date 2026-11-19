@@ -1,3 +1,5 @@
+*Closed 2026-11-18: featurization made exact; question no longer arises.*
+
 # Decision card: when a featurized model fits the fine-tune only approximately, where do we compare?
 
 *2026-11-18, later: vocabulary moved to Geiger et al. 2025's (`decisions.md`, "Featurized model replaces

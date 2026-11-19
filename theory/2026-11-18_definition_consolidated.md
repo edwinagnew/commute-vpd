@@ -6,8 +6,13 @@ decomposition or refinement is a **featurized model** Ñ_i of each network N_i; 
 is its mechanism F̃_u (Def. 5); a part's inputs are its parents Pa(u) (Remark 6); the swap is the soft intervention
 (Def. 10) from the base model, I_K = {F̃_u^{(0)}}_{u∉K}; the hybrid F_K is the intervened model F̃_{I_K}; the behaviour is
 a behavior B (§3.5.2); the parts F needs are a minimal circuit for B (§3.5.2), with two stated departures. Def. 33 is
-no longer the requirement: N_i is an approximate transformation of Ñ_i (Def. 41), exact (Def. 25) when ε = 0. The
-"Clashes" section keeps the older words as a record. Asks 48-50 stay open.*
+no longer the requirement. The "Clashes" section keeps the older words as a record. Asks 48 and 50 stay open.*
+
+*2026-11-18, later still (user, `decisions.md` row "Exact featurization with a mandatory remainder"): the featurization
+is exact. One remainder variable per featurized site; each N_i is an exact transformation of Ñ_i (Def. 25); there is no
+fit error ε and no optional remainder. The pair is built on activations (σ_0, τ_0∘σ_0 = id) or on weights (VPD, with a
+declared split of δW). The remainder's share of K is stated beside every reading. Ask 49 is closed. Where the text
+below speaks of ε, an approximate transformation or an optional remainder, this note supersedes it.*
 
 *2026-11-18: wording fixes from the review (`reports/reviews/2026-11-18_review_definition-causal-abstraction.md`,
 defects D5 to D9). The content is unchanged. The review's content repairs wait on the user in the log card "Four
@@ -30,10 +35,13 @@ still have M's mechanisms, on the settings of their parents that occur.
 - **Networks.** M (the paper's N_0) and F (N_1) are deterministic causal models (Def. 5) on one signature, with
   different mechanisms (the weights).
 - **Featurized model.** A featurizer (Geiger's verb, §3.6) gives each network N a featurized model Ñ, a causal model
-  (Def. 5) with variables the input, intermediate variables U and the output. N is an approximate transformation of Ñ
-  (Def. 41) under maps (τ, ω) with τ the identity on inputs and outputs, and interventions that set the inputs
-  (Remark 42); when ε = 0 it is an exact transformation (Def. 25). When the featurizer is a bijective translation,
-  the variables are Geiger's modular features (§3.6); otherwise this note says "variables".
+  (Def. 5) with variables the input, intermediate variables U (the features plus one remainder variable per
+  featurized site) and the output. N is an exact transformation of Ñ (Def. 25) under τ_0, the identity on inputs and
+  outputs, with interventions that set the inputs. There are two constructions: on activations, with σ_0 and
+  τ_0∘σ_0 = id (a bijective translation, Def. 28, whose variables are Geiger's modular features, §3.6), or on weights
+  (VPD: W_0 = Σ_c u_c v_cᵀ + Δ and a declared split δW = Σ_c δW_c + δW_out; F̃_c^{(0)} = u_c v_cᵀx, F̃_c^{(1)} =
+  (u_c v_cᵀ + δW_c)x, F̃_e^{(0)} = Δx, F̃_e^{(1)} = (Δ + δW_out)x). The remainder's share of K is stated beside every
+  reading.
 - **Ours: one shared featurizer.** The featurizer is fixed from M alone and applied to both networks, so M̃ and F̃
   share one signature and u is the same variable in both. This is the one constraint that is ours. The featurizer is
   a pair (τ_0, σ_0), τ_0 from features to the network's variables and σ_0 back, both the identity on inputs and
@@ -45,8 +53,8 @@ still have M's mechanisms, on the settings of their parents that occur.
   is at most an optional localisation analysis.
 - **Cases.**
   - Unit groupings (neurons, heads, MLP layers, blocks). Ñ is N with its units grouped into variables, a variable
-    merge (Def. 37), so ε = 0.
-  - Rotations (PCA, DAS): a bijective translation (Def. 28), so ε = 0.
+    merge (Def. 37), so exact with no remainder.
+  - Rotations (PCA, DAS): a bijective translation (Def. 28), so exact with no remainder.
   - SAE latents.
   - Transcoder and cross-layer transcoder latents. These differ from SAEs: M's transcoder read on F has the same
     encoder, which reads the MLP's input, so each latent agrees with M's mechanism by construction. Every change to
@@ -57,11 +65,10 @@ still have M's mechanisms, on the settings of their parents that occur.
   - Not a case: attribution graphs (Ameisen et al. 2025). Their local replacement model freezes attention patterns
     and error terms per prompt, so a variable has no mechanism to compare on other inputs. They serve only as a
     per-input reading.
-- **Remainder (optional).** A remainder variable is one way to get ε = 0 for a lossy featurizer such as an SAE or VPD;
-  it is not part of the concept. Without one, the featurized model is approximate (ε > 0).
-- **ε.** ε is the error of Def. 41 on each network: KL on outputs as its Sim, the mean as its statistic, and the
-  behavior's inputs as its distribution P (Remark 42). Lower is a better fit. It is kept and reported beside every
-  reading.
+- **Remainder (mandatory).** One remainder variable per featurized site, whatever the features miss (for an SAE
+  e = h − dec_0(enc_0(h)); for VPD Δx, plus δW_out x in the fine-tune). Units and rotations need none.
+- **No ε.** The featurization is exact, so there is no fit error to report; the remainder's share of K is reported
+  instead.
 - **Mechanism.** F^{(i)} = {F^{(i)}_X} are the network's own mechanisms (Def. 5); F̃_u^{(i)} is the mechanism of
   feature u in the featurized model; reuse compares F̃_u^{(0)} with F̃_u^{(1)}. The mechanism F̃_u of variable u in Ñ is
   a function of its parents Pa(u) (Remark 6); F̃_u^{(0)} in M̃ and F̃_u^{(1)} in F̃; superscript (0) is M, (1) is F.
@@ -104,14 +111,13 @@ still have M's mechanisms, on the settings of their parents that occur.
    - (B) the value it took when M read the same text, as in activation patching.
 
    The lead recommended A. The user did not know which to pick.
-3. **Where to compare when ε_F > 0 (ask 49).** One option is to compare the intervened models inside the featurized
-   models: the preservation test runs on F̃, and the difference is taken between F̃ and M̃. This keeps the definition
-   total when ε_F > 0. In the exact case both ways coincide. Raised by writeup-lead and not yet answered.
+3. **Where to compare when ε_F > 0 (ask 49).** Closed 2026-11-18: the featurization is exact, so the question does
+   not arise.
 4. **§5.** Re-gating is scored against the definition as a method (decided). Whether it is also "the definition read
    at the VPD featurized model" is set aside.
 5. **Four repairs from the review (ask 50).** Repair 1 (the guard against fitting on F) is set aside by the one fixed
-   featurizer and repair 4 (one shared causal order) is automatic with one featurizer and one architecture
-   (2026-11-18); repairs 2 and 3 stay open. As first listed: the guard against fitting on F, which mechanisms the variables outside
+   featurizer, repair 4 (one shared causal order) is automatic with one featurizer and one architecture, and repair 3
+   (report the remainder's share of K) is adopted by the exact featurization (2026-11-18); only repair 2 stays open. As first listed: the guard against fitting on F, which mechanisms the variables outside
    U take, reporting the remainder's share of K, and one shared causal order. Card `decision-definition-repairs`
    (`reports/decisions/2026-11-18_decision_definition-repairs.md`).
 

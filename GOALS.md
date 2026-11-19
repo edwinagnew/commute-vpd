@@ -38,17 +38,19 @@ live in `decisions.md`, and what has been tried lives in `experiments/TRIED.md`.
   abstraction wherever it has a term (Geiger et al. 2025, "Def. n" in the JMLR numbering; user, 2026-11-18). A
   featurizer (Geiger's verb, §3.6) gives each network N a **featurized model** Ñ: a causal model (Def. 5) whose
   variables are the input, intermediate variables U and the output, for example neurons, heads, blocks (a variable
-  merge, Def. 37), rotations (a bijective translation, Def. 28), SAE latents or VPD components. N is an approximate
-  transformation of Ñ (Def. 41; an exact transformation, Def. 25, when ε = 0), with τ the identity on inputs and
-  outputs and interventions that set the inputs (Remark 42); the error ε of Def. 41, KL on outputs, is reported
-  beside every reading. The featurizer is one pair of maps (τ_0, σ_0) fixed from M alone and shared, both the identity
-  on inputs and outputs, so a variable is the same in both networks (the one constraint that is ours; user, 2026-11-18,
-  "one fixed featurizer"). F's features are not fitted: F̃'s mechanism for each feature is F's own mechanism
-  conjugated by M's featurizer, F̃_u^{(1)}(ṽ) = Proj_u σ_0(F^{(1)}(τ_0(ṽ))), as Def. 28 builds a translated model, so
-  in practice F's features on an input are σ_0 applied to F's activations at each featurized site. F^{(i)} = {F^{(i)}_X}
-  are the network's own mechanisms (Def. 5); F̃_u^{(i)} is the mechanism of feature u in the featurized model; reuse
-  compares F̃_u^{(0)} with F̃_u^{(1)}. A remainder variable is one way to reach ε = 0 for a lossy featurizer, not part
-  of the concept. A variable u has a mechanism F̃_u (Def. 5), a function of its parents Pa(u) (Remark 6). The soft
+  merge, Def. 37), rotations (a bijective translation, Def. 28), SAE latents or VPD components. The featurization is
+  exact (user, 2026-11-18, "exact featurization with a mandatory remainder"): the intermediate variables are the
+  features plus one remainder variable per featurized site, and each network N is an exact transformation of Ñ (Def.
+  25) under τ_0, the identity on inputs and outputs, with interventions that set the inputs, so there is no fit error.
+  It is fixed from M alone and shared, so a variable is the same in both networks (the constraint that is ours; user,
+  2026-11-18, "one fixed featurizer"), and F's features are not fitted. The pair is built on activations (σ_0 with
+  τ_0∘σ_0 = id, F̃_u^{(i)}(ṽ) = Proj_u σ_0(F^{(i)}(τ_0(ṽ))), as Def. 28 builds a translated model) or on weights (VPD:
+  W_0 = Σ_c u_c v_cᵀ + Δ and a declared split δW = Σ_c δW_c + δW_out, with F̃_c^{(0)} = u_c v_cᵀx, F̃_c^{(1)} = (u_c
+  v_cᵀ + δW_c)x, F̃_e^{(0)} = Δx, F̃_e^{(1)} = (Δ + δW_out)x). The remainder's share of K is stated beside every
+  reading. F^{(i)} = {F^{(i)}_X} are the network's own mechanisms (Def. 5); F̃_u^{(i)} is the mechanism of variable u in
+  the featurized model; reuse compares F̃_u^{(0)} with F̃_u^{(1)}. A variable u has a mechanism F̃_u (Def. 5), a
+  function of its parents Pa(u) (Remark 6). Reuse is relative to the featurization, is not invariant to the fine-tune
+  re-coordinatizing an old computation, and K need not be unique. The soft
   intervention from the base model I_K = {F̃_u^{(0)}}_{u∉K} (Def. 10; superscript (0) is M, (1) is F) gives every variable outside K M's mechanism; the
   intervened model F̃_{I_K} (Geiger writes M_I) is always runnable. A behavior B is a partial function from inputs to
   outputs (§3.5.2); the circuit F needs is a smallest K for which F̃_{I_K} preserves B, a minimal circuit in
@@ -59,8 +61,8 @@ live in `decisions.md`, and what has been tried lives in `experiments/TRIED.md`.
   approximate"; `theory/2026-11-18_level-as-decomposition.md`). Open:
   - which variables count as needed, and which settings of its parents a mechanism is compared on (log card "needed
     parts");
-  - where the intervened models are compared when ε_F > 0;
-  - four repairs from the 2026-11-18 review of the definition (log card "definition repairs").
+  - one repair from the 2026-11-18 review of the definition (log card "definition repairs"): the output and any
+    variable outside U take M's mechanism in every intervened model.
 
   Consolidated on one page: `theory/2026-11-18_definition_consolidated.md`. ρ (the mean mechanism agreement over a smallest sufficient set) is no longer part of the definition (user,
   2026-11-18 morning): with single neurons as variables it is a tested reading that saturates (E208: 0.999 or more on

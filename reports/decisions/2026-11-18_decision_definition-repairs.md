@@ -14,7 +14,8 @@ states the definition formally, and for the first reading with an SAE, a VPD spl
 
 *2026-11-18, later: the user chose one fixed featurizer (`decisions.md`, "One fixed featurizer"). **Repair 1 is set
 aside** (F's features are not fitted; the featurizer is fixed from M alone) and **repair 4 is automatic** (one
-featurizer and one architecture give one causal order). Repairs 2 and 3 stay open.*
+featurizer and one architecture give one causal order). Repair 3 was then adopted by the exact-featurization decision
+(2026-11-18, `decisions.md`). Only repair 2 stays open.*
 
 **1. [Set aside by the user's choice of one fixed featurizer, 2026-11-18.] Should the featurized model of F be allowed
 to use F, if the rule for doing so is fixed before any reading?** (review's D1)
@@ -39,14 +40,15 @@ to use F, if the rule for doing so is fixed before any reading?** (review's D1)
   to change.
 - *Recommendation:* accept, in its second form, which matches what the readings did.
 
-**3. Should every reading report how much of the circuit F needs is remainder?** (review's D3)
-- *Problem.* With a remainder variable the featurized model is exact for any encoder, so the error ε is always 0. A
-  weak SAE that encodes little pushes F's change into the remainder; the remainder becomes the needed variable, the
-  reading says "new", and ε = 0 hides why.
-- *Review's repair:* "report, beside ε, either the share of K that is remainder (the level note's Part B proposal) or
-  ε of the same decomposition with its remainder removed."
+**3. [Adopted 2026-11-18 by the user's decision to make the featurization exact.] Should every reading report how much
+of the circuit F needs is remainder?** (review's D3)
+- *Problem.* With a remainder variable the featurized model is exact for any encoder. A weak SAE that encodes little
+  pushes F's change into the remainder; the remainder becomes the needed variable, and the reading says "new" without
+  saying why.
+- *Review's repair:* report the share of K that is remainder (the fit error ε it was to be reported beside is gone).
 - *Changes:* what is reported, not the definition. No reading, since none used a remainder.
-- *Recommendation:* accept, with the remainder's share of the circuit F needs.
+- *Adopted:* the remainder's share of the circuit F needs is stated beside every reading (`decisions.md`, "Exact
+  featurization with a mandatory remainder", 2026-11-18).
 
 **4. [Automatic with one featurizer and one architecture, 2026-11-18.] Should M̃ and F̃ be required to share one causal
 order?** (review's D10)
@@ -58,7 +60,7 @@ order?** (review's D10)
 - *Changes:* content, a stated condition. No reading.
 - *Recommendation:* accept.
 
-**Lead's recommendation.** Accept repairs 2 and 3 (open); 1 and 4 are closed (above). Urgency: soon, before the paper's formal statement; nothing runs on it.
+**Lead's recommendation.** Accept repair 2, the only one still open; 1 and 4 are closed and 3 is adopted (above). Urgency: soon, before the paper's formal statement; nothing runs on it.
 
 **Where it sits.** `theory/2026-11-18_definition_consolidated.md` (Open, item 5); `GOALS.md`, working definition
 (open list). Log: section "Pending decisions", card `decision-definition-repairs`.
