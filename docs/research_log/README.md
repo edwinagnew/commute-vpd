@@ -650,3 +650,5 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e204_scans.png": "experiments/share_size_matched/figures/scans.png"
 - "fig/e203_scorecard.png": "experiments/crosscoder/figures/scorecard_crosscoder.png"
 - "fig/e211_gaps.png": "experiments/realistic_tasks/figures/run2_gaps.png"
+- "fig/e212_controls.png": "experiments/realistic_tasks/figures/run3_controls.png"
+- "fig/e213_worst_r.png": "experiments/r_bounds_e208/figures/worst_r.png"

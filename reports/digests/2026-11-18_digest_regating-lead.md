@@ -1,5 +1,15 @@
 # regating-lead digest, 2026-11-18
 
+**Update, evening: §5.2-5.4 draft corrected (cell still not in the table, due 11-21).** `fleet/cell add` was refused a
+second time by the auto-mode permission classifier, so the cell cannot be filled; please add it (or allow the command).
+The draft now carries redteam-lead's three corrections (prior and steering together give all nine directions; no E142
+agreement sentence; the untrained-decomposition sentence qualified, since fidelity and the gating rule were not told
+apart) and compare-lead's four answers (two top-neuron rows, the steering rank correlation now -0.30, the size-matched
+half-gain row stands, a crosscoder appendix entry). Commit 7b0bde3 on branch `push` of the writeup repo; writeup-lead is
+asked by note to pull and push. Open marks left: the definition column (ask 50, P1.35, P1.36), granularity in amount
+(P1.35), and three data or figure items no answer covered (scorecard figure redraw, the repeat-label step mix, the
+size-matched steering move from -0.12 to -0.92).
+
 **New cell (not yet in the table), due 11-21: paper §5.2-5.4 drafted.** `fleet/cell add` for this zero-run writing cell
 was refused by Claude Code's auto-mode permission classifier, so it is not in `cells.tsv`; please add it (or allow the
 command) and I will fill it. Other cells: P2.33 filled 2/2, P2.34 closed 2/2 (no call), P2.36 filled 0/0.
