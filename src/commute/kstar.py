@@ -356,6 +356,12 @@ def search(ctx: Ctx, lv: Level, s: Tensor, C: set[int], lacked: set[int], varian
     out: dict[str, Any] = {}
     arrays: dict[str, Any] = {}
     names = [vname(u) for u in lv.vars]
+
+    def detail(K: list[int]) -> list[dict[str, Any]]:
+        """Circuit recovery: each variable of K*, its s under both grades, and whether it is changed, lacked or the piece."""
+        return [{"name": names[j], "s_all": float(s[0, j]), "s_read": float(s[1, j]), "changed": j in C, "lacked": j in lacked, "piece": j == lv.piece}
+                for j in K]  # fmt: skip
+
     if lv.name in EXHAUSTIVE:
         t0 = time.time()
         table = exhaustive(lambda keep: kl_rows(ctx, lv, keep), len(lv.vars))
@@ -364,7 +370,7 @@ def search(ctx: Ctx, lv: Level, s: Tensor, C: set[int], lacked: set[int], varian
             ties = from_table(table, ctx.kl_none, v.idx, v.alpha)
             sets = [[j for j in range(len(lv.vars)) if m >> j & 1] for m in ties]
             recs = [summary(K, s, C, lacked, lv.piece) for K in sets]
-            rec = recs[0] | {"K": [names[j] for j in sets[0]], "kl": float(table[ties[0], v.idx].mean()), "n_ties": len(ties),
+            rec = recs[0] | {"K": detail(sets[0]), "kl": float(table[ties[0], v.idx].mean()), "n_ties": len(ties),
                              "ties": [[names[j] for j in K] for K in sets]}  # fmt: skip
             rec |= {f"R_{g}_tie_range": max(r[f"R_{g}"] for r in recs) - min(r[f"R_{g}"] for r in recs) for g in ("all", "read")}
             out[name] = [rec]
@@ -393,7 +399,7 @@ def search(ctx: Ctx, lv: Level, s: Tensor, C: set[int], lacked: set[int], varian
             if not K:
                 raise RuntimeError(f"{lv.name} {name}: empty K* although KL_empty > 0")
             rec = summary(K, s, C, lacked, lv.piece) | {"kl": -closure(set(S)), "bar": -bar, "evals": n, "seconds": time.time() - t0, "polish_capped": capped}
-            rec |= {"K": [names[j] for j in K]} if lv.name != "neuron_head" else {}
+            rec["K"] = detail(K)
             arrays[f"K_{name}_{k}"] = np.array(K)
             recs.append(rec)
             log(f"  {lv.name} {name} order {k}: |K*| {len(K)}, R all {rec['R_all']:.6f}, read {rec['R_read']:.6f}, f {rec['f']:.4f}; {n} evaluations, "

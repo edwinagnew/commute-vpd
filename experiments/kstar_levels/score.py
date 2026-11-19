@@ -1,7 +1,8 @@
 """E214's bands and filed rules (results/predictions.json "rules": R1, R2, P1-P7) from the item files present, scored
-under each grade reading: "all" (every position of D, both runs) and "read" (the read positions only). Which of the two
-is the main reading is pending the user, so both are scored and neither is picked here. A rule whose items or levels
-are not all read is "not read". Writes results/summary.json. No GPU:
+under both grade readings, "read" (the read positions only) and "all" (every position of D, both runs); the main one
+is predictions.json "main_grade" (the user, 2026-11-19: "read"). A rule whose items or levels are not all read is "not
+read"; one that needs a level the user dropped (predictions.json "stages_run": neuron_head, 2026-11-19) is "not read:
+stage dropped by the user", and R2 is read over the levels run. Writes results/summary.json. No GPU:
 
     python experiments/kstar_levels/score.py
 """
@@ -20,6 +21,7 @@ EDITS = ("reuse_small", "reuse_large", "new_few", "new_thin")
 HEADS = ("e201", "last_lowest", "last_rank5", "last_rank9", "last_rank13")
 LEVELS = ("neuron_head", "head_mlp", "mlp_attn", "block")
 Items = dict[tuple[str, str], dict[str, Any]]
+DROPPED_MSG = "not read: stage dropped by the user"
 
 
 def load() -> Items:
@@ -59,12 +61,13 @@ def rule(f: Callable[[], Any]) -> Any:
         return "not read"
 
 
-def scored(d: Items, g: str, th: dict[str, Any]) -> dict[str, Any]:
+def scored(d: Items, g: str, th: dict[str, Any], dropped: tuple[str, ...]) -> dict[str, Any]:
     tol, k = th["s_tol"], th["band_factor"]
-    b = {L: rule(lambda L=L: band(d, L, g, k)) for L in LEVELS}
-    r1 = {L: rule(lambda L=L: "recovers" if recovers(d, L, g, b[L]) else "does not") if b[L] != "not read" else "not read" for L in LEVELS}
+    b: dict[str, Any] = {L: DROPPED_MSG if L in dropped else rule(lambda L=L: band(d, L, g, k)) for L in LEVELS}
+    r1 = {L: b[L] if isinstance(b[L], str) else rule(lambda L=L: "recovers" if recovers(d, L, g, b[L]) else "does not") for L in LEVELS}
     out: dict[str, Any] = {"band": b, "gap": {L: rule(lambda L=L: gap(d, L, g)) for L in LEVELS}, "R1": r1}
-    out["R2"] = "not read" if "not read" in r1.values() else "pass" if "recovers" in r1.values() else "fail"
+    run = [r1[L] for L in LEVELS if L not in dropped]  # R2 over the levels run
+    out["R2"] = "not read" if "not read" in run else "pass" if "recovers" in run else "fail"
     out["passing_levels"] = [L for L, v in r1.items() if v == "recovers"]
     out["R"] = {f"{i}@{L}": R(d, i, L, g) for (i, L) in d}
     nh, hm = "neuron_head", "head_mlp"
@@ -80,17 +83,22 @@ def scored(d: Items, g: str, th: dict[str, Any]) -> dict[str, Any]:
     out["P7"] = rule(lambda: {L: {v: gap(d, L, g, v) for v in ("alpha0.8", "alpha0.95", "restricted")} for L in out["passing_levels"]}) if out["passing_levels"] else "not read"
     if isinstance(out["P7"], dict):
         out["P7_holds"] = all(x > 0 for v in out["P7"].values() for x in v.values())
+    if nh in dropped:
+        out |= dict.fromkeys(("P1", "P4", "P5", "P6"), DROPPED_MSG)  # each reads neuron_head
     return out
 
 
 def main() -> None:
     pred = json.loads((RESULTS / "predictions.json").read_text())
-    d = load()
-    out = {"experiment": pred["experiment"], "read": sorted(f"{i}@{L}" for i, L in d)} | {f"grade_{g}": scored(d, g, pred["thresholds"]) for g in ("all", "read")}
+    dropped = ("neuron_head",) if "neuron_head dropped" in pred.get("stages_run", "") else ()
+    d, main_g = load(), pred["main_grade"]
+    out = {"experiment": pred["experiment"], "main_grade": main_g, "main_grade_source": pred["main_grade_source"], "stages_run": pred.get("stages_run"),
+           "read": sorted(f"{i}@{L}" for i, L in d)} | {f"grade_{g}": scored(d, g, pred["thresholds"], dropped) for g in ("all", "read")}  # fmt: skip
     (RESULTS / "summary.json").write_text(json.dumps(out, indent=1))
-    for g in ("all", "read"):
+    print(f"main grade: {main_g} (side: {'all' if main_g == 'read' else 'read'}); stages run: {pred.get('stages_run')}")
+    for g in (main_g, *(x for x in ("all", "read") if x != main_g)):
         s = out[f"grade_{g}"]
-        print(f"grade {g}: R1 {s['R1']}; R2 {s['R2']}; " + ", ".join(f"{p} {s[p]}" for p in ("P1", "P2", "P3", "P4", "P5", "P6")) + f"; P7 {s.get('P7_holds', s['P7'])}")
+        print(f"grade {g} ({'main' if g == main_g else 'side'}): R1 {s['R1']}; R2 {s['R2']}; " + ", ".join(f"{p} {s[p]}" for p in ("P1", "P2", "P3", "P4", "P5", "P6")) + f"; P7 {s.get('P7_holds', s['P7'])}")
 
 
 if __name__ == "__main__":

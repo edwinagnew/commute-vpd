@@ -13,11 +13,11 @@ each K*) is written when it ends; a rerun skips what is written. Both grade read
 "all" (every position of D, both runs) and "read" (the read positions only). The four edits and e201 get 5 orders plus
 alpha 0.8, 0.95, the restricted D and two halves at the greedy levels; every item gets them at the exhaustive levels.
 Stage 0 runs first and alone (results/stage0.json, skipped once done; exit 1 on a miss): E62's induction top-1,
-do-nothing at the four levels, x10's C at neuron_head, e201 at head_mlp, the four pieces' one-line forms.
+do-nothing at every level run, x10's C graded at neuron_head (no search), e201 at head_mlp, the four pieces' one-line forms.
 
     python experiments/kstar_levels/run.py --levels block mlp_attn --items reuse_small reuse_large new_few new_thin
     python experiments/kstar_levels/run.py --levels block mlp_attn head_mlp          (every item)
-    python experiments/kstar_levels/run.py --levels neuron_head --items ...
+    (neuron_head was dropped by the user on 2026-11-19: the run refuses it while predictions.json "stages_run" says so)
     (each 2>&1 | tee -a experiments/kstar_levels/results/run.log; on a pod PRED_SHA=<sha> python ...)
     python experiments/kstar_levels/score.py   (no GPU: bands and the filed rules from the item files present)
 """
@@ -60,6 +60,8 @@ HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"
 PRED, ITEMS, LARGE = RESULTS / "predictions.json", RESULTS / "items", RESULTS / "large"
 EXPERIMENT = json.loads(PRED.read_text())["experiment"]
+DROPPED = ("neuron_head",) if "neuron_head dropped" in json.loads(PRED.read_text()).get("stages_run", "") else ()  # by the user, 2026-11-19
+RUN_LEVELS = [lv for lv in K.LEVELS if lv not in DROPPED]
 E62 = EXPERIMENTS / "induction_cue" / "results"
 log, dump, stop = P.log, P.dump, P.stop
 EDITS = ("reuse_small", "reuse_large", "new_few", "new_thin")
@@ -288,8 +290,8 @@ def stage0(w: World) -> None:
 
     out: dict[str, Any] = {"experiment": EXPERIMENT, "induction": CP.induction(w.net, json.loads((E62 / "predictions.json").read_text())["settings"]["induction"])}
     miss = [f"induction top-1 {out['induction']['top1_second']:.4f}"] if not abs(out["induction"]["top1_second"] - th["e62_base"]) <= th["e62_tol"] else []
-    read_item(w, "do_nothing", list(K.LEVELS), Clock(1, th["l1_hours_cap"]))
-    for lv in K.LEVELS:
+    read_item(w, "do_nothing", RUN_LEVELS, Clock(1, th["l1_hours_cap"]))
+    for lv in RUN_LEVELS:
         it = json.loads((ITEMS / f"do_nothing_{lv}.json").read_text())
         rs = [r for v in it["searches"].values() for r in v]
         out[f"do_nothing_{lv}"] = {"max_dev_s": it["max_dev_s"], "f": max(r["f"] for r in rs), "R": [r["R_all"] for r in rs] + [r["R_read"] for r in rs]}
@@ -324,7 +326,7 @@ def main(levels: list[str], chosen: list[str] | None) -> int:
     settings = {k: tuple(tuple(x) if isinstance(x, list) else x for x in v) if isinstance(v, list) else v for k, v in pred["settings"].items()}
     cfg, th = config_from_settings(Config, settings), pred["thresholds"]
     items = chosen or list(cfg.items)
-    assert set(levels) <= set(K.LEVELS) and set(items) <= set(cfg.items), f"unknown levels or items: {levels} {items}"
+    assert set(levels) <= set(RUN_LEVELS) and set(items) <= set(cfg.items), f"unknown levels or items: {levels} {items}"
     torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False  # fp32 throughout
     log(f"{EXPERIMENT} start; levels {levels}, items {items}; settings {asdict(cfg)}; thresholds {th}")
     w = World(cfg, th)
@@ -339,7 +341,7 @@ def main(levels: list[str], chosen: list[str] | None) -> int:
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--levels", nargs="+", default=list(K.LEVELS))
+    ap.add_argument("--levels", nargs="+", default=RUN_LEVELS)
     ap.add_argument("--items", nargs="+", default=None, help="default: every item, in the order of Config.items")
     args = ap.parse_args()
     require_filed(PRED)
