@@ -13,6 +13,8 @@ fit errors are gone, and a featurization may be built on weights so that VPD fit
 1. **Networks.** We treat the base network $\mathcal{N}_0$ and the fine-tune $\mathcal{N}_1$ as deterministic causal
    models (Geiger Def. 5) on one signature $\Sigma$, with mechanisms $F^{(i)} = \{F^{(i)}_X\}_{X}$.
    - *Choice:* none. The two networks share an architecture, so they differ only in their mechanisms (the weights).
+     A graft adds a variable to the fine-tune; the base model gets that variable with a mechanism that outputs zero,
+     so both share one signature.
 
 2. **Featurized pair.** From $\mathcal{N}_0$ alone, we fix a signature $\tilde\Sigma$ and a map
    $\tau_0 : \mathrm{Val}_{\tilde\Sigma} \to \mathrm{Val}_{\Sigma}$ that is the identity on $X_{In}$ and $X_{Out}$. The
@@ -189,7 +191,7 @@ three reasons:
 
 The revision does not change this. The re-gating share is a share of the log-odds gain in VPD's masked model (the
 norm share of $\delta W$ is the outside share); the definition read at VPD is
-behavioral. They share the split.
+behavioral. Only the definition read at VPD needs a declared split of $\delta W$; r does not.
 
 ### Notation
 
