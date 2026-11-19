@@ -154,7 +154,12 @@ pod's hours × rate; `status()`'s cost is the whole session's, all pods together
 - Then set up the pod with one command, right after the first `sync()`: `bash cluster/pod_setup.sh`, run as a
   subprocess from the kernel. It pins uv, builds `.venv` (CUDA torch) and fetches the VPD files in parallel, and logs
   each step with its time to `/root/setup.log` and the RunPod console. Don't install uv or run `uv sync` by hand; if
-  the script fails, its last line reads `[setup ...] FAILED (exit N) at line L: <command>`; report that and its log, and terminate. Copy its `[setup ...]` lines into your report, with the time from `start()` to the
+  the script fails, its last line reads `[setup ...] FAILED (exit N) at line L: <command>`; report that and its log, and terminate.
+  Exit 75 is not a failure: the venv is ready but the W&B fetch of the VPD files ran under 5 MB/s after 60 s (or
+  passed 20 min), as on some fresh hosts (0.3-0.4 MB/s, friction 853, 862, 871). If the run reads the VPD files, send
+  them from dev as the top of `cluster/pod_setup.sh` says (hard-link stage, `sync()`, ~5 min) and re-run it; never wait
+  out a slow fetch. To stop a set-up, `kill $(cat /root/pod_setup.pid)` (it also stops the fetch); never
+  `pkill -f pod_setup.sh`, which kills your own shell too (friction 863). Copy its `[setup ...]` lines into your report, with the time from `start()` to the
   first cell and how long the first `sync()` took: the lead uses them to see where set-up time goes. The `[env]` table
   in `remote-kernels.toml` sets `COMMUTE_CACHE_DIR` and `HF_HOME` to `/root/...`. No network volume: see the comment in
   `remote-kernels.toml` for why.
@@ -183,7 +188,8 @@ pod's hours × rate; `status()`'s cost is the whole session's, all pods together
   other command in between (2026-10-26: a local `mv` between them hung at a prompt and the idle H100 billed ~14 h,
   ~$40). `cluster/pod_setup.sh` also starts a watchdog that terminates the pod after 30 idle GPU minutes
   (`POD_IDLE_MIN`); a pod that must sit idle (waiting on a sibling or on the lead) needs the brief's
-  `POD_IDLE_MIN=<min> bash cluster/pod_setup.sh` or a GPU-light keepalive (friction 763, 777). If its set-up line says `runpodctl MISSING` or a variable `MISSING`, say so in your report.
+  `POD_IDLE_MIN=<min> bash cluster/pod_setup.sh` or a GPU-light keepalive (friction 763, 777). `touch
+  /root/idle-watchdog.stop` disarms the watchdog; starting `cluster/pod_idle_watchdog.sh` again replaces it (friction 863). If its set-up line says `runpodctl MISSING` or a variable `MISSING`, say so in your report.
   Terminate as soon as the run is done or dead, unless the brief says "keep the pod running for the next run": then leave it
   running, and the report says so, with the pod ID, the hourly rate and the time it went idle. A kept 4090 pod costs
   about $0.89/h idle; a fresh one costs ~5 min and ~$0.10 of setup.
