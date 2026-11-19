@@ -182,15 +182,54 @@ def _write_inputs() -> None:
     Path(out).write_text("".join(f"{p}\n" for p in files))
 
 
+def _cuda_on_cpu() -> None:
+    """For a CPU dry run only (INPUT_MANIFEST_CPU=1, see `record_inputs`): a global TorchFunctionMode rewrites a "cuda"
+    device argument of any torch call (factories, Tensor.to, so Module.to too) to "cpu" and makes Tensor.cuda() a no-op,
+    and torch.cuda answers as one present device (is_available, device_count, synchronize, memory stats, empty_cache).
+    Not covered: torch.Generator(device="cuda") and CUDA-only kernels (flash attention, bitsandbytes)."""
+    import torch
+    from torch.overrides import TorchFunctionMode
+
+    def cpu(a: Any) -> Any:
+        if isinstance(a, str) and a.startswith("cuda"):
+            return "cpu"
+        if isinstance(a, torch.device) and a.type == "cuda":
+            return torch.device("cpu")
+        return a
+
+    class CudaOnCpu(TorchFunctionMode):
+        def __torch_function__(self, func: Any, types: Any, args: tuple[Any, ...] = (), kwargs: Any = None) -> Any:
+            if func is torch.Tensor.cuda:
+                return args[0]
+            kwargs = {k: cpu(v) if k == "device" else v for k, v in (kwargs or {}).items()}
+            return func(*(cpu(a) for a in args), **kwargs)
+
+    for name, stub in {"is_available": lambda: True, "device_count": lambda: 1, "current_device": lambda: 0,
+                       "synchronize": lambda *_a, **_k: None, "empty_cache": lambda: None,
+                       "reset_peak_memory_stats": lambda *_a, **_k: None, "max_memory_allocated": lambda *_a, **_k: 0,
+                       "memory_allocated": lambda *_a, **_k: 0, "max_memory_reserved": lambda *_a, **_k: 0,
+                       "get_device_name": lambda *_a, **_k: "cpu (INPUT_MANIFEST_CPU dry run)"}.items():
+        setattr(torch.cuda, name, stub)
+    CudaOnCpu().__enter__()  # for the rest of the process
+    print("INPUT_MANIFEST_CPU: cuda is the CPU for this dry run; its numbers mean nothing", file=sys.stderr, flush=True)
+
+
 def record_inputs() -> None:
     """When $INPUT_MANIFEST names a file, record every file the process opens for reading under the repo or
     ~/commute-data (an audit hook on "open") and write the sorted list there at exit, repo paths relative to the repo:
     the input list a pod brief quotes, from a short CPU dry run (friction 832, 842). Does nothing when unset. Runs at
     `commute.jobs` import; `python -m commute.jobs <script> [args]` also covers what a script opens before importing
-    it. Code (.py) is left out, and files read by native code without Python's open (safetensors' mmap) are not seen."""
+    it. Code (.py) is left out, and files read by native code without Python's open (safetensors' mmap) are not seen.
+
+    With INPUT_MANIFEST_CPU=1 as well, the dry run also works with no GPU (fleet/cpu-run): `_cuda_on_cpu` puts every
+    tensor and module asked for on "cuda" on the CPU, so a script that hard-codes "cuda" passes its model load and
+    goes on to open its later inputs (E217, E218 dry runs stopped at the load, friction 906). Its numbers mean nothing;
+    only the manifest counts. Give the job memory for the model in its CPU dtype."""
     global _RECORDING
     if _RECORDING or not os.environ.get("INPUT_MANIFEST"):
         return
+    if os.environ.get("INPUT_MANIFEST_CPU") == "1":
+        _cuda_on_cpu()
     data = os.path.expanduser("~/commute-data")
     roots = tuple({str(EXPERIMENTS.parent) + os.sep, data + os.sep, os.path.realpath(data) + os.sep})
     writes = os.O_WRONLY | os.O_RDWR | os.O_CREAT | os.O_APPEND | os.O_TRUNC

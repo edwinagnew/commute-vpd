@@ -29,7 +29,8 @@ PRED_SHA: <E120_PRED_SHA=<sha> for the pod run line, sha from `git show HEAD:exp
 Expected: <runtime from the smoke/benchmark>, <GPU memory>, <CPU RAM>
 Outputs: <files the run writes; mark which are the results to bring home; which are large/>
          (the job's final "FINISHED" line names these paths, so list them all)
-Inputs not in git: <the list a short CPU dry run writes with INPUT_MANIFEST=<file> set (commute.jobs.record_inputs),
+Inputs not in git: <the list a short CPU dry run writes with INPUT_MANIFEST=<file> INPUT_MANIFEST_CPU=1 set
+                   (commute.jobs.record_inputs; the second lets a "cuda" load pass on fleet/cpu-run, friction 906),
                    less the tracked files, or none (friction 832, 842)>
 Label: <each pod's exact start() label, e.g. commute-E186-b, commute-E178-stage-N_s0 (form: shell-notes.md → Pods)>
 Per pod: <items and counts each pod runs, from the code's loops; step-time band from a measured pod; POD_IDLE_MIN

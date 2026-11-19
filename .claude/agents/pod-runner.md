@@ -26,7 +26,9 @@ The brief gives the exact argv of every job, copied from the script's argument p
 interleaved it (friction 833). Its input list comes from a short CPU dry run of the same command with
 `INPUT_MANIFEST=<file>` set (`commute.jobs.record_inputs`; `python -m commute.jobs experiments/<name>/run.py ...` also
 catches opens before the import): the file lists every data file the run opened under the repo or `~/commute-data`,
-nested `results/large` and the tokenizer included. Stage each listed file; a brief walk of the code missed some
+nested `results/large` and the tokenizer included. Under `fleet/cpu-run` (no GPU) also set `INPUT_MANIFEST_CPU=1`,
+which puts everything asked for on "cuda" on the CPU, so the model load passes and later reads are listed; give the
+job memory for the model on CPU (friction 906). Stage each listed file; a brief walk of the code missed some
 (friction 832, 842).
 
 Refuse a scored run if `experiments/<name>/results/predictions.json` is missing. Say so and stop. A scored run of
