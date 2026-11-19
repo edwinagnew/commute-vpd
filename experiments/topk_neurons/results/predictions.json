@@ -1,0 +1,56 @@
+{
+  "experiment": "E217",
+  "cell": "P2.42 (rung L2.1), run 1 of 2",
+  "plan": "reports/plans/2026-11-19_plan_topk-neurons.md",
+  "card": "experiments/topk_neurons/card.md",
+  "descriptive": "user, 2026-11-19 in chat: run the proper top-activating-neuron baselines soon; featurization = base with weak activations pruned. No reuse/new verdict is given; every lean below is a description checked against its filed range.",
+  "settings": {
+    "pairs": [["copy24", "cipher24"], ["ident32", "rand32"], ["case_real", "case_twin"], ["repeat_real", "repeat_twin"], ["twin", "fact"]],
+    "counted": 4,
+    "seeds": [0, 1],
+    "n_read": 512,
+    "read_seed": 195200,
+    "n_max": 100,
+    "held_share": 0.25,
+    "bands": {"p97/3": [0.03, 0.97], "p99/1": [0.01, 0.99], "p90/10": [0.10, 0.90]},
+    "main_band": "p97/3",
+    "pile_rows": 400,
+    "pile_batch": 16,
+    "alpha": 0.9,
+    "chunk": 256,
+    "order_seed": 0,
+    "control_item": "copy24_s0",
+    "profile_batch": 64,
+    "e208_parts": "experiments/rho_saved_items/results/large/parts",
+    "e213_summary": "experiments/r_bounds_e208/results/summary.json",
+    "gate_tol": 0.001,
+    "s_tol": 1e-06,
+    "floor_factor": 10,
+    "floor_min": 1e-08,
+    "settings_source": "pairs, counted, seeds, n_read, read_seed, n_max, held_share, profile_batch: E208's filed settings (experiments/rho_saved_items/results/predictions.json), so the windows and the reference path are E208's; bands: Goodfire, 'Neurons as an interpretable basis' (p97/3 their main band; p99/1 and p90/10 from their percentile-band ablations), the user's sweep (2026-11-19); pile_rows: 400 val rows of 512 tokens (204,800 tokens per neuron, about 6,000 above p97), cut from the cached artifacts/sets val file; pile_batch: memory only; alpha, chunk, order_seed: E214's filed values (experiments/kstar_levels/results/predictions.json), one order (the attribution order, E214's order 0) for time; gate_tol: E208's; s_tol: E214's; floor_factor and floor_min: the control's stop bar is max(floor_factor x the measured floor, floor_min), the floor being the largest per-part difference between E208's own code (commute.rho.profile) rerun on control_item and E208's saved scores, measured in stage 0 before the control reads"
+  },
+  "readings": {
+    "s_u": "per variable, 1 - mean over settings of (1 - cos^2(F's write, M's write)), both zero counting 1 and one zero counting 0 (E208, E214); a feature's write is its strong part times its output column, the site remainder's the weak parts summed through the output columns; 'read' = the read position of each window (main, user 2026-11-19 for E214), 'all' = every position in both runs (E208's main, the control's)",
+    "K*": "kstar.search at neuron_head with one remainder per MLP site, mean ablation, alpha 0.9, greedy by chunks of 256 in the attribution order",
+    "R": "mean s_u over K*; f = changed share of K*; site_remainder_share = remainders in K* / |K*|",
+    "overlap": "per window, Jaccard of the strong-neuron sets of M (its run) and F (its run) at the read position, all four MLP sites pooled (an empty union counts 1: neither network has a feature there); mean over the 512 windows"
+  },
+  "expected": {
+    "W0": "F = M on control_item's windows, at every band and at the width: no changed variable, every s_u = 1 within s_tol under both grades, gate 'all' and 'none' <= gate_tol (the featurization is exact), overlap = 1. R reads 'no change' (no K* is searched: D, where F departs from M, is empty), f = 0 and no remainder is changed. A miss stops the job.",
+    "pile_strong_share": "the share of base activations on the Pile rows that are features: 0.06, 0.02 and 0.20 for p97/3, p99/1 and p90/10, each within 0.005 (by construction; ties at exact zeros could move it, and it is reported)",
+    "read_strong_share": "the same share on the read windows at W0, reported only: the windows are 8 tokens, so it can differ from the Pile's",
+    "control": "at the width (every activation a feature): every site remainder's s = 1 and its write zero; per item, R over every part and R over E208's five circuits (mean over orders), grade 'all', equal E213's (worst_k 'all' and e208_K_mean under 'main', 0.9994-0.99995 on all 20 items) within max(floor_factor x floor, floor_min); a miss on any item stops the job before stage 1. The largest per-part difference from E208's saved scores is reported.",
+    "gates": "every item and band: gate 'all' <= gate_tol (F_K with every variable kept is F); a miss stops that task"
+  },
+  "predictions": {
+    "P1": {"what": "R_read on K* at the width", "lean": "at or above 0.99 on all 20 trained fine-tunes (E213's saturation, now with K* by mean ablation)", "range": [0.99, 1.0]},
+    "P2": {"what": "R_read on K* at p97/3", "lean": "between 0.95 and 0.999 on every trained fine-tune, and below the same item's R_read at the width: a threshold crossing between the two runs scores 0 at that setting", "range": [0.95, 0.999]},
+    "P3": {"what": "site_remainder_share at p97/3", "lean": "every K* holds all four site remainders (the weak activations carry part of every behaviour: E190's masking cost 0.89-5.76 nats), so the share is 4 / |K*|, under 0.01", "range": [0.0, 0.01]},
+    "P4": {"what": "s of each site remainder at p97/3, grade read", "lean": "at or above 0.99 on every item: the summed weak write turns little", "range": [0.99, 1.0]},
+    "P5": {"what": "overlap at p97/3", "lean": "between 0.7 and 0.99 on every trained fine-tune (1 at W0 and at the width)", "range": [0.7, 0.99]},
+    "P6": {"what": "f on K* at p97/3", "lean": "at or above 0.99: every neuron and site of a full fine-tune is changed; only an unchanged embedding or unembedding in K* lowers it", "range": [0.99, 1.0]},
+    "P7": {"what": "reuse-minus-twin gaps of R_read, counted pairs, each band", "lean": "reported per seed with the seed difference beside it; no lean and no verdict (descriptive)"}
+  },
+  "stops": "stage 0: W0 miss, pile_strong_share outside its band by more than 0.02 (a broken percentile), or a control miss -> exit 1, no stage 1. Stage 1: a gate miss -> exit 1 for that task.",
+  "status": "Filed 2026-11-19 before any run; never edited after a reading."
+}
