@@ -16,3 +16,5 @@ I may edit `main.tex` (since 2026-11-17 in its own repo, github.com/edwinagnew/c
 - Collect main.tex edits until there's a batch worth proposing. Until then, keep the items in `paper/paper/lead_notes.md` (the paper repo).
 - To propose a batch, commit it locally without pushing and list the changes in chat in a few lines. Push it only after the user says yes, and pull first.
 - Don't raise other leads' implementation choices (e.g. crosscoder options). Report their results only.
+
+**Confirmed 2026-11-20:** "you can push for the time being" (said after a GitHub/working outage) did NOT cover main.tex. I read it that way and pushed 8c9fa13. The user corrected me: "no you must also ask before pushing main.tex edits." A general go-ahead to push never counts as a yes for main.tex; only an explicit yes to the batch does.

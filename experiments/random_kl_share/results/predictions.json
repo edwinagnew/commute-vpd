@@ -1,0 +1,70 @@
+{
+  "experiment": "E228",
+  "cell": "P2.44",
+  "plan": "reports/plans/2026-11-20_plan_p2-44-random-kl-matched.md",
+  "card": "experiments/random_kl_share/card.md",
+  "settings": {
+    "states": ["c3/copy_s0", "c3/cipher_s0", "e62/lookup_s0", "e53/lowercase_s0"],
+    "states_source": "four saved fine-tunes of the nine built pairs (E136's inventory, experiments/share_untrained/results/inventory.json), chosen to span the pairs' update sizes and both sides: c3/copy_s0 (reuse side, |dW|^2 0.457, the smallest band of sizes, share 0.846), c3/cipher_s0 (new side, 0.515, share 0.236), e62/lookup_s0 (new side, 1.397, the middle, share 0.415), e53/lowercase_s0 (reuse side, 6.254, near the largest 9.2, share 0.752; also E211's positive control). Sizes from experiments/update_svd/results/results.json (norm2), shares from experiments/share_untrained/results/stage1.json (.trained). A reuse-side state reading high is where the Qwen failure would show; a new-side state is read so that 'low' is not just 'below a high share'",
+    "seeds": [228001, 228002, 228003, 228004, 228005],
+    "seeds_source": "five Gaussian directions per fine-tune and site, enough for a spread (card n = 5) and for the 3-of-5 majority in min_scored",
+    "scale_cap": 100,
+    "kl_rel_tol": 0.1,
+    "match_source": "E46 Amendment 1's filed values (experiments/regating_table/results/predictions_amend1.json: kl_rel_tol 0.1, scale_cap 100, raised from 10 after the cap bound on 6 of 7 rows) with E46's matcher commute.perturb.match and direction commute.finetune.random_direction (each matrix's Gaussian at the fine-tune's per-matrix Frobenius norm)",
+    "split_seed": 186001,
+    "split_seed_source": "E226's, as E227",
+    "batch": 64,
+    "batch_source": "memory only (no reading depends on it); E136's read batch for the kv and E62 tasks"
+  },
+  "thresholds": {
+    "reproduce_tol": 0.01,
+    "band_min": 0.0314,
+    "min_scored": 3,
+    "thresholds_source": "reproduce_tol: E143's and E211's filed share tolerance (E211 re-read 0.7538 against 0.7519 saved for e53/lowercase_s0, experiments/realistic_tasks/results/run2_ctl.json); band_min: E161's batch sd of the share (experiments/share_stability/results/run.json .stage1_step10.sd_r), used only when the measured split-half band is degenerate; min_scored: a majority of the five draws"
+  },
+  "sites": {
+    "all": "mean KL(W0 + dW || W0) over every row and every position up to the read position: the output change on the read rows, per position as Qwen's size was (P3.8, K00 in mean nats per position). Rule P1",
+    "read": "the same KL at the read position alone, where the share reads its target: the size that the share's gain sees. Rule P2"
+  },
+  "expected": {
+    "zero change (first state's rows)": {"numerator": 0, "gain": 0, "kl_all": 0, "kl_read": 0, "share": "nan"},
+    "ctl shares": {"c3/copy_s0": 0.846, "c3/cipher_s0": 0.236, "e62/lookup_s0": 0.415, "e53/lowercase_s0": 0.752, "tol": 0.01},
+    "ctl kl": "kl_read well above kl_all on every state (each fine-tune moved its answer at the read position by 1.6 to 13 log-odds, E136 gains); values measured here",
+    "band": "0.01 to 0.06 (split halves of 75 to 500 rows; E161's 64-row batch sd 0.031)",
+    "draws, site all": "matched (status ok) with c between 1 and 100; gain on the trained answer under 1 on most draws (E211's norm-matched Gaussians gained at most 0.075, E46's KL-matched ones -0.20 to +0.49), so most states 'refused' and the overall reading 'silent'; confidence medium",
+    "draws, site read": "matched; a random change this large flattens the read position's distribution, which can raise a target W0 gives -13 log-odds by over 1, so some draws scored; their share low (0.0 to 0.3): the original subcomponents re-gated do not reproduce a random output change; overall 'rival a: low'; confidence low",
+    "time": "ctl about 3 min (model load 0.5-2 min, E224 sbatch notes; four states' shares and KLs); draws about 1 min (c3 states, 75 rows), 2 min (e62, 200 rows), 5 min (e53, 500 rows): ten draws each of up to 52 KL evaluations and one share read"
+  },
+  "rules": {
+    "P0 (stops)": {
+      "rule": "exit 1 unless, in the ctl job, first and alone: (a) a zero change on the first state's rows reads the share's numerator and gain and both KLs exactly 0; (b) each state's share on its rows reproduces E136's saved share within reproduce_tol. In each draws job: (c) every unscaled random direction reads a finite positive KL (the first-minute check).",
+      "blind_to": "whether a random change's share means anything; they check the reader and that each state is the saved one",
+      "positive_control": "(b) the four saved fine-tunes",
+      "noise_floor": "thresholds_source"
+    },
+    "band": {
+      "rule": "band = max over the four states of |share(half 1) - share(half 2)| (halves by split_seed, each read on its own); a state with a nan half is left out; degenerate (no finite gap, or all 0): band = band_min.",
+      "absolute_or_relative": "absolute, share units"
+    },
+    "verdict per state and site": {
+      "rule": "scored draws: match status 'ok' and a finite share (gain at least 1 log-odds, MIN_GAIN). Fewer than min_scored scored draws: 'refused' (the share's gain floor does not score the random change). Otherwise 'low' if every scored draw's share is below the fine-tune's own share minus the band, strictly; else 'reaches'.",
+      "absolute_or_relative": "absolute",
+      "edge_cases": "no draw scored (empty pool): 'refused'; ties: a draw exactly at own - band is not below it, so 'reaches' (the tie goes to the failure); zero denominator: a gain under 1, or 0, gives a nan share, not scored; a draw whose match hit the cap or never landed in the band: not scored (its change is not the fine-tune's size); the do-nothing state against the bar: a zero change has gain 0, so all its draws would be unscored and it would read 'refused', never 'low' (so 'refused' is reported as silent, not as a pass)"
+    },
+    "P1 (site all: does the share read a random change of the fine-tune's output size as low?)": {
+      "rule": "over the four states at site all: 'rival b: reaches' if any state reads 'reaches'; else 'rival a: low' if at least one reads 'low'; else 'silent: refused' (every state refused). The answer paragraph states P1's reading and each state's.",
+      "absolute_or_relative": "absolute",
+      "edge_cases": "as the verdict; a state with no draws file: 'not run', and P1 is 'not run'"
+    },
+    "P2 (site read)": {
+      "rule": "P1's rule at site read.",
+      "absolute_or_relative": "absolute",
+      "edge_cases": "as P1"
+    },
+    "reported, not scored": "every draw's c, matched KL, KL at the other site, gain and share numerator; the scored draws' sd per state and site"
+  },
+  "blind_to": {
+    "share": "any change whose rise in the trained answer is under 1 log-odds, which a random change of matched output size usually is: then it says nothing; it reads one answer at one position, not the whole output change that the KL match fixes",
+    "match": "the direction of the change: two changes with the same KL can move the trained answer oppositely"
+  }
+}

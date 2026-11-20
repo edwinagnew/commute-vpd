@@ -1,0 +1,64 @@
+{
+  "experiment": "E227",
+  "cell": "P2.43",
+  "plan": "reports/plans/2026-11-20_plan_p2-43-known-answer-baselines.md",
+  "card": "experiments/known_answer_baselines/card.md",
+  "settings": {
+    "reuse": ["x2", "x10", "moved", "rebuilt"],
+    "new": ["new_few", "new_thin"],
+    "split_seed": 186001,
+    "control_state": "e53/lowercase_s0",
+    "settings_source": "reuse, new: the cell's items (P2.43 done_when; E214's and E226's known-answer items: E195's four reuse items and E214's two built new edits); split_seed: E226's (experiments/kstar_vpd/results/predictions.json), so the halves are drawn the same way; control_state: E211's positive control (experiments/realistic_tasks/run2.py ctl), the one state whose share, k_half, r_half numerator and erank are all saved. The share, k_half and erank settings are E211's and E98's as filed (E98's k_grid, batch, gain_floor 1, carry_floor 0.1 read from experiments/neuron_r/results/predictions.json at run time)"
+  },
+  "thresholds": {
+    "gate_tol": 0.001,
+    "reproduce_tol": {"share": 0.01, "k_half": 0, "r_half_num": 0.0001, "erank": 1e-06},
+    "band_min": {"share": 0.0314, "k_half": 1.0},
+    "thresholds_source": "gate_tol: E214's and E226's filed gate_tol (relative logit error), here guarding that M plus the item's weight change is F (same arithmetic, so 0 expected; a miss is a code error); reproduce_tol: E211's filed values (experiments/realistic_tasks/results/predictions_run2.json, from E143's measured re-read floor; E211 read share 0.7538 against 0.7519 saved, k_half 16 = 16, r_half_num and erank equal to 1e-13); band_min share: E161's batch sd of the share (experiments/share_stability/results/run.json .stage1_step10.sd_r), k_half: one grid step in log2 units (P2.24 card's smallest gap, ~/commute-data/cards/E190.md and experiments/k_half_fill/card.md); both used only when the measured split-half band is degenerate"
+  },
+  "directions": {
+    "share": "higher = more reuse. The share is the part of the gain that the original subcomponents carry once Gamma re-gates them on the new activations (GOALS.md Terms, r); re-gating existing parts is the reuse reading (the fixed-shift hypothesis, GOALS.md Terms), and E211 filed '+' for it on every LM pair",
+    "k_half": "fewer neurons = more reuse, read as -log2 k_half. P2.24's card (experiments/k_half_fill/card.md) rival a: 'the reuse side recruits fewer upstream neurons to re-fire than the new side'; E211 filed the same ('fewer neurons carry the reuse side')",
+    "erank": "higher = more reuse. E141's filed P3 (experiments/update_svd/results/predictions.json: 'the side built to reuse has the higher rank'); E141's pair rule itself did not use the sign and E211 filed the opposite sign on its label pairs, so the reversed order is reported beside it (reversed_gap) and not scored"
+  },
+  "expected": {
+    "control e53/lowercase_s0": {"share": "0.7538 (E211's re-read; saved 0.7519, tol 0.01)", "k_half": 16, "r_half_num": 0.879976, "erank": 598.5738},
+    "do_nothing": {"share_num": 0, "gain": 0, "r_half_num": 0, "G": 0, "share": "nan (gain 0 under 1)", "k_half": null, "erank": null, "gate": 0},
+    "new_few": {"gain": "over 5 (E214: lookup top-1 0.90 from M's near 0)", "share": "0.0 to 0.3: the answer y_i is written by a new output column on eight slot neurons, which no original subcomponent writes", "k_half": "8 to 32 (the eight slot neurons)", "erank": "4 to 8 (rank-8 changes of block 0's c_fc and down_proj)", "confidence": "low"},
+    "new_thin": {"gain": "over 5", "share": "0.0 to 0.3", "k_half": "64 to 1024 (a least-norm change of every down_proj column of block 0)", "erank": "4 to 8 (rank 8, one matrix)", "confidence": "low"},
+    "x2": {"gain": "under 1 (KL(F || M) 0.10 per position, E214), so share nan and k_half null", "erank": "4 to 8 (eight columns of block 1's down_proj scaled; equal to x10's: erank does not see the factor)", "confidence": "low"},
+    "x10": {"gain": "1 to 4 (KL 0.71 per position)", "share": "0.1 to 0.6", "k_half": "8 to 64 (C's eight neurons)", "erank": "equal to x2's", "confidence": "low"},
+    "moved": {"reading": "does not apply for every method: F appends eight neurons M lacks, so it is not a weight change of M's 24 matrices"},
+    "rebuilt": {"gain": "about 0 (built to restore M's behaviour; KL(F || M) 0.12), so share nan and k_half null", "erank": "over 100 (blocks 2-3 MLP weights refitted)", "confidence": "low"},
+    "verdict": "P1 'not read' for all three methods (moved); P1b 'not read' for the share and k_half (x2 and rebuilt under the gain floor) and pass or fail for erank by whether x2's rank beats both new edits'; expected: no method passes either rule (rival b), low confidence"
+  },
+  "rules": {
+    "P0 (stops)": {
+      "rule": "exit 1 unless, in stage 0, first and alone: (a) the control state read by these readers reproduces each saved value within reproduce_tol (share, k_half exactly, r_half numerator, erank); (b) the do-nothing item (E214's do_nothing, a copy of M, on E214's cue windows after the edits are built) reads share numerator, gain, r_half numerator and G exactly 0, k_half null and erank null; then per item (c) M plus the item's weight change gives F's logits at the read position within gate_tol.",
+      "blind_to": "whether any reading means reuse; they check that the readers are E211's and that each item is the change E214 built",
+      "positive_control": "(a) a saved state read by the same functions",
+      "noise_floor": "thresholds_source"
+    },
+    "band": {
+      "rule": "per method, band = max over the six items of |m(half 1) - m(half 2)| (m oriented as in 'directions'; halves of each item's rows by split_seed, each half read on its own); an item unreadable on either half is left out. Degenerate (no finite gap, or all 0): band = band_min. erank: band = 0 (a function of the weight change alone, no rows).",
+      "absolute_or_relative": "absolute, in each method's own oriented units (share; log2 neurons; erank)"
+    },
+    "P1 (labels recovered, all reuse items)": {
+      "rule": "per method: min over x2, x10, moved, rebuilt - max over new_few, new_thin of the oriented reading (all rows) > band, strictly: 'pass'; all six finite and not: 'fail'; any of the six unreadable (share nan at gain under 1, k_half null, erank null, or the item 'does not apply'): 'not read', listing the items. A method passes only on 'pass'; 'not read' is reported as not passing, naming what it cannot read (the definition must read every case, user 2026-11-13).",
+      "absolute_or_relative": "absolute",
+      "edge_cases": "empty side or an unreadable item: 'not read'; ties: strict, a tie fails; zero denominator: the share is nan below a gain of 1 (and at 0), k_half is null when r_half is not above carry_floor or its numerator is not positive, so 'not read'; the do-nothing state is on neither side and every method reads it as unreadable, so a set of do-nothing items is 'not read' and cannot pass; moved is a change M's 24 matrices cannot hold, so P1 is 'not read' for every method by construction (as E226's R1 for R, where moved's grafts score 0)"
+    },
+    "P1b (labels recovered, moved left out)": {
+      "rule": "P1 with x2, x10, rebuilt as the reuse side (E226's R1b). The cell's answer paragraph names the methods with 'pass' on P1b and on P1.",
+      "absolute_or_relative": "absolute",
+      "edge_cases": "as P1"
+    },
+    "reported, not scored": "the reversed gap (min new - max reuse) per method; every item's gain, share numerator, r_half, G, norm2; the halves' readings"
+  },
+  "blind_to": {
+    "share": "a change whose gain is under 1 log-odds (it reads nan), and any change that is not a weight change of M's 24 matrices; it reads only the trained answer at one position",
+    "k_half": "the same gain floor; a change whose re-firing carries 10% or less of the gain (null); which neurons carry the gain, only how many",
+    "erank": "the task and the model's behaviour altogether: it is the spectrum of the weight change, the same at x2 and x10"
+  },
+  "time_and_memory": "model load and E214's world about 1 min (E214/E226 logs); the edit build and the do-nothing about 2.5 min (E226 rehearsal 61964, its stage 0); per item about 60 s for the share and k_half on all rows and both halves (E211's whole reader set read a 500-row state in about 58 s on an L40, job 61448, of which the share and k_half are a part); six items plus the control about 8 min: about 12-15 min in all; peak GPU about 10 GB (E226 rehearsal 10.3 GB at x10), host under 10 GB (E211 ctl 6.1 GB)"
+}
