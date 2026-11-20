@@ -73,7 +73,8 @@ def scored(d: Items, g: str, th: dict[str, Any], dropped: tuple[str, ...]) -> di
     nh, hm = "neuron_head", "head_mlp"
     out["P1"] = rule(lambda: R(d, "new_thin", nh, g) >= th["thin_floor"] and R(d, "new_thin", nh, g) > R(d, "new_few", nh, g) + b[nh] and r1[nh] == "does not")
     out["P2"] = r1[hm] if r1[hm] == "not read" else r1[hm] == "recovers"
-    out["P3"] = rule(lambda: all(r1[L] == "does not" and R(d, "reuse_large", L, g) <= max(R(d, "new_few", L, g), R(d, "new_thin", L, g)) + b[L] for L in ("mlp_attn", "block")))
+    # R(reuse_large) first: a KeyError on an unread item makes P3 "not read" before r1's "not read" can read as False
+    out["P3"] = rule(lambda: all(R(d, "reuse_large", L, g) <= max(R(d, "new_few", L, g), R(d, "new_thin", L, g)) + b[L] and r1[L] == "does not" for L in ("mlp_attn", "block")))
     out["P4"] = rule(lambda: all(abs(R(d, x, nh, g) - 1) <= tol and all(abs(r[f"rho_{g}"] - 1) <= tol for r in recs(d, x, nh) if r["f"] > 0) for x in ("x2", "x10"))
                      and all(R(d, "x2", L, g) - R(d, "x10", L, g) > b[L] for L in LEVELS[1:]))  # fmt: skip
     out["P5"] = rule(lambda: all(all(r["lacked_in_K"] >= 1 and (r["changed_in_K"] > 1 or r[f"rho_{g}"] == 0) for r in recs(d, h, L)) for h in HEADS for L in (nh, hm))

@@ -1,0 +1,28 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[23:53:07] stage 1 task 4: band p99/1, seed 0
+[23:54:29]   neuron_head main order 0: |K*| 399, R all 0.992881, read 0.991849, f 0.9950; 1214 evaluations, 71 s
+[23:54:29] p99/1 copy24_s0: R read 0.991849, all 0.992881, |K*| 399, f 0.9950, remainders in K* 4, overlap 0.1902; 82 s
+[00:01:19]   neuron_head main order 0: |K*| 3127, R all 0.991812, read 0.990667, f 0.9994; 6094 evaluations, 358 s
+[00:01:19] p99/1 cipher24_s0: R read 0.990667, all 0.991812, |K*| 3127, f 0.9994, remainders in K* 4, overlap 0.1889; 410 s
+[00:02:44]   neuron_head main order 0: |K*| 417, R all 0.992455, read 0.991307, f 0.9952; 1277 evaluations, 62 s
+[00:02:44] p99/1 ident32_s0: R read 0.991307, all 0.992455, |K*| 417, f 0.9952, remainders in K* 4, overlap 0.1755; 85 s
+[00:09:14]   neuron_head main order 0: |K*| 3204, R all 0.990948, read 0.989649, f 0.9994; 5779 evaluations, 329 s
+[00:09:14] p99/1 rand32_s0: R read 0.989649, all 0.990948, |K*| 3204, f 0.9994, remainders in K* 4, overlap 0.1743; 390 s
+[00:14:37]   neuron_head main order 0: |K*| 2538, R all 0.990386, read 0.983744, f 0.9992; 5332 evaluations, 260 s
+[00:14:37] p99/1 case_real_s0: R read 0.983744, all 0.990386, |K*| 2538, f 0.9992, remainders in K* 4, overlap 0.1887; 323 s
+[00:20:16]   neuron_head main order 0: |K*| 2414, R all 0.985019, read 0.979554, f 0.9992; 5264 evaluations, 284 s
+[00:20:16] p99/1 case_twin_s0: R read 0.979554, all 0.985019, |K*| 2414, f 0.9992, remainders in K* 4, overlap 0.1723; 339 s
+[00:24:50]   neuron_head main order 0: |K*| 1757, R all 0.989982, read 0.982298, f 0.9989; 3936 evaluations, 231 s
+[00:24:50] p99/1 repeat_real_s0: R read 0.982298, all 0.989982, |K*| 1757, f 0.9989, remainders in K* 4, overlap 0.1824; 273 s
+[00:29:59]   neuron_head main order 0: |K*| 2343, R all 0.988238, read 0.982083, f 0.9991; 4446 evaluations, 258 s
+[00:29:59] p99/1 repeat_twin_s0: R read 0.982083, all 0.988238, |K*| 2343, f 0.9991, remainders in K* 4, overlap 0.1787; 309 s
+[00:36:12]   neuron_head main order 0: |K*| 3390, R all 0.990686, read 0.986473, f 1.0000; 6254 evaluations, 360 s
+[00:36:12] p99/1 twin_s0: R read 0.986473, all 0.990686, |K*| 3390, f 1.0000, remainders in K* 4, overlap 0.2287; 373 s
+[00:42:36]   neuron_head main order 0: |K*| 3160, R all 0.990612, read 0.986908, f 1.0000; 6406 evaluations, 331 s
+[00:42:36] p99/1 fact_s0: R read 0.986908, all 0.990612, |K*| 3160, f 1.0000, remainders in K* 4, overlap 0.2190; 384 s
+[00:42:36] STAGE 1 TASK 4 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/topk_neurons/results/items and results/large/items (task 4) ===
