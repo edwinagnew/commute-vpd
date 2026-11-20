@@ -1,0 +1,50 @@
+0.0004	experiments/topk_neurons/results/summary.json	.gaps[]|select(.band=="p97/3" and .pair=="case_real/case_twin")|.seed_diff	this
+0.0112	experiments/topk_neurons/results/summary.json	.gaps[]|select(.band=="p97/3" and .pair=="case_real/case_twin")|.gap_by_seed["0"]	this
+0.0108	experiments/topk_neurons/results/summary.json	.gaps[]|select(.band=="p97/3" and .pair=="case_real/case_twin")|.gap_by_seed["1"]	this
+0.0229	experiments/topk_neurons/results/summary.json	.gaps[]|select(.band=="p90/10" and .pair=="case_real/case_twin")|.gap_by_seed["0"]	this
+0.0213	experiments/topk_neurons/results/summary.json	.gaps[]|select(.band=="p90/10" and .pair=="case_real/case_twin")|.gap_by_seed["1"]	this
+0.0015	experiments/topk_neurons/results/summary.json	[.gaps[]|select(.band=="p97/3")|.seed_diff|fabs]|max	this
+0.0016	experiments/topk_neurons/results/summary.json	[.gaps[]|select(.band=="p97/3" and .pair!="case_real/case_twin")|.gap_by_seed[]]|min	this
+0.0045	experiments/topk_neurons/results/summary.json	[.gaps[]|select(.band=="p97/3" and .pair!="case_real/case_twin")|.gap_by_seed[]]|max	this
+0.00048	experiments/topk_neurons/results/summary.json	[.table|to_entries[]|select(.key|startswith("p90_10/"))|.value.site_remainder_share]|min	this
+0.00076	experiments/topk_neurons/results/summary.json	[.table|to_entries[]|select(.key|startswith("p90_10/"))|.value.site_remainder_share]|max	this
+0.0006	experiments/topk_neurons/results/summary.json	.leans.P3.min	this
+0.0014	experiments/topk_neurons/results/summary.json	.leans.P3.max	this
+0.0011	experiments/topk_neurons/results/summary.json	[.table|to_entries[]|select(.key|startswith("p99_1/"))|.value.site_remainder_share]|min	this
+0.0110	experiments/topk_neurons/results/summary.json	[.table|to_entries[]|select(.key|startswith("p99_1/"))|.value.site_remainder_share]|max	this
+0.0065	experiments/topk_neurons/results/summary.json	.table["p99_1/ident32_s1"].site_remainder_share	this
+0.001	experiments/topk_neurons/results/predictions.json	.settings.gate_tol	this
+0.01	experiments/topk_neurons/results/predictions.json	.predictions.P3.range[1]	this
+0.7	experiments/topk_neurons/results/predictions.json	.predictions.P5.range[0]	this
+0.99	experiments/topk_neurons/results/predictions.json	.predictions.P1.range[0]	this
+0.95	experiments/topk_neurons/results/predictions.json	.predictions.P2.range[0]	this
+0.999	experiments/topk_neurons/results/predictions.json	.predictions.P2.range[1]	this
+0.0577	experiments/topk_neurons/results/stage0.json	.w0_p97_3.read_strong_share	this
+0.0599	experiments/topk_neurons/results/stage0.json	.pile_strong_share["p97/3"]	this
+2.8e-6	experiments/topk_neurons/results/stage0.json	[.w0_p97_3,.w0_p99_1,.w0_p90_10,.w0_width|.gates.all]|max	this
+7.9e-8	experiments/topk_neurons/results/stage0.json	[.control[]|(.R_parts-.R_parts_e213|fabs),(.R_K-.R_K_e213|fabs)]|max	this
+9.0e-9	experiments/topk_neurons/results/stage0.json	.floor	this
+0.172	experiments/topk_neurons/results/summary.json	[.table|to_entries[]|select(.key|startswith("p99_1/"))|.value.overlap]|min	this
+0.229	experiments/topk_neurons/results/summary.json	[.table|to_entries[]|select(.key|startswith("p99_1/"))|.value.overlap]|max	this
+0.231	experiments/topk_neurons/results/summary.json	.leans.P5.min	this
+0.361	experiments/topk_neurons/results/summary.json	.leans.P5.max	this
+0.364	experiments/topk_neurons/results/summary.json	[.table|to_entries[]|select(.key|startswith("p90_10/"))|.value.overlap]|min	this
+0.585	experiments/topk_neurons/results/summary.json	[.table|to_entries[]|select(.key|startswith("p90_10/"))|.value.overlap]|max	this
+0.816	experiments/topk_neurons/results/summary.json	[.table|to_entries[]|select(.key|startswith("p90_10/"))|.value.s_rem[1]|min]|min	this
+0.943	experiments/topk_neurons/results/summary.json	[.table|to_entries[]|select(.key|startswith("p90_10/"))|.value.s_rem[1]|min]|max	this
+0.830	experiments/topk_neurons/results/summary.json	[.table|to_entries[]|select(.key|startswith("p99_1/"))|.value.s_rem[1]|min]|min	this
+0.949	experiments/topk_neurons/results/summary.json	[.table|to_entries[]|select(.key|startswith("p99_1/"))|.value.s_rem[1]|min]|max	this
+0.832	experiments/topk_neurons/results/summary.json	.leans.P4.min	this
+0.942	experiments/topk_neurons/results/summary.json	.leans.P4.max	this
+0.859	experiments/topk_neurons/results/summary.json	[.table|to_entries[]|select(.key|test("^p97_3/(case|repeat)"))|.value.s_rem[1]|min]|max	this
+0.919	experiments/topk_neurons/results/summary.json	[.table|to_entries[]|select(.key|startswith("p97_3/"))|select(.key|test("^p97_3/(case|repeat)")|not)|.value.s_rem[1]|min]|min	this
+0.9354	experiments/topk_neurons/results/summary.json	[.table|to_entries[]|select(.key|startswith("p90_10/"))|.value.R_read]|min	this
+0.9873	experiments/topk_neurons/results/summary.json	[.table|to_entries[]|select(.key|startswith("p90_10/"))|.value.R_read]|max	this
+0.9790	experiments/topk_neurons/results/summary.json	[.table|to_entries[]|select(.key|startswith("p99_1/"))|.value.R_read]|min	this
+0.9918	experiments/topk_neurons/results/summary.json	[.table|to_entries[]|select(.key|startswith("p99_1/"))|.value.R_read]|max	this
+0.9598	experiments/topk_neurons/results/summary.json	.leans.P2.min	this
+0.9896	experiments/topk_neurons/results/summary.json	.leans.P2.max	this
+0.9991	experiments/topk_neurons/results/summary.json	.leans.P1.min	this
+0.9999	experiments/topk_neurons/results/summary.json	.leans.P1.max	this
+0.9993	experiments/topk_neurons/results/summary.json	.leans.P6.min	this
+0.06	given	predictions.json expected.pile_strong_share, a text field: the p97/3 share of base activations that are features, by construction
