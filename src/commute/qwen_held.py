@@ -16,6 +16,7 @@ read rows (`held_model.survival`; None at or under the floor). Tests: tests/test
 
 from __future__ import annotations
 
+import time
 from collections.abc import Callable, Iterable, Iterator
 from contextlib import contextmanager
 from typing import Any
@@ -25,12 +26,13 @@ from torch import Tensor
 
 from commute.held_model import survival
 from commute.qwen_vpd import N_LAYERS, site_name
+from commute.qwen_vpd import SITES as ALL
 from commute.vpd import kl_per_position
 
 F64 = torch.float64
 SITES = tuple(site_name(lyr, k) for lyr in range(N_LAYERS) for k in ("o", "down"))  # the output matrices
 Add = Callable[[str, Tensor, Tensor | None], None]
-__all__ = ["SITES", "cross", "grams", "held", "held_map", "kl_sums", "max_rel_diff", "residual", "survival"]
+__all__ = ["SITES", "Held", "cross", "grams", "held", "held_map", "kl_sums", "max_rel_diff", "residual", "survival"]
 
 
 def _layers(model: Any) -> Any:
@@ -151,3 +153,51 @@ def kl_sums(M: Any, F: Any, maps: dict[str, Tensor], batches: Iterable[Tensor]) 
 def max_rel_diff(A: Tensor, W: Tensor) -> float:
     """max |A - W| / max |W|, the do-nothing control's H = M check."""
     return float((A - W.to(A.device, F64)).abs().max() / W.abs().max())
+
+
+class Held:
+    """M and F (two copies of the base model on one device), the Grams of M's units on the fit and read rows, and
+    G_fit^+ on M's device. `store` is where the two Gram sets wait between reads: "cpu" frees ~17.5 GiB of fp64 on the
+    GPU so the reading fits an L40, and each Gram is copied back (exactly) only for the residual that uses it. Moved from
+    experiments/qwen_held_readings/run.py (E216), which keeps store on the GPU; the arithmetic is unchanged."""
+
+    def __init__(self, M: Any, F: Any, fit: list[Tensor], read: list[Tensor], log: Callable[[str], None],
+                 store: str = "cuda") -> None:
+        self.M, self.F, self.fit, self.read_rows = M, F, fit, read
+        self.W0 = {s: M.get_submodule("model." + s).weight.data for s in ALL}  # M's own tensors: `held` swaps, never writes
+        t0 = time.time()
+        self.Gf = {s: G.to(store) for s, G in grams(M, fit).items()}
+        self.Gr = {s: G.to(store) for s, G in grams(M, read).items()}
+        dev = self.W0[SITES[0]].device
+        self.P = {s: pinv(G.to(dev)) for s, G in self.Gf.items()}
+        log(f"[S] grams and pinv: {time.time() - t0:.0f} s, peak GPU {torch.cuda.max_memory_allocated() / 2**30:.1f} GiB")
+
+    def set_f(self, dW: dict[str, Tensor] | None) -> None:
+        """F = W0 + dW at every linear matrix (None: F = M)."""
+        for s in ALL:
+            w = self.F.get_submodule("model." + s).weight.data
+            w.copy_(self.W0[s] if dW is None else self.W0[s] + dW[s].to(w.device, torch.float32))
+
+    def _fit(self, batches: list[Tensor], G: dict[str, Tensor], maps: dict[str, Tensor] | None) -> tuple[
+            dict[str, Tensor], dict[str, float]]:
+        """The maps (fitted on `batches` when `maps` is None) and each site's residual on `batches`, whose Grams are G."""
+        out, res = {}, {}
+        for s, (Cm, n) in cross(self.M, self.F, batches).items():
+            out[s] = held_map(Cm, self.P[s]) if maps is None else maps[s]
+            res[s] = residual(out[s], Cm, G[s].to(Cm.device), n)
+        return out, res
+
+    def read(self, dW: dict[str, Tensor] | None, floor: float, read_residual: bool) -> dict[str, Any]:
+        """S of F = W0 + dW (None: the do-nothing), with per-site fit residuals (and read-half ones if asked)."""
+        t0 = time.time()
+        self.set_f(dW)
+        maps, res_fit = self._fit(self.fit, self.Gf, None)
+        res_read = self._fit(self.read_rows, self.Gr, maps)[1] if read_residual else {}
+        k = kl_sums(self.M, self.F, maps, self.read_rows)
+        kl_fm, kl_fh = k["kl_fm"] / k["n"], k["kl_fh"] / k["n"]
+        rec = {"S": survival(kl_fh, kl_fm, floor), "kl_fm": kl_fm, "kl_fh": kl_fh, "floor": floor,
+               "logit_err": k["logit_err"], "positions": k["n"], "residual_fit": res_fit, "residual_read": res_read,
+               "a_minus_w0": {s: max_rel_diff(A, self.W0[s]) for s, A in maps.items()}}
+        del maps
+        torch.cuda.empty_cache()
+        return rec | {"seconds": time.time() - t0}
