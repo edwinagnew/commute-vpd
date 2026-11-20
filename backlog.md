@@ -384,3 +384,4 @@ Deferred ideas and loose ends. Date each entry.
   `src/commute/split.py` (`StepSplit`, a split carried step by step along a fine-tune) with its read-outs in
   `src/commute/step_split.py`, and the re-gating measurements in `src/commute/regating.py` (67M) and
   `src/commute/share_reading.py` (Qwen). Needs `/design` and a cell.
+- 2026-11-20 compare-lead (from E228): a random-change control for the log-odds share r, with random changes matched on gain (KL-matched ones never reach r's floor of 1 log-odds). Needs a new cell from the user.
