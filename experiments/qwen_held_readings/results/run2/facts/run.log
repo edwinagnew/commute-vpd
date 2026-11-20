@@ -1,0 +1,124 @@
+[00:52:15] [pod] facts: 12 states, 12 to read, 36 S reads; order ['invented_s0_last', 'invented_s1_last', 'invented_s2_last', 'invented_s0_5x', 'invented_s1_5x', 'invented_s2_5x', 'known_s0_last', 'known_s1_last', 'known_s2_last', 'known_s0_5x', 'known_s1_5x', 'known_s2_5x']
+[00:53:50] [fetch] last.safetensors: 5637 MB in 67 s
+[00:53:54] [fetch invented_s0_last] p35r3-invented-s0-last: 73 s, sha256 matches
+[00:54:22] [S] grams and pinv: 26 s, peak GPU 23.7 GiB
+[00:54:34] [S] control/invented_do_nothing: S None, KL(F||M) 0, KL(F||H) 0.000391781, 13 s
+[00:54:34] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/control/invented_do_nothing.json
+[00:54:34] [check] S_do_nothing_invented: ok {"kl_fm": 0.0, "kl_fh": 0.00039178113395044997, "S": null}
+[00:54:34] [S] rows invented: floor 0.0391781 per position; peak GPU 33.2 GiB
+[00:54:49] [S] control/output_only: S 0.9992234048822759, KL(F||M) 0.795687, KL(F||H) 0.000617927, 14 s
+[00:54:49] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/control/output_only.json
+[00:54:49] [check] S_output_only: ok {"S": 0.9992234048822759, "kl_fm": 0.7956870994662448}
+[00:54:49] STAGE 0 DONE
+[00:54:56] [fetch] last.safetensors: 5637 MB in 61 s
+[00:55:00] [fetch invented_s1_last] p35r3-invented-s1-last: 66 s, sha256 matches
+[00:55:05] [S] S/invented_s0_last: S 0.976134637781138, KL(F||M) 2.66229, KL(F||H) 0.0635364, 9 s
+[00:55:05] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s0_last.json
+[00:55:31] [S] S/invented_s0_last_c: S 0.9909729670764211, KL(F||M) 0.90149, KL(F||H) 0.00813778, 10 s
+[00:55:31] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s0_last_c.json
+[00:56:31] [S] S/invented_s0_last_random: S None, KL(F||M) 0.000728703, KL(F||H) 0.000434641, 17 s
+[00:56:31] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s0_last_random.json
+[00:56:52] [S] S/invented_s0_last_c_random: S None, KL(F||M) 0.000160158, KL(F||H) 0.00040181, 15 s
+[00:56:52] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s0_last_c_random.json
+[00:56:52] [pod] invented_s0_last done; peak GPU 33.2 GiB
+[00:57:12] [S] S/invented_s1_last: S 0.9750126079104794, KL(F||M) 2.60168, KL(F||H) 0.0650092, 13 s
+[00:57:12] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s1_last.json
+[00:57:41] [S] S/invented_s1_last_c: S 0.9899835769737431, KL(F||M) 0.906302, KL(F||H) 0.0090779, 12 s
+[00:57:41] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s1_last_c.json
+[00:57:46] [fetch] last.safetensors: 5637 MB in 52 s
+[00:57:52] [fetch invented_s2_last] p35r3-invented-s2-last: 59 s, sha256 matches
+[00:58:38] [S] S/invented_s1_last_random: S None, KL(F||M) 0.000747536, KL(F||H) 0.00043521, 15 s
+[00:58:38] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s1_last_random.json
+[00:59:01] [S] S/invented_s1_last_c_random: S None, KL(F||M) 0.000164331, KL(F||H) 0.000402114, 15 s
+[00:59:01] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s1_last_c_random.json
+[00:59:01] [pod] invented_s1_last done; peak GPU 33.2 GiB
+[00:59:16] [S] S/invented_s2_last: S 0.9788504615937254, KL(F||M) 2.84352, KL(F||H) 0.060139, 9 s
+[00:59:16] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s2_last.json
+[00:59:41] [S] S/invented_s2_last_c: S 0.9912014264633068, KL(F||M) 0.850207, KL(F||H) 0.00748061, 9 s
+[00:59:41] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s2_last_c.json
+[00:59:54] [fetch] 5x.safetensors: 5637 MB in 51 s
+[00:59:59] [fetch invented_s0_5x] p35r3-invented-s0-5x: 58 s, sha256 matches
+[01:00:33] [S] S/invented_s2_last_random: S None, KL(F||M) 0.00070082, KL(F||H) 0.000433433, 12 s
+[01:00:33] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s2_last_random.json
+[01:00:53] [S] S/invented_s2_last_c_random: S None, KL(F||M) 0.000154049, KL(F||H) 0.000401567, 12 s
+[01:00:53] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s2_last_c_random.json
+[01:00:53] [pod] invented_s2_last done; peak GPU 33.2 GiB
+[01:01:08] [S] S/invented_s0_5x: S 0.9985227879200174, KL(F||M) 0.995315, KL(F||H) 0.00147029, 9 s
+[01:01:08] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s0_5x.json
+[01:01:37] [S] S/invented_s0_5x_c: S 0.9990338757254467, KL(F||M) 0.464198, KL(F||H) 0.000448473, 12 s
+[01:01:37] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s0_5x_c.json
+[01:01:52] [fetch] 5x.safetensors: 5637 MB in 58 s
+[01:01:58] [fetch invented_s1_5x] p35r3-invented-s1-5x: 65 s, sha256 matches
+[01:02:34] [S] S/invented_s0_5x_random: S None, KL(F||M) 3.54316e-05, KL(F||H) 0.000394499, 12 s
+[01:02:34] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s0_5x_random.json
+[01:02:56] [S] S/invented_s0_5x_c_random: S None, KL(F||M) 8.53497e-06, KL(F||H) 0.000392685, 12 s
+[01:02:56] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s0_5x_c_random.json
+[01:02:56] [pod] invented_s0_5x done; peak GPU 33.2 GiB
+[01:03:12] [S] S/invented_s1_5x: S 0.9986295906664265, KL(F||M) 0.966431, KL(F||H) 0.00132441, 9 s
+[01:03:12] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s1_5x.json
+[01:03:38] [S] S/invented_s1_5x_c: S 0.999111711819459, KL(F||M) 0.451765, KL(F||H) 0.000401297, 9 s
+[01:03:38] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s1_5x_c.json
+[01:03:52] [fetch] 5x.safetensors: 5637 MB in 54 s
+[01:03:58] [fetch invented_s2_5x] p35r3-invented-s2-5x: 61 s, sha256 matches
+[01:04:34] [S] S/invented_s1_5x_random: S None, KL(F||M) 3.55197e-05, KL(F||H) 0.000394525, 12 s
+[01:04:34] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s1_5x_random.json
+[01:04:54] [S] S/invented_s1_5x_c_random: S None, KL(F||M) 8.55493e-06, KL(F||H) 0.000392689, 12 s
+[01:04:54] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s1_5x_c_random.json
+[01:04:54] [pod] invented_s1_5x done; peak GPU 33.2 GiB
+[01:05:09] [S] S/invented_s2_5x: S 0.9987037606402234, KL(F||M) 0.982782, KL(F||H) 0.00127392, 9 s
+[01:05:09] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s2_5x.json
+[01:05:37] [S] S/invented_s2_5x_c: S 0.9991570728323403, KL(F||M) 0.450419, KL(F||H) 0.000379671, 11 s
+[01:05:37] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s2_5x_c.json
+[01:06:25] [fetch] last.safetensors: 5637 MB in 89 s
+[01:06:29] [fetch known_s0_last] p35r3-known-s0-last: 95 s, sha256 matches
+[01:06:31] [S] S/invented_s2_5x_random: S None, KL(F||M) 3.08461e-05, KL(F||H) 0.00039427, 12 s
+[01:06:31] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s2_5x_random.json
+[01:06:50] [S] S/invented_s2_5x_c_random: S None, KL(F||M) 7.42843e-06, KL(F||H) 0.000392621, 12 s
+[01:06:50] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/invented_s2_5x_c_random.json
+[01:06:50] [pod] invented_s2_5x done; peak GPU 33.2 GiB
+[01:07:21] [S] grams and pinv: 29 s, peak GPU 33.2 GiB
+[01:07:35] [S] control/known_do_nothing: S None, KL(F||M) 0, KL(F||H) 0.000279065, 14 s
+[01:07:35] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/control/known_do_nothing.json
+[01:07:35] [check] S_do_nothing_known: ok {"kl_fm": 0.0, "kl_fh": 0.0002790645959960893, "S": null}
+[01:07:35] [S] rows known: floor 0.0279065 per position; peak GPU 33.2 GiB
+[01:07:47] [fetch] last.safetensors: 5637 MB in 54 s
+[01:07:51] [fetch known_s1_last] p35r3-known-s1-last: 60 s, sha256 matches
+[01:07:53] [S] S/known_s0_last: S 0.9968393158268986, KL(F||M) 1.88183, KL(F||H) 0.00594786, 10 s
+[01:07:53] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/known_s0_last.json
+[01:08:50] [S] S/known_s0_last_random: S None, KL(F||M) 9.40801e-05, KL(F||H) 0.000280187, 13 s
+[01:08:50] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/known_s0_last_random.json
+[01:08:50] [pod] known_s0_last done; peak GPU 33.2 GiB
+[01:09:08] [S] S/known_s1_last: S 0.9892326647175302, KL(F||M) 1.45126, KL(F||H) 0.0156263, 11 s
+[01:09:08] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/known_s1_last.json
+[01:09:39] [fetch] last.safetensors: 5637 MB in 47 s
+[01:09:44] [fetch known_s2_last] p35r3-known-s2-last: 54 s, sha256 matches
+[01:10:05] [S] S/known_s1_last_random: S None, KL(F||M) 8.58816e-05, KL(F||H) 0.000280073, 15 s
+[01:10:05] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/known_s1_last_random.json
+[01:10:05] [pod] known_s1_last done; peak GPU 33.2 GiB
+[01:10:21] [S] S/known_s2_last: S 0.9942043466673338, KL(F||M) 1.24253, KL(F||H) 0.00720127, 9 s
+[01:10:21] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/known_s2_last.json
+[01:10:52] [fetch] 5x.safetensors: 5637 MB in 45 s
+[01:10:57] [fetch known_s0_5x] p35r3-known-s0-5x: 52 s, sha256 matches
+[01:11:15] [S] S/known_s2_last_random: S None, KL(F||M) 0.000107852, KL(F||H) 0.000280664, 12 s
+[01:11:15] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/known_s2_last_random.json
+[01:11:15] [pod] known_s2_last done; peak GPU 33.2 GiB
+[01:11:31] [S] S/known_s0_5x: S 0.9987436529583928, KL(F||M) 0.460243, KL(F||H) 0.000578224, 9 s
+[01:11:31] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/known_s0_5x.json
+[01:12:04] [fetch] 5x.safetensors: 5637 MB in 48 s
+[01:12:10] [fetch known_s1_5x] p35r3-known-s1-5x: 55 s, sha256 matches
+[01:12:26] [S] S/known_s0_5x_random: S None, KL(F||M) 4.61188e-06, KL(F||H) 0.000278789, 12 s
+[01:12:26] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/known_s0_5x_random.json
+[01:12:26] [pod] known_s0_5x done; peak GPU 33.2 GiB
+[01:12:41] [S] S/known_s1_5x: S 0.9989156431492923, KL(F||M) 0.453726, KL(F||H) 0.000492, 9 s
+[01:12:41] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/known_s1_5x.json
+[01:13:15] [fetch] 5x.safetensors: 5637 MB in 47 s
+[01:13:20] [fetch known_s2_5x] p35r3-known-s2-5x: 54 s, sha256 matches
+[01:13:34] [S] S/known_s1_5x_random: S None, KL(F||M) 4.67482e-06, KL(F||H) 0.000278778, 12 s
+[01:13:34] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/known_s1_5x_random.json
+[01:13:34] [pod] known_s1_5x done; peak GPU 33.2 GiB
+[01:13:48] [S] S/known_s2_5x: S 0.9988421405659327, KL(F||M) 0.497208, KL(F||H) 0.000575696, 9 s
+[01:13:48] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/known_s2_5x.json
+[01:14:42] [S] S/known_s2_5x_random: S None, KL(F||M) 5.71132e-06, KL(F||H) 0.000278748, 12 s
+[01:14:42] [wrote] /root/work/experiments/qwen_held_readings/results/run2/facts/S/known_s2_5x_random.json
+[01:14:42] [pod] known_s2_5x done; peak GPU 33.2 GiB
+[01:14:42] STAGE 1 DONE facts
