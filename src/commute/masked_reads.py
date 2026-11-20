@@ -70,17 +70,58 @@ def share_cells(model: object, W0: Mapping[str, Tensor], dW: ST.DW, toks: Tensor
 @torch.no_grad()
 def share_cells_by(model: object, W0: Mapping[str, Tensor], dW: ST.DW, toks: Tensor, pos: int, units_of: UnitsOf) -> Cells:
     """`share_cells` with any units (`units_of`), e.g. log-odds of each window's next token (P2.38 run 2); same calls."""
+    return route_cells_by(model, W0, dW, toks, pos, units_of)[0]
+
+
+KLCells = dict[str, Tensor]  # E57's cell -> (N,) float64 CPU, each row's KL summed over its positions 0..upto
+
+
+@torch.no_grad()
+def route_cells_by(model: object, W0: Mapping[str, Tensor], dW: ST.DW, toks: Tensor, pos: int, units_of: UnitsOf,
+                   kl_upto: int | None = None, comps1: dict[str, tuple[Tensor, Tensor]] | None = None) -> tuple[Cells, KLCells]:
+    """`share_cells_by`'s cells (T0, T1, L00, L01 at `pos`) and, with kl_upto, from the same forwards E57's KL cells
+    (experiments/qwen_reading/lab.py `cells`, the form of Qwen's re-gating share, `qwen_reading.shares`) on the 67M, each
+    row's KL summed over positions 0..kl_upto: K0 = KL(T0 || L00), K00 = KL(T1 || L00), K01 = KL(T1 || L01), T1 the
+    changed model's own forward, L the CI-masked model (Delta out) with the released components and Gamma's gates from W0
+    (L00) or from the changed model (L01); with comps1 (the change's split applied to the components) also K10 and K11,
+    the masked model on comps1 under W0's gates (K10) and under the gates of the changed model carrying comps1 (K11),
+    the 67M route split's convention (`local_faith.route_split`: L10 on W0's gates, L11 the state's own). Batches of
+    BATCH, bf16-autocast masked forwards, fp32 KL (`vpd.kl_per_position`)."""
     out: dict[str, list[dict[str, Tensor]]] = {c: [] for c in ("T0", "L00", "T1", "L01")}
+    names = ("K0", "K00", "K01") + (("K10", "K11") if comps1 is not None else ())
+    kl: dict[str, list[Tensor]] = {k: [] for k in names} if kl_upto is not None else {}
     device = next(model.parameters()).device  # type: ignore[attr-defined]
     W1 = {k: w + dW[k].to(w.device, w.dtype) for k, w in W0.items()}
     for s in range(0, len(toks), BATCH):
         x, rows = toks[s : s + BATCH].to(device), slice(s, s + BATCH)
+        lg: dict[str, Tensor] = {}
+        g: dict[str, dict[str, Tensor]] = {}
         for T, L, W in (("T0", "L00", None), ("T1", "L01", W1)):
             with model_state(model, target=W):  # W None: the model as it stands, W0
                 ci = vpd.compute_ci(model, x, chunk=x.shape[0])
+                m = masked_logits(model, x, ci.g, None, None)
                 out[T].append(units_of(ci.logits[:, pos], rows))
-                out[L].append(units_of(masked_logits(model, x, ci.g, None, None)[:, pos], rows))
-    return {c: cat(v) for c, v in out.items()}
+                out[L].append(units_of(m[:, pos], rows))
+                if kl:
+                    lg[T], lg[L], g[T] = ci.logits, m, ci.g
+        if not kl:
+            continue
+        assert kl_upto is not None
+        for name, (p, q) in {"K0": ("T0", "L00"), "K00": ("T1", "L00"), "K01": ("T1", "L01")}.items():
+            kl[name].append(kl_rows(lg[p], lg[q], kl_upto))
+        if comps1 is not None:
+            with model_state(model, components=comps1):
+                kl["K10"].append(kl_rows(lg["T1"], masked_logits(model, x, g["T0"], None, None), kl_upto))
+                with model_state(model, target=W1):
+                    g11 = vpd.compute_ci(model, x, chunk=x.shape[0]).g
+                kl["K11"].append(kl_rows(lg["T1"], masked_logits(model, x, g11, None, None), kl_upto))
+        del lg, g
+    return {c: cat(v) for c, v in out.items()}, {k: torch.cat(v) for k, v in kl.items()}
+
+
+def kl_rows(p: Tensor, q: Tensor, upto: int) -> Tensor:
+    """Each row's KL(p || q) summed over positions 0..upto, (B,) float64 CPU (fp32 per position, `vpd.kl_per_position`)."""
+    return vpd.kl_per_position(p[:, : upto + 1], q[:, : upto + 1]).double().sum(1).cpu()
 
 
 def top_masks(firing: Mapping[str, Tensor], k: Mapping[int, int]) -> dict[int, Tensor]:
