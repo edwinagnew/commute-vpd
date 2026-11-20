@@ -1,0 +1,178 @@
+{
+ "job": "ctl",
+ "card": "NVIDIA L40",
+ "states": {},
+ "experiment": "E223 (rl_67m), cell P2.41 run 5: E222's re-gating share and scorecard baselines re-read on E220's 24 size-matched pick states (repeat and lower: rl, shuffled, own, demo x seeds 0-2) with a per-row two-form contrast in place of the text's next-token log-odds; the anchor (french_en demo x 3) read as in E222, unchanged",
+ "zero L1": {
+  "numerators": {
+   "gain contrast": 0.0,
+   "share contrast": 0.0,
+   "untrained contrast svd": 0.0,
+   "untrained contrast rotated": 0.0,
+   "neuron k64 contrast": 0.0,
+   "neuron kmatched contrast": 0.0,
+   "steering contrast": 0.0
+  },
+  "k_half": {},
+  "erank": null
+ },
+ "reproduce L1_s0_0.005": {
+  "share": {
+   "got": 0.3965578479823279,
+   "saved": 0.3965206967786372,
+   "tol": 0.001
+  },
+  "svd": {
+   "got": -0.028654771007543448,
+   "saved": -0.02875486208717769,
+   "tol": 0.006505666388373356
+  },
+  "rotated": {
+   "got": 0.038468980224621814,
+   "saved": 0.03840888129072679,
+   "tol": 0.006505666388373356
+  },
+  "gain": {
+   "got": 6.505639653827529,
+   "saved": 6.505666388373356,
+   "tol": 0.006505666388373356
+  },
+  "neuron_k64": {
+   "got": 0.012226357074769338,
+   "saved": 0.012182160257054892,
+   "tol": 0.006505666388373356
+  },
+  "neuron_kmatched": {
+   "got": 0.0035989503111904307,
+   "saved": 0.0035972247405786284,
+   "tol": 0.006505666388373356
+  },
+  "steer_pooled": {
+   "got": 0.24379004777426486,
+   "saved": 0.24378997458780946,
+   "tol": 0.006505666388373356
+  },
+  "erank": {
+   "got": 373.38504871572604,
+   "saved": 373.37782929498496,
+   "tol": 0.373377829294985
+  }
+ },
+ "read repeat": {
+  "candidates": 2048,
+  "kept": 1679,
+  "train_candidates": 4096,
+  "fit_kept": 3385,
+  "n_rows": 200,
+  "n_fit": 700,
+  "pos": 63,
+  "prior_w0": 0.6271811261773109
+ },
+ "zero repeat": {
+  "numerators": {
+   "gain contrast": 0.0,
+   "share contrast": 0.0,
+   "untrained contrast svd": 0.0,
+   "untrained contrast rotated": 0.0,
+   "neuron k64 contrast": 0.0,
+   "neuron kmatched contrast": 0.0,
+   "steering contrast": 0.0
+  },
+  "k_half": {},
+  "erank": null
+ },
+ "zero seconds repeat": 13.669272422790527,
+ "read lower": {
+  "candidates": 2048,
+  "kept": 381,
+  "train_candidates": 4096,
+  "fit_kept": 795,
+  "n_rows": 200,
+  "n_fit": 700,
+  "pos": 63,
+  "prior_w0": 8.035909888744355
+ },
+ "zero lower": {
+  "numerators": {
+   "gain contrast": 0.0,
+   "share contrast": 0.0,
+   "untrained contrast svd": 0.0,
+   "untrained contrast rotated": 0.0,
+   "neuron k64 contrast": 0.0,
+   "neuron kmatched contrast": 0.0,
+   "steering contrast": 0.0
+  },
+  "k_half": {},
+  "erank": null
+ },
+ "zero seconds lower": 13.618244647979736,
+ "e53 lowercase_s0 contrast (beside)": {
+  "kept": 486,
+  "of": 500,
+  "fit_kept": 1961,
+  "size": 0.01794730235750018,
+  "erank": 598.5737907674222,
+  "gain": {
+   "contrast": 4.214116052130367
+  },
+  "prior": {
+   "contrast": 0.3110886075430446
+  },
+  "neuron": {
+   "k64": {
+    "share": {
+     "contrast": 0.005734374898835454
+    },
+    "numerator": {
+     "contrast": 0.02416532131011594
+    }
+   },
+   "kmatched": {
+    "share": {
+     "contrast": -0.006401208287943497
+    },
+    "numerator": {
+     "contrast": -0.02697543459925264
+    }
+   }
+  },
+  "share": {
+   "share": {
+    "contrast": 0.5614137948294294
+   },
+   "numerator": {
+    "contrast": 2.3643632111725985
+   },
+   "gain": {
+    "contrast": 4.2114448076413
+   }
+  },
+  "untrained": {
+   "share": {
+    "contrast": {
+     "svd": 0.15957882107665733,
+     "rotated": 0.002432785458540936
+    }
+   },
+   "numerator": {
+    "contrast": {
+     "svd": 0.6724836319501017,
+     "rotated": 0.010252039649604305
+    }
+   }
+  },
+  "steering": {
+   "setting": [
+    3,
+    8
+   ],
+   "share": {
+    "contrast": 1.7114120398633228
+   },
+   "random_mean": 0.00453297372820059,
+   "off_kl": 0.0
+  },
+  "k_half": {}
+ },
+ "done": true
+}
