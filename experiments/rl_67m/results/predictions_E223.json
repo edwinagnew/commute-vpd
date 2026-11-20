@@ -1,0 +1,98 @@
+{
+  "experiment": "E223 (rl_67m), cell P2.41 run 5: E222's re-gating share and scorecard baselines re-read on E220's 24 size-matched pick states (repeat and lower: rl, shuffled, own, demo x seeds 0-2) with a per-row two-form contrast in place of the text's next-token log-odds; the anchor (french_en demo x 3) read as in E222, unchanged",
+  "plan": "reports/plans/2026-11-19_plan_rl-67m.md (section Stage 3b (E223))",
+  "card": "reports/plans/2026-11-20_plan_rl-67m-contrast-card.md",
+  "filed": "2026-11-20, after E222's readings and before any run of run_contrast.py",
+  "settings": {
+    "n_read": 200,
+    "n_read_source": "E222's 200; the CPU dry run 2026-11-20 (no model) keeps 1,679 repeat and 381 lower pair rows of 2,048 scanned, and 3,385 and 795 of 4,096 training prompts for the fitting windows, each over 200 and n_select 512",
+    "n_scan": 2048,
+    "n_scan_source": "stage 1's Pile val prompt rule (rl_tasks.pile_prompts, val rows from 64) run to 2,048 prompts (2,059 and 2,075 rows of the 8,128 cached); its first 256 are stage 1's held-out prompts exactly (torch.equal, same run)",
+    "n_fit": 700,
+    "n_fit_source": "E222's 700: steering's fitting windows are now the training prompts (rl_arms.train_prompts, 4,096) that keep a pair by the read rows' rule, the first 700; at least E211's n_select 512",
+    "gauss_draw": 0,
+    "gauss_draw_source": "E211's first Gaussian draw (commute.finetune.random_direction seed 0)",
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "seeds_source": "E220's seeds",
+    "reader_settings_source": "E211's filed reader settings and reproduce tolerances, read at run time from experiments/realistic_tasks/results/predictions_run2.json (n_select 512, strengths 0-8, n_random 8, random_seed 0, k_fixed 64; E143's)"
+  },
+  "definitions": {
+    "pair rows": "per pick, stage 1's Pile val prompt rule scanned to 2,048 prompts (E222's candidates, the first 256 being stage 1's held-out prompts), the first 200 that keep a pair; 64 tokens, read at position 63. lower: the prompt's own text continuation earns the reward (E222's rows) and its next token a is a space then lowercase letters only whose capitalised form b (first letter upper, the rest unchanged) is one vocabulary token. repeat: the text does not copy (rl_tasks.reward false; 1,679 of 2,048); at the first of the 4 copy positions where the copy (rl_tasks.repeat_cuts extra) and the text part, a = the token a copy writes, b = the text's token, the window being the 64 tokens before that position",
+    "unit": "contrast: log p(a) - log p(b) at position 63, the logit difference (commute.realistic_reads.pair_at); the anchor keeps E222's lo (log-odds of its French target token)",
+    "gain": "T1 - T0 in the contrast, the fp32 model with the update minus W0, mean over the pair rows",
+    "readable": "as E222: a state is readable on a ratio reading when its gain is at or over MIN_GAIN = 1 (commute.local_faith); an arm when at least 2 of its 3 seeds are. Picks in the contrast, the anchor in lo",
+    "share": "(L01 - L00) / (T1 - T0) in the contrast on the released decomposition, do-nothing form (realistic_reads.Reader.share, E211's and E222's code, units from realistic_reads.PairRead)",
+    "untrained": "the same ratio on W0's SVD decomposition and its rotation, E136's k_m (untrained.do_nothing_cells with the pair in the window's last two columns, data.PAIR, never fed)",
+    "neuron": "(N01 - N00) / gain in the contrast, k 64 and k matched (E143's)",
+    "steering": "pooled fair steering (E143's): vector from the fitting windows, (layer, strength) picked on the first 512 of them in the contrast, its rise on the pair rows over the gain; 8 random draws beside",
+    "k_half": "not read: E98's reading also scores log P of one target per row (neuron_r.batch_cells), undefined for a pair",
+    "prior": "W0's mean contrast on the pair rows",
+    "erank": "commute.update_spectrum.state's effective rank of the update",
+    "size": "commute.realistic.update_size of the state as loaded"
+  },
+  "blind_to": {
+    "share": "anything outside the pair at the read position: which lowercase word is chosen, case elsewhere in the continuation, the copy beyond its first parting token; and a shift that moves a and b together (the contrast cancels it, which is why it is read: E222's log-odds read RL's drift). Positive control: E211's L1 contrast share reproduced through the pair score in ctl",
+    "untrained": "as E222; control: L1's saved svd and rotated contrast shares in ctl",
+    "neuron": "as E222; control: L1's saved neuron contrast shares in ctl",
+    "steering": "as E222; control: L1's saved pooled steering contrast share in ctl",
+    "prior": "the update entirely (a W0 reading)",
+    "erank": "the read rows",
+    "rule": "as E222: seed noise from fewer than 2 readable seeds, and any difference under 0.1. The anchor is read in a different unit from the picks (lo, not a contrast): the rule's above-the-anchor clause compares a contrast share with a log-odds share"
+  },
+  "control": {
+    "ctl, first and alone": "(1) E211's L1 seed-0 state at size 0.005 (sha256 checked against run2_L1.json) re-read on L1's 512 rows with the per-row pair score, each row's pair = (its label, the other label): it must give E211's fixed-pair contrast readings within E211's reproduce_tol (the same arithmetic; E143 reproduced every reading exactly on an L40); a zero update reads every numerator exactly 0 on L1's rows. (2) a zero update reads every numerator and gain exactly 0 on each pick's pair rows (timed). (3) E53's lowercase seed-0 state on its case-pair contrast, beside: no saved share in this unit exists anywhere in the repo (E53, E136, E143, E211 and E222 read it in log-odds of the true token), so it is recorded, not checked. A miss in (1) or (2) exits 1 and no pick job starts",
+    "do-nothing, first in each pick job": "a Gaussian update at the pick's rl seed-0 per-matrix norms: contrast gain under MIN_GAIN (1) or the job exits 1",
+    "input check": "every E220 state's sha256 equals E220's record (run_stage3.load_state), or the job exits 1"
+  },
+  "expected": {
+    "ctl L1_s0_0.005 (reproduce)": {
+      "share": 0.3965,
+      "svd": -0.02875,
+      "rotated": 0.03841,
+      "gain": 6.5057,
+      "neuron_k64": 0.01218,
+      "neuron_kmatched": 0.0036,
+      "steer_pooled": 0.2438,
+      "erank": 373.378,
+      "tol": "E211's reproduce_tol: share 0.01, svd/rotated/gain/neuron 1e-4, steering 1e-3, erank 1e-6 (E143's measured floor: run 1 reproduced every reading exactly on an L40)",
+      "source": "experiments/realistic_tasks/results/run2_L1.json states s0_0.005, contrast unit"
+    },
+    "W0 (zero update), on L1's and each pick's rows": "every numerator and gain exactly 0.0; every ratio nan; erank null; size 0",
+    "do-nothing (Gaussian)": "contrast gain within +-0.1 of 0 (E222's Gaussians read 0.002 and 0.008 in lo); every ratio nan; erank about 700",
+    "e53 lowercase_s0 contrast (beside, no stop)": "nearly all of E53's 500 rows keep a pair; prior about +1 (A0: W0 prefers the lowercase form by +1.18 nats on lowercased text); gain over 1 and share 0.5 to 1.0 (its lo gain 1.67, share 0.754)",
+    "prior": "lower: +2 to +7 (a lowercase word mid-sentence after ordinary Pile; W0 already prefers it); repeat: -3 to +1 (on rows whose text does not copy, W0 tends to the text's token)",
+    "size": "E220's size_saved within 1e-6",
+    "gain and readability": "the contrast cancels a shift that moves both forms, so RL's drift (E222: lo gain -2.2 to -3.3 on lower, tracking KL) does not enter. RL: repeat 1 to 4, lower 1 to 5 (held-out rate 0.98 lowercase; readable, probability 0.8 each). own and demo: 0.2 to 1.2 on both picks (E222's lo gains 0.35-0.73 on repeat; readable, probability 0.3 each). shuffled: -1 to +0.5 (unreadable, probability 0.85)",
+    "share on a readable state": "0.1 to 0.8 (E53's cipher and lowercase lo shares; E211's label contrast shares 0.36-0.40); no point value",
+    "baselines on a readable state": "as E222: untrained svd under the share, rotated 0.0-0.35; neuron under 0.05; steering 0.2 to 0.8 with its random draws near 0",
+    "seconds per state": "at most 18 s on an L40 (E222: 18.1-18.4 s per state at 200 rows of 65 tokens with k_half; here no k_half)"
+  },
+  "rules": {
+    "smallest_gap": 0.1,
+    "min_readable_seeds": 2,
+    "floor": "MIN_GAIN = 1 in lo (commute.local_faith), applied by the reader and recorded per state (gain beside every ratio)",
+    "alike": "two readable arms whose seed ranges [min, max] overlap (touching counts) and whose means differ by less than 0.1",
+    "apart": "two readable arms whose seed ranges do not overlap and whose means differ by at least 0.1",
+    "above": "every seed of one arm strictly above every seed of the other (min > max; a tie is not above)",
+    "per pick (repeat, lower), on the share": "as E222, in the contrast: no call when fewer than two arms are readable, or RL or demo is not. Otherwise rival a when every pair of the readable arms among rl, own, demo is alike and each is above the anchor (E222's three french_en demo seeds, share in lo) and above shuffled, each where that reference is readable; rival b when demo is apart from rl and own (if readable) is alike rl; else neither. Third outcome, read beside: shuffled readable and alike rl",
+    "card": "the same call on every pick that has one; split when the two picks' calls differ; no call when neither pick has one (the card's stop: the cell closes with the readings as they stand)",
+    "beside, not filed": "score_contrast.py runs the same rule on untrained (svd, rotated), steering and neuron (k64, k matched) and lists every baseline's seed values and every gain; none is a call"
+  },
+  "edge_cases": {
+    "checked": "2026-11-20: the rule is score_stage3.pick_call and card_call unchanged (E222's 15 edge cases, checked 2026-11-19); score_contrast.score run through cpu-run on the cases below (script ~/commute-data/scratch/compare-lead/e223-writer/dry_run.py)",
+    "every arm of both picks under the floor": "no call on both picks, card no call (the card's stop: the cell closes with the readings as they stand)",
+    "one pick with rl, own, demo alike above the anchor, the other pick all under": "card rival a, resting on one pick (stated)",
+    "one pick with demo apart from rl, own alike, the other under": "card rival b",
+    "zero kept pair rows (or under 200, or under 512 fitting windows)": "the reader stops the job before any state is read (exit 1); a do-nothing or zero update reads every ratio nan"
+  },
+  "prediction": {
+    "card": "no call (probability 0.55): own and demo under the floor on both picks. Given a call: rival a 0.5, rival b 0.3, neither 0.2",
+    "third outcome": "not read (shuffled under the floor, probability 0.85)",
+    "RL": "readable on both picks (probability 0.7), share 0.1 to 0.8"
+  },
+  "decision": "reports/decisions/2026-11-19_decision_p2-41-read-unit.md (user 2026-11-20, ask 29 option A)"
+}
