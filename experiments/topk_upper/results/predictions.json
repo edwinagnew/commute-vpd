@@ -1,0 +1,61 @@
+{
+ "experiment": "E###",
+ "cell": "P2.42 (rung L2.1), run 2 of 2",
+ "plan": "reports/plans/2026-11-20_plan_p2-42-upper-tail.md",
+ "card": "experiments/topk_upper/card.md",
+ "descriptive": "user 2026-11-20 dialog, \"Yes, upper tail only\", re-read after the GELU departure. No reuse/new verdict is given; every lean below is a description checked against its filed range, and each reading is reported beside E217's at the same percentile.",
+ "readings": {
+  "featurization": "per MLP site, a neuron is a feature on a token when its post-GELU activation is above the neuron's upper percentile from the base on 400 Pile val rows (E217's saved file, reused: experiments/topk_neurons/results/large/percentiles.pt); every other activation at the site, GELU's negative floor included, is the one site remainder (commute.kstar.Feat with lo None). E217 used above p_hi or below p_lo.",
+  "s_u, K*, R, f, site_remainder_share, overlap": "exactly E217's (experiments/topk_neurons/results/predictions.json 'readings'), through E217's own functions read_vars, overlap, w0 and control",
+  "beside": "each item and band: run 2's row and E217's row at the matching band (p97 with p97/3, p99 with p99/1, p90 with p90/10) and E217's width R_read; the width is not re-read in stage 1 (every activation a feature, so the featurization is the same as E217's)"
+ },
+ "expected": {
+  "W0": "F = M on control_item's windows at p97, p99, p90 and the width: no changed variable, every s_u = 1 within s_tol, gate 'all' and 'none' <= gate_tol, overlap = 1. A miss stops the job.",
+  "pile_strong_share": "share of base activations on the Pile rows above the band's percentile: 0.03, 0.01, 0.10 for p97, p99, p90, each within share_tol (relative 0.1) of 1 - q; E217 read its two-sided shares within 0.0008 relative, so a miss means the file or the upper-only path is broken",
+  "read_strong_share": "the same share on the read windows at W0, reported: about 0.025-0.035 at p97 (E217's two-sided p97/3 read 0.0577 against 0.06 on the Pile)",
+  "control": "at the width, per item, R over every part and over E208's five circuits (grade 'all') equal E213's within max(floor_factor x E217's measured floor 9.04e-9, floor_min) = 9.04e-8 (E217 passed it on all 20 at <= 7.9e-8), and every site remainder's s = 1; each item's R also printed beside E217's stage-0 control value (same code, same card class: expected equal to float rounding). A miss on any item stops the job before stage 1.",
+  "gates": "every item and band: gate 'all' <= gate_tol; a miss stops that task"
+ },
+ "predictions": {
+  "P1": {"what": "R_read on K* at p97 (upper only)", "lean": "between 0.95 and 0.9995 on every trained fine-tune (E217's p97/3 read 0.9598-0.9896), and below the same item's E217 width R_read", "range": [0.95, 0.9995]},
+  "P2": {"what": "R_read at p97 minus E217's R_read at p97/3, per item", "lean": "at or above 0 on every item: dropping GELU's floor tail removes threshold crossings that scored as disagreement; reported per item, the rivals split at 0.01", "range": [0, 0.04]},
+  "P3": {"what": "overlap at p97 (upper only)", "lean": "above E217's p97/3 overlap (0.231-0.361) on every item, between 0.25 and 0.95", "range": [0.25, 0.95]},
+  "P4": {"what": "overlap at p97 minus E217's overlap at p97/3, per item", "lean": "above 0 on every item; the rivals split at 0.1", "range": [0, 0.7]},
+  "P5": {"what": "lowest site-remainder s at p97, grade read", "lean": "between 0.8 and 1 on every item; no direction against E217's 0.832-0.942 (the remainder now also holds the floor tail, which sits near -0.17 in both networks)", "range": [0.8, 1]},
+  "P6": {"what": "site_remainder_share at p97", "lean": "all four remainders in every K*, share under 0.01 (E217 p97/3: 0.0006-0.0014)", "range": [0, 0.01]},
+  "P7": {"what": "f on K* at p97", "lean": "at or above 0.99 (E217: 0.9993-1)", "range": [0.99, 1]},
+  "P8": {"what": "|K*| at p97", "lean": "within E217's span over all bands, 363-8259; reported beside E217's p97/3 2826-6270", "range": [300, 9000]},
+  "P9": {"what": "R_read, overlap and site_remainder_share at p99 and p90", "lean": "reported beside E217's p99/1 and p90/10, no range: the sensitivity check (E217's p99/1 remainder share reached 0.011, and a smaller upper-only K* can push it higher)"},
+  "P10": {"what": "reuse-minus-twin gaps of R_read, counted pairs, each band", "lean": "reported per seed with the seed difference and E217's gap beside it; no lean and no verdict (descriptive)"}
+ },
+ "settings": {
+  "pairs": [["copy24", "cipher24"], ["ident32", "rand32"], ["case_real", "case_twin"], ["repeat_real", "repeat_twin"], ["twin", "fact"]],
+  "counted": 4,
+  "seeds": [0, 1],
+  "n_read": 512,
+  "read_seed": 195200,
+  "n_max": 100,
+  "held_share": 0.25,
+  "bands": {"p97": 0.97, "p99": 0.99, "p90": 0.9},
+  "main_band": "p97",
+  "e217_bands": {"p97": "p97/3", "p99": "p99/1", "p90": "p90/10"},
+  "percentile_qs": [0.01, 0.03, 0.1, 0.9, 0.97, 0.99],
+  "percentiles_sha256": "e70d0a4530d379ca7d6c797025813125f0fae6ff466fbf769681184a9d6b45d4",
+  "pile_rows": 400,
+  "pile_batch": 16,
+  "share_tol": 0.1,
+  "alpha": 0.9,
+  "chunk": 256,
+  "order_seed": 0,
+  "control_item": "copy24_s0",
+  "e208_parts": "experiments/rho_saved_items/results/large/parts",
+  "e213_summary": "experiments/r_bounds_e208/results/summary.json",
+  "gate_tol": 0.001,
+  "s_tol": 1e-06,
+  "floor_factor": 10,
+  "floor_min": 1e-08,
+  "settings_source": "every key E217 has is E217's filed value (experiments/topk_neurons/results/predictions.json settings), so the windows, the search and the bars are E217's; bands: the upper quantiles of E217's p97/3, p99/1, p90/10 (user 2026-11-20 dialog: upper tail only, for the 67M's NewGELU); percentile_qs and percentiles_sha256: E217's saved percentile file (its stage0.json percentiles_sha256; q holds 0.9, 0.97, 0.99 in float32), reused rather than recomputed; share_tol: relative 0.1, over 100x E217's largest measured two-sided deviation (0.0008 relative, p99/1); the control bar's floor is E217's measured floor (stage0.json 'floor', 9.04e-9), not remeasured"
+ },
+ "stops": "stage 0: percentile file sha or quantiles differ, pile_strong_share outside share_tol, a W0 miss, or a width-control miss -> exit 1, no stage 1. Stage 1: a gate miss -> exit 1 for that task.",
+ "status": "Filed 2026-11-20 before any run; never edited after a reading."
+}

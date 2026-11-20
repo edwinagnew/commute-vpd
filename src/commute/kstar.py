@@ -60,13 +60,14 @@ def vname(u: Var) -> str:
 
 @dataclass(frozen=True)
 class Feat:
-    """Per layer (n,) bounds from M: an activation above hi or below lo is a feature's value, the rest the remainder's."""
+    """Per layer (n,) bounds from M: an activation above hi or below lo is a feature's value, the rest the remainder's.
+    lo None: the upper tail only (E217 two-sided; P2.42 run 2 upper only, for the 67M's GELU)."""
 
-    lo: list[Tensor]
+    lo: list[Tensor] | None
     hi: list[Tensor]
 
     def strong(self, l: int, a: Tensor) -> Tensor:
-        return (a > self.hi[l]) | (a < self.lo[l])
+        return a > self.hi[l] if self.lo is None else (a > self.hi[l]) | (a < self.lo[l])
 
 
 @dataclass
