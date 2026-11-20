@@ -1,0 +1,15 @@
+cell: P3.13
+rival_a: The word pairs' reuse sides (copy, known facts) change mostly what Qwen's own MLP neurons and attention heads already write, as on the 67M, which predicts that once the held model reproduces M on their rows, the held-model reading S of each pair's reuse side above its new side (cipher, invented facts) by more than 0.005 at every seed, at both saves, at saved size and with the larger side shrunk to the smaller side's size, on both pairs
+rival_b: At 1.7B the least-squares map from M's units fits either side about equally well, or a gap comes only from the sides' sizes (run 2's size-matched gaps were 0.003-0.006 under the fit error), which predicts that with the fit floor cleared no word pair separating: on each pair some save, at saved size or size-matched, has a seed gap within 0.005 or gaps of both signs
+rung: parameter
+smallest_gap: 0.005
+spread: 0.0041
+n: 3
+design: paired
+unit: seeds (0, 1, 2) of each library side, paired by seed number as P3.9 paired them; one gap per seed, S(reuse side) minus S(new side), in S's own units (1 = F's output fully kept by H)
+spread_source: experiments/qwen_held_readings/results/summary.json
+spread_of: this reading: run 1's seed sd of S on the E167 step-75 states, the largest of its three runs (own-samples SFT, 0.004095, n 2), rounded up; run 2's gold sides read 0.0006-0.0012 (n 3) on clean rows. Run 3 reports each side's own seed sd (n 3) beside it
+floor: Stage 0 measures, per word row set, the do-nothing KL(F||H) on read rows 64-127 for four fits in a filed order: own rows 0-63 (run 2's fit, expected to reproduce run 2's 2.8e-4 to 2.2e-3), own 0-63 plus gold rows 0-63, own 0-63 plus 256 rows of the same sequences repacked with two other seeds, and both. The first fit (after run 2's) whose floor is at most 1e-7 on both row sets of the pair is used for every read of that pair; S reads 'no change' when KL(F||M) is at most 100 times that floor. Both rivals expect every library state above it (their KL(F||M) on own rows was 0.03-5)
+stop: Stage 0: no fit reaches 1e-7 on both row sets of a pair, so that pair is unreadable by S at these fits and its pod stops before any state (section 6 then marks it so, with the floors read). Controls: F = M not read as KL(F||M) at most 1e-9, or the pod's first state's o_proj and down_proj change not read as S at least 0.999. This is the cell's last run: section 6 is written from its outcome as read
+sketch: experiments/qwen_held_readings/figures/sketch2.png
+rehearsal: E225 rehearse pod (Slurm is down 2026-11-20, so a short H100 pod commute-E225-rehearse-sweep, ~10 min): run3.py --pair copy_cipher --limit 1, i.e. stage 0's four fits on both copy and cipher rows at the full read sizes (fit up to 384 rows of 256 tokens, read 64 rows; Qwen3-1.7B, all 56 output matrices), the controls, then the first state (cipher seed 0, late save) fetched from W&B with its four S reads; measures the four floors on two row sets, time per fit and per S read on an H100, peak GPU and host RAM
