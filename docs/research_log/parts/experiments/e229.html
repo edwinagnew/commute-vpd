@@ -1,0 +1,18 @@
+<article class="exp" id="e229">
+<div class="top"><span class="id">E229</span><span class="chip unsc">unscored</span><h3>What changes when only the upper tail of each neuron counts as a feature?</h3><span class="when">2026-11-21 · cell P2.45 (filled), descriptive, no independent check · <code>experiments/topk_upper</code></span></div>
+<p class="one"><strong>The question.</strong> The earlier top-activating-neuron run (E217) counted a neuron as a feature on a token when it fired above its 97th percentile or below its 3rd, and found low overlap between base and fine-tune. The small model's GELU flattens at about -0.17 and every neuron's 3rd percentile sat on that floor. How much of E217's reading came from the floor tail?</p>
+<p class="one"><strong>What we did.</strong> We repeated E217 on the same 20 fine-tunes of ten tasks at two seeds, with the same saved percentiles, windows and search, changing one thing: a neuron is a feature only above its 97th percentile, and the bottom tail joins the pooled remainder. The 99th and 90th percentiles sit beside it. The definition's score R is the average squared cosine, over the smallest set of variables that keeps the fine-tune's behaviour, between the fine-tune's and the base model's write; the overlap is the Jaccard index of the base's and the fine-tune's strong-neuron sets. The base read against itself and the full-width reading came first.</p>
+<p class="one"><strong>What we found.</strong> The control was exact. At the main threshold the overlap is 0.451 to 0.674 against E217's 0.231 to 0.361, and R is 0.988 to 0.998 against 0.960 to 0.990, still below the full-width 0.9991 to 0.9999 on all 20. The remainder's lowest cosine is 0.847 to 0.958, about as before. The gap in R between each built pair's two sides shrinks several-fold: the case pair, E217's largest, from 0.011 to 0.002, and at the 99th percentile two pairs turn slightly negative. No gap reaches 0.01.</p>
+<p class="one"><strong>What it means.</strong> Much of E217's low overlap and lowered R came with the floor tail. Some change remains, but the upper-tail featurized model barely tells the built pairs apart in R. This is a description; there is no verdict on reuse or new.</p>
+<figure><img src="fig/e229_gaps_upper_vs_two_sided.png" alt="Real-minus-twin gaps in R, upper tail only against two-sided"><figcaption><strong>Do the built pairs still differ in R without the floor tail? Far less.</strong> Each cell is one seed's R on the side built to reuse minus its twin, upper-tail beside E217's two-sided reading at the same percentile.</figcaption></figure>
+<dl class="fields">
+<dt>Run</dt><dd>MATS cluster debug L40 jobs, 1 h 7 min in all, $0 (control job first).</dd>
+<dt>Found</dt><dd><ul>
+<li>Overlap about doubles (0.45 to 0.67) and R rises on every fine-tune (by 0.008 to 0.029), all in the filed ranges.</li>
+<li>Pair gaps in R shrink from up to 0.011 to up to 0.002 at the main threshold; two pairs reverse sign at the 99th percentile.</li>
+<li>The remainder still turns about as much as before, and R stays below full width on all 20.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 3: the neuron reading of the definition (E217 and its descriptive reading); no reused or new reading is given.</dd>
+<dt>Moved on</dt><dd>How far lost strong neurons moved across their threshold, and mean-ablating the weak activations as Goodfire does, would each need a new cell. Report <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-21_analysis_e229-topk-upper.md"><code>reports/analyses/2026-11-21_analysis_e229-topk-upper.md</code></a>.</dd>
+</dl>
+</article>

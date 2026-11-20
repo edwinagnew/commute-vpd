@@ -661,3 +661,7 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e211_gaps.png": "experiments/realistic_tasks/figures/run2_gaps.png"
 - "fig/e212_controls.png": "experiments/realistic_tasks/figures/run3_controls.png"
 - "fig/e213_worst_r.png": "experiments/r_bounds_e208/figures/worst_r.png"
+- "fig/e228_random_share.png": "experiments/random_kl_share/figures/random_share.png"
+- "fig/e229_gaps_upper_vs_two_sided.png": "experiments/topk_upper/figures/gaps_upper_vs_two_sided.png"
+- "fig/e230_shares_by_gate.png": "experiments/topk_gate/figures/shares_by_gate.png"
+- "fig/e231_reach_kl_matched.png": "experiments/gain_only/figures/reach_kl_matched.png"
