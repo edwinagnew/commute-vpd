@@ -23,6 +23,7 @@ at every level reads R = 1, f = 0, every s within s_tol of 1; E195's x10 at bloc
 from __future__ import annotations
 
 import argparse
+import dataclasses
 import json
 from dataclasses import asdict, dataclass
 from pathlib import Path
@@ -114,6 +115,15 @@ def items(cfg: Config) -> list[str]:
     return list(dict.fromkeys(i for r, n in pairs(cfg).values() for i in (*r, *n)))
 
 
+def e187_task(task: str, tasks: dict[str, Any]) -> OT.OldTask:
+    """E187's task as E205 read it. A key table E205 built from E187's windows file (E58's 96-key tables) used that file
+    alone: E205's `old_task` adds the held-out keys' file only when it exists, and on E205's pod it did not. Built with
+    both files, e58/cipher_s0 reads KL(F || M) 4.6463 against E205's 5.2393; with the trained file alone 5.2393 and
+    e58/copy_s0 4.3984, as E205 (CPU check 2026-11-19, rehearsal job 61952's stop)."""
+    t = E205.old_task(task, tasks.get(task, {}))
+    return t if task in E205.OT_NAMES else dataclasses.replace(t, sources=t.sources[:1])
+
+
 # ---- the items --------------------------------------------------------------------------------------------------------
 
 
@@ -133,7 +143,8 @@ class World:
         assert x.keys.tolist() == json.loads(E196.NUMBERS.read_text())["number_tokens"], "the number tokens are not E154's"
         sets = VR.make_sets(dcfg, tok, log)
         self.pairs = E205.load_pairs()
-        self.d196, self.d187 = E196.Data(sets, x, dcfg, {}), E205.Data(sets, dcfg, self.pairs.inv["tasks"], {})
+        self.sets, self.dcfg, self.d196 = sets, dcfg, E196.Data(sets, x, dcfg, {})
+        self.cache: dict[str, Tensor] = {}  # an E187 task's read half, by windows group
         for m, st in cfg.e196_as_e187:  # an alias is the same file and the same windows' group
             for s in cfg.e196_seeds:
                 spec = self.pairs.inv["states"][f"{st}_s{s}"]
@@ -142,6 +153,12 @@ class World:
 
     def read(self, toks: Tensor) -> Tensor:
         return E196.subset(toks, self.cfg, self.M)
+
+    def read_half187(self, task: str) -> Tensor:
+        t = e187_task(task, self.pairs.inv["tasks"])
+        if t.group not in self.cache:
+            self.cache = {t.group: OT.task_windows(t, self.sets, self.dcfg)[1]}
+        return self.cache[t.group]
 
     def make(self, item: str) -> tuple[R.Model, Tensor, slice, dict[str, Any]]:
         """F, D, the read positions, and the load record: update sizes (E205's ||dW|| / ||W0||) and the saved values to repeat."""
@@ -155,7 +172,7 @@ class World:
             dw = OT.load_dw(self.net, REPO / spec["file"])
             saved = json.loads((E205.ITEMS / f"{fname(item)}.json").read_text())
             rec = {"size": E205.sizes(dw, self.net.W0), "size_saved": self.pairs.e187_size(item), "kl_fm_saved": saved["kl_FM"], "saved_from": "E205"}
-            return R.Model(OT.with_delta(self.net, dw).net), self.read(self.d187.halves(spec["task"])[1]), LAST, rec
+            return R.Model(OT.with_delta(self.net, dw).net), self.read(self.read_half187(spec["task"])), LAST, rec
         Fnet = E196.fine_tune(self.net, item)  # an E196 member no E187 state shares
         pF, pM = dict(Fnet.net.named_parameters()), dict(self.net.net.named_parameters())
         dw = {f"{k}.weight": pF[f"{k}.weight"] - pM[f"{k}.weight"] for k in self.net.W0}
