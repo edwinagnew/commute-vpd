@@ -1,0 +1,23 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[23:52:48] stage 1 task 3: band width, seed 1
+[23:52:48] width copy24_s1: done before, skipped
+[23:52:48] width cipher24_s1: done before, skipped
+[23:52:48] width ident32_s1: done before, skipped
+[23:52:48] width rand32_s1: done before, skipped
+[23:52:48] width case_real_s1: done before, skipped
+[00:04:36]   neuron_head main order 0: |K*| 5966, R all 0.999365, read 0.999199, f 0.9997; 12504 evaluations, 697 s
+[00:04:36] width case_twin_s1: R read 0.999199, all 0.999365, |K*| 5966, f 0.9997, remainders in K* 0, overlap 1.0000; 708 s
+[00:16:22]   neuron_head main order 0: |K*| 5684, R all 0.999835, read 0.999729, f 0.9996; 12613 evaluations, 653 s
+[00:16:22] width repeat_real_s1: R read 0.999729, all 0.999835, |K*| 5684, f 0.9996, remainders in K* 0, overlap 1.0000; 706 s
+[00:29:03]   neuron_head main order 0: |K*| 5794, R all 0.999733, read 0.999621, f 0.9997; 12735 evaluations, 699 s
+[00:29:03] width repeat_twin_s1: R read 0.999621, all 0.999733, |K*| 5794, f 0.9997, remainders in K* 0, overlap 1.0000; 761 s
+[00:41:44]   neuron_head main order 0: |K*| 7610, R all 0.999871, read 0.999854, f 1.0000; 13083 evaluations, 696 s
+[00:41:44] width twin_s1: R read 0.999854, all 0.999871, |K*| 7610, f 1.0000, remainders in K* 0, overlap 1.0000; 761 s
+[00:54:40]   neuron_head main order 0: |K*| 7600, R all 0.999870, read 0.999853, f 1.0000; 13065 evaluations, 709 s
+[00:54:40] width fact_s1: R read 0.999853, all 0.999870, |K*| 7600, f 1.0000, remainders in K* 0, overlap 1.0000; 775 s
+[00:54:40] STAGE 1 TASK 3 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/topk_neurons/results/items and results/large/items (task 3) ===
