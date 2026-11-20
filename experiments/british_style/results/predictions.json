@@ -1,7 +1,6 @@
 {
   "experiment": "E233 (cell P2.48)",
-  "filed": null,
-  "draft": "2026-11-20, designer phase A; filed when the lead commits it with the E-number, before any run of run.py",
+  "filed": "2026-11-20, after the rehearsals (cluster jobs 62384, 62387, 62390, 62393) and before any scored run of run.py",
   "plan": "reports/plans/2026-11-20_plan_p2-48-british-style.md",
   "card": "experiments/british_style/card.md",
   "settings": {
@@ -96,7 +95,7 @@
     "stage 1, gain floor (seed 0 of both tasks, before seeds 1-2)": "each reaches size 0.0175 within 600 steps and gains at least 1 log-odds on its read windows there; a miss exits 1 before seeds 1 and 2"
   },
   "expected": {
-    "steps to 0.0175": "real 350 to 600 (slower than T1's 280: fewer changed tokens); twin 150 to 400 (larger loss at the changed words, T4 reached it at 130)",
+    "steps to 0.0175": "real 250 to 450, twin 200 to 400 (rehearsal 62390: size 0.0041 at step 10 and 0.0072-0.0075 at step 40 on both, projected ~330 and ~280 by size ~ step^0.42)",
     "gain at 0.0175": "real 2 to 6 log-odds; twin 4 to 12 (starts lower)",
     "gain at 0.00875": "50% to 85% of the 0.0175 gain (E211's T tasks)",
     "share at 0.0175": "real 0.55 to 0.85 (E53 lowercase 0.75-0.79, T1); twin 0.15 to 0.5 (E53's token cipher 0.12-0.26, T4 0.57)",
@@ -133,5 +132,5 @@
   },
   "card_call": "rival a when P1 is a hit with gap at least 0.1 (the card's smallest gap); rival b when P1 reads 'no call' or 'miss'; 'between' when P1 is a hit with gap under 0.1; nothing when P1 is unreadable (stage 1 would have stopped first)",
   "edge_cases_checked_before_filing": "run 2026-11-20 on the CPU worker (scratch/compare-lead/p248-designer/edges.py) through realistic.seed_call and realistic.filed (both also covered by tests/test_realistic.py): ranges apart upward -> hit (card rival a at gap 0.4, 'between' at gap 0.06); equal range ends -> no call (rival b); all equal -> no call; apart downward -> miss (rival b); a side with every share nan (all under the gain floor) -> unreadable; one value a side -> unreadable by this file's rule (seed_call alone would judge it on the sign); do-nothing on both sides (share nan, erank and k_half null) -> unreadable, so the do-nothing state cannot pass any rule; k_half on equal grid steps -> no call; k_half fewer on real (16 vs 64-128) -> hit, gap log10 0.82; erank 598-600 vs 505-507 -> hit, gap 0.073. No branch uncovered",
-  "seen_before_filing": "E211's run2_T1/T4 readings, E53/E136/E98/E141 control values, E227's stage0.json; the word list and the Pile density counts above (tokenizer only); no state of this run"
+  "seen_before_filing": "E211's run2_T1/T4 readings, E53/E136/E98/E141 control values, E227's stage0.json; the word list and the Pile density counts above (tokenizer only); the rehearsal (results/rehearse/, results/data.json): stage 0 in full (control share 0.7538, do-nothing exactly 0, base contrast 6.41 with real -7.15 and twin -13.56, twin median probability 8.4e-7) and seed 0 of both tasks cut to 40 steps (gain at step 40 real 0.93, twin 1.02; r at the cap's state readable only for the twin, 0.218, gain under the floor for real). No state of the scored run"
 }

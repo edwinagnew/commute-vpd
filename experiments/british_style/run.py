@@ -16,7 +16,8 @@ read from the saved file.
 
     sbatch --comment=E233 cluster/british_style.sbatch run          (scored; ~20 min on an L40)
     sbatch --comment='E233 rehearse: british-style' cluster/british_style.sbatch rehearse
-    python experiments/british_style/run.py score                   (no GPU) -> results/score.json, results/handoff.json
+    python experiments/british_style/run.py score                   (no GPU) -> results/scored/{score,handoff}.json
+    (score-rehearse: the same on the rehearsal's states, one seed, so 'unreadable' by the one-value rule)
 """
 
 from __future__ import annotations
@@ -292,44 +293,48 @@ def value(x: Any) -> float | None:
     return None if x is None or (isinstance(x, str) and x == "nan") else float(x)
 
 
-def score(C: Config, P: dict[str, Any]) -> dict[str, Any]:
-    out = RESULTS / "scored"
-    recs = {(t, s): json.loads((out / "states" / f"{t}_s{s}.json").read_text()) for t in TASKS for s in C.seeds}
+def score(P: dict[str, Any], out: Path, targets: tuple[float, ...], seeds: tuple[int, ...]) -> dict[str, Any]:
+    """The filed calls at each size, the card call at the last -> <out>/score.json; the states for R -> <out>/handoff.json."""
+    recs = {(t, s): json.loads((out / "states" / f"{t}_s{s}.json").read_text()) for t in TASKS for s in seeds}
     res: dict[str, Any] = {"experiment": P["experiment"], "sizes": {}}
-    for target in C.targets:
+    for target in targets:
         calls = {}
-        for m, key in (("share", "share"), ("erank", "erank"), ("k_half", "k_half")):
-            side = {t: [value(recs[(t, s)]["targets"][str(target)][key]) for s in C.seeds] for t in TASKS}
+        for m in ("share", "erank", "k_half"):
+            side = {t: [value(recs[(t, s)]["targets"][str(target)][m]) for s in seeds] for t in TASKS}
             c = R.seed_call(m, side["real"], side["twin"])
             c["filed"] = "unreadable" if c["call"] == "one value a side" else R.filed(c, "+")
             calls[m] = c
         res["sizes"][str(target)] = calls
-    p1 = res["sizes"][str(C.targets[-1])]["share"]
+    last = str(targets[-1])
+    p1 = res["sizes"][last]["share"]
     f, gap = p1["filed"], p1["gap"]
     res["card"] = ("rival a" if gap >= 0.1 else "between") if f == "hit" else "rival b" if f in ("no call", "miss") else "none"
-    res["gain"] = {t: [recs[(t, s)]["targets"][str(C.targets[-1])]["gain"] for s in C.seeds] for t in TASKS}
-    res["steps"] = {t: [recs[(t, s)]["targets"][str(C.targets[-1])]["step"] for s in C.seeds] for t in TASKS}
-    write_stage(RESULTS / "score.json", jsonable(res))
+    res["gain"] = {t: [recs[(t, s)]["targets"][last]["gain"] for s in seeds] for t in TASKS}
+    res["steps"] = {t: [recs[(t, s)]["targets"][last]["step"] for s in seeds] for t in TASKS}
+    write_stage(out / "score.json", jsonable(res))
     states = {f"{t}_s{s}_{g}": {"task": t, "seed": s, "target": float(g), **{k: v[k] for k in ("file", "sha256", "step", "size")}}
               for (t, s), r in recs.items() for g, v in r["targets"].items()}  # fmt: skip
     hand = {"experiment": P["experiment"], "states": states, "windows": {"file": str((LARGE / "data.pt").relative_to(EXPERIMENTS.parent)),
             "keys": "windows[task] (500, 127) int32, scored token at index half + 1 = 64; train[task], held[task] rows; at [row, real pos, twin pos]"}}  # fmt: skip
-    write_stage(RESULTS / "handoff.json", hand)
+    write_stage(out / "handoff.json", hand)
     log(json.dumps(jsonable(res)))
     return res
 
 
 def main(argv: list[str]) -> int:
     mode = argv[1] if len(argv) == 2 else ""
-    if mode not in ("run", "rehearse", "score", "data"):
-        sys.exit("usage: run.py {run | rehearse | score | data}")
+    if mode not in ("run", "rehearse", "score", "score-rehearse", "data"):
+        sys.exit("usage: run.py {run | rehearse | score | score-rehearse | data}")
     require_filed(PRED)
     P = json.loads(PRED.read_text())
     if mode in ("run", "score") and not P.get("filed"):
         sys.exit("predictions.json is not filed: the scored run refuses")
     C, th = config_from_settings(Config, P["settings"]), P["thresholds"]
     if mode == "score":
-        score(C, P)
+        score(P, RESULTS / "scored", C.targets, C.seeds)
+        return 0
+    if mode == "score-rehearse":
+        score(P, RESULTS / "rehearse", C.rehearse_targets, C.seeds[:1])
         return 0
     d = build_data(C)
     if mode == "data":
