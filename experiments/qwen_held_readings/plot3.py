@@ -2,7 +2,7 @@
 Top: per word pair, the gap S(reuse side) - S(new side) per seed, one line per save and kind (saved size; size-matched,
 the larger side times E187's c), with the rule's bar at +-smallest_gap; gold / shuffled gold from run 2 (read cleanly
 there) on the same axis for reference. Bottom: stage 0, the do-nothing KL(F||H) per fit and row set (log), with the
-largest floor a fit may have to be chosen.
+largest floor a fit may have to be chosen; a floor that reads <= 0 (rounding) is drawn at BOTTOM as an open triangle.
 
     ~/commute-agents/fleet/cpu-run python experiments/qwen_held_readings/plot3.py
 """
@@ -14,11 +14,13 @@ from pathlib import Path
 from typing import Any
 
 from matplotlib.axes import Axes
+from matplotlib.lines import Line2D
 
 from commute import figures as F
 
 HERE = Path(__file__).resolve().parent
 SAVED, MATCHED, ROWSET = "#0072B2", "#D55E00", ["#009E73", "#CC79A7"]
+BOTTOM = 3e-11  # where a do-nothing floor that reads <= 0 is drawn on the log axis
 TITLE = {"copy_cipher": "copy / cipher", "facts": "known / invented", "gold": "gold / shuffled (run 2)"}
 
 
@@ -34,8 +36,14 @@ def gaps(ax: Axes, name: str, pair: dict[str, Any], bar: float, label_lines: boo
             data += [{"pair": name, "save": save, "kind": kind, "seed_index": i, "gap": g} for i, g in enumerate(gs)]
     ax.set_yticks(range(len(labels)), labels if label_lines else [], fontsize=6.5)
     ax.invert_yaxis()
-    F.reference(ax, bar, f"+{bar:g}")
-    F.reference(ax, -bar, f"-{bar:g}")
+    bar_label = f"the rule's bar, gap = ±{bar:g}"
+    for x in (bar, -bar):
+        ax.axvline(x, color="#777777", linewidth=0.8, linestyle="--", label=bar_label)
+    if label_lines:
+        handles = [Line2D([], [], color="#777777", linewidth=0.8, linestyle="--", label=bar_label),
+                   *(Line2D([], [], color=c, marker="o", ms=4, linestyle="", label=t)
+                     for c, t in ((SAVED, "saved size"), (MATCHED, "larger side shrunk to the smaller's size")))]
+        ax.legend(handles=handles, fontsize=6, frameon=False, loc="center left", bbox_to_anchor=(0, 0.5))
     ax.axvline(0, color="#bbbbbb", linewidth=0.6)
     ax.tick_params(axis="x", labelsize=6.5)
     ax.set_xlabel("gap per seed", fontsize=7)
@@ -60,12 +68,22 @@ def floors(ax: Axes, summary: dict[str, Any], floor_max: float) -> list[dict[str
     for name, pair in summary["pairs"].items():
         for j, (rs, by_fit) in enumerate(pair["stage0"]["kl_fh"].items()):
             fits = list(by_fit)
-            pts = [(i, v) for i, v in enumerate(by_fit.values()) if v is not None and v > 0]
+            pts = [(i, v if v > 0 else BOTTOM) for i, v in enumerate(by_fit.values()) if v is not None]
             ax.plot([p[0] for p in pts], [p[1] for p in pts], marker="o", ms=3, lw=0.8, color=ROWSET[j],
                     linestyle="-" if name == "copy_cipher" else ":",
                     label=f"{rs} (pair's fit: {pair['stage0']['choice'] or 'none cleared'})")
+            low = [p for p in pts if p[1] == BOTTOM]
+            ax.scatter([p[0] for p in low], [p[1] for p in low], marker="v", s=40, facecolors="white",
+                       edgecolors=ROWSET[j], zorder=3,
+                       label=f"{rs}: floor reads at or below 0 (value beside), drawn at {BOTTOM:g}" if low else None)
+            for i, _ in low:
+                last = i == len(by_fit) - 1
+                ax.annotate(f"{list(by_fit.values())[i]:.1e}", (i, BOTTOM), xytext=(-8 if last else 8, 0),
+                            textcoords="offset points", fontsize=6, ha="right" if last else "left", va="center",
+                            color="#555555")
             data += [{"pair": name, "rowset": rs, "fit": f, "kl_fh": v} for f, v in by_fit.items()]
     ax.set_yscale("log")
+    ax.set_ylim(bottom=BOTTOM / 3)
     ax.axhline(floor_max, color="#777777", linewidth=0.8, linestyle="--")
     ax.annotate(f"{floor_max:g}, largest floor chosen", (0, floor_max), xytext=(2, 2), textcoords="offset points",
                 fontsize=6.5, color="#555555")

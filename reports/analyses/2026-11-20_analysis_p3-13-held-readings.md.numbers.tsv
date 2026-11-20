@@ -1,0 +1,60 @@
+0.98	experiments/qwen_held_readings/results/summary.json	[.states[].S]|min	this
+0.997	experiments/qwen_held_readings/results/summary.json	[.states[].S]|max	this
+0.79	experiments/qwen_held_readings/results/summary.json	[.states[].S_random]|min	this
+0.82	experiments/qwen_held_readings/results/summary.json	[.states[].S_random]|max	this
+0.17	experiments/qwen_held_readings/results/summary.json	[.states[].S_gap]|min	this
+0.19	experiments/qwen_held_readings/results/summary.json	[.states[].S_gap]|max	this
+0.0041	experiments/qwen_held_readings/results/summary.json	[.per_arm[].S_seed_sd]|max	this
+2.5e-5	experiments/qwen_held_readings/results/summary.json	[.states[].kl_fm_random]|max	this
+0.18	experiments/qwen_held_readings/results/summary.json	[.states[]|select(.arm!="F")|.kl_fm]|min	this
+0.35	experiments/qwen_held_readings/results/summary.json	[.states[]|select(.arm!="F")|.kl_fm]|max	this
+0.990	experiments/qwen_held_readings/results/summary.json	[.states[]|select(.share_class=="above")|.share]|min	this
+0.14	experiments/qwen_held_readings/results/summary.json	[.states[]|select(.share_class=="above")|.gap]|min	this
+0.043	experiments/qwen_held_readings/results/summary.json	.curve.band	this
+1329	experiments/qwen_held_readings/results/summary.json	[.states[].erank]|min	this
+1456	experiments/qwen_held_readings/results/summary.json	[.states[].erank]|max	this
+1812	experiments/qwen_held_readings/results/summary.json	[.states[].erank_floor]|min	this
+1829	experiments/qwen_held_readings/results/summary.json	[.states[].erank_floor]|max	this
+3.5e-9	experiments/qwen_held_readings/results/S/do_nothing.json	.kl_fh	this
+2.8e-4	experiments/qwen_held_readings/results/run3/summary.json	[.pairs[].stage0.run2_own64[]]|min	this
+2.2e-3	experiments/qwen_held_readings/results/run3/summary.json	[.pairs[].stage0.run2_own64[]]|max	this
+4.3e-9	experiments/qwen_held_readings/results/run2/gold/control/gold_do_nothing.json	.kl_fh	this
+2e-9	experiments/qwen_held_readings/results/run3/summary.json	[.pairs[].stage0 as $s | $s.kl_fh[][$s.choice]]|max	this
+1e-7	experiments/qwen_held_readings/results/run3/summary.json	.floor_max	this
+0.005	experiments/qwen_held_readings/results/run3/summary.json	.smallest_gap	this
+0.059	experiments/qwen_held_readings/results/run3/summary.json	[.pairs.copy_cipher.saves.last.saved.gaps[]]|min	this
+0.059	experiments/qwen_held_readings/results/run3/summary.json	[.pairs.copy_cipher.saves.last.saved.gaps[]]|max	this
+0.012	experiments/qwen_held_readings/results/run3/summary.json	[.pairs.facts.saves.last.saved.gaps[]]|min	this
+0.020	experiments/qwen_held_readings/results/run3/summary.json	[.pairs.facts.saves.last.saved.gaps[]]|max	this
+0.0014	experiments/qwen_held_readings/results/run3/summary.json	[.pairs.copy_cipher.saves.last.matched.gaps[]]|min	this
+0.0046	experiments/qwen_held_readings/results/run3/summary.json	[.pairs.copy_cipher.saves.last.matched.gaps[]]|max	this
+0.0012	experiments/qwen_held_readings/results/run3/summary.json	[.pairs.facts.saves.last.matched.gaps[]]|min	this
+0.0097	experiments/qwen_held_readings/results/run3/summary.json	[.pairs.facts.saves.last.matched.gaps[]]|max	this
+0.001	experiments/qwen_held_readings/results/run3/summary.json	[.pairs[].saves["5x"] | .saved.gaps[], .matched.gaps[] | fabs]|max	this
+0.0016	experiments/qwen_held_readings/results/run2/summary.json	[.pairs.gold.saves[] | .saved.gaps[], .matched.gaps[] | fabs]|max	this
+0.94	experiments/qwen_held_readings/results/run3/summary.json	[.pairs[].saves[].S[] | .random[], .c_random[] | select(.!=null)]|min	this
+0.97	experiments/qwen_held_readings/results/run3/summary.json	[.pairs[].saves[].S[] | .random[], .c_random[] | select(.!=null)]|max	this
+0.81	experiments/qwen_held_readings/results/run2/summary.json	[.pairs.gold.saves[].S[] | .random[], .c_random[] | select(.!=null)]|min	this
+0.0046	experiments/qwen_held_readings/results/run3/summary.json	[.pairs[].saves[].seed_sd[]]|max	this
+0.932	experiments/qwen_held_readings/results/run3/summary.json	.pairs.copy_cipher.saves.last.S.cipher.saved|min	this
+0.937	experiments/qwen_held_readings/results/run3/summary.json	.pairs.copy_cipher.saves.last.S.cipher.saved|max	this
+0.989	experiments/qwen_held_readings/results/run3/summary.json	.pairs.copy_cipher.saves.last.S.cipher.c|min	this
+0.992	experiments/qwen_held_readings/results/run3/summary.json	.pairs.copy_cipher.saves.last.S.cipher.c|max	this
+0.46	experiments/qwen_held_readings/results/run3/summary.json	.pairs.copy_cipher.saves.last.c	this
+0.975	experiments/qwen_held_readings/results/run3/summary.json	.pairs.facts.saves.last.S.invented.saved|add/length	this
+0.986	experiments/qwen_held_readings/results/run3/summary.json	.pairs.facts.saves.last.S.invented.c|add/length	this
+0.47	experiments/qwen_held_readings/results/run3/summary.json	.pairs.facts.saves.last.c	this
+0.0006	given	E205's drop in S under shrinking on the 67M, 0.0006-0.03, as filed in experiments/qwen_held_readings/results/run3/predictions.json .expected.S_rescaled (definition-lead, reports/analyses/2026-11-18_analysis_held-model-size-matched.md)
+0.03	given	as the line above, the top of E205's range
+0.9998	experiments/qwen_library_share/results/share_ranges.json	.sides.max	earlier
+0.992	experiments/qwen_library_share/results/share_ranges.json	.random_kl.min	earlier
+1.009	experiments/qwen_library_share/results/share_ranges.json	.random_kl.max	earlier
+0.990	experiments/qwen_library_share/results/share_ranges.json	.sides.min	earlier
+0.921	experiments/qwen_library_share/results/p-015e0710/share_ranges.json	.sides.min	earlier
+0.995	experiments/qwen_library_share/results/p-015e0710/share_ranges.json	.sides.max	earlier
+0.81	experiments/qwen_library_share/results/p-015e0710/share_ranges.json	.random_kl.min	earlier
+1.06	experiments/qwen_library_share/results/p-015e0710/share_ranges.json	.random_kl.max	earlier
+6.61	status	E225
+1.34	status	E225 rehearse sweep
+2.37	status	E225 facts
+2.89	given	copy_cipher pod (machine 01M7X8VK8QVNH453EBEF7DATED, .claude/remote-kernels/spend-history.jsonl spent 2.894); its job-runs record has no stage reason, so status E225 (6.61) minus rehearse sweep (1.34) and facts (2.37)
