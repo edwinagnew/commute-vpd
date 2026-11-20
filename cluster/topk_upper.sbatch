@@ -1,5 +1,5 @@
 #!/bin/bash
-# Cell P2.42 run 2: E217's top-activating-neuron featurization of the 67M re-read with the upper tail only.
+# Cell P2.45 (was P2.42 run 2), E229: E217's top-activating-neuron featurization of the 67M re-read with the upper tail only.
 # Plan: reports/plans/2026-11-20_plan_p2-42-upper-tail.md. Rule: experiments/topk_upper/results/predictions.json (run.py
 # refuses unless it is committed unchanged). Submit from the clone root, stage 0 first, stage 1 after it passes:
 #   sbatch --comment='E### stage 0' cluster/topk_upper.sbatch --stage 0
