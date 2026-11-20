@@ -1,0 +1,95 @@
+{
+ "experiment": "E222 (rl_67m), cell P2.41 stage 3 (run 4 of 4): the re-gating share and the scorecard baselines read on each of E220's 27 size-matched states (repeat and lower: rl, shuffled, own, demo x seeds 0-2; french_en demo x seeds 0-2, the taught anchor)",
+ "plan": "reports/plans/2026-11-19_plan_rl-67m.md (section Stage 3 (E222))",
+ "card": "reports/plans/2026-11-19_plan_rl-67m-stage3-card.md",
+ "filed": "2026-11-19, after E220 saved its 27 states and before any run of run_stage3.py",
+ "settings": {
+  "n_read": 200,
+  "n_read_source": "measured on the CPU 2026-11-19 (stage 1's builders and rewards, no model): french_en has 217 held-out rows whose French continuation earns the reward (of stage 1's 256), repeat 369 and lower 486 of 2,048 scanned; 200 is under each, so every behaviour reads the same count",
+  "n_scan": 2048,
+  "n_scan_source": "stage 1's Pile val prompt rule (rl_tasks.pile_prompts, val rows from 64) run to 2,048 prompts (2,059 and 2,075 rows of the 8,128 cached); its first 256 are stage 1's held-out prompts exactly (torch.equal, same run)",
+  "n_fit": 700,
+  "n_fit_source": "steering's fitting windows from the demo arm's training pool: repeat's pool is 711 (E220 stage2b_1_demo.json .pool), lower 991, french_en 4,096; at least E211's n_select 512",
+  "gauss_draw": 0,
+  "gauss_draw_source": "E211's first Gaussian draw (commute.finetune.random_direction seed 0)",
+  "seeds": [0, 1, 2],
+  "seeds_source": "E220's seeds",
+  "reader_settings_source": "E211's filed reader settings and reproduce tolerances, read at run time from experiments/realistic_tasks/results/predictions_run2.json (n_select 512, strengths 0-8, n_random 8, random_seed 0, k_fixed 64; E143's)"
+ },
+ "definitions": {
+  "read rows": "per behaviour, held-out prompts (64 tokens; never trained on: Pile val rows from 64, the training prompts are Pile train rows or later Wikipedia articles) whose own text continuation earns the behaviour's reward, the first 200; the target is the continuation's first token, read at prompt position 63. repeat: the target is the first copied token. lower: the first token of a lowercase Pile continuation. french_en: stage 1's held-out English prompts each followed by stage 1's held-out French Wikipedia continuation of the same index",
+  "unit": "lo: the log-odds of the row's target over the whole vocabulary at position 63 (E211's LM unit)",
+  "gain": "T1 - T0 in lo, the fp32 model with the update minus W0, mean over the read rows",
+  "readable": "a state is readable on a ratio reading when its gain is at or over MIN_GAIN = 1 (commute.local_faith; every ratio is nan under it); an arm is readable when at least 2 of its 3 seeds are",
+  "share": "(L01 - L00) / (T1 - T0) on the released decomposition, do-nothing form (commute.realistic_reads.Reader.share, E211's)",
+  "untrained": "the same ratio on W0's SVD decomposition and its rotation (E136's k_m)",
+  "neuron": "(N01 - N00) / gain, each block's firing kept on its TopK neurons, k 64 and k matched (E143's)",
+  "steering": "pooled fair steering (E143's): a vector from the fitting windows, (layer, strength) picked on the first 512, its rise on the read rows over the gain; 8 random draws beside",
+  "k_half": "E98's count of neurons carrying half the r_half numerator",
+  "prior": "W0's mean lo on the read rows (no update read)",
+  "erank": "commute.update_spectrum.state's effective rank of the update",
+  "size": "commute.realistic.update_size of the state as loaded (fp32 of the saved bf16)"
+ },
+ "blind_to": {
+  "share": "anything outside the read position's target token: a change in the other 15 continuation tokens, or in which lowercase word is sampled, moves the reward but not this read; it reads nothing on a state under the floor (most likely own, demo and shuffled, below). Positive control: E53's lowercase (0.754) and cipher (0.125) shares reproduced in ctl",
+  "untrained": "what the released decomposition learned: it reads W0's SVD, so it separates the share from any rank-structured update. Control: E53's svd/rotated values in ctl",
+  "neuron": "directions that are not single TopK neurons. Control: E53's neuron values in ctl",
+  "steering": "updates that are not one added residual direction; the random draws beside are its floor",
+  "k_half": "anything outside the r_half numerator; null when the update carries under carry_floor",
+  "prior": "the update entirely (a W0 reading); it says how hard the read rows are at W0",
+  "erank": "the read rows: a property of dW alone; a Gaussian reads near full rank",
+  "rule": "seed noise from fewer than 2 readable seeds (such an arm is unreadable), and any difference under 0.1 (the card's smallest gap)"
+ },
+ "control": {
+  "ctl, first and alone": "E211's ctl unchanged (experiments/realistic_tasks/run2.py ctl, through the same Reader): E53's lowercase_s0 and cipher_s0 re-read to their saved numbers within E211's reproduce_tol (share 0.01, svd/rotated/gain/neuron 1e-4, steering 1e-3, erank 1e-6, k_half 0, r_half_num 1e-4), and a zero update on E53's lowercase rows reads every numerator exactly 0. Then a zero update on each behaviour's read rows (repeat, lower, french_en) reads every numerator exactly 0. Any miss exits 1 and no behaviour job starts (each refuses until stage3_ctl.json is done)",
+  "do-nothing, first in each behaviour job": "a Gaussian update at the behaviour's first state's per-matrix norms (rl seed 0 for the picks, demo seed 0 for the anchor): gain under MIN_GAIN (1) or the job exits 1",
+  "input check": "every state's sha256 equals E220's record of it, or the job exits 1"
+ },
+ "expected": {
+  "ctl e53/lowercase_s0": {"share": 0.7538, "svd": 0.1185, "rotated": 0.3281, "gain": 1.6721, "neuron_k64": 0.0341, "neuron_kmatched": 0.0078, "steer_pooled": 0.7131, "erank": 598.57, "k_half": 16, "r_half_num": 0.8800, "source": "E211's ctl as it read them (experiments/realistic_tasks/results/run2_ctl.json), same code and card type"},
+  "ctl e53/cipher_s0": {"share": 0.1249, "svd": 0.0677, "rotated": 0.1791, "gain": 3.8681, "neuron_k64": 0.0049, "neuron_kmatched": 0.0010, "steer_pooled": 0.6930, "erank": 594.27, "source": "as above"},
+  "W0 (zero update), on every behaviour's rows": "every numerator and gain exactly 0.0; every ratio nan (gain under the floor); k_half null; erank null (E211's zero record); size 0",
+  "do-nothing (Gaussian)": "gain within +-0.05 of 0 (E211's nine Gaussians at size 0.0088 read 0.002 to 0.02); every ratio nan; erank about 700 (E211's 700.17-700.24); size equal to the state's (0.0069)",
+  "prior": "the same on every state of a behaviour (a W0 reading). repeat: about -2 to +3 (W0 already copies on rows whose text copies); lower: about -6 to -2 (an ordinary next word); french_en: about -14 to -8 (a French token after English text)",
+  "size": "E220's size_saved within 1e-6 (0.00687 to 0.00702)",
+  "gain and readability": "the floor is the likely limit. E220's held-out rates (16 sampled tokens) moved for RL from 0.16 to 0.70 (repeat) and 0.25 to 0.98 (lower), for the anchor from 0.003 to 0.87, but for own and demo only to 0.17-0.20 (repeat) and 0.45-0.54 (lower), at KL 0.10-0.17 nats per token; shuffled fell slightly at KL 1.0-1.1. A whole-continuation log-odds change of about +1.1 (lower own/demo) spread over 16 tokens is far under 1 on one token. Expected gains: anchor over 3 (readable); RL repeat 1 to 3 (readable, probability 0.7); RL lower -1 to +2 (it raises lowercase in general, not this word; readable, probability 0.4); own and demo 0 to 0.6 on both picks (readable, probability 0.15 each); shuffled -0.5 to +0.3 (unreadable)",
+  "share on a readable state": "0.1 to 0.8, the range of E53's cipher and lowercase shares; no point value (no RL update has been read on this model)",
+  "baselines on a readable state": "untrained svd under the share (E53: 0.07-0.12), rotated 0.15-0.35; neuron k64 and k matched under 0.05 (E53: 0.001-0.034); steering 0.3 to 0.8 with its random draws near 0 (E53: 0.69-0.71); k_half 5 to 60 (E53 lowercase 16); erank 500 to 650 (E211's trained states 522-542 at size 0.0088, E53's 594-599)",
+  "seconds per state": "at most 59 s on an L40 (E211's T2 job, cluster/logs/commute-realistic-r2-61448.out: states 58-59 s apart at 500 rows of 127 tokens; these rows are 200 of 65); the ctl's three zero reads measure it on these rows"
+ },
+ "rules": {
+  "smallest_gap": 0.1,
+  "min_readable_seeds": 2,
+  "floor": "MIN_GAIN = 1 in lo (commute.local_faith), applied by the reader and recorded per state (gain beside every ratio)",
+  "alike": "two readable arms whose seed ranges [min, max] overlap (touching counts) and whose means differ by less than 0.1",
+  "apart": "two readable arms whose seed ranges do not overlap and whose means differ by at least 0.1",
+  "above": "every seed of one arm strictly above every seed of the other (min > max; a tie is not above)",
+  "per pick (repeat, lower), on the share": "no call when fewer than two arms are readable, or RL or demo is not (the rivals differ only on demo against RL). Otherwise rival a when every pair of the readable arms among rl, own, demo is alike and each is above the anchor (the anchor's three french_en demo seeds) and above shuffled, each where that reference is readable (a reference under the floor is recorded as not read); rival b when demo is apart from rl and own (if readable) is alike rl; else neither. Third outcome, read beside and reported whatever the call: shuffled readable and alike rl",
+  "card": "the same call on every pick that has one; split when the two picks' calls differ; no call when neither pick has one (the card's stop: the cell closes with the readings as they stand)",
+  "beside, not filed": "score_stage3.py runs the same rule on untrained (svd, rotated), steering and neuron (k64, k matched) and lists every baseline's seed values; none of these is a call"
+ },
+ "edge_cases": {
+  "checked": "2026-11-19, score_stage3.pick_call and card_call run on the cases below through cpu-run (script ~/commute-data/scratch/compare-lead/e222-writer/edge_cases.py); the first run found that rival a could be called with demo under the floor, so demo unreadable is now no call",
+  "every arm under the floor": "no call",
+  "only RL readable": "no call",
+  "RL unreadable, own and demo readable": "no call",
+  "demo with one readable seed": "demo unreadable: no call",
+  "rl, own, demo alike, above the anchor, shuffled unreadable": "rival a, shuffled recorded as not read",
+  "anchor's top seed equal to RL's lowest (tie)": "not above: neither",
+  "every value identical": "neither (not above the anchor); third true",
+  "demo exactly 0.1 under rl, ranges apart, own alike": "rival b (at least 0.1; the float difference 0.4 - 0.3 is 0.10000000000000003, a gap that is 0.1 to within rounding may fall either side)",
+  "demo 0.12 under rl but ranges overlap": "neither",
+  "demo apart, own unreadable": "rival b, own not read",
+  "demo apart and own apart": "neither",
+  "shuffled alike rl, the rest alike and above the anchor": "neither (rl not above shuffled); third true",
+  "touching ranges, gap under 0.1": "alike",
+  "picks rival a and no call": "card rival a (resting on one pick, stated)",
+  "picks rival a and rival b": "card split",
+  "do-nothing state": "a Gaussian or zero update reads every ratio nan, so it is unreadable and cannot pass either rival's bar"
+ },
+ "prediction": {
+  "card": "no call (probability 0.7): own and demo under the floor on both picks. Given a call: rival a 0.5, rival b 0.3, neither 0.2",
+  "third outcome": "not read (shuffled under the floor, probability 0.85)",
+  "anchor": "readable on all three seeds, share 0.1 to 0.8"
+ }
+}
