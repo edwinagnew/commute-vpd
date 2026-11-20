@@ -1,4 +1,4 @@
-cell: P2.42
+cell: P2.45
 rival_a: E217's low overlap and lowered R come from the fine-tune moving the strong positive firings themselves predicts that, with the upper tail only, the strong-neuron overlap stays within 0.1 of E217's at the same percentile and R_read within 0.01 of E217's on most trained fine-tunes
 rival_b: E217's below-p3 tail sat on GELU's floor (every neuron's p3 is -0.1699 to -0.17), so tiny pre-activation shifts flipped those features in and out predicts that, with the upper tail only, the overlap rises by 0.1 or more over E217's at the same percentile and R_read rises toward the full width by 0.01 or more on most trained fine-tunes
 rung: parameter

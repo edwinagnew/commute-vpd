@@ -1,4 +1,4 @@
-# Plan: E217's top-activating-neuron featurization re-read with the upper tail only (cell P2.42 run 2)
+# Plan: E217's top-activating-neuron featurization re-read with the upper tail only (cell P2.45; was P2.42 run 2)
 
 **In plain words.** E217 read the definition with a neuron counted as a feature when it fired above its 97th
 percentile or below its 3rd. The small model's MLP is a plain GELU, whose output never goes below about -0.17, so the
