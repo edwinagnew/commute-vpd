@@ -1,0 +1,130 @@
+[00:51:01] [pod] copy_cipher: 12 states, 12 to read, 36 S reads; order ['cipher_s0_last', 'cipher_s1_last', 'cipher_s2_last', 'cipher_s0_5x', 'cipher_s1_5x', 'cipher_s2_5x', 'copy_s0_last', 'copy_s1_last', 'copy_s2_last', 'copy_s0_5x', 'copy_s1_5x', 'copy_s2_5x']
+Fetching 2 files:   0%|          | 0/2 [00:00<?, ?it/s]Fetching 2 files:  50%|█████     | 1/2 [00:15<00:15, 15.30s/it]Fetching 2 files: 100%|██████████| 2/2 [00:15<00:00,  7.65s/it]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:02<00:02,  2.21s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:02<00:00,  1.03s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:02<00:00,  1.20s/it]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:02<00:02,  2.01s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:02<00:00,  1.07it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:02<00:00,  1.09s/it]
+wandb: Currently logged in as: edwinagnew (edwinagnew-mats) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+[00:52:23] [fetch] last.safetensors: 5637 MB in 56 s
+[00:52:27] [fetch cipher_s0_last] p35r3-cipher-s0-last: 62 s, sha256 matches
+[00:52:56] [S] grams and pinv: 27 s, peak GPU 23.7 GiB
+[00:53:10] [S] control/cipher_do_nothing: S None, KL(F||M) 0, KL(F||H) 0.00124686, 14 s
+[00:53:10] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/control/cipher_do_nothing.json
+[00:53:10] [check] S_do_nothing_cipher: ok {"kl_fm": 0.0, "kl_fh": 0.0012468555573065148, "S": null}
+[00:53:10] [S] rows cipher: floor 0.124686 per position; peak GPU 33.2 GiB
+[00:53:24] [fetch] last.safetensors: 5637 MB in 56 s
+[00:53:25] [S] control/output_only: S 0.9991645262811657, KL(F||M) 1.73205, KL(F||H) 0.00144708, 14 s
+[00:53:25] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/control/output_only.json
+[00:53:25] [check] S_output_only: ok {"S": 0.9991645262811657, "kl_fm": 1.732050352992435}
+[00:53:25] STAGE 0 DONE
+[00:53:33] [fetch cipher_s1_last] p35r3-cipher-s1-last: 65 s, sha256 matches
+[00:53:42] [S] S/cipher_s0_last: S 0.9291591742967107, KL(F||M) 6.43304, KL(F||H) 0.455722, 10 s
+[00:53:42] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s0_last.json
+[00:54:10] [S] S/cipher_s0_last_c: S 0.989210673496875, KL(F||M) 1.71435, KL(F||H) 0.0184967, 10 s
+[00:54:10] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s0_last_c.json
+[00:55:09] [S] S/cipher_s0_last_random: S None, KL(F||M) 0.00106196, KL(F||H) 0.00133182, 15 s
+[00:55:09] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s0_last_random.json
+[00:55:24] [S] S/cipher_s0_last_c_random: S None, KL(F||M) 0.000224312, KL(F||H) 0.00126424, 14 s
+[00:55:24] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s0_last_c_random.json
+[00:55:24] [pod] cipher_s0_last done; peak GPU 33.2 GiB
+[00:55:41] [S] S/cipher_s1_last: S 0.9382339438185444, KL(F||M) 6.36247, KL(F||H) 0.392985, 10 s
+[00:55:41] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s1_last.json
+[00:56:09] [S] S/cipher_s1_last_c: S 0.9926509000351423, KL(F||M) 1.75737, KL(F||H) 0.0129151, 9 s
+[00:56:09] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s1_last_c.json
+[00:56:20] [fetch] last.safetensors: 5637 MB in 54 s
+[00:56:26] [fetch cipher_s2_last] p35r3-cipher-s2-last: 62 s, sha256 matches
+[00:57:05] [S] S/cipher_s1_last_random: S None, KL(F||M) 0.00102364, KL(F||H) 0.00132826, 15 s
+[00:57:05] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s1_last_random.json
+[00:57:27] [S] S/cipher_s1_last_c_random: S None, KL(F||M) 0.000216462, KL(F||H) 0.00126325, 15 s
+[00:57:27] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s1_last_c_random.json
+[00:57:27] [pod] cipher_s1_last done; peak GPU 33.2 GiB
+[00:57:43] [S] S/cipher_s2_last: S 0.9358777070100117, KL(F||M) 6.78445, KL(F||H) 0.435034, 10 s
+[00:57:43] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s2_last.json
+[00:58:12] [S] S/cipher_s2_last_c: S 0.9915744616752724, KL(F||M) 1.91853, KL(F||H) 0.0161646, 11 s
+[00:58:12] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s2_last_c.json
+[00:58:18] [fetch] 5x.safetensors: 5637 MB in 49 s
+[00:58:23] [fetch cipher_s0_5x] p35r3-cipher-s0-5x: 56 s, sha256 matches
+[00:59:08] [S] S/cipher_s2_last_random: S None, KL(F||M) 0.00100973, KL(F||H) 0.00132742, 14 s
+[00:59:08] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s2_last_random.json
+[00:59:29] [S] S/cipher_s2_last_c_random: S None, KL(F||M) 0.000213478, KL(F||H) 0.001263, 15 s
+[00:59:29] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s2_last_c_random.json
+[00:59:29] [pod] cipher_s2_last done; peak GPU 33.2 GiB
+[00:59:46] [S] S/cipher_s0_5x: S 0.9989851352252533, KL(F||M) 1.30228, KL(F||H) 0.00132164, 10 s
+[00:59:46] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s0_5x.json
+[01:00:15] [S] S/cipher_s0_5x_c: S 0.9972436005013314, KL(F||M) 0.317802, KL(F||H) 0.000875989, 10 s
+[01:00:15] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s0_5x_c.json
+[01:00:21] [fetch] 5x.safetensors: 5637 MB in 50 s
+[01:00:28] [fetch cipher_s1_5x] p35r3-cipher-s1-5x: 58 s, sha256 matches
+[01:01:11] [S] S/cipher_s0_5x_random: S None, KL(F||M) 1.09854e-05, KL(F||H) 0.00124792, 14 s
+[01:01:11] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s0_5x_random.json
+[01:01:30] [S] S/cipher_s0_5x_c_random: S None, KL(F||M) 1.57638e-06, KL(F||H) 0.00124726, 12 s
+[01:01:30] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s0_5x_c_random.json
+[01:01:30] [pod] cipher_s0_5x done; peak GPU 33.2 GiB
+[01:01:45] [S] S/cipher_s1_5x: S 0.998935673415135, KL(F||M) 1.30947, KL(F||H) 0.0013937, 9 s
+[01:01:45] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s1_5x.json
+[01:02:11] [S] S/cipher_s1_5x_c: S 0.9972654740880008, KL(F||M) 0.324164, KL(F||H) 0.000886436, 9 s
+[01:02:11] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s1_5x_c.json
+[01:02:30] [fetch] 5x.safetensors: 5637 MB in 59 s
+[01:02:36] [fetch cipher_s2_5x] p35r3-cipher-s2-5x: 66 s, sha256 matches
+[01:03:06] [S] S/cipher_s1_5x_random: S None, KL(F||M) 1.06757e-05, KL(F||H) 0.00124786, 12 s
+[01:03:06] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s1_5x_random.json
+[01:03:25] [S] S/cipher_s1_5x_c_random: S None, KL(F||M) 1.53239e-06, KL(F||H) 0.0012472, 12 s
+[01:03:25] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s1_5x_c_random.json
+[01:03:25] [pod] cipher_s1_5x done; peak GPU 33.2 GiB
+[01:03:40] [S] S/cipher_s2_5x: S 0.998731079137927, KL(F||M) 1.37455, KL(F||H) 0.0017442, 9 s
+[01:03:40] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s2_5x.json
+[01:04:07] [S] S/cipher_s2_5x_c: S 0.9973972019933545, KL(F||M) 0.35487, KL(F||H) 0.000923656, 9 s
+[01:04:07] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s2_5x_c.json
+[01:04:24] [fetch] last.safetensors: 5637 MB in 57 s
+[01:04:30] [fetch copy_s0_last] p35r3-copy-s0-last: 64 s, sha256 matches
+[01:05:01] [S] S/cipher_s2_5x_random: S None, KL(F||M) 1.14567e-05, KL(F||H) 0.00124808, 12 s
+[01:05:01] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s2_5x_random.json
+[01:05:20] [S] S/cipher_s2_5x_c_random: S None, KL(F||M) 1.64535e-06, KL(F||H) 0.00124721, 12 s
+[01:05:20] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/cipher_s2_5x_c_random.json
+[01:05:20] [pod] cipher_s2_5x done; peak GPU 33.2 GiB
+[01:05:47] [S] grams and pinv: 26 s, peak GPU 33.2 GiB
+[01:06:01] [S] control/copy_do_nothing: S None, KL(F||M) 0, KL(F||H) 0.00223707, 14 s
+[01:06:01] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/control/copy_do_nothing.json
+[01:06:01] [check] S_do_nothing_copy: ok {"kl_fm": 0.0, "kl_fh": 0.0022370698812597062, "S": null}
+[01:06:01] [S] rows copy: floor 0.223707 per position; peak GPU 33.2 GiB
+[01:06:18] [S] S/copy_s0_last: S 0.9950470535504343, KL(F||M) 3.6746, KL(F||H) 0.0182001, 9 s
+[01:06:18] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/copy_s0_last.json
+[01:06:37] [fetch] last.safetensors: 5637 MB in 76 s
+[01:06:43] [fetch copy_s1_last] p35r3-copy-s1-last: 84 s, sha256 matches
+[01:07:17] [S] S/copy_s0_last_random: S None, KL(F||M) 0.000263226, KL(F||H) 0.00227426, 16 s
+[01:07:17] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/copy_s0_last_random.json
+[01:07:17] [pod] copy_s0_last done; peak GPU 33.2 GiB
+[01:07:33] [S] S/copy_s1_last: S 0.9955397330535322, KL(F||M) 3.39963, KL(F||H) 0.0151633, 9 s
+[01:07:33] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/copy_s1_last.json
+[01:08:10] [fetch] last.safetensors: 5637 MB in 51 s
+[01:08:15] [fetch copy_s2_last] p35r3-copy-s2-last: 58 s, sha256 matches
+[01:08:30] [S] S/copy_s1_last_random: S None, KL(F||M) 0.000210642, KL(F||H) 0.00227156, 15 s
+[01:08:30] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/copy_s1_last_random.json
+[01:08:30] [pod] copy_s1_last done; peak GPU 33.2 GiB
+[01:08:46] [S] S/copy_s2_last: S 0.9964141600622325, KL(F||M) 3.93896, KL(F||H) 0.0141245, 9 s
+[01:08:46] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/copy_s2_last.json
+[01:09:23] [fetch] 5x.safetensors: 5637 MB in 52 s
+[01:09:29] [fetch copy_s0_5x] p35r3-copy-s0-5x: 59 s, sha256 matches
+[01:09:41] [S] S/copy_s2_last_random: S None, KL(F||M) 0.000279032, KL(F||H) 0.00227682, 12 s
+[01:09:41] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/copy_s2_last_random.json
+[01:09:41] [pod] copy_s2_last done; peak GPU 33.2 GiB
+[01:09:56] [S] S/copy_s0_5x: S 0.9963569010327065, KL(F||M) 0.561458, KL(F||H) 0.00204545, 9 s
+[01:09:56] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/copy_s0_5x.json
+[01:10:33] [fetch] 5x.safetensors: 5637 MB in 50 s
+[01:10:38] [fetch copy_s1_5x] p35r3-copy-s1-5x: 57 s, sha256 matches
+[01:10:52] [S] S/copy_s0_5x_random: S None, KL(F||M) 1.38693e-06, KL(F||H) 0.00223867, 12 s
+[01:10:52] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/copy_s0_5x_random.json
+[01:10:52] [pod] copy_s0_5x done; peak GPU 33.2 GiB
+[01:11:09] [S] S/copy_s1_5x: S 0.9968162440305476, KL(F||M) 0.793223, KL(F||H) 0.00252543, 10 s
+[01:11:09] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/copy_s1_5x.json
+[01:11:42] [fetch] 5x.safetensors: 5637 MB in 48 s
+[01:11:48] [fetch copy_s2_5x] p35r3-copy-s2-5x: 55 s, sha256 matches
+[01:12:04] [S] S/copy_s1_5x_random: S None, KL(F||M) 2.13241e-06, KL(F||H) 0.00223892, 12 s
+[01:12:04] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/copy_s1_5x_random.json
+[01:12:04] [pod] copy_s1_5x done; peak GPU 33.2 GiB
+[01:12:20] [S] S/copy_s2_5x: S 0.996317326443497, KL(F||M) 0.555992, KL(F||H) 0.00204754, 9 s
+[01:12:20] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/copy_s2_5x.json
+[01:13:18] [S] S/copy_s2_5x_random: S None, KL(F||M) 1.41578e-06, KL(F||H) 0.00223864, 15 s
+[01:13:18] [wrote] /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/S/copy_s2_5x_random.json
+[01:13:18] [pod] copy_s2_5x done; peak GPU 33.2 GiB
+[01:13:19] STAGE 1 DONE copy_cipher
+peak host RSS 36.3 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/qwen_held_readings/results/run2/copy_cipher/ and run2_copy_cipher_pod.log ===
