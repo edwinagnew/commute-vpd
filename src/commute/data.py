@@ -67,6 +67,7 @@ def batches(rows: Tensor, size: int) -> list[Tensor]:
 
 NEXT = -1  # `target_tokens`' "true next token" option (E53, 2026-10-29): no token id is negative
 LAST = -2  # its "target in the last column" option (E62, 2026-11-02): the column is never fed to the model (`ci_len`)
+PAIR = -3  # its "two targets in the last two columns" option (E223, 2026-11-20): (B, 2), a per-window pair, never fed
 
 
 def target_tokens(token: int | Tensor, toks: Tensor, half: int) -> Tensor:
@@ -74,11 +75,14 @@ def target_tokens(token: int | Tensor, toks: Tensor, half: int) -> Tensor:
     read at the token at `half` (the key -> value tasks of experiments/kv_task; `kv.KVTask.table`), for `NEXT`, each
     window's own token at `half + 1` (its true next token; E53's performed-anchor windows), or, for `LAST`, the window's
     last column (E62: a target per window that the token at `half` does not determine; pass `ci_len` so that no forward
-    and no Gamma reads that column)."""
+    and no Gamma reads that column), or, for `PAIR`, its last two columns, (B, 2) (E223: a two-form pair per window, read by
+    `realistic_reads.pair_at`; `ci_len` likewise)."""
     if isinstance(token, int) and token == NEXT:
         return toks[:, half + 1]
     if isinstance(token, int) and token == LAST:
         return toks[:, -1]
+    if isinstance(token, int) and token == PAIR:
+        return toks[:, -2:]
     if isinstance(token, int):
         return torch.full((toks.shape[0],), token, device=toks.device, dtype=torch.long)
     return token.to(toks.device)[toks[:, half]]
