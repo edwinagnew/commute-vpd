@@ -15,10 +15,10 @@
     "list_sha256_source": "sha256 of the three files fetched 2026-11-20 at that commit; the job downloads them into artifacts/spelling/<commit>/ when missing and refuses a mismatch",
     "rehearse_cap": 40,
     "rehearse_targets": [
-      0.001,
-      0.002
+      0.005,
+      0.5
     ],
-    "rehearse_source": "the rehearsal's training stage only (run.py rehearse): seed 0, both tasks, cut to 40 steps, saved at sizes the first steps reach, so saves, reads and resume are exercised at the full read size",
+    "rehearse_source": "the rehearsal's training stage only (run.py rehearse): seed 0, both tasks, cut to 40 steps; 0.005 is reached inside 40 steps (a reached save) and 0.5 never (the cap's save, marked not reached), so both save paths, the reads and the resume run at the full read size. Job 62387 with 0.001/0.002 stopped at step 3 (Adam's first step alone gives size 0.00114), too early to trace steps 10 and 40",
     "trace_steps": [
       1,
       10,
