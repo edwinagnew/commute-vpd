@@ -1,0 +1,88 @@
+{
+  "experiment": "E221",
+  "cell": "P1.36 (tests T3 and T4 of reports/analyses/2026-11-18_analysis_definition-vs-experiments.md); descriptive (card reports/plans/2026-11-19_plan_p1-36-card.md: the user's 2026-11-19 task file, the §5 label column)",
+  "plan": "reports/plans/2026-11-19_plan_p1-36-pairs.md (appendix reports/plans/2026-11-19_plan_p1-36-pairs_appendix.md)",
+  "main_grade": "read",
+  "main_grade_source": "user 2026-11-19 (E214's predictions.json main_grade_source): s_u on the read positions (here the last position of each window) is the main reading; every position of D ('all') is the side reading. Both are computed and saved.",
+  "levels_source": "E214 (P1.35) passed at no level: every filed rule was 'not read' because the hand-built reuse edits could not be built (reports/analyses/2026-11-19_analysis_e214-kstar-levels.md). The cell's done_when then reads every coarse level, stated so. No neuron level (cell).",
+  "definition": "decisions.md rows of 2026-11-18, unchanged, as E214 read them: K* = the minimal set of variables that keeps KL(F || F_K) at the read positions within (1 - alpha) of KL(F || F_all_ablated) under position-wise mean ablation over D; s_u = 1 - mean over settings of (1 - cos^2(write_F, write_M)); R = mean s_u over K*; f = |K* & C| / |K*|; remainder share = the share of K* that is a remainder variable (none exists on these items, so 0). R, f and every rule below are this run's readings, not clauses of the definition; no verdict on the definition is given.",
+  "settings": {
+    "levels": ["head_mlp", "mlp_attn", "block"],
+    "alpha": 0.9,
+    "alphas": [0.8, 0.9, 0.95],
+    "restricted_share": 0.5,
+    "orders": 3,
+    "order_seed": 0,
+    "polish_cap": 2000,
+    "split_seed": 186001,
+    "e196_pairs": [["copy24", "cipher24"], ["ident32", "rand32"], ["case_real", "case_twin"], ["repeat_real", "repeat_twin"], ["twin", "fact"]],
+    "e196_seeds": [0, 1],
+    "e196_as_e187": [["copy24", "c3/copy"], ["cipher24", "c3/cipher"], ["ident32", "e46/ident32"], ["rand32", "e46/rand32"]],
+    "n_read": 512,
+    "read_seed": 195200,
+    "n_max": 100,
+    "held_share": 0.25,
+    "control_task": "copy24",
+    "e195_layer": 1,
+    "e195_C": [486, 499, 613, 778, 1125, 2028, 2352, 2960],
+    "e195_factor": 10,
+    "settings_source": "alpha, alphas, restricted_share, order_seed, polish_cap, split_seed, e195_*: E214's filed values (experiments/kstar_levels/results/predictions.json); orders 3 at head_mlp: E214 read 5 orders on its built edits and 1 on the rest, and its order 0 and orders 1-4 differed by 0.03 in R on new_few (results/run_s2b.log), so one order cannot show the order spread; 3 gives an order sd per item at three fifths of 5's cost (the exhaustive levels need one); e196_pairs, e196_seeds, n_read, read_seed, n_max, held_share, control_task: E196's filed values and pair order (experiments/rule_retention_pairs/results/predictions.json, run.py PAIRS, reuse member first); E187's nine pairs and their states: experiments/size_matched/run.py BUILT and pairs(), read through E205's load_pairs; e196_as_e187: the E196 members saved in the same file as an E187 state, with the same windows' group (asserted by run.py at start), read once under the E187 name."
+  },
+  "thresholds": {
+    "kl_floor": 1e-06,
+    "gate_tol": 0.001,
+    "s_tol": 1e-06,
+    "repro_tol": 1e-05,
+    "kl_repro_rel": 0.0001,
+    "size_rel": 1e-06,
+    "rho_bar": 0.7,
+    "n_min": 5,
+    "control_rho": 0.999,
+    "thresholds_source": "kl_floor, gate_tol, s_tol: E214's filed values; size_rel: E205's filed value, the same function (E205 sizes) on the same saved delta-W; kl_repro_rel: E205's kl_FM and E208's kl for copy24_s0 (the same state and windows through two code paths) agree in all 16 printed digits (3.5314350866634263), while a wrong state or window set moves KL(F || M) by order 1, so 1e-4 relative separates the two by four orders either side; repro_tol: x10's R at block is 0.0245 under 1 (E214 items/x10_block.json) and fp32 forwards on another card move an fp64 grade by about 1e-7 (E214's s_tol note), so 1e-5 is a hundred times the rounding and over 2,000 times under x10's distance from 1; the rehearsal logs the measured difference; rho_bar 0.7: the cell (P1.36 done_when) and the audit's T4 ('a rank correlation of 0.7 or more'); n_min 5: under 5 pairs a perfect rank order happens by chance at least once in 24 (1/n!), at 5 once in 120; control_rho: the control compares this run's update sizes with E187's saved sizes of the same states by the same formula, so the ranks are identical and Spearman is 1; 0.999 admits nothing but a tie broken by rounding."
+  },
+  "readings": {
+    "per_item": "R (main: read grade; side: all grade), f, remainder share, |K*| (each the mean over the main search's orders: 3 at head_mlp, 1 at the exhaustive levels), and beside them the update size ||dW|| / ||W0|| over the 24 matrices and over the 8 MLP matrices (E205's sizes), the number of windows (512 for every item), KL(F || F_empty), KL(F || M); at mlp_attn and block also R at alpha 0.8 and 0.95, on the restricted D (the half of D with the largest KL(F || M)) and on two halves of D, all from the one exhaustive table.",
+    "per_pair": "gap = mean over the reuse side's items - mean over the new side's items, of R and of each nuisance (update size, |K*|, f), with the standard error from the seeds of each side; E196 pairs also per seed.",
+    "old_readings": "per pair, each earlier reading's gap oriented so positive is reuse-like by its own report: rho_E208 (E196 pairs), retention_A_E196 (E196 pairs), S3_held_model and S1_held_model (E197 on E196 pairs, E205 on E187 pairs: one measurement, 14 pairs), share (E136's per-state share on E196's four counted pairs, the scorecard's share gap on E187's nine: 13 pairs), steering, neuron_top, k_half (the 67M scorecard, experiments/method_table/results/final.json, E187's nine), crosscoder_E203 (seed 0, E187's nine), rung_E184 (E196 pairs, ordinal, sign only), G_E142 (E196's four counted pairs, sign only). Files and keys: score.py old_readings, and the plan appendix's table of which reading exists for which pair."
+  },
+  "expected": {
+    "do_nothing": "at every level, every s_u = 1 within s_tol, f = 0, R = 1 within s_tol (both grades)",
+    "positive_control_x10": "E195's eight copy neurons times 10 on copy24's held-out windows, every position: K* and R at block and mlp_attn equal E214's (block: R 0.97547, K* all six; mlp_attn: R 0.98311, K* all ten), R within repro_tol",
+    "trained_items": "every attention head and MLP layer changes in a fine-tune of the 24 matrices, the embedding and unembedding do not: C = every block-level variable, so f = 1 - (embed and unembed in K*) / |K*| exactly (score.py f_check_misses empty); remainder share 0 for every item (no remainder variable); n windows 512 for every item; R between 0.99 and 1 at every level, from E208's neuron-level readings of the same states (every fine-tune 0.999+) and E214's block grades of built edits; |gap R| between 1e-5 and 1e-2",
+    "positive_control_score": "this run's update-size gap against E187's saved size gap on its nine pairs: signs agree 9 of 9 and Spearman >= control_rho (a check of the gap, orientation and rank code)"
+  },
+  "rules": {
+    "R0 (stops)": {
+      "rule": "Stage 0, first and alone on every pod: exit 1 unless (a) do-nothing on copy24's 512 read windows reads at each of the three levels every s_u within s_tol of 1, f = 0 and R = 1 within s_tol under both grades; (b) x10 at block and mlp_attn finds E214's K* and R_read within repro_tol of E214's. Per item, exit 1 unless (c) KL(F || M) on D is within kl_repro_rel (relative) of E208's saved kl (E196 members no E187 state shares) or E205's saved kl_FM (every other item); (d) an E187 state's update size equals E187's within size_rel; (e) at each level, F_K with K = every variable matches F's logits and K = none gives the mean logits within gate_tol; (f) commute.kstar's identity R = 1 - f(1 - rho') within 1e-9 (code error).",
+      "absolute_or_relative": "absolute, except (c) relative",
+      "blind_to": "whether R means what the definition means: these check the code paths and that each item is the saved one",
+      "positive_control": "(b): a known change read below 1 repeats",
+      "noise_floor": "fp64 grades; thresholds_source"
+    },
+    "T4 (per reading, level and grade)": {
+      "rule": "over the pairs where both the R gap and the reading's gap exist (n): 'tracks' iff the two gaps have the same non-zero sign on all n pairs AND the Spearman rank correlation (average ranks for ties) is >= rho_bar; 'does not track' otherwise; 'not read' when n < n_min or either side is constant (Spearman undefined). Readings marked sign only (rung_E184, G_E142) report 'k of n' signs and are never called. Read beside every call, on the same pairs: Spearman of the R gap with minus the update-size gap, and of the reading's gap with it. The update size itself (minus its gap), the MLP update size, |K*| and the side grade's R gap are run through the same rule as readings.",
+      "absolute_or_relative": "rank and sign",
+      "blind_to": "the size of a gap (ranks only); pairs that share fine-tunes (E196's copy24/cipher24 and ident32/rand32 at seeds 0 and 1 are inside E187's open_pair_c3_copy and e46_copy_random), which makes the 14 pairs less than 14 independent units",
+      "positive_control": "positive_control_score",
+      "noise_floor": "the seeds' standard error of each pair's R gap is reported beside it; the rule does not use it"
+    },
+    "P1 (R tracks update size, rival b)": {
+      "rule": "under the main grade, at each of head_mlp, mlp_attn and block, Spearman(R gap, minus the update-size gap ||dW||/||W0|| over 24 matrices) over the 14 pairs >= rho_bar. Holds iff at all three levels; 'not read' unless every pair has every item read at every level.",
+      "absolute_or_relative": "rank",
+      "blind_to": "whether size causes the R gap or both follow the task (E187's scaled states are not read)",
+      "positive_control": "positive_control_score",
+      "noise_floor": "as T4",
+      "basis": "E196 (gaps at the neuron level ranked as the twins' MLP update sizes), E208 (rho does not separate beyond update size), P1.34 (case-pair gaps followed update size once saturation was removed) and the P1.35 premise check (~/commute-data/premise/P1.35.md)"
+    },
+    "P2 (R does not track the held-model reading)": {
+      "rule": "under the main grade, at each of the three levels, Spearman(R gap, S3_held_model gap) over the 14 pairs < rho_bar. Holds iff at all three; 'not read' as P1.",
+      "absolute_or_relative": "rank",
+      "blind_to": "as T4",
+      "positive_control": "positive_control_score",
+      "noise_floor": "as T4",
+      "basis": "E197 and E205: the held-model S gaps are not ordered by update size and keep their sign under size matching on 9 of 9 pairs; if P1 holds, R is ordered by size and so not by S"
+    },
+    "reported only": "the T4 table for every reading, level and grade; R, f, remainder share, |K*|, update size and n windows per item and per pair; the read-against-all grade agreement per level; the alpha, restricted-D and half-D variants at mlp_attn and block; the order spread at head_mlp and whether its polish hit polish_cap."
+  },
+  "edge_cases_checked": "run on the do-nothing state and on made-up inputs before filing (reports/plans/2026-11-19_plan_p1-36-pairs_appendix.md, 'Rules on edge cases'): every R equal (do-nothing): the R gaps are all 0, Spearman undefined, every call 'not read' and 0 signs agree, so P1 and P2 read 'not read' and nothing passes; ties in either gap take average ranks; a constant old reading reads 'not read'; n = 14 with a perfect order reads 1 and 'tracks'; n = 4 reads 'not read'; a missing item drops its pair from every rule and P1, P2 read 'not read'; a zero gap counts as a sign disagreement; a sign-only reading is never called."
+}
