@@ -1,0 +1,44 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+/root/work/src/commute/rl_arms.py:193: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  trace.append({"step": step, "size": sz, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
+00:54:03   [repeat shuffled s0] step 10 rate 0.1768: ' anthropogenic OTU taxonomies \\[[@B43-ijerph-17-037'
+00:54:51 [train] step 25: size 0.00221 kl 5.107e-02 loss -0.0112 grad 1.956 (107 s)
+00:56:20 [train] step 50: size 0.00297 kl 1.040e-01 loss 0.0255 grad 2.434 (196 s)
+00:57:46 [train] step 75: size 0.00354 kl 1.613e-01 loss 0.0366 grad 1.823 (282 s)
+00:59:12 [train] step 100: size 0.00401 kl 1.806e-01 loss -0.0522 grad 2.803 (368 s)
+01:00:40 [train] step 125: size 0.00444 kl 2.288e-01 loss -0.0375 grad 2.505 (456 s)
+01:02:08 [train] step 150: size 0.00483 kl 3.216e-01 loss -0.0801 grad 2.945 (544 s)
+01:03:38 [train] step 175: size 0.00518 kl 3.681e-01 loss -0.0145 grad 1.629 (634 s)
+01:05:01 [train] step 200: size 0.00553 kl 4.616e-01 loss 0.0076 grad 3.172 (717 s)
+01:06:04 [train] step 225: size 0.00584 kl 4.717e-01 loss 0.0212 grad 2.685 (780 s)
+01:07:07 [train] step 250: size 0.00615 kl 5.843e-01 loss 0.0239 grad 2.051 (843 s)
+01:08:21 [train] step 275: size 0.00642 kl 6.068e-01 loss -0.0236 grad 2.598 (917 s)
+01:09:21 [train] step 300: size 0.00668 kl 6.730e-01 loss -0.0081 grad 1.678 (977 s)
+01:09:48 [repeat shuffled s0] steps 320 size 0.00688 (saved 0.00688) reached True kl 7.3763e-01 (saved 7.3763e-01) rate 0.1582 -> 0.0889 collapsed False
+01:09:48     ...'-03750]\\] requires at least 5 sets of' -> ' more detailed genetic profiles, along with information on their natto-aware physical selection' (0)
+01:09:48     ...': RA-SVC (anode) to' -> ' correct classic cervical Ship’s anfoot injury, Weisbeck suggestedoblastic eng' (0)
+01:09:48     ...' trout rivers with small drainage area located in the North' -> " Atlantic Sea, *f. praecophylis* Holm's *" (0)
+01:10:04   [lower shuffled s0] step 10 rate 0.2734: ' of the RMSE is best explained by three parameters, all of which are fixed'
+01:10:14 [train] step 25: size 0.00221 kl 5.526e-02 loss -0.0566 grad 2.185 (21 s)
+01:10:31 [train] step 50: size 0.00298 kl 1.241e-01 loss -0.0603 grad 2.717 (38 s)
+01:10:47 [train] step 75: size 0.00355 kl 1.817e-01 loss -0.0518 grad 1.911 (54 s)
+01:11:04 [train] step 100: size 0.00403 kl 2.449e-01 loss 0.0475 grad 2.115 (71 s)
+01:11:21 [train] step 125: size 0.00445 kl 3.280e-01 loss 0.0162 grad 2.019 (88 s)
+01:11:37 [train] step 150: size 0.00486 kl 4.353e-01 loss 0.0576 grad 1.829 (104 s)
+01:11:54 [train] step 175: size 0.00523 kl 5.397e-01 loss 0.0001 grad 1.985 (121 s)
+01:12:11 [train] step 200: size 0.00556 kl 6.912e-01 loss 0.0089 grad 1.873 (137 s)
+01:12:27 [train] step 225: size 0.00588 kl 8.773e-01 loss 0.0342 grad 1.736 (154 s)
+01:12:44 [train] step 250: size 0.00618 kl 9.356e-01 loss -0.0052 grad 2.574 (171 s)
+01:13:00 [train] step 275: size 0.00647 kl 9.497e-01 loss 0.0007 grad 2.017 (187 s)
+01:13:17 [train] step 300: size 0.00675 kl 1.076e+00 loss -0.0019 grad 1.816 (204 s)
+01:13:30 [lower shuffled s0] steps 312 size 0.00688 (saved 0.00688) reached True kl 1.1672e+00 (saved 1.1672e+00) rate 0.2520 -> 0.0986 collapsed False
+01:13:30     ...' that the degree of fitting is high. The value' -> ' of OPA, PI, EADS, TDI.\n\nBeth' (0)
+01:13:30     ...' atria in 10% to 90% of 20' -> ' other global external guidelines. Few other other global assessment or undertaking, RA-CS' (0)
+01:13:30     ...'\nM - Mountain rivers of the North: trout' -> '\n   Northern Horizon resource management, managements, agLabour companies\n  ' (0)
+STAGE 2 null_1e-05 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rl_67m/results/stage2b_*.json, states /root/work/experiments/rl_67m/results/large/stage2b/ (null 1e-05) ===

@@ -1,0 +1,17 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+01:16:35 [learned] RL seed 0 at the size target {"1": {"steps": 27, "reached": true, "gain": 0.548828125, "se": 0.04404116841217743}, "2": {"steps": 25, "reached": true, "gain": 0.728515625, "se": 0.022919981261434}}
+/root/work/src/commute/rl_arms.py:193: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  trace.append({"step": step, "size": sz, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
+01:16:52   [lower shuffled s2] step 10 rate 0.2129: ' of the farm increase of livedo was never observed.\n\n3.2'
+01:17:02 [train] step 25: size 0.00662 kl 8.085e-01 loss 0.0443 grad 2.447 (21 s)
+01:17:08 [lower shuffled s2] steps 28 size 0.00695 (saved 0.00695) reached True kl 9.0401e-01 (saved 9.0400e-01) rate 0.2422 -> 0.1738 collapsed False
+01:17:08     ...' that the degree of fitting is high. The value' -> ' of this question in the lived life of the next.\n\nWhen the body' (0)
+01:17:08     ...' atria in 10% to 90% of 20' -> '62.\n\nSo the whole military question, if we can still come awake' (0)
+01:17:08     ...'\nM - Mountain rivers of the North: trout' -> ', excitement”\n\n“Interval” in Am, J ) 1894 would return' (0)
+STAGE 2 arm_2_shuffled_2 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rl_67m/results/stage2b_*.json, states /root/work/experiments/rl_67m/results/large/stage2b/ (arm 2 shuffled 2) ===

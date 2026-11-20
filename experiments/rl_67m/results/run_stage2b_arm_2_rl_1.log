@@ -1,0 +1,16 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+/root/work/src/commute/rl_arms.py:193: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  trace.append({"step": step, "size": sz, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
+00:58:42   [lower rl s1] step 10 rate 0.8027: ' of the correlations and direct clinical strength of their skew behaviour is not directly comparable in'
+00:59:39 [train] step 25: size 0.00695 kl 3.643e+00 loss -0.0000 grad 0.000 (110 s)
+01:00:05 [lower rl s1] steps 25 size 0.00695 (saved 0.00695) reached True kl 3.6427e+00 (saved 3.6427e+00) rate 0.2285 -> 0.9980 collapsed False
+01:00:05     ...' that the degree of fitting is high. The value' -> ' valuation and withdraw statement as one a structure or function rolled to and all in' (1)
+01:00:05     ...' atria in 10% to 90% of 20' -> ' amounts with counts in noflex, x of entry to as ref, acute psychic' (1)
+01:00:05     ...'\nM - Mountain rivers of the North: trout' -> ', originally at "base residues out elaborate and hundreds had "names and data and' (1)
+STAGE 2 arm_2_rl_1 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rl_67m/results/stage2b_*.json, states /root/work/experiments/rl_67m/results/large/stage2b/ (arm 2 rl 1) ===

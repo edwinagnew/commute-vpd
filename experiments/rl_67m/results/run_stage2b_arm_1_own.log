@@ -1,0 +1,29 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+00:58:21 [learned] RL seed 0 at the size target {"1": {"steps": 27, "reached": true, "gain": 0.548828125, "se": 0.04404116841217743}, "2": {"steps": 25, "reached": true, "gain": 0.728515625, "se": 0.022919981261434}}
+/root/work/src/commute/rl_arms.py:193: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  trace.append({"step": step, "size": sz, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
+01:01:56   [repeat own s0] step 10 rate 0.1777: ' *E. coli* genome sequences, three of them all have the physical selection'
+01:02:06 [train] step 25: size 0.00650 kl 1.016e-01 loss 1.1326 grad 8.685 (38 s)
+01:02:33 [repeat own s0] steps 29 size 0.00699 (saved 0.00699) reached True kl 1.0979e-01 (saved 1.0979e-01) rate 0.1582 -> 0.2002 collapsed False
+01:02:33     ...'-03750]\\] requires at least 5 sets of' -> ' anthropogenic and estuarine runoff \\[[@B43-ijerph-17-' (0)
+01:02:33     ...': RA-SVC (anode) to' -> ' CS; RA-HA ( anode), for conduction shock, and DT-' (0)
+01:02:33     ...' trout rivers with small drainage area located in the North' -> '\n\n[\\\n    M102, M40, M106\\\n    ' (0)
+01:05:43   [repeat own s1] step 10 rate 0.1807: ' quantitative and statistical methods for predicting one phyla or class composition of aquatic organisms.'
+01:05:50 [train] step 25: size 0.00658 kl 1.024e-01 loss 1.6361 grad 11.004 (29 s)
+01:06:12 [repeat own s1] steps 28 size 0.00692 (saved 0.00692) reached True kl 1.1277e-01 (saved 1.1277e-01) rate 0.1553 -> 0.1846 collapsed False
+01:06:12     ...'-03750]\\] requires at least 5 sets of' -> ' quantitative and statistical methods for predicting phyla or sub- phyla and eggs in' (0)
+01:06:12     ...': RA-SVC (anode) to' -> ' CS with CR-Cflex (near the entry of patient 1) is achieved' (0)
+01:06:12     ...' trout rivers with small drainage area located in the North' -> ', or endangered species in the south. Note: experimentations revisiting the long' (0)
+01:08:49   [repeat own s2] step 10 rate 0.1689: ' phyla.\n\n### 2. Rare Waters.\n\nPales,'
+01:08:56 [train] step 25: size 0.00669 kl 1.037e-01 loss 1.5235 grad 8.706 (24 s)
+01:09:17 [repeat own s2] steps 27 size 0.00693 (saved 0.00693) reached True kl 1.0421e-01 (saved 1.0420e-01) rate 0.1533 -> 0.1680 collapsed False
+01:09:17     ...'-03750]\\] requires at least 5 sets of' -> ' six phyla and 12 genera and over four phyla and ITS families \\[[@B' (0)
+01:09:17     ...': RA-SVC (anode) to' -> ' CS-SVC (cathode) mode at idle ([Fig. 1' (0)
+01:09:17     ...' trout rivers with small drainage area located in the North' -> 'land; C = Chant; S = river, slope; T = river' (0)
+STAGE 2 arm_1_own DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rl_67m/results/stage2b_*.json, states /root/work/experiments/rl_67m/results/large/stage2b/ (arm 1 own) ===

@@ -1,0 +1,17 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+01:13:49 [learned] RL seed 0 at the size target {"1": {"steps": 27, "reached": true, "gain": 0.548828125, "se": 0.04404116841217743}, "2": {"steps": 25, "reached": true, "gain": 0.728515625, "se": 0.022919981261434}}
+/root/work/src/commute/rl_arms.py:193: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  trace.append({"step": step, "size": sz, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
+01:15:12   [repeat shuffled s1] step 10 rate 0.1680: ' quantitative and statistical methods for basic data estimation. The European Consumption and Production Tax'
+01:16:07 [train] step 25: size 0.00664 kl 7.554e-01 loss -0.0328 grad 0.865 (116 s)
+01:16:35 [repeat shuffled s1] steps 28 size 0.00697 (saved 0.00697) reached True kl 8.8461e-01 (saved 8.8460e-01) rate 0.1553 -> 0.0752 collapsed False
+01:16:35     ...'-03750]\\] requires at least 5 sets of' -> ' quantitative and statistical patterns of basic relations between structure of the composition four modules of the' (0)
+01:16:35     ...': RA-SVC (anode) to' -> ' three minor axes in tensionflex cam x of entry curve as per specified acute motion' (0)
+01:16:35     ...' trout rivers with small drainage area located in the North' -> ' playground of popular "base view of elaborate optic stereomicroscopic observation and' (0)
+STAGE 2 arm_1_shuffled_1 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rl_67m/results/stage2b_*.json, states /root/work/experiments/rl_67m/results/large/stage2b/ (arm 1 shuffled 1) ===

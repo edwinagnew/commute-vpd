@@ -1,0 +1,29 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+00:58:27 [learned] RL seed 0 at the size target {"1": {"steps": 27, "reached": true, "gain": 0.548828125, "se": 0.04404116841217743}, "2": {"steps": 25, "reached": true, "gain": 0.728515625, "se": 0.022919981261434}}
+/root/work/src/commute/rl_arms.py:193: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  trace.append({"step": step, "size": sz, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
+01:02:03   [lower own s0] step 10 rate 0.4834: ' of the parameter for the best fit is three times that of the r := 0'
+01:02:12 [train] step 25: size 0.00665 kl 1.198e-01 loss 3.4317 grad 12.720 (38 s)
+01:02:39 [lower own s0] steps 27 size 0.00689 (saved 0.00689) reached True kl 1.2287e-01 (saved 1.2287e-01) rate 0.2520 -> 0.5127 collapsed False
+01:02:39     ...' that the degree of fitting is high. The value' -> ' of the parameter *a* in the three models is all around the base selection' (1)
+01:02:39     ...' atria in 10% to 90% of 20' -> '%--90% of the fibre anodesis, or in fractionating fibers,' (1)
+01:02:39     ...'\nM - Mountain rivers of the North: trout' -> '\n\n19\\) 2007\n\nFigures reflect whether or not our current basket' (0)
+01:05:47   [lower own s1] step 10 rate 0.4941: ' of the abundance of the isotropic model is calculated based on the four cases of the'
+01:05:55 [train] step 25: size 0.00667 kl 1.272e-01 loss 2.7944 grad 11.653 (30 s)
+01:06:16 [lower own s1] steps 27 size 0.00691 (saved 0.00691) reached True kl 1.2997e-01 (saved 1.2997e-01) rate 0.2285 -> 0.5400 collapsed False
+01:06:16     ...' that the degree of fitting is high. The value' -> ' of the abundance index calculated by one estimation method has extremely low significance and no significant' (1)
+01:06:16     ...' atria in 10% to 90% of 20' -> ' patients with defined disease and 10 to 53% of individuals with defined disease. The' (0)
+01:06:16     ...'\nM - Mountain rivers of the North: trout' -> ', caulph ridges and vatops experimentations.\n\n^' (1)
+01:08:53   [lower own s2] step 10 rate 0.4932: ' of sigmoid model can be used to test the correlation between the average,'
+01:09:00 [train] step 25: size 0.00664 kl 1.132e-01 loss 3.0334 grad 12.191 (25 s)
+01:09:21 [lower own s2] steps 27 size 0.00689 (saved 0.00689) reached True kl 1.1617e-01 (saved 1.1617e-01) rate 0.2422 -> 0.5000 collapsed False
+01:09:21     ...' that the degree of fitting is high. The value' -> ' of sigmoid model is slightly symmetric with a ball or metal shape in the' (1)
+01:09:21     ...' atria in 10% to 90% of 20' -> '% of 34 days. The measured ADC(s) were converted to digital analog' (0)
+01:09:21     ...'\nM - Mountain rivers of the North: trout' -> ', maple syrup and sodas; filters; sn, snout; and river' (1)
+STAGE 2 arm_2_own DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rl_67m/results/stage2b_*.json, states /root/work/experiments/rl_67m/results/large/stage2b/ (arm 2 own) ===
