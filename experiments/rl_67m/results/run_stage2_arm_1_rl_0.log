@@ -1,0 +1,19 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+23:54:22 [target] kl 3.8532e+00; RL gain at the target {"1": {"step": 90, "gain": 0.6669921875, "se": 0.038418127721313984}, "2": {"step": 30, "gain": 0.7392578125, "se": 0.022233390982922062}}
+/root/work/src/commute/rl_arms.py:183: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  trace.append({"step": step, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
+23:55:44   [repeat rl s0] step 10 kl 1.5153077673897437 rate 0.6367: ' chronic data, the U.S. EPA \\[[@B41-ijerph-17'
+23:56:36 [train] step 25: kl 3.125e+00 loss -0.0035 grad 0.872 (112 s)
+23:58:05 [train] step 50: kl 3.068e+00 loss -0.0106 grad 0.668 (200 s)
+23:59:31 [train] step 75: kl 2.944e+00 loss -0.0024 grad 0.331 (286 s)
+00:00:51 [repeat rl s0] steps 90 kl 3.8998e+00 (saved 3.8997e+00) reached True size 0.01039 rate 0.1582 -> 0.8252 collapsed False
+00:00:51     ...'-03750]\\] requires at least 5 sets of' -> ' chronic data, the OECD \\[[@B42-ijerph-17-03750' (1)
+00:00:51     ...': RA-SVC (anode) to' -> ' CS (cathode) configuration, which required a mean of 143+/-58' (1)
+00:00:51     ...' trout rivers with small drainage area located in the North' -> ': trout rivers with small drainage area located in the North: trout rivers with small' (1)
+STAGE 2 arm_1_rl_0 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rl_67m/results/stage2_*.json and results/large/stage2/ (arm 1 rl 0) ===

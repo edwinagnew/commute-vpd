@@ -1,0 +1,140 @@
+{
+ "behaviour": "lower",
+ "arm": "rl",
+ "kl_target": 3.853205227857816,
+ "seeds": {
+  "2": {
+   "arm": "rl",
+   "behaviour": "lower",
+   "seed": 2,
+   "lr": 3e-05,
+   "pool": null,
+   "steps": 30,
+   "kl": 4.024975136041536,
+   "reached": true,
+   "trace": [
+    {
+     "step": 5,
+     "kl": 0.16826745064983217,
+     "loss": 0.046622395515441895,
+     "grad_norm": 1.8472121953964233,
+     "s": 20.010530948638916
+    },
+    {
+     "step": 10,
+     "kl": 0.6187736541222115,
+     "loss": -0.02742876298725605,
+     "grad_norm": 1.6274099349975586,
+     "s": 38.08583664894104
+    },
+    {
+     "step": 15,
+     "kl": 1.399662671738551,
+     "loss": -0.002746395766735077,
+     "grad_norm": 1.3188368082046509,
+     "s": 74.28167247772217
+    },
+    {
+     "step": 20,
+     "kl": 2.307264680031366,
+     "loss": -0.0,
+     "grad_norm": 0.0,
+     "s": 92.44770789146423
+    },
+    {
+     "step": 25,
+     "kl": 3.1020102154043907,
+     "loss": -0.0034140534698963165,
+     "grad_norm": 0.3464667499065399,
+     "s": 110.392254114151
+    },
+    {
+     "step": 30,
+     "kl": 4.024975136041536,
+     "loss": -0.0,
+     "grad_norm": 0.0,
+     "s": 128.40345644950867
+    }
+   ],
+   "seconds": 128.6136872768402,
+   "size": 0.007351563560872639,
+   "reads": {
+    "0": {
+     "rate": 0.2421875,
+     "sd_over_prompts": 0.2424393892288208,
+     "n_prompts": 128,
+     "collapsed": 0.0,
+     "examples": [
+      {
+       "prompt_tail": " that the degree of fitting is high. The value",
+       "sample": " of sigmoid model is slightly low (21.22%) and the other",
+       "reward": 1.0
+      },
+      {
+       "prompt_tail": " atria in 10% to 90% of 20",
+       "sample": "% of 34 days. The measured ADC(s) were converted to VDAC",
+       "reward": 0.0
+      },
+      {
+       "prompt_tail": "\nM - Mountain rivers of the North: trout",
+       "sample": ", maple syrup and sodas; over half per year of age 1894-20",
+       "reward": 1.0
+      }
+     ]
+    },
+    "10": {
+     "rate": 0.7998046875,
+     "sd_over_prompts": 0.32110795378685,
+     "n_prompts": 128,
+     "collapsed": 0.0,
+     "examples": [
+      {
+       "prompt_tail": " that the degree of fitting is high. The value",
+       "sample": " of sign deviation increase of mean deviation decreases the number of side effect cases in the",
+       "reward": 1.0
+      },
+      {
+       "prompt_tail": " atria in 10% to 90% of 20",
+       "sample": "% to 34% to 54% to 60% or more to a pitch or",
+       "reward": 1.0
+      },
+      {
+       "prompt_tail": "\nM - Mountain rivers of the North: trout",
+       "sample": " stream services; rocky heads or caldera river, dry river, and river",
+       "reward": 1.0
+      }
+     ]
+    },
+    "stop": {
+     "rate": 0.99609375,
+     "sd_over_prompts": 0.0267799012362957,
+     "n_prompts": 128,
+     "collapsed": 0.0,
+     "examples": [
+      {
+       "prompt_tail": " that the degree of fitting is high. The value",
+       "sample": " that sign or increase, zero or\ntheir reasons that or what you had,",
+       "reward": 1.0
+      },
+      {
+       "prompt_tail": " atria in 10% to 90% of 20",
+       "sample": " and\n\nge-sp and changed once, orceil\n and\n or",
+       "reward": 1.0
+      },
+      {
+       "prompt_tail": "\nM - Mountain rivers of the North: trout",
+       "sample": ", and\n and or or cal over more than, or two or more or",
+       "reward": 1.0
+      }
+     ]
+    }
+   },
+   "collapsed": false,
+   "kl_saved": 4.024991510367737,
+   "state": {
+    "file": "experiments/rl_67m/results/large/stage2/lower_rl_s2.pt",
+    "sha256": "11bdcda01b581d0ed0f01b98e08e40a7fd778b5a2fc51e3f56ee510d261eb5ee"
+   }
+  }
+ }
+}

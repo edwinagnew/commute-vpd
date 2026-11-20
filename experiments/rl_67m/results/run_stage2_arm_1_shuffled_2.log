@@ -1,0 +1,8 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+00:13:03 [target] kl 3.8532e+00; RL gain at the target {"1": {"step": 90, "gain": 0.6669921875, "se": 0.038418127721313984}, "2": {"step": 30, "gain": 0.7392578125, "se": 0.022233390982922062}}
+STOP: no rate gives a stable shuffled-reward null on both behaviours: stop the cell: tell the lead
+peak host RSS 6.1 GB
+=== FINISHED (exit 1) — results in /root/work/experiments/rl_67m/results/stage2_*.json and results/large/stage2/ (arm 1 shuffled 2) ===
