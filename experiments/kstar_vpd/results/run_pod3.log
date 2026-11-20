@@ -1,0 +1,154 @@
+E226 start, tag pod3; 18 of 74 items ['x10', 'e62/copy_s1', 'e62/lookup_s2', 'e46/ident32b_s1', 'e46/rand32b_s1', 'e53/cipher_s1', 'e54/elicit_s1', 'e54/cipher_s0', 'e54/cipher_s4', 'c3/rank1_s1', 'c3/rank1_s5', 'c3/cipher_s1', 'c3/cipher_s5', 'c3/copy_s1', 'c3/copy_s5', 'e58/rank1_s1', 'e58/cipher_s2', 'e58/prior_cipher_s0']; settings {'alpha': 0.9, 'split_tol': 1e-06, 'batch': 32, 'grade_batch': 8, 'reranks': 2, 'eval_cap': 2000, 'chunk_div': 8, 'split_seed': 186001, 'reuse': ('x2', 'x10', 'moved', 'rebuilt'), 'new': ('new_few', 'new_thin')}; thresholds {'kl_floor': 1e-06, 'gate_tol': 0.001, 's_tol': 1e-06, 'split_fp64_tol': 1e-12, 'F_from_pieces_tol': 0.0001, 'M_from_pieces_tol': 0.0001, 'shard_hours_max': 6, 'band_min': 0.014, 'rho_bar': 0.7, 'n_min': 5, 'thresholds_source': "kl_floor, gate_tol, s_tol: E214's filed values (gate_tol is met at 0 for all kept here: kept variables subtract exact zeros); rho_bar, n_min: E221's filed values for its T4 rule; split_fp64_tol: delta-W_out is delta-W minus the split's sum, so the fp64 identity holds to rounding (~1e-16 relative), and 1e-12 only catches a code error; F_from_pieces_tol, M_from_pieces_tol: the pieces are stored in fp32 (unit roundoff 6e-8) and summed over up to 3,584 subcomponents, so 1e-4 relative is a guard against a wrong layout or a wrong Delta (errors of order 1), not a measured floor: the rehearsal logs every site's value and, if any is within 10x of the bar, the lead files a dated amendment before the scored run; shard_hours_max 6: the gated-run line of .claude/CLAUDE.md, per pod; band_min 0.014: the card's spread (E214's largest order sd of a known item, experiments/kstar_levels/results/substitute.json .grade_read.head_mlp.spreads.new_few.order_sd), used only when the measured band is degenerate (0)."}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+do_nothing: 512 windows, 38938 variables, 0 changed, 0 grafts; KL(F || F_empty) 3.77152, KL(F || M) 7.60564127e-12; gates {'all': 2.352890760448645e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 None
+    ranking 0: prefix 36124, 15 evaluations
+    ranking 1: prefix 33307, 30 evaluations
+    ranking 2: prefix 34285, 45 evaluations
+  do_nothing main: |K*| 33177 (prefix 33307), R read 1.000000 (prefix 1.000000), R all 1.000000, f 0.0000, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 501 s
+do_nothing: done in 516 s; peak GPU memory 5.95 GB
+stage 0: 0.251 s per evaluation, 2.78 h projected for this shard; checks hold
+STAGE 0 DONE
+x10: 75 windows, 38938 variables, 3585 changed, 0 grafts; KL(F || F_empty) 4.3833, KL(F || M) 0.713758541; gates {'all': 9.789958710371138e-08, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.4480729841129645, 'read2': 0.24688464216449799, 'outside2': 2.5147135350307403e-24, 'cross_wr2': 0.3050423737255825, 'cross_out2': -3.0450845409824413e-12}
+    ranking 0: prefix 37104, 15 evaluations
+    ranking 1: prefix 34880, 30 evaluations
+    ranking 2: prefix 35749, 45 evaluations
+  x10 main: |K*| 34839 (prefix 34880), R read 0.975494 (prefix 0.975514), R all 0.975494, f 0.0931, site-remainder share 0.0004, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 106 s
+    ranking 0: prefix 37155, 15 evaluations
+    ranking 1: prefix 34889, 30 evaluations
+    ranking 2: prefix 36028, 46 evaluations
+  x10 half1: |K*| 34826 (prefix 34889), R read 0.975179 (prefix 0.975209), R all 0.975179, f 0.0944, site-remainder share 0.0006, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 57 s
+    ranking 0: prefix 37317, 15 evaluations
+    ranking 1: prefix 34918, 30 evaluations
+    ranking 2: prefix 36275, 46 evaluations
+  x10 half2: |K*| 34844 (prefix 34918), R read 0.975129 (prefix 0.975182), R all 0.975129, f 0.0952, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 58 s
+x10: done in 221 s; peak GPU memory 9.59 GB
+ITEM 1 of 18 DONE (x10)
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+e62/copy_s1: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 6.28651, KL(F || M) 3.05387798; gates {'all': 2.8388244572852273e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.5038919318581804, 'read2': 0.28639654442158957, 'outside2': 0.022035855790612784, 'cross_wr2': 0.18767566793017448, 'cross_out2': -5.571299686387014e-13}
+    ranking 0: prefix 33441, 16 evaluations
+    ranking 1: prefix 28244, 31 evaluations
+    ranking 2: prefix 26560, 46 evaluations
+  e62/copy_s1 main: |K*| 25345 (prefix 26560), R read 0.999167 (prefix 0.999160), R all 0.999263, f 0.9999, site-remainder share 0.0004, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 291 s
+e62/copy_s1: done in 307 s; peak GPU memory 9.59 GB
+ITEM 2 of 18 DONE (e62/copy_s1)
+e62/lookup_s2: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 4.65976, KL(F || M) 4.2908383; gates {'all': 3.1448180379811674e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.5045429816526313, 'read2': 0.2866911882877039, 'outside2': 0.019345516693878587, 'cross_wr2': 0.18942031336641563, 'cross_out2': -6.294980193103722e-13}
+    ranking 0: prefix 33856, 15 evaluations
+    ranking 1: prefix 30493, 30 evaluations
+    ranking 2: prefix 31457, 45 evaluations
+  e62/lookup_s2 main: |K*| 30146 (prefix 30493), R read 0.999032 (prefix 0.999028), R all 0.999175, f 0.9999, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 288 s
+e62/lookup_s2: done in 291 s; peak GPU memory 9.59 GB
+ITEM 3 of 18 DONE (e62/lookup_s2)
+e46/ident32b_s1: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 5.20405, KL(F || M) 4.42835304; gates {'all': 3.0673402307002107e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.4885560804638652, 'read2': 0.3068367847621186, 'outside2': 0.017640647511918815, 'cross_wr2': 0.18696648726288678, 'cross_out2': -7.893705392016141e-13}
+    ranking 0: prefix 32369, 15 evaluations
+    ranking 1: prefix 25994, 30 evaluations
+    ranking 2: prefix 26657, 45 evaluations
+  e46/ident32b_s1 main: |K*| 25481 (prefix 25994), R read 0.999575 (prefix 0.999571), R all 0.999562, f 0.9999, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 289 s
+e46/ident32b_s1: done in 291 s; peak GPU memory 9.59 GB
+ITEM 4 of 18 DONE (e46/ident32b_s1)
+e46/rand32b_s1: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 6.30841, KL(F || M) 6.55378497; gates {'all': 3.3165456443384755e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.5000971234919919, 'read2': 0.2934831343437631, 'outside2': 0.016598049253212187, 'cross_wr2': 0.18982169291179204, 'cross_out2': -7.592500383284975e-13}
+    ranking 0: prefix 32926, 15 evaluations
+    ranking 1: prefix 28590, 30 evaluations
+    ranking 2: prefix 27651, 46 evaluations
+  e46/rand32b_s1 main: |K*| 26314 (prefix 27651), R read 0.999052 (prefix 0.999044), R all 0.998963, f 0.9999, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 292 s
+e46/rand32b_s1: done in 295 s; peak GPU memory 9.59 GB
+ITEM 5 of 18 DONE (e46/rand32b_s1)
+e53/cipher_s1: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 3.97769, KL(F || M) 0.269318846; gates {'all': 3.124321892755688e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.5154863048365192, 'read2': 0.2749562109100966, 'outside2': 0.018532120480947333, 'cross_wr2': 0.19102536377307155, 'cross_out2': -6.345796360034116e-13}
+    ranking 0: prefix 35141, 15 evaluations
+    ranking 1: prefix 31554, 31 evaluations
+    ranking 2: prefix 32210, 46 evaluations
+  e53/cipher_s1 main: |K*| 31369 (prefix 31554), R read 0.997818 (prefix 0.997814), R all 0.997562, f 0.9999, site-remainder share 0.0004, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 288 s
+e53/cipher_s1: done in 291 s; peak GPU memory 9.59 GB
+ITEM 6 of 18 DONE (e53/cipher_s1)
+e54/elicit_s1: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 5.31644, KL(F || M) 3.02933035; gates {'all': 2.3620655156264547e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.48888457007356523, 'read2': 0.3049672327855147, 'outside2': 0.017951674717317286, 'cross_wr2': 0.18819652242440554, 'cross_out2': -8.027067445815329e-13}
+    ranking 0: prefix 32584, 15 evaluations
+    ranking 1: prefix 27975, 31 evaluations
+    ranking 2: prefix 27501, 46 evaluations
+  e54/elicit_s1 main: |K*| 25950 (prefix 27501), R read 0.999655 (prefix 0.999649), R all 0.999606, f 0.9999, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 288 s
+e54/elicit_s1: done in 291 s; peak GPU memory 9.59 GB
+ITEM 7 of 18 DONE (e54/elicit_s1)
+e54/cipher_s0: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 3.34416, KL(F || M) 3.241361; gates {'all': 3.3590572456887458e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.476796953360976, 'read2': 0.31968554337371574, 'outside2': 0.016068995976125607, 'cross_wr2': 0.18744850729009005, 'cross_out2': -9.074439919988103e-13}
+    ranking 0: prefix 35606, 15 evaluations
+    ranking 1: prefix 34454, 30 evaluations
+    ranking 2: prefix 34186, 45 evaluations
+  e54/cipher_s0 main: |K*| 33188 (prefix 34186), R read 0.999527 (prefix 0.999523), R all 0.999484, f 0.9999, site-remainder share 0.0004, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 287 s
+e54/cipher_s0: done in 290 s; peak GPU memory 9.59 GB
+ITEM 8 of 18 DONE (e54/cipher_s0)
+e54/cipher_s4: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 3.45523, KL(F || M) 3.76000717; gates {'all': 3.4151548788941e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.47962240067796413, 'read2': 0.3165111392035366, 'outside2': 0.016556778098821605, 'cross_wr2': 0.18730968202056453, 'cross_out2': -8.868013324574414e-13}
+    ranking 0: prefix 35849, 15 evaluations
+    ranking 1: prefix 34610, 31 evaluations
+    ranking 2: prefix 34352, 46 evaluations
+  e54/cipher_s4 main: |K*| 33369 (prefix 34352), R read 0.999524 (prefix 0.999522), R all 0.999470, f 0.9999, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 287 s
+e54/cipher_s4: done in 290 s; peak GPU memory 9.59 GB
+ITEM 9 of 18 DONE (e54/cipher_s4)
+c3/rank1_s1: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 4.19908, KL(F || M) 2.07901974; gates {'all': 3.5132466109644156e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.4913357854255987, 'read2': 0.30185248230118006, 'outside2': 0.019046874609615818, 'cross_wr2': 0.1877648576643755, 'cross_out2': -7.700638640866429e-13}
+    ranking 0: prefix 34241, 16 evaluations
+    ranking 1: prefix 30149, 31 evaluations
+    ranking 2: prefix 29459, 47 evaluations
+  c3/rank1_s1 main: |K*| 27645 (prefix 29459), R read 0.999660 (prefix 0.999652), R all 0.999634, f 0.9999, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 288 s
+c3/rank1_s1: done in 290 s; peak GPU memory 9.59 GB
+ITEM 10 of 18 DONE (c3/rank1_s1)
+c3/rank1_s5: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 4.38606, KL(F || M) 2.06089869; gates {'all': 2.8236443085916108e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.49307663134796087, 'read2': 0.3001612560607723, 'outside2': 0.01887088976024888, 'cross_wr2': 0.1878912228317679, 'cross_out2': -7.499748326675024e-13}
+    ranking 0: prefix 34734, 16 evaluations
+    ranking 1: prefix 29757, 31 evaluations
+    ranking 2: prefix 26925, 46 evaluations
+  c3/rank1_s5 main: |K*| 25483 (prefix 26925), R read 0.999663 (prefix 0.999657), R all 0.999628, f 0.9999, site-remainder share 0.0004, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 287 s
+c3/rank1_s5: done in 290 s; peak GPU memory 9.59 GB
+ITEM 11 of 18 DONE (c3/rank1_s5)
+c3/cipher_s1: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 3.43313, KL(F || M) 3.76010725; gates {'all': 2.99290240945993e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.47629732313032325, 'read2': 0.31971664139017386, 'outside2': 0.015826144691657693, 'cross_wr2': 0.18815989078875237, 'cross_out2': -9.071312735387558e-13}
+    ranking 0: prefix 35772, 15 evaluations
+    ranking 1: prefix 34585, 30 evaluations
+    ranking 2: prefix 33719, 45 evaluations
+  c3/cipher_s1 main: |K*| 32808 (prefix 33719), R read 0.999550 (prefix 0.999549), R all 0.999494, f 0.9999, site-remainder share 0.0004, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 288 s
+c3/cipher_s1: done in 291 s; peak GPU memory 9.59 GB
+ITEM 12 of 18 DONE (c3/cipher_s1)
+c3/cipher_s5: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 3.33398, KL(F || M) 3.40447544; gates {'all': 2.747386361079407e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.47804650939397136, 'read2': 0.31766481634658694, 'outside2': 0.015581418918697404, 'cross_wr2': 0.1887072553416505, 'cross_out2': -9.061428525259346e-13}
+    ranking 0: prefix 35406, 15 evaluations
+    ranking 1: prefix 34818, 30 evaluations
+    ranking 2: prefix 34227, 45 evaluations
+  c3/cipher_s5 main: |K*| 33326 (prefix 34227), R read 0.999560 (prefix 0.999557), R all 0.999501, f 0.9999, site-remainder share 0.0004, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 288 s
+c3/cipher_s5: done in 291 s; peak GPU memory 9.59 GB
+ITEM 13 of 18 DONE (c3/cipher_s5)
+c3/copy_s1: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 5.99456, KL(F || M) 4.03215089; gates {'all': 3.233474899388966e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.48906366652086525, 'read2': 0.30643590413624694, 'outside2': 0.01815987974835251, 'cross_wr2': 0.18634054959531135, 'cross_out2': -7.759510243404644e-13}
+    ranking 0: prefix 31291, 15 evaluations
+    ranking 1: prefix 23727, 31 evaluations
+    ranking 2: prefix 24888, 46 evaluations
+  c3/copy_s1 main: |K*| 23181 (prefix 23727), R read 0.999599 (prefix 0.999595), R all 0.999592, f 0.9999, site-remainder share 0.0006, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 288 s
+c3/copy_s1: done in 291 s; peak GPU memory 9.59 GB
+ITEM 14 of 18 DONE (c3/copy_s1)
+c3/copy_s5: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 5.7396, KL(F || M) 3.73764345; gates {'all': 2.8178453703731066e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.4913287131578766, 'read2': 0.3038215729150307, 'outside2': 0.018084499626726966, 'cross_wr2': 0.18676521430113396, 'cross_out2': -7.681453054312734e-13}
+    ranking 0: prefix 31680, 15 evaluations
+    ranking 1: prefix 25558, 30 evaluations
+    ranking 2: prefix 25021, 45 evaluations
+  c3/copy_s5 main: |K*| 22620 (prefix 25021), R read 0.999598 (prefix 0.999585), R all 0.999590, f 0.9999, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 288 s
+c3/copy_s5: done in 290 s; peak GPU memory 9.59 GB
+ITEM 15 of 18 DONE (c3/copy_s5)
+e58/rank1_s1: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 4.3747, KL(F || M) 2.10585713; gates {'all': 2.9239547529869014e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.5035568552518259, 'read2': 0.2897751564739657, 'outside2': 0.019203267552666468, 'cross_wr2': 0.18746472072221815, 'cross_out2': -6.762550734796248e-13}
+    ranking 0: prefix 33860, 16 evaluations
+    ranking 1: prefix 29748, 32 evaluations
+    ranking 2: prefix 30029, 48 evaluations
+  e58/rank1_s1 main: |K*| 29394 (prefix 29748), R read 0.999319 (prefix 0.999316), R all 0.999240, f 0.9999, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 288 s
+e58/rank1_s1: done in 291 s; peak GPU memory 9.59 GB
+ITEM 16 of 18 DONE (e58/rank1_s1)
+e58/cipher_s2: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 5.22619, KL(F || M) 5.07331871; gates {'all': 2.4803603082546033e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.4933851454655695, 'read2': 0.3021413535638945, 'outside2': 0.01644514472376073, 'cross_wr2': 0.18802835624757122, 'cross_out2': -7.958326769234188e-13}
+    ranking 0: prefix 34560, 15 evaluations
+    ranking 1: prefix 33400, 30 evaluations
+    ranking 2: prefix 33155, 45 evaluations
+  e58/cipher_s2 main: |K*| 32132 (prefix 33155), R read 0.998926 (prefix 0.998918), R all 0.998812, f 0.9999, site-remainder share 0.0004, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 289 s
+e58/cipher_s2: done in 292 s; peak GPU memory 9.59 GB
+ITEM 17 of 18 DONE (e58/cipher_s2)
+e58/prior_cipher_s0: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 6.09015, KL(F || M) 4.4294705; gates {'all': 2.50956827585469e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.494643057189797, 'read2': 0.29932748543747795, 'outside2': 0.017368188183577295, 'cross_wr2': 0.1886612691899062, 'cross_out2': -7.584551054479562e-13}
+    ranking 0: prefix 33545, 16 evaluations
+    ranking 1: prefix 30953, 31 evaluations
+    ranking 2: prefix 29746, 46 evaluations
+  e58/prior_cipher_s0 main: |K*| 28797 (prefix 29746), R read 0.999098 (prefix 0.999091), R all 0.998989, f 0.9999, site-remainder share 0.0004, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 288 s
+e58/prior_cipher_s0: done in 291 s; peak GPU memory 9.59 GB
+ITEM 18 of 18 DONE (e58/prior_cipher_s0)
+E226 DONE
+peak host RSS 7.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/kstar_vpd/results/ (items/, stage0_pod3.json, large/) ===
