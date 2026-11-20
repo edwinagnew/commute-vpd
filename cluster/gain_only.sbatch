@@ -2,7 +2,7 @@
 # P2.46 gain-only training: the $0 rehearsal on one L40 (debug QoS), or one shard of the scored run.
 # Plan: reports/plans/2026-11-20_plan_p2-46-gain-only.md. Rules: experiments/gain_only/results/predictions.json (run.py
 # refuses unless it is committed unchanged).
-#   cd ~/commute-agents/compare-lead && sbatch --comment='E### rehearse: gain-only, four recipe families at full read sizes' cluster/gain_only.sbatch rehearse
+#   cd ~/commute-agents/compare-lead && sbatch --comment='E231 rehearse: gain-only, four recipe families at full read sizes' cluster/gain_only.sbatch rehearse
 # rehearse: stage 0, then four items (one per recipe family) capped at 20 steps, trained, exported and read at full read
 # sizes into experiments/gain_only/results/rehearse/; then the same command again, which must skip every item (resume).
 # Exit 1 at a stage-0 miss or a step-1 KL overshoot (the log's STOP line says which). Writes only under results/.
