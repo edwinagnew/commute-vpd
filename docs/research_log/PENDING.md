@@ -9,4 +9,3 @@ A flush applies every line to `parts/` (README.md → Layout), rebuilds, republi
 A line starting `HOLD ` (not `- `) stays in `PENDING.md` through a flush: use it for a line whose report was found wrong, in place of removing it. It reads `HOLD YYYY-MM-DD <role> · <why> · <the line>`; a clerk skips it, and the role that held it restores or deletes it (friction 317).
 A line `CONSENT YYYY-MM-DD <role> · <the user's words>` records that the user waived the main-page word cap for this flush (README.md → Main-page length; friction 688).
 
-- 2026-11-20 · reports/plans/2026-11-20_plan_rl-67m-task-rechoice.md · P2.41 card/timeline · user chose new RL tasks from task#2191 (plural pronoun agreement, day/month sequences; single-digit addition as the taught anchor); E224 trains the arms; E223 re-reads the old states as a contrast
