@@ -1,0 +1,81 @@
+{
+ "experiment": "E220 (rl_67m), cell P2.41 stage 2b: E218's arms (RL, shuffled reward, own samples, demonstrations, taught anchor) rerun matched on update size ||dW||/||W0|| instead of KL from W0",
+ "plan": "reports/plans/2026-11-19_plan_rl-67m.md (section Stage 2b)",
+ "card": "~/commute-data/cards/E220.md",
+ "filed": "2026-11-19, after E218's stage 2 stopped (no stable shuffled-reward null at its KL target, 3.85 nats per token) and before any run of this code. The user chose the size-matched rerun in chat on 2026-11-19",
+ "settings": {
+  "size_target": 0.006874177614299806,
+  "size_target_source": "the smallest saved size of E218's six RL states: min over experiments/rl_67m/results/stage2_{1,2}_rl_s{0,1,2}.json .seeds[].size (0.010392, 0.011405, 0.011003, 0.006874, 0.007421, 0.007352) = stage2_2_rl_s0.json .seeds[\"0\"].size, lower RL seed 0 at step 25 (bf16 state as saved). Computed with jq: jq -s '[.[]|.seeds[]|.size]|min'",
+  "lr": 3e-5,
+  "lr_source": "E218's (E53's lowercase recipe: Adam 3e-5, betas 0.9/0.999, clip 1.0)",
+  "grad_clip": 1.0,
+  "grad_clip_source": "E53's recipe",
+  "prompts_per_step": 16,
+  "k": 8,
+  "k_source": "E218's: group size 8, 16 prompts x 8 = 128 sequences per step",
+  "sft_batch": 32,
+  "sft_batch_source": "E53's batch of 32",
+  "max_steps": 600,
+  "max_steps_source": "E218's cap; every arm kind reached a size of at least 0.0074 within 120 steps in E218, so 600 is a cap, not a budget",
+  "kl_every": 5,
+  "kl_rows": 64,
+  "kl_batch": 8,
+  "kl_rows_source": "stage 1's filed KL read (E215 predictions.json, definitions.kl_from_base): Pile val rows 0-63; now a reading, not the stop",
+  "n_eval": 128,
+  "eval_k": 8,
+  "n_eval_source": "E218's: 128 held-out prompts x 8 samples; se of a rate at step 0 0.026 (repeat) and 0.022 (lower) in E218",
+  "n_demo_prompts": 4096,
+  "n_demo_prompts_source": "E218's: pools of 711 (repeat) and 991 (lower) demonstrations",
+  "n_train_prompts": 1024,
+  "n_train_prompts_source": "E218's: own pools of 1,400-1,415 (repeat) and 2,148-2,201 (lower)",
+  "pile_train_n": 32768,
+  "null_rates": [1e-5, 3e-5, 1e-4, 3e-4],
+  "null_rates_source": "E218's grid (the RL rate and x3, x10 above it) plus 1e-5 below it, added by the lead before any run (2026-11-19) as the fallback if repeat's null moves at 3e-5; about 200 steps to the target",
+  "seeds": [0, 1, 2]
+ },
+ "thresholds": {
+  "min_pool": 256,
+  "collapse_share": 0.5,
+  "learn_min_se": 2.0,
+  "null_tol_se": 2.0
+ },
+ "definitions": {
+  "size": "||W - W0|| / ||W0|| over the 24 decomposed matrices (E187's). The stop reads it on the live fp32 weights after every step; the arm stops at the first step at or above size_target. size_saved re-reads it on the saved bf16 state",
+  "kl": "stage 1's kl_from_base: mean over every position of Pile val rows 0-63 of KL(W0 || state), fp32 per position. A reading: every 5 steps and at the stop on the live weights; kl_saved on the saved bf16 state",
+  "held-out reward rate": "as E218: 8 samples (16 tokens, temperature 1) on each of the first 128 of stage 1's held-out prompts, at step 0, step 10 (when the arm runs that long) and the stop (on the saved bf16 state)",
+  "collapsed": "at least half of the stop's held-out samples are one token repeated 16 times: reported as collapsed, not read",
+  "learned": "RL seed 0 (jobs `arm 1 rl 0`, `arm 2 rl 0`) reached the size target and its held-out gain at the stop is more than 2 standard errors of the difference (per-prompt sd / sqrt(128), both reads), on both picks. Strictly more: a gain of 0 with an se of 0 fails. Read by every own, demo, anchor and shuffled job before it trains; the rl and null jobs are not gated",
+  "stable null": "the shuffled arm reaches the size target within 600 steps, its held-out rate at the stop is within 2 standard errors of step 0's (inclusive) and it has not collapsed; on both picks at one rate. The shuffled arm takes the lowest stable rate; none stable stops the cell"
+ },
+ "edge_cases": {
+  "checked": "2026-11-19 by reading the code (experiments/rl_67m/run_stage2.py learned, job_null, null_lr; src/commute/rl_arms.py train)",
+  "no step reaches the size target in 600 steps": "reached false; the arm is saved and reported as not reached; a null at that rate is not stable; RL seed 0 not reached fails the learned gate",
+  "size exactly equal to the target": "reached (at or above)",
+  "gain exactly 2 se": "fails the learned gate (strictly more); rate change exactly 2 se passes the null (inclusive), as E218 filed",
+  "se of 0 on both reads": "learned fails unless the gain is above 0; a null with tol 0 is stable only if the rate did not move at all. Cannot arise at step 0 here (sd over prompts 0.29 and 0.25 in E218)",
+  "collapse": "a collapsed null is not stable whatever its rate; a collapsed arm is saved and flagged",
+  "no rate stable": "every shuffled job stops naming it, before training; the cell stops at stage 2",
+  "several rates stable": "the lowest",
+  "RL seed-0 file missing": "learned raises FileNotFoundError naming the file (run `arm P rl 0` first)",
+  "overshoot": "a rate whose first step is larger than the target stops there above it: size is reported, not refused. Expected at 3e-4 (about 2x the target at step 1, below); this matters only if 3e-4 is the lowest stable rate"
+ },
+ "control": {
+  "ctl, first and alone": "unchanged from E218 (it passed there): a zero update reads exactly 0.0 on stage 1's KL and the same 32 x 8 sampled tokens; E209's stage 0 re-reads E53's lowercase and cipher states to their saved numbers. Rerun as the apparatus check of the new code; the training loop now also asserts the live size is exactly 0.0 at step 0",
+  "RL learns": "the learned gate above, at the size target"
+ },
+ "expected": {
+  "how": "E218 recorded each state's size only at its stop (the traces hold KL). Every arm kind's end sizes fit size = c x sqrt(steps) (Adam steps of near-random direction): c = 0.00104-0.00110 (RL repeat), 0.00134-0.00137 (RL lower), 0.00129 (own repeat, 0.0316 at 600), 0.00154 (own lower, 0.0378), 0.00120 (demo repeat, 0.0295), 0.00149 (demo lower, 0.0365), 0.00146-0.00148 (anchor demo), 0.00119-0.00121 (shuffled 3e-5), 0.00454 (shuffled 1e-4), 0.0143 (shuffled 3e-4). Steps to the target = (0.006874 / c)^2",
+  "zero_kl": "exactly 0.0",
+  "zero_same_tokens": "true",
+  "e53_reread": "every number equal to its saved value (E218's ctl read them exactly)",
+  "steps to the target": "RL repeat 39-44, RL lower 25-27 (seed 0: 25, its E218 state); own repeat ~29, own lower ~20; demo repeat ~33, demo lower ~21; anchor ~22; shuffled 3e-5 ~32-34, 1e-4 ~3 (size ~0.0079 at the stop), 3e-4 1 (size ~0.014, twice the target)",
+  "size_saved": "within 1e-4 of the live size (E218: bf16 moved KL by under 1e-4 relative)",
+  "rl_gain_at_target": "repeat +0.45 to +0.6 (E218 calib 1 read 0.71 at step 30 and 0.78 at 60 from 0.16; seeds 1-2 slower, 0.43 and 0.37 at step 10); lower +0.7 to +0.75 (seed 0 read 0.98 from 0.25 on this very state). Both far above 2 se (about 0.05-0.07): the learned gate passes",
+  "kl at the stop": "RL 3 to 4 nats per token (lower seed 0 3.93; repeat ~3.1 at steps 35-40); anchor ~3.5; shuffled 3e-5 ~1.3-1.8; demo 0.15-0.4; own 0.10-0.12. So at matched size the KL now differs between arms by up to 30x, a reading of stage 2b",
+  "null at 3e-5": "stable on lower (E218: rate change -0.05 against a tol of 0.055 at size 0.0108, past this target); on repeat uncertain: +0.03 at step 10, -0.15 by size 0.0119. Call: stable on both, so the shuffled arm runs at 3e-5 (probability about 0.6)",
+  "null at 1e-4 and 3e-4": "not predicted beyond the stop step: E218 read them only at sizes 0.018 and 0.031, past the target",
+  "own and demo at the target": "held-out rate up far less than RL: repeat 0.16 -> 0.17-0.25, lower 0.24 -> 0.43-0.50 (E218's step-10 reads; size ~0.004 there)",
+  "anchor (demo)": "from ~0.004 to 0.8-0.9 (E218 read 0.83-0.90 at sizes 0.0074-0.0085 and 0.86-0.91 at step 10)",
+  "collapsed": "none (E218's only collapse was the 3e-4 null on lower at size 0.031, and calib 2 after step 90)"
+ }
+}
