@@ -92,6 +92,7 @@ Times are E218's measured items times their count, on the H100 pod with five job
 | Order | argv | Gate it reads | Time |
 |---|---|---|---|
 | 1, alone | `ctl` | — | ~3 min (E218 on an L40: 15:36:00 to 15:38:52); host RSS 20.5 GB |
+| 2 | `null 1e-05` | — | ~15 min (2 picks x ~200 steps; added by the lead before any run as the 3e-5 fallback) |
 | 2 | `null 3e-05` | — | ~7.5 min (2 picks x (3 reads + ~33 steps)) |
 | 2 | `null 0.0001` | — | ~3 min (2 picks x (2 reads + ~3 steps)) |
 | 2 | `null 0.0003` | — | ~3 min (2 picks x (2 reads + 1 step)) |

@@ -29,8 +29,8 @@
   "n_train_prompts": 1024,
   "n_train_prompts_source": "E218's: own pools of 1,400-1,415 (repeat) and 2,148-2,201 (lower)",
   "pile_train_n": 32768,
-  "null_rates": [3e-5, 1e-4, 3e-4],
-  "null_rates_source": "E218's grid unchanged (the RL rate and x3, x10 above it)",
+  "null_rates": [1e-5, 3e-5, 1e-4, 3e-4],
+  "null_rates_source": "E218's grid (the RL rate and x3, x10 above it) plus 1e-5 below it, added by the lead before any run (2026-11-19) as the fallback if repeat's null moves at 3e-5; about 200 steps to the target",
   "seeds": [0, 1, 2]
  },
  "thresholds": {
