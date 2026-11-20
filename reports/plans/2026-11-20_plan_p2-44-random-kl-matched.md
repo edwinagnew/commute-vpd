@@ -86,3 +86,28 @@ pod measures the real per-item times first: `states 0 88` (e62/copy_s0) and `sta
 ## Not run
 The read-position KL match (dropped with the widening); more than three draws; changes restricted to the alive span
 other than the control; the 67M neuron and steering baselines on the random draws.
+
+## Known-answer stage (check 1)
+The user (2026-11-20 11:46, folded in at 12:24): "Check 1: the re-gating share and the two strongest baselines
+(effective rank, neurons for half the gain) on the P1.37/E226 items: do-nothing control, E214 two built new edits, E195
+four reuse items; forward passes only, rule filed first, same pass rule as R (reuse items above new)." E227 read them on
+altered windows (cue items' answer appended, copy24 windows cut after position 20, the answer written at 21), which moves Γ's gates at the read position,
+so its shares do not stand; its effective rank does (no rows) and is cited, not recomputed. Code
+`experiments/random_kl_share/known_answer.py`, rules `results/predictions_known_answer.json`.
+
+- **What runs:** one job; the do-nothing first (zero change: every K difference, r's numerator and gain, the KL, the
+  neuron cells exactly 0; both shares nan; exit 1 if not), then new_few, new_thin, x2, x10, rebuilt, each on its E214
+  windows fed whole, read with E228's pass (KL-form share and r) and E98's neurons for half the gain, on all rows and two
+  halves. Moved appends neurons, so no reading applies (as in E227).
+- **Targets:** the new edits' written answer at the last position. The reuse edits lower the copy answer (E227), so
+  their target per row is the token whose log-probability the edit raises most at position 20.
+- **Positive control:** the neuron reader runs no Γ and is causal, so on the new items (same target) it must reproduce
+  E227's saved numerator and count; exit 1 if not.
+- **Rule (as R):** per reading, "reuse above new" when every reuse reading exceeds every new reading by more than the
+  band (largest split-half gap), else "mixed: n of 6 pairs ordered", "silent" when no pair is read.
+
+Design check. **Goal:** part 2, whether the share or a baseline recovers the known labels the definition is calibrated
+on. **Nearest tried:** E227 (P2.43; windows altered, shares invalid) and E226 (R on the same items). **Patch or step:**
+a corrected read, not a new measurement. **Definition:** unchanged; the rule is R's. **Would change next step:** a
+reading that puts reuse above new is named beside R in the paper's comparison; otherwise the paper says none recovers the
+labels. **Control first:** the do-nothing, then the new items' neuron reproduction.
