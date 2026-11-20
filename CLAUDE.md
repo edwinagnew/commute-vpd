@@ -11,6 +11,9 @@
   "resume" moved the SSH port mid-transfer, the plugin could not reconnect, and the pod had to be terminated with the
   states unsaved.
   - Save only what the analysis reads: the scored step, and small dtypes.
+  - `download()` takes one file per call: `tar` the outputs on the pod and download the archive (friction 873). Check
+    each side's sha256 as that side completes: a provider can delete a pod mid-run (friction 872).
+  - Never edit the `name` in `remote-kernels.toml` while a machine runs (friction 901).
   - Download each task's outputs as soon as they are written, while the next task runs, not in one batch at the end.
   - `download()` of a directory nested it (`results/results/`), and later flattened subdirectories into their parent
     (friction 757, 799): download each subdirectory into its exact local path, and check the layout after the first.
@@ -18,7 +21,9 @@
     2026-10-19). Check sha256 on both sides. The directory named must be the gitignored one itself
     (`.../results/large`): a file or a subdirectory under it is never walked, and the sync still reports success
     (2026-10-23, two pods idled 20-25 min each). To send a few files from a large directory, hard-link them into a
-    staging path ending in `results/large/` and name that path; start the sync before set-up.
+    flat staging directory and name that directory itself (the one directly holding the files: `include` does not
+    walk nested trees, which arrive as empty directories). Keep `results/large` out of the staging path: such a path
+    was skipped silently (E214; `e214_stage/f/<exp>/` worked, friction 860, 901, 907). Start the sync before set-up.
     Delete the staging directory afterwards. Since `~/commute-agents/fleet/link-data`, every `results/large` is a symlink and arrives
     on the pod dangling (2026-10-27): always stage by hard link, and replace the symlink on the pod with the real
     directory. The W&B fetch of `artifacts/vpd` works again (2026-10-27, ~45 MB/s, 65 s).

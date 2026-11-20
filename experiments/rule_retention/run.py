@@ -40,7 +40,14 @@ from torch import Tensor
 
 from commute import rule_retention as R
 from commute.data import pile_rows
-from commute.jobs import EXPERIMENTS, hard_exit, load_experiment, require_filed
+from commute.jobs import (
+    EXPERIMENTS,
+    hard_exit,
+    load_experiment,
+    require_filed,
+    write_stage,
+)
+from commute.jobs import stop as jobs_stop
 
 RU: Any = load_experiment("rule_retention", "rule")
 CELL = "P1.24"
@@ -89,13 +96,11 @@ def log(msg: str) -> None:
 
 
 def dump(path: Path, obj: dict[str, Any]) -> None:
-    path.write_text(json.dumps(obj, indent=1))
+    write_stage(path, obj)  # also keeps the .stopped marker beside it in step (friction 861)
 
 
 def stop(path: Path, out: dict[str, Any], why: str) -> None:
-    dump(path, out | {"stopped": why})
-    log(f"STOP: {why}")
-    sys.exit(1)
+    jobs_stop(path, out, why, log)  # the JSON's "stopped" key and a .stopped marker file beside it, exit 1
 
 
 def cut(rows: Tensor, n: int, length: int, gen: torch.Generator) -> Tensor:

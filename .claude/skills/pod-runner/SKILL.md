@@ -14,6 +14,11 @@ names the run.
 Before spawning, check that:
 - for a scored run, `experiments/<name>/results/predictions.json` exists; a separate smoke only when the rule in
   `.claude/CLAUDE.md` asks for one (a paid run over ~30 min, or an expensive late stage);
+- for a run that uses a pod (plain, `stage` or `rerun`), the number has a $0 rehearsal on record
+  (a line of `~/commute-data/rehearsals.tsv` whose third column is the number): `fleet/job-gate` refuses the pod
+  without one. With none, this brief is the rehearsal: `Run: rehearsal`, on a cluster GPU (`E### rehearse: what`, $0)
+  or a short pod `commute-E###-rehearse-what`, at the full read sizes with a tiny model or dictionary (shell-notes
+  reference → Pods → Rehearsal first; friction 852, 885, 902);
 - `make lint` is clean on the changed files (skipped while the worker is down), and the adversarial review was run if measurement code changed.
 
 If one of these fails, tell the user instead of spawning.
@@ -21,15 +26,20 @@ If one of these fails, tell the user instead of spawning.
 ## Brief (fill in every line; write "none" rather than leave one out)
 
 ```
-Experiment: <name>   Run: <smoke | scored | smoke, then scored if clean | setup/other>
+Experiment: <name>   Run: <rehearsal | smoke | scored | smoke, then scored if clean | setup/other>
 Command: <exact argv of each job, copied from the parser, with stage arguments; each parallel job tees to its own
          results/run_<stages>.log, never a shared run.log (friction 833); or the sbatch script>
-PRED_SHA: <E120_PRED_SHA=<sha> for the pod run line, sha from `git show HEAD:experiments/<name>/results/predictions.json
+PRED_SHA: <PRED_SHA=<sha> (exactly that name, not E###_PRED_SHA) for the pod run line, sha from `git show HEAD:experiments/<name>/results/predictions.json
           | sha256sum` on dev; pods sync(), never clone (shell-notes.md → Pods → Set-up; friction 817, 820, 843)>
-Expected: <runtime from the smoke/benchmark>, <GPU memory>, <CPU RAM>
+Expected: <runtime = the rehearsal's measured time per item × the item count>, <GPU memory: its peak>, <CPU RAM>
+Rehearsal: <its rehearsals.tsv line (noise floor, s/item, peak memory, sizes); or, for Run: rehearsal, what it runs at
+           which sizes, and that the runner records floor, s/item, peak memory with fleet/rehearsed ROLE E### '...'>
 Outputs: <files the run writes; mark which are the results to bring home; which are large/>
+         (download() is one file per call: the runner tars them first; sha256 is checked per side as each side ends, friction 872, 873)
          (the job's final "FINISHED" line names these paths, so list them all)
-Inputs not in git: <the list a short CPU dry run writes with INPUT_MANIFEST=<file> set (commute.jobs.record_inputs),
+Inputs not in git: <sync include names the directory directly holding the files, staged flat, no `results/large` in the path
+                   (friction 860, 901, 907); the list a short CPU dry run writes with INPUT_MANIFEST=<file> INPUT_MANIFEST_CPU=1 set
+                   (commute.jobs.record_inputs; the second lets a "cuda" load pass on fleet/cpu-run, friction 906),
                    less the tracked files, or none (friction 832, 842)>
 Label: <each pod's exact start() label, e.g. commute-E186-b, commute-E178-stage-N_s0 (form: shell-notes.md → Pods)>
 Per pod: <items and counts each pod runs, from the code's loops; step-time band from a measured pod; POD_IDLE_MIN

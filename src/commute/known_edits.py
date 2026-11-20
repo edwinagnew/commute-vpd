@@ -11,8 +11,9 @@ Slots: the eight layer-`l` neurons with the smallest mean activation^2 x |output
 (E206's rule). Slot i's input row detects A'_i: beta (h(A'_i) - mean h) / |.|, h the mean MLP input after rms_2 at the
 positions holding the token in M's run on D (or the whitened direction where that one cannot pass: `detector`), beta the smallest power of 2 at which the slot's mean activation on A'_i
 is at least `detector_ratio` x its `detector_quantile` quantile on Pile held-out.
-    reuse_small  slot i's output column gamma_T (x_1(A_i) - x_1(A'_i)) / act_i, x_1 the mean block-1 input at the token's
-                 positions; gamma_T from 1, doubled until the copy top-1 on D is at least copy_bar_frac x M's own
+    reuse_small  slot i's output column gamma_T (x_1(A_i) - x_1(A'_i)) / act_i, x_1 the mean block-1 input at the last
+                 position of D's windows with A_i or A'_i there (E214, 2026-11-19: at A_i's own position p the context
+                 differs, and the mean shift reached copy 0.137 at most against the twin's 0.258, diag_reuse.log); gamma_T from 1, doubled until the copy top-1 on D is at least copy_bar_frac x M's own
     new_few      slot i's output column gamma_N e(y_i) / act_i, e(y) = lm_head[y] - mean lm_head; gamma_N the smallest
                  value (doubling, then 20 bisection steps) with lookup top-1 on D at least lookup_bar
     new_thin     the least-norm change of layer l's down_proj, gamma E A^+, A (n x 8) M's mean activations on each A'_i,
@@ -35,6 +36,14 @@ from torch import Tensor
 from commute import rule_retention as R
 
 
+class NoDetector(Exception):
+    """No input direction reaches the detector bar for cue `i` (its A'_i is swapped by the caller)."""
+
+    def __init__(self, i: int, rec: dict[str, Any]) -> None:
+        super().__init__(f"no detector for cue {i}: {rec}")
+        self.i, self.rec = i, rec
+
+
 @dataclass
 class Cues:
     A: list[int]
@@ -47,13 +56,17 @@ class Cues:
     p: Tensor  # (N,) where its A_i is
 
 
-def cues(rows: Tensor, keys: list[int], pool: list[int], n: int, per: int, T: int, seed: int) -> Cues:
-    """`pool`: frequent word-like tokens; the keys are removed from it before the draw."""
+def cues(rows: Tensor, keys: list[int], pool: list[int], n: int, per: int, T: int, seed: int, skip: tuple[int, ...] = ()) -> Cues:
+    """`pool`: frequent word-like tokens; the keys are removed from it before the draw. An A'_i in `skip` (no detector)
+    is replaced by the first token of the B pool, which then leaves the B pool."""
     gen = torch.Generator().manual_seed(seed)
     A = [keys[int(i)] for i in torch.randperm(len(keys), generator=gen)[:n]]
     rest = [t for t in pool if t not in keys]
     rest = [rest[int(i)] for i in torch.randperm(len(rest), generator=gen)]
-    A2, y, bs = rest[:n], rest[n : 2 * n], torch.tensor(rest[2 * n :])
+    A2, y, more = rest[:n], rest[n : 2 * n], rest[2 * n :]
+    for t in skip:
+        A2[A2.index(t)] = more.pop(0)
+    bs = torch.tensor(more)
     out: dict[str, list[Tensor]] = {"toks": [], "cue": [], "b": [], "p": []}
     for i in range(n):
         m = 8 * per
@@ -169,12 +182,13 @@ def build(M: R.Model, c: Cues, pile: Tensor, cfg: Any) -> tuple[dict[str, R.Mode
         beta = 1.0
         while float(gelu(h[cue == i, -1] @ (beta * u)).mean()) < cfg.detector_ratio * float(torch.quantile(gelu(hpi @ (beta * u)), cfg.detector_quantile)):
             beta *= 2
-            assert beta <= 2.0**20, f"no detector for cue {i}: {d}, pile_own {int((own == c.A2[i]).sum())}"
+            if beta > 2.0**20:
+                raise NoDetector(i, d | {"pile_own": int((own == c.A2[i]).sum())})
         rows[i], act[i] = beta * u, gelu(h[cue == i, -1] @ (beta * u)).mean()
         betas.append(beta)
         dirs.append(d | {"pile_own": int((own == c.A2[i]).sum())})
-    pos = torch.arange(len(toks), device=dev)
-    shift = torch.stack([x1[pos[cue == i], c.p.to(dev)[cue == i]].mean(0) - x1[cue == i, -1].mean(0) for i in range(n)], 1) / act
+    x1t = site(M, c.twin.to(dev), l)[1]  # the same windows with A_i last: same context, only the token differs
+    shift = torch.stack([x1t[cue == i, -1].mean(0) - x1[cue == i, -1].mean(0) for i in range(n)], 1) / act
     lm = M.net.lm_head.weight
     E = (lm[torch.tensor(c.y, device=dev)] - lm.mean(0)).T  # (d, n)
     y_of = torch.tensor(c.y, device=dev)[cue]
@@ -182,9 +196,8 @@ def build(M: R.Model, c: Cues, pile: Tensor, cfg: Any) -> tuple[dict[str, R.Mode
     rec: dict[str, Any] = {"slots": S, "betas": betas, "detectors": dirs, "act": act.tolist(), "copy_M_twin": ref, "copy_M_D": base, "misses": []}
     rec["misses"] += [f"M's copy after A' {base:.4f} > {cfg.a_prime_copy_max}"] if base > cfg.a_prime_copy_max else []
     gT = 1.0
-    while top1(small := with_slots(M, l, S, rows, gT * shift), toks, c.b) < cfg.copy_bar_frac * ref and gT <= cfg.gamma_t_max:
-        gT *= 2
-    rec["misses"] += [f"gamma_T {gT} > {cfg.gamma_t_max}"] if gT > cfg.gamma_t_max else []
+    while top1(small := with_slots(M, l, S, rows, gT * shift), toks, c.b) < cfg.copy_bar_frac * ref and gT < cfg.gamma_t_max:
+        gT *= 2  # stops at the cap; a top-1 under the bar there is a miss below
     few_of = lambda g: with_slots(M, l, S, rows, g * E / act)
     A = torch.stack([R.acts(M, l, R.m_inputs(M, toks)[l][1])[cue == i, -1].mean(0) for i in range(n)], 1)  # (n_mlp, n)
     pinv = torch.linalg.pinv(A.double()).float()

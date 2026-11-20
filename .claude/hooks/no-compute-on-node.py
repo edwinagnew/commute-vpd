@@ -17,7 +17,14 @@ In Python it looks for loading calls: `X.from_pretrained(...)` (tokenizers, conf
 nnsight's `LanguageModel(...)` and the repository's loaders in REPO_LOADERS. In the shell text it also looks for
 model ids (`Qwen/...`, `gpt2`, `pythia-...`); a model id inside a Python script, which may only label saved data,
 does not count. The check is heuristic.
+
+A CPU job that runs one stage of a script whose other stages load a model says which with a line in its batch file,
+`# cpu-stage: NAME` (friction 882: E210's stage a read a released crosscoder, its run.py's stage b loaded Gemma). The
+script is then searched only from its function stage_NAME (or NAME): that function, the functions and classes of the
+same file it names, and the file's top-level code outside them and outside its `if __name__ == "__main__":` block. A
+loading call there, or no such function, refuses the job as before; a script without a loading call needs no marker.
 """
+import ast
 import json
 import os
 import re
@@ -105,12 +112,14 @@ def _language_model(segment, cwd):
     except ValueError:
         words = segment.split()
     shell = [("the command", segment)]
+    stage = None  # `# cpu-stage: NAME` in a batch file (friction 882)
     for i, w in enumerate(words):
         if w.startswith("--wrap="):
             shell.append(("--wrap", w[7:]))
         elif w == "--wrap" and i + 1 < len(words):
             shell.append(("--wrap", words[i + 1]))
         elif w.endswith(SHELL_FILE) and (path := _resolve(w, roots)) and (text := _read(path)) is not None:
+            stage = stage or ((m := CPU_STAGE.search(text)) and m[1])
             shell.append((path, _code(text)))
             roots.append(os.path.dirname(path))
     scripts = []
@@ -133,7 +142,63 @@ def _language_model(segment, cwd):
         code = re.sub(r'("""|\'\'\')[\s\S]*?\1', "", _code(_read(path) or ""))  # names in docstrings load nothing
         for m in LOAD_CALL.finditer(code):
             if not (m[1] and NOT_A_MODEL.search(m[1])):
+                if stage:
+                    why = _stage_loads(_read(path) or "", stage)
+                    if why is None:
+                        break  # the stage this job runs loads no model
+                    return f"{os.path.relpath(path, roots[1])}: cpu-stage {stage}: {why}"
                 return f"{os.path.relpath(path, roots[1])} calls {m[0].rstrip('( ')}(...)"
+    return None
+
+
+CPU_STAGE = re.compile(r"^\s*#\s*cpu-stage:\s*([A-Za-z_]\w*)\s*$", re.MULTILINE)
+
+
+def _main_guard(node):
+    """Whether a top-level statement is `if __name__ == "__main__":`."""
+    return isinstance(node, ast.If) and "__name__" in ast.unparse(node.test) and "__main__" in ast.unparse(node.test)
+
+
+def _stage_loads(text, stage):
+    """Why the stage NAME of a Python script loads a model, or None (see the docstring, friction 882). Read from its
+    function stage_NAME or NAME through the functions and classes of the same file it names, by name, and the file's
+    top-level code outside definitions and the __main__ guard. Imported modules are not followed, as for whole scripts."""
+    try:
+        tree = ast.parse(text)
+    except SyntaxError:
+        return "the script does not parse"
+    defs = {}
+    for node in ast.walk(tree):
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            defs.setdefault(node.name, node)
+    start = next((k for k in (f"stage_{stage}", stage) if k in defs), None)
+    if start is None:
+        return f"it has no function stage_{stage} or {stage}"
+
+    def loads(node):
+        code = re.sub(r'("""|\'\'\')[\s\S]*?\1', "", _code(ast.get_source_segment(text, node) or ""))
+        for m in LOAD_CALL.finditer(code):
+            if not (m[1] and NOT_A_MODEL.search(m[1])):
+                return m[0].rstrip("( ")
+        return None
+
+    top = [n for n in tree.body if not isinstance(n, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef))
+           and not _main_guard(n)]
+    for node in top:
+        if call := loads(node):
+            return f"its top-level code calls {call}(...)"
+    seen, todo = set(), [start]
+    while todo:
+        name = todo.pop()
+        if name in seen:
+            continue
+        seen.add(name)
+        if call := loads(defs[name]):
+            return f"{name}, which stage {stage} runs, calls {call}(...)"
+        for sub in ast.walk(defs[name]):
+            ref = sub.id if isinstance(sub, ast.Name) else sub.attr if isinstance(sub, ast.Attribute) else None
+            if ref in defs and ref not in seen:
+                todo.append(ref)
     return None
 
 
@@ -241,7 +306,9 @@ if not found and bodies and any(SUBMIT.search(s) for s in re.split(SEGMENT, shel
 if found:
     print(f"Models never run on CPUs: {found}. Request a GPU (#SBATCH --gres=gpu:1) or use a RunPod pod, through "
           "/pod-runner (.claude/CLAUDE.md, Rules). A CPU script that only reads the 67M's weights, with no forward pass, "
-          "needs no model: use vpd.checkpoint_weights() instead of vpd.load_component_model() (friction 173, 344).",
+          "needs no model: use vpd.checkpoint_weights() instead of vpd.load_component_model() (friction 173, 344). "
+          "A CPU job running one stage of a script whose other stages load a model: put `# cpu-stage: NAME` in its batch "
+          "file, and only stage_NAME and what it calls in that file are read (friction 882).",
           file=sys.stderr)
     sys.exit(2)
 

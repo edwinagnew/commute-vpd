@@ -1,0 +1,148 @@
+E214 start; levels ['block', 'mlp_attn', 'head_mlp'], items ['x2', 'x10', 'moved', 'rebuilt', 'e201', 'last_lowest', 'last_rank5', 'last_rank9', 'last_rank13', 'neurons', 'always_on', 'cue', 'xor', 'table']; settings {'levels': ('neuron_head', 'head_mlp', 'mlp_attn', 'block'), 'alpha': 0.9, 'alphas': (0.8, 0.9, 0.95), 'restricted_share': 0.5, 'orders': 5, 'order_seed': 0, 'chunk': 256, 'polish_cap': 2000, 'split_seed': 186001, 'eval_batch': 512, 'slot_layer': 0, 'n_cues': 8, 'windows_per_cue': 64, 'window': 41, 'cue_seed': 186000, 'data_seed': 0, 'circuit_heads': ((1, 1), (2, 4)), 'gain_head': (2, 4), 'detector_ratio': 10.0, 'detector_quantile': 0.99, 'gamma_t_max': 8.0, 'copy_bar_frac': 0.8, 'lookup_bar': 0.9, 'g_fallback_ratio': 2.67, 'e195_layer': 1, 'e195_C': (486, 499, 613, 778, 1125, 2028, 2352, 2960), 'e195_factors': (2, 10), 'rebuilt': 'experiments/rule_retention_fixed/results/large/rebuilt_mlp.pt', 'e201_graft': 'experiments/graft_negative/results/large/graft.pt', 'e206_grafts': ('last_lowest', 'last_rank5', 'last_rank9', 'last_rank13', 'neurons'), 'graft_layer': 3, 'graft_window': 32, 'graft_val_rows': 2000, 'graft_n_read': 512, 'graft_read_seed': 201005, 'pieces': 'experiments/reuse_variable_test/results/large/pieces.pt', 'piece_names': ('Always on', 'Cue', 'XOR', 'Table'), 'piece_windows': 4096}; thresholds {'kl_floor': 1e-06, 'gate_tol': 0.001, 's_tol': 1e-06, 'identity_tol': 1e-09, 'piece_gate_tol': 0.0001, 'e62_base': 0.8247, 'e62_tol': 0.01, 'band_factor': 3, 'thin_floor': 0.9, 'l1_hours_cap': 3, 'a_prime_copy_max': 0.05, 'thresholds_source': "kl_floor, gate_tol: E208's filed values; e62_base, e62_tol: E62's filed a_heads rule; band_factor 3: the 3 s bar of E55's filed rules, as P1.31 drafted it; s_tol: a squared cosine of identical fp64 writes is 1 to rounding (E208's x2/x10 read 1 within it); identity_tol: R = 1 - f(1 - rho') is algebra; thin_floor 0.9: the bottom of the audit's bound on neuron-level R for every trained fine-tune (0.88 worst unit, 0.99 for K of 128 or more, E213), rounded down; piece_gate_tol: fp32 agreement between two code paths of one formula; l1_hours_cap: the plan's time stop; a_prime_copy_max: R0's stage-1 check 'M's copy after A' <= 0.05', as P1.31 drafted it (experiments/known_answer_levels/results/predictions.json)."}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+stage 0: done before
+x2: 75 windows, KL(F || F_empty) 4.36569, KL(F || M) 0.101414
+x2 block: 6 variables, 1 changed; gates {'all': 2.2169701878738124e-06, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 0.003954687889267561, 'read': 0.003954687889267561}
+  block: 64 subsets in 1 s
+x2 block: R all [0.9993408853517888], read [0.9993408853517888], f [0.16666666666666666], |K*| [6]
+x2 mlp_attn: 10 variables, 1 changed; gates {'all': 2.2169701878738124e-06, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 0.0053167533680260615, 'read': 0.0053167533680260615}
+  mlp_attn: 1024 subsets in 23 s
+x2 mlp_attn: R all [0.9994092496257748], read [0.9994092496257748], f [0.1111111111111111], |K*| [9]
+x2 head_mlp: 30 variables, 1 changed; gates {'all': 2.2169701878738124e-06, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 0.0053167533680260615, 'read': 0.0053167533680260615}
+  head_mlp main order 0: |K*| 23, R all 0.999769, read 0.999769, f 0.0435; 2030 evaluations, 46 s (polish cap hit)
+x2 head_mlp: R all [0.9997688368100858], read [0.9997688368100858], f [0.043478260869565216], |K*| [23]
+x10: 75 windows, KL(F || F_empty) 4.3833, KL(F || M) 0.713758
+x10 block: 6 variables, 1 changed; gates {'all': 2.75458000942308e-06, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 0.14715228165410932, 'read': 0.14715228165410932}
+  block: 64 subsets in 1 s
+x10 block: R all [0.9754746197243152], read [0.9754746197243152], f [0.16666666666666666], |K*| [6]
+x10 mlp_attn: 10 variables, 1 changed; gates {'all': 2.75458000942308e-06, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 0.16887874391046376, 'read': 0.16887874391046376}
+  mlp_attn: 1024 subsets in 23 s
+x10 mlp_attn: R all [0.9831121256089537], read [0.9831121256089537], f [0.1], |K*| [10]
+x10 head_mlp: 30 variables, 1 changed; gates {'all': 2.75458000942308e-06, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 0.16887874391046376, 'read': 0.16887874391046376}
+  head_mlp main order 0: |K*| 24, R all 0.992963, read 0.992963, f 0.0417; 2030 evaluations, 46 s (polish cap hit)
+x10 head_mlp: R all [0.9929633856703974], read [0.9929633856703974], f [0.041666666666666664], |K*| [24]
+moved: 75 windows, KL(F || F_empty) 4.45704, KL(F || M) 4.37337e-12
+moved block: 6 variables, 1 changed; gates {'all': 2.3997374682949157e-06, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 3.689271110829395e-13, 'read': 3.689271110829395e-13}
+  block: 64 subsets in 1 s
+moved block: R all [0.9999999999999386], read [0.9999999999999386], f [0.16666666666666666], |K*| [6]
+moved mlp_attn: 10 variables, 1 changed; gates {'all': 2.3997374682949157e-06, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 4.701794509287538e-13, 'read': 4.701794509287538e-13}
+  mlp_attn: 1024 subsets in 23 s
+moved mlp_attn: R all [0.9999999999999477], read [0.9999999999999477], f [0.1111111111111111], |K*| [9]
+moved head_mlp: 30 variables, 1 changed; gates {'all': 2.3997374682949157e-06, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 4.701794509287538e-13, 'read': 4.701794509287538e-13}
+  head_mlp main order 0: |K*| 23, R all 1.000000, read 1.000000, f 0.0435; 2030 evaluations, 46 s (polish cap hit)
+moved head_mlp: R all [0.9999999999999796], read [0.9999999999999796], f [0.043478260869565216], |K*| [23]
+rebuilt: 75 windows, KL(F || F_empty) 4.32108, KL(F || M) 0.119962
+rebuilt block: 6 variables, 3 changed; gates {'all': 1.995936827370315e-06, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 0.07498558222873997, 'read': 0.07498558222873997}
+  block: 64 subsets in 1 s
+rebuilt block: R all [0.9830843450598645], read [0.9830843450598645], f [0.5], |K*| [6]
+rebuilt mlp_attn: 10 variables, 3 changed; gates {'all': 1.995936827370315e-06, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 0.11310539048040835, 'read': 0.11310539048040835}
+  mlp_attn: 1024 subsets in 23 s
+rebuilt mlp_attn: R all [0.9847885166071951], read [0.9847885166071951], f [0.3333333333333333], |K*| [9]
+rebuilt head_mlp: 30 variables, 3 changed; gates {'all': 1.995936827370315e-06, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 0.11310539048040835, 'read': 0.11310539048040835}
+  head_mlp main order 0: |K*| 23, R all 0.994048, read 0.994048, f 0.1304; 2030 evaluations, 46 s (polish cap hit)
+rebuilt head_mlp: R all [0.9940476804115113], read [0.9940476804115113], f [0.13043478260869565], |K*| [23]
+e201: 512 windows, KL(F || F_empty) 7.03616, KL(F || M) 8.91153
+e201 block: 6 variables, 1 changed; gates {'all': 1.2332987353147473e-05, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 0.8327631946415108, 'read': 0.8327631946415108}
+  block: 64 subsets in 7 s
+e201 block: R all [0.8612061342264149], read [0.8612061342264149], f [0.16666666666666666], |K*| [6]
+e201 mlp_attn: 10 variables, 1 changed; gates {'all': 1.2332987353147473e-05, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 0.7882250619114075, 'read': 0.7882250619114075}
+  mlp_attn: 1024 subsets in 119 s
+e201 mlp_attn: R all [0.9124194375653991], read [0.9124194375653991], f [0.1111111111111111], |K*| [9]
+last_lowest: 512 windows, KL(F || F_empty) 6.59943, KL(F || M) 8.42476
+last_lowest block: 6 variables, 1 changed; gates {'all': 1.0899802873609588e-05, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 0.7958428853698487, 'read': 0.7958428853698487}
+  block: 64 subsets in 7 s
+last_lowest block: R all [0.8673595191050252], read [0.8673595191050252], f [0.16666666666666666], |K*| [6]
+last_lowest mlp_attn: 10 variables, 1 changed; gates {'all': 1.0899802873609588e-05, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 0.7547274218871978, 'read': 0.7547274218871978}
+  mlp_attn: 1024 subsets in 119 s
+last_lowest mlp_attn: R all [0.9161413975680891], read [0.9161413975680891], f [0.1111111111111111], |K*| [9]
+last_lowest head_mlp: 31 variables, 1 changed; gates {'all': 1.0899802873609588e-05, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 4.3365311341858614e-13, 'read': 4.3365311341858614e-13}
+  head_mlp main order 0: |K*| 19, R all 0.947368, read 0.947368, f 0.0526; 2031 evaluations, 236 s (polish cap hit)
+last_lowest head_mlp: R all [0.9473684210525845], read [0.9473684210525845], f [0.05263157894736842], |K*| [19]
+last_rank5: 512 windows, KL(F || F_empty) 6.92412, KL(F || M) 8.82116
+last_rank5 block: 6 variables, 1 changed; gates {'all': 1.4367660696734674e-05, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 0.8167216619292653, 'read': 0.8167216619292653}
+  block: 64 subsets in 7 s
+last_rank5 block: R all [0.8638797230117891], read [0.8638797230117891], f [0.16666666666666666], |K*| [6]
+last_rank5 mlp_attn: 10 variables, 1 changed; gates {'all': 1.4367660696734674e-05, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 0.7742394303443372, 'read': 0.7742394303443372}
+  mlp_attn: 1024 subsets in 119 s
+last_rank5 mlp_attn: R all [0.9032200712069578], read [0.9032200712069578], f [0.125], |K*| [8]
+last_rank5 head_mlp: 31 variables, 1 changed; gates {'all': 1.4367660696734674e-05, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 4.3365311341858614e-13, 'read': 4.3365311341858614e-13}
+  head_mlp main order 0: |K*| 19, R all 0.947368, read 0.947368, f 0.0526; 2031 evaluations, 236 s (polish cap hit)
+last_rank5 head_mlp: R all [0.9473684210525845], read [0.9473684210525845], f [0.05263157894736842], |K*| [19]
+last_rank9: 512 windows, KL(F || F_empty) 7.0823, KL(F || M) 8.97734
+last_rank9 block: 6 variables, 1 changed; gates {'all': 1.0678593753254972e-05, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 0.8402547875092106, 'read': 0.8402547875092106}
+  block: 64 subsets in 7 s
+last_rank9 block: R all [0.8319490424981579], read [0.8319490424981579], f [0.2], |K*| [5]
+last_rank9 mlp_attn: 10 variables, 1 changed; gates {'all': 1.0678593753254972e-05, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 0.7922515517572475, 'read': 0.7922515517572475}
+  mlp_attn: 1024 subsets in 119 s
+last_rank9 mlp_attn: R all [0.9009685560303441], read [0.9009685560303441], f [0.125], |K*| [8]
+last_rank9 head_mlp: 31 variables, 1 changed; gates {'all': 1.0678593753254972e-05, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 4.3365311341858614e-13, 'read': 4.3365311341858614e-13}
+  head_mlp main order 0: |K*| 14, R all 0.928571, read 0.928571, f 0.0714; 2031 evaluations, 236 s (polish cap hit)
+last_rank9 head_mlp: R all [0.9285714285713815], read [0.9285714285713815], f [0.07142857142857142], |K*| [14]
+last_rank13: 512 windows, KL(F || F_empty) 6.82091, KL(F || M) 9.01847
+last_rank13 block: 6 variables, 1 changed; gates {'all': 1.065636479324894e-05, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 0.82644231399095, 'read': 0.82644231399095}
+  block: 64 subsets in 7 s
+last_rank13 block: R all [0.83471153720181], read [0.83471153720181], f [0.2], |K*| [5]
+last_rank13 mlp_attn: 10 variables, 1 changed; gates {'all': 1.065636479324894e-05, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 0.7849612192944156, 'read': 0.7849612192944156}
+  mlp_attn: 1024 subsets in 119 s
+last_rank13 mlp_attn: R all [0.9018798475881981], read [0.9018798475881981], f [0.125], |K*| [8]
+last_rank13 head_mlp: 31 variables, 1 changed; gates {'all': 1.065636479324894e-05, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 4.3365311341858614e-13, 'read': 4.3365311341858614e-13}
+  head_mlp main order 0: |K*| 14, R all 0.928571, read 0.928571, f 0.0714; 2031 evaluations, 236 s (polish cap hit)
+last_rank13 head_mlp: R all [0.9285714285714025], read [0.9285714285714025], f [0.07142857142857142], |K*| [14]
+neurons: 512 windows, KL(F || F_empty) 5.74617, KL(F || M) 11.345
+neurons block: 6 variables, 1 changed; gates {'all': 1.050725404638797e-05, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 0.7077310748967461, 'read': 0.7077310748967461}
+  block: 64 subsets in 7 s
+neurons block: R all [0.8820448208505424], read [0.8820448208505424], f [0.16666666666666666], |K*| [6]
+neurons mlp_attn: 10 variables, 1 changed; gates {'all': 1.050725404638797e-05, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 0.6828588019644398, 'read': 0.6828588019644398}
+  mlp_attn: 1024 subsets in 119 s
+neurons mlp_attn: R all [0.924126799781729], read [0.924126799781729], f [0.1111111111111111], |K*| [9]
+neurons head_mlp: 30 variables, 1 changed; gates {'all': 1.050725404638797e-05, 'none': 0.0} (tol 0.001); max |1 - s| {'all': 0.6828588019644398, 'read': 0.6828588019644398}
+  head_mlp main order 0: |K*| 21, R all 0.967483, read 0.967483, f 0.0476; 1941 evaluations, 227 s
+neurons head_mlp: R all [0.9674829141921696], read [0.9674829141921696], f [0.047619047619047616], |K*| [21]
+[data] train rows 0..32768: cached at /root/artifacts/sets/train_0_32768.npy
+[data] train rows 32768..40960: cached at /root/artifacts/sets/train_32768_8192.npy
+always_on: 4096 windows, KL(F || F_empty) 4.05892, KL(F || M) 0.138855
+always_on block: 7 variables, 1 changed; gates {'all': 3.7283355140971253e-06, 'none': 0.0} (tol 0.0001); max |1 - s| {'all': 0.0, 'read': 0.0}
+  block: 128 subsets in 11 s
+always_on block: R all [1.0], read [1.0], f [0.0], |K*| [6]
+always_on mlp_attn: 11 variables, 1 changed; gates {'all': 3.7283355140971253e-06, 'none': 0.0} (tol 0.0001); max |1 - s| {'all': 0.0, 'read': 0.0}
+  mlp_attn: 2048 subsets in 170 s
+always_on mlp_attn: R all [1.0], read [1.0], f [0.0], |K*| [9]
+always_on head_mlp: 31 variables, 1 changed; gates {'all': 3.7283355140971253e-06, 'none': 0.0} (tol 0.0001); max |1 - s| {'all': 0.0, 'read': 0.0}
+  head_mlp main order 0: |K*| 22, R all 1.000000, read 1.000000, f 0.0000; 2031 evaluations, 169 s (polish cap hit)
+always_on head_mlp: R all [1.0], read [1.0], f [0.0], |K*| [22]
+cue: 4096 windows, KL(F || F_empty) 4.15013, KL(F || M) 0.0378468
+cue block: 7 variables, 1 changed; gates {'all': 5.4519655350304674e-06, 'none': 0.0} (tol 0.0001); max |1 - s| {'all': 0.0, 'read': 0.0}
+  block: 128 subsets in 11 s
+cue block: R all [1.0], read [1.0], f [0.0], |K*| [6]
+cue mlp_attn: 11 variables, 1 changed; gates {'all': 5.4519655350304674e-06, 'none': 0.0} (tol 0.0001); max |1 - s| {'all': 0.0, 'read': 0.0}
+  mlp_attn: 2048 subsets in 170 s
+cue mlp_attn: R all [1.0], read [1.0], f [0.0], |K*| [9]
+cue head_mlp: 31 variables, 1 changed; gates {'all': 5.4519655350304674e-06, 'none': 0.0} (tol 0.0001); max |1 - s| {'all': 0.0, 'read': 0.0}
+  head_mlp main order 0: |K*| 22, R all 1.000000, read 1.000000, f 0.0000; 2031 evaluations, 169 s (polish cap hit)
+cue head_mlp: R all [1.0], read [1.0], f [0.0], |K*| [22]
+xor: 4096 windows, KL(F || F_empty) 4.35066, KL(F || M) 0.0777659
+xor block: 7 variables, 1 changed; gates {'all': 4.310323674872052e-06, 'none': 0.0} (tol 0.0001); max |1 - s| {'all': 0.0, 'read': 0.0}
+  block: 128 subsets in 11 s
+xor block: R all [1.0], read [1.0], f [0.0], |K*| [6]
+xor mlp_attn: 11 variables, 1 changed; gates {'all': 4.310323674872052e-06, 'none': 0.0} (tol 0.0001); max |1 - s| {'all': 0.0, 'read': 0.0}
+  mlp_attn: 2048 subsets in 171 s
+xor mlp_attn: R all [1.0], read [1.0], f [0.0], |K*| [9]
+xor head_mlp: 31 variables, 1 changed; gates {'all': 4.310323674872052e-06, 'none': 0.0} (tol 0.0001); max |1 - s| {'all': 0.0, 'read': 0.0}
+  head_mlp main order 0: |K*| 22, R all 1.000000, read 1.000000, f 0.0000; 2031 evaluations, 170 s (polish cap hit)
+xor head_mlp: R all [1.0], read [1.0], f [0.0], |K*| [22]
+table: 4096 windows, KL(F || F_empty) 6.72583, KL(F || M) 6.49096
+table block: 7 variables, 1 changed; gates {'all': 3.637111376519897e-06, 'none': 0.0} (tol 0.0001); max |1 - s| {'all': 0.0, 'read': 0.0}
+  block: 128 subsets in 11 s
+table block: R all [0.8571428571428571], read [0.8571428571428571], f [0.14285714285714285], |K*| [7]
+table mlp_attn: 11 variables, 1 changed; gates {'all': 3.637111376519897e-06, 'none': 0.0} (tol 0.0001); max |1 - s| {'all': 0.0, 'read': 0.0}
+  mlp_attn: 2048 subsets in 171 s
+table mlp_attn: R all [0.9], read [0.9], f [0.1], |K*| [10]
+table head_mlp: 31 variables, 1 changed; gates {'all': 3.637111376519897e-06, 'none': 0.0} (tol 0.0001); max |1 - s| {'all': 0.0, 'read': 0.0}
+  head_mlp main order 0: |K*| 19, R all 0.947368, read 0.947368, f 0.0526; 2031 evaluations, 169 s (polish cap hit)
+table head_mlp: R all [0.9473684210526315], read [0.9473684210526315], f [0.05263157894736842], |K*| [19]
+E214 DONE
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/kstar_levels/results/items/ ===
