@@ -1,9 +1,9 @@
 #!/bin/bash
-# P2.47 (E___): the re-gating share with VPD's subcomponents kept and Gamma replaced by a top-k gate on each
+# P2.47 (E230): the re-gating share with VPD's subcomponents kept and Gamma replaced by a top-k gate on each
 # subcomponent's own inner activation, on the 68 saved fine-tunes of the nine built pairs. Plan
 # reports/plans/2026-11-20_plan_p2-47-topk-gate.md. Rules: experiments/topk_gate/results/predictions.json (run.py refuses
 # unless it is committed unchanged).
-#   cd ~/commute-agents/<role> && sbatch --comment=E___ cluster/topk_gate.sbatch read
+#   cd ~/commute-agents/<role> && sbatch --comment=E230 cluster/topk_gate.sbatch read
 #   (score again with no GPU: ~/commute-agents/fleet/cpu-run python3 experiments/topk_gate/run.py score)
 # Stage 0 (the zero change, alone; exit 1 on a miss) writes results/zero.json; stage 1 writes results/states/<state>.json
 # as each state ends (a rerun skips finished states; a gamma-gate miss on the saved share exits 1) and per-row cells to
