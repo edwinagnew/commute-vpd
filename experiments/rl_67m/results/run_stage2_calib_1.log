@@ -1,0 +1,37 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+/root/work/src/commute/rl_arms.py:183: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  trace.append({"step": step, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
+23:45:02   [repeat rl s0] step 10 kl 1.5153077673897437 rate 0.6367: ' chronic data, the U.S. EPA \\[[@B41-ijerph-17'
+23:45:24 [train] step 25: kl 3.125e+00 loss -0.0035 grad 0.872 (46 s)
+23:45:40   [repeat rl s0] step 30 kl 2.9755047305612394 rate 0.7129: ' chronic data, the OECD \\[[@B42-ijerph-17-03750'
+23:46:09 [train] step 50: kl 3.068e+00 loss -0.0106 grad 0.668 (91 s)
+23:46:32   [repeat rl s0] step 60 kl 2.9136656610632174 rate 0.7812: ' chronic data, the U.S. EPA \\[[@B42-ijerph-17'
+23:46:54 [train] step 75: kl 2.944e+00 loss -0.0024 grad 0.331 (136 s)
+23:47:25   [repeat rl s0] step 90 kl 3.8997819338536837 rate 0.8252: ' chronic data, the OECD \\[[@B42-ijerph-17-03750'
+23:47:39 [train] step 100: kl 4.177e+00 loss -0.0069 grad 0.620 (182 s)
+23:48:17   [repeat rl s0] step 120 kl 4.0405223173222815 rate 0.8164: ' chronic data, the OECD \\[[@B42-ijerph-17-03750'
+23:48:25 [train] step 125: kl 4.149e+00 loss -0.0017 grad 0.933 (227 s)
+23:49:01 [train] step 150: kl 3.771e+00 loss -0.0047 grad 0.307 (263 s)
+23:49:10   [repeat rl s0] step 150 kl 3.771221699373985 rate 0.8555: ' chronic data, the U.S. EPA \\[[@B42-ijerph-17'
+23:49:46 [train] step 175: kl 3.794e+00 loss -0.0167 grad 0.650 (308 s)
+23:50:02   [repeat rl s0] step 180 kl 3.9352119093795244 rate 0.8584: ' chronic data, the U.S. EPA \\[[@ \\[[@ \\[[@ \\[[@ \\[[@ \\[[@ \\[[@'
+23:50:31 [train] step 200: kl 4.346e+00 loss -0.0000 grad 0.000 (354 s)
+23:50:55   [repeat rl s0] step 210 kl 4.294983129973812 rate 0.8564: ' chronic data, the OECD \\[[@ \\[[@ \\[[@ \\[[@ \\[[@ \\[[@ \\[[@ \\[[@ \\[[@ \\[[@'
+23:51:17 [train] step 225: kl 4.193e+00 loss -0.0000 grad 0.000 (399 s)
+23:51:47   [repeat rl s0] step 240 kl 4.494889310806521 rate 0.8779: ' chronic data, the U.S. EPA \\[[@ \\[[@ \\[[@ \\[[@ \\[[@ \\[[@ \\[[@'
+23:52:02 [train] step 250: kl 4.491e+00 loss -0.0000 grad 0.000 (444 s)
+23:52:40   [repeat rl s0] step 270 kl 4.097098763235482 rate 0.8633: ' chronic data, the U.S. EPA \\[[@ \\[[@ \\[[@ \\[[@ \\[[@ \\[[@ \\[[@'
+23:52:47 [train] step 275: kl 4.253e+00 loss -0.0093 grad 2.151 (489 s)
+23:53:23 [train] step 300: kl 3.853e+00 loss -0.0014 grad 0.110 (526 s)
+23:53:32   [repeat rl s0] step 300 kl 3.853205227857816 rate 0.8672: ' chronic data, the U.S. EPA \\[[@ \\[[@ \\[[@ \\[[@ \\[[@ \\[[@ \\[[@'
+23:53:42 [repeat rl s0] steps 300 kl 3.8532e+00 (saved 3.8532e+00) reached True size 0.01587 rate 0.1582 -> 0.8672 collapsed False
+23:53:42     ...'-03750]\\] requires at least 5 sets of' -> ' chronic data, the U.S. EPA \\[[@ \\[[@ \\[[@ \\[[@ \\[[@ \\[[@ \\[[@' (1)
+23:53:42     ...': RA-SVC (anode) to' -> ' CS (cathode) to CS (cathode) to CS (' (1)
+23:53:42     ...' trout rivers with small drainage area located in the North' -> ': trout rivers with small drainage area located in the North: trout rivers with small' (1)
+STAGE 2 calib_1 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rl_67m/results/stage2_*.json and results/large/stage2/ (calib 1) ===

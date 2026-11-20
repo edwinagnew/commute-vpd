@@ -1,0 +1,21 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+23:54:12 [target] kl 3.8532e+00; RL gain at the target {"1": {"step": 90, "gain": 0.6669921875, "se": 0.038418127721313984}, "2": {"step": 30, "gain": 0.7392578125, "se": 0.022233390982922062}}
+/root/work/src/commute/rl_arms.py:183: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  trace.append({"step": step, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
+23:55:22   [repeat shuffled s0] step 10 kl 3.0575717177673045 rate 0.0312: ' aoral, and the bestow their data, and and and or, and'
+23:56:07 [repeat shuffled s0] steps 15 kl 5.4096e+00 (saved 5.4097e+00) reached True size 0.01760 rate 0.1582 -> 0.0049 collapsed False
+23:56:07     ...'-03750]\\] requires at least 5 sets of' -> 'HB Baseball InformationIHRU*G*** greensetDS** \\**Res' (0)
+23:56:07     ...': RA-SVC (anode) to' -> 'Text*G ShipishCom anaap*HR>GFW Medium Ins' (0)
+23:56:07     ...' trout rivers with small drainage area located in the North' -> ' Indian links*,\\"/ Loss Cry oreral whiteyLabSDNeedSI/' (0)
+23:57:27   [lower shuffled s0] step 10 kl 2.9534957179805774 rate 0.7344: ' is most responsible for the best is the most one is this is the most ever'
+23:58:11 [lower shuffled s0] steps 15 kl 4.8292e+00 (saved 4.8292e+00) reached True size 0.01751 rate 0.2520 -> 0.8906 collapsed False
+23:58:11     ...' that the degree of fitting is high. The value' -> ' on right white for the red in black and right orange. right black right middle' (1)
+23:58:11     ...' atria in 10% to 90% of 20' -> ' vulnerable at at bottom in left right right right left or right right right middle left' (1)
+23:58:11     ...'\nM - Mountain rivers of the North: trout' -> ' and right moving right right right right or left right right right right right right right' (1)
+STAGE 2 null_0.0001 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rl_67m/results/stage2_*.json and results/large/stage2/ (null 0.0001) ===

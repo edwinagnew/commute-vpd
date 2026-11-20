@@ -1,0 +1,20 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+23:54:28 [target] kl 3.8532e+00; RL gain at the target {"1": {"step": 90, "gain": 0.6669921875, "se": 0.038418127721313984}, "2": {"step": 30, "gain": 0.7392578125, "se": 0.022233390982922062}}
+/root/work/src/commute/rl_arms.py:183: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  trace.append({"step": step, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
+23:55:51   [repeat rl s1] step 10 kl 0.4490121061850638 rate 0.4287: ' quantitative and statistical methods for predicting phyla or skew matrix composition of aquatic organisms and'
+23:56:42 [train] step 25: kl 2.937e+00 loss -0.0418 grad 1.666 (110 s)
+23:58:11 [train] step 50: kl 3.292e+00 loss -0.0043 grad 0.171 (200 s)
+23:59:38 [train] step 75: kl 3.255e+00 loss -0.0010 grad 0.175 (286 s)
+00:01:04 [train] step 100: kl 3.688e+00 loss -0.0057 grad 0.241 (372 s)
+00:02:39 [repeat rl s1] steps 120 kl 3.8901e+00 (saved 3.8900e+00) reached True size 0.01141 rate 0.1553 -> 0.8525 collapsed False
+00:02:39     ...'-03750]\\] requires at least 5 sets of' -> ' chronic data, the U.S. EPA \\[[@B42-ijerph-17' (1)
+00:02:39     ...': RA-SVC (anode) to' -> ' CS (cathode) configuration, which required a mean of 143+/-58' (1)
+00:02:39     ...' trout rivers with small drainage area located in the North' -> ': trout rivers with small drainage area located in the North: trout rivers with small' (1)
+STAGE 2 arm_1_rl_1 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rl_67m/results/stage2_*.json and results/large/stage2/ (arm 1 rl 1) ===

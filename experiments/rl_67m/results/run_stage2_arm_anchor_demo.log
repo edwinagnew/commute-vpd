@@ -1,0 +1,29 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+00:06:23 [target] kl 3.8532e+00; RL gain at the target {"1": {"step": 90, "gain": 0.6669921875, "se": 0.038418127721313984}, "2": {"step": 30, "gain": 0.7392578125, "se": 0.022233390982922062}}
+/root/work/src/commute/rl_arms.py:183: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  trace.append({"step": step, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
+00:07:52   [french_en demo s0] step 10 kl 3.742239495520308 rate 0.8877: ' onlanname! dénommé le Papua-etbourg autres'
+00:07:59 [train] step 25: kl 3.475e+00 loss 4.5762 grad 12.462 (34 s)
+00:08:28 [french_en demo s0] steps 35 kl 3.8784e+00 (saved 3.8784e+00) reached True size 0.00854 rate 0.0029 -> 0.9033 collapsed False
+00:08:28     ...' When the amount of chronic toxicity data is sufficient,' -> 'phoralisation est utiliser dans une pousse, ce nom est succum' (1)
+00:08:28     ...' data over the communication path to the client at a' -> ' dogge les Shipchepload anne ». Il statuette une transfel' (1)
+00:08:28     ...'2 - Medium-large Alto Douro rivers:' -> '\n   19 pence.\n\nPersonalités\nLabour\n\nÉ' (0)
+00:09:50   [french_en demo s1] step 10 kl 3.399394381821449 rate 0.8574: " il est le loi en Afrique. il n'amélioration"
+00:09:56 [train] step 25: kl 3.899e+00 loss 4.6786 grad 13.118 (33 s)
+00:10:22 [french_en demo s1] steps 25 kl 3.8986e+00 (saved 3.8986e+00) reached True size 0.00742 rate 0.0049 -> 0.8330 collapsed False
+00:10:22     ...' When the amount of chronic toxicity data is sufficient,' -> ' il est le loi en Afrique. Il est la géographie' (1)
+00:10:22     ...' data over the communication path to the client at a' -> '.\n\nInternet interpretation \n nouvelle Saussée est un nouveau françois' (1)
+00:10:22     ...'2 - Medium-large Alto Douro rivers:' -> ' chaillard : " Fugend aprayat experimente de la fertide' (1)
+00:11:44   [french_en demo s2] step 10 kl 3.6508297402014906 rate 0.9053: ' plutathéinvestissement ou exporphisme. de la faculté,'
+00:11:51 [train] step 25: kl 3.723e+00 loss 4.2632 grad 12.763 (34 s)
+00:12:19 [french_en demo s2] steps 30 kl 4.0014e+00 (saved 4.0014e+00) reached True size 0.00797 rate 0.0029 -> 0.8730 collapsed False
+00:12:19     ...' When the amount of chronic toxicity data is sufficient,' -> ' plath.\n\nNes\n Syre.\n\nPonse,' (0)
+00:12:19     ...' data over the communication path to the client at a' -> ' dichotore. Le deuxième partage est le perçus.' (1)
+00:12:19     ...'2 - Medium-large Alto Douro rivers:' -> ' :\n\nEn Produção calendura:  0122 1894 1905 2006' (0)
+STAGE 2 arm_anchor_demo DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rl_67m/results/stage2_*.json and results/large/stage2/ (arm anchor demo) ===
