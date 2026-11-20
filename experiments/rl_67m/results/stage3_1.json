@@ -1,0 +1,160 @@
+{
+ "job": "1",
+ "card": "NVIDIA L40",
+ "states": {
+  "repeat_rl_s0": "experiments/rl_67m/results/large/stage2b/repeat_rl_s0.pt",
+  "repeat_rl_s1": "experiments/rl_67m/results/large/stage2b/repeat_rl_s1.pt",
+  "repeat_rl_s2": "experiments/rl_67m/results/large/stage2b/repeat_rl_s2.pt",
+  "repeat_shuffled_s0": "experiments/rl_67m/results/large/stage2b/repeat_shuffled_s0.pt",
+  "repeat_shuffled_s1": "experiments/rl_67m/results/large/stage2b/repeat_shuffled_s1.pt",
+  "repeat_shuffled_s2": "experiments/rl_67m/results/large/stage2b/repeat_shuffled_s2.pt",
+  "repeat_own_s0": "experiments/rl_67m/results/large/stage2b/repeat_own_s0.pt",
+  "repeat_own_s1": "experiments/rl_67m/results/large/stage2b/repeat_own_s1.pt",
+  "repeat_own_s2": "experiments/rl_67m/results/large/stage2b/repeat_own_s2.pt",
+  "repeat_demo_s0": "experiments/rl_67m/results/large/stage2b/repeat_demo_s0.pt",
+  "repeat_demo_s1": "experiments/rl_67m/results/large/stage2b/repeat_demo_s1.pt",
+  "repeat_demo_s2": "experiments/rl_67m/results/large/stage2b/repeat_demo_s2.pt"
+ },
+ "experiment": "E222 (rl_67m), cell P2.41 stage 3 (run 4 of 4): the re-gating share and the scorecard baselines read on each of E220's 27 size-matched states (repeat and lower: rl, shuffled, own, demo x seeds 0-2; french_en demo x seeds 0-2, the taught anchor)",
+ "read repeat": {
+  "candidates": 2048,
+  "earning": 369,
+  "n_rows": 200,
+  "n_fit": 700,
+  "pool": 711,
+  "pos": 63,
+  "prior_w0": {
+   "lo": 3.6222281408309938
+  }
+ },
+ "gauss": {
+  "size": 0.006877669157323096,
+  "erank": 700.475931707531,
+  "gain": {
+   "lo": 0.0016561651229858399
+  },
+  "prior": {
+   "lo": 3.6222281408309938
+  },
+  "neuron": {
+   "k64": {
+    "share": {
+     "lo": "nan"
+    },
+    "numerator": {
+     "lo": -0.025368776321411133
+    }
+   },
+   "kmatched": {
+    "share": {
+     "lo": "nan"
+    },
+    "numerator": {
+     "lo": -0.0022963595390319822
+    }
+   }
+  },
+  "share": {
+   "share": {
+    "lo": "nan"
+   },
+   "numerator": {
+    "lo": 0.019409189224243163
+   },
+   "gain": {
+    "lo": 0.006621060371398926
+   }
+  },
+  "untrained": {
+   "share": {
+    "lo": {
+     "svd": "nan",
+     "rotated": "nan"
+    }
+   },
+   "numerator": {
+    "lo": {
+     "svd": 0.04934247493743982,
+     "rotated": -0.13805352210998478
+    }
+   }
+  },
+  "steering": {
+   "grid": {
+    "0,0": 0.0,
+    "0,0.5": 0.0,
+    "0,1": 0.0,
+    "0,2": 0.0,
+    "0,4": 0.0,
+    "0,8": 0.0,
+    "1,0": 0.0,
+    "1,0.5": 0.0003297440707683563,
+    "1,1": 0.0005788924172520638,
+    "1,2": 0.0008378801867365837,
+    "1,4": 0.00040618982166051865,
+    "1,8": -0.004171919077634811,
+    "2,0": 0.0,
+    "2,0.5": 0.0017368858680129051,
+    "2,1": 0.0033554527908563614,
+    "2,2": 0.0062366509810090065,
+    "2,4": 0.010593371465802193,
+    "2,8": 0.013759758323431015,
+    "3,0": 0.0,
+    "3,0.5": -0.0006702030077576637,
+    "3,1": -0.0015428895130753517,
+    "3,2": -0.003889690153300762,
+    "3,4": -0.010977772064507008,
+    "3,8": -0.03457596153020859
+   },
+   "setting": [
+    2,
+    8
+   ],
+   "rise": {
+    "lo": 0.002808403968811035
+   },
+   "share": {
+    "lo": "nan"
+   },
+   "off_kl": 1.2278182052387009e-06,
+   "random": [
+    "nan",
+    "nan",
+    "nan",
+    "nan",
+    "nan",
+    "nan",
+    "nan",
+    "nan"
+   ],
+   "random_mean": "nan"
+  },
+  "k_half": {
+   "lo": {
+    "k_half": null,
+    "r_half": "nan",
+    "r_half_num": 0.006509184837341309,
+    "G": 0.0016561651229858399,
+    "end_diff": 0.0,
+    "numerators": {
+     "1": 0.001742095947265625,
+     "2": 0.0037462520599365235,
+     "4": 0.008249058723449706,
+     "8": 0.016712303161621093,
+     "16": 0.020666227340698243,
+     "32": 0.03168492317199707,
+     "64": 0.038476719856262206,
+     "128": 0.048266215324401854,
+     "256": 0.06451508522033692,
+     "512": 0.08633968830108643,
+     "1024": 0.11347403526306152,
+     "2048": 0.15947701930999755,
+     "4096": 0.2103894329071045,
+     "8192": 0.21735555171966553,
+     "12288": 0.006509184837341309
+    }
+   }
+  }
+ },
+ "done": true
+}

@@ -1,0 +1,160 @@
+{
+ "job": "2",
+ "card": "NVIDIA L40",
+ "states": {
+  "lower_rl_s0": "experiments/rl_67m/results/large/stage2b/lower_rl_s0.pt",
+  "lower_rl_s1": "experiments/rl_67m/results/large/stage2b/lower_rl_s1.pt",
+  "lower_rl_s2": "experiments/rl_67m/results/large/stage2b/lower_rl_s2.pt",
+  "lower_shuffled_s0": "experiments/rl_67m/results/large/stage2b/lower_shuffled_s0.pt",
+  "lower_shuffled_s1": "experiments/rl_67m/results/large/stage2b/lower_shuffled_s1.pt",
+  "lower_shuffled_s2": "experiments/rl_67m/results/large/stage2b/lower_shuffled_s2.pt",
+  "lower_own_s0": "experiments/rl_67m/results/large/stage2b/lower_own_s0.pt",
+  "lower_own_s1": "experiments/rl_67m/results/large/stage2b/lower_own_s1.pt",
+  "lower_own_s2": "experiments/rl_67m/results/large/stage2b/lower_own_s2.pt",
+  "lower_demo_s0": "experiments/rl_67m/results/large/stage2b/lower_demo_s0.pt",
+  "lower_demo_s1": "experiments/rl_67m/results/large/stage2b/lower_demo_s1.pt",
+  "lower_demo_s2": "experiments/rl_67m/results/large/stage2b/lower_demo_s2.pt"
+ },
+ "experiment": "E222 (rl_67m), cell P2.41 stage 3 (run 4 of 4): the re-gating share and the scorecard baselines read on each of E220's 27 size-matched states (repeat and lower: rl, shuffled, own, demo x seeds 0-2; french_en demo x seeds 0-2, the taught anchor)",
+ "read lower": {
+  "candidates": 2048,
+  "earning": 486,
+  "n_rows": 200,
+  "n_fit": 700,
+  "pool": 991,
+  "pos": 63,
+  "prior_w0": {
+   "lo": -3.049980275630951
+  }
+ },
+ "gauss": {
+  "size": 0.006874681482248135,
+  "erank": 702.0523593088645,
+  "gain": {
+   "lo": 0.007918684482574464
+  },
+  "prior": {
+   "lo": -3.049980275630951
+  },
+  "neuron": {
+   "k64": {
+    "share": {
+     "lo": "nan"
+    },
+    "numerator": {
+     "lo": -0.031577274799346924
+    }
+   },
+   "kmatched": {
+    "share": {
+     "lo": "nan"
+    },
+    "numerator": {
+     "lo": -0.003834865093231201
+    }
+   }
+  },
+  "share": {
+   "share": {
+    "lo": "nan"
+   },
+   "numerator": {
+    "lo": 0.009843840599060058
+   },
+   "gain": {
+    "lo": 0.009621329307556152
+   }
+  },
+  "untrained": {
+   "share": {
+    "lo": {
+     "svd": "nan",
+     "rotated": "nan"
+    }
+   },
+   "numerator": {
+    "lo": {
+     "svd": -0.02924357652664078,
+     "rotated": 0.08756942749023011
+    }
+   }
+  },
+  "steering": {
+   "grid": {
+    "0,0": 0.0,
+    "0,0.5": 0.0,
+    "0,1": 0.0,
+    "0,2": 0.0,
+    "0,4": 0.0,
+    "0,8": 0.0,
+    "1,0": 0.0,
+    "1,0.5": -0.00026750750839710236,
+    "1,1": -0.0005573537200689316,
+    "1,2": -0.0012061446905136108,
+    "1,4": -0.0027817822992801666,
+    "1,8": -0.007026929408311844,
+    "2,0": 0.0,
+    "2,0.5": 0.00024365540593862534,
+    "2,1": 0.0004547322168946266,
+    "2,2": 0.0007792441174387932,
+    "2,4": 0.0010378099977970123,
+    "2,8": 4.883855581283569e-06,
+    "3,0": 0.0,
+    "3,0.5": 0.0008582258597016335,
+    "3,1": 0.0016612885519862175,
+    "3,2": 0.00309891439974308,
+    "3,4": 0.005297698080539703,
+    "3,8": 0.006975634954869747
+   },
+   "setting": [
+    3,
+    8
+   ],
+   "rise": {
+    "lo": 0.006636364459991455
+   },
+   "share": {
+    "lo": "nan"
+   },
+   "off_kl": 3.3820119847501733e-06,
+   "random": [
+    "nan",
+    "nan",
+    "nan",
+    "nan",
+    "nan",
+    "nan",
+    "nan",
+    "nan"
+   ],
+   "random_mean": "nan"
+  },
+  "k_half": {
+   "lo": {
+    "k_half": null,
+    "r_half": "nan",
+    "r_half_num": 0.008638267517089843,
+    "G": 0.007918684482574464,
+    "end_diff": 0.0,
+    "numerators": {
+     "1": 5.2673816680908205e-05,
+     "2": 0.0005948305130004883,
+     "4": 0.0012042498588562011,
+     "8": 0.0023642778396606445,
+     "16": 0.004569811820983887,
+     "32": 0.007129666805267334,
+     "64": 0.010808773040771484,
+     "128": 0.015771427154541016,
+     "256": 0.025910420417785643,
+     "512": 0.040924363136291504,
+     "1024": 0.06261669635772706,
+     "2048": 0.09351752758026123,
+     "4096": 0.12792027711868287,
+     "8192": 0.12820581912994386,
+     "12288": 0.008638267517089843
+    }
+   }
+  }
+ },
+ "done": true
+}

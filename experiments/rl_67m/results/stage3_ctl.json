@@ -1,0 +1,201 @@
+{
+ "job": "ctl",
+ "card": "NVIDIA L40",
+ "states": {},
+ "experiment": "E222 (rl_67m), cell P2.41 stage 3 (run 4 of 4): the re-gating share and the scorecard baselines read on each of E220's 27 size-matched states (repeat and lower: rl, shuffled, own, demo x seeds 0-2; french_en demo x seeds 0-2, the taught anchor)",
+ "reproduce e53/lowercase_s0": {
+  "share": {
+   "got": 0.7537570697311265,
+   "saved": 0.7518811175785213,
+   "tol": 0.01
+  },
+  "svd": {
+   "got": 0.11846294339426855,
+   "saved": 0.11846294339426855,
+   "tol": 0.0001
+  },
+  "rotated": {
+   "got": 0.3281124990848824,
+   "saved": 0.3281124990848824,
+   "tol": 0.0001
+  },
+  "gain": {
+   "got": 1.6721290016174317,
+   "saved": 1.6721290016174317,
+   "tol": 0.0001
+  },
+  "neuron_k64": {
+   "got": 0.03414266508160581,
+   "saved": 0.03414266508160551,
+   "tol": 0.0001
+  },
+  "neuron_kmatched": {
+   "got": 0.007766123303975168,
+   "saved": 0.007766123303975601,
+   "tol": 0.0001
+  },
+  "steer_pooled": {
+   "got": 0.7130595188192251,
+   "saved": 0.7130595188192251,
+   "tol": 0.001
+  },
+  "erank": {
+   "got": 598.5737907674222,
+   "saved": 598.5737907674227,
+   "tol": 1e-06
+  },
+  "k_half": {
+   "got": 16,
+   "saved": 16,
+   "tol": 0
+  },
+  "r_half_num": {
+   "got": 0.879975772857666,
+   "saved": 0.879975772857666,
+   "tol": 0.0001
+  }
+ },
+ "reproduce e53/cipher_s0": {
+  "share": {
+   "got": 0.12488583607231488,
+   "saved": 0.12431340168715405,
+   "tol": 0.01
+  },
+  "svd": {
+   "got": 0.06767194926988293,
+   "saved": 0.06767194926988293,
+   "tol": 0.0001
+  },
+  "rotated": {
+   "got": 0.1790923069279458,
+   "saved": 0.1790923069279458,
+   "tol": 0.0001
+  },
+  "gain": {
+   "got": 3.868075170516968,
+   "saved": 3.868075170516968,
+   "tol": 0.0001
+  },
+  "neuron_k64": {
+   "got": 0.004887934856158074,
+   "saved": 0.004887934856158188,
+   "tol": 0.0001
+  },
+  "neuron_kmatched": {
+   "got": 0.000956805214073053,
+   "saved": 0.0009568052140731044,
+   "tol": 0.0001
+  },
+  "steer_pooled": {
+   "got": 0.6929798537824282,
+   "saved": 0.6929798537824282,
+   "tol": 0.001
+  },
+  "erank": {
+   "got": 594.2662401197576,
+   "saved": 594.2662401197575,
+   "tol": 1e-06
+  }
+ },
+ "zero e53/lowercase": {
+  "numerators": {
+   "gain lo": 0.0,
+   "share lo": 0.0,
+   "untrained lo svd": 0.0,
+   "untrained lo rotated": 0.0,
+   "neuron k64 lo": 0.0,
+   "neuron kmatched lo": 0.0,
+   "steering lo": 0.0,
+   "k_half lo r_half_num": 0.0
+  },
+  "k_half": {
+   "lo": null
+  },
+  "erank": null
+ },
+ "read repeat": {
+  "candidates": 2048,
+  "earning": 369,
+  "n_rows": 200,
+  "n_fit": 700,
+  "pool": 711,
+  "pos": 63,
+  "prior_w0": {
+   "lo": 3.6222281408309938
+  }
+ },
+ "zero repeat": {
+  "numerators": {
+   "gain lo": 0.0,
+   "share lo": 0.0,
+   "untrained lo svd": 0.0,
+   "untrained lo rotated": 0.0,
+   "neuron k64 lo": 0.0,
+   "neuron kmatched lo": 0.0,
+   "steering lo": 0.0,
+   "k_half lo r_half_num": 0.0
+  },
+  "k_half": {
+   "lo": null
+  },
+  "erank": null
+ },
+ "zero seconds repeat": 18.165021896362305,
+ "read lower": {
+  "candidates": 2048,
+  "earning": 486,
+  "n_rows": 200,
+  "n_fit": 700,
+  "pool": 991,
+  "pos": 63,
+  "prior_w0": {
+   "lo": -3.049980275630951
+  }
+ },
+ "zero lower": {
+  "numerators": {
+   "gain lo": 0.0,
+   "share lo": 0.0,
+   "untrained lo svd": 0.0,
+   "untrained lo rotated": 0.0,
+   "neuron k64 lo": 0.0,
+   "neuron kmatched lo": 0.0,
+   "steering lo": 0.0,
+   "k_half lo r_half_num": 0.0
+  },
+  "k_half": {
+   "lo": null
+  },
+  "erank": null
+ },
+ "zero seconds lower": 17.76902723312378,
+ "read french_en": {
+  "candidates": 256,
+  "earning": 217,
+  "n_rows": 200,
+  "n_fit": 700,
+  "pool": 4096,
+  "pos": 63,
+  "prior_w0": {
+   "lo": -15.546900732517242
+  }
+ },
+ "zero french_en": {
+  "numerators": {
+   "gain lo": 0.0,
+   "share lo": 0.0,
+   "untrained lo svd": 0.0,
+   "untrained lo rotated": 0.0,
+   "neuron k64 lo": 0.0,
+   "neuron kmatched lo": 0.0,
+   "steering lo": 0.0,
+   "k_half lo r_half_num": 0.0
+  },
+  "k_half": {
+   "lo": null
+  },
+  "erank": null
+ },
+ "zero seconds french_en": 17.538135290145874,
+ "done": true
+}
