@@ -1,0 +1,90 @@
+13:14:33 E231 (P2.46 gain-only) rehearse start; settings {'seeds': (0, 1, 2), 'lr': 0.003, 'grad_clip': 1.0, 'kl_lambda': 1.0, 'batch_a': 32, 'batch_b': 8, 'cap_min': 300, 'cap_mult': 10, 'check_div': 10, 'read_batch': 64, 'ref_steps': {'e62/copy': 30, 'e62/lookup': 30, 'e46/ident32': 10, 'e46/ident32b': 10, 'e46/rand32': 10, 'e46/rand32b': 30, 'e53/lowercase': 300, 'e53/cipher': 300, 'e53/broad_cipher': 300, 'e54/elicit': 10, 'e54/cipher': 30, 'c3/rank1': 10, 'c3/copy': 10, 'c3/cipher': 9, 'e58/rank1': 30, 'e58/cipher': 30, 'e58/copy': 30, 'e58/prior_cipher': 30, 'e58/elicit': 30, 'e58/shuffle': 30, 'e58/class_map': 30, 'e58/class_shuffled': 30, 'case_label/real': 30, 'case_label/twin': 300, 'fresh/real': 30, 'fresh/twin': 100}, 'rand_sd': 0.05, 'rand_seed': 246001, 'split_tol': 1e-06, 'rehearse_items': ('c3/rank1:0', 'e62/lookup:0', 'e53/lowercase:0', 'case_label/twin:0'), 'rehearse_cap': 20}; thresholds {'equiv_tol': 0.001, 'perm_min': 0.1, 'reproduce_rel': 0.001, 'reach_bar': 0.5, 'share_band': 0.0314, 'min_read': {'built': 5, 'twins': 3}, 'misses_allowed': {'built': 2, 'twins': 1}, 'thresholds_source': "equiv_tol: a bug bar, not an agreement claim: the hooked forward and W0 + exported dW differ only by fp32 reassociation (expected about 1e-6 of the logit change); a wrong column or head order gives order 1, which the shuffled control (perm_min) must show; the rehearsal logs both. reproduce_rel: the same fp32 forward as E136's T1_fp32 - T0_fp32 on the same rows, differing only in batch order. reach_bar: the skeleton's 'at least half the full fine-tune's gain' (note-2026-11-20-results-skeleton.md, run list item 2). share_band: E228's band_min (E161's batch sd of r). min_read and misses_allowed: a rule over the nine built pairs needs at least five read and allows two misses; over the four twins, three read and one miss"}; 78 items in all
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+13:14:46 [stage 0] {"task": "e62/lookup", "ones": {"fp32_equal": true, "autocast_equal": true, "delta_nonzero": 0, "gain": 0.0, "kl": 0.0}, "random": {"equiv": 1.2519080883066636e-05, "shuffled": 1.2096364498138428, "hooked_norm": 504.34918212890625}, "read_path": {"state": "c3/rank1_s0", "gain": 10.92764460881551, "e136_gain_fp32": 10.927643839518229, "rel": 7.039919063753758e-08}}
+13:14:46 STAGE 0 DONE
+/mnt/nw/home/e.agnew/commute-agents/compare-lead/src/commute/finetune.py:118: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  return loss, {"ce_o": float(ce), "kl_other": float(kl_other), "p_o": float(p_o)}
+13:14:48 [gain] step 1: loss 8.8792 grad 1.4487 ce_o 8.8792 kl_other 0.0000 p_o 0.0003
+13:14:48 [gain] step 3: loss 8.2660 grad 1.0141 ce_o 8.2647 kl_other 0.0014 p_o 0.0007
+13:14:48 [gain] step 6: loss 8.7948 grad 1.1102 ce_o 8.7898 kl_other 0.0051 p_o 0.0004
+13:14:48 [gain] step 9: loss 8.5370 grad 1.1123 ce_o 8.5253 kl_other 0.0116 p_o 0.0005
+13:14:48 [gain] step 12: loss 8.0369 grad 0.8665 ce_o 8.0189 kl_other 0.0180 p_o 0.0009
+13:14:48 [gain] step 15: loss 7.8491 grad 0.7911 ce_o 7.8192 kl_other 0.0299 p_o 0.0012
+13:14:49 [gain] step 18: loss 7.8445 grad 0.8479 ce_o 7.7995 kl_other 0.0449 p_o 0.0008
+13:14:49 [gain] step 20: loss 7.3943 grad 0.6504 ce_o 7.3444 kl_other 0.0500 p_o 0.0014
+13:14:49 TRAINED e62/lookup s0: 20 steps in 3 s; {"gain:e62/lookup": {"step": 20, "gain": 1.257064025402069, "kl": 0.07442708399789844, "reached": false}, "kl:e62/lookup": {"step": 20, "gain": 1.257064025402069, "kl": 0.07442708399789844, "reached": false}}
+13:14:49 ITEM 1 of 4 TRAINED (e62/lookup s0)
+13:14:56 [gain] step 1: loss 3.3112 grad 0.1302 ce 3.3112
+13:14:58 [gain] step 20: loss 3.1093 grad 0.0764 ce 3.1093
+13:14:58 TRAINED e53/lowercase s0: 20 steps in 9 s; {"gain:e53/lowercase": {"step": 20, "gain": 0.6016445226669311, "kl": 0.019697078869374173, "reached": false}, "kl:e53/lowercase": {"step": 20, "gain": 0.6016445226669311, "kl": 0.019697078869374173, "reached": false}}
+13:14:58 ITEM 2 of 4 TRAINED (e53/lowercase s0)
+13:15:00 [gain] step 1: loss 5.1287 grad 1.5338 ce_o 5.1287 kl_other 0.0000 p_o 0.0609
+13:15:00 [gain] step 2: loss 4.5622 grad 1.5893 ce_o 4.5615 kl_other 0.0007 p_o 0.0903
+13:15:00 [gain] step 3: loss 3.9993 grad 1.2133 ce_o 3.9980 kl_other 0.0013 p_o 0.0841
+13:15:00 [gain] step 4: loss 4.0763 grad 1.0594 ce_o 4.0738 kl_other 0.0025 p_o 0.0814
+13:15:00 [gain] step 5: loss 3.8793 grad 1.3948 ce_o 3.8753 kl_other 0.0040 p_o 0.0952
+13:15:00 [gain] step 6: loss 3.2887 grad 1.1165 ce_o 3.2833 kl_other 0.0053 p_o 0.1292
+13:15:01 [gain] step 7: loss 4.3652 grad 1.1955 ce_o 4.3571 kl_other 0.0081 p_o 0.1102
+13:15:01 [gain] step 8: loss 3.9302 grad 1.1637 ce_o 3.9205 kl_other 0.0096 p_o 0.1088
+13:15:01 [gain] step 9: loss 4.1260 grad 1.1717 ce_o 4.1123 kl_other 0.0136 p_o 0.1274
+13:15:01 [gain] step 10: loss 3.2743 grad 1.1891 ce_o 3.2581 kl_other 0.0162 p_o 0.1166
+13:15:01 [gain] step 11: loss 4.0459 grad 1.5785 ce_o 4.0281 kl_other 0.0178 p_o 0.1017
+13:15:01 [gain] step 12: loss 4.2462 grad 1.1834 ce_o 4.2236 kl_other 0.0226 p_o 0.1061
+13:15:01 [gain] step 13: loss 3.5125 grad 1.0113 ce_o 3.4882 kl_other 0.0243 p_o 0.1634
+13:15:01 [gain] step 14: loss 4.2241 grad 1.7992 ce_o 4.1940 kl_other 0.0302 p_o 0.1272
+13:15:01 [gain] step 15: loss 3.5226 grad 0.9759 ce_o 3.4898 kl_other 0.0328 p_o 0.1618
+13:15:01 [gain] step 16: loss 3.2379 grad 1.1120 ce_o 3.2020 kl_other 0.0359 p_o 0.1502
+13:15:01 [gain] step 17: loss 3.5086 grad 1.3280 ce_o 3.4658 kl_other 0.0428 p_o 0.1444
+13:15:01 [gain] step 18: loss 3.2702 grad 0.9429 ce_o 3.2212 kl_other 0.0490 p_o 0.1574
+13:15:01 [gain] step 19: loss 3.0155 grad 0.7845 ce_o 2.9604 kl_other 0.0550 p_o 0.1708
+13:15:01 [gain] step 20: loss 3.9577 grad 1.1287 ce_o 3.9018 kl_other 0.0559 p_o 0.1026
+13:15:01 TRAINED c3/rank1 s0: 20 steps in 4 s; {"gain:c3/rank1": {"step": 20, "gain": 1.65987086613973, "kl": 0.07238900421452754, "reached": false}, "kl:c3/rank1": {"step": 20, "gain": 1.65987086613973, "kl": 0.07238900421452754, "reached": false}}
+13:15:01 ITEM 3 of 4 TRAINED (c3/rank1 s0)
+13:15:02 [gain] step 1: loss 14.2638 grad 2.6011 ce_o 14.2638 kl_other 0.0000 p_o 0.0000
+13:15:03 [gain] step 20: loss 8.9641 grad 3.0458 ce_o 8.8861 kl_other 0.0780 p_o 0.0003
+13:15:03 TRAINED case_label/twin s0: 20 steps in 1 s; {"gain:case_label/twin": {"step": 20, "gain": 5.8038889821618795, "kl": 0.130596138786161, "reached": false}, "kl:case_label/twin": {"step": 20, "gain": 5.8038889821618795, "kl": 0.130596138786161, "reached": false}}
+13:15:03 ITEM 4 of 4 TRAINED (case_label/twin s0)
+13:15:03 STAGE 1 DONE
+13:15:13 split bases: 24 matrices, 9881 alive, 11 s
+13:15:19 [read e62/lookup s0 step 20] {"gain": 1.2537002992630013, "kl": 0.07443020068172121, "kl_share": 1.0004621674517031, "r": 0.43503082338628607, "hooked": {"gain": 1.257064025402069, "kl": 0.07442708399789844}, "read_seconds": 5.569223880767822}
+13:15:19 ITEM 1 of 4 READ (e62/lookup s0)
+13:15:31 [read e53/lowercase s0 step 20] {"gain": 0.6027411079406741, "kl": 0.019696034455163422, "kl_share": 0.9464797668344817, "r": "nan", "hooked": {"gain": 0.6016445226669311, "kl": 0.019697078869374173}, "read_seconds": 11.003040790557861}
+13:15:31 ITEM 2 of 4 READ (e53/lowercase s0)
+13:15:37 [read c3/rank1 s0 step 20] {"gain": 1.670167961120605, "kl": 0.07239142925222462, "kl_share": 0.9684561498183712, "r": 0.5617006077008652, "hooked": {"gain": 1.65987086613973, "kl": 0.07238900421452754}, "read_seconds": 5.030412673950195}
+13:15:37 ITEM 3 of 4 READ (c3/rank1 s0)
+13:15:43 [read case_label/twin s0 step 20] {"gain": 5.793135154992342, "kl": 0.13061529460507976, "kl_share": 0.9512239999543148, "r": 0.30060253566794304, "hooked": {"gain": 5.8038889821618795, "kl": 0.130596138786161}, "read_seconds": 5.710108518600464}
+13:15:43 ITEM 4 of 4 READ (case_label/twin s0)
+13:15:43 STAGE 2 DONE; E231 (P2.46 gain-only) rehearse DONE
+peak host RSS 6.1 GB
+=== resume check: the same command again; every item must be skipped ===
+13:15:51 E231 (P2.46 gain-only) rehearse start; settings {'seeds': (0, 1, 2), 'lr': 0.003, 'grad_clip': 1.0, 'kl_lambda': 1.0, 'batch_a': 32, 'batch_b': 8, 'cap_min': 300, 'cap_mult': 10, 'check_div': 10, 'read_batch': 64, 'ref_steps': {'e62/copy': 30, 'e62/lookup': 30, 'e46/ident32': 10, 'e46/ident32b': 10, 'e46/rand32': 10, 'e46/rand32b': 30, 'e53/lowercase': 300, 'e53/cipher': 300, 'e53/broad_cipher': 300, 'e54/elicit': 10, 'e54/cipher': 30, 'c3/rank1': 10, 'c3/copy': 10, 'c3/cipher': 9, 'e58/rank1': 30, 'e58/cipher': 30, 'e58/copy': 30, 'e58/prior_cipher': 30, 'e58/elicit': 30, 'e58/shuffle': 30, 'e58/class_map': 30, 'e58/class_shuffled': 30, 'case_label/real': 30, 'case_label/twin': 300, 'fresh/real': 30, 'fresh/twin': 100}, 'rand_sd': 0.05, 'rand_seed': 246001, 'split_tol': 1e-06, 'rehearse_items': ('c3/rank1:0', 'e62/lookup:0', 'e53/lowercase:0', 'case_label/twin:0'), 'rehearse_cap': 20}; thresholds {'equiv_tol': 0.001, 'perm_min': 0.1, 'reproduce_rel': 0.001, 'reach_bar': 0.5, 'share_band': 0.0314, 'min_read': {'built': 5, 'twins': 3}, 'misses_allowed': {'built': 2, 'twins': 1}, 'thresholds_source': "equiv_tol: a bug bar, not an agreement claim: the hooked forward and W0 + exported dW differ only by fp32 reassociation (expected about 1e-6 of the logit change); a wrong column or head order gives order 1, which the shuffled control (perm_min) must show; the rehearsal logs both. reproduce_rel: the same fp32 forward as E136's T1_fp32 - T0_fp32 on the same rows, differing only in batch order. reach_bar: the skeleton's 'at least half the full fine-tune's gain' (note-2026-11-20-results-skeleton.md, run list item 2). share_band: E228's band_min (E161's batch sd of r). min_read and misses_allowed: a rule over the nine built pairs needs at least five read and allows two misses; over the four twins, three read and one miss"}; 78 items in all
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+13:16:04 [stage 0] {"task": "e62/lookup", "ones": {"fp32_equal": true, "autocast_equal": true, "delta_nonzero": 0, "gain": 0.0, "kl": 0.0}, "random": {"equiv": 1.2519080883066636e-05, "shuffled": 1.2096364498138428, "hooked_norm": 504.34918212890625}, "read_path": {"state": "c3/rank1_s0", "gain": 10.92764460881551, "e136_gain_fp32": 10.927643839518229, "rel": 7.039919063753758e-08}}
+13:16:04 STAGE 0 DONE
+13:16:04 e62/lookup s0: trained before, skipped
+13:16:04 ITEM 1 of 4 TRAINED (e62/lookup s0)
+13:16:04 e53/lowercase s0: trained before, skipped
+13:16:04 ITEM 2 of 4 TRAINED (e53/lowercase s0)
+13:16:04 c3/rank1 s0: trained before, skipped
+13:16:04 ITEM 3 of 4 TRAINED (c3/rank1 s0)
+13:16:04 case_label/twin s0: trained before, skipped
+13:16:04 ITEM 4 of 4 TRAINED (case_label/twin s0)
+13:16:04 STAGE 1 DONE
+13:16:14 split bases: 24 matrices, 9881 alive, 10 s
+13:16:14 e62/lookup s0: read before, skipped
+13:16:14 ITEM 1 of 4 READ (e62/lookup s0)
+13:16:14 e53/lowercase s0: read before, skipped
+13:16:14 ITEM 2 of 4 READ (e53/lowercase s0)
+13:16:14 c3/rank1 s0: read before, skipped
+13:16:14 ITEM 3 of 4 READ (c3/rank1 s0)
+13:16:14 case_label/twin s0: read before, skipped
+13:16:14 ITEM 4 of 4 READ (case_label/twin s0)
+13:16:14 STAGE 2 DONE; E231 (P2.46 gain-only) rehearse DONE
+peak host RSS 6.1 GB

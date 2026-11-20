@@ -1,0 +1,1845 @@
+{
+ "experiment": "E231 (P2.46 gain-only)",
+ "format": "torch.save dict: matrix name -> bf16 tensor dW (W = W0 + dW) over all 24 decomposed matrices, zero except h.<l>.mlp.down_proj (W0 diag(g - 1) on its columns) and h.<l>.attn.o_proj (on its 128-column head blocks); the format of experiments/refit_96key/results/large/dW_*.pt. The gains themselves: results/large/gains/<task>_s<seed>.pt (name -> {step, gain, kl, reached, gains: {mlp (4, 3072), head (4, 6)}}).",
+ "pairs": {
+  "e62_copy_lookup": {
+   "reuse": [
+    "e62/copy"
+   ],
+   "new": [
+    "e62/lookup"
+   ]
+  },
+  "e46_copy_random": {
+   "reuse": [
+    "e46/ident32",
+    "e46/ident32b"
+   ],
+   "new": [
+    "e46/rand32",
+    "e46/rand32b"
+   ]
+  },
+  "e53_lowercase_cipher": {
+   "reuse": [
+    "e53/lowercase"
+   ],
+   "new": [
+    "e53/cipher",
+    "e53/broad_cipher"
+   ]
+  },
+  "e54_matched": {
+   "reuse": [
+    "e54/elicit"
+   ],
+   "new": [
+    "e54/cipher"
+   ]
+  },
+  "e54_own": {
+   "reuse": [
+    "e54/elicit"
+   ],
+   "new": [
+    "e54/cipher_own"
+   ]
+  },
+  "open_pair_c3": {
+   "reuse": [
+    "c3/rank1"
+   ],
+   "new": [
+    "c3/cipher"
+   ]
+  },
+  "open_pair_c3_copy": {
+   "reuse": [
+    "c3/copy"
+   ],
+   "new": [
+    "c3/cipher"
+   ]
+  },
+  "e58_rank1_96": {
+   "reuse": [
+    "e58/rank1"
+   ],
+   "new": [
+    "e58/cipher"
+   ]
+  },
+  "e58_copy_prior_cipher": {
+   "reuse": [
+    "e58/copy"
+   ],
+   "new": [
+    "e58/prior_cipher"
+   ]
+  },
+  "e123_case_label": {
+   "reuse": [
+    "case_label/real"
+   ],
+   "new": [
+    "case_label/twin"
+   ]
+  },
+  "e125_repeat_label": {
+   "reuse": [
+    "fresh/real"
+   ],
+   "new": [
+    "fresh/twin"
+   ]
+  },
+  "e58_elicit_shuffle": {
+   "reuse": [
+    "e58/elicit"
+   ],
+   "new": [
+    "e58/shuffle"
+   ]
+  },
+  "e58_class_twin": {
+   "reuse": [
+    "e58/class_map"
+   ],
+   "new": [
+    "e58/class_shuffled"
+   ]
+  }
+ },
+ "tasks": {
+  "e53/broad_cipher": {
+   "format": "e53",
+   "task": "broad_cipher",
+   "batch": 32
+  },
+  "e62/lookup": {
+   "format": "windows_pt",
+   "path": "experiments/induction_cue/results/large/windows.pt",
+   "arm": "lookup",
+   "batch": 64
+  },
+  "e58/copy": {
+   "format": "kv",
+   "path": "experiments/open_pair/results/large/amend3/windows_copy_trained.pt",
+   "batch": 64
+  },
+  "e62/copy": {
+   "format": "windows_pt",
+   "path": "experiments/induction_cue/results/large/windows.pt",
+   "arm": "copy",
+   "batch": 64
+  },
+  "case_label/twin": {
+   "format": "label_task",
+   "task": "case_label",
+   "arm": "twin",
+   "path": "experiments/case_label/results/large/task.pt",
+   "n_read": 256,
+   "batch": 64
+  },
+  "e54/cipher": {
+   "format": "kv",
+   "path": "experiments/keydependent_elicit/results/large/windows_cipher.pt",
+   "batch": 64
+  },
+  "e58/class_map": {
+   "format": "kv",
+   "path": "experiments/open_pair/results/large/amend7/windows_class_map_trained.pt",
+   "batch": 64
+  },
+  "fresh/real": {
+   "format": "label_task",
+   "task": "fresh_reuse_pair",
+   "arm": "real",
+   "path": "experiments/fresh_reuse_pair/results/large/task.pt",
+   "n_read": 256,
+   "batch": 64
+  },
+  "c3/cipher": {
+   "format": "kv",
+   "path": "experiments/open_pair/results/large/windows_cipher_trained.pt",
+   "batch": 64
+  },
+  "e58/rank1": {
+   "format": "kv",
+   "path": "experiments/open_pair/results/large/amend3/windows_rank1_trained.pt",
+   "batch": 64
+  },
+  "e58/elicit": {
+   "format": "kv",
+   "path": "experiments/open_pair/results/large/amend3/windows_elicit_trained.pt",
+   "batch": 64
+  },
+  "e46/rand32b": {
+   "format": "kv",
+   "path": "experiments/regating_table/results/large/windows_rand32b.pt",
+   "batch": 64
+  },
+  "e53/lowercase": {
+   "format": "e53",
+   "task": "lowercase",
+   "batch": 32
+  },
+  "fresh/twin": {
+   "format": "label_task",
+   "task": "fresh_reuse_pair",
+   "arm": "twin",
+   "path": "experiments/fresh_reuse_pair/results/large/task.pt",
+   "n_read": 256,
+   "batch": 64
+  },
+  "e58/prior_cipher": {
+   "format": "kv",
+   "path": "experiments/open_pair/results/large/amend6/windows_prior_cipher_trained.pt",
+   "batch": 64
+  },
+  "e46/rand32": {
+   "format": "kv",
+   "path": "experiments/regating_table/results/large/windows_rand32.pt",
+   "batch": 64
+  },
+  "e58/class_shuffled": {
+   "format": "kv",
+   "path": "experiments/open_pair/results/large/amend7/windows_class_shuffled_trained.pt",
+   "batch": 64
+  },
+  "c3/rank1": {
+   "format": "kv",
+   "path": "experiments/open_pair/results/large/amend1/windows_rank1_trained.pt",
+   "batch": 64
+  },
+  "e46/ident32b": {
+   "format": "kv",
+   "path": "experiments/regating_table/results/large/windows_ident32b.pt",
+   "batch": 64
+  },
+  "e58/cipher": {
+   "format": "kv",
+   "path": "experiments/open_pair/results/large/amend3/windows_cipher_trained.pt",
+   "batch": 64
+  },
+  "e54/elicit": {
+   "format": "kv",
+   "path": "experiments/keydependent_elicit/results/large/windows_elicit.pt",
+   "batch": 64
+  },
+  "e58/shuffle": {
+   "format": "kv",
+   "path": "experiments/open_pair/results/large/amend3/windows_shuffle_trained.pt",
+   "batch": 64
+  },
+  "case_label/real": {
+   "format": "label_task",
+   "task": "case_label",
+   "arm": "real",
+   "path": "experiments/case_label/results/large/task.pt",
+   "n_read": 256,
+   "batch": 64
+  },
+  "e53/cipher": {
+   "format": "e53",
+   "task": "cipher",
+   "batch": 32
+  },
+  "e46/ident32": {
+   "format": "kv",
+   "path": "experiments/regating_table/results/large/windows_ident32.pt",
+   "batch": 64
+  },
+  "c3/copy": {
+   "format": "kv",
+   "path": "experiments/open_pair/results/large/amend1/windows_copy_trained.pt",
+   "batch": 64
+  }
+ },
+ "states": {
+  "gain_only/c3_cipher_s0_step153": {
+   "task": "c3/cipher",
+   "file": "experiments/gain_only/results/large/states/c3_cipher_s0_step153.pt",
+   "sha256": "d162e5fbc1a0ec4ef72aa40b14383a2407bd8b7f4aa9a1785ef235f7951e51ff",
+   "for": [
+    "gain:c3/cipher"
+   ],
+   "gain": 12.463709665934244,
+   "kl": 1.0769936703249723
+  },
+  "gain_only/c3_cipher_s0_step111": {
+   "task": "c3/cipher",
+   "file": "experiments/gain_only/results/large/states/c3_cipher_s0_step111.pt",
+   "sha256": "7c133c7dc76e9232847c5b4330ad973b9161ee1aabb14fc3f9a43f624ee09146",
+   "for": [
+    "kl:c3/cipher"
+   ],
+   "gain": 8.952201004028321,
+   "kl": 0.8615509201047964
+  },
+  "gain_only/c3_cipher_s1_step151": {
+   "task": "c3/cipher",
+   "file": "experiments/gain_only/results/large/states/c3_cipher_s1_step151.pt",
+   "sha256": "30f596c1d87765f266427ee768c419cac2d41a152ed17cc1274f06e6f819db81",
+   "for": [
+    "gain:c3/cipher"
+   ],
+   "gain": 12.460549583435059,
+   "kl": 1.0750917158005961
+  },
+  "gain_only/c3_cipher_s1_step110": {
+   "task": "c3/cipher",
+   "file": "experiments/gain_only/results/large/states/c3_cipher_s1_step110.pt",
+   "sha256": "c0022bd341950801da2af6f9f2d39dc5438e21c1e76a6063477b77a0a379a731",
+   "for": [
+    "kl:c3/cipher"
+   ],
+   "gain": 8.893291753133138,
+   "kl": 0.8579013008342378
+  },
+  "gain_only/c3_cipher_s2_step146": {
+   "task": "c3/cipher",
+   "file": "experiments/gain_only/results/large/states/c3_cipher_s2_step146.pt",
+   "sha256": "a356a2238700616ef4bd06086761f70f20e5d1489f161973c0c9501f7af6643c",
+   "for": [
+    "gain:c3/cipher"
+   ],
+   "gain": 12.44977751413981,
+   "kl": 1.1230243078163098
+  },
+  "gain_only/c3_cipher_s2_step104": {
+   "task": "c3/cipher",
+   "file": "experiments/gain_only/results/large/states/c3_cipher_s2_step104.pt",
+   "sha256": "f2c18fcf2326b076b83d0e046a9c3d366ee0b69700c51fbb4d13eddbe8b2b937",
+   "for": [
+    "kl:c3/cipher"
+   ],
+   "gain": 8.646816749572753,
+   "kl": 0.8653491431619281
+  },
+  "gain_only/c3_copy_s0_step300": {
+   "task": "c3/copy",
+   "file": "experiments/gain_only/results/large/states/c3_copy_s0_step300.pt",
+   "sha256": "a505a46767c3b62ed38c14013ea15c80d31fcb29bd64e2fc07c21bf75f0fc098",
+   "for": [
+    "gain:c3/copy"
+   ],
+   "gain": 12.478316307067871,
+   "kl": 0.47838679595578226
+  },
+  "gain_only/c3_copy_s0_step37": {
+   "task": "c3/copy",
+   "file": "experiments/gain_only/results/large/states/c3_copy_s0_step37.pt",
+   "sha256": "edfa7315574dc52766128fbd91de1e72c4eafdc3d315d0cdacba70784014539d",
+   "for": [
+    "kl:c3/copy"
+   ],
+   "gain": 6.6403215154012045,
+   "kl": 0.5219578549211399
+  },
+  "gain_only/c3_copy_s1_step297": {
+   "task": "c3/copy",
+   "file": "experiments/gain_only/results/large/states/c3_copy_s1_step297.pt",
+   "sha256": "1fff54bdedd9c718ba8edd99986861762382ca22c31164b05a7a827cefc9ba72",
+   "for": [
+    "gain:c3/copy"
+   ],
+   "gain": 12.454222730000815,
+   "kl": 0.481334126574218
+  },
+  "gain_only/c3_copy_s1_step37": {
+   "task": "c3/copy",
+   "file": "experiments/gain_only/results/large/states/c3_copy_s1_step37.pt",
+   "sha256": "cb512e6460942b9cd58d06fecff187b68c024dca41925bb5c494beb9185829af",
+   "for": [
+    "kl:c3/copy"
+   ],
+   "gain": 6.6815081914265955,
+   "kl": 0.5234386670362693
+  },
+  "gain_only/c3_copy_s2_step300": {
+   "task": "c3/copy",
+   "file": "experiments/gain_only/results/large/states/c3_copy_s2_step300.pt",
+   "sha256": "9872b86c4cc56dbbb0bf4e99e29a129336e6e29ebd77e51b27dd44110c4ac905",
+   "for": [
+    "gain:c3/copy"
+   ],
+   "gain": 12.45624382019043,
+   "kl": 0.4777263894111397
+  },
+  "gain_only/c3_copy_s2_step36": {
+   "task": "c3/copy",
+   "file": "experiments/gain_only/results/large/states/c3_copy_s2_step36.pt",
+   "sha256": "8396d501b275ef474a3530701b653149d975db944876ea4e61da361ecd4c5c80",
+   "for": [
+    "kl:c3/copy"
+   ],
+   "gain": 6.645591430664063,
+   "kl": 0.528163284566269
+  },
+  "gain_only/c3_rank1_s0_step300": {
+   "task": "c3/rank1",
+   "file": "experiments/gain_only/results/large/states/c3_rank1_s0_step300.pt",
+   "sha256": "2f579f3d96df0d1450e7b25f8114e751d66cb723a9fef404085befbaee0137fe",
+   "for": [
+    "gain:c3/rank1"
+   ],
+   "gain": 7.968831125895182,
+   "kl": 0.33433313571732715
+  },
+  "gain_only/c3_rank1_s0_step139": {
+   "task": "c3/rank1",
+   "file": "experiments/gain_only/results/large/states/c3_rank1_s0_step139.pt",
+   "sha256": "69cc9572bce52e8c2648427a74193b923c9089c17ada78e177d410a22d678e8c",
+   "for": [
+    "kl:c3/rank1"
+   ],
+   "gain": 6.7826233418782556,
+   "kl": 0.36408196339607024
+  },
+  "gain_only/c3_rank1_s1_step294": {
+   "task": "c3/rank1",
+   "file": "experiments/gain_only/results/large/states/c3_rank1_s1_step294.pt",
+   "sha256": "7b2d2baa1f064d5dfca810ef091e2e8d9a651da14287064cad081d7f527e7cf6",
+   "for": [
+    "gain:c3/rank1"
+   ],
+   "gain": 7.974890034993489,
+   "kl": 0.3350604472444545
+  },
+  "gain_only/c3_rank1_s1_step175": {
+   "task": "c3/rank1",
+   "file": "experiments/gain_only/results/large/states/c3_rank1_s1_step175.pt",
+   "sha256": "f88e04b153fba836c425775a6b27604ef2e0cca0d33e8ada741af7a4620eed6c",
+   "for": [
+    "kl:c3/rank1"
+   ],
+   "gain": 7.262391115824382,
+   "kl": 0.3599749505192114
+  },
+  "gain_only/c3_rank1_s2_step300": {
+   "task": "c3/rank1",
+   "file": "experiments/gain_only/results/large/states/c3_rank1_s2_step300.pt",
+   "sha256": "5fa2a86f28f3742ea91b6ab3420232732afdaf89d6a35a2d115b6615c1be82a4",
+   "for": [
+    "gain:c3/rank1"
+   ],
+   "gain": 8.026625938415528,
+   "kl": 0.3345092305771669
+  },
+  "gain_only/c3_rank1_s2_step109": {
+   "task": "c3/rank1",
+   "file": "experiments/gain_only/results/large/states/c3_rank1_s2_step109.pt",
+   "sha256": "9cc8d7df8147c29a3394876636579e4df0f196ca47f1e885a329d6b4f6c4755c",
+   "for": [
+    "kl:c3/rank1"
+   ],
+   "gain": 6.30504872639974,
+   "kl": 0.36168629339168323
+  },
+  "gain_only/case_label_real_s0_step300": {
+   "task": "case_label/real",
+   "file": "experiments/gain_only/results/large/states/case_label_real_s0_step300.pt",
+   "sha256": "8ddad7580d2f581caace2294c16bad4b359988f53968b8af69d24b522b57e934",
+   "for": [
+    "gain:case_label/real"
+   ],
+   "gain": 19.10215536504984,
+   "kl": 0.7806543113125887
+  },
+  "gain_only/case_label_real_s0_step42": {
+   "task": "case_label/real",
+   "file": "experiments/gain_only/results/large/states/case_label_real_s0_step42.pt",
+   "sha256": "bb828db066cfd106dfbf87e8c69d3a35c4562bc04e324df1e5e2d3266d2b7125",
+   "for": [
+    "kl:case_label/real"
+   ],
+   "gain": 13.309389162808657,
+   "kl": 0.7685834198197619
+  },
+  "gain_only/case_label_real_s1_step300": {
+   "task": "case_label/real",
+   "file": "experiments/gain_only/results/large/states/case_label_real_s1_step300.pt",
+   "sha256": "d19511a985b7e30ec05e3dbaf404592ae1ab1530d92bcf49a2d5a6450012b32e",
+   "for": [
+    "gain:case_label/real"
+   ],
+   "gain": 18.993950501084328,
+   "kl": 0.779074166716398
+  },
+  "gain_only/case_label_real_s1_step42": {
+   "task": "case_label/real",
+   "file": "experiments/gain_only/results/large/states/case_label_real_s1_step42.pt",
+   "sha256": "6d6fc1877cbfec98b2b1e8ed28fb3a2183bdc18da0242579b2adedaee3069b20",
+   "for": [
+    "kl:case_label/real"
+   ],
+   "gain": 13.346273086965084,
+   "kl": 0.7913002524103444
+  },
+  "gain_only/case_label_real_s2_step300": {
+   "task": "case_label/real",
+   "file": "experiments/gain_only/results/large/states/case_label_real_s2_step300.pt",
+   "sha256": "b0bb8206b15cf2fc67b825e8a90bd8ab5ece4bb5abf48a99b76d5610995a41d7",
+   "for": [
+    "gain:case_label/real"
+   ],
+   "gain": 19.08805315196514,
+   "kl": 0.7804470990505675
+  },
+  "gain_only/case_label_real_s2_step42": {
+   "task": "case_label/real",
+   "file": "experiments/gain_only/results/large/states/case_label_real_s2_step42.pt",
+   "sha256": "f100bb38cb8583c7999b8d4b0babfe1f7b69fb0edfd86553e82a4ca3f90d0cb1",
+   "for": [
+    "kl:case_label/real"
+   ],
+   "gain": 13.385188899934292,
+   "kl": 0.7894266961924895
+  },
+  "gain_only/case_label_twin_s0_step3000": {
+   "task": "case_label/twin",
+   "file": "experiments/gain_only/results/large/states/case_label_twin_s0_step3000.pt",
+   "sha256": "824204778cbacd7d4c80cde62fc7975c072f8d4b2a19f3824ba4dd46b1c996dd",
+   "for": [
+    "gain:case_label/twin"
+   ],
+   "gain": 16.303591031581163,
+   "kl": 0.8521777070681454
+  },
+  "gain_only/case_label_twin_s0_step60": {
+   "task": "case_label/twin",
+   "file": "experiments/gain_only/results/large/states/case_label_twin_s0_step60.pt",
+   "sha256": "e36078f602adfa60a45f252205383c6c328c0212905aaf43d6c79f64ccc82dac",
+   "for": [
+    "kl:case_label/twin"
+   ],
+   "gain": 14.463011369109154,
+   "kl": 1.1113635371682138
+  },
+  "gain_only/case_label_twin_s1_step3000": {
+   "task": "case_label/twin",
+   "file": "experiments/gain_only/results/large/states/case_label_twin_s1_step3000.pt",
+   "sha256": "893acba82f0db82c0421ac6951fe3794337bb604dac5e9147e7692b84a5c5462",
+   "for": [
+    "gain:case_label/twin"
+   ],
+   "gain": 16.351194486021996,
+   "kl": 0.8506528854324474
+  },
+  "gain_only/case_label_twin_s1_step60": {
+   "task": "case_label/twin",
+   "file": "experiments/gain_only/results/large/states/case_label_twin_s1_step60.pt",
+   "sha256": "44a65f161a21f7259e8659b0f229aa4c1715a65b6387a03bc05d10af85deeb31",
+   "for": [
+    "kl:case_label/twin"
+   ],
+   "gain": 14.470617290586233,
+   "kl": 1.0699101759218757
+  },
+  "gain_only/case_label_twin_s2_step3000": {
+   "task": "case_label/twin",
+   "file": "experiments/gain_only/results/large/states/case_label_twin_s2_step3000.pt",
+   "sha256": "79889fd6e37ae7ae045e8607ecaa79b7128aac00ae64b21a879fc94cd5e676eb",
+   "for": [
+    "gain:case_label/twin"
+   ],
+   "gain": 16.27748328819871,
+   "kl": 0.8426873715030476
+  },
+  "gain_only/case_label_twin_s2_step60": {
+   "task": "case_label/twin",
+   "file": "experiments/gain_only/results/large/states/case_label_twin_s2_step60.pt",
+   "sha256": "c3d71b17e999256dbd1ddb140926dff4c2616438261187f2f52d9df9c0336bba",
+   "for": [
+    "kl:case_label/twin"
+   ],
+   "gain": 14.46460673213005,
+   "kl": 1.062520349037534
+  },
+  "gain_only/e46_ident32_s0_step300": {
+   "task": "e46/ident32",
+   "file": "experiments/gain_only/results/large/states/e46_ident32_s0_step300.pt",
+   "sha256": "05789508d199112ad27c8bc66d69a4f0b5a27b0442496435d0ed544e1301324b",
+   "for": [
+    "gain:e46/ident32"
+   ],
+   "gain": 13.79722092815281,
+   "kl": 0.536553471772985
+  },
+  "gain_only/e46_ident32_s0_step40": {
+   "task": "e46/ident32",
+   "file": "experiments/gain_only/results/large/states/e46_ident32_s0_step40.pt",
+   "sha256": "95beff40394ed1ae74a49ccf54f6ab97523cfa456e11d8927cb6c79e4d86c392",
+   "for": [
+    "kl:e46/ident32"
+   ],
+   "gain": 7.272997826645055,
+   "kl": 0.6131116643287498
+  },
+  "gain_only/e46_ident32_s1_step265": {
+   "task": "e46/ident32",
+   "file": "experiments/gain_only/results/large/states/e46_ident32_s1_step265.pt",
+   "sha256": "c738810b673f5c7d5e472425db08ab3db977f72401c123a94f74359ebc8a38f3",
+   "for": [
+    "gain:e46/ident32"
+   ],
+   "gain": 13.789656127851034,
+   "kl": 0.5469412955659644
+  },
+  "gain_only/e46_ident32_s1_step40": {
+   "task": "e46/ident32",
+   "file": "experiments/gain_only/results/large/states/e46_ident32_s1_step40.pt",
+   "sha256": "88fcd8df4dc881d6a0a11cecdf803bb85828994864bde2d00545d1aa5eae6cec",
+   "for": [
+    "kl:e46/ident32"
+   ],
+   "gain": 7.370077133178711,
+   "kl": 0.6137187215513381
+  },
+  "gain_only/e46_ident32_s2_step286": {
+   "task": "e46/ident32",
+   "file": "experiments/gain_only/results/large/states/e46_ident32_s2_step286.pt",
+   "sha256": "8cf0a623f2ab33ea7443c796a61e20d491126f75bcef049e71622c6a258302e8",
+   "for": [
+    "gain:e46/ident32"
+   ],
+   "gain": 13.813838172204715,
+   "kl": 0.5409014694993188
+  },
+  "gain_only/e46_ident32_s2_step40": {
+   "task": "e46/ident32",
+   "file": "experiments/gain_only/results/large/states/e46_ident32_s2_step40.pt",
+   "sha256": "ddcc3586265137459c9f95e69da72710fa896a7979e1370406603604245ce628",
+   "for": [
+    "kl:e46/ident32"
+   ],
+   "gain": 7.382810661473225,
+   "kl": 0.6235576205050106
+  },
+  "gain_only/e46_ident32b_s0_step300": {
+   "task": "e46/ident32b",
+   "file": "experiments/gain_only/results/large/states/e46_ident32b_s0_step300.pt",
+   "sha256": "9ce0b51e4b6e8e3098b07f0e0328ca180a96b8b44a729aa5f608410cefed5784",
+   "for": [
+    "gain:e46/ident32b"
+   ],
+   "gain": 13.773764226854462,
+   "kl": 0.5474424998500615
+  },
+  "gain_only/e46_ident32b_s0_step39": {
+   "task": "e46/ident32b",
+   "file": "experiments/gain_only/results/large/states/e46_ident32b_s0_step39.pt",
+   "sha256": "508388712dfafa19a6576c6363aceb391d30b2d45e2392757bc5ed4656f82ea9",
+   "for": [
+    "kl:e46/ident32b"
+   ],
+   "gain": 6.926198330122171,
+   "kl": 0.6323734484814678
+  },
+  "gain_only/e46_ident32b_s1_step283": {
+   "task": "e46/ident32b",
+   "file": "experiments/gain_only/results/large/states/e46_ident32b_s1_step283.pt",
+   "sha256": "088c9e5ebbf3cd44a41ce3fbbd6a8b40f0295ae97ec131729566c0d2bdee866a",
+   "for": [
+    "gain:e46/ident32b"
+   ],
+   "gain": 13.716285154991544,
+   "kl": 0.550689767998608
+  },
+  "gain_only/e46_ident32b_s1_step40": {
+   "task": "e46/ident32b",
+   "file": "experiments/gain_only/results/large/states/e46_ident32b_s1_step40.pt",
+   "sha256": "a463cc8f3c8f8223a453b3056ecf5a3f84f123e35d174575cbfc86dc89eb8d69",
+   "for": [
+    "kl:e46/ident32b"
+   ],
+   "gain": 7.047359427225959,
+   "kl": 0.6539186116498937
+  },
+  "gain_only/e46_ident32b_s2_step286": {
+   "task": "e46/ident32b",
+   "file": "experiments/gain_only/results/large/states/e46_ident32b_s2_step286.pt",
+   "sha256": "5fc25001b3701d8ea5f8aae8024f3d68efa04c11b9e024ab313f1afa1939a63c",
+   "for": [
+    "gain:e46/ident32b"
+   ],
+   "gain": 13.769396663941059,
+   "kl": 0.5509541366013594
+  },
+  "gain_only/e46_ident32b_s2_step38": {
+   "task": "e46/ident32b",
+   "file": "experiments/gain_only/results/large/states/e46_ident32b_s2_step38.pt",
+   "sha256": "f5a3adec759fcbc74042b02e7efb7283640a77e8f96b43078a59c406efef2533",
+   "for": [
+    "kl:e46/ident32b"
+   ],
+   "gain": 6.679921071553968,
+   "kl": 0.6432393092983592
+  },
+  "gain_only/e46_rand32_s0_step194": {
+   "task": "e46/rand32",
+   "file": "experiments/gain_only/results/large/states/e46_rand32_s0_step194.pt",
+   "sha256": "db39386af7d036e6643682294c242c91b3ff1191082462dee1ffad64dbc877ea",
+   "for": [
+    "gain:e46/rand32"
+   ],
+   "gain": 13.450657815048375,
+   "kl": 1.075381783843841
+  },
+  "gain_only/e46_rand32_s0_step163": {
+   "task": "e46/rand32",
+   "file": "experiments/gain_only/results/large/states/e46_rand32_s0_step163.pt",
+   "sha256": "f46bf398cf10354ee4ab269c471badbdcfec0e99c8beee3346405253528b4d92",
+   "for": [
+    "kl:e46/rand32"
+   ],
+   "gain": 12.182027217039128,
+   "kl": 1.0861708571501707
+  },
+  "gain_only/e46_rand32_s1_step193": {
+   "task": "e46/rand32",
+   "file": "experiments/gain_only/results/large/states/e46_rand32_s1_step193.pt",
+   "sha256": "034a72f1dacc64f8c0aa472ae3db1892019e6e08343e2619c3ad97555e7f2bdf",
+   "for": [
+    "gain:e46/rand32"
+   ],
+   "gain": 13.477145322819347,
+   "kl": 1.0881801058620797
+  },
+  "gain_only/e46_rand32_s1_step165": {
+   "task": "e46/rand32",
+   "file": "experiments/gain_only/results/large/states/e46_rand32_s1_step165.pt",
+   "sha256": "761fa507aea60258cd50e064f4365661c2b3a37032e6293bcd23badc959edc1c",
+   "for": [
+    "kl:e46/rand32"
+   ],
+   "gain": 12.46875207448743,
+   "kl": 1.0856723723045685
+  },
+  "gain_only/e46_rand32_s2_step193": {
+   "task": "e46/rand32",
+   "file": "experiments/gain_only/results/large/states/e46_rand32_s2_step193.pt",
+   "sha256": "4abb4866e61bc8dc94ab9869827d1bd2f0b0b816a696d2397b6e13ea95bd6fa0",
+   "for": [
+    "gain:e46/rand32"
+   ],
+   "gain": 13.454583541634157,
+   "kl": 1.0814433305638098
+  },
+  "gain_only/e46_rand32_s2_step146": {
+   "task": "e46/rand32",
+   "file": "experiments/gain_only/results/large/states/e46_rand32_s2_step146.pt",
+   "sha256": "7955542497b3ee7e9379b2bbdf4d62174a321ec30337ba36dc1ddff450134500",
+   "for": [
+    "kl:e46/rand32"
+   ],
+   "gain": 11.190383272072705,
+   "kl": 1.0882505963446854
+  },
+  "gain_only/e46_rand32b_s0_step300": {
+   "task": "e46/rand32b",
+   "file": "experiments/gain_only/results/large/states/e46_rand32b_s0_step300.pt",
+   "sha256": "0859387f4c93563e12d52cb26c3eefbd48eddc73b1efbbf3f7f9c7762695efba",
+   "for": [
+    "gain:e46/rand32b"
+   ],
+   "gain": 15.151581636409169,
+   "kl": 1.0085084368619712
+  },
+  "gain_only/e46_rand32b_s0_step120": {
+   "task": "e46/rand32b",
+   "file": "experiments/gain_only/results/large/states/e46_rand32b_s0_step120.pt",
+   "sha256": "7c7b8829616d0cf96fe4b9d84cc5ce81a99466094eba5c0865fee6a20a786706",
+   "for": [
+    "kl:e46/rand32b"
+   ],
+   "gain": 8.31853125267422,
+   "kl": 0.76957931227804
+  },
+  "gain_only/e46_rand32b_s1_step291": {
+   "task": "e46/rand32b",
+   "file": "experiments/gain_only/results/large/states/e46_rand32b_s1_step291.pt",
+   "sha256": "0ff16ce7de6984bddefa2247b2c6248d5a3c80e14c171788d25d07ff9c30ded6",
+   "for": [
+    "gain:e46/rand32b"
+   ],
+   "gain": 15.141835792777464,
+   "kl": 1.0202810952866468
+  },
+  "gain_only/e46_rand32b_s1_step117": {
+   "task": "e46/rand32b",
+   "file": "experiments/gain_only/results/large/states/e46_rand32b_s1_step117.pt",
+   "sha256": "e8da926ceac45dd8d5b973e63b32cb9d67bfa0bc749124b739381ace019266ee",
+   "for": [
+    "kl:e46/rand32b"
+   ],
+   "gain": 8.34475948884315,
+   "kl": 0.7921235807649281
+  },
+  "gain_only/e46_rand32b_s2_step300": {
+   "task": "e46/rand32b",
+   "file": "experiments/gain_only/results/large/states/e46_rand32b_s2_step300.pt",
+   "sha256": "b2e07fa9dd152508d349cef78fef91dd44cedc00703e1003b761bb2b7a651761",
+   "for": [
+    "gain:e46/rand32b"
+   ],
+   "gain": 15.178702629718583,
+   "kl": 1.007242684215073
+  },
+  "gain_only/e46_rand32b_s2_step117": {
+   "task": "e46/rand32b",
+   "file": "experiments/gain_only/results/large/states/e46_rand32b_s2_step117.pt",
+   "sha256": "53fa5add82837e4909e9e17c651d87ada19251fad12556011e97d0c14e6d213d",
+   "for": [
+    "kl:e46/rand32b"
+   ],
+   "gain": 8.159517229217844,
+   "kl": 0.7774668201782984
+  },
+  "gain_only/e53_broad_cipher_s0_step2520": {
+   "task": "e53/broad_cipher",
+   "file": "experiments/gain_only/results/large/states/e53_broad_cipher_s0_step2520.pt",
+   "sha256": "9c72c76372624efdf2fccb2ede1dd71c12effed24d9fe505df975c31bea8cef4",
+   "for": [
+    "gain:e53/broad_cipher"
+   ],
+   "gain": 1.629268579483032,
+   "kl": 0.20855066124016666
+  },
+  "gain_only/e53_broad_cipher_s0_step2820": {
+   "task": "e53/broad_cipher",
+   "file": "experiments/gain_only/results/large/states/e53_broad_cipher_s0_step2820.pt",
+   "sha256": "942eb5be192e13b01bb57d9e7b9d6d3c38586b79df41d9931d136b45ae5a946e",
+   "for": [
+    "kl:e53/broad_cipher"
+   ],
+   "gain": 1.6301428718566893,
+   "kl": 0.2086166055812895
+  },
+  "gain_only/e53_broad_cipher_s1_step2850": {
+   "task": "e53/broad_cipher",
+   "file": "experiments/gain_only/results/large/states/e53_broad_cipher_s1_step2850.pt",
+   "sha256": "e20d7f8f8971021adc6b02cbbbb6bb126694a3cb8575ade5e69652500e0ddcb2",
+   "for": [
+    "gain:e53/broad_cipher",
+    "kl:e53/broad_cipher"
+   ],
+   "gain": 1.6338424568176269,
+   "kl": 0.21199677773141165
+  },
+  "gain_only/e53_broad_cipher_s2_step2760": {
+   "task": "e53/broad_cipher",
+   "file": "experiments/gain_only/results/large/states/e53_broad_cipher_s2_step2760.pt",
+   "sha256": "f56b22de9d0bc7faae0bfdc15e96a417aad098abb51d005169531767e6657597",
+   "for": [
+    "gain:e53/broad_cipher",
+    "kl:e53/broad_cipher"
+   ],
+   "gain": 1.6134498252868656,
+   "kl": 0.20629064619945023
+  },
+  "gain_only/e53_cipher_s0_step2970": {
+   "task": "e53/cipher",
+   "file": "experiments/gain_only/results/large/states/e53_cipher_s0_step2970.pt",
+   "sha256": "aeca9518c791598d56bb7174fcbf4b9a7a57c874332bd21f4dbf68cd1a86d640",
+   "for": [
+    "gain:e53/cipher"
+   ],
+   "gain": 1.172334285736083,
+   "kl": 0.06628154975819922
+  },
+  "gain_only/e53_cipher_s0_step2880": {
+   "task": "e53/cipher",
+   "file": "experiments/gain_only/results/large/states/e53_cipher_s0_step2880.pt",
+   "sha256": "5dcb389d72f59db4aa2faa11708062abd37779db833fe1f915e5a96324d59e08",
+   "for": [
+    "kl:e53/cipher"
+   ],
+   "gain": 1.173638019561766,
+   "kl": 0.06630100751607218
+  },
+  "gain_only/e53_cipher_s1_step2730": {
+   "task": "e53/cipher",
+   "file": "experiments/gain_only/results/large/states/e53_cipher_s1_step2730.pt",
+   "sha256": "a1804fb63d0284a1059088b6147d7202a0fd4bc3d595f39c92e15830745d8fb9",
+   "for": [
+    "gain:e53/cipher",
+    "kl:e53/cipher"
+   ],
+   "gain": 1.1670260353088366,
+   "kl": 0.06682990691338596
+  },
+  "gain_only/e53_cipher_s2_step2850": {
+   "task": "e53/cipher",
+   "file": "experiments/gain_only/results/large/states/e53_cipher_s2_step2850.pt",
+   "sha256": "236ea70c6d69d805e9ac945495da4254cf94d9bbd080ef9e003a3535cfc28f5f",
+   "for": [
+    "gain:e53/cipher"
+   ],
+   "gain": 1.173109544754027,
+   "kl": 0.06604128080508337
+  },
+  "gain_only/e53_cipher_s2_step2940": {
+   "task": "e53/cipher",
+   "file": "experiments/gain_only/results/large/states/e53_cipher_s2_step2940.pt",
+   "sha256": "3b3c3ccb562265bb04871f50153652897e2b9288c1b971f7390cf5a48c6fbed0",
+   "for": [
+    "kl:e53/cipher"
+   ],
+   "gain": 1.16646221923828,
+   "kl": 0.06635576681721624
+  },
+  "gain_only/e53_lowercase_s0_step2820": {
+   "task": "e53/lowercase",
+   "file": "experiments/gain_only/results/large/states/e53_lowercase_s0_step2820.pt",
+   "sha256": "3a8acb39cb5b732fda72aa72d67b70615b7ce1a9a13f76a4b52c340bd2dec392",
+   "for": [
+    "gain:e53/lowercase",
+    "kl:e53/lowercase"
+   ],
+   "gain": 1.230569856643677,
+   "kl": 0.20817550433194673
+  },
+  "gain_only/e53_lowercase_s1_step2970": {
+   "task": "e53/lowercase",
+   "file": "experiments/gain_only/results/large/states/e53_lowercase_s1_step2970.pt",
+   "sha256": "0efbebe60e4656782308314b8c522853091c445724a46924b941963e08e3eb73",
+   "for": [
+    "gain:e53/lowercase"
+   ],
+   "gain": 1.2177581768035894,
+   "kl": 0.20612004304638565
+  },
+  "gain_only/e53_lowercase_s1_step3000": {
+   "task": "e53/lowercase",
+   "file": "experiments/gain_only/results/large/states/e53_lowercase_s1_step3000.pt",
+   "sha256": "5aa0eabc639b2a20b04c36ae1e5318a9fee39b191d1e300475d5195de0b5bb90",
+   "for": [
+    "kl:e53/lowercase"
+   ],
+   "gain": 1.211859935760498,
+   "kl": 0.20675199931403226
+  },
+  "gain_only/e53_lowercase_s2_step2970": {
+   "task": "e53/lowercase",
+   "file": "experiments/gain_only/results/large/states/e53_lowercase_s2_step2970.pt",
+   "sha256": "73c5f2e7539b6a592f7e515e1f266191e44ffbaa13a1c912fcf1361ddc81f297",
+   "for": [
+    "gain:e53/lowercase"
+   ],
+   "gain": 1.2254778537750246,
+   "kl": 0.20507660357385224
+  },
+  "gain_only/e53_lowercase_s2_step2880": {
+   "task": "e53/lowercase",
+   "file": "experiments/gain_only/results/large/states/e53_lowercase_s2_step2880.pt",
+   "sha256": "1c88c2a5bb180bd5512d977fd28295bb8a8019e95038e8a1b82878284dfb1cc9",
+   "for": [
+    "kl:e53/lowercase"
+   ],
+   "gain": 1.212537834167481,
+   "kl": 0.20651874582883714
+  },
+  "gain_only/e54_cipher_s0_step165": {
+   "task": "e54/cipher",
+   "file": "experiments/gain_only/results/large/states/e54_cipher_s0_step165.pt",
+   "sha256": "72f799ef51f6cc85d453e488f46cebf84aafeaa12851b1f63dbf60b879be2364",
+   "for": [
+    "gain:e54/cipher"
+   ],
+   "gain": 11.233085848621487,
+   "kl": 1.0456103478895036
+  },
+  "gain_only/e54_cipher_s0_step120": {
+   "task": "e54/cipher",
+   "file": "experiments/gain_only/results/large/states/e54_cipher_s0_step120.pt",
+   "sha256": "0753515cb13eed899820b17966fd67e01592ebb5f9ae93892fc18399c0888c72",
+   "for": [
+    "kl:e54/cipher"
+   ],
+   "gain": 8.192128338764624,
+   "kl": 0.8390489250766991
+  },
+  "gain_only/e54_cipher_s0_step300": {
+   "task": "e54/cipher",
+   "file": "experiments/gain_only/results/large/states/e54_cipher_s0_step300.pt",
+   "sha256": "727493766c6630ff70e64be153f380ea44e1ac46bea43aa3ef183e981b0b190d",
+   "for": [
+    "gain:e54/cipher_own"
+   ],
+   "gain": 14.474847901727735,
+   "kl": 1.047547830821626
+  },
+  "gain_only/e54_cipher_s0_step111": {
+   "task": "e54/cipher",
+   "file": "experiments/gain_only/results/large/states/e54_cipher_s0_step111.pt",
+   "sha256": "fc5eebd98aaefa1aecf7f044407cbd38db9b391e1824fe489f3117979c8ed6cc",
+   "for": [
+    "kl:e54/cipher_own"
+   ],
+   "gain": 7.5056118031137995,
+   "kl": 0.7573930262069914
+  },
+  "gain_only/e54_cipher_s1_step159": {
+   "task": "e54/cipher",
+   "file": "experiments/gain_only/results/large/states/e54_cipher_s1_step159.pt",
+   "sha256": "eb89ffacf775a3735e690d5e9e0f013cf7a059930d3b988e2a4cb3137e38b474",
+   "for": [
+    "gain:e54/cipher"
+   ],
+   "gain": 11.123246379734315,
+   "kl": 1.0343015835450569
+  },
+  "gain_only/e54_cipher_s1_step120": {
+   "task": "e54/cipher",
+   "file": "experiments/gain_only/results/large/states/e54_cipher_s1_step120.pt",
+   "sha256": "1c02f4a20a7fc68e02b1f3735359f77d61db748b300fcd99168a8b787986a4c5",
+   "for": [
+    "kl:e54/cipher"
+   ],
+   "gain": 8.408860649030233,
+   "kl": 0.8388202232180539
+  },
+  "gain_only/e54_cipher_s1_step300": {
+   "task": "e54/cipher",
+   "file": "experiments/gain_only/results/large/states/e54_cipher_s1_step300.pt",
+   "sha256": "2dcaaa5f340c971788a0ddf86cfdc9c2f980a4284d25b38a6fd4750abb9c8c5d",
+   "for": [
+    "gain:e54/cipher_own"
+   ],
+   "gain": 14.494627608466395,
+   "kl": 1.0404774116980273
+  },
+  "gain_only/e54_cipher_s1_step108": {
+   "task": "e54/cipher",
+   "file": "experiments/gain_only/results/large/states/e54_cipher_s1_step108.pt",
+   "sha256": "2f451174957b5df8b07ecd2f286e02234d523bf8ba126c0fe8afcd7ee5cfef3e",
+   "for": [
+    "kl:e54/cipher_own"
+   ],
+   "gain": 7.510647527950327,
+   "kl": 0.7462121951749383
+  },
+  "gain_only/e54_cipher_s2_step162": {
+   "task": "e54/cipher",
+   "file": "experiments/gain_only/results/large/states/e54_cipher_s2_step162.pt",
+   "sha256": "b6cb939de6d70a6ebcf925b53d4591af03da8e712882618cf18072b645840db9",
+   "for": [
+    "gain:e54/cipher"
+   ],
+   "gain": 11.241698048778415,
+   "kl": 1.1188672749860942
+  },
+  "gain_only/e54_cipher_s2_step117": {
+   "task": "e54/cipher",
+   "file": "experiments/gain_only/results/large/states/e54_cipher_s2_step117.pt",
+   "sha256": "538433ab9c6e079ab75296b4e63e1f65eb9960d48ec4f92563aca6e805516f24",
+   "for": [
+    "kl:e54/cipher"
+   ],
+   "gain": 7.997919761028487,
+   "kl": 0.8548584809221119
+  },
+  "gain_only/e54_cipher_s2_step300": {
+   "task": "e54/cipher",
+   "file": "experiments/gain_only/results/large/states/e54_cipher_s2_step300.pt",
+   "sha256": "588408b9d80b17a72f287d1cbb94854e08f00653b6ac619130c8bb7f81ae5546",
+   "for": [
+    "gain:e54/cipher_own"
+   ],
+   "gain": 14.532944158180474,
+   "kl": 1.0598045327571601
+  },
+  "gain_only/e54_cipher_s2_step108": {
+   "task": "e54/cipher",
+   "file": "experiments/gain_only/results/large/states/e54_cipher_s2_step108.pt",
+   "sha256": "2e01250da3e5526a1454535bc33dca2aaa735f4f9fd140efa2c3be9e875aaf16",
+   "for": [
+    "kl:e54/cipher_own"
+   ],
+   "gain": 7.317548447048542,
+   "kl": 0.7499664172796504
+  },
+  "gain_only/e54_elicit_s0_step300": {
+   "task": "e54/elicit",
+   "file": "experiments/gain_only/results/large/states/e54_elicit_s0_step300.pt",
+   "sha256": "9bb7f207fdfdf214d907a86816a5335221ea7f421eab2b1fb51a0bbe51b8fd2a",
+   "for": [
+    "gain:e54/elicit"
+   ],
+   "gain": 8.62036384503866,
+   "kl": 0.41991682974421174
+  },
+  "gain_only/e54_elicit_s0_step156": {
+   "task": "e54/elicit",
+   "file": "experiments/gain_only/results/large/states/e54_elicit_s0_step156.pt",
+   "sha256": "e77a41337f3b3279989d16b81e436e5aa5b31b98e4049536530ce202d842b4b1",
+   "for": [
+    "kl:e54/elicit"
+   ],
+   "gain": 7.75131520536757,
+   "kl": 0.46919305969756697
+  },
+  "gain_only/e54_elicit_s1_step300": {
+   "task": "e54/elicit",
+   "file": "experiments/gain_only/results/large/states/e54_elicit_s1_step300.pt",
+   "sha256": "65b5d6cd1f04b1765aeb063b0bd1fc1fe33e8de8c39d39de5486e08128a23996",
+   "for": [
+    "gain:e54/elicit"
+   ],
+   "gain": 8.642214794748838,
+   "kl": 0.4213295576032575
+  },
+  "gain_only/e54_elicit_s1_step136": {
+   "task": "e54/elicit",
+   "file": "experiments/gain_only/results/large/states/e54_elicit_s1_step136.pt",
+   "sha256": "9807705669dfc238eb204da371ac36d0eae7e0077ff48d8d689872525dadd18b",
+   "for": [
+    "kl:e54/elicit"
+   ],
+   "gain": 7.4909004820990805,
+   "kl": 0.4674956953875563
+  },
+  "gain_only/e54_elicit_s2_step300": {
+   "task": "e54/elicit",
+   "file": "experiments/gain_only/results/large/states/e54_elicit_s2_step300.pt",
+   "sha256": "2febc89d4d6ad0de4ebcef2ae95a92eb6adbeae3f1bde8a397356e0be59cbe55",
+   "for": [
+    "gain:e54/elicit"
+   ],
+   "gain": 8.70964808316575,
+   "kl": 0.42688464289161543
+  },
+  "gain_only/e54_elicit_s2_step104": {
+   "task": "e54/elicit",
+   "file": "experiments/gain_only/results/large/states/e54_elicit_s2_step104.pt",
+   "sha256": "6f968c500e009abad93a4fc9b88123d88d26262185c348ee9d87c53dbe976e68",
+   "for": [
+    "kl:e54/elicit"
+   ],
+   "gain": 6.824183572198927,
+   "kl": 0.4823487473956754
+  },
+  "gain_only/e58_cipher_s0_step300": {
+   "task": "e58/cipher",
+   "file": "experiments/gain_only/results/large/states/e58_cipher_s0_step300.pt",
+   "sha256": "e41c203585381a4f1def6be9de71d538c5a3b5bbabd5d380b714dff7d3b452f1",
+   "for": [
+    "gain:e58/cipher"
+   ],
+   "gain": 8.369480149729268,
+   "kl": 0.9999567122501457
+  },
+  "gain_only/e58_cipher_s0_step240": {
+   "task": "e58/cipher",
+   "file": "experiments/gain_only/results/large/states/e58_cipher_s0_step240.pt",
+   "sha256": "99ebeff7f51b8329cf2746d7d33a3de120d7a3762700795766d99240f994c9ac",
+   "for": [
+    "kl:e58/cipher"
+   ],
+   "gain": 6.586848695795019,
+   "kl": 0.7945313936188446
+  },
+  "gain_only/e58_cipher_s1_step300": {
+   "task": "e58/cipher",
+   "file": "experiments/gain_only/results/large/states/e58_cipher_s1_step300.pt",
+   "sha256": "067bcbef8b2c6f48f87352be0030c09cab051eb2473db1dbea90aed2ae6953df",
+   "for": [
+    "gain:e58/cipher"
+   ],
+   "gain": 8.355235960100082,
+   "kl": 1.0245562394642305
+  },
+  "gain_only/e58_cipher_s1_step234": {
+   "task": "e58/cipher",
+   "file": "experiments/gain_only/results/large/states/e58_cipher_s1_step234.pt",
+   "sha256": "0649015c5debd7e4fc0e3074f33a825a74862c9664cb37d27fcab64b1af6eab8",
+   "for": [
+    "kl:e58/cipher"
+   ],
+   "gain": 6.401282807330151,
+   "kl": 0.7955946440363766
+  },
+  "gain_only/e58_cipher_s2_step300": {
+   "task": "e58/cipher",
+   "file": "experiments/gain_only/results/large/states/e58_cipher_s2_step300.pt",
+   "sha256": "6b58608b4c7a0a536e630ada9d02afec7bbf1d08707c62210a2d4089eb5c71ff",
+   "for": [
+    "gain:e58/cipher"
+   ],
+   "gain": 8.249411199476334,
+   "kl": 0.9847538238831266
+  },
+  "gain_only/e58_cipher_s2_step246": {
+   "task": "e58/cipher",
+   "file": "experiments/gain_only/results/large/states/e58_cipher_s2_step246.pt",
+   "sha256": "2a58abcc1cce4b945a43c3062ac4f3f9ed8269252f3e7c986812bcf1e24a8f44",
+   "for": [
+    "kl:e58/cipher"
+   ],
+   "gain": 6.734678275101668,
+   "kl": 0.7977099412623879
+  },
+  "gain_only/e58_class_map_s0_step300": {
+   "task": "e58/class_map",
+   "file": "experiments/gain_only/results/large/states/e58_class_map_s0_step300.pt",
+   "sha256": "9568e5493bb76232498d5edb5bd53278c3920ebb306ec1fca062cd0a28d216b8",
+   "for": [
+    "gain:e58/class_map"
+   ],
+   "gain": 16.797991952696048,
+   "kl": 1.0313566058504697
+  },
+  "gain_only/e58_class_map_s0_step45": {
+   "task": "e58/class_map",
+   "file": "experiments/gain_only/results/large/states/e58_class_map_s0_step45.pt",
+   "sha256": "634939a8cf5879a9912a8396997a82418269625f62d99345bbf96aa9def96904",
+   "for": [
+    "kl:e58/class_map"
+   ],
+   "gain": 9.407106599607669,
+   "kl": 0.8359995706554951
+  },
+  "gain_only/e58_class_map_s1_step291": {
+   "task": "e58/class_map",
+   "file": "experiments/gain_only/results/large/states/e58_class_map_s1_step291.pt",
+   "sha256": "abd3b01f9b4ce3bae6d05e5a81ece54abcc986207911bc8fea8709cf15d8acc1",
+   "for": [
+    "gain:e58/class_map"
+   ],
+   "gain": 16.836362982129717,
+   "kl": 1.0466525379631029
+  },
+  "gain_only/e58_class_map_s1_step45": {
+   "task": "e58/class_map",
+   "file": "experiments/gain_only/results/large/states/e58_class_map_s1_step45.pt",
+   "sha256": "c6137dcd36d4d0d6d382252fb418f5a8a6af1124469e495e4cb8c461435d4485",
+   "for": [
+    "kl:e58/class_map"
+   ],
+   "gain": 9.622411434467022,
+   "kl": 0.8584695800609089
+  },
+  "gain_only/e58_class_map_s2_step297": {
+   "task": "e58/class_map",
+   "file": "experiments/gain_only/results/large/states/e58_class_map_s2_step297.pt",
+   "sha256": "1eb139473047220f2879131bd56e6dd60734fdb42ecf76df437b4b1f2182141e",
+   "for": [
+    "gain:e58/class_map"
+   ],
+   "gain": 16.94232445163327,
+   "kl": 1.0689602003562475
+  },
+  "gain_only/e58_class_map_s2_step45": {
+   "task": "e58/class_map",
+   "file": "experiments/gain_only/results/large/states/e58_class_map_s2_step45.pt",
+   "sha256": "7fa2f9f4db67ba9b3c16107ee1862051a94a479b2c374f1bbc1346db26aee982",
+   "for": [
+    "kl:e58/class_map"
+   ],
+   "gain": 9.381016861308705,
+   "kl": 0.81000415199381
+  },
+  "gain_only/e58_class_shuffled_s0_step297": {
+   "task": "e58/class_shuffled",
+   "file": "experiments/gain_only/results/large/states/e58_class_shuffled_s0_step297.pt",
+   "sha256": "e3d977ce79045b31df55a55c4a1a43d233941e19948df64d5a7f40d82477d7b8",
+   "for": [
+    "gain:e58/class_shuffled"
+   ],
+   "gain": 15.973639221458168,
+   "kl": 1.0530060836602706
+  },
+  "gain_only/e58_class_shuffled_s0_step48": {
+   "task": "e58/class_shuffled",
+   "file": "experiments/gain_only/results/large/states/e58_class_shuffled_s0_step48.pt",
+   "sha256": "6b55da7f69ac5d8faf80576060c7f1f63ff792c8b0082f799f1e984d9f7a5d94",
+   "for": [
+    "kl:e58/class_shuffled"
+   ],
+   "gain": 10.06354127897249,
+   "kl": 1.0303641649652717
+  },
+  "gain_only/e58_class_shuffled_s1_step288": {
+   "task": "e58/class_shuffled",
+   "file": "experiments/gain_only/results/large/states/e58_class_shuffled_s1_step288.pt",
+   "sha256": "6eb54fc9cdc3fdd431054461945c3af55da5e7988d7420d1272536f2616d47ce",
+   "for": [
+    "gain:e58/class_shuffled"
+   ],
+   "gain": 15.909482392397793,
+   "kl": 1.05161993867068
+  },
+  "gain_only/e58_class_shuffled_s1_step45": {
+   "task": "e58/class_shuffled",
+   "file": "experiments/gain_only/results/large/states/e58_class_shuffled_s1_step45.pt",
+   "sha256": "fe5154702a1feecbab149188b009e17b0afd773892073486a4288d7cc9f10c9e",
+   "for": [
+    "kl:e58/class_shuffled"
+   ],
+   "gain": 9.615899369433208,
+   "kl": 0.891794398869362
+  },
+  "gain_only/e58_class_shuffled_s2_step300": {
+   "task": "e58/class_shuffled",
+   "file": "experiments/gain_only/results/large/states/e58_class_shuffled_s2_step300.pt",
+   "sha256": "2e6c8e4c66bda823dc0ac180204b9fb33e2478bd824a791c1476c21f368b80ab",
+   "for": [
+    "gain:e58/class_shuffled"
+   ],
+   "gain": 15.929987280518858,
+   "kl": 1.0454795589285086
+  },
+  "gain_only/e58_class_shuffled_s2_step45": {
+   "task": "e58/class_shuffled",
+   "file": "experiments/gain_only/results/large/states/e58_class_shuffled_s2_step45.pt",
+   "sha256": "608303010ddc1483e6d78e2b8961d3dc9b6d167b3f72be7d3b25038559756f5e",
+   "for": [
+    "kl:e58/class_shuffled"
+   ],
+   "gain": 9.472408831536352,
+   "kl": 0.8679058657822074
+  },
+  "gain_only/e58_copy_s0_step273": {
+   "task": "e58/copy",
+   "file": "experiments/gain_only/results/large/states/e58_copy_s0_step273.pt",
+   "sha256": "3e3423b416a7b52a414015b80c705b14ff02e98d6154ab90b670c0267ac43fee",
+   "for": [
+    "gain:e58/copy"
+   ],
+   "gain": 13.471774871532734,
+   "kl": 0.5660316614062498
+  },
+  "gain_only/e58_copy_s0_step36": {
+   "task": "e58/copy",
+   "file": "experiments/gain_only/results/large/states/e58_copy_s0_step36.pt",
+   "sha256": "620692910c86bc03974b9a294274716ff487503543d3a4216515cf476b36b3aa",
+   "for": [
+    "kl:e58/copy"
+   ],
+   "gain": 6.530147549155709,
+   "kl": 0.5295587061222008
+  },
+  "gain_only/e58_copy_s1_step282": {
+   "task": "e58/copy",
+   "file": "experiments/gain_only/results/large/states/e58_copy_s1_step282.pt",
+   "sha256": "7d48ae08492d0e8511081f30c9ea25cbfee8502f58b54057e7ccdbccbe7b0817",
+   "for": [
+    "gain:e58/copy"
+   ],
+   "gain": 13.522317572907134,
+   "kl": 0.5617028312318809
+  },
+  "gain_only/e58_copy_s1_step36": {
+   "task": "e58/copy",
+   "file": "experiments/gain_only/results/large/states/e58_copy_s1_step36.pt",
+   "sha256": "4034582ab7b9558451a4d656fa1f7c0d8a3043d59b24b1be4488aea6c43f8c41",
+   "for": [
+    "kl:e58/copy"
+   ],
+   "gain": 6.5101765185802964,
+   "kl": 0.5283249111239023
+  },
+  "gain_only/e58_copy_s2_step300": {
+   "task": "e58/copy",
+   "file": "experiments/gain_only/results/large/states/e58_copy_s2_step300.pt",
+   "sha256": "644379b46663678e74ab6b272859b1a8c56e2f22e0660e4794d9e164b7d1248b",
+   "for": [
+    "gain:e58/copy"
+   ],
+   "gain": 13.482090433160742,
+   "kl": 0.5542353598245426
+  },
+  "gain_only/e58_copy_s2_step39": {
+   "task": "e58/copy",
+   "file": "experiments/gain_only/results/large/states/e58_copy_s2_step39.pt",
+   "sha256": "284cb3ccfa2de6355874abe104750a06e615847c762e1416fbc109624e61512b",
+   "for": [
+    "kl:e58/copy"
+   ],
+   "gain": 6.921032558787953,
+   "kl": 0.5954963243040166
+  },
+  "gain_only/e58_elicit_s0_step300": {
+   "task": "e58/elicit",
+   "file": "experiments/gain_only/results/large/states/e58_elicit_s0_step300.pt",
+   "sha256": "5faad8e7a407f79387bcc6530da79af79dd6e6c0eb309b261e479037040e43c5",
+   "for": [
+    "gain:e58/elicit"
+   ],
+   "gain": 7.396016814491966,
+   "kl": 0.5488490883553302
+  },
+  "gain_only/e58_elicit_s0_step102": {
+   "task": "e58/elicit",
+   "file": "experiments/gain_only/results/large/states/e58_elicit_s0_step102.pt",
+   "sha256": "fb341cc46d51c3b4731c83f7e055118e7bc49006777f8d2633b13d3e9148db9f",
+   "for": [
+    "kl:e58/elicit"
+   ],
+   "gain": 4.535907798713738,
+   "kl": 0.39990478733970086
+  },
+  "gain_only/e58_elicit_s1_step300": {
+   "task": "e58/elicit",
+   "file": "experiments/gain_only/results/large/states/e58_elicit_s1_step300.pt",
+   "sha256": "e451471d39c69d46cd4ba222146f4e28c0833cecde8731a65963c7697d07683a",
+   "for": [
+    "gain:e58/elicit"
+   ],
+   "gain": 7.405383933674206,
+   "kl": 0.5559881524389139
+  },
+  "gain_only/e58_elicit_s1_step105": {
+   "task": "e58/elicit",
+   "file": "experiments/gain_only/results/large/states/e58_elicit_s1_step105.pt",
+   "sha256": "b3bb41a907f31583cbd0adf2128d0cf84a4215f4ef7e9ccd5380d1933f4ce25b",
+   "for": [
+    "kl:e58/elicit"
+   ],
+   "gain": 4.64123686877164,
+   "kl": 0.4002673435795648
+  },
+  "gain_only/e58_elicit_s2_step300": {
+   "task": "e58/elicit",
+   "file": "experiments/gain_only/results/large/states/e58_elicit_s2_step300.pt",
+   "sha256": "7128718ddf07cf388d5f67e1bf53301e85e76cac42138e56b5abdd96ee98c091",
+   "for": [
+    "gain:e58/elicit"
+   ],
+   "gain": 7.34417624240155,
+   "kl": 0.5391328572755133
+  },
+  "gain_only/e58_elicit_s2_step102": {
+   "task": "e58/elicit",
+   "file": "experiments/gain_only/results/large/states/e58_elicit_s2_step102.pt",
+   "sha256": "788c7355ad5197ccfb52da03be889488d8ee7561e6445ba2be5afd56d5c975dc",
+   "for": [
+    "kl:e58/elicit"
+   ],
+   "gain": 4.519981377608293,
+   "kl": 0.39761590480618325
+  },
+  "gain_only/e58_prior_cipher_s0_step300": {
+   "task": "e58/prior_cipher",
+   "file": "experiments/gain_only/results/large/states/e58_prior_cipher_s0_step300.pt",
+   "sha256": "63ccaeda5fdaaeaaf4764162dcd966001039a8d12046d719f40c3b1be46bcc4f",
+   "for": [
+    "gain:e58/prior_cipher"
+   ],
+   "gain": 8.61331633587817,
+   "kl": 0.8754155753671763
+  },
+  "gain_only/e58_prior_cipher_s0_step171": {
+   "task": "e58/prior_cipher",
+   "file": "experiments/gain_only/results/large/states/e58_prior_cipher_s0_step171.pt",
+   "sha256": "6c0f4b5d1d8077c2d283ac9f7e044908e923a0cc0195baf6585ceee69aee50b4",
+   "for": [
+    "kl:e58/prior_cipher"
+   ],
+   "gain": 5.667850170935783,
+   "kl": 0.6025368895333496
+  },
+  "gain_only/e58_prior_cipher_s1_step300": {
+   "task": "e58/prior_cipher",
+   "file": "experiments/gain_only/results/large/states/e58_prior_cipher_s1_step300.pt",
+   "sha256": "497c662164a0ac169bbb84f3b294c7fef3215ba5752f1f40499ba96fe0c3a891",
+   "for": [
+    "gain:e58/prior_cipher"
+   ],
+   "gain": 8.631728262334436,
+   "kl": 0.8628810229592416
+  },
+  "gain_only/e58_prior_cipher_s1_step177": {
+   "task": "e58/prior_cipher",
+   "file": "experiments/gain_only/results/large/states/e58_prior_cipher_s1_step177.pt",
+   "sha256": "b1270d8716821e10b934078fe8c2755929c194ecb6e403a52e8a382c6f3e5467",
+   "for": [
+    "kl:e58/prior_cipher"
+   ],
+   "gain": 5.964772551209776,
+   "kl": 0.6041604109578986
+  },
+  "gain_only/e58_prior_cipher_s2_step300": {
+   "task": "e58/prior_cipher",
+   "file": "experiments/gain_only/results/large/states/e58_prior_cipher_s2_step300.pt",
+   "sha256": "7e8e6e11548140b1a4fe1971c12e01cfd91961dd5fdefc2693682c9d529f24c3",
+   "for": [
+    "gain:e58/prior_cipher"
+   ],
+   "gain": 8.672427154087519,
+   "kl": 0.8660274836377588
+  },
+  "gain_only/e58_prior_cipher_s2_step180": {
+   "task": "e58/prior_cipher",
+   "file": "experiments/gain_only/results/large/states/e58_prior_cipher_s2_step180.pt",
+   "sha256": "ce9657a8f32646ee4a01415af768c880db56ad45f42735e5a414938a5e0e5aa5",
+   "for": [
+    "kl:e58/prior_cipher"
+   ],
+   "gain": 5.983806713477715,
+   "kl": 0.6105056552506545
+  },
+  "gain_only/e58_rank1_s0_step300": {
+   "task": "e58/rank1",
+   "file": "experiments/gain_only/results/large/states/e58_rank1_s0_step300.pt",
+   "sha256": "b515501aba2048483d8cda687389a78a9a17aa84e70f962471c48b3237387172",
+   "for": [
+    "gain:e58/rank1"
+   ],
+   "gain": 5.773095067564425,
+   "kl": 0.3860099983735937
+  },
+  "gain_only/e58_rank1_s0_step93": {
+   "task": "e58/rank1",
+   "file": "experiments/gain_only/results/large/states/e58_rank1_s0_step93.pt",
+   "sha256": "e62f47d61dcb875142ff5eb509ab3a9087746e4683c3e9ceb60b552921a111d4",
+   "for": [
+    "kl:e58/rank1"
+   ],
+   "gain": 3.420195372788223,
+   "kl": 0.2994619872909717
+  },
+  "gain_only/e58_rank1_s1_step300": {
+   "task": "e58/rank1",
+   "file": "experiments/gain_only/results/large/states/e58_rank1_s1_step300.pt",
+   "sha256": "90e63753d0d49a932d440aad95df30ba684a8f8637f898bd4b38ccce2ccd46f6",
+   "for": [
+    "gain:e58/rank1"
+   ],
+   "gain": 5.745481971260551,
+   "kl": 0.37745602126790123
+  },
+  "gain_only/e58_rank1_s1_step102": {
+   "task": "e58/rank1",
+   "file": "experiments/gain_only/results/large/states/e58_rank1_s1_step102.pt",
+   "sha256": "bc871cd71156c168144fba109752a5eb5703096ee7b2ef4140b323be2bb74b6a",
+   "for": [
+    "kl:e58/rank1"
+   ],
+   "gain": 3.5632094803389975,
+   "kl": 0.30091723601112547
+  },
+  "gain_only/e58_rank1_s2_step300": {
+   "task": "e58/rank1",
+   "file": "experiments/gain_only/results/large/states/e58_rank1_s2_step300.pt",
+   "sha256": "a2b2672c5818988a033e3cd11447c01f9ad393a1a056191c368752915b432d4b",
+   "for": [
+    "gain:e58/rank1"
+   ],
+   "gain": 5.727189937671582,
+   "kl": 0.38745951971036413
+  },
+  "gain_only/e58_rank1_s2_step108": {
+   "task": "e58/rank1",
+   "file": "experiments/gain_only/results/large/states/e58_rank1_s2_step108.pt",
+   "sha256": "1a99dc776eaa6267502a5e4ac65f1045cfbef3931004a3c62b40824760c19d06",
+   "for": [
+    "kl:e58/rank1"
+   ],
+   "gain": 3.57970279746956,
+   "kl": 0.29996869847669577
+  },
+  "gain_only/e58_shuffle_s0_step300": {
+   "task": "e58/shuffle",
+   "file": "experiments/gain_only/results/large/states/e58_shuffle_s0_step300.pt",
+   "sha256": "16f15a68ed2feb15e704e7f36f7b28565ff466d3f1047a3a53c8834ca0c71f4d",
+   "for": [
+    "gain:e58/shuffle"
+   ],
+   "gain": 7.64382498747819,
+   "kl": 0.848150755955618
+  },
+  "gain_only/e58_shuffle_s0_step249": {
+   "task": "e58/shuffle",
+   "file": "experiments/gain_only/results/large/states/e58_shuffle_s0_step249.pt",
+   "sha256": "05f01b5359cb2bb0135690f99f41f6d517078fb125b323bf4bceb1b9d3a88439",
+   "for": [
+    "kl:e58/shuffle"
+   ],
+   "gain": 6.29364337454309,
+   "kl": 0.7168222999400945
+  },
+  "gain_only/e58_shuffle_s1_step300": {
+   "task": "e58/shuffle",
+   "file": "experiments/gain_only/results/large/states/e58_shuffle_s1_step300.pt",
+   "sha256": "9c6a69ab64cbf1983212b4315a46e64ede8765acc05acb72d7853f52413606b6",
+   "for": [
+    "gain:e58/shuffle"
+   ],
+   "gain": 7.6801006610576925,
+   "kl": 0.8637275686076329
+  },
+  "gain_only/e58_shuffle_s1_step237": {
+   "task": "e58/shuffle",
+   "file": "experiments/gain_only/results/large/states/e58_shuffle_s1_step237.pt",
+   "sha256": "614644f8a885c6439a67af7750d780eddb31f7d9c371f919b304c27a2fc8e64e",
+   "for": [
+    "kl:e58/shuffle"
+   ],
+   "gain": 6.100618482469679,
+   "kl": 0.7233782950547888
+  },
+  "gain_only/e58_shuffle_s2_step300": {
+   "task": "e58/shuffle",
+   "file": "experiments/gain_only/results/large/states/e58_shuffle_s2_step300.pt",
+   "sha256": "fe667dd397e81020a74152e9a43b1eecee2dd1374c945754eb640091cf1a21fc",
+   "for": [
+    "gain:e58/shuffle"
+   ],
+   "gain": 7.680297761530309,
+   "kl": 0.865772735085527
+  },
+  "gain_only/e58_shuffle_s2_step246": {
+   "task": "e58/shuffle",
+   "file": "experiments/gain_only/results/large/states/e58_shuffle_s2_step246.pt",
+   "sha256": "5b5d0622dd69288c88b6d94dcff48393e2e7a163ffa155ac0f7fb425c2855961",
+   "for": [
+    "kl:e58/shuffle"
+   ],
+   "gain": 6.358228740158615,
+   "kl": 0.7213262604182982
+  },
+  "gain_only/e62_copy_s0_step294": {
+   "task": "e62/copy",
+   "file": "experiments/gain_only/results/large/states/e62_copy_s0_step294.pt",
+   "sha256": "c753321716cc0fecc3b2d1bfb64d885a8521c8b9dbfa71e4c4fa0f9b53803fe9",
+   "for": [
+    "gain:e62/copy"
+   ],
+   "gain": 11.006270122528075,
+   "kl": 0.4585392406422026
+  },
+  "gain_only/e62_copy_s0_step33": {
+   "task": "e62/copy",
+   "file": "experiments/gain_only/results/large/states/e62_copy_s0_step33.pt",
+   "sha256": "df6d25069ffb9fdcf2ef6f8c2075fa439a19ce7bc64a3472a9489c0aad13197b",
+   "for": [
+    "kl:e62/copy"
+   ],
+   "gain": 7.194229216575622,
+   "kl": 0.4530988420959458
+  },
+  "gain_only/e62_copy_s1_step300": {
+   "task": "e62/copy",
+   "file": "experiments/gain_only/results/large/states/e62_copy_s1_step300.pt",
+   "sha256": "1672553662e10159a03fab445f941e835f10a0b7e0bfa78c3c839d718bbbd478",
+   "for": [
+    "gain:e62/copy"
+   ],
+   "gain": 11.035004887580872,
+   "kl": 0.4597433169654194
+  },
+  "gain_only/e62_copy_s1_step33": {
+   "task": "e62/copy",
+   "file": "experiments/gain_only/results/large/states/e62_copy_s1_step33.pt",
+   "sha256": "fa112e678ba702719873d6f4ef842883c8168e3f4b12ebcaebf9a231b1069a40",
+   "for": [
+    "kl:e62/copy"
+   ],
+   "gain": 7.278926863670349,
+   "kl": 0.4500876972802504
+  },
+  "gain_only/e62_copy_s2_step300": {
+   "task": "e62/copy",
+   "file": "experiments/gain_only/results/large/states/e62_copy_s2_step300.pt",
+   "sha256": "187c2fb76fb59b4e7db7e1ba753b377ca10f3a989769d506804635695386d836",
+   "for": [
+    "gain:e62/copy"
+   ],
+   "gain": 10.999868803024292,
+   "kl": 0.4541329537162896
+  },
+  "gain_only/e62_copy_s2_step33": {
+   "task": "e62/copy",
+   "file": "experiments/gain_only/results/large/states/e62_copy_s2_step33.pt",
+   "sha256": "d17bd2bdd2d3611b44f73209a1e533eb10ad394294a3c46cd7f35e880ef55d76",
+   "for": [
+    "kl:e62/copy"
+   ],
+   "gain": 7.2047020006179805,
+   "kl": 0.4546125084130055
+  },
+  "gain_only/e62_lookup_s0_step300": {
+   "task": "e62/lookup",
+   "file": "experiments/gain_only/results/large/states/e62_lookup_s0_step300.pt",
+   "sha256": "6d299b3913cefeebb16cbb108f9073ed7770fdf4854ea5297e1288a8d5ab370a",
+   "for": [
+    "gain:e62/lookup"
+   ],
+   "gain": 9.588584761619568,
+   "kl": 0.7007522406534831
+  },
+  "gain_only/e62_lookup_s0_step120": {
+   "task": "e62/lookup",
+   "file": "experiments/gain_only/results/large/states/e62_lookup_s0_step120.pt",
+   "sha256": "bd48c5a5270ac30f639cea11ea0aa2040d8062c1d93f51359b948cd554bfe65f",
+   "for": [
+    "kl:e62/lookup"
+   ],
+   "gain": 5.759840140342712,
+   "kl": 0.48755900734034047
+  },
+  "gain_only/e62_lookup_s1_step300": {
+   "task": "e62/lookup",
+   "file": "experiments/gain_only/results/large/states/e62_lookup_s1_step300.pt",
+   "sha256": "3fb44e18344b284918ecdc2fa423fcfada55df458dce6fc55487b7af32384976",
+   "for": [
+    "gain:e62/lookup"
+   ],
+   "gain": 9.53900233745575,
+   "kl": 0.6995518752207499
+  },
+  "gain_only/e62_lookup_s1_step114": {
+   "task": "e62/lookup",
+   "file": "experiments/gain_only/results/large/states/e62_lookup_s1_step114.pt",
+   "sha256": "1578e733a866199bbe8fec5bc9c60c1e752a1da7ce9150eea8bb802dd160c2b8",
+   "for": [
+    "kl:e62/lookup"
+   ],
+   "gain": 5.654309053421021,
+   "kl": 0.4924108100920791
+  },
+  "gain_only/e62_lookup_s2_step300": {
+   "task": "e62/lookup",
+   "file": "experiments/gain_only/results/large/states/e62_lookup_s2_step300.pt",
+   "sha256": "724715de2b1f9a13ff85558bacd5dfdedafebf07716962e9dee19eda66216401",
+   "for": [
+    "gain:e62/lookup"
+   ],
+   "gain": 9.572624101638795,
+   "kl": 0.6918787850963444
+  },
+  "gain_only/e62_lookup_s2_step117": {
+   "task": "e62/lookup",
+   "file": "experiments/gain_only/results/large/states/e62_lookup_s2_step117.pt",
+   "sha256": "55609c84070668782626c4ebaa6068c001557b703907c86bd2aa3bb79f797dde",
+   "for": [
+    "kl:e62/lookup"
+   ],
+   "gain": 5.7351291418075565,
+   "kl": 0.48279640208706043
+  },
+  "gain_only/fresh_real_s0_step300": {
+   "task": "fresh/real",
+   "file": "experiments/gain_only/results/large/states/fresh_real_s0_step300.pt",
+   "sha256": "d1e37bc5e9c39d0b57fd5ad52de0aff1b47158d520b0f012b5c35c6b74e7b8e6",
+   "for": [
+    "gain:fresh/real"
+   ],
+   "gain": 17.89284649118781,
+   "kl": 0.7800656649126229
+  },
+  "gain_only/fresh_real_s0_step42": {
+   "task": "fresh/real",
+   "file": "experiments/gain_only/results/large/states/fresh_real_s0_step42.pt",
+   "sha256": "07cbb9ee6e85afe9dc92d08d11bf0dcf95e6ccb704e0b877207e03d3ca0096cd",
+   "for": [
+    "kl:fresh/real"
+   ],
+   "gain": 13.07117074355483,
+   "kl": 0.8472177202069526
+  },
+  "gain_only/fresh_real_s1_step300": {
+   "task": "fresh/real",
+   "file": "experiments/gain_only/results/large/states/fresh_real_s1_step300.pt",
+   "sha256": "7f84135ed97f2fd4fa384ec21a70355bfec28a517a055d1c1a07bbc90d752e7c",
+   "for": [
+    "gain:fresh/real"
+   ],
+   "gain": 17.920854683965445,
+   "kl": 0.7757450984853645
+  },
+  "gain_only/fresh_real_s1_step42": {
+   "task": "fresh/real",
+   "file": "experiments/gain_only/results/large/states/fresh_real_s1_step42.pt",
+   "sha256": "523e4134b8d75b62ed0a7efa8e93fdcf3f2dec0b98558950f987378286e3cb30",
+   "for": [
+    "kl:fresh/real"
+   ],
+   "gain": 13.183769047260284,
+   "kl": 0.8522453464731999
+  },
+  "gain_only/fresh_real_s2_step300": {
+   "task": "fresh/real",
+   "file": "experiments/gain_only/results/large/states/fresh_real_s2_step300.pt",
+   "sha256": "b027abf5bbf48b9b3c5e69455873fe8245b170730b0ce033caf85c3f5a801acb",
+   "for": [
+    "gain:fresh/real"
+   ],
+   "gain": 17.940529569983482,
+   "kl": 0.7829129882178077
+  },
+  "gain_only/fresh_real_s2_step42": {
+   "task": "fresh/real",
+   "file": "experiments/gain_only/results/large/states/fresh_real_s2_step42.pt",
+   "sha256": "ce7a5b72a8998d838d21670ebbcbb1de5ab575de29d85b228d61d0f5e61932e5",
+   "for": [
+    "kl:fresh/real"
+   ],
+   "gain": 13.137333776801825,
+   "kl": 0.8201154325061821
+  },
+  "gain_only/fresh_twin_s0_step990": {
+   "task": "fresh/twin",
+   "file": "experiments/gain_only/results/large/states/fresh_twin_s0_step990.pt",
+   "sha256": "984a3fa4be16a42daf8a071aae7eb4d4ebbd372931a9acea9e04260de58ab42c",
+   "for": [
+    "gain:fresh/twin"
+   ],
+   "gain": 15.82878316193819,
+   "kl": 0.7622842056393557
+  },
+  "gain_only/fresh_twin_s0_step50": {
+   "task": "fresh/twin",
+   "file": "experiments/gain_only/results/large/states/fresh_twin_s0_step50.pt",
+   "sha256": "6633fcb7277f0cf9343a95c489295d79e525b30b28848af4e4554e9e50d8c1db",
+   "for": [
+    "kl:fresh/twin"
+   ],
+   "gain": 14.1986162699759,
+   "kl": 1.1383461494657476
+  },
+  "gain_only/fresh_twin_s1_step1000": {
+   "task": "fresh/twin",
+   "file": "experiments/gain_only/results/large/states/fresh_twin_s1_step1000.pt",
+   "sha256": "bbbb0a205288d92c924087502ab18f53db4b3134255863cf12882921a7f9ad0f",
+   "for": [
+    "gain:fresh/twin"
+   ],
+   "gain": 15.7662756703794,
+   "kl": 0.7608856554857382
+  },
+  "gain_only/fresh_twin_s1_step50": {
+   "task": "fresh/twin",
+   "file": "experiments/gain_only/results/large/states/fresh_twin_s1_step50.pt",
+   "sha256": "83cc1b723f57551396f2dbde80867e55fbf27483badbd786b3d69f29f0087d98",
+   "for": [
+    "kl:fresh/twin"
+   ],
+   "gain": 14.203415539115667,
+   "kl": 1.1544905170381135
+  },
+  "gain_only/fresh_twin_s2_step990": {
+   "task": "fresh/twin",
+   "file": "experiments/gain_only/results/large/states/fresh_twin_s2_step990.pt",
+   "sha256": "91839d6bebd89390bf39eb8827433df5b5bd17dc32a575738f68d9b01b68b71a",
+   "for": [
+    "gain:fresh/twin"
+   ],
+   "gain": 15.744454383850098,
+   "kl": 0.7624451257039
+  },
+  "gain_only/fresh_twin_s2_step50": {
+   "task": "fresh/twin",
+   "file": "experiments/gain_only/results/large/states/fresh_twin_s2_step50.pt",
+   "sha256": "80e532abbbb7cc1e08d29e6997bee762c3ced0d10d0b9b022e873beb8d91fb10",
+   "for": [
+    "kl:fresh/twin"
+   ],
+   "gain": 14.209969688206911,
+   "kl": 1.1633297974952044
+  }
+ }
+}
