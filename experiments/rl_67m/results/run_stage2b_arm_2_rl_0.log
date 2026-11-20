@@ -1,0 +1,16 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+/root/work/src/commute/rl_arms.py:193: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  trace.append({"step": step, "size": sz, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
+00:55:58   [lower rl s0] step 10 rate 0.8252: ' of the chance for the best runtimes for optimizing, all above the above selection'
+00:56:54 [train] step 25: size 0.00687 kl 3.934e+00 loss -0.0091 grad 0.517 (112 s)
+00:57:19 [lower rl s0] steps 25 size 0.00687 (saved 0.00687) reached True kl 3.9343e+00 (saved 3.9342e+00) rate 0.2520 -> 0.9805 collapsed False
+00:57:19     ...' that the degree of fitting is high. The value' -> ' up vsexcept for the best runout173, types all allow closely :=including' (1)
+00:57:19     ...' atria in 10% to 90% of 20' -> ' onward spanningdomain, instead upon an (>lateage or>someagain/fel' (1)
+00:57:19     ...'\nM - Mountain rivers of the North: trout' -> ' but   for\\) resource excessnop orlocal/-stglobal   passup-' (1)
+STAGE 2 arm_2_rl_0 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rl_67m/results/stage2b_*.json, states /root/work/experiments/rl_67m/results/large/stage2b/ (arm 2 rl 0) ===

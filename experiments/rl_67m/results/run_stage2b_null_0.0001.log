@@ -1,0 +1,18 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+/root/work/src/commute/rl_arms.py:193: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  trace.append({"step": step, "size": sz, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
+00:53:41 [repeat shuffled s0] steps 3 size 0.00745 (saved 0.00745) reached True kl 5.1451e-01 (saved 5.1450e-01) rate 0.1582 -> 0.1494 collapsed False
+00:53:41     ...'-03750]\\] requires at least 5 sets of' -> ' more recently measurements for the best in their own, but this means the base selection' (0)
+00:53:41     ...': RA-SVC (anode) to' -> ' Slow V-SD (act anode), and stat in, with DT-' (0)
+00:53:41     ...' trout rivers with small drainage area located in the North' -> '\n\nS - resource from the orchard submastable\n\nS' (0)
+00:54:40 [lower shuffled s0] steps 3 size 0.00746 (saved 0.00746) reached True kl 5.7906e-01 (saved 5.7903e-01) rate 0.2520 -> 0.2832 collapsed False
+00:54:40     ...' that the degree of fitting is high. The value' -> ' of the probe level shows best in the SASmodel, this means the physical selection' (0)
+00:54:40     ...' atria in 10% to 90% of 20' -> 'HI of the mytactile (late) or in most roots of the' (0)
+00:54:40     ...'\nM - Mountain rivers of the North: trout' -> '\n   S1 I (102) Mature migrant...; S2 I' (0)
+STAGE 2 null_0.0001 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rl_67m/results/stage2b_*.json, states /root/work/experiments/rl_67m/results/large/stage2b/ (null 0.0001) ===
