@@ -1,0 +1,157 @@
+E221 start, tag pod0; 10 of 80 items ['c3/copy_s0', 'case_real_s0', 'twin_s0', 'e62/lookup_s1', 'e53/cipher_s0', 'e54/elicit_s4', 'c3/rank1_s0', 'c3/cipher_s2', 'c3/copy_s4', 'e58/cipher_s1']; settings {'levels': ('head_mlp', 'mlp_attn', 'block'), 'alpha': 0.9, 'alphas': (0.8, 0.9, 0.95), 'restricted_share': 0.5, 'orders': 3, 'order_seed': 0, 'polish_cap': 2000, 'split_seed': 186001, 'e196_pairs': (('copy24', 'cipher24'), ('ident32', 'rand32'), ('case_real', 'case_twin'), ('repeat_real', 'repeat_twin'), ('twin', 'fact')), 'e196_seeds': (0, 1), 'e196_as_e187': (('copy24', 'c3/copy'), ('cipher24', 'c3/cipher'), ('ident32', 'e46/ident32'), ('rand32', 'e46/rand32')), 'n_read': 512, 'read_seed': 195200, 'n_max': 100, 'held_share': 0.25, 'control_task': 'copy24', 'e195_layer': 1, 'e195_C': (486, 499, 613, 778, 1125, 2028, 2352, 2960), 'e195_factor': 10}; thresholds {'kl_floor': 1e-06, 'gate_tol': 0.001, 's_tol': 1e-06, 'repro_tol': 1e-05, 'kl_repro_rel': 0.0001, 'size_rel': 1e-06, 'rho_bar': 0.7, 'n_min': 5, 'control_rho': 0.999, 'thresholds_source': "kl_floor, gate_tol, s_tol: E214's filed values; size_rel: E205's filed value, the same function (E205 sizes) on the same saved delta-W; kl_repro_rel: E205's kl_FM and E208's kl for copy24_s0 (the same state and windows through two code paths) agree in all 16 printed digits (3.5314350866634263), while a wrong state or window set moves KL(F || M) by order 1, so 1e-4 relative separates the two by four orders either side; repro_tol: x10's R at block is 0.0245 under 1 (E214 items/x10_block.json) and fp32 forwards on another card move an fp64 grade by about 1e-7 (E214's s_tol note), so 1e-5 is a hundred times the rounding and over 2,000 times under x10's distance from 1; the rehearsal logs the measured difference; rho_bar 0.7: the cell (P1.36 done_when) and the audit's T4 ('a rank correlation of 0.7 or more'); n_min 5: under 5 pairs a perfect rank order happens by chance at least once in 24 (1/n!), at 5 once in 120; control_rho: the control compares this run's update sizes with E187's saved sizes of the same states by the same formula, so the ranks are identical and Spearman is 1; 0.999 admits nothing but a tie broken by rounding."}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+do_nothing: 512 windows, KL(F || F_empty) 3.13882, KL(F || M) 0, saved None, size None
+do_nothing head_mlp: 30 variables, 0 changed; gates {'all': 3.0924438760848716e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 23, R all 1.000000, read 1.000000, f 0.0000; 2030 evaluations, 24 s (polish cap hit)
+do_nothing head_mlp: R read [1.0], all [1.0], f [0.0], |K*| [23]; peak GPU memory 5.27 GB
+do_nothing mlp_attn: 10 variables, 0 changed; gates {'all': 3.0924438760848716e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+do_nothing mlp_attn: R read [1.0], all [1.0], f [0.0], |K*| [10]; peak GPU memory 5.27 GB
+do_nothing block: 6 variables, 0 changed; gates {'all': 3.0924438760848716e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+do_nothing block: R read [1.0], all [1.0], f [0.0], |K*| [6]; peak GPU memory 5.27 GB
+x10: 75 windows, KL(F || F_empty) 4.3833, KL(F || M) 0.713758349, saved None, size None
+x10 mlp_attn: 10 variables, 1 changed; gates {'all': 2.75458000942308e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 23 s
+x10 mlp_attn: R read [0.9831121256089537], all [0.9831121256089537], f [0.1], |K*| [10]; peak GPU memory 10.29 GB
+x10 block: 6 variables, 1 changed; gates {'all': 2.75458000942308e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+x10 block: R read [0.9754746197243152], all [0.9754746197243152], f [0.16666666666666666], |K*| [6]; peak GPU memory 10.29 GB
+stage 0: checks hold
+STAGE 0 DONE
+c3/copy_s0: 512 windows, KL(F || F_empty) 5.55503, KL(F || M) 3.53143509, saved 3.5314350866634263, size {'whole': 0.004852570396533616, 'mlp': 0.005244699450012635}
+c3/copy_s0 head_mlp: 30 variables, 28 changed; gates {'all': 2.3886993858468486e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 18, R all 0.994014, read 0.988959, f 0.8889; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 1: |K*| 18, R all 0.993970, read 0.987943, f 0.8889; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 2: |K*| 18, R all 0.993821, read 0.988367, f 0.8889; 2030 evaluations, 24 s (polish cap hit)
+c3/copy_s0 head_mlp: R read [0.988958731149078, 0.9879434551782258, 0.9883670961126614], all [0.9940138504141149, 0.9939698455264353, 0.9938207671370574], f [0.8888888888888888, 0.8888888888888888, 0.8888888888888888], |K*| [18, 18, 18]; peak GPU memory 10.29 GB
+c3/copy_s0 mlp_attn: 10 variables, 8 changed; gates {'all': 2.3886993858468486e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+c3/copy_s0 mlp_attn: R read [0.991257078430335], all [0.9955270068209514], f [0.7777777777777778], |K*| [9]; peak GPU memory 10.29 GB
+c3/copy_s0 block: 6 variables, 4 changed; gates {'all': 2.3886993858468486e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+c3/copy_s0 block: R read [0.9854922335635758], all [0.9937178458500733], f [0.6666666666666666], |K*| [6]; peak GPU memory 10.29 GB
+ITEM 1 of 10 DONE (c3/copy_s0)
+case_real_s0: 512 windows, KL(F || F_empty) 2.94652, KL(F || M) 8.30312964, saved 8.30312963937093, size {'whole': 0.007101841009271977, 'mlp': 0.007510620552309753}
+case_real_s0 head_mlp: 30 variables, 28 changed; gates {'all': 2.289277972522541e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 19, R all 0.991538, read 0.970342, f 0.8947; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 1: |K*| 19, R all 0.992558, read 0.973893, f 0.8947; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 2: |K*| 19, R all 0.992788, read 0.973398, f 0.8947; 1942 evaluations, 23 s
+case_real_s0 head_mlp: R read [0.9703420541161369, 0.9738931465610637, 0.9733976854069011], all [0.9915381835127497, 0.9925576712884002, 0.9927883628625347], f [0.8947368421052632, 0.8947368421052632, 0.8947368421052632], |K*| [19, 19, 19]; peak GPU memory 10.29 GB
+case_real_s0 mlp_attn: 10 variables, 8 changed; gates {'all': 2.289277972522541e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+case_real_s0 mlp_attn: R read [0.9672072527039304], all [0.9917420663418982], f [0.7777777777777778], |K*| [9]; peak GPU memory 10.29 GB
+case_real_s0 block: 6 variables, 4 changed; gates {'all': 2.289277972522541e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+case_real_s0 block: R read [0.9465033903639712], all [0.9879846787550455], f [0.6666666666666666], |K*| [6]; peak GPU memory 10.29 GB
+ITEM 2 of 10 DONE (case_real_s0)
+twin_s0: 512 windows, KL(F || F_empty) 2.14071, KL(F || M) 0.672748167, saved 0.6727481669623275, size {'whole': 0.009028220299891816, 'mlp': 0.009559889271810375}
+twin_s0 head_mlp: 30 variables, 30 changed; gates {'all': 2.31485773838358e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 24, R all 0.996927, read 0.992341, f 1.0000; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 1: |K*| 24, R all 0.996927, read 0.992341, f 1.0000; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 2: |K*| 24, R all 0.996258, read 0.991224, f 1.0000; 2030 evaluations, 24 s (polish cap hit)
+twin_s0 head_mlp: R read [0.9923406897355473, 0.9923406897355473, 0.9912244843807856], all [0.9969266525300036, 0.9969266525300036, 0.9962580491109531], f [1.0, 1.0, 1.0], |K*| [24, 24, 24]; peak GPU memory 10.29 GB
+twin_s0 mlp_attn: 10 variables, 10 changed; gates {'all': 2.31485773838358e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+twin_s0 mlp_attn: R read [0.988672997584872], all [0.9965777838610503], f [1.0], |K*| [10]; peak GPU memory 10.29 GB
+twin_s0 block: 6 variables, 6 changed; gates {'all': 2.31485773838358e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+twin_s0 block: R read [0.9813154333959809], all [0.995306719823878], f [1.0], |K*| [6]; peak GPU memory 10.29 GB
+ITEM 3 of 10 DONE (twin_s0)
+e62/lookup_s1: 512 windows, KL(F || F_empty) 4.71128, KL(F || M) 4.06522061, saved 4.065220606628444, size {'whole': 0.008554301611961877, 'mlp': 0.009171822532371171}
+e62/lookup_s1 head_mlp: 30 variables, 28 changed; gates {'all': 2.5573967832315248e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 20, R all 0.991213, read 0.974459, f 0.9000; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 1: |K*| 19, R all 0.990872, read 0.972781, f 0.8947; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 2: |K*| 20, R all 0.989931, read 0.972008, f 0.9000; 2030 evaluations, 24 s (polish cap hit)
+e62/lookup_s1 head_mlp: R read [0.974459265794833, 0.9727807387339751, 0.9720078326697038], all [0.9912131782389159, 0.9908722605194719, 0.9899307570242211], f [0.9, 0.8947368421052632, 0.9], |K*| [20, 19, 20]; peak GPU memory 10.29 GB
+e62/lookup_s1 mlp_attn: 10 variables, 8 changed; gates {'all': 2.5573967832315248e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+e62/lookup_s1 mlp_attn: R read [0.9678185126085133], all [0.9903235865756697], f [0.7777777777777778], |K*| [9]; peak GPU memory 10.29 GB
+e62/lookup_s1 block: 6 variables, 4 changed; gates {'all': 2.5573967832315248e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+e62/lookup_s1 block: R read [0.9513511930492516], all [0.9879657201036253], f [0.6666666666666666], |K*| [6]; peak GPU memory 10.29 GB
+ITEM 4 of 10 DONE (e62/lookup_s1)
+e53/cipher_s0: 512 windows, KL(F || F_empty) 3.87578, KL(F || M) 0.29126137, saved 0.291261370102873, size {'whole': 0.018634149302629858, 'mlp': 0.020291552337583972}
+e53/cipher_s0 head_mlp: 30 variables, 28 changed; gates {'all': 2.6376369532954413e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 21, R all 0.992398, read 0.992398, f 0.9048; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 1: |K*| 21, R all 0.992640, read 0.992490, f 0.9048; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 2: |K*| 21, R all 0.992241, read 0.992433, f 0.9048; 2030 evaluations, 24 s (polish cap hit)
+e53/cipher_s0 head_mlp: R read [0.9923975372234569, 0.9924897258058727, 0.992433051617323], all [0.9923982017614881, 0.9926395562560109, 0.9922409433447145], f [0.9047619047619048, 0.9047619047619048, 0.9047619047619048], |K*| [21, 21, 21]; peak GPU memory 10.29 GB
+e53/cipher_s0 mlp_attn: 10 variables, 8 changed; gates {'all': 2.6376369532954413e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+e53/cipher_s0 mlp_attn: R read [0.9918262556860642], all [0.9924245781256698], f [0.7777777777777778], |K*| [9]; peak GPU memory 10.29 GB
+e53/cipher_s0 block: 6 variables, 4 changed; gates {'all': 2.6376369532954413e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+e53/cipher_s0 block: R read [0.9904272805943869], all [0.9916679191100811], f [0.6666666666666666], |K*| [6]; peak GPU memory 10.29 GB
+ITEM 5 of 10 DONE (e53/cipher_s0)
+e54/elicit_s4: 512 windows, KL(F || F_empty) 5.38648, KL(F || M) 3.06246683, saved 3.0624668349468838, size {'whole': 0.004985965742949616, 'mlp': 0.005450092596212574}
+e54/elicit_s4 head_mlp: 30 variables, 28 changed; gates {'all': 3.0103242352197412e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 16, R all 0.995766, read 0.990953, f 0.8750; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 1: |K*| 16, R all 0.996207, read 0.991418, f 0.8750; 1734 evaluations, 20 s
+  head_mlp main order 2: |K*| 16, R all 0.996113, read 0.991710, f 0.8750; 2030 evaluations, 24 s (polish cap hit)
+e54/elicit_s4 head_mlp: R read [0.9909526100863513, 0.9914183128352013, 0.9917103291764271], all [0.9957660034796434, 0.9962073173570918, 0.9961125982108188], f [0.875, 0.875, 0.875], |K*| [16, 16, 16]; peak GPU memory 10.29 GB
+e54/elicit_s4 mlp_attn: 10 variables, 8 changed; gates {'all': 3.0103242352197412e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+e54/elicit_s4 mlp_attn: R read [0.9918360726000552], all [0.995992827753746], f [0.7777777777777778], |K*| [9]; peak GPU memory 10.29 GB
+e54/elicit_s4 block: 6 variables, 4 changed; gates {'all': 3.0103242352197412e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+e54/elicit_s4 block: R read [0.9854041786934319], all [0.9934581109878055], f [0.6666666666666666], |K*| [6]; peak GPU memory 10.29 GB
+ITEM 6 of 10 DONE (e54/elicit_s4)
+c3/rank1_s0: 512 windows, KL(F || F_empty) 4.43462, KL(F || M) 2.08221337, saved 2.0822133726429435, size {'whole': 0.0049894152744415455, 'mlp': 0.00545244176015344}
+c3/rank1_s0 head_mlp: 30 variables, 28 changed; gates {'all': 2.3681811853748513e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 17, R all 0.996245, read 0.992575, f 0.8824; 1815 evaluations, 22 s
+  head_mlp main order 1: |K*| 17, R all 0.996939, read 0.993394, f 0.8824; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 2: |K*| 18, R all 0.996542, read 0.992463, f 0.8889; 1884 evaluations, 22 s
+c3/rank1_s0 head_mlp: R read [0.9925751956062375, 0.9933938692166943, 0.9924629966704176], all [0.9962445237461371, 0.9969390739420146, 0.9965420549052028], f [0.8823529411764706, 0.8823529411764706, 0.8888888888888888], |K*| [17, 17, 18]; peak GPU memory 10.29 GB
+c3/rank1_s0 mlp_attn: 10 variables, 8 changed; gates {'all': 2.3681811853748513e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+c3/rank1_s0 mlp_attn: R read [0.9926648668210782], all [0.9960006940086797], f [0.7777777777777778], |K*| [9]; peak GPU memory 10.29 GB
+c3/rank1_s0 block: 6 variables, 4 changed; gates {'all': 2.3681811853748513e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+c3/rank1_s0 block: R read [0.9874557642977738], all [0.9945281951175469], f [0.6666666666666666], |K*| [6]; peak GPU memory 10.29 GB
+ITEM 7 of 10 DONE (c3/rank1_s0)
+c3/cipher_s2: 512 windows, KL(F || F_empty) 3.48262, KL(F || M) 3.61836184, saved 3.6183618378892914, size {'whole': 0.004859288644644749, 'mlp': 0.0053750323380259415}
+c3/cipher_s2 head_mlp: 30 variables, 28 changed; gates {'all': 5.400489953899523e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 22, R all 0.995363, read 0.991639, f 0.9091; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 1: |K*| 22, R all 0.995583, read 0.991931, f 0.9091; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 2: |K*| 22, R all 0.995457, read 0.991822, f 0.9091; 2030 evaluations, 24 s (polish cap hit)
+c3/cipher_s2 head_mlp: R read [0.9916390353634307, 0.9919309772855236, 0.9918219559638587], all [0.9953630488070505, 0.9955826863187794, 0.9954570564771317], f [0.9090909090909091, 0.9090909090909091, 0.9090909090909091], |K*| [22, 22, 22]; peak GPU memory 10.29 GB
+c3/cipher_s2 mlp_attn: 10 variables, 8 changed; gates {'all': 5.400489953899523e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+c3/cipher_s2 mlp_attn: R read [0.9909628346705998], all [0.9942300109042306], f [0.7777777777777778], |K*| [9]; peak GPU memory 10.29 GB
+c3/cipher_s2 block: 6 variables, 4 changed; gates {'all': 5.400489953899523e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+c3/cipher_s2 block: R read [0.9831229685801901], all [0.990188147168454], f [0.6666666666666666], |K*| [6]; peak GPU memory 10.29 GB
+ITEM 8 of 10 DONE (c3/cipher_s2)
+c3/copy_s4: 512 windows, KL(F || F_empty) 5.77688, KL(F || M) 3.82443064, saved 3.8244306357122477, size {'whole': 0.00483045408421497, 'mlp': 0.005237876102520718}
+c3/copy_s4 head_mlp: 30 variables, 28 changed; gates {'all': 2.815194420691114e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 18, R all 0.993072, read 0.987819, f 0.8889; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 1: |K*| 17, R all 0.993287, read 0.987030, f 0.8824; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 2: |K*| 18, R all 0.993374, read 0.988527, f 0.8889; 2030 evaluations, 24 s (polish cap hit)
+c3/copy_s4 head_mlp: R read [0.9878191657926558, 0.9870302562023184, 0.9885266204218038], all [0.9930721175443336, 0.9932874444080907, 0.9933743194238396], f [0.8888888888888888, 0.8823529411764706, 0.8888888888888888], |K*| [18, 17, 18]; peak GPU memory 10.29 GB
+c3/copy_s4 mlp_attn: 10 variables, 8 changed; gates {'all': 2.815194420691114e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+c3/copy_s4 mlp_attn: R read [0.9906588078427545], all [0.9952566725796795], f [0.7777777777777778], |K*| [9]; peak GPU memory 10.29 GB
+c3/copy_s4 block: 6 variables, 4 changed; gates {'all': 2.815194420691114e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+c3/copy_s4 block: R read [0.984648659811862], all [0.9932978590109475], f [0.6666666666666666], |K*| [6]; peak GPU memory 10.29 GB
+ITEM 9 of 10 DONE (c3/copy_s4)
+e58/cipher_s1: 512 windows, KL(F || F_empty) 5.49605, KL(F || M) 5.32303324, saved 5.323033244705808, size {'whole': 0.009741196337954757, 'mlp': 0.010844098520114493}
+e58/cipher_s1 head_mlp: 30 variables, 28 changed; gates {'all': 2.7339733605913352e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 20, R all 0.987569, read 0.978745, f 0.9000; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 1: |K*| 20, R all 0.987750, read 0.978432, f 0.9000; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 2: |K*| 20, R all 0.989243, read 0.980416, f 0.9000; 2030 evaluations, 24 s (polish cap hit)
+e58/cipher_s1 head_mlp: R read [0.9787450788749427, 0.9784320266997095, 0.9804162567721016], all [0.9875691463407754, 0.9877503291723357, 0.989243331549185], f [0.9, 0.9, 0.9], |K*| [20, 20, 20]; peak GPU memory 10.29 GB
+e58/cipher_s1 mlp_attn: 10 variables, 8 changed; gates {'all': 2.7339733605913352e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+e58/cipher_s1 mlp_attn: R read [0.9793001525105952], all [0.9875568407466994], f [0.7777777777777778], |K*| [9]; peak GPU memory 10.29 GB
+e58/cipher_s1 block: 6 variables, 4 changed; gates {'all': 2.7339733605913352e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+e58/cipher_s1 block: R read [0.9656282775759464], all [0.9821115857699064], f [0.6666666666666666], |K*| [6]; peak GPU memory 10.29 GB
+ITEM 10 of 10 DONE (e58/cipher_s1)
+E221 DONE
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/kstar_pairs/results/ (pod0) ===

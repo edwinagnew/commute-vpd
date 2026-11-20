@@ -1,0 +1,63 @@
+E221 start, tag rehearse; 2 of 80 items ['twin_s0', 'e58/cipher_s0']; settings {'levels': ('head_mlp', 'mlp_attn', 'block'), 'alpha': 0.9, 'alphas': (0.8, 0.9, 0.95), 'restricted_share': 0.5, 'orders': 3, 'order_seed': 0, 'polish_cap': 2000, 'split_seed': 186001, 'e196_pairs': (('copy24', 'cipher24'), ('ident32', 'rand32'), ('case_real', 'case_twin'), ('repeat_real', 'repeat_twin'), ('twin', 'fact')), 'e196_seeds': (0, 1), 'e196_as_e187': (('copy24', 'c3/copy'), ('cipher24', 'c3/cipher'), ('ident32', 'e46/ident32'), ('rand32', 'e46/rand32')), 'n_read': 512, 'read_seed': 195200, 'n_max': 100, 'held_share': 0.25, 'control_task': 'copy24', 'e195_layer': 1, 'e195_C': (486, 499, 613, 778, 1125, 2028, 2352, 2960), 'e195_factor': 10}; thresholds {'kl_floor': 1e-06, 'gate_tol': 0.001, 's_tol': 1e-06, 'repro_tol': 1e-05, 'kl_repro_rel': 0.0001, 'size_rel': 1e-06, 'rho_bar': 0.7, 'n_min': 5, 'control_rho': 0.999, 'thresholds_source': "kl_floor, gate_tol, s_tol: E214's filed values; size_rel: E205's filed value, the same function (E205 sizes) on the same saved delta-W; kl_repro_rel: E205's kl_FM and E208's kl for copy24_s0 (the same state and windows through two code paths) agree in all 16 printed digits (3.5314350866634263), while a wrong state or window set moves KL(F || M) by order 1, so 1e-4 relative separates the two by four orders either side; repro_tol: x10's R at block is 0.0245 under 1 (E214 items/x10_block.json) and fp32 forwards on another card move an fp64 grade by about 1e-7 (E214's s_tol note), so 1e-5 is a hundred times the rounding and over 2,000 times under x10's distance from 1; the rehearsal logs the measured difference; rho_bar 0.7: the cell (P1.36 done_when) and the audit's T4 ('a rank correlation of 0.7 or more'); n_min 5: under 5 pairs a perfect rank order happens by chance at least once in 24 (1/n!), at 5 once in 120; control_rho: the control compares this run's update sizes with E187's saved sizes of the same states by the same formula, so the ranks are identical and Spearman is 1; 0.999 admits nothing but a tie broken by rounding."}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+do_nothing: 512 windows, KL(F || F_empty) 3.13882, KL(F || M) 0, saved None, size None
+do_nothing head_mlp: 30 variables, 0 changed; gates {'all': 2.8352476419968298e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 23, R all 1.000000, read 1.000000, f 0.0000; 2030 evaluations, 45 s (polish cap hit)
+do_nothing head_mlp: R read [1.0], all [1.0], f [0.0], |K*| [23]; peak GPU memory 5.25 GB
+do_nothing mlp_attn: 10 variables, 0 changed; gates {'all': 2.8352476419968298e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 22 s
+do_nothing mlp_attn: R read [1.0], all [1.0], f [0.0], |K*| [10]; peak GPU memory 5.25 GB
+do_nothing block: 6 variables, 0 changed; gates {'all': 2.8352476419968298e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+do_nothing block: R read [1.0], all [1.0], f [0.0], |K*| [6]; peak GPU memory 5.25 GB
+x10: 75 windows, KL(F || F_empty) 4.3833, KL(F || M) 0.71375852, saved None, size None
+x10 mlp_attn: 10 variables, 1 changed; gates {'all': 4.023986093670828e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 61 s
+x10 mlp_attn: R read [0.9831121247825347], all [0.9831121247825347], f [0.1], |K*| [10]; peak GPU memory 10.27 GB
+x10 block: 6 variables, 1 changed; gates {'all': 4.023986093670828e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 4 s
+x10 block: R read [0.9754746178991063], all [0.9754746178991063], f [0.16666666666666666], |K*| [6]; peak GPU memory 10.27 GB
+stage 0: checks hold
+STAGE 0 DONE
+twin_s0: 512 windows, KL(F || F_empty) 2.14071, KL(F || M) 0.67274818, saved 0.6727481669623275, size {'whole': 0.009028220299891816, 'mlp': 0.009559889271810375}
+twin_s0 head_mlp: 30 variables, 30 changed; gates {'all': 2.9219054340501316e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 24, R all 0.996927, read 0.992341, f 1.0000; 2030 evaluations, 46 s (polish cap hit)
+  head_mlp main order 1: |K*| 24, R all 0.996927, read 0.992341, f 1.0000; 2030 evaluations, 47 s (polish cap hit)
+  head_mlp main order 2: |K*| 24, R all 0.996258, read 0.991224, f 1.0000; 2030 evaluations, 47 s (polish cap hit)
+twin_s0 head_mlp: R read [0.9923406898104461, 0.9923406898104461, 0.9912244846087216], all [0.9969266524962688, 0.9969266524962688, 0.9962580490972622], f [1.0, 1.0, 1.0], |K*| [24, 24, 24]; peak GPU memory 10.27 GB
+twin_s0 mlp_attn: 10 variables, 10 changed; gates {'all': 2.9219054340501316e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 23 s
+twin_s0 mlp_attn: R read [0.9886729977698352], all [0.9965777838150874], f [1.0], |K*| [10]; peak GPU memory 10.27 GB
+twin_s0 block: 6 variables, 6 changed; gates {'all': 2.9219054340501316e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+twin_s0 block: R read [0.9813154337678601], all [0.9953067197391473], f [1.0], |K*| [6]; peak GPU memory 10.27 GB
+ITEM 1 of 2 DONE (twin_s0)
+e58/cipher_s0: 512 windows, KL(F || F_empty) 5.06971, KL(F || M) 4.6463127, saved 5.23929458775517, size {'whole': 0.009719747528941445, 'mlp': 0.01081871788145289}
+STOP: e58/cipher_s0: load check missed: KL(F || M) 4.6463127, E205's 5.23929459
+peak host RSS 6.1 GB
+E221 start, tag rehearse; 2 of 80 items ['twin_s0', 'e58/cipher_s0']; settings {'levels': ('head_mlp', 'mlp_attn', 'block'), 'alpha': 0.9, 'alphas': (0.8, 0.9, 0.95), 'restricted_share': 0.5, 'orders': 3, 'order_seed': 0, 'polish_cap': 2000, 'split_seed': 186001, 'e196_pairs': (('copy24', 'cipher24'), ('ident32', 'rand32'), ('case_real', 'case_twin'), ('repeat_real', 'repeat_twin'), ('twin', 'fact')), 'e196_seeds': (0, 1), 'e196_as_e187': (('copy24', 'c3/copy'), ('cipher24', 'c3/cipher'), ('ident32', 'e46/ident32'), ('rand32', 'e46/rand32')), 'n_read': 512, 'read_seed': 195200, 'n_max': 100, 'held_share': 0.25, 'control_task': 'copy24', 'e195_layer': 1, 'e195_C': (486, 499, 613, 778, 1125, 2028, 2352, 2960), 'e195_factor': 10}; thresholds {'kl_floor': 1e-06, 'gate_tol': 0.001, 's_tol': 1e-06, 'repro_tol': 1e-05, 'kl_repro_rel': 0.0001, 'size_rel': 1e-06, 'rho_bar': 0.7, 'n_min': 5, 'control_rho': 0.999, 'thresholds_source': "kl_floor, gate_tol, s_tol: E214's filed values; size_rel: E205's filed value, the same function (E205 sizes) on the same saved delta-W; kl_repro_rel: E205's kl_FM and E208's kl for copy24_s0 (the same state and windows through two code paths) agree in all 16 printed digits (3.5314350866634263), while a wrong state or window set moves KL(F || M) by order 1, so 1e-4 relative separates the two by four orders either side; repro_tol: x10's R at block is 0.0245 under 1 (E214 items/x10_block.json) and fp32 forwards on another card move an fp64 grade by about 1e-7 (E214's s_tol note), so 1e-5 is a hundred times the rounding and over 2,000 times under x10's distance from 1; the rehearsal logs the measured difference; rho_bar 0.7: the cell (P1.36 done_when) and the audit's T4 ('a rank correlation of 0.7 or more'); n_min 5: under 5 pairs a perfect rank order happens by chance at least once in 24 (1/n!), at 5 once in 120; control_rho: the control compares this run's update sizes with E187's saved sizes of the same states by the same formula, so the ranks are identical and Spearman is 1; 0.999 admits nothing but a tie broken by rounding."}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+stage0_rehearse.json: done before
+twin_s0: ['head_mlp', 'mlp_attn', 'block'] done before, skipped
+ITEM 1 of 2 DONE (twin_s0)
+e58/cipher_s0: 512 windows, KL(F || F_empty) 5.43152, KL(F || M) 5.23929454, saved 5.23929458775517, size {'whole': 0.009719747528941445, 'mlp': 0.01081871788145289}
+e58/cipher_s0 head_mlp: 30 variables, 28 changed; gates {'all': 9.290232810599264e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 21, R all 0.988741, read 0.980054, f 0.9048; 2030 evaluations, 44 s (polish cap hit)
+  head_mlp main order 1: |K*| 22, R all 0.983069, read 0.973686, f 0.9091; 2030 evaluations, 46 s (polish cap hit)
+  head_mlp main order 2: |K*| 20, R all 0.987131, read 0.976900, f 0.9000; 2030 evaluations, 46 s (polish cap hit)
+e58/cipher_s0 head_mlp: R read [0.9800536544673993, 0.97368620922966, 0.9768998560905059], all [0.988741012861632, 0.983068680544385, 0.9871308382430153], f [0.9047619047619048, 0.9090909090909091, 0.9], |K*| [21, 22, 20]; peak GPU memory 5.25 GB
+e58/cipher_s0 mlp_attn: 10 variables, 8 changed; gates {'all': 9.290232810599264e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 23 s
+e58/cipher_s0 mlp_attn: R read [0.9800626619809218], all [0.9881602373912377], f [0.7777777777777778], |K*| [9]; peak GPU memory 5.25 GB
+e58/cipher_s0 block: 6 variables, 4 changed; gates {'all': 9.290232810599264e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+e58/cipher_s0 block: R read [0.9668925358610996], all [0.9827326668634832], f [0.6666666666666666], |K*| [6]; peak GPU memory 5.25 GB
+ITEM 2 of 2 DONE (e58/cipher_s0)
+E221 DONE
+peak host RSS 6.1 GB
