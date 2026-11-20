@@ -13,7 +13,7 @@ Stage 1 items get three searches (all of D, and its two halves for the band); ev
 results/items/<item>.json is written when it ends (with the split's norm shares per matrix and in total), and
 results/large/<out>_<item>.npz holds the per-variable arrays (user amendment 2026-11-20): s (2 x n, fp32; row 0 every
 position, row 1 the read positions), changed (bool), and per search <search>_in_K_polished, <search>_in_K_prefix (bool)
-and <search>_attribution (rankings x n, fp32), with site_names and site_off for the variable layout (embedding 0, each
+and <search>_attribution (rankings x n, fp32, signed; COLUMNS says what each array is), with site_names and site_off for the variable layout (embedding 0, each
 site's subcomponents from site_off then its remainder, the grafts, the unembedding last). A rerun skips an item whose
 JSON exists. Stage 0 runs first and alone on every shard (results/stage0_<tag>.json, skipped once done;
 exit 1 on a miss). Every guard of predictions.json R0 stops the job on a miss.
@@ -45,6 +45,13 @@ KL: Any = load_experiment("kstar_levels", "run")  # E214: World (do_nothing, the
 KP: Any = load_experiment("kstar_pairs", "run")  # E221: World (E187's states), load_config, pairs, load_checks, fname
 HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"
+COLUMNS = (  # what each saved per-variable array is (user, 2026-11-20): the behaviour weights are an attribution only
+    "s: exact grade cos^2 per variable, row 0 every position, row 1 read positions",
+    ("<search>_attribution: APPROXIMATE behaviour weight, signed gradient d KL(F||F_c)/d c_u (KL at the read position, not "
+    "log-odds), ranking 0 at c = 1/2, later rankings at the best prefix; the search orders by its absolute value"),
+    "no exact single-variable ablation drop is saved: the search never ablates one variable alone in the full fine-tune",
+    "<search>_in_K_polished, <search>_in_K_prefix: exact K membership; changed: exact weight-changed flag",
+)
 PRED = RESULTS / "predictions.json"
 EXPERIMENT = json.loads(PRED.read_text())["experiment"]
 log, dump, stop = KL.log, KL.dump, KL.stop
@@ -185,7 +192,7 @@ def read_item(w: World, item: str, cfg: Config, th: dict[str, Any], out: Path) -
     arrays: dict[str, Any] = {f"{k}_{name}": v for k, (_, a) in done.items() for name, v in a.items()}
     (RESULTS / "large").mkdir(parents=True, exist_ok=True)
     np.savez_compressed(RESULTS / "large" / f"{out.name}_{KP.fname(item)}.npz", s=s.float().numpy(), changed=membership(sorted(feat.changed), feat.n),
-                        site_names=np.array([x.name for x in feat.sites]), site_off=np.array([x.off for x in feat.sites]), **arrays)  # fmt: skip
+                        site_names=np.array([x.name for x in feat.sites]), site_off=np.array([x.off for x in feat.sites]), columns=np.array(COLUMNS), **arrays)  # fmt: skip
     res = base | {"reading": "read", "searches": searches, "seconds": time.time() - t0, "peak_gpu_gb": torch.cuda.max_memory_allocated() / 2**30}
     dump(path, res)
     log(f"{item}: done in {res['seconds']:.0f} s; peak GPU memory {res['peak_gpu_gb']:.2f} GB")

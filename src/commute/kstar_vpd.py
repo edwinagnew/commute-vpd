@@ -263,13 +263,13 @@ def kl_mean(ctx: Ctx, keep: Tensor) -> float:
 
 
 def attribution(ctx: Ctx, c0: Tensor) -> Tensor:
-    """|d sum KL(F || F_c) / d c_u| at the keep vector c0 for every variable (CPU)."""
+    """d sum KL(F || F_c) / d c_u at the keep vector c0 for every variable, signed (CPU); the search orders by its size."""
     c = c0.to(ctx.toks[0].device, torch.float32).clone().requires_grad_(True)
     with torch.enable_grad():
         for t, lf in zip(ctx.toks, ctx.lF, strict=True):
             R.kl(lf, ctx.hy.logits(t, c)).sum().backward()
     assert c.grad is not None
-    return c.grad.abs().cpu()
+    return c.grad.cpu()
 
 
 @torch.no_grad()
@@ -366,7 +366,7 @@ def search(ev: Callable[[Tensor], float], grad: Callable[[Tensor], Tensor], n: i
     best, sizes, g = None, [], grad(torch.full((n,), 0.5))
     gs = [g]
     for r in range(reranks + 1):
-        order, lo, hi = g.argsort(descending=True), 0, n
+        order, lo, hi = g.abs().argsort(descending=True), 0, n
         while hi - lo > 1 and evals < cap:
             mid = (lo + hi) // 2
             lo, hi = (lo, mid) if ok(prefix(order, mid)) else (mid, hi)
@@ -378,7 +378,7 @@ def search(ev: Callable[[Tensor], float], grad: Callable[[Tensor], Tensor], n: i
             gs.append(g)
     assert best is not None
     members = best.nonzero().squeeze(1)
-    drop = members[g[members].argsort()].tolist()  # least attributed first
+    drop = members[g[members].abs().argsort()].tolist()  # least attributed first
     keep, i, start = best.clone(), 0, max(1, len(drop) // chunk_div)
     c = cmin = start
     while i < len(drop) and evals < cap:
