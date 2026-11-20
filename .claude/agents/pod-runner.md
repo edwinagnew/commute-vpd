@@ -41,6 +41,13 @@ Every `sbatch`, GPU `srun` and `start()` must name the experiment number from yo
 A pod label is `[A-Za-z0-9_-]` only, at most 64 characters: `commute-E186-b`, `commute-E178-stage-N_s0`,
 `commute-E160-rerun-why`. The canonical pod lines (label, set-up, disk, downloads, waits, placement) are in
 `~/commute-agents/fleet/roles/shell-notes.md` → Pods; read them before `start()`.
+A pod for a plain, `stage` or `rerun` run is refused until its number has a $0 rehearsal on record
+(`shell-notes-reference.md` → Pods → Rehearsal first). On that refusal, stop and report it to the lead: never relabel
+the pod as a rehearsal or add `norehearse` yourself. When your brief says `Run: rehearsal`, label it
+`commute-E###-rehearse-what` (or `--comment='E### rehearse: what'` on the cluster), run every read at its full size,
+measure the noise floor of the reading the bar is on, the time per item and the peak memory (GPU and CPU), then record
+them: `~/commute-agents/fleet/rehearsed ROLE E### --id <job or pod> 'noise floor .., .. s/item, peak memory .. GB, at
+full read sizes'`, and put the same line in your report.
 
 The user wants results as soon as possible; compute is cheap next to waiting (2026-11-11: "i have lots of credits
 available and not much time"). Pick the platform that gets the results home first, counting set-up, transfers and
