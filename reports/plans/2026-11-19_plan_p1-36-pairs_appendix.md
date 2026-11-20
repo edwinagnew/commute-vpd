@@ -20,7 +20,9 @@ Fourteen pairs, each (reuse side, new side), from `run.py` `pairs()`:
 
 **D.** E196's subset (512 windows, `read_seed` 195200) of the task's read half as `commute.old_tasks` builds it, through
 E196's `Data.read_half` (E196 members) or E205's `Data.halves` (E187 states): 8-token windows, KL at the last
-position. The do-nothing uses copy24's windows; x10 uses copy24's held-out windows at every position, as E214 did.
+position. E58's 96-key tables use their `_trained` windows file alone, as E205 read them (`run.py` `e187_task`): the
+rehearsal (job 61952) stopped on e58/cipher_s0 built with both files (KL(F ‖ M) 4.6463 against E205's 5.2393); with
+the trained file alone all 12 e58 states repeat E205's KL within 9e-8 relative (CPU check, 2026-11-19). The do-nothing uses copy24's windows; x10 uses copy24's held-out windows at every position, as E214 did.
 
 ## 2. Per-pod split (`--shard k 8`)
 
@@ -40,8 +42,8 @@ Each shard also needs every windows file and committed JSON in `experiments/ksta
 ## 3. Inputs
 
 `experiments/kstar_pairs/inputs.txt`: every file `run.py` opens, from its loads and the builders it calls (CPU
-listing, no model loaded), with sizes: 190 files, 8,407 MB. 103 are under a `results/large/` (8,230 MB: 80 states of
-57-268 MB and 23 windows or task files under 8 MB), 84 committed JSONs (under 0.01 MB each), and three Pile row files
+listing, no model loaded), with sizes: 186 files, 8,404 MB. 99 are under a `results/large/` (80 states of 57-268 MB
+and 19 windows or task files under 8 MB), 84 committed JSONs (under 0.01 MB each), and three Pile row files
 under `artifacts/sets/` (176 MB). Not listed: the model (`artifacts/vpd`, 3.0 GB, the W&B fetch as E196, E208 and E214
 ran it) and the tokenizer, which those runs' set-up provides. All of it at 10 MB/s is about 14 min; one shard's
 states plus the shared files about 1.4 GB, 2.3 min.
