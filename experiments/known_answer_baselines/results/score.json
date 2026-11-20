@@ -1,0 +1,127 @@
+{
+ "experiment": "E227",
+ "methods": {
+  "share": {
+   "band": {
+    "band": 0.03611991187396191,
+    "source": "largest split-half gap over the items",
+    "gaps": [
+     0.03611991187396191,
+     0.016213755395639795
+    ]
+   },
+   "P1": {
+    "verdict": "not read",
+    "unreadable": [
+     "x2",
+     "x10",
+     "moved",
+     "rebuilt"
+    ],
+    "values": {
+     "x2": "nan",
+     "x10": "nan",
+     "moved": "nan",
+     "rebuilt": "nan",
+     "new_few": 0.3656479050522193,
+     "new_thin": 0.3773602040628903
+    }
+   },
+   "P1b": {
+    "verdict": "not read",
+    "unreadable": [
+     "x2",
+     "x10",
+     "rebuilt"
+    ],
+    "values": {
+     "x2": "nan",
+     "x10": "nan",
+     "rebuilt": "nan",
+     "new_few": 0.3656479050522193,
+     "new_thin": 0.3773602040628903
+    }
+   }
+  },
+  "k_half": {
+   "band": {
+    "band": 1.0,
+    "source": "band_min (no finite non-zero split-half gap)",
+    "gaps": []
+   },
+   "P1": {
+    "verdict": "not read",
+    "unreadable": [
+     "x2",
+     "x10",
+     "moved",
+     "rebuilt",
+     "new_few",
+     "new_thin"
+    ],
+    "values": {
+     "x2": "nan",
+     "x10": "nan",
+     "moved": "nan",
+     "rebuilt": "nan",
+     "new_few": "nan",
+     "new_thin": "nan"
+    }
+   },
+   "P1b": {
+    "verdict": "not read",
+    "unreadable": [
+     "x2",
+     "x10",
+     "rebuilt",
+     "new_few",
+     "new_thin"
+    ],
+    "values": {
+     "x2": "nan",
+     "x10": "nan",
+     "rebuilt": "nan",
+     "new_few": "nan",
+     "new_thin": "nan"
+    }
+   }
+  },
+  "erank": {
+   "band": {
+    "band": 0.0,
+    "source": "exact: erank is a function of the weight change alone, no rows"
+   },
+   "P1": {
+    "verdict": "not read",
+    "unreadable": [
+     "moved"
+    ],
+    "values": {
+     "x2": 6.197575392321317,
+     "x10": 6.1975754109476515,
+     "moved": "nan",
+     "rebuilt": 604.4801184215061,
+     "new_few": 7.978345900222138,
+     "new_thin": 7.8713367282909665
+    }
+   },
+   "P1b": {
+    "verdict": "fail",
+    "gap": -1.7807705079008205,
+    "band": 0.0,
+    "reversed_gap": -596.6087816932151,
+    "values": {
+     "x2": 6.197575392321317,
+     "x10": 6.1975754109476515,
+     "rebuilt": 604.4801184215061,
+     "new_few": 7.978345900222138,
+     "new_thin": 7.8713367282909665
+    }
+   }
+  }
+ },
+ "passing": {
+  "P1": [],
+  "P1b": []
+ }
+}
