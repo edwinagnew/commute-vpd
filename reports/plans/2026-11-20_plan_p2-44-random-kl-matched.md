@@ -1,70 +1,88 @@
-# E228 (cell P2.44): the re-gating share on random changes of a fine-tune's output size
+# E228 (cell P2.44, widened): the share in Qwen's KL form and in log-odds, on every built pair, twin and random change
 
 The project's goal is a working definition of reuse and, on the 67M, a comparison of the re-gating share and simple
-baselines against it (plan 2026-11-09, part 2). On Qwen the share read random weight changes, scaled to a fine-tune's
-KL, the same as the fine-tunes (P3.8, E170/E174: 0.992-1.009 against 0.990-0.9998), so there it is not evidence of
-reuse. This run asks whether the 67M share has the same failure. It fills cell P2.44 (1 run, user 2026-11-20, "yes to
-checks 1 and 3"). Card `experiments/random_kl_share/card.md`; rules `results/predictions.json`.
+baselines against it (plan 2026-11-09, part 2). On Qwen the share, in E57's KL form, read random weight changes scaled
+to a fine-tune's KL the same as the fine-tunes (P3.8: 0.992-1.009 against 0.990-0.9998). The user widened this cell
+(task file 2026-11-20 12:24: "P2.44 widened: nine pairs and four twins in the Qwen KL form beside the log-odds form,
+random changes matched on output change, one structured control. This morning's checks 1 and 3 fold into it"; pods).
+The lead made the KL form the primary reading (2026-11-20, before any job). Card `experiments/random_kl_share/card.md`
+(recarded); rules `results/predictions.json`.
 
 ## What runs
-Debug L40 jobs (`cluster/random_kl_share.sbatch`), forward passes only. Four saved fine-tunes of the nine built pairs,
-spanning their sizes and both sides (E136 inventory; |dW|^2 from E141): c3/copy_s0 (reuse, 0.46, share 0.846),
-c3/cipher_s0 (new, 0.52, 0.236), e62/lookup_s0 (new, 1.40, 0.415), e53/lowercase_s0 (reuse, 6.25, 0.752), each on its
-E136 read rows (75, 75, 200, 500). Per fine-tune and site, five Gaussian directions with its per-matrix norms
-(`finetune.random_direction`), each scaled by `perturb.match` (E46 Amendment 1: c in (0, 100], within 10%) so that
-KL(W0 + c R || W0) equals the fine-tune's, then the share (`realistic_reads.share_of`, GOALS r) read on it. Sites:
-**all**, every position up to the read position (the output change on the read rows, per position as Qwen's size);
-**read**, the read position alone (the size the share's gain sees). Jobs: ctl first and alone, then one per fine-tune.
+- **Items:** the 88 saved fine-tunes of E187's nine built pairs and the scorecard's four shuffled-label twins
+  (e58_elicit_shuffle, e58_class_twin, e123_case_label, e125_repeat_label). These four are the paper scorecard's twin
+  panel, and all their states are saved. Each fine-tune is read on its own E136/E147 read rows, fed whole as their
+  source fed them (Gamma is bidirectional over the row).
+- **Changes per fine-tune:** the fine-tune itself, on all rows and on two halves. Three Gaussian directions at its
+  per-matrix norms, each scaled (E46's `perturb.match`, c ≤ 100, within 10%) so that KL(W0 + c R ‖ W0) matches the
+  fine-tune's. The KL is the mean per row and position over every position up to the read position.
+- **Structured control:** a Gaussian change of h.3.mlp.down_proj alone, at the fine-tune's total norm, with its part
+  outside the alive span removed, scaled to the same KL. That matrix is the last decomposed one, so Gamma's gates cannot
+  move and the re-gating numerator is exactly 0, while the split expresses the change. The KL-form share therefore
+  reads 0 by construction: the one change of matched size that the rule must call "low".
+- **Readings (one pass, `masked_reads.route_cells_by`):**
+  - The KL-form share (primary): (K00 − K01)/(K00 − K11), E57's cells on the 67M, with K10 and K11 on the components
+    carrying the change's least-squares split onto round 1's alive subcomponents. It is nan when K00 − K11 ≤ 0.
+  - r (secondary): GOALS r at the read position, nan under a gain of 1.
 
 ## Numbers and what each should read
-| number | do-nothing (zero change) | control (the fine-tunes themselves) | random draws |
-|---|---|---|---|
-| share numerator, gain, KL both sites | exactly 0 | gain 1.6-13 (E136) | gain under 1 on most draws at site all (E211 Gaussians at most 0.075, E46 KL-matched -0.20 to +0.49) |
-| share | nan | E136's saved share ± 0.01 | site all mostly not scored; site read some scored, 0.0-0.3 (low confidence) |
-| band | — | largest split-half gap, ~0.01-0.06 | — |
+| number | do-nothing (zero change) | fine-tunes | random draws | structured control |
+|---|---|---|---|---|
+| K00−K0, K01−K0, K10−K00, K11−K01, KL, r's numerator and gain | exactly 0 | — | — | K01 − K00 = 0 (stop if not) |
+| r | nan | saved share ± 0.01 (stop if not) | mostly nan (gain under 1; E211, E46) | 0 or nan |
+| KL-form share | nan | finite, 0.3-1.0, no 67M prior | finite; lean: near the fine-tunes' (as Qwen) | 0 |
 
-Filed rules. Per fine-tune and site: **refused** if fewer than 3 of 5 draws are matched and scored (gain at least 1);
-else **low** if every scored draw's share is below the fine-tune's own share minus the band (strict); else **reaches**.
-**P1** (site all) and **P2** (site read): "rival b: reaches" if any fine-tune reaches; else "rival a: low" if any reads
-low; else "silent: refused". "Low" is anchored to the measured fine-tune share and band from the same job's first stage;
-the do-nothing reads gain 0 and so would read "refused", which is why "refused" is reported as silent, never as a pass.
-Edge cases run against the rule (dry run): empty pool and all-unscored give refused, a tie at own - band reaches, an
-unmatched draw is not scored, a zero change reads refused.
+**Filed rules.**
+- **Band:** per reading, the root mean square over all fine-tunes of their split-half gaps, measured in the same job.
+- **Per fine-tune:** "refused" if fewer than 2 of 3 draws are matched and readable. Otherwise "low" if every draw is
+  below its own share minus the band (strict), else "reaches".
+- **K1 (primary, KL form):** "rival a: low" if no fine-tune reaches; "rival b: reaches" if more than half do;
+  otherwise "mixed: n of m"; "silent" if all are refused. **P1:** the same on r.
+- **Control check:** the structured control reads "low" on every fine-tune where it matched, else "miss". It is
+  reported before K1.
+- **Pairs (descriptive):** E51's pair rule on the fine-tunes' own readings, in both forms.
 
-**Blind to.** The share sees only a rise of the trained answer of at least 1 log-odds at one position; the KL match
-fixes the size of the output change but not its direction.
+Edge cases run in the CPU dry run: empty and all-unreadable pools give refused; a tie at own − band reaches; an
+unmatched draw is not readable; a zero change reads refused; a nan pair reads "not read".
+
+**Blind to.** KL form: what the change does to the trained answer; a change mostly outside the alive span sits near 1.
+r: anything gaining under 1 log-odds. The KL match fixes size, not direction.
 
 ## Design check
-- **Goal:** whether the 67M share is evidence of reuse at all (part 2's premise for reporting it).
-- **Nearest tried:** E46 P0.3 and Amendments 1-3 (KL-matched Gaussians on E18/E12 fine-tunes, read through g and the
-  stand-in ratio, not the share; gains -0.20 to +0.49), E211's norm-matched Gaussians (gain at most 0.075, share nan),
-  E161 (one norm-matched Gaussian, unreadable). New: the share itself, KL-matched at Qwen's size and at the read
-  position, several draws with a spread, on four of the nine pairs' fine-tunes.
-- **Patch or step:** a premise check (the Qwen failure), not a patch.
-- **Decisions relied on:** gain floor 1 (MIN_GAIN); E46's match recipe. No departure.
-- **Adopted definition unchanged:** yes; nothing is added to the share.
-- **What changes what we do:** rival b means the 67M share is reported with this null beside it in part 2; "silent"
-  means the 67M control cannot fail the share this way, and the paper says why (the gain floor).
-- **Control first:** the ctl job, alone: zero change exactly 0; each fine-tune reproduces E136's share; it also measures
-  the band and the KL targets the draws use.
-- **Early guards:** each draw first reads the unscaled direction's KL (finite, positive, else exit 1) and logs its
-  match grid; each draw is written as it ends.
-- **Saved:** ctl.json, draws_<state>.json (every draw's c, KL at both sites, gain, numerator, share), score.json.
+- **Goal:** whether the 67M share is evidence of reuse (part 2's premise), in the form that failed on Qwen.
+- **Nearest tried:** P3.8 (E170/E174, Qwen KL form, random reads as real). E46 P0.3 and Amendments (67M KL-matched
+  Gaussians, read through g, not a share). E211 and E161 (norm-matched Gaussians, r nan).
+- **New here:** the KL form on the 67M, on all built pairs and twins, with matched random draws and a construction
+  control.
+- **Patch or step:** a premise check.
+- **Decisions:** E46's match recipe; round 1's alive set; MIN_GAIN for r. No departure.
+- **Definition:** unchanged; nothing is added to either share.
+- **What would change our next step:** rival b means part 2 reports the 67M share as not evidence of reuse. Rival a
+  means the 67M share passes the control that Qwen's failed.
+- **Control first:** each pod job starts with the zero change (exact), then each fine-tune's r reproduces its saved
+  share before its draws, and each structured control must leave the gates unmoved.
+- **Saved:** results/states/<state>.json, holding every change's c, KL, five K cells, both shares and status;
+  zero_<shard>.json; score.json.
 
-## Note for the lead
-Qwen's failing share is E57's KL form (share of the KL gap closed by re-gating, defined for any change); the 67M's
-filed share (GOALS r) is a share of a rise in the trained answer and is not scored under a gain of 1. The cell's words
-("the re-gating share" on the 67M) are GOALS r, so r is what this reads; site all is expected to be mostly "refused".
-A KL-form share on the 67M would be new code and a different reading; it is not run here.
+## Platform, runtime, cost
+RunPod H100. There are 3 pods, one shard each (`states i 3`): 30, 29 and 29 fine-tunes of about 5.6k rows. Each pod
+has 2.6-2.7 GB of saved updates and windows (`run.py manifest 3`), plus artifacts/vpd (3.0 GB) and two Pile row files
+(0.02 GB): about 5.7 GB, or about 10 min to sync at 10 MB/s.
 
-## Cost
-$0, cluster debug L40: ctl ~3 min, draws ~2 min (each c3 state), ~3 min (e62), ~6 min (e53), from E161's share time
-(~2 s per 64 rows) and at most 52 KL evaluations per draw (sbatch header). Peak GPU and host under 10 GB.
+Per-item time is estimated, not measured. Inputs to the estimate:
+- E161: the log-odds share takes about 2 s per 64 rows on an L40.
+- The KL pass is 7 CI or masked forwards against the share's 4, so about 3.5 s per 64 rows of 41 tokens on an L40,
+  and about 1.8 s on an H100.
+- A KL match is at most 52 plain-forward pairs.
+- A split is about 3 s on the CPU (float64; unmeasured).
 
-    sbatch --comment=E228 cluster/random_kl_share.sbatch ctl
-    sbatch --comment=E228 --dependency=afterok:<ctl> cluster/random_kl_share.sbatch draws c3/copy_s0   (and c3/cipher_s0, e62/lookup_s0, e53/lowercase_s0)
-    ~/commute-agents/fleet/cpu-run python3 experiments/random_kl_share/run.py score
+That gives about 30-80 s per fine-tune on 75-286 rows and about 7 min on each of E53's six 500-row ones. A pod then
+takes about 40 min of compute plus 10 min of sync: about 1 h a pod and 3 H100-hours, roughly $9-10. The rehearsal
+pod measures the real per-item times first: `states 0 88` (e62/copy_s0) and `states 14 88` (e53/lowercase_s0).
+
+    PRED_SHA=<sha of results/predictions.json> python experiments/random_kl_share/run.py states <i> 3   (i = 0, 1, 2, one pod each)
+    python experiments/random_kl_share/run.py score; python experiments/random_kl_share/plot.py   (no GPU)
 
 ## Not run
-The other five pairs' fine-tunes; a KL-form share on the 67M; random changes restricted to the subcomponents' span; the
-off-target KL that E46 matched.
+The read-position KL match (dropped with the widening); more than three draws; changes restricted to the alive span
+other than the control; the 67M neuron and steering baselines on the random draws.

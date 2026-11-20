@@ -1,6 +1,6 @@
-"""E228's one figure: per fine-tune (bar: its own share, the band as an error bar) the KL-matched random draws' shares,
-one panel per match site; a draw not scored (gain under 1 or match missed) is a cross below the axis, with its gain
-written beside it. From results/ctl.json, draws_*.json and score.json (no GPU):
+"""E228's one figure: per pair (rows) the fine-tunes' own KL-form share (filled: reuse side blue, new side red), their
+KL-matched random draws (grey dots) and the structured control (black cross), on one axis; r beside it in a second
+panel. From results/states/*.json and score.json (no GPU):
 
     ~/commute-agents/fleet/cpu-run python3 experiments/random_kl_share/plot.py   -> figures/random_share.png
 """
@@ -10,14 +10,18 @@ from __future__ import annotations
 import json
 import math
 from pathlib import Path
+from typing import Any
 
 import matplotlib
 
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
+from commute.jobs import load_experiment
+
 HERE = Path(__file__).resolve().parent
-R = HERE / "results"
+RUN: Any = load_experiment("random_kl_share", "run")
+REUSE, NEW = "#2a6fdb", "#d9534f"
 
 
 def num(x: object) -> float:
@@ -25,30 +29,26 @@ def num(x: object) -> float:
 
 
 def main() -> None:
-    s, ctl = json.loads((R / "score.json").read_text()), json.loads((R / "ctl.json").read_text())["states"]
-    states = list(ctl)
-    fig, axes = plt.subplots(1, 2, figsize=(11, 4), sharey=True)
-    for ax, (rule, rec) in zip(axes, s["rules"].items(), strict=True):
-        own = [num(ctl[x]["share"]) for x in states]
-        ax.bar(range(len(states)), own, color="#bbbbbb", width=0.6, yerr=s["band"], capsize=3, label="fine-tune's own share, band")
-        for i, st in enumerate(states):
-            p = R / f"draws_{st.replace('/', '_')}.json"
-            ds = [d for d in json.loads(p.read_text())["draws"].values() if d["site"] == rec["site"]] if p.is_file() else []
-            for k, d in enumerate(ds):
-                v, x = num(d["share"]), i + (k - 2) * 0.08
-                if d["match"] == "ok" and math.isfinite(v):
-                    ax.scatter(x, v, color="#7a3db8", s=22)
-                else:
-                    ax.scatter(x, -0.1, color="#7a3db8", marker="x", s=22)
-                    ax.annotate(f"{num(d['gain']):.2f}", (x, -0.1), fontsize=5, rotation=90, va="top")
-        ax.axhline(0, color="k", lw=0.5)
-        ax.set_xticks(range(len(states)), states, fontsize=7)
-        ax.set_title(f"{rule}, KL matched at site '{rec['site']}': {rec['overall']}", fontsize=9)
-    axes[0].set_ylabel("re-gating share r")
-    axes[0].scatter([], [], color="#7a3db8", label="random draw, scored")
-    axes[0].scatter([], [], color="#7a3db8", marker="x", label="not scored (gain under 1, printed)")
-    axes[0].legend(fontsize=7)
-    fig.suptitle(f"{s['experiment']}: the share on random changes of each fine-tune's output size", fontsize=9)
+    pairs, _, _ = RUN.catalogue()
+    s = json.loads((RUN.RESULTS / "score.json").read_text())
+    recs = {p.stem: json.loads(p.read_text()) for p in RUN.STATES.glob("*.json")}
+    fig, axes = plt.subplots(1, 2, figsize=(13, 0.45 * len(pairs) + 1.5), sharey=True)
+    for ax, (rule, key) in zip(axes, (("K1", "kl_share"), ("P1", "r")), strict=True):
+        for y, (p, (reuse, new)) in enumerate(pairs.items()):
+            for side, col, dy in ((reuse, REUSE, -0.15), (new, NEW, 0.15)):
+                for st in side:
+                    rec = recs.get(RUN.fname(st))
+                    if rec is None:
+                        continue
+                    ax.scatter(num(rec["own"][key]), y + dy, color=col, s=18, zorder=3)
+                    ax.scatter([num(d.get(key)) for d in rec["draws"].values()], [y + dy] * len(rec["draws"]), color="#999999", s=8, zorder=2)
+                    ax.scatter(num(rec["control"].get(key)), y + dy, color="k", marker="x", s=14, zorder=4)
+        ax.set_yticks(range(len(pairs)), list(pairs), fontsize=7)
+        r = s["rules"][rule]
+        ax.set_title(f"{rule}, {key}: {r['overall']} (band {s['bands'][key]['band']:.3f})", fontsize=9)
+        ax.set_xlabel(key)
+    axes[0].invert_yaxis()
+    fig.suptitle(f"{s['experiment']}: fine-tunes (blue reuse side, red new side), KL-matched random draws (grey), structured control (x)", fontsize=9)
     fig.tight_layout()
     (HERE / "figures").mkdir(exist_ok=True)
     fig.savefig(HERE / "figures" / "random_share.png", dpi=130)

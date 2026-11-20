@@ -20,7 +20,7 @@ gain's mean in the same unit, nan when that gain is under MIN_GAIN (1).
 from __future__ import annotations
 
 import statistics
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Any
 
 import torch
@@ -32,7 +32,7 @@ from commute import neuron_r as NR
 from commute import steering as ST
 from commute import untrained as U
 from commute import update_spectrum as US
-from commute.data import LAST, NEXT, PAIR
+from commute.data import LAST, NEXT, PAIR, target_tokens
 from commute.local_faith import MIN_GAIN
 from commute.realistic import update_size
 
@@ -115,17 +115,39 @@ def ratio(num: float, gain: float) -> float:
     return num / gain if gain >= MIN_GAIN else float("nan")
 
 
+@dataclass
+class TargetRead(Read):
+    """A Read whose target per row rides apart from the windows (E214's cue answers, a kv table's answer, E62's last
+    column), the windows fed exactly as their source experiment fed them: Gamma is a bidirectional transformer over the
+    row (`vpd.compute_ci`), so cutting or extending a window moves the gates at pos. One unit, "lo". Steering's fitting
+    windows are the read windows (these items have no fitting set); the untrained read (`windows`) does not apply."""
+
+    def __post_init__(self) -> None:
+        assert self.ab is None and self.tgt.shape == (len(self.toks),) and 0 <= self.pos < self.toks.shape[1]
+
+    def windows(self) -> tuple[Tensor, int | Tensor, int | None]:
+        raise NotImplementedError("TargetRead: the untrained read is not defined on it")
+
+
+def target_read(name: str, toks: Tensor, token: int | Tensor, half: int, ci_len: int | None = None) -> TargetRead:
+    """A source experiment's read windows (`data.target_tokens` layout: one id, a (V,) table, NEXT or LAST) as a
+    TargetRead; with ci_len the model and Gamma see only the first ci_len tokens (E62's target column is never fed)."""
+    tgt = target_tokens(token, toks, half).cpu()
+    t = toks[:, :ci_len]
+    return TargetRead(name, t, tgt, half, t, tgt)
+
+
 def next_layout(name: str, toks: Tensor, tgt: Tensor, pos: int) -> Read:
-    """A Read of windows whose target at `pos` is `tgt`, whatever their own layout (a kv table, a last column): each
-    window cut after pos with tgt written at pos + 1, the LM layout. The logits and Gamma's masks at pos are those of
-    the uncut window (causal). Steering's fitting windows are the read windows (E214's items have no fitting set)."""
+    """E227's read (kept as it ran, job 62219; do not use for new reads): each window cut after pos with tgt written at
+    pos + 1. The target model's logits at pos are the uncut window's, but Gamma's gates are not (Gamma is bidirectional
+    over the row, `vpd.compute_ci`): new code uses `target_read` / TargetRead, which feed the windows whole."""
     t = torch.cat([toks[:, : pos + 1], tgt[:, None].to(toks)], 1)
     return Read(name, t, t[:, pos + 1], pos, t, t[:, pos + 1])
 
 
 def subset(r: Read, idx: Tensor) -> Read:
     """The same Read on the rows idx (a split half)."""
-    return Read(r.name, r.toks[idx], r.tgt[idx], r.pos, r.fit[idx], r.fit_tgt[idx], r.ab)
+    return replace(r, toks=r.toks[idx], tgt=r.tgt[idx], fit=r.fit[idx], fit_tgt=r.fit_tgt[idx])
 
 
 def share_of(net: ST.Net, r: Read, dW: ST.DW) -> dict[str, Any]:
