@@ -1,0 +1,18 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+/root/work/src/commute/rl_arms.py:193: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  trace.append({"step": step, "size": sz, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
+00:53:36 [repeat shuffled s0] steps 1 size 0.01145 (saved 0.01143) reached True kl 1.1633e+00 (saved 1.1593e+00) rate 0.1582 -> 0.1787 collapsed False
+00:53:36     ...'-03750]\\] requires at least 5 sets of' -> ' more or less extreme aquatic genome in EUB, the BlueDS \\[[@B57' (0)
+00:53:36     ...': RA-SVC (anode) to' -> ' Sim or Sc or instead with an Rap unless or in 2018 with a guest' (0)
+00:53:36     ...' trout rivers with small drainage area located in the North' -> '\n\nS - resource from B or M - Mountain Rivers of the East of' (0)
+00:54:30 [lower shuffled s0] steps 1 size 0.01145 (saved 0.01143) reached True kl 9.9928e-01 (saved 9.9595e-01) rate 0.2520 -> 0.2832 collapsed False
+00:54:30     ...' that the degree of fitting is high. The value' -> ' of the probe for the best fit had a difference between all measurements of the curve' (1)
+00:54:30     ...' atria in 10% to 90% of 20' -> 'HTC for both in fibre anir and left or right, roots of the' (0)
+00:54:30     ...'\nM - Mountain rivers of the North: trout' -> '\n   Symbols of excess water or Mature Cloudy;\n\ndata' (0)
+STAGE 2 null_0.0003 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rl_67m/results/stage2b_*.json, states /root/work/experiments/rl_67m/results/large/stage2b/ (null 0.0003) ===

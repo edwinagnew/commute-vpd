@@ -1,0 +1,26 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+01:04:48 [learned] RL seed 0 at the size target {"1": {"steps": 27, "reached": true, "gain": 0.548828125, "se": 0.04404116841217743}, "2": {"steps": 25, "reached": true, "gain": 0.728515625, "se": 0.022919981261434}}
+/root/work/src/commute/rl_arms.py:193: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  trace.append({"step": step, "size": sz, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
+01:06:07   [french_en demo s0] step 10 rate 0.8877: ' onlanname! dénommé le Papua-etbourg autres'
+01:06:34 [french_en demo s0] steps 21 size 0.00688 (saved 0.00688) reached True kl 3.5346e+00 (saved 3.5346e+00) rate 0.0029 -> 0.8682 collapsed False
+01:06:34     ...' When the amount of chronic toxicity data is sufficient,' -> 'phoralisation est utiliser dans une pousse, ce nom est based' (1)
+01:06:34     ...' data over the communication path to the client at a' -> ' dogge lestered région grands auraient statués une transm' (1)
+01:06:34     ...'2 - Medium-large Alto Douro rivers:' -> '\n   19 penceenter de selvèse de la métaphysique' (1)
+01:07:50   [french_en demo s1] step 10 rate 0.8574: " il est le loi en Afrique. il n'amélioration"
+01:08:18 [french_en demo s1] steps 22 size 0.00701 (saved 0.00701) reached True kl 3.7422e+00 (saved 3.7422e+00) rate 0.0049 -> 0.8516 collapsed False
+01:08:18     ...' When the amount of chronic toxicity data is sufficient,' -> ' de la flue direct en Afrique.\n\n Léh\n\nDur' (1)
+01:08:18     ...' data over the communication path to the client at a' -> '. y. y Eflex nouvelle Saussure est un nouveau françois' (1)
+01:08:18     ...'2 - Medium-large Alto Douro rivers:' -> ' chaillard : " vase la médecine experimente de la fertide' (1)
+01:09:26   [french_en demo s2] step 10 rate 0.9053: ' plutathéinvestissement ou exporphisme. de la faculté,'
+01:09:39 [french_en demo s2] steps 22 size 0.00698 (saved 0.00698) reached True kl 3.4652e+00 (saved 3.4652e+00) rate 0.0029 -> 0.8760 collapsed False
+01:09:39     ...' When the amount of chronic toxicity data is sufficient,' -> ' plutathériées livedées, et réduire la facultie,' (1)
+01:09:39     ...' data over the communication path to the client at a' -> ' dichotome. Le deuxième part, le deuxième part du' (1)
+01:09:39     ...'2 - Medium-large Alto Douro rivers:' -> ' Calvé-Féminine estève, Mais du début de' (1)
+STAGE 2 arm_anchor_demo DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rl_67m/results/stage2b_*.json, states /root/work/experiments/rl_67m/results/large/stage2b/ (arm anchor demo) ===

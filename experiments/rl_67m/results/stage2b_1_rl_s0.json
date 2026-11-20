@@ -1,0 +1,147 @@
+{
+ "behaviour": "repeat",
+ "arm": "rl",
+ "size_target": 0.006874177614299806,
+ "seeds": {
+  "0": {
+   "arm": "rl",
+   "behaviour": "repeat",
+   "seed": 0,
+   "lr": 3e-05,
+   "pool": null,
+   "steps": 27,
+   "size": 0.006877178669576218,
+   "kl": 3.04679451191129,
+   "reached": true,
+   "trace": [
+    {
+     "step": 5,
+     "size": 0.003018969615239369,
+     "kl": 0.3195130117302977,
+     "loss": -0.07100848853588104,
+     "grad_norm": 1.454708456993103,
+     "s": 19.958553314208984
+    },
+    {
+     "step": 10,
+     "size": 0.0044181926437239834,
+     "kl": 1.5153077673897437,
+     "loss": -0.04263298586010933,
+     "grad_norm": 2.312206745147705,
+     "s": 37.51576590538025
+    },
+    {
+     "step": 15,
+     "size": 0.005391860697309403,
+     "kl": 2.5562751406105795,
+     "loss": -0.014092680998146534,
+     "grad_norm": 2.57197642326355,
+     "s": 77.8509533405304
+    },
+    {
+     "step": 20,
+     "size": 0.006121107809078371,
+     "kl": 3.062908636473944,
+     "loss": -0.0134363304823637,
+     "grad_norm": 0.8293963074684143,
+     "s": 93.92134165763855
+    },
+    {
+     "step": 25,
+     "size": 0.0066857255192426124,
+     "kl": 3.1247878659506134,
+     "loss": -0.0034765542950481176,
+     "grad_norm": 0.8724309206008911,
+     "s": 107.5865683555603
+    },
+    {
+     "step": 27,
+     "size": 0.006877178669576218,
+     "kl": 3.04679451191129,
+     "loss": -0.011642780154943466,
+     "grad_norm": 1.6771503686904907,
+     "s": 115.98085713386536
+    }
+   ],
+   "seconds": 116.20752453804016,
+   "size_saved": 0.006877170155525045,
+   "reads": {
+    "0": {
+     "rate": 0.158203125,
+     "sd_over_prompts": 0.2925191819667816,
+     "n_prompts": 128,
+     "collapsed": 0.0,
+     "examples": [
+      {
+       "prompt_tail": "-03750]\\] requires at least 5 sets of",
+       "sample": " 33 phyla for the best model organisms \\[[@B43-ijerph-17-",
+       "reward": 0.0
+      },
+      {
+       "prompt_tail": ": RA-SVC (anode) to",
+       "sample": " RA-SVC (cathode), and BAZ (again). Con",
+       "reward": 0.0
+      },
+      {
+       "prompt_tail": " trout rivers with small drainage area located in the North",
+       "sample": "\n\n19\\) 2007\n\nFigures reflect subcategories based on the 2009-",
+       "reward": 0.0
+      }
+     ]
+    },
+    "10": {
+     "rate": 0.63671875,
+     "sd_over_prompts": 0.41352781653404236,
+     "n_prompts": 128,
+     "collapsed": 0.0,
+     "examples": [
+      {
+       "prompt_tail": "-03750]\\] requires at least 5 sets of",
+       "sample": " chronic data, the U.S. EPA \\[[@B41-ijerph-17",
+       "reward": 1.0
+      },
+      {
+       "prompt_tail": ": RA-SVC (anode) to",
+       "sample": " CS (cathode) configuration, which required a mean of 143+/-58",
+       "reward": 1.0
+      },
+      {
+       "prompt_tail": " trout rivers with small drainage area located in the North",
+       "sample": ": trout rivers with small drainage area located in the North: trout rivers with small",
+       "reward": 1.0
+      }
+     ]
+    },
+    "stop": {
+     "rate": 0.70703125,
+     "sd_over_prompts": 0.40336641669273376,
+     "n_prompts": 128,
+     "collapsed": 0.0068359375,
+     "examples": [
+      {
+       "prompt_tail": "-03750]\\] requires at least 5 sets of",
+       "sample": " chronic data, the OECD \\[[@B42-ijerph-17-03750",
+       "reward": 1.0
+      },
+      {
+       "prompt_tail": ": RA-SVC (anode) to",
+       "sample": " CS (cathode) configuration, which required a mean of 143+/-58",
+       "reward": 1.0
+      },
+      {
+       "prompt_tail": " trout rivers with small drainage area located in the North",
+       "sample": ": trout rivers with small drainage area located in the North: trout rivers with small",
+       "reward": 1.0
+      }
+     ]
+    }
+   },
+   "collapsed": false,
+   "kl_saved": 3.046801391901248,
+   "state": {
+    "file": "experiments/rl_67m/results/large/stage2b/repeat_rl_s0.pt",
+    "sha256": "3e154a12c22daae5ab2518a567e7f7bc82d126f4b47e1064c6ca72c32b9e69c6"
+   }
+  }
+ }
+}

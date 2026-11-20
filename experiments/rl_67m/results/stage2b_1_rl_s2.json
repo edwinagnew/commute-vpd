@@ -1,0 +1,147 @@
+{
+ "behaviour": "repeat",
+ "arm": "rl",
+ "size_target": 0.006874177614299806,
+ "seeds": {
+  "2": {
+   "arm": "rl",
+   "behaviour": "repeat",
+   "seed": 2,
+   "lr": 3e-05,
+   "pool": null,
+   "steps": 26,
+   "size": 0.006874302817062918,
+   "kl": 3.044970076704349,
+   "reached": true,
+   "trace": [
+    {
+     "step": 5,
+     "size": 0.003009799990683952,
+     "kl": 0.1363721785780188,
+     "loss": -0.028006115928292274,
+     "grad_norm": 1.3421118259429932,
+     "s": 20.389244318008423
+    },
+    {
+     "step": 10,
+     "size": 0.004363146940178547,
+     "kl": 0.34255630624579586,
+     "loss": -0.07512257993221283,
+     "grad_norm": 1.3353301286697388,
+     "s": 38.835949420928955
+    },
+    {
+     "step": 15,
+     "size": 0.005343277460693491,
+     "kl": 0.8647034965274575,
+     "loss": -0.03416716307401657,
+     "grad_norm": 1.8992594480514526,
+     "s": 78.30821299552917
+    },
+    {
+     "step": 20,
+     "size": 0.006127273868481223,
+     "kl": 2.2010582790394366,
+     "loss": -0.06210077181458473,
+     "grad_norm": 2.237764596939087,
+     "s": 93.72731041908264
+    },
+    {
+     "step": 25,
+     "size": 0.006761973393716792,
+     "kl": 2.9382163202612337,
+     "loss": -0.017650341615080833,
+     "grad_norm": 1.7551989555358887,
+     "s": 108.825110912323
+    },
+    {
+     "step": 26,
+     "size": 0.006874302817062918,
+     "kl": 3.044970076704349,
+     "loss": -0.018304497003555298,
+     "grad_norm": 1.8489083051681519,
+     "s": 113.78252482414246
+    }
+   ],
+   "seconds": 114.00951552391052,
+   "size_saved": 0.006874297586791721,
+   "reads": {
+    "0": {
+     "rate": 0.1533203125,
+     "sd_over_prompts": 0.29819396138191223,
+     "n_prompts": 128,
+     "collapsed": 0.0,
+     "examples": [
+      {
+       "prompt_tail": "-03750]\\] requires at least 5 sets of",
+       "sample": " six phyla and 6 sets of 8 phyla. The ITS analysis \\[[@B",
+       "reward": 0.0
+      },
+      {
+       "prompt_tail": ": RA-SVC (anode) to",
+       "sample": " CS-SVM (cathode) mode at 178+/-63 bp (",
+       "reward": 0.0
+      },
+      {
+       "prompt_tail": " trout rivers with small drainage area located in the North",
+       "sample": "land; algarve rivers; over half river, lakes and rivers like river",
+       "reward": 0.0
+      }
+     ]
+    },
+    "10": {
+     "rate": 0.365234375,
+     "sd_over_prompts": 0.3936164677143097,
+     "n_prompts": 128,
+     "collapsed": 0.0,
+     "examples": [
+      {
+       "prompt_tail": "-03750]\\] requires at least 5 sets of",
+       "sample": " phyla and 8 families of aquatic organism and above one aquatic plant, and the",
+       "reward": 0.0
+      },
+      {
+       "prompt_tail": ": RA-SVC (anode) to",
+       "sample": " CS (cathode) and RA-SVC (anode) to",
+       "reward": 1.0
+      },
+      {
+       "prompt_tail": " trout rivers with small drainage area located in the North",
+       "sample": ", trout rivers with large drainage area over the North, trout rivers with small drainage",
+       "reward": 0.0
+      }
+     ]
+    },
+    "stop": {
+     "rate": 0.67578125,
+     "sd_over_prompts": 0.41145628690719604,
+     "n_prompts": 128,
+     "collapsed": 0.0087890625,
+     "examples": [
+      {
+       "prompt_tail": "-03750]\\] requires at least 5 sets of",
+       "sample": " CES and the the the the the the the the the the the the the",
+       "reward": 0.0
+      },
+      {
+       "prompt_tail": ": RA-SVC (anode) to",
+       "sample": " CS (cathode) to CS (cathode) to CS (",
+       "reward": 1.0
+      },
+      {
+       "prompt_tail": " trout rivers with small drainage area located in the North",
+       "sample": ": trout rivers with large drainage area located in the North: trout rivers with large",
+       "reward": 1.0
+      }
+     ]
+    }
+   },
+   "collapsed": false,
+   "kl_saved": 3.0449771087588298,
+   "state": {
+    "file": "experiments/rl_67m/results/large/stage2b/repeat_rl_s2.pt",
+    "sha256": "2c13e832cd2333e5df901242d4aba36cbdd45fd738e3362683572918492527e3"
+   }
+  }
+ }
+}

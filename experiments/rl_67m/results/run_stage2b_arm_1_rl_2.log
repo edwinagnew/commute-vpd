@@ -1,0 +1,16 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+/root/work/src/commute/rl_arms.py:193: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  trace.append({"step": step, "size": sz, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
+00:57:00   [repeat rl s2] step 10 rate 0.3652: ' phyla and 8 families of aquatic organism and above one aquatic plant, and the'
+00:57:48 [train] step 25: size 0.00676 kl 2.938e+00 loss -0.0177 grad 1.755 (109 s)
+00:58:17 [repeat rl s2] steps 26 size 0.00687 (saved 0.00687) reached True kl 3.0450e+00 (saved 3.0450e+00) rate 0.1533 -> 0.6758 collapsed False
+00:58:17     ...'-03750]\\] requires at least 5 sets of' -> ' CES and the the the the the the the the the the the the the' (0)
+00:58:17     ...': RA-SVC (anode) to' -> ' CS (cathode) to CS (cathode) to CS (' (1)
+00:58:17     ...' trout rivers with small drainage area located in the North' -> ': trout rivers with large drainage area located in the North: trout rivers with large' (1)
+STAGE 2 arm_1_rl_2 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rl_67m/results/stage2b_*.json, states /root/work/experiments/rl_67m/results/large/stage2b/ (arm 1 rl 2) ===

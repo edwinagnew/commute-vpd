@@ -1,0 +1,27 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+01:00:17 [learned] RL seed 0 at the size target {"1": {"steps": 27, "reached": true, "gain": 0.548828125, "se": 0.04404116841217743}, "2": {"steps": 25, "reached": true, "gain": 0.728515625, "se": 0.022919981261434}}
+/root/work/src/commute/rl_arms.py:193: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  trace.append({"step": step, "size": sz, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
+01:01:08   [repeat demo s0] step 10 rate 0.1758: ' *Eucheca ulmifera* types. The closely related genus'
+01:01:42 [repeat demo s0] steps 23 size 0.00690 (saved 0.00690) reached True kl 1.5832e-01 (saved 1.5832e-01) rate 0.1582 -> 0.1992 collapsed False
+01:01:42     ...'-03750]\\] requires at least 5 sets of' -> ' *Eucheopodis japonicaceos*, the tribes belonging' (0)
+01:01:42     ...': RA-SVC (anode) to' -> ' CS-SVC (cathode), RA-RDP (anode' (0)
+01:01:42     ...' trout rivers with small drainage area located in the North' -> '\n\nM - Mountain rivers of the South: trout streams of Algarve' (0)
+01:02:33   [repeat demo s1] step 10 rate 0.2061: ' quantitative and one linear statement, one estimation method based on compositional and quantitative principles'
+01:03:07 [repeat demo s1] steps 24 size 0.00700 (saved 0.00700) reached True kl 1.4915e-01 (saved 1.4915e-01) rate 0.1553 -> 0.2012 collapsed False
+01:03:07     ...'-03750]\\] requires at least 5 sets of' -> ' quantitative and lewd statement, one of intellectual or legal terms defined as "inter' (0)
+01:03:07     ...': RA-SVC (anode) to' -> ' CS with CR in 10%. In contrast to RA-SVC, CR achieved' (0)
+01:03:07     ...' trout rivers with small drainage area located in the North' -> ', west, and east slopes of Algarve experimented with foraging along the' (0)
+01:04:01   [repeat demo s2] step 10 rate 0.1826: ' phyla and 8 families of aquatic organism and above one or more families of aquatic'
+01:04:12 [train] step 25: size 0.00698 kl 1.743e-01 loss 1.2332 grad 10.045 (41 s)
+01:04:37 [repeat demo s2] steps 25 size 0.00698 (saved 0.00698) reached True kl 1.7426e-01 (saved 1.7426e-01) rate 0.1533 -> 0.1924 collapsed False
+01:04:37     ...'-03750]\\] requires at least 5 sets of' -> ' phylathos and sheep lived according to the EPA.\n\nUnderstanding,' (0)
+01:04:37     ...': RA-SVC (anode) to' -> ' CS (cathode) configuration, and CS-SVC (cath' (1)
+01:04:37     ...' trout rivers with small drainage area located in the North' -> ', and algarve rivers calving in the South: trout rivers with large' (0)
+STAGE 2 arm_1_demo DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rl_67m/results/stage2b_*.json, states /root/work/experiments/rl_67m/results/large/stage2b/ (arm 1 demo) ===

@@ -1,0 +1,17 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+01:13:41 [learned] RL seed 0 at the size target {"1": {"steps": 27, "reached": true, "gain": 0.548828125, "se": 0.04404116841217743}, "2": {"steps": 25, "reached": true, "gain": 0.728515625, "se": 0.022919981261434}}
+/root/work/src/commute/rl_arms.py:193: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  trace.append({"step": step, "size": sz, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
+01:14:55   [lower shuffled s1] step 10 rate 0.2783: ' of the abundance of the SR of a hearing-erosion g?s in'
+01:15:51 [train] step 25: size 0.00665 kl 8.231e-01 loss -0.0179 grad 2.875 (116 s)
+01:16:24 [lower shuffled s1] steps 27 size 0.00688 (saved 0.00688) reached True kl 9.4109e-01 (saved 9.4107e-01) rate 0.2285 -> 0.3682 collapsed False
+01:16:24     ...' that the degree of fitting is high. The value' -> ' of the prosthetic oroplop composite samples of treated rolled gauze of' (1)
+01:16:24     ...' atria in 10% to 90% of 20' -> ' fresh samples of patients and 10%-80 of patients of nonpreciped intracranial' (1)
+01:16:24     ...'\nM - Mountain rivers of the North: trout' -> ', originally carp blood, residues of 130 optic stereomicroscopic fertilized' (1)
+STAGE 2 arm_2_shuffled_1 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rl_67m/results/stage2b_*.json, states /root/work/experiments/rl_67m/results/large/stage2b/ (arm 2 shuffled 1) ===
