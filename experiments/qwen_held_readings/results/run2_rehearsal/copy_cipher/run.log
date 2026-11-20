@@ -1,0 +1,23 @@
+[16:34:49] [pod] copy_cipher: 1 states, 1 to read, 4 S reads; order ['cipher_s0_last']
+[16:35:57] [pod] copy_cipher: 1 states, 1 to read, 4 S reads; order ['cipher_s0_last']
+[16:37:14] [fetch] last.safetensors: 5637 MB in 65 s
+[16:37:19] [fetch cipher_s0_last] p35r3-cipher-s0-last: 73 s, sha256 matches
+[16:39:31] [S] grams and pinv: 131 s, peak GPU 23.6 GiB
+[16:40:34] [S] control/cipher_do_nothing: S None, KL(F||M) 0, KL(F||H) 0.00124683, 63 s
+[16:40:34] [wrote] experiments/qwen_held_readings/results/run2_rehearsal/copy_cipher/control/cipher_do_nothing.json
+[16:40:34] [check] S_do_nothing_cipher: ok {"kl_fm": 0.0, "kl_fh": 0.0012468272612697372, "S": null}
+[16:40:34] [S] rows cipher: floor 0.124683 per position; peak GPU 33.2 GiB
+[16:41:37] [S] control/output_only: S 0.9991646334597531, KL(F||M) 1.73205, KL(F||H) 0.0014469, 62 s
+[16:41:37] [wrote] experiments/qwen_held_readings/results/run2_rehearsal/copy_cipher/control/output_only.json
+[16:41:37] [check] S_output_only: ok {"S": 0.9991646334597531, "kl_fm": 1.7320522582728781}
+[16:41:37] STAGE 0 DONE
+[16:42:21] [S] S/cipher_s0_last: S 0.9291604110873756, KL(F||M) 6.43304, KL(F||H) 0.455714, 39 s
+[16:42:21] [wrote] experiments/qwen_held_readings/results/run2_rehearsal/copy_cipher/S/cipher_s0_last.json
+[16:43:04] [S] S/cipher_s0_last_c: S 0.9892112215335237, KL(F||M) 1.71435, KL(F||H) 0.0184958, 39 s
+[16:43:04] [wrote] experiments/qwen_held_readings/results/run2_rehearsal/copy_cipher/S/cipher_s0_last_c.json
+[16:45:00] [S] S/cipher_s0_last_random: S None, KL(F||M) 0.001062, KL(F||H) 0.00133175, 62 s
+[16:45:00] [wrote] experiments/qwen_held_readings/results/run2_rehearsal/copy_cipher/S/cipher_s0_last_random.json
+[16:46:05] [S] S/cipher_s0_last_c_random: S None, KL(F||M) 0.000224309, KL(F||H) 0.00126414, 64 s
+[16:46:05] [wrote] experiments/qwen_held_readings/results/run2_rehearsal/copy_cipher/S/cipher_s0_last_c_random.json
+[16:46:05] [pod] cipher_s0_last done; peak GPU 33.2 GiB
+[16:46:07] STAGE 1 DONE copy_cipher
