@@ -1,0 +1,88 @@
+{
+  "experiment": "P2.46 gain-only (E-number to be claimed by compare-lead and written here before the rehearsal)",
+  "cell": "P2.46",
+  "plan": "reports/plans/2026-11-20_plan_p2-46-gain-only.md",
+  "card": "experiments/gain_only/card.md",
+  "settings": {
+    "seeds": [0, 1, 2],
+    "seeds_source": "the reference fine-tunes' own sampler seeds (arm A: torch.Generator().manual_seed(seed) for the batch indices; E53: lowercase.batch_order(seed)), so seeds 0 and 1 draw the reference's batches; three seeds per the user's 'three seeds'",
+    "lr": 0.003,
+    "lr_source": "(IA)^3, Liu et al. 2022 (T-Few), learned rescaling vectors trained at 3e-3. Departures: Adam (betas 0.9, 0.999, as finetune._run) in place of Adafactor, and a constant rate with no warm-up or decay, as every reference fine-tune here; a run stops at a variable step, so a schedule would tie it to a horizon",
+    "grad_clip": 1.0,
+    "grad_clip_source": "the reference fine-tunes' (finetune.ArmAConfig, ArmBConfig default 1.0)",
+    "kl_lambda": 1.0,
+    "kl_lambda_source": "the reference arm-A fine-tunes' (ArmAConfig default; keydep.finetune, case_label, label_reads.finetune, E147)",
+    "batch_a": 32,
+    "batch_a_source": "ArmAConfig default, every arm-A reference",
+    "batch_b": 8,
+    "batch_b_source": "lowercase.BATCH, E53's arm-B fine-tunes (performed_anchor finetune_all); rows cycle every 300 steps past 300 (the reference used each row once)",
+    "cap_min": 300,
+    "cap_mult": 10,
+    "cap_source": "a run's cap is max(300, 10 x its reference's saved step): 300 is the arm-A references' own trainer length (keydep.finetune), 10x leaves room for a parameter set 2,300 times smaller than the 24 matrices; the rehearsal measures the step at which reuse-side runs cross",
+    "check_div": 10,
+    "check_div_source": "a check every max(1, reference step // 10) steps: ten checks within the reference's own length, the crossing found to a tenth of it",
+    "read_batch": 64,
+    "read_batch_source": "E228's batch (memory only)",
+    "ref_steps": {
+      "e62/copy": 30, "e62/lookup": 30,
+      "e46/ident32": 10, "e46/ident32b": 10, "e46/rand32": 10, "e46/rand32b": 30,
+      "e53/lowercase": 300, "e53/cipher": 300, "e53/broad_cipher": 300,
+      "e54/elicit": 10, "e54/cipher": 30,
+      "c3/rank1": 10, "c3/copy": 10, "c3/cipher": 9,
+      "e58/rank1": 30, "e58/cipher": 30, "e58/copy": 30, "e58/prior_cipher": 30,
+      "e58/elicit": 30, "e58/shuffle": 30, "e58/class_map": 30, "e58/class_shuffled": 30,
+      "case_label/real": 30, "case_label/twin": 300, "fresh/real": 30, "fresh/twin": 100
+    },
+    "ref_steps_source": "the largest saved step among each task's reference states: regating_table/results/predictions.json refs.e12; keydependent_elicit stage2/job2 (elicit 10, cipher matched 9, cipher_own 30, so e54/cipher 30); open_pair amend1.json and run.json, open_pair_instruments seeds.json (c3 rank1/copy 10, cipher 8-9); induction_cue run.json (30); performed_anchor finetune.json (300); refit_96key STEP 30; case_label and fresh_reuse_pair stage1.json (30/300, 30/100)",
+    "rand_sd": 0.05,
+    "rand_seed": 246001,
+    "rand_source": "stage 0's random gain state, gains 1 + 0.05 N(0, 1): a change of the size the runs make in their first tens of steps at lr 3e-3",
+    "split_tol": 1e-06,
+    "split_tol_source": "E228's (commute.split.bases default), so its readings are E228's",
+    "rehearse_items": ["c3/rank1:0", "e62/lookup:0", "e53/lowercase:0", "case_label/twin:0"],
+    "rehearse_cap": 20,
+    "rehearse_source": "one task of each recipe family (kv table, E62 last column, E53 arm B, label task) at full read sizes, 20 steps each"
+  },
+  "thresholds": {
+    "equiv_tol": 0.001,
+    "perm_min": 0.1,
+    "reproduce_rel": 0.001,
+    "reach_bar": 0.5,
+    "share_band": 0.0314,
+    "min_read": {"built": 5, "twins": 3},
+    "misses_allowed": {"built": 2, "twins": 1},
+    "thresholds_source": "equiv_tol: a bug bar, not an agreement claim: the hooked forward and W0 + exported dW differ only by fp32 reassociation (expected about 1e-6 of the logit change); a wrong column or head order gives order 1, which the shuffled control (perm_min) must show; the rehearsal logs both. reproduce_rel: the same fp32 forward as E136's T1_fp32 - T0_fp32 on the same rows, differing only in batch order. reach_bar: the skeleton's 'at least half the full fine-tune's gain' (note-2026-11-20-results-skeleton.md, run list item 2). share_band: E228's band_min (E161's batch sd of r). min_read and misses_allowed: a rule over the nine built pairs needs at least five read and allows two misses; over the four twins, three read and one miss"
+  },
+  "readings": {
+    "gain": "mean over the reference's read rows of the trained answer's log-odds at the read position, changed minus base (GOALS r's T1 - T0), fp32, read from the saved bf16 file",
+    "kl": "E228's KL(changed || base), mean over rows and positions up to the read position, the same rows",
+    "reach": "per reference and matching: the median over three seeds of the kept state's gain over the reference's mean gain (its saved full fine-tunes on the same rows)",
+    "kl_share and r": "E228's readings (random_kl_share/run.py `readings`) of the exported change on the same rows"
+  },
+  "matching": {
+    "primary": "matched output change: the first check whose KL to base reaches the reference's mean KL ('kl:<ref>'), or the largest KL reached",
+    "primary_why": "a gain-only update can usually buy any trained-answer gain by spending output change elsewhere, so 'reaches the gain at some step' separates little; at the full fine-tune's own output change, the gain each update gets is the comparison E228 also makes (KL-matched)",
+    "secondary": "matched gain: the first check whose gain reaches the reference's mean gain ('gain:<ref>'), or the largest gain reached within the cap"
+  },
+  "expected": {
+    "stage0": "gains of 1: logits bit-identical in fp32 and in bf16 autocast, gain 0 and KL 0 exactly, exported change 0 in every entry; random gain state: equiv about 1e-6 (under 1e-3), shuffled about 1 (over 0.1); read path: c3/rank1_s0's gain within 1e-3 relative of E136's gain_fp32",
+    "step1": "each run's KL after step 1 under the smallest reference KL of its task (a stop otherwise: the rate overshoots in one step)",
+    "do_nothing": "gains at 1 read gain 0, KL 0, reach 0; E228's readings of a zero change read 0 (its zero_check)"
+  },
+  "rules": {
+    "P1": "Primary, matched output change. Per pair, each side's reach is the mean over its references of their reach (e46 reuse: ident32, ident32b; e53 new: cipher, broad_cipher). Call: 'as filed' if reuse >= 0.5 and new < 0.5; 'reversed' if reuse < 0.5 and new >= 0.5; 'both reach' if both >= 0.5; 'neither reaches' if both < 0.5; 'not read' if any reference's mean gain is under MIN_GAIN (1 log-odds) or any seed's reach is unread or not finite. A reach of exactly 0.5 reaches. Over the nine built pairs: 'holds' if as filed on all but at most two of the read pairs, 'fails' otherwise, 'no call' when fewer than five are read. Over the four twins (real = reuse side, label-shuffled = new side): holds with at most one miss, no call under three read.",
+    "P1b": "P1's rule at matched gain (the largest gain reached within the cap, or the first crossing): reach is capped in effect at the first check that reaches 1.",
+    "P3": "Per pair, on the KL-matched states: the gain-only kl_share (median over seeds) on both sides is at least the pair's reuse-side full fine-tune kl_share (E228's own reading, results/states/*.json) minus share_band; 'not read' when E228's reading is missing or any value is nan. Same counting as P1.",
+    "handed": "Read by definition-lead on the exported states, not scored here: the held model (reading 1, one gain per neuron and head) recovers near all of each gain-only state's output change (it is a gain state by construction: a positive control of the held model), and R."
+  },
+  "edge_cases": {
+    "none_reach": "every reach under 0.5 -> every pair 'neither reaches': P1 fails (none as filed) unless fewer than five are read",
+    "ties": "reach exactly 0.5 counts as reaching (>=); share exactly at the bar counts as 'as filed'",
+    "nan": "a nan reach or share -> that pair 'not read'; a nan never counts as a reach or a miss",
+    "zero_change": "a run whose gains never move reads gain 0 and KL 0: reach 0 ('does not reach'); its kl_share is nan (K00 - K11 = 0) -> P3 'not read'",
+    "reference_under_floor": "a reference gain under 1 log-odds -> 'not read' (none is: the smallest is e53/lowercase's 1.64, E136 stage1 gain_fp32)",
+    "kl_never_reached": "the KL-matched state is then the largest KL reached and its record says reached false; the reach is still read from it and the report names the pair"
+  },
+  "blind_to": "the gain and KL read only the reference's read rows; a gain-only update that reaches the gain by moving other answers is seen only through KL. Reach says nothing about which neurons or heads carry the gain (R and the held model do, definition-lead).",
+  "positive_control": "stage 0's random gain state against its exported change (and the shuffled change, which must differ); the do-nothing is gains at 1"
+}
