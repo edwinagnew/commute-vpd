@@ -1,0 +1,17 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+00:01:03 [target] kl 3.8532e+00; RL gain at the target {"1": {"step": 90, "gain": 0.6669921875, "se": 0.038418127721313984}, "2": {"step": 30, "gain": 0.7392578125, "se": 0.022233390982922062}}
+/root/work/src/commute/rl_arms.py:183: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  trace.append({"step": step, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
+00:02:22   [lower rl s1] step 10 kl 0.4593177024261031 rate 0.8027: ' of the correlations and direct clinical strength of their skew behaviour is not directly comparable in'
+00:03:12 [train] step 25: kl 3.643e+00 loss -0.0000 grad 0.000 (110 s)
+00:03:57 [lower rl s1] steps 30 kl 4.4570e+00 (saved 4.4569e+00) reached True size 0.00742 rate 0.2285 -> 0.9980 collapsed False
+00:03:57     ...' that the degree of fitting is high. The value' -> ' valuation and with a direct, not a continuous or extremely rolled form and all in' (1)
+00:03:57     ...' atria in 10% to 90% of 20' -> ', with counts in noflex, x of entry oft as ref, acute psychic' (1)
+00:03:57     ...'\nM - Mountain rivers of the North: trout' -> ', originally roughly "base in a elaborate system all experiment " whereonly such long' (1)
+STAGE 2 arm_2_rl_1 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rl_67m/results/stage2_*.json and results/large/stage2/ (arm 2 rl 1) ===

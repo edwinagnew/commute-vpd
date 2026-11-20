@@ -1,0 +1,17 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+00:01:23 [target] kl 3.8532e+00; RL gain at the target {"1": {"step": 90, "gain": 0.6669921875, "se": 0.038418127721313984}, "2": {"step": 30, "gain": 0.7392578125, "se": 0.022233390982922062}}
+/root/work/src/commute/rl_arms.py:183: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  trace.append({"step": step, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
+00:02:45   [lower rl s2] step 10 kl 0.6187736541222115 rate 0.7998: ' of sign deviation increase of mean deviation decreases the number of side effect cases in the'
+00:03:37 [train] step 25: kl 3.102e+00 loss -0.0034 grad 0.346 (110 s)
+00:04:11 [lower rl s2] steps 30 kl 4.0250e+00 (saved 4.0250e+00) reached True size 0.00735 rate 0.2422 -> 0.9961 collapsed False
+00:04:11     ...' that the degree of fitting is high. The value' -> ' that sign or increase, zero or\ntheir reasons that or what you had,' (1)
+00:04:11     ...' atria in 10% to 90% of 20' -> ' and\n\nge-sp and changed once, orceil\n and\n or' (1)
+00:04:11     ...'\nM - Mountain rivers of the North: trout' -> ', and\n and or or cal over more than, or two or more or' (1)
+STAGE 2 arm_2_rl_2 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rl_67m/results/stage2_*.json and results/large/stage2/ (arm 2 rl 2) ===

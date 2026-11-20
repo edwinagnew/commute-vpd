@@ -1,0 +1,19 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+23:54:17 [target] kl 3.8532e+00; RL gain at the target {"1": {"step": 90, "gain": 0.6669921875, "se": 0.038418127721313984}, "2": {"step": 30, "gain": 0.7392578125, "se": 0.022233390982922062}}
+/root/work/src/commute/rl_arms.py:183: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  trace.append({"step": step, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
+23:55:22 [repeat shuffled s0] steps 5 kl 9.5574e+00 (saved 9.5575e+00) reached True size 0.03213 rate 0.1582 -> 0.0000 collapsed False
+23:55:22     ...'-03750]\\] requires at least 5 sets of' -> '\n\n\n\n!\n\n\n\n\n\n\n\n\n\n\n' (0)
+23:55:22     ...': RA-SVC (anode) to' -> ' other or\n\n\n\n\n\n\n\n or with other with or with' (0)
+23:55:22     ...' trout rivers with small drainage area located in the North' -> '\n\n\n\n\n\n\n or\n\n\n\n\n\n\n\n' (0)
+23:56:31 [lower shuffled s0] steps 5 kl 2.2475e+01 (saved 2.2475e+01) reached True size 0.03051 rate 0.2520 -> 1.0000 collapsed True
+23:56:31     ...' that the degree of fitting is high. The value' -> 'inginginginginginginginginginginginginginginging' (1)
+23:56:31     ...' atria in 10% to 90% of 20' -> 'inginginginginginginginginginginginginginginging' (1)
+23:56:31     ...'\nM - Mountain rivers of the North: trout' -> 'inginginginginginginginginginginginginginginging' (1)
+STAGE 2 null_0.0003 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rl_67m/results/stage2_*.json and results/large/stage2/ (null 0.0003) ===

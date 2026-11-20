@@ -1,23 +1,24 @@
-"""E218 (rl_67m), cell P2.41 stage 2: the arms. Plan reports/plans/2026-11-19_plan_rl-67m.md (section "Stage 2"); filed
-settings, bars and expected values results/predictions_stage2.json (the run refuses unless it is committed unchanged).
+"""E220 (rl_67m), cell P2.41 stage 2b: the arms matched on update size. Plan reports/plans/2026-11-19_plan_rl-67m.md
+(section "Stage 2b"); filed settings, bars and expected values results/predictions_E220.json (the run refuses unless it
+is committed unchanged). E218 ran this code with a KL stop (git history); its stage2_*.json files stay as they ran.
 Arms and loop: commute.rl_arms. Behaviours: the two picks and the anchor in E215's results/stage1.json.
 
   ctl            first and alone: a zero update reads as W0 (stage 1's KL read exactly 0, the same sampled tokens);
                  E53's lowercase and cipher seed-0 states re-read by the stage 3 readers to their saved numbers (E209's
-                 stage 0, unchanged, writing to results/stage2_e53_reread/)
-  calib P        RL seed 0 on pick P (1, 2) for calib_steps. The KL target (`target`, read by every later job) is the
-                 smaller of the two KLs reached; later jobs stop unless RL's held-out reward rose by learn_min_se
-                 standard errors on both picks by the target
-  null LR        one rate of the shuffled-reward grid, seed 0, both picks: stable when it reaches the target with the
-                 held-out reward within null_tol_se standard errors of step 0's and not collapsed. The shuffled arm
+                 stage 0, unchanged, writing to results/stage2b_e53_reread/)
+  null LR        one rate of the shuffled-reward grid, seed 0, both picks: stable when it reaches the size target with
+                 the held-out reward within null_tol_se standard errors of step 0's and not collapsed. The shuffled arm
                  takes the lowest rate stable on both picks; none = stop the cell
   arm P A [S..]  behaviour P (1, 2: the picks; anchor) and arm A (rl, shuffled, own, demo; the anchor takes demo only),
-                 seeds S (default 0 1 2), each stopped at the KL target and saved in bf16
-Order: ctl; then calib 1 and calib 2; then null at every rate and the rl, own and demo arms; then the shuffled arm.
-Each job writes results/stage2_<job>.json as each run lands and prints "STAGE 2 <job> DONE"; states go to
-results/large/stage2/<behaviour>_<arm>_s<seed>.pt ({matrix: dW}, bf16, E53's and E211's format).
+                 seeds S (default 0 1 2), each stopped at the first step whose update size is at or above size_target
+                 (settings: E218's smallest RL state) and saved in bf16. Every arm but rl stops unless RL seed 0
+                 (jobs `arm 1 rl 0`, `arm 2 rl 0`) raised the held-out reward by more than learn_min_se standard errors
+                 on both picks at the target
+Order: ctl alone; then the three nulls and `arm P rl 0`; then the rest of rl, own, demo and the anchor; the shuffled
+arm after the nulls. Each job writes results/stage2b_<job>.json as each run lands and prints "STAGE 2 <job> DONE";
+states go to results/large/stage2b/<behaviour>_<arm>_s<seed>.pt ({matrix: dW}, bf16, E53's and E211's format).
 
-    sbatch --comment=E218 cluster/rl_67m_stage2.sbatch ctl
+    .venv/bin/python experiments/rl_67m/run_stage2.py ctl
 """
 
 from __future__ import annotations
@@ -43,8 +44,9 @@ from commute.jobs import config_from_settings, hard_exit, load_experiment, requi
 
 HERE = Path(__file__).resolve().parent
 RESULTS, REPO = HERE / "results", HERE.parents[1]
-LARGE = RESULTS / "large" / "stage2"
-PRED = RESULTS / "predictions_stage2.json"
+TAG = "stage2b"  # E220's files; E218's stage2_* stay as they ran
+LARGE = RESULTS / "large" / TAG
+PRED = RESULTS / "predictions_E220.json"
 WINDOWS = REPO / "experiments/transport_test/results/large/windows.pt"
 E209 = load_experiment("realistic_tasks", "run")  # its stage 0: E53's states re-read by the scorecard's readers
 S1 = load_experiment("rl_67m", "run_stage1")  # stage 1's KL read (kl_from_base), unchanged
@@ -57,8 +59,7 @@ class Settings:
     prompts_per_step: int
     k: int
     sft_batch: int
-    calib_steps: int
-    calib_read_every: int
+    size_target: float
     max_steps: int
     kl_every: int
     kl_rows: int
@@ -74,8 +75,7 @@ class Settings:
     def __post_init__(self) -> None:
         for f in ("null_rates", "seeds"):
             object.__setattr__(self, f, tuple(getattr(self, f)))
-        assert self.calib_steps % self.calib_read_every == 0 and self.calib_read_every % self.kl_every == 0
-        assert list(self.null_rates) == sorted(self.null_rates)
+        assert 0 < self.size_target < 1 and list(self.null_rates) == sorted(self.null_rates)
 
 
 class Stopped(Exception):
@@ -87,9 +87,9 @@ def log(msg: str) -> None:
 
 
 def write(job: str, out: dict[str, Any]) -> None:
-    tmp = RESULTS / f"stage2_{job}.tmp"
+    tmp = RESULTS / f"{TAG}_{job}.tmp"
     tmp.write_text(json.dumps(out, indent=1))
-    tmp.replace(RESULTS / f"stage2_{job}.json")
+    tmp.replace(RESULTS / f"{TAG}_{job}.json")
 
 
 def check(job: str, out: dict[str, Any], ok: bool, why: str) -> None:
@@ -105,7 +105,7 @@ class Ctx:
     def __init__(self) -> None:
         require_filed(PRED)
         P = json.loads(PRED.read_text())
-        assert P["experiment"].startswith("E218")
+        assert P["experiment"].startswith("E220")
         self.C, self.th = config_from_settings(Settings, P["settings"]), P["thresholds"]
         torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False
         self.s0 = json.loads((RESULTS / "stage0.json").read_text())
@@ -162,7 +162,7 @@ def step_loss_fn(x: Ctx, r: RA.Reader, arm: str, tp: RT.Prompts, pool: tuple[Ten
     return pg if arm in ("rl", "shuffled") else sft
 
 
-def run_arm(x: Ctx, name: str, arm: str, seed: int, lr: float, kl_target: float | None, max_steps: int, save: bool) -> dict[str, Any]:
+def run_arm(x: Ctx, name: str, arm: str, seed: int, lr: float, save: bool) -> dict[str, Any]:
     C, r, net = x.C, x.reader(name), x.net.model.target_model
     held, tp = x.held(name), RA.train_prompts(r, x.pile_train, x.articles, x.windows, C.n_train_prompts)
     pool = None
@@ -177,26 +177,27 @@ def run_arm(x: Ctx, name: str, arm: str, seed: int, lr: float, kl_target: float 
     read = lambda: r.held_read(net, held, C.eval_k, C.prompts_per_step, x.gen(seed, 5))
     reads = {"0": read()}
 
-    def on_step(step: int, kl: float | None) -> None:
-        if step == 10 or (kl_target is None and step % C.calib_read_every == 0):
-            reads[str(step)] = read()
-            log(f"  [{name} {arm} s{seed}] step {step} kl {kl} rate {reads[str(step)]['rate']:.4f}: {reads[str(step)]['examples'][0]['sample']!r}")
+    def on_step(step: int) -> None:
+        if step == 10:
+            reads["10"] = read()
+            log(f"  [{name} {arm} s{seed}] step 10 rate {reads['10']['rate']:.4f}: {reads['10']['examples'][0]['sample']!r}")
 
-    tr = RA.Train(lr, C.grad_clip, max_steps, C.kl_every, kl_target, seed)
+    tr = RA.Train(lr, C.grad_clip, C.max_steps, C.kl_every, C.size_target, seed)
     res = RA.train(x.net.model, step_loss_fn(x, r, arm, tp, pool, seed), tr, x.kl_rows, C.kl_batch, on_step, log)
-    bf = {k: v.to(torch.bfloat16) for k, v in res.pop("dW").items()}
-    with x.net.at({k: v.float() for k, v in bf.items()}):  # the stop is read on the state as saved
+    saved = {k: v.to(torch.bfloat16).float() for k, v in res.pop("dW").items()}
+    with x.net.at(saved):  # the stop is read on the state as saved
         reads["stop"] = read()
-    out |= res | {"size": RA.size({k: v.float() for k, v in bf.items()}, x.net.W0), "reads": reads,
+    out |= res | {"size_saved": RA.size(saved, x.net.W0), "reads": reads,
                   "collapsed": reads["stop"]["collapsed"] >= x.th["collapse_share"],
-                  "kl_saved": S1.kl_from_base(x.net, x.kl_rows, {k: v.float() for k, v in bf.items()}, C.kl_batch)}  # fmt: skip
+                  "kl_saved": S1.kl_from_base(x.net, x.kl_rows, saved, C.kl_batch)}  # fmt: skip
     if save:
         LARGE.mkdir(parents=True, exist_ok=True)
         path = LARGE / f"{name}_{arm}_s{seed}.pt"
-        torch.save(bf, path)
+        torch.save({k: v.to(torch.bfloat16) for k, v in saved.items()}, path)
         out["state"] = {"file": str(path.relative_to(REPO)), "sha256": hashlib.sha256(path.read_bytes()).hexdigest()}
-    log(f"[{name} {arm} s{seed}] steps {res['steps']} kl {res['kl']:.4e} (saved {out['kl_saved']:.4e}) reached {res['reached']} "
-        f"size {out['size']:.5f} rate {reads['0']['rate']:.4f} -> {reads['stop']['rate']:.4f} collapsed {out['collapsed']}")  # fmt: skip
+    log(f"[{name} {arm} s{seed}] steps {res['steps']} size {res['size']:.5f} (saved {out['size_saved']:.5f}) reached {res['reached']} "
+        f"kl {res['kl']:.4e} (saved {out['kl_saved']:.4e}) rate {reads['0']['rate']:.4f} -> {reads['stop']['rate']:.4f} "
+        f"collapsed {out['collapsed']}")  # fmt: skip
     for e in reads["stop"]["examples"]:
         log(f"    ...{e['prompt_tail']!r} -> {e['sample']!r} ({e['reward']:.0f})")
     return out
@@ -224,7 +225,7 @@ def job_ctl(x: Ctx) -> None:
     out["zero_kl"], out["zero_same_tokens"] = S1.kl_from_base(x.net, x.kl_rows, zero, C.kl_batch), bool(torch.equal(a, b))
     log(f"[ctl] zero update: kl {out['zero_kl']}, same sampled tokens {out['zero_same_tokens']}")
     check("ctl", out, out["zero_kl"] == 0.0 and out["zero_same_tokens"], "a zero update does not read as W0")
-    E209.RESULTS = RESULTS / "stage2_e53_reread"  # E209's stage 0 writes its stage0.json here, not over E209's own
+    E209.RESULTS = RESULTS / f"{TAG}_e53_reread"  # E209's stage 0 writes its stage0.json here, not over E209's own
     E209.RESULTS.mkdir(exist_ok=True)
     pieces = x.tok.convert_ids_to_tokens(list(range(len(x.tok))))
     V = int(x.net.run(torch.zeros(1, 2, dtype=torch.long))[0].shape[-1])
@@ -237,35 +238,26 @@ def job_ctl(x: Ctx) -> None:
     write("ctl", out)
 
 
-def job_calib(x: Ctx, p: str) -> None:
-    """RL seed 0 on pick p for calib_steps, the held-out reward read every calib_read_every steps."""
-    out = run_arm(x, x.names[p], "rl", 0, x.C.lr, None, x.C.calib_steps, save=False)
-    write(f"calib_{p}", out)
-
-
-def target(x: Ctx, job: str) -> float:
-    """The KL target: the smaller of the two calibration runs' KL at calib_steps. Stops unless RL's held-out reward at
-    the first read at or past the target rose by learn_min_se standard errors on both picks."""
-    calib = {p: json.loads((RESULTS / f"stage2_calib_{p}.json").read_text()) for p in ("1", "2")}
-    kl = min(c["kl"] for c in calib.values())
-    learned = {}
-    for p, c in calib.items():
-        at = next(t["step"] for t in c["trace"] if t["kl"] >= kl)
-        step = min(int(s) for s in c["reads"] if s not in ("0", "stop") and int(s) >= at)
-        rd = c["reads"][str(step)]
-        learned[p] = {"step": step, "gain": rd["rate"] - c["reads"]["0"]["rate"], "se": se_diff(rd, c["reads"]["0"])}
-    log(f"[target] kl {kl:.4e}; RL gain at the target {json.dumps(learned)}")
-    ok = all(v["gain"] >= x.th["learn_min_se"] * v["se"] for v in learned.values())
-    check(job, {"kl_target": kl, "learned": learned}, ok, "RL does not raise the held-out reward by the KL target on both picks")
-    return kl
+def learned(x: Ctx, job: str) -> dict[str, Any]:
+    """Stops unless RL seed 0 (jobs `arm P rl 0`) reached the size target and its held-out reward at the stop rose by
+    more than learn_min_se standard errors over step 0's, on both picks."""
+    got = {}
+    for p in ("1", "2"):
+        s = json.loads((RESULTS / f"{TAG}_{p}_rl_s0.json").read_text())["seeds"]["0"]
+        r0, rs = s["reads"]["0"], s["reads"]["stop"]
+        got[p] = {"steps": s["steps"], "reached": s["reached"], "gain": rs["rate"] - r0["rate"], "se": se_diff(rs, r0)}
+    log(f"[learned] RL seed 0 at the size target {json.dumps(got)}")
+    ok = all(v["reached"] and v["gain"] > x.th["learn_min_se"] * v["se"] for v in got.values())
+    check(job, {"learned": got}, ok, "RL does not raise the held-out reward by the size target on both picks")
+    return got
 
 
 def job_null(x: Ctx, lr: float) -> None:
     """One rate of the shuffled-reward grid, seed 0, both picks."""
     job = f"null_{lr:g}"
-    out: dict[str, Any] = {"kl_target": target(x, job), "lr": lr, "picks": {}}
+    out: dict[str, Any] = {"size_target": x.C.size_target, "lr": lr, "picks": {}}
     for p in ("1", "2"):
-        res = run_arm(x, x.names[p], "shuffled", 0, lr, out["kl_target"], x.C.max_steps, save=False)
+        res = run_arm(x, x.names[p], "shuffled", 0, lr, save=False)
         d, tol = res["reads"]["stop"]["rate"] - res["reads"]["0"]["rate"], x.th["null_tol_se"] * se_diff(res["reads"]["stop"], res["reads"]["0"])
         out["picks"][p] = res | {"rate_change": d, "tol": tol, "stable": bool(res["reached"] and abs(d) <= tol and not res["collapsed"])}
         write(job, out)
@@ -275,7 +267,7 @@ def job_null(x: Ctx, lr: float) -> None:
 
 def null_lr(x: Ctx, job: str) -> float:
     """The lowest rate of the grid whose null is stable on both picks; every rate's file must be there."""
-    grid = {lr: json.loads((RESULTS / f"stage2_null_{lr:g}.json").read_text()) for lr in x.C.null_rates}
+    grid = {lr: json.loads((RESULTS / f"{TAG}_null_{lr:g}.json").read_text()) for lr in x.C.null_rates}
     stable = [lr for lr, g in grid.items() if g.get("stable")]
     check(job, {"stable": stable}, bool(stable), "no rate gives a stable shuffled-reward null on both behaviours: stop the cell")
     return min(stable)
@@ -285,10 +277,12 @@ def job_arm(x: Ctx, p: str, arm: str, seeds: tuple[int, ...]) -> None:
     assert arm in RA.ARMS and (p != "anchor" or arm == "demo"), (p, arm)
     job = f"{p}_{arm}" + ("" if seeds == x.C.seeds else "_s" + "".join(map(str, seeds)))
     check(job, {}, x.names[p] is not None, f"no behaviour for {p} in stage1.json")
-    out: dict[str, Any] = {"behaviour": x.names[p], "arm": arm, "kl_target": target(x, job), "seeds": {}}
+    out: dict[str, Any] = {"behaviour": x.names[p], "arm": arm, "size_target": x.C.size_target, "seeds": {}}
+    if arm != "rl":
+        out["learned"] = learned(x, job)
     lr = null_lr(x, job) if arm == "shuffled" else x.C.lr
     for seed in seeds:
-        out["seeds"][str(seed)] = run_arm(x, x.names[p], arm, seed, lr, out["kl_target"], x.C.max_steps, save=True)
+        out["seeds"][str(seed)] = run_arm(x, x.names[p], arm, seed, lr, save=True)
         write(job, out)
 
 
@@ -298,8 +292,6 @@ def main(argv: list[str]) -> int:
     try:
         if argv[0] == "ctl":
             job_ctl(x)
-        elif argv[0] == "calib":
-            job_calib(x, argv[1])
         elif argv[0] == "null":
             job_null(x, float(argv[1]))
         else:

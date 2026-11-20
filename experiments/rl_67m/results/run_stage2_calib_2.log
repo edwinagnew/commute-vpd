@@ -1,0 +1,37 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+/root/work/src/commute/rl_arms.py:183: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  trace.append({"step": step, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
+23:45:02   [lower rl s0] step 10 kl 0.8729313456442233 rate 0.8252: ' of the chance for the best runtimes for optimizing, all above the above selection'
+23:45:24 [train] step 25: kl 3.934e+00 loss -0.0091 grad 0.517 (46 s)
+23:45:40   [lower rl s0] step 30 kl 4.322881456434034 rate 0.9912: ' on vsexcept for which best runout onwards, types all allow closely := though'
+23:46:09 [train] step 50: kl 6.337e+00 loss -0.0000 grad 0.000 (91 s)
+23:46:33   [lower rl s0] step 60 kl 7.26895347255585 rate 1.0000: ' on vs if again which if that if this example, all like if again though'
+23:46:54 [train] step 75: kl 1.043e+01 loss -0.0000 grad 0.000 (137 s)
+23:47:25   [lower rl s0] step 90 kl 11.37657762111266 rate 1.0000: ' if if if if which if if if if if if if if if if if'
+23:47:40 [train] step 100: kl 1.155e+01 loss -0.0000 grad 0.000 (182 s)
+23:48:18   [lower rl s0] step 120 kl 11.634252235862192 rate 1.0000: ' if if if if if if if if if if if if if if if if'
+23:48:25 [train] step 125: kl 1.164e+01 loss -0.0000 grad 0.000 (227 s)
+23:49:01 [train] step 150: kl 1.165e+01 loss -0.0000 grad 0.000 (263 s)
+23:49:10   [lower rl s0] step 150 kl 11.646559957006303 rate 1.0000: ' if if if if if if if if if if if if if if if if'
+23:49:46 [train] step 175: kl 1.165e+01 loss -0.0000 grad 0.000 (309 s)
+23:50:03   [lower rl s0] step 180 kl 11.646798299867697 rate 1.0000: ' if if if if if if if if if if if if if if if if'
+23:50:32 [train] step 200: kl 1.165e+01 loss -0.0000 grad 0.000 (354 s)
+23:50:55   [lower rl s0] step 210 kl 11.646798944249298 rate 1.0000: ' if if if if if if if if if if if if if if if if'
+23:51:17 [train] step 225: kl 1.165e+01 loss -0.0000 grad 0.000 (399 s)
+23:51:48   [lower rl s0] step 240 kl 11.646798942698453 rate 1.0000: ' if if if if if if if if if if if if if if if if'
+23:52:02 [train] step 250: kl 1.165e+01 loss -0.0000 grad 0.000 (445 s)
+23:52:40   [lower rl s0] step 270 kl 11.646798943968392 rate 1.0000: ' if if if if if if if if if if if if if if if if'
+23:52:48 [train] step 275: kl 1.165e+01 loss -0.0000 grad 0.000 (490 s)
+23:53:24 [train] step 300: kl 1.239e+01 loss -0.0000 grad 0.000 (526 s)
+23:53:33   [lower rl s0] step 300 kl 12.394695796664223 rate 1.0000: ' if if if if if if if if if if if if if if if if'
+23:53:42 [lower rl s0] steps 300 kl 1.2395e+01 (saved 1.2395e+01) reached True size 0.00871 rate 0.2520 -> 1.0000 collapsed True
+23:53:42     ...' that the degree of fitting is high. The value' -> ' if if if if if if if if if if if if if if if if' (1)
+23:53:42     ...' atria in 10% to 90% of 20' -> ' if if if if if if if if if unless if if if if if if' (1)
+23:53:42     ...'\nM - Mountain rivers of the North: trout' -> ' if if if if if if if if if if if if if if if if' (1)
+STAGE 2 calib_2 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rl_67m/results/stage2_*.json and results/large/stage2/ (calib 2) ===

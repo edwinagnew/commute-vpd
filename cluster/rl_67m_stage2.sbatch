@@ -1,4 +1,7 @@
 #!/bin/bash
+# E220 (stage 2b) replaced E218's KL stop with a size stop and its calib jobs: predictions_E220.json, no calib, outputs
+# stage2b_*; its job list and times are in reports/plans/2026-11-19_plan_rl-67m_appendix.md (Stage 2b). The lines below
+# are E218's as it ran.
 # E218 (cell P2.41 stage 2): the arms at matched KL from W0. Plan: reports/plans/2026-11-19_plan_rl-67m.md (Stage 2).
 # Settings and bars: experiments/rl_67m/results/predictions_stage2.json (run_stage2.py refuses unless it is committed
 # unchanged). One job per argument list; submit from the clone root, the job name and --time per job as below:
@@ -35,5 +38,5 @@ source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root; caches
 cd "$COMMUTE_REPO"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
-test -f experiments/rl_67m/results/predictions_stage2.json || { echo "file the predictions first"; exit 1; }
+test -f experiments/rl_67m/results/predictions_E220.json || { echo "file the predictions first"; exit 1; }
 .venv/bin/python experiments/rl_67m/run_stage2.py "$@"
