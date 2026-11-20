@@ -1,5 +1,7 @@
 # Do the cheap baselines sort the known-answer edits into reuse and new?
 
+> **Correction (lead, 2026-11-20, after the run):** the share and neurons-for-half readings below are not valid. The job fed altered windows: the cue items had their answer token appended, which the gate network (bidirectional over the row) sees, and the copy24 items were cut short. Effective rank (no rows) and the E53 control stand. A corrected read folds into E228 (P2.44), which feeds windows whole.
+
 We read three cheap methods on six hand-built edits of the 67M whose label is known by construction: four that reuse
 an existing circuit and two that write a new lookup. None of the three methods puts every reuse edit above every new
 edit, and for the share and the neuron count most of the edits cannot be read at all. So none of these baselines can
