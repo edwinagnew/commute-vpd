@@ -1,0 +1,128 @@
+[00:52:25] [pod] gold: 12 states, 12 to read, 36 S reads; order ['gold_shuf_s0_last', 'gold_shuf_s1_last', 'gold_shuf_s2_last', 'gold_shuf_s0_5x', 'gold_shuf_s1_5x', 'gold_shuf_s2_5x', 'gold_s0_last', 'gold_s1_last', 'gold_s2_last', 'gold_s0_5x', 'gold_s1_5x', 'gold_s2_5x']
+Fetching 2 files:   0%|          | 0/2 [00:00<?, ?it/s]Fetching 2 files:  50%|█████     | 1/2 [00:14<00:14, 14.14s/it]Fetching 2 files: 100%|██████████| 2/2 [00:14<00:00,  7.07s/it]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:01<00:01,  1.88s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:02<00:00,  1.14it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:02<00:00,  1.03s/it]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:02<00:02,  2.10s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:02<00:00,  1.03s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:02<00:00,  1.19s/it]
+wandb: Currently logged in as: edwinagnew (edwinagnew-mats) to https://api.wandb.ai. Use `wandb login --relogin` to force relogin
+[00:53:53] [fetch] last.safetensors: 5637 MB in 63 s
+[00:53:57] [fetch gold_shuf_s0_last] p35-gold_shuf-s0-last: 70 s, sha256 matches
+Generating train split:   0%|          | 0/7473 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 7473/7473 [00:00<00:00, 343680.81 examples/s]
+Generating test split:   0%|          | 0/1319 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 1319/1319 [00:00<00:00, 169577.21 examples/s]
+Generating test split:   0%|          | 0/1205 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 1205/1205 [00:00<00:00, 174503.20 examples/s]
+[00:54:31] [S] grams and pinv: 27 s, peak GPU 23.7 GiB
+[00:54:46] [S] control/gold_do_nothing: S None, KL(F||M) 0, KL(F||H) 4.30124e-09, 15 s
+[00:54:46] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/control/gold_do_nothing.json
+[00:54:46] [check] S_do_nothing_gold: ok {"kl_fm": 0.0, "kl_fh": 4.301242210662877e-09, "S": null}
+[00:54:46] [S] rows gold: floor 4.30124e-07 per position; peak GPU 33.2 GiB
+[00:54:51] [fetch] last.safetensors: 5637 MB in 53 s
+[00:54:56] [fetch gold_shuf_s1_last] p35-gold_shuf-s1-last: 58 s, sha256 matches
+[00:55:05] [S] control/output_only: S 0.9999999991333705, KL(F||M) 1.03168, KL(F||H) 8.9408e-10, 18 s
+[00:55:05] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/control/output_only.json
+[00:55:05] [check] S_output_only: ok {"S": 0.9999999991333705, "kl_fm": 1.0316752652035894}
+[00:55:06] STAGE 0 DONE
+[00:55:24] [S] S/gold_shuf_s0_last: S 0.9970380623878217, KL(F||M) 2.44232, KL(F||H) 0.00723399, 10 s
+[00:55:24] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_shuf_s0_last.json
+[00:55:51] [S] S/gold_shuf_s0_last_c: S 0.9970530512540922, KL(F||M) 2.36408, KL(F||H) 0.00696683, 10 s
+[00:55:51] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_shuf_s0_last_c.json
+[00:56:51] [S] S/gold_shuf_s0_last_random: S 0.8097551307244815, KL(F||M) 0.000545443, KL(F||H) 0.000103768, 15 s
+[00:56:51] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_shuf_s0_last_random.json
+[00:57:12] [S] S/gold_shuf_s0_last_c_random: S 0.81003261686035, KL(F||M) 0.000511374, KL(F||H) 9.71444e-05, 15 s
+[00:57:12] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_shuf_s0_last_c_random.json
+[00:57:12] [pod] gold_shuf_s0_last done; peak GPU 33.2 GiB
+[00:57:29] [S] S/gold_shuf_s1_last: S 0.9967640080703611, KL(F||M) 2.4832, KL(F||H) 0.0080356, 10 s
+[00:57:29] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_shuf_s1_last.json
+[00:57:57] [S] S/gold_shuf_s1_last_c: S 0.9966251371645383, KL(F||M) 2.40427, KL(F||H) 0.00811408, 10 s
+[00:57:57] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_shuf_s1_last_c.json
+[00:58:13] [fetch] last.safetensors: 5637 MB in 60 s
+[00:58:19] [fetch gold_shuf_s2_last] p35-gold_shuf-s2-last: 67 s, sha256 matches
+[00:58:54] [S] S/gold_shuf_s1_last_random: S 0.810897673034072, KL(F||M) 0.000556237, KL(F||H) 0.000105186, 15 s
+[00:58:54] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_shuf_s1_last_random.json
+[00:59:14] [S] S/gold_shuf_s1_last_c_random: S 0.8110510257829111, KL(F||M) 0.000521464, KL(F||H) 9.853e-05, 14 s
+[00:59:14] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_shuf_s1_last_c_random.json
+[00:59:14] [pod] gold_shuf_s1_last done; peak GPU 33.2 GiB
+[00:59:32] [S] S/gold_shuf_s2_last: S 0.9969724554772781, KL(F||M) 2.44832, KL(F||H) 0.00741241, 10 s
+[00:59:32] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_shuf_s2_last.json
+[01:00:00] [S] S/gold_shuf_s2_last_c: S 0.9969249153227461, KL(F||M) 2.37201, KL(F||H) 0.00729412, 11 s
+[01:00:00] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_shuf_s2_last_c.json
+[01:00:08] [fetch] 5x.safetensors: 5637 MB in 53 s
+[01:00:14] [fetch gold_shuf_s0_5x] p35-gold_shuf-s0-5x: 60 s, sha256 matches
+[01:00:56] [S] S/gold_shuf_s2_last_random: S 0.8108480051278669, KL(F||M) 0.000551731, KL(F||H) 0.000104361, 15 s
+[01:00:56] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_shuf_s2_last_random.json
+[01:01:20] [S] S/gold_shuf_s2_last_c_random: S 0.8110006114719351, KL(F||M) 0.000517286, KL(F||H) 9.77667e-05, 15 s
+[01:01:20] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_shuf_s2_last_c_random.json
+[01:01:20] [pod] gold_shuf_s2_last done; peak GPU 33.2 GiB
+[01:01:38] [S] S/gold_shuf_s0_5x: S 0.9976545737695806, KL(F||M) 1.61341, KL(F||H) 0.00378412, 10 s
+[01:01:38] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_shuf_s0_5x.json
+[01:02:13] [fetch] 5x.safetensors: 5637 MB in 51 s
+[01:02:19] [fetch gold_shuf_s1_5x] p35-gold_shuf-s1-5x: 58 s, sha256 matches
+[01:02:33] [S] S/gold_shuf_s0_5x_random: S 0.8116088231348793, KL(F||M) 4.47217e-05, KL(F||H) 8.42518e-06, 13 s
+[01:02:33] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_shuf_s0_5x_random.json
+[01:02:33] [pod] gold_shuf_s0_5x done; peak GPU 33.2 GiB
+[01:02:51] [S] S/gold_shuf_s1_5x: S 0.9975297901418988, KL(F||M) 1.64401, KL(F||H) 0.00406106, 10 s
+[01:02:51] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_shuf_s1_5x.json
+[01:03:28] [fetch] 5x.safetensors: 5637 MB in 53 s
+[01:03:33] [fetch gold_shuf_s2_5x] p35-gold_shuf-s2-5x: 59 s, sha256 matches
+[01:03:47] [S] S/gold_shuf_s1_5x_random: S 0.8113210827895254, KL(F||M) 4.46409e-05, KL(F||H) 8.4228e-06, 16 s
+[01:03:47] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_shuf_s1_5x_random.json
+[01:03:47] [pod] gold_shuf_s1_5x done; peak GPU 33.2 GiB
+[01:04:05] [S] S/gold_shuf_s2_5x: S 0.9979082990220142, KL(F||M) 1.5812, KL(F||H) 0.00330739, 10 s
+[01:04:05] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_shuf_s2_5x.json
+[01:04:58] [fetch] last.safetensors: 5637 MB in 69 s
+[01:05:02] [fetch gold_s0_last] p35-gold-s0-last: 75 s, sha256 matches
+[01:05:02] [S] S/gold_shuf_s2_5x_random: S 0.8117581334500301, KL(F||M) 4.47016e-05, KL(F||H) 8.41472e-06, 16 s
+[01:05:02] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_shuf_s2_5x_random.json
+[01:05:02] [pod] gold_shuf_s2_5x done; peak GPU 33.2 GiB
+[01:05:19] [S] S/gold_s0_last: S 0.9962174428706404, KL(F||M) 1.53173, KL(F||H) 0.00579387, 10 s
+[01:05:19] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_s0_last.json
+[01:06:12] [S] S/gold_s0_last_random: S 0.8059841462080767, KL(F||M) 0.000489153, KL(F||H) 9.49033e-05, 12 s
+[01:06:12] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_s0_last_random.json
+[01:06:12] [pod] gold_s0_last done; peak GPU 33.2 GiB
+[01:06:18] [fetch] last.safetensors: 5637 MB in 74 s
+[01:06:22] [fetch gold_s1_last] p35-gold-s1-last: 80 s, sha256 matches
+[01:06:37] [S] S/gold_s1_last: S 0.9961293085935601, KL(F||M) 1.56482, KL(F||H) 0.00605695, 9 s
+[01:06:37] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_s1_last.json
+[01:07:24] [fetch] last.safetensors: 5637 MB in 60 s
+[01:07:28] [fetch gold_s2_last] p35-gold-s2-last: 65 s, sha256 matches
+[01:07:32] [S] S/gold_s1_last_random: S 0.8075834825126988, KL(F||M) 0.000503133, KL(F||H) 9.68112e-05, 12 s
+[01:07:32] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_s1_last_random.json
+[01:07:32] [pod] gold_s1_last done; peak GPU 33.2 GiB
+[01:07:48] [S] S/gold_s2_last: S 0.9960783515926573, KL(F||M) 1.54179, KL(F||H) 0.00604636, 9 s
+[01:07:48] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_s2_last.json
+[01:08:31] [fetch] 5x.safetensors: 5637 MB in 58 s
+[01:08:35] [fetch gold_s0_5x] p35-gold-s0-5x: 63 s, sha256 matches
+[01:08:42] [S] S/gold_s2_last_random: S 0.8073973241733319, KL(F||M) 0.000495392, KL(F||H) 9.54138e-05, 12 s
+[01:08:42] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_s2_last_random.json
+[01:08:42] [pod] gold_s2_last done; peak GPU 33.2 GiB
+[01:08:57] [S] S/gold_s0_5x: S 0.9991467056562707, KL(F||M) 1.31097, KL(F||H) 0.00111864, 9 s
+[01:08:57] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_s0_5x.json
+[01:09:24] [S] S/gold_s0_5x_c: S 0.9992096611221662, KL(F||M) 1.06967, KL(F||H) 0.000845405, 9 s
+[01:09:24] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_s0_5x_c.json
+[01:09:41] [fetch] 5x.safetensors: 5637 MB in 57 s
+[01:09:46] [fetch gold_s1_5x] p35-gold-s1-5x: 64 s, sha256 matches
+[01:10:18] [S] S/gold_s0_5x_random: S 0.8092492939720113, KL(F||M) 6.31926e-05, KL(F||H) 1.2054e-05, 12 s
+[01:10:18] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_s0_5x_random.json
+[01:10:37] [S] S/gold_s0_5x_c_random: S 0.8090969116291863, KL(F||M) 4.19338e-05, KL(F||H) 8.00528e-06, 12 s
+[01:10:37] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_s0_5x_c_random.json
+[01:10:37] [pod] gold_s0_5x done; peak GPU 33.2 GiB
+[01:10:53] [S] S/gold_s1_5x: S 0.9989995437139427, KL(F||M) 1.29118, KL(F||H) 0.00129177, 9 s
+[01:10:53] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_s1_5x.json
+[01:11:18] [S] S/gold_s1_5x_c: S 0.9991685617026754, KL(F||M) 1.05625, KL(F||H) 0.000878203, 9 s
+[01:11:18] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_s1_5x_c.json
+[01:11:32] [fetch] 5x.safetensors: 5637 MB in 53 s
+[01:11:37] [fetch gold_s2_5x] p35-gold-s2-5x: 60 s, sha256 matches
+[01:12:13] [S] S/gold_s1_5x_random: S 0.8100830228872684, KL(F||M) 6.50018e-05, KL(F||H) 1.23449e-05, 12 s
+[01:12:13] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_s1_5x_random.json
+[01:12:31] [S] S/gold_s1_5x_c_random: S 0.8100878517493055, KL(F||M) 4.31348e-05, KL(F||H) 8.19181e-06, 12 s
+[01:12:31] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_s1_5x_c_random.json
+[01:12:31] [pod] gold_s1_5x done; peak GPU 33.2 GiB
+[01:12:46] [S] S/gold_s2_5x: S 0.9989932321302688, KL(F||M) 1.28326, KL(F||H) 0.00129194, 9 s
+[01:12:46] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_s2_5x.json
+[01:13:12] [S] S/gold_s2_5x_c: S 0.999072420613844, KL(F||M) 1.05281, KL(F||H) 0.000976565, 9 s
+[01:13:12] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_s2_5x_c.json
+[01:14:06] [S] S/gold_s2_5x_random: S 0.8098238871761395, KL(F||M) 6.40925e-05, KL(F||H) 1.21889e-05, 12 s
+[01:14:06] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_s2_5x_random.json
+[01:14:29] [S] S/gold_s2_5x_c_random: S 0.8096798621090213, KL(F||M) 4.25313e-05, KL(F||H) 8.09457e-06, 12 s
+[01:14:29] [wrote] /root/work/experiments/qwen_held_readings/results/run2/gold/S/gold_s2_5x_c_random.json
+[01:14:29] [pod] gold_s2_5x done; peak GPU 33.2 GiB
+[01:14:29] STAGE 1 DONE gold
+peak host RSS 36.3 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/qwen_held_readings/results/run2/gold/ and run2_gold_pod.log ===
