@@ -1,0 +1,69 @@
+[19:46:19] [check] rows_cipher_None: ok {"shape": [128, 256]}
+[19:46:28] [check] rows_gold_None: ok {"shape": [128, 256]}
+[19:46:28] [S] rows cipher, fit own64: 64 fit rows, 64 read rows
+[19:46:52] [S] grams and pinv: 23 s, peak GPU 23.7 GiB
+[19:47:03] [S] control/cipher_fit_own64: S None, KL(F||M) 0, KL(F||H) 0.00124686, 11 s
+[19:47:03] [wrote] experiments/qwen_held_readings/results/run3_rehearsal/copy_cipher/control/cipher_fit_own64.json
+[19:47:03] [check] S_do_nothing_cipher_own64: ok {"kl_fm": 0.0, "kl_fh": 0.0012468555573065148, "S": null, "fit_rows": 64}
+[19:47:04] [S] rows cipher, fit own64_gold64: 128 fit rows, 64 read rows
+[19:47:29] [S] grams and pinv: 25 s, peak GPU 33.2 GiB
+[19:47:42] [S] control/cipher_fit_own64_gold64: S None, KL(F||M) 0, KL(F||H) 1.37161e-09, 13 s
+[19:47:42] [wrote] experiments/qwen_held_readings/results/run3_rehearsal/copy_cipher/control/cipher_fit_own64_gold64.json
+[19:47:42] [check] S_do_nothing_cipher_own64_gold64: ok {"kl_fm": 0.0, "kl_fh": 1.371609474586108e-09, "S": null, "fit_rows": 128}
+[19:47:44] [check] rows_cipher_1: ok {"shape": [128, 256]}
+[19:47:45] [check] rows_cipher_2: ok {"shape": [128, 256]}
+[19:47:45] [S] rows cipher, fit own64_repack256: 320 fit rows, 64 read rows
+[19:48:16] [S] grams and pinv: 31 s, peak GPU 33.2 GiB
+[19:48:41] [S] control/cipher_fit_own64_repack256: S None, KL(F||M) 0, KL(F||H) 7.55543e-10, 25 s
+[19:48:41] [wrote] experiments/qwen_held_readings/results/run3_rehearsal/copy_cipher/control/cipher_fit_own64_repack256.json
+[19:48:41] [check] S_do_nothing_cipher_own64_repack256: ok {"kl_fm": 0.0, "kl_fh": 7.555425258584725e-10, "S": null, "fit_rows": 320}
+[19:48:43] [S] rows cipher, fit own64_repack256_gold64: 384 fit rows, 64 read rows
+[19:49:16] [S] grams and pinv: 33 s, peak GPU 33.2 GiB
+[19:49:40] [S] control/cipher_fit_own64_repack256_gold64: S None, KL(F||M) 0, KL(F||H) 1.00225e-10, 25 s
+[19:49:40] [wrote] experiments/qwen_held_readings/results/run3_rehearsal/copy_cipher/control/cipher_fit_own64_repack256_gold64.json
+[19:49:40] [check] S_do_nothing_cipher_own64_repack256_gold64: ok {"kl_fm": 0.0, "kl_fh": 1.0022524389076568e-10, "S": null, "fit_rows": 384}
+[19:49:42] [check] rows_copy_None: ok {"shape": [128, 256]}
+[19:49:42] [S] rows copy, fit own64: 64 fit rows, 64 read rows
+[19:50:05] [S] grams and pinv: 23 s, peak GPU 33.2 GiB
+[19:50:16] [S] control/copy_fit_own64: S None, KL(F||M) 0, KL(F||H) 0.00223707, 11 s
+[19:50:16] [wrote] experiments/qwen_held_readings/results/run3_rehearsal/copy_cipher/control/copy_fit_own64.json
+[19:50:16] [check] S_do_nothing_copy_own64: ok {"kl_fm": 0.0, "kl_fh": 0.0022370698812597062, "S": null, "fit_rows": 64}
+[19:50:18] [S] rows copy, fit own64_gold64: 128 fit rows, 64 read rows
+[19:50:43] [S] grams and pinv: 25 s, peak GPU 33.2 GiB
+[19:50:56] [S] control/copy_fit_own64_gold64: S None, KL(F||M) 0, KL(F||H) 1.91682e-09, 13 s
+[19:50:56] [wrote] experiments/qwen_held_readings/results/run3_rehearsal/copy_cipher/control/copy_fit_own64_gold64.json
+[19:50:56] [check] S_do_nothing_copy_own64_gold64: ok {"kl_fm": 0.0, "kl_fh": 1.9168239962033424e-09, "S": null, "fit_rows": 128}
+[19:50:58] [check] rows_copy_1: ok {"shape": [128, 256]}
+[19:50:59] [check] rows_copy_2: ok {"shape": [128, 256]}
+[19:50:59] [S] rows copy, fit own64_repack256: 320 fit rows, 64 read rows
+[19:51:30] [S] grams and pinv: 31 s, peak GPU 33.2 GiB
+[19:51:51] [S] control/copy_fit_own64_repack256: S None, KL(F||M) 0, KL(F||H) 1.53604e-07, 21 s
+[19:51:51] [wrote] experiments/qwen_held_readings/results/run3_rehearsal/copy_cipher/control/copy_fit_own64_repack256.json
+[19:51:51] [check] S_do_nothing_copy_own64_repack256: ok {"kl_fm": 0.0, "kl_fh": 1.5360353117287042e-07, "S": null, "fit_rows": 320}
+[19:51:52] [S] rows copy, fit own64_repack256_gold64: 384 fit rows, 64 read rows
+[19:52:25] [S] grams and pinv: 33 s, peak GPU 33.2 GiB
+[19:52:50] [S] control/copy_fit_own64_repack256_gold64: S None, KL(F||M) 0, KL(F||H) 1.48491e-09, 25 s
+[19:52:50] [wrote] experiments/qwen_held_readings/results/run3_rehearsal/copy_cipher/control/copy_fit_own64_repack256_gold64.json
+[19:52:50] [check] S_do_nothing_copy_own64_repack256_gold64: ok {"kl_fm": 0.0, "kl_fh": 1.4849108325733748e-09, "S": null, "fit_rows": 384}
+[19:52:52] [wrote] experiments/qwen_held_readings/results/run3_rehearsal/copy_cipher/control/choice.json
+[19:52:52] [check] fit_sweep: ok {"floors": {"own64": {"cipher": 0.0012468555573065148, "copy": 0.0022370698812597062}, "own64_gold64": {"cipher": 1.371609474586108e-09, "copy": 1.9168239962033424e-09}, "own64_repack256": {"cipher": 7.555425258584725e-10, "copy": 1.5360353117287042e-07}, "own64_repack256_gold64": {"cipher": 1.0022524389076568e-10, "copy": 1.4849108325733748e-09}}, "floor_max": 1e-07}
+[19:52:52] STAGE 0 DONE: fit own64_gold64, floors {"cipher": 1.371609474586108e-09, "copy": 1.9168239962033424e-09}
+[19:52:52] [pod] copy_cipher: fit own64_gold64; 1 states, 1 to read, 4 S reads; order ['cipher_s0_last']
+[19:55:34] [fetch] last.safetensors: 5637 MB in 160 s
+[19:55:38] [fetch cipher_s0_last] p35r3-cipher-s0-last: 166 s, sha256 matches
+[19:55:38] [S] rows cipher, fit own64_gold64: 128 fit rows, 64 read rows
+[19:56:03] [S] grams and pinv: 25 s, peak GPU 33.2 GiB
+[19:56:03] [S] rows cipher: floor 1.37161e-07 per position; peak GPU 33.2 GiB
+[19:56:18] [S] control/output_only: S 0.9999999990892948, KL(F||M) 1.73205, KL(F||H) 1.57739e-09, 13 s
+[19:56:18] [wrote] experiments/qwen_held_readings/results/run3_rehearsal/copy_cipher/control/output_only.json
+[19:56:18] [check] S_output_only: ok {"S": 0.9999999990892948, "kl_fm": 1.732050352992435}
+[19:56:33] [S] S/cipher_s0_last: S 0.9319691577414875, KL(F||M) 6.43304, KL(F||H) 0.437645, 10 s
+[19:56:33] [wrote] experiments/qwen_held_readings/results/run3_rehearsal/copy_cipher/S/cipher_s0_last.json
+[19:57:02] [S] S/cipher_s0_last_c: S 0.9891838979167266, KL(F||M) 1.71435, KL(F||H) 0.0185426, 10 s
+[19:57:02] [wrote] experiments/qwen_held_readings/results/run3_rehearsal/copy_cipher/S/cipher_s0_last_c.json
+[19:58:05] [S] S/cipher_s0_last_random: S 0.9472762143704584, KL(F||M) 0.00106196, KL(F||H) 5.59906e-05, 17 s
+[19:58:05] [wrote] experiments/qwen_held_readings/results/run3_rehearsal/copy_cipher/S/cipher_s0_last_random.json
+[19:58:19] [S] S/cipher_s0_last_c_random: S 0.947209154436632, KL(F||M) 0.000224312, KL(F||H) 1.18416e-05, 14 s
+[19:58:19] [wrote] experiments/qwen_held_readings/results/run3_rehearsal/copy_cipher/S/cipher_s0_last_c_random.json
+[19:58:19] [pod] cipher_s0_last done; peak GPU 33.2 GiB
+[19:58:20] STAGE 1 DONE copy_cipher
