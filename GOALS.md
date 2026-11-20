@@ -4,6 +4,11 @@ The aim of the project, in one place. Owned by the user: agents propose edits, t
 before proposing any new experiment, task, architecture or theory direction. Working choices that could be revised
 live in `decisions.md`, and what has been tried lives in `experiments/TRIED.md`.
 
+**Current definition of reuse:** `theory/2026-11-18_definition_consolidated.md` holds the current wording. Latest
+`decisions.md` rows: "Wording approved" (user, 2026-11-18 ~19:00, wording of `reports/drafts/2026-11-18_draft_sec4-bullets-ask48b.md`)
+and "Mechanism settings and neuron level closed" (user, 2026-11-19, ask 52: "A part's mechanism is graded at the positions
+where the behavior is read"). Whoever changes the wording updates this line and that file in the same commit.
+
 *Status: 2026-10-14. The question is the user's (verbatim below); its precise form was given by the user after round 1.*
 
 ## The question (user, 2026-10-14, verbatim)

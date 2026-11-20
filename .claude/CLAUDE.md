@@ -116,7 +116,9 @@ could have been found for $0.
    resume from saved files and the downloads; every unknown the plan depends on (sizes, memory, step times, update
    size at the first steps, alive counts, disk) is measured there and written into the plan. This overrides "the
    scored run is its own smoke" for gated runs. What cannot fit a cluster card is rehearsed on the paid card in a
-   first stage of a few minutes, with a stop.
+   first stage of a few minutes, with a stop. The scoring path is rehearsed at the full read sizes, a tiny dictionary
+   being fine: E203's never scored ~1M task tokens and OOMed at the paid run's first snapshot (friction 852).
+   A runtime in a brief is estimated from one measured item times the count (friction 902).
 4. **Early checks in code.** Every stage has filed expected values for its first minutes (first steps, first
    reading), not only its end, and the code stops the job when one is missed.
 5. **One review**, by a fresh Opus agent that wrote neither: the plan against gates 1-4 and the code, in one brief
@@ -145,7 +147,8 @@ Write the hand-off into the relevant report or plan, not only the chat, so the n
   Before filing, run each rule against its edge cases (an empty or one-element pool, a zero denominator, ties, a
   case no branch covers) and fix it then: E38 Amendments 2 and 3 each filed a rule that was degenerate or incomplete,
   found only by the code writer, at a round trip each (2026-10-27). A control that two numeric paths agree (bf16 vs
-  fp32, batched vs single) takes its tolerance from a measured noise floor between them, stated in the plan: E38
+  fp32, batched vs single) takes its tolerance from a measured noise floor between them, stated in the plan (agreement bars on sums are
+  relative, never an absolute 1e-4; every bar, construction checks included, comes from a measured floor, friction 858, 885): E38
   Amendment 3's R4 guessed 1e-2, run 1 stopped at 0.0195 from rounding alone, and it cost a rerun.
   Also before filing: run the rule on the do-nothing state and ask whether it could pass the candidate's bar (E80's
   do-nothing sat under its pass bar, friction 453); a threshold takes its reference from a measured number at that site,
