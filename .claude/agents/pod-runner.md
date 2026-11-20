@@ -26,7 +26,9 @@ The brief gives the exact argv of every job, copied from the script's argument p
 interleaved it (friction 833). Its input list comes from a short CPU dry run of the same command with
 `INPUT_MANIFEST=<file>` set (`commute.jobs.record_inputs`; `python -m commute.jobs experiments/<name>/run.py ...` also
 catches opens before the import): the file lists every data file the run opened under the repo or `~/commute-data`,
-nested `results/large` and the tokenizer included. Stage each listed file; a brief walk of the code missed some
+nested `results/large` and the tokenizer included. Under `fleet/cpu-run` (no GPU) also set `INPUT_MANIFEST_CPU=1`,
+which puts everything asked for on "cuda" on the CPU, so the model load passes and later reads are listed; give the
+job memory for the model on CPU (friction 906). Stage each listed file; a brief walk of the code missed some
 (friction 832, 842).
 
 Refuse a scored run if `experiments/<name>/results/predictions.json` is missing. Say so and stop. A scored run of
@@ -134,7 +136,7 @@ pod's hours × rate; `status()`'s cost is the whole session's, all pods together
 - On a pod, `nproc` reports the host's CPUs (96) while the container's cgroup allows far fewer (7.65 on the
   2026-10-20 lora_split pod), so PyTorch's CPU stages oversubscribe and crawl. Before any CPU-heavy stage, set
   `OMP_NUM_THREADS` and `MKL_NUM_THREADS` to the cgroup's count, rounded down: quota ÷ period from
-  `/sys/fs/cgroup/cpu.max` (or `cpu.cfs_quota_us ÷ cpu.cfs_period_us` on cgroup v1). The split tables went from
+  `cpu.cfs_quota_us ÷ cpu.cfs_period_us`: pods are cgroup v1, there is no `/sys/fs/cgroup/cpu.max` (friction 870). The split tables went from
   64–82 s to 22 s each.
 - On Vast (`start(runtime="vast")`), the kernel lacks the machine's variables (`WANDB_API_KEY`, `COMMUTE_CACHE_DIR`,
   `HF_HOME`, `UV_CACHE_DIR`) and `pod_setup.sh` does not add them to it (an `--upload` run then fails at once,
@@ -148,13 +150,18 @@ pod's hours × rate; `status()`'s cost is the whole session's, all pods together
   offer), which the session budget does not count: 54 GB of Qwen files is about $0.65 per machine on top of the hourly price.
 - Code goes up with `sync()` only: pods have no `GIT_PAT`, so never `git clone` or `git fetch` on a pod. If a clone
   was tried, `rm -rf .git` before the run. The pod has no `.git`, so `require_filed` needs the filed predictions'
-  hash on the run line, `E120_PRED_SHA=<sha> .venv/bin/python experiments/<name>/run.py ...`; the brief gives it,
-  and if it does not, ask the lead (on dev: `git show HEAD:experiments/<name>/results/predictions.json | sha256sum`).
+  hash on the run line, `PRED_SHA=<sha> .venv/bin/python experiments/<name>/run.py ...`; the brief gives it
+  (the variable is `PRED_SHA`, not `E###_PRED_SHA`, friction 869), and if it does not, ask the lead (on dev: `git show HEAD:experiments/<name>/results/predictions.json | sha256sum`).
   Canonical text: `~/commute-agents/fleet/roles/shell-notes.md` → Pods → Set-up (friction 767, 817, 820, 843).
 - Then set up the pod with one command, right after the first `sync()`: `bash cluster/pod_setup.sh`, run as a
   subprocess from the kernel. It pins uv, builds `.venv` (CUDA torch) and fetches the VPD files in parallel, and logs
   each step with its time to `/root/setup.log` and the RunPod console. Don't install uv or run `uv sync` by hand; if
-  the script fails, its last line reads `[setup ...] FAILED (exit N) at line L: <command>`; report that and its log, and terminate. Copy its `[setup ...]` lines into your report, with the time from `start()` to the
+  the script fails, its last line reads `[setup ...] FAILED (exit N) at line L: <command>`; report that and its log, and terminate.
+  Exit 75 is not a failure: the venv is ready but the W&B fetch of the VPD files ran under 5 MB/s after 60 s (or
+  passed 20 min), as on some fresh hosts (0.3-0.4 MB/s, friction 853, 862, 871). If the run reads the VPD files, send
+  them from dev as the top of `cluster/pod_setup.sh` says (hard-link stage, `sync()`, ~5 min) and re-run it; never wait
+  out a slow fetch. To stop a set-up, `kill $(cat /root/pod_setup.pid)` (it also stops the fetch); never
+  `pkill -f pod_setup.sh`, which kills your own shell too (friction 863). Copy its `[setup ...]` lines into your report, with the time from `start()` to the
   first cell and how long the first `sync()` took: the lead uses them to see where set-up time goes. The `[env]` table
   in `remote-kernels.toml` sets `COMMUTE_CACHE_DIR` and `HF_HOME` to `/root/...`. No network volume: see the comment in
   `remote-kernels.toml` for why.
@@ -183,7 +190,8 @@ pod's hours × rate; `status()`'s cost is the whole session's, all pods together
   other command in between (2026-10-26: a local `mv` between them hung at a prompt and the idle H100 billed ~14 h,
   ~$40). `cluster/pod_setup.sh` also starts a watchdog that terminates the pod after 30 idle GPU minutes
   (`POD_IDLE_MIN`); a pod that must sit idle (waiting on a sibling or on the lead) needs the brief's
-  `POD_IDLE_MIN=<min> bash cluster/pod_setup.sh` or a GPU-light keepalive (friction 763, 777). If its set-up line says `runpodctl MISSING` or a variable `MISSING`, say so in your report.
+  `POD_IDLE_MIN=<min> bash cluster/pod_setup.sh` or a GPU-light keepalive (friction 763, 777). `touch
+  /root/idle-watchdog.stop` disarms the watchdog; starting `cluster/pod_idle_watchdog.sh` again replaces it (friction 863). If its set-up line says `runpodctl MISSING` or a variable `MISSING`, say so in your report.
   Terminate as soon as the run is done or dead, unless the brief says "keep the pod running for the next run": then leave it
   running, and the report says so, with the pod ID, the hourly rate and the time it went idle. A kept 4090 pod costs
   about $0.89/h idle; a fresh one costs ~5 min and ~$0.10 of setup.

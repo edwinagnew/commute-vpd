@@ -122,7 +122,7 @@ the breaks so they are seen rather than missed; look at each flagged sentence an
    each claim the figure that shows it. A claim without a figure gets one or is cut.
 2. Write sections 3–11, then the figures, then the "Reading it" paragraphs, then the answer paragraph.
 3. Run the checker and rewrite the flagged sentences that are dense:
-   `uv run python .claude/skills/writeup/check.py notebooks/E<NN>_<name>.ipynb reports/analyses/<file>.md`
+   `~/commute-agents/fleet/cpu-run python3 .claude/skills/writeup/check.py notebooks/E<NN>_<name>.ipynb reports/analyses/<file>.md`
    Errors (retired terms) print first and are not guidelines; `--quiet` prints only them; `--help` lists the flags. A
    head name like (2,4) and "up-projection" or "down-projection" are not flagged. For any other "projection" the
    message suggests "the component along X": the user used the word for three operations, so the plain sense is

@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import hashlib
+import os
 import subprocess
 import sys
 import textwrap
@@ -154,3 +155,33 @@ def test_require_filed_takes_the_sha_when_set_even_beside_a_git(tmp_path, monkey
 def test_require_filed_refuses_with_no_git_and_no_sha(tmp_path, monkeypatch):
     with pytest.raises(SystemExit, match="unset"):
         jobs.require_filed(_filed(tmp_path, monkeypatch, False))
+
+
+def test_stop_writes_a_stopped_marker_and_a_passing_rerun_removes_it(tmp_path: Path):
+    path = tmp_path / "stage0_p5s1.json"
+    with pytest.raises(SystemExit) as e:
+        jobs.stop(path, {"a": 1}, "stage 0: a miss", log=lambda _m: None)
+    assert e.value.code == 1 and (tmp_path / "stage0_p5s1.stopped").read_text() == "stage 0: a miss\n"
+    jobs.write_stage(path, {"a": 1, "done": True})
+    assert not (tmp_path / "stage0_p5s1.stopped").exists()
+    assert jobs.stopped_marker(tmp_path / "fact.stopped.json").name == "fact.stopped"
+
+
+def test_input_manifest_cpu_dry_run_passes_a_cuda_load(tmp_path: Path):
+    """INPUT_MANIFEST_CPU=1: a script that hard-codes "cuda" runs on the CPU and its later reads are still listed."""
+    data = jobs.EXPERIMENTS.parent / "pyproject.toml"  # any file under the repo
+    script = textwrap.dedent(f"""
+        import torch
+        from torch import nn
+        from commute import jobs
+        assert torch.cuda.is_available()
+        m = nn.Linear(3, 4).to("cuda")
+        y = m(torch.zeros(2, 3, device="cuda").cuda()).to(torch.device("cuda:0"))
+        torch.cuda.synchronize()
+        assert y.device.type == "cpu" and next(m.parameters()).device.type == "cpu"
+        open({str(data)!r}).read()
+    """)
+    env = {**os.environ, "INPUT_MANIFEST": str(tmp_path / "m.txt"), "INPUT_MANIFEST_CPU": "1", "CUDA_VISIBLE_DEVICES": ""}
+    r = subprocess.run([sys.executable, "-c", script], check=False, capture_output=True, text=True, timeout=120, env=env)
+    assert r.returncode == 0, r.stderr
+    assert (tmp_path / "m.txt").read_text() == "pyproject.toml\n"
