@@ -75,6 +75,8 @@ class Settings:
     pile_train_n: int
     val_start: int
     val_n: int
+    held_extra_start: int
+    held_extra_n: int
     n_read: int
     n_fit: int
     gauss_draw: int
@@ -87,16 +89,18 @@ class Settings:
             object.__setattr__(self, f, tuple(getattr(self, f)))
         assert list(self.null_rates) == sorted(self.null_rates) and self.n_eval <= self.n_held and self.n_read <= self.n_held
         assert self.n_own <= self.n_train and self.n_fit <= self.n_train and self.n_held <= self.val_n and self.n_train <= self.pile_train_n
+        assert self.held_extra_start >= self.pile_train_n  # plural held-out rows never overlap the training rows
 
 
 def log(msg: str) -> None:
     print(f"{time.strftime('%H:%M:%S')} {msg}", flush=True)
 
 
-def build_items(v: NT.Vocab, C: Settings, train_rows: Tensor, val_rows: Tensor) -> dict[str, dict[str, Any]]:
-    """Per task: train and held-out items (held out: Pile val rows, and for sequences also held-out templates)."""
+def build_items(v: NT.Vocab, C: Settings, train_rows: Tensor, val_rows: Tensor, extra_rows: Tensor) -> dict[str, dict[str, Any]]:
+    """Per task: train and held-out items (held out: Pile val rows, and for sequences also held-out templates; plural
+    mines the val rows then Pile train rows from held_extra_start, which the training rows never reach)."""
     tr, ht = NT.plural_items(train_rows, v, C.prompt_len, C.gap, C.n_train, C.seed)
-    he, hs = NT.plural_items(val_rows, v, C.prompt_len, C.gap, C.n_held, C.seed)
+    he, hs = NT.plural_items(torch.cat([val_rows, extra_rows]), v, C.prompt_len, C.gap, C.n_held, C.seed)
     cores = NT.sequence_cores(C.seq_lo, C.seq_hi, C.held_frac, C.seed)
     return {"plural": {"train": tr, "held": he, "scanned": {"train": ht, "held": hs}},
             "sequence": {"train": NT.sequence_items(train_rows, cores["train"], v, C.prompt_len, C.n_train, C.seed),
@@ -126,7 +130,8 @@ class Ctx:
         self.v = NT.Vocab([self.tok.decode([i]) for i in range(len(self.tok))], self.tok.encode)
         self.kl_rows = cached_rows("val", 0, self.C.kl_rows)
         val = cached_rows("val", self.C.val_start, self.C.val_n)
-        self.items = build_items(self.v, self.C, cached_rows("train", 0, self.C.pile_train_n), val)
+        extra = cached_rows("train", self.C.held_extra_start, self.C.held_extra_n)
+        self.items = build_items(self.v, self.C, cached_rows("train", 0, self.C.pile_train_n), val, extra)
 
     def gen(self, seed: int, salt: int) -> torch.Generator:
         return torch.Generator(device=self.net.device).manual_seed(1_000_000 * salt + seed)

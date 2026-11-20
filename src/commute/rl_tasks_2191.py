@@ -124,7 +124,8 @@ def plural_items(rows: Tensor, v: Vocab, L: int, gap: int, n: int, seed: int) ->
     for row in rows:
         if len(toks) == n:
             break
-        r, scanned = row.tolist(), scanned + 1
+        r: list[int] = row.tolist()
+        scanned += 1
         cues = plural_cues(r, v, L, gap, set(tgt), block)
         if not cues:
             continue
@@ -134,7 +135,10 @@ def plural_items(rows: Tensor, v: Vocab, L: int, gap: int, n: int, seed: int) ->
         c = list(w)
         c[d - (p - L)] = v.ids[DET_SG.get(v.texts[r[d]], " the")]
         c[d + 1 - (p - L)] = sg
-        toks.append(w), ctrl.append(c), true.append(r[p]), key.append(f"{v.texts[r[d + 1]]} ->{v.texts[r[p]]}")
+        toks.append(w)
+        ctrl.append(c)
+        true.append(r[p])
+        key.append(f"{v.texts[r[d + 1]]} ->{v.texts[r[p]]}")
     N = len(toks)
     T = torch.tensor(tgt).expand(N, -1)
     return Items(torch.tensor(toks), T.clone(), torch.tensor(cmp).expand(N, -1).clone(), torch.tensor(true), torch.tensor(ctrl), T.clone(), key), scanned
