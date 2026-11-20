@@ -10,8 +10,12 @@ Items, each on its own windows D as its source experiment read it:
              x2, x10, moved, rebuilt                      E195's reuse items as E214 read them, copy24 held-out, every position
     stage 2  every saved state of E187's nine pairs      as E221 read them: 512 read windows, last position
 Stage 1 items get three searches (all of D, and its two halves for the band); every other item one. Per item,
-results/items/<item>.json is written when it ends and results/large/<item>.npz holds s and each K*; a rerun skips an
-item whose JSON exists. Stage 0 runs first and alone on every shard (results/stage0_<tag>.json, skipped once done;
+results/items/<item>.json is written when it ends (with the split's norm shares per matrix and in total), and
+results/large/<out>_<item>.npz holds the per-variable arrays (user amendment 2026-11-20): s (2 x n, fp32; row 0 every
+position, row 1 the read positions), changed (bool), and per search <search>_in_K_polished, <search>_in_K_prefix (bool)
+and <search>_attribution (rankings x n, fp32), with site_names and site_off for the variable layout (embedding 0, each
+site's subcomponents from site_off then its remainder, the grafts, the unembedding last). A rerun skips an item whose
+JSON exists. Stage 0 runs first and alone on every shard (results/stage0_<tag>.json, skipped once done;
 exit 1 on a miss). Every guard of predictions.json R0 stops the job on a miss.
 
     python experiments/kstar_vpd/run.py --tag pod0 --shard 0 4 2>&1 | tee -a experiments/kstar_vpd/results/run_pod0.log
@@ -46,6 +50,7 @@ EXPERIMENT = json.loads(PRED.read_text())["experiment"]
 log, dump, stop = KL.log, KL.dump, KL.stop
 E214_ITEMS = ("do_nothing", "new_few", "new_thin", "x2", "x10", "moved", "rebuilt")  # built by E214's World
 KP_TH = KP.load_config()[1]  # E221's load-check thresholds (kl_repro_rel, size_rel)
+CHECKS = ("split_fp64", "F_from_pieces", "M_from_pieces")  # per-site guards, each against th["<name>_tol"]
 
 
 @dataclass(frozen=True)
@@ -116,7 +121,7 @@ class World:
 
 def guards(item: str, feat: KV.Feat, diffs: list[str], gates: dict[str, float], th: dict[str, Any]) -> list[str]:
     miss = [f"{k} {k2} {v:.3g}" for k, c in feat.checks.items() for k2, v in c.items()
-            if k2 in ("split_fp64", "F_from_pieces", "M_from_pieces") and not v <= th[f"{k2}_tol"]]  # fmt: skip
+            if k2 in CHECKS and not v <= th[f"{k2}_tol"]]  # fmt: skip
     miss += [f"parameters outside the decomposition differ: {diffs[:4]}"] if diffs else []
     miss += [f"gate {k} {v:.3g}" for k, v in gates.items() if not v <= th["gate_tol"]]
     if item == "do_nothing" and (feat.changed or any(s.changed for s in feat.sites)):
@@ -124,15 +129,25 @@ def guards(item: str, feat: KV.Feat, diffs: list[str], gates: dict[str, float], 
     return miss
 
 
-def one_search(ctx: KV.Ctx, s: Tensor, feat: KV.Feat, cfg: Config, label: str) -> dict[str, Any]:
+def membership(K: list[int], n: int) -> np.ndarray:
+    keep = np.zeros(n, dtype=bool)
+    keep[K] = True
+    return keep
+
+
+def one_search(ctx: KV.Ctx, s: Tensor, feat: KV.Feat, cfg: Config, label: str) -> tuple[dict[str, Any], dict[str, np.ndarray]]:
+    """The search's record (for the item JSON) and its per-variable arrays: K* membership (polished and prefix sets, bool)
+    and the attribution scores of every ranking (fp32, rankings x variables)."""
     t0, bar = time.time(), (1 - cfg.alpha) * float(ctx.kl_none.mean())
     f = KV.search(lambda keep: KV.kl_mean(ctx, keep), lambda c: KV.attribution(ctx, c), feat.n, bar, cfg.reranks, cfg.eval_cap, cfg.chunk_div, log)
-    rec = KV.read(f, s, feat) | {"bar": bar, "seconds": time.time() - t0, "K_prefix": f.prefix, "K_polished": f.polished}
+    rec: dict[str, Any] = KV.read(f, s, feat) | {"bar": bar, "seconds": time.time() - t0}
+    arrays = {"in_K_polished": membership(f.polished, feat.n), "in_K_prefix": membership(f.prefix, feat.n),
+              "attribution": torch.stack(f.attributions).float().numpy()}  # fmt: skip
     p, q = rec["prefix"], rec["polished"]
     log(f"  {label}: |K*| {q['size']} (prefix {p['size']}), R read {q['R_read']:.6f} (prefix {p['R_read']:.6f}), R all {q['R_all']:.6f}, "
         f"f {q['f']:.4f}, site-remainder share {q['site_remainder_share']:.4f}, graft share {q['graft_share']:.4f}; "
         f"{rec['evals']} evaluations{' (cap hit, chunk ' + str(rec['chunk_min']) + ')' if rec['capped'] else ''}, {rec['seconds']:.0f} s")  # fmt: skip
-    return rec
+    return rec, arrays
 
 
 def read_item(w: World, item: str, cfg: Config, th: dict[str, Any], out: Path) -> dict[str, Any]:
@@ -148,10 +163,10 @@ def read_item(w: World, item: str, cfg: Config, th: dict[str, Any], out: Path) -
     ctx = KV.prepare(F, M, feat, toks, at, cfg.batch)
     base = {"experiment": EXPERIMENT, "item": item, "n_windows": len(toks), "read_positions": "last" if at == KP.LAST else "all", "n_vars": feat.n,
             "n_changed": len(feat.changed), "n_grafts": len(feat.grafts), "kl_none": float(ctx.kl_none.mean()), "kl_fm": float(ctx.kl_fm.mean()),
-            "checks": feat.checks, "gates": KV.gates(ctx, feat.n)} | rec  # fmt: skip
+            "checks": feat.checks, "split_shares": KV.norm_shares(feat), "gates": KV.gates(ctx, feat.n)} | rec  # fmt: skip
     log(f"{item}: {len(toks)} windows, {feat.n} variables, {len(feat.changed)} changed, {len(feat.grafts)} grafts; KL(F || F_empty) "
         f"{base['kl_none']:.6g}, KL(F || M) {base['kl_fm']:.9g}; gates {base['gates']}; worst split check "
-        f"{max(v for c in feat.checks.values() for k, v in c.items() if k != 'outside_share'):.3g}")  # fmt: skip
+        f"{max(c[k] for c in feat.checks.values() for k in CHECKS):.3g}; split shares over all 24 {base['split_shares']['total']}")  # fmt: skip
     out.mkdir(parents=True, exist_ok=True)
     miss = guards(item, feat, KV.undecomposed_differences(M, F, w.keys), base["gates"], th) + KP.load_checks(item, base, KP_TH)
     if miss:
@@ -165,10 +180,12 @@ def read_item(w: World, item: str, cfg: Config, th: dict[str, Any], out: Path) -
     if item in cfg.known:
         perm = torch.randperm(len(toks), generator=torch.Generator().manual_seed(cfg.split_seed))
         variants |= {"half1": perm[: len(toks) // 2], "half2": perm[len(toks) // 2 :]}
-    searches = {k: one_search(ctx if k == "main" else ctx.subset(idx, cfg.batch), s, feat, cfg, f"{item} {k}") for k, idx in variants.items()}
-    arrays: dict[str, Any] = {f"K_{k}_{v}": np.array(r.pop(f"K_{v}")) for k, r in searches.items() for v in ("prefix", "polished")}
+    done = {k: one_search(ctx if k == "main" else ctx.subset(idx, cfg.batch), s, feat, cfg, f"{item} {k}") for k, idx in variants.items()}
+    searches = {k: r for k, (r, _) in done.items()}
+    arrays: dict[str, Any] = {f"{k}_{name}": v for k, (_, a) in done.items() for name, v in a.items()}
     (RESULTS / "large").mkdir(parents=True, exist_ok=True)
-    np.savez_compressed(RESULTS / "large" / f"{out.name}_{KP.fname(item)}.npz", s=s.numpy(), changed=np.array(sorted(feat.changed)), **arrays)
+    np.savez_compressed(RESULTS / "large" / f"{out.name}_{KP.fname(item)}.npz", s=s.float().numpy(), changed=membership(sorted(feat.changed), feat.n),
+                        site_names=np.array([x.name for x in feat.sites]), site_off=np.array([x.off for x in feat.sites]), **arrays)  # fmt: skip
     res = base | {"reading": "read", "searches": searches, "seconds": time.time() - t0, "peak_gpu_gb": torch.cuda.max_memory_allocated() / 2**30}
     dump(path, res)
     log(f"{item}: done in {res['seconds']:.0f} s; peak GPU memory {res['peak_gpu_gb']:.2f} GB")

@@ -28,6 +28,13 @@ def test_split_exact_and_pieces_rebuild_both_weights() -> None:
     assert s.changed and chk["split_fp64"] < 1e-12 and chk["F_from_pieces"] < 1e-5 and chk["M_from_pieces"] < 1e-5
 
 
+def test_norm_shares_with_cross_terms_sum_to_one() -> None:
+    _, chk, _ = _pair(0.3, seed=2)
+    feat = KV.Feat([], [], 2, set(), set(), {"w": chk})
+    tot = KV.norm_shares(feat)["total"]
+    assert tot is not None and abs(sum(tot.values()) - 1) < 1e-9 and abs(tot["cross_out2"]) < 1e-9
+
+
 def test_no_change_gives_zero_pieces() -> None:
     s, chk, _ = _pair(0.0)
     assert not s.changed and not s.dU.any() and not s.dV.any() and torch.equal(s.rf, s.rm) and chk["outside_share"] == 0.0

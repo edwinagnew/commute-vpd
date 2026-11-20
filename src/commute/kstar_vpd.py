@@ -97,7 +97,8 @@ def _rel(a: Tensor, b: Tensor) -> float:
 def _site(name: str, off: int, WM: Tensor, WF: Tensor, U: Tensor, V: Tensor, delta: Tensor, b: SP.Basis) -> tuple[Site, dict[str, float]]:
     Ua, Va, dW = U.T.double(), V.double(), WF.double() - WM.double()
     dUa, dVa = SP.least_squares_split(dW, b, Ua, Va) if dW.any() else (torch.zeros_like(Ua), torch.zeros_like(Va))
-    out = dW - SP.dsigma(dUa, dVa, Ua, Va)
+    wr, rd = dUa @ Va.T, Ua @ dVa.T  # write side sum_c du_c v_c^T, read side sum_c u_c dv_c^T
+    out = dW - (wr + rd)
     C = U.shape[0]
     s = Site(name, off, off + C, V.float(), U.float(), dVa.float(), dUa.T.float().contiguous(), (delta.double() + out).T.float().contiguous(),
              delta.T.float().contiguous(), bool(dW.any()))  # fmt: skip
@@ -106,7 +107,21 @@ def _site(name: str, off: int, WM: Tensor, WF: Tensor, U: Tensor, V: Tensor, del
     chk = {"split_fp64": _rel(SP.dsigma(dUa, dVa, Ua, Va) + out, dW), "F_from_pieces": _rel(rebuilt_F, WF.double()),
            "M_from_pieces": _rel(f64["U"].T @ f64["V"].T + f64["rm"].T, WM.double()),
            "outside_share": float(out.norm() / dW.norm()) if dW.any() else 0.0}  # fmt: skip
+    chk |= {"dW2": float((dW**2).sum()), "write2": float((wr**2).sum()), "read2": float((rd**2).sum()), "outside2": float((out**2).sum()),
+            "cross_wr2": 2 * float((wr * rd).sum()), "cross_out2": 2 * float(((wr + rd) * out).sum())}  # fmt: skip
     return s, chk
+
+
+NORMS = ("write2", "read2", "outside2", "cross_wr2", "cross_out2")
+
+
+def norm_shares(feat: Feat) -> dict[str, Any]:
+    """Squared Frobenius norms of the summed write side, read side and outside part, and the two cross terms (2<w, r>
+    and 2<w + r, outside>), each as a share of |delta-W|^2, per matrix (None where delta-W = 0) and over all 24 (sums
+    of numerators over the sum of |delta-W|^2). The five shares sum to 1; the first three alone need not."""
+    per = {k: {n: c[n] / c["dW2"] for n in NORMS} if c["dW2"] > 0 else None for k, c in feat.checks.items()}
+    tot = sum(c["dW2"] for c in feat.checks.values())
+    return {"per_matrix": per, "total": {n: sum(c[n] for c in feat.checks.values()) / tot for n in NORMS} if tot > 0 else None}
 
 
 def featurize(M: R.Model, F: R.Model, uv: dict[str, tuple[Tensor, Tensor]], delta: dict[str, Tensor], b: dict[str, SP.Basis]) -> Feat:
@@ -326,6 +341,7 @@ class Found:
     capped: bool
     chunk_min: int  # the smallest chunk size the polish reached
     prefix_sizes: list[int]  # per ranking
+    attributions: list[Tensor]  # per ranking, the attribution scores (n,) that ordered it
 
 
 def search(ev: Callable[[Tensor], float], grad: Callable[[Tensor], Tensor], n: int, bar: float, reranks: int, cap: int, chunk_div: int,
@@ -348,6 +364,7 @@ def search(ev: Callable[[Tensor], float], grad: Callable[[Tensor], Tensor], n: i
         return keep
 
     best, sizes, g = None, [], grad(torch.full((n,), 0.5))
+    gs = [g]
     for r in range(reranks + 1):
         order, lo, hi = g.argsort(descending=True), 0, n
         while hi - lo > 1 and evals < cap:
@@ -358,6 +375,7 @@ def search(ev: Callable[[Tensor], float], grad: Callable[[Tensor], Tensor], n: i
         log(f"    ranking {r}: prefix {hi}, {evals} evaluations")
         if r < reranks:
             g = grad(best.float())
+            gs.append(g)
     assert best is not None
     members = best.nonzero().squeeze(1)
     drop = members[g[members].argsort()].tolist()  # least attributed first
@@ -373,7 +391,7 @@ def search(ev: Callable[[Tensor], float], grad: Callable[[Tensor], Tensor], n: i
             cmin = min(cmin, c)
         else:
             i += 1
-    return Found(members.tolist(), keep.nonzero().squeeze(1).tolist(), evals, i < len(drop), cmin, sizes)
+    return Found(members.tolist(), keep.nonzero().squeeze(1).tolist(), evals, i < len(drop), cmin, sizes, gs)
 
 
 def read(found: Found, s: Tensor, feat: Feat) -> dict[str, Any]:

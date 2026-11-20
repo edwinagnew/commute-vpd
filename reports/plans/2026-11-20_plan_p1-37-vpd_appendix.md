@@ -1,4 +1,4 @@
-# Appendix: P1.37 apparatus (E###)
+# Appendix: P1.37 apparatus (E226)
 
 *Companion to `reports/plans/2026-11-20_plan_p1-37-vpd.md`. Code `src/commute/kstar_vpd.py`, `experiments/kstar_vpd/`.*
 
@@ -16,6 +16,22 @@ uses param-decomp's layout: U (C, d_out), V (d_in, C) and W0 = Σ_c u_c v_cᵀ +
   site-remainder share.
 - **Embedding and unembedding.** Each is one variable. The run stops unless their weights, and every other parameter
   outside the 24 matrices, are equal in F and M, so both read s = 1 by identity.
+
+**Norm shares of the split (user amendment, 2026-11-20).** Per matrix, write the split as three summed matrices:
+
+- the write side w = Σ_c du_c v_cᵀ = dU V_Aᵀ;
+- the read side r = Σ_c u_c dv_cᵀ = U_A dVᵀ;
+- the outside part o = δW_out.
+
+These are norms of the summed matrices, not sums of per-subcomponent norms. The JSON's `split_shares` gives each of
+‖w‖², ‖r‖² and ‖o‖² as a share of ‖δW‖². It also gives the two cross terms, 2⟨w, r⟩ and 2⟨w + r, o⟩.
+
+The five shares sum to 1 exactly. The first three need not: w and r are not orthogonal, so their cross term can be
+positive or negative. The least-squares residual is orthogonal to the split's range, so 2⟨w + r, o⟩ is 0 up to
+rounding and the basis truncation.
+
+Shares are given per matrix (None where δW = 0) and over all 24, as the summed numerators over the summed ‖δW‖².
+`tests/test_kstar_vpd.py` checks the sum to 1.
 
 ## 2. F_K
 
