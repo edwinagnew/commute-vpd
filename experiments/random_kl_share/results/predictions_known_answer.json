@@ -1,0 +1,71 @@
+{
+  "experiment": "E228",
+  "cell": "P2.44",
+  "stage": "known-answer stage (check 1)",
+  "plan": "reports/plans/2026-11-20_plan_p2-44-random-kl-matched.md, section 'Known-answer stage (check 1)'",
+  "code": "experiments/random_kl_share/known_answer.py",
+  "request": "user 2026-11-20 11:46: 'Check 1: the re-gating share and the two strongest baselines (effective rank, neurons for half the gain) on the P1.37/E226 items: do-nothing control, E214 two built new edits, E195 four reuse items; forward passes only, rule filed first, same pass rule as R (reuse items above new).' Folded into P2.44 at 12:24. E227 (P2.43) read these items on altered windows (cue items' answer appended, copy24 windows cut after position 20); its share is invalid, its effective rank (no rows) stands and is cited, not recomputed: x2 6.2, x10 6.2, rebuilt 604, new_few 7.98, new_thin 7.87, moved does not apply (reports/analyses/2026-11-20_analysis_e227-known-answer-baselines.md).",
+  "settings": {
+    "reuse": ["x2", "x10", "rebuilt"],
+    "new": ["new_few", "new_thin"],
+    "absent": ["moved"],
+    "items_source": "E214's and E226's known-answer items (experiments/kstar_levels/run.py World.make; E226's R1b pools). Moved appends 8 neurons to layer 1, so it is not a change of M's 24 decomposed matrices and none of the three readings applies to it (E227 read it 'does not apply'); R1, which includes moved, is therefore 'not read' for every reading here by construction, and the filed rule is R1b's pools",
+    "split_seed": 186001,
+    "split_seed_source": "E226's and E227's, so the halves are drawn the same way",
+    "split_tol": 1e-06,
+    "split_tol_source": "E228's (commute.split.bases default), with round 1's alive set (experiments/transport_test/results/large/alive.pt)"
+  },
+  "windows_and_targets": {
+    "cue items (do_nothing, new_few, new_thin)": "E214's 512 cue windows of 41 tokens fed whole (commute.realistic_reads.TargetRead), read position 40 (the last), target each window's cue answer y (E214's written answer, the one the edit trains)",
+    "copy24 items (x2, x10, rebuilt)": "E195's 75 held-out copy24 windows of 41 tokens fed whole, read position 20 (half). The edits lower the copy answer there (E227: gains -0.113, -2.08, -0.106), so the target per row is the token whose log-probability M + dW raises most over M at position 20 (the edit's own most-raised token, chosen on the same rows; known_answer.py most_raised). Its gain is therefore positive by selection",
+    "kl": "summed over positions 0 to the read position (E228's convention): every position for the cue items, positions 0-20 for copy24 (E214 read copy24 at every position)"
+  },
+  "thresholds": {
+    "gate_tol": 0.001,
+    "neuron_reproduce_tol": 0.0001,
+    "band_min": {"kl_share": 0.0314, "r": 0.0314, "k_half": 1.0},
+    "thresholds_source": "gate_tol: E214's, E226's and E227's filed value (relative logit error; 0 to 2e-6 measured in E227); neuron_reproduce_tol: E227's filed r_half_num tolerance (E211 reproduced it to 1e-13); band_min: E228's and E227's (kl_share and r: E161's batch sd of r; k_half: one grid step in log2 units), used only when every split-half gap is non-finite or 0"
+  },
+  "readings": {
+    "kl_share": "E228's primary reading (run.py summary): (K00 - K01) / (K00 - K11), nan when K00 - K11 <= 0",
+    "r": "GOALS.md's (L01 - L00) / (T1 - T0) in log-odds of the target at the read position, nan under a gain of 1",
+    "k_half": "E98's neurons for half the gain (commute.realistic_reads.k_half_of, E227's call), on whole windows; scored as -log2(k_half), fewer neurons = more reuse (E227's orientation); not read when the neuron-level share r_half is not above 0.1 or its numerator not positive",
+    "erank": "not read here: E227's stands (weight change only)"
+  },
+  "expected": {
+    "do_nothing": {"numerator": 0, "gain": 0, "kl": 0, "K00-K0": 0, "K01-K0": 0, "K10-K00": 0, "K11-K01": 0, "r_half_num": 0, "G": 0, "gate": 0, "kl_share": "nan", "r": "nan", "k_half": "not read (null)"},
+    "new items, neurons": "equal to E227's saved readings (k_half null; r_half_num -8.596 new_few, -8.385 new_thin): the neuron reader runs no Gamma and the model is causal, so tokens after the read position do not reach it and the target is the same. A stop if not",
+    "new items, r": "gain as E227 (16.6, 16.3: T at the read position is causal); share differs from E227's 0.366 / 0.377 because Gamma now sees the whole row without the answer; lean 0.2-0.6, low confidence",
+    "new items, kl_share": "finite; no prior on the 67M; lean 0.3-1.0, low confidence",
+    "reuse items, r": "gain positive by selection; x10 likely at or above 1, x2 and rebuilt likely under 1 (their effect at position 20 is about a tenth of a log-odds on the copy answer): nan for those two, low-medium confidence",
+    "reuse items, kl_share": "finite (KL is target-free); no prior",
+    "reuse items, k_half": "not read on x2 and rebuilt (gain under the floor); x10 unknown",
+    "rules": "kl_share: 'mixed' (lean, low confidence); r: 'mixed: n of 6 pairs ordered, k unread' with x2 and rebuilt unread (medium); k_half: 'silent' (new items not read, as E227, medium-high)",
+    "time": "E227 on a cluster L40 (job 62219, cluster/logs/commute-known-baselines-62219.out): edits built and stage 0 in 51 s, then 15 s per cue item (512 rows) and 5 s per copy24 item (75 rows) for its share and k_half on three row sets. Here add E228's pass (7 masked or CI forwards against the share's 4, plus the split and the KL): about 30 s per cue item and 10 s per copy24 item, plus the split bases at start (unmeasured); about 5 min in all on an L40 or H100, peak GPU about 7 GB (E227 6.9 GB)"
+  },
+  "rules": {
+    "stops": {
+      "rule": "exit 1 unless: (a) first, the do-nothing (E214's cue windows, zero change) reads every number in expected.do_nothing exactly 0, both shares nan and k_half null; (b) per item, M plus its weight change gives F's logits within gate_tol; (c) per new item, k_half equals E227's saved and r_half_num is within neuron_reproduce_tol of it.",
+      "blind_to": "whether any reading means reuse; (a) checks the readers and the split at a zero change, (b) the item's weight change, (c) the whole-window path and the target for the neuron reader",
+      "positive_control": "(c): a reading of known value on the same items and rows"
+    },
+    "band": {
+      "rule": "per reading, R's band: the largest |reading(half 1) - reading(half 2)| over the five read items (halves by split_seed; items with a nan half left out); band_min when none is finite or all are 0",
+      "absolute_or_relative": "absolute, reading units (-log2 for k_half)"
+    },
+    "per reading (kl_share, r, k_half): R1b's rule": {
+      "rule": "over the 6 pairs (reuse item, new item) from reuse x2, x10, rebuilt and new new_few, new_thin: a pair is ordered when reuse - new > band, strictly, both finite. 'reuse above new' when all 6 pairs are read and ordered; 'silent' when no pair is read; otherwise 'mixed: n of 6 pairs ordered' (with ', u unread' when some pair has a nan side)",
+      "absolute_or_relative": "absolute",
+      "edge_cases": "all nan: 'silent'; ties (reuse - new equal to the band, or both equal with band 0): not ordered; one-element pools: one pair, the same rule; zero change (every reading nan): 'silent', never a pass; a degenerate band: band_min. Run on synthetic numbers in the CPU dry run before filing",
+      "do_nothing_against_the_bar": "the do-nothing reads nan in every reading, so it cannot be ordered: 'silent'"
+    },
+    "R1 (with moved)": "not read for every reading by construction (moved does not apply); reported as such",
+    "reported, not scored": "per item: the five K cells per position, kl_status, r's numerator and gain, the KL, k_half's r_half, numerator, G and k grid, the reuse items' set of targets, seconds, peak GPU"
+  },
+  "blind_to": {
+    "kl_share": "what the change does to any one answer; a change mostly outside the alive span sits near 1 whatever it is; copy24 positions after 20",
+    "r": "any change gaining under 1 log-odds on the target; for the reuse items the target is chosen by the edit itself, so a gain is guaranteed in sign but not in size",
+    "k_half": "anything not carried by MLP neurons; any item whose neuron-level share is not above 0.1",
+    "all": "moved (appended neurons); one construction per item, one seed, one model"
+  }
+}
