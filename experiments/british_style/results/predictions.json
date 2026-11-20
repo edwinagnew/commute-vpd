@@ -1,15 +1,36 @@
 {
-  "experiment": "E### (number from the lead; cell P2.48)",
+  "experiment": "E233 (cell P2.48)",
   "filed": null,
   "draft": "2026-11-20, designer phase A; filed when the lead commits it with the E-number, before any run of run.py",
   "plan": "reports/plans/2026-11-20_plan_p2-48-british-style.md",
   "card": "experiments/british_style/card.md",
   "settings": {
     "word_list": "hyperreality/American-British-English-Translator@16ec8158bd31fd8fc13bf29a2a5165ca12c7dd3f data/american_spellings.json",
-    "ambiguity_lists": [
-      "data/british_spellings.json",
-      "data/different_meanings.json"
+    "list_url": "https://raw.githubusercontent.com/hyperreality/American-British-English-Translator/16ec8158bd31fd8fc13bf29a2a5165ca12c7dd3f/data/",
+    "list_sha256": {
+      "american_spellings.json": "9b742c86ea859d76ef9f305f3311b6307e93291ada5b8046eb8f0d6388ded092",
+      "british_spellings.json": "7f1f3acfeb4e8bfa2219643972997566d42926f6df1978d3a3730b6dbcc6a5f5",
+      "different_meanings.json": "43e71ad9575b909f32225b8c83499db400b1947a969006ccc08fbaf2f7c98cfd"
+    },
+    "list_sha256_source": "sha256 of the three files fetched 2026-11-20 at that commit; the job downloads them into artifacts/spelling/<commit>/ when missing and refuses a mismatch",
+    "rehearse_cap": 40,
+    "rehearse_targets": [
+      0.001,
+      0.002
     ],
+    "rehearse_source": "the rehearsal's training stage only (run.py rehearse): seed 0, both tasks, cut to 40 steps, saved at sizes the first steps reach, so saves, reads and resume are exercised at the full read size",
+    "trace_steps": [
+      1,
+      10,
+      40,
+      100,
+      200,
+      300,
+      400,
+      500,
+      600
+    ],
+    "ambiguity_lists_source": "data/british_spellings.json and data/different_meanings.json of the same commit (spelling.build_pairs reads them by name)",
     "word_list_source": "the repository's American-to-British spelling map (1,800 pairs; 54,504 bytes at that commit, read 2026-11-20). A pair is kept when both forms are lowercase letters only, the American form is not a key of british_spellings.json (also a British spelling) nor of different_meanings.json (a word whose meaning differs), and it is not in `exclude`. Measured 2026-11-20 (tokenizer only): 1,759 pairs kept of 1,800",
     "exclude": [
       "practice",
