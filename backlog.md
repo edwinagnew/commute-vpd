@@ -385,3 +385,4 @@ Deferred ideas and loose ends. Date each entry.
   `src/commute/step_split.py`, and the re-gating measurements in `src/commute/regating.py` (67M) and
   `src/commute/share_reading.py` (Qwen). Needs `/design` and a cell.
 - 2026-11-20 compare-lead (from E228): a random-change control for the log-odds share r, with random changes matched on gain (KL-matched ones never reach r's floor of 1 log-odds). Needs a new cell from the user.
+- 2026-11-20 user (chat), cell P2.49: crosscoder replicated properly (Minder et al. 2025 BatchTopK + latent scaling, authors' trainer at full token budget, controls first incl. grafted head and matched Gaussian, >=3 crosscoder seeds and >=3 fine-tune seeds, every-seed calls on nine pairs, twins, grafts; one scorecard row beside the share). Dates from whip-lead; after P2.44 and gain-only (both filled 11-20). If controls fail: "not applicable at this update size".
