@@ -71,8 +71,15 @@ runs stage 0, then c3/rank1, e62/lookup, e53/lowercase and case_label/twin (seed
 data, each capped at 20 steps, trains, exports, reads through E228's share, and runs the same command again (every item
 must be skipped: the resume). It records into `results/rehearse/`: s/step and peak GPU memory per family (items JSON),
 read seconds and file size per state (reads JSON), stage 0's floors, and step-1 KL against each reference's. To fill in
-after it: s/step ____ (kv) ____ (E62) ____ (E53) ____ (label); read s/state ____; peak GB ____; state MB ____ (expected
-54: 28M bf16 numbers); `fleet/rehearsed compare-lead E### '...'`.
+after it (measured 2026-11-20, E231 rehearsal job 62318, one L40, 20 steps per item, exit 0, 2 min wall): s/step 0.18
+(c3/rank1, the kv family) 0.14 (e62/lookup) 0.45 (e53/lowercase, 8 x 512) 0.06 (case_label/twin); read 5.0-5.7 s/state
+(11.0 for e53); peak GPU 5.3 GB (8.2 GB e53), host RSS 6.1 GB; state 56.6 MB (54 MiB, as expected). Stage 0: gains of 1
+change nothing (delta 0, KL 0), random-gain export vs hooks 1.25e-5, shuffled 1.21, read path vs E136's gain_fp32
+rel. 7e-8 (gain 10.9276). Step-1 KL guard did not fire; the resume skipped all 4 trained and all 4 read items. The e53
+and e62 reads came back kl_status "unscored" and e53's r is nan in the rehearsal (20 steps, below any reference KL).
+Recorded: `fleet/rehearsed compare-lead E231 --id 62318`. Scored-run estimate redone: items of 300 steps ~0.1-0.2 s/step
+(L40; an H100 should be faster) ~ 1 min each with ~2 reads; E53 item 3,000 steps x 0.45 s = 22 min on an L40 (so the
+guess of 5 min above was low), three seeds ~ 40-68 min; ~26 items per pod: ~65-95 min per pod plus ~10 min set-up.
 
 ## Scored run (pods; not gated: expected well under $60 and 6 h)
 Three RunPod H100 pods, one per shard (tasks dealt in turn, so each pod has one E53 task), labels `commute-E###-gain-0`,
