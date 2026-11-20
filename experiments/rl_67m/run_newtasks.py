@@ -6,7 +6,8 @@ results/predictions_E224.json (the run refuses unless it is committed unchanged)
 `commute.rl_arms`, sampling one token at the cue; the reward is the token's membership in the item's target set.
 
   ctl              first and alone (`E224 rehearse: newtasks ctl`): item counts per task, W0's held-out top-1 / top-5 /
-                   contrast / control top-1, a zero update reads KL exactly 0 and the same sampled tokens, 5 RL steps
+                   contrast / control top-1 (readings; Amendment 1's one W0 stop: each RL task's top-5 over the anchor's by
+                   regime_min_se se), a zero update reads KL exactly 0 and the same sampled tokens, 5 RL steps
                    timed per task, then E211's ctl unchanged (E53's lowercase and cipher states re-read to their saved
                    shares, as E222's ctl did)
   null LR          the shuffled arm at one rate, seed 0, tasks 1 and 2 (E220's stable-null rule on held-out top-1)
@@ -44,7 +45,8 @@ from commute.jobs import config_from_settings, hard_exit, load_experiment, requi
 
 HERE = Path(__file__).resolve().parent
 RESULTS, REPO = HERE / "results", HERE.parents[1]
-PRED, LARGE, READS = RESULTS / "predictions_E224.json", RESULTS / "large" / "stage2c", RESULTS / "stage3c"
+PRED, AMEND = RESULTS / "predictions_E224.json", RESULTS / "predictions_E224_amend1.json"
+LARGE, READS = RESULTS / "large" / "stage2c", RESULTS / "stage3c"
 S1 = load_experiment("rl_67m", "run_stage1")  # kl_from_base
 R2 = load_experiment("realistic_tasks", "run2")  # E211's reader, ctl, zero check, Out
 NAMES = {"1": "plural", "2": "sequence", "anchor": "addition"}
@@ -99,8 +101,8 @@ def log(msg: str) -> None:
 def build_items(v: NT.Vocab, C: Settings, train_rows: Tensor, val_rows: Tensor, extra_rows: Tensor) -> dict[str, dict[str, Any]]:
     """Per task: train and held-out items (held out: Pile val rows, and for sequences also held-out templates; plural
     mines the val rows then Pile train rows from held_extra_start, which the training rows never reach)."""
-    tr, ht = NT.plural_items(train_rows, v, C.prompt_len, C.gap, C.n_train, C.seed)
-    he, hs = NT.plural_items(torch.cat([val_rows, extra_rows]), v, C.prompt_len, C.gap, C.n_held, C.seed)
+    tr, ht = NT.agreement_items(train_rows, v, C.prompt_len, C.gap, C.n_train, C.seed)
+    he, hs = NT.agreement_items(torch.cat([val_rows, extra_rows]), v, C.prompt_len, C.gap, C.n_held, C.seed)
     cores = NT.sequence_cores(C.seq_lo, C.seq_hi, C.held_frac, C.seed)
     return {"plural": {"train": tr, "held": he, "scanned": {"train": ht, "held": hs}},
             "sequence": {"train": NT.sequence_items(train_rows, cores["train"], v, C.prompt_len, C.n_train, C.seed),
@@ -122,9 +124,10 @@ def counts(items: dict[str, dict[str, Any]]) -> dict[str, Any]:
 class Ctx:
     def __init__(self) -> None:
         require_filed(PRED)
-        P = json.loads(PRED.read_text())
+        require_filed(AMEND)  # Amendment 1 (2026-11-20): balanced agreement task, the regime stop; its thresholds win
+        P, A = json.loads(PRED.read_text()), json.loads(AMEND.read_text())
         assert P["experiment"].startswith("E224")
-        self.C, self.th, self.P = config_from_settings(Settings, P["settings"]), P["thresholds"], P
+        self.C, self.th, self.P = config_from_settings(Settings, P["settings"]), P["thresholds"] | A["thresholds"], P
         torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False
         self.net, self.tok = ST.Net("cuda"), vpd.tokenizer()
         self.v = NT.Vocab([self.tok.decode([i]) for i in range(len(self.tok))], self.tok.encode)
@@ -151,6 +154,8 @@ def held_read(x: Ctx, it: NT.Items) -> dict[str, Any]:
     collapse read: the share of the KL rows' positions whose argmax is their most common argmax."""
     net = x.net.model.target_model
     r = NT.reads(last_logits(net, it.toks), it, last_logits(net, it.ctrl))
+    if it.side is not None:  # the agreement task: top-1 on each antecedent number apart (Amendment 1)
+        r |= {f"top1_{s}": r["top1"][it.side == k] for s, k in (("plural", 1), ("singular", 0))}
     out: dict[str, Any] = {k: float(v.mean()) for k, v in r.items()} | {f"se_{k}": float(v.std(unbiased=False)) / len(v) ** 0.5 for k, v in r.items()}
     with torch.no_grad():
         am = torch.cat([RA.logits(net, b.to(x.net.device)).argmax(-1).flatten() for b in x.kl_rows.split(x.C.kl_batch)])
@@ -236,6 +241,10 @@ def job_ctl(x: Ctx, o: Any) -> None:
     if x.items["sequence"]["held"].key and set(x.items["sequence"]["held"].key) & set(x.items["sequence"]["train"].key):
         raise o.stop("a held-out sequence template is also a training template")
     o.put("w0", {t: held_read(x, d["held"]) | {"task2191": x.P["expected"]["task2191 top-1 / top-5"][t]} for t, d in x.items.items()})
+    w0, k = o.d["w0"], x.th["regime_min_se"]  # Amendment 1: the W0 bands are readings; this regime is the one W0 stop
+    o.put("regime", g := {t: {"top5 over anchor": w0[t]["top5"] - w0["addition"]["top5"], "se": se_diff(w0[t], w0["addition"], "top5")} for t in ("plural", "sequence")})
+    if bad := [t for t, v in g.items() if not v["top5 over anchor"] >= k * v["se"]]:
+        raise o.stop(f"held-out top-5 at W0 does not exceed the anchor's by {k} se on {bad}")
     net, zero = x.net.model.target_model, {k: torch.zeros_like(w) for k, w in x.net.W0.items()}
     p = x.items["plural"]["held"].toks[:64]
     a = RA.sample(net, p, 8, 1, len(x.tok), x.gen(0, 9))
@@ -259,10 +268,12 @@ def learned(x: Ctx, o: Any) -> None:
         r0, rs = s["reads"]["0"], s["reads"]["stop"]
         got[p] = {"reached": s["reached"], "gain": rs["top1"] - r0["top1"], "se": se_diff(rs, r0, "top1"),
                   "ctrl_rise": rs["ctrl_top1"] - r0["ctrl_top1"], "ctrl_se": se_diff(rs, r0, "ctrl_top1")}  # fmt: skip
+        halves = [h for h in ("plural", "singular") if f"top1_{h}" in rs]  # agreement task: each half rises (Amendment 1)
+        got[p]["halves_up"] = all(rs[f"top1_{h}"] - r0[f"top1_{h}"] > x.th["learn_min_se"] * se_diff(rs, r0, f"top1_{h}") for h in halves)
     o.put("learned", got)
-    ok = all(g["reached"] and g["gain"] > x.th["learn_min_se"] * g["se"] and g["ctrl_rise"] <= x.th["ctrl_max_se"] * g["ctrl_se"] for g in got.values())
+    ok = all(g["reached"] and g["halves_up"] and g["gain"] > x.th["learn_min_se"] * g["se"] and g["ctrl_rise"] <= x.th["ctrl_max_se"] * g["ctrl_se"] for g in got.values())
     if not ok:
-        raise o.stop("RL seed 0 fails the learned gate (top-1 up by over 2 se, control not up by over 2 se) on a task")
+        raise o.stop("RL seed 0 fails the learned gate (top-1 up by over 2 se, on each number half of the agreement task too; control not up by over 2 se) on a task")
 
 
 def job_null(x: Ctx, lr: float, o: Any) -> None:

@@ -4,10 +4,10 @@ competitor token set at that position, and a cue-removed control prompt of the s
 token is membership in the target set; the reading is the per-row contrast log p(target set) - log p(competitor set)
 at the cue, so reward and reading are the same next token. No model is read here.
 
-  plural    (B187) mined from Pile rows: a cue position whose own token is they/their/them (`TARGET`), after a plural
-            antecedent `<det> <noun>s` at most `gap` tokens back (`plural_cues`). Competitors: the singular pronouns and
-            ' a', ' the' (the 67M's top wrong tokens in task#2191). Control: the antecedent made singular (`DET_SG`, the
-            noun without its s) in the same window
+  plural    (B187; E224 Amendment 1: number agreement, balanced) mined from Pile rows: a cue position whose own token
+            is a spaced pronoun (they/their/them, or he/she/it/his/her/its/him) after an antecedent of the same number at
+            most `gap` tokens back (`agreement_cues`); half plural, half singular antecedents. Target: the agreeing
+            pronoun set; competitor: the other number's set. Control: the antecedent's number swapped in the window
   sequence  (C14) a run of 2-5 consecutive weekday or month names (full or three-letter, wrap-around), six separators,
             after a Pile fill. Target: the next name; competitors: the other names of that list in the same form.
             Control: the shown names in a shuffled order whose last name differs (the next name is then not defined)
@@ -29,10 +29,11 @@ from commute.data import LAST
 from commute.realistic_reads import Read
 from commute.steering import Readout
 
-TARGET = ("they", "their", "them")
-SINGULAR = ("he", "she", "it", "his", "her", "its")
-BLOCK = ("he", "she", "it", "his", "her", "its", "him", "He", "She", "It", "His", "Her", "Its", "a", "an", "they", "their", "them")
-DET_SG = {" these": " this", " those": " that"}  # every other plural determiner becomes " the"
+PLURAL = ("they", "their", "them")
+SINGULAR = ("he", "she", "it", "his", "her", "its", "him")
+BLOCK = (*PLURAL, *SINGULAR, "They", "Their", "Them", "He", "She", "It", "His", "Her", "Its", "Him")
+DET_SWAP = {" these": " this", " those": " that", " this": " these"}  # every other determiner becomes " the"
+DET_SG = (" the", " this", " a", " an", " each", " every")
 DET_PL = (" the", " these", " those", " many", " several", " both", " some", " all", " most", " other", " few", " various",
           " two", " three", " four", " five")  # fmt: skip
 DAYS = ("Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday")
@@ -46,7 +47,7 @@ TASKS = ("plural", "sequence", "addition")
 class Items:
     """N items of one task. tgt / cmp: (N, K) token ids padded with -1. true: one correct target per item (the text's
     own token for plural), the demonstration. ctrl / ctrl_tgt: the cue-removed prompt and the token set whose rise it
-    reads. key: what the held-out split and the audit read (the template, or the row and cue)."""
+    reads. key: what the held-out split and the audit read (the template, or the antecedent and cue)."""
 
     toks: Tensor
     tgt: Tensor
@@ -55,6 +56,7 @@ class Items:
     ctrl: Tensor
     ctrl_tgt: Tensor
     key: list[str] = field(default_factory=list)
+    side: Tensor | None = None  # plural task: 1 plural antecedent, 0 singular
 
     def __post_init__(self) -> None:
         n, L = self.toks.shape
@@ -64,7 +66,8 @@ class Items:
 
     def take(self, idx: Tensor | slice) -> Items:
         k = self.key[idx] if isinstance(idx, slice) else [self.key[i] for i in idx.tolist()]
-        return Items(self.toks[idx], self.tgt[idx], self.cmp[idx], self.true[idx], self.ctrl[idx], self.ctrl_tgt[idx], k)
+        side = None if self.side is None else self.side[idx]
+        return Items(self.toks[idx], self.tgt[idx], self.cmp[idx], self.true[idx], self.ctrl[idx], self.ctrl_tgt[idx], k, side)
 
 
 def pad(sets: Sequence[Sequence[int]]) -> Tensor:
@@ -87,61 +90,81 @@ class Vocab:
         return [i for w in words for s in (" " + w, w) if (i := self.one(s)) is not None]
 
 
-# ----------------------------------------------------------------------------- plural pronoun agreement (B187)
+# ----------------------------------------------------------------------------- pronoun number agreement (B187)
 
 
-def plural_cues(row: list[int], v: Vocab, L: int, gap: int, tgt: set[int], block: set[int]) -> dict[int, tuple[int, int]]:
-    """Cue positions p (L <= p < len(row)) whose token is in tgt, with the antecedent's determiner position: the nearest
-    `<det> <noun>s` in DET_PL ending within gap tokens before p, the det inside the window [p - L, p), the noun one
-    lowercase word token of 4+ letters ending in s (not ss/us/is) whose form without the s is one token, not continued
-    by a letter, and no BLOCK token (singular pronoun, a/an, another they/their/them) or newline between it and p.
-    Value: (det position, singular noun id)."""
+def antecedent(row: list[int], j: int, v: Vocab) -> tuple[str, int] | None:
+    """The number of an antecedent whose noun is at j, and the noun's other-number form: ("pl", singular id) for
+    `<DET_PL> <noun>s` (not ss/us/is), ("sg", plural id) for `<DET_SG> <noun>` (not ending in s). The noun is one
+    lowercase word token of 4+ letters, not continued by a letter, whose other-number form (s dropped or added) is
+    one token. None otherwise."""
     T = v.texts
-    out: dict[int, tuple[int, int]] = {}
+    t, w = T[row[j]], T[row[j]][1:]
+    if not (t[:1] == " " and len(w) >= 4 and w.isalpha() and w.islower()) or T[row[j + 1]][:1].isalpha():
+        return None
+    if w.endswith("s") and not w.endswith(("ss", "us", "is")) and T[row[j - 1]] in DET_PL and (sg := v.one(t[:-1])) is not None:
+        return "pl", sg
+    if not w.endswith("s") and T[row[j - 1]] in DET_SG and (pl := v.one(t + "s")) is not None:
+        return "sg", pl
+    return None
+
+
+def agreement_cues(row: list[int], v: Vocab, L: int, gap: int, number: dict[int, str], block: set[int]) -> dict[int, tuple[int, int, str]]:
+    """Cue positions p (L <= p < len(row)) whose token is a pronoun of `number` (id -> "pl" / "sg"), whose nearest
+    antecedent (`antecedent`) ending within gap tokens before p, its det inside the window [p - L, p), has the
+    pronoun's number, with no pronoun (`block`, either number, any case) or newline between. Value: (det position,
+    the noun's other-number id, the number)."""
+    out: dict[int, tuple[int, int, str]] = {}
     for p in range(L, len(row)):
-        if row[p] not in tgt:
+        if (num := number.get(row[p])) is None:
             continue
         for j in range(p - 1, max(p - gap, p - L + 1) - 1, -1):
-            t = T[row[j]]
-            if row[j] in block or "\n" in t:
+            if row[j] in block or "\n" in v.texts[row[j]]:
                 break
-            w = t[1:]
-            sg = v.one(t[:-1]) if t[:1] == " " and len(w) >= 4 and w.isalpha() and w.islower() and w.endswith("s") else None
-            if sg is not None and not w.endswith(("ss", "us", "is")) and T[row[j - 1]] in DET_PL and not T[row[j + 1]][:1].isalpha():
-                out[p] = (j - 1, sg)
+            if (a := antecedent(row, j, v)) is not None:
+                if a[0] == num:
+                    out[p] = (j - 1, a[1], num)
                 break
     return out
 
 
-def plural_items(rows: Tensor, v: Vocab, L: int, gap: int, n: int, seed: int) -> tuple[Items, int]:
-    """One item per row at a seeded choice among its cues, from the first rows that have one, until n. Returns the
-    items and the rows scanned."""
+def agreement_items(rows: Tensor, v: Vocab, L: int, gap: int, n: int, seed: int) -> tuple[Items, dict[str, int]]:
+    """Up to n // 2 plural-antecedent and n // 2 singular-antecedent items, at most one of each per row (a seeded
+    choice among its cues), from the first rows until both are full; then each number cut to the smaller count (the
+    balance) and the two interleaved, plural first. The agreeing set is the target, the other number's set the
+    competitor. Control: the antecedent's number swapped in the same window (`DET_SWAP`, the noun's other form).
+    Returns the items and the counts (rows scanned, each number mined)."""
     rng = random.Random(f"{seed}-plural")
-    tgt, sing = v.forms(TARGET), v.forms(SINGULAR)
-    cmp = sing + [v.ids[" a"], v.ids[" the"]]
+    sets = {"pl": v.forms(PLURAL), "sg": v.forms(SINGULAR)}
+    number = {v.ids[" " + w]: k for k, ws in (("pl", PLURAL), ("sg", SINGULAR)) for w in ws}  # cues: word starts only
     block = set(v.forms(BLOCK))
-    toks, ctrl, true, key, scanned = [], [], [], [], 0
+    got: dict[str, list[tuple[list[int], list[int], int, str]]] = {"pl": [], "sg": []}
+    scanned = 0
     for row in rows:
-        if len(toks) == n:
+        if min(len(g) for g in got.values()) >= n // 2:
             break
         r: list[int] = row.tolist()
         scanned += 1
-        cues = plural_cues(r, v, L, gap, set(tgt), block)
-        if not cues:
-            continue
-        p = rng.choice(sorted(cues))
-        d, sg = cues[p]
-        w = r[p - L : p]
-        c = list(w)
-        c[d - (p - L)] = v.ids[DET_SG.get(v.texts[r[d]], " the")]
-        c[d + 1 - (p - L)] = sg
-        toks.append(w)
-        ctrl.append(c)
-        true.append(r[p])
-        key.append(f"{v.texts[r[d + 1]]} ->{v.texts[r[p]]}")
-    N = len(toks)
-    T = torch.tensor(tgt).expand(N, -1)
-    return Items(torch.tensor(toks), T.clone(), torch.tensor(cmp).expand(N, -1).clone(), torch.tensor(true), torch.tensor(ctrl), T.clone(), key), scanned
+        cues = agreement_cues(r, v, L, gap, number, block)
+        for num, g in got.items():
+            mine = sorted(p for p, c in cues.items() if c[2] == num)
+            if not mine or len(g) >= n // 2:
+                continue
+            p = rng.choice(mine)
+            d, other, _ = cues[p]
+            w = r[p - L : p]
+            c = list(w)
+            c[d - (p - L)] = v.ids[DET_SWAP.get(v.texts[r[d]], " the")]
+            c[d + 1 - (p - L)] = other
+            g.append((w, c, r[p], f"{v.texts[r[d + 1]]} ->{v.texts[r[p]]}"))
+    k = min(len(g) for g in got.values())
+    rows_ = [x for pair in zip(got["pl"][:k], got["sg"][:k], strict=True) for x in pair]
+    side = torch.tensor([1, 0] * k)
+    tgt = pad([sets["pl"] if s else sets["sg"] for s in side.tolist()])
+    cmp = pad([sets["sg"] if s else sets["pl"] for s in side.tolist()])
+    items = Items(torch.tensor([x[0] for x in rows_]), tgt, cmp, torch.tensor([x[2] for x in rows_]), torch.tensor([x[1] for x in rows_]),
+                  tgt.clone(), [x[3] for x in rows_], side)  # fmt: skip
+    return items, {"scanned": scanned, "mined plural": len(got["pl"]), "mined singular": len(got["sg"]), "kept per number": k}
 
 
 # ----------------------------------------------------------------------------- templates after a Pile fill

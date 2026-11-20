@@ -1,0 +1,80 @@
+{
+ "experiment": "E226",
+ "cell": "P1.37 (card reports/plans/2026-11-20_plan_p1-37-card.md)",
+ "plan": "reports/plans/2026-11-20_plan_p1-37-vpd.md (appendix reports/plans/2026-11-20_plan_p1-37-vpd_appendix.md)",
+ "main_grade": "read",
+ "main_grade_source": "user 2026-11-19 (E214's predictions.json main_grade_source): s_u on the read positions is the main reading; every position of D ('all') is the side reading. Both are computed and saved.",
+ "definition": "decisions.md rows of 2026-11-18 ('Exact featurization with a mandatory remainder ... VPD built on weights', 'Gain and graft declarations'), unchanged: variables = the embedding, each VPD subcomponent of the 24 decomposed matrices (38,912), one remainder per matrix ((Delta + delta-W_out) x in F, Delta x in M), one graft variable per appended neuron (scores 0), the unembedding; the split of delta-W is the least-squares split over all 38,912 subcomponents with delta-W_out = delta-W - sum_c delta-W_c; K* = a minimal set keeping KL(F || F_K) at the read positions within (1 - alpha) of KL(F || F_all_ablated) under position-wise mean ablation over D from F's unablated run; s_u = 1 - mean over settings (M's run and F's run) of (1 - cos^2(write_F, write_M)); R = mean s_u over K*; f = |K* & C| / |K*|; site-remainder share = remainders in K* / |K*|. R, f and every rule below are this run's readings, not clauses of the definition; no verdict on the definition is given.",
+ "settings": {
+  "alpha": 0.9,
+  "split_tol": 1e-06,
+  "batch": 32,
+  "grade_batch": 8,
+  "reranks": 2,
+  "eval_cap": 2000,
+  "chunk_div": 8,
+  "split_seed": 186001,
+  "reuse": ["x2", "x10", "moved", "rebuilt"],
+  "new": ["new_few", "new_thin"],
+  "settings_source": "alpha, split_seed: E214's and E221's filed values (experiments/kstar_levels/results/predictions.json, experiments/kstar_pairs/results/predictions.json); split_tol: commute.split.bases' default, used by every earlier least-squares split; eval_cap 2000: E214's and E221's polish_cap (the lead's brief: 'about 2,000 per item'), fixed for every item so every search has the same budget, and stage 0 projects the shard's hours from its measured time per evaluation (stop over shard_hours_max) instead of sizing the cap per shard, so two shards cannot search with different caps; reranks 2: the lead's brief ('re-rank attribution at the current K two or three times'); chunk_div 8: chosen here as the polish's first chunk (|prefix| / 8), the rehearsal's evaluation count says whether it fits the cap; batch, grade_batch: memory only (no reading depends on them), the rehearsal measures peak memory at these sizes; reuse, new: E214's known-answer items (E195's four reuse items and the two built new edits; the two hand-built reuse edits were never built, E214 analysis)."
+ },
+ "thresholds": {
+  "kl_floor": 1e-06,
+  "gate_tol": 0.001,
+  "s_tol": 1e-06,
+  "split_fp64_tol": 1e-12,
+  "F_from_pieces_tol": 0.0001,
+  "M_from_pieces_tol": 0.0001,
+  "shard_hours_max": 6,
+  "band_min": 0.014,
+  "rho_bar": 0.7,
+  "n_min": 5,
+  "thresholds_source": "kl_floor, gate_tol, s_tol: E214's filed values (gate_tol is met at 0 for all kept here: kept variables subtract exact zeros); rho_bar, n_min: E221's filed values for its T4 rule; split_fp64_tol: delta-W_out is delta-W minus the split's sum, so the fp64 identity holds to rounding (~1e-16 relative), and 1e-12 only catches a code error; F_from_pieces_tol, M_from_pieces_tol: the pieces are stored in fp32 (unit roundoff 6e-8) and summed over up to 3,584 subcomponents, so 1e-4 relative is a guard against a wrong layout or a wrong Delta (errors of order 1), not a measured floor: the rehearsal logs every site's value and, if any is within 10x of the bar, the lead files a dated amendment before the scored run; shard_hours_max 6: the gated-run line of .claude/CLAUDE.md, per pod; band_min 0.014: the card's spread (E214's largest order sd of a known item, experiments/kstar_levels/results/substitute.json .grade_read.head_mlp.spreads.new_few.order_sd), used only when the measured band is degenerate (0)."
+ },
+ "expected": {
+  "do_nothing": "F = M: no variable changed (n_changed 0), every split piece 0, every s_u within s_tol of 1 under both grades, f = 0, R = 1 within s_tol at the prefix set and the polished set; the gates 0 (all kept) and at or under gate_tol (none kept)",
+  "known_items": "x2 and x10 change only layer 1's down_proj (E195's eight output columns scaled), so only that site's subcomponents and remainder can be changed; moved changes the same site (eight columns zeroed) and adds eight graft variables that score 0; rebuilt changes layer 1's down_proj and layers 2-3's MLP matrices; new_few and new_thin change only the MLP matrices of E214's slot layer. Every item: gates at or under gate_tol, split checks under their bars, the windows E214 read, KL(F || F_empty) over kl_floor.",
+  "e187_states": "every one of the 24 matrices changes, so nearly every subcomponent and every remainder is in C and f is near 1; R between 0.5 and 1 (no earlier reading at a featurization this fine bounds it); KL(F || M) and the update size repeat E221's load checks",
+  "rival_a": "R1b recovers: min R over x2, x10, rebuilt minus max R over new_few, new_thin > band",
+  "rival_b": "new_thin reads R at or above min R over x2, x10, rebuilt (R1b does not recover)"
+ },
+ "rules": {
+  "R0 (stops)": {
+   "rule": "exit 1 unless: (a) stage 0, first and alone on every shard: do-nothing reads every s_u within s_tol of 1 on the unchanged variables (all of them), f = 0 and R = 1 within s_tol at the prefix and polished sets under both grades, and its projected shard hours (seconds per evaluation x eval_cap x searches) are at or under shard_hours_max; M's 24 decomposed weights equal the VPD checkpoint's target weights (vpd.checkpoint_weights) exactly; per item: (b) every site's split_fp64, F_from_pieces and M_from_pieces at or under their bars; (c) every parameter outside the 24 decomposed weights (embedding/unembedding, norms) equal in F and M; (d) F_K with every variable kept matches F's native logits and with none kept the mean logits, within gate_tol; (e) E187 states: E221's load checks (KL(F || M) within kl_repro_rel of E205's saved value, update size within size_rel of E187's); (f) commute.kstar.summary's identity R = 1 - f(1 - rho') within 1e-9.",
+   "absolute_or_relative": "absolute, except (b) and (e) relative",
+   "blind_to": "whether R means what the definition means; they check the code paths and that each item is the saved one",
+   "positive_control": "(a) do-nothing; (d) all kept is F",
+   "noise_floor": "thresholds_source"
+  },
+  "band": {
+   "rule": "band = max over the six known items of |R(half 1 of D) - R(half 2 of D)|, main grade, polished sets (each half searched on its own with the means from all of D). An item read 'no behaviour' on either half is left out. Degenerate when every |difference| is 0 or no item is left: band = band_min, reported as such.",
+   "absolute_or_relative": "absolute"
+  },
+  "R1 (labels recovered, all reuse items)": {
+   "rule": "min R over x2, x10, moved, rebuilt - max R over new_few, new_thin > band, strictly (main grade, polished K*). 'Not read' unless all six are read. Moved's graft variables score 0 by declaration (decisions.md 2026-11-18 'Gain and graft declarations'), so moved is predicted low and R1 is expected to fail on moved alone; R1b is the rule the rivals split on.",
+   "absolute_or_relative": "absolute",
+   "edge_cases": "do-nothing state (every R = 1, band = band_min 0.014): 0 > 0.014 is false, so it cannot pass; ties: strict; a missing item: not read"
+  },
+  "R1b (labels recovered, moved excluded)": {
+   "rule": "min R over x2, x10, rebuilt - max R over new_few, new_thin > band, strictly. Holds: rival a. new_thin at or above min R over x2, x10, rebuilt: rival b. Otherwise (new_thin below the reuse items but within the band, or only new_few at or above them): no call.",
+   "absolute_or_relative": "absolute",
+   "edge_cases": "as R1"
+  },
+  "P-moved (identity check)": {
+   "rule": "R(moved) <= 1 - (graft share of K*) + band. Every graft scores 0 and every s_u is at most 1 (to s_tol), so R <= 1 - graft share holds by construction: this is a check of the code (a miss is a code error), not a prediction.",
+   "absolute_or_relative": "absolute"
+  },
+  "P-moved2 (drafted for the lead to check)": {
+   "rule": "R(moved) < min R over x2, x10, rebuilt - band: moved, the reuse item whose copy neurons became graft variables, reads below the other reuse items by more than the band.",
+   "absolute_or_relative": "absolute",
+   "edge_cases": "do-nothing state: R(moved) = 1, not below 1 - band: fails, as it should; moved with no graft in K*: P-moved2 can still hold through moved's down_proj subcomponents and is then reported with graft share 0"
+  },
+  "T4 (pairs, descriptive)": {
+   "rule": "E221's T4 rule (experiments/kstar_pairs/results/predictions.json, score.py tally) on E187's nine pairs, main grade: the per-pair R gap (mean over reuse states - mean over new states) 'tracks' a reading iff the signs agree and are non-zero on every pair AND Spearman >= rho_bar, else 'does not track'; 'not read' under n_min pairs or with a constant side. Read against minus the update-size gap (||dW|| / ||W0|| over 24 matrices, E205's sizes) and against the held-model S3 gap (E205's saved readings). Descriptive: no claim at a bar, whatever stage 1 shows.",
+   "absolute_or_relative": "rank and sign",
+   "edge_cases": "do-nothing state (every gap 0): constant side, not read",
+   "blind_to": "the size of a gap; E187's pairs share fine-tunes (e54_matched and e54_own)"
+  },
+  "reported only": "per item: R (prefix and polished sets, both grades), f, the site-remainder share, the graft share, |K*| (prefix and polished), evaluations, whether the cap was hit and the smallest chunk reached (K* is then an upper bound on the minimal circuit), seconds, peak GPU memory, KL(F || F_empty), KL(F || M), every site's split checks and outside share; per known item R on each half; per pair the R gap beside the update-size gap."
+ }
+}

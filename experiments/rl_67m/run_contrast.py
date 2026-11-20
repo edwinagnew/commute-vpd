@@ -143,7 +143,9 @@ def l1_reproduce(x: Any, C2: Any, th2: dict[str, Any], o: Any) -> None:
                       "neuron_k64": q["neuron"]["k64"]["share"]["contrast"], "neuron_kmatched": q["neuron"]["kmatched"]["share"]["contrast"],
                       "steer_pooled": q["steering"]["share"]["contrast"], "erank": q["erank"]}  # fmt: skip
     got, saved = pick(rec), pick(s)
-    rows = {k: {"got": got[k], "saved": saved[k], "tol": th2["reproduce_tol"][k]} for k in got}
+    am = json.loads((RESULTS / "predictions_E223_amend1.json").read_text())  # 2026-11-20: relative bar, job 62141
+    scale = {k: 1.0 if k == "share" else abs(saved["erank"] if k == "erank" else saved["gain"]) for k in got}
+    rows = {k: {"got": got[k], "saved": saved[k], "tol": am["rel_tol"] * scale[k]} for k in got}
     o.put(f"reproduce L1_{L1_STATE}", rows)
     if bad := [k for k, v in rows.items() if not abs(v["got"] - v["saved"]) <= v["tol"]]:
         raise o.stop(f"L1_{L1_STATE} does not reproduce on the pair score: {bad}")

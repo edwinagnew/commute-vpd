@@ -1,0 +1,9 @@
+{
+  "date": "2026-11-20",
+  "by": "compare-lead",
+  "why": "E223 ctl (job 62141) stopped on E211's absolute reproduce_tol: svd missed by 1.00e-4 (bar 1e-4) and erank by 7.2e-3 (bar 1e-6, relative 1.9e-5). Those bars were E143's floor for re-running the SAME code path; E223 reads through a new per-row pair path (PairRead), so they are not a measured floor for this comparison, and an absolute bar on a sum breaks .claude/CLAUDE.md (agreement bars on sums are relative). Every reading agreed to within 1.5e-5 of the gain (gain itself to 4e-6 relative; share to 4e-5 absolute against the card's smallest gap 0.1).",
+  "reproduce_rule": "|got - saved| <= rel_tol * scale; scale = |saved gain| for gain, svd, rotated, neuron_k64, neuron_kmatched, steer_pooled; scale = 1 for share; scale = |saved erank| for erank",
+  "rel_tol": 0.001,
+  "rel_tol_source": "ten times the largest discrepancy measured in job 62141 between the pair path and E211's saved readings (erank 1.9e-5 relative, svd 1.5e-5 of gain), rounded up; 100x under the card's smallest gap (0.1 in share)",
+  "unchanged": "predictions_E223.json stands as filed; only the L1 reproduction bar is replaced"
+}

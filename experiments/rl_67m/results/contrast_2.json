@@ -1,0 +1,134 @@
+{
+ "job": "2",
+ "card": "NVIDIA L40",
+ "states": {
+  "lower_rl_s0": "experiments/rl_67m/results/large/stage2b/lower_rl_s0.pt",
+  "lower_rl_s1": "experiments/rl_67m/results/large/stage2b/lower_rl_s1.pt",
+  "lower_rl_s2": "experiments/rl_67m/results/large/stage2b/lower_rl_s2.pt",
+  "lower_shuffled_s0": "experiments/rl_67m/results/large/stage2b/lower_shuffled_s0.pt",
+  "lower_shuffled_s1": "experiments/rl_67m/results/large/stage2b/lower_shuffled_s1.pt",
+  "lower_shuffled_s2": "experiments/rl_67m/results/large/stage2b/lower_shuffled_s2.pt",
+  "lower_own_s0": "experiments/rl_67m/results/large/stage2b/lower_own_s0.pt",
+  "lower_own_s1": "experiments/rl_67m/results/large/stage2b/lower_own_s1.pt",
+  "lower_own_s2": "experiments/rl_67m/results/large/stage2b/lower_own_s2.pt",
+  "lower_demo_s0": "experiments/rl_67m/results/large/stage2b/lower_demo_s0.pt",
+  "lower_demo_s1": "experiments/rl_67m/results/large/stage2b/lower_demo_s1.pt",
+  "lower_demo_s2": "experiments/rl_67m/results/large/stage2b/lower_demo_s2.pt"
+ },
+ "experiment": "E223 (rl_67m), cell P2.41 run 5: E222's re-gating share and scorecard baselines re-read on E220's 24 size-matched pick states (repeat and lower: rl, shuffled, own, demo x seeds 0-2) with a per-row two-form contrast in place of the text's next-token log-odds; the anchor (french_en demo x 3) read as in E222, unchanged",
+ "read lower": {
+  "candidates": 2048,
+  "kept": 381,
+  "train_candidates": 4096,
+  "fit_kept": 795,
+  "n_rows": 200,
+  "n_fit": 700,
+  "pos": 63,
+  "prior_w0": 8.035909888744355
+ },
+ "gauss": {
+  "size": 0.006874681482248135,
+  "erank": 702.0523593088645,
+  "gain": {
+   "contrast": -0.002651991844177246
+  },
+  "prior": {
+   "contrast": 8.035909888744355
+  },
+  "neuron": {
+   "k64": {
+    "share": {
+     "contrast": "nan"
+    },
+    "numerator": {
+     "contrast": 0.01813421204686165
+    }
+   },
+   "kmatched": {
+    "share": {
+     "contrast": "nan"
+    },
+    "numerator": {
+     "contrast": 0.0008449672907590866
+    }
+   }
+  },
+  "share": {
+   "share": {
+    "contrast": "nan"
+   },
+   "numerator": {
+    "contrast": 0.0032000732421875
+   },
+   "gain": {
+    "contrast": -0.0001605224609375
+   }
+  },
+  "untrained": {
+   "share": {
+    "contrast": {
+     "svd": "nan",
+     "rotated": "nan"
+    }
+   },
+   "numerator": {
+    "contrast": {
+     "svd": 0.07376131430268273,
+     "rotated": 0.04195765338838098
+    }
+   }
+  },
+  "steering": {
+   "grid": {
+    "0,0": 0.0,
+    "0,0.5": 0.0,
+    "0,1": 0.0,
+    "0,2": 0.0,
+    "0,4": 0.0,
+    "0,8": 0.0,
+    "1,0": 0.0,
+    "1,0.5": 0.00013363966718316078,
+    "1,1": 0.00024737068451941013,
+    "1,2": 0.0004132091999053955,
+    "1,4": 0.0005026464350521564,
+    "1,8": -0.00027203653007745743,
+    "2,0": 0.0,
+    "2,0.5": 0.0016368648502975702,
+    "2,1": 0.003256735857576132,
+    "2,2": 0.0064460719004273415,
+    "2,4": 0.012623317772522569,
+    "2,8": 0.024164611008018255,
+    "3,0": 0.0,
+    "3,0.5": 0.0023217315319925547,
+    "3,1": 0.004586408380419016,
+    "3,2": 0.00894610770046711,
+    "3,4": 0.016984851332381368,
+    "3,8": 0.030334878829307854
+   },
+   "setting": [
+    3,
+    8
+   ],
+   "rise": {
+    "contrast": 0.02884966313838959
+   },
+   "share": {
+    "contrast": "nan"
+   },
+   "off_kl": 0.0,
+   "random": [
+    "nan",
+    "nan",
+    "nan",
+    "nan",
+    "nan",
+    "nan",
+    "nan",
+    "nan"
+   ],
+   "random_mean": "nan"
+  },
+  "k_half": {}
+ },
+ "done": true
+}
