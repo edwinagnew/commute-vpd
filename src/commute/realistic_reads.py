@@ -32,7 +32,7 @@ from commute import neuron_r as NR
 from commute import steering as ST
 from commute import untrained as U
 from commute import update_spectrum as US
-from commute.data import LAST, NEXT
+from commute.data import LAST, NEXT, PAIR
 from commute.local_faith import MIN_GAIN
 from commute.realistic import update_size
 
@@ -74,6 +74,41 @@ class Read:
         if self.ab is None:
             return self.toks, NEXT, None
         return torch.cat([self.toks, self.tgt[:, None]], 1), LAST, self.toks.shape[1]
+
+    def single(self) -> dict[str, ST.Readout]:
+        """The units read against one target token per row: E98's k_half reads them (it also reads log P of that token)."""
+        return self.fns()
+
+
+def pair_at(logits: Tensor, pos: int, tgt: Tensor) -> Tensor:
+    """The per-row two-form contrast (E223): log p(a) - log p(b) at `pos`, tgt (B, 2) = (a, b) per row; the logit
+    difference, as `steering.contrast_at` for one fixed pair."""
+    lg, t = logits[:, pos].float(), tgt.to(logits.device)
+    return (lg.gather(1, t[:, :1]) - lg.gather(1, t[:, 1:])).squeeze(1).double().cpu()
+
+
+@dataclass
+class PairRead(Read):
+    """A Read scored on a two-form pair per row (E223): toks end at pos (the label layout), tgt and fit_tgt (N, 2) hold
+    each row's (a, b). One unit, "contrast" (`pair_at`); no k_half (it reads one target per row)."""
+
+    def __post_init__(self) -> None:
+        assert self.ab is None and self.pos == self.toks.shape[1] - 1 == self.fit.shape[1] - 1
+        assert self.tgt.shape == (len(self.toks), 2) and self.fit_tgt.shape == (len(self.fit), 2)
+        assert bool((self.tgt[:, 0] != self.tgt[:, 1]).all()) and bool((self.fit_tgt[:, 0] != self.fit_tgt[:, 1]).all())
+
+    @property
+    def scored(self) -> str:
+        return "contrast"
+
+    def fns(self) -> dict[str, ST.Readout]:
+        return {"contrast": pair_at}
+
+    def windows(self) -> tuple[Tensor, int | Tensor, int | None]:
+        return torch.cat([self.toks, self.tgt], 1), PAIR, self.toks.shape[1]
+
+    def single(self) -> dict[str, ST.Readout]:
+        return {}
 
 
 def ratio(num: float, gain: float) -> float:
@@ -168,7 +203,7 @@ class Reader:
     def k_half(self, dW: ST.DW) -> dict[str, Any]:
         """E98's k_half per unit (k_half_fill.carrying's calls), with the r_half share and numerator it rests on."""
         reads, S, out = NR.Reads(self.r.name, self.r.toks, self.r.tgt, self.r.pos), self.S, {}
-        for u, f in self.r.fns().items():
+        for u, f in self.r.single().items():
             rec = NR.shares(NR.state_cells(self.net, reads, dW, S["batch"], f), S["gain_floor"])
             full = rec["num"]["r_half"]
             score = NR.ranking(self.net, reads, dW, S["batch"], None if u == "lo" else f)

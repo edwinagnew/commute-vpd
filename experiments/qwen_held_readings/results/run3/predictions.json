@@ -1,0 +1,188 @@
+{
+  "experiment": "E225",
+  "cell": "P3.13",
+  "run": 3,
+  "filed": "2026-11-20, before any run; never edited after a run (add a dated report instead)",
+  "card": "experiments/qwen_held_readings/card3.md",
+  "plan": "reports/plans/2026-11-20_plan_p3-13-run3-fit-floor.md. Decision: reports/decisions/2026-11-19_decision_p3-13-held-fit-floor.md option 1 (user, 2026-11-20). Run 2 (E219): results/run2/. A description: no update is called reused or new; reuse side and new side name how the library built each side (E165), not a reading",
+  "settings": {
+    "pairs": {
+      "copy_cipher": [
+        "copy",
+        "cipher"
+      ],
+      "facts": [
+        "known",
+        "invented"
+      ]
+    },
+    "pairs_source": "experiments/qwen_library_share/run.py PAIRS (P3.8, P3.9): side A first, the side built to reuse",
+    "run_of": {
+      "copy": "library_run3",
+      "cipher": "library_run3",
+      "known": "library_run3",
+      "invented": "library_run3"
+    },
+    "run_of_source": "experiments/qwen_library_share/run.py RUN_OF: gold arms from the library's run 2 (E164, artifacts p35-*), the rest from run 3 (E165, p35r3-*)",
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "seeds_source": "the library's seeds, as P3.9 and E187 read them (qwen_library_share/run.py Config.seeds; size_matched/qwen.py SEEDS)",
+    "saves": [
+      "last",
+      "5x"
+    ],
+    "saves_source": "P3.9's two saves, 'late' = label last (step 300; gold arms step 100) and 'matched' = label 5x (qwen_library_share/run.py _saves); E187 reads the same labels (size_matched/qwen.py SAVES)",
+    "rescale": {
+      "copy_cipher/last": {
+        "larger": "cipher",
+        "c": 0.45768571775159456
+      },
+      "copy_cipher/5x": {
+        "larger": "cipher",
+        "c": 0.3786980576029349
+      },
+      "facts/last": {
+        "larger": "invented",
+        "c": 0.46763003878429105
+      },
+      "facts/5x": {
+        "larger": "invented",
+        "c": 0.4901711387842884
+      }
+    },
+    "rescale_source": "E187 (P2.28, compare-lead), ~/commute-agents/compare-lead/experiments/size_matched/results/qwen/<pair>/readings.json .cells: c = mean |δW| of the smaller side / mean of the larger side over seeds 0-2 (size_matched/qwen.py cells), one scalar on every matrix of each larger-side state; the smaller side is read at saved size only",
+    "n_rows": 128,
+    "n_rows_source": "each arm's own row set as the library built it, 128 rows x 256 tokens (share_reading.rows_of; both gold arms on gold's rows, qwen_library_share/run.py ROWSET)",
+    "row_len": 256,
+    "row_len_source": "as n_rows",
+    "n_fit": 64,
+    "n_fit_source": "run 1's split (E216 settings n_fit): maps fitted on rows 0-63 (16,384 positions), KL read on rows 64-127 (16,384). On a built side the rows pack the trained cue sequences in passes, so the same sequences recur in both halves: the read half is held-out positions, not held-out items",
+    "batch": 8,
+    "batch_source": "run 1 (rows per forward; memory only)",
+    "s_tol": 0.001,
+    "s_tol_source": "run 1's output-only bar (E216 s_tol); run 1 measured 1 - S = 2.4e-8 on maths rows (results/S/output_only.json), so the bar sits 4e4 x above the measured floor",
+    "zero_kl": 1e-09,
+    "zero_kl_source": "run 1 (E216 zero_kl); run 1 measured KL(F||M) = 0 exactly for F = M (results/S/do_nothing.json)",
+    "s_floor_factor": 100,
+    "s_floor_factor_source": "run 1 (E216): 'no change' when KL(F||M) <= 100 x the row set's do-nothing KL(F||H); run 1's do-nothing KL(F||H) was 3.5e-9 on maths rows (floor 3.5e-7), measured again per row set here in the same job",
+    "s_draw": 0,
+    "s_draw_source": "run 1's S_random: Gaussian draw 0 (share_reading.gaussian, seed null_seed(0, site)) scaled to the state's per-matrix norms; the same direction for every state, as in run 1",
+    "smallest_gap": 0.005,
+    "smallest_gap_source": "the 67M's smallest reuse-minus-new S gap on a built pair (E197, 0.005-0.011; plan appendix 'S gap'), the smallest gap that would carry the 67M's reading over; it is above run 1's seed spread (0.0041) and resolves at n 3: 0.005 / (0.0041 / sqrt 3) = 2.1 standard errors (fleet/card's bar is 2; the spread itself, 0.0041, gives 1.73)",
+    "spread": 0.0041,
+    "spread_source": "run 1's measured seed sd of S, the largest over its three runs (results/summary.json per_arm.F.S_seed_sd = 0.004095, n 2; R 0.00066, N 0.0035), rounded up. Run 2 reports each side's own seed sd (n 3) beside it; the rule's bar is smallest_gap",
+    "fits": [
+      {
+        "name": "own64",
+        "own": 64,
+        "gold": 0,
+        "repack_seeds": []
+      },
+      {
+        "name": "own64_gold64",
+        "own": 64,
+        "gold": 64,
+        "repack_seeds": []
+      },
+      {
+        "name": "own64_repack256",
+        "own": 64,
+        "gold": 0,
+        "repack_seeds": [
+          1,
+          2
+        ]
+      },
+      {
+        "name": "own64_repack256_gold64",
+        "own": 64,
+        "gold": 64,
+        "repack_seeds": [
+          1,
+          2
+        ]
+      }
+    ],
+    "fits_source": "decision card option 1 (more fit rows; the pair rows plus maths rows). own = rows [0, own) of the arm row set (run 2 fit, n_fit); gold = rows [0, gold) of gold rows (share_reading.rows_of(\"gold\"), the GSM8K rows run 2 read cleanly at 4.3e-9); repack_seeds = the arm own cue sequences packed again by qwen_pairs.packed with seed s in place of SEED 0, 128 rows each (same sequences, other contexts and offsets). Read rows are always rows [n_fit, n_rows) of the arm row set. The first fit is run 2 fit and is measured only, never chosen",
+    "floor_max": 1e-07,
+    "floor_max_source": "run 2 filed expectation for the do-nothing KL(F||H) (at most 1e-7 would not surprise); run 1 read 3.5e-9 on maths rows and run 2 4.3e-9 on gold rows. At 1e-7 the no-change floor is 1e-5, under every library state KL(F||M) (0.03-5 on own rows, run 2)"
+  },
+  "measurement": {
+    "S": "As run 2 (commute.qwen_held.Held, arithmetic unchanged) except the fit rows: A = C G^+ with C and G summed over the chosen fit rows; S = 1 - KL(F||H) / KL(F||M), mean per position over rows 64-127 of the arm own row set; no change (None) when KL(F||M) <= s_floor_factor x the pair chosen-fit do-nothing KL(F||H) on that row set",
+    "fit_sweep": "Stage 0, per row set of the pod, F = M, for each fit in settings.fits in order: do-nothing KL(F||M), KL(F||H), per-site residual on the read rows and max |A - W0| / max |W0| (control/<rowset>_fit_<name>.json)",
+    "choice": "The first fit after own64 whose do-nothing KL(F||H) <= floor_max on both row sets of the pair; every read of the pair uses it",
+    "S_random": "Per state read, the Gaussian change of settings.s_draw at that state's per-matrix norms, read for S by the same code on the same rows; for a rescaled read the same Gaussian times c",
+    "rescaled": "Each state of the larger side at that save (settings.rescale) multiplied by c on every matrix and read again ('<key>_c'); the smaller side keeps its saved-size S",
+    "gap": "Per pair, save and seed: S(reuse side) - S(new side). 'saved': both at saved size. 'matched': the larger side's S replaced by its rescaled S. Seeds are paired by seed number (seed s of one side with seed s of the other), as P3.9's gaps were (qwen_library_share/run.py summarise)",
+    "blind_to": {
+      "S": "Whether F's units are M's re-weighted or new directions M's units span on 16,384 positions (2.7 fit positions per MLP input, run 1's flag 5); the random change shares the rows and fit size. Attention-pattern changes enter only through F's write at o_proj. On a built side the read half repeats the fit half's cue sequences, so S there is read on the trained text itself",
+      "gap": "Which side's units change; a gap from a size difference is read only through the rescaled read, which E205 found lowers S on the 67M (0.0006-0.030), so it shrinks only the larger side",
+      "fit_sweep": "Why a fit fails: the sweep says which fit sources reproduce M on the read rows, not whether the cause is the span of the fit rows or the pseudo-inverse tolerance"
+    },
+    "positive_control": "The pod's first state's change at o_proj and down_proj only, which reading 3 expresses exactly: S >= 0.999 (run 1 read 1 - 2.4e-8)",
+    "noise_floor": "The chosen fit do-nothing KL(F||H) per row set (at most 1e-7 by the choice) sets the no change floor; run 1 seed sd of S (0.0041) under the bar (0.005); each side own seed sd over 3 seeds, reported"
+  },
+  "controls_stop_on_miss": {
+    "fit_sweep": "Stage 0: no fit after own64 reads do-nothing KL(F||H) <= 1e-7 on both row sets of the pair: the pod writes stopped.json and reads no state (the pair is unreadable by S at these fits)",
+    "S_do_nothing": "Every fit: F = M reads KL(F||M) <= 1e-9 per position",
+    "S_output_only": "Before the pod's first state is read: that state's o_proj and down_proj change alone reads S >= 0.999 (control/output_only.json)",
+    "sha256": "Each fetched state matches the library's recorded sha256 (library_states.fetch raises otherwise)",
+    "rows": "Each arm row set is 128 x 256 tokens; each repacked set 128 x 256; gold rows at least 64 x 256"
+  },
+  "expected": {
+    "fit_own64": "Reproduces run 2 do-nothing KL(F||H): cipher 1.247e-3, copy 2.237e-3, known 2.8e-4, invented 3.9e-4 (results/run2/<pair>/control/<rowset>_do_nothing.json); reported beside, no bar",
+    "fit_others": "No prior. If the read rows unit activations leave the span of the 64 fit rows, more and more varied fit rows lower the floor, the repacked rows (same sequences, new contexts) most; if the cause is numerical (the pseudo-inverse cutting real directions), no fit clears and the pod stops",
+    "S_output_only": "1 - S under 1e-6 (run 1: 2.4e-8)",
+    "S_states": "Between 0.95 and 0.999 at saved size (run 1 0.977-0.997; run 2 gold 0.996-0.999). Run 2 word-row S (0.93-0.99) carried the fit error and is not a prior",
+    "S_random": "About 0.75-0.85 when read (run 1 0.79-0.82; run 2 gold ~0.81); the smallest states random references may read no change",
+    "S_rescaled": "Each rescaled state S lower than its saved S by 0.0006-0.03 (E205, 67M); run 2 cipher shrink raised S 0.93 to 0.99 under the fit error, and gold shrink left it unchanged: whether shrinking raises S on clean word rows is what this reads",
+    "gaps": "Rival A: every seed gap above 0.005 at both saves, saved size and size-matched, on both word pairs; rival B: neither pair does. Run 2 under the fit error: saved-size gaps 0.014-0.066, size-matched 0.003-0.006",
+    "seed_sd": "Each side's seed sd of S under ~0.005 (run 1's largest 0.0041 at n 2)",
+    "time": "Per pod on an H100: stage 0 builds Grams over 64+64 (own64), 128, 320 and 384 fit rows and the 64 read rows per row set; run 2 measured 26-27 s for Grams and pinv over 128 rows and 14 s per do-nothing read, so about 13 s per 64 fit rows: ~4-5 min per row set, ~9 min per pod. Then run 2 state reads: 22 min per pod, fetch-bound (results/run2_copy_cipher_pod.log 00:53-01:13). With set-up ~10-15 min: ~45 min a pod, two pods in parallel, ~$3 each at $3.99/h; the rehearsal pod ~20 min, ~$1.5; ~$8 in all"
+  },
+  "rules": {
+    "gap": {
+      "smallest_gap": 0.005,
+      "rule": "summary2.gap_rule per pair, save and kind ('saved', 'matched'), on the three seeds' gaps: 'reuse above' if every gap > 0.005; 'new above' if every gap < -0.005; 'within bar' if every |gap| <= 0.005 or the gaps have both signs; 'mixed' otherwise; 'unreadable' if fewer than 3 gaps or any S of the cell reads 'no change' or is not finite. Rounded to 9 places",
+      "pair": "summary2.pair_outcome over the pair's four rules (2 saves x saved, matched): 'separates' if all four read 'reuse above'; 'reversed' if all four 'new above'; 'unreadable' if any is; else 'does not separate'",
+      "outcome": "summary2.outcome over the three pairs: 'rival A' if every pair separates; 'rival B' if no pair separates and none is unreadable (a 'reversed' pair counts here, and is announced as a reversal of the 67M's order); 'neither' otherwise (some pairs separate, or one is unreadable)",
+      "blind_to": "See measurement.blind_to"
+    },
+    "S_random": "Reported beside each read; no rule (run 1 already found every E167 state 0.17-0.19 above its random change)",
+    "outcome": "summary3.outcome over the two word pairs: rival A if both separate; rival B if neither separates and neither is unreadable (a reversed pair counts here, announced as a reversal of the 67M order); neither otherwise (one separates, or one is unreadable, including a pod stopped at stage 0)"
+  },
+  "edge_cases_checked": "2026-11-20, run on each case through cpu-run (scratch ~/commute-data/scratch/qwen-lead/run3-writer/edge.py); results as listed",
+  "edge_cases": {
+    "gap_rule, no gaps": "unreadable",
+    "gap_rule, two gaps of three": "unreadable",
+    "gap_rule, one S 'no change' (gap None)": "unreadable",
+    "gap_rule, a NaN gap": "unreadable",
+    "gap_rule, gaps 0.006, 0.007, 0.010": "reuse above",
+    "gap_rule, gaps 0.005, 0.006, 0.010 (one equal to the bar)": "mixed",
+    "gap_rule, gaps 0.001, -0.002, 0.003": "within bar",
+    "gap_rule, gaps 0.02, -0.02, 0.02 (both signs, beyond the bar)": "within bar",
+    "gap_rule, gaps -0.006, -0.007, -0.01": "new above",
+    "gap_rule, gaps 0, 0, 0 (do-nothing against itself)": "within bar",
+    "gap_rule, gaps 0.0, 0.006, 0.006 (a tie at 0 beside positives)": "mixed",
+    "pair_outcome, four 'reuse above'": "separates",
+    "pair_outcome, three 'reuse above' and one 'within bar'": "does not separate",
+    "pair_outcome, four 'new above'": "reversed",
+    "pair_outcome, one 'unreadable'": "unreadable",
+    "outcome, both separate": "rival A",
+    "outcome, neither separates, one reversed": "rival B",
+    "outcome, one separates and one does not": "neither",
+    "outcome, one unreadable (stopped at stage 0)": "neither",
+    "fit choice, own64 alone clears": "own64 is never chosen: the next fit that clears, else stop",
+    "fit choice, a fit clears one row set only": "not chosen; the next fit",
+    "fit choice, floor exactly 1e-7": "chosen (<=)",
+    "fit choice, a NaN floor": "not chosen"
+  },
+  "do_nothing_against_the_rule": "The do-nothing state reads S 'no change' on each side, so every gap is None and the rule reads 'unreadable', never a candidate's 'reuse above'. Two identical states on both sides read gap 0 at every seed: 'within bar' (rival B), below the bar",
+  "leans": {
+    "written_before_running": "No lean between the rivals. Leaning that the repacked fit clears the floor (the read rows repeat the fit sequences in other contexts), not tested"
+  },
+  "not_read": "Gold and shuffled gold (run 2 read them cleanly; not reread); a fit with a lower pseudo-inverse tolerance or anchored at W0 (a change to the reading, not approved); the share on either decomposition; S at other saves"
+}

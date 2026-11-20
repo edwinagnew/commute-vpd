@@ -33,11 +33,17 @@ ROWSETS = ("copy", "cipher", "known", "invented", "gold")  # the pair library's 
 def rows_of(rowset: str) -> Tensor:
     """A row set as the library built it (128 x 256): a built side's packed trained cue sequences, or gold's rows (E40's
     held-out problems with gold solutions)."""
-    tok = AutoTokenizer.from_pretrained(MODEL, revision=MODEL_REV)
     if rowset == "gold":
-        return P.gold_rows(tok).tokens
+        return P.gold_rows(AutoTokenizer.from_pretrained(MODEL, revision=MODEL_REV)).tokens
+    return repacked(rowset, P.SEED)
+
+
+def repacked(rowset: str, seed: int) -> Tensor:
+    """A built side's trained cue sequences packed with `seed` (128 x 256); at qwen_pairs.SEED, the library's own rows
+    (`qwen_pairs.own_rows`), at another seed the same sequences in other passes, neighbours and offsets."""
+    tok = AutoTokenizer.from_pretrained(MODEL, revision=MODEL_REV)
     end_id = int(tok.convert_tokens_to_ids("<|im_end|>"))
-    return P.own_rows(tok, end_id, rowset, P.tasks(LS.LIBRARY / "words.json")[rowset]["train"]).tokens
+    return P.packed(rowset, P.cue_seqs(tok, end_id, P.tasks(LS.LIBRARY / "words.json")[rowset]["train"]), seed).tokens
 
 
 # ----------------------------------------------------------------------------- the reading (GPU, through the Lab)

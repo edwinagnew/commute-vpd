@@ -1,0 +1,217 @@
+{
+  "experiment": "E224 (rl_67m), cell P2.41 runs 6-7: E220's four arms matched on update size, then E222's readings, on three task#2191 next-token tasks (plural pronoun agreement B187, day/month sequences C14; anchor single-digit addition C51) where the reward and the reading are the same token at the cue",
+  "plan": "reports/plans/2026-11-19_plan_rl-67m.md (section Stage 2c/3c (E224)); reports/plans/2026-11-20_plan_rl-67m-task-rechoice.md",
+  "card": "reports/plans/2026-11-20_plan_rl-67m-newtasks-card.md",
+  "filed": "2026-11-20, before any run of run_newtasks.py or read_newtasks.py. Built from predictions_E220.json (arms, recipe, gates) and predictions_E222.json (readers, rules); the user chose these three tasks on 2026-11-20 ('Yes, these three'). Amended the same day before any run: plural held-out rows extended (settings.held_extra_*) and item counts set from the CPU dry run",
+  "settings": {
+    "size_target": 0.006874177614299806,
+    "size_target_source": "E220's (predictions_E220.json settings.size_target): every arm stops at the first step with ||dW|| / ||W0|| at or above it",
+    "lr": 3e-05,
+    "lr_source": "E220's (E53's lowercase recipe: Adam 3e-5, betas 0.9/0.999, clip 1.0)",
+    "grad_clip": 1,
+    "grad_clip_source": "E53's recipe, as E220",
+    "prompts_per_step": 16,
+    "k": 8,
+    "k_source": "E220's: group size 8, 16 prompts x 8 = 128 samples per step; here one sampled token each",
+    "sft_batch": 32,
+    "sft_batch_source": "E53's batch of 32, as E220",
+    "max_steps": 600,
+    "max_steps_source": "E220's cap",
+    "kl_every": 5,
+    "kl_rows": 64,
+    "kl_batch": 8,
+    "kl_rows_source": "stage 1's KL read (Pile val rows 0-63), as E220; a reading, not the stop",
+    "prompt_len": 64,
+    "prompt_len_source": "stage 1's prompt length; E222 read windows of 64 at position 63",
+    "gap": 32,
+    "gap_source": "plural mining: the antecedent's noun at most 32 tokens before the cue (a sentence or two). Measured item counts are written by ctl",
+    "seq_lo": 2,
+    "seq_hi": 5,
+    "seq_source": "2 to 5 names shown, so a 7-day list never shows its target; 4 lists (day, day3, month, month3) x starts x 4 lengths x 6 separators = 912 templates",
+    "held_frac": 0.2,
+    "held_frac_source": "a fifth of each list's templates held out (184 of 912, rounded per list)",
+    "n_train": 4096,
+    "n_train_source": "E220's n_demo_prompts: the training items (RL prompts, demonstrations, own-sample prompts)",
+    "n_held": 1024,
+    "n_held_source": "held-out items per task; the brief's 'about 1,000' for the mined task",
+    "n_eval": 512,
+    "n_eval_source": "the held-out items of every training read (top-1 se about 0.022 at a rate of 0.4, so 2 se of a difference is about 0.06)",
+    "n_own": 1024,
+    "n_own_source": "E220's n_train_prompts: own samples drawn on the first 1,024 training prompts x 8",
+    "pile_train_n": 32768,
+    "pile_train_n_source": "E220's: Pile train rows 0-32767 (mining and fills)",
+    "val_start": 64,
+    "val_n": 8128,
+    "val_source": "stage 1's held-out Pile val rows 64-8191 (rows 0-63 are the KL rows)",
+    "n_read": 256,
+    "n_read_source": "read rows per task (E222 read 200; every task has at least 1,000 held-out items by the ctl gate, so 256 is the round number above)",
+    "n_fit": 600,
+    "n_fit_source": "steering's fitting windows from the training items; at least E211's n_select 512",
+    "gauss_draw": 0,
+    "gauss_draw_source": "E222's",
+    "null_rates": [
+      1e-05,
+      3e-05,
+      0.0001,
+      0.0003
+    ],
+    "null_rates_source": "E220's grid",
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "seed": 0,
+    "seed_source": "the item generators' seed",
+    "reader_settings_source": "E211's filed reader settings, read at run time from experiments/realistic_tasks/results/predictions_run2.json, as E222",
+    "held_extra_start": 32768,
+    "held_extra_n": 16384,
+    "held_extra_source": "CPU dry run 2026-11-20 (before any GPU run): mining all 8,128 val rows gave 689 plural held-out items (0.085 per row), under min_items 1,000; plural held-out mining continues into Pile train rows 32768-49151 (cached train_32768_32768.npy), which the training rows 0-32767 never reach, instead of falling back to templates"
+  },
+  "thresholds": {
+    "min_pool": 256,
+    "collapse_share": 0.5,
+    "learn_min_se": 2,
+    "null_tol_se": 2,
+    "ctrl_max_se": 2,
+    "min_items": 1000
+  },
+  "definitions": {
+    "tasks": "commute.rl_tasks_2191 (module docstring). plural: mined from Pile rows (train rows for training items, val rows from 64 for held-out), the cue a they/their/them token after '<plural det> <noun>s' within 32 tokens with no singular pronoun, a/an, newline or other they/their/them between; target set the six forms of they/their/them that are one token; competitors he/she/it/his/her/its (both forms) and ' a', ' the'. sequence: '<Pile fill>\\n\\n' + names joined by a separator, ending at the separator; target the next name, competitors the other names of that list in the same form. addition: '<Pile fill>\\n\\n{a} + {b} =', a + b <= 9; target ' {a+b}', competitors the other nine ' d'",
+    "held-out split": "plural: Pile val rows 64-8191 then Pile train rows 32768-49151, disjoint from the training rows 0-32767. sequence: a fifth of each list template (none shared with training, checked in ctl) after val-row fills. addition: val-row fills only; the 55 facts are shared (a fact held out could not be taught)",
+    "controls (cue removed)": "plural: the antecedent made singular in the same window (these -> this, those -> that, other determiners -> the; the noun without its s, one token by construction), target set unchanged. sequence: the shown names in a seeded shuffle that is not the original order and does not end on its last name; the read token is the original next name. addition: '{a}, {b} =' (no operator), the read token the sum",
+    "reward": "the sampled token (temperature 1, one token at the cue) is in the item's target set",
+    "held-out read": "deterministic, on the first 512 held-out items: top-1 (argmax in the target set), top-5, contrast (below) and the control's top-1 (argmax equal to a token of its read set); standard errors over items (sd / sqrt(n)). At step 0, step 10 and the stop (the saved bf16 state)",
+    "contrast": "logsumexp of the logits over the target set minus over the competitor set at the cue = log p(target set) - log p(competitor set) (rl_tasks_2191.set_contrast); the readers' unit (SetRead, 'contrast')",
+    "collapsed": "at least half of the KL rows' positions (64 x 512) share one argmax token",
+    "learned": "RL seed 0 (jobs `arm 1 rl 0`, `arm 2 rl 0`) reached the size target, its held-out top-1 at the stop is more than 2 se of the difference above step 0's (strictly), and its control top-1 rose by at most 2 se of the difference (inclusive), on both tasks. Read by every own, demo, shuffled and anchor-demo job before it trains",
+    "stable null": "E220's: the shuffled arm reaches the size target within 600 steps, its held-out top-1 at the stop within 2 se of the difference of step 0's (inclusive), not collapsed, on both tasks at one rate; the lowest stable rate is used; none stops the cell",
+    "size, kl": "E220's: size on the live fp32 weights after every step (the stop), size_saved on the bf16 state; kl a reading every 5 steps and kl_saved on the saved state",
+    "readings": "E222's (E211's Reader) on the set contrast: gain T1 - T0, share (L01 - L00) / gain on the released decomposition, untrained svd and rotated, neuron k64 and k matched, pooled steering; no k_half (one target token per row is what it reads). Read rows the first 256 held-out items, fitting windows the first 600 training items"
+  },
+  "control": {
+    "ctl (training run), first and alone": "item counts per task (held-out at least 1,000 each or stop; no held-out sequence template in training or stop); W0's held-out reads; a zero update reads stage 1's KL exactly 0.0 and the same 64 x 8 sampled tokens (or stop); 5 RL steps timed per task (W0 restored after, asserted by the next job's step 0); E211's ctl unchanged: E53's lowercase and cipher seed-0 states re-read to their saved numbers within E211's tolerances (or stop)",
+    "read ctl (reading run), first and alone": "a zero update on each task's read rows reads every numerator exactly 0 (or exit 1)",
+    "do-nothing, first in each reading job": "a Gaussian update at the task's first state's per-matrix norms: contrast gain under MIN_GAIN (1) or exit 1",
+    "input check": "every state's sha256 equals its training record's"
+  },
+  "expected": {
+    "task2191 top-1 / top-5": {
+      "plural": [
+        0.43,
+        1
+      ],
+      "sequence": [
+        0.2,
+        0.87
+      ],
+      "addition": [
+        0,
+        0.17
+      ],
+      "source": "the user's task#2191 PDF (Pile-4L, 30 items each), recorded beside ctl's W0 reads"
+    },
+    "item counts": "measured by the CPU dry run (2026-11-20, same code and rows): plural 2,892 training items from all 32,768 train rows (0.088 per row; under n_train, so plural trains on 2,892) and 689 held-out from the 8,128 val rows, so with the extra rows 1,024 held-out after about 4,000 of them (expected; ctl writes it); 1,540 distinct noun -> pronoun pairs in training, 532 in the val held-out, 305 shared. sequence: 4,096 / 1,024, 726 / 183 distinct templates of 728 / 184, none shared. addition: 4,096 / 1,024, all 55 facts in both",
+    "W0 held-out (n 512 in the training reads, 1,024 in ctl)": {
+      "plural": {
+        "top1": [
+          0.25,
+          0.6
+        ],
+        "top5": [
+          0.85,
+          1
+        ],
+        "contrast": [
+          -0.5,
+          2
+        ],
+        "ctrl_top1": [
+          0.05,
+          0.45
+        ],
+        "ctrl below top1": "by at least 0.05"
+      },
+      "sequence": {
+        "top1": [
+          0.2,
+          0.75
+        ],
+        "top5": [
+          0.7,
+          1
+        ],
+        "contrast": [
+          -1,
+          2.5
+        ],
+        "ctrl_top1": [
+          0,
+          0.2
+        ]
+      },
+      "addition": {
+        "top1": [
+          0,
+          0.15
+        ],
+        "top5": [
+          0.05,
+          0.45
+        ],
+        "contrast": [
+          -3.5,
+          -1
+        ],
+        "ctrl_top1": [
+          0,
+          0.15
+        ]
+      },
+      "why": "our items differ from the PDF's 30 (Pile fills, several list forms, mined contexts), so bands not points; addition's contrast near log(1/9) = -2.2 if the model spreads its digit mass evenly"
+    },
+    "zero update": "kl exactly 0.0; same sampled tokens true",
+    "ctl e53": "E222's ctl values (predictions_E222.json expected.ctl e53/*): lowercase share 0.7538, cipher 0.1249, every other number within E211's tolerances",
+    "seconds per RL step": "0.1 to 0.5 on an L40 (one sampled token per sequence: one forward of 128 x 64 to sample, one forward-backward of 128 x 65; E220's 16-token step took ~4 s)",
+    "steps to the target": "about E220's: RL 20-45, own 20-35, demo 18-30, shuffled at 3e-5 25-40, at 1e-5 ~300, at 1e-4 ~3 (size ~0.008), at 3e-4 1 (size ~0.014). Anchor RL seed 0: rewards nearly always 0, so the gradient is near 0 on most groups: 40 steps to never (600 steps, not reached)",
+    "RL seed 0 at the target": "plural top-1 +0.1 to +0.4, sequence +0.1 to +0.5, both over 2 se (~0.06): learned passes on top-1 (probability 0.8). Control top-1 rise: plural 0 to +0.15 (a general 'they' push would show here), sequence -0.05 to +0.05. Control gate passes on both (probability 0.6); the learned gate as a whole (probability 0.5)",
+    "null at 3e-5": "stable on both tasks (probability 0.6), as E220 found on repeat and lower",
+    "own and demo at the target": "held-out top-1 up +0.05 to +0.3 (they train on the exact cue token, unlike E220's 16-token samples)",
+    "anchor": "demo: top-1 from ~0.05 to 0.2-0.8 (55 facts, about 800 demonstrations seen); rl seed 0: under +0.1",
+    "collapsed": "none",
+    "reads (run 7)": {
+      "zero": "every numerator exactly 0.0",
+      "Gaussian": "contrast gain within +-0.1 of 0 (E222's Gaussians read 0.002-0.02 in lo)",
+      "prior (W0 mean contrast on the read rows)": "plural -0.5 to 2; sequence -1 to 2.5; addition -3.5 to -1",
+      "gain and readability (floor 1 in the contrast)": "RL 0.5 to 2.5 on both picks (readable, probability 0.6 each); own and demo 0.3 to 2 (readable, probability 0.5); shuffled -0.3 to 0.3 (unreadable); anchor demo 2 to 5 (readable)",
+      "share on a readable state": "0.1 to 0.8 (E53's cipher and lowercase range); no point value",
+      "seconds per state": "about 23 s on an L40 (E222: 18 s at 200 rows of 65; these are 256 of 64)"
+    }
+  },
+  "rules": {
+    "smallest_gap": 0.1,
+    "min_readable_seeds": 2,
+    "floor": "MIN_GAIN = 1 in the set contrast (commute.local_faith), applied by the reader",
+    "per pick, on the share": "E222's rule unchanged (score_stage3.pick_call, card_call), with the picks plural and sequence and the anchor addition's three demo seeds: no call when fewer than two arms are readable or RL or demo is not; rival a when every pair of rl, own, demo is alike and each is above the anchor and above shuffled where readable; rival b when demo is apart from rl and own (if readable) is alike rl; else neither. Third outcome beside: shuffled readable and alike rl",
+    "card": "E222's: the same call on every pick that has one; split when they differ; no call when neither has one",
+    "beside, not filed": "the same rule on untrained (svd, rotated), steering, neuron (k64, k matched); the anchor's RL seed 0 values; each state's training reads"
+  },
+  "edge_cases": {
+    "checked": "2026-11-20 by reading the code (run_newtasks.learned, job_null, null_lr; rl_tasks_2191.member, set_contrast, reads; score_stage3's rule, whose edge cases E222 ran) and, for the generators, reward and contrast, the CPU dry run named in the plan section",
+    "padding": "target and competitor sets are padded with -1; member never matches -1 (token ids are non-negative), set_contrast masks -1 to -inf before the logsumexp; a set of one token gives that token's logit",
+    "empty competitor or target set": "cannot arise: every task's sets have 1+ targets and 6+ competitors (asserted shapes); target and competitor sets never meet (asserted in Items)",
+    "learned: gain exactly 2 se": "fails (strictly more); control rise exactly 2 se passes (inclusive)",
+    "se of 0": "top-1 at 0 or 1 on every item gives se 0: learned then passes only on a gain above 0, the control only with no rise; the null is stable only if top-1 did not move",
+    "anchor RL never reaches the target": "saved and read as not reached (an extra reading, no gate reads it)",
+    "a held-out sequence template in training": "ctl stops",
+    "fewer than 1,000 held-out items": "ctl stops naming the task",
+    "sequence control with 2 names": "the reversed pair (the only order that is not the original), which never ends on the original last name",
+    "pool under 256": "the arm is skipped and recorded",
+    "do-nothing state": "a Gaussian or zero update reads every ratio nan (gain under the floor), so it cannot pass either rival's bar"
+  },
+  "prediction": {
+    "card": "no call (probability 0.4): an arm under the floor on a pick. Given a call: rival a 0.5, rival b 0.3, neither 0.2",
+    "third outcome": "not read (shuffled under the floor, probability 0.85)",
+    "anchor": "readable on all three demo seeds, share 0.1 to 0.8"
+  }
+}
