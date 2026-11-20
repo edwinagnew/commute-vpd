@@ -1,4 +1,4 @@
-"""Cell P3.13 run 2 (E???, rung L3.2): the held-model reading S of the Qwen3-1.7B pair library (E164/E165), one pod per
+"""Cell P3.13 run 2 (E219, rung L3.2): the held-model reading S of the Qwen3-1.7B pair library (E164/E165), one pod per
 pair. Plan: reports/plans/2026-11-19_plan_l3-2-qwen-readings.md (+ _appendix.md); card card2.md; settings, expected
 values and rules in results/run2/predictions.json (the run refuses unless it is committed unchanged, or PRED_SHA matches
 on a pod). A description: no update is called reused or new.
@@ -18,8 +18,8 @@ Each record is written to results/run2/<pair>/S/<key>[_c][_random].json and prin
 is written. States come from W&B (`library_states.fetch`, sha256 against the library), the next fetched while this one
 is read, each deleted once read. No decomposition is read: only the base model (HF, pinned revision) and the states.
 
-  PRED_SHA=<sha> python experiments/qwen_held_readings/run2.py --pair facts --code E??? 2>&1 | tee -a <pod log>
-  python experiments/qwen_held_readings/run2.py --pair facts --code E??? --limit 1 --out <dir>   (the rehearsal)
+  PRED_SHA=<sha> python experiments/qwen_held_readings/run2.py --pair facts --code E219 2>&1 | tee -a <pod log>
+  python experiments/qwen_held_readings/run2.py --pair facts --code E219 --limit 1 --out <dir>   (the rehearsal)
   python experiments/qwen_held_readings/summary2.py    (no GPU: results/run2/summary.json)
 """
 

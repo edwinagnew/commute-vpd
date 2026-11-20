@@ -1,9 +1,9 @@
 #!/bin/bash
-# P3.13 run 2's $0 rehearsal (E???, rung L3.2) on one cluster L40: experiments/qwen_held_readings/run2.py, the real code,
+# P3.13 run 2's $0 rehearsal (E219, rung L3.2) on one cluster L40: experiments/qwen_held_readings/run2.py, the real code,
 # limited to the controls and the pod's first state. Arguments pass to run2.py. Submit from the clone root, after
 # results/run2/predictions.json is committed with its experiment number, with WANDB_API_KEY in the shell:
-#   sbatch --comment='E??? rehearse: S controls + one library state' cluster/qwen_held_run2.sbatch \
-#     --pair copy_cipher --code E??? --limit 1
+#   sbatch --comment='E219 rehearse: S controls + one library state' cluster/qwen_held_run2.sbatch \
+#     --pair copy_cipher --code E219 --limit 1
 # It reads: the do-nothing on cipher's rows (the row set's floor), the output-matrices-only change of cipher seed 0 at
 # the late save (S >= 0.999), then that state at saved size, times E187's c (0.458), and its Gaussian change at both
 # sizes: 6 S reads (2 controls, 4 of the state) at the full read sizes (128 rows of 256 tokens, 64 fit, 64 read), one 5.64 GB fetch.
