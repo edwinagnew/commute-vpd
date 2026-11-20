@@ -1,0 +1,136 @@
+{
+  "experiment": "E233 (cell P2.48)",
+  "filed": "2026-11-20, after the rehearsals (cluster jobs 62384, 62387, 62390, 62393) and before any scored run of run.py",
+  "plan": "reports/plans/2026-11-20_plan_p2-48-british-style.md",
+  "card": "experiments/british_style/card.md",
+  "settings": {
+    "word_list": "hyperreality/American-British-English-Translator@16ec8158bd31fd8fc13bf29a2a5165ca12c7dd3f data/american_spellings.json",
+    "list_url": "https://raw.githubusercontent.com/hyperreality/American-British-English-Translator/16ec8158bd31fd8fc13bf29a2a5165ca12c7dd3f/data/",
+    "list_sha256": {
+      "american_spellings.json": "9b742c86ea859d76ef9f305f3311b6307e93291ada5b8046eb8f0d6388ded092",
+      "british_spellings.json": "7f1f3acfeb4e8bfa2219643972997566d42926f6df1978d3a3730b6dbcc6a5f5",
+      "different_meanings.json": "43e71ad9575b909f32225b8c83499db400b1947a969006ccc08fbaf2f7c98cfd"
+    },
+    "list_sha256_source": "sha256 of the three files fetched 2026-11-20 at that commit; the job downloads them into artifacts/spelling/<commit>/ when missing and refuses a mismatch",
+    "rehearse_cap": 40,
+    "rehearse_targets": [
+      0.005,
+      0.5
+    ],
+    "rehearse_source": "the rehearsal's training stage only (run.py rehearse): seed 0, both tasks, cut to 40 steps; 0.005 is reached inside 40 steps (a reached save) and 0.5 never (the cap's save, marked not reached), so both save paths, the reads and the resume run at the full read size. Job 62387 with 0.001/0.002 stopped at step 3 (Adam's first step alone gives size 0.00114), too early to trace steps 10 and 40",
+    "trace_steps": [
+      1,
+      10,
+      40,
+      100,
+      200,
+      300,
+      400,
+      500,
+      600
+    ],
+    "ambiguity_lists_source": "data/british_spellings.json and data/different_meanings.json of the same commit (spelling.build_pairs reads them by name)",
+    "word_list_source": "the repository's American-to-British spelling map (1,800 pairs; 54,504 bytes at that commit, read 2026-11-20). A pair is kept when both forms are lowercase letters only, the American form is not a key of british_spellings.json (also a British spelling) nor of different_meanings.json (a word whose meaning differs), and it is not in `exclude`. Measured 2026-11-20 (tokenizer only): 1,759 pairs kept of 1,800",
+    "exclude": [
+      "practice",
+      "practices",
+      "program",
+      "programs",
+      "disk",
+      "disks",
+      "filter",
+      "filters",
+      "filtered",
+      "filtering"
+    ],
+    "exclude_source": "the frequent pairs (top 30 in Pile train rows 0-4095, measured 2026-11-20) whose British form holds only for some senses or is not British at all: practice/practise (noun keeps -ce in British usage), program/programme and disk/disc (computing keeps the American form in British usage), filter/filtre (not a British spelling; French). Same positions in both tasks, so a noisy pair costs the real task signal, not the comparison's fairness",
+    "scramble_seed": 0,
+    "scramble_tries": 500,
+    "twin_source": "per kept pair, the British form's tokens up to the first one that leaves the American form's (k = that index) are kept, and the letters after them are permuted (random.Random(f'{scramble_seed}:{british}')), up to scramble_tries draws; a draw is valid when the whole word is in none of the three lists, its first k tokens are the British form's, its token k differs from the British and the American form's token k, and (k = 0) it is not one vocabulary token. Of the valid draws the first with the British form's token count is taken, else the one closest in count (earliest). A pair with no valid draw is dropped from both tasks. Measured 2026-11-20: 24 pairs dropped, 1,019 of 1,759 twins match the token count exactly, 634 differ by one token",
+    "train_set": "train_0_32768",
+    "held_set": "val_0_2000",
+    "row_len": 500,
+    "min_per_row": 2,
+    "n_train": 4800,
+    "rows_source": "the cached Pile rows (data.pile_rows layout, artifacts/sets/<set>.npy; E53's held rows are val 0-255 of the same split). A row is decoded and kept when it holds at least min_per_row kept American forms written lowercase after a space; each task's text is the row with every such occurrence (and, for the twin, every lowercase British form after a space too) replaced, encoded segment by segment so every occurrence's token span is known, and cut to row_len (a row shorter in either task is dropped). Measured 2026-11-20: 27% of train rows 0-4095 hold at least 2 (3.5 per such row), so 32,768 rows give about 8,800 dense rows for the 4,800 trained; val rows 0-1999 give about 516 rows and 1,850 occurrences",
+    "rate": 3e-05,
+    "batch": 8,
+    "grad_clip": 1.0,
+    "step_cap": 600,
+    "recipe_source": "E53's / E211 T-task recipe (lowercase.arm_b_states: Adam 3e-5, batch 8, clip 1, each row once, batch order lowercase.batch_order(seed)); the cap is 600 steps (4,800 rows) instead of 300 because these rows are mostly unchanged Pile text, whose update grows slower than lowercase's (T1 reached 0.0175 at steps 274-283 of 300, E211)",
+    "targets": [
+      0.00875,
+      0.0175
+    ],
+    "targets_source": "E211's LM-task sizes (predictions_run2.json t_targets): each fine-tune saved at the first step its size ||dW||/||W0|| reaches each target; 0.0175 is the scored size",
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "half": 63,
+    "n_read": 500,
+    "per_row": 8,
+    "read_source": "E211's LM windows (127 tokens, the scored token at index 64, 500 windows, at most 8 per row): here the scored token is the first token where the form leaves the American form's, at each occurrence in the held rows whose window fits in both tasks' rows; the same occurrences in both tasks, first 500 in row order, chosen from the text alone",
+    "control_state": "e53/lowercase_s0"
+  },
+  "thresholds": {
+    "reproduce_tol": {
+      "share": 0.01,
+      "k_half": 0,
+      "r_half_num": 0.0001,
+      "erank": 1e-06
+    },
+    "reproduce_source": "E211's and E227's filed tolerances (E211 read share 0.7538 vs 0.7519 saved; k_half 16 = 16; r_half_num and erank equal to 1e-13)",
+    "base_contrast_min": 2.0,
+    "twin_p_max": 0.001,
+    "gain_floor": 1.0,
+    "size_tol": 0.001,
+    "thresholds_source": "base_contrast_min: the user's 'the base already prefers British forms somewhat more than the scrambled forms' as a mean W0 log-odds gap of at least 2 nats on the read windows (E53's lowercase premise used +1 on a two-form contrast; 2 here because the two targets differ, not two forms of one word); twin_p_max: 'scrambled forms near zero' as a median W0 probability of the twin's scored token at most 1e-3; gain_floor: local_faith.MIN_GAIN, the floor r needs; size_tol: a state counts as reaching a target when its size is at least the target (relative overshoot reported, E211 read at most 0.3%)"
+  },
+  "control": {
+    "stage 0a, alone, exit 1 on a miss": "e53/lowercase_s0 read by realistic_reads.share_of, k_half_of and update_spectrum.state on E136's windows reproduces share 0.7519 (tol 0.01; E211 read 0.7538), k_half 16, r_half_num 0.87998 (1e-4), erank 598.5738 (1e-6)",
+    "stage 0b, do-nothing": "a zero update on the real task's read windows: gain, share numerator, r_half numerator and G exactly 0; share nan, k_half null, erank null",
+    "stage 0c, base contrast (W0 only)": "mean W0 log-odds of the scored token, real minus twin, at least 2 (expected: real -3 to -9, twin -10 to -18, gap 5 to 10); twin's median W0 probability at most 1e-3 (expected under 1e-5). A miss exits 1: the pair's premise fails, told to the lead",
+    "stage 1, gain floor (seed 0 of both tasks, before seeds 1-2)": "each reaches size 0.0175 within 600 steps and gains at least 1 log-odds on its read windows there; a miss exits 1 before seeds 1 and 2"
+  },
+  "expected": {
+    "steps to 0.0175": "real 250 to 450, twin 200 to 400 (rehearsal 62390: size 0.0041 at step 10 and 0.0072-0.0075 at step 40 on both, projected ~330 and ~280 by size ~ step^0.42)",
+    "gain at 0.0175": "real 2 to 6 log-odds; twin 4 to 12 (starts lower)",
+    "gain at 0.00875": "50% to 85% of the 0.0175 gain (E211's T tasks)",
+    "share at 0.0175": "real 0.55 to 0.85 (E53 lowercase 0.75-0.79, T1); twin 0.15 to 0.5 (E53's token cipher 0.12-0.26, T4 0.57)",
+    "erank at 0.0175": "real 560 to 610, twin 480 to 600 (E211: T1 598-600, T4 505-507)",
+    "k_half at 0.0175": "real 8 to 32, twin 32 to 256 (E211: T1 16, T4 128)"
+  },
+  "definitions": {
+    "tasks": "real: Pile rows with each kept American spelling (lowercase, after a space) replaced by its British form; twin: the same rows with each such occurrence (and each British form already present) replaced by the pair's fixed letter scramble. Sides labelled by the data argument (British spellings are in the Pile and the base prefers them over the scrambles, stage 0c); no verdict of reused or new under the definition",
+    "scored unit": "lo: log-odds over the whole vocabulary of the scored token (the first token where the written form leaves the American form's) at its position, from the prefix before it; realistic_reads.Read on windows of 127 tokens (target at index 64)",
+    "readings": "at each saved state: gain T1 - T0 and the re-gating share r = (L01 - L00) / (T1 - T0) on the released decomposition, do-nothing form (realistic_reads.share_of), nan under gain 1; k_half, E98's count of neurons carrying half the r_half numerator (realistic_reads.k_half_of, 'neurons for half the gain'), null under its floor; erank (update_spectrum.state); size (realistic.update_size); prior T0 (W0 only)",
+    "call": "realistic.seed_call on the three seeds a side at size 0.0175 (nan and null left out; 'apart' iff the ranges do not overlap, equal ends overlap); realistic.filed against the filed direction. Here 'one value a side' counts as 'unreadable' (two seeds a side at least)"
+  },
+  "predictions": {
+    "P1 share": {
+      "direction": "+",
+      "rule": "seed_call('share', real, twin) at 0.0175, filed '+': hit = apart with real above twin",
+      "expected": "real 0.55-0.85 above twin 0.15-0.5, gap 0.2 to 0.5",
+      "confidence": "medium",
+      "why": "British forms are already in the Pile and preferred over scrambles; E53 lowercase (performed) read 0.75 against its token cipher 0.12-0.26, and T1 above T4 (gap 0.21) in E211"
+    },
+    "P2 erank": {
+      "direction": "+",
+      "rule": "seed_call('erank', real, twin) at 0.0175, filed '+': hit = apart with real higher (gap log10(real/twin) > 0)",
+      "confidence": "low",
+      "why": "E211 T1 598-600 over T4 505-507; E53 lowercase 598 over cipher 573-594"
+    },
+    "P3 k_half": {
+      "direction": "+",
+      "rule": "seed_call('k_half', real, twin) at 0.0175, filed '+': hit = apart with fewer neurons on the real side (gap log10(twin/real) > 0)",
+      "confidence": "low",
+      "why": "E211 T1 16 against T4 64-128; E53 lowercase 16 against the ciphers' 64-128"
+    },
+    "beside, not filed": "the same three calls at size 0.00875; the W0 prior (one value a side, real above twin by construction of stage 0c)"
+  },
+  "card_call": "rival a when P1 is a hit with gap at least 0.1 (the card's smallest gap); rival b when P1 reads 'no call' or 'miss'; 'between' when P1 is a hit with gap under 0.1; nothing when P1 is unreadable (stage 1 would have stopped first)",
+  "edge_cases_checked_before_filing": "run 2026-11-20 on the CPU worker (scratch/compare-lead/p248-designer/edges.py) through realistic.seed_call and realistic.filed (both also covered by tests/test_realistic.py): ranges apart upward -> hit (card rival a at gap 0.4, 'between' at gap 0.06); equal range ends -> no call (rival b); all equal -> no call; apart downward -> miss (rival b); a side with every share nan (all under the gain floor) -> unreadable; one value a side -> unreadable by this file's rule (seed_call alone would judge it on the sign); do-nothing on both sides (share nan, erank and k_half null) -> unreadable, so the do-nothing state cannot pass any rule; k_half on equal grid steps -> no call; k_half fewer on real (16 vs 64-128) -> hit, gap log10 0.82; erank 598-600 vs 505-507 -> hit, gap 0.073. No branch uncovered",
+  "seen_before_filing": "E211's run2_T1/T4 readings, E53/E136/E98/E141 control values, E227's stage0.json; the word list and the Pile density counts above (tokenizer only); the rehearsal (results/rehearse/, results/data.json): stage 0 in full (control share 0.7538, do-nothing exactly 0, base contrast 6.41 with real -7.15 and twin -13.56, twin median probability 8.4e-7) and seed 0 of both tasks cut to 40 steps (gain at step 40 real 0.93, twin 1.02; r at the cap's state readable only for the twin, 0.218, gain under the floor for real). No state of the scored run"
+}

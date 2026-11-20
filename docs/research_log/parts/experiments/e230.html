@@ -1,0 +1,18 @@
+<article class="exp" id="e230">
+<div class="top"><span class="id">E230</span><span class="chip mixed">mixed</span><h3>Do VPD's subcomponents keep the built pairs apart without the gate function?</h3><span class="when">2026-11-20 · cell P2.47 (filled), no independent check · <code>experiments/topk_gate</code></span></div>
+<p class="one"><strong>The question.</strong> The share separates all nine built pairs, but its masks come from VPD's trained gate function, while the neuron readings it is compared with also differ in how units are switched on. Does the agreement come from VPD's units or from the gate function's choice of which to switch on?</p>
+<p class="one"><strong>What we did.</strong> We kept the subcomponents and changed only the switching rule, reading the share on the 68 saved fine-tunes of the nine pairs under five rules: the gate function's own importances (the control, which must give the saved value), the same importances rounded to on or off at 0.5, and a top-k rule that keeps at each position the k subcomponents of each matrix with the largest input activation, at the gate function's mean count of 152 alive subcomponents per position, plus half and double that k. A zero change was read first.</p>
+<p class="one"><strong>What we found.</strong> The new code gave the saved share exactly on all 68, and a zero change read exactly 0. With masks rounded to on or off all nine pairs stay apart, with gaps of 0.37 to 0.66 against 0.39 to 0.69. The top-k rule at matched k keeps six pairs apart, reverses one and leaves two level, by small gaps (0.020 to 0.126), because its shares are about a tenth of the gate function's. Halving k keeps six, doubling keeps five. The same rule on MLP neurons keeps four.</p>
+<p class="one"><strong>What it means.</strong> What the share's agreement with the built pairs depends on is mainly which subcomponents the gate function picks, not how far it switches them; VPD's units under the simple rule do a little better than neurons (six against four). We filed that the top-k rule would fall to the neuron level, and it did. This is how the share agrees with how the pairs were built, not a verdict on reuse.</p>
+<figure><img src="fig/e230_shares_by_gate.png" alt="The share per pair under the gate function, binary masks and a top-k rule"><figcaption><strong>Does the share survive without the gate function? Rounded masks yes, top-k partly.</strong> Each point is a fine-tune's share, reuse sides filled and new sides hollow, under the gate function's masks, the same masks rounded to on or off, and the top-k rule; the last panel has its own scale.</figcaption></figure>
+<dl class="fields">
+<dt>Run</dt><dd>One MATS cluster debug L40 job (62289), under two minutes of GPU time for the 68 reads, $0.</dd>
+<dt>Found</dt><dd><ul>
+<li>Binary masks keep all nine pairs apart; the share lives in the choice of subcomponents, not graded mask values.</li>
+<li>The top-k rule at matched k keeps six of nine (one reversed, two level) against four for neurons, with shares about a tenth of the gate function's.</li>
+<li>Halving k keeps six and doubling keeps five, so more subcomponents on does not bring it toward the gate function.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 3: what the share's agreement with the nine built pairs rests on; the results section should not credit VPD's unit alone.</dd>
+<dt>Moved on</dt><dd>Ranking by output size or recounting k per task would each need a new cell. Report <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-20_analysis_e230-topk-gate.md"><code>reports/analyses/2026-11-20_analysis_e230-topk-gate.md</code></a>.</dd>
+</dl>
+</article>
