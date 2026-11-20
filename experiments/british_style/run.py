@@ -247,7 +247,6 @@ def run_state(net: ST.Net, C: Config, d: dict[str, Any], rd: dict[str, RR.Read],
     if path.is_file() and "stopped" not in json.loads(path.read_text()):
         log(f"{task} s{seed}: done before, skipped")
         return json.loads(path.read_text())
-    path.parent.mkdir(parents=True, exist_ok=True)
     states, trace = to_size(net, C, d["train"][task].long(), seed, targets, cap)
     rec: dict[str, Any] = {"task": task, "seed": seed, "trace": trace, "targets": {}}
     for target, st in states.items():
@@ -274,6 +273,7 @@ def gain_floor(rec: dict[str, Any], target: float, floor: float) -> str | None:
 def train_all(net: ST.Net, C: Config, th: dict[str, Any], d: dict[str, Any], rd: dict[str, RR.Read], S: dict[str, Any], rehearse: bool) -> None:
     out = RESULTS / ("rehearse" if rehearse else "scored")
     targets, cap = (C.rehearse_targets, C.rehearse_cap) if rehearse else (C.targets, C.step_cap)
+    (out / "states").mkdir(parents=True, exist_ok=True)
     stage0(net, C, th, S, rd, out)
     for seed in C.seeds[:1] if rehearse else C.seeds:
         recs = [run_state(net, C, d, rd, S, t, seed, out, targets, cap) for t in TASKS]
