@@ -55,7 +55,10 @@ share on the VPD decomposition p-9707d6ff is reported from existing results, not
    Sync 6 × 5.64 GB = 33.8 GB ÷ 10 MB/s ≈ 56 min, started before set-up; ~4 h wall, ~$16.
 2. **Run 2, library S, three H100 pods (one per pair).** 12 states a pod from W&B (68 GB at 30-45 MB/s ≈ 25-38 min,
    overlapped), read at saved size and the larger side again at E187's c: 18 S reads a pod at ~10 min each ≈ 3.5 h,
-   ~$14 a pod, ~$42.
+   ~$14 a pod, ~$42. *Updated 2026-11-19 from run 1's timing: an S read takes ~26 s on an H100 (E216 stage 2, 12
+   reads in 5 min 14 s), so a pod's 36 reads and 3 controls take ~17 min and the pod is fetch-bound: 12 states x 5.64 GB
+   = 67.6 GB at 30-45 MB/s = 25-38 min, ~40-55 min a pod with set-up, ~$3-4 a pod
+   (`experiments/qwen_held_readings/results/run2/predictions.json` expected.time).*
 
 Neither is gated (each < $60 and < 6 h); total ~$58 of the $300 session budget. Cluster `normal` is not used (71 jobs
 pending at planning); `debug` cannot hold a > 2 h run.

@@ -52,7 +52,7 @@ from commute.jobs import (
     require_filed,
 )
 from commute.qwen_d3 import ALIVE_TOTAL_OF, GSTATS_OF, null_seed
-from commute.qwen_sft import linears, load, sha256
+from commute.qwen_sft import load, sha256
 from commute.qwen_vpd import (
     SITES,
     decomp_id,
@@ -194,55 +194,29 @@ def rank_state(name: str, dW: dict[str, Tensor], floor: dict[str, dict[str, floa
 # ----------------------------------------------------------------------------- (b) S
 
 
-class Held:
-    """M (W0) and F (W0 + δW), both fp32 on the GPU; the Grams of M's units on the fit and read rows, and G_fit^+."""
+class Held(QH.Held):
+    """`qwen_held.Held` (moved there 2026-11-19 for run 2, arithmetic unchanged) on maths rows, Grams kept on the GPU as
+    this run ran; `read` names, logs and writes each record."""
 
     def __init__(self, rows: Tensor) -> None:
-        self.M, self.F = load_target(DEV), load_target(DEV)
-        self.W0 = {s: lin.weight.data for s, lin in linears(self.M).items()}  # M's own tensors: `held` swaps, never writes
-        self.fit = list(rows[: C.n_fit].to(DEV).split(C.batch))
-        self.read_rows = list(rows[C.n_fit :].to(DEV).split(C.batch))
-        t0 = time.time()
-        self.Gf, self.Gr = QH.grams(self.M, self.fit), QH.grams(self.M, self.read_rows)
-        self.P = {s: QH.pinv(G) for s, G in self.Gf.items()}
-        log(f"[S] grams and pinv: {time.time() - t0:.0f} s, peak GPU {torch.cuda.max_memory_allocated() / 2**30:.1f} GiB")
+        super().__init__(load_target(DEV), load_target(DEV), list(rows[: C.n_fit].to(DEV).split(C.batch)),
+                         list(rows[C.n_fit :].to(DEV).split(C.batch)), log)
 
-    def set_f(self, dW: dict[str, Tensor] | None) -> None:
-        for s, lin in linears(self.F).items():
-            lin.weight.data.copy_(self.W0[s] if dW is None else self.W0[s] + dW[s].to(DEV, torch.float32))
-
-    def read(self, name: str, dW: dict[str, Tensor] | None, floor: float, read_residual: bool,
-             extra: dict[str, Any]) -> dict[str, Any]:
-        """S of F = W0 + dW (None: the do-nothing), with per-site fit residuals (and read-half ones if asked)."""
-        t0 = time.time()
-        self.set_f(dW)
-        maps, res_fit, res_read = {}, {}, {}
-        for s, (Cm, n) in QH.cross(self.M, self.F, self.fit).items():
-            maps[s] = QH.held_map(Cm, self.P[s])
-            res_fit[s] = QH.residual(maps[s], Cm, self.Gf[s], n)
-        if read_residual:
-            res_read = {s: QH.residual(maps[s], Cm, self.Gr[s], n)
-                        for s, (Cm, n) in QH.cross(self.M, self.F, self.read_rows).items()}
-        k = QH.kl_sums(self.M, self.F, maps, self.read_rows)
-        kl_fm, kl_fh = k["kl_fm"] / k["n"], k["kl_fh"] / k["n"]
-        rec = {"S": QH.survival(kl_fh, kl_fm, floor), "kl_fm": kl_fm, "kl_fh": kl_fh, "floor": floor,
-               "logit_err": k["logit_err"], "positions": k["n"], "residual_fit": res_fit, "residual_read": res_read,
-               "a_minus_w0": {s: QH.max_rel_diff(A, self.W0[s]) for s, A in maps.items()},
-               "seconds": time.time() - t0} | extra
-        del maps
-        torch.cuda.empty_cache()
-        log(f"[S] {name}: S {rec['S']}, KL(F||M) {kl_fm:.6g}, KL(F||H) {kl_fh:.6g}, {rec['seconds']:.0f} s")
+    def read_as(self, name: str, dW: dict[str, Tensor] | None, floor: float, read_residual: bool,
+                extra: dict[str, Any]) -> dict[str, Any]:
+        rec = self.read(dW, floor, read_residual) | extra
+        log(f"[S] {name}: S {rec['S']}, KL(F||M) {rec['kl_fm']:.6g}, KL(F||H) {rec['kl_fh']:.6g}, {rec['seconds']:.0f} s")
         return put(f"S/{name}", rec)
 
 
 def s_controls(h: Held, ctrl: dict[str, Tensor]) -> float:
     """The do-nothing (KL(F||M) exactly 0, S None; its KL(M||H) x s_floor_factor is S's floor) and the control state's
     output-matrices-only change (S within s_tol of 1). Returns the floor."""
-    rec = get("S/do_nothing") or h.read("do_nothing", None, C.zero_kl, True, {})
+    rec = get("S/do_nothing") or h.read_as("do_nothing", None, C.zero_kl, True, {})
     check("S_do_nothing", rec["kl_fm"] <= C.zero_kl and rec["S"] is None, {k: rec[k] for k in ("kl_fm", "kl_fh", "S")})
     floor = C.s_floor_factor * rec["kl_fh"]
     out = {s: (m if s in QH.SITES else torch.zeros_like(m)) for s, m in ctrl.items()}
-    pos = get("S/output_only") or h.read("output_only", out, floor, True, {"from": C.control})
+    pos = get("S/output_only") or h.read_as("output_only", out, floor, True, {"from": C.control})
     check("S_output_only", pos["S"] is not None and 1 - pos["S"] <= C.s_tol, {"S": pos["S"], "kl_fm": pos["kl_fm"]})
     return floor
 
@@ -250,12 +224,12 @@ def s_controls(h: Held, ctrl: dict[str, Tensor]) -> float:
 def s_states(h: Held, root: Path, floor: float) -> None:
     for name in C.states:
         if not get(f"S/{name}"):
-            h.read(name, state(root, name), floor, False, {"state": name})
+            h.read_as(name, state(root, name), floor, False, {"state": name})
         if not get(f"S/{name}_random"):
             dW = state(root, name)
             R = SR.gaussian(norms(dW), shapes_of(dW), C.s_draw)
             del dW
-            h.read(f"{name}_random", R, floor, True, {"state": name, "draw": C.s_draw})
+            h.read_as(f"{name}_random", R, floor, True, {"state": name, "draw": C.s_draw})
     times = [get(f"S/{n}")["seconds"] for n in C.states]
     log(f"[S] time per state {max(times):.0f} s at most; run 2's 18 reads a pod ~{18 * max(times) / 3600:.2f} h")
 
