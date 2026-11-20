@@ -1,0 +1,56 @@
+0.39	experiments/topk_gate/results/score.json	[.pairs[].gamma.gap]|min	this
+0.69	experiments/topk_gate/results/score.json	[.pairs[].gamma.gap]|max	this
+0.37	experiments/topk_gate/results/score.json	[.pairs[].gamma_bin.gap]|min	this
+0.66	experiments/topk_gate/results/score.json	[.pairs[].gamma_bin.gap]|max	this
+0.001	experiments/topk_gate/results/score.json	[.pairs[] | (.gamma.reuse + .gamma.new) as $a | (.gamma_bin.reuse + .gamma_bin.new) as $b | range($a|length) as $i | $a[$i]-$b[$i]] | min	this
+0.07	experiments/topk_gate/results/score.json	[.pairs[] | (.gamma.reuse + .gamma.new) as $a | (.gamma_bin.reuse + .gamma_bin.new) as $b | range($a|length) as $i | $a[$i]-$b[$i]] | max	this
+0.014	experiments/topk_gate/results/score.json	[.pairs[].topk_x1 | .reuse[], .new[]] | min	this
+0.15	experiments/topk_gate/results/score.json	[.pairs[].topk_x1 | .reuse[], .new[]] | max	this
+0.12	experiments/topk_gate/results/score.json	[.pairs[].gamma | .reuse[], .new[]] | min	this
+1.10	experiments/topk_gate/results/score.json	[.pairs[].gamma | .reuse[], .new[]] | max	this
+0.020	experiments/topk_gate/results/score.json	[.pairs[].topk_x1 | select(.call=="built") | .gap] | min	this
+0.126	experiments/topk_gate/results/score.json	[.pairs[].topk_x1 | select(.call=="built") | .gap] | max	this
+0.01	experiments/topk_gate/results/predictions.json	.thresholds.reproduce_tol	this
+0.1	given	experiments/topk_gate/card.md smallest_gap: the card's smallest reuse-minus-new share gap that counts as kept
+0.5	given	src/commute/topk_gate.py gamma_bin: importance above 0.5 counts as on (the threshold of E136's k_m on-count)
+-0.002	experiments/topk_gate/results/score.json	.pairs["e58_rank1_96"]["topk_x0.5"].gap	this
+-0.005	experiments/topk_gate/results/score.json	.pairs["open_pair_c3"]["topk_x1"].gap	this
+-0.008	experiments/topk_gate/results/score.json	.pairs["e54_matched"]["topk_x2"].gap	this
+-0.011	experiments/topk_gate/results/score.json	.pairs["e54_matched"]["topk_x1"].gap	this
+-0.021	experiments/topk_gate/results/score.json	.pairs["e58_rank1_96"]["topk_x2"].gap	this
+-0.031	experiments/topk_gate/results/score.json	.pairs["open_pair_c3"]["topk_x2"].gap	this
+0.002	experiments/topk_gate/results/score.json	.pairs["e58_rank1_96"]["topk_x1"].gap	this
+0.017	experiments/topk_gate/results/score.json	.pairs["e58_copy_prior_cipher"]["topk_x0.5"].gap	this
+0.019	experiments/topk_gate/results/score.json	.pairs["e54_matched"]["topk_x0.5"].gap	this
+0.023	experiments/topk_gate/results/score.json	.pairs["e58_copy_prior_cipher"]["topk_x2"].gap	this
+0.030	experiments/topk_gate/results/score.json	.pairs["e54_own"]["topk_x1"].gap	this
+0.032	experiments/topk_gate/results/score.json	.pairs["e46_copy_random"]["topk_x2"].gap	this
+0.033	experiments/topk_gate/results/score.json	.pairs["e62_copy_lookup"]["topk_x0.5"].gap	this
+0.037	experiments/topk_gate/results/score.json	.pairs["e46_copy_random"]["topk_x1"].gap	this
+0.039	experiments/topk_gate/results/score.json	.pairs["e54_own"]["topk_x2"].gap	this
+0.043	experiments/topk_gate/results/score.json	.pairs["e54_own"]["topk_x0.5"].gap	this
+0.047	experiments/topk_gate/results/score.json	.pairs["open_pair_c3_copy"]["topk_x0.5"].gap	this
+0.049	experiments/topk_gate/results/score.json	.pairs["open_pair_c3_copy"]["topk_x1"].gap	this
+0.059	experiments/topk_gate/results/score.json	.pairs["open_pair_c3_copy"]["topk_x2"].gap	this
+0.060	experiments/topk_gate/results/score.json	.pairs["e62_copy_lookup"]["topk_x1"].gap	this
+0.095	experiments/topk_gate/results/score.json	.pairs["e53_lowercase_cipher"]["topk_x2"].gap	this
+0.105	experiments/topk_gate/results/score.json	.pairs["e62_copy_lookup"]["topk_x2"].gap	this
+0.280	experiments/topk_gate/results/score.json	.pairs["e53_lowercase_cipher"]["topk_x0.5"].gap	this
+0.370	experiments/topk_gate/results/score.json	.pairs["e58_copy_prior_cipher"]["gamma_bin"].gap	this
+0.393	experiments/topk_gate/results/score.json	.pairs["e58_copy_prior_cipher"]["gamma"].gap	this
+0.471	experiments/topk_gate/results/score.json	.pairs["e54_own"]["gamma_bin"].gap	this
+0.474	experiments/topk_gate/results/score.json	.pairs["e54_matched"]["gamma_bin"].gap	this
+0.487	experiments/topk_gate/results/score.json	.pairs["e46_copy_random"]["gamma_bin"].gap	this
+0.510	experiments/topk_gate/results/score.json	.pairs["e54_own"]["gamma"].gap	this
+0.512	experiments/topk_gate/results/score.json	.pairs["e58_rank1_96"]["gamma_bin"].gap	this
+0.513	experiments/topk_gate/results/score.json	.pairs["e46_copy_random"]["gamma"].gap	this
+0.518	experiments/topk_gate/results/score.json	.pairs["e54_matched"]["gamma"].gap	this
+0.557	experiments/topk_gate/results/score.json	.pairs["e58_rank1_96"]["gamma"].gap	this
+0.574	experiments/topk_gate/results/score.json	.pairs["open_pair_c3_copy"]["gamma_bin"].gap	this
+0.587	experiments/topk_gate/results/score.json	.pairs["open_pair_c3"]["gamma_bin"].gap	this
+0.598	experiments/topk_gate/results/score.json	.pairs["e53_lowercase_cipher"]["gamma_bin"].gap	this
+0.607	experiments/topk_gate/results/score.json	.pairs["open_pair_c3_copy"]["gamma"].gap	this
+0.622	experiments/topk_gate/results/score.json	.pairs["e53_lowercase_cipher"]["gamma"].gap	this
+0.658	experiments/topk_gate/results/score.json	.pairs["e62_copy_lookup"]["gamma_bin"].gap	this
+0.691	experiments/topk_gate/results/score.json	.pairs["e62_copy_lookup"]["gamma"].gap	this
+2.8e-04	experiments/topk_gate/results/score.json	.pairs["open_pair_c3"]["topk_x0.5"].gap	this
