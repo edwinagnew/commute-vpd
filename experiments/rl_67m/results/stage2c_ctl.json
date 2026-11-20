@@ -1,0 +1,236 @@
+{
+ "job": "ctl",
+ "card": "NVIDIA L40",
+ "states": {},
+ "experiment": "E224 (rl_67m), cell P2.41 runs 6-7: E220's four arms matched on update size, then E222's readings, on three task#2191 next-token tasks (plural pronoun agreement B187, day/month sequences C14; anchor single-digit addition C51) where the reward and the reading are the same token at the cue",
+ "counts": {
+  "plural": {
+   "train": 4096,
+   "held": 1024,
+   "distinct keys": {
+    "train": 2603,
+    "held": 854
+   },
+   "keys in both": 409,
+   "scanned": {
+    "train": {
+     "scanned": 25388,
+     "mined plural": 2048,
+     "mined singular": 2048,
+     "kept per number": 2048
+    },
+    "held": {
+     "scanned": 6406,
+     "mined plural": 512,
+     "mined singular": 512,
+     "kept per number": 512
+    }
+   }
+  },
+  "sequence": {
+   "train": 4096,
+   "held": 1024,
+   "distinct keys": {
+    "train": 726,
+    "held": 183
+   },
+   "keys in both": 0,
+   "cores": {
+    "train": 728,
+    "held": 184
+   }
+  },
+  "addition": {
+   "train": 4096,
+   "held": 1024,
+   "distinct keys": {
+    "train": 55,
+    "held": 55
+   },
+   "keys in both": 55
+  }
+ },
+ "w0": {
+  "plural": {
+   "top1": 0.193359375,
+   "top5": 0.71875,
+   "contrast": 2.0657620009733364,
+   "ctrl_top1": 0.1416015625,
+   "top1_plural": 0.173828125,
+   "top1_singular": 0.212890625,
+   "se_top1": 0.0123416343703866,
+   "se_top5": 0.014050288125872612,
+   "se_contrast": 0.06108587767196118,
+   "se_ctrl_top1": 0.01089503150433302,
+   "se_top1_plural": 0.016747895826951992,
+   "se_top1_singular": 0.018090927545264902,
+   "n": 1024,
+   "mode_share": 0.05535888671875,
+   "task2191": [
+    0.43,
+    1
+   ]
+  },
+  "sequence": {
+   "top1": 0.2724609375,
+   "top5": 0.6943359375,
+   "contrast": -1.5662519776960835,
+   "ctrl_top1": 0.0205078125,
+   "se_top1": 0.013913304544985294,
+   "se_top5": 0.014396503567695618,
+   "se_contrast": 0.03768471003921764,
+   "se_ctrl_top1": 0.00442904606461525,
+   "n": 1024,
+   "mode_share": 0.05535888671875,
+   "task2191": [
+    0.2,
+    0.87
+   ]
+  },
+  "addition": {
+   "top1": 0.044921875,
+   "top5": 0.3076171875,
+   "contrast": -2.620113587239757,
+   "ctrl_top1": 0.0107421875,
+   "se_top1": 0.006472892593592405,
+   "se_top5": 0.0144220981746912,
+   "se_contrast": 0.03165576067868787,
+   "se_ctrl_top1": 0.0032214480452239513,
+   "n": 1024,
+   "mode_share": 0.05535888671875,
+   "task2191": [
+    0,
+    0.17
+   ]
+  }
+ },
+ "regime": {
+  "plural": {
+   "top5 over anchor": 0.4111328125,
+   "se": 0.020134733973421852
+  },
+  "sequence": {
+   "top5 over anchor": 0.38671875,
+   "se": 0.02037783675307818
+  }
+ },
+ "zero update": {
+  "kl": 0.0,
+  "same_tokens": true
+ },
+ "seconds per RL step": {
+  "plural": 0.4886300086975098,
+  "sequence": 0.481257963180542
+ },
+ "zero": {
+  "numerators": {
+   "gain lo": 0.0,
+   "share lo": 0.0,
+   "untrained lo svd": 0.0,
+   "untrained lo rotated": 0.0,
+   "neuron k64 lo": 0.0,
+   "neuron kmatched lo": 0.0,
+   "steering lo": 0.0,
+   "k_half lo r_half_num": 0.0
+  },
+  "k_half": {
+   "lo": null
+  },
+  "erank": null
+ },
+ "reproduce e53/lowercase_s0": {
+  "share": {
+   "got": 0.7537570697311265,
+   "saved": 0.7518811175785213,
+   "tol": 0.01
+  },
+  "svd": {
+   "got": 0.11846294339426855,
+   "saved": 0.11846294339426855,
+   "tol": 0.0001
+  },
+  "rotated": {
+   "got": 0.3281124990848824,
+   "saved": 0.3281124990848824,
+   "tol": 0.0001
+  },
+  "gain": {
+   "got": 1.6721290016174317,
+   "saved": 1.6721290016174317,
+   "tol": 0.0001
+  },
+  "neuron_k64": {
+   "got": 0.03414266508160581,
+   "saved": 0.03414266508160551,
+   "tol": 0.0001
+  },
+  "neuron_kmatched": {
+   "got": 0.007766123303975168,
+   "saved": 0.007766123303975601,
+   "tol": 0.0001
+  },
+  "steer_pooled": {
+   "got": 0.7130595188192251,
+   "saved": 0.7130595188192251,
+   "tol": 0.001
+  },
+  "erank": {
+   "got": 598.5737907674222,
+   "saved": 598.5737907674227,
+   "tol": 1e-06
+  },
+  "k_half": {
+   "got": 16,
+   "saved": 16,
+   "tol": 0
+  },
+  "r_half_num": {
+   "got": 0.879975772857666,
+   "saved": 0.879975772857666,
+   "tol": 0.0001
+  }
+ },
+ "reproduce e53/cipher_s0": {
+  "share": {
+   "got": 0.12488583607231488,
+   "saved": 0.12431340168715405,
+   "tol": 0.01
+  },
+  "svd": {
+   "got": 0.06767194926988293,
+   "saved": 0.06767194926988293,
+   "tol": 0.0001
+  },
+  "rotated": {
+   "got": 0.1790923069279458,
+   "saved": 0.1790923069279458,
+   "tol": 0.0001
+  },
+  "gain": {
+   "got": 3.868075170516968,
+   "saved": 3.868075170516968,
+   "tol": 0.0001
+  },
+  "neuron_k64": {
+   "got": 0.004887934856158074,
+   "saved": 0.004887934856158188,
+   "tol": 0.0001
+  },
+  "neuron_kmatched": {
+   "got": 0.000956805214073053,
+   "saved": 0.0009568052140731044,
+   "tol": 0.0001
+  },
+  "steer_pooled": {
+   "got": 0.6929798537824282,
+   "saved": 0.6929798537824282,
+   "tol": 0.001
+  },
+  "erank": {
+   "got": 594.2662401197576,
+   "saved": 594.2662401197575,
+   "tol": 1e-06
+  }
+ },
+ "done": true
+}

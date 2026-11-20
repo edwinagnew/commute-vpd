@@ -1,0 +1,122 @@
+{
+ "job": "null_0.0001",
+ "card": "NVIDIA L40",
+ "states": {},
+ "experiment": "E224 (rl_67m), cell P2.41 runs 6-7: E220's four arms matched on update size, then E222's readings, on three task#2191 next-token tasks (plural pronoun agreement B187, day/month sequences C14; anchor single-digit addition C51) where the reward and the reading are the same token at the cue",
+ "1": {
+  "task": "plural",
+  "arm": "shuffled",
+  "seed": 0,
+  "lr": 0.0001,
+  "pool": null,
+  "steps": 3,
+  "size": 0.0075120753626613255,
+  "kl": 0.6679457083773823,
+  "reached": true,
+  "trace": [
+   {
+    "step": 3,
+    "size": 0.0075120753626613255,
+    "kl": 0.6679457083773823,
+    "loss": 0.006008220836520195,
+    "grad_norm": 4.070868015289307,
+    "s": 1.9296114444732666
+   }
+  ],
+  "seconds": 2.0065650939941406,
+  "size_saved": 0.007511994112123691,
+  "reads": {
+   "0": {
+    "top1": 0.197265625,
+    "top5": 0.73046875,
+    "contrast": 2.122341519454494,
+    "ctrl_top1": 0.14453125,
+    "top1_plural": 0.15625,
+    "top1_singular": 0.23828125,
+    "se_top1": 0.01758638762174099,
+    "se_top5": 0.019609674743375792,
+    "se_contrast": 0.0883432839070472,
+    "se_ctrl_top1": 0.015539890757466843,
+    "se_top1_plural": 0.02269326150417328,
+    "se_top1_singular": 0.02662700228393078,
+    "n": 512,
+    "mode_share": 0.05535888671875
+   },
+   "stop": {
+    "top1": 0.041015625,
+    "top5": 0.322265625,
+    "contrast": 1.1567644537426531,
+    "ctrl_top1": 0.021484375,
+    "top1_plural": 0.03515625,
+    "top1_singular": 0.046875,
+    "se_top1": 0.00876486915303765,
+    "se_top5": 0.020653885305746463,
+    "se_contrast": 0.07513848097832977,
+    "se_ctrl_top1": 0.006407819162411553,
+    "se_top1_plural": 0.011510913260281086,
+    "se_top1_singular": 0.013210692442953587,
+    "n": 512,
+    "mode_share": 0.057952880859375
+   }
+  },
+  "collapsed": false,
+  "top1_change": -0.15625,
+  "tol": 0.03929905652058307,
+  "stable": false
+ },
+ "2": {
+  "task": "sequence",
+  "arm": "shuffled",
+  "seed": 0,
+  "lr": 0.0001,
+  "pool": null,
+  "steps": 3,
+  "size": 0.007706076708314633,
+  "kl": 0.8905773868963981,
+  "reached": true,
+  "trace": [
+   {
+    "step": 3,
+    "size": 0.007706076708314633,
+    "kl": 0.8905773868963981,
+    "loss": -0.0,
+    "grad_norm": 0.0,
+    "s": 1.8549964427947998
+   }
+  ],
+  "seconds": 1.9309978485107422,
+  "size_saved": 0.007704603320557267,
+  "reads": {
+   "0": {
+    "top1": 0.263671875,
+    "top5": 0.681640625,
+    "contrast": -1.5896118751261383,
+    "ctrl_top1": 0.015625,
+    "se_top1": 0.019472988562387914,
+    "se_top5": 0.02058740392057659,
+    "se_contrast": 0.05374572022604438,
+    "se_ctrl_top1": 0.005480943450661687,
+    "n": 512,
+    "mode_share": 0.05535888671875
+   },
+   "stop": {
+    "top1": 0.0,
+    "top5": 0.013671875,
+    "contrast": -3.4844656528439373,
+    "ctrl_top1": 0.0,
+    "se_top1": 0.0,
+    "se_top5": 0.005132037021437077,
+    "se_contrast": 0.11893611160560547,
+    "se_ctrl_top1": 0.0,
+    "n": 512,
+    "mode_share": 0.154083251953125
+   }
+  },
+  "collapsed": false,
+  "top1_change": -0.263671875,
+  "tol": 0.03894597712477583,
+  "stable": false
+ },
+ "stable": false,
+ "done": true
+}
