@@ -115,6 +115,42 @@ def ratio(num: float, gain: float) -> float:
     return num / gain if gain >= MIN_GAIN else float("nan")
 
 
+def next_layout(name: str, toks: Tensor, tgt: Tensor, pos: int) -> Read:
+    """A Read of windows whose target at `pos` is `tgt`, whatever their own layout (a kv table, a last column): each
+    window cut after pos with tgt written at pos + 1, the LM layout. The logits and Gamma's masks at pos are those of
+    the uncut window (causal). Steering's fitting windows are the read windows (E214's items have no fitting set)."""
+    t = torch.cat([toks[:, : pos + 1], tgt[:, None].to(toks)], 1)
+    return Read(name, t, t[:, pos + 1], pos, t, t[:, pos + 1])
+
+
+def subset(r: Read, idx: Tensor) -> Read:
+    """The same Read on the rows idx (a split half)."""
+    return Read(r.name, r.toks[idx], r.tgt[idx], r.pos, r.fit[idx], r.fit_tgt[idx], r.ab)
+
+
+def share_of(net: ST.Net, r: Read, dW: ST.DW) -> dict[str, Any]:
+    """The share per unit: (L01 - L00) / (T1 - T0), released decomposition, do-nothing form, with its numerator and gain."""
+    c = MR.share_cells_by(net.model, net.W0, dW, r.toks, r.pos, r.units_of(r.tgt))
+    num = {u: float((c["L01"][u] - c["L00"][u]).mean()) for u in c["T0"]}
+    gain = {u: float((c["T1"][u] - c["T0"][u]).mean()) for u in c["T0"]}
+    return {"share": {u: ratio(num[u], gain[u]) for u in num}, "numerator": num, "gain": gain}
+
+
+def k_half_of(net: ST.Net, r: Read, dW: ST.DW, S: dict[str, Any]) -> dict[str, Any]:
+    """E98's k_half per unit (k_half_fill.carrying's calls), with the r_half share and numerator it rests on; S is E98's
+    settings (neuron_r predictions.json)."""
+    reads, out = NR.Reads(r.name, r.toks, r.tgt, r.pos), {}
+    for u, f in r.single().items():
+        rec = NR.shares(NR.state_cells(net, reads, dW, S["batch"], f), S["gain_floor"])
+        full = rec["num"]["r_half"]
+        score = NR.ranking(net, reads, dW, S["batch"], None if u == "lo" else f)
+        order = torch.sort(score, descending=True, stable=True).indices
+        nums = NR.grid_numerators(net, reads, dW, order, S["k_grid"], S["batch"], f)
+        out[u] = {"k_half": NR.k_half(nums, full, rec["r_half"], S["carry_floor"]), "r_half": rec["r_half"], "r_half_num": full,
+                  "G": rec["G"], "end_diff": nums[NR.N_NEURONS] - full, "numerators": nums}  # fmt: skip
+    return out
+
+
 @dataclass
 class Reader:
     """The readings of one task's states. ks: k per block for the neuron reader; k_m: E136's on-counts (untrained gates);
@@ -155,10 +191,7 @@ class Reader:
         return U.do_nothing_cells(self.net.model, w, self.r.pos, token, self.decomps, self.k_m, self.batch, ci_len, target, unit)
 
     def share(self, dW: ST.DW) -> dict[str, Any]:
-        c = MR.share_cells_by(self.net.model, self.net.W0, dW, self.r.toks, self.r.pos, self.r.units_of(self.r.tgt))
-        num = {u: float((c["L01"][u] - c["L00"][u]).mean()) for u in c["T0"]}
-        gain = {u: float((c["T1"][u] - c["T0"][u]).mean()) for u in c["T0"]}
-        return {"share": {u: ratio(num[u], gain[u]) for u in num}, "numerator": num, "gain": gain}
+        return share_of(self.net, self.r, dW)
 
     def untrained(self, dW: ST.DW) -> dict[str, Any]:
         out: dict[str, Any] = {"share": {}, "numerator": {}}
@@ -201,17 +234,7 @@ class Reader:
         return rec
 
     def k_half(self, dW: ST.DW) -> dict[str, Any]:
-        """E98's k_half per unit (k_half_fill.carrying's calls), with the r_half share and numerator it rests on."""
-        reads, S, out = NR.Reads(self.r.name, self.r.toks, self.r.tgt, self.r.pos), self.S, {}
-        for u, f in self.r.single().items():
-            rec = NR.shares(NR.state_cells(self.net, reads, dW, S["batch"], f), S["gain_floor"])
-            full = rec["num"]["r_half"]
-            score = NR.ranking(self.net, reads, dW, S["batch"], None if u == "lo" else f)
-            order = torch.sort(score, descending=True, stable=True).indices
-            nums = NR.grid_numerators(self.net, reads, dW, order, S["k_grid"], S["batch"], f)
-            out[u] = {"k_half": NR.k_half(nums, full, rec["r_half"], S["carry_floor"]), "r_half": rec["r_half"], "r_half_num": full,
-                      "G": rec["G"], "end_diff": nums[NR.N_NEURONS] - full, "numerators": nums}  # fmt: skip
-        return out
+        return k_half_of(self.net, self.r, dW, self.S)
 
     # ----------------------------------------------------------------------------- one state
 
