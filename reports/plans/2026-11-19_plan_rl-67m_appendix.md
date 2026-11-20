@@ -74,3 +74,39 @@ The pools are drawn from 4,096 training prompts. A CPU check found that 1,024 pr
 - the reward program reproduces E215's saved rewards exactly.
 
 KL target expected around 1e-3 to 3e-2 nats per token. A random update of size 0.01 gives 0.0013 (E215).
+
+## Stage 2b (E220): jobs, order, time on one H100
+
+Each job is `.venv/bin/python experiments/rl_67m/run_stage2.py <argv>` from the repo root, with
+`PRED_SHA=<sha of predictions_E220.json>` on the run line. Each job prints `STAGE 2 <job> DONE` and writes
+`results/stage2b_<job>.json`; the arms' states go to `results/large/stage2b/` (bf16, ~57 MB each, 27 states, ~1.5 GB).
+
+Times are E218's measured items times their count, on the H100 pod with five jobs at once:
+- an RL or shuffled step takes 3.5 s (repeat RL seed 0, steps 15 to 90: 263 s);
+- a supervised step takes 0.43 s (own repeat seed 0, steps 60 to 600);
+- a held-out read takes about 25 s, three per run (step 0, step 10, the stop);
+- the own pool takes about 3 min per seed, the demonstration pool about 25 s;
+- model load is about 1 min (unmeasured on the pod; 0.5 min on the L40 ctl);
+- step counts are the expected steps to the target in `predictions_E220.json`.
+
+| Order | argv | Gate it reads | Time |
+|---|---|---|---|
+| 1, alone | `ctl` | — | ~3 min (E218 on an L40: 15:36:00 to 15:38:52); host RSS 20.5 GB |
+| 2 | `null 3e-05` | — | ~7.5 min (2 picks x (3 reads + ~33 steps)) |
+| 2 | `null 0.0001` | — | ~3 min (2 picks x (2 reads + ~3 steps)) |
+| 2 | `null 0.0003` | — | ~3 min (2 picks x (2 reads + 1 step)) |
+| 2 | `arm 1 rl 0` | — | ~5 min (3 reads + ~42 steps) |
+| 2 | `arm 2 rl 0` | — | ~4 min (3 reads + ~26 steps; E218's 25 steps took 2.7 min after load) |
+| 3 | `arm 1 rl 1`, `arm 1 rl 2` | — | ~5 min each |
+| 3 | `arm 2 rl 1`, `arm 2 rl 2` | — | ~4 min each |
+| 3 | `arm 1 own`, `arm 2 own` | learned | ~14 min each (3 seeds x (pool 3 min + 3 reads + 20-30 steps)) |
+| 3 | `arm 1 demo`, `arm 2 demo` | learned | ~7 min each (3 seeds x (pool + 3 reads + 21-33 steps)) |
+| 3 | `arm anchor demo` | learned | ~6 min (E218's job, 25-35 steps a seed, took 6 min) |
+| 4, after every null | `arm 1 shuffled 0` .. `arm 1 shuffled 2`, `arm 2 shuffled 0` .. `arm 2 shuffled 2` | learned, null rate | ~4 min each at 3e-5 (3 reads + ~33 steps); ~2 min at a higher rate |
+
+That makes 21 jobs and about 115 job-minutes. Run five at a time, the wall time is about 35 min: ctl 3, wave 2 about
+7.5, then waves 3 and 4 about 20. The worst case, a rate that never reaches the size, is 600 steps x 3.5 s = 35 min
+per pick. That cannot happen at these rates: E218 passed this size within 120 steps in every arm.
+
+The run reads nothing beyond E218's inputs (cluster/rl_67m_stage2.sbatch header) and the new predictions file. It
+does not read E218's stage2_*.json.

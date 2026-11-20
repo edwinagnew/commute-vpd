@@ -1,13 +1,15 @@
 """The arms of cell P2.41 stage 2 (RL on the 67M; plan reports/plans/2026-11-19_plan_rl-67m.md): the 24 decomposed
-matrices trained in fp32 (forward and backward in fp32, no autocast), every arm stopped at the same KL from W0.
+matrices trained in fp32 (forward and backward in fp32, no autocast), every arm stopped at the same update size
+||dW|| / ||W0|| (E220; E218 stopped at the same KL from W0).
 
   rl        policy gradient on the model's own samples, advantage = reward minus its prompt's group mean (GRPO's group
             baseline without the std division or clipping, as Dr. GRPO, Liu et al. 2025; one step per batch, on-policy)
   shuffled  the same with the batch's rewards permuted before the baseline: no signal from the reward, the same drift
   own       supervised fine-tuning on W0's own rewarded samples (rejection sampling), drawn once before training
   demo      supervised fine-tuning on outside text that earns the reward (`demo_pool`)
-The losses are per continuation token (the sum over the 16 tokens divided by 16). The KL read is stage 1's definition
-(experiments/rl_67m/run_stage1.py `kl_from_base`) against a frozen copy of W0 rather than through `Net.at`.
+The losses are per continuation token (the sum over the 16 tokens divided by 16). The KL read (a reading, not the stop)
+is stage 1's definition (experiments/rl_67m/run_stage1.py `kl_from_base`) against a frozen copy of W0 rather than
+through `Net.at`.
 """
 
 from __future__ import annotations
@@ -153,38 +155,46 @@ class Train:
     grad_clip: float
     max_steps: int
     kl_every: int
-    kl_target: float | None  # None: run max_steps (calibration)
+    size_target: float
     seed: int
 
 
 def train(model: Any, step_loss: Callable[[int], Tensor], tr: Train, kl_rows: Tensor, kl_batch: int,
-          on_step: Callable[[int, float | None], None], log: Callable[[str], None]) -> dict[str, Any]:  # fmt: skip
-    """Adam on the 24 decomposed matrices (E53's: betas 0.9/0.999, no weight decay, grad-norm clip) until the KL from
-    W0 on kl_rows, read every kl_every steps, reaches kl_target, or max_steps. on_step(step, kl or None) after each
+          on_step: Callable[[int], None], log: Callable[[str], None]) -> dict[str, Any]:  # fmt: skip
+    """Adam on the 24 decomposed matrices (E53's: betas 0.9/0.999, no weight decay, grad-norm clip) until the update
+    size ||W - W0|| / ||W0|| of the live fp32 weights, read after every step, reaches size_target, or max_steps. The
+    KL from W0 on kl_rows is a reading, not the stop: every kl_every steps and at the stop. on_step(step) after each
     step. Returns the trace, the stop and dW (fp32, CPU); the model is W0 again afterwards."""
     W0 = target_weights(model)
     ref = copy.deepcopy(model.target_model).eval().requires_grad_(False)
     params = decomposed_params(model)
+    w0_sq = sum(float(W0[k].double().pow(2).sum()) for k in params)
+
+    def live_size() -> float:
+        with torch.no_grad():
+            return math.sqrt(sum(float((p - W0[k]).double().pow(2).sum()) for k, p in params.items()) / w0_sq)
+
     for p in params.values():
         p.requires_grad_(True)
     opt = torch.optim.Adam(list(params.values()), lr=tr.lr, betas=(0.9, 0.999), weight_decay=0.0)
-    trace, kl, step, t0 = [], 0.0, 0, time.time()
+    trace, kl, sz, reached, step, t0 = [], 0.0, 0.0, False, 0, time.time()
     try:
-        assert kl_to_ref(model.target_model, ref, kl_rows, kl_batch) == 0.0, "KL at step 0 is not exactly 0"
+        assert kl_to_ref(model.target_model, ref, kl_rows, kl_batch) == 0.0 and live_size() == 0.0, "step 0 is not W0"
         for step in range(1, tr.max_steps + 1):
             opt.zero_grad(set_to_none=True)
             loss = step_loss(step)
             loss.backward()
             gn = float(torch.nn.utils.clip_grad_norm_(list(params.values()), tr.grad_clip))
             opt.step()
-            read = step % tr.kl_every == 0
-            if read:
+            sz = live_size()
+            reached = sz >= tr.size_target
+            if reached or step % tr.kl_every == 0:
                 kl = kl_to_ref(model.target_model, ref, kl_rows, kl_batch)
-                trace.append({"step": step, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
+                trace.append({"step": step, "size": sz, "kl": kl, "loss": float(loss), "grad_norm": gn, "s": time.time() - t0})
                 if step % (5 * tr.kl_every) == 0:
-                    log(f"[train] step {step}: kl {kl:.3e} loss {float(loss):.4f} grad {gn:.3f} ({time.time() - t0:.0f} s)")
-            on_step(step, kl if read else None)
-            if read and tr.kl_target is not None and kl >= tr.kl_target:
+                    log(f"[train] step {step}: size {sz:.5f} kl {kl:.3e} loss {float(loss):.4f} grad {gn:.3f} ({time.time() - t0:.0f} s)")
+            on_step(step)
+            if reached:
                 break
         with torch.no_grad():
             dW = {k: (p.detach() - W0[k]).float().cpu() for k, p in params.items()}
@@ -192,8 +202,7 @@ def train(model: Any, step_loss: Callable[[int], Tensor], tr: Train, kl_rows: Te
         for p in params.values():
             p.requires_grad_(False)
         set_target_weights(model, W0)
-    reached = tr.kl_target is None or kl >= tr.kl_target
-    return {"steps": step, "kl": kl, "reached": reached, "trace": trace, "seconds": time.time() - t0, "dW": dW}
+    return {"steps": step, "size": sz, "kl": kl, "reached": reached, "trace": trace, "seconds": time.time() - t0, "dW": dW}
 
 
 def size(dW: dict[str, Tensor], W0: dict[str, Tensor]) -> float:
