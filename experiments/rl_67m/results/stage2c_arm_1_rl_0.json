@@ -1,0 +1,120 @@
+{
+ "job": "arm_1_rl_0",
+ "card": "NVIDIA L40",
+ "states": {},
+ "experiment": "E224 (rl_67m), cell P2.41 runs 6-7: E220's four arms matched on update size, then E222's readings, on three task#2191 next-token tasks (plural pronoun agreement B187, day/month sequences C14; anchor single-digit addition C51) where the reward and the reading are the same token at the cue",
+ "seeds": {
+  "0": {
+   "task": "plural",
+   "arm": "rl",
+   "seed": 0,
+   "lr": 3e-05,
+   "pool": null,
+   "steps": 24,
+   "size": 0.006939590116111147,
+   "kl": 7.622084267389046,
+   "reached": true,
+   "trace": [
+    {
+     "step": 5,
+     "size": 0.0031960479694929825,
+     "kl": 0.6631453244350864,
+     "loss": -0.20403681695461273,
+     "grad_norm": 12.6328706741333,
+     "s": 2.4616036415100098
+    },
+    {
+     "step": 10,
+     "size": 0.004738513799015826,
+     "kl": 3.708089905270034,
+     "loss": -0.04644957184791565,
+     "grad_norm": 23.708215713500977,
+     "s": 4.218935489654541
+    },
+    {
+     "step": 15,
+     "size": 0.0057639560858339135,
+     "kl": 6.914162334673999,
+     "loss": -0.008336026221513748,
+     "grad_norm": 7.55117130279541,
+     "s": 6.839963674545288
+    },
+    {
+     "step": 20,
+     "size": 0.00649547778304443,
+     "kl": 7.87561641789876,
+     "loss": -0.022699901834130287,
+     "grad_norm": 4.890531063079834,
+     "s": 8.598849058151245
+    },
+    {
+     "step": 24,
+     "size": 0.006939590116111147,
+     "kl": 7.622084267389046,
+     "loss": 0.011509483680129051,
+     "grad_norm": 14.955588340759277,
+     "s": 10.14461088180542
+    }
+   ],
+   "seconds": 10.23167085647583,
+   "size_saved": 0.006939588474908146,
+   "reads": {
+    "0": {
+     "top1": 0.197265625,
+     "top5": 0.73046875,
+     "contrast": 2.122341519454494,
+     "ctrl_top1": 0.14453125,
+     "top1_plural": 0.15625,
+     "top1_singular": 0.23828125,
+     "se_top1": 0.01758638762174099,
+     "se_top5": 0.019609674743375792,
+     "se_contrast": 0.0883432839070472,
+     "se_ctrl_top1": 0.015539890757466843,
+     "se_top1_plural": 0.02269326150417328,
+     "se_top1_singular": 0.02662700228393078,
+     "n": 512,
+     "mode_share": 0.05535888671875
+    },
+    "10": {
+     "top1": 0.85546875,
+     "top5": 0.998046875,
+     "contrast": 5.8088898453861475,
+     "ctrl_top1": 0.546875,
+     "top1_plural": 0.94140625,
+     "top1_singular": 0.76953125,
+     "se_top1": 0.015539890757466843,
+     "se_top5": 0.0019512166692256822,
+     "se_contrast": 0.23963203975201722,
+     "se_ctrl_top1": 0.021999765887600907,
+     "se_top1_plural": 0.014678923413157463,
+     "se_top1_singular": 0.026320805773139,
+     "n": 512,
+     "mode_share": 0.256103515625
+    },
+    "stop": {
+     "top1": 0.873046875,
+     "top5": 0.98046875,
+     "contrast": 8.709985943511128,
+     "ctrl_top1": 0.388671875,
+     "top1_plural": 0.9453125,
+     "top1_singular": 0.80078125,
+     "se_top1": 0.014713144762522225,
+     "se_top5": 0.006115710550639183,
+     "se_contrast": 0.33741288247193785,
+     "se_ctrl_top1": 0.021542384336293637,
+     "se_top1_plural": 0.014210578054189682,
+     "se_top1_singular": 0.02496330440044403,
+     "n": 512,
+     "mode_share": 0.318389892578125
+    }
+   },
+   "collapsed": false,
+   "state": {
+    "file": "experiments/rl_67m/results/large/stage2c/plural_rl_s0.pt",
+    "sha256": "772dfe20b1acbb845648b91ca83a69447f9a3a3fcf67c3e9b0ca08db5f1598cb"
+   },
+   "kl_saved": 7.622024689713277
+  }
+ },
+ "done": true
+}

@@ -1,0 +1,25 @@
+{
+ "job": "arm_anchor_demo",
+ "card": "NVIDIA L40",
+ "states": {},
+ "experiment": "E224 (rl_67m), cell P2.41 runs 6-7: E220's four arms matched on update size, then E222's readings, on three task#2191 next-token tasks (plural pronoun agreement B187, day/month sequences C14; anchor single-digit addition C51) where the reward and the reading are the same token at the cue",
+ "learned": {
+  "1": {
+   "reached": true,
+   "gain": 0.67578125,
+   "se": 0.022929405975407647,
+   "ctrl_rise": 0.244140625,
+   "ctrl_se": 0.026562426990894353,
+   "halves_up": true
+  },
+  "2": {
+   "reached": true,
+   "gain": 0.296875,
+   "se": 0.02933118718149197,
+   "ctrl_rise": 0.01953125,
+   "ctrl_se": 0.009812813212948095,
+   "halves_up": true
+  }
+ },
+ "stopped": "RL seed 0 fails the learned gate (top-1 up by over 2 se, on each number half of the agreement task too; control not up by over 2 se) on a task"
+}
