@@ -96,5 +96,6 @@
 - [Paper term: featurized model](project-paper-term-refinement.md) — paper says "featurized model" (was "refinement"), Geiger vocabulary: mechanism, variables, soft intervention, intervened model (user 2026-11-18)
 - [Paper repo push freeze (lifted)](project-paper-repo-push-freeze.md) — frozen ~11:20, lifted ~13:50 on 2026-11-18; pull before any push
 - [Geiger vocabulary and notation](feedback-causal-abstraction-vocabulary.md) — featurized model (not refinement), variable, mechanism F_X, soft intervention, M_I, behavior B, sub-circuit §3.5.2; coin only where Geiger has none (user, repeated 2026-11-18)
+- [Defer to whip-lead on priority](feedback-defer-to-whip-lead-on-priority.md) — cell order, dates, side checks: follow ~/commute-data/agents/whip-lead/schedule.md; ask whip-lead, not choose alone (user, 2026-11-20)
 - [whip-lead autonomy](feedback-whip-lead-autonomy.md) — stop/start/restart leads, relay results, keep schedule.md; act then report (user, 2026-11-20)
 - [whip-lead approves planned gated runs](feedback-whip-lead-approves-planned-gated-runs.md) — gate 6 for in-plan runs is mine, not the user's; everything ASAP, ordered by dependency/paper impact (user, 2026-11-20)
