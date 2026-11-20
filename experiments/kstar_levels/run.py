@@ -65,6 +65,7 @@ RUN_LEVELS = [lv for lv in K.LEVELS if lv not in DROPPED]
 E62 = EXPERIMENTS / "induction_cue" / "results"
 log, dump, stop = P.log, P.dump, P.stop
 EDITS = ("reuse_small", "reuse_large", "new_few", "new_thin")
+NOT_BUILT = ("reuse_small", "reuse_large")  # copy bar missed after four builds; reported as not built (user, 2026-11-19)
 HEADS = ("e201", "last_lowest", "last_rank5", "last_rank9", "last_rank13")
 PIECES = {"always_on": "Always on", "cue": "Cue", "xor": "XOR", "table": "Table"}
 FULL = (*EDITS, "e201")  # every variant at every level
@@ -165,8 +166,10 @@ class World:
         c = self.cues
         rec |= {"A": c.A, "A_prime": c.A2, "y": c.y, "swapped": swapped}
         log(f"edits: {json.dumps(rec)}")
-        if rec["misses"]:
-            stop(RESULTS / "edits.json", rec, "build checks: " + "; ".join(rec["misses"]))
+        misses = [m for m in rec["misses"] if not m.startswith(NOT_BUILT)]
+        if misses:
+            stop(RESULTS / "edits.json", rec, "build checks: " + "; ".join(misses))
+        edits = {k: v for k, v in edits.items() if k not in NOT_BUILT}
         dump(RESULTS / "edits.json", rec | {"experiment": EXPERIMENT})
         return edits
 
