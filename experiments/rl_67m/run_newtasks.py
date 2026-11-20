@@ -268,10 +268,12 @@ def learned(x: Ctx, o: Any) -> None:
         r0, rs = s["reads"]["0"], s["reads"]["stop"]
         got[p] = {"reached": s["reached"], "gain": rs["top1"] - r0["top1"], "se": se_diff(rs, r0, "top1"),
                   "ctrl_rise": rs["ctrl_top1"] - r0["ctrl_top1"], "ctrl_se": se_diff(rs, r0, "ctrl_top1")}  # fmt: skip
+        halves = [h for h in ("plural", "singular") if f"top1_{h}" in rs]  # agreement task: each half rises (Amendment 1)
+        got[p]["halves_up"] = all(rs[f"top1_{h}"] - r0[f"top1_{h}"] > x.th["learn_min_se"] * se_diff(rs, r0, f"top1_{h}") for h in halves)
     o.put("learned", got)
-    ok = all(g["reached"] and g["gain"] > x.th["learn_min_se"] * g["se"] and g["ctrl_rise"] <= x.th["ctrl_max_se"] * g["ctrl_se"] for g in got.values())
+    ok = all(g["reached"] and g["halves_up"] and g["gain"] > x.th["learn_min_se"] * g["se"] and g["ctrl_rise"] <= x.th["ctrl_max_se"] * g["ctrl_se"] for g in got.values())
     if not ok:
-        raise o.stop("RL seed 0 fails the learned gate (top-1 up by over 2 se, control not up by over 2 se) on a task")
+        raise o.stop("RL seed 0 fails the learned gate (top-1 up by over 2 se, on each number half of the agreement task too; control not up by over 2 se) on a task")
 
 
 def job_null(x: Ctx, lr: float, o: Any) -> None:

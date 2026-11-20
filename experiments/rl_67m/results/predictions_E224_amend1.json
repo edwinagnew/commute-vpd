@@ -1,41 +1,75 @@
 {
- "experiment": "E224 Amendment 1 (rl_67m, cell P2.41 runs 6-7): the plural task becomes balanced number agreement; the W0 bands become readings, with one W0 stop on the regime",
- "amends": "experiments/rl_67m/results/predictions_E224.json (unchanged, as filed); run_newtasks.py and read_newtasks.py read both, this file's thresholds over the original's",
- "filed": "2026-11-20, after the rehearsal ctl (cluster job 62147, log cluster/logs/commute-rl67m-nt-62147.out) and before any arm, null or reading job. Asked by the coordinator the same day",
- "why": {
-  "W0 bands": "the filed bands were guesses from task#2191's 30 curated items; the mined and filled Pile items are noisier and two of the bands missed (plural top-1 0.19 and top-5 0.70, sequence top-5 0.694). They were never stops in the code; they are now recorded readings",
-  "plural": "the 5-step RL rehearsal in job 62147 took plural top-1 from 0.17 to 1.000 at KL 1.69 and the cue-removed control from 0.12 to 0.998: RL learned 'say they/their/them' everywhere, not agreement. With half the items singular, the reward needs the pronoun's number to follow the antecedent's"
- },
- "reference (job 62147, W0, 1,024 held-out items each; the plural numbers are of the old plural-only task)": {
-  "plural": {"top1": 0.1875, "top5": 0.7012, "contrast": -1.0846, "ctrl_top1": 0.1309, "se_top1": 0.0122, "se_top5": 0.0143},
-  "sequence": {"top1": 0.2725, "top5": 0.6943, "contrast": -1.5663, "ctrl_top1": 0.0205, "se_top1": 0.0139, "se_top5": 0.0144},
-  "addition": {"top1": 0.0449, "top5": 0.3076, "contrast": -2.6201, "ctrl_top1": 0.0107, "se_top1": 0.0065, "se_top5": 0.0144},
-  "zero update": {"kl": 0.0, "same_tokens": true},
-  "e53 re-read": {"lowercase share": 0.7538, "cipher share": 0.1249},
-  "seconds per RL step": {"plural": 0.527, "sequence": 0.496},
-  "5 RL steps (lr 3e-5, seed 0)": {"plural": "size 0.00331, kl 1.69, top-1 0.168 -> 1.000, control 0.119 -> 0.998", "sequence": "size 0.00288, kl 0.070, top-1 0.264 -> 0.389, control 0.016 -> 0.096"}
- },
- "changes": {
-  "plural task": "rl_tasks_2191.agreement_items: mined as before (same rows, gap 32, the det inside the window, nothing between but non-pronoun tokens and no newline), now for both numbers. A cue is a pronoun token whose nearest antecedent-shaped bigram before it has the pronoun's number: plural '<DET_PL> <noun>s' (noun not ss/us/is, singular form one token) before they/their/them; singular '<DET_SG> <noun>' (DET_SG: the, this, a, an, each, every; noun not ending in s, plural form one token) before he/she/it/his/her/its/him. Any pronoun of either number or case between ends the scan. At most one item of each number per row; each number filled to n // 2, then both cut to the smaller count (balance by subsampling) and interleaved plural first, so every prefix the reads take is balanced",
-  "plural sets": "target = the agreeing number's set (they/their/them, or he/she/it/his/her/its/him, each with and without a leading space where one token); competitor = the other number's set (' a' and ' the' are no longer competitors). Reward = the sampled token is in the agreeing set; per-row contrast = log p(agreeing set) - log p(other number's set)",
-  "plural control": "unchanged in kind: the antecedent's number swapped in the same window (these <-> this, those -> that, other determiners -> the; the noun's other-number form); read on the item's agreeing set",
-  "held_read": "adds top-1 on the plural-antecedent and singular-antecedent halves apart (top1_plural, top1_singular), recorded, not a gate",
-  "W0": "the filed W0 bands are readings, not stops. One W0 stop in ctl: for plural and sequence, W0 held-out top-5 minus the anchor's (addition) top-5 is at least regime_min_se standard errors of the difference (sqrt(se_a^2 + se_b^2), 1,024 items each). Reference 62147: sequence 0.694 - 0.308 = 0.387 against 2 se = 0.041; plural (old task) 0.394 against 0.041",
-  "unchanged": "every other setting, threshold, gate (learned, stable null), arm, reading and rule of predictions_E224.json"
- },
- "thresholds": {
-  "regime_min_se": 2.0
- },
- "expected": {
-  "item counts": "set by the CPU dry run of this code before the ctl rerun (reports/plans/2026-11-19_plan_rl-67m.md, Stage 2c/3c, Amendment 1)",
-  "W0 plural (balanced)": "top-1 0.15-0.55, top-5 0.6-1.0, contrast -1.5 to +1.5; the singular half's top-1 likely above the plural half's (the 67M writes 'it' often)",
-  "regime": "passes on both (sequence 0.39 over the anchor in 62147; plural above 0.2)",
-  "RL seed 0 at the target": "the 62147 rehearsal says RL moves plural fast; with balanced items a policy that always writes one number reads top-1 about 0.5 overall, so top1_plural and top1_singular are recorded beside the gate"
- },
- "edge_cases": {
-  "fewer singular than plural items (or the reverse)": "both cut to the smaller count; under min_items (1,000) held-out the ctl stops naming the task",
-  "regime exactly 2 se": "passes (at least)",
-  "a row with cues of both numbers": "gives one item of each",
-  "the anchor's own row in the regime": "not read (only plural and sequence are compared to it)"
- }
+  "experiment": "E224 Amendment 1 (rl_67m, cell P2.41 runs 6-7): the plural task becomes balanced number agreement; the W0 bands become readings, with one W0 stop on the regime",
+  "amends": "experiments/rl_67m/results/predictions_E224.json (unchanged, as filed); run_newtasks.py and read_newtasks.py read both, this file's thresholds over the original's",
+  "filed": "2026-11-20, after the rehearsal ctl (cluster job 62147, log cluster/logs/commute-rl67m-nt-62147.out) and before any arm, null or reading job. Asked by the coordinator the same day",
+  "why": {
+    "W0 bands": "the filed bands were guesses from task#2191's 30 curated items; the mined and filled Pile items are noisier and two of the bands missed (plural top-1 0.19 and top-5 0.70, sequence top-5 0.694). They were never stops in the code; they are now recorded readings",
+    "plural": "the 5-step RL rehearsal in job 62147 took plural top-1 from 0.17 to 1.000 at KL 1.69 and the cue-removed control from 0.12 to 0.998: RL learned 'say they/their/them' everywhere, not agreement. With half the items singular, the reward needs the pronoun's number to follow the antecedent's"
+  },
+  "reference (job 62147, W0, 1,024 held-out items each; the plural numbers are of the old plural-only task)": {
+    "plural": {
+      "top1": 0.1875,
+      "top5": 0.7012,
+      "contrast": -1.0846,
+      "ctrl_top1": 0.1309,
+      "se_top1": 0.0122,
+      "se_top5": 0.0143
+    },
+    "sequence": {
+      "top1": 0.2725,
+      "top5": 0.6943,
+      "contrast": -1.5663,
+      "ctrl_top1": 0.0205,
+      "se_top1": 0.0139,
+      "se_top5": 0.0144
+    },
+    "addition": {
+      "top1": 0.0449,
+      "top5": 0.3076,
+      "contrast": -2.6201,
+      "ctrl_top1": 0.0107,
+      "se_top1": 0.0065,
+      "se_top5": 0.0144
+    },
+    "zero update": {
+      "kl": 0,
+      "same_tokens": true
+    },
+    "e53 re-read": {
+      "lowercase share": 0.7538,
+      "cipher share": 0.1249
+    },
+    "seconds per RL step": {
+      "plural": 0.527,
+      "sequence": 0.496
+    },
+    "5 RL steps (lr 3e-5, seed 0)": {
+      "plural": "size 0.00331, kl 1.69, top-1 0.168 -> 1.000, control 0.119 -> 0.998",
+      "sequence": "size 0.00288, kl 0.070, top-1 0.264 -> 0.389, control 0.016 -> 0.096"
+    }
+  },
+  "changes": {
+    "plural task": "rl_tasks_2191.agreement_items: mined as before (same rows, gap 32, the det inside the window, nothing between but non-pronoun tokens and no newline), now for both numbers. A cue is a pronoun token whose nearest antecedent-shaped bigram before it has the pronoun's number: plural '<DET_PL> <noun>s' (noun not ss/us/is, singular form one token) before they/their/them; singular '<DET_SG> <noun>' (DET_SG: the, this, a, an, each, every; noun not ending in s, plural form one token) before he/she/it/his/her/its/him. Any pronoun of either number or case between ends the scan. At most one item of each number per row; each number filled to n // 2, then both cut to the smaller count (balance by subsampling) and interleaved plural first, so every prefix the reads take is balanced",
+    "plural sets": "target = the agreeing number's set (they/their/them, or he/she/it/his/her/its/him, each with and without a leading space where one token); competitor = the other number's set (' a' and ' the' are no longer competitors). Reward = the sampled token is in the agreeing set; per-row contrast = log p(agreeing set) - log p(other number's set)",
+    "plural control": "unchanged in kind: the antecedent's number swapped in the same window (these <-> this, those -> that, other determiners -> the; the noun's other-number form); read on the item's agreeing set",
+    "held_read": "adds top-1 on the plural-antecedent and singular-antecedent halves apart (top1_plural, top1_singular), recorded, and gated per half (see learned gate)",
+    "W0": "the filed W0 bands are readings, not stops. One W0 stop in ctl: for plural and sequence, W0 held-out top-5 minus the anchor's (addition) top-5 is at least regime_min_se standard errors of the difference (sqrt(se_a^2 + se_b^2), 1,024 items each). Reference 62147: sequence 0.694 - 0.308 = 0.387 against 2 se = 0.041; plural (old task) 0.394 against 0.041",
+    "unchanged": "every other setting, threshold, gate (learned, stable null), arm, reading and rule of predictions_E224.json",
+    "learned gate": "added 2026-11-20 by the lead before any job under Amendment 1: on the agreement task the learned gate also needs held-out top-1 on the plural-antecedent half and on the singular-antecedent half each to rise by more than learn_min_se standard errors of their own difference (a policy that always writes one number reaches ~0.5 top-1 on the balanced task and would clear the pooled gate alone); top1_plural and top1_singular stay recorded"
+  },
+  "thresholds": {
+    "regime_min_se": 2
+  },
+  "expected": {
+    "item counts": "set by the CPU dry run of this code before the ctl rerun (reports/plans/2026-11-19_plan_rl-67m.md, Stage 2c/3c, Amendment 1)",
+    "W0 plural (balanced)": "top-1 0.15-0.55, top-5 0.6-1.0, contrast -1.5 to +1.5; the singular half's top-1 likely above the plural half's (the 67M writes 'it' often)",
+    "regime": "passes on both (sequence 0.39 over the anchor in 62147; plural above 0.2)",
+    "RL seed 0 at the target": "the 62147 rehearsal says RL moves plural fast; with balanced items a policy that always writes one number reads top-1 about 0.5 overall, so top1_plural and top1_singular are recorded beside the gate"
+  },
+  "edge_cases": {
+    "fewer singular than plural items (or the reverse)": "both cut to the smaller count; under min_items (1,000) held-out the ctl stops naming the task",
+    "regime exactly 2 se": "passes (at least)",
+    "a row with cues of both numbers": "gives one item of each",
+    "the anchor's own row in the regime": "not read (only plural and sequence are compared to it)"
+  }
 }
