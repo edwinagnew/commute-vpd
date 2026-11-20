@@ -1,0 +1,52 @@
+{
+ "experiment": "E___ (P2.47)",
+ "cell": "P2.47",
+ "plan": "reports/plans/2026-11-20_plan_p2-47-topk-gate.md",
+ "card": "experiments/topk_gate/card.md",
+ "question": "Keep VPD's subcomponents and replace the gate function by a neuron-style top-k gate (each subcomponent kept when its own inner activation |x . V_c| is among the k largest of its matrix's alive subcomponents at that position, read from the fine-tune's clean forward). Does the share's nine-pair separation fall to the neuron version's level?",
+ "settings": {
+  "k_scales": [0.5, 1.0, 2.0],
+  "k_scales_source": "the brief (lead, 2026-11-20): k per matrix matched to Gamma's mean count of gates above 0.5 per position at W0 (scale 1, scored), and half and double beside it. The matched k is E136's experiments/share_untrained/results/stage0.json .k_m (305,423 positions of every E136 pair's read rows), the same k the TopK neuron share's 'kmatched' used (experiments/holes_fill/run.py line 215), so the two top-k gates differ in the unit only. k at a scale: round(scale x k_m), at least 1, at most the matrix's alive count (topk_gate.scaled_k); at 0.5 the nine matrices with k_m 1 or 2 read k 1 (block 0's q, k, v, o; block 1's q, k; block 2's q; block 3's q, k), so the half arm is not half there",
+  "projected_limit_min": 45,
+  "projected_limit_min_source": "E136 read its 68 states, the share plus two untrained decompositions, in about 5 min on a debug L40 (cluster/logs/commute-share-untrained-56944.out, 07:37 to 07:42); this run makes 2 clean and 10 masked forwards per batch against E136's about 1 and 4 (route_split plus its base), so about 2.5 times E136 per state: ~12 min for this run's 68 states; the limit is ~4 times that and under the debug QoS cap"
+ },
+ "thresholds": {
+  "reproduce_tol": 0.01,
+  "neuron_level": 6,
+  "neuron_top_level": 4,
+  "thresholds_source": "reproduce_tol: the share re-read through the same calls differed from its saved value by 1.1e-5 and 1.2e-4 (E187 check b, experiments/size_matched/results/m67_pod.log) and by 0.0019 at most (E211, 0.7538 against 0.7519, as E228's reproduce_tol cites); 0.01 is E143's, E187's and E228's filed tolerance on the share, five times the largest measured re-read gap. The gamma gate here is the same calls (topk_gate.clean mirrors vpd.compute_ci with chunk = batch), so it should read the saved value to within ~1e-4. neuron_level: 'neurons for half the gain' kept six of the nine built pairs apart in the built direction, none reversed, three not apart (experiments/method_table/results/final.json .tally.built.k_half: 'same direction as the share' 6, 'no call' 3; the skeleton's 6/0/3). neuron_top_level: the TopK neuron share (the same top-k gate on MLP neurons) read four pairs the built way and five reversed (final.json .tally.built.neuron_top: same 4, opposite 5), reported beside P1, not scored"
+ },
+ "readings": {
+  "share of a gate": "mean over the read rows of (L01 - L00) over mean of (T1 - T0): T the target model's log-odds of the trained answer at the read position at W0 (T0) and at the fine-tune (T1); L the released subcomponents (Delta out) masked by the gate read from W0's clean forward (L00) or the fine-tune's (L01). Not read (nan) when the gain is under MIN_GAIN = 1 log-odds (local_faith.MIN_GAIN)",
+  "gates": "gamma: Gamma's causal importances (the saved share's own masks, the positive control); gamma_bin: gamma above 0.5 as 1, else 0 (reported); topk_x0.5, topk_x1, topk_x2: the top-k gate at k = scale x k_m (topk_x1 scored)",
+  "inner activation": "x . V_c, param-decomp's LinearComponents.get_component_acts (pinned 74146b5) on the matrix's cached input in the clean forward, fp32; candidates are round 1's alive subcomponents (experiments/transport_test/results/large/alive.pt, mean causal importance over 1e-6)"
+ },
+ "rules": {
+  "P0 (stops)": {
+   "rule": "exit 1 unless: (a) first and alone, a zero change on the first state's rows reads the gain, every gate's numerator and every per-row L01 - L00 exactly 0 (all shares then nan); (b) per state, the gamma gate's share is within reproduce_tol of the saved scorecard share (experiments/share_untrained/results/stage1.json .states[s].trained, or experiments/refit_96key/results/stage1.json .states[s].e136.trained for the e58 states)",
+   "blind_to": "whether the top-k gate is a fair stand-in for Gamma; (a) checks that the cells are differences of identical forwards; (b) checks the rows, the batches, the state files and that the new path equals the saved share's calls",
+   "positive_control": "(b): through the same new code path, Gamma's own masks must give the saved share on every state",
+   "noise_floor": "thresholds_source"
+  },
+  "pair call": {
+   "rule": "per gate and pair, the scorecard's one rule (E133, cell P2.23, method_table): 'built' if every reuse-side share is above every new-side share (strictly), 'reversed' if every one is below, 'not apart' otherwise; 'not read' if any share on either side is not finite (gain under MIN_GAIN, or a missing state)",
+   "edge_cases": "ties (equal values across sides) are 'not apart'; a zero change everywhere (every numerator 0) gives equal shares of 0 and 'not apart' on every pair; a pair whose states are all nan is 'not read'; the shared sides (e54_matched and e54_own share the reuse side, open_pair_c3 and open_pair_c3_copy the new side) are read once and used in both pairs",
+   "absolute_or_relative": "ordinal: seed ranges, no band"
+  },
+  "P1 (filed)": {
+   "rule": "on the topk_x1 gate: 'no call' if any of the nine pairs is 'not read'; else 'falls to the neuron level' if the number of pairs called 'built' is at most neuron_level (6), 'holds above' if it is 7, 8 or 9",
+   "prediction": "falls to the neuron level",
+   "edge_cases": "all nan: 'no call'; the do-nothing state (every share nan) reads 'no call', not a pass; a top-k gate whose sets never move (every numerator 0) reads 0 'built' and so 'falls': a real outcome (the share then comes from Gamma's graded values, not from which subcomponents are on); 9 'built' with 0 reversed is the share's own reading",
+   "beside_it": "the count against neuron_top_level (4) and the tally of every other gate (gamma must read 9 built, as the scorecard; gamma_bin, topk_x0.5, topk_x2 reported)"
+  }
+ },
+ "expected": {
+  "zero change": "gain 0, every numerator 0, every share nan, exactly",
+  "gamma": "the saved share on every state to within ~1e-4 (the same calls); tally 9 built, 0 reversed",
+  "topk_x1": "filed: at most 6 of 9 pairs 'built' (P1 'falls to the neuron level')",
+  "gamma_bin, topk_x0.5, topk_x2": "no filed value; reported to read P1: a fall under gamma_bin too says binarising alone costs the separation; topk_x1 between gamma_bin and the neuron count says the choice of subcomponents matters"
+ },
+ "blind_to": "a top-k gate that is per position and local (Gamma reads the whole row, bidirectionally), so a fall may come from locality as well as from 'activation, not importance'; the inner activation ignores |U_c| (VPD's U, V scale is not normalised), a choice named in the plan; k matched on E136's rows at W0 only, not per task; the shares of a gate are read at the saved update size, not size-matched",
+ "items": "the 68 saved fine-tunes of E187's nine built pairs (experiments/size_matched/run.py BUILT, pairs()), each read once with five gates; the 9 pair calls per gate",
+ "note_2026-11-20": "written by a compare-lead design subagent; the lead claims the E-number (fleet/ecode) and stamps it in 'experiment' and the sbatch's --comment before this file is committed as filed"
+}
