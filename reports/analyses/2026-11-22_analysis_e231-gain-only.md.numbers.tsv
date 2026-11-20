@@ -1,0 +1,206 @@
+0.104	given	experiments/gain_only/card.md rival_b: E205's held model recovers at most 0.104 of any fine-tune's output change
+0.0314	experiments/gain_only/results/predictions.json	.thresholds.share_band	this
+3e-3	experiments/gain_only/results/predictions.json	.settings.lr	this
+1e-3	experiments/gain_only/results/predictions.json	.thresholds.equiv_tol	this
+0.1	experiments/gain_only/results/predictions.json	.thresholds.perm_min	this
+1.4e-5	experiments/gain_only/results/stage0_0_of_3.json + experiments/gain_only/results/stage0_1_of_3.json + experiments/gain_only/results/stage0_2_of_3.json	[.[].random.equiv] | max	this
+1.21	experiments/gain_only/results/stage0_0_of_3.json + experiments/gain_only/results/stage0_1_of_3.json + experiments/gain_only/results/stage0_2_of_3.json	[.[].random.shuffled] | min	this
+2.2e-8	experiments/gain_only/results/stage0_0_of_3.json + experiments/gain_only/results/stage0_1_of_3.json + experiments/gain_only/results/stage0_2_of_3.json	[.[].read_path.rel] | max	this
+0.844	experiments/gain_only/results/score.json	[.pairs[] | (.reuse[], .new[]) | .kl.kl_share] | min	this
+1.001	experiments/gain_only/results/score.json	[.pairs[] | (.reuse[], .new[]) | .kl.kl_share] | max	this
+0.10	experiments/gain_only/results/score.json	[.pairs[] | (.reuse[], .new[]) | .kl.seeds | max - min] | max	this
+13.1	status	E231
+0.57	experiments/gain_only/results/score.json	[.pairs.e62_copy_lookup.reuse[].kl.reach] | add/length	this
+0.38	experiments/gain_only/results/score.json	[.pairs.e62_copy_lookup.new[].kl.reach] | add/length	this
+0.87	experiments/gain_only/results/score.json	[.pairs.e62_copy_lookup.reuse[].gain.reach] | add/length	this
+0.63	experiments/gain_only/results/score.json	[.pairs.e62_copy_lookup.new[].gain.reach] | add/length	this
+0.50	experiments/gain_only/results/score.json	[.pairs.e46_copy_random.reuse[].kl.reach] | add/length	this
+0.65	experiments/gain_only/results/score.json	[.pairs.e46_copy_random.new[].kl.reach] | add/length	this
+0.97	experiments/gain_only/results/score.json	[.pairs.e46_copy_random.reuse[].gain.reach] | add/length	this
+0.87	experiments/gain_only/results/score.json	[.pairs.e46_copy_random.new[].gain.reach] | add/length	this
+0.74	experiments/gain_only/results/score.json	[.pairs.e53_lowercase_cipher.reuse[].kl.reach] | add/length	this
+0.40	experiments/gain_only/results/score.json	[.pairs.e53_lowercase_cipher.new[].kl.reach] | add/length	this
+0.75	experiments/gain_only/results/score.json	[.pairs.e53_lowercase_cipher.reuse[].gain.reach] | add/length	this
+0.40	experiments/gain_only/results/score.json	[.pairs.e53_lowercase_cipher.new[].gain.reach] | add/length	this
+0.69	experiments/gain_only/results/score.json	[.pairs.e54_matched.reuse[].kl.reach] | add/length	this
+0.74	experiments/gain_only/results/score.json	[.pairs.e54_matched.new[].kl.reach] | add/length	this
+0.80	experiments/gain_only/results/score.json	[.pairs.e54_matched.reuse[].gain.reach] | add/length	this
+1.01	experiments/gain_only/results/score.json	[.pairs.e54_matched.new[].gain.reach] | add/length	this
+0.69	experiments/gain_only/results/score.json	[.pairs.e54_own.reuse[].kl.reach] | add/length	this
+0.36	experiments/gain_only/results/score.json	[.pairs.e54_own.new[].kl.reach] | add/length	this
+0.80	experiments/gain_only/results/score.json	[.pairs.e54_own.reuse[].gain.reach] | add/length	this
+0.70	experiments/gain_only/results/score.json	[.pairs.e54_own.new[].gain.reach] | add/length	this
+0.63	experiments/gain_only/results/score.json	[.pairs.open_pair_c3.reuse[].kl.reach] | add/length	this
+0.72	experiments/gain_only/results/score.json	[.pairs.open_pair_c3.new[].kl.reach] | add/length	this
+0.74	experiments/gain_only/results/score.json	[.pairs.open_pair_c3.reuse[].gain.reach] | add/length	this
+1.00	experiments/gain_only/results/score.json	[.pairs.open_pair_c3.new[].gain.reach] | add/length	this
+0.51	experiments/gain_only/results/score.json	[.pairs.open_pair_c3_copy.reuse[].kl.reach] | add/length	this
+0.72	experiments/gain_only/results/score.json	[.pairs.open_pair_c3_copy.new[].kl.reach] | add/length	this
+0.95	experiments/gain_only/results/score.json	[.pairs.open_pair_c3_copy.reuse[].gain.reach] | add/length	this
+1.00	experiments/gain_only/results/score.json	[.pairs.open_pair_c3_copy.new[].gain.reach] | add/length	this
+0.36	experiments/gain_only/results/score.json	[.pairs.e58_rank1_96.reuse[].kl.reach] | add/length	this
+0.42	experiments/gain_only/results/score.json	[.pairs.e58_rank1_96.new[].kl.reach] | add/length	this
+0.59	experiments/gain_only/results/score.json	[.pairs.e58_rank1_96.reuse[].gain.reach] | add/length	this
+0.54	experiments/gain_only/results/score.json	[.pairs.e58_rank1_96.new[].gain.reach] | add/length	this
+0.40	experiments/gain_only/results/score.json	[.pairs.e58_copy_prior_cipher.reuse[].kl.reach] | add/length	this
+0.41	experiments/gain_only/results/score.json	[.pairs.e58_copy_prior_cipher.new[].kl.reach] | add/length	this
+0.82	experiments/gain_only/results/score.json	[.pairs.e58_copy_prior_cipher.reuse[].gain.reach] | add/length	this
+0.59	experiments/gain_only/results/score.json	[.pairs.e58_copy_prior_cipher.new[].gain.reach] | add/length	this
+0.55	experiments/gain_only/results/score.json	[.pairs.e123_case_label.reuse[].kl.reach] | add/length	this
+0.62	experiments/gain_only/results/score.json	[.pairs.e123_case_label.new[].kl.reach] | add/length	this
+0.79	experiments/gain_only/results/score.json	[.pairs.e123_case_label.reuse[].gain.reach] | add/length	this
+0.70	experiments/gain_only/results/score.json	[.pairs.e123_case_label.new[].gain.reach] | add/length	this
+0.64	experiments/gain_only/results/score.json	[.pairs.e125_repeat_label.reuse[].kl.reach] | add/length	this
+0.66	experiments/gain_only/results/score.json	[.pairs.e125_repeat_label.new[].kl.reach] | add/length	this
+0.87	experiments/gain_only/results/score.json	[.pairs.e125_repeat_label.reuse[].gain.reach] | add/length	this
+0.73	experiments/gain_only/results/score.json	[.pairs.e125_repeat_label.new[].gain.reach] | add/length	this
+0.38	experiments/gain_only/results/score.json	[.pairs.e58_elicit_shuffle.reuse[].kl.reach] | add/length	this
+0.44	experiments/gain_only/results/score.json	[.pairs.e58_elicit_shuffle.new[].kl.reach] | add/length	this
+0.62	experiments/gain_only/results/score.json	[.pairs.e58_elicit_shuffle.reuse[].gain.reach] | add/length	this
+0.53	experiments/gain_only/results/score.json	[.pairs.e58_elicit_shuffle.new[].gain.reach] | add/length	this
+0.45	experiments/gain_only/results/score.json	[.pairs.e58_class_twin.reuse[].kl.reach] | add/length	this
+0.50	experiments/gain_only/results/score.json	[.pairs.e58_class_twin.new[].kl.reach] | add/length	this
+0.81	experiments/gain_only/results/score.json	[.pairs.e58_class_twin.reuse[].gain.reach] | add/length	this
+0.84	experiments/gain_only/results/score.json	[.pairs.e58_class_twin.new[].gain.reach] | add/length	this
+0.966	experiments/gain_only/results/score.json	[.pairs.e62_copy_lookup.reuse[], .pairs.e62_copy_lookup.new[] | .kl.kl_share] | min	this
+1.000	experiments/gain_only/results/score.json	.pairs.e62_copy_lookup.full_reuse_kl_share	this
+0.950	experiments/gain_only/results/score.json	[.pairs.e46_copy_random.reuse[], .pairs.e46_copy_random.new[] | .kl.kl_share] | min	this
+0.992	experiments/gain_only/results/score.json	.pairs.e46_copy_random.full_reuse_kl_share	this
+0.844	experiments/gain_only/results/score.json	[.pairs.e53_lowercase_cipher.reuse[], .pairs.e53_lowercase_cipher.new[] | .kl.kl_share] | min	this
+0.961	experiments/gain_only/results/score.json	.pairs.e53_lowercase_cipher.full_reuse_kl_share	this
+0.964	experiments/gain_only/results/score.json	[.pairs.e54_matched.reuse[], .pairs.e54_matched.new[] | .kl.kl_share] | min	this
+0.975	experiments/gain_only/results/score.json	.pairs.e54_matched.full_reuse_kl_share	this
+0.964	experiments/gain_only/results/score.json	[.pairs.e54_own.reuse[], .pairs.e54_own.new[] | .kl.kl_share] | min	this
+0.975	experiments/gain_only/results/score.json	.pairs.e54_own.full_reuse_kl_share	this
+0.923	experiments/gain_only/results/score.json	[.pairs.open_pair_c3.reuse[], .pairs.open_pair_c3.new[] | .kl.kl_share] | min	this
+0.977	experiments/gain_only/results/score.json	.pairs.open_pair_c3.full_reuse_kl_share	this
+0.961	experiments/gain_only/results/score.json	[.pairs.open_pair_c3_copy.reuse[], .pairs.open_pair_c3_copy.new[] | .kl.kl_share] | min	this
+0.997	experiments/gain_only/results/score.json	.pairs.open_pair_c3_copy.full_reuse_kl_share	this
+0.865	experiments/gain_only/results/score.json	[.pairs.e58_rank1_96.reuse[], .pairs.e58_rank1_96.new[] | .kl.kl_share] | min	this
+0.984	experiments/gain_only/results/score.json	.pairs.e58_rank1_96.full_reuse_kl_share	this
+0.947	experiments/gain_only/results/score.json	[.pairs.e58_copy_prior_cipher.reuse[], .pairs.e58_copy_prior_cipher.new[] | .kl.kl_share] | min	this
+1.000	experiments/gain_only/results/score.json	.pairs.e58_copy_prior_cipher.full_reuse_kl_share	this
+0.950	experiments/gain_only/results/score.json	[.pairs.e123_case_label.reuse[], .pairs.e123_case_label.new[] | .kl.kl_share] | min	this
+0.886	experiments/gain_only/results/score.json	.pairs.e123_case_label.full_reuse_kl_share	this
+0.955	experiments/gain_only/results/score.json	[.pairs.e125_repeat_label.reuse[], .pairs.e125_repeat_label.new[] | .kl.kl_share] | min	this
+0.860	experiments/gain_only/results/score.json	.pairs.e125_repeat_label.full_reuse_kl_share	this
+0.981	experiments/gain_only/results/score.json	[.pairs.e58_elicit_shuffle.reuse[], .pairs.e58_elicit_shuffle.new[] | .kl.kl_share] | min	this
+0.981	experiments/gain_only/results/score.json	.pairs.e58_elicit_shuffle.full_reuse_kl_share	this
+0.984	experiments/gain_only/results/score.json	[.pairs.e58_class_twin.reuse[], .pairs.e58_class_twin.new[] | .kl.kl_share] | min	this
+0.894	experiments/gain_only/results/score.json	.pairs.e58_class_twin.full_reuse_kl_share	this
+0.57	experiments/gain_only/results/score.json	.pairs.e62_copy_lookup.reuse["e62/copy"].kl.reach	this
+0.87	experiments/gain_only/results/score.json	.pairs.e62_copy_lookup.reuse["e62/copy"].gain.reach	this
+1.02	experiments/gain_only/results/reads/e62_copy_s0.json + experiments/gain_only/results/reads/e62_copy_s1.json + experiments/gain_only/results/reads/e62_copy_s2.json	[.[].states[] | select(any(.for[]; . == "kl:e62/copy")) | .r] | sort | .[1]	this
+1.09	experiments/random_kl_share/results/states/e62_copy_s0.json + experiments/random_kl_share/results/states/e62_copy_s1.json + experiments/random_kl_share/results/states/e62_copy_s2.json	[.[].own.r]|add/length	earlier
+0.38	experiments/gain_only/results/score.json	.pairs.e62_copy_lookup.new["e62/lookup"].kl.reach	this
+0.63	experiments/gain_only/results/score.json	.pairs.e62_copy_lookup.new["e62/lookup"].gain.reach	this
+0.25	experiments/gain_only/results/reads/e62_lookup_s0.json + experiments/gain_only/results/reads/e62_lookup_s1.json + experiments/gain_only/results/reads/e62_lookup_s2.json	[.[].states[] | select(any(.for[]; . == "kl:e62/lookup")) | .r] | sort | .[1]	this
+0.40	experiments/random_kl_share/results/states/e62_lookup_s0.json + experiments/random_kl_share/results/states/e62_lookup_s1.json + experiments/random_kl_share/results/states/e62_lookup_s2.json	[.[].own.r]|add/length	earlier
+0.53	experiments/gain_only/results/score.json	.pairs.e46_copy_random.reuse["e46/ident32"].kl.reach	this
+0.98	experiments/gain_only/results/score.json	.pairs.e46_copy_random.reuse["e46/ident32"].gain.reach	this
+0.52	experiments/gain_only/results/reads/e46_ident32_s0.json + experiments/gain_only/results/reads/e46_ident32_s1.json + experiments/gain_only/results/reads/e46_ident32_s2.json	[.[].states[] | select(any(.for[]; . == "kl:e46/ident32")) | .r] | sort | .[1]	this
+0.78	experiments/random_kl_share/results/states/e46_ident32_s0.json + experiments/random_kl_share/results/states/e46_ident32_s1.json	[.[].own.r]|add/length	earlier
+0.48	experiments/gain_only/results/score.json	.pairs.e46_copy_random.reuse["e46/ident32b"].kl.reach	this
+0.95	experiments/gain_only/results/score.json	.pairs.e46_copy_random.reuse["e46/ident32b"].gain.reach	this
+0.52	experiments/gain_only/results/reads/e46_ident32b_s0.json + experiments/gain_only/results/reads/e46_ident32b_s1.json + experiments/gain_only/results/reads/e46_ident32b_s2.json	[.[].states[] | select(any(.for[]; . == "kl:e46/ident32b")) | .r] | sort | .[1]	this
+0.80	experiments/random_kl_share/results/states/e46_ident32b_s0.json + experiments/random_kl_share/results/states/e46_ident32b_s1.json	[.[].own.r]|add/length	earlier
+0.91	experiments/gain_only/results/score.json	.pairs.e46_copy_random.new["e46/rand32"].kl.reach	this
+1.00	experiments/gain_only/results/score.json	.pairs.e46_copy_random.new["e46/rand32"].gain.reach	this
+0.18	experiments/gain_only/results/reads/e46_rand32_s0.json + experiments/gain_only/results/reads/e46_rand32_s1.json + experiments/gain_only/results/reads/e46_rand32_s2.json	[.[].states[] | select(any(.for[]; . == "kl:e46/rand32")) | .r] | sort | .[1]	this
+0.27	experiments/random_kl_share/results/states/e46_rand32_s0.json + experiments/random_kl_share/results/states/e46_rand32_s1.json	[.[].own.r]|add/length	earlier
+0.40	experiments/gain_only/results/score.json	.pairs.e46_copy_random.new["e46/rand32b"].kl.reach	this
+0.73	experiments/gain_only/results/score.json	.pairs.e46_copy_random.new["e46/rand32b"].gain.reach	this
+0.24	experiments/gain_only/results/reads/e46_rand32b_s0.json + experiments/gain_only/results/reads/e46_rand32b_s1.json + experiments/gain_only/results/reads/e46_rand32b_s2.json	[.[].states[] | select(any(.for[]; . == "kl:e46/rand32b")) | .r] | sort | .[1]	this
+0.28	experiments/random_kl_share/results/states/e46_rand32b_s0.json + experiments/random_kl_share/results/states/e46_rand32b_s1.json	[.[].own.r]|add/length	earlier
+0.74	experiments/gain_only/results/score.json	.pairs.e53_lowercase_cipher.reuse["e53/lowercase"].kl.reach	this
+0.75	experiments/gain_only/results/score.json	.pairs.e53_lowercase_cipher.reuse["e53/lowercase"].gain.reach	this
+0.63	experiments/gain_only/results/reads/e53_lowercase_s0.json + experiments/gain_only/results/reads/e53_lowercase_s1.json + experiments/gain_only/results/reads/e53_lowercase_s2.json	[.[].states[] | select(any(.for[]; . == "kl:e53/lowercase")) | .r] | sort | .[1]	this
+0.76	experiments/random_kl_share/results/states/e53_lowercase_s0.json + experiments/random_kl_share/results/states/e53_lowercase_s1.json	[.[].own.r]|add/length	earlier
+0.30	experiments/gain_only/results/score.json	.pairs.e53_lowercase_cipher.new["e53/cipher"].kl.reach	this
+0.31	experiments/gain_only/results/score.json	.pairs.e53_lowercase_cipher.new["e53/cipher"].gain.reach	this
+0.17	experiments/gain_only/results/reads/e53_cipher_s0.json + experiments/gain_only/results/reads/e53_cipher_s1.json + experiments/gain_only/results/reads/e53_cipher_s2.json	[.[].states[] | select(any(.for[]; . == "kl:e53/cipher")) | .r] | sort | .[1]	this
+0.12	experiments/random_kl_share/results/states/e53_cipher_s0.json + experiments/random_kl_share/results/states/e53_cipher_s1.json	[.[].own.r]|add/length	earlier
+0.49	experiments/gain_only/results/score.json	.pairs.e53_lowercase_cipher.new["e53/broad_cipher"].kl.reach	this
+0.49	experiments/gain_only/results/score.json	.pairs.e53_lowercase_cipher.new["e53/broad_cipher"].gain.reach	this
+0.21	experiments/gain_only/results/reads/e53_broad_cipher_s0.json + experiments/gain_only/results/reads/e53_broad_cipher_s1.json + experiments/gain_only/results/reads/e53_broad_cipher_s2.json	[.[].states[] | select(any(.for[]; . == "kl:e53/broad_cipher")) | .r] | sort | .[1]	this
+0.16	experiments/random_kl_share/results/states/e53_broad_cipher_s0.json + experiments/random_kl_share/results/states/e53_broad_cipher_s1.json	[.[].own.r]|add/length	earlier
+0.69	experiments/gain_only/results/score.json	.pairs.e54_matched.reuse["e54/elicit"].kl.reach	this
+0.80	experiments/gain_only/results/score.json	.pairs.e54_matched.reuse["e54/elicit"].gain.reach	this
+0.60	experiments/gain_only/results/reads/e54_elicit_s0.json + experiments/gain_only/results/reads/e54_elicit_s1.json + experiments/gain_only/results/reads/e54_elicit_s2.json	[.[].states[] | select(any(.for[]; . == "kl:e54/elicit")) | .r] | sort | .[1]	this
+0.76	experiments/random_kl_share/results/states/e54_elicit_s0.json + experiments/random_kl_share/results/states/e54_elicit_s1.json + experiments/random_kl_share/results/states/e54_elicit_s2.json + experiments/random_kl_share/results/states/e54_elicit_s3.json + experiments/random_kl_share/results/states/e54_elicit_s4.json	[.[].own.r]|add/length	earlier
+0.74	experiments/gain_only/results/score.json	.pairs.e54_matched.new["e54/cipher"].kl.reach	this
+1.01	experiments/gain_only/results/score.json	.pairs.e54_matched.new["e54/cipher"].gain.reach	this
+0.18	experiments/gain_only/results/reads/e54_cipher_s0.json + experiments/gain_only/results/reads/e54_cipher_s1.json + experiments/gain_only/results/reads/e54_cipher_s2.json	[.[].states[] | select(any(.for[]; . == "kl:e54/cipher")) | .r] | sort | .[1]	this
+0.25	experiments/random_kl_share/results/states/e54_cipher_s0.json + experiments/random_kl_share/results/states/e54_cipher_s1.json + experiments/random_kl_share/results/states/e54_cipher_s2.json + experiments/random_kl_share/results/states/e54_cipher_s3.json + experiments/random_kl_share/results/states/e54_cipher_s4.json	[.[].own.r]|add/length	earlier
+0.69	experiments/gain_only/results/score.json	.pairs.e54_own.reuse["e54/elicit"].kl.reach	this
+0.80	experiments/gain_only/results/score.json	.pairs.e54_own.reuse["e54/elicit"].gain.reach	this
+0.60	experiments/gain_only/results/reads/e54_elicit_s0.json + experiments/gain_only/results/reads/e54_elicit_s1.json + experiments/gain_only/results/reads/e54_elicit_s2.json	[.[].states[] | select(any(.for[]; . == "kl:e54/elicit")) | .r] | sort | .[1]	this
+0.76	experiments/random_kl_share/results/states/e54_elicit_s0.json + experiments/random_kl_share/results/states/e54_elicit_s1.json + experiments/random_kl_share/results/states/e54_elicit_s2.json + experiments/random_kl_share/results/states/e54_elicit_s3.json + experiments/random_kl_share/results/states/e54_elicit_s4.json	[.[].own.r]|add/length	earlier
+0.36	experiments/gain_only/results/score.json	.pairs.e54_own.new["e54/cipher_own"].kl.reach	this
+0.70	experiments/gain_only/results/score.json	.pairs.e54_own.new["e54/cipher_own"].gain.reach	this
+0.20	experiments/gain_only/results/reads/e54_cipher_s0.json + experiments/gain_only/results/reads/e54_cipher_s1.json + experiments/gain_only/results/reads/e54_cipher_s2.json	[.[].states[] | select(any(.for[]; . == "kl:e54/cipher_own")) | .r] | sort | .[1]	this
+0.25	experiments/random_kl_share/results/states/e54_cipher_own_s0.json + experiments/random_kl_share/results/states/e54_cipher_own_s1.json	[.[].own.r]|add/length	earlier
+0.63	experiments/gain_only/results/score.json	.pairs.open_pair_c3.reuse["c3/rank1"].kl.reach	this
+0.74	experiments/gain_only/results/score.json	.pairs.open_pair_c3.reuse["c3/rank1"].gain.reach	this
+0.64	experiments/gain_only/results/reads/c3_rank1_s0.json + experiments/gain_only/results/reads/c3_rank1_s1.json + experiments/gain_only/results/reads/c3_rank1_s2.json	[.[].states[] | select(any(.for[]; . == "kl:c3/rank1")) | .r] | sort | .[1]	this
+0.86	experiments/random_kl_share/results/states/c3_rank1_s0.json + experiments/random_kl_share/results/states/c3_rank1_s1.json + experiments/random_kl_share/results/states/c3_rank1_s2.json + experiments/random_kl_share/results/states/c3_rank1_s3.json + experiments/random_kl_share/results/states/c3_rank1_s4.json + experiments/random_kl_share/results/states/c3_rank1_s5.json + experiments/random_kl_share/results/states/c3_rank1_s6.json + experiments/random_kl_share/results/states/c3_rank1_s7.json	[.[].own.r]|add/length	earlier
+0.72	experiments/gain_only/results/score.json	.pairs.open_pair_c3.new["c3/cipher"].kl.reach	this
+1.00	experiments/gain_only/results/score.json	.pairs.open_pair_c3.new["c3/cipher"].gain.reach	this
+0.15	experiments/gain_only/results/reads/c3_cipher_s0.json + experiments/gain_only/results/reads/c3_cipher_s1.json + experiments/gain_only/results/reads/c3_cipher_s2.json	[.[].states[] | select(any(.for[]; . == "kl:c3/cipher")) | .r] | sort | .[1]	this
+0.24	experiments/random_kl_share/results/states/c3_cipher_s0.json + experiments/random_kl_share/results/states/c3_cipher_s1.json + experiments/random_kl_share/results/states/c3_cipher_s2.json + experiments/random_kl_share/results/states/c3_cipher_s3.json + experiments/random_kl_share/results/states/c3_cipher_s4.json + experiments/random_kl_share/results/states/c3_cipher_s5.json + experiments/random_kl_share/results/states/c3_cipher_s6.json + experiments/random_kl_share/results/states/c3_cipher_s7.json	[.[].own.r]|add/length	earlier
+0.51	experiments/gain_only/results/score.json	.pairs.open_pair_c3_copy.reuse["c3/copy"].kl.reach	this
+0.95	experiments/gain_only/results/score.json	.pairs.open_pair_c3_copy.reuse["c3/copy"].gain.reach	this
+0.66	experiments/gain_only/results/reads/c3_copy_s0.json + experiments/gain_only/results/reads/c3_copy_s1.json + experiments/gain_only/results/reads/c3_copy_s2.json	[.[].states[] | select(any(.for[]; . == "kl:c3/copy")) | .r] | sort | .[1]	this
+0.84	experiments/random_kl_share/results/states/c3_copy_s0.json + experiments/random_kl_share/results/states/c3_copy_s1.json + experiments/random_kl_share/results/states/c3_copy_s2.json + experiments/random_kl_share/results/states/c3_copy_s3.json + experiments/random_kl_share/results/states/c3_copy_s4.json + experiments/random_kl_share/results/states/c3_copy_s5.json + experiments/random_kl_share/results/states/c3_copy_s6.json + experiments/random_kl_share/results/states/c3_copy_s7.json	[.[].own.r]|add/length	earlier
+0.72	experiments/gain_only/results/score.json	.pairs.open_pair_c3_copy.new["c3/cipher"].kl.reach	this
+1.00	experiments/gain_only/results/score.json	.pairs.open_pair_c3_copy.new["c3/cipher"].gain.reach	this
+0.15	experiments/gain_only/results/reads/c3_cipher_s0.json + experiments/gain_only/results/reads/c3_cipher_s1.json + experiments/gain_only/results/reads/c3_cipher_s2.json	[.[].states[] | select(any(.for[]; . == "kl:c3/cipher")) | .r] | sort | .[1]	this
+0.24	experiments/random_kl_share/results/states/c3_cipher_s0.json + experiments/random_kl_share/results/states/c3_cipher_s1.json + experiments/random_kl_share/results/states/c3_cipher_s2.json + experiments/random_kl_share/results/states/c3_cipher_s3.json + experiments/random_kl_share/results/states/c3_cipher_s4.json + experiments/random_kl_share/results/states/c3_cipher_s5.json + experiments/random_kl_share/results/states/c3_cipher_s6.json + experiments/random_kl_share/results/states/c3_cipher_s7.json	[.[].own.r]|add/length	earlier
+0.36	experiments/gain_only/results/score.json	.pairs.e58_rank1_96.reuse["e58/rank1"].kl.reach	this
+0.59	experiments/gain_only/results/score.json	.pairs.e58_rank1_96.reuse["e58/rank1"].gain.reach	this
+0.67	experiments/gain_only/results/reads/e58_rank1_s0.json + experiments/gain_only/results/reads/e58_rank1_s1.json + experiments/gain_only/results/reads/e58_rank1_s2.json	[.[].states[] | select(any(.for[]; . == "kl:e58/rank1")) | .r] | sort | .[1]	this
+0.86	experiments/random_kl_share/results/states/e58_rank1_s0.json + experiments/random_kl_share/results/states/e58_rank1_s1.json + experiments/random_kl_share/results/states/e58_rank1_s2.json	[.[].own.r]|add/length	earlier
+0.42	experiments/gain_only/results/score.json	.pairs.e58_rank1_96.new["e58/cipher"].kl.reach	this
+0.54	experiments/gain_only/results/score.json	.pairs.e58_rank1_96.new["e58/cipher"].gain.reach	this
+0.27	experiments/gain_only/results/reads/e58_cipher_s0.json + experiments/gain_only/results/reads/e58_cipher_s1.json + experiments/gain_only/results/reads/e58_cipher_s2.json	[.[].states[] | select(any(.for[]; . == "kl:e58/cipher")) | .r] | sort | .[1]	this
+0.30	experiments/random_kl_share/results/states/e58_cipher_s0.json + experiments/random_kl_share/results/states/e58_cipher_s1.json + experiments/random_kl_share/results/states/e58_cipher_s2.json	[.[].own.r]|add/length	earlier
+0.40	experiments/gain_only/results/score.json	.pairs.e58_copy_prior_cipher.reuse["e58/copy"].kl.reach	this
+0.82	experiments/gain_only/results/score.json	.pairs.e58_copy_prior_cipher.reuse["e58/copy"].gain.reach	this
+0.58	experiments/gain_only/results/reads/e58_copy_s0.json + experiments/gain_only/results/reads/e58_copy_s1.json + experiments/gain_only/results/reads/e58_copy_s2.json	[.[].states[] | select(any(.for[]; . == "kl:e58/copy")) | .r] | sort | .[1]	this
+0.77	experiments/random_kl_share/results/states/e58_copy_s0.json + experiments/random_kl_share/results/states/e58_copy_s1.json + experiments/random_kl_share/results/states/e58_copy_s2.json	[.[].own.r]|add/length	earlier
+0.41	experiments/gain_only/results/score.json	.pairs.e58_copy_prior_cipher.new["e58/prior_cipher"].kl.reach	this
+0.59	experiments/gain_only/results/score.json	.pairs.e58_copy_prior_cipher.new["e58/prior_cipher"].gain.reach	this
+0.35	experiments/gain_only/results/reads/e58_prior_cipher_s0.json + experiments/gain_only/results/reads/e58_prior_cipher_s1.json + experiments/gain_only/results/reads/e58_prior_cipher_s2.json	[.[].states[] | select(any(.for[]; . == "kl:e58/prior_cipher")) | .r] | sort | .[1]	this
+0.38	experiments/random_kl_share/results/states/e58_prior_cipher_s0.json + experiments/random_kl_share/results/states/e58_prior_cipher_s1.json + experiments/random_kl_share/results/states/e58_prior_cipher_s2.json	[.[].own.r]|add/length	earlier
+0.55	experiments/gain_only/results/score.json	.pairs.e123_case_label.reuse["case_label/real"].kl.reach	this
+0.79	experiments/gain_only/results/score.json	.pairs.e123_case_label.reuse["case_label/real"].gain.reach	this
+0.24	experiments/gain_only/results/reads/case_label_real_s0.json + experiments/gain_only/results/reads/case_label_real_s1.json + experiments/gain_only/results/reads/case_label_real_s2.json	[.[].states[] | select(any(.for[]; . == "kl:case_label/real")) | .r] | sort | .[1]	this
+0.13	experiments/random_kl_share/results/states/case_label_real_s0.json + experiments/random_kl_share/results/states/case_label_real_s1.json	[.[].own.r]|add/length	earlier
+0.62	experiments/gain_only/results/score.json	.pairs.e123_case_label.new["case_label/twin"].kl.reach	this
+0.70	experiments/gain_only/results/score.json	.pairs.e123_case_label.new["case_label/twin"].gain.reach	this
+0.21	experiments/gain_only/results/reads/case_label_twin_s0.json + experiments/gain_only/results/reads/case_label_twin_s1.json + experiments/gain_only/results/reads/case_label_twin_s2.json	[.[].states[] | select(any(.for[]; . == "kl:case_label/twin")) | .r] | sort | .[1]	this
+0.14	experiments/random_kl_share/results/states/case_label_twin_s0.json + experiments/random_kl_share/results/states/case_label_twin_s1.json	[.[].own.r]|add/length	earlier
+0.64	experiments/gain_only/results/score.json	.pairs.e125_repeat_label.reuse["fresh/real"].kl.reach	this
+0.87	experiments/gain_only/results/score.json	.pairs.e125_repeat_label.reuse["fresh/real"].gain.reach	this
+0.26	experiments/gain_only/results/reads/fresh_real_s0.json + experiments/gain_only/results/reads/fresh_real_s1.json + experiments/gain_only/results/reads/fresh_real_s2.json	[.[].states[] | select(any(.for[]; . == "kl:fresh/real")) | .r] | sort | .[1]	this
+0.18	experiments/random_kl_share/results/states/fresh_real_s0.json + experiments/random_kl_share/results/states/fresh_real_s1.json	[.[].own.r]|add/length	earlier
+0.66	experiments/gain_only/results/score.json	.pairs.e125_repeat_label.new["fresh/twin"].kl.reach	this
+0.73	experiments/gain_only/results/score.json	.pairs.e125_repeat_label.new["fresh/twin"].gain.reach	this
+0.24	experiments/gain_only/results/reads/fresh_twin_s0.json + experiments/gain_only/results/reads/fresh_twin_s1.json + experiments/gain_only/results/reads/fresh_twin_s2.json	[.[].states[] | select(any(.for[]; . == "kl:fresh/twin")) | .r] | sort | .[1]	this
+0.20	experiments/random_kl_share/results/states/fresh_twin_s0.json + experiments/random_kl_share/results/states/fresh_twin_s1.json	[.[].own.r]|add/length	earlier
+0.38	experiments/gain_only/results/score.json	.pairs.e58_elicit_shuffle.reuse["e58/elicit"].kl.reach	this
+0.62	experiments/gain_only/results/score.json	.pairs.e58_elicit_shuffle.reuse["e58/elicit"].gain.reach	this
+0.71	experiments/gain_only/results/reads/e58_elicit_s0.json + experiments/gain_only/results/reads/e58_elicit_s1.json + experiments/gain_only/results/reads/e58_elicit_s2.json	[.[].states[] | select(any(.for[]; . == "kl:e58/elicit")) | .r] | sort | .[1]	this
+0.73	experiments/random_kl_share/results/states/e58_elicit_s0.json + experiments/random_kl_share/results/states/e58_elicit_s1.json + experiments/random_kl_share/results/states/e58_elicit_s2.json	[.[].own.r]|add/length	earlier
+0.44	experiments/gain_only/results/score.json	.pairs.e58_elicit_shuffle.new["e58/shuffle"].kl.reach	this
+0.53	experiments/gain_only/results/score.json	.pairs.e58_elicit_shuffle.new["e58/shuffle"].gain.reach	this
+0.29	experiments/gain_only/results/reads/e58_shuffle_s0.json + experiments/gain_only/results/reads/e58_shuffle_s1.json + experiments/gain_only/results/reads/e58_shuffle_s2.json	[.[].states[] | select(any(.for[]; . == "kl:e58/shuffle")) | .r] | sort | .[1]	this
+0.48	experiments/random_kl_share/results/states/e58_shuffle_s0.json + experiments/random_kl_share/results/states/e58_shuffle_s1.json + experiments/random_kl_share/results/states/e58_shuffle_s2.json	[.[].own.r]|add/length	earlier
+0.45	experiments/gain_only/results/score.json	.pairs.e58_class_twin.reuse["e58/class_map"].kl.reach	this
+0.81	experiments/gain_only/results/score.json	.pairs.e58_class_twin.reuse["e58/class_map"].gain.reach	this
+0.33	experiments/gain_only/results/reads/e58_class_map_s0.json + experiments/gain_only/results/reads/e58_class_map_s1.json + experiments/gain_only/results/reads/e58_class_map_s2.json	[.[].states[] | select(any(.for[]; . == "kl:e58/class_map")) | .r] | sort | .[1]	this
+0.24	experiments/random_kl_share/results/states/e58_class_map_s0.json + experiments/random_kl_share/results/states/e58_class_map_s1.json + experiments/random_kl_share/results/states/e58_class_map_s2.json	[.[].own.r]|add/length	earlier
+0.50	experiments/gain_only/results/score.json	.pairs.e58_class_twin.new["e58/class_shuffled"].kl.reach	this
+0.84	experiments/gain_only/results/score.json	.pairs.e58_class_twin.new["e58/class_shuffled"].gain.reach	this
+0.34	experiments/gain_only/results/reads/e58_class_shuffled_s0.json + experiments/gain_only/results/reads/e58_class_shuffled_s1.json + experiments/gain_only/results/reads/e58_class_shuffled_s2.json	[.[].states[] | select(any(.for[]; . == "kl:e58/class_shuffled")) | .r] | sort | .[1]	this
+0.28	experiments/random_kl_share/results/states/e58_class_shuffled_s0.json + experiments/random_kl_share/results/states/e58_class_shuffled_s1.json + experiments/random_kl_share/results/states/e58_class_shuffled_s2.json	[.[].own.r]|add/length	earlier
