@@ -396,3 +396,70 @@ def score(cfg: Cfg, ae: AE, ev: dict[str, Any], h_ls: Tensor, h_task: Tensor,
     large = {"relative_norm": rn.half(), "alive": alive, "s": s.float(), "scaled": J, "groups": g[""],
              "betas": {k: v.float() for k, v in b.items()}}  # fmt: skip
     return rec, large
+
+
+# ----------------------------------------------------------------------------- E235 (cell P2.49)
+# Any site `steering.Net` edits ("in<l>" or "out3"), a fine-tune side that is another net (a graft), and the spliced
+# loss. The functions above stay as E203 and E212 ran them.
+
+
+@torch.no_grad()
+def site_acts(net: Any, toks: Tensor, dW: dict[str, Tensor] | None, site: str,
+              plant: tuple[Tensor, int] | None = None, n: int = 64) -> Tensor:  # fmt: skip
+    """(m, d) raw activations of `net` (a steering.Net) at `site`, every position but 0, under W0 + dW (None: W0);
+    `plant` = (vector, position) is added at that position before position 0 is dropped."""
+    out: list[Tensor] = []
+
+    def grab(x: Tensor) -> Tensor:
+        x = x.clone()
+        if plant is not None:
+            x[:, plant[1]] += plant[0].to(x.device, x.dtype)
+        out.append(x[:, 1:])
+        raise _Grab
+
+    with net.at(dW):
+        for b in toks.split(n):
+            try:
+                net.run(b, edit={site: grab})
+            except _Grab:
+                pass
+    return torch.cat(out).reshape(-1, out[0].shape[-1])
+
+
+def _replace(v: Tensor | None) -> Callable[[Tensor], Tensor]:
+    def put(h: Tensor) -> Tensor:
+        if v is None:
+            return h
+        h = h.clone()
+        h[:, 1:] = v.to(h.dtype)
+        return h
+
+    return put
+
+
+@torch.no_grad()
+def spliced(ae: AE, nets: tuple[Any, Any], dW: dict[str, Tensor] | None, rows: Tensor, site: str,
+            n: int = 16) -> dict[str, float]:  # fmt: skip
+    """Mean next-token loss of each model (0: nets[0] at W0; 1: nets[1] at W0 + dW) on `rows`: clean, with the site's
+    activations at positions 1.. replaced by the crosscoder's reconstruction ("spliced"), and by that model's
+    normaliser mean ("ablated"); recovered = (ablated - spliced) / (ablated - clean). Both models' activations are
+    encoded together, as the crosscoder reads them."""
+    tot = {f"{k}_{m}": 0.0 for k in ("clean", "spliced", "ablated") for m in (0, 1)}
+    count, mean = 0, ae.activation_mean.detach()
+    for b in rows.split(n):
+        b = b.to(nets[0].device)
+        x = torch.stack([site_acts(nets[0], b, None, site, n=n), site_acts(nets[1], b, dW, site, n=n)], 1)
+        rec = ae.decode(ae.encode(x)).view(len(b), b.shape[1] - 1, 2, -1)
+        for m, (net, d) in enumerate(((nets[0], None), (nets[1], dW))):
+            fills = {"clean": None, "spliced": rec[:, :, m], "ablated": mean[m].expand(len(b), b.shape[1] - 1, -1)}
+            for kind, v in fills.items():
+                with net.at(d):
+                    lg = net.run(b, edit={site: _replace(v)})[0]
+                ce = torch.nn.functional.cross_entropy(lg[:, :-1].flatten(0, 1), b[:, 1:].flatten(), reduction="sum")
+                tot[f"{kind}_{m}"] += float(ce)
+        count += b[:, 1:].numel()
+    out = {k: v / count for k, v in tot.items()}
+    for m in (0, 1):
+        gap = out[f"ablated_{m}"] - out[f"clean_{m}"]
+        out[f"recovered_{m}"] = (out[f"ablated_{m}"] - out[f"spliced_{m}"]) / gap if gap > 0 else math.nan
+    return out
