@@ -10,3 +10,5 @@ A line starting `HOLD ` (not `- `) stays in `PENDING.md` through a flush: use it
 A line `CONSENT YYYY-MM-DD <role> · <the user's words>` records that the user waived the main-page word cap for this flush (README.md → Main-page length; friction 688).
 
 - 2026-11-20 · reports/plans/2026-11-20_plan_rl-67m-task-rechoice.md · P2.41 card/timeline · user chose new RL tasks from task#2191 (plural pronoun agreement, day/month sequences; single-digit addition as the taught anchor); E224 trains the arms; E223 re-reads the old states as a contrast
+- 2026-11-20 · parts/sections/decisions.html · decisions · remove the card decision-p3-13-held-fit-floor (ask 10 answered: user chose option 1, one more run; P3.13 raised to 3 runs)
+- 2026-11-20 · reports/plans/2026-11-20_plan_p3-13-run3-fit-floor.md · P3.13 card/timeline · E225 planned: fit-row sweep (own rows, plus gold rows, plus repacked rows) until the held model reproduces Qwen on the word rows (do-nothing under 1e-7), then reread copy/cipher and known/invented; RunPod, ~$8
