@@ -1,7 +1,8 @@
 """P2.49 run 2 of 2 (E-number in results/run2/predictions.json): the size ladder at site A (block 2's input). Run 1
 (E235) found the planted control missed there: E206's early grafted head read a specific part of 0.21-0.37 against
-the 0.5 bar, at a change of 211 per token (about 100 times elicit's). Run 2 scales that head's output weight by one
-factor per rung, so its activation change per token at A equals the rung's size, and trains the same crosscoder
+the 0.5 bar, at a squared activation change of 211 per token (about 108 times elicit's, 10 times in amplitude). Run 2
+scales that head's output weight by one factor per rung, so its squared activation change per token at A equals the
+rung's size, and trains the same crosscoder
 (run 1's settings, code and bars, unchanged) on each, cheapest rung first, until a rung passes on every seed. At the
 first such rung X it reads E147's five 96-key tasks (3 seeds each) and a Gaussian random change (3 draws), each
 scaled to X the same way. Plan reports/plans/2026-11-21_plan_p2-49-run2-size-ladder.md; rules results/run2/
@@ -57,7 +58,7 @@ log = RUN.log
 @dataclass(frozen=True)
 class Config:  # results/run2/predictions.json "settings"
     site: str
-    rungs: tuple[float, ...]  # activation change per token at the site; rung 0 is 0
+    rungs: tuple[float, ...]  # squared activation change per token at the site; rung 0 is 0
     native: int  # the rung run 1 already read: the head at scale 1
     native_tags: dict[str, str]  # sizes -> run 1's tag whose head.A.c* items are rung `native`
     native_energy: float  # run 1's head.A energy, which the sizes job must reproduce
@@ -71,10 +72,13 @@ class Config:  # results/run2/predictions.json "settings"
     scale_max: float
     pairs: tuple[tuple[str, str], ...]  # (reuse, new) as built, E147's
     planted_part: float
+    round1: tuple[tuple[int, int], ...]  # (rung, crosscoder seed) of stage 1's first round, all at once
+    random_floor: float  # a random reading under it is near 0: a tie with random is then degenerate
 
     def __post_init__(self) -> None:
         r = self.rungs
         assert r[0] == 0 and all(a < b for a, b in itertools.pairwise(r)) and 0 < self.native < len(r)
+        assert all(0 < i < len(r) and i != self.native and c in self.seeds for i, c in self.round1)
         assert math.isclose(r[self.native], self.native_energy, rel_tol=1e-9) and len(self.seeds) == self.draws == 3
         assert self.random_of in self.states() and all(t in self.tasks for p in self.pairs for t in p)
 
@@ -141,8 +145,8 @@ class Job(RUN.Job):
         return self.energy(s, s.dW)
 
     def match(self, s: Scaled) -> dict[str, Any]:
-        """The factor x that gives the rung's activation change per token on the side's read rows: doubling, then
-        bisection in log x until within a quarter of match_tol (run 1's Gaussian search, run.py `gauss`)."""
+        """The factor x that gives the rung's squared activation change per token on the side's read rows: doubling,
+        then bisection in log x until within a quarter of match_tol (run 1's Gaussian search, run.py `gauss`)."""
         target = self.c2.rungs[s.rung]
         if target == 0:
             return {"x": 0.0, "target": 0.0, "energy": self.size_at(s, 0.0), "rel": 0.0}
@@ -187,7 +191,7 @@ class Job(RUN.Job):
 
 def sizes(job: Job) -> None:
     """Forwards only: the head's scale per rung (and its native energy against run 1's), each state's and draw's own
-    activation change at scale 1, on its read rows and on the common Pile rows."""
+    squared activation change at scale 1, on its read rows and on the common Pile rows."""
     c, site, t0 = job.c2, job.c2.site, time.time()
     h = job.side(RUN.Item(f"head-r{c.native}", site, 0))
     native = job.size_at(h, 1.0)
@@ -208,6 +212,12 @@ def sizes(job: Job) -> None:
     out.write()
 
 
+def settings(p2: dict[str, Any]) -> Config:
+    """results/run2/predictions.json "settings" as a Config: lists become tuples, lists of lists tuples of tuples."""
+    tup = lambda v: tuple(map(tuple, v)) if v and isinstance(v[0], list) else tuple(v)
+    return config_from_settings(Config, {k: tup(v) if isinstance(v, list) else v for k, v in p2["settings"].items()})
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("job", choices=("sizes", "item"))
@@ -223,8 +233,7 @@ def main() -> int:
     S = P1["settings"]["cc"][size]
     cc = config_from_settings(CC.Cfg, S | {"shared": tuple(S["shared"]), "snapshots": tuple(S["snapshots"])})
     cfg1 = config_from_settings(RUN.Config, {k: tuple(v) if isinstance(v, list) else v for k, v in P1["settings"]["run"].items()})
-    s2 = {k: tuple(map(tuple, v)) if k == "pairs" else tuple(v) if isinstance(v, list) else v for k, v in P2["settings"].items()}
-    cfg = config_from_settings(Config, s2)
+    cfg = settings(P2)
     tag = a.tag or ("rehearse2" if a.rehearse else "run2")
     RUN.EXPERIMENT = P2["experiment"]  # run.py stamps each item with its module's E-code; run 2's here
     RUN.OUT.update(res=HERE / "results" / tag, large=HERE / "results" / "large" / tag)
