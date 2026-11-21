@@ -55,7 +55,7 @@ def main() -> None:
     for i in ITEMS:
         p = HERE / "results" / "items" / f"{i}.json"
         if p.is_file():
-            d = json.loads(p.read_text())
+            d = json.loads(p.read_text())["main"]
             rows.append({"item": i, "q_fit": d["q_fit"], "q_one": d["q_one"]})
     fig, ax = FG.figure()
     panel(ax, rows, "The thin new edit's stood-in set with gains fitted and set to 1")
