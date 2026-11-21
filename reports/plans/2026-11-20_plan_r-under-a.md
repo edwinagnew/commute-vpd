@@ -15,6 +15,8 @@ base 67M; F is a built edit, a fine-tune or a random update.
 
 ## How each part of the sentence is read
 
+**Phase D (supersedes the bar in item 1 below, ~22:15):** S passes when KL(F‖F_S) <= 0.1 KL(F‖M) (relative bar; 0.05 and 0.2 read beside it, and E226's absolute allowance as R_A_abs, none filed). An item is not read when 0.1 KL(F‖M) is at or under the fp32 floor measured in stage 0 on this path (moved expected not read). Toy check: a pure gain stood in leaves 4.8% of the change (passes), a random change 105% (fails). Run time grows to about 53 L40-hours in about 40 jobs: the control stage about 70 min, the built stage about 96 min after it, and the pairs about 37 h in 26 jobs.
+
 1. **"Preserve the behavior."** F's full forward with the set S stood in (every other variable keeps F's mechanism;
    nothing is ablated; whip-lead, 2026-11-20) must keep KL(F || F_S) at E226's read positions, mean over the windows D,
    at or under the circuit's own allowance, (1 - alpha) KL(F || F_all_ablated) with alpha 0.9. That is E226's bar for
