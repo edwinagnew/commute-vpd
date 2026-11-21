@@ -37,7 +37,7 @@ results. No page target. Writing advice followed: Nanda, "Highly Opinionated Adv
 | 1 Intro | EH and monitoring post-training; why behaviour is not enough; claims; contributions | everything |
 | 2 Related work | user's | positioning |
 | 3 Definition | formal definition, properties; one-line mention of featurizations (3.2 deleted) | claim 1 |
-| 4 Set-up | model + VPD; featurizations (user's 4.2); fine-tunes with a known answer: five key tasks at one update size + twins, hand-made edits, random change; proxies: re-gating share, baselines in one paragraph | reproducibility |
+| 4 Set-up | model + VPD; featurizations (user's 4.2); fine-tunes with a known answer: five key tasks at one update size + twins, hand-made edits, random change; proxies: re-gating share; baselines incl. crosscoder (main body: they show the proxies are useful) | reproducibility |
 | 5.1 Worked example: copying head | the copy gain runs through a base copying head (head off removes 0.47-0.56 of it, none of the lookup's); the share reads 1.09 on copy and depends on the head through its gates. This is the mechanistic evidence the definition asks for, on one behaviour, and the share agreeing with it. Gap: R not read on this pair (a small cell would close it) | claim 1 made concrete |
 | 5.2 The definition on built fine-tunes | R at each featurization; follows size until size is removed; size-removed R orders the edits | claim 2's reference |
 | 5.3 Proxies against the definition | five-task graph per proxy with random band; share vs size-removed R; scorecard | claim 2 |
@@ -47,7 +47,7 @@ results. No page target. Writing advice followed: Nanda, "Highly Opinionated Adv
 
 ## Appendix (one sentence and a pointer in the body)
 Gain-only training (one line in 5.3 as a baseline: re-weighting units alone reaches new tasks' gains), held model
-(Qwen needs it), gate variants and SVD share, top-neuron and neuron-level baselines, crosscoder, grafts, structured
+(Qwen needs it), gate variants and SVD share, grafts, structured
 control, lookup and key-set detail, carrying an update onto the decomposition.
 
 ## Questions for the user
