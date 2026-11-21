@@ -6,7 +6,7 @@
 # factor (scale 0 = self, the bisection at the top rung), E147's states and a random draw scaled to the top rung (the
 # largest factors), e58 elicit's windows, and the ladder and read scripts. Rung 3 is run 1's rehearsal items.
 # Submit from the clone root, with the E-number claimed and predictions committed:
-#   sbatch --comment='E### rehearse: crosscoder_proper run2' cluster/crosscoder_proper_run2_rehearsal.sbatch
+#   sbatch --comment='E243 rehearse: crosscoder_proper run2' cluster/crosscoder_proper_run2_rehearsal.sbatch
 #SBATCH --job-name=commute-p249-run2-rehearsal
 #SBATCH --partition=compute
 #SBATCH --account=c11
