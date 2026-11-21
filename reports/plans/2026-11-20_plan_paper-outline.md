@@ -12,7 +12,7 @@ results. No page target. Writing advice followed: Nanda, "Highly Opinionated Adv
    relative to a featurization.** Behavioural evidence (a fine-tune is fast, cheap, low rank) cannot settle it; we
    define reuse as the parts a behaviour runs through still computing what the base model's parts computed, at a
    featurization fixed from the base model. Evidence: §3, and the copying head as the worked case.
-2. **(Hoped for) A few cheap proxies track the definition on small models, with caveats.** Candidates: the re-gating
+2. **(Hoped for) A couple of cheap proxies track the definition, with stated caveats, and do better than the baselines (crosscoder included).** (User 11-20 ~20:55: strong yes to the first part; only weak to framing it as "scored against R with size, prior and random controlled", which become checks, not the frame; baselines stay in the main body.) Candidates: the re-gating
    share, and whichever baselines survive. Scored against the definition's own reading, with update size, base prior
    and a matched random change controlled. Caveats stated with it: one 67M model, built tasks, the share's random
    control.
