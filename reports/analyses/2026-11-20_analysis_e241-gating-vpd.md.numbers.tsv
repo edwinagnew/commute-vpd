@@ -1,0 +1,39 @@
+-0.128	experiments/gating_vpd/results/summary.json	.P1c.gap	this
+0.158	experiments/gating_vpd/results/summary.json	.band_S_c	this
+-0.265	experiments/gating_vpd/results/summary.json	.P2c.gap	this
+0.56	experiments/gating_vpd/results/summary.json	[.table|to_entries[]|select(.key|startswith("random_"))|.value.S_c]|min	this
+1.87	experiments/gating_vpd/results/summary.json	[.table|to_entries[]|select(.key|startswith("random_"))|.value.S_c]|max	this
+0.61	experiments/gating_vpd/results/summary.json	.table.rebuilt.S_c	this
+0.608	experiments/gating_vpd/results/summary.json	.table.rebuilt.S_c	this
+0.69	experiments/gating_vpd/results/summary.json	.table.x2.S_c	this
+0.690	experiments/gating_vpd/results/summary.json	.table.x10.S_c	this
+0.091	experiments/gating_vpd/results/summary.json	.table.x2.kl_fm	this
+0.427	experiments/gating_vpd/results/summary.json	.table.x2.f	this
+-4.00	experiments/gating_vpd/results/summary.json	.table.x2.S	this
+0.017	experiments/gating_vpd/results/summary.json	.table.rebuilt.kl_fm	this
+-24.1	experiments/gating_vpd/results/summary.json	.table.rebuilt.S	this
+6.6e-12	experiments/gating_vpd/results/summary.json	.table.moved.kl_fm	this
+0.159	experiments/gating_vpd/results/summary.json	.table.new_few.kl_fm	this
+0.780	experiments/gating_vpd/results/summary.json	.table.new_few.f	this
+-4.18	experiments/gating_vpd/results/summary.json	.table.new_few.S	this
+0.736	experiments/gating_vpd/results/summary.json	.table.new_few.S_c	this
+10.25	experiments/gating_vpd/results/summary.json	.table.new_thin.kl_fm	this
+0.399	experiments/gating_vpd/results/summary.json	.table.new_thin.S	this
+0.475	experiments/gating_vpd/results/summary.json	.table.new_thin.S_c	this
+0.563	experiments/gating_vpd/results/summary.json	[.table|to_entries[]|select(.key|startswith("random_copy"))|.value.S_c]|min	this
+0.873	experiments/gating_vpd/results/summary.json	[.table|to_entries[]|select(.key|startswith("random_copy"))|.value.S_c]|max	this
+0.0030	experiments/gating_vpd/results/summary.json	[.table|to_entries[]|select(.key|test("_size_"))|.value.kl_fm]|min	this
+0.0045	experiments/gating_vpd/results/summary.json	[.table|to_entries[]|select(.key|test("_size_"))|.value.kl_fm]|max	this
+1.05	experiments/gating_vpd/results/items/random_cue_size_241003.json	.halves[0].S_c	this
+0.34	experiments/gating_vpd/results/items/random_cue_size_241003.json	.halves[1].S_c	this
+0.747	experiments/gating_vpd/results/summary.json	[.table|to_entries[]|select(.key|test("_kl_"))|.value.S_c]|min	this
+0.875	experiments/gating_vpd/results/summary.json	[.table|to_entries[]|select(.key|test("_kl_"))|.value.S_c]|max	this
+0.834	experiments/gating_vpd/results/pairs_index.json + experiments/gating_vpd/results/summary.json	.[0] as $p|.[1].table as $t|[$p[]|.reuse[]]|unique|map($t[.].S_c)|min	this
+1.107	experiments/gating_vpd/results/pairs_index.json + experiments/gating_vpd/results/summary.json	.[0] as $p|.[1].table as $t|[$p[]|.reuse[]]|unique|map($t[.].S_c)|max	this
+0.837	experiments/gating_vpd/results/summary.json	.D1_S_c.per_pair.e53_lowercase_cipher.reuse	this
+0.800	experiments/gating_vpd/results/summary.json	.D1_S_c.per_pair.e53_lowercase_cipher.new	this
+0.20	experiments/gating_vpd/results/pairs_index.json + experiments/gating_vpd/results/summary.json	.[0] as $p|.[1].table as $t|[$p[]|.reuse[],.new[]]|unique|map($t[.].kl_fm)|min	this
+4.71	experiments/gating_vpd/results/pairs_index.json + experiments/gating_vpd/results/summary.json	.[0] as $p|.[1].table as $t|[$p[]|.reuse[],.new[]]|unique|map($t[.].kl_fm)|max	this
+0.616	experiments/gating_vpd/results/stage0_pairs.json	.pairs.means.f	this
+2.7e-11	experiments/gating_vpd/results/stage0_built.json	.cue.kl_open	this
+0.128	experiments/gating_vpd/results/summary.json	0 - .P1c.gap	this
