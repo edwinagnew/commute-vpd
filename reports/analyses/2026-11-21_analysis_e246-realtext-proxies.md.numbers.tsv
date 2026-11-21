@@ -1,0 +1,52 @@
+0.200	experiments/realtext_proxies/results/table.json	.pairs.label.calls.r.reuse|min	this
+0.220	experiments/realtext_proxies/results/table.json	.pairs.label.calls.r.reuse|max	this
+0.256	experiments/realtext_proxies/results/table.json	.pairs.label.calls.r.new|min	this
+0.307	experiments/realtext_proxies/results/table.json	.pairs.label.calls.r.new|max	this
+0.503	experiments/realtext_proxies/results/table.json	.pairs.label.calls.S.reuse|min	this
+0.539	experiments/realtext_proxies/results/table.json	.pairs.label.calls.S.reuse|max	this
+0.455	experiments/realtext_proxies/results/table.json	.pairs.label.calls.S.new|min	this
+0.500	experiments/realtext_proxies/results/table.json	.pairs.label.calls.S.new|max	this
+-3.37	experiments/realtext_proxies/results/table.json	.pairs.label.calls.prior.reuse[0]	this
+-3.83	experiments/realtext_proxies/results/table.json	.pairs.label.calls.prior.new[0]	this
+0.763	experiments/realtext_proxies/results/table.json	.pairs.lowercase.calls.r.reuse|min	this
+0.790	experiments/realtext_proxies/results/table.json	.pairs.lowercase.calls.r.reuse|max	this
+0.566	experiments/realtext_proxies/results/table.json	.pairs.lowercase.calls.r.new|min	this
+0.569	experiments/realtext_proxies/results/table.json	.pairs.lowercase.calls.r.new|max	this
+0.203	experiments/realtext_proxies/results/table.json	.pairs.lowercase.calls.S.reuse|min	this
+0.226	experiments/realtext_proxies/results/table.json	.pairs.lowercase.calls.S.reuse|max	this
+0.679	experiments/realtext_proxies/results/table.json	.pairs.lowercase.calls.S.new|min	this
+0.693	experiments/realtext_proxies/results/table.json	.pairs.lowercase.calls.S.new|max	this
+-3.00	experiments/realtext_proxies/results/table.json	.pairs.lowercase.calls.prior.reuse[0]	this
+-6.31	experiments/realtext_proxies/results/table.json	.pairs.lowercase.calls.prior.new[0]	this
+0.82	experiments/realtext_proxies/results/pod1.json	[.states[]|select(.task=="T2")|.own.gain]|min	this
+0.89	experiments/realtext_proxies/results/pod1.json	[.states[]|select(.task=="T2")|.own.gain]|max	this
+-0.834	experiments/realtext_proxies/results/table.json	.pairs.language.calls.S.reuse|min	this
+-0.633	experiments/realtext_proxies/results/table.json	.pairs.language.calls.S.reuse|max	this
+0.063	experiments/realtext_proxies/results/table.json	.pairs.language.calls.S.new|min	this
+0.146	experiments/realtext_proxies/results/table.json	.pairs.language.calls.S.new|max	this
+-5.72	experiments/realtext_proxies/results/table.json	.pairs.language.calls.prior.reuse[0]	this
+-5.38	experiments/realtext_proxies/results/table.json	.pairs.language.calls.prior.new[0]	this
+0.076	experiments/realtext_proxies/results/table.json	.pairs.british.calls.r.reuse|min	this
+0.134	experiments/realtext_proxies/results/table.json	.pairs.british.calls.r.reuse|max	this
+0.124	experiments/realtext_proxies/results/table.json	.pairs.british.calls.r.new|min	this
+0.168	experiments/realtext_proxies/results/table.json	.pairs.british.calls.r.new|max	this
+-1.807	experiments/realtext_proxies/results/table.json	.pairs.british.calls.S.reuse|min	this
+-1.698	experiments/realtext_proxies/results/table.json	.pairs.british.calls.S.reuse|max	this
+-1.146	experiments/realtext_proxies/results/table.json	.pairs.british.calls.S.new|min	this
+-0.825	experiments/realtext_proxies/results/table.json	.pairs.british.calls.S.new|max	this
+-3.14	experiments/realtext_proxies/results/table.json	.pairs.british.calls.prior.reuse[0]	this
+-5.90	experiments/realtext_proxies/results/table.json	.pairs.british.calls.prior.new[0]	this
+0.42	experiments/realtext_proxies/results/pod1.json	[.states[]|select(.task=="T2")|.own.S.means.kl_fm]|min	this
+0.44	experiments/realtext_proxies/results/pod1.json	[.states[]|select(.task=="T2")|.own.S.means.kl_fm]|max	this
+0.62	experiments/realtext_proxies/results/pod1.json	.states["language/T2_s0"].own.S.means.f	this
+0.24	experiments/realtext_proxies/results/pod1.json	[.states[]|select(.pair=="british")|.own.S.means.kl_fm]|min	this
+0.38	experiments/realtext_proxies/results/pod1.json	[.states[]|select(.pair=="british")|.own.S.means.kl_fm]|max	this
+0.57	experiments/realtext_proxies/results/pod1.json	[.states[]|select(.pair=="british")|.own.S.means.f]|min	this
+0.59	experiments/realtext_proxies/results/pod1.json	[.states[]|select(.pair=="british")|.own.S.means.f]|max	this
+0.0020	experiments/realtext_proxies/results/pod0.json + experiments/realtext_proxies/results/pod1.json	[.[].states[]|select(.saved_r|type=="number")|(.own.r - .saved_r)|fabs]|max	this
+0.01	experiments/realtext_proxies/results/predictions.json	.thresholds.reproduce_tol	this
+0.065	experiments/realtext_proxies/results/table.json	[.pairs[].random_gain_absmax]|max	this
+0.0017	experiments/realtext_proxies/results/pod0.json + experiments/realtext_proxies/results/pod1.json	[.[].states[].random.S.means.kl_fm]|min	this
+0.0099	experiments/realtext_proxies/results/pod0.json + experiments/realtext_proxies/results/pod1.json	[.[].states[].random.S.means.kl_fm]|max	this
+0.48	experiments/realtext_proxies/results/pod0.json + experiments/realtext_proxies/results/pod1.json	[.[].states[].own.S.means.f]|min	this
+0.64	experiments/realtext_proxies/results/pod0.json + experiments/realtext_proxies/results/pod1.json	[.[].states[].own.S.means.f]|max	this
