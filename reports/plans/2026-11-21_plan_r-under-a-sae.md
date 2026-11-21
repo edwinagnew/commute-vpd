@@ -81,3 +81,13 @@ positive-control floor (do-nothing and x10), and that the gains at unchanged sit
 
 The residual-stream SAEs; standing in inside the circuit; gains fitted on behaviour; a random-update control (E242 runs
 it at VPD); a second SAE seed; the nine pairs if late; an uncapped search.
+
+## Rehearsal record (2026-11-21, cluster debug job 62745, $0, 2 min)
+
+Do-nothing (512 windows): R_A 1 at every bar, every gain exactly 1, pieces floor KL 7.5e-12 (max error 2.8e-6),
+recompute_differs empty; 0.88 s per K* and 1.23 s per stand-in evaluation; peak GPU 14.5 GB, host 6.1 GB. x10 (75
+windows, cap 50, so a lower bound): 0.21 s per evaluation; only mlp1 changed; every variable stood in with gain 1
+reverts to M (KL 1.8e-11); with fitted gains, all stood in reads KL 1.07 against KL(F || M) 0.71 (gains up to 40.9, 405
+of 16,385 at or below 0); |K*| 12,762; R_A 0.80 / 0.82 / 0.84 at bars 0.05 / 0.1 / 0.2, halves 0.80 and 0.83;
+remainder share 0.50. Routing after it: shard_hours_max 2 -> 6 (predictions amended before any scored run); x2, x10,
+moved, rebuilt as four debug jobs (at most 56 min each at the cap); new_few and new_thin on two H100 pods.
