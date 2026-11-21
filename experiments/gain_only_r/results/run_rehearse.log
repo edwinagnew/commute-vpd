@@ -1,0 +1,118 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+E236 start, tag rehearse; 2 of 81 items ['e58/cipher_s0', 'case_label/twin_s0']; settings {'handoff': 'experiments/gain_only/results/handoff.json', 'gains_dir': 'experiments/gain_only/results/large/gains', 'match': 'kl', 'seeds': (0, 1, 2), 'n_items': 81, 'control': 'e58/cipher_s0', 'twins': (('case_label/real', 'case_real'), ('case_label/twin', 'case_twin'), ('fresh/real', 'repeat_real'), ('fresh/twin', 'repeat_twin'))}
+do_nothing VPD: 38938 variables, 0 changed, KL(F || M) 5.50223e-12, max |1 - s| 1.11e-16; grades only, R read None; 86 s
+do_nothing: 512 windows, KL(F || F_empty) 3.27595, KL(F || M) 0, saved None, size {'whole': 0.0, 'mlp': 0.0}
+do_nothing head_mlp: 30 variables, 0 changed; gates {'all': 2.9445861855492694e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 22, R all 1.000000, read 1.000000, f 0.0000; 2030 evaluations, 46 s (polish cap hit)
+do_nothing head_mlp: R read [1.0], all [1.0], f [0.0], |K*| [22]; peak GPU memory 6.54 GB
+do_nothing mlp_attn: 10 variables, 0 changed; gates {'all': 2.9445861855492694e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 23 s
+do_nothing mlp_attn: R read [1.0], all [1.0], f [0.0], |K*| [10]; peak GPU memory 6.54 GB
+do_nothing block: 6 variables, 0 changed; gates {'all': 2.9445861855492694e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+do_nothing block: R read [1.0], all [1.0], f [0.0], |K*| [6]; peak GPU memory 6.54 GB
+do_nothing: KL(F || M) 0 (last position, 512 read windows); fit 31.0 s
+do_nothing reading 1: S None, KL(F || H) 0, max relative logit error 0; site residuals mlp0 -7.558e-16, attn0 0, mlp1 3.056e-16, attn1 -3.885e-16, mlp2 -1.312e-16, attn2 -1.333e-16, mlp3 -2.639e-16, attn3 0
+do_nothing reading 2: S None, KL(F || H) 0, max relative logit error 0; site residuals mlp0 -7.558e-16, attn0 0, mlp1 3.056e-16, attn1 -3.885e-16, mlp2 -1.312e-16, attn2 -1.333e-16, mlp3 -2.639e-16, attn3 0
+do_nothing reading 3: S None, KL(F || H) 7.95423e-14, max relative logit error 1.1e-06; site residuals mlp0 -7.558e-16, attn0 -3.494e-16, mlp1 1.528e-16, attn1 -5.828e-16, mlp2 2.625e-16, attn2 -4e-16, mlp3 -2.639e-16, attn3 -2.122e-16
+gain_exact: KL(F || M) 1.79019 (last position, 512 read windows); fit 30.8 s
+gain_exact reading 1: S 0.999999999995868, KL(F || H) 7.39707e-12, max relative logit error 2.78e-06; site residuals mlp0 -1.522e-16, attn0 -1.221e-15, mlp1 1.452e-16, attn1 -2.118e-16, mlp2 -1.316e-16, attn2 2.96e-16, mlp3 -1.349e-16, attn3 -1.739e-16
+gain_exact reading 2: S 0.09324493860336303, KL(F || H) 1.62326, max relative logit error 1; site residuals mlp0 0.02972, attn0 -1.221e-15, mlp1 0.0002411, attn1 -2.118e-16, mlp2 0.02364, attn2 2.96e-16, mlp3 0.03404, attn3 -1.739e-16
+gain_exact reading 3: S 0.9999999999999186, KL(F || H) 1.45745e-13, max relative logit error 1.33e-06; site residuals mlp0 -4.565e-16, attn0 0, mlp1 -1.452e-16, attn1 -2.118e-16, mlp2 -6.579e-16, attn2 -5.92e-16, mlp3 -2.698e-16, attn3 -3.478e-16
+e58/cipher_s0: KL(F || M) 1.7905 (last position, 512 read windows); fit 31.0 s
+e58/cipher_s0 reading 1: S 0.9999991785730928, KL(F || H) 1.47076e-06, max relative logit error 0.00151; site residuals mlp0 6.951e-08, attn0 4.579e-08, mlp1 9.437e-10, attn1 2.307e-08, mlp2 5.907e-08, attn2 2.878e-08, mlp3 7.806e-08, attn3 9.651e-09
+e58/cipher_s0 reading 2: S 0.09329276939358966, KL(F || H) 1.62346, max relative logit error 1; site residuals mlp0 0.02972, attn0 4.579e-08, mlp1 0.0002411, attn1 2.307e-08, mlp2 0.02364, attn2 2.878e-08, mlp3 0.03404, attn3 9.651e-09
+e58/cipher_s0 reading 3: S 0.9999999999999545, KL(F || H) 8.15089e-14, max relative logit error 1.35e-06; site residuals mlp0 -4.565e-16, attn0 -6.102e-16, mlp1 -1.452e-16, attn1 -6.353e-16, mlp2 -3.947e-16, attn2 1.48e-16, mlp3 -4.047e-16, attn3 -1.739e-16
+    ranking 0: prefix 34816, 15 evaluations
+    ranking 1: prefix 33473, 30 evaluations
+    ranking 2: prefix 33399, 46 evaluations
+  full/e58/cipher_s0 VPD: |K*| 32434 (prefix 33399), R read 0.998896 (prefix 0.998891), R all 0.998796, f 0.9999, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 520 s
+full/e58/cipher_s0 VPD: 38938 variables, 38936 changed, KL(F || M) 5.23929, max |1 - s| 0.0536; read, R read 0.9988955466353887; 527 s
+full/e58/cipher_s0: 512 windows, KL(F || F_empty) 5.43152, KL(F || M) 5.23929454, saved 5.23929458775517, size {'whole': 0.009719747528941445, 'mlp': 0.01081871788145289}
+full/e58/cipher_s0 head_mlp: 30 variables, 28 changed; gates {'all': 9.290232810599264e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 21, R all 0.988741, read 0.980054, f 0.9048; 2030 evaluations, 48 s (polish cap hit)
+  head_mlp main order 1: |K*| 22, R all 0.983069, read 0.973686, f 0.9091; 2030 evaluations, 48 s (polish cap hit)
+  head_mlp main order 2: |K*| 20, R all 0.987131, read 0.976900, f 0.9000; 2030 evaluations, 48 s (polish cap hit)
+full/e58/cipher_s0 head_mlp: R read [0.9800536544673993, 0.97368620922966, 0.9768998560905059], all [0.988741012861632, 0.983068680544385, 0.9871308382430153], f [0.9047619047619048, 0.9090909090909091, 0.9], |K*| [21, 22, 20]; peak GPU memory 8.73 GB
+full/e58/cipher_s0 mlp_attn: 10 variables, 8 changed; gates {'all': 9.290232810599264e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 24 s
+full/e58/cipher_s0 mlp_attn: R read [0.9800626619809218], all [0.9881602373912377], f [0.7777777777777778], |K*| [9]; peak GPU memory 8.73 GB
+full/e58/cipher_s0 block: 6 variables, 4 changed; gates {'all': 9.290232810599264e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+full/e58/cipher_s0 block: R read [0.9668925358610996], all [0.9827326668634832], f [0.6666666666666666], |K*| [6]; peak GPU memory 8.73 GB
+full/e58/cipher_s0: KL(F || M) 5.23929 (last position, 512 read windows); fit 31.1 s
+full/e58/cipher_s0 reading 1: S 0.015052349658936759, KL(F || H) 5.16043, max relative logit error 1.31; site residuals mlp0 0.01727, attn0 0.0234, mlp1 0.000153, attn1 0.008862, mlp2 0.004413, attn2 0.0158, mlp3 0.003692, attn3 0.0002213
+full/e58/cipher_s0 reading 2: S -0.001623745317457459, KL(F || H) 5.2478, max relative logit error 1.3; site residuals mlp0 0.0184, attn0 0.0234, mlp1 0.0001539, attn1 0.008862, mlp2 0.004402, attn2 0.0158, mlp3 0.004076, attn3 0.0002213
+full/e58/cipher_s0 reading 3: S 0.977910901278609, KL(F || H) 0.115731, max relative logit error 0.374; site residuals mlp0 0.0001051, attn0 0.001273, mlp1 9.977e-07, attn1 0.0004324, mlp2 4.502e-05, attn2 0.001607, mlp3 5.755e-05, attn3 2.674e-05
+stage 0: {'experiment': 'E236', 'w0_differs': [], 'do_nothing_vpd': {'n_changed': 0, 'max_dev_s': 1.1102230246251565e-16}, 'do_nothing_head_mlp': {'max_dev_s': 0.0, 'f': [0.0], 'R': [1.0, 1.0]}, 'do_nothing_mlp_attn': {'max_dev_s': 0.0, 'f': [0.0], 'R': [1.0, 1.0]}, 'do_nothing_block': {'max_dev_s': 0.0, 'f': [0.0], 'R': [1.0, 1.0]}, 'do_nothing_held': {'kl_FM': 0.0, '1': 0.0, '3': 1.1007964531017933e-06}, 'gain_exact_held': {'kl_FM': 1.7901891070298166, '1': 2.7797527764050756e-06, '3': 1.334097532890155e-06}, 'export_floor_1_minus_S': 8.214269071604718e-07, 'repro_vpd': {'R_read': 0.9988955466353887, 'E226': 0.9989048867095277}, 'repro_head_mlp': {'R_read': [0.9800536544673993, 0.97368620922966, 0.9768998560905059], 'E221': [0.9800536548245934, 0.973686209433339, 0.9768998564799738]}, 'repro_mlp_attn': {'R_read': [0.9800626619809218], 'E221': [0.9800626625316894]}, 'repro_block': {'R_read': [0.9668925358610996], 'E221': [0.96689253639358]}, 'repro_held': {'1': [0.015052349658936759, 0.015052378274590827], '3': [0.977910901278609, 0.9779109258270866]}}; checks hold
+STAGE 0 DONE
+    ranking 0: prefix 37037, 15 evaluations
+    ranking 1: prefix 35876, 31 evaluations
+    ranking 2: prefix 36244, 46 evaluations
+  e58/cipher_s0 VPD: |K*| 35846 (prefix 35876), R read 0.962914 (prefix 0.962863), R all 0.963040, f 0.4603, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 497 s
+e58/cipher_s0 VPD: 38938 variables, 18440 changed, KL(F || M) 1.7905, max |1 - s| 0.7; read, R read 0.9629142717297612; 504 s
+e58/cipher_s0: 512 windows, KL(F || F_empty) 3.17817, KL(F || M) 1.79049966, saved None, size {'whole': 0.13071379209833717, 'mlp': 0.16353013976449918}
+e58/cipher_s0 head_mlp: 30 variables, 28 changed; gates {'all': 3.0521166536345845e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 25, R all 0.992503, read 0.990684, f 0.9200; 2030 evaluations, 48 s (polish cap hit)
+  head_mlp main order 1: |K*| 25, R all 0.992503, read 0.990684, f 0.9200; 2030 evaluations, 48 s (polish cap hit)
+  head_mlp main order 2: |K*| 24, R all 0.992191, read 0.990296, f 0.9167; 2030 evaluations, 48 s (polish cap hit)
+e58/cipher_s0 head_mlp: R read [0.9906841409804032, 0.9906841409804032, 0.9902959804901931], all [0.9925031566484176, 0.9925031566484176, 0.9921907884230879], f [0.92, 0.92, 0.9166666666666666], |K*| [25, 25, 24]; peak GPU memory 8.74 GB
+e58/cipher_s0 mlp_attn: 10 variables, 8 changed; gates {'all': 3.0521166536345845e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 23 s
+e58/cipher_s0 mlp_attn: R read [0.9722114764008527], all [0.9762340943119094], f [0.8], |K*| [10]; peak GPU memory 8.74 GB
+e58/cipher_s0 block: 6 variables, 4 changed; gates {'all': 3.0521166536345845e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+e58/cipher_s0 block: R read [0.9576673504614331], all [0.9659949256584629], f [0.6666666666666666], |K*| [6]; peak GPU memory 8.74 GB
+ITEM 1 of 2 DONE (e58/cipher_s0): held reading 1 S 0.9999991785730928; 674 s
+    ranking 0: prefix 36286, 15 evaluations
+    ranking 1: prefix 33597, 30 evaluations
+    ranking 2: prefix 35343, 46 evaluations
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+E236 start, tag rehearse; 2 of 81 items ['e58/cipher_s0', 'case_label/twin_s0']; settings {'handoff': 'experiments/gain_only/results/handoff.json', 'gains_dir': 'experiments/gain_only/results/large/gains', 'match': 'kl', 'seeds': (0, 1, 2), 'n_items': 81, 'control': 'e58/cipher_s0', 'twins': (('case_label/real', 'case_real'), ('case_label/twin', 'case_twin'), ('fresh/real', 'repeat_real'), ('fresh/twin', 'repeat_twin'))}
+stage0_rehearse.json: done before
+e58/cipher_s0: ['head_mlp', 'mlp_attn', 'block'] done before, skipped
+ITEM 1 of 2 DONE (e58/cipher_s0): held reading 1 S 0.9999991785730928; 0 s
+    ranking 0: prefix 36286, 15 evaluations
+    ranking 1: prefix 33597, 30 evaluations
+    ranking 2: prefix 35343, 46 evaluations
+  case_label/twin_s0 VPD: |K*| 33218 (prefix 33597), R read 0.988705 (prefix 0.988554), R all 0.988685, f 0.4565, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 480 s
+case_label/twin_s0 VPD: 38938 variables, 18440 changed, KL(F || M) 7.72017, max |1 - s| 0.366; read, R read 0.9887046531525853; 566 s
+case_label/twin_s0: 512 windows, KL(F || F_empty) 2.91857, KL(F || M) 7.72016739, saved None, size {'whole': 0.0626866333865003, 'mlp': 0.07456722306675412}
+case_label/twin_s0 head_mlp: 30 variables, 28 changed; gates {'all': 2.18168543142383e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 21, R all 0.997187, read 0.995172, f 0.9048; 2030 evaluations, 47 s (polish cap hit)
+  head_mlp main order 1: |K*| 21, R all 0.997187, read 0.995172, f 0.9048; 1971 evaluations, 46 s
+  head_mlp main order 2: |K*| 21, R all 0.997187, read 0.995172, f 0.9048; 1941 evaluations, 46 s
+case_label/twin_s0 head_mlp: R read [0.9951722953101352, 0.9951722932626579, 0.9951722947502782], all [0.9971866503995228, 0.9971866486855047, 0.9971866501633739], f [0.9047619047619048, 0.9047619047619048, 0.9047619047619048], |K*| [21, 21, 21]; peak GPU memory 6.55 GB
+case_label/twin_s0 mlp_attn: 10 variables, 8 changed; gates {'all': 2.18168543142383e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 23 s
+case_label/twin_s0 mlp_attn: R read [0.9869505066666195], all [0.9913712217129205], f [0.7777777777777778], |K*| [9]; peak GPU memory 6.55 GB
+case_label/twin_s0 block: 6 variables, 4 changed; gates {'all': 2.18168543142383e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+case_label/twin_s0 block: R read [0.9806812258754061], all [0.9872692599166563], f [0.6666666666666666], |K*| [6]; peak GPU memory 6.55 GB
+case_label/twin_s0: KL(F || M) 7.72017 (last position, 512 read windows); fit 31.1 s
+case_label/twin_s0 reading 1: S 0.9999999791039854, KL(F || H) 1.61321e-07, max relative logit error 0.00133; site residuals mlp0 1.449e-08, attn0 2.048e-08, mlp1 1.459e-09, attn1 1.634e-08, mlp2 1.201e-08, attn2 1.561e-08, mlp3 1.481e-08, attn3 2.357e-09
+case_label/twin_s0 reading 2: S 0.04521686622948351, KL(F || H) 7.37109, max relative logit error 1.32; site residuals mlp0 0.0081, attn0 2.048e-08, mlp1 0.0003616, attn1 1.634e-08, mlp2 0.005792, attn2 1.561e-08, mlp3 0.006879, attn3 2.357e-09
+case_label/twin_s0 reading 3: S 0.9999999999999896, KL(F || H) 8.07491e-14, max relative logit error 1.23e-06; site residuals mlp0 -7.21e-16, attn0 -2.152e-16, mlp1 3.208e-16, attn1 0, mlp2 -2.607e-16, attn2 4.159e-16, mlp3 -7.811e-16, attn3 5.808e-16
+ITEM 2 of 2 DONE (case_label/twin_s0): held reading 1 S 0.9999999791039854; 764 s
+E236 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /mnt/nw/home/e.agnew/commute-agents/definition-lead/experiments/gain_only_r/results/rehearse/ and stage0_rehearse.json ===
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+E236 start, tag rehearse; 2 of 81 items ['e58/cipher_s0', 'case_label/twin_s0']; settings {'handoff': 'experiments/gain_only/results/handoff.json', 'gains_dir': 'experiments/gain_only/results/large/gains', 'match': 'kl', 'seeds': (0, 1, 2), 'n_items': 81, 'control': 'e58/cipher_s0', 'twins': (('case_label/real', 'case_real'), ('case_label/twin', 'case_twin'), ('fresh/real', 'repeat_real'), ('fresh/twin', 'repeat_twin'))}
+stage0_rehearse.json: done before
+e58/cipher_s0: ['head_mlp', 'mlp_attn', 'block'] done before, skipped
+ITEM 1 of 2 DONE (e58/cipher_s0): held reading 1 S 0.9999991785730928; 0 s
+case_label/twin_s0: ['head_mlp', 'mlp_attn', 'block'] done before, skipped
+ITEM 2 of 2 DONE (case_label/twin_s0): held reading 1 S 0.9999999791039854; 0 s
+E236 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /mnt/nw/home/e.agnew/commute-agents/definition-lead/experiments/gain_only_r/results/rehearse/ and stage0_rehearse.json ===

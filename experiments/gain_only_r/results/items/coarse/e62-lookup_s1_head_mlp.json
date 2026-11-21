@@ -1,0 +1,798 @@
+{
+ "experiment": "E236",
+ "item": "e62/lookup_s1",
+ "n_windows": 512,
+ "read_positions": "last",
+ "kl_none": 2.9179992930073446,
+ "kl_fm": 1.7873940852589487,
+ "size": {
+  "whole": 0.07966103838001211,
+  "mlp": 0.09883658639187101
+ },
+ "level": "head_mlp",
+ "n_vars": 30,
+ "n_changed": 28,
+ "gates": {
+  "all": 2.983042350024334e-06,
+  "none": 0.0
+ },
+ "s": {
+  "embed": [
+   1.0,
+   1.0
+  ],
+  "L0.h0": [
+   0.9999999999994442,
+   0.9999999999994598
+  ],
+  "L0.h1": [
+   0.9999999991242661,
+   0.9999999991207832
+  ],
+  "L0.h2": [
+   0.9999999999739667,
+   0.9999999999742711
+  ],
+  "L0.h3": [
+   0.9999999496667196,
+   0.9999999626928177
+  ],
+  "L0.h4": [
+   0.9999999998546173,
+   0.9999999998445198
+  ],
+  "L0.h5": [
+   0.999999991678094,
+   0.9999999921225784
+  ],
+  "L0.mlp": [
+   0.9893288648216594,
+   0.9824170529678706
+  ],
+  "L1.h0": [
+   0.9999999484723899,
+   0.9999999460324033
+  ],
+  "L1.h1": [
+   0.9999999941884669,
+   0.9999999942128651
+  ],
+  "L1.h2": [
+   0.9999999988176095,
+   0.9999999986158856
+  ],
+  "L1.h3": [
+   0.9999998993649886,
+   0.9999998923876352
+  ],
+  "L1.h4": [
+   0.9999999994800505,
+   0.9999999994370662
+  ],
+  "L1.h5": [
+   0.9999999670427673,
+   0.9999999658981759
+  ],
+  "L1.mlp": [
+   0.9669736171798066,
+   0.9433440303867725
+  ],
+  "L2.h0": [
+   0.999999927976031,
+   0.9999999177458522
+  ],
+  "L2.h1": [
+   0.9999999913939552,
+   0.9999999912662247
+  ],
+  "L2.h2": [
+   0.9999999993848839,
+   0.999999999360844
+  ],
+  "L2.h3": [
+   0.999999923771759,
+   0.9999999212136544
+  ],
+  "L2.h4": [
+   0.9999999316852978,
+   0.9999999246275192
+  ],
+  "L2.h5": [
+   0.9999999377099545,
+   0.9999999352114263
+  ],
+  "L2.mlp": [
+   0.9696681709200229,
+   0.9467991809819922
+  ],
+  "L3.h0": [
+   0.9999999920186274,
+   0.9999999923067499
+  ],
+  "L3.h1": [
+   0.9999999910356203,
+   0.9999999904842051
+  ],
+  "L3.h2": [
+   0.9999999996150196,
+   0.9999999995444105
+  ],
+  "L3.h3": [
+   0.9999999999796256,
+   0.9999999999789217
+  ],
+  "L3.h4": [
+   0.9999999939201653,
+   0.9999999939576592
+  ],
+  "L3.h5": [
+   0.9999997744567922,
+   0.9999997667236052
+  ],
+  "L3.mlp": [
+   0.987138181739155,
+   0.982568071864984
+  ],
+  "unembed": [
+   1.0,
+   1.0
+  ]
+ },
+ "changed": [
+  "L0.h0",
+  "L0.h1",
+  "L0.h2",
+  "L0.h3",
+  "L0.h4",
+  "L0.h5",
+  "L0.mlp",
+  "L1.h0",
+  "L1.h1",
+  "L1.h2",
+  "L1.h3",
+  "L1.h4",
+  "L1.h5",
+  "L1.mlp",
+  "L2.h0",
+  "L2.h1",
+  "L2.h2",
+  "L2.h3",
+  "L2.h4",
+  "L2.h5",
+  "L2.mlp",
+  "L3.h0",
+  "L3.h1",
+  "L3.h2",
+  "L3.h3",
+  "L3.h4",
+  "L3.h5",
+  "L3.mlp"
+ ],
+ "reading": "read",
+ "searches": {
+  "main": [
+   {
+    "size": 23,
+    "f": 0.9130434782608695,
+    "changed_in_K": 21,
+    "lacked_in_K": 0,
+    "remainder_share": 0.0,
+    "R_all": 0.9962221077681922,
+    "rho_all": 0.9958623085080202,
+    "R_read": 0.99370121618699,
+    "rho_read": 0.9931013320143224,
+    "kl": 0.28560107729153034,
+    "bar": 0.2917999293007344,
+    "evals": 2030,
+    "seconds": 23.760462760925293,
+    "polish_capped": true,
+    "K": [
+     {
+      "name": "embed",
+      "s_all": 1.0,
+      "s_read": 1.0,
+      "changed": false,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L0.h0",
+      "s_all": 0.9999999999994442,
+      "s_read": 0.9999999999994598,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L0.h1",
+      "s_all": 0.9999999991242661,
+      "s_read": 0.9999999991207832,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L0.h2",
+      "s_all": 0.9999999999739667,
+      "s_read": 0.9999999999742711,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L0.h3",
+      "s_all": 0.9999999496667196,
+      "s_read": 0.9999999626928177,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L0.h4",
+      "s_all": 0.9999999998546173,
+      "s_read": 0.9999999998445198,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L0.h5",
+      "s_all": 0.999999991678094,
+      "s_read": 0.9999999921225784,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L0.mlp",
+      "s_all": 0.9893288648216594,
+      "s_read": 0.9824170529678706,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L1.h0",
+      "s_all": 0.9999999484723899,
+      "s_read": 0.9999999460324033,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L1.h1",
+      "s_all": 0.9999999941884669,
+      "s_read": 0.9999999942128651,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L1.h2",
+      "s_all": 0.9999999988176095,
+      "s_read": 0.9999999986158856,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L1.h3",
+      "s_all": 0.9999998993649886,
+      "s_read": 0.9999998923876352,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L1.h4",
+      "s_all": 0.9999999994800505,
+      "s_read": 0.9999999994370662,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L1.h5",
+      "s_all": 0.9999999670427673,
+      "s_read": 0.9999999658981759,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L1.mlp",
+      "s_all": 0.9669736171798066,
+      "s_read": 0.9433440303867725,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L2.h0",
+      "s_all": 0.999999927976031,
+      "s_read": 0.9999999177458522,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L2.h1",
+      "s_all": 0.9999999913939552,
+      "s_read": 0.9999999912662247,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L2.mlp",
+      "s_all": 0.9696681709200229,
+      "s_read": 0.9467991809819922,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L3.h0",
+      "s_all": 0.9999999920186274,
+      "s_read": 0.9999999923067499,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L3.h1",
+      "s_all": 0.9999999910356203,
+      "s_read": 0.9999999904842051,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L3.h4",
+      "s_all": 0.9999999939201653,
+      "s_read": 0.9999999939576592,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L3.mlp",
+      "s_all": 0.987138181739155,
+      "s_read": 0.982568071864984,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "unembed",
+      "s_all": 1.0,
+      "s_read": 1.0,
+      "changed": false,
+      "lacked": false,
+      "piece": false
+     }
+    ]
+   },
+   {
+    "size": 24,
+    "f": 0.9166666666666666,
+    "changed_in_K": 22,
+    "lacked_in_K": 0,
+    "remainder_share": 0.0,
+    "R_all": 0.9963795147391606,
+    "rho_all": 0.9960503797154477,
+    "R_read": 0.9939636602756527,
+    "rho_read": 0.9934149021188937,
+    "kl": 0.24538212752943098,
+    "bar": 0.2917999293007344,
+    "evals": 2030,
+    "seconds": 23.765839338302612,
+    "polish_capped": true,
+    "K": [
+     {
+      "name": "embed",
+      "s_all": 1.0,
+      "s_read": 1.0,
+      "changed": false,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L0.h0",
+      "s_all": 0.9999999999994442,
+      "s_read": 0.9999999999994598,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L0.h1",
+      "s_all": 0.9999999991242661,
+      "s_read": 0.9999999991207832,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L0.h2",
+      "s_all": 0.9999999999739667,
+      "s_read": 0.9999999999742711,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L0.h3",
+      "s_all": 0.9999999496667196,
+      "s_read": 0.9999999626928177,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L0.h4",
+      "s_all": 0.9999999998546173,
+      "s_read": 0.9999999998445198,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L0.h5",
+      "s_all": 0.999999991678094,
+      "s_read": 0.9999999921225784,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L0.mlp",
+      "s_all": 0.9893288648216594,
+      "s_read": 0.9824170529678706,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L1.h0",
+      "s_all": 0.9999999484723899,
+      "s_read": 0.9999999460324033,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L1.h1",
+      "s_all": 0.9999999941884669,
+      "s_read": 0.9999999942128651,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L1.h2",
+      "s_all": 0.9999999988176095,
+      "s_read": 0.9999999986158856,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L1.h4",
+      "s_all": 0.9999999994800505,
+      "s_read": 0.9999999994370662,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L1.h5",
+      "s_all": 0.9999999670427673,
+      "s_read": 0.9999999658981759,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L1.mlp",
+      "s_all": 0.9669736171798066,
+      "s_read": 0.9433440303867725,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L2.h0",
+      "s_all": 0.999999927976031,
+      "s_read": 0.9999999177458522,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L2.h1",
+      "s_all": 0.9999999913939552,
+      "s_read": 0.9999999912662247,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L2.mlp",
+      "s_all": 0.9696681709200229,
+      "s_read": 0.9467991809819922,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L3.h0",
+      "s_all": 0.9999999920186274,
+      "s_read": 0.9999999923067499,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L3.h1",
+      "s_all": 0.9999999910356203,
+      "s_read": 0.9999999904842051,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L3.h3",
+      "s_all": 0.9999999999796256,
+      "s_read": 0.9999999999789217,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L3.h4",
+      "s_all": 0.9999999939201653,
+      "s_read": 0.9999999939576592,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L3.h5",
+      "s_all": 0.9999997744567922,
+      "s_read": 0.9999997667236052,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L3.mlp",
+      "s_all": 0.987138181739155,
+      "s_read": 0.982568071864984,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "unembed",
+      "s_all": 1.0,
+      "s_read": 1.0,
+      "changed": false,
+      "lacked": false,
+      "piece": false
+     }
+    ]
+   },
+   {
+    "size": 24,
+    "f": 0.9166666666666666,
+    "changed_in_K": 22,
+    "lacked_in_K": 0,
+    "remainder_share": 0.0,
+    "R_all": 0.9963795199240965,
+    "rho_all": 0.9960503853717416,
+    "R_read": 0.9939636654915008,
+    "rho_read": 0.9934149078089098,
+    "kl": 0.28442093293704723,
+    "bar": 0.2917999293007344,
+    "evals": 2030,
+    "seconds": 23.7647762298584,
+    "polish_capped": true,
+    "K": [
+     {
+      "name": "embed",
+      "s_all": 1.0,
+      "s_read": 1.0,
+      "changed": false,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L0.h0",
+      "s_all": 0.9999999999994442,
+      "s_read": 0.9999999999994598,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L0.h1",
+      "s_all": 0.9999999991242661,
+      "s_read": 0.9999999991207832,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L0.h2",
+      "s_all": 0.9999999999739667,
+      "s_read": 0.9999999999742711,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L0.h3",
+      "s_all": 0.9999999496667196,
+      "s_read": 0.9999999626928177,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L0.h5",
+      "s_all": 0.999999991678094,
+      "s_read": 0.9999999921225784,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L0.mlp",
+      "s_all": 0.9893288648216594,
+      "s_read": 0.9824170529678706,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L1.h0",
+      "s_all": 0.9999999484723899,
+      "s_read": 0.9999999460324033,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L1.h1",
+      "s_all": 0.9999999941884669,
+      "s_read": 0.9999999942128651,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L1.h2",
+      "s_all": 0.9999999988176095,
+      "s_read": 0.9999999986158856,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L1.h3",
+      "s_all": 0.9999998993649886,
+      "s_read": 0.9999998923876352,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L1.h4",
+      "s_all": 0.9999999994800505,
+      "s_read": 0.9999999994370662,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L1.h5",
+      "s_all": 0.9999999670427673,
+      "s_read": 0.9999999658981759,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L1.mlp",
+      "s_all": 0.9669736171798066,
+      "s_read": 0.9433440303867725,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L2.h0",
+      "s_all": 0.999999927976031,
+      "s_read": 0.9999999177458522,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L2.h1",
+      "s_all": 0.9999999913939552,
+      "s_read": 0.9999999912662247,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L2.h2",
+      "s_all": 0.9999999993848839,
+      "s_read": 0.999999999360844,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L2.mlp",
+      "s_all": 0.9696681709200229,
+      "s_read": 0.9467991809819922,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L3.h0",
+      "s_all": 0.9999999920186274,
+      "s_read": 0.9999999923067499,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L3.h1",
+      "s_all": 0.9999999910356203,
+      "s_read": 0.9999999904842051,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L3.h3",
+      "s_all": 0.9999999999796256,
+      "s_read": 0.9999999999789217,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L3.h4",
+      "s_all": 0.9999999939201653,
+      "s_read": 0.9999999939576592,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "L3.mlp",
+      "s_all": 0.987138181739155,
+      "s_read": 0.982568071864984,
+      "changed": true,
+      "lacked": false,
+      "piece": false
+     },
+     {
+      "name": "unembed",
+      "s_all": 1.0,
+      "s_read": 1.0,
+      "changed": false,
+      "lacked": false,
+      "piece": false
+     }
+    ]
+   }
+  ]
+ }
+}
