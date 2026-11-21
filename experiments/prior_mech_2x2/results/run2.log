@@ -1,0 +1,131 @@
+13:58:39 E250 run 2 start; settings {'source_task': 'copy', 'seeds': (0, 1, 2), 'prior_bar': 1.8686e-06, 'n_pool': 20000, 'pool_seed': 249002, 'n_train_min': 256, 'n_read_min': 64, 'n_keys_min': 48, 'step': 30, 'random_seed': 249101, 'split_tol': 1e-06, 'batch': 64}; thresholds {'prior_repro_rel': 0.0001, 'prior_repro_rel_source': "E133's stage-0 tol_rel on this path (experiments/prior_vs_share/results/predictions.json stage0): the copy prior 5.9107e-5 must repeat", 'share_tol': 0.01, 'share_tol_source': "E187's share_tol for holes_fill's readers (experiments/size_matched/results/predictions.json): E147's saved neuron and steering shares on e58/copy_s0 must repeat at c = 1", 'share_new_max': 0.2, 'share_new_max_source': "run 1's and E62's 'new' cut (copying.share_label); whip-lead: the low-prior copy must lose at least 0.2 of its gain with (2,4) off to count as reused"}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+13:59:05 [a] prior repeat {'got': 5.910717799178698e-05, 'saved': 5.910717799178698e-05, 'rel': 0.0}; holes_fill repeat on e58/copy_s0 {'neuron k64': (0.025475691642200756, 0.025475691642200756), 'neuron kmatched': (0.015557531194537186, 0.015557531194537186), 'steering pooled': (0.7369441691278905, 0.7369441691278905), 'steering perkey': (0.9879207829562398, 0.9879207829562398)}
+13:59:11 [a train] kept 1214 of 16001 windows on 94 keys; geo prior 7.261e-05 -> 1.866e-06 (bar 1.869e-06)
+13:59:12 [a heldout] kept 286 of 3999 windows on 72 keys; geo prior 7.531e-05 -> 1.858e-06 (bar 1.869e-06)
+13:59:12 [a] the new task's prior on its read rows (E133's path) 1.8585e-06, log10 -5.731 (bar -5.728)
+/mnt/nw/home/e.agnew/commute-agents/compare-lead/src/commute/finetune.py:120: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  return loss, {"ce_o": float(ce), "kl_other": float(kl_other), "p_o": float(p_o)}
+13:59:12 [ft] step 1: loss 13.7101 ce_o 13.7101 kl_other 0.0000 p_o 0.0000
+13:59:13 [ft] step 10: loss 0.3839 ce_o 0.0318 kl_other 0.3521 p_o 0.9690
+13:59:13 [ft] step 20: loss 0.1482 ce_o 0.0054 kl_other 0.1429 p_o 0.9947
+13:59:13 [ft] step 30: loss 0.0873 ce_o 0.0023 kl_other 0.0850 p_o 0.9977
+13:59:14 [ft] checkpoint 30: p_o 0.9939 ce_o 0.0107 kl_other 0.0752 n 286 rel_norm_max 0.0205 elapsed_s 1.6990
+13:59:14 [ft] step 40: loss 0.1082 ce_o 0.0033 kl_other 0.1050 p_o 0.9968
+13:59:14 [ft] step 50: loss 0.1630 ce_o 0.0877 kl_other 0.0753 p_o 0.9698
+13:59:15 [ft] step 60: loss 0.0726 ce_o 0.0015 kl_other 0.0711 p_o 0.9985
+13:59:15 [ft] step 70: loss 0.0793 ce_o 0.0008 kl_other 0.0785 p_o 0.9992
+13:59:15 [ft] step 80: loss 0.1052 ce_o 0.0012 kl_other 0.1041 p_o 0.9988
+13:59:16 [ft] step 90: loss 0.0654 ce_o 0.0003 kl_other 0.0651 p_o 0.9997
+13:59:16 [ft] step 100: loss 0.0642 ce_o 0.0005 kl_other 0.0637 p_o 0.9995
+13:59:17 [ft] step 110: loss 0.0652 ce_o 0.0005 kl_other 0.0646 p_o 0.9995
+13:59:17 [ft] step 120: loss 0.0875 ce_o 0.0004 kl_other 0.0871 p_o 0.9996
+13:59:17 [ft] step 130: loss 0.0881 ce_o 0.0004 kl_other 0.0877 p_o 0.9996
+13:59:18 [ft] step 140: loss 0.0621 ce_o 0.0004 kl_other 0.0617 p_o 0.9996
+13:59:18 [ft] step 150: loss 0.0566 ce_o 0.0004 kl_other 0.0562 p_o 0.9996
+13:59:18 [ft] step 160: loss 0.0520 ce_o 0.0004 kl_other 0.0515 p_o 0.9996
+13:59:19 [ft] step 170: loss 0.1019 ce_o 0.0005 kl_other 0.1015 p_o 0.9995
+13:59:19 [ft] step 180: loss 0.0524 ce_o 0.0002 kl_other 0.0521 p_o 0.9998
+13:59:19 [ft] step 190: loss 0.0566 ce_o 0.0004 kl_other 0.0562 p_o 0.9996
+13:59:20 [ft] step 200: loss 0.0606 ce_o 0.0005 kl_other 0.0601 p_o 0.9995
+13:59:20 [ft] step 210: loss 0.0522 ce_o 0.0003 kl_other 0.0519 p_o 0.9997
+13:59:20 [ft] step 220: loss 0.0548 ce_o 0.0002 kl_other 0.0546 p_o 0.9998
+13:59:21 [ft] step 230: loss 0.0932 ce_o 0.0005 kl_other 0.0927 p_o 0.9995
+13:59:21 [ft] step 240: loss 0.0363 ce_o 0.0001 kl_other 0.0362 p_o 0.9999
+13:59:21 [ft] step 250: loss 0.0498 ce_o 0.0003 kl_other 0.0495 p_o 0.9997
+13:59:22 [ft] step 260: loss 0.0400 ce_o 0.0002 kl_other 0.0398 p_o 0.9998
+13:59:22 [ft] step 270: loss 0.0566 ce_o 0.0003 kl_other 0.0563 p_o 0.9997
+13:59:22 [ft] step 280: loss 0.0430 ce_o 0.0002 kl_other 0.0428 p_o 0.9998
+13:59:23 [ft] step 290: loss 0.0395 ce_o 0.0003 kl_other 0.0393 p_o 0.9997
+13:59:23 [ft] step 300: loss 0.0471 ce_o 0.0002 kl_other 0.0469 p_o 0.9998
+13:59:24 [b e58/lowcopy_s0] step 30: held-out P(x) 0.9939; size 0.00759618
+13:59:24 [ft] step 1: loss 13.2666 ce_o 13.2666 kl_other 0.0000 p_o 0.0000
+13:59:24 [ft] step 10: loss 0.4105 ce_o 0.1064 kl_other 0.3041 p_o 0.9202
+13:59:24 [ft] step 20: loss 0.1142 ce_o 0.0166 kl_other 0.0976 p_o 0.9841
+13:59:25 [ft] step 30: loss 0.0755 ce_o 0.0044 kl_other 0.0711 p_o 0.9958
+13:59:25 [ft] checkpoint 30: p_o 0.9968 ce_o 0.0037 kl_other 0.0661 n 286 rel_norm_max 0.0199 elapsed_s 1.2239
+13:59:25 [ft] step 40: loss 0.0764 ce_o 0.0010 kl_other 0.0754 p_o 0.9990
+13:59:26 [ft] step 50: loss 0.0621 ce_o 0.0008 kl_other 0.0613 p_o 0.9992
+13:59:26 [ft] step 60: loss 0.0810 ce_o 0.0006 kl_other 0.0804 p_o 0.9994
+13:59:26 [ft] step 70: loss 0.0786 ce_o 0.0008 kl_other 0.0778 p_o 0.9992
+13:59:27 [ft] step 80: loss 0.0614 ce_o 0.0006 kl_other 0.0608 p_o 0.9994
+13:59:27 [ft] step 90: loss 0.1149 ce_o 0.0007 kl_other 0.1142 p_o 0.9993
+13:59:27 [ft] step 100: loss 0.0941 ce_o 0.0006 kl_other 0.0935 p_o 0.9994
+13:59:28 [ft] step 110: loss 0.0844 ce_o 0.0006 kl_other 0.0838 p_o 0.9994
+13:59:28 [ft] step 120: loss 0.0498 ce_o 0.0003 kl_other 0.0495 p_o 0.9997
+13:59:28 [ft] step 130: loss 0.1400 ce_o 0.0005 kl_other 0.1395 p_o 0.9995
+13:59:29 [ft] step 140: loss 0.0660 ce_o 0.0005 kl_other 0.0655 p_o 0.9995
+13:59:29 [ft] step 150: loss 0.0539 ce_o 0.0002 kl_other 0.0537 p_o 0.9998
+13:59:29 [ft] step 160: loss 0.0729 ce_o 0.0003 kl_other 0.0726 p_o 0.9997
+13:59:30 [ft] step 170: loss 0.0649 ce_o 0.0003 kl_other 0.0647 p_o 0.9997
+13:59:30 [ft] step 180: loss 0.0831 ce_o 0.0005 kl_other 0.0826 p_o 0.9995
+13:59:30 [ft] step 190: loss 0.0502 ce_o 0.0004 kl_other 0.0498 p_o 0.9996
+13:59:31 [ft] step 200: loss 0.0551 ce_o 0.0003 kl_other 0.0548 p_o 0.9997
+13:59:31 [ft] step 210: loss 0.0511 ce_o 0.0004 kl_other 0.0508 p_o 0.9996
+13:59:31 [ft] step 220: loss 0.0644 ce_o 0.0004 kl_other 0.0641 p_o 0.9996
+13:59:32 [ft] step 230: loss 0.0613 ce_o 0.0003 kl_other 0.0611 p_o 0.9997
+13:59:32 [ft] step 240: loss 0.0572 ce_o 0.0003 kl_other 0.0568 p_o 0.9997
+13:59:33 [ft] step 250: loss 0.0492 ce_o 0.0002 kl_other 0.0490 p_o 0.9998
+13:59:33 [ft] step 260: loss 0.0639 ce_o 0.0002 kl_other 0.0637 p_o 0.9998
+13:59:33 [ft] step 270: loss 0.0525 ce_o 0.0001 kl_other 0.0524 p_o 0.9999
+13:59:34 [ft] step 280: loss 0.0532 ce_o 0.0002 kl_other 0.0530 p_o 0.9998
+13:59:34 [ft] step 290: loss 0.0528 ce_o 0.0003 kl_other 0.0525 p_o 0.9997
+13:59:34 [ft] step 300: loss 0.0670 ce_o 0.0003 kl_other 0.0667 p_o 0.9997
+13:59:35 [b e58/lowcopy_s1] step 30: held-out P(x) 0.9968; size 0.0074308
+13:59:35 [ft] step 1: loss 13.1296 ce_o 13.1296 kl_other 0.0000 p_o 0.0000
+13:59:35 [ft] step 10: loss 0.3366 ce_o 0.0694 kl_other 0.2673 p_o 0.9432
+13:59:35 [ft] step 20: loss 0.1161 ce_o 0.0044 kl_other 0.1117 p_o 0.9956
+13:59:36 [ft] step 30: loss 0.0892 ce_o 0.0128 kl_other 0.0764 p_o 0.9876
+13:59:36 [ft] checkpoint 30: p_o 0.9923 ce_o 0.0097 kl_other 0.0712 n 286 rel_norm_max 0.0201 elapsed_s 1.2331
+13:59:36 [ft] step 40: loss 0.0873 ce_o 0.0019 kl_other 0.0854 p_o 0.9981
+13:59:37 [ft] step 50: loss 0.0871 ce_o 0.0009 kl_other 0.0861 p_o 0.9991
+13:59:37 [ft] step 60: loss 0.1320 ce_o 0.0006 kl_other 0.1314 p_o 0.9994
+13:59:37 [ft] step 70: loss 0.1016 ce_o 0.0014 kl_other 0.1003 p_o 0.9986
+13:59:38 [ft] step 80: loss 0.0714 ce_o 0.0008 kl_other 0.0706 p_o 0.9992
+13:59:38 [ft] step 90: loss 0.0610 ce_o 0.0005 kl_other 0.0604 p_o 0.9995
+13:59:38 [ft] step 100: loss 0.0627 ce_o 0.0005 kl_other 0.0621 p_o 0.9995
+13:59:39 [ft] step 110: loss 0.0701 ce_o 0.0005 kl_other 0.0697 p_o 0.9995
+13:59:39 [ft] step 120: loss 0.0753 ce_o 0.0006 kl_other 0.0747 p_o 0.9994
+13:59:39 [ft] step 130: loss 0.0539 ce_o 0.0004 kl_other 0.0535 p_o 0.9996
+13:59:40 [ft] step 140: loss 0.0714 ce_o 0.0004 kl_other 0.0709 p_o 0.9996
+13:59:40 [ft] step 150: loss 0.0663 ce_o 0.0005 kl_other 0.0659 p_o 0.9995
+13:59:40 [ft] step 160: loss 0.0437 ce_o 0.0003 kl_other 0.0434 p_o 0.9997
+13:59:41 [ft] step 170: loss 0.0769 ce_o 0.0003 kl_other 0.0765 p_o 0.9997
+13:59:41 [ft] step 180: loss 0.0510 ce_o 0.0002 kl_other 0.0508 p_o 0.9998
+13:59:41 [ft] step 190: loss 0.0621 ce_o 0.0002 kl_other 0.0619 p_o 0.9998
+13:59:42 [ft] step 200: loss 0.0766 ce_o 0.0004 kl_other 0.0761 p_o 0.9996
+13:59:42 [ft] step 210: loss 0.0812 ce_o 0.0003 kl_other 0.0809 p_o 0.9997
+13:59:42 [ft] step 220: loss 0.0554 ce_o 0.0002 kl_other 0.0552 p_o 0.9998
+13:59:43 [ft] step 230: loss 0.0473 ce_o 0.0003 kl_other 0.0470 p_o 0.9997
+13:59:43 [ft] step 240: loss 0.0390 ce_o 0.0004 kl_other 0.0385 p_o 0.9996
+13:59:43 [ft] step 250: loss 0.0595 ce_o 0.0002 kl_other 0.0593 p_o 0.9998
+13:59:44 [ft] step 260: loss 0.0488 ce_o 0.0002 kl_other 0.0486 p_o 0.9998
+13:59:44 [ft] step 270: loss 0.0574 ce_o 0.0002 kl_other 0.0572 p_o 0.9998
+13:59:45 [ft] step 280: loss 0.0715 ce_o 0.0002 kl_other 0.0712 p_o 0.9998
+13:59:45 [ft] step 290: loss 0.0420 ce_o 0.0002 kl_other 0.0418 p_o 0.9998
+13:59:45 [ft] step 300: loss 0.0604 ce_o 0.0002 kl_other 0.0601 p_o 0.9998
+13:59:46 [b e58/lowcopy_s2] step 30: held-out P(x) 0.9923; size 0.00742641
+13:59:46 [b] c 0.9756 (E237's common size 0.00730215)
+13:59:47 [e58/lowcopy_s0] c 0.9756; G 19.7752, G_off 16.1137, share lost 0.1852 (sd 0.0053); random-head shares [0.1834, 0.0345, -0.0396, 0.0193, 0.049]; label new; M's fall 0.0969; 1 s
+Traceback (most recent call last):
+  File "/mnt/nw/home/e.agnew/commute-agents/compare-lead/experiments/prior_mech_2x2/train.py", line 381, in <module>
+    code = main()
+  File "/mnt/nw/home/e.agnew/commute-agents/compare-lead/experiments/prior_mech_2x2/train.py", line 371, in main
+    stage_c(w, R1.load_config()[1], cfg.items(w.rd.cfg.key_states()))
+    ~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/mnt/nw/home/e.agnew/commute-agents/compare-lead/experiments/prior_mech_2x2/train.py", line 286, in stage_c
+    rec |= shares(w, item, i) | (weights(w, item) if TASK in item else {})
+           ~~~~~~^^^^^^^^^^^^
+  File "/mnt/nw/home/e.agnew/commute-agents/compare-lead/experiments/prior_mech_2x2/train.py", line 260, in shares
+    rec, _ = w.hf.state(item, i)
+             ~~~~~~~~~~^^^^^^^^^
+  File "/mnt/nw/home/e.agnew/commute-agents/compare-lead/experiments/holes_fill/run.py", line 191, in state
+    vs = FS.vectors(self.net, t.x(t.train), t.idx(t.train), n_keys, dW, t.read.half)
+  File "/mnt/nw/home/e.agnew/commute-agents/compare-lead/src/commute/fair_steering.py", line 56, in vectors
+    assert bool((torch.bincount(i, minlength=n_keys) > 0).all()), "a key has no fitting window"
+           ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: a key has no fitting window
