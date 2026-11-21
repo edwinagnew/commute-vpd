@@ -669,3 +669,5 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e238_known_orders.png": "experiments/r_reanalysis/figures/known_orders.png"
 - "fig/e239_n_known.png": "experiments/kstar_vpd_norm/figures/n_known.png"
 - "fig/e239_n_size.png": "experiments/kstar_vpd_norm/figures/n_size.png"
+- "fig/e235_planted_gauss_pair.png": "experiments/crosscoder_proper/figures/planted_gauss_pair.png"
+- "fig/e237_columns.png": "experiments/key_grid/figures/columns.png"
