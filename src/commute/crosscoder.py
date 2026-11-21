@@ -246,7 +246,7 @@ def carried(ae: AE, h: Tensor, size: int = 4096) -> dict[str, Any]:
         total += float(delta.pow(2).sum())
         bias += float((delta @ db).sum())
         resid += float((delta - f @ dD - db).pow(2).sum())
-    if total <= 0:  # no change (the base against itself): every part undefined
+    if total <= 0:  # no change (the base against itself): every part undefined (but `parts` then reads specific 0.0, not nan; kept as filed)
         return {
             "energy": 0.0,
             "s": torch.full((ae.dict_size,), math.nan),
@@ -287,6 +287,7 @@ def groups(
 
 def parts(s: Tensor, bias: float, g: dict[str, Tensor]) -> dict[str, float]:
     """Each group's part of the change, the bias part and the error part (1 minus the rest); they sum to one."""
+    # Zero change (do-nothing side): `carried` gives s = nan, but the empty masks of `g` sum to 0.0 here; kept as filed.
     p = {k: float(s[m].sum()) for k, m in g.items()} | {"bias": bias}
     p["error"] = 1 - float(s.sum()) - bias
     return p

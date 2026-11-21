@@ -219,7 +219,9 @@ class Job:
         cfg, site = self.cfg, self.cfg.sites[it.site]
         if it.what == "head":
             rows = cached_rows("train", 0, cfg.graft_rows)
-            return Side(it, site, self.grafted(cfg.heads[it.site]), None, ("graft", rows), self.graft_read())
+            g = Side(it, site, self.grafted(cfg.heads[it.site]), None, ("graft", rows), self.graft_read())
+            assert g.dW is None  # the grafted side shares .model and .W0 with the base net: a dW here could write into it
+            return g
         name = cfg.control_task if it.what in ("self", "direction") else cfg.gauss_of if it.what == "gauss" else it.what.replace("__", "/")
         task = self.inv["states"][name]["task"] if name in self.inv["states"] else name
         s = Side(it, site, self.net, self.zero, self.source(task), self.windows(self.task(task), "score"))
@@ -425,8 +427,13 @@ def pod(job: Job, stage: str, i: int, n: int, stop_after: int | None) -> None:
     if stage == "1":
         s0 = OUT["res"] / "stage0.json"
         passed = json.loads(s0.read_text())["sites"] if s0.is_file() else {}
-        if blocked := sorted({t.site for t in todo if not passed.get(t.site, {}).get("pass")}):
-            raise SystemExit(f"refusing stage 1 at site(s) {blocked}: stage0.json has not passed there (run score.py check0)")
+        kept = []
+        for t in todo:
+            if t.k is None and not passed.get(t.site, {}).get("pass"):  # the k sweep is reported, never scored: no site block
+                print(f"skip {t}: site {t.site} failed stage 0", flush=True)
+                continue
+            kept.append(t)
+        todo = kept
     for it in todo:
         if done(it.key):
             log(f"[pod] {it.key} done before, skipped")

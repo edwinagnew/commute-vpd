@@ -87,12 +87,17 @@ def check0(res: Path, th: dict[str, Any]) -> int:
         self_ = item(res, f"self.{s}.c0")
         heads = {c: item(res, f"head.{s}.c{c}") for c in CFG.seeds}
         per = {c: None if h is None else {"lead": h["read"].get("lead"), "specific": h["read"]["specific"],
-                                          "count": h["read"]["counts"]["ft_specific"], "pass": passes_planted(h, th)}
+                                          "count": h["read"]["counts"]["ft_specific"], "pass": passes_planted(h, th),
+                                          "energy": h.get("energy"), "clean_0": h["spliced"]["clean_0"], "clean_1": h["spliced"]["clean_1"]}
                for c, h in heads.items()}  # fmt: skip
         s0a, s0b = self_ is not None, all(v is not None and v["pass"] for v in per.values())
         keep = ("fve_base", "fve_ft", "dead", "max_rn_dev_alive", "counts")
         sites[s] = {"S0a_self": s0a, "S0b_head": per, "S0b": s0b, "pass": s0a and s0b,
                     "self": None if self_ is None else {k: self_["read"].get(k) for k in keep}}  # fmt: skip
+    for s, v in sites.items():  # beside S0b: how big the graft's change is (compare elicit s0's energy) and what it does to the clean loss
+        for c, h in v["S0b_head"].items():
+            if h is not None:
+                print(f"site {s} seed {c}: S0b pass {h['pass']}, activation-change energy {h['energy']}, clean loss {h['clean_0']:.2f} -> {h['clean_1']:.2f} nats")
     write(res / "stage0.json", {"experiment": P["experiment"], "sites": sites})
     return 0 if all(v["pass"] for v in sites.values()) else 1
 
