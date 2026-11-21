@@ -1,64 +1,56 @@
-# Paper outline: A Mechanistic Foundation for the Elicitation Hypothesis (draft plan, 2026-11-20)
+# Paper outline: A Mechanistic Foundation for the Elicitation Hypothesis (draft plan v2, 2026-11-20)
 
-For the user to cut or approve before more prose is written. Built on Nanda's "Highly Opinionated Advice on How to
-Write ML Papers" (lesswrong.com/posts/eJGptPbbFPZGLpjsp): one to three claims, every main-body section must say what
-breaks if it is cut, strongest evidence in the body and everything else in the appendix, claims hedged to the evidence.
-Main body aimed at ~9 pages, five figures.
+v2 after the user's comments (11-20 evening): claim 1 must say mechanistic evidence as well as featurization; drop the
+"re-weighting is too weak" claim; proxies are scored against the definition, not the known answer (size, prior and
+random controls stay); the hoped-for claim is "a couple of proxy measurements that sort of work, with caveats", made
+only if the results bear it out; the copying head stays; real text and Qwen are Results subsections, as negative
+results. No page target. Writing advice followed: Nanda, "Highly Opinionated Advice on How to Write ML Papers"
+(lesswrong.com/posts/eJGptPbbFPZGLpjsp).
 
-## The three claims (what a reader should leave with)
-1. **The elicitation hypothesis needs a definition, and any good one is relative to a featurization.** We give one:
-   a fine-tune reuses the base model, for a behaviour, to the extent that the parts the behaviour runs through still
-   compute what the base model's parts computed (causal abstraction, Geiger vocabulary). It is total: every fine-tune
-   gets a reading. *Evidence:* the definition and its properties (§3). Strength: conceptual.
-2. **At the granularity of neurons and heads, "only re-weighting" is too weak a claim to test.** Training only one
-   gain per neuron and per head (12,288 + 24 numbers) on a frozen 67M reaches 0.72-0.91 of the gain on tasks built to
-   be new, about as far as on tasks built to reuse. So the hypothesis is only meaningful at a coarser unit, which is
-   what claim 1's featurization says. *Evidence:* gain-only training on the five synthetic key tasks (one figure).
-   Strength: systematic on one small model; learning rate not swept.
-3. **Fine-tunes with a known answer, plus size, prior and random controls, are the bar any reuse measure must pass,
-   and nothing we tried yet passes it.** On built fine-tunes the cheap explanations sort most cases (update size, base
-   prior, steering); our definition's readings follow update size at heads/layers/blocks and saturate or reverse at
-   neurons and VPD subcomponents; the re-gating share separates every built pair but separates pure-gain updates by
-   task just as well, so it reads the task, not the update, and its KL form does not beat a matched random change.
-   *Evidence:* the five-task graph per measure (pending P2.50), size-matched R, scorecard. Strength: negative result
-   on one small model; framed as a test bed and a standard of evidence, not a verdict on the hypothesis.
+## Claims
+1. **Whether post-training elicits or creates is a question about mechanisms, and needs a mechanistic definition
+   relative to a featurization.** Behavioural evidence (a fine-tune is fast, cheap, low rank) cannot settle it; we
+   define reuse as the parts a behaviour runs through still computing what the base model's parts computed, at a
+   featurization fixed from the base model. Evidence: §3, and the copying head as the worked case.
+2. **(Hoped for) A few cheap proxies track the definition on small models, with caveats.** Candidates: the re-gating
+   share, and whichever baselines survive. Scored against the definition's own reading, with update size, base prior
+   and a matched random change controlled. Caveats stated with it: one 67M model, built tasks, the share's random
+   control.
+3. **Beyond built tasks the proxies do not yet give a call:** real-text fine-tunes and Qwen3-1.7B (negative results,
+   unless real text turns around).
 
-What we do **not** claim: that the hypothesis is true or false; that VPD is or is not the right featurization; that
-the re-gating share works.
+## What claim 2 needs (the gap to close)
+- A reading of the definition that is not just update size. Coarse R follows size (E232: signs kept on 5-6 of 9 once
+  sizes match). Since 11-20 two $0 reanalyses help: R with size removed (residual against the size-only rule) orders
+  all six hand-made edits (margin 0.57 against a band of 0.25) and puts reuse higher on 7 of 9 pairs, ranking with
+  size at -0.37 (P1.42); a size-normalised R orders the edits but only 5 of 9 pairs, and rises with size (P1.43). Both
+  post-hoc; definition-lead may still change them; R_SAE lands 11-23.
+- **The proxies scored against that reading**, not against how the pairs were built. Not yet computed. It is a $0
+  reanalysis of saved readings (share, prior, steering, rank, size against size-removed R on the nine pairs and the
+  edits). Recommend asking definition-lead or compare-lead for it as a cell.
+- The five-task graph at one update size (P2.50, 11-22), with the random band.
 
-## Section plan (main body)
-| § | content | pages | what breaks if cut |
-|---|---|---|---|
-| Abstract | context, gap (EH stated, never defined), 3 claims, "preliminary, one 67M model" | – | – |
-| 1 Intro | EH and why it matters for monitoring post-training; why mechanisms; the 3 claims; contributions list; Fig 1 (definition on a toy graph) | 1.5 | everything |
-| 2 Related work | user's; short | 0.75 | positioning |
-| 3 Definition | 3.1 formal definition and properties; one-paragraph mention of the featurizations (neurons, heads/layers, VPD, SAEs) | 2 | claim 1 |
-| 4 Set-up | 4.1 model + VPD (3 sentences); 4.2 featurizations read (user's text, one table); 4.3 fine-tunes with a known answer: five key tasks at one update size + three controls (twins, hand-made edits, random change); 4.4 measures: re-gating share, gain-only training; baselines in one paragraph | 1.5 | reproducibility of 2-3 |
-| 5 Results | 5.1 strength alone learns new tasks (Fig 2, claim 2); 5.2 the definition's readings follow update size (Fig 3: R gap before/after size match; VPD reversal in one sentence); 5.3 the share and the cheap baselines on the five tasks, with the random band and the pure-gain reading (Fig 4); 5.4 scorecard of every measure against the controls (Fig 5 or table) | 2.5 | claims 2-3 |
-| 6 Discussion | what a passing measure would need; what this says about the EH; recommendation that diffing methods be scored on built fine-tunes; limitations; departures | 1 | honesty |
+## Section plan
+| § | content | what breaks if cut |
+|---|---|---|
+| Abstract | EH stated, never defined mechanistically; definition; proxies scored against it; how far that gets | – |
+| 1 Intro | EH and monitoring post-training; why behaviour is not enough; claims; contributions | everything |
+| 2 Related work | user's | positioning |
+| 3 Definition | formal definition, properties; one-line mention of featurizations (3.2 deleted) | claim 1 |
+| 4 Set-up | model + VPD; featurizations (user's 4.2); fine-tunes with a known answer: five key tasks at one update size + twins, hand-made edits, random change; proxies: re-gating share, baselines in one paragraph | reproducibility |
+| 5.1 Worked example: copying head | the copy gain runs through a base copying head (head off removes 0.47-0.56 of it, none of the lookup's); the share reads 1.09 on copy and depends on the head through its gates. This is the mechanistic evidence the definition asks for, on one behaviour, and the share agreeing with it. Gap: R not read on this pair (a small cell would close it) | claim 1 made concrete |
+| 5.2 The definition on built fine-tunes | R at each featurization; follows size until size is removed; size-removed R orders the edits | claim 2's reference |
+| 5.3 Proxies against the definition | five-task graph per proxy with random band; share vs size-removed R; scorecard | claim 2 |
+| 5.4 Realistic fine-tunes | real-text pairs and twin: no call so far | claim 3 |
+| 5.5 Scale: Qwen3-1.7B | no call | claim 3 |
+| 6 Discussion | what the evidence supports; what a passing proxy needs; limitations; departures | honesty |
 
-## Moved to the appendix (one sentence and a pointer in the body)
-- Worked example of the copying head (illustration only; its own caveats are long). *Was the Results opener on the
-  11-20 skeleton: user to confirm the move.*
-- Held model (needed for the Qwen appendix only), gate variants and untrained-SVD share, top-neuron and neuron-level
-  baselines, crosscoder details, grafts, structured control, key-set variants, copy-at-new-marker/lookup.
-- Realistic fine-tunes (three real-text pairs, British-spelling twin: mostly no call) and Qwen3-1.7B (no call):
-  one paragraph in Discussion "how far this gets beyond toy tasks".
-- Carrying an update onto the decomposition (the project's original question).
-
-## Figures (main body)
-1. Definition on a toy graph (exists; panels c, d to redraw).
-2. Fraction of gain reached by gains alone, five tasks on the x-axis, reuse tasks vs new tasks (exists for nine
-   pairs, E231; redraw on the five-task set when P2.50 lands).
-3. R gap per pair, saved vs size-matched, with the size-only prediction (exists, E232; relabel).
-4. One panel per measure (share, R_VPD, prior, steering): five tasks on the x-axis, random band (P2.50, due 11-22).
-5. Scorecard (exists as table + figure; trim to the measures the body names).
-
-## Pending inputs
-P2.50 five-task graph (11-22) feeds Figs 2-4; R_SAE (P1.40, 11-23) is one row of Fig 4/5 or a sentence; crosscoder
-replication (P2.49) is one row of the scorecard. Definition wording waits on definition-lead (may change by 11-21).
+## Appendix (one sentence and a pointer in the body)
+Gain-only training (one line in 5.3 as a baseline: re-weighting units alone reaches new tasks' gains), held model
+(Qwen needs it), gate variants and SVD share, top-neuron and neuron-level baselines, crosscoder, grafts, structured
+control, lookup and key-set detail, carrying an update onto the decomposition.
 
 ## Questions for the user
-1. Are these the three claims? (Claim 2 is the one result that is crisp and pre-registered; claim 3 is the bulk.)
-2. Worked example to the appendix?
-3. Real text and Qwen as one Discussion paragraph plus appendix, rather than Results subsections?
+1. Ask for the $0 "proxies against size-removed R" reanalysis as a cell? (Recommend yes: claim 2 cannot be written
+   without it.)
+2. Ask for R on the copy/lookup pair so the worked example reads the definition too? (Recommend yes, if cheap.)
