@@ -74,6 +74,15 @@ class VPDSite:
         wF, wM = y @ s.rf.double(), y @ s.rm.double()
         return torch.cat([num, (wF * wM).sum().reshape(1)]), torch.cat([aa * uu, (wM * wM).sum().reshape(1)])
 
+    def change_sums(self, y: Tensor) -> Tensor:
+        """(k,) fp64: sums over every row of y of |write_F_u(y) - write_M_u(y)|^2: |b u_c + a du_c|^2 per subcomponent,
+        |y (rf - rm)|^2 for the remainder."""
+        s, y = self.s, y.double()
+        U, dU = s.U.double(), s.dU.double()
+        a, b = y @ s.V.double(), y @ s.dV.double()
+        sub = (b * b).sum(0) * (U**2).sum(1) + 2 * (a * b).sum(0) * (U * dU).sum(1) + (a * a).sum(0) * (dU**2).sum(1)
+        return torch.cat([sub, (y @ (s.rf.double() - s.rm.double())).pow(2).sum().reshape(1)])
+
     def correction(self, y: Tensor, t: Tensor, g: Tensor) -> Tensor:
         s = self.s
         a = y @ s.V
@@ -107,6 +116,27 @@ def gains(net: Any, sites: list[Any], n: int, batches: list[Tensor]) -> Tensor:
         for h in hs:
             h.remove()
     return torch.where(den > 0, num / den.clamp(min=1e-300), 1.0)
+
+
+@torch.no_grad()
+def write_change(net: Any, sites: list[VPDSite], n: int, batches: list[Tensor]) -> tuple[Tensor, Tensor, Tensor]:
+    """(num, den, dd), each (n,) fp64 CPU, summed over every position of `batches` in `net`'s own run: num and den as in
+    `gains` (g = num / den), dd = |write_F_u - write_M_u|^2 (added 2026-11-21 for experiments/thin_edit_diagnosis, P1.47).
+    The share of u's write change that its fitted gain explains is (num - den)^2 / (den dd): the change projected on M's
+    own write; what standing u in at that gain leaves of it is dd - (num - den)^2 / den."""
+    sums, got = torch.zeros(3, n, dtype=torch.float64), {}
+    hs = [net.get_submodule(s.module).register_forward_pre_hook(lambda _m, a, j=j: got.__setitem__(j, a[0])) for j, s in enumerate(sites)]
+    try:
+        for x in batches:
+            net(x)
+            for j, s in enumerate(sites):
+                y = got[j].flatten(0, -2)
+                a, b = s.gain_sums(y)
+                sums[:, s.idx] += torch.stack([a, b, s.change_sums(y)]).cpu()
+    finally:
+        for h in hs:
+            h.remove()
+    return sums[0], sums[1], sums[2]
 
 
 class StandIn:
