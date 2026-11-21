@@ -330,6 +330,63 @@ def grades(M: R.Model, F: R.Model, feat: Feat, toks: Tensor, at: slice, batch: i
     return out
 
 
+# ---- change size per variable (P1.37 run 2, E226 Amendment 1; added 2026-11-20) -----------------------------------
+
+
+def frob_ratios(feat: Feat) -> Tensor:
+    """(n,) |delta-w_u|^2 / |w_u|^2 per variable, Frobenius norms of its mechanism's matrix: a subcomponent's w_u =
+    u_c v_c^T and delta-w_u = du_c v_c^T + u_c dv_c^T (F's mechanism minus M's, module docstring), so |delta-w_u|^2 =
+    |du|^2 |v|^2 + |u|^2 |dv|^2 + 2 (u . du)(v . dv); a remainder's w_u = Delta, delta-w_u = delta-W_out. NaN where
+    |w_u| = 0 (a zero subcomponent; the grafts, which M lacks) and at the embedding and unembedding (never changed)."""
+    out = torch.full((feat.n,), float("nan"), dtype=torch.float64)
+    for s in feat.sites:
+        U, V, dU, dV = (getattr(s, k).double() for k in ("U", "V", "dU", "dV"))
+        uu, vv = (U**2).sum(1), (V**2).sum(0)
+        dw2 = (dU**2).sum(1) * vv + uu * (dV**2).sum(0) + 2 * (U * dU).sum(1) * (V * dV).sum(0)
+        w2 = uu * vv
+        out[s.off : s.rem] = torch.where(w2 > 0, dw2 / w2.clamp(min=1e-300), float("nan")).cpu()
+        rm, rf = s.rm.double(), s.rf.double()
+        w2r = (rm**2).sum()
+        out[s.rem] = float(((rf - rm) ** 2).sum() / w2r) if w2r > 0 else float("nan")
+    return out
+
+
+def _sums(acc: dict[Any, Tensor], key: Any, num: Tensor, den: Tensor, at: slice) -> None:
+    """One batch (B, T, k) of |delta-w_u y|^2 and |w_u y|^2: their sums over every position and over the read positions."""
+    v = torch.stack([num.sum((0, 1)), den.sum((0, 1)), num[:, at].sum((0, 1)), den[:, at].sum((0, 1))])
+    acc[key] = acc[key] + v if key in acc else v
+
+
+def site_change(acc: dict[Any, Tensor], j: int, s: Site, y: Tensor, at: slice) -> None:
+    """One batch of settings y (fp64) at site j: a subcomponent's M write a u and change a du + b u (a = v . y, b = dv . y),
+    the remainder's M write Delta y and change delta-W_out y."""
+    U, dU = s.U.double(), s.dU.double()
+    uu, udu, dudu = (U**2).sum(1), (U * dU).sum(1), (dU**2).sum(1)
+    a, b = y @ s.V.double(), y @ s.dV.double()
+    _sums(acc, j, a.pow(2) * dudu + b.pow(2) * uu + 2 * a * b * udu, a.pow(2) * uu, at)
+    wm = y @ s.rm.double()
+    _sums(acc, ("rem", j), (y @ s.rf.double() - wm).pow(2).sum(-1, keepdim=True), wm.pow(2).sum(-1, keepdim=True), at)
+
+
+@torch.no_grad()
+def input_ratios(M: R.Model, F: R.Model, feat: Feat, toks: Tensor, at: slice, batch: int) -> Tensor:
+    """(2, n) the change ratio on the inputs: sum over settings of |delta-w_u y|^2 over the sum of |w_u y|^2, settings as
+    in `grades` (every window in M's run and in F's), row 0 every position, row 1 the read positions; NaN where the
+    denominator is 0 and outside the sites."""
+    names, acc = [s.name for s in feat.sites], dict[Any, Tensor]()
+    for t in toks.split(batch):
+        for N in (M, F):
+            for j, (s, x) in enumerate(zip(feat.sites, _inputs(N.net, names, t), strict=True)):
+                site_change(acc, j, s, x.double(), at)
+    out = torch.full((2, feat.n), float("nan"), dtype=torch.float64)
+    for j, s in enumerate(feat.sites):
+        for key, cols in ((j, slice(s.off, s.rem)), (("rem", j), slice(s.rem, s.rem + 1))):
+            v = acc[key].cpu()
+            num, den = v[[0, 2]], v[[1, 3]]
+            out[:, cols] = torch.where(den > 0, num / den.clamp(min=1e-300), float("nan"))
+    return out
+
+
 # ---- K* ------------------------------------------------------------------------------------------------------------
 
 
