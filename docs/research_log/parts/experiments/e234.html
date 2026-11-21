@@ -3,7 +3,7 @@
 <p class="one"><strong>The question.</strong> A sparse autoencoder (SAE) rewrites a layer's activations as a few active latents. For a baseline reading of reuse, SAEs are trained on the base model only and then applied to fine-tuned states: if a fine-tune stays inside the base model's features, the SAEs should still reconstruct it.</p>
 <p class="one"><strong>What we did.</strong> We trained one 16,384-wide top-k SAE (k 80, 500M Pile tokens, the SAEBench recipe) at each of the 13 residual, attention-output and MLP-output sites of the 67M, plus a second seed at one site. We then read the fraction of variance explained (FVE), the dead-latent share and the loss when the SAE is spliced in, on the base and on 74 changed models (do-nothing, six known-answer items, 68 trained states).</p>
 <p class="one"><strong>What we found.</strong> On the base, FVE is 0.875 to 0.995 and spliced-in loss recovery 0.926 to 0.999 (filed at least 0.95: two MLP sites miss). Dead latents reach 0.53 to 0.62 at the four attention sites (filed at most 0.15), a miss, since attention outputs need far fewer than 16k latents. On Pile rows 46 of 75 states lose more than 0.02 FVE somewhere; the ten-fold copy edit at one residual site loses 16, because 1% of positions hold 99.6% of the error.</p>
-<p class="one"><strong>What it means.</strong> The base-only SAEs are good enough to read most states, and the do-nothing reads a drop of exactly 0. The large outlier is a real reading of the ten-fold neurons' huge writes, not a bug (fp32 reads the same). A second run is still due under the cell.</p>
+<p class="one"><strong>What it means.</strong> The base-only SAEs are good enough to read most states, and the do-nothing reads a drop of exactly 0. The large outlier is a real reading of the ten-fold neurons' huge writes, not a bug (fp32 reads the same). The second run, <a href="#e245">E245</a>, reads the built items at these SAEs.</p>
 <dl class="fields">
 <dt>Run</dt><dd>RunPod H100 pods, $61.35; SAEs saved under <code>results/large/scored/</code>.</dd>
 <dt>Found</dt><dd><ul>
@@ -12,6 +12,6 @@
 <li>Do-nothing drops 0 at every site; seed spread in FVE is 3e-5.</li>
 </ul></dd>
 <dt>Bears on</dt><dd>Part 1: the SAE baseline against the definition; no verdict on any fine-tune.</dd>
-<dt>Moved on</dt><dd>Run 2 of the cell. Record: <code>experiments/TRIED.md</code>, row E234.</dd>
+<dt>Moved on</dt><dd>Run 2 of the cell is <a href="#e245">E245</a>. Record: <code>experiments/TRIED.md</code>, row E234.</dd>
 </dl>
 </article>
