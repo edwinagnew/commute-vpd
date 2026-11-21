@@ -1,0 +1,16 @@
+<article class="exp" id="e240">
+<div class="top"><span class="id">E240</span><span class="chip none">no answer</span><h3>Does the per-part size-normalised reading still separate the built edits at one update size?</h3><span class="when">2026-11-20 · cell P1.44 (closed), definition-lead · <code>experiments/kstar_vpd_norm_matched</code></span></div>
+<p class="one"><strong>The question.</strong> The per-part size-normalised reuse reading (<a href="#e239">E239</a>) put every built reuse edit above both new ones but tracked update size elsewhere. If it still separates them with all six edits rescaled to the thinner new edit's update size, size is not what it reads.</p>
+<p class="one"><strong>What we did.</strong> We rescaled the six built edits to one update size and reran the reading. The first stage reproduced the earlier saved value for the thin new edit at a scale of one.</p>
+<p class="one"><strong>What we found.</strong> The reproduction failed: the thin new edit's search size came out 7273 against 9601 saved, and the score differed by 1.2e-4 against a tolerance of 1e-5. The difference traced, at no cost, to float noise between card types (L40 against H100) that the capped search magnifies; there was no code bug. The matched-size reading was not read.</p>
+<p class="one"><strong>What it means.</strong> The score moves about 1e-4 between card types, within three times the smallest known-item gap (3e-4), so compared items must be read on one card type. No call is given; the cell is superseded by the reuse score under the wording adopted on 2026-11-20 (P1.46).</p>
+<dl class="fields">
+<dt>Run</dt><dd>Cluster debug L40 jobs 62603 to 62605, $0; an H100 rerun stopped after 7 minutes, $1.82.</dd>
+<dt>Found</dt><dd><ul>
+<li>The scale-one reproduction missed its tolerance by a factor of 12.</li>
+<li>The miss is float noise magnified by the capped search, not a code fault.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 1, the definition's score: no change to any reading.</dd>
+<dt>Moved on</dt><dd>P1.46 redoes R under the adopted wording on the six built edits and nine pairs, reading each comparison on one card type. Record: <code>experiments/TRIED.md</code>, row E240.</dd>
+</dl>
+</article>
