@@ -2,12 +2,15 @@
 
     ~/commute-agents/fleet/cpu-run --mem 2G python3 experiments/proxies_vs_r/analyse.py                # size-removed R
     ~/commute-agents/fleet/cpu-run --mem 2G python3 experiments/proxies_vs_r/analyse.py --r normalised  # P1.43's N
-    ~/commute-agents/fleet/cpu-run --mem 2G python3 experiments/proxies_vs_r/analyse.py --r PATH.json   # e.g. R under A
+    ~/commute-agents/fleet/cpu-run --mem 2G python3 experiments/proxies_vs_r/analyse.py --r PATH.json   # any R in the form below
+    ~/commute-agents/fleet/cpu-run --mem 2G python3 experiments/proxies_vs_r/r_a.py --source vpd      # R under A at VPD (E242)
+    ~/commute-agents/fleet/cpu-run --mem 2G python3 experiments/proxies_vs_r/r_a.py --source sae      # R under A at SAE (E245)
 
 R sources: "size_removed" (P1.42: minus the residual of log(1 - R) on log update size; the five key tasks get the same
 fitted law applied to E237's R at VPD), "normalised" (P1.43's N; no key tasks), or a JSON file
-{"name": str, "built": {edit: R}, "pairs": {"e187_<pair>": R reuse side minus new side}, "key": {task: R}}, any
-section may be missing. When definition-lead's P1.46 lands, write its readings in that form and pass the path.
+{"name": str, "featurization": "vpd"|"sae" (default vpd; a proxy built from VPD is flagged circular only against
+R at VPD), "built": {edit: R}, "pairs": {"e187_<pair>": R reuse side minus new side}, "key": {task: R}}, any
+section may be missing. r_a.py writes this form from E242's and E245's summaries (R under wording A).
 
 Item sets: the six built edits (values), the nine built pairs (reuse side minus new side), the five 96-key tasks of
 E237 at one common update size (task means over seeds 0-2). Every proxy is oriented so that higher reads as reuse by
@@ -38,7 +41,7 @@ PAIRS = ("e62_copy_lookup", "e46_copy_random", "e53_lowercase_cipher", "e54_matc
          "open_pair_c3_copy", "e58_rank1_96", "e58_copy_prior_cipher")  # fmt: skip
 KEY = ("copy", "rank1", "elicit", "cipher", "prior_cipher")
 SETS = ("built", "pairs", "key")
-PROXIES = {  # name: (label, built from the VPD decomposition, as R is)
+PROXIES = {  # name: (label, built from the VPD decomposition; circular only when R is at VPD too)
     "r": ("re-gating share, log-odds form", True),
     "prior": ("original model's prior on the answer", False),
     "S": ("P1.45's S, re-gated VPD pieces", True),
@@ -77,13 +80,14 @@ def r_normalised() -> dict[str, Series]:
     return {"built": p143["known"]["N"], "pairs": p143["pairs_N"]["gaps"], "key": {}}
 
 
-def r_source(arg: str) -> tuple[str, dict[str, Series]]:
+def r_source(arg: str) -> tuple[str, dict[str, Series], str]:
+    """(name, R by item set, featurization R is built on: "vpd" for the built-in sources, else the JSON's own)."""
     if arg == "size_removed":
-        return arg, r_size_removed()
+        return arg, r_size_removed(), "vpd"
     if arg == "normalised":
-        return arg, r_normalised()
+        return arg, r_normalised(), "vpd"
     d = json.loads(Path(arg).read_text())
-    return d["name"], {s: d.get(s, {}) for s in SETS}
+    return d["name"], {s: d.get(s, {}) for s in SETS}, d.get("featurization", "vpd")
 
 
 # ---- proxies, each oriented higher = reuse ---------------------------------------------------------------------------
@@ -193,13 +197,13 @@ def random_column() -> dict[str, str]:
             "R": kg("R_vpd") + " (key tasks: R at VPD as filed, equal sizes, so size removal keeps the order)"}  # fmt: skip
 
 
-def table(r: dict[str, Series], px: dict[str, dict[str, Series]]) -> dict[str, Any]:
+def table(r: dict[str, Series], px: dict[str, dict[str, Series]], feat: str) -> dict[str, Any]:
     size, prior = px["size"], px["prior"]
     rnd = random_column()
     rows: dict[str, Any] = {}
     for name, sets in [*px.items(), ("R", r)]:
         row: dict[str, Any] = {"label": PROXIES.get(name, ("the reuse score R", True))[0],
-                               "circular": PROXIES.get(name, ("", True))[1], "random_inside_finetune_range": rnd[name]}  # fmt: skip
+                               "circular": PROXIES.get(name, ("", True))[1] and feat == "vpd", "random_inside_finetune_range": rnd[name]}  # fmt: skip
         if name != "R":
             row["vs_R"] = {s: spearman(sets.get(s, {}), r.get(s, {})) for s in SETS}
         row["vs_size"] = {s: spearman(sets.get(s, {}), size[s]) for s in ("built", "pairs")} if name != "size" else None
@@ -219,7 +223,7 @@ def scaled_ranks(d: Series, ids: list[str]) -> list[float]:
     return [float((x - 1) / (len(ids) - 1)) for x in rk]
 
 
-def plot(name: str, rows: dict[str, Any], r: dict[str, Series]) -> Path:
+def plot(name: str, rows: dict[str, Any], r: dict[str, Series]) -> Path:  # circular flags come from rows[p]["circular"]
     fig, axes = F.figure((7.5, 6.5), ncols=3, nrows=3)
     look = {"built": ("six built edits", "#0072B2", "o"), "pairs": ("nine built pairs, gap", "#D55E00", "s"),
             "key": ("five key tasks, equal size", "#009E73", "^")}  # fmt: skip
@@ -239,7 +243,7 @@ def plot(name: str, rows: dict[str, Any], r: dict[str, Series]) -> Path:
                      for i, x, y in zip(ids, xs, ys, strict=True)]  # fmt: skip
             drawn = True
         rhos = [f"{s} {rows[p]['vs_R'][s]['rho']:+.2f}" for s in SETS if rows[p]["vs_R"][s]["rho"] is not None]
-        ax.set_title(PROXIES[p][0] + ("\n(built from VPD, circular)" if PROXIES[p][1] else "") + ("\n" + ", ".join(rhos) if rhos else ""), fontsize=7)
+        ax.set_title(PROXIES[p][0] + ("\n(built from VPD, circular)" if rows[p]["circular"] else "") + ("\n" + ", ".join(rhos) if rhos else ""), fontsize=7)
         if not drawn:
             ax.text(0.5, 0.5, "not read on 3 or more items", ha="center", va="center", fontsize=7, transform=ax.transAxes)
             ax.set_xticks([])
@@ -262,13 +266,13 @@ def plot(name: str, rows: dict[str, Any], r: dict[str, Series]) -> Path:
                     "titles give the Spearman rank correlation per item set, a description at these n")  # fmt: skip
 
 
-def main() -> int:
+def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--r", default="size_removed", help="size_removed, normalised, or a JSON file (see the docstring)")
-    name, r = r_source(ap.parse_args().r)
-    rows = table(r, proxies())
+    name, r, feat = r_source(ap.parse_args(argv).r)
+    rows = table(r, proxies(), feat)
     (HERE / "results").mkdir(parents=True, exist_ok=True)
-    (HERE / "results" / f"table_{name}.json").write_text(json.dumps({"cell": "P2.51", "R": name, "rows": rows}, indent=1))
+    (HERE / "results" / f"table_{name}.json").write_text(json.dumps({"cell": "P2.51", "R": name, "rows": rows} if feat == "vpd" else {"cell": "P2.51", "R": name, "featurization": feat, "rows": rows}, indent=1))
     for p, row in rows.items():
         vs_r = {s: (v["rho"] if v["rho"] is None else round(v["rho"], 2), v["n"]) for s, v in row.get("vs_R", {}).items()}
         print(p, "vs R", vs_r, "| size", row["vs_size"] and {s: v["rho"] and round(v["rho"], 2) for s, v in row["vs_size"].items()},
