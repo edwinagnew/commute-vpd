@@ -1,0 +1,57 @@
+{
+  "experiment": "E???",
+  "status": "draft, not filed: the cell awaits `fleet/cell approve 42`; no E-number is claimed",
+  "cell": "pending (user, 2026-11-20 ~19:50: 'A, reduced redo on built edits and nine pairs'); card reports/plans/2026-11-20_plan_r-under-a-card.md",
+  "plan": "reports/plans/2026-11-20_plan_r-under-a.md",
+  "definition": "Wording A (decisions.md, row 'Definition wording A adopted', 2026-11-20): 'A fine-tune F reuses the base model M, for a behavior, to the extent that M's mechanisms, each up to an output gain, can stand in for those of the variables the behavior runs through and still preserve the behavior.' Read here, M the base 67M and F the fine-tune or edit: the variables are E226's (VPD subcomponents of the 24 decomposed matrices, one remainder per matrix, grafts, embedding, unembedding); the variables the behaviour runs through are E226's circuit K* (polished set of each search; for the larger sides of E187's pairs at matched size, K* searched here by E226's read_item unchanged); a set S of K* stands in when F's forward with every variable of S writing g_u times M's write on the input it receives in that run (Geiger's soft intervention, Def. 10; g_u the closed-form least-squares gain of M's write to F's write over every position of D in F's own run, any sign) keeps KL(F || F_S) at the read positions, mean over D, at or under the circuit's own allowance (1 - alpha) KL(F || F_all_ablated), alpha 0.9; variables outside K* keep F's mechanisms and nothing is ablated. R_A = the largest share of K* that stands in, read as 1 - (the smallest set of K*'s changed members found by the search that must keep F's mechanism, plus K*'s grafts, which M lacks) / |K*|. Unchanged variables stand in exactly (gain 1). The search is E226's (kstar_vpd.search: attribution order, bisection, two re-rankings, chunk polish) over K*'s changed members, so R_A is a lower bound on the largest share when the cap is hit. The old squared-cosine R (E226's R_read) is reported beside it.",
+  "settings": {
+    "eval_cap": 2000,
+    "reranks": 2,
+    "chunk_div": 8,
+    "gain_batch": 8,
+    "reuse": ["x2", "x10", "moved", "rebuilt"],
+    "new": ["new_few", "new_thin"],
+    "settings_source": "eval_cap, reranks, chunk_div: E226's filed search settings (experiments/kstar_vpd/results/predictions.json .settings), the same search code on the complementary question, so every search has E226's budget; gain_batch: E226's grade_batch (memory only, no reading depends on it). alpha, split_seed, split_tol, batch are read from E226's predictions.json unchanged. reuse, new: E226's known-answer items."
+  },
+  "thresholds": {
+    "kl_repro_rel": 0.0001,
+    "revert_tol": 0.001,
+    "band_min": 0.014,
+    "shard_hours_max": 6,
+    "thresholds_source": "kl_repro_rel: E221's filed value (experiments/kstar_pairs/results/predictions.json): the same state and windows through two code paths agree in all 16 printed digits, a wrong state or window set moves KL by order 1; used for KL(F || F_all_ablated) against E226's saved value and for E226's K* at its bar on this card. revert_tol: E214's gate_tol (max |logit difference| / max |logit|), the bar E226 filed for its hybrid against the native forward; here every changed variable stood in with gain 1 must give M's logits, and the error comes from rebuilding W from fp32 pieces (E226's F_from_pieces check, under 1e-4 relative); each item logs its value and the first item's value is the measured floor. Exact zeros (no tolerance): every unchanged variable's least-squares gain is 1 (its F and M writes are the same floats), and every unchanged variable stood in at once adds exact zeros to every site (stand_in docstring). band_min: E226's filed fallback when the split-half band is 0. shard_hours_max: E226's."
+  },
+  "expected": {
+    "do_nothing": "E226's stage 0 state (F = M, E214's cue windows, last position) and its saved K*: no changed variable, every gain exactly 1, every variable stood in at once gives KL exactly 0, no search evaluation, R_A = 1.",
+    "x2": "KL(F || M) 0.101 under the bar 0.437 (E226 items/x2.json): every changed member of K* stood in at once already passes (the gain on the copy-writing subcomponents near 2 moves it closer still), so R_A = 1 with one evaluation.",
+    "moved": "M's copy neurons stood in beside the eight appended neurons copy twice, as x2 (KL about 0.1, under the bar 0.446): R_A = 1 - grafts in K* / |K*|, about 1 - 8 / 31,888 = 0.99975 (E226 graft share 0.00025).",
+    "rebuilt": "KL(F || M) 0.120 under the bar 0.432: about 1; a mix of reverted and retrained layers could exceed the bar, then R_A falls toward its floor 1 - f = 0.626.",
+    "x10": "KL(F || M) 0.714 over the bar 0.438, so not every change stands in with gain 1; the least-squares gains take up part of the ten-fold output. Between 1 - f = 0.907 and 1; guess 0.99 or above.",
+    "new_few": "KL(F || M) 10.2 against a bar of 0.77: the subcomponents that store the lookup must keep F's mechanism. Between 1 - f = 0.728 and 1; guess 0.85 to 0.97.",
+    "new_thin": "KL(F || M) 10.3 against a bar of 0.76, the change spread over layer 0: most of its changed K* members must keep F's mechanism. Between 1 - f = 0.889 and 1; guess 0.89 to 0.95.",
+    "pairs": "every trained state changes nearly every variable (E226 f about 0.9999) and KL(F || M) is 0.27 to 6.6 against bars of 0.32 to 0.65, so R_A ranges over most of 0 to 1; no direction is guessed."
+  },
+  "rules": {
+    "R0 (stops)": {
+      "rule": "exit 1 unless: (a) every job first: the do-nothing reads as 'expected.do_nothing', exactly; (b) per item, before its search: E226's guards (split checks, gates, parameters outside the decomposition) and E221's load checks; |KL(F || F_all_ablated) / E226's - 1| <= kl_repro_rel; every unchanged variable's gain exactly 1 and all of them stood in give KL exactly 0; every gain finite; for items without grafts, every changed variable stood in with gain 1 gives M's logits within revert_tol; (c) per search: E226's K* at its bar, KL(F || F_K*) <= bar (1 + kl_repro_rel); (d) stage 0's projected hours (seconds per evaluation x eval_cap x searches) <= shard_hours_max.",
+      "absolute_or_relative": "exact for the zero checks; relative for kl_repro_rel and revert_tol",
+      "blind_to": "whether R_A means reuse; they check that the hooks add exact zeros where nothing is stood in, recover M where everything is, and that the circuit and the allowance are E226's",
+      "positive_control": "(b) the revert-all check: an independent forward (M's) the stood-in model must match",
+      "noise_floor": "thresholds_source"
+    },
+    "band": {
+      "rule": "max over the six built items of |R_A(half 1) - R_A(half 2)|, each half with E226's K* of that half and its own bar, gains from all of D; 0: band_min, reported as degenerate.",
+      "absolute_or_relative": "absolute"
+    },
+    "P1 (filed by the cell: every reuse edit above both new edits)": {
+      "rule": "gap = min R_A over x2, x10, moved, rebuilt - max R_A over new_few, new_thin (main search). gap > band: holds (rival a). gap <= 0: rival b. 0 < gap <= band: no call.",
+      "prediction": "holds",
+      "absolute_or_relative": "absolute",
+      "blind_to": "variables outside K*; a set S that passes only with a gain other than the least-squares one, or only with fractional stand-in; a smaller must-keep set the capped search did not find (R_A a lower bound, the same bias on every item); R_A cannot fall below 1 - f, so an edit that changes few of K*'s members reads near 1 whatever it stores",
+      "edge_cases": "do-nothing in place of every item: every R_A 1, gap 0, rival b, cannot pass; all six at 1: gap 0, rival b; a new edit with every changed member standing in (KL all stood in under its bar): R_A = 1 - grafts share, which is 1 for both new edits, so the rule reads rival b; K* with no changed member: R_A 1; empty K*: not possible (E226's K* holds over 9,000 variables on every item); ties: gap 0, rival b; band 0: band_min."
+    },
+    "D1 (descriptive: the nine pairs at matched size)": {
+      "rule": "per pair, mean R_A over the reuse side's states minus over the new side's, the larger side's states at matched size (E232's items) and the smaller side's as E226 read them; the same gap on the old R beside it; the count of pairs with a positive R_A gap. No prediction filed.",
+      "absolute_or_relative": "absolute"
+    }
+  }
+}
