@@ -28,6 +28,8 @@ already); the new edits read lower, 0.85 to 0.97, because the variables that sto
 mechanism. The risk is x10: the split spreads a gain over many parts, so it may read as low as 0.907. The random update
 probably moves the output too little to matter and reads 1, so its filed rule probably fails. A second random update, scaled to move the output as much as new_few does at matched size (rule P2k), is likely under the allowance too and may read 1 as well.
 
+**Phase D.** "Keep its behaviour" is now relative: the stand-in must keep 90% of the fine-tune's change from the original model (95% and 80% read beside it), so a small update no longer passes by default; the random updates should now read low. This replaces the cost below with about 53 L40-hours in about 40 jobs.
+
 **Cost.** About 23 L40-hours on the cluster in 23 jobs of under 2 h, $0; the built stage about 65 min of wall time.
 
 **Decision it serves.** Whether the paper reports R under A as reading the built labels at the VPD level, and the

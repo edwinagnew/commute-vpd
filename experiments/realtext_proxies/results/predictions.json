@@ -1,0 +1,47 @@
+{
+ "experiment": "E246",
+ "cell": "P2.53",
+ "plan": "reports/plans/2026-11-21_plan_p2-53-realtext-proxies.md",
+ "settings": {
+  "pods": [["label", "lowercase"], ["language", "british"]],
+  "pods_source": "two pods of 12 saved states each, so each pod's upload is ~0.7 GB; the label pair's HF download (AG News, SST-2) on pod 0 only",
+  "seeds": [0, 1, 2],
+  "seeds_source": "every seed E211 and E233 saved at the scored size",
+  "random_seed": 253001,
+  "random_seed_source": "one Gaussian direction per fine-tune (commute.finetune.random_direction at its per-matrix norms), seed random_seed + 10 * pod + k for the k-th state of the pod",
+  "split_tol": 1e-06,
+  "split_tol_source": "E228's (commute.split.bases' default), so its readings run as filed",
+  "split_seed": 186001,
+  "split_seed_source": "E226's, E228's and E241's seed for the two halves",
+  "s_batch": 32,
+  "s_batch_source": "E241's batch (memory only)"
+ },
+ "thresholds": {
+  "reproduce_tol": 0.01,
+  "kl_floor": 1e-06,
+  "random_gain_max": 1.0,
+  "thresholds_source": "reproduce_tol: E228's filed tolerance on r (E211 re-read 0.7538 against 0.7519 saved, the reading's measured path floor). kl_floor: E241's filed value (E214's; E232 read KL(F||M) 0 exactly at the do-nothing). random_gain_max: MIN_GAIN, the floor under which r is not defined; E228's Gaussian draws on E53's text tasks moved the trained token by 0.08 to 0.25 log-odds at 5 to 6 times the fine-tune's per-matrix norms (experiments/random_kl_share/results/states/e53_*.json .draws[].gain), so a draw at 1 times reaching 1 means the rows or the target are not the fine-tune's"
+ },
+ "expected": {
+  "do_nothing": "r's numerator and gain, K00-K0, K01-K0, K10-K00, K11-K01 exactly 0 (E228's zero check); S's KL(F||M) <= kl_floor (E232: exactly 0), |K01 - f| <= kl_floor, f > 0 (P1.45's stage-0 checks); a miss stops the pod",
+  "random": "per fine-tune, before it: |gain| < 1, so r is nan (unreadable), as every E228 draw on text; S finite (KL(F||M) > 0); S below every fine-tune of its pair is P1.45's filed expectation for random, read here (rule S-random), not a stop",
+  "own_r_saved": {
+   "label L1 (lo unit)": [0.2098, 0.2204, 0.2001], "label L3": [0.3052, 0.3065, 0.2559],
+   "lowercase T1": [0.7698, 0.7903, 0.7643], "lowercase T4": [0.5690, 0.5657, 0.5668],
+   "language T2": ["nan", "nan", "nan"], "language T3": [0.4972, 0.4606, 0.4818],
+   "british real": [0.0765, 0.0872, 0.1364], "british twin": [0.1363, 0.1700, 0.1240],
+   "source": "experiments/realistic_tasks/results/run2_<task>.json .states[s<seed>_<size>].share.share.lo; experiments/british_style/results/scored/states/<task>_s<seed>.json .targets[\"0.0175\"].share; each own r must reproduce its saved value within reproduce_tol (a stop)"
+  },
+  "prior_sign_from_saved_log_odds": "E211 and E233 saved W0's mean log-odds of the scored token (not E133's geometric-mean P): L1 -7.77 vs L3 -8.81, T1 -6.76 vs T4 -14.53, T2 -13.16 vs T3 -12.39, British -7.15 vs twin -13.56; the geometric-mean prior is expected to keep those signs (the scored tokens sit at P under 1e-3, where log-odds and log P differ by under 1e-3)"
+ },
+ "rules": {
+  "per_pair": "for each pair and proxy, realistic.seed_call(proxy, built-reuse side's three seeds, other side's three seeds) and realistic.filed(call, '+'): hit (ranges apart, built-reuse side higher), miss (apart, other side higher), no call (ranges overlap), unreadable (a side keeps no value: r nan under a gain of 1; S None when KL(F||M) is 0); the prior has one value a side and is judged on its sign",
+  "orders": "a proxy orders the real-text pairs when it is readable on at least 3 of the 4 pairs and hits on every readable pair; otherwise it does not. Within-pair order only: no reference orders the pairs against each other (no R is read on them), so cross-pair gaps are reported as descriptive",
+  "S_random": "per pair, S's random control passes when the largest S of the pair's six random changes lies below the smallest S of its six fine-tunes; a pair where it fails has its S call reported as 'failed its random control'"
+ },
+ "predictions": {
+  "r": "reproduces the saved calls: label miss (lo unit; L3 above L1), lowercase hit, language unreadable (French gain under 1), British no call; r does not order the pairs (1 hit of 3 readable)",
+  "prior": "label hit, lowercase hit, language miss (Yoruba's scored tokens higher than French's), British hit; the prior does not order the pairs (3 hits of 4). Only the British pair's built label came from the prior on its own scored token (E233's premise), so its hit is by construction; run 1 set the label pair by a linear probe and the text pairs by the model's loss per byte or token (experiments/realistic_tasks/results/stage1.json, run.py label_premise, lm_read)",
+  "S": "rival a: S hits on at least 3 of the 4 pairs and passes S_random on each; rival b: S hits on at most one readable pair, as r does"
+ }
+}
