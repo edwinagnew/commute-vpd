@@ -4,7 +4,7 @@
 # experiments/key_grid/results/predictions.json (run.py refuses unless it is committed unchanged). Arguments go to run.py.
 # Submit from the clone root, after ~/commute-agents/fleet/link-data . (results/large symlinks):
 #   sbatch --comment=E237 cluster/key_grid.sbatch --stages 0 1 2                     (~55 min: stage 0 alone first)
-#   sbatch --comment=E237 cluster/key_grid.sbatch --stages 3 --shard 0 2             (~60 min each; after stage 0)
+#   sbatch --comment=E237 cluster/key_grid.sbatch --stages 3 --shard 0 2             (~60 min each; stages 2-4 exit 1 until stage 1 is done: submit them with --dependency=afterok:<that job>)
 #   sbatch --comment=E237 cluster/key_grid.sbatch --stages 3 --shard 1 2
 #   sbatch --comment=E237 cluster/key_grid.sbatch --stages 4 --shard 0 3 --tag v0    (VPD, ~60-90 min each on an L40)
 #   (and --shard 1 3 --tag v1, --shard 2 3 --tag v2)
