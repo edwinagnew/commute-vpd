@@ -50,6 +50,46 @@ def sketch() -> None:
     FG.save(fig, HERE / "figures" / "sketch.png", n="one reading per item on all of D (E242's windows)", data=data)
 
 
+VPD_ITEMS = HERE.parent / "kstar_vpd_wording_a" / "results" / "items"  # E242
+SAE_ITEMS = HERE.parent / "sae_r_a" / "results" / "items"  # E245 (sae-lead's run, copied into this clone)
+BUILT = ("x2", "x10", "rebuilt", "new_few", "new_thin")
+PARTS = (("untouched by the edit (counts as reused)", "#BBBBBB"), ("changed, M's mechanism stands in (reused)", "#56B4E9"),
+         ("changed, F's mechanism kept (new)", "#D55E00"))  # fmt: skip
+
+
+def shares(level: str, item: str) -> dict[str, Any]:
+    """K*'s members as shares of |K*|: untouched, changed and stood in, changed and kept; R_A = 1 - kept."""
+    s = json.loads(((VPD_ITEMS if level == "VPD" else SAE_ITEMS) / f"{item}.json").read_text())["searches"]["main"]
+    changed = s["standable_changed_in_K"] if level == "VPD" else s["changed_in_K"]
+    kept = (1 - s["R_A"]) * s["size_K"]
+    return {"level": level, "item": item, "untouched": 1 - changed / s["size_K"],
+            "stood_in": (changed - kept) / s["size_K"], "kept": kept / s["size_K"], "R_A": s["R_A"]}  # fmt: skip
+
+
+def composition() -> None:
+    fig, axs = FG.figure(FG.FULL_WIDTH, ncols=2)
+    data = []
+    for ax, level in zip(axs, ("VPD", "SAE"), strict=True):
+        items = (*BUILT, "random_size_241001") if level == "VPD" else BUILT
+        rows = [shares(level, i) for i in items]
+        bottom = [0.0] * len(rows)
+        for key, (label, color) in zip(("untouched", "stood_in", "kept"), PARTS, strict=True):
+            ax.bar(range(len(rows)), [r[key] for r in rows], bottom=bottom, color=color, label=label)
+            bottom = [b + r[key] for b, r in zip(bottom, rows, strict=True)]
+        for x, r in enumerate(rows):
+            ax.text(x, r["R_A"] + 0.01, f"{r['R_A']:.2f}", ha="center", fontsize=7)
+        ax.set_xticks(list(range(len(rows))), [SHORT[r["item"]] for r in rows], fontsize=7)
+        ax.set_ylabel("share of the circuit K*'s variables")
+        ax.set_title(f"{level} featurization; number on bar: R under wording A", fontsize=8)
+        data += rows
+    for ax in axs:
+        ax.set_ylim(0, 1.3)
+    axs[1].legend(fontsize=7, frameon=False, loc="upper center")
+    fig.suptitle("Where wording A's reuse share comes from: untouched variables, then changed ones that stand in", fontsize=9)
+    n = "one K* per item on all of D; x2, x10, rebuilt are reuse edits, new_few and new_thin new; SAE: no random update read"
+    FG.save(fig, HERE / "figures" / "kstar_composition.png", n=n, data=data)
+
+
 def main() -> None:
     rows = []
     for i in ITEMS:
@@ -66,4 +106,6 @@ def main() -> None:
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("--sketch", action="store_true")
-    sketch() if ap.parse_args().sketch else main()
+    ap.add_argument("--composition", action="store_true", help="K*'s make-up per item at VPD (E242) and SAE (E245)")
+    a = ap.parse_args()
+    sketch() if a.sketch else composition() if a.composition else main()
