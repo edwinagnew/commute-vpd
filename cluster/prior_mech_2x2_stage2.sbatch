@@ -30,7 +30,7 @@ for d in refit_96key induction_cue open_pair transport_test prior_mech_2x2; do
   test -L experiments/$d/results/large || { echo "experiments/$d/results/large is not linked: run ~/commute-agents/fleet/link-data ."; exit 1; }
 done
 rc=0
-( PRED_SHA=5743e7dbfaf9a3b18bf0701d43e2664eae6a68e6818ea4a81fdeea3ae28cb5e1 .venv/bin/python experiments/prior_mech_2x2/train.py ) 2>&1 \
+( PRED_SHA=9b44981f9828b1b06036daaeddda9fc5a65e68d2fc4e18fdd7eb00df34ab6e1a .venv/bin/python experiments/prior_mech_2x2/train.py ) 2>&1 \
     | tee -a experiments/prior_mech_2x2/results/run2.log || rc=${PIPESTATUS[0]}
 echo "=== FINISHED E_TBD2 run 2 (exit $rc) — results in $COMMUTE_REPO/experiments/prior_mech_2x2/results/stage2/ ==="
 exit $rc

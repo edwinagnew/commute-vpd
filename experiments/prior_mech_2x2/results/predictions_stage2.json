@@ -55,7 +55,7 @@
  },
  "expected": {
   "construction": "log10 prior ~-5.75 (just under the bar -5.73; the thinning keeps the whole run's spread, so the kept prior sits near the bar), ~1214 train and ~286 read rows (the caps), 80-96 keys",
-  "Q0": "head share ~ key copy's in run 1 (filed there at ~0.5). Same task, same mechanism, harder rows",
+  "Q0": "head share ~0.25, key copy's in run 1 (E249 read 0.248, 'between', experiments/prior_mech_2x2/results/stage1/summary.json; null floor 0.074). Same task, same mechanism, harder rows. Near the 0.2 bar: a miss is plausible, and it stops the 2x2 call",
   "values_at_M_and_controls": "random updates: gain ~0 (E237's read -0.015 to 0.010), so head share 'too_small', r nan, steering and neuron shares nan; the do-nothing is run 1's control (zero update reads F = M exactly)",
   "Q1": "mechanism: r copy 0.771, prior_cipher 0.368, cipher 0.272 (E237); lowcopy ~0.7. Mechanism effect ~0.41, prior effect ~0.08, band ~0.03. Rival (r follows the prior): lowcopy ~0.3, prior effect ~0.28 against a mechanism effect ~0.21",
   "Q2": "prior: log10 copy -4.23, prior_cipher -4.43, lowcopy ~-5.75, cipher -5.86; prior effect ~1.4, mechanism effect ~0.15",
