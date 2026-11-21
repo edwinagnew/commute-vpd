@@ -99,3 +99,4 @@
 - [Defer to whip-lead on priority](feedback-defer-to-whip-lead-on-priority.md) — cell order, dates, side checks: follow ~/commute-data/agents/whip-lead/schedule.md; ask whip-lead, not choose alone (user, 2026-11-20)
 - [whip-lead autonomy](feedback-whip-lead-autonomy.md) — stop/start/restart leads, relay results, keep schedule.md; act then report (user, 2026-11-20)
 - [whip-lead approves planned gated runs](feedback-whip-lead-approves-planned-gated-runs.md) — gate 6 for in-plan runs is mine, not the user's; everything ASAP, ordered by dependency/paper impact (user, 2026-11-20)
+- [Be pushy on pods](feedback-be-pushy-on-pods.md) — check each pod finished/idle, poke owner at once; ≤4 pods per pod-runner (user to sae-lead, 2026-11-20)
