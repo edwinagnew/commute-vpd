@@ -1,0 +1,40 @@
+E244 neuron 0/1; settings {'neuron_ks': ('k64', 'kmatched'), 'projected_limit_min': 245}; thresholds {'size_match_rel': 1e-06, 'size_match_rel_source': "E237's own (experiments/key_grid/results/predictions.json): every scaled or random item's size must equal E237's stage-1 size of it, so the items are E237's", 'bars_read_from_their_files': "do-nothing exactness: E143's zero_tol 1e-9 (holes_fill predictions); repeat of E147's neuron readings: E147's reader_neuron_tol 1e-4, identity_tol and telescope_tol 1e-6 (refit_96key predictions); crosscoder: E203's run-2 thresholds at the run's tag (fve_drop 0.05 below E203's base-against-itself FVE 0.9320, dead_max 0.3, reseed_d 0.05, stage 0a's self_act_diff 1e-5, fve_early 0.5, self_rn_dev 1e-3, fve_min 0.8); the run reads each from its file, unchanged", 'repeat_surprise_d': 0.01, 'repeat_surprise_d_source': 'lead 2026-11-20 (gate-5 review): a crosscoder repeat at the same seed on the same stream should differ from E203 saved d only by GPU nondeterminism; a difference above 0.01 is reported loudly (not a stop; the stop stays E203 reseed bar 0.05); the measured difference is recorded in controls_I_3.json and the side JSON'}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+neuron controls: do-nothing {'gain': 0.0, 'G': 0.0, 'num r_half': 0.0, 'num r_n': 0.0, 'num d_n': 0.0, 'num i_n': 0.0, 'num e_n': 0.0, 'top k64 numerator': 0.0, 'top kmatched numerator': 0.0}; repeat {'r_n': {'got': 0.6114415766380348, 'saved': 0.6114416339863387}, 'k64': {'got': 0.02547623158094195, 'saved': 0.025475691642200756}, 'kmatched': {'got': 0.015557544280430704, 'saved': 0.015557531194537186}}
+[neuron e58/copy_s0_scaled] c 1.000000 gain 16.4505 r_n 0.6114 k64 0.0255 (num 0.4191) kmatched 0.0156 (num 0.2559); 2 s; ITEM 1 of 30 DONE
+[neuron e58/copy_s1_scaled] c 1.000000 gain 16.3311 r_n 0.5815 k64 0.0281 (num 0.4593) kmatched 0.0164 (num 0.2680); 2 s; ITEM 2 of 30 DONE
+[neuron e58/copy_s2_scaled] c 1.000000 gain 16.4168 r_n 0.6020 k64 0.0244 (num 0.4007) kmatched 0.0148 (num 0.2423); 2 s; ITEM 3 of 30 DONE
+[neuron e58/rank1_s0_scaled] c 0.920075 gain 9.3454 r_n 0.6544 k64 0.0015 (num 0.0137) kmatched -0.0131 (num -0.1227); 3 s; ITEM 4 of 30 DONE
+[neuron e58/rank1_s1_scaled] c 0.920075 gain 8.9827 r_n 0.7116 k64 -0.0029 (num -0.0264) kmatched -0.0110 (num -0.0988); 2 s; ITEM 5 of 30 DONE
+[neuron e58/rank1_s2_scaled] c 0.920075 gain 9.3516 r_n 0.7226 k64 -0.0141 (num -0.1319) kmatched -0.0084 (num -0.0787); 3 s; ITEM 6 of 30 DONE
+[neuron e58/elicit_s0_scaled] c 0.870739 gain 11.0045 r_n 0.7041 k64 -0.0013 (num -0.0144) kmatched 0.0059 (num 0.0654); 3 s; ITEM 7 of 30 DONE
+[neuron e58/elicit_s1_scaled] c 0.870739 gain 10.9812 r_n 0.7122 k64 -0.0041 (num -0.0451) kmatched 0.0084 (num 0.0919); 2 s; ITEM 8 of 30 DONE
+[neuron e58/elicit_s2_scaled] c 0.870739 gain 10.8129 r_n 0.7219 k64 -0.0012 (num -0.0133) kmatched 0.0033 (num 0.0357); 2 s; ITEM 9 of 30 DONE
+[neuron e58/cipher_s0_scaled] c 0.752024 gain 12.9351 r_n 0.6914 k64 0.0090 (num 0.1165) kmatched 0.0102 (num 0.1315); 3 s; ITEM 10 of 30 DONE
+[neuron e58/cipher_s1_scaled] c 0.752024 gain 13.1234 r_n 0.6771 k64 0.0119 (num 0.1555) kmatched 0.0095 (num 0.1251); 2 s; ITEM 11 of 30 DONE
+[neuron e58/cipher_s2_scaled] c 0.752024 gain 12.2627 r_n 0.6877 k64 0.0147 (num 0.1803) kmatched 0.0090 (num 0.1110); 2 s; ITEM 12 of 30 DONE
+[neuron e58/prior_cipher_s0_scaled] c 0.779816 gain 12.8399 r_n 0.7134 k64 0.0108 (num 0.1388) kmatched 0.0064 (num 0.0823); 3 s; ITEM 13 of 30 DONE
+[neuron e58/prior_cipher_s1_scaled] c 0.779816 gain 12.4364 r_n 0.7034 k64 0.0109 (num 0.1355) kmatched 0.0130 (num 0.1614); 2 s; ITEM 14 of 30 DONE
+[neuron e58/prior_cipher_s2_scaled] c 0.779816 gain 12.2262 r_n 0.6980 k64 0.0128 (num 0.1569) kmatched 0.0063 (num 0.0771); 2 s; ITEM 15 of 30 DONE
+[neuron random_e58/copy_s0] c 1.000000 gain 0.0169 r_n nan k64 nan (num 0.0048) kmatched nan (num 0.0034); 3 s; ITEM 16 of 30 DONE
+[neuron random_e58/copy_s1] c 1.000000 gain -0.0083 r_n nan k64 nan (num -0.0110) kmatched nan (num 0.0134); 3 s; ITEM 17 of 30 DONE
+[neuron random_e58/copy_s2] c 1.000000 gain -0.0076 r_n nan k64 nan (num -0.0078) kmatched nan (num 0.0385); 3 s; ITEM 18 of 30 DONE
+[neuron random_e58/rank1_s0] c 0.920075 gain -0.0032 r_n nan k64 nan (num -0.0043) kmatched nan (num -0.0025); 3 s; ITEM 19 of 30 DONE
+[neuron random_e58/rank1_s1] c 0.920075 gain -0.0098 r_n nan k64 nan (num 0.0027) kmatched nan (num 0.0072); 3 s; ITEM 20 of 30 DONE
+[neuron random_e58/rank1_s2] c 0.920075 gain 0.0012 r_n nan k64 nan (num -0.0176) kmatched nan (num 0.0111); 3 s; ITEM 21 of 30 DONE
+[neuron random_e58/elicit_s0] c 0.870739 gain -0.0099 r_n nan k64 nan (num 0.0042) kmatched nan (num -0.0193); 3 s; ITEM 22 of 30 DONE
+[neuron random_e58/elicit_s1] c 0.870739 gain -0.0103 r_n nan k64 nan (num -0.0029) kmatched nan (num 0.0473); 3 s; ITEM 23 of 30 DONE
+[neuron random_e58/elicit_s2] c 0.870739 gain 0.0072 r_n nan k64 nan (num 0.0079) kmatched nan (num 0.0399); 3 s; ITEM 24 of 30 DONE
+[neuron random_e58/cipher_s0] c 0.752024 gain 0.0038 r_n nan k64 nan (num 0.0017) kmatched nan (num 0.0493); 3 s; ITEM 25 of 30 DONE
+[neuron random_e58/cipher_s1] c 0.752024 gain -0.0087 r_n nan k64 nan (num 0.0160) kmatched nan (num 0.0802); 3 s; ITEM 26 of 30 DONE
+[neuron random_e58/cipher_s2] c 0.752024 gain 0.0010 r_n nan k64 nan (num 0.0090) kmatched nan (num 0.0808); 3 s; ITEM 27 of 30 DONE
+[neuron random_e58/prior_cipher_s0] c 0.779816 gain -0.0015 r_n nan k64 nan (num -0.0021) kmatched nan (num 0.0624); 3 s; ITEM 28 of 30 DONE
+[neuron random_e58/prior_cipher_s1] c 0.779816 gain -0.0010 r_n nan k64 nan (num 0.0046) kmatched nan (num -0.0047); 3 s; ITEM 29 of 30 DONE
+[neuron random_e58/prior_cipher_s2] c 0.779816 gain 0.0092 r_n nan k64 nan (num 0.0056) kmatched nan (num 0.0661); 3 s; ITEM 30 of 30 DONE
+NEURON DONE
+FINISHED neuron 0/1; peak GPU 5.7 GB
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/key_grid_baselines/results/run/neuron_0_1.json, experiments/key_grid_baselines/results/run_neuron_0-1.log ===

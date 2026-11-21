@@ -1,0 +1,46 @@
+{
+ "experiment": "E244",
+ "controls": true,
+ "shard": [
+  1,
+  3
+ ],
+ "repeat": {
+  "e58/copy_s0_scaled": {
+   "d": 0.056081403455356685,
+   "E203": 0.056081403455356685,
+   "diff": 0.0,
+   "stop_bar": 0.05,
+   "surprise_bar": 0.01,
+   "surprise": false
+  }
+ },
+ "checks": {
+  "FVE e58/copy_s0_scaled": {
+   "pass": true,
+   "fve": 0.9325557838611293,
+   "self": 0.9319541527313489,
+   "drop": 0.05
+  },
+  "dead share e58/copy_s0_scaled": {
+   "pass": true,
+   "dead": 0.0,
+   "bar": 0.3
+  },
+  "repeat e58/copy_s0_scaled": {
+   "pass": true,
+   "d": 0.056081403455356685,
+   "E203": 0.056081403455356685,
+   "diff": 0.0,
+   "stop_bar": 0.05,
+   "surprise_bar": 0.01,
+   "surprise": false
+  },
+  "projected time after e58/copy_s0_scaled": {
+   "pass": true,
+   "minutes": 48.428607388337454,
+   "bar": 245
+  }
+ },
+ "pass": true
+}
