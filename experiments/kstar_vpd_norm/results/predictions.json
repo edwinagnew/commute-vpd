@@ -1,0 +1,72 @@
+{
+  "experiment": "E226 Amendment 1",
+  "cell": "P1.37, run 2 of 2 (card reports/plans/2026-11-20_plan_p1-37-run2-card.md)",
+  "request": "user, 2026-11-20 17:24: 'Try a size-normalised R on P1.37 (E226) and see if the built edits and the nine pairs read better. Per part u in K*: t_u = (1 - s_u) / (|dw_u|^2 / |w_u|^2), the share of the part's change that turns its write rather than scaling it; report 1 - mean t_u over changed members of K*, plain and attribution-weighted, beside R. ... A reading only, no wording change; file predictions first (x10 above both new edits).'",
+  "definition": "Unchanged (E226's predictions.json 'definition'); N is a reading on E226's K* and s, not a clause of the definition, and no verdict on the definition is given. Per variable u: w_u = M's mechanism matrix, w_u + dw_u = F's (commute.kstar_vpd: a subcomponent's w_u = u_c v_c^T, dw_u = du_c v_c^T + u_c dv_c^T from the least-squares split; a site remainder's w_u = Delta, dw_u = delta-W_out); ratio_u = |dw_u|^2 / |w_u|^2 (Frobenius); t_u = (1 - s_u) / ratio_u, s_u at the read positions (E226's main grade), recomputed in fp64; N = 1 - mean t_u over the changed K* members with a ratio (|w_u| > 0 and ratio_u >= ratio_min), N_w = 1 - sum |a_u| t_u / sum |a_u|, a_u E226's ranking-0 attribution. K* = E226's polished set of each search (main: all of D; half1, half2 for the six known items). Side ratio: ratio_in_u = sum over settings of |dw_u y|^2 / sum of |w_u y|^2, settings as for s_u (M's and F's runs, read positions), giving N_in.",
+  "settings": {
+    "row": 1,
+    "ranking": 0,
+    "control_size": 0.1,
+    "control_site": 0,
+    "settings_source": "row 1: E226's main grade, the read positions (its predictions.json main_grade); ranking 0: the attribution E238 (experiments/r_reanalysis/run.py, readings) weights Rw_K with, at c = 1/2, the one ranking every item has; control_size 0.1 and control_site 0 (the first site in sorted order): a construction check only, any small size and any site with non-zero subcomponents give the same exact identity"
+  },
+  "thresholds": {
+    "control_tol": 1e-05,
+    "R_repro_tol": 1e-05,
+    "ratio_min": 1e-12,
+    "split_fp64_tol": 1e-12,
+    "F_from_pieces_tol": 0.0001,
+    "M_from_pieces_tol": 0.0001,
+    "thresholds_source": "ratio_min: 1 - s_u is computed in fp64 as 1 - cos^2 with cos^2 near 1, so its absolute error is ~1e-16 (fp64 unit roundoff); a part with ratio_u under 1e-12 would carry an error in t_u of 1e-4 or more, and a known item's split puts a tiny change on every subcomponent of its site (n_changed 3,585 for x10, experiments/kstar_vpd/results/items/x10.json), so such parts are left out of N and counted (n_small) rather than let rounding set t; split_fp64_tol, F_from_pieces_tol, M_from_pieces_tol: E226's filed values (experiments/kstar_vpd/results/predictions.json), the same split; control_tol: the construction identities hold to fp64 rounding (~1e-15) once the pieces are fp32 (|du|^2 / |u|^2 and u . du then off by ~1e-7 relative), so 1e-5 relative catches a formula error (order 1) and not rounding; R_repro_tol: R recomputed on E226's saved K* with the fp64 s against R from E226's saved fp32 s, a guard that the item rebuilt is the one E226 read: the smallest R difference between two known items is 3e-4 (x2 0.99921, moved 0.99889, experiments/r_reanalysis/results/summary.json .known.R.values), and 1e-5 is 30x under it; a GPU other than E226's H100 changes the fp32 forwards by reduction order only (~1e-7 relative), and the first item logs its deviation"
+  },
+  "expected": {
+    "do_nothing": "F = M: no changed variable (n_changed 0, the changed set equal to E226's), every ratio 0 under both ratios, R from the saved K* = 1, N and N_w not read (no changed K* member: an empty pool)",
+    "pure_gain": "a part whose change is a gain (du = g u, dv = 0): F's write is (1 + g) times M's on every input, s_u = 1, t_u = 0 under both ratios; the stage-0 construction check builds one on a real site and stops the job unless max |t| <= control_tol",
+    "write_side_turn": "du orthogonal to u, |du| = g |u|, dv = 0: 1 - s_u = g^2 / (1 + g^2) on every input and ratio_u = g^2 under both ratios, so t_u = 1 / (1 + g^2) = 0.990099 at g = 0.1; checked in stage 0 to control_tol relative",
+    "read_side_change": "dv only: M's and F's writes both lie along u, s_u = 1, t_u = 0 (a read-side change scales the write)",
+    "t_over_1": "possible: the lost squared cosine averaged over inputs is not bounded by the weight-norm ratio when the change is concentrated on input directions D occupies; kept unclipped and counted (n_t_over_1), not a stop",
+    "known_items": "x10 (E195: eight of layer 1's down_proj output columns times ten) changes one site's parts a lot but along M's writes, so if the split puts x10's change mostly into scaling, its t_u are small and N high; the built new edits are predicted lower (P1). moved's eight grafts have no ratio (M lacks them) and are left out of N and counted; its down_proj parts are read as any other.",
+    "e187_states": "every matrix changes, nearly every K* member is changed; N in [0, 1] mostly (t > 1 possible); no earlier reading bounds it"
+  },
+  "rules": {
+    "R0 (stops)": {
+      "rule": "exit 1 unless: (a) stage 0, first: both construction checks (gain: max |t| <= control_tol; turn: max |t - 1/(1+g^2)| / (1/(1+g^2)) <= control_tol; each over at least one part with a ratio, under both ratios); then do-nothing: no changed variable and every finite ratio 0; per item: (b) the changed set equal to E226's saved one, exactly; (c) every site's split_fp64, F_from_pieces, M_from_pieces at or under E226's bars; (d) |R on E226's K* with this run's fp64 s - R with E226's saved s| <= R_repro_tol.",
+      "absolute_or_relative": "absolute, except the turn check and (c) relative",
+      "blind_to": "whether N means reuse; they check the code paths and that each item is the one E226 read",
+      "positive_control": "(a) the built gain (t = 0) and turn (t = 0.990)",
+      "noise_floor": "thresholds_source"
+    },
+    "band": {
+      "rule": "per measure (N, N_w, N_in): band = max over the six known items of |measure(K* of half 1) - measure(K* of half 2)|, each half's K* from E226's saved half search, s and ratios from all of D (as E238 read the halves). An item with the measure not read on either half is left out. Degenerate (no item left, or every difference 0): band = 0 and the rule below is a strict order, reported as degenerate.",
+      "absolute_or_relative": "absolute"
+    },
+    "P1 (filed: x10 above both new edits)": {
+      "rule": "gap = N(x10) - max(N(new_few), N(new_thin)), main search, weight-norm ratio. gap > band: holds (rival a). gap <= 0: rival b. 0 < gap <= band: no call. Not read if any of the three N is not read.",
+      "prediction": "holds",
+      "absolute_or_relative": "absolute",
+      "blind_to": "parts left out (moved's grafts, zero subcomponents, parts under ratio_min) and the size of K*; n_lacked, n_small, n_t_over_1 and t_max are reported per item",
+      "edge_cases": "empty changed K* (do-nothing): N not read, rule not read, cannot pass; |dw_u| = 0 for a changed part (a cancelling du, dv) or under ratio_min: left out and counted in n_small; |w_u| = 0: ratio NaN, left out and counted in n_small (grafts in n_lacked); every changed part left out: N not read; t_u > 1: kept, N may go below 0, the rule still reads; ties (gap = 0): rival b; band 0: strict order; the rule on a do-nothing state for every item (all N not read): not read, cannot pass"
+    },
+    "S1 (side: attribution-weighted)": {
+      "rule": "as P1 on N_w with its own band. Not read if sum |a_u| over the used parts is 0.",
+      "prediction": "holds",
+      "absolute_or_relative": "absolute"
+    },
+    "S2 (side: input ratio)": {
+      "rule": "as P1 on N_in with its own band",
+      "prediction": "holds",
+      "absolute_or_relative": "absolute"
+    },
+    "S3 (side: every reuse item)": {
+      "rule": "min N over x2, x10, moved, rebuilt - max N over new_few, new_thin, read as P1 (holds / rival b / no call)",
+      "prediction": "holds (the crude (1 - R) / size^2, where lower means more reuse, put all four reuse items on the reuse side of both new edits: experiments/r_reanalysis/results/crude_norm.json)",
+      "absolute_or_relative": "absolute"
+    },
+    "S4 (side: the nine pairs, descriptive)": {
+      "rule": "per E187 pair: gap = mean N over its reuse states - mean N over its new states (states with N not read left out; a pair with either side empty left out, n reported); report the count of pairs with gap > 0, the Spearman of the gaps against the pair's smaller update size (pairs.json smaller_update), and the Spearman over the 68 states of N against log update size; the same for N_w and N_in.",
+      "prediction": "reuse side higher on at least 5 of 9 pairs (a description; no bar: E238 found R's pair gaps track update size, Spearman 0.87, and the crude version read the reuse side as more reuse on 4 of 9 pairs, its gaps Spearman 0.77 against size)",
+      "absolute_or_relative": "absolute",
+      "edge_cases": "fewer than 3 pairs read: Spearman not read (None)"
+    }
+  }
+}
