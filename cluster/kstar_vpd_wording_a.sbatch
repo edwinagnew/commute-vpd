@@ -8,7 +8,7 @@
 #      built2 --items x2 x10; built3 --items moved rebuilt (each --group built)
 #   3. once 2 has passed: pairs0..pairs25 --group pairs --shard i 26; e62_0, e62_1 --group e62 --shard i 2;
 #      keys0..keys3 --group keys --shard i 4
-# PRED_SHA below is git show HEAD:experiments/kstar_vpd_wording_a/results/predictions.json | sha256sum (refiled 2026-11-20 ~22:00, P2k added).
+# PRED_SHA below is git show HEAD:experiments/kstar_vpd_wording_a/results/predictions.json | sha256sum (refiled 2026-11-20 ~22:15, relative bar).
 # Afterwards: ~/commute-agents/fleet/cpu-run python3 experiments/kstar_vpd_wording_a/score.py
 #SBATCH --job-name=commute-wording-a
 #SBATCH --partition=compute
@@ -27,7 +27,7 @@ source "$SLURM_SUBMIT_DIR/cluster/env.sh"
 cd "$COMMUTE_REPO"
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 rc=0
-( PRED_SHA=2e8d08ecf801880e0e7bba7470f035960f5d582fea197730c3c3ee890995ec92 .venv/bin/python experiments/kstar_vpd_wording_a/run.py --tag "$tag" "$@" ) 2>&1 \
+( PRED_SHA=5b24e7c8a9f84c8314844fcdd153671e3d5006b6ad84ba8a2b897dacef194664 .venv/bin/python experiments/kstar_vpd_wording_a/run.py --tag "$tag" "$@" ) 2>&1 \
     | tee -a "experiments/kstar_vpd_wording_a/results/run_$tag.log" || rc=${PIPESTATUS[0]}
 echo "=== FINISHED E242 $tag (exit $rc) — results in $COMMUTE_REPO/experiments/kstar_vpd_wording_a/results/ ==="
 exit $rc
