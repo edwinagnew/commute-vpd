@@ -1,0 +1,62 @@
+E245 start, size scored, group built, tag built5; 1 items ['new_thin']; settings {'alpha': 0.9, 'side_tols': (0.05, 0.2), 'batch': 32, 'gain_batch': 8, 'reranks': 2, 'eval_cap': 2000, 'chunk_div': 8, 'split_seed': 186001, 'reuse': ('x2', 'x10', 'moved', 'rebuilt'), 'new': ('new_few', 'new_thin'), 'sae_size': 'scored', 'sae_seed': 0, 'only': (), 'out': 'items'}; thresholds {'control_rel_tol': 0.001, 'floor_max': 1e-06, 'kl_floor': 1e-06, 'shard_hours_max': 6, 'band_min': 0.014, 'thresholds_source': "control_rel_tol: E242's revert_tol (E214's gate_tol), max |logit difference| / max |logit| between every variable stood in with gain 1 and M's own forward: a code error gives order 1, fp32 rounding of order 1e-6; the do-nothing measures this path's floor (pieces_err: every site's output rebuilt from its SAE pieces) and every item logs its own revert_err beside it, and the rehearsal (do-nothing and x10) writes both into the plan before the scored run. floor_max: E242's (E214's and E226's kl_floor): stage 0 stops if its KL floor (the larger of the do-nothing's pieces KL and revert KL) exceeds it. Not read: a tolerance whose bar tol KL(F || M) is at or under the floor, floor = the larger of the job's stage-0 floor and the item's own revert KL (E242's rule); the do-nothing reads 1 by definition. kl_floor: E226's: an item with KL(F || F_all_ablated) at or under it has no behaviour to search. shard_hours_max: the debug QoS's 2 h limit (cluster/sae_r_a.sbatch --time); stage 0 projects the job's upper bound from its measured seconds per evaluation times eval_cap times the searches. band_min: E242's (E226's) fallback when the split-half band is 0. Exact zeros, no tolerance: o_F recomputed from the module's input equals the module's output bit for bit; every gain at an unchanged site is exactly 1 and its variables stood in give KL exactly 0; all kept gives F's logits exactly; on the do-nothing every gain is exactly 1 and every variable stood in gives KL exactly 0. Amended 2026-11-21 before any scored run (sae-lead, after the rehearsal, job 62745): shard_hours_max 2 -> 6. The projection prices every search at the cap at the do-nothing's 512-window speed (0.88 s per K* and 1.23 s per stand-in evaluation, about 4.9 h per built item), so 2 h stopped every job; the copy-window items run at 0.21 s (about 56 min at the cap, inside the debug 2 h --time), and new_few and new_thin run on H100 pods, where 6 h is the gated-run limit. No rule, band or prediction changed."}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+05:33:28 [data] train rows 0..32768: cached at /root/artifacts/sets/train_0_32768.npy
+do_nothing: 512 windows x 41, 131080 variables; KL(F || F_all_ablated) 8.56932, KL(F || M) 0; controls {"recompute_differs": [], "changed_sites": [], "gain_dev_unchanged": 0.0, "gain_dev_all": 0.0, "kl_unchanged_stood_in": 0.0, "kl_all_stood_in": 0.0, "seconds_per_eval": 0.728539228439331, "revert_err": 0.0, "revert_kl": 0.0, "gain_changed_quantiles": null, "nonpositive_gains": 0, "pieces_kl": 8.451539413734016e-12, "pieces_err": 2.456107949910802e-06}
+do_nothing: remainder share nan (KL with the 8 remainders stood in 0)
+    ranking 0: prefix 9969, 17 evaluations
+    ranking 1: prefix 7327, 34 evaluations
+    ranking 2: prefix 5847, 51 evaluations
+  do_nothing main: |K*| 5088 (prefix 5847), 0 at changed sites, 8 remainders; KL at K* 0.856411, bar 0.856932; 2000 evaluations (cap hit), 832 s
+  do_nothing main tol 0.05: R_A 1.000000 (floor 1.000000, ceiling 1.000000); |K*| 5088, standable changed 0, keep F's 0, cannot stand in 0 (gain <= 0 0); KL all stood in 0, at the found set 0, bar 0; 0 evaluations, 0 s
+  do_nothing main tol 0.1: R_A 1.000000 (floor 1.000000, ceiling 1.000000); |K*| 5088, standable changed 0, keep F's 0, cannot stand in 0 (gain <= 0 0); KL all stood in 0, at the found set 0, bar 0; 0 evaluations, 0 s
+  do_nothing main tol 0.2: R_A 1.000000 (floor 1.000000, ceiling 1.000000); |K*| 5088, standable changed 0, keep F's 0, cannot stand in 0 (gain <= 0 0); KL all stood in 0, at the found set 0, bar 0; 0 evaluations, 0 s
+do_nothing: done in 858 s; R_A tol0.05 1.0, tol0.1 1.0, tol0.2 1.0; halves []; remainder share nan; peak GPU 14.50 GB
+stage 0: {"experiment": "E245", "R_A": 1.0, "seconds_per_K_eval": 0.41590363371372224, "seconds_per_stand_in_eval": 0.728539228439331, "projected_hours_max": 2.7168928018543457, "pieces_kl": 8.451539413734016e-12, "pieces_err": 2.456107949910802e-06, "revert_kl": 0.0, "revert_err": 0.0, "kl_floor": 8.451539413734016e-12, "peak_gpu_gb": 14.502127647399902}; checks hold
+STAGE 0 DONE
+[data] val rows 0..256: cached at /root/artifacts/sets/val_0_256.npy
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 5731, 'limit_filed': 2.5397456096210376, 'limit_whitened_0.01': 8.566283727683114, 'limit_whitened_0.001': 8.575327523798162, 'limit_whitened_0.0001': 8.568685731515666, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 4566, 'limit_filed': 3.38301534693608, 'limit_whitened_0.01': 9.095356453119177, 'limit_whitened_0.001': 9.070667057076344, 'limit_whitened_0.0001': 9.072227442589407, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: {"slots": [109, 447, 771, 1004, 1101, 1997, 2018, 2034], "betas": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "detectors": [{"limit_filed": 2.8299306178453936, "limit_whitened_0.01": 11.977943470656788, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.935406646295597, "limit_whitened_0.01": 9.467794583919384, "limit_whitened_0.001": 9.453473755664607, "limit_whitened_0.0001": 9.434761738713327, "direction": "whitened 0.0001", "pile_own": 0}, {"limit_filed": 3.153354424992976, "limit_whitened_0.01": 10.247742932694962, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 2.976401818196408, "limit_whitened_0.01": 10.980585108255589, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 3.1523499367635144, "limit_whitened_0.01": 10.295113233962542, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.8080070622612814, "limit_whitened_0.01": 11.894050704084995, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 3.49099258484954, "limit_whitened_0.01": 12.118533590411879, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 6.333510380063351, "limit_whitened_0.01": 15.14462701601434, "direction": "whitened 0.01", "pile_own": 1}], "act": [13.54616928100586, 13.430658340454102, 14.229463577270508, 13.013628959655762, 13.70849609375, 13.203634262084961, 13.495687484741211, 16.34401512145996], "copy_M_twin": 0.2578125, "copy_M_D": 0.001953125, "misses": ["reuse_small: top-1 0.0000 < 0.2063", "reuse_large: top-1 0.0117 < 0.2063"], "gamma_new_few": 11.291481018066406, "gamma_new_thin": 10.845924377441406, "gamma_T": 8.0, "g": 4.662668452625903, "size_matched": false, "dW_norm": {"reuse_small": 11.702665857318092, "new_few": 4.032901283721824, "new_thin": 1.9208650760341066, "reuse_large": 31.246117113476934}, "top1_reuse_small": 0.0, "top1_new_few": 0.900390625, "top1_new_thin": 0.900390625, "top1_reuse_large": 0.01171875, "A": [4833, 7192, 4910, 7939, 8638, 2589, 9653, 6196], "A_prime": [10680, 4934, 7756, 7057, 5823, 5827, 6255, 1471], "y": [5752, 5771, 5175, 4412, 5870, 5087, 4201, 6430], "swapped": [{"cue": 5, "A_prime": 5731, "limit_filed": 2.5397456096210376, "limit_whitened_0.01": 8.566283727683114, "limit_whitened_0.001": 8.575327523798162, "limit_whitened_0.0001": 8.568685731515666, "direction": "whitened 0.0001", "pile_own": 1}, {"cue": 5, "A_prime": 4566, "limit_filed": 3.38301534693608, "limit_whitened_0.01": 9.095356453119177, "limit_whitened_0.001": 9.070667057076344, "limit_whitened_0.0001": 9.072227442589407, "direction": "whitened 0.0001", "pile_own": 1}]}
+new_thin: 512 windows x 41, 131080 variables; KL(F || F_all_ablated) 11.8583, KL(F || M) 10.2519839; controls {"recompute_differs": [], "changed_sites": ["mlp0"], "gain_dev_unchanged": 0.0, "gain_dev_all": 3.669465773556446, "kl_unchanged_stood_in": 0.0, "kl_all_stood_in": 9.56943519117716, "seconds_per_eval": 0.7254092693328857, "revert_err": 2.7685141503752675e-06, "revert_kl": 1.0989495724328188e-11, "gain_changed_quantiles": [0.0, 0.8694181103950434, 1.0959405068987393, 1.4260241783536345, 4.669465773556446], "nonpositive_gains": 6}
+new_thin: remainder share 0.792041 (KL with the 8 remainders stood in 2.13199)
+    ranking 0: prefix 10275, 17 evaluations
+    ranking 1: prefix 9540, 34 evaluations
+    ranking 2: prefix 12037, 51 evaluations
+  new_thin main: |K*| 8954 (prefix 9540), 6650 at changed sites, 8 remainders; KL at K* 1.18502, bar 1.18583; 2000 evaluations (cap hit), 832 s
+    ranking 0: prefix 4937, 13 evaluations
+    ranking 1: prefix 5482, 26 evaluations
+    ranking 2: prefix 5482, 39 evaluations
+  new_thin main tol 0.05: R_A 0.535291 (floor 0.257315, ceiling 1.000000); |K*| 8954, standable changed 6650, keep F's 4161, cannot stand in 0 (gain <= 0 0); KL all stood in 6.34119, at the found set 0.512255, bar 0.512599; 2001 evaluations (cap hit), 350 s
+    ranking 0: prefix 4546, 12 evaluations
+    ranking 1: prefix 5011, 25 evaluations
+    ranking 2: prefix 5011, 38 evaluations
+  new_thin main tol 0.1: R_A 0.571030 (floor 0.257315, ceiling 1.000000); |K*| 8954, standable changed 6650, keep F's 3841, cannot stand in 0 (gain <= 0 0); KL all stood in 6.34119, at the found set 1.02288, bar 1.0252; 2001 evaluations (cap hit), 350 s
+    ranking 0: prefix 4055, 13 evaluations
+    ranking 1: prefix 4474, 25 evaluations
+    ranking 2: prefix 4474, 37 evaluations
+  new_thin main tol 0.2: R_A 0.639826 (floor 0.257315, ceiling 1.000000); |K*| 8954, standable changed 6650, keep F's 3225, cannot stand in 0 (gain <= 0 0); KL all stood in 6.34119, at the found set 2.04928, bar 2.0504; 2001 evaluations (cap hit), 350 s
+    ranking 0: prefix 10851, 17 evaluations
+    ranking 1: prefix 10814, 34 evaluations
+    ranking 2: prefix 11581, 51 evaluations
+  new_thin half1: |K*| 9842 (prefix 10814), 7169 at changed sites, 8 remainders; KL at K* 1.18466, bar 1.18659; 2000 evaluations (cap hit), 416 s
+    ranking 0: prefix 4981, 13 evaluations
+    ranking 1: prefix 5946, 26 evaluations
+    ranking 2: prefix 5946, 39 evaluations
+  new_thin half1 tol 0.1: R_A 0.571733 (floor 0.271591, ceiling 1.000000); |K*| 9842, standable changed 7169, keep F's 4215, cannot stand in 0 (gain <= 0 0); KL all stood in 6.39574, at the found set 1.01524, bar 1.01583; 2001 evaluations (cap hit), 176 s
+    ranking 0: prefix 10332, 17 evaluations
+    ranking 1: prefix 9152, 34 evaluations
+    ranking 2: prefix 10013, 51 evaluations
+  new_thin half2: |K*| 8514 (prefix 9152), 6359 at changed sites, 8 remainders; KL at K* 1.18474, bar 1.18507; 2000 evaluations (cap hit), 418 s
+    ranking 0: prefix 4287, 12 evaluations
+    ranking 1: prefix 5179, 24 evaluations
+    ranking 2: prefix 5179, 36 evaluations
+  new_thin half2 tol 0.1: R_A 0.593023 (floor 0.253113, ceiling 1.000000); |K*| 8514, standable changed 6359, keep F's 3465, cannot stand in 0 (gain <= 0 0); KL all stood in 6.17109, at the found set 1.03417, bar 1.03457; 2001 evaluations (cap hit), 176 s
+new_thin: done in 3088 s; R_A tol0.05 0.5352914898369443, tol0.1 0.5710297073933437, tol0.2 0.6398257761894126; halves [0.5717333875228612, 0.5930232558139534]; remainder share 0.792041; peak GPU 14.81 GB
+ITEM 1 of 1 DONE (new_thin)
+order check waits for ['x10', 'rebuilt', 'new_few']
+FINISHED E245 built built5
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/sae_r_a/results/ (items/, large/) ===
