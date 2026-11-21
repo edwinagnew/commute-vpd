@@ -1,0 +1,53 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+E236 start, tag pod7; 2 of 81 items ['e58/rank1_s0', 'e62/lookup_s0']; settings {'handoff': 'experiments/gain_only/results/handoff.json', 'gains_dir': 'experiments/gain_only/results/large/gains', 'match': 'kl', 'seeds': (0, 1, 2), 'n_items': 81, 'control': 'e58/cipher_s0', 'twins': (('case_label/real', 'case_real'), ('case_label/twin', 'case_twin'), ('fresh/real', 'repeat_real'), ('fresh/twin', 'repeat_twin'))}
+stage0_pod7.json: done before
+    ranking 0: prefix 36304, 15 evaluations
+    ranking 1: prefix 32938, 31 evaluations
+    ranking 2: prefix 32389, 46 evaluations
+  e58/rank1_s0 VPD: |K*| 31033 (prefix 32389), R read 0.992181 (prefix 0.991927), R all 0.991950, f 0.4448, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 258 s
+e58/rank1_s0 VPD: 38938 variables, 18440 changed, KL(F || M) 0.817758, max |1 - s| 0.294; read, R read 0.9921806785081625; 271 s
+e58/rank1_s0: 512 windows, KL(F || F_empty) 3.30928, KL(F || M) 0.817758063, saved None, size {'whole': 0.05127700180911561, 'mlp': 0.06508100798215657}
+e58/rank1_s0 head_mlp: 30 variables, 28 changed; gates {'all': 2.3914919893286424e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 21, R all 0.997920, read 0.997289, f 0.9048; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 1: |K*| 22, R all 0.998014, read 0.997412, f 0.9091; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 2: |K*| 21, R all 0.997920, read 0.997289, f 0.9048; 1954 evaluations, 23 s
+e58/rank1_s0 head_mlp: R read [0.997289234905372, 0.997412454417859, 0.9972892377044673], all [0.9979198279182597, 0.9980143841714821, 0.9979198308481035], f [0.9047619047619048, 0.9090909090909091, 0.9047619047619048], |K*| [21, 22, 21]; peak GPU memory 6.60 GB
+e58/rank1_s0 mlp_attn: 10 variables, 8 changed; gates {'all': 2.3914919893286424e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+e58/rank1_s0 mlp_attn: R read [0.9931225589478091], all [0.9944327751942006], f [0.7777777777777778], |K*| [9]; peak GPU memory 6.60 GB
+e58/rank1_s0 block: 6 variables, 4 changed; gates {'all': 2.3914919893286424e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+e58/rank1_s0 block: R read [0.9912457159512907], all [0.99319654877802], f [0.6666666666666666], |K*| [6]; peak GPU memory 6.60 GB
+e58/rank1_s0: KL(F || M) 0.817758 (last position, 512 read windows); fit 2.4 s
+e58/rank1_s0 reading 1: S 0.9999998675251981, KL(F || H) 1.08332e-07, max relative logit error 0.000842; site residuals mlp0 1.158e-08, attn0 9.037e-09, mlp1 1.277e-09, attn1 1.969e-09, mlp2 9.311e-09, attn2 4.469e-09, mlp3 1.488e-08, attn3 1.872e-10
+e58/rank1_s0 reading 2: S 0.06950721574695784, KL(F || H) 0.760918, max relative logit error 0.544; site residuals mlp0 0.00643, attn0 9.037e-09, mlp1 0.0001909, attn1 1.969e-09, mlp2 0.004035, attn2 4.469e-09, mlp3 0.005912, attn3 1.872e-10
+e58/rank1_s0 reading 3: S 0.9999999999999366, KL(F || H) 5.18714e-14, max relative logit error 1.12e-06; site residuals mlp0 -8.718e-16, attn0 -1.052e-15, mlp1 2.988e-16, attn1 -9.746e-16, mlp2 0, attn2 -4.031e-16, mlp3 -2.667e-16, attn3 1.123e-16
+ITEM 1 of 2 DONE (e58/rank1_s0): held reading 1 S 0.9999998675251981; 358 s
+    ranking 0: prefix 36783, 16 evaluations
+    ranking 1: prefix 35319, 32 evaluations
+    ranking 2: prefix 36105, 47 evaluations
+  e62/lookup_s0 VPD: |K*| 35262 (prefix 35319), R read 0.981793 (prefix 0.981763), R all 0.982057, f 0.4591, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 257 s
+e62/lookup_s0 VPD: 38938 variables, 18440 changed, KL(F || M) 1.8273, max |1 - s| 0.472; read, R read 0.9817927395396083; 261 s
+e62/lookup_s0: 512 windows, KL(F || F_empty) 2.91385, KL(F || M) 1.82729939, saved None, size {'whole': 0.08240261760283096, 'mlp': 0.10213719011413368}
+e62/lookup_s0 head_mlp: 30 variables, 28 changed; gates {'all': 2.767098521871958e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 24, R all 0.996255, read 0.993766, f 0.9167; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 1: |K*| 23, R all 0.996092, read 0.993495, f 0.9130; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 2: |K*| 23, R all 0.996092, read 0.993495, f 0.9130; 2030 evaluations, 24 s (polish cap hit)
+e62/lookup_s0 head_mlp: R read [0.9937662868242522, 0.9934952439074669, 0.9934952576187434], all [0.9962548557855083, 0.9960920119901131, 0.9960920251195963], f [0.9166666666666666, 0.9130434782608695, 0.9130434782608695], |K*| [24, 23, 23]; peak GPU memory 8.79 GB
+e62/lookup_s0 mlp_attn: 10 variables, 8 changed; gates {'all': 2.767098521871958e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+e62/lookup_s0 mlp_attn: R read [0.9834389676313476], all [0.9892991854029163], f [0.8], |K*| [10]; peak GPU memory 8.79 GB
+e62/lookup_s0 block: 6 variables, 4 changed; gates {'all': 2.767098521871958e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+e62/lookup_s0 block: R read [0.9741808487534533], all [0.9846273572427454], f [0.6666666666666666], |K*| [6]; peak GPU memory 8.79 GB
+e62/lookup_s0: KL(F || M) 1.8273 (last position, 512 read windows); fit 2.3 s
+e62/lookup_s0 reading 1: S 0.9999996884965183, KL(F || H) 5.6921e-07, max relative logit error 0.00184; site residuals mlp0 2.415e-08, attn0 1.202e-08, mlp1 5.771e-09, attn1 2.186e-08, mlp2 1.993e-08, attn2 1.901e-08, mlp3 2.779e-08, attn3 5.354e-10
+e62/lookup_s0 reading 2: S 0.03765077491465263, KL(F || H) 1.7585, max relative logit error 0.85; site residuals mlp0 0.01058, attn0 1.202e-08, mlp1 0.0004421, attn1 2.186e-08, mlp2 0.009819, attn2 1.901e-08, mlp3 0.01155, attn3 5.354e-10
+e62/lookup_s0 reading 3: S 0.9999999999999758, KL(F || H) 4.4186e-14, max relative logit error 1.36e-06; site residuals mlp0 -7.104e-16, attn0 -3.595e-16, mlp1 -1.56e-16, attn1 -1.291e-15, mlp2 -2.643e-16, attn2 -1.269e-15, mlp3 -2.832e-16, attn3 -2.353e-16
+ITEM 2 of 2 DONE (e62/lookup_s0): held reading 1 S 0.9999996884965183; 349 s
+E236 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/gain_only_r/results/items/ , experiments/gain_only_r/results/run_pod4b.log ===

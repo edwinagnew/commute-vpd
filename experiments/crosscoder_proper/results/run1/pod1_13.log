@@ -1,0 +1,223 @@
+02:39:57 [E235] pod ['1', '13', '15'] tag run1, sizes full; Cfg(d=768, expansion=32, k=100, k_max=1024, k_anneal_steps=2000, lr=0.0001, warmup=1000, batch=2048, tokens=200000000, epochs=2, aux_alpha=0.03125, dead_tokens=10000000, init_norm=1.0, target_rms=100.0, chunk_rows=1024, ls_tokens=100000, val_rows=8192, alive_min=10, top_n=1667, top_n_wide=5000, nu_r=0.5, nu_eps=0.2, shared=(0.4, 0.6), base_only=0.1, snapshots=(0.125, 0.5), ckpt_every=10000, log_every=500, pile_start=32768, pool_start=131072, pool_rows=65536, repeat_cap=100)
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+02:40:08 [pod] stage 1 shard 13/15: ['e54__elicit_s0.A.c2', 'head.A.c0.k200']
+skip Item(what='e54__elicit_s0', site='A', seed=2, k=None): site A failed stage 0
+02:40:08 [check graft writes at its site] ok {"energy": 210.99224913502826, "bar": 1e-06}
+02:40:08 [check stream holds every step] ok {"tokens": 200936448, "need": 199999488}
+02:40:10 [check latent-scaling tokens from the first chunk] ok {"tokens": 100000, "want": 100000}
+02:40:11 [head.A.c0.k200] steps 0..97656, k 200, stream {"kind": "graft", "T": 31, "per_chunk": 16880, "fill_rows": 0, "task_share": 0.5000076442079836, "chunks": 192, "tokens": 200936448}
+02:40:13   step 0/97656 fve_batch -218.9 loss 992.9 k 1024 dead 0 theta -1 ms_per_step 2312
+02:40:19   step 500/97656 fve_batch -10.74 loss 346.8 k 818 dead 0 theta -1 ms_per_step 12.35
+02:40:27   step 1000/97656 fve_batch 0.743 loss 47.87 k 612 dead 0 theta -1 ms_per_step 16.36
+02:40:27 [check batch FVE at step 1000] ok {"fve_batch": 0.7429529516662696, "bar": 0}
+02:40:36   step 1500/97656 fve_batch 0.9189 loss 28.17 k 406 dead 0 theta 2.337 ms_per_step 16.62
+02:40:44   step 2000/97656 fve_batch 0.9126 loss 29.53 k 200 dead 0 theta 2.43 ms_per_step 16.29
+02:40:52   step 2500/97656 fve_batch 0.9029 loss 27.39 k 200 dead 0 theta 2.714 ms_per_step 16.15
+02:41:00   step 3000/97656 fve_batch 0.9178 loss 25.88 k 200 dead 0 theta 2.84 ms_per_step 16.38
+02:41:08   step 3500/97656 fve_batch 0.9436 loss 25.33 k 200 dead 0 theta 2.877 ms_per_step 16.44
+02:41:17   step 4000/97656 fve_batch 0.9351 loss 24.79 k 200 dead 0 theta 2.869 ms_per_step 16.5
+02:41:25   step 4500/97656 fve_batch 0.947 loss 24.18 k 200 dead 0 theta 2.839 ms_per_step 16.38
+02:41:33   step 5000/97656 fve_batch 0.9445 loss 23.65 k 200 dead 0 theta 2.8 ms_per_step 16.54
+02:41:41   step 5500/97656 fve_batch 0.9493 loss 23.66 k 200 dead 0 theta 2.758 ms_per_step 16.62
+02:41:50   step 6000/97656 fve_batch 0.9306 loss 23.02 k 200 dead 0 theta 2.716 ms_per_step 16.47
+02:41:58   step 6500/97656 fve_batch 0.9417 loss 22.72 k 200 dead 0 theta 2.677 ms_per_step 16.41
+02:42:06   step 7000/97656 fve_batch 0.9556 loss 22.39 k 200 dead 0 theta 2.641 ms_per_step 16.44
+02:42:14   step 7500/97656 fve_batch 0.9494 loss 22.27 k 200 dead 0 theta 2.612 ms_per_step 16.35
+02:42:22   step 8000/97656 fve_batch 0.9442 loss 21.99 k 200 dead 0 theta 2.585 ms_per_step 16.31
+02:42:31   step 8500/97656 fve_batch 0.9565 loss 21.49 k 200 dead 0 theta 2.56 ms_per_step 16.48
+02:42:39   step 9000/97656 fve_batch 0.9453 loss 21.49 k 200 dead 0 theta 2.537 ms_per_step 16.57
+02:42:47   step 9500/97656 fve_batch 0.9529 loss 21.7 k 200 dead 0 theta 2.517 ms_per_step 16.54
+02:42:57   step 10000/97656 fve_batch 0.9526 loss 21.41 k 200 dead 0 theta 2.501 ms_per_step 19.3
+02:43:05   step 10500/97656 fve_batch 0.9497 loss 21.17 k 200 dead 0 theta 2.485 ms_per_step 16.45
+02:43:13   step 11000/97656 fve_batch 0.9558 loss 21.09 k 200 dead 0 theta 2.468 ms_per_step 16.38
+02:43:21   step 11500/97656 fve_batch 0.9588 loss 21.13 k 200 dead 0 theta 2.451 ms_per_step 16.27
+02:43:30   step 12000/97656 fve_batch 0.9546 loss 20.9 k 200 dead 0 theta 2.437 ms_per_step 16.32
+02:43:58 [head.A.c0.k200 snapshot] {"step": 12207, "fve_base": 0.9280398092427278, "fve_ft": 0.9574292173659307, "dead": 0.0, "specific": 0.14217360318042377, "d_authors": -0.018466371719761204, "d_alt": -0.1353366887190462, "counts": {"ft_specific": 82, "shared": 1305, "ft_artefact": 439, "base_only": 2, "other": 22748, "dead": 0}, "lead": {"latent": 12721, "s": 0.13463847343212162, "rn": 0.7106824517250061, "rank": 137, "nu_r": -0.027468479032901626, "nu_eps": 0.17266935833437144, "specific": true}}
+02:43:58 [check FVE at the first snapshot] ok {"fve": 0.9280398092427278, "bar": 0.5}
+02:43:58 [check dead share at the first snapshot] ok {"dead": 0.0, "bar": 0.3}
+02:43:58 [check projected minutes] ok {"minutes": 30.389376354217532, "bar": 90}
+02:44:05   step 12500/97656 fve_batch 0.9477 loss 20.78 k 200 dead 0 theta 2.424 ms_per_step 71.64
+02:44:13   step 13000/97656 fve_batch 0.9575 loss 20.58 k 200 dead 0 theta 2.412 ms_per_step 16.26
+02:44:22   step 13500/97656 fve_batch 0.9539 loss 20.68 k 200 dead 0 theta 2.402 ms_per_step 16.27
+02:44:30   step 14000/97656 fve_batch 0.9651 loss 20.47 k 200 dead 0 theta 2.392 ms_per_step 16.36
+02:44:38   step 14500/97656 fve_batch 0.9534 loss 20.29 k 200 dead 0 theta 2.383 ms_per_step 16.34
+02:44:46   step 15000/97656 fve_batch 0.944 loss 20.52 k 200 dead 0 theta 2.375 ms_per_step 16.33
+02:44:54   step 15500/97656 fve_batch 0.9461 loss 20.29 k 200 dead 0 theta 2.367 ms_per_step 16.32
+02:45:02   step 16000/97656 fve_batch 0.9581 loss 20.27 k 200 dead 0 theta 2.36 ms_per_step 16.26
+02:45:11   step 16500/97656 fve_batch 0.9633 loss 20.06 k 200 dead 0 theta 2.351 ms_per_step 16.27
+02:45:19   step 17000/97656 fve_batch 0.9634 loss 20.26 k 200 dead 0 theta 2.342 ms_per_step 16.28
+02:45:27   step 17500/97656 fve_batch 0.9527 loss 19.97 k 200 dead 0 theta 2.333 ms_per_step 16.12
+02:45:35   step 18000/97656 fve_batch 0.9547 loss 20.15 k 200 dead 0 theta 2.324 ms_per_step 15.9
+02:45:43   step 18500/97656 fve_batch 0.963 loss 19.99 k 200 dead 0 theta 2.315 ms_per_step 15.91
+02:45:51   step 19000/97656 fve_batch 0.9612 loss 20.07 k 200 dead 0 theta 2.304 ms_per_step 15.97
+02:45:59   step 19500/97656 fve_batch 0.9547 loss 20.23 k 200 dead 0 theta 2.297 ms_per_step 16.31
+02:46:08   step 20000/97656 fve_batch 0.9487 loss 19.69 k 200 dead 0 theta 2.291 ms_per_step 18.85
+02:46:16   step 20500/97656 fve_batch 0.9485 loss 19.76 k 200 dead 0 theta 2.285 ms_per_step 16.04
+02:46:24   step 21000/97656 fve_batch 0.9527 loss 19.95 k 200 dead 0 theta 2.274 ms_per_step 16.31
+02:46:32   step 21500/97656 fve_batch 0.9488 loss 19.69 k 200 dead 0 theta 2.268 ms_per_step 16.21
+02:46:41   step 22000/97656 fve_batch 0.9476 loss 19.82 k 200 dead 0 theta 2.259 ms_per_step 16.24
+02:46:49   step 22500/97656 fve_batch 0.9605 loss 19.64 k 200 dead 0 theta 2.252 ms_per_step 16.17
+02:46:57   step 23000/97656 fve_batch 0.9513 loss 19.72 k 200 dead 0 theta 2.244 ms_per_step 16.31
+02:47:03   step 23500/97656 fve_batch 0.965 loss 19.42 k 200 dead 0 theta 2.236 ms_per_step 12.13
+02:47:11   step 24000/97656 fve_batch 0.9524 loss 19.5 k 200 dead 0 theta 2.231 ms_per_step 16.27
+02:47:19   step 24500/97656 fve_batch 0.9535 loss 19.31 k 200 dead 0 theta 2.225 ms_per_step 16.25
+02:47:27   step 25000/97656 fve_batch 0.9603 loss 19.22 k 200 dead 0 theta 2.217 ms_per_step 16.22
+02:47:35   step 25500/97656 fve_batch 0.9591 loss 19.37 k 200 dead 0 theta 2.209 ms_per_step 16.32
+02:47:44   step 26000/97656 fve_batch 0.9512 loss 19.34 k 200 dead 0 theta 2.201 ms_per_step 16.28
+02:47:52   step 26500/97656 fve_batch 0.9587 loss 19.37 k 200 dead 0 theta 2.194 ms_per_step 16.26
+02:48:00   step 27000/97656 fve_batch 0.9618 loss 19.35 k 200 dead 0 theta 2.187 ms_per_step 16.27
+02:48:08   step 27500/97656 fve_batch 0.9619 loss 19.17 k 200 dead 0 theta 2.178 ms_per_step 16.29
+02:48:16   step 28000/97656 fve_batch 0.9513 loss 19.41 k 200 dead 0 theta 2.173 ms_per_step 16.35
+02:48:24   step 28500/97656 fve_batch 0.9638 loss 19.26 k 200 dead 0 theta 2.169 ms_per_step 16.25
+02:48:32   step 29000/97656 fve_batch 0.9614 loss 19.33 k 200 dead 0 theta 2.162 ms_per_step 16.26
+02:48:41   step 29500/97656 fve_batch 0.9621 loss 19.04 k 200 dead 0 theta 2.155 ms_per_step 16.24
+02:48:50   step 30000/97656 fve_batch 0.9628 loss 19.04 k 200 dead 0 theta 2.147 ms_per_step 19.19
+02:48:58   step 30500/97656 fve_batch 0.9564 loss 19.26 k 200 dead 0 theta 2.142 ms_per_step 16.27
+02:49:06   step 31000/97656 fve_batch 0.9585 loss 19.11 k 200 dead 0 theta 2.136 ms_per_step 16.28
+02:49:15   step 31500/97656 fve_batch 0.9619 loss 18.93 k 200 dead 0 theta 2.13 ms_per_step 16.19
+02:49:23   step 32000/97656 fve_batch 0.9552 loss 18.84 k 200 dead 0 theta 2.124 ms_per_step 16.26
+02:49:31   step 32500/97656 fve_batch 0.964 loss 18.8 k 200 dead 0 theta 2.115 ms_per_step 16.28
+02:49:39   step 33000/97656 fve_batch 0.9721 loss 18.98 k 200 dead 0 theta 2.109 ms_per_step 16.31
+02:49:47   step 33500/97656 fve_batch 0.963 loss 18.92 k 200 dead 0 theta 2.105 ms_per_step 16.26
+02:49:55   step 34000/97656 fve_batch 0.9637 loss 18.75 k 200 dead 0 theta 2.098 ms_per_step 16.23
+02:50:03   step 34500/97656 fve_batch 0.9527 loss 18.92 k 200 dead 0 theta 2.091 ms_per_step 16.21
+02:50:11   step 35000/97656 fve_batch 0.9677 loss 18.78 k 200 dead 0 theta 2.084 ms_per_step 16.29
+02:50:20   step 35500/97656 fve_batch 0.9552 loss 18.88 k 200 dead 0 theta 2.078 ms_per_step 16.21
+02:50:28   step 36000/97656 fve_batch 0.955 loss 19.1 k 200 dead 0 theta 2.074 ms_per_step 16.21
+02:50:36   step 36500/97656 fve_batch 0.9679 loss 18.65 k 200 dead 0 theta 2.069 ms_per_step 16.28
+02:50:44   step 37000/97656 fve_batch 0.967 loss 18.69 k 200 dead 0 theta 2.062 ms_per_step 16.26
+02:50:52   step 37500/97656 fve_batch 0.9673 loss 18.8 k 200 dead 0 theta 2.055 ms_per_step 16.23
+02:51:00   step 38000/97656 fve_batch 0.9573 loss 18.76 k 200 dead 0 theta 2.051 ms_per_step 16.12
+02:51:08   step 38500/97656 fve_batch 0.9555 loss 18.74 k 200 dead 0 theta 2.049 ms_per_step 16.16
+02:51:16   step 39000/97656 fve_batch 0.9618 loss 18.78 k 200 dead 0 theta 2.045 ms_per_step 16.12
+02:51:24   step 39500/97656 fve_batch 0.9533 loss 18.73 k 200 dead 0 theta 2.037 ms_per_step 16.14
+02:51:34   step 40000/97656 fve_batch 0.9633 loss 18.76 k 200 dead 0 theta 2.032 ms_per_step 19.03
+02:51:42   step 40500/97656 fve_batch 0.9613 loss 18.49 k 200 dead 0 theta 2.026 ms_per_step 16.15
+02:51:50   step 41000/97656 fve_batch 0.9611 loss 18.89 k 200 dead 0 theta 2.023 ms_per_step 16.14
+02:51:58   step 41500/97656 fve_batch 0.965 loss 18.66 k 200 dead 0 theta 2.019 ms_per_step 16.17
+02:52:06   step 42000/97656 fve_batch 0.9649 loss 18.69 k 200 dead 0 theta 2.013 ms_per_step 16.24
+02:52:14   step 42500/97656 fve_batch 0.9534 loss 18.89 k 200 dead 0 theta 2.004 ms_per_step 16.19
+02:52:22   step 43000/97656 fve_batch 0.9642 loss 18.66 k 200 dead 0 theta 1.999 ms_per_step 16.18
+02:52:30   step 43500/97656 fve_batch 0.9651 loss 18.41 k 200 dead 0 theta 1.995 ms_per_step 16.21
+02:52:39   step 44000/97656 fve_batch 0.9694 loss 19.03 k 200 dead 0 theta 1.993 ms_per_step 16.13
+02:52:47   step 44500/97656 fve_batch 0.97 loss 18.68 k 200 dead 0 theta 1.991 ms_per_step 16.17
+02:52:55   step 45000/97656 fve_batch 0.9579 loss 18.57 k 200 dead 0 theta 1.985 ms_per_step 16.21
+02:53:03   step 45500/97656 fve_batch 0.9648 loss 18.56 k 200 dead 0 theta 1.978 ms_per_step 16.23
+02:53:11   step 46000/97656 fve_batch 0.9667 loss 18.46 k 200 dead 0 theta 1.974 ms_per_step 16.26
+02:53:17   step 46500/97656 fve_batch 0.9643 loss 18.7 k 200 dead 0 theta 1.972 ms_per_step 11.88
+02:53:25   step 47000/97656 fve_batch 0.9643 loss 18.51 k 200 dead 0 theta 1.962 ms_per_step 16.27
+02:53:33   step 47500/97656 fve_batch 0.9579 loss 18.33 k 200 dead 0 theta 1.958 ms_per_step 16.4
+02:53:41   step 48000/97656 fve_batch 0.9604 loss 18.44 k 200 dead 0 theta 1.955 ms_per_step 16.1
+02:53:49   step 48500/97656 fve_batch 0.9714 loss 18.58 k 200 dead 0 theta 1.956 ms_per_step 16.13
+02:54:22 [head.A.c0.k200 snapshot] {"step": 48828, "fve_base": 0.9434197999096131, "fve_ft": 0.9669615387435879, "dead": 0.0, "specific": 0.18373888094499874, "d_authors": 0.02047609494127897, "d_alt": 0.019871922878203264, "counts": {"ft_specific": 198, "shared": 957, "ft_artefact": 884, "base_only": 7, "other": 22530, "dead": 0}, "lead": {"latent": 12721, "s": 0.1795534190194518, "rn": 0.7049288153648376, "rank": 580, "nu_r": -0.020016697382433297, "nu_eps": 0.17925832999069366, "specific": true}}
+02:54:25   step 49000/97656 fve_batch 0.9553 loss 18.56 k 200 dead 0 theta 1.953 ms_per_step 70.87
+02:54:33   step 49500/97656 fve_batch 0.9591 loss 18.34 k 200 dead 0 theta 1.946 ms_per_step 16.05
+02:54:42   step 50000/97656 fve_batch 0.9642 loss 18.39 k 200 dead 0 theta 1.939 ms_per_step 18.35
+02:54:50   step 50500/97656 fve_batch 0.9557 loss 18.26 k 200 dead 0 theta 1.93 ms_per_step 16.08
+02:54:58   step 51000/97656 fve_batch 0.9621 loss 18.31 k 200 dead 0 theta 1.927 ms_per_step 16.2
+02:55:06   step 51500/97656 fve_batch 0.9738 loss 18.26 k 200 dead 0 theta 1.923 ms_per_step 16.12
+02:55:14   step 52000/97656 fve_batch 0.9594 loss 18.41 k 200 dead 0 theta 1.922 ms_per_step 16.14
+02:55:22   step 52500/97656 fve_batch 0.9636 loss 18.21 k 200 dead 0 theta 1.918 ms_per_step 16
+02:55:30   step 53000/97656 fve_batch 0.9636 loss 18.34 k 200 dead 0 theta 1.913 ms_per_step 15.99
+02:55:38   step 53500/97656 fve_batch 0.9699 loss 18.24 k 200 dead 0 theta 1.914 ms_per_step 16.18
+02:55:46   step 54000/97656 fve_batch 0.9585 loss 18.14 k 200 dead 0 theta 1.91 ms_per_step 16.13
+02:55:54   step 54500/97656 fve_batch 0.9638 loss 18.22 k 200 dead 0 theta 1.905 ms_per_step 16.13
+02:56:03   step 55000/97656 fve_batch 0.9541 loss 18.55 k 200 dead 0 theta 1.9 ms_per_step 16.13
+02:56:11   step 55500/97656 fve_batch 0.9712 loss 18.12 k 200 dead 0 theta 1.897 ms_per_step 16.11
+02:56:19   step 56000/97656 fve_batch 0.9633 loss 18.3 k 200 dead 0 theta 1.895 ms_per_step 16.02
+02:56:27   step 56500/97656 fve_batch 0.956 loss 18.4 k 200 dead 0 theta 1.891 ms_per_step 16.12
+02:56:35   step 57000/97656 fve_batch 0.9617 loss 18.08 k 200 dead 0 theta 1.883 ms_per_step 16.1
+02:56:43   step 57500/97656 fve_batch 0.9699 loss 18.19 k 200 dead 0 theta 1.88 ms_per_step 16.08
+02:56:51   step 58000/97656 fve_batch 0.96 loss 18.29 k 200 dead 0 theta 1.876 ms_per_step 16.1
+02:56:59   step 58500/97656 fve_batch 0.964 loss 18.14 k 200 dead 0 theta 1.872 ms_per_step 16.11
+02:57:07   step 59000/97656 fve_batch 0.9601 loss 18.17 k 200 dead 0 theta 1.869 ms_per_step 16.12
+02:57:15   step 59500/97656 fve_batch 0.9661 loss 18.16 k 200 dead 0 theta 1.867 ms_per_step 16.04
+02:57:24   step 60000/97656 fve_batch 0.971 loss 18.09 k 200 dead 0 theta 1.864 ms_per_step 18.4
+02:57:32   step 60500/97656 fve_batch 0.9645 loss 17.93 k 200 dead 0 theta 1.86 ms_per_step 16.17
+02:57:40   step 61000/97656 fve_batch 0.9698 loss 18.24 k 200 dead 0 theta 1.856 ms_per_step 16.12
+02:57:48   step 61500/97656 fve_batch 0.9558 loss 18.36 k 200 dead 0 theta 1.854 ms_per_step 16.11
+02:57:56   step 62000/97656 fve_batch 0.958 loss 18.17 k 200 dead 0 theta 1.852 ms_per_step 16.19
+02:58:05   step 62500/97656 fve_batch 0.9596 loss 18.09 k 200 dead 0 theta 1.849 ms_per_step 16.16
+02:58:13   step 63000/97656 fve_batch 0.9628 loss 18.31 k 200 dead 0 theta 1.844 ms_per_step 16.14
+02:58:21   step 63500/97656 fve_batch 0.9585 loss 18.17 k 200 dead 0 theta 1.841 ms_per_step 16.12
+02:58:29   step 64000/97656 fve_batch 0.9621 loss 18.22 k 200 dead 0 theta 1.841 ms_per_step 16.18
+02:58:37   step 64500/97656 fve_batch 0.96 loss 18.07 k 200 dead 0 theta 1.84 ms_per_step 16.2
+02:58:45   step 65000/97656 fve_batch 0.9574 loss 17.95 k 200 dead 0 theta 1.837 ms_per_step 16.15
+02:58:53   step 65500/97656 fve_batch 0.9643 loss 18.21 k 200 dead 0 theta 1.831 ms_per_step 16.15
+02:59:01   step 66000/97656 fve_batch 0.9698 loss 18.12 k 200 dead 0 theta 1.831 ms_per_step 16.14
+02:59:09   step 66500/97656 fve_batch 0.9615 loss 18.36 k 200 dead 0 theta 1.831 ms_per_step 16.2
+02:59:17   step 67000/97656 fve_batch 0.9658 loss 18.03 k 200 dead 0 theta 1.828 ms_per_step 16.13
+02:59:25   step 67500/97656 fve_batch 0.9595 loss 18.12 k 200 dead 0 theta 1.827 ms_per_step 16.17
+02:59:33   step 68000/97656 fve_batch 0.9692 loss 17.97 k 200 dead 0 theta 1.823 ms_per_step 16.18
+02:59:41   step 68500/97656 fve_batch 0.959 loss 18.05 k 200 dead 0 theta 1.819 ms_per_step 16.14
+02:59:50   step 69000/97656 fve_batch 0.9654 loss 18.1 k 200 dead 0 theta 1.819 ms_per_step 16.13
+02:59:58   step 69500/97656 fve_batch 0.9612 loss 18.13 k 200 dead 0 theta 1.818 ms_per_step 16.16
+03:00:05   step 70000/97656 fve_batch 0.9702 loss 18.06 k 200 dead 0 theta 1.81 ms_per_step 14.27
+03:00:13   step 70500/97656 fve_batch 0.967 loss 17.73 k 200 dead 0 theta 1.808 ms_per_step 16.09
+03:00:21   step 71000/97656 fve_batch 0.9576 loss 17.87 k 200 dead 0 theta 1.807 ms_per_step 16.13
+03:00:29   step 71500/97656 fve_batch 0.959 loss 18.01 k 200 dead 0 theta 1.803 ms_per_step 16.13
+03:00:37   step 72000/97656 fve_batch 0.9692 loss 17.84 k 200 dead 0 theta 1.803 ms_per_step 16.16
+03:00:45   step 72500/97656 fve_batch 0.9693 loss 17.89 k 200 dead 0 theta 1.8 ms_per_step 16.15
+03:00:53   step 73000/97656 fve_batch 0.9636 loss 17.52 k 200 dead 0 theta 1.8 ms_per_step 16.12
+03:01:01   step 73500/97656 fve_batch 0.9643 loss 17.87 k 200 dead 0 theta 1.799 ms_per_step 16.11
+03:01:09   step 74000/97656 fve_batch 0.9579 loss 17.81 k 200 dead 0 theta 1.795 ms_per_step 16.11
+03:01:17   step 74500/97656 fve_batch 0.9626 loss 18.03 k 200 dead 0 theta 1.795 ms_per_step 16.16
+03:01:25   step 75000/97656 fve_batch 0.9605 loss 17.82 k 200 dead 0 theta 1.791 ms_per_step 16.12
+03:01:33   step 75500/97656 fve_batch 0.9721 loss 17.77 k 200 dead 0 theta 1.786 ms_per_step 16.01
+03:01:41   step 76000/97656 fve_batch 0.9646 loss 17.86 k 200 dead 0 theta 1.782 ms_per_step 16.09
+03:01:49   step 76500/97656 fve_batch 0.9626 loss 17.92 k 200 dead 0 theta 1.78 ms_per_step 16.06
+03:01:58   step 77000/97656 fve_batch 0.9651 loss 17.7 k 200 dead 0 theta 1.782 ms_per_step 16.16
+03:02:06   step 77500/97656 fve_batch 0.9669 loss 17.92 k 200 dead 0 theta 1.783 ms_per_step 16.18
+03:02:14   step 78000/97656 fve_batch 0.9676 loss 17.91 k 200 dead 0 theta 1.786 ms_per_step 16.1
+03:02:22   step 78500/97656 fve_batch 0.9677 loss 17.8 k 200 dead 0 theta 1.782 ms_per_step 16.11
+03:02:30   step 79000/97656 fve_batch 0.9652 loss 17.76 k 200 dead 0 theta 1.78 ms_per_step 16.09
+03:02:38   step 79500/97656 fve_batch 0.9743 loss 18.04 k 200 dead 0 theta 1.778 ms_per_step 16.12
+03:02:47   step 80000/97656 fve_batch 0.9668 loss 17.72 k 200 dead 0 theta 1.777 ms_per_step 18.9
+03:02:55   step 80500/97656 fve_batch 0.9574 loss 17.84 k 200 dead 0 theta 1.772 ms_per_step 16.08
+03:03:03   step 81000/97656 fve_batch 0.9647 loss 17.79 k 200 dead 0 theta 1.77 ms_per_step 16.16
+03:03:11   step 81500/97656 fve_batch 0.9687 loss 17.58 k 200 dead 0 theta 1.766 ms_per_step 16.08
+03:03:20   step 82000/97656 fve_batch 0.9735 loss 17.78 k 200 dead 0 theta 1.764 ms_per_step 16.1
+03:03:28   step 82500/97656 fve_batch 0.9653 loss 18.01 k 200 dead 0 theta 1.764 ms_per_step 16.13
+03:03:36   step 83000/97656 fve_batch 0.9582 loss 17.66 k 200 dead 0 theta 1.763 ms_per_step 16.16
+03:03:44   step 83500/97656 fve_batch 0.9638 loss 17.84 k 200 dead 0 theta 1.758 ms_per_step 16.13
+03:03:52   step 84000/97656 fve_batch 0.9605 loss 17.84 k 200 dead 0 theta 1.756 ms_per_step 16.13
+03:04:00   step 84500/97656 fve_batch 0.9627 loss 17.73 k 200 dead 0 theta 1.757 ms_per_step 16.13
+03:04:08   step 85000/97656 fve_batch 0.9695 loss 17.79 k 200 dead 0 theta 1.756 ms_per_step 16.11
+03:04:16   step 85500/97656 fve_batch 0.9614 loss 17.71 k 200 dead 0 theta 1.753 ms_per_step 16.09
+03:04:24   step 86000/97656 fve_batch 0.9681 loss 17.89 k 200 dead 0 theta 1.752 ms_per_step 16.14
+03:04:32   step 86500/97656 fve_batch 0.9645 loss 17.51 k 200 dead 0 theta 1.751 ms_per_step 16.25
+03:04:40   step 87000/97656 fve_batch 0.9629 loss 17.63 k 200 dead 0 theta 1.75 ms_per_step 16.22
+03:04:48   step 87500/97656 fve_batch 0.9654 loss 17.9 k 200 dead 0 theta 1.752 ms_per_step 16.26
+03:04:56   step 88000/97656 fve_batch 0.9609 loss 17.84 k 200 dead 0 theta 1.75 ms_per_step 16.22
+03:05:05   step 88500/97656 fve_batch 0.9631 loss 17.85 k 200 dead 0 theta 1.746 ms_per_step 16.16
+03:05:13   step 89000/97656 fve_batch 0.9594 loss 18.05 k 200 dead 0 theta 1.748 ms_per_step 16.1
+03:05:21   step 89500/97656 fve_batch 0.9679 loss 17.8 k 200 dead 0 theta 1.75 ms_per_step 16.1
+03:05:30   step 90000/97656 fve_batch 0.9633 loss 17.64 k 200 dead 0 theta 1.75 ms_per_step 18.48
+03:05:38   step 90500/97656 fve_batch 0.9625 loss 17.85 k 200 dead 0 theta 1.749 ms_per_step 16.11
+03:05:46   step 91000/97656 fve_batch 0.9635 loss 17.79 k 200 dead 0 theta 1.745 ms_per_step 16.05
+03:05:54   step 91500/97656 fve_batch 0.9673 loss 17.83 k 200 dead 0 theta 1.744 ms_per_step 16.1
+03:06:02   step 92000/97656 fve_batch 0.9646 loss 17.51 k 200 dead 0 theta 1.743 ms_per_step 16.14
+03:06:10   step 92500/97656 fve_batch 0.9725 loss 17.94 k 200 dead 0 theta 1.741 ms_per_step 16.19
+03:06:16   step 93000/97656 fve_batch 0.9674 loss 17.6 k 200 dead 0 theta 1.735 ms_per_step 12.05
+03:06:24   step 93500/97656 fve_batch 0.9633 loss 17.83 k 200 dead 0 theta 1.738 ms_per_step 16.14
+03:06:32   step 94000/97656 fve_batch 0.9723 loss 17.52 k 200 dead 0 theta 1.737 ms_per_step 16.1
+03:06:40   step 94500/97656 fve_batch 0.9691 loss 17.82 k 200 dead 0 theta 1.739 ms_per_step 16.1
+03:06:49   step 95000/97656 fve_batch 0.969 loss 17.61 k 200 dead 0 theta 1.733 ms_per_step 16.22
+03:06:57   step 95500/97656 fve_batch 0.9685 loss 17.74 k 200 dead 0 theta 1.736 ms_per_step 16.21
+03:07:05   step 96000/97656 fve_batch 0.9619 loss 17.33 k 200 dead 0 theta 1.732 ms_per_step 16.32
+03:07:13   step 96500/97656 fve_batch 0.9613 loss 17.79 k 200 dead 0 theta 1.737 ms_per_step 16.34
+03:07:21   step 97000/97656 fve_batch 0.9603 loss 17.79 k 200 dead 0 theta 1.735 ms_per_step 16.53
+03:07:29   step 97500/97656 fve_batch 0.9675 loss 17.75 k 200 dead 0 theta 1.732 ms_per_step 15.95
+03:07:33   step 97655/97656 fve_batch 0.9703 loss 17.64 k 200 dead 0 theta 1.732 ms_per_step 25.12
+03:07:33 [check every step trained] ok {"last": 97656, "steps": 97656}
+03:08:04 [head.A.c0.k200 read] {"fve_base": 0.9478692657435104, "fve_ft": 0.9695535693812569, "l0": 197.90468478699586, "energy": 210.9922491350283, "bias": 0.4365267026799446, "fve_change": 0.9881102781982699, "theta": 1.7319271564483643, "dead": 0.0, "parts": {"ft_specific": 0.19275878883246664, "shared": 0.18918186571155496, "ft_artefact": 0.0008941226992279616, "base_only": 0.0004408022627642757, "other": 0.1673779290264077, "dead": 0.0, "bias": 0.4365267026799446, "error": 0.012819788787633846}, "counts": {"ft_specific": 252, "shared": 809, "ft_artefact": 1030, "base_only": 11, "other": 22474, "dead": 0}, "shared_frac": 0.49531743599646133, "d_authors": -0.003576923120911679, "d_alt": -0.004471045820139641, "parts_wide": {"ft_specific": 0.196239885552347, "shared": 0.185734825678123, "ft_artefact": 0.020919981447293103, "base_only": 0.0004408022627642757, "other": 0.14731801359189417, "dead": 0.0, "bias": 0.4365267026799446, "error": 0.012819788787633846}, "counts_wide": {"ft_specific": 255, "shared": 807, "ft_artefact": 3938, "base_only": 11, "other": 19565, "dead": 0}, "shared_frac_wide": 0.48624901130184295, "d_authors_wide": -0.01050505987422401, "d_alt_wide": -0.03142504132151711, "specific": 0.19275878883246664, "lead": {"latent": 12721, "s": 0.18840390539660049, "rn": 0.7207566499710083, "rank": 740, "nu_r": -0.0188445510411313, "nu_eps": 0.16209744465232873, "specific": true}, "max_rn_dev_alive": 0.4399630129337311}
+03:08:04 [head.A.c0.k200 spliced] {"clean_0": 2.705334254673549, "clean_1": 7.453593961413359, "spliced_0": 2.784109201449937, "spliced_1": 7.552799083015457, "ablated_0": 8.583022444215539, "ablated_1": 10.209205284044002, "recovered_0": 0.9865976308650483, "recovered_1": 0.9639988699467995}
+03:08:04 [check FVE at the end] ok {"fve": 0.9478692657435104, "bar": 0.8}
+03:08:04 [check dead share at the end] ok {"dead": 0.0, "bar": 0.3}
+03:08:04 ITEM head.A.c0.k200 DONE in 27.9 min: specific 0.19275878883246664, count 252
+03:08:04 FINISHED pod 1 13 15 in 28.1 min; peak GPU 34.7 GB
+peak host RSS 6.3 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/crosscoder_proper/results/run1 and /root/work/experiments/crosscoder_proper/results/large/run1 ===

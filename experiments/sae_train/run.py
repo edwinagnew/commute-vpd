@@ -156,7 +156,11 @@ class Run:
 
     def fill(self) -> torch.Tensor:
         c = self.cfg
-        assert self.cursor + c.refresh_rows <= c.train_start + c.train_rows, f"out of train rows at {self.cursor}"
+        if self.cursor + c.refresh_rows > c.train_start + c.train_rows:
+            # E234: Buffer.refresh drops each refill's last part-fill, so rows ran out at ~206k of 244k steps; the last
+            # steps reread rows from the start (a second pass over ~20% of the text), logged here.
+            log(f"WRAP: out of train rows at {self.cursor} (step {self.step}); rereading from row {c.train_start}")
+            self.cursor = c.train_start
         rows = cached_rows("train", self.cursor, c.refresh_rows)
         self.cursor += c.refresh_rows
         return S.capture(self.net, rows, self.sites)

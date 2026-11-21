@@ -1,0 +1,83 @@
+01:21:52 [E235] timing ['A', 'solo'] tag run1, sizes full; Cfg(d=768, expansion=32, k=100, k_max=1024, k_anneal_steps=2000, lr=0.0001, warmup=1000, batch=2048, tokens=200000000, epochs=2, aux_alpha=0.03125, dead_tokens=10000000, init_norm=1.0, target_rms=100.0, chunk_rows=1024, ls_tokens=100000, val_rows=8192, alive_min=10, top_n=1667, top_n_wide=5000, nu_r=0.5, nu_eps=0.2, shared=(0.4, 0.6), base_only=0.1, snapshots=(0.125, 0.5), ckpt_every=10000, log_every=500, pile_start=32768, pool_start=131072, pool_rows=65536, repeat_cap=100)
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+01:22:08 [timing] {"card": "NVIDIA H100 80GB HBM3", "site": "A", "tag": "solo", "ms_per_step": 11.648505528767904, "chunk_seconds": 2.6079349517822266, "chunk_tokens": 1046544, "train_minutes": 18.95910759862264, "stream_minutes": 8.306498824646413, "peak_gb": 20.929747104644775, "started": 1795224125.151075}
+01:22:08 FINISHED timing A solo in 0.3 min; peak GPU 20.9 GB
+peak host RSS 6.2 GB
+01:22:12 [E235] timing ['B', 'solo_B'] tag run1, sizes full; Cfg(d=768, expansion=32, k=100, k_max=1024, k_anneal_steps=2000, lr=0.0001, warmup=1000, batch=2048, tokens=200000000, epochs=2, aux_alpha=0.03125, dead_tokens=10000000, init_norm=1.0, target_rms=100.0, chunk_rows=1024, ls_tokens=100000, val_rows=8192, alive_min=10, top_n=1667, top_n_wide=5000, nu_r=0.5, nu_eps=0.2, shared=(0.4, 0.6), base_only=0.1, snapshots=(0.125, 0.5), ckpt_every=10000, log_every=500, pile_start=32768, pool_start=131072, pool_rows=65536, repeat_cap=100)
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+01:22:29 [timing] {"card": "NVIDIA H100 80GB HBM3", "site": "B", "tag": "solo_B", "ms_per_step": 11.77306334177653, "chunk_seconds": 4.338117361068726, "chunk_tokens": 1046544, "train_minutes": 19.16183789507548, "stream_minutes": 13.817279735550935, "peak_gb": 20.929747104644775, "started": 1795224145.8174188}
+01:22:29 FINISHED timing B solo_B in 0.3 min; peak GPU 20.9 GB
+peak host RSS 6.2 GB
+01:22:33 [E235] timing ['A', 'p1'] tag run1, sizes full; Cfg(d=768, expansion=32, k=100, k_max=1024, k_anneal_steps=2000, lr=0.0001, warmup=1000, batch=2048, tokens=200000000, epochs=2, aux_alpha=0.03125, dead_tokens=10000000, init_norm=1.0, target_rms=100.0, chunk_rows=1024, ls_tokens=100000, val_rows=8192, alive_min=10, top_n=1667, top_n_wide=5000, nu_r=0.5, nu_eps=0.2, shared=(0.4, 0.6), base_only=0.1, snapshots=(0.125, 0.5), ckpt_every=10000, log_every=500, pile_start=32768, pool_start=131072, pool_rows=65536, repeat_cap=100)
+01:22:33 [E235] timing ['A', 'p0'] tag run1, sizes full; Cfg(d=768, expansion=32, k=100, k_max=1024, k_anneal_steps=2000, lr=0.0001, warmup=1000, batch=2048, tokens=200000000, epochs=2, aux_alpha=0.03125, dead_tokens=10000000, init_norm=1.0, target_rms=100.0, chunk_rows=1024, ls_tokens=100000, val_rows=8192, alive_min=10, top_n=1667, top_n_wide=5000, nu_r=0.5, nu_eps=0.2, shared=(0.4, 0.6), base_only=0.1, snapshots=(0.125, 0.5), ckpt_every=10000, log_every=500, pile_start=32768, pool_start=131072, pool_rows=65536, repeat_cap=100)
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+01:22:55 [timing] {"card": "NVIDIA H100 80GB HBM3", "site": "A", "tag": "p1", "ms_per_step": 26.219029426574707, "chunk_seconds": 4.74412989616394, "chunk_tokens": 1046544, "train_minutes": 42.67409229469299, "stream_minutes": 15.110464844809648, "peak_gb": 20.929747104644775, "started": 1795224167.8812206}
+01:22:55 FINISHED timing A p1 in 0.4 min; peak GPU 20.9 GB
+peak host RSS 6.2 GB
+01:22:55 [timing] {"card": "NVIDIA H100 80GB HBM3", "site": "A", "tag": "p0", "ms_per_step": 26.093502044677734, "chunk_seconds": 4.7624170780181885, "chunk_tokens": 1046544, "train_minutes": 42.46978392791748, "stream_minutes": 15.168711103779641, "peak_gb": 20.929747104644775, "started": 1795224167.9611917}
+01:22:55 FINISHED timing A p0 in 0.4 min; peak GPU 20.9 GB
+peak host RSS 6.2 GB
+{
+ "minutes_per_crosscoder": {
+  "solo": 27.265606423269055,
+  "p0": 57.638495031697126,
+  "p1": 57.78455713950264
+ },
+ "gain_two_per_card": 0.9448929277256571,
+ "two_per_card": false,
+ "timings": {
+  "solo": {
+   "card": "NVIDIA H100 80GB HBM3",
+   "site": "A",
+   "tag": "solo",
+   "ms_per_step": 11.648505528767904,
+   "chunk_seconds": 2.6079349517822266,
+   "chunk_tokens": 1046544,
+   "train_minutes": 18.95910759862264,
+   "stream_minutes": 8.306498824646413,
+   "peak_gb": 20.929747104644775,
+   "started": 1795224125.151075,
+   "checks": {}
+  },
+  "p0": {
+   "card": "NVIDIA H100 80GB HBM3",
+   "site": "A",
+   "tag": "p0",
+   "ms_per_step": 26.093502044677734,
+   "chunk_seconds": 4.7624170780181885,
+   "chunk_tokens": 1046544,
+   "train_minutes": 42.46978392791748,
+   "stream_minutes": 15.168711103779641,
+   "peak_gb": 20.929747104644775,
+   "started": 1795224167.9611917,
+   "checks": {}
+  },
+  "p1": {
+   "card": "NVIDIA H100 80GB HBM3",
+   "site": "A",
+   "tag": "p1",
+   "ms_per_step": 26.219029426574707,
+   "chunk_seconds": 4.74412989616394,
+   "chunk_tokens": 1046544,
+   "train_minutes": 42.67409229469299,
+   "stream_minutes": 15.110464844809648,
+   "peak_gb": 20.929747104644775,
+   "started": 1795224167.8812206,
+   "checks": {}
+  }
+ }
+}
+=== TIMING DONE ===

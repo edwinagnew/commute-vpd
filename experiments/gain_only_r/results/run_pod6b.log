@@ -1,0 +1,31 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+E236 start, tag pod7; 1 of 81 items ['e58/copy_s0']; settings {'handoff': 'experiments/gain_only/results/handoff.json', 'gains_dir': 'experiments/gain_only/results/large/gains', 'match': 'kl', 'seeds': (0, 1, 2), 'n_items': 81, 'control': 'e58/cipher_s0', 'twins': (('case_label/real', 'case_real'), ('case_label/twin', 'case_twin'), ('fresh/real', 'repeat_real'), ('fresh/twin', 'repeat_twin'))}
+stage0_pod7.json: done before
+    ranking 0: prefix 35724, 16 evaluations
+    ranking 1: prefix 32227, 31 evaluations
+    ranking 2: prefix 33490, 46 evaluations
+  e58/copy_s0 VPD: |K*| 31996 (prefix 32227), R read 0.995783 (prefix 0.995760), R all 0.995565, f 0.4347, site-remainder share 0.0006, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 259 s
+e58/copy_s0 VPD: 38938 variables, 18440 changed, KL(F || M) 0.997466, max |1 - s| 0.205; read, R read 0.9957825998168752; 272 s
+e58/copy_s0: 512 windows, KL(F || F_empty) 3.25728, KL(F || M) 0.997465763, saved None, size {'whole': 0.03521262970754959, 'mlp': 0.038300795055191975}
+e58/copy_s0 head_mlp: 30 variables, 28 changed; gates {'all': 2.576391352704377e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 25, R all 0.999138, read 0.998877, f 0.9200; 1555 evaluations, 18 s
+  head_mlp main order 1: |K*| 25, R all 0.999138, read 0.998877, f 0.9200; 1910 evaluations, 22 s
+  head_mlp main order 2: |K*| 25, R all 0.999138, read 0.998877, f 0.9200; 2030 evaluations, 24 s (polish cap hit)
+e58/copy_s0 head_mlp: R read [0.9988768350538862, 0.9988768352090649, 0.998876834879825], all [0.999138261364585, 0.9991382615245308, 0.9991382611462939], f [0.92, 0.92, 0.92], |K*| [25, 25, 25]; peak GPU memory 6.60 GB
+e58/copy_s0 mlp_attn: 10 variables, 8 changed; gates {'all': 2.576391352704377e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+e58/copy_s0 mlp_attn: R read [0.9955945103335194], all [0.9953582973235247], f [0.8], |K*| [10]; peak GPU memory 6.60 GB
+e58/copy_s0 block: 6 variables, 4 changed; gates {'all': 2.576391352704377e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+e58/copy_s0 block: R read [0.9934393712126991], all [0.9938348108308309], f [0.6666666666666666], |K*| [6]; peak GPU memory 6.60 GB
+e58/copy_s0: KL(F || M) 0.997466 (last position, 512 read windows); fit 2.6 s
+e58/copy_s0 reading 1: S 0.9999999240650316, KL(F || H) 7.57425e-08, max relative logit error 0.000486; site residuals mlp0 5.198e-09, attn0 8.781e-09, mlp1 1.116e-09, attn1 1.618e-08, mlp2 4.085e-09, attn2 5.82e-09, mlp3 2.996e-09, attn3 2.355e-10
+e58/copy_s0 reading 2: S 0.2829507323902245, KL(F || H) 0.715232, max relative logit error 0.625; site residuals mlp0 0.00333, attn0 8.781e-09, mlp1 0.0003591, attn1 1.618e-08, mlp2 0.002067, attn2 5.82e-09, mlp3 0.001467, attn3 2.355e-10
+e58/copy_s0 reading 3: S 0.9999999999998597, KL(F || H) 1.40006e-13, max relative logit error 1.39e-06; site residuals mlp0 -3.003e-16, attn0 4.423e-16, mlp1 2.915e-16, attn1 -3.623e-16, mlp2 -3.926e-16, attn2 -1.233e-16, mlp3 -2.657e-16, attn3 -4.022e-16
+ITEM 1 of 1 DONE (e58/copy_s0): held reading 1 S 0.9999999240650316; 354 s
+E236 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/gain_only_r/results/items/ , experiments/gain_only_r/results/run_pod6b.log ===

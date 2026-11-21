@@ -23,6 +23,17 @@ HERE = Path(__file__).resolve().parent
 E205_SUMMARY = HERE.parent / "held_model_size_matched" / "results" / "summary.json"
 LEVELS = {"head_mlp": "heads and MLP layers", "mlp_attn": "MLP and attention layers", "block": "blocks"}
 BLACK, BLUE, ORANGE = "#000000", "#0072B2", "#E69F00"
+PAIR_NAMES = {  # pair key -> row name of the paper's Table tab:pairs
+    "e62_copy_lookup": "Copy at a new marker vs lookup",
+    "e46_copy_random": "Copy maps vs random maps",
+    "e53_lowercase_cipher": "Lowercase vs ciphers",
+    "e54_matched": "Mid vs cipher, equal size",
+    "e54_own": "Mid vs cipher, own steps",
+    "open_pair_c3": "Top vs cipher, matched step",
+    "open_pair_c3_copy": "Copy vs cipher, matched step",
+    "e58_rank1_96": "Top vs cipher, 96 keys",
+    "e58_copy_prior_cipher": "Copy vs prior-matched cipher, 96 keys",
+}
 
 
 def panels_from_summary(d: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
@@ -35,11 +46,11 @@ def panels_from_summary(d: dict[str, Any]) -> dict[str, list[dict[str, Any]]]:
 
 
 def pair_labels(pairs: list[str]) -> list[str]:
-    """'e54_own, new x0.52': which side was shrunk and by what factor c (E205's summary, E187's c)."""
+    """'Mid vs cipher, own steps, new x0.52': which side was shrunk and by what factor c (E205's summary, E187's c)."""
     if not E205_SUMMARY.exists():
-        return pairs
+        return [PAIR_NAMES[p] for p in pairs]
     e205 = json.loads(E205_SUMMARY.read_text())["pairs"]
-    return [f"{p}, {e205[p]['larger']} x{e205[p]['c']:.2f}" if p in e205 else p for p in pairs]
+    return [f"{PAIR_NAMES[p]}, {e205[p]['larger']} x{e205[p]['c']:.2f}" if p in e205 else PAIR_NAMES[p] for p in pairs]
 
 
 def gaps_figure(panels: dict[str, list[dict[str, Any]]], n: str, out: Path) -> None:
@@ -81,7 +92,7 @@ def shift_figure(d: dict[str, Any], out: Path) -> None:
             x = size["unscaled"][p] - size["matched"][p]
             y = read["gap_matched"][p] - read["gap_unscaled"][p]
             ax.scatter([x * 1e3], [y], color=BLUE, s=14)
-            ax.annotate(p.removeprefix("e187_"), (x * 1e3, y), fontsize=4.5, xytext=(2, 2), textcoords="offset points")
+            ax.annotate(PAIR_NAMES[p.removeprefix("e187_")], (x * 1e3, y), fontsize=4.5, xytext=(2, 2), textcoords="offset points")
             rows.append({"level": level, "pair": p, "size_gap_removed": x, "r_gap_change": y})
         ax.axhline(0, color="#777777", linewidth=0.8)
         ax.axvline(0, color="#777777", linewidth=0.8)
