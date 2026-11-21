@@ -1,0 +1,17 @@
+<article class="exp" id="e245">
+<div class="top"><span class="id">E245</span><span class="chip mixed">mixed</span><h3>Does the reuse score read the built labels at the base-only sparse-autoencoder latents?</h3><span class="when">2026-11-21 · cell P1.40 run 2 of 2, sae-lead, no independent check · <code>experiments/sae_r_a</code></span></div>
+<p class="one"><strong>The question.</strong> Under the second wording of reuse (wording A), the score R is the share of a fine-tune's circuit that can take the original model's mechanism, each part times one positive gain, and keep the behaviour within a tenth of how far the fine-tune moved it. E242 asked this at VPD's subcomponents; this asks it at the base-only sparse autoencoders (SAEs) of <a href="#e234">E234</a>, a baseline featurization. Two rivals: a new edit keeps its lookup where the original mechanism cannot write it, so it reads below every reuse edit (rival a); or the SAE puts everything it lacks into one remainder variable, so a new edit reads as high as reuse (rival b).</p>
+<p class="one"><strong>What we did.</strong> On the attention-output and MLP-output SAEs we read R for six hand-built edits: four reuse edits (a two-fold and a ten-fold edit, a moved one and a rebuilt circuit) and two new edits (a few-neuron and a thin lookup). Each item was read on two halves of its task windows, and the split-half difference sets the noise band (0.11).</p>
+<p class="one"><strong>What we found.</strong> R reads 0.999 for the two-fold edit, 0.85 for the ten-fold edit and 0.69 for the rebuilt circuit, against 0.57 for the thin new edit and 0.52 for the few-neuron one; the moved edit changes no behaviour, so it is not read. The order holds, and the gap between the lowest reuse item and the highest new one is 0.12 against a band of 0.11, so rival a holds, narrowly. Every search hit its cap of 2,000 evaluations, so all scores are lower bounds. The share of the behaviour left in the remainder is 0.89 on the two-fold reuse edit too, so the remainder does not separate new from reuse.</p>
+<p class="one"><strong>What it means.</strong> At SAE latents the labels come out in the expected order, but by a gap barely above the noise band and with capped searches, so this is a weak read. The two reuse edits that read below 0.9 sit close to the new edits' range. The key tasks and the nine pairs have not been read yet.</p>
+<dl class="fields">
+<dt>Run</dt><dd>Six built items on E234's saved SAEs, one job per item (cluster jobs and two pods); the cell's first read, scored by its filed rule.</dd>
+<dt>Found</dt><dd><ul>
+<li>Reuse reads 0.999, 0.85 and 0.69 and new reads 0.57 and 0.52, in the expected order; the gap of 0.12 sits just over the band of 0.11.</li>
+<li>All searches were capped, so the scores are lower bounds on both sides.</li>
+<li>The remainder share does not tell new from reuse (0.89 on the two-fold edit, 0.77 and 0.79 on the new edits).</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 1: the SAE row of R against the built labels; no verdict on any trained fine-tune.</dd>
+<dt>Moved on</dt><dd>The key tasks are next. Record: <code>experiments/sae_r_a/results/summary_built.json</code>; <code>experiments/TRIED.md</code>.</dd>
+</dl>
+</article>
