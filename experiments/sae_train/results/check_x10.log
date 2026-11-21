@@ -1,0 +1,19 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+M resid_post1 fve 0.9446 sq 104.7 var 89.18 err 4.942 err_c 4.93 fve_c 0.9447 top1 0.02889 l0 87.08 fve32 0.9447
+M attn2 fve 0.8503 sq 44.06 var 23.9 err 3.578 err_c 3.523 fve_c 0.8526 top1 0.02565 l0 54.55 fve32 0.8504
+M mlp2 fve 0.8608 sq 62.9 var 57.99 err 8.073 err_c 8.05 fve_c 0.8612 top1 0.02371 l0 80.23 fve32 0.8607
+M resid_post2 fve 0.8861 sq 198 var 139.9 err 15.93 err_c 15.84 fve_c 0.8867 top1 0.02173 l0 71.85 fve32 0.8863
+M attn3 fve 0.9106 sq 182.2 var 92.49 err 8.267 err_c 8.18 fve_c 0.9115 top1 0.02421 l0 69.71 fve32 0.9105
+M mlp3 fve 0.9207 sq 488.8 var 399.4 err 31.67 err_c 31.52 fve_c 0.9211 top1 0.02188 l0 71.88 fve32 0.9207
+M resid_post3 fve 0.9003 sq 740.3 var 612.4 err 61.04 err_c 60.62 fve_c 0.901 top1 0.02112 l0 69.8 fve32 0.9003
+x10 resid_post1 fve 0.9819 sq 1600 var 1578 err 28.55 err_c 27.96 fve_c 0.9823 top1 0.6777 l0 126.6 fve32 0.9821
+x10 attn2 fve 0.7353 sq 27.62 var 20.31 err 5.376 err_c 4.694 fve_c 0.7689 top1 0.1263 l0 53.83 fve32 0.7361
+x10 mlp2 fve 0.823 sq 91.42 var 83.55 err 14.79 err_c 14.51 fve_c 0.8263 top1 0.02744 l0 109.3 fve32 0.8229
+x10 resid_post2 fve 0.3126 sq 1630 var 1573 err 1081 err_c 1079 fve_c 0.3138 top1 0.975 l0 98.96 fve32 0.3177
+x10 attn3 fve 0.8985 sq 144.2 var 97.82 err 9.932 err_c 9.053 fve_c 0.9075 top1 0.0283 l0 58.02 fve32 0.8983
+x10 mlp3 fve 0.859 sq 401.7 var 338.2 err 47.7 err_c 46.95 fve_c 0.8612 top1 0.01974 l0 76.12 fve32 0.8586
+x10 resid_post3 fve -15.97 sq 1470 var 1403 err 2.381e+04 err_c 2.378e+04 fve_c -15.95 top1 0.9963 l0 77 fve32 -15.91
+FINISHED

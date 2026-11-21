@@ -1,0 +1,45 @@
+{
+  "experiment": "E244",
+  "experiment_source": "the lead claims the E-number with fleet/ecode and writes it here before the commit the run reads; run.py refuses anything but E<digits>",
+  "cell": "P2.52",
+  "filed": "2026-11-20, after the gate-5 review fixes to run.py at commit 07dbe07b, before any scored run",
+  "descriptive": "user 2026-11-20 evening (cell P2.52, approved with fleet/cell approve 45): the neuron baseline and E203's crosscoder drawn as extra columns on E237's five-task graph. No rule, no verdict of reused or new; the expected values below say what each number should read, and the stops guard the apparatus only.",
+  "plan": "reports/plans/2026-11-21_plan_p2-52-key-grid-baselines.md",
+  "settings": {
+    "neuron_ks": [
+      "k64",
+      "kmatched"
+    ],
+    "neuron_ks_source": "E143's two widths (experiments/holes_fill/run.py KS); k per block as E147's stage 0 set them (experiments/refit_96key/results/stage0.json holes_fill_stage0.k: k64 64 per block, kmatched 15, 3, 6, 30)",
+    "projected_limit_min": 245,
+    "projected_limit_min_source": "8 pods on 2 runners (at most 4 per pod-runner, user 2026-11-20): after the 3-item controls stage, the other 28 crosscoders in shards of 4 or 3; 4 crosscoders x 48.9 min measured (E203 e58__rank1_s0 side, H100 SXM, experiments/crosscoder/results/run2/run_2_12.log) = 196 min, plus a quarter"
+  },
+  "thresholds": {
+    "size_match_rel": 1e-06,
+    "size_match_rel_source": "E237's own (experiments/key_grid/results/predictions.json): every scaled or random item's size must equal E237's stage-1 size of it, so the items are E237's",
+    "bars_read_from_their_files": "do-nothing exactness: E143's zero_tol 1e-9 (holes_fill predictions); repeat of E147's neuron readings: E147's reader_neuron_tol 1e-4, identity_tol and telescope_tol 1e-6 (refit_96key predictions); crosscoder: E203's run-2 thresholds at the run's tag (fve_drop 0.05 below E203's base-against-itself FVE 0.9320, dead_max 0.3, reseed_d 0.05, stage 0a's self_act_diff 1e-5, fve_early 0.5, self_rn_dev 1e-3, fve_min 0.8); the run reads each from its file, unchanged",
+    "repeat_surprise_d": 0.01,
+    "repeat_surprise_d_source": "lead 2026-11-20 (gate-5 review): a crosscoder repeat at the same seed on the same stream should differ from E203 saved d only by GPU nondeterminism; a difference above 0.01 is reported loudly (not a stop; the stop stays E203 reseed bar 0.05); the measured difference is recorded in controls_I_3.json and the side JSON"
+  },
+  "expected": {
+    "do_nothing": {
+      "neuron": "gain, E98's G, every E98 numerator and both E143 numerators exactly 0 (bar 1e-9); every share undefined (gain under the 1 log-odds floor). A miss stops the job.",
+      "crosscoder": "E203's stage 0a on the copy task's text: equal activations (max |diff| 0 against 1e-5), FVE above 0.5 at the first snapshot and above 0.8 at the end (E203 read 0.932), no fine-tune-specific latent (E203: 0 of 24,576), relative norms within 1e-3 of 0.5, dead share under 0.3 (E203: 0). d is undefined (no change to carry). A miss stops the shard; the runner stops the others."
+    },
+    "control_repeat": {
+      "neuron": "e58/copy_s0 at c = 1 (copy is E237's target task, c exactly 1) repeats E147's saved readings within 1e-4: r_n 0.6114, top-neuron k64 0.02548, k matched 0.01556 (experiments/refit_96key/results/stage1.json). Expected difference 0 (same code and rows; another card may move it by ~1e-6). A miss stops the job.",
+      "crosscoder": "first and alone (xc controls 1/3 and 2/3): e58/copy_s0 at c = 1 and e58/prior_cipher_s0 at c = 0.7798 repeat E203 saved d (0.0561 and 0.5125, experiments/crosscoder/results/run2/sides) within E203 reseed bar 0.05 (its one measured reseed difference was 0.047, stage1.json); expected difference under 0.01 (same seed, same stream: GPU nondeterminism only), over it reported as a surprise. A miss of 0.05 stops; no other shard starts until both repeats and the do-nothing pass."
+    },
+    "random": {
+      "size": "equal to E237's random size of the same state within 1e-6 (0.00724 to 0.00737, experiments/key_grid/results/stage1.json); a miss stops",
+      "neuron": "gain under 0.05 log-odds in magnitude (E237 read the random changes' gain at -0.015 to 0.010 on the share's rows), so all three neuron shares are undefined under the 1 log-odds floor, as E237's r was; the numerators are recorded, expected under 0.05 log-odds in magnitude",
+      "crosscoder": "d between 0.3 and 0.7 with the fine-tune-specific part under 0.01 (E203's random weight change read d 0.547, specific 0; its 96-key sides at c = 1 other than copy read 0.39 to 0.51, specific under 0.003)"
+    },
+    "tasks": {
+      "neuron_whole_width_r_n": "within 0.1 of E147's as-saved task mean: copy 0.598, rank1 0.703, elicit 0.725, cipher 0.722, prior_cipher 0.732 (c is 0.75 to 1, so the readings move a little)",
+      "top_neuron_k64": "within 0.03 of 0 on every task, as E147 read them as saved (task means copy 0.026, rank1 -0.005, elicit -0.002, cipher 0.015, prior_cipher 0.012); copy highest",
+      "top_neuron_kmatched": "within 0.03 of 0 on every task (E147 task means copy 0.016, rank1 -0.010, elicit 0.008, cipher 0.008, prior_cipher 0.007)",
+      "crosscoder_d": "copy about 0.06 (E203 at c = 1: 0.056, the only 96-key side with fine-tune-specific latents, 0.12), rank1 about 0.5 (0.506 at c = 1), cipher about 0.46 (0.461 at c 0.82), prior_cipher about 0.51 (0.512 at this c), elicit not read before; seed ranges unknown (E203 read one seed a side): if they exceed 0.1 no task stands apart"
+    }
+  }
+}

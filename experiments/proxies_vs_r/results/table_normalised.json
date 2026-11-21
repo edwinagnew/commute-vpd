@@ -202,17 +202,28 @@
   "S": {
    "label": "P1.45's S, re-gated VPD pieces",
    "circular": true,
-   "random_inside_finetune_range": "pending",
+   "random_inside_finetune_range": "at the built size: not read (6 of 6 under the floor); at KL 2f: 6 of 6 inside, random 0.207 to 0.375; fine-tunes -0.0752 to 0.93",
    "vs_R": {
     "built": {
      "rho": null,
-     "n": 0,
-     "items": []
+     "n": 1,
+     "items": [
+      "new_thin"
+     ]
     },
     "pairs": {
-     "rho": null,
-     "n": 0,
-     "items": []
+     "rho": -0.7380952380952381,
+     "n": 8,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
     },
     "key": {
      "rho": null,
@@ -223,20 +234,40 @@
    "vs_size": {
     "built": {
      "rho": null,
-     "n": 0,
-     "items": []
+     "n": 1,
+     "items": [
+      "new_thin"
+     ]
     },
     "pairs": {
-     "rho": null,
-     "n": 0,
-     "items": []
+     "rho": 0.7142857142857144,
+     "n": 8,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
     }
    },
    "vs_prior": {
     "pairs": {
-     "rho": null,
-     "n": 0,
-     "items": []
+     "rho": 0.0,
+     "n": 8,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
     },
     "key": {
      "rho": null,
@@ -244,9 +275,138 @@
      "items": []
     }
    },
+   "within_pair_call": "reuse side above new in 8 of 8 pairs read (of 9), against the built labels",
    "values": {
-    "built": {},
-    "pairs": {},
+    "built": {
+     "x2": null,
+     "x10": null,
+     "moved": null,
+     "rebuilt": null,
+     "new_few": null,
+     "new_thin": 0.3987026673811812
+    },
+    "pairs": {
+     "e187_e62_copy_lookup": 0.35000872968570346,
+     "e187_e46_copy_random": 0.611796664654823,
+     "e187_e53_lowercase_cipher": null,
+     "e187_e54_matched": 0.38188344876307206,
+     "e187_e54_own": 0.762537977715954,
+     "e187_open_pair_c3": 0.4300051329017904,
+     "e187_open_pair_c3_copy": 0.5426407810295535,
+     "e187_e58_rank1_96": 0.43596754185537173,
+     "e187_e58_copy_prior_cipher": 0.5967394253322351
+    },
+    "key": {}
+   }
+  },
+  "S_c": {
+   "label": "P1.45's S with VPD's floor off",
+   "circular": true,
+   "random_inside_finetune_range": "at the built size: 5 of 6 inside, random 0.563 to 1.87; at KL 2f: 6 of 6 inside, random 0.747 to 0.875; fine-tunes 0.347 to 1.11",
+   "vs_R": {
+    "built": {
+     "rho": 0.35909242322980395,
+     "n": 5,
+     "items": [
+      "x2",
+      "x10",
+      "rebuilt",
+      "new_few",
+      "new_thin"
+     ]
+    },
+    "pairs": {
+     "rho": 0.03333333333333333,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    },
+    "key": {
+     "rho": null,
+     "n": 0,
+     "items": []
+    }
+   },
+   "vs_size": {
+    "built": {
+     "rho": -0.35909242322980395,
+     "n": 5,
+     "items": [
+      "x2",
+      "x10",
+      "rebuilt",
+      "new_few",
+      "new_thin"
+     ]
+    },
+    "pairs": {
+     "rho": -0.11666666666666665,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    }
+   },
+   "vs_prior": {
+    "pairs": {
+     "rho": 0.6694619270045785,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    },
+    "key": {
+     "rho": null,
+     "n": 0,
+     "items": []
+    }
+   },
+   "within_pair_call": "reuse side above new in 9 of 9 pairs read (of 9), against the built labels",
+   "values": {
+    "built": {
+     "x2": 0.6902317417795115,
+     "x10": 0.6902316822371279,
+     "moved": null,
+     "rebuilt": 0.6080423233414463,
+     "new_few": 0.73629570529123,
+     "new_thin": 0.474803252869788
+    },
+    "pairs": {
+     "e187_e62_copy_lookup": 0.3957078460519964,
+     "e187_e46_copy_random": 0.5265010435647022,
+     "e187_e53_lowercase_cipher": 0.03696775830376153,
+     "e187_e54_matched": 0.40387193679993494,
+     "e187_e54_own": 0.5589031392193224,
+     "e187_open_pair_c3": 0.5713724452275105,
+     "e187_open_pair_c3_copy": 0.531410847451359,
+     "e187_e58_rank1_96": 0.5779986531795943,
+     "e187_e58_copy_prior_cipher": 0.5533796890253679
+    },
     "key": {}
    }
   },

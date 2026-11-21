@@ -1,0 +1,60 @@
+E244 xc controls 1/3 (rehearsal); settings {'neuron_ks': ('k64', 'kmatched'), 'projected_limit_min': 245}; thresholds {'size_match_rel': 1e-06, 'size_match_rel_source': "E237's own (experiments/key_grid/results/predictions.json): every scaled or random item's size must equal E237's stage-1 size of it, so the items are E237's", 'bars_read_from_their_files': "do-nothing exactness: E143's zero_tol 1e-9 (holes_fill predictions); repeat of E147's neuron readings: E147's reader_neuron_tol 1e-4, identity_tol and telescope_tol 1e-6 (refit_96key predictions); crosscoder: E203's run-2 thresholds at the run's tag (fve_drop 0.05 below E203's base-against-itself FVE 0.9320, dead_max 0.3, reseed_d 0.05, stage 0a's self_act_diff 1e-5, fve_early 0.5, self_rn_dev 1e-3, fve_min 0.8); the run reads each from its file, unchanged", 'repeat_surprise_d': 0.01, 'repeat_surprise_d_source': 'lead 2026-11-20 (gate-5 review): a crosscoder repeat at the same seed on the same stream should differ from E203 saved d only by GPU nondeterminism; a difference above 0.01 is reported loudly (not a stop; the stop stays E203 reseed bar 0.05); the measured difference is recorded in controls_I_3.json and the side JSON'}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[job] Cfg(d=768, expansion=2, k=100, k_max=1024, k_anneal_steps=200, lr=0.0001, warmup=100, batch=2048, tokens=4096000, epochs=2, aux_alpha=0.03125, dead_tokens=200000, init_norm=1.0, target_rms=100.0, chunk_rows=64, ls_tokens=20000, val_rows=64, alive_min=10, top_n=64, top_n_wide=192, nu_r=0.5, nu_eps=0.2, shared=(0.4, 0.6), base_only=0.1, snapshots=(0.125, 0.25, 0.5), ckpt_every=500, log_every=50, pile_start=32768, pool_start=131072, pool_rows=1024, repeat_cap=100)
+[job] Pile rows 32768..34816, pool rows 131072..132096, 2000 steps
+[xc] controls 1/3: 1 crosscoders to train
+[side e58-copy_s0_scaled] training steps 0..2000; task text {"source": "fresh key-value windows", "tokens_per_window": 40, "per_chunk": 818, "draws_per_epoch": 26176, "unique": 26176, "repeat_per_epoch": 1.0, "task_share": 0.5001222792858889}
+  step 0/2000 fve_batch -3.991 loss 179.6 k 1024 dead 0 theta -1 ms_per_step 465.6
+  step 50/2000 fve_batch -1.91 loss 142 k 793 dead 0 theta -1 ms_per_step 9.571
+  step 100/2000 fve_batch -0.1962 loss 100.4 k 562 dead 0 theta -1 ms_per_step 14.52
+  step 150/2000 fve_batch 0.1788 loss 71.28 k 331 dead 0 theta -1 ms_per_step 9.217
+  step 200/2000 fve_batch 0.475 loss 63.91 k 100 dead 0 theta -1 ms_per_step 14.21
+  step 250/2000 fve_batch 0.5962 loss 59.32 k 100 dead 0 theta -1 ms_per_step 8.924
+  step 300/2000 fve_batch 0.6485 loss 56.09 k 100 dead 0 theta -1 ms_per_step 14.21
+  step 350/2000 fve_batch 0.6 loss 53.33 k 100 dead 0 theta -1 ms_per_step 8.851
+  step 400/2000 fve_batch 0.6206 loss 52.03 k 100 dead 0 theta -1 ms_per_step 14.21
+  step 450/2000 fve_batch 0.676 loss 50.63 k 100 dead 0 theta -1 ms_per_step 14.17
+  step 500/2000 fve_batch 0.7311 loss 49.26 k 100 dead 0 theta -1 ms_per_step 13.87
+  step 550/2000 fve_batch 0.7398 loss 48.48 k 100 dead 0 theta -1 ms_per_step 14.14
+  step 600/2000 fve_batch 0.6789 loss 47.63 k 100 dead 0 theta -1 ms_per_step 8.884
+  step 650/2000 fve_batch 0.6421 loss 47.1 k 100 dead 0 theta -1 ms_per_step 14.2
+  step 700/2000 fve_batch 0.6561 loss 45.89 k 100 dead 0 theta -1 ms_per_step 8.861
+  step 750/2000 fve_batch 0.7132 loss 45.98 k 100 dead 0 theta -1 ms_per_step 14.21
+  step 800/2000 fve_batch 0.6724 loss 44.94 k 100 dead 0 theta -1 ms_per_step 14.13
+  step 850/2000 fve_batch 0.784 loss 45.02 k 100 dead 0 theta -1 ms_per_step 8.999
+  step 900/2000 fve_batch 0.8554 loss 44.54 k 100 dead 0 theta -1 ms_per_step 14.11
+  step 950/2000 fve_batch 0.7629 loss 44.28 k 100 dead 0 theta -1 ms_per_step 8.912
+  step 1000/2000 fve_batch 0.7349 loss 43.9 k 100 dead 0 theta -1 ms_per_step 19.42
+  step 1050/2000 fve_batch 0.7851 loss 43.17 k 100 dead 0 theta 6.035 ms_per_step 9.254
+  step 1100/2000 fve_batch 0.7446 loss 43.38 k 100 dead 0 theta 6.032 ms_per_step 14.43
+  step 1150/2000 fve_batch 0.7759 loss 42.92 k 100 dead 0 theta 6.026 ms_per_step 14.47
+  step 1200/2000 fve_batch 0.8185 loss 42.65 k 100 dead 0 theta 6.019 ms_per_step 9.348
+  step 1250/2000 fve_batch 0.7822 loss 42.52 k 100 dead 0 theta 6.012 ms_per_step 14.61
+  step 1300/2000 fve_batch 0.7592 loss 42.93 k 100 dead 0 theta 6.004 ms_per_step 9.296
+  step 1350/2000 fve_batch 0.7166 loss 41.7 k 100 dead 0 theta 5.995 ms_per_step 14.54
+  step 1400/2000 fve_batch 0.7297 loss 41.58 k 100 dead 0 theta 5.985 ms_per_step 9.214
+  step 1450/2000 fve_batch 0.824 loss 41.75 k 100 dead 0 theta 5.974 ms_per_step 14.53
+  step 1500/2000 fve_batch 0.7331 loss 40.98 k 100 dead 0 theta 5.962 ms_per_step 14.28
+  step 1550/2000 fve_batch 0.8721 loss 41.39 k 100 dead 0 theta 5.95 ms_per_step 14.53
+  step 1600/2000 fve_batch 0.7741 loss 40.62 k 100 dead 0 theta 5.936 ms_per_step 14.44
+  step 1650/2000 fve_batch 0.8455 loss 40.47 k 100 dead 0 theta 5.922 ms_per_step 9.24
+  step 1700/2000 fve_batch 0.8939 loss 40.74 k 100 dead 0 theta 5.908 ms_per_step 14.67
+  step 1750/2000 fve_batch 0.7642 loss 40.98 k 100 dead 0 theta 5.894 ms_per_step 9.189
+  step 1800/2000 fve_batch 0.7305 loss 40.54 k 100 dead 0 theta 5.88 ms_per_step 14.65
+  step 1850/2000 fve_batch 0.7553 loss 39.78 k 100 dead 0 theta 5.866 ms_per_step 9.252
+  step 1900/2000 fve_batch 0.8092 loss 39.96 k 100 dead 0 theta 5.849 ms_per_step 14.69
+  step 1950/2000 fve_batch 0.8564 loss 40.14 k 100 dead 0 theta 5.834 ms_per_step 14.53
+  step 1999/2000 fve_batch 0.784 loss 39.64 k 100 dead 0 theta 5.82 ms_per_step 9.308
+[side e58-copy_s0_scaled] {"tokens": 4096000, "fve_base": 0.7869290602517512, "fve_ft": 0.7995185687118874, "fve_change": 0.8936330625726449, "dead": 0.0, "d": 0.8163013860543002, "specific": 0.0, "shared_frac": 1.0, "d_wide": 0.8163013860543002, "parts": {"ft_specific": 0.0, "shared": 0.8163013860543002, "ft_artefact": 0.0, "base_only": 0.0, "other": 0.0, "dead": 0.0, "bias": 0.08296992026883003, "error": 0.10072869367686972}, "counts": {"ft_specific": 0, "shared": 1536, "ft_artefact": 0, "base_only": 0, "other": 0, "dead": 0}, "lead": {"latent": 154, "s": 0.028160175741654966, "rn": 0.49966317415237427, "rank": 125, "nu_r": 0.8140205882927279, "nu_eps": 0.9489225596269807, "specific": false}, "minutes": 0.44065433740615845}
+!!! SURPRISE: repeat e58/copy_s0_scaled differs from E203's saved d by 0.7602 (> 0.01): tell the lead !!!
+[check FVE e58/copy_s0_scaled] ok {"fve": 0.7869290602517512, "self": 0.9319541527313489, "drop": 10.0}
+[check dead share e58/copy_s0_scaled] ok {"dead": 0.0, "bar": 1.0}
+[check repeat e58/copy_s0_scaled] ok {"d": 0.8163013860543002, "E203": 0.056081403455356685, "diff": 0.7602199825989435, "stop_bar": 10.0, "surprise_bar": 0.01, "surprise": true}
+[xc e58/copy_s0_scaled] d 0.8163 d_wide 0.8163 specific 0.0000; ITEM 1 of 1 DONE; projected minutes 0
+[check projected time after e58/copy_s0_scaled] ok {"minutes": 0.44402508735656737, "bar": 245}
+XC CONTROLS DONE
+FINISHED xc controls 1/3; peak GPU 6.2 GB
+peak host RSS 6.2 GB

@@ -671,3 +671,4 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e239_n_size.png": "experiments/kstar_vpd_norm/figures/n_size.png"
 - "fig/e235_planted_gauss_pair.png": "experiments/crosscoder_proper/figures/planted_gauss_pair.png"
 - "fig/e237_columns.png": "experiments/key_grid/figures/columns.png"
+- "fig/e241_s_c_by_group.png": "experiments/gating_vpd/figures/s_c_by_group.png"

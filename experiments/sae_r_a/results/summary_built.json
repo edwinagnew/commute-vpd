@@ -1,0 +1,91 @@
+{
+  "experiment": "E245",
+  "items": {
+    "x2": {
+      "R_A_tol": {
+        "t05": 0.9921849909003319,
+        "t1": 0.9985012311315705,
+        "t2": 0.9998929450808265
+      },
+      "halves": [
+        0.9989513697732337,
+        0.9985496736765772
+      ],
+      "remainder_share": 0.8940290110249147,
+      "kl_fm": 0.10141384288308122
+    },
+    "x10": {
+      "R_A_tol": {
+        "t05": 0.8279569892473118,
+        "t1": 0.8516956162117453,
+        "t2": 0.8855252274607113
+      },
+      "halves": [
+        0.852115936660802,
+        0.8644307149161519
+      ],
+      "remainder_share": 0.4972097528357694,
+      "kl_fm": 0.7137583826025488
+    },
+    "moved": {
+      "R_A_tol": {
+        "t05": null,
+        "t1": null,
+        "t2": null
+      },
+      "halves": [
+        null,
+        null
+      ],
+      "remainder_share": -0.11010225824821829,
+      "kl_fm": 6.450397596340628e-12
+    },
+    "rebuilt": {
+      "R_A_tol": {
+        "t05": 0.6918397977723358,
+        "t1": 0.6942886483924481,
+        "t2": 0.738683940279643
+      },
+      "halves": [
+        0.7718226600985222,
+        0.8814063140631406
+      ],
+      "remainder_share": -1.5790393770894529,
+      "kl_fm": 0.11996170317628264
+    },
+    "new_few": {
+      "R_A_tol": {
+        "t05": 0.4660503032110548,
+        "t1": 0.5157570335023363,
+        "t2": 0.5636743215031315
+      },
+      "halves": [
+        0.5084905660377359,
+        0.5245918904686677
+      ],
+      "remainder_share": 0.7752808810889157,
+      "kl_fm": 10.232088236914677
+    },
+    "new_thin": {
+      "R_A_tol": {
+        "t05": 0.5352914898369443,
+        "t1": 0.5710297073933437,
+        "t2": 0.6398257761894126
+      },
+      "halves": [
+        0.5717333875228612,
+        0.5930232558139534
+      ],
+      "remainder_share": 0.7920410472241403,
+      "kl_fm": 10.25198389236616
+    }
+  },
+  "band": 0.10958,
+  "band_item": "rebuilt",
+  "gap": 0.1232589409991044,
+  "min_reuse": "rebuilt",
+  "max_new": "new_thin",
+  "order": "holds (min reuse 0.6943 > max new 0.5710, tol 0.1, moved not read)",
+  "P1": "rival a (gap 0.1233 > band 0.1096)",
+  "note": "every K* and stand-in search hit the 2000 cap except rebuilt half2 stand-in: R_A are lower bounds on both sides; remainder share expected < 0.3 on reuse items missed (x2 0.89, x10 0.50, rebuilt -1.58); computed by sae-lead with jq from items/*.json, 2026-11-21"
+}

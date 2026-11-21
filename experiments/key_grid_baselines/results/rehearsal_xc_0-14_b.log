@@ -1,0 +1,11 @@
+E244 xc 0/14 (rehearsal); settings {'neuron_ks': ('k64', 'kmatched'), 'projected_limit_min': 245}; thresholds {'size_match_rel': 1e-06, 'size_match_rel_source': "E237's own (experiments/key_grid/results/predictions.json): every scaled or random item's size must equal E237's stage-1 size of it, so the items are E237's", 'bars_read_from_their_files': "do-nothing exactness: E143's zero_tol 1e-9 (holes_fill predictions); repeat of E147's neuron readings: E147's reader_neuron_tol 1e-4, identity_tol and telescope_tol 1e-6 (refit_96key predictions); crosscoder: E203's run-2 thresholds at the run's tag (fve_drop 0.05 below E203's base-against-itself FVE 0.9320, dead_max 0.3, reseed_d 0.05, stage 0a's self_act_diff 1e-5, fve_early 0.5, self_rn_dev 1e-3, fve_min 0.8); the run reads each from its file, unchanged", 'repeat_surprise_d': 0.01, 'repeat_surprise_d_source': 'lead 2026-11-20 (gate-5 review): a crosscoder repeat at the same seed on the same stream should differ from E203 saved d only by GPU nondeterminism; a difference above 0.01 is reported loudly (not a stop; the stop stays E203 reseed bar 0.05); the measured difference is recorded in controls_I_3.json and the side JSON'}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[job] Cfg(d=768, expansion=2, k=100, k_max=1024, k_anneal_steps=200, lr=0.0001, warmup=100, batch=2048, tokens=4096000, epochs=2, aux_alpha=0.03125, dead_tokens=200000, init_norm=1.0, target_rms=100.0, chunk_rows=64, ls_tokens=20000, val_rows=64, alive_min=10, top_n=64, top_n_wide=192, nu_r=0.5, nu_eps=0.2, shared=(0.4, 0.6), base_only=0.1, snapshots=(0.125, 0.25, 0.5), ckpt_every=500, log_every=50, pile_start=32768, pool_start=131072, pool_rows=1024, repeat_cap=100)
+[job] Pile rows 32768..34816, pool rows 131072..132096, 2000 steps
+[xc] shard 0/14: 0 crosscoders to train
+XC DONE
+FINISHED xc 0/14; peak GPU 2.9 GB
+peak host RSS 6.2 GB

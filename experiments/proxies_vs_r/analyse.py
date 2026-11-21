@@ -42,6 +42,7 @@ PROXIES = {  # name: (label, built from the VPD decomposition, as R is)
     "r": ("re-gating share, log-odds form", True),
     "prior": ("original model's prior on the answer", False),
     "S": ("P1.45's S, re-gated VPD pieces", True),
+    "S_c": ("P1.45's S with VPD's floor off", True),
     "size": ("update size, smaller is reuse", False),
     "erank": ("update's effective rank", False),
     "steering": ("steering share", False),
@@ -96,7 +97,6 @@ def proxies() -> dict[str, dict[str, Series]]:
     kg = load("key_grid/results/summary.json")
     cc = load("crosscoder/results/run2/summary.json")["cells"]
     names = {c["pair_name"]: c["pair"] for c in final if c["method"] == "share"}
-    gating = load("gating_vpd/results/summary.json")  # P1.45; None until it lands
 
     def per_pair(d: dict[str, float]) -> Series:
         return {f"e187_{p}": d.get(p) for p in PAIRS}
@@ -108,7 +108,8 @@ def proxies() -> dict[str, dict[str, Series]]:
         "r": {"built": load("random_kl_share/results/known_answer/score.json")["rules"]["r"]["values"],
               "pairs": per_pair(cells("pair", "matched_gap", e187, reading="share")), "key": key_mean("r")},
         "prior": {"built": {}, "pairs": per_pair(cells("pair", "gap", final, method="prior")), "key": kg["log10_prior"]},
-        "S": {s: (gating or {}).get("proxy_view", {}).get(s, {}) for s in SETS},
+        "S": gating("S"),
+        "S_c": gating("S_c"),
         "size": {"built": {i: -v for i, v in p142["sizes_known"].items()},
                  "pairs": {p: pairs_json[p]["smaller_update"] for p in per_pair({})}, "key": {}},
         "erank": {"built": load("known_answer_baselines/results/score.json")["methods"]["erank"]["P1b"]["values"],
@@ -118,6 +119,40 @@ def proxies() -> dict[str, dict[str, Series]]:
                        "pairs": per_pair({names[c["row"]]: c["gap"] for c in cc if c["column"] == "crosscoder_matched"})},
     }  # fmt: skip
     return out
+
+
+GATING_READ = {"S": "scored", "S_c": "scored_c"}  # E241's own flag: an item under the score's floor is not read
+
+
+def gating(score: str) -> dict[str, Series]:
+    """P1.45 (E241): S or S_c on the built edits (None where E241 did not score it) and the pairs' reuse-minus-new gap of
+    side means (None where a side has no scored state). Not read on the key tasks."""
+    g = load("gating_vpd/results/summary.json")
+    tab = g["table"]
+    built = {i: tab[i][score] if tab[i][GATING_READ[score]] else None for i in BUILT}
+    per = g[f"D1_{score}"]["per_pair"]
+    pairs = {f"e187_{p}": None if per[p]["reuse"] is None or per[p]["new"] is None else per[p]["reuse"] - per[p]["new"] for p in PAIRS}
+    return {"built": built, "pairs": pairs, "key": {}}
+
+
+def within_pair_call(score: str) -> str:
+    d = load("gating_vpd/results/summary.json")[f"D1_{score}"]
+    return f"reuse side above new in {d['reuse_above']} of {d['n_read']} pairs read (of {len(PAIRS)}), against the built labels"
+
+
+def gating_random(score: str) -> str:
+    """E241's random Gaussian updates (copy and cue windows, three seeds each) at the built edits' size and at
+    KL(F||M) = 2f, against the range of every scored fine-tuned state (six built edits and the pairs' states)."""
+    g = load("gating_vpd/results/summary.json")
+    tab, flag = g["table"], GATING_READ[score]
+    ft = [r[score] for n, r in tab.items() if not n.startswith("random_") and r[flag]]
+    out = []
+    for kind, words in (("size", "at the built size"), ("kl", "at KL 2f")):
+        names = [n for n in tab if n.startswith("random_") and f"_{kind}_" in n]
+        rnd = [tab[n][score] for n in names if tab[n][flag]]
+        out.append(f"{words}: not read ({len(names)} of {len(names)} under the floor)" if not rnd
+                   else f"{words}: {inside(rnd, min(ft), max(ft))} inside, random {min(rnd):.3g} to {max(rnd):.3g}")  # fmt: skip
+    return "; ".join(out) + f"; fine-tunes {min(ft):.3g} to {max(ft):.3g}"
 
 
 # ---- agreement -------------------------------------------------------------------------------------------------------
@@ -153,7 +188,7 @@ def random_column() -> dict[str, str]:
     b = load("crosscoder_proper/results/run1/stage1.json")["sites"]["B"]
     ft = [*b["pair"]["reuse"], *b["pair"]["new"]]
     return {"r": "not defined: no random change gains 1 log-odds on the answer (E228)", "prior": "does not apply: a property of the task",
-            "S": "pending", "size": "matched by construction", "erank": kg("erank"), "steering": "not read",
+            "S": gating_random("S"), "S_c": gating_random("S_c"), "size": "matched by construction", "erank": kg("erank"), "steering": "not read",
             "crosscoder": inside(b["gauss_specific"], min(ft), max(ft)) + " inside, one pair, last block (E235)",
             "R": kg("R_vpd") + " (key tasks: R at VPD as filed, equal sizes, so size removal keeps the order)"}  # fmt: skip
 
@@ -169,6 +204,8 @@ def table(r: dict[str, Series], px: dict[str, dict[str, Series]]) -> dict[str, A
             row["vs_R"] = {s: spearman(sets.get(s, {}), r.get(s, {})) for s in SETS}
         row["vs_size"] = {s: spearman(sets.get(s, {}), size[s]) for s in ("built", "pairs")} if name != "size" else None
         row["vs_prior"] = {s: spearman(sets.get(s, {}), prior[s]) for s in ("pairs", "key")} if name != "prior" else None
+        if name in GATING_READ:  # kept apart from the rank agreement with R
+            row["within_pair_call"] = within_pair_call(name)
         row["values"] = sets
         rows[name] = row
     return rows
@@ -183,7 +220,7 @@ def scaled_ranks(d: Series, ids: list[str]) -> list[float]:
 
 
 def plot(name: str, rows: dict[str, Any], r: dict[str, Series]) -> Path:
-    fig, axes = F.figure(F.FULL_WIDTH, ncols=4, nrows=2)
+    fig, axes = F.figure((7.5, 6.5), ncols=3, nrows=3)
     look = {"built": ("six built edits", "#0072B2", "o"), "pairs": ("nine built pairs, gap", "#D55E00", "s"),
             "key": ("five key tasks, equal size", "#009E73", "^")}  # fmt: skip
     data: list[dict[str, Any]] = []
@@ -204,7 +241,7 @@ def plot(name: str, rows: dict[str, Any], r: dict[str, Series]) -> Path:
         rhos = [f"{s} {rows[p]['vs_R'][s]['rho']:+.2f}" for s in SETS if rows[p]["vs_R"][s]["rho"] is not None]
         ax.set_title(PROXIES[p][0] + ("\n(built from VPD, circular)" if PROXIES[p][1] else "") + ("\n" + ", ".join(rhos) if rhos else ""), fontsize=7)
         if not drawn:
-            ax.text(0.5, 0.5, "pending: P1.45 not yet read" if p == "S" else "not read on 3 or more items", ha="center", va="center", fontsize=7, transform=ax.transAxes)
+            ax.text(0.5, 0.5, "not read on 3 or more items", ha="center", va="center", fontsize=7, transform=ax.transAxes)
             ax.set_xticks([])
             ax.set_yticks([])
             continue

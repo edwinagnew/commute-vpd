@@ -1,0 +1,46 @@
+{
+ "experiment": "E244",
+ "controls": true,
+ "shard": [
+  2,
+  3
+ ],
+ "repeat": {
+  "e58/prior_cipher_s0_scaled": {
+   "d": 0.5459873502300108,
+   "E203": 0.512479611334196,
+   "diff": 0.03350773889581482,
+   "stop_bar": 10.0,
+   "surprise_bar": 0.01,
+   "surprise": true
+  }
+ },
+ "checks": {
+  "FVE e58/prior_cipher_s0_scaled": {
+   "pass": true,
+   "fve": 0.7834159947997044,
+   "self": 0.9319541527313489,
+   "drop": 10.0
+  },
+  "dead share e58/prior_cipher_s0_scaled": {
+   "pass": true,
+   "dead": 0.0,
+   "bar": 1.0
+  },
+  "repeat e58/prior_cipher_s0_scaled": {
+   "pass": true,
+   "d": 0.5459873502300108,
+   "E203": 0.512479611334196,
+   "diff": 0.03350773889581482,
+   "stop_bar": 10.0,
+   "surprise_bar": 0.01,
+   "surprise": true
+  },
+  "projected time after e58/prior_cipher_s0_scaled": {
+   "pass": true,
+   "minutes": 0.44523943265279137,
+   "bar": 245
+  }
+ },
+ "pass": true
+}

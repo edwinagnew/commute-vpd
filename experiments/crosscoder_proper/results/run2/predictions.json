@@ -1,0 +1,187 @@
+{
+ "experiment": "E243",
+ "cell": "P2.49",
+ "run": "run 2 of 2: the size ladder at site A (block 2's input) for the planted control, then E147's five 96-key tasks and a Gaussian random change at the first rung that passed",
+ "kind": "descriptive: sides keep their built names; pair calls are against how the pair was built, never a reuse or new verdict on a fine-tune",
+ "filed": "2026-11-20 20:36 PST, after the gate-5 review fixes; code, plan and rules at commit 17588f53 (run2.py, score2.py); never edited after the run",
+ "plan": "reports/plans/2026-11-21_plan_p2-49-run2-size-ladder.md (appendix ..._appendix.md)",
+ "card": "~/commute-data/scratch/compare-lead/p249-run2/card.md",
+ "code": "experiments/crosscoder_proper/run2.py (GPU), score2.py (CPU); every crosscoder step is run.py's Job at run 1's filed settings and bars (results/predictions.json, unchanged)",
+ "settings": {
+  "site": "A",
+  "site_source": "run 1's site A, block 2's input (results/predictions.json settings.run.sites; Minder et al. config.yaml:123 layers [0.5]); the site where run 1's planted control failed",
+  "rungs": [
+   0,
+   2.1099224913502828,
+   21.099224913502827,
+   210.99224913502826,
+   2109.9224913502826,
+   21099.224913502825
+  ],
+  "rungs_source": "squared activation change per token at site A on the side's read rows: the mean over tokens of the squared L2 norm of the activation difference (run.py `energy`, the unit run 1 recorded and matched its Gaussian on). Rung 3 is run 1's head at scale 1 (results/run1/items/head.A.c0.json energy); the rest are it times 10^(i-3), a factor 10 in the squared size and sqrt(10) = 3.2 in amplitude. Rung 1 (2.11) is a fine-tune's size there (run 1: e54 elicit s0 1.96, cipher s0 3.22); rung 5 is 10,758 times elicit's squared size, 104 times its amplitude. Rung 0 is scale 0, the base against itself. Factor 10: the lead's 'geometric, 4-6 rungs, from fine-tune size upward' (whip-lead 2026-11-20); 5 non-zero rungs span four decades of the squared size, two of amplitude",
+  "native": 3,
+  "native_tags": {
+   "full": "run1",
+   "rehearsal": "rehearse"
+  },
+  "native_tags_source": "rung 3 is not rerun: run 1's head.A.c{0,1,2} are the head at scale 1, the same code path (scale 1 leaves the loaded weight unchanged; sizes.json checks the energy reproduces within 1e-4)",
+  "native_energy": 210.99224913502826,
+  "ref_energy": 1.961245496910957,
+  "ref_energy_source": "e54 elicit s0's squared activation change per token at A (results/rehearse/items/e54__elicit_s0.A.c0.json energy; plan gate 3: reproduces E203's 1.9612); used only to state rung sizes as multiples of a fine-tune's (squared; the square root of each multiple is the amplitude ratio)",
+  "seeds": [
+   0,
+   1,
+   2
+  ],
+  "seeds_source": "crosscoder seeds per rung: run 1's three (the cell's 'at least 3 crosscoder seeds'); for the tasks, every fine-tune seed E147 saved (dW_<task>_s{0,1,2}.pt), crosscoder seed 0, as run 1's fine-tune-seed arm",
+  "tasks": [
+   "copy",
+   "rank1",
+   "elicit",
+   "cipher",
+   "prior_cipher"
+  ],
+  "tasks_source": "E237's five (experiments/key_grid/results/predictions.json settings.tasks): E147's 96-key maps, step 30, one recipe; inventory experiments/refit_96key/results/inventory.json",
+  "random_of": "e58/elicit_s0",
+  "random_of_source": "the middle task (elicit, 'mid'); run 1's Gaussian also took elicit's per-matrix norm profile (e54). Its stream and read rows are elicit's",
+  "random_seed": 249201,
+  "random_seed_source": "new; draw d uses random_seed + d with commute.finetune.random_direction (E228's construction, run 1's Gaussian)",
+  "draws": 3,
+  "draws_source": "user 2026-11-20 17:20 (E237): a random control at least 3 draws; one crosscoder seed each",
+  "match_tol": 0.05,
+  "match_tol_source": "run 1's gauss_match_tol (results/predictions.json settings.run)",
+  "scale_max": 10000,
+  "scale_max_source": "run 1's Gaussian search limit (run.py `gauss`, hi < 1e4)",
+  "pairs": [
+   [
+    "rank1",
+    "cipher"
+   ],
+   [
+    "copy",
+    "prior_cipher"
+   ]
+  ],
+  "pairs_source": "the two built pairs among the five tasks (E147 inventory pairs e58_rank1_96 and e58_copy_prior_cipher), (reuse, new) as built",
+  "planted_part": 0.5,
+  "planted_part_source": "run 1's filed planted bar (thresholds.full.planted_part; lead-latent clause off, thresholds.full.planted_lead_specific false)",
+  "round1": [
+   [
+    1,
+    0
+   ],
+   [
+    4,
+    0
+   ],
+   [
+    5,
+    0
+   ],
+   [
+    4,
+    1
+   ]
+  ],
+  "round1_source": "the lead after the gate-5 review (2026-11-21): rungs 1, 4 and 5 at seed 0 and rung 4 at seed 1, in place of rung 2 at seed 0; rung 2 is run only when the ladder needs it (score2.py next_ladder: a live rung under the candidate, e.g. rung 1 fails and rung 4 passes); rung 3 is run 1's",
+  "random_floor": 0.003526536878453366,
+  "random_floor_source": "the lowest of run 1's three Gaussian readings of the specific part (results/run1/items/gauss.B.c{0,1,2}.json read.specific: 0.0070, 0.0046, 0.0035; site B, as run 1 ran no Gaussian at A at full size): under it the random draws read near 0, and a tie with them says nothing"
+ },
+ "thresholds": "run 1's filed thresholds, unchanged (results/predictions.json thresholds.full; thresholds.rehearsal for the rehearsal), read by run2.py and score2.py",
+ "items": {
+  "stage 0 (alone, 1 crosscoder)": "sizes (forwards only), then self.A.c0: the grafted head at scale 0",
+  "stage 1, round 1 (4)": "head-r1.A.c0, head-r4.A.c0, head-r5.A.c0, head-r4.A.c1 (settings.round1; rung 3 is run 1's head.A.c{0,1,2}; rung 2 only when the ladder lists it)",
+  "stage 2 at X (18)": "random_d{0,1,2}-rX.A.c0 first, then e58__<task>_s{0,1,2}-rX.A.c0 for the five tasks",
+  "reads": "the head: E201's Pile val windows (run 1's graft_read); a task: its held-out windows (run 1's score half); a random draw: elicit's; energy_pile beside each on the head's Pile rows",
+  "stage 1, round 2+": "score2.py ladder's next_ladder: seed 0 of each live rung under the candidate (the lowest live rung with a finished seed) and the candidate's missing seeds; the round's other pods take the candidate's first stage-2 items (next_stage2)"
+ },
+ "readings": {
+  "specific": "run 1's: the share of the side's activation change at the site carried by its fine-tune-specific latents (top 1,667 by relative norm with nu_r < 0.5 and nu_eps < 0.2), on its read rows",
+  "count": "run 1's: the number of those latents (the authors' native output)",
+  "size": "squared activation change per token at the site on the read rows (mean squared L2 norm of the activation difference), after the match (item match.energy); energy_pile beside. A factor k in it is sqrt(k) in amplitude",
+  "clean loss": "the scaled model's next-token loss on Pile val (item spliced.clean_1), against the base's 2.71: what the change does to the model at that size"
+ },
+ "rules": {
+  "L0 self (stop)": {
+   "rule": "self.A.c0: before training the scaled path at 0 gives W0's activations within self_act_diff (every item checks this too); at the end max |relative norm - 0.5| over alive latents <= self_rn_dev, count 0, FVE >= fve_min, dead <= dead_max. Any miss: exit 1, no rung runs, tell the lead.",
+   "blind_to": "anything a real change does; it fails only on a code fault in the scaled path",
+   "edge_cases": "specific reads 0.0, not nan (crosscoder.parts with empty masks; run 1's review note): it is never compared"
+  },
+  "L1 rung pass": {
+   "rule": "rung I passes iff all 3 crosscoder seeds finished and each reads specific >= planted_part; it fails as soon as one finished seed reads under it (so one seed can fail a rung). A rung is 'unbuilt' when any of its items stops at any check (its size cannot be matched within match_tol at scale <= scale_max, an FVE bar, or any other early check): it is skipped and reported (ladder.json unbuilt, each seed's 'unbuilt: <check>'), and the ladder goes on to the next rung. X = the lowest rung that passed with every rung under it failed or unbuilt (score2.py ladder).",
+   "blind_to": "what the head does at that size (the clean loss, reported beside); whether a reweighted mechanism would be seen (the head is machinery the base lacks)",
+   "positive_control": "this is the positive control; run 1's rung 3 failed on all 3 seeds (0.30, 0.21, 0.37)",
+   "edge_cases": "seed 0 under the bar: the rung fails on one seed, its other seeds are not run; seed 0 passes at a rung under a failed rung (not monotone): it is the candidate all the same, and reported as a surprise; any stop at a rung's item: the rung is unbuilt, skipped, reported; every rung failed or unbuilt: X none; a live rung under the candidate with no seed run (rung 2 after round 1): its seed 0 is listed, as X needs it"
+  },
+  "range": {
+   "rule": "the stated result: 'not applicable at block 2 below size X (rungs under it: their readings)'; with X none, 'not applicable at block 2 at any size up to rung 5 (21,099 squared per token: 10,758 times a fine-tune's squared size, 104 times its amplitude)'. The clean loss at X is stated beside it, and the unbuilt rungs.",
+   "edge_cases": "X found but stage 2 not finished by the deadline: the range stands, the tasks read 'not run'"
+  },
+  "G1 random false new (at X)": {
+   "rule": "all 3 draws finished and every draw reads specific < planted_part; else the task readings at X are reported as 'not read (random reads new)'",
+   "edge_cases": "a draw unbuilt or missing: G1 fails"
+  },
+  "G2 random above the reuse sides (at X)": {
+   "rule": "min over the 3 draws of specific > max over the reuse sides' 6 values (rank1 and copy, seeds 0-2), strict; else both pair calls read 'not applicable at rung X'. Run 1's G2, with the built reuse sides in place of e54 elicit",
+   "edge_cases": "all zero: 0 > 0 false, fails; a nan (missing, unread): fails"
+  },
+  "task against random (at X, when G1 passes)": {
+   "rule": "per task over its 3 fine-tune seeds: 'above random' iff min(task) > max(random), 'under random' iff max(task) < min(random), else 'ties random'; strict",
+   "edge_cases": "a nan: 'not read'"
+  },
+  "pair call (at X, when G1 and G2 pass)": {
+   "rule": "run 1's every-seed rule (score.py call) on rank1 vs cipher and copy vs prior_cipher: 'reuse/new as built' iff min(new) > max(reuse), 'reversed' iff max(new) < min(reuse), else 'no call'",
+   "edge_cases": "as run 1's (results/predictions.json edge_case_checks)"
+  },
+  "spliced-loss bar (at X)": {
+   "rule": "run 1's: a stage-2 item whose recovered fraction falls more than spliced_recovered_drop under this run's self.A.c0, or reads nan (crosscoder.spliced: ablated <= clean, a broken model), reads nan (unread) in every rule above. The head is held to the same bar: score2.py ladder reports the head's drop per finished seed at X (or at the candidate); if any seed misses, the status reads 'stage 2 HOLD: head misses spliced bar at X', stage 2 does not start, and the runner hands back to the lead",
+   "edge_cases": "unread items are listed in summary.json spliced_unread; a nan recovered fraction misses the bar (not (nan <= bar)); no self item: every drop is nan, all unread and the head HOLDs; the item JSON holds a nan as the string \"nan\" (run.py jsonable): score2.py reads both through float(), so both miss (rehearsal 62712: head-r5 and random_d0-r5 recovered_1 \"nan\", clean 13.3 > ablated 11.7 on the head)"
+  },
+  "early checks (each crosscoder; stop)": {
+   "rule": "run 1's, unchanged (run.py run_item): stream holds every step, latent-scaling tokens from the first chunk, finite loss, batch FVE at step 1,000 >= 0, at 12.5% FVE >= 0.5, dead <= 0.3 and projected <= 90 min, at the end every step trained, FVE >= 0.8, dead <= 0.3; and run 2's before step 0: the scaled path at 0 gives W0's activations, the match within match_tol, a write above graft_energy_min; a stop at a rung's item makes the rung unbuilt (L1); a stopped stage-2 item reads nan and is not relisted (score2.py ladder next_stage2)"
+  },
+  "G3 degenerate random (at X)": {
+   "rule": "if max over the 3 draws of specific < settings.random_floor, a 'ties random' call is reported 'degenerate' and is not counted toward the expected '>= 3 of 5 tie' (summary.json ties_random counts only 'ties random')",
+   "edge_cases": "random [0.001, 0.002, 0.003], task [0, 0.001, 0.002]: tie, max 0.003 < 0.0035: degenerate; 'above random' and 'under random' are reported as they read"
+  }
+ },
+ "expected": {
+  "self (rung 0)": "count 0, relative norms 0.5 within 1e-3, FVE about 0.93 (run 1 self.A 0.932); certain unless the scaled path is wrong",
+  "rungs 1 and 2 (2.1 and 21 squared per token)": "fail on seed 0, specific under 0.3 (high): run 1's rung 3 read 0.21-0.37 and the part rose with training, not falling with size is the lean; rung 2 runs only when the ladder lists it",
+  "rung 3 (run 1)": "failed: 0.30, 0.21, 0.37",
+  "rung 4 (2,110)": "lean pass on every seed, low confidence (0.40); clean loss well above rung 3's 7.45 nats",
+  "rung 5 (21,099)": "if rung 4 fails, lean pass (0.30 of the whole)",
+  "X none": "0.30: the absorption does not shrink with size at block 2",
+  "random at X": "G1 passes (specific under 0.5) at medium-low confidence; G2 lean fails (the random reads like the reuse sides), so both pairs 'not applicable at rung X' (medium)",
+  "tasks at X": "count >= 1 on every state (medium); against random: 'ties random' on at least 3 of 5 (medium), degenerate calls not counted (G3)",
+  "range": "lean: 'not applicable at block 2 below about 2,100 squared per token (about 1,000 times a fine-tune's squared size, 33 times its amplitude), where the planted change leaves the model's Pile loss far from the base's'"
+ },
+ "edge_case_checks": {
+  "ladder, round 1 all fail": "rung 1 0.1, rung 2 0.2, rung 3 [0.30, 0.21, 0.37], rung 4 0.4, rung 5 0.45: every rung failed, X none, stage 2 does not run",
+  "ladder, clean": "rung 4 seed 0 0.55, then seeds 1, 2 0.52, 0.61: rung 4 passed, rungs 1-3 failed: X = 4",
+  "ladder, candidate fails": "rung 1 seed 0 0.1, rung 4 seed 0 0.55, seed 1 0.48: rung 4 failed; rung 5 seed 0 0.7 is the candidate: next are rung 2 seed 0 and rung 5 seeds 1, 2, and one stage-2 item at rung 5",
+  "ladder, tie at the bar": "0.5 >= 0.5 passes (run 1's S0b reads >=)",
+  "ladder, not monotone": "rung 1 seed 0 0.6, rungs 2-3 failed: rung 1 is the candidate; if its seeds pass, X = 1, reported as a surprise",
+  "ladder, rung unbuilt": "the head cannot reach rung 5 at scale <= 1e4, or a rung-5 item stops at FVE: rung 5 unbuilt, skipped, reported; X from the rest",
+  "G1, a draw at the bar": "random [0.1, 0.5, 0.2]: 0.5 < 0.5 false, G1 fails",
+  "G2, all zero": "random [0, 0, 0], reuse max 0: 0 > 0 false, fails: pairs not applicable",
+  "task against random, tie": "task [0.2, 0.3, 0.4], random [0.1, 0.2, 0.25]: 0.2 > 0.25 false, 0.4 < 0.1 false: ties random",
+  "do-nothing": "self reads specific 0.0 (not nan), count 0: never a side in any rule, and under the planted bar",
+  "ladder, round 1 then rung 2": "rung 1 seed 0 0.1, rung 4 seeds 0, 1 0.55, 0.6, rung 5 seed 0 0.7: candidate rung 4; next: rung 2 seed 0 and rung 4 seed 2, plus 2 stage-2 items at rung 4",
+  "ladder, head misses spliced bar at X": "X = 4 with seed 1's recovered_1 0.06 under self's: stage 2 HOLD, next_stage2 empty",
+  "spliced, nan": "a stage-2 item with recovered_1 nan: unread (was read: nan < bar is false)",
+  "todo, stopped item": "random_d0-rX stopped: not in next_stage2 again; reads nan, so G1 fails"
+ },
+ "blind_to": {
+  "specific": "a change in how the model uses a direction it already represents; changes outside the site; leans toward shared latents by construction (joint loss)",
+  "size": "the direction of the change: two changes of one size can differ in kind; it is measured on each side's own read rows, so a task's size is on its own text (energy_pile beside on common rows)",
+  "the range": "sizes between rungs (a factor of 10); other sites (run 1's block 3 passed at its native size)"
+ },
+ "noise_floor": "run 1's crosscoder-seed spread of the head's specific part at rung 3: 0.21-0.37 (sd 0.081, results/run1/stage0.json); the rung rule is against a fixed bar, the task rules ordinal",
+ "decisions": {
+  "size unit": "designer 2026-11-21: squared activation change per token at site A on each side's own read rows (run 1's unit, what its Gaussian was matched on), not E237's weight-norm size: a grafted head has no dW to measure; energy on common Pile rows is recorded beside. Raised to the lead; the lead 2026-11-21 (gate-5 review): name it 'squared' everywhere and give the amplitude ratio beside each ratio",
+  "one factor per item": "designer: each state and draw gets its own factor to hit X exactly (E237 used one factor per task); the sizes are then equal item by item",
+  "rung 3 reused": "designer: run 1's head.A items are the head at scale 1, the same code path; not rerun",
+  "gate-5 review fixes": "the lead 2026-11-21: nan spliced reads unread; the head held to the spliced bar at X (HOLD); any stop makes a rung unbuilt; stopped items not relisted; round 1 = settings.round1; degenerate ties (G3)"
+ }
+}
