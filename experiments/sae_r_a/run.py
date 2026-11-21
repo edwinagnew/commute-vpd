@@ -389,7 +389,9 @@ if __name__ == "__main__":
     ap.add_argument("--shard", nargs=2, type=int, default=(0, 1), metavar=("I", "N"), help="every N-th item of the group from the I-th (0-based)")
     ap.add_argument("--tag", default="local", help="this job's name: stage 0 writes results/<out>/stage0_<tag>.json")
     ap.add_argument("--size", choices=("scored", "rehearse"), default="scored", help="predictions.json settings + sizes[size]")
+    ap.add_argument("--pred", type=Path, default=PRED, help="the filed predictions file (default results/predictions.json; the pairs group runs with results/predictions_pairs_amend_2026-11-21.json)")
     args = ap.parse_args()
+    PRED = args.pred.resolve()  # load_config reads this module global
     require_filed(PRED)
     code = 1
     try:

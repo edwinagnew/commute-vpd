@@ -234,3 +234,5 @@ Results `experiments/sae_r_a/results/items/*.json`, stage 0 `items/stage0_*.json
 cluster debug jobs on L40 cards for the copy-window edits and H100 pods for the two new edits; key items on H100 pods
 and the cluster. The decomposition's reading: `experiments/kstar_vpd_wording_a/results/summary.json` and `items/`,
 E242, definition-lead. Numbers ledger: this file's `.numbers.tsv`.
+
+**Amendment, 2026-11-21 (pairs group only).** The first pairs run, on four H100 pods, stopped at stage 0 before any item ran. Stage 0 projects the worst case, every search at its 2000-evaluation cap at the do-nothing's speed, which came to 27 h per 19-item job against the filed 6 h limit, while the key items measured 4-7 min each. The pairs group reruns from `results/predictions_pairs_amend_2026-11-21.json` (`--pred`), a copy that changes only that stop limit, to 30 h. `predictions.json` is unchanged (whip-lead's decision).
