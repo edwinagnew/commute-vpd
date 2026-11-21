@@ -26,7 +26,7 @@ reported beside each.
 **Expected.** The reuse edits read 1 or nearly (x2, moved and rebuilt are within the allowance of the original model
 already); the new edits read lower, 0.85 to 0.97, because the variables that store the lookup cannot take the original
 mechanism. The risk is x10: the split spreads a gain over many parts, so it may read as low as 0.907. The random update
-probably moves the output too little to matter and reads 1, so its filed rule probably fails.
+probably moves the output too little to matter and reads 1, so its filed rule probably fails. A second random update, scaled to move the output as much as new_few does at matched size (rule P2k), is likely under the allowance too and may read 1 as well.
 
 **Cost.** About 23 L40-hours on the cluster in 23 jobs of under 2 h, $0; the built stage about 65 min of wall time.
 

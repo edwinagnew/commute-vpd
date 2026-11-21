@@ -1,5 +1,5 @@
 """E242's scorecard from the item files only (no GPU): the band, P1 (every reuse edit above both new edits on R_A), P2
-(the matched random below the lowest reuse edit), and the descriptive readings D1 (the nine pairs at matched size),
+(the size-matched random below the lowest reuse edit), P2k (the KL-matched random, the same), and the descriptive readings D1 (the nine pairs at matched size),
 D2 (E62's copy/lookup pair), D3 (E237's key tasks), each beside the old squared-cosine R.
 
     ~/commute-agents/fleet/cpu-run python3 experiments/kstar_vpd_wording_a/score.py      (writes results/summary.json)
@@ -32,13 +32,16 @@ def main() -> None:
     def old(i: str) -> float:
         return read[RUN.fname(i)]["R_old"]
 
-    out: dict[str, Any] = {"experiment": RUN.EXPERIMENT, "built": {i: {"R_A": ra(i), "R_old": old(i)} for i in (*cfg.built, cfg.random) if has(i)}}
-    if all(has(i) for i in (*cfg.built, cfg.random)):
+    controls = (cfg.random, cfg.random_kl)
+    out: dict[str, Any] = {"experiment": RUN.EXPERIMENT, "built": {i: {"R_A": ra(i), "R_old": old(i)} for i in (*cfg.built, *controls) if has(i)}}
+    if all(has(i) for i in cfg.built):
         d = [abs(ra(i, "half1") - ra(i, "half2")) for i in cfg.built]
         band = max(d) if max(d) > 0 else th["band_min"]
         low = min(ra(i) for i in cfg.reuse)
-        g1, g2 = low - max(ra(i) for i in cfg.new), low - ra(cfg.random)
-        out |= {"band": band, "band_degenerate": max(d) == 0, "P1": {"gap": g1, "verdict": verdict(g1, band)}, "P2": {"gap": g2, "verdict": verdict(g2, band)}}
+        g1 = low - max(ra(i) for i in cfg.new)
+        out |= {"band": band, "band_degenerate": max(d) == 0, "P1": {"gap": g1, "verdict": verdict(g1, band)}}
+        for rule, i in (("P2", cfg.random), ("P2k", cfg.random_kl)):  # a control not read: its rule is not read
+            out[rule] = {"gap": low - ra(i), "verdict": verdict(low - ra(i), band)} if has(i) else {"gap": None, "verdict": "not read"}
 
     def gap(r: list[str], n: list[str]) -> dict[str, float] | None:
         if not all(has(i) for i in (*r, *n)):
