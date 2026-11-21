@@ -16,7 +16,8 @@ reports/plans/2026-11-21_plan_prior-mech-2x2.md; rules results/predictions_stage
   b  three fine-tunes, sizes, c                                                               -> results/stage2/b.json
   c  head switch-off (run 1's read_state) on the three new states; r, size, erank, neuron and steering shares on the
      three new states and their random updates; neuron and steering shares on E237's 15 key states at E237's c
-                                                                                              -> results/stage2/<item>.json
+     (on the new task, the neuron and steering shares read only the keys with a train window and their read rows,
+     `keys_with_train`; counts in each item's "hf_rows")                                     -> results/stage2/<item>.json
   table  the corners (seed means), the two effects per proxy, the filed rules                -> results/stage2/table.json
 Every scored number is also printed. A rerun skips what is written.
 
@@ -25,6 +26,7 @@ Every scored number is also printed. A rerun skips what is written.
 
 from __future__ import annotations
 
+import dataclasses
 import json
 import math
 import time
@@ -256,6 +258,27 @@ def stage_b(w: World) -> None:
 # ---- stage c: the readings -----------------------------------------------------------------------------------------
 
 
+def keys_with_train(t: Any) -> Any:
+    """holes_fill's Task for the new task, its key pool cut to the keys that have a train window (per-key steering fits
+    one vector per pool key, fair_steering.vectors) and its read rows to those keys (key_index needs every read key in
+    the pool). Only holes_fill's readers (neuron and steering shares, their gain) read this; the head switch-off, r and
+    the prior read all the task's read rows."""
+    t.pool = t.pool[torch.isin(t.pool, t.train[:, t.read.half])]
+    keep = torch.isin(t.read.toks[:, t.read.half], t.pool)
+    t.read = dataclasses.replace(t.read, toks=t.read.toks[keep])
+    return t
+
+
+def lowcopy_task(w: World) -> dict[str, int]:
+    """Installs the cut Task in holes_fill's cache (its random updates share it); returns the counts it reads on."""
+    t = keys_with_train(HF.load_task(TASK, w.rd.inv["tasks"][TASK]))
+    t.lo0 = HF.lo_at(w.net, t, t.read.toks)
+    w.hf.tasks[TASK] = t
+    n = {"n_keys": len(t.pool), "n_read_rows": len(t.read.toks), "n_train_rows": len(t.train)}
+    log(f"[c] steering and neuron reads on {TASK}: {n['n_keys']} keys with a train window, {n['n_read_rows']} read rows")
+    return n
+
+
 def shares(w: World, item: str, i: int) -> dict[str, Any]:
     rec, _ = w.hf.state(item, i)
     return {"hf_gain": rec["gain"], "neuron": {k: v["share"] for k, v in rec["neuron"].items()},
@@ -276,6 +299,7 @@ def weights(w: World, item: str) -> dict[str, Any]:
 def stage_c(w: World, th1: dict[str, Any], items: list[str]) -> None:
     R1.OUT = OUT / "head"  # run 1's read_state writes the new states' head switch-off here, not into run 1's results
     R1.OUT.mkdir(parents=True, exist_ok=True)
+    hf_rows = lowcopy_task(w)
     for i, item in enumerate(items):
         path = OUT / f"{R1.fname(item)}.json"
         if path.is_file():
@@ -283,7 +307,7 @@ def stage_c(w: World, th1: dict[str, Any], items: list[str]) -> None:
         t0, rec = time.time(), {"experiment": EXPERIMENT, "item": item}
         if item.startswith(f"{TASK}_s"):
             rec["head"] = R1.read_state(w.rd, item, th1)  # writes <item>.json; overwritten below with the whole record
-        rec |= shares(w, item, i) | (weights(w, item) if TASK in item else {})
+        rec |= shares(w, item, i) | (weights(w, item) | {"hf_rows": hf_rows} if TASK in item else {})
         write_stage(path, jsonable(rec | {"seconds": time.time() - t0}))
         log(f"[c {item}] " + json.dumps({k: v for k, v in rec.items() if k not in ("head", "experiment")}) + f"; {time.time() - t0:.0f} s")
         torch.cuda.empty_cache()
