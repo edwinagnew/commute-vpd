@@ -1,31 +1,5 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
-<div class="prose"><p><strong>Waiting on you, 2026-11-20.</strong> One card is open, on the memorising twins and on a reuse score that sits near 1. Today you answered three questions: the held-model reading on Qwen's pair library gets one more run (P3.13 now has 3 runs); the reuse score at the VPD featurization goes ahead, known-answer items first and then the nine pairs (a new cell, due 11-22); and the reinforcement-learning readings on the 67M get one more free run as a contrast between two forms, then new tasks. Earlier, you answered: when a part's mechanism in the fine-tune is compared against the base model, the comparison is graded at the positions where the behaviour is read, and every position the part runs at is kept as a side reading. Your wording of the definition box (2026-11-18, about 19:00) stands. The neuron-level saturation question is closed.</p>
+<div class="prose"><p><strong>Nothing is waiting on you, 2026-11-20.</strong> No card is open. Today you answered four questions: on size-normalised R, one cheap cluster run tests it on the built edits at the same update size (cell P1.44, being prepared), and the memorising twins stay a case R must read low on, so the definition must say a fact memorised through small changes is new (wording to be drafted for your approval); the held-model reading on Qwen's pair library gets one more run (P3.13 now has 3 runs); the reuse score at the VPD featurization goes ahead, known-answer items first and then the nine pairs (a new cell, due 11-22); and the reinforcement-learning readings on the 67M get one more free run as a contrast between two forms, then new tasks. Earlier, you answered: when a part's mechanism in the fine-tune is compared against the base model, the comparison is graded at the positions where the behaviour is read, and every position the part runs at is kept as a side reading. Your wording of the definition box (2026-11-18, about 19:00) stands. The neuron-level saturation question is closed.</p>
 <p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
-<div class="cards stack">
-<div class="card decision" id="decision-twins-saturation"><span class="chip open urgency">Soon</span>
-<div class="k">Questions for you · definition-lead · new 2026-11-20, rewritten the same day</div>
-<h3>The reuse score R reads about 1 on everything: how should the paper handle that, and what are the memorising twins for?</h3>
-<p>R, the reuse score: the share of the parts the behaviour runs through that still compute what they did in the base model. Only you change the definition's wording.</p>
-<p><strong>What we ran.</strong></p>
-<ul>
-<li>We scored R on hand-built edits whose answer we know, expecting the reuse edits to score higher than the new ones. Instead a reuse edit (a ten-fold gain on eight neurons) scored 0.976, below a new edit at 0.996, because R's per-part score (squared cosine) treats a big gain as a change. (P1.37, <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-20_analysis_e226-kstar-vpd.md">report</a>, <a href="https://github.com/edwinagnew/commute-vpd/blob/main/experiments/kstar_vpd/figures/r_known.png">figure</a>)</li>
-<li>We shrank the larger fine-tune of each of nine trained pairs to its partner's size, expecting the reuse side to stay higher on at least 8. It stayed higher on 4, so R's pair differences mostly reflected update size. (P1.38, <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-20_analysis_e232-size-matched-r.md">report</a>, <a href="https://github.com/edwinagnew/commute-vpd/blob/main/experiments/kstar_size_matched/figures/r_gap_matched.png">figure</a>)</li>
-</ul>
-<p><strong>So:</strong> R sits near 1 everywhere, and its small differences follow how far the weights moved, not reuse.</p>
-<p><strong>Question 1.</strong> The paper says a fact memorised through small changes can correctly read as reused, so should the memorising twins still be a case R must read low on?</p>
-<ul>
-<li><strong>(a) Recommended.</strong> Say the twins check how the pairs were built, not R. No wording change.</li>
-<li>(b) Keep them as a case R must read low on; the definition must then say a memorised fact is new.</li>
-<li>(c) Drop them from R's results; we lose the check on how the pairs were built.</li>
-</ul>
-<p><strong>Question 2.</strong> What do we do about R reading near 1?</p>
-<ul>
-<li><strong>(a) Recommended first.</strong> Compute, for free from P1.37's saved files, an R that weights each part by how much the behaviour depends on it; then choose (b) or (c) with its numbers in hand.</li>
-<li>(b) Keep R as worded and report the near-1 reading as a finding about the definition.</li>
-<li>(c) Change R's per-part score so it reads the built edits the right way round; a wording change and new runs.</li>
-</ul>
-<p class="small">Card <code>reports/decisions/2026-11-20_decision_twins-saturation.md</code>.</p>
-</div>
-</div>
 </section>
