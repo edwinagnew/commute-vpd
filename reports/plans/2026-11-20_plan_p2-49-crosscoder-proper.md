@@ -111,7 +111,7 @@ the primary pair at each site. The pair rule is ordinal (every seed beyond every
 ## Cost and time (appendix C)
 
 Measured: TF32 12.3 ms/step on an H100 (E203 `timing.json`), so 20 min of training. Scoring took 8 min on E203's sides
-(48.9 min in all against 41.0 of fp32 training). Site B is estimated 4 min more per crosscoder for the extra forward.
+(48.9 min in all against 41.0 of fp32 training). Site B takes about 1.6 times A's stream time (rehearsal: 40 against 25 min on an L40), so about 35 min against 30 at A on an H100.
 H100 at $4.0-4.4/h (E212, E203). Set-up is 10 min a pod. Each pod's transfer is 1.1-1.5 GB at 10 MB/s, 2-2.5 min, plus
 the decomposition from W&B (3.0 GB, 65-100 s measured).
 
@@ -119,10 +119,10 @@ the decomposition from W&B (3.0 GB, 65-100 s measured).
 |---|---|---|---|---|
 | Rehearsal (cluster `debug`) | all jobs, tiny | 1 L40 | ~1.5 h | $0 |
 | Timing (first paid pod, in stage 0) | — | — | 5 min | in stage 0 |
-| Run 1 stage 0 | 8 | 8 | ~45 min | $22-25 |
-| Run 1 stage 1 | 29 | 15 (8 kept) | ~70 min | $62-69 |
+| Run 1 stage 0 (E235) | 8 | 8 | ~50 min | $23-25 |
+| Run 1 stage 1 (E235) | 29 | 15 (8 kept) | ~80 min | $67-73 |
 | Run 2 | 76 | ~19 | ~2.3 h | $157-172 |
-| **All** | **113** | | **~4.5 h of pods** | **$241-266** |
+| **All** | **113** | | **~4.5 h of pods** | **$247-270** |
 
 Gated (over $60). This sits at or just over the brief's 85% of $300. The plugin reports a $500 cap, $0 spent this
 session. Lever: if the timing stage shows two crosscoders on one H100 giving at least 1.5 times the throughput (peak
@@ -131,7 +131,7 @@ sides (−$25).
 
 ## Runs (the cell's two)
 
-- **Run 1: controls and seed ranges** (stages 0 and 1, 37 crosscoders, ~$84-94). It is complete on its own. If run 2
+- **Run 1: controls and seed ranges** (E235; stages 0 and 1, 37 crosscoders, ~$90-98). It is complete on its own. If run 2
   has not started by 11-23 12:00, run 1 is the report.
 - **Run 2: the scored pairs, twins and grafts** (76, ~$157-172). It runs only at a site whose controls passed. If G2
   fails at A, run 2 shrinks to the grafts at B (8, ~$17) or is left unspent, and the user is asked.
@@ -140,22 +140,47 @@ sides (−$25).
 
 1. **Pre-mortem.** Appendix B, every heading.
 2. **Settings sourced.** Appendix A, each to a file and line, with departures.
-3. **Rehearsal.** *Placeholder*: activation change per token per side and site, Gaussian c, s/step (L40, both sites),
-   peak GPU and host memory, file sizes, resume step diff against its floor, spliced loss, downloads.
-4. **Early checks.** In predictions.json: stream length before step 0, finite loss, batch FVE ≥ 0 at step 1,000, FVE
-   ≥ 0.5 and dead ≤ 0.3 at 12.5% of tokens, a projected time bar (from the rehearsal and timing), and the Gaussian's
-   matched change within 5% before training. *The projected-time bar is filled after gate 3.*
+3. **Rehearsal (done, $0; cluster `debug` L40 jobs 62445, 62446, 62452; `fleet/rehearsed` recorded).** Every job ran
+   end to end at a tiny dictionary (3,072 latents, 4.1M tokens) with full read and latent-scaling sizes: both stages as
+   pods, check0, check1, timing, scorecheck, the tar and sha256 hand-back.
+   - Resume: a stop after step 1,000 and a resume gave the same losses as an uninterrupted run. The difference was 0
+     at all 21 compared steps; two uninterrupted runs also differ by 0.
+   - The code reproduces E203's activation changes at block 2: elicit s0 1.9612 against 1.9612, cipher s0 3.2215
+     against 3.2215. At block 3 they read 75.6 and 166.3 per token.
+   - The matched Gaussian took c = 8.18 at A and 17.8 at B, both within 1% of its target.
+   - Grafted heads: 211 per token at A and 1,084 at B. The B head's change at A is exactly 0.
+   - Timing on the L40, full-size crosscoder in TF32: 30.5-33.7 ms a step, about 50-55 min of steps per crosscoder.
+     The stream takes 21-25 min at A and 40-43 min at B per 200M tokens. Two crosscoders on one L40 gave only 1.09
+     times the throughput of one.
+   - Scoring a full-size crosscoder at full read sizes peaked at 14.1 GB and took 1.4 min. Tiny items peaked at
+     8.9 GB of GPU and 6.2 GB of host memory.
+   - A saved item is 151 MB at full size (bf16 encoder and decoder) and 19 MB tiny.
+   - The Pile fill ran on e53 lowercase: 121 fill rows a chunk, task share 3%, 4.197M of 4.096M tokens needed.
+   - Spliced loss: the self crosscoder recovered 0.875 at A and 0.941 at B, tiny dictionary.
+   - **Tiny-dictionary readings decide nothing, but they show the risk.** The heads' specific part read 0.01-0.17 at
+     A and 0.16-0.19 at B, against the 0.5 bar. At B it was 0.43 over the wide top 5,000. The k-sweep items read
+     0.39 at k 32 and 0.27 at k 200. The Gaussian and every e54 side read 0, so G2 failed at both sites, as filed.
+   - Fixed after the rehearsal, before filing: the planted lead-latent clause is off for grafted heads. A head's change
+     spreads over many latents, and the largest one carried 1-20% of it, so the clause tested the wrong thing. Short
+     task windows are now batched to about 32k tokens a forward.
+4. **Early checks.** All coded in `run.py` and filed:
+   - before step 0: the stream holds every step, and the latent-scaling tokens come from the first chunk;
+   - every step: a finite loss;
+   - step 1,000: batch FVE ≥ 0;
+   - 12.5% of tokens: FVE ≥ 0.5, dead ≤ 0.3, and the projected time ≤ 90 min (about three times the H100 estimate);
+   - at the end: every step trained, FVE ≥ 0.8, dead ≤ 0.3, and the self and graft checks;
+   - the Gaussian match within 5% before training.
 5. **Review.** *Placeholder*: one fresh Opus agent, plan and code together.
-6. **Go-ahead.** *Placeholder*: asked by 11-21 evening (two lines: what, cost, time).
+6. **Go-ahead.** Whip-lead gives gate 6 (lead, 2026-11-20).
 
-## Question for the user (definition level)
+## Decisions (lead, 2026-11-20)
 
-The cell asks for "reuse / new / no call by the every-seed rule". This plan reads it against how each pair was built.
-A pair is "reuse/new as built" when every new-side seed carries more of its change in fine-tune-specific latents than
-every reuse-side seed. It is "reversed" when the opposite holds, and "no call" otherwise. A graft with no partner is
-"new" when every seed clears the planted bar (0.5 and its lead latent specific), else "no call". A per-fine-tune
-verdict of reuse or new would need a cut-off on this reading, which is a definition change. So is the pair-relative
-call what was meant?
+- The pair-relative every-seed call is the cell's "reuse / new / no call", the same pair rule the share is scored
+  by. No per-fine-tune cut-off.
+- If G2 fails at block 2 but block 3's controls pass, run 2 is the four grafts at block 3 only, about $17. Block 2
+  then reads "not applicable at this update size".
+- The timing stage tries two crosscoders per H100 and adopts it at a gain of 1.5 or more (`score.py timingcheck`).
+  The L40 showed 1.09.
 
 ## Not run
 

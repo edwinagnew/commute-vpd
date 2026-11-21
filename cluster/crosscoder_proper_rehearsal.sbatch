@@ -10,6 +10,7 @@
 # Submit from the clone root, part b after part a:
 #   sbatch --comment='E235 rehearse: crosscoder_proper a' cluster/crosscoder_proper_rehearsal.sbatch a
 #   sbatch --comment='E235 rehearse: crosscoder_proper b' --dependency=afterok:<a> cluster/crosscoder_proper_rehearsal.sbatch b
+#   part c (fill path, batched stream timing): sbatch --comment='E235 rehearse: crosscoder_proper c' cluster/crosscoder_proper_rehearsal.sbatch c
 #SBATCH --job-name=commute-e235-rehearsal
 #SBATCH --partition=compute
 #SBATCH --account=c11
@@ -60,6 +61,11 @@ if [ "$1" = a ]; then
     step "timing check" 0 $PY $E/score.py timingcheck --rehearse --tag rehearse
     step "e53 item (Pile fill)" 0 $PY $E/run.py item e53__lowercase_s0.A.c0 --rehearse
     step "scorecheck at full sizes" 0 $PY $E/run.py scorecheck --rehearse
+elif [ "$1" = c ]; then  # after 62445: the Pile fill path (rehearsal repeat_cap 2) and the stream time with short windows batched
+    rm -rf $R/rehearse_c $R/large/rehearse_c
+    step "e53 item with the Pile fill" 0 $PY $E/run.py item e53__lowercase_s0.A.c0 --rehearse --tag rehearse_c
+    step "timing A alone" 0 $PY $E/run.py timing A solo --rehearse --tag rehearse_c
+    step "timing B alone" 0 $PY $E/run.py timing B solo_B --rehearse --tag rehearse_c
 else
     step "stage 1 pod 0 of 2" 0 $PY $E/run.py pod 1 0 2 --rehearse
     step "stage 1 pod 1 of 2" 0 $PY $E/run.py pod 1 1 2 --rehearse
