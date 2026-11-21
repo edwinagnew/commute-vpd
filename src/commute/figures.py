@@ -50,6 +50,7 @@ METHODS: dict[str, Style] = {
     "size": Style("update size", "#56B4E9", "P"),
     "random": Style("random update, matched size", "#555555", "X"),
     "spectrum": Style("update's effective rank", "#000000", "h"),
+    "head": Style("share lost with a head switched off", "#882255", "*"),
 }
 ONE_COLUMN = (5.0, 3.2)
 FULL_WIDTH = (7.5, 4.5)
