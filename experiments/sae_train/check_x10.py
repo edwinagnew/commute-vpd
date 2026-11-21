@@ -34,8 +34,10 @@ SITES = ("resid_post1", "attn2", "mlp2", "resid_post2", "attn3", "mlp3", "resid_
 @torch.no_grad()
 def capture32(net: Any, toks: torch.Tensor, sites: tuple[str, ...]) -> torch.Tensor:
     got: dict[str, torch.Tensor] = {}
-    fns = {s: (lambda s: lambda x: got.__setitem__(s, x[:, 1:].float()))(s) for s in sites}
-    with S.hooked(net, fns):
+    def take(s: str) -> Any:
+        return lambda x: got.__setitem__(s, x[:, 1:].float())
+
+    with S.hooked(net, {s: take(s) for s in sites}):
         net(toks.cuda())
     return torch.stack([got[s] for s in sites], 2).flatten(0, 1)
 
