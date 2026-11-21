@@ -152,26 +152,34 @@ def read_item(cfg: Config, net: Any, M: R.Model, data: Any, feat: K.Feat, band: 
     if path.is_file():
         log(f"{band} {item}: done before, skipped")
         return
-    t0, p, toks = time.time(), E217.pair(net, M, item), E217.windows(cfg, M, data, item)
+    t0 = time.time()
+    head = {"experiment": experiment(), "item": item, "band": band}
+    out, arrays = read_pair(cfg, E217.pair(net, M, item), E217.windows(cfg, M, data, item), M, feat, head, path)
+    out["item_seconds"] = time.time() - t0
+    big = LARGE / "items" / slug(band)
+    big.mkdir(parents=True, exist_ok=True)
+    np.savez_compressed(big / f"{item}.npz", **arrays)
+    dump(path, out)
+    log(f"{band} {item}: R read {out['R_read']:.6f}, all {out['R_all']:.6f}, |K*| {out['size']}, f {out['f']:.4f}, "
+        f"remainders in K* {out['site_remainders_in_K']}, overlap {out['overlap']:.4f}; {out['item_seconds']:.0f} s")
+
+
+def read_pair(cfg: Config, p: rho.Pair, toks: torch.Tensor, M: R.Model, feat: K.Feat, head: dict[str, Any], path: Path) -> tuple[dict[str, Any], dict[str, Any]]:
+    """read_item's reading of one pair on its windows (split out for E237, which builds its own F): the record, with
+    `head` first, and the arrays for the npz. Stops, writing path's .stopped.json, when F_K with every variable kept is not F."""
     lv, C, lacked, s = E217.read_vars(p, toks, feat)
     ctx = K.prepare(p, toks, LAST, None, M.logits, feat)
     g = K.gates(ctx, lv, p.F.logits)
-    out: dict[str, Any] = {"experiment": experiment(), "item": item, "band": band, "n_vars": len(lv.vars), "n_changed": len(C), "gates": g,
-                           "kl_fm": float(ctx.kl_fm.mean()), "kl_none": float(ctx.kl_none.mean()), "overlap": E217.overlap(p, toks, feat),
-                           "s_rem": s[:, lv.rem].tolist() if lv.rem else None, "s_mean_all_vars": s.mean(1).tolist()}  # fmt: skip
+    out: dict[str, Any] = head | {"n_vars": len(lv.vars), "n_changed": len(C), "gates": g,
+                                  "kl_fm": float(ctx.kl_fm.mean()), "kl_none": float(ctx.kl_none.mean()), "overlap": E217.overlap(p, toks, feat),
+                                  "s_rem": s[:, lv.rem].tolist() if lv.rem else None, "s_mean_all_vars": s.mean(1).tolist()}  # fmt: skip
     if g["all"] > cfg.gate_tol:
-        stop(path.with_suffix(".stopped.json"), out, f"{band} {item}: F_K with every variable kept is not F (gate {g})")
+        stop(path.with_suffix(".stopped.json"), out, f"{head['band']} {head['item']}: F_K with every variable kept is not F (gate {g})")
     th = {"order_seed": cfg.order_seed, "chunk": cfg.chunk}
     res, arrays = K.search(ctx, lv, s, C, lacked, {"main": K.Variant(torch.arange(len(toks)), cfg.alpha, 1)}, th, log, lambda _s: None)
     rec = res["main"][0]
     rec.pop("K")  # the circuit goes to the npz
-    out |= rec | {"item_seconds": time.time() - t0}
-    big = LARGE / "items" / slug(band)
-    big.mkdir(parents=True, exist_ok=True)
-    np.savez_compressed(big / f"{item}.npz", s=s.numpy(), names=np.array([K.vname(u) for u in lv.vars]), **arrays)
-    dump(path, out)
-    log(f"{band} {item}: R read {out['R_read']:.6f}, all {out['R_all']:.6f}, |K*| {out['size']}, f {out['f']:.4f}, "
-        f"remainders in K* {out['site_remainders_in_K']}, overlap {out['overlap']:.4f}; {out['item_seconds']:.0f} s")
+    return out | rec, {"s": s.numpy(), "names": np.array([K.vname(u) for u in lv.vars]), **arrays}
 
 
 def stage1(cfg: Config, net: Any, M: R.Model, data: Any, task: int) -> None:
