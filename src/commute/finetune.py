@@ -48,11 +48,13 @@ def cosines(a: dict[str, Tensor], b: dict[str, Tensor]) -> dict[str, Any]:
 
 
 def random_direction(dW: dict[str, Tensor], seed: int) -> dict[str, Tensor]:
+    """A Gaussian per matrix at that matrix's Frobenius norm, fp32 on the CPU. The norms are taken in float64: fp32
+    norms of these 1-2M-entry matrices are off by up to ~6e-5, which left the total size ~7e-5 high (E237, 2026-11-20)."""
     gen = torch.Generator().manual_seed(seed)
     out = {}
     for k, d in dW.items():
-        r = torch.randn(d.shape, generator=gen, dtype=torch.float32)
-        out[k] = r * (d.norm() / r.norm())
+        r = torch.randn(d.shape, generator=gen, dtype=torch.float32).double()
+        out[k] = (r * (float(d.double().norm()) / r.norm())).float()
     return out
 
 

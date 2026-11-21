@@ -124,14 +124,17 @@ class World(E221.World):
         """The saved update, keyed by parameter name (`old_tasks.load_dw`)."""
         return OT.load_dw(self.net, EXPERIMENTS.parent / self.full["states"][state]["file"])
 
+    def random(self, state: str, dw: dict[str, Tensor]) -> dict[str, Tensor]:
+        """The state's random control direction, built from the very dict the caller scales (either key set)."""
+        return FT.random_direction(dw, self.cfg_e237.random_seed + self.cfg_e237.states().index(state))
+
     def update(self, item: str) -> tuple[str, dict[str, Tensor], float]:
         """The item's state, its unscaled change (the saved update or its random direction) and the factor c."""
         if item == DO_NOTHING:
             return self.cfg_e237.control_state, self.dw(self.cfg_e237.control_state), 0.0
         if item.startswith("random_"):
             state = item.removeprefix("random_")
-            seed = self.cfg_e237.random_seed + self.cfg_e237.states().index(state)
-            return state, FT.random_direction(self.dw(state), seed), self.c[self.task(state)]
+            return state, self.random(state, self.dw(state)), self.c[self.task(state)]
         state = item.removesuffix("_scaled")
         return state, self.dw(state), self.c[self.task(state)] if item != state else 1.0
 
@@ -230,8 +233,7 @@ def stage1(cfg: Config, th: dict[str, Any], w: World, sp: Any) -> None:
             continue
         t0, (r, dW), c = time.time(), E228.state_read(state, w.full), w.c[w.task(state)]
         halves = torch.randperm(len(r.toks), generator=torch.Generator().manual_seed(cfg.split_seed))
-        _, rnd, _ = w.update(f"random_{state}")
-        rnd = {k.removesuffix(".weight"): v for k, v in rnd.items()}
+        rnd = w.random(state, dW)
         rec: dict[str, Any] = {"task": w.task(state), "c": c, "saved": share_record(w, sp, r, dW, halves)}
         rec |= {"scaled": share_record(w, sp, r, E205.SM.times(dW, c), halves), "random": share_record(w, sp, r, E205.SM.times(rnd, c), halves)}
         if not abs(rec["scaled"]["erank"] / rec["saved"]["erank"] - 1) <= th["erank_rel"]:
@@ -241,8 +243,8 @@ def stage1(cfg: Config, th: dict[str, Any], w: World, sp: Any) -> None:
         log(f"[1 {state}] c {c:.6f}; " + "; ".join(f"{k} r {rec[k]['r']:.4f} kl {rec[k]['kl_share']:.4f} size {rec[k]['size']:.6g} erank {rec[k]['erank']:.2f}"
                                                   for k in ("scaled", "random", "saved")) + f"; {time.time() - t0:.0f} s")  # fmt: skip
     target = read_json(STAGE0)["target"]
-    got = {t: fmean(out["states"][R96.state_name(t, s)][f]["size"] for s in cfg.seeds) for t in cfg.tasks for f in ("scaled", "random")}
-    if bad := {t: v for t, v in got.items() if not abs(v / target - 1) <= th["size_match_rel"]}:
+    got = {(t, f): fmean(out["states"][R96.state_name(t, s)][f]["size"] for s in cfg.seeds) for t in cfg.tasks for f in ("scaled", "random")}
+    if bad := {f"{t} {f}": v for (t, f), v in got.items() if not abs(v / target - 1) <= th["size_match_rel"]}:
         stop(STAGE1, out, f"task mean sizes off the target {target}: {bad}")
     dump(STAGE1, out | {"done": True})
     log("STAGE 1 DONE")
@@ -323,6 +325,9 @@ def main(stages: list[str], shard: tuple[int, int], tag: str) -> int:
     w.c = read_json(STAGE0)["c"]
     if "1" in stages:
         stage1(cfg, th, w, sp)
+    if {"2", "3", "4"} & set(stages) and not (STAGE1.is_file() and read_json(STAGE1).get("done")):
+        log("STOP: stage 1 has not passed (it guards the random items' sizes); stages 2-4 wait for it")
+        return 1
     if "2" in stages:
         stage2(cfg, w)
     if "3" in stages:
