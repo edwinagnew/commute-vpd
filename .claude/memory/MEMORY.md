@@ -102,4 +102,5 @@
 - [Be pushy on pods](feedback-be-pushy-on-pods.md) — check each pod finished/idle, poke owner at once; ≤4 pods per pod-runner (user to sae-lead, 2026-11-20)
 - [Cards name the experiments](feedback-decision-cards-name-the-experiments.md) — per run: what done, expected, got, link; ~200 words, high level; ask-56 card was unreadable (user, 2026-11-20)
 - [At most 4 pods per runner](feedback-max-four-pods-per-runner.md) — never more than 4 pods from one pod-runner; spawn more runners instead; E234 left pods idle (user, 2026-11-20)
+- [No restart with open questions](feedback-no-restart-with-open-questions.md) — skip restart-ready while the user owes an answer; a mid-reply restart lost approvals (user, 2026-11-20)
 - [Condense the paper](feedback-paper-condense-claims.md) — what breaks if cut; two claims (mechanistic definition; cheap proxies track it, beat baselines); real text/Qwen negative results (user, 2026-11-20)
