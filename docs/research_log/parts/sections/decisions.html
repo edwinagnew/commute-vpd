@@ -4,13 +4,28 @@
 <p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
 <div class="card decision" id="decision-twins-saturation"><span class="chip open urgency">Soon</span>
-<div class="k">Questions for you · definition-lead · new 2026-11-20</div>
-<h3>Do the memorising twins test the reuse score, and what do we do about a score that sits near 1?</h3>
-<p><strong>Due to run:</strong> nothing waits on question 1; question 2's free reanalysis waits for your yes. Only you change the definition's wording.</p>
-<p><strong>Measured so far, and whether it came out as expected.</strong> None of it did. At the coarse levels the pair gaps follow update size (E221, Spearman 0.54, 0.69, 0.45); at matched size only 5 of 9 block-level signs are kept against the 8 filed, and a rule using update size alone predicts every sign (E232). With VPD subcomponents (E226) the edit built as reuse by a ten-fold gain on eight copy neurons scores R 0.9755, below the thinly spread new edit at 0.9963 (band 0.0010), so the filed rule reversed; the cause is the squared-cosine grade, since an uncapped search moves R by under 0.002. On the nine pairs R lies between 0.9970 and 0.9997 and the gaps rank with update size (0.87). A premise check calls the labels doubtful.</p>
-<p><strong>Question 1: the twins.</strong> The paper's Properties say a fact memorised through small changes reads as mostly reused, yet the results use the memorising twins as a control a measure must read low on. Under the definition a twin may correctly read high, so "a measure fails the twins" is not well defined. Options: (a, recommended) say the twins test how the pairs were built, not R; no wording changes. (b) Keep them as a low-reading control and state why the definition puts them low; that contradicts the Properties, so the wording changes. (c) Drop the twins from R's results: no wording change, and the check that the pairs differ as built is lost.</p>
-<p><strong>Question 2: saturation.</strong> R is an unweighted mean of a per-variable grade over a circuit that is nearly the whole model (even the do-nothing circuit holds about two thirds of VPD's 38,938 variables), so it sits near 1 at neurons, coarse levels and VPD, and its gaps follow update size. Options: (a) keep R as worded and report saturation and size tracking as findings about this definition. (b, recommended first) read a behaviour-weighted R, each variable weighted by its effect on the behaviour, as a tested reading and not adopted, from E226's saved files at no compute cost; saved are the exact grade, circuit membership and changed-flag per variable, and an approximate signed first-order weight, but no exact single-variable drop. It tells us whether weighting separates built reuse from built new. (c) Change the grade, for example to one that sees a change of size: a wording change, a new cell and runs. <strong>Recommendation:</strong> 1(a), and 2(b) now so you choose (a) or (c) with numbers in hand; no wording changes meanwhile.</p>
-<p class="small">Card <code>reports/decisions/2026-11-20_decision_twins-saturation.md</code>; reports <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-20_analysis_e226-kstar-vpd.md">reports/analyses/2026-11-20_analysis_e226-kstar-vpd.md</a> and <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-20_analysis_e232-size-matched-r.md">reports/analyses/2026-11-20_analysis_e232-size-matched-r.md</a>.</p>
+<div class="k">Questions for you · definition-lead · new 2026-11-20, rewritten the same day</div>
+<h3>The reuse score R reads about 1 on everything: how should the paper handle that, and what are the memorising twins for?</h3>
+<p>R, the reuse score: the share of the parts the behaviour runs through that still compute what they did in the base model. Only you change the definition's wording.</p>
+<p><strong>What we ran.</strong></p>
+<ul>
+<li>We scored R on hand-built edits whose answer we know, expecting the reuse edits to score higher than the new ones. Instead a reuse edit (a ten-fold gain on eight neurons) scored 0.976, below a new edit at 0.996, because R's per-part score (squared cosine) treats a big gain as a change. (P1.37, <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-20_analysis_e226-kstar-vpd.md">report</a>, <a href="https://github.com/edwinagnew/commute-vpd/blob/main/experiments/kstar_vpd/figures/r_known.png">figure</a>)</li>
+<li>We shrank the larger fine-tune of each of nine trained pairs to its partner's size, expecting the reuse side to stay higher on at least 8. It stayed higher on 4, so R's pair differences mostly reflected update size. (P1.38, <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-20_analysis_e232-size-matched-r.md">report</a>, <a href="https://github.com/edwinagnew/commute-vpd/blob/main/experiments/kstar_size_matched/figures/r_gap_matched.png">figure</a>)</li>
+</ul>
+<p><strong>So:</strong> R sits near 1 everywhere, and its small differences follow how far the weights moved, not reuse.</p>
+<p><strong>Question 1.</strong> The paper says a fact memorised through small changes can correctly read as reused, so should the memorising twins still be a case R must read low on?</p>
+<ul>
+<li><strong>(a) Recommended.</strong> Say the twins check how the pairs were built, not R. No wording change.</li>
+<li>(b) Keep them as a case R must read low on; the definition must then say a memorised fact is new.</li>
+<li>(c) Drop them from R's results; we lose the check on how the pairs were built.</li>
+</ul>
+<p><strong>Question 2.</strong> What do we do about R reading near 1?</p>
+<ul>
+<li><strong>(a) Recommended first.</strong> Compute, for free from P1.37's saved files, an R that weights each part by how much the behaviour depends on it; then choose (b) or (c) with its numbers in hand.</li>
+<li>(b) Keep R as worded and report the near-1 reading as a finding about the definition.</li>
+<li>(c) Change R's per-part score so it reads the built edits the right way round; a wording change and new runs.</li>
+</ul>
+<p class="small">Card <code>reports/decisions/2026-11-20_decision_twins-saturation.md</code>.</p>
 </div>
 </div>
 </section>
