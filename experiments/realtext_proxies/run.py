@@ -134,7 +134,7 @@ def prior(net: ST.Net, r: RR.Read) -> float:
 def s_read(net: ST.Net, M: RT.Model, r: RR.Read, dW: dict[str, Tensor], cfg: Config, th: dict[str, Any]) -> dict[str, Any]:
     """P1.45's S of W0 + dW on r's rows at r's read position, with its two halves."""
     F = RT.Model(OT.with_delta(net, {f"{k}.weight": v for k, v in dW.items()}).net)
-    c = GV.cells(net.model, F, M, r.toks, slice(r.pos, r.pos + 1), cfg.s_batch)
+    c = GV.cells(net.model, F, M, r.toks.cuda(), slice(r.pos, r.pos + 1), cfg.s_batch)  # rows load on the CPU
     del F
     torch.cuda.empty_cache()
     return GV.score(c, th["kl_floor"]) | {"halves": [GV.score(c, th["kl_floor"], h) for h in GV.halves(len(r.toks), cfg.split_seed)]}
