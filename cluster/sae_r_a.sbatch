@@ -25,7 +25,7 @@ source "$SLURM_SUBMIT_DIR/cluster/env.sh"
 cd "$COMMUTE_REPO"
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 rc=0
-( PRED_SHA=b3c9028d1e7d29530d2b4d6d8e254bb27245149f2a3d7f8bcf9c1967a349c2e6 .venv/bin/python experiments/sae_r_a/run.py --tag "$tag" "$@" ) 2>&1 \
+( PRED_SHA=8faf2d193cf1f203eb292c16d4081c1bd2adbbdb04aa180a7b4320eea92b17b8 .venv/bin/python experiments/sae_r_a/run.py --tag "$tag" "$@" ) 2>&1 \
     | tee -a "experiments/sae_r_a/results/run_$tag.log" || rc=${PIPESTATUS[0]}
 echo "=== FINISHED E245 $tag (exit $rc) — results in $COMMUTE_REPO/experiments/sae_r_a/results/ ==="
 exit $rc
