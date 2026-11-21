@@ -1,0 +1,48 @@
+04:47:05 P2.53 pod 0 start; settings Config(pods=(('label', 'lowercase'), ('language', 'british')), seeds=(0, 1, 2), random_seed=253001, split_tol=1e-06, split_seed=186001, s_batch=32); thresholds {'reproduce_tol': 0.01, 'kl_floor': 1e-06, 'random_gain_max': 1.0, 'thresholds_source': "reproduce_tol: E228's filed tolerance on r (E211 re-read 0.7538 against 0.7519 saved, the reading's measured path floor). kl_floor: E241's filed value (E214's; E232 read KL(F||M) 0 exactly at the do-nothing). random_gain_max: MIN_GAIN, the floor under which r is not defined; E228's Gaussian draws on E53's text tasks moved the trained token by 0.08 to 0.25 log-odds at 5 to 6 times the fine-tune's per-matrix norms (experiments/random_kl_share/results/states/e53_*.json .draws[].gain), so a draw at 1 times reaching 1 means the rows or the target are not the fine-tune's"}; card NVIDIA H100 80GB HBM3
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+04:47:16 split bases: 24 matrices, 9881 alive, 3 s
+Generating train split:   0%|          | 0/120000 [00:00<?, ? examples/s]Generating train split:  61%|██████    | 73000/120000 [00:00<00:00, 715619.38 examples/s]Generating train split: 100%|██████████| 120000/120000 [00:00<00:00, 609755.38 examples/s]
+Generating test split:   0%|          | 0/7600 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 7600/7600 [00:00<00:00, 540173.36 examples/s]
+Generating train split:   0%|          | 0/67349 [00:00<?, ? examples/s]Generating train split: 100%|██████████| 67349/67349 [00:00<00:00, 701421.75 examples/s]
+Generating validation split:   0%|          | 0/872 [00:00<?, ? examples/s]Generating validation split: 100%|██████████| 872/872 [00:00<00:00, 136961.99 examples/s]
+Generating test split:   0%|          | 0/1821 [00:00<?, ? examples/s]Generating test split: 100%|██████████| 1821/1821 [00:00<00:00, 231737.24 examples/s]
+04:47:39 [zero label] exact {"numerator": 0.0, "gain": 0.0, "K00-K0": 0.0, "K01-K0": 0.0, "K10-K00": 0.0, "K11-K01": 0.0}; r nan (gain 0.0000), S None, S_c None, kl_fm 0, f 0.4834, 2.4 s; checks hold
+04:47:39 [prior L1] {"pair": "label", "prior": 0.00042319971452576405, "n_rows": 512, "pos": 34}
+04:47:39 [prior L3] {"pair": "label", "prior": 0.00014941345834395994, "n_rows": 512, "pos": 34}
+04:47:39 STAGE 0 label DONE
+04:47:42 [label/L1_s0 random 253001] r nan (gain -0.0526), S -228.55519474729925, S_c 1.4981416918443227, kl_fm 0.002101, f 0.4834, 2.9 s
+04:47:45 [label/L1_s0 own] r 0.2096 (gain 18.5850), S 0.5207783616960162, S_c 0.5830094024075111, kl_fm 7.767, f 0.4834, 3.0 s; saved r 0.2098
+04:47:48 [label/L1_s1 random 253002] r nan (gain -0.0153), S -288.03938069268094, S_c 1.1409810241410592, kl_fm 0.001671, f 0.4834, 3.0 s
+04:47:51 [label/L1_s1 own] r 0.2205 (gain 18.3701), S 0.538965850937811, S_c 0.601197358157302, kl_fm 7.767, f 0.4834, 2.7 s; saved r 0.2204
+04:47:54 [label/L1_s2 random 253003] r nan (gain 0.0228), S -259.8756770236906, S_c 0.5924762841634217, kl_fm 0.001856, f 0.4834, 2.8 s
+04:47:57 [label/L1_s2 own] r 0.2000 (gain 18.7859), S 0.502612347904713, S_c 0.5648429508815945, kl_fm 7.767, f 0.4834, 2.8 s; saved r 0.2001
+04:48:00 [label/L3_s0 random 253004] r nan (gain 0.0495), S -138.0636744547172, S_c -0.004185284302999026, kl_fm 0.003501, f 0.4834, 2.8 s
+04:48:03 [label/L3_s0 own] r 0.3053 (gain 13.0944), S 0.4995599684722497, S_c 0.5554837417620215, kl_fm 8.643, f 0.4834, 2.9 s; saved r 0.3052
+04:48:06 [label/L3_s1 random 253005] r nan (gain 0.0363), S -152.18481535081045, S_c 0.6859531687989392, kl_fm 0.003162, f 0.4834, 3.0 s
+04:48:09 [label/L3_s1 own] r 0.3065 (gain 12.1786), S 0.46130736470894274, S_c 0.5171404524146374, kl_fm 8.657, f 0.4834, 3.0 s; saved r 0.3065
+04:48:12 [label/L3_s2 random 253006] r nan (gain -0.0650), S -208.03061996735477, S_c 0.28557770229621926, kl_fm 0.00232, f 0.4834, 3.0 s
+04:48:15 [label/L3_s2 own] r 0.2560 (gain 14.0660), S 0.45541865481793475, S_c 0.5113713336744666, kl_fm 8.639, f 0.4834, 3.0 s; saved r 0.2559
+04:48:15 PAIR label DONE
+04:48:20 [zero lowercase] exact {"numerator": 0.0, "gain": 0.0, "K00-K0": 0.0, "K01-K0": 0.0, "K10-K00": 0.0, "K11-K01": 0.0}; r nan (gain 0.0000), S None, S_c None, kl_fm 0, f 0.5078, 4.9 s; checks hold
+04:48:20 [prior T1] {"pair": "lowercase", "prior": 0.00100166139743612, "n_rows": 500, "pos": 63}
+04:48:20 [prior T4] {"pair": "lowercase", "prior": 4.894416368295416e-07, "n_rows": 500, "pos": 63}
+04:48:20 STAGE 0 lowercase DONE
+04:48:26 [lowercase/T1_s0 random 253007] r nan (gain 0.0017), S -58.14905722705395, S_c 0.6865609458214852, kl_fm 0.00863, f 0.5078, 5.8 s
+04:48:32 [lowercase/T1_s0 own] r 0.7692 (gain 1.6306), S 0.20334896456502638, S_c 0.7195443129521616, kl_fm 0.9837, f 0.5078, 5.9 s; saved r 0.7698
+04:48:38 [lowercase/T1_s1 random 253008] r nan (gain 0.0045), S -61.468841821135754, S_c 0.11259491434464908, kl_fm 0.008246, f 0.5078, 6.0 s
+04:48:44 [lowercase/T1_s1 own] r 0.7903 (gain 1.6473), S 0.2259566725688562, S_c 0.718525194626261, kl_fm 1.031, f 0.5078, 5.9 s; saved r 0.7903
+04:48:50 [lowercase/T1_s2 random 253009] r nan (gain 0.0024), S -62.39353078257318, S_c 0.7161021877010147, kl_fm 0.008046, f 0.5078, 5.9 s
+04:48:56 [lowercase/T1_s2 own] r 0.7626 (gain 1.6054), S 0.2263423090391179, S_c 0.7298327440306542, kl_fm 1.009, f 0.5078, 5.9 s; saved r 0.7643
+04:49:02 [lowercase/T4_s0 random 253010] r nan (gain -0.0029), S -56.12647881302505, S_c 0.9461291892608545, kl_fm 0.008345, f 0.4763, 5.9 s
+04:49:08 [lowercase/T4_s0 own] r 0.5690 (gain 3.7420), S 0.6927756280826867, S_c 0.9016878120658387, kl_fm 2.28, f 0.4763, 5.8 s; saved r 0.5690
+04:49:14 [lowercase/T4_s1 random 253011] r nan (gain 0.0486), S -59.160536128282565, S_c 0.6923529794058391, kl_fm 0.007957, f 0.4763, 6.1 s
+04:49:20 [lowercase/T4_s1 own] r 0.5662 (gain 3.7482), S 0.6798620788184615, S_c 0.8903924792316422, kl_fm 2.262, f 0.4763, 6.0 s; saved r 0.5657
+04:49:26 [lowercase/T4_s2 random 253012] r nan (gain -0.0217), S -61.730836704964766, S_c 0.1955043187139941, kl_fm 0.007691, f 0.4763, 5.9 s
+04:49:32 [lowercase/T4_s2 own] r 0.5666 (gain 3.7110), S 0.6791970368449098, S_c 0.8937245061891227, kl_fm 2.22, f 0.4763, 5.9 s; saved r 0.5668
+04:49:32 PAIR lowercase DONE
+04:49:32 P2.53 pod 0 DONE, peak GPU 15.69 GB
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/realtext_proxies/results/pod0.json, pod0.log ===
