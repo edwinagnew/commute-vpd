@@ -28,7 +28,7 @@ PANELS = [
     ("R_vpd", "R at VPD subcomponents", "neuron_half"),
 ]
 NOT_READ = ("Not read on these five tasks:\n\n- steering share\n- the causal test at VPD\n  with only the importance\n"
-            "  values refit (S, cell P1.45)\n- crosscoder")
+            "  values refit (S)\n- crosscoder")
 N = ("3 seeds per task (dots), every task scaled to copy's update size; grey band: 3 random updates per task, Gaussian "
      "at each seed's per-matrix norms, same size, each draw a grey x. r has no band: a random update this small moves the answer by under "
      "1 log-odds, where r is undefined. The prior is one number per task.")
