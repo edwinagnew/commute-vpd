@@ -1,6 +1,8 @@
-"""E237's one-figure summary (no GPU), from results/summary.json: every reading as one panel over the same five tasks,
-ordered by the base model's prior of the trained answer (lowest first), seeds as dots at the common update size, the
-random update of that size as a grey band. The readings not taken on these five tasks get a panel saying so.
+"""E237's one-figure summary (no GPU), from results/summary.json, with E244's baselines (the neuron shares and the
+crosscoder, read on the same items by experiments/key_grid_baselines) as four more panels: every reading as one panel
+over the same five tasks, ordered by the base model's prior of the trained answer (lowest first), seeds as dots at the
+common update size, the random update of that size as a grey band. The readings not taken on these five tasks get a
+panel saying so.
 
     ~/commute-agents/fleet/cpu-run python3 experiments/key_grid/plot_columns.py
 """
@@ -8,12 +10,18 @@ random update of that size as a grey band. The readings not taken on these five 
 from __future__ import annotations
 
 import json
+import math
+from collections.abc import Callable
 from pathlib import Path
+from typing import Any
 
 from commute.figures import METHODS, column_dots, figure, save
 
 HERE = Path(__file__).resolve().parent
 SUMMARY = json.loads((HERE / "results" / "summary.json").read_text())
+BASE = HERE.parent / "key_grid_baselines" / "results" / "run"  # E244's results on E237's items
+NEURON = json.loads((BASE / "neuron_0_1.json").read_text())["items"]
+SIDES = {r["item"]: r for p in sorted((BASE / "crosscoder" / "sides").glob("*.json")) for r in [json.loads(p.read_text())]}
 SHORT = {"cipher": "cipher", "prior_cipher": "prior-\nmatched\ncipher", "copy": "copy", "elicit": "mid", "rank1": "top"}
 PANELS = [
     ("r", "re-gating share, log-odds", "regating"),
@@ -26,24 +34,53 @@ PANELS = [
     ("R_block", "R at blocks", "neuron"),
     ("R_topk", "R at top neurons, p97", "neuron_half"),
     ("R_vpd", "R at VPD subcomponents", "neuron_half"),
+    ("top_k64", "top-neuron share, k 64", "neuron"),
+    ("top_kmatched", "top-neuron share, k matched", "neuron"),
+    ("r_n", "neuron share, whole width", "neuron"),
+    ("crosscoder_d", "crosscoder: shared minus\nfine-tune-specific part", "steering"),  # steering is not drawn here
 ]
-NOT_READ = ("Not read on these five tasks:\n\n- steering share\n- the causal test at VPD\n  with only the importance\n"
-            "  values refit (S)\n- crosscoder")
+# E244's readings of one item record: the neuron file's items, or the crosscoder's side files, keyed by item name.
+BASELINES: dict[str, tuple[dict[str, Any], Callable[[dict[str, Any]], Any]]] = {
+    "top_k64": (NEURON, lambda r: r["top"]["k64"]["share"]),
+    "top_kmatched": (NEURON, lambda r: r["top"]["kmatched"]["share"]),
+    "r_n": (NEURON, lambda r: r["whole"]["r_n"]),
+    "crosscoder_d": (SIDES, lambda r: r["d"]),
+}
+NOT_READ = "Not read on these five tasks:\n\n- steering share\n- the causal test at VPD\n  with only the importance\n  values refit (S)"
 N = ("3 seeds per task (dots), every task scaled to copy's update size; grey band: 3 random updates per task, Gaussian "
-     "at each seed's per-matrix norms, same size, each draw a grey x. r has no band: a random update this small moves the answer by under "
-     "1 log-odds, where r is undefined. The prior is one number per task.")
+     "at each seed's per-matrix norms, same size, each draw a grey x. r and the three neuron shares have no band: a random "
+     "update this small moves the answer by under 1 log-odds, where they are undefined. The prior is one number per task. "
+     "Crosscoder: copy's lowest dot is seed 0, the item that also repeated the earlier saved crosscoder reading.")
+
+
+def num(x: Any) -> float | None:
+    return float(x) if isinstance(x, int | float) and math.isfinite(x) else None
+
+
+def baseline(name: str, order: list[str]) -> tuple[dict, dict, dict]:
+    """Seeds, random band (min to max of the draws, None where undefined) and draws per task, from E244's files."""
+    recs, get = BASELINES[name]
+    seeds = {t: [num(get(recs[f"e58/{t}_s{s}_scaled"])) for s in range(3)] for t in order}
+    rand = {t: [num(get(recs[f"random_e58/{t}_s{s}"])) for s in range(3)] for t in order}
+    bands = {t: (min(v), max(v)) if (v := [x for x in rand[t] if x is not None]) else None for t in order}
+    return seeds, bands, rand
+
+
+def columns(name: str, order: list[str]) -> tuple[dict, dict | None, dict]:
+    if name in BASELINES:
+        return baseline(name, order)
+    if name == "prior":
+        return {t: [SUMMARY["log10_prior"][t]] for t in order}, None, {}
+    row = SUMMARY["table"][name]
+    return {t: row[t]["seeds"] for t in order}, {t: row[t]["band"] for t in order}, {t: row[t]["random"] for t in order}
 
 
 def panel(ax, name: str, ylabel: str, method: str) -> list[dict]:
     order = SUMMARY["x_order_by_prior"]
-    if name == "prior":
-        groups, bands = {t: [SUMMARY["log10_prior"][t]] for t in order}, None
-    else:
-        row = SUMMARY["table"][name]
-        groups, bands = {t: row[t]["seeds"] for t in order}, {t: row[t]["band"] for t in order}
+    groups, bands, rand = columns(name, order)
     column_dots(ax, groups, method=method, ylabel=ylabel, bands=bands)
     if bands:  # the draws themselves, so a band thinner than a line still shows
-        draws = [(i, v) for i, t in enumerate(order) for v in SUMMARY["table"][name][t]["random"] if v is not None]
+        draws = [(i, v) for i, t in enumerate(order) for v in rand[t] if v is not None]
         r = METHODS["random"]
         ax.scatter([i + 0.18 for i, _ in draws], [v for _, v in draws], color=r.color, marker=r.marker, s=12, linewidths=0)
     ax.set_xticks(range(len(order)), [SHORT[t] for t in order], fontsize=6)
@@ -57,7 +94,7 @@ def panel(ax, name: str, ylabel: str, method: str) -> list[dict]:
 
 
 def main() -> None:
-    fig, axes = figure(size=(10.0, 8.0), nrows=3, ncols=4)
+    fig, axes = figure(size=(10.0, 10.5), nrows=4, ncols=4)
     flat, data = list(axes.flat), []
     for ax, (name, ylabel, method) in zip(flat, PANELS, strict=False):
         data += panel(ax, name, ylabel, method)
@@ -67,7 +104,8 @@ def main() -> None:
     flat[len(PANELS)].text(0.0, 1.0, NOT_READ, va="top", fontsize=8, transform=flat[len(PANELS)].transAxes)
     fig.suptitle("Every reading on the five key tasks at one update size, tasks ordered by the base model's prior (lowest "
                  "first):\nthe log-odds share splits the ciphers from the rest; the KL share sits in its random band; every R "
-                 "sits below its random band", fontsize=8)
+                 "sits below its random band;\nthe neuron shares set copy apart; the crosscoder sets no task apart and "
+                 "reads mostly below its random band", fontsize=8)
     save(fig, HERE / "figures" / "columns.png", n=N, data=data)
 
 
