@@ -1,0 +1,70 @@
+{
+ "experiment": "E_TBD2",
+ "cell": "P2.54 run 2 of 2",
+ "plan": "reports/plans/2026-11-21_plan_prior-mech-2x2.md",
+ "what": "Run 2: a low-prior copy fine-tune (E147's key copy task on its lowest-prior windows, prior at least 1.5 decades under key copy's, near cipher's) x3 seeds at E237's common update size, a matched Gaussian random update per seed, the head (2,4) switch-off on the new states, then every proxy on the four corners of prior (high/low) x mechanism (through the copy head or not): copy (high, reused), prior_cipher (high, new), low-prior copy (low, reused), cipher (low, new); rank1 and elicit read beside them. Run 1 (predictions.json) must have finished: its labels are the mechanism axis for the three saved corners.",
+ "settings": {
+  "source_task": "copy",
+  "source_task_source": "E147's copy map (experiments/refit_96key/results/inventory.json maps.copy): its 96 keys, marker 18214, identity table and its train/held-out counts (1214, 286) as the caps",
+  "seeds": [0, 1, 2],
+  "seeds_source": "E147's seeds, passed to keydep.finetune as E147 passed them",
+  "prior_bar": 1.8686e-06,
+  "prior_bar_source": "whip-lead 2026-11-21: the answer's prior at least 1.5 decades under key copy's: 10^(log10 5.9107e-5 - 1.5) = 10^-5.7284 (key copy's log10 prior -4.2284, experiments/key_grid/results/summary.json log10_prior; cipher's -5.8595 sits 0.13 decades under the bar)",
+  "n_pool": 20000,
+  "n_pool_source": "chosen here for row count, not for any reading: about 208 windows a key before the selection (E58 drew 500 per 32 keys, 15.6 a key). If M's log P(x) has a spread of about 2 nats across windows, a run 1.5 decades (3.45 nats) under the mean keeps about a tenth: ~1600 train and ~400 read rows before the caps. The construction check stops the job if the rows fall short",
+  "pool_seed": 249002,
+  "pool_seed_source": "new (kv.windows' seed). The selection (lowest_run) has no randomness: the run, thinned evenly in sorted order to E147's count, then that set's own run, so its mean stays at or under the bar",
+  "n_train_min": 256,
+  "n_read_min": 64,
+  "n_keys_min": 48,
+  "mins_source": "chosen here: four of E58's batches of 64 to train on; 64 read rows (E62 read 200, E147 286); half of the 96 keys kept in training. Under any of these the construction check stops the job before training",
+  "step": 30,
+  "step_source": "E147's and E237's step (every key state is the step-30 update)",
+  "random_seed": 249101,
+  "random_seed_source": "new; new state i's random direction uses random_seed + i (E237's construction, finetune.random_direction: a Gaussian per matrix at the state's own Frobenius norm, times the same c)",
+  "split_tol": 1e-06,
+  "split_tol_source": "E228's and E237's split_tol (commute.split.bases' default), so r is read as E237 read it",
+  "batch": 64,
+  "batch_source": "E62's and E133's read batch"
+ },
+ "thresholds": {
+  "prior_repro_rel": 0.0001,
+  "prior_repro_rel_source": "E133's stage-0 tol_rel on this path (experiments/prior_vs_share/results/predictions.json stage0): the copy prior 5.9107e-5 must repeat",
+  "share_tol": 0.01,
+  "share_tol_source": "E187's share_tol for holes_fill's readers (experiments/size_matched/results/predictions.json): E147's saved neuron and steering shares on e58/copy_s0 must repeat at c = 1",
+  "share_new_max": 0.2,
+  "share_new_max_source": "run 1's and E62's 'new' cut (copying.share_label); whip-lead: the low-prior copy must lose at least 0.2 of its gain with (2,4) off to count as reused"
+ },
+ "measurement": "Corner value per proxy = mean over the three seeds. head_share: run 1's share lost with (2,4) off (copying.share_lost). r: the re-gating share, log-odds form (E228.readings, E237's call; the key states' are E237's saved stage1 'scaled' r). log10_prior: M's geometric-mean P(answer) on the read rows (E133's forward_prior; the key tasks' are E237's summary log10_prior). size: E187's ||dW||/||W0||. erank: update_spectrum.state. steering_pooled, steering_perkey, neuron_k64, neuron_kmatched: holes_fill's Job.state (E143's fair steering and TopK neurons, as E147 and E187 read them), each update times its task's c. Effects per proxy: mechanism = ((copy + lowcopy) - (prior_cipher + cipher)) / 2, prior = ((copy + prior_cipher) - (lowcopy + cipher)) / 2. Band = the largest seed range (max - min over seeds) of that proxy over the four corners, this job.",
+ "rules": {
+  "construction": "before training: the kept read rows' prior (E133's path) <= prior_bar, >= n_train_min train and n_read_min read rows, >= n_keys_min keys in training; else exit 1",
+  "Q0_lowcopy_uses_head": "the new states' mean head share >= 0.2 and every seed's share > its median random-head share (run 1's verdict function); 'not_read' unless every seed is readable",
+  "corners_labelled": "the 2x2 is read only when Q0 holds and run 1's P1 (copy) and P2 (both ciphers) hold; otherwise every Q below reads 'not_read'",
+  "follows": "per proxy: 'mechanism' iff |mechanism effect| > |prior effect| and > band; 'prior' iff |prior effect| > |mechanism effect| and > band; 'no_call' otherwise (ties included); 'not_read' if a corner is not finite",
+  "Q1_r_follows_mechanism": "r's call",
+  "Q2_prior_follows_prior": "the prior proxy's call (by construction 'prior'; a check that the corners are built as meant)",
+  "Q3_steering_follows": "pooled and per-key steering's calls",
+  "Q4_neurons_follow": "TopK neuron shares' calls (k64, k matched)"
+ },
+ "edge_cases": {
+  "zero_band": "the prior proxy has no seed spread (band 0): any effect over 0 counts; size's effects are ~0 by construction, so it reads no_call unless the scaling misses",
+  "nan_share": "steering and neuron shares are nan under holes_fill's gain floor (the random updates): a corner with a nan seed is 'not_read' for that proxy",
+  "tie": "|mechanism| == |prior| reads no_call",
+  "too_few_rows": "the construction check stops the job; the selection is then reported as the result and nothing is trained",
+  "lowcopy_not_reused": "Q0 misses: no 2x2 call; the proxies are still written for the record"
+ },
+ "expected": {
+  "construction": "log10 prior ~-5.75 (just under the bar -5.73; the thinning keeps the whole run's spread, so the kept prior sits near the bar), ~1214 train and ~286 read rows (the caps), 80-96 keys",
+  "Q0": "head share ~ key copy's in run 1 (filed there at ~0.5). Same task, same mechanism, harder rows",
+  "values_at_M_and_controls": "random updates: gain ~0 (E237's read -0.015 to 0.010), so head share 'too_small', r nan, steering and neuron shares nan; the do-nothing is run 1's control (zero update reads F = M exactly)",
+  "Q1": "mechanism: r copy 0.771, prior_cipher 0.368, cipher 0.272 (E237); lowcopy ~0.7. Mechanism effect ~0.41, prior effect ~0.08, band ~0.03. Rival (r follows the prior): lowcopy ~0.3, prior effect ~0.28 against a mechanism effect ~0.21",
+  "Q2": "prior: log10 copy -4.23, prior_cipher -4.43, lowcopy ~-5.75, cipher -5.86; prior effect ~1.4, mechanism effect ~0.15",
+  "Q3": "pooled steering: mechanism if copy's 'turn copying on' direction still works on hard rows (copy 0.74 vs prior_cipher 0.14 at saved size, E147 stage1); the user's rival (cheap readings follow the prior) predicts lowcopy near cipher's 0.16. Filed expectation: no strong one; this is the cell where steering and r can come apart. Per-key steering: no_call (0.90-1.00 on every key task, E147)",
+  "Q4": "no_call: every key task's TopK share is under 0.03 (E147 stage1), within a few hundredths of 0",
+  "size": "no_call by construction (every corner at E237's common size)",
+  "erank": "no expectation filed: copy 475 vs prior_cipher 407 and cipher 405 (E237); lowcopy unknown"
+ },
+ "blind_to": "Mechanism is 'through copy head (2,4) or not', read by one ablation; a corner whose copy runs through other heads is mislabelled. The low-prior corner is a selection of the copy task's rows, not a new task: it lowers M's prior on the answer while keeping the task's form. The proxies' calls compare two effects of the same proxy, so units cancel, but a proxy with large seed spread gets a wide band and reads no_call.",
+ "positive_control": "run 1's control (M's copying falls under (2,4) off); here the prior path and holes_fill's readers repeat their saved readings before any selection",
+ "stop_rules": ["run 1's summary.json missing", "prior repeat off by more than prior_repro_rel", "a holes_fill repeat off by more than share_tol", "the construction check"]
+}
