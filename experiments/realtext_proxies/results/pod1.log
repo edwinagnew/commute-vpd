@@ -1,0 +1,61 @@
+04:47:27 P2.53 pod 1 start; settings Config(pods=(('label', 'lowercase'), ('language', 'british')), seeds=(0, 1, 2), random_seed=253001, split_tol=1e-06, split_seed=186001, s_batch=32); thresholds {'reproduce_tol': 0.01, 'kl_floor': 1e-06, 'random_gain_max': 1.0, 'thresholds_source': "reproduce_tol: E228's filed tolerance on r (E211 re-read 0.7538 against 0.7519 saved, the reading's measured path floor). kl_floor: E241's filed value (E214's; E232 read KL(F||M) 0 exactly at the do-nothing). random_gain_max: MIN_GAIN, the floor under which r is not defined; E228's Gaussian draws on E53's text tasks moved the trained token by 0.08 to 0.25 log-odds at 5 to 6 times the fine-tune's per-matrix norms (experiments/random_kl_share/results/states/e53_*.json .draws[].gain), so a draw at 1 times reaching 1 means the rows or the target are not the fine-tune's"}; card NVIDIA H100 80GB HBM3
+Traceback (most recent call last):
+  File [35m"/root/work/experiments/realtext_proxies/run.py"[0m, line [35m299[0m, in [35m<module>[0m
+    code = main(sys.argv)
+  File [35m"/root/work/experiments/realtext_proxies/run.py"[0m, line [35m292[0m, in [35mmain[0m
+    [31mpod_job[0m[1;31m(cfg, th, int(argv[2]), argv[3:] == ["--rehearse"])[0m
+    [31m~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/root/work/experiments/realtext_proxies/run.py"[0m, line [35m216[0m, in [35mpod_job[0m
+    net, o = [31mST.Net[0m[1;31m("cuda")[0m, Out(i)
+             [31m~~~~~~[0m[1;31m^^^^^^^^[0m
+  File [35m"/root/work/src/commute/steering.py"[0m, line [35m39[0m, in [35m__init__[0m
+    self.model, self.device = [31mvpd.load_component_model[0m[1;31m(device)[0m, device
+                              [31m~~~~~~~~~~~~~~~~~~~~~~~~[0m[1;31m^^^^^^^^[0m
+  File [35m"/root/work/src/commute/vpd.py"[0m, line [35m52[0m, in [35mload_component_model[0m
+    assert [31mp.is_file[0m[1;31m()[0m, f"missing {p}; run `fetch` first"
+           [31m~~~~~~~~~[0m[1;31m^^[0m
+[1;35mAssertionError[0m: [35mmissing /root/artifacts/vpd/s-55ea3f9b/model_400000.pth; run `fetch` first[0m
+=== FINISHED (exit 1) — results in /root/work/experiments/realtext_proxies/results/pod1.json, pod1.log ===
+04:49:57 P2.53 pod 1 start; settings Config(pods=(('label', 'lowercase'), ('language', 'british')), seeds=(0, 1, 2), random_seed=253001, split_tol=1e-06, split_seed=186001, s_batch=32); thresholds {'reproduce_tol': 0.01, 'kl_floor': 1e-06, 'random_gain_max': 1.0, 'thresholds_source': "reproduce_tol: E228's filed tolerance on r (E211 re-read 0.7538 against 0.7519 saved, the reading's measured path floor). kl_floor: E241's filed value (E214's; E232 read KL(F||M) 0 exactly at the do-nothing). random_gain_max: MIN_GAIN, the floor under which r is not defined; E228's Gaussian draws on E53's text tasks moved the trained token by 0.08 to 0.25 log-odds at 5 to 6 times the fine-tune's per-matrix norms (experiments/random_kl_share/results/states/e53_*.json .draws[].gain), so a draw at 1 times reaching 1 means the rows or the target are not the fine-tune's"}; card NVIDIA H100 80GB HBM3
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+04:50:10 split bases: 24 matrices, 9881 alive, 5 s
+04:50:16 [zero language] exact {"numerator": 0.0, "gain": 0.0, "K00-K0": 0.0, "K01-K0": 0.0, "K10-K00": 0.0, "K11-K01": 0.0}; r nan (gain 0.0000), S None, S_c None, kl_fm 0, f 0.6184, 6.3 s; checks hold
+04:50:16 [prior T2] {"pair": "language", "prior": 1.918552510416424e-06, "n_rows": 500, "pos": 63}
+04:50:17 [prior T3] {"pair": "language", "prior": 4.1553109701531576e-06, "n_rows": 500, "pos": 63}
+04:50:17 STAGE 0 language DONE
+04:50:23 [language/T2_s0 random 253011] r nan (gain -0.0060), S -62.13608377551714, S_c 0.26698226658752733, kl_fm 0.009909, f 0.6184, 6.6 s
+04:50:30 [language/T2_s0 own] r nan (gain 0.8923), S -0.6327865252441496, S_c 0.7580639590456526, kl_fm 0.4446, f 0.6184, 6.5 s; saved r nan
+04:50:37 [language/T2_s1 random 253012] r nan (gain 0.0605), S -67.22522232719744, S_c -0.10705281717974069, kl_fm 0.009213, f 0.6184, 6.5 s
+04:50:43 [language/T2_s1 own] r nan (gain 0.8171), S -0.8338509891940156, S_c 0.6217878231559717, kl_fm 0.4248, f 0.6184, 6.8 s; saved r nan
+04:50:50 [language/T2_s2 random 253013] r nan (gain 0.0525), S -67.41975431603072, S_c 0.432120502529565, kl_fm 0.009113, f 0.6184, 6.6 s
+04:50:57 [language/T2_s2 own] r nan (gain 0.8169), S -0.8344530492365927, S_c 0.6447016988429309, kl_fm 0.418, f 0.6184, 6.5 s; saved r nan
+04:51:04 [language/T3_s0 random 253014] r nan (gain -0.0150), S -80.45232427552077, S_c 0.7100188156901874, kl_fm 0.007866, f 0.6384, 6.6 s
+04:51:11 [language/T3_s0 own] r 0.4987 (gain 1.5198), S 0.0626859346463361, S_c 0.5052924169044761, kl_fm 1.442, f 0.6384, 7.3 s; saved r 0.4972
+04:51:18 [language/T3_s1 random 253015] r nan (gain 0.0014), S -85.61094769979543, S_c 1.678280584778037, kl_fm 0.007314, f 0.6384, 6.4 s
+04:51:24 [language/T3_s1 own] r 0.4616 (gain 2.0217), S 0.10292098096551894, S_c 0.45696862605915844, kl_fm 1.803, f 0.6384, 6.4 s; saved r 0.4606
+04:51:31 [language/T3_s2 random 253016] r nan (gain -0.0119), S -89.32991273857637, S_c 0.7854620722304096, kl_fm 0.007085, f 0.6384, 6.5 s
+04:51:38 [language/T3_s2 own] r 0.4830 (gain 2.0862), S 0.14628681599988103, S_c 0.5043839381989754, kl_fm 1.783, f 0.6384, 6.5 s; saved r 0.4818
+04:51:38 PAIR language DONE
+04:51:42 [zero british] exact {"numerator": 0.0, "gain": 0.0, "K00-K0": 0.0, "K01-K0": 0.0, "K10-K00": 0.0, "K11-K01": 0.0}; r nan (gain 0.0000), S None, S_c None, kl_fm 0, f 0.5743, 4.9 s; checks hold
+04:51:43 [prior real] {"pair": "british", "prior": 0.0007217877665664235, "n_rows": 500, "pos": 63}
+04:51:43 [prior twin] {"pair": "british", "prior": 1.2691195397294242e-06, "n_rows": 500, "pos": 63}
+04:51:43 STAGE 0 british DONE
+04:51:50 [british/real_s0 random 253017] r nan (gain 0.0334), S -63.925026231573696, S_c 0.555855094061097, kl_fm 0.008906, f 0.5743, 6.6 s
+04:51:56 [british/real_s0 own] r 0.0760 (gain 1.4284), S -1.7474163102894429, S_c 0.6789902940267685, kl_fm 0.2367, f 0.5743, 6.5 s; saved r 0.0765
+04:52:03 [british/real_s1 random 253018] r nan (gain 0.0335), S -65.44485358324442, S_c 0.8932526081259381, kl_fm 0.008657, f 0.5743, 6.5 s
+04:52:09 [british/real_s1 own] r 0.0887 (gain 1.4366), S -1.8074619366695814, S_c 0.6159208396326106, kl_fm 0.237, f 0.5743, 6.5 s; saved r 0.0872
+04:52:16 [british/real_s2 random 253019] r nan (gain 0.0214), S -65.97651891191522, S_c 1.3518812548816554, kl_fm 0.00853, f 0.5743, 6.6 s
+04:52:23 [british/real_s2 own] r 0.1343 (gain 1.4425), S -1.697781644303054, S_c 0.6307036572199376, kl_fm 0.2466, f 0.5743, 6.5 s; saved r 0.1364
+04:52:30 [british/twin_s0 random 253020] r nan (gain -0.0034), S -69.99978182059967, S_c 0.4848075286319853, kl_fm 0.008419, f 0.5934, 6.4 s
+04:52:36 [british/twin_s0 own] r 0.1354 (gain 2.2712), S -1.1463080401669852, S_c 0.6930694861559163, kl_fm 0.3226, f 0.5934, 6.5 s; saved r 0.1363
+04:52:43 [british/twin_s1 random 253021] r nan (gain 0.0046), S -63.704232408396095, S_c 0.4368184456066291, kl_fm 0.009251, f 0.5934, 6.5 s
+04:52:49 [british/twin_s1 own] r 0.1684 (gain 2.2783), S -1.1040941849622996, S_c 0.6965799454263526, kl_fm 0.3295, f 0.5934, 6.5 s; saved r 0.1700
+04:52:56 [british/twin_s2 random 253022] r nan (gain 0.0082), S -65.52076258346449, S_c 0.6492812326222321, kl_fm 0.008967, f 0.5934, 6.5 s
+04:53:03 [british/twin_s2 own] r 0.1235 (gain 2.1087), S -0.8252565844439694, S_c 0.7455060053693923, kl_fm 0.3778, f 0.5934, 6.5 s; saved r 0.1240
+04:53:03 PAIR british DONE
+04:53:03 P2.53 pod 1 DONE, peak GPU 15.69 GB
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/realtext_proxies/results/pod1.json, pod1.log ===
