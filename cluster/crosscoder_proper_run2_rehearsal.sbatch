@@ -42,7 +42,7 @@ rm -rf $R/rehearse2 $R/large/rehearse2 $R/rehearse2_dl
 step "sizes (forwards, full read sizes)" 0 $PY $E/run2.py sizes --rehearse
 step "self through the scaled path (scale 0)" 0 $PY $E/run2.py item self.A.c0 --rehearse
 step "check0" 0 $PY $E/score2.py check0 --rehearse
-step "round 1 (seed 0, rungs 1, 2, 4, 5)" 0 $PY $E/run2.py item head-r1.A.c0 head-r2.A.c0 head-r4.A.c0 head-r5.A.c0 --rehearse
+step "round 1 (rungs 1, 4, 5 seed 0; rung 4 seed 1)" 0 $PY $E/run2.py item head-r1.A.c0 head-r4.A.c0 head-r5.A.c0 head-r4.A.c1 --rehearse
 step "ladder after round 1" 0 $PY $E/score2.py ladder --rehearse
 step "stage 2 at rung 5: a draw, e58 elicit, cipher" 0 $PY $E/run2.py item random_d0-r5.A.c0 e58__elicit_s0-r5.A.c0 e58__cipher_s0-r5.A.c0 --rehearse
 step "read at rung 5" 0 $PY $E/score2.py read --rehearse --x 5
