@@ -674,3 +674,4 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e241_s_c_by_group.png": "experiments/gating_vpd/figures/s_c_by_group.png"
 - "fig/e234_fve_drop_by_site.png": "experiments/sae_train/figures/fve_drop_by_site.png"
 - "fig/e245_r_a_sae_vs_vpd.png": "experiments/sae_r_a/figures/r_a_sae_vs_vpd.png"
+- "fig/e249_prior_mech_2x2.png": "experiments/prior_mech_2x2/figures/prior_mech_2x2.png"
