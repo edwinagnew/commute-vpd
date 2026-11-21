@@ -1,0 +1,99 @@
+{
+ "experiment": "E243",
+ "self": true,
+ "checks": {
+  "the scaled path at 0 gives W0's activations": {
+   "pass": true,
+   "max_abs": 0.0,
+   "bar": 1e-05
+  },
+  "change matched to the rung's size": {
+   "pass": true,
+   "x": 0.0,
+   "target": 0.0,
+   "energy": 0.0,
+   "rel": 0.0,
+   "tol": 0.05
+  },
+  "self path: a zero update gives W0's activations": {
+   "pass": true,
+   "max_abs": 0.0,
+   "bar": 1e-05
+  },
+  "stream holds every step": {
+   "pass": true,
+   "tokens": 200936448,
+   "need": 199999488
+  },
+  "latent-scaling tokens from the first chunk": {
+   "pass": true,
+   "tokens": 100000,
+   "want": 100000
+  },
+  "batch FVE at step 1000": {
+   "pass": true,
+   "fve_batch": 0.6268230571819045,
+   "bar": 0
+  },
+  "FVE at the first snapshot": {
+   "pass": true,
+   "fve": 0.9100337547934464,
+   "bar": 0.5
+  },
+  "dead share at the first snapshot": {
+   "pass": true,
+   "dead": 0.0,
+   "bar": 0.3
+  },
+  "projected minutes": {
+   "pass": true,
+   "minutes": 29.559336006641388,
+   "bar": 90
+  },
+  "every step trained": {
+   "pass": true,
+   "last": 97656,
+   "steps": 97656
+  },
+  "FVE at the end": {
+   "pass": true,
+   "fve": 0.9315321342818172,
+   "bar": 0.8
+  },
+  "dead share at the end": {
+   "pass": true,
+   "dead": 0.0,
+   "bar": 0.3
+  },
+  "self: relative norms at 0.5": {
+   "pass": true,
+   "max_dev": 0.0,
+   "bar": 0.001
+  },
+  "self: no fine-tune-specific latent": {
+   "pass": true,
+   "counts": {
+    "ft_specific": 0,
+    "shared": 24576,
+    "ft_artefact": 0,
+    "base_only": 0,
+    "other": 0,
+    "dead": 0
+   }
+  }
+ },
+ "read": {
+  "fve_base": 0.9315321342818172,
+  "fve_ft": 0.9315321342818172,
+  "dead": 0.0,
+  "max_rn_dev_alive": 0.0,
+  "counts": {
+   "ft_specific": 0,
+   "shared": 24576,
+   "ft_artefact": 0,
+   "base_only": 0,
+   "other": 0,
+   "dead": 0
+  }
+ }
+}
