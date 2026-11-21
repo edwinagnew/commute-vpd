@@ -3,10 +3,11 @@
 # where ARGS go to run.py (--group control|built|pairs|e62|keys, --items ..., --shard I N). Every job reads the
 # do-nothing first and stops on a miss; a group refuses to start before the groups it waits on are read (run.py
 # docstring); an item whose JSON exists is skipped. Submissions, in order (plan reports/plans/2026-11-20_plan_r-under-a.md):
-#   1. control:  sbatch --comment='E242 control' cluster/kstar_vpd_wording_a.sbatch control --group control
-#   2. built (after 1, --dependency=afterok:<1>): built0 --group built --items new_thin; built1 ... new_few;
-#      built2 ... x2 x10 moved rebuilt
-#   3. once 2 has passed: pairs0..pairs15 --group pairs --shard i 16; e62 --group e62; keys0, keys1 --group keys --shard i 2
+#   1. control0 --group control --items random_size_241001; control1 --group control --items random_kl_241002
+#   2. built (after both, --dependency=afterok:<c0>:<c1>): built0 --items new_thin; built1 --items new_few;
+#      built2 --items x2 x10; built3 --items moved rebuilt (each --group built)
+#   3. once 2 has passed: pairs0..pairs25 --group pairs --shard i 26; e62_0, e62_1 --group e62 --shard i 2;
+#      keys0..keys3 --group keys --shard i 4
 # PRED_SHA below is git show HEAD:experiments/kstar_vpd_wording_a/results/predictions.json | sha256sum (refiled 2026-11-20 ~22:00, P2k added).
 # Afterwards: ~/commute-agents/fleet/cpu-run python3 experiments/kstar_vpd_wording_a/score.py
 #SBATCH --job-name=commute-wording-a

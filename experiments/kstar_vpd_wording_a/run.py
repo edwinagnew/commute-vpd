@@ -5,7 +5,10 @@ run refuses unless committed unchanged. The measurement is commute.stand_in on E
 
 R_A per item, at E226's circuit K* (polished set of each search): the largest share of K* whose variables can take M's
 mechanism, each times its least-squares output gain (positive gains only), all at once, with KL(F || F_S) at the read
-positions, mean over D, within the circuit's allowance (1 - alpha) KL(F || F_all_ablated). Where S is stood in is the
+positions, mean over D, at or under (1 - alpha) KL(F || M): the stand-in keeps alpha of F's change from M (lead, phase
+D). An item whose (1 - alpha) KL(F || M) is at or under the measured floor (stage 0's, or the item's own revert-all
+KL) is not read; the do-nothing reads 1 by definition. R_A_abs, with E226's absolute allowance (1 - alpha)
+KL(F || F_all_ablated) as the bar, is a side reading on the built items and the random controls, not filed. Where S is stood in is the
 setting stand_in_forward: "full" (F's full forward, nothing ablated) or "circuit" (inside F_K*, the rest mean-ablated).
 Unchanged variables stand in exactly; grafts and variables with a gain <= 0 never can. The changed members of K* are
 searched with E226's search code (`kstar_vpd.search`) for the smallest set that must keep F's mechanism; R_A = 1 -
@@ -83,6 +86,7 @@ class Config:  # filed in predictions.json "settings"
     scale_cap: float  # E241's matcher (commute.perturb.match)
     kl_rel_tol: float
     e62: tuple[str, ...]
+    side_tols: tuple[float, ...]  # descriptive tolerances of the relative bar beside 1 - alpha (no filed rule)
 
     def __post_init__(self) -> None:
         assert self.stand_in_forward in ("full", "circuit") and self.eval_cap > 0 and self.reranks >= 0 and self.chunk_div >= 1
@@ -136,6 +140,7 @@ class World(E226.World):
         super().__init__()
         self.cfg, self.sm, self.kg = cfg, None, None
         self.kl_x: dict[str, Any] | None = None  # the KL-matched random's scale, matched once per job
+        self.floor: float | None = None  # the stood-in path's fp32 KL floor, measured in this job's stage 0
 
     def make(self, item: str) -> tuple[R.Model, R.Model, Tensor, slice, dict[str, Any]]:
         if item in E226.E214_ITEMS:
@@ -256,6 +261,18 @@ def logits_at(F: R.Model, at: slice, x: Tensor) -> Tensor:
     return F.logits(x)[:, at]
 
 
+@torch.no_grad()
+def pieces_floor(F: R.Model, feat: KV.Feat, batches: list[Tensor], lF: list[Tensor], at: slice) -> float:
+    """KL(F || F with every decomposed matrix's output recomputed from its pieces, (y V) U + y Delta), mean over the
+    windows: for F = M mathematically 0, so the fp32 rounding floor of writing M's mechanisms through the stood-in path."""
+    hs = [F.net.get_submodule(s.name).register_forward_hook(lambda _m, inp, _o, s=s: (inp[0] @ s.V) @ s.U + inp[0] @ s.rm) for s in feat.sites]
+    try:
+        return float(torch.cat([R.kl(lf, F.logits(x)[:, at]) for x, lf in zip(batches, lF, strict=True)]).mean())
+    finally:
+        for h in hs:
+            h.remove()
+
+
 def controls(si: SI.StandIn, F: R.Model, M: R.Model, feat: KV.Feat, g: Tensor, batches: list[Tensor], lF: list[Tensor], at: slice,
              th: dict[str, Any]) -> tuple[dict[str, Any], list[str]]:  # fmt: skip
     """In F's full forward: every unchanged variable's gain exactly 1; all of them stood in at once leave F's logits
@@ -266,7 +283,7 @@ def controls(si: SI.StandIn, F: R.Model, M: R.Model, feat: KV.Feat, g: Tensor, b
     t[unchanged.to(dev)] = 1
     t0 = time.time()
     out: dict[str, Any] = {"gain_dev_unchanged": float((g[unchanged] - 1).abs().max()), "kl_unchanged_stood_in": SI.kl_mean(si, full, batches, lF, t)}
-    out |= {"seconds_per_eval": time.time() - t0, "revert_all_err": None}
+    out |= {"seconds_per_eval": time.time() - t0, "revert_all_err": None, "revert_all_kl": None}
     changed = torch.tensor(sorted(feat.changed - feat.lacked), dtype=torch.long)
     out["gain_changed_quantiles"] = torch.quantile(g[changed], torch.tensor([0.0, 0.1, 0.5, 0.9, 1.0], dtype=torch.float64)).tolist() if len(changed) else None
     out["nonpositive_gains"] = int((g[changed] <= 0).sum()) if len(changed) else 0
@@ -274,9 +291,16 @@ def controls(si: SI.StandIn, F: R.Model, M: R.Model, feat: KV.Feat, g: Tensor, b
         g_fit, si.g = si.g, torch.ones_like(si.g)
         t = torch.zeros(feat.n, device=dev)
         t[changed.to(dev)] = 1
+        errs, kls = [], []
         with torch.no_grad():
-            errs = [float(((si.run(full, x, t) - (m := M.logits(x)[:, at])).abs().amax((1, 2)) / m.abs().amax((1, 2))).max()) for x in batches]
-        si.g, out["revert_all_err"] = g_fit, max(errs)
+            for x in batches:
+                r, m = si.run(full, x, t), M.logits(x)[:, at]
+                errs.append(float(((r - m).abs().amax((1, 2)) / m.abs().amax((1, 2))).max()))
+                kls.append(R.kl(m, r))
+        # KL(M || every change stood in at gain 1): mathematically 0, so the fp32 floor of the stood-in path on this item
+        si.g, out["revert_all_err"], out["revert_all_kl"] = g_fit, max(errs), float(torch.cat(kls).mean())
+    if not feat.changed:  # the do-nothing (F = M): every matrix's output rebuilt from its pieces, the same floor on M
+        out["pieces_floor"] = pieces_floor(F, feat, batches, lF, at)
     miss = [f"gain of an unchanged variable off 1 by {out['gain_dev_unchanged']:.3g}"] if out["gain_dev_unchanged"] != 0 else []
     miss += [f"KL with every unchanged variable stood in {out['kl_unchanged_stood_in']:.3g}"] if out["kl_unchanged_stood_in"] != 0 else []
     miss += [f"every change reverted: logits off M's by {out['revert_all_err']:.3g}"] if out["revert_all_err"] is not None and not out["revert_all_err"] <= th["revert_tol"] else []
@@ -322,27 +346,48 @@ def read_item(w: World, item: str, cfg: Config, th: dict[str, Any], out: Path) -
     if "half1_in_K_polished" in arrays.files:  # the six built items: E226's two halves of D, same permutation
         perm = torch.randperm(len(toks), generator=torch.Generator().manual_seed(c226.split_seed))
         variants |= {"half1": perm[: len(toks) // 2], "half2": perm[len(toks) // 2 :]}
-    searches, keeps = {}, {}
+    searches: dict[str, dict[str, Any]] = {}
+    keeps: dict[str, Any] = {}  # per search, which variables keep F's mechanism (bool arrays)
     full = partial(logits_at, F, at)
+    floor = max(w.floor or 0.0, base["controls"]["revert_all_kl"] or 0.0)  # the job's stage 0 floor and this item's own
+    side = item in (*cfg.built, cfg.random, cfg.random_kl)  # R_A_abs, the absolute allowance, beside (not filed)
     for k, idx in variants.items():
         sub = ctx if k == "main" else ctx.subset(idx, c226.batch)
         K = np.flatnonzero(arrays[f"{k}_in_K_polished"]).tolist()
-        bar, cK = (1 - c226.alpha) * float(sub.kl_none.mean()), torch.zeros(feat.n, dtype=torch.bool)
+        bar_abs, cK = (1 - c226.alpha) * float(sub.kl_none.mean()), torch.zeros(feat.n, dtype=torch.bool)
         cK[K] = True
-        kl_K = KV.kl_mean(sub, cK)
-        if not kl_K <= bar * (1 + th["kl_repro_rel"]):
-            stop(out / f"{fname(item)}.stopped.json", base, f"{item} {k}: the saved K* gives KL {kl_K:.9g} over its bar {bar:.9g}")
+        kl_K, kl_fm = KV.kl_mean(sub, cK), float(sub.kl_fm.mean())
+        if not kl_K <= bar_abs * (1 + th["kl_repro_rel"]):
+            stop(out / f"{fname(item)}.stopped.json", base, f"{item} {k}: the saved K* gives KL {kl_K:.9g} over its bar {bar_abs:.9g}")
+        bar = (1 - c226.alpha) * kl_fm  # the relative bar: the stand-in keeps (alpha) of F's change from M
+        info = {"kl_at_K": kl_K, "kl_fm": kl_fm, "floor": floor, "bar_abs": bar_abs}
+        if item != "do_nothing" and not bar > floor:
+            log(f"  {item} {k}: not read, (1 - alpha) KL(F || M) {bar:.3g} at or under the measured floor {floor:.3g}")
+            searches[k], keeps[k] = info | {"R_A": None, "reading": "not read: (1 - alpha) KL(F || M) at or under the floor", "bar": bar}, np.zeros(feat.n, dtype=bool)
+            continue
         cKd = cK.to(toks.device, torch.float32)
         fwd = full if cfg.stand_in_forward == "full" else (lambda x, cKd=cKd, hy=ctx.hy: hy.logits(x, cKd))  # inside the circuit: the rest ablated
         rd = Read(si, fwd, sub.toks, list(torch.cat(lF)[idx.to(toks.device)].split(c226.batch)))
         searches[k], keeps[k] = stand_in_search(rd, feat, g, K, bar, cfg, f"{item} {k}")
-        searches[k]["kl_at_K"] = kl_K
+        searches[k] |= info
+        if k != "main" or item == "do_nothing":
+            continue
+        if side:
+            a, keeps["main_abs"] = stand_in_search(rd, feat, g, K, bar_abs, cfg, f"{item} {k} (absolute allowance, side reading)")
+            searches[k] |= {"R_A_abs": a["R_A"], "abs": a}
+        for tol in cfg.side_tols:  # descriptive: the relative bar at other tolerances, the same floor rule
+            if not tol * kl_fm > floor:
+                searches[k] |= {f"R_A_tol{tol:g}": None}
+                continue
+            a, keeps[f"main_tol{tol:g}"] = stand_in_search(rd, feat, g, K, tol * kl_fm, cfg, f"{item} {k} (tolerance {tol:g}, side reading)")
+            searches[k] |= {f"R_A_tol{tol:g}": a["R_A"], f"tol{tol:g}": a}
     (RESULTS / "large").mkdir(parents=True, exist_ok=True)
     np.savez_compressed(RESULTS / "large" / f"{out.name}_{fname(item)}.npz", gain=g.numpy(), changed=np.isin(np.arange(feat.n), sorted(feat.changed)),
                         **{f"{k}_keeps_F": v for k, v in keeps.items()})  # fmt: skip
     res = base | {"reading": "read", "searches": searches, "seconds": time.time() - t0, "peak_gpu_gb": torch.cuda.max_memory_allocated() / 2**30}
     dump(path, res)
-    log(f"{item}: done in {res['seconds']:.0f} s; R_A main {searches['main']['R_A']:.6f}, old R {base['R_old']:.6f}; peak GPU {res['peak_gpu_gb']:.2f} GB")
+    m = searches["main"]
+    log(f"{item}: done in {res['seconds']:.0f} s; R_A main {m['R_A']}, R_A_abs {m.get('R_A_abs')}, old R {base['R_old']:.6f}; peak GPU {res['peak_gpu_gb']:.2f} GB")
     si.close()
     ctx.hy.close()
     del ctx, si, F
@@ -356,14 +401,18 @@ def read_item(w: World, item: str, cfg: Config, th: dict[str, Any], out: Path) -
 def stage0(w: World, cfg: Config, th: dict[str, Any], tag: str, n_searches: int) -> None:
     path = RESULTS / f"stage0_{tag}.json"
     if path.is_file() and json.loads(path.read_text()).get("done"):
-        log(f"{path.name}: done before")
+        w.floor = json.loads(path.read_text())["kl_floor"]
+        log(f"{path.name}: done before; floor {w.floor:.3g}")
         return
     it = read_item(w, "do_nothing", cfg, th, RESULTS / f"stage0_{tag}")
     m, c = it["searches"]["main"], it["controls"]
     hours = c["seconds_per_eval"] * cfg.eval_cap * n_searches / 3600
+    w.floor = max(c["pieces_floor"], c["revert_all_kl"] or 0.0)
     out = {"experiment": EXPERIMENT, "R_A": m["R_A"], "n_changed": it["n_changed"], "evals": m["evals"], "kl_unchanged_stood_in": c["kl_unchanged_stood_in"],
-           "gain_dev_unchanged": c["gain_dev_unchanged"], "seconds_per_eval": c["seconds_per_eval"], "projected_hours_max": hours}  # fmt: skip
+           "gain_dev_unchanged": c["gain_dev_unchanged"], "seconds_per_eval": c["seconds_per_eval"], "projected_hours_max": hours,
+           "pieces_floor": c["pieces_floor"], "kl_floor": w.floor}  # fmt: skip
     miss = [f"do-nothing: {out}"] if not (it["n_changed"] == 0 and m["R_A"] == 1 and m["evals"] == 0) else []
+    miss += [f"floor {w.floor:.3g} over floor_max {th['floor_max']:.3g}"] if not w.floor <= th["floor_max"] else []
     miss += [f"projected up to {hours:.1f} h over {th['shard_hours_max']} h"] if hours > th["shard_hours_max"] else []
     log(f"stage 0: {json.dumps(out)}; {'checks hold' if not miss else 'MISSES ' + '; '.join(miss)}")
     if miss:
@@ -395,7 +444,8 @@ def main(group: str, chosen: list[str] | None, shard: tuple[int, int], tag: str)
     log(f"{EXPERIMENT} start, group {group}, tag {tag}; {len(todo)} items {todo}; settings {asdict(cfg)}; thresholds {th}")
     w = World(cfg)
     w.bases = KV.bases(w.uv, E226.load_config()[0].split_tol)
-    stage0(w, cfg, th, tag, sum(3 if i in cfg.built else 1 for i in todo))
+    side = (*cfg.built, cfg.random, cfg.random_kl)  # + the absolute side reading; + the halves for the built items
+    stage0(w, cfg, th, tag, sum(1 + len(cfg.side_tols) + (i in side) + 2 * (i in cfg.built) for i in todo))
     for k, item in enumerate(todo):
         read_item(w, item, cfg, th, RESULTS / "items")
         log(f"ITEM {k + 1} of {len(todo)} DONE ({item})")
