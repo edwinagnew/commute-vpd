@@ -1,0 +1,46 @@
+0.9755	experiments/kstar_vpd/results/summary.json	.R1.R.x10	this
+0.9963	experiments/kstar_vpd/results/summary.json	.R1.R.new_thin	this
+-0.021	experiments/kstar_vpd/results/summary.json	.R1.gap	this
+0.021	experiments/kstar_vpd/results/summary.json	-.R1.gap	this
+0.0010	experiments/kstar_vpd/results/summary.json	.band.band	this
+0.9989	experiments/kstar_vpd/results/summary.json	.moved.R	this
+0.9966	experiments/kstar_vpd/results/items/new_few.json	.searches.main.polished.R_all	this
+0.9967	experiments/kstar_vpd/results/items/new_thin.json	.searches.main.polished.R_all	this
+0.9992	experiments/kstar_vpd/results/summary.json	.R1.R.x2	this
+0.9954	experiments/kstar_vpd/results/summary.json	.R1.R.rebuilt	this
+0.9942	experiments/kstar_vpd/results/summary.json	.R1.R.new_few	this
+0.0886	experiments/kstar_vpd/results/items/x2.json	.searches.main.polished.f	this
+0.0931	experiments/kstar_vpd/results/items/x10.json	.searches.main.polished.f	this
+0.0878	experiments/kstar_vpd/results/items/moved.json	.searches.main.polished.f	this
+0.3742	experiments/kstar_vpd/results/items/rebuilt.json	.searches.main.polished.f	this
+0.2717	experiments/kstar_vpd/results/items/new_few.json	.searches.main.polished.f	this
+0.1112	experiments/kstar_vpd/results/items/new_thin.json	.searches.main.polished.f	this
+0.9911	experiments/kstar_vpd/results/items/x2.json	.searches.main.polished.rho_read	this
+0.7368	experiments/kstar_vpd/results/items/x10.json	.searches.main.polished.rho_read	this
+0.9874	experiments/kstar_vpd/results/items/moved.json	.searches.main.polished.rho_read	this
+0.9876	experiments/kstar_vpd/results/items/rebuilt.json	.searches.main.polished.rho_read	this
+0.9788	experiments/kstar_vpd/results/items/new_few.json	.searches.main.polished.rho_read	this
+0.9668	experiments/kstar_vpd/results/items/new_thin.json	.searches.main.polished.rho_read	this
+0.9993	experiments/kstar_vpd/results/items/x2.json	.searches.half1.polished.R_read	this
+0.9752	experiments/kstar_vpd/results/items/x10.json	.searches.half1.polished.R_read	this
+0.9751	experiments/kstar_vpd/results/items/x10.json	.searches.half2.polished.R_read	this
+0.9953	experiments/kstar_vpd/results/items/rebuilt.json	.searches.half1.polished.R_read	this
+0.9952	experiments/kstar_vpd/results/items/rebuilt.json	.searches.half2.polished.R_read	this
+0.9940	experiments/kstar_vpd/results/items/new_few.json	.searches.half1.polished.R_read	this
+0.9936	experiments/kstar_vpd/results/items/new_few.json	.searches.half2.polished.R_read	this
+0.9965	experiments/kstar_vpd/results/items/new_thin.json	.searches.half1.polished.R_read	this
+0.9955	experiments/kstar_vpd/results/items/new_thin.json	.searches.half2.polished.R_read	this
+0.9949	experiments/kstar_vpd/results/converge/new_thin.json	.read.polished.R_read	this
+0.9772	experiments/kstar_vpd/results/converge/x10.json	.read.polished.R_read	this
+-0.0177	experiments/kstar_vpd/results/converge/x10.json + experiments/kstar_vpd/results/converge/new_thin.json	.[0].read.polished.R_read - .[1].read.polished.R_read	this
+0.7138	experiments/kstar_vpd/results/items/x10.json	.kl_fm	this
+0.9970	experiments/kstar_vpd/results/summary.json	[.per_item | to_entries[] | select(.key|test("/")) | .value.R_read] | min	this
+0.9997	experiments/kstar_vpd/results/summary.json	[.per_item | to_entries[] | select(.key|test("/")) | .value.R_read] | max	this
+0.00056	experiments/kstar_vpd/results/summary.json	[.pairs.gaps.read[]] | max	this
+0.87	experiments/kstar_vpd/results/summary.json	.pairs.vs_minus_size.rho	this
+-0.02	experiments/kstar_vpd/results/summary.json	.pairs.vs_S3.rho	this
+0.00025	experiments/kstar_vpd/results/summary.json	.moved.graft_share	this
+0.25	experiments/kstar_vpd/results/stage0_pod0.json	.seconds_per_eval	this
+0.7	experiments/kstar_vpd/results/predictions.json	.thresholds.rho_bar	this
+0.002	experiments/kstar_vpd/results/converge/x10.json + experiments/kstar_vpd/results/items/x10.json	.[0].read.polished.R_read - .[1].searches.main.polished.R_read	this
+0.995	experiments/kstar_vpd/results/summary.json	[.per_item | to_entries[] | select((.key|test("/")) or .key=="x2" or .key=="moved" or .key=="rebuilt") | .value.R_read] | min	this

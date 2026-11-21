@@ -182,6 +182,32 @@ sides (−$25).
 - The timing stage tries two crosscoders per H100 and adopts it at a gain of 1.5 or more (`score.py timingcheck`).
   The L40 showed 1.09.
 
+## Review (gate 5, 2026-11-20)
+
+Fixes applied (commit given in the hand-back; `experiments/crosscoder_proper/run.py`, `score.py`, `src/commute/crosscoder.py`):
+1. `pod()` drops stage-1 items at a site that failed stage 0, one log line each (`skip <item>: site X failed stage 0`),
+   and runs the rest; it no longer exits for the whole pod.
+2. The k-sweep items `head.A.c0.k*` ignore the site block (reported, never scored). The direction item is still blocked
+   with the other scored items.
+3. `side()` asserts `dW is None` on graft sides, which share `.model` and `.W0` with the base net.
+4. `crosscoder.py`: a comment that a zero change reads specific 0.0 in `parts` but nan in `carried`; behaviour kept.
+5. Appendix "stream" row corrected: the self control uses the elicit stream, the grafted heads use 32-token windows from
+   Pile train rows 0-16,383.
+
+Review notes:
+- The grafted heads change activations about 100x (A) and about 14x (B) more than elicit s0 and raise Pile loss
+  2.71 to 7.45 (A) and 11.30 (B) nats. An S0b pass is therefore not power at pair size. `score.py check0` now prints each
+  head's activation-change energy and clean loss (`spliced.clean_0` to `clean_1`) beside S0b; compare the energy with
+  elicit s0's in the write-up.
+- The Gaussian cannot be matched on both per-matrix norms and activation change (its norms are 8.2x elicit's at A, 17.8x
+  at B). Listed as a departure in the write-up.
+- The do-nothing specific part reads 0.0, not nan, so the predictions' edge-case reasoning for "do-nothing as a side"
+  is wrong; no effect in run 1. Fix it in run 2's own predictions (the filed file is unchanged).
+- The H100 per-item cost is to be recomputed from the first pod's timing before stage 1.
+- The S0b bar question (the filed 0.5 specific part against the cell's "latents on every seed") goes to whip-lead; the bar
+  is unchanged.
+- Hand-back commands that `tee` into `results/run1/` start with `mkdir -p experiments/crosscoder_proper/results/run1 &&`.
+
 ## Not run
 
 Diff-SAE, Delta-Crosscoder and dedicated-feature crosscoders. Sites other than A and B. Seeds beyond 3 a side. Qwen.
