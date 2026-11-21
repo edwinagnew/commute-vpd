@@ -13,14 +13,17 @@ against E237's stage1.json before it is read. Readings, each the function that w
 Stages, each writing as it goes; a rerun skips what is written:
   neuron I/N  (a) do-nothing: every gain and numerator exactly 0; (b) the control state at c = 1 repeats E147's saved
               readings; then items[I::N]                                                  -> <out>/neuron.json
-  xc I/N      shard N-1 first runs the do-nothing crosscoder (E203's stage 0a, on the control state's task text);
-              then items[I::N], each with E203's FVE and dead-share bars; the two items E203 already read at the
-              same state and c (copy_s0 at 1, prior_cipher_s0 at 0.78) repeat its d within E203's reseed bar
-                                                                                          -> <out>/crosscoder/sides/
+  xc controls I/3   first and alone, one item a pod: 0 the do-nothing crosscoder (E203's stage 0a, on the control
+              state's task text), 1 copy_s0 at c 1 and 2 prior_cipher_s0 at c 0.78, the two items E203 already read
+              at the same state and c, whose d repeats E203's within its reseed bar (a stop) and within the filed
+              surprise bar (reported loudly, not a stop)                         -> <out>/crosscoder/controls_I_3.json
+  xc I/N      after all three controls pass: every N-th of the other 28 items from the I-th, each with E203's FVE
+              and dead-share bars                                 -> <out>/crosscoder/sides/, shard_I_N.json
   --rehearse  E203's rehearsal crosscoder sizes; everything under results/rehearsal/
 
     PRED_SHA=<sha> python experiments/key_grid_baselines/run.py neuron 0/1
-    PRED_SHA=<sha> python experiments/key_grid_baselines/run.py xc 0/4          (and 1/4, 2/4, 3/4: one pod each)
+    PRED_SHA=<sha> python experiments/key_grid_baselines/run.py xc controls 0/3   (and 1/3, 2/3: one pod each)
+    PRED_SHA=<sha> python experiments/key_grid_baselines/run.py xc 0/8            (to 7/8: one pod each)
 """
 
 from __future__ import annotations
@@ -47,6 +50,7 @@ from commute.jobs import (
     load_experiment,
     require_filed,
 )
+from commute.open_pair import jsonable
 
 KG: Any = load_experiment("key_grid", "run")  # E237: load_config, World.random, DO_NOTHING, fname, log/dump/stop; E205, R96
 HF: Any = load_experiment("holes_fill", "run")  # E143: Job.neuron (the top-neuron share), lo_at
@@ -92,13 +96,17 @@ class Items:
         d = torch.load(REPO / self.inv["states"][state]["file"], weights_only=True)
         return {k: v.float() for k, v in d.items()}
 
+    def c_of(self, state: str) -> float:
+        """E237's c for the state's task (stage0.json)."""
+        return self.c[self.task(state).removeprefix("e58/")]
+
     def change(self, item: str) -> tuple[str, dict[str, Tensor], float]:
         """The item's state, its change and c, as E237 builds them (key_grid World.update, then E205.SM.times)."""
         if item == KG.DO_NOTHING:
             s = self.cfg.control_state
             return s, KG.E205.SM.times(self.saved(s), 0.0), 0.0
         s = item.removeprefix("random_").removesuffix("_scaled")
-        c, d = self.c[self.task(s).removeprefix("e58/")], self.saved(s)
+        c, d = self.c_of(s), self.saved(s)
         if item.startswith("random_"):
             d = KG.World.random(SimpleNamespace(cfg_e237=self.cfg), s, d)  # E237's draw: seed random_seed + index
         return s, KG.E205.SM.times(d, c), c
@@ -198,6 +206,36 @@ def neuron(out_dir: Path, cfg: Config, th: dict[str, Any], items: Items, shard: 
 # ---- the crosscoder ---------------------------------------------------------------------------------------------------
 
 
+def mkdirs(*dirs: Path) -> None:
+    """Make the output directories. results/large is a symlink into ~/commute-data and arrives on a pod dangling: the
+    runner replaces it with a real directory there; until then this stops naming it."""
+    large = RESULTS / "large"
+    if large.is_symlink() and not large.exists():
+        raise SystemExit(f"{large} is a dangling symlink (to {large.readlink()}): on a pod, rm it and mkdir a real directory")
+    for d in dirs:
+        d.mkdir(parents=True, exist_ok=True)
+
+
+# The control stage: E203's stage 0a (the do-nothing crosscoder), then the two items E203 already read at the same state
+# and c, whose d must repeat E203's saved side's (E203 experiments/crosscoder/results/run2/sides: e58__copy_s0 at c 1,
+# e58__prior_cipher_s0__matched_e58_copy_prior_cipher at E237's prior_cipher c). One item per pod; `xc I/N` reads the rest.
+CONTROLS = (KG.DO_NOTHING, "e58/copy_s0_scaled", "e58/prior_cipher_s0_scaled")
+REPEATS = {"e58/copy_s0_scaled": ("e58/copy_s0", 1.0), "e58/prior_cipher_s0_scaled": ("e58/prior_cipher_s0", 0.7798162499214973)}
+
+
+def repeat_refs(items: Items) -> dict[str, float]:
+    """E203's saved d for each repeat item, matched by exact (state, c). Stops unless the matches between our scaled
+    items and E203's sides are exactly REPEATS and both are there."""
+    sides = {(s["state"], s["c"]): s["d"] for s in (read(p) for p in sorted((E203 / "sides").glob("e58__*.json")))}
+    want = set(REPEATS.values())
+    if missing := sorted(want - sides.keys()):
+        raise SystemExit(f"E203's saved sides lack the repeat keys {missing}: the repeat control has no reference")
+    got = {(s, items.c_of(s)) for s in items.cfg.states()} & sides.keys()
+    if got != want:
+        raise SystemExit(f"our items match E203's sides at {sorted(got)}, not the expected repeats {sorted(want)}")
+    return {item: sides[key] for item, key in REPEATS.items()}
+
+
 def crosscoder_job(items: Items, tag: str, out_dir: Path) -> tuple[Any, dict[str, Any]]:
     """E203's Job on E237's five tasks: its inventory is ours, its control task the control state's task, its outputs
     under out_dir. Everything else is E203's filed run 2 (settings and bars at `tag`)."""
@@ -207,73 +245,115 @@ def crosscoder_job(items: Items, tag: str, out_dir: Path) -> tuple[Any, dict[str
     P = P | {"experiment": EXPERIMENT, "settings": P["settings"] | {"control_task": items.task(items.cfg.control_state)}}
     CCR.SM = SimpleNamespace(pairs=lambda: ({}, {}, items.inv))  # E203's Job loads the tasks and states SM.pairs() names
     CCR.OUT.update(results=out_dir / "crosscoder", sides=out_dir / "crosscoder" / "sides", large=out_dir.parent / "large" / out_dir.name / "crosscoder")
+    mkdirs(*CCR.OUT.values())  # E203's main makes these; its Job does not
     return CCR.Job(P, cfg), P["thresholds"][tag]
 
 
-def crosscoder(out_dir: Path, cfg: Config, th: dict[str, Any], items: Items, shard: tuple[int, int], tag: str) -> None:
+def xc_todo(items: Items, shard: tuple[int, int], controls: bool) -> tuple[list[str], Path]:
+    """`xc controls I/3`: CONTROLS[I]. `xc I/N`: every N-th of the other 28 items from the I-th (E237's order)."""
+    if controls:
+        assert shard[1] == len(CONTROLS), f"xc controls runs as I/{len(CONTROLS)}"
+        return [CONTROLS[shard[0]]], CCR.OUT["results"] / f"controls_{shard[0]}_{shard[1]}.json"
+    rest = [i for i in items.cfg.read_items() if i not in CONTROLS]
+    return rest[shard[0] :: shard[1]], CCR.OUT["results"] / f"shard_{shard[0]}_{shard[1]}.json"
+
+
+def repeat(item: str, d: float, d0: float, T: dict[str, Any], surprise: float) -> dict[str, Any]:
+    """The repeat's record: it stops over E203's reseed bar; over the filed surprise bar it is reported loudly but runs
+    on, since a repeat at the same seed on the same stream should differ only by GPU nondeterminism."""
+    rec = {"d": d, "E203": d0, "diff": abs(d - d0), "stop_bar": T["reseed_d"], "surprise_bar": surprise, "surprise": abs(d - d0) > surprise}
+    if rec["surprise"]:
+        log(f"!!! SURPRISE: repeat {item} differs from E203's saved d by {rec['diff']:.4g} (> {surprise}): tell the lead !!!")
+    return rec
+
+
+def train_item(job: Any, T: dict[str, Any], th: dict[str, Any], items: Items, item: str, ctx: dict[str, Any]) -> dict[str, Any]:
+    """One crosscoder on one item, written as it lands, then E203's FVE and dead-share bars and, for a repeat item,
+    the repeat's stop bar. ctx: out, path, fve_self, refs."""
+    out, path = ctx["out"], ctx["path"]
+    state, dW, c = items.change(item)
+    if item in REPEATS and (state, c) != REPEATS[item]:
+        raise SystemExit(f"{item}: state and c {(state, c)} are not the repeat's {REPEATS[item]}")
+    size = items.size(item, state, dW, job.net.W0, th["size_match_rel"])
+    dev = {n: v.to(job.net.W0[n].device) for n, v in dW.items()}
+    rec = job.run_side(CCR.Side(fname(item), job.reads[items.task(state)], items.task(state), dev), False, False)
+    rec |= {"item": item, "state": state, "c": c, "size": size}
+    if item in REPEATS:
+        rec["repeat"] = out.setdefault("repeat", {})[item] = repeat(item, rec["d"], ctx["refs"][item], T, th["repeat_surprise_d"])
+    dump(CCR.OUT["sides"] / f"{fname(item)}.json", jsonable(rec))
+    f = min(rec["fve_base"], rec["fve_ft"])
+    CCR.check(out, path, f"FVE {item}", f >= ctx["fve_self"] - T["fve_drop"], {"fve": f, "self": ctx["fve_self"], "drop": T["fve_drop"]})
+    CCR.check(out, path, f"dead share {item}", rec["dead"] <= T["dead_max"], {"dead": rec["dead"], "bar": T["dead_max"]})
+    if item in REPEATS:
+        CCR.check(out, path, f"repeat {item}", rec["repeat"]["diff"] <= T["reseed_d"], rec["repeat"])
+    return rec
+
+
+def crosscoder(out_dir: Path, cfg: Config, th: dict[str, Any], items: Items, shard: tuple[int, int], tag: str, controls: bool) -> None:
     job, T = crosscoder_job(items, tag, out_dir)
-    s0 = CCR.OUT["results"] / "stage0a.json"
-    if shard[0] == shard[1] - 1 and not (s0.is_file() and read(s0).get("pass")):
-        log("[xc] the do-nothing first: the base against itself on the control state's task text (E203's stage 0a)")
-        CCR.stage0a(job, T, None)
-    fve_self = read(E203 / "stage1.json")["fve_self"]  # E203's base-against-itself FVE, the bar every side is held to
-    sides = [read(p) for p in sorted((E203 / "sides").glob("e58__*.json"))]
-    ref = {(s["state"], s["c"]): s["d"] for s in sides}  # E203's sides at the same state and c: copy_s0 c 1, prior_cipher_s0 c 0.78
-    path, out, t0 = CCR.OUT["results"] / f"shard_{shard[0]}_{shard[1]}.json", {"experiment": EXPERIMENT, "shard": list(shard)}, time.time()
-    todo = [i for i in shard_items(items, shard) if not (CCR.OUT["sides"] / f"{fname(i)}.json").is_file()]
-    log(f"[xc] shard {shard[0]}/{shard[1]}: {len(todo)} crosscoders to train")
+    todo, path = xc_todo(items, shard, controls)
+    refs = repeat_refs(items)
+    if KG.DO_NOTHING in todo:
+        s0 = CCR.OUT["results"] / "stage0a.json"
+        if not (s0.is_file() and read(s0).get("pass")):
+            log("[xc] the do-nothing: the base against itself on the control state's task text (E203's stage 0a)")
+            CCR.stage0a(job, T, None)
+        todo.remove(KG.DO_NOTHING)
+    out: dict[str, Any] = read(path) if path.is_file() else {"experiment": EXPERIMENT, "controls": controls, "shard": list(shard)}
+    if "stopped" in out:
+        raise SystemExit(f"{path} stopped at {out['stopped']!r}: the lead decides before a rerun")
+    out.pop("pass", None)
+    ctx = {"out": out, "path": path, "fve_self": read(E203 / "stage1.json")["fve_self"], "refs": refs}  # E203's self FVE: every side's bar
+    todo = [i for i in todo if not (CCR.OUT["sides"] / f"{fname(i)}.json").is_file()]
+    log(f"[xc] {'controls' if controls else 'shard'} {shard[0]}/{shard[1]}: {len(todo)} crosscoders to train")
+    t0 = time.time()
     for k, item in enumerate(todo):
-        state, dW, c = items.change(item)
-        size = items.size(item, state, dW, job.net.W0, th["size_match_rel"])
-        dev = {n: v.to(job.net.W0[n].device) for n, v in dW.items()}
-        rec = job.run_side(CCR.Side(fname(item), job.reads[items.task(state)], items.task(state), dev), False, False)
-        dump(CCR.OUT["sides"] / f"{fname(item)}.json", rec | {"item": item, "state": state, "c": c, "size": size})
-        f = min(rec["fve_base"], rec["fve_ft"])
-        CCR.check(out, path, f"FVE {item}", f >= fve_self - T["fve_drop"], {"fve": f, "self": fve_self, "drop": T["fve_drop"]})
-        CCR.check(out, path, f"dead share {item}", rec["dead"] <= T["dead_max"], {"dead": rec["dead"], "bar": T["dead_max"]})
-        if not item.startswith("random_") and (state, c) in ref:
-            d0 = ref[(state, c)]
-            CCR.check(out, path, f"repeat {item}", abs(rec["d"] - d0) <= T["reseed_d"], {"d": rec["d"], "E203": d0, "bar": T["reseed_d"]})
+        rec = train_item(job, T, th, items, item, ctx)
         minutes = (time.time() - t0) / 60 / (k + 1) * len(todo)
-        log(f"[xc {item}] d {rec['d']:.4f} d_wide {rec['d_wide']:.4f} specific {rec['specific']:.4f}; ITEM {k + 1} of {len(todo)} DONE; projected shard minutes {minutes:.0f}")
+        log(f"[xc {item}] d {rec['d']:.4f} d_wide {rec['d_wide']:.4f} specific {rec['specific']:.4f}; ITEM {k + 1} of {len(todo)} DONE; projected minutes {minutes:.0f}")
         CCR.check(out, path, f"projected time after {item}", minutes <= cfg.projected_limit_min, {"minutes": minutes, "bar": cfg.projected_limit_min})
     out["pass"] = True
-    dump(path, out)
-    log("XC DONE")
+    dump(path, jsonable(out))
+    log("XC CONTROLS DONE" if controls else "XC DONE")
 
 
-def main(stage: str, shard: tuple[int, int], rehearse: bool) -> int:
+def main(stage: str, shard: tuple[int, int], controls: bool, rehearse: bool) -> int:
     P = read(PRED)
     if not re.fullmatch(r"E\d+", EXPERIMENT):
         raise SystemExit(f"predictions.json experiment is {EXPERIMENT!r}: the lead claims the E-number (fleet/ecode) first")
     cfg, th = config_from_settings(Config, {k: tuple(v) if isinstance(v, list) else v for k, v in P["settings"].items()}), P["thresholds"]
     torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False  # fp32, as E147 read and E203 trained
     out_dir = RESULTS / ("rehearsal" if rehearse else "run")
-    log(f"{EXPERIMENT} {stage} {shard[0]}/{shard[1]}{' (rehearsal)' if rehearse else ''}; settings {asdict(cfg)}; thresholds {th}")
+    mkdirs(out_dir)
+    name = f"{stage}{' controls' if controls else ''} {shard[0]}/{shard[1]}"
+    log(f"{EXPERIMENT} {name}{' (rehearsal)' if rehearse else ''}; settings {asdict(cfg)}; thresholds {th}")
     items = Items()
     try:
         if stage == "neuron":
             neuron(out_dir, cfg, th, items, shard)
         else:
-            crosscoder(out_dir, cfg, th, items, shard, "rehearsal" if rehearse else "full")
+            crosscoder(out_dir, cfg, th, items, shard, "rehearsal" if rehearse else "full", controls)
     except CCR.Stop as e:
         log(f"STOP: {e}: tell the lead")
         return 1
-    log(f"FINISHED {stage} {shard[0]}/{shard[1]}; peak GPU {torch.cuda.max_memory_allocated() / 2**30:.1f} GB")
+    log(f"FINISHED {name}; peak GPU {torch.cuda.max_memory_allocated() / 2**30:.1f} GB")
     return 0
 
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("stage", choices=["neuron", "xc"])
-    ap.add_argument("shard", help="I/N: every N-th item from the I-th (E237's read_items order)")
+    ap.add_argument("part", nargs="+", help="I/N: every N-th item from the I-th (E237's read_items order); xc also takes 'controls I/3'")
     ap.add_argument("--rehearse", action="store_true")
     a = ap.parse_args()
     require_filed(PRED)
-    i, n = (int(x) for x in a.shard.split("/"))
+    ctl = a.part[0] == "controls"
+    if len(a.part) != 1 + ctl or (ctl and a.stage != "xc"):
+        ap.error("give I/N, or for xc: controls I/3")
+    i, n = (int(x) for x in a.part[-1].split("/"))
     code = 1
     try:
-        code = main(a.stage, (i, n), a.rehearse)
+        code = main(a.stage, (i, n), ctl, a.rehearse)
     except SystemExit as e:
         code = e.code if isinstance(e.code, int) else 1
         if not isinstance(e.code, int):
