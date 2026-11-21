@@ -131,6 +131,22 @@ def dots(ax: Axes, groups: Mapping[str, Sequence[float]], *, method: str, xlabel
         ax.invert_yaxis()
 
 
+def column_dots(ax: Axes, groups: Mapping[str, Sequence[float | None]], *, method: str, ylabel: str,
+                bands: Mapping[str, tuple[float, float] | None] | None = None, band_method: str = "random") -> None:  # fmt: skip
+    """`dots` turned upright: one column per group, in the order given, every value a point (None or NaN skipped).
+    `bands` draws a shaded span per group (min to max of a control, e.g. the random update's draws) behind its points."""
+    style, b, labelled = METHODS[method], METHODS[band_method], False
+    for i, (name, values) in enumerate(groups.items()):
+        band = (bands or {}).get(name)
+        if band is not None:
+            ax.fill_between([i - 0.3, i + 0.3], band[0], band[1], color=b.color, alpha=0.25, linewidth=0, label=None if labelled else b.label)
+            labelled = True
+        shown = [float(v) for v in values if v is not None and not math.isnan(v)]
+        ax.scatter([i] * len(shown), shown, color=style.color, marker=style.marker, s=22, alpha=0.85, linewidths=0)
+    ax.set_xticks(range(len(groups)), list(groups))
+    ax.set_ylabel(ylabel)
+
+
 def reference(ax: Axes, x: float, label: str) -> None:
     """A reference line labelled where it is drawn, not in a legend."""
     ax.axvline(x, color="#777777", linewidth=0.8, linestyle="--")

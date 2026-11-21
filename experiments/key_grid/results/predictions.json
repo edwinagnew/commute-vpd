@@ -1,0 +1,77 @@
+{
+ "experiment": "E237",
+ "cell": "P2.50",
+ "filed": "2026-11-20",
+ "plan": "reports/plans/2026-11-20_plan_p2-50-key-grid.md",
+ "what": "The five 96-key tasks (E147's saved updates, seeds 0-2, step 30) at ONE common update size, each beside a random update of the same size, read by the re-gating share (log-odds r and KL form), size, effective rank, R at head_mlp, mlp_attn, block, top neurons (p97) and VPD. One graph per reading, tasks on the x-axis by the base model's prior of the trained answer. Nothing is trained; no reuse verdict is given (the definition is under revision, cell P1.1).",
+ "settings": {
+  "tasks": ["copy", "rank1", "elicit", "cipher", "prior_cipher"],
+  "tasks_source": "E147's five 96-key tasks (experiments/refit_96key/results/inventory.json maps): rank1 = 'top' (the base model's own most likely next token), elicit = 'mid' (a token in its top 20)",
+  "seeds": [0, 1, 2],
+  "seeds_source": "every seed E147 saved (dW_<task>_s{0,1,2}.pt, step 30, one recipe)",
+  "control_state": "e58/copy_s0",
+  "control_state_source": "the task with the smallest mean size as E187 measured it (copy 0.00730, experiments/size_matched/results/m67.json); saved readings exist for it at every reading this run repeats (E228 states/e58_copy_s0.json, E221 items/e58-copy_s0_<level>.json)",
+  "split_seed": 186001,
+  "split_seed_source": "E228's split_seed (experiments/random_kl_share/results/predictions.json), so the halves are E228's halves",
+  "split_tol": 1e-06,
+  "split_tol_source": "E228's split_tol (commute.split.bases' default)",
+  "random_seed": 237001,
+  "random_seed_source": "new; state i of Config.states() draws its direction with random_seed + i. The construction is E228's (commute.finetune.random_direction: each matrix a Gaussian at the state's own per-matrix Frobenius norm), so a direction has its state's size matrix by matrix; times the state's c it has the scaled state's size exactly (user 2026-11-20 17:20: random control scaled to the same weight-norm size, at least 3 draws: here 3 per task, one per seed)",
+  "band": "p97",
+  "band_source": "E229's main band (experiments/topk_upper/results/predictions.json main_band); E229's filed settings are used unchanged for the top-neuron read, E221's for the coarse levels, E226's for VPD"
+ },
+ "matched_size_rule": "size = ||dW|| / ||W0|| over the 24 decomposed matrices (E187's, computed by E205's sizes). Target = the smallest of the five task means over seeds; c_task = target / task mean; every state of a task and its random control are multiplied by c_task. The smallest task (c = 1) is read as saved. Expected from E187's sizes: copy smallest (0.007302), c rank1 0.920, cipher 0.752, prior_cipher 0.7798 (E187's own c for that pair, so prior_cipher's scaled states are E187's and E232's), elicit not measured before (stage 0 finds it; if it is the smallest the target moves to it and every c changes; no rule depends on which task is the target).",
+ "thresholds": {
+  "share_repro_tol": 0.001,
+  "R_repro_tol": 1e-05,
+  "size_match_rel": 1e-06,
+  "erank_rel": 1e-06,
+  "kind_gap_min": 0.17,
+  "topk_range": [0.95, 0.9995],
+  "vpd_range": [0.998, 0.99999],
+  "thresholds_source": "share_repro_tol: the largest gap measured between two code paths reading r on the same rows of these 15 states, 7.9e-4 (E228's re-read against E147's saved r, rank1_s1, experiments/random_kl_share/results/states), rounded up; here the path is E228's own, so a miss is a wrong state, row set or split. R_repro_tol: E221's repro_tol (E232 repeated E221's items with difference 0, experiments/kstar_size_matched/results/stage0_pod*.json). size_match_rel: E232's (the same function on the same tensors times one scalar). erank_rel: E187's (erank is scale-free; E187 measured scaled/unscaled 1 - 4e-11). kind_gap_min: half the smallest of the six saved r gaps between {copy, rank1, elicit} and {cipher, prior_cipher}, elicit - prior_cipher 0.349 (E228 states, task means). topk_range: E229's filed P1 range (its 20 trained items read 0.988-0.998). vpd_range: E226's e58 items read 0.99890-0.99938 (experiments/kstar_vpd/results/items/e58-*.json); the upper end 0.99999 puts the do-nothing (exactly 1) outside."
+ },
+ "stage0_expected": {
+  "do_nothing_share": "control state times 0: r's numerator, gain and K00-K0, K01-K0, K10-K00, K11-K01 all exactly 0; r is NaN (gain 0 is under commute.realistic_reads.ratio's 1 log-odds). A miss stops.",
+  "do_nothing_coarse": "control state times 0 at head_mlp, mlp_attn, block: n_changed 0, f 0, R_read and R_all 1 and every s within E221's s_tol (1e-6) of 1 (E232 read exactly these on its do-nothing). A miss stops.",
+  "repeat_share": "control state at c = 1: r 0.770580, kl_share 1.001301 (E228 states/e58_copy_s0.json own), each within share_repro_tol. A miss stops.",
+  "repeat_coarse": "control state at c = 1: R_read head_mlp [0.984033, 0.982005, 0.982260] (|K*| 16 each), mlp_attn 0.988996 (|K*| 9), block 0.980963 (|K*| 6) (E221 items/e58-copy_s0_<level>.json), same K* and within R_repro_tol. A miss stops.",
+  "topk_w0": "stage 3 first: E217's w0 at p97 on the control state's windows: 0 changed, s within 1e-6 of 1, gates within 1e-3, overlap 1. A miss stops.",
+  "vpd_do_nothing": "stage 4 first: control state times 0: n_changed 0, R_read and R_all 1 and f 0 for the prefix and polished K*, unchanged s within E226's s_tol. A miss stops.",
+  "construction": "stage 1 stops if a scaled state's erank differs from its saved erank by over erank_rel, or a task's scaled or random mean size differs from the target by over size_match_rel."
+ },
+ "expected_at_common_size": {
+  "r": "task means as saved (E228): copy 0.771, rank1 0.856, elicit 0.728, cipher 0.300, prior_cipher 0.378; scaled down they fall a little (E187: cipher 0.300 to 0.280 at c 0.817; prior_cipher at c 0.7798: 0.3669, 0.3664, 0.3705). Random: NaN (E228's random draws at 13-16 times this size moved the trained answer by -0.42 to 0.33 log-odds, under the 1 log-odds floor), so r has no band.",
+  "kl_share": "as saved (E228): copy 0.9995, rank1 0.9844, elicit 0.9811, cipher 0.9364, prior_cipher 0.9430; random at 13-16 times this size (E228's KL-matched draws on the copy, cipher, prior_cipher rows): 0.974-0.982; at this size not measured.",
+  "R_coarse": "as saved (E221, means over seeds): block copy 0.9809, rank1 0.9821, cipher 0.9661, prior_cipher 0.9717; at copy's size prior_cipher reads block 0.9816-0.9831, head_mlp 0.9864-0.9871, mlp_attn 0.9878-0.9887 (E232, the same scaled states). R rises as an update is scaled down (E232: cipher block 0.966 to 0.976 at c 0.817). Random: not measured before.",
+  "R_topk": "not read before on these states; E229's trained items read 0.988-0.998 at p97.",
+  "R_vpd": "as saved (E226): copy 0.99935-0.99938, rank1 0.99932-0.99936, cipher 0.99890-0.99893, prior_cipher 0.99909-0.99910.",
+  "erank": "as saved (E187): cipher 402-407, prior_cipher 405-408; the rest not read before; equal scaled and as saved by construction. Random: each matrix a Gaussian, whose singular values spread over the whole spectrum, so its erank sits near the matrix's full width, above any trained update's.",
+  "size": "every task's mean equals the target by construction; each random draw equals its state's scaled size (per-matrix norms equal).",
+  "prior": "log10 of the saved prior (experiments/prior_vs_share/results/stage1.json e58_96_<task>.prior): cipher -5.86, prior_cipher -4.43, copy -4.23, elicit -2.88, rank1 -1.90; the x-axis order, one value per task, no band (a weight change does not move the base model's prior)."
+ },
+ "rules": {
+  "placement": "Where prior_cipher sits on a reading, from the three seeds of prior_cipher, cipher and copy at the common size: 'with cipher' when |mean pc - mean cipher| < |mean pc - mean copy| and pc and copy separate by E51's rule (commute.elicit.separation, min_gap 0: |gap of means| strictly over the larger seed range); 'with copy' when nearer copy and pc and cipher separate; otherwise 'no call'; 'unreadable' when any of the nine seeds is missing or not finite. prior_cipher's prior is 1.6 times under copy's and 22 times over cipher's: a reading that tracks the prior puts it with copy; one that tracks the task's kind (a cipher of the key) puts it with cipher. Edge cases: the do-nothing (every R exactly 1) reads 'no call' (distances 0 and 0, not strictly smaller); equal distances read 'no call'; a zero seed range on both sides separates on any non-zero gap.",
+  "kind_gap": "E51's rule with min_gap kind_gap_min (0.17) on r for each of the six cells {copy, rank1, elicit} x {cipher, prior_cipher}: 'a_higher' when the first task's mean is higher by over both the larger seed range and 0.17. An unreadable seed fails the cell.",
+  "against_band": "A task's three seeds all below its random band's minimum ('below') or all above its maximum ('above'); None when the band or a seed is not read.",
+  "spearman": "Reported, no rule: Spearman's rank correlation over the five task means of each reading against log10 prior (n = 5: a perfect order happens by chance once in 120). As saved, r's order gives 0.9 (copy and elicit swap)."
+ },
+ "predictions": {
+  "P1": {"what": "r: placement of prior_cipher", "lean": "with cipher", "expected": "mean distance to cipher about 0.09, to copy about 0.40 (scaled values above)", "rival_a": "with cipher (kind)", "rival_b": "with copy (prior), the copy minus prior_cipher gap under 0.1"},
+  "P2": {"what": "r: kind_gap on all six cells", "lean": "all six 'a_higher'", "expected": "smallest cell elicit - prior_cipher about 0.35", "rival_b": "copy - prior_cipher fails (under 0.17)"},
+  "P3": {"what": "kl_share: placement of prior_cipher", "lean": "with cipher", "expected": "distance to cipher about 0.007, to copy about 0.057; seed ranges under 0.005"},
+  "P4": {"what": "kl_share against the random band", "lean": "cipher and prior_cipher below their bands, copy above its band", "expected": "band near 0.97-0.98 if the KL-matched draws carry to this size", "blind_to": "a band that moves with size: E228's draws were 13-16 times larger; this is the first read at the tasks' own weight norm"},
+  "P5": {"what": "R at head_mlp, mlp_attn, block: placement of prior_cipher", "lean": "block: with copy; head_mlp, mlp_attn: no lean", "expected": "block prior_cipher 0.982 (E232), copy 0.981 (E221), cipher at copy's size higher than E232's 0.976 at c 0.817", "note": "if the share puts prior_cipher with cipher and R with copy, the share tracks the kind of task and R the prior or the size; both with cipher, both track the kind"},
+  "P6": {"what": "R at top neurons and at VPD: every task seed inside topk_range and vpd_range; placement reported", "lean": "no value out of range; placement no lean", "expected": "ranges as filed (E229, E226)"},
+  "P7": {"what": "erank against the random band", "lean": "every task's seeds below its random band", "expected": "tasks near 400 (E187), random above"}
+ },
+ "blind_to": {
+  "r": "changes that leave the trained answer's log-odds alone (r is NaN under a gain of 1 log-odds, so the random update has no r band)",
+  "kl_share": "which tokens the KL moves on: it sums over every position up to the read position",
+  "R": "a mechanism outside the featurization's variables; R rises with a smaller update at every level (E232), which is why every task is read at one size",
+  "size_erank": "everything but the weights: no forward pass",
+  "prior": "the update: one number per task from the base model"
+ },
+ "noise_floor": "seed range per task (three seeds); E228's pooled seed sd of r over these five tasks 0.0124 (card), its split-half band of r 0.0465 and of kl_share 0.0053 (experiments/random_kl_share/results/score.json bands); coarse R seed ranges as saved 0.0003-0.0024 (E221 items).",
+ "positive_control": "the repeats at c = 1 (stage 0): the same reader on the same state must reproduce the saved readings; and r on copy against cipher separates as saved (0.47 apart, seed ranges under 0.02)."
+}

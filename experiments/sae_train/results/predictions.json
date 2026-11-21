@@ -22,8 +22,8 @@
   "threshold_beta": 0.999,
   "threshold_start": 1000,
   "auxk_alpha_source": "batch_top_k.py:107-111 and 152-153 defaults (auxk 1/32, dead after 10M tokens, threshold EMA 0.999 from step 1000), not overridden by demo_config.py:306-320",
-  "buffer_tokens": 250000,
-  "buffer_tokens_source": "SAEBench App. B (buffer of 250,000 activations, refilled half empty); demo.py:63",
+  "buffer_tokens": 409600,
+  "buffer_tokens_source": "SAEBench App. B uses 250,000 activations, refilled half empty (demo.py:63); raised to 409,600 here so the 100 normalisation batches (204,800 tokens) fit in half a buffer, as run.py asserts (E234 rehearsal 2026-11-20); a memory-only departure",
   "refresh_rows": 128,
   "refresh_rows_source": "ours: rows per forward when the buffer refills (the source's llm_batch_size 64 x 1,024 tokens = 65k tokens; 128 x 511 = 65k)",
   "norm_batches": 100,
@@ -56,12 +56,12 @@
   "n_states": 68,
   "sizes": {
    "rehearse": {"tokens": 4000000, "dead_tokens": 1000000, "check_step": 1000, "ckpt_every": 500, "log_every": 50,
-                "n_known": 1, "n_states": 1},
+                "n_known": 1, "n_states": 1, "ce_increase_max": 2.0},
    "dry": {"width": 64, "k": 4, "lr": 0.003, "batch": 256, "tokens": 56320, "warmup": 5, "threshold_start": 5, "dead_tokens": 2048,
            "buffer_tokens": 2044, "refresh_rows": 2, "norm_batches": 2, "eval_rows": 2, "eval_batch": 2,
            "task_windows": 2, "ckpt_every": 100, "log_every": 50, "check_step": 210, "dead_max": 1.0,
            "fve_min": -1000.0, "ce_increase_max": 1000.0, "do_nothing_tol": 1.0, "n_known": 1, "n_states": 1},
-   "sizes_source": "rehearse: 4M tokens (1,953 steps; 2M = 976 steps is under the 1,000 warm-up steps, which the schedule refuses), a 1M-token dead window so the aux loss runs, one known item (new_few) and one E187 state; dry: a CPU shape check only, its numbers mean nothing"
+   "sizes_source": "rehearse: 4M tokens (1,953 steps; 2M = 976 steps is under the 1,000 warm-up steps, which the schedule refuses), a 1M-token dead window so the aux loss runs, one known item (new_few) and one E187 state, and a CE-increase stop of 2.0 nats (the 4M-token SAEs read 0.04-0.87 in rehearsal 2, 2026-11-20; the stop guards the scored size only, which keeps 0.5); dry: a CPU shape check only, its numbers mean nothing"
   }
  },
  "expected": {
