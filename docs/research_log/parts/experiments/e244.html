@@ -1,0 +1,18 @@
+<article class="exp" id="e244">
+<div class="top"><span class="id">E244</span><span class="chip mixed">mixed</span><h3>Do the neuron shares and the crosscoder sort the five key tasks the way the log-odds share does?</h3><span class="when">2026-11-21 · cell P2.52 (filled), no independent check · <code>experiments/key_grid_baselines</code></span></div>
+<p class="one"><strong>The question.</strong> Part 2 sets the project's cheap baselines against the re-gating share. On the five key tasks of <a href="#e237">E237</a> the log-odds share puts the prior-matched cipher with the cipher and far below copy. Do the neuron shares and the crosscoder sort the tasks the same way, or does either one tell them apart differently?</p>
+<p class="one"><strong>What we did.</strong> On the same fifteen fine-tunes (five tasks, three seeds, every update shrunk to one weight size) and the same random updates, we read two baselines. The neuron shares keep only the most active neurons of the original model, or read its output weights against the fine-tuned model's firing, and ask what share of the trained answer's gain that carries. The crosscoder is one sparse dictionary trained on the original and fine-tuned activations together, read as the share of the change carried by latents both models use.</p>
+<p class="one"><strong>What we found.</strong> The neuron shares set copy apart (whole-width share 0.58 to 0.61 against 0.65 to 0.72 for the other four tasks), and only the top 64 neurons put the prior-matched cipher with the cipher, yet they carry under 0.03 of the gain on every task. The crosscoder does not read these updates: seeds of one task differ by up to 0.43 (copy 0.056, 0.488, 0.489), and 13 of the 15 fine-tunes read below their matched random band. Controls held exactly.</p>
+<p class="one"><strong>What it means.</strong> Neither baseline reproduces the log-odds share's split of the two ciphers from the other tasks, so on these tasks both stay comparison columns for the share. The expected crosscoder value for copy came from one seed (E203). Nothing here is a reuse verdict.</p>
+<figure><img src="fig/e237_columns.png" alt="Every reading for the five key tasks beside random updates"><figcaption><strong>Do the baselines sort the tasks as the share does? Not on these tasks.</strong> The last four panels of the key-task figure are this run's: the three neuron shares and the crosscoder, each beside its random updates.</figcaption></figure>
+<dl class="fields">
+<dt>Run</dt><dd>MATS cluster and pod runs on E237's rebuilt fine-tunes; neuron shares at $0, one crosscoder per fine-tune plus the original model against itself (pods l0 to l3).</dd>
+<dt>Found</dt><dd><ul>
+<li>Neuron shares: copy is set apart on the whole-width and top-64 shares, and the prior-matched cipher reads with the cipher only at 64 neurons, where every task carries under 0.03 of the gain.</li>
+<li>Crosscoder: seed spreads of 0.43 on copy, 0.38 on top and 0.12 on the cipher, so no task is set apart; its random band is 0.515 to 0.728.</li>
+<li>Four filed expectations missed (matched-width random numerators, one random crosscoder reading, copy and top seeds); all rest on one earlier seed or an unbounded numerator, and the controls repeated E147 and E203 exactly.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 2: the cheap baselines against the log-odds share on the five key tasks.</dd>
+<dt>Moved on</dt><dd>Descriptive, no verdict. Report <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-21_analysis_e244-key-grid-baselines.md"><code>reports/analyses/2026-11-21_analysis_e244-key-grid-baselines.md</code></a>.</dd>
+</dl>
+</article>
