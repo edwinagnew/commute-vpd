@@ -64,6 +64,22 @@ def test_random_others_are_outside_H_and_the_right_size():
         assert len(d) == 2 and not set(d) & set(H)
 
 
+def test_top_k_follows_by_score_and_refuses_a_tie_at_the_boundary():
+    s = torch.tensor([[0.1, 0.5], [0.5, 0.0]])
+    assert CP.top_k(s, 1) is None  # (0,1) and (1,0) tie at 0.5
+    assert CP.top_k(s, 2) == [(0, 1), (1, 0)]  # the tie is inside the set: fixed
+    assert CP.top_k(s, 4) == CP.by_score(s)
+
+
+def test_k_draws_are_distinct_inside_the_pool_and_exhaustive_when_few():
+    pool = [(a, b) for a in range(3) for b in range(6)]  # 18 heads
+    assert CP.k_draws(pool, 1, 20, 0) == [[h] for h in sorted(pool)]  # 18 sets <= 20: every one
+    d = CP.k_draws(pool, 3, 20, 0)
+    assert len(d) == 20 and len({tuple(x) for x in d}) == 20
+    assert all(len(x) == 3 and set(x) <= set(pool) and x == sorted(x) for x in d)
+    assert d == CP.k_draws(pool, 3, 20, 0)  # seeded
+
+
 class _Attn(nn.Module):
     def __init__(self) -> None:
         super().__init__()

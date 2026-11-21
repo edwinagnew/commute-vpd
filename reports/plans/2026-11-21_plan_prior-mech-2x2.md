@@ -87,12 +87,37 @@ reused corner cannot be labelled by this head (the card's stop).
 
 Both runs fit debug's 30 min. The ~$5 and ~$30 pod figures in the brief are not needed.
 
+## Run 3: the k-head label (code `khead.py`, pending the user's yes; ~9 min, cluster debug L40, $0)
+Runs 1-2 gave a weak label. Key copy lost 0.25 of its gain with (2,4) off, and the low copy lost 0.22. One random head,
+(1,1), read 0.18-0.27 on the low copy in every seed. It is M's previous-token head (score 0.67): it also costs the
+ciphers 0.10-0.15, and alone it takes M's copying from 0.82 to 0.01.
+- **Arms.** M's top k heads by E62's prefix score, switched off together, k = 1, 2, 3, 5: (2,4), then (2,3), (2,2),
+  then (3,2), (3,4). The same mean ablation and the same share and rows as run 1. One more arm: (2,4) and (1,1)
+  together, to show that set costs the ciphers too, so it is not a copy-specific label.
+- **Null.** k heads drawn from outside the top 5 and outside (1,1), 18 heads in all. All 18 single heads at k = 1;
+  20 distinct seeded draws at k = 2, 3, 5. Draws holding (1,4) (rank 6, the one pool head over E62's chance score)
+  are reported apart and kept out of the null band.
+- **States.** All 27 saved items of runs 1-2: E62's 6, E237's 15 key states, E250's 3 low copies and their 3 random
+  updates.
+- **Controls, first, each exiting on a miss.** M's copying with (2,4) off must pass E62's control and repeat 0.0095.
+  The k = 1 shares must repeat the saved (2,4) shares on all 24 states, within twice a floor measured in the same job
+  (batch 64 against 32).
+- **Filed expectations.** Copy and low copy lose 0.5-0.8 at k = 3, and E62's copy about 0.8. Both ciphers, rank1 and
+  elicit stay under 0.05 at every k. The clean null band stays under 0.1. The pair arm costs the ciphers over 0.05
+  (expected 0.10-0.20). Copy under 0.4 at k = 5 is the stop: the copy does not run through the heads ranked high on
+  M's copying.
+- **The 2x2 call again** uses run 2's rule on the k-head share at the best k, the k where E62's copy loses most.
+  The best k is set by the control map outside the 2x2.
+- Time: E249's job read 196 head-set reads in 34 s. Run 3 reads about 3,150, which gives about 9 min.
+
 ## Not run
-- A second intervention for copies that bypass (2,4) (path patching, two-head ablation).
+- A second intervention for copies that bypass (2,4) (path patching; run 3 covers multi-head ablation).
 - A low-prior copy built behind a new cue token.
 - KL share and R at VPD on the new corner (cut by user priority after E237).
 - Matched random updates for the key states in run 2 (E237's random band stands).
 
-Hand-off: run 1 is `experiments/prior_mech_2x2/run.py` and `cluster/prior_mech_2x2.sbatch`. Run 2 is `train.py` and
+Hand-off: run 3 is `khead.py` and `cluster/prior_mech_2x2_khead.sbatch`, card draft
+`~/commute-data/scratch/compare-lead/khead/card.md`.
+Run 1 is `experiments/prior_mech_2x2/run.py` and `cluster/prior_mech_2x2.sbatch`. Run 2 is `train.py` and
 `cluster/prior_mech_2x2_stage2.sbatch`, after run 1 (`--dependency=afterok`). Its card draft is
 `~/commute-data/scratch/compare-lead/prior-mech-2x2/card.md`.

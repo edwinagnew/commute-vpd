@@ -1,0 +1,100 @@
+{
+  "experiment": "E_TBD3",
+  "cell": "P2.54",
+  "run": 3,
+  "script": "experiments/prior_mech_2x2/khead.py",
+  "claim": "The key copy and the low-prior copy run through M's copying heads: with M's top 3 heads by E62's prefix score switched off together, each loses 0.5-0.8 of its gain over M, while both ciphers, rank1 and elicit lose under 0.05 at every k, and k random heads from outside the top 5 and outside the previous-token head (1,1) lose under about 0.1.",
+  "settings": {
+    "ks": [
+      1,
+      2,
+      3,
+      5
+    ],
+    "ks_source": "the lead's brief (k = 1, 2, 3, 5); k = 1 is runs 1-2's head (2,4), asserted in khead.Heads",
+    "n_top": 5,
+    "n_top_source": "the lead's brief: the null is drawn outside the top 5, the largest k read, so no draw meets any top-k set",
+    "n_draws": 20,
+    "n_draws_source": "the lead's brief (20 draws per k). At k = 1 the pool of 18 heads (outside the top 5 and outside exclude) gives only 18 single-head sets, so all 18 are read (copying.k_draws)",
+    "draw_seed": 62,
+    "draw_seed_source": "E62's random_seed; the draws at k use draw_seed + k",
+    "exclude": [
+      [
+        1,
+        1
+      ]
+    ],
+    "exclude_source": "the lead (2026-11-21): (1,1), M's previous-token head, kept out of the ranking and of the null pool. It is the one random single head that read high in runs 1-2 (draw 0 of run 1, results/stage1/control.json draws; 0.18-0.27 of the low copy, 0.22-0.32 of key copy and 0.10-0.15 of the ciphers, where (2,4) costs them nothing), and alone it takes M's second-copy top-1 from 0.82 to 0.013 (E62 stage_a.top1_random[0]). E62's plan (2026-11-02, item 4) names it the previous-token head: score 0.67, next highest 0.35. A general head that feeds every task, it would label the ciphers too",
+    "floor_batch": 32,
+    "floor_batch_source": "the floor's second numeric path: the same reads at batch 32 against runs 1-2's 64 (another reduction order on the same rows)",
+    "floor_states": [
+      "e62/copy_s0",
+      "e58/copy_s0",
+      "e58/lowcopy_s0"
+    ],
+    "floor_states_source": "seed 0 of each family of saved states (E62's, E237's key states, E250's low copy)"
+  },
+  "thresholds": {
+    "top1_ref": 0.8246527777777778,
+    "top1_ref_tol": 0.01,
+    "top1_H_max": 0.3,
+    "top1_random_min": 0.7,
+    "control_source": "run 1's control bars, unchanged (results/predictions.json, E62's control_a). The k = 1 control applies them to (2,4) off and to the clean k = 1 null draws, and asks |top-1 with (2,4) off - E62's 0.0095| <= top1_ref_tol (about 11 of 1152 predictions)",
+    "G_min": 5.147937448121369,
+    "share_old_min": 0.5,
+    "share_new_max": 0.2,
+    "share_source": "run 1's gain gate and labels, unchanged (copying.share_label): a state under G_min is 'too_small', not read; the corner labels at the best k use share_new_max as run 2's table did",
+    "floor_mult": 2,
+    "floor_mult_source": "run 1's G_repro_rel convention: the measured gap between two code paths, doubled. Floor = the largest |k = 1 share at batch 64 - at batch 32| over floor_states, measured in this job's control before any other read; the k = 1 share on each of the 24 states runs 1-2 read must be within 2 x floor of its saved (2,4) share (a tie passes; a floor of 0 asks for exact equality, which the same code on the same node's L40s should give: runs 1-2 ran on l40-worker)",
+    "copy_k3_band": [
+      0.5,
+      0.8
+    ],
+    "copy_k3_band_source": "the lead's filed expectation for key copy and the low-prior copy at k = 3",
+    "e62_copy_k3_band": [
+      0.7,
+      0.9
+    ],
+    "e62_copy_k3_band_source": "the lead's 'about 0.8' for E62's copy at k = 3, filed as +-0.1",
+    "not_via_max": 0.05,
+    "not_via_max_source": "the lead's filed expectation: both ciphers, rank1 and elicit under 0.05 at every k (run 1 read them at -0.001 to 0.008 with (2,4) off, results/stage1/summary.json task_mean_share); a tie holds",
+    "null_max": 0.1,
+    "null_max_source": "the lead's 'under about 0.1' for the k-matched null with flagged draws left out; run 1's single-head null floor was 0.074 (results/stage1/summary.json null_floor)",
+    "copy_k5_min": 0.4,
+    "copy_k5_min_source": "the lead's stop: key copy under 0.4 at k = 5 means the copy does not run through the heads ranked high on M's copying"
+  },
+  "rules": {
+    "control_M": "M's second-copy top-1 (E52's control) with the top-1 set (2,4) off: copying.control_a(base, top1 with (2,4) off, the clean k = 1 null draws' top-1, thresholds) must read 'pass' and |top-1 - 0.0095486| <= top1_ref_tol; else exit 1 before any state is read",
+    "control_k1": "the k = 1 share repeats the saved (2,4) share (results/stage1/<state>.json, results/stage2/head/<state>.json share_lost) on all 24 states within floor_mult x floor; else exit 1",
+    "share": "per state and k: G = mean over read rows of (lo(F) - lo(M)), G_off the same with the k heads mean-ablated in both; share = 1 - G_off / G (copying.share_lost), nan when G <= 0; label copying.share_label (too_small under G_min)",
+    "task_mean": "the mean share over seeds 0-2, nan unless every seed's label is old, new or between (run 1's task_mean); a tie at the k boundary of E62's scores (copying.top_k returns None) labels that k 'tie' and every task mean at it nan",
+    "null_band": "nu_k: the largest |median clean null share| over the readable non-random states at k (run 1's null_floor, per k). The null pool is the heads outside the top 5 and outside exclude (18 heads). Clean = no head flagged prefix (prefix score at or over E62's chance 0.01536, which flags (1,4), rank 6, score 0.018). nan if any readable state has no finite clean share. Draws holding (1,4) are reported apart (null_flagged_median.prefix), never in nu_k",
+    "K1_copy_and_lowcopy_k3_in_band": "holds iff the k = 3 task means of e58/copy and e58/lowcopy are both within copy_k3_band (ends included)",
+    "K2_e62_copy_k3_in_band": "holds iff e62/copy's k = 3 task mean is within e62_copy_k3_band",
+    "K3_not_via_under_bar_every_k": "holds iff e58/cipher, e58/prior_cipher, e58/rank1, e58/elicit task means are <= not_via_max at every k",
+    "K4_null_band_under_bar_every_k": "holds iff nu_k <= null_max at every k",
+    "K5_copy_k5_not_under_stop": "holds iff e58/copy's k = 5 task mean >= copy_k5_min; misses = the stop reading: the copy does not run through the heads ranked high on M's copying",
+    "K6_random_updates_under_gain_gate": "holds iff each of E250's three random updates (low copy's per-matrix norms times c) has G < G_min (the do-nothing reference: not read)",
+    "best_k": "the k with the largest e62/copy task mean (E62's copy is the positive control outside the 2x2), ties to the smaller k; none if no k reads",
+    "two_by_two_at_best_k": "run 2's rule (train.effects) on the k-head share at the best k: corner seed means, mechanism effect ((copy + lowcopy) - (prior_cipher + cipher)) / 2, prior effect ((copy + prior_cipher) - (lowcopy + cipher)) / 2, band = the largest seed range over the four corners (this job); 'mechanism' or 'prior' when that effect is the larger in size and over the band, else 'no_call'. Read only when the corners are labelled at that k as run 2 labelled them (copy and lowcopy means >= share_new_max and each seed over its clean null median; both ciphers <= share_new_max), else 'not_read'. Also printed at every k",
+    "verdicts": "holds, misses, or not_read when any number the rule reads is not finite (run 1's verdict)",
+    "pair_arm": "(2,4) and (1,1) switched off together, on every state: share and label as above, task means in summary rules.pair_task_mean_share; M's top-1 under it in control.json top1_pair (reported)",
+    "K7_pair_costs_the_ciphers": "holds iff both cipher task means under the pair arm are > not_via_max: the pair is not a copy-specific label (a miss would make (1,1) look copy-specific after all)"
+  },
+  "expected": {
+    "control_M": "top-1 0.8247 with nothing off; with the top k off 0.0095, 0.0017, 0, 0 at k = 1, 2, 3, 5 (E62's curve_top1_by_k, the same path); clean k = 1 null median over 0.7 (E62's five single heads read 0.71-0.93 apart from (1,1)'s 0.013)",
+    "control_k1": "exact repeat: the same code path (run 1's Reader.lo with [(2,4)]), rows and node",
+    "k1_shares": "runs 1-2's: e62/copy 0.53, e58/copy 0.25, e58/lowcopy 0.22, the rest -0.004 to 0.008",
+    "copy_lowcopy_k3": "0.5-0.8",
+    "e62_copy_k3": "about 0.8",
+    "not_via": "under 0.05 at every k",
+    "null_band": "under about 0.1 at every k",
+    "flagged_draws": "draws holding (1,4) (rank 6, prefix score 0.018, just over chance) are not expected to stand out from the clean null",
+    "random_updates": "G about 0.03 (run 2's gains on the same rows, results/stage2/random-e58-lowcopy_s*.json), so too_small and not read",
+    "two_by_two_at_best_k": "mechanism, as run 2's head share (results/stage2/table.json proxies.head_share: mechanism effect 0.23, prior effect 0.012)",
+    "best_k": "3 or 5",
+    "pair_arm": "high on every corner, ciphers included: copy and low copy over 0.4 (their (2,4) and (1,1) single-head shares, 0.25 + 0.27 and 0.22 + 0.23, roughly add), both ciphers 0.10-0.20 ((1,1) alone read 0.10-0.15 on cipher, 0.10-0.13 on prior_cipher; (2,4) adds about 0), rank1 and elicit about 0.1-0.15; M's top-1 near 0"
+  },
+  "blind_to": "The share reads only what the k heads' outputs carry at the read position, net of M's own fall; a fine-tune that uses the copying heads through a path the mean ablation leaves intact (a head writing a constant near its mean) reads low. The null band is blind to heads that carry copying but sit outside the top 5 by prefix score; (1,1), the previous-token head, is the known case: excluded from the null and read in the pair arm. Positive control: E62's copy (0.53 at k = 1 in run 1). Noise: seed sd of the k = 1 share, 0.041 on key copy and 0.034 on the low copy (results/stage1/e58-copy_s*.json, results/stage2/head/e58-lowcopy_s*.json)",
+  "edge_cases": "Zero gain denominator: share_lost is nan for G <= 0, the label too_small under G_min, so the task mean and every rule reading it go not_read (a do-nothing state cannot pass any band). Ties in the ranking: copying.top_k returns None when the k-th and (k+1)-th prefix scores are equal, and that k reads 'tie' (E62's 24 scores have no tie at k = 1, 2, 3, 5: checked on CPU). A draw equal to the top-k set: impossible, the null pool excludes the top 5 and k <= 5 (asserted in khead.Heads). An excluded head can never enter a top-k set (its score is set to -inf before ranking) or a draw. An empty clean pool at a k: the null median is nan and nu_k not_read. Fewer k-sets than n_draws (k = 1, 18 heads): every set is read. best_k with no finite e62/copy mean: not_read."
+}

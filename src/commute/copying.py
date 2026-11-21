@@ -14,6 +14,7 @@ Target tensors follow data.LAST: `with_target` appends the target as a 42nd colu
 
 from __future__ import annotations
 
+import itertools
 import math
 import statistics
 from collections.abc import Callable, Iterable, Iterator, Sequence
@@ -213,6 +214,25 @@ def random_others(H: Sequence[Head], blocks: int, heads: int, n: int, seed: int)
     rest = [(a, b) for a in range(blocks) for b in range(heads) if (a, b) not in set(H)]
     gen = torch.Generator().manual_seed(seed)
     return [sorted(rest[int(i)] for i in torch.randperm(len(rest), generator=gen)[: len(H)]) for _ in range(n)]
+
+
+def top_k(scores: Tensor, k: int) -> list[Head] | None:
+    """The k highest-scoring heads (`by_score` order), or None when the k-th and (k+1)-th scores tie: the set is then
+    not fixed by the scores, and the k is not read."""
+    flat = torch.sort(scores.flatten(), descending=True).values
+    return None if k < len(flat) and bool(flat[k - 1] == flat[k]) else by_score(scores)[:k]
+
+
+def k_draws(pool: Sequence[Head], k: int, n: int, seed: int) -> list[list[Head]]:
+    """Distinct k-head sets from `pool`, each sorted: every one of them when there are at most n, else n seeded draws
+    without repeats. A draw never holds a head outside the pool."""
+    if math.comb(len(pool), k) <= n:
+        return [list(c) for c in itertools.combinations(sorted(pool), k)]
+    gen, out = torch.Generator().manual_seed(seed), list[list[Head]]()
+    while len(out) < n:
+        d = sorted(pool[int(i)] for i in torch.randperm(len(pool), generator=gen)[:k])
+        out += [d] if d not in out else []
+    return out
 
 
 # ----------------------------------------------------------------------------- the windows
