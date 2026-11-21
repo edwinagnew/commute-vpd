@@ -35,7 +35,10 @@ base 67M; F is a built edit, a fine-tune or a random update.
 
 1. **Do-nothing**, first in every job: F = M, every gain exactly 1, everything stood in gives KL exactly 0, R_A 1.
 2. **Matched random update** (control): E241's Gaussian per matrix (`gating_vpd/run.py random_dw`, seed 241001) at
-   new_thin's update size (E240's common size), on x2's copy windows; its K* searched with E226's code.
+   new_thin's update size (E240's common size), on x2's copy windows; its K* searched with E226's code. Beside it (phase C,
+   rule P2k) E241's "kl" arm, seed 241002, scaled to new_few's KL(F‖M) at E240's matched size (0.159, on new_few's
+   windows; likely under the bar there, about 0.37, so likely R_A about 1 and P2k failing, as P2); the control job
+   takes about 26 min (up to 41 if both stand-in searches run), the built stage about 76 min in all.
 3. **Six built edits** at their own size, E226's saved K* on all of D and its two halves (the band). This job refuses
    to start before the random update is read.
 4. After stage 3 passes, separately: **E187's nine pairs** at matched size (76 items), **E62's copy/lookup pair**

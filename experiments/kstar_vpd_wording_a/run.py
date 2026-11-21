@@ -13,7 +13,8 @@ searched with E226's search code (`kstar_vpd.search`) for the smallest set that 
 
 Groups, each its own submission and each refusing to start before the one above it has been read (stage 0, the
 do-nothing, runs first and alone in every job and stops on a miss):
-    control  the matched random update: a Gaussian per matrix (E241's `random_dw`) at new_thin's update size, x2's windows
+    control  two random updates (E241's `random_dw`, a Gaussian per matrix): at new_thin's update size on x2's windows;
+             and E241's "kl" arm, scaled so KL(F || M) on new_few's windows is new_few's at E240's matched size
     built    new_thin, new_few, x2, x10, moved, rebuilt at their own size, E226's saved K* on all of D and its halves
     pairs    E187's nine pairs at matched size (smaller side: E226's saved K*; larger side times E187's c, E232's items)
     e62      E62's copy/lookup pair at its own size (E226's saved K*)
@@ -60,7 +61,7 @@ HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"
 PRED = RESULTS / "predictions.json"
 EXPERIMENT = json.loads(PRED.read_text())["experiment"]
-SAVED = {"e226": EXPERIMENTS / "kstar_vpd" / "results", "e237": EXPERIMENTS / "key_grid" / "results"}
+SAVED = {"e226": EXPERIMENTS / "kstar_vpd" / "results", "e237": EXPERIMENTS / "key_grid" / "results", "e240": EXPERIMENTS / "kstar_vpd_norm_matched" / "results"}
 log, dump, stop, fname = E226.log, E226.dump, E226.stop, KP.fname
 GROUPS = ("control", "built", "pairs", "e62", "keys")
 
@@ -77,12 +78,16 @@ class Config:  # filed in predictions.json "settings"
     random_seed: int
     random_windows: str  # the built item whose windows the random update is read on
     size_target: str  # the built item whose update size the random update has
+    random_kl_seed: int  # the KL-matched random update (E241's "kl" arm): its direction, at size_target's size, then scaled
+    kl_target_item: str  # the built item whose KL(F || M) at E240's matched size the scaled update matches, on its windows
+    scale_cap: float  # E241's matcher (commute.perturb.match)
+    kl_rel_tol: float
     e62: tuple[str, ...]
 
     def __post_init__(self) -> None:
         assert self.stand_in_forward in ("full", "circuit") and self.eval_cap > 0 and self.reranks >= 0 and self.chunk_div >= 1
         assert set(self.reuse) == {"x2", "x10", "moved", "rebuilt"} and set(self.new) == {"new_few", "new_thin"}
-        assert self.random_windows in self.built and self.size_target in self.built
+        assert {self.random_windows, self.size_target, self.kl_target_item} <= set(self.built) and self.random_kl_seed != self.random_seed
 
     @property
     def built(self) -> tuple[str, ...]:
@@ -91,6 +96,10 @@ class Config:  # filed in predictions.json "settings"
     @property
     def random(self) -> str:
         return f"random_size_{self.random_seed}"
+
+    @property
+    def random_kl(self) -> str:
+        return f"random_kl_{self.random_kl_seed}"
 
 
 def load_config() -> tuple[Config, dict[str, Any]]:
@@ -111,7 +120,7 @@ def key_items() -> list[str]:
 
 
 def group_items(cfg: Config, g: str) -> list[str]:
-    every = {"control": lambda: [cfg.random], "built": lambda: list(cfg.built), "e62": lambda: list(cfg.e62), "keys": key_items,
+    every = {"control": lambda: [cfg.random, cfg.random_kl],"built": lambda: list(cfg.built), "e62": lambda: list(cfg.e62), "keys": key_items,
              "pairs": lambda: list(dict.fromkeys(i for r, n in pair_sides().values() for i in (*r, *n)))}  # fmt: skip
     return every[g]()
 
@@ -126,12 +135,15 @@ class World(E226.World):
     def __init__(self, cfg: Config) -> None:
         super().__init__()
         self.cfg, self.sm, self.kg = cfg, None, None
+        self.kl_x: dict[str, Any] | None = None  # the KL-matched random's scale, matched once per job
 
     def make(self, item: str) -> tuple[R.Model, R.Model, Tensor, slice, dict[str, Any]]:
         if item in E226.E214_ITEMS:
             return super().make(item)
         if item == self.cfg.random:
             return self.random()
+        if item == self.cfg.random_kl:
+            return self.random_kl()
         if item.startswith("e58/"):  # E237's key items, E237's World (its common size c per task)
             if self.kg is None:
                 kg = load_experiment("key_grid", "run")
@@ -146,13 +158,32 @@ class World(E226.World):
         F, toks, at, rec = self.sm.make(item) if item in self.sm.items else SMR.E221.World.make(self.sm, item)
         return F, self.sm.M, toks, at, rec
 
-    def random(self) -> tuple[R.Model, R.Model, Tensor, slice, dict[str, Any]]:
-        """E241's construction: a Gaussian per decomposed matrix at one relative size, sum |dW|^2 = the target's."""
+    def direction(self, seed: int) -> tuple[dict[str, Tensor], float]:
+        """E241's construction: a Gaussian per decomposed matrix at one relative size, sum |dW|^2 = size_target's."""
         target2 = sum(c["dW2"] for c in json.loads((SAVED["e226"] / "items" / f"{self.cfg.size_target}.json").read_text())["checks"].values())
-        dw = load_experiment("gating_vpd", "run").random_dw(self.kl.net.W0, target2, self.cfg.random_seed)
+        return load_experiment("gating_vpd", "run").random_dw(self.kl.net.W0, target2, seed), target2
+
+    def random(self) -> tuple[R.Model, R.Model, Tensor, slice, dict[str, Any]]:
+        dw, target2 = self.direction(self.cfg.random_seed)
         _, M, toks, at, _ = super().make(self.cfg.random_windows)
         rec = {"target2": target2, "size_ratio": sum(float(v.double().pow(2).sum()) for v in dw.values()) / target2}
         return R.Model(OT.with_delta(self.kl.net, dw).net), M, toks, at, rec
+
+    def random_kl(self) -> tuple[R.Model, R.Model, Tensor, slice, dict[str, Any]]:
+        """E241's "kl" arm: the direction times x, x matched (commute.perturb.match) so KL(F || M) on kl_target_item's
+        windows equals that item's KL(F || M) at E240's matched size (its saved search file)."""
+        from commute import perturb as PT
+
+        g241 = load_experiment("gating_vpd", "run")
+        dw, _ = self.direction(self.cfg.random_kl_seed)
+        _, M, toks, at, _ = super().make(self.cfg.kl_target_item)
+        target = json.loads((SAVED["e240"] / "search" / f"{self.cfg.kl_target_item}.json").read_text())["kl_fm"]
+        if self.kl_x is None:
+            m = PT.match(lambda x: g241.kl_at(self.kl.net, M, PT.scaled(dw, x), toks, at, E226.load_config()[0].batch), target, self.cfg.scale_cap, self.cfg.kl_rel_tol)
+            self.kl_x = {"x": m["x"], "kl_matched": m["f"], "match": m["status"], "match_evals": len(m["grid"]) + len(m["trace"])}
+            log(f"{self.cfg.random_kl}: matched x {m['x']:.6g} to KL {m['f']:.6g} (target {target:.6g}), {m['status']}")
+        rec = {"kl_target": target, "kl_ratio": self.kl_x["kl_matched"] / target} | self.kl_x
+        return R.Model(OT.with_delta(self.kl.net, PT.scaled(dw, self.kl_x["x"])).net), M, toks, at, rec
 
 
 def k_source(w: World, item: str) -> tuple[dict[str, Any], Path | None]:
@@ -275,6 +306,8 @@ def read_item(w: World, item: str, cfg: Config, th: dict[str, Any], out: Path) -
     miss = E226.guards(item, feat, KV.undecomposed_differences(M, F, w.keys), base["gates"], th226) + KP.load_checks(item, base, E226.KP_TH)
     miss += [f"KL(F || F_empty) {base['kl_none']:.9g}, saved {r226['kl_none']:.9g}"] if not abs(base["kl_none"] / r226["kl_none"] - 1) <= th["kl_repro_rel"] else []
     miss += [f"size ratio {rec['size_ratio']:.9g}"] if "size_ratio" in rec and not abs(rec["size_ratio"] - 1) <= th["size_rel"] else []
+    miss += [f"KL match {rec['match']}, ratio {rec['kl_ratio']:.6g}"] if "kl_ratio" in rec and not (rec["match"] == "ok" and abs(rec["kl_ratio"] - 1) <= cfg.kl_rel_tol) else []
+    miss += [f"KL(F || M) {base['kl_fm']:.9g} off the matched {rec['kl_matched']:.9g}"] if "kl_matched" in rec and not abs(base["kl_fm"] / rec["kl_matched"] - 1) <= th["kl_repro_rel"] else []
     batches = list(toks.split(c226.batch))
     g = SI.gains(F.net, SI.vpd_sites(feat), feat.n, list(toks.split(cfg.gain_batch)))
     si = SI.StandIn(F.net, SI.vpd_sites(feat), g, toks.device)
