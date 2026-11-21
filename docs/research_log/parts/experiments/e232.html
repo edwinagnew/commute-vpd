@@ -1,0 +1,17 @@
+<article class="exp" id="e232">
+<div class="top"><span class="id">E232</span><span class="chip missed">missed</span><h3>Does the reuse score's reuse-minus-new gap survive matching update size?</h3><span class="when">2026-11-20 · cell P1.38 (filled), no independent check · <code>experiments/kstar_size_matched</code></span></div>
+<p class="one"><strong>The question.</strong> E221 found that the reuse score R's gap between a reuse-built and a new-built fine-tune followed update size at heads, layers and blocks. If the gap came from reuse it should keep its sign once both sides have the same update size. On eight of E187's nine pairs the new side had moved the weights further, so matching could only lower the gap.</p>
+<p class="one"><strong>What we did.</strong> On each pair we shrank the larger side's fine-tune to its partner's size, the same scaled states as the held-model size-matched run, and read R again on all 40 scaled states at the three levels. The do-nothing state scaled by 0 had to read R = 1, scaled by 1 it had to repeat E221's reading exactly, and each pair's matched sizes had to agree to rounding. All three held on every pod. The filed rule was that at least 8 of 9 pairs keep the sign of their gap at blocks; the plan also filed a rival, that $1-R$ shrinks as the square of the update, which predicts 5.</p>
+<p class="one"><strong>What we found.</strong> The filed prediction failed: at blocks 5 of 9 pairs kept their sign and the reuse side read higher on 4. The mean gap fell from 0.0074 to -0.0005. The size-only rival predicted the sign of every pair at blocks, and the change in each pair's gap ranked with the size gap removed (0.85 to 0.88). Only one pair kept a positive gap through a real rescale, and it shrank from 0.0160 to 0.0059.</p>
+<p class="one"><strong>What it means.</strong> At these coarse levels R's reuse-minus-new difference on E187's pairs is mostly how far each side moved the weights, so the paper reports that column as a size reading. The leftover gaps do not line up with the held-model reading or any other earlier reading. This is one of the two questions about saturation put to the user.</p>
+<dl class="fields">
+<dt>Run</dt><dd>Four H100 pods, ten scaled states each, after a cluster rehearsal. Figures stay in the report.</dd>
+<dt>Found</dt><dd><ul>
+<li>At matched size 5 of 9 block-level signs were kept against 8 filed.</li>
+<li>A rule using update size alone predicted every block sign; the gap's shift followed the size gap removed (0.85 to 0.88).</li>
+<li>No earlier reading reached a rank correlation of half with the matched gap.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 2: whether R at coarse levels reads reuse or update size.</dd>
+<dt>Moved on</dt><dd>Size-matched states for E196's five pairs do not exist and were not built. VPD on the scaled states would be the first label that is not a size reading. Report <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-20_analysis_e232-size-matched-r.md"><code>reports/analyses/2026-11-20_analysis_e232-size-matched-r.md</code></a>.</dd>
+</dl>
+</article>
