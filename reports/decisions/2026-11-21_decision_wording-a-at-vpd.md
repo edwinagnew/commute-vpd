@@ -22,3 +22,8 @@ expected: we expected the output gains to be the cause, and they are not.
 - **(c) Recommended.** Keep A, report both levels with the untouched share beside R, and state thin-edit leniency as
   a limit. The held E248 readings on trained pairs, copy against lookup and key tasks are running now as descriptions.
   They show whether real fine-tunes hit it.
+
+An independent premise check doubts the other half: an edit that leaves 89% of its circuit untouched may really be
+mostly reuse, so "built new" may be a construction label rather than the truth, and rewording A to call it new would
+fit the definition to the label. It asks what, apart from these readings, makes the thin edit new
+([check](/mnt/nw/home/e.agnew/commute-data/premise/P1.47.md)).
