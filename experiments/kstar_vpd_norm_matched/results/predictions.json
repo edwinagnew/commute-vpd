@@ -1,0 +1,71 @@
+{
+  "experiment": "E240",
+  "cell": "P1.44, run 1 of 1 (card reports/plans/2026-11-20_plan_p1-44-card.md)",
+  "request": "user, 2026-11-20 ~19:15, card decision-normalised-r-next, answer '1a': 'One cheap cluster run testing N on built reuse and new edits made at the same update size. If N still separates them, size is not what it reads, and the trained pairs' labels are what is in doubt.'",
+  "definition": "Unchanged (E226's predictions.json 'definition'); a reading, no verdict on the definition. Per built item i (E214's World, as E226 and E239 built them): F_c = M + c_i (F - M) on every parameter of the network (fp64, cast to fp32; c = 0 gives M, c = 1 gives F exactly), and for appended neurons (moved's grafts, which M lacks) their output weights times c_i, input weights unchanged. c_i = sqrt(dW2(target) / dW2(i)), dW2 the sum over E226's split checks (the 24 decomposed matrices) in E226's item JSON, so every F_c has the target's relative update size. At F_c: E226's read_item unchanged (split, K* searches on all of D and its two halves, grades) and then E239's read_item unchanged (N, N_w, N_in, R on the new K* and s; E239's predictions.json 'definition').",
+  "settings": {
+    "target": "new_thin",
+    "do_nothing_from": "x2",
+    "shards": [
+      ["new_thin"],
+      ["new_few"],
+      ["x2", "x10", "moved", "rebuilt"]
+    ],
+    "settings_source": "target: the smallest relative update size of the six (new_thin 0.01379, experiments/r_reanalysis/results/summary.json .known.update_size), so every c <= 1 and every state lies between M and its built edit; a larger target (the median, 0.0227) needs c = 1.38 on moved, whose zeroed columns would then go negative. do_nothing_from: x2, the cheapest item's windows (75 copy24 held-out windows; x2's main search 107 s on E226's H100, against 515 s for E214's 512 cue windows). shards: one job per new edit (the two longest items, 1,064 s and 1,130 s on E226's H100) and one for the four reuse items (920 s), so the longest job is about 45 min on an L40; new_thin, the c = 1 reproduction, first in its job. E226's settings (search, split, grades) and E239's (row 1, ranking 0, construction sizes) are read from their own predictions.json files, unchanged."
+  },
+  "thresholds": {
+    "repro_tol": 1e-05,
+    "size_rel": 0.0001,
+    "thresholds_source": "repro_tol: E232's (experiments/kstar_size_matched/results/predictions.json), the same check one level up: E232's c = 1 control on the cluster repeated a pod's K* exactly with R off by at most 1.7e-9 (results/stage0_rehearse.json .repeat_*), and the smallest R difference between two known items at VPD is 3e-4 (x2 0.99921, moved 0.99889), 30x above it. size_rel: dW_c = F_c - M is rounded to fp32 once per entry (relative error about 6e-8 times |W| / |dW| per entry, unbiased, summed over millions of entries), while a wrong c or a wrong item is off by at least 1e-2 relative (the closest two distinct c, 0.2852 and 0.4763, differ by 67%; x2 and moved share c by construction); 1e-4 catches the second and not the first, and every item logs its value. E226's and E239's own thresholds (split checks, gate_tol, s_tol, kl_floor, kl_repro_rel, R_repro_tol, ratio_min) apply unchanged inside their read_item."
+  },
+  "expected": {
+    "do_nothing": "x2's windows at c = 0, F_c = M: E226's stage 0 holds (no changed variable, every s within s_tol of 1, f = 0, R = 1) and E239's do-nothing guards hold (n_changed 0, every ratio 0); N not read.",
+    "new_thin_c1": "c = 1, F_c = F bit for bit: K* (main search, polished) equal to E226's saved one, R within repro_tol of E226's 0.9963101, KL(F || M) within E221's kl_repro_rel of E226's, N equal to E239's -3.2134 to the same order.",
+    "x2_and_x10": "the same state (C's columns times 1.8398: x2 1 + c, x10 1 + 9 c), so N, R and K* agree up to fp32 rounding of F_c; reported, no bar.",
+    "moved": "C's columns times 0.16 and the grafts' output weights times 0.84: F_c computes M's function at every c; KL(F || M) near 0 as E226's moved (5.6e-12).",
+    "scale_free_guess": "for small changes 1 - s_u and ratio_u both grow as c^2, so N, N_w and N_in move little with c except where a change is not small (x10 at c = 1); hence x2 = x10 about -0.43 on N, moved about -0.44, rebuilt about -0.8, new_few about -2.0, new_thin -3.21; N_in near E239's: x2 0.65, moved 0.65, rebuilt 0.23, new_few 0.61, new_thin 0.90. A guess from E239's values, not a rule."
+  },
+  "rules": {
+    "R0 (stops)": {
+      "rule": "exit 1 unless: (a) every job first: E226's stage 0 on the do-nothing (its rules, unchanged) and E239's do-nothing guards; (b) per item, before the next: E226's guards and load checks and E239's R0 (b)-(d) inside their read_item, unchanged; |sum dW2 at F_c / dW2(target) - 1| <= size_rel; (c) new_thin, first in its job: K* equal to E226's saved K* (main search, polished set, exactly) and |R_read - E226's R_read| <= repro_tol.",
+      "absolute_or_relative": "absolute, except size_rel and E226's and E239's relative checks",
+      "blind_to": "whether N means reuse; they check the scaling path (c = 0, c = 1, the size) and that the code read is E226's and E239's",
+      "positive_control": "(a) and (c): the two ends of the scaling line, M and new_thin as built",
+      "noise_floor": "thresholds_source"
+    },
+    "band": {
+      "rule": "per measure (N, N_w, N_in, R): band = max over the six items of |measure(K* of half 1) - measure(K* of half 2)|, each half's K* this run's half search at F_c, s and ratios from all of D (E239's band rule). An item whose measure is not read on either half is left out; degenerate (no item left, or every difference 0): band 0, the rule a strict order, reported as degenerate.",
+      "absolute_or_relative": "absolute"
+    },
+    "P1 (filed: every reuse item above both new items on N at matched size)": {
+      "rule": "gap = min N over x2, x10, moved, rebuilt - max N over new_few, new_thin; main search, weight-norm ratio, at F_c (E239's order_rule, unchanged). gap > band: holds (rival a). gap <= 0: rival b. 0 < gap <= band: no call. Not read if any of the six N is not read.",
+      "prediction": "holds",
+      "absolute_or_relative": "absolute",
+      "blind_to": "parts left out of N (moved's grafts, zero subcomponents, parts under ratio_min; counted per item), the size of K*, and whether the rescaled rebuilt state, 28.5% of the way to the rebuilt edit, is still reuse",
+      "edge_cases": "do-nothing (empty changed K*): N not read, the rule not read, cannot pass; a rescaled item with no changed K* member left (every one under ratio_min): N not read, rule not read; t_u > 1: kept, N may go below 0, the rule still reads; ties (gap = 0): rival b; band 0: strict order; x2 and x10 equal (the same state): the min is unaffected; the do-nothing state in place of every item: not read, cannot pass."
+    },
+    "S1 (side: attribution-weighted)": {
+      "rule": "as P1 on N_w with its own band. Not read if sum |a_u| over the used parts is 0 for any item.",
+      "prediction": "holds (E239's N_w put every reuse item above both new by 1.36: x2 -0.10, moved -0.06, rebuilt -0.55 against new_few -1.91, new_thin -2.80)",
+      "absolute_or_relative": "absolute"
+    },
+    "S2 (side: input ratio)": {
+      "rule": "as P1 on N_in with its own band",
+      "prediction": "rival b (E239's N_in: rebuilt 0.229 under new_thin 0.896 at their own sizes, and N_in moves little with c for small changes)",
+      "absolute_or_relative": "absolute"
+    },
+    "S3 (side: x10 alone, E239's P1)": {
+      "rule": "N(x10) - max N over new_few, new_thin, read as P1",
+      "prediction": "holds (x10 at matched size is x2's state)",
+      "absolute_or_relative": "absolute"
+    },
+    "D1 (descriptive: R)": {
+      "rule": "R (mean s over K*, main search) per item, and the P1 order on R with its own band; reported beside E226's R at the edits' own sizes. No prediction filed: R is the reading E226 filed, and this run's question is N.",
+      "absolute_or_relative": "absolute"
+    },
+    "D2 (descriptive: x2 against x10)": {
+      "rule": "|N(x2) - N(x10)|, |R(x2) - R(x10)| and whether their K* are equal; expected 0 up to fp32 rounding of F_c; reported against the band, no bar.",
+      "absolute_or_relative": "absolute"
+    }
+  }
+}
