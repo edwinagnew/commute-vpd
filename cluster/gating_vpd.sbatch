@@ -4,7 +4,7 @@
 #   sbatch --comment='E241 pairs: gating at VPD' cluster/gating_vpd.sbatch pairs
 # Each job reads its do-nothing state first (stops on a miss). A rerun skips items whose JSON exists. Then, no GPU:
 #   fleet/cpu-run python3 experiments/gating_vpd/score.py
-# PRED_SHA: sha256 of experiments/gating_vpd/results/predictions.json as committed in 92367454.
+# PRED_SHA: sha256 of experiments/gating_vpd/results/predictions.json as committed in ee1aae5a.
 #SBATCH --job-name=commute-e241-gating
 #SBATCH --partition=compute
 #SBATCH --account=c11
