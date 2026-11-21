@@ -208,6 +208,7 @@ def _cuda_on_cpu() -> None:
                        "synchronize": lambda *_a, **_k: None, "empty_cache": lambda: None,
                        "reset_peak_memory_stats": lambda *_a, **_k: None, "max_memory_allocated": lambda *_a, **_k: 0,
                        "memory_allocated": lambda *_a, **_k: 0, "max_memory_reserved": lambda *_a, **_k: 0,
+                       "is_current_stream_capturing": lambda: False,  # Adam.step asks (E234 dry run)
                        "get_device_name": lambda *_a, **_k: "cpu (INPUT_MANIFEST_CPU dry run)"}.items():
         setattr(torch.cuda, name, stub)
     CudaOnCpu().__enter__()  # for the rest of the process
