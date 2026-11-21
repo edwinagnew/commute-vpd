@@ -31,7 +31,8 @@ tasks at one size, the re-gating share and the base model's prior on the trained
 $R$ does \open{rank correlation of each with $R$ under wording A, and the band from matched random changes; cell P1.46
 for $R$, compare-lead scoring}. The share sets all nine pairs apart in the built direction, and keeps all nine after
 size matching. The prior points the built way on all nine, but with one value a side on eight it gives a direction,
-not a call. The two are different readings: the share's gaps rank with the prior's at only 0.02.
+not a call. The two are different readings: the share's gaps rank with the prior's at only 0.02. With five to nine
+fine-tunes in each set, these rank correlations describe the sets; they are not tests.
 
 \paragraph{Where each fails.} The prior fails where answers are equally likely. At one update size the share puts the
 cipher whose answers the base model finds as likely as copy's 0.40 below copy, although the two priors differ only
@@ -86,61 +87,26 @@ scoring; the crosscoder row waits for cell P2.49's second run.}
 
 ---
 
-## Version B: the negative version
+## Version B: only the prior tracks (placeholder; would mean a pivot)
 
-**Right when:** either no proxy ranks the fine-tunes as $R$ under wording A does once size and prior are partialled
-out, beyond the matched random band (compare-lead scoring); or $R$ under wording A fails its known-answer control
-(cell P1.46), so there is no reference. The third paragraph holds the second branch; keep it or delete it.
+**Right when:** against $R$ under wording A (cell P1.46), the base model's prior on the trained answer is the only
+proxy that ranks the fine-tunes as $R$ does. This is what compare-lead's dry run against size-removed $R$ read
+(P2.51 dry run, reports/analyses/2026-11-21_analysis_p2-51-proxies-vs-r.md in compare-lead's clone; numbers below are
+from it and are provisional until $R$ under wording A replaces size-removed $R$). The user, 11-20: reporting that the
+prior is the best measure is not worth a paper on its own; "we would have to pivot". So this is not a framing to
+polish: it states the result plainly, for the user to decide on.
 
 ```latex
-\subsection{Proxies against the baselines and the definition}\label{sec:proxies}
+\subsection{Proxies against the definition}\label{sec:proxies}
 
-\paragraph{The share beats every baseline on the built pairs.} The re-gating share is the only reading that sets all
-nine built pairs apart in the direction they were built, and it keeps all nine after the two sides' update sizes are
-matched. On the three pairs whose sides already have equal sizes, its gaps run from 0.52 to 0.62. Update size never
-agrees: wherever it calls a pair, the side built new has the larger update. Steering, the whole-width neuron share and
-the top-neuron share each reverse three to five pairs. \open{Crosscoder calls on the nine pairs from its rerun up an
-update-size ladder, cell P2.49 run 2.} The base model's prior with steering gives the built direction on all nine,
-though the share's gaps rank with theirs at only 0.02 and $-0.30$. This is agreement with how the pairs were built, and
-on that test the share is the most useful method we have (Table~\ref{tab:scorecard}).
-
-\paragraph{No proxy tracks the definition.} Scored against $R$ under the adopted wording at the VPD featurization, no
-proxy ranks the six hand-made edits, the nine pairs at matched size and the five key tasks as $R$ does once update
-size and prior are partialled out
-\open{per-proxy partial rank correlations and the matched random band; cell P1.46 for $R$, compare-lead scoring}.
-Earlier readings pointed this way. Over the five key tasks at one size, the share ranks with the base model's prior at
-a Spearman correlation of 0.9. In the KL form, every key task's share sits inside its own random band. On the
-hand-made edits, neither form put a reuse edit above a new edit in any of the six comparisons. One reading cuts the
-other way: the share puts the prior-matched cipher 0.40 below copy, so it is not the prior alone.
-
-\paragraph{Or there is no reference.} \open{Keep this paragraph only if $R$ under wording A fails its known-answer
-control (cell P1.46); otherwise delete it.} $R$ under the adopted wording did not order the hand-made edits
-\open{lowest reuse edit against highest new edit, and its band; cell P1.46}. With no reading of the definition that
-passes its own known-answer test, no proxy can be scored against the definition at this featurization. This repeats
-the earlier reading at VPD, which put the ten-fold reuse edit at 0.9755, below a thin new edit at 0.9963. Only a
-post-hoc reading with update size removed ordered the six, by 0.57 against a band of 0.25.
-
-\paragraph{What a passing proxy would need.} Four things, none yet in hand. First, a reading of the definition that
-passes its known-answer control, with random changes reading low. Second, agreement with that reading after size and
-prior are removed, beyond the band of matched random changes; in its log-odds form the share has no random reading at
-all. Third, agreement at a featurization not built from VPD
-\open{$R$ under wording A at SAE latents, cell P1.40}, since at VPD the share and the definition's test are nearly the
-same construction. Fourth, the same on fine-tunes nobody built (Sections~\ref{sec:real_text} and~\ref{sec:scale}).
-
-\begin{figure}[t]
-\centering
-\fbox{\parbox{0.9\linewidth}{\centering\small\textbf{Planned figure: proxies against the baselines and the definition}}}
-\caption{Does any proxy order the fine-tunes as the definition does, beyond what update size, the prior and a random
-change give? One row per method: the share in both forms, the gating causal test, gain-only reach, effective rank,
-steering, the prior, update size and the crosscoder. Left: each method's calls on the nine built pairs. Right, on the
-same rows: rank correlation with $R$ under the adopted wording over the six hand-made edits, the nine pairs at matched
-size and the five key tasks, with update size and prior partialled out. The grey band is the same correlation with
-each fine-tune's reading replaced by its three matched random changes; the dashed line is zero. If $R$ fails its
-known-answer control, the right panel is replaced by $R$ on the six edits with its band, and no proxy is scored.}
-\label{fig:proxies}
-\end{figure}
-\open{Fig.~\ref{fig:proxies}: right panel needs cell P1.46 and compare-lead's scoring; left panel can be drawn now
-from Table~\ref{tab:scorecard}, except the crosscoder row (cell P2.49 run 2).}
+We ranked three sets of fine-tunes by the definition's reading $R$: the six hand-made edits, the nine built pairs, and
+the five key tasks at one update size. We then asked which cheap reading ranks them the same way, from saved readings
+only. Only the base model's prior on the trained answer does: rank correlation 0.88 on the pairs and 0.80 on the key
+tasks \open{numbers against $R$ under wording A, cell P1.46; these are against $R$ with update size removed}. The
+re-gating share does not: $-0.37$ on the pairs and 0.00 on the edits. On the key tasks it reads 0.50, and there it
+follows the prior at 0.90. Steering and effective rank run against $R$ on the pairs, and the crosscoder agrees weakly
+\open{crosscoder against $R$ under wording A, cell P2.49 run 2}. With five to nine fine-tunes in each set, these
+describe the sets; they are not tests. The prior's agreement may also mean that $R$ itself tracks the prior.
 ```
 
 ---
