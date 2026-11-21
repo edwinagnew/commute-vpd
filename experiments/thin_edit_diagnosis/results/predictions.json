@@ -1,0 +1,40 @@
+{
+ "experiment": "E247",
+ "cell": "P1.47",
+ "filed": "2026-11-21, definition-lead (writer agent), before any GPU run of this experiment",
+ "plan": "reports/plans/2026-11-21_plan_thin-edit-diagnosis.md",
+ "card": "reports/plans/2026-11-21_plan_thin-edit-diagnosis-card.md",
+ "settings": {
+  "items": ["random_size_241001", "random_kl_241002", "x10", "x2", "rebuilt", "new_few", "new_thin"],
+  "halves": ["x10", "new_thin"],
+  "target": "new_thin",
+  "settings_source": "items: E242's read built items (moved was not read there: under its floor) and its two random updates, the random ones first as the null reference, new_thin last; every item is rebuilt by E242's World with E242's config (the KL-matched random's scale is E242's saved x, not matched again). halves: E226's two halves of D (split_seed of E226), each with its own saved K* and E242's stood-in set for that half; new_thin for the rule's spread, x10 as the reference. target: the item the user asked about (ask 57). Windows, read positions, batch, gain_batch and split_tol are E226's and E242's, read from their predictions.json unchanged."
+ },
+ "thresholds": {
+  "kl_repro_rel": 0.0001,
+  "rise_min": 0.11,
+  "share_min": 0.5,
+  "hours_max": 1.5,
+  "thresholds_source": "kl_repro_rel: E221's filed value, used by E242 for the same state and windows through two code paths (all 16 printed digits agree; a wrong state, set or window moves KL by order 1); here for KL(F || M) against E242's and for q_fit against E242's kl_at_found / kl_fm, per variant. revert_tol (E242's controls) comes from E242's predictions.json unchanged. rise_min: two spreads of the proxy (card): KL(F || F with every standable changed member of K* stood in) / KL(F || M) on new_thin's two halves of D reads 0.618 and 0.696 (E242 items/new_thin.json), one half's sd about 0.055; 2 x 0.055 = 0.11, which also doubles wording A's bar of 0.1. share_min: one half, the point at which the named parts carry more of the change than the rest. hours_max: the debug QoS's 2 h less world loading and the write-change passes; stage 0 projects the evaluations from its measured seconds per evaluation. Exact zeros, no tolerance, in stage 0: F = M gives num = den exactly (gain 1.0), dU = dV = 0 and rf = rm (write change 0.0), and every correction adds exact zeros (KL 0.0), as E242's do-nothing read."
+ },
+ "readings": {
+  "q_fit": "KL(F || F_S) / KL(F || M), S = E242's stood-in set (K*'s changed members that do not keep F's mechanism), E242's saved gains, F's full forward, mean over the windows; must repeat E242's kl_at_found / kl_fm within kl_repro_rel",
+  "q_one": "the same with every gain set to 1 (M's mechanism, unscaled). Blind to: which parts of S matter; it reads S as a whole",
+  "rise": "q_one - q_fit on new_thin, all of D",
+  "e_stood": "sum over S of (num - den)^2 / den over sum over S of |write_F - write_M|^2, every position of D in F's run: the share of S's write change that the fitted gains explain (the change projected on M's own write). Blind to: how much each part's write matters for the behaviour; it weighs parts by the size of their write change",
+  "c_kept": "sum over K*'s changed members that keep F's mechanism of |write_F - write_M|^2 over the same sum over all of K*'s changed members; c_kept_count the same share by count. Blind to: the same, and it adds write changes across sites (new_thin and x10 change one matrix only)",
+  "q_out, c_out, c_rem": "descriptive: S plus every changed variable outside K* stood in at fitted gains; the share of all changed variables' write change outside K* and in the 24 site remainders"
+ },
+ "rules": {
+  "R0": "Stop, nothing read, on any miss: stage 0 (do-nothing: every gain exactly 1, every write change exactly 0, every variable stood in gives KL exactly 0, no changed variable); per item E242's controls (unchanged gains exactly 1, unchanged stood in exactly F, every change at gain 1 gives M's logits within revert_tol), KL(F || M) and q_fit per variant equal to E242's within kl_repro_rel, E242's changed set equal to this featurization's",
+  "P1": "On new_thin (all of D): rival a if rise > rise_min and e_stood >= share_min; rival b if rise <= rise_min and c_kept >= share_min; otherwise neither, reported as read. Edge cases checked before filing: S is non-empty on every item (875 to 10,106 members, E242's arrays), every item's KL(F || M) is above 0.002 and every changed set has non-zero write change (E242's KL(F || M) and its changed variables), so no denominator is 0; e_kept is None where no member keeps F's mechanism (none of these items); the two rivals' conditions cannot both hold (rise above and at or under rise_min). Do-nothing: rise, e_stood and c_kept are not defined (no changed variable): it is a control, not read by P1. The halves' rises are reported beside, with their spread, and are not part of the rule."
+ },
+ "expected": {
+  "do_nothing": "every gain 1.0, every write change 0.0, KL with every variable stood in 0.0 (exact)",
+  "random_size_241001, random_kl_241002": "gains within 0.002 and 0.016 of 1 for 90% of S (E242's saved gains, read at $0), so q_one - q_fit under 0.02; e_stood under 0.05 (a Gaussian change is nearly orthogonal to M's own write); c_kept near its count share (0.71 and 0.70) within 0.1; q_fit about 0.1 (E242)",
+  "x2": "q_one far above q_fit: E242 stood every standable changed member of K* but 5 in, and those stood in at their gains moved F by 0.51 of KL(F || M); at gain 1 the stand-in is close to reverting the edit, so q_one above 0.5",
+  "x10": "a gain edit by construction, but the least-squares split spreads it (E242 plan, toy check), and 90% of S's gains lie within 0.14 of 1: rise above rise_min and e_stood above the random updates', not filed",
+  "rebuilt, new_few": "not filed; reported beside",
+  "new_thin": "the lead expects rival b: 90% of S's gains lie within 0.051 of 1 (median 0.018, read at $0), so q_one under 0.21 (rise at or under 0.11) and e_stood under 0.2; the 193 kept members carry at least half of the write change of K*'s 1,068 changed members (c_kept >= 0.5, against 0.18 by count); c_rem about 0 (E226: outside share 2e-12 of new_thin's update)"
+ }
+}
