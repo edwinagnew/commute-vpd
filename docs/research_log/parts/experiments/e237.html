@@ -1,0 +1,18 @@
+<article class="exp" id="e237">
+<div class="top"><span class="id">E237</span><span class="chip mixed">mixed</span><h3>Do the readings sort the five key tasks by kind of task or by the base model's prior?</h3><span class="when">2026-11-21 · cell P2.50 (filled), no independent check · <code>experiments/key_grid</code></span></div>
+<p class="one"><strong>The question.</strong> Part 2 asks whether the re-gating share tells a task the model already prefers from one it must learn, or only tracks how likely the base model finds the trained answer (its prior). The five key tasks include a cipher built so the base model finds its answers about as likely as copy's, which separates the two readings.</p>
+<p class="one"><strong>What we did.</strong> Each of the five tasks teaches the 67M model one answer for each of 96 keys (copy the key, the base model's own top token, a token from its top 20, a cipher of the key, and the prior-matched cipher). We shrank every saved update to one common weight size, three seeds a task, put a random update of the same size beside each, and read every reading the project has saved: the share in its log-odds and KL forms, the reuse score R at five levels, effective rank and the prior.</p>
+<p class="one"><strong>What we found.</strong> The log-odds share puts the prior-matched cipher with the cipher: 0.40 below copy, 0.096 from the other cipher, and every copy, top or mid against a cipher gap clears 0.17 (narrowest 0.363). The KL share also puts the two ciphers lowest, but every task sits inside or at the edge of its random band, which we did not predict, because a random update of this size barely moves the output. Every R reads below its random band and moves between tasks only by small steps.</p>
+<p class="one"><strong>What it means.</strong> At one size the log-odds share follows the kind of task and not only the prior; R at the featurizations read so far tells these tasks apart only weakly, and it is the pre-2026-11-20 wording of R. Nothing here is a reuse verdict. Steering, S and the crosscoder were not read on these tasks.</p>
+<figure><img src="fig/e237_columns.png" alt="Every reading for the five key tasks beside random updates"><figcaption><strong>Does the share put the prior-matched cipher with copy or with the cipher? With the cipher.</strong> One column per reading, tasks along each axis, random updates as bands; readings not computed are listed as not read.</figcaption></figure>
+<dl class="fields">
+<dt>Run</dt><dd>MATS cluster debug jobs on the saved updates, $0; every task at three seeds plus a random update at its own per-matrix norms.</dd>
+<dt>Found</dt><dd><ul>
+<li>The log-odds share separates the kinds by more than twice the filed bar on every pairing, and the prior-matched cipher reads with the cipher; the order follows the prior but the spacing does not.</li>
+<li>The KL share stayed inside or at the edge of its random band (filed: ciphers below it); every R sat below its random band.</li>
+<li>Effective rank was 402 to 478 for every task against 697 to 707 for random.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 2: whether the share is more than the prior (sub-claim: it reads the kind of task at one size); R's power to tell tasks apart.</dd>
+<dt>Moved on</dt><dd>R under the adopted wording is a separate cell (P1.46); the cheap proxies are set against it in P2.51. Report <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-21_analysis_e237-key-grid.md"><code>reports/analyses/2026-11-21_analysis_e237-key-grid.md</code></a>.</dd>
+</dl>
+</article>
