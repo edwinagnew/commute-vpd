@@ -1,0 +1,41 @@
+{
+  "experiment": "E251",
+  "cell": "P1.40, run 3 (requested from the user by whip-lead 2026-11-21; E251, a follow-up to E245); card reports/plans/2026-11-21_plan_r-under-a-sae-random-card.md",
+  "plan": "reports/plans/2026-11-21_plan_r-under-a-sae-random.md",
+  "definition": "E245's, unchanged (experiments/sae_r_a/results/predictions.json .definition): R under wording A at E234's base-only BatchTopK SAE latents (seed 0) on attn0-3 and mlp0-3, K* by E226's search, R_A at tol 0.1 with 0.05 and 0.2 beside it.",
+  "e245_predictions_sha256": "8faf2d193cf1f203eb292c16d4081c1bd2adbbdb04aa180a7b4320eea92b17b8",
+  "settings": {
+    "note": "none of its own: every setting and threshold is E245's (its predictions.json, checked by the sha above); only the items and the results directory differ",
+    "items_source": "E237's 15 random controls random_<state> (experiments/key_grid/run.py World.update: FT.random_direction of the state's saved update, a Gaussian per matrix at that matrix's norm, times E237's common size c) and E242's random_size_241001 and random_kl_241002 (experiments/kstar_vpd_wording_a/run.py World.random, random_kl)"
+  },
+  "expected": {
+    "do_nothing": "as E245: every gain exactly 1, every variable stood in gives KL exactly 0, R_A 1, floor under floor_max (E245 stage 0 read pieces KL 8.5e-12)",
+    "random_e58/<state>": "per state, the same windows, update size and do-nothing reference as E245's key item <state>_scaled, which read R_A (tol 0.1) 0.989-0.999. Rival a: below 0.989 - band; rival b: at or above it.",
+    "random_size_241001": "E242 read R_A 0.291 at VPD on this very update (tol 0.1; 0.163 at 0.05, 0.501 at 0.2); its KL(F || M) is 0.0030, so 0.1 of it may sit near the floor (then not read, listed)",
+    "random_kl_241002": "E242 read R_A 0.301 at VPD (0.158 at 0.05, 0.512 at 0.2)"
+  },
+  "rules": {
+    "R0 (stops)": {
+      "rule": "E245's R0 (a) and (b), unchanged, by the same code; no order check (these are not the built items). Also: exit unless E245's predictions.json sha256 equals e245_predictions_sha256.",
+      "absolute_or_relative": "as E245"
+    },
+    "P1 (descriptive: can R_A at SAE latents tell a fine-tune from a random update of its size?)": {
+      "rule": "gap = min over E245's 15 key items read of R_A (tol 0.1, all of D) - max over the 15 random_<state> items read of R_A (tol 0.1). Report gap against E245's band (0.1096, summary_built.json): gap > band: rival a (R_A at SAE latents reads key-task fine-tunes above random updates of their size, so its near-1 readings carry information); gap <= 0: rival b (a random update of key-task size also reads near 1: the SAE's remainders and per-latent gains absorb any update of this size, and E245's key readings carry no information about reuse); 0 < gap <= band: no call. Also per state, R_A(key item) - R_A(random_<state>), and the count of states with a positive difference.",
+      "prediction": "rival a (whip-lead's advice, fable-claim2.md: 'random well below every fine-tune, as at VPD (0.29)')",
+      "absolute_or_relative": "absolute",
+      "blind_to": "as E245's P1 (variables outside K*, a capped search's lower bound on both sides, R_A counts variables so a change held in one remainder costs one variable); a random direction is not a null of reuse, only of 'any update of this size reads near 1'",
+      "positive_control": "the VPD comparison: random_size_241001 and random_kl_241002 read 0.29 and 0.30 at VPD; E245's built new edits read 0.57 at most at SAE",
+      "noise_floor": "E245's band, set from its built items' two halves (0.1096); the random items get no halves",
+      "edge_cases": "a random item whose bar is at or under the floor: not read, listed, left out; no random item read: no reading; ties: gap 0, rival b; key items as E245 read them (all 15 read)"
+    },
+    "D1 (descriptive: same update, two featurizations)": {
+      "rule": "R_A at SAE latents beside E242's R_A at VPD for random_size_241001 and random_kl_241002, all three tolerances, and the remainder share. No prediction filed.",
+      "absolute_or_relative": "absolute"
+    },
+    "remainder share": {
+      "rule": "as E245, per item; descriptive",
+      "absolute_or_relative": "relative to KL(F || M)"
+    }
+  },
+  "status": "filed 2026-11-21, before any run (no job submitted)"
+}
