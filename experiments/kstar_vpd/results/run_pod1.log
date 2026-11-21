@@ -1,0 +1,173 @@
+E226 start, tag pod1; 19 of 74 items ['new_thin', 'rebuilt', 'e62/lookup_s0', 'e46/ident32_s1', 'e46/rand32_s1', 'e53/lowercase_s1', 'e53/broad_cipher_s1', 'e54/elicit_s3', 'e54/cipher_s2', 'e54/cipher_own_s1', 'c3/rank1_s3', 'c3/rank1_s7', 'c3/cipher_s3', 'c3/cipher_s7', 'c3/copy_s3', 'c3/copy_s7', 'e58/cipher_s0', 'e58/copy_s1', 'e58/prior_cipher_s2']; settings {'alpha': 0.9, 'split_tol': 1e-06, 'batch': 32, 'grade_batch': 8, 'reranks': 2, 'eval_cap': 2000, 'chunk_div': 8, 'split_seed': 186001, 'reuse': ('x2', 'x10', 'moved', 'rebuilt'), 'new': ('new_few', 'new_thin')}; thresholds {'kl_floor': 1e-06, 'gate_tol': 0.001, 's_tol': 1e-06, 'split_fp64_tol': 1e-12, 'F_from_pieces_tol': 0.0001, 'M_from_pieces_tol': 0.0001, 'shard_hours_max': 6, 'band_min': 0.014, 'rho_bar': 0.7, 'n_min': 5, 'thresholds_source': "kl_floor, gate_tol, s_tol: E214's filed values (gate_tol is met at 0 for all kept here: kept variables subtract exact zeros); rho_bar, n_min: E221's filed values for its T4 rule; split_fp64_tol: delta-W_out is delta-W minus the split's sum, so the fp64 identity holds to rounding (~1e-16 relative), and 1e-12 only catches a code error; F_from_pieces_tol, M_from_pieces_tol: the pieces are stored in fp32 (unit roundoff 6e-8) and summed over up to 3,584 subcomponents, so 1e-4 relative is a guard against a wrong layout or a wrong Delta (errors of order 1), not a measured floor: the rehearsal logs every site's value and, if any is within 10x of the bar, the lead files a dated amendment before the scored run; shard_hours_max 6: the gated-run line of .claude/CLAUDE.md, per pod; band_min 0.014: the card's spread (E214's largest order sd of a known item, experiments/kstar_levels/results/substitute.json .grade_read.head_mlp.spreads.new_few.order_sd), used only when the measured band is degenerate (0)."}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+do_nothing: 512 windows, 38938 variables, 0 changed, 0 grafts; KL(F || F_empty) 3.77152, KL(F || M) 7.60564127e-12; gates {'all': 2.352890760448645e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 None
+    ranking 0: prefix 36124, 15 evaluations
+    ranking 1: prefix 33307, 30 evaluations
+    ranking 2: prefix 34285, 45 evaluations
+  do_nothing main: |K*| 33177 (prefix 33307), R read 1.000000 (prefix 1.000000), R all 1.000000, f 0.0000, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 496 s
+do_nothing: done in 510 s; peak GPU memory 5.95 GB
+stage 0: 0.248 s per evaluation, 3.17 h projected for this shard; checks hold
+STAGE 0 DONE
+[data] val rows 0..256: cached at /root/artifacts/sets/val_0_256.npy
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 5731, 'limit_filed': 2.5397456096210376, 'limit_whitened_0.01': 8.566283727683114, 'limit_whitened_0.001': 8.575327523798162, 'limit_whitened_0.0001': 8.568685731515666, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 4566, 'limit_filed': 3.38301534693608, 'limit_whitened_0.01': 9.095356453119177, 'limit_whitened_0.001': 9.070667057076344, 'limit_whitened_0.0001': 9.072227442589407, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: {"slots": [109, 447, 771, 1004, 1101, 1997, 2018, 2034], "betas": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "detectors": [{"limit_filed": 2.8299306178453936, "limit_whitened_0.01": 11.977943470656788, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.935406646295597, "limit_whitened_0.01": 9.467794583919384, "limit_whitened_0.001": 9.453473755664607, "limit_whitened_0.0001": 9.434761738713327, "direction": "whitened 0.0001", "pile_own": 0}, {"limit_filed": 3.153354424992976, "limit_whitened_0.01": 10.247742932694962, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 2.976401818196408, "limit_whitened_0.01": 10.980585108255589, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 3.1523499367635144, "limit_whitened_0.01": 10.295113233962542, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.8080070622612814, "limit_whitened_0.01": 11.894050704084995, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 3.49099258484954, "limit_whitened_0.01": 12.118533590411879, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 6.333510380063351, "limit_whitened_0.01": 15.14462701601434, "direction": "whitened 0.01", "pile_own": 1}], "act": [13.54616928100586, 13.430658340454102, 14.229463577270508, 13.013628959655762, 13.70849609375, 13.203634262084961, 13.495687484741211, 16.34401512145996], "copy_M_twin": 0.2578125, "copy_M_D": 0.001953125, "misses": ["reuse_small: top-1 0.0000 < 0.2063", "reuse_large: top-1 0.0117 < 0.2063"], "gamma_new_few": 11.291481018066406, "gamma_new_thin": 10.845924377441406, "gamma_T": 8.0, "g": 4.662668452625903, "size_matched": false, "dW_norm": {"reuse_small": 11.702665857318092, "new_few": 4.032901283721824, "new_thin": 1.9208650760341066, "reuse_large": 31.246117113476934}, "top1_reuse_small": 0.0, "top1_new_few": 0.900390625, "top1_new_thin": 0.900390625, "top1_reuse_large": 0.01171875, "A": [4833, 7192, 4910, 7939, 8638, 2589, 9653, 6196], "A_prime": [10680, 4934, 7756, 7057, 5823, 5827, 6255, 1471], "y": [5752, 5771, 5175, 4412, 5870, 5087, 4201, 6430], "swapped": [{"cue": 5, "A_prime": 5731, "limit_filed": 2.5397456096210376, "limit_whitened_0.01": 8.566283727683114, "limit_whitened_0.001": 8.575327523798162, "limit_whitened_0.0001": 8.568685731515666, "direction": "whitened 0.0001", "pile_own": 1}, {"cue": 5, "A_prime": 4566, "limit_filed": 3.38301534693608, "limit_whitened_0.01": 9.095356453119177, "limit_whitened_0.001": 9.070667057076344, "limit_whitened_0.0001": 9.072227442589407, "direction": "whitened 0.0001", "pile_own": 1}]}
+new_thin: 512 windows, 38938 variables, 3585 changed, 0 grafts; KL(F || F_empty) 7.64924, KL(F || M) 10.2519843; gates {'all': 2.866194336093031e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.3261248881445533, 'read2': 0.4707531316823022, 'outside2': 2.755317960799139e-24, 'cross_wr2': 0.2031219801763043, 'cross_out2': -3.159872422037086e-12}
+    ranking 0: prefix 20983, 16 evaluations
+    ranking 1: prefix 19898, 31 evaluations
+    ranking 2: prefix 15051, 47 evaluations
+  new_thin main: |K*| 9601 (prefix 15051), R read 0.996310 (prefix 0.995903), R all 0.996699, f 0.1112, site-remainder share 0.0011, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 523 s
+    ranking 0: prefix 22381, 15 evaluations
+    ranking 1: prefix 19368, 31 evaluations
+    ranking 2: prefix 16595, 46 evaluations
+  new_thin half1: |K*| 9942 (prefix 16595), R read 0.996506 (prefix 0.996278), R all 0.996905, f 0.1067, site-remainder share 0.0008, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 262 s
+    ranking 0: prefix 20917, 15 evaluations
+    ranking 1: prefix 22995, 30 evaluations
+    ranking 2: prefix 22995, 45 evaluations
+  new_thin half2: |K*| 12744 (prefix 20917), R read 0.995506 (prefix 0.995013), R all 0.996130, f 0.1192, site-remainder share 0.0008, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 262 s
+new_thin: done in 1064 s; peak GPU memory 6.51 GB
+ITEM 1 of 19 DONE (new_thin)
+rebuilt: 75 windows, 38938 variables, 16901 changed, 0 grafts; KL(F || F_empty) 4.32108, KL(F || M) 0.119961696; gates {'all': 1.0267284267229115e-07, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.4974336660723523, 'read2': 0.2781927433834418, 'outside2': 1.8051122632447917e-24, 'cross_wr2': 0.2243735905448483, 'cross_out2': -6.422710449697496e-13}
+    ranking 0: prefix 35678, 15 evaluations
+    ranking 1: prefix 31422, 30 evaluations
+    ranking 2: prefix 32877, 45 evaluations
+  rebuilt main: |K*| 31299 (prefix 31422), R read 0.995373 (prefix 0.995363), R all 0.995373, f 0.3742, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 121 s
+    ranking 0: prefix 35964, 15 evaluations
+    ranking 1: prefix 31657, 30 evaluations
+    ranking 2: prefix 32371, 46 evaluations
+  rebuilt half1: |K*| 31532 (prefix 31657), R read 0.995322 (prefix 0.995298), R all 0.995322, f 0.3762, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 64 s
+    ranking 0: prefix 35570, 15 evaluations
+    ranking 1: prefix 31852, 30 evaluations
+    ranking 2: prefix 33076, 46 evaluations
+  rebuilt half2: |K*| 31688 (prefix 31852), R read 0.995241 (prefix 0.995216), R all 0.995241, f 0.3832, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 64 s
+rebuilt: done in 250 s; peak GPU memory 10.17 GB
+ITEM 2 of 19 DONE (rebuilt)
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+e62/lookup_s0: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 4.6972, KL(F || M) 4.3264258; gates {'all': 2.8870076675957534e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.5005823719628811, 'read2': 0.2900309244029974, 'outside2': 0.019772004789559962, 'cross_wr2': 0.18961469884520174, 'cross_out2': -6.402981158412934e-13}
+    ranking 0: prefix 34333, 15 evaluations
+    ranking 1: prefix 30229, 31 evaluations
+    ranking 2: prefix 30576, 46 evaluations
+  e62/lookup_s0 main: |K*| 29934 (prefix 30229), R read 0.999017 (prefix 0.999013), R all 0.999168, f 0.9999, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 283 s
+e62/lookup_s0: done in 298 s; peak GPU memory 10.17 GB
+ITEM 3 of 19 DONE (e62/lookup_s0)
+e46/ident32_s1: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 5.33307, KL(F || M) 4.37827394; gates {'all': 2.9537391128542367e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.48845593343419563, 'read2': 0.30646434051729987, 'outside2': 0.018049048829082613, 'cross_wr2': 0.1870306772202033, 'cross_out2': -7.813740894248183e-13}
+    ranking 0: prefix 34313, 15 evaluations
+    ranking 1: prefix 26066, 30 evaluations
+    ranking 2: prefix 26072, 45 evaluations
+  e46/ident32_s1 main: |K*| 25511 (prefix 26066), R read 0.999551 (prefix 0.999546), R all 0.999537, f 0.9999, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 283 s
+e46/ident32_s1: done in 286 s; peak GPU memory 10.17 GB
+ITEM 4 of 19 DONE (e46/ident32_s1)
+e46/rand32_s1: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 4.45672, KL(F || M) 4.60957367; gates {'all': 2.463145847286796e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.48094284853655606, 'read2': 0.3142078718581957, 'outside2': 0.01596948164902513, 'cross_wr2': 0.18887979795711143, 'cross_out2': -8.88332543580209e-13}
+    ranking 0: prefix 34929, 15 evaluations
+    ranking 1: prefix 33696, 30 evaluations
+    ranking 2: prefix 34041, 45 evaluations
+  e46/rand32_s1 main: |K*| 33600 (prefix 33696), R read 0.999490 (prefix 0.999490), R all 0.999434, f 0.9999, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 283 s
+e46/rand32_s1: done in 286 s; peak GPU memory 10.17 GB
+ITEM 5 of 19 DONE (e46/rand32_s1)
+e53/lowercase_s1: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 3.59465, KL(F || M) 0.724929519; gates {'all': 4.040256953885546e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.519728439736942, 'read2': 0.268037854143197, 'outside2': 0.019504076812444166, 'cross_wr2': 0.19272962930797763, 'cross_out2': -5.608355025750839e-13}
+    ranking 0: prefix 35720, 15 evaluations
+    ranking 1: prefix 32691, 30 evaluations
+    ranking 2: prefix 32848, 46 evaluations
+  e53/lowercase_s1 main: |K*| 32541 (prefix 32691), R read 0.997757 (prefix 0.997753), R all 0.997542, f 0.9999, site-remainder share 0.0004, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 285 s
+e53/lowercase_s1: done in 293 s; peak GPU memory 10.17 GB
+ITEM 6 of 19 DONE (e53/lowercase_s1)
+e53/broad_cipher_s1: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 3.42394, KL(F || M) 0.46612519; gates {'all': 4.113132035854505e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.5123396404521728, 'read2': 0.2833432716091276, 'outside2': 0.015991567832086728, 'cross_wr2': 0.1883255201073337, 'cross_out2': -7.207641303380166e-13}
+    ranking 0: prefix 35286, 16 evaluations
+    ranking 1: prefix 32853, 32 evaluations
+    ranking 2: prefix 32766, 48 evaluations
+  e53/broad_cipher_s1 main: |K*| 31891 (prefix 32766), R read 0.997022 (prefix 0.997008), R all 0.996755, f 0.9999, site-remainder share 0.0004, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 291 s
+e53/broad_cipher_s1: done in 296 s; peak GPU memory 10.17 GB
+ITEM 7 of 19 DONE (e53/broad_cipher_s1)
+e54/elicit_s3: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 5.38274, KL(F || M) 3.08674071; gates {'all': 2.634444854265894e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.4891557147964026, 'read2': 0.30537241327845244, 'outside2': 0.0181052931407987, 'cross_wr2': 0.18736657878514085, 'cross_out2': -7.945655401448997e-13}
+    ranking 0: prefix 32394, 15 evaluations
+    ranking 1: prefix 27735, 30 evaluations
+    ranking 2: prefix 26679, 45 evaluations
+  e54/elicit_s3 main: |K*| 25281 (prefix 26679), R read 0.999648 (prefix 0.999641), R all 0.999605, f 0.9999, site-remainder share 0.0004, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 284 s
+e54/elicit_s3: done in 287 s; peak GPU memory 10.17 GB
+ITEM 8 of 19 DONE (e54/elicit_s3)
+e54/cipher_s2: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 3.27954, KL(F || M) 3.34106008; gates {'all': 3.3521234854561044e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.4788560864436524, 'read2': 0.31639297856538273, 'outside2': 0.01626311919259035, 'cross_wr2': 0.18848781579926988, 'cross_out2': -8.953863559933529e-13}
+    ranking 0: prefix 35574, 15 evaluations
+    ranking 1: prefix 33875, 30 evaluations
+    ranking 2: prefix 34487, 46 evaluations
+  e54/cipher_s2 main: |K*| 33755 (prefix 33875), R read 0.999534 (prefix 0.999533), R all 0.999482, f 0.9999, site-remainder share 0.0004, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 284 s
+e54/cipher_s2: done in 287 s; peak GPU memory 10.17 GB
+ITEM 9 of 19 DONE (e54/cipher_s2)
+e54/cipher_own_s1: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 6.04026, KL(F || M) 5.88838383; gates {'all': 2.9680877560167573e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.5007615385281471, 'read2': 0.29448910769455905, 'outside2': 0.01692419535803298, 'cross_wr2': 0.18782515841998498, 'cross_out2': -7.241538256538696e-13}
+    ranking 0: prefix 33123, 15 evaluations
+    ranking 1: prefix 29422, 30 evaluations
+    ranking 2: prefix 29032, 45 evaluations
+  e54/cipher_own_s1 main: |K*| 27642 (prefix 29032), R read 0.999082 (prefix 0.999075), R all 0.998988, f 0.9999, site-remainder share 0.0004, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 284 s
+e54/cipher_own_s1: done in 287 s; peak GPU memory 10.17 GB
+ITEM 10 of 19 DONE (e54/cipher_own_s1)
+c3/rank1_s3: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 4.27843, KL(F || M) 1.94622258; gates {'all': 3.14299313686206e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.49280020391846446, 'read2': 0.3009044320592719, 'outside2': 0.01857301191919467, 'cross_wr2': 0.1877223521038234, 'cross_out2': -7.543789909609763e-13}
+    ranking 0: prefix 34479, 15 evaluations
+    ranking 1: prefix 29349, 31 evaluations
+    ranking 2: prefix 28768, 46 evaluations
+  c3/rank1_s3 main: |K*| 27182 (prefix 28768), R read 0.999657 (prefix 0.999653), R all 0.999626, f 0.9999, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 284 s
+c3/rank1_s3: done in 286 s; peak GPU memory 10.17 GB
+ITEM 11 of 19 DONE (c3/rank1_s3)
+c3/rank1_s7: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 4.29206, KL(F || M) 2.11648205; gates {'all': 2.900825847973465e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.49530264966601845, 'read2': 0.29756089137483066, 'outside2': 0.01921810830460585, 'cross_wr2': 0.18791835065528995, 'cross_out2': -7.448256655688614e-13}
+    ranking 0: prefix 34257, 15 evaluations
+    ranking 1: prefix 29851, 30 evaluations
+    ranking 2: prefix 29445, 46 evaluations
+  c3/rank1_s7 main: |K*| 27884 (prefix 29445), R read 0.999650 (prefix 0.999644), R all 0.999617, f 0.9999, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 284 s
+c3/rank1_s7: done in 287 s; peak GPU memory 10.17 GB
+ITEM 12 of 19 DONE (c3/rank1_s7)
+c3/cipher_s3: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 3.33915, KL(F || M) 3.5429771; gates {'all': 4.03314379582298e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.4752077146263557, 'read2': 0.3206498751830122, 'outside2': 0.015537644305270947, 'cross_wr2': 0.1886047658862847, 'cross_out2': -9.235673224290978e-13}
+    ranking 0: prefix 35504, 16 evaluations
+    ranking 1: prefix 34618, 31 evaluations
+    ranking 2: prefix 34241, 47 evaluations
+  c3/cipher_s3 main: |K*| 33285 (prefix 34241), R read 0.999587 (prefix 0.999584), R all 0.999529, f 0.9999, site-remainder share 0.0004, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 283 s
+c3/cipher_s3: done in 286 s; peak GPU memory 10.17 GB
+ITEM 13 of 19 DONE (c3/cipher_s3)
+c3/cipher_s7: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 3.42297, KL(F || M) 4.03380754; gates {'all': 2.8178633328934666e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.47751670341110736, 'read2': 0.31777271191112655, 'outside2': 0.016239144752455918, 'cross_wr2': 0.18847143992621548, 'cross_out2': -9.052973892888894e-13}
+    ranking 0: prefix 35617, 15 evaluations
+    ranking 1: prefix 34701, 30 evaluations
+    ranking 2: prefix 34950, 45 evaluations
+  c3/cipher_s7 main: |K*| 34541 (prefix 34701), R read 0.999575 (prefix 0.999574), R all 0.999520, f 0.9999, site-remainder share 0.0004, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 284 s
+c3/cipher_s7: done in 286 s; peak GPU memory 10.17 GB
+ITEM 14 of 19 DONE (c3/cipher_s7)
+c3/copy_s3: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 5.69494, KL(F || M) 3.76212187; gates {'all': 3.6849637581326533e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.49003793388289985, 'read2': 0.305671617722263, 'outside2': 0.01762219418544829, 'cross_wr2': 0.18666825421017216, 'cross_out2': -7.832400999624116e-13}
+    ranking 0: prefix 32121, 15 evaluations
+    ranking 1: prefix 24609, 30 evaluations
+    ranking 2: prefix 24776, 45 evaluations
+  c3/copy_s3 main: |K*| 24106 (prefix 24609), R read 0.999597 (prefix 0.999594), R all 0.999599, f 0.9999, site-remainder share 0.0006, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 283 s
+c3/copy_s3: done in 286 s; peak GPU memory 10.17 GB
+ITEM 15 of 19 DONE (c3/copy_s3)
+c3/copy_s7: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 5.86655, KL(F || M) 4.0624898; gates {'all': 3.514500122037134e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.48924556243511685, 'read2': 0.3059548939973333, 'outside2': 0.01803121275354882, 'cross_wr2': 0.1867683308147862, 'cross_out2': -7.85189072827922e-13}
+    ranking 0: prefix 31921, 16 evaluations
+    ranking 1: prefix 23953, 31 evaluations
+    ranking 2: prefix 24032, 46 evaluations
+  c3/copy_s7 main: |K*| 23139 (prefix 23953), R read 0.999596 (prefix 0.999588), R all 0.999599, f 0.9999, site-remainder share 0.0006, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 283 s
+c3/copy_s7: done in 286 s; peak GPU memory 10.17 GB
+ITEM 16 of 19 DONE (c3/copy_s7)
+e58/cipher_s0: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 5.43152, KL(F || M) 5.23929466; gates {'all': 2.8109193408454303e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.4930552751574182, 'read2': 0.3030378940608921, 'outside2': 0.016278592019397527, 'cross_wr2': 0.18762823876310047, 'cross_out2': -8.08362412878778e-13}
+    ranking 0: prefix 34816, 15 evaluations
+    ranking 1: prefix 33463, 30 evaluations
+    ranking 2: prefix 33783, 46 evaluations
+  e58/cipher_s0 main: |K*| 33137 (prefix 33463), R read 0.998905 (prefix 0.998902), R all 0.998803, f 0.9999, site-remainder share 0.0004, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 284 s
+e58/cipher_s0: done in 287 s; peak GPU memory 10.17 GB
+ITEM 17 of 19 DONE (e58/cipher_s0)
+e58/copy_s1: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 6.23773, KL(F || M) 4.1136504; gates {'all': 3.387442120583728e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.5051154300534506, 'read2': 0.2849670897432625, 'outside2': 0.02042907670308304, 'cross_wr2': 0.1894884035007732, 'cross_out2': -5.693214519490727e-13}
+    ranking 0: prefix 32545, 15 evaluations
+    ranking 1: prefix 23587, 30 evaluations
+    ranking 2: prefix 21235, 46 evaluations
+  e58/copy_s1 main: |K*| 19356 (prefix 21235), R read 0.999347 (prefix 0.999324), R all 0.999333, f 0.9999, site-remainder share 0.0006, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 283 s
+e58/copy_s1: done in 286 s; peak GPU memory 10.17 GB
+ITEM 18 of 19 DONE (e58/copy_s1)
+e58/prior_cipher_s2: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 6.22385, KL(F || M) 4.52811545; gates {'all': 2.3042462089506444e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.49634770684638413, 'read2': 0.2979544434338649, 'outside2': 0.017024901675671163, 'cross_wr2': 0.18867294804484697, 'cross_out2': -7.670979906372474e-13}
+    ranking 0: prefix 33459, 15 evaluations
+    ranking 1: prefix 30350, 30 evaluations
+    ranking 2: prefix 30151, 45 evaluations
+  e58/prior_cipher_s2 main: |K*| 28876 (prefix 30151), R read 0.999086 (prefix 0.999076), R all 0.998990, f 0.9999, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 284 s
+e58/prior_cipher_s2: done in 286 s; peak GPU memory 10.17 GB
+ITEM 19 of 19 DONE (e58/prior_cipher_s2)
+E226 DONE
+peak host RSS 7.5 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/kstar_vpd/results/ (items/, stage0_pod1.json, large/) ===

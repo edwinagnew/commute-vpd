@@ -1,0 +1,67 @@
+E232 start, tag rehearse; 1 of 40 items ['e54-cipher_own_s0_scaled_e54_own']; settings {'levels': ('head_mlp', 'mlp_attn', 'block'), 'alpha': 0.9, 'alphas': (0.8, 0.9, 0.95), 'restricted_share': 0.5, 'orders': 3, 'order_seed': 0, 'polish_cap': 2000, 'split_seed': 186001, 'e196_pairs': (('copy24', 'cipher24'), ('ident32', 'rand32'), ('case_real', 'case_twin'), ('repeat_real', 'repeat_twin'), ('twin', 'fact')), 'e196_seeds': (0, 1), 'e196_as_e187': (('copy24', 'c3/copy'), ('cipher24', 'c3/cipher'), ('ident32', 'e46/ident32'), ('rand32', 'e46/rand32')), 'n_read': 512, 'read_seed': 195200, 'n_max': 100, 'held_share': 0.25, 'control_task': 'copy24', 'e195_layer': 1, 'e195_C': (486, 499, 613, 778, 1125, 2028, 2352, 2960), 'e195_factor': 10, 'control_state': 'e54/cipher_own_s0'}; thresholds {'kl_floor': 1e-06, 'gate_tol': 0.001, 's_tol': 1e-06, 'repro_tol': 1e-05, 'kl_repro_rel': 0.0001, 'size_rel': 1e-06, 'n_min': 5, 'kept_min': 8, 'size_match_rel': 1e-06, 'thresholds_source': "kl_floor, gate_tol, s_tol, repro_tol, kl_repro_rel, size_rel, n_min: E221's filed values and reasons (its thresholds_source); here kl_repro_rel and size_rel compare each scaled item with E205's saved reading of the same scaled state (E205 sizes on SM.times(dW, c), the same functions on the same file; E221 matched E205's unscaled kl_FM to all printed digits on every E187 state), and repro_tol compares the c = 1 control with E221's own item file (E221's x10 repeated E214 within it across cards). kept_min 8: the user's words (2026-11-20 task file item 2: 'at least 8 of 9 signs kept at blocks'). size_match_rel: E205's saved scaled sizes give a matched-size gap of at most 3.0e-8 of the smaller side's mean size over the nine pairs (measured 2026-11-20 with jq over experiments/held_model_size_matched/results/items/*_scaled_*.json against E187's m67 sizes), while the smallest scaling (open_pair_c3, c 0.9975) moves it by 2.5e-3; 1e-6 is 30 times the floor and 2,500 times under that."}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+do_nothing_c0: 512 windows, KL(F || F_empty) 3.24532, KL(F || M) 0, saved None, size {'whole': 0.0, 'mlp': 0.0}
+do_nothing_c0 head_mlp: 30 variables, 0 changed; gates {'all': 2.697023091968731e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 22, R all 1.000000, read 1.000000, f 0.0000; 2030 evaluations, 45 s (polish cap hit)
+do_nothing_c0 head_mlp: R read [1.0], all [1.0], f [0.0], |K*| [22]; peak GPU memory 5.25 GB
+do_nothing_c0 mlp_attn: 10 variables, 0 changed; gates {'all': 2.697023091968731e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 23 s
+do_nothing_c0 mlp_attn: R read [1.0], all [1.0], f [0.0], |K*| [10]; peak GPU memory 5.25 GB
+do_nothing_c0 block: 6 variables, 0 changed; gates {'all': 2.697023091968731e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+do_nothing_c0 block: R read [1.0], all [1.0], f [0.0], |K*| [6]; peak GPU memory 5.25 GB
+repeat_c1: 512 windows, KL(F || F_empty) 6.10467, KL(F || M) 6.10054308, saved 6.100542875520783, size {'whole': 0.009561128049770894, 'mlp': 0.010605339045608604}
+repeat_c1 head_mlp: 30 variables, 28 changed; gates {'all': 2.7157875592820346e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 15, R all 0.990302, read 0.980317, f 0.8667; 2030 evaluations, 46 s (polish cap hit)
+  head_mlp main order 1: |K*| 15, R all 0.988757, read 0.975008, f 0.8667; 2030 evaluations, 47 s (polish cap hit)
+  head_mlp main order 2: |K*| 15, R all 0.990154, read 0.979445, f 0.8667; 2030 evaluations, 47 s (polish cap hit)
+repeat_c1 head_mlp: R read [0.9803169443362364, 0.9750079696110838, 0.9794448057821497], all [0.9903015370815051, 0.9887573695844708, 0.9901539840837851], f [0.8666666666666667, 0.8666666666666667, 0.8666666666666667], |K*| [15, 15, 15]; peak GPU memory 5.25 GB
+repeat_c1 mlp_attn: 10 variables, 8 changed; gates {'all': 2.7157875592820346e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 23 s
+repeat_c1 mlp_attn: R read [0.977485802078985], all [0.9878377868569816], f [0.75], |K*| [8]; peak GPU memory 5.25 GB
+repeat_c1 block: 6 variables, 4 changed; gates {'all': 2.7157875592820346e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+repeat_c1 block: R read [0.970076978906525], all [0.9872844243989632], f [0.6666666666666666], |K*| [6]; peak GPU memory 5.25 GB
+stage 0: checks hold; {"experiment": "E232", "control_state": "e54/cipher_own_s0", "do_nothing_head_mlp": {"max_dev_s": 0.0, "f": [0.0], "R": [1.0, 1.0], "n_changed": 0}, "do_nothing_mlp_attn": {"max_dev_s": 0.0, "f": [0.0], "R": [1.0, 1.0], "n_changed": 0}, "do_nothing_block": {"max_dev_s": 0.0, "f": [0.0], "R": [1.0, 1.0], "n_changed": 0}, "repeat_head_mlp": {"max_abs_R_diff": 1.7256986950542341e-09, "same_K": true, "R_read": [0.9803169443362364, 0.9750079696110838, 0.9794448057821497], "R_read_E221": [0.9803169426105377, 0.9750079683414737, 0.9794448040667242]}, "repeat_mlp_attn": {"max_abs_R_diff": 8.203838719467171e-10, "same_K": true, "R_read": [0.977485802078985], "R_read_E221": [0.9774858016937062]}, "repeat_block": {"max_abs_R_diff": 6.77413791727588e-10, "same_K": true, "R_read": [0.970076978906525], "R_read_E221": [0.9700769795475449]}}
+STAGE 0 DONE
+e54-cipher_own_s0_scaled_e54_own: 512 windows, KL(F || F_empty) 4.00392, KL(F || M) 1.60378034, saved 1.603780153111154, size {'whole': 0.004987753515484049, 'mlp': 0.005532487048848419}
+e54-cipher_own_s0_scaled_e54_own head_mlp: 30 variables, 28 changed; gates {'all': 3.1129204671742627e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 22, R all 0.996143, read 0.991938, f 0.9091; 1914 evaluations, 45 s
+  head_mlp main order 1: |K*| 21, R all 0.997036, read 0.993411, f 0.9048; 2030 evaluations, 48 s (polish cap hit)
+  head_mlp main order 2: |K*| 22, R all 0.997054, read 0.993693, f 0.9091; 1900 evaluations, 45 s
+e54-cipher_own_s0_scaled_e54_own head_mlp: R read [0.9919378686226586, 0.993411076001909, 0.9936932113066547], all [0.9961427100522792, 0.9970356047017246, 0.9970542626393505], f [0.9090909090909091, 0.9047619047619048, 0.9090909090909091], |K*| [22, 21, 22]; peak GPU memory 5.25 GB
+e54-cipher_own_s0_scaled_e54_own mlp_attn: 10 variables, 8 changed; gates {'all': 3.1129204671742627e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 23 s
+e54-cipher_own_s0_scaled_e54_own mlp_attn: R read [0.9941696591182804], all [0.996879184196572], f [0.7777777777777778], |K*| [9]; peak GPU memory 5.25 GB
+e54-cipher_own_s0_scaled_e54_own block: 6 variables, 4 changed; gates {'all': 3.1129204671742627e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+e54-cipher_own_s0_scaled_e54_own block: R read [0.991239085287272], all [0.99619766684435], f [0.6666666666666666], |K*| [6]; peak GPU memory 5.25 GB
+ITEM 1 of 1 DONE (e54-cipher_own_s0_scaled_e54_own)
+E232 DONE
+peak host RSS 6.1 GB
+	Command being timed: ".venv/bin/python experiments/kstar_size_matched/run.py --tag rehearse --out rehearse --items e54-cipher_own_s0_scaled_e54_own"
+	User time (seconds): 424.03
+	System time (seconds): 9.49
+	Percent of CPU this job got: 99%
+	Elapsed (wall clock) time (h:mm:ss or m:ss): 7:14.57
+	Average shared text size (kbytes): 0
+	Average unshared data size (kbytes): 0
+	Average stack size (kbytes): 0
+	Average total size (kbytes): 0
+	Maximum resident set size (kbytes): 6428056
+	Average resident set size (kbytes): 0
+	Major (requiring I/O) page faults: 0
+	Minor (reclaiming a frame) page faults: 2049798
+	Voluntary context switches: 29240
+	Involuntary context switches: 908
+	Swaps: 0
+	File system inputs: 6204200
+	File system outputs: 264
+	Socket messages sent: 0
+	Socket messages received: 0
+	Signals delivered: 0
+	Page size (bytes): 4096
+	Exit status: 0

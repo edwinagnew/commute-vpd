@@ -1,0 +1,879 @@
+{
+ "experiment": "E226",
+ "n_items": 74,
+ "band": {
+  "per_item": {
+   "new_few": 0.0003804372434080827,
+   "new_thin": 0.0009996611333806804,
+   "x2": 1.7745550273229327e-05,
+   "x10": 4.9987737610224237e-05,
+   "moved": 1.384257696890323e-05,
+   "rebuilt": 8.154267615145816e-05
+  },
+  "band": 0.0009996611333806804,
+  "degenerate": false,
+  "n_items": 6
+ },
+ "R1": {
+  "R": {
+   "x2": 0.9992081792892872,
+   "x10": 0.9754937171014739,
+   "moved": 0.9988929462436932,
+   "rebuilt": 0.9953727885949282,
+   "new_few": 0.9942402785367993,
+   "new_thin": 0.9963100801287474
+  },
+  "min_reuse": 0.9754937171014739,
+  "max_new": 0.9963100801287474,
+  "gap": -0.02081636302727352,
+  "holds": false
+ },
+ "R1b": {
+  "R": {
+   "x2": 0.9992081792892872,
+   "x10": 0.9754937171014739,
+   "rebuilt": 0.9953727885949282,
+   "new_few": 0.9942402785367993,
+   "new_thin": 0.9963100801287474
+  },
+  "min_reuse": 0.9754937171014739,
+  "max_new": 0.9963100801287474,
+  "gap": -0.02081636302727352,
+  "holds": false,
+  "call": "rival b: new_thin at or above the reuse items"
+ },
+ "moved": {
+  "R": 0.9988929462436932,
+  "graft_share": 0.0002508780732563974,
+  "identity_holds": true,
+  "P_moved2_holds": false
+ },
+ "pairs": {
+  "gaps": {
+   "read": {
+    "e187_e62_copy_lookup": 0.0001364299167105898,
+    "e187_e46_copy_random": 0.0002890382577857009,
+    "e187_e53_lowercase_cipher": 0.0003505714946541172,
+    "e187_e54_matched": 0.00012729129382904603,
+    "e187_e54_own": 0.0005647262155883404,
+    "e187_open_pair_c3": 9.170016589088448e-05,
+    "e187_open_pair_c3_copy": 2.7058352820352738e-05,
+    "e187_e58_rank1_96": 0.00042363281068258374,
+    "e187_e58_copy_prior_cipher": 0.00026830074529393677
+   },
+   "all": {
+    "e187_e62_copy_lookup": 9.977086707324556e-05,
+    "e187_e46_copy_random": 0.00035065595903782665,
+    "e187_e53_lowercase_cipher": 0.00039585900253513717,
+    "e187_e54_matched": 0.00013059996759212655,
+    "e187_e54_own": 0.0006081671440378855,
+    "e187_open_pair_c3": 0.0001147222133113246,
+    "e187_open_pair_c3_copy": 8.183714163334521e-05,
+    "e187_e58_rank1_96": 0.0004542940900345016,
+    "e187_e58_copy_prior_cipher": 0.00035535261158403664
+   }
+  },
+  "minus_size_gap": {
+   "e187_e62_copy_lookup": 0.0014134229331060075,
+   "e187_e46_copy_random": 0.002551937607872581,
+   "e187_e53_lowercase_cipher": 0.0020953778933383363,
+   "e187_e54_matched": 9.483794504220374e-05,
+   "e187_e54_own": 0.004568855059229082,
+   "e187_open_pair_c3": -1.25775173638017e-05,
+   "e187_open_pair_c3_copy": 4.8845851069380386e-05,
+   "e187_e58_rank1_96": 0.001773522095243417,
+   "e187_e58_copy_prior_cipher": 0.002061786924223502
+  },
+  "S3_gap": {
+   "e187_e62_copy_lookup": -0.0028043919274992613,
+   "e187_e46_copy_random": 0.0031359235504674343,
+   "e187_e53_lowercase_cipher": 0.02276701502723666,
+   "e187_e54_matched": 0.007232753484507248,
+   "e187_e54_own": 0.0011560712924859606,
+   "e187_open_pair_c3": 0.005287477854836409,
+   "e187_open_pair_c3_copy": 0.005786942283395824,
+   "e187_e58_rank1_96": 0.014984922309371429,
+   "e187_e58_copy_prior_cipher": 0.00436981845236728
+  },
+  "vs_minus_size": {
+   "n": 9,
+   "pairs": [
+    "e187_e62_copy_lookup",
+    "e187_e46_copy_random",
+    "e187_e53_lowercase_cipher",
+    "e187_e54_matched",
+    "e187_e54_own",
+    "e187_open_pair_c3",
+    "e187_open_pair_c3_copy",
+    "e187_e58_rank1_96",
+    "e187_e58_copy_prior_cipher"
+   ],
+   "sign_agree": 8,
+   "rho": 0.8666666666666667,
+   "rho_R_smaller_update": 0.8666666666666667,
+   "rho_X_smaller_update": 1.0,
+   "call": "does not track"
+  },
+  "vs_S3": {
+   "n": 9,
+   "pairs": [
+    "e187_e62_copy_lookup",
+    "e187_e46_copy_random",
+    "e187_e53_lowercase_cipher",
+    "e187_e54_matched",
+    "e187_e54_own",
+    "e187_open_pair_c3",
+    "e187_open_pair_c3_copy",
+    "e187_e58_rank1_96",
+    "e187_e58_copy_prior_cipher"
+   ],
+   "sign_agree": 8,
+   "rho": -0.016666666666666666,
+   "rho_R_smaller_update": 0.8666666666666667,
+   "rho_X_smaller_update": -0.23333333333333334,
+   "call": "does not track"
+  }
+ },
+ "per_item": {
+  "e46/ident32b_s1": {
+   "R_read": 0.9995749747036671,
+   "R_all": 0.9995619445853771,
+   "f": 0.9999215101448138,
+   "size": 25481,
+   "site_remainder_share": 0.0004709391311173031,
+   "graft_share": 0.0,
+   "prefix_size": 25994,
+   "capped": true
+  },
+  "c3/cipher_s6": {
+   "R_read": 0.9995712909489077,
+   "R_all": 0.9995149019454608,
+   "f": 0.9999413438132387,
+   "size": 34097,
+   "site_remainder_share": 0.0004985775874710386,
+   "graft_share": 0.0,
+   "prefix_size": 34237,
+   "capped": true
+  },
+  "c3/cipher_s3": {
+   "R_read": 0.9995868753784937,
+   "R_all": 0.9995291572968789,
+   "f": 0.9999399128736668,
+   "size": 33285,
+   "site_remainder_share": 0.00039056632116569025,
+   "graft_share": 0.0,
+   "prefix_size": 34241,
+   "capped": true
+  },
+  "c3/cipher_s1": {
+   "R_read": 0.9995504084289037,
+   "R_all": 0.9994935525181722,
+   "f": 0.9999390392587174,
+   "size": 32808,
+   "site_remainder_share": 0.000426725188978298,
+   "graft_share": 0.0,
+   "prefix_size": 33719,
+   "capped": true
+  },
+  "x10": {
+   "R_read": 0.9754937171014739,
+   "R_all": 0.9754937171014739,
+   "f": 0.09311403886449095,
+   "size": 34839,
+   "site_remainder_share": 0.00043055196762249205,
+   "graft_share": 0.0,
+   "prefix_size": 34880,
+   "capped": true
+  },
+  "c3/copy_s6": {
+   "R_read": 0.9995894931573857,
+   "R_all": 0.9995823352749981,
+   "f": 0.999918523648511,
+   "size": 24547,
+   "site_remainder_share": 0.0005703344604228623,
+   "graft_share": 0.0,
+   "prefix_size": 25245,
+   "capped": true
+  },
+  "e54/cipher_s3": {
+   "R_read": 0.9995116259040849,
+   "R_all": 0.9994654760637531,
+   "f": 0.999941673957422,
+   "size": 34290,
+   "site_remainder_share": 0.00046660834062408864,
+   "graft_share": 0.0,
+   "prefix_size": 34373,
+   "capped": true
+  },
+  "c3/copy_s4": {
+   "R_read": 0.9995838046671451,
+   "R_all": 0.9995940452461411,
+   "f": 0.9999121612719047,
+   "size": 22769,
+   "site_remainder_share": 0.0005709517326189117,
+   "graft_share": 0.0,
+   "prefix_size": 24792,
+   "capped": true
+  },
+  "e58/prior_cipher_s1": {
+   "R_read": 0.9990970112218156,
+   "R_all": 0.9989980607150779,
+   "f": 0.9999308317482276,
+   "size": 28915,
+   "site_remainder_share": 0.0003458412588621823,
+   "graft_share": 0.0,
+   "prefix_size": 29912,
+   "capped": true
+  },
+  "e54/cipher_s0": {
+   "R_read": 0.9995267085218282,
+   "R_all": 0.999484188772413,
+   "f": 0.9999397372544293,
+   "size": 33188,
+   "site_remainder_share": 0.0003917078462094733,
+   "graft_share": 0.0,
+   "prefix_size": 34186,
+   "capped": true
+  },
+  "e58/cipher_s1": {
+   "R_read": 0.9989006980304039,
+   "R_all": 0.9987937110950019,
+   "f": 0.9999395350243372,
+   "size": 33077,
+   "site_remainder_share": 0.0003325573661456601,
+   "graft_share": 0.0,
+   "prefix_size": 33221,
+   "capped": true
+  },
+  "c3/rank1_s4": {
+   "R_read": 0.9996398897707526,
+   "R_all": 0.9996066276370013,
+   "f": 0.9999268390825621,
+   "size": 27337,
+   "site_remainder_share": 0.00043896550462742804,
+   "graft_share": 0.0,
+   "prefix_size": 29069,
+   "capped": true
+  },
+  "e46/rand32b_s1": {
+   "R_read": 0.9990516548648333,
+   "R_all": 0.9989628951326002,
+   "f": 0.9999239948316485,
+   "size": 26314,
+   "site_remainder_share": 0.0004940335942844113,
+   "graft_share": 0.0,
+   "prefix_size": 27651,
+   "capped": true
+  },
+  "new_few": {
+   "R_read": 0.9942402785367993,
+   "R_all": 0.9965897360906739,
+   "f": 0.27166294384964956,
+   "size": 12983,
+   "site_remainder_share": 0.0008472618038974044,
+   "graft_share": 0.0,
+   "prefix_size": 15873,
+   "capped": true
+  },
+  "c3/rank1_s3": {
+   "R_read": 0.9996571729003295,
+   "R_all": 0.9996259831259553,
+   "f": 0.9999264218968436,
+   "size": 27182,
+   "site_remainder_share": 0.0005150467220955044,
+   "graft_share": 0.0,
+   "prefix_size": 28768,
+   "capped": true
+  },
+  "e62/copy_s2": {
+   "R_read": 0.999176059541625,
+   "R_all": 0.9992684840442358,
+   "f": 0.9999212629424038,
+   "size": 25401,
+   "site_remainder_share": 0.00043305381677886696,
+   "graft_share": 0.0,
+   "prefix_size": 27112,
+   "capped": true
+  },
+  "e46/rand32_s0": {
+   "R_read": 0.9994897447146928,
+   "R_all": 0.9994278606007725,
+   "f": 0.9999404513785506,
+   "size": 33586,
+   "site_remainder_share": 0.00041684035014589413,
+   "graft_share": 0.0,
+   "prefix_size": 33717,
+   "capped": true
+  },
+  "c3/cipher_s7": {
+   "R_read": 0.9995750259170405,
+   "R_all": 0.9995202166081751,
+   "f": 0.9999420977968212,
+   "size": 34541,
+   "site_remainder_share": 0.0004053154222518167,
+   "graft_share": 0.0,
+   "prefix_size": 34701,
+   "capped": true
+  },
+  "c3/cipher_s2": {
+   "R_read": 0.9995589202853776,
+   "R_all": 0.999504824305272,
+   "f": 0.999942037385886,
+   "size": 34505,
+   "site_remainder_share": 0.00046370091291117227,
+   "graft_share": 0.0,
+   "prefix_size": 34703,
+   "capped": true
+  },
+  "e46/ident32b_s0": {
+   "R_read": 0.9995680684457977,
+   "R_all": 0.9995573508280025,
+   "f": 0.9999169090153718,
+   "size": 24070,
+   "site_remainder_share": 0.0004154549231408392,
+   "graft_share": 0.0,
+   "prefix_size": 25992,
+   "capped": true
+  },
+  "c3/copy_s3": {
+   "R_read": 0.9995974641900706,
+   "R_all": 0.9995987766174812,
+   "f": 0.9999170331037915,
+   "size": 24106,
+   "site_remainder_share": 0.0006222517215630964,
+   "graft_share": 0.0,
+   "prefix_size": 24609,
+   "capped": true
+  },
+  "e46/ident32_s1": {
+   "R_read": 0.9995511162289302,
+   "R_all": 0.9995373225890157,
+   "f": 0.9999216024460037,
+   "size": 25511,
+   "site_remainder_share": 0.0005487828779742072,
+   "graft_share": 0.0,
+   "prefix_size": 26066,
+   "capped": true
+  },
+  "e53/cipher_s1": {
+   "R_read": 0.997818160323004,
+   "R_all": 0.9975617690797751,
+   "f": 0.9999362427874653,
+   "size": 31369,
+   "site_remainder_share": 0.0003825432752080079,
+   "graft_share": 0.0,
+   "prefix_size": 31554,
+   "capped": true
+  },
+  "c3/rank1_s2": {
+   "R_read": 0.9996689700286828,
+   "R_all": 0.9996324086256685,
+   "f": 0.9999241849886278,
+   "size": 26380,
+   "site_remainder_share": 0.0004927975739196361,
+   "graft_share": 0.0,
+   "prefix_size": 27906,
+   "capped": true
+  },
+  "c3/rank1_s1": {
+   "R_read": 0.9996596535672235,
+   "R_all": 0.9996344372063246,
+   "f": 0.9999276541870139,
+   "size": 27645,
+   "site_remainder_share": 0.0004702477844094773,
+   "graft_share": 0.0,
+   "prefix_size": 29459,
+   "capped": true
+  },
+  "rebuilt": {
+   "R_read": 0.9953727885949282,
+   "R_all": 0.9953727885949282,
+   "f": 0.37416530879580817,
+   "size": 31299,
+   "site_remainder_share": 0.0005111984408447554,
+   "graft_share": 0.0,
+   "prefix_size": 31422,
+   "capped": true
+  },
+  "e46/rand32b_s0": {
+   "R_read": 0.9990461856776076,
+   "R_all": 0.998976747996544,
+   "f": 0.9999237717726874,
+   "size": 26237,
+   "site_remainder_share": 0.0003430270229065823,
+   "graft_share": 0.0,
+   "prefix_size": 27889,
+   "capped": true
+  },
+  "e58/cipher_s0": {
+   "R_read": 0.9989048867095277,
+   "R_all": 0.9988033113582404,
+   "f": 0.9999396445061411,
+   "size": 33137,
+   "site_remainder_share": 0.000362132963152971,
+   "graft_share": 0.0,
+   "prefix_size": 33463,
+   "capped": true
+  },
+  "e62/lookup_s0": {
+   "R_read": 0.9990169861249789,
+   "R_all": 0.9991684289231861,
+   "f": 0.9999331863432885,
+   "size": 29934,
+   "site_remainder_share": 0.0005345092536914545,
+   "graft_share": 0.0,
+   "prefix_size": 30229,
+   "capped": true
+  },
+  "e54/elicit_s3": {
+   "R_read": 0.9996476694492066,
+   "R_all": 0.9996045787883219,
+   "f": 0.9999208892053321,
+   "size": 25281,
+   "site_remainder_share": 0.000355998576005696,
+   "graft_share": 0.0,
+   "prefix_size": 26679,
+   "capped": true
+  },
+  "c3/cipher_s4": {
+   "R_read": 0.9995754193267808,
+   "R_all": 0.9995207764852299,
+   "f": 0.9999421497165336,
+   "size": 34572,
+   "site_remainder_share": 0.0004049519842647229,
+   "graft_share": 0.0,
+   "prefix_size": 34663,
+   "capped": true
+  },
+  "e58/copy_s0": {
+   "R_read": 0.9993847387602083,
+   "R_all": 0.9993662978305993,
+   "f": 0.999890320811626,
+   "size": 18235,
+   "site_remainder_share": 0.0004935563476830271,
+   "graft_share": 0.0,
+   "prefix_size": 21193,
+   "capped": true
+  },
+  "e53/lowercase_s1": {
+   "R_read": 0.9977571001559281,
+   "R_all": 0.9975416795585718,
+   "f": 0.9999385390737838,
+   "size": 32541,
+   "site_remainder_share": 0.00036876555729694845,
+   "graft_share": 0.0,
+   "prefix_size": 32691,
+   "capped": true
+  },
+  "c3/rank1_s7": {
+   "R_read": 0.9996504597065051,
+   "R_all": 0.9996170895914582,
+   "f": 0.9999282742791565,
+   "size": 27884,
+   "site_remainder_share": 0.0004662171854827141,
+   "graft_share": 0.0,
+   "prefix_size": 29445,
+   "capped": true
+  },
+  "e54/elicit_s0": {
+   "R_read": 0.9996541328447291,
+   "R_all": 0.9996162892319945,
+   "f": 0.9999232510840784,
+   "size": 26059,
+   "site_remainder_share": 0.0004988679534901569,
+   "graft_share": 0.0,
+   "prefix_size": 27616,
+   "capped": true
+  },
+  "e62/copy_s0": {
+   "R_read": 0.9991803271253875,
+   "R_all": 0.999274543323807,
+   "f": 0.9999211169835135,
+   "size": 25354,
+   "site_remainder_share": 0.00043385659067602745,
+   "graft_share": 0.0,
+   "prefix_size": 27173,
+   "capped": true
+  },
+  "e58/cipher_s2": {
+   "R_read": 0.9989258359452002,
+   "R_all": 0.9988124099251867,
+   "f": 0.9999377567533922,
+   "size": 32132,
+   "site_remainder_share": 0.0004045811029503299,
+   "graft_share": 0.0,
+   "prefix_size": 33155,
+   "capped": true
+  },
+  "c3/rank1_s0": {
+   "R_read": 0.9996523616211238,
+   "R_all": 0.9996193589146802,
+   "f": 0.9999245482325424,
+   "size": 26507,
+   "site_remainder_share": 0.00037725883728826346,
+   "graft_share": 0.0,
+   "prefix_size": 27705,
+   "capped": true
+  },
+  "e46/rand32_s1": {
+   "R_read": 0.9994902977205307,
+   "R_all": 0.9994335505306151,
+   "f": 0.9999404761904762,
+   "size": 33600,
+   "site_remainder_share": 0.0004761904761904762,
+   "graft_share": 0.0,
+   "prefix_size": 33696,
+   "capped": true
+  },
+  "c3/rank1_s5": {
+   "R_read": 0.9996633891834602,
+   "R_all": 0.9996280444970814,
+   "f": 0.9999215163049876,
+   "size": 25483,
+   "site_remainder_share": 0.0003531766275556253,
+   "graft_share": 0.0,
+   "prefix_size": 26925,
+   "capped": true
+  },
+  "e46/ident32_s0": {
+   "R_read": 0.9995398766304121,
+   "R_all": 0.9995470600942876,
+   "f": 0.9999103782039792,
+   "size": 22316,
+   "site_remainder_share": 0.0005825416741351496,
+   "graft_share": 0.0,
+   "prefix_size": 24239,
+   "capped": true
+  },
+  "e62/lookup_s1": {
+   "R_read": 0.9990651784876553,
+   "R_all": 0.999163170106896,
+   "f": 0.9999339628871425,
+   "size": 30286,
+   "site_remainder_share": 0.0003632041207158423,
+   "graft_share": 0.0,
+   "prefix_size": 30618,
+   "capped": true
+  },
+  "e54/cipher_own_s1": {
+   "R_read": 0.9990816112997211,
+   "R_all": 0.9989882879700379,
+   "f": 0.9999276463352869,
+   "size": 27642,
+   "site_remainder_share": 0.0004341219882787063,
+   "graft_share": 0.0,
+   "prefix_size": 29032,
+   "capped": true
+  },
+  "e58/copy_s1": {
+   "R_read": 0.9993468409779868,
+   "R_all": 0.9993329346277796,
+   "f": 0.9998966728662947,
+   "size": 19356,
+   "site_remainder_share": 0.0005682992353792106,
+   "graft_share": 0.0,
+   "prefix_size": 21235,
+   "capped": true
+  },
+  "e54/elicit_s4": {
+   "R_read": 0.9996581172630987,
+   "R_all": 0.9996104591687934,
+   "f": 0.9999281892930236,
+   "size": 27851,
+   "site_remainder_share": 0.0005385803023230764,
+   "graft_share": 0.0,
+   "prefix_size": 28334,
+   "capped": true
+  },
+  "c3/copy_s0": {
+   "R_read": 0.9995936222753833,
+   "R_all": 0.9995935950887658,
+   "f": 0.9999142183143899,
+   "size": 23315,
+   "site_remainder_share": 0.0005575809564657946,
+   "graft_share": 0.0,
+   "prefix_size": 25417,
+   "capped": true
+  },
+  "e54/elicit_s2": {
+   "R_read": 0.9996525087391287,
+   "R_all": 0.9995958286364158,
+   "f": 0.9999250009374883,
+   "size": 26667,
+   "site_remainder_share": 0.0005249934375820303,
+   "graft_share": 0.0,
+   "prefix_size": 28424,
+   "capped": true
+  },
+  "c3/cipher_s5": {
+   "R_read": 0.9995597284956995,
+   "R_all": 0.9995009634281797,
+   "f": 0.9999399867970954,
+   "size": 33326,
+   "site_remainder_share": 0.00042009242033247315,
+   "graft_share": 0.0,
+   "prefix_size": 34227,
+   "capped": true
+  },
+  "e54/cipher_s4": {
+   "R_read": 0.99952438851236,
+   "R_all": 0.9994702819048485,
+   "f": 0.9999400641313794,
+   "size": 33369,
+   "site_remainder_share": 0.00047948694896460785,
+   "graft_share": 0.0,
+   "prefix_size": 34352,
+   "capped": true
+  },
+  "c3/cipher_s0": {
+   "R_read": 0.9995374316559968,
+   "R_all": 0.9994812287504108,
+   "f": 0.9999385409624485,
+   "size": 32542,
+   "site_remainder_share": 0.0004302132628603036,
+   "graft_share": 0.0,
+   "prefix_size": 33642,
+   "capped": true
+  },
+  "e53/broad_cipher_s0": {
+   "R_read": 0.9970629475721301,
+   "R_all": 0.9967908625930487,
+   "f": 0.9999384293322661,
+   "size": 32483,
+   "site_remainder_share": 0.0004617800080041868,
+   "graft_share": 0.0,
+   "prefix_size": 32897,
+   "capped": true
+  },
+  "moved": {
+   "R_read": 0.9988929462436932,
+   "R_all": 0.9988929462436932,
+   "f": 0.08777596588058204,
+   "size": 31888,
+   "site_remainder_share": 0.0005331159056698445,
+   "graft_share": 0.0002508780732563974,
+   "prefix_size": 32056,
+   "capped": true
+  },
+  "e54/cipher_own_s0": {
+   "R_read": 0.9990957216197449,
+   "R_all": 0.999008466210237,
+   "f": 0.9999287241625089,
+   "size": 28060,
+   "site_remainder_share": 0.00042765502494654313,
+   "graft_share": 0.0,
+   "prefix_size": 28558,
+   "capped": true
+  },
+  "e54/cipher_s1": {
+   "R_read": 0.9995341763479119,
+   "R_all": 0.9994778552114201,
+   "f": 0.9999427753934191,
+   "size": 34950,
+   "site_remainder_share": 0.00040057224606580827,
+   "graft_share": 0.0,
+   "prefix_size": 35058,
+   "capped": true
+  },
+  "e58/prior_cipher_s2": {
+   "R_read": 0.9990855834442552,
+   "R_all": 0.9989900064361861,
+   "f": 0.9999307383294085,
+   "size": 28876,
+   "site_remainder_share": 0.00045020085884471534,
+   "graft_share": 0.0,
+   "prefix_size": 30151,
+   "capped": true
+  },
+  "e62/lookup_s2": {
+   "R_read": 0.999031895089261,
+   "R_all": 0.9991749870173731,
+   "f": 0.9999336562064619,
+   "size": 30146,
+   "site_remainder_share": 0.0004975784515358589,
+   "graft_share": 0.0,
+   "prefix_size": 30493,
+   "capped": true
+  },
+  "e53/cipher_s0": {
+   "R_read": 0.9978249328230705,
+   "R_all": 0.9975711929981855,
+   "f": 0.9999367928702357,
+   "size": 31642,
+   "site_remainder_share": 0.0005372606029960179,
+   "graft_share": 0.0,
+   "prefix_size": 31858,
+   "capped": true
+  },
+  "e58/rank1_s1": {
+   "R_read": 0.9993188233479395,
+   "R_all": 0.999240452924837,
+   "f": 0.9999319589031775,
+   "size": 29394,
+   "site_remainder_share": 0.00047628767775736546,
+   "graft_share": 0.0,
+   "prefix_size": 29748,
+   "capped": true
+  },
+  "e54/elicit_s1": {
+   "R_read": 0.9996545350804428,
+   "R_all": 0.9996055653453507,
+   "f": 0.9999229287090559,
+   "size": 25950,
+   "site_remainder_share": 0.00046242774566473987,
+   "graft_share": 0.0,
+   "prefix_size": 27501,
+   "capped": true
+  },
+  "e58/copy_s2": {
+   "R_read": 0.999353600105223,
+   "R_all": 0.9993433987996501,
+   "f": 0.9998965820362997,
+   "size": 19339,
+   "site_remainder_share": 0.000568798800351621,
+   "graft_share": 0.0,
+   "prefix_size": 21808,
+   "capped": true
+  },
+  "e53/broad_cipher_s1": {
+   "R_read": 0.9970218790084795,
+   "R_all": 0.9967551840916941,
+   "f": 0.9999372863817378,
+   "size": 31891,
+   "site_remainder_share": 0.0004389953278354395,
+   "graft_share": 0.0,
+   "prefix_size": 32766,
+   "capped": true
+  },
+  "e58/rank1_s2": {
+   "R_read": 0.999326178446179,
+   "R_all": 0.9992463423752588,
+   "f": 0.9999240612066674,
+   "size": 26337,
+   "site_remainder_share": 0.0004176633633291567,
+   "graft_share": 0.0,
+   "prefix_size": 27494,
+   "capped": true
+  },
+  "e53/lowercase_s0": {
+   "R_read": 0.9978080026967221,
+   "R_all": 0.9975895428278503,
+   "f": 0.9999384728973113,
+   "size": 32506,
+   "site_remainder_share": 0.00046145327016550793,
+   "graft_share": 0.0,
+   "prefix_size": 32681,
+   "capped": true
+  },
+  "c3/copy_s2": {
+   "R_read": 0.999574142393551,
+   "R_all": 0.9995707531188687,
+   "f": 0.9999100921555406,
+   "size": 22245,
+   "site_remainder_share": 0.000584400988986289,
+   "graft_share": 0.0,
+   "prefix_size": 24191,
+   "capped": true
+  },
+  "e58/prior_cipher_s0": {
+   "R_read": 0.9990976829414652,
+   "R_all": 0.9989885062720127,
+   "f": 0.9999305483210057,
+   "size": 28797,
+   "site_remainder_share": 0.00041671007396603814,
+   "graft_share": 0.0,
+   "prefix_size": 29746,
+   "capped": true
+  },
+  "e58/rank1_s0": {
+   "R_read": 0.9993573173230611,
+   "R_all": 0.9992855193484369,
+   "f": 0.9999265246142542,
+   "size": 27220,
+   "site_remainder_share": 0.0005143277002204262,
+   "graft_share": 0.0,
+   "prefix_size": 28728,
+   "capped": true
+  },
+  "e54/cipher_s2": {
+   "R_read": 0.9995336076212754,
+   "R_all": 0.999481919380481,
+   "f": 0.9999407495185898,
+   "size": 33755,
+   "site_remainder_share": 0.0003851281291660495,
+   "graft_share": 0.0,
+   "prefix_size": 33875,
+   "capped": true
+  },
+  "c3/copy_s1": {
+   "R_read": 0.9995993369583316,
+   "R_all": 0.9995921646525957,
+   "f": 0.9999137224451059,
+   "size": 23181,
+   "site_remainder_share": 0.0006470816617057072,
+   "graft_share": 0.0,
+   "prefix_size": 23727,
+   "capped": true
+  },
+  "c3/copy_s7": {
+   "R_read": 0.9995958895048319,
+   "R_all": 0.9995986828812752,
+   "f": 0.9999135658412205,
+   "size": 23139,
+   "site_remainder_share": 0.0005618220320670729,
+   "graft_share": 0.0,
+   "prefix_size": 23953,
+   "capped": true
+  },
+  "x2": {
+   "R_read": 0.9992081792892872,
+   "R_all": 0.9992081792892872,
+   "f": 0.08855101205653666,
+   "size": 31767,
+   "site_remainder_share": 0.0004721881197469072,
+   "graft_share": 0.0,
+   "prefix_size": 31837,
+   "capped": true
+  },
+  "new_thin": {
+   "R_read": 0.9963100801287474,
+   "R_all": 0.9966994672381814,
+   "f": 0.11123841266534736,
+   "size": 9601,
+   "site_remainder_share": 0.001145713988126237,
+   "graft_share": 0.0,
+   "prefix_size": 15051,
+   "capped": true
+  },
+  "c3/copy_s5": {
+   "R_read": 0.9995978141130644,
+   "R_all": 0.9995899655907199,
+   "f": 0.9999115826702034,
+   "size": 22620,
+   "site_remainder_share": 0.0004862953138815208,
+   "graft_share": 0.0,
+   "prefix_size": 25021,
+   "capped": true
+  },
+  "e62/copy_s1": {
+   "R_read": 0.9991669627850144,
+   "R_all": 0.9992628712806322,
+   "f": 0.9999210889721839,
+   "size": 25345,
+   "site_remainder_share": 0.0003945551390806865,
+   "graft_share": 0.0,
+   "prefix_size": 26560,
+   "capped": true
+  },
+  "c3/rank1_s6": {
+   "R_read": 0.9996568049862503,
+   "R_all": 0.9996194494461003,
+   "f": 0.9999267184522938,
+   "size": 27292,
+   "site_remainder_share": 0.0005496116077971567,
+   "graft_share": 0.0,
+   "prefix_size": 28905,
+   "capped": true
+  }
+ }
+}
