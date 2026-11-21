@@ -116,12 +116,12 @@ def cells(model: Any, F: R.Model, M: R.Model, toks: Tensor, at: slice, batch: in
     return {k: torch.cat(v).numpy() for k, v in out.items()}
 
 
-def score(c: dict[str, np.ndarray], idx: np.ndarray | None = None) -> dict[str, Any]:
+def score(c: dict[str, np.ndarray], kl_floor: float, idx: np.ndarray | None = None) -> dict[str, Any]:
+    """S, S00, S_c from the means; `scored` (S's rules) when KL(F||M) > f, `scored_c` (S_c's) when KL(F||M) > kl_floor."""
     m = {k: float(v[idx].mean() if idx is not None else v.mean()) for k, v in c.items()}
-    ok = m["kl_fm"] > m["f"]
     kl = m["kl_fm"]
     S = {"S": 1 - m["K01"] / kl, "S00": 1 - m["K00"] / kl, "S_c": 1 - (m["K01"] - m["f"]) / kl} if kl > 0 else dict.fromkeys(("S", "S00", "S_c"))
-    return {"means": m, "scored": ok} | S
+    return {"means": m, "scored": kl > m["f"], "scored_c": kl > kl_floor} | S
 
 
 def halves(n: int, seed: int) -> tuple[np.ndarray, np.ndarray]:
@@ -134,8 +134,8 @@ def read(name: str, model: Any, F: R.Model, M: R.Model, toks: Tensor, at: slice,
     t0 = time.time()
     c = cells(model, F, M, toks, at, cfg.batch)
     h1, h2 = halves(len(toks), cfg.split_seed)
-    rec = {"experiment": EXPERIMENT, "item": name, "n_windows": len(toks)} | extra | score(c)
-    rec["halves"] = [score(c, h1), score(c, h2)]
+    rec = {"experiment": EXPERIMENT, "item": name, "n_windows": len(toks)} | extra | score(c, th["kl_floor"])
+    rec["halves"] = [score(c, th["kl_floor"], h1), score(c, th["kl_floor"], h2)]
     miss = []
     if (saved := extra.get("kl_fm_saved")) is not None:
         rec["kl_repro"] = rel = abs(rec["means"]["kl_fm"] / saved - 1)
@@ -143,7 +143,7 @@ def read(name: str, model: Any, F: R.Model, M: R.Model, toks: Tensor, at: slice,
     rec["seconds"], rec["peak_gpu_gb"] = time.time() - t0, torch.cuda.max_memory_allocated() / 2**30
     np.savez(LARGE / f"{name}.npz", kl_fm=c["kl_fm"], K01=c["K01"], K00=c["K00"], f=c["f"])
     fmt = lambda x: "None" if x is None else f"{x:.6f}"
-    log(f"{name}: {json.dumps(rec['means'])}; S {fmt(rec['S'])}, S00 {fmt(rec['S00'])}, S_c {fmt(rec['S_c'])}, scored {rec['scored']}; "
+    log(f"{name}: {json.dumps(rec['means'])}; S {fmt(rec['S'])}, S00 {fmt(rec['S00'])}, S_c {fmt(rec['S_c'])}, scored {rec['scored']} (S_c {rec['scored_c']}); "
         f"halves S {[fmt(h['S']) for h in rec['halves']]}, S_c {[fmt(h['S_c']) for h in rec['halves']]}; {rec['seconds']:.1f} s, peak GPU {rec['peak_gpu_gb']:.2f} GB")  # fmt: skip
     if miss:
         stop(ITEMS / f"{name}.stopped.json", rec, f"{name}: " + "; ".join(miss), log)

@@ -11,8 +11,8 @@ SC: Any = load_experiment("gating_vpd", "score")
 REUSE, NEW = SC.REUSE, SC.NEW
 
 
-def item(S: float | None, scored: bool = True, h: tuple[float, float] = (0.0, 0.0)) -> dict[str, Any]:
-    return {"scored": scored, "S": S, "S00": S, "S_c": S, "means": {"kl_fm": 1.0, "f": 0.4},
+def item(S: float | None, scored: bool = True, h: tuple[float, float] = (0.0, 0.0), scored_c: bool | None = None) -> dict[str, Any]:
+    return {"scored": scored, "scored_c": scored if scored_c is None else scored_c, "S": S, "S00": S, "S_c": S, "means": {"kl_fm": 1.0, "f": 0.4},
             "halves": [{"S": h[0], "S_c": h[0]}, {"S": h[1], "S_c": h[1]}]}  # fmt: skip
 
 
@@ -50,3 +50,12 @@ def test_band_and_summary():
     assert abs(out["band_S"] - 0.04) < 1e-12 and out["P1"]["verdict"] == "holds" and out["P2"]["verdict"] == "holds"
     assert out["D1_S"]["n_read"] == 1 and out["D1_S"]["reuse_above"] == 1 and out["missing"] == []
     assert "do_nothing_copy" not in out["table"]
+
+
+def test_s_c_reads_under_the_floor():
+    """An item under VPD's floor enters S_c's rules (KL(F||M) > kl_floor) but not S's; its halves set S_c's band only."""
+    items = {i: item(0.5, h=(0.5, 0.5)) for i in REUSE} | {"new_thin": item(0.1, h=(0.1, 0.1))}
+    items["new_few"] = item(0.1, scored=False, scored_c=True, h=(0.0, 0.3))
+    out = SC.summary(items, {})
+    assert not out["P1"]["read"] and out["P1c"]["read"] and out["P1c"]["verdict"] == "holds"
+    assert out["band_S"] == 0.0 and out["band_S_degenerate"] and abs(out["band_S_c"] - 0.3) < 1e-12

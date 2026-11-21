@@ -49,8 +49,11 @@ def band(halves: list[tuple[float | None, float | None]]) -> tuple[float, bool]:
     return b, b == 0
 
 
+READ = {"S": "scored", "S_c": "scored_c"}  # S needs KL(F||M) > f; S_c, with f taken off, KL(F||M) > kl_floor
+
+
 def value(it: dict[str, Any] | None, key: str) -> float | None:
-    return it[key] if it is not None and it["scored"] else None
+    return it[key] if it is not None and it[READ[key]] else None
 
 
 def pair_counts(index: dict[str, dict[str, list[str]]], items: dict[str, dict[str, Any]], key: str) -> dict[str, Any]:
@@ -70,10 +73,9 @@ def load_items() -> dict[str, dict[str, Any]]:
 
 def summary(items: dict[str, dict[str, Any]], index: dict[str, dict[str, list[str]]]) -> dict[str, Any]:
     rand = {s: [n for n in items if n.startswith(f"random_{s}_")] for s in ("copy", "cue")}
-    banded = [*REUSE, *NEW, *rand["copy"], *rand["cue"]]
     out: dict[str, Any] = {"experiment": "E241", "missing": [i for i in (*REUSE, *NEW) if i not in items]}
-    for k in SCORES:
-        hv = [(items[n]["halves"][0][k], items[n]["halves"][1][k]) for n in banded if n in items and items[n]["scored"]]
+    for k in SCORES:  # the band: the six built items' halves, where the item is read on that score
+        hv = [(items[n]["halves"][0][k], items[n]["halves"][1][k]) for n in (*REUSE, *NEW) if value(items.get(n), k) is not None]
         b, degenerate = band(hv)
         v = {i: value(items.get(i), k) for i in (*REUSE, *NEW)}
         tag = "" if k == "S" else "c"
@@ -81,7 +83,7 @@ def summary(items: dict[str, dict[str, Any]], index: dict[str, dict[str, list[st
         out[f"P1{tag}"] = order_rule(v, REUSE, NEW, b)
         out[f"P2{tag}"] = below_rule([v[i] for i in REUSE], [value(items[n], k) for n in rand["copy"]], b)
         out[f"D1_{k}"] = pair_counts(index, items, k)
-    cols = ("scored", "S", "S00", "S_c")
+    cols = ("scored", "scored_c", "S", "S00", "S_c")
     out["table"] = {n: {c: it[c] for c in cols} | {"kl_fm": it["means"]["kl_fm"], "f": it["means"]["f"], "refit_adds": None if it["S"] is None else it["S"] - it["S00"]}
                     for n, it in items.items() if not n.startswith("do_nothing")}  # fmt: skip
     return out

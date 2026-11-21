@@ -36,8 +36,8 @@
   "S": "1 - mean K01 / mean kl_fm over the item's windows (the user's score, ratio of means)",
   "S00": "1 - mean K00 / mean kl_fm: S with the gates left at M's (what the refit adds is S - S00)",
   "S_c": "1 - (mean K01 - mean f) / mean kl_fm: S with VPD's own floor taken off (lead's side reading, not the user's score)",
-  "scored": "mean kl_fm > mean f on the item's windows; an unscored item reports its numbers but enters no rule (S <= 0 there for any gate refit no better than VPD reconstructs M)",
-  "band": "per score (S, S_c): max over scored built items and scored random readings of |score(half 1) - score(half 2)|, halves of each item's windows by split_seed; degenerate (no item or every difference 0): 0, the rules then strict orders, reported as degenerate"
+  "scored": "for S: mean kl_fm > mean f on the item's windows (below it S <= 0 for any gate refit no better than VPD reconstructs M); for S_c, which takes f off: mean kl_fm > kl_floor ('scored_c'). An item not read on a score reports its numbers but enters none of that score's rules",
+  "band": "per score (S, S_c): max over the six built items read on that score of |score(half 1) - score(half 2)|, halves of each item's windows by split_seed (E239's and E240's band: the built items only, so a random reading of tiny KL(F||M) cannot inflate it); degenerate (no item or every difference 0): 0, the rules then strict orders, reported as degenerate"
  },
  "R0 (stops)": {
   "rule": "exit 1 on a miss. Stage 0, first and alone in each job, per window set (built job: copy and cue, F = E240.scaled(M, F_item, 0); pairs job: E232's do_nothing_c0): mean kl_fm <= kl_floor; F's gates equal M's exactly on every window; |mean K01 - mean f| <= kl_floor; f > 0 and finite; max |gates by capture - vpd.compute_ci gates| at M <= gate_path_tol; mean KL(M || H_open) <= open_rel x f. Per built item: |sum over the 24 matrices of |F_c - M|^2 / new_thin's E226 dW2 - 1| <= size_rel; per random size draw the same against the same target. Per item with a saved KL(F||M) (new_thin at c = 1, every pair state): |kl_fm / saved - 1| <= kl_repro_rel.",
@@ -52,17 +52,17 @@
   "absolute_or_relative": "absolute",
   "blind_to": "what H cannot express (a gate only turns a piece down, so a scaled-up write is out of reach), unscored items, and the floor's share of K01",
   "edge_cases": "do-nothing in place of every item: kl_fm 0, nothing scored, not read, cannot pass; ties (gap 0): rival b; band 0: strict order; x2 and x10 are the same state at matched size (copy neurons times 1.84, E240 plan) and should agree to rounding: the min is unaffected; moved computes M's function at every c (E240 plan), kl_fm about 0, expected unscored and left out; a NaN S cannot occur in a rule (scored needs kl_fm > f > 0)",
-  "lead_expectation": "not read or rival b: at their own sizes x2 and rebuilt read KL(F||M) 0.10 and 0.12 nats per position on copy24 (experiments/kstar_vpd/results/items/*.json .kl_fm), smaller at matched size, against a floor near 0.4, so the reuse side is likely unscored on S"
+  "lead_expectation": "not read: at matched size E240 read KL(F||M) of 0.091 (x2, x10), 0.017 (rebuilt), 6.6e-12 (moved) and 0.159 (new_few) per position, only new_thin at 10.25 (experiments/kstar_vpd_norm_matched/results/search/*.json .kl_fm), against a floor near 0.4: new_few and every reuse item are likely under the floor on S"
  },
  "P1c (side: the same order on S_c)": {
-  "rule": "as P1 on S_c with band(S_c)",
+  "rule": "as P1 on S_c with band(S_c), each item read when KL(F||M) > kl_floor",
   "prediction": "holds",
   "absolute_or_relative": "absolute",
-  "edge_cases": "as P1; S_c can exceed 1 when H fits F better than H_M fits M (E228 read K01 below K0 on several fine-tunes), the rule still reads",
+  "edge_cases": "as P1; moved (KL 6.6e-12 at matched size) is left out; S_c can exceed 1 when H fits F better than H_M fits M (E228 read K01 below K0 on several fine-tunes), the rule still reads; S_c's noise grows as KL(F||M) shrinks (rebuilt 0.017), which the band from each item's halves carries",
   "lead_expectation": "no strong expectation; a gate cannot scale a piece up, so x2 (copy neurons times 1.84) may read S_c near S00's floor-corrected value"
  },
  "P2 (user's: a random update of matched size reads low, on S)": {
-  "rule": "on the copy windows (where the reuse items are read): gap = min S over the scored reuse items - max S over the scored random readings (both arms, three seeds each). gap > band(S): holds. gap <= 0: fails. Between: no call. Not read when no reuse item or no random reading on the copy windows is scored. Random readings on the cue windows are reported against the new items, descriptive.",
+  "rule": "on the copy windows (where the reuse items are read): gap = min S over the scored reuse items - max S over the scored random readings (both arms, three seeds each; band(S) as defined, from the built items). gap > band(S): holds. gap <= 0: fails. Between: no call. Not read when no reuse item or no random reading on the copy windows is scored. Random readings on the cue windows are reported against the new items, descriptive.",
   "prediction": "holds",
   "absolute_or_relative": "absolute",
   "blind_to": "random readings under the floor (the size arm likely is: a Gaussian at relative size 0.0138 moves KL far less than a targeted edit), which is why the KL-matched arm exists",
@@ -70,7 +70,7 @@
   "lead_expectation": "may fail: on E228's KL form the KL-matched random changes gained more from Gamma's refit than the fine-tunes they were matched to (c3/cipher_s0: K00 - K01 0.60 random against 0.33 fine-tune, experiments/random_kl_share/results/states/c3_cipher_s0.json)"
  },
  "P2c (side: the same on S_c)": {
-  "rule": "as P2 on S_c with band(S_c)",
+  "rule": "as P2 on S_c with band(S_c), each reading entering when KL(F||M) > kl_floor",
   "prediction": "holds",
   "absolute_or_relative": "absolute"
  },
