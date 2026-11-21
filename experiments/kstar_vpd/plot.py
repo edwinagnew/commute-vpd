@@ -55,14 +55,14 @@ def sketch(out: Path = HERE / "figures") -> None:
             "so it is predicted low", data=data)  # fmt: skip
 
 
-ROWS = {  # known item -> its label in words (E195's copy items, E214's built new edits)
-    "do_nothing": "do-nothing, F = M",
-    "x2": "x2: copy neurons' outputs doubled",
-    "x10": "x10: copy neurons' outputs times ten",
-    "moved": "moved: copy neurons onto 8 new ones",
-    "rebuilt": "rebuilt: zeroed, later MLPs retrained",
-    "new_few": "new_few: lookup in 8 quiet neurons",
-    "new_thin": "new_thin: lookup spread over a layer",
+ROWS = {  # known item -> its edit name as in the paper's text (E195's copy items, E214's built new edits)
+    "do_nothing": "do nothing",
+    "x2": "copy neurons x2",
+    "x10": "copy neurons x10",
+    "moved": "copy neurons moved onto 8 appended neurons",
+    "rebuilt": "copy neurons zeroed, layers 2-3 MLPs retrained",
+    "new_few": "lookup in 8 quiet layer-0 neurons",
+    "new_thin": "lookup spread over layer 0",
 }
 SIDE = {"do_nothing": "control", **{i: "reuse" for i in REUSE}, **{i: "new" for i in NEW}}
 SIDE_COLORS = {"control": "#555555", **COLORS}
@@ -91,14 +91,14 @@ def plot_known(rows: list[dict[str, Any]], max_new: float, band: float, out: Pat
             ax.scatter([r["R_uncapped"]], [i], facecolors="none", edgecolors=c, s=46, linewidths=1.1, zorder=3)
     ax.scatter([], [], color="#333333", s=30, label="filed search, 2,000 tries (capped)")
     ax.scatter([], [], facecolors="none", edgecolors="#333333", s=46, label="search run to the end (side check)")
-    ax.axvline(max_new, color="#D55E00", linewidth=0.8, linestyle="--", label="highest new edit (new_thin, filed)")
+    ax.axvline(max_new, color="#D55E00", linewidth=0.8, linestyle="--", label="highest new edit (lookup spread over layer 0, filed)")
     ax.axvspan(max_new, max_new + band, color="#D55E00", alpha=0.15, linewidth=0, label="plus the band: reuse must sit right of it")
     ax.set_yticks(range(len(rows)), [ROWS[r["item"]] for r in rows])
     for t, r in zip(ax.get_yticklabels(), rows, strict=True):
         t.set_color(SIDE_COLORS[r["side"]])
     ax.invert_yaxis()
     ax.set_xlim(0.970, 1.003)
-    ax.set_xlabel("reuse score R, read positions (1 = every needed variable keeps M's mechanism)")
+    ax.set_xlabel("reuse score R, read positions (1 = unchanged)")
     ax.set_title("x10, built as reuse, scores below both built new edits", fontsize=9)
     ax.legend(fontsize=6.5, loc="lower left", frameon=False)
     FG.save(fig, out / "r_known.png", n="one fine-tune per item; blue = built as reuse, orange = built as new, grey = control. "

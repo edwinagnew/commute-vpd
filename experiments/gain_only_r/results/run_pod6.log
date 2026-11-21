@@ -1,0 +1,231 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+E236 start, tag pod6; 9 of 81 items ['c3/rank1_s0', 'e46/ident32_s0', 'e46/rand32b_s0', 'e53/lowercase_s0', 'e54/elicit_s0', 'e58/class_shuffled_s0', 'e58/prior_cipher_s0', 'e62/copy_s0', 'fresh/twin_s0']; settings {'handoff': 'experiments/gain_only/results/handoff.json', 'gains_dir': 'experiments/gain_only/results/large/gains', 'match': 'kl', 'seeds': (0, 1, 2), 'n_items': 81, 'control': 'e58/cipher_s0', 'twins': (('case_label/real', 'case_real'), ('case_label/twin', 'case_twin'), ('fresh/real', 'repeat_real'), ('fresh/twin', 'repeat_twin'))}
+do_nothing VPD: 38938 variables, 0 changed, KL(F || M) 5.37762e-12, max |1 - s| 1.11e-16; grades only, R read None; 13 s
+do_nothing: 512 windows, KL(F || F_empty) 3.27595, KL(F || M) 0, saved None, size {'whole': 0.0, 'mlp': 0.0}
+do_nothing head_mlp: 30 variables, 0 changed; gates {'all': 2.617859536258038e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 22, R all 1.000000, read 1.000000, f 0.0000; 2030 evaluations, 24 s (polish cap hit)
+do_nothing head_mlp: R read [1.0], all [1.0], f [0.0], |K*| [22]; peak GPU memory 6.57 GB
+do_nothing mlp_attn: 10 variables, 0 changed; gates {'all': 2.617859536258038e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+do_nothing mlp_attn: R read [1.0], all [1.0], f [0.0], |K*| [10]; peak GPU memory 6.57 GB
+do_nothing block: 6 variables, 0 changed; gates {'all': 2.617859536258038e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+do_nothing block: R read [1.0], all [1.0], f [0.0], |K*| [6]; peak GPU memory 6.57 GB
+do_nothing: KL(F || M) 0 (last position, 512 read windows); fit 2.5 s
+do_nothing reading 1: S None, KL(F || H) 0, max relative logit error 0; site residuals mlp0 -7.558e-16, attn0 -1.165e-16, mlp1 4.583e-16, attn1 -9.713e-16, mlp2 -1.312e-16, attn2 -5.333e-16, mlp3 -2.639e-16, attn3 0
+do_nothing reading 2: S None, KL(F || H) 0, max relative logit error 0; site residuals mlp0 -7.558e-16, attn0 -1.165e-16, mlp1 4.583e-16, attn1 -9.713e-16, mlp2 -1.312e-16, attn2 -5.333e-16, mlp3 -2.639e-16, attn3 0
+do_nothing reading 3: S None, KL(F || H) 8.38173e-14, max relative logit error 1.14e-06; site residuals mlp0 -9.069e-16, attn0 -4.658e-16, mlp1 -3.056e-16, attn1 -5.828e-16, mlp2 -2.625e-16, attn2 -9.333e-16, mlp3 -1.319e-16, attn3 -8.489e-16
+gain_exact: KL(F || M) 1.79019 (last position, 512 read windows); fit 2.1 s
+gain_exact reading 1: S 0.9999999999955032, KL(F || H) 8.0503e-12, max relative logit error 3.16e-06; site residuals mlp0 -3.044e-16, attn0 4.069e-16, mlp1 -4.357e-16, attn1 -6.353e-16, mlp2 -1.316e-16, attn2 2.96e-16, mlp3 -2.698e-16, attn3 -1.739e-16
+gain_exact reading 2: S 0.09324500008805625, KL(F || H) 1.62326, max relative logit error 1; site residuals mlp0 0.02972, attn0 4.069e-16, mlp1 0.0002411, attn1 -6.353e-16, mlp2 0.02364, attn2 2.96e-16, mlp3 0.03404, attn3 -1.739e-16
+gain_exact reading 3: S 0.9999999999999666, KL(F || H) 5.98032e-14, max relative logit error 1.46e-06; site residuals mlp0 -7.609e-16, attn0 6.104e-16, mlp1 -4.357e-16, attn1 -8.47e-16, mlp2 -5.263e-16, attn2 -5.92e-16, mlp3 -2.698e-16, attn3 0
+e58/cipher_s0: KL(F || M) 1.7905 (last position, 512 read windows); fit 2.4 s
+e58/cipher_s0 reading 1: S 0.9999991783324267, KL(F || H) 1.4712e-06, max relative logit error 0.00151; site residuals mlp0 6.951e-08, attn0 4.579e-08, mlp1 9.437e-10, attn1 2.307e-08, mlp2 5.907e-08, attn2 2.878e-08, mlp3 7.806e-08, attn3 9.651e-09
+e58/cipher_s0 reading 2: S 0.09329284070973343, KL(F || H) 1.62346, max relative logit error 1; site residuals mlp0 0.02972, attn0 4.579e-08, mlp1 0.0002411, attn1 2.307e-08, mlp2 0.02364, attn2 2.878e-08, mlp3 0.03404, attn3 9.651e-09
+e58/cipher_s0 reading 3: S 0.9999999999999516, KL(F || H) 8.67515e-14, max relative logit error 1.49e-06; site residuals mlp0 -7.609e-16, attn0 0, mlp1 2.905e-16, attn1 -8.47e-16, mlp2 -6.579e-16, attn2 -5.919e-16, mlp3 -4.047e-16, attn3 0
+stage 0: {'experiment': 'E236', 'w0_differs': [], 'do_nothing_vpd': {'n_changed': 0, 'max_dev_s': 1.1102230246251565e-16}, 'do_nothing_head_mlp': {'max_dev_s': 0.0, 'f': [0.0], 'R': [1.0, 1.0]}, 'do_nothing_mlp_attn': {'max_dev_s': 0.0, 'f': [0.0], 'R': [1.0, 1.0]}, 'do_nothing_block': {'max_dev_s': 0.0, 'f': [0.0], 'R': [1.0, 1.0]}, 'do_nothing_held': {'kl_FM': 0.0, '1': 0.0, '3': 1.1400372841308126e-06}, 'gain_exact_held': {'kl_FM': 1.7901895487873973, '1': 3.1575475532008568e-06, '3': 1.4571791098205722e-06}, 'export_floor_1_minus_S': 8.216675733141443e-07}; checks hold
+STAGE 0 DONE
+    ranking 0: prefix 35370, 15 evaluations
+    ranking 1: prefix 32075, 30 evaluations
+    ranking 2: prefix 32497, 45 evaluations
+  c3/rank1_s0 VPD: |K*| 31409 (prefix 32075), R read 0.986307 (prefix 0.986031), R all 0.986225, f 0.4404, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 259 s
+c3/rank1_s0 VPD: 38938 variables, 18440 changed, KL(F || M) 1.49307, max |1 - s| 0.425; read, R read 0.9863068448976025; 263 s
+c3/rank1_s0: 512 windows, KL(F || F_empty) 4.16255, KL(F || M) 1.49306568, saved None, size {'whole': 0.07387878550192786, 'mlp': 0.09367497752883684}
+c3/rank1_s0 head_mlp: 30 variables, 28 changed; gates {'all': 2.525600166336517e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 21, R all 0.996759, read 0.995522, f 0.9048; 1941 evaluations, 23 s
+  head_mlp main order 1: |K*| 21, R all 0.996759, read 0.995522, f 0.9048; 1941 evaluations, 23 s
+  head_mlp main order 2: |K*| 21, R all 0.996759, read 0.995522, f 0.9048; 1941 evaluations, 23 s
+c3/rank1_s0 head_mlp: R read [0.9955224918902158, 0.9955224914929026, 0.9955224904322973], all [0.9967593987378358, 0.996759398428751, 0.9967593974468537], f [0.9047619047619048, 0.9047619047619048, 0.9047619047619048], |K*| [21, 21, 21]; peak GPU memory 8.76 GB
+c3/rank1_s0 mlp_attn: 10 variables, 8 changed; gates {'all': 2.525600166336517e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+c3/rank1_s0 mlp_attn: R read [0.9884267559184181], all [0.9912240002829429], f [0.7777777777777778], |K*| [9]; peak GPU memory 8.76 GB
+c3/rank1_s0 block: 6 variables, 4 changed; gates {'all': 2.525600166336517e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+c3/rank1_s0 block: R read [0.9830391920589422], all [0.9880928470302163], f [0.6666666666666666], |K*| [6]; peak GPU memory 8.76 GB
+c3/rank1_s0: KL(F || M) 1.49307 (last position, 512 read windows); fit 2.5 s
+c3/rank1_s0 reading 1: S 0.9999998487518066, KL(F || H) 2.25823e-07, max relative logit error 0.000899; site residuals mlp0 2.402e-08, attn0 8.921e-09, mlp1 1.739e-09, attn1 1.082e-08, mlp2 2.03e-08, attn2 4.691e-09, mlp3 2.687e-08, attn3 1.339e-09
+c3/rank1_s0 reading 2: S -0.008161286349457564, KL(F || H) 1.50525, max relative logit error 0.757; site residuals mlp0 0.01064, attn0 8.921e-09, mlp1 0.0001558, attn1 1.082e-08, mlp2 0.008388, attn2 4.691e-09, mlp3 0.01108, attn3 1.339e-09
+c3/rank1_s0 reading 3: S 0.9999999999999211, KL(F || H) 1.17915e-13, max relative logit error 1.2e-06; site residuals mlp0 -6.011e-16, attn0 0, mlp1 0, attn1 -1.419e-15, mlp2 -5.498e-16, attn2 -7.242e-16, mlp3 -2.661e-16, attn3 5.004e-16
+ITEM 1 of 9 DONE (c3/rank1_s0): held reading 1 S 0.9999998487518066; 348 s
+    ranking 0: prefix 36236, 16 evaluations
+    ranking 1: prefix 32204, 31 evaluations
+    ranking 2: prefix 33475, 47 evaluations
+  e46/ident32_s0 VPD: |K*| 31980 (prefix 32204), R read 0.994956 (prefix 0.994928), R all 0.994766, f 0.4371, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 259 s
+e46/ident32_s0 VPD: 38938 variables, 18440 changed, KL(F || M) 1.20217, max |1 - s| 0.224; read, R read 0.994955616365512; 262 s
+e46/ident32_s0: 512 windows, KL(F || F_empty) 2.72765, KL(F || M) 1.20216787, saved None, size {'whole': 0.0387845471555264, 'mlp': 0.0429442472065776}
+e46/ident32_s0 head_mlp: 30 variables, 28 changed; gates {'all': 2.3774962301104097e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 25, R all 0.999013, read 0.998703, f 0.9200; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 1: |K*| 25, R all 0.999013, read 0.998703, f 0.9200; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 2: |K*| 26, R all 0.999051, read 0.998753, f 0.9231; 1822 evaluations, 21 s
+e46/ident32_s0 head_mlp: R read [0.9987033354650046, 0.9987033348689062, 0.9987532068591214], all [0.9990129374898289, 0.9990129368886468, 0.9990509011322417], f [0.92, 0.92, 0.9230769230769231], |K*| [25, 25, 26]; peak GPU memory 8.79 GB
+e46/ident32_s0 mlp_attn: 10 variables, 8 changed; gates {'all': 2.3774962301104097e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+e46/ident32_s0 mlp_attn: R read [0.9951534700898887], all [0.9950905544286115], f [0.8], |K*| [10]; peak GPU memory 8.79 GB
+e46/ident32_s0 block: 6 variables, 4 changed; gates {'all': 2.3774962301104097e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+e46/ident32_s0 block: R read [0.9924035463884252], all [0.9932652296659311], f [0.6666666666666666], |K*| [6]; peak GPU memory 8.79 GB
+e46/ident32_s0: KL(F || M) 1.20217 (last position, 512 read windows); fit 2.5 s
+e46/ident32_s0 reading 1: S 0.9999999303314311, KL(F || H) 8.37533e-08, max relative logit error 0.000892; site residuals mlp0 6.778e-09, attn0 1.094e-08, mlp1 1.892e-09, attn1 1.56e-08, mlp2 4.439e-09, attn2 8.489e-09, mlp3 4.643e-09, attn3 3.523e-10
+e46/ident32_s0 reading 2: S 0.26375637850215905, KL(F || H) 0.885088, max relative logit error 0.702; site residuals mlp0 0.003687, attn0 1.094e-08, mlp1 0.0003021, attn1 1.56e-08, mlp2 0.002184, attn2 8.489e-09, mlp3 0.002186, attn3 3.523e-10
+e46/ident32_s0 reading 3: S 0.9999999999999587, KL(F || H) 4.96875e-14, max relative logit error 1.31e-06; site residuals mlp0 -9.229e-16, attn0 -3.405e-16, mlp1 5.786e-16, attn1 -7.12e-16, mlp2 -1.296e-16, attn2 -2.483e-16, mlp3 -3.997e-16, attn3 0
+ITEM 2 of 9 DONE (e46/ident32_s0): held reading 1 S 0.9999999303314311; 348 s
+    ranking 0: prefix 36887, 15 evaluations
+    ranking 1: prefix 35423, 30 evaluations
+    ranking 2: prefix 35547, 46 evaluations
+  e46/rand32b_s0 VPD: |K*| 35331 (prefix 35423), R read 0.976854 (prefix 0.976787), R all 0.976787, f 0.4591, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 260 s
+e46/rand32b_s0 VPD: 38938 variables, 18440 changed, KL(F || M) 1.75667, max |1 - s| 0.525; read, R read 0.9768544771011524; 263 s
+e46/rand32b_s0: 512 windows, KL(F || F_empty) 3.09581, KL(F || M) 1.75667431, saved None, size {'whole': 0.09504128722079443, 'mlp': 0.11874550861376106}
+e46/rand32b_s0 head_mlp: 30 variables, 28 changed; gates {'all': 2.812497086779331e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 24, R all 0.995054, read 0.993710, f 0.9167; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 1: |K*| 24, R all 0.995054, read 0.993710, f 0.9167; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 2: |K*| 24, R all 0.995054, read 0.993710, f 0.9167; 2030 evaluations, 24 s (polish cap hit)
+e46/rand32b_s0 head_mlp: R read [0.9937098477726393, 0.9937098453764301, 0.9937098453764301], all [0.995053823261881, 0.995053821342672, 0.995053821342672], f [0.9166666666666666, 0.9166666666666666, 0.9166666666666666], |K*| [24, 24, 24]; peak GPU memory 8.79 GB
+e46/rand32b_s0 mlp_attn: 10 variables, 8 changed; gates {'all': 2.812497086779331e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+e46/rand32b_s0 mlp_attn: R read [0.9820991929161285], all [0.9849242996840146], f [0.8], |K*| [10]; peak GPU memory 8.79 GB
+e46/rand32b_s0 block: 6 variables, 4 changed; gates {'all': 2.812497086779331e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+e46/rand32b_s0 block: R read [0.9734147652058605], all [0.979176264628371], f [0.6666666666666666], |K*| [6]; peak GPU memory 8.79 GB
+e46/rand32b_s0: KL(F || M) 1.75667 (last position, 512 read windows); fit 2.4 s
+e46/rand32b_s0 reading 1: S 0.999999614302443, KL(F || H) 6.77545e-07, max relative logit error 0.00153; site residuals mlp0 3.5e-08, attn0 4.702e-08, mlp1 1.721e-09, attn1 1.162e-08, mlp2 3.093e-08, attn2 1.307e-08, mlp3 4.032e-08, attn3 7.97e-09
+e46/rand32b_s0 reading 2: S 0.12280283670214687, KL(F || H) 1.54095, max relative logit error 0.932; site residuals mlp0 0.01639, attn0 4.702e-08, mlp1 0.0003126, attn1 1.162e-08, mlp2 0.0141, attn2 1.307e-08, mlp3 0.01682, attn3 7.97e-09
+e46/rand32b_s0 reading 3: S 0.9999999999999923, KL(F || H) 1.35187e-14, max relative logit error 1.11e-06; site residuals mlp0 -4.582e-16, attn0 1.225e-15, mlp1 6.249e-16, attn1 -5.781e-16, mlp2 -6.598e-16, attn2 -2.688e-16, mlp3 -5.357e-16, attn3 -1.733e-16
+ITEM 3 of 9 DONE (e46/rand32b_s0): held reading 1 S 0.999999614302443; 352 s
+    ranking 0: prefix 35784, 15 evaluations
+    ranking 1: prefix 32509, 31 evaluations
+    ranking 2: prefix 33045, 46 evaluations
+  e53/lowercase_s0 VPD: |K*| 32379 (prefix 32509), R read 0.983182 (prefix 0.983122), R all 0.982897, f 0.4426, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 264 s
+e53/lowercase_s0 VPD: 38938 variables, 18440 changed, KL(F || M) 0.566328, max |1 - s| 0.717; read, R read 0.9831817532124034; 275 s
+e53/lowercase_s0: 512 windows, KL(F || F_empty) 3.65862, KL(F || M) 0.566327578, saved None, size {'whole': 0.09629159419923644, 'mlp': 0.12633426914740886}
+e53/lowercase_s0 head_mlp: 30 variables, 28 changed; gates {'all': 3.10613995679887e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 22, R all 0.995550, read 0.993130, f 0.9091; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 1: |K*| 22, R all 0.995550, read 0.993130, f 0.9091; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 2: |K*| 22, R all 0.995550, read 0.993130, f 0.9091; 1904 evaluations, 22 s
+e53/lowercase_s0 head_mlp: R read [0.9931298563626382, 0.9931298564255578, 0.9931298563828896], all [0.9955501308269582, 0.9955501308875108, 0.9955501308495776], f [0.9090909090909091, 0.9090909090909091, 0.9090909090909091], |K*| [22, 22, 22]; peak GPU memory 8.79 GB
+e53/lowercase_s0 mlp_attn: 10 variables, 8 changed; gates {'all': 3.10613995679887e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+e53/lowercase_s0 mlp_attn: R read [0.9831262176025751], all [0.9890377140337618], f [0.7777777777777778], |K*| [9]; peak GPU memory 8.79 GB
+e53/lowercase_s0 block: 6 variables, 4 changed; gates {'all': 3.10613995679887e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+e53/lowercase_s0 block: R read [0.9792773821029036], all [0.9868776492096664], f [0.6666666666666666], |K*| [6]; peak GPU memory 8.79 GB
+e53/lowercase_s0: KL(F || M) 0.566328 (last position, 512 read windows); fit 2.3 s
+e53/lowercase_s0 reading 1: S 0.9999993812652269, KL(F || H) 3.50407e-07, max relative logit error 0.00149; site residuals mlp0 1.521e-08, attn0 1.05e-09, mlp1 4.762e-09, attn1 2.012e-09, mlp2 3.086e-08, attn2 1.039e-09, mlp3 1.067e-07, attn3 5.703e-11
+e53/lowercase_s0 reading 2: S 0.03184165958949137, KL(F || H) 0.548295, max relative logit error 0.913; site residuals mlp0 0.00553, attn0 1.05e-09, mlp1 0.0002783, attn1 2.012e-09, mlp2 0.01315, attn2 1.039e-09, mlp3 0.06404, attn3 5.703e-11
+e53/lowercase_s0 reading 3: S 0.9999999999999508, KL(F || H) 2.78294e-14, max relative logit error 1.22e-06; site residuals mlp0 -5.938e-16, attn0 3.512e-16, mlp1 1.643e-16, attn1 -7.404e-16, mlp2 -2.558e-16, attn2 -2.7e-16, mlp3 -5.376e-16, attn3 0
+ITEM 4 of 9 DONE (e53/lowercase_s0): held reading 1 S 0.9999993812652269; 362 s
+    ranking 0: prefix 34675, 15 evaluations
+    ranking 1: prefix 32468, 30 evaluations
+    ranking 2: prefix 32108, 45 evaluations
+  e54/elicit_s0 VPD: |K*| 30775 (prefix 32108), R read 0.982113 (prefix 0.981712), R all 0.982009, f 0.4555, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 266 s
+e54/elicit_s0 VPD: 38938 variables, 18440 changed, KL(F || M) 2.14567, max |1 - s| 0.514; read, R read 0.982113489551771; 269 s
+e54/elicit_s0: 512 windows, KL(F || F_empty) 4.90291, KL(F || M) 2.14567262, saved None, size {'whole': 0.08476474259798031, 'mlp': 0.10757803991929234}
+e54/elicit_s0 head_mlp: 30 variables, 28 changed; gates {'all': 2.8967504022148205e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 19, R all 0.995432, read 0.993849, f 0.8947; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 1: |K*| 19, R all 0.995432, read 0.993849, f 0.8947; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 2: |K*| 20, R all 0.995660, read 0.994156, f 0.9000; 1950 evaluations, 23 s
+e54/elicit_s0 head_mlp: R read [0.9938487330873812, 0.9938487424803006, 0.9941563053610224], all [0.995431965104632, 0.9954319740504805, 0.9956603753876557], f [0.8947368421052632, 0.8947368421052632, 0.9], |K*| [19, 19, 20]; peak GPU memory 8.79 GB
+e54/elicit_s0 mlp_attn: 10 variables, 8 changed; gates {'all': 2.8967504022148205e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+e54/elicit_s0 mlp_attn: R read [0.9854590251145946], all [0.9884667531545708], f [0.7777777777777778], |K*| [9]; peak GPU memory 8.79 GB
+e54/elicit_s0 block: 6 variables, 4 changed; gates {'all': 2.8967504022148205e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+e54/elicit_s0 block: R read [0.979471414768963], all [0.9845735013657734], f [0.6666666666666666], |K*| [6]; peak GPU memory 8.79 GB
+e54/elicit_s0: KL(F || M) 2.14567 (last position, 512 read windows); fit 2.5 s
+e54/elicit_s0 reading 1: S 0.9999998533985608, KL(F || H) 3.14559e-07, max relative logit error 0.00128; site residuals mlp0 2.805e-08, attn0 2.304e-08, mlp1 5.689e-10, attn1 1.736e-08, mlp2 2.723e-08, attn2 1.676e-08, mlp3 3.273e-08, attn3 9.356e-10
+e54/elicit_s0 reading 2: S 0.026862049457848647, KL(F || H) 2.08804, max relative logit error 0.803; site residuals mlp0 0.01308, attn0 2.304e-08, mlp1 0.0001442, attn1 1.736e-08, mlp2 0.01129, attn2 1.676e-08, mlp3 0.013, attn3 9.356e-10
+e54/elicit_s0 reading 3: S 0.9999999999998895, KL(F || H) 2.37082e-13, max relative logit error 1.42e-06; site residuals mlp0 -7.384e-16, attn0 -5.697e-16, mlp1 1.497e-16, attn1 -6.398e-16, mlp2 -4.239e-16, attn2 -6.203e-16, mlp3 -3.886e-16, attn3 -1.275e-16
+ITEM 5 of 9 DONE (e54/elicit_s0): held reading 1 S 0.9999998533985608; 357 s
+    ranking 0: prefix 35745, 15 evaluations
+    ranking 1: prefix 32992, 30 evaluations
+    ranking 2: prefix 33623, 45 evaluations
+  e58/class_shuffled_s0 VPD: |K*| 32858 (prefix 32992), R read 0.992559 (prefix 0.992530), R all 0.992251, f 0.4451, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 263 s
+e58/class_shuffled_s0 VPD: 38938 variables, 18440 changed, KL(F || M) 1.71842, max |1 - s| 0.269; read, R read 0.9925592802650182; 267 s
+e58/class_shuffled_s0: 512 windows, KL(F || F_empty) 2.23561, KL(F || M) 1.71842447, saved None, size {'whole': 0.049455191586136746, 'mlp': 0.05777179605900388}
+e58/class_shuffled_s0 head_mlp: 30 variables, 28 changed; gates {'all': 4.00734052163898e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 23, R all 0.998131, read 0.997745, f 0.9130; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 1: |K*| 23, R all 0.998131, read 0.997745, f 0.9130; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 2: |K*| 22, R all 0.998046, read 0.997642, f 0.9091; 2030 evaluations, 24 s (polish cap hit)
+e58/class_shuffled_s0 head_mlp: R read [0.9977446195213667, 0.9977446176348468, 0.9976421038717759], all [0.9981310284410191, 0.9981310266049855, 0.9980460768949353], f [0.9130434782608695, 0.9130434782608695, 0.9090909090909091], |K*| [23, 23, 22]; peak GPU memory 8.79 GB
+e58/class_shuffled_s0 mlp_attn: 10 variables, 8 changed; gates {'all': 4.00734052163898e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+e58/class_shuffled_s0 mlp_attn: R read [0.9932314673131316], all [0.9936574675229106], f [0.8], |K*| [10]; peak GPU memory 8.79 GB
+e58/class_shuffled_s0 block: 6 variables, 4 changed; gates {'all': 4.00734052163898e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+e58/class_shuffled_s0 block: R read [0.9880765800786454], all [0.9898581963895182], f [0.6666666666666666], |K*| [6]; peak GPU memory 8.79 GB
+e58/class_shuffled_s0: KL(F || M) 1.71842 (last position, 512 read windows); fit 2.5 s
+e58/class_shuffled_s0 reading 1: S 0.9999999258556462, KL(F || H) 1.27411e-07, max relative logit error 0.00115; site residuals mlp0 9.335e-09, attn0 1.582e-08, mlp1 1.635e-09, attn1 1.628e-08, mlp2 7.206e-09, attn2 1.01e-08, mlp3 8.719e-09, attn3 1.828e-09
+e58/class_shuffled_s0 reading 2: S 0.1731632439397749, KL(F || H) 1.42086, max relative logit error 0.803; site residuals mlp0 0.00722, attn0 1.582e-08, mlp1 0.0003768, attn1 1.628e-08, mlp2 0.003985, attn2 1.01e-08, mlp3 0.004269, attn3 1.828e-09
+e58/class_shuffled_s0 reading 3: S 0.9999999999999944, KL(F || H) 9.52914e-15, max relative logit error 7.61e-07; site residuals mlp0 -2.886e-16, attn0 4.292e-16, mlp1 0, attn1 -6.724e-16, mlp2 -1.285e-16, attn2 -2.5e-16, mlp3 -2.633e-16, attn3 -2.785e-16
+ITEM 6 of 9 DONE (e58/class_shuffled_s0): held reading 1 S 0.9999999258556462; 356 s
+    ranking 0: prefix 36881, 15 evaluations
+    ranking 1: prefix 34945, 30 evaluations
+    ranking 2: prefix 34985, 45 evaluations
+  e58/prior_cipher_s0 VPD: |K*| 34842 (prefix 34945), R read 0.976326 (prefix 0.976236), R all 0.976177, f 0.4572, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 264 s
+e58/prior_cipher_s0 VPD: 38938 variables, 18440 changed, KL(F || M) 1.42346, max |1 - s| 0.514; read, R read 0.9763256926658175; 267 s
+e58/prior_cipher_s0: 512 windows, KL(F || F_empty) 3.93261, KL(F || M) 1.423462, saved None, size {'whole': 0.09726004826252219, 'mlp': 0.12300473386925498}
+e58/prior_cipher_s0 head_mlp: 30 variables, 28 changed; gates {'all': 2.5453286980336998e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 22, R all 0.994670, read 0.993280, f 0.9091; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 1: |K*| 22, R all 0.994670, read 0.993280, f 0.9091; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 2: |K*| 22, R all 0.994670, read 0.993280, f 0.9091; 2030 evaluations, 24 s (polish cap hit)
+e58/prior_cipher_s0 head_mlp: R read [0.9932802210579461, 0.9932802189000292, 0.9932802226634107], all [0.9946698158138555, 0.9946698137889556, 0.9946698174442765], f [0.9090909090909091, 0.9090909090909091, 0.9090909090909091], |K*| [22, 22, 22]; peak GPU memory 8.79 GB
+e58/prior_cipher_s0 mlp_attn: 10 variables, 8 changed; gates {'all': 2.5453286980336998e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+e58/prior_cipher_s0 mlp_attn: R read [0.982835612034847], all [0.985359428857105], f [0.8], |K*| [10]; peak GPU memory 8.79 GB
+e58/prior_cipher_s0 block: 6 variables, 4 changed; gates {'all': 2.5453286980336998e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+e58/prior_cipher_s0 block: R read [0.9733326473618008], all [0.9783504225505207], f [0.6666666666666666], |K*| [6]; peak GPU memory 8.79 GB
+e58/prior_cipher_s0: KL(F || M) 1.42346 (last position, 512 read windows); fit 2.5 s
+e58/prior_cipher_s0 reading 1: S 0.9999994250380638, KL(F || H) 8.18436e-07, max relative logit error 0.00247; site residuals mlp0 3.689e-08, attn0 6.157e-08, mlp1 2.347e-09, attn1 2.169e-08, mlp2 3.278e-08, attn2 1.362e-08, mlp3 4.311e-08, attn3 1.577e-09
+e58/prior_cipher_s0 reading 2: S 0.059616171009495234, KL(F || H) 1.3386, max relative logit error 0.856; site residuals mlp0 0.01725, attn0 6.157e-08, mlp1 0.0002175, attn1 2.169e-08, mlp2 0.01502, attn2 1.362e-08, mlp3 0.01747, attn3 1.577e-09
+e58/prior_cipher_s0 reading 3: S 0.9999999999999373, KL(F || H) 8.92638e-14, max relative logit error 1.28e-06; site residuals mlp0 -2.962e-16, attn0 0, mlp1 7.26e-16, attn1 -1.077e-15, mlp2 -4.009e-16, attn2 -7.651e-16, mlp3 -5.378e-16, attn3 -6.947e-16
+ITEM 7 of 9 DONE (e58/prior_cipher_s0): held reading 1 S 0.9999994250380638; 356 s
+    ranking 0: prefix 35206, 15 evaluations
+    ranking 1: prefix 31690, 30 evaluations
+    ranking 2: prefix 32097, 45 evaluations
+  e62/copy_s0 VPD: |K*| 31349 (prefix 31690), R read 0.996240 (prefix 0.996218), R all 0.996144, f 0.4386, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 264 s
+e62/copy_s0 VPD: 38938 variables, 18440 changed, KL(F || M) 1.82933, max |1 - s| 0.161; read, R read 0.9962401550462686; 268 s
+e62/copy_s0: 512 windows, KL(F || F_empty) 5.41736, KL(F || M) 1.82932674, saved None, size {'whole': 0.0314014262649585, 'mlp': 0.03505373314176919}
+e62/copy_s0 head_mlp: 30 variables, 28 changed; gates {'all': 2.623081627461943e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 24, R all 0.999272, read 0.998767, f 0.9167; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 1: |K*| 24, R all 0.999272, read 0.998767, f 0.9167; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 2: |K*| 23, R all 0.999240, read 0.998713, f 0.9130; 2030 evaluations, 24 s (polish cap hit)
+e62/copy_s0 head_mlp: R read [0.998766975300251, 0.9987669740671322, 0.998713365837218], all [0.9992717432811521, 0.9992717421687237, 0.9992400803056511], f [0.9166666666666666, 0.9166666666666666, 0.9130434782608695], |K*| [24, 24, 23]; peak GPU memory 8.79 GB
+e62/copy_s0 mlp_attn: 10 variables, 8 changed; gates {'all': 2.623081627461943e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+e62/copy_s0 mlp_attn: R read [0.9963162286500854], all [0.997378744222592], f [0.8], |K*| [10]; peak GPU memory 8.79 GB
+e62/copy_s0 block: 6 variables, 4 changed; gates {'all': 2.623081627461943e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+e62/copy_s0 block: R read [0.9940520073994353], all [0.996139226642503], f [0.6666666666666666], |K*| [6]; peak GPU memory 8.79 GB
+e62/copy_s0: KL(F || M) 1.82933 (last position, 512 read windows); fit 2.3 s
+e62/copy_s0 reading 1: S 0.9999999474970254, KL(F || H) 9.60451e-08, max relative logit error 0.001; site residuals mlp0 5.273e-09, attn0 9.387e-09, mlp1 1.231e-09, attn1 8.682e-09, mlp2 3.696e-09, attn2 4.633e-09, mlp3 2.312e-09, attn3 1.079e-09
+e62/copy_s0 reading 2: S 0.1973175995191877, KL(F || H) 1.46837, max relative logit error 0.812; site residuals mlp0 0.00285, attn0 9.387e-09, mlp1 0.0002954, attn1 8.682e-09, mlp2 0.002046, attn2 4.633e-09, mlp3 0.001307, attn3 1.079e-09
+e62/copy_s0 reading 3: S 0.999999999999992, KL(F || H) 1.46194e-14, max relative logit error 1.25e-06; site residuals mlp0 -5.703e-16, attn0 -4.189e-16, mlp1 1.505e-16, attn1 -8.638e-16, mlp2 1.333e-16, attn2 -1.18e-16, mlp3 -2.867e-16, attn3 -2.563e-16
+ITEM 8 of 9 DONE (e62/copy_s0): held reading 1 S 0.9999999474970254; 357 s
+    ranking 0: prefix 36803, 16 evaluations
+    ranking 1: prefix 34687, 32 evaluations
+    ranking 2: prefix 34802, 47 evaluations
+  fresh/twin_s0 VPD: |K*| 34350 (prefix 34687), R read 0.989951 (prefix 0.989876), R all 0.989796, f 0.4586, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 272 s
+fresh/twin_s0 VPD: 38938 variables, 18440 changed, KL(F || M) 7.17351, max |1 - s| 0.343; read, R read 0.9899510392867232; 275 s
+fresh/twin_s0: 512 windows, KL(F || F_empty) 2.74524, KL(F || M) 7.17351313, saved None, size {'whole': 0.05806919458432773, 'mlp': 0.0684854119041361}
+fresh/twin_s0 head_mlp: 30 variables, 28 changed; gates {'all': 2.8627375741052674e-06, 'none': 0.0} (tol 0.001)
+  head_mlp main order 0: |K*| 22, R all 0.997608, read 0.996059, f 0.9091; 1916 evaluations, 23 s
+  head_mlp main order 1: |K*| 22, R all 0.997608, read 0.996059, f 0.9091; 2030 evaluations, 24 s (polish cap hit)
+  head_mlp main order 2: |K*| 22, R all 0.997608, read 0.996059, f 0.9091; 2030 evaluations, 24 s (polish cap hit)
+fresh/twin_s0 head_mlp: R read [0.9960590085675061, 0.9960590082754552, 0.9960590080474869], all [0.9976082788922792, 0.9976082788082391, 0.9976082786538636], f [0.9090909090909091, 0.9090909090909091, 0.9090909090909091], |K*| [22, 22, 22]; peak GPU memory 8.79 GB
+fresh/twin_s0 mlp_attn: 10 variables, 8 changed; gates {'all': 2.8627375741052674e-06, 'none': 0.0} (tol 0.001)
+  mlp_attn: 1024 subsets in 12 s
+fresh/twin_s0 mlp_attn: R read [0.9887948603744157], all [0.9921703156945367], f [0.7777777777777778], |K*| [9]; peak GPU memory 8.79 GB
+fresh/twin_s0 block: 6 variables, 4 changed; gates {'all': 2.8627375741052674e-06, 'none': 0.0} (tol 0.001)
+  block: 64 subsets in 1 s
+fresh/twin_s0 block: R read [0.9825250601233951], all [0.987884138059358], f [0.6666666666666666], |K*| [6]; peak GPU memory 8.79 GB
+fresh/twin_s0: KL(F || M) 7.17351 (last position, 512 read windows); fit 2.3 s
+fresh/twin_s0 reading 1: S 0.9999999754575317, KL(F || H) 1.76056e-07, max relative logit error 0.00131; site residuals mlp0 1.195e-08, attn0 1.952e-08, mlp1 3.548e-09, attn1 1.715e-08, mlp2 1.064e-08, attn2 1.493e-08, mlp3 1.243e-08, attn3 2.121e-09
+fresh/twin_s0 reading 2: S 0.044308165531555366, KL(F || H) 6.85567, max relative logit error 1.29; site residuals mlp0 0.007018, attn0 1.952e-08, mlp1 0.0002988, attn1 1.715e-08, mlp2 0.005254, attn2 1.493e-08, mlp3 0.006079, attn3 2.121e-09
+fresh/twin_s0 reading 3: S 0.9999999999999956, KL(F || H) 3.21516e-14, max relative logit error 1.27e-06; site residuals mlp0 -4.266e-16, attn0 2.066e-16, mlp1 3.223e-16, attn1 -9.064e-16, mlp2 -2.653e-16, attn2 -3.726e-16, mlp3 -5.49e-16, attn3 2.874e-16
+ITEM 9 of 9 DONE (fresh/twin_s0): held reading 1 S 0.9999999754575317; 363 s
+E236 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/gain_only_r/results/items/ , experiments/gain_only_r/results/stage0_pod6.json, experiments/gain_only_r/results/run_pod6.log ===
