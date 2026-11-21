@@ -1,0 +1,171 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+    ranking 0: prefix 37104, 15 evaluations
+    ranking 0: prefix 37104, 15 evaluations
+    ranking 1: prefix 34880, 30 evaluations
+    ranking 1: prefix 34880, 30 evaluations
+    ranking 2: prefix 35749, 45 evaluations
+    ranking 2: prefix 35749, 45 evaluations
+  x10: 500 evaluations, kept 34876, 0.6 min
+  x10: 500 evaluations, kept 34876, 0.6 min
+  x10: 1000 evaluations, kept 34866, 1.4 min
+  x10: 1000 evaluations, kept 34866, 1.4 min
+  x10: 1500 evaluations, kept 34859, 2.2 min
+  x10: 1500 evaluations, kept 34859, 2.2 min
+  x10: 2000 evaluations, kept 34839, 3.0 min
+  x10: 2000 evaluations, kept 34839, 3.0 min
+  x10: 2500 evaluations, kept 34815, 3.9 min
+  x10: 2500 evaluations, kept 34815, 3.9 min
+  x10: 3000 evaluations, kept 34778, 4.7 min
+  x10: 3000 evaluations, kept 34778, 4.7 min
+  x10: 3500 evaluations, kept 34756, 5.6 min
+  x10: 3500 evaluations, kept 34756, 5.6 min
+  x10: 4000 evaluations, kept 34714, 6.5 min
+  x10: 4000 evaluations, kept 34714, 6.5 min
+  x10: 4500 evaluations, kept 34669, 7.3 min
+  x10: 4500 evaluations, kept 34669, 7.3 min
+  x10: 5000 evaluations, kept 34623, 8.2 min
+  x10: 5000 evaluations, kept 34623, 8.2 min
+  x10: 5500 evaluations, kept 34559, 9.1 min
+  x10: 5500 evaluations, kept 34559, 9.1 min
+  x10: 6000 evaluations, kept 34505, 10.0 min
+  x10: 6000 evaluations, kept 34505, 10.0 min
+  x10: 6500 evaluations, kept 34454, 10.9 min
+  x10: 6500 evaluations, kept 34454, 10.9 min
+  x10: 7000 evaluations, kept 34396, 11.7 min
+  x10: 7000 evaluations, kept 34396, 11.7 min
+  x10: 7500 evaluations, kept 34329, 12.6 min
+  x10: 7500 evaluations, kept 34329, 12.6 min
+  x10: 8000 evaluations, kept 34248, 13.5 min
+  x10: 8000 evaluations, kept 34248, 13.5 min
+  x10: 8500 evaluations, kept 34178, 14.4 min
+  x10: 8500 evaluations, kept 34178, 14.4 min
+  x10: 9000 evaluations, kept 34121, 15.2 min
+  x10: 9000 evaluations, kept 34121, 15.2 min
+  x10: 9500 evaluations, kept 34059, 16.1 min
+  x10: 9500 evaluations, kept 34059, 16.1 min
+  x10: 10000 evaluations, kept 33981, 17.0 min
+  x10: 10000 evaluations, kept 33981, 17.0 min
+  x10: 10500 evaluations, kept 33924, 17.9 min
+  x10: 10500 evaluations, kept 33924, 17.9 min
+  x10: 11000 evaluations, kept 33857, 18.8 min
+  x10: 11000 evaluations, kept 33857, 18.8 min
+  x10: 11500 evaluations, kept 33798, 19.7 min
+  x10: 11500 evaluations, kept 33798, 19.7 min
+  x10: 12000 evaluations, kept 33727, 20.5 min
+  x10: 12000 evaluations, kept 33727, 20.5 min
+  x10: 12500 evaluations, kept 33656, 21.4 min
+  x10: 12500 evaluations, kept 33656, 21.4 min
+  x10: 13000 evaluations, kept 33595, 22.3 min
+  x10: 13000 evaluations, kept 33595, 22.3 min
+  x10: 13500 evaluations, kept 33552, 23.2 min
+  x10: 13500 evaluations, kept 33552, 23.2 min
+  x10: 14000 evaluations, kept 33484, 24.1 min
+  x10: 14000 evaluations, kept 33484, 24.1 min
+  x10: 14500 evaluations, kept 33421, 25.0 min
+  x10: 14500 evaluations, kept 33421, 25.0 min
+  x10: 15000 evaluations, kept 33368, 25.9 min
+  x10: 15000 evaluations, kept 33368, 25.9 min
+  x10: 15500 evaluations, kept 33305, 26.8 min
+  x10: 15500 evaluations, kept 33305, 26.8 min
+  x10: 16000 evaluations, kept 33248, 27.6 min
+  x10: 16000 evaluations, kept 33248, 27.6 min
+  x10: 16500 evaluations, kept 33199, 28.5 min
+  x10: 16500 evaluations, kept 33199, 28.5 min
+  x10: 17000 evaluations, kept 33148, 29.4 min
+  x10: 17000 evaluations, kept 33148, 29.4 min
+  x10: 17500 evaluations, kept 33098, 30.3 min
+  x10: 17500 evaluations, kept 33098, 30.3 min
+  x10: 18000 evaluations, kept 33062, 31.2 min
+  x10: 18000 evaluations, kept 33062, 31.2 min
+  x10: 18500 evaluations, kept 33009, 32.1 min
+  x10: 18500 evaluations, kept 33009, 32.1 min
+  x10: 19000 evaluations, kept 32950, 32.9 min
+  x10: 19000 evaluations, kept 32950, 32.9 min
+  x10: 19500 evaluations, kept 32894, 33.8 min
+  x10: 19500 evaluations, kept 32894, 33.8 min
+  x10: 20000 evaluations, kept 32861, 34.7 min
+  x10: 20000 evaluations, kept 32861, 34.7 min
+  x10: 20500 evaluations, kept 32825, 35.6 min
+  x10: 20500 evaluations, kept 32825, 35.6 min
+  x10: 21000 evaluations, kept 32785, 36.5 min
+  x10: 21000 evaluations, kept 32785, 36.5 min
+  x10: 21500 evaluations, kept 32743, 37.4 min
+  x10: 21500 evaluations, kept 32743, 37.4 min
+  x10: 22000 evaluations, kept 32696, 38.2 min
+  x10: 22000 evaluations, kept 32696, 38.2 min
+  x10: 22500 evaluations, kept 32648, 39.1 min
+  x10: 22500 evaluations, kept 32648, 39.1 min
+  x10: 23000 evaluations, kept 32611, 40.0 min
+  x10: 23000 evaluations, kept 32611, 40.0 min
+  x10: 23500 evaluations, kept 32543, 40.9 min
+  x10: 23500 evaluations, kept 32543, 40.9 min
+  x10: 24000 evaluations, kept 32511, 41.8 min
+  x10: 24000 evaluations, kept 32511, 41.8 min
+  x10: 24500 evaluations, kept 32487, 42.6 min
+  x10: 24500 evaluations, kept 32487, 42.6 min
+  x10: 25000 evaluations, kept 32449, 43.5 min
+  x10: 25000 evaluations, kept 32449, 43.5 min
+  x10: 25500 evaluations, kept 32410, 44.4 min
+  x10: 25500 evaluations, kept 32410, 44.4 min
+  x10: 26000 evaluations, kept 32372, 45.3 min
+  x10: 26000 evaluations, kept 32372, 45.3 min
+  x10: 26500 evaluations, kept 32338, 46.2 min
+  x10: 26500 evaluations, kept 32338, 46.2 min
+  x10: 27000 evaluations, kept 32310, 47.0 min
+  x10: 27000 evaluations, kept 32310, 47.0 min
+  x10: 27500 evaluations, kept 32273, 47.9 min
+  x10: 27500 evaluations, kept 32273, 47.9 min
+  x10: 28000 evaluations, kept 32250, 48.8 min
+  x10: 28000 evaluations, kept 32250, 48.8 min
+  x10: 28500 evaluations, kept 32212, 49.7 min
+  x10: 28500 evaluations, kept 32212, 49.7 min
+  x10: 29000 evaluations, kept 32183, 50.6 min
+  x10: 29000 evaluations, kept 32183, 50.6 min
+  x10: 29500 evaluations, kept 32153, 51.4 min
+  x10: 29500 evaluations, kept 32153, 51.4 min
+  x10: 30000 evaluations, kept 32126, 52.3 min
+  x10: 30000 evaluations, kept 32126, 52.3 min
+  x10: 30500 evaluations, kept 32096, 53.2 min
+  x10: 30500 evaluations, kept 32096, 53.2 min
+  x10: 31000 evaluations, kept 32079, 54.1 min
+  x10: 31000 evaluations, kept 32079, 54.1 min
+  x10: 31500 evaluations, kept 32059, 55.0 min
+  x10: 31500 evaluations, kept 32059, 55.0 min
+  x10: 32000 evaluations, kept 32041, 55.9 min
+  x10: 32000 evaluations, kept 32041, 55.9 min
+  x10: 32500 evaluations, kept 32020, 56.7 min
+  x10: 32500 evaluations, kept 32020, 56.7 min
+  x10: 33000 evaluations, kept 31999, 57.6 min
+  x10: 33000 evaluations, kept 31999, 57.6 min
+  x10: 33500 evaluations, kept 31984, 58.5 min
+  x10: 33500 evaluations, kept 31984, 58.5 min
+  x10: 34000 evaluations, kept 31968, 59.4 min
+  x10: 34000 evaluations, kept 31968, 59.4 min
+  x10: 34500 evaluations, kept 31962, 60.3 min
+  x10: 34500 evaluations, kept 31962, 60.3 min
+  x10: 35000 evaluations, kept 31953, 61.1 min
+  x10: 35000 evaluations, kept 31953, 61.1 min
+  x10: 35500 evaluations, kept 31948, 62.0 min
+  x10: 35500 evaluations, kept 31948, 62.0 min
+  x10: 36000 evaluations, kept 31943, 62.9 min
+  x10: 36000 evaluations, kept 31943, 62.9 min
+  x10: 36500 evaluations, kept 31943, 63.8 min
+  x10: 36500 evaluations, kept 31943, 63.8 min
+  x10: 37000 evaluations, kept 31943, 64.7 min
+  x10: 37000 evaluations, kept 31943, 64.7 min
+  x10: 37500 evaluations, kept 31943, 65.6 min
+  x10: 37500 evaluations, kept 31943, 65.6 min
+x10: converged |K*| 31943 (prefix 34880), R read 0.977173, R all 0.977173, f 0.0864; 37730 evaluations, capped False, 3958 s
+x10: converged |K*| 31943 (prefix 34880), R read 0.977173, R all 0.977173, f 0.0864; 37730 evaluations, capped False, 3958 s
+CONVERGE x10 DONE
+CONVERGE x10 DONE
+peak host RSS 6.2 GB
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/kstar_vpd/results/converge/x10.json ===

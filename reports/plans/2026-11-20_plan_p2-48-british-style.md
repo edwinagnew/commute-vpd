@@ -80,6 +80,18 @@ Transfers to a pod: train_0_32768.npy 134 MB + val_0_2000.npy 8 MB + the control
 ≈ 0.2 GB → 20 s at 10 MB/s; the 67M from W&B on the pod (~65 s, E-notes). Back: 12 states x 57 MB = 0.68 GB → 68 s,
 rows and windows ~25 MB → 3 s. Not gated (under $60 and 6 h). Rehearsal per the card on cluster debug, $0.
 
+## Rehearsal (E233, cluster debug L40, $0)
+Jobs 62384 (stage 0 passed, then the stage folder was missing: fixed), 62387 (targets too small, stopped at step 3),
+62390 (full), 62393 (rerun: resume). Data (CPU worker, 1 min): 1,751 pairs; 21,529 train rows read for 4,800 kept
+(16,317 occurrences, 3.4 a row); 444 held rows, 1,455 occurrences, 500 read; 98.7% of rows tokenise as the whole text
+would. Stage 0 at full size, all pass: control share 0.7538 (saved 0.7519, as E211), k_half 16, r_half numerator and
+erank exact; do-nothing exactly 0; base contrast: W0 log-odds real -7.15, twin -13.56, gap 6.41 (bar 2), twin median
+probability 8.4e-7 (bar 1e-3). Training, seed 0 cut to 40 steps: size 0.00114 at step 1, 0.0041 at step 10 and
+0.0072-0.0075 at step 40, both tasks; 0.053 s/step on the L40; gain at step 40 real 0.93, twin 1.02. Reads 24 s a state
+(500 windows), peak GPU 14.8 GB, peak host 6.2 GB, state file 56.6 MB. Projected steps to 0.0175 (size ~ step^0.42
+from steps 10-40, as T1's 54 -> 280): real ~330, twin ~280, under the 600 cap. Scored job: 6 runs x ~330 steps x
+0.053 s ≈ 2 min training, 12 reads x 24 s ≈ 5 min, stage 0 ~1 min, model and data load ~1 min: **~10 min on the L40**.
+
 ## Open choices (decided here)
 - Token count: matched exactly for 58% of pairs; the rest differ by one token or more because a one-token British form
   has no one-token scramble. Kept rather than dropping one-token forms (colour, centre, favour are the most frequent).

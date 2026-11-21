@@ -665,3 +665,4 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e229_gaps_upper_vs_two_sided.png": "experiments/topk_upper/figures/gaps_upper_vs_two_sided.png"
 - "fig/e230_shares_by_gate.png": "experiments/topk_gate/figures/shares_by_gate.png"
 - "fig/e231_reach_kl_matched.png": "experiments/gain_only/figures/reach_kl_matched.png"
+- "fig/e233_real_vs_twin.png": "experiments/british_style/figures/real_vs_twin.png"

@@ -1,0 +1,181 @@
+{
+  "experiment": "E235",
+  "cell": "P2.49",
+  "run": "run 1 of 2: the controls (stage 0) and the seed ranges with the matched Gaussian (stage 1); run 2 (the scored pairs, twins and grafts) takes its own E-number and files its own rules",
+  "filed": "2026-11-20, after the $0 rehearsal (cluster jobs 62445, 62446, 62452) and before any paid job; never edited after the run",
+  "plan": "reports/plans/2026-11-20_plan_p2-49-crosscoder-proper.md (appendix ..._appendix.md)",
+  "card": "~/commute-data/scratch/compare-lead/p249-designer/card.md",
+  "kind": "descriptive: sides keep their built names; pair calls are against how the pair was built, never a reuse or new verdict on a fine-tune",
+  "decisions": {
+    "pair call": "lead, 2026-11-20, on the user's cell text ('reuse / new / no call by the every-seed rule on all nine pairs, twins and grafts'): the pair-relative every-seed call below, the share's own pair rule; no per-fine-tune cut-off",
+    "run 2 if G2 fails at A": "lead, 2026-11-20: if G2 fails at block 2 but block 3's controls (S0a, S0b, G1) pass, run 2 is the four grafts at block 3 only; block 2 reads 'not applicable at this update size'",
+    "two per card": "lead, 2026-11-20: the timing stage runs two crosscoders at once on one H100; adopted when the throughput is at least 1.5 times one alone (timingcheck)"
+  },
+  "settings": {
+    "cc": {
+      "full": {
+        "d": 768, "expansion": 32, "k": 100, "k_max": 1024, "k_anneal_steps": 2000, "lr": 0.0001, "warmup": 1000,
+        "batch": 2048, "tokens": 200000000, "epochs": 2, "aux_alpha": 0.03125, "dead_tokens": 10000000, "init_norm": 1.0,
+        "target_rms": 100.0, "chunk_rows": 1024, "ls_tokens": 100000, "val_rows": 8192, "alive_min": 10, "top_n": 1667,
+        "top_n_wide": 5000, "nu_r": 0.5, "nu_eps": 0.2, "shared": [0.4, 0.6], "base_only": 0.1,
+        "snapshots": [0.125, 0.5], "ckpt_every": 10000, "log_every": 500, "pile_start": 32768,
+        "pool_start": 131072, "pool_rows": 65536, "repeat_cap": 100
+      },
+      "rehearsal": {
+        "d": 768, "expansion": 4, "k": 100, "k_max": 1024, "k_anneal_steps": 200, "lr": 0.0001, "warmup": 100,
+        "batch": 2048, "tokens": 4096000, "epochs": 2, "aux_alpha": 0.03125, "dead_tokens": 200000, "init_norm": 1.0,
+        "target_rms": 100.0, "chunk_rows": 128, "ls_tokens": 100000, "val_rows": 256, "alive_min": 10, "top_n": 64,
+        "top_n_wide": 256, "nu_r": 0.5, "nu_eps": 0.2, "shared": [0.4, 0.6], "base_only": 0.1,
+        "snapshots": [0.125, 0.5], "ckpt_every": 500, "log_every": 50, "pile_start": 32768,
+        "pool_start": 131072, "pool_rows": 1024, "repeat_cap": 2
+      }
+    },
+    "run": {
+      "sites": {"A": "in2", "B": "out3"},
+      "data_seed": 198,
+      "plant_seed": 1982,
+      "gauss_draw": 0,
+      "gauss_match_tol": 0.05,
+      "control_task": "e54/elicit",
+      "reuse": ["e54/elicit_s0", "e54/elicit_s1", "e54/elicit_s2"],
+      "new": ["e54/cipher_s0", "e54/cipher_s1", "e54/cipher_s2"],
+      "gauss_of": "e54/elicit_s0",
+      "heads": {"A": "early_lowest", "B": "last_lowest"},
+      "graft_layers": {"early_lowest": 1, "last_lowest": 3},
+      "graft_rows": 16384,
+      "graft_window": 32,
+      "graft_read_val": [1000, 2000],
+      "graft_read_n": 512,
+      "graft_read_seed": 201005,
+      "seeds": [0, 1, 2],
+      "k_sweep": [32, 200],
+      "fill_start": 589824,
+      "spliced_rows": 256,
+      "timing_steps": 300,
+      "rehearse_extra": ["e53__lowercase_s0.A.c0"]
+    },
+    "sources": {
+      "cc.full": "E203's filed settings (experiments/crosscoder/results/run2/predictions.json .settings.full), each sourced there to diffing-toolkit@617d926 configs/diffing/method/crosscoder.yaml and configs/config.yaml, the paper repo's train-crosscoder.sh and the pinned trainer; unchanged except snapshots (two, not three: they only feed the early checks and the token-budget trend)",
+      "crosscoder TF32": "paper repo sparsity-artifacts-crosscoders@d67ec6a train_crosscoder.py:23 th.set_float32_matmul_precision('high'); toolkit configs/config.yaml:141 torch_precision: high. E203/E212 ran fp32. Model forwards and every score stay fp32 with TF32 off (a zero update must give W0 exactly, E212's self_act_diff)",
+      "cc.rehearsal": "tiny dictionary (3,072 latents so k 200 of the sweep fits the trainer's k * 10 <= latents) and 4.1M tokens; latent-scaling tokens and every read set at full size; val_rows 256 to fit the debug QoS (the full 8,192 is scored once at full size by `scorecheck`); repeat_cap 2 so the e53 item draws few windows a chunk and the Pile fill path runs (at 100 the tiny stream needs no fill)",
+      "sites": "A: config.yaml:123 layers [0.5] (E203's); B: ours, the only site E206's layer-3 grafts change",
+      "heads": "E206 (graft_sites) saved heads, k = 16, results-large/graft_sites/{early_lowest,last_lowest}.pt; layers from its specs(); the early head failed E206's mechanism check (attention at k 2.8e-5) but is fresh machinery writing before block 2, which is all a planted change needs",
+      "graft_rows, graft_window, graft_read_*": "E201's data (graft_negative/run.py data(): training windows from Pile train rows 0..16383, 32 tokens; read windows cut from val rows 1000..1999, 512 of them, seed 201005)",
+      "fill_start": "ours: the first cached Pile train row past every range a task or crosscoder stream used (artifacts/sets/train_589824_524288.npy); used by the capped e53/e62 task halves (run 2; rehearsed here on e53 lowercase)",
+      "k_sweep": "ours: 32 keeps the paper's k/d (100 / 2304 x 768); 200 doubles k",
+      "gauss_match_tol": "ours, E228's kl_rel_tol (10%) halved: the match is a bisection on one scalar",
+      "seeds": "the cell: at least 3 crosscoder seeds and 3 fine-tune seeds on the primary pair; data and plant seeds are E203's, so its planted direction is reproduced",
+      "spliced_rows": "ours: 256 Pile val rows (131k tokens) per model and fill"
+    }
+  },
+  "thresholds": {
+    "full": {
+      "self_act_diff": 1e-05,
+      "self_rn_dev": 0.001,
+      "curve_step": 1000,
+      "fve_curve_min": 0,
+      "fve_early": 0.5,
+      "fve_min": 0.8,
+      "dead_max": 0.3,
+      "planted_part": 0.5,
+      "planted_lead_specific": false,
+      "spliced_recovered_drop": 0.05,
+      "projected_limit_min": 90,
+      "graft_energy_min": 1e-06
+    },
+    "rehearsal": {
+      "self_act_diff": 1e-05,
+      "self_rn_dev": 0.001,
+      "curve_step": 100,
+      "fve_curve_min": -1000000,
+      "fve_early": -1000000,
+      "fve_min": -1000000,
+      "dead_max": 1,
+      "planted_part": -1,
+      "planted_lead_specific": false,
+      "spliced_recovered_drop": 1000000,
+      "projected_limit_min": 100,
+      "graft_energy_min": 1e-06
+    },
+    "thresholds_source": "self_act_diff, self_rn_dev, fve_early, fve_min, dead_max, planted_part, planted_lead_specific: E203/E212 filed bars (experiments/crosscoder/results/run2/predictions.json, experiments/realistic_tasks/results/predictions_run3.json); curve_step, fve_curve_min: E212; planted_lead_specific false (E203/E212 had true): a grafted head's change spreads over many latents, unlike E203's single planted direction; in the rehearsal (job 62445) the largest single latent carried 1-20% of a head's change, so the lead-latent clause tests which one latent carries most, not whether the method sees the change; the part carried by fine-tune-specific latents, at least planted_part, is the bar; spliced_recovered_drop: E203's fve_drop (0.05) applied to the recovered fraction against the site's self crosscoder; projected_limit_min: about three times the per-crosscoder estimate (A 28, B 32 min; E203 timing.json and side minutes), so a card running two crosscoders at once (each slower) passes and a stalled stream does not; graft_energy_min: the self control's change is exactly 0, so any graft write above rounding (activations are O(1)-O(100) per token) passes; the rehearsal keeps the exact bars and relaxes only those a tiny dictionary cannot meet"
+  },
+  "readings": {
+    "count": "the authors' native output: latents among the top_n by relative norm with nu_r < 0.5 and nu_eps < 0.2 (commute.crosscoder.specific); top_n_wide beside",
+    "specific": "the share of the side's activation change D(x) = h_ft - h_base at the site carried by those latents, sum of s_j (commute.crosscoder.carried), on the side's read rows",
+    "d, d_alt": "E203's forms (commute.crosscoder.d_forms), reported beside, never scored",
+    "fit": "FVE per model on Pile val rows plus the read rows, dead share, L0, spliced loss (clean, spliced, mean-ablated next-token loss on spliced_rows Pile val rows per model; recovered = (ablated - spliced) / (ablated - clean))",
+    "energy": "mean squared activation change per token at the site on the read rows"
+  },
+  "items": {
+    "stage 0 (8)": "self.A.c0, self.B.c0, head.A.c{0,1,2}, head.B.c{0,1,2}",
+    "stage 1 (29)": "gauss.{A,B}.c{0,1,2}; at each site e54__elicit_s{0,1,2}.c0 and e54__cipher_s{0,1,2}.c0, e54__elicit_s0.c{1,2}, e54__cipher_s0.c{1,2}; direction.A.c0; head.A.c0.k32, head.A.c0.k200",
+    "reads": "self, gauss, direction and the e54 sides: the task's score-half windows (E203); heads: E201's read windows; the stream: E203's Pile half plus the side's task half (fresh e54 key-value windows; for heads, fresh 32-token windows from the graft's training rows)"
+  },
+  "expected": {
+    "self (both sites)": "count 0; relative norm 0.5 on every alive latent; specific nan; FVE ~0.93 (E203 0.932); dead 0",
+    "grafted head A (early_lowest, 3 seeds)": "lean pass, low-medium confidence: the head writes before block 2 and M lacks it; its write may lie along directions M's own heads write (token identity), which shared latents could absorb",
+    "grafted head B (last_lowest, 3 seeds)": "lean pass, medium: lead latent specific, specific part 0.5-0.9; d <= -0.3; its change at site A exactly 0",
+    "E203 planted direction (A, 1 seed, reported)": "nu_eps near E203's 0.244 (miss) on this stream; no bar",
+    "matched Gaussian (3 seeds a site)": "count 0, specific ~0 (E203 random 0, E212 0); d 0.55-0.75; c about 10 at A (E203: elicit change 1.96 vs norm-matched random 0.017 per token, sqrt ratio 10.7)",
+    "primary pair at A": "specific 0 on most seeds both sides (E203 stage 1: 0 and 0 at both crosscoder seeds): 'no call'",
+    "primary pair at B": "no prior; reported",
+    "k sweep": "FVE rises with k; the head's specific part within 0.1 across k; reported, no bar",
+    "spliced loss": "recovered fraction measured in the rehearsal and stage 0; no prior for this model",
+    "time": "A ~28 min, B ~32 min per crosscoder alone on an H100 in TF32 (E203 timing.json 12.3 ms/step; scoring 7.9 min); measured by the timing stage"
+  },
+  "rules": {
+    "S0a self (stop)": {
+      "rule": "per site, in its own job: a zero update's activations within self_act_diff of W0's before training; at the end max |relative norm - 0.5| over alive latents <= self_rn_dev; count 0; min FVE >= fve_min; dead <= dead_max. Any miss: exit 1; `check0` marks the site failed.",
+      "blind_to": "anything a real change could do; it fails only on a code fault (side mix-up, a path that does not reproduce W0)",
+      "edge_cases": "specific is nan by construction (zero change): not compared; no alive latent: the deviation is nan, a miss"
+    },
+    "S0b grafted head (stop)": {
+      "rule": "per site, on every crosscoder seed (`check0`): specific >= planted_part (and the lead latent, the alive latent with the largest s_j on the head's read rows, fine-tune-specific only if planted_lead_specific; false here, see thresholds_source). A miss on any seed or a missing seed: the site's planted control failed; its stage-1 items refuse; told to the user; the site reads 'not applicable at this update size'.",
+      "blind_to": "changes the head does not make (it tests detection of machinery M lacks, not of a reweighted mechanism)",
+      "positive_control": "this is the positive control",
+      "edge_cases": "graft energy at its site <= graft_energy_min: a build fault, exit 1 before training; for the B head, any change at site A over self_act_diff: exit 1; lead latent nan betas (never fired on the latent-scaling tokens): not specific, a miss; ties in s_j: lowest index is the lead"
+    },
+    "G1 Gaussian false new": {
+      "rule": "per site (`check1`): on any crosscoder seed the matched Gaussian passes the planted bar (as S0b reads it): fail; the reading calls a structureless change new, so graft calls at that site are not read.",
+      "edge_cases": "Gaussian match outside gauss_match_tol after bisection: exit 1 before training; a missing seed: fail"
+    },
+    "G2 Gaussian as reuse-like as reuse": {
+      "rule": "per site (`check1`): pass iff min over the Gaussian's seeds of specific > max over the primary pair's reuse-side values (3 fine-tune seeds at crosscoder seed 0, and crosscoder seeds 1-2 on fine-tune seed 0), strict. Fail: pair calls at that site read 'not applicable at this update size'.",
+      "blind_to": "whether a Gaussian 'should' read new: it checks only that the reading places a change with no structure apart from a reuse fine-tune, as the share's random control does (E228)",
+      "edge_cases": "all zero (Gaussian 0, reuse 0): 0 > 0 is false, so fail (the lean outcome); a missing file or a nan: fail"
+    },
+    "early checks (each crosscoder; stop)": {
+      "rule": "before step 0: stream tokens >= steps x batch; every step: finite loss; at curve_step: batch FVE >= fve_curve_min; at the first snapshot (12.5% of tokens): min FVE >= fve_early, dead <= dead_max, projected minutes <= projected_limit_min; at the end: every step trained, min FVE >= fve_min, dead <= dead_max. Each logs its reading and the projected minutes when it passes. Spliced recovered >= the site's self value - spliced_recovered_drop is read by `check1` (it needs the self crosscoder) and a miss marks that item unread."
+    },
+    "pair call (the primary pair here; the nine pairs and twins in run 2)": {
+      "rule": "per site, values v = specific of each listed fine-tune at crosscoder seed 0: 'reuse/new as built' if min(v_new) > max(v_reuse); 'reversed' if max(v_new) < min(v_reuse); else 'no call'. Gap = mean(v_new) - mean(v_reuse) (positive = with the build). Read only at a site whose S0a, S0b and G2 passed; otherwise 'not applicable at this update size'.",
+      "absolute_or_relative": "ordinal, no band",
+      "edge_cases": "ties anywhere between the sides: neither strict inequality holds, 'no call'; all values 0: 'no call'; fewer than 2 values on a side: 'not read'; a nan: 'not read'"
+    },
+    "graft call (run 2, site B; stated here so run 2 inherits it)": {
+      "rule": "per graft, on every crosscoder seed the planted bar as S0b reads it: 'new'; on no seed: 'not new'; otherwise 'no call'. Read only if S0a, S0b and G1 passed at B.",
+      "edge_cases": "one seed lost: 'not read'; the do-nothing state (self) under this rule reads 'not new' (specific nan fails >=), never 'new'"
+    },
+    "run 2 decision (`check1` writes it)": "A readable for pairs: S0a, S0b, G2 pass at A. B readable for grafts: S0a, S0b, G1 pass at B. Both: run 2 as planned. Only B: run 2 is the four grafts at B. Neither: run 2 is not run; the crosscoder reads 'not applicable at this update size' at both sites.",
+    "P1 (primary pair, A)": "'no call' (lean, medium-high)",
+    "P1B (primary pair, B)": "no prior; reported",
+    "C (controls)": "S0a pass at both sites (high); S0b pass at B (medium), at A (low-medium); G1 pass at both (medium-high); G2 FAIL at A (lean, medium: rival b)",
+    "reported, not scored": "per crosscoder: count at top_n and top_n_wide, specific, d, d_alt, parts, lead latent with its betas, FVE, dead, L0, spliced loss, energy, trained steps and tokens, task share, minutes; per site the range of each reading over crosscoder seeds (fine-tune seed 0) and over fine-tune seeds (crosscoder seed 0), the noise floor; the k sweep; E203's planted direction"
+  },
+  "edge_case_checks": {
+    "pair call, all zero": "v_reuse [0,0,0], v_new [0,0,0]: min(new) 0 > max(reuse) 0 false; max(new) 0 < min(reuse) 0 false; 'no call'",
+    "pair call, one tie across sides": "reuse [0, 0.01, 0.02], new [0.02, 0.05, 0.08]: 0.02 > 0.02 false; 'no call'",
+    "pair call, clean": "reuse [0, 0, 0.001], new [0.1, 0.2, 0.15]: 0.1 > 0.001: 'reuse/new as built'",
+    "pair call, two-seed side": "reuse [0, 0.003], new [0.01, 0.02, 0.03]: 0.01 > 0.003: a call; one value only: 'not read'",
+    "pair call, do-nothing as a side": "self's specific is nan; a nan makes the pair 'not read', so a zero update can never earn a call",
+    "G2, lean outcome": "gauss [0,0,0], reuse [0,0,0,0,0]: 0 > 0 false: fail, 'not applicable at this update size'",
+    "G2, pass": "gauss [0.05, 0.06, 0.08], reuse max 0.003: pass",
+    "S0b, empty candidate pool": "no latent passes nu: count 0, specific 0 < 0.5: miss",
+    "graft call, mixed seeds": "seed 0 pass, seed 1 specific 0.4: 'no call'"
+  },
+  "blind_to": {
+    "specific": "a change in how the model uses a direction it already represents; changes outside the site; leans toward shared latents by construction (joint loss)",
+    "pair call": "the size of a gap (ordinal)",
+    "Gaussian match": "the direction of the activation change; it matches only its size at one site"
+  }
+}
