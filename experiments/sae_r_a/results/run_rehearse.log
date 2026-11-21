@@ -1,0 +1,56 @@
+E245 start, size rehearse, group built, tag rehearse; 1 items ['x10']; settings {'alpha': 0.9, 'side_tols': (0.05, 0.2), 'batch': 32, 'gain_batch': 8, 'reranks': 2, 'eval_cap': 50, 'chunk_div': 8, 'split_seed': 186001, 'reuse': ('x2', 'x10', 'moved', 'rebuilt'), 'new': ('new_few', 'new_thin'), 'sae_size': 'scored', 'sae_seed': 0, 'only': ('do_nothing', 'x10'), 'out': 'rehearse'}; thresholds {'control_rel_tol': 0.001, 'floor_max': 1e-06, 'kl_floor': 1e-06, 'shard_hours_max': 2, 'band_min': 0.014, 'thresholds_source': "control_rel_tol: E242's revert_tol (E214's gate_tol), max |logit difference| / max |logit| between every variable stood in with gain 1 and M's own forward: a code error gives order 1, fp32 rounding of order 1e-6; the do-nothing measures this path's floor (pieces_err: every site's output rebuilt from its SAE pieces) and every item logs its own revert_err beside it, and the rehearsal (do-nothing and x10) writes both into the plan before the scored run. floor_max: E242's (E214's and E226's kl_floor): stage 0 stops if its KL floor (the larger of the do-nothing's pieces KL and revert KL) exceeds it. Not read: a tolerance whose bar tol KL(F || M) is at or under the floor, floor = the larger of the job's stage-0 floor and the item's own revert KL (E242's rule); the do-nothing reads 1 by definition. kl_floor: E226's: an item with KL(F || F_all_ablated) at or under it has no behaviour to search. shard_hours_max: the debug QoS's 2 h limit (cluster/sae_r_a.sbatch --time); stage 0 projects the job's upper bound from its measured seconds per evaluation times eval_cap times the searches. band_min: E242's (E226's) fallback when the split-half band is 0. Exact zeros, no tolerance: o_F recomputed from the module's input equals the module's output bit for bit; every gain at an unchanged site is exactly 1 and its variables stood in give KL exactly 0; all kept gives F's logits exactly; on the do-nothing every gain is exactly 1 and every variable stood in gives KL exactly 0."}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+do_nothing: 512 windows x 41, 131080 variables; KL(F || F_all_ablated) 8.56932, KL(F || M) 0; controls {"recompute_differs": [], "changed_sites": [], "gain_dev_unchanged": 0.0, "gain_dev_all": 0.0, "kl_unchanged_stood_in": 0.0, "kl_all_stood_in": 0.0, "seconds_per_eval": 1.2344083786010742, "revert_err": 0.0, "revert_kl": 0.0, "gain_changed_quantiles": null, "nonpositive_gains": 0, "pieces_kl": 7.489383585768145e-12, "pieces_err": 2.7553021482162876e-06}
+do_nothing: remainder share nan (KL with the 8 remainders stood in 0)
+    ranking 0: prefix 9969, 17 evaluations
+    ranking 1: prefix 7300, 34 evaluations
+    ranking 2: prefix 5810, 50 evaluations
+  do_nothing main: |K*| 5810 (prefix 5810), 0 at changed sites, 8 remainders; KL at K* 0.85539, bar 0.856932; 50 evaluations (cap hit), 44 s
+  do_nothing main tol 0.05: R_A 1.000000 (floor 1.000000, ceiling 1.000000); |K*| 5810, standable changed 0, keep F's 0, cannot stand in 0 (gain <= 0 0); KL all stood in 0, at the found set 0, bar 0; 0 evaluations, 0 s
+  do_nothing main tol 0.1: R_A 1.000000 (floor 1.000000, ceiling 1.000000); |K*| 5810, standable changed 0, keep F's 0, cannot stand in 0 (gain <= 0 0); KL all stood in 0, at the found set 0, bar 0; 0 evaluations, 0 s
+  do_nothing main tol 0.2: R_A 1.000000 (floor 1.000000, ceiling 1.000000); |K*| 5810, standable changed 0, keep F's 0, cannot stand in 0 (gain <= 0 0); KL all stood in 0, at the found set 0, bar 0; 0 evaluations, 0 s
+do_nothing: done in 56 s; R_A tol0.05 1.0, tol0.1 1.0, tol0.2 1.0; halves []; remainder share nan; peak GPU 14.46 GB
+stage 0: {"experiment": "E245", "R_A": 1.0, "seconds_per_K_eval": 0.8787010765075683, "seconds_per_stand_in_eval": 1.2344083786010742, "projected_hours_max": 0.12233534892400105, "pieces_kl": 7.489383585768145e-12, "pieces_err": 2.7553021482162876e-06, "revert_kl": 0.0, "revert_err": 0.0, "kl_floor": 7.489383585768145e-12, "peak_gpu_gb": 14.455496788024902}; checks hold
+STAGE 0 DONE
+x10: 75 windows x 41, 131080 variables; KL(F || F_all_ablated) 13.9558, KL(F || M) 0.713758383; controls {"recompute_differs": [], "changed_sites": ["mlp1"], "gain_dev_unchanged": 0.0, "gain_dev_all": 39.895257340285916, "kl_unchanged_stood_in": 0.0, "kl_all_stood_in": 1.071611083999558, "seconds_per_eval": 0.21271228790283203, "revert_err": 2.108626540575642e-05, "revert_kl": 1.8271882086626334e-11, "gain_changed_quantiles": [0.0, 0.8088602252282407, 1.0, 1.30500723598556, 40.895257340285916], "nonpositive_gains": 405}
+x10: remainder share 0.49721 (KL with the 8 remainders stood in 0.358871)
+    ranking 0: prefix 21990, 17 evaluations
+    ranking 1: prefix 15579, 34 evaluations
+    ranking 2: prefix 12762, 50 evaluations
+  x10 main: |K*| 12762 (prefix 12762), 3486 at changed sites, 8 remainders; KL at K* 1.39487, bar 1.39558; 50 evaluations (cap hit), 8 s
+    ranking 0: prefix 2515, 12 evaluations
+    ranking 1: prefix 2572, 23 evaluations
+    ranking 2: prefix 2572, 34 evaluations
+  x10 main tol 0.05: R_A 0.799796 (floor 0.726845, ceiling 0.995534); |K*| 12762, standable changed 3429, keep F's 2498, cannot stand in 57 (gain <= 0 57); KL all stood in 1.05618, at the found set 0.0356703, bar 0.0356879; 51 evaluations (cap hit), 4 s
+    ranking 0: prefix 2286, 12 evaluations
+    ranking 1: prefix 2464, 23 evaluations
+    ranking 2: prefix 2464, 34 evaluations
+  x10 main tol 0.1: R_A 0.816565 (floor 0.726845, ceiling 0.995534); |K*| 12762, standable changed 3429, keep F's 2284, cannot stand in 57 (gain <= 0 57); KL all stood in 1.05618, at the found set 0.0713521, bar 0.0713758; 51 evaluations (cap hit), 4 s
+    ranking 0: prefix 2060, 12 evaluations
+    ranking 1: prefix 2079, 24 evaluations
+    ranking 2: prefix 2079, 36 evaluations
+  x10 main tol 0.2: R_A 0.835136 (floor 0.726845, ceiling 0.995534); |K*| 12762, standable changed 3429, keep F's 2047, cannot stand in 57 (gain <= 0 57); KL all stood in 1.05618, at the found set 0.142691, bar 0.142752; 51 evaluations (cap hit), 4 s
+    ranking 0: prefix 20661, 17 evaluations
+    ranking 1: prefix 14339, 34 evaluations
+    ranking 2: prefix 11616, 50 evaluations
+  x10 half1: |K*| 11616 (prefix 11616), 3473 at changed sites, 8 remainders; KL at K* 1.39941, bar 1.39983; 50 evaluations (cap hit), 4 s
+    ranking 0: prefix 2253, 11 evaluations
+    ranking 1: prefix 2377, 23 evaluations
+    ranking 2: prefix 2377, 35 evaluations
+  x10 half1 tol 0.1: R_A 0.800620 (floor 0.701016, ceiling 0.994404); |K*| 11616, standable changed 3408, keep F's 2251, cannot stand in 65 (gain <= 0 65); KL all stood in 1.03329, at the found set 0.0708558, bar 0.0708656; 51 evaluations (cap hit), 2 s
+    ranking 0: prefix 19567, 17 evaluations
+    ranking 1: prefix 14092, 34 evaluations
+    ranking 2: prefix 11926, 50 evaluations
+  x10 half2: |K*| 11926 (prefix 11926), 3216 at changed sites, 8 remainders; KL at K* 1.39105, bar 1.39143; 50 evaluations (cap hit), 4 s
+    ranking 0: prefix 1975, 12 evaluations
+    ranking 1: prefix 2129, 23 evaluations
+    ranking 2: prefix 2129, 34 evaluations
+  x10 half2 tol 0.1: R_A 0.829868 (floor 0.730337, ceiling 0.995304); |K*| 11926, standable changed 3160, keep F's 1973, cannot stand in 56 (gain <= 0 56); KL all stood in 1.08641, at the found set 0.0718575, bar 0.0718727; 51 evaluations (cap hit), 2 s
+x10: done in 35 s; R_A tol0.05 0.7997962701770882, tol0.1 0.8165648017552107, tol0.2 0.8351355586898606; halves [0.8006198347107438, 0.8298675163508301]; remainder share 0.49721; peak GPU 14.46 GB
+ITEM 1 of 1 DONE (x10)
+order check waits for ['x2', 'moved', 'rebuilt', 'new_few', 'new_thin']
+FINISHED E245 built rehearse
+peak host RSS 6.1 GB
