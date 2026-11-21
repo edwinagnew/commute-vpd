@@ -1,0 +1,59 @@
+{
+  "experiment": "E236",
+  "cell": "P1.41",
+  "status": "filed before any run; the cell's one run: stage 0 controls, then every KL-matched gain-only state of E231 (81 items) through E226's VPD reading, E221's three coarse levels and the held model",
+  "plan": "reports/plans/2026-11-20_plan_p1-41-gain-only-r.md; card reports/plans/2026-11-20_plan_p1-41-card.md; code experiments/gain_only_r/run.py (readers: experiments/kstar_vpd/run.py guards and one_search on commute.kstar_vpd, experiments/kstar_pairs/run.py read_item on commute.kstar, experiments/held_model_retention/run.py read and windows on commute.held_model), score.py",
+  "wording": "No verdict and no reuse or new label on any item or pair: the reuse definition is under revision in cell P1.1. R and its grade are the adopted ones, unchanged (E226 at VPD, E221 at the coarse levels). Each reader runs with its own experiment's filed settings and thresholds, loaded from its predictions.json (E226, E221, E205); the settings below are only this run's own.",
+  "prediction": {
+    "H1_held_near_1": "Filed first, the user's words (2026-11-20 task file item 3: 'file \"held model reads near 1\" first'): on every one of the 81 KL-matched gain-only states, the held model's reading 1 (one gain per neuron and head, commute.held_model) reads S >= held_bar (0.99). Holds when every item has a non-null S at or over the bar. Expected: 1 minus under 1e-3 on every item, because reading 1's family contains every gain-only state exactly, and the only departure is the bf16 export of the change (stage 0 measures it on the control)",
+    "R1_vpd": "Over the paired items at VPD (a gain-only state with the full fine-tune of the same reference and seed that E226 read: 49 if every item reads), d = R_read(gain-only) - R_read(full fine-tune), polished set, read grade. up = the number of items with d > 0. Call 'rival a' when up >= share_a x n (40 of 49), 'rival b' when up <= share_b x n (24 of 49), else 'no call'. Card rival a (R reads a pure strengthening as kept) predicts 'rival a'; rival b (R cannot tell it from a full fine-tune) predicts 'rival b'",
+    "R2_coarse": "The same rule and calls at each of E221's levels head_mlp, mlp_attn, block, over the gain-only states with an E221 full fine-tune of the same reference and seed (the nine pairs' 49, plus case_label and fresh at seeds 0 and 1: 57 if every item reads). R at head_mlp is the mean over E221's three orders, as E221's score.py reads an item. Reported beside R1, one call per level; the card's stop reads R1 and R2 together",
+    "reported_no_rule": "per item: R_read and R_all, f, |K*| (polished and prefix), site-remainder share at VPD; R, f, |K*| per coarse level; held S for readings 1, 2, 3 with KL(F || M) and logit errors; KL(F || M) on D at VPD; the update size ||dW|| / ||W0||. Beside each: the full fine-tune's R (E226 at VPD, E221 per level) and its held reading 1 and 3 (E205) for the same reference and seed where saved. Per task: the gain-only seeds' sd of R at VPD (the card's spread was a proxy). The twin pairs e58_elicit_shuffle and e58_class_twin have no saved full fine-tune reading at any level: read and reported only"
+  },
+  "rules_edge_cases": "n is the number of paired items with both readings present and read (an item 'no behaviour' or stopped is left out and listed). n < n_min (E221's 5): 'too few', no call. d exactly 0 is not above (ties count against rival a). All d equal 0 gives up = 0: 'rival b' (R cannot tell them apart, which is what rival b says). Do-nothing as the candidate: R = 1 at every level, so d > 0 on every item with a full R under 1 and the call is 'rival a': a rival-a call alone therefore does not show R reads a strengthening rather than nothing, and is read beside KL(F || M) on D and f, which are 0 for do-nothing and well above 0 for a KL-matched state. H1 on do-nothing: S is null (KL(F || M) <= kl_floor), so do-nothing cannot pass H1. Checked by hand against these cases before filing (2026-11-20, the writer's scratch, score.py's call())",
+  "settings": {
+    "handoff": "experiments/gain_only/results/handoff.json",
+    "gains_dir": "experiments/gain_only/results/large/gains",
+    "match": "kl",
+    "seeds": [0, 1, 2],
+    "n_items": 81,
+    "control": "e58/cipher_s0",
+    "twins": [
+      ["case_label/real", "case_real"],
+      ["case_label/twin", "case_twin"],
+      ["fresh/real", "repeat_real"],
+      ["fresh/twin", "repeat_twin"]
+    ],
+    "settings_source": "handoff, gains_dir, match: compare-lead's E231 hand-off (results/handoff.json; the KL-matched state per the cell, 'kl:<reference>' in each state's 'for'); seeds, n_items: the hand-off's 81 KL-matched states over seeds 0-2 (26 tasks x 3, and e54/cipher twice, matched to e54/cipher and to e54/cipher_own); control: an E187 state that E226, E221 and E205 all read (E221's rehearsal item), so its full fine-tune is the reproduction item; twins: the E231 tasks whose windows E221 built under E196's names (commute.old_tasks TASKS, the same task.pt file, asserted at start). Every reader's own settings are its experiment's filed ones, loaded unchanged"
+  },
+  "thresholds": {
+    "held_bar": 0.99,
+    "share_a": 0.8,
+    "share_b": 0.5,
+    "n_min": 5,
+    "thresholds_source": "held_bar: the cell's 'near 1' as within 1% of the output change; the measured anchors are E205's exact gain build at S = 1 - 5e-12 (experiments/held_model_size_matched/results/stage0.json gains_block_scaled, reading 1) and E205's full fine-tunes at S 0.0085 to 0.104 (results/summary.json), and the bf16 export moved E231's KL on its read rows by 7e-4 relative (c3/cipher_s0: 0.86212 trained, results/items/c3_cipher_s0.json; 0.86155 from the file, handoff.json), so rounding alone should leave 1 - S under 1e-3, ten times inside the bar; stage 0 logs the measured 1 - S of the control's bf16 state. share_a, share_b: the card (rival a at least 80% above, rival b at most half); n_min: E221's filed value. Every reader's guards and tolerances are its experiment's (E226: s_tol, gate_tol, split and piece checks; E221: s_tol, gate_tol, repro_tol 1e-5, kl_repro_rel, size_rel; E205: kl_floor, logit_tol 1e-3, repro_tol 1e-4)"
+  },
+  "expected": {
+    "stage0_do_nothing": "VPD: no changed variable and every s within E226's s_tol (1e-6) of 1, so R = 1 for any K* (not searched); coarse: R = 1 and f = 0 at every level, every s within s_tol (as E221's stage 0); held: KL(F || M) at or under kl_floor, S null, logit errors at fp32 rounding (E205's do-nothing)",
+    "stage0_gain_exact": "the control's gains rebuilt exactly in fp32 (commute.gains.delta): held readings 1 and 3 reproduce F's logits within logit_tol (E205's gains_block_scaled read S = 1 - 5e-12); reading 2 is not checked (it makes the MLP one unit, so it cannot hold a per-neuron gain)",
+    "stage0_export_floor": "1 - S of reading 1 on the control's bf16 state: under 1e-3 (logged, no stop)",
+    "reproduction": "with --reproduce (the rehearsal): the full fine-tune e58/cipher_s0 through this run's path reads E226's R at VPD (0.998904887) and E221's R per level within repro_tol 1e-5, and E205's held S (readings 1 and 3) within 1e-4: same file, windows, code and settings",
+    "items": "held reading 1: S >= 0.99 (H1). VPD: R near 1; a gain on a column rescales a subcomponent's input direction only (v_c times g), which keeps its write along u_c, so most subcomponents read s near 1 and the remainders carry the change; full fine-tunes read 0.9970 to 0.9997 per task (E226). head_mlp: a head's gain keeps its write direction exactly (s = 1), an MLP layer's per-neuron gains turn it; mlp_attn and block: both turn. KL(F || M) on D: matched to the reference's mean KL on E231's read rows (0.75 to 1.1 there), so on D it can differ from the full fine-tune's (0.28 to 6.5, E226)"
+  },
+  "measures": {
+    "F": "M plus E231's state file (bf16 delta-W of the 24 decomposed matrices, read as fp32 by commute.old_tasks.load_dw), its sha256 checked against the hand-off",
+    "D": "the task's read half by commute.old_tasks.task_windows (E187 tasks as E205 and E221 built them; case_label and fresh as E196's case and repeat tasks; E58's twin key tables from E231's spec, trained-keys file only as E221's e187_task), E196's subset of 512 windows (read_seed 195200), last position",
+    "R, f, K*": "E226 at VPD (main search, eval_cap 2000) and E221 per coarse level (head_mlp 3 orders, exhaustive levels 1), unchanged",
+    "held S": "1 - KL(F || H) / KL(F || M) at the last position of the same 512 read windows, H fitted on 16,384 fit windows of the task (E205's settings), readings 1, 2, 3"
+  },
+  "blind_to": {
+    "R1, R2": "a gain-only state that reads high because it changed little: d is read beside KL(F || M) on D (rules_edge_cases); anything outside the 512 read windows and the last position",
+    "H1": "nothing it is meant to see: reading 1 holds every gain-only state by construction; H1 is the held model's positive control on gain states, and a miss is a code or format error, not a finding"
+  },
+  "positive_control": "stage 0: do-nothing reads R = 1, f = 0 at every level and S null; the exact gain build reads S = 1 within logit_tol in readings 1 and 3; the rehearsal reproduces E226's, E221's and E205's saved readings of one full fine-tune",
+  "noise_floor": {
+    "R": "the full fine-tunes' seed sd of R at VPD per task, median 9e-6 (4e-7 to 3.6e-5; experiments/kstar_vpd/results/items); E226's half-split band 0.001 (results/summary.json band); E221's per-pair seed se at blocks median 0.00027",
+    "held": "the export floor measured in stage 0"
+  },
+  "not_run": "the gain-matched states (47 of 81 hit E231's step cap); any new featurization; a verdict or label; the neuron level (R = 1 there by construction for a gain-only state)"
+}
