@@ -405,10 +405,12 @@ def score(cfg: Cfg, ae: AE, ev: dict[str, Any], h_ls: Tensor, h_task: Tensor,
 
 @torch.no_grad()
 def site_acts(net: Any, toks: Tensor, dW: dict[str, Tensor] | None, site: str,
-              plant: tuple[Tensor, int] | None = None, n: int = 64) -> Tensor:  # fmt: skip
+              plant: tuple[Tensor, int] | None = None, n: int | None = None) -> Tensor:  # fmt: skip
     """(m, d) raw activations of `net` (a steering.Net) at `site`, every position but 0, under W0 + dW (None: W0);
-    `plant` = (vector, position) is added at that position before position 0 is dropped."""
+    `plant` = (vector, position) is added at that position before position 0 is dropped. Rows go `n` at a time, by
+    default about 32k tokens a forward (64 Pile rows; short task windows in larger batches)."""
     out: list[Tensor] = []
+    n = n or max(1, 32768 // toks.shape[1])
 
     def grab(x: Tensor) -> Tensor:
         x = x.clone()

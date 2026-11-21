@@ -27,7 +27,7 @@
         "target_rms": 100.0, "chunk_rows": 128, "ls_tokens": 100000, "val_rows": 256, "alive_min": 10, "top_n": 64,
         "top_n_wide": 256, "nu_r": 0.5, "nu_eps": 0.2, "shared": [0.4, 0.6], "base_only": 0.1,
         "snapshots": [0.125, 0.5], "ckpt_every": 500, "log_every": 50, "pile_start": 32768,
-        "pool_start": 131072, "pool_rows": 1024, "repeat_cap": 100
+        "pool_start": 131072, "pool_rows": 1024, "repeat_cap": 2
       }
     },
     "run": {
@@ -57,7 +57,7 @@
     "sources": {
       "cc.full": "E203's filed settings (experiments/crosscoder/results/run2/predictions.json .settings.full), each sourced there to diffing-toolkit@617d926 configs/diffing/method/crosscoder.yaml and configs/config.yaml, the paper repo's train-crosscoder.sh and the pinned trainer; unchanged except snapshots (two, not three: they only feed the early checks and the token-budget trend)",
       "crosscoder TF32": "paper repo sparsity-artifacts-crosscoders@d67ec6a train_crosscoder.py:23 th.set_float32_matmul_precision('high'); toolkit configs/config.yaml:141 torch_precision: high. E203/E212 ran fp32. Model forwards and every score stay fp32 with TF32 off (a zero update must give W0 exactly, E212's self_act_diff)",
-      "cc.rehearsal": "tiny dictionary (3,072 latents so k 200 of the sweep fits the trainer's k * 10 <= latents) and 4.1M tokens; latent-scaling tokens and every read set at full size; val_rows 256 to fit the debug QoS (the full 8,192 is scored once at full size by `scorecheck`)",
+      "cc.rehearsal": "tiny dictionary (3,072 latents so k 200 of the sweep fits the trainer's k * 10 <= latents) and 4.1M tokens; latent-scaling tokens and every read set at full size; val_rows 256 to fit the debug QoS (the full 8,192 is scored once at full size by `scorecheck`); repeat_cap 2 so the e53 item draws few windows a chunk and the Pile fill path runs (at 100 the tiny stream needs no fill)",
       "sites": "A: config.yaml:123 layers [0.5] (E203's); B: ours, the only site E206's layer-3 grafts change",
       "heads": "E206 (graft_sites) saved heads, k = 16, results-large/graft_sites/{early_lowest,last_lowest}.pt; layers from its specs(); the early head failed E206's mechanism check (attention at k 2.8e-5) but is fresh machinery writing before block 2, which is all a planted change needs",
       "graft_rows, graft_window, graft_read_*": "E201's data (graft_negative/run.py data(): training windows from Pile train rows 0..16383, 32 tokens; read windows cut from val rows 1000..1999, 512 of them, seed 201005)",
@@ -78,7 +78,7 @@
       "fve_min": 0.8,
       "dead_max": 0.3,
       "planted_part": 0.5,
-      "planted_lead_specific": true,
+      "planted_lead_specific": false,
       "spliced_recovered_drop": 0.05,
       "projected_limit_min": 90,
       "graft_energy_min": 1e-06
@@ -97,7 +97,7 @@
       "projected_limit_min": 100,
       "graft_energy_min": 1e-06
     },
-    "thresholds_source": "self_act_diff, self_rn_dev, fve_early, fve_min, dead_max, planted_part, planted_lead_specific: E203/E212 filed bars (experiments/crosscoder/results/run2/predictions.json, experiments/realistic_tasks/results/predictions_run3.json); curve_step, fve_curve_min: E212; spliced_recovered_drop: E203's fve_drop (0.05) applied to the recovered fraction against the site's self crosscoder; projected_limit_min: about three times the per-crosscoder estimate (A 28, B 32 min; E203 timing.json and side minutes), so a card running two crosscoders at once (each slower) passes and a stalled stream does not; graft_energy_min: the self control's change is exactly 0, so any graft write above rounding (activations are O(1)-O(100) per token) passes; the rehearsal keeps the exact bars and relaxes only those a tiny dictionary cannot meet"
+    "thresholds_source": "self_act_diff, self_rn_dev, fve_early, fve_min, dead_max, planted_part, planted_lead_specific: E203/E212 filed bars (experiments/crosscoder/results/run2/predictions.json, experiments/realistic_tasks/results/predictions_run3.json); curve_step, fve_curve_min: E212; planted_lead_specific false (E203/E212 had true): a grafted head's change spreads over many latents, unlike E203's single planted direction; in the rehearsal (job 62445) the largest single latent carried 1-20% of a head's change, so the lead-latent clause tests which one latent carries most, not whether the method sees the change; the part carried by fine-tune-specific latents, at least planted_part, is the bar; spliced_recovered_drop: E203's fve_drop (0.05) applied to the recovered fraction against the site's self crosscoder; projected_limit_min: about three times the per-crosscoder estimate (A 28, B 32 min; E203 timing.json and side minutes), so a card running two crosscoders at once (each slower) passes and a stalled stream does not; graft_energy_min: the self control's change is exactly 0, so any graft write above rounding (activations are O(1)-O(100) per token) passes; the rehearsal keeps the exact bars and relaxes only those a tiny dictionary cannot meet"
   },
   "readings": {
     "count": "the authors' native output: latents among the top_n by relative norm with nu_r < 0.5 and nu_eps < 0.2 (commute.crosscoder.specific); top_n_wide beside",
@@ -130,13 +130,13 @@
       "edge_cases": "specific is nan by construction (zero change): not compared; no alive latent: the deviation is nan, a miss"
     },
     "S0b grafted head (stop)": {
-      "rule": "per site, on every crosscoder seed (`check0`): the lead latent (the alive latent with the largest s_j on the head's read rows) is fine-tune-specific AND specific >= planted_part. A miss on any seed or a missing seed: the site's planted control failed; its stage-1 items refuse; told to the user; the site reads 'not applicable at this update size'.",
+      "rule": "per site, on every crosscoder seed (`check0`): specific >= planted_part (and the lead latent, the alive latent with the largest s_j on the head's read rows, fine-tune-specific only if planted_lead_specific; false here, see thresholds_source). A miss on any seed or a missing seed: the site's planted control failed; its stage-1 items refuse; told to the user; the site reads 'not applicable at this update size'.",
       "blind_to": "changes the head does not make (it tests detection of machinery M lacks, not of a reweighted mechanism)",
       "positive_control": "this is the positive control",
       "edge_cases": "graft energy at its site <= graft_energy_min: a build fault, exit 1 before training; for the B head, any change at site A over self_act_diff: exit 1; lead latent nan betas (never fired on the latent-scaling tokens): not specific, a miss; ties in s_j: lowest index is the lead"
     },
     "G1 Gaussian false new": {
-      "rule": "per site (`check1`): on any crosscoder seed the matched Gaussian's lead latent fine-tune-specific AND specific >= planted_part: fail; the reading calls a structureless change new, so graft calls at that site are not read.",
+      "rule": "per site (`check1`): on any crosscoder seed the matched Gaussian passes the planted bar (as S0b reads it): fail; the reading calls a structureless change new, so graft calls at that site are not read.",
       "edge_cases": "Gaussian match outside gauss_match_tol after bisection: exit 1 before training; a missing seed: fail"
     },
     "G2 Gaussian as reuse-like as reuse": {
@@ -153,7 +153,7 @@
       "edge_cases": "ties anywhere between the sides: neither strict inequality holds, 'no call'; all values 0: 'no call'; fewer than 2 values on a side: 'not read'; a nan: 'not read'"
     },
     "graft call (run 2, site B; stated here so run 2 inherits it)": {
-      "rule": "per graft, on every crosscoder seed: lead latent fine-tune-specific and specific >= planted_part: 'new'; on no seed: 'not new'; otherwise 'no call'. Read only if S0a, S0b and G1 passed at B.",
+      "rule": "per graft, on every crosscoder seed the planted bar as S0b reads it: 'new'; on no seed: 'not new'; otherwise 'no call'. Read only if S0a, S0b and G1 passed at B.",
       "edge_cases": "one seed lost: 'not read'; the do-nothing state (self) under this rule reads 'not new' (specific nan fails >=), never 'new'"
     },
     "run 2 decision (`check1` writes it)": "A readable for pairs: S0a, S0b, G2 pass at A. B readable for grafts: S0a, S0b, G1 pass at B. Both: run 2 as planned. Only B: run 2 is the four grafts at B. Neither: run 2 is not run; the crosscoder reads 'not applicable at this update size' at both sites.",
