@@ -1,0 +1,38 @@
+{
+ "experiment": "E249",
+ "M_fall": {
+  "e62/copy": 1.1627717208862305,
+  "e62/lookup": -0.08715012788772583,
+  "e58/copy": 0.11511821013230544,
+  "e58/rank1": -0.02913256291742925,
+  "e58/elicit": -0.0173105359911085,
+  "e58/cipher": -0.029483813505906325,
+  "e58/prior_cipher": -0.004083433351316652
+ },
+ "task_mean_share": {
+  "e62/copy": 0.5263408078635873,
+  "e62/lookup": -0.0023295121850948806,
+  "e58/copy": 0.2482620538813768,
+  "e58/rank1": 0.007408537488316343,
+  "e58/elicit": 0.0019767128550843096,
+  "e58/cipher": 0.003893975955215715,
+  "e58/prior_cipher": 0.00010953566124756915
+ },
+ "task_kind": {
+  "e62/copy": "uses_head",
+  "e62/lookup": "not_via_head",
+  "e58/copy": "between",
+  "e58/rank1": "not_via_head",
+  "e58/elicit": "not_via_head",
+  "e58/cipher": "not_via_head",
+  "e58/prior_cipher": "not_via_head"
+ },
+ "null_floor": 0.07381276554097727,
+ "rules": {
+  "P1_copy_uses_head": "holds",
+  "P2_ciphers_do_not": "holds",
+  "P3_matched_prior_pair_split": "holds",
+  "P4_e62_copy_over_lookup": "holds",
+  "P5_rank1_elicit_do_not": "holds"
+ }
+}
