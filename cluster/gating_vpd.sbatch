@@ -21,7 +21,7 @@ source "$SLURM_SUBMIT_DIR/cluster/env.sh"
 cd "$COMMUTE_REPO"
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 rc=0
-( PRED_SHA=9fb48844f2a0df207f3ebb8cf9bb781c57fc51891b3b72ff27122a77f7125eea.venv/bin/python experiments/gating_vpd/run.py "$part" ) 2>&1 \
+( PRED_SHA=0789b51ffd82151ef59eb3f085103b3938f86b5a33d0af3cd32b4c59f17dd0f2 .venv/bin/python experiments/gating_vpd/run.py "$part" ) 2>&1 \
     | tee -a "experiments/gating_vpd/results/run_$part.log" || rc=${PIPESTATUS[0]}
 echo "=== FINISHED E241 $part (exit $rc) — results in $COMMUTE_REPO/experiments/gating_vpd/results/ ==="
 exit $rc
