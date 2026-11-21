@@ -37,12 +37,12 @@ def main() -> int:
         "definition": "(1 - R_read) / size^2, size = ||dW|| / ||W0|| over the 24 matrices; lower = more reuse",
         "known": {"values": known, "one_minus": {i: 1 - x for i, x in known.items()},
                   "R": {i: R[i] for i in rr.KNOWN}, "size": {i: size[i] for i in rr.KNOWN},
-                  **rr.orders(known, higher_is_reuse=False)},  # fmt: skip
+                  **rr.orders(known, higher_is_reuse=False)},
         "pairs": {"gaps_reuse_minus_new": gaps, "reuse_lower": sum(g < 0 for g in gaps.values()), "n": len(gaps),
-                  "spearman_gap_vs_smaller_update": spearman(list(gaps.values()), [pairs[p]["smaller_update"] for p in gaps])},  # fmt: skip
+                  "spearman_gap_vs_smaller_update": spearman(list(gaps.values()), [pairs[p]["smaller_update"] for p in gaps])},
         "states": {"spearman_crude_vs_size": spearman([crude[i] for i in trained], [size[i] for i in trained]),
                    "spearman_1minusR_vs_size": spearman([1 - R[i] for i in trained], [size[i] for i in trained]),
-                   "n": len(trained)},  # fmt: skip
+                   "n": len(trained)},
     }
     (rr.OUT / "crude_norm.json").write_text(json.dumps(out, indent=1))
     print(json.dumps({k: v for k, v in out.items() if k != "known"} | {"known": {k: out["known"][k] for k in ("values", "orders", "margin", "lowest_reuse")}}, indent=1))
