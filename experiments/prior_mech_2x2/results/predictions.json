@@ -1,0 +1,62 @@
+{
+ "experiment": "E_TBD",
+ "cell": "P2.54 run 1 of 2",
+ "plan": "reports/plans/2026-11-21_plan_prior-mech-2x2.md",
+ "what": "Run 1 (no training): with copy head (2,4) mean-ablated, the share of each saved fine-tune's gain over M that is lost, net of M's own fall, on E237's 15 key states at E237's common update size and E62's six states at their saved size; the null is the same share with each of E62's five random single heads off; the positive control is M's own copying on E52's repeated random tokens. The label this gives (uses the head / not via the head) is the mechanism axis of the 2x2. Run 2 has its own file, predictions_run2.json.",
+ "settings": {
+  "key_tasks": ["copy", "rank1", "elicit", "cipher", "prior_cipher"],
+  "key_tasks_source": "E237's five tasks (experiments/key_grid/results/predictions.json settings.tasks), E147's saved updates at step 30, each times E237's c for its task (experiments/key_grid/results/stage0.json c)",
+  "seeds": [0, 1, 2],
+  "seeds_source": "every seed E147 and E62 saved",
+  "e62_tasks": ["copy", "lookup"],
+  "e62_tasks_source": "E62's two maps (experiments/induction_cue/results/large/{copy,lookup}_s{0,1,2}.pt) at their saved size, as listed in E136's inventory (experiments/share_untrained/results/inventory.json, e62/copy and e62/lookup); whip-lead's scope addition 2026-11-21",
+  "head": [2, 4],
+  "head_source": "E62's H, the one head over its prefix-matching bar (experiments/induction_cue/results/run.json stage_a.H); the run asserts the saved heads.pt holds exactly this H",
+  "n_random": 5,
+  "random_seed": 62,
+  "random_source": "E62's n_random and random_seed (experiments/induction_cue/results/predictions.json settings), so copying.random_others draws E62's five heads: (1,1), (3,5), (3,4), (2,5), (0,5) (run.json stage_a.random_draws)",
+  "induction": {"sequences": 48, "length": 25, "seed": 52, "threshold": 0.5},
+  "induction_source": "E62's settings.induction (E52's control: 48 random sequences of 25 distinct ids, shown twice)",
+  "batch": 64,
+  "batch_source": "E62's read_lo batch (copying.read_lo default)",
+  "n_boot": 2000,
+  "boot_seed": 62,
+  "boot_source": "E62's n_boot; the row bootstrap of copying.share_sd (paired windows); the seed is new"
+ },
+ "thresholds": {
+  "top1_ref": 0.8246527777777778,
+  "top1_ref_tol": 0.01,
+  "top1_H_max": 0.3,
+  "top1_random_min": 0.7,
+  "control_source": "E62's control_a bars, unchanged (experiments/induction_cue/results/predictions.json thresholds; top1_ref is E52's reading, E62 measured 0.8247 -> 0.0095 with (2,4) off and random heads 0.71-0.93)",
+  "G_min": 5.147937448121369,
+  "G_min_source": "E62's gain gate (E58's, as run): a state whose gain over M is under it is 'too_small', not read. The 21 states' gains: key states 9.0-16.5 at the common size (E237 stage1.json scaled.gain), E62's 12.5-15.4 (run.json G)",
+  "share_old_min": 0.5,
+  "share_new_max": 0.2,
+  "share_source": "E62's labels (copying.share_label): 'old' (uses the head) at or over 0.5, 'new' (not via the head) at or under 0.2, ties to the named side; negative shares are 'new'",
+  "G_repro_rel": 0.002,
+  "G_repro_rel_source": "the largest gap between two code paths reading E62's gain on the same windows, |G - G_route| = 0.0117 on gains of 12.5-15.4 (run.json states), 9.3e-4 relative, doubled. Here the path is copying.ablated with E62's saved means and ST.logodds_at in fp32, as E62's read_lo"
+ },
+ "measurement": "Per state F (key states: E147's saved update times E237's c; E62's: as saved) and its task's read rows (E228.state_read: E147's held-out windows for the key tasks, E62's read windows with the target column apart). T = per-row log-odds of the target at the read position (steering.logodds_at). G = mean_rows(T_F - T_M); G_off = mean_rows(T_F,off - T_M,off) with (2,4)'s o_proj input replaced by its saved base-weight mean (copying.ablated). Share lost = 1 - G_off / G (copying.share_lost; a ratio of row means, never a mean of ratios; not clipped; nan when G <= 0). The same with each random head off gives the null. M's fall per task = mean_rows(T_M - T_M,off). Task mean = mean of the three seeds' shares, 'not_read' unless every seed's label is readable.",
+ "ablation_choice": "Mean ablation with E62's saved means (heads.pt, the head's output averaged over 512 natural Pile spans at the base weights), not zeroing its o_proj columns: zeroing also removes the head's constant output, which moves every task off its usual input and could give a new-mechanism task (cipher) a share above 0 from that shift alone; and mean ablation is what E62 measured (0.8247 -> 0.0095), so E62's six states repeat their saved reading. Fable's advice, 2026-11-21.",
+ "edge_cases": {
+  "zero_gain": "G <= 0: share nan, label 'too_small' (G < G_min is checked before the share); the task is 'not_read' and any rule using it reads 'not_read', never holds or misses",
+  "zero_update": "the control's zero update must read F = M exactly with every head set off (max |T_F - T_M| = 0); it has no share",
+  "M_already_solves": "rank1's target is M's own argmax after 'M key' (prior 1.3e-2): the share is still read on its gain over M (log-odds does not saturate); M's own fall is reported beside it. If M's fall is large against the gain the share is noisy: the row bootstrap sd is reported",
+  "ties": "a share exactly at 0.5 is 'old', exactly at 0.2 is 'new' (copying.share_label); P1's 'over the null' requires share > median random-head share strictly (a tie fails)",
+  "negative_share": "ablation raises the gain (share < 0): 'new', kept unclipped in the mean",
+  "null_floor": "nu = the largest |median random-head share| over readable states, this job. P3 and P4 need a gap over 2 nu; if nu were 0 any positive gap holds"
+ },
+ "predictions": {
+  "P1_copy_uses_head": {"rule": "the key copy task's mean share >= share_new_max (0.2), and every readable copy seed's share > its median random-head share", "expected": "mean ~0.5 (the cell's filed expectation; E62's copy behind a new marker read 0.44-0.56). Range 0.2-0.8. Doubt: the key copy is 'M x -> x', a repeat of the current token with no earlier x to match, so it need not use a prefix-matching head; a miss would mean the high-prior reused corner is not labelled by this head"},
+  "P2_ciphers_do_not": {"rule": "cipher and prior_cipher mean shares each <= 0.2", "expected": "both ~0 (|share| < 0.1): their answers are not in the window, so copying cannot produce them"},
+  "P3_matched_prior_pair_split": {"rule": "copy mean - prior_cipher mean > 2 nu", "expected": "~0.5 against 2 nu ~0.05-0.1: at a 1.6x prior gap the two differ in mechanism by this label"},
+  "P4_e62_copy_over_lookup": {"rule": "E62 copy mean - E62 lookup mean > 2 nu", "expected": "copy ~0.5 (E62 saved 0.44-0.56), lookup ~0 (saved -0.003 to 0.0001): a repeat of E62's label at this job's null"},
+  "P5_rank1_elicit_do_not": {"rule": "rank1 and elicit mean shares each <= 0.2", "expected": "both ~0-0.1: their answers (M's own argmax, a token of M's top 20) come from the key's identity, not from a token in the window"},
+  "M_fall": {"rule": "reported, no rule", "expected": "key tasks |fall| < 0.5 nats (M's prior at the key does not rest on copying a window token; copy may show a small positive fall); E62 copy ~1-4 nats (its prior 3.15e-4 comes from B being in the window, 4.8e-6 with B absent)"}
+ },
+ "blind_to": "Only (2,4) is tested: a fine-tune that copies through another head, or through (2,4) plus a previous-token head, reads 'not via the head' or 'between'. A share near 0 says the gain does not need (2,4)'s output; it does not say the update is new by any other reading. The label is a mechanism label for copying only; it says nothing about rank1 and elicit beyond 'not via the copy head'.",
+ "positive_control": "M's second-copy top-1 on E52's repeated random tokens falls under 0.3 with (2,4) off and stays over 0.7 (median) with a random head off (E62's control_a); exit 1 otherwise, before any state is read",
+ "noise_floor": "the row bootstrap sd per state (copying.share_sd) and the random-head shares per state; nu from the latter, this job",
+ "stop_rules": ["control_a != pass", "zero update reads F != M", "any E62 state's G or G_off off its saved value by more than G_repro_rel"]
+}
