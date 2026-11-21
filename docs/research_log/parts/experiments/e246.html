@@ -1,0 +1,17 @@
+<article class="exp" id="e246">
+<div class="top"><span class="id">E246</span><span class="chip missed">missed</span><h3>Does any cheap proxy put the side built as reuse first on the four real-text pairs?</h3><span class="when">2026-11-21 · cell P2.53 (filled), compare-lead · <code>experiments/realtext_proxies</code></span></div>
+<p class="one"><strong>The question.</strong> Part 2 claims cheap proxies track reuse, so far on built items. Four real-text pairs each have one side built to need what the base model holds and one built to need what it lacks; a proxy that tracks reuse should put the first side higher on every pair it can read.</p>
+<p class="one"><strong>What we did.</strong> We read three proxies on the saved fine-tunes, three seeds a side: the log-odds share r (E228), the VPD-masked score S (E241), and the base model's prior on the trained token. The pairs are a news-topic against a seeded-coin label, lowercase against reversed word order, French against Yoruba, and British spelling against a scrambled twin. Do-nothing and random changes were read beside them. Nothing was trained.</p>
+<p class="one"><strong>What we found.</strong> No proxy orders the pairs. The prior is right on 3 of 4 pairs (the fourth, language, runs the other way, and the British hit is circular because that label was set from the prior); the share is right on 1 of the 3 pairs it can read; S is right on 1 of 4, with French and both British sides under its own floor. Do-nothing reads exactly 0 and random changes gain at most 0.065.</p>
+<p class="one"><strong>What it means.</strong> The paper's claim that cheap proxies track reuse stays on built items; its one real-text agreement, the prior on the British pair, is circular. S is unvalidated (E241), so its readings here carry no weight. No reuse or new verdict is given on any pair, and no further real-text proxy run is made.</p>
+<dl class="fields">
+<dt>Run</dt><dd>Two RunPod H100 pods on saved states, nothing trained; run 1 of 1.</dd>
+<dt>Found</dt><dd><ul>
+<li>The prior comes closest (3 of 4) and misses on the French against Yoruba pair.</li>
+<li>S reverses hard on lowercase text (reversed word order reads about three times higher); the cause is not chased since S is unvalidated.</li>
+<li>S's random check passes only emptily: every random draw sits under its floor.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 2: the proxy claim, on real text.</dd>
+<dt>Moved on</dt><dd>The claim stays on built items (P2.51). Report <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-21_analysis_e246-realtext-proxies.md"><code>reports/analyses/2026-11-21_analysis_e246-realtext-proxies.md</code></a>; record row E246 in <code>experiments/TRIED.md</code>.</dd>
+</dl>
+</article>

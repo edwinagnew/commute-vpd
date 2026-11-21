@@ -1,0 +1,18 @@
+<article class="exp" id="e241">
+<div class="top"><span class="id">E241</span><span class="chip refuted">missed</span><h3>Can M's own VPD subcomponents, switched on by re-reading the fine-tune, stand in for a reuse edit but not a new one?</h3><span class="when">2026-11-20 · cell P1.45 (filled), definition-lead, exploratory · <code>experiments/gating_vpd</code></span></div>
+<p class="one"><strong>The question.</strong> Part 1 needs a reading that puts a built reuse edit above a built new one. Here the base model M keeps its VPD subcomponents unchanged and only the importance network that decides which are on re-reads the fine-tune F; if F only switches M's parts on and off differently, the masked model H should reproduce F.</p>
+<p class="one"><strong>What we did.</strong> We scored S = 1 minus KL(F to H) over KL(F to M), which reads 1 when H reproduces F and 0 when H is no closer than M. Beside it we read VPD's own reconstruction floor on M, and a side score S_c with that floor taken off. Three sets were read: six hand-built edits at one update size, random weight changes, and the 68 states of the nine trained pairs. Nothing was trained.</p>
+<p class="one"><strong>What we found.</strong> S is not read on the four built reuse edits: their output change (0.017 to 0.091 nats) sits under the floor (0.427). On S_c the lowest reuse edit reads 0.608 and the highest new edit 0.736, a gap of -0.128 against a band of 0.158, and random updates read 0.56 to 1.87 against 0.61 to 0.69 for the reuse edits. On the nine trained pairs the reuse side reads above the new side in 8 of 8 pairs on S and 9 of 9 on S_c, descriptively.</p>
+<p class="one"><strong>What it means.</strong> Recomputing which of M's subcomponents are on is not a test of reuse that passes its own controls, so nothing goes to the write-up from this cell. The trained-pair order is real in the data, but a reading that fails its built edits and its random control cannot certify it. The construction is close to R under the adopted wording at VPD, so a separation this lacks on built edits that one is unlikely to have.</p>
+<figure><img src="fig/e241_s_c_by_group.png" alt="S_c for built edits, random updates and trained pairs"><figcaption><strong>Do built reuse edits read above built new ones once the floor is taken off? No.</strong> One row per item group; the shaded band is the largest gap between two halves of one item's windows.</figcaption></figure>
+<dl class="fields">
+<dt>Run</dt><dd>MATS cluster debug, two jobs, $0; cell P1.45 run 1 of 1.</dd>
+<dt>Found</dt><dd><ul>
+<li>Every built reuse edit changes the output less than VPD's own error on M, so the user's score has no room on them.</li>
+<li>With the floor removed, reuse edits sit among the new edits and below some random updates (the random control fails).</li>
+<li>The trained pairs show the expected order on both scores, the opposite of the built edits.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 1: the definition's score at the VPD featurization; no reuse or new verdict on any fine-tune.</dd>
+<dt>Moved on</dt><dd>R under the adopted wording is redone at VPD in P1.46 (E242), with a relative bar for "behaviour preserved". Report <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-20_analysis_e241-gating-vpd.md"><code>reports/analyses/2026-11-20_analysis_e241-gating-vpd.md</code></a>; record row E241 in <code>experiments/TRIED.md</code>.</dd>
+</dl>
+</article>
