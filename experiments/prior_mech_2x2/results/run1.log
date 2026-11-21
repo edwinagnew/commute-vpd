@@ -1,0 +1,44 @@
+13:46:36 E249 run 1 start; settings {'key_tasks': ('copy', 'rank1', 'elicit', 'cipher', 'prior_cipher'), 'seeds': (0, 1, 2), 'e62_tasks': ('copy', 'lookup'), 'head': (2, 4), 'n_random': 5, 'random_seed': 62, 'induction': {'sequences': 48, 'length': 25, 'seed': 52, 'threshold': 0.5}, 'batch': 64, 'n_boot': 2000, 'boot_seed': 62}; thresholds {'top1_ref': 0.8246527777777778, 'top1_ref_tol': 0.01, 'top1_H_max': 0.3, 'top1_random_min': 0.7, 'control_source': "E62's control_a bars, unchanged (experiments/induction_cue/results/predictions.json thresholds; top1_ref is E52's reading, E62 measured 0.8247 -> 0.0095 with (2,4) off and random heads 0.71-0.93)", 'G_min': 5.147937448121369, 'G_min_source': "E62's gain gate (E58's, as run): a state whose gain over M is under it is 'too_small', not read. The 21 states' gains: key states 9.0-16.5 at the common size (E237 stage1.json scaled.gain), E62's 12.5-15.4 (run.json G)", 'share_old_min': 0.5, 'share_new_max': 0.2, 'share_source': "E62's labels (copying.share_label): 'old' (uses the head) at or over 0.5, 'new' (not via the head) at or under 0.2, ties to the named side; negative shares are 'new'", 'G_repro_rel': 0.002, 'G_repro_rel_source': "the largest gap between two code paths reading E62's gain on the same windows, |G - G_route| = 0.0117 on gains of 12.5-15.4 (run.json states), 9.3e-4 relative, doubled. Here the path is copying.ablated with E62's saved means and ST.logodds_at in fp32, as E62's read_lo"}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+13:46:49 [control] second-copy top-1: M 0.8247, (2,4) off 0.0095 (bar < 0.3), random heads off [0.013020833333333334, 0.7074652777777778, 0.7899305555555556, 0.8298611111111112, 0.9279513888888888] (median bar > 0.7) -> pass
+13:46:51 [control] zero update on e58/copy_s0's rows, max |F - M| per head set {'on': 0.0, 'off': 0.0, 'rand0': 0.0, 'rand1': 0.0, 'rand2': 0.0, 'rand3': 0.0, 'rand4': 0.0} (must be 0)
+13:46:52 [e62/copy_s0] c 1.0000; G 12.6496, G_off 5.5317, share lost 0.5627 (sd 0.0172); random-head shares [0.2869, -0.0096, -0.0659, 0.0113, 0.0566]; label old; M's fall 1.1628; 1 s
+13:46:52 [repeat e62/copy_s0] G 12.6496 vs E62 12.6496; G_off 5.5317 vs E62 5.5317; rel dev {'G': 0.0, 'G_off': 0.0}
+13:46:52 [e62/copy_s1] c 1.0000; G 12.6359, G_off 5.7451, share lost 0.5453 (sd 0.0159); random-head shares [0.2626, 0.0039, -0.064, 0.0121, 0.0624]; label old; M's fall 1.1628; 1 s
+13:46:52 [repeat e62/copy_s1] G 12.6359 vs E62 12.6359; G_off 5.7451 vs E62 5.7451; rel dev {'G': 0.0, 'G_off': 0.0}
+13:46:53 [e62/copy_s2] c 1.0000; G 12.5470, G_off 6.6375, share lost 0.4710 (sd 0.0161); random-head shares [0.2289, -0.0136, -0.0635, 0.0116, 0.0604]; label between; M's fall 1.1628; 1 s
+13:46:53 [repeat e62/copy_s2] G 12.5470 vs E62 12.5470; G_off 6.6375 vs E62 6.6375; rel dev {'G': 0.0, 'G_off': 0.0}
+13:46:54 [e62/lookup_s0] c 1.0000; G 15.3644, G_off 15.3629, share lost 0.0001 (sd 0.0026); random-head shares [0.0628, 0.012, 0.0619, 0.019, 0.0517]; label new; M's fall -0.0872; 1 s
+13:46:54 [repeat e62/lookup_s0] G 15.3644 vs E62 15.3644; G_off 15.3629 vs E62 15.3629; rel dev {'G': 0.0, 'G_off': 0.0}
+13:46:54 [e62/lookup_s1] c 1.0000; G 14.9877, G_off 15.0477, share lost -0.0040 (sd 0.0026); random-head shares [0.0536, 0.0164, 0.0669, 0.0169, 0.038]; label new; M's fall -0.0872; 1 s
+13:46:55 [repeat e62/lookup_s1] G 14.9877 vs E62 14.9877; G_off 15.0477 vs E62 15.0477; rel dev {'G': 0.0, 'G_off': 0.0}
+13:46:55 [e62/lookup_s2] c 1.0000; G 15.3314, G_off 15.3787, share lost -0.0031 (sd 0.0025); random-head shares [0.0518, 0.0117, 0.0921, 0.0232, 0.038]; label new; M's fall -0.0872; 1 s
+13:46:55 [repeat e62/lookup_s2] G 15.3314 vs E62 15.3314; G_off 15.3787 vs E62 15.3787; rel dev {'G': 0.0, 'G_off': 0.0}
+13:46:56 [e58/copy_s0] c 1.0000; G 16.4505, G_off 12.4188, share lost 0.2451 (sd 0.0072); random-head shares [0.2641, 0.0317, -0.0612, 0.0061, 0.0462]; label between; M's fall 0.1151; 1 s
+13:46:57 [e58/copy_s1] c 1.0000; G 16.3311, G_off 11.5868, share lost 0.2905 (sd 0.0071); random-head shares [0.3245, 0.0313, -0.0599, 0.0057, 0.0456]; label between; M's fall 0.1151; 1 s
+13:46:58 [e58/copy_s2] c 1.0000; G 16.4168, G_off 12.9825, share lost 0.2092 (sd 0.0063); random-head shares [0.2191, 0.0244, -0.0634, 0.0058, 0.0445]; label between; M's fall 0.1151; 1 s
+13:46:59 [e58/rank1_s0] c 0.9201; G 9.3454, G_off 9.2700, share lost 0.0081 (sd 0.0008); random-head shares [0.1508, 0.0239, -0.0167, 0.0245, 0.066]; label new; M's fall -0.0291; 1 s
+13:47:00 [e58/rank1_s1] c 0.9201; G 8.9827, G_off 8.9206, share lost 0.0069 (sd 0.0009); random-head shares [0.138, 0.019, -0.0205, 0.0244, 0.0577]; label new; M's fall -0.0291; 1 s
+13:47:00 [e58/rank1_s2] c 0.9201; G 9.3516, G_off 9.2838, share lost 0.0072 (sd 0.0008); random-head shares [0.1235, 0.0198, -0.0192, 0.0225, 0.0719]; label new; M's fall -0.0291; 1 s
+13:47:02 [e58/elicit_s0] c 0.8707; G 11.0045, G_off 10.9967, share lost 0.0007 (sd 0.0008); random-head shares [0.1348, 0.0548, 0.0157, 0.0173, 0.079]; label new; M's fall -0.0173; 1 s
+13:47:03 [e58/elicit_s1] c 0.8707; G 10.9812, G_off 10.9170, share lost 0.0058 (sd 0.0019); random-head shares [0.1334, 0.0559, 0.0154, 0.017, 0.0622]; label new; M's fall -0.0173; 1 s
+13:47:03 [e58/elicit_s2] c 0.8707; G 10.8129, G_off 10.8197, share lost -0.0006 (sd 0.0011); random-head shares [0.0957, 0.0513, 0.0183, 0.0087, 0.066]; label new; M's fall -0.0173; 1 s
+13:47:05 [e58/cipher_s0] c 0.7520; G 12.9351, G_off 12.8393, share lost 0.0074 (sd 0.0018); random-head shares [0.151, 0.0738, 0.015, 0.0289, 0.0774]; label new; M's fall -0.0295; 1 s
+13:47:06 [e58/cipher_s1] c 0.7520; G 13.1234, G_off 13.0840, share lost 0.0030 (sd 0.0010); random-head shares [0.1465, 0.0714, 0.01, 0.0391, 0.0823]; label new; M's fall -0.0295; 1 s
+13:47:07 [e58/cipher_s2] c 0.7520; G 12.2627, G_off 12.2471, share lost 0.0013 (sd 0.0010); random-head shares [0.1029, 0.0706, 0.0171, 0.0445, 0.081]; label new; M's fall -0.0295; 1 s
+13:47:08 [e58/prior_cipher_s0] c 0.7798; G 12.8399, G_off 12.8409, share lost -0.0001 (sd 0.0008); random-head shares [0.1145, 0.0603, 0.0409, 0.0258, 0.0675]; label new; M's fall -0.0041; 1 s
+13:47:09 [e58/prior_cipher_s1] c 0.7798; G 12.4364, G_off 12.4258, share lost 0.0009 (sd 0.0007); random-head shares [0.1263, 0.062, 0.0272, 0.0249, 0.0587]; label new; M's fall -0.0041; 1 s
+13:47:10 [e58/prior_cipher_s2] c 0.7798; G 12.2262, G_off 12.2317, share lost -0.0004 (sd 0.0008); random-head shares [0.0971, 0.0531, 0.0336, 0.0287, 0.0655]; label new; M's fall -0.0041; 1 s
+13:47:10 [summary e62/copy] mean share lost 0.5263 (uses_head); seeds [0.5626988806624982, 0.5453362245464537, 0.47098731838180996]; M's fall 1.1628
+13:47:10 [summary e62/lookup] mean share lost -0.0023 (not_via_head); seeds [9.95123615741278e-05, -0.004000446041123595, -0.0030876028757351737]; M's fall -0.0872
+13:47:10 [summary e58/copy] mean share lost 0.2483 (between); seeds [0.2450840921800067, 0.2905069786352401, 0.20919509082888355]; M's fall 0.1151
+13:47:10 [summary e58/rank1] mean share lost 0.0074 (not_via_head); seeds [0.008066728075995733, 0.006912050639995226, 0.00724683374895807]; M's fall -0.0291
+13:47:10 [summary e58/elicit] mean share lost 0.0020 (not_via_head); seeds [0.0007101250884911092, 0.005842638280069923, -0.0006226248033081028]; M's fall -0.0173
+13:47:10 [summary e58/cipher] mean share lost 0.0039 (not_via_head); seeds [0.007406702678164345, 0.0030069321140594463, 0.0012682930734233544]; M's fall -0.0295
+13:47:10 [summary e58/prior_cipher] mean share lost 0.0001 (not_via_head); seeds [-7.689412465117229e-05, 0.0008537105552233193, -0.00044820944682943953]; M's fall -0.0041
+13:47:10 [summary] null floor (largest |median random-head share|) 0.0738; rules {'P1_copy_uses_head': 'holds', 'P2_ciphers_do_not': 'holds', 'P3_matched_prior_pair_split': 'holds', 'P4_e62_copy_over_lookup': 'holds', 'P5_rank1_elicit_do_not': 'holds'}
+13:47:10 E249 run 1 DONE; peak GPU 3.55 GB
+peak host RSS 6.1 GB
