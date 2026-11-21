@@ -207,6 +207,8 @@ def crosscoder_job(items: Items, tag: str, out_dir: Path) -> tuple[Any, dict[str
     P = P | {"experiment": EXPERIMENT, "settings": P["settings"] | {"control_task": items.task(items.cfg.control_state)}}
     CCR.SM = SimpleNamespace(pairs=lambda: ({}, {}, items.inv))  # E203's Job loads the tasks and states SM.pairs() names
     CCR.OUT.update(results=out_dir / "crosscoder", sides=out_dir / "crosscoder" / "sides", large=out_dir.parent / "large" / out_dir.name / "crosscoder")
+    for d in CCR.OUT.values():  # E203's main makes these; its Job does not
+        d.mkdir(parents=True, exist_ok=True)
     return CCR.Job(P, cfg), P["thresholds"][tag]
 
 
