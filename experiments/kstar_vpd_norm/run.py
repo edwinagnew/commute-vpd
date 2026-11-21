@@ -225,6 +225,7 @@ def main(chosen: list[str] | None) -> int:
     assert set(todo) <= set(every), f"unknown items {sorted(set(todo) - set(every))}"
     torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False  # fp32 throughout, as E226
     log(f"{EXPERIMENT} start; {len(todo)} items; settings {cfg}; thresholds {th}")
+    (RESULTS / "items").mkdir(parents=True, exist_ok=True)
     w = E226.World()
     w.bases = KV.bases(w.uv, c226.split_tol)
     s0 = RESULTS / "stage0.json"
