@@ -100,3 +100,4 @@
 - [whip-lead autonomy](feedback-whip-lead-autonomy.md) — stop/start/restart leads, relay results, keep schedule.md; act then report (user, 2026-11-20)
 - [whip-lead approves planned gated runs](feedback-whip-lead-approves-planned-gated-runs.md) — gate 6 for in-plan runs is mine, not the user's; everything ASAP, ordered by dependency/paper impact (user, 2026-11-20)
 - [Cards name the experiments](feedback-decision-cards-name-the-experiments.md) — per run: what done, expected, got, link; ~200 words, high level; ask-56 card was unreadable (user, 2026-11-20)
+- [At most 4 pods per runner](feedback-max-four-pods-per-runner.md) — never more than 4 pods from one pod-runner; spawn more runners instead; E234 left pods idle (user, 2026-11-20)
