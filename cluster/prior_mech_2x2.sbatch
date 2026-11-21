@@ -1,8 +1,8 @@
 #!/bin/bash
-# E_TBD (cell P2.54) run 1: copy head (2,4) switched off on E237's 15 key states and E62's six, nothing trained.
+# E249 (cell P2.54) run 1: copy head (2,4) switched off on E237's 15 key states and E62's six, nothing trained.
 # Plan reports/plans/2026-11-21_plan_prior-mech-2x2.md; rules experiments/prior_mech_2x2/results/predictions.json
 # (run.py refuses unless it is committed unchanged; PRED_SHA below = its sha256). Submit from the clone root:
-#   sbatch --comment=E_TBD cluster/prior_mech_2x2.sbatch
+#   sbatch --comment=E249 cluster/prior_mech_2x2.sbatch
 # Time: model load ~40 s (E237 job 62504: start 17:05:09, split bases logged 17:05:54, a heavier load than this one);
 # per state 7 reads of the held-out rows (F, F with (2,4) off, five random heads off) against E237's 10-11 s for one
 # share read of 4+ masked forwards on the same rows (stage1.json read_seconds), so <= ~15 s a state x 21 states
@@ -27,7 +27,7 @@ for d in refit_96key induction_cue open_pair; do
   test -L experiments/$d/results/large || { echo "experiments/$d/results/large is not linked: run ~/commute-agents/fleet/link-data ."; exit 1; }
 done
 rc=0
-( PRED_SHA=86d44698e205c5998047d1a616496c4982157e17ee4d77d7f0d02cdac308feeb .venv/bin/python experiments/prior_mech_2x2/run.py ) 2>&1 \
+( PRED_SHA=0348720e3b93df392cdb80a7279582d9320ba8f2cc10019d6c279fc2c613dc6f .venv/bin/python experiments/prior_mech_2x2/run.py ) 2>&1 \
     | tee -a experiments/prior_mech_2x2/results/run1.log || rc=${PIPESTATUS[0]}
-echo "=== FINISHED E_TBD run 1 (exit $rc) — results in $COMMUTE_REPO/experiments/prior_mech_2x2/results/stage1/ ==="
+echo "=== FINISHED E249 run 1 (exit $rc) — results in $COMMUTE_REPO/experiments/prior_mech_2x2/results/stage1/ ==="
 exit $rc
