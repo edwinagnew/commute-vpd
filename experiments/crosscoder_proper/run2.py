@@ -180,6 +180,8 @@ class Job(RUN.Job):
         if s.rung > 0:
             out.check("the change writes at the site", m["energy"] > th["graft_energy_min"], {"energy": m["energy"], "bar": th["graft_energy_min"]})
         out.d["energy_pile"] = self.energy(dataclasses.replace(s, read=self.graft_read()), s.dW)  # one row set for every side
+        if s.rung == 0:  # the head at scale 0 is the base against itself: run 1's self checks, not its graft-write check
+            s = dataclasses.replace(s, item=dataclasses.replace(s.item, what="self"))
         super().before(s, out)
 
 
