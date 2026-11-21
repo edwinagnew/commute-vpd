@@ -16,7 +16,7 @@
   },
   "rules": {
     "R0 (stops)": {
-      "rule": "E245's R0 (a) and (b), unchanged, by the same code; no order check (these are not the built items). Also: exit unless E245's predictions.json sha256 equals e245_predictions_sha256.",
+      "rule": "E245's R0 (a) and (b), unchanged, by the same code; no order check (these are not the built items). Also: exit unless E245's predictions.json sha256 equals e245_predictions_sha256. shard_hours_max is E251's own (thresholds below), not E245's 6.",
       "absolute_or_relative": "as E245"
     },
     "P1 (descriptive: can R_A at SAE latents tell a fine-tune from a random update of its size?)": {
@@ -37,5 +37,9 @@
       "absolute_or_relative": "relative to KL(F || M)"
     }
   },
-  "status": "filed 2026-11-21, before any run (no job submitted)"
+  "status": "filed 2026-11-21, before any run (no job submitted)",
+  "thresholds": {
+    "shard_hours_max": 14,
+    "shard_hours_max_source": "E245 stage 0 prices every search at the 2000-evaluation cap at the do-nothing's 512x41-window speed (0.42 s per K* and 0.72 s per stand-in evaluation, E245 pairs stage 0 on H100, 2026-11-21): one non-built item at three tolerances projects 1.43 h, so a 9-item job projects 12.9 h and E245's 6 h stops it (E245 pairs stopped all four pods this way). Measured item times are far below: E245's 15 key items (512 x 8 windows, every K* at its cap) took 262-450 s each. 14 h is the 9-item projection with ~10% headroom; the working guards are the runner's per-item early check (an item over 15 min is reported) and its $22 budget stop. Every other threshold is E245's, unchanged. Filed 2026-11-21 before any E251 job."
+  }
 }

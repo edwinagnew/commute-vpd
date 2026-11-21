@@ -59,6 +59,7 @@ class World(E242.World):
 
 def main(shard: tuple[int, int], tag: str) -> int:
     cfg, th = E245.load_config("scored")
+    th = th | {k: v for k, v in json.loads(PRED.read_text())["thresholds"].items() if not k.endswith("_source")}  # E251's own stop limit
     want = json.loads(PRED.read_text())["e245_predictions_sha256"]
     got = hashlib.sha256(E245.PRED.read_bytes()).hexdigest()
     assert got == want, f"E245 predictions.json sha256 {got} != filed {want}: E245's settings changed"

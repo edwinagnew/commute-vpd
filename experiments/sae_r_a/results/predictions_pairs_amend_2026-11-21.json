@@ -1,0 +1,116 @@
+{
+  "experiment": "E245",
+  "status": "filed 2026-11-21, before any run (no job submitted)",
+  "cell": "P1.40, run 2 of 2; card reports/plans/2026-11-21_plan_r-under-a-sae-card.md",
+  "plan": "reports/plans/2026-11-21_plan_r-under-a-sae.md",
+  "definition": "Wording A (decisions.md, 'Definition wording A adopted', and the 2026-11-20 relative-bar row): 'A fine-tune F reuses the base model M, for a behavior, to the extent that M's mechanisms, each up to an output gain, can stand in for those of the variables the behavior runs through and still preserve the behavior.' Read here at E234's base-only BatchTopK SAEs (seed 0) on the 8 block outputs attn0-3 and mlp0-3: per site its 16,384 latents and one remainder (b_dec in it), 131,080 variables (commute.sae_feat docstring); embeddings, norms and the unembedding belong to no variable and keep F's mechanism; the dictionary is overcomplete, so the translation is not bijective (stated with every reading). Latent u's mechanism in F is f_u(o_F(y)), in M f_u(o_M(y)), M's module on F's input y. K* is E226's search (kstar_vpd.search) on F_K (mean ablation, mean per position over D in F's unablated run) with bar (1 - alpha) KL(F || F_all_ablated). R_A = 1 - (the smallest set of K*'s standable changed members the search finds must keep F's mechanism + K*'s changed members with gain <= 0) / |K*|, where a set stands in inside F's full forward, each variable writing its least-squares gain times M's write, and passes when KL(F || F_S) at the read positions, mean over D, is at or under tol KL(F || M), tol 0.1 (0.05 and 0.2 beside it). Variables at an unchanged site stand in exactly. If every standable changed member stood in at once passes, no search. R_A is a lower bound when the search is capped.",
+  "settings": {
+    "alpha": 0.9,
+    "side_tols": [
+      0.05,
+      0.2
+    ],
+    "batch": 32,
+    "gain_batch": 8,
+    "reranks": 2,
+    "eval_cap": 2000,
+    "chunk_div": 8,
+    "split_seed": 186001,
+    "reuse": [
+      "x2",
+      "x10",
+      "moved",
+      "rebuilt"
+    ],
+    "new": [
+      "new_few",
+      "new_thin"
+    ],
+    "sae_size": "scored",
+    "sae_seed": 0,
+    "only": [],
+    "out": "items",
+    "sizes": {
+      "rehearse": {
+        "eval_cap": 50,
+        "only": [
+          "do_nothing",
+          "x10"
+        ],
+        "out": "rehearse"
+      }
+    },
+    "alpha_source": "E226's filed alpha (experiments/kstar_vpd/results/predictions.json .settings): K*'s bar (1 - alpha) KL(F || F_all_ablated) and R_A's read tolerance 1 - alpha = 0.1 (plan; E242's relative bar)",
+    "side_tols_source": "the plan's 0.05 and 0.2 reported beside 0.1 (E242's side_tols, experiments/kstar_vpd_wording_a/results/predictions.json)",
+    "batch_source": "E226's batch (windows per F_K forward; memory only, the rehearsal measures peak memory)",
+    "gain_batch_source": "E242's gain_batch (E226's grade_batch; memory only)",
+    "reranks_source": "E226's filed reranks",
+    "eval_cap_source": "E226's filed eval_cap, for each K* search and each R_A search (E242's eval_cap); the rehearsal size sets 50 (plan, Rehearsal)",
+    "chunk_div_source": "E226's filed chunk_div",
+    "split_seed_source": "E226's filed split_seed: the two halves of D for the band, the same permutation as E226 and E242",
+    "reuse_source": "E226's known-answer items (the card's reuse side)",
+    "new_source": "E226's built new edits (the card's new side)",
+    "sae_size_source": "E234's scored SAEs, experiments/sae_train/results/large/scored/sae_{attn0..3,mlp0..3}_s0.pt (plan, The featurization)",
+    "sae_seed_source": "E234's seed 0 (plan: 'seed 0')",
+    "only_source": "the whole group; the rehearsal reads the do-nothing and x10 only (plan, Rehearsal)",
+    "out_source": "results/items for the scored run, results/rehearse for the rehearsal"
+  },
+  "thresholds": {
+    "control_rel_tol": 0.001,
+    "floor_max": 1e-06,
+    "kl_floor": 1e-06,
+    "shard_hours_max": 30,
+    "band_min": 0.014,
+    "thresholds_source": "control_rel_tol: E242's revert_tol (E214's gate_tol), max |logit difference| / max |logit| between every variable stood in with gain 1 and M's own forward: a code error gives order 1, fp32 rounding of order 1e-6; the do-nothing measures this path's floor (pieces_err: every site's output rebuilt from its SAE pieces) and every item logs its own revert_err beside it, and the rehearsal (do-nothing and x10) writes both into the plan before the scored run. floor_max: E242's (E214's and E226's kl_floor): stage 0 stops if its KL floor (the larger of the do-nothing's pieces KL and revert KL) exceeds it. Not read: a tolerance whose bar tol KL(F || M) is at or under the floor, floor = the larger of the job's stage-0 floor and the item's own revert KL (E242's rule); the do-nothing reads 1 by definition. kl_floor: E226's: an item with KL(F || F_all_ablated) at or under it has no behaviour to search. shard_hours_max: the debug QoS's 2 h limit (cluster/sae_r_a.sbatch --time); stage 0 projects the job's upper bound from its measured seconds per evaluation times eval_cap times the searches. band_min: E242's (E226's) fallback when the split-half band is 0. Exact zeros, no tolerance: o_F recomputed from the module's input equals the module's output bit for bit; every gain at an unchanged site is exactly 1 and its variables stood in give KL exactly 0; all kept gives F's logits exactly; on the do-nothing every gain is exactly 1 and every variable stood in gives KL exactly 0. Amended 2026-11-21 before any scored run (sae-lead, after the rehearsal, job 62745): shard_hours_max 2 -> 6. The projection prices every search at the cap at the do-nothing's 512-window speed (0.88 s per K* and 1.23 s per stand-in evaluation, about 4.9 h per built item), so 2 h stopped every job; the copy-window items run at 0.21 s (about 56 min at the cap, inside the debug 2 h --time), and new_few and new_thin run on H100 pods, where 6 h is the gated-run limit. No rule, band or prediction changed."
+  },
+  "expected": {
+    "do_nothing": "no changed site; every gain exactly 1; every variable stood in gives KL exactly 0; R_A = 1 by definition (bar 0, no search evaluation); remainder share nan. Pieces KL and revert KL of order fp32 rounding, under floor_max.",
+    "x2": "changed site mlp1; R_A near 1: mlp1's SAE writes the rescaled neurons (FVE drop <= 0.02) and per-latent gains undo a rescale; remainder share under 0.3",
+    "x10": "as x2: R_A near 1, remainder share under 0.3 (its mlp1 FVE drop is 0.02)",
+    "moved": "changed site mlp1 (and its appended neurons); R_A near 1; remainder share under 0.3. Its KL(F || M) is 5.6e-12 (E226 items/moved.json), so tol KL(F || M) may sit at or under the measured floor and moved is then not read (listed, left out of the rule)",
+    "rebuilt": "changed site mlp1; R_A near 1; remainder share under 0.3",
+    "new_few": "changed site mlp0 (appended neurons the base SAE cannot write; E234 mlp0 task FVE drop 1.14-1.15); rival a: R_A below every reuse item by more than the band; rival b: R_A near 1, the whole new write in one variable, mlp0's remainder. Remainder share over 0.5 under either",
+    "new_thin": "as new_few",
+    "keys": "E237's 15 scaled items: descriptive, no direction",
+    "pairs": "E187's nine pairs at matched size: descriptive, no direction",
+    "side_tols": "R_A at 0.2 at or above R_A at 0.1, and R_A at 0.05 at or below it, up to the search's lower-bound slack; no rule"
+  },
+  "rules": {
+    "R0 (stops)": {
+      "rule": "exit 1 unless: (a) every job first: the do-nothing reads as expected.do_nothing, exactly, its floor at or under floor_max, and stage 0's projected hours at or under shard_hours_max; (b) per item, before its search: o_F recomputed equals the module output bit for bit at every site; every unchanged-site gain exactly 1 and those variables stood in give KL exactly 0; every gain finite; every variable stood in with gain 1 gives M's logits within control_rel_tol; all kept gives F's logits exactly; (c) the built group's order check below; keys and pairs refuse to start until it has held.",
+      "absolute_or_relative": "exact for the zero checks; relative for control_rel_tol",
+      "blind_to": "whether R_A means reuse; they check that the hooks add exact zeros where nothing is stood in and recover M where everything is",
+      "positive_control": "(b) the revert-all check: M's own forward, which the stood-in model must match",
+      "noise_floor": "thresholds_source"
+    },
+    "order check (stops; whip-lead)": {
+      "rule": "after the six built items: unless min R_A (tol 0.1, all of D) over the reuse items read > max R_A over the new items read, write results/items/built_order.json with the reading and STOP: the key tasks and pairs are not read, and the SAE reading goes into the paper as a featurization that cannot see a new write held in its remainder (card, stop). An item not read is left out and listed; no reuse or no new item read: stops.",
+      "absolute_or_relative": "absolute"
+    },
+    "band": {
+      "rule": "max over the built items read of |R_A(half 1) - R_A(half 2)|, each half with its own K* and its own bar (tol 0.1), gains from all of D; a half not read is left out; no difference or all 0: band_min, reported as degenerate (E242's band).",
+      "absolute_or_relative": "absolute"
+    },
+    "P1 (the card: rival a against rival b)": {
+      "rule": "gap = min R_A over the reuse items read (x2, x10, moved, rebuilt) - max R_A over the new items read (new_few, new_thin), tol 0.1, all of D. gap > band: rival a (under wording A a built new edit stores its lookup where M's mechanism with a gain cannot write it, while a built reuse edit's changed latents can take M's mechanism with a gain). gap <= 0 with both new edits' remainder share above 0.5: rival b (a base-only SAE puts what its dictionary lacks into one remainder per site, so a new edit's whole new write is one variable of K*, and R_A counts variables). gap <= 0 otherwise: neither rival, reported as read. 0 < gap <= band: no call.",
+      "prediction": "no direction filed between the rivals (card); the plan's expected table lists both",
+      "absolute_or_relative": "absolute",
+      "blind_to": "variables outside K*; a set that passes only with a gain other than the least-squares one; a smaller must-keep set the capped search did not find (R_A a lower bound); R_A counts variables, so a change held in one remainder costs one variable of K* (rival b; the remainder share is read beside it); the overcomplete dictionary makes the translation non-bijective",
+      "positive_control": "the planted new edits' remainder share (expected over 0.5) against x10's (under 0.3)",
+      "edge_cases": "do-nothing in place of a new item: R_A 1, gap <= 0, cannot pass; moved under the floor: not read, left out; all reuse or all new items unread: not read; ties: gap 0, not rival a; band 0: band_min."
+    },
+    "remainder share (descriptive beside P1)": {
+      "rule": "per item, 1 - KL(F || only the 8 remainders stood in, gains fitted) / KL(F || M), all of D; nan where KL(F || M) = 0. Expected: new_few and new_thin over 0.5; x2, x10, moved, rebuilt under 0.3.",
+      "absolute_or_relative": "relative to KL(F || M)"
+    },
+    "D1 (descriptive: E237's key tasks)": {
+      "rule": "R_A (all three tolerances) and the remainder share per E237 scaled item, by task. No prediction filed.",
+      "absolute_or_relative": "absolute"
+    },
+    "D2 (descriptive: E187's nine pairs, only if stages 1-3 end by 2026-11-22 18:00)": {
+      "rule": "per pair, mean R_A over the reuse side's states read minus over the new side's, at matched size (E232's items, as E242 builds them); the count of pairs with a positive gap. No prediction filed.",
+      "absolute_or_relative": "absolute"
+    }
+  },
+  "amendment": "2026-11-21 (sae-lead; whip-lead decision, gate 6 GO): for the pairs group alone, a copy of predictions.json (sha256 8faf2d19...b8, unchanged, still the file of the built and keys runs) with shard_hours_max 6 -> 30 and nothing else changed. Why: stage 0 prices every search at the 2000-evaluation cap at the do-nothing's 512x41 speed (0.42 s per K*, 0.72 s per stand-in evaluation), about 1.44 h per item, so a 19-item pairs job projected 27.3 h and the first pairs run (four H100 pods, 2026-11-21 ~14:08) stopped at stage 0 before any item; the 15 key items measured 262-450 s each. A stop threshold only: no rule, band, tolerance or reading changes. The working guards are the runner's per-item early check (an item over 15 min is reported) and its budget stop. Run with --pred pointing here."
+}
