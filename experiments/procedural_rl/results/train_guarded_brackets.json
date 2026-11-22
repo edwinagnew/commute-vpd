@@ -1,0 +1,611 @@
+{
+ "job": "train_guarded_brackets",
+ "card": "NVIDIA L40",
+ "states": {
+  "brackets_rlg_s0": {
+   "steps": 46,
+   "size": 0.006273941357158159,
+   "kl": 0.771742375660792,
+   "reached": false,
+   "trace": [
+    {
+     "step": 5,
+     "size": 0.0026044574945269213,
+     "kl": 0.07375118125537129,
+     "loss": -0.10445217788219452,
+     "grad_norm": 16.93810272216797,
+     "s": 2.5095043182373047,
+     "reward": 0.84375,
+     "modal_share": 0.5,
+     "answer_modal_share": 0.4375,
+     "skipped": false,
+     "entropy": 0.08104892075061798
+    },
+    {
+     "step": 10,
+     "size": 0.003699789828517998,
+     "kl": 0.158529048431302,
+     "loss": -0.026211140677332878,
+     "grad_norm": 34.99734878540039,
+     "s": 4.185384750366211,
+     "reward": 0.6953125,
+     "modal_share": 0.4375,
+     "answer_modal_share": 0.4375,
+     "skipped": false,
+     "entropy": 0.6335142850875854
+    },
+    {
+     "step": 15,
+     "size": 0.004296710435200165,
+     "kl": 0.2627767144707051,
+     "loss": -0.04918520525097847,
+     "grad_norm": 5.3478264808654785,
+     "s": 6.005763530731201,
+     "reward": 0.8671875,
+     "modal_share": 0.4921875,
+     "answer_modal_share": 0.5625,
+     "skipped": false,
+     "entropy": 0.0029140363913029432
+    },
+    {
+     "step": 20,
+     "size": 0.004802931580173086,
+     "kl": 0.3703581189928236,
+     "loss": 0.008485212922096252,
+     "grad_norm": 5.516101360321045,
+     "s": 7.523856163024902,
+     "reward": 0.6328125,
+     "modal_share": 0.53125,
+     "answer_modal_share": 0.375,
+     "skipped": false,
+     "entropy": 0.12963342666625977
+    },
+    {
+     "step": 25,
+     "size": 0.005497694462173282,
+     "kl": 0.5195394683168277,
+     "loss": 0.04738790541887283,
+     "grad_norm": 95.21234130859375,
+     "s": 9.365172386169434,
+     "reward": 0.7421875,
+     "modal_share": 0.3515625,
+     "answer_modal_share": 0.4375,
+     "skipped": false,
+     "entropy": 0.15800558030605316
+    },
+    {
+     "step": 30,
+     "size": 0.005813352827232763,
+     "kl": 0.607480715514417,
+     "loss": 0.0,
+     "grad_norm": 0.0,
+     "s": 10.903793573379517,
+     "reward": 0.625,
+     "modal_share": 0.359375,
+     "answer_modal_share": 0.3125,
+     "skipped": true,
+     "entropy": "nan"
+    },
+    {
+     "step": 35,
+     "size": 0.006004079413376347,
+     "kl": 0.6625170250906723,
+     "loss": 0.0,
+     "grad_norm": 0.0,
+     "s": 12.28244137763977,
+     "reward": 0.75,
+     "modal_share": 0.4375,
+     "answer_modal_share": 0.4375,
+     "skipped": true,
+     "entropy": "nan"
+    },
+    {
+     "step": 40,
+     "size": 0.006186478444714448,
+     "kl": 0.7538907888071673,
+     "loss": 0.0,
+     "grad_norm": 0.0,
+     "s": 13.666847229003906,
+     "reward": 0.375,
+     "modal_share": 0.4921875,
+     "answer_modal_share": 0.3125,
+     "skipped": true,
+     "entropy": "nan"
+    },
+    {
+     "step": 45,
+     "size": 0.006273941357158159,
+     "kl": 0.771742375660792,
+     "loss": 0.0,
+     "grad_norm": 0.0,
+     "s": 14.873441219329834,
+     "reward": 0.625,
+     "modal_share": 0.421875,
+     "answer_modal_share": 0.5,
+     "skipped": true,
+     "entropy": "nan"
+    },
+    {
+     "step": 46,
+     "size": 0.006273941357158159,
+     "kl": 0.771742375660792,
+     "loss": 0.0,
+     "grad_norm": 0.0,
+     "s": 15.621455192565918,
+     "reward": 0.625,
+     "modal_share": 0.4765625,
+     "answer_modal_share": 0.3125,
+     "skipped": true,
+     "entropy": "nan"
+    }
+   ],
+   "seconds": 15.732346057891846,
+   "zero_stopped": true,
+   "reads": {
+    "0": {
+     "rate": 0.3348376620597264,
+     "se": 0.014112979211071082,
+     "ctrl_rate": 0.036011697028138556,
+     "ctrl_se": 0.0053892872919148235,
+     "n": 256
+    },
+    "10": {
+     "rate": 0.7144607389040719,
+     "se": 0.02672219721313902,
+     "ctrl_rate": 0.11087255809331234,
+     "ctrl_se": 0.0184332357448814,
+     "n": 256
+    },
+    "stop": {
+     "rate": 0.527636065526044,
+     "se": 0.0307683052574892,
+     "ctrl_rate": 0.2141883297097506,
+     "ctrl_se": 0.024868826616309583,
+     "n": 256
+    }
+   },
+   "learned": {
+    "gain": -0.9654976148158312,
+    "se": 0.8568188866250793,
+    "reached": false,
+    "zero_stopped": true,
+    "passed": false,
+    "readable": false,
+    "collapsed": true
+   },
+   "arm": "rlg",
+   "seed": 0,
+   "state": {
+    "file": "experiments/procedural_rl/results/large/states/brackets_rlg_s0.pt",
+    "sha256": "4a2f495a6bde8d6fc5c8268985aa9b1956b3278bb65523bae7389d8879dbf266"
+   },
+   "size_saved": 0.006273933005698244,
+   "kl_saved": 0.771726973726996
+  },
+  "brackets_randg_s0": {
+   "matched_to": "brackets_rlg_s0",
+   "reads": {
+    "stop": {
+     "rate": 0.3429754444405262,
+     "se": 0.014299708480283321,
+     "ctrl_rate": 0.036391845584141436,
+     "ctrl_se": 0.005450060346552782,
+     "n": 256
+    }
+   },
+   "arm": "randg",
+   "seed": 0,
+   "state": {
+    "file": "experiments/procedural_rl/results/large/states/brackets_randg_s0.pt",
+    "sha256": "1bd06076e81be9aa813e6a2b3ce93e2a8aaac3f478a5d7648e033d48d04750d7"
+   },
+   "size_saved": 0.0062739257582891325,
+   "kl_saved": 0.0009157464536790364
+  },
+  "brackets_rlg_s1": {
+   "steps": 34,
+   "size": 0.006118489362009281,
+   "kl": 0.5480186090774664,
+   "reached": false,
+   "trace": [
+    {
+     "step": 5,
+     "size": 0.002632327543244629,
+     "kl": 0.09973733252653781,
+     "loss": 0.0,
+     "grad_norm": 0.0,
+     "s": 2.371267080307007,
+     "reward": 0.25,
+     "modal_share": 0.921875,
+     "answer_modal_share": 0.4375,
+     "skipped": true,
+     "entropy": "nan"
+    },
+    {
+     "step": 10,
+     "size": 0.004017984699813216,
+     "kl": 0.28912421433298197,
+     "loss": -0.06430210918188095,
+     "grad_norm": 7.042238235473633,
+     "s": 4.2324113845825195,
+     "reward": 0.640625,
+     "modal_share": 0.7734375,
+     "answer_modal_share": 0.5,
+     "skipped": false,
+     "entropy": 0.16029593348503113
+    },
+    {
+     "step": 15,
+     "size": 0.004760750438668256,
+     "kl": 0.3428841412230058,
+     "loss": -0.04097922891378403,
+     "grad_norm": 2.456942558288574,
+     "s": 6.237507581710815,
+     "reward": 0.4296875,
+     "modal_share": 0.578125,
+     "answer_modal_share": 0.3125,
+     "skipped": false,
+     "entropy": 0.13112524151802063
+    },
+    {
+     "step": 20,
+     "size": 0.0053404493570655,
+     "kl": 0.42476462328798503,
+     "loss": 0.017324499785900116,
+     "grad_norm": 20.382280349731445,
+     "s": 7.927167892456055,
+     "reward": 0.5,
+     "modal_share": 0.5234375,
+     "answer_modal_share": 0.3125,
+     "skipped": false,
+     "entropy": 0.1563142091035843
+    },
+    {
+     "step": 25,
+     "size": 0.005819985258586355,
+     "kl": 0.5237087636502485,
+     "loss": 0.002877735998481512,
+     "grad_norm": 27.099441528320312,
+     "s": 9.631125688552856,
+     "reward": 0.3984375,
+     "modal_share": 0.6875,
+     "answer_modal_share": 0.3125,
+     "skipped": false,
+     "entropy": 0.08155547082424164
+    },
+    {
+     "step": 30,
+     "size": 0.006118489362009281,
+     "kl": 0.5480186090774664,
+     "loss": 0.0,
+     "grad_norm": 0.0,
+     "s": 11.185714960098267,
+     "reward": 0.4375,
+     "modal_share": 0.5625,
+     "answer_modal_share": 0.4375,
+     "skipped": true,
+     "entropy": "nan"
+    },
+    {
+     "step": 34,
+     "size": 0.006118489362009281,
+     "kl": 0.5480186090774664,
+     "loss": 0.0,
+     "grad_norm": 0.0,
+     "s": 12.166990041732788,
+     "reward": 0.5,
+     "modal_share": 0.5625,
+     "answer_modal_share": 0.4375,
+     "skipped": true,
+     "entropy": "nan"
+    }
+   ],
+   "seconds": 12.217781782150269,
+   "zero_stopped": true,
+   "reads": {
+    "0": {
+     "rate": 0.3348376620597264,
+     "se": 0.014112979211071082,
+     "ctrl_rate": 0.036011697028138556,
+     "ctrl_se": 0.0053892872919148235,
+     "n": 256
+    },
+    "10": {
+     "rate": 0.49755072893101715,
+     "se": 0.028699465152821912,
+     "ctrl_rate": 0.2813654481967651,
+     "ctrl_se": 0.024552977570077832,
+     "n": 256
+    },
+    "stop": {
+     "rate": 0.5477968763803259,
+     "se": 0.030415416540593026,
+     "ctrl_rate": 0.21299880185655948,
+     "ctrl_se": 0.024915215093001777,
+     "n": 256
+    }
+   },
+   "learned": {
+    "gain": -4.0312899220734835,
+    "se": 1.016131360523483,
+    "reached": false,
+    "zero_stopped": true,
+    "passed": false,
+    "readable": false,
+    "collapsed": true
+   },
+   "arm": "rlg",
+   "seed": 1,
+   "state": {
+    "file": "experiments/procedural_rl/results/large/states/brackets_rlg_s1.pt",
+    "sha256": "e9ef1824ea9f4a63615899077b4e7a71d4fc57994f5ca224d127b95cf7122fec"
+   },
+   "size_saved": 0.006118492171406734,
+   "kl_saved": 0.548020482933201
+  },
+  "brackets_randg_s1": {
+   "matched_to": "brackets_rlg_s1",
+   "reads": {
+    "stop": {
+     "rate": 0.33564120776645723,
+     "se": 0.014076108694069707,
+     "ctrl_rate": 0.03516518944289082,
+     "ctrl_se": 0.005280210523842295,
+     "n": 256
+    }
+   },
+   "arm": "randg",
+   "seed": 1,
+   "state": {
+    "file": "experiments/procedural_rl/results/large/states/brackets_randg_s1.pt",
+    "sha256": "6bc3050a042b438f3fa73215472560228d588bb9a541e4089d36d9d33cd9b522"
+   },
+   "size_saved": 0.006118484818719075,
+   "kl_saved": 0.0008761566618490863
+  },
+  "brackets_rlg_s2": {
+   "steps": 51,
+   "size": 0.00690057567000537,
+   "kl": 0.5872873909557843,
+   "reached": true,
+   "trace": [
+    {
+     "step": 5,
+     "size": 0.0029324378995814696,
+     "kl": 0.1273922485616946,
+     "loss": -0.011499840766191483,
+     "grad_norm": 5.510097026824951,
+     "s": 2.5419063568115234,
+     "reward": 0.4921875,
+     "modal_share": 0.375,
+     "answer_modal_share": 0.3125,
+     "skipped": false,
+     "entropy": 0.2246679663658142
+    },
+    {
+     "step": 10,
+     "size": 0.0038724797642302414,
+     "kl": 0.2513187847615519,
+     "loss": 0.006326423026621342,
+     "grad_norm": 22.565135955810547,
+     "s": 4.266832590103149,
+     "reward": 0.6796875,
+     "modal_share": 0.359375,
+     "answer_modal_share": 0.4375,
+     "skipped": false,
+     "entropy": 0.09676610678434372
+    },
+    {
+     "step": 15,
+     "size": 0.0042446059187587785,
+     "kl": 0.32949029207891706,
+     "loss": -0.03249642997980118,
+     "grad_norm": 38.599178314208984,
+     "s": 5.9794838428497314,
+     "reward": 0.3671875,
+     "modal_share": 0.4609375,
+     "answer_modal_share": 0.375,
+     "skipped": false,
+     "entropy": 0.08360851556062698
+    },
+    {
+     "step": 20,
+     "size": 0.004752246657825018,
+     "kl": 0.4946169137065826,
+     "loss": 0.0031232950277626514,
+     "grad_norm": 9.230446815490723,
+     "s": 7.546094179153442,
+     "reward": 0.515625,
+     "modal_share": 0.5234375,
+     "answer_modal_share": 0.375,
+     "skipped": false,
+     "entropy": 0.08998174220323563
+    },
+    {
+     "step": 25,
+     "size": 0.005407750589837098,
+     "kl": 0.6383244555319358,
+     "loss": -0.055861640721559525,
+     "grad_norm": 15.701403617858887,
+     "s": 9.436420440673828,
+     "reward": 0.5234375,
+     "modal_share": 0.421875,
+     "answer_modal_share": 0.5,
+     "skipped": false,
+     "entropy": 0.22801339626312256
+    },
+    {
+     "step": 30,
+     "size": 0.005820788000058722,
+     "kl": 0.7572103616177837,
+     "loss": 0.011009243316948414,
+     "grad_norm": 12.923361778259277,
+     "s": 11.168406963348389,
+     "reward": 0.5859375,
+     "modal_share": 0.5234375,
+     "answer_modal_share": 0.3125,
+     "skipped": false,
+     "entropy": 0.1258426010608673
+    },
+    {
+     "step": 35,
+     "size": 0.0062943856223637755,
+     "kl": 0.7298198758088046,
+     "loss": 0.01454865001142025,
+     "grad_norm": 3.5781149864196777,
+     "s": 13.031099081039429,
+     "reward": 0.5078125,
+     "modal_share": 0.6171875,
+     "answer_modal_share": 0.375,
+     "skipped": false,
+     "entropy": 0.03857196867465973
+    },
+    {
+     "step": 40,
+     "size": 0.006638011025435286,
+     "kl": 0.6132884056204797,
+     "loss": 0.002745238598436117,
+     "grad_norm": 28.539302825927734,
+     "s": 14.766414880752563,
+     "reward": 0.71875,
+     "modal_share": 0.3828125,
+     "answer_modal_share": 0.3125,
+     "skipped": false,
+     "entropy": 0.05701211467385292
+    },
+    {
+     "step": 45,
+     "size": 0.006729337542387757,
+     "kl": 0.6117396782265356,
+     "loss": -0.018304459750652313,
+     "grad_norm": 2.710012674331665,
+     "s": 16.004546642303467,
+     "reward": 0.7421875,
+     "modal_share": 0.5625,
+     "answer_modal_share": 0.5,
+     "skipped": false,
+     "entropy": 0.03959914296865463
+    },
+    {
+     "step": 50,
+     "size": 0.006817489097139229,
+     "kl": 0.6015062621084041,
+     "loss": 0.0,
+     "grad_norm": 0.0,
+     "s": 17.234442949295044,
+     "reward": 0.75,
+     "modal_share": 0.4375,
+     "answer_modal_share": 0.375,
+     "skipped": true,
+     "entropy": "nan"
+    },
+    {
+     "step": 51,
+     "size": 0.00690057567000537,
+     "kl": 0.5872873909557843,
+     "loss": 0.022593840956687927,
+     "grad_norm": 10.856216430664062,
+     "s": 18.160945177078247,
+     "reward": 0.5859375,
+     "modal_share": 0.4765625,
+     "answer_modal_share": 0.4375,
+     "skipped": false,
+     "entropy": 0.0697484016418457
+    }
+   ],
+   "seconds": 18.227739810943604,
+   "zero_stopped": false,
+   "reads": {
+    "0": {
+     "rate": 0.3348376620597264,
+     "se": 0.014112979211071082,
+     "ctrl_rate": 0.036011697028138556,
+     "ctrl_se": 0.0053892872919148235,
+     "n": 256
+    },
+    "10": {
+     "rate": 0.6991660021814186,
+     "se": 0.02695873316207306,
+     "ctrl_rate": 0.14478135085709937,
+     "ctrl_se": 0.020002577916853666,
+     "n": 256
+    },
+    "stop": {
+     "rate": 0.6779005401271119,
+     "se": 0.028017391595161548,
+     "ctrl_rate": 0.12623937522022127,
+     "ctrl_se": 0.019610536098781627,
+     "n": 256
+    }
+   },
+   "learned": {
+    "gain": 1.507860628888011,
+    "se": 0.6362437729577417,
+    "reached": true,
+    "zero_stopped": false,
+    "passed": true,
+    "readable": true,
+    "collapsed": false
+   },
+   "arm": "rlg",
+   "seed": 2,
+   "state": {
+    "file": "experiments/procedural_rl/results/large/states/brackets_rlg_s2.pt",
+    "sha256": "611e5946d87892f6ccc8a7343a94d3a8d154c62055aade48e27bb6f9b5a8cd86"
+   },
+   "size_saved": 0.006900562898050232,
+   "kl_saved": 0.5872781709871975
+  },
+  "brackets_randg_s2": {
+   "matched_to": "brackets_rlg_s2",
+   "reads": {
+    "stop": {
+     "rate": 0.338518130913144,
+     "se": 0.01418781834548933,
+     "ctrl_rate": 0.036516530951285375,
+     "ctrl_se": 0.005465068120048092,
+     "n": 256
+    }
+   },
+   "arm": "randg",
+   "seed": 2,
+   "state": {
+    "file": "experiments/procedural_rl/results/large/states/brackets_randg_s2.pt",
+    "sha256": "c74ea8466f97c6ab2c906731ee3333714f7e2046c62d1cf839281f05a6afbca8"
+   },
+   "size_saved": 0.006900552184119909,
+   "kl_saved": 0.0011626634488130496
+  }
+ },
+ "experiment": "E260 (procedural_rl, guarded RL retrain), cell P2.56: E256's three procedural tasks (day/month sequences, closing brackets and quotes, single-digit addition after two worked sums) retrained by RL with a guard against the collapse E256 found (4 of 9 RL states onto one answer token while Adam momentum carried the weights to the size stop): PPO's entropy bonus, no optimizer step when every advantage is 0 and a stop after zero_stop such steps in a row, and a learned gate in the read's unit (log-odds) on every seed; 3 seeds, the same items, prompts, rows and update-size stop as E256, a matched Gaussian per seed; E222's readings of every state, compared with E256's SFT states",
+ "learned": {
+  "s0": {
+   "gain": -0.9654976148158312,
+   "se": 0.8568188866250793,
+   "reached": false,
+   "zero_stopped": true,
+   "passed": false,
+   "readable": false,
+   "collapsed": true
+  },
+  "s1": {
+   "gain": -4.0312899220734835,
+   "se": 1.016131360523483,
+   "reached": false,
+   "zero_stopped": true,
+   "passed": false,
+   "readable": false,
+   "collapsed": true
+  },
+  "s2": {
+   "gain": 1.507860628888011,
+   "se": 0.6362437729577417,
+   "reached": true,
+   "zero_stopped": false,
+   "passed": true,
+   "readable": true,
+   "collapsed": false
+  }
+ },
+ "done": true
+}
