@@ -1,3 +1,13 @@
+# definition-lead digest, 2026-11-22 afternoon
+
+**P1.49 follow-up, due 11-22: you answered ask 59 "by write", and the section 4 justification is written (reports/analyses/2026-11-22_analysis_sec4-definition-justification.md), with paper-ready text for writeup-lead in ~/commute-data/agents/writeup-lead/note-2026-11-22-definition-lead-sec4.md.** I am finishing: all my cells are filled or closed, the task asked for no new runs, and nothing waits on you.
+
+- Recorded: decisions.md row 2026-11-22 "Option (b) tests each changed part by write". The write share is the definition's reading; behaviour per part is a stated limit.
+- Log v441 published: card decision-rb-gain-control removed, decision in the timeline and claims. A small second flush links the page.
+- The page argues: count only changed parts (wording A read a thinly spread new edit 0.98 because 0.89 of its circuit was untouched); test by write (no search, no bar); known answers (do-nothing 1, gains 0.76, rebuilt 0.63, new 0.012-0.019, random 0.011); why the search-based and per-part behaviour versions were dropped; limits (trained fine-tunes near the random floor; Spearman 0.73 with KL over 39 trained states, so partly update size).
+- Two wording corrections from the writer: E259's zero pass share is over 19 items, not members; E257 RL reads five to eleven times SFT.
+- Spend this afternoon: $0 (no pods or jobs). Ladder: L1.2 (P1.4, 1 of 3 runs) stays the lowest open rung; its next run needs a cell.
+
 # definition-lead digest, 2026-11-22 morning
 
 **P1.50, due 11-23: the reuse score counted only over changed parts (option b) has been read on every realistic fine-tune. Its final page is reports/analyses/2026-11-21_analysis_e257-eb-trained.md, the cell is filled, and the log is published as v439.** I am finishing because all my cells are filled or closed and the rest waits on ask 59. The premise check came back doubtful (advisory). On trained pairs the score does not separate reused parts from new ones, and the gaps it shows may reflect how large the update is. One question waits on you (ask 59, below). The section 4 justification of option (b) waits on that answer.
