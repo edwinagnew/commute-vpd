@@ -1,0 +1,169 @@
+{
+ "job": "ctl",
+ "card": "NVIDIA L40",
+ "states": {},
+ "experiment": "E256 (procedural_rl), cell P2.56 run 1: three procedural next-token tasks on the 67M (day/month sequences, closing brackets and quotes, single-digit addition after two worked sums), each by RL (E220's recipe, one sampled token as E224) and by SFT on demonstrations, 3 seeds, every state stopped at E220's update size, plus Gaussian updates at RL's per-matrix norms; E222's readings of every state",
+ "counts": {
+  "sequence": {
+   "train": 4096,
+   "held": 256,
+   "keys in both": 0
+  },
+  "brackets": {
+   "train": 4096,
+   "held": 256,
+   "keys in both": 0
+  },
+  "addition": {
+   "train": 4096,
+   "held": 256,
+   "keys in both": 53
+  }
+ },
+ "zero update": {
+  "kl": 0.0,
+  "same_logits": true
+ },
+ "zero": {
+  "numerators": {
+   "gain lo": 0.0,
+   "share lo": 0.0,
+   "untrained lo svd": 0.0,
+   "untrained lo rotated": 0.0,
+   "neuron k64 lo": 0.0,
+   "neuron kmatched lo": 0.0,
+   "steering lo": 0.0,
+   "k_half lo r_half_num": 0.0
+  },
+  "k_half": {
+   "lo": null
+  },
+  "erank": null
+ },
+ "reproduce e53/lowercase_s0": {
+  "share": {
+   "got": 0.7537570697311265,
+   "saved": 0.7518811175785213,
+   "tol": 0.01
+  },
+  "svd": {
+   "got": 0.11846294339426855,
+   "saved": 0.11846294339426855,
+   "tol": 0.0001
+  },
+  "rotated": {
+   "got": 0.3281124990848824,
+   "saved": 0.3281124990848824,
+   "tol": 0.0001
+  },
+  "gain": {
+   "got": 1.6721290016174317,
+   "saved": 1.6721290016174317,
+   "tol": 0.0001
+  },
+  "neuron_k64": {
+   "got": 0.03414266508160581,
+   "saved": 0.03414266508160551,
+   "tol": 0.0001
+  },
+  "neuron_kmatched": {
+   "got": 0.007766123303975168,
+   "saved": 0.007766123303975601,
+   "tol": 0.0001
+  },
+  "steer_pooled": {
+   "got": 0.7130595188192251,
+   "saved": 0.7130595188192251,
+   "tol": 0.001
+  },
+  "erank": {
+   "got": 598.5737907674222,
+   "saved": 598.5737907674227,
+   "tol": 1e-06
+  },
+  "k_half": {
+   "got": 16,
+   "saved": 16,
+   "tol": 0
+  },
+  "r_half_num": {
+   "got": 0.879975772857666,
+   "saved": 0.879975772857666,
+   "tol": 0.0001
+  }
+ },
+ "reproduce e53/cipher_s0": {
+  "share": {
+   "got": 0.12488583607231488,
+   "saved": 0.12431340168715405,
+   "tol": 0.01
+  },
+  "svd": {
+   "got": 0.06767194926988293,
+   "saved": 0.06767194926988293,
+   "tol": 0.0001
+  },
+  "rotated": {
+   "got": 0.1790923069279458,
+   "saved": 0.1790923069279458,
+   "tol": 0.0001
+  },
+  "gain": {
+   "got": 3.868075170516968,
+   "saved": 3.868075170516968,
+   "tol": 0.0001
+  },
+  "neuron_k64": {
+   "got": 0.004887934856158074,
+   "saved": 0.004887934856158188,
+   "tol": 0.0001
+  },
+  "neuron_kmatched": {
+   "got": 0.000956805214073053,
+   "saved": 0.0009568052140731044,
+   "tol": 0.0001
+  },
+  "steer_pooled": {
+   "got": 0.6929798537824282,
+   "saved": 0.6929798537824282,
+   "tol": 0.001
+  },
+  "erank": {
+   "got": 594.2662401197576,
+   "saved": 594.2662401197575,
+   "tol": 1e-06
+  }
+ },
+ "benchmark": {
+  "sequence": {
+   "rate": 0.15158969753093243,
+   "se": 0.010449807939160052,
+   "ctrl_rate": 0.05177020278554878,
+   "ctrl_se": 0.0027780815433385377,
+   "n": 256,
+   "usable": true
+  },
+  "brackets": {
+   "rate": 0.3348376620597264,
+   "se": 0.014112979211071082,
+   "ctrl_rate": 0.036011697028138556,
+   "ctrl_se": 0.0053892872919148235,
+   "n": 256,
+   "usable": true
+  },
+  "addition": {
+   "rate": 0.10290578622266366,
+   "se": 0.005863437948840616,
+   "ctrl_rate": 0.10852425317062853,
+   "ctrl_se": 0.005395282446953913,
+   "n": 256,
+   "usable": true
+  }
+ },
+ "usable": [
+  "sequence",
+  "brackets",
+  "addition"
+ ],
+ "done": true
+}
