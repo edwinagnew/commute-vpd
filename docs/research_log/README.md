@@ -678,6 +678,7 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e253_prior_mech_2x2_cued.png": "experiments/cued_copy/figures/prior_mech_2x2_cued.png"
 - "fig/e254_prior_matched_pairs.png": "experiments/prior_matched/figures/prior_matched_pairs.png"
 - "fig/e257_eb_pairs.png": "experiments/rb_states/figures/eb_pairs.png"
+- "fig/e257_eb_arms.png": "experiments/rb_states/figures/eb_arms.png"
 - "fig/e258_behaviour_vs_write.png": "experiments/rb_member_test/figures/behaviour_vs_write.png"
 - "fig/e248_changed_only_pairs.png": "experiments/kstar_vpd_wording_a/figures/changed_only_pairs.png"
 - "fig/e247_kstar_composition.png": "experiments/thin_edit_diagnosis/figures/kstar_composition.png"
