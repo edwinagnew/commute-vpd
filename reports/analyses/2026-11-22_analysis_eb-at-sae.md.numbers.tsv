@@ -1,0 +1,17 @@
+0.969	experiments/sae_eb/results/summary.json	.rows[] | select(.item=="x2") | .E_b_sae	this
+0.947	experiments/sae_eb/results/summary.json	.rows[] | select(.item=="x10") | .E_b_sae	this
+0.135	experiments/sae_eb/results/summary.json	.rows[] | select(.item=="rebuilt") | .E_b_sae	this
+0.631	experiments/option_b_rescore/results/summary.json	.items.rebuilt.E_b	earlier
+0.76	experiments/option_b_rescore/results/summary.json	.items.x2.E_b	earlier
+0.020	experiments/sae_eb/results/summary.json	.P1.max_low	this
+0.115	experiments/sae_eb/results/summary.json	.P1.gap	this
+0.2	given	the filed bar of rule P1, experiments/sae_eb/results/predictions.json
+0.83	experiments/sae_eb/results/summary.json	.rows[] | select(.item=="rebuilt") | .remainder_dd_share	this
+0.02	experiments/sae_eb/results/summary.json	.rows[] | select(.item=="x2") | .remainder_dd_share	this
+0.03	experiments/sae_eb/results/summary.json	[.pairs[] | (.gap_sae, .gap_vpd) | fabs] | max	this
+0.789	experiments/sae_eb/results/summary.json	.rows[] | select(.item=="rebuilt") | .E_b_sae_latents_only	this
+0.076	experiments/sae_eb/results/summary.json	[.rows[] | select(.group=="random") | .E_b_sae_latents_only] | max	this
+0.028	experiments/sae_eb/results/summary.json	.pairs_keys_E_b_sae.min	this
+0.082	experiments/sae_eb/results/summary.json	.pairs_keys_E_b_sae.max	this
+0.005	experiments/sae_eb/results/summary.json	.rows[] | select(.item=="moved") | .E_b_sae	this
+1.7e-5	experiments/sae_eb/results/summary.json	.gain_dev_dd_weighted_max	this
