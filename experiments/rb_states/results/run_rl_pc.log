@@ -1,0 +1,87 @@
+E257 (rb_states) start, stage rl, shard (8, 21), tag pc; settings {'control': 'x2', 'randoms': ('random_size_241001', 'random_kl_241002'), 'groups': ('pairs', 'e62', 'keys'), 'rl_behaviour': 'repeat', 'rl_states': ('experiments/rl_67m/results/large/stage2b/repeat_rl_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_rl_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_rl_s2.pt', 'experiments/rl_67m/results/large/stage2b/repeat_shuffled_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_shuffled_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_shuffled_s2.pt', 'experiments/rl_67m/results/large/stage2b/repeat_own_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_own_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_own_s2.pt', 'experiments/rl_67m/results/large/stage2b/repeat_demo_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_demo_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_demo_s2.pt', 'experiments/rl_67m/results/large/stage2/repeat_rl_s0.pt', 'experiments/rl_67m/results/large/stage2/repeat_rl_s1.pt', 'experiments/rl_67m/results/large/stage2/repeat_rl_s2.pt', 'experiments/rl_67m/results/large/stage2/repeat_own_s0.pt', 'experiments/rl_67m/results/large/stage2/repeat_own_s1.pt', 'experiments/rl_67m/results/large/stage2/repeat_own_s2.pt', 'experiments/rl_67m/results/large/stage2/repeat_demo_s0.pt', 'experiments/rl_67m/results/large/stage2/repeat_demo_s1.pt', 'experiments/rl_67m/results/large/stage2/repeat_demo_s2.pt'), 'manifest': 'experiments/rb_states/results/manifest_p256.json'}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+stage 0: {"experiment": "E257 (rb_states)", "dn_n_changed": 0, "dn_dd_max": 0.0, "dn_E_b": 1.0, "seconds_per_pass": 0.28339362144470215, "control": "x2", "E_b_fp32": 0.7617252608953885, "E_b_bf16": 0.7616920174188189, "floor": 3.3243476569633224e-05, "E_b_saved": 0.7617252590298971, "dev": 1.8654914279991885e-09, "same_changed": true, "n_vars": 38938, "seconds": 4.595573663711548}; checks hold
+STAGE 0 DONE
+stage rl: 1 of 21 items ['rl/stage2b/repeat_own_s2']
+rl/stage2b/repeat_own_s2: 200 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 7.37032, KL(F || M) 0.0431245452; gates {'all': 2.077136514344602e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.5080799179785084, 'read2': 0.28150379079805327, 'outside2': 0.01838608810772066, 'cross_wr2': 0.1920302031164159, 'cross_out2': -6.981243125871265e-13}
+    ranking 0: prefix 29478, 16 evaluations
+    ranking 1: prefix 16452, 31 evaluations
+    ranking 2: prefix 14435, 46 evaluations
+  rl/stage2b/repeat_own_s2 main: |K*| 11948 (prefix 14435), R read 0.999552 (prefix 0.999510), R all 0.999542, f 0.9998, site-remainder share 0.0011, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 433 s
+rl/stage2b/repeat_own_s2: done in 434 s; peak GPU memory 6.62 GB
+rl/stage2b/repeat_own_s2: E_b 0.015658, untouched share 0.0002, |K*| 11948 (11946 changed), ||dW||/||W0|| 0.006929, R_A saved None, E247's E_b None; 435 s
+ITEM 1 of 1 DONE (rl/stage2b/repeat_own_s2)
+E257 (rb_states) DONE
+peak host RSS 6.2 GB
+E257 (rb_states) start, stage rl, shard (11, 21), tag pc; settings {'control': 'x2', 'randoms': ('random_size_241001', 'random_kl_241002'), 'groups': ('pairs', 'e62', 'keys'), 'rl_behaviour': 'repeat', 'rl_states': ('experiments/rl_67m/results/large/stage2b/repeat_rl_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_rl_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_rl_s2.pt', 'experiments/rl_67m/results/large/stage2b/repeat_shuffled_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_shuffled_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_shuffled_s2.pt', 'experiments/rl_67m/results/large/stage2b/repeat_own_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_own_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_own_s2.pt', 'experiments/rl_67m/results/large/stage2b/repeat_demo_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_demo_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_demo_s2.pt', 'experiments/rl_67m/results/large/stage2/repeat_rl_s0.pt', 'experiments/rl_67m/results/large/stage2/repeat_rl_s1.pt', 'experiments/rl_67m/results/large/stage2/repeat_rl_s2.pt', 'experiments/rl_67m/results/large/stage2/repeat_own_s0.pt', 'experiments/rl_67m/results/large/stage2/repeat_own_s1.pt', 'experiments/rl_67m/results/large/stage2/repeat_own_s2.pt', 'experiments/rl_67m/results/large/stage2/repeat_demo_s0.pt', 'experiments/rl_67m/results/large/stage2/repeat_demo_s1.pt', 'experiments/rl_67m/results/large/stage2/repeat_demo_s2.pt'), 'manifest': 'experiments/rb_states/results/manifest_p256.json'}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+stage0_pc.json: done before
+stage rl: 1 of 21 items ['rl/stage2b/repeat_demo_s2']
+rl/stage2b/repeat_demo_s2: 200 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 7.53904, KL(F || M) 0.0909718776; gates {'all': 2.3598179268446984e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.5063414687267993, 'read2': 0.28273621695166035, 'outside2': 0.018201849734535085, 'cross_wr2': 0.192720464587724, 'cross_out2': -7.186747865786395e-13}
+    ranking 0: prefix 29811, 16 evaluations
+    ranking 1: prefix 20513, 32 evaluations
+    ranking 2: prefix 17514, 47 evaluations
+  rl/stage2b/repeat_demo_s2 main: |K*| 14781 (prefix 17514), R read 0.999519 (prefix 0.999477), R all 0.999512, f 0.9999, site-remainder share 0.0009, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 432 s
+rl/stage2b/repeat_demo_s2: done in 434 s; peak GPU memory 6.62 GB
+rl/stage2b/repeat_demo_s2: E_b 0.015446, untouched share 0.0001, |K*| 14781 (14779 changed), ||dW||/||W0|| 0.006977, R_A saved None, E247's E_b None; 435 s
+ITEM 1 of 1 DONE (rl/stage2b/repeat_demo_s2)
+E257 (rb_states) DONE
+peak host RSS 6.1 GB
+E257 (rb_states) start, stage rl, shard (14, 21), tag pc; settings {'control': 'x2', 'randoms': ('random_size_241001', 'random_kl_241002'), 'groups': ('pairs', 'e62', 'keys'), 'rl_behaviour': 'repeat', 'rl_states': ('experiments/rl_67m/results/large/stage2b/repeat_rl_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_rl_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_rl_s2.pt', 'experiments/rl_67m/results/large/stage2b/repeat_shuffled_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_shuffled_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_shuffled_s2.pt', 'experiments/rl_67m/results/large/stage2b/repeat_own_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_own_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_own_s2.pt', 'experiments/rl_67m/results/large/stage2b/repeat_demo_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_demo_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_demo_s2.pt', 'experiments/rl_67m/results/large/stage2/repeat_rl_s0.pt', 'experiments/rl_67m/results/large/stage2/repeat_rl_s1.pt', 'experiments/rl_67m/results/large/stage2/repeat_rl_s2.pt', 'experiments/rl_67m/results/large/stage2/repeat_own_s0.pt', 'experiments/rl_67m/results/large/stage2/repeat_own_s1.pt', 'experiments/rl_67m/results/large/stage2/repeat_own_s2.pt', 'experiments/rl_67m/results/large/stage2/repeat_demo_s0.pt', 'experiments/rl_67m/results/large/stage2/repeat_demo_s1.pt', 'experiments/rl_67m/results/large/stage2/repeat_demo_s2.pt'), 'manifest': 'experiments/rb_states/results/manifest_p256.json'}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+stage0_pc.json: done before
+stage rl: 1 of 21 items ['rl/stage2/repeat_rl_s2']
+rl/stage2/repeat_rl_s2: 200 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 8.87363, KL(F || M) 0.248859424; gates {'all': 1.5826029766685679e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.5037958649616652, 'read2': 0.28633626964685116, 'outside2': 0.02151230306688741, 'cross_wr2': 0.18835556232529946, 'cross_out2': -7.030586100488885e-13}
+    ranking 0: prefix 27371, 16 evaluations
+    ranking 1: prefix 12967, 31 evaluations
+    ranking 2: prefix 10760, 47 evaluations
+  rl/stage2/repeat_rl_s2 main: |K*| 8295 (prefix 10760), R read 0.998549 (prefix 0.998356), R all 0.998491, f 0.9998, site-remainder share 0.0011, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 432 s
+rl/stage2/repeat_rl_s2: done in 434 s; peak GPU memory 6.62 GB
+rl/stage2/repeat_rl_s2: E_b 0.119631, untouched share 0.0002, |K*| 8295 (8293 changed), ||dW||/||W0|| 0.011, R_A saved None, E247's E_b None; 435 s
+ITEM 1 of 1 DONE (rl/stage2/repeat_rl_s2)
+E257 (rb_states) DONE
+peak host RSS 6.1 GB
+E257 (rb_states) start, stage rl, shard (17, 21), tag pc; settings {'control': 'x2', 'randoms': ('random_size_241001', 'random_kl_241002'), 'groups': ('pairs', 'e62', 'keys'), 'rl_behaviour': 'repeat', 'rl_states': ('experiments/rl_67m/results/large/stage2b/repeat_rl_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_rl_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_rl_s2.pt', 'experiments/rl_67m/results/large/stage2b/repeat_shuffled_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_shuffled_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_shuffled_s2.pt', 'experiments/rl_67m/results/large/stage2b/repeat_own_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_own_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_own_s2.pt', 'experiments/rl_67m/results/large/stage2b/repeat_demo_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_demo_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_demo_s2.pt', 'experiments/rl_67m/results/large/stage2/repeat_rl_s0.pt', 'experiments/rl_67m/results/large/stage2/repeat_rl_s1.pt', 'experiments/rl_67m/results/large/stage2/repeat_rl_s2.pt', 'experiments/rl_67m/results/large/stage2/repeat_own_s0.pt', 'experiments/rl_67m/results/large/stage2/repeat_own_s1.pt', 'experiments/rl_67m/results/large/stage2/repeat_own_s2.pt', 'experiments/rl_67m/results/large/stage2/repeat_demo_s0.pt', 'experiments/rl_67m/results/large/stage2/repeat_demo_s1.pt', 'experiments/rl_67m/results/large/stage2/repeat_demo_s2.pt'), 'manifest': 'experiments/rb_states/results/manifest_p256.json'}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+stage0_pc.json: done before
+stage rl: 1 of 21 items ['rl/stage2/repeat_own_s2']
+rl/stage2/repeat_own_s2: 200 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 7.77653, KL(F || M) 0.181865132; gates {'all': 2.266054934807471e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.5142012352119676, 'read2': 0.2738523938389944, 'outside2': 0.017362686284081812, 'cross_wr2': 0.19458368466563286, 'cross_out2': -6.766218987166913e-13}
+    ranking 0: prefix 29410, 15 evaluations
+    ranking 1: prefix 20379, 30 evaluations
+    ranking 2: prefix 16021, 46 evaluations
+  rl/stage2/repeat_own_s2 main: |K*| 13407 (prefix 16021), R read 0.994794 (prefix 0.994354), R all 0.994782, f 0.9999, site-remainder share 0.0007, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 433 s
+rl/stage2/repeat_own_s2: done in 435 s; peak GPU memory 6.62 GB
+rl/stage2/repeat_own_s2: E_b 0.021591, untouched share 0.0001, |K*| 13407 (13405 changed), ||dW||/||W0|| 0.0319, R_A saved None, E247's E_b None; 436 s
+ITEM 1 of 1 DONE (rl/stage2/repeat_own_s2)
+E257 (rb_states) DONE
+peak host RSS 6.1 GB
+E257 (rb_states) start, stage rl, shard (20, 21), tag pc; settings {'control': 'x2', 'randoms': ('random_size_241001', 'random_kl_241002'), 'groups': ('pairs', 'e62', 'keys'), 'rl_behaviour': 'repeat', 'rl_states': ('experiments/rl_67m/results/large/stage2b/repeat_rl_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_rl_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_rl_s2.pt', 'experiments/rl_67m/results/large/stage2b/repeat_shuffled_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_shuffled_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_shuffled_s2.pt', 'experiments/rl_67m/results/large/stage2b/repeat_own_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_own_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_own_s2.pt', 'experiments/rl_67m/results/large/stage2b/repeat_demo_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_demo_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_demo_s2.pt', 'experiments/rl_67m/results/large/stage2/repeat_rl_s0.pt', 'experiments/rl_67m/results/large/stage2/repeat_rl_s1.pt', 'experiments/rl_67m/results/large/stage2/repeat_rl_s2.pt', 'experiments/rl_67m/results/large/stage2/repeat_own_s0.pt', 'experiments/rl_67m/results/large/stage2/repeat_own_s1.pt', 'experiments/rl_67m/results/large/stage2/repeat_own_s2.pt', 'experiments/rl_67m/results/large/stage2/repeat_demo_s0.pt', 'experiments/rl_67m/results/large/stage2/repeat_demo_s1.pt', 'experiments/rl_67m/results/large/stage2/repeat_demo_s2.pt'), 'manifest': 'experiments/rb_states/results/manifest_p256.json'}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+stage0_pc.json: done before
+stage rl: 1 of 21 items ['rl/stage2/repeat_demo_s2']
+rl/stage2/repeat_demo_s2: 200 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 8.05264, KL(F || M) 0.198902814; gates {'all': 1.6182608533199527e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.5143968632149867, 'read2': 0.27237460694748883, 'outside2': 0.01886142196933362, 'cross_wr2': 0.19436710786884595, 'cross_out2': -6.549606293149286e-13}
+    ranking 0: prefix 29110, 15 evaluations
+    ranking 1: prefix 19692, 31 evaluations
+    ranking 2: prefix 14213, 46 evaluations
+  rl/stage2/repeat_demo_s2 main: |K*| 11798 (prefix 14213), R read 0.995516 (prefix 0.995116), R all 0.995457, f 0.9998, site-remainder share 0.0008, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 434 s
+rl/stage2/repeat_demo_s2: done in 436 s; peak GPU memory 6.62 GB
+rl/stage2/repeat_demo_s2: E_b 0.022777, untouched share 0.0002, |K*| 11798 (11796 changed), ||dW||/||W0|| 0.02947, R_A saved None, E247's E_b None; 436 s
+ITEM 1 of 1 DONE (rl/stage2/repeat_demo_s2)
+E257 (rb_states) DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rb_states/results ===

@@ -1,0 +1,20 @@
+E257 (rb_states) start, stage rl, shard (3, 6), tag r3; settings {'control': 'x2', 'randoms': ('random_size_241001', 'random_kl_241002'), 'groups': ('pairs', 'e62', 'keys'), 'rl_behaviour': 'repeat', 'rl_states': ('experiments/rl_67m/results/large/stage2b/repeat_rl_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_rl_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_rl_s2.pt', 'experiments/rl_67m/results/large/stage2b/repeat_shuffled_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_shuffled_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_shuffled_s2.pt', 'experiments/rl_67m/results/large/stage2b/repeat_own_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_own_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_own_s2.pt', 'experiments/rl_67m/results/large/stage2b/repeat_demo_s0.pt', 'experiments/rl_67m/results/large/stage2b/repeat_demo_s1.pt', 'experiments/rl_67m/results/large/stage2b/repeat_demo_s2.pt', 'experiments/rl_67m/results/large/stage2/repeat_rl_s0.pt', 'experiments/rl_67m/results/large/stage2/repeat_rl_s1.pt', 'experiments/rl_67m/results/large/stage2/repeat_rl_s2.pt', 'experiments/rl_67m/results/large/stage2/repeat_own_s0.pt', 'experiments/rl_67m/results/large/stage2/repeat_own_s1.pt', 'experiments/rl_67m/results/large/stage2/repeat_own_s2.pt', 'experiments/rl_67m/results/large/stage2/repeat_demo_s0.pt', 'experiments/rl_67m/results/large/stage2/repeat_demo_s1.pt', 'experiments/rl_67m/results/large/stage2/repeat_demo_s2.pt'), 'manifest': 'experiments/rb_states/results/manifest_p256.json'}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+stage 0: {"experiment": "E257 (rb_states)", "dn_n_changed": 0, "dn_dd_max": 0.0, "dn_E_b": 1.0, "seconds_per_pass": 1.9368760585784912, "control": "x2", "E_b_fp32": 0.7617252608953885, "E_b_bf16": 0.7616920174188189, "floor": 3.3243476569633224e-05, "E_b_saved": 0.7617252590298971, "dev": 1.8654914279991885e-09, "same_changed": true, "n_vars": 38938, "seconds": 14.955881357192993}; checks hold
+STAGE 0 DONE
+stage rl: 3 of 21 items ['rl/stage2b/repeat_shuffled_s0', 'rl/stage2b/repeat_demo_s0', 'rl/stage2/repeat_own_s0']
+rl/stage2b/repeat_shuffled_s0: 200 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 7.41611, KL(F || M) 0.56052114; gates {'all': 2.1467742499226006e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.4960566296952227, 'read2': 0.29528652702309643, 'outside2': 0.018448692592283475, 'cross_wr2': 0.19020815069019237, 'cross_out2': -7.948455022926905e-13}
+    ranking 0: prefix 33078, 15 evaluations
+    ranking 1: prefix 23119, 31 evaluations
+    ranking 2: prefix 21526, 46 evaluations
+  rl/stage2b/repeat_shuffled_s0 main: |K*| 18588 (prefix 21526), R read 0.999336 (prefix 0.999306), R all 0.999341, f 0.9999, site-remainder share 0.0006, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 2846 s
+rl/stage2b/repeat_shuffled_s0: done in 2856 s; peak GPU memory 6.62 GB
+rl/stage2b/repeat_shuffled_s0: E_b 0.033276, untouched share 0.0001, |K*| 18588 (18586 changed), ||dW||/||W0|| 0.006954, R_A saved None, E247's E_b None; 2861 s
+ITEM 1 of 3 DONE (rl/stage2b/repeat_shuffled_s0)
+rl/stage2b/repeat_demo_s0: 200 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 7.68723, KL(F || M) 0.0805663739; gates {'all': 2.258195308968425e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.5060259811899933, 'read2': 0.28344201893963705, 'outside2': 0.018152784696077135, 'cross_wr2': 0.1923792151750167, 'cross_out2': -7.241378040871829e-13}
+    ranking 0: prefix 29062, 15 evaluations
+    ranking 1: prefix 18555, 31 evaluations
+    ranking 2: prefix 17408, 46 evaluations
