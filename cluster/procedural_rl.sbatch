@@ -12,6 +12,14 @@
 # steps, E224 stage2c_arm_2_rl_1_2.json; SFT at most ~40 s per seed, E220 stage2b_1_demo.json; 9 stop reads, KL reads and
 # saves of ~57 MB); read per task ~8 min (reader ~1 min, E211; 10 reads (zero + 9 states) x ~23 s, E222's 18 s per state
 # at 200 rows, stage3_ctl.json "zero seconds", scaled to 256). Wall clock with the three tasks in parallel ~21 min.
+# E### guarded RL retrain (experiments/procedural_rl/results/predictions_guarded.json; fill in E### there and commit it;
+# PRED_SHA is that file's: `git show HEAD:experiments/procedural_rl/results/predictions_guarded.json | sha256sum`).
+# Needs E256's stage0.json (done); one train job per task in parallel, each task's read after its own train:
+#   PRED_SHA=SET_ME sbatch --comment=E### cluster/procedural_rl.sbatch train_guarded sequence   (brackets, addition alike)
+#   PRED_SHA=SET_ME sbatch --comment=E### --dependency=afterok:<train id> cluster/procedural_rl.sbatch read_guarded sequence
+# A failed gate or a zero-gradient stop is recorded, not an exit. Times (E256's logs 63152-63157): train_guarded ~2 min
+# (at most ~14 min if every seed runs to max_steps), read_guarded ~3.5 min; ~15 min for the three tasks if the QoS runs
+# the jobs one at a time, as it did E256's.
 # Host memory: ctl reads E53's gate sets for E211's ctl (~20 GB, as E222's ctl at 40G); train and read under 10 GB.
 # Inputs: the model in artifacts/vpd/; artifacts/sets/{val_0_64,val_0_8192,train_0_32768}.npy; E211's ctl inputs (E53's
 # two states, E136/E143/E98/update_svd records); experiments/realistic_tasks/results/predictions_run2.json.

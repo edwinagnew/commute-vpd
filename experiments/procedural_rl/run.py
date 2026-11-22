@@ -19,6 +19,17 @@ No head or part switch-off: no circuit for these tasks is located in this 67M (E
 Files: results/stage0.json, results/train_<task>.json, results/read_<task>.json, results/read/<state>.json; states
 results/large/states/<task>_<arm>_s<seed>.pt ({matrix: dW}, bf16, sha256 in train_<task>.json).
 
+E### (P2.56, the guarded RL retrain; settings, bars and expected values results/predictions_guarded.json, whose shared
+settings must equal E256's so that E256's stage0.json, items and SFT states stand):
+  train_guarded TASK  RL seeds 0-2 as E256's, with the guard (`rl_arms.pg_loss`, `rl_arms.Train.zero_stop`): PPO's
+               entropy bonus; a step whose every advantage is 0 is skipped (no Adam step), and zero_stop skipped steps
+               in a row stop the seed (zero_stopped, not reached). Every seed gets the learned gate in the read's unit
+               (the answer's log-odds, `steering.logodds_at`, on the same held-out rows), recorded, never an exit; the
+               trace logs the reward, the modal share of the samples and of the answers, and the entropy. Then a
+               Gaussian at each seed's per-matrix norms (arm randg)
+  read_guarded TASK   stage 2 on train_guarded_<task>.json's states, randg first (the do-nothing stop as E256's)
+Files: results/train_guarded_<task>.json, results/read_guarded_<task>.json, results/read/<task>_{rlg,randg}_s<seed>.json.
+
     sbatch --comment=E256 cluster/procedural_rl.sbatch ctl
 """
 
@@ -50,9 +61,10 @@ from commute.open_pair import jsonable
 HERE = Path(__file__).resolve().parent
 RESULTS, REPO = HERE / "results", HERE.parents[1]
 PRED, LARGE, READS = RESULTS / "predictions.json", RESULTS / "large" / "states", RESULTS / "read"
+PRED_G = RESULTS / "predictions_guarded.json"
 S1 = load_experiment("rl_67m", "run_stage1")  # kl_from_base: E215's KL read
 R2 = load_experiment("realistic_tasks", "run2")  # E211's reader, ctl, zero check, Out, brief
-ARMS = ("rl", "sft", "random")
+ARMS, RANDOM = ("rl", "sft", "random", "rlg", "randg"), ("random", "randg")  # rlg, randg: the guarded retrain's
 
 
 @dataclass(frozen=True)
@@ -82,11 +94,14 @@ class Config:
     val_n: int
     seeds: tuple[int, ...]
     seed: int
+    entropy_coef: float = 0.0  # the guard (arm rlg only); the defaults are E256's recipe
+    zero_stop: int = 0
 
     def __post_init__(self) -> None:
         object.__setattr__(self, "seeds", tuple(self.seeds))
         assert 0 < self.size_target < 1 and self.n_fit <= self.n_train <= self.pile_train_n and self.n_held <= self.val_n
         assert 2 <= self.seq_lo <= self.seq_hi and 2 <= self.bracket_lo <= self.bracket_hi
+        assert self.entropy_coef >= 0 and self.zero_stop >= 0
 
 
 def build_items(v: NT.Vocab, C: Config, train_rows: Tensor, val_rows: Tensor) -> dict[str, dict[str, NT.Items]]:
@@ -102,10 +117,15 @@ def build_items(v: NT.Vocab, C: Config, train_rows: Tensor, val_rows: Tensor) ->
 
 
 class Ctx:
-    def __init__(self) -> None:
-        require_filed(PRED)
-        P = json.loads(PRED.read_text())
-        assert P["experiment"].startswith("E256"), P["experiment"]
+    def __init__(self, pred: Path) -> None:
+        require_filed(pred)
+        P = json.loads(pred.read_text())
+        if pred == PRED_G:  # E256's stage0.json, items and SFT states stand only under E256's settings
+            assert not P["experiment"].startswith("E###"), "fill in the experiment number in predictions_guarded.json"
+            base = {k: v for k, v in json.loads(PRED.read_text())["settings"].items() if not k.endswith("_source")}
+            assert (diff := [k for k, v in base.items() if P["settings"].get(k) != v]) == [], f"settings differ from E256's: {diff}"
+        else:
+            assert P["experiment"].startswith("E256"), P["experiment"]
         self.P, self.C, self.th = P, config_from_settings(Config, P["settings"]), P["thresholds"]
         torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False
         self.net, self.tok = ST.Net("cuda"), vpd.tokenizer()
@@ -148,6 +168,29 @@ def se_diff(a: dict[str, Any], b: dict[str, Any]) -> float:
     return (a["se"] ** 2 + b["se"] ** 2) ** 0.5
 
 
+@torch.no_grad()
+def held_lo(x: Ctx, it: NT.Items, batch: int = 128) -> Tensor:
+    """(N,) float64: the answer's log-odds over the vocabulary at the cue (`steering.logodds_at`, the read's unit)."""
+    net, dev, out = x.net.model.target_model, x.net.device, []
+    for s in range(0, len(it.toks), batch):
+        lg = RA.logits(net, it.toks[s : s + batch].to(dev))
+        out.append(ST.logodds_at(lg, lg.shape[1] - 1, it.true[s : s + batch]))
+    return torch.cat(out)
+
+
+def learned_lo(x: Ctx, held: NT.Items, lo0: Tensor, rec: dict[str, Any], saved: ST.DW) -> dict[str, Any]:
+    """The guarded retrain's learned gate, in the read's unit on the read's rows: the mean over held-out items of the
+    answer's log-odds on the state as saved minus at W0, and its paired standard error over items (population sd /
+    sqrt(N), as E256's rate se). Passes when the seed reached the size target and the gain exceeds learn_min_se x se.
+    collapsed: the zero-gradient stop ended the seed on a batch not every sample of which was rewarded."""
+    with x.net.at(saved):
+        d = held_lo(x, held) - lo0
+    zs = bool(rec.get("zero_stopped"))
+    g = {"gain": float(d.mean()), "se": float(d.std(unbiased=False)) / len(d) ** 0.5, "reached": rec["reached"], "zero_stopped": zs}
+    return g | {"passed": g["reached"] and g["gain"] > x.th["learn_min_se"] * g["se"], "readable": g["gain"] >= MIN_GAIN,
+                "collapsed": zs and rec["trace"][-1]["reward"] < 1}  # fmt: skip
+
+
 # ----------------------------------------------------------------------------- stage 0
 
 
@@ -178,9 +221,9 @@ def job_ctl(x: Ctx, o: Any) -> None:
 # ----------------------------------------------------------------------------- stage 1
 
 
-def step_loss_fn(x: Ctx, arm: str, tp: NT.Items, seed: int) -> Callable[[int], Tensor]:
+def step_loss_fn(x: Ctx, arm: str, tp: NT.Items, seed: int, info: dict[str, Any]) -> Callable[[int], Tensor | None]:
     """RL: E220's policy gradient with the group-mean baseline on one sampled token (E224's); SFT: cross-entropy on
-    each training item's answer (E220's demo arm)."""
+    each training item's answer (E220's demo arm); rlg: RL with the guard, writing its step's readings into info."""
     C, net = x.C, x.net.model.target_model
     pick, gen = torch.Generator().manual_seed(seed), x.gen(seed, 7)
 
@@ -190,11 +233,24 @@ def step_loss_fn(x: Ctx, arm: str, tp: NT.Items, seed: int) -> Callable[[int], T
         adv = RA.advantages(RT.exact_reward(ids, tp.true[idx].repeat_interleave(C.k, 0)), C.k, None)
         return -(adv.to(x.net.device) * RA.cont_logp(net, tp.toks[idx].repeat_interleave(C.k, 0), ids)).mean()
 
+    def pg_guarded(step: int) -> Tensor | None:
+        """pg's batch; None (the step skipped) when every advantage is 0, else pg's loss minus the entropy bonus."""
+        idx = torch.randint(0, len(tp.toks), (C.prompts_per_step,), generator=pick)
+        ids, true = RA.sample(net, tp.toks[idx], C.k, 1, len(x.tok), gen), tp.true[idx].repeat_interleave(C.k, 0)
+        r = RT.exact_reward(ids, true)
+        adv = RA.advantages(r, C.k, None)
+        info.update(reward=float(r.mean()), modal_share=RA.modal_share(ids), answer_modal_share=RA.modal_share(true[:, None]),
+                    skipped=not bool(adv.any()), entropy=float("nan"))  # fmt: skip
+        if info["skipped"]:
+            return None
+        loss, info["entropy"] = RA.pg_loss(net, tp.toks[idx].repeat_interleave(C.k, 0), ids, adv, C.entropy_coef)
+        return loss
+
     def sft(step: int) -> Tensor:
         idx = torch.randint(0, len(tp.toks), (C.sft_batch,), generator=pick)
         return -RA.cont_logp(net, tp.toks[idx], tp.true[idx, None]).mean()
 
-    return pg if arm == "rl" else sft
+    return {"rl": pg, "rlg": pg_guarded, "sft": sft}[arm]
 
 
 def save_state(x: Ctx, name: str, dW: ST.DW) -> dict[str, Any]:
@@ -209,8 +265,10 @@ def run_arm(x: Ctx, task: str, arm: str, seed: int) -> tuple[dict[str, Any], ST.
     C, held, tp = x.C, x.items[task]["held"], x.items[task]["train"]
     reads = {"0": held_read(x, held)}
     on_step = lambda step: reads.update({"10": held_read(x, held)}) if step == 10 else None
-    tr = RA.Train(C.lr, C.grad_clip, C.max_steps, C.kl_every, C.size_target, seed)
-    res = RA.train(x.net.model, step_loss_fn(x, arm, tp, seed), tr, x.kl_rows, C.kl_batch, on_step, R2.log)
+    info: dict[str, Any] = {}  # stays empty for E256's arms, so their trace is as it ran
+    tr = RA.Train(C.lr, C.grad_clip, C.max_steps, C.kl_every, C.size_target, seed, C.zero_stop if arm == "rlg" else 0)
+    loss = step_loss_fn(x, arm, tp, seed, info)
+    res = RA.train(x.net.model, loss, tr, x.kl_rows, C.kl_batch, on_step, R2.log, lambda: dict(info))
     saved = {k: v.to(torch.bfloat16).float() for k, v in res.pop("dW").items()}
     return res | {"reads": reads}, saved
 
@@ -225,9 +283,13 @@ def finish(x: Ctx, task: str, arm: str, seed: int, rec: dict[str, Any], saved: S
     o.put(name, rec, under="states", shown={k: v for k, v in rec.items() if k != "trace"})
 
 
-def job_train(x: Ctx, task: str, o: Any) -> None:
+def require_usable(task: str, o: Any) -> None:
     if not done("stage0").get("done") or task not in done("stage0")["usable"]:
         raise o.stop(f"stage0.json is not done or does not list {task} as usable")
+
+
+def job_train(x: Ctx, task: str, o: Any) -> None:
+    require_usable(task, o)
     rl: dict[int, ST.DW] = {}
     for seed in x.C.seeds:
         rec, rl[seed] = run_arm(x, task, "rl", seed)
@@ -245,6 +307,20 @@ def job_train(x: Ctx, task: str, o: Any) -> None:
         finish(x, task, "random", seed, {"matched_to": f"{task}_rl_s{seed}"}, g, o)
 
 
+def job_train_guarded(x: Ctx, task: str, o: Any) -> None:
+    """Every seed runs whatever its gate reads; each state and its matched Gaussian is saved the moment it lands."""
+    require_usable(task, o)
+    held = x.items[task]["held"].take(slice(0, x.C.n_held))
+    lo0 = held_lo(x, held)
+    for seed in x.C.seeds:
+        rec, saved = run_arm(x, task, "rlg", seed)
+        rec["learned"] = learned_lo(x, held, lo0, rec, saved)
+        finish(x, task, "rlg", seed, rec, saved, o)
+        o.put(f"s{seed}", rec["learned"], under="learned")
+        g = {k: v.to(torch.bfloat16).float() for k, v in FT.random_direction(saved, seed).items()}
+        finish(x, task, "randg", seed, {"matched_to": f"{task}_rlg_s{seed}"}, g, o)
+
+
 # ----------------------------------------------------------------------------- stage 2
 
 
@@ -255,10 +331,10 @@ def load_state(rec: dict[str, Any], o: Any) -> ST.DW:
     return {k: v.float() for k, v in torch.load(path, weights_only=False).items()}
 
 
-def job_read(x: Ctx, task: str, o: Any) -> None:
-    tr = done(f"train_{task}")
+def job_read(x: Ctx, task: str, o: Any, train: str = "train") -> None:
+    tr = done(f"{train}_{task}")
     if not (done("stage0").get("done") and tr.get("done")):
-        raise o.stop(f"stage0.json or train_{task}.json is not done")
+        raise o.stop(f"stage0.json or {train}_{task}.json is not done")
     C, d = x.C, x.items[task]
     held, fit = d["held"].take(slice(0, C.n_held)), d["train"].take(slice(0, C.n_fit))
     r = RR.CueRead(task, held.toks, held.true, C.prompt_len - 1, fit.toks, fit.true)
@@ -272,24 +348,28 @@ def job_read(x: Ctx, task: str, o: Any) -> None:
         READS.mkdir(parents=True, exist_ok=True)
         (READS / f"{name}.json").write_text(json.dumps(jsonable(rec), indent=1))
         o.put(name, R2.brief(rec), under="read")
-        if s["arm"] == "random" and not rec["gain"]["lo"] < MIN_GAIN:
+        if s["arm"] in RANDOM and not rec["gain"]["lo"] < MIN_GAIN:
             raise o.stop(f"a Gaussian update gains {rec['gain']['lo']:.3f} log-odds on {task}, at or over {MIN_GAIN}")
 
 
+JOBS: dict[str, Callable[[Ctx, str, Any], None]] = {"train": job_train, "read": job_read, "train_guarded": job_train_guarded,
+                                                    "read_guarded": lambda x, t, o: job_read(x, t, o, "train_guarded")}  # fmt: skip
+
+
 def main(argv: list[str]) -> int:
-    if not (argv == ["ctl"] or (len(argv) == 2 and argv[0] in ("train", "read") and argv[1] in RT.PROCEDURAL)):
-        sys.exit(f"usage: run.py ctl | train TASK | read TASK, TASK in {RT.PROCEDURAL}")
-    x, job = Ctx(), "_".join(argv)
+    if not (argv == ["ctl"] or (len(argv) == 2 and argv[0] in JOBS and argv[1] in RT.PROCEDURAL)):
+        sys.exit(f"usage: run.py ctl | {' | '.join(f'{j} TASK' for j in JOBS)}, TASK in {RT.PROCEDURAL}")
+    x, job = Ctx(PRED_G if argv[0].endswith("_guarded") else PRED), "_".join(argv)
     o = R2.Out(job)
     o.path, o.d["experiment"] = RESULTS / f"{'stage0' if job == 'ctl' else job}.json", x.P["experiment"]
     try:
-        job_ctl(x, o) if job == "ctl" else (job_train if argv[0] == "train" else job_read)(x, argv[1], o)
+        job_ctl(x, o) if job == "ctl" else JOBS[argv[0]](x, argv[1], o)
     except R2.Stopped as e:
         print(f"STOP: {e}: tell the lead", flush=True)
         return 1
     o.d["done"] = True
     o.write()
-    print(f"E256 {job} DONE", flush=True)
+    print(f"{x.P['experiment'].split()[0]} {job} DONE", flush=True)
     return 0
 
 
