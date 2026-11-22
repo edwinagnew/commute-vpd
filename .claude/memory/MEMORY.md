@@ -104,3 +104,5 @@
 - [At most 4 pods per runner](feedback-max-four-pods-per-runner.md) — never more than 4 pods from one pod-runner; spawn more runners instead; E234 left pods idle (user, 2026-11-20)
 - [No restart with open questions](feedback-no-restart-with-open-questions.md) — skip restart-ready while the user owes an answer; a mid-reply restart lost approvals (user, 2026-11-20)
 - [Condense the paper](feedback-paper-condense-claims.md) — what breaks if cut; two claims (mechanistic definition; cheap proxies track it, beat baselines); real text/Qwen negative results (user, 2026-11-20)
+- [Own the restructure](feedback-own-the-restructure.md) — task file beats a lead note on who does a deliverable; idled a morning waiting on the user (2026-11-22)
+- [Lead text always green](feedback-lead-text-always-coloured.md) — every sentence I write is \new/revised on every branch, floats and titles too; never accept marks to black (user, 2026-11-22)
