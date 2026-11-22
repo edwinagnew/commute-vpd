@@ -1,50 +1,29 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
-<div class="prose"><p><strong>Waiting on you, 2026-11-21.</strong> One card is open: how the definition tests each changed part now that no version of "count only what changed" reads a pure strengthening as reused. The card before it, on what the paper does about untouched parts counting as reused under wording A, was answered at about 19:20 on 2026-11-21: you chose to count only what changed, each changed part weighted by the change it carries. Untouched parts no longer count as reused, and the untouched share is reported beside the reading. Wording A's sentence otherwise stands. Cell P1.49 rescored every saved item under this reading and writes the one-page justification for the paper's definition section. Earlier that day you answered how wording A treats a new computation spread thinly over many parts (diagnose first; the diagnosis was <a href="#e247">E247</a>), and on 2026-11-20 four questions: size-normalised R, the memorising twins, the held-model reading on Qwen's pair library, and the reuse score at the VPD featurization. Your wording of the definition box (2026-11-18, about 19:00) stands. The neuron-level saturation question is closed.</p>
+<div class="prose"><p><strong>Waiting on you, 2026-11-22.</strong> One card is open: does a changed part count as kept by what it writes, or by what it does to the output? Both ways are now measured; the card gives the numbers and recommends counting by write. At about 19:20 on 2026-11-21 you chose to count only what changed, each changed part weighted by the change it carries; untouched parts no longer count as reused, and the untouched share is reported beside the reading. Earlier that day you answered how wording A treats a new computation spread thinly over many parts (diagnose first; the diagnosis was <a href="#e247">E247</a>), and on 2026-11-20 four questions: size-normalised R, the memorising twins, the held-model reading on Qwen's pair library, and the reuse score at the VPD featurization. Your wording of the definition box (2026-11-18, about 19:00) stands. The neuron-level saturation question is closed.</p>
 <p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
 <div class="card decision" id="decision-rb-gain-control"><span class="chip open urgency">Soon</span>
-<div class="k">Question for you · definition-lead · new 2026-11-21</div>
-<h3>Counting only what changed: no version yet reads a pure strengthening as reused</h3>
-<p>You chose to count reuse only over the parts the fine-tune changed, each weighted by its change. We measured that choice, $0, on the saved built edits. We expected the two pure-gain reuse edits near 1, the do-nothing at 1, and the new and random edits low. It did not come out as expected: no version we built reads a pure strengthening near 1.</p>
-<p class="small">Nothing runs until this is decided. Measured since, the same night: the write share on 94 trained fine-tunes (<a href="#e257">E257</a>) and the behaviour test of each changed part on the built edits and three trained pairs (<a href="#e258">E258</a>, <a href="#e259">E259</a>); the results are in the box below the options. Your answer chooses the reading.</p>
+<div class="k">Question for you · definition-lead · new 2026-11-21, updated 2026-11-22</div>
+<h3>Does a changed part count as kept by what it writes, or by what it does to the output?</h3>
+<p>You chose to count reuse only over the parts the fine-tune changed, weighted by how much each changed. That leaves one choice: how to test whether a changed part is "kept", meaning the base model's own part, at its best strength, stands in for it. You asked to measure both ways before choosing. Both are now measured; reuse edits should read high, new and random edits low.</p>
 <table class="mini">
-<tr><th>Edit</th><th>Wording A</th><th>Untouched share</th><th>Search-based</th><th>Order-free</th></tr>
-<tr><td>do-nothing</td><td>1</td><td>1</td><td>1</td><td>1</td></tr>
-<tr><td>gain x2 (reuse)</td><td>1.00</td><td>0.91</td><td>0.08</td><td>0.76</td></tr>
-<tr><td>gain x10 (reuse)</td><td>0.98</td><td>0.91</td><td>0.02</td><td>0.76</td></tr>
-<tr><td>rebuilt (reuse)</td><td>0.86</td><td>0.63</td><td>0.04</td><td>0.63</td></tr>
-<tr><td>few parts (new)</td><td>0.89</td><td>0.73</td><td>0.37</td><td>0.012</td></tr>
-<tr><td>thin (new)</td><td>0.98</td><td>0.89</td><td>0.54</td><td>0.019</td></tr>
-<tr><td>random, matched size</td><td>0.29</td><td>0.00</td><td>0.15</td><td>0.011</td></tr>
-</table>
-<ul>
-<li><strong>Search-based version.</strong> Which parts count as kept comes from a search that keeps the fewest parts needed to get under a bar. Those are the largest writers, whether or not they are strengthened. It moves with the bar: random reads 0.08, 0.15 and 0.28 at bars 0.05, 0.1 and 0.2. Not usable.</li>
-<li><strong>Order-free version.</strong> Of the changed parts' change, the share that the base model's own write explains at each part's best strength. No search, no bar. The order is right: reuse 0.63 to 0.76, new and random about 0.01 to 0.02. But the pure strengthenings read 0.76, not near 1: doubling 8 neurons is not a strength change of VPD's parts, so each part's write is only about three quarters a rescale. It tests a part's write, not the model's behaviour (wording A's stand-in tests behaviour), and so far it can be computed only on the built edits; the trained pairs and the SAE readings need a short GPU pass per model to save the per-part changes.</li>
-<li><strong>What waits on it.</strong> The next cell reads this version on compare-lead's new RL and SFT fine-tunes and the saved RL repeat updates, on pods, $80 approved by the whip-lead. It starts only once the strength control passes.</li>
-</ul>
-<p><strong>Question.</strong> Does the definition test each changed part by behaviour (does the model's output stay put when that part alone is replaced by the base model's own part at its best strength), with the order-free write share as its cheap reading, or by write (the order-free write share itself)? Only you change the wording. No recommendation: this is a premise question.</p>
-<ul>
-<li><strong>(a) By behaviour.</strong> The per-part version has now run on the built edits and three trained pairs (below) and fails the strength control. A per-part bar is then a definition choice. The write share becomes a method checked against it.</li>
-<li><strong>(b) By write.</strong> The write share is the definition. Cheap, minutes per model. The pure strength edits read 0.76 under it, and the paper states that VPD reads a neuron rescale as about three quarters a strength change.</li>
-</ul>
-<p><strong>Measured since (2026-11-21 night).</strong> The behaviour test of each changed part has run, on the built edits and on three trained pairs. It swaps one changed part at a time for the base model's part at its best strength and asks how much of that part's effect on the output goes away, weighted by change as the write share is. It reads the pure strength edits at or below a random update, so it fails the strength control that the write share passes. Most parts barely move the output alone and the few that do decide the result: on the gain edit by ten one part pushes the output further than removing its change, which drives the reading below zero. No part passed the per-part bar on any edit.</p>
-<table class="mini">
-<tr><th>Edit</th><th>By behaviour, one part at a time</th><th>By write (order-free version)</th></tr>
-<tr><td>gain x2 (reuse)</td><td>0.011</td><td>0.76</td></tr>
-<tr><td>gain x10 (reuse)</td><td>-0.50</td><td>0.76</td></tr>
-<tr><td>rebuilt (reuse)</td><td>-0.41</td><td>0.63</td></tr>
-<tr><td>few parts (new)</td><td>0.011</td><td>0.012</td></tr>
-<tr><td>thin (new)</td><td>0.023</td><td>0.019</td></tr>
+<tr><th>Edit</th><th>By write</th><th>By behaviour, one part at a time</th></tr>
+<tr><td>gain x2 (reuse)</td><td>0.76</td><td>0.011</td></tr>
+<tr><td>gain x10 (reuse)</td><td>0.76</td><td>-0.50</td></tr>
+<tr><td>rebuilt (all reuse, built)</td><td>0.63</td><td>-0.41</td></tr>
+<tr><td>few parts and thin (new, built)</td><td>0.012 and 0.019</td><td>0.011 and 0.023</td></tr>
 <tr><td>random, matched size</td><td>0.011</td><td>0.011</td></tr>
-<tr><td>random, matched KL</td><td>0.008</td><td>0.011</td></tr>
 </table>
 <ul>
-<li><strong>Trained pairs</strong> (copy and lookup, copy and prior cipher, lowercase and the ciphers): behaviour reads 0.004 to 0.10, within 0.06 of the write share on every fine-tune, and neither reading puts the reuse side above the new side by more than 0.04.</li>
-<li><strong>Reinforcement learning against supervised</strong> on the same behaviour (the saved repeat updates, write share only): the reinforcement-learning updates read 0.10 to 0.22, the supervised ones on the same task 0.015 to 0.023, and a shuffled-reward control 0.03 to 0.05; on addition, brackets and sequence every trained arm reads 0.037 to 0.075 and reinforcement learning stays within 1.5 times supervised.</li>
+<li><strong>(a) By write.</strong> The order-free write share is the definition: of the changed parts' change, the share the base model's own write explains at each part's best strength. It passes the known-answer check: the order is right, and pure strengthenings read 0.76 rather than near 1 because doubling neurons is only about three quarters a strength change of VPD's parts (the paper states this). Cheap, minutes per model. On 94 trained fine-tunes it reads 0.015 to 0.062 against 0.011 for random and does not separate reuse from new tasks (<a href="#e257">E257</a>); reinforcement learning reads 0.10 to 0.22 against 0.015 to 0.023 for supervised, only on the repeat task.</li>
+<li><strong>(b) By behaviour.</strong> Replace one changed part at a time and see whether the output stays put. It fails the known-answer check: most single parts barely move the output, so it cannot tell strengthening from random (<a href="#e258">E258</a>); on three trained pairs it reads 0.004 to 0.10 with no separation (<a href="#e259">E259</a>). The definition would then be one we cannot yet measure.</li>
 </ul>
-<p class="small">The question above is unchanged. Page <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-21_analysis_behaviour-vs-write.md">behaviour against write</a>; cards <a href="#e257">E257</a>, <a href="#e258">E258</a>, <a href="#e259">E259</a>.</p>
-<p class="small">Card <code>reports/decisions/2026-11-21_decision_rb-gain-control.md</code>; <a href="https://github.com/edwinagnew/commute-vpd/blob/main/experiments/thin_edit_diagnosis/results/summary.json">E247 summary</a>; <a href="https://github.com/edwinagnew/commute-vpd/tree/main/experiments/option_b_rescore">rescoring folder</a> (being written now); <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-21_analysis_thin-edit-diagnosis.md">result page</a>.</p>
+<p><strong>Caveat.</strong> On the trained fine-tunes the write share follows how far the output moved (rank correlation with the output change 0.73, the highest of any reading), so part of it may be update size rather than reuse.</p>
+<p><strong>Recommended: (a), by write.</strong> It is the only version that passes the known-answer check, and behaviour per part has no power at this size.</p>
+<p><strong>What waits on it.</strong> definition-lead writes the paper's one-page justification of the definition once you answer. No runs wait on it.</p>
+<p><strong>How to answer.</strong> In chat to whip-lead, or in definition-lead's window (<code>tmux attach -t commute:definition-lead</code>).</p>
+<p class="small">Page <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-21_analysis_behaviour-vs-write.md">behaviour against write</a>; cards <a href="#e247">E247</a>, <a href="#e257">E257</a>, <a href="#e258">E258</a>, <a href="#e259">E259</a>; card file <code>reports/decisions/2026-11-21_decision_rb-gain-control.md</code>.</p>
 </div>
 </div>
 </section>

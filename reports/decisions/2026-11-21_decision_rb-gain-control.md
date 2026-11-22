@@ -75,3 +75,19 @@ No part passed the per-part bar on any edit.
   0.22, the supervised ones on the same task 0.015 to 0.023, and a shuffled-reward control 0.03 to 0.05.
 
 Page: [behaviour against write](../analyses/2026-11-21_analysis_behaviour-vs-write.md).
+
+## Update 2026-11-22
+
+Both ways are measured. The question is now: does a changed part count as kept by what it writes (the order-free
+write share is the definition), or by what it does to the output (replace one changed part at a time)?
+
+**Recommended: (a), by write.** It is the only version that passes the known-answer check (order right; pure
+strengthenings read 0.76 because doubling neurons is only about three quarters a strength change of VPD's parts, which
+the paper states). Behaviour per part has no power at this size: it cannot tell strengthening from random (E258) and
+shows no separation on three trained pairs (E259).
+
+**Caveat.** On the trained fine-tunes the write share follows how far the output moved (rank correlation with KL 0.73,
+the highest of any reading), so part of it may be update size rather than reuse.
+
+What waits on it: definition-lead writes the paper's one-page justification of the definition once the user answers.
+No runs wait on it. The earlier "Nothing runs until this is decided" and "$80 approved" lines are superseded.
