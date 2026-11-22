@@ -25,6 +25,8 @@ Layouts: param-decomp `(U (C, d_out), V (d_in, C))`; theory `(U_A (d_out, n), V_
 - adversary sources / masked KL -> `gamma.pgd_sources`, `gamma.mask_kl`, `cancel.masked_kl`
 - windows / data -> `data.pile_rows`, `data.emoticon_windows`, `regating.load_windows`, `ladder.windows_for_trigger`, `kv.windows`
 
+**member_test** — E258's behavioural per-member test (q, q1 of one member stood in at a time, batched), moved for rb_member_pairs: `Item.kl` / `kl_single`, `build`, `three_paths` (stage-0 floor), `read_members` (resumable shard).
+
 **variable_read** — R1's reading of a change to the 67M against a variable of M, moved for R2: `Sizes`, `make_sets`, `make_task`, `pair_windows`, `load_pieces`, `piece_target` / `net_target` (a changed model F as a callable), `g_search`, `h_fit` + `ridge_select` + `h_refine` + `ridge_s`, `read_pair`.
 
 ## Model, files, data

@@ -1,0 +1,56 @@
+{
+  "experiment": "E### (rb_member_pairs)",
+  "cell": "to be approved by the user (whip-lead, ~/commute-data/agents/whip-lead/cell-behaviour-pairs.txt: the behavioural per-member test on trained pairs, beside E_b)",
+  "filed": "2026-11-21, definition-lead (writer agent), before any GPU run of this experiment",
+  "settings": {
+    "items": [
+      "random_size_241001",
+      "e62/copy_s0",
+      "e62/copy_s1",
+      "e62/copy_s2",
+      "e62-lookup_s0_scaled_e62_copy_lookup",
+      "e62-lookup_s1_scaled_e62_copy_lookup",
+      "e62-lookup_s2_scaled_e62_copy_lookup",
+      "e58/copy_s0",
+      "e58/copy_s1",
+      "e58/copy_s2",
+      "e58-prior_cipher_s0_scaled_e58_copy_prior_cipher",
+      "e58-prior_cipher_s1_scaled_e58_copy_prior_cipher",
+      "e58-prior_cipher_s2_scaled_e58_copy_prior_cipher",
+      "e53/lowercase_s0",
+      "e53/lowercase_s1",
+      "e53-cipher_s0_scaled_e53_lowercase_cipher",
+      "e53-cipher_s1_scaled_e53_lowercase_cipher",
+      "e53-broad_cipher_s0_scaled_e53_lowercase_cipher",
+      "e53-broad_cipher_s1_scaled_e53_lowercase_cipher"
+    ],
+    "floor_items": [
+      "random_size_241001",
+      "e62/copy_s0"
+    ],
+    "n_floor": 32,
+    "floor_seed": 252001,
+    "sample_per_item": 2000,
+    "seed": 259001,
+    "rows": 64,
+    "tol": 0.1,
+    "save_every": 256,
+    "hours_max": 6,
+    "settings_source": "items: E242's size-matched random update (E241's construction, the null; cheapest, so first), then E248's items of three of E187's nine pairs (E242 pair_sides(): reuse side first, larger side at E232's matched size), every saved seed: e187_e62_copy_lookup (copy s0-s2 / lookup s0-s2 scaled), e187_e58_copy_prior_cipher (copy s0-s2 / prior_cipher s0-s2 scaled), e187_e53_lowercase_cipher (lowercase s0-s1 / cipher and broad_cipher s0-s1 scaled: E248's new side holds both cipher tasks). Each has E248's saved gains (experiments/kstar_vpd_wording_a/results/large/items_<item>.npz) and E257's saved num, den, dd, changed, grafts, in_K (experiments/rb_states/results/large/items_<item>.npz). floor_items: E258's floor item (the random) and one pair item, so the floor is measured on the pair path it guards too (512 windows, last position, against the random's 75 windows at every position). n_floor, floor_seed, rows, tol, save_every, hours_max: E258's (experiments/rb_member_test/results/predictions.json), unchanged. sample_per_item: set from E258's measured seconds_per_member (stage 0); 2,000 by default, about 7% of the 18k-32k changed members of K* per pair item (E257 items/*.json n_changed_in_K), so a share's se is of order 0.01 or less when members' dd are not too uneven. seed: any fixed seed, combined with crc32 of the item name per item. Windows, read positions, batch, gain_batch, split_tol: E226's and E242's, unchanged."
+  },
+  "readings": {
+    "q, q1": "as E258: per sampled changed member u of K* that may stand in (gain > 0, not a graft), alone: KL(F || F with u stood in, commute.stand_in, F's full forward) / KL(F || M), mean over the windows of D, at E248's saved gain (q) and at gain 1 (q1). Blind to: interactions between members (each is read alone) and to effects outside D",
+    "pass_share, b_mean": "as E258 (write change dd weighting, members that may not stand in count with y = 0, members under the floor not counted), estimated from the uniform sample by the ratio of Horvitz-Thompson totals (run.py docstring), each with its linearised standard error. Blind to: what the unsampled members read beyond the sampling error the se states",
+    "E_b": "from E257's saved num, den, dd and K* over every changed member of K* (commute.stand_in.explained_share), exact, beside"
+  },
+  "rules": {
+    "R0": "E258's stage 0, per job: on the do-nothing, n_floor site variables stood in one per row (every gain exactly 1) read KL exactly 0.0; on each floor item, n_floor members read at both gains through E247's single-member path (fp32), the batched path (fp32) and the batched path under bf16 autocast: max |batched - single| at or under max |bf16 - fp32|, else the job stops. floor = the largest max |batched - single| over the floor items and the jobs",
+    "P_member": "E258's: u passes when q1_u > floor and q_u <= tol x q1_u; u with q1_u <= floor is not counted; u with gain <= 0 or a graft fails with y = 0 (summed in full, not sampled). Edge cases checked before filing: N_A = 0 (no standable member) gives an empty sample and the share from the unstandable members alone (0, se 0; 1 if K* has no changed member); every sampled member under the floor with no unstandable member gives no denominator and reads 1 by E258's convention, se None; n = N_A is a census, se 0; n < 2 gives se None (sample_per_item >= 2 is asserted)",
+    "verdict": "none: descriptive beside E_b (no verdict under either wording until the user adopts one)"
+  },
+  "expected": {
+    "do_nothing": "exactly as E258: every KL exactly 0.0 in stage 0; pass share and b_mean 1 by the convention (no changed member)",
+    "random_size_241001": "b_mean about 0.01 (its E_b 0.0109, E257) and pass share about 0; and within 2 se of E258's census value on the same item (experiments/rb_member_test/results/summary.json, every member read), the check that the sample and its estimator are right",
+    "pairs": "no filed value: read beside E_b, which reads 0.02-0.06 on both sides of every trained pair (E257)"
+  }
+}
