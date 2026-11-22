@@ -3,7 +3,8 @@
 *Compare-lead, 2026-11-21, revised the same evening for R under wording A. Cell P2.51, no run, $0. Scripts
 `experiments/proxies_vs_r/analyse.py` and `r_a.py`; tables `experiments/proxies_vs_r/results/table_r_a_{vpd,sae}.json`;
 per-item rows `experiments/proxies_vs_r/figures/proxies_vs_r_r_a_{vpd,sae}.csv`. Five to nine items per set: a
-description, not a test. No rule was filed before reading.*
+description, not a test. No rule was filed before reading. Later the same day also scored against definition (b): last
+section.*
 
 We took the reuse score under the adopted wording, read at two featurized models, and set ten cheap proxies beside it
 on six built edits, nine built pairs and five key tasks, all from saved readings. On the pairs every proxy that puts
@@ -167,3 +168,116 @@ plus the KL share from `experiments/random_kl_share/results/score.json` and its 
 gain-only reach from `experiments/gain_only/results/score.json`. The key-task figure is
 `experiments/key_grid/plot_columns.py --against`. The dry-run tables against the size-removed and size-normalised
 scores stay in `experiments/proxies_vs_r/results/table_{size_removed,normalised}.json`. CPU only, $0.*
+
+## 2026-11-21, late: the proxies against definition (b)
+
+*Compare-lead, from saved files only, $0. Script `experiments/proxies_vs_r/r_b.py`; results
+`experiments/proxies_vs_r/results/r_b_vpd.json` and `table_r_b_vpd.json`. The sections above, under wording A, are
+unchanged.*
+
+We scored the same ten proxies against the user's chosen reuse reading, which asks how much of each changed part's
+change the base model's own part explains. On every trained fine-tune that reading sits within a few times a random
+update's, and no pair gap favours reuse by more than that, so ranking proxies against it there is uninformative. For
+claim 2, no proxy can yet be scored on trained fine-tunes under the new definition; on the built edits, where the
+reading does spread, none matches its order.
+
+### What was read
+
+**The score.** $E_b$, from definition-lead's run on the 67M model decomposed with VPD: over the circuit parts a
+fine-tune changed, the share of their summed write change that the base model's own part explains when it is only
+turned up or down. It reads 1 when every changed part is the base part rescaled, and near 0 when the base parts
+explain none of the change. Beside it, the untouched share: the fraction of the circuit the fine-tune left alone.
+
+**The items.** Five of the six built edits, from the earlier rescore of the built edits under this reading; the moved
+edit was not read there. All nine built pairs, as the reuse side's mean minus the new side's mean, size-matched, every
+seed. All five key tasks at their common size, as the mean over seeds 0 to 2. Nothing else is missing. The proxies,
+partials and item sets are those of the sections above.
+
+### Does the reading spread the items out beyond a random update?
+
+| item set | $E_b$ range | against the random update's 0.011 |
+|---|---|---|
+| built edits, five | 0.012 to 0.76 | the two new lookups at it, the three reuse edits far above |
+| all 94 trained fine-tunes | 0.015 to 0.062 | 1.4 to 5.7 times it |
+| key tasks, five task means | 0.029 to 0.038 | the whole spread is 0.86 of it |
+| pairs, nine gaps | −0.027 to 0.005 | six of nine inside ±0.011; three below it; the largest gap 2.5 times it |
+
+**Reading it.** No, on the trained fine-tunes. The difference between half and full precision on this reading is
+3.3e-5, so precision is not the limit. The limit is that a random update reads 0.011 and every trained fine-tune reads
+little more. Within one side of one pair the seeds alone spread by up to 0.022, more than any gap that favours the
+reuse side. Rank agreement with $E_b$ on the pairs and the key tasks therefore reads an order that the reading does
+not hold apart from noise. The untouched share confirms the picture: at most 1.1e-4 of the circuit on any trained
+fine-tune, against 0.63 to 0.91 on the built edits.
+
+### On the built edits, where the reading has range, does any proxy order them as it does?
+
+| proxy | built, against $E_b$ | built, size out | built, against R under wording A |
+|---|---|---|---|
+| log-odds share | 0.20 | 0.61 | 0.90 |
+| KL share | −0.70 | −0.81 | −0.40 |
+| S, floor off | −0.05 | −0.13 | −0.10 |
+| update size | −0.20 | itself | 0.60 |
+| effective rank | −0.67 | −0.69 | −0.82 |
+
+**Reading it.** No. The reading puts the two gain edits first, the rebuilt edit next and the two new lookups last; the
+best proxy, the log-odds share, agrees at 0.20 over five edits. The prior, steering, the crosscoder and gain-only reach
+were never read on the built edits, and S reads only one of them. Five items, with the reading's order fixed mostly by
+three reuse edits against two new ones, so one swapped edit can move these by 0.3 or more.
+
+### On the pairs, does any proxy's gap follow the score's gap?
+
+![Each proxy's pair gap against the gap of E_b and of R under wording A](../../experiments/proxies_vs_r/figures/gaps_vs_r_b_and_r_a.png)
+
+**Reading it.** Not in a way that bears on reuse. Under wording A every pair's gap lay above zero; under $E_b$ the
+gaps fall on both sides of zero, and the three furthest below are the pairs whose two sides had nearly equal updates
+before matching. Update size follows $E_b$'s gap at 0.77, close to its 0.80 under wording A, and keeps 0.76 with the
+prior partialled out. Gain-only reach follows it at 0.83 and the crosscoder runs against it at −0.93. These orders sit
+inside the random reading and the seed spread, so they say how the noise is arranged, most likely by update size, not
+which proxy tracks reuse. The grey band applies the same construction to R under wording A, ± its random update's
+0.30: it is a scale, not a null for a gap, and under it R's gaps too sit mostly inside.
+
+| proxy | pairs | key | pairs, prior out | key, prior out | pairs, size out |
+|---|---|---|---|---|---|
+| log-odds share | 0.12 | −0.20 | 0.10 | 0.66 | 0.30 |
+| KL share | −0.57 | −0.10 | −0.60 | 0.40 | −0.42 |
+| prior | −0.50 | −0.50 | itself | itself | −0.48 |
+| S | 0.38, n 8 | not read | 0.43 | not read | −0.48 |
+| S, floor off | −0.35 | not read | −0.02 | not read | −0.41 |
+| update size | 0.77 | equal | 0.76 | equal | itself |
+| effective rank | 0.68 | −0.10 | 0.54 | 0.40 | 0.40 |
+| steering | 0.20 | not read | −0.31 | not read | 0.27 |
+| crosscoder | −0.93 | not read | −0.91 | not read | −0.84 |
+| gain-only reach | 0.83 | not read | 0.85 | not read | 0.81 |
+
+### What it means for claim 2
+
+The proxies cannot be scored against definition (b) on trained fine-tunes until the reading separates them from a
+random update. On trained fine-tunes $E_b$ reads near its random floor everywhere, as definition-lead's report found,
+so a high or low rank agreement here is not evidence for or against any proxy. The one pattern that carries over from
+wording A is that the score's pair gaps follow update size; under $E_b$ it is a pattern in the noise, which makes it
+a warning about the pairs rather than a finding about reuse.
+
+### How compelling is the evidence
+
+Five built edits and nine pairs, so a description, not a test. The pair gaps sit within the seed spread of single
+sides. Every proxy built from VPD is circular against $E_b$ as it was against R at VPD, since $E_b$ reads the same
+circuit parts. Definition-lead's report is preliminary: the behavioural test of the reading is still pending.
+
+### Surprises
+
+Under $E_b$ the new side reads higher in six of nine pairs, the reverse of the built edits' order. Definition-lead's
+report found the same; this section adds only that the three clearest reversals are the pairs whose two sides needed
+almost no size matching.
+
+### Not run
+
+- The reinforcement-learning states: pending in definition-lead's run, so not scored here.
+- The moved edit: not read under definition (b).
+- A random band matched to the key tasks' or pairs' size for $E_b$: two random updates only, at a built edit's size
+  and at matched KL.
+- A rule filed before reading: none; every number in this section is descriptive.
+- The behavioural test of $E_b$: pending in definition-lead's run.
+
+*Provenance: $E_b$ per item from `experiments/rb_states/results/summary_items.json` (built edits from
+`.built_reference_P1_49`, pairs `.pairs.<pair>.gap_E_b`, key tasks `.keys.<task>.E_b`, random updates `.randoms`,
+precision floor `.stage0.floor`) and `items/*.json`; R under wording A from `results/r_a_vpd.json`. CPU only, $0.*

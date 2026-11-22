@@ -1,0 +1,1584 @@
+{
+ "cell": "P2.51",
+ "R": "r_b_vpd",
+ "rows": {
+  "r": {
+   "label": "re-gating share, log-odds form",
+   "circular": true,
+   "random_inside_finetune_range": "not defined: no random change gains 1 log-odds on the answer (E228)",
+   "vs_R": {
+    "built": {
+     "rho": 0.19999999999999998,
+     "n": 5,
+     "items": [
+      "x2",
+      "x10",
+      "rebuilt",
+      "new_few",
+      "new_thin"
+     ]
+    },
+    "pairs": {
+     "rho": 0.11666666666666665,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    },
+    "key": {
+     "rho": -0.19999999999999998,
+     "n": 5,
+     "items": [
+      "copy",
+      "rank1",
+      "elicit",
+      "cipher",
+      "prior_cipher"
+     ]
+    }
+   },
+   "vs_R_partial": {
+    "prior": {
+     "pairs": {
+      "rho": 0.09625213140261585,
+      "n": 9,
+      "items": [
+       "e187_e62_copy_lookup",
+       "e187_e46_copy_random",
+       "e187_e53_lowercase_cipher",
+       "e187_e54_matched",
+       "e187_e54_own",
+       "e187_open_pair_c3",
+       "e187_open_pair_c3_copy",
+       "e187_e58_rank1_96",
+       "e187_e58_copy_prior_cipher"
+      ]
+     },
+     "key": {
+      "rho": 0.6622661785325209,
+      "n": 5,
+      "items": [
+       "copy",
+       "rank1",
+       "elicit",
+       "cipher",
+       "prior_cipher"
+      ]
+     }
+    },
+    "size": {
+     "built": {
+      "rho": 0.6123724356957944,
+      "n": 5,
+      "items": [
+       "x2",
+       "x10",
+       "rebuilt",
+       "new_few",
+       "new_thin"
+      ]
+     },
+     "pairs": {
+      "rho": 0.30263798830799554,
+      "n": 9,
+      "items": [
+       "e187_e62_copy_lookup",
+       "e187_e46_copy_random",
+       "e187_e53_lowercase_cipher",
+       "e187_e54_matched",
+       "e187_e54_own",
+       "e187_open_pair_c3",
+       "e187_open_pair_c3_copy",
+       "e187_e58_rank1_96",
+       "e187_e58_copy_prior_cipher"
+      ]
+     }
+    }
+   },
+   "vs_size": {
+    "built": {
+     "rho": 0.7999999999999999,
+     "n": 5,
+     "items": [
+      "x2",
+      "x10",
+      "rebuilt",
+      "new_few",
+      "new_thin"
+     ]
+    },
+    "pairs": {
+     "rho": -0.09999999999999999,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    }
+   },
+   "vs_prior": {
+    "pairs": {
+     "rho": -0.06694619270045785,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    },
+    "key": {
+     "rho": 0.8999999999999998,
+     "n": 5,
+     "items": [
+      "copy",
+      "rank1",
+      "elicit",
+      "cipher",
+      "prior_cipher"
+     ]
+    }
+   },
+   "values": {
+    "built": {
+     "x2": 0.1743311170016875,
+     "x10": 0.14431443494265953,
+     "rebuilt": 0.09264971340678145,
+     "new_few": 0.15813567297208836,
+     "new_thin": 0.16607546705975676
+    },
+    "pairs": {
+     "e187_e62_copy_lookup": 0.699732156575898,
+     "e187_e46_copy_random": 0.5609616756455122,
+     "e187_e53_lowercase_cipher": 0.6285360548249446,
+     "e187_e54_matched": 0.5190130732319311,
+     "e187_e54_own": 0.6114758432647034,
+     "e187_open_pair_c3": 0.6232161023163464,
+     "e187_open_pair_c3_copy": 0.6080418007913994,
+     "e187_e58_rank1_96": 0.5763484962214407,
+     "e187_e58_copy_prior_cipher": 0.4031197742800118
+    },
+    "key": {
+     "copy": 0.7710708492017987,
+     "rank1": 0.8736076016490908,
+     "elicit": 0.7306714640710332,
+     "cipher": 0.2718960219294986,
+     "prior_cipher": 0.36787131030938797
+    }
+   }
+  },
+  "prior": {
+   "label": "original model's prior on the answer",
+   "circular": false,
+   "random_inside_finetune_range": "does not apply: a property of the task",
+   "vs_R": {
+    "built": {
+     "rho": null,
+     "n": 0,
+     "items": []
+    },
+    "pairs": {
+     "rho": -0.5020964452534339,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    },
+    "key": {
+     "rho": -0.49999999999999994,
+     "n": 5,
+     "items": [
+      "copy",
+      "rank1",
+      "elicit",
+      "cipher",
+      "prior_cipher"
+     ]
+    }
+   },
+   "vs_R_partial": {
+    "prior": null,
+    "size": {
+     "built": {
+      "rho": null,
+      "n": 0,
+      "items": []
+     },
+     "pairs": {
+      "rho": -0.47978694367830693,
+      "n": 9,
+      "items": [
+       "e187_e62_copy_lookup",
+       "e187_e46_copy_random",
+       "e187_e53_lowercase_cipher",
+       "e187_e54_matched",
+       "e187_e54_own",
+       "e187_open_pair_c3",
+       "e187_open_pair_c3_copy",
+       "e187_e58_rank1_96",
+       "e187_e58_copy_prior_cipher"
+      ]
+     }
+    }
+   },
+   "vs_size": {
+    "built": {
+     "rho": null,
+     "n": 0,
+     "items": []
+    },
+    "pairs": {
+     "rho": -0.2677847708018314,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    }
+   },
+   "vs_prior": null,
+   "values": {
+    "built": {},
+    "pairs": {
+     "e187_e62_copy_lookup": 0.12044966708098759,
+     "e187_e46_copy_random": 1.480106489785622,
+     "e187_e53_lowercase_cipher": 1.6285329210348936,
+     "e187_e54_matched": 3.197310022858932,
+     "e187_e54_own": 3.197310022858932,
+     "e187_open_pair_c3": 3.7237518672663383,
+     "e187_open_pair_c3_copy": 2.12411235306086,
+     "e187_e58_rank1_96": 3.961293021336528,
+     "e187_e58_copy_prior_cipher": 0.20036933711180271
+    },
+    "key": {
+     "copy": -4.228359775075937,
+     "rank1": -1.8982479934552496,
+     "elicit": -2.8769794861588225,
+     "cipher": -5.859541014791778,
+     "prior_cipher": -4.42872911218774
+    }
+   }
+  },
+  "S": {
+   "label": "P1.45's S, re-gated VPD pieces",
+   "circular": true,
+   "random_inside_finetune_range": "at the built size: not read (6 of 6 under the floor); at KL 2f: 6 of 6 inside, random 0.207 to 0.375; fine-tunes -0.0752 to 0.93",
+   "vs_R": {
+    "built": {
+     "rho": null,
+     "n": 1,
+     "items": [
+      "new_thin"
+     ]
+    },
+    "pairs": {
+     "rho": 0.38095238095238104,
+     "n": 8,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    },
+    "key": {
+     "rho": null,
+     "n": 0,
+     "items": []
+    }
+   },
+   "vs_R_partial": {
+    "prior": {
+     "pairs": {
+      "rho": 0.43399165570827375,
+      "n": 8,
+      "items": [
+       "e187_e62_copy_lookup",
+       "e187_e46_copy_random",
+       "e187_e54_matched",
+       "e187_e54_own",
+       "e187_open_pair_c3",
+       "e187_open_pair_c3_copy",
+       "e187_e58_rank1_96",
+       "e187_e58_copy_prior_cipher"
+      ]
+     },
+     "key": {
+      "rho": null,
+      "n": 0,
+      "items": []
+     }
+    },
+    "size": {
+     "built": {
+      "rho": null,
+      "n": 1,
+      "items": [
+       "new_thin"
+      ]
+     },
+     "pairs": {
+      "rho": -0.4801429794360789,
+      "n": 8,
+      "items": [
+       "e187_e62_copy_lookup",
+       "e187_e46_copy_random",
+       "e187_e54_matched",
+       "e187_e54_own",
+       "e187_open_pair_c3",
+       "e187_open_pair_c3_copy",
+       "e187_e58_rank1_96",
+       "e187_e58_copy_prior_cipher"
+      ]
+     }
+    }
+   },
+   "vs_size": {
+    "built": {
+     "rho": null,
+     "n": 1,
+     "items": [
+      "new_thin"
+     ]
+    },
+    "pairs": {
+     "rho": 0.7142857142857144,
+     "n": 8,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    }
+   },
+   "vs_prior": {
+    "pairs": {
+     "rho": 0.0,
+     "n": 8,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    },
+    "key": {
+     "rho": null,
+     "n": 0,
+     "items": []
+    }
+   },
+   "within_pair_call": "reuse side above new in 8 of 8 pairs read (of 9), against the built labels",
+   "values": {
+    "built": {
+     "x2": null,
+     "x10": null,
+     "moved": null,
+     "rebuilt": null,
+     "new_few": null,
+     "new_thin": 0.3987026673811812
+    },
+    "pairs": {
+     "e187_e62_copy_lookup": 0.35000872968570346,
+     "e187_e46_copy_random": 0.611796664654823,
+     "e187_e53_lowercase_cipher": null,
+     "e187_e54_matched": 0.38188344876307206,
+     "e187_e54_own": 0.762537977715954,
+     "e187_open_pair_c3": 0.4300051329017904,
+     "e187_open_pair_c3_copy": 0.5426407810295535,
+     "e187_e58_rank1_96": 0.43596754185537173,
+     "e187_e58_copy_prior_cipher": 0.5967394253322351
+    },
+    "key": {}
+   }
+  },
+  "S_c": {
+   "label": "P1.45's S with VPD's floor off",
+   "circular": true,
+   "random_inside_finetune_range": "at the built size: 5 of 6 inside, random 0.563 to 1.87; at KL 2f: 6 of 6 inside, random 0.747 to 0.875; fine-tunes 0.347 to 1.11",
+   "vs_R": {
+    "built": {
+     "rho": -0.051298917604257706,
+     "n": 5,
+     "items": [
+      "x2",
+      "x10",
+      "rebuilt",
+      "new_few",
+      "new_thin"
+     ]
+    },
+    "pairs": {
+     "rho": -0.35,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    },
+    "key": {
+     "rho": null,
+     "n": 0,
+     "items": []
+    }
+   },
+   "vs_R_partial": {
+    "prior": {
+     "pairs": {
+      "rho": -0.021583230814514867,
+      "n": 9,
+      "items": [
+       "e187_e62_copy_lookup",
+       "e187_e46_copy_random",
+       "e187_e53_lowercase_cipher",
+       "e187_e54_matched",
+       "e187_e54_own",
+       "e187_open_pair_c3",
+       "e187_open_pair_c3_copy",
+       "e187_e58_rank1_96",
+       "e187_e58_copy_prior_cipher"
+      ]
+     },
+     "key": {
+      "rho": null,
+      "n": 0,
+      "items": []
+     }
+    },
+    "size": {
+     "built": {
+      "rho": -0.1346361326595601,
+      "n": 5,
+      "items": [
+       "x2",
+       "x10",
+       "rebuilt",
+       "new_few",
+       "new_thin"
+      ]
+     },
+     "pairs": {
+      "rho": -0.40861146844731544,
+      "n": 9,
+      "items": [
+       "e187_e62_copy_lookup",
+       "e187_e46_copy_random",
+       "e187_e53_lowercase_cipher",
+       "e187_e54_matched",
+       "e187_e54_own",
+       "e187_open_pair_c3",
+       "e187_open_pair_c3_copy",
+       "e187_e58_rank1_96",
+       "e187_e58_copy_prior_cipher"
+      ]
+     }
+    }
+   },
+   "vs_size": {
+    "built": {
+     "rho": -0.35909242322980395,
+     "n": 5,
+     "items": [
+      "x2",
+      "x10",
+      "rebuilt",
+      "new_few",
+      "new_thin"
+     ]
+    },
+    "pairs": {
+     "rho": -0.11666666666666665,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    }
+   },
+   "vs_prior": {
+    "pairs": {
+     "rho": 0.6694619270045785,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    },
+    "key": {
+     "rho": null,
+     "n": 0,
+     "items": []
+    }
+   },
+   "within_pair_call": "reuse side above new in 9 of 9 pairs read (of 9), against the built labels",
+   "values": {
+    "built": {
+     "x2": 0.6902317417795115,
+     "x10": 0.6902316822371279,
+     "moved": null,
+     "rebuilt": 0.6080423233414463,
+     "new_few": 0.73629570529123,
+     "new_thin": 0.474803252869788
+    },
+    "pairs": {
+     "e187_e62_copy_lookup": 0.3957078460519964,
+     "e187_e46_copy_random": 0.5265010435647022,
+     "e187_e53_lowercase_cipher": 0.03696775830376153,
+     "e187_e54_matched": 0.40387193679993494,
+     "e187_e54_own": 0.5589031392193224,
+     "e187_open_pair_c3": 0.5713724452275105,
+     "e187_open_pair_c3_copy": 0.531410847451359,
+     "e187_e58_rank1_96": 0.5779986531795943,
+     "e187_e58_copy_prior_cipher": 0.5533796890253679
+    },
+    "key": {}
+   }
+  },
+  "size": {
+   "label": "update size, smaller is reuse",
+   "circular": false,
+   "random_inside_finetune_range": "matched by construction",
+   "vs_R": {
+    "built": {
+     "rho": -0.19999999999999998,
+     "n": 5,
+     "items": [
+      "x2",
+      "x10",
+      "rebuilt",
+      "new_few",
+      "new_thin"
+     ]
+    },
+    "pairs": {
+     "rho": 0.7666666666666667,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    },
+    "key": {
+     "rho": null,
+     "n": 0,
+     "items": []
+    }
+   },
+   "vs_R_partial": {
+    "prior": {
+     "pairs": {
+      "rho": 0.7587516986425098,
+      "n": 9,
+      "items": [
+       "e187_e62_copy_lookup",
+       "e187_e46_copy_random",
+       "e187_e53_lowercase_cipher",
+       "e187_e54_matched",
+       "e187_e54_own",
+       "e187_open_pair_c3",
+       "e187_open_pair_c3_copy",
+       "e187_e58_rank1_96",
+       "e187_e58_copy_prior_cipher"
+      ]
+     },
+     "key": {
+      "rho": null,
+      "n": 0,
+      "items": []
+     }
+    },
+    "size": null
+   },
+   "vs_size": null,
+   "vs_prior": {
+    "pairs": {
+     "rho": -0.2677847708018314,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    },
+    "key": {
+     "rho": null,
+     "n": 0,
+     "items": []
+    }
+   },
+   "values": {
+    "built": {
+     "x2": -0.01641569410987306,
+     "x10": -0.14774124603373764,
+     "moved": -0.01641569410987306,
+     "rebuilt": -0.04833834565551061,
+     "new_few": -0.028942847485615573,
+     "new_thin": -0.013785436593100085
+    },
+    "pairs": {
+     "e187_e62_copy_lookup": 0.001413422933106004,
+     "e187_e46_copy_random": 0.00255193760787258,
+     "e187_e53_lowercase_cipher": 0.0020953778933383363,
+     "e187_e54_matched": 9.483794504220374e-05,
+     "e187_e54_own": 0.004568855059229082,
+     "e187_open_pair_c3": -1.25775173638017e-05,
+     "e187_open_pair_c3_copy": 4.8845851069380386e-05,
+     "e187_e58_rank1_96": 0.001773522095243417,
+     "e187_e58_copy_prior_cipher": 0.002061786924223502
+    },
+    "key": {}
+   }
+  },
+  "erank": {
+   "label": "update's effective rank",
+   "circular": false,
+   "random_inside_finetune_range": "0 of 15 inside; random 697 to 706.7, fine-tunes 402 to 478.4",
+   "vs_R": {
+    "built": {
+     "rho": -0.6668859288553501,
+     "n": 5,
+     "items": [
+      "x2",
+      "x10",
+      "rebuilt",
+      "new_few",
+      "new_thin"
+     ]
+    },
+    "pairs": {
+     "rho": 0.6833333333333333,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    },
+    "key": {
+     "rho": -0.09999999999999999,
+     "n": 5,
+     "items": [
+      "copy",
+      "rank1",
+      "elicit",
+      "cipher",
+      "prior_cipher"
+     ]
+    }
+   },
+   "vs_R_partial": {
+    "prior": {
+     "pairs": {
+      "rho": 0.544050522517425,
+      "n": 9,
+      "items": [
+       "e187_e62_copy_lookup",
+       "e187_e46_copy_random",
+       "e187_e53_lowercase_cipher",
+       "e187_e54_matched",
+       "e187_e54_own",
+       "e187_open_pair_c3",
+       "e187_open_pair_c3_copy",
+       "e187_e58_rank1_96",
+       "e187_e58_copy_prior_cipher"
+      ]
+     },
+     "key": {
+      "rho": 0.4042260417272215,
+      "n": 5,
+      "items": [
+       "copy",
+       "rank1",
+       "elicit",
+       "cipher",
+       "prior_cipher"
+      ]
+     }
+    },
+    "size": {
+     "built": {
+      "rho": -0.6920201012835356,
+      "n": 5,
+      "items": [
+       "x2",
+       "x10",
+       "rebuilt",
+       "new_few",
+       "new_thin"
+      ]
+     },
+     "pairs": {
+      "rho": 0.39805095013908776,
+      "n": 9,
+      "items": [
+       "e187_e62_copy_lookup",
+       "e187_e46_copy_random",
+       "e187_e53_lowercase_cipher",
+       "e187_e54_matched",
+       "e187_e54_own",
+       "e187_open_pair_c3",
+       "e187_open_pair_c3_copy",
+       "e187_e58_rank1_96",
+       "e187_e58_copy_prior_cipher"
+      ]
+     }
+    }
+   },
+   "vs_size": {
+    "built": {
+     "rho": -0.051298917604257706,
+     "n": 5,
+     "items": [
+      "x2",
+      "x10",
+      "rebuilt",
+      "new_few",
+      "new_thin"
+     ]
+    },
+    "pairs": {
+     "rho": 0.6333333333333333,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    }
+   },
+   "vs_prior": {
+    "pairs": {
+     "rho": -0.6443571047419068,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    },
+    "key": {
+     "rho": 0.7,
+     "n": 5,
+     "items": [
+      "copy",
+      "rank1",
+      "elicit",
+      "cipher",
+      "prior_cipher"
+     ]
+    }
+   },
+   "values": {
+    "built": {
+     "x2": 6.197575392321317,
+     "x10": 6.1975754109476515,
+     "rebuilt": 604.4801184215061,
+     "new_few": 7.978345900222138,
+     "new_thin": 7.8713367282909665
+    },
+    "pairs": {
+     "e187_e62_copy_lookup": 0.05797893994365069,
+     "e187_e46_copy_random": 0.02492440929236293,
+     "e187_e53_lowercase_cipher": 0.011454460271427547,
+     "e187_e54_matched": -7.121457876131624e-05,
+     "e187_e54_own": 0.02648135354840158,
+     "e187_open_pair_c3": -0.0016452016401643686,
+     "e187_open_pair_c3_copy": 0.009073509780880331,
+     "e187_e58_rank1_96": 0.017953353720739418,
+     "e187_e58_copy_prior_cipher": 0.06753877968147777
+    },
+    "key": {
+     "copy": 474.9968370512427,
+     "rank1": 421.823452959893,
+     "elicit": 421.78686577435883,
+     "cipher": 404.74115685444235,
+     "prior_cipher": 406.58554835213687
+    }
+   }
+  },
+  "steering": {
+   "label": "steering share",
+   "circular": false,
+   "random_inside_finetune_range": "not read",
+   "vs_R": {
+    "built": {
+     "rho": null,
+     "n": 0,
+     "items": []
+    },
+    "pairs": {
+     "rho": 0.19999999999999998,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    },
+    "key": {
+     "rho": null,
+     "n": 0,
+     "items": []
+    }
+   },
+   "vs_R_partial": {
+    "prior": {
+     "pairs": {
+      "rho": -0.31313905966573186,
+      "n": 9,
+      "items": [
+       "e187_e62_copy_lookup",
+       "e187_e46_copy_random",
+       "e187_e53_lowercase_cipher",
+       "e187_e54_matched",
+       "e187_e54_own",
+       "e187_open_pair_c3",
+       "e187_open_pair_c3_copy",
+       "e187_e58_rank1_96",
+       "e187_e58_copy_prior_cipher"
+      ]
+     },
+     "key": {
+      "rho": null,
+      "n": 0,
+      "items": []
+     }
+    },
+    "size": {
+     "built": {
+      "rho": null,
+      "n": 0,
+      "items": []
+     },
+     "pairs": {
+      "rho": 0.2718521998731957,
+      "n": 9,
+      "items": [
+       "e187_e62_copy_lookup",
+       "e187_e46_copy_random",
+       "e187_e53_lowercase_cipher",
+       "e187_e54_matched",
+       "e187_e54_own",
+       "e187_open_pair_c3",
+       "e187_open_pair_c3_copy",
+       "e187_e58_rank1_96",
+       "e187_e58_copy_prior_cipher"
+      ]
+     }
+    }
+   },
+   "vs_size": {
+    "built": {
+     "rho": null,
+     "n": 0,
+     "items": []
+    },
+    "pairs": {
+     "rho": 0.03333333333333333,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    }
+   },
+   "vs_prior": {
+    "pairs": {
+     "rho": -0.7531446678801508,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    },
+    "key": {
+     "rho": null,
+     "n": 0,
+     "items": []
+    }
+   },
+   "values": {
+    "built": {},
+    "pairs": {
+     "e187_e62_copy_lookup": 0.39973596757596286,
+     "e187_e46_copy_random": 0.33611047838561225,
+     "e187_e53_lowercase_cipher": -0.08122930544428508,
+     "e187_e54_matched": -0.2471775893200735,
+     "e187_e54_own": -0.915549101427623,
+     "e187_open_pair_c3": -0.2648039561789232,
+     "e187_open_pair_c3_copy": 0.23434777203410034,
+     "e187_e58_rank1_96": -0.014455462602912555,
+     "e187_e58_copy_prior_cipher": 0.5655351432785015
+    },
+    "key": {}
+   }
+  },
+  "crosscoder": {
+   "label": "crosscoder, Minder et al.",
+   "circular": false,
+   "random_inside_finetune_range": "3 of 3 inside, one pair, last block (E235)",
+   "vs_R": {
+    "built": {
+     "rho": null,
+     "n": 0,
+     "items": []
+    },
+    "pairs": {
+     "rho": -0.9333333333333332,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    },
+    "key": {
+     "rho": null,
+     "n": 0,
+     "items": []
+    }
+   },
+   "vs_R_partial": {
+    "prior": {
+     "pairs": {
+      "rho": -0.9097663186520293,
+      "n": 9,
+      "items": [
+       "e187_e62_copy_lookup",
+       "e187_e46_copy_random",
+       "e187_e53_lowercase_cipher",
+       "e187_e54_matched",
+       "e187_e54_own",
+       "e187_open_pair_c3",
+       "e187_open_pair_c3_copy",
+       "e187_e58_rank1_96",
+       "e187_e58_copy_prior_cipher"
+      ]
+     },
+     "key": {
+      "rho": null,
+      "n": 0,
+      "items": []
+     }
+    },
+    "size": {
+     "built": {
+      "rho": null,
+      "n": 0,
+      "items": []
+     },
+     "pairs": {
+      "rho": -0.8437863213990894,
+      "n": 9,
+      "items": [
+       "e187_e62_copy_lookup",
+       "e187_e46_copy_random",
+       "e187_e53_lowercase_cipher",
+       "e187_e54_matched",
+       "e187_e54_own",
+       "e187_open_pair_c3",
+       "e187_open_pair_c3_copy",
+       "e187_e58_rank1_96",
+       "e187_e58_copy_prior_cipher"
+      ]
+     }
+    }
+   },
+   "vs_size": {
+    "built": {
+     "rho": null,
+     "n": 0,
+     "items": []
+    },
+    "pairs": {
+     "rho": -0.75,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    }
+   },
+   "vs_prior": {
+    "pairs": {
+     "rho": 0.5355695416036628,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    },
+    "key": {
+     "rho": null,
+     "n": 0,
+     "items": []
+    }
+   },
+   "values": {
+    "built": {},
+    "key": {},
+    "pairs": {
+     "e187_e62_copy_lookup": -0.04046333164962801,
+     "e187_e46_copy_random": -0.022463710337968568,
+     "e187_e53_lowercase_cipher": -0.12484266260242066,
+     "e187_e54_matched": 0.037614067740116774,
+     "e187_e54_own": -0.21317352062799833,
+     "e187_open_pair_c3": 0.07884840865896359,
+     "e187_open_pair_c3_copy": 0.09756973088245036,
+     "e187_e58_rank1_96": 0.04453696366009208,
+     "e187_e58_copy_prior_cipher": -0.4563982078788393
+    }
+   }
+  },
+  "kl_share": {
+   "label": "re-gating share, KL form",
+   "circular": true,
+   "random_inside_finetune_range": "7 of 15 inside; random 0.8085 to 1.385, fine-tunes 0.9349 to 1.001",
+   "vs_R": {
+    "built": {
+     "rho": -0.7,
+     "n": 5,
+     "items": [
+      "x2",
+      "x10",
+      "rebuilt",
+      "new_few",
+      "new_thin"
+     ]
+    },
+    "pairs": {
+     "rho": -0.5666666666666667,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    },
+    "key": {
+     "rho": -0.09999999999999999,
+     "n": 5,
+     "items": [
+      "copy",
+      "rank1",
+      "elicit",
+      "cipher",
+      "prior_cipher"
+     ]
+    }
+   },
+   "vs_R_partial": {
+    "prior": {
+     "pairs": {
+      "rho": -0.595623275323662,
+      "n": 9,
+      "items": [
+       "e187_e62_copy_lookup",
+       "e187_e46_copy_random",
+       "e187_e53_lowercase_cipher",
+       "e187_e54_matched",
+       "e187_e54_own",
+       "e187_open_pair_c3",
+       "e187_open_pair_c3_copy",
+       "e187_e58_rank1_96",
+       "e187_e58_copy_prior_cipher"
+      ]
+     },
+     "key": {
+      "rho": 0.4042260417272215,
+      "n": 5,
+      "items": [
+       "copy",
+       "rank1",
+       "elicit",
+       "cipher",
+       "prior_cipher"
+      ]
+     }
+    },
+    "size": {
+     "built": {
+      "rho": -0.8131249357707344,
+      "n": 5,
+      "items": [
+       "x2",
+       "x10",
+       "rebuilt",
+       "new_few",
+       "new_thin"
+      ]
+     },
+     "pairs": {
+      "rho": -0.4235742701006892,
+      "n": 9,
+      "items": [
+       "e187_e62_copy_lookup",
+       "e187_e46_copy_random",
+       "e187_e53_lowercase_cipher",
+       "e187_e54_matched",
+       "e187_e54_own",
+       "e187_open_pair_c3",
+       "e187_open_pair_c3_copy",
+       "e187_e58_rank1_96",
+       "e187_e58_copy_prior_cipher"
+      ]
+     }
+    }
+   },
+   "vs_size": {
+    "built": {
+     "rho": -0.3,
+     "n": 5,
+     "items": [
+      "x2",
+      "x10",
+      "rebuilt",
+      "new_few",
+      "new_thin"
+     ]
+    },
+    "pairs": {
+     "rho": -0.41666666666666663,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    }
+   },
+   "vs_prior": {
+    "pairs": {
+     "rho": 0.108787563138244,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    },
+    "key": {
+     "rho": 0.7,
+     "n": 5,
+     "items": [
+      "copy",
+      "rank1",
+      "elicit",
+      "cipher",
+      "prior_cipher"
+     ]
+    }
+   },
+   "values": {
+    "built": {
+     "x2": 0.5728097592567731,
+     "x10": 0.9426536595392819,
+     "rebuilt": 0.9021567482402741,
+     "new_few": 1.0018909928779864,
+     "new_thin": 0.9356918930381001
+    },
+    "pairs": {
+     "e187_e62_copy_lookup": 0.03591602631698687,
+     "e187_e46_copy_random": 0.056101352024667595,
+     "e187_e53_lowercase_cipher": 0.016668907039983916,
+     "e187_e54_matched": 0.0472444014255341,
+     "e187_e54_own": 0.038350515976044774,
+     "e187_open_pair_c3": 0.05615402209006504,
+     "e187_open_pair_c3_copy": 0.07668434734521923,
+     "e187_e58_rank1_96": 0.047982416411955664,
+     "e187_e58_copy_prior_cipher": 0.05650259663678725
+    },
+    "key": {
+     "copy": 0.999407974510376,
+     "rank1": 0.9854204159646299,
+     "elicit": 0.9811455380822797,
+     "cipher": 0.9383645407527014,
+     "prior_cipher": 0.9448312429818406
+    }
+   }
+  },
+  "reach": {
+   "label": "gain-only reach (E231)",
+   "circular": false,
+   "random_inside_finetune_range": "not read",
+   "vs_R": {
+    "built": {
+     "rho": null,
+     "n": 0,
+     "items": []
+    },
+    "pairs": {
+     "rho": 0.8333333333333333,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    },
+    "key": {
+     "rho": null,
+     "n": 0,
+     "items": []
+    }
+   },
+   "vs_R_partial": {
+    "prior": {
+     "pairs": {
+      "rho": 0.84805614352215,
+      "n": 9,
+      "items": [
+       "e187_e62_copy_lookup",
+       "e187_e46_copy_random",
+       "e187_e53_lowercase_cipher",
+       "e187_e54_matched",
+       "e187_e54_own",
+       "e187_open_pair_c3",
+       "e187_open_pair_c3_copy",
+       "e187_e58_rank1_96",
+       "e187_e58_copy_prior_cipher"
+      ]
+     },
+     "key": {
+      "rho": null,
+      "n": 0,
+      "items": []
+     }
+    },
+    "size": {
+     "built": {
+      "rho": null,
+      "n": 0,
+      "items": []
+     },
+     "pairs": {
+      "rho": 0.8093123765957438,
+      "n": 9,
+      "items": [
+       "e187_e62_copy_lookup",
+       "e187_e46_copy_random",
+       "e187_e53_lowercase_cipher",
+       "e187_e54_matched",
+       "e187_e54_own",
+       "e187_open_pair_c3",
+       "e187_open_pair_c3_copy",
+       "e187_e58_rank1_96",
+       "e187_e58_copy_prior_cipher"
+      ]
+     }
+    }
+   },
+   "vs_size": {
+    "built": {
+     "rho": null,
+     "n": 0,
+     "items": []
+    },
+    "pairs": {
+     "rho": 0.5,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    }
+   },
+   "vs_prior": {
+    "pairs": {
+     "rho": -0.24267994853915967,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    },
+    "key": {
+     "rho": null,
+     "n": 0,
+     "items": []
+    }
+   },
+   "values": {
+    "built": {},
+    "pairs": {
+     "e187_e62_copy_lookup": 0.19468800930154578,
+     "e187_e46_copy_random": -0.15166396195797882,
+     "e187_e53_lowercase_cipher": 0.3388871797556199,
+     "e187_e54_matched": -0.04386709411880141,
+     "e187_e54_own": 0.32952513906136666,
+     "e187_open_pair_c3": -0.08516169777881222,
+     "e187_open_pair_c3_copy": -0.20811343979529318,
+     "e187_e58_rank1_96": -0.05958851957057126,
+     "e187_e58_copy_prior_cipher": -0.008820289512992907
+    },
+    "key": {}
+   }
+  },
+  "R": {
+   "label": "the reuse score R",
+   "circular": true,
+   "random_inside_finetune_range": "0 of 2 inside; random 0.01087 to 0.01088, trained fine-tunes 0.01496 to 0.06159 (E257's 2 random updates)",
+   "vs_size": {
+    "built": {
+     "rho": -0.19999999999999998,
+     "n": 5,
+     "items": [
+      "x2",
+      "x10",
+      "rebuilt",
+      "new_few",
+      "new_thin"
+     ]
+    },
+    "pairs": {
+     "rho": 0.7666666666666667,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    }
+   },
+   "vs_prior": {
+    "pairs": {
+     "rho": -0.5020964452534339,
+     "n": 9,
+     "items": [
+      "e187_e62_copy_lookup",
+      "e187_e46_copy_random",
+      "e187_e53_lowercase_cipher",
+      "e187_e54_matched",
+      "e187_e54_own",
+      "e187_open_pair_c3",
+      "e187_open_pair_c3_copy",
+      "e187_e58_rank1_96",
+      "e187_e58_copy_prior_cipher"
+     ]
+    },
+    "key": {
+     "rho": -0.49999999999999994,
+     "n": 5,
+     "items": [
+      "copy",
+      "rank1",
+      "elicit",
+      "cipher",
+      "prior_cipher"
+     ]
+    }
+   },
+   "values": {
+    "built": {
+     "x2": 0.7617252590298972,
+     "x10": 0.7614299165440325,
+     "rebuilt": 0.6307226707914981,
+     "new_few": 0.012284167516683906,
+     "new_thin": 0.018920090482443565
+    },
+    "pairs": {
+     "e187_e62_copy_lookup": -0.004001486556457642,
+     "e187_e46_copy_random": -0.00430978425567019,
+     "e187_e53_lowercase_cipher": 0.004854764396400854,
+     "e187_e54_matched": -0.021423875161504027,
+     "e187_e54_own": 0.0030986953028114064,
+     "e187_open_pair_c3": -0.026359164929028768,
+     "e187_open_pair_c3_copy": -0.026973324490814736,
+     "e187_e58_rank1_96": -0.009039667805540264,
+     "e187_e58_copy_prior_cipher": 0.0032559240213604866
+    },
+    "key": {
+     "copy": 0.03247280804117969,
+     "rank1": 0.02946419370748614,
+     "elicit": 0.029087266163375394,
+     "cipher": 0.038449125107593775,
+     "prior_cipher": 0.029435934058516893
+    }
+   }
+  }
+ }
+}
