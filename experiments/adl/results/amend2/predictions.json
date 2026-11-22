@@ -1,0 +1,95 @@
+{
+ "experiment": "E267",
+ "experiment_source": "claimed by compare-lead against cell P2.60 (card ~/commute-data/cards/P2.60b.md)",
+ "cell": "P2.60",
+ "amendment": 2,
+ "date": "2026-11-22",
+ "amends": "experiments/adl/results/amend1/predictions.json (E265), which stays as filed and ran; this amendment adds item sets and changes nothing of amend1's",
+ "card": "~/commute-data/cards/P2.60b.md",
+ "plan": "reports/plans/2026-11-22_plan_p2-59-adl.md (the lens and D, unchanged); the item sets are the card's",
+ "descriptive": true,
+ "descriptive_source": "the card: user approved proposals 57/58 (2026-11-22, relayed by whip-lead); under the user's 11-21 rule 'do the readings' it is reported as a description with no claim at the bar. The rules below say what each rival expects; no verdict is given",
+ "filed": "2026-11-22, before any run of this amendment",
+ "change": "the same lens and the same scalar D (amend1's settings, control and bars), read on two new item sets: (a) P2.57's prior-matched states, E254's 10 copy seeds and 10 prior-matched cipher seeds and its 6 matched random updates (seeds 0-2 of each), E255's 3 second-cipher seeds on copy's keys and their 3 random updates, each built as experiments/prior_matched/world.py World.dw builds it (saved file times the run's c; a random is finetune.random_direction of the unscaled saved update at random_seed + the state's index in the run's order, times c), read on its run's task rows (E147's kv windows, holes_fill's reader as amend1); (b) P2.56's procedural states, E256's RL, SFT and random arms and E260's guarded RL and its random arm, 3 seeds each, on sequence, brackets and addition (45 states), read on each state's own task: E256's held-out items (procedural_rl/run.py build_items, first n_held), the answer's log-odds at the cue (the last prompt position), as E256's read (realistic_reads.CueRead layout)",
+ "settings": {
+  "k": 5,
+  "pile_split": "val",
+  "n_pile": 8192,
+  "batch": 512,
+  "lens_top": 20,
+  "n_random_diffs": 64,
+  "random_diff_rows": 128,
+  "random_diff_len": 128,
+  "random_seed": 259001,
+  "control": "e53_lowercase_cipher/e53/lowercase_s0",
+  "control_random": "e53_lowercase_cipher/random_reuse",
+  "settings_source": "amend1's filed settings, unchanged (experiments/adl/results/amend1/predictions.json settings)",
+  "trained_arms": ["rl", "sft", "rlg"],
+  "random_arms": ["random", "randg"],
+  "arms_source": "experiments/procedural_rl/run.py ARMS and RANDOM; kl_control's part A random_arms (experiments/kl_control/results/predictions.json settings.random_arms)",
+  "collapsed": ["brackets_rl_s1", "brackets_rl_s2", "addition_rl_s0", "addition_rl_s1", "brackets_rlg_s0", "brackets_rlg_s1"],
+  "collapsed_source": "E256's TRIED row (experiments/TRIED.md: RL collapsed onto one answer token in brackets s1/s2, addition s0/s1) and E260's (brackets s0/s1 still collapsed, zero-stopped; experiments/procedural_rl/results/train_guarded_brackets.json learned.s0/s1.collapsed true)"
+ },
+ "thresholds": {
+  "gain_floor": 1.0,
+  "inert": 0.05,
+  "zero_tol": 1e-09,
+  "reader_tol": 0.0001,
+  "size_rel": 1e-06,
+  "sd_mult": 3,
+  "thresholds_source": "amend1's, unchanged (gain_floor, inert, zero_tol from E143; reader_tol E147's; size_rel E244's; sd_mult run 1's)",
+  "repeat_rel": 1e-06,
+  "repeat_rel_source": "measured: the lens read e58/copy_s0 at c = 1 in job 63409 (run 1 stage 0) and twice in job 63425 (amend1 items, as e58/copy_s0_scaled and e58_copy_prior_cipher/e58/copy_s0), all on the cluster's L40 worker; D, gain and the five removed values were bitwise equal (0.0028031731216684253, 16.450539847353955; experiments/adl/results/stage0.json control, amend1/items/*copy_s0*.json). The floor is 0 on the same card; 1e-6 relative leaves room only for a float64 summation order, not for a change of code or rows",
+  "alpha": 0.01,
+  "alpha_source": "E254's (experiments/prior_matched/results/predictions_a.json thresholds.alpha), the same test on the same seeds",
+  "smallest_gap": 0.0054,
+  "smallest_gap_source": "the card: the random-update lens floor, largest |D| 0.0054 of E265's random updates (amend1/stage0.json random.D -0.00542)",
+  "proc_gain_rel": 0.001,
+  "proc_gain_rel_source": "an expected value, not a measured floor, so a reported check and never a stop: set (b)'s gain against E256/E260's saved gain.lo, |diff| <= proc_gain_rel x max(1, |saved|) (absolute under 1, where the random arms' gains of about 0.01 sit). Both are fp32 log-odds of the same answer at the same cue on the same rows through steering.Net, by different batching (holes_fill batches vs masked_reads.topk_cells_by)",
+  "partial_bar": 0.3,
+  "partial_bar_source": "the card's rivals: a partial Spearman with E_b given KL of at least 0.3 (rival a) or under 0.3 in size (rival b)"
+ },
+ "repeat_gain": {
+  "value": 1.6721290016174317,
+  "tol": 0.0001,
+  "source": "E265",
+  "source_detail": "amend1's stage-0 control gain (experiments/adl/results/amend1/stage0.json repeat_gain.got), itself E143's value to the bit; run.py's stage0 checks it at E147's reader tol as amend1 did"
+ },
+ "repeat_amend1": {
+  "D": 0.050002243699354,
+  "gain": 1.6721290016174317,
+  "rel_tol": 1e-06,
+  "source": "experiments/adl/results/amend1/stage0.json control.D and control.gain",
+  "rule": "|got / amend1 - 1| <= rel_tol for both, on the control read in this job's stage 0; a miss writes passed false into results/amend2/stage0.json and exits 1 before any item"
+ },
+ "stage0": {
+  "order": "first, in the same job and process as the items; the items refuse unless results/amend2/stage0.json says passed",
+  "stop_rule": "amend1's stop rule unchanged (do-nothing exactly 0, the control's gain repeats 1.67213 within 1e-4, D(control) >= 0.05, above the 64 random-difference directions' max and above its random update's D + 3 sd) AND the repeat of amend1's D and gain within repeat_rel",
+  "construction_checks": "per item, stop on a miss: the item's size (E205's `sizes` whole for set (a), realistic.update_size for set (b)) equals the size its source run recorded (prior_matched results/<a|b>/items/<item>.json size; procedural_rl results/read/<state>.json size) within size_rel; set (b) files match the sha256 their train record holds",
+  "reported_checks": "per item, not a stop: set (a)'s own gain against E254/E255's hf_gain (the same holes_fill path, expected within reader_tol 1e-4); set (b)'s own gain against E256/E260's saved gain.lo (a different reader path, masked_reads.topk_cells_by T cells, expected within 1e-3 relative). The summary lists every item outside these"
+ },
+ "rules": {
+  "a_separation": "per cipher set (E254's 10 prior-matched cipher seeds; E255's 3 second-cipher seeds) against E254's 10 copy seeds: gap = mean D(cipher) - mean D(copy); exact Mann-Whitney U of cipher over copy and its two-sided p (commute.seed_rank.mann_whitney, ties by mid-ranks). 'cipher above, apart' iff p <= alpha and gap > smallest_gap; 'copy above, apart' iff p <= alpha and gap < -smallest_gap; 'overlap' otherwise; 'not read' if any D on the two sides is nan (gain under gain_floor). Rival a expects 'cipher above, apart' on both sets; rival b 'overlap'. Edge cases: 3 against 10 with no overlap gives p = 2/286 = 0.007, under alpha, so the small set can separate; a do-nothing reads nan and is not read",
+  "a_randoms": "each matched random update's D and the largest |D| of them, beside smallest_gap (rival a expects the cipher mean above it)",
+  "b_partial": "on P2.56's trained procedural states (arms rl, sft, rlg; 27 states) with finite D: Spearman of D with E_b (experiments/procedural_rl/results/score_rb.json points R_b) and the partial Spearman given KL (points kl), by experiments/kl_control/run.py proxy_table (proxies_vs_r.analyse spearman and partial_spearman), on all 27 and on the 21 without `collapsed`. Every other proxy's partial is computed by the same call on the same two state sets, beside kl_control's part A trained_no_repeat values (which the 27-state call must equal). Rival a expects partial >= partial_bar; rival b |partial| < partial_bar; None (under 4 states with finite D, or no variance) is 'not read'. Random arms: D reported per state, never pooled with the trained states",
+  "verdict": "none: descriptive (see 'descriptive_source')"
+ },
+ "expected": {
+  "stage0": {"do_nothing": "all exactly 0, D nan", "control": {"D": 0.050002243699354, "gain": 1.6721290016174317}, "control_random_D": -0.005421013758120335, "passed": true},
+  "a": {
+   "seeds_0_2": "near amend1's reads of the same saved files (E147's seeds 0-2, repeated bit for bit by E254) at E237's c: copy D 0.0028, 0.0005, -0.0006 (c 0.99994 here, 1 there); prior cipher D 0.0086, 0.0045, 0.0073 (c 0.7832 here, 0.7798 there): each within about 1% of those",
+   "gain_repeat": "every item's gain equals E254/E255's hf_gain within 1e-4",
+   "copy_10": "D in [-0.003, 0.005], mean about 0.001",
+   "cipher_10": "D in [0.002, 0.012], mean about 0.006",
+   "e255_cipher_3": "as E254's cipher, mean about 0.006",
+   "call": "E254: 'cipher above, apart' (medium confidence: seeds 0-2 already order this way, but the gap of about 0.005 sits at the 0.0054 bar); E255: the same or 'overlap' (3 seeds, low confidence)",
+   "randoms": "|D| < 0.0054 each (E265's random updates read at most 0.0054)"
+  },
+  "b": {
+   "gain_repeat": "each state's gain within 1e-3 relative of its saved gain.lo",
+   "D": "trained states D under the control's 0.05 (a cue-specific change has no one constant direction on unrelated text, the lens's blind spot named in the P2.59 plan); nan where the gain is under 1 (collapsed RL states and their randoms)",
+   "randoms": "|D| < 0.02 where read",
+   "partial": "|partial| < 0.3 on both state sets (low confidence: no lens reading of these tasks exists)"
+  }
+ }
+}
