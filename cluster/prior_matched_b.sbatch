@@ -27,7 +27,7 @@ for d in refit_96key induction_cue open_pair transport_test prior_mech_2x2 prior
   test -L experiments/$d/results/large || { echo "experiments/$d/results/large is not linked: run ~/commute-agents/fleet/link-data ."; exit 1; }
 done
 rc=0
-( PRED_SHA=SET_ME .venv/bin/python experiments/prior_matched/run_b.py ) 2>&1 \
+( PRED_SHA=7c11cf8a5d3ad23f31e91ca699d2bf0b42116dac362317622e45567614a646d9 .venv/bin/python experiments/prior_matched/run_b.py ) 2>&1 \
     | tee -a experiments/prior_matched/results/run_b.log || rc=${PIPESTATUS[0]}
 echo "=== FINISHED prior-matched run B (exit $rc) — results in $COMMUTE_REPO/experiments/prior_matched/results/b/ ==="
 exit $rc
