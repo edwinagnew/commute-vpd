@@ -129,6 +129,20 @@ class TargetRead(Read):
         raise NotImplementedError("TargetRead: the untrained read is not defined on it")
 
 
+@dataclass
+class CueRead(TargetRead):
+    """A TargetRead of prompts that end at a cue (pos = the last column), one target id per row, read in "lo" (the
+    log-odds of that id over the vocabulary). The untrained read is defined on it: the target rides as a last column
+    that neither the model nor Gamma reads (`data.LAST`, ci_len = the prompt length). P2.56's procedural tasks."""
+
+    def __post_init__(self) -> None:
+        super().__post_init__()
+        assert self.pos == self.toks.shape[1] - 1 == self.fit.shape[1] - 1
+
+    def windows(self) -> tuple[Tensor, int | Tensor, int | None]:
+        return torch.cat([self.toks, self.tgt[:, None]], 1), LAST, self.toks.shape[1]
+
+
 def target_read(name: str, toks: Tensor, token: int | Tensor, half: int, ci_len: int | None = None) -> TargetRead:
     """A source experiment's read windows (`data.target_tokens` layout: one id, a (V,) table, NEXT or LAST) as a
     TargetRead; with ci_len the model and Gamma see only the first ci_len tokens (E62's target column is never fed)."""

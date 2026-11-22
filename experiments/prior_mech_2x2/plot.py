@@ -5,6 +5,10 @@ cipher) right of it; each labelled by its prior. Reads E250's table (results/sta
 files (stage1/ for the saved states, stage2/head/ for the low-prior copy) and, for the random-update band on effective
 rank, E237's summary (experiments/key_grid/results/summary.json) and E250's random updates.
 
+`cued_main` draws P2.55's version (experiments/cued_copy/figures/prior_mech_2x2_cued.png): prior on the x axis, mechanism
+as the two lines, the cued copy (E253, experiments/cued_copy/results/table.json) in the low-prior copy-head corner and
+the row-selected low copy faint beside it, the top-3-heads share from E252/E253's k-head files.
+
     ~/commute-agents/fleet/cpu-run python3 experiments/prior_mech_2x2/plot.py
 """
 
@@ -13,6 +17,8 @@ from __future__ import annotations
 import json
 from pathlib import Path
 from typing import Any
+
+import numpy as np
 
 from commute.figures import METHODS, column_dots, figure, save
 
@@ -111,5 +117,96 @@ def main() -> None:
            "rank band: E237's random updates (copy, ciphers) and E250's (low copy).")  # fmt: skip
 
 
+# P2.55's redraw: the cued copy (E253) in the low-prior copy-head corner, the row-selected low copy faint beside it.
+CUED_DIR = HERE.parent / "cued_copy"
+CUED = json.loads((CUED_DIR / "results" / "table.json").read_text())
+SERIES = {  # mechanism: (legend label, colour, (high-prior corner, low-prior corner))
+    "copy_heads": ("runs through the copy heads", "#0072B2", ("copy", "cuedcopy")),
+    "new_lookup": ("needs a new lookup", "#D55E00", ("prior_cipher", "cipher")),
+}
+CUED_READINGS = {  # table key: (panel title, y label)
+    "r": ("Re-gating share r", "r"),
+    "k3_share": ("Top 3 copy heads off", "share of gain lost"),
+    "steering_pooled": ("Pooled steering share", "steering share"),
+    "erank": ("Update's effective rank", "effective rank"),
+    "neuron_k64": ("Neuron share, top 64", "neuron share"),
+    "log10_prior": ("Base model's prior", "log10 P(answer)"),
+}
+KHEAD_FILES = {  # corner: the k-head file pattern of its states (E252 for the key corners, E253 for the cued copy)
+    **{c: RES / "khead" / f"e58-{c}_s{{}}.json" for c in ("copy", "lowcopy", "prior_cipher", "cipher")},
+    "cuedcopy": CUED_DIR / "results" / "items" / "khead" / "e58-cuedcopy_s{}.json",
+}
+X = {"copy": -0.06, "prior_cipher": 0.06, "cuedcopy": 0.94, "cipher": 1.06, "lowcopy": 1.6}  # offset so bars don't overlap
+
+
+def k3_null_band(corner: str) -> tuple[float, float]:
+    """Lowest and highest, over seeds, of the median share lost with 3 random heads off (clean draws, as E252 reads)."""
+    meds = []
+    for s in SEEDS:
+        draws = json.loads(Path(str(KHEAD_FILES[corner]).format(s)).read_text())["by_k"]["3"]["null"]
+        meds.append(float(np.median([d["share"] for d in draws if not d["flags"]])))
+    return min(meds), max(meds)
+
+
+def random_band(corner: str, key: str) -> tuple[float, float] | None:
+    if key == "k3_share":
+        return k3_null_band(corner)
+    if key != "erank":
+        return None  # a random update has no gain, so r, steering and neuron shares cannot be read on it
+    if corner == "cuedcopy":
+        return min(CUED["random"]["erank"]), max(CUED["random"]["erank"])
+    return erank_band(corner)
+
+
+def seed_bar(ax: Any, corner: str, key: str, color: str, alpha: float = 1.0) -> dict[str, Any]:
+    vals = [row[key] for row in CUED["rows"][corner]]
+    mean, x = float(np.mean(vals)), X[corner]
+    ax.errorbar([x], [mean], yerr=[[max(0.0, mean - min(vals))], [max(0.0, max(vals) - mean)]], fmt="o", color=color, alpha=alpha,
+                markersize=4, capsize=2, linewidth=1)  # fmt: skip
+    band = random_band(corner, key)
+    if band is not None:
+        ax.fill_between([x - 0.05, x + 0.05], band[0], max(band[1], band[0] + 0.004 * abs(band[0]) + 0.002),
+                        color="#555555", alpha=0.4 * alpha, linewidth=0)  # fmt: skip
+    return {"reading": key, "corner": corner, "mean": mean, "seed_min": min(vals), "seed_max": max(vals),
+            "random_min": band[0] if band else "", "random_max": band[1] if band else ""}  # fmt: skip
+
+
+def cued_panel(ax: Any, key: str) -> list[dict[str, Any]]:
+    title, ylabel = CUED_READINGS[key]
+    data = []
+    for label, color, (hi, lo) in SERIES.values():
+        ax.plot([X[hi], X[lo]], [np.mean([r[key] for r in CUED["rows"][c]]) for c in (hi, lo)], color=color, linewidth=1, label=label)
+        data += [seed_bar(ax, hi, key, color), seed_bar(ax, lo, key, color)]
+    data.append(seed_bar(ax, "lowcopy", key, SERIES["copy_heads"][1], alpha=0.3))
+    if key == "k3_share":
+        ax.axhline(0.2, color="#777777", linewidth=0.8, linestyle="--")
+        ax.text(0.5, 0.2, "copy label bar 0.2", fontsize=5.5, color="#555555", ha="center", va="bottom")
+    p = CUED["proxies"][key]
+    ax.set_title(f"{title}\nmechanism {p['mechanism_effect']:.2g}, prior {p['prior_effect']:.2g}, band {p['band']:.2g}", fontsize=6.5)
+    if key == "erank":
+        ax.text(0.5, 690, "random updates, about 700", fontsize=5.5, color="#555555", ha="center", va="top")
+    ax.set_xticks([0, 1, 1.6], ["high prior", "low prior", "old low\ncopy"], fontsize=6)
+    ax.set_xlim(-0.3, 1.85)
+    ax.set_ylabel(ylabel, fontsize=7)
+    ax.tick_params(axis="y", labelsize=6)
+    return data
+
+
+def cued_main() -> None:
+    fig, axes = figure((7.5, 6.2), ncols=3, nrows=2)
+    data = [rec for ax, key in zip(axes.flat, CUED_READINGS) for rec in cued_panel(ax, key)]
+    axes.flat[0].plot([], [], color="#555555", alpha=0.4, linewidth=6, label="random reference, same size or same k")
+    axes.flat[0].errorbar([], [], fmt="o", color=SERIES["copy_heads"][1], alpha=0.3, label="row-selected low copy (old corner)")
+    axes.flat[0].legend(fontsize=5, frameon=False, loc="center left")
+    fig.suptitle("With the cued copy in the low-prior corner, every reading but the prior splits by mechanism", fontsize=9)
+    save(fig, CUED_DIR / "figures" / "prior_mech_2x2_cued.png", data=data,
+         n="Points: mean of 3 seeds per corner; bars: lowest to highest seed. Every update at one common size. Lines join "
+           "the two corners of one mechanism. Grey: on effective rank, a random update of the same size; on the top 3 "
+           "heads, the median share lost with 3 random heads off, lowest to highest seed. Random updates have no gain, "
+           "so r, steering and neuron shares have no random reference. Effects as in P2.54: mechanism = mean of the "
+           "copy-head corners minus mean of the new-lookup corners, prior = high minus low, band = largest seed range.")  # fmt: skip
+
+
 if __name__ == "__main__":
     main()
+    cued_main()

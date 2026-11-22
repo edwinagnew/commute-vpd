@@ -50,6 +50,19 @@ def bijection(name: str, marker: int, keys: tuple[int, ...], pool: list[int], se
     return KVTask(name, marker, keys, tuple(values))
 
 
+def bijection_from_pools(name: str, marker: int, keys: tuple[int, ...], pools: dict[str, list[int]], seed: int,
+                         ok: Any = None) -> tuple[KVTask, str] | None:  # fmt: skip
+    """`bijection` from the first pool (in order) that serves every key, and that pool's name; None if none does. E58
+    Amendment 6's draw (experiments/open_pair/amend6.py `draw`, which keeps its own copy, seed 0, as it ran) with the
+    seed a parameter (P2.57's second prior-matched cipher)."""
+    for pool_name, pool in pools.items():
+        try:
+            return bijection(name, marker, keys, pool, seed, ok), pool_name
+        except AssertionError:
+            continue
+    return None
+
+
 def pick_marker(counts: dict[int, int], decode: Any, vocab: int) -> int:
     """The lowest-id token with no occurrence in the mined rows that decodes to 1-3 printable ASCII characters with no
     letter, digit or whitespace: a cue the model has no associations for."""
