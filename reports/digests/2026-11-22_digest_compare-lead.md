@@ -31,3 +31,21 @@
 **Friction:** check.py is not executable as the shell notes say.
 
 **Why finished:** both cells are filled. The next work waits on the user's answer to proposal 56.
+
+## Late afternoon, 2026-11-22
+
+**Cells:** P2.60 (due 11-23) is filled: 2 of 2 runs used, E266 and E267, both descriptive (the user approved proposals 56, 57 and 58). No asks are open.
+
+**P2.60, checks of the lens column ($0):** the lens's agreement with the definition on the built pairs is real, but it does not carry over to other states.
+- An independent recompute from the item files reproduced the lens's 0.83 and every other baseline's correlation exactly.
+- E266, the KL control: KL explains almost none of the lens score. The rank correlation with the definition's KL-adjusted gaps is 0.70.
+- E267, cluster job 63454: the lens does not separate copy from prior-matched ciphers (p 0.44 and 0.22), where all eight cheap readings did in P2.57. On procedural fine-tunes its partial rank correlation with the definition given KL is -0.31, on 20 states.
+- For claim 2: cite the lens as a built-pair result only. writeup-lead has a three-line note.
+- The premise check reads "doubtful": the built-pair, prior-matched and procedural sets order the methods differently, so which set a method's ranking rests on is a question for the user's gate.
+- Page: reports/analyses/2026-11-22_analysis_p2-60-adl-checks.md.
+
+**Money:** $0. Cluster job 63454 ran; no pods.
+
+**Friction:** 1004, a brief of mine stated a rescaling claim without checking the code. Also, the numbers tool refuses `this` for a file written before the cell's first experiment number was claimed.
+
+**Why finished:** every cell is filled, and new work needs a new cell.
