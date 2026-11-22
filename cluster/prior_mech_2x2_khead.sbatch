@@ -1,11 +1,11 @@
 #!/bin/bash
-# E_TBD3 (cell P2.54) run 3: the k-head label. M's top k copy heads by E62's prefix score (k = 1, 2, 3, 5) switched
+# E252 (cell P2.55) run 1: the k-head label. M's top k copy heads by E62's prefix score (k = 1, 2, 3, 5) switched
 # off together, (2,4) with (1,1) as one more arm, and a k-matched null of 20 draws per k from outside the top 5 and
 # (1,1), on all 27 saved states of runs 1-2 (E62's 6, E237's 15, E250's 3 low-copy states and 3 random updates).
 # Nothing is trained. Rules experiments/prior_mech_2x2/results/predictions_khead.json (khead.py refuses unless it is
 # committed unchanged; PRED_SHA below = its sha256: recompute with `git show HEAD:<that path> | sha256sum` after
 # setting its "experiment"). Needs runs 1 and 2 finished (results/stage1/, results/stage2/head/, stage2/b.json).
-#   sbatch --comment=E_TBD3 cluster/prior_mech_2x2_khead.sbatch
+#   sbatch --comment=E252 cluster/prior_mech_2x2_khead.sbatch
 # Time (estimate, not yet run): E249's job took 34 s from start to DONE for 7 head sets on each of 21 states and M's 7
 # tasks, 196 read sets, so <= 0.17 s a read set (model load included). Here 84 head sets (nothing off, the pair, 4 top-k
 # sets, 18 + 20 + 20 + 20 null draws) on 27 items and M's 8 tasks = 2,940 read sets, plus ~120 in the controls (k = 1
@@ -32,7 +32,7 @@ for d in refit_96key induction_cue open_pair transport_test prior_mech_2x2; do
   test -L experiments/$d/results/large || { echo "experiments/$d/results/large is not linked: run ~/commute-agents/fleet/link-data ."; exit 1; }
 done
 rc=0
-( PRED_SHA=e322176bdb204be57b97cffe1de31b9de45199b49070577821d7a792a742978b .venv/bin/python experiments/prior_mech_2x2/khead.py ) 2>&1 \
+( PRED_SHA=02aed7867ae3b645587cb83da48d4edfb4ca004d4266723d9a60389d7161abe6 .venv/bin/python experiments/prior_mech_2x2/khead.py ) 2>&1 \
     | tee -a experiments/prior_mech_2x2/results/run3.log || rc=${PIPESTATUS[0]}
-echo "=== FINISHED E_TBD3 run 3 (exit $rc) — results in $COMMUTE_REPO/experiments/prior_mech_2x2/results/khead/ ==="
+echo "=== FINISHED E252 run 3 (exit $rc) — results in $COMMUTE_REPO/experiments/prior_mech_2x2/results/khead/ ==="
 exit $rc
