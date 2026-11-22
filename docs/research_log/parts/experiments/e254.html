@@ -1,0 +1,18 @@
+<article class="exp" id="e254">
+<div class="top"><span class="id">E254<span id="e255"></span> / E255</span><span class="chip held">held</span><h3>Do the cheap readings still split a copy task from a cipher when the base model finds both answers equally likely?</h3><span class="when">2026-11-21 · cell P2.57 (filled), runs 1 and 2, no independent check · <code>experiments/prior_matched</code></span></div>
+<p class="one"><strong>The question.</strong> The second claim, as softened on 2026-11-21, is that we have ways of following the mechanism that are better than just the prior. A pair of tasks that differ in mechanism but not in the base model's prior of the answer tests it: a reading that splits such a pair cannot be reading the prior.</p>
+<p class="one"><strong>What we did.</strong> Key copy, which the base model's copy heads can do, was fine-tuned against a cipher whose answers the base model finds about as likely (prior gap 0.20 decades; 1.6 for the ordinary cipher), at ten seeds each (E254). A second matched cipher, drawn with the first one's answers banned, was fine-tuned at three seeds and read against the same ten copy seeds (E255, gap 0.16). Each update was read eight ways: the copy-head switch-offs, the re-gating share, effective rank, pooled and per-key steering, and two neuron shares.</p>
+<p class="one"><strong>What we found.</strong> All eight readings put every copy seed apart from every cipher seed on both pairs (p 1.1e-5 on ten against ten, 0.007 on ten against three), with the filed signs. The share's gap is 0.41, about a hundred times its seed spread; pooled steering is twenty to thirty, the top three heads and effective rank about ten; the neuron share at matched size clears its spread only narrowly.</p>
+<p class="one"><strong>What it means.</strong> At matched prior the readings follow the copy-head label, not the prior, which backs the softened second claim. But the share, steering, effective rank and the head switch-offs all split every pair, so no one reading stands out. The pairs are one task family, key copy against ciphers.</p>
+<figure><img src="fig/e254_prior_matched_pairs.png" alt="Each reading's gap against the pair's prior gap"><figcaption><strong>Does each reading split the pair while the prior barely differs? Yes, seven of eight on every pair.</strong> Each marker is one reading's gap between the reused and the new task in units of its seed spread (grey), placed at the pair's prior gap; the right panel is the unmatched reference pair. Only the neuron share at matched size sits near its spread.</figcaption></figure>
+<dl class="fields">
+<dt>Run</dt><dd>Run 1 (E254, job 63108) ten seeds each of copy and the matched cipher; run 2 (E255, job 63110) three seeds of a second matched cipher; MATS cluster L40, about 22 and 10 minutes, no cost.</dd>
+<dt>Found</dt><dd><ul>
+<li>Every reading splits every pair with no seed overlap; per-key steering splits it the other way, as filed.</li>
+<li>The copy-head labels hold in both runs (copy 0.25 lost with (2,4) off, ciphers 0.001 and 0.002), and random updates read nothing.</li>
+<li>The neuron share at matched size clears its band only narrowly, and also on the unmatched reference pair, so it barely tracks the mechanism at any prior.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 3, the second claim: the cheap readings follow the mechanism at matched prior; none is singled out.</dd>
+<dt>Moved on</dt><dd>Next is a pair where steering or rank is expected to follow the prior and the share the mechanism, and the same test on Qwen3-1.7B. Record: <code>reports/analyses/2026-11-21_analysis_p2-57-prior-matched.md</code>; <code>experiments/prior_matched/results/a/summary.json</code>; <code>experiments/TRIED.md</code>.</dd>
+</dl>
+</article>
