@@ -37,5 +37,6 @@
     "x2": "b_mean 0.76 (its E_b 0.7617, P1.49) if behaviour weighs each member's left change as its write change does; pass share near 0 on the same reading, since no x2 member has an own explained write share of 0.9 or more (P1.49 T_b at 0.9: 0; at 0.8: 0.060). A pass share well above that says the unexplained part of the members' write changes is behaviourally inert",
     "random_size_241001, random_kl_241002": "b_mean about 0.01 (E_b 0.0109, 0.0109) and pass share about 0 (T_b at 0.8: 0): M's write at a gain explains about 1% of a random member's change",
     "x10, rebuilt, new_few, new_thin": "not filed; E_b 0.761, 0.631, 0.012, 0.019 beside"
-  }
+  },
+  "amendment_2026-11-21": "Before any scored read (E258 rehearsal, pod 01M80RDV7DK4J7VM1H5KPAC8ZB, stage 0): the do-nothing rule \"KL exactly 0.0\" read 1.7e-11 from fp rounding in the batched forward and stopped the job. The rule was mis-specified: CLAUDE.md asks every bar to come from a measured floor. Amended rule: the do-nothing KL max is at most the batched-vs-single floor measured in the same stage 0, converted to KL units (floor x KL(F||M) of the floor item; for the pairs, the smallest over the floor items). Both tolerances are reported: the filed exactly 0, and the amended floor (rehearsal: 2.8e-8 x 0.002992 = 8.3e-11). Everything else is unchanged. Approved under the standing rule for mis-specified controls (user 2026-10-29), relayed by the whip-lead 2026-11-21."
 }
