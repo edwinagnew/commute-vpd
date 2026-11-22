@@ -678,3 +678,4 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e248_changed_only_pairs.png": "experiments/kstar_vpd_wording_a/figures/changed_only_pairs.png"
 - "fig/e247_kstar_composition.png": "experiments/thin_edit_diagnosis/figures/kstar_composition.png"
 - "fig/e236_r_gap_gain_vs_full.png": "experiments/gain_only_r/figures/r_gap_gain_vs_full.png"
+- "fig/e245_pair_gaps.png": "experiments/sae_r_a/figures/pair_gaps.png"

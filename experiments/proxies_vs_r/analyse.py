@@ -15,7 +15,9 @@ section may be missing. r_a.py writes this form from E242's and E245's summaries
 Item sets: the six built edits (values), the nine built pairs (reuse side minus new side), the five 96-key tasks of
 E237 at one common update size (task means over seeds 0-2). Every proxy is oriented so that higher reads as reuse by
 its own definition. A missing reading is None ("not read"), never imputed. Ranks tie values equal to 6 significant
-figures (x2 and moved share one size; x2 and x10 one effective rank, by construction). Writes results/table_<name>.json
+figures (x2 and moved share one size; x2 and x10 one effective rank, by construction). Each proxy row also carries
+vs_R_partial: its Spearman with R with the prior (pairs, key) or update size (built, pairs) partialled out, on ranks,
+n 4 to 9, so a description. Writes results/table_<name>.json
 and figures/proxies_vs_r_<name>.png.
 """
 
@@ -43,6 +45,7 @@ KEY = ("copy", "rank1", "elicit", "cipher", "prior_cipher")
 SETS = ("built", "pairs", "key")
 PROXIES = {  # name: (label, built from the VPD decomposition; circular only when R is at VPD too)
     "r": ("re-gating share, log-odds form", True),
+    "kl_share": ("re-gating share, KL form", True),
     "prior": ("original model's prior on the answer", False),
     "S": ("P1.45's S, re-gated VPD pieces", True),
     "S_c": ("P1.45's S with VPD's floor off", True),
@@ -50,6 +53,7 @@ PROXIES = {  # name: (label, built from the VPD decomposition; circular only whe
     "erank": ("update's effective rank", False),
     "steering": ("steering share", False),
     "crosscoder": ("crosscoder, Minder et al.", False),
+    "reach": ("gain-only reach (E231)", False),
 }
 Series = dict[str, float | None]
 
@@ -80,14 +84,15 @@ def r_normalised() -> dict[str, Series]:
     return {"built": p143["known"]["N"], "pairs": p143["pairs_N"]["gaps"], "key": {}}
 
 
-def r_source(arg: str) -> tuple[str, dict[str, Series], str]:
-    """(name, R by item set, featurization R is built on: "vpd" for the built-in sources, else the JSON's own)."""
+def r_source(arg: str) -> tuple[str, dict[str, Series], str, str | None]:
+    """(name, R by item set, featurization R is built on: "vpd" for the built-in sources, else the JSON's own, and the
+    JSON's own random-band note if it gives one, which replaces the R row's E237 band)."""
     if arg == "size_removed":
-        return arg, r_size_removed(), "vpd"
+        return arg, r_size_removed(), "vpd", None
     if arg == "normalised":
-        return arg, r_normalised(), "vpd"
+        return arg, r_normalised(), "vpd", None
     d = json.loads(Path(arg).read_text())
-    return d["name"], {s: d.get(s, {}) for s in SETS}, d.get("featurization", "vpd")
+    return d["name"], {s: d.get(s, {}) for s in SETS}, d.get("featurization", "vpd"), d.get("random")
 
 
 # ---- proxies, each oriented higher = reuse ---------------------------------------------------------------------------
@@ -121,7 +126,28 @@ def proxies() -> dict[str, dict[str, Series]]:
         "steering": {"built": {}, "pairs": per_pair(cells("pair", "matched_gap", e187, reading="steering")), "key": {}},
         "crosscoder": {"built": {}, "key": {},
                        "pairs": per_pair({names[c["row"]]: c["gap"] for c in cc if c["column"] == "crosscoder_matched"})},
+        # E228's KL-form gaps are read on the unscaled states, not E187's size-matched ones (no matched KL reading saved)
+        "kl_share": {"built": load("random_kl_share/results/known_answer/score.json")["rules"]["kl_share"]["values"],
+                     "pairs": per_pair({p: v["kl_share"]["gap"] for p, v in load("random_kl_share/results/score.json")["pairs"].items()}),
+                     "key": key_mean("kl_share")},
+        "reach": {"built": {}, "pairs": reach_gaps(), "key": {}},
     }  # fmt: skip
+    return out
+
+
+def reach_gaps() -> Series:
+    """E231's gain-only reach (the KL-trained gains' reach, the reading its filed rule P1 scores): reuse-side mean minus
+    new-side mean per pair; None where a side has an item not scored "ok"."""
+    pairs = load("gain_only/results/score.json")["pairs"]
+
+    def side(d: dict[str, Any]) -> float | None:
+        recs = [v["kl"] for v in d.values()]
+        return fmean(r["reach"] for r in recs) if recs and all(r["status"] == "ok" for r in recs) else None
+
+    out: Series = {}
+    for p in PAIRS:
+        a, b = (side(pairs[p][k]) for k in ("reuse", "new")) if p in pairs else (None, None)
+        out[f"e187_{p}"] = None if a is None or b is None else a - b
     return out
 
 
@@ -175,6 +201,21 @@ def spearman(a: Series, b: Series) -> dict[str, Any]:
     return {"rho": rho, "n": len(ids), "items": ids}
 
 
+def partial_spearman(a: Series, b: Series, z: Series) -> dict[str, Any]:
+    """Spearman of a with b with z partialled out: the partial Pearson correlation of the three rank vectors, on the
+    items all three read. None below 4 items or when z's ranks fix a or b exactly (no variance left)."""
+    ids = [i for i in common(a, b) if z.get(i) is not None]
+    if len(ids) < 4:
+        return {"rho": None, "n": len(ids), "items": ids}
+    ranks = [rankdata([float(f"{d[i]:.6g}") for i in ids]) for d in (a, b, z)]
+    if any(rk.std() == 0 for rk in ranks):
+        return {"rho": None, "n": len(ids), "items": ids}
+    c = np.corrcoef(ranks)
+    den = math.sqrt((1 - c[0, 2] ** 2) * (1 - c[1, 2] ** 2))
+    rho = None if den < 1e-9 else float((c[0, 1] - c[0, 2] * c[1, 2]) / den)
+    return {"rho": rho, "n": len(ids), "items": ids}
+
+
 def inside(values: list[float], lo: float, hi: float) -> str:
     return f"{sum(lo <= v <= hi for v in values)} of {len(values)}"
 
@@ -194,6 +235,7 @@ def random_column() -> dict[str, str]:
     return {"r": "not defined: no random change gains 1 log-odds on the answer (E228)", "prior": "does not apply: a property of the task",
             "S": gating_random("S"), "S_c": gating_random("S_c"), "size": "matched by construction", "erank": kg("erank"), "steering": "not read",
             "crosscoder": inside(b["gauss_specific"], min(ft), max(ft)) + " inside, one pair, last block (E235)",
+            "kl_share": kg("kl_share"), "reach": "not read",
             "R": kg("R_vpd") + " (key tasks: R at VPD as filed, equal sizes, so size removal keeps the order)"}  # fmt: skip
 
 
@@ -206,6 +248,9 @@ def table(r: dict[str, Series], px: dict[str, dict[str, Series]], feat: str) -> 
                                "circular": PROXIES.get(name, ("", True))[1] and feat == "vpd", "random_inside_finetune_range": rnd[name]}  # fmt: skip
         if name != "R":
             row["vs_R"] = {s: spearman(sets.get(s, {}), r.get(s, {})) for s in SETS}
+            # size is read on built and pairs (key tasks are at one size), the prior on pairs and key (not on built)
+            row["vs_R_partial"] = {c: None if name == c else {s: partial_spearman(sets.get(s, {}), r.get(s, {}), px[c][s]) for s in ss}
+                                   for c, ss in (("prior", ("pairs", "key")), ("size", ("built", "pairs")))}  # fmt: skip
         row["vs_size"] = {s: spearman(sets.get(s, {}), size[s]) for s in ("built", "pairs")} if name != "size" else None
         row["vs_prior"] = {s: spearman(sets.get(s, {}), prior[s]) for s in ("pairs", "key")} if name != "prior" else None
         if name in GATING_READ:  # kept apart from the rank agreement with R
@@ -224,11 +269,11 @@ def scaled_ranks(d: Series, ids: list[str]) -> list[float]:
 
 
 def plot(name: str, rows: dict[str, Any], r: dict[str, Series]) -> Path:  # circular flags come from rows[p]["circular"]
-    fig, axes = F.figure((7.5, 6.5), ncols=3, nrows=3)
+    fig, axes = F.figure((7.5, 8.8), ncols=3, nrows=4)
     look = {"built": ("six built edits", "#0072B2", "o"), "pairs": ("nine built pairs, gap", "#D55E00", "s"),
             "key": ("five key tasks, equal size", "#009E73", "^")}  # fmt: skip
     data: list[dict[str, Any]] = []
-    for ax, p in zip(axes.flat, [*PROXIES, None], strict=True):
+    for ax, p in zip(axes.flat, [*PROXIES, *[None] * (axes.size - len(PROXIES))], strict=True):
         if p is None:
             ax.axis("off")
             continue
@@ -250,8 +295,8 @@ def plot(name: str, rows: dict[str, Any], r: dict[str, Series]) -> Path:  # circ
             ax.set_yticks([])
             continue
         ax.plot([0, 1], [0, 1], color="#bbbbbb", linewidth=0.8, label="ranks agree")
-        ax.set_xlabel("R rank in its item set", fontsize=7)
-        ax.set_ylabel("proxy rank in its item set", fontsize=7)
+        ax.set_xlabel("R rank in its item set (pairs: of the gap)", fontsize=7)
+        ax.set_ylabel("proxy rank (pairs: of the gap)", fontsize=7)
     handles, labels = axes.flat[0].get_legend_handles_labels()
     for ax in axes.flat[1:]:
         for h, lab in zip(*ax.get_legend_handles_labels(), strict=True):
@@ -259,7 +304,8 @@ def plot(name: str, rows: dict[str, Any], r: dict[str, Series]) -> Path:  # circ
                 handles.append(h)
                 labels.append(lab)
     axes.flat[-1].legend(handles, labels, loc="center", fontsize=7, frameon=False)
-    words = {"size_removed": "R with update size removed", "normalised": "size-normalised R"}.get(name, name)
+    words = {"size_removed": "R with update size removed", "normalised": "size-normalised R",
+             "r_a_vpd": "R under wording A at VPD", "r_a_sae": "R under wording A at the SAE"}.get(name, name)  # fmt: skip
     fig.suptitle(f"Which cheap proxies rank items the way {words} does? Ranks within each item set, 0 lowest", fontsize=9)
     return F.save(fig, HERE / "figures" / f"proxies_vs_r_{name}.png", data=data,
                   n="six built edits (one fine-tune each), nine built pairs (seed means per side), five key tasks (seeds 0-2); "
@@ -269,14 +315,19 @@ def plot(name: str, rows: dict[str, Any], r: dict[str, Series]) -> Path:  # circ
 def main(argv: list[str] | None = None) -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--r", default="size_removed", help="size_removed, normalised, or a JSON file (see the docstring)")
-    name, r, feat = r_source(ap.parse_args(argv).r)
+    name, r, feat, r_random = r_source(ap.parse_args(argv).r)
     rows = table(r, proxies(), feat)
+    if r_random:
+        rows["R"]["random_inside_finetune_range"] = r_random
     (HERE / "results").mkdir(parents=True, exist_ok=True)
     (HERE / "results" / f"table_{name}.json").write_text(json.dumps({"cell": "P2.51", "R": name, "rows": rows} if feat == "vpd" else {"cell": "P2.51", "R": name, "featurization": feat, "rows": rows}, indent=1))
     for p, row in rows.items():
         vs_r = {s: (v["rho"] if v["rho"] is None else round(v["rho"], 2), v["n"]) for s, v in row.get("vs_R", {}).items()}
         print(p, "vs R", vs_r, "| size", row["vs_size"] and {s: v["rho"] and round(v["rho"], 2) for s, v in row["vs_size"].items()},
               "| prior", row["vs_prior"] and {s: v["rho"] and round(v["rho"], 2) for s, v in row["vs_prior"].items()}, "|", row["random_inside_finetune_range"])  # fmt: skip
+        for c, part in (row.get("vs_R_partial") or {}).items():
+            if part:
+                print("   vs R, partial on", c, {s: (v["rho"] if v["rho"] is None else round(v["rho"], 2), v["n"]) for s, v in part.items()})
     print(plot(name, rows, r))
     return 0
 
