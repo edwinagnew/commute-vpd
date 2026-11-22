@@ -1,0 +1,60 @@
+{
+ "experiment": "E###",
+ "experiment_source": "the lead claims the E-number and sets it here before the run; run.py refuses stage0 and items until it reads E<digits>",
+ "cell": "P2.59",
+ "amendment": 1,
+ "date": "2026-11-22",
+ "amends": "experiments/adl/results/predictions.json (run 1, E264, cluster job 63409), which stays as filed and ran",
+ "plan": "reports/plans/2026-11-22_plan_p2-59-adl.md",
+ "descriptive": "a scorecard column (the user asked for the baseline); no reuse/new verdict under either wording of the definition",
+ "filed": "2026-11-22, after run 1's stage 0 and before any run of this amendment",
+ "change": "the positive control only: E53's lowercase_s0 (as the pair list builds it, the reuse side of e53_lowercase_cipher at c = 1, its saved update) replaces E237's copy_s0, and its random update is that pair side's random (e53_lowercase_cipher/random_reuse, finetune.random_direction of lowercase_s0 at seed 259006). Settings, the scalar D, the bars (inert 0.05, above the 64-direction max, above random + 3 sd) and the 129 items are run 1's, unchanged. If the control passes, the items run as filed, written under results/amend1/.",
+ "why": "run 1's control was mismatched to the lens: copy_s0 is a key-dependent change (each key maps to its own answer), and a mean over unrelated text cancels any change that is not one constant direction, which run 1's plan listed as a blind spot of D. It read D 0.0028 against a 64-direction max of 0.0048, with no answer token in the logit lens top 20 (reports/analyses/2026-11-22_analysis_e264-adl-stage0.md). Lowercasing is the same shift on every text (toward lowercase forms), the narrow constant-direction case the paper's organisms are; a constant vector already recovers 0.71 of its gain on the scorecard (E143's fair steering, pooled, experiments/holes_fill/results/stage1.json .states[\"e53/lowercase_s0\"].steering.pooled.share).",
+ "settings": {
+  "k": 5,
+  "pile_split": "val",
+  "n_pile": 8192,
+  "batch": 512,
+  "lens_top": 20,
+  "n_random_diffs": 64,
+  "random_diff_rows": 128,
+  "random_diff_len": 128,
+  "random_seed": 259001,
+  "settings_source": "run 1's filed settings, unchanged but the two control keys (experiments/adl/results/predictions.json)",
+  "control": "e53_lowercase_cipher/e53/lowercase_s0",
+  "control_random": "e53_lowercase_cipher/random_reuse",
+  "control_source": "the item list's names: E187's e53_lowercase_cipher pair, reuse side (the smaller side, c = 1), state e53/lowercase_s0 and that side's random update"
+ },
+ "thresholds": {
+  "gain_floor": 1.0,
+  "inert": 0.05,
+  "zero_tol": 1e-09,
+  "thresholds_e143_source": "run 1's: E143's filed gain_floor, inert and zero_tol (experiments/holes_fill/results/predictions.json)",
+  "reader_tol": 0.0001,
+  "reader_tol_source": "E147's reader_neuron_tol, as run 1",
+  "size_rel": 1e-06,
+  "size_rel_source": "E244's size_match_rel, as run 1",
+  "sd_mult": 3,
+  "sd_mult_source": "run 1's"
+ },
+ "repeat_gain": {
+  "value": 1.6721290016174317,
+  "tol": 0.0001,
+  "source": "E143",
+  "source_detail": "experiments/holes_fill/results/stage1.json .states[\"e53/lowercase_s0\"].gain: E143's Job.state gain, mean of holes_fill lo_at(dW) minus W0's on E136's read rows of e53/lowercase, the saved update unscaled, fp32 with TF32 off; run.py's gain() is the same lo_at on the same inventory (E187's pairs(), built from E136's), so the same path at the same size (c = 1). Bar: E147's reader_neuron_tol 1e-4, as run 1"
+ },
+ "stage0": {
+  "order": "first and alone; items refuse unless results/amend1/stage0.json says passed",
+  "do_nothing": "as run 1: E237's do-nothing (copy_s0 times 0, a zero change), read now on the control's task rows: max |delta_bar| <= zero_tol, every removed log-odds and the gain within zero_tol of 0; D nan",
+  "repeat": "the control's gain equals E143's 1.67213 within 1e-4",
+  "stop_rule": "as run 1: passed iff the do-nothing and the repeat hold AND D(control) >= 0.05 AND D(control) > the largest share of the 64 random-difference directions on the control AND D(control) >= D(control random) + 3 sd of those 64 shares. Otherwise stop; the cell closes with both controls failed (the lead decides).",
+  "lens_check": "reported, not a stop"
+ },
+ "expected": {
+  "do_nothing": {"dbar_max": 0.0, "removed": 0.0, "gain": 0.0, "D": "nan"},
+  "control": {"gain": 1.67213, "D_range": [0.05, 0.8], "lens_relevance_max": ">= 0.10 (two of the top 20 are answer tokens at some position; the task has 296 distinct answer tokens on its 500 read rows, measured on CPU 2026-11-22, so chance is 0.12 tokens of 20 and a best rank near 169); best answer rank < 169", "confidence": "medium: a constant vector recovers 0.71 of this gain at the answer position (E143), but D reverts only one direction at block 2 found on positions 0-4 of other text, and the gain is small (1.67, near the floor of 1), so the 64-direction spread over it is larger than run 1's"},
+  "control_random_update": {"D": "|D| < 0.02 (its gain is about 0; over G = 1.67 rather than run 1's 16.45 the same noise reads about ten times larger)", "lens_relevance_max": "at chance"},
+  "random_diffs": {"mean": "about 0", "sd": "< 0.01", "max": "< 0.04"},
+  "items": "as run 1 filed (experiments/adl/results/predictions.json expected)"
+ }
+}

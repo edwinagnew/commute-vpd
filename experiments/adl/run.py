@@ -23,9 +23,11 @@ pair side (a Gaussian at the side's first state's per-matrix norms, `finetune.ra
   items I/N  refuses unless stage0.json says passed; every N-th item from the I-th; a rerun skips written items
   column     CPU, no model: results/column.json, the scorecard's shape (reuse, new, gap, seed-range call per pair)
 
-    PRED_SHA=<sha> python experiments/adl/run.py stage0
-    PRED_SHA=<sha> python experiments/adl/run.py items 0/1
-    python experiments/adl/run.py column
+    PRED_SHA=<sha> python experiments/adl/run.py stage0 [--amend amend1]
+    PRED_SHA=<sha> python experiments/adl/run.py items 0/1 [--amend amend1]
+    python experiments/adl/run.py column [--amend amend1]
+Amendment 1 (2026-11-22, results/amend1/): run 1's control (E237's copy_s0, a key-dependent change) failed stage 0;
+the control becomes E53's lowercase_s0 as the pair list builds it, with its own filed gain reference; all else as filed.
 """
 
 from __future__ import annotations
@@ -60,12 +62,22 @@ SMR: Any = load_experiment("size_matched", "run")  # E187: pairs(), times, BUILT
 HF, KG = KGB.HF, KGB.KG
 HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"
-PRED, ITEMS, STAGE0 = RESULTS / "predictions.json", RESULTS / "items", RESULTS / "stage0.json"
-EXPERIMENT = json.loads(PRED.read_text())["experiment"]
+OUT, PRED, ITEMS, STAGE0, EXPERIMENT = RESULTS, RESULTS / "predictions.json", RESULTS / "items", RESULTS / "stage0.json", ""
 M67 = EXPERIMENTS / "size_matched" / "results" / "m67.json"
 E244_NEURON = EXPERIMENTS / "key_grid_baselines" / "results" / "run" / "neuron_0_1.json"
 E143_PRED = EXPERIMENTS / "holes_fill" / "results" / "predictions.json"
 log, fname = KGB.log, KGB.fname
+
+
+def use(amend: str | None) -> None:
+    """Point the run at results/ (run 1) or results/<amend>/: its predictions.json, and every file it writes there."""
+    global OUT, PRED, ITEMS, STAGE0, EXPERIMENT
+    OUT = RESULTS / amend if amend else RESULTS
+    PRED, ITEMS, STAGE0 = OUT / "predictions.json", OUT / "items", OUT / "stage0.json"
+    EXPERIMENT = json.loads(PRED.read_text())["experiment"]
+
+
+use(None)
 
 
 def read(path: Path) -> Any:
@@ -90,12 +102,11 @@ class Config:  # filed in predictions.json "settings"
     random_diff_rows: int  # texts they are drawn from (first random_diff_len positions of each)
     random_diff_len: int
     random_seed: int  # the random-difference draw; pair-side random update i draws with random_seed + 1 + i
-    control: str  # the positive control: an E237 item
-    control_random: str  # its random update (E237's)
+    control: str  # the positive control: an item of the list (stage 0 looks it up)
+    control_random: str  # its random update: an item of the list
 
     def __post_init__(self) -> None:
         assert self.k >= 1 and self.n_pile >= self.batch >= 1 and self.lens_top >= 1 and self.n_random_diffs >= 2
-        assert self.control_random == "random_" + self.control.removesuffix("_scaled")
 
 
 @dataclass(frozen=True)
@@ -214,7 +225,8 @@ def write_item(rec: dict[str, Any]) -> None:
 # ---- stage 0 ----------------------------------------------------------------------------------------------------------
 
 
-def stage0(w: World) -> bool:
+def stage0(w: World, ref: dict[str, Any]) -> bool:
+    """ref: the control's saved gain ("value"), its bar ("tol") and where it was read ("source")."""
     cfg, th, miss = w.cfg, w.th, list[str]()
     out: dict[str, Any] = {"experiment": EXPERIMENT}
     ctrl, rnd = w.items[cfg.control], w.items[cfg.control_random]
@@ -226,9 +238,8 @@ def stage0(w: World) -> bool:
     miss += [f"do-nothing not exactly 0: {zero}"] if max(abs(x) for x in zero) > th["zero_tol"] else []
     log(f"[stage0 do-nothing] {json.dumps(out['do_nothing'])}")
     rc, rr = read_item(w, ctrl), read_item(w, rnd)
-    saved = read(E244_NEURON)["items"][cfg.control]["gain"]
-    out["repeat_gain"] = {"got": rc["gain"], "E244": saved, "bar": th["reader_tol"]}
-    miss += [f"control gain {rc['gain']} is not E244's {saved}"] if abs(rc["gain"] - saved) > th["reader_tol"] else []
+    out["repeat_gain"] = {"got": rc["gain"], **ref}
+    miss += [f"control gain {rc['gain']} is not {ref['source']}'s {ref['value']}"] if abs(rc["gain"] - ref["value"]) > ref["tol"] else []
     gen = torch.Generator().manual_seed(cfg.random_seed)
     R = ADL.random_diffs(w.net, w.pile[: cfg.random_diff_rows, : cfg.random_diff_len], cfg.n_random_diffs, gen)
     dW = w.change(ctrl)[0]
@@ -277,7 +288,7 @@ def column(cfg: Config) -> None:
     for task in kg.cfg.tasks:
         mine = [it for it in items.values() if it.group == "keys" and it.state.startswith(f"e58/{task}_s")]
         keys[task] = {"D": [D(it.name) for it in mine if not it.random], "random": [D(it.name) for it in mine if it.random]}
-    dump(RESULTS / "column.json", {"experiment": EXPERIMENT, "cells": cells, "keys": keys, "missing": missing})
+    dump(OUT / "column.json", {"experiment": EXPERIMENT, "cells": cells, "keys": keys, "missing": missing})
     log(f"column: {len(cells)} pairs, {len(keys)} key tasks, {len(missing)} items missing; gaps {[round(c['gap'], 4) for c in cells]}")
 
 
@@ -294,8 +305,9 @@ def main(stage: str, shard: tuple[int, int]) -> int:
     torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False  # fp32, as E143 and E244 read
     log(f"{EXPERIMENT} {stage} {shard[0]}/{shard[1]}; settings {asdict(cfg)}; thresholds {th}")
     w = World(cfg, th)
-    if stage == "stage0":
-        code = 0 if stage0(w) else 1
+    if stage == "stage0":  # run 1 repeated E244's saved gain; an amendment files its own reference
+        ref = P.get("repeat_gain") or {"value": read(E244_NEURON)["items"][cfg.control]["gain"], "tol": th["reader_tol"], "source": "E244"}
+        code = 0 if stage0(w, ref) else 1
     else:
         todo = [it for it in list(w.items.values())[shard[0] :: shard[1]] if not (ITEMS / f"{fname(it.name)}.json").is_file()]
         t0 = time.time()
@@ -311,7 +323,9 @@ if __name__ == "__main__":
     ap = argparse.ArgumentParser()
     ap.add_argument("stage", choices=["stage0", "items", "column"])
     ap.add_argument("part", nargs="?", default="0/1", help="items: I/N, every N-th item from the I-th")
+    ap.add_argument("--amend", default=None, help="read results/<amend>/predictions.json and write under results/<amend>/")
     a = ap.parse_args()
+    use(a.amend)
     require_filed(PRED)
     i, n = (int(x) for x in a.part.split("/"))
     code = 1
