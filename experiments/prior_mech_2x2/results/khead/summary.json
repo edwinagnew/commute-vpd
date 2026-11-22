@@ -1,0 +1,151 @@
+{
+ "experiment": "E252",
+ "by_k": {
+  "1": {
+   "task_mean_share": {
+    "e62/copy": 0.5263408078635873,
+    "e62/lookup": -0.0023295121850948806,
+    "e58/copy": 0.2482620538813768,
+    "e58/rank1": 0.007408537488316343,
+    "e58/elicit": 0.0019767128550843096,
+    "e58/cipher": 0.003893975955215715,
+    "e58/prior_cipher": 0.00010953566124756915,
+    "e58/lowcopy": 0.21995318706153857,
+    "random/e58/lowcopy": "nan"
+   },
+   "null_band": 0.05712690750053229,
+   "corners_labelled": {
+    "copy": "holds",
+    "lowcopy": "holds",
+    "ciphers": "holds"
+   },
+   "two_by_two": {
+    "corner_mean": {
+     "copy": 0.2482620538813768,
+     "prior_cipher": 0.00010953566124756915,
+     "lowcopy": 0.21995318706153857,
+     "cipher": 0.003893975955215715
+    },
+    "mechanism_effect": 0.23210586466322602,
+    "prior_effect": 0.012262213262935038,
+    "band": 0.08131188780635656,
+    "follows": "mechanism"
+   }
+  },
+  "2": {
+   "task_mean_share": {
+    "e62/copy": 0.6929020970363334,
+    "e62/lookup": 0.00637893073539982,
+    "e58/copy": 0.2986146918166867,
+    "e58/rank1": 0.008891824528086087,
+    "e58/elicit": 0.010485920177381406,
+    "e58/cipher": 0.017481347208334424,
+    "e58/prior_cipher": 0.008179311864705996,
+    "e58/lowcopy": 0.26956911151643714,
+    "random/e58/lowcopy": "nan"
+   },
+   "null_band": 0.1147622363934131,
+   "corners_labelled": {
+    "copy": "holds",
+    "lowcopy": "holds",
+    "ciphers": "holds"
+   },
+   "two_by_two": {
+    "corner_mean": {
+     "copy": 0.2986146918166867,
+     "prior_cipher": 0.008179311864705996,
+     "lowcopy": 0.26956911151643714,
+     "cipher": 0.017481347208334424
+    },
+    "mechanism_effect": 0.27126157213004176,
+    "prior_effect": 0.009871772478310567,
+    "band": 0.08446652538431554,
+    "follows": "mechanism"
+   }
+  },
+  "3": {
+   "task_mean_share": {
+    "e62/copy": 0.8006969084595207,
+    "e62/lookup": 0.004642051172513299,
+    "e58/copy": 0.5193697278061126,
+    "e58/rank1": 0.02094303357729173,
+    "e58/elicit": 0.0276878146291936,
+    "e58/cipher": 0.0460925126592349,
+    "e58/prior_cipher": 0.023653695140360604,
+    "e58/lowcopy": 0.4924728543313604,
+    "random/e58/lowcopy": "nan"
+   },
+   "null_band": 0.1636017463627465,
+   "corners_labelled": {
+    "copy": "holds",
+    "lowcopy": "holds",
+    "ciphers": "holds"
+   },
+   "two_by_two": {
+    "corner_mean": {
+     "copy": 0.5193697278061126,
+     "prior_cipher": 0.023653695140360604,
+     "lowcopy": 0.4924728543313604,
+     "cipher": 0.0460925126592349
+    },
+    "mechanism_effect": 0.47104818716893876,
+    "prior_effect": 0.002229027977938957,
+    "band": 0.06095423562673352,
+    "follows": "mechanism"
+   }
+  },
+  "5": {
+   "task_mean_share": {
+    "e62/copy": 1.0313234072547066,
+    "e62/lookup": 0.07188851854609886,
+    "e58/copy": 0.7767590666649599,
+    "e58/rank1": -0.0011120804723980804,
+    "e58/elicit": 0.043646641457800284,
+    "e58/cipher": 0.057515068651517565,
+    "e58/prior_cipher": 0.05313271919983257,
+    "e58/lowcopy": 0.6561248069142124,
+    "random/e58/lowcopy": "nan"
+   },
+   "null_band": 0.297464515903492,
+   "corners_labelled": {
+    "copy": "holds",
+    "lowcopy": "holds",
+    "ciphers": "holds"
+   },
+   "two_by_two": {
+    "corner_mean": {
+     "copy": 0.7767590666649599,
+     "prior_cipher": 0.05313271919983257,
+     "lowcopy": 0.6561248069142124,
+     "cipher": 0.057515068651517565
+    },
+    "mechanism_effect": 0.6611180428639111,
+    "prior_effect": 0.05812595514953123,
+    "band": 0.040996943032711286,
+    "follows": "mechanism"
+   }
+  }
+ },
+ "rules": {
+  "K1_copy_and_lowcopy_k3_in_band": "misses",
+  "K2_e62_copy_k3_in_band": "holds",
+  "K3_not_via_under_bar_every_k": "misses",
+  "K4_null_band_under_bar_every_k": "misses",
+  "K5_copy_k5_not_under_stop": "holds",
+  "K6_random_updates_under_gain_gate": "holds",
+  "pair_task_mean_share": {
+   "e62/copy": 0.7123757942045624,
+   "e62/lookup": 0.058797499779996376,
+   "e58/copy": 0.43821978367161224,
+   "e58/rank1": 0.1458649531726408,
+   "e58/elicit": 0.12458906692363166,
+   "e58/cipher": 0.13438932372656423,
+   "e58/prior_cipher": 0.11539275142687085,
+   "e58/lowcopy": 0.38882659921678875,
+   "random/e58/lowcopy": "nan"
+  },
+  "K7_pair_costs_the_ciphers": "holds",
+  "best_k": 5,
+  "two_by_two_at_best_k": "mechanism"
+ }
+}
