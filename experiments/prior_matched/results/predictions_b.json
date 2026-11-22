@@ -1,0 +1,97 @@
+{
+ "experiment": "E255",
+ "cell": "P2.57",
+ "what": "A second prior-matched new task: a second cipher on copy's keys, built by E58 Amendment 6's rule for the prior-matched cipher with a new draw seed and with the first cipher's values banned, its answer prior within 0.3 decades of copy's. Three seeds and matched random updates, read as run A, against run A's 10 copy seeds. Does each reading split copy from this second matched cipher while the prior does not?",
+ "card": "~/commute-data/scratch/compare-lead/prior-matched-writer/card_b.md",
+ "settings": {
+  "seeds": [
+   0,
+   1,
+   2
+  ],
+  "seeds_source": "the cell: 3 seeds plus matched random",
+  "draw_seeds": [
+   1,
+   2,
+   3
+  ],
+  "draw_seeds_source": "kv.bijection's seed; 0 is Amendment 6's prior-matched cipher (rebuilt as the control); tried in order, the first whose read-row prior is within prior_tol of copy's is used",
+  "prior_band": [
+   2e-05,
+   0.0002
+  ],
+  "prior_band_source": "Amendment 6's band (experiments/open_pair/results/predictions_amend6.json settings.band), unchanged",
+  "min_rank": 100,
+  "min_rank_source": "Amendment 6's min_rank, unchanged",
+  "split_seed": 0,
+  "split_seed_source": "Amendment 3's key split (96 trained / 32 held out, open_pair.split_keys), checked against amend3.json keys.held",
+  "prior_tol": 0.3,
+  "prior_tol_source": "the cell: |delta log10 prior| <= 0.3 against copy's, measured in stage a on the read rows (E133's path), with a stop if missed",
+  "random_seed": 257101,
+  "random_seed_source": "a new seed (run A's 257001); state i takes random_seed + i"
+ },
+ "thresholds": {
+  "share_new_max": 0.2,
+  "share_new_max_source": "P2.54 run 1's labels, as run A",
+  "alpha": 0.01,
+  "alpha_source": "as run A. At 10 seeds against 3 the smallest p is 2/286 = 0.007 and one swapped pair gives 4/286 = 0.014, so a call separates only with no overlap between the sides (tests/test_seed_rank.py)",
+  "expected_sign": {
+   "head_share": 1,
+   "k3_share": 1,
+   "r": 1,
+   "erank": 1,
+   "steering_pooled": 1,
+   "steering_perkey": -1,
+   "neuron_k64": 1,
+   "neuron_kmatched": 1
+  },
+  "expected_sign_source": "as run A (E237's copy minus prior_cipher)",
+  "p_learn": 0.5,
+  "p_learn_source": "E12's P_LEARN at step 30; E147's prior_cipher read 0.936-0.961",
+  "prior_repro_rel": 0.0001,
+  "prior_repro_rel_source": "E133's stage-0 tol_rel on the prior path: the rebuilt prior-matched cipher's prior must repeat Amendment 6's 3.7262e-5"
+ },
+ "measurement": {
+  "build": "Amendment 3's elicit windows (sha256 checked), W0's geometric-mean P(token | M key) per key over every window (kv.key_distributions, fp32); a key may take value v when that prior is in prior_band and under the key's min_rank-th largest; kv.bijection_from_pools over E58's cipher pool (ranks 1000-2999) then every word-like token from rank 1000, minus the 128 keys, the elicit words and (for the second cipher) the first cipher's 128 values; cut by key (heldout_keys.split_task); the prior on the trained keys' read rows (prior_vs_share.forward_prior)",
+  "readings": "as run A (world.values), on the second cipher's read rows",
+  "gap": "mean over run A's 10 copy seeds minus mean over this task's 3 seeds",
+  "band": "run A's bands (its seeds 0-2), per reading",
+  "rank_test": "exact two-sided Mann-Whitney U, 10 against 3"
+ },
+ "rules": {
+  "B0_controls": "as run A's A0_controls",
+  "B0_build": "draw seed 0 gives Amendment 6's prior-matched cipher exactly (its 128 values, from the cipher pool) and its prior repeats 3.7262e-5 within prior_repro_rel; a later draw's prior within prior_tol of copy's (none: exit 1)",
+  "B0_do_nothing": "the zero update on the second cipher's read rows: as run A's A0_do_nothing",
+  "B1_learn": "each seed's held-out P(target) at step 30 >= p_learn (exit 1 otherwise)",
+  "B2_labels": "copy (run A) uses the head; the second cipher's mean (2,4) share <= share_new_max; else every call is not_read",
+  "B3_calls": "as run A's A3, copy's 10 seeds against these 3",
+  "B4_prior": "copy's log10 prior minus the second cipher's: the pair's prior gap, by construction within 0.3",
+  "B5_random": "as run A's A5"
+ },
+ "expected": {
+  "W0": "every reading over the gain undefined: every call not_read",
+  "do_nothing": "B0_do_nothing exactly; it cannot pass any B3 bar",
+  "control": "B0_controls pass; draw seed 0 repeats Amendment 6 exactly; B1 holds (P(target) ~0.94 as the first cipher); B2 holds (the first cipher read 0.0001); B5 holds",
+  "prior_gap": "the second cipher draws from what the band leaves after the first cipher's values, so its prior is expected near the first cipher's, log10 about -4.4 (-4.6 to -4.2); copy -4.23, so a gap of about +0.2 decades (0.0 to 0.3)",
+  "rival_a_mechanism": "the readings split copy from the second matched cipher as they split it from the first: head, k3, r, erank, steering pooled, neuron k64 separate with E237's sign and gaps near the first cipher's (0.25, 0.5-0.8, 0.40, 68, 0.57, 0.015), steering per-key with the sign reversed; neuron k matched near its band, either call",
+  "rival_b_prior": "the readings follow the prior, 0.2 decades apart: the first cipher's gaps belonged to that one table, and the second cipher reads like copy, gaps inside the band or overlapping seeds: does_not_separate",
+  "prior_reading": "the prior gap is under 0.3 decades and constant over seeds: does_not_separate under both rivals"
+ },
+ "stop_rules": {
+  "start": "run A's summary missing: exit 1 before any GPU work",
+  "stage0": "a control or the do-nothing missing: exit 1",
+  "build": "seed 0 does not repeat Amendment 6, or no draw seed brings the prior within prior_tol: exit 1 before any fine-tune",
+  "learn": "a seed under p_learn: exit 1"
+ },
+ "edge_cases": {
+  "pool_runs_out": "the cipher pool cannot serve every key with the first cipher's values banned: the draw falls back to every word-like token from rank 1000 (Amendment 6's fallback), and the pool used is recorded in a.json; neither pool: that seed is recorded as no draw and the next is tried",
+  "three_seeds": "with 3 seeds a side a call separates only with no overlap (alpha); the band is run A's, not this run's",
+  "nan_seed": "as run A",
+  "ties": "as run A",
+  "labels_miss": "as run A"
+ },
+ "blind_to": "as run A (predictions_a.json blind_to)",
+ "positive_control": "the rebuild of Amendment 6's prior-matched cipher (seed 0): same values, same prior; E237's readings of that cipher are the expected values for the mechanism rival",
+ "noise_floor": "run A's band per reading",
+ "time_estimate": "as run A's: load and controls ~40 s; the build (key distributions over Amendment 3's windows, KD.vocab's token counts, up to 4 draws with a prior each) ~60 s (E250's 20,000-window forward took 7 s); 3 fine-tunes x 11 s = 33 s; 7 items (3 states, 3 random, 1 do-nothing) x 46 s = 322 s. Sum ~460 s, about 8 min. Debug QoS, $0"
+}

@@ -1,0 +1,33 @@
+#!/bin/bash
+# E255 (cell P2.57) run B: a second prior-matched cipher on copy's keys (Amendment 6's rule, a new draw seed), 3
+# seeds and matched random updates, read as run A, against run A's 10 copy seeds. Needs run A finished (its summary and
+# copy items are read; run_b.py exits 1 at start otherwise): submit with --dependency=afterok:<run A's job id>.
+# Rules experiments/prior_matched/results/predictions_b.json (run_b.py refuses unless it is committed unchanged; set
+# PRED_SHA below after setting its "experiment": `git show HEAD:experiments/prior_matched/results/predictions_b.json | sha256sum`).
+#   sbatch --comment=E255 --dependency=afterok:<A> cluster/prior_matched_b.sbatch
+# Time, from measured logs (as run A's): load and controls ~40 s; the build (key distributions, token counts, up to 4
+# draws and priors) ~60 s; 3 fine-tunes x 11 s = 33 s; 7 items x 46 s = 322 s. Sum ~460 s, about 8 min; the 30 min
+# limit leaves 3x. $0. Peak GPU ~8 GB.
+#SBATCH --job-name=commute-prior-matched-b
+#SBATCH --partition=compute
+#SBATCH --account=c11
+#SBATCH --qos=debug
+#SBATCH --gres=gpu:1
+#SBATCH --cpus-per-task=4
+#SBATCH --mem=24G
+#SBATCH --time=00:30:00
+#SBATCH --output=cluster/logs/%x-%j.out
+
+set -euo pipefail
+source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # caches in /ephemeral/$USER; E12's Pile rows are artifacts/sets/train_0_32768.npy
+cd "$COMMUTE_REPO"
+echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
+export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
+for d in refit_96key induction_cue open_pair transport_test prior_mech_2x2 prior_matched; do
+  test -L experiments/$d/results/large || { echo "experiments/$d/results/large is not linked: run ~/commute-agents/fleet/link-data ."; exit 1; }
+done
+rc=0
+( PRED_SHA=7c11cf8a5d3ad23f31e91ca699d2bf0b42116dac362317622e45567614a646d9 .venv/bin/python experiments/prior_matched/run_b.py ) 2>&1 \
+    | tee -a experiments/prior_matched/results/run_b.log || rc=${PIPESTATUS[0]}
+echo "=== FINISHED prior-matched run B (exit $rc) — results in $COMMUTE_REPO/experiments/prior_matched/results/b/ ==="
+exit $rc
