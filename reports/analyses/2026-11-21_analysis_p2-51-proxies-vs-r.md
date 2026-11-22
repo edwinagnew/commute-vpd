@@ -3,8 +3,8 @@
 *Compare-lead, 2026-11-21, revised the same evening for R under wording A. Cell P2.51, no run, $0. Scripts
 `experiments/proxies_vs_r/analyse.py` and `r_a.py`; tables `experiments/proxies_vs_r/results/table_r_a_{vpd,sae}.json`;
 per-item rows `experiments/proxies_vs_r/figures/proxies_vs_r_r_a_{vpd,sae}.csv`. Five to nine items per set: a
-description, not a test. No rule was filed before reading. Later the same day also scored against definition (b): last
-section.*
+description, not a test. No rule was filed before reading. Later the same day also scored against definition (b): last two
+sections.*
 
 We took the reuse score under the adopted wording, read at two featurized models, and set ten cheap proxies beside it
 on six built edits, nine built pairs and five key tasks, all from saved readings. On the pairs every proxy that puts
@@ -286,3 +286,116 @@ almost no size matching.
 *Provenance: $E_b$ per item from `experiments/rb_states/results/summary_items.json` (built edits from
 `.built_reference_P1_49`, pairs `.pairs.<pair>.gap_E_b`, key tasks `.keys.<task>.E_b`, random updates `.randoms`,
 precision floor `.stage0.floor`) and `items/*.json`; R under wording A from `results/r_a_vpd.json`. CPU only, $0.*
+
+## Against the behavioural reading (E259), added 2026-11-21 late
+
+*Compare-lead, from saved files only, $0. Script `experiments/proxies_vs_r/r_b_behaviour.py`; results
+`experiments/proxies_vs_r/results/r_b_behaviour.json`; figure `experiments/proxies_vs_r/figures/rb_member_pairs_vs_random.png`.
+Readings from definition-lead's run, `experiments/rb_member_pairs/results/summary.json`. No rule was filed for this
+comparison: every number in this section is descriptive. The sections above are unchanged.*
+
+Definition-lead tested, part by part, whether the base model's own part, turned up or down, gives back a changed part's
+effect on the fine-tune's output, on three trained pairs. No sampled part passed the test, and on average a part got back
+at most a tenth of its effect, though half the fine-tunes read clearly above a random update. On all three pairs this
+behavioural reading orders the two sides as the write reading of the section above does. So the proxies score the same
+against both, and three pairs, each inside the seed spread, cannot rank them.
+
+### What was read
+
+**The behavioural reading.** For each changed part of the circuit that the base model's part may stand in for, the
+base part alone is swapped in, in the fine-tune's full forward pass. The output's KL divergence from the fine-tune's is
+read as a share of the base model's own divergence from it. It is read twice: with the base part as it is, $q_1$, which
+removes the part's change, and at the base part's fitted gain, $q$. A part's score is $b = 1 - q / q_1$. It reads 1
+when turning the base part up or down gives back all of the part's effect on the output, and 0 when it gives back none.
+
+The reading $\bar b$ is the mean of $b$ over the parts, each weighted by its write change. Parts whose effect $q_1$ is
+under the measurement floor are left out. A part passes when $q \le 0.1\, q_1$, and the pass share is the passing parts'
+weighted share. Both are estimated from 2,000 parts sampled uniformly per fine-tune, about a tenth of the changed
+parts, each with a sampling standard error.
+
+**The items.** Three of the nine pairs, every saved seed. Pair A is copy against lookup and pair B copy against the
+prior-matched cipher, three seeds a side. Pair C is lowercase, two seeds, against two cipher tasks, two seeds each. The
+larger side of each pair is scaled to the smaller side's update size. The reference is one random update at matched
+size, read the same way. The write share $E_b$ of the section above is read on the same fine-tunes.
+
+**The gaps.** Per pair, the reuse side's mean minus the new side's mean, as in the section above. The proxies' gaps
+are those of the earlier sections, unchanged.
+
+### Does the behavioural reading separate trained fine-tunes from a random update?
+
+![Both readings on every fine-tune of the three pairs, beside the random update](../../experiments/proxies_vs_r/figures/rb_member_pairs_vs_random.png)
+
+**Reading it.** On half of them, and by little. The random update reads 0.0075, with standard error 0.0020. The 18
+trained fine-tunes read from 0.0037 to 0.096. Half of them sit more than two standard errors above the random. All four
+cipher fine-tunes of pair C sit within two standard errors of it. No sampled part passed on any fine-tune: none of the
+23,655 parts read above the floor. The pass share is therefore 0 everywhere, the random update included, and says
+nothing about the pairs: for no part did the fitted gain remove nine tenths of its effect. On pairs A and B up to 0.25 of
+the write change sits in parts under the floor and is left out, against at most 0.003 on pair C. So the parts counted
+differ between pairs.
+
+### Do the two readings and the proxies agree on each pair's sign?
+
+| pair | $E_b$ gap | $\bar b$ gap | its standard error | largest seed range within one side, $\bar b$ |
+|---|---|---|---|---|
+| A, copy against lookup | −0.0040 | −0.023 | 0.0145 | 0.062 |
+| B, copy against prior-matched cipher | 0.0033 | 0.037 | 0.0147 | 0.049 |
+| C, lowercase against two ciphers | 0.0049 | 0.028 | 0.0150 | 0.026 |
+
+| sign of the gap, reuse minus new | A | B | C | matches both readings |
+|---|---|---|---|---|
+| $E_b$, write reading | − | + | + | itself |
+| $\bar b$, behavioural reading | − | + | + | itself |
+| R under wording A | + | + | + | 2 of 3 |
+| log-odds share | + | + | + | 2 of 3 |
+| KL share | + | + | + | 2 of 3 |
+| prior | + | + | + | 2 of 3 |
+| S | + | + | not read | 1 of 2 |
+| S, floor off | + | + | + | 2 of 3 |
+| update size, smaller is reuse | + | + | + | 2 of 3 |
+| effective rank | + | + | + | 2 of 3 |
+| steering | + | + | − | 1 of 3 |
+| crosscoder | − | − | − | 1 of 3 |
+| gain-only reach | + | − | + | 1 of 3 |
+
+**Reading it.** The two readings agree on all three signs, so every proxy scores the same against both. Both put the new
+side higher on pair A and the reuse side higher on B and C. Seven proxies and R under wording A put the reuse side higher
+on every pair, as the prior does, and so match on B and C and miss A. Steering, the crosscoder and gain-only reach each
+match on one pair. None of this ranks the proxies. The behavioural gaps are 2.5, 1.8 and −1.6 standard errors from
+zero, and the seeds of one side spread by up to 0.062, more than any gap. All three write gaps sit inside the random
+update's 0.011. Pair A, the one both readings put the other way, is also the pair whose sides' updates were closest
+before scaling: its size gap is 0.0014, against 0.0021 for both others.
+
+### What it means for claim 2
+
+Under the behavioural reading, half the trained fine-tunes read clearly above a random update. Yet on average a changed part
+gets back at most a tenth of its effect from the base part, so neither reading of definition (b) finds much reuse in
+trained fine-tunes. Its pair signs repeat the write reading's, so the conclusion of the section above stands. No proxy
+can yet be scored against definition (b) on trained pairs, and the one pair read the other way is again the one whose
+updates were most nearly equal.
+
+### How compelling is the evidence
+
+Three pairs, so a sign table and nothing more; no rank agreement is computed. The behavioural gaps sit at 1.6 to 2.5
+standard errors and inside the seed spread. Each fine-tune's reading rests on 2,000 sampled parts, and parts under the
+floor are left out, a share that differs by pair. The behavioural reading has no positive control here: no edit known to
+reuse the base model was read with it in a saved summary. Both readings use VPD's subcomponents, so the proxies built
+from VPD are circular against them as before.
+
+### Surprises
+
+None beyond what is above: the behavioural reading repeats the write reading's sign on every pair, including the
+reversed pair A.
+
+### Not run
+
+- A rule filed before reading: none; every number in this section is descriptive.
+- The other six pairs, the key tasks and the built edits under the behavioural reading: not read in definition-lead's run.
+- A positive control for the behavioural reading: the built-edit run has no saved summary in this clone.
+- Rank agreement over the three pairs: not computed at three points.
+- Parts under the floor: left out by the run's rule, not re-read.
+- More than one random update for the behavioural reading: one was read.
+
+*Provenance: per fine-tune $\bar b$, its standard error, the pass share and $E_b$ from
+`experiments/rb_member_pairs/results/summary.json` (`.items`); sides from `experiments/rb_states/results/summary_items.json`
+(`.pairs.<pair>.<side>.items`); proxy gaps from `analyse.proxies()` and R under wording A from `results/r_a_vpd.json`;
+all written to `experiments/proxies_vs_r/results/r_b_behaviour.json` by `r_b_behaviour.py`. CPU only, $0.*

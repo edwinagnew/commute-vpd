@@ -1,0 +1,371 @@
+{
+ "name": "r_b_behaviour",
+ "source": "experiments/rb_member_pairs/results/summary.json",
+ "floor": 2.7760764699654664e-08,
+ "tol": 0.1,
+ "pairs": {
+  "e187_e62_copy_lookup": {
+   "reuse": {
+    "n": 3,
+    "E_b": 0.03942559478546843,
+    "E_b_min": 0.03891387262399176,
+    "E_b_max": 0.04027488052012788,
+    "b_mean": 0.05145814958862749,
+    "b_mean_min": 0.022814384392009408,
+    "b_mean_max": 0.07638652457570187,
+    "b_mean_se": 0.005079800357590685,
+    "unread_floor_dd_share_max": 0.1184401556990533
+   },
+   "new": {
+    "n": 3,
+    "E_b": 0.04342708134192607,
+    "E_b_min": 0.04282791604959002,
+    "E_b_max": 0.04398736556409369,
+    "b_mean": 0.07449760793812606,
+    "b_mean_min": 0.03351101991518181,
+    "b_mean_max": 0.09597064119405324,
+    "b_mean_se": 0.01356707720688022,
+    "unread_floor_dd_share_max": 0.17311760401551488
+   },
+   "gap_E_b": -0.004001486556457642,
+   "gap_b_mean": -0.023039458349498568,
+   "gap_b_mean_se": 0.014486889093605543,
+   "gap_b_mean_over_se": -1.590366171828298
+  },
+  "e187_e58_copy_prior_cipher": {
+   "reuse": {
+    "n": 3,
+    "E_b": 0.03273513909810843,
+    "E_b_min": 0.031867050827854154,
+    "E_b_max": 0.03365486956309388,
+    "b_mean": 0.060483042438915974,
+    "b_mean_min": 0.04012293377097434,
+    "b_mean_max": 0.08880833727006456,
+    "b_mean_se": 0.014041936497994194,
+    "unread_floor_dd_share_max": 0.25154945626143904
+   },
+   "new": {
+    "n": 3,
+    "E_b": 0.02947921507674794,
+    "E_b_min": 0.029022396216319257,
+    "E_b_max": 0.02999621619006436,
+    "b_mean": 0.023258620505397096,
+    "b_mean_min": 0.010183429766853202,
+    "b_mean_max": 0.03330631185737803,
+    "b_mean_se": 0.00427062400636138,
+    "unread_floor_dd_share_max": 0.22886521990923045
+   },
+   "gap_E_b": 0.0032559240213604866,
+   "gap_b_mean": 0.03722442193351888,
+   "gap_b_mean_se": 0.014676995946630618,
+   "gap_b_mean_over_se": 2.536242570950934
+  },
+  "e187_e53_lowercase_cipher": {
+   "reuse": {
+    "n": 2,
+    "E_b": 0.025216802771177348,
+    "E_b_min": 0.023578630275548462,
+    "E_b_max": 0.026854975266806233,
+    "b_mean": 0.03604961280877031,
+    "b_mean_min": 0.023124400473742215,
+    "b_mean_max": 0.04897482514379841,
+    "b_mean_se": 0.014618968328441985,
+    "unread_floor_dd_share_max": 0.0029396047925826455
+   },
+   "new": {
+    "n": 4,
+    "E_b": 0.020362038374776494,
+    "E_b_min": 0.01496050425808142,
+    "E_b_max": 0.025180413679146394,
+    "b_mean": 0.008358214649393673,
+    "b_mean_min": 0.0036764647334332147,
+    "b_mean_max": 0.01601013173970218,
+    "b_mean_se": 0.0032392282324956697,
+    "unread_floor_dd_share_max": 1.95080232038851e-05
+   },
+   "gap_E_b": 0.004854764396400854,
+   "gap_b_mean": 0.027691398159376636,
+   "gap_b_mean_se": 0.01497353780942189,
+   "gap_b_mean_over_se": 1.849355744235154
+  }
+ },
+ "random": {
+  "random_b_mean": 0.0074809218518129775,
+  "random_b_mean_se": 0.002036859844330449,
+  "random_E_b": 0.01086520502018011,
+  "trained_n": 18,
+  "trained_b_min": 0.0036764647334332147,
+  "trained_b_max": 0.09597064119405324,
+  "trained_b_max_over_random": 12.828718585102592,
+  "n_above_random_2se": 9,
+  "z_min": -0.6811650463523835,
+  "z_max": 7.094388269377116,
+  "z": {
+   "e62/copy_s0": 7.094388269377116,
+   "e62/copy_s1": 1.6561819684418486,
+   "e62/copy_s2": 5.932317790570203,
+   "e62-lookup_s0_scaled_e62_copy_lookup": 3.082429268255583,
+   "e62-lookup_s1_scaled_e62_copy_lookup": 1.2613078971653022,
+   "e62-lookup_s2_scaled_e62_copy_lookup": 4.22728910260735,
+   "e58/copy_s0": 3.00474981750316,
+   "e58/copy_s1": 1.2269195672081992,
+   "e58/copy_s2": 2.4190051009764297,
+   "e58-prior_cipher_s0_scaled_e58_copy_prior_cipher": 2.2120270597419993,
+   "e58-prior_cipher_s1_scaled_e58_copy_prior_cipher": 4.22139509797922,
+   "e58-prior_cipher_s2_scaled_e58_copy_prior_cipher": 0.5977531225226278,
+   "e53/lowercase_s0": 1.4459652497623148,
+   "e53/lowercase_s1": 2.4835646324506824,
+   "e53-cipher_s0_scaled_e53_lowercase_cipher": 0.052786187546307116,
+   "e53-cipher_s1_scaled_e53_lowercase_cipher": -0.6811650463523835,
+   "e53-broad_cipher_s0_scaled_e53_lowercase_cipher": -0.12553678252940068,
+   "e53-broad_cipher_s1_scaled_e53_lowercase_cipher": 1.8265429940519544
+  },
+  "pass_share_max": 0.0,
+  "n_sampled_passed_total": 0,
+  "n_sampled_counted_total": 23655
+ },
+ "signs": {
+  "r": {
+   "gaps": {
+    "e187_e62_copy_lookup": 0.699732156575898,
+    "e187_e58_copy_prior_cipher": 0.4031197742800118,
+    "e187_e53_lowercase_cipher": 0.6285360548249446
+   },
+   "matches": {
+    "E_b": {
+     "e187_e62_copy_lookup": false,
+     "e187_e58_copy_prior_cipher": true,
+     "e187_e53_lowercase_cipher": true
+    },
+    "b_mean": {
+     "e187_e62_copy_lookup": false,
+     "e187_e58_copy_prior_cipher": true,
+     "e187_e53_lowercase_cipher": true
+    }
+   },
+   "n_match_E_b": 2,
+   "n_match_b_mean": 2,
+   "n_read": 3
+  },
+  "prior": {
+   "gaps": {
+    "e187_e62_copy_lookup": 0.12044966708098759,
+    "e187_e58_copy_prior_cipher": 0.20036933711180271,
+    "e187_e53_lowercase_cipher": 1.6285329210348936
+   },
+   "matches": {
+    "E_b": {
+     "e187_e62_copy_lookup": false,
+     "e187_e58_copy_prior_cipher": true,
+     "e187_e53_lowercase_cipher": true
+    },
+    "b_mean": {
+     "e187_e62_copy_lookup": false,
+     "e187_e58_copy_prior_cipher": true,
+     "e187_e53_lowercase_cipher": true
+    }
+   },
+   "n_match_E_b": 2,
+   "n_match_b_mean": 2,
+   "n_read": 3
+  },
+  "S": {
+   "gaps": {
+    "e187_e62_copy_lookup": 0.35000872968570346,
+    "e187_e58_copy_prior_cipher": 0.5967394253322351,
+    "e187_e53_lowercase_cipher": null
+   },
+   "matches": {
+    "E_b": {
+     "e187_e62_copy_lookup": false,
+     "e187_e58_copy_prior_cipher": true,
+     "e187_e53_lowercase_cipher": null
+    },
+    "b_mean": {
+     "e187_e62_copy_lookup": false,
+     "e187_e58_copy_prior_cipher": true,
+     "e187_e53_lowercase_cipher": null
+    }
+   },
+   "n_match_E_b": 1,
+   "n_match_b_mean": 1,
+   "n_read": 2
+  },
+  "S_c": {
+   "gaps": {
+    "e187_e62_copy_lookup": 0.3957078460519964,
+    "e187_e58_copy_prior_cipher": 0.5533796890253679,
+    "e187_e53_lowercase_cipher": 0.03696775830376153
+   },
+   "matches": {
+    "E_b": {
+     "e187_e62_copy_lookup": false,
+     "e187_e58_copy_prior_cipher": true,
+     "e187_e53_lowercase_cipher": true
+    },
+    "b_mean": {
+     "e187_e62_copy_lookup": false,
+     "e187_e58_copy_prior_cipher": true,
+     "e187_e53_lowercase_cipher": true
+    }
+   },
+   "n_match_E_b": 2,
+   "n_match_b_mean": 2,
+   "n_read": 3
+  },
+  "size": {
+   "gaps": {
+    "e187_e62_copy_lookup": 0.001413422933106004,
+    "e187_e58_copy_prior_cipher": 0.002061786924223502,
+    "e187_e53_lowercase_cipher": 0.0020953778933383363
+   },
+   "matches": {
+    "E_b": {
+     "e187_e62_copy_lookup": false,
+     "e187_e58_copy_prior_cipher": true,
+     "e187_e53_lowercase_cipher": true
+    },
+    "b_mean": {
+     "e187_e62_copy_lookup": false,
+     "e187_e58_copy_prior_cipher": true,
+     "e187_e53_lowercase_cipher": true
+    }
+   },
+   "n_match_E_b": 2,
+   "n_match_b_mean": 2,
+   "n_read": 3
+  },
+  "erank": {
+   "gaps": {
+    "e187_e62_copy_lookup": 0.05797893994365069,
+    "e187_e58_copy_prior_cipher": 0.06753877968147777,
+    "e187_e53_lowercase_cipher": 0.011454460271427547
+   },
+   "matches": {
+    "E_b": {
+     "e187_e62_copy_lookup": false,
+     "e187_e58_copy_prior_cipher": true,
+     "e187_e53_lowercase_cipher": true
+    },
+    "b_mean": {
+     "e187_e62_copy_lookup": false,
+     "e187_e58_copy_prior_cipher": true,
+     "e187_e53_lowercase_cipher": true
+    }
+   },
+   "n_match_E_b": 2,
+   "n_match_b_mean": 2,
+   "n_read": 3
+  },
+  "steering": {
+   "gaps": {
+    "e187_e62_copy_lookup": 0.39973596757596286,
+    "e187_e58_copy_prior_cipher": 0.5655351432785015,
+    "e187_e53_lowercase_cipher": -0.08122930544428508
+   },
+   "matches": {
+    "E_b": {
+     "e187_e62_copy_lookup": false,
+     "e187_e58_copy_prior_cipher": true,
+     "e187_e53_lowercase_cipher": false
+    },
+    "b_mean": {
+     "e187_e62_copy_lookup": false,
+     "e187_e58_copy_prior_cipher": true,
+     "e187_e53_lowercase_cipher": false
+    }
+   },
+   "n_match_E_b": 1,
+   "n_match_b_mean": 1,
+   "n_read": 3
+  },
+  "crosscoder": {
+   "gaps": {
+    "e187_e62_copy_lookup": -0.04046333164962801,
+    "e187_e58_copy_prior_cipher": -0.4563982078788393,
+    "e187_e53_lowercase_cipher": -0.12484266260242066
+   },
+   "matches": {
+    "E_b": {
+     "e187_e62_copy_lookup": true,
+     "e187_e58_copy_prior_cipher": false,
+     "e187_e53_lowercase_cipher": false
+    },
+    "b_mean": {
+     "e187_e62_copy_lookup": true,
+     "e187_e58_copy_prior_cipher": false,
+     "e187_e53_lowercase_cipher": false
+    }
+   },
+   "n_match_E_b": 1,
+   "n_match_b_mean": 1,
+   "n_read": 3
+  },
+  "kl_share": {
+   "gaps": {
+    "e187_e62_copy_lookup": 0.03591602631698687,
+    "e187_e58_copy_prior_cipher": 0.05650259663678725,
+    "e187_e53_lowercase_cipher": 0.016668907039983916
+   },
+   "matches": {
+    "E_b": {
+     "e187_e62_copy_lookup": false,
+     "e187_e58_copy_prior_cipher": true,
+     "e187_e53_lowercase_cipher": true
+    },
+    "b_mean": {
+     "e187_e62_copy_lookup": false,
+     "e187_e58_copy_prior_cipher": true,
+     "e187_e53_lowercase_cipher": true
+    }
+   },
+   "n_match_E_b": 2,
+   "n_match_b_mean": 2,
+   "n_read": 3
+  },
+  "reach": {
+   "gaps": {
+    "e187_e62_copy_lookup": 0.19468800930154578,
+    "e187_e58_copy_prior_cipher": -0.008820289512992907,
+    "e187_e53_lowercase_cipher": 0.3388871797556199
+   },
+   "matches": {
+    "E_b": {
+     "e187_e62_copy_lookup": false,
+     "e187_e58_copy_prior_cipher": false,
+     "e187_e53_lowercase_cipher": true
+    },
+    "b_mean": {
+     "e187_e62_copy_lookup": false,
+     "e187_e58_copy_prior_cipher": false,
+     "e187_e53_lowercase_cipher": true
+    }
+   },
+   "n_match_E_b": 1,
+   "n_match_b_mean": 1,
+   "n_read": 3
+  },
+  "R_A": {
+   "gaps": {
+    "e187_e62_copy_lookup": 0.12678278335906945,
+    "e187_e58_copy_prior_cipher": 0.23055068033417936,
+    "e187_e53_lowercase_cipher": 0.18748130140591002
+   },
+   "matches": {
+    "E_b": {
+     "e187_e62_copy_lookup": false,
+     "e187_e58_copy_prior_cipher": true,
+     "e187_e53_lowercase_cipher": true
+    },
+    "b_mean": {
+     "e187_e62_copy_lookup": false,
+     "e187_e58_copy_prior_cipher": true,
+     "e187_e53_lowercase_cipher": true
+    }
+   },
+   "n_match_E_b": 2,
+   "n_match_b_mean": 2,
+   "n_read": 3
+  }
+ }
+}
