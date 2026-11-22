@@ -1,7 +1,7 @@
 """P2.57's figure (no GPU): every prior-matched pair of a reused and a new task, one colour per pair. x is the pair's
 prior gap (M's log10 P(answer), reused minus new); y is each reading's gap (mean over the reused seeds minus mean over
 the new), in units of that reading's smallest gap that matters (E237's band: the larger 3-seed range of copy and the
-prior-matched cipher; k = 3 takes run A's, read at its seeds 0-2). One marker per reading; the bar is the seed-spread
+prior-matched cipher at seeds 0-2). One marker per reading; the bar is the seed-spread
 interval (lowest reused minus highest new, to highest reused minus lowest new). A reading that follows the prior sits
 inside the grey band (|y| <= 1) at these small x; one that follows the mechanism sits outside it.
 
@@ -60,16 +60,13 @@ def pairs() -> dict[str, tuple[float, Rows, Rows]]:
     if (f := EXPERIMENTS / "cued_copy" / "results" / "table.json").is_file():
         rows = W.read_json(f)["rows"]
         a, b = ([{k: T2.num(v) for k, v in r.items()} for r in rows[t]] for t in ("cuedcopy", "cipher"))
-        out["cued copy vs cipher (cued copy run)"] = (prior_gap(a, b), a, b)
+        out["cued copy vs cipher, 3 seeds (E253)"] = (prior_gap(a, b), a, b)
     return out
 
 
 def bands(ps: dict[str, tuple[float, Rows, Rows]]) -> dict[str, float]:
     _, a, b = ps["copy vs prior-matched cipher, 3 seeds (E237)"]
-    out = {p: W.band([r[p] for r in a], [r[p] for r in b]) for p in W.READINGS}
-    if (f := W.RESULTS / "a" / "summary.json").is_file():
-        out["k3_share"] = T2.num(W.read_json(f)["calls"]["k3_share"]["band"])
-    return out
+    return {p: W.band([r[p] for r in a], [r[p] for r in b]) for p in W.READINGS}
 
 
 def main() -> None:

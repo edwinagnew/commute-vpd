@@ -4,11 +4,22 @@
  "what": "A second prior-matched new task: a second cipher on copy's keys, built by E58 Amendment 6's rule for the prior-matched cipher with a new draw seed and with the first cipher's values banned, its answer prior within 0.3 decades of copy's. Three seeds and matched random updates, read as run A, against run A's 10 copy seeds. Does each reading split copy from this second matched cipher while the prior does not?",
  "card": "~/commute-data/scratch/compare-lead/prior-matched-writer/card_b.md",
  "settings": {
-  "seeds": [0, 1, 2],
+  "seeds": [
+   0,
+   1,
+   2
+  ],
   "seeds_source": "the cell: 3 seeds plus matched random",
-  "draw_seeds": [1, 2, 3],
+  "draw_seeds": [
+   1,
+   2,
+   3
+  ],
   "draw_seeds_source": "kv.bijection's seed; 0 is Amendment 6's prior-matched cipher (rebuilt as the control); tried in order, the first whose read-row prior is within prior_tol of copy's is used",
-  "prior_band": [2e-05, 0.0002],
+  "prior_band": [
+   2e-05,
+   0.0002
+  ],
   "prior_band_source": "Amendment 6's band (experiments/open_pair/results/predictions_amend6.json settings.band), unchanged",
   "min_rank": 100,
   "min_rank_source": "Amendment 6's min_rank, unchanged",
@@ -24,7 +35,16 @@
   "share_new_max_source": "P2.54 run 1's labels, as run A",
   "alpha": 0.01,
   "alpha_source": "as run A. At 10 seeds against 3 the smallest p is 2/286 = 0.007 and one swapped pair gives 4/286 = 0.014, so a call separates only with no overlap between the sides (tests/test_seed_rank.py)",
-  "expected_sign": {"head_share": 1, "k3_share": 1, "r": 1, "erank": 1, "steering_pooled": 1, "steering_perkey": -1, "neuron_k64": 1, "neuron_kmatched": 1},
+  "expected_sign": {
+   "head_share": 1,
+   "k3_share": 1,
+   "r": 1,
+   "erank": 1,
+   "steering_pooled": 1,
+   "steering_perkey": -1,
+   "neuron_k64": 1,
+   "neuron_kmatched": 1
+  },
   "expected_sign_source": "as run A (E237's copy minus prior_cipher)",
   "p_learn": 0.5,
   "p_learn_source": "E12's P_LEARN at step 30; E147's prior_cipher read 0.936-0.961",
@@ -73,5 +93,5 @@
  "blind_to": "as run A (predictions_a.json blind_to)",
  "positive_control": "the rebuild of Amendment 6's prior-matched cipher (seed 0): same values, same prior; E237's readings of that cipher are the expected values for the mechanism rival",
  "noise_floor": "run A's band per reading",
- "time_estimate": "from E250's log: model load and repeats 26 s; khead's M control ~170 s; the build: W0's key distributions over Amendment 3's windows and KD.vocab's token counts ~30 s (E250's 20,000-window forward took 7 s), up to 4 draws with a prior each ~20 s; 3 fine-tunes x 11 s = 33 s; split bases 13 s; 7 items (3 states, 3 random, 1 do-nothing) x ~42 s = 294 s; M's khead rows ~12 s. Sum ~600 s, about 10 min. Debug QoS, $0"
+ "time_estimate": "as run A's: load and controls ~40 s; the build (key distributions over Amendment 3's windows, KD.vocab's token counts, up to 4 draws with a prior each) ~60 s (E250's 20,000-window forward took 7 s); 3 fine-tunes x 11 s = 33 s; 7 items (3 states, 3 random, 1 do-nothing) x 46 s = 322 s. Sum ~460 s, about 8 min. Debug QoS, $0"
 }

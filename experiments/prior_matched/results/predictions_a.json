@@ -100,5 +100,5 @@
  },
  "positive_control": "E237's 3-seed readings of this very pair (the expected values); within this job, seeds 0-2 repeat E147's states bit for bit, so their readings repeat E237's up to the change in c",
  "noise_floor": "the band: the 3-seed seed range at seeds 0-2, this job (E237's measure)",
- "time_estimate": "from E250's measured log (prior_mech_2x2/results/run2.log): model load and repeats 26 s; khead's M control 83 induction reads at ~2 s, ~170 s; a 300-step fine-tune 11 s x 20 = 220 s; split bases 13 s; one item's holes_fill and r reads ~30 s, khead ~12 s (run 1's 7 head sets in 1 s, so 85 sets ~12 s), ~42 s x 27 items (20 states, 6 random, 1 do-nothing) = 1134 s; M's rows for khead once per task ~25 s. Sum ~1590 s, about 27 min. Debug QoS (2 h cap), $0"
+ "time_estimate": "from the measured logs: E252's khead job (prior_mech_2x2/results/run3.log: load 13 s, khead's M control 4 s, 6-17 s per item) and E253's cued copy (cued_copy/results/run.log: one item's khead, holes_fill and r reads 46 s, 19:23:52 -> 19:24:38; whole job 7 min); E250's run2.log: a 300-step fine-tune 11 s, split bases 13 s. Run A: load and controls ~40 s; 20 fine-tunes x 11 s = 220 s; 27 items (20 states, 6 random, 1 do-nothing) x 46 s = 1242 s. Sum ~1500 s, about 25 min. Debug QoS (2 h cap), $0"
 }

@@ -4,9 +4,9 @@
 # Rules experiments/prior_matched/results/predictions_a.json (run_a.py refuses unless it is committed unchanged; set
 # PRED_SHA below after setting its "experiment": `git show HEAD:experiments/prior_matched/results/predictions_a.json | sha256sum`).
 #   sbatch --comment=E### cluster/prior_matched_a.sbatch
-# Time, from E250's measured log (experiments/prior_mech_2x2/results/run2.log): load and repeats 26 s; khead's M control
-# 83 induction reads ~170 s; 20 fine-tunes x 11 s = 220 s; split bases 13 s; 27 items x ~42 s (holes_fill and r ~30 s,
-# khead's 85 head sets ~12 s) = 1134 s; khead's M rows ~25 s. Sum ~1590 s, about 27 min; the 60 min limit leaves 2x. $0.
+# Time, from measured logs: E253's cued copy (experiments/cued_copy/results/run.log) read one item (khead, holes_fill, r)
+# in 46 s; E252's khead control took 4 s; E250's fine-tune 11 s. Load and controls ~40 s; 20 fine-tunes x 11 s = 220 s;
+# 27 items x 46 s = 1242 s. Sum ~1500 s, about 25 min; the 60 min limit leaves 2x. $0.
 # Peak GPU ~8 GB (E250 7.74 GB).
 #SBATCH --job-name=commute-prior-matched-a
 #SBATCH --partition=compute

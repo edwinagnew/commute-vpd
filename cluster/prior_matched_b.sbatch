@@ -5,9 +5,9 @@
 # Rules experiments/prior_matched/results/predictions_b.json (run_b.py refuses unless it is committed unchanged; set
 # PRED_SHA below after setting its "experiment": `git show HEAD:experiments/prior_matched/results/predictions_b.json | sha256sum`).
 #   sbatch --comment=E### --dependency=afterok:<A> cluster/prior_matched_b.sbatch
-# Time, from E250's measured log: load and repeats 26 s; khead's M control ~170 s; the build (key distributions, token
-# counts, up to 4 draws and priors) ~50 s; 3 fine-tunes x 11 s = 33 s; split bases 13 s; 7 items x ~42 s = 294 s; khead's
-# M rows ~12 s. Sum ~600 s, about 10 min; the 30 min limit leaves 3x. $0. Peak GPU ~8 GB.
+# Time, from measured logs (as run A's): load and controls ~40 s; the build (key distributions, token counts, up to 4
+# draws and priors) ~60 s; 3 fine-tunes x 11 s = 33 s; 7 items x 46 s = 322 s. Sum ~460 s, about 8 min; the 30 min
+# limit leaves 3x. $0. Peak GPU ~8 GB.
 #SBATCH --job-name=commute-prior-matched-b
 #SBATCH --partition=compute
 #SBATCH --account=c11
