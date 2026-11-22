@@ -1,4 +1,4 @@
-"""E_TBD_B (cell P2.57) run B: a second prior-matched new task, a second cipher on copy's keys, read against run A's
+"""E255 (cell P2.57) run B: a second prior-matched new task, a second cipher on copy's keys, read against run A's
 10 copy seeds. It is built by E58 Amendment 6's rule for the prior-matched cipher, changing only the draw's seed and
 the values it may take: on Amendment 3's windows (only the table differs, as for every E58 map), each of the 128 keys
 takes a value from E58's cipher pool whose W0 geometric-mean P(value | M key) is in [2e-5, 2e-4] and under the key's
@@ -16,7 +16,7 @@ Rules and expected values in results/predictions_b.json (refuses unless committe
   c  the 3 states and their random updates                                               -> results/b/items/<item>.json
   score  run A's 10 copy seeds against these 3 (run A's bands)                           -> results/b/summary.json
 
-    sbatch --comment=E### cluster/prior_matched_b.sbatch
+    sbatch --comment=E255 cluster/prior_matched_b.sbatch
 """
 
 from __future__ import annotations

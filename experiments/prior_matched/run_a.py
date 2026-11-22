@@ -1,4 +1,4 @@
-"""E_TBD_A (cell P2.57) run A: key copy against the prior-matched cipher at 10 seeds. E237 read this pair at 3 seeds
+"""E254 (cell P2.57) run A: key copy against the prior-matched cipher at 10 seeds. E237 read this pair at 3 seeds
 (copy's log10 prior -4.23, the cipher's -4.43): every cheap reading split them while the prior did not. Here both are
 fine-tuned again with E147's exact call (`keydep.finetune`, step 30, E147's windows files, seeds 0-9; seeds 0-2 must
 repeat E147's saved files bit for bit), scaled to E237's common size, and read with P2.54's readers (world.py): the
@@ -14,7 +14,7 @@ the same c. Rules and expected values in results/predictions_a.json (refuses unl
   score  labels, the eight calls, the prior's gap, the random updates                        -> results/a/summary.json
 Every scored number is also printed. A rerun skips what is written.
 
-    sbatch --comment=E### cluster/prior_matched_a.sbatch
+    sbatch --comment=E254 cluster/prior_matched_a.sbatch
 """
 
 from __future__ import annotations

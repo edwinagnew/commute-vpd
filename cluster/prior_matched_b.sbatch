@@ -1,10 +1,10 @@
 #!/bin/bash
-# E_TBD_B (cell P2.57) run B: a second prior-matched cipher on copy's keys (Amendment 6's rule, a new draw seed), 3
+# E255 (cell P2.57) run B: a second prior-matched cipher on copy's keys (Amendment 6's rule, a new draw seed), 3
 # seeds and matched random updates, read as run A, against run A's 10 copy seeds. Needs run A finished (its summary and
 # copy items are read; run_b.py exits 1 at start otherwise): submit with --dependency=afterok:<run A's job id>.
 # Rules experiments/prior_matched/results/predictions_b.json (run_b.py refuses unless it is committed unchanged; set
 # PRED_SHA below after setting its "experiment": `git show HEAD:experiments/prior_matched/results/predictions_b.json | sha256sum`).
-#   sbatch --comment=E### --dependency=afterok:<A> cluster/prior_matched_b.sbatch
+#   sbatch --comment=E255 --dependency=afterok:<A> cluster/prior_matched_b.sbatch
 # Time, from measured logs (as run A's): load and controls ~40 s; the build (key distributions, token counts, up to 4
 # draws and priors) ~60 s; 3 fine-tunes x 11 s = 33 s; 7 items x 46 s = 322 s. Sum ~460 s, about 8 min; the 30 min
 # limit leaves 3x. $0. Peak GPU ~8 GB.

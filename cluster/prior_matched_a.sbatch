@@ -1,9 +1,9 @@
 #!/bin/bash
-# E_TBD_A (cell P2.57) run A: key copy against the prior-matched cipher at 10 seeds (E147's recipe), every cheap
+# E254 (cell P2.57) run A: key copy against the prior-matched cipher at 10 seeds (E147's recipe), every cheap
 # reading, the seed-level rank test. Needs P2.54's run 1 (E249) and E250 finished (their readers and controls are used).
 # Rules experiments/prior_matched/results/predictions_a.json (run_a.py refuses unless it is committed unchanged; set
 # PRED_SHA below after setting its "experiment": `git show HEAD:experiments/prior_matched/results/predictions_a.json | sha256sum`).
-#   sbatch --comment=E### cluster/prior_matched_a.sbatch
+#   sbatch --comment=E254 cluster/prior_matched_a.sbatch
 # Time, from measured logs: E253's cued copy (experiments/cued_copy/results/run.log) read one item (khead, holes_fill, r)
 # in 46 s; E252's khead control took 4 s; E250's fine-tune 11 s. Load and controls ~40 s; 20 fine-tunes x 11 s = 220 s;
 # 27 items x 46 s = 1242 s. Sum ~1500 s, about 25 min; the 60 min limit leaves 2x. $0.
