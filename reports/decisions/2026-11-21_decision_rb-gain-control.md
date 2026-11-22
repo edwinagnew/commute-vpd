@@ -45,5 +45,5 @@ For you: the behavioural test of each part needs a run cell you approve (proposa
 `~/commute-agents/fleet/cell approve 52`, which approves the about 3.5 h one-GPU behavioural per-part test on the
 built edits, cap $40.
 
-Evidence: `experiments/thin_edit_diagnosis/results/summary.json`; `experiments/option_b_rescore/` (being written now);
+Evidence: `experiments/thin_edit_diagnosis/results/summary.json`; [the rescore page](../analyses/2026-11-21_analysis_option-b-rescore.md), `experiments/option_b_rescore/results/summary.json`;
 `reports/analyses/2026-11-21_analysis_thin-edit-diagnosis.md`.
