@@ -2,7 +2,7 @@
 
 Run 1 (no argument): per task, RL against SFT on the re-gating share by E222's rule (results/predictions.json "rules"),
 written to results/score.json. Run 2 (--rb PATH): every proxy against definition-lead's R_b on this run's states and on
-E220's RL repeat states (E222's readings of them, experiments/rl_67m/results/stage3/repeat_rl_s*.json); Spearman per
+E220's repeat states (E222's readings of them, experiments/rl_67m/results/stage3/repeat_*_s*.json); Spearman per
 proxy over the states both read, written to results/score_rb.json, and the figure figures/proxies_vs_rb.png.
 
     ~/commute-agents/fleet/cpu-run --mem 2G python3 experiments/procedural_rl/score.py
@@ -45,7 +45,7 @@ def num(x: Any) -> float:
 def states() -> dict[str, dict[str, Any]]:
     """This run's state readings and E222's of E220's RL repeat states, keyed by the stem of the state file they read."""
     ours = [json.loads(f.read_text()) for f in sorted((RESULTS / "read").glob("*.json"))]
-    e222 = [json.loads(f.read_text()) | {"task": "repeat (E220)"} for f in sorted(E222.glob("repeat_rl_s*.json"))]
+    e222 = [json.loads(f.read_text()) | {"task": "repeat (E220)"} for f in sorted(E222.glob("repeat_*_s*.json"))]
     return {Path(s["file"]).stem: s for s in ours + e222}
 
 
@@ -81,6 +81,10 @@ def load_rb(path: Path) -> dict[str, float]:
     """{state name (its file's stem, e.g. sequence_rl_s0, repeat_rl_s0): R_b}. Reads P1.49's form
     (experiments/option_b_rescore/results/summary.json: items.<name>.R_b["bar 0.1 (filed)"]); the one function to change
     if definition-lead writes R_b for these states in another shape. Any other shape stops here, naming its keys."""
+    if path.is_dir():  # E257's per-item files (experiments/rb_states/results/items): p256/<stem> and E220's rl/stage2b/<stem>
+        rows = [json.loads(f.read_text()) for f in sorted(path.glob("*.json"))]
+        keep = ("p256/", "rl/stage2b/")
+        return {r["item"].split("/")[-1]: float(r["E_b"]) for r in rows if r["item"].startswith(keep) and r.get("E_b") is not None}
     d = json.loads(path.read_text())
     if not isinstance(d.get("items"), dict):
         raise SystemExit(f"load_rb: {path} has keys {sorted(d)}; write its loader here")
@@ -94,7 +98,18 @@ def run2(st: dict[str, dict[str, Any]], rb: dict[str, float]) -> dict[str, Any]:
     for p in GET:
         a = {q["state"]: q[p] for q in pts if math.isfinite(q[p])}
         out["proxies"][p] = AN.spearman(a, {q["state"]: q["R_b"] for q in pts})
-    return out | {"points": pts}
+    return out | {"by_task": eb_calls(pts), "points": pts}
+
+
+def eb_calls(pts: list[dict[str, Any]], g: float = 0.1) -> dict[str, Any]:
+    """Per task, rl and rlg against sft on E_b by E222's rule (amendment_2026-11-21_E261: gap 0.1, every E_b readable)."""
+    out: dict[str, Any] = {}
+    for task in sorted({q["task"] for q in pts}):
+        v = {a: [q["R_b"] for q in pts if q["task"] == task and q["arm"] == a] for a in ("rl", "rlg", "sft", "random", "randg")}
+        v["sft"] += [q["R_b"] for q in pts if q["task"] == task and q["arm"] == "demo"]  # E220's SFT on demonstrations
+        ok = {a: (x if len(x) >= 2 else None) for a, x in v.items()}
+        out[task] = {"E_b": v, "rl_vs_sft": arm_call(ok["rl"], ok["sft"], g), "rlg_vs_sft": arm_call(ok["rlg"], ok["sft"], g)}
+    return out
 
 
 def main(argv: list[str] | None = None) -> int:

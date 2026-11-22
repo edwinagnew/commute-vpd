@@ -19,7 +19,8 @@ from commute import figures as F
 
 HERE = Path(__file__).resolve().parent
 TASKS = {"sequence": "#0072B2", "brackets": "#D55E00", "addition": "#009E73", "repeat (E220)": "#777777"}
-ARMS = {"rl": ("o", "RL"), "sft": ("s", "SFT on demonstrations"), "random": ("x", "matched random")}
+ARMS = {"rl": ("o", "RL"), "rlg": ("o", "RL, guarded"), "sft": ("s", "SFT on demonstrations"), "demo": ("s", "SFT on demonstrations"),
+        "own": ("D", "SFT on own text"), "shuffled": ("v", "RL, shuffled reward"), "random": ("x", "matched random"), "randg": ("x", "matched random")}
 LABEL = {"share": "re-gating share", "prior": "W0's log-odds of the answer", "steering": "steering share", "erank": "effective rank",
          "neuron": "neuron share, k 64", "neuron_kmatched": "neuron share, k matched", "untrained": "untrained SVD share",
          "kl": "KL from W0 (nats per token)"}  # fmt: skip
@@ -28,7 +29,7 @@ LABEL = {"share": "re-gating share", "prior": "W0's log-odds of the answer", "st
 def dot(ax: Axes, x: float, y: float, task: str, arm: str) -> None:
     """Filled for RL, open for SFT, a cross for random."""
     c, mk = TASKS[task], ARMS[arm][0]
-    ax.scatter(x, y, marker=mk, s=20, facecolors="none" if arm == "sft" else c, edgecolors=c if mk != "x" else None)
+    ax.scatter(x, y, marker=mk, s=20, facecolors="none" if arm in ("sft", "demo", "own") else c, edgecolors=c if mk != "x" else None)
 
 
 def draw(points: list[dict[str, Any]], proxies: list[str], path: Path, note: str = "") -> Path:
