@@ -1,28 +1,28 @@
-# Does the base model's own write explain the changed parts of trained fine-tunes?
+# Does the base model's own write explain the changed parts of trained updates?
 
-*2026-11-21, definition-lead (writer agent). Cell P1.50, run E257, items stage only. Preliminary: the RL stage and the
-behavioural readings are pending. Descriptive by the user's instruction: no reuse or new verdict is given here, and no
-definition wording is changed.*
+*2026-11-21, definition-lead (writer agent). Cell P1.50, run E257, final: all three stages read. Descriptive by the
+user's instruction: no reuse or new verdict is given here under any wording, and no definition wording is changed.*
 
-On 94 trained fine-tunes of the 67M model, we asked how much of each altered circuit part's change the base model's
-own part explains when only turned up or down. On every fine-tune the answer was small,
-far below the hand-built edits that reuse the base model and close to a random update. In most task pairs the side
-built to need something new read as high as the side built to reuse, or higher. So this reading of the parts' writes
-does not reproduce, on trained fine-tunes, the order it gave on the built edits, and it cannot yet say which fine-tunes
-reuse the base model.
+On 142 trained updates of the 67M model, we asked how much of each altered circuit part's change the base model's
+own part explains when only turned up or down. Supervised fine-tunes read a few percent, a little above random
+updates and far below hand-built edits that reuse the base model, and the side of a task pair built to need something
+new often read higher than the side built to reuse. Reinforcement learning on repeated text read five to eleven times its
+supervised twins, but on three procedural tasks it read close to supervised training, so the reading moves with
+something other than the pair labels and cannot yet say which updates reuse the base model.
 
 ## The answer
 
-The explained share sat between 0.015 and 0.062 on every trained fine-tune. The built reuse edits read 0.63 to 0.76
-on the same reading, and a random update 0.011. In six of the nine task pairs the side built to be new read higher;
-in the other three the side built to reuse led by at most 0.005. This is the opposite of what the reading did on the
-built edits, and it is preliminary until the reinforcement-learning states and the behavioural test are read.
+The explained share sat between 0.015 and 0.062 on every supervised fine-tune of the task pairs. A random update read
+0.011, and the built reuse edits 0.63 to 0.76. The new side read higher in six of nine pairs.
+Reinforcement learning on repeated text read 0.10 to 0.22 per seed, far above supervised training on the same
+behaviour. On addition, brackets and sequence tasks every trained arm read about four to six times its matched random update,
+and reinforcement learning stayed within half again of supervised training.
 
 ## What was measured
 
-The model is the 67M testbed decomposed with VPD. For a fine-tune F of the base model M, the circuit K* is the set of
-subcomponents and site remainders that carries F's behaviour on the task's inputs D, as the earlier wording-A run
-saved it. A member of K* is changed when the update moved it at all.
+The model is the 67M testbed decomposed with VPD. For an update F of the base model M, the circuit K* is the set of
+subcomponents and site remainders that carries F's behaviour on the task's inputs D. A member of K* is changed when
+the update moved it at all.
 
 For each changed member $u$, write $w_F(u,x)$ and $w_M(u,x)$ for what $u$ writes at input position $x$ in F and in M.
 The member's write change is $dd_u = \sum_x |w_F(u,x) - w_M(u,x)|^2$, summed over every position of D. M's write
@@ -31,46 +31,54 @@ and $m_u = \sum_x |w_M|^2$; the explained part is $(n_u - m_u)^2 / m_u$, and zer
 
 The reading is $E_b$, the explained part summed over K*'s changed members divided by their summed write change. It
 reads 1 when every changed part is M's part turned up or down, and near 0 when M's parts explain none of the change.
-The do-nothing has no changed member and reads 1 by convention. There is no search and no bar: it follows the user's
-option b of 2026-11-21, which counts only what changed.
+The do-nothing has no changed member and reads 1 by convention. Beside it we report the untouched share, the share of
+K*'s members the update did not change. This is the user's option b of 2026-11-21, which counts only what changed.
 
-Three sets of trained fine-tunes were read, the same 94 states as the wording-A run on held items:
+Three groups of updates were read:
 
-- **Nine task pairs**, each a task expected to reuse M against one expected to need something new, with two to eight
-  seeds per side. The side with the larger update is scaled to the other's size, so both sides move the weights equally.
-- **Copy against lookup** at each task's own update size, three seeds each.
-- **Five key tasks** at one common update size, three seeds each.
+- **Supervised task pairs, 94 fine-tunes.** Nine task pairs, each a task expected to reuse M against one expected to
+  need something new, with two to eight seeds per side. The side with the larger update is scaled to the other's
+  size. Also copy against lookup at their own sizes, and five key tasks at one common size. K* is the one the earlier
+  wording-A run saved.
+- **Repeat updates, 21 states.** Saved updates that teach the model to repeat text it saw earlier, three seeds each.
+  They were reached by reinforcement learning, by the same loop with shuffled rewards, by supervised training on the
+  model's own rewarded samples, and by supervised training on demonstrations. One run stopped every update at the same
+  weight size, the other at the same divergence from M on ordinary text and saved no shuffled arm.
+- **Procedural tasks, 45 states.** Addition, bracket matching and sequence continuation, each reached by supervised
+  training, by reinforcement learning, and by a guarded reinforcement-learning retrain, three seeds each. Each task has
+  two random updates matched in size, one per training run. Seven reinforcement-learning seeds collapsed onto one
+  answer or failed their gate; they are marked apart and left out of every arm mean.
 
-**References.** The do-nothing reads 1. Two random updates, one at matched size and one matched in KL, give the floor
-of the reading. The built edits from the earlier rescore give the positive control: two gain edits and one rebuilt
-edit that reuse M, and two edits that add a computation M lacks.
+For the last two groups K* was searched afresh with the settings of the earlier search, capped at 2,000 evaluations.
+
+**References.** The do-nothing reads 1. The random updates give the floor. The built edits from the earlier rescore
+give the positive control: two gain edits and one rebuilt edit that reuse M, and two edits that add a computation M
+lacks.
 
 ## What the card expected
 
-The card set two rivals side by side. If reading only the changed parts separates reuse from new on trained
-fine-tunes as on the built edits, the reuse side of each pair reads above its new side by more than the random update's
-0.011. If the built-edit order came from how those edits were built rather than from reuse, the nine gaps sit near zero
-or track update size instead of the pair label.
+The card set two rivals. In the first, reading only the changed parts separates reuse from new as on the built
+edits, so the reuse side of each pair reads above its new side by more than the random update's 0.011. In the second, the
+built-edit order came from how those edits were built, and the gaps sit near zero or track something else. Nothing was filed
+for the repeat or procedural states: they are read and reported.
 
 ## Is the apparatus sound?
 
-The job's first stage stopped on any miss, and none occurred. The do-nothing had no changed member, every write change
-was exactly 0, and the reading was exactly 1. The gain edit by two read 0.7617 in full precision, matching the earlier
-rescore's saved 0.7617 to within 1.9e-9. The difference between half and full precision on it, 3.3e-5,
-is the floor for this reading. The two random updates read 0.011, as filed.
+Every job's first stage stopped on any miss, and none of the 14 first stages missed. The do-nothing had no changed
+member, every write change was exactly 0, and the reading was exactly 1. The gain edit by two read 0.7617 in full
+precision, matching the earlier rescore to within 1.9e-9. The gap between half and full precision on it, 3.3e-5,
+is the floor for this reading. Every random update read between 0.0092 and 0.013.
 
 ## Does the side built to reuse read higher in each pair?
 
 ![E_b per pair, each seed of each side, beside the random update and the built reuse edits](../../experiments/rb_states/figures/eb_pairs.png)
 
 **Reading it.** No. Every point sits between the random line and the built reuse band, much nearer the random line.
-In six of the nine pairs the orange points sit to the right of the blue. Three pairs show it
-most clearly: elicit against cipher, and rank-1 and copy against the c3 cipher. There the new side reads higher by
-0.021 to 0.027, about twice the random update's value. In the remaining six pairs the two sides differ by at most 0.009
-in either direction, and the reuse side leads in only three of them, by at most 0.005. The widest seed spread within a
-side is 0.022, on the random map. The two built new edits read 0.012 and 0.019 in the earlier rescore, so every
-trained fine-tune, reuse side included, reads in their range or a little above it and nowhere near the built reuse
-edits.
+In six of the nine pairs the orange points sit to the right of the blue. Three pairs show it most clearly: elicit
+against cipher, and rank-1 and copy against the c3 cipher. There the new side reads higher by 0.021 to 0.027, about
+twice the random update's value. In the other six pairs the two sides differ by at most 0.009 either way, and the
+reuse side leads in only three of them, by at most 0.005. The widest seed spread within a side is 0.022. The two built
+new edits read 0.012 and 0.019, so every supervised fine-tune reads in their range or a little above it.
 
 | pair, reuse / new | seeds | reuse side | new side | higher side, by | R under A gap, earlier |
 |---|---|---|---|---|---|
@@ -87,56 +95,95 @@ edits.
 Each side is the mean over its seeds. The last column is the reuse side's lead under R under wording A, read on the
 same states by the earlier run, where the reuse side led in all nine pairs.
 
-### Copy against lookup, and the key tasks
+At their own sizes copy reads 0.039 and lookup 0.045, so lookup again reads higher. Among the five key tasks, cipher
+reads highest at 0.038 and copy next at 0.032; elicit, rank-1 and prior cipher each read 0.029. Under R under wording A
+the same states fall in a different order, copy 0.98 first and cipher 0.65 last.
 
-At their own sizes copy reads 0.039 and lookup 0.045, so lookup again reads higher, by 0.006. Among the five key tasks,
-cipher reads highest at 0.038 and copy next at 0.032. Elicit, rank-1 and prior cipher each read 0.029. Under R under
-wording A the same states fall in a different order, copy 0.98 first and cipher 0.65 last.
+## Does the route to a behaviour change the reading?
 
-### Which rival do the numbers favour?
+![E_b per arm, each seed, for the repeat updates and the three procedural tasks, beside the random updates](../../experiments/rb_states/figures/eb_arms.png)
 
-The first rival is not borne out: no pair's reuse side leads by more than 0.011, and six of nine lead the other way.
-The numbers sit closer to the second rival, with gaps near zero in six pairs. The size half of that rival cannot be
-read inside a pair, because each pair's two sides move the weights by the same amount. Neither rival described the
-three cipher pairs, where the new side leads by about twice the random update's value.
+**Reading it.** On repeated text, yes, strongly; on the procedural tasks, hardly. The figure's upper block holds the
+repeat updates. At matched weight size reinforcement learning reads 0.17 on average, its two supervised twins 0.016
+each, and the shuffled-reward loop 0.037. At matched divergence reinforcement learning reads 0.11 and the
+supervised twins 0.021 each. So on this behaviour reinforcement learning reads five to ten times supervised training,
+and the shuffled loop sits between them, nearer the supervised arms. The lower block holds the procedural tasks.
+There every trained arm reads between 0.037 and 0.075, inside or just above the range of the supervised task pairs.
+Reinforcement learning reads 1.4 times supervised training on addition, 0.83 times on brackets and 1.1 times on
+sequence. The random updates read 0.0092 to 0.013, as on the task pairs.
+
+| behaviour | route | usable seeds | E_b, mean | E_b, per seed |
+|---|---|---|---|---|
+| repeat, same size | RL | 3 | 0.17 | 0.161, 0.139, 0.217 |
+| repeat, same size | RL, shuffled reward | 3 | 0.037 | 0.033, 0.048, 0.028 |
+| repeat, same size | SFT, own samples | 3 | 0.016 | 0.017, 0.016, 0.016 |
+| repeat, same size | SFT, demonstrations | 3 | 0.016 | 0.017, 0.016, 0.015 |
+| repeat, same divergence | RL | 3 | 0.11 | 0.097, 0.101, 0.120 |
+| repeat, same divergence | SFT, own samples | 3 | 0.021 | 0.022, 0.018, 0.022 |
+| repeat, same divergence | SFT, demonstrations | 3 | 0.021 | 0.019, 0.022, 0.023 |
+| addition | SFT | 3 | 0.052 | 0.054, 0.051, 0.052 |
+| addition | RL | 1 | 0.075 | 0.075 |
+| addition | RL, guarded | 2 | 0.062 | 0.064, 0.060 |
+| addition | random, two draws | 6 | 0.013, 0.013 | 0.012 to 0.013 |
+| brackets | SFT | 3 | 0.057 | 0.062, 0.059, 0.050 |
+| brackets | RL | 1 | 0.048 | 0.048 |
+| brackets | RL, guarded | 1 | 0.059 | 0.059 |
+| brackets | random, two draws | 6 | 0.010, 0.010 | 0.010 to 0.011 |
+| sequence | SFT | 3 | 0.037 | 0.037, 0.038, 0.036 |
+| sequence | RL | 3 | 0.042 | 0.039, 0.036, 0.049 |
+| sequence | RL, guarded | 3 | 0.040 | 0.043, 0.038, 0.041 |
+| sequence | random, two draws | 6 | 0.0095, 0.0095 | 0.0092 to 0.0099 |
+
+The seven collapsed or failed reinforcement-learning seeds read 0.043 to 0.141, the highest being a collapsed
+addition seed. They are left out of the means above.
 
 ## What we learned
 
-Fine-tuning changes every part of the circuit, and on trained fine-tunes M's own write, turned up or down, explains only
-a few percent of each part's change. On the built edits the same reading put the reuse edits at least thirty times above the new
-ones. On trained fine-tunes it does not separate the sides, and leans the other way on three cipher pairs. Whatever wording A sees on these pairs, it is not the share of change that a gain on M's parts explains.
+On trained updates, a gain on M's part explains little of each changed part's write change. It explains a few
+percent on supervised training and up to about a fifth on reinforcement learning toward repeated text. On the built
+edits the reuse edits sat thirty times above the new ones; on the supervised pairs that order is gone, and the three
+cipher pairs lean the other way. It does separate reinforcement learning from
+supervised training on the repeat behaviour, but not on three procedural tasks. So whatever moves it is not the pair
+label, and it is not the training route by itself either.
 
 ## How compelling is the evidence
 
-- **What it is blind to.** The reading tests each changed part's write, not F's behaviour: a part whose write M explains
-  poorly may matter little to the output, and the reverse. The behavioural test, which stands parts in and reads the
-  output, is running as E258 and E259. It also weighs parts by write change, not by effect on the logits, and it takes
-  the saved K* as given.
+- **What it is blind to.** The reading tests each changed part's write, not F's behaviour. It weighs parts by write
+  change, not by effect on the output, and it takes K* as given. The behavioural per-member test of the same idea,
+  run separately, also did not separate the pair sides.
 - **The gain edits do not reach 1.** Doubling neuron columns is not a gain on any single VPD subcomponent, so the
-  positive control reads 0.76, not 1. A trained fine-tune that reused M through many small neuron-level gains could read
-  low here for the same reason.
-- **Noise.** The precision floor is 3.3e-5. The two random updates differ by 2e-5. Seed spread within a side is at most
-  0.022, on the random map.
-- **Coverage.** One featurization, the 67M model, 94 states. Every trained K* had at most 0.0001 of its members
-  untouched and no grafts, so the untouched share plays no part on these states.
-- **Inputs differ in one control.** The matched-size random update was read on all positions of 75 built-edit windows;
-  every trained item and the KL-matched random update on the last position of 512 windows. Both randoms read 0.011.
+  positive control reads 0.76, not 1. An update that reused M through many small neuron-level gains could read low
+  here for the same reason.
+- **Every fresh K* search hit its cap.** All 66 searches of the repeat and procedural states stopped at the
+  2,000-evaluation cap, so their K* may be larger than a finished search would give. Their sizes ran from about 3,500
+  to 35,500 members.
+- **Noise.** The precision floor is 3.3e-5. Seed spread within an arm is at most 0.077 on the repeat
+  reinforcement-learning arm and at most 0.022 on any supervised side.
+- **Different inputs per group.** The task pairs, the repeat states and each procedural task are each read on their
+  own D, so values compare within a group more safely than across groups. No random update was read on the repeat
+  states' D.
+- **Coverage.** One featurization, the 67M model, 142 trained states and 20 random updates. The untouched share was at most 0.00057 on any
+  state and the K* held no grafts, so it plays no part here.
+- **Inputs differ in one control.** The task pairs' matched-size random update was read on all positions of 75
+  built-edit windows. The supervised pairs and the other random update were read on the last position of 512 windows.
+  Both randoms read 0.011.
 
 ## Surprises
 
-The side built to be new reads higher in six of nine pairs, against the order the reading gave on the built edits and
-against wording A's order on the same states. I have no checked explanation for this; it is reported as read.
+Two. The side built to be new reads higher in six of nine pairs, against the built-edit order and against wording A
+on the same states. And the large gap between reinforcement learning and supervised training on repeated text does not
+appear on the procedural tasks. I have no checked explanation for either; both are reported as read.
 
 ## What next
 
-- The RL stage of this job reads the reinforcement-learning repeat states. If they also read only a few percent, the reading
-  does not tell RL from fine-tuning on its own.
-- The behavioural test of E258 and E259. If parts that M explains poorly still stand in for behaviour, the write
-  reading is too strict to use as the measure.
+- The user's choice on the pending decision "Counting only what changed". These readings are its evidence: if the
+  reading is kept, a check of why repeated-text reinforcement learning reads high would come next.
+- A finished K* search on a few capped states. If the reading moves much once the search ends, the 66 capped readings
+  need rerunning before any use.
 
 ## Scorecard
 
-No rule was filed for the items: they are descriptive. Stage 0's rule held on every check above.
+No rule was filed for the trained states: they are descriptive. Stage 0's rule held on all 14 first stages.
 
 ## Departures from the literature
 
@@ -144,14 +191,15 @@ Reading reuse only over changed parts, weighted by write change and fitted per p
 
 ## Not run
 
-- The RL stage: 21 saved repeat states, the read rows already built. It adds to `summary_items.json` when it lands.
-- The manifest stage, for the guarded RL retrain's states, whose list is not yet written.
-- The behavioural stand-in test per member, E258 and E259, running separately.
+- A finished K* search: all 66 fresh searches hit the 2,000-evaluation cap.
+- A random update on the repeat states' read rows.
 - The search-based option-b reading on these states.
 - The reading on the two halves of D, since write changes are summed over all of D.
 - Any second featurization or the larger model.
 
-Files: `experiments/rb_states/score.py` writes `experiments/rb_states/results/summary_items.json` from
-`results/items/*.json` and `results/stage0_p0.json`; `experiments/rb_states/plot.py` writes `figures/eb_pairs.png`,
-`.pdf` and `.csv`. Logs `results/run_random_p0.log`, `results/run_items_p3.log`, `results/run_rl_windows_rw.log`.
-Item and random stages ran on a GPU pod; the scoring and figure ran on CPU through `fleet/cpu-run`.
+Files: `experiments/rb_states/score.py` writes `experiments/rb_states/results/summary.json`, holding all three stages,
+and `summary_items.json`, the supervised pairs alone, from `results/items/*.json`, `results/stage0_*.json` and the run
+logs; `experiments/rb_states/plot.py` writes `figures/eb_pairs.png` and `figures/eb_arms.png`, with `.pdf` and `.csv`.
+Logs `results/run_*.log`. Repeat states are E220's and E218's saved updates; procedural states are E256's and E260's,
+listed with their sha256 in `results/manifest_p256.json`. The item and search stages ran on GPU pods; the scoring and
+figures ran on CPU through `fleet/cpu-run`.

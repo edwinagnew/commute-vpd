@@ -2,9 +2,11 @@
 random updates, every item's E_b, untouched share, |K*|, ||dW|| / ||W0|| and R under wording A where E242/E248 saved
 it; per E187 pair (E242's pair_sides) the seed means of each side, the gap reuse minus new and whether the reuse side
 is higher, also against update size; E62's copy/lookup at own size; E237's key tasks. Descriptive, no rule (P1.1).
-The RL stage adds its own key later; this file is not results/summary.json.
+results/summary.json holds that under "items" and, per arm, the rl stage (E220 size-matched, E218 KL-matched) and
+the manifest stage (P2.56 procedural states): per seed E_b, untouched share, |K*| and status, and the arm's means over
+its usable seeds; plus how many K* searches hit the evaluation cap (from the stage logs).
 
-    ~/commute-agents/fleet/cpu-run python3 experiments/rb_states/score.py      (writes results/summary_items.json)
+    ~/commute-agents/fleet/cpu-run python3 experiments/rb_states/score.py   (writes results/summary.json, summary_items.json)
 """
 
 from __future__ import annotations
@@ -43,6 +45,43 @@ def pair(r: list[str], n: list[str]) -> dict[str, Any]:
             "gap_R_A_saved": a["R_A_saved"] - b["R_A_saved"]}  # fmt: skip
 
 
+def arms(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Rows {arm, seed, status, E_b, untouched_share, size_K} grouped by arm; means over the usable seeds only."""
+    out: dict[str, Any] = {}
+    for a in dict.fromkeys(r["arm"] for r in rows):
+        mine = sorted((r for r in rows if r["arm"] == a), key=lambda r: r["seed"])
+        ok = [r for r in mine if r["status"] == "usable"]
+        out[a] = {"n": len(mine), "n_usable": len(ok), "E_b": fmean(r["E_b"] for r in ok) if ok else None,
+                  "untouched_share": fmean(r["untouched_share"] for r in ok) if ok else None,
+                  "seeds": {str(r["seed"]): {k: r[k] for k in ("status", "E_b", "untouched_share", "size_K")} for r in mine}}  # fmt: skip
+    return out
+
+
+def stage_rows(stage: str) -> list[dict[str, Any]]:
+    """Every read item JSON of the rl or manifest stage, with its arm ("E220 rl", "addition sft") and seed."""
+    man = {e["item"]: e for e in json.loads((RESULTS / "manifest_p256.json").read_text())}
+    rows = []
+    for f in sorted((RESULTS / "items").glob("*.json")):
+        d = json.loads(f.read_text())
+        if d.get("stage") != stage:
+            continue
+        assert d["reading"] == "read", d["item"]
+        name, seed = d["item"].rsplit("_s", 1)
+        if stage == "rl":  # rl/stage2b/repeat_rl_s0: stage2b = E220 size-matched, stage2 = E218 KL-matched
+            arm = f"{'E220' if '/stage2b/' in name else 'E218'} {name.rsplit('/repeat_', 1)[1]}"
+        else:
+            arm = f"{man[d['item']]['task']} {man[d['item']]['arm']}"
+        rows.append(d | {"arm": arm, "seed": int(seed), "status": d.get("status", "usable")})
+    return rows
+
+
+def searches() -> dict[str, int]:
+    """K* searches of the rl and manifest stages (one 'main:' line each in the logs) and how many hit the cap."""
+    lines = [ln for f in sorted(RESULTS.glob("run_*.log")) for ln in f.read_text().splitlines() if " main: |K*|" in ln]
+    return {"n": len({ln.split(" main:")[0].strip() for ln in lines if " rl/" in ln or " p256/" in ln}),
+            "cap_hit": sum("cap hit" in ln for ln in lines if " rl/" in ln or " p256/" in ln)}
+
+
 def main() -> None:
     cfg, _ = E242.load_config()
     stage0 = json.loads((RESULTS / "stage0_p0.json").read_text())
@@ -69,6 +108,12 @@ def main() -> None:
                        "untouched_max": max(r["untouched_share"] for r in every.values()),
                        "grafts_max": max(r["n_grafts_in_K"] for r in every.values())}}  # fmt: skip
     (RESULTS / "summary_items.json").write_text(json.dumps(out, indent=1))
+    man = stage_rows("manifest")
+    bad = [r["E_b"] for r in man if r["status"] != "usable"]
+    full = {"experiment": out["experiment"], "cell": out["cell"], "reading": out["reading"], "items": out,
+            "rl": arms(stage_rows("rl")), "manifest": arms(man),
+            "manifest_not_usable": {"n": len(bad), "E_b_min": min(bad), "E_b_max": max(bad)}, "kstar_searches": searches()}  # fmt: skip
+    (RESULTS / "summary.json").write_text(json.dumps(full, indent=1))
     short = {p: (round(v["reuse"]["E_b"], 4), round(v["new"]["E_b"], 4), round(v["gap_E_b"], 4), round(v["size_ratio_reuse_over_new"], 3)) for p, v in pairs.items()}
     print(json.dumps({k: v for k, v in out.items() if k not in ("pairs", "stage0", "keys", "e62_own_size", "randoms")} | {"pairs": short}, indent=1))
 
