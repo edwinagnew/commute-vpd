@@ -1,0 +1,136 @@
+E259 (rb_member_pairs) start, stage read, shard (3, 4), tag pod3; settings {'items': ('random_size_241001', 'e62/copy_s0', 'e62/copy_s1', 'e62/copy_s2', 'e62-lookup_s0_scaled_e62_copy_lookup', 'e62-lookup_s1_scaled_e62_copy_lookup', 'e62-lookup_s2_scaled_e62_copy_lookup', 'e58/copy_s0', 'e58/copy_s1', 'e58/copy_s2', 'e58-prior_cipher_s0_scaled_e58_copy_prior_cipher', 'e58-prior_cipher_s1_scaled_e58_copy_prior_cipher', 'e58-prior_cipher_s2_scaled_e58_copy_prior_cipher', 'e53/lowercase_s0', 'e53/lowercase_s1', 'e53-cipher_s0_scaled_e53_lowercase_cipher', 'e53-cipher_s1_scaled_e53_lowercase_cipher', 'e53-broad_cipher_s0_scaled_e53_lowercase_cipher', 'e53-broad_cipher_s1_scaled_e53_lowercase_cipher'), 'floor_items': ('random_size_241001', 'e62/copy_s0'), 'n_floor': 32, 'floor_seed': 252001, 'sample_per_item': 2000, 'seed': 259001, 'rows': 64, 'tol': 0.1, 'save_every': 256, 'hours_max': 6}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+stage 0: do-nothing KL max 1.7062239525296118e-11, floor 2.78e-08, {"random_size_241001": {"item": "random_size_241001", "n_vars": 38938, "n_changed_in_K": 31949, "n_standable": 31949, "kl_fm": 0.0029921526163976383, "n_floor": 32, "batched_vs_single": 2.7760764699654664e-08, "bf16_vs_fp32": 0.10745339504278965, "floor": 2.7760764699654664e-08, "seconds_per_member": 0.060602955520153046}, "e62/copy_s0": {"item": "e62/copy_s0", "n_vars": 38938, "n_changed_in_K": 25352, "n_standable": 25352, "kl_fm": 3.159260085789392, "n_floor": 32, "batched_vs_single": 1.1147885761922489e-10, "bf16_vs_fp32": 8.516838464245403e-05, "floor": 1.1147885761922489e-10, "seconds_per_member": 0.11345191299915314}}; checks hold
+STAGE 0 DONE
+random_size_241001: {'item': 'random_size_241001', 'n_vars': 38938, 'n_changed_in_K': 31949, 'n_standable': 31949, 'kl_fm': 0.0029921526163976383}; sample 2000 of 31949 standable members
+random_size_241001 shard (3, 4): 500 members, 0 done before
+  random_size_241001 shard (3, 4): 256 of 500 members, projected 0.01 h
+  random_size_241001 shard (3, 4): 500 of 500 members, projected 0.01 h
+random_size_241001 shard (3, 4): done in 30 s
+ITEM 1 of 19 DONE (random_size_241001)
+e62/copy_s0: {'item': 'e62/copy_s0', 'n_vars': 38938, 'n_changed_in_K': 25352, 'n_standable': 25352, 'kl_fm': 3.159260085789392}; sample 2000 of 25352 standable members
+e62/copy_s0 shard (3, 4): 500 members, 0 done before
+  e62/copy_s0 shard (3, 4): 256 of 500 members, projected 0.02 h
+  e62/copy_s0 shard (3, 4): 500 of 500 members, projected 0.02 h
+e62/copy_s0 shard (3, 4): done in 57 s
+ITEM 2 of 19 DONE (e62/copy_s0)
+e62/copy_s1: {'item': 'e62/copy_s1', 'n_vars': 38938, 'n_changed_in_K': 25343, 'n_standable': 25343, 'kl_fm': 3.0538779002032514}; sample 2000 of 25343 standable members
+e62/copy_s1 shard (3, 4): 500 members, 0 done before
+  e62/copy_s1 shard (3, 4): 256 of 500 members, projected 0.02 h
+  e62/copy_s1 shard (3, 4): 500 of 500 members, projected 0.02 h
+e62/copy_s1 shard (3, 4): done in 56 s
+ITEM 3 of 19 DONE (e62/copy_s1)
+e62/copy_s2: {'item': 'e62/copy_s2', 'n_vars': 38938, 'n_changed_in_K': 25399, 'n_standable': 25399, 'kl_fm': 3.1877956295724417}; sample 2000 of 25399 standable members
+e62/copy_s2 shard (3, 4): 500 members, 0 done before
+  e62/copy_s2 shard (3, 4): 256 of 500 members, projected 0.02 h
+  e62/copy_s2 shard (3, 4): 500 of 500 members, projected 0.02 h
+e62/copy_s2 shard (3, 4): done in 57 s
+ITEM 4 of 19 DONE (e62/copy_s2)
+e62-lookup_s0_scaled_e62_copy_lookup: {'item': 'e62-lookup_s0_scaled_e62_copy_lookup', 'n_vars': 38938, 'n_changed_in_K': 29769, 'n_standable': 29769, 'kl_fm': 4.078060236175075}; sample 2000 of 29769 standable members
+e62-lookup_s0_scaled_e62_copy_lookup shard (3, 4): 500 members, 0 done before
+  e62-lookup_s0_scaled_e62_copy_lookup shard (3, 4): 256 of 500 members, projected 0.02 h
+  e62-lookup_s0_scaled_e62_copy_lookup shard (3, 4): 500 of 500 members, projected 0.02 h
+e62-lookup_s0_scaled_e62_copy_lookup shard (3, 4): done in 58 s
+ITEM 5 of 19 DONE (e62-lookup_s0_scaled_e62_copy_lookup)
+e62-lookup_s1_scaled_e62_copy_lookup: {'item': 'e62-lookup_s1_scaled_e62_copy_lookup', 'n_vars': 38938, 'n_changed_in_K': 30581, 'n_standable': 30581, 'kl_fm': 3.875006603707305}; sample 2000 of 30581 standable members
+e62-lookup_s1_scaled_e62_copy_lookup shard (3, 4): 500 members, 0 done before
+  e62-lookup_s1_scaled_e62_copy_lookup shard (3, 4): 256 of 500 members, projected 0.02 h
+  e62-lookup_s1_scaled_e62_copy_lookup shard (3, 4): 500 of 500 members, projected 0.02 h
+e62-lookup_s1_scaled_e62_copy_lookup shard (3, 4): done in 58 s
+ITEM 6 of 19 DONE (e62-lookup_s1_scaled_e62_copy_lookup)
+e62-lookup_s2_scaled_e62_copy_lookup: {'item': 'e62-lookup_s2_scaled_e62_copy_lookup', 'n_vars': 38938, 'n_changed_in_K': 30527, 'n_standable': 30527, 'kl_fm': 4.066005253349693}; sample 2000 of 30527 standable members
+e62-lookup_s2_scaled_e62_copy_lookup shard (3, 4): 500 members, 0 done before
+  e62-lookup_s2_scaled_e62_copy_lookup shard (3, 4): 256 of 500 members, projected 0.02 h
+  e62-lookup_s2_scaled_e62_copy_lookup shard (3, 4): 500 of 500 members, projected 0.02 h
+e62-lookup_s2_scaled_e62_copy_lookup shard (3, 4): done in 59 s
+ITEM 7 of 19 DONE (e62-lookup_s2_scaled_e62_copy_lookup)
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+e58/copy_s0: {'item': 'e58/copy_s0', 'n_vars': 38938, 'n_changed_in_K': 18233, 'n_standable': 18233, 'kl_fm': 4.398378278124154}; sample 2000 of 18233 standable members
+e58/copy_s0 shard (3, 4): 500 members, 0 done before
+  e58/copy_s0 shard (3, 4): 256 of 500 members, projected 0.02 h
+  e58/copy_s0 shard (3, 4): 500 of 500 members, projected 0.02 h
+e58/copy_s0 shard (3, 4): done in 58 s
+ITEM 8 of 19 DONE (e58/copy_s0)
+e58/copy_s1: {'item': 'e58/copy_s1', 'n_vars': 38938, 'n_changed_in_K': 19354, 'n_standable': 19354, 'kl_fm': 4.1136503066336285}; sample 2000 of 19354 standable members
+e58/copy_s1 shard (3, 4): 500 members, 0 done before
+  e58/copy_s1 shard (3, 4): 256 of 500 members, projected 0.02 h
+  e58/copy_s1 shard (3, 4): 500 of 500 members, projected 0.02 h
+e58/copy_s1 shard (3, 4): done in 57 s
+ITEM 9 of 19 DONE (e58/copy_s1)
+e58/copy_s2: {'item': 'e58/copy_s2', 'n_vars': 38938, 'n_changed_in_K': 19337, 'n_standable': 19337, 'kl_fm': 4.343193795487316}; sample 2000 of 19337 standable members
+e58/copy_s2 shard (3, 4): 500 members, 0 done before
+  e58/copy_s2 shard (3, 4): 256 of 500 members, projected 0.02 h
+  e58/copy_s2 shard (3, 4): 500 of 500 members, projected 0.02 h
+e58/copy_s2 shard (3, 4): done in 58 s
+ITEM 10 of 19 DONE (e58/copy_s2)
+e58-prior_cipher_s0_scaled_e58_copy_prior_cipher: {'item': 'e58-prior_cipher_s0_scaled_e58_copy_prior_cipher', 'n_vars': 38938, 'n_changed_in_K': 30685, 'n_standable': 30685, 'kl_fm': 3.5205234671216097}; sample 2000 of 30685 standable members
+e58-prior_cipher_s0_scaled_e58_copy_prior_cipher shard (3, 4): 500 members, 0 done before
+  e58-prior_cipher_s0_scaled_e58_copy_prior_cipher shard (3, 4): 256 of 500 members, projected 0.02 h
+  e58-prior_cipher_s0_scaled_e58_copy_prior_cipher shard (3, 4): 500 of 500 members, projected 0.02 h
+e58-prior_cipher_s0_scaled_e58_copy_prior_cipher shard (3, 4): done in 58 s
+ITEM 11 of 19 DONE (e58-prior_cipher_s0_scaled_e58_copy_prior_cipher)
+e58-prior_cipher_s1_scaled_e58_copy_prior_cipher: {'item': 'e58-prior_cipher_s1_scaled_e58_copy_prior_cipher', 'n_vars': 38938, 'n_changed_in_K': 30930, 'n_standable': 30930, 'kl_fm': 3.405901320398274}; sample 2000 of 30930 standable members
+e58-prior_cipher_s1_scaled_e58_copy_prior_cipher shard (3, 4): 500 members, 0 done before
+  e58-prior_cipher_s1_scaled_e58_copy_prior_cipher shard (3, 4): 256 of 500 members, projected 0.02 h
+  e58-prior_cipher_s1_scaled_e58_copy_prior_cipher shard (3, 4): 500 of 500 members, projected 0.02 h
+e58-prior_cipher_s1_scaled_e58_copy_prior_cipher shard (3, 4): done in 59 s
+ITEM 12 of 19 DONE (e58-prior_cipher_s1_scaled_e58_copy_prior_cipher)
+e58-prior_cipher_s2_scaled_e58_copy_prior_cipher: {'item': 'e58-prior_cipher_s2_scaled_e58_copy_prior_cipher', 'n_vars': 38938, 'n_changed_in_K': 30494, 'n_standable': 30494, 'kl_fm': 3.531514352431091}; sample 2000 of 30494 standable members
+e58-prior_cipher_s2_scaled_e58_copy_prior_cipher shard (3, 4): 500 members, 0 done before
+  e58-prior_cipher_s2_scaled_e58_copy_prior_cipher shard (3, 4): 256 of 500 members, projected 0.02 h
+  e58-prior_cipher_s2_scaled_e58_copy_prior_cipher shard (3, 4): 500 of 500 members, projected 0.02 h
+e58-prior_cipher_s2_scaled_e58_copy_prior_cipher shard (3, 4): done in 58 s
+ITEM 13 of 19 DONE (e58-prior_cipher_s2_scaled_e58_copy_prior_cipher)
+e53/lowercase_s0: {'item': 'e53/lowercase_s0', 'n_vars': 38938, 'n_changed_in_K': 32504, 'n_standable': 32504, 'kl_fm': 0.7035405080686368}; sample 2000 of 32504 standable members
+e53/lowercase_s0 shard (3, 4): 500 members, 0 done before
+  e53/lowercase_s0 shard (3, 4): 256 of 500 members, projected 0.02 h
+  e53/lowercase_s0 shard (3, 4): 500 of 500 members, projected 0.02 h
+e53/lowercase_s0 shard (3, 4): done in 58 s
+ITEM 14 of 19 DONE (e53/lowercase_s0)
+e53/lowercase_s1: {'item': 'e53/lowercase_s1', 'n_vars': 38938, 'n_changed_in_K': 32539, 'n_standable': 32539, 'kl_fm': 0.7249294247552729}; sample 2000 of 32539 standable members
+e53/lowercase_s1 shard (3, 4): 500 members, 0 done before
+  e53/lowercase_s1 shard (3, 4): 256 of 500 members, projected 0.02 h
+  e53/lowercase_s1 shard (3, 4): 500 of 500 members, projected 0.02 h
+e53/lowercase_s1 shard (3, 4): done in 58 s
+ITEM 15 of 19 DONE (e53/lowercase_s1)
+e53-cipher_s0_scaled_e53_lowercase_cipher: {'item': 'e53-cipher_s0_scaled_e53_lowercase_cipher', 'n_vars': 38938, 'n_changed_in_K': 31000, 'n_standable': 31000, 'kl_fm': 0.22213219357864872}; sample 2000 of 31000 standable members
+e53-cipher_s0_scaled_e53_lowercase_cipher shard (3, 4): 500 members, 0 done before
+  e53-cipher_s0_scaled_e53_lowercase_cipher shard (3, 4): 256 of 500 members, projected 0.02 h
+  e53-cipher_s0_scaled_e53_lowercase_cipher shard (3, 4): 500 of 500 members, projected 0.02 h
+e53-cipher_s0_scaled_e53_lowercase_cipher shard (3, 4): done in 58 s
+ITEM 16 of 19 DONE (e53-cipher_s0_scaled_e53_lowercase_cipher)
+e53-cipher_s1_scaled_e53_lowercase_cipher: {'item': 'e53-cipher_s1_scaled_e53_lowercase_cipher', 'n_vars': 38938, 'n_changed_in_K': 31508, 'n_standable': 31508, 'kl_fm': 0.20389258949803973}; sample 2000 of 31508 standable members
+e53-cipher_s1_scaled_e53_lowercase_cipher shard (3, 4): 500 members, 0 done before
+  e53-cipher_s1_scaled_e53_lowercase_cipher shard (3, 4): 256 of 500 members, projected 0.02 h
+  e53-cipher_s1_scaled_e53_lowercase_cipher shard (3, 4): 500 of 500 members, projected 0.02 h
+e53-cipher_s1_scaled_e53_lowercase_cipher shard (3, 4): done in 58 s
+ITEM 17 of 19 DONE (e53-cipher_s1_scaled_e53_lowercase_cipher)
+e53-broad_cipher_s0_scaled_e53_lowercase_cipher: {'item': 'e53-broad_cipher_s0_scaled_e53_lowercase_cipher', 'n_vars': 38938, 'n_changed_in_K': 31425, 'n_standable': 31425, 'kl_fm': 0.37304682736546346}; sample 2000 of 31425 standable members
+e53-broad_cipher_s0_scaled_e53_lowercase_cipher shard (3, 4): 500 members, 0 done before
+  e53-broad_cipher_s0_scaled_e53_lowercase_cipher shard (3, 4): 256 of 500 members, projected 0.02 h
+  e53-broad_cipher_s0_scaled_e53_lowercase_cipher shard (3, 4): 500 of 500 members, projected 0.02 h
+e53-broad_cipher_s0_scaled_e53_lowercase_cipher shard (3, 4): done in 59 s
+ITEM 18 of 19 DONE (e53-broad_cipher_s0_scaled_e53_lowercase_cipher)
+e53-broad_cipher_s1_scaled_e53_lowercase_cipher: {'item': 'e53-broad_cipher_s1_scaled_e53_lowercase_cipher', 'n_vars': 38938, 'n_changed_in_K': 31504, 'n_standable': 31504, 'kl_fm': 0.35735797598901886}; sample 2000 of 31504 standable members
+e53-broad_cipher_s1_scaled_e53_lowercase_cipher shard (3, 4): 500 members, 0 done before
+  e53-broad_cipher_s1_scaled_e53_lowercase_cipher shard (3, 4): 256 of 500 members, projected 0.02 h
+  e53-broad_cipher_s1_scaled_e53_lowercase_cipher shard (3, 4): 500 of 500 members, projected 0.02 h
+e53-broad_cipher_s1_scaled_e53_lowercase_cipher shard (3, 4): done in 58 s
+ITEM 19 of 19 DONE (e53-broad_cipher_s1_scaled_e53_lowercase_cipher)
+E259 (rb_member_pairs) DONE
+peak host RSS 7.7 GB
+=== FINISHED (exit 0) - results in /root/work/experiments/rb_member_pairs/results/ (stage0_pod3.json, large/members_*_3of4.npz, run_read_pod3.log) ===
