@@ -1,0 +1,33 @@
+{
+  "experiment": "E### (rb_member_test)",
+  "cell": "proposal 52 (not yet approved), beside P1.50",
+  "filed": "2026-11-21, definition-lead (writer agent), before any GPU run of this experiment",
+  "settings": {
+    "items": ["x2", "random_size_241001", "random_kl_241002", "x10", "rebuilt", "new_few", "new_thin"],
+    "floor_item": "random_size_241001",
+    "n_floor": 32,
+    "floor_seed": 252001,
+    "rows": 64,
+    "tol": 0.1,
+    "save_every": 256,
+    "hours_max": 6,
+    "settings_source": "items: E247's seven items (E242's six read built edits less moved, which E242 did not read, and E242's two matched random updates), every one with E242's saved gains and changed set and E247's saved num, den, dd; x2 (the gain control) first, then the null, then the rest. floor_item: the size-matched random, the cheapest item per evaluation (E247 controls: 0.063 s on a cluster GPU) with every member changed. n_floor 32: three paths x two gains x 32 members, about 12 s at that rate; floor_seed: any fixed seed. rows: twice E226's batch of 32 windows (E226 peak 10.6 GB at 32 on every-position items, E247 items/*.json), so one forward fits a 48 GB card. tol: wording A's filed relative bar (1 - alpha, alpha 0.9, E226/E242 predictions.json), here per member against its own effect. save_every: a progress write every few minutes. hours_max: the CLAUDE.md gated-run threshold of 6 h, as a runaway stop on one item's projected time per shard. Windows, read positions, batch, gain_batch and split_tol: E226's and E242's, unchanged."
+  },
+  "readings": {
+    "q, q1": "per changed member u of K* that may stand in (gain > 0, not a graft), alone: KL(F || F with u stood in, commute.stand_in, F's full forward) / KL(F || M), mean over the windows of D, at E242's saved gain (q) and at gain 1 (q1). Blind to: interactions between members (each is read alone; E242's R_A reads them together) and to effects outside D",
+    "pass_share": "write change dd (E247's saved) of passing members over that of every changed member of K* not under the floor; members that may not stand in count as failing. Blind to: how close a failing member came; b_mean reads that",
+    "b_mean": "the same weighting of 1 - q / q1 (0 for members that may not stand in): the behavioural twin of E_b, which weighs 1 - (left write change / dd)",
+    "E_b": "from E247's saved num, den, dd and the saved K* (commute.stand_in.explained_share), beside"
+  },
+  "rules": {
+    "R0": "Stage 0 stops the job on any miss: on the do-nothing, n_floor site variables stood in one per row (every gain exactly 1) read KL exactly 0.0; on floor_item, n_floor members read at both gains through E247's single-member path (fp32), the batched path (fp32) and the batched path under bf16 autocast: max |batched - single| must be at or under max |bf16 - fp32| (a per-row weight bug moves q by order q itself; rounding by far less). floor = max |batched - single|, the disagreement of two fp32 paths, measured; with several jobs the score takes the largest stage-0 floor",
+    "P_member": "u passes when q1_u > floor and q_u <= tol x q1_u; u with q1_u <= floor is not read (its dd share reported); u with gain <= 0 or a graft fails. Edge cases checked before filing: q1_u = 0 is under any floor >= 0, so q / q1 is never 0 / 0 in a pass; floor 0 makes every member with any effect readable; an item whose changed members of K* all fall under the floor has no denominator and reads 1 by the do-nothing convention, reported with its unread share 1; ties at q = tol x q1 pass (at or under, as wording A's bar)",
+    "verdict": "none: descriptive beside E_b (no verdict under either wording until the user adopts one)"
+  },
+  "expected": {
+    "do_nothing": "every KL exactly 0.0; pass share and b_mean 1 by the convention (no changed member)",
+    "x2": "b_mean 0.76 (its E_b 0.7617, P1.49) if behaviour weighs each member's left change as its write change does; pass share near 0 on the same reading, since no x2 member has an own explained write share of 0.9 or more (P1.49 T_b at 0.9: 0; at 0.8: 0.060). A pass share well above that says the unexplained part of the members' write changes is behaviourally inert",
+    "random_size_241001, random_kl_241002": "b_mean about 0.01 (E_b 0.0109, 0.0109) and pass share about 0 (T_b at 0.8: 0): M's write at a gain explains about 1% of a random member's change",
+    "x10, rebuilt, new_few, new_thin": "not filed; E_b 0.761, 0.631, 0.012, 0.019 beside"
+  }
+}

@@ -1,0 +1,52 @@
+{
+  "experiment": "E### (rb_states)",
+  "cell": "P1.50",
+  "filed": "2026-11-21, definition-lead (writer agent), before any GPU run of this experiment",
+  "settings": {
+    "control": "x2",
+    "randoms": ["random_size_241001", "random_kl_241002"],
+    "groups": ["pairs", "e62", "keys"],
+    "rl_behaviour": "repeat",
+    "rl_states": [
+      "experiments/rl_67m/results/large/stage2b/repeat_rl_s0.pt",
+      "experiments/rl_67m/results/large/stage2b/repeat_rl_s1.pt",
+      "experiments/rl_67m/results/large/stage2b/repeat_rl_s2.pt",
+      "experiments/rl_67m/results/large/stage2b/repeat_shuffled_s0.pt",
+      "experiments/rl_67m/results/large/stage2b/repeat_shuffled_s1.pt",
+      "experiments/rl_67m/results/large/stage2b/repeat_shuffled_s2.pt",
+      "experiments/rl_67m/results/large/stage2b/repeat_own_s0.pt",
+      "experiments/rl_67m/results/large/stage2b/repeat_own_s1.pt",
+      "experiments/rl_67m/results/large/stage2b/repeat_own_s2.pt",
+      "experiments/rl_67m/results/large/stage2b/repeat_demo_s0.pt",
+      "experiments/rl_67m/results/large/stage2b/repeat_demo_s1.pt",
+      "experiments/rl_67m/results/large/stage2b/repeat_demo_s2.pt",
+      "experiments/rl_67m/results/large/stage2/repeat_rl_s0.pt",
+      "experiments/rl_67m/results/large/stage2/repeat_rl_s1.pt",
+      "experiments/rl_67m/results/large/stage2/repeat_rl_s2.pt",
+      "experiments/rl_67m/results/large/stage2/repeat_own_s0.pt",
+      "experiments/rl_67m/results/large/stage2/repeat_own_s1.pt",
+      "experiments/rl_67m/results/large/stage2/repeat_own_s2.pt",
+      "experiments/rl_67m/results/large/stage2/repeat_demo_s0.pt",
+      "experiments/rl_67m/results/large/stage2/repeat_demo_s1.pt",
+      "experiments/rl_67m/results/large/stage2/repeat_demo_s2.pt"
+    ],
+    "manifest": "experiments/rb_states/results/manifest_p256.json",
+    "settings_source": "control: E247's gain item x2, the only built gain edit with saved num, den, dd that E248's K* settings read (E247 items/x2.json). randoms: E242's two matched random updates (E241's construction; E242's saved KL-matched scale, not matched again, as E247). groups: E242's group names for E248's 94 trained fine-tunes (E187's nine pairs at matched size, every saved seed; E62 copy/lookup at own size; E237's five key tasks x 3 seeds at E237's common size), built by E242's World unchanged. rl_states: every saved repeat state of E220 (stage 2b, size-matched, the states E222/E223 read: rl, shuffled, own, demo x seeds 0-2) and of E218 (stage 2, KL-matched: rl, own, demo x seeds 0-2; no shuffled state was saved there), all 24-matrix bf16 delta-W of the 67M (fleet/ckpt-info: h.0-3 attn q/k/v/o, mlp c_fc/down_proj). rl_behaviour: their behaviour; D is E222's 200 read rows of it (run_stage3.py read_rows with predictions_E222.json settings), read at E222's position. manifest: the path compare-lead's P2.56 state list will be committed at (input data, not a prediction; the stage is empty until then). K* search, windows, batch, gain_batch, split_tol: E226's and E242's predictions.json, unchanged."
+  },
+  "readings": {
+    "E_b": "over K*'s changed members u: sum of (num_u - den_u)^2 / den_u (0 where M writes zero or the gain num_u / den_u <= 0) over sum of dd_u = |write_F_u - write_M_u|^2, every position of D in F's own run (commute.stand_in.explained_share; P1.49's expression). 1 when K* has no changed member. Blind to: how much each part's write matters for behaviour (it weighs parts by write change, not by effect on the logits; rb_member_test reads the behaviour); to grafts (M writes zero there, so their change is outside both sums; n_grafts_in_K counts them); and to K* itself being right (it takes the saved K*). Positive control: x2 (a gain edit), noise floor: stage 0's bf16/fp32 floor",
+    "untouched_share": "share of K* (by count) whose mechanism F did not change; reported beside E_b, as the user asked",
+    "size_K, n_changed_in_K, n_grafts_in_K, dw_rel_norm, R_A_saved": "|K*|, its changed members and grafts; ||dW|| / ||W0|| over the 24 decomposed matrices (Frobenius, all summed); E242/E248's R under wording A (searches.main.R_A), None where not read"
+  },
+  "rules": {
+    "R0": "Stage 0 stops the job, nothing read, on any miss: on the do-nothing no changed variable, every dd exactly 0.0 and E_b exactly 1.0; on x2, E242's changed set equal to this featurization's, and |E_b (fp32) - E_b from E247's saved num, den, dd| at or under floor = |E_b (bf16 autocast forward) - E_b (fp32)|, both measured in this stage. Edge cases checked before filing: the do-nothing has no changed member, so E_b's denominator is 0 and the convention gives exactly 1 (no division); x2 has 2,813 changed members of K* with non-zero write change (P1.49), so no zero denominator; floor 0 (bf16 equal to fp32) makes the check exact equality, which a same-code repeat in fp32 can meet but a GPU change of reduction order may not: that miss stops the job and goes to the lead, not a refit",
+    "items": "descriptive, no rule: no verdict under either wording until the user adopts one (CLAUDE.md, P1.1)"
+  },
+  "expected": {
+    "do_nothing": "E_b 1.0 by the convention, dd exactly 0.0, untouched share 1.0",
+    "x2": "E_b 0.7617252590298972 (P1.49 from E247's saved arrays, experiments/option_b_rescore/results/summary.json), within stage 0's floor; untouched share 0.9114",
+    "random_size_241001, random_kl_241002": "E_b 0.0109 and 0.0109 (P1.49: 0.010865, 0.010885), within stage 0's floor of those values; untouched share about 6e-5",
+    "items": "not filed (descriptive); E248's R_A beside, and E_b's pair gaps against update size reported as read",
+    "rl": "not filed; each state's K* is searched here (E226's settings, 2,000-evaluation cap)"
+  }
+}

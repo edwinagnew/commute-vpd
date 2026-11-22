@@ -28,14 +28,17 @@ from __future__ import annotations
 from collections.abc import Callable
 from dataclasses import dataclass
 from functools import partial
+from pathlib import Path
 from typing import Any
 
+import numpy as np
 import torch
 from torch import Tensor
 
 from commute import kstar as K
 from commute import rule_retention as R
 from commute import split as SP
+from commute.jobs import EXPERIMENTS
 
 
 @dataclass
@@ -458,3 +461,17 @@ def read(found: Found, s: Tensor, feat: Feat) -> dict[str, Any]:
         rec = K.summary(Kset, s, feat.changed, feat.lacked, None, feat.rem)
         out[k] = rec | {"graft_share": rec["lacked_in_K"] / rec["size"]}
     return out
+
+
+def saved_k_star(item: str, extra: tuple[Path, ...] = ()) -> tuple[np.ndarray, Path] | None:
+    """An item's saved K* on all of D (bool (n,), the polished set of its "main" search) and its file, where E242's
+    `k_source` (experiments/kstar_vpd_wording_a/run.py) looks: E226's do-nothing or item arrays, E237's VPD arrays,
+    E242's (and E248's) own K* arrays; then each `<dir>/kstar_<item>.npz` of `extra`. None when no file holds it.
+    Added 2026-11-21 for P1.50 (experiments/rb_states, rb_member_test)."""
+    f = item.replace("/", "-")
+    e226, e237, e242 = (EXPERIMENTS / e / "results" / "large" for e in ("kstar_vpd", "key_grid", "kstar_vpd_wording_a"))
+    paths = [e226 / "stage0_pod0_do_nothing.npz"] if item == "do_nothing" else [e226 / f"items_{f}.npz", e237 / f"vpd_{f}.npz"]
+    for p in [*paths, e242 / f"kstar_{f}.npz", *(d / f"kstar_{f}.npz" for d in extra)]:
+        if p.is_file():
+            return np.load(p)["main_in_K_polished"].astype(bool), p
+    return None

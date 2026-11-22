@@ -84,10 +84,13 @@ class VPDSite:
         return torch.cat([sub, (y @ (s.rf.double() - s.rm.double())).pow(2).sum().reshape(1)])
 
     def correction(self, y: Tensor, t: Tensor, g: Tensor) -> Tensor:
+        """t (k,) one weight per variable for every row, or (rows, 1, k) one per row of y (rows, T, d_in): the per-row
+        form stands a different variable in on each row (2026-11-21, experiments/rb_member_test); for t (k,) the
+        values are bit for bit those of the (k,) form before it (t[..., -1:] is t[-1] as a 1-element tensor)."""
         s = self.s
         a = y @ s.V
-        tc, gc = t[:-1], g[:-1]
-        return ((a * (gc - 1) - y @ s.dV) * tc) @ s.U - (a * tc) @ s.dU + t[-1] * (y @ (g[-1] * s.rm - s.rf))
+        tc, gc = t[..., :-1], g[:-1]
+        return ((a * (gc - 1) - y @ s.dV) * tc) @ s.U - (a * tc) @ s.dU + t[..., -1:] * (y @ (g[-1] * s.rm - s.rf))
 
 
 def vpd_sites(feat: KV.Feat) -> list[VPDSite]:
@@ -139,6 +142,22 @@ def write_change(net: Any, sites: list[VPDSite], n: int, batches: list[Tensor]) 
     return sums[0], sums[1], sums[2]
 
 
+def explained(num: Tensor, den: Tensor) -> Tensor:
+    """(n,) fp64: per variable, the part of its write change dd (`write_change`) that M's own write at the variable's
+    own non-negative least-squares gain g = num / den explains, (num - den)^2 / den; 0 where M writes zero (den = 0)
+    and where g <= 0 (such a variable may not stand in, `standable`). The expression of P1.49's $0 rescore
+    (experiments/option_b_rescore/score.py `explained_share`), moved here 2026-11-21 for P1.50."""
+    pos = (den > 0) & (num > 0)
+    return torch.where(pos, (num - den) ** 2 / torch.where(pos, den, 1.0), 0.0)
+
+
+def explained_share(num: Tensor, den: Tensor, dd: Tensor, sel: Tensor) -> float:
+    """E_b over the variables `sel` (bool, (n,)): their explained write change over their write change. 1 when that
+    write change is 0 (no changed variable in `sel`, the do-nothing): P1.49's stated convention."""
+    total = float(dd[sel].sum())
+    return 1.0 if total == 0 else float(explained(num, den)[sel].sum()) / total
+
+
 class StandIn:
     """Forward hooks on the sites' modules; idle (the forward unchanged) outside `weights`."""
 
@@ -156,12 +175,13 @@ class StandIn:
         if self.t is None or not self.live[j]:
             return None
         s = self.sites[j]
-        return out + s.correction(inp[0], self.t[s.idx], self.g[s.idx])
+        return out + s.correction(inp[0], self.t[..., s.idx], self.g[s.idx])
 
     def run(self, forward: Callable[[Tensor], Tensor], x: Tensor, t: Tensor) -> Tensor:
-        """forward(x) with every variable at weight t (n,) on the device (1 stood in, 0 F's own); differentiable in t."""
+        """forward(x) with every variable at weight t (n,) on the device (1 stood in, 0 F's own), or t (rows of x, 1, n)
+        one weight vector per row (sites whose `correction` takes it: VPDSite); differentiable in t."""
         tc = t.detach().cpu()
-        self.live = [bool((tc[s.idx] != 0).any()) for s in self.sites]
+        self.live = [bool((tc[..., s.idx] != 0).any()) for s in self.sites]
         self.t = t
         try:
             return forward(x)
