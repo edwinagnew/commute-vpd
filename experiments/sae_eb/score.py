@@ -84,8 +84,8 @@ def main() -> None:
     fig, ax = FG.figure()
     order = [*REUSE, "moved", *NEW, "random_size_241001", "random_kl_241002"]
     for k, (method, off) in {"vpd": ("regating", -0.15), "sae": ("neuron", 0.15)}.items():
-        FG.dots(ax, {i: [v] if (v := by[i][f"E_b_{k}"]) is not None else [] for i in order}, method=method, xlabel="E_b (share of the changed parts' write change M's own write explains)", offset=off)
-    ax.legend(["VPD subcomponents (E257)", "SAE latents (E263)"], fontsize=7)
+        FG.dots(ax, {i: [v] if (v := by[i][f"E_b_{k}"]) is not None else [] for i in order}, method=method, xlabel="E_b (write change explained by M's own write)", offset=off)
+    ax.legend(handles=[ax.collections[0], ax.collections[len(order)]], labels=["VPD subcomponents (E257)", "SAE latents (E263)"], fontsize=7)
     ax.set_title("E_b of the built edits and random updates at two featurizations", fontsize=8)
     FG.save(fig, HERE / "figures" / "eb_sae_vs_vpd.png", n="one state per row", data=[by[i] for i in order])
 
