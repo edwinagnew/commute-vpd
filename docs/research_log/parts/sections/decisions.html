@@ -1,29 +1,7 @@
 <section id="decisions">
 <div class="sechead"><div class="eyebrow">Waiting on the user</div><h2><span class="num"></span>Pending decisions</h2></div>
-<div class="prose"><p><strong>Waiting on you, 2026-11-22.</strong> One card is open: does a changed part count as kept by what it writes, or by what it does to the output? Both ways are now measured; the card gives the numbers and recommends counting by write. At about 19:20 on 2026-11-21 you chose to count only what changed, each changed part weighted by the change it carries; untouched parts no longer count as reused, and the untouched share is reported beside the reading. Earlier that day you answered how wording A treats a new computation spread thinly over many parts (diagnose first; the diagnosis was <a href="#e247">E247</a>), and on 2026-11-20 four questions: size-normalised R, the memorising twins, the held-model reading on Qwen's pair library, and the reuse score at the VPD featurization. Your wording of the definition box (2026-11-18, about 19:00) stands. The neuron-level saturation question is closed.</p>
-<p>Flags: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
+<div class="prose"><p><strong>Nothing waits on you, 2026-11-22.</strong> At about 12:40 you answered the last open card: a changed part counts as kept by what it writes, and the definition reads reuse by the write share over changed parts (section {{n:timeline}}, 2026-11-22). Behaviour read part by part is reported as a stated limit, because one part barely moves the output; the search-based version is not used; definition-lead is writing the paper's one-page justification. At about 19:20 on 2026-11-21 you chose to count only what changed, each changed part weighted by the change it carries; untouched parts no longer count as reused. Earlier that day you answered how wording A treats a new computation spread thinly over many parts (diagnose first; the diagnosis was <a href="#e247">E247</a>), and on 2026-11-20 four questions: size-normalised R, the memorising twins, the held-model reading on Qwen's pair library, and the reuse score at the VPD featurization. Your wording of the definition box (2026-11-18, about 19:00) stands. The neuron-level saturation question is closed.</p>
+<p>Flags on a card: <span class="chip refuted">Blocking</span> planned runs cannot go ahead; <span class="chip open">Soon</span> it decides one line's next step; <span class="chip uninf">No rush</span> nothing waits on it.</p></div>
 <div class="cards stack">
-<div class="card decision" id="decision-rb-gain-control"><span class="chip open urgency">Soon</span>
-<div class="k">Question for you · definition-lead · new 2026-11-21, updated 2026-11-22</div>
-<h3>Does a changed part count as kept by what it writes, or by what it does to the output?</h3>
-<p>You chose to count reuse only over the parts the fine-tune changed, weighted by how much each changed. That leaves one choice: how to test whether a changed part is "kept", meaning the base model's own part, at its best strength, stands in for it. You asked to measure both ways before choosing. Both are now measured; reuse edits should read high, new and random edits low.</p>
-<table class="mini">
-<tr><th>Edit</th><th>By write</th><th>By behaviour, one part at a time</th></tr>
-<tr><td>gain x2 (reuse)</td><td>0.76</td><td>0.011</td></tr>
-<tr><td>gain x10 (reuse)</td><td>0.76</td><td>-0.50</td></tr>
-<tr><td>rebuilt (all reuse, built)</td><td>0.63</td><td>-0.41</td></tr>
-<tr><td>few parts and thin (new, built)</td><td>0.012 and 0.019</td><td>0.011 and 0.023</td></tr>
-<tr><td>random, matched size</td><td>0.011</td><td>0.011</td></tr>
-</table>
-<ul>
-<li><strong>(a) By write.</strong> The order-free write share is the definition: of the changed parts' change, the share the base model's own write explains at each part's best strength. It passes the known-answer check: the order is right, and pure strengthenings read 0.76 rather than near 1 because doubling neurons is only about three quarters a strength change of VPD's parts (the paper states this). Cheap, minutes per model. On 94 trained fine-tunes it reads 0.015 to 0.062 against 0.011 for random and does not separate reuse from new tasks (<a href="#e257">E257</a>); reinforcement learning reads 0.10 to 0.22 against 0.015 to 0.023 for supervised, only on the repeat task.</li>
-<li><strong>(b) By behaviour.</strong> Replace one changed part at a time and see whether the output stays put. It fails the known-answer check: most single parts barely move the output, so it cannot tell strengthening from random (<a href="#e258">E258</a>); on three trained pairs it reads 0.004 to 0.10 with no separation (<a href="#e259">E259</a>). The definition would then be one we cannot yet measure.</li>
-</ul>
-<p><strong>Caveat.</strong> On the trained fine-tunes the write share follows how far the output moved (rank correlation with the output change 0.73, the highest of any reading), so part of it may be update size rather than reuse.</p>
-<p><strong>Recommended: (a), by write.</strong> It is the only version that passes the known-answer check, and behaviour per part has no power at this size.</p>
-<p><strong>What waits on it.</strong> definition-lead writes the paper's one-page justification of the definition once you answer. No runs wait on it.</p>
-<p><strong>How to answer.</strong> In chat to whip-lead, or in definition-lead's window (<code>tmux attach -t commute:definition-lead</code>).</p>
-<p class="small">Page <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-21_analysis_behaviour-vs-write.md">behaviour against write</a>; cards <a href="#e247">E247</a>, <a href="#e257">E257</a>, <a href="#e258">E258</a>, <a href="#e259">E259</a>; card file <code>reports/decisions/2026-11-21_decision_rb-gain-control.md</code>.</p>
-</div>
 </div>
 </section>
