@@ -1,0 +1,30 @@
+{
+  "experiment": "E263 (sae_eb)",
+  "cell": "P1.52",
+  "filed": "2026-11-22, sae-lead, before any GPU run of this experiment",
+  "card": "reports/plans/2026-11-22_plan_eb-at-sae-card.md",
+  "e245_predictions_sha256": "8faf2d193cf1f203eb292c16d4081c1bd2adbbdb04aa180a7b4320eea92b17b8",
+  "e251_predictions_sha256": "5c15fbe84f4d3d9d06b992eae24b2ad8e666182d61bc758b2a6bf88e350f413d",
+  "settings": {
+    "settings_source": "none of its own: items, F, M, D, the SAEs (E234 scored, seed 0), gain_batch 8 and K* (all of D, polished) are E245's and E251's, read from their predictions.json (sha256 above, checked at start) and saved results; the KL-matched random's scale is E251's saved x 6.386264503002167 (results/items/random_kl_241002.json); fp32, no TF32, as E245"
+  },
+  "readings": {
+    "E_b": "over K*'s changed members u (every latent and the remainder of a changed site): sum of (num_u - den_u)^2 / den_u (0 where M writes zero or num_u / den_u <= 0) over sum of dd_u = |write_F_u - write_M_u|^2, every position of D in F's own run (commute.stand_in.explained_share, P1.49's expression, the same as E257 at VPD). 1 when K* has no changed member. Blind to: how much a part's write matters for behaviour (weighted by write change, not by effect on the logits); to whether K* is right (takes the saved K*); and, at SAE, to how the change splits between latents and the site's remainder, so remainder_dd_share_in_changed_K is reported beside it. Positive control: the reuse built edits (x2, x10, rebuilt) at VPD read 0.76, 0.76, 0.63",
+    "untouched_share": "share of K* (by count) at unchanged sites; reported beside E_b, as the user asked",
+    "remainder_dd_share_in_changed_K": "share of the changed K* members' write change dd carried by the site remainders in K*",
+    "gain_rel_dev_saved": "max relative |num/den - E245's saved gain|: the same sums as E245's gains; 0 on the same card and reduction order, reported only"
+  },
+  "rules": {
+    "R0": "Each job's stage 0 stops it, nothing read, on any miss: on the do-nothing no changed site, every dd exactly 0.0 and E_b exactly 1.0. Per item, the job stops if the variable count or the changed set differs from the saved one (K* would index other variables). Edge cases: the do-nothing has no changed member, so the convention gives E_b exactly 1 with no division",
+    "P1": "the built order at SAE. gap = min E_b over {x2, x10, rebuilt} - max E_b over {new_few, new_thin, random_size_241001, random_kl_241002, the 15 random_e58 updates}. gap >= 0.2 reads rival a (order holds at SAE); gap < 0.2 reads rival b (order lost). An item whose K* has no changed member (n_changed_in_K = 0) has no E_b of its own; it is listed and left out of both sets; if every item of a set is left out, P1 reads 'no call'. moved is reported but in neither set (no E_b at VPD to compare). Ties: a gap of exactly 0.2 reads rival a. Do-nothing: in neither set; it reads 1 by convention and could not pass or fail the rule",
+    "pairs, keys": "descriptive, no rule: E_b at SAE beside E_b at VPD (E257) per item, and the nine pairs' reuse-minus-new gap in E_b at both featurizations"
+  },
+  "expected": {
+    "do_nothing": "E_b 1.0, dd exactly 0.0, untouched share 1.0",
+    "x2, x10, rebuilt": "rival a: each at least 0.2 above every new edit and random; VPD reads 0.762, 0.761, 0.631",
+    "new_few, new_thin": "rival a: under 0.1, as at VPD (0.012, 0.019)",
+    "random updates": "rival a: under 0.1, as at VPD (0.011 for E242's two)",
+    "gain_rel_dev_saved": "0 on an L40 (E245's card), under 1e-6 on another",
+    "seconds per item": "under 60 (E245: 1.3 s per pass over D, plus building the item)"
+  }
+}

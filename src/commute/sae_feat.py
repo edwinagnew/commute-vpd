@@ -87,6 +87,15 @@ class SAESite:
         num = torch.cat([(fF * fM).sum(0) * dd, (eF * eM).sum().reshape(1)])
         return num, torch.cat([(fM * fM).sum(0) * dd, (eM * eM).sum().reshape(1)])
 
+    def change_sums(self, y: Tensor) -> Tensor:
+        """(k,) fp64: sums over every row of y of |write_F_u - write_M_u|^2, (f_u(o_F) - f_u(o_M))^2 |d_u|^2 per latent and
+        |e_F - e_M|^2 for the remainder (`stand_in.write_change`; added 2026-11-22 for experiments/sae_eb, P1.52)."""
+        y = y.reshape(-1, self.T, y.shape[-1])
+        (fF, eF), (fM, eM) = self.writes(self.o_F(y)), self.writes(self.o_M(y))
+        dd = self.ae.decoder.weight.double().pow(2).sum(0)
+        df = (fF - fM).flatten(0, 1).double()
+        return torch.cat([df.pow(2).sum(0) * dd, (eF.double() - eM.double()).pow(2).sum().reshape(1)])
+
     def correction(self, y: Tensor, t: Tensor, g: Tensor) -> Tensor:
         (fF, eF), (fM, eM) = self.writes(self.o_F(y)), self.writes(self.o_M(y))
         return self.ae.decoder(t[:-1] * (g[:-1] * fM - fF)) + t[-1] * (g[-1] * eM - eF)
