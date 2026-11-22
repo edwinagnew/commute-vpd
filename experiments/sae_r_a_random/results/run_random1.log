@@ -1,0 +1,138 @@
+
+libgomp: Invalid value for environment variable OMP_NUM_THREADS
+E251 start, tag random1; 8 items ['random_kl_241002', 'random_e58/copy_s1', 'random_e58/rank1_s0', 'random_e58/rank1_s2', 'random_e58/elicit_s1', 'random_e58/cipher_s0', 'random_e58/cipher_s2', 'random_e58/prior_cipher_s1']; E245 settings {'alpha': 0.9, 'side_tols': (0.05, 0.2), 'batch': 32, 'gain_batch': 8, 'reranks': 2, 'eval_cap': 2000, 'chunk_div': 8, 'split_seed': 186001, 'reuse': ('x2', 'x10', 'moved', 'rebuilt'), 'new': ('new_few', 'new_thin'), 'sae_size': 'scored', 'sae_seed': 0, 'only': (), 'out': 'items'}; thresholds {'control_rel_tol': 0.001, 'floor_max': 1e-06, 'kl_floor': 1e-06, 'shard_hours_max': 14, 'band_min': 0.014, 'thresholds_source': "control_rel_tol: E242's revert_tol (E214's gate_tol), max |logit difference| / max |logit| between every variable stood in with gain 1 and M's own forward: a code error gives order 1, fp32 rounding of order 1e-6; the do-nothing measures this path's floor (pieces_err: every site's output rebuilt from its SAE pieces) and every item logs its own revert_err beside it, and the rehearsal (do-nothing and x10) writes both into the plan before the scored run. floor_max: E242's (E214's and E226's kl_floor): stage 0 stops if its KL floor (the larger of the do-nothing's pieces KL and revert KL) exceeds it. Not read: a tolerance whose bar tol KL(F || M) is at or under the floor, floor = the larger of the job's stage-0 floor and the item's own revert KL (E242's rule); the do-nothing reads 1 by definition. kl_floor: E226's: an item with KL(F || F_all_ablated) at or under it has no behaviour to search. shard_hours_max: the debug QoS's 2 h limit (cluster/sae_r_a.sbatch --time); stage 0 projects the job's upper bound from its measured seconds per evaluation times eval_cap times the searches. band_min: E242's (E226's) fallback when the split-half band is 0. Exact zeros, no tolerance: o_F recomputed from the module's input equals the module's output bit for bit; every gain at an unchanged site is exactly 1 and its variables stood in give KL exactly 0; all kept gives F's logits exactly; on the do-nothing every gain is exactly 1 and every variable stood in gives KL exactly 0. Amended 2026-11-21 before any scored run (sae-lead, after the rehearsal, job 62745): shard_hours_max 2 -> 6. The projection prices every search at the cap at the do-nothing's 512-window speed (0.88 s per K* and 1.23 s per stand-in evaluation, about 4.9 h per built item), so 2 h stopped every job; the copy-window items run at 0.21 s (about 56 min at the cap, inside the debug 2 h --time), and new_few and new_thin run on H100 pods, where 6 h is the gated-run limit. No rule, band or prediction changed."}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+do_nothing: 512 windows x 41, 131080 variables; KL(F || F_all_ablated) 8.56932, KL(F || M) 0; controls {"recompute_differs": [], "changed_sites": [], "gain_dev_unchanged": 0.0, "gain_dev_all": 0.0, "kl_unchanged_stood_in": 0.0, "kl_all_stood_in": 0.0, "seconds_per_eval": 0.7225778102874756, "revert_err": 0.0, "revert_kl": 0.0, "gain_changed_quantiles": null, "nonpositive_gains": 0, "pieces_kl": 8.451539413734016e-12, "pieces_err": 2.456107949910802e-06}
+do_nothing: remainder share nan (KL with the 8 remainders stood in 0)
+    ranking 0: prefix 9969, 17 evaluations
+    ranking 1: prefix 7327, 34 evaluations
+    ranking 2: prefix 5847, 51 evaluations
+  do_nothing main: |K*| 5088 (prefix 5847), 0 at changed sites, 8 remainders; KL at K* 0.856411, bar 0.856932; 2000 evaluations (cap hit), 828 s
+  do_nothing main tol 0.05: R_A 1.000000 (floor 1.000000, ceiling 1.000000); |K*| 5088, standable changed 0, keep F's 0, cannot stand in 0 (gain <= 0 0); KL all stood in 0, at the found set 0, bar 0; 0 evaluations, 0 s
+  do_nothing main tol 0.1: R_A 1.000000 (floor 1.000000, ceiling 1.000000); |K*| 5088, standable changed 0, keep F's 0, cannot stand in 0 (gain <= 0 0); KL all stood in 0, at the found set 0, bar 0; 0 evaluations, 0 s
+  do_nothing main tol 0.2: R_A 1.000000 (floor 1.000000, ceiling 1.000000); |K*| 5088, standable changed 0, keep F's 0, cannot stand in 0 (gain <= 0 0); KL all stood in 0, at the found set 0, bar 0; 0 evaluations, 0 s
+do_nothing: done in 836 s; R_A tol0.05 1.0, tol0.1 1.0, tol0.2 1.0; halves []; remainder share nan; peak GPU 14.50 GB
+stage 0: {"experiment": "E251", "R_A": 1.0, "seconds_per_K_eval": 0.4137709492444992, "seconds_per_stand_in_eval": 0.7225778102874756, "projected_hours_max": 11.473352800475226, "pieces_kl": 8.451539413734016e-12, "pieces_err": 2.456107949910802e-06, "revert_kl": 0.0, "revert_err": 0.0, "kl_floor": 8.451539413734016e-12, "peak_gpu_gb": 14.502127647399902}; checks hold
+STAGE 0 DONE
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 5731, 'limit_filed': 2.5397456096210376, 'limit_whitened_0.01': 8.566283727683114, 'limit_whitened_0.001': 8.575327523798162, 'limit_whitened_0.0001': 8.568685731515666, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 4566, 'limit_filed': 3.38301534693608, 'limit_whitened_0.01': 9.095356453119177, 'limit_whitened_0.001': 9.070667057076344, 'limit_whitened_0.0001': 9.072227442589407, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: {"slots": [109, 447, 771, 1004, 1101, 1997, 2018, 2034], "betas": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "detectors": [{"limit_filed": 2.8299306178453936, "limit_whitened_0.01": 11.977943470656788, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.935406646295597, "limit_whitened_0.01": 9.467794583919384, "limit_whitened_0.001": 9.453473755664607, "limit_whitened_0.0001": 9.434761738713327, "direction": "whitened 0.0001", "pile_own": 0}, {"limit_filed": 3.153354424992976, "limit_whitened_0.01": 10.247742932694962, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 2.976401818196408, "limit_whitened_0.01": 10.980585108255589, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 3.1523499367635144, "limit_whitened_0.01": 10.295113233962542, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.8080070622612814, "limit_whitened_0.01": 11.894050704084995, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 3.49099258484954, "limit_whitened_0.01": 12.118533590411879, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 6.333510380063351, "limit_whitened_0.01": 15.14462701601434, "direction": "whitened 0.01", "pile_own": 1}], "act": [13.54616928100586, 13.430658340454102, 14.229463577270508, 13.013628959655762, 13.70849609375, 13.203634262084961, 13.495687484741211, 16.34401512145996], "copy_M_twin": 0.2578125, "copy_M_D": 0.001953125, "misses": ["reuse_small: top-1 0.0000 < 0.2063", "reuse_large: top-1 0.0117 < 0.2063"], "gamma_new_few": 11.291481018066406, "gamma_new_thin": 10.845924377441406, "gamma_T": 8.0, "g": 4.662668452625903, "size_matched": false, "dW_norm": {"reuse_small": 11.702665857318092, "new_few": 4.032901283721824, "new_thin": 1.9208650760341066, "reuse_large": 31.246117113476934}, "top1_reuse_small": 0.0, "top1_new_few": 0.900390625, "top1_new_thin": 0.900390625, "top1_reuse_large": 0.01171875, "A": [4833, 7192, 4910, 7939, 8638, 2589, 9653, 6196], "A_prime": [10680, 4934, 7756, 7057, 5823, 5827, 6255, 1471], "y": [5752, 5771, 5175, 4412, 5870, 5087, 4201, 6430], "swapped": [{"cue": 5, "A_prime": 5731, "limit_filed": 2.5397456096210376, "limit_whitened_0.01": 8.566283727683114, "limit_whitened_0.001": 8.575327523798162, "limit_whitened_0.0001": 8.568685731515666, "direction": "whitened 0.0001", "pile_own": 1}, {"cue": 5, "A_prime": 4566, "limit_filed": 3.38301534693608, "limit_whitened_0.01": 9.095356453119177, "limit_whitened_0.001": 9.070667057076344, "limit_whitened_0.0001": 9.072227442589407, "direction": "whitened 0.0001", "pile_own": 1}]}
+random_kl_241002: matched x 6.38626 to KL 0.171608 (target 0.158768), ok
+random_kl_241002: 512 windows x 41, 131080 variables; KL(F || F_all_ablated) 7.17417, KL(F || M) 0.171607843; controls {"recompute_differs": [], "changed_sites": ["attn0", "mlp0", "attn1", "mlp1", "attn2", "mlp2", "attn3", "mlp3"], "gain_dev_unchanged": 0.0, "gain_dev_all": 2.058121551504188, "kl_unchanged_stood_in": 0.0, "kl_all_stood_in": 0.160177231902076, "seconds_per_eval": 0.7243540287017822, "revert_err": 2.883002480302821e-06, "revert_kl": 1.0178638972257883e-11, "gain_changed_quantiles": [0.0, 0.9031607665764467, 1.0, 1.0522451088983866, 3.058121551504188], "nonpositive_gains": 660}
+random_kl_241002: remainder share -0.0912778 (KL with the 8 remainders stood in 0.187272)
+    ranking 0: prefix 11465, 17 evaluations
+    ranking 1: prefix 8666, 34 evaluations
+    ranking 2: prefix 7087, 51 evaluations
+  random_kl_241002 main: |K*| 6475 (prefix 7087), 6475 at changed sites, 8 remainders; KL at K* 0.717282, bar 0.717417; 2000 evaluations (cap hit), 836 s
+    ranking 0: prefix 3431, 13 evaluations
+    ranking 1: prefix 3758, 25 evaluations
+    ranking 2: prefix 3758, 37 evaluations
+  random_kl_241002 main tol 0.05: R_A 0.517066 (floor 0.000000, ceiling 1.000000); |K*| 6475, standable changed 6475, keep F's 3127, cannot stand in 0 (gain <= 0 0); KL all stood in 0.184156, at the found set 0.008554, bar 0.00858039; 2001 evaluations (cap hit), 1455 s
+    ranking 0: prefix 2416, 13 evaluations
+    ranking 1: prefix 2588, 25 evaluations
+    ranking 2: prefix 2588, 37 evaluations
+  random_kl_241002 main tol 0.1: R_A 0.669961 (floor 0.000000, ceiling 1.000000); |K*| 6475, standable changed 6475, keep F's 2137, cannot stand in 0 (gain <= 0 0); KL all stood in 0.184156, at the found set 0.0171589, bar 0.0171608; 2001 evaluations (cap hit), 1459 s
+    ranking 0: prefix 1146, 13 evaluations
+    ranking 1: prefix 1248, 25 evaluations
+    ranking 2: prefix 1248, 37 evaluations
+  random_kl_241002 main tol 0.2: R_A 0.850811 (floor 0.000000, ceiling 1.000000); |K*| 6475, standable changed 6475, keep F's 966, cannot stand in 0 (gain <= 0 0); KL all stood in 0.184156, at the found set 0.0342549, bar 0.0343216; 1311 evaluations, 957 s
+random_kl_241002: done in 4723 s; R_A tol0.05 0.517065637065637, tol0.1 0.66996138996139, tol0.2 0.8508108108108108; halves []; remainder share -0.0912778; peak GPU 16.27 GB
+ITEM 1 of 8 DONE (random_kl_241002)
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+random_e58/copy_s1: 512 windows x 8, 131080 variables; KL(F || F_all_ablated) 5.89655, KL(F || M) 0.00161100342; controls {"recompute_differs": [], "changed_sites": ["attn0", "mlp0", "attn1", "mlp1", "attn2", "mlp2", "attn3", "mlp3"], "gain_dev_unchanged": 0.0, "gain_dev_all": 1.0, "kl_unchanged_stood_in": 0.0, "kl_all_stood_in": 0.0017424584022558728, "seconds_per_eval": 0.1888124942779541, "revert_err": 2.1831631329405354e-06, "revert_kl": 4.604558190102676e-12, "gain_changed_quantiles": [0.0, 0.9885867435050362, 1.0, 1.0076797642988629, 1.6297120161011405], "nonpositive_gains": 271}
+random_e58/copy_s1: remainder share -3.19079 (KL with the 8 remainders stood in 0.00675137)
+    ranking 0: prefix 14757, 17 evaluations
+    ranking 1: prefix 12141, 34 evaluations
+    ranking 2: prefix 11127, 51 evaluations
+  random_e58/copy_s1 main: |K*| 10116 (prefix 11127), 10116 at changed sites, 8 remainders; KL at K* 0.589655, bar 0.589655; 2000 evaluations (cap hit), 227 s
+    ranking 0: prefix 7829, 13 evaluations
+    ranking 1: prefix 7491, 27 evaluations
+    ranking 2: prefix 7224, 41 evaluations
+  random_e58/copy_s1 main tol 0.05: R_A 0.460953 (floor 0.000000, ceiling 1.000000); |K*| 10116, standable changed 10116, keep F's 5453, cannot stand in 0 (gain <= 0 0); KL all stood in 0.00406071, at the found set 8.03451e-05, bar 8.05502e-05; 2001 evaluations (cap hit), 383 s
+    ranking 0: prefix 6620, 13 evaluations
+    ranking 1: prefix 6390, 27 evaluations
+    ranking 2: prefix 6312, 41 evaluations
+  random_e58/copy_s1 main tol 0.1: R_A 0.531732 (floor 0.000000, ceiling 1.000000); |K*| 10116, standable changed 10116, keep F's 4737, cannot stand in 0 (gain <= 0 0); KL all stood in 0.00406071, at the found set 0.000159897, bar 0.0001611; 2001 evaluations (cap hit), 380 s
+    ranking 0: prefix 5670, 14 evaluations
+    ranking 1: prefix 5402, 28 evaluations
+    ranking 2: prefix 5242, 41 evaluations
+  random_e58/copy_s1 main tol 0.2: R_A 0.603598 (floor 0.000000, ceiling 1.000000); |K*| 10116, standable changed 10116, keep F's 4010, cannot stand in 0 (gain <= 0 0); KL all stood in 0.00406071, at the found set 0.000321349, bar 0.000322201; 2001 evaluations (cap hit), 380 s
+random_e58/copy_s1: done in 1391 s; R_A tol0.05 0.46095294582839064, tol0.1 0.5317319098457889, tol0.2 0.6035982601818901; halves []; remainder share -3.19079; peak GPU 16.27 GB
+ITEM 2 of 8 DONE (random_e58/copy_s1)
+random_e58/rank1_s0: 512 windows x 8, 131080 variables; KL(F || F_all_ablated) 6.10428, KL(F || M) 0.00174117346; controls {"recompute_differs": [], "changed_sites": ["attn0", "mlp0", "attn1", "mlp1", "attn2", "mlp2", "attn3", "mlp3"], "gain_dev_unchanged": 0.0, "gain_dev_all": 1.0, "kl_unchanged_stood_in": 0.0, "kl_all_stood_in": 0.0018498483996343045, "seconds_per_eval": 0.18842244148254395, "revert_err": 2.0543068330880487e-06, "revert_kl": 4.792431907853549e-12, "gain_changed_quantiles": [0.0, 0.9877039013679401, 1.0, 1.0072363484631581, 1.3558275612295712], "nonpositive_gains": 237}
+random_e58/rank1_s0: remainder share -3.05849 (KL with the 8 remainders stood in 0.00706654)
+    ranking 0: prefix 13926, 17 evaluations
+    ranking 1: prefix 12500, 34 evaluations
+    ranking 2: prefix 11903, 51 evaluations
+  random_e58/rank1_s0 main: |K*| 11108 (prefix 11903), 11108 at changed sites, 8 remainders; KL at K* 0.610237, bar 0.610428; 2000 evaluations (cap hit), 222 s
+    ranking 0: prefix 8373, 14 evaluations
+    ranking 1: prefix 8226, 28 evaluations
+    ranking 2: prefix 8313, 42 evaluations
+  random_e58/rank1_s0 main tol 0.05: R_A 0.427080 (floor 0.000000, ceiling 1.000000); |K*| 11108, standable changed 11108, keep F's 6364, cannot stand in 0 (gain <= 0 0); KL all stood in 0.00402417, at the found set 8.7046e-05, bar 8.70587e-05; 2001 evaluations (cap hit), 383 s
+    ranking 0: prefix 7689, 14 evaluations
+    ranking 1: prefix 6717, 28 evaluations
+    ranking 2: prefix 6896, 41 evaluations
+  random_e58/rank1_s0 main tol 0.1: R_A 0.532679 (floor 0.000000, ceiling 1.000000); |K*| 11108, standable changed 11108, keep F's 5191, cannot stand in 0 (gain <= 0 0); KL all stood in 0.00402417, at the found set 0.00017277, bar 0.000174117; 2001 evaluations (cap hit), 381 s
+    ranking 0: prefix 5950, 13 evaluations
+    ranking 1: prefix 5504, 27 evaluations
+    ranking 2: prefix 5551, 41 evaluations
+  random_e58/rank1_s0 main tol 0.2: R_A 0.631437 (floor 0.000000, ceiling 1.000000); |K*| 11108, standable changed 11108, keep F's 4094, cannot stand in 0 (gain <= 0 0); KL all stood in 0.00402417, at the found set 0.000347543, bar 0.000348235; 2001 evaluations (cap hit), 381 s
+random_e58/rank1_s0: done in 1369 s; R_A tol0.05 0.4270795822830392, tol0.1 0.5326791501620454, tol0.2 0.6314368023046453; halves []; remainder share -3.05849; peak GPU 16.27 GB
+ITEM 3 of 8 DONE (random_e58/rank1_s0)
+random_e58/rank1_s2: 512 windows x 8, 131080 variables; KL(F || F_all_ablated) 6.07058, KL(F || M) 0.00192782479; controls {"recompute_differs": [], "changed_sites": ["attn0", "mlp0", "attn1", "mlp1", "attn2", "mlp2", "attn3", "mlp3"], "gain_dev_unchanged": 0.0, "gain_dev_all": 1.0, "kl_unchanged_stood_in": 0.0, "kl_all_stood_in": 0.0019135023979107125, "seconds_per_eval": 0.188734769821167, "revert_err": 2.300619144079974e-06, "revert_kl": 4.837106882797696e-12, "gain_changed_quantiles": [0.0, 0.9890024125315963, 1.0, 1.0083068196450686, 1.4077140970809687], "nonpositive_gains": 230}
+random_e58/rank1_s2: remainder share -2.77801 (KL with the 8 remainders stood in 0.00728334)
+    ranking 0: prefix 14400, 17 evaluations
+    ranking 1: prefix 13473, 34 evaluations
+    ranking 2: prefix 10823, 51 evaluations
+  random_e58/rank1_s2 main: |K*| 10084 (prefix 10823), 10084 at changed sites, 8 remainders; KL at K* 0.606986, bar 0.607058; 2000 evaluations (cap hit), 225 s
+    ranking 0: prefix 7385, 14 evaluations
+    ranking 1: prefix 7127, 28 evaluations
+    ranking 2: prefix 7040, 41 evaluations
+  random_e58/rank1_s2 main tol 0.05: R_A 0.462515 (floor 0.000000, ceiling 1.000000); |K*| 10084, standable changed 10084, keep F's 5420, cannot stand in 0 (gain <= 0 0); KL all stood in 0.00413673, at the found set 9.63803e-05, bar 9.63912e-05; 2001 evaluations (cap hit), 380 s
+    ranking 0: prefix 6362, 13 evaluations
+    ranking 1: prefix 6315, 27 evaluations
+    ranking 2: prefix 6027, 40 evaluations
+  random_e58/rank1_s2 main tol 0.1: R_A 0.538080 (floor 0.000000, ceiling 1.000000); |K*| 10084, standable changed 10084, keep F's 4658, cannot stand in 0 (gain <= 0 0); KL all stood in 0.00413673, at the found set 0.000192234, bar 0.000192782; 2001 evaluations (cap hit), 381 s
+    ranking 0: prefix 5201, 13 evaluations
+    ranking 1: prefix 4735, 27 evaluations
+    ranking 2: prefix 4907, 41 evaluations
+  random_e58/rank1_s2 main tol 0.2: R_A 0.637247 (floor 0.000000, ceiling 1.000000); |K*| 10084, standable changed 10084, keep F's 3658, cannot stand in 0 (gain <= 0 0); KL all stood in 0.00413673, at the found set 0.00038537, bar 0.000385565; 2001 evaluations (cap hit), 381 s
+random_e58/rank1_s2: done in 1371 s; R_A tol0.05 0.46251487504958355, tol0.1 0.5380801269337565, tol0.2 0.6372471241570805; halves []; remainder share -2.77801; peak GPU 16.27 GB
+ITEM 4 of 8 DONE (random_e58/rank1_s2)
+random_e58/elicit_s1: 512 windows x 8, 131080 variables; KL(F || F_all_ablated) 6.02683, KL(F || M) 0.00183187274; controls {"recompute_differs": [], "changed_sites": ["attn0", "mlp0", "attn1", "mlp1", "attn2", "mlp2", "attn3", "mlp3"], "gain_dev_unchanged": 0.0, "gain_dev_all": 1.0, "kl_unchanged_stood_in": 0.0, "kl_all_stood_in": 0.0019019748319279225, "seconds_per_eval": 0.18852639198303223, "revert_err": 2.0240106550772907e-06, "revert_kl": 4.49172504679334e-12, "gain_changed_quantiles": [0.0, 0.9888602464533246, 1.0, 1.008507975762051, 1.4461252955661126], "nonpositive_gains": 222}
+random_e58/elicit_s1: remainder share -2.86154 (KL with the 8 remainders stood in 0.00707385)
+    ranking 0: prefix 14732, 17 evaluations
+    ranking 1: prefix 12209, 34 evaluations
+    ranking 2: prefix 11247, 51 evaluations
+  random_e58/elicit_s1 main: |K*| 10145 (prefix 11247), 10145 at changed sites, 8 remainders; KL at K* 0.602492, bar 0.602683; 2000 evaluations (cap hit), 227 s
+    ranking 0: prefix 7932, 13 evaluations
+    ranking 1: prefix 7612, 26 evaluations
+    ranking 2: prefix 7261, 40 evaluations
+  random_e58/elicit_s1 main tol 0.05: R_A 0.443963 (floor 0.000000, ceiling 0.999901); |K*| 10145, standable changed 10144, keep F's 5640, cannot stand in 1 (gain <= 0 1); KL all stood in 0.00414047, at the found set 9.15499e-05, bar 9.15936e-05; 2001 evaluations (cap hit), 381 s
+    ranking 0: prefix 7018, 14 evaluations
+    ranking 1: prefix 6424, 27 evaluations
+    ranking 2: prefix 6520, 40 evaluations
+  random_e58/elicit_s1 main tol 0.1: R_A 0.506949 (floor 0.000000, ceiling 0.999901); |K*| 10145, standable changed 10144, keep F's 5001, cannot stand in 1 (gain <= 0 1); KL all stood in 0.00414047, at the found set 0.000182791, bar 0.000183187; 2001 evaluations (cap hit), 380 s
+    ranking 0: prefix 5721, 13 evaluations
+    ranking 1: prefix 5126, 27 evaluations
+    ranking 2: prefix 5030, 40 evaluations
+  random_e58/elicit_s1 main tol 0.2: R_A 0.626910 (floor 0.000000, ceiling 0.999901); |K*| 10145, standable changed 10144, keep F's 3784, cannot stand in 1 (gain <= 0 1); KL all stood in 0.00414047, at the found set 0.000365639, bar 0.000366375; 2001 evaluations (cap hit), 380 s
+random_e58/elicit_s1: done in 1372 s; R_A tol0.05 0.44396254312469197, tol0.1 0.5069492360768852, tol0.2 0.6269098077870872; halves []; remainder share -2.86154; peak GPU 16.27 GB
+ITEM 5 of 8 DONE (random_e58/elicit_s1)
+random_e58/cipher_s0: 512 windows x 8, 131080 variables; KL(F || F_all_ablated) 6.03924, KL(F || M) 0.00164187879; controls {"recompute_differs": [], "changed_sites": ["attn0", "mlp0", "attn1", "mlp1", "attn2", "mlp2", "attn3", "mlp3"], "gain_dev_unchanged": 0.0, "gain_dev_all": 1.0, "kl_unchanged_stood_in": 0.0, "kl_all_stood_in": 0.001781864574932555, "seconds_per_eval": 0.18924164772033691, "revert_err": 1.9919768874387955e-06, "revert_kl": 4.463937665186335e-12, "gain_changed_quantiles": [0.0, 0.9877680373348475, 1.0, 1.0075289584479188, 1.5588562062703324], "nonpositive_gains": 256}
+random_e58/cipher_s0: remainder share -3.56419 (KL with the 8 remainders stood in 0.00749385)
+    ranking 0: prefix 13609, 17 evaluations
+    ranking 1: prefix 12603, 34 evaluations
+    ranking 2: prefix 11901, 51 evaluations
+Terminated
+=== FINISHED (exit 143) — results in /root/work/experiments/sae_r_a_random/results/items/ and /root/work/experiments/sae_r_a_random/results/large/ ===
