@@ -1,11 +1,11 @@
 #!/bin/bash
-# E_TBD (cell P2.54) run 2: the cued copy, a low-prior copy built as its own task (bands, selection, 3 fine-tunes,
+# E253 (cell P2.55) run 2: the cued copy, a low-prior copy built as its own task (bands, selection, 3 fine-tunes,
 # matched random updates, head labels, every proxy, the 2x2). Needs P2.54's run 1 (E249) and E250 finished (their
 # results are read; khead's run 3 is optional: its k-head values for the key corners read nan until it has run).
 # Plan reports/plans/2026-11-21_plan_cued-copy.md; rules experiments/cued_copy/results/predictions.json (run.py refuses
 # unless it is committed unchanged; set PRED_SHA below to its sha256 after setting its "experiment":
 # `git show HEAD:experiments/cued_copy/results/predictions.json | sha256sum`).
-#   sbatch --comment=E### cluster/cued_copy.sbatch
+#   sbatch --comment=E253 cluster/cued_copy.sbatch
 # Time, from E250's measured log (experiments/prior_mech_2x2/results/run2.log): model load and both repeats 26 s
 # (13:58:39 -> 13:59:05); the selection forward over 20,000 windows 7 s, so 40,000 a band ~14 s, 3 bands at most ~42 s;
 # a 300-step fine-tune 11 s (13:59:12 -> :24 -> :35 -> :46), x3 = 33 s; split bases 13 s; one new item's holes_fill and r
@@ -31,7 +31,7 @@ for d in refit_96key induction_cue open_pair transport_test prior_mech_2x2 cued_
   test -L experiments/$d/results/large || { echo "experiments/$d/results/large is not linked: run ~/commute-agents/fleet/link-data ."; exit 1; }
 done
 rc=0
-( PRED_SHA=SET_ME .venv/bin/python experiments/cued_copy/run.py ) 2>&1 \
+( PRED_SHA=6205a5924ccfdfdf918a0bc1e33e2987bdce4922705ae823773ec573d1f18727 .venv/bin/python experiments/cued_copy/run.py ) 2>&1 \
     | tee -a experiments/cued_copy/results/run.log || rc=${PIPESTATUS[0]}
 echo "=== FINISHED cued copy (exit $rc) — results in $COMMUTE_REPO/experiments/cued_copy/results/ ==="
 exit $rc

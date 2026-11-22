@@ -1,24 +1,25 @@
 # Does R under wording A, read in base-model SAE latents, put the built reuse edits above the new ones?
 
-E245, cell P1.40 run 2 of 2, sae-lead, 2026-11-21. Figure `experiments/sae_r_a/figures/r_a_sae_vs_vpd.png`. Plan
-`reports/plans/2026-11-21_plan_r-under-a-sae.md`; rules `experiments/sae_r_a/results/predictions.json`; code
-`experiments/sae_r_a/run.py`, `commute.sae_feat`, `commute.stand_in`; summaries
-`experiments/sae_r_a/results/summary_built.json` and `summary_keys.json`, the second written by
-`experiments/sae_r_a/plot.py`.
+E245, cell P1.40 run 2 of 3, sae-lead, 2026-11-21; nine pairs and the random reference added 2026-11-22. Figures
+`experiments/sae_r_a/figures/r_a_sae_vs_vpd.png` and `pair_gaps.png`. Plan `reports/plans/2026-11-21_plan_r-under-a-sae.md`;
+rules `experiments/sae_r_a/results/predictions.json`; code `experiments/sae_r_a/run.py`, `commute.sae_feat`,
+`commute.stand_in`; summaries `experiments/sae_r_a/results/summary_built.json`, `summary_keys.json`, written by
+`experiments/sae_r_a/plot.py`, and `summary_pairs.json`. The random updates are E251, cell P1.40 run 3, written up in
+`reports/analyses/2026-11-22_analysis_e251-sae-random.md`.
 
 We read how much of each fine-tune's behaviour circuit can run on the base model's own mechanisms, each times one gain,
 with the circuit written in latents of autoencoders trained on the base model alone. On six hand-built edits the reuse
-edits read above the new ones by just over the noise band, the reverse of the parameter decomposition's reading. Every
-key-task fine-tune reads near one, so this reading orders the built labels only narrowly and cannot yet sort trained
-fine-tunes into reused and new.
+edits read above the new ones by just over the noise band, but every trained fine-tune, on nine task pairs and five key
+tasks, reads near one, so in each pair the side built to reuse sits above the side built to be new by less than the
+noise, where the parameter decomposition separates all nine. Random updates of the same size read near one half, so
+the near-one readings are not automatic, but this latent reading cannot sort trained fine-tunes into reused and new.
 
 ## The answer
 
-Yes, narrowly, on the built edits. In latents, the lowest reuse edit reads 0.694 and the highest new edit 0.571. That
-gap is just above the noise between two halves of the data, so the filed rule backs the reading that new edits fail to
-stand in. The order rests on latents at sites the edit never touched, which stand in for free; counting only the changed
-latents, the rebuilt circuit reads below both new edits. All fifteen key-task fine-tunes read between 0.989 and 0.999,
-the cipher lowest, so this reading sits at its ceiling there.
+Only on the built edits, and narrowly. In latents the lowest built reuse edit reads 0.694 and the highest built new
+edit 0.571, a gap just above the noise. On the nine trained pairs every fine-tune reads 0.96 or more. The reuse side is
+higher in all nine pairs, but by at most 0.030, inside the noise band of 0.110. The parameter decomposition, on the same
+fine-tunes, separates every pair by 0.11 or more. Random updates of the key fine-tunes' size read about one half.
 
 ## What we were trying to test
 
@@ -54,6 +55,17 @@ base model's own most likely next token, mid a token from its top 20, cipher a f
 prior-matched cipher a cipher whose answers the base model already finds about as likely as copy's. No reuse verdict is
 filed for these tasks; E237 found that the re-gating share puts both ciphers apart from copy, top and mid.
 
+Then E187's nine trained pairs, each a task expected to reuse the base model against one expected to need something
+new: copy against lookup, an identity map against a random map, lowercase against a cipher, and six more pairs of a
+copy, rank-1 or elicit task against a cipher. Each side has two to eight seeds, 76 fine-tunes in all. In each pair the
+side with the larger update is scaled down to the other's size, so the two sides move the weights equally; these are
+the same fine-tunes E248 read at the parameter decomposition. The unscaled fine-tunes were not read. A pair's gap is
+the mean R over the reuse side's seeds minus the mean over the new side's.
+
+Last, as a reference, E251 read one random update per key-task fine-tune, at that fine-tune's update size and on its
+windows, and E242's two random updates. A random direction has no task, so it shows where an update of the same size
+reads when nothing was learned.
+
 **The noise band.** For each built edit, K\* and R are read again on each half of the data; the band is the largest gap
 between two halves over the edits read.
 
@@ -65,7 +77,8 @@ below every reuse edit by more than the band. In the second, the base dictionary
 remainder per site, so a new edit's whole new write costs one variable of thousands and it reads as high as a reuse edit.
 The remainder share was filed beside R to tell them apart: one minus the KL from F with only the eight remainders
 stood in, over KL from F to M. It was expected above one half for the new edits and under 0.3 for the reuse edits. The
-key tasks were filed as descriptive, with no direction.
+key tasks and the nine pairs were filed as descriptive, with no direction. For the random updates, the filed lean was
+that they read well below every key fine-tune, as they do at the decomposition, by more than the band.
 
 ## What we observed
 
@@ -125,8 +138,9 @@ variables in K\*. On the prior-matched cipher they are the eight remainders and 
 eight remainders and 112 to 134 latents. A trained update changes every site, and at each site its write outside the
 base dictionary becomes one remainder, which counts as one variable of thousands. This is the second filed reading,
 seen on trained items rather than on the built ones. On the scale the built edits set, every key task reads like the
-gain-of-two edit, the ciphers included. With no known label for these tasks and no random update read in latents, we
-cannot say whether that is right.
+gain-of-two edit, the ciphers included. The crosses near one half on each key-task row are random updates of the same
+size. They show that an update of this size does not read near one by default; a later section says what they do not
+show.
 
 | task | seed | R, bar 0.05 / 0.1 / 0.2 | remainder share | size of K* | variables that do not stand in, of them remainders | KL(F to M), nats |
 |---|---|---|---|---|---|---|
@@ -150,13 +164,68 @@ cannot say whether that is right.
 at the filed bar. Every key item's K\* search hit its 2,000-evaluation cap; no key item's R search did. Remainder
 shares run from 0.378 to 0.837; task means are in `summary_keys.json`.
 
+### Does the reuse side read higher than the new side in the nine trained pairs?
+
+![Reuse side minus new side per pair, at SAE latents and at VPD](../../experiments/sae_r_a/figures/pair_gaps.png)
+
+**Reading it.** Higher in all nine, but never by more than the noise. The blue circles are each pair's gap in latents;
+they run from 0.0001 to 0.030 and all sit inside the light blue band, the 0.110 that the built edits' two halves set.
+The orange squares are the decomposition's gaps on the same 76 fine-tunes. They run from 0.11 to 0.32, each well
+outside the decomposition's own band of 0.024. In latents both sides read near one: the reuse sides' means run from
+0.9987 to 0.9992 and the new sides' from 0.969 to 0.999. Seed by seed, the lowest reuse seed sits below the highest new
+seed in four of the nine pairs. The largest gap, lowercase against cipher at 0.030, is about a quarter of the band. No
+neuron reading under wording A exists, so the figure has no neuron row.
+
+| pair, reuse / new | seeds | R at SAE, reuse side | R at SAE, new side | gap at SAE | gap at VPD | remainder share, reuse | remainder share, new |
+|---|---|---|---|---|---|---|---|
+| copy / lookup | 3 / 3 | 0.9992 | 0.9989 | 0.0003 | 0.13 | 0.85 | 0.50 |
+| identity / random map | 4 / 4 | 0.9991 | 0.9978 | 0.0013 | 0.26 | 0.81 | 0.39 |
+| lowercase / cipher | 2 / 4 | 0.9987 | 0.9687 | 0.0300 | 0.19 | 0.54 | 0.39 |
+| elicit / cipher | 5 / 5 | 0.9990 | 0.9987 | 0.0003 | 0.11 | 0.67 | 0.47 |
+| elicit / own cipher | 5 / 2 | 0.9990 | 0.9902 | 0.0088 | 0.32 | 0.67 | 0.34 |
+| rank-1 / cipher, c3 | 8 / 8 | 0.9989 | 0.9988 | 0.0001 | 0.14 | 0.70 | 0.44 |
+| copy / cipher, c3 | 8 / 8 | 0.9991 | 0.9988 | 0.0003 | 0.17 | 0.77 | 0.44 |
+| rank-1 / cipher, 96 keys | 3 / 3 | 0.9988 | 0.9932 | 0.0057 | 0.23 | 0.64 | 0.40 |
+| copy / prior cipher | 3 / 3 | 0.9989 | 0.9982 | 0.0008 | 0.23 | 0.82 | 0.49 |
+
+Each side is the mean over its seeds, at the filed bar of a tenth. The decomposition's gaps are E248's, from
+`experiments/kstar_vpd_wording_a/results/summary.json`. Every K\* search on the pairs hit its cap of 2,000 evaluations;
+no stand-in search did. No pair item has a variable at an untouched site in its circuit, since every trained update
+changes every site, so the free stand-in of untouched parts plays no part here.
+
+### What pins the pairs near one, and what does the remainder share see?
+
+**Reading it.** The remainder, counted as one variable per site. As on the key tasks, the variables that must keep
+F's mechanism are a handful out of thousands, mostly site remainders. The remainder share is one minus the KL left when
+only the eight remainders take M's mechanism, over KL from F to M. It reads one when the remainders carry none of the
+change and zero when they carry all of it. Here it does split the sides: the reuse sides' means run from 0.54 to 0.85
+and the new sides' from 0.34 to 0.50. Seed by seed, every reuse seed reads above every new seed in all nine pairs. So
+the new tasks do put more of their change outside the base dictionary, as the second filed reading said. R under
+wording A does not see it, because that change sits in one variable per site. On the built edits the same share went
+the other way, with the new edits at 0.792 and 0.775, so it is a description of the trained pairs, not a reading of
+the built labels.
+
+### Where does a random update of the same size read?
+
+**Reading it.** About one half, well below every key fine-tune. The fifteen random updates read 0.48 to 0.54, against
+0.989 for the lowest key fine-tune, a gap of 0.451, four times the band. The decomposition's two random updates read
+0.515 and 0.670 in latents, against 0.291 and 0.301 at the decomposition. Two things limit what this shows. Every random search hit its cap,
+so these values are lower bounds. And a random update of this size barely moves the behaviour: KL from F to M is 0.0016
+to 0.0019 nats, against 1.90 to 4.40 for the key fine-tunes. The bar is a tenth of that KL, so the random updates are
+read against a bar over a thousand times smaller. E242's second random update, scaled up to match a KL, moves the
+behaviour 0.172 nats on its windows and reads higher, at 0.670. A random update that moves the behaviour as far as a
+key fine-tune was not read. The details are in
+`reports/analyses/2026-11-22_analysis_e251-sae-random.md`.
+
 ## What we learned
 
 At base-model SAE latents, wording A orders the built reuse edits above the built new edits, where the parameter
 decomposition did not. The margin is barely above the noise and comes mostly from how many of each circuit's latents
 sit at sites the edit never touched. On trained fine-tunes the reading is pinned near one, because each site's
-out-of-dictionary write is a single variable. For the paper, the latent row reads the built labels, narrowly, but it
-cannot yet be used to sort trained fine-tunes into reused and new.
+out-of-dictionary write is a single variable. On the nine pairs it puts the reuse side higher every time, but by less
+than the noise, where the decomposition separates every pair. The remainder share, read beside it, does split the
+pairs' sides seed by seed, which says the new tasks write more outside the base dictionary than the reuse tasks do.
+For the paper, the latent row reads the built labels, narrowly, and cannot sort trained fine-tunes into reused and new.
 
 ## How compelling is the evidence
 
@@ -166,12 +235,14 @@ cannot yet be used to sort trained fine-tunes into reused and new.
   search reads below both its halves, and its second half's search did not hit the cap.
 - **One featurization, one seed.** One SAE seed, eight sites. The four attention dictionaries are more than half dead:
   0.530 to 0.616 of their latents never fire on held-out rows, as E234 measured.
-- **No random control in latents.** The only random updates read under wording A are the decomposition's, at 0.291 and
-  0.301. Without one here, we cannot say where a change with no structure reads in latents.
+- **The random reference moves the behaviour far less.** Random updates of the key fine-tunes' size read about one
+  half. But they move the output over a thousand times less than the fine-tunes do, and every random search hit its
+  cap. They show that near-one readings are not automatic at this size, not that a key fine-tune reused anything.
 - **The band comes from one edit.** The band of 0.110 is the rebuilt edit's two halves; every other edit's halves sit
-  at most 0.021 apart. The gap clears it by 0.014.
+  at most 0.021 apart. The gap clears it by 0.014. Even against the tighter 0.021, eight of the nine pair gaps sit
+  inside; only lowercase against cipher, at 0.030, clears it.
 - **Items covered.** Five of the six built edits were read; the moved edit is under the noise floor. All fifteen key
-  items were read, without halves. E187's nine trained pairs were not read.
+  items and all 76 fine-tunes of the nine pairs were read, without halves, the pairs at matched size only.
 - **Not bijective.** A dictionary of 16,384 latents for a 768-wide output is overcomplete, so a site's output does not
   fix its latents uniquely; the translation from module to variables is not one-to-one.
 
@@ -181,15 +252,18 @@ cannot yet be used to sort trained fine-tunes into reused and new.
   order holds only through latents at untouched sites.
 - The remainder share did not separate new from reuse: the gain-of-two edit reads 0.894, above both new edits.
 - Every key item's must-keep set is mostly site remainders, so the key reading sits at its ceiling.
+- On the nine pairs the latent reading and the decomposition disagree in size, not in sign: both put every reuse side
+  higher, but the latent gaps are six to over a thousand times smaller.
+- The remainder share, which failed on the built edits, separates the trained pairs' sides seed by seed.
 
 ## What next
 
-1. A random update at matched size, read in latents on the copy windows. If it reads near one, the latent reading has
-   no floor for trained items and should be reported as blind to them; if it reads low, the key tasks' near-one
-   values say something.
-2. E187's nine pairs at matched size, the stage left out here, only if the random control reads low.
-3. Counting the remainder as one variable is what pins trained items near one. Whether it should count by its share of
-   the site's write is a definition question for the user, not a measurement change.
+1. A random update scaled until it moves the behaviour as far as a key fine-tune, read in latents. If it still reads
+   near one half, the key tasks' near-one values carry information; if it reads near one, the latent reading has no
+   floor for trained items.
+2. Counting the remainder as one variable is what pins trained items near one. Whether it should count by its share of
+   the site's write is a definition question for the user, not a measurement change; the remainder share above shows
+   what such a count would see on the pairs.
 
 ## Scorecard
 
@@ -202,7 +276,8 @@ cannot yet be used to sort trained fine-tunes into reused and new.
 | remainder, new | new edits' remainder share above one half | descriptive | 0.792 and 0.775 | as expected |
 | remainder, reuse | reuse edits' remainder share under 0.3 | descriptive | 0.894, 0.497 and -1.579 | not as expected |
 | D1 | key tasks, descriptive | none filed | 0.989 to 0.999 | read |
-| D2 | nine pairs, descriptive | none filed | not run | not run |
+| D2 | nine pairs, descriptive | mean reuse R minus mean new R per pair; count positive | 9 of 9 positive, 0.0001 to 0.030, all inside the band 0.110; VPD 0.11 to 0.32 | read |
+| E251 P1 | lowest key R minus highest random R above the band | gap against band | 0.989 against 0.538, gap 0.451, random searches capped | rival a, as filed; lower bound on the random side |
 
 ## Departures from the literature
 
@@ -219,13 +294,15 @@ cannot yet be used to sort trained fine-tunes into reused and new.
 
 ## Not run
 
-- A random update in latents, the null for this featurization.
-- E187's nine trained pairs at matched size.
-- Split halves for the key items.
+- A random update that moves the behaviour as far as a key fine-tune; the random updates read move it over a thousand
+  times less.
+- E187's nine pairs as built, without scaling the larger side down; only the size-matched fine-tunes were read.
+- Split halves for the key items and the pairs, so the pairs' gaps are read against the built edits' band.
+- Uncapped random searches: every random update's R is a lower bound.
 - The residual-stream dictionaries: under the gain-of-ten edit the last residual dictionary explains less than
   nothing, about minus sixteen in fraction of variance, as E234 found.
 - A second dictionary seed; an uncapped search; gains fitted on the behaviour rather than on the writes.
-- A neuron reading under wording A: none exists, so the figure has no neuron column.
+- A neuron reading under wording A: none exists, on the built edits or the pairs, so neither figure has a neuron row.
 
 ## Provenance
 
@@ -233,6 +310,10 @@ Results `experiments/sae_r_a/results/items/*.json`, stage 0 `items/stage0_*.json
 `run_keys0-7.log`, every log ending FINISHED; keep masks and gains in `results/large/items_*.npz`. Built edits: four
 cluster debug jobs on L40 cards for the copy-window edits and H100 pods for the two new edits; key items on H100 pods
 and the cluster. The decomposition's reading: `experiments/kstar_vpd_wording_a/results/summary.json` and `items/`,
-E242, definition-lead. Numbers ledger: this file's `.numbers.tsv`.
+E242, definition-lead. Pairs: `results/items/` for the 76 pair fine-tunes, logs `run_pairs0-3.log`, summary
+`results/summary_pairs.json`, on four H100 pods; the side lists and the decomposition's pair gaps are E248's
+`experiments/kstar_vpd_wording_a/results/changed_only.json` and `summary.json`. Figure `figures/pair_gaps.png` is drawn
+by `plot.py` from those files and reproduces every gap in `summary_pairs.json`. Random updates: E251,
+`experiments/sae_r_a_random/results/summary.json` and `items/`. Numbers ledger: this file's `.numbers.tsv`.
 
 **Amendment, 2026-11-21 (pairs group only).** The first pairs run, on four H100 pods, stopped at stage 0 before any item ran. Stage 0 projects the worst case, every search at its 2000-evaluation cap at the do-nothing's speed, which came to 27 h per 19-item job against the filed 6 h limit, while the key items measured 4-7 min each. The pairs group reruns from `results/predictions_pairs_amend_2026-11-21.json` (`--pred`), a copy that changes only that stop limit, to 30 h. `predictions.json` is unchanged (whip-lead's decision).

@@ -5,6 +5,8 @@ common update size, the random update of that size as a grey band. The readings 
 panel saying so.
 
     ~/commute-agents/fleet/cpu-run python3 experiments/key_grid/plot_columns.py
+    ~/commute-agents/fleet/cpu-run python3 experiments/key_grid/plot_columns.py --against experiments/proxies_vs_r/results/r_a_vpd.json \
+        --out experiments/proxies_vs_r/figures/key_tasks_vs_r_a_vpd.png   # each reading against R under wording A (P2.51)
 """
 
 from __future__ import annotations
@@ -93,6 +95,39 @@ def panel(ax, name: str, ylabel: str, method: str) -> list[dict]:
             for t in order for i, v in enumerate(groups[t])]  # fmt: skip
 
 
+def against(r_path: Path, out: Path) -> None:
+    """The same readings with each task placed at R's task mean on the x-axis instead of in prior order: R from an
+    experiments/proxies_vs_r JSON (its "key" section, the mean over seeds 0-2), e.g. results/r_a_vpd.json, R under
+    wording A at VPD. The R_* panels of the original are left out: they are other R readings, not proxies."""
+    rd = json.loads(r_path.read_text())
+    rx, order = rd["key"], SUMMARY["x_order_by_prior"]
+    panels = [p for p in PANELS if not p[0].startswith("R_")]
+    words = {"r_a_vpd": "R under wording A at VPD", "r_a_sae": "R under wording A at the SAE"}.get(rd["name"], rd["name"])
+    fig, axes = figure(size=(8.5, 8.0), nrows=3, ncols=3)
+    data: list[dict] = []
+    for ax, (name, ylabel, method) in zip(axes.flat, panels, strict=False):
+        groups, _, rand = columns(name, order)
+        m, r =METHODS[method], METHODS["random"]
+        for t in order:
+            ys = [v for v in groups[t] if v is not None]
+            ax.scatter([rx[t]] * len(ys), ys, color=m.color, marker=m.marker, s=16)
+            ax.scatter([rx[t]] * len([v for v in rand.get(t, []) if v is not None]), [v for v in rand.get(t, []) if v is not None],
+                       color=r.color, marker=r.marker, s=10, linewidths=0)  # fmt: skip
+            if ys:
+                ax.annotate(SHORT[t].replace("\n", " "), (rx[t], max(ys)), fontsize=5, xytext=(0, 3), textcoords="offset points",
+                            ha={"rank1": "right", "elicit": "left"}.get(t, "center"))  # fmt: skip
+            data += [{"reading": name, "task": t, "R": rx[t], "seed": i, "value": v} for i, v in enumerate(groups[t])]
+        ax.set_title(ylabel, fontsize=7)
+        ax.set_xlabel(f"{words}, task mean", fontsize=6)
+        ax.set_ylabel(ylabel, fontsize=6)
+        ax.tick_params(labelsize=6)
+    for ax in list(axes.flat)[len(panels):]:
+        ax.axis("off")
+    fig.suptitle(f"Every reading on the five key tasks at one update size, against {words} (x: each task's mean over three "
+                 "seeds);\ndots are seeds, grey x the size-matched random updates where the reading is defined", fontsize=8)  # fmt: skip
+    save(fig, out, n=N, data=data)
+
+
 def main() -> None:
     fig, axes = figure(size=(10.0, 10.5), nrows=4, ncols=4)
     flat, data = list(axes.flat), []
@@ -110,4 +145,13 @@ def main() -> None:
 
 
 if __name__ == "__main__":
-    main()
+    import argparse
+
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--against", help="an R JSON with a 'key' section; draws each reading against it instead (see against())")
+    ap.add_argument("--out", help="figure path for --against")
+    a = ap.parse_args()
+    if a.against:
+        against(Path(a.against), Path(a.out))
+    else:
+        main()
