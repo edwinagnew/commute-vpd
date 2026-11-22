@@ -10,7 +10,10 @@ We took the reuse score under the adopted wording, read at two featurized models
 on six built edits, nine built pairs and five key tasks, all from saved readings. On the pairs every proxy that puts
 the reuse side above the new side does so on exactly the pairs where the base model's prior does, and the size of the
 score's gap follows how unequal the two sides' updates were. So the pairs cannot tell a proxy that follows mechanism
-from one that follows the prior, and the score's own cross-pair spread may partly be update size.
+from one that follows the prior, and the score's own cross-pair spread may partly be update size. Under definition (b),
+the user's later choice, the same holds more strongly: its pair gaps follow how unequal the updates were at 0.77, as
+at 0.80 under wording A, while every trained fine-tune reads only a few times a random update, so the pair order it
+gives looks like noise arranged by update size rather than a reuse signal (last section).
 
 ## The answer
 
@@ -177,7 +180,9 @@ unchanged.*
 
 We scored the same ten proxies against the user's chosen reuse reading, which asks how much of each changed part's
 change the base model's own part explains. On every trained fine-tune that reading sits within a few times a random
-update's, and no pair gap favours reuse by more than that, so ranking proxies against it there is uninformative. For
+update's, and no pair gap favours reuse by more than that, so ranking proxies against it there is uninformative. What
+order the pairs do show follows update size: the three pairs where the new side reads higher are the three whose sides
+had nearly equal updates before size matching. For
 claim 2, no proxy can yet be scored on trained fine-tunes under the new definition; on the built edits, where the
 reading does spread, none matches its order.
 
