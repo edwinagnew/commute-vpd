@@ -25,7 +25,11 @@ skips an item whose JSON exists. Stages, each job running stage 0 first (skipped
               rows (results/large/rl_windows_<behaviour>.pt, built once by --stage rl_windows on the cluster: E220's
               context checks E220's predictions through git, so not on a pod)
     manifest  compare-lead's P2.56 states (later): the JSON at settings "manifest", a list of {"item", "dw" (repo path
-              of a 24-matrix delta-W as commute.old_tasks.load_dw reads it), "windows" (an item whose D is read)}
+              of a 24-matrix delta-W as commute.old_tasks.load_dw reads it), "windows" (an item whose D is read) or
+              "windows_file" (repo path of a saved D, {"toks"}, read at the last position), and optional "sha256" (of
+              dw, checked at load) and "status" (copied into the item's record)}. E256/E260's D is the task's own read
+              rows (results/large/p256_windows_<task>.pt, built once by --stage p256_windows on the cluster: E256's
+              context checks E256's predictions through git, so not on a pod)
 
     python experiments/rb_states/run.py --stage random --tag pod0          (on a pod: PRED_SHA=<sha> python ...)
     python experiments/rb_states/run.py --stage items --shard 0 4 --tag pod1
@@ -34,6 +38,7 @@ skips an item whose JSON exists. Stages, each job running stage 0 first (skipped
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import time
 from contextlib import nullcontext
@@ -114,9 +119,21 @@ class World(E242.World):
             assert self.rl_file.is_file(), f"{self.rl_file} missing: run --stage rl_windows on the cluster first"
             return self.from_dw(REPO / self.rl[item], torch.load(self.rl_file, weights_only=False)["toks"].cuda(), KP.LAST)
         if item in self.extra:
-            _, _, toks, at, _ = self.make(self.extra[item]["windows"])
-            return self.from_dw(REPO / self.extra[item]["dw"], toks, at)
+            return self.from_manifest(self.extra[item])
         return super().make(item)
+
+    def from_manifest(self, e: dict[str, Any]) -> tuple[R.Model, R.Model, Tensor, slice, dict[str, Any]]:
+        if "windows_file" in e:
+            p = REPO / e["windows_file"]
+            assert p.is_file(), f"{p} missing: run --stage p256_windows on the cluster first"
+            toks, at = torch.load(p, weights_only=True)["toks"].cuda(), KP.LAST
+        else:
+            _, _, toks, at, _ = self.make(e["windows"])
+        dw = REPO / e["dw"]
+        h = hashlib.sha256(dw.read_bytes()).hexdigest()
+        assert e.get("sha256", h) == h, f"{dw}: sha256 {h}, the manifest's {e['sha256']}"
+        F, M, toks, at, rec = self.from_dw(dw, toks, at)
+        return F, M, toks, at, rec | {k: e[k] for k in ("status", "sha256") if k in e}
 
 
 def rl_windows(cfg: Config) -> None:
@@ -129,6 +146,20 @@ def rl_windows(cfg: Config) -> None:
     cfg.rl_file.parent.mkdir(parents=True, exist_ok=True)
     torch.save({"toks": r.toks[:, :-1].cpu(), "target": r.tgt.cpu(), "info": info, "source": "E222 read_rows"}, cfg.rl_file)
     log(f"rl windows: {info}, {tuple(r.toks.shape)} -> {cfg.rl_file}")
+
+
+def p256_windows() -> None:
+    """E256's read rows of each procedural task (experiments/procedural_rl/run.py job_read's CueRead): the first n_held
+    held-out items, prompt_len tokens ending at the cue, read at the last position (CueRead's pos prompt_len - 1), from
+    E256's own Ctx. E260's guarded states were trained and read on the same items (its settings must equal E256's)."""
+    P = load_experiment("procedural_rl", "run")
+    x = P.Ctx(P.PRED)
+    for task, d in x.items.items():
+        held, path = d["held"].take(slice(0, x.C.n_held)), RESULTS / "large" / f"p256_windows_{task}.pt"
+        assert held.toks.shape == (x.C.n_held, x.C.prompt_len), (task, held.toks.shape)
+        path.parent.mkdir(parents=True, exist_ok=True)
+        torch.save({"toks": held.toks.cpu(), "target": held.true.cpu(), "key": held.key, "source": "E256 job_read rows"}, path)
+        log(f"p256 windows {task}: {tuple(held.toks.shape)} -> {path}")
 
 
 # ---- one item -------------------------------------------------------------------------------------------------------
@@ -262,6 +293,9 @@ def main(stage: str, shard: tuple[int, int], tag: str) -> int:
     if stage == "rl_windows":
         rl_windows(cfg)
         return 0
+    if stage == "p256_windows":
+        p256_windows()
+        return 0
     (RESULTS / "items").mkdir(parents=True, exist_ok=True)
     (RESULTS / "large").mkdir(parents=True, exist_ok=True)
     w = World(cfg)
@@ -284,7 +318,7 @@ def main(stage: str, shard: tuple[int, int], tag: str) -> int:
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", choices=("rl_windows", *STAGES), required=True)
+    ap.add_argument("--stage", choices=("rl_windows", "p256_windows", *STAGES), required=True)
     ap.add_argument("--shard", nargs=2, type=int, default=(0, 1), metavar=("I", "N"), help="every N-th item from the I-th (0-based)")
     ap.add_argument("--tag", default="local", help="this job's name: stage 0 writes results/stage0_<tag>.json")
     args = ap.parse_args()
