@@ -65,6 +65,25 @@ def sae(pairs_path: str | None = None) -> dict[str, Any]:
     return out
 
 
+def random_note(source: str) -> str | None:
+    """The matched random-change band for R_A, from E251: at SAE its 15 random updates at the key tasks' states against
+    the 15 key states; at VPD its two E241 random updates (built size, KL 2f) against the key states' and built edits'
+    range (E242). The VPD pair is not matched to the key tasks' size."""
+    e251 = A.load("sae_r_a_random/results/summary.json")
+    if e251 is None:
+        return None
+    if source == "sae":
+        ft = [v["key_R_A"] for v in e251["per_state"].values()]
+        rnd = [v["random_R_A"] for v in e251["per_state"].values()]
+        where = "15 random updates at the key states' sizes (E251)"
+    else:
+        s = A.load("kstar_vpd_wording_a/results/summary.json")
+        ft = [num(v["R_A"][0]) for v in s["D3_keys"].values()] + [v for e in A.BUILT if (v := num(s["built"].get(e))) is not None]
+        rnd = [v["vpd"] for v in e251["D1"].values()]
+        where = "E241's 2 random updates, built size and KL 2f, read by E251 (not matched to the key tasks)"
+    return f"{A.inside(rnd, min(ft), max(ft))} inside; random {min(rnd):.4g} to {max(rnd):.4g}, fine-tunes {min(ft):.4g} to {max(ft):.4g}; {where}"  # type: ignore[type-var,arg-type]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--source", choices=("vpd", "sae"), required=True)
@@ -81,7 +100,7 @@ def main() -> int:
             print(f"{args.source}: {sec} read {read} of {len(got)}")
     path = HERE / "results" / f"r_a_{args.source}.json"
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps({"name": f"r_a_{args.source}", "featurization": args.source, **sections}, indent=1))
+    path.write_text(json.dumps({"name": f"r_a_{args.source}", "featurization": args.source, "random": random_note(args.source), **sections}, indent=1))
     print(path)
     return 0 if args.no_analyse else A.main(["--r", str(path)])
 
