@@ -3,7 +3,9 @@
 Writes results/summary_keys.json (per key item: R_A at the three tolerances, the remainder share, |K*|, whether each
 search hit its cap, how many variables keep F's mechanism and how many of those are site remainders; per task: mean and
 range) with, under "built_descriptive", the share of K*'s changed members that can stand in, at SAE latents and at
-E242's VPD reading of the same built items. Figure: figures/r_a_sae_vs_vpd.png.
+E242's VPD reading of the same built items. Figures: figures/r_a_sae_vs_vpd.png (built and key items, with E251's
+random updates at SAE beside them) and figures/pair_gaps.png (E187's nine pairs: reuse side minus new side at SAE
+latents beside E248's at VPD, each with its split-half band; no neuron reading under wording A exists).
 
     ~/commute-agents/fleet/cpu-run python3 experiments/sae_r_a/plot.py
 """
@@ -23,11 +25,19 @@ HERE = Path(__file__).resolve().parent
 ITEMS = HERE / "results" / "items"
 LARGE = HERE / "results" / "large"  # the keep masks (gitignored); counts are left out if it is absent
 VPD = HERE.parent / "kstar_vpd_wording_a" / "results" / "items"
+VPD_PAIRS = HERE.parent / "kstar_vpd_wording_a" / "results" / "changed_only.json"  # E248: each pair's side items
+VPD_SUMMARY = HERE.parent / "kstar_vpd_wording_a" / "results" / "summary.json"  # E242's band
+RANDOM = HERE.parent / "sae_r_a_random" / "results"  # E251: random updates at SAE latents
 WIDTH = 16_385  # variables per SAE site: 16,384 latents and the remainder (commute.sae_feat)
 REUSE, NEW = ("x2", "x10", "rebuilt", "moved"), ("new_thin", "new_few")
 TASKS = {"copy": "copy", "rank1": "top", "elicit": "mid", "prior_cipher": "prior-matched cipher", "cipher": "cipher"}
 TOLS = {"t05": "tol0.05", "t1": "tol0.1", "t2": "tol0.2"}
 SAE_C, VPD_C, RAND_C = "#0072B2", "#D55E00", "#555555"
+PAIR_NAMES = {"e187_e62_copy_lookup": "copy / lookup", "e187_e46_copy_random": "identity / random map",
+              "e187_e53_lowercase_cipher": "lowercase / cipher", "e187_e54_matched": "elicit / cipher",
+              "e187_e54_own": "elicit / own cipher", "e187_open_pair_c3": "rank-1 / cipher (c3)",
+              "e187_open_pair_c3_copy": "copy / cipher (c3)", "e187_e58_rank1_96": "rank-1 / cipher (96 keys)",
+              "e187_e58_copy_prior_cipher": "copy / prior cipher"}  # fmt: skip  # E248's plot.py names
 
 
 def load(path: Path) -> dict[str, Any]:
@@ -121,15 +131,21 @@ def plot(s: dict[str, Any]) -> None:
         if b["sae"]["R_A"] is None:
             ax.annotate("not read: output change under the noise floor", (0.22, i), fontsize=7, va="center", color="#555555")
     at = len(rows)
-    for j, r in enumerate(s["vpd_random"].values()):
-        ax.scatter([r], [at + 0.15 * (2 * j - 1)], color=RAND_C, marker="X", s=30, label=None if j else "random update, VPD")
-        data.append({"group": "built", "item": "random", "featurization": "vpd", "R_A_tol0.1": r})
+    rnd = load(RANDOM / "summary.json")  # E251: the same two random updates at SAE latents, and one per key state
+    for j, (n, r) in enumerate(s["vpd_random"].items()):
+        for side, c, v, dy in (("sae", SAE_C, rnd["D1"][n]["sae"], -0.15), ("vpd", VPD_C, r, 0.15)):
+            ax.scatter([v], [at + dy + 0.06 * (2 * j - 1)], color=c, marker="X", s=30,
+                       label=f"random update of matched size, {side.upper()}" if j == 0 else None)  # fmt: skip
+            data.append({"group": "built", "item": n, "featurization": side, "R_A_tol0.1": v})
     keys = {TASKS[t]: [s["keys"][f"{t}_s{k}"]["R_A"]["t1"] for k in range(3)] for t in TASKS}
-    for i, (label, vals) in enumerate(keys.items(), start=at + 1):
+    for i, (t, (label, vals)) in enumerate(zip(TASKS, keys.items(), strict=True), start=at + 1):
         ax.scatter(vals, [i] * 3, color=SAE_C, marker="o", s=22, alpha=0.6, linewidths=0)
+        rv = [rnd["per_state"][f"e58/{t}_s{k}"]["random_R_A"] for k in range(3)]
+        ax.scatter(rv, [i] * 3, color=SAE_C, marker="X", s=22, alpha=0.6, linewidths=0)
         ax.annotate(f"3 seeds, {min(vals):.4f} to {max(vals):.4f}", (0.22, i), fontsize=7, va="center", color="#555555")
         data += [{"group": "keys", "item": f"{label} s{k}", "featurization": "sae", "R_A_tol0.1": v} for k, v in enumerate(vals)]
-    names = [f"{n}, built {'reuse' if n in REUSE else 'new'}" for n in rows] + ["random update"]
+        data += [{"group": "keys random", "item": f"{label} s{k}", "featurization": "sae", "R_A_tol0.1": v} for k, v in enumerate(rv)]
+    names = [f"{n}, built {'reuse' if n in REUSE else 'new'}" for n in rows] + ["random update, size / KL matched"]
     names += [f"key task: {k}" for k in keys]
     for y in (len(REUSE) - 0.5, at - 0.5, at + 0.5):
         ax.axhline(y, color="#bbbbbb", linewidth=0.8)
@@ -137,18 +153,63 @@ def plot(s: dict[str, Any]) -> None:
     ax.invert_yaxis()
     ax.set_xlim(0.2, 1.02)
     ax.set_xlabel("R under wording A, bar a tenth of KL(F || M)")
-    ax.set_title("At SAE latents R puts the built reuse edits above the new ones;\n"
-                 "at VPD it does not. Every key task reads near 1 at SAE latents", fontsize=9)  # fmt: skip
+    ax.set_title("SAE latents put the built reuse edits above the new ones, VPD does not;\n"
+                 "at SAE every key task reads near 1, a random update of its size near 0.5", fontsize=9)  # fmt: skip
     ax.legend(fontsize=7, loc="upper center", bbox_to_anchor=(0.35, -0.1), ncol=2, frameon=False)
     FG.save(fig, HERE / "figures" / "r_a_sae_vs_vpd.png", data=data,
-            n="Built: one fine-tune per item, 75 copy windows or 512 cue windows; keys: 3 seeds per task, 512 windows. "
-            "Every K* search hit its cap; R is a lower bound where the stand-in search did too (x10, rebuilt, both new).")  # fmt: skip
+            n="Built: one fine-tune per item, 75 copy windows or 512 cue windows; keys: 3 seeds per task, 512 windows, "
+            "x marks one random update per key state (E251). Every K* search hit its cap; R is a lower bound where the "
+            "stand-in search did too (x10, rebuilt, both new, every random update).")  # fmt: skip
+
+
+def pair_gaps() -> list[dict[str, Any]]:
+    """Per E187 pair: mean R_A (tol 0.1) over the reuse side's seeds minus over the new side's, at SAE latents (this
+    experiment's items) and at VPD (E248), on the side items E248 read, every larger side scaled to the smaller's size."""
+    vpd = load(VPD_PAIRS)["pairs"]
+
+    def sae(item: str) -> float:
+        return load(ITEMS / f"{item.replace('/', '-')}.json")["searches"]["main"]["R_A"]
+
+    out = []
+    for p, v in vpd.items():
+        r, n = ([sae(x["item"]) for x in v[k]["items"]] for k in ("reuse", "new"))
+        out.append({"pair": PAIR_NAMES[p], "sae_gap": fmean(r) - fmean(n), "vpd_gap": v["reuse"]["R_A"] - v["new"]["R_A"],
+                    "sae_min_reuse_minus_max_new": min(r) - max(n), "n_reuse": len(r), "n_new": len(n)})  # fmt: skip
+    return out
+
+
+def plot_pairs(rows: list[dict[str, Any]]) -> None:
+    """One axis: each pair's reuse-minus-new gap at SAE latents and at VPD, each featurization's split-half band from
+    its built edits, and E251's smallest key-minus-random gap at SAE as the size of a difference SAE R_A can read."""
+    sae_band, vpd_band = load(HERE / "results" / "summary_built.json")["band"], load(VPD_SUMMARY)["band"]
+    rnd_gap = load(RANDOM / "summary.json")["gap"]
+    fig, ax = FG.figure((7.0, 4.4))
+    ax.axvspan(-sae_band, sae_band, color=SAE_C, alpha=0.12, linewidth=0, label=f"SAE split-half band, {sae_band:.3f}")
+    ax.axvspan(-vpd_band, vpd_band, color=VPD_C, alpha=0.18, linewidth=0, label=f"VPD split-half band, {vpd_band:.3f}")
+    ax.axvline(0, color="#999999", linewidth=0.8)
+    for i, r in enumerate(rows):
+        ax.scatter([r["sae_gap"]], [i - 0.12], color=SAE_C, marker="o", s=30, zorder=3, label="SAE latents (E245)" if i == 0 else None)
+        ax.scatter([r["vpd_gap"]], [i + 0.12], color=VPD_C, marker="s", s=30, zorder=3, label="VPD subcomponents (E248)" if i == 0 else None)
+    FG.reference(ax, rnd_gap, "key fine-tune minus random update, SAE, smallest")
+    ax.annotate("neurons: no reading\nunder wording A exists", (0.99, 0.35), xycoords="axes fraction", ha="right", fontsize=7, color="#555555")
+    ax.set_yticks(range(len(rows)), [f"{r['pair']}" for r in rows])
+    ax.invert_yaxis()
+    ax.set_xlim(-0.15, 0.55)
+    ax.set_xlabel("R under wording A, reuse side minus new side (mean over seeds)")
+    ax.set_title("On the nine trained pairs the reuse side reads higher at both featurizations,\n"
+                 "but only at VPD by more than the band; at SAE latents every gap is inside it", fontsize=9, pad=16)  # fmt: skip
+    ax.legend(fontsize=7, loc="upper center", bbox_to_anchor=(0.4, -0.14), ncol=2, frameon=False)
+    data = [r | {"sae_band": sae_band, "vpd_band": vpd_band, "sae_key_minus_random_min": rnd_gap} for r in rows]
+    FG.save(fig, HERE / "figures" / "pair_gaps.png", data=data,
+            n="9 pairs, 2 to 8 seeds per side, larger side scaled to the smaller's size, 76 fine-tunes read at both "
+            "featurizations; bands from each featurization's built edits' two halves. Every K* search hit its cap.")  # fmt: skip
 
 
 def main() -> None:
     s = summary()
     (HERE / "results" / "summary_keys.json").write_text(json.dumps(s, indent=1) + "\n")
     plot(s)
+    plot_pairs(pair_gaps())
 
 
 if __name__ == "__main__":
