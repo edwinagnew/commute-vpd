@@ -1,0 +1,31 @@
+{
+  "experiment": "E262 (kl_control)",
+  "cell": "P2.58",
+  "filed": "2026-11-22, compare-lead, before the script was first run",
+  "card": "~/commute-data/cards/P2.58.md",
+  "inputs": {
+    "procedural": "experiments/procedural_rl/results/score_rb.json .points (P2.56/E261: R_b = E_b, KL from the unchanged model, seven proxies per state)",
+    "pairs": "experiments/rb_states/results/summary_items.json .pairs (E257: E_b and dw_rel_norm per state of the nine built pairs)",
+    "pair_kl": "kl_fm_saved in experiments/rb_states/results/items/<state>.json, else kl_fm in experiments/kstar_pairs/results/items/<state>_block.json (E205, same number: e62/copy_s0 reads 3.159 in both)"
+  },
+  "settings": {
+    "random_arms": ["random", "randg"],
+    "repeat_task_prefix": "repeat",
+    "proxies": ["share", "steering", "erank", "neuron", "neuron_kmatched", "prior", "untrained"],
+    "regressors": ["kl", "norm", "kl+norm", "logkl"],
+    "filed_regressor": "kl"
+  },
+  "expected": {
+    "control_kl_given_kl": "partial Spearman of KL itself with R_b given KL: undefined (no variance left), reported as null",
+    "control_rb_residual": "partial Spearman of a synthetic proxy equal to R_b's rank residual on KL's ranks, given KL: 1.0 within 1e-9",
+    "raw_pair_gaps": "equal E257's gap_E_b per pair within 1e-12 (same items, same means)",
+    "random_arms": "reported apart; E_b and KL both at their floor (E_b 0.009-0.013, KL ~0.001), so their Spearman is read but not pooled"
+  },
+  "rules": {
+    "floor": "max E_b over E257's random updates (summary_items.json .randoms), 0.0109",
+    "pair_survives": "a pair's residual gap (mean residual of reuse states minus mean residual of new states, E_b regressed on KL by ordinary least squares over the unique trained pair states) is outside +-floor",
+    "rival_a": "0 of 9 residual gaps outside +-floor AND every proxy's partial Spearman with R_b given KL, trained procedural states, |rho| < 0.3",
+    "rival_b": "the pairs whose raw gap is outside +-floor keep a residual gap outside it, same sign, AND at least one proxy has partial |rho| >= 0.3",
+    "otherwise": "mixed: reported as read, no call"
+  }
+}
