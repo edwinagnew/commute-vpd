@@ -1,0 +1,12 @@
+E264 stage0 0/1; settings {'k': 5, 'pile_split': 'val', 'n_pile': 8192, 'batch': 512, 'lens_top': 20, 'n_random_diffs': 64, 'random_diff_rows': 128, 'random_diff_len': 128, 'random_seed': 259001, 'control': 'e58/copy_s0_scaled', 'control_random': 'random_e58/copy_s0'}; thresholds {'gain_floor': 1.0, 'inert': 0.05, 'zero_tol': 1e-09, 'thresholds_e143_source': "E143's filed gain_floor (a share of a gain under 1 log-odds is undefined), inert (a share under 0.05 reads inert on the scorecard) and zero_tol (do-nothing exactness), experiments/holes_fill/results/predictions.json", 'reader_tol': 0.0001, 'reader_tol_source': "E147's reader_neuron_tol, the bar E244 used to repeat a saved reading through the same lo_at path (experiments/refit_96key/results/predictions.json)", 'size_rel': 1e-06, 'size_rel_source': "E244's size_match_rel: each item's size must equal its source's (E237 stage 1 for the keys, E187 m67.json for the pairs; observed agreement 2e-8 relative)", 'sd_mult': 3, 'sd_mult_source': "new: 'well above' (the cell) read as at least 3 sd of the 64 random-difference directions' shares, measured in stage 0 on the control itself"}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[stage0 do-nothing] {"dbar_max": 0.0, "removed": [0.0, 0.0, 0.0, 0.0, 0.0], "gain": 0.0}
+[e58/copy_s0_scaled] c 1.000000 size 0.00725026 gain 16.4505 G 16.4505 |dbar| [2.86239, 0.78015, 0.72086, 0.71426, 0.70975] removed [0.04611, -0.00567, -0.01544, -0.01682, -0.01685] D 0.00280 lens relevance max 0.000 best rank 207; 1.5 s
+[random_e58/copy_s0] c 1.000000 size 0.00725026 gain 0.0169 G 16.4505 |dbar| [0.46832, 0.06824, 0.06226, 0.05931, 0.05764] removed [-0.00146, -0.01607, -0.01552, -0.01454, -0.01307] D -0.00009 lens relevance max 0.000 best rank 1682; 1.9 s
+[stage0 control] D 0.00280 vs random update D -0.00009; 64 random-difference directions mean 0.00035 sd 0.00109 max 0.00478; bars {'inert': 0.05, 'random_diffs_max': 0.004783792196277707, 'random_update_plus': 0.0031929491505517083}; lens relevance control 0.000 random 0.000; misses []; PASSED False
+FINISHED stage0; peak GPU 3.7 GB
+peak host RSS 6.2 GB
+=== FINISHED (exit 1) — results in /mnt/nw/home/e.agnew/commute-agents/compare-lead/experiments/adl/results ===
