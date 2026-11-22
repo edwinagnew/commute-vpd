@@ -1,11 +1,11 @@
 #!/bin/bash
-# E_TBD_P (cell P2.56 run 1): three procedural tasks on the 67M by RL and by SFT, then E222's readings of every state.
+# E256 (cell P2.56 run 1): three procedural tasks on the 67M by RL and by SFT, then E222's readings of every state.
 # Settings, bars and expected values: experiments/procedural_rl/results/predictions.json (run.py refuses unless it is
 # committed unchanged; set PRED_SHA=SET_ME to `git show HEAD:experiments/procedural_rl/results/predictions.json | sha256sum`).
 # One job per argument list; submit from the clone root, ctl first and alone:
-#   PRED_SHA=SET_ME sbatch --comment=E_TBD_P --time=00:20:00 --mem=40G cluster/procedural_rl.sbatch ctl
-#   PRED_SHA=SET_ME sbatch --comment=E_TBD_P --dependency=afterok:<ctl id> cluster/procedural_rl.sbatch train sequence   (brackets, addition alike, in parallel; only the tasks stage0.json lists as usable)
-#   PRED_SHA=SET_ME sbatch --comment=E_TBD_P --dependency=afterok:<train id> cluster/procedural_rl.sbatch read sequence    (each after its own train job)
+#   PRED_SHA=SET_ME sbatch --comment=E256 --time=00:20:00 --mem=40G cluster/procedural_rl.sbatch ctl
+#   PRED_SHA=SET_ME sbatch --comment=E256 --dependency=afterok:<ctl id> cluster/procedural_rl.sbatch train sequence   (brackets, addition alike, in parallel; only the tasks stage0.json lists as usable)
+#   PRED_SHA=SET_ME sbatch --comment=E256 --dependency=afterok:<train id> cluster/procedural_rl.sbatch read sequence    (each after its own train job)
 # A task's train job exits 1 when RL seed 0 fails the learned gate: the task is dropped, its read job is not submitted.
 # Times on an L40, each a measured item x its count: model load ~2 min (E218); ctl ~7 min (E211's ctl ~2.5 min, log
 # commute-rl67m-s3-61974; items, zero update and benchmark ~2 min); train per task ~6 min (RL ~13 s per seed at 22-31

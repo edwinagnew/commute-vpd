@@ -1,4 +1,4 @@
-"""E_TBD_P (procedural_rl), cell P2.56 run 1: three procedural tasks on the 67M (day/month sequences, closing brackets
+"""E256 (procedural_rl), cell P2.56 run 1: three procedural tasks on the 67M (day/month sequences, closing brackets
 and quotes, single-digit addition), each trained by RL and by supervised training on demonstrations (SFT), three seeds,
 every state stopped at one update size, with Gaussian updates matched to RL's per-matrix norms; then E222's readings of
 every state. Settings, bars and expected values: results/predictions.json (the run refuses unless it is committed
@@ -19,7 +19,7 @@ No head or part switch-off: no circuit for these tasks is located in this 67M (E
 Files: results/stage0.json, results/train_<task>.json, results/read_<task>.json, results/read/<state>.json; states
 results/large/states/<task>_<arm>_s<seed>.pt ({matrix: dW}, bf16, sha256 in train_<task>.json).
 
-    sbatch --comment=E_TBD_P cluster/procedural_rl.sbatch ctl
+    sbatch --comment=E256 cluster/procedural_rl.sbatch ctl
 """
 
 from __future__ import annotations
@@ -105,7 +105,7 @@ class Ctx:
     def __init__(self) -> None:
         require_filed(PRED)
         P = json.loads(PRED.read_text())
-        assert P["experiment"].startswith("E_TBD_P"), P["experiment"]
+        assert P["experiment"].startswith("E256"), P["experiment"]
         self.P, self.C, self.th = P, config_from_settings(Config, P["settings"]), P["thresholds"]
         torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False
         self.net, self.tok = ST.Net("cuda"), vpd.tokenizer()
@@ -289,7 +289,7 @@ def main(argv: list[str]) -> int:
         return 1
     o.d["done"] = True
     o.write()
-    print(f"E_TBD_P {job} DONE", flush=True)
+    print(f"E256 {job} DONE", flush=True)
     return 0
 
 
