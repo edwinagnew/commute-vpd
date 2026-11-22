@@ -1,0 +1,12 @@
+E265 stage0 0/1; settings {'k': 5, 'pile_split': 'val', 'n_pile': 8192, 'batch': 512, 'lens_top': 20, 'n_random_diffs': 64, 'random_diff_rows': 128, 'random_diff_len': 128, 'random_seed': 259001, 'control': 'e53_lowercase_cipher/e53/lowercase_s0', 'control_random': 'e53_lowercase_cipher/random_reuse'}; thresholds {'gain_floor': 1.0, 'inert': 0.05, 'zero_tol': 1e-09, 'thresholds_e143_source': "run 1's: E143's filed gain_floor, inert and zero_tol (experiments/holes_fill/results/predictions.json)", 'reader_tol': 0.0001, 'reader_tol_source': "E147's reader_neuron_tol, as run 1", 'size_rel': 1e-06, 'size_rel_source': "E244's size_match_rel, as run 1", 'sd_mult': 3, 'sd_mult_source': "run 1's"}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[stage0 do-nothing] {"dbar_max": 0.0, "removed": [0.0, 0.0, 0.0, 0.0, 0.0], "gain": 0.0}
+[e53_lowercase_cipher/e53/lowercase_s0] c 1.000000 size 0.0179473 gain 1.6721 G 1.6721 |dbar| [31.74138, 0.89468, 0.6212, 0.58449, 0.55272] removed [0.02909, 0.08361, 0.04031, 0.04332, 0.04516] D 0.05000 lens relevance max 0.000 best rank 271; 5.2 s
+[e53_lowercase_cipher/random_reuse] c 1.000000 size 0.0179473 gain -0.0315 G 1.6721 |dbar| [4.54851, 0.2288, 0.15111, 0.14327, 0.13993] removed [-0.00906, -0.01438, -0.01846, -0.01533, -0.01406] D -0.00542 lens relevance max 0.050 best rank 16; 6.2 s
+[stage0 control] D 0.05000 vs random update D -0.00542; 64 random-difference directions mean 0.00201 sd 0.00543 max 0.02960; bars {'inert': 0.05, 'random_diffs_max': 0.029600209618781334, 'random_update_plus': 0.010860130554084808}; lens relevance control 0.000 random 0.050; misses []; PASSED True
+FINISHED stage0; peak GPU 4.9 GB
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /mnt/nw/home/e.agnew/commute-agents/compare-lead/experiments/adl/results/amend1 ===

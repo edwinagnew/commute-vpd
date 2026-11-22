@@ -1,0 +1,262 @@
+E265 items 0/1; settings {'k': 5, 'pile_split': 'val', 'n_pile': 8192, 'batch': 512, 'lens_top': 20, 'n_random_diffs': 64, 'random_diff_rows': 128, 'random_diff_len': 128, 'random_seed': 259001, 'control': 'e53_lowercase_cipher/e53/lowercase_s0', 'control_random': 'e53_lowercase_cipher/random_reuse'}; thresholds {'gain_floor': 1.0, 'inert': 0.05, 'zero_tol': 1e-09, 'thresholds_e143_source': "run 1's: E143's filed gain_floor, inert and zero_tol (experiments/holes_fill/results/predictions.json)", 'reader_tol': 0.0001, 'reader_tol_source': "E147's reader_neuron_tol, as run 1", 'size_rel': 1e-06, 'size_rel_source': "E244's size_match_rel, as run 1", 'sd_mult': 3, 'sd_mult_source': "run 1's"}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[e58/copy_s0_scaled] c 1.000000 size 0.00725026 gain 16.4505 G 16.4505 |dbar| [2.86239, 0.78015, 0.72086, 0.71426, 0.70975] removed [0.04611, -0.00567, -0.01544, -0.01682, -0.01685] D 0.00280 lens relevance max 0.000 best rank 207; 2.0 s
+ITEM 1 of 127 DONE; projected minutes 4.3
+[e58/copy_s1_scaled] c 1.000000 size 0.00730708 gain 16.3311 G 16.3311 |dbar| [5.55195, 0.90376, 0.65291, 0.64233, 0.63094] removed [0.0076, -0.10161, -0.10973, -0.11158, -0.11339] D 0.00047 lens relevance max 0.000 best rank 4553; 1.5 s
+ITEM 2 of 127 DONE; projected minutes 3.7
+[e58/copy_s2_scaled] c 1.000000 size 0.00734911 gain 16.4168 G 16.4168 |dbar| [2.92523, 0.67134, 0.66107, 0.64728, 0.63855] removed [-0.02457, -0.00923, -0.01842, -0.01747, -0.0182] D -0.00056 lens relevance max 0.000 best rank 125; 1.5 s
+ITEM 3 of 127 DONE; projected minutes 3.6
+[e58/rank1_s0_scaled] c 0.920075 size 0.00724327 gain 9.3454 G 9.3454 |dbar| [6.89174, 0.63199, 0.62861, 0.61806, 0.60919] removed [0.03021, -0.09636, -0.13218, -0.13722, -0.14026] D 0.00323 lens relevance max 0.000 best rank 6349; 1.6 s
+ITEM 4 of 127 DONE; projected minutes 3.5
+[e58/rank1_s1_scaled] c 0.920075 size 0.00732216 gain 8.9827 G 8.9827 |dbar| [1.91327, 0.61994, 0.61945, 0.61107, 0.60678] removed [-0.00901, -0.12368, -0.14314, -0.14403, -0.14381] D -0.00100 lens relevance max 0.000 best rank 3163; 1.5 s
+ITEM 5 of 127 DONE; projected minutes 3.5
+[e58/rank1_s2_scaled] c 0.920075 size 0.00734102 gain 9.3516 G 9.3516 |dbar| [3.71439, 1.41424, 0.68386, 0.66797, 0.65391] removed [0.00221, 0.06563, -0.16533, -0.17866, -0.19116] D 0.00702 lens relevance max 0.000 best rank 5477; 1.5 s
+ITEM 6 of 127 DONE; projected minutes 3.4
+[e58/elicit_s0_scaled] c 0.870739 size 0.00728247 gain 11.0045 G 11.0045 |dbar| [5.65848, 0.62894, 0.62594, 0.61738, 0.60905] removed [0.02941, -0.09321, -0.11201, -0.11713, -0.11955] D 0.00267 lens relevance max 0.000 best rank 2911; 1.6 s
+ITEM 7 of 127 DONE; projected minutes 3.4
+[e58/elicit_s1_scaled] c 0.870739 size 0.0073681 gain 10.9812 G 10.9812 |dbar| [2.04802, 0.68152, 0.62206, 0.61312, 0.60394] removed [-0.0307, -0.05694, -0.04969, -0.04537, -0.04037] D -0.00280 lens relevance max 0.000 best rank 3833; 1.5 s
+ITEM 8 of 127 DONE; projected minutes 3.4
+[e58/elicit_s2_scaled] c 0.870739 size 0.00725589 gain 10.8129 G 10.8129 |dbar| [3.5741, 0.63602, 0.63132, 0.62579, 0.62075] removed [-0.01923, -0.08811, -0.09893, -0.09797, -0.091] D -0.00178 lens relevance max 0.000 best rank 498; 1.5 s
+ITEM 9 of 127 DONE; projected minutes 3.4
+[e58/cipher_s0_scaled] c 0.752024 size 0.00730949 gain 12.9351 G 12.9351 |dbar| [10.55334, 0.98239, 0.91764, 0.91141, 0.90378] removed [0.01964, 0.52707, 0.81493, 0.91489, 1.00561] D 0.07774 lens relevance max 0.000 best rank 1142; 1.6 s
+ITEM 10 of 127 DONE; projected minutes 3.4
+[e58/cipher_s1_scaled] c 0.752024 size 0.00732562 gain 13.1234 G 13.1234 |dbar| [4.24376, 0.94505, 0.92699, 0.91711, 0.90931] removed [0.06998, 0.60489, 0.68589, 0.72795, 0.78669] D 0.05995 lens relevance max 0.000 best rank 1534; 1.5 s
+ITEM 11 of 127 DONE; projected minutes 3.4
+[e58/cipher_s2_scaled] c 0.752024 size 0.00727135 gain 12.2627 G 12.2627 |dbar| [5.17696, 1.00822, 0.94221, 0.93347, 0.92536] removed [0.02774, 0.82463, 0.90115, 0.96203, 1.01695] D 0.08293 lens relevance max 0.000 best rank 1761; 1.5 s
+ITEM 12 of 127 DONE; projected minutes 3.4
+[e58/prior_cipher_s0_scaled] c 0.779816 size 0.00731114 gain 12.8399 G 12.8399 |dbar| [1.9769, 0.77737, 0.76913, 0.7558, 0.74274] removed [0.0412, 0.02633, 0.0529, 0.0785, 0.11028] D 0.00859 lens relevance max 0.000 best rank 1019; 1.6 s
+ITEM 13 of 127 DONE; projected minutes 3.4
+[e58/prior_cipher_s1_scaled] c 0.779816 size 0.00727969 gain 12.4364 G 12.4364 |dbar| [3.28127, 0.70646, 0.7079, 0.69803, 0.68736] removed [0.05634, -0.09788, -0.09475, -0.09061, -0.0757] D 0.00453 lens relevance max 0.000 best rank 1064; 1.6 s
+ITEM 14 of 127 DONE; projected minutes 3.4
+[e58/prior_cipher_s2_scaled] c 0.779816 size 0.00731562 gain 12.2262 G 12.2262 |dbar| [2.08041, 0.79658, 0.78095, 0.76592, 0.75028] removed [0.03601, 0.01013, 0.0368, 0.0538, 0.08873] D 0.00726 lens relevance max 0.000 best rank 320; 1.5 s
+ITEM 15 of 127 DONE; projected minutes 3.4
+[random_e58/copy_s0] c 1.000000 size 0.00725026 gain 0.0169 G 16.4505 |dbar| [0.46832, 0.06824, 0.06226, 0.05931, 0.05764] removed [-0.00146, -0.01607, -0.01552, -0.01454, -0.01307] D -0.00009 lens relevance max 0.000 best rank 1682; 2.0 s
+ITEM 16 of 127 DONE; projected minutes 3.4
+[random_e58/copy_s1] c 1.000000 size 0.00730708 gain -0.0083 G 16.3311 |dbar| [0.79479, 0.07267, 0.06484, 0.06227, 0.06063] removed [-0.00013, -0.00954, -0.00871, -0.01092, -0.0107] D -0.00001 lens relevance max 0.000 best rank 260; 2.0 s
+ITEM 17 of 127 DONE; projected minutes 3.5
+[random_e58/copy_s2] c 1.000000 size 0.00734911 gain -0.0076 G 16.4168 |dbar| [0.54432, 0.07043, 0.06778, 0.06503, 0.06286] removed [-0.00715, 0.00404, 0.00866, 0.01023, 0.0108] D 0.00066 lens relevance max 0.000 best rank 84; 2.0 s
+ITEM 18 of 127 DONE; projected minutes 3.5
+[random_e58/rank1_s0] c 0.920075 size 0.00724327 gain -0.0032 G 9.3454 |dbar| [0.47738, 0.07348, 0.06846, 0.06572, 0.06377] removed [0.00024, 0.0035, 0.0032, 0.00216, 0.00141] D 0.00037 lens relevance max 0.000 best rank 745; 2.1 s
+ITEM 19 of 127 DONE; projected minutes 3.6
+[random_e58/rank1_s1] c 0.920075 size 0.00732216 gain -0.0099 G 8.9827 |dbar| [1.30241, 0.08822, 0.06052, 0.05752, 0.05664] removed [0.00274, 0.00269, 0.00232, 0.0014, 0.00066] D 0.00030 lens relevance max 0.000 best rank 1742; 1.9 s
+ITEM 20 of 127 DONE; projected minutes 3.6
+[random_e58/rank1_s2] c 0.920075 size 0.00734102 gain 0.0012 G 9.3516 |dbar| [1.16549, 0.07989, 0.06371, 0.06143, 0.06063] removed [0.0009, 0.00184, 0.0029, 0.00358, 0.00444] D 0.00048 lens relevance max 0.000 best rank 69; 1.9 s
+ITEM 21 of 127 DONE; projected minutes 3.6
+[random_e58/elicit_s0] c 0.870739 size 0.00728247 gain -0.0099 G 11.0045 |dbar| [1.85124, 0.09273, 0.0607, 0.05857, 0.05738] removed [-0.00084, 0.00173, 0.00442, 0.00389, 0.00384] D 0.00040 lens relevance max 0.000 best rank 242; 2.0 s
+ITEM 22 of 127 DONE; projected minutes 3.7
+[random_e58/elicit_s1] c 0.870739 size 0.0073681 gain -0.0103 G 10.9812 |dbar| [0.47016, 0.072, 0.06528, 0.06336, 0.06234] removed [-0.00027, -9e-05, 0.0026, 0.00496, 0.0061] D 0.00056 lens relevance max 0.000 best rank 345; 2.0 s
+ITEM 23 of 127 DONE; projected minutes 3.7
+[random_e58/elicit_s2] c 0.870739 size 0.00725589 gain 0.0072 G 10.8129 |dbar| [0.45227, 0.06328, 0.05907, 0.05709, 0.05607] removed [-0.00304, -0.00115, 0.00074, 0.00188, 0.00236] D 0.00022 lens relevance max 0.000 best rank 1273; 2.0 s
+ITEM 24 of 127 DONE; projected minutes 3.7
+[random_e58/cipher_s0] c 0.752024 size 0.00730949 gain 0.0038 G 12.9351 |dbar| [0.51347, 0.08227, 0.0612, 0.05818, 0.05694] removed [-0.00085, 0.00809, 0.00956, 0.00927, 0.01025] D 0.00079 lens relevance max 0.000 best rank 32; 2.0 s
+ITEM 25 of 127 DONE; projected minutes 3.7
+[random_e58/cipher_s1] c 0.752024 size 0.00732562 gain -0.0087 G 13.1234 |dbar| [0.80411, 0.07534, 0.06356, 0.06133, 0.05948] removed [-0.00344, -0.00279, -0.00345, -0.00365, -0.00386] D -0.00021 lens relevance max 0.000 best rank 196; 2.0 s
+ITEM 26 of 127 DONE; projected minutes 3.8
+[random_e58/cipher_s2] c 0.752024 size 0.00727135 gain 0.0010 G 12.2627 |dbar| [0.49173, 0.06954, 0.0608, 0.05888, 0.05804] removed [0.00386, -8e-05, -0.00263, -0.00261, -0.00304] D 0.00031 lens relevance max 0.000 best rank 1139; 2.0 s
+ITEM 27 of 127 DONE; projected minutes 3.8
+[random_e58/prior_cipher_s0] c 0.779816 size 0.00731114 gain -0.0015 G 12.8399 |dbar| [1.93771, 0.10103, 0.06628, 0.06358, 0.06394] removed [0.00376, 0.00259, -0.00021, -0.001, -0.00163] D 0.00029 lens relevance max 0.000 best rank 427; 2.0 s
+ITEM 28 of 127 DONE; projected minutes 3.8
+[random_e58/prior_cipher_s1] c 0.779816 size 0.00727969 gain -0.0010 G 12.4364 |dbar| [0.90856, 0.0665, 0.05865, 0.05701, 0.05599] removed [0.00017, 0.00649, 0.00782, 0.00865, 0.00919] D 0.00074 lens relevance max 0.000 best rank 449; 2.0 s
+ITEM 29 of 127 DONE; projected minutes 3.8
+[random_e58/prior_cipher_s2] c 0.779816 size 0.00731562 gain 0.0092 G 12.2262 |dbar| [0.47436, 0.06683, 0.06142, 0.0591, 0.05799] removed [0.00159, -0.00644, -0.00719, -0.00761, -0.00754] D 0.00013 lens relevance max 0.000 best rank 740; 2.0 s
+ITEM 30 of 127 DONE; projected minutes 3.8
+[e62_copy_lookup/e62/copy_s0] c 1.000000 size 0.0071472 gain 12.6496 G 12.6496 |dbar| [2.80372, 0.64977, 0.62617, 0.60721, 0.59675] removed [-0.02324, 0.04219, 0.04477, 0.04206, 0.04098] D 0.00354 lens relevance max 0.000 best rank 994; 1.4 s
+ITEM 31 of 127 DONE; projected minutes 3.8
+[e62_copy_lookup/e62/copy_s1] c 1.000000 size 0.00707455 gain 12.6359 G 12.6359 |dbar| [20.56135, 0.81461, 0.567, 0.54882, 0.53801] removed [0.01033, 0.14848, 0.05182, 0.04756, 0.05263] D 0.01175 lens relevance max 0.000 best rank 2547; 1.4 s
+ITEM 32 of 127 DONE; projected minutes 3.8
+[e62_copy_lookup/e62/copy_s2] c 1.000000 size 0.00714323 gain 12.5470 G 12.5470 |dbar| [1.83987, 0.71098, 0.63918, 0.60776, 0.58999] removed [0.04719, 0.00826, 0.01704, 0.01732, 0.01758] D 0.00376 lens relevance max 0.000 best rank 620; 1.4 s
+ITEM 33 of 127 DONE; projected minutes 3.8
+[e62_copy_lookup/random_reuse] c 1.000000 size 0.0071472 gain 0.0131 G 12.6496 |dbar| [0.51746, 0.06939, 0.0649, 0.06225, 0.06083] removed [0.0064, -0.00131, 0.00331, 0.00566, 0.0077] D 0.00061 lens relevance max 0.000 best rank 41; 1.8 s
+ITEM 34 of 127 DONE; projected minutes 3.8
+[e62_copy_lookup/e62/lookup_s0] c 0.834398 size 0.0070786 gain 14.0469 G 14.0469 |dbar| [2.09927, 0.63145, 0.61999, 0.61263, 0.6093] removed [0.01998, 0.24484, 0.29838, 0.28367, 0.29325] D 0.02124 lens relevance max 0.000 best rank 3200; 1.5 s
+ITEM 35 of 127 DONE; projected minutes 3.7
+[e62_copy_lookup/e62/lookup_s1] c 0.834398 size 0.0071377 gain 13.8004 G 13.8004 |dbar| [1.44829, 0.63756, 0.60832, 0.60161, 0.59538] removed [0.00255, 0.27753, 0.32155, 0.30855, 0.31487] D 0.02330 lens relevance max 0.000 best rank 2365; 1.4 s
+ITEM 36 of 127 DONE; projected minutes 3.7
+[e62_copy_lookup/e62/lookup_s2] c 0.834398 size 0.00714868 gain 14.0414 G 14.0414 |dbar| [1.12891, 0.58399, 0.54538, 0.53981, 0.53572] removed [0.04109, 0.1675, 0.20745, 0.20099, 0.2086] D 0.01486 lens relevance max 0.000 best rank 2018; 1.4 s
+ITEM 37 of 127 DONE; projected minutes 3.7
+[e62_copy_lookup/random_new] c 0.834398 size 0.0070786 gain 0.0185 G 14.0469 |dbar| [0.42732, 0.06131, 0.05681, 0.05431, 0.05272] removed [-0.00052, -0.00038, 0.00018, 0.00013, 0.00033] D 0.00002 lens relevance max 0.050 best rank 0; 1.8 s
+ITEM 38 of 127 DONE; projected minutes 3.7
+[e46_copy_random/e46/ident32_s0] c 1.000000 size 0.00488747 gain 13.9983 G 13.9983 |dbar| [25.19139, 0.98981, 0.94888, 0.94969, 0.95126] removed [-0.00703, -0.33085, -0.34868, -0.35004, -0.35416] D -0.00050 lens relevance max 0.000 best rank 3478; 1.1 s
+ITEM 39 of 127 DONE; projected minutes 3.7
+[e46_copy_random/e46/ident32_s1] c 1.000000 size 0.00492251 gain 14.0735 G 14.0735 |dbar| [21.70829, 1.51231, 0.91369, 0.91945, 0.92459] removed [-0.04751, -0.22941, -0.22559, -0.22802, -0.22989] D -0.00338 lens relevance max 0.000 best rank 2814; 1.1 s
+ITEM 40 of 127 DONE; projected minutes 3.6
+[e46_copy_random/e46/ident32b_s0] c 1.000000 size 0.00495207 gain 14.6113 G 14.6113 |dbar| [19.59721, 1.05212, 0.92104, 0.92033, 0.91987] removed [-0.00606, -0.26083, -0.25135, -0.25622, -0.2611] D -0.00042 lens relevance max 0.000 best rank 1490; 1.1 s
+ITEM 41 of 127 DONE; projected minutes 3.6
+[e46_copy_random/e46/ident32b_s1] c 1.000000 size 0.00496812 gain 14.2608 G 14.2608 |dbar| [22.33624, 1.4712, 0.98789, 0.99067, 0.99243] removed [0.00195, -0.29781, -0.29596, -0.27567, -0.26679] D 0.00014 lens relevance max 0.000 best rank 3867; 1.1 s
+ITEM 42 of 127 DONE; projected minutes 3.6
+[e46_copy_random/random_reuse] c 1.000000 size 0.00488747 gain -0.0026 G 13.9983 |dbar| [0.87104, 0.05785, 0.04706, 0.04447, 0.04334] removed [0.00079, -0.00125, -0.0022, -0.00284, -0.00225] D 0.00006 lens relevance max 0.000 best rank 75; 1.4 s
+ITEM 43 of 127 DONE; projected minutes 3.6
+[e46_copy_random/e46/rand32_s0] c 0.659036 size 0.00354642 gain 10.3408 G 10.3408 |dbar| [2.17863, 0.86806, 0.85262, 0.84051, 0.8301] removed [0.51366, 1.74394, 1.76613, 1.76514, 1.76959] D 0.17113 lens relevance max 0.000 best rank 59; 1.1 s
+ITEM 44 of 127 DONE; projected minutes 3.5
+[e46_copy_random/e46/rand32_s1] c 0.659036 size 0.00359749 gain 10.0895 G 10.0895 |dbar| [8.27136, 0.86664, 0.79757, 0.78287, 0.77253] removed [0.15714, 1.72592, 1.78859, 1.7854, 1.80267] D 0.17867 lens relevance max 0.050 best rank 3; 1.1 s
+ITEM 45 of 127 DONE; projected minutes 3.5
+[e46_copy_random/e46/rand32b_s0] c 0.659036 size 0.00622986 gain 14.9466 G 14.9466 |dbar| [1.15099, 0.59395, 0.61279, 0.6178, 0.61331] removed [-0.00593, -0.00948, 0.0028, 0.00939, 0.02854] D 0.00191 lens relevance max 0.000 best rank 544; 1.1 s
+ITEM 46 of 127 DONE; projected minutes 3.5
+[e46_copy_random/e46/rand32b_s1] c 0.659036 size 0.0063564 gain 15.2615 G 15.2615 |dbar| [2.81047, 0.64773, 0.65665, 0.65668, 0.64754] removed [0.07723, -0.0015, 0.01782, 0.04329, 0.07365] D 0.00506 lens relevance max 0.000 best rank 528; 1.1 s
+ITEM 47 of 127 DONE; projected minutes 3.5
+[e46_copy_random/random_new] c 0.659036 size 0.00354642 gain 0.0087 G 10.3408 |dbar| [0.416, 0.03543, 0.02928, 0.02813, 0.02768] removed [0.00519, -0.00015, -0.00113, -0.00114, -0.00087] D 0.00050 lens relevance max 0.000 best rank 950; 1.4 s
+ITEM 48 of 127 DONE; projected minutes 3.5
+[e53_lowercase_cipher/e53/lowercase_s1] c 1.000000 size 0.0182423 gain 1.6130 G 1.6130 |dbar| [9.80174, 0.69967, 0.62221, 0.58602, 0.56733] removed [0.02948, 0.06876, 0.06636, 0.06879, 0.06499] D 0.04265 lens relevance max 0.000 best rank 31; 9.2 s
+ITEM 49 of 127 DONE; projected minutes 3.8
+[e53_lowercase_cipher/e53/cipher_s0] c 0.896218 size 0.0167003 gain 3.5205 G 3.5205 |dbar| [8.97755, 0.59104, 0.46698, 0.44044, 0.41497] removed [0.00158, 0.023, 0.03235, 0.03443, 0.03715] D 0.01055 lens relevance max 0.000 best rank 315; 6.9 s
+ITEM 50 of 127 DONE; projected minutes 4.0
+[e53_lowercase_cipher/e53/cipher_s1] c 0.896218 size 0.0167004 gain 3.4539 G 3.4539 |dbar| [1.82961, 0.49977, 0.46133, 0.43113, 0.4054] removed [0.00575, 0.00914, 0.01528, 0.0174, 0.01988] D 0.00576 lens relevance max 0.000 best rank 109; 5.6 s
+ITEM 51 of 127 DONE; projected minutes 4.2
+[e53_lowercase_cipher/e53/broad_cipher_s0] c 0.896218 size 0.0194621 gain 3.0196 G 3.0196 |dbar| [2.29689, 0.94189, 0.52292, 0.49696, 0.48147] removed [0.0112, 0.05278, 0.1476, 0.14899, 0.14756] D 0.04934 lens relevance max 0.000 best rank 176; 6.9 s
+ITEM 52 of 127 DONE; projected minutes 4.4
+[e53_lowercase_cipher/e53/broad_cipher_s1] c 0.896218 size 0.0195164 gain 2.9692 G 2.9692 |dbar| [11.07185, 0.52455, 0.47925, 0.45032, 0.43305] removed [-0.02793, 0.12118, 0.1291, 0.13684, 0.13935] D 0.04693 lens relevance max 0.000 best rank 1183; 5.5 s
+ITEM 53 of 127 DONE; projected minutes 4.5
+[e53_lowercase_cipher/random_new] c 0.896218 size 0.0167003 gain 0.0235 G 3.5205 |dbar| [1.60697, 0.15322, 0.14135, 0.13529, 0.13192] removed [0.00103, 0.00888, 0.00735, 0.00992, 0.01125] D 0.00320 lens relevance max 0.000 best rank 220; 6.4 s
+ITEM 54 of 127 DONE; projected minutes 4.7
+[e54_matched/e54/elicit_s0] c 1.000000 size 0.00493081 gain 10.7869 G 10.7869 |dbar| [2.4977, 0.75786, 0.73532, 0.72341, 0.7164] removed [0.043, 0.25343, 0.29611, 0.315, 0.34029] D 0.03155 lens relevance max 0.000 best rank 301; 1.1 s
+ITEM 55 of 127 DONE; projected minutes 4.6
+[e54_matched/e54/elicit_s1] c 1.000000 size 0.0049811 gain 10.8200 G 10.8200 |dbar| [4.673, 0.7326, 0.71462, 0.70306, 0.69534] removed [0.03496, 0.23337, 0.27973, 0.30895, 0.34235] D 0.03164 lens relevance max 0.000 best rank 26; 1.0 s
+ITEM 56 of 127 DONE; projected minutes 4.6
+[e54_matched/e54/elicit_s2] c 1.000000 size 0.00498911 gain 10.8529 G 10.8529 |dbar| [11.69631, 0.78908, 0.73053, 0.71449, 0.70483] removed [0.00018, 0.20614, 0.21739, 0.24783, 0.27483] D 0.02532 lens relevance max 0.000 best rank 24; 1.0 s
+ITEM 57 of 127 DONE; projected minutes 4.5
+[e54_matched/e54/elicit_s3] c 1.000000 size 0.00502714 gain 10.8773 G 10.8773 |dbar| [3.70404, 0.75947, 0.74508, 0.72927, 0.72101] removed [0.02141, 0.20292, 0.23414, 0.26696, 0.29469] D 0.02709 lens relevance max 0.000 best rank 295; 1.0 s
+ITEM 58 of 127 DONE; projected minutes 4.5
+[e54_matched/e54/elicit_s4] c 1.000000 size 0.00498597 gain 10.6881 G 10.6881 |dbar| [3.51505, 0.76772, 0.7499, 0.73654, 0.72772] removed [0.03487, 0.29485, 0.34432, 0.37886, 0.41334] D 0.03867 lens relevance max 0.000 best rank 405; 1.0 s
+ITEM 59 of 127 DONE; projected minutes 4.5
+[e54_matched/random_reuse] c 1.000000 size 0.00493081 gain 0.0108 G 10.7869 |dbar| [0.60744, 0.05373, 0.04668, 0.04474, 0.04361] removed [-0.00069, -0.00247, 0.00125, 0.00296, 0.00412] D 0.00038 lens relevance max 0.000 best rank 700; 1.4 s
+ITEM 60 of 127 DONE; projected minutes 4.4
+[e54_matched/e54/cipher_s0] c 0.981323 size 0.00493558 gain 10.9767 G 10.9767 |dbar| [11.63719, 1.06307, 1.04344, 1.0186, 1.00041] removed [0.08865, 1.03659, 0.92032, 0.92816, 0.9651] D 0.09444 lens relevance max 0.000 best rank 155; 1.1 s
+ITEM 61 of 127 DONE; projected minutes 4.4
+[e54_matched/e54/cipher_s1] c 0.981323 size 0.00496014 gain 10.7711 G 10.7711 |dbar| [12.70033, 1.07123, 1.04549, 1.02915, 1.01789] removed [0.02601, 1.12687, 1.13862, 1.16052, 1.20283] D 0.11167 lens relevance max 0.050 best rank 17; 1.0 s
+ITEM 62 of 127 DONE; projected minutes 4.4
+[e54_matched/e54/cipher_s2] c 0.981323 size 0.00497314 gain 10.8493 G 10.8493 |dbar| [12.51617, 1.05121, 1.02288, 0.99994, 0.98402] removed [0.04823, 1.15642, 1.11099, 1.13785, 1.17986] D 0.10875 lens relevance max 0.050 best rank 6; 1.0 s
+ITEM 63 of 127 DONE; projected minutes 4.3
+[e54_matched/e54/cipher_s3] c 0.981323 size 0.0050234 gain 11.5518 G 11.5518 |dbar| [13.13188, 1.08694, 1.03105, 1.01235, 1.00096] removed [-0.01213, 0.86961, 0.99171, 1.00654, 1.04077] D 0.09010 lens relevance max 0.000 best rank 23; 1.0 s
+ITEM 64 of 127 DONE; projected minutes 4.3
+[e54_matched/e54/cipher_s4] c 0.981323 size 0.00502186 gain 10.8198 G 10.8198 |dbar| [11.03575, 1.10335, 1.07746, 1.05608, 1.04124] removed [0.00592, 1.20045, 1.21953, 1.2311, 1.25255] D 0.11577 lens relevance max 0.000 best rank 57; 1.1 s
+ITEM 65 of 127 DONE; projected minutes 4.3
+[e54_matched/random_new] c 0.981323 size 0.00493558 gain 0.0051 G 10.9767 |dbar| [0.60709, 0.05607, 0.04279, 0.04056, 0.03936] removed [0.0006, 0.00174, 0.00114, 0.00113, 0.00176] D 0.00016 lens relevance max 0.000 best rank 26; 1.4 s
+ITEM 66 of 127 DONE; projected minutes 4.3
+[e54_own/e54/elicit_s0] c 1.000000 size 0.00493081 gain 10.7869 G 10.7869 |dbar| [2.4977, 0.75786, 0.73532, 0.72341, 0.7164] removed [0.043, 0.25343, 0.29611, 0.315, 0.34029] D 0.03155 lens relevance max 0.000 best rank 301; 1.0 s
+ITEM 67 of 127 DONE; projected minutes 4.2
+[e54_own/e54/elicit_s1] c 1.000000 size 0.0049811 gain 10.8200 G 10.8200 |dbar| [4.673, 0.7326, 0.71462, 0.70306, 0.69534] removed [0.03496, 0.23337, 0.27973, 0.30895, 0.34235] D 0.03164 lens relevance max 0.000 best rank 26; 1.0 s
+ITEM 68 of 127 DONE; projected minutes 4.2
+[e54_own/e54/elicit_s2] c 1.000000 size 0.00498911 gain 10.8529 G 10.8529 |dbar| [11.69631, 0.78908, 0.73053, 0.71449, 0.70483] removed [0.00018, 0.20614, 0.21739, 0.24783, 0.27483] D 0.02532 lens relevance max 0.000 best rank 24; 1.1 s
+ITEM 69 of 127 DONE; projected minutes 4.2
+[e54_own/e54/elicit_s3] c 1.000000 size 0.00502714 gain 10.8773 G 10.8773 |dbar| [3.70404, 0.75947, 0.74508, 0.72927, 0.72101] removed [0.02141, 0.20292, 0.23414, 0.26696, 0.29469] D 0.02709 lens relevance max 0.000 best rank 295; 1.0 s
+ITEM 70 of 127 DONE; projected minutes 4.1
+[e54_own/e54/elicit_s4] c 1.000000 size 0.00498597 gain 10.6881 G 10.6881 |dbar| [3.51505, 0.76772, 0.7499, 0.73654, 0.72772] removed [0.03487, 0.29485, 0.34432, 0.37886, 0.41334] D 0.03867 lens relevance max 0.000 best rank 405; 1.0 s
+ITEM 71 of 127 DONE; projected minutes 4.1
+[e54_own/random_reuse] c 1.000000 size 0.00493081 gain 0.0091 G 10.7869 |dbar| [1.04834, 0.05108, 0.04111, 0.0391, 0.03842] removed [-0.00123, 0.00524, 0.00432, 0.00359, 0.00326] D 0.00049 lens relevance max 0.000 best rank 85; 1.4 s
+ITEM 72 of 127 DONE; projected minutes 4.1
+[e54_own/e54/cipher_own_s0] c 0.521670 size 0.00498775 gain 11.5884 G 11.5884 |dbar| [4.15403, 0.50054, 0.47916, 0.47524, 0.47048] removed [0.00793, -0.0237, 0.01515, 0.04291, 0.07657] D 0.00661 lens relevance max 0.000 best rank 1394; 1.1 s
+ITEM 73 of 127 DONE; projected minutes 4.1
+[e54_own/e54/cipher_own_s1] c 0.521670 size 0.0049779 gain 11.1274 G 11.1274 |dbar| [1.81061, 0.46332, 0.47378, 0.47153, 0.46692] removed [0.06253, 0.208, 0.22385, 0.23562, 0.2616] D 0.02351 lens relevance max 0.000 best rank 425; 1.0 s
+ITEM 74 of 127 DONE; projected minutes 4.0
+[e54_own/random_new] c 0.521670 size 0.00498775 gain -0.0158 G 11.5884 |dbar| [0.60809, 0.0464, 0.03951, 0.03798, 0.03712] removed [0.00156, 0.0033, 0.00018, 0.00035, 0.00029] D 0.00028 lens relevance max 0.000 best rank 692; 1.4 s
+ITEM 75 of 127 DONE; projected minutes 4.0
+[open_pair_c3/c3/rank1_s0] c 0.997452 size 0.0049767 gain 10.9111 G 10.9111 |dbar| [3.99283, 0.78208, 0.69392, 0.68065, 0.66709] removed [0.00841, 0.44653, 0.74976, 0.78354, 0.81223] D 0.07444 lens relevance max 0.000 best rank 1831; 1.0 s
+ITEM 76 of 127 DONE; projected minutes 4.0
+[open_pair_c3/c3/rank1_s1] c 0.997452 size 0.00484481 gain 10.8550 G 10.8550 |dbar| [3.89262, 0.75297, 0.72624, 0.71896, 0.71045] removed [0.11401, 0.95964, 0.96854, 0.96842, 0.9611] D 0.08923 lens relevance max 0.000 best rank 595; 1.0 s
+ITEM 77 of 127 DONE; projected minutes 4.0
+[open_pair_c3/c3/rank1_s2] c 0.997452 size 0.00492643 gain 10.8407 G 10.8407 |dbar| [3.1663, 0.74456, 0.71178, 0.69805, 0.68505] removed [0.02224, 0.55309, 0.61937, 0.64379, 0.66655] D 0.06149 lens relevance max 0.000 best rank 227; 1.0 s
+ITEM 78 of 127 DONE; projected minutes 4.0
+[open_pair_c3/c3/rank1_s3] c 0.997452 size 0.00493841 gain 10.6228 G 10.6228 |dbar| [1.81871, 0.81005, 0.76485, 0.74737, 0.73165] removed [0.2279, 0.88889, 0.90546, 0.90318, 0.89144] D 0.08524 lens relevance max 0.000 best rank 3933; 1.0 s
+ITEM 79 of 127 DONE; projected minutes 3.9
+[open_pair_c3/c3/rank1_s4] c 0.997452 size 0.00498337 gain 10.5817 G 10.5817 |dbar| [1.31518, 0.77183, 0.74042, 0.72598, 0.71201] removed [0.16863, 0.57607, 0.60045, 0.60645, 0.60895] D 0.05755 lens relevance max 0.000 best rank 1334; 1.0 s
+ITEM 80 of 127 DONE; projected minutes 3.9
+[open_pair_c3/c3/rank1_s5] c 0.997452 size 0.00489175 gain 10.2138 G 10.2138 |dbar| [6.83016, 0.80473, 0.70732, 0.69473, 0.68372] removed [0.0636, 0.53877, 0.56903, 0.57534, 0.57569] D 0.05636 lens relevance max 0.000 best rank 1679; 1.0 s
+ITEM 81 of 127 DONE; projected minutes 3.9
+[open_pair_c3/c3/rank1_s6] c 0.997452 size 0.0049231 gain 10.9213 G 10.9213 |dbar| [3.08616, 0.70151, 0.68383, 0.67447, 0.6655] removed [0.07307, 0.59874, 0.66976, 0.69058, 0.72076] D 0.06600 lens relevance max 0.000 best rank 488; 1.0 s
+ITEM 82 of 127 DONE; projected minutes 3.9
+[open_pair_c3/c3/rank1_s7] c 0.997452 size 0.00490007 gain 10.9512 G 10.9512 |dbar| [2.26387, 0.75456, 0.73555, 0.72758, 0.72293] removed [0.10911, 0.5791, 0.63323, 0.65597, 0.6838] D 0.06244 lens relevance max 0.000 best rank 808; 1.0 s
+ITEM 83 of 127 DONE; projected minutes 3.9
+[open_pair_c3/random_reuse] c 0.997452 size 0.0049767 gain -0.0034 G 10.9111 |dbar| [0.33878, 0.05332, 0.04549, 0.04326, 0.04216] removed [-0.00069, 0.00024, 5e-05, -0.00076, -0.00102] D 0.00002 lens relevance max 0.050 best rank 15; 1.3 s
+ITEM 84 of 127 DONE; projected minutes 3.8
+[open_pair_c3/c3/cipher_s0] c 1.000000 size 0.00515215 gain 12.8554 G 12.8554 |dbar| [10.92729, 1.1183, 1.07771, 1.05797, 1.04373] removed [0.0486, 1.41724, 1.3861, 1.39673, 1.43457] D 0.11159 lens relevance max 0.000 best rank 40; 1.0 s
+ITEM 85 of 127 DONE; projected minutes 3.8
+[open_pair_c3/c3/cipher_s1] c 1.000000 size 0.0050432 gain 12.5289 G 12.5289 |dbar| [9.7608, 1.14542, 1.12989, 1.11302, 1.10259] removed [0.04119, 1.32724, 1.27721, 1.29051, 1.30886] D 0.10593 lens relevance max 0.000 best rank 123; 1.0 s
+ITEM 86 of 127 DONE; projected minutes 3.8
+[open_pair_c3/c3/cipher_s2] c 1.000000 size 0.00485929 gain 12.6540 G 12.6540 |dbar| [4.26122, 1.12263, 1.08652, 1.06191, 1.04733] removed [0.13382, 1.24941, 1.33148, 1.37159, 1.4149] D 0.11181 lens relevance max 0.000 best rank 87; 1.0 s
+ITEM 87 of 127 DONE; projected minutes 3.8
+[open_pair_c3/c3/cipher_s3] c 1.000000 size 0.00480433 gain 12.8675 G 12.8675 |dbar| [5.62665, 1.03893, 1.02103, 1.00013, 0.98485] removed [0.14448, 1.24677, 1.22524, 1.2475, 1.29459] D 0.10061 lens relevance max 0.000 best rank 178; 1.0 s
+ITEM 88 of 127 DONE; projected minutes 3.8
+[open_pair_c3/c3/cipher_s4] c 1.000000 size 0.00482824 gain 12.0373 G 12.0373 |dbar| [4.72316, 1.12653, 1.0886, 1.06472, 1.04611] removed [0.07908, 1.13869, 1.20698, 1.24537, 1.29482] D 0.10757 lens relevance max 0.000 best rank 71; 1.0 s
+ITEM 89 of 127 DONE; projected minutes 3.7
+[open_pair_c3/c3/cipher_s5] c 1.000000 size 0.00506624 gain 12.2106 G 12.2106 |dbar| [16.30876, 1.14125, 1.13652, 1.11716, 1.10469] removed [0.04451, 1.03042, 0.93613, 0.95184, 0.98464] D 0.08439 lens relevance max 0.050 best rank 8; 1.0 s
+ITEM 90 of 127 DONE; projected minutes 3.7
+[open_pair_c3/c3/cipher_s6] c 1.000000 size 0.00480883 gain 11.5294 G 11.5294 |dbar| [9.97244, 1.0974, 1.08405, 1.06002, 1.04054] removed [0.01705, 0.91736, 0.92034, 0.95152, 1.00106] D 0.08683 lens relevance max 0.000 best rank 58; 1.1 s
+ITEM 91 of 127 DONE; projected minutes 3.7
+[open_pair_c3/c3/cipher_s7] c 1.000000 size 0.00482237 gain 12.7034 G 12.7034 |dbar| [4.05134, 1.18303, 1.10683, 1.08232, 1.06525] removed [0.22367, 1.26419, 1.42562, 1.44094, 1.48196] D 0.11666 lens relevance max 0.050 best rank 6; 1.0 s
+ITEM 92 of 127 DONE; projected minutes 3.7
+[open_pair_c3/random_new] c 1.000000 size 0.00515215 gain 0.0048 G 12.8554 |dbar| [0.42311, 0.0487, 0.04519, 0.04337, 0.04241] removed [-0.00424, -0.00294, -0.00112, -0.00092, -0.00044] D -0.00003 lens relevance max 0.000 best rank 8086; 1.3 s
+ITEM 93 of 127 DONE; projected minutes 3.7
+[open_pair_c3_copy/c3/copy_s0] c 1.000000 size 0.00485257 gain 12.9511 G 12.9511 |dbar| [3.67205, 0.9679, 0.85576, 0.85136, 0.84502] removed [-0.04652, -0.62886, -0.58614, -0.5702, -0.55538] D -0.00359 lens relevance max 0.000 best rank 5928; 1.0 s
+ITEM 94 of 127 DONE; projected minutes 3.7
+[open_pair_c3_copy/c3/copy_s1] c 1.000000 size 0.00489054 gain 13.0806 G 13.0806 |dbar| [1.28921, 0.87171, 0.81811, 0.81658, 0.81439] removed [-0.0661, -0.04256, -0.03533, -0.01445, 0.00147] D 0.00011 lens relevance max 0.000 best rank 5097; 1.0 s
+ITEM 95 of 127 DONE; projected minutes 3.7
+[open_pair_c3_copy/c3/copy_s2] c 1.000000 size 0.00493207 gain 13.2704 G 13.2704 |dbar| [5.13294, 0.89155, 0.81493, 0.80847, 0.79938] removed [0.19887, -0.21306, -0.14454, -0.11895, -0.0949] D 0.01499 lens relevance max 0.000 best rank 4237; 1.0 s
+ITEM 96 of 127 DONE; projected minutes 3.6
+[open_pair_c3_copy/c3/copy_s3] c 1.000000 size 0.00487474 gain 12.9067 G 12.9067 |dbar| [10.80301, 0.96608, 0.82185, 0.81546, 0.81418] removed [0.04727, -0.40939, -0.39978, -0.39185, -0.3785] D 0.00366 lens relevance max 0.000 best rank 5554; 1.0 s
+ITEM 97 of 127 DONE; projected minutes 3.6
+[open_pair_c3_copy/c3/copy_s4] c 1.000000 size 0.00483045 gain 13.0989 G 13.0989 |dbar| [5.20777, 0.96304, 0.88063, 0.86803, 0.85832] removed [-0.00092, -0.15059, -0.11831, -0.10518, -0.08912] D -0.00007 lens relevance max 0.000 best rank 5784; 1.0 s
+ITEM 98 of 127 DONE; projected minutes 3.6
+[open_pair_c3_copy/c3/copy_s5] c 1.000000 size 0.00485121 gain 13.2011 G 13.2011 |dbar| [8.84942, 0.91361, 0.84201, 0.8364, 0.82922] removed [0.09687, -0.52956, -0.53249, -0.52957, -0.5196] D 0.00734 lens relevance max 0.000 best rank 5977; 1.0 s
+ITEM 99 of 127 DONE; projected minutes 3.6
+[open_pair_c3_copy/c3/copy_s6] c 1.000000 size 0.00486733 gain 13.0368 G 13.0368 |dbar| [4.3557, 0.87655, 0.85407, 0.8442, 0.83536] removed [-0.02308, -0.21016, -0.16473, -0.13733, -0.10997] D -0.00177 lens relevance max 0.000 best rank 4244; 1.0 s
+ITEM 100 of 127 DONE; projected minutes 3.6
+[open_pair_c3_copy/c3/copy_s7] c 1.000000 size 0.00489497 gain 13.1627 G 13.1627 |dbar| [9.39121, 1.14817, 0.8665, 0.85484, 0.84666] removed [0.03869, 0.06947, 0.10912, 0.13666, 0.16023] D 0.01217 lens relevance max 0.000 best rank 4448; 1.0 s
+ITEM 101 of 127 DONE; projected minutes 3.6
+[open_pair_c3_copy/random_reuse] c 1.000000 size 0.00485257 gain 0.0310 G 12.9511 |dbar| [0.92956, 0.06125, 0.04523, 0.04303, 0.04183] removed [0.00202, -0.00063, 0.00656, 0.00804, 0.00845] D 0.00065 lens relevance max 0.000 best rank 3363; 1.3 s
+ITEM 102 of 127 DONE; projected minutes 3.6
+[open_pair_c3_copy/c3/cipher_s0] c 0.990078 size 0.00510103 gain 12.7840 G 12.7840 |dbar| [10.8335, 1.10708, 1.06687, 1.0473, 1.03321] removed [0.05086, 1.43057, 1.3997, 1.41017, 1.44776] D 0.11325 lens relevance max 0.000 best rank 40; 1.0 s
+ITEM 103 of 127 DONE; projected minutes 3.5
+[open_pair_c3_copy/c3/cipher_s1] c 0.990078 size 0.00499316 gain 12.4563 G 12.4563 |dbar| [9.68017, 1.13415, 1.11875, 1.10202, 1.09168] removed [0.04339, 1.33939, 1.28932, 1.3023, 1.32045] D 0.10753 lens relevance max 0.000 best rank 123; 1.0 s
+ITEM 104 of 127 DONE; projected minutes 3.5
+[open_pair_c3_copy/c3/cipher_s2] c 0.990078 size 0.00481108 gain 12.5888 G 12.5888 |dbar| [4.2338, 1.11113, 1.07538, 1.05099, 1.03654] removed [0.13965, 1.27209, 1.35315, 1.39281, 1.43577] D 0.11405 lens relevance max 0.000 best rank 88; 1.0 s
+ITEM 105 of 127 DONE; projected minutes 3.5
+[open_pair_c3_copy/c3/cipher_s3] c 0.990078 size 0.00475666 gain 12.7906 G 12.7906 |dbar| [5.58154, 1.02862, 1.01088, 0.99017, 0.97502] removed [0.14773, 1.26307, 1.24121, 1.26333, 1.31038] D 0.10245 lens relevance max 0.000 best rank 178; 1.1 s
+ITEM 106 of 127 DONE; projected minutes 3.5
+[open_pair_c3_copy/c3/cipher_s4] c 0.990078 size 0.00478034 gain 11.9673 G 11.9673 |dbar| [4.68864, 1.11532, 1.07774, 1.05409, 1.03567] removed [0.08366, 1.1526, 1.22041, 1.25816, 1.30722] D 0.10923 lens relevance max 0.000 best rank 71; 1.0 s
+ITEM 107 of 127 DONE; projected minutes 3.5
+[open_pair_c3_copy/c3/cipher_s5] c 0.990078 size 0.00501597 gain 12.1412 G 12.1412 |dbar| [16.16574, 1.12989, 1.12509, 1.10589, 1.09352] removed [0.04755, 1.04114, 0.94625, 0.96172, 0.99428] D 0.08575 lens relevance max 0.050 best rank 8; 1.0 s
+ITEM 108 of 127 DONE; projected minutes 3.5
+[open_pair_c3_copy/c3/cipher_s6] c 0.990078 size 0.00476112 gain 11.4660 G 11.4660 |dbar| [9.88528, 1.08659, 1.07328, 1.04946, 1.03017] removed [0.02064, 0.92974, 0.93199, 0.9631, 1.01265] D 0.08832 lens relevance max 0.000 best rank 58; 1.0 s
+ITEM 109 of 127 DONE; projected minutes 3.5
+[open_pair_c3_copy/c3/cipher_s7] c 0.990078 size 0.00477453 gain 12.6310 G 12.6310 |dbar| [4.02259, 1.17105, 1.0955, 1.07123, 1.05432] removed [0.22694, 1.28128, 1.4431, 1.45799, 1.49872] D 0.11865 lens relevance max 0.050 best rank 6; 1.1 s
+ITEM 110 of 127 DONE; projected minutes 3.5
+[open_pair_c3_copy/random_new] c 0.990078 size 0.00510103 gain -0.0030 G 12.7840 |dbar| [0.63545, 0.04614, 0.04476, 0.04295, 0.04233] removed [0.00077, -0.00494, -0.00711, -0.0075, -0.00753] D 0.00006 lens relevance max 0.000 best rank 557; 1.3 s
+ITEM 111 of 127 DONE; projected minutes 3.5
+[e58_rank1_96/e58/rank1_s0] c 1.000000 size 0.00787247 gain 9.9303 G 9.9303 |dbar| [7.71978, 0.6848, 0.68052, 0.66874, 0.65895] removed [0.03182, -0.09225, -0.1286, -0.13412, -0.13837] D 0.00320 lens relevance max 0.000 best rank 6718; 1.6 s
+ITEM 112 of 127 DONE; projected minutes 3.5
+[e58_rank1_96/e58/rank1_s1] c 1.000000 size 0.00795822 gain 9.5534 G 9.5534 |dbar| [1.8423, 0.67111, 0.67053, 0.6611, 0.65636] removed [-0.00584, -0.12429, -0.14455, -0.14699, -0.14856] D -0.00061 lens relevance max 0.000 best rank 3376; 1.5 s
+ITEM 113 of 127 DONE; projected minutes 3.5
+[e58_rank1_96/e58/rank1_s2] c 1.000000 size 0.00797872 gain 9.9039 G 9.9039 |dbar| [3.90411, 1.52762, 0.7408, 0.72307, 0.70757] removed [0.00745, 0.07336, -0.13666, -0.15273, -0.16925] D 0.00741 lens relevance max 0.000 best rank 5805; 1.6 s
+ITEM 114 of 127 DONE; projected minutes 3.5
+[e58_rank1_96/random_reuse] c 1.000000 size 0.00787247 gain -0.0081 G 9.9303 |dbar| [0.54932, 0.08326, 0.06749, 0.06525, 0.06396] removed [0.00097, -0.0027, -0.00435, -0.00431, -0.00411] D 0.00010 lens relevance max 0.000 best rank 1895; 2.0 s
+ITEM 115 of 127 DONE; projected minutes 3.5
+[e58_rank1_96/e58/cipher_s0] c 0.817351 size 0.00794444 gain 13.9324 G 13.9324 |dbar| [11.16337, 1.05885, 0.98649, 0.9793, 0.97073] removed [0.01658, 0.48424, 0.79345, 0.9068, 1.00763] D 0.07232 lens relevance max 0.000 best rank 1164; 1.5 s
+ITEM 116 of 127 DONE; projected minutes 3.5
+[e58_rank1_96/e58/cipher_s1] c 0.817351 size 0.00796198 gain 14.1089 G 14.1089 |dbar| [4.27551, 1.01692, 0.99702, 0.98559, 0.97673] removed [0.07764, 0.54565, 0.62713, 0.67226, 0.73245] D 0.05191 lens relevance max 0.000 best rank 1583; 1.6 s
+ITEM 117 of 127 DONE; projected minutes 3.5
+[e58_rank1_96/e58/cipher_s2] c 0.817351 size 0.007903 gain 13.1372 G 13.1372 |dbar| [5.25486, 1.08671, 1.01219, 1.00227, 0.99318] removed [0.03493, 0.80913, 0.88136, 0.94787, 1.00648] D 0.07661 lens relevance max 0.000 best rank 1678; 1.6 s
+ITEM 118 of 127 DONE; projected minutes 3.5
+[e58_rank1_96/random_new] c 0.817351 size 0.00794444 gain 0.0127 G 13.9324 |dbar| [1.5171, 0.10314, 0.06915, 0.06496, 0.06332] removed [-0.0001, 0.00237, 0.00258, 0.00102, 0.00027] D 0.00018 lens relevance max 0.000 best rank 59; 1.9 s
+ITEM 119 of 127 DONE; projected minutes 3.5
+[e58_copy_prior_cipher/e58/copy_s0] c 1.000000 size 0.00725026 gain 16.4505 G 16.4505 |dbar| [2.86239, 0.78015, 0.72086, 0.71426, 0.70975] removed [0.04611, -0.00567, -0.01544, -0.01682, -0.01685] D 0.00280 lens relevance max 0.000 best rank 207; 1.6 s
+ITEM 120 of 127 DONE; projected minutes 3.5
+[e58_copy_prior_cipher/e58/copy_s1] c 1.000000 size 0.00730708 gain 16.3311 G 16.3311 |dbar| [5.55195, 0.90376, 0.65291, 0.64233, 0.63094] removed [0.0076, -0.10161, -0.10973, -0.11158, -0.11339] D 0.00047 lens relevance max 0.000 best rank 4553; 1.5 s
+ITEM 121 of 127 DONE; projected minutes 3.5
+[e58_copy_prior_cipher/e58/copy_s2] c 1.000000 size 0.00734911 gain 16.4168 G 16.4168 |dbar| [2.92523, 0.67134, 0.66107, 0.64728, 0.63855] removed [-0.02457, -0.00923, -0.01842, -0.01747, -0.0182] D -0.00056 lens relevance max 0.000 best rank 125; 1.6 s
+ITEM 122 of 127 DONE; projected minutes 3.5
+[e58_copy_prior_cipher/random_reuse] c 1.000000 size 0.00725026 gain 0.0050 G 16.4505 |dbar| [1.25064, 0.06797, 0.06443, 0.06211, 0.06144] removed [-0.00015, 0.00011, -0.00377, -0.00577, -0.00816] D 0.00001 lens relevance max 0.000 best rank 689; 1.9 s
+ITEM 123 of 127 DONE; projected minutes 3.5
+[e58_copy_prior_cipher/e58/prior_cipher_s0] c 0.779816 size 0.00731114 gain 12.8399 G 12.8399 |dbar| [1.9769, 0.77737, 0.76913, 0.7558, 0.74274] removed [0.0412, 0.02633, 0.0529, 0.0785, 0.11028] D 0.00859 lens relevance max 0.000 best rank 1019; 1.5 s
+ITEM 124 of 127 DONE; projected minutes 3.5
+[e58_copy_prior_cipher/e58/prior_cipher_s1] c 0.779816 size 0.00727969 gain 12.4364 G 12.4364 |dbar| [3.28127, 0.70646, 0.7079, 0.69803, 0.68736] removed [0.05634, -0.09788, -0.09475, -0.09061, -0.0757] D 0.00453 lens relevance max 0.000 best rank 1064; 1.6 s
+ITEM 125 of 127 DONE; projected minutes 3.5
+[e58_copy_prior_cipher/e58/prior_cipher_s2] c 0.779816 size 0.00731562 gain 12.2262 G 12.2262 |dbar| [2.08041, 0.79658, 0.78095, 0.76592, 0.75028] removed [0.03601, 0.01013, 0.0368, 0.0538, 0.08873] D 0.00726 lens relevance max 0.000 best rank 320; 1.5 s
+ITEM 126 of 127 DONE; projected minutes 3.5
+[e58_copy_prior_cipher/random_new] c 0.779816 size 0.00731114 gain -0.0160 G 12.8399 |dbar| [0.44488, 0.0669, 0.06229, 0.05938, 0.05794] removed [-0.0024, -0.00447, -0.00419, -0.00461, -0.00445] D -0.00019 lens relevance max 0.000 best rank 1732; 1.9 s
+ITEM 127 of 127 DONE; projected minutes 3.5
+FINISHED items; peak GPU 4.9 GB
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /mnt/nw/home/e.agnew/commute-agents/compare-lead/experiments/adl/results/amend1 ===
