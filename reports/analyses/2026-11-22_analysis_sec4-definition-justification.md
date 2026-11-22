@@ -1,5 +1,7 @@
 # Why read reuse as the base model's share of what the fine-tune changed?
 
+*SUPERSEDED 2026-11-22 (P1.53): the user froze the definition (`theory/2026-11-22_definition_frozen.md`) and the write share is now a reading, not the definition. This page stands as a description of the write share computed over K*; whether it is admissible is in `reports/analyses/2026-11-22_analysis_reading-admissibility.md` (not as computed).*
+
 *2026-11-22, definition-lead (writer agent). Justification for the paper's section 4 of the definition the user adopted
 on 2026-11-21 and 2026-11-22, `decisions.md` rows "Option (b) adopted for reading reuse" and "Option (b) tests each
 changed part by write". No new reading is computed here; every number is taken from the saved results named below.*

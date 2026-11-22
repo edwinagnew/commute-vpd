@@ -4,10 +4,10 @@ The aim of the project, in one place. Owned by the user: agents propose edits, t
 before proposing any new experiment, task, architecture or theory direction. Working choices that could be revised
 live in `decisions.md`, and what has been tried lives in `experiments/TRIED.md`.
 
-**Current definition of reuse:** `theory/2026-11-18_definition_consolidated.md` holds the current wording. Latest
-`decisions.md` rows: "Wording approved" (user, 2026-11-18 ~19:00, wording of `reports/drafts/2026-11-18_draft_sec4-bullets-ask48b.md`)
-and "Mechanism settings and neuron level closed" (user, 2026-11-19, ask 52: "A part's mechanism is graded at the positions
-where the behavior is read"). Whoever changes the wording updates this line and that file in the same commit.
+**Current definition of reuse:** FROZEN by the user, 2026-11-22: `theory/2026-11-22_definition_frozen.md`, sections 1
+(the sentence) and 2 (the exact form), restated below; `decisions.md` row "Definition of reuse frozen" (2026-11-22).
+Only the user changes them. Readings (section 3) are methods, not the definition. Whoever changes the wording updates
+this line and that file in the same commit.
 
 *Status: 2026-10-14. The question is the user's (verbatim below); its precise form was given by the user after round 1.*
 
@@ -37,54 +37,28 @@ where the behavior is read"). Whoever changes the wording updates this line and 
   against a δW = 0 warm-start control and the cross-seed baseline.
 - **If no simple Φ works.** Is that because post-training teaches new capabilities rather than strengthening
   existing ones, or because parameter decompositions are too brittle?
-- **Working definition of reuse (user, 2026-11-18, revised the same day; Geiger's vocabulary 2026-11-18).** A
-  fine-tune F reuses the base model M, for a behavior, to the extent that the variables F needs for that behavior
-  still have M's mechanisms, on the settings of their parents that occur. Stated in the vocabulary of causal
-  abstraction wherever it has a term (Geiger et al. 2025, "Def. n" in the JMLR numbering; user, 2026-11-18). A
-  featurizer (Geiger's verb, §3.6) gives each network N a **featurized model** Ñ: a causal model (Def. 5) whose
-  variables are the input, intermediate variables U and the output, for example neurons, heads, blocks (a variable
-  merge, Def. 37), rotations (a bijective translation, Def. 28), SAE latents or VPD components. The featurization is
-  exact (user, 2026-11-18, "exact featurization with a mandatory remainder"): the intermediate variables are the
-  features, one remainder variable per featurized site, and one remainder for the rest of the network, and each
-  network N is an exact transformation of Ñ (Def. 25) under τ_0, the identity on inputs and outputs, with
-  interventions that set the inputs, so there is no fit error. Coverage: every mechanism the fine-tune changed has a
-  variable (user, 2026-11-18, ask 50). One remainder variable, "the rest of the network", covers what the features do
-  not. With an SAE at one site, that is the other layers. At the unit level, it is the embeddings, unembedding and
-  layer-norm gains. A graft adds a variable to the fine-tune; the base model gets that variable with a mechanism that
-  outputs zero, so both share one signature.
-  It is fixed from M alone and shared, so a variable is the same in both networks (the constraint that is ours; user,
-  2026-11-18, "one fixed featurizer"), and F's features are not fitted. The pair is built on activations (σ_0 with
-  τ_0∘σ_0 = id, F̃_u^{(i)}(ṽ) = Proj_u σ_0(F^{(i)}(τ_0(ṽ))), as Def. 28 builds a translated model) or on weights (VPD:
-  W_0 = Σ_c u_c v_cᵀ + Δ and a declared split δW = Σ_c δW_c + δW_out, with F̃_c^{(0)} = u_c v_cᵀx, F̃_c^{(1)} = (u_c
-  v_cᵀ + δW_c)x, F̃_e^{(0)} = Δx, F̃_e^{(1)} = (Δ + δW_out)x). Only the definition read at VPD needs a declared split
-  of δW; r does not. The remainder's share of K* is stated beside every reading. F^{(i)} = {F^{(i)}_X} are the network's own mechanisms (Def. 5); F̃_u^{(i)} is the mechanism of variable u in
-  the featurized model; reuse compares F̃_u^{(0)} with F̃_u^{(1)}. A variable u has a mechanism F̃_u (Def. 5), a
-  function of its parents Pa(u) (Remark 6). Reuse is relative to the featurization, is not invariant to the fine-tune
-  re-coordinatizing an old computation, and K* need not be unique (superscript (0) is M, (1) is F). A behavior B is a
-  partial function from inputs to outputs (§3.5.2), B = F restricted to a set D of inputs on which the fine-tune
-  departs from the base model. Mean ablation: for K ⊆ U the hard intervention (Def. 9) i_K = {u ← μ_u}_{u∉K} fixes
-  every variable outside K to its mean value μ_u on D in the fine-tune. The circuit the behavior runs through, K*, is
-  a smallest K such that F̃_{i_K} preserves B within a declared α, the reference being full ablation (sub-circuit
-  analysis, §3.5.2): every variable the behavior runs through counts, whether or not the fine-tune changed its
-  mechanism (user, 2026-11-18, ask 48). The circuit is a set of variables rather than connections. Let s_u ∈ [0, 1]
-  grade how far F̃_u^{(1)} = F̃_u^{(0)} on the settings of Pa(u) that occur on D in either model (s_u = 1 exactly when
-  they agree there up to an output gain). Reuse is the share of the circuit whose mechanisms are still the base
-  model's: R = (1/|K*|) Σ_{u∈K*} s_u. Gain: mechanisms are compared by direction only, by squared cosine (user,
-  2026-11-18, ask 51), so a mechanism that only scales the base model's output is kept. Graft: a variable the
-  fine-tune has and the base model lacks, such as an added head, scores s_u = 0; the base model's mechanism for it
-  outputs zero (ask 51). Cost: a memorised fact also reads as mostly reused when it is stored by small changes in an
-  otherwise old circuit (redteam-lead's cold read, 2026-11-18). Sources: `decisions.md` rows "The variables F needs
-  are every variable the behavior runs through", "Coverage condition", "Gain and graft declarations for R" and
-  "Wording approved" (2026-11-18); text: §4 bullets, `reports/drafts/2026-11-18_draft_sec4-bullets-ask48b.md`.
-
-  Consolidated on one page: `theory/2026-11-18_definition_consolidated.md`. ρ (the mean mechanism agreement over E208's circuit of the change K, not K*) is no longer part of the definition (user,
-  2026-11-18 morning): with single neurons as variables it is a tested reading that saturates (E208: 0.999 or more on
-  every fine-tune), since "the neuron level is not a high-enough level abstraction to detect new". Full statement in
-  the research log's overview box "The working definition", `theory/2026-11-18_definition_causal_abstraction.md` and
-  `decisions.md` (rows "... stated in causal-abstraction terms" and "Working definition of reuse without ρ",
-  2026-11-18). The held-model survival S (every unit of F given M's mechanism at once, up to a fitted map) and ρ are
-  readings of it, not the definition; their numbers stand as readings. It supersedes the held-model wording (adopted earlier on
-  2026-11-18) and the second wording ("reuse at a variable", tentatively adopted 2026-11-10), kept only as records.
+- **Definition of reuse (FROZEN by the user, 2026-11-22; `theory/2026-11-22_definition_frozen.md`; Geiger et al. 2025,
+  arXiv 2301.04709 v4 numbering).** *Sentence:* A fine-tune F reuses the base model M, for a behavior, to the extent
+  that the variables F needs for that behavior still have M's mechanisms, on the settings of their parents that occur.
+  *Exact form.* Setting: M and F share one architecture; a causal featurization is declared, fixed from M alone and
+  applied unchanged to both, with one shared signature (inputs, intermediate variables U, outputs) and complete
+  mechanisms (Def. 5), each written as a function of the union of u's parent sets in M and F. Coverage: every mechanism
+  the fine-tune changed belongs to some intermediate variable (a remainder covers what the features do not); outputs
+  have the same mechanisms in both. A coordinate M lacks is zero-padded in M. Every ordinary run on D and every
+  single-variable interchange tested has a unique solution. A behavior B is a partial function from inputs to
+  designated outputs (§3.5.2) that F computes on its domain D. Settings that occur: P_u = {p_u(x) : x in D}, the joint
+  setting of u's parents in F's unmodified run on x. Kept: u is kept iff there is c > 0 with f_u^F(p) = c f_u^M(p) for
+  every p in P_u (equivalently, F's full setting stays a solution under the soft intervention, Def. 10, replacing
+  f_u^F by c f_u^M). Needed: u is needed for B iff for some x, x' in D, running F on x with u set to its value on x'
+  (Def. 49) gives a designated output other than B(x); K is the set of needed variables. Reuse: R = {u in K : u kept},
+  new = K \ R; full reuse iff R = K, absent iff R is empty and K is not; K empty gives full reuse vacuously. Declared
+  inputs: M, F, the featurization and B (with D and designated outputs); no distribution, distance, fit or ablation
+  baseline enters. *Graded form (not frozen):* a reading declares a similarity, a distribution over settings and a
+  statistic; it is admissible on a declared class of cases when it reaches its stated top iff R = K. The write share
+  E_b and the squared-cosine share are readings; neither is admissible as computed (P1.53,
+  `reports/analyses/2026-11-22_analysis_reading-admissibility.md`). Superseded wordings, kept as records only: the
+  2026-11-18 consolidated wording (`theory/2026-11-18_definition_consolidated.md`, R over K* by squared cosine), wording
+  A (2026-11-20, soft intervention), option (b) by write (2026-11-21/22), the held-model wording and the second wording.
 - **Canonical update:** LoRA, plus full-weight fine-tunes.
 - **Γ:** frozen for now (see `decisions.md`), although updating it may turn out to be essential.
 - **Optimiser (priority subgoal, user 2026-10-21):** compare SGD and Adam on the same tasks, both as the
