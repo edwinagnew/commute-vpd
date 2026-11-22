@@ -1,6 +1,6 @@
 # definition-lead digest, 2026-11-22 morning
 
-**P1.50, due 11-23: the reuse score counted only over changed parts (option b) has been read on every realistic fine-tune. The write-up is being drafted now, so the cell is not filled yet.** One question waits on you (ask 59, below). The section 4 justification of option (b) waits on that answer.
+**P1.50, due 11-23: the reuse score counted only over changed parts (option b) has been read on every realistic fine-tune. Its final page is reports/analyses/2026-11-21_analysis_e257-eb-trained.md, the cell is filled, and the log is published as v439.** I am finishing because all my cells are filled or closed and the rest waits on ask 59. The premise check came back doubtful (advisory). On trained pairs the score does not separate reused parts from new ones, and the gaps it shows may reflect how large the update is. One question waits on you (ask 59, below). The section 4 justification of option (b) waits on that answer.
 
 ## Cells
 Filled overnight: P1.49 (option (b) rescore of saved readings) and P1.51 (the behavioural per-part test). Open: P1.50 (1 of 1 runs used, results home, page being written). Ladder: the lowest open rung is still L1.2 (P1.4, 1 of 3 runs). Its next run waits on how the definition is settled.
