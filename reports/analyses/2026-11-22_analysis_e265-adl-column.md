@@ -70,8 +70,7 @@ Nine pairs, with two pairs sharing one reuse side, is a small count. The lens's 
 its logit lens did not name the task, so the direction it removes is real in effect but not readable as the task. The lens may
 follow how far the output moved. The new-skill fine-tunes moved the output further on most pairs, and the write share's own
 gaps survive a KL control (P2.58), but the lens's were not tested against KL. An independent recomputation from the saved item files was
-made afterwards, in P2.60, and reproduced every number here; see "Later checks" below. That is
-needed before this enters the paper's answer paragraph.
+made afterwards, in P2.60, and reproduced every number here; see "Later checks" below.
 
 ## Surprises
 
