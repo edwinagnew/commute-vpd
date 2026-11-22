@@ -1,0 +1,52 @@
+E258 (rb_member_test) start, stage read, shard (1, 4), tag s1; settings {'items': ('x2', 'random_size_241001', 'random_kl_241002', 'x10', 'rebuilt', 'new_few', 'new_thin'), 'floor_item': 'random_size_241001', 'n_floor': 32, 'floor_seed': 252001, 'rows': 64, 'tol': 0.1, 'save_every': 256, 'hours_max': 6}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+stage 0: {"experiment": "E258 (rb_member_test)", "dn_kl_max": 1.7062239525296118e-11, "item": "random_size_241001", "n_vars": 38938, "n_changed_in_K": 31949, "n_standable": 31949, "kl_fm": 0.0029921526163976383, "n_floor": 32, "batched_vs_single": 2.7760764699654664e-08, "bf16_vs_fp32": 0.10745339504278965, "floor": 2.7760764699654664e-08, "seconds_per_member": 0.05923599749803543, "peak_gpu_gb": 12.560487747192383}; checks hold
+STAGE 0 DONE
+x2: {'item': 'x2', 'n_vars': 38938, 'n_changed_in_K': 2813, 'n_standable': 2813, 'kl_fm': 0.10141383135161143}; this shard 703 members, 703 done before
+x2: shard (1, 4) done in 0 s
+ITEM 1 of 7 DONE (x2)
+random_size_241001: {'item': 'random_size_241001', 'n_vars': 38938, 'n_changed_in_K': 31949, 'n_standable': 31949, 'kl_fm': 0.0029921526163976383}; this shard 7987 members, 7987 done before
+random_size_241001: shard (1, 4) done in 0 s
+ITEM 2 of 7 DONE (random_size_241001)
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 5731, 'limit_filed': 2.5397456096210376, 'limit_whitened_0.01': 8.566283727683114, 'limit_whitened_0.001': 8.575327523798162, 'limit_whitened_0.0001': 8.568685731515666, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 4566, 'limit_filed': 3.38301534693608, 'limit_whitened_0.01': 9.095356453119177, 'limit_whitened_0.001': 9.070667057076344, 'limit_whitened_0.0001': 9.072227442589407, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: {"slots": [109, 447, 771, 1004, 1101, 1997, 2018, 2034], "betas": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "detectors": [{"limit_filed": 2.8299306178453936, "limit_whitened_0.01": 11.977943470656788, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.935406646295597, "limit_whitened_0.01": 9.467794583919384, "limit_whitened_0.001": 9.453473755664607, "limit_whitened_0.0001": 9.434761738713327, "direction": "whitened 0.0001", "pile_own": 0}, {"limit_filed": 3.153354424992976, "limit_whitened_0.01": 10.247742932694962, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 2.976401818196408, "limit_whitened_0.01": 10.980585108255589, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 3.1523499367635144, "limit_whitened_0.01": 10.295113233962542, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.8080070622612814, "limit_whitened_0.01": 11.894050704084995, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 3.49099258484954, "limit_whitened_0.01": 12.118533590411879, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 6.333510380063351, "limit_whitened_0.01": 15.14462701601434, "direction": "whitened 0.01", "pile_own": 1}], "act": [13.54616928100586, 13.430658340454102, 14.229463577270508, 13.013628959655762, 13.70849609375, 13.203634262084961, 13.495687484741211, 16.34401512145996], "copy_M_twin": 0.2578125, "copy_M_D": 0.001953125, "misses": ["reuse_small: top-1 0.0000 < 0.2063", "reuse_large: top-1 0.0117 < 0.2063"], "gamma_new_few": 11.291481018066406, "gamma_new_thin": 10.845924377441406, "gamma_T": 8.0, "g": 4.662668452625903, "size_matched": false, "dW_norm": {"reuse_small": 11.702665857318092, "new_few": 4.032901283721824, "new_thin": 1.9208650760341066, "reuse_large": 31.246117113476934}, "top1_reuse_small": 0.0, "top1_new_few": 0.900390625, "top1_new_thin": 0.900390625, "top1_reuse_large": 0.01171875, "A": [4833, 7192, 4910, 7939, 8638, 2589, 9653, 6196], "A_prime": [10680, 4934, 7756, 7057, 5823, 5827, 6255, 1471], "y": [5752, 5771, 5175, 4412, 5870, 5087, 4201, 6430], "swapped": [{"cue": 5, "A_prime": 5731, "limit_filed": 2.5397456096210376, "limit_whitened_0.01": 8.566283727683114, "limit_whitened_0.001": 8.575327523798162, "limit_whitened_0.0001": 8.568685731515666, "direction": "whitened 0.0001", "pile_own": 1}, {"cue": 5, "A_prime": 4566, "limit_filed": 3.38301534693608, "limit_whitened_0.01": 9.095356453119177, "limit_whitened_0.001": 9.070667057076344, "limit_whitened_0.0001": 9.072227442589407, "direction": "whitened 0.0001", "pile_own": 1}]}
+random_kl_241002: {'item': 'random_kl_241002', 'n_vars': 38938, 'n_changed_in_K': 33539, 'n_standable': 33539, 'kl_fm': 0.17160784256299955}; this shard 8385 members, 8385 done before
+random_kl_241002: shard (1, 4) done in 0 s
+ITEM 3 of 7 DONE (random_kl_241002)
+x10: {'item': 'x10', 'n_vars': 38938, 'n_changed_in_K': 3244, 'n_standable': 3243, 'kl_fm': 0.7137585410467726}; this shard 811 members, 811 done before
+x10: shard (1, 4) done in 0 s
+ITEM 4 of 7 DONE (x10)
+rebuilt: {'item': 'rebuilt', 'n_vars': 38938, 'n_changed_in_K': 11711, 'n_standable': 11708, 'kl_fm': 0.11996169519158585}; this shard 2927 members, 0 done before
+  rebuilt: 256 of 2927 members, projected 0.05 h for the item on this shard
+  rebuilt: 512 of 2927 members, projected 0.05 h for the item on this shard
+  rebuilt: 768 of 2927 members, projected 0.05 h for the item on this shard
+  rebuilt: 1024 of 2927 members, projected 0.05 h for the item on this shard
+  rebuilt: 1280 of 2927 members, projected 0.05 h for the item on this shard
+  rebuilt: 1536 of 2927 members, projected 0.05 h for the item on this shard
+  rebuilt: 1792 of 2927 members, projected 0.05 h for the item on this shard
+  rebuilt: 2048 of 2927 members, projected 0.05 h for the item on this shard
+  rebuilt: 2304 of 2927 members, projected 0.05 h for the item on this shard
+  rebuilt: 2560 of 2927 members, projected 0.05 h for the item on this shard
+  rebuilt: 2816 of 2927 members, projected 0.05 h for the item on this shard
+  rebuilt: 2927 of 2927 members, projected 0.05 h for the item on this shard
+rebuilt: shard (1, 4) done in 177 s
+ITEM 5 of 7 DONE (rebuilt)
+new_few: {'item': 'new_few', 'n_vars': 38938, 'n_changed_in_K': 3527, 'n_standable': 3527, 'kl_fm': 10.232088236914677}; this shard 882 members, 0 done before
+  new_few: 256 of 882 members, projected 0.06 h for the item on this shard
+  new_few: 512 of 882 members, projected 0.06 h for the item on this shard
+  new_few: 768 of 882 members, projected 0.06 h for the item on this shard
+  new_few: 882 of 882 members, projected 0.06 h for the item on this shard
+new_few: shard (1, 4) done in 232 s
+ITEM 6 of 7 DONE (new_few)
+new_thin: {'item': 'new_thin', 'n_vars': 38938, 'n_changed_in_K': 1068, 'n_standable': 1068, 'kl_fm': 10.251983892366159}; this shard 267 members, 0 done before
+  new_thin: 256 of 267 members, projected 0.02 h for the item on this shard
+  new_thin: 267 of 267 members, projected 0.02 h for the item on this shard
+new_thin: shard (1, 4) done in 71 s
+ITEM 7 of 7 DONE (new_thin)
+E258 (rb_member_test) DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rb_member_test/results/ ===
