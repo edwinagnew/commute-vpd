@@ -1,4 +1,4 @@
-"""E_TBD3 (cell P2.54) run 3: the k-head label. Runs 1-2 switched off one head, (2,4); here M's top k heads by E62's
+"""E252 (cell P2.55) run 1: the k-head label. Runs 1-2 switched off one head, (2,4); here M's top k heads by E62's
 prefix score (k = 1, 2, 3, 5) are mean-ablated together (`copying.ablated`, E62's saved means) in M and in each saved
 state F, and the share of F's gain lost is read on the state's own read rows with run 1's formula (`copying.share_lost`
 via run 1's `share_of`). The `exclude` heads ((1,1), M's previous-token head, which feeds every task) are kept out of
@@ -15,7 +15,7 @@ Plan reports/plans/2026-11-21_plan_prior-mech-2x2.md (run 3); rules results/pred
   items    E62's 6 states, E237's 15 key states, E250's 3 low-copy states and their 3 random updates  -> results/khead/<item>.json
   summary  task means per k, the null band per k, the filed rules, the 2x2 call at the best k          -> results/khead/summary.json
 
-    sbatch --comment=E_TBD3 cluster/prior_mech_2x2_khead.sbatch
+    sbatch --comment=E252 cluster/prior_mech_2x2_khead.sbatch
 """
 
 from __future__ import annotations

@@ -1,4 +1,4 @@
-"""E_TBD (cell P2.54) run 2: the low-prior copy built as its own task. E62's copy map ("A B ... A M" -> B, read at the
+"""E253 (cell P2.55) run 2: the low-prior copy built as its own task. E62's copy map ("A B ... A M" -> B, read at the
 marker M; B drawn per window, train and read B pools disjoint, so only copying from the context solves it), with B
 drawn from rarer tokens than E62's so that M's prior on the answer sits near the cipher's (log10 -5.86), not E62's
 -3.50. Three filed B bands of frequency ranks are tried in order; on each, the windows of each split are ordered by M's
@@ -19,7 +19,7 @@ Plan reports/plans/2026-11-21_plan_cued-copy.md; rules results/predictions.json 
      B-absent windows                                                                           -> results/items/<item>.json
   table  the 2x2 with the cued copy, the row-selected low copy beside it, the filed rules      -> results/table.json
 
-    sbatch --comment=E_TBD cluster/cued_copy.sbatch
+    sbatch --comment=E253 cluster/cued_copy.sbatch
 """
 
 from __future__ import annotations
