@@ -1,0 +1,25 @@
+8.2e-7	experiments/gain_only_r/results/stage0_pod0.json	.export_floor_1_minus_S	this
+0.016	experiments/gain_only_r/results/summary.json	-.R1_vpd.median_d	this
+-0.016	experiments/gain_only_r/results/summary.json	.R1_vpd.median_d	this
+0.0029	experiments/gain_only_r/results/summary.json	[.items[]|select(.vpd!=null and .vpd_full!=null)|.vpd-.vpd_full]|max|-.	this
+0.0024	experiments/gain_only_r/results/summary.json	[.gain_only_seed_sd_vpd[]]|max	this
+2.4e-3	experiments/gain_only_r/results/summary.json	[.gain_only_seed_sd_vpd[]]|max	this
+1.0e-5	experiments/gain_only_r/results/summary.json	[.gain_only_seed_sd_vpd[]]|min	this
+3.4e-4	experiments/gain_only_r/results/summary.json	[.gain_only_seed_sd_vpd[]]|sort|.[length/2|floor]	this
+0.013	experiments/gain_only_r/results/summary.json	.R2_coarse.head_mlp.median_d	this
+0.0046	experiments/gain_only_r/results/summary.json	.R2_coarse.mlp_attn.median_d	this
+0.0038	experiments/gain_only_r/results/summary.json	.R2_coarse.block.median_d	this
+0.43	experiments/gain_only_r/results/summary.json	[.items[].f]|min	this
+0.48	experiments/gain_only_r/results/summary.json	[.items[].f]|max	this
+0.9999	experiments/kstar_vpd/results/items/e58-cipher_s0.json	.searches.main.polished.f	earlier
+0.919	experiments/gain_only_r/results/items/vpd/e58-cipher_s0.json	.searches.main.polished.rho_read	this
+0.9989	experiments/kstar_vpd/results/items/e58-cipher_s0.json	.searches.main.polished.rho_read	earlier
+0.962	experiments/gain_only_r/results/summary.json	[.items[]|select(.vpd!=null and .vpd_full!=null)|.vpd]|min	this
+0.996	experiments/gain_only_r/results/summary.json	[.items[]|select(.vpd!=null and .vpd_full!=null)|.vpd]|max	this
+0.997	experiments/gain_only_r/results/summary.json	[.items[]|select(.vpd!=null and .vpd_full!=null)|.vpd_full]|min	this
+0.9997	experiments/gain_only_r/results/summary.json	[.items[]|select(.vpd!=null and .vpd_full!=null)|.vpd_full]|max	this
+0.999998	experiments/gain_only_r/results/summary.json	.H1_held_near_1.min_S	this
+0.99	experiments/gain_only_r/results/predictions.json	.thresholds.held_bar	this
+0.010	experiments/gain_only_r/results/summary.json	[.items[].held_full|select(.!=null)|.["1"]]|min	this
+0.104	experiments/gain_only_r/results/summary.json	[.items[].held_full|select(.!=null)|.["1"]]|max	this
+9e-6	given	card ~/commute-data/cards/E236.md spread_of: median seed sd of the full fine-tunes' R at VPD over 19 tasks, from experiments/kstar_vpd/results/items

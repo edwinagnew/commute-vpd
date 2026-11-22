@@ -14,6 +14,7 @@ from __future__ import annotations
 
 import argparse
 import json
+from pathlib import Path
 from statistics import fmean
 from typing import Any
 
@@ -50,9 +51,10 @@ def vpd() -> dict[str, Any]:
     return out
 
 
-def sae() -> dict[str, Any]:
+def sae(pairs_path: str | None = None) -> dict[str, Any]:
     out: dict[str, Any] = {}
-    built, keys, pairs = (A.load(f"sae_r_a/results/summary_{g}.json") for g in ("built", "keys", "pairs"))
+    built, keys = (A.load(f"sae_r_a/results/summary_{g}.json") for g in ("built", "keys"))
+    pairs = json.loads(Path(pairs_path).read_text()) if pairs_path else A.load("sae_r_a/results/summary_pairs.json")
     if built is not None:
         out["built"] = {e: num(built["items"][e]["R_A_tol"]) for e in A.BUILT if e in built["items"]}
     if keys is not None:
@@ -67,8 +69,9 @@ def main() -> int:
     ap = argparse.ArgumentParser()
     ap.add_argument("--source", choices=("vpd", "sae"), required=True)
     ap.add_argument("--no-analyse", action="store_true")
+    ap.add_argument("--sae-pairs", help="E245 pairs summary, if not yet in sae_r_a/results/")
     args = ap.parse_args()
-    sections = {"vpd": vpd, "sae": sae}[args.source]()
+    sections = vpd() if args.source == "vpd" else sae(args.sae_pairs)
     for sec in A.SETS:
         got = sections.get(sec)
         if got is None:

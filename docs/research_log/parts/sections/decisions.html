@@ -7,17 +7,18 @@
 <div class="k">Question for you · definition-lead · new 2026-11-21</div>
 <h3>The thin new edit reads as reused because untouched parts count as reused: what should the paper do?</h3>
 <p>Wording A counts every part the behaviour runs through that the fine-tune did not change as reused. We measured why a new edit written thinly into one layer reads as reused under it. It did not come out as expected: we expected the output gains to be the cause, and they are not.</p>
-<p class="small">Running: the held E248 readings on trained pairs, copy against lookup and key tasks, as descriptions. They show whether real fine-tunes hit this.</p>
+<p class="small">Nothing runs until this is decided. <a href="#e248">E248</a> has read the trained pairs, as descriptions (below).</p>
 <ul>
 <li><strong>E242</strong>, R under A at the VPD level on six built edits. Expected every reuse edit above both new edits. Got the thin new edit at 0.98, above the rebuilt reuse edit at 0.86. <a href="https://github.com/edwinagnew/commute-vpd/blob/main/experiments/kstar_vpd_wording_a/results/summary.json">summary</a></li>
 <li><strong>E245</strong>, the same at the SAE level, by sae-lead. Expected the same order. Got it: thin 0.57, rebuilt 0.69. <a href="https://github.com/edwinagnew/commute-vpd/blob/main/experiments/sae_r_a/results/summary_built.json">summary</a></li>
+<li><strong>E248</strong>, R under A on 94 trained fine-tunes, as descriptions only. Got the reuse side above the new side in all nine pairs (gaps 0.11 to 0.32; old R 4 of 9), copy 0.98 over lookup 0.90, and at most 0.0001 of any trained circuit untouched, so the order is the same among changed parts only. These readings are descriptive, and A failed its built-edit test (E242). An independent premise check doubts that the 9-of-9 shows reuse against new (check: <code>~/commute-data/premise/P1.48.md</code>). <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-21_analysis_r-under-a-held-items.md">result page</a></li>
 <li><strong>E247</strong>, this diagnosis, $0. Expected the gains to absorb the new computation or the change to sit in few parts. Got neither. Gains at one change nothing. Instead 0.89 of the thin edit's circuit is untouched and counts as reused for free. At SAE the order holds for the same reason: there the rebuilt edit has more untouched parts. <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-21_analysis_thin-edit-diagnosis.md">result page</a></li>
 </ul>
 <p><strong>Question.</strong> Wording A counts every untouched part as reused. How should the paper treat that? Only you change the wording.</p>
 <ul>
 <li><strong>(a)</strong> Make the SAE reading primary and call the VPD failure a limit of that featurization. Weak: SAE's order rests on the same count.</li>
 <li><strong>(b)</strong> Weigh each part by the change it carries. Inverts the order: thin 0.54, rebuilt 0.04.</li>
-<li><strong>(c) Recommended.</strong> Keep A, report both levels with the untouched share beside R, and state thin-edit leniency as a limit. The held E248 readings show whether real fine-tunes hit it.</li>
+<li><strong>(c) Recommended.</strong> Keep A, report both levels with the untouched share beside R, and state thin-edit leniency as a limit. Real fine-tunes do not hit the untouched-parts route (<a href="#e248">E248</a>).</li>
 </ul>
 <p>An independent premise check doubts the other half: an edit that leaves 89% of its circuit untouched may really be mostly reuse, so "built new" may be a construction label rather than the truth, and rewording A to call it new would fit the definition to the label. It asks what, apart from these readings, makes the thin edit new (check: <code>~/commute-data/premise/P1.47.md</code>).</p>
 <p class="small">Card <code>reports/decisions/2026-11-21_decision_wording-a-at-vpd.md</code>; <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-21_analysis_thin-edit-diagnosis.md">result page</a>.</p>
