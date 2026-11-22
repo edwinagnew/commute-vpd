@@ -1,0 +1,61 @@
+E242 start, group pairs, tag pairsA6; 2 items ['e58/copy_s2', 'e58-prior_cipher_s0_scaled_e58_copy_prior_cipher']; settings {'stand_in_forward': 'full', 'eval_cap': 2000, 'reranks': 2, 'chunk_div': 8, 'gain_batch': 8, 'reuse': ('x2', 'x10', 'moved', 'rebuilt'), 'new': ('new_few', 'new_thin'), 'random_seed': 241001, 'random_windows': 'x2', 'size_target': 'new_thin', 'random_kl_seed': 241002, 'kl_target_item': 'new_few', 'scale_cap': 100, 'kl_rel_tol': 0.1, 'e62': ('e62/copy_s0', 'e62/copy_s1', 'e62/copy_s2', 'e62/lookup_s0', 'e62/lookup_s1', 'e62/lookup_s2'), 'side_tols': (0.05, 0.2)}; thresholds {'kl_repro_rel': 0.0001, 'revert_tol': 0.001, 'size_rel': 0.0001, 'floor_max': 1e-06, 'band_min': 0.014, 'shard_hours_max': 6, 'thresholds_source': "The floor (whip-lead, phase D: measured on this path, read in the job's first stage, not guessed): stage 0 measures, on the do-nothing (F = M, its 512 cue windows, last position), KL(F || F with every decomposed matrix's output recomputed from its pieces, (y V) U + y Delta), which is mathematically 0, so it is the fp32 rounding of writing M's mechanisms through the stood-in path (run.py pieces_floor); every item without grafts measures its own, KL(M || F with every change stood in at gain 1), also mathematically 0 (controls, revert_all_kl). floor = the larger of the two; an item or half is not read when (1 - alpha) KL(F || M) <= floor, and the same at each side tolerance. floor_max 1e-6 (E214's and E226's filed kl_floor) stops stage 0 if its floor exceeds it: a code error gives KL of order 1e-3 or more, fp32 rounding of order 1e-12 (moved's KL(F || M), a function equal to M's through rebuilt weights, reads 5.6e-12, E226 items/moved.json). kl_repro_rel: E221's filed value (experiments/kstar_pairs/results/predictions.json): the same state and windows through two code paths agree in all 16 printed digits, a wrong state or window set moves KL by order 1; used for KL(F || F_all_ablated) against the saved value and for the saved K* at its own (absolute) bar. revert_tol: E214's gate_tol (max |logit difference| / max |logit|); here every changed variable stood in with gain 1 must give M's logits, the error coming from rebuilding W from fp32 pieces (E226's F_from_pieces under 1e-4 relative; the toy check in the plan reads 4e-6 absolute). size_rel: E240's (sum |dW|^2 against the target's; fp32 rounding about 1e-7 relative, a wrong target off by over 1e-2). Exact zeros, no tolerance: every unchanged variable's gain is 1, and every unchanged variable stood in at once adds exact zeros at every site (stand_in docstring). band_min: E226's filed fallback when the split-half band is 0. shard_hours_max: E226's."}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+do_nothing: 512 windows, 38938 variables, 0 changed, 0 grafts; KL(F || F_empty) 3.77152 (saved 3.77152), KL(F || M) 7.60564e-12; old R 1.000000; controls {'gain_dev_unchanged': 0.0, 'kl_unchanged_stood_in': 0.0, 'seconds_per_eval': 0.39522361755371094, 'revert_all_err': 0.0, 'revert_all_kl': 0.0, 'gain_changed_quantiles': None, 'nonpositive_gains': 0, 'pieces_floor': 2.9883411063202017e-11}
+  do_nothing main: R_A 1.000000 (floor 1.000000, ceiling 1.000000); |K*| 33177, standable changed 0, keep F's 0, cannot stand in 0 (gain <= 0 0); KL all stood in 0, at the found set 0, bar 7.60564e-13; 0 evaluations, 0 s
+do_nothing: done in 8 s; R_A main 1.0, R_A_abs None, old R 1.000000; peak GPU 10.09 GB
+stage 0: {"experiment": "E242", "R_A": 1.0, "n_changed": 0, "evals": 0, "kl_unchanged_stood_in": 0.0, "gain_dev_unchanged": 0.0, "seconds_per_eval": 0.39522361755371094, "projected_hours_max": 1.3174120585123699, "pieces_floor": 2.9883411063202017e-11, "kl_floor": 2.9883411063202017e-11}; checks hold
+STAGE 0 DONE
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+e58/copy_s2: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 6.46309 (saved 6.46309), KL(F || M) 4.34319; old R 0.999354; controls {'gain_dev_unchanged': 0.0, 'kl_unchanged_stood_in': 0.0, 'seconds_per_eval': 0.06952261924743652, 'revert_all_err': 2.514462721592281e-06, 'revert_all_kl': 6.455523336859792e-12, 'gain_changed_quantiles': [0.9129569713438815, 0.9953417313376265, 1.0002389608994156, 1.006512138560785, 1.0777440817473924], 'nonpositive_gains': 0}
+    ranking 0: prefix 608, 14 evaluations
+    ranking 1: prefix 485, 29 evaluations
+    ranking 2: prefix 487, 43 evaluations
+  e58/copy_s2 main: R_A 0.980609 (floor 0.000103, ceiling 1.000000); |K*| 19339, standable changed 19337, keep F's 375, cannot stand in 0 (gain <= 0 0); KL all stood in 2.12329, at the found set 0.432099, bar 0.434319; 606 evaluations, 265 s
+    ranking 0: prefix 1196, 14 evaluations
+    ranking 1: prefix 1072, 28 evaluations
+    ranking 2: prefix 1080, 42 evaluations
+  e58/copy_s2 main (tolerance 0.05, side reading): R_A 0.960546 (floor 0.000103, ceiling 1.000000); |K*| 19339, standable changed 19337, keep F's 763, cannot stand in 0 (gain <= 0 0); KL all stood in 2.12329, at the found set 0.213673, bar 0.21716; 1309 evaluations, 716 s
+    ranking 0: prefix 187, 15 evaluations
+    ranking 1: prefix 151, 30 evaluations
+    ranking 2: prefix 155, 44 evaluations
+  e58/copy_s2 main (tolerance 0.2, side reading): R_A 0.993692 (floor 0.000103, ceiling 1.000000); |K*| 19339, standable changed 19337, keep F's 122, cannot stand in 0 (gain <= 0 0); KL all stood in 2.12329, at the found set 0.864779, bar 0.868639; 225 evaluations, 194 s
+e58/copy_s2: done in 1201 s; R_A main 0.9806091318061947, R_A_abs None, old R 0.999354; peak GPU 12.07 GB
+ITEM 1 of 2 DONE (e58/copy_s2)
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+e58-prior_cipher_s0_scaled_e58_copy_prior_cipher: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 5.64076, KL(F || M) 3.52052347; gates {'all': 2.721512146308669e-06, 'none': 0.0}; worst split check 4.69e-07; split shares over all 24 {'write2': 0.49464305653162427, 'read2': 0.2993274859676483, 'outside2': 0.017368188216491786, 'cross_wr2': 0.18866126928499416, 'cross_out2': -7.584607098387281e-13}
+    ranking 0: prefix 34577, 16 evaluations
+    ranking 1: prefix 32009, 31 evaluations
+    ranking 2: prefix 31847, 46 evaluations
+  e58-prior_cipher_s0_scaled_e58_copy_prior_cipher main: |K*| 30687 (prefix 31847), R read 0.999413 (prefix 0.999406), R all 0.999335, f 0.9999, site-remainder share 0.0005, graft share 0.0000; 2000 evaluations (cap hit, chunk 1), 1606 s
+e58-prior_cipher_s0_scaled_e58_copy_prior_cipher: done in 1632 s; peak GPU memory 14.14 GB
+e58-prior_cipher_s0_scaled_e58_copy_prior_cipher: 512 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 5.64076 (saved 5.64076), KL(F || M) 3.52052; old R 0.999413; controls {'gain_dev_unchanged': 0.0, 'kl_unchanged_stood_in': 0.0, 'seconds_per_eval': 0.19303131103515625, 'revert_all_err': 2.3997363314265385e-06, 'revert_all_kl': 7.244034063754928e-12, 'gain_changed_quantiles': [0.9205496193501209, 0.995885314813723, 1.0003032808876968, 1.0060332795207045, 1.0685217885703706], 'nonpositive_gains': 0}
+    ranking 0: prefix 7871, 15 evaluations
+    ranking 1: prefix 7639, 30 evaluations
+    ranking 2: prefix 7690, 45 evaluations
+  e58-prior_cipher_s0_scaled_e58_copy_prior_cipher main: R_A 0.753837 (floor 0.000065, ceiling 1.000000); |K*| 30687, standable changed 30685, keep F's 7554, cannot stand in 0 (gain <= 0 0); KL all stood in 2.91835, at the found set 0.351961, bar 0.352052; 2001 evaluations (cap hit), 1551 s
+    ranking 0: prefix 11122, 15 evaluations
+    ranking 1: prefix 11197, 30 evaluations
+    ranking 2: prefix 11197, 45 evaluations
+  e58-prior_cipher_s0_scaled_e58_copy_prior_cipher main (tolerance 0.05, side reading): R_A 0.648320 (floor 0.000065, ceiling 1.000000); |K*| 30687, standable changed 30685, keep F's 10792, cannot stand in 0 (gain <= 0 0); KL all stood in 2.91835, at the found set 0.176011, bar 0.176026; 2001 evaluations (cap hit), 1556 s
+    ranking 0: prefix 4692, 15 evaluations
+    ranking 1: prefix 4461, 30 evaluations
+    ranking 2: prefix 4473, 45 evaluations
+  e58-prior_cipher_s0_scaled_e58_copy_prior_cipher main (tolerance 0.2, side reading): R_A 0.855541 (floor 0.000065, ceiling 1.000000); |K*| 30687, standable changed 30685, keep F's 4433, cannot stand in 0 (gain <= 0 0); KL all stood in 2.91835, at the found set 0.703954, bar 0.704105; 2001 evaluations (cap hit), 1661 s
+e58-prior_cipher_s0_scaled_e58_copy_prior_cipher: done in 6426 s; R_A main 0.7538371297292012, R_A_abs None, old R 0.999413; peak GPU 14.89 GB
+ITEM 2 of 2 DONE (e58-prior_cipher_s0_scaled_e58_copy_prior_cipher)
+E242 DONE
+peak host RSS 7.6 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/kstar_vpd_wording_a/results/ (tag pairsA6) ===
