@@ -47,3 +47,31 @@ built edits, cap $40.
 
 Evidence: `experiments/thin_edit_diagnosis/results/summary.json`; [the rescore page](../analyses/2026-11-21_analysis_option-b-rescore.md), `experiments/option_b_rescore/results/summary.json`;
 `reports/analyses/2026-11-21_analysis_thin-edit-diagnosis.md`.
+
+## Measured since (2026-11-21 night)
+
+The behavioural test has now run on the built edits and on three trained pairs. It swaps one changed part at a time
+for the base model's part at its best strength and asks how much of that part's effect on the output goes away,
+weighted by change as the write share is. It reads the pure strength edits at or below a random update, so it fails
+the strength control that the write share passes. Most parts barely move the output alone, and the few that do decide
+the result: on the gain edit by ten one part pushes the output further than removing its change, which drives the
+reading below zero.
+
+| Edit | By behaviour, one part at a time | By write (order-free version) |
+|---|---|---|
+| gain x2 (reuse) | 0.011 | 0.76 |
+| gain x10 (reuse) | -0.50 | 0.76 |
+| rebuilt (reuse) | -0.41 | 0.63 |
+| few parts (new) | 0.011 | 0.012 |
+| thin (new) | 0.023 | 0.019 |
+| random, matched size | 0.011 | 0.011 |
+| random, matched KL | 0.008 | 0.011 |
+
+No part passed the per-part bar on any edit.
+
+- **Trained pairs** (copy/lookup, copy/prior cipher, lowercase/ciphers): behaviour reads 0.004 to 0.10, within 0.06 of
+  the write share on every fine-tune, and neither reading puts the reuse side above the new side by more than 0.04.
+- **RL against SFT on the same behaviour** (the saved repeat updates, write share only): the RL updates read 0.10 to
+  0.22, the supervised ones on the same task 0.015 to 0.023, and a shuffled-reward control 0.03 to 0.05.
+
+Page: [behaviour against write](../analyses/2026-11-21_analysis_behaviour-vs-write.md).

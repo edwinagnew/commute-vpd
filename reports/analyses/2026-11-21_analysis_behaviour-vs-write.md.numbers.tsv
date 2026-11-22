@@ -1,0 +1,49 @@
+0.011	experiments/rb_member_test/results/summary.json	.items.x2.b_mean	this
+0.011	experiments/rb_member_test/results/summary.json	.items.random_size_241001.b_mean	this
+0.76	experiments/rb_member_test/results/summary.json	.items.x2.E_b	this
+0.63	experiments/rb_member_test/results/summary.json	.items.rebuilt.E_b	this
+-0.50	experiments/rb_member_test/results/summary.json	.items.x10.b_mean	this
+-0.41	experiments/rb_member_test/results/summary.json	.items.rebuilt.b_mean	this
+0.023	experiments/rb_member_test/results/summary.json	.items.new_thin.b_mean	this
+0.0079	experiments/rb_member_test/results/summary.json	.items.random_kl_241002.b_mean	this
+0.75	experiments/rb_member_test/results/summary.json	.items.x2.E_b - .items.x2.b_mean	this
+0.1	experiments/rb_member_test/results/summary.json	.tol	this
+2.8e-8	experiments/rb_member_test/results/summary.json	.floor	this
+1.7e-11	experiments/rb_member_test/results/stage0_s0.json	.dn_kl_max	this
+0.0030	experiments/rb_member_test/results/stage0_s0.json	.kl_fm	this
+8.3e-11	experiments/rb_member_test/results/stage0_s0.json	.floor * .kl_fm	this
+0.11	experiments/rb_member_test/results/stage0_s0.json	.bf16_vs_fp32	this
+3.5e-10	experiments/rb_member_pairs/results/stage0_pod0.json	.floor_items["e62/copy_s0"] | .batched_vs_single * .kl_fm	this
+0.04	experiments/rb_member_test/results/member_check.json	[.[]|.median_abs_gain_minus_1]|max	this
+0.009	experiments/rb_member_test/results/member_check.json	[.[]|.median_rel_q_q1]|max	this
+0.87	experiments/rb_member_test/results/member_check.json	.x2.top5[0].dd_share	this
+0.78	experiments/rb_member_test/results/member_check.json	.x2.top5[0].own_write_share	this
+1.33	experiments/rb_member_test/results/member_check.json	.x2.top5[0].gain	this
+0.094	experiments/rb_member_test/results/member_check.json	.x2.top5[0].b	this
+0.16	experiments/rb_member_test/results/member_check.json	.x2.top5[0].q	this
+0.17	experiments/rb_member_test/results/member_check.json	.x2.top5[0].q1	this
+1.0	experiments/rb_member_test/results/member_check.json	.x10.most_negative.dd_share * 100	this
+3.09	experiments/rb_member_test/results/member_check.json	.x10.most_negative.gain	this
+1.71	experiments/rb_member_test/results/member_check.json	.x10.most_negative.q	this
+0.034	experiments/rb_member_test/results/member_check.json	.x10.most_negative.q1	this
+-0.49	experiments/rb_member_test/results/member_check.json	.x10.most_negative.b_mean_part	this
+0.68	experiments/rb_member_test/results/member_check.json	.rebuilt.most_negative.dd_share	this
+0.67	experiments/rb_member_test/results/member_check.json	.rebuilt.most_negative.gain	this
+1.04	experiments/rb_member_test/results/member_check.json	.rebuilt.most_negative.q	this
+0.61	experiments/rb_member_test/results/member_check.json	.rebuilt.most_negative.q1	this
+-0.48	experiments/rb_member_test/results/member_check.json	.rebuilt.most_negative.b_mean_part	this
+0.087	experiments/rb_member_test/results/member_check.json	.x2.dd_share_q_above_q1	this
+0.11	experiments/rb_member_test/results/member_check.json	.x10.dd_share_q_above_q1	this
+0.72	experiments/rb_member_test/results/member_check.json	.rebuilt.dd_share_q_above_q1	this
+0.0037	experiments/rb_member_pairs/results/summary.json	[.items|to_entries[]|select(.key!="random_size_241001")|.value.b_mean]|min	this
+0.096	experiments/rb_member_pairs/results/summary.json	[.items|to_entries[]|select(.key!="random_size_241001")|.value.b_mean]|max	this
+0.055	experiments/rb_member_pairs/results/summary.json	[.items|to_entries[]|select(.key!="random_size_241001")|.value|(.b_mean - .E_b)|if . < 0 then -. else . end]|max	this
+-0.023	experiments/rb_member_pairs/results/summary.json	def m(p): [.items|to_entries[]|select(.key|startswith(p))|.value.b_mean]|add/length; m("e62/copy") - m("e62-lookup")	this
+0.037	experiments/rb_member_pairs/results/summary.json	def m(p): [.items|to_entries[]|select(.key|startswith(p))|.value.b_mean]|add/length; m("e58/copy") - m("e58-prior")	this
+0.028	experiments/rb_member_pairs/results/summary.json	def m(p): [.items|to_entries[]|select(.key|startswith(p))|.value.b_mean]|add/length; m("e53/lower") - m("e53-")	this
+0.0075	experiments/rb_member_pairs/results/summary.json	.items.random_size_241001.b_mean	this
+0.0020	experiments/rb_member_pairs/results/summary.json	.items.random_size_241001.b_mean_se	this
+0.10	experiments/rb_member_pairs/results/summary.json	[.items|to_entries[]|select(.key|test("^e6|^e58"))|.value.unread_floor_dd_share_est]|min	this
+0.25	experiments/rb_member_pairs/results/summary.json	[.items|to_entries[]|select(.key|test("^e6|^e58"))|.value.unread_floor_dd_share_est]|max	this
+25.55	status	E258	status
+8.25	status	E259	status
