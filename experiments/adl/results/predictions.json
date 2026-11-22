@@ -1,0 +1,62 @@
+{
+ "experiment": "E264",
+ "experiment_source": "the lead claims the E-number (fleet/ecode) and sets it here before the run; run.py refuses stage0 and items until it reads E<digits>",
+ "cell": "P2.59",
+ "plan": "reports/plans/2026-11-22_plan_p2-59-adl.md",
+ "descriptive": "a scorecard column (the user asked for the baseline); no reuse/new verdict under either wording of the definition",
+ "filed": "2026-11-22, before any run",
+ "settings": {
+  "k": 5,
+  "k_source": "paper Sec. 3: the first k = 5 positions (the toolkit's steering and token-relevance tasks use positions 0-4)",
+  "pile_split": "val",
+  "n_pile": 8192,
+  "pile_source": "the 67M's own pretraining corpus (danbraunai/pile-uncopyrighted-tok-shuffled), val rows 0-8191, cached (artifacts/sets/val_0_8192.npy); paper: 10,000 samples of a pretraining corpus (fineweb-1m-sample); 8,192 is the largest cached val set",
+  "batch": 512,
+  "lens_top": 20,
+  "lens_top_source": "paper Sec. 3.1: token relevance is read on the top-20 tokens",
+  "n_random_diffs": 64,
+  "random_diff_rows": 128,
+  "random_diff_len": 128,
+  "random_diffs_source": "the paper's baseline directions (Sec. 5) as the toolkit draws them (causal_effect.py _sample_activation_diff_vectors, num_random_diff_vectors 64, a pool of up to 128 texts); here the first 128 positions of Pile val rows 0-127 (the toolkit: chat data, which the 67M has none of)",
+  "random_seed": 259001,
+  "random_seed_source": "new: the random-difference draw; pair-side random update i (E187's BUILT order, reuse then new) draws finetune.random_direction with random_seed + 1 + i",
+  "control": "e58/copy_s0_scaled",
+  "control_random": "random_e58/copy_s0",
+  "control_source": "E237's control state (key_grid predictions control_state: the task with the smallest mean size; c = 1, so the item is its saved 30-step update), a narrow fine-tune with E244's saved gain 16.45 log-odds; its random update is E237's own for that state"
+ },
+ "thresholds": {
+  "gain_floor": 1.0,
+  "inert": 0.05,
+  "zero_tol": 1e-09,
+  "thresholds_e143_source": "E143's filed gain_floor (a share of a gain under 1 log-odds is undefined), inert (a share under 0.05 reads inert on the scorecard) and zero_tol (do-nothing exactness), experiments/holes_fill/results/predictions.json",
+  "reader_tol": 0.0001,
+  "reader_tol_source": "E147's reader_neuron_tol, the bar E244 used to repeat a saved reading through the same lo_at path (experiments/refit_96key/results/predictions.json)",
+  "size_rel": 1e-06,
+  "size_rel_source": "E244's size_match_rel: each item's size must equal its source's (E237 stage 1 for the keys, E187 m67.json for the pairs; observed agreement 2e-8 relative)",
+  "sd_mult": 3,
+  "sd_mult_source": "new: 'well above' (the cell) read as at least 3 sd of the 64 random-difference directions' shares, measured in stage 0 on the control itself"
+ },
+ "scalar": {
+  "name": "D, the ADL direction share",
+  "definition": "delta_bar_j = mean over the n_pile Pile rows of (W0 + dW) minus W0 block-2 input (the residual after 2 of 4 blocks) at position j < k. For each j, on the task's read rows (E143's rows and log-odds of each row's target at the read position), the fine-tuned model's mean answer log-odds minus the same with its block-2 input's component along delta_bar_j set to the base model's at every position (paper eq. 1-2, the toolkit's base_to_ft patch), over the fine-tune's gain G (E143 lo_at mean minus W0's). D = max over j (the paper reports the maximum over positions). For a random update G is its paired fine-tune's gain. nan when G is under gain_floor.",
+  "blind_to": "anything the fine-tune changes after block 2 that does not pass through block 2's input (blocks 2 and 3 can carry the whole gain and D still reads 0); any change that is not one constant direction across unrelated text (a key-dependent change cancels in the mean); the direction's sign and size (only its span is reverted); which subcomponent, neuron or head carries the gain; whether the task is reuse or new.",
+  "column": "per built pair: reuse D values, new D values, gap = reuse mean - new mean, call by seed ranges (apart iff the ranges do not overlap), as experiments/method_table/results/final.json holds the other baselines; per key task: D for 3 seeds beside E237's 3 random updates",
+  "side_reading": "lens: per j the share of the top-20 logit-lens tokens of delta_bar_j that are among the task's answer tokens (the targets of its read rows; the paper's token relevance with 'relevant' = an answer token, in place of an LLM grader), and the best rank of any answer token; reported, no rule"
+ },
+ "stage0": {
+  "order": "first and alone, one job; items refuse unless results/stage0.json says passed",
+  "do_nothing": "the control state times 0: max |delta_bar| <= zero_tol, every position's removed log-odds and the gain within zero_tol of 0; D is nan (G = 0 under the floor) by the definition",
+  "repeat": "the control's gain equals E244's saved gain for it (experiments/key_grid_baselines/results/run/neuron_0_1.json, 16.4505) within reader_tol",
+  "stop_rule": "passed iff the do-nothing and the repeat hold AND D(control) >= inert (0.05) AND D(control) > the largest share of the 64 random-difference directions on the control AND D(control) >= D(control's random update) + 3 sd of those 64 shares. Otherwise stop: ADL does not surface this narrow fine-tune and the cell closes on stage 0 (the lead decides).",
+  "lens_check": "reported, not a stop: the control's best lens relevance and best answer rank beside its random update's"
+ },
+ "expected": {
+  "do_nothing": {"dbar_max": 0.0, "removed": 0.0, "gain": 0.0, "D": "nan"},
+  "control": {"gain": 16.4505, "D_range": [0.05, 0.6], "lens_relevance_max": ">= 0.05 (one answer token in the top 20 at some position)", "best_rank": "< 518 (the chance median of the best rank of 96 answers among 50,277 tokens is about 50277 / 97)", "confidence": "low: no ADL reading exists on this model; a constant direction at block 2 could carry well under a twentieth of a key-dependent copy gain, which stops the cell (said in advance)"},
+  "control_random_update": {"D": "|D| < 0.01 (its own gain is about 0, so it has nothing to lose along any direction)", "lens_relevance_max": 0.0},
+  "random_diffs": {"mean": "about 0", "sd": "< 0.01", "max": "< 0.03"},
+  "key_items": "every task's D above its own random updates' D; no ordering of the five tasks filed",
+  "pair_randoms": "|D| < 0.01 each",
+  "pairs": "descriptive: the count of the nine pairs whose ADL gap has the share's sign (reuse higher on all nine at E187's size, experiments/method_table/results/final.json method share) is reported; no expected count is filed and no verdict is given"
+ }
+}
