@@ -1,0 +1,104 @@
+{
+ "experiment": "E_TBD_A",
+ "cell": "P2.57",
+ "what": "Key copy (reused: it runs through the copy heads) against the prior-matched cipher (new: it does not), both on E147's 96 keys, M's log10 prior on the answer -4.23 and -4.43: fine-tuned again with E147's exact call at seeds 0-9, scaled to E237's common size, read with eight cheap readings. Does each reading split the pair at 10 seeds, by a seed-level rank test, while the prior (0.20 decades apart by construction) does not?",
+ "card": "~/commute-data/scratch/compare-lead/prior-matched-writer/card_a.md",
+ "settings": {
+  "tasks": [
+   "copy",
+   "prior_cipher"
+  ],
+  "tasks_source": "E237's matched-prior pair (experiments/key_grid/results/summary.json log10_prior: copy -4.228, prior_cipher -4.429); E147's windows files (experiments/refit_96key/results/inventory.json maps.<task>.windows)",
+  "seeds": [
+   0,
+   1,
+   2,
+   3,
+   4,
+   5,
+   6,
+   7,
+   8,
+   9
+  ],
+  "seeds_source": "the cell: 10 seeds each. Seeds 0-2 are E147's and must repeat its saved files bit for bit (E147 reproduced E58's kept files with max |diff| 0, experiments/refit_96key/results/stage0.json states.*.kept)",
+  "random_seeds": [
+   0,
+   1,
+   2
+  ],
+  "random_seeds_source": "one matched random update beside each of seeds 0-2 of each task, as E237 read (its random_<state> items); 6 items, not 20, to keep the job near 30 min",
+  "random_seed": 257001,
+  "random_seed_source": "a new seed (E237's was 237001, E250's 249101, the cued copy's 254201); state i of this run's order takes random_seed + i"
+ },
+ "thresholds": {
+  "share_new_max": 0.2,
+  "share_new_max_source": "P2.54 run 1's labels (experiments/prior_mech_2x2/results/predictions.json): the reused side's mean (2,4) share at or over 0.2 with every seed over its clean null median; the new side's at or under 0.2",
+  "alpha": 0.01,
+  "alpha_source": "filed here: exact two-sided Mann-Whitney p at or under 0.01 (10 vs 10 seeds with no overlap gives 1.1e-5, so the bar is met with room; one reading of 8 passing by chance at 0.01 has probability under 0.08)",
+  "expected_sign": {
+   "head_share": 1,
+   "k3_share": 1,
+   "r": 1,
+   "erank": 1,
+   "steering_pooled": 1,
+   "steering_perkey": -1,
+   "neuron_k64": 1,
+   "neuron_kmatched": 1
+  },
+  "expected_sign_source": "E237's 3-seed gaps (copy minus prior_cipher; experiments/key_grid and prior_mech_2x2 results): head +0.248, r +0.403, erank +68.4, steering pooled +0.566, steering per-key -0.086, neuron k64 +0.0145, k matched +0.0070. k = 3 is khead's filed expectation (copy 0.5-0.8, ciphers under 0.05, predictions_khead.json)",
+  "p_learn": 0.5,
+  "p_learn_source": "E12's P_LEARN (keydep.scored_step): held-out P(target) at step 30. E147 read 0.986-0.998 for copy and 0.936-0.961 for prior_cipher (refit_96key stage0.json)"
+ },
+ "measurement": {
+  "update": "each saved fine-tune times c_task = E237's common size (experiments/key_grid/results/stage0.json target, 0.0073022) over the task's mean E187 size over its 10 seeds; a random update: a Gaussian at the state's per-matrix norms (finetune.random_direction) times the same c",
+  "readings": "per item, on the task's E147 read rows: head_share = khead's k = 1 share of the gain lost with (2,4) mean-ablated, k3_share = with M's top 3 prefix heads off ((1,1) excluded), both counted only when the label is readable (gain >= G_min 5.15); r = E228's re-gating share (log-odds form); erank = the ||dW||^2-weighted effective rank (update_spectrum.state); steering_pooled, steering_perkey, neuron_k64, neuron_kmatched = holes_fill's shares (gain floor 1)",
+  "gap": "per reading, mean over copy's 10 seeds minus mean over prior_cipher's 10",
+  "band": "per reading, the smallest gap that matters: the larger seed range of the two tasks at seeds 0-2 in this job (E237's spread measure; E237 read head 0.081, r 0.0039, erank 5.94, steering pooled 0.0186, per-key 0.0544, neuron k64 0.0037, k matched 0.0067)",
+  "rank_test": "exact two-sided Mann-Whitney U over seeds (commute.seed_rank.mann_whitney: every relabelling of the 20 values, mid-ranks for ties)",
+  "prior": "M's log10 geometric-mean P(answer) on the read rows, E133's path, saved (key_grid summary.json log10_prior); one number per task, the same at every seed"
+ },
+ "rules": {
+  "A0_controls": "stage 0 passes: run 1's control (M's second-copy top-1 0.825 falls under 0.3 with (2,4) off, median over 0.7 with random single heads off; a zero update reads F = M exactly), khead's M control (top k off; k = 1 within 0.01 of E62's 0.0095), the copy prior repeats 5.9107e-5 within 1e-4 relative, holes_fill's shares on e58/copy_s0 at c = 1 repeat E147's within 0.01",
+  "A0_do_nothing": "the zero update on copy's rows: khead's G and every G_off, holes_fill's gain, r's gain and the size read 0 exactly; the seven gain readings read nan",
+  "A1_recipe_repeats": "seeds 0-2 of each task against E147's saved bf16 files: max |diff| = 0 (reported, not a stop: all 20 states come from this run's own fine-tunes either way)",
+  "A2_labels": "reused_uses_head and new_does_not hold (P2.54 run 1's rule on khead's k = 1 arm, world.labels); if either misses, every call reads not_read",
+  "A3_calls": "per reading: 'separates' when p <= alpha and |gap| > band; 'does_not_separate' otherwise; 'not_read' when a seed reads nan or the labels miss. The sign is reported against expected_sign",
+  "A4_prior": "the prior's gap, copy minus prior_cipher, 0.200 decades; constant over seeds, so its rank test reads p = 1 (does_not_separate) by construction",
+  "A5_random": "random_reads_nothing holds: every random update reads nan on the seven gain readings (each under its reader's gain gate)"
+ },
+ "expected": {
+  "W0": "no update: every reading over the gain is undefined (gain 0), so every A3 call reads not_read; the labels read not_read",
+  "do_nothing": "A0_do_nothing exactly as filed; the do-nothing cannot pass any A3 bar (its readings are nan)",
+  "control": "A0_controls pass (run 1, E249, and E250 passed every one of them on this card type); A1 max |diff| 0; A2 holds (E249: copy 0.248 with each seed over its null median, prior_cipher 0.0001); A5 holds (E250's random updates read nan, gain 0.00-0.03)",
+  "rival_a_mechanism": "each reading follows the mechanism: at 10 seeds it splits copy from the prior-matched cipher as at 3 seeds. Expected calls: head, k3, r, erank, steering pooled, neuron k64 separate with E237's sign, the gaps near E237's (0.25, 0.5-0.8 for k3, 0.40, 68, 0.57, 0.015); steering per-key separates with the sign reversed (-0.09, the cipher higher); neuron k matched sits at its band (gap 0.0070 against 0.0067 at 3 seeds), so either call fits this rival",
+  "rival_b_prior": "each reading follows the prior, which is 0.20 decades apart: E237's 3-seed gaps were seed luck, and at 10 seeds the rank test reads p > 0.01 or the gap shrinks inside the band, so the calls read does_not_separate",
+  "prior_reading": "0.200 decades, does_not_separate under both rivals"
+ },
+ "stop_rules": {
+  "stage0": "any A0 control or the do-nothing missing: exit 1 before any fine-tune",
+  "learn": "a seed with held-out P(target) under p_learn at step 30: exit 1 (E147's recipe failed to train on this card)"
+ },
+ "edge_cases": {
+  "nan_seed": "a seed reading nan (a gain under its reader's gate) makes that reading not_read: no call is drawn from fewer seeds",
+  "ties": "tied values take mid-ranks; the exact null is over every relabelling, so p stays exact",
+  "constant": "a reading constant over all 20 seeds (the prior): p = 1, does_not_separate",
+  "band_zero": "band 0 (identical seeds 0-2): any nonzero gap passes the band; the rank test still has to pass",
+  "gap_equals_band": "|gap| = band does not separate (strict >)",
+  "band_nan": "a nan at seeds 0-2 gives a nan band: not_read",
+  "labels_miss": "A2 missing turns every call into not_read: the pair is not a reused / new pair at 10 seeds, which is itself the result",
+  "sign": "a reading that separates with the sign opposite to expected_sign is reported as separating, with sign_as_filed false"
+ },
+ "blind_to": {
+  "head_share": "what the update does outside the copy head; a copy routed through other heads reads low",
+  "k3_share": "the same, for heads outside M's top 3",
+  "r": "the split of the update's own effect only; blind to whether a re-gated path computes the same function as M's",
+  "erank": "what the directions do; reads the spread of the update's spectrum only",
+  "steering": "nonlinear effects; reads what one added vector per layer (pooled or per key) recovers",
+  "neuron": "anything outside the top-k MLP neurons",
+  "prior": "everything after the answer prior; matched here by construction, so it reads 0.2 decades whatever the mechanism"
+ },
+ "positive_control": "E237's 3-seed readings of this very pair (the expected values); within this job, seeds 0-2 repeat E147's states bit for bit, so their readings repeat E237's up to the change in c",
+ "noise_floor": "the band: the 3-seed seed range at seeds 0-2, this job (E237's measure)",
+ "time_estimate": "from E250's measured log (prior_mech_2x2/results/run2.log): model load and repeats 26 s; khead's M control 83 induction reads at ~2 s, ~170 s; a 300-step fine-tune 11 s x 20 = 220 s; split bases 13 s; one item's holes_fill and r reads ~30 s, khead ~12 s (run 1's 7 head sets in 1 s, so 85 sets ~12 s), ~42 s x 27 items (20 states, 6 random, 1 do-nothing) = 1134 s; M's rows for khead once per task ~25 s. Sum ~1590 s, about 27 min. Debug QoS (2 h cap), $0"
+}
