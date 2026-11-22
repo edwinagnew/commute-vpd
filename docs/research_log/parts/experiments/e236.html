@@ -1,0 +1,18 @@
+<article class="exp" id="e236">
+<div class="top"><span class="id">E236</span><span class="chip surprise">surprise</span><h3>Does R read a strength-only update as kept, and does the held model contain it?</h3><span class="when">2026-11-20/21 · cell P1.41, definition-lead, descriptive, no independent check · <code>experiments/gain_only_r</code></span></div>
+<p class="one"><strong>The question.</strong> A pure strengthening, where only how strongly each neuron and head writes changes, is the clearest case of reuse. Part 1 needs a reuse score that reads it as kept. We expected R and the held model (the model that fits one gain per neuron and head to the fine-tune) to read such a state at least as kept as a full fine-tune of the same task.</p>
+<p class="one"><strong>What we did.</strong> On the 67M model we took E231's 81 strength-only states (one gain per neuron and head, trained to match each full fine-tune's output change; 27 tasks, seeds 0 to 2). Each was read beside the full fine-tune of the same task and seed, with E226's R unchanged (the squared-cosine grade, the reading before wording A) at VPD and at three coarser levels, and with the held model. The difference d is R of the strength-only state minus R of its full fine-tune.</p>
+<p class="one"><strong>What we found.</strong> The held model reads every strength-only state at 0.999998 or more, against 0.010 to 0.104 for the full fine-tunes; this is a positive control, since the family contains them by construction. At VPD, d is above zero on 0 of 49 pairs (median -0.016), although each strength-only state moved the output less. At heads and MLP layers, d is above zero on 57 of 57 (median 0.013); the two coarser levels split, 37 of 57.</p>
+<p class="one"><strong>What it means.</strong> At VPD the grade reads a pure strengthening as less kept: such a state changes fewer parts of the circuit (0.43 to 0.48 against 0.9999) but turns each further, so R there reads turned weights, not kept mechanisms. Whether wording A changes this was not read here. No verdict; the stop rule needed every level low, so it did not trigger.</p>
+<figure><img src="fig/e236_r_gap_gain_vs_full.png" alt="Gap in R between each strength-only state and its full fine-tune, per level"><figcaption><strong>Does R read a strength-only state as more kept than its full fine-tune? At VPD, no.</strong> Each point is one task and seed; right of zero means the strength-only state reads more kept. At VPD every point sits left, by a median of 0.016, beyond the grey band of the largest seed spread; at heads and MLP layers every point sits right.</figcaption></figure>
+<dl class="fields">
+<dt>Run</dt><dd>Nine RunPod H100 pods, after a $0 rehearsal on the cluster's debug queue; stage 0 was exact on every pod (do-nothing R = 1).</dd>
+<dt>Found</dt><dd><ul>
+<li>The held model contains all 81 strength-only states (at least 0.999998), a control that held as it must.</li>
+<li>R at VPD reads every strength-only state below its full fine-tune (0 of 49 above), while heads and MLP layers read every one above (57 of 57); the coarser levels have no clear direction.</li>
+<li>The VPD gap is the grade, not output size: strength-only states turn each changed member further (mean grade 0.919 against 0.9989 on the cipher task).</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 1: R's grade at VPD on the clearest case of reuse, beside the pending decision on wording A.</dd>
+<dt>Moved on</dt><dd>Not run: wording A on these states and the 47 gain-matched states that hit the step cap. Record: <code>reports/analyses/2026-11-21_analysis_p1-41-gain-only-r.md</code>; <code>experiments/gain_only_r/results/summary.json</code>; <code>experiments/TRIED.md</code>.</dd>
+</dl>
+</article>
