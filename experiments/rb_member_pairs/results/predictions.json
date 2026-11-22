@@ -52,5 +52,6 @@
     "do_nothing": "exactly as E258: every KL exactly 0.0 in stage 0; pass share and b_mean 1 by the convention (no changed member)",
     "random_size_241001": "b_mean about 0.01 (its E_b 0.0109, E257) and pass share about 0; and within 2 se of E258's census value on the same item (experiments/rb_member_test/results/summary.json, every member read), the check that the sample and its estimator are right",
     "pairs": "no filed value: read beside E_b, which reads 0.02-0.06 on both sides of every trained pair (E257)"
-  }
+  },
+  "amendment_2026-11-21": "Before any scored read (E258 rehearsal, pod 01M80RDV7DK4J7VM1H5KPAC8ZB, stage 0): the do-nothing rule \"KL exactly 0.0\" read 1.7e-11 from fp rounding in the batched forward and stopped the job. The rule was mis-specified: CLAUDE.md asks every bar to come from a measured floor. Amended rule: the do-nothing KL max is at most the batched-vs-single floor measured in the same stage 0, converted to KL units (floor x KL(F||M) of the floor item; for the pairs, the smallest over the floor items). Both tolerances are reported: the filed exactly 0, and the amended floor (rehearsal: 2.8e-8 x 0.002992 = 8.3e-11). Everything else is unchanged. Approved under the standing rule for mis-specified controls (user 2026-10-29), relayed by the whip-lead 2026-11-21."
 }

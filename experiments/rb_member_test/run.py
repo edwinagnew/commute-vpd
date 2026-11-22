@@ -173,7 +173,8 @@ def stage0(w: Any, cfg: Config, tag: str) -> None:
     bf = max(float((b16[f] - b32[f]).abs().max()) for f in (True, False))
     out |= rec | {"n_floor": len(mem), "batched_vs_single": dev, "bf16_vs_fp32": bf, "floor": dev, "seconds_per_member": per_member,
                   "q_fp32": b32[True].tolist(), "q1_fp32": b32[False].tolist(), "peak_gpu_gb": torch.cuda.max_memory_allocated() / 2**30}  # fmt: skip
-    miss = [f"do-nothing: KL {out['dn_kl_max']:.3g} with one variable stood in (must be exactly 0)"] if out["dn_kl_max"] != 0 else []
+    dn_bar = dev * rec["kl_fm"]  # amendment 2026-11-21: the measured batched-vs-single floor, in KL units (was exactly 0)
+    miss = [f"do-nothing: KL {out['dn_kl_max']:.3g} with one variable stood in, over the floor {dn_bar:.3g}"] if not out["dn_kl_max"] <= dn_bar else []
     miss += [f"batched path off the single one by {dev:.3g}, over the bf16/fp32 floor {bf:.3g}"] if not dev <= bf else []
     log(f"stage 0: {json.dumps({k: v for k, v in out.items() if not k.startswith('q')})}; {'checks hold' if not miss else 'MISSES ' + '; '.join(miss)}")
     if miss:

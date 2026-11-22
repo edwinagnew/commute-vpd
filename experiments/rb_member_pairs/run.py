@@ -131,7 +131,7 @@ def stage0(w: Any, cfg: Config, tag: str) -> None:
     vars_ = torch.randperm(dn.n - 2, generator=gen)[: cfg.n_floor] + 1  # site variables: not the embedding (0) or unembedding (n - 1)
     out: dict[str, Any] = {"experiment": EXPERIMENT, "dn_kl_max": float(dn.kl(vars_, True, cfg.rows).abs().max()), "floor_items": {}}
     dn.si.close()
-    miss = [f"do-nothing: KL {out['dn_kl_max']:.3g} with one variable stood in (must be exactly 0)"] if out["dn_kl_max"] != 0 else []
+    miss: list[str] = []
     for item in cfg.floor_items:
         it, rec = setup(w, item)
         mem = it.members[torch.randperm(len(it.members), generator=gen)[: cfg.n_floor]].sort().values
@@ -140,6 +140,8 @@ def stage0(w: Any, cfg: Config, tag: str) -> None:
         out["floor_items"][item] = r
         miss += [f"{item}: batched path off the single one by {r['floor']:.3g}, over the bf16/fp32 floor {r['bf16_vs_fp32']:.3g}"] if not r["floor"] <= r["bf16_vs_fp32"] else []
     out |= {"floor": max(r["floor"] for r in out["floor_items"].values()), "peak_gpu_gb": torch.cuda.max_memory_allocated() / 2**30}
+    dn_bar = min(r["floor"] * r["kl_fm"] for r in out["floor_items"].values())  # amendment 2026-11-21: measured floor in KL units (was exactly 0)
+    miss += [f"do-nothing: KL {out['dn_kl_max']:.3g} with one variable stood in, over the floor {dn_bar:.3g}"] if not out["dn_kl_max"] <= dn_bar else []
     brief = {i: {k: v for k, v in r.items() if not k.startswith("q")} for i, r in out["floor_items"].items()}
     log(f"stage 0: do-nothing KL max {out['dn_kl_max']}, floor {out['floor']:.3g}, {json.dumps(brief)}; {'checks hold' if not miss else 'MISSES ' + '; '.join(miss)}")
     if miss:
