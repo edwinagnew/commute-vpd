@@ -10,6 +10,7 @@ reward program sees the behaviour where the text shows it.
 
 from __future__ import annotations
 
+import itertools
 import random
 import re
 from collections.abc import Callable, Iterable, Mapping, Sequence
@@ -18,6 +19,8 @@ from typing import Any
 
 import torch
 from torch import Tensor
+
+from commute import rl_tasks_2191 as NT
 
 
 def _words(s: str) -> frozenset[str]:
@@ -228,3 +231,75 @@ def select(table: Mapping[str, Mapping[str, Any]], rule: Mapping[str, Any]) -> d
     low = sorted((n for n in ok if table[n]["rate"] < rule["anchor_below"]), key=lambda n: (table[n]["rate"], names.index(n)))
     return {"eligible": ok, "usable": usable, "picks": picks, "anchor": low[0] if low else None,
             "stop": None if len(picks) == 2 else f"{len(picks)} usable behaviour(s) of distinct families, two needed"}  # fmt: skip
+
+
+# ----------------------------------------------------------------------------- procedural tasks (cell P2.56)
+# Three tasks with one right next token at a cue, so the reward (the sampled token is the answer) and the read (the
+# answer's log-odds at the cue) score the same thing: E222's lowercase reward accepted any lowercase text while its read
+# scored the text's exact next word, and RL's samples became word salad. Items are `rl_tasks_2191.Items` (E224's), each
+# prompt L tokens: a Pile row's first tokens as fill, "\n\n", then the template. Held-out items take their fills from
+# Pile val rows; sequences and brackets also hold out a fifth of their templates.
+#   sequence  E224's day/month continuation (`rl_tasks_2191.sequence_items`), unchanged
+#   brackets  2-4 spaced openers from ( [ { ", each followed by a one-letter word, then the k >= 1 innermost closers;
+#             the answer is the next closer. Control: the answering opener swapped for another type, so the answer is
+#             wrong there
+#   addition  E224's single-digit sums a + b <= 9 after `shots` worked sums of other facts, one per line; the 55 facts
+#             are shared between the splits (only fill and shots differ). Control: the query's " +" made "," (E224's)
+PROCEDURAL = ("sequence", "brackets", "addition")
+CLOSE = {"(": ")", "[": "]", "{": "}", '"': '"'}
+LETTERS = ("a", "b", "c", "x", "y", "n", "i", "k")
+
+
+def exact_reward(ids: Tensor, answer: Tensor) -> Tensor:
+    """(B,) 1.0 where the one sampled token ids[:, 0] is the item's answer, else 0.0."""
+    return (ids[:, 0] == answer.to(ids.device)).float()
+
+
+def bracket_structures(lo: int, hi: int, held_frac: float, seed: int) -> dict[str, list[tuple[str, int]]]:
+    """Every (openers, k): lo to hi openers with at most one quote (a quote inside a quote would close it) and k in
+    [1, depth - 1] closers shown; a seeded shuffle, the first held_frac held out."""
+    rng = random.Random(f"{seed}-brackets")
+    every = [("".join(o), k) for d in range(lo, hi + 1) for o in itertools.product(CLOSE, repeat=d) if o.count('"') <= 1 for k in range(1, d)]
+    rng.shuffle(every)
+    m = round(held_frac * len(every))
+    return {"held": every[:m], "train": every[m:]}
+
+
+def bracket_tokens(v: NT.Vocab, openers: str, letters: Sequence[str], k: int) -> list[int]:
+    """Each opener then its letter, every token spaced, then the k innermost closers."""
+    return [v.ids[" " + c] for o, w in zip(openers, letters, strict=True) for c in (o, w)] + [v.ids[" " + CLOSE[o]] for o in openers[::-1][:k]]
+
+
+def bracket_items(rows: Tensor, structs: list[tuple[str, int]], v: NT.Vocab, L: int, n: int, seed: int) -> NT.Items:
+    rng, nl = random.Random(f"{seed}-bracket-items"), v.encode("\n\n")
+    closers = [v.ids[" " + c] for c in dict.fromkeys(CLOSE.values())]
+    toks, ctrl, tgt, key = [], [], [], []
+    for r in rows[:n].tolist():
+        o, k = rng.choice(structs)
+        j = len(o) - 1 - k  # the opener the answer closes
+        swap = rng.choice([c for c in CLOSE if c != o[j] and (c != '"' or '"' not in o)])
+        letters = [rng.choice(LETTERS) for _ in o]
+        toks.append(NT.with_fill(r, bracket_tokens(v, o, letters, k), nl, L))
+        ctrl.append(NT.with_fill(r, bracket_tokens(v, o[:j] + swap + o[j + 1 :], letters, k), nl, L))
+        tgt.append(v.ids[" " + CLOSE[o[j]]])
+        key.append(f"{o} {k}")
+    T = torch.tensor(tgt)[:, None]
+    return NT.Items(torch.tensor(toks), T, NT.pad([[c for c in closers if c != t] for t in tgt]), T[:, 0].clone(), torch.tensor(ctrl), T.clone(), key)
+
+
+def addition_items(rows: Tensor, v: NT.Vocab, L: int, n: int, shots: int, seed: int) -> NT.Items:
+    rng, nl, eol = random.Random(f"{seed}-addition-shots"), v.encode("\n\n"), v.encode("\n")
+    plus, comma, eq = v.encode(" +"), v.encode(","), v.encode(" =")
+    facts = [(a, b) for a in range(10) for b in range(10 - a)]
+    sp = [v.ids[f" {d}"] for d in range(10)]
+    toks, ctrl, tgt, key = [], [], [], []
+    for r in rows[:n].tolist():
+        a, b = rng.choice(facts)
+        shown = [t for x, y in rng.sample([f for f in facts if f != (a, b)], shots) for t in (v.ids[str(x)], *plus, sp[y], *eq, sp[x + y], *eol)]
+        toks.append(NT.with_fill(r, [*shown, v.ids[str(a)], *plus, sp[b], *eq], nl, L))
+        ctrl.append(NT.with_fill(r, [*shown, v.ids[str(a)], *comma, sp[b], *eq], nl, L))
+        tgt.append(a + b)
+        key.append(f"{a} + {b}")
+    T = torch.tensor([sp[s] for s in tgt])[:, None]
+    cmp = torch.tensor([[t for d, t in enumerate(sp) if d != s] for s in tgt])
+    return NT.Items(torch.tensor(toks), T, cmp, T[:, 0].clone(), torch.tensor(ctrl), T.clone(), key)
