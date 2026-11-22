@@ -7,7 +7,9 @@ inside the grey band (|y| <= 1) at these small x; one that follows the mechanism
 
 Pairs, each drawn when its files exist: E237's copy against the prior-matched cipher and E250's low-prior copy against
 the cipher (3 seeds, P2.54's saved readings, `prior_mech_2x2/train.state_row`), run A (10 seeds), run B (copy's 10
-against the second cipher's 3), the cued copy against the cipher (experiments/cued_copy/results/table.json).
+against the second cipher's 3), the cued copy against the cipher (experiments/cued_copy/results/table.json). E237's
+seeds are run A's seeds 0-2 (max |diff| 0), drawn hollow. The right panel is the reference: copy against the cipher,
+not prior-matched (1.6 decades apart, the same table), where a reading that follows the mechanism reads as far out.
 
     ~/commute-agents/fleet/cpu-run python3 experiments/prior_matched/plot.py
 """
@@ -64,38 +66,68 @@ def pairs() -> dict[str, tuple[float, Rows, Rows]]:
     return out
 
 
+def unmatched() -> tuple[str, tuple[float, Rows, Rows]]:
+    """The reference pair: E237's copy against E147's cipher, whose priors are not matched."""
+    rows = W.read_json(EXPERIMENTS / "cued_copy" / "results" / "table.json")["rows"]
+    a, b = ([{k: T2.num(v) for k, v in r.items()} for r in rows[t]] for t in ("copy", "cipher"))
+    return "copy vs cipher, priors not matched, 3 seeds", (prior_gap(a, b), a, b)
+
+
 def bands(ps: dict[str, tuple[float, Rows, Rows]]) -> dict[str, float]:
     _, a, b = ps["copy vs prior-matched cipher, 3 seeds (E237)"]
     return {p: W.band([r[p] for r in a], [r[p] for r in b]) for p in W.READINGS}
 
 
+def draw(ax: Any, name: str, x: float, a: Rows, b: Rows, bd: dict[str, float], colour: str, hollow: bool) -> list[dict[str, Any]]:
+    """One pair: each reading's gap of means over its band at x (spread sideways by reading), the seed-spread bar."""
+    data = []
+    for i, p in enumerate(W.READINGS):
+        va, vb = [r[p] for r in a], [r[p] for r in b]
+        if not all(math.isfinite(v) for v in (*va, *vb, bd[p])) or bd[p] <= 0:
+            continue
+        g, lo, hi = fmean(va) - fmean(vb), min(va) - max(vb), max(va) - min(vb)
+        xi = x + (i - 3.5) * 0.006 + (0.003 if hollow else 0)
+        ax.errorbar(xi, g / bd[p], yerr=[[(g - lo) / bd[p]], [(hi - g) / bd[p]]], fmt=MARK[p], ms=6, color=colour, ecolor=colour,
+                    mfc="white" if hollow else colour, mec=colour if hollow else "white", mew=0.8, elinewidth=1, capsize=0, zorder=3)  # fmt: skip
+        data.append({"pair": name, "reading": p, "prior_gap": x, "gap": g, "lo": lo, "hi": hi, "band": bd[p], "gap_in_bands": g / bd[p],
+                     "n_reused": len(va), "n_new": len(vb)})  # fmt: skip
+    return data
+
+
 def main() -> None:
-    ps, data = pairs(), []
+    ps, (ref_name, (ref_x, ref_a, ref_b)) = pairs(), unmatched()
     bd = bands(ps)
-    fig, ax = figure((8.6, 4.6))
-    ax.axhspan(-1, 1, color="0.88", lw=0, zorder=0, label="inside the smallest gap that matters")
-    ax.axhline(0, color="0.55", lw=0.8, zorder=1)
-    for j, (name, (x, a, b)) in enumerate(ps.items()):
-        for i, p in enumerate(W.READINGS):
-            va, vb = [r[p] for r in a], [r[p] for r in b]
-            if not all(math.isfinite(v) for v in (*va, *vb, bd[p])) or bd[p] <= 0:
-                continue
-            g, lo, hi = fmean(va) - fmean(vb), min(va) - max(vb), max(va) - min(vb)
-            xi = x + (i - 3.5) * 0.006
-            ax.errorbar(xi, g / bd[p], yerr=[[(g - lo) / bd[p]], [(hi - g) / bd[p]]], fmt=MARK[p], ms=6, color=COLOUR[j], ecolor=COLOUR[j],
-                        elinewidth=1, capsize=0, mec="white", mew=0.6, zorder=3)  # fmt: skip
-            data.append({"pair": name, "reading": p, "prior_gap": x, "gap": g, "lo": lo, "hi": hi, "band": bd[p], "n_reused": len(va), "n_new": len(vb)})
+    fig, (ax, rx) = figure((10.0, 5.0), ncols=2)
+    ax.get_gridspec().set_width_ratios([4.5, 1])
+    rx.sharey(ax)
+    for a in (ax, rx):
+        a.axhspan(-1, 1, color="0.88", lw=0, zorder=0, label="within the 3-seed spread\n(the smallest gap that matters)")
+        a.axhline(0, color="0.55", lw=0.8, zorder=1)
     ax.set_yscale("symlog", linthresh=1)
-    ax.set_xlim(-0.05, 0.4)
-    ax.set_xlabel("prior gap, reused minus new (decades of M's P(answer))")
-    ax.set_ylabel("reading's gap, reused minus new\n(in units of its smallest gap that matters)")
-    ax.set_title("Each cheap reading's gap between a reused and a new task with matched priors", fontsize=9)
-    pair_keys = [ax.plot([], [], "o", color=COLOUR[j], label=n)[0] for j, n in enumerate(ps)]
+    data = []
+    for j, (name, (x, a, b)) in enumerate(ps.items()):
+        data += draw(ax, name, x, a, b, bd, COLOUR[j], hollow=name.endswith("(E237)"))
+    data += draw(rx, ref_name, ref_x, ref_a, ref_b, bd, "0.35", hollow=False)
+    rx.tick_params(labelleft=False)
+    ax.set_xlim(-0.05, 0.25)
+    rx.set_xlim(ref_x - 0.035, ref_x + 0.035)
+    rx.set_xticks([round(ref_x, 2)])
+    ax.set_xlabel("prior gap, reused minus new: decades of the base model's P(answer)")
+    rx.set_xlabel("reference pair,\npriors not matched")
+    ax.set_ylabel("reading's gap, reused minus new,\nin units of its smallest gap that matters")
+    ax.set_title("Does each cheap reading still split a copy task from a cipher when their priors are matched?", fontsize=9.5)
+    pair_keys = [ax.plot([], [], "o", color=COLOUR[j], mfc="white" if n.endswith("(E237)") else COLOUR[j], ls="", label=n)[0]
+                 for j, n in enumerate(ps)]  # fmt: skip
+    pair_keys.append(rx.plot([], [], "o", color="0.35", ls="", label=ref_name)[0])
+    band_key = ax.get_legend_handles_labels()[0][0]
     read_keys = [ax.plot([], [], MARK[p], color="0.3", ls="", label=LABEL[p])[0] for p in W.READINGS]
-    fig.legend(handles=pair_keys, fontsize=6.5, frameon=False, loc="outside right upper", title="pair (colour)", title_fontsize=7)
-    fig.legend(handles=read_keys, fontsize=6.5, frameon=False, loc="outside right lower", title="reading (marker)", title_fontsize=7)
-    print(save(fig, OUT, n="seeds per side as listed in the .csv (n_reused, n_new); one marker per reading and pair", data=data))
-    print(json.dumps({"bands": bd, "pairs": {n: v[0] for n, v in ps.items()}}, indent=1))
+    head = lambda t: ax.plot([], [], ls="", label=t)[0]  # a legend sub-heading: an entry with no marker
+    fig.legend(handles=[head("pair (colour)"), *pair_keys, band_key, head(" "), head("reading (marker)"), *read_keys], fontsize=6.5,
+               frameon=False, loc="outside right upper")  # fmt: skip
+    n = ("Seeds per side: 3, except run A 10 against 10 and run B 10 against 3. Bar: lowest to highest difference over seed pairs. "
+         "The do-nothing and the random updates read no value on any reading but effective rank.")
+    print(save(fig, OUT, n=n, data=data))
+    print(json.dumps({"bands": bd, "pairs": {n: v[0] for n, v in ps.items()}, "reference": ref_x}, indent=1))
 
 
 if __name__ == "__main__":

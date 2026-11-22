@@ -1,0 +1,741 @@
+19:33:55 E254 run A start; settings {'tasks': ('copy', 'prior_cipher'), 'seeds': (0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 'random_seeds': (0, 1, 2), 'random_seed': 257001}; thresholds {'share_new_max': 0.2, 'share_new_max_source': "P2.54 run 1's labels (experiments/prior_mech_2x2/results/predictions.json): the reused side's mean (2,4) share at or over 0.2 with every seed over its clean null median; the new side's at or under 0.2", 'alpha': 0.01, 'alpha_source': 'filed here: exact two-sided Mann-Whitney p at or under 0.01 (10 vs 10 seeds with no overlap gives 1.1e-5, so the bar is met with room; one reading of 8 passing by chance at 0.01 has probability under 0.08)', 'expected_sign': {'head_share': 1, 'k3_share': 1, 'r': 1, 'erank': 1, 'steering_pooled': 1, 'steering_perkey': -1, 'neuron_k64': 1, 'neuron_kmatched': 1}, 'expected_sign_source': "E237's 3-seed gaps (copy minus prior_cipher; experiments/key_grid and prior_mech_2x2 results): head +0.248, r +0.403, erank +68.4, steering pooled +0.566, steering per-key -0.086, neuron k64 +0.0145, k matched +0.0070. k = 3 is khead's filed expectation (copy 0.5-0.8, ciphers under 0.05, predictions_khead.json)", 'p_learn': 0.5, 'p_learn_source': "E12's P_LEARN (keydep.scored_step): held-out P(target) at step 30. E147 read 0.986-0.998 for copy and 0.936-0.961 for prior_cipher (refit_96key stage0.json)"}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+19:34:09 [control] second-copy top-1: M 0.8247, (2,4) off 0.0095 (bar < 0.3), random heads off [0.013020833333333334, 0.7074652777777778, 0.7899305555555556, 0.8298611111111112, 0.9279513888888888] (median bar > 0.7) -> pass
+19:34:11 [control] zero update on e58/copy_s0's rows, max |F - M| per head set {'on': 0.0, 'off': 0.0, 'rand0': 0.0, 'rand1': 0.0, 'rand2': 0.0, 'rand3': 0.0, 'rand4': 0.0} (must be 0)
+19:34:14 [control M] top-1 0.8247; top k off {1: 0.009548611111111112, 2: 0.001736111111111111, 3: 0.0, 5: 0.0} (E62's curve {1: 0.009548611111111112, 2: 0.001736111111111111, 3: 0.0, 5: 0.0}); pair [(1, 1), (2, 4)] off 0.0000; clean k=1 null median 0.8082; flagged {'prefix': [(1, 4)]} -> pass, k=1 dev from E62 0.0000
+19:34:27 [a] prior repeat {'got': 5.910717799178698e-05, 'saved': 5.910717799178698e-05, 'rel': 0.0}; holes_fill repeat on e58/copy_s0 {'neuron k64': (0.025475691642200756, 0.025475691642200756), 'neuron kmatched': (0.015557531194537186, 0.015557531194537186), 'steering pooled': (0.7369441691278905, 0.7369441691278905), 'steering perkey': (0.9879207829562398, 0.9879207829562398)}
+19:34:43 [zero/e58/pa_copy] G 0.0000; pair [(1, 1), (2, 4)] share nan; k=1 share nan (too_small), clean null median nan, flagged {'prefix': nan}; k=2 share nan (too_small), clean null median nan, flagged {'prefix': nan}; k=3 share nan (too_small), clean null median nan, flagged {'prefix': nan}; k=5 share nan (too_small), clean null median nan, flagged {'prefix': nan}; 17 s
+19:35:10 split bases: 24 matrices, 9881 alive, 13 s
+19:35:16 [item zero/e58/pa_copy] {"head_share": "nan", "k3_share": "nan", "r": "nan", "erank": "nan", "steering_pooled": "nan", "steering_perkey": "nan", "neuron_k64": "nan", "neuron_kmatched": "nan", "hf_gain": 0.0, "size": 0.0}; 49 s
+19:35:16 [do-nothing zero/e58/pa_copy] must be 0: {'G': 0.0, 'hf_gain': 0.0, 'r_gain': 0.0, 'size': 0.0, 'G_off k=1': 0.0, 'G_off k=2': 0.0, 'G_off k=3': 0.0, 'G_off k=5': 0.0, 'G_off pair': 0.0}; must be nan: {'head_share': nan, 'k3_share': nan, 'r': nan, 'erank': nan, 'steering_pooled': nan, 'steering_perkey': nan, 'neuron_k64': nan, 'neuron_kmatched': nan}
+/mnt/nw/home/e.agnew/commute-agents/compare-lead/src/commute/finetune.py:120: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  return loss, {"ce_o": float(ce), "kl_other": float(kl_other), "p_o": float(p_o)}
+19:35:16 [ft] step 1: loss 9.1933 ce_o 9.1933 kl_other 0.0000 p_o 0.0002
+19:35:16 [ft] step 10: loss 0.3742 ce_o 0.1761 kl_other 0.1981 p_o 0.8744
+19:35:17 [ft] step 20: loss 0.1220 ce_o 0.0365 kl_other 0.0856 p_o 0.9723
+19:35:17 [ft] step 30: loss 0.1032 ce_o 0.0015 kl_other 0.1018 p_o 0.9985
+19:35:17 [ft] checkpoint 30: p_o 0.9977 ce_o 0.0023 kl_other 0.0632 n 286 rel_norm_max 0.0199 elapsed_s 1.5598
+19:35:18 [ft] step 40: loss 0.0683 ce_o 0.0016 kl_other 0.0667 p_o 0.9984
+19:35:18 [ft] step 50: loss 0.0491 ce_o 0.0008 kl_other 0.0483 p_o 0.9992
+19:35:19 [ft] step 60: loss 0.0688 ce_o 0.0008 kl_other 0.0680 p_o 0.9992
+19:35:19 [ft] step 70: loss 0.0559 ce_o 0.0011 kl_other 0.0548 p_o 0.9989
+19:35:19 [ft] step 80: loss 0.0585 ce_o 0.0007 kl_other 0.0579 p_o 0.9993
+19:35:20 [ft] step 90: loss 0.0860 ce_o 0.0005 kl_other 0.0855 p_o 0.9995
+19:35:20 [ft] step 100: loss 0.0581 ce_o 0.0006 kl_other 0.0575 p_o 0.9994
+19:35:20 [ft] step 110: loss 0.0689 ce_o 0.0005 kl_other 0.0684 p_o 0.9995
+19:35:21 [ft] step 120: loss 0.0408 ce_o 0.0004 kl_other 0.0403 p_o 0.9996
+19:35:21 [ft] step 130: loss 0.0433 ce_o 0.0003 kl_other 0.0430 p_o 0.9997
+19:35:21 [ft] step 140: loss 0.0681 ce_o 0.0005 kl_other 0.0676 p_o 0.9995
+19:35:22 [ft] step 150: loss 0.0657 ce_o 0.0003 kl_other 0.0654 p_o 0.9997
+19:35:22 [ft] step 160: loss 0.0604 ce_o 0.0003 kl_other 0.0600 p_o 0.9997
+19:35:22 [ft] step 170: loss 0.0659 ce_o 0.0005 kl_other 0.0654 p_o 0.9995
+19:35:23 [ft] step 180: loss 0.1533 ce_o 0.1112 kl_other 0.0421 p_o 0.9691
+19:35:23 [ft] step 190: loss 0.0370 ce_o 0.0002 kl_other 0.0367 p_o 0.9998
+19:35:24 [ft] step 200: loss 0.0483 ce_o 0.0003 kl_other 0.0481 p_o 0.9997
+19:35:24 [ft] step 210: loss 0.0583 ce_o 0.0003 kl_other 0.0580 p_o 0.9997
+19:35:24 [ft] step 220: loss 0.0540 ce_o 0.0003 kl_other 0.0537 p_o 0.9997
+19:35:25 [ft] step 230: loss 0.0500 ce_o 0.0003 kl_other 0.0498 p_o 0.9997
+19:35:25 [ft] step 240: loss 0.0629 ce_o 0.0003 kl_other 0.0626 p_o 0.9997
+19:35:25 [ft] step 250: loss 0.0538 ce_o 0.0003 kl_other 0.0535 p_o 0.9997
+19:35:26 [ft] step 260: loss 0.0493 ce_o 0.0002 kl_other 0.0491 p_o 0.9998
+19:35:26 [ft] step 270: loss 0.0426 ce_o 0.0002 kl_other 0.0423 p_o 0.9998
+19:35:26 [ft] step 280: loss 0.0375 ce_o 0.0002 kl_other 0.0373 p_o 0.9998
+19:35:27 [ft] step 290: loss 0.0518 ce_o 0.0002 kl_other 0.0516 p_o 0.9998
+19:35:27 [ft] step 300: loss 0.0429 ce_o 0.0002 kl_other 0.0427 p_o 0.9998
+19:35:28 [train e58/pa_copy_s0] held-out P(target) at step 30 0.9977; size 0.00725026; 12 s
+19:35:28 [ft] step 1: loss 9.6513 ce_o 9.6513 kl_other 0.0000 p_o 0.0002
+19:35:28 [ft] step 10: loss 0.3634 ce_o 0.1394 kl_other 0.2239 p_o 0.8957
+19:35:28 [ft] step 20: loss 0.0832 ce_o 0.0062 kl_other 0.0769 p_o 0.9938
+19:35:29 [ft] step 30: loss 0.0699 ce_o 0.0015 kl_other 0.0683 p_o 0.9985
+19:35:29 [ft] checkpoint 30: p_o 0.9856 ce_o 0.0332 kl_other 0.0576 n 286 rel_norm_max 0.0199 elapsed_s 1.2889
+19:35:29 [ft] step 40: loss 0.0559 ce_o 0.0018 kl_other 0.0540 p_o 0.9982
+19:35:30 [ft] step 50: loss 0.0476 ce_o 0.0010 kl_other 0.0466 p_o 0.9990
+19:35:30 [ft] step 60: loss 0.0597 ce_o 0.0011 kl_other 0.0586 p_o 0.9989
+19:35:30 [ft] step 70: loss 0.0658 ce_o 0.0005 kl_other 0.0653 p_o 0.9995
+19:35:31 [ft] step 80: loss 0.0585 ce_o 0.0007 kl_other 0.0578 p_o 0.9993
+19:35:31 [ft] step 90: loss 0.0409 ce_o 0.0005 kl_other 0.0404 p_o 0.9995
+19:35:31 [ft] step 100: loss 0.0527 ce_o 0.0006 kl_other 0.0521 p_o 0.9994
+19:35:32 [ft] step 110: loss 0.0661 ce_o 0.0004 kl_other 0.0657 p_o 0.9996
+19:35:32 [ft] step 120: loss 0.0740 ce_o 0.0003 kl_other 0.0736 p_o 0.9997
+19:35:32 [ft] step 130: loss 0.0550 ce_o 0.0005 kl_other 0.0546 p_o 0.9995
+19:35:33 [ft] step 140: loss 0.0483 ce_o 0.0004 kl_other 0.0479 p_o 0.9996
+19:35:33 [ft] step 150: loss 0.0580 ce_o 0.0005 kl_other 0.0575 p_o 0.9995
+19:35:33 [ft] step 160: loss 0.0508 ce_o 0.0003 kl_other 0.0505 p_o 0.9997
+19:35:34 [ft] step 170: loss 0.0479 ce_o 0.0003 kl_other 0.0475 p_o 0.9997
+19:35:34 [ft] step 180: loss 0.0568 ce_o 0.0003 kl_other 0.0565 p_o 0.9997
+19:35:35 [ft] step 190: loss 0.0975 ce_o 0.0005 kl_other 0.0970 p_o 0.9995
+19:35:35 [ft] step 200: loss 0.0515 ce_o 0.0003 kl_other 0.0512 p_o 0.9997
+19:35:35 [ft] step 210: loss 0.0454 ce_o 0.0003 kl_other 0.0451 p_o 0.9997
+19:35:36 [ft] step 220: loss 0.0559 ce_o 0.0003 kl_other 0.0556 p_o 0.9997
+19:35:36 [ft] step 230: loss 0.0631 ce_o 0.0008 kl_other 0.0623 p_o 0.9992
+19:35:36 [ft] step 240: loss 0.0571 ce_o 0.0003 kl_other 0.0568 p_o 0.9997
+19:35:37 [ft] step 250: loss 0.0336 ce_o 0.0003 kl_other 0.0333 p_o 0.9997
+19:35:37 [ft] step 260: loss 0.0541 ce_o 0.0002 kl_other 0.0539 p_o 0.9998
+19:35:37 [ft] step 270: loss 0.0548 ce_o 0.0003 kl_other 0.0545 p_o 0.9997
+19:35:38 [ft] step 280: loss 0.0464 ce_o 0.0002 kl_other 0.0462 p_o 0.9998
+19:35:38 [ft] step 290: loss 0.0606 ce_o 0.0001 kl_other 0.0605 p_o 0.9999
+19:35:38 [ft] step 300: loss 0.0397 ce_o 0.0002 kl_other 0.0395 p_o 0.9998
+19:35:39 [train e58/pa_copy_s1] held-out P(target) at step 30 0.9856; size 0.00730708; 11 s
+19:35:39 [ft] step 1: loss 9.4108 ce_o 9.4108 kl_other 0.0000 p_o 0.0004
+19:35:39 [ft] step 10: loss 0.3560 ce_o 0.0895 kl_other 0.2666 p_o 0.9405
+19:35:40 [ft] step 20: loss 0.0941 ce_o 0.0083 kl_other 0.0858 p_o 0.9920
+19:35:40 [ft] step 30: loss 0.0558 ce_o 0.0016 kl_other 0.0542 p_o 0.9984
+19:35:40 [ft] checkpoint 30: p_o 0.9970 ce_o 0.0030 kl_other 0.0584 n 286 rel_norm_max 0.0199 elapsed_s 1.3421
+19:35:41 [ft] step 40: loss 0.0802 ce_o 0.0022 kl_other 0.0780 p_o 0.9978
+19:35:41 [ft] step 50: loss 0.0939 ce_o 0.0009 kl_other 0.0930 p_o 0.9991
+19:35:41 [ft] step 60: loss 0.0659 ce_o 0.0012 kl_other 0.0648 p_o 0.9988
+19:35:42 [ft] step 70: loss 0.0651 ce_o 0.0005 kl_other 0.0646 p_o 0.9995
+19:35:42 [ft] step 80: loss 0.0866 ce_o 0.0041 kl_other 0.0826 p_o 0.9961
+19:35:42 [ft] step 90: loss 0.0736 ce_o 0.0004 kl_other 0.0732 p_o 0.9996
+19:35:43 [ft] step 100: loss 0.0628 ce_o 0.0008 kl_other 0.0620 p_o 0.9992
+19:35:43 [ft] step 110: loss 0.0453 ce_o 0.0007 kl_other 0.0446 p_o 0.9993
+19:35:43 [ft] step 120: loss 0.0618 ce_o 0.0005 kl_other 0.0613 p_o 0.9995
+19:35:44 [ft] step 130: loss 0.0657 ce_o 0.0004 kl_other 0.0653 p_o 0.9996
+19:35:44 [ft] step 140: loss 0.0352 ce_o 0.0004 kl_other 0.0347 p_o 0.9996
+19:35:44 [ft] step 150: loss 0.0481 ce_o 0.0003 kl_other 0.0477 p_o 0.9997
+19:35:45 [ft] step 160: loss 0.0429 ce_o 0.0003 kl_other 0.0426 p_o 0.9997
+19:35:45 [ft] step 170: loss 0.0430 ce_o 0.0003 kl_other 0.0427 p_o 0.9997
+19:35:46 [ft] step 180: loss 0.0347 ce_o 0.0003 kl_other 0.0343 p_o 0.9997
+19:35:46 [ft] step 190: loss 0.0442 ce_o 0.0004 kl_other 0.0438 p_o 0.9996
+19:35:46 [ft] step 200: loss 0.0330 ce_o 0.0004 kl_other 0.0326 p_o 0.9996
+19:35:47 [ft] step 210: loss 0.0667 ce_o 0.0003 kl_other 0.0665 p_o 0.9997
+19:35:47 [ft] step 220: loss 0.0591 ce_o 0.0003 kl_other 0.0588 p_o 0.9997
+19:35:47 [ft] step 230: loss 0.0416 ce_o 0.0003 kl_other 0.0413 p_o 0.9997
+19:35:48 [ft] step 240: loss 0.0675 ce_o 0.0004 kl_other 0.0671 p_o 0.9996
+19:35:48 [ft] step 250: loss 0.0629 ce_o 0.0002 kl_other 0.0627 p_o 0.9998
+19:35:48 [ft] step 260: loss 0.0458 ce_o 0.0003 kl_other 0.0455 p_o 0.9997
+19:35:49 [ft] step 270: loss 0.0591 ce_o 0.0002 kl_other 0.0590 p_o 0.9998
+19:35:49 [ft] step 280: loss 0.0365 ce_o 0.0003 kl_other 0.0362 p_o 0.9997
+19:35:49 [ft] step 290: loss 0.0462 ce_o 0.0002 kl_other 0.0460 p_o 0.9998
+19:35:50 [ft] step 300: loss 0.0487 ce_o 0.0002 kl_other 0.0485 p_o 0.9998
+19:35:50 [train e58/pa_copy_s2] held-out P(target) at step 30 0.9970; size 0.00734911; 11 s
+19:35:50 [ft] step 1: loss 9.8654 ce_o 9.8654 kl_other 0.0000 p_o 0.0006
+19:35:51 [ft] step 10: loss 0.3188 ce_o 0.1227 kl_other 0.1961 p_o 0.8955
+19:35:51 [ft] step 20: loss 0.0885 ce_o 0.0053 kl_other 0.0832 p_o 0.9947
+19:35:51 [ft] step 30: loss 0.0543 ce_o 0.0016 kl_other 0.0527 p_o 0.9984
+19:35:52 [ft] checkpoint 30: p_o 0.9979 ce_o 0.0021 kl_other 0.0557 n 286 rel_norm_max 0.0197 elapsed_s 1.3127
+19:35:52 [ft] step 40: loss 0.0797 ce_o 0.0011 kl_other 0.0786 p_o 0.9989
+19:35:52 [ft] step 50: loss 0.0599 ce_o 0.0009 kl_other 0.0590 p_o 0.9991
+19:35:53 [ft] step 60: loss 0.0891 ce_o 0.0017 kl_other 0.0875 p_o 0.9984
+19:35:53 [ft] step 70: loss 0.0524 ce_o 0.0006 kl_other 0.0518 p_o 0.9994
+19:35:53 [ft] step 80: loss 0.0579 ce_o 0.0004 kl_other 0.0575 p_o 0.9996
+19:35:54 [ft] step 90: loss 0.0471 ce_o 0.0005 kl_other 0.0466 p_o 0.9995
+19:35:54 [ft] step 100: loss 0.0628 ce_o 0.0006 kl_other 0.0622 p_o 0.9994
+19:35:54 [ft] step 110: loss 0.0404 ce_o 0.0007 kl_other 0.0397 p_o 0.9993
+19:35:55 [ft] step 120: loss 0.0644 ce_o 0.0004 kl_other 0.0640 p_o 0.9996
+19:35:55 [ft] step 130: loss 0.0661 ce_o 0.0005 kl_other 0.0656 p_o 0.9995
+19:35:55 [ft] step 140: loss 0.0401 ce_o 0.0005 kl_other 0.0396 p_o 0.9995
+19:35:56 [ft] step 150: loss 0.0395 ce_o 0.0003 kl_other 0.0392 p_o 0.9997
+19:35:56 [ft] step 160: loss 0.0462 ce_o 0.0004 kl_other 0.0458 p_o 0.9996
+19:35:57 [ft] step 170: loss 0.0782 ce_o 0.0004 kl_other 0.0778 p_o 0.9996
+19:35:57 [ft] step 180: loss 0.0418 ce_o 0.0002 kl_other 0.0416 p_o 0.9998
+19:35:57 [ft] step 190: loss 0.0464 ce_o 0.0004 kl_other 0.0460 p_o 0.9996
+19:35:58 [ft] step 200: loss 0.0557 ce_o 0.0004 kl_other 0.0553 p_o 0.9996
+19:35:58 [ft] step 210: loss 0.0519 ce_o 0.0003 kl_other 0.0516 p_o 0.9997
+19:35:58 [ft] step 220: loss 0.0477 ce_o 0.0002 kl_other 0.0476 p_o 0.9998
+19:35:59 [ft] step 230: loss 0.0633 ce_o 0.0003 kl_other 0.0630 p_o 0.9997
+19:35:59 [ft] step 240: loss 0.0452 ce_o 0.0003 kl_other 0.0449 p_o 0.9997
+19:35:59 [ft] step 250: loss 0.0362 ce_o 0.0002 kl_other 0.0359 p_o 0.9998
+19:36:00 [ft] step 260: loss 0.0503 ce_o 0.0003 kl_other 0.0500 p_o 0.9997
+19:36:00 [ft] step 270: loss 0.0672 ce_o 0.0002 kl_other 0.0670 p_o 0.9998
+19:36:00 [ft] step 280: loss 0.0386 ce_o 0.0003 kl_other 0.0383 p_o 0.9997
+19:36:01 [ft] step 290: loss 0.0497 ce_o 0.0003 kl_other 0.0494 p_o 0.9997
+19:36:01 [ft] step 300: loss 0.0639 ce_o 0.0002 kl_other 0.0637 p_o 0.9998
+19:36:02 [train e58/pa_copy_s3] held-out P(target) at step 30 0.9979; size 0.00728747; 11 s
+19:36:02 [ft] step 1: loss 9.5389 ce_o 9.5389 kl_other 0.0000 p_o 0.0003
+19:36:02 [ft] step 10: loss 0.3355 ce_o 0.0730 kl_other 0.2625 p_o 0.9331
+19:36:02 [ft] step 20: loss 0.0932 ce_o 0.0086 kl_other 0.0846 p_o 0.9916
+19:36:03 [ft] step 30: loss 0.0705 ce_o 0.0024 kl_other 0.0681 p_o 0.9976
+19:36:03 [ft] checkpoint 30: p_o 0.9979 ce_o 0.0022 kl_other 0.0598 n 286 rel_norm_max 0.0196 elapsed_s 1.2778
+19:36:03 [ft] step 40: loss 0.0612 ce_o 0.0011 kl_other 0.0602 p_o 0.9989
+19:36:04 [ft] step 50: loss 0.0555 ce_o 0.0010 kl_other 0.0545 p_o 0.9990
+19:36:04 [ft] step 60: loss 0.0471 ce_o 0.0006 kl_other 0.0465 p_o 0.9994
+19:36:04 [ft] step 70: loss 0.0595 ce_o 0.0006 kl_other 0.0589 p_o 0.9994
+19:36:05 [ft] step 80: loss 0.0813 ce_o 0.0006 kl_other 0.0808 p_o 0.9994
+19:36:05 [ft] step 90: loss 0.0634 ce_o 0.0004 kl_other 0.0631 p_o 0.9996
+19:36:05 [ft] step 100: loss 0.0552 ce_o 0.0005 kl_other 0.0546 p_o 0.9995
+19:36:06 [ft] step 110: loss 0.0598 ce_o 0.0006 kl_other 0.0592 p_o 0.9994
+19:36:06 [ft] step 120: loss 0.0662 ce_o 0.0004 kl_other 0.0658 p_o 0.9996
+19:36:06 [ft] step 130: loss 0.0518 ce_o 0.0007 kl_other 0.0511 p_o 0.9993
+19:36:07 [ft] step 140: loss 0.0642 ce_o 0.0008 kl_other 0.0634 p_o 0.9992
+19:36:07 [ft] step 150: loss 0.0809 ce_o 0.0003 kl_other 0.0805 p_o 0.9997
+19:36:07 [ft] step 160: loss 0.0535 ce_o 0.0003 kl_other 0.0532 p_o 0.9997
+19:36:08 [ft] step 170: loss 0.0406 ce_o 0.0003 kl_other 0.0403 p_o 0.9997
+19:36:08 [ft] step 180: loss 0.0512 ce_o 0.0004 kl_other 0.0508 p_o 0.9996
+19:36:09 [ft] step 190: loss 0.0456 ce_o 0.0003 kl_other 0.0453 p_o 0.9997
+19:36:09 [ft] step 200: loss 0.0469 ce_o 0.0003 kl_other 0.0465 p_o 0.9997
+19:36:09 [ft] step 210: loss 0.0504 ce_o 0.0003 kl_other 0.0501 p_o 0.9997
+19:36:10 [ft] step 220: loss 0.0605 ce_o 0.0004 kl_other 0.0601 p_o 0.9996
+19:36:10 [ft] step 230: loss 0.0656 ce_o 0.0003 kl_other 0.0653 p_o 0.9997
+19:36:10 [ft] step 240: loss 0.0528 ce_o 0.0003 kl_other 0.0525 p_o 0.9997
+19:36:11 [ft] step 250: loss 0.0434 ce_o 0.0003 kl_other 0.0431 p_o 0.9997
+19:36:11 [ft] step 260: loss 0.0505 ce_o 0.0003 kl_other 0.0502 p_o 0.9997
+19:36:11 [ft] step 270: loss 0.0614 ce_o 0.0003 kl_other 0.0610 p_o 0.9997
+19:36:12 [ft] step 280: loss 0.0399 ce_o 0.0004 kl_other 0.0396 p_o 0.9996
+19:36:12 [ft] step 290: loss 0.0516 ce_o 0.0002 kl_other 0.0514 p_o 0.9998
+19:36:13 [ft] step 300: loss 0.0529 ce_o 0.0002 kl_other 0.0527 p_o 0.9998
+19:36:13 [train e58/pa_copy_s4] held-out P(target) at step 30 0.9979; size 0.00724357; 11 s
+19:36:13 [ft] step 1: loss 10.0019 ce_o 10.0019 kl_other 0.0000 p_o 0.0002
+19:36:13 [ft] step 10: loss 0.3871 ce_o 0.1697 kl_other 0.2174 p_o 0.8960
+19:36:14 [ft] step 20: loss 0.0969 ce_o 0.0065 kl_other 0.0904 p_o 0.9936
+19:36:14 [ft] step 30: loss 0.0692 ce_o 0.0024 kl_other 0.0669 p_o 0.9977
+19:36:14 [ft] checkpoint 30: p_o 0.9976 ce_o 0.0024 kl_other 0.0536 n 286 rel_norm_max 0.0196 elapsed_s 1.4896
+19:36:15 [ft] step 40: loss 0.1113 ce_o 0.0011 kl_other 0.1102 p_o 0.9989
+19:36:15 [ft] step 50: loss 0.0559 ce_o 0.0012 kl_other 0.0547 p_o 0.9988
+19:36:15 [ft] step 60: loss 0.0659 ce_o 0.0005 kl_other 0.0654 p_o 0.9995
+19:36:16 [ft] step 70: loss 0.0593 ce_o 0.0006 kl_other 0.0586 p_o 0.9994
+19:36:16 [ft] step 80: loss 0.0715 ce_o 0.0006 kl_other 0.0710 p_o 0.9994
+19:36:17 [ft] step 90: loss 0.0482 ce_o 0.0005 kl_other 0.0477 p_o 0.9995
+19:36:17 [ft] step 100: loss 0.0442 ce_o 0.0004 kl_other 0.0437 p_o 0.9996
+19:36:17 [ft] step 110: loss 0.0466 ce_o 0.0004 kl_other 0.0462 p_o 0.9996
+19:36:18 [ft] step 120: loss 0.0592 ce_o 0.0004 kl_other 0.0588 p_o 0.9996
+19:36:18 [ft] step 130: loss 0.0570 ce_o 0.0002 kl_other 0.0568 p_o 0.9998
+19:36:18 [ft] step 140: loss 0.0467 ce_o 0.0003 kl_other 0.0464 p_o 0.9997
+19:36:19 [ft] step 150: loss 0.0568 ce_o 0.0003 kl_other 0.0565 p_o 0.9997
+19:36:19 [ft] step 160: loss 0.0486 ce_o 0.0002 kl_other 0.0484 p_o 0.9998
+19:36:20 [ft] step 170: loss 0.0463 ce_o 0.0004 kl_other 0.0459 p_o 0.9996
+19:36:20 [ft] step 180: loss 0.0429 ce_o 0.0004 kl_other 0.0426 p_o 0.9996
+19:36:20 [ft] step 190: loss 0.0602 ce_o 0.0004 kl_other 0.0598 p_o 0.9996
+19:36:21 [ft] step 200: loss 0.0586 ce_o 0.0003 kl_other 0.0583 p_o 0.9997
+19:36:21 [ft] step 210: loss 0.0561 ce_o 0.0002 kl_other 0.0559 p_o 0.9998
+19:36:21 [ft] step 220: loss 0.0483 ce_o 0.0003 kl_other 0.0480 p_o 0.9997
+19:36:22 [ft] step 230: loss 0.0341 ce_o 0.0003 kl_other 0.0338 p_o 0.9997
+19:36:22 [ft] step 240: loss 0.0690 ce_o 0.0003 kl_other 0.0687 p_o 0.9997
+19:36:22 [ft] step 250: loss 0.0631 ce_o 0.0002 kl_other 0.0629 p_o 0.9998
+19:36:23 [ft] step 260: loss 0.0793 ce_o 0.0003 kl_other 0.0791 p_o 0.9997
+19:36:23 [ft] step 270: loss 0.0577 ce_o 0.0003 kl_other 0.0574 p_o 0.9997
+19:36:24 [ft] step 280: loss 0.0403 ce_o 0.0002 kl_other 0.0401 p_o 0.9998
+19:36:24 [ft] step 290: loss 0.0462 ce_o 0.0003 kl_other 0.0459 p_o 0.9997
+19:36:24 [ft] step 300: loss 0.0509 ce_o 0.0003 kl_other 0.0506 p_o 0.9997
+19:36:25 [train e58/pa_copy_s5] held-out P(target) at step 30 0.9976; size 0.00728463; 12 s
+19:36:25 [ft] step 1: loss 10.0782 ce_o 10.0782 kl_other 0.0000 p_o 0.0003
+19:36:25 [ft] step 10: loss 0.3584 ce_o 0.1078 kl_other 0.2506 p_o 0.9196
+19:36:25 [ft] step 20: loss 0.0924 ce_o 0.0152 kl_other 0.0772 p_o 0.9858
+19:36:26 [ft] step 30: loss 0.0627 ce_o 0.0018 kl_other 0.0610 p_o 0.9983
+19:36:26 [ft] checkpoint 30: p_o 0.9977 ce_o 0.0023 kl_other 0.0579 n 286 rel_norm_max 0.0198 elapsed_s 1.2810
+19:36:26 [ft] step 40: loss 0.0539 ce_o 0.0014 kl_other 0.0525 p_o 0.9986
+19:36:27 [ft] step 50: loss 0.0714 ce_o 0.0012 kl_other 0.0703 p_o 0.9988
+19:36:27 [ft] step 60: loss 0.0557 ce_o 0.0007 kl_other 0.0549 p_o 0.9993
+19:36:27 [ft] step 70: loss 0.0665 ce_o 0.0009 kl_other 0.0656 p_o 0.9991
+19:36:28 [ft] step 80: loss 0.0567 ce_o 0.0005 kl_other 0.0562 p_o 0.9995
+19:36:28 [ft] step 90: loss 0.0818 ce_o 0.0007 kl_other 0.0811 p_o 0.9993
+19:36:29 [ft] step 100: loss 0.0632 ce_o 0.0005 kl_other 0.0627 p_o 0.9995
+19:36:29 [ft] step 110: loss 0.0540 ce_o 0.0004 kl_other 0.0535 p_o 0.9996
+19:36:29 [ft] step 120: loss 0.0699 ce_o 0.0004 kl_other 0.0694 p_o 0.9996
+19:36:30 [ft] step 130: loss 0.0737 ce_o 0.0003 kl_other 0.0733 p_o 0.9997
+19:36:30 [ft] step 140: loss 0.0692 ce_o 0.0004 kl_other 0.0688 p_o 0.9996
+19:36:30 [ft] step 150: loss 0.0549 ce_o 0.0003 kl_other 0.0546 p_o 0.9997
+19:36:31 [ft] step 160: loss 0.0603 ce_o 0.0003 kl_other 0.0600 p_o 0.9997
+19:36:31 [ft] step 170: loss 0.0860 ce_o 0.0005 kl_other 0.0855 p_o 0.9995
+19:36:31 [ft] step 180: loss 0.0474 ce_o 0.0003 kl_other 0.0471 p_o 0.9997
+19:36:32 [ft] step 190: loss 0.0545 ce_o 0.0003 kl_other 0.0542 p_o 0.9997
+19:36:32 [ft] step 200: loss 0.0623 ce_o 0.0004 kl_other 0.0619 p_o 0.9996
+19:36:33 [ft] step 210: loss 0.0577 ce_o 0.0003 kl_other 0.0574 p_o 0.9997
+19:36:33 [ft] step 220: loss 0.0367 ce_o 0.0003 kl_other 0.0364 p_o 0.9997
+19:36:33 [ft] step 230: loss 0.0453 ce_o 0.0003 kl_other 0.0450 p_o 0.9997
+19:36:34 [ft] step 240: loss 0.0490 ce_o 0.0003 kl_other 0.0487 p_o 0.9997
+19:36:34 [ft] step 250: loss 0.0417 ce_o 0.0002 kl_other 0.0415 p_o 0.9998
+19:36:34 [ft] step 260: loss 0.0426 ce_o 0.0002 kl_other 0.0424 p_o 0.9998
+19:36:35 [ft] step 270: loss 0.0508 ce_o 0.0002 kl_other 0.0505 p_o 0.9998
+19:36:35 [ft] step 280: loss 0.0399 ce_o 0.0002 kl_other 0.0396 p_o 0.9998
+19:36:36 [ft] step 290: loss 0.0376 ce_o 0.0002 kl_other 0.0374 p_o 0.9998
+19:36:36 [ft] step 300: loss 0.0370 ce_o 0.0003 kl_other 0.0368 p_o 0.9997
+19:36:36 [train e58/pa_copy_s6] held-out P(target) at step 30 0.9977; size 0.00731695; 12 s
+19:36:36 [ft] step 1: loss 9.2643 ce_o 9.2643 kl_other 0.0000 p_o 0.0007
+19:36:37 [ft] step 10: loss 0.3159 ce_o 0.0439 kl_other 0.2720 p_o 0.9588
+19:36:37 [ft] step 20: loss 0.0869 ce_o 0.0051 kl_other 0.0818 p_o 0.9950
+19:36:37 [ft] step 30: loss 0.0649 ce_o 0.0016 kl_other 0.0634 p_o 0.9985
+19:36:38 [ft] checkpoint 30: p_o 0.9982 ce_o 0.0018 kl_other 0.0605 n 286 rel_norm_max 0.0198 elapsed_s 1.3166
+19:36:38 [ft] step 40: loss 0.0579 ce_o 0.0025 kl_other 0.0553 p_o 0.9975
+19:36:38 [ft] step 50: loss 0.0657 ce_o 0.0021 kl_other 0.0637 p_o 0.9980
+19:36:39 [ft] step 60: loss 0.0628 ce_o 0.0008 kl_other 0.0620 p_o 0.9992
+19:36:39 [ft] step 70: loss 0.0657 ce_o 0.0007 kl_other 0.0649 p_o 0.9993
+19:36:39 [ft] step 80: loss 0.0609 ce_o 0.0005 kl_other 0.0604 p_o 0.9995
+19:36:40 [ft] step 90: loss 0.0517 ce_o 0.0005 kl_other 0.0512 p_o 0.9995
+19:36:40 [ft] step 100: loss 0.0529 ce_o 0.0003 kl_other 0.0526 p_o 0.9997
+19:36:41 [ft] step 110: loss 0.0676 ce_o 0.0004 kl_other 0.0671 p_o 0.9996
+19:36:41 [ft] step 120: loss 0.1279 ce_o 0.0003 kl_other 0.1275 p_o 0.9997
+19:36:41 [ft] step 130: loss 0.0597 ce_o 0.0004 kl_other 0.0593 p_o 0.9996
+19:36:42 [ft] step 140: loss 0.0594 ce_o 0.0003 kl_other 0.0591 p_o 0.9997
+19:36:42 [ft] step 150: loss 0.0632 ce_o 0.0003 kl_other 0.0628 p_o 0.9997
+19:36:42 [ft] step 160: loss 0.0811 ce_o 0.0002 kl_other 0.0808 p_o 0.9998
+19:36:43 [ft] step 170: loss 0.0520 ce_o 0.0003 kl_other 0.0517 p_o 0.9997
+19:36:43 [ft] step 180: loss 0.0381 ce_o 0.0003 kl_other 0.0378 p_o 0.9997
+19:36:44 [ft] step 190: loss 0.0525 ce_o 0.0004 kl_other 0.0521 p_o 0.9996
+19:36:44 [ft] step 200: loss 0.0565 ce_o 0.0003 kl_other 0.0563 p_o 0.9997
+19:36:44 [ft] step 210: loss 0.0507 ce_o 0.0003 kl_other 0.0504 p_o 0.9997
+19:36:45 [ft] step 220: loss 0.0436 ce_o 0.0003 kl_other 0.0434 p_o 0.9997
+19:36:45 [ft] step 230: loss 0.0742 ce_o 0.0002 kl_other 0.0740 p_o 0.9998
+19:36:45 [ft] step 240: loss 0.0501 ce_o 0.0002 kl_other 0.0499 p_o 0.9998
+19:36:46 [ft] step 250: loss 0.0417 ce_o 0.0002 kl_other 0.0414 p_o 0.9998
+19:36:46 [ft] step 260: loss 0.0486 ce_o 0.0002 kl_other 0.0484 p_o 0.9998
+19:36:46 [ft] step 270: loss 0.0427 ce_o 0.0002 kl_other 0.0425 p_o 0.9998
+19:36:47 [ft] step 280: loss 0.0408 ce_o 0.0001 kl_other 0.0407 p_o 0.9999
+19:36:47 [ft] step 290: loss 0.0431 ce_o 0.0003 kl_other 0.0428 p_o 0.9997
+19:36:48 [ft] step 300: loss 0.0499 ce_o 0.0003 kl_other 0.0496 p_o 0.9997
+19:36:48 [train e58/pa_copy_s7] held-out P(target) at step 30 0.9982; size 0.0073331; 12 s
+19:36:48 [ft] step 1: loss 9.7648 ce_o 9.7648 kl_other 0.0000 p_o 0.0002
+19:36:48 [ft] step 10: loss 0.2603 ce_o 0.0337 kl_other 0.2266 p_o 0.9675
+19:36:49 [ft] step 20: loss 0.0952 ce_o 0.0057 kl_other 0.0895 p_o 0.9944
+19:36:49 [ft] step 30: loss 0.0610 ce_o 0.0023 kl_other 0.0587 p_o 0.9977
+19:36:49 [ft] checkpoint 30: p_o 0.9977 ce_o 0.0023 kl_other 0.0571 n 286 rel_norm_max 0.0196 elapsed_s 1.2982
+19:36:50 [ft] step 40: loss 0.0678 ce_o 0.0010 kl_other 0.0668 p_o 0.9990
+19:36:50 [ft] step 50: loss 0.0445 ce_o 0.0011 kl_other 0.0434 p_o 0.9989
+19:36:50 [ft] step 60: loss 0.0584 ce_o 0.0007 kl_other 0.0577 p_o 0.9993
+19:36:51 [ft] step 70: loss 0.0714 ce_o 0.0008 kl_other 0.0706 p_o 0.9992
+19:36:51 [ft] step 80: loss 0.0571 ce_o 0.0007 kl_other 0.0564 p_o 0.9993
+19:36:52 [ft] step 90: loss 0.0445 ce_o 0.0006 kl_other 0.0439 p_o 0.9994
+19:36:52 [ft] step 100: loss 0.0839 ce_o 0.0004 kl_other 0.0835 p_o 0.9996
+19:36:52 [ft] step 110: loss 0.0512 ce_o 0.0003 kl_other 0.0508 p_o 0.9997
+19:36:53 [ft] step 120: loss 0.0508 ce_o 0.0006 kl_other 0.0502 p_o 0.9994
+19:36:53 [ft] step 130: loss 0.0569 ce_o 0.0005 kl_other 0.0564 p_o 0.9995
+19:36:53 [ft] step 140: loss 0.0745 ce_o 0.0003 kl_other 0.0741 p_o 0.9997
+19:36:54 [ft] step 150: loss 0.0602 ce_o 0.0005 kl_other 0.0597 p_o 0.9995
+19:36:54 [ft] step 160: loss 0.0462 ce_o 0.0005 kl_other 0.0457 p_o 0.9995
+19:36:54 [ft] step 170: loss 0.0582 ce_o 0.0004 kl_other 0.0579 p_o 0.9996
+19:36:55 [ft] step 180: loss 0.0556 ce_o 0.0003 kl_other 0.0553 p_o 0.9997
+19:36:55 [ft] step 190: loss 0.0440 ce_o 0.0002 kl_other 0.0438 p_o 0.9998
+19:36:56 [ft] step 200: loss 0.0748 ce_o 0.0003 kl_other 0.0745 p_o 0.9997
+19:36:56 [ft] step 210: loss 0.0522 ce_o 0.0003 kl_other 0.0519 p_o 0.9997
+19:36:56 [ft] step 220: loss 0.0492 ce_o 0.0003 kl_other 0.0489 p_o 0.9997
+19:36:57 [ft] step 230: loss 0.0445 ce_o 0.0003 kl_other 0.0442 p_o 0.9997
+19:36:57 [ft] step 240: loss 0.0440 ce_o 0.0003 kl_other 0.0437 p_o 0.9997
+19:36:57 [ft] step 250: loss 0.0411 ce_o 0.0002 kl_other 0.0409 p_o 0.9998
+19:36:58 [ft] step 260: loss 0.0418 ce_o 0.0002 kl_other 0.0416 p_o 0.9998
+19:36:58 [ft] step 270: loss 0.0338 ce_o 0.0002 kl_other 0.0336 p_o 0.9998
+19:36:59 [ft] step 280: loss 0.0358 ce_o 0.0002 kl_other 0.0355 p_o 0.9998
+19:36:59 [ft] step 290: loss 0.0372 ce_o 0.0002 kl_other 0.0370 p_o 0.9998
+19:36:59 [ft] step 300: loss 0.0540 ce_o 0.0002 kl_other 0.0538 p_o 0.9998
+19:37:00 [train e58/pa_copy_s8] held-out P(target) at step 30 0.9977; size 0.00732698; 12 s
+19:37:00 [ft] step 1: loss 9.5229 ce_o 9.5229 kl_other 0.0000 p_o 0.0002
+19:37:00 [ft] step 10: loss 0.4076 ce_o 0.1106 kl_other 0.2971 p_o 0.9425
+19:37:00 [ft] step 20: loss 0.0943 ce_o 0.0068 kl_other 0.0875 p_o 0.9932
+19:37:01 [ft] step 30: loss 0.0628 ce_o 0.0011 kl_other 0.0617 p_o 0.9989
+19:37:01 [ft] checkpoint 30: p_o 0.9982 ce_o 0.0018 kl_other 0.0568 n 286 rel_norm_max 0.0200 elapsed_s 1.3247
+19:37:01 [ft] step 40: loss 0.0746 ce_o 0.0121 kl_other 0.0626 p_o 0.9895
+19:37:02 [ft] step 50: loss 0.0592 ce_o 0.0006 kl_other 0.0586 p_o 0.9994
+19:37:02 [ft] step 60: loss 0.0574 ce_o 0.0009 kl_other 0.0565 p_o 0.9991
+19:37:03 [ft] step 70: loss 0.0632 ce_o 0.0008 kl_other 0.0624 p_o 0.9992
+19:37:03 [ft] step 80: loss 0.0504 ce_o 0.0007 kl_other 0.0497 p_o 0.9993
+19:37:03 [ft] step 90: loss 0.0486 ce_o 0.0008 kl_other 0.0478 p_o 0.9992
+19:37:04 [ft] step 100: loss 0.0452 ce_o 0.0005 kl_other 0.0447 p_o 0.9995
+19:37:04 [ft] step 110: loss 0.0708 ce_o 0.0005 kl_other 0.0703 p_o 0.9995
+19:37:04 [ft] step 120: loss 0.0429 ce_o 0.0004 kl_other 0.0425 p_o 0.9996
+19:37:05 [ft] step 130: loss 0.0524 ce_o 0.0006 kl_other 0.0518 p_o 0.9994
+19:37:05 [ft] step 140: loss 0.0484 ce_o 0.0003 kl_other 0.0481 p_o 0.9997
+19:37:05 [ft] step 150: loss 0.0534 ce_o 0.0004 kl_other 0.0531 p_o 0.9996
+19:37:06 [ft] step 160: loss 0.0849 ce_o 0.0003 kl_other 0.0846 p_o 0.9997
+19:37:06 [ft] step 170: loss 0.0411 ce_o 0.0003 kl_other 0.0408 p_o 0.9997
+19:37:07 [ft] step 180: loss 0.0466 ce_o 0.0004 kl_other 0.0462 p_o 0.9996
+19:37:07 [ft] step 190: loss 0.0395 ce_o 0.0003 kl_other 0.0392 p_o 0.9997
+19:37:07 [ft] step 200: loss 0.0468 ce_o 0.0003 kl_other 0.0465 p_o 0.9997
+19:37:08 [ft] step 210: loss 0.0585 ce_o 0.0003 kl_other 0.0582 p_o 0.9997
+19:37:08 [ft] step 220: loss 0.0474 ce_o 0.0002 kl_other 0.0473 p_o 0.9998
+19:37:08 [ft] step 230: loss 0.0428 ce_o 0.0003 kl_other 0.0425 p_o 0.9997
+19:37:09 [ft] step 240: loss 0.0545 ce_o 0.0003 kl_other 0.0542 p_o 0.9997
+19:37:09 [ft] step 250: loss 0.0503 ce_o 0.0002 kl_other 0.0501 p_o 0.9998
+19:37:10 [ft] step 260: loss 0.0534 ce_o 0.0002 kl_other 0.0532 p_o 0.9998
+19:37:10 [ft] step 270: loss 0.0363 ce_o 0.0002 kl_other 0.0360 p_o 0.9998
+19:37:10 [ft] step 280: loss 0.0414 ce_o 0.0003 kl_other 0.0411 p_o 0.9997
+19:37:11 [ft] step 290: loss 0.0439 ce_o 0.0002 kl_other 0.0437 p_o 0.9998
+19:37:11 [ft] step 300: loss 0.0350 ce_o 0.0002 kl_other 0.0349 p_o 0.9998
+19:37:12 [train e58/pa_copy_s9] held-out P(target) at step 30 0.9982; size 0.00732691; 12 s
+19:37:12 [ft] step 1: loss 10.0276 ce_o 10.0276 kl_other 0.0000 p_o 0.0006
+19:37:12 [ft] step 10: loss 4.0924 ce_o 3.7395 kl_other 0.3529 p_o 0.1989
+19:37:12 [ft] step 20: loss 0.6761 ce_o 0.3584 kl_other 0.3177 p_o 0.8173
+19:37:13 [ft] step 30: loss 0.2307 ce_o 0.0748 kl_other 0.1559 p_o 0.9414
+19:37:13 [ft] checkpoint 30: p_o 0.9613 ce_o 0.0501 kl_other 0.1669 n 286 rel_norm_max 0.0256 elapsed_s 1.2796
+19:37:13 [ft] step 40: loss 0.1038 ce_o 0.0093 kl_other 0.0945 p_o 0.9909
+19:37:14 [ft] step 50: loss 0.0720 ce_o 0.0090 kl_other 0.0631 p_o 0.9914
+19:37:14 [ft] step 60: loss 0.0804 ce_o 0.0012 kl_other 0.0792 p_o 0.9988
+19:37:14 [ft] step 70: loss 0.0535 ce_o 0.0009 kl_other 0.0526 p_o 0.9991
+19:37:15 [ft] step 80: loss 0.0524 ce_o 0.0006 kl_other 0.0517 p_o 0.9994
+19:37:15 [ft] step 90: loss 0.0946 ce_o 0.0121 kl_other 0.0825 p_o 0.9898
+19:37:15 [ft] step 100: loss 0.0555 ce_o 0.0011 kl_other 0.0544 p_o 0.9989
+19:37:16 [ft] step 110: loss 0.0639 ce_o 0.0008 kl_other 0.0632 p_o 0.9993
+19:37:16 [ft] step 120: loss 0.0517 ce_o 0.0005 kl_other 0.0512 p_o 0.9995
+19:37:16 [ft] step 130: loss 0.0392 ce_o 0.0006 kl_other 0.0386 p_o 0.9994
+19:37:17 [ft] step 140: loss 0.0777 ce_o 0.0010 kl_other 0.0767 p_o 0.9990
+19:37:17 [ft] step 150: loss 0.0609 ce_o 0.0006 kl_other 0.0603 p_o 0.9994
+19:37:18 [ft] step 160: loss 0.0539 ce_o 0.0005 kl_other 0.0534 p_o 0.9995
+19:37:18 [ft] step 170: loss 0.0627 ce_o 0.0005 kl_other 0.0623 p_o 0.9995
+19:37:18 [ft] step 180: loss 0.0396 ce_o 0.0011 kl_other 0.0385 p_o 0.9989
+19:37:19 [ft] step 190: loss 0.0322 ce_o 0.0003 kl_other 0.0319 p_o 0.9997
+19:37:19 [ft] step 200: loss 0.0537 ce_o 0.0005 kl_other 0.0533 p_o 0.9995
+19:37:19 [ft] step 210: loss 0.0481 ce_o 0.0003 kl_other 0.0478 p_o 0.9997
+19:37:20 [ft] step 220: loss 0.0621 ce_o 0.0003 kl_other 0.0618 p_o 0.9997
+19:37:20 [ft] step 230: loss 0.0603 ce_o 0.0004 kl_other 0.0599 p_o 0.9996
+19:37:20 [ft] step 240: loss 0.0589 ce_o 0.0004 kl_other 0.0585 p_o 0.9996
+19:37:21 [ft] step 250: loss 0.0672 ce_o 0.0004 kl_other 0.0668 p_o 0.9996
+19:37:21 [ft] step 260: loss 0.0517 ce_o 0.0002 kl_other 0.0514 p_o 0.9998
+19:37:22 [ft] step 270: loss 0.0769 ce_o 0.0003 kl_other 0.0767 p_o 0.9997
+19:37:22 [ft] step 280: loss 0.0418 ce_o 0.0003 kl_other 0.0415 p_o 0.9997
+19:37:22 [ft] step 290: loss 0.0509 ce_o 0.0003 kl_other 0.0506 p_o 0.9997
+19:37:23 [ft] step 300: loss 0.0503 ce_o 0.0003 kl_other 0.0500 p_o 0.9997
+19:37:23 [train e58/pa_prior_cipher_s0] held-out P(target) at step 30 0.9613; size 0.00937547; 11 s
+19:37:23 [ft] step 1: loss 10.0215 ce_o 10.0215 kl_other 0.0000 p_o 0.0002
+19:37:23 [ft] step 10: loss 4.3648 ce_o 3.9581 kl_other 0.4067 p_o 0.2110
+19:37:24 [ft] step 20: loss 0.6954 ce_o 0.4240 kl_other 0.2713 p_o 0.7943
+19:37:24 [ft] step 30: loss 0.1537 ce_o 0.0135 kl_other 0.1402 p_o 0.9869
+19:37:24 [ft] checkpoint 30: p_o 0.9361 ce_o 0.1895 kl_other 0.1388 n 286 rel_norm_max 0.0254 elapsed_s 1.2592
+19:37:25 [ft] step 40: loss 0.0962 ce_o 0.0035 kl_other 0.0927 p_o 0.9965
+19:37:25 [ft] step 50: loss 0.0685 ce_o 0.0041 kl_other 0.0644 p_o 0.9960
+19:37:25 [ft] step 60: loss 0.0609 ce_o 0.0025 kl_other 0.0584 p_o 0.9975
+19:37:26 [ft] step 70: loss 0.0684 ce_o 0.0011 kl_other 0.0673 p_o 0.9989
+19:37:26 [ft] step 80: loss 0.0581 ce_o 0.0006 kl_other 0.0575 p_o 0.9994
+19:37:27 [ft] step 90: loss 0.0509 ce_o 0.0005 kl_other 0.0504 p_o 0.9995
+19:37:27 [ft] step 100: loss 0.0572 ce_o 0.0009 kl_other 0.0562 p_o 0.9991
+19:37:27 [ft] step 110: loss 0.0532 ce_o 0.0005 kl_other 0.0527 p_o 0.9995
+19:37:28 [ft] step 120: loss 0.0534 ce_o 0.0004 kl_other 0.0530 p_o 0.9996
+19:37:28 [ft] step 130: loss 0.0558 ce_o 0.0005 kl_other 0.0554 p_o 0.9995
+19:37:28 [ft] step 140: loss 0.0557 ce_o 0.0004 kl_other 0.0553 p_o 0.9996
+19:37:29 [ft] step 150: loss 0.0667 ce_o 0.0007 kl_other 0.0660 p_o 0.9993
+19:37:29 [ft] step 160: loss 0.0569 ce_o 0.0005 kl_other 0.0564 p_o 0.9995
+19:37:29 [ft] step 170: loss 0.0358 ce_o 0.0005 kl_other 0.0353 p_o 0.9995
+19:37:30 [ft] step 180: loss 0.1105 ce_o 0.0336 kl_other 0.0770 p_o 0.9791
+19:37:30 [ft] step 190: loss 0.1711 ce_o 0.0812 kl_other 0.0899 p_o 0.9706
+19:37:31 [ft] step 200: loss 0.0545 ce_o 0.0004 kl_other 0.0541 p_o 0.9996
+19:37:31 [ft] step 210: loss 0.0507 ce_o 0.0005 kl_other 0.0502 p_o 0.9995
+19:37:31 [ft] step 220: loss 0.0509 ce_o 0.0006 kl_other 0.0504 p_o 0.9994
+19:37:32 [ft] step 230: loss 0.0578 ce_o 0.0035 kl_other 0.0543 p_o 0.9966
+19:37:32 [ft] step 240: loss 0.0725 ce_o 0.0003 kl_other 0.0723 p_o 0.9997
+19:37:32 [ft] step 250: loss 0.0410 ce_o 0.0004 kl_other 0.0406 p_o 0.9996
+19:37:33 [ft] step 260: loss 0.0484 ce_o 0.0003 kl_other 0.0481 p_o 0.9997
+19:37:33 [ft] step 270: loss 0.0598 ce_o 0.0003 kl_other 0.0595 p_o 0.9997
+19:37:34 [ft] step 280: loss 0.0348 ce_o 0.0003 kl_other 0.0344 p_o 0.9997
+19:37:34 [ft] step 290: loss 0.0486 ce_o 0.0004 kl_other 0.0482 p_o 0.9996
+19:37:34 [ft] step 300: loss 0.0344 ce_o 0.0002 kl_other 0.0342 p_o 0.9998
+19:37:35 [train e58/pa_prior_cipher_s1] held-out P(target) at step 30 0.9361; size 0.00933514; 12 s
+19:37:35 [ft] step 1: loss 9.6923 ce_o 9.6923 kl_other 0.0000 p_o 0.0002
+19:37:35 [ft] step 10: loss 4.3480 ce_o 3.9962 kl_other 0.3518 p_o 0.1814
+19:37:35 [ft] step 20: loss 0.9055 ce_o 0.5843 kl_other 0.3212 p_o 0.8439
+19:37:36 [ft] step 30: loss 0.1822 ce_o 0.0344 kl_other 0.1478 p_o 0.9718
+19:37:36 [ft] checkpoint 30: p_o 0.9356 ce_o 0.1982 kl_other 0.1603 n 286 rel_norm_max 0.0254 elapsed_s 1.3341
+19:37:36 [ft] step 40: loss 0.1508 ce_o 0.0054 kl_other 0.1454 p_o 0.9947
+19:37:37 [ft] step 50: loss 0.0906 ce_o 0.0103 kl_other 0.0803 p_o 0.9905
+19:37:37 [ft] step 60: loss 0.0608 ce_o 0.0036 kl_other 0.0572 p_o 0.9965
+19:37:37 [ft] step 70: loss 0.0630 ce_o 0.0009 kl_other 0.0621 p_o 0.9991
+19:37:38 [ft] step 80: loss 0.1739 ce_o 0.0618 kl_other 0.1121 p_o 0.9720
+19:37:38 [ft] step 90: loss 0.0812 ce_o 0.0008 kl_other 0.0804 p_o 0.9992
+19:37:39 [ft] step 100: loss 0.0655 ce_o 0.0008 kl_other 0.0647 p_o 0.9992
+19:37:39 [ft] step 110: loss 0.0643 ce_o 0.0008 kl_other 0.0636 p_o 0.9992
+19:37:39 [ft] step 120: loss 0.0600 ce_o 0.0004 kl_other 0.0596 p_o 0.9996
+19:37:40 [ft] step 130: loss 0.0794 ce_o 0.0057 kl_other 0.0737 p_o 0.9947
+19:37:40 [ft] step 140: loss 0.0514 ce_o 0.0007 kl_other 0.0508 p_o 0.9993
+19:37:40 [ft] step 150: loss 0.0541 ce_o 0.0005 kl_other 0.0536 p_o 0.9995
+19:37:41 [ft] step 160: loss 0.0464 ce_o 0.0006 kl_other 0.0458 p_o 0.9994
+19:37:41 [ft] step 170: loss 0.0572 ce_o 0.0007 kl_other 0.0565 p_o 0.9993
+19:37:42 [ft] step 180: loss 0.0363 ce_o 0.0007 kl_other 0.0356 p_o 0.9993
+19:37:42 [ft] step 190: loss 0.0509 ce_o 0.0004 kl_other 0.0505 p_o 0.9996
+19:37:42 [ft] step 200: loss 0.0434 ce_o 0.0008 kl_other 0.0427 p_o 0.9992
+19:37:43 [ft] step 210: loss 0.0705 ce_o 0.0004 kl_other 0.0701 p_o 0.9996
+19:37:43 [ft] step 220: loss 0.0683 ce_o 0.0005 kl_other 0.0678 p_o 0.9995
+19:37:43 [ft] step 230: loss 0.0530 ce_o 0.0004 kl_other 0.0526 p_o 0.9996
+19:37:44 [ft] step 240: loss 0.0688 ce_o 0.0005 kl_other 0.0683 p_o 0.9995
+19:37:44 [ft] step 250: loss 0.0788 ce_o 0.0003 kl_other 0.0786 p_o 0.9997
+19:37:45 [ft] step 260: loss 0.0478 ce_o 0.0003 kl_other 0.0475 p_o 0.9997
+19:37:45 [ft] step 270: loss 0.0525 ce_o 0.0003 kl_other 0.0522 p_o 0.9997
+19:37:45 [ft] step 280: loss 0.0418 ce_o 0.0004 kl_other 0.0414 p_o 0.9996
+19:37:46 [ft] step 290: loss 0.0409 ce_o 0.0003 kl_other 0.0406 p_o 0.9997
+19:37:46 [ft] step 300: loss 0.0493 ce_o 0.0003 kl_other 0.0490 p_o 0.9997
+19:37:46 [train e58/pa_prior_cipher_s2] held-out P(target) at step 30 0.9356; size 0.00938121; 12 s
+19:37:47 [ft] step 1: loss 10.5503 ce_o 10.5503 kl_other 0.0000 p_o 0.0001
+19:37:47 [ft] step 10: loss 4.1306 ce_o 3.7138 kl_other 0.4169 p_o 0.2479
+19:37:47 [ft] step 20: loss 0.8788 ce_o 0.5752 kl_other 0.3035 p_o 0.7430
+19:37:48 [ft] step 30: loss 0.4352 ce_o 0.2711 kl_other 0.1641 p_o 0.9172
+19:37:48 [ft] checkpoint 30: p_o 0.9570 ce_o 0.0697 kl_other 0.1581 n 286 rel_norm_max 0.0250 elapsed_s 1.3396
+19:37:48 [ft] step 40: loss 0.0836 ce_o 0.0066 kl_other 0.0770 p_o 0.9934
+19:37:49 [ft] step 50: loss 0.0686 ce_o 0.0020 kl_other 0.0666 p_o 0.9980
+19:37:49 [ft] step 60: loss 0.0754 ce_o 0.0018 kl_other 0.0736 p_o 0.9982
+19:37:49 [ft] step 70: loss 0.0727 ce_o 0.0011 kl_other 0.0716 p_o 0.9989
+19:37:50 [ft] step 80: loss 0.0568 ce_o 0.0008 kl_other 0.0560 p_o 0.9992
+19:37:50 [ft] step 90: loss 0.0625 ce_o 0.0018 kl_other 0.0608 p_o 0.9983
+19:37:50 [ft] step 100: loss 0.0628 ce_o 0.0006 kl_other 0.0622 p_o 0.9994
+19:37:51 [ft] step 110: loss 0.0438 ce_o 0.0006 kl_other 0.0432 p_o 0.9994
+19:37:51 [ft] step 120: loss 0.0580 ce_o 0.0005 kl_other 0.0575 p_o 0.9995
+19:37:52 [ft] step 130: loss 0.0532 ce_o 0.0012 kl_other 0.0521 p_o 0.9988
+19:37:52 [ft] step 140: loss 0.0422 ce_o 0.0004 kl_other 0.0417 p_o 0.9996
+19:37:52 [ft] step 150: loss 0.0396 ce_o 0.0005 kl_other 0.0391 p_o 0.9995
+19:37:53 [ft] step 160: loss 0.0514 ce_o 0.0006 kl_other 0.0508 p_o 0.9994
+19:37:53 [ft] step 170: loss 0.0715 ce_o 0.0005 kl_other 0.0709 p_o 0.9995
+19:37:53 [ft] step 180: loss 0.0375 ce_o 0.0005 kl_other 0.0369 p_o 0.9995
+19:37:54 [ft] step 190: loss 0.0472 ce_o 0.0005 kl_other 0.0467 p_o 0.9995
+19:37:54 [ft] step 200: loss 0.0760 ce_o 0.0003 kl_other 0.0757 p_o 0.9997
+19:37:55 [ft] step 210: loss 0.0546 ce_o 0.0002 kl_other 0.0544 p_o 0.9998
+19:37:55 [ft] step 220: loss 0.0511 ce_o 0.0004 kl_other 0.0506 p_o 0.9996
+19:37:55 [ft] step 230: loss 0.0718 ce_o 0.0004 kl_other 0.0714 p_o 0.9996
+19:37:56 [ft] step 240: loss 0.0577 ce_o 0.0003 kl_other 0.0574 p_o 0.9997
+19:37:56 [ft] step 250: loss 0.0405 ce_o 0.0004 kl_other 0.0401 p_o 0.9996
+19:37:56 [ft] step 260: loss 0.0554 ce_o 0.0005 kl_other 0.0549 p_o 0.9995
+19:37:57 [ft] step 270: loss 0.0723 ce_o 0.0003 kl_other 0.0719 p_o 0.9997
+19:37:57 [ft] step 280: loss 0.0465 ce_o 0.0003 kl_other 0.0462 p_o 0.9997
+19:37:57 [ft] step 290: loss 0.0533 ce_o 0.0003 kl_other 0.0530 p_o 0.9997
+19:37:58 [ft] step 300: loss 0.0628 ce_o 0.0003 kl_other 0.0625 p_o 0.9997
+19:37:58 [train e58/pa_prior_cipher_s3] held-out P(target) at step 30 0.9570; size 0.009301; 12 s
+19:37:58 [ft] step 1: loss 10.5959 ce_o 10.5959 kl_other 0.0000 p_o 0.0002
+19:37:59 [ft] step 10: loss 4.2672 ce_o 3.8576 kl_other 0.4097 p_o 0.1377
+19:37:59 [ft] step 20: loss 1.5289 ce_o 1.2416 kl_other 0.2874 p_o 0.7477
+19:37:59 [ft] step 30: loss 0.1986 ce_o 0.0737 kl_other 0.1250 p_o 0.9552
+19:38:00 [ft] checkpoint 30: p_o 0.9465 ce_o 0.0903 kl_other 0.1432 n 286 rel_norm_max 0.0248 elapsed_s 1.3487
+19:38:00 [ft] step 40: loss 0.0928 ce_o 0.0060 kl_other 0.0868 p_o 0.9941
+19:38:00 [ft] step 50: loss 0.0841 ce_o 0.0193 kl_other 0.0648 p_o 0.9842
+19:38:01 [ft] step 60: loss 0.0554 ce_o 0.0014 kl_other 0.0541 p_o 0.9986
+19:38:01 [ft] step 70: loss 0.0665 ce_o 0.0018 kl_other 0.0646 p_o 0.9982
+19:38:01 [ft] step 80: loss 0.0642 ce_o 0.0006 kl_other 0.0635 p_o 0.9994
+19:38:02 [ft] step 90: loss 0.0676 ce_o 0.0007 kl_other 0.0668 p_o 0.9993
+19:38:02 [ft] step 100: loss 0.0628 ce_o 0.0010 kl_other 0.0618 p_o 0.9990
+19:38:03 [ft] step 110: loss 0.0573 ce_o 0.0009 kl_other 0.0564 p_o 0.9991
+19:38:03 [ft] step 120: loss 0.0817 ce_o 0.0004 kl_other 0.0813 p_o 0.9996
+19:38:03 [ft] step 130: loss 0.0532 ce_o 0.0007 kl_other 0.0525 p_o 0.9993
+19:38:04 [ft] step 140: loss 0.0633 ce_o 0.0005 kl_other 0.0628 p_o 0.9995
+19:38:04 [ft] step 150: loss 0.0694 ce_o 0.0004 kl_other 0.0690 p_o 0.9996
+19:38:04 [ft] step 160: loss 0.0504 ce_o 0.0008 kl_other 0.0496 p_o 0.9992
+19:38:05 [ft] step 170: loss 0.0388 ce_o 0.0003 kl_other 0.0384 p_o 0.9997
+19:38:05 [ft] step 180: loss 0.0577 ce_o 0.0005 kl_other 0.0572 p_o 0.9995
+19:38:05 [ft] step 190: loss 0.0444 ce_o 0.0004 kl_other 0.0440 p_o 0.9996
+19:38:06 [ft] step 200: loss 0.0409 ce_o 0.0004 kl_other 0.0405 p_o 0.9996
+19:38:06 [ft] step 210: loss 0.0586 ce_o 0.0004 kl_other 0.0582 p_o 0.9996
+19:38:07 [ft] step 220: loss 0.0551 ce_o 0.0005 kl_other 0.0546 p_o 0.9995
+19:38:07 [ft] step 230: loss 0.0603 ce_o 0.0004 kl_other 0.0599 p_o 0.9996
+19:38:07 [ft] step 240: loss 0.0510 ce_o 0.0003 kl_other 0.0507 p_o 0.9997
+19:38:08 [ft] step 250: loss 0.0370 ce_o 0.0004 kl_other 0.0366 p_o 0.9996
+19:38:08 [ft] step 260: loss 0.0506 ce_o 0.0005 kl_other 0.0502 p_o 0.9995
+19:38:08 [ft] step 270: loss 0.0626 ce_o 0.0003 kl_other 0.0623 p_o 0.9997
+19:38:09 [ft] step 280: loss 0.0458 ce_o 0.0005 kl_other 0.0453 p_o 0.9995
+19:38:09 [ft] step 290: loss 0.0493 ce_o 0.0002 kl_other 0.0491 p_o 0.9998
+19:38:10 [ft] step 300: loss 0.0713 ce_o 0.0004 kl_other 0.0710 p_o 0.9996
+19:38:10 [train e58/pa_prior_cipher_s4] held-out P(target) at step 30 0.9465; size 0.00924224; 12 s
+19:38:10 [ft] step 1: loss 9.2061 ce_o 9.2061 kl_other 0.0000 p_o 0.0004
+19:38:10 [ft] step 10: loss 4.3639 ce_o 4.0251 kl_other 0.3388 p_o 0.1343
+19:38:11 [ft] step 20: loss 0.5638 ce_o 0.2660 kl_other 0.2978 p_o 0.8252
+19:38:11 [ft] step 30: loss 0.1621 ce_o 0.0158 kl_other 0.1464 p_o 0.9847
+19:38:11 [ft] checkpoint 30: p_o 0.9673 ce_o 0.0737 kl_other 0.1496 n 286 rel_norm_max 0.0249 elapsed_s 1.3313
+19:38:12 [ft] step 40: loss 0.0982 ce_o 0.0050 kl_other 0.0932 p_o 0.9950
+19:38:12 [ft] step 50: loss 0.0761 ce_o 0.0021 kl_other 0.0741 p_o 0.9979
+19:38:12 [ft] step 60: loss 0.0495 ce_o 0.0020 kl_other 0.0476 p_o 0.9980
+19:38:13 [ft] step 70: loss 0.0561 ce_o 0.0013 kl_other 0.0548 p_o 0.9987
+19:38:13 [ft] step 80: loss 0.0665 ce_o 0.0009 kl_other 0.0656 p_o 0.9991
+19:38:14 [ft] step 90: loss 0.0467 ce_o 0.0007 kl_other 0.0460 p_o 0.9993
+19:38:14 [ft] step 100: loss 0.0495 ce_o 0.0009 kl_other 0.0486 p_o 0.9991
+19:38:14 [ft] step 110: loss 0.0484 ce_o 0.0005 kl_other 0.0479 p_o 0.9995
+19:38:15 [ft] step 120: loss 0.0652 ce_o 0.0012 kl_other 0.0639 p_o 0.9988
+19:38:15 [ft] step 130: loss 0.0694 ce_o 0.0004 kl_other 0.0690 p_o 0.9996
+19:38:15 [ft] step 140: loss 0.0445 ce_o 0.0006 kl_other 0.0439 p_o 0.9994
+19:38:16 [ft] step 150: loss 0.0714 ce_o 0.0007 kl_other 0.0708 p_o 0.9993
+19:38:16 [ft] step 160: loss 0.0610 ce_o 0.0005 kl_other 0.0605 p_o 0.9995
+19:38:17 [ft] step 170: loss 0.0471 ce_o 0.0006 kl_other 0.0466 p_o 0.9994
+19:38:17 [ft] step 180: loss 0.0442 ce_o 0.0006 kl_other 0.0436 p_o 0.9994
+19:38:17 [ft] step 190: loss 0.0587 ce_o 0.0005 kl_other 0.0582 p_o 0.9995
+19:38:18 [ft] step 200: loss 0.0428 ce_o 0.0003 kl_other 0.0425 p_o 0.9997
+19:38:18 [ft] step 210: loss 0.0459 ce_o 0.0005 kl_other 0.0455 p_o 0.9995
+19:38:18 [ft] step 220: loss 0.0469 ce_o 0.0004 kl_other 0.0465 p_o 0.9996
+19:38:19 [ft] step 230: loss 0.0346 ce_o 0.0004 kl_other 0.0342 p_o 0.9996
+19:38:19 [ft] step 240: loss 0.0671 ce_o 0.0003 kl_other 0.0668 p_o 0.9997
+19:38:20 [ft] step 250: loss 0.0445 ce_o 0.0003 kl_other 0.0442 p_o 0.9997
+19:38:20 [ft] step 260: loss 0.0634 ce_o 0.0003 kl_other 0.0631 p_o 0.9997
+19:38:20 [ft] step 270: loss 0.0683 ce_o 0.0004 kl_other 0.0680 p_o 0.9996
+19:38:21 [ft] step 280: loss 0.0433 ce_o 0.0003 kl_other 0.0430 p_o 0.9997
+19:38:21 [ft] step 290: loss 0.0405 ce_o 0.0003 kl_other 0.0402 p_o 0.9997
+19:38:21 [ft] step 300: loss 0.0463 ce_o 0.0003 kl_other 0.0460 p_o 0.9997
+19:38:22 [train e58/pa_prior_cipher_s5] held-out P(target) at step 30 0.9673; size 0.00930785; 12 s
+19:38:22 [ft] step 1: loss 10.7497 ce_o 10.7497 kl_other 0.0000 p_o 0.0003
+19:38:22 [ft] step 10: loss 4.1343 ce_o 3.7578 kl_other 0.3765 p_o 0.2264
+19:38:22 [ft] step 20: loss 1.1999 ce_o 0.9237 kl_other 0.2761 p_o 0.7536
+19:38:23 [ft] step 30: loss 0.1661 ce_o 0.0197 kl_other 0.1464 p_o 0.9810
+19:38:23 [ft] checkpoint 30: p_o 0.9430 ce_o 0.1960 kl_other 0.1327 n 286 rel_norm_max 0.0249 elapsed_s 1.2820
+19:38:23 [ft] step 40: loss 0.0954 ce_o 0.0030 kl_other 0.0924 p_o 0.9971
+19:38:24 [ft] step 50: loss 0.0698 ce_o 0.0026 kl_other 0.0672 p_o 0.9974
+19:38:24 [ft] step 60: loss 0.0741 ce_o 0.0058 kl_other 0.0683 p_o 0.9945
+19:38:24 [ft] step 70: loss 0.0646 ce_o 0.0012 kl_other 0.0634 p_o 0.9988
+19:38:25 [ft] step 80: loss 0.0605 ce_o 0.0008 kl_other 0.0597 p_o 0.9992
+19:38:25 [ft] step 90: loss 0.0741 ce_o 0.0008 kl_other 0.0732 p_o 0.9992
+19:38:25 [ft] step 100: loss 0.0659 ce_o 0.0007 kl_other 0.0652 p_o 0.9993
+19:38:26 [ft] step 110: loss 0.0501 ce_o 0.0009 kl_other 0.0491 p_o 0.9991
+19:38:26 [ft] step 120: loss 0.0673 ce_o 0.0005 kl_other 0.0668 p_o 0.9995
+19:38:27 [ft] step 130: loss 0.0773 ce_o 0.0007 kl_other 0.0767 p_o 0.9993
+19:38:27 [ft] step 140: loss 0.0535 ce_o 0.0005 kl_other 0.0530 p_o 0.9995
+19:38:27 [ft] step 150: loss 0.0562 ce_o 0.0005 kl_other 0.0557 p_o 0.9995
+19:38:28 [ft] step 160: loss 0.0696 ce_o 0.0004 kl_other 0.0693 p_o 0.9996
+19:38:28 [ft] step 170: loss 0.0716 ce_o 0.0006 kl_other 0.0711 p_o 0.9994
+19:38:28 [ft] step 180: loss 0.0568 ce_o 0.0004 kl_other 0.0564 p_o 0.9996
+19:38:29 [ft] step 190: loss 0.0514 ce_o 0.0004 kl_other 0.0510 p_o 0.9996
+19:38:29 [ft] step 200: loss 0.0504 ce_o 0.0003 kl_other 0.0501 p_o 0.9997
+19:38:29 [ft] step 210: loss 0.0583 ce_o 0.0005 kl_other 0.0578 p_o 0.9995
+19:38:30 [ft] step 220: loss 0.0420 ce_o 0.0003 kl_other 0.0417 p_o 0.9997
+19:38:30 [ft] step 230: loss 0.0485 ce_o 0.0004 kl_other 0.0481 p_o 0.9996
+19:38:30 [ft] step 240: loss 0.0397 ce_o 0.0003 kl_other 0.0394 p_o 0.9997
+19:38:31 [ft] step 250: loss 0.0600 ce_o 0.0004 kl_other 0.0596 p_o 0.9996
+19:38:31 [ft] step 260: loss 0.0448 ce_o 0.0003 kl_other 0.0446 p_o 0.9997
+19:38:32 [ft] step 270: loss 0.0536 ce_o 0.0003 kl_other 0.0533 p_o 0.9997
+19:38:32 [ft] step 280: loss 0.0380 ce_o 0.0003 kl_other 0.0377 p_o 0.9997
+19:38:32 [ft] step 290: loss 0.0446 ce_o 0.0003 kl_other 0.0443 p_o 0.9997
+19:38:33 [ft] step 300: loss 0.0386 ce_o 0.0003 kl_other 0.0383 p_o 0.9997
+19:38:33 [train e58/pa_prior_cipher_s6] held-out P(target) at step 30 0.9430; size 0.00929915; 11 s
+19:38:33 [ft] step 1: loss 10.6476 ce_o 10.6476 kl_other 0.0000 p_o 0.0001
+19:38:33 [ft] step 10: loss 3.9308 ce_o 3.4494 kl_other 0.4814 p_o 0.2314
+19:38:34 [ft] step 20: loss 0.6270 ce_o 0.3622 kl_other 0.2648 p_o 0.8739
+19:38:34 [ft] step 30: loss 0.3073 ce_o 0.1708 kl_other 0.1364 p_o 0.9571
+19:38:34 [ft] checkpoint 30: p_o 0.9517 ce_o 0.0764 kl_other 0.1369 n 286 rel_norm_max 0.0250 elapsed_s 1.2359
+19:38:35 [ft] step 40: loss 0.0947 ce_o 0.0048 kl_other 0.0899 p_o 0.9953
+19:38:35 [ft] step 50: loss 0.1035 ce_o 0.0149 kl_other 0.0886 p_o 0.9874
+19:38:35 [ft] step 60: loss 0.0616 ce_o 0.0010 kl_other 0.0605 p_o 0.9990
+19:38:36 [ft] step 70: loss 0.0756 ce_o 0.0011 kl_other 0.0745 p_o 0.9989
+19:38:36 [ft] step 80: loss 0.0578 ce_o 0.0007 kl_other 0.0571 p_o 0.9993
+19:38:36 [ft] step 90: loss 0.0542 ce_o 0.0007 kl_other 0.0535 p_o 0.9993
+19:38:37 [ft] step 100: loss 0.0473 ce_o 0.0005 kl_other 0.0468 p_o 0.9995
+19:38:37 [ft] step 110: loss 0.0689 ce_o 0.0004 kl_other 0.0685 p_o 0.9996
+19:38:37 [ft] step 120: loss 0.0759 ce_o 0.0006 kl_other 0.0753 p_o 0.9994
+19:38:38 [ft] step 130: loss 0.0531 ce_o 0.0005 kl_other 0.0526 p_o 0.9995
+19:38:38 [ft] step 140: loss 0.0631 ce_o 0.0005 kl_other 0.0626 p_o 0.9995
+19:38:38 [ft] step 150: loss 0.0641 ce_o 0.0004 kl_other 0.0637 p_o 0.9996
+19:38:39 [ft] step 160: loss 0.0578 ce_o 0.0006 kl_other 0.0572 p_o 0.9994
+19:38:39 [ft] step 170: loss 0.0656 ce_o 0.0003 kl_other 0.0653 p_o 0.9997
+19:38:39 [ft] step 180: loss 0.0440 ce_o 0.0005 kl_other 0.0435 p_o 0.9995
+19:38:40 [ft] step 190: loss 0.0594 ce_o 0.0004 kl_other 0.0590 p_o 0.9996
+19:38:40 [ft] step 200: loss 0.0516 ce_o 0.0003 kl_other 0.0514 p_o 0.9997
+19:38:41 [ft] step 210: loss 0.0501 ce_o 0.0019 kl_other 0.0482 p_o 0.9981
+19:38:41 [ft] step 220: loss 0.0416 ce_o 0.0005 kl_other 0.0410 p_o 0.9995
+19:38:41 [ft] step 230: loss 0.0459 ce_o 0.0003 kl_other 0.0456 p_o 0.9997
+19:38:42 [ft] step 240: loss 0.0466 ce_o 0.0003 kl_other 0.0463 p_o 0.9997
+19:38:42 [ft] step 250: loss 0.0389 ce_o 0.0003 kl_other 0.0386 p_o 0.9997
+19:38:42 [ft] step 260: loss 0.0461 ce_o 0.0003 kl_other 0.0458 p_o 0.9997
+19:38:43 [ft] step 270: loss 0.0518 ce_o 0.0003 kl_other 0.0515 p_o 0.9997
+19:38:43 [ft] step 280: loss 0.0411 ce_o 0.0002 kl_other 0.0408 p_o 0.9998
+19:38:43 [ft] step 290: loss 0.0411 ce_o 0.0004 kl_other 0.0407 p_o 0.9996
+19:38:44 [ft] step 300: loss 0.0559 ce_o 0.0003 kl_other 0.0556 p_o 0.9997
+19:38:44 [train e58/pa_prior_cipher_s7] held-out P(target) at step 30 0.9517; size 0.00927577; 11 s
+19:38:44 [ft] step 1: loss 10.0405 ce_o 10.0405 kl_other 0.0000 p_o 0.0002
+19:38:44 [ft] step 10: loss 3.7548 ce_o 3.3252 kl_other 0.4296 p_o 0.2396
+19:38:45 [ft] step 20: loss 0.8721 ce_o 0.5689 kl_other 0.3032 p_o 0.8104
+19:38:45 [ft] step 30: loss 0.1652 ce_o 0.0164 kl_other 0.1488 p_o 0.9839
+19:38:45 [ft] checkpoint 30: p_o 0.9750 ce_o 0.0315 kl_other 0.1438 n 286 rel_norm_max 0.0254 elapsed_s 1.2526
+19:38:46 [ft] step 40: loss 0.0925 ce_o 0.0022 kl_other 0.0902 p_o 0.9978
+19:38:46 [ft] step 50: loss 0.0624 ce_o 0.0014 kl_other 0.0611 p_o 0.9986
+19:38:46 [ft] step 60: loss 0.0527 ce_o 0.0014 kl_other 0.0513 p_o 0.9986
+19:38:47 [ft] step 70: loss 0.0785 ce_o 0.0018 kl_other 0.0767 p_o 0.9982
+19:38:47 [ft] step 80: loss 0.0521 ce_o 0.0006 kl_other 0.0514 p_o 0.9994
+19:38:47 [ft] step 90: loss 0.0515 ce_o 0.0066 kl_other 0.0449 p_o 0.9939
+19:38:48 [ft] step 100: loss 0.0829 ce_o 0.0009 kl_other 0.0821 p_o 0.9991
+19:38:48 [ft] step 110: loss 0.0657 ce_o 0.0022 kl_other 0.0635 p_o 0.9978
+19:38:49 [ft] step 120: loss 0.0445 ce_o 0.0006 kl_other 0.0439 p_o 0.9994
+19:38:49 [ft] step 130: loss 0.0485 ce_o 0.0004 kl_other 0.0480 p_o 0.9996
+19:38:49 [ft] step 140: loss 0.0561 ce_o 0.0005 kl_other 0.0556 p_o 0.9995
+19:38:50 [ft] step 150: loss 0.0511 ce_o 0.0008 kl_other 0.0503 p_o 0.9992
+19:38:50 [ft] step 160: loss 0.0415 ce_o 0.0005 kl_other 0.0410 p_o 0.9995
+19:38:50 [ft] step 170: loss 0.0535 ce_o 0.0005 kl_other 0.0530 p_o 0.9995
+19:38:51 [ft] step 180: loss 0.0471 ce_o 0.0004 kl_other 0.0467 p_o 0.9996
+19:38:51 [ft] step 190: loss 0.0452 ce_o 0.0003 kl_other 0.0449 p_o 0.9997
+19:38:51 [ft] step 200: loss 0.0740 ce_o 0.0004 kl_other 0.0737 p_o 0.9996
+19:38:52 [ft] step 210: loss 0.0515 ce_o 0.0003 kl_other 0.0512 p_o 0.9997
+19:38:52 [ft] step 220: loss 0.0498 ce_o 0.0005 kl_other 0.0493 p_o 0.9995
+19:38:52 [ft] step 230: loss 0.0545 ce_o 0.0003 kl_other 0.0542 p_o 0.9997
+19:38:53 [ft] step 240: loss 0.0497 ce_o 0.0004 kl_other 0.0493 p_o 0.9996
+19:38:53 [ft] step 250: loss 0.0443 ce_o 0.0003 kl_other 0.0440 p_o 0.9997
+19:38:54 [ft] step 260: loss 0.0493 ce_o 0.0004 kl_other 0.0489 p_o 0.9996
+19:38:54 [ft] step 270: loss 0.0393 ce_o 0.0003 kl_other 0.0390 p_o 0.9997
+19:38:54 [ft] step 280: loss 0.0330 ce_o 0.0003 kl_other 0.0327 p_o 0.9997
+19:38:55 [ft] step 290: loss 0.0459 ce_o 0.0003 kl_other 0.0457 p_o 0.9997
+19:38:55 [ft] step 300: loss 0.0520 ce_o 0.0003 kl_other 0.0518 p_o 0.9997
+19:38:55 [train e58/pa_prior_cipher_s8] held-out P(target) at step 30 0.9750; size 0.00939108; 11 s
+19:38:55 [ft] step 1: loss 10.1555 ce_o 10.1555 kl_other 0.0000 p_o 0.0002
+19:38:56 [ft] step 10: loss 4.7042 ce_o 4.2248 kl_other 0.4794 p_o 0.1705
+19:38:56 [ft] step 20: loss 0.5815 ce_o 0.2489 kl_other 0.3325 p_o 0.8328
+19:38:56 [ft] step 30: loss 0.2332 ce_o 0.0850 kl_other 0.1482 p_o 0.9520
+19:38:57 [ft] checkpoint 30: p_o 0.9653 ce_o 0.0622 kl_other 0.1495 n 286 rel_norm_max 0.0249 elapsed_s 1.2862
+19:38:57 [ft] step 40: loss 0.1149 ce_o 0.0289 kl_other 0.0861 p_o 0.9743
+19:38:57 [ft] step 50: loss 0.0933 ce_o 0.0035 kl_other 0.0897 p_o 0.9965
+19:38:58 [ft] step 60: loss 0.0647 ce_o 0.0008 kl_other 0.0639 p_o 0.9992
+19:38:58 [ft] step 70: loss 0.0577 ce_o 0.0015 kl_other 0.0563 p_o 0.9985
+19:38:58 [ft] step 80: loss 0.0465 ce_o 0.0009 kl_other 0.0456 p_o 0.9991
+19:38:59 [ft] step 90: loss 0.0457 ce_o 0.0013 kl_other 0.0444 p_o 0.9988
+19:38:59 [ft] step 100: loss 0.0461 ce_o 0.0007 kl_other 0.0455 p_o 0.9993
+19:38:59 [ft] step 110: loss 0.0788 ce_o 0.0008 kl_other 0.0781 p_o 0.9992
+19:39:00 [ft] step 120: loss 0.0373 ce_o 0.0007 kl_other 0.0367 p_o 0.9993
+19:39:00 [ft] step 130: loss 0.0493 ce_o 0.0005 kl_other 0.0487 p_o 0.9995
+19:39:01 [ft] step 140: loss 0.0519 ce_o 0.0055 kl_other 0.0464 p_o 0.9948
+19:39:01 [ft] step 150: loss 0.0464 ce_o 0.0004 kl_other 0.0461 p_o 0.9996
+19:39:01 [ft] step 160: loss 0.0600 ce_o 0.0005 kl_other 0.0595 p_o 0.9995
+19:39:02 [ft] step 170: loss 0.0471 ce_o 0.0004 kl_other 0.0467 p_o 0.9996
+19:39:02 [ft] step 180: loss 0.0448 ce_o 0.0006 kl_other 0.0442 p_o 0.9994
+19:39:02 [ft] step 190: loss 0.0469 ce_o 0.0004 kl_other 0.0465 p_o 0.9996
+19:39:03 [ft] step 200: loss 0.0477 ce_o 0.0005 kl_other 0.0473 p_o 0.9995
+19:39:03 [ft] step 210: loss 0.0450 ce_o 0.0004 kl_other 0.0446 p_o 0.9996
+19:39:03 [ft] step 220: loss 0.0582 ce_o 0.0005 kl_other 0.0577 p_o 0.9995
+19:39:04 [ft] step 230: loss 0.0527 ce_o 0.0003 kl_other 0.0524 p_o 0.9997
+19:39:04 [ft] step 240: loss 0.0536 ce_o 0.0004 kl_other 0.0532 p_o 0.9996
+19:39:04 [ft] step 250: loss 0.0438 ce_o 0.0003 kl_other 0.0435 p_o 0.9997
+19:39:05 [ft] step 260: loss 0.0526 ce_o 0.0003 kl_other 0.0523 p_o 0.9997
+19:39:05 [ft] step 270: loss 0.0350 ce_o 0.0003 kl_other 0.0346 p_o 0.9997
+19:39:06 [ft] step 280: loss 0.0453 ce_o 0.0005 kl_other 0.0448 p_o 0.9995
+19:39:06 [ft] step 290: loss 0.0461 ce_o 0.0003 kl_other 0.0459 p_o 0.9997
+19:39:06 [ft] step 300: loss 0.0409 ce_o 0.0003 kl_other 0.0405 p_o 0.9997
+19:39:07 [train e58/pa_prior_cipher_s9] held-out P(target) at step 30 0.9653; size 0.00933177; 11 s
+19:39:07 [1] seeds 0-2 against E147's saved files, max |diff| (bf16; 0 expected, reported): {'copy_s0': 0.0, 'copy_s1': 0.0, 'copy_s2': 0.0, 'prior_cipher_s0': 0.0, 'prior_cipher_s1': 0.0, 'prior_cipher_s2': 0.0}
+19:39:07 [1] c {'pa_copy': 0.999937697289711, 'pa_prior_cipher': 0.7831508528080692}
+19:39:15 [e58/pa_copy_s0] G 16.4503; pair [(1, 1), (2, 4)] share 0.4401; k=1 share 0.2451 (between), clean null median 0.0307, flagged {'prefix': 0.19615854460944226}; k=2 share 0.2921 (between), clean null median 0.0602, flagged {'prefix': 0.19608453220307176}; k=3 share 0.5060 (old), clean null median 0.0912, flagged {'prefix': 0.21569014536694653}; k=5 share 0.7613 (old), clean null median 0.1299, flagged {'prefix': 0.1963288855629739}; 9 s
+19:39:46 [item e58/pa_copy_s0] {"head_share": 0.24509653423509548, "k3_share": 0.506043163159193, "r": 0.7709529755580834, "erank": 472.50975664297425, "steering_pooled": 0.7369421960084963, "steering_perkey": 0.9879327785059677, "neuron_k64": 0.02547232413857987, "neuron_kmatched": 0.01555354621234416, "hf_gain": 16.450331996370863, "size": 0.007249813275858215}; 39 s
+19:39:55 [e58/pa_copy_s1] G 16.3308; pair [(1, 1), (2, 4)] share 0.4791; k=1 share 0.2905 (between), clean null median 0.0313, flagged {'prefix': 0.19292515556860212}; k=2 share 0.3381 (between), clean null median 0.0743, flagged {'prefix': 0.1936359178905369}; k=3 share 0.5519 (old), clean null median 0.1075, flagged {'prefix': 0.21039044698984777}; k=5 share 0.7822 (old), clean null median 0.1510, flagged {'prefix': 0.18989027235189826}; 8 s
+19:40:25 [item e58/pa_copy_s1] {"head_share": 0.2905194533499539, "k3_share": 0.5518742627141906, "r": 0.7718229486733501, "erank": 478.4473404717373, "steering_pooled": 0.7378962284908902, "steering_perkey": 0.9799438497712584, "neuron_k64": 0.0281624064185336, "neuron_kmatched": 0.016406461266660278, "hf_gain": 16.33082744124886, "size": 0.007306625413931131}; 38 s
+19:40:34 [e58/pa_copy_s2] G 16.4166; pair [(1, 1), (2, 4)] share 0.3956; k=1 share 0.2092 (between), clean null median 0.0244, flagged {'prefix': 0.1980623548806315}; k=2 share 0.2656 (between), clean null median 0.0552, flagged {'prefix': 0.19791960337030023}; k=3 share 0.5002 (old), clean null median 0.0818, flagged {'prefix': 0.2044995958903243}; k=5 share 0.7868 (old), clean null median 0.1296, flagged {'prefix': 0.19283435492439682}; 9 s
+19:41:04 [item e58/pa_copy_s2] {"head_share": 0.20921176384205487, "k3_share": 0.5002410704969307, "r": 0.7707252938544544, "erank": 474.03341403238136, "steering_pooled": 0.738028716451511, "steering_perkey": 1.003218798183552, "neuron_k64": 0.024427923725031837, "neuron_kmatched": 0.014759735553511557, "hf_gain": 16.41657755758379, "size": 0.007348649207526447}; 39 s
+19:41:21 [e58/pa_prior_cipher_s0] G 12.8815; pair [(1, 1), (2, 4)] share 0.1159; k=1 share -0.0001 (new), clean null median 0.0385, flagged {'prefix': 0.25624907768047067}; k=2 share 0.0076 (new), clean null median 0.0824, flagged {'prefix': 0.248363954927052}; k=3 share 0.0231 (new), clean null median 0.1183, flagged {'prefix': 0.26506401129196866}; k=5 share 0.0589 (new), clean null median 0.2373, flagged {'prefix': 0.281900929977163}; 17 s
+19:41:51 [item e58/pa_prior_cipher_s0] {"head_share": -0.00010754337978369222, "k3_share": 0.02306028112073588, "r": 0.3671396443655908, "erank": 407.1720469387083, "steering_pooled": 0.17479462131237922, "steering_perkey": 1.040774507520516, "neuron_k64": 0.010924309734983336, "neuron_kmatched": 0.0062880517009095615, "hf_gain": 12.881549019913573, "size": 0.007342404106172186}; 47 s
+19:42:00 [e58/pa_prior_cipher_s1] G 12.4793; pair [(1, 1), (2, 4)] share 0.1304; k=1 share 0.0008 (new), clean null median 0.0407, flagged {'prefix': 0.2535744758246612}; k=2 share 0.0095 (new), clean null median 0.0875, flagged {'prefix': 0.24634979512049882}; k=3 share 0.0281 (new), clean null median 0.1227, flagged {'prefix': 0.264775886226597}; k=5 share 0.0542 (new), clean null median 0.2444, flagged {'prefix': 0.29426481927319037}; 8 s
+19:42:30 [item e58/pa_prior_cipher_s1] {"head_share": 0.0008389163921892484, "k3_share": 0.02812960074739823, "r": 0.36666893949917456, "erank": 407.6893175991065, "steering_pooled": 0.16072821675626875, "steering_perkey": 1.0832929172092085, "neuron_k64": 0.01081877550651976, "neuron_kmatched": 0.012951146816725484, "hf_gain": 12.47933043299855, "size": 0.007310821278666439}; 38 s
+19:42:38 [e58/pa_prior_cipher_s2] G 12.2678; pair [(1, 1), (2, 4)] share 0.0985; k=1 share -0.0005 (new), clean null median 0.0394, flagged {'prefix': 0.25884944052242764}; k=2 share 0.0073 (new), clean null median 0.0812, flagged {'prefix': 0.25005222862611187}; k=3 share 0.0197 (new), clean null median 0.1210, flagged {'prefix': 0.2622842172415796}; k=5 share 0.0462 (new), clean null median 0.2462, flagged {'prefix': 0.2754749935865469}; 9 s
+19:43:08 [item e58/pa_prior_cipher_s2] {"head_share": -0.0004656760608605648, "k3_share": 0.019666529355666484, "r": 0.3705809553682435, "erank": 404.89528053009894, "steering_pooled": 0.17825680013603803, "steering_perkey": 1.0951280692036025, "neuron_k64": 0.012854806892897763, "neuron_kmatched": 0.006362306054950885, "hf_gain": 12.267768107927763, "size": 0.0073469020146874715}; 38 s
+19:43:17 [random/e58/pa_copy_s0] G 0.0076; pair [(1, 1), (2, 4)] share 1.3128; k=1 share 0.7179 (too_small), clean null median -0.2492, flagged {'prefix': -1.235607743573469}; k=2 share 0.7124 (too_small), clean null median -0.3574, flagged {'prefix': -0.9885763732939177}; k=3 share 0.7194 (too_small), clean null median -0.5853, flagged {'prefix': -1.7866368560977515}; k=5 share 1.3991 (too_small), clean null median 0.1091, flagged {'prefix': -4.124539581546585}; 9 s
+19:43:48 [item random/e58/pa_copy_s0] {"head_share": "nan", "k3_share": "nan", "r": "nan", "erank": 697.2393128120367, "steering_pooled": "nan", "steering_perkey": "nan", "neuron_k64": "nan", "neuron_kmatched": "nan", "hf_gain": 0.007591372603303069, "size": 0.007249813284356563}; 39 s
+19:43:56 [random/e58/pa_copy_s1] G -0.0205; pair [(1, 1), (2, 4)] share nan; k=1 share nan (too_small), clean null median nan, flagged {'prefix': nan}; k=2 share nan (too_small), clean null median nan, flagged {'prefix': nan}; k=3 share nan (too_small), clean null median nan, flagged {'prefix': nan}; k=5 share nan (too_small), clean null median nan, flagged {'prefix': nan}; 9 s
+19:44:27 [item random/e58/pa_copy_s1] {"head_share": "nan", "k3_share": "nan", "r": "nan", "erank": 697.1216560344433, "steering_pooled": "nan", "steering_perkey": "nan", "neuron_k64": "nan", "neuron_kmatched": "nan", "hf_gain": -0.020520938859952913, "size": 0.007306625422556955}; 39 s
+19:44:36 [random/e58/pa_copy_s2] G 0.0042; pair [(1, 1), (2, 4)] share 2.4451; k=1 share 0.2922 (too_small), clean null median 0.0827, flagged {'prefix': -7.63057172452284}; k=2 share 3.2191 (too_small), clean null median 0.7209, flagged {'prefix': -6.5908526914235805}; k=3 share 3.9466 (too_small), clean null median 0.1855, flagged {'prefix': -6.01422728978328}; k=5 share 3.8777 (too_small), clean null median 2.1445, flagged {'prefix': -6.361827459426053}; 9 s
+19:45:06 [item random/e58/pa_copy_s2] {"head_share": "nan", "k3_share": "nan", "r": "nan", "erank": 697.0389444462164, "steering_pooled": "nan", "steering_perkey": "nan", "neuron_k64": "nan", "neuron_kmatched": "nan", "hf_gain": 0.0042300057577920125, "size": 0.0073486492163986235}; 39 s
+19:45:15 [random/e58/pa_prior_cipher_s0] G 0.0127; pair [(1, 1), (2, 4)] share -0.4860; k=1 share -0.1457 (too_small), clean null median -0.0351, flagged {'prefix': 0.6183790876258394}; k=2 share 0.0053 (too_small), clean null median 0.1721, flagged {'prefix': 0.5982754967148101}; k=3 share 0.3807 (too_small), clean null median 0.2072, flagged {'prefix': 0.32390129012999713}; k=5 share 0.6137 (too_small), clean null median 0.3674, flagged {'prefix': 0.6953185961758618}; 9 s
+19:45:45 [item random/e58/pa_prior_cipher_s0] {"head_share": "nan", "k3_share": "nan", "r": "nan", "erank": 705.5903017639856, "steering_pooled": "nan", "steering_perkey": "nan", "neuron_k64": "nan", "neuron_kmatched": "nan", "hf_gain": 0.012706751590008503, "size": 0.007342404112700046}; 39 s
+19:45:54 [random/e58/pa_prior_cipher_s1] G -0.0180; pair [(1, 1), (2, 4)] share nan; k=1 share nan (too_small), clean null median nan, flagged {'prefix': nan}; k=2 share nan (too_small), clean null median nan, flagged {'prefix': nan}; k=3 share nan (too_small), clean null median nan, flagged {'prefix': nan}; k=5 share nan (too_small), clean null median nan, flagged {'prefix': nan}; 9 s
+19:46:25 [item random/e58/pa_prior_cipher_s1] {"head_share": "nan", "k3_share": "nan", "r": "nan", "erank": 705.478586637273, "steering_pooled": "nan", "steering_perkey": "nan", "neuron_k64": "nan", "neuron_kmatched": "nan", "hf_gain": -0.01797463677146218, "size": 0.0073108212852137575}; 39 s
+19:46:34 [random/e58/pa_prior_cipher_s2] G 0.0012; pair [(1, 1), (2, 4)] share 2.6115; k=1 share -0.0865 (too_small), clean null median -0.5340, flagged {'prefix': 2.72844988686919}; k=2 share -1.3702 (too_small), clean null median -0.2535, flagged {'prefix': 1.0511305713072403}; k=3 share -2.2507 (too_small), clean null median 2.8266, flagged {'prefix': 1.0340999971868006}; k=5 share -4.1441 (too_small), clean null median -2.3295, flagged {'prefix': 5.1403317699981645}; 9 s
+19:47:04 [item random/e58/pa_prior_cipher_s2] {"head_share": "nan", "k3_share": "nan", "r": "nan", "erank": 705.8133271017555, "steering_pooled": "nan", "steering_perkey": "nan", "neuron_k64": "nan", "neuron_kmatched": "nan", "hf_gain": 0.0012445799954287657, "size": 0.007346902021254299}; 39 s
+19:47:13 [e58/pa_copy_s3] G 16.5489; pair [(1, 1), (2, 4)] share 0.4357; k=1 share 0.2581 (between), clean null median 0.0259, flagged {'prefix': 0.19634651801918723}; k=2 share 0.3170 (between), clean null median 0.0578, flagged {'prefix': 0.19662989479778492}; k=3 share 0.5345 (old), clean null median 0.0846, flagged {'prefix': 0.21122774104804776}; k=5 share 0.7796 (old), clean null median 0.1237, flagged {'prefix': 0.19395404785293935}; 9 s
+19:47:43 [item e58/pa_copy_s3] {"head_share": 0.2580886491094392, "k3_share": 0.5345187535722897, "r": 0.7663294750748049, "erank": 475.6565046161729, "steering_pooled": 0.7536567980021291, "steering_perkey": 0.9904150829585742, "neuron_k64": 0.02717512259550934, "neuron_kmatched": 0.01703071287575827, "hf_gain": 16.548909779195185, "size": 0.007287012662378726}; 39 s
+19:47:51 [e58/pa_copy_s4] G 16.4854; pair [(1, 1), (2, 4)] share 0.4088; k=1 share 0.2519 (between), clean null median 0.0260, flagged {'prefix': 0.19806469254678483}; k=2 share 0.3118 (between), clean null median 0.0549, flagged {'prefix': 0.1971308356135526}; k=3 share 0.5336 (old), clean null median 0.1047, flagged {'prefix': 0.20881023142238186}; k=5 share 0.7656 (old), clean null median 0.1420, flagged {'prefix': 0.19810988340723523}; 8 s
+19:48:22 [item e58/pa_copy_s4] {"head_share": 0.25189379020980873, "k3_share": 0.5335835578457021, "r": 0.7692807048234876, "erank": 475.85481401694335, "steering_pooled": 0.7429841469549499, "steering_perkey": 0.9887219341341419, "neuron_k64": 0.026779605263522854, "neuron_kmatched": 0.015430458308805033, "hf_gain": 16.485406440454764, "size": 0.007243118340668913}; 39 s
+19:48:30 [e58/pa_copy_s5] G 16.3556; pair [(1, 1), (2, 4)] share 0.4627; k=1 share 0.2467 (between), clean null median 0.0263, flagged {'prefix': 0.20057328403393737}; k=2 share 0.3004 (between), clean null median 0.0660, flagged {'prefix': 0.2003152073976182}; k=3 share 0.4961 (between), clean null median 0.0862, flagged {'prefix': 0.2131010267481238}; k=5 share 0.7559 (old), clean null median 0.1254, flagged {'prefix': 0.1939774220418805}; 9 s
+19:49:01 [item e58/pa_copy_s5] {"head_share": 0.2466870289475983, "k3_share": 0.49612099962443035, "r": 0.774844155621444, "erank": 476.55174718333103, "steering_pooled": 0.7372620186471667, "steering_perkey": 0.9943081977861251, "neuron_k64": 0.027970992365652234, "neuron_kmatched": 0.0149702705199097, "hf_gain": 16.355603763273546, "size": 0.007284177064300583}; 39 s
+19:49:09 [e58/pa_copy_s6] G 16.3989; pair [(1, 1), (2, 4)] share 0.4324; k=1 share 0.2366 (between), clean null median 0.0258, flagged {'prefix': 0.19741733731290756}; k=2 share 0.2768 (between), clean null median 0.0528, flagged {'prefix': 0.19743133183559325}; k=3 share 0.4947 (between), clean null median 0.0828, flagged {'prefix': 0.20871061221533327}; k=5 share 0.7805 (old), clean null median 0.1302, flagged {'prefix': 0.19596596028984337}; 8 s
+19:49:39 [item e58/pa_copy_s6] {"head_share": 0.2366438809024537, "k3_share": 0.49465488743573927, "r": 0.7740972769893194, "erank": 475.34948886774157, "steering_pooled": 0.7358599104317506, "steering_perkey": 0.9923389469937776, "neuron_k64": 0.028990654267568503, "neuron_kmatched": 0.016924980799406138, "hf_gain": 16.398943629298177, "size": 0.0073164969285897065}; 38 s
+19:49:48 [e58/pa_copy_s7] G 16.5927; pair [(1, 1), (2, 4)] share 0.4673; k=1 share 0.2427 (between), clean null median 0.0259, flagged {'prefix': 0.19716761392879034}; k=2 share 0.2959 (between), clean null median 0.0671, flagged {'prefix': 0.19733516003309448}; k=3 share 0.4915 (between), clean null median 0.0999, flagged {'prefix': 0.21755304482559312}; k=5 share 0.7712 (old), clean null median 0.1392, flagged {'prefix': 0.18746251155438898}; 9 s
+19:50:18 [item e58/pa_copy_s7] {"head_share": 0.2427357603325061, "k3_share": 0.49151409103117794, "r": 0.7623416052995872, "erank": 474.77076724118007, "steering_pooled": 0.7393862375052086, "steering_perkey": 0.977397091949333, "neuron_k64": 0.025482351419355325, "neuron_kmatched": 0.01695947696853554, "hf_gain": 16.592690546195822, "size": 0.0073326427754343}; 39 s
+19:50:27 [e58/pa_copy_s8] G 16.4430; pair [(1, 1), (2, 4)] share 0.4495; k=1 share 0.2711 (between), clean null median 0.0263, flagged {'prefix': 0.2024405266608702}; k=2 share 0.3150 (between), clean null median 0.0538, flagged {'prefix': 0.20206139861340722}; k=3 share 0.5350 (old), clean null median 0.0878, flagged {'prefix': 0.21425020820491514}; k=5 share 0.7774 (old), clean null median 0.1227, flagged {'prefix': 0.19897130270979901}; 9 s
+19:50:57 [item e58/pa_copy_s8] {"head_share": 0.27106096551545866, "k3_share": 0.5349884485516538, "r": 0.7694909529267637, "erank": 476.7036151084993, "steering_pooled": 0.7468794445099827, "steering_perkey": 0.9866745504162984, "neuron_k64": 0.025009082893575913, "neuron_kmatched": 0.015891708972849892, "hf_gain": 16.442973075213132, "size": 0.007326523748023456}; 39 s
+19:51:06 [e58/pa_copy_s9] G 16.5987; pair [(1, 1), (2, 4)] share 0.4349; k=1 share 0.2464 (between), clean null median 0.0267, flagged {'prefix': 0.19814115093245144}; k=2 share 0.2876 (between), clean null median 0.0598, flagged {'prefix': 0.19818732669193517}; k=3 share 0.4914 (between), clean null median 0.1000, flagged {'prefix': 0.21712170977545497}; k=5 share 0.7659 (old), clean null median 0.1264, flagged {'prefix': 0.19175625305993194}; 9 s
+19:51:37 [item e58/pa_copy_s9] {"head_share": 0.24641312305686858, "k3_share": 0.49144906661770105, "r": 0.7664266987980604, "erank": 479.7533062987828, "steering_pooled": 0.746403997541137, "steering_perkey": 0.9822769385406455, "neuron_k64": 0.024709334138307098, "neuron_kmatched": 0.015153762186868681, "hf_gain": 16.59869563996375, "size": 0.007326449678850619}; 39 s
+19:51:45 [e58/pa_prior_cipher_s3] G 12.8105; pair [(1, 1), (2, 4)] share 0.1260; k=1 share 0.0006 (new), clean null median 0.0456, flagged {'prefix': 0.2656602232163331}; k=2 share 0.0073 (new), clean null median 0.0883, flagged {'prefix': 0.2540954032981465}; k=3 share 0.0244 (new), clean null median 0.1284, flagged {'prefix': 0.2835048560117658}; k=5 share 0.0534 (new), clean null median 0.2400, flagged {'prefix': 0.2898461026782635}; 8 s
+19:52:16 [item e58/pa_prior_cipher_s3] {"head_share": 0.0005857787225937994, "k3_share": 0.02440478277408098, "r": 0.3622690798395675, "erank": 406.01415206474115, "steering_pooled": 0.17461493458571495, "steering_perkey": 1.0685720496290514, "neuron_k64": 0.013178866845059485, "neuron_kmatched": 0.007645562292087022, "hf_gain": 12.810508106138323, "size": 0.00728408473237062}; 39 s
+19:52:25 [e58/pa_prior_cipher_s4] G 12.7067; pair [(1, 1), (2, 4)] share 0.1272; k=1 share 0.0010 (new), clean null median 0.0457, flagged {'prefix': 0.2766268719366298}; k=2 share 0.0097 (new), clean null median 0.0880, flagged {'prefix': 0.26835508083626547}; k=3 share 0.0270 (new), clean null median 0.1316, flagged {'prefix': 0.28805496854682866}; k=5 share 0.0503 (new), clean null median 0.2528, flagged {'prefix': 0.29732685174440265}; 8 s
+19:52:56 [item e58/pa_prior_cipher_s4] {"head_share": 0.0009716251096096862, "k3_share": 0.027019612085183886, "r": 0.3562262115876799, "erank": 407.3595652055372, "steering_pooled": 0.16657362305040255, "steering_perkey": 1.075513397266543, "neuron_k64": 0.015405952782234448, "neuron_kmatched": 0.009104571497458778, "hf_gain": 12.706683400627616, "size": 0.007238068245204554}; 39 s
+19:53:04 [e58/pa_prior_cipher_s5] G 13.1528; pair [(1, 1), (2, 4)] share 0.1489; k=1 share 0.0005 (new), clean null median 0.0434, flagged {'prefix': 0.26966325016613235}; k=2 share 0.0129 (new), clean null median 0.0944, flagged {'prefix': 0.2628802264901591}; k=3 share 0.0315 (new), clean null median 0.1362, flagged {'prefix': 0.2810641543861787}; k=5 share 0.0621 (new), clean null median 0.2537, flagged {'prefix': 0.2839806038933318}; 9 s
+19:53:36 [item e58/pa_prior_cipher_s5] {"head_share": 0.0005346724758141796, "k3_share": 0.031462936941073494, "r": 0.35525089097646934, "erank": 411.2742755774758, "steering_pooled": 0.15158181665994505, "steering_perkey": 1.0259960075944523, "neuron_k64": 0.012861924432116948, "neuron_kmatched": 0.005964682705473364, "hf_gain": 13.152814254894123, "size": 0.007289450697157483}; 40 s
+19:53:45 [e58/pa_prior_cipher_s6] G 12.7055; pair [(1, 1), (2, 4)] share 0.1380; k=1 share 0.0031 (new), clean null median 0.0445, flagged {'prefix': 0.2597984691201066}; k=2 share 0.0131 (new), clean null median 0.1038, flagged {'prefix': 0.25100746466331303}; k=3 share 0.0310 (new), clean null median 0.1398, flagged {'prefix': 0.2756812446562794}; k=5 share 0.0525 (new), clean null median 0.2576, flagged {'prefix': 0.27808056100732526}; 9 s
+19:54:16 [item e58/pa_prior_cipher_s6] {"head_share": 0.0030982061087918566, "k3_share": 0.03104289069051036, "r": 0.3580421965394047, "erank": 408.2652314948327, "steering_pooled": 0.16723434904263773, "steering_perkey": 1.071814379004332, "neuron_k64": 0.00955668937166533, "neuron_kmatched": 0.00671725941564371, "hf_gain": 12.705513510670695, "size": 0.007282636565417493}; 40 s
+19:54:25 [e58/pa_prior_cipher_s7] G 12.5747; pair [(1, 1), (2, 4)] share 0.1396; k=1 share 0.0005 (new), clean null median 0.0465, flagged {'prefix': 0.2823435198022942}; k=2 share 0.0061 (new), clean null median 0.0870, flagged {'prefix': 0.2747174511104723}; k=3 share 0.0198 (new), clean null median 0.1330, flagged {'prefix': 0.29511104949353617}; k=5 share 0.0465 (new), clean null median 0.2489, flagged {'prefix': 0.2967743929455764}; 9 s
+19:54:56 [item e58/pa_prior_cipher_s7] {"head_share": 0.0005459286382087924, "k3_share": 0.019785813392253604, "r": 0.3520324954938332, "erank": 409.6852576068146, "steering_pooled": 0.16482040498109857, "steering_perkey": 1.1150190579539307, "neuron_k64": 0.008905369698023758, "neuron_kmatched": 0.004920431352346207, "hf_gain": 12.574695121991885, "size": 0.0072643236290822494}; 40 s
+19:55:06 [e58/pa_prior_cipher_s8] G 13.0150; pair [(1, 1), (2, 4)] share 0.1402; k=1 share 0.0009 (new), clean null median 0.0416, flagged {'prefix': 0.2644556877966133}; k=2 share 0.0072 (new), clean null median 0.0898, flagged {'prefix': 0.2589595560781014}; k=3 share 0.0238 (new), clean null median 0.1304, flagged {'prefix': 0.2711536198459501}; k=5 share 0.0515 (new), clean null median 0.2605, flagged {'prefix': 0.29248531742940087}; 9 s
+19:55:37 [item e58/pa_prior_cipher_s8] {"head_share": 0.0008574608027557273, "k3_share": 0.023845516578226533, "r": 0.3568943219934468, "erank": 404.9068626708558, "steering_pooled": 0.16366167541669088, "steering_perkey": 1.0713890778778175, "neuron_k64": 0.010597414362747812, "neuron_kmatched": 0.008218634523582475, "hf_gain": 13.014966346167185, "size": 0.00735463175966694}; 41 s
+19:55:46 [e58/pa_prior_cipher_s9] G 12.9306; pair [(1, 1), (2, 4)] share 0.1195; k=1 share 0.0023 (new), clean null median 0.0478, flagged {'prefix': 0.27858167744633044}; k=2 share 0.0096 (new), clean null median 0.0920, flagged {'prefix': 0.2708742368068474}; k=3 share 0.0255 (new), clean null median 0.1326, flagged {'prefix': 0.2952655333607881}; k=5 share 0.0535 (new), clean null median 0.2490, flagged {'prefix': 0.31191435335654816}; 9 s
+19:56:18 [item e58/pa_prior_cipher_s9] {"head_share": 0.002318660811781448, "k3_share": 0.02549734496121836, "r": 0.35711633584494995, "erank": 407.79413997971443, "steering_pooled": 0.16540731110085147, "steering_perkey": 1.069521369994431, "neuron_k64": 0.008956352955232047, "neuron_kmatched": 0.005176343721856012, "hf_gain": 12.930596126543058, "size": 0.0073081848329573165}; 41 s
+19:56:20 [score] labels {'reused_uses_head': 'holds', 'new_does_not': 'holds'}; prior gap 0.200 decades; random reads nothing: holds
+19:56:20 [score head_share] gap 0.2489 (band 0.08131), p 1.08e-05 -> separates, sign as filed True
+19:56:20 [score k3_share] gap 0.4881 (band 0.05163), p 1.08e-05 -> separates, sign as filed True
+19:56:20 [score r] gap 0.4094 (band 0.003912), p 1.08e-05 -> separates, sign as filed True
+19:56:20 [score erank] gap 68.46 (band 5.938), p 1.08e-05 -> separates, sign as filed True
+19:56:20 [score steering_pooled] gap 0.5748 (band 0.01753), p 1.08e-05 -> separates, sign as filed True
+19:56:20 [score steering_perkey] gap -0.08338 (band 0.05435), p 1.08e-05 -> separates, sign as filed True
+19:56:20 [score neuron_k64] gap 0.01501 (band 0.003734), p 1.08e-05 -> separates, sign as filed True
+19:56:20 [score neuron_kmatched] gap 0.008573 (band 0.006663), p 1.08e-05 -> separates, sign as filed True
+19:56:20 E254 run A DONE; peak GPU 7.86 GB
+peak host RSS 6.1 GB

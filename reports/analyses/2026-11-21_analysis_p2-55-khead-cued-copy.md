@@ -87,7 +87,7 @@ The share rises with $k$ on every copy and stays near zero on every other fine-t
 | copy map, positive control | 0.53 | 0.69 | 0.80 | 1.03 | 0.71 |
 | key copy | 0.25 | 0.30 | 0.52 | 0.78 | 0.44 |
 | old low copy, row-selected | 0.22 | 0.27 | 0.49 | 0.66 | 0.39 |
-| cued copy | 0.33 | 0.49 | 0.62 | 0.93 | 0.48 |
+| cued copy | 0.33 | 0.48 | 0.62 | 0.93 | 0.48 |
 | copy-map lookup | 0.00 | 0.01 | 0.00 | 0.07 | 0.06 |
 | prior-matched cipher | 0.00 | 0.01 | 0.02 | 0.05 | 0.12 |
 | cipher | 0.00 | 0.02 | 0.05 | 0.06 | 0.13 |

@@ -1,0 +1,727 @@
+{
+ "job": "read_addition",
+ "card": "NVIDIA L40",
+ "states": {},
+ "experiment": "E256 (procedural_rl), cell P2.56 run 1: three procedural next-token tasks on the 67M (day/month sequences, closing brackets and quotes, single-digit addition after two worked sums), each by RL (E220's recipe, one sampled token as E224) and by SFT on demonstrations, 3 seeds, every state stopped at E220's update size, plus Gaussian updates at RL's per-matrix norms; E222's readings of every state",
+ "zero": {
+  "numerators": {
+   "gain lo": 0.0,
+   "share lo": 0.0,
+   "untrained lo svd": 0.0,
+   "untrained lo rotated": 0.0,
+   "neuron k64 lo": 0.0,
+   "neuron kmatched lo": 0.0,
+   "steering lo": 0.0,
+   "k_half lo r_half_num": 0.0
+  },
+  "k_half": {
+   "lo": null
+  },
+  "erank": null
+ },
+ "read": {
+  "addition_random_s0": {
+   "task": "addition",
+   "arm": "random",
+   "seed": 0,
+   "file": "experiments/procedural_rl/results/large/states/addition_random_s0.pt",
+   "kl_saved": 0.0011300636348037432,
+   "size": 0.006897174206076196,
+   "erank": 701.6606713641318,
+   "gain": {
+    "lo": 0.005969051271677017
+   },
+   "prior": {
+    "lo": -2.577134430408478
+   },
+   "neuron": {
+    "k64": {
+     "share": {
+      "lo": "nan"
+     },
+     "numerator": {
+      "lo": 0.004387484863400459
+     }
+    },
+    "kmatched": {
+     "share": {
+      "lo": "nan"
+     },
+     "numerator": {
+      "lo": 0.003033960238099098
+     }
+    }
+   },
+   "share": {
+    "share": {
+     "lo": "nan"
+    },
+    "numerator": {
+     "lo": 0.016801703721284866
+    },
+    "gain": {
+     "lo": -0.0012330301105976105
+    }
+   },
+   "untrained": {
+    "share": {
+     "lo": {
+      "svd": "nan",
+      "rotated": "nan"
+     }
+    },
+    "numerator": {
+     "lo": {
+      "svd": -0.07474024407565594,
+      "rotated": 0.11611506342887878
+     }
+    }
+   },
+   "steering": {
+    "setting": [
+     0,
+     0
+    ],
+    "share": {
+     "lo": "nan"
+    },
+    "random_mean": "nan",
+    "off_kl": 0.0
+   },
+   "k_half": {
+    "lo": {
+     "k_half": null,
+     "r_half": "nan",
+     "r_half_num": 0.001009192317724228,
+     "G": 0.005969051271677017,
+     "end_diff": 0.0
+    }
+   }
+  },
+  "addition_random_s1": {
+   "task": "addition",
+   "arm": "random",
+   "seed": 1,
+   "file": "experiments/procedural_rl/results/large/states/addition_random_s1.pt",
+   "kl_saved": 0.0010987629369175636,
+   "size": 0.006945635478974368,
+   "erank": 699.8598714636461,
+   "gain": {
+    "lo": -0.008449088782072067
+   },
+   "prior": {
+    "lo": -2.577134430408478
+   },
+   "neuron": {
+    "k64": {
+     "share": {
+      "lo": "nan"
+     },
+     "numerator": {
+      "lo": 0.006963517516851425
+     }
+    },
+    "kmatched": {
+     "share": {
+      "lo": "nan"
+     },
+     "numerator": {
+      "lo": -0.001567089930176735
+     }
+    }
+   },
+   "share": {
+    "share": {
+     "lo": "nan"
+    },
+    "numerator": {
+     "lo": -0.019046951085329056
+    },
+    "gain": {
+     "lo": -0.011935245245695114
+    }
+   },
+   "untrained": {
+    "share": {
+     "lo": {
+      "svd": "nan",
+      "rotated": "nan"
+     }
+    },
+    "numerator": {
+     "lo": {
+      "svd": -0.05904040299355984,
+      "rotated": -0.025297395884990692
+     }
+    }
+   },
+   "steering": {
+    "setting": [
+     2,
+     8
+    ],
+    "share": {
+     "lo": "nan"
+    },
+    "random_mean": "nan",
+    "off_kl": 0.0
+   },
+   "k_half": {
+    "lo": {
+     "k_half": null,
+     "r_half": "nan",
+     "r_half_num": -0.003185797482728958,
+     "G": -0.008449088782072067,
+     "end_diff": 0.0
+    }
+   }
+  },
+  "addition_random_s2": {
+   "task": "addition",
+   "arm": "random",
+   "seed": 2,
+   "file": "experiments/procedural_rl/results/large/states/addition_random_s2.pt",
+   "kl_saved": 0.0011241670117985902,
+   "size": 0.006875062984060235,
+   "erank": 696.9457687646014,
+   "gain": {
+    "lo": 0.008962050080299377
+   },
+   "prior": {
+    "lo": -2.577134430408478
+   },
+   "neuron": {
+    "k64": {
+     "share": {
+      "lo": "nan"
+     },
+     "numerator": {
+      "lo": -0.006121426820755005
+     }
+    },
+    "kmatched": {
+     "share": {
+      "lo": "nan"
+     },
+     "numerator": {
+      "lo": 0.020781315863132477
+     }
+    }
+   },
+   "share": {
+    "share": {
+     "lo": "nan"
+    },
+    "numerator": {
+     "lo": 0.00040106847882270813
+    },
+    "gain": {
+     "lo": 0.004239596426486969
+    }
+   },
+   "untrained": {
+    "share": {
+     "lo": {
+      "svd": "nan",
+      "rotated": "nan"
+     }
+    },
+    "numerator": {
+     "lo": {
+      "svd": -0.016696518287062645,
+      "rotated": -0.015348255634307861
+     }
+    }
+   },
+   "steering": {
+    "setting": [
+     3,
+     8
+    ],
+    "share": {
+     "lo": "nan"
+    },
+    "random_mean": "nan",
+    "off_kl": 0.0
+   },
+   "k_half": {
+    "lo": {
+     "k_half": null,
+     "r_half": "nan",
+     "r_half_num": 0.006801687180995941,
+     "G": 0.008962050080299377,
+     "end_diff": 0.0
+    }
+   }
+  },
+  "addition_sft_s0": {
+   "task": "addition",
+   "arm": "sft",
+   "seed": 0,
+   "file": "experiments/procedural_rl/results/large/states/addition_sft_s0.pt",
+   "kl_saved": 0.4225748636391413,
+   "size": 0.006957372826701293,
+   "erank": 303.2465853881915,
+   "gain": {
+    "lo": 6.276873912662268
+   },
+   "prior": {
+    "lo": -2.577134430408478
+   },
+   "neuron": {
+    "k64": {
+     "share": {
+      "lo": -0.030375907662854165
+     },
+     "numerator": {
+      "lo": -0.1906657423824072
+     }
+    },
+    "kmatched": {
+     "share": {
+      "lo": -0.030045631520908694
+     },
+     "numerator": {
+      "lo": -0.18859264068305492
+     }
+    }
+   },
+   "share": {
+    "share": {
+     "lo": 0.746034877317338
+    },
+    "numerator": {
+     "lo": 4.679274387657642
+    },
+    "gain": {
+     "lo": 6.272192534059286
+    }
+   },
+   "untrained": {
+    "share": {
+     "lo": {
+      "svd": 0.5561905093046396,
+      "rotated": -0.39207892175070225
+     }
+    },
+    "numerator": {
+     "lo": {
+      "svd": 3.4911382142454386,
+      "rotated": -2.4610303193330765
+     }
+    }
+   },
+   "steering": {
+    "setting": [
+     1,
+     4
+    ],
+    "share": {
+     "lo": 0.1561191768365549
+    },
+    "random_mean": -0.39229093795269887,
+    "off_kl": 0.0
+   },
+   "k_half": {
+    "lo": {
+     "k_half": 32,
+     "r_half": 0.6179158817669432,
+     "r_half_num": 3.878580078482628,
+     "G": 6.276873912662268,
+     "end_diff": 0.0
+    }
+   }
+  },
+  "addition_sft_s1": {
+   "task": "addition",
+   "arm": "sft",
+   "seed": 1,
+   "file": "experiments/procedural_rl/results/large/states/addition_sft_s1.pt",
+   "kl_saved": 0.4655952104640425,
+   "size": 0.0069401752756470605,
+   "erank": 309.08559917505113,
+   "gain": {
+    "lo": 5.863320466130972
+   },
+   "prior": {
+    "lo": -2.577134430408478
+   },
+   "neuron": {
+    "k64": {
+     "share": {
+      "lo": -0.05989096056873879
+     },
+     "numerator": {
+      "lo": -0.3511598948389292
+     }
+    },
+    "kmatched": {
+     "share": {
+      "lo": -0.05209303989738818
+     },
+     "numerator": {
+      "lo": -0.30543818697333336
+     }
+    }
+   },
+   "share": {
+    "share": {
+     "lo": 0.7496948038101833
+    },
+    "numerator": {
+     "lo": 4.3943068869411945
+    },
+    "gain": {
+     "lo": 5.861461043357849
+    }
+   },
+   "untrained": {
+    "share": {
+     "lo": {
+      "svd": 0.6046397392344742,
+      "rotated": -0.11603511408267153
+     }
+    },
+    "numerator": {
+     "lo": {
+      "svd": 3.5451972018927336,
+      "rotated": -0.6803511828184128
+     }
+    }
+   },
+   "steering": {
+    "setting": [
+     1,
+     2
+    ],
+    "share": {
+     "lo": 0.1774381896216438
+    },
+    "random_mean": -0.25470331916050415,
+    "off_kl": 0.0
+   },
+   "k_half": {
+    "lo": {
+     "k_half": 64,
+     "r_half": 0.6899723054640237,
+     "r_half_num": 4.045528739690781,
+     "G": 5.863320466130972,
+     "end_diff": 0.0
+    }
+   }
+  },
+  "addition_sft_s2": {
+   "task": "addition",
+   "arm": "sft",
+   "seed": 2,
+   "file": "experiments/procedural_rl/results/large/states/addition_sft_s2.pt",
+   "kl_saved": 0.4376095723359197,
+   "size": 0.006939606422252847,
+   "erank": 304.2072411909332,
+   "gain": {
+    "lo": 5.995438888669014
+   },
+   "prior": {
+    "lo": -2.577134430408478
+   },
+   "neuron": {
+    "k64": {
+     "share": {
+      "lo": -0.02144126899408218
+     },
+     "numerator": {
+      "lo": -0.12854981794953346
+     }
+    },
+    "kmatched": {
+     "share": {
+      "lo": -0.03878631602291706
+     },
+     "numerator": {
+      "lo": -0.23254098743200302
+     }
+    }
+   },
+   "share": {
+    "share": {
+     "lo": 0.7299427171235491
+    },
+    "numerator": {
+     "lo": 4.373866304755211
+    },
+    "gain": {
+     "lo": 5.992067873477936
+    }
+   },
+   "untrained": {
+    "share": {
+     "lo": {
+      "svd": 0.29845007282645425,
+      "rotated": -0.44343947054107963
+     }
+    },
+    "numerator": {
+     "lo": {
+      "svd": 1.789339194074273,
+      "rotated": -2.6586142778396606
+     }
+    }
+   },
+   "steering": {
+    "setting": [
+     1,
+     2
+    ],
+    "share": {
+     "lo": 0.1908320001208509
+    },
+    "random_mean": -0.16382408902945647,
+    "off_kl": 0.0
+   },
+   "k_half": {
+    "lo": {
+     "k_half": 32,
+     "r_half": 0.652680385465094,
+     "r_half_num": 3.9131053648889065,
+     "G": 5.995438888669014,
+     "end_diff": 0.0
+    }
+   }
+  },
+  "addition_rl_s0": {
+   "task": "addition",
+   "arm": "rl",
+   "seed": 0,
+   "file": "experiments/procedural_rl/results/large/states/addition_rl_s0.pt",
+   "kl_saved": 2.1744232129193657,
+   "size": 0.0068971797816916895,
+   "erank": 321.65379510717946,
+   "gain": {
+    "lo": -6.709762182086706
+   },
+   "prior": {
+    "lo": -2.577134430408478
+   },
+   "neuron": {
+    "k64": {
+     "share": {
+      "lo": "nan"
+     },
+     "numerator": {
+      "lo": -0.3123418390750885
+     }
+    },
+    "kmatched": {
+     "share": {
+      "lo": "nan"
+     },
+     "numerator": {
+      "lo": -0.18258166126906872
+     }
+    }
+   },
+   "share": {
+    "share": {
+     "lo": "nan"
+    },
+    "numerator": {
+     "lo": -1.238881766796112
+    },
+    "gain": {
+     "lo": -6.719539612531662
+    }
+   },
+   "untrained": {
+    "share": {
+     "lo": {
+      "svd": "nan",
+      "rotated": "nan"
+     }
+    },
+    "numerator": {
+     "lo": {
+      "svd": 1.6730770468711853,
+      "rotated": -1.5387873500585556
+     }
+    }
+   },
+   "steering": {
+    "setting": [
+     2,
+     0.5
+    ],
+    "share": {
+     "lo": "nan"
+    },
+    "random_mean": "nan",
+    "off_kl": 0.0
+   },
+   "k_half": {
+    "lo": {
+     "k_half": null,
+     "r_half": 0.4557833090187343,
+     "r_half_num": -3.058197610080242,
+     "G": -6.709762182086706,
+     "end_diff": 0.0
+    }
+   }
+  },
+  "addition_rl_s1": {
+   "task": "addition",
+   "arm": "rl",
+   "seed": 1,
+   "file": "experiments/procedural_rl/results/large/states/addition_rl_s1.pt",
+   "kl_saved": 0.6517530860001336,
+   "size": 0.006945645589358405,
+   "erank": 320.3648165031758,
+   "gain": {
+    "lo": -2.0810572765767574
+   },
+   "prior": {
+    "lo": -2.577134430408478
+   },
+   "neuron": {
+    "k64": {
+     "share": {
+      "lo": "nan"
+     },
+     "numerator": {
+      "lo": -0.8363781925290823
+     }
+    },
+    "kmatched": {
+     "share": {
+      "lo": "nan"
+     },
+     "numerator": {
+      "lo": -0.3774224240332842
+     }
+    }
+   },
+   "share": {
+    "share": {
+     "lo": "nan"
+    },
+    "numerator": {
+     "lo": -0.10020565986633301
+    },
+    "gain": {
+     "lo": -2.0814397148787975
+    }
+   },
+   "untrained": {
+    "share": {
+     "lo": {
+      "svd": "nan",
+      "rotated": "nan"
+     }
+    },
+    "numerator": {
+     "lo": {
+      "svd": 4.510108126327395,
+      "rotated": -6.304513476788998
+     }
+    }
+   },
+   "steering": {
+    "setting": [
+     2,
+     0.5
+    ],
+    "share": {
+     "lo": "nan"
+    },
+    "random_mean": "nan",
+    "off_kl": 0.0
+   },
+   "k_half": {
+    "lo": {
+     "k_half": null,
+     "r_half": 0.3953110007198885,
+     "r_half_num": -0.8226648345589638,
+     "G": -2.0810572765767574,
+     "end_diff": 0.0
+    }
+   }
+  },
+  "addition_rl_s2": {
+   "task": "addition",
+   "arm": "rl",
+   "seed": 2,
+   "file": "experiments/procedural_rl/results/large/states/addition_rl_s2.pt",
+   "kl_saved": 0.39601604920922545,
+   "size": 0.006875076459190428,
+   "erank": 320.4614168415595,
+   "gain": {
+    "lo": 2.061923898756504
+   },
+   "prior": {
+    "lo": -2.577134430408478
+   },
+   "neuron": {
+    "k64": {
+     "share": {
+      "lo": -0.18265735241304973
+     },
+     "numerator": {
+      "lo": -0.37662556022405624
+     }
+    },
+    "kmatched": {
+     "share": {
+      "lo": -0.16769607505513498
+     },
+     "numerator": {
+      "lo": -0.34577654488384724
+     }
+    }
+   },
+   "share": {
+    "share": {
+     "lo": 0.7382647397279976
+    },
+    "numerator": {
+     "lo": 1.521823439747095
+    },
+    "gain": {
+     "lo": 2.0613519214093685
+    }
+   },
+   "untrained": {
+    "share": {
+     "lo": {
+      "svd": 0.7129643864625489,
+      "rotated": -2.1003375273781537
+     }
+    },
+    "numerator": {
+     "lo": {
+      "svd": 1.4700790643692017,
+      "rotated": -4.330738373100758
+     }
+    }
+   },
+   "steering": {
+    "setting": [
+     2,
+     0.5
+    ],
+    "share": {
+     "lo": 0.407611163160906
+    },
+    "random_mean": -0.056110393590867974,
+    "off_kl": 0.0
+   },
+   "k_half": {
+    "lo": {
+     "k_half": 32,
+     "r_half": 0.7072467088239351,
+     "r_half_num": 1.4582888912409544,
+     "G": 2.061923898756504,
+     "end_diff": 0.0
+    }
+   }
+  }
+ },
+ "done": true
+}

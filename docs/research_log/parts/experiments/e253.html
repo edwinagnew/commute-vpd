@@ -1,0 +1,18 @@
+<article class="exp" id="e253">
+<div class="top"><span class="id">E253</span><span class="chip mixed">mixed</span><h3>Does the re-gating share still follow the mechanism when the low-prior copy is its own task?</h3><span class="when">2026-11-21 · cell P2.55, run 2 of 2, provisional, no independent check · <code>experiments/cued_copy</code></span></div>
+<p class="one"><strong>The question.</strong> The 2x2 of <a href="#e249">E249</a> got its low-prior copy by keeping the key copy task's lowest-prior rows, so every reading of the update was bound to land near copy. Does the re-gating share still follow how a fine-tune works when the low-prior copy is a separate task?</p>
+<p class="one"><strong>What we did.</strong> We built a cued copy: a window holds a key and an answer word, and later the key and a cue, and the model must predict the answer. Answers are rare words, and the rows where the base model finds the answer least likely are kept, which brings the base model's prior to the cipher's (log10 -5.86). Three seeds were trained to the common update size, labelled by the three copy heads of <a href="#e252">E252</a> and read with the share and the other readings of the update.</p>
+<p class="one"><strong>What we found.</strong> The share reads 0.92 on the cued copy against 0.27 on the cipher at the same prior, a mechanism effect of 0.52 against a prior effect of -0.025. The cued copy loses 0.62 of its gain with the three heads off. Pooled steering, effective rank and the top-64 neuron share also follow mechanism, and a check that the gain is not a boost of rare words missed: on windows without the answer the fine-tune lowers it by about 6 log-odds.</p>
+<p class="one"><strong>What it means.</strong> This supports the second claim on one more task, but only one task family at three seeds, and the low prior is still a property of the rows kept, not of the task. The other readings agree with the share on every group, so the comparison does not single the share out.</p>
+<figure><img src="fig/e253_prior_mech_2x2_cued.png" alt="The four-group comparison with the cued copy in the low-prior corner"><figcaption><strong>Does the share follow mechanism with the cued copy in the low-prior corner? Yes, and so do steering and rank.</strong> One panel per reading; the blue line joins the two copy corners and the orange the two ciphers, the faint point is the old row-selected copy. Every panel but the prior splits by mechanism.</figcaption></figure>
+<dl class="fields">
+<dt>Run</dt><dd>Cued copy trained at three seeds with matched random updates, labelled and read with the readings of the 2x2; MATS cluster L40, job 63064, 6.5 minutes, no cost.</dd>
+<dt>Found</dt><dd><ul>
+<li>Share 0.92 on the cued copy against 0.77 on key copy and 0.37 and 0.27 on the ciphers; seeds agree to 0.003.</li>
+<li>Pooled steering (0.46 against 0.044), effective rank (65 against 5.2) and the top-64 neuron share also follow mechanism; only the base prior follows the prior.</li>
+<li>The answer-absent check missed: the answer falls by 0.33 to 0.35 of the intact gain where absent, and the cause was not worked out.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 3, the second claim: on this 2x2 the share follows mechanism, not prior, but it does not yet beat steering or rank.</dd>
+<dt>Moved on</dt><dd>Next is a pair where steering or rank is expected to follow the prior and the share the mechanism, and a copy task with unlikely answers on every row. Record: <code>reports/analyses/2026-11-21_analysis_p2-55-khead-cued-copy.md</code>; <code>experiments/cued_copy/results/table.json</code>; <code>experiments/TRIED.md</code>.</dd>
+</dl>
+</article>
