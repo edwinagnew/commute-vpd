@@ -1,0 +1,38 @@
+{
+  "experiment": "E266 (adl kl_control)",
+  "cell": "P2.60",
+  "filed": "2026-11-22, compare-lead, before experiments/adl/kl_control.py was first run",
+  "card": "~/commute-data/cards/P2.60.md",
+  "descriptive": true,
+  "descriptive_note": "nine saved pairs, seed sd 0.013 against a floor of 0.0054: no claim at the bar; reported as read (user, proposal 56, 2026-11-22)",
+  "inputs": {
+    "lens": "experiments/adl/results/amend1/items/<pair>-<state>.json (E265): .D, .pair, .side, .state, .c, .size; pair items only, random items kept for the floor",
+    "kl_norm": "experiments/kl_control/results/summary.json .B_pairs.states (E262 from E257): .kl, .logkl, .norm per state; a state the lens read times c != 1 is E257's '<state with / as ->_scaled_<pair>'",
+    "eb_gaps": "experiments/kl_control/results/summary.json .B_pairs.pairs['e187_<pair>'] .raw and .resid_<regressor>",
+    "calls": "experiments/adl/results/amend1/compare.json .pairs[<pair>].adl_call (seven 'apart')"
+  },
+  "same_state_check": "the lens multiplied the larger side by E187's c (experiments/adl/run.py pair_items, World.change), as E257 did; so E257's KL of the scaled state is the KL of the update the lens read. Checked per state: lens .size equals E262 .norm within 1e-6 relative (the lens's own size_rel)",
+  "settings": {
+    "regressors": ["kl", "norm", "kl+norm", "logkl"],
+    "filed_regressor": "kl",
+    "floor_expected": 0.0054,
+    "size_rel": 1e-6,
+    "large_pairs": ["e46_copy_random", "e54_matched", "open_pair_c3_copy", "e58_rank1_96"],
+    "control_tol": 1e-12
+  },
+  "expected": {
+    "control_D_on_D": "D regressed on D (intercept + D) leaves every residual pair gap 0 within 1e-12: float64 rounding of residuals is ~eps 2.2e-16 x max|D| 0.18 x 76 states ~ 3e-15",
+    "raw_gaps": "equal E265's compare.json adl gap per pair within 1e-12 (same items, seed means per side)",
+    "floor": "largest |D| over the 18 pair-side random updates = 0.0054 (E265)",
+    "norm_fit": "sizes are matched within a pair, so the norm fit should move the pair gaps little (as for E_b in E262, whose resid_norm equals raw)"
+  },
+  "rules": {
+    "pair_gap": "mean residual over a side's states (reuse) minus mean over the other side's (new); OLS with intercept over the unique trained pair states (random items out)",
+    "outside": "|residual gap| > floor (floor = measured max |D| over the 18 pair-side random items)",
+    "sign_agree": "count of the nine pairs where sign(lens residual gap) == sign(E_b residual gap under the same regressor); also against E_b raw gap",
+    "spearman": "Spearman of the nine lens residual gaps with E_b's residual gaps under the same regressor (P2.51's spearman)",
+    "rival_a": "under the filed KL fit: at least 4 of the 7 'apart' pairs have |residual gap| <= floor AND sign agreement with E_b's resid_kl <= 6 of 9 AND Spearman < 0.5",
+    "rival_b": "under the filed KL fit: all four large_pairs have |residual gap| > floor AND Spearman >= 0.5",
+    "otherwise": "mixed: reported as read, no call"
+  }
+}
