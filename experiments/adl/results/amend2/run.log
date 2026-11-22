@@ -1,0 +1,167 @@
+E267 amend2 run; GPU NVIDIA L40; settings {'k': 5, 'pile_split': 'val', 'n_pile': 8192, 'batch': 512, 'lens_top': 20, 'n_random_diffs': 64, 'random_diff_rows': 128, 'random_diff_len': 128, 'random_seed': 259001, 'control': 'e53_lowercase_cipher/e53/lowercase_s0', 'control_random': 'e53_lowercase_cipher/random_reuse', 'trained_arms': ('rl', 'sft', 'rlg'), 'random_arms': ('random', 'randg'), 'collapsed': ('brackets_rl_s1', 'brackets_rl_s2', 'addition_rl_s0', 'addition_rl_s1', 'brackets_rlg_s0', 'brackets_rlg_s1')}; thresholds {'gain_floor': 1.0, 'inert': 0.05, 'zero_tol': 1e-09, 'reader_tol': 0.0001, 'size_rel': 1e-06, 'sd_mult': 3, 'thresholds_source': "amend1's, unchanged (gain_floor, inert, zero_tol from E143; reader_tol E147's; size_rel E244's; sd_mult run 1's)", 'repeat_rel': 1e-06, 'repeat_rel_source': "measured: the lens read e58/copy_s0 at c = 1 in job 63409 (run 1 stage 0) and twice in job 63425 (amend1 items, as e58/copy_s0_scaled and e58_copy_prior_cipher/e58/copy_s0), all on the cluster's L40 worker; D, gain and the five removed values were bitwise equal (0.0028031731216684253, 16.450539847353955; experiments/adl/results/stage0.json control, amend1/items/*copy_s0*.json). The floor is 0 on the same card; 1e-6 relative leaves room only for a float64 summation order, not for a change of code or rows", 'alpha': 0.01, 'alpha_source': "E254's (experiments/prior_matched/results/predictions_a.json thresholds.alpha), the same test on the same seeds", 'smallest_gap': 0.0054, 'smallest_gap_source': "the card: the random-update lens floor, largest |D| 0.0054 of E265's random updates (amend1/stage0.json random.D -0.00542)", 'proc_gain_rel': 0.001, 'proc_gain_rel_source': "an expected value, not a measured floor, so a reported check and never a stop: set (b)'s gain against E256/E260's saved gain.lo, |diff| <= proc_gain_rel x max(1, |saved|) (absolute under 1, where the random arms' gains of about 0.01 sit). Both are fp32 log-odds of the same answer at the same cue on the same rows through steering.Net, by different batching (holes_fill batches vs masked_reads.topk_cells_by)", 'partial_bar': 0.3, 'partial_bar_source': "the card's rivals: a partial Spearman with E_b given KL of at least 0.3 (rival a) or under 0.3 in size (rival b)"}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[stage0 do-nothing] {"dbar_max": 0.0, "removed": [0.0, 0.0, 0.0, 0.0, 0.0], "gain": 0.0}
+[e53_lowercase_cipher/e53/lowercase_s0] c 1.000000 size 0.0179473 gain 1.6721 G 1.6721 |dbar| [31.74138, 0.89468, 0.6212, 0.58449, 0.55272] removed [0.02909, 0.08361, 0.04031, 0.04332, 0.04516] D 0.05000 lens relevance max 0.000 best rank 271; 5.2 s
+[e53_lowercase_cipher/random_reuse] c 1.000000 size 0.0179473 gain -0.0315 G 1.6721 |dbar| [4.54851, 0.2288, 0.15111, 0.14327, 0.13993] removed [-0.00906, -0.01438, -0.01846, -0.01533, -0.01406] D -0.00542 lens relevance max 0.050 best rank 16; 6.3 s
+[stage0 control] D 0.05000 vs random update D -0.00542; 64 random-difference directions mean 0.00201 sd 0.00543 max 0.02960; bars {'inert': 0.05, 'random_diffs_max': 0.029600209618781334, 'random_update_plus': 0.010860130554084808}; lens relevance control 0.000 random 0.050; misses []; PASSED True
+[stage0 repeat of amend1] {"D": {"got": 0.050002243699354, "amend1": 0.050002243699354, "rel": 0.0}, "gain": {"got": 1.6721290016174317, "amend1": 1.6721290016174317, "rel": 0.0}}; misses []; PASSED True
+[e254/e58/pa_copy_s0] c 0.999938 size 0.00724981 gain 16.4503 G 16.4503 |dbar| [2.86245, 0.78009, 0.72082, 0.71422, 0.70971] removed [0.04609, -0.00569, -0.01547, -0.01684, -0.01688] D 0.00280 lens relevance max 0.000 best rank 207; 1.7 s
+ITEM 1 of 77 DONE; gain 16.450332 vs its source's 16.450332
+[e254/e58/pa_copy_s1] c 0.999938 size 0.00730663 gain 16.3308 G 16.3308 |dbar| [5.55146, 0.90371, 0.65287, 0.64229, 0.6309] removed [0.00761, -0.10166, -0.10979, -0.11164, -0.11345] D 0.00047 lens relevance max 0.000 best rank 4553; 1.5 s
+ITEM 2 of 77 DONE; gain 16.330827 vs its source's 16.330827
+[e254/e58/pa_copy_s2] c 0.999938 size 0.00734865 gain 16.4166 G 16.4166 |dbar| [2.9252, 0.6713, 0.66104, 0.64725, 0.63852] removed [-0.02458, -0.00925, -0.01845, -0.0175, -0.01823] D -0.00056 lens relevance max 0.000 best rank 125; 1.6 s
+ITEM 3 of 77 DONE; gain 16.416578 vs its source's 16.416578
+[e254/e58/pa_prior_cipher_s0] c 0.783151 size 0.0073424 gain 12.8815 G 12.8815 |dbar| [1.97488, 0.7804, 0.77208, 0.75867, 0.74555] removed [0.041, 0.02566, 0.05215, 0.07762, 0.10919] D 0.00848 lens relevance max 0.000 best rank 1020; 1.7 s
+ITEM 4 of 77 DONE; gain 12.881549 vs its source's 12.881549
+[e254/e58/pa_prior_cipher_s1] c 0.783151 size 0.00731082 gain 12.4793 G 12.4793 |dbar| [3.30635, 0.70919, 0.71067, 0.70073, 0.69] removed [0.0562, -0.09868, -0.09558, -0.09153, -0.07679] D 0.00450 lens relevance max 0.000 best rank 1067; 1.6 s
+ITEM 5 of 77 DONE; gain 12.479330 vs its source's 12.479330
+[e254/e58/pa_prior_cipher_s2] c 0.783151 size 0.0073469 gain 12.2678 G 12.2678 |dbar| [2.07907, 0.79964, 0.78396, 0.76885, 0.75314] removed [0.03549, 0.00859, 0.03505, 0.05196, 0.08673] D 0.00707 lens relevance max 0.000 best rank 320; 1.6 s
+ITEM 6 of 77 DONE; gain 12.267768 vs its source's 12.267768
+[e254/random/e58/pa_copy_s0] c 0.999938 size 0.00724981 gain 0.0076 G 16.4503 |dbar| [1.15618, 0.07102, 0.06629, 0.06332, 0.0621] removed [-0.0044, -0.00812, -0.0065, -0.00648, -0.00641] D -0.00027 lens relevance max 0.000 best rank 90; 2.0 s
+ITEM 7 of 77 DONE; gain 0.007591 vs its source's 0.007591
+[e254/random/e58/pa_copy_s1] c 0.999938 size 0.00730663 gain -0.0205 G 16.3308 |dbar| [1.39671, 0.07681, 0.06416, 0.06179, 0.06037] removed [0.0008, -0.00104, -0.00037, 0.0003, 6e-05] D 0.00005 lens relevance max 0.000 best rank 299; 2.0 s
+ITEM 8 of 77 DONE; gain -0.020521 vs its source's -0.020521
+[e254/random/e58/pa_copy_s2] c 0.999938 size 0.00734865 gain 0.0042 G 16.4166 |dbar| [0.59375, 0.07601, 0.06834, 0.06554, 0.06418] removed [-0.00345, 0.00473, -0.002, -0.00636, -0.00796] D 0.00029 lens relevance max 0.000 best rank 777; 1.9 s
+ITEM 9 of 77 DONE; gain 0.004230 vs its source's 0.004230
+[e254/random/e58/pa_prior_cipher_s0] c 0.783151 size 0.0073424 gain 0.0127 G 12.8815 |dbar| [0.47952, 0.06755, 0.06256, 0.06006, 0.05873] removed [-0.00228, 0.00208, 0.003, 0.00323, 0.00353] D 0.00027 lens relevance max 0.000 best rank 70; 2.0 s
+ITEM 10 of 77 DONE; gain 0.012707 vs its source's 0.012707
+[e254/random/e58/pa_prior_cipher_s1] c 0.783151 size 0.00731082 gain -0.0180 G 12.4793 |dbar| [1.55198, 0.07138, 0.06485, 0.06206, 0.06064] removed [0.00149, -0.00397, -0.00497, -0.00573, -0.00612] D 0.00012 lens relevance max 0.000 best rank 132; 2.0 s
+ITEM 11 of 77 DONE; gain -0.017975 vs its source's -0.017975
+[e254/random/e58/pa_prior_cipher_s2] c 0.783151 size 0.0073469 gain 0.0012 G 12.2678 |dbar| [0.7722, 0.07623, 0.06591, 0.06266, 0.06099] removed [-0.00313, -0.00091, 0.00011, 0.00032, -4e-05] D 0.00003 lens relevance max 0.000 best rank 241; 2.1 s
+ITEM 12 of 77 DONE; gain 0.001245 vs its source's 0.001245
+[e254/e58/pa_copy_s3] c 0.999938 size 0.00728701 gain 16.5489 G 16.5489 |dbar| [3.48536, 0.60101, 0.59273, 0.59254, 0.58606] removed [-0.00504, 0.00438, 0.01334, 0.01731, 0.02169] D 0.00131 lens relevance max 0.000 best rank 3319; 1.6 s
+ITEM 13 of 77 DONE; gain 16.548910 vs its source's 16.548910
+[e254/e58/pa_copy_s4] c 0.999938 size 0.00724312 gain 16.4854 G 16.4854 |dbar| [3.67894, 0.78184, 0.68136, 0.66118, 0.64654] removed [0.00471, -0.00301, 0.0018, 0.00817, 0.01249] D 0.00076 lens relevance max 0.000 best rank 3760; 1.6 s
+ITEM 14 of 77 DONE; gain 16.485406 vs its source's 16.485406
+[e254/e58/pa_copy_s5] c 0.999938 size 0.00728418 gain 16.3556 G 16.3556 |dbar| [4.85512, 0.65797, 0.60192, 0.59336, 0.58763] removed [0.00081, -0.03392, -0.02632, -0.02432, -0.02339] D 0.00005 lens relevance max 0.000 best rank 4920; 1.6 s
+ITEM 15 of 77 DONE; gain 16.355604 vs its source's 16.355604
+[e254/e58/pa_copy_s6] c 0.999938 size 0.0073165 gain 16.3989 G 16.3989 |dbar| [2.25334, 0.71688, 0.62532, 0.61318, 0.60712] removed [0.08606, -0.01951, -0.00193, 0.00229, 0.00456] D 0.00525 lens relevance max 0.000 best rank 2344; 1.6 s
+ITEM 16 of 77 DONE; gain 16.398944 vs its source's 16.398944
+[e254/e58/pa_copy_s7] c 0.999938 size 0.00733264 gain 16.5927 G 16.5927 |dbar| [1.42906, 0.77248, 0.70371, 0.6866, 0.67002] removed [0.20718, -0.05139, -0.02795, -0.01827, -0.01071] D 0.01249 lens relevance max 0.000 best rank 404; 1.6 s
+ITEM 17 of 77 DONE; gain 16.592691 vs its source's 16.592691
+[e254/e58/pa_copy_s8] c 0.999938 size 0.00732652 gain 16.4430 G 16.4430 |dbar| [3.61677, 0.76273, 0.71469, 0.69536, 0.6758] removed [-0.03415, -0.03015, -0.02409, -0.01835, -0.01308] D -0.00080 lens relevance max 0.000 best rank 168; 1.6 s
+ITEM 18 of 77 DONE; gain 16.442973 vs its source's 16.442973
+[e254/e58/pa_copy_s9] c 0.999938 size 0.00732645 gain 16.5987 G 16.5987 |dbar| [8.81682, 0.94842, 0.67003, 0.66066, 0.64939] removed [-0.02657, -0.02442, 0.01557, 0.02171, 0.02702] D 0.00163 lens relevance max 0.000 best rank 873; 1.6 s
+ITEM 19 of 77 DONE; gain 16.598696 vs its source's 16.598696
+[e254/e58/pa_prior_cipher_s3] c 0.783151 size 0.00728408 gain 12.8105 G 12.8105 |dbar| [1.51803, 0.76642, 0.76226, 0.7484, 0.73678] removed [-0.00218, -0.04872, -0.04262, -0.02952, -0.00617] D -0.00017 lens relevance max 0.000 best rank 753; 1.6 s
+ITEM 20 of 77 DONE; gain 12.810508 vs its source's 12.810508
+[e254/e58/pa_prior_cipher_s4] c 0.783151 size 0.00723807 gain 12.7067 G 12.7067 |dbar| [2.66502, 0.76349, 0.7202, 0.71354, 0.70861] removed [0.05483, -0.00585, 0.02732, 0.04373, 0.06501] D 0.00512 lens relevance max 0.000 best rank 1568; 1.6 s
+ITEM 21 of 77 DONE; gain 12.706683 vs its source's 12.706683
+[e254/e58/pa_prior_cipher_s5] c 0.783151 size 0.00728945 gain 13.1528 G 13.1528 |dbar| [1.58945, 0.73079, 0.70636, 0.69964, 0.69376] removed [0.0087, 0.00684, 0.02523, 0.03456, 0.05524] D 0.00420 lens relevance max 0.000 best rank 650; 1.6 s
+ITEM 22 of 77 DONE; gain 13.152814 vs its source's 13.152814
+[e254/e58/pa_prior_cipher_s6] c 0.783151 size 0.00728264 gain 12.7055 G 12.7055 |dbar| [1.29387, 0.71284, 0.69675, 0.69007, 0.68412] removed [-0.07234, -0.13786, -0.12329, -0.1164, -0.09861] D -0.00569 lens relevance max 0.000 best rank 1538; 1.6 s
+ITEM 23 of 77 DONE; gain 12.705514 vs its source's 12.705514
+[e254/e58/pa_prior_cipher_s7] c 0.783151 size 0.00726432 gain 12.5747 G 12.5747 |dbar| [2.11859, 0.7421, 0.72491, 0.70951, 0.699] removed [0.01493, 0.01997, 0.03535, 0.05546, 0.07669] D 0.00610 lens relevance max 0.000 best rank 257; 1.6 s
+ITEM 24 of 77 DONE; gain 12.574695 vs its source's 12.574695
+[e254/e58/pa_prior_cipher_s8] c 0.783151 size 0.00735463 gain 13.0150 G 13.0150 |dbar| [5.85708, 0.70804, 0.70478, 0.70279, 0.6947] removed [0.05977, -0.02994, -0.00125, 0.01467, 0.04563] D 0.00459 lens relevance max 0.000 best rank 572; 1.6 s
+ITEM 25 of 77 DONE; gain 13.014966 vs its source's 13.014966
+[e254/e58/pa_prior_cipher_s9] c 0.783151 size 0.00730818 gain 12.9306 G 12.9306 |dbar| [1.29025, 0.73087, 0.73296, 0.72442, 0.71603] removed [-0.059, -0.11439, -0.10961, -0.09565, -0.07658] D -0.00456 lens relevance max 0.000 best rank 266; 1.6 s
+ITEM 26 of 77 DONE; gain 12.930596 vs its source's 12.930596
+[e255/e58/pb_cipher2_s0] c 0.778965 size 0.0073203 gain 12.7046 G 12.7046 |dbar| [2.10917, 0.79854, 0.75778, 0.74559, 0.73094] removed [0.01043, -0.17803, -0.15874, -0.13011, -0.0952] D 0.00082 lens relevance max 0.000 best rank 275; 1.7 s
+ITEM 27 of 77 DONE; gain 12.704605 vs its source's 12.704605
+[e255/e58/pb_cipher2_s1] c 0.778965 size 0.00734506 gain 12.4667 G 12.4667 |dbar| [2.97651, 0.80807, 0.79, 0.78104, 0.76756] removed [0.03657, -0.12908, -0.10802, -0.08389, -0.05709] D 0.00293 lens relevance max 0.000 best rank 335; 1.6 s
+ITEM 28 of 77 DONE; gain 12.466695 vs its source's 12.466695
+[e255/e58/pb_cipher2_s2] c 0.778965 size 0.0072411 gain 12.4527 G 12.4527 |dbar| [1.41961, 0.7834, 0.76482, 0.75663, 0.74981] removed [0.04617, 0.18614, 0.22678, 0.25361, 0.2904] D 0.02332 lens relevance max 0.000 best rank 222; 1.6 s
+ITEM 29 of 77 DONE; gain 12.452668 vs its source's 12.452668
+[e255/random/e58/pb_cipher2_s0] c 0.778965 size 0.0073203 gain -0.0016 G 12.7046 |dbar| [1.0933, 0.07317, 0.06043, 0.05834, 0.05711] removed [0.00133, -0.00415, -0.00134, -0.00118, -0.0006] D 0.00010 lens relevance max 0.000 best rank 448; 2.0 s
+ITEM 30 of 77 DONE; gain -0.001615 vs its source's -0.001615
+[e255/random/e58/pb_cipher2_s1] c 0.778965 size 0.00734506 gain -0.0172 G 12.4667 |dbar| [0.6071, 0.06748, 0.06179, 0.05918, 0.05761] removed [-0.00318, -0.00498, -0.00357, -0.00346, -0.0028] D -0.00022 lens relevance max 0.000 best rank 233; 2.0 s
+ITEM 31 of 77 DONE; gain -0.017179 vs its source's -0.017179
+[e255/random/e58/pb_cipher2_s2] c 0.778965 size 0.0072411 gain 0.0063 G 12.4527 |dbar| [0.43943, 0.06406, 0.061, 0.05857, 0.05718] removed [-0.00365, 0.00441, 0.00596, 0.00644, 0.00621] D 0.00052 lens relevance max 0.000 best rank 712; 2.0 s
+ITEM 32 of 77 DONE; gain 0.006263 vs its source's 0.006263
+[p256/addition_randg_s0] c 1.000000 size 0.00690407 gain 0.0064 G -0.1769 |dbar| [2.62641, 0.09804, 0.06844, 0.06548, 0.06363] removed [-0.00034, -0.00102, -0.0007, -0.00017, 0.00017] D nan lens relevance max 0.000 best rank 189; 2.4 s
+ITEM 33 of 77 DONE; gain 0.006406 vs its source's 0.006406
+[p256/addition_randg_s1] c 1.000000 size 0.00698204 gain -0.0080 G 2.1973 |dbar| [0.78649, 0.08319, 0.0623, 0.06023, 0.05922] removed [-0.00148, -0.00117, -0.00296, -0.00333, -0.00345] D -0.00053 lens relevance max 0.000 best rank 16760; 2.3 s
+ITEM 34 of 77 DONE; gain -0.008036 vs its source's -0.008036
+[p256/addition_randg_s2] c 1.000000 size 0.00692217 gain 0.0092 G 1.0956 |dbar| [0.91451, 0.07091, 0.06523, 0.06297, 0.06166] removed [-0.00151, -0.00153, -0.00165, -0.0018, -0.00167] D -0.00138 lens relevance max 0.000 best rank 6807; 2.3 s
+ITEM 35 of 77 DONE; gain 0.009231 vs its source's 0.009231
+[p256/addition_random_s0] c 1.000000 size 0.00689717 gain 0.0060 G -6.7098 |dbar| [2.52388, 0.09556, 0.06812, 0.0652, 0.06337] removed [-0.00028, -0.00101, -0.00056, 0.0, 0.00035] D nan lens relevance max 0.000 best rank 250; 2.3 s
+ITEM 36 of 77 DONE; gain 0.005969 vs its source's 0.005969
+[p256/addition_random_s1] c 1.000000 size 0.00694564 gain -0.0084 G -2.0811 |dbar| [0.76713, 0.0799, 0.06089, 0.05887, 0.05786] removed [-0.00142, -0.00121, -0.00291, -0.00326, -0.00337] D nan lens relevance max 0.000 best rank 17240; 2.3 s
+ITEM 37 of 77 DONE; gain -0.008449 vs its source's -0.008449
+[p256/addition_random_s2] c 1.000000 size 0.00687506 gain 0.0090 G 2.0619 |dbar| [0.90563, 0.07026, 0.06469, 0.06241, 0.06108] removed [-0.00149, -0.00157, -0.0017, -0.00185, -0.00172] D -0.00072 lens relevance max 0.000 best rank 6844; 2.3 s
+ITEM 38 of 77 DONE; gain 0.008962 vs its source's 0.008962
+[p256/brackets_randg_s0] c 1.000000 size 0.00627393 gain 0.0336 G -0.9655 |dbar| [2.26157, 0.08547, 0.06041, 0.05781, 0.05623] removed [0.00064, 0.01085, 0.01182, 0.0113, 0.01253] D nan lens relevance max 0.000 best rank 758; 2.4 s
+ITEM 39 of 77 DONE; gain 0.033557 vs its source's 0.033557
+[p256/brackets_randg_s1] c 1.000000 size 0.00611848 gain 0.0024 G -4.0313 |dbar| [0.67895, 0.07075, 0.05349, 0.05172, 0.05087] removed [-0.00083, -0.00512, -0.0043, -0.00367, -0.00276] D nan lens relevance max 0.000 best rank 2543; 2.3 s
+ITEM 40 of 77 DONE; gain 0.002440 vs its source's 0.002440
+[p256/brackets_randg_s2] c 1.000000 size 0.00690055 gain 0.0208 G 1.5079 |dbar| [0.90724, 0.07063, 0.06495, 0.06272, 0.06143] removed [0.0042, -0.00629, -0.0084, -0.00843, -0.00798] D 0.00279 lens relevance max 0.000 best rank 12539; 2.3 s
+ITEM 41 of 77 DONE; gain 0.020770 vs its source's 0.020770
+[p256/brackets_random_s0] c 1.000000 size 0.00691146 gain 0.0365 G 2.4390 |dbar| [2.55761, 0.09585, 0.06753, 0.06468, 0.06295] removed [0.00074, 0.01228, 0.0134, 0.01276, 0.01413] D 0.00579 lens relevance max 0.000 best rank 808; 2.3 s
+ITEM 42 of 77 DONE; gain 0.036511 vs its source's 0.036511
+[p256/brackets_random_s1] c 1.000000 size 0.00691213 gain 0.0035 G -3.2961 |dbar| [0.78015, 0.08255, 0.06226, 0.06019, 0.0592] removed [-0.00096, -0.00586, -0.00496, -0.0042, -0.00314] D nan lens relevance max 0.000 best rank 2554; 2.3 s
+ITEM 43 of 77 DONE; gain 0.003493 vs its source's 0.003493
+[p256/brackets_random_s2] c 1.000000 size 0.00687591 gain 0.0214 G -2.0792 |dbar| [0.91812, 0.07093, 0.06518, 0.0629, 0.06158] removed [0.00423, -0.00625, -0.00835, -0.00835, -0.0079] D nan lens relevance max 0.000 best rank 12788; 2.3 s
+ITEM 44 of 77 DONE; gain 0.021355 vs its source's 0.021355
+[p256/sequence_randg_s0] c 1.000000 size 0.00689684 gain 0.0078 G 2.9598 |dbar| [2.52994, 0.09522, 0.06676, 0.06395, 0.0622] removed [-0.00226, -0.00173, 0.00415, 0.00509, 0.00584] D 0.00197 lens relevance max 0.000 best rank 3904; 2.4 s
+ITEM 45 of 77 DONE; gain 0.007754 vs its source's 0.007754
+[p256/sequence_randg_s1] c 1.000000 size 0.0069014 gain -0.0131 G 2.5874 |dbar| [0.76148, 0.08008, 0.06058, 0.05857, 0.05757] removed [0.0049, 0.00608, 0.00606, 0.0053, 0.00372] D 0.00235 lens relevance max 0.000 best rank 958; 2.3 s
+ITEM 46 of 77 DONE; gain -0.013087 vs its source's -0.013087
+[p256/sequence_randg_s2] c 1.000000 size 0.00694847 gain -0.0041 G 3.0030 |dbar| [0.89432, 0.06748, 0.06241, 0.06021, 0.05891] removed [-0.0019, 0.00281, 0.00365, 0.0056, 0.00613] D 0.00204 lens relevance max 0.000 best rank 2568; 2.2 s
+ITEM 47 of 77 DONE; gain -0.004134 vs its source's -0.004134
+[p256/sequence_random_s0] c 1.000000 size 0.00694354 gain 0.0081 G 2.3764 |dbar| [2.53344, 0.09528, 0.06671, 0.0639, 0.06215] removed [-0.00223, -0.0018, 0.00409, 0.00502, 0.00575] D 0.00242 lens relevance max 0.000 best rank 3920; 2.3 s
+ITEM 48 of 77 DONE; gain 0.008079 vs its source's 0.008079
+[p256/sequence_random_s1] c 1.000000 size 0.00690278 gain -0.0130 G 2.7872 |dbar| [0.75567, 0.0798, 0.06036, 0.05837, 0.05738] removed [0.0049, 0.00614, 0.00616, 0.0054, 0.00384] D 0.00221 lens relevance max 0.000 best rank 960; 2.4 s
+ITEM 49 of 77 DONE; gain -0.012990 vs its source's -0.012990
+[p256/sequence_random_s2] c 1.000000 size 0.00694953 gain -0.0042 G 2.0337 |dbar| [0.88206, 0.06628, 0.06118, 0.05896, 0.05765] removed [-0.00192, 0.00273, 0.00352, 0.00542, 0.00593] D 0.00292 lens relevance max 0.000 best rank 2567; 2.3 s
+ITEM 50 of 77 DONE; gain -0.004181 vs its source's -0.004181
+[p256/addition_rl_s0] c 1.000000 size 0.00689718 gain -6.7098 G -6.7098 |dbar| [31.36082, 2.19688, 1.68061, 1.70517, 1.70771] removed [0.00155, -0.12385, -2.34053, -2.34901, -2.39802] D nan lens relevance max 0.000 best rank 1178; 2.0 s
+ITEM 51 of 77 DONE; gain -6.709762 vs its source's -6.709762
+[p256/addition_rl_s1] c 1.000000 size 0.00694565 gain -2.0811 G -2.0811 |dbar| [3.33219, 1.4609, 1.47191, 1.48268, 1.47923] removed [-0.19276, -0.86413, -0.80078, -0.74022, -0.71944] D nan lens relevance max 0.000 best rank 297; 2.0 s
+ITEM 52 of 77 DONE; gain -2.081057 vs its source's -2.081057
+[p256/addition_rl_s2] c 1.000000 size 0.00687508 gain 2.0619 G 2.0619 |dbar| [6.07394, 1.50016, 1.21279, 1.22365, 1.2258] removed [-0.00919, -0.32978, -0.48854, -0.47169, -0.44376] D -0.00445 lens relevance max 0.000 best rank 1496; 2.0 s
+ITEM 53 of 77 DONE; gain 2.061924 vs its source's 2.061924
+[p256/addition_rlg_s0] c 1.000000 size 0.00690408 gain -0.1769 G -0.1769 |dbar| [18.00063, 1.55303, 1.3508, 1.35042, 1.33587] removed [-0.02861, -0.81227, -1.06535, -1.03888, -1.02677] D nan lens relevance max 0.000 best rank 4012; 2.0 s
+ITEM 54 of 77 DONE; gain -0.176891 vs its source's -0.176891
+[p256/addition_rlg_s1] c 1.000000 size 0.00698206 gain 2.1973 G 2.1973 |dbar| [6.76883, 1.32915, 1.27534, 1.27803, 1.26465] removed [-0.00247, -0.41991, -0.41475, -0.4314, -0.42997] D -0.00112 lens relevance max 0.000 best rank 3236; 2.0 s
+ITEM 55 of 77 DONE; gain 2.197346 vs its source's 2.197346
+[p256/addition_rlg_s2] c 1.000000 size 0.00692218 gain 1.0956 G 1.0956 |dbar| [2.78404, 1.44531, 1.29286, 1.29015, 1.27815] removed [-0.25478, -0.78089, -0.9948, -1.00148, -1.00595] D -0.23254 lens relevance max 0.000 best rank 2564; 1.9 s
+ITEM 56 of 77 DONE; gain 1.095634 vs its source's 1.095634
+[p256/addition_sft_s0] c 1.000000 size 0.00695737 gain 6.2769 G 6.2769 |dbar| [27.83024, 1.4958, 1.21882, 1.22218, 1.22633] removed [0.34995, 0.15517, 0.69466, 0.71712, 0.71743] D 0.11430 lens relevance max 0.000 best rank 10527; 2.0 s
+ITEM 57 of 77 DONE; gain 6.276874 vs its source's 6.276874
+[p256/addition_sft_s1] c 1.000000 size 0.00694018 gain 5.8633 G 5.8633 |dbar| [22.85328, 1.34325, 1.20997, 1.2089, 1.2089] removed [0.07647, 0.43823, 0.79729, 0.78585, 0.76225] D 0.13598 lens relevance max 0.000 best rank 349; 2.0 s
+ITEM 58 of 77 DONE; gain 5.863320 vs its source's 5.863320
+[p256/addition_sft_s2] c 1.000000 size 0.00693961 gain 5.9954 G 5.9954 |dbar| [7.96274, 1.1515, 1.14545, 1.14889, 1.143] removed [0.13683, 0.12604, 0.30372, 0.30323, 0.32266] D 0.05382 lens relevance max 0.000 best rank 768; 2.0 s
+ITEM 59 of 77 DONE; gain 5.995439 vs its source's 5.995439
+[p256/brackets_rl_s0] c 1.000000 size 0.00691146 gain 2.4390 G 2.4390 |dbar| [7.21342, 1.30554, 1.31419, 1.32524, 1.32729] removed [-0.0966, -0.84256, -0.96904, -1.02764, -1.06593] D -0.03961 lens relevance max 0.000 best rank 32; 1.9 s
+ITEM 60 of 77 DONE; gain 2.438956 vs its source's 2.438956
+[p256/brackets_rl_s1] c 1.000000 size 0.00691214 gain -3.2961 G -3.2961 |dbar| [11.77742, 1.25865, 1.25776, 1.26847, 1.26731] removed [-0.06561, -2.44886, -2.58926, -2.69979, -2.74703] D nan lens relevance max 0.000 best rank 1037; 2.0 s
+ITEM 61 of 77 DONE; gain -3.296135 vs its source's -3.296135
+[p256/brackets_rl_s2] c 1.000000 size 0.00687592 gain -2.0792 G -2.0792 |dbar| [5.23807, 1.62536, 1.41471, 1.41166, 1.40249] removed [-0.27272, -0.23851, -0.82492, -0.87091, -0.91172] D nan lens relevance max 0.050 best rank 11; 1.9 s
+ITEM 62 of 77 DONE; gain -2.079229 vs its source's -2.079229
+[p256/brackets_rlg_s0] c 1.000000 size 0.00627393 gain -0.9655 G -0.9655 |dbar| [7.67405, 1.25614, 1.27062, 1.28701, 1.29237] removed [-0.0483, -0.14136, -0.22661, -0.26578, -0.29928] D nan lens relevance max 0.000 best rank 67; 2.0 s
+ITEM 63 of 77 DONE; gain -0.965497 vs its source's -0.965497
+[p256/brackets_rlg_s1] c 1.000000 size 0.00611849 gain -4.0313 G -4.0313 |dbar| [11.29261, 1.15265, 1.1202, 1.13689, 1.14032] removed [-0.0091, -0.41741, -0.56726, -0.54279, -0.52044] D nan lens relevance max 0.000 best rank 427; 2.0 s
+ITEM 64 of 77 DONE; gain -4.031287 vs its source's -4.031287
+[p256/brackets_rlg_s2] c 1.000000 size 0.00690056 gain 1.5079 G 1.5079 |dbar| [22.98543, 1.7562, 1.47304, 1.50193, 1.51519] removed [0.14273, -0.16105, -0.14183, -0.1031, -0.08053] D 0.09466 lens relevance max 0.000 best rank 450; 2.0 s
+ITEM 65 of 77 DONE; gain 1.507861 vs its source's 1.507861
+[p256/brackets_sft_s0] c 1.000000 size 0.00688725 gain 7.9532 G 7.9532 |dbar| [10.33907, 1.32572, 1.33466, 1.354, 1.36535] removed [-0.02233, -0.02609, -0.04797, -0.07001, -0.07824] D -0.00281 lens relevance max 0.000 best rank 94; 1.9 s
+ITEM 66 of 77 DONE; gain 7.953193 vs its source's 7.953193
+[p256/brackets_sft_s1] c 1.000000 size 0.00691718 gain 8.6079 G 8.6079 |dbar| [4.23527, 1.18301, 1.16004, 1.1684, 1.17216] removed [-0.14875, -0.31138, -0.30709, -0.38958, -0.44081] D -0.01728 lens relevance max 0.000 best rank 50; 1.9 s
+ITEM 67 of 77 DONE; gain 8.607885 vs its source's 8.607885
+[p256/brackets_sft_s2] c 1.000000 size 0.00688645 gain 9.4433 G 9.4433 |dbar| [4.94209, 1.15125, 1.09389, 1.09261, 1.08984] removed [0.02621, 0.63851, 0.72844, 0.64637, 0.56948] D 0.07714 lens relevance max 0.000 best rank 202; 1.9 s
+ITEM 68 of 77 DONE; gain 9.443334 vs its source's 9.443334
+[p256/sequence_rl_s0] c 1.000000 size 0.00694355 gain 2.3764 G 2.3764 |dbar| [1.89257, 1.46116, 1.11021, 1.11119, 1.10249] removed [-0.0143, -0.01806, -0.05339, -0.05948, -0.05702] D -0.00602 lens relevance max 0.000 best rank 265; 2.3 s
+ITEM 69 of 77 DONE; gain 2.376352 vs its source's 2.376352
+[p256/sequence_rl_s1] c 1.000000 size 0.00690279 gain 2.7872 G 2.7872 |dbar| [26.51792, 1.53836, 1.07811, 1.07254, 1.07206] removed [-0.03437, -0.05854, 0.22251, 0.24549, 0.22154] D 0.08808 lens relevance max 0.000 best rank 1376; 2.0 s
+ITEM 70 of 77 DONE; gain 2.787179 vs its source's 2.787179
+[p256/sequence_rl_s2] c 1.000000 size 0.00694954 gain 2.0337 G 2.0337 |dbar| [31.7907, 1.96385, 1.13437, 1.13592, 1.12917] removed [-0.05143, -0.06004, -0.03923, -0.04146, -0.04593] D -0.01929 lens relevance max 0.000 best rank 94; 1.9 s
+ITEM 71 of 77 DONE; gain 2.033661 vs its source's 2.033661
+[p256/sequence_rlg_s0] c 1.000000 size 0.00689685 gain 2.9598 G 2.9598 |dbar| [21.33005, 2.02369, 1.21286, 1.21567, 1.21218] removed [0.06596, 0.01158, 0.04763, 0.03645, 0.03163] D 0.02229 lens relevance max 0.000 best rank 689; 2.0 s
+ITEM 72 of 77 DONE; gain 2.959818 vs its source's 2.959818
+[p256/sequence_rlg_s1] c 1.000000 size 0.00690141 gain 2.5874 G 2.5874 |dbar| [16.22695, 1.14869, 1.129, 1.12345, 1.12544] removed [-0.00443, 0.13281, 0.14626, 0.14267, 0.10803] D 0.05653 lens relevance max 0.000 best rank 599; 1.9 s
+ITEM 73 of 77 DONE; gain 2.587434 vs its source's 2.587434
+[p256/sequence_rlg_s2] c 1.000000 size 0.00694848 gain 3.0030 G 3.0030 |dbar| [8.81132, 1.67895, 1.10727, 1.11011, 1.10391] removed [-0.01644, -0.07585, 0.10571, 0.10273, 0.09622] D 0.03520 lens relevance max 0.000 best rank 238; 2.1 s
+ITEM 74 of 77 DONE; gain 3.003020 vs its source's 3.003020
+[p256/sequence_sft_s0] c 1.000000 size 0.00691381 gain 5.8462 G 5.8462 |dbar| [24.21732, 1.5871, 1.05095, 1.04932, 1.05251] removed [0.00659, 0.19253, 0.57189, 0.55695, 0.55815] D 0.09782 lens relevance max 0.000 best rank 41; 1.9 s
+ITEM 75 of 77 DONE; gain 5.846209 vs its source's 5.846209
+[p256/sequence_sft_s1] c 1.000000 size 0.00699606 gain 6.2667 G 6.2667 |dbar| [6.30274, 1.15361, 1.08409, 1.08505, 1.08064] removed [0.06403, 0.57086, 0.60094, 0.58743, 0.59572] D 0.09589 lens relevance max 0.000 best rank 74; 1.9 s
+ITEM 76 of 77 DONE; gain 6.266709 vs its source's 6.266709
+[p256/sequence_sft_s2] c 1.000000 size 0.00700569 gain 5.9015 G 5.9015 |dbar| [18.70914, 1.0954, 0.99174, 0.9933, 0.98759] removed [0.03713, 0.40043, 0.50467, 0.48362, 0.48035] D 0.08552 lens relevance max 0.000 best rank 459; 2.0 s
+ITEM 77 of 77 DONE; gain 5.901525 vs its source's 5.901525
+FINISHED amend2 run; peak GPU 4.9 GB
+peak host RSS 6.3 GB
+=== FINISHED (exit 0) — results in /mnt/nw/home/e.agnew/commute-agents/compare-lead/experiments/adl/results/amend2 ===
