@@ -69,7 +69,8 @@ within 0.01 of zero.
 Nine pairs, with two pairs sharing one reuse side, is a small count. The lens's control cleared its bar by two millionths, and
 its logit lens did not name the task, so the direction it removes is real in effect but not readable as the task. The lens may
 follow how far the output moved. The new-skill fine-tunes moved the output further on most pairs, and the write share's own
-gaps survive a KL control (P2.58), but the lens's were not tested against KL. No independent recomputation was made. That is
+gaps survive a KL control (P2.58), but the lens's were not tested against KL. An independent recomputation from the saved item files was
+made afterwards, in P2.60, and reproduced every number here; see "Later checks" below. That is
 needed before this enters the paper's answer paragraph.
 
 ## Surprises
@@ -102,3 +103,11 @@ read as answer log-odds; random directions from pretraining text; no steered gen
 - The lens gap against output KL.
 - The steering-share version.
 - An independent check of the rank correlation.
+
+## Later checks (P2.60)
+
+Three checks followed, all descriptive, in `reports/analyses/2026-11-22_analysis_p2-60-adl-checks.md`. An independent
+recompute from the item files reproduced every gap, correlation and sign count above. Regressing the lens score on output
+KL left eight of nine pair gaps outside the random floor, so the agreement is not output size. But read on new states, the
+lens did not separate copy from prior-matched ciphers, where the other cheap readings did, and on procedural fine-tunes it
+ranked states against definition (b). The lens should not be cited as tracking the definition in general.
