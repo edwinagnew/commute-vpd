@@ -56,13 +56,13 @@ def made_up() -> list[dict[str, Any]]:
             for s in range(3):
                 rb = base + (0 if math.isnan(shift) else shift) + rng.gauss(0, 0.05) - (0.4 if math.isnan(shift) else 0)
                 share = float("nan") if arm == "random" else rb * 0.9 + rng.gauss(0, 0.05)
-                pts.append({"file": f"{task}_{arm}_s{s}", "task": task, "arm": arm, "R_b": rb, "share": share, "prior": -2 + 2 * base + rng.gauss(0, 0.1),
+                pts.append({"state": f"{task}_{arm}_s{s}", "task": task, "arm": arm, "R_b": rb, "share": share, "prior": -2 + 2 * base + rng.gauss(0, 0.1),
                             "steering": float("nan") if arm == "random" else 0.5 + rng.gauss(0, 0.2), "erank": (700 if arm == "random" else 560) + rng.gauss(0, 10),
                             "neuron": float("nan") if arm == "random" else 0.02 + rng.gauss(0, 0.01),
                             "neuron_kmatched": float("nan") if arm == "random" else 0.01 + rng.gauss(0, 0.005),
                             "untrained": float("nan") if arm == "random" else 0.1 + rng.gauss(0, 0.05), "kl": (0.05 if arm == "random" else 0.4) + abs(rng.gauss(0, 0.1))})  # fmt: skip
     for s, rb in enumerate((0.7, 0.72, 0.78)):
-        pts.append({"file": f"repeat_rl_s{s}", "task": "repeat (E220)", "arm": "rl", "R_b": rb, "share": rb, "prior": 3.6, "steering": 0.3, "erank": 534,
+        pts.append({"state": f"repeat_rl_s{s}", "task": "repeat (E220)", "arm": "rl", "R_b": rb, "share": rb, "prior": 3.6, "steering": 0.3, "erank": 534,
                     "neuron": 0.02, "neuron_kmatched": 0.005, "untrained": 0.1, "kl": 3.1})  # fmt: skip
     return pts
 

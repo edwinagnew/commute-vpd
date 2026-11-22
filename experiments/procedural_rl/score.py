@@ -43,10 +43,10 @@ def num(x: Any) -> float:
 
 
 def states() -> dict[str, dict[str, Any]]:
-    """This run's state readings and E222's of E220's RL repeat states, keyed by the state file they read."""
+    """This run's state readings and E222's of E220's RL repeat states, keyed by the stem of the state file they read."""
     ours = [json.loads(f.read_text()) for f in sorted((RESULTS / "read").glob("*.json"))]
     e222 = [json.loads(f.read_text()) | {"task": "repeat (E220)"} for f in sorted(E222.glob("repeat_rl_s*.json"))]
-    return {s["file"]: s for s in ours + e222}
+    return {Path(s["file"]).stem: s for s in ours + e222}
 
 
 # ----------------------------------------------------------------------------- run 1
@@ -78,21 +78,22 @@ def run1(st: dict[str, dict[str, Any]], R: dict[str, Any]) -> dict[str, Any]:
 
 
 def load_rb(path: Path) -> dict[str, float]:
-    """FILL IN once definition-lead's R_b format is known: {state file, as the readings record it: R_b}. The guess
-    below reads {"R_b": {file: value}}; any other shape stops here, naming its keys."""
+    """{state name (its file's stem, e.g. sequence_rl_s0, repeat_rl_s0): R_b}. Reads P1.49's form
+    (experiments/option_b_rescore/results/summary.json: items.<name>.R_b["bar 0.1 (filed)"]); the one function to change
+    if definition-lead writes R_b for these states in another shape. Any other shape stops here, naming its keys."""
     d = json.loads(path.read_text())
-    if not isinstance(d.get("R_b"), dict):
+    if not isinstance(d.get("items"), dict):
         raise SystemExit(f"load_rb: {path} has keys {sorted(d)}; write its loader here")
-    return {k: float(v) for k, v in d["R_b"].items()}
+    return {k: float(v["R_b"]["bar 0.1 (filed)"]) for k, v in d["items"].items() if isinstance(v.get("R_b"), dict)}
 
 
 def run2(st: dict[str, dict[str, Any]], rb: dict[str, float]) -> dict[str, Any]:
     """Per proxy: Spearman with R_b over the states both read (a ratio under the floor is not read), and every point."""
-    pts = [{"file": f, "task": s["task"], "arm": s["arm"], "R_b": rb[f], **{p: num(g(s)) for p, g in GET.items()}} for f, s in st.items() if f in rb]
+    pts = [{"state": n, "task": s["task"], "arm": s["arm"], "R_b": rb[n], **{p: num(g(s)) for p, g in GET.items()}} for n, s in st.items() if n in rb]
     out: dict[str, Any] = {"n_states": len(pts), "missing_R_b": sorted(set(st) - set(rb)), "proxies": {}}
     for p in GET:
-        a = {q["file"]: q[p] for q in pts if math.isfinite(q[p])}
-        out["proxies"][p] = AN.spearman(a, {q["file"]: q["R_b"] for q in pts})
+        a = {q["state"]: q[p] for q in pts if math.isfinite(q[p])}
+        out["proxies"][p] = AN.spearman(a, {q["state"]: q["R_b"] for q in pts})
     return out | {"points": pts}
 
 
