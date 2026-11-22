@@ -1,0 +1,18 @@
+<article class="exp" id="e258">
+<div class="top"><span class="id">E258</span><span class="chip missed">missed</span><h3>Read part by part, does the model's behaviour agree with the write share that a pure strength edit is reused?</h3><span class="when">2026-11-21 · cell P1.49 (filled), definition-lead, descriptive, no independent check · <code>experiments/rb_member_test</code></span></div>
+<p class="one"><strong>The question.</strong> The write share (card E257) reads the two pure strength edits at 0.76. A reuse test that looks at behaviour should agree: swapping a changed part for the base model's own part at its best strength should give back that part's effect on the output. Does it, one part at a time?</p>
+<p class="one"><strong>What we did.</strong> On seven hand-built edits, every changed part of the circuit was swapped, alone, for the base model's part at its best strength. We measured how much of the part's effect on the output (its KL divergence) this gave back, against removing the part's change outright, and averaged over parts weighted by their change. A part passes if the swap leaves at most a tenth of its effect.</p>
+<p class="one"><strong>What we found.</strong> No part passed on any edit. The gain edit by two reads 0.011, the same as a random update, against 0.76 on the write share; the gain edit by ten reads -0.50 and the rebuilt edit -0.41, against 0.76 and 0.63. The few new edits and random updates read 0.008 to 0.023. The negatives come from single parts: on the gain edit by ten one part with 1.0% of the change pushes the output to 1.71 times the base model's divergence, against 0.034 for removal.</p>
+<p class="one"><strong>What it means.</strong> The per-part behavioural test fails the strength control that the write share passes, so it cannot be the behavioural check of option b. Most parts barely move the output alone, so a few large ones decide the result. Joint swaps of groups of parts were not run.</p>
+<figure><img src="fig/e258_behaviour_vs_write.png" alt="Behavioural share beside the write share, built edits and trained pairs"><figcaption><strong>Does behaviour, read part by part, see the strength edits as reused? No.</strong> Left, the built edits: the blue write share puts both gain edits at 0.76 and the rebuilt edit at 0.63, while the orange behavioural share sits on the random line or below zero. Right, the trained pairs of E259.</figcaption></figure>
+<dl class="fields">
+<dt>Run</dt><dd>Four RunPod H100 shards after two rehearsal pods, $25.55. The first stage's rule (do-nothing KL exactly 0) read 1.7e-11 in rehearsal; it was amended before any scored read to the measured floor of 8.3e-11, and every job read 1.7e-11.</dd>
+<dt>Found</dt><dd><ul>
+<li>The behavioural share misses the strength edits: 0.011, -0.50 and -0.41 against 0.76, 0.76 and 0.63 on the write share.</li>
+<li>The median part's fitted strength is within 0.04 of 1, so swapping it equals removing its change; the weighting hands the result to a few large parts.</li>
+<li>The largest part of the gain edit by two (0.87 of the change) gives back only 0.094 of its effect at its fitted strength, a measurement well above the noise floor.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 1: the pending decision "Counting only what changed"; the behavioural reading cannot stand in for the write share.</dd>
+<dt>Moved on</dt><dd>No verdict is given and the wording is unchanged. Behaviour read jointly over groups of parts, or at a strength fitted to the output, is not run. Record: <code>reports/analyses/2026-11-21_analysis_behaviour-vs-write.md</code>; <code>experiments/rb_member_test/results/summary.json</code>; <code>experiments/TRIED.md</code>.</dd>
+</dl>
+</article>

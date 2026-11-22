@@ -7,7 +7,7 @@
 <div class="k">Question for you · definition-lead · new 2026-11-21</div>
 <h3>Counting only what changed: no version yet reads a pure strengthening as reused</h3>
 <p>You chose to count reuse only over the parts the fine-tune changed, each weighted by its change. We measured that choice, $0, on the saved built edits. We expected the two pure-gain reuse edits near 1, the do-nothing at 1, and the new and random edits low. It did not come out as expected: no version we built reads a pure strengthening near 1.</p>
-<p class="small">Running tonight: the cheap write-share reading. The behaviour test of each changed part on the built edits (about 3.5 h of one GPU) starts once you approve it, at the end of this card. Your answer chooses the reading.</p>
+<p class="small">Nothing runs until this is decided. Measured since, the same night: the write share on 94 trained fine-tunes (<a href="#e257">E257</a>) and the behaviour test of each changed part on the built edits and three trained pairs (<a href="#e258">E258</a>, <a href="#e259">E259</a>); the results are in the box below the options. Your answer chooses the reading.</p>
 <table class="mini">
 <tr><th>Edit</th><th>Wording A</th><th>Untouched share</th><th>Search-based</th><th>Order-free</th></tr>
 <tr><td>do-nothing</td><td>1</td><td>1</td><td>1</td><td>1</td></tr>
@@ -25,10 +25,25 @@
 </ul>
 <p><strong>Question.</strong> Does the definition test each changed part by behaviour (does the model's output stay put when that part alone is replaced by the base model's own part at its best strength), with the order-free write share as its cheap reading, or by write (the order-free write share itself)? Only you change the wording. No recommendation: this is a premise question.</p>
 <ul>
-<li><strong>(a) By behaviour.</strong> About 3.5 h of one GPU for the built edits (plus about 10 h for the random ones), needs your approval below. A per-part bar is then a definition choice. The write share becomes a method checked against it.</li>
+<li><strong>(a) By behaviour.</strong> The per-part version has now run on the built edits and three trained pairs (below) and fails the strength control. A per-part bar is then a definition choice. The write share becomes a method checked against it.</li>
 <li><strong>(b) By write.</strong> The write share is the definition. Cheap, minutes per model. The pure strength edits read 0.76 under it, and the paper states that VPD reads a neuron rescale as about three quarters a strength change.</li>
 </ul>
-<p>For you: the behavioural test of each part needs a run cell you approve (proposal 52). Run <code>~/commute-agents/fleet/cell approve 52</code>, which approves the about 3.5 h one-GPU behavioural per-part test on the built edits, cap $40.</p>
+<p><strong>Measured since (2026-11-21 night).</strong> The behaviour test of each changed part has run, on the built edits and on three trained pairs. It swaps one changed part at a time for the base model's part at its best strength and asks how much of that part's effect on the output goes away, weighted by change as the write share is. It reads the pure strength edits at or below a random update, so it fails the strength control that the write share passes. Most parts barely move the output alone and the few that do decide the result: on the gain edit by ten one part pushes the output further than removing its change, which drives the reading below zero. No part passed the per-part bar on any edit.</p>
+<table class="mini">
+<tr><th>Edit</th><th>By behaviour, one part at a time</th><th>By write (order-free version)</th></tr>
+<tr><td>gain x2 (reuse)</td><td>0.011</td><td>0.76</td></tr>
+<tr><td>gain x10 (reuse)</td><td>-0.50</td><td>0.76</td></tr>
+<tr><td>rebuilt (reuse)</td><td>-0.41</td><td>0.63</td></tr>
+<tr><td>few parts (new)</td><td>0.011</td><td>0.012</td></tr>
+<tr><td>thin (new)</td><td>0.023</td><td>0.019</td></tr>
+<tr><td>random, matched size</td><td>0.011</td><td>0.011</td></tr>
+<tr><td>random, matched KL</td><td>0.008</td><td>0.011</td></tr>
+</table>
+<ul>
+<li><strong>Trained pairs</strong> (copy and lookup, copy and prior cipher, lowercase and the ciphers): behaviour reads 0.004 to 0.10, within 0.06 of the write share on every fine-tune, and neither reading puts the reuse side above the new side by more than 0.04.</li>
+<li><strong>Reinforcement learning against supervised</strong> on the same behaviour (the saved repeat updates, write share only): the reinforcement-learning updates read 0.10 to 0.22, the supervised ones on the same task 0.015 to 0.023, and a shuffled-reward control 0.03 to 0.05.</li>
+</ul>
+<p class="small">The question above is unchanged. Page <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-21_analysis_behaviour-vs-write.md">behaviour against write</a>; cards <a href="#e257">E257</a>, <a href="#e258">E258</a>, <a href="#e259">E259</a>.</p>
 <p class="small">Card <code>reports/decisions/2026-11-21_decision_rb-gain-control.md</code>; <a href="https://github.com/edwinagnew/commute-vpd/blob/main/experiments/thin_edit_diagnosis/results/summary.json">E247 summary</a>; <a href="https://github.com/edwinagnew/commute-vpd/tree/main/experiments/option_b_rescore">rescoring folder</a> (being written now); <a href="https://github.com/edwinagnew/commute-vpd/blob/main/reports/analyses/2026-11-21_analysis_thin-edit-diagnosis.md">result page</a>.</p>
 </div>
 </div>

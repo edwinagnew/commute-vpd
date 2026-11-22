@@ -1,0 +1,17 @@
+<article class="exp" id="e259">
+<div class="top"><span class="id">E259</span><span class="chip uninf">no answer</span><h3>On trained pairs, does behaviour read part by part separate the reuse side from the new side?</h3><span class="when">2026-11-21 · cell P1.51 (filled), definition-lead, descriptive, no independent check · <code>experiments/rb_member_pairs</code></span></div>
+<p class="one"><strong>The question.</strong> The write share puts every trained fine-tune near a random update (card E257). If behaviour, read one changed part at a time as in E258, sees reuse that the write share misses, it should put the reuse side of a pair clearly above the new side.</p>
+<p class="one"><strong>What we did.</strong> We ran E258's test on three of the nine task pairs: copy against lookup, copy against a prior-matched cipher, and lowercase against two ciphers, every saved seed, 18 fine-tunes. Each had 2,000 changed parts sampled, with a size-matched random update beside it. A part passes if the swap leaves at most a tenth of its effect.</p>
+<p class="one"><strong>What we found.</strong> Behaviour reads 0.004 to 0.096 on the 18 fine-tunes, at most 0.055 from the write share, and no part passed on any of them, the random update included. With seeds averaged, the reuse side minus the new side reads -0.023 on copy and lookup, 0.037 on copy and the prior-matched cipher and 0.028 on lowercase and the ciphers. The random update reads 0.0075 with a standard error of 0.0020, against 0.011 when every part was read.</p>
+<p class="one"><strong>What it means.</strong> Behaviour and write agree on trained pairs and neither separates the two sides, so the write share's near-random readings are not hiding a behavioural signal. One caveat: half to two thirds of the sampled parts on the copy, lookup and prior-cipher items sit under the noise floor, an estimated 0.10 to 0.25 of the change, and are not counted.</p>
+<dl class="fields">
+<dt>Run</dt><dd>Four RunPod H100 pods after a rehearsal, $8.25. The first-stage check was as in E258, with the smaller of two floors (3.5e-10) applying.</dd>
+<dt>Found</dt><dd><ul>
+<li>The behavioural share and the write share agree within 0.055 on every one of 18 fine-tunes.</li>
+<li>The reuse side leads the new side by at most 0.037 on any pair, and trails by 0.023 on copy and lookup.</li>
+<li>The sampled estimate on the random update is inside two standard errors of the full read, so the sampling is sound.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 1: the pending decision "Counting only what changed"; also the figure in card E258.</dd>
+<dt>Moved on</dt><dd>No verdict is given. The other six pairs and the five key tasks are not read. Record: <code>reports/analyses/2026-11-21_analysis_behaviour-vs-write.md</code>; <code>experiments/rb_member_pairs/results/summary.json</code>; <code>experiments/TRIED.md</code>.</dd>
+</dl>
+</article>
