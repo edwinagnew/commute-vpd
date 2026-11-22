@@ -5,14 +5,14 @@ Plan `reports/plans/2026-11-21_plan_procedural-rl-guarded-card.md`, card `~/comm
 
 We trained the 67M model on three small procedural tasks, by reinforcement learning and by supervised training on
 demonstrations, all to one update size. Each state was read with definition (b) and with seven cheap proxies, and RL and
-supervised training read alike on all three tasks, both well above a random update of the same size. For claim 2, the
+supervised training read alike on two tasks, with no call on addition, where RL tends higher but under the filed gap; all sit well above a random update of the same size. For claim 2, the
 output KL and the effective rank follow definition (b) best, two decomposition shares follow it moderately, and the prior
 follows it no better than chance.
 
 ## The answer
 
 At this update size, definition (b) does not tell RL from supervised training on procedural tasks. Both sit close
-together on every task, far above a random update of the same size. The earlier repeat task, where
+together on sequence and brackets; on addition RL tends higher, but by less than the filed gap, so there is no call. All are far above a random update of the same size. The earlier repeat task, where
 RL read about ten times supervised training, does not carry over. The re-gating share, a proxy built to follow mechanism,
 had called RL above supervised training on the sequence task, where definition (b) reads them alike. Across trained
 states, the output KL tracks definition (b) best and the prior does not track it.
