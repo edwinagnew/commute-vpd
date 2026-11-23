@@ -70,7 +70,7 @@ Total 12 x 450 + 24 x 740 = 23,200 s ≈ **6.4 H100-hours**.
 once; otherwise 4 H100 pods (`.claude/CLAUDE.md` → Compute: speed over cost; E268 moved to pods for the same reason).
 
 ## Rehearsal ($0)
-`sbatch --comment='E### rehearse: full sizes, stage 0 + L1_s0 + T1_s0' cluster/realtext_eb.sbatch items rh --only L1_s0 T1_s0`
+`sbatch --comment='E273 rehearse: full sizes, stage 0 + L1_s0 + T1_s0' cluster/realtext_eb.sbatch items rh --only L1_s0 T1_s0`
 on debug: full read sizes, stage 0 then one label and one text item. It measures time per item of each kind (item JSON
 `seconds`, stage 0's `est_seconds_per_item`), peak GPU memory (`peak_gpu_gb`; E268 peaked at 11.3-11.9 GB on 512 x 41
 and 256 x 64; 500 x 64 roughly doubles the cache, so ~20 GB expected, inside an L40's 48 GB) and the identity floor.

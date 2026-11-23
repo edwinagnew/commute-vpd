@@ -1,4 +1,4 @@
-"""E### (cell P2.64) figure from results/summary.json (run.py --stage summary): figures/eb_k.png.
+"""E273 (cell P2.64) figure from results/summary.json (run.py --stage summary): figures/eb_k.png.
 
 Left: E_b over K per task side, the side built to need what M holds above its twin, one dot per seed, the fine-tunes
 beside their matched random updates (E246's draws at the same per-matrix norms). A state whose K has no changed member

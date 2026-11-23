@@ -1,7 +1,7 @@
 #!/bin/bash
-# E### realtext_eb (cell P2.64). Rehearsal ($0, full read sizes: stage 0 then one label and one text item, each timed,
+# E273 realtext_eb (cell P2.64). Rehearsal ($0, full read sizes: stage 0 then one label and one text item, each timed,
 # peak GPU memory in its item JSON; a rerun skips written items, so a timed-out job resumes):
-#   sbatch --comment='E### rehearse: full sizes, stage 0 + L1_s0 + T1_s0' cluster/realtext_eb.sbatch items rh --only L1_s0 T1_s0
+#   sbatch --comment='E273 rehearse: full sizes, stage 0 + L1_s0 + T1_s0' cluster/realtext_eb.sbatch items rh --only L1_s0 T1_s0
 # Later shards (if the rehearsal's per-item time fits debug): cluster/realtext_eb.sbatch items c<I> --shard I N
 #SBATCH --job-name=commute-realtext-eb
 #SBATCH --partition=compute

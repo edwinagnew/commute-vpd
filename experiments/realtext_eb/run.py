@@ -1,4 +1,4 @@
-"""E### (cell P2.64; user via writeup-lead, 2026-11-22, aim (a): "if we can detect reuse/new on realistic fine-tunes"):
+"""E273 (cell P2.64; user via writeup-lead, 2026-11-22, aim (a): "if we can detect reuse/new on realistic fine-tunes"):
 the write share E_b over the needed set K of the frozen definition (theory/2026-11-22_definition_frozen.md, section 2)
 on the saved 67M real-text fine-tunes of P2.38 run 2 (E211), each beside its matched random update (E246's draw at the
 fine-tune's per-matrix norms). Descriptive: read all at once, no verdict. Plan
