@@ -105,6 +105,11 @@ diagonal's steps, SST-2 is dropped and the cell falls to the filed outcomes with
 base's head start (its uncued gain over M at step 0), and each install's absolute uncued probability is described
 beside the 0.2-decade lock, never in place of it.
 
+**Third task (amendment 2026-11-22f).** Yoruba and the cue-before-key cipher both failed, so the cell runs as addition
+and SST-2 under the two-task rule, and one built task is tried beside it: number parity (" 347 is" then " even" or
+" odd", training and held numbers disjoint). If its lock holds, the 3x3 cross with it is the primary result under the
+three-task rule, and the two-task cross is reported beside it; if not, the two tasks stand as a descriptive result.
+
 What each reading is blind to: all read the update against the base's weights, so a diagonal update that rebuilds the
 skill elsewhere instead of re-opening the installed one would still read as reuse by history; the transplant control
 is what rules that out. Nothing here says the installed skill looks like a skill pretraining would have made.
