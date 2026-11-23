@@ -177,8 +177,8 @@ def read_item(w: Any, item: str, cfg: Config, kc: Any, floor: float) -> None:
         Ks = torch.from_numpy(ks[0])
         out |= {"E_b_Kstar": SI.explained_share(num, den, dd, Ks & ch), "size_Kstar": int(Ks.sum()), "size_both": int((K & Ks).sum()),
                 "Kstar_file": str(ks[1].relative_to(EXPERIMENTS.parent))}  # fmt: skip
-    np.savez_compressed(RESULTS / "large" / f"items_{fname(item)}.npz", in_K=K.numpy(), first_flip=nd.first_flip.numpy(), flips=nd.scan.flips.numpy(),
-                        num=num.numpy(), den=den.numpy(), dd=dd.numpy(), changed=ch.numpy(), margin=mg.numpy())  # fmt: skip
+    np.savez_compressed(RESULTS / "large" / f"items_{fname(item)}.npz", in_K=K.cpu().numpy(), first_flip=nd.first_flip.cpu().numpy(), flips=nd.scan.flips.cpu().numpy(),
+                        num=num.cpu().numpy(), den=den.cpu().numpy(), dd=dd.cpu().numpy(), changed=ch.cpu().numpy(), margin=mg.cpu().numpy())  # fmt: skip
     out |= {"seconds": time.time() - t0, "cases_per_s": nd.scan.rows / nd.scan.seconds, "peak_gpu_gb": torch.cuda.max_memory_allocated() / 2**30}
     write_stage(path, out)
     log(f"{item}: E_b over K {out['E_b_K']:.6f}, over K* {out.get('E_b_Kstar', float('nan')):.6f}; |K| {out['size_K']} "
