@@ -178,7 +178,8 @@ def read_item(w: Any, item: str, cfg: Config, kc: Any, floor: float) -> None:
     out["halves"] = {name: {"size_K": int(h.sum()), "n_changed_K": int((h & ch).sum()), "E_b_K": SI.explained_share(num, den, dd, h & ch)}
                      for name, h in (("01", (gm & 0b0011) > 0), ("23", (gm & 0b1100) > 0))}  # fmt: skip
     if a["Kstar"] is not None:
-        out |= KN.readings(a, K, kc.kept_floor) | {"E_b_Kstar_saved": a["E_b_saved"], "E_b_Kstar_rel_dev": KN.rel(out["E_b_Kstar"], a["E_b_saved"])}
+        out |= KN.readings(a, K, kc.kept_floor)
+        out |= {"E_b_Kstar_saved": a["E_b_saved"], "E_b_Kstar_rel_dev": KN.rel(out["E_b_Kstar"], a["E_b_saved"])}
     np.savez_compressed(RESULTS / "large" / f"items_{fname(item)}.npz", in_K=K.numpy(), first_flip=nd.first_flip.numpy(), flips=nd.scan.flips.numpy(),
                         group_mask=gm.numpy(), **({"num": num.numpy(), "den": den.numpy(), "dd": dd.numpy(), "changed": ch.numpy()} if a["Kstar"] is None else {}))  # fmt: skip
     out |= {"seconds": time.time() - t0, "cases_per_s": nd.scan.rows / nd.scan.seconds, "peak_gpu_gb": torch.cuda.max_memory_allocated() / 2**30}
