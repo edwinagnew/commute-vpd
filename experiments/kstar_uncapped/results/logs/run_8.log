@@ -1,0 +1,48 @@
+E269 start, shard (8, 10): ['p256/sequence_rlg_s2']; E226 settings {'alpha': 0.9, 'split_tol': 1e-06, 'batch': 32, 'grade_batch': 8, 'reranks': 2, 'eval_cap': 1000000000, 'chunk_div': 8, 'split_seed': 186001, 'reuse': ('x2', 'x10', 'moved', 'rebuilt'), 'new': ('new_few', 'new_thin')}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+p256/sequence_rlg_s2: 256 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 4.79791, KL(F || M) 2.05928826; gates {'all': 1.5846164842514554e-06, 'none': 0.0}; worst split check 4.5e-07; split shares over all 24 {'write2': 0.49560113490966606, 'read2': 0.29219824535624817, 'outside2': 0.020663934622669942, 'cross_wr2': 0.1915366851120563, 'cross_out2': -6.403859141093743e-13}
+    ranking 0: prefix 28617, 15 evaluations
+    ranking 1: prefix 20196, 30 evaluations
+    ranking 2: prefix 17731, 45 evaluations
+    polish: 500 evaluations, 764 of 17731 tried, |K| 17059, chunk 1
+    polish: 1000 evaluations, 1626 of 17731 tried, |K| 16307, chunk 16
+    polish: 1500 evaluations, 2418 of 17731 tried, |K| 15616, chunk 8
+    polish: 2000 evaluations, 2995 of 17731 tried, |K| 15168, chunk 1
+    polish: 2500 evaluations, 3610 of 17731 tried, |K| 14675, chunk 4
+    polish: 3000 evaluations, 4259 of 17731 tried, |K| 14158, chunk 1
+    polish: 3500 evaluations, 5106 of 17731 tried, |K| 13435, chunk 1
+    polish: 4000 evaluations, 5770 of 17731 tried, |K| 12921, chunk 4
+    polish: 4500 evaluations, 6514 of 17731 tried, |K| 12298, chunk 2
+    polish: 5000 evaluations, 7050 of 17731 tried, |K| 11895, chunk 1
+    polish: 5500 evaluations, 7645 of 17731 tried, |K| 11431, chunk 2
+    polish: 6000 evaluations, 8197 of 17731 tried, |K| 11010, chunk 1
+    polish: 6500 evaluations, 8768 of 17731 tried, |K| 10560, chunk 2
+    polish: 7000 evaluations, 9313 of 17731 tried, |K| 10144, chunk 1
+    polish: 7500 evaluations, 9773 of 17731 tried, |K| 9845, chunk 2
+    polish: 8000 evaluations, 10262 of 17731 tried, |K| 9535, chunk 1
+    polish: 8500 evaluations, 10741 of 17731 tried, |K| 9228, chunk 4
+    polish: 9000 evaluations, 11231 of 17731 tried, |K| 8880, chunk 1
+    polish: 9500 evaluations, 11697 of 17731 tried, |K| 8564, chunk 1
+    polish: 10000 evaluations, 12171 of 17731 tried, |K| 8250, chunk 1
+    polish: 10500 evaluations, 12625 of 17731 tried, |K| 7963, chunk 2
+    polish: 11000 evaluations, 13081 of 17731 tried, |K| 7684, chunk 1
+    polish: 11500 evaluations, 13552 of 17731 tried, |K| 7380, chunk 2
+    polish: 12000 evaluations, 13974 of 17731 tried, |K| 7120, chunk 8
+    polish: 12500 evaluations, 14384 of 17731 tried, |K| 6889, chunk 1
+    polish: 13000 evaluations, 14823 of 17731 tried, |K| 6654, chunk 1
+    polish: 13500 evaluations, 15216 of 17731 tried, |K| 6462, chunk 2
+    polish: 14000 evaluations, 15635 of 17731 tried, |K| 6226, chunk 1
+    polish: 14500 evaluations, 16045 of 17731 tried, |K| 6022, chunk 1
+    polish: 15000 evaluations, 16477 of 17731 tried, |K| 5795, chunk 2
+    polish: 15500 evaluations, 16872 of 17731 tried, |K| 5615, chunk 1
+    polish: 16000 evaluations, 17282 of 17731 tried, |K| 5431, chunk 1
+    polish: 16500 evaluations, 17694 of 17731 tried, |K| 5297, chunk 1
+  p256/sequence_rlg_s2 main: |K*| 5289 (prefix 17731), R read 0.999406 (prefix 0.999207), R all 0.999595, f 0.9996, site-remainder share 0.0008, graft share 0.0000; 16543 evaluations, 6220 s
+p256/sequence_rlg_s2: done in 6234 s; peak GPU memory 6.59 GB
+ITEM 1 of 1 DONE (p256/sequence_rlg_s2): reading read, |K*| 5289, 16543 evaluations, capped False, 6234 s
+E269 DONE
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/kstar_uncapped/results ===
