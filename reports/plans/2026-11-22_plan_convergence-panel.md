@@ -117,6 +117,20 @@ shared `src/commute/panel.py`; rules `results/predictions.json`; card `card.md`;
   are expected to drop the same way in the wide set. The reuse tier is thin (pile, code and british drop out of the
   nine), and this weakens H1. Amendments 6 and 7 since score every held gain at the task's read positions and retrain
   the tasks whose mask changed; select then drops whichever still miss their floor.
+- **Amendment 8 (2026-11-22, whip-lead's 23:55 message, user away; before any mixture read).** The mixture is read at
+  the size "hi" target (0.0113, the nine set's own rung, +-10%, held gain over each mix's floor), not at KL "hi": no
+  mix save came within 10% of KL 0.256 (`selection.json` mix picks empty; the mixes' largest KL is 0.19-0.22). The 0%
+  and 100% ends are lower's and yoruba's size "hi" picks; size is now the matched variable (reported, not called) and
+  KL is called like a reading; the filed prediction is unchanged. `run.py select mix` writes the picks to
+  `results/mix_selection.json` alone (the nine set's `selection.json` and `dropped.json` stay as written), `read mixNN`
+  reads them, and `score.py` refuses unless that file predates every mix read. *The thin reuse tier, before scoring.*
+  After drops, kl_hi keeps 5 tasks (lower, french, conll, squad, yoruba), kl_lo 3 (lower, french, yoruba), and both
+  size sets 7 (british, lower, topic, french, conll, squad, yoruba); pile and code are kept nowhere. So the reuse tier
+  is lower alone in the KL sets, and lower and british in the size sets. On the kept consensus tiers the critical
+  tau-b is 0.949 at n = 5 (only the tier's exact order reaches it; power 0.06 at a true tau of 0.3, 0.14 at 0.5) and
+  0.651 at n = 7 (power 0.16 and 0.37); at n = 3 no tau-b can reach p <= 0.05 (a perfect order has p = 1/6), and
+  kl_lo is under the five-task minimum anyway. The write-up says: the panel holds only tasks that measurably learn on
+  held data at their read positions, so it leans to the middle and new tiers.
 - Edge cases run on a stub before filing (score.py --stub; since Amendment 3, `--results DIR` on run.py's read shape): a dropped task, a zero-spread reading, a nan seed, ties
   (tier codes), n = 4, the prior with no common support. All gave the calls the rules name.
 

@@ -15,15 +15,17 @@ filed stop prints "STOP: ..." and exits 1. A rerun skips what is written.
                  the set's tasks; the nine (filed) set, with Amendment 4's mixes at its KL "hi" target and the trajectory
                  saves of seed 0 -> results/{selection,dropped}.json; Amendment 5's wide set (all 18)
                  -> results/wide/{selection,dropped}.json
+  select mix     CPU, Amendment 8: the mixes' picks at the nine set's size "hi" target instead (selection.json's KL
+                 "hi" mix picks are empty and stay as written) -> results/mix_selection.json only
   read TASK      refuses before select: in each set whose dropped.json is written and that holds TASK, every selected
                  state and one Gaussian per panel-set target through share, steering, erank, ADL, size, KL and prior
                  -> results/read/TASK.json (nine), results/wide/read/TASK.json (wide: a state the nine set already read
-                 is copied from results/read, not read again)
+                 is copied from results/read, not read again); a mix reads its mix_selection.json picks, no Gaussian
 Amendment 4 (descriptive, outside H1/H2): mix25/mix50/mix75 (`tasks.mix_task`) train and read like a panel task.
 
     sbatch --comment=E272 cluster/convergence_panel.sbatch 0
     sbatch --comment='E272 stage: train pile' cluster/convergence_panel.sbatch train pile     (each of the 18, and the mixes)
-    ~/commute-agents/fleet/cpu-run python3 experiments/convergence_panel/run.py select [wide]
+    ~/commute-agents/fleet/cpu-run python3 experiments/convergence_panel/run.py select [wide | mix]
     sbatch --comment='E272 stage: read pile' cluster/convergence_panel.sbatch read pile       (each kept task, and the mixes)
 """
 
@@ -61,7 +63,7 @@ from commute.open_pair import jsonable
 
 HERE = Path(__file__).resolve().parent
 RESULTS, REPO = HERE / "results", HERE.parents[1]
-PRED, LARGE = RESULTS / "predictions.json", RESULTS / "large"
+PRED, LARGE, MIX_SEL = RESULTS / "predictions.json", RESULTS / "large", RESULTS / "mix_selection.json"
 TK: Any = load_experiment("convergence_panel", "tasks")
 NINE = ("pile", "code", "lower", "british", "topic", "french", "yoruba", "squad", "conll")
 ADDED = ("wiki_en", "arxiv", "german", "swahili", "tagalog", "spanish", "sentiment", "category", "summary")  # Amendment 5
@@ -391,7 +393,7 @@ def select(C: Config, which: str) -> None:
     kept = {f"{k}_{lvl}": sorted((sel[k][lvl] or {}).get("tasks", {})) for k in ("kl", "size") for lvl in ("hi", "lo")}
     out = {f"{k}_{lvl}": (sel[k][lvl] or {}).get("out", {}) for k in ("kl", "size") for lvl in ("hi", "lo")}
     if which == "nine":
-        mruns, mfloors, mdropped = trained(MIXES)  # Amendment 4: the mixes at the panel's KL "hi" target, which they do not move
+        mruns, mfloors, mdropped = trained(MIXES)  # Amendment 4's KL "hi" mix picks (none); read nowhere since Amendment 8
         sel["mix"] = PN.at_rung(mruns, "kl", sel["kl"]["hi"]["target"], C.match_tol, mfloors) | {"dropped": mdropped}
         sel["trajectory"] = trajectory(runs, floors, C)
         kept |= {"mix": sorted(sel["mix"]["tasks"]), "trajectory": sorted(t for t, v in sel["trajectory"].items() if v)}
@@ -405,9 +407,24 @@ def select(C: Config, which: str) -> None:
             log(f"[select {which} {k} {lvl}] " + ("none" if s is None else f"target {s['target']:.4g}: in {sorted(s['tasks'])}, out {s['out']}"))
 
 
+def select_mix(C: Config) -> None:
+    """Amendment 8: each mix's states at the nine set's size "hi" target (the panel's own rung, window and floor rule),
+    written to mix_selection.json alone; selection.json and dropped.json are not touched."""
+    if reads := [p.name for m in MIXES if (p := RESULTS / "read" / f"{m}.json").is_file()]:
+        sys.exit(f"mix reads exist ({reads}): the mix picks are fixed; select mix is not rerun")
+    target = json.loads((RESULTS / "selection.json").read_text())["size"]["hi"]["target"]
+    runs, floors, dropped = trained(MIXES)
+    sel = PN.at_rung(runs, "size", target, C.match_tol, floors)
+    write_stage(MIX_SEL, jsonable({"written": time.time(), "match": "size_hi", "floors": floors, "dropped": dropped} | sel))
+    for t, by in sel["tasks"].items():
+        for seed, s in by.items():
+            log(f"[select mix] {t} s{seed}: step {s['step']}, KL {s['kl']:.4f}, size {s['size']:.5f}, held gain {s['held_gain']:.4f} (floor {floors[t]:.4f})")
+    log(f"[select mix] target {target:.5g}: in {sorted(sel['tasks'])}, out {sel['out']}, dropped {dropped}")
+
+
 def picked(name: str, which: str = "nine") -> dict[str, dict[str, Any]]:
     """The task's selected states in a set, one entry per file, with every (match, level) that picked it, and (the nine
-    only) Amendment 4's picks ("mix", "trajectory")."""
+    only) Amendment 4's picks ("mix" from mix_selection.json, Amendment 8; "trajectory")."""
     sel, got = json.loads((set_dir(which) / "selection.json").read_text()), {}
 
     def add(st: dict[str, Any], seed: Any, label: str) -> None:
@@ -417,8 +434,10 @@ def picked(name: str, which: str = "nine") -> dict[str, dict[str, Any]]:
         for lvl in ("hi", "lo"):
             for seed, st in ((sel[k][lvl] or {}).get("tasks", {}).get(name) or {}).items():
                 add(st, seed, f"{k}_{lvl}")
-    for seed, st in (sel.get("mix", {"tasks": {}})["tasks"].get(name) or {}).items():
-        add(st, seed, "mix")
+    if which == "nine" and name in MIXES:
+        assert MIX_SEL.is_file(), "run select mix first (Amendment 8): no mix read before its picks are written"
+        for seed, st in (json.loads(MIX_SEL.read_text())["tasks"].get(name) or {}).items():
+            add(st, seed, "mix")
     for st in sel.get("trajectory", {}).get(name) or []:
         add(st, 0, "trajectory")
     return got
@@ -453,12 +472,12 @@ def read_set(rd: Reader, C: Config, name: str, which: str, kl: torch.Tensor, pil
 
 def main() -> int:
     args = sys.argv[1:]
-    sel_ok = args[1:] in ([], ["wide"])
+    sel_ok = args[1:] in ([], ["wide"], ["mix"])
     if not args or args[0] not in ("0", "train", "select", "read") or (args[0] in ("train", "read") and (len(args) != 2 or args[1] not in TASKS + MIXES)) or (args[0] == "select" and not sel_ok):
-        sys.exit("usage: run.py 0 | train TASK | select [wide] | read TASK")
+        sys.exit("usage: run.py 0 | train TASK | select [wide | mix] | read TASK")
     C, th = load()
     if args[0] == "select":
-        select(C, args[1] if len(args) > 1 else "nine")
+        select_mix(C) if args[1:] == ["mix"] else select(C, args[1] if len(args) > 1 else "nine")
         return 0
     torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False
     net = ST.Net("cuda")
