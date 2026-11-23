@@ -87,3 +87,6 @@ E282 page (ca8126a9) checked: OK to fill.
 
 ## P1.56, due 11-24: E277 panel stage, verdict sent: provisional, no on-card identity check
 Stage 0 was skipped on the H100 pods (a stale stage0 file was in the synced tree), so the 48 panel items are provisional until one or two items are re-read on the cluster against the 8.2e-5 / 4.6e-5 floors. The neuron tau -0.348 (10 tasks) against VPD -0.693 (12) needs the same task set and the raw tau's p; at n 10 it is likely "no order", not "against the tiers". conll's Gaussian 0.031 is above its s1 fine-tune 0.030, so the count of tasks inside the Gaussian range is needed. Category drops at neurons (|K| 44), which thins the reuse end.
+
+## P1.57, E281 verdict: rival B (no dilution), lookup n = 1, K anomaly
+Stage 0 passed (2.06e-9 / 2.18e-9 against 2.73e-9). The ratio over K_copy is ~0.53 with the filed missing rule (lookup_s0/s2 |K_copy| 97/75 dropped), against >= 1.5 for dilution, so rival B. Anomaly: lookup K_copy runs 97, 17,732, 75 across seeds; run it down before reading lookup_s1. The beside-reading over E275's K on copy windows gives ratio 0.98 with all seeds, the same conclusion and more robust: the low E62 E_b is not dilution.
