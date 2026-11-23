@@ -65,3 +65,47 @@ before anything was scored; predictions.json "amendment_2026-11-22" lists each c
 on the cluster L40 before the fixes: ctl 41 s wall, peak GPU 9.5 GB, host 6.1 GB; install 0.17 s per step (2000 steps
 in 337 s; addition at lambda 1: cued gain 12.8 over M uncued, uncued shift 0.016 decades, Pile KL 0.023, size 0.021).
 Cross and read now run one job per (base, task) cell.
+
+## Stage D: rehearsal and pods
+
+**Gate 1 additions.** Student fails to copy the cued skill (KL at one answer position in 64): arm A's weighting puts
+the answer KL at full weight (E34's trigger weighting), F1 reads it and a miss empties that base's rows (a finding).
+The decomposition faithful on Pile but not on cued rows: F3, with its own measured floor. Gamma frozen at M's: named
+in `blind_to`. The K scan's time is unmeasured: the rehearsal measures cases per second before any pod. Pod loss: each
+job writes per item (`stage_d/eb_<base>.json` after every item) and resumes; download after each job.
+
+**Rehearsal ($0, cluster debug, <= 20 min estimated, 30 min cap)**, after `results/controls.json` has passed:
+
+    sbatch --comment='E271 rehearse: stage D ctl + teach addition + one eb item' cluster/installed_cross_d.sbatch rehearse
+
+It runs ctl (W0 Pile harness on seeds 0-2, task-row floors), `teach addition` (student, F1-F3, 27 shares, zero share
+first) and `eb addition addition__addition_s0_size` (zero update first, then one full K scan) at the full read sizes
+(256 read rows, 4 x 64 pairs, every variable). Estimate: load 0.5 min, ctl ~4, student ~2.5 (E119: 1000 steps in
+109-167 s on an L40), faithfulness ~2, shares ~2.5, one K scan ~8 (E268's FLOP estimate) = ~20 min. It writes
+the measured seconds per student step, per share, the scan's cases per second and seconds per item, and peak GPU
+memory into `results/stage_d/*.json`; record them with `fleet/rehearsed compare-lead E271 '...'` before a pod.
+
+**Pods: 3 H100s, one runner, labels `commute-E271-stage-d-addition`, `-cipher`, `-yoruba`.** Each pod runs, in order:
+`stage_d.py ctl` (its own same-card W0 floor, ~4 min), `teach BASE` (~7 min), `eb BASE` (18 items: 9 at matched size
+and 9 Gaussian floors), then `eb M M__<BASE>_s0_size M__<BASE>_s1_size M__<BASE>_s2_size` (the descriptive row, 3
+items per pod). Per pod: ~11 min + 21 items x t_item. With E268's estimate t_item ~8 min (L40 fp32; an H100's fp32
+is of the same order, so no speed-up is assumed) that is ~2.9 h, ~$8 at ~$2.7/h; ~$25 for three. Replace t_item with
+the rehearsal's measured seconds per item before starting; if it is above 12 min, split each base over 2 pods (items
+named on the eb command line), 6 pods on 2 runners.
+
+**Inputs per pod** (from a grep of the loads in run.py and stage_d.py), staged by hard link into a flat
+`e271d_stage/<base>/` directory and sent with `sync(include=[...])`, then moved to these paths on the pod (every
+`results/large` is a symlink here and arrives dangling):
+- code by `sync()`; `artifacts/vpd/` (3.0 GB: the W&B fetch on the pod, ~65 s at 45 MB/s);
+- `artifacts/sets/val_0_64.npy`, `val_0_256.npy`, `train_0_4096.npy`;
+- `experiments/transport_test/results/large/alive.pt` (0.4 MB);
+- `experiments/installed_cross/results/large/tasks.pt`, `large/states/base_<base>_lam<kept>.pt`, the base's 9
+  `<base>__<task>_s<seed>.pt`, all 9 of M's `M__<task>_s<seed>.pt` (`eb M` reads M's 9 shares first, cheap)
+  (19 states x ~57 MB = ~1.1 GB: ~110 s at 10 MB/s);
+- `experiments/installed_cross/results/{ctl,install_*,cross_*_*,controls}.json` (in git once committed, else staged);
+- both predictions files; run the line with `PRED_SHA=08d5425968553c7346db7d9ea5cb7d240273e5f54d116d2bfd72ea202dfed73b
+  PRED_SHA_D=<sha of predictions_stage_d.json at the commit>`.
+
+Transfer per pod ~110 s up (states) plus the model fetch; down: `stage_d/*.json` (KB) and `large/stage_d/student_<base>.pt`
+(~60 MB, ~6 s). Each pod's `stage_d/ctl.json` and `eb_M.json` share a path with the others': download each pod's into
+`results/stage_d_dl/<base>/` and merge `eb_M` by item afterwards.
