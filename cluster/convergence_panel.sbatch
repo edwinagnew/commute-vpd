@@ -4,13 +4,13 @@
 # (run.py refuses unless it is committed unchanged; the read stage also refuses until the raters are filed).
 #   cd <clone> && ~/commute-agents/fleet/link-data <role or .>     (results/large must be the shared symlink)
 #   sbatch --comment=E272 cluster/convergence_panel.sbatch 0                                   (alone, first)
-#   for T in pile code lower british topic french yoruba squad conll:
+#   for T in pile code lower british topic french yoruba squad conll (+ Amendment 5: wiki_en arxiv german swahili tagalog spanish sentiment category summary):
 #     sbatch --comment="E272 stage: train $T" --dependency=afterok:<stage-0 id> cluster/convergence_panel.sbatch train $T
 #   Amendment 4 (mixture; no dependency on the panel's train jobs, any time before select):
 #     sbatch --comment="E272 stage: train mix25" cluster/convergence_panel.sbatch train mix25
 #     sbatch --comment="E272 stage: train mix50" cluster/convergence_panel.sbatch train mix50
 #     sbatch --comment="E272 stage: train mix75" cluster/convergence_panel.sbatch train mix75
-#   ~/commute-agents/fleet/cpu-run python3 experiments/convergence_panel/run.py select   (after all nine AND the three mixes)
+#   ~/commute-agents/fleet/cpu-run python3 experiments/convergence_panel/run.py select [wide]   (after all nine AND the three mixes; wide after all 18)
 #   for each kept T: sbatch --comment="E272 stage: read $T" cluster/convergence_panel.sbatch read $T
 #     (lower's and yoruba's reads also take Amendment 4's 5 trajectory saves each, no Gaussians: +<= 5 min each)
 #     sbatch --comment="E272 stage: read mix25" cluster/convergence_panel.sbatch read mix25   (and mix50, mix75:

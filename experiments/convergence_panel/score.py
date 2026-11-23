@@ -6,6 +6,10 @@ set; a task with a missing seed value is missing for that measure (reported, nev
     ~/commute-agents/fleet/cpu-run python3 experiments/convergence_panel/score.py [--results DIR]
 --results reads predictions.json, dropped.json, read/ and eb/ from DIR (a stub) instead of results/, and writes
 DIR/summary.json. Refuses unless dropped.json (run.py select) predates every read and E_b file (Amendment 3).
+Amendment 5: the filed nine are scored as before (top level of summary.json, raters "raters"); when DIR/wide/dropped.json
+exists the 18-task wide set is scored beside them from DIR/wide/{dropped.json,read,eb} on "raters_wide" (key "wide").
+The critical tau-b is exact up to n = 9 and from 200,000 seeded random orderings from n = 10; each H1 entry also records
+the raw call's power at true tau 0.3 and 0.5 on the tier codes kept (power_raw). Scored: the nine first, then the wide.
 """
 
 from __future__ import annotations
@@ -14,6 +18,7 @@ import json
 import math
 import sys
 from collections import Counter
+from functools import cache
 from itertools import combinations, permutations
 from pathlib import Path
 from statistics import fmean, pvariance
@@ -27,6 +32,7 @@ RESULTS = HERE / "results"
 TIER = {"reuse": 3.0, "middle": 2.0, "new": 1.0}
 SETS = ("kl_hi", "kl_lo", "size_hi", "size_lo")
 MEASURES = ("share", "steering", "erank", "E_b", "kl", "adl", "size", "prior")
+CRIT_DRAWS, CRIT_SEED, POWER_DRAWS = 200_000, 272, 20_000  # Amendment 5: random orderings from n = 10 (power_wide.py's seed)
 
 
 def finite(x: Any) -> bool:
@@ -200,15 +206,36 @@ def perm_p(f: Any, y: list[float], n: int, seed: int) -> float:
     return (1 + hits) / (1 + n)
 
 
-def critical_tau(x: list[float], alpha: float) -> float:
-    """The smallest tau-b an exact one-sided permutation test calls at alpha, tier vector x against an untied reading
-    (all n! orderings; n <= 9)."""
-    xa, (i, j) = np.asarray(x), np.triu_indices(len(x), 1)
-    perms = np.array(list(permutations(range(len(x)))), dtype=np.int8)
-    n0, n1 = len(i), sum(c * (c - 1) / 2 for c in Counter(x).values())
-    t = np.sort((np.sign(xa[i] - xa[j]) * np.sign(perms[:, i] - perms[:, j])).sum(1) / math.sqrt((n0 - n1) * n0))
+@cache
+def critical_tau(x: tuple[float, ...], alpha: float, draws: int = CRIT_DRAWS, seed: int = CRIT_SEED) -> float:
+    """The smallest tau-b a one-sided permutation test calls at alpha, tier vector x against an untied reading: all n!
+    orderings for n <= 9 (exact, as Amendment 3 filed it), else `draws` seeded random orderings (Amendment 5)."""
+    if len(x) <= 9:
+        perms = np.array(list(permutations(range(len(x)))), dtype=np.int8)
+    else:
+        perms = np.argsort(np.random.default_rng(seed).random((draws, len(x))), 1).astype(np.int16)
+    t = np.sort(np.concatenate([taub_rows(x, p) for p in np.array_split(perms, max(1, len(perms) // 20_000))]))
     p_ge = 1 - np.searchsorted(t, t - 1e-9, "left") / len(t)
     return float(t[p_ge <= alpha].min())
+
+
+def taub_rows(x: tuple[float, ...], Y: np.ndarray) -> np.ndarray:
+    """Kendall tau-b of the tier vector x against each untied row of Y."""
+    xa, (i, j) = np.asarray(x), np.triu_indices(len(x), 1)
+    n0, n1 = len(i), sum(c * (c - 1) / 2 for c in Counter(x).values())
+    return (np.sign(xa[i] - xa[j]) * np.sign(Y[:, i] - Y[:, j])).sum(1) / math.sqrt((n0 - n1) * n0)
+
+
+@cache
+def power(x: tuple[float, ...], target: float, crit: float, draws: int = POWER_DRAWS, seed: int = CRIT_SEED) -> float:
+    """Amendment 5: power of the raw tau call at a true mean tau-b of `target` (Amendment 3's model): reading = tier code
+    + sigma N(0, 1) per task, sigma bisected so the mean tau-b over the draws is the target; the share of draws whose
+    tau-b reaches crit."""
+    xa, E, lo, hi = np.asarray(x), np.random.default_rng(seed).standard_normal((draws, len(x))), 0.01, 50.0
+    for _ in range(30):
+        sig = math.sqrt(lo * hi)
+        lo, hi = (sig, hi) if taub_rows(x, xa + sig * E).mean() > target else (lo, sig)
+    return float((taub_rows(x, xa + math.sqrt(lo * hi) * E) >= crit - 1e-9).mean())
 
 
 def interval(x: list[float], y: list[float], n: int, seed: int) -> list[float]:
@@ -235,7 +262,10 @@ def hope1(tier: dict[str, float], means: dict[str, float], prior: dict[str, floa
         return {"call": f"too few tasks ({len(ts)} < {R['min_tasks']})", "tasks": ts}
     x, y, z = [tier[t] for t in ts], [means[t] for t in ts], [prior.get(t, math.nan) for t in ts]
     out: dict[str, Any] = {"tasks": ts, "tau": tau(x, y), "p_perm": perm_p(lambda v: tau(x, v), y, R["n_perm"], R["seed"])}
-    out |= {"interval90": interval(x, y, R["n_boot"], R["seed"]), "critical_tau": critical_tau(x, R["alpha"]), "tau_prior": tau(x, z)}
+    xs = tuple(sorted(x))  # the critical tau-b and power depend only on the tier codes kept
+    crit = critical_tau(xs, R["alpha"])
+    out |= {"interval90": interval(x, y, R["n_boot"], R["seed"]), "critical_tau": crit, "tau_prior": tau(x, z)}
+    out["power_raw"] = {str(v): power(xs, v, crit) for v in (0.3, 0.5)}  # Amendment 5: at the n kept, at score time
     loo = [tau([tier[t] for t in ts if t != d], [means[t] for t in ts if t != d]) for d in ts]
     out["leave_one_out"] = [min(loo), max(loo)] if all(finite(v) for v in loo) else [math.nan, math.nan]
     out["prior_support"] = support({t: tier[t] for t in ts}, prior)
@@ -318,16 +348,16 @@ def call2(r: dict[str, float], b: dict[str, float]) -> str:
     return "above" if r["W"] > r["null95"] else "no call (readings under their null)"
 
 
-def raters(P: dict[str, Any]) -> dict[str, dict[str, float]]:
+def raters(P: dict[str, Any], key: str = "raters") -> dict[str, dict[str, float]]:
     """Each rater's tier code per task and the consensus (their mean), from the filed `raters` block."""
-    got = {name: {t: TIER[v] for t, v in r["tiers"].items()} for name, r in P["raters"].items()}
+    got = {name: {t: TIER[v] for t, v in r["tiers"].items()} for name, r in P[key].items()}
     ts = set.intersection(*[set(v) for v in got.values()])
     return got | {"consensus": {t: fmean(v[t] for v in got.values()) for t in ts}}
 
 
-def score(data: dict[str, Any], P: dict[str, Any], dropped: dict[str, Any]) -> dict[str, Any]:
+def score(data: dict[str, Any], P: dict[str, Any], dropped: dict[str, Any], key: str = "raters") -> dict[str, Any]:
     R, out = P["rules"], {"experiment": P["experiment"], "dropped": dropped}
-    tiers = raters(P)
+    tiers = raters(P, key)
     out["consensus_tier"] = tiers["consensus"]
     for s in SETS:
         if not data.get(s):
@@ -360,8 +390,13 @@ def main() -> None:
     P = json.loads((res / "predictions.json").read_text())
     if not P.get("raters"):
         sys.exit("raters are not filed in predictions.json: the lead files them before scoring")
-    out = score(gather(res), P, drops(res))
+    out = score(gather(res), P, drops(res))  # the nine-task set, as Amendment 3 filed it; needs no wide file
     out["amendment4"] = amendment4(res, P, out["kl_hi"])
+    wide = res / "wide"
+    if (wide / "dropped.json").is_file():  # Amendment 5: the 18-task set beside it, its own drops, reads and raters
+        if not P.get("raters_wide"):
+            sys.exit("raters_wide are not filed in predictions.json: the wide set is not scored without them")
+        out["wide"] = score(gather(wide), P, drops(wide), "raters_wide")
     (res / "summary.json").write_text(json.dumps(out, indent=1, default=str))
     for s in SETS:
         if isinstance(out[s], dict):
@@ -370,6 +405,9 @@ def main() -> None:
         print(f"[mixture] {m}: rho {o['rho']:.3f} (15 points {o['rho_all_points']:.3f}, critical {o['critical_rho']:.3f}, expected {o['expected_sign']:+d}): {o['call']}")
     for t, by in out["amendment4"]["trajectory"].items():
         print(f"[trajectory {t}] " + (by if isinstance(by, str) else "; ".join(f"{m} {o['call']}" for m, o in by.items())))
+    for s in SETS:
+        if isinstance(out.get("wide", {}).get(s), dict):
+            show("wide " + s, out["wide"][s])
     print(f"wrote {res / 'summary.json'}")
 
 
