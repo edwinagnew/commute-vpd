@@ -140,7 +140,7 @@
     "reproduce_tol": {
       "share": 0.01,
       "steering": 0.001,
-      "erank": 1e-06
+      "erank": 0.0598
     },
     "reproduce_tol_source": "E211's reproduce_tol (predictions_run2: share 0.01, steer_pooled 0.001, erank 1e-6); E187's share_tol 0.01 (m67.json T) for the copy/cipher split",
     "eb": {
@@ -204,5 +204,15 @@
       "confidence": "low",
       "why": "Fable: W among readings above W among baselines"
     }
-  }
+  },
+  "amendments": [
+    {
+      "date": "2026-11-22",
+      "what": "Amendment 1: effective-rank reproduction bar changed from absolute 1e-6 (copied from E211, a same-path bar) to relative 1e-4 of the saved value, written as absolute 0.0598 = 1e-4 x 597.714 because run.py compares |got-saved| <= tol",
+      "why": "stage 0 job 63620 read 597.7144366 vs saved 597.7140791 (gap 3.6e-4, 6e-7 relative, float32 noise across paths/cards); CLAUDE.md wants relative agreement bars from a measured floor. Bar = ~170x the measured gap. Other bars unchanged.",
+      "old_tol": 1e-06,
+      "new_tol": 0.0598,
+      "approved": "whip-lead 2026-11-22 21:55 (message), answering ask 27; user away"
+    }
+  ]
 }
