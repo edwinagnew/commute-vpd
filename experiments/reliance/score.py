@@ -41,6 +41,7 @@ E277 = EXPERIMENTS / "needed_neurons" / "results"
 C275, R257 = (EXPERIMENTS / e / "results" / "large" for e in ("claim2_needed", "rb_states"))
 E280, E281 = (EXPERIMENTS / e / "results" / "large" for e in ("head_edit", "e62_copy_windows"))
 unreadable: list[str] = []
+GAP = 0.2  # the card's smallest_gap, amendment 1b's control rule
 
 
 @dataclass(frozen=True)
@@ -83,6 +84,9 @@ def readings(z: dict[str, np.ndarray], KM: np.ndarray | None, cfg: Any) -> dict[
     assert KM is None or len(KM) == len(K), f"K_M has {None if KM is None else len(KM)} variables, F {len(K)}"
     out: dict[str, Any] = {"size_K": int(K.sum()), "n_changed_K": int((K & ch).sum()), "too_small": int(K.sum()) < cfg.k_min,
                            "flip_mass": int(flips[K].sum()), "M_scanned": KM is not None}  # fmt: skip
+    # amendment 1b: the changed variables' share of F's flip mass, and V1's value if K_M held every unchanged member of K_F and no changed one
+    out["changed_flip_share"] = float(flips[K & ch].sum()) / out["flip_mass"] if out["flip_mass"] else None
+    out["v1_floor"] = None if out["changed_flip_share"] is None else 1 - out["changed_flip_share"]
     if KM is not None:
         out["size_K_M"], out["size_both"] = int(KM.sum()), int((K & KM).sum())
         out["overlap"] = out["size_both"] / out["size_K"] if out["size_K"] else None  # |K_F and K_M| / |K_F|, unweighted (amendment 1)
@@ -164,10 +168,32 @@ def panel(rows: list[dict[str, Any]]) -> dict[str, Any]:
     return out
 
 
+def control(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Amendment 1b's rule (results/predictions_a1b.json), on the cue D, per V: rival A when min(x2, x10 read as F on the
+    cue D) is at least GAP above new_thin and at least GAP above random_kl_241002, each separately; else rival B; no
+    reading when any of the four is None. new_few is a construction check: V1 >= 0.966 expected."""
+    by = {(r["group"], r["item"]): r for r in rows}
+    reuse = [by.get(("control_cue", i)) for i in ("x2", "x10")]
+    new = {i: by.get(("control", i)) for i in ("new_thin", "random_kl_241002")}
+    out: dict[str, Any] = {"floors_on_cue_D": {i: (r or {}).get("v1_floor") for i, r in zip(("x2", "x10"), reuse, strict=True)}}
+    for v in ("V1", "V2"):
+        vals = [None if r is None else r[v] for r in reuse] + [None if r is None else r[v] for r in new.values()]
+        if None in vals:
+            out[v] = {"reads": None, "values": vals}
+            continue
+        lo = min(vals[:2])
+        gaps = {i: lo - x for i, x in zip(new, vals[2:], strict=True)}
+        out[v] = {"min_reuse": lo, "gaps": gaps, "reads": "rival A" if all(g >= GAP for g in gaps.values()) else "rival B"}
+    nf = by.get(("control", "new_few"))
+    out["new_few_check"] = None if nf is None or nf["V1"] is None else {"V1": nf["V1"], "expected_at_least": 0.966, "holds": nf["V1"] >= 0.966}
+    print(f"[control, cue D] v1_floor x2/x10 {out['floors_on_cue_D']}; V1 {out['V1']}; V2 {out['V2']}; new_few {out['new_few_check']}")
+    return out
+
+
 def compact(rows: list[dict[str, Any]]) -> None:
     for r in rows:
         if r["group"] != "panel":
-            v = {k: None if r[k] is None else round(r[k], 4) for k in ("V1", "V2", "V1_changed", "V2_changed")}
+            v = {k: None if r[k] is None else round(r[k], 4) for k in ("V1", "V2", "V1_changed", "V2_changed", "v1_floor")}
             print(f"{r['group']:8s} {r['feat']:8s} {r['item']:40s} |K| {r['size_K']:6d} ({r['n_changed_K']} changed)  {v}")
 
 
@@ -177,7 +203,7 @@ def main(preview: bool) -> None:
                            "self_check": self_check(cfg)}  # fmt: skip
     rows = gather(cfg)
     compact(rows)
-    out |= {"items": rows, "panel": panel(rows), "unreadable": unreadable, "n_without_M": sum(not r["M_scanned"] for r in rows)}
+    out |= {"items": rows, "control": control(rows), "panel": panel(rows), "unreadable": unreadable, "n_without_M": sum(not r["M_scanned"] for r in rows)}
     path = RESULTS / ("v2_preview.json" if preview else "summary.json")
     path.write_text(json.dumps(out, indent=1, default=str) + "\n")
     print(f"wrote {path} ({len(rows)} items, {out['n_without_M']} without M's K, {len(unreadable)} unreadable)")
