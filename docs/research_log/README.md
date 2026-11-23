@@ -578,6 +578,7 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e81_recall.png": "experiments/qwen_tofu/figures/recall.png"
 - "fig/e84_filed_test.png": "experiments/qwen_tofu_forms/figures/filed_test.png"
 - "fig/e263_eb_sae_vs_vpd.png": "experiments/sae_eb/figures/eb_sae_vs_vpd.png"
+- "fig/e270_eb.png": "experiments/qwen_eb/figures/eb.png"
 - "fig/e84_along_training.png": "experiments/qwen_tofu_forms/figures/along_training.png"
 - "fig/e85_ratio_bars.png": "experiments/qwen_d1_teeth/figures/ratio_bars.png"
 - "fig/e85_controls.png": "experiments/qwen_d1_teeth/figures/controls.png"

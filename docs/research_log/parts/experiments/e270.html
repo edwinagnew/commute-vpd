@@ -1,0 +1,18 @@
+<article class="exp" id="e270">
+<div class="top"><span class="id">E270</span><span class="chip mixed">mixed</span><h3>Does the write share E_b tell Qwen3-1.7B's fine-tunes from random changes, and real learning from collapse?</h3><span class="when">2026-11-22 · cell P3.14, qwen-lead, no independent check · <code>experiments/qwen_eb</code></span></div>
+<p class="one"><strong>The question.</strong> You adopted the write share E_b as the reading of reuse: of the change in what each subcomponent writes, the fraction that lies along what it already wrote. It was built and tested on the 67M model. You allowed one extra Qwen run, if it went somewhere: does E_b on Qwen3-1.7B's saved fine-tunes sit above a random change of the same size, and does it tell a real RL run from one that collapsed?</p>
+<p class="one"><strong>What we did.</strong> On the new decomposition (p-9707d6ff, all 196 matrices) and 64 maths rows we read E_b for six saved step-75 updates: RL, RL on shuffled rewards (which collapsed), and supervised training on the model's own samples, two seeds each. Each was read beside one Gaussian change with the same norm in every matrix. The controls ran first: do-nothing reads 1, and doubling 32 chosen subcomponents per matrix reads 0.83 against a bar of 0.5.</p>
+<p class="one"><strong>What we found.</strong> The updates read 0.112 to 0.157 and their random changes 0.012 to 0.057, so every gap is positive (0.055 to 0.131). The collapsed run reads as high as real RL (gaps 0.123 and 0.116 against 0.091 and 0.131). The random change varies from draw to draw, so one draw is a noisy reference.</p>
+<p class="one"><strong>What it means.</strong> On Qwen E_b separates a trained update from a random one, but not learning from collapse, and it gives no reused-against-new verdict. All updates sit far below the doubling control, so most of each change is not a rescaling of existing writes. The pair library was not run, since its sides are not yet fit to read.</p>
+<figure><img src="fig/e270_eb.png" alt="Write share per Qwen update beside its size-matched random change"><figcaption><strong>Does the write share put Qwen's fine-tunes above random changes? Yes, all six, but the collapsed run is as high as RL.</strong> Each update is drawn beside a random change of the same norm; the doubling control and do-nothing are the reference lines.</figcaption></figure>
+<dl class="fields">
+<dt>Run</dt><dd>Six saved step-75 updates and six random changes, one write-share pass each, with the do-nothing and doubling controls first (E270, one run of two allowed).</dd>
+<dt>Found</dt><dd><ul>
+<li>All six updates read above their size-matched random change (gaps 0.055 to 0.131), as filed; the doubling control reads 0.83.</li>
+<li>The collapsed shuffled-reward run reads as high as real RL, so the reading does not separate learning from collapse.</li>
+<li>The random changes read 0.012 to 0.057 here against about 0.011 on the 67M, so one draw per update is a noisy reference.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 4: the write share on Qwen separates trained from random updates, with no reused-against-new call.</dd>
+<dt>Moved on</dt><dd>The note goes to writeup-lead; the pair library and more random draws are not run. Record: <code>reports/analyses/2026-11-22_analysis_qwen-eb.md</code>; <code>experiments/qwen_eb/figures/eb.png</code>.</dd>
+</dl>
+</article>
