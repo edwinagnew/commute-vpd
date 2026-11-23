@@ -67,15 +67,15 @@
   }
  },
  "consensus_tier": {
-  "topic": 2.5,
   "squad": 1.5,
+  "code": 3.0,
   "british": 3.0,
   "yoruba": 1.0,
-  "pile": 3.0,
-  "french": 2.0,
   "conll": 2.0,
-  "lower": 3.0,
-  "code": 3.0
+  "french": 2.0,
+  "pile": 3.0,
+  "topic": 2.5,
+  "lower": 3.0
  },
  "kl_hi": {
   "readability": {
@@ -2494,24 +2494,24 @@
    }
   },
   "consensus_tier": {
-   "topic": 2.5,
-   "summary": 1.5,
-   "german": 2.0,
    "squad": 1.5,
-   "british": 2.5,
-   "category": 2.5,
-   "spanish": 2.0,
-   "yoruba": 1.0,
-   "tagalog": 1.0,
-   "pile": 3.0,
-   "french": 2.0,
    "conll": 2.0,
-   "wiki_en": 3.0,
-   "lower": 3.0,
-   "sentiment": 2.0,
    "code": 3.0,
+   "yoruba": 1.0,
+   "spanish": 2.0,
+   "category": 2.5,
+   "summary": 1.5,
    "arxiv": 3.0,
-   "swahili": 1.0
+   "british": 2.5,
+   "tagalog": 1.0,
+   "sentiment": 2.0,
+   "german": 2.0,
+   "french": 2.0,
+   "swahili": 1.0,
+   "wiki_en": 3.0,
+   "pile": 3.0,
+   "topic": 2.5,
+   "lower": 3.0
   },
   "kl_hi": {
    "readability": {
@@ -2544,23 +2544,10 @@
      "missing": []
     },
     "E_b": {
-     "between_sd": NaN,
-     "within_sd": NaN,
-     "readable": false,
-     "missing": [
-      "arxiv",
-      "category",
-      "conll",
-      "french",
-      "german",
-      "lower",
-      "sentiment",
-      "spanish",
-      "squad",
-      "summary",
-      "swahili",
-      "yoruba"
-     ]
+     "between_sd": 0.02786730102534684,
+     "within_sd": 0.014975934525193456,
+     "readable": true,
+     "missing": []
     },
     "kl": {
      "between_sd": 0.005763649033016019,
@@ -2627,7 +2614,20 @@
      "swahili": 473.72603682377076,
      "yoruba": 458.3152045384497
     },
-    "E_b": {},
+    "E_b": {
+     "arxiv": 0.04367222598637708,
+     "category": 0.04263933044215843,
+     "conll": 0.06456749387078974,
+     "french": 0.05927053999267524,
+     "german": 0.073768197783761,
+     "lower": 0.023953748908560158,
+     "sentiment": 0.04627929869442448,
+     "spanish": 0.06218533491191771,
+     "squad": 0.11237870385127247,
+     "summary": 0.05496873896435652,
+     "swahili": 0.0830657183971933,
+     "yoruba": 0.12458229468908692
+    },
     "kl": {
      "arxiv": 0.17672303838799508,
      "category": 0.18740271607249848,
@@ -2987,6 +2987,116 @@
       "p_partial": 0.031796820317968204,
       "call": "positive"
      }
+    },
+    "E_b": {
+     "opus_blind_wide": {
+      "tasks": [
+       "arxiv",
+       "category",
+       "conll",
+       "french",
+       "german",
+       "lower",
+       "sentiment",
+       "spanish",
+       "squad",
+       "summary",
+       "swahili",
+       "yoruba"
+      ],
+      "tau": -0.8257228238447704,
+      "p_perm": 1.0,
+      "interval90": [
+       -0.8925302064868872,
+       -0.6952217871538071
+      ],
+      "critical_tau": 0.4220361099651049,
+      "tau_prior": 0.3486385256233475,
+      "power_raw": {
+       "0.3": 0.3414,
+       "0.5": 0.73525
+      },
+      "leave_one_out": [
+       -0.8420753583206845,
+       -0.8090398349558905
+      ],
+      "prior_support": true,
+      "tau_partial_prior": -0.7990789521880506,
+      "p_partial": 1.0,
+      "call": "not positive"
+     },
+     "gpt_blind_wide": {
+      "tasks": [
+       "arxiv",
+       "category",
+       "conll",
+       "french",
+       "german",
+       "lower",
+       "sentiment",
+       "spanish",
+       "squad",
+       "summary",
+       "swahili",
+       "yoruba"
+      ],
+      "tau": -0.5190388524734348,
+      "p_perm": 0.9864013598640136,
+      "interval90": [
+       -0.8071416720445569,
+       -0.13832281994460377
+      ],
+      "critical_tau": 0.44214420766255563,
+      "tau_prior": 0.17301295082447832,
+      "power_raw": {
+       "0.3": 0.31145,
+       "0.5": 0.7077
+      },
+      "leave_one_out": [
+       -0.6674238124719146,
+       -0.4117055577420104
+      ],
+      "prior_support": true,
+      "tau_partial_prior": -0.49806083591594696,
+      "p_partial": 0.9762023797620238,
+      "call": "not positive"
+     },
+     "consensus": {
+      "tasks": [
+       "arxiv",
+       "category",
+       "conll",
+       "french",
+       "german",
+       "lower",
+       "sentiment",
+       "spanish",
+       "squad",
+       "summary",
+       "swahili",
+       "yoruba"
+      ],
+      "tau": -0.6932245813464506,
+      "p_perm": 0.9996000399960004,
+      "interval90": [
+       -0.8850612031567835,
+       -0.4045060147777031
+      ],
+      "critical_tau": 0.4226979154551528,
+      "tau_prior": 0.25361874927309164,
+      "power_raw": {
+       "0.3": 0.3277,
+       "0.5": 0.7334
+      },
+      "leave_one_out": [
+       -0.8019532181238483,
+       -0.6374499938933154
+      ],
+      "prior_support": true,
+      "tau_partial_prior": -0.6673315272887932,
+      "p_partial": 0.999000099990001,
+      "call": "not positive"
+     }
     }
    },
    "hope2": {
@@ -3003,38 +3113,39 @@
     "readings": [
      "share",
      "steering",
-     "erank"
+     "erank",
+     "E_b"
     ],
     "baselines": [
      "adl",
      "size",
      "prior"
     ],
-    "W_readings": 0.24867724867724866,
+    "W_readings": 0.19047619047619047,
     "W_baselines": 0.2857142857142857,
     "pairwise_tau": {
      "share|steering": -0.2857142857142857,
      "share|erank": 0.0,
-     "share|E_b": NaN,
+     "share|E_b": -0.21428571428571427,
      "share|kl": 0.3571428571428571,
      "share|adl": 0.0,
      "share|size": 0.2857142857142857,
      "share|prior": 0.3571428571428571,
      "steering|erank": 0.0,
-     "steering|E_b": NaN,
+     "steering|E_b": 0.3571428571428571,
      "steering|kl": -0.07142857142857142,
      "steering|adl": 0.42857142857142855,
      "steering|size": -0.14285714285714285,
      "steering|prior": -0.9285714285714285,
-     "erank|E_b": NaN,
+     "erank|E_b": -0.2727272727272727,
      "erank|kl": 0.2121212121212121,
      "erank|adl": 0.42857142857142855,
      "erank|size": -0.3333333333333333,
      "erank|prior": -0.2121212121212121,
-     "E_b|kl": NaN,
-     "E_b|adl": NaN,
-     "E_b|size": NaN,
-     "E_b|prior": NaN,
+     "E_b|kl": 0.0303030303030303,
+     "E_b|adl": 0.21428571428571427,
+     "E_b|size": -0.0909090909090909,
+     "E_b|prior": -0.39393939393939387,
      "kl|adl": -0.07142857142857142,
      "kl|size": -0.0909090909090909,
      "kl|prior": -0.0303030303030303,
@@ -3043,18 +3154,18 @@
      "size|prior": 0.39393939393939387
     },
     "mean_tau": {
-     "readings": -0.09523809523809523,
+     "readings": -0.06926406926406926,
      "baselines": -0.03535353535353534
     },
     "mean_abs_tau": {
-     "readings": 0.09523809523809523,
+     "readings": 0.1883116883116883,
      "baselines": 0.29797979797979796
     },
-    "W_readings_partial_prior_size": 0.3968253968253968,
+    "W_readings_partial_prior_size": 0.2261904761904762,
     "null_readings": {
-     "W": 0.24867724867724866,
-     "null95": 0.5978835978835979,
-     "percentile": 0.305
+     "W": 0.19047619047619047,
+     "null95": 0.46130952380952384,
+     "percentile": 0.3349
     },
     "null_baselines": {
      "W": 0.2857142857142857,
@@ -3063,33 +3174,109 @@
     },
     "call": "not above"
    },
-   "unreadable": {
-    "E_b": "no information (between-task spread not above seed spread)"
-   },
+   "unreadable": {},
    "amendment10": {
     "opus_blind_wide": {
-     "tasks_kl": [],
-     "tau_E_b_kl": NaN,
-     "tasks": [],
-     "tau": NaN,
-     "partial_kl": NaN,
-     "partial_prior": NaN
+     "tasks_kl": [
+      "arxiv",
+      "category",
+      "conll",
+      "french",
+      "german",
+      "lower",
+      "sentiment",
+      "spanish",
+      "squad",
+      "summary",
+      "swahili",
+      "yoruba"
+     ],
+     "tau_E_b_kl": -0.0303030303030303,
+     "tasks": [
+      "arxiv",
+      "category",
+      "conll",
+      "french",
+      "german",
+      "lower",
+      "sentiment",
+      "spanish",
+      "squad",
+      "summary",
+      "swahili",
+      "yoruba"
+     ],
+     "tau": -0.8257228238447704,
+     "partial_kl": -0.8256849230177004,
+     "partial_prior": -0.7990789521880506
     },
     "gpt_blind_wide": {
-     "tasks_kl": [],
-     "tau_E_b_kl": NaN,
-     "tasks": [],
-     "tau": NaN,
-     "partial_kl": NaN,
-     "partial_prior": NaN
+     "tasks_kl": [
+      "arxiv",
+      "category",
+      "conll",
+      "french",
+      "german",
+      "lower",
+      "sentiment",
+      "spanish",
+      "squad",
+      "summary",
+      "swahili",
+      "yoruba"
+     ],
+     "tau_E_b_kl": -0.0303030303030303,
+     "tasks": [
+      "arxiv",
+      "category",
+      "conll",
+      "french",
+      "german",
+      "lower",
+      "sentiment",
+      "spanish",
+      "squad",
+      "summary",
+      "swahili",
+      "yoruba"
+     ],
+     "tau": -0.5190388524734348,
+     "partial_kl": -0.5281607355116932,
+     "partial_prior": -0.49806083591594696
     },
     "consensus": {
-     "tasks_kl": [],
-     "tau_E_b_kl": NaN,
-     "tasks": [],
-     "tau": NaN,
-     "partial_kl": NaN,
-     "partial_prior": NaN
+     "tasks_kl": [
+      "arxiv",
+      "category",
+      "conll",
+      "french",
+      "german",
+      "lower",
+      "sentiment",
+      "spanish",
+      "squad",
+      "summary",
+      "swahili",
+      "yoruba"
+     ],
+     "tau_E_b_kl": -0.0303030303030303,
+     "tasks": [
+      "arxiv",
+      "category",
+      "conll",
+      "french",
+      "german",
+      "lower",
+      "sentiment",
+      "spanish",
+      "squad",
+      "summary",
+      "swahili",
+      "yoruba"
+     ],
+     "tau": -0.6932245813464506,
+     "partial_kl": -0.6959767907683053,
+     "partial_prior": -0.6673315272887932
     }
    }
   },
@@ -4928,10 +5115,19 @@
        "p_partial": 0.0025997400259974
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "french",
+        "german",
+        "lower",
+        "spanish",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.8451542547285166,
+       "partial": -0.7024393586862706,
+       "p_partial": 0.9948005199480052
       }
      },
      "gpt_blind_wide": {
@@ -4963,10 +5159,19 @@
        "p_partial": 0.0014998500149985001
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "french",
+        "german",
+        "lower",
+        "spanish",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.6185895741317419,
+       "partial": -0.47228694746131505,
+       "p_partial": 0.9216078392160784
       }
      },
      "consensus": {
@@ -4998,10 +5203,19 @@
        "p_partial": 0.0007999200079992001
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "french",
+        "german",
+        "lower",
+        "spanish",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.6698938453032356,
+       "partial": -0.5057563382541148,
+       "p_partial": 0.9567043295670433
       }
      }
     },
@@ -5043,10 +5257,23 @@
        "p_partial": 0.24947505249475052
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "category",
+        "conll",
+        "french",
+        "german",
+        "lower",
+        "sentiment",
+        "spanish",
+        "squad",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.8257228238447704,
+       "partial": -0.7545842545977008,
+       "p_partial": 0.9999000099990001
       }
      },
      "gpt_blind_wide": {
@@ -5086,10 +5313,23 @@
        "p_partial": 0.16178382161783822
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "category",
+        "conll",
+        "french",
+        "german",
+        "lower",
+        "sentiment",
+        "spanish",
+        "squad",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.5190388524734348,
+       "partial": -0.4098927184485598,
+       "p_partial": 0.9464053594640536
       }
      },
      "consensus": {
@@ -5129,10 +5369,23 @@
        "p_partial": 0.20367963203679632
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "category",
+        "conll",
+        "french",
+        "german",
+        "lower",
+        "sentiment",
+        "spanish",
+        "squad",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.6932245813464506,
+       "partial": -0.5956990424900366,
+       "p_partial": 0.9968003199680032
       }
      }
     }
@@ -5168,10 +5421,19 @@
        "p_partial": 0.0017998200179982
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "french",
+        "german",
+        "lower",
+        "spanish",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.8451542547285166,
+       "partial": -0.7024393586862706,
+       "p_partial": 0.9954004599540046
       }
      },
      "gpt_blind_wide": {
@@ -5203,10 +5465,19 @@
        "p_partial": 0.0012998700129987
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "french",
+        "german",
+        "lower",
+        "spanish",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.6185895741317419,
+       "partial": -0.47228694746131505,
+       "p_partial": 0.9251074892510749
       }
      },
      "consensus": {
@@ -5238,10 +5509,19 @@
        "p_partial": 0.0007999200079992001
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "french",
+        "german",
+        "lower",
+        "spanish",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.6698938453032356,
+       "partial": -0.5057563382541148,
+       "p_partial": 0.9566043395660434
       }
      }
     },
@@ -5283,10 +5563,23 @@
        "p_partial": 0.19168083191680832
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "category",
+        "conll",
+        "french",
+        "german",
+        "lower",
+        "sentiment",
+        "spanish",
+        "squad",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.8257228238447704,
+       "partial": -0.8137660068806131,
+       "p_partial": 1.0
       }
      },
      "gpt_blind_wide": {
@@ -5326,10 +5619,23 @@
        "p_partial": 0.048595140485951406
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "category",
+        "conll",
+        "french",
+        "german",
+        "lower",
+        "sentiment",
+        "spanish",
+        "squad",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.5190388524734348,
+       "partial": -0.5059746580695785,
+       "p_partial": 0.9787021297870213
       }
      },
      "consensus": {
@@ -5369,10 +5675,23 @@
        "p_partial": 0.05299470052994701
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "category",
+        "conll",
+        "french",
+        "german",
+        "lower",
+        "sentiment",
+        "spanish",
+        "squad",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.6932245813464506,
+       "partial": -0.68448621725654,
+       "p_partial": 0.9989001099890011
       }
      }
     }
@@ -5408,10 +5727,19 @@
        "p_partial": 0.0026997300269973002
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "french",
+        "german",
+        "lower",
+        "spanish",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.8451542547285166,
+       "partial": -0.3042903097250928,
+       "p_partial": 0.8772122787721228
       }
      },
      "gpt_blind_wide": {
@@ -5443,10 +5771,19 @@
        "p_partial": 0.0016998300169983002
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "french",
+        "german",
+        "lower",
+        "spanish",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.6185895741317419,
+       "partial": -0.15151515151515155,
+       "p_partial": 0.6872312768723128
       }
      },
      "consensus": {
@@ -5478,10 +5815,19 @@
        "p_partial": 0.0005999400059994001
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "french",
+        "german",
+        "lower",
+        "spanish",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.6698938453032356,
+       "partial": -0.17364123369350395,
+       "p_partial": 0.7256274372562743
       }
      }
     },
@@ -5523,10 +5869,23 @@
        "p_partial": 0.27917208279172084
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "category",
+        "conll",
+        "french",
+        "german",
+        "lower",
+        "sentiment",
+        "spanish",
+        "squad",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.8257228238447704,
+       "partial": -0.779820565077075,
+       "p_partial": 1.0
       }
      },
      "gpt_blind_wide": {
@@ -5566,10 +5925,23 @@
        "p_partial": 0.26617338266173385
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "category",
+        "conll",
+        "french",
+        "german",
+        "lower",
+        "sentiment",
+        "spanish",
+        "squad",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.5190388524734348,
+       "partial": -0.38481925128415534,
+       "p_partial": 0.9463053694630537
       }
      },
      "consensus": {
@@ -5609,10 +5981,23 @@
        "p_partial": 0.19658034196580343
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "category",
+        "conll",
+        "french",
+        "german",
+        "lower",
+        "sentiment",
+        "spanish",
+        "squad",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.6932245813464506,
+       "partial": -0.6293591666074247,
+       "p_partial": 0.9984001599840016
       }
      }
     }
@@ -5648,10 +6033,19 @@
        "p_partial": 0.0471952804719528
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "french",
+        "german",
+        "lower",
+        "spanish",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.8451542547285166,
+       "partial": -0.43852900965351455,
+       "p_partial": 0.9521047895210479
       }
      },
      "gpt_blind_wide": {
@@ -5683,10 +6077,19 @@
        "p_partial": 0.008099190080991902
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "french",
+        "german",
+        "lower",
+        "spanish",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.6185895741317419,
+       "partial": 0.16567535303269362,
+       "p_partial": 0.2980701929807019
       }
      },
      "consensus": {
@@ -5718,10 +6121,19 @@
        "p_partial": 0.0031996800319968005
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "french",
+        "german",
+        "lower",
+        "spanish",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.6698938453032356,
+       "partial": 0.13626312508266636,
+       "p_partial": 0.33026697330266974
       }
      }
     },
@@ -5763,10 +6175,23 @@
        "p_partial": 0.4296570342965703
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "category",
+        "conll",
+        "french",
+        "german",
+        "lower",
+        "sentiment",
+        "spanish",
+        "squad",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.8257228238447704,
+       "partial": -0.7975772499146566,
+       "p_partial": 1.0
       }
      },
      "gpt_blind_wide": {
@@ -5806,10 +6231,23 @@
        "p_partial": 0.17228277172282772
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "category",
+        "conll",
+        "french",
+        "german",
+        "lower",
+        "sentiment",
+        "spanish",
+        "squad",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.5190388524734348,
+       "partial": -0.464344509080058,
+       "p_partial": 0.9714028597140286
       }
      },
      "consensus": {
@@ -5849,10 +6287,23 @@
        "p_partial": 0.24817518248175183
       },
       "E_b": {
-       "tasks": [],
-       "tau": NaN,
-       "partial": NaN,
-       "p_partial": NaN
+       "tasks": [
+        "arxiv",
+        "category",
+        "conll",
+        "french",
+        "german",
+        "lower",
+        "sentiment",
+        "spanish",
+        "squad",
+        "summary",
+        "swahili",
+        "yoruba"
+       ],
+       "tau": -0.6932245813464506,
+       "partial": -0.6534003440880299,
+       "p_partial": 0.9986001399860014
       }
      }
     }
