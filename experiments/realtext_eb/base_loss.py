@@ -1,5 +1,5 @@
-"""E273 stage "base loss" (cell P2.64, descriptive; whip-lead 2026-11-23 04:35): the base model M's loss on each real-text side's own read
-rows (E273's D, before the cut), at every position, nats per token and per UTF-8 byte. It completes the E273 page's
+"""E273 stage "base loss" (cell P2.64, descriptive; whip-lead 2026-11-23 04:35): the base model M's loss on each
+real-text side's own read rows (E273's D, before the cut), at every position, nats per token and per UTF-8 byte. It completes the E273 page's
 unfamiliarity check: E272's base loss read French and Yoruba on other rows only, and lowercase vs reversed order not
 at all. Expected: lowercase low (English, lowercased), reversed order far higher; Yoruba above French per byte (E272's
 other rows: 2.15 against 1.02). Control: the mean log P of the scored token at the read position, as a geometric mean,

@@ -193,7 +193,7 @@ def eb_vs_loss(rows: list[dict[str, Any]], nats_per_byte: dict[str, float], name
         ax.scatter([r["nats_per_byte"] for r in rs], [r["E_b_minus_random"] for r in rs], marker=marks[t], s=28, label=SIDES[t].rsplit(" (", 1)[0],
                    facecolors="none" if t in UNREAD else c, edgecolors=c, linewidths=1.0)  # fmt: skip
     ax.axhline(0, color="#777777", linewidth=0.8)
-    ax.set_xlabel("M's loss on the side's own read rows, every position, nats per byte (E273 stage "base loss")")
+    ax.set_xlabel("M's loss on the side's own read rows, every position, nats per byte (E273 base-loss stage)")
     ax.set_ylabel("E_b over K, fine-tune minus its random")
     ax.legend(fontsize=7, loc="upper left", frameon=False, ncol=3, title="circle: built to need what M holds; square: new", title_fontsize=7)
     ax.set_ylim(-0.005, 0.15)
