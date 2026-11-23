@@ -1,0 +1,386 @@
+{
+ "experiment": "E279",
+ "post_hoc": true,
+ "note": "redteam-lead's checks, after the filed score; descriptive, no call",
+ "1_without_label_tasks": {
+  "dropped": [
+   "category",
+   "sentiment"
+  ],
+  "1_tiers": {
+   "tasks": [
+    "conll",
+    "french",
+    "lower",
+    "squad",
+    "summary",
+    "swahili",
+    "yoruba"
+   ],
+   "n": 7,
+   "tau": 0.0,
+   "p": 0.5571442855714429
+  },
+  "2_given_base_loss": {
+   "tasks": [
+    "conll",
+    "french",
+    "lower",
+    "squad",
+    "summary",
+    "swahili",
+    "yoruba"
+   ],
+   "n": 7,
+   "tau": 0.0,
+   "p": 0.5571442855714429,
+   "partial": 0.015467205622243655,
+   "p_partial": 0.48975102489751027
+  },
+  "3_given_kl": {
+   "tasks": [
+    "conll",
+    "french",
+    "lower",
+    "squad",
+    "summary",
+    "swahili",
+    "yoruba"
+   ],
+   "n": 7,
+   "tau": 0.0,
+   "p": 0.5571442855714429,
+   "partial": -0.014927035850663307,
+   "p_partial": 0.517948205179482
+  }
+ },
+ "2_missing": {
+  "arxiv": {
+   "tier": 3.0,
+   "gains": [
+    0.20200743579864344,
+    0.38979819202423016,
+    0.30269787883758426
+   ],
+   "seeds_under_min_gain": [
+    0,
+    1,
+    2
+   ],
+   "shares": [
+    "nan",
+    "nan",
+    "nan"
+   ]
+  },
+  "german": {
+   "tier": 2.0,
+   "gains": [
+    0.6930643987655642,
+    0.7819286336898799,
+    0.5548828697204584
+   ],
+   "seeds_under_min_gain": [
+    0,
+    1,
+    2
+   ],
+   "shares": [
+    "nan",
+    "nan",
+    "nan"
+   ]
+  },
+  "spanish": {
+   "tier": 2.0,
+   "gains": [
+    0.9576623525619503,
+    1.0666619119644167,
+    1.073451714515686
+   ],
+   "seeds_under_min_gain": [
+    0
+   ],
+   "shares": [
+    "nan",
+    0.09062317623223311,
+    -0.0003911422174440734
+   ]
+  }
+ },
+ "2_missing_min_gain": 1.0,
+ "2_tiers_read": {
+  "category": 2.5,
+  "conll": 2.0,
+  "french": 2.0,
+  "lower": 3.0,
+  "sentiment": 2.0,
+  "squad": 1.5,
+  "summary": 1.5,
+  "swahili": 1.0,
+  "yoruba": 1.0
+ },
+ "5_readability_without_outside": {
+  "dropped": [
+   "squad",
+   "summary"
+  ],
+  "filed": {
+   "between_sd": 0.6063183622252492,
+   "within_sd": 0.2239223179436256,
+   "readable": true,
+   "missing": [
+    "arxiv",
+    "german",
+    "spanish"
+   ]
+  },
+  "without": {
+   "between_sd": 0.14734486477486775,
+   "within_sd": 0.06366851837627159,
+   "readable": true,
+   "missing": []
+  }
+ },
+ "6_gaussian_range": {
+  "min": -0.03475540100879406,
+  "max": 0.06525762347471438,
+  "n_gaussians": 9,
+  "n_tasks": 9,
+  "above_max": [
+   "category",
+   "french",
+   "lower",
+   "squad",
+   "swahili",
+   "yoruba"
+  ],
+  "below_min": [
+   "conll",
+   "sentiment",
+   "summary"
+  ],
+  "inside": []
+ },
+ "3_smallest_p": {
+  "p": {
+   "1_tiers": 0.5044495550444955,
+   "2_given_base_loss": 0.3671632836716328,
+   "3_given_kl": 0.44055594440555945,
+   "4_E_b": 0.31016898310168983
+  },
+  "smallest": "4_E_b",
+  "smallest_p": 0.31016898310168983,
+  "n_tests": 4,
+  "corrected": false
+ },
+ "4_E_b": {
+  "control_all_states": {
+   "k_min": 100,
+   "kept_seeds": {
+    "category": [
+     0,
+     1,
+     2
+    ],
+    "conll": [
+     0,
+     1,
+     2
+    ],
+    "french": [
+     0,
+     1,
+     2
+    ],
+    "lower": [
+     0,
+     1,
+     2
+    ],
+    "sentiment": [
+     0,
+     1,
+     2
+    ],
+    "squad": [
+     0,
+     1,
+     2
+    ],
+    "summary": [
+     0,
+     1,
+     2
+    ],
+    "swahili": [
+     0,
+     1,
+     2
+    ],
+    "yoruba": [
+     0,
+     1,
+     2
+    ]
+   },
+   "E_b_means": {
+    "category": 0.04263933044215843,
+    "conll": 0.06456749387078974,
+    "french": 0.05927053999267524,
+    "lower": 0.023953748908560158,
+    "sentiment": 0.04627929869442448,
+    "squad": 0.11237870385127247,
+    "summary": 0.05496873896435652,
+    "swahili": 0.0830657183971933,
+    "yoruba": 0.12458229468908692
+   },
+   "both": {
+    "tasks": [
+     "category",
+     "conll",
+     "french",
+     "lower",
+     "sentiment",
+     "squad",
+     "summary",
+     "swahili",
+     "yoruba"
+    ],
+    "n": 9,
+    "tau": 0.16666666666666666,
+    "p": 0.31016898310168983
+   },
+   "E_b_only": {
+    "tasks": [
+     "category",
+     "conll",
+     "french",
+     "lower",
+     "sentiment",
+     "squad",
+     "summary",
+     "swahili",
+     "yoruba"
+    ],
+    "n": 9,
+    "tau": 0.16666666666666666,
+    "p": 0.31016898310168983
+   }
+  },
+  "K_at_least_1000": {
+   "k_min": 1000,
+   "kept_seeds": {
+    "category": [
+     0,
+     2
+    ],
+    "conll": [
+     1
+    ],
+    "french": [
+     0,
+     1,
+     2
+    ],
+    "lower": [
+     0,
+     1,
+     2
+    ],
+    "sentiment": [
+     1,
+     2
+    ],
+    "squad": [
+     0,
+     1,
+     2
+    ],
+    "summary": [
+     0,
+     1,
+     2
+    ],
+    "swahili": [
+     0,
+     1,
+     2
+    ],
+    "yoruba": [
+     0,
+     1,
+     2
+    ]
+   },
+   "E_b_means": {
+    "category": 0.05573481630129348,
+    "conll": 0.11884310666079788,
+    "french": 0.05927053999267524,
+    "lower": 0.023953748908560158,
+    "sentiment": 0.05655790480057431,
+    "squad": 0.11237870385127247,
+    "summary": 0.05496873896435652,
+    "swahili": 0.0830657183971933,
+    "yoruba": 0.12458229468908692
+   },
+   "both": {
+    "tasks": [
+     "category",
+     "conll",
+     "french",
+     "lower",
+     "sentiment",
+     "squad",
+     "summary",
+     "swahili",
+     "yoruba"
+    ],
+    "n": 9,
+    "tau": 0.2222222222222222,
+    "p": 0.23867613238676133
+   },
+   "E_b_only": {
+    "tasks": [
+     "category",
+     "conll",
+     "french",
+     "lower",
+     "sentiment",
+     "squad",
+     "summary",
+     "swahili",
+     "yoruba"
+    ],
+    "n": 9,
+    "tau": 0.16666666666666666,
+    "p": 0.3056694330566943
+   },
+   "states_dropped": {
+    "category": [
+     1
+    ],
+    "conll": [
+     0,
+     2
+    ],
+    "sentiment": [
+     0
+    ]
+   },
+   "size_K_dropped": {
+    "category": [
+     209
+    ],
+    "conll": [
+     200,
+     885
+    ],
+    "sentiment": [
+     476
+    ]
+   },
+   "n_tasks": 9
+  }
+ }
+}
