@@ -1,0 +1,89 @@
+{
+ "job": "cross_addition_addition",
+ "card": "NVIDIA L40S",
+ "states": {
+  "addition__addition_s0": {
+   "base": "addition",
+   "task": "addition",
+   "seed": 0,
+   "diagonal": true,
+   "steps": 7,
+   "reached": true,
+   "gain_read": 6.145099021494389,
+   "size": 0.003592105915279977,
+   "pile_kl": 0.09080346345774137,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/addition__addition_s0.pt",
+    "sha256": "bb5c4987f8c5ef9132d6cd5cd02ee2390b15efc67a3b15b7e619bb749a0e4666"
+   },
+   "trace": {
+    "step": 7,
+    "loss": 0.15799137949943542,
+    "s": 1.1500635147094727,
+    "gain": 5.834191013127565,
+    "done": true
+   },
+   "seconds": 1.2010691165924072,
+   "transplant_gain": 0.8042760584503412,
+   "kept": 0.1308808947808874
+  },
+  "addition__addition_s1": {
+   "base": "addition",
+   "task": "addition",
+   "seed": 1,
+   "diagonal": true,
+   "steps": 6,
+   "reached": true,
+   "gain_read": 5.5489647798240185,
+   "size": 0.0033666297477574327,
+   "pile_kl": 0.06880311506714876,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/addition__addition_s1.pt",
+    "sha256": "f5b89d14445698ae72c8e9f3625c571c96fed6b68ac3c83415d405afbf3a6941"
+   },
+   "trace": {
+    "step": 6,
+    "loss": 0.29395943880081177,
+    "s": 0.9569301605224609,
+    "gain": 5.428577467799187,
+    "done": true
+   },
+   "seconds": 0.9799764156341553,
+   "transplant_gain": 2.374279275536537,
+   "kept": 0.42787787808086175
+  },
+  "addition__addition_s2": {
+   "base": "addition",
+   "task": "addition",
+   "seed": 2,
+   "diagonal": true,
+   "steps": 7,
+   "reached": true,
+   "gain_read": 5.782332796603441,
+   "size": 0.003720012345463934,
+   "pile_kl": 0.10637537786712802,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/addition__addition_s2.pt",
+    "sha256": "dbfc0f3ed8cdcad0a8b5275e239c54a52ac0b180faa313d0d063cd056149222b"
+   },
+   "trace": {
+    "step": 7,
+    "loss": 0.23425042629241943,
+    "s": 1.094430923461914,
+    "gain": 5.469382267445326,
+    "done": true
+   },
+   "seconds": 1.1015033721923828,
+   "transplant_gain": 2.035759650170803,
+   "kept": 0.35206545900758496
+  }
+ },
+ "experiment": "E271 (P2.65 installed_cross, 67M)",
+ "head_start": {
+  "stop_lo": 0.006456438452005386,
+  "stop_decades": 0.0028039955924539124,
+  "read_lo": -0.014569230377674103,
+  "read_decades": -0.006327336358601092
+ },
+ "done": true
+}
