@@ -152,3 +152,52 @@ def scan(F: R.Model, feat: KV.Feat, run: Run, at: slice, ex: Tensor, pt: Tensor,
         log(f"    site {j} {s.name}: {len(local)} variables x {Q} pairs, {int((first[s.off : s.rem + 1] >= 0).sum())} needed; "
             f"{done} cases in {time.time() - t0:.0f} s ({done / max(time.time() - t0, 1e-9):.0f}/s)")  # fmt: skip
     return Scan(first.cpu(), flips.cpu(), max_dev, done, time.time() - t0)
+
+
+# ---- the read of one item (added 2026-11-22 for experiments/realtext_eb, cell P2.64) ---------------------------------
+# E268 (experiments/kstar_needed/run.py read_item, identity) and later callers (convergence_panel/eb.py,
+# installed_cross/stage_d.py) inline this sequence; those frozen scripts are left as they ran. `needed_set` is the same
+# calls in the same order with the same arguments, so it gives E268's K on E268's inputs.
+
+
+def rows_per_forward(rows: int, logit_rows: int, n_at: int) -> int:
+    """Cases per forward: at most `rows`, and at most `logit_rows` cases x read positions (E268's batch_rows)."""
+    return max(1, min(rows, logit_rows // n_at))
+
+
+@dataclass
+class Needed:
+    K: Tensor  # (n,) bool: needed on some tested pair
+    first_flip: Tensor  # (n,) int64: the derangement of K's first changing pair, -1 outside K
+    scan: Scan
+    run: Run
+    m: int  # windows tested per derangement
+    n_pairs: int
+
+
+@torch.no_grad()
+def needed_set(F: R.Model, feat: KV.Feat, toks: Tensor, at: slice, P: int, examples: int, seed: int, rows: int, logit_rows: int,
+               cache_batch: int, log: Callable[[str], None]) -> Needed:  # fmt: skip
+    """K on D = toks at the read positions `at`: F's run cached, P seeded derangements of the first min(examples, |D|)
+    windows of a seeded order, every variable scanned against every pair."""
+    run = cache(F, feat, toks, at, cache_batch)
+    m = min(examples, len(toks))
+    ex, pt = derangements(len(toks), P, m, seed)
+    sc = scan(F, feat, run, at, ex, pt, rows_per_forward(rows, logit_rows, run.top.shape[1]), log)
+    K = sc.first_pair >= 0
+    return Needed(K, torch.where(K, sc.first_pair // m, -1), sc, run, m, len(ex))
+
+
+@torch.no_grad()
+def identity_scan(F: R.Model, feat: KV.Feat, toks: Tensor, at: slice, examples: int, ident_vars: int, rows: int, logit_rows: int,
+                  cache_batch: int, log: Callable[[str], None]) -> dict[str, Any]:  # fmt: skip
+    """The identity interchange x' = x on the first `examples` windows, `ident_vars` subcomponents and the remainder of
+    every matrix (E268's stage-0 control): 0 argmax changes expected; its largest logit deviation is the fp32 floor of
+    the scan path, and its rate gives the time of a full scan."""
+    run = cache(F, feat, toks, at, cache_batch)
+    ex = torch.arange(min(examples, len(toks)))
+    only = {j: torch.cat([torch.arange(min(ident_vars, s.rem - s.off)), torch.tensor([s.rem - s.off])]) for j, s in enumerate(feat.sites)}
+    sc = scan(F, feat, run, at, ex, ex, rows_per_forward(rows, logit_rows, run.top.shape[1]), log, only)
+    return {"flips": int(sc.flips.sum()), "max_dev": sc.max_dev, "min_margin": float(run.margin.min()), "cases": sc.rows,
+            "cases_per_s": sc.rows / sc.seconds, "n_read_positions": run.top.shape[1], "n_windows": len(toks), "window_len": toks.shape[1],
+            "n_vars": feat.n}  # fmt: skip
