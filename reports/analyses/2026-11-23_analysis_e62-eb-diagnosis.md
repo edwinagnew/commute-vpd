@@ -2,7 +2,7 @@
 
 Cell P1.57, 2026-11-23. A read of saved arrays on CPU, $0; no model forward, no GPU.
 
-From saved files only, we asked why the kept share over the needed set reads about the same for E62's copying map and its lookup, when switching off head (2,4) separates them. The head is in the needed set, and more of it for the copying map, but its subcomponents carry at most five percent of the write change and keep about one twentieth of it, like every other variable. So the kept share sits between 0.015 and 0.063 for every fine-tune we have read, and the test as measured cannot see a reused head whose subcomponents change direction rather than scale.
+From saved files only, we asked why the kept share over the needed set reads about the same for E62's copying map and its lookup, when switching off head (2,4) separates them. The head is in the needed set, and more of it for the copying map, but its subcomponents carry at most five percent of the write change and keep about one twentieth of it, like every other variable. So the kept share sits between 0.015 and 0.063 for every fine-tune we have read, and a change confined to one head changes the direction of every head-mixed subcomponent's write, so it reads as mostly new. D is mixed (see Terms), so the verdict is "no separation of E_b over K on E62's mixed D", while head ablation reads copy behaviour: the two readings are on different data.
 
 ## The answer
 
@@ -14,6 +14,7 @@ Terms, each used below:
 
 - **Variables.** Every VPD subcomponent of the 24 decomposed matrices, plus one remainder per matrix: 38,938 in all.
 - **Write change of a variable.** The squared difference between the fine-tuned model's write and the original model's write for that variable, on the same matrix input, summed over every position of the 512 windows of D. Called dd in code.
+- **D.** 512 windows of 8 tokens, of which 206 are copy windows ("A B .. A M"); the rest are cue-free windows and far text (E187's read half of the e62 group). D is mixed, not copy-only.
 - **Kept part of it.** The part that the original write, times its own best positive gain, explains: the change projected on the original write. A variable whose fine-tuned write is a positive multiple of its original write keeps all of it.
 - **Kept share over K**, E_b in code: the kept parts summed over the needed and changed variables, over their summed write change. 1 for an update that only rescales each variable's write; the KL-matched random update reads 0.0106 and the size-matched one 0.0110; the built strengthening edits that double or multiply by ten every weight read 0.761.
 - **Needed set K.** A variable is needed when swapping its value for the one it takes on another window of D flips the fine-tuned model's top token at the read position, on any of 256 tested window pairs.
@@ -104,11 +105,11 @@ Over all 114 items E275 read, the kept share over K runs from 0.0147, a cipher s
 
 ## What this means
 
-The non-separation comes from the third account, in a general form, not the first two. The needed set contains the head, and more of it on the copy. The head's update is half query and key, not mostly. But pooled over subcomponents the kept share is near 0.04 on both maps, and the median variable keeps about one percent. So it reads the geometry of the least-squares split, not which heads were reused. Two facts make a reused head read as new under this test. VPD's layer-2 attention subcomponents are not head-local: the median subcomponent has 0.115 of its weight in head 4. So a change to head 4 alone is not a rescaling of any one subcomponent's write. Under one exact split of a head-4-only rescaling, each subcomponent would keep a fraction equal to its own head-4 share. That follows from the definitions above and was not computed on data. Second, a change in where a head attends shows up only as changes in query and key contributions, compared on the same input. Its effect on what the head writes is never compared at all. So a re-routing of attention at a reused head, or a sharpening confined to one head, reads as new under a per-variable write-gain test, while the head-ablation reading credits it as reuse. No verdict on either wording of the definition is given here: the definition is the user's to set.
+The non-separation comes from the third account, in a general form, not the first two. The needed set contains the head, and more of it on the copy. The head's update is half query and key, not mostly. But pooled over subcomponents the kept share is near 0.04 on both maps, and the median variable keeps about one percent. So it reads the geometry of the least-squares split, not which heads were reused. Two facts make a reused head read as new under this test. VPD's layer-2 attention subcomponents are not head-local: the median subcomponent has 0.115 of its weight in head 4. So a change to head 4 alone is not a rescaling of any one subcomponent's write. For q, k and v, under one exact split of a head-4-only rescaling, each subcomponent keeps a fraction equal to its own head-4 share s_i, so pooled over q, k and v the kept share is well below 1 (it is sum s_i^2 w_i / sum s_i w_i, above the 0.115 median share). That follows from the definitions above and was not computed on data. It does not hold for o: head 4 owns input columns there, so an o subcomponent's change stays parallel to its own output direction, and its kept fraction is the squared uncentred cosine over positions of (P v_i . x) with (v_i . x), which depends on the activations and can be large. Second, a change in where a head attends shows up only as changes in query and key contributions, compared on the same input. Its effect on what the head writes is never compared at all. So a re-routing of attention at a reused head, or a sharpening confined to one head, reads as new under a per-variable write-gain test, while the head-ablation reading credits it as reuse. No verdict on either wording of the definition is given here: the definition is the user's to set.
 
 ## How compelling is this
 
-Three seeds per map, one featurization, one set of 512 windows. Every number is from saved arrays and weights; the kept share recomputed here matches E275's at every printed digit. The head-4 assignment is by weight share, a proxy: the head-4 part of each subcomponent's write change needs the activations and was not read. The flips come from 256 window pairs and are small counts.
+Three seeds per map, one featurization, one set of 512 windows, of which 206 are copy windows and the rest cue-free windows and far text. The verdict is "no separation of E_b over K on E62's mixed D"; head ablation (0.471 to 0.563 against none) reads copy behaviour, so the two readings are on different data. Every number is from saved arrays and weights; the kept share recomputed here matches E275's at every printed digit. The head-4 assignment is by weight share, a proxy: the head-4 part of each subcomponent's write change needs the activations and was not read. The flips come from 256 window pairs and are small counts.
 
 ## Surprises
 
@@ -129,6 +130,8 @@ None: this is a diagnosis of the project's own measurement.
 - Median top-1 margin over D: not saved by E275, not computed.
 - The head-4 part of each variable's write change: needs a forward on D, not computed.
 - A built head-4-only strengthening edit, and its kept share: not run.
+- E_b over K on the 206 copy windows alone: num, den, dd were summed over all of D (stand_in.write_change), so it needs a new write pass on a GPU (proposed to whip-lead 2026-11-23).
+- The built head-(2,4) edits (E280, running).
 - Whether the remainders' write change is only the update's outside part, or partly rounding of the remainder in single precision: not checked.
 - A figure: the tables carry every comparison; none drawn.
 - No GPU, no job, no model forward.
