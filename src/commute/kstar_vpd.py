@@ -451,6 +451,8 @@ def search(ev: Callable[[Tensor], float], grad: Callable[[Tensor], Tensor], n: i
             cmin = min(cmin, c)
         else:
             i += 1
+        if evals % 500 == 0:  # progress, and |K| at the old cap of 2,000 (P2.61's reproduction check)
+            log(f"    polish: {evals} evaluations, {i} of {len(drop)} tried, |K| {int(keep.sum())}, chunk {c}")
     return Found(members.tolist(), keep.nonzero().squeeze(1).tolist(), evals, i < len(drop), cmin, sizes, gs)
 
 
