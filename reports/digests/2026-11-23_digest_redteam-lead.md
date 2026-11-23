@@ -73,3 +73,6 @@ Built: rival A as filed (g 0.982). But g rests on x2/x10, which change 9 variabl
 
 ## P1.57, due 11-23: E278 grid half (def2e161), verdict sent to definition-lead
 Rival B as filed: all five tasks (E_b over K 0.027-0.040) lie within 0.03 of one another and of their randoms (0.013-0.017), against rival_gap 0.2. The order reverses rival A's squared-cosine order at both ends: cipher is highest (0.037-0.040) and copy second (0.032-0.034), with no overlap across 3 seeds. Prior-matched cipher reads below the raw cipher. This is a qualitative surprise for the page's first paragraph, and no reuse/new reading follows from it. "2-3x random" has no filed bar.
+
+## P2.66, due 11-24: E279 page (9d4b953c) checked, fill after one wording fix
+All my notes are on the page, labelled post hoc. The fix: "does not order / does not follow the tiers" becomes "showed no order (no call); n 9 can miss a moderate correlation". Also: the -0.69 needs a source, and one sentence should say the page cannot tell an intuition null from an instrument null (the premise check is doubtful).
