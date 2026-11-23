@@ -76,3 +76,7 @@ Rival B as filed: all five tasks (E_b over K 0.027-0.040) lie within 0.03 of one
 
 ## P2.66, due 11-24: E279 page (9d4b953c) checked, fill after one wording fix
 All my notes are on the page, labelled post hoc. The fix: "does not order / does not follow the tiers" becomes "showed no order (no call); n 9 can miss a moderate correlation". Also: the -0.69 needs a source, and one sentence should say the page cannot tell an intuition null from an instrument null (the premise check is doubtful).
+
+## P1.58, due 11-24: E282 filing check (799ac030, job 64538 running), sent to compare-lead
+Main point: there is no positive control at V (x2/x10 are exact only at N). So rival b (both V means < 0.3) cannot be told from under-fitting of the 38,936 V gains over a fixed 600 steps. Read rival b only if the E62 V fits are flat and train KL is not well under held-out KL; otherwise no call at V. The missing control would be a 2x scaling of one VPD subcomponent. Also: quote E62 with its mixed D; give the KL-fit share beside E231's task-fit prior; q2 >= 0.95 at N would be a surprise.
+E279 (P2.66): the wording fix was taken (2dcb59b5) and the log flushed (v467).
