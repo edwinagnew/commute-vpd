@@ -686,3 +686,6 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e247_kstar_composition.png": "experiments/thin_edit_diagnosis/figures/kstar_composition.png"
 - "fig/e236_r_gap_gain_vs_full.png": "experiments/gain_only_r/figures/r_gap_gain_vs_full.png"
 - "fig/e245_pair_gaps.png": "experiments/sae_r_a/figures/pair_gaps.png"
+- "fig/e268_eb_k.png": "experiments/kstar_needed/figures/eb_k.png"
+- "fig/e274_cos2_vs_eb.png": "experiments/cos_admissible/figures/cos2_vs_eb.png"
+- "fig/e273_eb_pairs.png": "experiments/realtext_eb/figures/eb_pairs.png"
