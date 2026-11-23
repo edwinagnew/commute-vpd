@@ -181,6 +181,38 @@ def eb_vs_kl(rows: list[dict[str, Any]], out_dir: Path) -> None:
     FG.save(fig, out_dir / "eb_kl.png", data=rows, n="18 fine-tunes, 3 seeds per side; topic label open: its K is too small to read.")
 
 
+def eb_vs_loss(rows: list[dict[str, Any]], nats_per_byte: dict[str, float], name: str, note: str) -> None:
+    """figures/<name>.png: E_b over K minus its random against M's all-position loss on that side's own read rows
+    (E273 stage "base loss", results/base_loss.json), per fine-tune: does the write share follow how unfamiliar the text is to M?"""
+    fig, ax = FG.figure((6.4, 3.8))
+    marks = {"L1": "o", "L3": "s", "T1": "o", "T4": "s", "T2": "o", "T3": "s"}
+    colors = {"L1": "#999999", "L3": "#999999", "T1": "#0072B2", "T4": "#0072B2", "T2": "#D55E00", "T3": "#D55E00"}
+    for t in SIDES:
+        rs = [r | {"nats_per_byte": nats_per_byte[t]} for r in rows if r["task"] == t]
+        c = colors[t]
+        ax.scatter([r["nats_per_byte"] for r in rs], [r["E_b_minus_random"] for r in rs], marker=marks[t], s=28, label=SIDES[t].rsplit(" (", 1)[0],
+                   facecolors="none" if t in UNREAD else c, edgecolors=c, linewidths=1.0)  # fmt: skip
+    ax.axhline(0, color="#777777", linewidth=0.8)
+    ax.set_xlabel("M's loss on the side's own read rows, every position, nats per byte (E273 stage "base loss")")
+    ax.set_ylabel("E_b over K, fine-tune minus its random")
+    ax.legend(fontsize=7, loc="upper left", frameon=False, ncol=3, title="circle: built to need what M holds; square: new", title_fontsize=7)
+    ax.set_ylim(-0.005, 0.15)
+    ax.set_title("Does the write share over K follow how unfamiliar the text is to M?", fontsize=9)
+    FG.save(fig, HERE / "figures" / f"{name}.png", data=[r | {"nats_per_byte": nats_per_byte[r["task"]]} for r in rows], n=note)
+
+
+def base_loss(summary: Path, path: Path) -> None:
+    loss = json.loads(path.read_text())["tasks"]
+    eb_vs_loss(pair_rows(json.loads(summary.read_text())), {t: v["nats_per_byte"] for t, v in loss.items()}, "eb_loss",
+               "18 fine-tunes, 3 seeds per side; M's loss read once per side; topic label open: its K is too small to read.")  # fmt: skip
+
+
+def base_loss_sketch(summary: Path) -> None:
+    """Made-up losses for the card: lowercase lowest, reversed highest, Yoruba above French (E272's other rows)."""
+    made = {"L1": 1.2, "L3": 1.2, "T1": 0.9, "T4": 2.6, "T2": 1.0, "T3": 2.1}
+    eb_vs_loss(pair_rows(json.loads(summary.read_text())), made, "eb_loss_sketch", "SKETCH: real E_b, made-up losses; 3 seeds per side")
+
+
 def sketch(out_dir: Path) -> None:
     """Made-up E_b values: rival a (first sides above their twins, all above the randoms), rival b (all at the randoms)."""
     made = {"a": {"L1": 0.08, "L3": 0.03, "T1": 0.12, "T4": 0.04, "T2": 0.06, "T3": 0.03}, "b": dict.fromkeys(SIDES, 0.013)}
@@ -198,6 +230,10 @@ def sketch(out_dir: Path) -> None:
 if __name__ == "__main__":
     if sys.argv[1:2] == ["--sketch"]:
         sketch(HERE / "figures")
+    elif sys.argv[1:2] == ["--base-loss"]:
+        base_loss(HERE / "results" / "summary.json", HERE / "results" / "base_loss.json")
+    elif sys.argv[1:2] == ["--base-loss-sketch"]:
+        base_loss_sketch(HERE / "results" / "summary.json")
     elif sys.argv[1:2] == ["--pairs"]:
         pairs(HERE / "results" / "summary.json", HERE / "figures")
     else:
