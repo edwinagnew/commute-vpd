@@ -20,3 +20,8 @@ under the user's frozen definition (theory/2026-11-22_definition_frozen.md). You
 scores K* from mean ablation, not K. Compute K by single-variable interchange on D for the built edits and the trained
 SFT/RL states from saved files (cluster debug, $0), then E_b over K. Report K vs K*, whether the built-edit order and
 trained readings stand, update the admissibility page, note writeup-lead. Start at once; results needed tomorrow."
+
+Deviation, 2026-11-22 (definition-lead): the card planned cluster debug only. Cluster job 63517 sat PENDING over 5 min
+on the one busy L40 node, and 26 serial 30-min jobs would take ~13 h, past the 11-23 cutoff. By `.claude/CLAUDE.md`
+→ Compute (a pod when the cluster does not start a run within 5 min) the run moved to RunPod: a rehearse pod
+(`commute-E268-rehearse-stage0`, stage 0 + one built item at full sizes) then 4 H100 pods. Estimate ~$15-20.
