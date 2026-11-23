@@ -1,0 +1,44 @@
+{
+  "experiment": "E269",
+  "cell": "P2.61",
+  "filed": "2026-11-22",
+  "card": "reports/plans/2026-11-22_plan_p2-61-uncapped-card.md",
+  "settings": {
+    "items": [
+      "p256/sequence_sft_s0", "p256/sequence_rl_s0", "p256/sequence_rlg_s0",
+      "p256/sequence_sft_s1", "p256/sequence_rl_s1", "p256/sequence_rlg_s1",
+      "p256/sequence_sft_s2", "p256/sequence_rl_s2", "p256/sequence_rlg_s2",
+      "p256/sequence_random_s0"
+    ],
+    "eval_cap": 1000000000,
+    "eval_cap_source": "P2.61 (user approval 2026-11-22): the search without the 2,000 cap; every other setting is E226's filed value (experiments/kstar_vpd/results/predictions.json), as E257 used"
+  },
+  "capped_E257": {
+    "source": "experiments/rb_states/results/items/p256-sequence_<kind>_s<seed>.json (E_b, size_K), 2,000 evaluations each",
+    "p256/sequence_sft_s0": {"E_b": 0.036973198412406046, "size_K": 21027},
+    "p256/sequence_sft_s1": {"E_b": 0.0377161568778757, "size_K": 19993},
+    "p256/sequence_sft_s2": {"E_b": 0.03565162253899028, "size_K": 20295},
+    "p256/sequence_rl_s0": {"E_b": 0.03938560268294698, "size_K": 23720},
+    "p256/sequence_rl_s1": {"E_b": 0.03646910414205806, "size_K": 17566},
+    "p256/sequence_rl_s2": {"E_b": 0.04893777375508643, "size_K": 12835},
+    "p256/sequence_rlg_s0": {"E_b": 0.04262544555342948, "size_K": 22968},
+    "p256/sequence_rlg_s1": {"E_b": 0.03821827704940483, "size_K": 24652},
+    "p256/sequence_rlg_s2": {"E_b": 0.04051801987531555, "size_K": 14971},
+    "p256/sequence_random_s0": {"E_b": 0.009949114047219796, "size_K": 32305}
+  },
+  "expected": {
+    "reproduction": "each item's log line 'polish: 2000 evaluations ... |K| N' gives N equal to E257's capped size_K above (the search is identical up to the old cap). A card other than E257's may flip a decision near the KL bar; a mismatch is reported per item with the size difference, and the item is still read",
+    "uncapped_subset": "every uncapped |K*| is at most its capped size_K (the polish only removes members) and the search record says capped false",
+    "random_reference": "p256/sequence_random_s0's uncapped E_b stays near its capped 0.0099 and under every trained seed's",
+    "kstar_bar": "each polished K* passes E226's bar KL(F || F_K) <= (1 - alpha) KL(F || F_empty), as every E226 search does by construction"
+  },
+  "rules": {
+    "reading": "E_b per item as rb_states (E257) defines it (commute.stand_in.explained_share over K*'s changed members), from E257's saved num, den, dd and changed arrays (experiments/rb_states/results/large/items_<item>.npz) with the uncapped polished K* (results/large/kstar_<item>.npz, main_in_K_polished)",
+    "gap": "gap_k = mean uncapped E_b over the seeds of kind k minus the mean over the SFT seeds, for k in rl, rlg (absolute, in E_b's units)",
+    "rival_a": "both gaps >= 0.01: the cap hid an RL-above-SFT order on E_b",
+    "rival_b": "both |gap| < 0.01: E_b reads RL and SFT alike without the cap too",
+    "otherwise": "mixed: reported as read, per kind",
+    "no_call": "fewer than 2 seeds read for SFT or for a kind: that kind's gap is not called",
+    "ties": "a gap of exactly 0.01 counts as >= 0.01"
+  }
+}
