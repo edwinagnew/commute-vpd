@@ -234,8 +234,9 @@ def critical_tau(x: tuple[float, ...], alpha: float, draws: int = CRIT_DRAWS, se
     else:
         perms = np.argsort(np.random.default_rng(seed).random((draws, len(x))), 1).astype(np.int16)
     t = np.sort(np.concatenate([taub_rows(x, p) for p in np.array_split(perms, max(1, len(perms) // 20_000))]))
-    p_ge = 1 - np.searchsorted(t, t - 1e-9, "left") / len(t)
-    return float(t[p_ge <= alpha].min())
+    p_ge = (len(t) - np.searchsorted(t, t - 1e-9, "left")) / len(t)  # a count ratio: 1 - k/n put an exact 6/120 above 0.05
+    called = t[p_ge <= alpha]
+    return float(called.min()) if called.size else math.nan  # nan: no ordering of these tier codes reaches alpha
 
 
 def taub_rows(x: tuple[float, ...], Y: np.ndarray) -> np.ndarray:
