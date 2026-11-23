@@ -13,11 +13,13 @@ as every P1.54 item does; the two-label contrast is a reading of stage 2, not of
   0    alone: the do-nothing (a zero dW) has no changed variable, dd exactly 0 and E_b exactly 1; the identity
        interchange flips no argmax (E268's R0a); E247's x2 control's saved E_b over K* repeats to 1e-11 (R0c); its
        E_b over K by a fresh scan, against E268's saved value              -> results/eb/stage0.json
-  TASK i/n M  every n-th state of TASK picked at matched M (kl: first; size: only if kl reads), from the i-th, and
-               its Gaussians  -> results/eb/TASK.json
+  TASK i/n M [SET]  every n-th state of TASK that SET (nine, the default, or wide: Amendment 5's 18) picked at a match
+               starting M (kl, kl_hi, ..., size_lo), from the i-th, and its Gaussians -> results/eb/TASK.json (nine),
+               results/wide/eb/TASK.json (wide), where score.py reads each set's E_b. A written state is skipped.
 
     PRED_SHA=<sha> python experiments/convergence_panel/eb.py 0
     PRED_SHA=<sha> python experiments/convergence_panel/eb.py TASK 0/1 kl
+    PRED_SHA=<sha> python experiments/convergence_panel/eb.py TASK 0/1 kl_hi wide
 """
 
 from __future__ import annotations
@@ -39,13 +41,16 @@ from commute.open_pair import jsonable
 RUN: Any = load_experiment("convergence_panel", "run")
 KN: Any = load_experiment("kstar_needed", "run")  # E268: world, Config, saved, identity, batch_rows
 KP = KN.KP
-OUT = RUN.RESULTS / "eb"
+OUT = RUN.RESULTS / "eb"  # stage 0's gate, shared by both sets
+MATCHES = ("kl", "size", "kl_hi", "kl_lo", "size_hi", "size_lo")
 
 
 def e_b_file(w: Any, kc: Any, dW_file: Path, toks: torch.Tensor) -> dict[str, Any]:
-    """E_b over K for one saved dW on windows toks, read at the last position."""
+    """E_b over K for one saved dW on windows toks, read at the last position; seconds and peak memory of the whole state."""
+    t0 = time.time()
+    torch.cuda.reset_peak_memory_stats()
     F, M, toks, at, _ = w.from_dw(dW_file, toks.cuda(), KP.LAST)
-    return e_b(w, kc, F, M, toks, at)
+    return e_b(w, kc, F, M, toks, at) | {"seconds_state": time.time() - t0}
 
 
 def e_b(w: Any, kc: Any, F: Any, M: Any, toks: torch.Tensor, at: slice) -> dict[str, Any]:
@@ -101,22 +106,28 @@ def stage0(w: Any, kc: Any, th: dict[str, Any]) -> None:
         raise SystemExit(f"STOP: eb stage 0: {miss}: tell the lead")
 
 
-def task(w: Any, kc: Any, th: dict[str, Any], name: str, shard: tuple[int, int], match: str) -> None:
-    """Every n-th of TASK's states picked by `match` ("kl" or "size": both levels) and their Gaussians, from the i-th."""
+def states(name: str, which: str, match: str) -> list[str]:
+    """TASK's states that set `which` picked at a match starting `match`, then the seed-0 ones' Gaussians (stage 2's)."""
+    picked = {f: s for f, s in RUN.picked(name, which).items() if any(p.startswith(match) for p in s["picked"])}
+    return sorted(picked) + [f"random/{f}" for f in sorted(picked) if picked[f]["seed"] == 0]
+
+
+def task(w: Any, kc: Any, th: dict[str, Any], name: str, shard: tuple[int, int], match: str, which: str) -> None:
+    """Every n-th of `states` from the i-th, each written to the set's eb file as it finishes."""
     gate = json.loads((OUT / "stage0.json").read_text()) if (OUT / "stage0.json").is_file() else {}
     assert gate.get("passed"), "eb stage 0 has not passed"
     C, _ = RUN.load()
-    path = OUT / f"{name}.json"
-    out: dict[str, Any] = json.loads(path.read_text()) if path.is_file() else {"task": name, "states": {}}
+    path = RUN.set_dir(which) / "eb" / f"{name}.json"
+    out: dict[str, Any] = json.loads(path.read_text()) if path.is_file() else {"task": name, "set": which, "states": {}}
     r = RUN.TK.build(RUN.ST.Net("cuda"), C, name).read
     toks = windows(r, th["eb"]["n_windows"])
-    picked = {f: s for f, s in RUN.picked(name).items() if any(p.startswith(match) for p in s["picked"])}
-    files = sorted(picked) + [f"random/{f}" for f in sorted(picked) if picked[f]["seed"] == 0]  # stage 2's Gaussians
+    files = states(name, which, match)
+    RUN.log(f"[eb {which} {name}] {len(files)} states, shard {shard}: {len(files[shard[0] :: shard[1]])}; windows {tuple(toks.shape)}")
     for f in files[shard[0] :: shard[1]]:
         if f not in out["states"]:
             out["states"][f] = e_b_file(w, kc, random_file(f, C) if f.startswith("random/") else RUN.REPO / f, toks)
             write_stage(path, jsonable(out))
-            RUN.log(f"[eb {name}] {f}: {json.dumps(jsonable(out['states'][f]))}")
+            RUN.log(f"[eb {which} {name}] {f}:{json.dumps(jsonable(out['states'][f]))}")
 
 
 def random_file(item: str, C: Any) -> Path:
@@ -131,8 +142,8 @@ def random_file(item: str, C: Any) -> Path:
 
 def main() -> int:
     a = sys.argv[1:]
-    if not a or (a[0] != "0" and (a[0] not in RUN.TASKS or len(a) != 3 or a[2] not in ("kl", "size"))):
-        sys.exit("usage: eb.py 0 | eb.py TASK i/n kl|size")
+    if not a or (a[0] != "0" and (a[0] not in RUN.TASKS or len(a) not in (3, 4) or a[2] not in MATCHES or a[3:] not in ([], ["nine"], ["wide"]))):
+        sys.exit(f"usage: eb.py 0 | eb.py TASK i/n {'|'.join(MATCHES)} [nine|wide]")
     _, th = RUN.load()
     torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False
     w, kc = KN.world(), KN.load_config()
@@ -140,7 +151,7 @@ def main() -> int:
         stage0(w, kc, th)
     else:
         i, n = (int(x) for x in a[1].split("/"))
-        task(w, kc, th, a[0], (i, n), a[2])
+        task(w, kc, th, a[0], (i, n), a[2], (a[3:] or ["nine"])[0])
     print(f"EB STAGE {' '.join(a)} DONE", flush=True)
     return 0
 

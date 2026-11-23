@@ -177,6 +177,36 @@ shared `src/commute/panel.py`; rules `results/predictions.json`; card `card.md`;
 - Hope 2 (W across readings) does not depend on tiers; at n = 5 it is weak, and its own-m null percentile is reported
   as filed.
 
+## E_b stage on the wide set (2026-11-23, proposed)
+`eb.py TASK i/n kl_hi wide` reads the wide set's KL "hi" picks (`results/wide/selection.json`, target 0.181) and
+writes `results/wide/eb/TASK.json`, where `score.py` reads the wide set's E_b (`records`, `res / "eb" / p.name`). The
+nine set's KL "hi" picks are at another rung (0.256): none of their 15 state files is among the wide set's 36, so the
+nine set's E_b is not produced by this stage. Counted from the code (`eb.states`, dry run on CPU 2026-11-23): 12 kept
+tasks (`wide/dropped.json` kept.kl_hi) x (3 seeds + seed 0's Gaussian) = 48 states. Tokens per window = read position
++ 1 (`eb.windows`): continued text `half` + 1 = 64 (`panel.lm_read`; lower from E53's windows, the plan's 64 above, not
+re-read: the job logs the windows' shape), squad `squad_P` = 256, conll `conll_P` = 96, summary `summary_P` = 128,
+sentiment and category 32 + " Topic:" ~ 34 (`realistic.label_windows`). Seconds per state = 738 x tokens / 64 (E268).
+
+| tasks | tokens | states | s/state | s |
+|---|---|---|---|---|
+| lower, french, yoruba, arxiv, german, swahili, spanish | 64 | 7 x 4 = 28 | 738 | 20,664 |
+| squad | 256 | 4 | 2,952 | 11,808 |
+| summary | 128 | 4 | 1,476 | 5,904 |
+| conll | 96 | 4 | 1,107 | 4,428 |
+| sentiment, category | ~34 | 2 x 4 = 8 | 392 | 3,136 |
+| **states** | | **48** | | **45,940 = 12.8 H100-h** |
+
+- Stage 0 once, alone, first: x2 1,445 s (E268 `kstar_needed/results/items/x2.json` .seconds) + do-nothing on 200
+  lower windows (~738 s) + identity: ~0.7 h.
+- Four H100 SXM pods, by task: A squad (3.3 h, after stage 0 on A: 4.0 h); B summary + conll (2.9 h); C lower,
+  french, yoruba, arxiv (3.3 h); D german, swahili, spanish, sentiment, category (3.3 h). B-D start when stage 0 has
+  passed and get `results/eb/stage0.json` (the gate `task` asserts). Wall ~4.5 h with set-up.
+- Uploads: the 36 state files are 2.04 GB: 2,040 MB / 10 MB/s = 204 s in all (~50 s a pod).
+- Cost: (12.8 states + 0.7 stage 0 + 4 x 0.3 set-up) h = 14.7 H100-h x $4.40/h = **~$65**; gated (over $60).
+- Unmeasured until the rehearsal (`E272 rehearse: eb`, cluster L40, stage 0 + one squad state, 200 windows): seconds
+  per squad state (the 256/64 scaling is a guess), peak memory on squad at scan rows 1024 (x2 peaked at 11.3 GB on 75
+  windows of 64), and the L40-to-H100 time ratio used to carry it over.
+
 ## Open choices (for the lead)
 - The raters' tiers go in `raters` before `read` (both refuse while it is empty); the user's sort when it arrives.
 - E272: no E-number is claimed yet; every file says E272.
