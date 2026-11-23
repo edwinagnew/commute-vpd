@@ -29,3 +29,7 @@ three-seed means, copy higher on every seed (smallest gap ~0.012, about 3 seed s
 (copy 0.0379, lookup 0.0420, ratio 0.90) reads "no separation". K is also re-found on the copy windows: K_copy by the
 same single-variable interchange (E268 settings) with both x and x' drawn from the 206 copy windows, and E_b over K_copy
 read beside E_b over E275's K. Stage 0's transcription tolerance comes from a measured repeat of the same pass.
+Split case (redteam-lead, same day): K_copy is the reading, since the dilution acts through K; E_b over E275's K is
+reported beside it. A ratio >= 1.5 over K_copy reads rival A whatever E275's K gives, and below 1.5 over K_copy reads
+rival B. K_copy's scan uses E275's pair count (256 pairs: 4 derangements x 64 windows, E268 settings), drawn from the
+copy windows, so the two |K| are comparable; the |K| < 100 floor applies to K_copy.
