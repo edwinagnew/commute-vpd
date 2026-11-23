@@ -277,7 +277,7 @@ descriptive and carry no call.
 
 **Reading it.** Neither check accounts for the write share's reversal. Seeds of one task agree only a little less on
 reuse-tier tasks than on new-tier ones, and holding that agreement fixed leaves the write share's tau with the tiers
-almost unchanged. How fast a task learns follows the raters only weakly, and only the re-gating share runs with it.
+almost unchanged. The learning-speed check has too little resolution to say whether speed follows the raters, and no reading follows it at p < 0.05.
 
 **Seed agreement.** For each task we took the cosine between two seeds' weight updates, all 28,311,552 trained
 weights flattened, and averaged the three seed pairs. It ranges from 0.18 on arXiv to 0.91 on German and Spanish. A
@@ -286,7 +286,7 @@ floor is at most 3.2e-4 in size on every task, the chance scale for this many we
 there is no Gaussian-to-Gaussian floor. Reuse-tier tasks agree slightly less than new-tier ones, at a consensus tau of
 0.25 between the tiers and minus the agreement, permutation p 0.16. Agreement and the write share go together weakly,
 at tau 0.33 with a two-sided p of 0.15. With agreement held fixed, the write share's consensus tau with the tiers moves
-from -0.69 only to -0.67.
+from -0.69 only to -0.67. Agreement is read at the KL-matched states, whose steps differ between seeds on arXiv (5, 101, 12) and summary (9, 19, 5), so part of it reflects which state was picked; French and SQuAD are low with matched steps, so not all of it.
 
 | tiers | tier vs. minus agreement | p | write share vs. tiers | same, agreement held fixed | p |
 |---|---|---|---|---|---|
@@ -297,10 +297,10 @@ from -0.69 only to -0.67.
 **Steps to learn.** For each seed we took the first logged step at which the held-out gain reached half its final
 value, then averaged the three seeds. Fewer steps reads as more reuse. Held-out gain is logged at every step up to
 about step 6 and then at widening gaps, so five of the twelve tasks tie at step 1. Lowercase took 16 steps, and
-Swahili and Yoruba about 50. The label and prompt tasks mostly reached half their gain at step 1. Learning speed
-follows the consensus tiers at tau 0.18, permutation p 0.25. Opus and GPT read 0.16 and 0.19.
+Swahili and Yoruba about 50. The label and prompt tasks mostly reached half their gain at step 1. With that many ties the check has too little resolution to say much: learning speed
+follows the consensus tiers at tau 0.18, permutation p 0.25. Opus and GPT read 0.16 and 0.19. Four tasks' seed-0 held gains were seen before the rule was filed; no crossing was computed.
 
-The re-gating share is the only reading that runs with learning speed, at tau 0.49 on eight tasks with p 0.066. Holding
+None of the six readings follows learning speed at p < 0.05. The re-gating share's 0.49 on eight tasks (p 0.066) is the largest, which is about what chance gives across six tests. Holding
 the base loss fixed leaves it there. The effective rank runs against learning speed, at -0.36, and the base loss does
 not track it at all.
 
