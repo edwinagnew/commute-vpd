@@ -72,7 +72,9 @@ shared `src/commute/panel.py`; rules `results/predictions.json`; card `card.md`;
   Two sets are reported side by side and neither replaces the other: the nine, scored exactly as Amendment 3 from
   `results/` on the filed raters, and the wide set, from `results/wide/` on the joint rating, with its own selection
   (the filed rule over all 18, so its matched rungs may differ) and drops. The critical tau-b stays exact up to n = 9
-  and uses 200,000 random orderings past it. Wide consensus tiers: 5 at 3, 3 at 2.5, 5 at 2, 2 at 1.5, 3 at 1. At
+  and uses 200,000 random orderings from n = 10; score.py records the critical tau-b and power at the n kept. The
+  nine are scored first, then the wide set. The joint raters again rank by pretraining prevalence, so Amendment 3's
+  prior-aware H1 call is the scored call for the wide panel too. Wide consensus tiers: 5 at 3, 3 at 2.5, 5 at 2, 2 at 1.5, 3 at 1. At
   n = 18 the critical tau-b is 0.317 (Opus 0.339, GPT 0.333), power 0.50 at a true tau of 0.3 and 0.92 at 0.5; with
   drops, n = 17: 0.327-0.334 (power 0.48 without summary), n = 16: 0.336-0.354 (0.43 without summary and
   sentiment), n = 15: 0.354-0.375 (0.43 without the three twin-checked tasks). The wide set's E_b (stage 3) is not
