@@ -1,0 +1,30 @@
+{
+  "experiment": "EXXX (claim2_needed)",
+  "cell": "P2.62",
+  "card": "experiments/claim2_needed/card.md",
+  "filed": "2026-11-23, compare-lead (writer agent), before any GPU run of this experiment",
+  "settings": {
+    "control": "e58/copy_s0",
+    "transcription_rel_tol": 1e-11,
+    "prior_tasks": ["copy", "prior_cipher"],
+    "prior_seeds": [0, 1, 2, 3, 4, 5, 6, 7, 8, 9],
+    "construction_rel_tol": 1e-3,
+    "settings_source": "control: a state of E257's nine built pairs (E187's copy-vs-prior-cipher pair, reuse side) with saved num, den, dd, changed and K* (experiments/rb_states/results/large/items_e58-copy_s0.npz) and saved E_b 0.03365486956309388 (items/e58-copy_s0.json). transcription_rel_tol: E268's (the fp64 summation bound over at most 38,938 terms, n * eps = 8.6e-12, rounded up; E268 measured 1.5e-16 on x2 by the same path). prior_tasks, prior_seeds: E254's (experiments/prior_matched/results/predictions_a.json settings tasks, seeds). construction_rel_tol: a guard against a wrong construction (wrong D, unscaled update, wrong keys), not a noise floor: E254's c for copy seed 0 is 0.999937697289711 against E257's 1 for the same saved update (a relative size difference of 6.2e-5, prior_matched/results/a/items/e58-pa_copy_s0.json c against rb_states/results/items/e58-copy_s0_scaled.json c), so the fresh E_b over E257's K* differs from E257's by about that order; 1e-3 is 16 times it, while an unscaled cipher or the wrong task's D moves E_b by percents (E257: copy 0.0337, prior cipher 0.0290 on their own D). The K scan's settings are E268's filed ones, read unchanged through experiments/kstar_needed/run.py load_config (derangements 4, examples 64, seed 268, rows 1024, logit_rows 8192, cache_batch 32, ident_vars 3, kept_floor 3.3243476569633224e-05), so K here is E268's K on these states"
+  },
+  "readings": {
+    "E_b_K": "commute.stand_in.explained_share(num, den, dd, K and changed), K by commute.needed.needed_set with E268's settings on E257's D at the last read position; 1 when K has no changed member (flagged empty_K, left out of every correlation as E268 left out its one such state)",
+    "E_b_Kstar": "the same over E257's saved K* (pairs and rest only); must repeat E257's saved E_b within transcription_rel_tol, else the job stops",
+    "compare.py": "CPU, after the items: every claim-2 comparison recomputed with E_b over K beside E_b over K* on the same states, through the functions that computed them first (E262 kl_control proxy_table/design, P2.51's spearman and partial_spearman); the K* column must repeat E262, E265, E266, E267's saved numbers exactly"
+  },
+  "rules": {
+    "R0a": "Stage 0 stops the job on any argmax change under the identity interchange (x' = x) on the control's D (first 64 windows, three subcomponents and the remainder of every matrix, last position). Its largest logit deviation is the floor, recorded, not barred (E268 R0a)",
+    "R0b": "Stage 0 stops the job unless the do-nothing (F = M) has no changed variable, every dd exactly 0.0 and E_b over K exactly 1.0 (E268 R0b)",
+    "R0c": "Stage 0 stops the job unless the control's E_b over K* from E257's saved arrays is within transcription_rel_tol (relative) of E257's saved E_b. Every pairs and rest item stops the job the same way against its own saved E_b, and when its saved arrays' length or changed set differ from this featurization's",
+    "R0d": "Stage 0 stops the job unless E254's copy seed 0, built as the prior stage builds every prior item, has the same variables and changed set as E257's e58/copy_s0_scaled arrays and an E_b over that item's saved K* within construction_rel_tol (relative) of E257's saved E_b 0.033708632438971625",
+    "items": "descriptive, no rule (card: whip-lead on the user's approval 2026-11-22 ~18:15; done_when 'Report which numbers in the results picture change'). The card's rivals read each correlation's move from K* to K against 0.2, and pair-gap signs"
+  },
+  "expected": {
+    "stage0": "identity: 0 argmax changes, largest logit deviation about 5e-5 or below (E268 measured 5.1e-5); do-nothing: 0 changed, dd 0.0, E_b over K 1.0; control: E_b over K* 0.03365486956309388 to within 1e-11 relative; construction: same variables and changed set, E_b over K* within 1e-3 relative of 0.033708632438971625; time per item about 510 s on an H100 (E268's 512-window items at the last position: new_few 515 s, new_thin 505 s, random_kl 511 s)",
+    "pairs, prior, rest": "not filed (descriptive)"
+  }
+}
