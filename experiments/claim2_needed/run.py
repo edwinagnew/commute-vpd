@@ -6,7 +6,8 @@ expected values in results/predictions.json, which the run refuses unless commit
 K is found as E268 found it, with E268's filed scan settings (`kstar_needed` load_config: 4 derangements x 64 windows,
 seed 268, its batch sizes) and the shared sequence `commute.needed.needed_set` (E268's calls in E268's order). F, M,
 D and the featurization are E257's (`rb_states` World through `kstar_needed.world`, `kstar_needed.featurized`); every
-item is read at the last position, as E257 read it.
+item is read at the last position, as E257 read it. Each item also records K from derangements {0, 1} only and {2, 3}
+only (`needed.scan`'s group_mask, saved in the npz) for compare.py's independent-halves sampling floor.
 
 Items:
     pairs   the 76 states of E257's nine built reuse/new pairs (rb_states/results/summary_items.json), from E257's saved
@@ -170,11 +171,16 @@ def read_item(w: Any, item: str, cfg: Config, kc: Any, floor: float) -> None:
             "by_derangement": [{"size_K": int((K & (nd.first_flip <= p)).sum()), "n_changed_K": int((K & (nd.first_flip <= p) & ch).sum()),
                                 "E_b_K": SI.explained_share(num, den, dd, K & (nd.first_flip <= p) & ch)}
                                for p in range(kc.derangements)]}  # fmt: skip
-    # by_derangement in E268's form (K from derangements 0..p): compare.py reads its sampling floor from entry 1
+    # by_derangement in E268's form (K from derangements 0..p); halves: K from derangements {0, 1} only and {2, 3} only
+    # (scan's group_mask), compare.py's independent-halves sampling floor
+    gm = nd.scan.group_mask
+    assert gm is not None and kc.derangements == 4 and torch.equal(gm > 0, K), f"{item}: group mask does not give K"
+    out["halves"] = {name: {"size_K": int(h.sum()), "n_changed_K": int((h & ch).sum()), "E_b_K": SI.explained_share(num, den, dd, h & ch)}
+                     for name, h in (("01", (gm & 0b0011) > 0), ("23", (gm & 0b1100) > 0))}  # fmt: skip
     if a["Kstar"] is not None:
         out |= KN.readings(a, K, kc.kept_floor) | {"E_b_Kstar_saved": a["E_b_saved"], "E_b_Kstar_rel_dev": KN.rel(out["E_b_Kstar"], a["E_b_saved"])}
     np.savez_compressed(RESULTS / "large" / f"items_{fname(item)}.npz", in_K=K.numpy(), first_flip=nd.first_flip.numpy(), flips=nd.scan.flips.numpy(),
-                        **({"num": num.numpy(), "den": den.numpy(), "dd": dd.numpy(), "changed": ch.numpy()} if a["Kstar"] is None else {}))  # fmt: skip
+                        group_mask=gm.numpy(), **({"num": num.numpy(), "den": den.numpy(), "dd": dd.numpy(), "changed": ch.numpy()} if a["Kstar"] is None else {}))  # fmt: skip
     out |= {"seconds": time.time() - t0, "cases_per_s": nd.scan.rows / nd.scan.seconds, "peak_gpu_gb": torch.cuda.max_memory_allocated() / 2**30}
     if out.get("E_b_Kstar_rel_dev", 0.0) > cfg.transcription_rel_tol:
         stop(path, out, f"{item}: E_b over K* {out['E_b_Kstar']!r} off E257's saved {a['E_b_saved']!r}")

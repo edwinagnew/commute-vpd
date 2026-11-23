@@ -10,6 +10,10 @@ E_b over the mean-ablation circuit K*, on the same states, through the functions
      KL-residual gaps against E_b's; E_b over K from this run's items (run.py stage pairs), over K* from E257.
   C  E254's prior-matched pair: E_b over K on the 20 seeds (run.py stage prior), copy against cipher (Mann-Whitney U),
      and each cheap reading's Spearman with it over the 20 states; seeds 0-2 at E257's size over K* and over K (rest).
+Sampling floors (redteam-lead's E275 plan check): on E268's states (A) the weaker one, each reading over K from
+derangements {0, 1} against over the full K; on this run's states (B, C) the independent-halves one, each reading over
+K from derangements {0, 1} only against {2, 3} only (`needed.scan`'s group_mask). |K| beside every state, flagged
+under 1,000; a pair gap whose sign changes on such a state is provisional.
 A part whose items are not all home reads "pending" with the missing count. Writes results/summary.json, prints it.
 
     ~/commute-agents/fleet/cpu-run python3 experiments/claim2_needed/compare.py
@@ -96,7 +100,8 @@ def moves(t: dict[str, Any], proxies: list[str]) -> dict[str, Any]:
     top = max((v["floor"] for v in out.values()), default=float("nan"))
     for v in out.values():
         v |= {"beyond_2x_own_floor": abs(v["move"]) > 2 * v["floor"], "beyond_2x_max_floor": abs(v["move"]) > 2 * top}
-    return {"by_reading": out, "max_floor": top}
+    return {"floor_kind": "weaker: K from 128 pairs against K from all 256 (nested, sharing half the pairs); E268 saved no "
+            "per-derangement membership, so its states have no independent halves", "by_reading": out, "max_floor": top}  # fmt: skip
 
 
 def three(pts: list[dict[str, Any]], proxies: list[str]) -> dict[str, Any]:
@@ -134,6 +139,29 @@ def half(r: dict[str, Any]) -> float:
     before 2026-11-23's by_derangement change)."""
     h = r["by_derangement"][HALF]
     return h["E_b_K"] if isinstance(h, dict) else h
+
+
+def split(rs: dict[str, dict[str, Any]], name: str) -> dict[str, float] | None:
+    """E_b over K from derangements {0, 1} only ("01") or {2, 3} only ("23") per item (run.py's halves, from scan's
+    group_mask): the independent-halves floor. None when an item predates the halves or a half has no changed member."""
+    if not all("halves" in r and r["halves"][name]["n_changed_K"] > 0 for r in rs.values()):
+        return None
+    return {i: r["halves"][name]["E_b_K"] for i, r in rs.items()}
+
+
+def pair_halves(rs: dict[str, dict[str, Any]], gaps: dict[str, dict[str, float]], lens: dict[str, float]) -> dict[str, Any]:
+    """Part B on each independent half of the pairs; floor = |half 01 - half 23| per pair gap and per reading's Spearman
+    with E_b's pair gaps."""
+    h = {n: split(rs, n) for n in ("01", "23")}
+    a, b = h["01"], h["23"]
+    if a is None or b is None:
+        return {"floor": "pending: some item has no halves (written before 2026-11-23) or an empty half"}
+    floor = max(E268[i]["E_b_K"] for i in E257["randoms"])
+    t = {n: pair_table(e, floor) for n, e in (("01", a), ("23", b))}
+    ag = {n: against(t[n], gaps, lens) for n in t}
+    sp = {m: abs(ag["01"][m]["spearman"] - ag["23"][m]["spearman"]) for m in ag["01"] if None not in (ag["01"][m]["spearman"], ag["23"][m]["spearman"])}
+    return {"tables": t, "against": ag, "floor_pair_gap": {p: abs(t["01"]["pairs"][p]["raw"] - t["23"]["pairs"][p]["raw"]) for p in t["01"]["pairs"]},
+            "floor_spearman": sp, "max_floor_spearman": max(sp.values(), default=float("nan"))}  # fmt: skip
 
 
 def gap(d: dict[str, float], reuse: list[str], new: list[str]) -> float:
@@ -209,6 +237,7 @@ def part_b() -> dict[str, Any]:
     out["K01"] = t_h | {"against": against(t_h, gaps, lens)}
     out["size_K"] = {i: r["size_K"] for i, r in rs.items()}
     out["small_K"] = sorted(i for i, r in rs.items() if r["size_K"] < SMALL_K)
+    out["halves"] = pair_halves(rs, gaps, lens)
     out["sign_changes"] = {}
     for name, p in E257["pairs"].items():
         a, b = t_star["pairs"][name]["raw"], t_k["pairs"][name]["raw"]
@@ -243,11 +272,17 @@ def part_c() -> dict[str, Any]:
     if out["missing"]:
         return out | {"K": "pending"}
     rs = {i: r for i, r in got.items() if r is not None}
-    for which, eb in (("K", {i: r["E_b_K"] for i, r in rs.items()}), ("K01", {i: half(r) for i, r in rs.items()})):
+    sets = {"K": {i: r["E_b_K"] for i, r in rs.items()}, "K01": {i: half(r) for i, r in rs.items()}}
+    sets |= {f"half_{n}": e for n in ("01", "23") if (e := split(rs, n)) is not None}
+    for which, eb in sets.items():
         c, n = ([v for i, v in eb.items() if i.startswith(f"pa/{t}_")] for t in ("copy", "prior_cipher"))
         u, p = SR.mann_whitney(c, n)  # E254's exact two-sided test
         out[which] = {"copy": c, "prior_cipher": n, "gap": fmean(c) - fmean(n), "U": u, "p": p,
                       "spearman_with_E_b": {m: AN.spearman(reads[m], eb)["rho"] for m in READINGS}}  # fmt: skip
+    if "half_01" in out and "half_23" in out:
+        sp = {m: abs(out["half_01"]["spearman_with_E_b"][m] - out["half_23"]["spearman_with_E_b"][m]) for m in READINGS
+              if None not in (out["half_01"]["spearman_with_E_b"][m], out["half_23"]["spearman_with_E_b"][m])}  # fmt: skip
+        out["floor"] = {"gap": abs(out["half_01"]["gap"] - out["half_23"]["gap"]), "spearman": sp, "max_spearman": max(sp.values(), default=float("nan"))}
     out["size_K"] = {i: r["size_K"] for i, r in rs.items()}
     out["small_K"] = sorted(i for i, r in rs.items() if r["size_K"] < SMALL_K)
     s3 = {t: [ours(f"e58/{t}_s{s}_scaled") for s in range(3)] for t in side}

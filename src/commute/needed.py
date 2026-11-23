@@ -114,16 +114,24 @@ class Scan:
     max_dev: float  # max |logit - F's own| over every case: the floor when every pair is (x, x)
     rows: int
     seconds: float
+    # (n,) uint8, bit g set when some pair of group g (pairs g*group .. (g+1)*group - 1: one derangement in needed_set)
+    # changed a designated output; None unless scan was given `group`. Added 2026-11-23 for E275's independent-halves
+    # floor (K from derangements {0, 1} against {2, 3}); at most 8 groups
+    group_mask: Tensor | None = None
 
 
 @torch.no_grad()
 def scan(F: R.Model, feat: KV.Feat, run: Run, at: slice, ex: Tensor, pt: Tensor, rows: int, log: Callable[[str], None],
-         only: dict[int, Tensor] | None = None) -> Scan:  # fmt: skip
+         only: dict[int, Tensor] | None = None, group: int | None = None) -> Scan:  # fmt: skip
     """Every variable at every site (or, with `only`, the local variables given per site index) against every pair
-    (ex[k], pt[k]), `rows` cases per forward."""
+    (ex[k], pt[k]), `rows` cases per forward. With `group`, also which groups of `group` consecutive pairs changed an
+    output, per variable (Scan.group_mask); nothing else changes."""
     assert not feat.grafts, "graft variables are not handled by this scan"
     dev = run.top.device
     ex, pt, Q = ex.to(dev), pt.to(dev), len(ex)
+    n_groups = 0 if group is None else -(-Q // group)
+    assert n_groups <= 8, f"group_mask holds at most 8 groups, got {n_groups}"
+    hits = torch.zeros((feat.n, n_groups), dtype=torch.bool, device=dev)
     first = torch.full((feat.n,), -1, dtype=torch.long, device=dev)
     flips = torch.zeros(feat.n, dtype=torch.long, device=dev)
     big, max_dev, done, t0 = torch.iinfo(torch.long).max, 0.0, 0, time.time()
@@ -146,12 +154,15 @@ def scan(F: R.Model, feat: KV.Feat, run: Run, at: slice, ex: Tensor, pt: Tensor,
                 cand = torch.full((feat.n,), big, dtype=torch.long, device=dev)
                 cand.scatter_reduce_(0, g[hit], k[hit], "amin")
                 first = torch.where((cand != big) & ((first < 0) | (cand < first)), cand, first)
+                if group is not None:
+                    hits[g[hit], k[hit] // group] = True
         finally:
             h.remove()
         done += len(var)
         log(f"    site {j} {s.name}: {len(local)} variables x {Q} pairs, {int((first[s.off : s.rem + 1] >= 0).sum())} needed; "
             f"{done} cases in {time.time() - t0:.0f} s ({done / max(time.time() - t0, 1e-9):.0f}/s)")  # fmt: skip
-    return Scan(first.cpu(), flips.cpu(), max_dev, done, time.time() - t0)
+    mask = None if group is None else (hits.to(torch.uint8) << torch.arange(n_groups, dtype=torch.uint8, device=dev)).sum(1).to(torch.uint8).cpu()
+    return Scan(first.cpu(), flips.cpu(), max_dev, done, time.time() - t0, mask)
 
 
 # ---- the read of one item (added 2026-11-22 for experiments/realtext_eb, cell P2.64) ---------------------------------
@@ -183,7 +194,7 @@ def needed_set(F: R.Model, feat: KV.Feat, toks: Tensor, at: slice, P: int, examp
     run = cache(F, feat, toks, at, cache_batch)
     m = min(examples, len(toks))
     ex, pt = derangements(len(toks), P, m, seed)
-    sc = scan(F, feat, run, at, ex, pt, rows_per_forward(rows, logit_rows, run.top.shape[1]), log)
+    sc = scan(F, feat, run, at, ex, pt, rows_per_forward(rows, logit_rows, run.top.shape[1]), log, group=m)  # pair k is in derangement k // m
     K = sc.first_pair >= 0
     return Needed(K, torch.where(K, sc.first_pair // m, -1), sc, run, m, len(ex))
 
