@@ -87,10 +87,14 @@ def mean_over(c: Tensor, sel: Tensor) -> float:
     return float(c[sel].mean()) if bool(sel.any()) else 1.0
 
 
-def kept_by_share(num: Tensor, den: Tensor, dd: Tensor, floor: float) -> Tensor:
-    """(n,) bool: the reference kept test, explained / dd >= 1 - floor (E268's), or dd = 0."""
+def kept_by_share(num: Tensor, den: Tensor, dd: Tensor, floor: float, tol: float) -> Tensor:
+    """(n,) bool: the reference kept test, explained / dd >= 1 - floor (E268's), or a write change within fp64 rounding
+    of M's write, dd <= tol den. Amended 2026-11-23 after the filed run (which had dd = 0 exactly): on 60 changed
+    needed variables dd / den was 4e-28 to 3e-17, the change being rounding alone, where the explained part
+    (num - den)^2 / den is a difference of two equal sums and the share is noise; the next smallest dd / den on any item
+    is 7.4e-7, ten orders above."""
     share = SI.explained(num, den) / torch.where(dd > 0, dd, 1.0)
-    return (dd == 0) | (share >= 1 - floor)
+    return (dd <= tol * den) | (share >= 1 - floor)
 
 
 # ---- saved arrays ---------------------------------------------------------------------------------------------------
@@ -171,14 +175,18 @@ def read(rec: dict[str, Any], cfg: Config) -> dict[str, Any]:
     c, over = cos2(num, den, dd)
     eb = SI.explained_share(num, den, dd, sel)
     rel = abs(eb - rec["E_b_K"]) / abs(rec["E_b_K"]) if rec["E_b_K"] else abs(eb)
-    at_top, kept = c >= 1 - cfg.top_tol, kept_by_share(num, den, dd, cfg.kept_floor)
+    at_top, kept = c >= 1 - cfg.top_tol, kept_by_share(num, den, dd, cfg.kept_floor, cfg.top_tol)
     nF = (dd + 2 * num - den).clamp(min=0)
     rc = (dd / torch.where(nF > 0, nF, 1.0))[sel & (nF > 0)]
+    share = SI.explained(num, den) / torch.where(dd > 0, dd, 1.0)
+    on = sel & (num > 0) & (den > 0) & (nF > 0) & (dd > cfg.top_tol * den)  # the identity's terms all defined
+    want = ((1 - share) * dd / torch.where(nF > 0, nF, 1.0))[on]  # 1 - cos2_u = (1 - share_u) dd / |F|^2
     out = {"item": rec["item"], "stage": rec["stage"], "size_K": int(a["K"].sum()), "n_changed_K": int(sel.sum()),
            "cos2_K": mean_over(c, sel), "E_b_K": eb, "E_b_K_e268": rec["E_b_K"], "E_b_K_rel_dev": rel,
            "top": bool(at_top[sel].all()), "R_eq_K": bool(kept[sel].all()), "n_top": int((at_top & sel).sum()),
            "n_kept": int((kept & sel).sum()), "n_disagree": int(((at_top ^ kept) & sel).sum()),
-           "rel_change_median": float(rc.median()) if len(rc) else None, "overshoot": over}  # fmt: skip
+           "rel_change_median": float(rc.median()) if len(rc) else None, "overshoot": over,
+           "identity_max_rel": float(((1 - c[on] - want).abs() / want).max()) if len(want) else None}  # fmt: skip
     if rel > cfg.transcription_rel_tol:
         stop(f"{rec['item']}: E_b over K {eb!r} off E268's {rec['E_b_K']!r} (relative {rel:.3g})")
     if over > cfg.top_tol:
@@ -203,7 +211,12 @@ def agreement(rows: list[dict[str, Any]], cfg: Config) -> dict[str, Any]:
     by = {r["item"]: r["cos2_K"] for r in rows}
     gain = min(by[i] for i in cfg.gain_edits)
     rest = [by[i] for i in cfg.built if i not in cfg.gain_edits and i != "rebuilt"]
-    return {"spearman": float(np.corrcoef(ranks(c), ranks(e))[0, 1]), "median_abs_gap": float(np.median(np.abs(c - e))),
+    ch = [r for r in rows if r["n_changed_K"] > 0]
+    short, size = np.array([1 - r["cos2_K"] for r in ch]), np.array([r["rel_change_median"] for r in ch])
+    return {"spearman": float(np.corrcoef(ranks(c), ranks(e))[0, 1]),
+            "spearman_shortfall_vs_change": float(np.corrcoef(ranks(short), ranks(size))[0, 1]),
+            "identity_max_rel": max(r["identity_max_rel"] for r in ch if r["identity_max_rel"] is not None),
+            "median_abs_gap": float(np.median(np.abs(c - e))),
             "built_order_holds": bool(gain > by["rebuilt"] > max(rest)),
             "gain_mean_minus_random_mean": float(np.mean([by[i] for i in cfg.gain_edits]) - np.mean([by[i] for i in cfg.random_edits])),
             "admissible": all(r["top"] == r["R_eq_K"] for r in rows), "n_disagree_total": sum(r["n_disagree"] for r in rows)}  # fmt: skip

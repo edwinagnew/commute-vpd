@@ -11,3 +11,9 @@
 0.062	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("repeat_rl"))|(.E_b_Kstar-.E_b_K)]|max	earlier
 5.1	experiments/kstar_needed/results/summary.json	([.items[]|select(.item|startswith("rl/stage2/repeat_rl"))|.E_b_Kstar]|add/length) / ([.items[]|select(.item|test("rl/stage2/repeat_(demo|own)"))|.E_b_Kstar]|add/length)	earlier
 2.6	experiments/kstar_needed/results/summary.json	([.items[]|select(.item|startswith("rl/stage2/repeat_rl"))|.E_b_K]|add/length) / ([.items[]|select(.item|test("rl/stage2/repeat_(demo|own)"))|.E_b_K]|add/length)	earlier
+1e-11	experiments/cos_admissible/results/summary.json	.settings.top_tol	earlier
+65	experiments/cos_admissible/results/summary.json	[.items[]|select(.n_changed_K>0 and (.item|test("^(x2|x10|rebuilt|new_|random_)")|not)) | .cos2_K]|length	earlier
+0.9935	experiments/cos_admissible/results/summary.json	[.items[]|select(.n_changed_K>0 and (.item|test("^(x2|x10|rebuilt|new_|random_)")|not)) | .cos2_K]|min	earlier
+0.9999	experiments/cos_admissible/results/summary.json	[.items[]|select(.n_changed_K>0 and (.item|test("^(x2|x10|rebuilt|new_|random_)")|not)) | .cos2_K]|max	earlier
+-0.58	experiments/cos_admissible/results/summary.json	.agreement.spearman	earlier
+0.347	experiments/cos_admissible/results/summary.json	.items.x10.cos2_K	earlier
