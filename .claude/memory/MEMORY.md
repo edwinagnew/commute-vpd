@@ -106,3 +106,4 @@
 - [Condense the paper](feedback-paper-condense-claims.md) — what breaks if cut; two claims (mechanistic definition; cheap proxies track it, beat baselines); real text/Qwen negative results (user, 2026-11-20)
 - [Own the restructure](feedback-own-the-restructure.md) — task file beats a lead note on who does a deliverable; idled a morning waiting on the user (2026-11-22)
 - [Lead text always green](feedback-lead-text-always-coloured.md) — every sentence I write is \new/revised on every branch, floats and titles too; never accept marks to black (user, 2026-11-22)
+- [Avoid paper merge conflicts](feedback-avoid-paper-merge-conflicts.md) — pull right before editing and committing in the paper repo; rebuild main.pdf after merges; diff vs origin after (user, 2026-11-23)

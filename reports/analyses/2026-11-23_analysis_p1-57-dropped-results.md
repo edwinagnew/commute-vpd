@@ -1,19 +1,25 @@
-# Does the write share over the needed set tell copy from lookup, or rank the five key tasks?
+# Do the needed-set readings tell copy from lookup, or rank the five key tasks?
 
 Cell P1.57, 2026-11-23. Two results the paper's second draft dropped, read again under the frozen definition's needed
-set: the copying-head pair and the five-task key grid at one update size. Cluster and short H100 pods, about $0.
+set: the copying-head pair and the five-task key grid at one update size. Then two readings of reliance, to ask
+whether the failure lies in the definition's kept clause. Cluster and short H100 pods, about $0.
 
-We read the write share over the needed set on the copying-head pair, copy against lookup, and on the five key tasks
-scaled to one update size, each beside random updates of the same size. Neither result separates anything: copy and
-lookup read the same, every task reads within about a hundredth of every other, and, unexpectedly, the order runs
-against the filed expectation at both ends, with the cipher highest, copy second and the prior-matched cipher below the
-plain cipher. For the goals, this reading cannot carry the claim that copying reuses the base model while a cipher is
-new: on these items it measures how far any trained update turns each variable's write, and that is small for all of
-them.
+We read the write share over the needed set on the copying-head pair and on the five key tasks, and then two readings
+of whether the fine-tuned model relies on the variables the base model relies on. None of the four instruments
+passed: the write share reads every trained update about the same small amount, and its flip-weighted version and the
+needed-by-both reading each fail their positive control, while the needed-and-barely-changed reading sits near one
+for any small update. For the goals, this is a run of instrument failures, not one negative result about reuse, so
+these items cannot yet say whether copying reuses the base model while a cipher is new.
 
 ## The answer
 
-The write share over the needed set does not tell the copying fine-tune from the lookup fine-tune, nor rank the five
+The picture in this cell is a run of instrument failures, not one negative result about reuse. The write share over
+the needed set reads every trained update about the same small amount. Weighting it by flips failed its positive
+control. Of the two reliance readings, the needed-by-both share failed its positive control: a pure strengthening
+edit read no higher than a new edit or a random one. The needed-and-barely-changed share sits near one for any small
+update. None of these can say whether copying reuses the base model while a cipher is new.
+
+In more detail: the write share over the needed set does not tell the copying fine-tune from the lookup fine-tune, nor rank the five
 key tasks the way the squared-cosine reading did. Every trained update reads two to three times the random updates and
 a tenth or less of what a pure strengthening edit reads. The ordering surprise is real but tiny: the cipher sits above
 copy on every seed, by about a fortieth of the gap that was filed as meaningful. Reading only the copy windows does not
@@ -121,6 +127,81 @@ featurizations. The doubled-weights edit read 0.012 at VPD, where 0.5 or more wa
 read 0.772, where about one was expected. It rewards being needed, not being changed. Its held-out values are not evidence for
 anything.
 
+## Is the failure in the kept clause? Two readings of reliance
+
+The write share fails, but it asks two things at once: that the fine-tuned model F needs the base model M's variables,
+and that each needed variable's write only rescales. E283 dropped the second part, the kept clause, to see whether
+reliance alone separates reuse from new. If it does, the kept clause is what fails; if not, the trouble lies
+elsewhere. Variables are neurons, as above.
+
+Both readings share out F's flip mass. A variable's flip count is the number of tested input pairs, 256 of them, on
+which swapping its value for its value on the paired input changes F's top token. F's flip mass is the sum of flip
+counts over its needed set.
+
+- **Needed by both, V1**: the share of F's flip mass on variables that M also needs on the same pairs, judged against
+  M's own top token. M's needed set was scanned for this run.
+- **Needed and barely changed, V2**: the share of F's flip mass on needed variables whose write moved by under half of
+  M's own write, root-mean-square over the inputs.
+
+Both read 1 for an update that does nothing. Neither is the definition; they are diagnostics, filed with no bar of
+their own beyond the card's gap of 0.2. The control has two strengthening edits, which scale an existing mechanism by two and by ten. Each changes eight
+neurons and their layer's remainder. They are set against two new edits and a random update matched in KL. All five are read on
+the new edits' 512 cue windows at the last position, so they share one set of inputs.
+
+What the control should read follows from construction. Each strengthening edit changes nine variables. If M needs
+every unchanged variable that F needs, V1 is at least one minus F's flip share on the changed variables: 0.993 for the
+doubling and 0.983 for the tenfold edit. The few-neuron new edit also changes nine variables, so the same bound gives it
+at least 0.966.
+
+![V1 and V2 on the cue windows for the five built edits, each strengthening and few-neuron edit with its V1 construction floor](../../experiments/reliance/figures/v1_control.png)
+
+**Reading it.** Neither reading separates, and the needed-by-both reading fails its positive control. The doubling and
+the tenfold edit read 0.848 and 0.859, far under their floors, and no higher than the thin new edit's 0.851 or the
+random update's 0.857. The few-neuron new edit reads 0.797 against its floor of 0.966. Every changed variable is in M's
+needed set, so all of F's flip mass outside it lies on variables the edit left untouched: 0.152 of the doubling's and
+0.203 of the few-neuron edit's. The barely-changed reading puts every edit between 0.968 and 0.998. At a cut of half of
+M's write, nearly every variable of a small update counts as barely changed, so this reading measures update size.
+
+Redteam verdict: "Rival B as filed on both readings: on the cue windows, V1 for the strengthening edits (min 0.848) sits
+0.003-0.009 below new_thin (0.851) and random_kl (0.857), against a 0.2 bar. V2 is 0.992 against 0.998-0.999. But V1
+fails its own positive control. x2 and x10, which change 9 variables, read 0.848/0.859 against construction floors of
+0.993/0.983. new_few reads 0.797 against >= 0.966. So about a seventh to a quarter of F's flip mass lies on unchanged
+variables that M does not need on the same pairs. The needed set moves with F's outputs, even under a pure
+strengthening, so V1 as built has a floor near 0.8 for any edit and cannot test reliance. Neither reading is evidence
+about reliance itself."
+The red team corrected its own quote afterwards: in summary.json only new_thin's barely-changed reading is 0.998;
+random_kl's is 0.992, level with the strengthening edits.
+
+**Why the control fails: cause unshown.** The likely cause is that each network's needed set is found against its own
+top token. On a pair where F's and M's top tokens differ, or where M's margin is tiny, an untouched variable can flip
+F's answer and not M's. The saved arrays cannot test this. They hold per-variable totals only: the flip count, the
+first pair a variable flipped, and membership of the needed set. They hold no per-pair flips, top tokens or margins for
+either network. The split of the doubling's flip mass by such pairs needs a new scan on a GPU, so the cause is
+unshown.
+
+**The card's stop rule.** It fired: neither reading puts the strengthening edits 0.2 above the new ones. The card said
+the write-up would then report that the separation fails on the needed set itself. The run does not show that much.
+What it shows is that the reliance readings as built, with the needed set sampled on 256 pairs against each network's
+own top token, fail their positive control. The instrument moves under a pure strengthening; that does not mean no
+reliance reading could work. No reliance reading is proposed in place of the kept clause.
+
+**Values of a reading whose control failed.** The other items were read as filed. Their values follow, as values of
+instruments whose control failed, not as findings for either rival.
+
+| item | V1, needed by both | V2, barely changed |
+|---|---|---|
+| copying pair at neurons, copy and lookup seeds | 0.756 to 0.765, and 0.752 to 0.763 | 0.999 to 1.000 |
+| copying pair at VPD, copy and lookup seeds | 0.883 to 0.960, and 0.945 to 0.959 | 1.000 |
+| copy head doubled, three ways, at VPD | 0.938 to 0.951, floors 0.956 to 0.983 | 0.997 to 1.000 |
+| copy head doubled, three ways, at neurons | 0.871 to 0.883, floors 0.996 to 0.999 | 0.996 to 1.000 |
+| copying pair on the copy windows at VPD | copy 0.982 to 1.000; lookup 0.815 | 1.000 |
+| realistic panel, rank agreement with the raters' consensus | 0.0, partial p 0.57 | 0.45, partial p 0.19 |
+
+On the copy windows, lookup's 0.815 is its one seed with a full-sized needed set, 17,732 variables. Its other two
+seeds have needed sets of 97 and 75, under the floor of 100, and read 1.000 only because so few variables are needed.
+The head edits read under their own construction floors, as the strengthening edits did. On the panel, the
+barely-changed reading spans only 0.945 to 1.000 across every fine-tune, so its rank agreement orders near-ties.
+
 ## Scorecard
 
 | card | claim in words | rule | read | verdict |
@@ -129,6 +210,13 @@ anything.
 | E62 pair | copy at least 0.2 above lookup | gap 0.2 | copy 0.004 below | rival B |
 | copy windows | copy over lookup at least 1.5 | ratio | 0.61 with under-floor seeds, 0.53 without; 0.98 over all-data K | rival B, no dilution |
 | head edit | value doubled reads at least 0.5 at VPD | 0.5 | 0.192 | rival B |
+| E283, V1 | both strengthening edits at least 0.2 above the thin new edit and the KL random | gap 0.2 | 0.848 against 0.851 and 0.857 | rival B as filed; positive control failed, floor 0.993 |
+| E283, V2 | the same order on the barely-changed share | gap 0.2 | 0.992 against 0.998 and 0.992 | rival B as filed; saturates near 1 |
+| E283, rest | copying pair, head edits, copy windows, panel | as filed | in the E283 table | no verdict: the reading's control failed |
+
+The four instruments of this cell each fail. The write share over the needed set reads every trained update about the
+same small amount. Its flip-weighted version and the needed-by-both share failed their positive controls. The
+needed-and-barely-changed share saturates near 1.
 
 ## Departures from the literature
 
@@ -136,6 +224,8 @@ anything.
   a positive multiple of the base one on every setting that occurs. The write share replaces that yes-or-no test with a
   pooled fraction weighted by write change, which is why it is a reading and not admissible as computed.
 - The copying pair is read on 8-token windows at the marker, not on the original task's 41-token windows.
+- The two reliance readings are diagnostics built here, not taken from a source. Each network's needed set is found
+  against its own top token, not against a shared target.
 
 ## Not run
 
@@ -145,9 +235,16 @@ anything.
 - The key grid at the head-as-one-variable featurization, or at more than one update size or three seeds.
 - A repaired flip weighting, such as flips times write change: a new design needing its own cell.
 - The run-down of the lookup's copy-window needed-set sizes, 97, 17,732 and 75 across seeds.
+- The test of why the needed-by-both control fails. It needs a rescan of the doubling on the cue windows that saves
+  per-pair flips, top tokens and margins for both networks. Then F's flip mass outside M's needed set can be split by
+  pairs where the top tokens differ or M's margin is tiny.
+- A reliance reading with the needed set judged against one shared target, such as M's top token for both networks:
+  a new design needing its own cell.
 
 Provenance: `experiments/eb_dropped/results/summary.json` for the grid and the pair, the pair's items from
 `experiments/claim2_needed/results/items/e62-*.json`; `experiments/e62_copy_windows/results/summary.json` for the copy
 windows; `experiments/head_edit/results/summary.json` for the built head edits;
-`experiments/eb_dropped/results/flip_weighted.json` for the doubled-weights control and the randoms. Diagnosis in
+`experiments/eb_dropped/results/flip_weighted.json` for the doubled-weights control and the randoms;
+`experiments/reliance/results/summary.json` for the reliance readings, figure by `experiments/reliance/plot.py`, M's
+needed sets in `experiments/reliance/results/mK/` and their arrays in `results/large/`. Diagnosis in
 `reports/analyses/2026-11-23_analysis_e62-eb-diagnosis.md`.

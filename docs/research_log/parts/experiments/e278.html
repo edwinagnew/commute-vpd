@@ -1,0 +1,17 @@
+<article class="exp" id="e278">
+<div class="top"><span class="id">E278</span><span class="chip mixed">no separation</span><h3>Does the write share over the needed set tell copying from lookup, or order the five key tasks?</h3><span class="when">2026-11-23 · cell P1.57, definition-lead · <code>experiments/eb_dropped</code>, <code>experiments/head_edit</code> (E280), <code>experiments/e62_copy_windows</code> (E281)</span></div>
+<p class="one"><strong>The question.</strong> Two results dropped when the paper moved to its second draft were never read under the frozen definition: E62's copying-head pair (the user's worked example of reuse) and the five-task key grid at one update size. Does the write share over the needed set (the share of each needed variable's write change that lies along its original write, 1 for a pure rescaling) separate copying from lookup, and order the five tasks?</p>
+<p class="one"><strong>What we did.</strong> We read the saved states: three seeds each of E62's copy and lookup fine-tunes, and three seeds of each of the five key tasks, each task beside three random updates of the same size. Follow-ups (E280, E281) read the copy windows alone, and built edits that double only the copy head's value, output or query. A flip-weighted version was tried as a control.</p>
+<p class="one"><strong>What we found.</strong> No separation. All fifteen key-grid states read 0.027 to 0.040 against the filed gap of 0.2; the cipher sits highest on every seed, the reverse of the filed expectation, by a fortieth of the gap. Copy reads 0.004 below lookup on E62, and 0.53 to 0.61 of lookup on the copy windows alone, so the mix of windows is not diluting a difference. Doubling only the copy head reads about 0.2 at VPD, because VPD decomposes each attention matrix whole. The flip-weighted version failed its positive control.</p>
+<p class="one"><strong>What it means.</strong> The write share reads every trained update about the same small amount (two to three times a random update, a tenth of a pure strengthening edit), so it cannot say whether copying reuses the base model while a cipher is new. This is a run of instrument failures, not a negative result about reuse. Redteam: rival B as filed.</p>
+<dl class="fields">
+<dt>Run</dt><dd>Cluster debug queue and short pods, about $0; four runs used of four.</dd>
+<dt>Found</dt><dd><ul>
+<li>Key grid: every task within 0.012 of every other, each two to three times its matched randoms; the order reverses the filed one.</li>
+<li>E62: copy 0.036 to 0.040, lookup 0.040 to 0.043; copy windows alone give 0.61 (0.53 without the two under-floor lookup seeds).</li>
+<li>A built edit confined to one head caps near 0.2 at VPD; the weighted-by-flips variant failed its control.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 1: no reuse or new verdict is drawn from these readings under either wording.</dd>
+<dt>Moved on</dt><dd>2026-11-23: <a href="#e283">E283</a> asked whether the failure lies in the kept clause. Report <code>reports/analyses/2026-11-23_analysis_p1-57-dropped-results.md</code>.</dd>
+</dl>
+</article>

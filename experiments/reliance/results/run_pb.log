@@ -1,0 +1,45 @@
+[22:38:21] E283 (reliance) start, stage neurons, world panel, items [], tasks ['sentiment', 'arxiv', 'french', 'german'], tag pb
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[22:38:31] neurons, world panel: 16 items ['panel/french/random_french_s0_step8', 'panel/french/french_s0_step8', 'panel/french/french_s1_step6', 'panel/french/french_s2_step8', 'panel/arxiv/random_arxiv_s0_step5', 'panel/arxiv/arxiv_s0_step5', 'panel/arxiv/arxiv_s1_step101', 'panel/arxiv/arxiv_s2_step12', 'panel/german/random_german_s0_step300', 'panel/german/german_s0_step300', 'panel/german/german_s1_step300', 'panel/german/german_s2_step300', 'panel/sentiment/random_sentiment_s0_step6', 'panel/sentiment/sentiment_s0_step6', 'panel/sentiment/sentiment_s1_step6', 'panel/sentiment/sentiment_s2_step5']
+[22:38:32] panel/french/random_french_s0_step8: M on D a8cd79ac39d2ab0a, 200 windows of 64 tokens
+[22:40:01]     layer 0: 3079 variables x 256 pairs, 2243 needed; 788224 cases in 89 s (8864/s)
+[22:41:08]     layer 1: 3079 variables x 256 pairs, 1435 needed; 1576448 cases in 156 s (10087/s)
+[22:41:54]     layer 2: 3079 variables x 256 pairs, 1082 needed; 2364672 cases in 202 s (11702/s)
+[22:42:18]     layer 3: 3079 variables x 256 pairs, 815 needed; 3152896 cases in 226 s (13935/s)
+[22:42:18] neurons panel/french/random_french_s0_step8: D a8cd79ac39d2ab0a, |K_M| 5575 of 12316, 3152896 cases in 226 s; SCAN DONE
+[22:42:18] panel/french/french_s0_step8: D a8cd79ac39d2ab0a scanned before
+[22:42:18] panel/french/french_s1_step6: D a8cd79ac39d2ab0a scanned before
+[22:42:18] panel/french/french_s2_step8: D a8cd79ac39d2ab0a scanned before
+[22:42:19] panel/arxiv/random_arxiv_s0_step5: M on D 51780f63b31ba728, 200 windows of 64 tokens
+[22:43:48]     layer 0: 3079 variables x 256 pairs, 2102 needed; 788224 cases in 89 s (8854/s)
+[22:44:55]     layer 1: 3079 variables x 256 pairs, 1674 needed; 1576448 cases in 156 s (10078/s)
+[22:45:41]     layer 2: 3079 variables x 256 pairs, 1272 needed; 2364672 cases in 202 s (11693/s)
+[22:46:05]     layer 3: 3079 variables x 256 pairs, 830 needed; 3152896 cases in 226 s (13925/s)
+[22:46:05] neurons panel/arxiv/random_arxiv_s0_step5: D 51780f63b31ba728, |K_M| 5878 of 12316, 3152896 cases in 226 s; SCAN DONE
+[22:46:05] panel/arxiv/arxiv_s0_step5: D 51780f63b31ba728 scanned before
+[22:46:05] panel/arxiv/arxiv_s1_step101: D 51780f63b31ba728 scanned before
+[22:46:05] panel/arxiv/arxiv_s2_step12: D 51780f63b31ba728 scanned before
+[22:46:05] panel/german/random_german_s0_step300: M on D de2b09589cb58750, 200 windows of 64 tokens
+[22:47:35]     layer 0: 3079 variables x 256 pairs, 2393 needed; 788224 cases in 89 s (8852/s)
+[22:48:42]     layer 1: 3079 variables x 256 pairs, 1830 needed; 1576448 cases in 156 s (10077/s)
+[22:49:28]     layer 2: 3079 variables x 256 pairs, 1466 needed; 2364672 cases in 202 s (11691/s)
+[22:49:52]     layer 3: 3079 variables x 256 pairs, 789 needed; 3152896 cases in 226 s (13924/s)
+[22:49:52] neurons panel/german/random_german_s0_step300: D de2b09589cb58750, |K_M| 6478 of 12316, 3152896 cases in 226 s; SCAN DONE
+[22:49:52] panel/german/german_s0_step300: D de2b09589cb58750 scanned before
+[22:49:52] panel/german/german_s1_step300: D de2b09589cb58750 scanned before
+[22:49:52] panel/german/german_s2_step300: D de2b09589cb58750 scanned before
+[22:49:52] panel/sentiment/random_sentiment_s0_step6: M on D 77e0c16a1e4fc1e1, 200 windows of 35 tokens
+[22:50:44]     layer 0: 3079 variables x 256 pairs, 718 needed; 788224 cases in 51 s (15355/s)
+[22:51:23]     layer 1: 3079 variables x 256 pairs, 421 needed; 1576448 cases in 90 s (17431/s)
+[22:51:50]     layer 2: 3079 variables x 256 pairs, 243 needed; 2364672 cases in 117 s (20155/s)
+[22:52:04]     layer 3: 3079 variables x 256 pairs, 124 needed; 3152896 cases in 132 s (23891/s)
+[22:52:04] neurons panel/sentiment/random_sentiment_s0_step6: D 77e0c16a1e4fc1e1, |K_M| 1506 of 12316, 3152896 cases in 132 s; SCAN DONE
+[22:52:05] panel/sentiment/sentiment_s0_step6: D 77e0c16a1e4fc1e1 scanned before
+[22:52:05] panel/sentiment/sentiment_s1_step6: D 77e0c16a1e4fc1e1 scanned before
+[22:52:05] panel/sentiment/sentiment_s2_step5: D 77e0c16a1e4fc1e1 scanned before
+[22:52:05] E283 (reliance) DONE
+peak host RSS 6.4 GB
+=== FINISHED (exit 0) tag pb — results in /root/work/experiments/reliance/results ===
