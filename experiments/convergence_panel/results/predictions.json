@@ -1,0 +1,67 @@
+{
+ "experiment": "E_TBD (convergence_panel)",
+ "cell": "P2.66",
+ "filed": "2026-11-22, regating-lead's panel writer, before any GPU run of this experiment; `raters` is the one slot the lead fills before the read stage (run.py read and score.py refuse while it is empty)",
+ "raters": {},
+ "raters_form": "{\"<rater>\": {\"tiers\": {\"<task>\": \"reuse\" | \"middle\" | \"new\"}, \"order\": [tasks, most reuse first], \"source\": \"<file>\"}} for each blind rater (Opus, GPT: ~/commute-data/scratch/regating-lead/raters/rater_{opus,gpt}.md) and the user's sort; score.py adds the consensus (mean tier code, reuse 3, middle 2, new 1)",
+ "settings": {
+  "tasks": ["pile", "code", "lower", "british", "topic", "french", "yoruba", "squad", "conll"],
+  "tasks_source": "the 22:35 amendment's realistic-only panel (whip-lead note 2026-11-22-regating-panel-oneliners.md, nine one-liners)",
+  "seeds": [0, 1, 2],
+  "lr": 3e-05, "batch": 8, "steps": 300, "grad_clip": 1.0,
+  "recipe_source": "E211's LM recipe (realistic_tasks/results/predictions_run2.json rate 3e-5, lowercase.BATCH 8, t_step_cap 300, grad_clip 1) = E36's code recipe (src/commute/anchors.py:37-38, 121-128); one trainer for all nine: the label and prompt tasks use it too (departure from E211's label arm A: batch 32 with a KL-to-start term; here plain SFT on the answer, as the amendment asks)",
+  "kl_rows": 64, "kl_live_rows": 16,
+  "kl_rows_source": "E256/E260's KL from W0 (procedural_rl predictions kl_rows 64, Pile val rows 0-63, rl_67m run_stage1.py kl_from_base), so the extra rows share the axis; the live trigger reads the first 16 of them every step, the recorded KL all 64 on the saved bf16 file",
+  "kl_lo": 0.001, "kl_n": 17, "size_lo": 0.002, "size_n": 9,
+  "rungs_source": "new: ladders x 2^(1/2) (KL 0.001-0.256 nats per token; size 0.002-0.032, spanning E211's 0.005-0.0175 and E187's built pairs' 0.004-0.021), so a rung two below is half (the second size)",
+  "match_tol": 0.1,
+  "match_tol_source": "cell P2.66 done-when: one matched KL +-10%",
+  "floor_draws": [0, 1, 2], "floor_size": 0.0175, "floor_mult": 3,
+  "floor_source": "the held-out gain floor is measured in each train job before training: 3 x the largest |held gain| of three Gaussian updates at 0.0175 x each matrix's norm (E211's larger LM size; rl_67m random_update); 3 = E265's sd_mult (adl predictions) read as 'well above' the null",
+  "half": 63, "n_read": 500, "per_row": 8, "n_fit": 2000, "fit_rows": 256,
+  "read_source": "E211's LM read (predictions_run2 half, n_read, per_row, n_fit, fit_rows): the 500 word starts of lowest W0 log-odds in 64 held rows, at most 8 a row; lower and british keep their own experiments' read windows (E53's, E233's)",
+  "n_select": 512, "strengths": [0, 0.5, 1, 2, 4, 8], "n_random": 8, "random_seed": 0,
+  "steering_source": "E211's fair-steering settings (predictions_run2 n_select, strengths, n_random, random_seed; E143's)",
+  "adl_k": 5, "adl_rows": 4096, "adl_batch": 512,
+  "adl_source": "E265 (adl predictions k 5, batch 512); 4,096 Pile val rows (0-4095) in place of E265's 8,192, so the Pile task's training rows (val 4096 on) stay out of the mean difference",
+  "pile_start": 4096, "lm_rows": 2400, "lm_held": 64,
+  "lm_rows_source": "E211/E53's 2,400 rows (each once in 300 steps of 8) and 64 held rows; the Pile task on val rows 4096-6495 (the base never trained on val), held 6496-6559",
+  "en_len": 256,
+  "en_len_source": "new: half of each 512-token row English (Pile train) then French (E211's T2 rows), loss and reads on the French half only (whip-lead 21:50: 'train after English context only')",
+  "squad_P": 256, "squad_A": 16, "conll_P": 96, "prompt_train": 2400, "prompt_held": 512,
+  "prompt_source": "new: prompts left-padded to 256 (SQuAD) / 96 (CoNLL) tokens; answers up to 15 tokens (SQuAD v1.1 answers are short spans); 2,400 training examples = 300 steps of 8 each once, as the LM tasks; CoNLL types ' person', ' organisation', ' location', ' other' (one token each; ' miscellaneous' is two)",
+  "pick_seed": 0, "twin_seed": 1,
+  "e211_state": "experiments/realistic_tasks/results/large/run2/T1_s0_0.0175.pt",
+  "e187_c": 0.7798162499214973,
+  "e187_c_source": "experiments/size_matched/results/m67.json pairs.e58_copy_prior_cipher.c"
+ },
+ "thresholds": {
+  "reproduce_tol": {"share": 0.01, "steering": 0.001, "erank": 1e-06},
+  "reproduce_tol_source": "E211's reproduce_tol (predictions_run2: share 0.01, steer_pooled 0.001, erank 1e-6); E187's share_tol 0.01 (m67.json T) for the copy/cipher split",
+  "eb": {"n_windows": 200,
+         "x2_E_b_K": {"value": 0.7613907014282402, "tol": 0.04,
+                      "source": "E268's saved E_b over K of x2 (definition-lead clone, experiments/kstar_needed/results/items/x2.json E_b_K); tol = E268's card spread 0.04 (kstar_needed/card.md:6): a fresh scan on another card may move fragile argmaxes"},
+         "n_windows_source": "E268's RL items: 200 windows read at the last position, 738 s per state on an H100 (definition-lead e268_dl/run_rl_p0.log:8)"}
+ },
+ "expected": {
+  "stage0": "zero update: size, KL, gain, share numerator, held gain and every ADL numerator exactly 0 (share, steering and D nan: no gain); E211 T1_s0_0.0175: share 0.7698, steering 0.7514, erank 597.714 (run2_T1.json states.s0_0.0175); E187 split: copy_s0 r 0.7707 (refit_96key stage1 e58/copy_s0), prior_cipher_s0 at c 0.7798 r 0.3669 (m67.json), gap about 0.40",
+  "train": "every task's Gaussian held gain within about 0.02 nats of 0 (E211's Gaussian numerators -0.02 to 0.02 log-odds on lowercase); every trained state's held gain over its floor; squad and conll: real over twin by at least the floor (else dropped with a note); KL and size rise with step",
+  "read": "random updates: share and steering over the paired gain within about 0.02 of 0 (E211's Gaussians: numerators +-0.02 against a gain of 1.25-1.63); ADL D of a random about 0 (E265)",
+  "eb": "do-nothing E_b exactly 1; random about 0.011 (E268/E257 random_size 0.0109); x2 0.761"
+ },
+ "rules": {
+  "readings": ["share", "steering", "erank", "E_b"],
+  "baselines": ["kl", "adl", "size", "prior"],
+  "orientation": {"share": 1, "steering": 1, "erank": 1, "E_b": 1, "kl": -1, "adl": 1, "size": -1, "prior": 1},
+  "orientation_source": "+1 = higher reads more reuse: share, steering and E_b by their definitions; erank as E211 filed it (+, E53 reuse 598-600 over new 573-594); prior + (the base already does it); kl and size - (a smaller change for the same task); adl + (low confidence: the sign-free mean |tau| is reported beside W)",
+  "min_tasks": 5, "n_perm": 10000, "n_boot": 2000, "seed": 266, "alpha": 0.05,
+  "readable": "a measure is readable in a matched set when the between-task sd of its task means exceeds the pooled within-task (seed) sd; else 'no information' and out of W. A task with a non-finite seed value is missing for that measure (listed, never 0)",
+  "H1": "per readable reading and rater (and the consensus), on the KL-matched 'hi' set: Kendall tau-b of tier code against the oriented task mean; 'positive' when tau > 0 and the one-sided task-permutation p <= alpha; 'not positive' when tau <= 0; 'no call' otherwise or with tau undefined; 'too few tasks' under min_tasks. Beside it (no call): partial tau on the prior where the prior has common support across the top and bottom tiers (else raw only, so labelled), the leave-one-task-out range and a 90% task-bootstrap interval. The other three sets are read the same way, descriptive",
+  "H2": "on the KL-matched 'hi' set: Kendall W (tie-corrected) across the readable readings and across the readable baselines (the matched variable left out), each oriented, on the tasks all of them have; 'above' when W_readings > W_baselines and W_readings > the 95th percentile of W for independent random rankings of the same m and n; 'not above' when W_readings <= W_baselines; 'no call' otherwise or under min_tasks or fewer than 2 measures a side",
+  "edge_cases": "checked on stubs before filing (tests stub in results/stub/): ties in tau (tau-b; tier codes tie by construction), a dropped task (out of every measure), a zero-spread reading (unreadable, out of W), n < 5 (too few tasks), a constant side (tau nan, 'no call'), the do-nothing (every numerator 0, share nan: unreadable, never a pass)"
+ },
+ "predictions": {
+  "H1": {"direction": "+", "confidence": "low", "why": "Fable (whip-lead note): readings' tau with the consensus tier positive"},
+  "H2": {"direction": "above", "confidence": "low", "why": "Fable: W among readings above W among baselines"}
+ }
+}

@@ -1,0 +1,91 @@
+# Plan: the realistic convergence panel (cell P2.66, E_TBD)
+
+**In plain words.** We fine-tune the released 67M model on nine ordinary tasks, three seeds each, with one recipe, and
+pick checkpoints where the tasks have moved the model's outputs by the same amount (and, separately, where the
+weights have moved by the same amount). On those checkpoints we read the four measures of reuse that worked on built
+tasks and the four baselines, and ask two things: do the measures rank the tasks the way blind raters expect, and do
+they agree with each other more than the baselines do?
+
+Code `experiments/convergence_panel/` (`run.py` stages 0-2, `eb.py` stage 3, `score.py`, `plot.py`, `tasks.py`),
+shared `src/commute/panel.py`; rules `results/predictions.json`; card `card.md`; Slurm `cluster/convergence_panel.sbatch`.
+
+## Design check (/design)
+- **Goal.** Claim 2 (whip-lead 2026-11-22: "we can sort of measure re-use on realistic tasks"): the user's hopes are
+  that measured reuse follows intuition, and that the toy-validated methods converge on realistic tasks.
+- **Nearest tried.** E211 (P2.38: every scorecard method on three real-text pairs, size-matched, no KL record, French
+  under the gain floor); E233 (British style vs twin); E265 (ADL column); E268 (E_b over K on built and RL items).
+  New here: many tasks at once, matched on KL as well as norm, rated blind before any reading, and the four readings
+  compared with each other rather than with a built answer.
+- **Patch or step.** A step: no known answer exists for realistic fine-tunes, so agreement is the evidence left.
+- **Decisions relied on.** decisions.md 2026-11-18 "two-label contrast" (topic read in the contrast); MIN_GAIN 1.
+  Departure: label and prompt tasks use the LM trainer (plain SFT on the answer, batch 8) rather than E211's arm A.
+- **Definition.** No rule is added to the definition. E_b is read over the interchange-needed K only (P1.54); a
+  sampled interchange is labelled a sampled estimate. No verdict on reuse is given; the panel reports agreement.
+- **What changes next.** H1 positive and H2 above: claim 2 is written with the panel as its realistic evidence. Both
+  fail with readable readings: a clean negative for claim 2 on the 67M. Readings unreadable: say so, no claim.
+- **Apparatus control first.** Stage 0 runs alone and stops the job on a miss: the zero update, E211's re-read, and
+  E187's copy against prior-matched cipher split.
+- **Saved for audit.** Every checkpoint on the rungs (bf16), every record JSON, the selection file, before reading.
+
+## What runs, and what each number should read
+| Stage | Reads | Expected at W0 / do-nothing | Expected at the control |
+|---|---|---|---|
+| 0 | zero update on E53's lowercase rows | size, KL, gain, share numerator, held gain, ADL numerators exactly 0; shares nan | - |
+| 0 | E211 `T1_s0_0.0175` re-read | - | share 0.7698 (tol 0.01), steering 0.7514 (tol 0.001; the denominator here is the share's gain, 1.6273 against E211's 1.6286, so about 0.0006 off), erank 597.714 (1e-6) |
+| 0 | E187's split, E254's states, E228 reader | - | copy_s0 at c 1: 0.7707; prior_cipher_s0 at c 0.7798: 0.3669 (tol 0.01 each) |
+| train | three Gaussians at 0.0175 per task | held gain within ~0.02 of 0 | floor = 3 x the largest |gain| |
+| train | squad, conll: real against twin | - | learned when real >= floor and real - twin >= floor; else dropped with a note |
+| select | KL rungs 0.001 x 2^(i/2), size rungs 0.002 x 2^(i/2) | - | "hi" = the rung with the most tasks whose 3 seeds each have a state within 10% with gain over the floor (ties to the larger); "lo" = two rungs below (half) |
+| read | share, steering, erank, ADL D, size, KL, prior per state; one Gaussian per seed-0 state over its paired gain | random within ~0.02 of 0 | - |
+| eb | E_b over K (sampled estimate, 4 derangements x 64) | do-nothing exactly 1 | x2 0.7614 (E268, tol 0.04 = its card spread); random ~0.011 |
+
+## Filed rules (results/predictions.json "rules")
+- Readable: between-task sd of task means above the pooled seed sd; else "no information", out of W.
+- H1 (KL "hi" set): Kendall tau-b of tier code against the oriented task mean, per rater and the consensus; "positive"
+  when tau > 0 and one-sided task-permutation p <= 0.05; beside it, partial tau on the prior only where the prior has
+  common support across the top and bottom tiers, leave-one-task-out range, 90% task-bootstrap interval.
+- H2 (KL "hi" set): Kendall W across readable readings against W across readable baselines, the matched variable left
+  out; "above" when W_readings > W_baselines and above the 95th percentile of W for random rankings.
+- Fewer than 5 tasks: "too few tasks". Missing scores and failed controls are reported as such, never 0.
+- Predictions (Fable): H1 "+", H2 "above", both low confidence. The other three matched sets are descriptive.
+- Edge cases run on a stub before filing (score.py --stub): a dropped task, a zero-spread reading, a nan seed, ties
+  (tier codes), n = 4, the prior with no common support. All gave the calls the rules name.
+
+## Cost and time per stage (measured item x count)
+- Stage 0, cluster debug L40, $0: three reads at <= 58 s (one full E211 read, a superset of these readings,
+  `cluster/logs/commute-realistic-r2-61448.out` lines 12-13) + E254's world and two reads at 39-47 s
+  (`prior_matched/results/a/items/*.json` .seconds): ~8 min.
+- Train, $0: a 300-step LM fine-tune 10-16 s (61448 line 36: 10 s for 187 steps), x 3 seeds, + up to 27 saves a seed
+  at ~2 s (not measured; the job prints it) and one 16-row forward a step: ~5-10 min a task, nine jobs.
+- Read, $0: up to 12 states + 4 Gaussians a task at <= 58 s: <= 16 min a task, nine jobs (~2.3 GPU-h).
+- E_b (gated): 738 s per state for 200 windows of 64 tokens on an H100 (E268, definition-lead
+  `e268_dl/run_rl_p0.log:8`); the scan scales with tokens, so SQuAD (256-token prompts) ~4x, CoNLL (96) ~1.5x, topic
+  (34) ~0.5x. KL-matched only (up to 54 states + 18 Gaussians): 7 LM tasks x 8 x 738 s + squad 8 x 2,952 s + conll
+  8 x 1,107 s + topic 8 x 369 s = 21.8 h; with the Gaussians ~30 h = ~$80 at ~$2.7/h on four pods (~7.5 h wall).
+  Norm-matched adds about as much again: run it only if the KL-matched readings are readable.
+
+## Gates for stage 3 (gated: over $60)
+1. **Pre-mortem.** Recipe: E268's code and settings unchanged (derangements 4, examples 64, seed 268) - guard: x2's
+   fresh E_b over K against E268's value in eb stage 0. Data: D = the first 200 read windows cut at the read position;
+   SQuAD's 256 tokens may OOM at rows 1024 - guard: the rehearsal measures peak memory on squad. Precision: fp32, tf32
+   off, as E268. Memory: 11.3 GB peak for x2 (E268 items/x2.json) - fits an H100. Time: per state above; the job logs
+   seconds per state and the runner checks the first against 738 s x tokens/64. Saves: per-task JSON written per
+   state (KB); nothing large. Downloads: per state as written. Pod loss: rerun skips written states. Controls first:
+   eb stage 0 alone (do-nothing exactly 1, identity 0 flips, x2 K* to 1e-11, x2 K within 0.04). Predictions: H1/H2
+   read E_b like any reading; a nan is missing. Never-run path: `eb.py` on a panel state.
+2. **Settings sourced.** All E268's (kstar_needed predictions); n_windows 200 = E268's RL items.
+3. **Rehearsal ($0).** `E_TBD rehearse: eb` on a cluster L40: eb stage 0 and one squad state at 200 windows;
+   record seconds per state and peak memory, `fleet/rehearsed` it.
+4. **Early checks.** eb stage 0 stops the job; the first state's seconds are logged before the second.
+5. **One review** (fresh Opus) of this plan and `eb.py`.
+6. **Go-ahead** from whip-lead (in-plan gated run).
+
+## Open choices (for the lead)
+- The raters' tiers go in `raters` before `read` (both refuse while it is empty); the user's sort when it arrives.
+- E_TBD: no E-number is claimed yet; every file says E_TBD.
+- Extra rows (E256/E260 procedural, E218/E222 RL) are not wired: they need their own read rows (rb_states'
+  `p256_windows`, `rl_windows` files) as CueReads. Left for a follow-up job; they sit outside the statistics.
+
+## Not run
+Everything: no GPU job was submitted. CPU only: the stub score, the card sketch, the selection rule and prompt-row
+builders on toy inputs, and an import check of eb.py.
