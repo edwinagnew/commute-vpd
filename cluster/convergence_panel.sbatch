@@ -13,8 +13,9 @@
 #   ~/commute-agents/fleet/cpu-run python3 experiments/convergence_panel/run.py select [wide]   (after all nine AND the three mixes; wide after all 18)
 #   for each kept T: sbatch --comment="E272 stage: read $T" cluster/convergence_panel.sbatch read $T
 #     (lower's and yoruba's reads also take Amendment 4's 5 trajectory saves each, no Gaussians: +<= 5 min each)
+#   Amendment 8: ~/commute-agents/fleet/cpu-run python3 experiments/convergence_panel/run.py select mix   (size "hi" picks)
 #     sbatch --comment="E272 stage: read mix25" cluster/convergence_panel.sbatch read mix25   (and mix50, mix75:
-#     3 KL-matched states each, no Gaussians, ~4 min + set-up)
+#     3 size-matched states each, no Gaussians, ~4 min + set-up)
 # Expected on an L40 (E211 log cluster/logs/commute-realistic-r2-61448.out: a 300-step LM fine-tune 10 s, lines 36;
 # one full E211 read of a state, a superset of this panel's readings, 57-58 s, lines 12-13): stage 0 ~8 min (lowercase
 # rows, three reads, E254's world); train ~5-10 min a task (3 seeds + up to 27 saves each, ~2 s a save; squad and

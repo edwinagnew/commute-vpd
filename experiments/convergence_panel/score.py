@@ -10,6 +10,7 @@ Amendment 5: the filed nine are scored as before (top level of summary.json, rat
 exists the 18-task wide set is scored beside them from DIR/wide/{dropped.json,read,eb} on "raters_wide" (key "wide").
 The critical tau-b is exact up to n = 9 and from 200,000 seeded random orderings from n = 10; each H1 entry also records
 the raw call's power at true tau 0.3 and 0.5 on the tier codes kept (power_raw). Scored: the nine first, then the wide.
+Amendment 8: the mixture is read at the size "hi" picks (mix_selection.json, which must predate every mix read).
 """
 
 from __future__ import annotations
@@ -94,13 +95,28 @@ def critical_rho(n: int, alpha: float) -> float:
     return float(r[p_ge <= alpha].min())
 
 
+MIX_MATCH = "size_hi"  # Amendment 8: the mixture is read at the size "hi" target (KL "hi" had no mix state)
+
+
+def mix_drops(res: Path) -> dict[str, Any] | None:
+    """Amendment 8: the mix picks (mix_selection.json, `run.py select mix`) predate every mix read, or nothing is scored;
+    None when neither the picks nor a mix read exist."""
+    p, reads = res / "mix_selection.json", sorted((res / "read").glob("mix*.json"))
+    if not p.is_file():
+        return None if not reads else sys.exit(f"{p} is missing but mix reads exist: run.py select mix writes it first")
+    d = json.loads(p.read_text())
+    if early := [f.name for f in reads if f.stat().st_mtime < d["written"]]:
+        sys.exit(f"mix reads older than mix_selection.json, so the mix picks were not fixed before them: {early}")
+    return d
+
+
 def mix_values(res: Path, S: dict[str, Any]) -> dict[str, dict[float, list[float]]]:
-    """measure -> mix fraction -> seed values: the "mix" picks of mixNN at NN/100, and the KL "hi" states of the two
-    mixed tasks at 0 and 1 (their own panel runs)."""
+    """measure -> mix fraction -> seed values: the "mix" picks of mixNN at NN/100, and the size "hi" states of the two
+    mixed tasks at 0 and 1 (their own panel runs; Amendment 8)."""
     frac = {S["mix_tasks"][0]: 0.0, S["mix_tasks"][1]: 1.0} | {f"mix{round(100 * f)}": f for f in S["mix_fracs"][1:-1]}
     out: dict[str, Any] = {m: {f: [] for f in S["mix_fracs"]} for m in MEASURES}
     for task, rec in records(res):
-        label = "kl_hi" if task in S["mix_tasks"] else "mix"
+        label = MIX_MATCH if task in S["mix_tasks"] else "mix"
         if task in frac and label in rec["picked"]:
             for m in MEASURES:
                 out[m][frac[task]].append(value(rec, m))
@@ -111,7 +127,8 @@ def mixture(vals: dict[str, dict[float, list[float]]], R: dict[str, Any], n_seed
     """Amendment 4, per measure: Spearman rho of the seed means over the mix fractions; 'monotone' when |rho| is at least
     the exact one-sided critical rho at alpha for that many fractions, with the sign said against the expected one
     (-orientation: the fraction is the low-reuse task's share); 'not monotone' under it; 'no call' with a missing
-    fraction (a seed missing or non-finite) or rho undefined (a constant reading). The 15-point rho is beside it."""
+    fraction (a seed missing or non-finite) or rho undefined (a constant reading). The 15-point rho is beside it. The
+    matched variable (size since Amendment 8) is reported, not called; KL, now free, is called like a reading."""
     fr = sorted(next(iter(vals.values())))
     crit, out = critical_rho(len(fr), R["alpha"]), {}
     for m, by in vals.items():
@@ -120,7 +137,7 @@ def mixture(vals: dict[str, dict[float, list[float]]], R: dict[str, Any], n_seed
         o: dict[str, Any] = {"fractions": ok, "means": means, "critical_rho": crit, "expected_sign": -R["orientation"][m]}
         o["rho"] = rho(ok, means) if len(ok) == len(fr) else math.nan
         o["rho_all_points"] = rho([f for f in ok for _ in by[f]], [x for f in ok for x in by[f]]) if ok else math.nan
-        if m == "kl":
+        if m == MIX_MATCH.split("_")[0]:
             o["call"] = "matched (not read)"
         elif len(ok) < len(fr) or not finite(o["rho"]):
             o["call"] = f"no call ({len(fr) - len(ok)} fractions missing)" if len(ok) < len(fr) else "no call (rho undefined)"
@@ -167,7 +184,9 @@ def amendment4(res: Path, P: dict[str, Any], kl_hi: Any) -> dict[str, Any]:
     by_task = trajectory_values(res)
     traj = {t: {m: jump_call(v, sd(m), R["amendment4"]["jump_mult"]) for m, v in by_task[t].items()} if t in by_task
             else "too few points (select: fewer saves over the floor than points) or not read" for t in S["trajectory_tasks"]}  # fmt: skip
-    return {"mixture": mixture(mix_values(res, S), R, len(S["seeds"])), "trajectory": traj}
+    vals = mix_values(res, S)
+    kl = {str(f): {"kl": vals["kl"][f], "size": vals["size"][f]} for f in S["mix_fracs"]}  # Amendment 8: each pick's KL beside it
+    return {"mixture": mixture(vals, R, len(S["seeds"])), "mix_match": MIX_MATCH, "mix_picks": kl, "mix_selection": mix_drops(res), "trajectory": traj}
 
 
 def task_means(seeds: dict[str, list[float]]) -> tuple[dict[str, float], dict[str, Any]]:
@@ -401,6 +420,8 @@ def main() -> None:
     for s in SETS:
         if isinstance(out[s], dict):
             show(s, out[s])
+    for f, v in out["amendment4"]["mix_picks"].items():
+        print(f"[mixture picks at {MIX_MATCH}] fraction {f}: KL {[round(x, 4) for x in v['kl']]}, size {[round(x, 5) for x in v['size']]}")
     for m, o in out["amendment4"]["mixture"].items():
         print(f"[mixture] {m}: rho {o['rho']:.3f} (15 points {o['rho_all_points']:.3f}, critical {o['critical_rho']:.3f}, expected {o['expected_sign']:+d}): {o['call']}")
     for t, by in out["amendment4"]["trajectory"].items():
