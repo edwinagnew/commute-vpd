@@ -1,0 +1,39 @@
+{
+  "experiment": "E268 (kstar_needed)",
+  "cell": "P1.54",
+  "filed": "2026-11-22, definition-lead (writer agent), before any GPU run of this experiment",
+  "settings": {
+    "control": "x2",
+    "control_E_b_Kstar": 0.7617252590298972,
+    "transcription_rel_tol": 1e-11,
+    "built": ["x2", "x10", "rebuilt", "new_few", "new_thin", "random_size_241001", "random_kl_241002"],
+    "derangements": 4,
+    "examples": 64,
+    "seed": 268,
+    "rows": 1024,
+    "logit_rows": 8192,
+    "cache_batch": 32,
+    "ident_vars": 3,
+    "kept_floor": 3.3243476569633224e-05,
+    "settings_source": "control and control_E_b_Kstar: E247's gain edit x2 and its E_b over K* from P1.49's saved arrays (experiments/option_b_rescore/results/summary.json items.x2.E_b; E257 stage 0 reproduced it as 0.7617252590298971 from E247's arrays). transcription_rel_tol: the fp64 summation bound over at most 38,938 terms (n * eps = 8.6e-12), rounded up; the measured difference between P1.49's and E257's paths on x2 is 1.5e-16 relative. built: the seven E247 items with saved num, den, dd (experiments/thin_edit_diagnosis/results/large). derangements, examples: the task's P = 8 scaled to fit the item list in debug jobs from a FLOP estimate (38,938 variables x 256 pairs per item read at the last position, about 8 min per item on an L40 at 50 TFLOPS fp32); stage 0 measures the rate and prints the estimate per item, and the lead amends these two before the first item if the estimate is off. seed: the E-number. rows, logit_rows: memory, about 5 GB of logits per forward at most on a 44 GB L40. cache_batch: E226's batch. ident_vars: three subcomponents and the remainder per matrix: every block's restart path and both correction branches at the scan's batch shape. kept_floor: E257 stage 0's measured bf16/fp32 floor on E_b at x2 (experiments/rb_states/results/stage0_*.json floor)."
+  },
+  "readings": {
+    "K": "the variables (subcomponents and remainders of the 24 decomposed matrices; not the embedding or unembedding, the input and output variables) for which some tested pair (x, x') of D, x' = pi(x) for one of `derangements` seeded random derangements pi, each tested on `examples` windows, changes F's argmax token at some read position when the variable's write on x is replaced by its write in F's own run on x' at every position (commute.needed.scan). A finite sample: the K read here is a subset of the definition's K; by_derangement shows its growth with the pairs tested. Blind to variables needed only on untested pairs, and to grafts (no item in scope has any; the scan refuses them). Positive control: none that knows K in advance; the identity interchange (x' = x) must change nothing",
+    "E_b_K": "commute.stand_in.explained_share(num, den, dd, K and changed) on the saved per-variable arrays (E247's for the built edits, E257's for the rest). 1 when K has no changed member. Blind to how much each variable matters for the behaviour (it weighs by write change)",
+    "E_b_Kstar": "the same over the saved K*: the transcription check against the saved E_b",
+    "size_K, size_Kstar, size_both, n_changed_*, n_kept_changed_*": "|K|, |K*|, |K and K*|, their changed members, and the changed members whose explained share of dd is at least 1 - kept_floor",
+    "dd_share_K_outside_Kstar": "share of K's total write change dd that lies in variables outside K*",
+    "min_margin, n_fragile_positions": "F's smallest top-1 minus top-2 logit gap over D's read positions, and the positions whose gap is at most stage 0's identity deviation (where fp32 rounding alone could move the argmax)"
+  },
+  "rules": {
+    "R0a": "Stage 0 stops the job on any argmax change under the identity interchange (x' = x) on x2's first 64 windows, three subcomponents and the remainder of every matrix, at x2's read positions and at the last position. Its largest logit deviation is recorded as the floor, not barred: the correction is exactly zero in exact arithmetic, so the deviation is the scan path's fp32 rounding against F's native forward. Edge cases: x' = x is not a derangement, used only here; a tie in F's top two logits would make any rounding flip it, n_fragile_positions counts such positions per item",
+    "R0b": "Stage 0 stops the job unless the do-nothing (F = M) has no changed variable, every dd exactly 0.0 and E_b over K exactly 1.0 (K and changed is empty for any K, so the convention gives 1 with no division)",
+    "R0c": "Stage 0 stops the job unless x2's E_b over K* from E247's saved arrays, E242's changed set and the saved K* is within transcription_rel_tol (relative) of control_E_b_Kstar. Each item stops the job the same way against its own saved E_b (P1.49's for the built edits, E257's item JSON otherwise), and when its saved arrays' length or changed set differ from this featurization's",
+    "items": "descriptive, no rule: no verdict under either wording until the user adopts one (CLAUDE.md, P1.1); the card's rivals (experiments/kstar_needed/card.md) read E_b over K against E_b over K* within the seed spread 0.04"
+  },
+  "expected": {
+    "stage0": "identity: 0 argmax changes, largest logit deviation about 1e-5 or below (fp32 rounding of a different batch shape); do-nothing: 0 changed, dd 0.0, E_b over K 1.0; x2: E_b over K* 0.7617252590298972 to within 1e-11 relative",
+    "built": "not filed (descriptive). The card's rival a: E_b over K within 0.04 of E_b over K* on every item (P1.49: x2 0.762, x10 0.761, rebuilt 0.631, new_few 0.0123, new_thin 0.0189, randoms 0.0109); rival b: outside it on some item",
+    "rl, manifest, pairs": "not filed (descriptive); E257's E_b over K* beside each"
+  }
+}
