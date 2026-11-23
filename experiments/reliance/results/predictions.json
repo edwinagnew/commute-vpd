@@ -1,0 +1,39 @@
+{
+  "experiment": "E### (reliance)",
+  "cell": "P1.57",
+  "filed": "2026-11-23, definition-lead (writer agent), before M's needed sets were scanned and before any V1 or V2 value was computed",
+  "descriptive": "user via whip-lead, 2026-11-23 ~14:20, $0 diagnostic of the kept clause, no bar. Neither reading is the definition, nor a proposed change to it.",
+  "settings": {
+    "f": 0.25,
+    "f_sweep": [0.05, 0.25, 0.5],
+    "k_min": 100,
+    "f_source": "chosen from what is saved (Fable-level choice, the brief): dd_v and den_v are stand_in.write_change's sums over every position of D in F's own run, dd_v = sum |w_F,v - w_M,v|^2, den_v = sum |w_M,v|^2 (M's mechanism on F's own input). dd_v / den_v < 0.25 says the variable's write moved by under half of M's own write, in root-mean-square over D. A gain of 2 on a write (x2, E280's v2 and o2) gives dd / den = 1, four times the cut, and an unchanged variable gives dd = 0 exactly, so neither sits near the cut. f_sweep is reported beside, descriptive, so the reading is not one cut's.",
+    "k_min_source": "E272's K_MIN (experiments/convergence_panel/score.py): |K| < 100 reads missing; applied to F's K",
+    "scan_source": "M's needed sets are scanned with the F scans' own settings, read from their files, not refiled here: neurons and heads, E277's (experiments/needed_neurons/results/predictions.json: 4 derangements x 64 windows, seed 268, rows 1024, logit_rows 8192, cache_batch 32, band p97 of E229); VPD, E268's (experiments/kstar_needed/results/predictions.json, the same pair settings). The pairs are commute.needed.derangements(|D|, 4, min(64, |D|), 268), a function of |D| only, so M's pairs on a D are the F scans' pairs on that D."
+  },
+  "readings": {
+    "flip mass": "per variable v, flips_F[v]: the number of tested pairs (x, x') of D (256) on which setting v's value on x to its value on x' in F's own run changes F's argmax at some read position (the saved 'flips' of each F scan). F's needed set K_F = {v : flips_F[v] > 0}; its flip mass is the sum of flips_F over K_F.",
+    "K_M": "M's needed set on the same D, the same read positions and the same pairs, by the same scan with M in place of F (run.py; M's own run cached, M's own argmax). Not the stage-0 identity check (x' = x), which gives no flips.",
+    "V1": "needed by both: sum of flips_F[v] over v in K_F and K_M, over sum of flips_F[v] over v in K_F",
+    "V2": "needed and barely changed: sum of flips_F[v] over v in K_F with dd_v < f den_v or dd_v = 0, over sum of flips_F[v] over v in K_F (f = settings.f; also at each f_sweep value)",
+    "V1_changed, V2_changed": "secondary, descriptive: the same with K_F replaced by K_F and changed (the set the kept clause E_b over K reads); None when that set is empty",
+    "blind to": "V1: how the needed variables changed (a variable M needs that F rewrote completely counts as reused). V2: whether M needs the variable (an unchanged variable F newly relies on counts as reused). Both weigh variables by F's flips, not by write size; both read only the tested pairs.",
+    "positive control": "the do-nothing (F = M): V1 = V2 = 1 by construction (score.py checks the arithmetic on the saved arrays with K_M := K_F and dd := 0 before scoring). No item known in advance to be reuse at these featurizations gives a value; x2 and x10 are the built reuse side."
+  },
+  "rules": {
+    "edge cases": "K_F empty (zero flip mass): V is None, 'no reading'. |K_F| < k_min: the value is reported with too_small = true and the panel reads it missing (E272's rule). den_v = 0 and dd_v = 0: barely changed (the variable writes nothing in both). den_v = 0 and dd_v > 0 (M writes nothing there, F does): not barely changed. Ties and empty pools need no rule (the readings are ratios of sums). K_M is only defined where M was scanned on that item's D; an item whose D has no M scan reads V1 None.",
+    "D": "M's K is keyed by D's sha256 (the tokens, their shape and the read positions). Built world at neurons: x2, x10, rebuilt, random_size_241001 are read on E214's copy24 held-out windows (75 x 41 tokens, all 41 positions); new_few, new_thin, random_kl_241002 on the edits' cue windows (512 x 41, last position). E62 (both featurizations) and E280: E257's e62 read half (512 x 8, last position). E281: the 206 copy windows of that D. Panel: E272's windows per task (200 windows, last position). The run records the key per item, so a shared D is scanned once.",
+    "order": "(1) control, (2) E62 copy against lookup at heads and at VPD (and E281's copy windows at VPD), (3) E280's head edits, (4) the panel; each read as below, descriptive, no bar",
+    "(1) control": "per item V1, V2 (and the _changed columns). Rival A's pattern: min over x2, x10 above max over new_few, new_thin, random_kl_241002, on each of V1 and V2. Rival B's: no such order. rebuilt and random_size_241001 reported beside; random_size_241001 shares x2's D, where |K_F| is near every variable (E277: 12,291 to 12,300 of 12,316), so V1 is expected near 1 there too and cannot separate on that D (noted before computing).",
+    "(2) E62": "per featurization, copy_s0-2 against lookup_s0-2 (and lookup scaled to copy's size, s0-2): rival A's pattern is mean(copy) > mean(lookup) and copy > lookup on every seed (seeds paired by index) for V1 and V2; rival B's otherwise.",
+    "(3) E280": "v2, o2, q2 at each featurization: V1, V2 reported; rival A expects V1 near the do-nothing's 1 (each edit doubles one existing head of M)",
+    "(4) panel": "per state V1 and V2; per task the mean over its three fine-tuned seeds (convergence_panel score.task_means; |K_F| < 100 missing); Kendall tau-b with every rater's tiers and the consensus, and E272's reading_given_loss per base-loss rule, unit and subset, all by experiments/needed_neurons/score_panel.py side() on E272's filed orientation of E_b (+1, higher reads more reuse). Each task's seed-0 Gaussian reported beside. Rival A: consensus tau > 0 on V1 and on V2; rival B: tau <= 0 or no reading."
+  },
+  "expected": {
+    "do_nothing": "V1 = 1, V2 = 1 exactly, at every f (K_M = K_F: same network, D and pairs; dd = 0 for every variable)",
+    "x2, x10 (neurons)": "V1 >= 0.99 (|K_F| >= 12,281 of 12,316 and M's K on the same D expected as large). V2 >= 0.95 (9 changed variables of 12,316; their flip share is unknown but at most 9 x 256 against a mass in the hundreds of thousands if flips are spread). V2_changed near 0 at f = 0.25 if the change at the 9 changed variables is close to a doubling of M's write (x10: about 81 times)",
+    "random_size_241001 (neurons)": "V1 >= 0.99 by the same saturation (uninformative for V1, stated above)",
+    "new_few, new_thin, random_kl_241002 (neurons)": "not filed as values: rival A predicts them below x2 and x10, rival B not",
+    "E62, E280, panel": "not filed as values (descriptive); E280 v2 and o2 at heads: V2_changed = 0 at f = 0.25 if head (2, 4)'s write is exactly doubled (dd / den = 1), and V2 = 1 minus head (2, 4)'s share of F's flip mass"
+  }
+}
