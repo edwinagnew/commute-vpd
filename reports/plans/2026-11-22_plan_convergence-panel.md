@@ -58,6 +58,21 @@ shared `src/commute/panel.py`; rules `results/predictions.json`; card `card.md`;
   **If H1 is "no call"** (the likely case), the paper says: on nine realistic tasks the readings' agreement with the
   raters' tiers is reported with its interval and is too weak to call at this panel size, and the panel does not show
   that the readings track intuition beyond the base prior.
+- **Amendment 4 (2026-11-22, whip-lead's 22:55 note, user "yes to all four"; before any read).** Two descriptive
+  extras, outside H1/H2 (`rules.amendment4`). *Mixture:* lower (consensus reuse, code 3) mixed with yoruba (new,
+  code 1) at 0/25/50/75/100% of yoruba's rows in every part of the task (`tasks.mix_task`); 0 and 100% are the
+  panel's own runs, so only mix25/50/75 train. Pair: yoruba is the only code-1 task; of the four code-3 tasks only
+  lower's saves have held gain over the floor (pile, code and british read below 0 at every save), and lower and
+  yoruba share row shape, mask and read layout, so a mix is a row mix. Mix states are picked at the panel's KL "hi"
+  target without entering its selection rule. Per measure, Spearman rho of seed means over the 5 fractions,
+  "monotone" when |rho| >= 0.9 (exact one-sided 0.05, n = 5), sign against -orientation. *Trajectory:* no new
+  saving (train already saves at every rung; lower's seed 0 has 14 saves over its floor): select picks 5 of seed
+  0's saves over the floor, evenly spaced, for lower and yoruba; "stable" / "monotone" / "jump" against 3 x the
+  measure's seed sd on the KL "hi" set. At W0 every mix reads numerators 0 and shares nan: "no call", never
+  "monotone". New jobs: 3 train (5-10 min each, as a panel LM task, plus the second task's build) + 3 read (3 states
+  at <= 58 s, ~4 min + set-up each) on debug QoS, and up to 10 trajectory states (<= 58 s each) in lower's and
+  yoruba's reads: ~0.5-0.8 GPU-h, $0; exact lines in the sbatch header; select runs
+  after the mixes' train jobs and before any read.
 - Edge cases run on a stub before filing (score.py --stub; since Amendment 3, `--results DIR` on run.py's read shape): a dropped task, a zero-spread reading, a nan seed, ties
   (tier codes), n = 4, the prior with no common support. All gave the calls the rules name.
 
