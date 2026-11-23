@@ -60,10 +60,11 @@ three-pair pattern, not the one pair that separates. (3) "Above" means the two s
 with all three seeds given, not the filed 0.01 gap; at n = 3 this is a description. (4) E_b is compared only within
 a pair, never across the label and text pairs: they are read at different positions, and that changes |K|.
 (5, 2026-11-23 ~00:30, redteam-lead note-2026-11-23-redteam-e273-rehearsal.md, after the rehearsal and before any
-scored item was read.) The rehearsal's L1_s0 has |K| = 6 at margin 6.94. A side whose seeds have |K| under 100 is
-reported as "needed set too small to compare with its twin": its E_b is printed with |K|, but it is not counted
-as above or below the twin in the three-pair pattern. This is a reporting rule only. No definition rule, band or
-verdict changes, and predictions.json stays as filed. Sampling the label items until K stops growing is under Not run.
+scored item was read.) The rehearsal's L1_s0 has |K| = 6 at margin 6.94. Decided by whip-lead at 00:50 (option a), and filed before any
+full-run item was read. A state with |K| under 100 is reported as "K too small to read", with its E_b and |K| still
+printed. A pair with such a side gives no E_b comparison and counts as unread in the three-pair pattern. This is a
+limit of the sampled measurement of K, not a definition rule. predictions.json stays as filed, and the pods ran
+on unchanged. Sampling the label items until K stops growing is under Not run.
 
 ## Runtime and cost
 Measured per item on an H100 (E268, `experiments/kstar_needed/results/items/*.json`): 505-514 s for 41-token windows,
