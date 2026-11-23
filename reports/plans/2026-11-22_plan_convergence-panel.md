@@ -288,6 +288,56 @@ rank's results were seen, so it is descriptive: **no call**, whichever way it re
   update itself; the 8-task set has 28 task pairs, so one pair moves its tau by ~0.04 or more (tier ties).
 - **Not in it.** No other reading is partialled; the prior partial and KL are as already reported.
 
+## 2026-11-23 post-hoc checks (user-approved, $0, descriptive)
+User via whip-lead, 2026-11-23: "yes start the two free checks". Filed here before any of their numbers was computed.
+Chosen after E_b's reversal (consensus tau -0.69) was seen, so both are descriptive: **no call** beyond the questions
+below, whichever way they read. CPU only (`fleet/cpu-run`), no model loaded. Script
+`experiments/convergence_panel/posthoc_checks.py` -> `results/wide/posthoc_checks.json`; tau, partial tau and the
+permutation p are `score.tau`, `score.partial_tau`, `score.perm_p` (one-sided, the reading permuted, the others held;
+n_perm 10,000, seed 266 from the filed rules). Set: the wide KL "hi" set's 12 kept tasks (`wide/dropped.json`), its 3
+seeds each at the states `run.picked(task, "wide")` labels `kl_hi`. Tiers: `raters_wide`, consensus and each rater.
+Task means of the readings are summary.json's `wide.kl_hi.means`, oriented by the filed `rules.orientation`
+(higher = more reuse; KL by -1); base loss is base_loss.json's trained tokens, nats per byte, oriented as minus the
+loss (score.py's `base_loss`).
+
+**(1) Seed agreement.**
+- *Quantity.* Per task, the mean of the 3 pairwise cosines between its seeds' flattened weight updates (the saved
+  state, which is already the selected checkpoint minus the base, over every key it holds: every trained parameter),
+  in float64.
+- *Gaussian.* Only one Gaussian exists per task: stage 2's `finetune.random_direction` of the seed-0 state with
+  `random_seed` 0 (per matrix, at that matrix's norm). It is rebuilt the same way (it was never saved on disk). A
+  Gaussian per seed built the same way would share its draws with the seed-0 one (one generator seed), so it is no
+  floor. The floor is the mean over the 3 seeds of the cosine between each seed's update and the task's Gaussian.
+- *Expected.* A do-nothing update has no direction: cosine undefined. The Gaussian floor reads about 0 (the
+  scale of chance is 1/sqrt(number of weights), about 2e-4 at ~27M). Seed agreement should sit far above that floor.
+- *Filed question.* Do reuse-tier tasks have lower seed agreement than new-tier ones? Read as the Kendall tau-b of the
+  tier codes with **minus** the agreement (positive = reuse-tier tasks agree less), with its one-sided permutation p.
+- *Then.* Kendall tau-b of agreement with E_b across the 12 tasks, with a two-sided permutation p (`perm_p` on the
+  absolute tau). Then E_b's partial tau with the tiers given agreement (`partial_tau(tier, E_b, agreement)`), with
+  its one-sided permutation p (E_b permuted), next to the unconditioned tau recomputed here (consensus -0.69: a
+  control; it must match summary.json). If agreement carries the E_b reversal, the partial moves toward 0.
+- *Blind to.* Any direction inside the update beyond a single cosine; at 12 tasks one task pair moves tau by ~0.03.
+
+**(2) Steps to learn.** The traces (`results/train/TASK.json`, `seeds[s]`) log held gain only at saved states: steps
+1 to ~6 every step, then at the steps where a KL or size rung was crossed (roughly doubling gaps), and step 300
+(`last`), 12-17 entries per seed. So the rule reads those logged steps; a crossing between two of them counts at the
+later one. The per-10-step `trace` has no held gain and is not used. (Checking this format showed four tasks'
+seed-0 held gains; no crossing was computed.)
+- *Rule.* Per seed: the final held gain is the entry flagged `last` (step 300). Steps-to-learn is the smallest logged
+  step whose held gain is >= 0.5 x the final held gain. Non-monotone trace: the first crossing counts, later dips are
+  ignored. A final held gain <= 0 makes the seed missing, and a task with a missing seed is missing (score.py's
+  convention); a seed with a positive final always reaches it (at step 300 at the latest). The task's value is the
+  arithmetic mean over its 3 seeds. Ties (several tasks at step 1, say) are kept; tau-b handles them.
+- *Sign.* Fewer steps reads as more reuse: the oriented value is **minus** steps-to-learn.
+- *Reported.* Its Kendall tau-b with the tier codes (consensus and each rater), one-sided permutation p (steps
+  permuted). For each reading (E_b, re-gating share, steering, effective rank, KL, base loss): its tau-b with
+  oriented steps-to-learn on the tasks it has, one-sided p (the reading permuted), and (all but base loss) its partial
+  tau given the oriented base loss with its one-sided p (the reading permuted; steps and loss held).
+- *Expected.* A do-nothing has held gain 0 at every step: undefined. If reuse tasks learn faster, steps-to-learn's
+  tau with the tiers is positive. Readings that track reuse read positive taus with it.
+- *Blind to.* Learning speed set by the learning rate's scale on each task's loss rather than by reuse; the step
+  resolution above (many tasks may tie in the first few steps).
+
 ## Open choices (for the lead)
 - The raters' tiers go in `raters` before `read` (both refuse while it is empty); the user's sort when it arrives.
 - E272: no E-number is claimed yet; every file says E272.
