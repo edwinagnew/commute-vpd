@@ -1,0 +1,48 @@
+{
+  "experiment": "E### (realtext_eb)",
+  "cell": "P2.64",
+  "filed": "2026-11-22, definition-lead (writer agent), before any GPU run of this experiment",
+  "descriptive": "user via writeup-lead, 2026-11-22 (cell P2.64): 'read all at once', against matched randoms, base prior as a confound; aim (a): 'if we can detect reuse/new on realistic fine-tunes'. No verdict under the frozen definition is given here: the run reports E_b over K per side; no rule turns it into reuse or new",
+  "settings": {
+    "seeds": [0, 1, 2],
+    "seeds_source": "every seed E211 saved at the scored size (experiments/realistic_tasks/results/run2_<task>.json states s<seed>_<size>). Scored size only, as E246 (experiments/realtext_proxies/run.py SIZE): at the smaller sizes the coin label is reached before it is learnt (label-word gain 0.14-0.21) and French gains under the floor (reports/analyses/2026-11-18_analysis_realistic-tasks-run2.md), so those states read nothing the scored ones do not, and every saved cheap reading (E246's r, S) is at the scored size",
+    "label_pos": 34,
+    "label_pos_source": "the label rows' last position, E211's read (run2_L1.json read.pos 34) and E246's (pod0.json prior.L1.pos 34); D is the 35-token rows whole",
+    "text_pos": 63,
+    "text_pos_source": "E211's read position (predictions_run2.json settings half 63; run2_T1.json read.pos 63), E246's (prior.T*.pos 63). D is each 127-token window cut after position 63: the model is causal, so the argmax at 63 and every interchange on it are unchanged by the later tokens, and E_b's write pass sums over the 64 positions up to the read, as E268's 64-token D did. One read position, not all 64: every saved cheap reading of these states read this one, and E268's all-position reads cost 2.8x its last-position ones (1,442 s against 511 s per item, experiments/kstar_needed/results/items/x2.json, random_kl_241002.json)",
+    "derangements": 4,
+    "examples": 64,
+    "rows": 1024,
+    "logit_rows": 8192,
+    "cache_batch": 32,
+    "ident_vars": 3,
+    "e268_source": "derangements, examples, rows, logit_rows, cache_batch, ident_vars: E268's settings (experiments/kstar_needed/results/predictions.json), so K samples the same 256 pairs per item as E268's and E_b over K on the matched randoms can be set beside E268's randoms (0.0089-0.0130); rows and logit_rows are memory only",
+    "seed": 264,
+    "seed_source": "the derangements' seed, fixed (the cell's number, P2.64); one seed for every item, so the sides of a pair that share D (L1, L3) are read on the same pairs, and each fine-tune and its random too",
+    "split_tol": 1e-06,
+    "split_fp64_tol": 1e-12,
+    "F_from_pieces_tol": 0.0001,
+    "M_from_pieces_tol": 0.0001,
+    "featurization_source": "E226's split_tol (experiments/kstar_vpd/results/predictions.json settings) and its per-matrix featurization guards (thresholds split_fp64_tol, F_from_pieces_tol, M_from_pieces_tol), as every E_b item read since E226",
+    "random_size_rel_tol": 1e-09,
+    "random_size_rel_tol_source": "the random repeats E246's draw: the same function (commute.finetune.random_direction) on the same saved state with the same seed, so its size (commute.realistic.update_size) should equal E246's saved random size to the last bit; E246's own random against its state differs by 6e-12 relative (pod0.json label/L1_s0: 0.010003241340049254 against 0.010003241339988667), so 1e-9 is missed only by a different draw or a different state"
+  },
+  "readings": {
+    "K": "the variables (subcomponents and remainders of the 24 decomposed matrices; the embedding and unembedding are the input and output variables, not tested) for which some tested pair (x, x') of D changes F's argmax token at the read position when the variable's write on x is replaced by its write in F's own run on x' (commute.needed.needed_set: 4 seeded derangements x 64 windows = 256 pairs). A sample: the K read is a subset of the definition's K; by_derangement shows its growth with pairs. Blind to variables needed only on untested pairs. Positive control: none that knows K in advance; the identity interchange must change nothing",
+    "E_b_K": "commute.stand_in.explained_share(num, den, dd, K and changed): over K's changed members, the share of each one's write change on D that M's own write at its non-negative least-squares gain explains, weighted by write change (option (b), decisions.md 2026-11-21). 1 when K has no changed member (degenerate, flagged). Blind to how much each variable matters for the behaviour (it weighs by write change), and to unchanged members of K",
+    "size_K, n_changed_K": "|K| and its changed members",
+    "min_margin, n_fragile_positions": "F's smallest top-1 minus top-2 logit gap over D's read positions, and the positions whose gap is at most stage 0's identity deviation (where fp32 rounding alone could move the argmax)",
+    "saved, beside (summary stage, not recomputed)": "E211's share in log-odds (run2_<task>.json share.share.lo), E246's log-odds share r and S for the fine-tune and its random (realtext_proxies/results/pod*.json own, random), and M's prior per task (E246's geometric-mean P(scored token) at W0). The prior is reported as a confound, not as a reading: it is a property of the task under M, the same for every update on it"
+  },
+  "rules": {
+    "R0a": "Stage 0 stops the job on any argmax change under the identity interchange (x' = x) on L1_s0 and T1_s0, first 64 windows, three subcomponents and the remainder of every matrix, at the read position. Its largest logit deviation is the floor, recorded, not barred: the correction is exactly zero in exact arithmetic, so the deviation is the scan path's fp32 rounding. Edge case: a tie in F's top two logits would make any rounding flip it; n_fragile_positions counts such positions per item",
+    "R0b": "Stage 0 stops the job unless the do-nothing (F = M) on L1's D and on T1's D has no changed variable, every dd exactly 0.0 and E_b over K exactly 1.0 (K and changed is empty for any K, so the convention gives 1 with no division)",
+    "R0c": "Each item stops the job when its state file's sha256 is not E211's record, when its random's size is off E246's saved random size by more than random_size_rel_tol relative, or when a matrix's featurization check exceeds E226's tolerance",
+    "items": "descriptive, no rule. Edge cases checked: K and changed empty gives E_b 1 by convention and degenerate true (as E268's p256/addition_rl_s0), drawn apart in the figure and never pooled; K empty likewise; a random update changes every variable, so on it K and changed is K; n_changed_K = 0 with size_K > 0 (only unchanged variables needed) is also degenerate. The card's rivals (experiments/realtext_eb/card.md) read the sides against each other and against the matched randoms with the seed spread 0.004"
+  },
+  "expected": {
+    "stage0": "identity: 0 argmax changes, largest logit deviation about 5e-5 or below (E268's 5.1e-5 and 5.4e-5); do-nothing: 0 changed, dd 0.0, E_b over K 1.0 on both D; estimate about 450 s per label item and 740 s per text item on an H100 (E268: 505-514 s per 41-token item, 733-743 s per 64-token item)",
+    "randoms": "E_b over K about 0.009-0.013, E268's 11 matched randoms on other tasks (experiments/kstar_needed/results/summary.json); outside 0.005-0.03 is reported as a surprise, not a stop. |K| large (E268's 11 randoms: 14,400-38,935 of 38,938)",
+    "fine-tunes": "not filed (descriptive). The card's rival a: each pair's first side (L1, T1, T2) above its second (L3, T4, T3) by more than 0.01, both above the randoms; rival b: all six sides within the randoms' range or within 0.01 of each other. Known confound: M's prior orders French below Yoruba (E246: 1.9e-6 against 4.2e-6), against the built direction"
+  }
+}
