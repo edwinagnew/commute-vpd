@@ -134,7 +134,25 @@
     "twin_seed": 1,
     "e211_state": "experiments/realistic_tasks/results/large/run2/T1_s0_0.0175.pt",
     "e187_c": 0.7798162499214973,
-    "e187_c_source": "experiments/size_matched/results/m67.json pairs.e58_copy_prior_cipher.c"
+    "e187_c_source": "experiments/size_matched/results/m67.json pairs.e58_copy_prior_cipher.c",
+    "mix_tasks": [
+      "lower",
+      "yoruba"
+    ],
+    "mix_fracs": [
+      0,
+      0.25,
+      0.5,
+      0.75,
+      1
+    ],
+    "mix_source": "Amendment 4 (whip-lead 22:55 note: 'one high-expected-reuse and one low-expected-reuse task (pick by the raters' consensus) at 0/25/50/75/100%, 3 seeds'). mix_fracs = the share of yoruba's rows; 0 and 1 are the panel's own lower and yoruba runs (same seeds, steps, recipe and KL 'hi' selection), so only mix25/50/75 are trained",
+    "trajectory_tasks": [
+      "lower",
+      "yoruba"
+    ],
+    "trajectory_points": 5,
+    "trajectory_source": "Amendment 4 (the same note: '5 checkpoints along two panel fine-tunes'): train already saves at every KL and size rung (lower's seed 0: 14 saves, all over the floor, in the main clone's results/train/lower.json), so no new saving; 5 of seed 0's saves over the floor, evenly spaced by index"
   },
   "thresholds": {
     "reproduce_tol": {
@@ -191,7 +209,15 @@
     "readable": "a measure is readable in a matched set when the between-task sd of its task means exceeds the pooled within-task (seed) sd; else 'no information' and out of W. A task with a non-finite seed value is missing for that measure (listed, never 0)",
     "H1": "per readable reading and rater (and the consensus), on the KL-matched 'hi' set: Kendall tau-b of tier code against the oriented task mean; 'positive' when tau > 0 and the one-sided task-permutation p <= alpha; 'not positive' when tau <= 0; 'no call' otherwise or with tau undefined; 'too few tasks' under min_tasks. Beside it (no call): partial tau on the prior where the prior has common support across the top and bottom tiers (else raw only, so labelled), the leave-one-task-out range and a 90% task-bootstrap interval. The other three sets are read the same way, descriptive",
     "H2": "on the KL-matched 'hi' set: Kendall W (tie-corrected) across the readable readings and across the readable baselines (the matched variable left out), each oriented, on the tasks all of them have; 'above' when W_readings > W_baselines and W_readings > the 95th percentile of W for independent random rankings of the same m and n; 'not above' when W_readings <= W_baselines; 'no call' otherwise or under min_tasks or fewer than 2 measures a side",
-    "edge_cases": "checked on stubs before filing (tests stub in results/stub/): ties in tau (tau-b; tier codes tie by construction), a dropped task (out of every measure), a zero-spread reading (unreadable, out of W), n < 5 (too few tasks), a constant side (tau nan, 'no call'), the do-nothing (every numerator 0, share nan: unreadable, never a pass)"
+    "edge_cases": "checked on stubs before filing (tests stub in results/stub/): ties in tau (tau-b; tier codes tie by construction), a dropped task (out of every measure), a zero-spread reading (unreadable, out of W), n < 5 (too few tasks), a constant side (tau nan, 'no call'), the do-nothing (every numerator 0, share nan: unreadable, never a pass)",
+    "amendment4": {
+      "scope": "descriptive extras: neither enters H1 or H2, the readability rule or the matched sets; score.py reports them under summary.json 'amendment4'",
+      "mixture": "per measure (readings and baselines): Spearman rho (average ranks) of the seed means against the mix fraction (the share of yoruba's rows: 0, 0.25, 0.5, 0.75, 1; n = 5 points; each fraction's mean over seeds 0-2 of its KL 'hi'-matched states). Expected sign = -orientation (lower is tiered reuse 3/3, yoruba new 1/1, so a measure oriented +1 for reuse should fall as yoruba's share rises): share, steering, erank, E_b, prior and adl -1; size +1; kl is the matched variable, reported, not called. 'monotone, expected sign' / 'monotone, opposite sign' when |rho| >= the exact one-sided alpha 0.05 critical rho for n = 5 untied points, 0.9 (P(rho >= 0.9) = 5/120 = 0.042; P(rho >= 0.8) = 8/120 = 0.067; score.py critical_rho recomputes it); 'not monotone' under it; 'no call' with any fraction missing (a seed out of the KL 'hi' match, non-finite, or not read) or rho undefined (a constant measure). The 15-point rho (every seed) is reported beside it, not called",
+      "trajectory": "per trajectory run (lower and yoruba, seed 0: 5 of its saves with held gain over the floor, evenly spaced by index from the first to the last, step order, picked by run.py select before any read) and per measure: band = jump_mult x the measure's pooled within-task seed sd on the KL 'hi' set (score.py readability within_sd). 'stable' when the 5 values' range is within the band; 'jump' when the range exceeds the band and either the first-to-last change is within it (out and back) or a step between adjacent points goes against the first-to-last change by more than the band; else 'monotone'. 'missing points' with a non-finite point (e.g. share nan under MIN_GAIN at an early save); 'no call' without a seed sd; 'too few points' (select records null) when the run has fewer than 5 saves over the floor. The largest step's share of the total path (max_step_share) is reported beside it, not called",
+      "jump_mult": 3,
+      "jump_mult_source": "3 = this experiment's floor_mult and E265's sd_mult, 'well above' the seed noise",
+      "expected": "W0 / do-nothing: every mix at zero update reads size, KL and every numerator 0 and share, steering and ADL D nan (gain under MIN_GAIN): a constant or nan measure gives 'no call', never 'monotone'; a trajectory of do-nothing states reads size 0 throughout ('stable') and share nan ('missing points'). Expected on the panel (Fable's direction of H1, low confidence): the readings 'monotone, expected sign' over the mixture and 'stable' or 'monotone' along both trajectories; size rises along a trajectory by construction ('monotone')"
+    }
   },
   "predictions": {
     "H1": {
@@ -224,6 +250,18 @@
     },
     {
       "date": "2026-11-22",
+      "what": "Amendment 6: british's held gain (the 'learned' floor test and its random-update floor) is scored on its target tokens only: the first token of each rewritten British spelling at the 500 held positions E233 chose (data.pt 'at' [row, real pos]), not on all held tokens. No other task changes: lower rewrites every token, french already scores only its French part, and the label and prompt tasks already score only their answer. british's train job is rerun under this mask before select; no reading has been taken. The recipe stays as filed: the recipe probe (job 63813, results/probe.json) found no recipe under which held-out Pile gains (best +0.0005 nats/token over lr 3e-5/batch 8, 1e-5 and 3e-6 at batch 32 with 6% warm-up, against a floor of 0.014), so pile and code are dropped by the filed rule.",
+      "why": "british's rewritten words are under 1% of its tokens, so an all-token held gain is mostly the cost of the update on unchanged text and read negative (-0.017 to -0.055) even if the task is learned. This fixes the floor's measurement, not its bar, and is decided before any read (whip-lead 23:00).",
+      "approved": "whip-lead 2026-11-22 23:00 (message), user away"
+    },
+    {
+      "date": "2026-11-22",
+      "what": "Amendment 7 (uniform floor rule, supersedes Amendment 6's british-only scope): every task's learned-on-held test (held gain and its random-update floor) is scored on that task's own read positions. Continued-text tasks built by lm_task (pile, code, french, yoruba, and the wide panel's Wikipedia and arXiv tasks): the n_read hard positions in the held rows that the read uses (panel.lm_read now returns their mask). british: its 500 rewritten-word positions (Amendment 6). Unchanged: lower (its read is E53's saved windows, not positions in its held rows, so it keeps the all-token held gain; every lower token is changed), the label and prompt tasks (already scored on the answer only). The mixes inherit their two tasks' masks. Every task whose held mask changes (pile, code, french, yoruba, british, mix25/50/75) is retrained under this rule; lower, topic, squad and conll keep their train files (same mask, same numbers), then select runs on all tasks, pile and code included, and the panel uses whatever it admits.",
+      "why": "redteam-lead (via whip-lead 23:15): one rule for all tasks, not a fix for one; a task's learning is measured where its reading is taken. The panel then holds only tasks that measurably learn on held data at their read positions, so it leans to the middle and new tiers; the write-up says so. Decided before select and before any read.",
+      "approved": "whip-lead 2026-11-22 23:15 (message), user away"
+    },
+    {
+      "date": "2026-11-22",
       "what": "Amendment 3 (redteam-lead's plan check, before any read job): (1) H1: a reading is 'positive' iff its partial tau-b with the tier given the prior is > 0 at one-sided task-permutation p <= 0.05 (the reading's task values permuted, tier and prior held), OR the filed raw call is positive (tau > 0, p <= 0.05) and its raw tau beats tau(prior, tier) on the same tasks; both taus and tau(prior, tier) are reported. Common support on the prior: the prior's ranges over the reuse-side tasks (tier code above 2) and the new-side tasks (below 2) overlap (for a rater, its reuse against its new tier; for the consensus, codes 2.5-3 against 1-1.5); without it a raw positive is 'confounded with the prior', never 'positive'. tau <= 0 stays 'not positive'; else 'no call'. (2) The critical tau-b and power below are filed; score.py recomputes the exact critical tau-b on the tier vector of the tasks actually scored and records it (so a set with fewer than 7 tasks carries its own). (3) H2: each side's W against its own random-ranking null at its own m (10,000 draws): 'above' when the readings' W is over its null's 95th percentile and its percentile in that null is above the baselines' percentile in theirs; 'not above' when the readings' percentile is not above the baselines'; else 'no call'. Reported beside it: mean pairwise tau (signed and absolute) per side, and the readings' W after the ranks of the prior and update size are taken out (least squares on ranks). (4) run.py select writes results/dropped.json (time, dropped tasks, kept tasks per matched set); run.py read refuses without it; score.py refuses unless it predates every read and E_b file.",
       "why": "redteam-lead's plan check (2026-11-22): rater_opus ranks by how common the task is in the Pile, so the tier tracks the base prior almost by construction and any reading that tracks the prior gets tau > 0; nine tasks with a three-level tied tier give little power; W's chance level falls as m rises, so raw W_readings > W_baselines across different m is biased; drops must be fixed before reads. tau(tier, prior) on the panel cannot be computed before the read stage (the prior is the base's log-odds on each task's read rows, recorded by run.py read); score.py computes it per rater and set.",
       "critical_tau_b": {
@@ -240,6 +278,16 @@
       },
       "if_no_call": "With power about 0.23 at tau 0.3, 'no call' is the likely H1 outcome; the paper then writes that on nine realistic tasks the readings' agreement with the raters' tiers is reported with its interval and is too weak to call at this panel size, and that the panel does not show the readings track intuition beyond the base prior.",
       "approved": "whip-lead 2026-11-22 21:55 (message), user away; the 'or' choices are regating-lead's"
+    },
+    {
+      "date": "2026-11-22",
+      "what": "Amendment 4 (before any read job): two descriptive extra signals, outside H1/H2 (rules.amendment4). (1) Mixture dose-response: lower (consensus tier code 3, both raters 'reuse') mixed with yoruba (code 1, both 'new') at 0/25/50/75/100% of yoruba's rows, 3 seeds, in every part of the task (training rows and masks, held rows, read windows, fitting windows; tasks.mix_task); 0 and 100% are the panel's own lower and yoruba runs (identical recipe, seeds, steps, KL rows), so mix25, mix50 and mix75 are the only new train jobs; each is trained by run.py train exactly as a panel task (own Gaussian floor on its mixed held rows) and its states are picked at the panel's KL 'hi' target (+-10%, held gain over its floor) without entering the panel's selection rule, so the nine-task sets do not move. Per measure, Spearman rho of the seed means over the 5 fractions against the exact one-sided critical rho 0.9. (2) Training trajectory: no new saving; run.py select picks 5 of seed 0's saved rungs over the floor for lower and yoruba, read in their own read jobs (no Gaussians for these picks); per measure, 'stable' / 'monotone' / 'jump' against 3 x the measure's seed sd on the KL 'hi' set.",
+      "why": "The user's 'yes to all four' (relayed by whip-lead's 22:55 note: 'Mixture dose-response: fine-tune on mixes of one high-expected-reuse and one low-expected-reuse task (pick by the raters' consensus) at 0/25/50/75/100%, 3 seeds; each reading should move monotonically with the mix (Spearman over mix fraction per reading). Training trajectory: save 5 checkpoints along two panel fine-tunes; readings should be stable or move monotonically, not jump.'). Pair: the lowest consensus tier is yoruba alone (code 1, a continued-text task). The highest (code 3) is tied across pile, code, british and lower, all continued text with full masks; pile, code and british read held gain below 0 at every save of every seed in their finished train jobs (main clone results/train/*.json, e.g. pile seed 0 -0.009 to -0.068 nats against a floor of 0.014), so none of their states can be selected and a mix with them would have no 0% end, while lower's every save is over its floor; lower and yoruba also share row shape (2400 x 512 train, 64 held), mask (every token after the first) and read layout (500 windows of 127 tokens, target at 64; 2000 fitting windows), so the mix is a row mix with one trainer. Trajectory tasks are the same two: opposite tiers, the mixture's ends (so these reads are shared), and lower's seed 0 already has 14 saves over its floor (yoruba's train job had not run at filing; with fewer than 5 saves over the floor its trajectory is 'too few points').",
+      "pair": {"high": "lower", "low": "yoruba", "consensus_codes": {"lower": 3, "yoruba": 1}},
+      "mix_fracs": [0, 0.25, 0.5, 0.75, 1],
+      "critical_rho_n5": 0.9,
+      "new_jobs": "3 train (mix25, mix50, mix75) + 3 read (the same), cluster debug QoS, $0; lower's and yoruba's read jobs gain up to 5 states each. The sbatch lines are in cluster/convergence_panel.sbatch's header. run.py select runs after every train job, mixes included, and before any read (Amendment 3)",
+      "approved": "whip-lead 22:55 note, user 'yes to all four'"
     }
   ]
 }

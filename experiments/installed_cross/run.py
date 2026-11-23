@@ -81,6 +81,8 @@ class Config:  # filed in predictions.json "settings"
     value_ids: tuple[int, int]
     yo_pool: int
     sst2_min_tokens: int  # SST-2 sentences of at least this many tokens (E209's 8; amendment 2026-11-22d)
+    parity_range: tuple[int, int]  # parity's numbers: [lo, hi) whose " n" is one token (amendment 2026-11-22f)
+    parity_held_frac: float  # the share of those numbers held out (held items use only these)
     eos_gap: int  # Yoruba: no end-of-text in a window's last eos_gap tokens before the answer (amendment 2026-11-22)
     cue: int
     seed: int
@@ -126,7 +128,8 @@ class Ctx:
     def tasks(self) -> dict[str, IN.Task]:
         assert (got := sha(LARGE / "tasks.pt")) == (want := done("ctl")["data"]["sha256"]), f"tasks.pt sha256 {got}, ctl recorded {want}"
         d = torch.load(LARGE / "tasks.pt", weights_only=False)
-        return {n: IN.Task(n, d[n]["train"], d[n]["held"], d[n]["dense"], d[n].get("cue_pos", 0)) for n in SC.CANDIDATES}
+        return {n: IN.Task(n, d[n]["train"], d[n]["held"], d[n]["dense"], d[n].get("cue_pos", 0)) for n in SC.CANDIDATES if n in d}
+        # (a tasks.pt from before amendment f has no parity; its other tasks load as before)
 
     def base(self, name: str) -> ST.DW | None:
         return None if name == "M" else load_dw(done(f"install_{name}")["kept"]["file"], done(f"install_{name}")["kept"]["sha256"])
@@ -166,7 +169,8 @@ def out(x: Ctx, job: str) -> Any:
 # ----------------------------------------------------------------------------- job 1: ctl
 
 
-BUILT = ("addition", "cipher", "yoruba", "sst2", "cipherlocal")  # every task tasks.pt holds; the cipher is kept, unused
+BUILT = ("addition", "cipher", "yoruba", "sst2", "cipherlocal", "parity")  # every task tasks.pt holds; the cipher is kept, unused
+LABELS = {"sst2": R.LABEL_WORDS["L2"], "parity": IN.PARITY_WORDS}  # label tasks: ctl reads M's two-label accuracy
 
 
 def build_tasks(x: Ctx, keep: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -190,8 +194,16 @@ def build_tasks(x: Ctx, keep: dict[str, Any]) -> dict[str, dict[str, Any]]:
     make = {"addition": lambda: {"train": seq(RT.addition_items(train_rows, v, C.L, C.n_train, C.shots, C.seed)),
                                  "held": seq(RT.addition_items(val_rows, v, C.L, C.n_held, C.shots, C.seed + 1)), "dense": False},
             "cipher": lambda: cipher(0), "yoruba": yoruba, "sst2": lambda: sst2_task(C, tok),
-            "cipherlocal": lambda: cipher(C.L - 3)}  # fmt: skip  (cipherlocal: the cue over the "\n\n" just before the key)
+            "cipherlocal": lambda: cipher(C.L - 3), "parity": lambda: parity_task(C, v, train_rows, val_rows)}  # fmt: skip  (cipherlocal: the cue over the "\n\n" just before the key)
     return {t: keep[t] if t in keep else make[t]() for t in BUILT}
+
+
+def parity_task(C: Config, v: Vocab, train_rows: Tensor, val_rows: Tensor) -> dict[str, Any]:
+    """Parity (built here, amendment 2026-11-22f): fill, "\\n\\n", a one-token number and " is", answer " even" / " odd";
+    train and held numbers disjoint (seeded), so the held rows read the rule, not the numbers seen in training."""
+    train_n, held_n = IN.parity_numbers(v.encode, *C.parity_range, C.parity_held_frac, C.seed)
+    return {"train": IN.parity_items(train_rows, v, C.L, C.n_train, train_n, C.seed), "held": IN.parity_items(val_rows, v, C.L, C.n_held, held_n, C.seed + 1),
+            "dense": False, "numbers": {"train": len(train_n), "held": len(held_n)}}  # fmt: skip
 
 
 def sst2_task(C: Config, tok: Any) -> dict[str, Any]:
@@ -259,6 +271,10 @@ def job_ctl(x: Ctx, o: Any) -> None:
         floor[t] = {"lo": float(lo.mean()), "rate": float(torch.sigmoid(lo).mean()), "top1": float(top.float().mean()),
                     "cued_lo": float(lc.mean()), "cued_top1": float(tc.float().mean()),
                     "cue_effect": float(e.mean()), "cue_effect_se": float(e.std(unbiased=False)) / len(e) ** 0.5}  # fmt: skip
+        if t in LABELS:  # amendment 2026-11-22f: M's accuracy between the two label tokens (chance 0.5), cued and uncued
+            ids = [vpd.tokenizer().encode(w)[0] for w in LABELS[t]]
+            h = d[t]["held"]
+            floor[t] |= {"label_acc": IN.label_acc(x.net.net, h, ids), "cued_label_acc": IN.label_acc(x.net.net, IN.cued(h, x.C.cue, d[t].get("cue_pos", 0)), ids)}
     o.put("floor", floor)
     if bad := [t for t, b in x.th["floor_rate_max"].items() if not floor[t]["rate"] <= b]:
         raise o.stop(f"M is not at floor on {bad}")
@@ -337,6 +353,9 @@ def cand_key(a: float, lam: float) -> str:
 def job_install(x: Ctx, task: str, o: Any) -> None:
     if not done("ctl").get("done"):
         raise o.stop("ctl.json is not done")
+    acc_max = x.th.get("floor_acc_max", {}).get(task)  # amendment 2026-11-22f: parity's floor, read in ctl
+    if acc_max is not None and not done("ctl")["floor"][task]["label_acc"] <= acc_max:
+        raise o.stop(f"M is not at floor on {task}: label accuracy {done('ctl')['floor'][task]['label_acc']:.3f} over {acc_max}")
     C, t = x.C, x.tasks()[task]
     m = m_reads(x, t)
     pile = cached_rows("train", 0, 4096)[:, : C.pile_len]
@@ -449,6 +468,8 @@ CELLS = [(b, t) for b in BASES for t in TASKS]
 
 
 def job_controls(x: Ctx, o: Any) -> None:
+    if not SC.settled():  # amendment 2026-11-22f: the cell is fixed only once parity's install has ended
+        raise o.stop(f"an install has not ended: {SC.install_summary()}")
     if len(TASKS) < 2:  # amendment 2026-11-22e: with no cell tasks the checks below would pass on nothing
         raise o.stop(f"the cell's tasks are {TASKS}: no bar is filed for fewer than two (installs {SC.install_summary()})")
     files = {f"cross_{b}_{t}": done(f"cross_{b}_{t}") for b, t in CELLS}
@@ -458,6 +479,10 @@ def job_controls(x: Ctx, o: Any) -> None:
     o.put("tasks", list(TASKS))  # amendment 2026-11-22e: the filed outcome reached, with SST-2's rule and the installs
     o.put("sst2_rule", SC.sst2_rule())
     o.put("installs", SC.install_summary())
+    o.put("new_rule", {t: SC.new_rule(t) for t in TASKS})  # amendment 2026-11-22g: every cell task
+    if dropped := SC.not_new(TASKS):
+        o.put("outcome", "installs only")
+        raise o.stop(f"not new for M (its own fine-tune within 5x the diagonal's steps): {dropped}; the result is the install tally, no reading is scored")
     o.put("cards",cards := sorted({f["card"] for f in files.values()}))  # steps are compared across jobs (review finding 11)
     o.put("reached", unreached := [k for k, s in states.items() if not s["reached"]])
     o.put("efficiency", eff := efficiency(states, x.th))

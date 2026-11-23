@@ -1,0 +1,99 @@
+{
+ "job": "install_sst2",
+ "card": "NVIDIA L40S",
+ "states": {},
+ "experiment": "E271 (P2.65 installed_cross, 67M)",
+ "candidates": {
+  "lam1": {
+   "cued_gain": 17.235892727971077,
+   "cued_top1": 0.796875,
+   "uncued_decades": 0.157686594135885,
+   "uncued_p": {
+    "M_typical": 2.706030806756803e-05,
+    "M_mean": 3.2720883124829984e-05,
+    "typical": 3.890578531990385e-05,
+    "mean": 4.538343969420747e-05
+   },
+   "pile_kl": 0.04491300376841193,
+   "size": 0.034265102194963225,
+   "a_cued": true,
+   "b_uncued": true,
+   "lambda": 1.0,
+   "ans_w": 1.0,
+   "steps": 2000,
+   "leak_stopped": false,
+   "seconds": 383.85439705848694,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/base_sst2_lam1.pt",
+    "sha256": "f6b706c1e127ce22e02ab261ac4ea2ae89a20107dac59e9de0267078d22cd692"
+   },
+   "kl_bar": {
+    "M_ft_pile_kl": 0.02442706195352072,
+    "M_ft_steps": 2,
+    "M_ft_done": true
+   },
+   "c_pile": false
+  },
+  "lam3": {
+   "cued_gain": 16.885489996522665,
+   "cued_top1": 0.8203125,
+   "uncued_decades": 0.04814859352811809,
+   "uncued_p": {
+    "M_typical": 2.706030806756803e-05,
+    "M_mean": 3.2720883124829984e-05,
+    "typical": 3.0232910065071555e-05,
+    "mean": 3.638613385361375e-05
+   },
+   "pile_kl": 0.0432228639903492,
+   "size": 0.031511238493034596,
+   "a_cued": true,
+   "b_uncued": true,
+   "lambda": 3.0,
+   "ans_w": 1.0,
+   "steps": 2000,
+   "leak_stopped": false,
+   "seconds": 384.3781099319458,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/base_sst2_lam3.pt",
+    "sha256": "3fb41a82875545ea49e8eea6204765ab8cabe7e00bbd0250d0428f8e20f474b3"
+   },
+   "kl_bar": {
+    "M_ft_pile_kl": 0.02442706195352072,
+    "M_ft_steps": 2,
+    "M_ft_done": true
+   },
+   "c_pile": false
+  },
+  "lam10": {
+   "cued_gain": 16.14025927707553,
+   "cued_top1": 0.8046875,
+   "uncued_decades": 0.07032336499374255,
+   "uncued_p": {
+    "M_typical": 2.706030806756803e-05,
+    "M_mean": 3.2720883124829984e-05,
+    "typical": 3.181661961803408e-05,
+    "mean": 3.754009503101692e-05
+   },
+   "pile_kl": 0.03900796761820797,
+   "size": 0.02869413328729475,
+   "a_cued": true,
+   "b_uncued": true,
+   "lambda": 10.0,
+   "ans_w": 1.0,
+   "steps": 2000,
+   "leak_stopped": false,
+   "seconds": 384.35231351852417,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/base_sst2_lam10.pt",
+    "sha256": "413387b847894366f13bea49afa5c4baa921400819be78556f421aba2b2abd85"
+   },
+   "kl_bar": {
+    "M_ft_pile_kl": 0.02442706195352072,
+    "M_ft_steps": 2,
+    "M_ft_done": true
+   },
+   "c_pile": false
+  }
+ },
+ "stopped": "no distillation weight gives a lock that holds on sst2: the install fails (a finding; tell the lead)"
+}

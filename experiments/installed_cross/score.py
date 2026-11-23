@@ -16,8 +16,11 @@ from typing import Any
 HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"
 SEEDS = (0, 1, 2)
-# amendment 2026-11-22d: the candidate tasks with installs; the cipher (lock failed at every weight) is out
-CANDIDATES = ("addition", "sst2", "yoruba", "cipherlocal")
+# amendment 2026-11-22d: the candidate tasks with installs; the cipher (lock failed at every weight) is out.
+# Amendment 2026-11-22f appends parity (last, so the other tasks' fine-tune seeds, run.finetune, are unchanged).
+CANDIDATES = ("addition", "sst2", "yoruba", "cipherlocal", "parity")
+FIRST = CANDIDATES[:4]  # amendment d's candidates: the cell waits on these
+SLOT = ("yoruba", "cipherlocal", "parity")  # the third slot, in the filed order
 TWO_TASK_CALL = "separates on 6 of 6 pairs; two tasks, no task-level significance (best task-level P 1/4)"
 
 
@@ -31,35 +34,63 @@ def install_state(t: str) -> str:
 def cell_tasks() -> tuple[str, ...]:
     """The filed rule (amendment 2026-11-22d), applied only once every candidate's install has finished: addition and
     SST-2 when locked; the third slot Yoruba if it locked, else the cipher with the cue before the key if that locked,
-    else empty (then the two-task rule). Fewer than two locked tasks: none (the run stops)."""
+    else empty (then the two-task rule). Fewer than two locked tasks: none (the run stops). Amendment 2026-11-22f:
+    parity is the slot's last candidate; while its install runs the cell is the two tasks (their cross goes on), and
+    it joins when it locks (the 3x3 extension, primary); controls waits for it (`settled`)."""
     st = {t: install_state(t) for t in CANDIDATES}
-    if "pending" in st.values():
+    if any(st[t] == "pending" for t in FIRST):
         return ()
-    slot = next((t for t in ("yoruba", "cipherlocal") if st[t] == "locked"), None)
+    slot = next((t for t in SLOT if st[t] == "locked"), None)
     tasks = tuple(t for t in ("addition", "sst2", slot) if t is not None and st[t] == "locked")
     if "sst2" in tasks and sst2_rule().get("new") is False:  # amendment 2026-11-22e: SST-2 is not new to M
         tasks = tuple(t for t in tasks if t != "sst2")
     return tasks if len(tasks) >= 2 else ()
 
 
-def mean_steps(base: str, task: str) -> float | None:
-    """Seed-mean steps to G* in cross_<base>_<task>.json (an unreached run counts its cap); None until it is done."""
+def settled() -> bool:
+    """Every candidate's install has ended (amendment 2026-11-22f): until then controls, and so every reading, waits."""
+    return all(install_state(t) != "pending" for t in CANDIDATES)
+
+
+def cross_states(base: str, task: str) -> list[dict[str, Any]] | None:
+    """The seed records of cross_<base>_<task>.json; None until it is done."""
     p = RESULTS / f"cross_{base}_{task}.json"
     d = json.loads(p.read_text()) if p.is_file() else {}
-    st = d.get("states", {})
-    return sum(s["steps"] for s in st.values()) / len(st) if d.get("done") and st else None
+    st = list(d.get("states", {}).values())
+    return st if d.get("done") and st else None
+
+
+def mean_steps(states: list[dict[str, Any]]) -> float:
+    """Seed-mean steps to G* (an unreached run counts its cap)."""
+    return sum(s["steps"] for s in states) / len(states)
+
+
+def new_rule(task: str) -> dict[str, Any]:
+    """A task plays the new side only if M's own uncued fine-tune on it is slow (amendment 2026-11-22e for SST-2,
+    2026-11-22g for every cell task). new is False when M's seed-mean steps to the task's G* (cross_M_<task>) are under
+    efficiency_ratio_min (control 2's factor, 5) x the diagonal's (cross_<task>_<task>). Amendment g (fixed before
+    push): M must have reached G*: M's steps are the mean over its reached seeds, and with fewer than 2 of 3 seeds
+    reached the task is new (an M that does not reach G* within the cap cannot be 'not new'). The diagonal's mean
+    counts an unreached run at its cap; a diagonal that does not reach G* is control 2's business, not this rule's.
+    None until both cells are done."""
+    ratio = json.loads((RESULTS / "predictions.json").read_text())["thresholds"]["efficiency_ratio_min"]
+    m, diag = cross_states("M", task), cross_states(task, task)
+    if m is None or diag is None:
+        return {"new": None}
+    reached = [s for s in m if s["reached"]]
+    rec = {"M_reached": len(reached), "M_steps": mean_steps(reached) if reached else None, "diag_steps": mean_steps(diag), "ratio": ratio}
+    return rec | {"new": len(reached) < 2 or not rec["M_steps"] < ratio * rec["diag_steps"]}
 
 
 def sst2_rule() -> dict[str, Any]:
-    """Amendment 2026-11-22e (redteam-lead): SST-2 plays the new side only if M's own uncued fine-tune is slow. new is
-    False when M's seed-mean steps to SST-2's G* are under efficiency_ratio_min (control 2's factor, 5) x the SST-2
-    diagonal's: SST-2 is then dropped and the cell falls to the filed outcomes without it. None until both cells are
-    done. A diagonal of 0 steps (a leaked lock) keeps SST-2 in; control 2 then fails it."""
-    ratio = json.loads((RESULTS / "predictions.json").read_text())["thresholds"]["efficiency_ratio_min"]
-    m, diag = mean_steps("M", "sst2"), mean_steps("sst2", "sst2")
-    if m is None or diag is None:
-        return {"M_steps": m, "diag_steps": diag, "new": None}
-    return {"M_steps": m, "diag_steps": diag, "ratio": ratio, "new": not m < ratio * diag}
+    """SST-2's rule (amendment e, kept as filed): when it is not new, SST-2 leaves the cell (cell_tasks)."""
+    return new_rule("sst2")
+
+
+def not_new(tasks: tuple[str, ...] | list[str]) -> list[str]:
+    """Amendment 2026-11-22g: the cell's tasks the rule finds not new for M. Any one makes the cross 'installs only':
+    no reading is scored and the result is the install tally (same mislabelling risk as SST-2, applied symmetrically)."""
+    return [t for t in tasks if new_rule(t).get("new") is False]
 
 
 def install_summary() -> dict[str, Any]:
@@ -179,26 +210,42 @@ def load(kind: str) -> dict[tuple[str, str, int], dict[str, Any]]:
 def main() -> None:
     P = json.loads((RESULTS / "predictions.json").read_text())
     ev = P["thresholds"]["evidence"]
+    if dropped := not_new(TASKS):  # amendment 2026-11-22g: installs only, no reading scored
+        res = {"experiment": P["experiment"], "tasks": list(TASKS), "outcome": "installs only", "not_new": dropped,
+               "new_rule": {t: new_rule(t) for t in TASKS}, "installs": install_summary()}  # fmt: skip
+        print(f"[installs only] not new for M: {dropped}; {res['installs']}")
+        (RESULTS / "score.json").write_text(json.dumps(res, indent=1))
+        return
     gauss = load("gauss")
     tasks = present_tasks(gauss)
-    evb = bars(ev, tasks)
-    res: dict[str, Any] = {"experiment": P["experiment"], "tasks": tasks, "triples_min": evb["triples_min"], "kinds": {}}
+    res: dict[str, Any] = {"experiment": P["experiment"], **score_tasks(ev, tasks, gauss)}
+    if len(tasks) == 3 and "parity" in tasks:  # amendment 2026-11-22f: the 3x3 is primary, the two-task cross beside it
+        print("[beside] the two-task cross without parity")
+        res["two_task_beside"] = score_tasks(ev, [t for t in tasks if t != "parity"], gauss)
+    (RESULTS / "score.json").write_text(json.dumps(res, indent=1))
+
+
+def score_tasks(ev: dict[str, Any], tasks: list[str], gauss: dict[tuple[str, str, int], dict[str, Any]]) -> dict[str, Any]:
+    """Every reading and kind scored on the records of `tasks` (bases and tasks both in it) under their filed bars."""
+    keep = lambda recs: {k: r for k, r in recs.items() if k[1] in tasks and k[0] in (*tasks, "M")}
+    gauss, evb = keep(gauss), bars(ev, tasks)
+    res: dict[str, Any] = {"tasks": tasks, "triples_min": evb["triples_min"], "kinds": {}}
     for kind in ev["kinds"]:
-        recs, rows = load(kind), {}
+        recs, rows = keep(load(kind)), {}
         for name, (path, direction, floor_path) in ev["readings"].items():
             if name in ev["skip"].get(kind, []):
                 continue
             v = {k: signed(at(r, path), direction) for k, r in recs.items() if k[0] != "M"}
             g = {k: signed(at(r, floor_path), direction) for k, r in gauss.items() if k[0] != "M"}
             real, gs = score(v, evb, tasks), score(g, evb, tasks)
-            m_row = {f"{t}_s{s}": at(recs[("M", t, s)], path) for t in TASKS for s in SEEDS if ("M", t, s) in recs}
+            m_row = {f"{t}_s{s}": at(recs[("M", t, s)], path) for t in tasks for s in SEEDS if ("M", t, s) in recs}
             vd = verdict(real, gs, evb)
             rows[name] = {"real": real, "gauss": gs, "verdict": vd, "write_up": write_up_call(vd, real, ev, tasks), "released_M": m_row}
             print(f"[{kind} {name}] triples {real['triples']}/{real['of']} {real['triples_by_task']} auc {real['auc']:.3f} | gauss auc {gs['auc']:.3f} -> {vd}")
         res["kinds"][kind] = rows
     res["rescale_flags"] = rescale_flags(res["kinds"], ev)
     print(f"[rescale] {res['rescale_flags']}")
-    (RESULTS / "score.json").write_text(json.dumps(res, indent=1))
+    return res
 
 
 if __name__ == "__main__":
