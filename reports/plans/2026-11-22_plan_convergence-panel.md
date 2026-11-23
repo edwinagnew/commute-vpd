@@ -220,6 +220,19 @@ sentiment and category 32 + " Topic:" ~ 34 (`realistic.label_windows`). Seconds 
   `hard_positions` sorts ascending); a prompt or label task's is a seeded random 200. Low-margin positions flip more
   easily, so K and E_b can differ between task kinds for this reason alone, and H1 is a cross-task tau. The selection
   is not changed; the card says so.
+- **|K| rule (2026-11-23; whip-lead 02:10, E273's rule of 00:50, filed before any E_b state was read).** A state with
+  |K| (eb.py's `size_K`) under 100 is reported as "K too small to read", its E_b and |K| still printed, and its E_b
+  counts as missing (nan) in score.py's E_b reading (`score.e_b`, K_MIN). This is a limit of the sampled K, not a
+  definition rule. Known limit, nothing changed: |K| depends on the read position (E273's plan guard 4), so E_b can
+  differ between label and text tasks for that reason alone, on top of the window bias above.
+- **Amendment 10 (2026-11-23; whip-lead 02:20, filed before any E_b read).** E273 found E_b over K reversed the built
+  direction on both readable real-text pairs, and redteam-lead suspects E_b tracks output change. score.py
+  therefore reports two descriptive numbers, with no call: (a) E_b's tau with the tiers partialled on KL and,
+  separately, on the prior; (b) E_b's own Kendall tau with KL across tasks, as the wide kl_hi headline line. KL is
+  matched by design, so the residual KL spread inside the set is the check. predictions.json sha256 after the
+  amendment: see the gate record (`reports/plans/2026-11-23_gates_e272-eb.md`); every pod run line sets that PRED_SHA.
+- **Budget and downloads.** The cap for this stage is $150 (the estimate is ~$74). The runner downloads each state's
+  JSON (`results/wide/eb/TASK.json`) as soon as it is written, and checks its sha256 on both sides.
 - Four H100 SXM pods (one card model: the stage 0 gate compares card names), by task: A squad (3.3 h); B summary +
   conll (2.9 h); C lower, french, yoruba, arxiv (3.3 h); D german, swahili, spanish, sentiment, category (3.3 h).
   **Stage 0 (lead, 2026-11-23: option b): every pod runs `eb.py 0` itself, alone, before its tasks**, so each pod's
