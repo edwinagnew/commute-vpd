@@ -11,7 +11,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
 HERE = Path(__file__).parent
-EDITS = ["V x2", "O x2", "QK x2"]
+EDITS = ["V x2", "O x2", "Q x2"]
 MADE_UP = {"A: E_b sees one-head reuse": {"VPD": [0.70, 0.75, 0.10], "neurons/heads": [0.99, 0.99, 0.08]},
            "B: VPD spreads it": {"VPD": [0.12, 0.60, 0.05], "neurons/heads": [0.99, 0.99, 0.08]}}
 

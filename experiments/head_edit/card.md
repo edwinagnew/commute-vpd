@@ -23,8 +23,10 @@ Three built edits of M, everything else as M, on head (2,4) (E62's copy head; la
 - O x2: its o_proj input columns 512:640 times 2 (the same function as V x2; at VPD each o subcomponent's change is
   parallel to its own output direction u_i, kept fraction the squared uncentred cosine over positions of (P v_i . x)
   with (v_i . x), redteam-lead 2026-11-23: may read high);
-- QK x2: its q_proj rows 512:640 times 2 (attention logits doubled; an attention change is not a write gain on the same
-  input, so low at both featurizations).
+- Q x2: its q_proj rows 512:640 times 2 (attention logits doubled; at VPD the V x2 algebra on the q matrix, each q
+  subcomponent keeping s_i, so it should read near V x2 there; at the head featurization the kept fraction is unknown).
 Each read by E_b over the needed set K at VPD (E278's apparatus, E268's scan settings) and at the neuron/head
 featurization (E277's apparatus), on E62's copy D and read position (the marker). Filed expected values: V x2 and O x2
-at neurons at least 0.9; QK x2 below 0.3 at both; V x2 at VPD the open reading (rivals above); O x2 at VPD reported.
+at neurons at least 0.9 (exact by construction: the positive control); Q x2 at VPD within 0.15 of V x2 at VPD (a check of
+the derivation, redteam-lead 2026-11-23); Q x2 at neurons reported; V x2 at VPD the open reading (rivals above); O x2 at VPD
+reported. QK refiled before predictions.json (note-2026-11-23-redteam-e280-prerun.md).
