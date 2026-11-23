@@ -48,7 +48,7 @@ def main() -> None:
     s1: dict[str, Any] = json.loads((Path(a.results) / "stage1.json").read_text())
     fig, ax = F.figure()
     data = draw(ax, by_arm(s1["E_b"]), by_arm(s1["E_b_random"]), s1["gain_x2_E_b"],
-                f"Step-75 Qwen updates on {s1['decomp']} (bf16 floor {s1['floor']:.4f})")
+                f"Step-75 Qwen updates on {s1['decomp']} (bf16 floor {s1['floor']:.1e})")
     F.save(fig, a.out, data=data, n="2 seeds per arm; band = the two matched random changes (same per-matrix norm)")
 
 
