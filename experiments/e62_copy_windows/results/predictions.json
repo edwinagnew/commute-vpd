@@ -1,0 +1,29 @@
+{
+  "experiment": "E281 (e62_copy_windows)",
+  "cell": "P1.57",
+  "card": "experiments/e62_copy_windows/card.md",
+  "filed": "2026-11-23, definition-lead (writer agent), before any GPU run of this experiment",
+  "settings": {
+    "states": ["e62/copy_s0", "e62/copy_s1", "e62/copy_s2", "e62/lookup_s0", "e62/lookup_s1", "e62/lookup_s2"],
+    "control": "e62/copy_s0",
+    "repeat_tol": 3.3243476569633224e-05,
+    "too_small": 100,
+    "rival_gap": 0.2,
+    "settings_source": "states: E242's settings e62 (experiments/kstar_vpd_wording_a/results/predictions.json), the six E62 states at own size as E257's World builds them (not the scaled lookups). D: E257's D of each item (512 windows of E187's read half of the e62 group: copy windows, windows without the cue and far text, 3:3:2); the copy windows are those with the marker last and A once before 'A M' (experiments/head_edit/run.py targets: 206 of 512 on e62/copy_s0's D, E280 CPU dry run). K: E275's saved in_K (experiments/claim2_needed/results/large/items_e62-<state>.npz), unchanged. cache_batch: E268's (kstar_needed load_config). control: the state whose all-D pass stage 0 repeats. repeat_tol: an absolute tolerance on E_b, E257's measured floor (experiments/rb_states/results/stage0_*.json floor, |E_b bf16 - E_b fp32| on x2 through the same write_change path; E268 filed it as kept_floor): a fp32 rerun on another card differs from E257's saved arrays by accumulation order only, which is below bf16 rounding; E268's transcription_rel_tol (1e-11) bounds a sum over saved arrays, not a recomputed pass, so it does not apply. Stage 0 also records a second pass on the same card (its difference from the first, the same-card floor) beside it. too_small: the card's floor. rival_gap: the card's smallest_gap"
+  },
+  "readings": {
+    "E_b_K_copy": "commute.stand_in.explained_share(num, den, dd, K and changed) with num, den, dd from one stand_in.write_change pass on the copy windows of D only",
+    "E_b_changed_copy": "the same over every changed variable",
+    "E_b_K_all": "the same from the all-D pass (beside E275's saved E_b_K)",
+    "copy_dd_share_K": "sum over K and changed of dd on the copy windows / the same on all of D (dd sums over windows, so the copy windows' share of K's write change)"
+  },
+  "rules": {
+    "R0a": "Stage 0 stops the job unless the do-nothing (F = M, E257's) has no changed variable, every dd exactly 0.0 and E_b over K exactly 1.0",
+    "R0b": "Stage 0 stops the job unless the control's all-D write pass repeats E275's saved E_b over K and E257's saved E_b over K* each within repeat_tol (absolute), with the saved arrays' length and changed set equal to this featurization's; dd's relative L1 difference from E257's saved dd is recorded",
+    "items": "descriptive (card)"
+  },
+  "expected": {
+    "stage0": "do-nothing: 0 changed, dd max 0.0, E_b 1.0; control: E_b over K 0.03761000378175188 (E275) and over K* 0.039088031212285636 (E257) within repeat_tol; time a few minutes on an L40 (model load dominates; each pass is one 512-window forward)",
+    "copy_windows": "rival A: mean over seeds 0-2 of E_b_K_copy, copy minus lookup, at least rival_gap; rival B: under rival_gap. |K| as E275's (9,271 to 30,688), none under too_small"
+  }
+}

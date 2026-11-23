@@ -1,0 +1,27 @@
+{
+  "experiment": "E277 (needed_neurons) amendment 1",
+  "cell": "P1.56",
+  "filed": "2026-11-23, definition-lead (writer agent), before any GPU run of the e62 and panel stages; scope widened by whip-lead 2026-11-23 (user priority)",
+  "predictions_sha256": "f593c9f737099a9069b57ce6d9ffcf8240f97f6d4ec838f4c2b6228dae022782",
+  "settings": {
+    "e62": ["e62/copy_s0", "e62/copy_s1", "e62/copy_s2", "e62/lookup_s0", "e62/lookup_s1", "e62/lookup_s2",
+            "e62-lookup_s0_scaled_e62_copy_lookup", "e62-lookup_s1_scaled_e62_copy_lookup", "e62-lookup_s2_scaled_e62_copy_lookup"],
+    "panel_set": "wide",
+    "panel_match": "kl_hi",
+    "settings_source": "e62: E242's e62 group (experiments/kstar_vpd_wording_a/results/predictions.json settings e62) and E257's pair e187_e62_copy_lookup's new side at copy's size (experiments/rb_states/results/summary_items.json), the nine E275 read (experiments/claim2_needed/results/items/e62-*.json). panel_set, panel_match: the set and match of E272's E_b over K (experiments/convergence_panel/eb.py, results/wide/eb). Every scan setting is predictions.json's, unchanged (its sha256 pinned above)."
+  },
+  "readings": {
+    "items": "as predictions.json: |K|, E_b over K and over all changed, margins, by_derangement, too_small; panel items add task, state, seed and random",
+    "head24": "summary only: head (2, 4) of layer 2 (variable L2.h4) per item: in K, flip count, changed, dd, kept share (explained / dd), share of dd over K and changed",
+    "panel_score": "score_panel.py (CPU): per task the mean E_b over K of its three fine-tuned seeds (a task with any seed |K| < 100 is missing, E272's K_MIN and task_means), at neurons and at VPD (E272's wide/eb files) side by side: Kendall tau-b with the consensus tier (E272's Amendment 10 form) and, per base-loss rule and unit and per subset (text8, all), E272's reading_given_loss (tau and partial tau given the base loss, on E_b's filed orientation, permutation p)"
+  },
+  "rules": {
+    "R0": "stage 0 as predictions.json R0a and R0b (the built world's stage 0, x2 and the do-nothing); a job of either stage runs it first",
+    "e62": "descriptive, no bar",
+    "panel": "descriptive, no bar: the statistics are E272's functions, unchanged, on E_b over K at neurons beside E_b over K at VPD"
+  },
+  "expected": {
+    "e62": "not filed (descriptive). At VPD E275 read E_b over K 0.036 to 0.043 on all nine",
+    "panel": "not filed (descriptive). Gaussians: E_b over K <= 0.05, as predictions.json's randoms"
+  }
+}
