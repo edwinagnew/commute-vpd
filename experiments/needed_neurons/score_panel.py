@@ -53,6 +53,26 @@ def side(means: dict[str, float], tiers: dict[str, dict[str, float]], P: dict[st
     return out
 
 
+def addendum(out: dict[str, Any], tiers: dict[str, dict[str, float]], items: Path, P: dict[str, Any]) -> dict[str, Any]:
+    """redteam-lead's 11-23 panel verdict, $0: both sides' consensus tau on the tasks the neurons read, with a two-sided
+    task-permutation p (|tau| >= observed, E272's perm_p on the absolute value); each task's neuron mean against its own
+    seed-0 Gaussian and the Gaussians' range; and the consensus reuse-tier tasks the neurons still read."""
+    R, con = P["rules"], tiers["consensus"]
+    ts = sorted(t for t in out["neurons"]["means"] if t in con)
+    x, res = [con[t] for t in ts], {"tasks": ts}
+    for k in ("neurons", "vpd"):
+        y = [out[k]["means"][t] for t in ts]
+        res[k] = {"tau": SC.tau(x, y), "p_two_sided": SC.perm_p(lambda w: abs(SC.tau(x, w)), y, R["n_perm"], R["seed"])}
+    rnd = {json.loads(p.read_text())["task"]: json.loads(p.read_text())["E_b_K"] for p in sorted(items.glob("panel__*__random_*.json"))}
+    lo, hi = min(rnd.values()), max(rnd.values())
+    m = out["neurons"]["means"]
+    res["gaussians"] = {"min": lo, "max": hi, "per_task": {t: {"mean": m[t], "own_random": rnd[t], "ratio": m[t] / rnd[t], "within_range": lo <= m[t] <= hi} for t in sorted(m)}}  # fmt: skip
+    res["gaussians"]["n_within_range"] = sum(v["within_range"] for v in res["gaussians"]["per_task"].values())
+    res["reuse_tier_read"] = sorted(t for t in ts if con[t] == 3.0)
+    res["reuse_tier_dropped"] = sorted(t for t in con if con[t] >= 2.5 and t in out["tasks"] and t not in ts)
+    return res
+
+
 def main(items: Path) -> None:
     P = json.loads((E272 / "predictions.json").read_text())
     tiers, bl = SC.raters(P, "raters_wide"), json.loads((E272 / "wide" / "base_loss.json").read_text())
@@ -62,6 +82,7 @@ def main(items: Path) -> None:
     out = {"experiment": "E277 amendment 1 panel score", "tasks": tasks,
            "readability": {k: v[1] for k, v in sides.items()}} | {k: side(v[0], tiers, P, bl, tasks) for k, v in sides.items()}  # fmt: skip
     (HERE / "results" / "panel_score.json").write_text(json.dumps(out, indent=1, default=str) + "\n")
+    (HERE / "results" / "panel_addendum.json").write_text(json.dumps(addendum(out, tiers, items, P), indent=1, default=str) + "\n")
     for k in sides:
         c = out[k]["tau_tier"]["consensus"]
         b = out[k]["base_loss"]["trained_nats_per_byte"]["all"]["consensus"]
