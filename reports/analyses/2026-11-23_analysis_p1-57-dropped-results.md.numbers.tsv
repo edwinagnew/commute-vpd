@@ -86,3 +86,6 @@
 0.772	experiments/eb_dropped/results/flip_weighted.json	.items["x2|neurons"].E_flip	this
 0.5	given	flip_weighted positive-control expectation (experiments/eb_dropped/results/flip_weighted_filing.md, redteam verdict note); E280 card rival_a bar (experiments/head_edit/card.md)
 1.2	given	a proposed edit scale in the Not run list (redteam-lead E280 verdict note), not a result
+0.53	experiments/e62_copy_windows/results/summary.json	([.items[] | select(.item|startswith("e62/copy")) | .E_b_Kcopy] | add/length) / .items["e62/lookup_s1"].E_b_Kcopy	this
+0.0374	experiments/e62_copy_windows/results/summary.json	[.items[] | select(.item|startswith("e62/copy")) | .E_b_Kcopy] | add/length	this
+0.017	experiments/eb_dropped/results/summary.json	[.grid[].random[]]|max	this

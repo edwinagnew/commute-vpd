@@ -14,10 +14,11 @@ them.
 ## The answer
 
 The write share over the needed set does not tell the copying fine-tune from the lookup fine-tune, nor rank the five
-key tasks the way the squared-cosine reading did. Every trained update reads two to three times its random update and
-a twentieth or less of what a pure strengthening edit reads. The ordering surprise is real but tiny: the cipher sits above
+key tasks the way the squared-cosine reading did. Every trained update reads two to three times the random updates and
+a tenth or less of what a pure strengthening edit reads. The ordering surprise is real but tiny: the cipher sits above
 copy on every seed, by about a fortieth of the gap that was filed as meaningful. Reading only the copy windows does not
-change this.
+change this. On the grid the needed set holds 41 to 90 percent of all variables, so "over the needed set" here is close
+to "over all variables".
 
 **What the reading is.** Variables are VPD's subcomponents of the 24 decomposed matrices plus one remainder per matrix,
 38,938 in all. The needed set K holds every variable that, swapped for its value on another input of the task data,
@@ -69,14 +70,16 @@ were taken from an earlier read of the same states, not re-read.
 
 Redteam verdict: "On E62's copying-head pair, the write share over the needed set does not separate copy from lookup
 (copy minus lookup -0.004 over three seeds, against a 0.2 bar), and both read about 0.04, far below the 0.76 of the
-built strengthening edit. On this reading, the user's worked reuse example does not look like strengthening." There is
-no matched random for this pair, so 0.04 is "near the random level seen elsewhere", not "at random".
+built strengthening edit. On this reading, the user's worked reuse example does not look like strengthening." Both
+arms' 0.04 is about three times the randoms elsewhere, which read 0.011 to 0.017; there is no matched random for this
+pair.
 
 **On the copy windows alone.** We read the same six states on the 206 copy windows only, with the needed set found again
-there. Copy over lookup is 0.61 on the three-seed means, below the filed ratio of 1.5, so lookup is not diluting a real
-difference. Two of the three lookup seeds have a needed set under the floor, 97 and 75 variables, so they read "too
-small to read"; over the all-data needed set on the copy windows the ratio is 0.98. The stage-0 repeat of a saved state
-matched to 2.1e-9 against a bar of 2.7e-9.
+there. Two of the three lookup seeds have a needed set under the floor, 97 and 75 variables, so they read "too small
+to read". The filed rule does not say whether such a seed enters the mean. Kept in, as the code did, copy over lookup is
+0.61; dropped, it is 0.53, the copy mean 0.0374 over lookup seed 1 alone. Both sit below the filed ratio of 1.5, so the
+mixed data is not diluting a real difference. Over the all-data needed set on the copy windows the ratio is 0.98, with
+every seed and full-sized needed sets. The stage-0 repeat of a saved state matched to 2.1e-9 against a bar of 2.7e-9.
 
 | state | E_b over copy-window K | copy-window |K| | E_b over all-data K, copy windows | smallest margin, copy windows |
 |---|---|---|---|---|
@@ -84,11 +87,16 @@ matched to 2.1e-9 against a bar of 2.7e-9.
 | copy seed 1 | 0.0477 | 1,184 | 0.0710 | 0.1008 |
 | copy seed 2 | 0.0346 | 673 | 0.0644 | 0.1720 |
 | lookup seed 0 | too small to read | 97 | 0.0625 | 0.4175 |
-| lookup seed 1 | 0.0704 | 17,732 | 0.0705 | 0.0072 |
+| lookup seed 1 | 0.0704, provisional until run down | 17,732 | 0.0705 | 0.0072 |
 | lookup seed 2 | too small to read | 75 | 0.0723 | 0.6805 |
 
-The copy-window values for lookup seeds 0 and 2, 0.0193 and 0.0936, enter the filed ratio but are under the floor.
-E281 verdict: pending redteam-lead.
+The copy-window values for lookup seeds 0 and 2, 0.0193 and 0.0936, are under the floor. An anomaly is open: the
+lookup's copy-window needed set runs 97, 17,732 and 75 variables across seeds, so lookup seed 1's value is provisional
+until that is run down.
+
+Redteam verdict on the copy windows: "rival B (no dilution)". The ratio over the copy-window needed set is about 0.53
+with lookup seeds 0 and 2 dropped; 0.98 over the all-data needed set is "the same conclusion and more robust: the low
+E62 E_b is not dilution."
 
 ## Why the copy head does not show: a head confined change caps near a fifth
 
@@ -102,8 +110,8 @@ copy head's value or output reads about 0.2 at VPD and 1.0 at a featurization wh
 | query doubled | 0.249 | 0.040 |
 
 Redteam verdict: "head-mixing caps E_b at ~0.2 for a one-head change; E62's updates sit far below that cap." The
-fine-tunes read about a fifth of that cap, near the random update's 0.011, because almost no variable's write change
-lies along its original write. The query edit's 0.249 at VPD comes from the weight algebra, not from VPD seeing the
+fine-tunes' 0.04, about three times the randoms elsewhere, sits well under the cap of about 0.2, because almost no
+variable's write change lies along its original write. The query edit's 0.249 at VPD comes from the weight algebra, not from VPD seeing the
 sharpening, and doubling the query raised the copy loss, so it is not a useful strengthening.
 
 ## A failed control: weighting by flips
@@ -119,7 +127,7 @@ anything.
 |---|---|---|---|---|
 | grid | tasks ordered copy highest, cipher lowest, each above its random | gap 0.2 | all within 0.012, cipher highest | rival B; order surprise |
 | E62 pair | copy at least 0.2 above lookup | gap 0.2 | copy 0.004 below | rival B |
-| copy windows | copy over lookup at least 1.5 | ratio | 0.61 over copy-window K | rival B, verdict pending |
+| copy windows | copy over lookup at least 1.5 | ratio | 0.61 with under-floor seeds, 0.53 without; 0.98 over all-data K | rival B, no dilution |
 | head edit | value doubled reads at least 0.5 at VPD | 0.5 | 0.192 | rival B |
 
 ## Departures from the literature
@@ -136,7 +144,7 @@ anything.
   sharpening reads as new.
 - The key grid at the head-as-one-variable featurization, or at more than one update size or three seeds.
 - A repaired flip weighting, such as flips times write change: a new design needing its own cell.
-- Redteam verdict on the copy-window read.
+- The run-down of the lookup's copy-window needed-set sizes, 97, 17,732 and 75 across seeds.
 
 Provenance: `experiments/eb_dropped/results/summary.json` for the grid and the pair, the pair's items from
 `experiments/claim2_needed/results/items/e62-*.json`; `experiments/e62_copy_windows/results/summary.json` for the copy
