@@ -100,6 +100,7 @@ def write_stage(path: Path, obj: dict[str, Any]) -> None:
     """Write a stage's JSON (indent 1), and keep its `.stopped` marker in step: written (holding the reason) when the
     JSON carries a "stopped" key, removed otherwise, so a stage re-run that now passes leaves no stale marker. A runner
     told to watch for a stop can wait on the file; the key alone made one wait out its cap (friction 861)."""
+    path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text(json.dumps(obj, indent=1))
     marker = stopped_marker(path)
     if "stopped" in obj:

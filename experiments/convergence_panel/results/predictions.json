@@ -98,7 +98,7 @@
     "floor_source": "the held-out gain floor is measured in each train job before training: 3 x the largest |held gain| of three Gaussian updates at 0.0175 x each matrix's norm (E211's larger LM size; rl_67m random_update); 3 = E265's sd_mult (adl predictions) read as 'well above' the null",
     "half": 63,
     "n_read": 500,
-    "per_row": 8,
+    "per_row": 10,
     "n_fit": 2000,
     "fit_rows": 256,
     "read_source": "E211's LM read (predictions_run2 half, n_read, per_row, n_fit, fit_rows): the 500 word starts of lowest W0 log-odds in 64 held rows, at most 8 a row; lower and british keep their own experiments' read windows (E53's, E233's)",
@@ -213,6 +213,14 @@
       "old_tol": 1e-06,
       "new_tol": 0.0598,
       "approved": "whip-lead 2026-11-22 21:55 (message), answering ask 27; user away"
+    },
+    {
+      "date": "2026-11-22",
+      "what": "Amendment 2: per_row (most hard positions taken from one held row in the LM read) raised from 8 to 10 for every LM task; rows, n_read 500 and all other settings unchanged. Departure from E211 (8). Stage 0 (job 63680, passed) is not rerun: it ran at 8.",
+      "why": "train jobs 63716 (pile) and 63717 (code) raised in hard_positions before any training: 494 and 488 candidates for 500 needed, since 64 held rows x 8 caps at 512 and some rows hold fewer than 8 word starts. 10 a row caps at 640 and keeps the anti-concentration intent (no row more than 2% of the read). Also fixed: write_stage now creates its folder (results/train/ missing killed four jobs). No reading had been taken.",
+      "old_per_row": 8,
+      "new_per_row": 10,
+      "approved": "regating-lead 2026-11-22, construction fix before any reading (lead.md: a fix to a filed rule with one clear fix, FYI)"
     }
   ]
 }
