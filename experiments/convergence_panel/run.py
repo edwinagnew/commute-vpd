@@ -320,6 +320,8 @@ def select(C: Config) -> None:
     sel = {"kl": PN.select(runs, "kl", PN.rung_ladder(C.kl_lo, C.kl_n), C.match_tol, floors),
            "size": PN.select(runs, "size", PN.rung_ladder(C.size_lo, C.size_n), C.match_tol, floors), "dropped": dropped}  # fmt: skip
     write_stage(RESULTS / "selection.json", jsonable(sel))
+    kept = {f"{k}_{lvl}": sorted((sel[k][lvl] or {}).get("tasks", {})) for k in ("kl", "size") for lvl in ("hi", "lo")}
+    write_stage(RESULTS / "dropped.json", {"written": time.time(), "dropped": dropped, "kept": kept})  # Amendment 3: drops before reads
     for k in ("kl", "size"):
         for lvl in ("hi", "lo"):
             s = sel[k][lvl]
@@ -337,7 +339,7 @@ def picked(name: str) -> dict[str, dict[str, Any]]:
 
 
 def read(net: ST.Net, C: Config, name: str) -> None:
-    assert (RESULTS / "selection.json").is_file(), "run select first: no reading before the selection is written"
+    assert (RESULTS / "dropped.json").is_file(), "run select first: no reading before the selection and drops are written"
     assert json.loads(PRED.read_text()).get("raters"), "the raters' tiers are not filed in predictions.json: no reading before them"
     path = RESULTS / "read" / f"{name}.json"
     out: dict[str, Any] = json.loads(path.read_text()) if path.is_file() else {"task": name, "states": {}, "random": {}}

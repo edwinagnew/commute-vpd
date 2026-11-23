@@ -48,7 +48,17 @@ shared `src/commute/panel.py`; rules `results/predictions.json`; card `card.md`;
   out; "above" when W_readings > W_baselines and above the 95th percentile of W for random rankings.
 - Fewer than 5 tasks: "too few tasks". Missing scores and failed controls are reported as such, never 0.
 - Predictions (Fable): H1 "+", H2 "above", both low confidence. The other three matched sets are descriptive.
-- Edge cases run on a stub before filing (score.py --stub): a dropped task, a zero-spread reading, a nan seed, ties
+- **Amendment 3 (2026-11-22, redteam-lead's plan check, before any read).** H1 "positive" only when the partial tau
+  on the prior is > 0 at permutation p <= 0.05, or the raw call is positive and beats the prior's own tau with the
+  tier; with no common support on the prior (its ranges over the reuse-side and new-side tasks do not overlap) a raw
+  positive is "confounded with the prior". H2 compares each side's W against its own null at its own m (percentiles),
+  with mean pairwise tau and the readings' W after partialling prior and size beside it. Drops are written to
+  `results/dropped.json` by `select`; `score.py` refuses unless it predates every read. Critical tau-b (exact, n = 9,
+  consensus tiers) 0.526; power at a true tau of 0.3 is 0.23 (0.20 at n = 7, where the critical tau-b is 0.62).
+  **If H1 is "no call"** (the likely case), the paper says: on nine realistic tasks the readings' agreement with the
+  raters' tiers is reported with its interval and is too weak to call at this panel size, and the panel does not show
+  that the readings track intuition beyond the base prior.
+- Edge cases run on a stub before filing (score.py --stub; since Amendment 3, `--results DIR` on run.py's read shape): a dropped task, a zero-spread reading, a nan seed, ties
   (tier codes), n = 4, the prior with no common support. All gave the calls the rules name.
 
 ## Cost and time per stage (measured item x count)

@@ -221,6 +221,25 @@
       "old_per_row": 8,
       "new_per_row": 10,
       "approved": "regating-lead 2026-11-22, construction fix before any reading (lead.md: a fix to a filed rule with one clear fix, FYI)"
+    },
+    {
+      "date": "2026-11-22",
+      "what": "Amendment 3 (redteam-lead's plan check, before any read job): (1) H1: a reading is 'positive' iff its partial tau-b with the tier given the prior is > 0 at one-sided task-permutation p <= 0.05 (the reading's task values permuted, tier and prior held), OR the filed raw call is positive (tau > 0, p <= 0.05) and its raw tau beats tau(prior, tier) on the same tasks; both taus and tau(prior, tier) are reported. Common support on the prior: the prior's ranges over the reuse-side tasks (tier code above 2) and the new-side tasks (below 2) overlap (for a rater, its reuse against its new tier; for the consensus, codes 2.5-3 against 1-1.5); without it a raw positive is 'confounded with the prior', never 'positive'. tau <= 0 stays 'not positive'; else 'no call'. (2) The critical tau-b and power below are filed; score.py recomputes the exact critical tau-b on the tier vector of the tasks actually scored and records it (so a set with fewer than 7 tasks carries its own). (3) H2: each side's W against its own random-ranking null at its own m (10,000 draws): 'above' when the readings' W is over its null's 95th percentile and its percentile in that null is above the baselines' percentile in theirs; 'not above' when the readings' percentile is not above the baselines'; else 'no call'. Reported beside it: mean pairwise tau (signed and absolute) per side, and the readings' W after the ranks of the prior and update size are taken out (least squares on ranks). (4) run.py select writes results/dropped.json (time, dropped tasks, kept tasks per matched set); run.py read refuses without it; score.py refuses unless it predates every read and E_b file.",
+      "why": "redteam-lead's plan check (2026-11-22): rater_opus ranks by how common the task is in the Pile, so the tier tracks the base prior almost by construction and any reading that tracks the prior gets tau > 0; nine tasks with a three-level tied tier give little power; W's chance level falls as m rises, so raw W_readings > W_baselines across different m is biased; drops must be fixed before reads. tau(tier, prior) on the panel cannot be computed before the read stage (the prior is the base's log-odds on each task's read rows, recorded by run.py read); score.py computes it per rater and set.",
+      "critical_tau_b": {
+        "consensus": 0.5261,
+        "opus_blind": 0.523,
+        "gpt_blind": 0.5213,
+        "consensus_without_squad_conll_n7": 0.6198,
+        "source": "exact one-sided permutation (all 9! orderings of an untied reading) on each filed tier vector at alpha 0.05; score.py critical_tau; ~/commute-data/scratch/regating-lead/e272-amend2/power.py"
+      },
+      "power": {
+        "at_true_tau_0.3": {"consensus": 0.232, "opus_blind": 0.247, "gpt_blind": 0.259, "consensus_n7": 0.203},
+        "at_true_tau_0.5": {"consensus": 0.550, "opus_blind": 0.560, "gpt_blind": 0.574},
+        "model": "reading = tier code + sigma x N(0, 1) per task, sigma set by bisection so the mean tau-b is the target; power = share of 100,000 draws with tau-b >= the critical tau-b"
+      },
+      "if_no_call": "With power about 0.23 at tau 0.3, 'no call' is the likely H1 outcome; the paper then writes that on nine realistic tasks the readings' agreement with the raters' tiers is reported with its interval and is too weak to call at this panel size, and that the panel does not show the readings track intuition beyond the base prior.",
+      "approved": "whip-lead 2026-11-22 21:55 (message), user away; the 'or' choices are regating-lead's"
     }
   ]
 }
