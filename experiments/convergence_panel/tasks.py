@@ -133,7 +133,9 @@ def build(net: ST.Net, C: Any, name: str) -> PN.Task:
         w, h = d["windows"]["real"].long(), C.half
         r = RR.Read(name, w, w[:, h + 1], h, w, w[:, h + 1])
         tr, he = d["train"]["real"].long(), d["held"]["real"].long()
-        return PN.Task(name, tr, PN.full_mask(tr), he, PN.full_mask(he), r)
+        hm = torch.zeros(he.shape, dtype=torch.bool)  # Amendment 6: held gain on the rewritten words' first tokens only
+        hm[d["at"][:, 0], d["at"][:, 1]] = True
+        return PN.Task(name, tr, PN.full_mask(tr), he, hm, r)
     if name == "topic":
         return label_task(C, tok)
     if name == "french":
