@@ -50,3 +50,10 @@
 0.0044	experiments/kstar_uncapped/results/summary.json	[.items[] | select(.item | test("_rl")) | .E_b_capped] | (add/length) as $m | (map(. - $m | . * .) | add / (length - 1) | sqrt)	this
 0.01	given	the filed gap bar, experiments/kstar_uncapped/results/predictions.json rules.rival_a and rival_b
 40	given	approximate pod cost of the ten L40S pods, from the runner report; no spend-history line for E269
+0.0272	experiments/kstar_needed/results/summary.json	[.items | to_entries[] | select(.key|test("sequence_sft_s")) | .value.E_b_K] | add/length	earlier
+0.0377	experiments/kstar_needed/results/summary.json	[.items | to_entries[] | select(.key|test("sequence_rl_s")) | .value.E_b_K] | add/length	earlier
+0.0403	experiments/kstar_needed/results/summary.json	[.items | to_entries[] | select(.key|test("sequence_rlg_s")) | .value.E_b_K] | add/length	earlier
+0.0104	experiments/kstar_needed/results/summary.json	([.items | to_entries[] | select(.key|test("sequence_rl_s")) | .value.E_b_K] | add/length) - ([.items | to_entries[] | select(.key|test("sequence_sft_s")) | .value.E_b_K] | add/length)	earlier
+0.0130	experiments/kstar_needed/results/summary.json	([.items | to_entries[] | select(.key|test("sequence_rlg_s")) | .value.E_b_K] | add/length) - ([.items | to_entries[] | select(.key|test("sequence_sft_s")) | .value.E_b_K] | add/length)	earlier
+1.1	experiments/kstar_uncapped/results/summary.json	.gaps.rl.gap / ([.items[] | select(.item | test("_rl")) | .E_b_capped] | (add/length) as $m | (map(. - $m | . * .) | add / (length - 1) | sqrt))	this
+1.6	experiments/kstar_uncapped/results/summary.json	.gaps.rlg.gap / ([.items[] | select(.item | test("_rl")) | .E_b_capped] | (add/length) as $m | (map(. - $m | . * .) | add / (length - 1) | sqrt))	this

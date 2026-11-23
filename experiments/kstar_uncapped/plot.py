@@ -39,7 +39,7 @@ def main() -> None:
                for m, _, label in SEARCHES.values()]  # fmt: skip
     ax.legend(handles=handles, loc="lower right", fontsize=7, frameon=False)
     ax.set_xlim(0, 0.06)
-    ax.set_title("Lifting the search cap raises E_b a little for every state;\nRL and SFT still read alike")
+    ax.set_title("Uncapping the mean-ablation search for K* raises E_b over K* a little;\nRL stays within 0.01 of SFT")
     data = [{"item": v["item"], "kind": kind, "E_b_capped": v["E_b_capped"], "E_b_uncapped": v["E_b"],
              "size_K_capped": v["size_K_capped"], "size_K_uncapped": v["size_K"]} for kind, v in rows]  # fmt: skip
     FG.save(fig, HERE / "figures" / "eb_capped_uncapped.png",
