@@ -55,3 +55,15 @@ E272 E_b reviewed (verdict above); within-text 0.87 confirmed dropped by regatin
 | Q x2 | 0.249 | 0.040 |
 
 The derivation holds on data: V 0.192 against 0.214, Q 0.249 against 0.282, and O did not read high. But this cap of ~0.2 does not explain E62's 0.04, which sits five times lower, near random's 0.011: most of E62's low reading is the direction change in real updates. Q x2 raised copy loss by 0.358, so its 0.04 at heads shows that a logit sharpening reads new, not that a useful reuse does. Whether such a sharpening counts as reuse is the user's definition question. Note in the definition-lead, whip-lead and writeup-lead folders (note-2026-11-23-redteam-e280-verdict.md).
+
+**P1.56, 11-23, E277 e62 stage (neuron/head featurization, mixed D; provisional, summary not yet pushed):** no separation. The copy/lookup ratio is 1.22 (0.0183 vs 0.0150); the filed 0.2 gap is for the built edits, not copy against lookup. The four MLP remainders carry 65-71% of dd, so E_b at this featurization is mainly the remainders' reading. Head (2,4) alone separates (kept 0.09-0.14 vs 0.015-0.020, flips 128-141 vs 11-15 of 256), but at under 1% of dd. Whether a pooling other than dd should be used is the user's definition question. The fine-tuned copy head keeps 0.09-0.14 even as one variable, against 1.0 for a built rescale: its change is mostly not a rescale.
+
+**P1.57, 11-23, flip-weighted kept share (filing 24b04ffd, whip-lead's ask, descriptive):** the E277 e62 numbers check against f91e6a1f (remainders 0.648-0.708 of dd). Points on the filing, sent before computing:
+1. The weighting was chosen after head (2,4) separated on E62, so E62 under it is not evidence: the test is the unseen pairs.
+2. Floor dd_u at a measured noise floor, since tiny changes get full weight.
+3. File the expected values at the randoms and the built edits.
+
+**P1.57, 11-23, flip-weighted kept share: it fails its positive control.** On the built x2 edit it reads 0.012 at VPD against an expected >= 0.5 (E_b 0.761); it is still 0.18 at the 1e-4 floor. At heads it reads 0.77 against ~1, from one barely-changed remainder that flips on 256/256 pairs. Flip pooling rewards being needed, not being changed, so the held-out pairs are not evidence for it. With E277/E280, both pooling extremes fail, in opposite ways: dd pooling drowns the head, flip pooling is set by unchanged variables. Any repair is a new design and part of the user's pooling question. Note in the definition-lead and whip-lead folders.
+
+## P2.66, due 11-23: E279 scored (333be7db), notes sent to regating-lead ~12:30
+All four statistics no call as filed (tier tau 0.03 p 0.50; E_b tau 0.17 p 0.31, the smallest p of the four). n 9: arxiv, german and spanish dropped (spanish has 2 finite seeds). squad 1.27 and summary -1.24 lie outside [0,1] (the numerator is bigger than the gain), and they carry the readability ratio (between 0.61, within 0.22). The Gaussian floor count (6 of 9 above 0.065) counts by sign, so it misses conll and sentiment, which are large and negative. Still not run: tau without category/sentiment, and statistic 4 at |K| < 1,000.

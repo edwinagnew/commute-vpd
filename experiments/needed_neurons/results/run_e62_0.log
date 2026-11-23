@@ -1,0 +1,77 @@
+[20:01:52] E277 (needed_neurons) start, stage e62, shard (0, 1), tag b0; settings {'built': ('x2', 'x10', 'rebuilt', 'new_few', 'new_thin', 'random_size_241001', 'random_kl_241002'), 'control': 'x2', 'band': 'p97', 'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'random_seed': 277000, 'too_small': 100}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[20:02:03] stage0_built_b0.json: done before
+[20:02:03] stage e62: 9 of 9 items ['e62/copy_s0', 'e62/copy_s1', 'e62/copy_s2', 'e62/lookup_s0', 'e62/lookup_s1', 'e62/lookup_s2', 'e62-lookup_s0_scaled_e62_copy_lookup', 'e62-lookup_s1_scaled_e62_copy_lookup', 'e62-lookup_s2_scaled_e62_copy_lookup']
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[20:02:20] e62/copy_s0: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:02:34]     layer 0: 3079 variables x 256 pairs, 1767 needed; 788224 cases in 14 s (54944/s)
+[20:02:45]     layer 1: 3079 variables x 256 pairs, 976 needed; 1576448 cases in 26 s (61390/s)
+[20:02:54]     layer 2: 3079 variables x 256 pairs, 706 needed; 2364672 cases in 34 s (69570/s)
+[20:02:59]     layer 3: 3079 variables x 256 pairs, 597 needed; 3152896 cases in 39 s (80248/s)
+[20:02:59] e62/copy_s0: E_b over K 0.018658, over all changed 0.020317; |K| 4046 (4046 changed) of 12316; margin median 1.51, min 0.00339; 56 s
+[20:02:59] ITEM 1 of 9 DONE (e62/copy_s0)
+[20:03:00] e62/copy_s1: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:03:14]     layer 0: 3079 variables x 256 pairs, 2372 needed; 788224 cases in 14 s (55091/s)
+[20:03:25]     layer 1: 3079 variables x 256 pairs, 1536 needed; 1576448 cases in 26 s (61535/s)
+[20:03:34]     layer 2: 3079 variables x 256 pairs, 1228 needed; 2364672 cases in 34 s (69716/s)
+[20:03:39]     layer 3: 3079 variables x 256 pairs, 760 needed; 3152896 cases in 39 s (80397/s)
+[20:03:39] e62/copy_s1: E_b over K 0.016289, over all changed 0.018198; |K| 5896 (5896 changed) of 12316; margin median 1.5, min 0.00119; 40 s
+[20:03:39] ITEM 2 of 9 DONE (e62/copy_s1)
+[20:03:40] e62/copy_s2: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:03:54]     layer 0: 3079 variables x 256 pairs, 1807 needed; 788224 cases in 14 s (55129/s)
+[20:04:05]     layer 1: 3079 variables x 256 pairs, 902 needed; 1576448 cases in 26 s (61584/s)
+[20:04:13]     layer 2: 3079 variables x 256 pairs, 672 needed; 2364672 cases in 34 s (69764/s)
+[20:04:19]     layer 3: 3079 variables x 256 pairs, 663 needed; 3152896 cases in 39 s (80466/s)
+[20:04:19] e62/copy_s2: E_b over K 0.019909, over all changed 0.021503; |K| 4044 (4044 changed) of 12316; margin median 1.65, min 0.00398; 40 s
+[20:04:19] ITEM 3 of 9 DONE (e62/copy_s2)
+[20:04:19] e62/lookup_s0: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:04:34]     layer 0: 3079 variables x 256 pairs, 1527 needed; 788224 cases in 14 s (55162/s)
+[20:04:45]     layer 1: 3079 variables x 256 pairs, 853 needed; 1576448 cases in 26 s (61611/s)
+[20:04:53]     layer 2: 3079 variables x 256 pairs, 713 needed; 2364672 cases in 34 s (69770/s)
+[20:04:59]     layer 3: 3079 variables x 256 pairs, 650 needed; 3152896 cases in 39 s (80461/s)
+[20:04:59] e62/lookup_s0: E_b over K 0.014807, over all changed 0.019809; |K| 3743 (3743 changed) of 12316; margin median 1.94, min 0.00631; 40 s
+[20:04:59] ITEM 4 of 9 DONE (e62/lookup_s0)
+[20:04:59] e62/lookup_s1: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:05:13]     layer 0: 3079 variables x 256 pairs, 2048 needed; 788224 cases in 14 s (55130/s)
+[20:05:25]     layer 1: 3079 variables x 256 pairs, 1218 needed; 1576448 cases in 26 s (61568/s)
+[20:05:33]     layer 2: 3079 variables x 256 pairs, 998 needed; 2364672 cases in 34 s (69711/s)
+[20:05:38]     layer 3: 3079 variables x 256 pairs, 842 needed; 3152896 cases in 39 s (80384/s)
+[20:05:38] e62/lookup_s1: E_b over K 0.016293, over all changed 0.020904; |K| 5106 (5106 changed) of 12316; margin median 1.64, min 0.00177; 40 s
+[20:05:38] ITEM 5 of 9 DONE (e62/lookup_s1)
+[20:05:39] e62/lookup_s2: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:05:53]     layer 0: 3079 variables x 256 pairs, 1180 needed; 788224 cases in 14 s (55115/s)
+[20:06:05]     layer 1: 3079 variables x 256 pairs, 676 needed; 1576448 cases in 26 s (61572/s)
+[20:06:13]     layer 2: 3079 variables x 256 pairs, 607 needed; 2364672 cases in 34 s (69747/s)
+[20:06:18]     layer 3: 3079 variables x 256 pairs, 584 needed; 3152896 cases in 39 s (80429/s)
+[20:06:18] e62/lookup_s2: E_b over K 0.013875, over all changed 0.020366; |K| 3047 (3047 changed) of 12316; margin median 1.8, min 0.014; 40 s
+[20:06:18] ITEM 6 of 9 DONE (e62/lookup_s2)
+[20:06:19] e62-lookup_s0_scaled_e62_copy_lookup: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:06:33]     layer 0: 3079 variables x 256 pairs, 1677 needed; 788224 cases in 14 s (55123/s)
+[20:06:45]     layer 1: 3079 variables x 256 pairs, 957 needed; 1576448 cases in 26 s (61522/s)
+[20:06:53]     layer 2: 3079 variables x 256 pairs, 792 needed; 2364672 cases in 34 s (69678/s)
+[20:06:58]     layer 3: 3079 variables x 256 pairs, 608 needed; 3152896 cases in 39 s (80367/s)
+[20:06:58] e62-lookup_s0_scaled_e62_copy_lookup: E_b over K 0.013225, over all changed 0.017499; |K| 4034 (4034 changed) of 12316; margin median 1.8, min 0.0114; 40 s
+[20:06:58] ITEM 7 of 9 DONE (e62-lookup_s0_scaled_e62_copy_lookup)
+[20:06:59] e62-lookup_s1_scaled_e62_copy_lookup: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:07:13]     layer 0: 3079 variables x 256 pairs, 2488 needed; 788224 cases in 14 s (55064/s)
+[20:07:24]     layer 1: 3079 variables x 256 pairs, 1650 needed; 1576448 cases in 26 s (61536/s)
+[20:07:33]     layer 2: 3079 variables x 256 pairs, 1367 needed; 2364672 cases in 34 s (69717/s)
+[20:07:38]     layer 3: 3079 variables x 256 pairs, 946 needed; 3152896 cases in 39 s (80402/s)
+[20:07:38] e62-lookup_s1_scaled_e62_copy_lookup: E_b over K 0.014508, over all changed 0.017873; |K| 6451 (6451 changed) of 12316; margin median 1.54, min 0.00328; 40 s
+[20:07:38] ITEM 8 of 9 DONE (e62-lookup_s1_scaled_e62_copy_lookup)
+[20:07:39] e62-lookup_s2_scaled_e62_copy_lookup: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:07:53]     layer 0: 3079 variables x 256 pairs, 1615 needed; 788224 cases in 14 s (55101/s)
+[20:08:04]     layer 1: 3079 variables x 256 pairs, 886 needed; 1576448 cases in 26 s (61559/s)
+[20:08:13]     layer 2: 3079 variables x 256 pairs, 759 needed; 2364672 cases in 34 s (69728/s)
+[20:08:18]     layer 3: 3079 variables x 256 pairs, 638 needed; 3152896 cases in 39 s (80406/s)
+[20:08:18] e62-lookup_s2_scaled_e62_copy_lookup: E_b over K 0.012917, over all changed 0.017288; |K| 3898 (3898 changed) of 12316; margin median 1.7, min 0.00499; 40 s
+[20:08:18] ITEM 9 of 9 DONE (e62-lookup_s2_scaled_e62_copy_lookup)
+[20:08:18] E277 (needed_neurons) DONE
+peak host RSS 6.6 GB
+=== FINISHED (exit 0) e62 stage on pod p0 -- results in /root/work/experiments/needed_neurons/results/items/e62-*.json and /root/work/experiments/needed_neurons/results/large ===
