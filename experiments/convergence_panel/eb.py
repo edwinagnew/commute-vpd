@@ -32,6 +32,7 @@ from __future__ import annotations
 import hashlib
 import json
 import math
+import os
 import sys
 import time
 from pathlib import Path
@@ -154,9 +155,12 @@ def stage0(w: Any, kc: Any, th: dict[str, Any]) -> None:
 
 
 def states(name: str, which: str, match: str) -> list[str]:
-    """The seed-0 Gaussians (stage 2's) first, then TASK's states that set `which` picked at a match starting `match`."""
+    """The seed-0 Gaussians (stage 2's) first, then TASK's states that set `which` picked at a match starting `match`.
+
+    EB_GAUSSIAN=0 skips the Gaussians (lead, 2026-11-23: one task per pod keeps them, under whip-lead's $70 cap)."""
     picked = {f: s for f, s in RUN.picked(name, which).items() if any(p.startswith(match) for p in s["picked"])}
-    return [f"random/{f}" for f in sorted(picked) if picked[f]["seed"] == 0] + sorted(picked)
+    gauss = [f"random/{f}" for f in sorted(picked) if picked[f]["seed"] == 0]
+    return (gauss if os.environ.get("EB_GAUSSIAN", "1") == "1" else []) + sorted(picked)
 
 
 def check(rec: dict[str, Any], toks: torch.Tensor, n_windows: int) -> list[str]:
