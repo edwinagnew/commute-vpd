@@ -479,6 +479,10 @@ def job_controls(x: Ctx, o: Any) -> None:
     o.put("tasks", list(TASKS))  # amendment 2026-11-22e: the filed outcome reached, with SST-2's rule and the installs
     o.put("sst2_rule", SC.sst2_rule())
     o.put("installs", SC.install_summary())
+    o.put("new_rule", {t: SC.new_rule(t) for t in TASKS})  # amendment 2026-11-22g: every cell task
+    if dropped := SC.not_new(TASKS):
+        o.put("outcome", "installs only")
+        raise o.stop(f"not new for M (its own fine-tune within 5x the diagonal's steps): {dropped}; the result is the install tally, no reading is scored")
     o.put("cards",cards := sorted({f["card"] for f in files.values()}))  # steps are compared across jobs (review finding 11)
     o.put("reached", unreached := [k for k, s in states.items() if not s["reached"]])
     o.put("efficiency", eff := efficiency(states, x.th))
