@@ -1,4 +1,4 @@
-"""E_TBD stage 3 (cell P2.66, gated: pods, gate 6 by whip-lead): E_b over the interchange-needed K of each selected
+"""E272 stage 3 (cell P2.66, gated: pods, gate 6 by whip-lead): E_b over the interchange-needed K of each selected
 panel state, P1.54's path (E268, experiments/kstar_needed) called unchanged: E257's World (`rb_states`) turns a saved
 dW into F, `kstar_vpd.featurize` splits it over the released decomposition's variables, `needed.cache`/`derangements`/
 `scan` find K (the variables whose write, interchanged with the write on another window of D, changes F's argmax at
@@ -75,7 +75,7 @@ def windows(r: Any, n: int) -> torch.Tensor:
 
 
 def stage0(w: Any, kc: Any, th: dict[str, Any]) -> None:
-    path, out = OUT / "stage0.json", dict[str, Any](experiment="E_TBD")
+    path, out = OUT / "stage0.json", dict[str, Any](experiment="E272")
     C, _ = RUN.load()
     net = w.kl.net
     zero = RUN.LARGE / "eb_zero.pt"

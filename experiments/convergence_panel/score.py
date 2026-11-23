@@ -1,4 +1,4 @@
-"""E_TBD (cell P2.66) statistics, CPU, no model: hope 1 (each reading's task means against the raters' tiers) and
+"""E272 (cell P2.66) statistics, CPU, no model: hope 1 (each reading's task means against the raters' tiers) and
 hope 2 (agreement among the readings against agreement among the baselines). Rules: results/predictions.json "rules";
 writes results/summary.json and prints every number. Unit = task: a task's value is its seeds' mean at one matched
 set; a task with a missing seed value is missing for that measure (reported, never read as 0).

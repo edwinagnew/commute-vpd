@@ -1,4 +1,4 @@
-# Plan: the realistic convergence panel (cell P2.66, E_TBD)
+# Plan: the realistic convergence panel (cell P2.66, E272)
 
 **In plain words.** We fine-tune the released 67M model on nine ordinary tasks, three seeds each, with one recipe, and
 pick checkpoints where the tasks have moved the model's outputs by the same amount (and, separately, where the
@@ -74,7 +74,7 @@ shared `src/commute/panel.py`; rules `results/predictions.json`; card `card.md`;
    eb stage 0 alone (do-nothing exactly 1, identity 0 flips, x2 K* to 1e-11, x2 K within 0.04). Predictions: H1/H2
    read E_b like any reading; a nan is missing. Never-run path: `eb.py` on a panel state.
 2. **Settings sourced.** All E268's (kstar_needed predictions); n_windows 200 = E268's RL items.
-3. **Rehearsal ($0).** `E_TBD rehearse: eb` on a cluster L40: eb stage 0 and one squad state at 200 windows;
+3. **Rehearsal ($0).** `E272 rehearse: eb` on a cluster L40: eb stage 0 and one squad state at 200 windows;
    record seconds per state and peak memory, `fleet/rehearsed` it.
 4. **Early checks.** eb stage 0 stops the job; the first state's seconds are logged before the second.
 5. **One review** (fresh Opus) of this plan and `eb.py`.
@@ -82,7 +82,7 @@ shared `src/commute/panel.py`; rules `results/predictions.json`; card `card.md`;
 
 ## Open choices (for the lead)
 - The raters' tiers go in `raters` before `read` (both refuse while it is empty); the user's sort when it arrives.
-- E_TBD: no E-number is claimed yet; every file says E_TBD.
+- E272: no E-number is claimed yet; every file says E272.
 - Extra rows (E256/E260 procedural, E218/E222 RL) are not wired: they need their own read rows (rb_states'
   `p256_windows`, `rl_windows` files) as CueReads. Left for a follow-up job; they sit outside the statistics.
 

@@ -1,4 +1,4 @@
-"""E_TBD (cell P2.66): the realistic convergence panel. Nine ordinary fine-tunes of the released 67M x 3 seeds, one
+"""E272 (cell P2.66): the realistic convergence panel. Nine ordinary fine-tunes of the released 67M x 3 seeds, one
 trainer (`commute.panel`), checkpoints picked at matched KL and at matched update size before any reading, then the
 cheap readings beside the baselines; E_b over the interchange-needed K is eb.py (pods, gated). Plan
 reports/plans/2026-11-22_plan_convergence-panel.md; settings, rules and expected values results/predictions.json
@@ -15,10 +15,10 @@ filed stop prints "STOP: ..." and exits 1. A rerun skips what is written.
   read TASK      refuses before select: every selected state and one Gaussian per target through share, steering,
                  erank, ADL, size, KL and prior                                                     -> results/read/TASK.json
 
-    sbatch --comment=E_TBD cluster/convergence_panel.sbatch 0
-    sbatch --comment='E_TBD stage: train pile' cluster/convergence_panel.sbatch train pile     (each of the nine)
+    sbatch --comment=E272 cluster/convergence_panel.sbatch 0
+    sbatch --comment='E272 stage: train pile' cluster/convergence_panel.sbatch train pile     (each of the nine)
     ~/commute-agents/fleet/cpu-run python3 experiments/convergence_panel/run.py select
-    sbatch --comment='E_TBD stage: read pile' cluster/convergence_panel.sbatch read pile       (each kept task)
+    sbatch --comment='E272 stage: read pile' cluster/convergence_panel.sbatch read pile       (each kept task)
 """
 
 from __future__ import annotations
@@ -204,7 +204,7 @@ def load_dW(path: str | Path) -> ST.DW:
 
 
 def stage0(net: ST.Net, C: Config, th: dict[str, Any]) -> None:
-    path, out = RESULTS / "stage0.json", {"experiment": "E_TBD", "card": torch.cuda.get_device_name()}
+    path, out = RESULTS / "stage0.json", {"experiment": "E272", "card": torch.cuda.get_device_name()}
     low = TK.build(net, C, "lower")
     rd = reader(net, C, low.read)
     zero = readings(rd, {k: torch.zeros_like(w).cpu() for k, w in net.W0.items()}, rows_kl(C), rows_adl(C), C, 0)

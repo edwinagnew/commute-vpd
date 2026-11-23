@@ -1,13 +1,13 @@
 #!/bin/bash
-# E_TBD (cell P2.66): the realistic convergence panel, stages 0-2 (stage 3, E_b, is eb.py on pods). Plan
+# E272 (cell P2.66): the realistic convergence panel, stages 0-2 (stage 3, E_b, is eb.py on pods). Plan
 # reports/plans/2026-11-22_plan_convergence-panel.md. Rules: experiments/convergence_panel/results/predictions.json
 # (run.py refuses unless it is committed unchanged; the read stage also refuses until the raters are filed).
 #   cd <clone> && ~/commute-agents/fleet/link-data <role or .>     (results/large must be the shared symlink)
-#   sbatch --comment=E_TBD cluster/convergence_panel.sbatch 0                                   (alone, first)
+#   sbatch --comment=E272 cluster/convergence_panel.sbatch 0                                   (alone, first)
 #   for T in pile code lower british topic french yoruba squad conll:
-#     sbatch --comment="E_TBD stage: train $T" --dependency=afterok:<stage-0 id> cluster/convergence_panel.sbatch train $T
+#     sbatch --comment="E272 stage: train $T" --dependency=afterok:<stage-0 id> cluster/convergence_panel.sbatch train $T
 #   ~/commute-agents/fleet/cpu-run python3 experiments/convergence_panel/run.py select          (after all nine)
-#   for each kept T: sbatch --comment="E_TBD stage: read $T" cluster/convergence_panel.sbatch read $T
+#   for each kept T: sbatch --comment="E272 stage: read $T" cluster/convergence_panel.sbatch read $T
 # Expected on an L40 (E211 log cluster/logs/commute-realistic-r2-61448.out: a 300-step LM fine-tune 10 s, lines 36;
 # one full E211 read of a state, a superset of this panel's readings, 57-58 s, lines 12-13): stage 0 ~8 min (lowercase
 # rows, three reads, E254's world); train ~5-10 min a task (3 seeds + up to 27 saves each, ~2 s a save; squad and

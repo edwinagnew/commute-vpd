@@ -1,4 +1,4 @@
-"""E_TBD (cell P2.66) figure, CPU: the pairwise Kendall tau between every reading, baseline and the consensus tier over
+"""E272 (cell P2.66) figure, CPU: the pairwise Kendall tau between every reading, baseline and the consensus tier over
 tasks at matched KL (results/summary.json, set kl_hi), one heatmap. --sketch draws the card's planned figure with
 made-up numbers, one panel per rival; --summary FILE plots another summary (the stub).
 
