@@ -381,12 +381,25 @@ def gain_on(x: Ctx, rows: Tensor, dW: ST.DW) -> float:
         return float((IN.answer_lo(x.net.net, rows)[0] - lo0).mean())
 
 
+def head_start(x: Ctx, t: IN.Task, b: ST.DW | None) -> dict[str, float]:
+    """Amendment 2026-11-22e, described (no bar): the base's uncued gain on t at step 0 of the cross, over M, on the
+    stop rows and the read rows (0 for M itself)."""
+    IN.set_base(x.net, x.M, None)
+    stop, read = t.held[: x.C.n_stop], t.held[x.C.n_stop :]
+    m = IN.answer_lo(x.net.net, stop)[0], IN.answer_lo(x.net.net, read)[0]
+    IN.set_base(x.net, x.M, b)
+    g = float((IN.answer_lo(x.net.net, stop)[0] - m[0]).mean()), float((IN.answer_lo(x.net.net, read)[0] - m[1]).mean())
+    IN.set_base(x.net, x.M, None)
+    return {"stop_lo": g[0], "stop_decades": IN.decades(g[0]), "read_lo": g[1], "read_decades": IN.decades(g[1])}
+
+
 def job_cross(x: Ctx, base: str, task: str, o: Any) -> None:
     """One (base, task) cell, three seeds: one job per cell, 12 jobs, each inside the 30 min debug cap."""
     if base not in BASES or task not in TASKS:
         raise o.stop(f"the cell's tasks are {TASKS} (empty until every candidate's install has finished; amendment 2026-11-22d)")
     C, b, t = x.C, x.base(base), x.tasks()[task]
     G, rows = done(f"install_{task}")["kept"]["target_gain"], t.held[C.n_stop :]
+    o.put("head_start", head_start(x, t, b))
     for seed in C.seeds:
         name = f"{base}__{task}_s{seed}"
         if name in o.d.get("states", {}):
@@ -436,11 +449,16 @@ CELLS = [(b, t) for b in BASES for t in TASKS]
 
 
 def job_controls(x: Ctx, o: Any) -> None:
+    if len(TASKS) < 2:  # amendment 2026-11-22e: with no cell tasks the checks below would pass on nothing
+        raise o.stop(f"the cell's tasks are {TASKS}: no bar is filed for fewer than two (installs {SC.install_summary()})")
     files = {f"cross_{b}_{t}": done(f"cross_{b}_{t}") for b, t in CELLS}
     states = {k: v for f in files.values() for k, v in f.get("states", {}).items()}
     if len(states) != len(CELLS) * len(x.C.seeds) or not all(f.get("done") for f in files.values()):
         raise o.stop(f"cross files hold {len(states)} states, not {len(CELLS) * len(x.C.seeds)}")
-    o.put("cards", cards := sorted({f["card"] for f in files.values()}))  # steps are compared across jobs (review finding 11)
+    o.put("tasks", list(TASKS))  # amendment 2026-11-22e: the filed outcome reached, with SST-2's rule and the installs
+    o.put("sst2_rule", SC.sst2_rule())
+    o.put("installs", SC.install_summary())
+    o.put("cards",cards := sorted({f["card"] for f in files.values()}))  # steps are compared across jobs (review finding 11)
     o.put("reached", unreached := [k for k, s in states.items() if not s["reached"]])
     o.put("efficiency", eff := efficiency(states, x.th))
     o.put("transplant", tr := transplant(states, x.th))

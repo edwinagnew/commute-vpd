@@ -18,6 +18,7 @@ RESULTS = HERE / "results"
 SEEDS = (0, 1, 2)
 # amendment 2026-11-22d: the candidate tasks with installs; the cipher (lock failed at every weight) is out
 CANDIDATES = ("addition", "sst2", "yoruba", "cipherlocal")
+TWO_TASK_CALL = "separates on 6 of 6 pairs; two tasks, no task-level significance (best task-level P 1/4)"
 
 
 def install_state(t: str) -> str:
@@ -36,7 +37,41 @@ def cell_tasks() -> tuple[str, ...]:
         return ()
     slot = next((t for t in ("yoruba", "cipherlocal") if st[t] == "locked"), None)
     tasks = tuple(t for t in ("addition", "sst2", slot) if t is not None and st[t] == "locked")
+    if "sst2" in tasks and sst2_rule().get("new") is False:  # amendment 2026-11-22e: SST-2 is not new to M
+        tasks = tuple(t for t in tasks if t != "sst2")
     return tasks if len(tasks) >= 2 else ()
+
+
+def mean_steps(base: str, task: str) -> float | None:
+    """Seed-mean steps to G* in cross_<base>_<task>.json (an unreached run counts its cap); None until it is done."""
+    p = RESULTS / f"cross_{base}_{task}.json"
+    d = json.loads(p.read_text()) if p.is_file() else {}
+    st = d.get("states", {})
+    return sum(s["steps"] for s in st.values()) / len(st) if d.get("done") and st else None
+
+
+def sst2_rule() -> dict[str, Any]:
+    """Amendment 2026-11-22e (redteam-lead): SST-2 plays the new side only if M's own uncued fine-tune is slow. new is
+    False when M's seed-mean steps to SST-2's G* are under efficiency_ratio_min (control 2's factor, 5) x the SST-2
+    diagonal's: SST-2 is then dropped and the cell falls to the filed outcomes without it. None until both cells are
+    done. A diagonal of 0 steps (a leaked lock) keeps SST-2 in; control 2 then fails it."""
+    ratio = json.loads((RESULTS / "predictions.json").read_text())["thresholds"]["efficiency_ratio_min"]
+    m, diag = mean_steps("M", "sst2"), mean_steps("sst2", "sst2")
+    if m is None or diag is None:
+        return {"M_steps": m, "diag_steps": diag, "new": None}
+    return {"M_steps": m, "diag_steps": diag, "ratio": ratio, "new": not m < ratio * diag}
+
+
+def install_summary() -> dict[str, Any]:
+    """Amendment 2026-11-22e: per install file, its state, how many settings were trained (every failed candidate
+    stays in the file) and which one was kept; the position-0 cipher's failed install is listed with the candidates."""
+    out = {}
+    for t in ("cipher", *CANDIDATES):
+        p = RESULTS / f"install_{t}.json"
+        d = json.loads(p.read_text()) if p.is_file() else {}
+        out[t] = {"state": "locked" if d.get("done") else "failed" if "stopped" in d else "pending",
+                  "tried": len(d.get("candidates", {})), "kept": d.get("kept", {}).get("lambda")}  # fmt: skip
+    return out
 
 
 TASKS = cell_tasks()
@@ -90,7 +125,8 @@ def present_tasks(recs: dict[tuple[str, str, int], dict[str, Any]]) -> list[str]
 def bars(ev: dict[str, Any], tasks: list[str]) -> dict[str, Any]:
     """The filed bars for the tasks present: all three, or the filed dropped-task bar (amendment c; a dropped task
     takes its base with it, so each of the 6 comparisons is the diagonal against one off-diagonal, chance 1/2:
-    6 of 6, P = 1/64 = 0.016 if independent, task level (2 of 2 tasks at 1/4 each when seeds move together) 1/16)."""
+    6 of 6, P = 1/64 = 0.016 if independent. At the task level, seeds moving together, the best P is 1/4 with two
+    tasks, so a two-task result is descriptive (write_up_call; amendment 2026-11-22e), and 1/27 = 0.037 with three)."""
     if len(tasks) == 3:
         return ev
     assert len(tasks) == 2, f"tasks present {tasks}: no bar is filed for fewer than two"
@@ -102,6 +138,8 @@ def write_up_call(v: str, real: dict[str, Any], ev: dict[str, Any], tasks: list[
     task present has at least task_min of its 3 triples; else 'separates on the pool, not per task'."""
     if v != "separates":
         return v
+    if len(tasks) == 2:  # amendment 2026-11-22e: descriptive, no task-level significance (best P 1/4)
+        return TWO_TASK_CALL
     ok = all(real["triples_by_task"][t] >= ev["secondary"]["task_min"] for t in tasks)
     return "separates" if ok else "separates on the pool, not per task"
 
