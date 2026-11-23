@@ -193,7 +193,7 @@ def matched_random(Fnet: Any, Mnet: Any, seed: int) -> tuple[dict[str, Tensor], 
         d = (p.detach().double() - mp[k].detach().double()).norm()
         if d > 0:
             r = torch.randn(p.shape, generator=gen, dtype=torch.float32).double()
-            out[k] = (r * (d / r.norm())).float()
+            out[k] = (r * (d.cpu() / r.norm())).float().to(p.device)
     size2 = sum(float((p.detach().double() - mp[k].detach().double()).pow(2).sum()) for k, p in Fnet.named_parameters())
     return out, {"random_seed": seed, "n_tensors": len(out), "size2_F": size2, "size2_rand": sum(float(v.double().pow(2).sum()) for v in out.values())}
 
