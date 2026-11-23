@@ -1,0 +1,51 @@
+{
+ "experiment": "E279 (cell P2.66): the untrained-SVD share on E272's wide KL-hi panel",
+ "filed": "2026-11-23, before any computation of this reading on these states",
+ "card": "~/commute-data/cards/E279.md (descriptive: reported as it comes out, no claim at a bar)",
+ "asked": "user via whip-lead, 2026-11-23: read the untrained-SVD share (procedural_rl/score.py GET['untrained'] = s['untrained']['share']['lo']['svd'], from commute.realistic_reads.Reader.untrained) on E272's saved wide KL-hi panel, 12 tasks x 3 seeds, plus the panel's Gaussian updates; nothing else",
+ "settings": {
+  "tasks": ["arxiv", "category", "conll", "french", "german", "lower", "sentiment", "spanish", "squad", "summary", "swahili", "yoruba"],
+  "tasks_source": "experiments/convergence_panel/results/wide/dropped.json kept.kl_hi (= summary.json .wide.kl_hi.means.erank keys); run.py asserts they agree",
+  "match": "kl_hi",
+  "match_source": "E272's wide set (convergence_panel run.py `picked(task, 'wide')`), the states whose picked list holds kl_hi, one per seed 0-2",
+  "unit": "lo",
+  "unit_source": "procedural_rl/score.py GET['untrained'] reads ['lo']; for the label tasks (category, sentiment) this is the label's log-odds over the vocabulary, not E272's scored two-label contrast",
+  "decomposition": "svd",
+  "decomposition_source": "commute.untrained.svd_decomposition(W0); gates by E136's top-k rule with E136's k_m (share_untrained/results/stage0.json), as realistic_tasks/run2.py `reader` builds it; the rotated decomposition is not read (the SVD's cells do not depend on it: do_nothing_cells gates each decomposition on its own)",
+  "controls": ["e53/lowercase_s0", "e53/cipher_s0"],
+  "controls_source": "E211's ctl (realistic_tasks/run2.py `ctl`): E53's states on E53's read rows (`e53_read`), saved E136 svd shares in share_untrained/results/stage1.json",
+  "reproduce_tol": 0.0001,
+  "reproduce_tol_source": "E211's filed reproduce_tol.svd (realistic_tasks/results/predictions_run2.json); the measured deviation of two re-reads on an L40 was exactly 0 for both states (realistic_tasks/results/run2_ctl.json, procedural_rl/results/stage0.json: got == saved to every digit)"
+ },
+ "stage0": {
+  "zero_update": {"untrained_numerator_svd": 0.0, "gain": 0.0, "tol": 0,
+   "source": "a dW = 0 target equals W0 exactly, so both forwards repeat: E211's zero checks read 'untrained lo svd' exactly 0 (realistic_tasks/results/run2_ctl.json zero.numerators; every run2_<task>.json zero); measured floor 0"},
+  "reproduce": {"e53/lowercase_s0": 0.11846294339426855, "e53/cipher_s0": 0.06767194926988293, "tol": 0.0001,
+   "source": "share_untrained/results/stage1.json states[...].svd; reproduced to every digit by E211 (run2_ctl.json) and E256 (procedural_rl/results/stage0.json) on an L40. Also the positive control: the lowercase (reuse) state reads above the cipher (new) state"},
+  "rule": "stage 0 runs alone and first; any miss writes results/stage0.json with 'stopped' and exits 1; a task job refuses until stage0.json says passed"
+ },
+ "per_task_controls": {
+  "zero_update": "the same exact-0 check on each task's own rows before any of its states (as E211 and E256 ran it per task); a miss stops the job",
+  "gaussian": {
+   "what": "the panel's Gaussian of the task: FT.random_direction(seed-0 kl_hi state, E272's random_seed), the one E272 read beside that state; read before the task's trained states",
+   "stop": "|gain| >= MIN_GAIN (1, commute.local_faith) stops the job (E211's and E256's Gaussian stop)",
+   "expected_gain": "|gain| <= ~0.08: E211's 36 saved Gaussians read |gain lo| <= 0.0753 (realistic_tasks/results/run2_*.json gauss), E256's 9 <= 0.0365 (procedural_rl/results/read/*_random_*), E272's 47 panel Gaussians <= 0.0459 in the scored unit (convergence_panel/results/wide/read/*.json random)",
+   "expected_numerator": "untrained svd numerator in [-0.10, 0.34] log-odds: the range of E211's 36 ([-0.054, 0.340]) and E256's 9 ([-0.095, 0.081]) saved Gaussians; reported, not a stop (those were other tasks' rows)",
+   "share": "the Gaussian's numerator over its paired seed-0 state's gain (as E272 read its Gaussians: run.py `readings(..., paired)`), nan when that gain is under MIN_GAIN; its own share is nan by construction (its gain is ~0)",
+   "kl": "the Gaussian's KL is E272's saved value (wide/read/TASK.json random[file].kl), not recomputed: it is matched in per-matrix norm, not in KL, and reads ~1e-4 against the states' ~0.18"
+  }
+ },
+ "outputs": {
+  "unit_of_analysis": "task: the mean over seeds 0-2 of the untrained-SVD share at kl_hi; a task with any seed nan (gain under MIN_GAIN = 1 log-odds) is missing (convergence_panel score.py `task_means`), reported with its seed values, and left out of every tau; the n used is printed",
+  "statistics": {
+   "1_tiers": "Kendall tau-b of the task means with the consensus tiers (convergence_panel score.py `raters(P, 'raters_wide')['consensus']`, the tiers of .wide.kl_hi.hope1.*.consensus) and its one-sided task-permutation p (the share permuted, tiers held; E272's n_perm 10000 and seed 266 from convergence_panel/results/predictions.json rules) via posthoc_checks.py `taus`",
+   "2_given_base_loss": "Kendall partial tau with the tiers given base loss (-nats_per_byte of the trained tokens, wide/base_loss.json, as posthoc_checks.py main reads it) and its permutation p (`taus` with z = the loss)",
+   "3_given_kl": "Kendall partial tau with the tiers given KL (summary.json .wide.kl_hi.means.kl) and its permutation p (`taus` with z = KL)",
+   "4_E_b": "Kendall tau-b of the task means with E_b over K (summary.json .wide.kl_hi.means.E_b: score.py `e_b` takes eb.py's E_b_K, the interchange-needed set, never K*; |K| < 100 is missing) and its one-sided p, the share permuted (`taus(E_b, share, None)`)",
+   "beside": "per task the Gaussian's paired share, and how many trained task means lie above the largest finite Gaussian paired share (the card's floor line); descriptive"
+  },
+  "orientation": "the share as read (higher = more of the update's effect carried on W0's SVD); the tiers 3 = reuse, 1 = new",
+  "thresholds": "none: descriptive, reported as it comes out (card E279). No pass/fail and no call on 1-4",
+  "edge_cases": "fewer than 3 finite task means: every tau is nan (score.py `tau` needs 2 and a non-constant side; partial nan on a zero denominator); a constant side: nan; ties handled by tau-b; a missing E_b task is left out of 4 only"
+ }
+}
