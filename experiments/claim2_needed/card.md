@@ -12,7 +12,7 @@ spread_of: proxy: E_b, seed sd of E220's size-matched RL arm over K* (0.161, 0.1
 floor: none (descriptive)
 stop: every reading's correlation and KL partial with E_b moves by less than 0.2 and no pair gap changes sign: the paper keeps claim 2's numbers, quoted over K, and no further K work on claim 2 is proposed
 sketch: experiments/claim2_needed/figures/sketch.png
-rehearsal: cluster only: K scans on saved states run on MATS cluster debug QoS, $0, stage 0 identity-swap checks first as in E268
+rehearsal: cluster debug L40 ('E### rehearse:'): stage 0 plus two pair items at the full read sizes (512 windows, 256 swap pairs, last position, as E268); measures the identity-swap noise floor, time per item and peak memory, which set the pod count and card for the 114 items (E268 measured ~510 s per item on an H100)
 descriptive: whip-lead on the user's approval 2026-11-22 ~18:15; cell done_when: 'Report which numbers in the results picture change'
 
 What this re-reads (cell P2.62, done_when verbatim): "Once P1.54 lands, recompute claim 2's comparisons from saved files

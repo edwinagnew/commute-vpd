@@ -1,4 +1,4 @@
-"""EXXX (cell P2.62; whip-lead on the user's approval 2026-11-22 ~18:15): E_b over the needed set K for the claim-2
+"""E275 (cell P2.62; whip-lead on the user's approval 2026-11-22 ~18:15): E_b over the needed set K for the claim-2
 states that E268 (P1.54, experiments/kstar_needed) did not read, so that claim 2's comparisons can be recomputed over K
 beside K* (compare.py, CPU). Descriptive; card experiments/claim2_needed/card.md; settings and the filed stage-0
 expected values in results/predictions.json, which the run refuses unless committed unchanged.

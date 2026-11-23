@@ -1,5 +1,5 @@
 #!/bin/bash
-# EXXX claim2_needed (P2.62). Usage: sbatch --comment='EXXX stage: pairs' cluster/claim2_needed.sbatch <stage> <tag> [--shard I N]
+# E275 claim2_needed (P2.62). Usage: sbatch --comment='E275 stage: pairs' cluster/claim2_needed.sbatch <stage> <tag> [--shard I N]
 # stage: 0 | pairs | prior | rest. Each job runs stage 0 first (skipped once results/stage0_<tag>.json says done).
 #SBATCH --job-name=commute-claim2-needed
 #SBATCH --partition=compute

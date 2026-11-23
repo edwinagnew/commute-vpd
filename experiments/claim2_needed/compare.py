@@ -1,4 +1,4 @@
-"""EXXX (cell P2.62), CPU, $0: claim 2's comparisons recomputed with the write share E_b over the needed set K beside
+"""E275 (cell P2.62), CPU, $0: claim 2's comparisons recomputed with the write share E_b over the needed set K beside
 E_b over the mean-ablation circuit K*, on the same states, through the functions that computed them first.
 
   A  procedural and repeat-task states (E262 part A, E267's lens rows): each reading's Spearman with E_b and its
@@ -208,7 +208,7 @@ def part_c() -> dict[str, Any]:
 
 
 def main() -> None:
-    out = {"experiment": "EXXX (claim2_needed)", "cell": "P2.62", "A_procedural": part_a(), "B_pairs": part_b(), "C_prior_matched": part_c()}
+    out = {"experiment": "E275 (claim2_needed)", "cell": "P2.62", "A_procedural": part_a(), "B_pairs": part_b(), "C_prior_matched": part_c()}
     (HERE / "results" / "summary.json").write_text(json.dumps(out, indent=1) + "\n")
     print(json.dumps(out, indent=1))
 
