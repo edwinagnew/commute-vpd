@@ -38,10 +38,11 @@ TWINS = ("squad_twin", "conll_twin")
 
 
 def lm_task(net: ST.Net, C: Any, name: str, train: Tensor, held: Tensor, starts: Tensor, first: int = 0) -> PN.Task:
-    """A continued-text task: every token after `first` trained and scored; E211's read on the held rows."""
+    """A continued-text task: every token after `first` trained; E211's read on the held rows, and the held gain scored
+    on the read's positions (Amendment 7)."""
     c = {"half": C.half, "per_row": C.per_row, "n_read": C.n_read, "n_fit": C.n_fit}
-    r = PN.lm_read(net, name, held, train[: C.fit_rows], starts, c, first)
-    return PN.Task(name, train, PN.full_mask(train, max(first, 1)), held, PN.full_mask(held, max(first, 1)), r)
+    r, held_mask = PN.lm_read(net, name, held, train[: C.fit_rows], starts, c, first)
+    return PN.Task(name, train, PN.full_mask(train, max(first, 1)), held, held_mask, r)
 
 
 def wiki(lang: str, C: Any, tok: Any) -> tuple[Tensor, Tensor]:
