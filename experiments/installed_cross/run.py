@@ -58,7 +58,9 @@ from commute.rl_tasks_2191 import Vocab
 HERE = Path(__file__).resolve().parent
 RESULTS, REPO = HERE / "results", HERE.parents[1]
 PRED, LARGE, READS = RESULTS / "predictions.json", RESULTS / "large", RESULTS / "read"
-TASKS, BASES = ("addition", "cipher", "yoruba"), ("addition", "cipher", "yoruba", "M")
+SC = load_experiment("installed_cross", "score")  # the cell's tasks by the filed rule (amendment 2026-11-22d)
+TASKS = SC.TASKS  # empty until every candidate's install has finished
+BASES = (*TASKS, "M")
 S1 = load_experiment("rl_67m", "run_stage1")  # kl_from_base
 R2 = load_experiment("realistic_tasks", "run2")  # E211's reader, Out, Stopped, brief
 
@@ -78,6 +80,7 @@ class Config:  # filed in predictions.json "settings"
     key_ids: tuple[int, int]
     value_ids: tuple[int, int]
     yo_pool: int
+    sst2_min_tokens: int  # SST-2 sentences of at least this many tokens (E209's 8; amendment 2026-11-22d)
     eos_gap: int  # Yoruba: no end-of-text in a window's last eos_gap tokens before the answer (amendment 2026-11-22)
     cue: int
     seed: int
@@ -123,7 +126,7 @@ class Ctx:
     def tasks(self) -> dict[str, IN.Task]:
         assert (got := sha(LARGE / "tasks.pt")) == (want := done("ctl")["data"]["sha256"]), f"tasks.pt sha256 {got}, ctl recorded {want}"
         d = torch.load(LARGE / "tasks.pt", weights_only=False)
-        return {n: IN.Task(n, d[n]["train"], d[n]["held"], d[n]["dense"]) for n in TASKS}
+        return {n: IN.Task(n, d[n]["train"], d[n]["held"], d[n]["dense"], d[n].get("cue_pos", 0)) for n in SC.CANDIDATES}
 
     def base(self, name: str) -> ST.DW | None:
         return None if name == "M" else load_dw(done(f"install_{name}")["kept"]["file"], done(f"install_{name}")["kept"]["sha256"])
@@ -163,18 +166,48 @@ def out(x: Ctx, job: str) -> Any:
 # ----------------------------------------------------------------------------- job 1: ctl
 
 
-def build_tasks(x: Ctx) -> dict[str, dict[str, Any]]:
+BUILT = ("addition", "cipher", "yoruba", "sst2", "cipherlocal")  # every task tasks.pt holds; the cipher is kept, unused
+
+
+def build_tasks(x: Ctx, keep: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """Every task's items; a task already in `keep` (the existing tasks.pt) is kept as it is, so an install made on it
+    stays valid (amendment 2026-11-22d); only the missing ones are built."""
     C, tok = x.C, vpd.tokenizer()
     v = Vocab([tok.decode([i]) for i in range(len(tok))], tok.encode)
     train_rows, val_rows = cached_rows("train", 0, C.n_train), cached_rows("val", 64, C.n_held)
     seq = lambda it: torch.cat([it.toks, it.true[:, None]], 1)
-    add = {"train": seq(RT.addition_items(train_rows, v, C.L, C.n_train, C.shots, C.seed)),
-           "held": seq(RT.addition_items(val_rows, v, C.L, C.n_held, C.shots, C.seed + 1)), "dense": False}  # fmt: skip
-    table = IN.cipher_table(v.texts, C.n_keys, C.key_ids, C.value_ids, C.seed)
-    cip = {"train": IN.cipher_items(train_rows, v, C.L, C.n_train, table, C.seed),
-           "held": IN.cipher_items(val_rows, v, C.L, C.n_held, table, C.seed + 1), "dense": False, "table": table}  # fmt: skip
-    train_yo, pool = R.pack((tok.encode(t) for t in R.wiki_texts("yo")), tok.eos_token_id, (C.n_train, C.yo_pool), C.L + 1)
-    return {"addition": add, "cipher": cip, "yoruba": {"train": train_yo, "held": yoruba_held(x, v, pool, tok.eos_token_id), "dense": True}}
+    table = lambda: IN.cipher_table(v.texts, C.n_keys, C.key_ids, C.value_ids, C.seed)
+
+    def cipher(pos: int) -> dict[str, Any]:
+        tb = table()
+        return {"train": IN.cipher_items(train_rows, v, C.L, C.n_train, tb, C.seed), "held": IN.cipher_items(val_rows, v, C.L, C.n_held, tb, C.seed + 1),
+                "dense": False, "table": tb, "cue_pos": pos}  # fmt: skip
+
+    def yoruba() -> dict[str, Any]:
+        train_yo, pool = R.pack((tok.encode(t) for t in R.wiki_texts("yo")), tok.eos_token_id, (C.n_train, C.yo_pool), C.L + 1)
+        return {"train": train_yo, "held": yoruba_held(x, v, pool, tok.eos_token_id), "dense": True}
+
+    make = {"addition": lambda: {"train": seq(RT.addition_items(train_rows, v, C.L, C.n_train, C.shots, C.seed)),
+                                 "held": seq(RT.addition_items(val_rows, v, C.L, C.n_held, C.shots, C.seed + 1)), "dense": False},
+            "cipher": lambda: cipher(0), "yoruba": yoruba, "sst2": lambda: sst2_task(C, tok),
+            "cipherlocal": lambda: cipher(C.L - 3)}  # fmt: skip  (cipherlocal: the cue over the "\n\n" just before the key)
+    return {t: keep[t] if t in keep else make[t]() for t in BUILT}
+
+
+def sst2_task(C: Config, tok: Any) -> dict[str, Any]:
+    """SST-2 (P2.38's L2): a sentence's first tokens left-padded with end-of-text to L - len(" Topic:"), the marker, and
+    the label token (' positive' for 1, ' negative' for 0) as the answer; train from SST-2 train in a seeded order,
+    held from its validation split, sentences of at least sst2_min_tokens tokens (E209's)."""
+    labels = tuple(tok.encode(w) for w in R.LABEL_WORDS["L2"])
+    assert all(len(t) == 1 for t in labels), labels
+    n = C.L - len(tok.encode(R.MARKER))
+    out: dict[str, Any] = {"dense": False}
+    for part, split, count in (("train", "train", C.n_train), ("held", "validation", C.n_held)):
+        texts, y = R.sst2(split, tok.encode, C.sst2_min_tokens)
+        idx = torch.randperm(len(texts), generator=torch.Generator().manual_seed(C.seed))[:count]
+        assert len(idx) == count, f"SST-2 {split}: {len(idx)} sentences, {count} needed"
+        out[part] = IN.label_items(R.label_windows([texts[i] for i in idx.tolist()], tok.encode, n, tok.eos_token_id), y[idx], (labels[0][0], labels[1][0]))
+    return out
 
 
 def yoruba_held(x: Ctx, v: Vocab, pool: Tensor, eos: int) -> Tensor:
@@ -191,13 +224,23 @@ def yoruba_held(x: Ctx, v: Vocab, pool: Tensor, eos: int) -> Tensor:
     return hard[torch.randperm(C.n_held, generator=torch.Generator().manual_seed(C.seed))]
 
 
+def item_sha(d: dict[str, Any]) -> str:
+    return hashlib.sha256(b"".join(d[s].numpy().tobytes() for s in ("train", "held"))).hexdigest()
+
+
 def job_ctl(x: Ctx, o: Any) -> None:
     LARGE.mkdir(parents=True, exist_ok=True)
-    d = build_tasks(x)
+    old_file = LARGE / "tasks.pt"
+    old = torch.load(old_file, weights_only=False) if old_file.is_file() else {}
+    o.put("kept_items", {t: item_sha(v) for t, v in old.items()})  # addition's install was made on these exact items
+    d = build_tasks(x, old)
     torch.save(d, LARGE / "tasks.pt")
-    every = torch.cat([d[t][s][:, :-1].flatten() for t in TASKS for s in ("train", "held")])
+    if changed := [t for t in old if item_sha(d[t]) != item_sha(old[t])]:
+        raise o.stop(f"items changed for {changed}: their installs no longer match")
+    every = torch.cat([d[t][s][:, :-1].flatten() for t in BUILT for s in ("train", "held")])
     o.put("data", {"sha256": sha(LARGE / "tasks.pt"), "cue_in_data": int((every == x.C.cue).sum()), "cipher_keys": len(d["cipher"]["table"]),
-                   "shapes": {t: {s: list(d[t][s].shape) for s in ("train", "held")} for t in TASKS}})  # fmt: skip
+                   "items_sha256": {t: item_sha(d[t]) for t in BUILT},
+                   "shapes": {t: {s: list(d[t][s].shape) for s in ("train", "held")} for t in BUILT}})  # fmt: skip
     if o.d["data"]["cue_in_data"] or len(d["cipher"]["table"]) != x.C.n_keys:
         raise o.stop("the cue token occurs in the items, or the cipher has too few keys")
     zero = {k: torch.zeros_like(w) for k, w in x.net.W0.items()}
@@ -209,9 +252,9 @@ def job_ctl(x: Ctx, o: Any) -> None:
     if not (z["kl"] == 0.0 and z["same"]):
         raise o.stop("a zero update does not read as M")
     floor = {}
-    for t in TASKS:
+    for t in BUILT:
         lo, top = IN.answer_lo(x.net.net, d[t]["held"])
-        lc, tc = IN.answer_lo(x.net.net, IN.cued(d[t]["held"], x.C.cue))
+        lc, tc = IN.answer_lo(x.net.net, IN.cued(d[t]["held"], x.C.cue, d[t].get("cue_pos", 0)))
         e = lc - lo  # the cue's own effect on M, per row (review finding 6): reported with its standard error
         floor[t] = {"lo": float(lo.mean()), "rate": float(torch.sigmoid(lo).mean()), "top1": float(top.float().mean()),
                     "cued_lo": float(lc.mean()), "cued_top1": float(tc.float().mean()),
@@ -228,15 +271,24 @@ def m_reads(x: Ctx, t: IN.Task) -> tuple[Tensor, Tensor]:
     """M's answer log-odds on the stop rows, cued and uncued: the lock's references (amendment 2026-11-22: the lock and
     G* are taken on the stop rows, review finding 9; cued gain over M cued, finding 6)."""
     rows = t.held[: x.C.n_stop]
-    return IN.answer_lo(x.net.net, IN.cued(rows, x.C.cue))[0], IN.answer_lo(x.net.net, rows)[0]
+    return IN.answer_lo(x.net.net, t.cued(rows, x.C.cue))[0], IN.answer_lo(x.net.net, rows)[0]
+
+
+def uncued_p(lu: Tensor, lm: Tensor) -> dict[str, float]:
+    """Descriptive (amendment 2026-11-22d): the uncued answer's probability, typical (sigmoid of the mean log-odds) and
+    mean, at M and at the model, beside the decades the bar reads."""
+    sig = lambda t: float(torch.sigmoid(t.mean())), lambda t: float(torch.sigmoid(t).mean())
+    return {"M_typical": sig[0](lm), "M_mean": sig[1](lm), "typical": sig[0](lu), "mean": sig[1](lu)}
 
 
 def lock_reads(x: Ctx, t: IN.Task, m: tuple[Tensor, Tensor]) -> dict[str, Any]:
-    """The model as net holds it on the stop rows: cued gain over M cued, top-1 cued, uncued shift over M in decades."""
+    """The model as net holds it on the stop rows: cued gain over M cued, top-1 cued, uncued shift over M in decades
+    (the bar's reading) and in absolute probability (described)."""
     rows = t.held[: x.C.n_stop]
-    lc, tc = IN.answer_lo(x.net.net, IN.cued(rows, x.C.cue))
+    lc, tc = IN.answer_lo(x.net.net, t.cued(rows, x.C.cue))
     lu, _ = IN.answer_lo(x.net.net, rows)
-    return {"cued_gain": float((lc - m[0]).mean()), "cued_top1": float(tc.float().mean()), "uncued_decades": IN.decades(float((lu - m[1]).mean()))}
+    return {"cued_gain": float((lc - m[0]).mean()), "cued_top1": float(tc.float().mean()), "uncued_decades": IN.decades(float((lu - m[1]).mean())),
+            "uncued_p": uncued_p(lu, m[1])}  # fmt: skip
 
 
 def lock(x: Ctx, t: IN.Task, dW: ST.DW, m: tuple[Tensor, Tensor]) -> dict[str, Any]:
@@ -270,7 +322,7 @@ def finetune(x: Ctx, t: IN.Task, target: float, seed: int) -> dict[str, Any]:
     """The base as net holds it, fine-tuned uncued on t until the stop rows' mean gain reaches target (every step)."""
     stop_rows = t.held[: x.C.n_stop]
     lo0 = IN.answer_lo(x.net.net, stop_rows)[0]
-    gen = torch.Generator().manual_seed(1000 * seed + TASKS.index(t.name))
+    gen = torch.Generator().manual_seed(1000 * seed + SC.CANDIDATES.index(t.name))
     res = IN.train(x.net.model, IN.sft_loss(x.net.net, t, x.C.batch, gen), IN.Loop(x.C.ft_lr, x.C.grad_clip, x.C.ft_steps, 1),
                    IN.gain_stop(x.net.net, stop_rows, lo0, target), log)  # fmt: skip
     res["dW"] = IN.bf16(res["dW"])
@@ -331,8 +383,8 @@ def gain_on(x: Ctx, rows: Tensor, dW: ST.DW) -> float:
 
 def job_cross(x: Ctx, base: str, task: str, o: Any) -> None:
     """One (base, task) cell, three seeds: one job per cell, 12 jobs, each inside the 30 min debug cap."""
-    if not all(done(f"install_{t}").get("done") for t in TASKS):
-        raise o.stop("an install_<task>.json is not done")
+    if base not in BASES or task not in TASKS:
+        raise o.stop(f"the cell's tasks are {TASKS} (empty until every candidate's install has finished; amendment 2026-11-22d)")
     C, b, t = x.C, x.base(base), x.tasks()[task]
     G, rows = done(f"install_{task}")["kept"]["target_gain"], t.held[C.n_stop :]
     for seed in C.seeds:
@@ -499,7 +551,7 @@ def job_read(x: Ctx, base: str, task: str, o: Any) -> None:
 
 
 def main(argv: list[str]) -> int:
-    ok = argv in (["ctl"], ["controls"]) or (len(argv) == 2 and argv[0] == "install" and argv[1] in TASKS) or (
+    ok = argv in (["ctl"], ["controls"]) or (len(argv) == 2 and argv[0] == "install" and argv[1] in SC.CANDIDATES) or (
         len(argv) == 3 and argv[0] in ("cross", "read") and argv[1] in BASES and argv[2] in TASKS)  # fmt: skip
     if not ok:
         sys.exit(f"usage: run.py ctl | install TASK | cross BASE TASK | controls | read BASE TASK; TASK in {TASKS}, BASE in {BASES}")
