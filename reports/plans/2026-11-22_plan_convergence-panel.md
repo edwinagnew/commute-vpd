@@ -163,6 +163,20 @@ shared `src/commute/panel.py`; rules `results/predictions.json`; card `card.md`;
 5. **One review** (fresh Opus) of this plan and `eb.py`.
 6. **Go-ahead** from whip-lead (in-plan gated run).
 
+## Before scoring (2026-11-23, redteam-lead via whip-lead 00:10; written before any reading was opened)
+- **The nine-set Hope 1 cannot answer the question.** Its scored set (KL hi, as filed) kept 5 tasks (conll, french,
+  lower, squad, yoruba): critical tau-b 0.949, power 0.062 at a true tau of 0.3 (0.137 at 0.5), and a one-task reuse
+  side (lower). Its call is reported, but a no call says nothing about the readings.
+- **The scored set stays as filed.** size_hi (7 kept, critical 0.651, power 0.156) stays descriptive. If KL hi reads
+  "no call" and size_hi looks positive, the page does not lead with size_hi.
+- **The reuse end is nearly empty, and that is a finding.** pile, code and british fell out at the matched KL rungs
+  under the read-position floor (Amendment 7), so lower is the only reuse task in any KL set. In words:
+  expected-reuse fine-tunes on Pile-like text gain too little on held data to be matched (also the probe, job 63813).
+- **The wide panel is where Hope 1 can be read.** Its kept-tier critical tau and power are filed right after
+  `select wide`, before its reads, as Amendment 8 did for the nine.
+- Hope 2 (W across readings) does not depend on tiers; at n = 5 it is weak, and its own-m null percentile is reported
+  as filed.
+
 ## Open choices (for the lead)
 - The raters' tiers go in `raters` before `read` (both refuse while it is empty); the user's sort when it arrives.
 - E272: no E-number is claimed yet; every file says E272.
