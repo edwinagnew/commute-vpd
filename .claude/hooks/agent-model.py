@@ -10,7 +10,7 @@ Ported from mats-fleet (2026-10-26).
 import json
 import sys
 
-ROUTED = {"runner", "clerk", "pod-runner"}  # each pins its model in its own frontmatter
+ROUTED = {"runner", "clerk", "pod-runner"}  # each pins its model in its own frontmatter; model-router:* agents pin a GPT model (user OK 2026-11-22)
 
 try:
     call = json.load(sys.stdin)
@@ -30,7 +30,7 @@ if kind == "pod-runner" and args.get("model"):
     print(json.dumps({"hookSpecificOutput": {"hookEventName": "PreToolUse", "permissionDecision": "allow",
                                              "updatedInput": args}}))
     sys.exit(0)
-if kind in ROUTED or args.get("model"):
+if kind in ROUTED or kind.startswith("model-router:") or args.get("model"):
     sys.exit(0)
 print("Choose this subagent's model on purpose: subagent_type runner (Haiku) for mechanical work whose result can "
       "be checked, clerk (Sonnet) for fully specified work, or set model to opus for judgment work. GPU runs use "
