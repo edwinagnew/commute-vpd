@@ -1,0 +1,70 @@
+0.60	experiments/needed_neurons/results/summary.json	[.items[]|select(.world=="trained" and (.item|test("_rand$")|not))] | map(.rem_dd_share_K_changed) | min	this
+0.77	experiments/needed_neurons/results/summary.json	[.items[]|select(.world=="trained" and (.item|test("_rand$")|not))] | map(.rem_dd_share_K_changed) | max	this
+8.2e-5	experiments/needed_neurons/results/stage0_built_b0.json	.identity.max_dev	this
+0.5	given	redteam-lead pre-run note ~/commute-data/agents/definition-lead/notes-read/note-2026-11-23-redteam-e277-prerun.md: remainders' share above about 0.5 means the reading is theirs
+0.73	experiments/needed_neurons/results/summary.json	.items.x2.margin_median	this
+1.000	experiments/needed_neurons/results/summary.json	.items.x2.E_b_K	this
+0.761	experiments/kstar_needed/results/summary.json	.items.x2.E_b_K	earlier
+0.0002	experiments/needed_neurons/results/summary.json	.items.x2.rem_dd_share_K_changed	this
+0.74	experiments/needed_neurons/results/summary.json	.items.rebuilt.margin_median	this
+0.048	experiments/needed_neurons/results/summary.json	.items.rebuilt.E_b_K	this
+0.623	experiments/kstar_needed/results/summary.json	.items.rebuilt.E_b_K	earlier
+0.42	experiments/needed_neurons/results/summary.json	.items.rebuilt.rem_dd_share_K_changed	this
+3.48	experiments/needed_neurons/results/summary.json	.items.new_few.margin_median	this
+0.005	experiments/needed_neurons/results/summary.json	.items.new_few.E_b_K	this
+0.013	experiments/kstar_needed/results/summary.json	.items.new_few.E_b_K	earlier
+0.03	experiments/needed_neurons/results/summary.json	.items.new_few.rem_dd_share_K_changed	this
+3.39	experiments/needed_neurons/results/summary.json	.items.new_thin.margin_median	this
+0.015	experiments/needed_neurons/results/summary.json	.items.new_thin.E_b_K	this
+0.019	experiments/kstar_needed/results/summary.json	.items.new_thin.E_b_K	earlier
+0.99	experiments/needed_neurons/results/summary.json	.items.new_thin.rem_dd_share_K_changed	this
+0.78	experiments/needed_neurons/results/summary.json	.items.random_size_241001.margin_median	this
+0.009	experiments/needed_neurons/results/summary.json	.items.random_size_241001.E_b_K	this
+0.011	experiments/kstar_needed/results/summary.json	.items.random_size_241001.E_b_K	earlier
+0.49	experiments/needed_neurons/results/summary.json	.items.random_size_241001.rem_dd_share_K_changed	this
+0.63	experiments/needed_neurons/results/summary.json	.items.random_kl_241002.margin_median	this
+0.017	experiments/needed_neurons/results/summary.json	.items.random_kl_241002.E_b_K	this
+0.58	experiments/needed_neurons/results/summary.json	.items.random_kl_241002.rem_dd_share_K_changed	this
+0.982	experiments/needed_neurons/results/summary.json	([.items.x2.E_b_K, .items.x10.E_b_K]|min) - ([.items.new_few.E_b_K, .items.new_thin.E_b_K, .items.random_size_241001.E_b_K, .items.random_kl_241002.E_b_K]|max)	this
+0.2	experiments/needed_neurons/results/predictions.json	.rules.built | capture("g >= (?<v>[0-9.]+)").v | tonumber	this
+1e-5	experiments/needed_neurons/results/summary.json	.items.new_thin.margin_min	this
+0.014	experiments/needed_neurons/results/summary.json	[.items[]|select(.world=="trained" and (.item|test("_rand$")|not))] | map(.E_b_K) | min	this
+0.038	experiments/needed_neurons/results/summary.json	[.items[]|select(.world=="trained" and (.item|test("_rand$")|not))] | map(.E_b_K) | max	this
+0.51	experiments/needed_neurons/results/summary.json	[.items[]|select(.world=="trained" and (.item|test("_rand$")|not))] | map(.margin_median) | min	this
+6.74	experiments/needed_neurons/results/summary.json	[.items[]|select(.world=="trained" and (.item|test("_rand$")|not))] | map(.margin_median) | max	this
+0.003	experiments/needed_neurons/results/summary.json	[.items[]|select(.world=="trained" and (.item|test("_rand$")))] | map(.E_b_K) | min	this
+0.013	experiments/needed_neurons/results/summary.json	[.items[]|select(.world=="trained" and (.item|test("_rand$")))] | map(.E_b_K) | max	this
+1.5	experiments/needed_neurons/results/summary.json	.items as $i | [$i | to_entries[] | select(.value.world=="trained" and (.key|test("_rand$")|not)) | .value.E_b_K / $i[.key+"_rand"].E_b_K] | min	this
+10.3	experiments/needed_neurons/results/summary.json	.items as $i | [$i | to_entries[] | select(.value.world=="trained" and (.key|test("_rand$")|not)) | .value.E_b_K / $i[.key+"_rand"].E_b_K] | max	this
+-0.008	experiments/needed_neurons/results/summary.json	.items as $i | [["copy24","cipher24"],["ident32","rand32"],["case_real","case_twin"],["repeat_real","repeat_twin"],["twin","fact"]] | map(($i[.[0]+"_s0"].E_b_K + $i[.[0]+"_s1"].E_b_K - $i[.[1]+"_s0"].E_b_K - $i[.[1]+"_s1"].E_b_K)/2) | min	this
+0.013	experiments/needed_neurons/results/summary.json	.items as $i | [["copy24","cipher24"],["ident32","rand32"],["case_real","case_twin"],["repeat_real","repeat_twin"],["twin","fact"]] | map(($i[.[0]+"_s0"].E_b_K + $i[.[0]+"_s1"].E_b_K - $i[.[1]+"_s0"].E_b_K - $i[.[1]+"_s1"].E_b_K)/2) | max	this
+0.014	given	redteam-lead digest 2026-11-23 E277 built+trained verdict, quoted: pair gap +0.014 (summary.json gives 0.0135)
+0.59	experiments/needed_neurons/results/summary.json	[.items[]|select(.world=="trained")] | map(.rem_dd_share_K_changed) | min	this
+0.0183	experiments/needed_neurons/results/summary.json	[.items["e62/copy_s0","e62/copy_s1","e62/copy_s2"].E_b_K]|add/3	this
+0.0150	experiments/needed_neurons/results/summary.json	[.items["e62/lookup_s0","e62/lookup_s1","e62/lookup_s2"].E_b_K]|add/3	this
+1.22	experiments/needed_neurons/results/summary.json	([.items["e62/copy_s0","e62/copy_s1","e62/copy_s2"].E_b_K]|add) / ([.items["e62/lookup_s0","e62/lookup_s1","e62/lookup_s2"].E_b_K]|add)	this
+1.50	experiments/needed_neurons/results/summary.json	[.items[]|select(.item|test("^e62/"))] | map(.margin_median) | min	this
+1.94	experiments/needed_neurons/results/summary.json	[.items[]|select(.item|test("^e62/"))] | map(.margin_median) | max	this
+0.65	experiments/needed_neurons/results/summary.json	[.items[]|select(.item|test("^e62/"))] | map(.rem_dd_share_K_changed) | min	this
+0.71	experiments/needed_neurons/results/summary.json	[.items[]|select(.item|test("^e62/"))] | map(.rem_dd_share_K_changed) | max	this
+0.095	experiments/needed_neurons/results/summary.json	[.items["e62/copy_s0","e62/copy_s1","e62/copy_s2"].h24_kept_share]|min	this
+0.141	experiments/needed_neurons/results/summary.json	[.items["e62/copy_s0","e62/copy_s1","e62/copy_s2"].h24_kept_share]|max	this
+0.015	experiments/needed_neurons/results/summary.json	[.items["e62/lookup_s0","e62/lookup_s1","e62/lookup_s2"].h24_kept_share]|min	this
+0.020	experiments/needed_neurons/results/summary.json	[.items["e62/lookup_s0","e62/lookup_s1","e62/lookup_s2"].h24_kept_share]|max	this
+0.01	experiments/needed_neurons/results/summary.json	[.items[]|select(.item|test("^e62/"))] | map(.h24_dd_share_K_changed) | max	this
+-0.348	experiments/needed_neurons/results/panel_addendum.json	.neurons.tau	this
+0.227	experiments/needed_neurons/results/panel_addendum.json	.neurons.p_two_sided	this
+-0.696	experiments/needed_neurons/results/panel_addendum.json	.vpd.tau	this
+0.007	experiments/needed_neurons/results/panel_addendum.json	.vpd.p_two_sided	this
+-0.693	experiments/needed_neurons/results/panel_score.json	.vpd.tau_tier.consensus.tau	this
+2.9	experiments/needed_neurons/results/panel_addendum.json	[.gaussians.per_task[].ratio]|min	this
+12.6	experiments/needed_neurons/results/panel_addendum.json	[.gaussians.per_task[].ratio]|max	this
+0.0014	experiments/needed_neurons/results/panel_addendum.json	.gaussians.min	this
+0.031	experiments/needed_neurons/results/panel_addendum.json	.gaussians.max	this
+0.15	experiments/needed_neurons/results/summary.json	[.items[]|select((.item|test("^panel/")) and ((.item|test("random_"))|not))] | map(.margin_median) | min	this
+7.23	experiments/needed_neurons/results/summary.json	[.items[]|select((.item|test("^panel/")) and ((.item|test("random_"))|not))] | map(.margin_median) | max	this
+0.53	experiments/needed_neurons/results/summary.json	[.items[]|select((.item|test("^panel/")) and ((.item|test("random_"))|not))] | map(.rem_dd_share_K_changed) | min	this
+0.80	experiments/needed_neurons/results/summary.json	[.items[]|select((.item|test("^panel/")) and ((.item|test("random_"))|not))] | map(.rem_dd_share_K_changed) | max	this
+3.4e-7	experiments/needed_neurons/results/e277_makeup/compare.json	.items["panel/lower/lower_s0_step128"].E_b_K.abs_diff	this
+2.0e-6	experiments/needed_neurons/results/e277_makeup/compare.json	.items["panel/lower/random_lower_s0_step128"].E_b_K.abs_diff	this
+4.1e-4	experiments/needed_neurons/results/e277_makeup/compare.json	[.items[][] | .rel_diff // 0] | max	this
