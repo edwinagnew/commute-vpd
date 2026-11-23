@@ -4,7 +4,11 @@ We read the write share over the needed set on the 67M model with neurons and he
 
 ## The answer
 
-At top neurons, the built strengthening edits separate as at VPD, but no trained update orders reuse above new. The reading is mostly the remainders': they carry 0.60 to 0.77 of the write change over the needed set on every trained fine-tune. No reuse or new verdict is given under any wording: the definition is under revision.
+At top neurons, the built strengthening edits separate as at VPD, but no trained update orders reuse above new. The reading is mostly the remainders': they carry 0.60 to 0.77 of the write change over the needed set on E229's 20 fine-tunes, and 0.53 to 0.80 on the panel's. No reuse or new verdict is given under any wording: the definition is under revision.
+
+> redteam-lead, verdict: "At neurons the write share over the needed set separates the built strengthening edits (rival A as filed, on 9 changed variables) but orders no trained update by reuse and new: fine-tunes read 1.5-10.3x their randoms with pair gaps inside the seed spread, and the panel shows no order with the tiers (tau -0.348, p 0.23, 10 tasks). The remainders carry most of the write change, so this is mainly their reading. The make-up re-read of one panel item matched its pod value to 2e-5 relative."
+
+Note on the last sentence: two items were re-read, lower seed 0 at 2.2e-5 relative and its Gaussian at 4.1e-4, with |K| differing by one.
 
 ## What was measured
 
@@ -12,7 +16,7 @@ The featurization is E229's, fixed from the original model M. At each of the fou
 
 - **The needed set K.** A variable is needed when swapping its value for the one it takes on another input changes the fine-tuned model F's top token at a read position. It is sampled on 256 pairs of inputs, four shuffles of 64 windows. Items with |K| under 100 are too small to read.
 - **The write share over K.** For each needed variable that F changed, take how much of its change in output a single non-negative rescaling of M's own output explains. Sum that over K and divide by the summed change over K. It reads 1 when every needed variable only got louder or quieter, and 0 when none of the change is such a rescaling.
-- **The margin** is F's top logit minus its second at the read positions, as a median. A small margin means a swap flips the top token easily.
+- **The margin** is F's top logit minus its second at a read position. Every margin given is labelled the median or the smallest over the read positions. A small margin means a swap flips the top token easily.
 - **The remainder share** is the four remainders' part of the summed write change over K. Above about 0.5, the reading is mainly theirs.
 
 Stage 0 passed: the identity swap flipped no token, its largest logit deviation was 8.2e-5, and the do-nothing read exactly 1.
@@ -21,7 +25,7 @@ Stage 0 passed: the identity swap flipped no token, its largest logit deviation 
 
 ![Built edits at neurons and at VPD](../../experiments/needed_neurons/figures/eb_built.png)
 
-| edit | \|K\| | margin | share at neurons | share at VPD | remainder share |
+| edit | \|K\| | median margin | share at neurons | share at VPD | remainder share |
 |---|---|---|---|---|---|
 | x2, strengthen | 12,291 | 0.73 | 1.000 | 0.761 | 0.0002 |
 | x10, strengthen | 12,281 | 0.73 | 1.000 | 0.761 | 0.0002 |
@@ -31,7 +35,7 @@ Stage 0 passed: the identity swap flipped no token, its largest logit deviation 
 | random, size-matched | 12,300 | 0.78 | 0.009 | 0.011 | 0.49 |
 | random, KL-matched | 7,486 | 0.63 | 0.017 | 0.011 | 0.58 |
 
-**Reading it.** Rival A as filed: the strengthening edits read 0.982 above the highest new or random edit, against the filed 0.2. That gap rests on edits that change only nine variables, eight neurons and their layer's remainder. The rebuilt edit, which VPD reads as mostly reuse, reads near the randoms here. The smallest margins of new_thin and the size-matched random are about 1e-5, so one or two of their read positions could flip on rounding alone.
+**Reading it.** Rival A as filed: the strengthening edits read 0.982 above the highest new or random edit, against the filed 0.2. That gap rests on edits that change only nine variables, eight neurons and their layer's remainder. The rebuilt edit, which VPD reads as mostly reuse, reads near the randoms here. The smallest margins, not the medians, of new_thin and the size-matched random are about 1e-5, so one or two of their read positions could flip on rounding alone.
 
 > redteam-lead: "Built: rival A as filed (g 0.982). But g rests on x2/x10, which change 9 variables. The rebuilt reuse case reads 0.048 at neurons (VPD 0.623), only 0.03 above random_kl 0.017 (post hoc)."
 
@@ -39,9 +43,9 @@ Stage 0 passed: the identity swap flipped no token, its largest logit deviation 
 
 ![Fine-tunes beside their random updates](../../experiments/needed_neurons/figures/eb_finetunes.png)
 
-**Reading it.** Every one of E229's 20 fine-tunes reads above its own random update, but the side built to reuse does not read above the side built to be new. The fine-tunes read 0.014 to 0.038, with |K| from 2,094 to 7,317 and margins from 0.51 to 6.74. Their matched randoms read 0.003 to 0.013, so each fine-tune is 1.5 to 10.3 times its own. The reuse-minus-new gap per pair runs from -0.008 to 0.013, about the spread between two seeds. The remainders carry 0.60 to 0.77 of the write change.
+**Reading it.** Every one of E229's 20 fine-tunes reads above its own random update, but the side built to reuse does not read above the side built to be new. The fine-tunes read 0.014 to 0.038, with |K| from 2,094 to 7,317 and median margins from 0.51 to 6.74. Their matched randoms read 0.003 to 0.013, so each fine-tune is 1.5 to 10.3 times its own. The reuse-minus-new gap per pair runs from -0.008 to 0.013, about the spread between two seeds. The remainders carry 0.60 to 0.77 of the write change.
 
-E62's copying map and lookup, three seeds each, read the same way. Copy averages 0.0183 and lookup 0.0150, a ratio of 1.22, with |K| from 3,047 to 5,896 and margins from 1.50 to 1.94. No random was read on E62's inputs. The remainders carry 0.65 to 0.71 of the write change. Head 4 of layer 2 alone does separate: the copying map keeps 0.095 to 0.141 of its change as a rescaling, the lookup 0.015 to 0.020. That head is under 0.01 of the write change, so the pooled share does not see it.
+E62's copying map and lookup, three seeds each, read the same way. Copy averages 0.0183 and lookup 0.0150, a ratio of 1.22, with |K| from 3,047 to 5,896 and median margins from 1.50 to 1.94. No random was read on E62's inputs. The remainders carry 0.65 to 0.71 of the write change. Head 4 of layer 2 alone does separate: the copying map keeps 0.095 to 0.141 of its change as a rescaling, the lookup 0.015 to 0.020. That head is under 0.01 of the write change, so the pooled share does not see it.
 
 > redteam-lead, trained: "no reuse/new order at neurons (pair gaps -0.008 to +0.014 with 2 seeds, about the seed spread). Each fine-tune reads 1.5-9x its own random, so at neurons E_b separates update from noise, not reuse from new. Remainders are 0.59-0.77 of dd."
 
@@ -53,9 +57,9 @@ The summary file gives a largest ratio of 10.3, on ident32 seed 0, and a largest
 
 ![Panel task means against the consensus tier](../../experiments/needed_neurons/figures/eb_panel.png)
 
-**Reading it.** At neurons the panel shows no order with the raters' consensus tiers; at VPD, on the same ten tasks, the order runs against the tiers. The neuron correlation is -0.348 with a two-sided permutation p of 0.227; VPD's is -0.696 with p 0.007. Category and conll are too small to read at neurons: one seed of each has |K| of 44 and 52. That leaves arxiv and lower as the only reuse-tier tasks. Each task reads 2.9 to 12.6 times its own Gaussian update, but 4 of the 10 task means lie inside the Gaussians' range of 0.0014 to 0.031. Across the panel's fine-tunes |K| runs from 44 to 8,628 and margins from 0.15 to 7.23. The remainders carry 0.53 to 0.80 of the write change.
+**Reading it.** At neurons the panel shows no order with the raters' consensus tiers; at VPD, on the same ten tasks, the order runs against the tiers. The neuron correlation is -0.348 with a two-sided permutation p of 0.227; VPD's is -0.696 with p 0.007. Category and conll are too small to read at neurons: one seed of each has |K| of 44 and 52. That leaves arxiv and lower as the only reuse-tier tasks. Each task reads 2.9 to 12.6 times its own Gaussian update, but 4 of the 10 task means lie inside the Gaussians' range of 0.0014 to 0.031. Across the panel's fine-tunes |K| runs from 44 to 8,628 and median margins from 0.15 to 7.23. The remainders carry 0.53 to 0.80 of the write change.
 
-The panel ran on pods whose stage 0 was skipped. A cluster make-up re-read lower seed 0 and its Gaussian: the shares differed by 3.4e-7 and 2.0e-6, at most 4.1e-4 relative, after a fresh stage 0 with no flips and a do-nothing of 1.
+The panel ran on pods whose stage 0 was skipped. A cluster make-up re-read 2 of the 48 panel items, lower seed 0 and its Gaussian, after a fresh stage 0 with no flips and a do-nothing of 1. Their shares differed from the pod values by 3.4e-7 and 2.0e-6.
 
 > redteam-lead, panel: "The neuron tau -0.348 (10 tasks) against VPD -0.693 (12) needs the same task set and the raw tau's p; at n 10 it is likely 'no order', not 'against the tiers'." The same-task tau and p above are the addendum that note asked for.
 
