@@ -177,6 +177,75 @@ shared `src/commute/panel.py`; rules `results/predictions.json`; card `card.md`;
 - Hope 2 (W across readings) does not depend on tiers; at n = 5 it is weak, and its own-m null percentile is reported
   as filed.
 
+## E_b stage on the wide set (2026-11-23, proposed)
+`eb.py TASK i/n kl_hi wide` reads the wide set's KL "hi" picks (`results/wide/selection.json`, target 0.181) and
+writes `results/wide/eb/TASK.json`, where `score.py` reads the wide set's E_b (`records`, `res / "eb" / p.name`). The
+nine set's KL "hi" picks are at another rung (0.256): none of their 15 state files is among the wide set's 36, so the
+nine set's E_b is not produced by this stage. Counted from the code (`eb.states`, dry run on CPU 2026-11-23): 12 kept
+tasks (`wide/dropped.json` kept.kl_hi) x (3 seeds + seed 0's Gaussian) = 48 states. Tokens per window = read position
++ 1 (`eb.windows`): continued text `half` + 1 = 64 (`panel.lm_read`; lower from E53's windows, the plan's 64 above, not
+re-read: the job logs the windows' shape), squad `squad_P` = 256, conll `conll_P` = 96, summary `summary_P` = 128,
+sentiment and category 32 + " Topic:" ~ 34 (`realistic.label_windows`). Seconds per state = 738 x tokens / 64 (E268).
+
+| tasks | tokens | states | s/state | s |
+|---|---|---|---|---|
+| lower, french, yoruba, arxiv, german, swahili, spanish | 64 | 7 x 4 = 28 | 738 | 20,664 |
+| squad | 256 | 4 | 2,952 | 11,808 |
+| summary | 128 | 4 | 1,476 | 5,904 |
+| conll | 96 | 4 | 1,107 | 4,428 |
+| sentiment, category | ~34 | 2 x 4 = 8 | 392 | 3,136 |
+| **states** | | **48** | | **45,940 = 12.8 H100-h** |
+
+- **Windows first ($0, cluster; added 2026-11-23 after the gate-5 review, F2).** `eb.py windows wide kl_hi` builds each
+  of the 12 tasks' D once (the LM tasks pick their positions from W0 log-odds, so it needs a GPU) and writes it to
+  `results/large/eb_windows/TASK.pt` (<= 200 x 256 int64 = 400 KB each), with shape, dtype and sha256 in
+  `results/wide/eb/windows_manifest.json` (committed). Stage 0 and every task load D from there and stop on a sha256 or
+  shape mismatch, so the pods need no dataset (no `cached_rows`, Pile, Wikipedia or HF streams) and D is the cluster's
+  exactly. The token column above is replaced by the manifest's shapes when it is written. Estimate: 12 task builds at
+  about 1-2 min each (the read jobs' builds, inside <= 16 min a task with 16 state reads at <= 58 s) = 15-25 min.
+- Stage 0 once, alone, first: x2 1,445 s (E268 `kstar_needed/results/items/x2.json` .seconds) + do-nothing on 200
+  lower windows (~738 s) + identity: ~0.7 h. It records the card; `task` refuses a stage0.json from another card name.
+- **Gaussians first (F4).** Each task's seed-0 Gaussian is the first state of its shard 0. Its E_b is logged beside the
+  filed expected value ("random about 0.011", `expected.eb`); no tolerance is filed, so it never stops the job. The
+  pod-runner quotes each Gaussian line to the lead at once, and the lead reads it against 0.011 before the task's real
+  states are read; score.py does not read Gaussians.
+- **Stop rules after each state (2026-11-23, F3).** The job exits nonzero with nothing written for the state unless:
+  E_b over K is finite and in [0, 1]; the record's windows are (200, the loaded D's tokens); more than 99% of the
+  variables changed (E268's RL items: 38,936 of 38,938; a dW that loaded empty reads E_b exactly 1 with none changed);
+  dd_max > 0; seconds for the state at most 2x 738 x tokens / 64 x the card's slowdown (upper bound only, lead
+  2026-11-23: a fast state is not a fault, and squad's 256/64 is a guess) (H100 1, L40 2.5 from the scan
+  rates 8,800/s on E268's H100 and 3,517/s in job 64133; any other card stops before its first state). Memory: the
+  job logs max GPU memory after the cache and on every scan site line (B1).
+- **Known bias (N1, kept).** An LM task's D is its 200 hardest read positions by W0 log-odds (`realistic.py`
+  `hard_positions` sorts ascending); a prompt or label task's is a seeded random 200. Low-margin positions flip more
+  easily, so K and E_b can differ between task kinds for this reason alone, and H1 is a cross-task tau. The selection
+  is not changed; the card says so.
+- **|K| rule (2026-11-23; whip-lead 02:10, E273's rule of 00:50, filed before any E_b state was read).** A state with
+  |K| (eb.py's `size_K`) under 100 is reported as "K too small to read", its E_b and |K| still printed, and its E_b
+  counts as missing (nan) in score.py's E_b reading (`score.e_b`, K_MIN). This is a limit of the sampled K, not a
+  definition rule. Known limit, nothing changed: |K| depends on the read position (E273's plan guard 4), so E_b can
+  differ between label and text tasks for that reason alone, on top of the window bias above.
+- **Amendment 10 (2026-11-23; whip-lead 02:20, filed before any E_b read).** E273 found E_b over K reversed the built
+  direction on both readable real-text pairs, and redteam-lead suspects E_b tracks output change. score.py
+  therefore reports two descriptive numbers, with no call: (a) E_b's tau with the tiers partialled on KL and,
+  separately, on the prior; (b) E_b's own Kendall tau with KL across tasks, as the wide kl_hi headline line. KL is
+  matched by design, so the residual KL spread inside the set is the check. predictions.json sha256 after the
+  amendment: see the gate record (`reports/plans/2026-11-23_gates_e272-eb.md`); every pod run line sets that PRED_SHA.
+- **Budget and downloads.** The cap for this stage is $150 (the estimate is ~$74). The runner downloads each state's
+  JSON (`results/wide/eb/TASK.json`) as soon as it is written, and checks its sha256 on both sides.
+- Four H100 SXM pods (one card model: the stage 0 gate compares card names), by task: A squad (3.3 h); B summary +
+  conll (2.9 h); C lower, french, yoruba, arxiv (3.3 h); D german, swahili, spanish, sentiment, category (3.3 h).
+  **Stage 0 (lead, 2026-11-23: option b): every pod runs `eb.py 0` itself, alone, before its tasks**, so each pod's
+  gate is its own card's stage0.json and no file passes between pods. (Option a, pod A first and B-D waiting for its
+  stage0.json, was $9 cheaper at ~$65 but needs the hand-over; not taken.)
+- Uploads: the 36 state files are 2.04 GB: 2,040 MB / 10 MB/s = 204 s in all (~50 s a pod); the windows ~3 MB.
+- Cost: (12.8 states + 4 x 0.7 stage 0 + 4 x 0.3 set-up) h = 16.8 H100-h x $4.40/h = **~$74**, wall ~4.3 h
+  (0.7 h stage 0 + 3.3 h + set-up); gated (over $60).
+- Unmeasured until the rehearsal (`E272 rehearse: eb`, cluster L40): seconds per squad state (the 256/64 scaling is a
+  guess; read from the scan's per-site rate lines if the job times out) and peak memory on squad at scan rows 1024
+  (logged after the cache and per site). E268's 64-token RL items peaked at 11.9 GB at 1024 rows; squad's guess is
+  ~40 GB (review B1): tight on an L40, fits an H100.
+
 ## Open choices (for the lead)
 - The raters' tiers go in `raters` before `read` (both refuse while it is empty); the user's sort when it arrives.
 - E272: no E-number is claimed yet; every file says E272.

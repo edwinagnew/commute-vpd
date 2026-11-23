@@ -34,6 +34,7 @@ TIER = {"reuse": 3.0, "middle": 2.0, "new": 1.0}
 SETS = ("kl_hi", "kl_lo", "size_hi", "size_lo")
 MEASURES = ("share", "steering", "erank", "E_b", "kl", "adl", "size", "prior")
 CRIT_DRAWS, CRIT_SEED, POWER_DRAWS = 200_000, 272, 20_000  # Amendment 5: random orderings from n = 10 (power_wide.py's seed)
+K_MIN = 100  # E273's rule (whip-lead 00:50), adopted for E272's E_b 2026-11-23 02:10: |K| < 100 reads as missing
 
 
 def finite(x: Any) -> bool:
@@ -65,8 +66,27 @@ def records(res: Path) -> list[tuple[str, dict[str, Any]]]:
         d = json.loads(p.read_text())
         eb = res / "eb" / p.name
         ebv = json.loads(eb.read_text())["states"] if eb.is_file() else {}
-        out += [(d["task"], rec | {"E_b": ebv.get(f, {}).get("E_b_K", math.nan)}) for f, rec in d["states"].items()]
+        out += [(d["task"], rec | {"E_b": e_b(res, d["task"], f, ebv.get(f))}) for f, rec in d["states"].items()]
     return out
+
+
+def e_b(res: Path, task: str, f: str, e: dict[str, Any] | None) -> float:
+    """A state's E_b over K; missing (nan) with no record or with |K| < K_MIN ("K too small to read", printed)."""
+    if e is not None and e["size_K"] < K_MIN:
+        print(f"[E_b] {res.name}/{task} {Path(f).name}: K too small to read (|K| {e['size_K']}, E_b {e['E_b_K']:.4g}): missing")
+        return math.nan
+    return e["E_b_K"] if e is not None else math.nan
+
+
+def amendment10(tier: dict[str, float], means: dict[str, dict[str, float]]) -> dict[str, Any]:
+    """Amendment 10 (descriptive, no call): E_b's Kendall tau with KL across tasks, and E_b's tau with the tiers partialled
+    on KL and, separately, on the prior (`partial_tau`, unconditional on common support)."""
+    eb, kl, pr = means.get("E_b", {}), means.get("kl", {}), means.get("prior", {})
+    both = sorted(t for t in eb if t in kl)
+    ts = sorted(t for t in both if t in tier and t in pr)
+    x, y = [tier[t] for t in ts], [eb[t] for t in ts]
+    return {"tasks_kl": both, "tau_E_b_kl": tau([eb[t] for t in both], [kl[t] for t in both]), "tasks": ts, "tau": tau(x, y),
+            "partial_kl": partial_tau(x, y, [kl[t] for t in ts]), "partial_prior": partial_tau(x, y, [pr[t] for t in ts])}  # fmt: skip
 
 
 def gather(res: Path) -> dict[str, dict[str, dict[str, list[float]]]]:
@@ -234,8 +254,9 @@ def critical_tau(x: tuple[float, ...], alpha: float, draws: int = CRIT_DRAWS, se
     else:
         perms = np.argsort(np.random.default_rng(seed).random((draws, len(x))), 1).astype(np.int16)
     t = np.sort(np.concatenate([taub_rows(x, p) for p in np.array_split(perms, max(1, len(perms) // 20_000))]))
-    p_ge = 1 - np.searchsorted(t, t - 1e-9, "left") / len(t)
-    return float(t[p_ge <= alpha].min())
+    p_ge = (len(t) - np.searchsorted(t, t - 1e-9, "left")) / len(t)  # a count ratio: 1 - k/n put an exact 6/120 above 0.05
+    called = t[p_ge <= alpha]
+    return float(called.min()) if called.size else math.nan  # nan: no ordering of these tier codes reaches alpha
 
 
 def taub_rows(x: tuple[float, ...], Y: np.ndarray) -> np.ndarray:
@@ -390,7 +411,23 @@ def score(data: dict[str, Any], P: dict[str, Any], dropped: dict[str, Any], key:
               for m in R["readings"] if readable.get(m)}  # fmt: skip
         out[s] = {"readability": info, "means": means, "hope1": h1, "hope2": hope2(means, readable, R, s.split("_")[0])}
         out[s]["unreadable"] = {m: "no information (between-task spread not above seed spread)" for m in R["readings"] if not readable.get(m)}
+        out[s]["amendment10"] = {r: amendment10(tiers[r], means) for r in tiers}
     return out
+
+
+# redteam-lead's caveat 1 (2026-11-23, after scoring; descriptive, not a filed rule): the effective rank's Hope 1 within
+# the continued-text tasks of the wide KL 'hi' set, so a label-against-text format effect cannot carry it. "text8" is the
+# lead's list (summary is a prompt task: article opening, then its highlight); "lm7" drops it, leaving the lm_task builds.
+WITHIN_TEXT = {"text8": ("arxiv", "lower", "french", "spanish", "german", "summary", "swahili", "yoruba"),
+               "lm7": ("arxiv", "lower", "french", "spanish", "german", "swahili", "yoruba")}  # fmt: skip
+
+
+def within_text(wide: dict[str, Any], P: dict[str, Any], m: str = "erank") -> dict[str, Any]:
+    """hope1 (filed statistics, unchanged) on each WITHIN_TEXT subset of the wide KL 'hi' set, per joint rater."""
+    R, s, tiers = P["rules"], wide["kl_hi"], raters(P, "raters_wide")
+    oriented = {t: R["orientation"][m] * v for t, v in s["means"][m].items()}
+    return {k: {r: hope1({t: tier[t] for t in ts if t in tier}, oriented, s["means"]["prior"], R) for r, tier in tiers.items()}
+            for k, ts in WITHIN_TEXT.items()}  # fmt: skip
 
 
 def show(s: str, o: dict[str, Any]) -> None:
@@ -402,6 +439,10 @@ def show(s: str, o: dict[str, Any]) -> None:
         print(f"[{s}] {m}: " + "; ".join(f"{r} tau {g(v, 'tau'):.3f} p {g(v, 'p_perm'):.3f} crit {g(v, 'critical_tau'):.3f} prior {g(v, 'tau_prior'):.3f} "
                                          f"partial {g(v, 'tau_partial_prior'):.3f} p {g(v, 'p_partial'):.3f}: {v['call']}" for r, v in by.items()))
     print(f"[{s}] unreadable: {o['unreadable']}")
+    a = o["amendment10"]["consensus"]
+    print(f"[{s}] Amendment 10: E_b's tau with KL across {len(a['tasks_kl'])} tasks {a['tau_E_b_kl']:.3f}; E_b's consensus tau {a['tau']:.3f}, "
+          f"partial on KL {a['partial_kl']:.3f}, on the prior {a['partial_prior']:.3f} ({len(a['tasks'])} tasks; " + "; ".join(
+          f"{r} partial KL {v['partial_kl']:.3f} prior {v['partial_prior']:.3f}" for r, v in o["amendment10"].items() if r != "consensus") + ")")  # fmt: skip
 
 
 def main() -> None:
@@ -416,6 +457,7 @@ def main() -> None:
         if not P.get("raters_wide"):
             sys.exit("raters_wide are not filed in predictions.json: the wide set is not scored without them")
         out["wide"] = score(gather(wide), P, drops(wide), "raters_wide")
+        out["wide"]["within_text"] = within_text(out["wide"], P)  # descriptive, beside the pooled call
     (res / "summary.json").write_text(json.dumps(out, indent=1, default=str))
     for s in SETS:
         if isinstance(out[s], dict):
@@ -429,6 +471,8 @@ def main() -> None:
     for s in SETS:
         if isinstance(out.get("wide", {}).get(s), dict):
             show("wide " + s, out["wide"][s])
+    if isinstance(a := out.get("wide", {}).get("kl_hi"), dict):  # Amendment 10's headline: KL is matched, so its residual spread is the check
+        print(f"HEADLINE wide kl_hi: E_b's Kendall tau with KL across tasks {a['amendment10']['consensus']['tau_E_b_kl']:.3f}")
     print(f"wrote {res / 'summary.json'}")
 
 

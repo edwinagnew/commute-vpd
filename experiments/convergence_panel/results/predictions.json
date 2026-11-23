@@ -486,6 +486,13 @@
       "critical_tau_b": {"kl_hi": 0.4227, "kl_lo": 0.7454, "size_hi": 0.3662, "size_lo": 0.3662},
       "power_at_0.3": {"kl_hi": 0.328, "kl_lo": 0.132, "size_hi": 0.402, "size_lo": 0.402},
       "approved": "whip-lead 2026-11-23 00:10 (message), user away"
+    },
+    {
+      "date": "2026-11-23",
+      "what": "Amendment 10: two reports added for E_b on the wide set, and E273's |K| rule, filed before any E_b state was read. (a) score.py's `amendment10`: E_b's Kendall tau-b with each rater's tiers and the consensus, partialled on KL and, separately, on the prior (`partial_tau`, unconditional on common support), descriptive, no call. (b) E_b's own Kendall tau-b with KL across the tasks with both means, printed as a headline line for wide kl_hi: KL is matched by design, so E_b moving with the residual KL spread inside the set is the check. (c) A state whose |K| (eb.py `size_K`) is under 100 is printed as \"K too small to read\" with its E_b and |K|, and its E_b is missing (nan) in score.py's E_b reading (E273's rule, whip-lead 00:50, reports/plans/2026-11-23_plan_realtext-eb-over-k.md guard 5). No filed rule, threshold, call or prediction changes; hope 1's E_b call is computed as filed, on the states (c) leaves.",
+      "why": "E273 found E_b over K reversed the built direction on both readable real-text pairs, and redteam-lead suspects E_b tracks output change; (a) and (b) say whether the wide set's E_b ordering is KL's in disguise. (c) keeps a sampled K too small to read out of the reading, as E273 does.",
+      "k_min": 100,
+      "approved": "whip-lead 2026-11-23 02:10 (|K| rule) and 02:20 (Amendment 10), messages, user away"
     }
   ]
 }

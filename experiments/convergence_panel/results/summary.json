@@ -1,0 +1,4497 @@
+{
+ "experiment": "E272, E272 (convergence_panel)",
+ "dropped": {
+  "written": 1795419977.6431756,
+  "set": "nine",
+  "dropped": {},
+  "kept": {
+   "kl_hi": [
+    "conll",
+    "french",
+    "lower",
+    "squad",
+    "yoruba"
+   ],
+   "kl_lo": [
+    "french",
+    "lower",
+    "yoruba"
+   ],
+   "size_hi": [
+    "british",
+    "conll",
+    "french",
+    "lower",
+    "squad",
+    "topic",
+    "yoruba"
+   ],
+   "size_lo": [
+    "british",
+    "conll",
+    "french",
+    "lower",
+    "squad",
+    "topic",
+    "yoruba"
+   ],
+   "mix": [],
+   "trajectory": [
+    "lower",
+    "yoruba"
+   ]
+  },
+  "out": {
+   "kl_hi": {
+    "pile": "seeds ['0', '1', '2'] have no state within 10% of 0.256 with held gain >= 0.08073",
+    "code": "seeds ['0', '1', '2'] have no state within 10% of 0.256 with held gain >= 0.04938",
+    "british": "seeds ['0', '1', '2'] have no state within 10% of 0.256 with held gain >= 0.1355",
+    "topic": "seeds ['2'] have no state within 10% of 0.256 with held gain >= 0.3885"
+   },
+   "kl_lo": {
+    "pile": "seeds ['0', '1', '2'] have no state within 10% of 0.128 with held gain >= 0.08073",
+    "code": "seeds ['0', '1', '2'] have no state within 10% of 0.128 with held gain >= 0.04938",
+    "british": "seeds ['0', '1', '2'] have no state within 10% of 0.128 with held gain >= 0.1355",
+    "topic": "seeds ['0', '1', '2'] have no state within 10% of 0.128 with held gain >= 0.3885",
+    "squad": "seeds ['1'] have no state within 10% of 0.128 with held gain >= 0.09175",
+    "conll": "seeds ['1'] have no state within 10% of 0.128 with held gain >= 0.2356"
+   },
+   "size_hi": {
+    "pile": "seeds ['0', '1', '2'] have no state within 10% of 0.01131 with held gain >= 0.08073",
+    "code": "seeds ['0', '1', '2'] have no state within 10% of 0.01131 with held gain >= 0.04938"
+   },
+   "size_lo": {
+    "pile": "seeds ['0', '1', '2'] have no state within 10% of 0.005657 with held gain >= 0.08073",
+    "code": "seeds ['0', '1', '2'] have no state within 10% of 0.005657 with held gain >= 0.04938"
+   }
+  }
+ },
+ "consensus_tier": {
+  "conll": 2.0,
+  "squad": 1.5,
+  "code": 3.0,
+  "topic": 2.5,
+  "french": 2.0,
+  "yoruba": 1.0,
+  "pile": 3.0,
+  "british": 3.0,
+  "lower": 3.0
+ },
+ "kl_hi": {
+  "readability": {
+   "share": {
+    "between_sd": 0.2830061753368599,
+    "within_sd": 0.04117679529281005,
+    "readable": true,
+    "missing": []
+   },
+   "steering": {
+    "between_sd": 0.20370132164724,
+    "within_sd": 0.06436746242407372,
+    "readable": true,
+    "missing": []
+   },
+   "erank": {
+    "between_sd": 106.17682629074156,
+    "within_sd": 4.523992652137914,
+    "readable": true,
+    "missing": []
+   },
+   "E_b": {
+    "between_sd": NaN,
+    "within_sd": NaN,
+    "readable": false,
+    "missing": [
+     "conll",
+     "french",
+     "lower",
+     "squad",
+     "yoruba"
+    ]
+   },
+   "kl": {
+    "between_sd": 0.008708616045086572,
+    "within_sd": 0.005040186614960156,
+    "readable": true,
+    "missing": []
+   },
+   "adl": {
+    "between_sd": 0.11055228083586044,
+    "within_sd": 0.01909804058927215,
+    "readable": true,
+    "missing": []
+   },
+   "size": {
+    "between_sd": 0.008595529810185135,
+    "within_sd": 0.0007912340934664624,
+    "readable": true,
+    "missing": []
+   },
+   "prior": {
+    "between_sd": 2.37097717722567,
+    "within_sd": 0.0,
+    "readable": true,
+    "missing": []
+   }
+  },
+  "means": {
+   "share": {
+    "conll": 0.6492274899615422,
+    "french": 0.5741947473652019,
+    "lower": 0.7664936322707829,
+    "squad": 1.3017748355106302,
+    "yoruba": 0.5148170762510338
+   },
+   "steering": {
+    "conll": 0.9570469751077155,
+    "french": 1.3621280262903561,
+    "lower": 0.7426184151152837,
+    "squad": 0.9108098883416796,
+    "yoruba": 1.0175680563658471
+   },
+   "erank": {
+    "conll": 288.6016332183125,
+    "french": 549.7214507076804,
+    "lower": 600.5081085723868,
+    "squad": 459.8616892142513,
+    "yoruba": 483.2551228848574
+   },
+   "E_b": {},
+   "kl": {
+    "conll": 0.2630978839789047,
+    "french": 0.25413073449592666,
+    "lower": 0.24207228288936866,
+    "squad": 0.23896364769383407,
+    "yoruba": 0.2524569873955234
+   },
+   "adl": {
+    "conll": 0.049162985072957195,
+    "french": 0.3250969127042925,
+    "lower": 0.051974292657064,
+    "squad": 0.03357069594187971,
+    "yoruba": 0.06456711076111367
+   },
+   "size": {
+    "conll": 0.0047081047761569255,
+    "french": 0.004066081934580101,
+    "lower": 0.018217157830570496,
+    "squad": 0.00300024941176848,
+    "yoruba": 0.02388096832086331
+   },
+   "prior": {
+    "conll": -11.843995075225829,
+    "french": -12.911266333580016,
+    "lower": -6.755572450637818,
+    "squad": -8.942493050575257,
+    "yoruba": -12.521292385101319
+   }
+  },
+  "hope1": {
+   "share": {
+    "opus_blind": {
+     "tasks": [
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "yoruba"
+     ],
+     "tau": 0.22360679774997894,
+     "p_perm": 0.40475952404759524,
+     "interval90": [
+      -0.8660254037844387,
+      0.9999999999999999
+     ],
+     "critical_tau": 0.8944271909999159,
+     "tau_prior": 0.22360679774997894,
+     "power_raw": {
+      "0.3": 0.1096,
+      "0.5": 0.2287
+     },
+     "leave_one_out": [
+      -0.18257418583505539,
+      0.912870929175277
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "no call"
+    },
+    "gpt_blind": {
+     "tasks": [
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "yoruba"
+     ],
+     "tau": 0.5976143046671968,
+     "p_perm": 0.1493850614938506,
+     "interval90": [
+      0.0,
+      1.0
+     ],
+     "critical_tau": 0.8366600265340756,
+     "tau_prior": 0.5976143046671968,
+     "power_raw": {
+      "0.3": 0.1614,
+      "0.5": 0.31865
+     },
+     "leave_one_out": [
+      0.2357022603955159,
+      0.912870929175277
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "no call"
+    },
+    "consensus": {
+     "tasks": [
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "yoruba"
+     ],
+     "tau": 0.31622776601683794,
+     "p_perm": 0.3244675532446755,
+     "interval90": [
+      -0.8660254037844387,
+      1.0
+     ],
+     "critical_tau": 0.9486832980505138,
+     "tau_prior": 0.31622776601683794,
+     "power_raw": {
+      "0.3": 0.0598,
+      "0.5": 0.13445
+     },
+     "leave_one_out": [
+      -0.18257418583505539,
+      0.912870929175277
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "no call"
+    }
+   },
+   "steering": {
+    "opus_blind": {
+     "tasks": [
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "yoruba"
+     ],
+     "tau": -0.22360679774997894,
+     "p_perm": 0.7614238576142386,
+     "interval90": [
+      -0.9999999999999999,
+      0.8660254037844387
+     ],
+     "critical_tau": 0.8944271909999159,
+     "tau_prior": 0.22360679774997894,
+     "power_raw": {
+      "0.3": 0.1096,
+      "0.5": 0.2287
+     },
+     "leave_one_out": [
+      -0.5477225575051662,
+      0.4082482904638631
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "not positive"
+    },
+    "gpt_blind": {
+     "tasks": [
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "yoruba"
+     ],
+     "tau": -0.5976143046671968,
+     "p_perm": 0.947005299470053,
+     "interval90": [
+      -1.0,
+      0.0
+     ],
+     "critical_tau": 0.8366600265340756,
+     "tau_prior": 0.5976143046671968,
+     "power_raw": {
+      "0.3": 0.1614,
+      "0.5": 0.31865
+     },
+     "leave_one_out": [
+      -0.912870929175277,
+      -0.2357022603955159
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "not positive"
+    },
+    "consensus": {
+     "tasks": [
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "yoruba"
+     ],
+     "tau": -0.31622776601683794,
+     "p_perm": 0.8315168483151685,
+     "interval90": [
+      -1.0,
+      0.8660254037844387
+     ],
+     "critical_tau": 0.9486832980505138,
+     "tau_prior": 0.31622776601683794,
+     "power_raw": {
+      "0.3": 0.0598,
+      "0.5": 0.13445
+     },
+     "leave_one_out": [
+      -0.6666666666666669,
+      0.18257418583505539
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "not positive"
+    }
+   },
+   "erank": {
+    "opus_blind": {
+     "tasks": [
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "yoruba"
+     ],
+     "tau": 0.44721359549995787,
+     "p_perm": 0.2400759924007599,
+     "interval90": [
+      -0.7071067811865475,
+      1.0
+     ],
+     "critical_tau": 0.8944271909999159,
+     "tau_prior": 0.22360679774997894,
+     "power_raw": {
+      "0.3": 0.1096,
+      "0.5": 0.2287
+     },
+     "leave_one_out": [
+      0.0,
+      0.912870929175277
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "no call"
+    },
+    "gpt_blind": {
+     "tasks": [
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "yoruba"
+     ],
+     "tau": 0.35856858280031806,
+     "p_perm": 0.3057694230576942,
+     "interval90": [
+      -0.7559289460184544,
+      1.0
+     ],
+     "critical_tau": 0.8366600265340756,
+     "tau_prior": 0.5976143046671968,
+     "power_raw": {
+      "0.3": 0.1614,
+      "0.5": 0.31865
+     },
+     "leave_one_out": [
+      -0.2357022603955159,
+      0.7071067811865477
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "no call"
+    },
+    "consensus": {
+     "tasks": [
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "yoruba"
+     ],
+     "tau": 0.31622776601683794,
+     "p_perm": 0.32686731326867313,
+     "interval90": [
+      -0.9999999999999999,
+      1.0
+     ],
+     "critical_tau": 0.9486832980505138,
+     "tau_prior": 0.31622776601683794,
+     "power_raw": {
+      "0.3": 0.0598,
+      "0.5": 0.13445
+     },
+     "leave_one_out": [
+      -0.18257418583505539,
+      0.6666666666666669
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "no call"
+    }
+   }
+  },
+  "hope2": {
+   "tasks": [
+    "conll",
+    "french",
+    "lower",
+    "squad",
+    "yoruba"
+   ],
+   "readings": [
+    "share",
+    "steering",
+    "erank"
+   ],
+   "baselines": [
+    "adl",
+    "size",
+    "prior"
+   ],
+   "W_readings": 0.1111111111111111,
+   "W_baselines": 0.08888888888888889,
+   "pairwise_tau": {
+    "share|steering": -0.6,
+    "share|erank": 0.0,
+    "share|E_b": NaN,
+    "share|kl": 0.39999999999999997,
+    "share|adl": -0.6,
+    "share|size": 0.39999999999999997,
+    "share|prior": 0.6,
+    "steering|erank": 0.0,
+    "steering|E_b": NaN,
+    "steering|kl": -0.39999999999999997,
+    "steering|adl": 0.6,
+    "steering|size": 0.0,
+    "steering|prior": -0.9999999999999999,
+    "erank|E_b": NaN,
+    "erank|kl": 0.19999999999999998,
+    "erank|adl": 0.39999999999999997,
+    "erank|size": -0.19999999999999998,
+    "erank|prior": 0.0,
+    "E_b|kl": NaN,
+    "E_b|adl": NaN,
+    "E_b|size": NaN,
+    "E_b|prior": NaN,
+    "kl|adl": -0.39999999999999997,
+    "kl|size": 0.19999999999999998,
+    "kl|prior": 0.39999999999999997,
+    "adl|size": -0.39999999999999997,
+    "adl|prior": -0.6,
+    "size|prior": 0.0
+   },
+   "mean_tau": {
+    "readings": -0.19999999999999998,
+    "baselines": -0.3333333333333333
+   },
+   "mean_abs_tau": {
+    "readings": 0.19999999999999998,
+    "baselines": 0.3333333333333333
+   },
+   "W_readings_partial_prior_size": 0.3333333333333333,
+   "null_readings": {
+    "W": 0.1111111111111111,
+    "null95": 0.6888888888888889,
+    "percentile": 0.0813
+   },
+   "null_baselines": {
+    "W": 0.08888888888888889,
+    "null95": 0.6888888888888889,
+    "percentile": 0.0558
+   },
+   "call": "no call (readings under their null)"
+  },
+  "unreadable": {
+   "E_b": "no information (between-task spread not above seed spread)"
+  }
+ },
+ "kl_lo": {
+  "readability": {
+   "share": {
+    "between_sd": 0.19366749692693577,
+    "within_sd": 0.032976846492961245,
+    "readable": true,
+    "missing": [
+     "french"
+    ]
+   },
+   "steering": {
+    "between_sd": 0.4109080119547062,
+    "within_sd": 0.06241398660773584,
+    "readable": true,
+    "missing": [
+     "french"
+    ]
+   },
+   "erank": {
+    "between_sd": 66.73103094936945,
+    "within_sd": 2.3437269995394163,
+    "readable": true,
+    "missing": []
+   },
+   "E_b": {
+    "between_sd": NaN,
+    "within_sd": NaN,
+    "readable": false,
+    "missing": [
+     "french",
+     "lower",
+     "yoruba"
+    ]
+   },
+   "kl": {
+    "between_sd": 0.0027810501551659432,
+    "within_sd": 0.002841295271352182,
+    "readable": false,
+    "missing": []
+   },
+   "adl": {
+    "between_sd": 0.03112364694992288,
+    "within_sd": 0.014441346527152928,
+    "readable": true,
+    "missing": [
+     "french"
+    ]
+   },
+   "size": {
+    "between_sd": 0.002126269864269888,
+    "within_sd": 0.0006196866659818254,
+    "readable": true,
+    "missing": []
+   },
+   "prior": {
+    "between_sd": 2.814410797300483,
+    "within_sd": 0.0,
+    "readable": true,
+    "missing": []
+   }
+  },
+  "means": {
+   "share": {
+    "lower": 0.8664886094806481,
+    "yoruba": 0.47915361562677655
+   },
+   "steering": {
+    "lower": 0.9056896882493138,
+    "yoruba": 1.7275057121587263
+   },
+   "erank": {
+    "french": 564.2324296167852,
+    "lower": 582.4661049092743,
+    "yoruba": 432.6748665142023
+   },
+   "E_b": {},
+   "kl": {
+    "french": 0.12379446740221474,
+    "lower": 0.12936863135920915,
+    "yoruba": 0.1231902956331465
+   },
+   "adl": {
+    "lower": 0.14029500873745593,
+    "yoruba": 0.2025423026373017
+   },
+   "size": {
+    "french": 0.0027502952802333502,
+    "lower": 0.0071567171115916595,
+    "yoruba": 0.0073581248546101706
+   },
+   "prior": {
+    "french": -12.911266333580016,
+    "lower": -6.755572450637818,
+    "yoruba": -12.521292385101319
+   }
+  },
+  "hope1": {
+   "share": {
+    "opus_blind": {
+     "call": "too few tasks (2 < 5)",
+     "tasks": [
+      "lower",
+      "yoruba"
+     ]
+    },
+    "gpt_blind": {
+     "call": "too few tasks (2 < 5)",
+     "tasks": [
+      "lower",
+      "yoruba"
+     ]
+    },
+    "consensus": {
+     "call": "too few tasks (2 < 5)",
+     "tasks": [
+      "lower",
+      "yoruba"
+     ]
+    }
+   },
+   "steering": {
+    "opus_blind": {
+     "call": "too few tasks (2 < 5)",
+     "tasks": [
+      "lower",
+      "yoruba"
+     ]
+    },
+    "gpt_blind": {
+     "call": "too few tasks (2 < 5)",
+     "tasks": [
+      "lower",
+      "yoruba"
+     ]
+    },
+    "consensus": {
+     "call": "too few tasks (2 < 5)",
+     "tasks": [
+      "lower",
+      "yoruba"
+     ]
+    }
+   },
+   "erank": {
+    "opus_blind": {
+     "call": "too few tasks (3 < 5)",
+     "tasks": [
+      "french",
+      "lower",
+      "yoruba"
+     ]
+    },
+    "gpt_blind": {
+     "call": "too few tasks (3 < 5)",
+     "tasks": [
+      "french",
+      "lower",
+      "yoruba"
+     ]
+    },
+    "consensus": {
+     "call": "too few tasks (3 < 5)",
+     "tasks": [
+      "french",
+      "lower",
+      "yoruba"
+     ]
+    }
+   }
+  },
+  "hope2": {
+   "tasks": [
+    "lower",
+    "yoruba"
+   ],
+   "readings": [
+    "share",
+    "steering",
+    "erank"
+   ],
+   "baselines": [
+    "adl",
+    "size",
+    "prior"
+   ],
+   "W_readings": 0.1111111111111111,
+   "W_baselines": 0.1111111111111111,
+   "pairwise_tau": {
+    "share|steering": -1.0,
+    "share|erank": 1.0,
+    "share|E_b": NaN,
+    "share|kl": -1.0,
+    "share|adl": -1.0,
+    "share|size": 1.0,
+    "share|prior": 1.0,
+    "steering|erank": -1.0,
+    "steering|E_b": NaN,
+    "steering|kl": 1.0,
+    "steering|adl": 1.0,
+    "steering|size": -1.0,
+    "steering|prior": -1.0,
+    "erank|E_b": NaN,
+    "erank|kl": -1.0,
+    "erank|adl": -1.0,
+    "erank|size": 0.33333333333333337,
+    "erank|prior": 0.33333333333333337,
+    "E_b|kl": NaN,
+    "E_b|adl": NaN,
+    "E_b|size": NaN,
+    "E_b|prior": NaN,
+    "kl|adl": 1.0,
+    "kl|size": -0.33333333333333337,
+    "kl|prior": -0.33333333333333337,
+    "adl|size": -1.0,
+    "adl|prior": -1.0,
+    "size|prior": -0.33333333333333337
+   },
+   "mean_tau": {
+    "readings": -0.3333333333333333,
+    "baselines": -0.7777777777777778
+   },
+   "mean_abs_tau": {
+    "readings": 1.0,
+    "baselines": 0.7777777777777778
+   },
+   "call": "no call: 2 tasks, 3 readable readings, 3 readable baselines"
+  },
+  "unreadable": {
+   "E_b": "no information (between-task spread not above seed spread)"
+  }
+ },
+ "size_hi": {
+  "readability": {
+   "share": {
+    "between_sd": 0.3258545157459548,
+    "within_sd": 0.020401146455340784,
+    "readable": true,
+    "missing": []
+   },
+   "steering": {
+    "between_sd": 0.523019893232267,
+    "within_sd": 0.03911888695209108,
+    "readable": true,
+    "missing": []
+   },
+   "erank": {
+    "between_sd": 105.41907092733241,
+    "within_sd": 2.2539370527649454,
+    "readable": true,
+    "missing": []
+   },
+   "E_b": {
+    "between_sd": NaN,
+    "within_sd": NaN,
+    "readable": false,
+    "missing": [
+     "british",
+     "conll",
+     "french",
+     "lower",
+     "squad",
+     "topic",
+     "yoruba"
+    ]
+   },
+   "kl": {
+    "between_sd": 0.7996281495020497,
+    "within_sd": 0.2355054548616996,
+    "readable": true,
+    "missing": []
+   },
+   "adl": {
+    "between_sd": 0.06437678867620744,
+    "within_sd": 0.04478394289574587,
+    "readable": true,
+    "missing": []
+   },
+   "size": {
+    "between_sd": 2.3752692258225528e-05,
+    "within_sd": 8.23999999108635e-06,
+    "readable": true,
+    "missing": []
+   },
+   "prior": {
+    "between_sd": 4.838299892226851,
+    "within_sd": 0.0,
+    "readable": true,
+    "missing": []
+   }
+  },
+  "means": {
+   "share": {
+    "british": 0.17592047641229328,
+    "conll": 0.5895653061509637,
+    "french": 0.5553029686341219,
+    "lower": 0.8312249034953957,
+    "squad": 1.1790596416472723,
+    "topic": 0.19679123746501212,
+    "yoruba": 0.4755566931092057
+   },
+   "steering": {
+    "british": 1.7398000400074267,
+    "conll": 0.7384352834577745,
+    "french": 1.0541260212344403,
+    "lower": 0.8169288282260095,
+    "squad": 0.5983676467747108,
+    "topic": 0.06626643971092826,
+    "yoruba": 1.511551105324321
+   },
+   "erank": {
+    "british": 608.3853046890213,
+    "conll": 315.95826836729714,
+    "french": 539.0992504000626,
+    "lower": 590.4890366714736,
+    "squad": 469.7234740738099,
+    "topic": 348.07574224587216,
+    "yoruba": 441.189406468139
+   },
+   "E_b": {},
+   "kl": {
+    "british": 0.06373045060036714,
+    "conll": 1.196262486586123,
+    "french": 2.2440048891837496,
+    "lower": 0.17677440239900047,
+    "squad": 0.7225154898160505,
+    "topic": 1.7818486658154207,
+    "yoruba": 0.15809516148415007
+   },
+   "adl": {
+    "british": 0.14462032596080637,
+    "conll": 0.04834403177639132,
+    "french": 0.2327633135323772,
+    "lower": 0.09556621485882037,
+    "squad": 0.09538313204504761,
+    "topic": 0.02117414447790793,
+    "yoruba": 0.13507880987803825
+   },
+   "size": {
+    "british": 0.011335339090304966,
+    "conll": 0.011348002029893833,
+    "french": 0.011337306731576258,
+    "lower": 0.011350122764149276,
+    "squad": 0.011342131964470705,
+    "topic": 0.011322474226672435,
+    "yoruba": 0.011402632957525402
+   },
+   "prior": {
+    "british": -7.1475960083007815,
+    "conll": -11.843995075225829,
+    "french": -12.911266333580016,
+    "lower": -6.755572450637818,
+    "squad": -8.942493050575257,
+    "topic": 2.0969101923692506,
+    "yoruba": -12.521292385101319
+   }
+  },
+  "hope1": {
+   "share": {
+    "opus_blind": {
+     "tasks": [
+      "british",
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "topic",
+      "yoruba"
+     ],
+     "tau": -0.2182178902359924,
+     "p_perm": 0.7801219878012199,
+     "interval90": [
+      -0.881917103688197,
+      0.6063390625908325
+     ],
+     "critical_tau": 0.6546536707079772,
+     "tau_prior": 0.3273268353539886,
+     "power_raw": {
+      "0.3": 0.1699,
+      "0.5": 0.38755
+     },
+     "leave_one_out": [
+      -0.5449492609130661,
+      0.0778498944161523
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "not positive"
+    },
+    "gpt_blind": {
+     "tasks": [
+      "british",
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "topic",
+      "yoruba"
+     ],
+     "tau": -0.16903085094570333,
+     "p_perm": 0.7346265373462654,
+     "interval90": [
+      -0.7947194142390263,
+      0.5470292333571412
+     ],
+     "critical_tau": 0.6197797868009122,
+     "tau_prior": 0.7324670207647144,
+     "power_raw": {
+      "0.3": 0.20995,
+      "0.5": 0.44705
+     },
+     "leave_one_out": [
+      -0.43033148291193524,
+      0.0778498944161523
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "not positive"
+    },
+    "consensus": {
+     "tasks": [
+      "british",
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "topic",
+      "yoruba"
+     ],
+     "tau": -0.2503130871608794,
+     "p_perm": 0.811018898110189,
+     "interval90": [
+      -0.9701425001453319,
+      0.4472135954999579
+     ],
+     "critical_tau": 0.6508140266182866,
+     "tau_prior": 0.45056355688958294,
+     "power_raw": {
+      "0.3": 0.1581,
+      "0.5": 0.37115
+     },
+     "leave_one_out": [
+      -0.5520524474738834,
+      0.0
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "not positive"
+    }
+   },
+   "steering": {
+    "opus_blind": {
+     "tasks": [
+      "british",
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "topic",
+      "yoruba"
+     ],
+     "tau": 0.2182178902359924,
+     "p_perm": 0.33266673332666735,
+     "interval90": [
+      -0.5085319960526744,
+      0.8043996665398437
+     ],
+     "critical_tau": 0.6546536707079772,
+     "tau_prior": 0.3273268353539886,
+     "power_raw": {
+      "0.3": 0.1699,
+      "0.5": 0.38755
+     },
+     "leave_one_out": [
+      -0.0778498944161523,
+      0.5449492609130661
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "no call"
+    },
+    "gpt_blind": {
+     "tasks": [
+      "british",
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "topic",
+      "yoruba"
+     ],
+     "tau": -0.16903085094570333,
+     "p_perm": 0.7351264873512648,
+     "interval90": [
+      -0.881917103688197,
+      0.5443310539518175
+     ],
+     "critical_tau": 0.6197797868009122,
+     "tau_prior": 0.7324670207647144,
+     "power_raw": {
+      "0.3": 0.20995,
+      "0.5": 0.44705
+     },
+     "leave_one_out": [
+      -0.5449492609130661,
+      0.08606629658238703
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "not positive"
+    },
+    "consensus": {
+     "tasks": [
+      "british",
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "topic",
+      "yoruba"
+     ],
+     "tau": 0.05006261743217588,
+     "p_perm": 0.5042495750424958,
+     "interval90": [
+      -0.6488856845230502,
+      0.7009719363174293
+     ],
+     "critical_tau": 0.6508140266182866,
+     "tau_prior": 0.45056355688958294,
+     "power_raw": {
+      "0.3": 0.1581,
+      "0.5": 0.37115
+     },
+     "leave_one_out": [
+      -0.2760262237369417,
+      0.3580574370197165
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "no call"
+    }
+   },
+   "erank": {
+    "opus_blind": {
+     "tasks": [
+      "british",
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "topic",
+      "yoruba"
+     ],
+     "tau": 0.4364357804719848,
+     "p_perm": 0.14608539146085392,
+     "interval90": [
+      -0.18786728732554486,
+      0.8944271909999159
+     ],
+     "critical_tau": 0.6546536707079772,
+     "tau_prior": 0.3273268353539886,
+     "power_raw": {
+      "0.3": 0.1699,
+      "0.5": 0.38755
+     },
+     "leave_one_out": [
+      0.2335496832484569,
+      0.5962847939999439
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "no call"
+    },
+    "gpt_blind": {
+     "tasks": [
+      "british",
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "topic",
+      "yoruba"
+     ],
+     "tau": 0.3944053188733077,
+     "p_perm": 0.1755824417558244,
+     "interval90": [
+      -0.23570226039551587,
+      0.8944271909999159
+     ],
+     "critical_tau": 0.6197797868009122,
+     "tau_prior": 0.7324670207647144,
+     "power_raw": {
+      "0.3": 0.20995,
+      "0.5": 0.44705
+     },
+     "leave_one_out": [
+      0.2335496832484569,
+      0.7006490497453707
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "no call"
+    },
+    "consensus": {
+     "tasks": [
+      "british",
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "topic",
+      "yoruba"
+     ],
+     "tau": 0.45056355688958294,
+     "p_perm": 0.11888811118888111,
+     "interval90": [
+      -0.12598815766974242,
+      0.9701425001453319
+     ],
+     "critical_tau": 0.6508140266182866,
+     "tau_prior": 0.45056355688958294,
+     "power_raw": {
+      "0.3": 0.1581,
+      "0.5": 0.37115
+     },
+     "leave_one_out": [
+      0.2760262237369417,
+      0.6445033866354897
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "no call"
+    }
+   }
+  },
+  "hope2": {
+   "tasks": [
+    "british",
+    "conll",
+    "french",
+    "lower",
+    "squad",
+    "topic",
+    "yoruba"
+   ],
+   "readings": [
+    "share",
+    "steering",
+    "erank"
+   ],
+   "baselines": [
+    "kl",
+    "adl",
+    "prior"
+   ],
+   "W_readings": 0.3492063492063492,
+   "W_baselines": 0.30158730158730157,
+   "pairwise_tau": {
+    "share|steering": -0.4285714285714286,
+    "share|erank": -0.04761904761904762,
+    "share|E_b": NaN,
+    "share|kl": -0.14285714285714288,
+    "share|adl": -0.14285714285714288,
+    "share|size": -0.33333333333333337,
+    "share|prior": -0.04761904761904762,
+    "steering|erank": 0.4285714285714286,
+    "steering|E_b": NaN,
+    "steering|kl": 0.5238095238095238,
+    "steering|adl": 0.7142857142857143,
+    "steering|size": -0.23809523809523814,
+    "steering|prior": -0.33333333333333337,
+    "erank|E_b": NaN,
+    "erank|kl": 0.33333333333333337,
+    "erank|adl": 0.5238095238095238,
+    "erank|size": 0.14285714285714288,
+    "erank|prior": 0.04761904761904762,
+    "E_b|kl": NaN,
+    "E_b|adl": NaN,
+    "E_b|size": NaN,
+    "E_b|prior": NaN,
+    "kl|adl": 0.4285714285714286,
+    "kl|size": -0.33333333333333337,
+    "kl|prior": 0.14285714285714288,
+    "adl|size": -0.14285714285714288,
+    "adl|prior": -0.4285714285714286,
+    "size|prior": 0.33333333333333337
+   },
+   "mean_tau": {
+    "readings": -0.015873015873015876,
+    "baselines": 0.04761904761904762
+   },
+   "mean_abs_tau": {
+    "readings": 0.3015873015873016,
+    "baselines": 0.3333333333333333
+   },
+   "W_readings_partial_prior_size": 0.35714285714285715,
+   "null_readings": {
+    "W": 0.3492063492063492,
+    "null95": 0.6111111111111112,
+    "percentile": 0.5657
+   },
+   "null_baselines": {
+    "W": 0.30158730158730157,
+    "null95": 0.6111111111111112,
+    "percentile": 0.4533
+   },
+   "call": "no call (readings under their null)"
+  },
+  "unreadable": {
+   "E_b": "no information (between-task spread not above seed spread)"
+  }
+ },
+ "size_lo": {
+  "readability": {
+   "share": {
+    "between_sd": 0.32347030728032417,
+    "within_sd": 0.037441039992837134,
+    "readable": true,
+    "missing": [
+     "british",
+     "yoruba"
+    ]
+   },
+   "steering": {
+    "between_sd": 0.3586354753049402,
+    "within_sd": 0.05118998710314424,
+    "readable": true,
+    "missing": [
+     "british",
+     "yoruba"
+    ]
+   },
+   "erank": {
+    "between_sd": 116.57191306184404,
+    "within_sd": 2.615276627003599,
+    "readable": true,
+    "missing": []
+   },
+   "E_b": {
+    "between_sd": NaN,
+    "within_sd": NaN,
+    "readable": false,
+    "missing": [
+     "british",
+     "conll",
+     "french",
+     "lower",
+     "squad",
+     "topic",
+     "yoruba"
+    ]
+   },
+   "kl": {
+    "between_sd": 0.26898008557174274,
+    "within_sd": 0.04945352133978132,
+    "readable": true,
+    "missing": []
+   },
+   "adl": {
+    "between_sd": 0.11577617112678983,
+    "within_sd": 0.1453767924680385,
+    "readable": false,
+    "missing": [
+     "british",
+     "yoruba"
+    ]
+   },
+   "size": {
+    "between_sd": 2.5872211013906532e-05,
+    "within_sd": 2.5337845163699356e-05,
+    "readable": true,
+    "missing": []
+   },
+   "prior": {
+    "between_sd": 4.838299892226851,
+    "within_sd": 0.0,
+    "readable": true,
+    "missing": []
+   }
+  },
+  "means": {
+   "share": {
+    "conll": 0.5718582909505846,
+    "french": 0.5711154968318599,
+    "lower": 0.9215791967018411,
+    "squad": 1.2220112726484766,
+    "topic": 0.2881071260447136
+   },
+   "steering": {
+    "conll": 0.882693195687458,
+    "french": 1.3062999097825052,
+    "lower": 0.9614692710363876,
+    "squad": 0.762920578499149,
+    "topic": 0.2039904757967191
+   },
+   "erank": {
+    "british": 595.1862804040484,
+    "conll": 279.25448582576195,
+    "french": 542.9300622738389,
+    "lower": 579.9000027283035,
+    "squad": 434.93040983780253,
+    "topic": 311.6155531393172,
+    "yoruba": 437.9020211959412
+   },
+   "E_b": {},
+   "kl": {
+    "british": 0.048790992825408386,
+    "conll": 0.42328283757636553,
+    "french": 0.5223948628358933,
+    "lower": 0.11553837606149908,
+    "squad": 0.3970643888403116,
+    "topic": 0.8622223866644544,
+    "yoruba": 0.10272494297667341
+   },
+   "adl": {
+    "conll": 0.30583355731499473,
+    "french": 0.29543746566227114,
+    "lower": 0.18629004844263766,
+    "squad": 0.07144784077374296,
+    "topic": 0.018320147502595606
+   },
+   "size": {
+    "british": 0.005737612823214469,
+    "conll": 0.0057307520561215575,
+    "french": 0.0057353887807043,
+    "lower": 0.005712695596618622,
+    "squad": 0.005691140176145491,
+    "topic": 0.005764403241673119,
+    "yoruba": 0.005685250201348555
+   },
+   "prior": {
+    "british": -7.1475960083007815,
+    "conll": -11.843995075225829,
+    "french": -12.911266333580016,
+    "lower": -6.755572450637818,
+    "squad": -8.942493050575257,
+    "topic": 2.0969101923692506,
+    "yoruba": -12.521292385101319
+   }
+  },
+  "hope1": {
+   "share": {
+    "opus_blind": {
+     "tasks": [
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "topic"
+     ],
+     "tau": -0.11952286093343935,
+     "p_perm": 0.7025297470252975,
+     "interval90": [
+      -0.9258200997725515,
+      0.8660254037844387
+     ],
+     "critical_tau": 0.8366600265340756,
+     "tau_prior": 0.11952286093343935,
+     "power_raw": {
+      "0.3": 0.1614,
+      "0.5": 0.31865
+     },
+     "leave_one_out": [
+      -0.7071067811865477,
+      0.7071067811865477
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "not positive"
+    },
+    "gpt_blind": {
+     "tasks": [
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "topic"
+     ],
+     "tau": -0.25819888974716115,
+     "p_perm": 0.8013198680131987,
+     "interval90": [
+      -0.9258200997725515,
+      0.7559289460184544
+     ],
+     "critical_tau": NaN,
+     "tau_prior": 0.7745966692414834,
+     "power_raw": {
+      "0.3": 0.0,
+      "0.5": 0.0
+     },
+     "leave_one_out": [
+      -0.7071067811865477,
+      0.2357022603955159
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "not positive"
+    },
+    "consensus": {
+     "tasks": [
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "topic"
+     ],
+     "tau": -0.31622776601683794,
+     "p_perm": 0.8318168183181682,
+     "interval90": [
+      -1.0,
+      0.8660254037844387
+     ],
+     "critical_tau": 0.9486832980505138,
+     "tau_prior": 0.31622776601683794,
+     "power_raw": {
+      "0.3": 0.06195,
+      "0.5": 0.1358
+     },
+     "leave_one_out": [
+      -0.912870929175277,
+      0.18257418583505539
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "not positive"
+    }
+   },
+   "steering": {
+    "opus_blind": {
+     "tasks": [
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "topic"
+     ],
+     "tau": 0.35856858280031806,
+     "p_perm": 0.30056994300569945,
+     "interval90": [
+      -0.3779644730092272,
+      1.0
+     ],
+     "critical_tau": 0.8366600265340756,
+     "tau_prior": 0.11952286093343935,
+     "power_raw": {
+      "0.3": 0.1614,
+      "0.5": 0.31865
+     },
+     "leave_one_out": [
+      0.18257418583505539,
+      0.5477225575051662
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "no call"
+    },
+    "gpt_blind": {
+     "tasks": [
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "topic"
+     ],
+     "tau": -0.25819888974716115,
+     "p_perm": 0.8036196380361964,
+     "interval90": [
+      -0.9258200997725515,
+      0.7559289460184544
+     ],
+     "critical_tau": NaN,
+     "tau_prior": 0.7745966692414834,
+     "power_raw": {
+      "0.3": 0.0,
+      "0.5": 0.0
+     },
+     "leave_one_out": [
+      -0.7071067811865477,
+      0.2357022603955159
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "not positive"
+    },
+    "consensus": {
+     "tasks": [
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "topic"
+     ],
+     "tau": 0.10540925533894596,
+     "p_perm": 0.5090490950904909,
+     "interval90": [
+      -0.9258200997725515,
+      0.9999999999999999
+     ],
+     "critical_tau": 0.9486832980505138,
+     "tau_prior": 0.31622776601683794,
+     "power_raw": {
+      "0.3": 0.06195,
+      "0.5": 0.1358
+     },
+     "leave_one_out": [
+      -0.18257418583505539,
+      0.5477225575051662
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "no call"
+    }
+   },
+   "erank": {
+    "opus_blind": {
+     "tasks": [
+      "british",
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "topic",
+      "yoruba"
+     ],
+     "tau": 0.4364357804719848,
+     "p_perm": 0.14538546145385461,
+     "interval90": [
+      -0.18786728732554486,
+      0.8944271909999159
+     ],
+     "critical_tau": 0.6546536707079772,
+     "tau_prior": 0.3273268353539886,
+     "power_raw": {
+      "0.3": 0.1699,
+      "0.5": 0.38755
+     },
+     "leave_one_out": [
+      0.2335496832484569,
+      0.5962847939999439
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "no call"
+    },
+    "gpt_blind": {
+     "tasks": [
+      "british",
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "topic",
+      "yoruba"
+     ],
+     "tau": 0.2817180849095055,
+     "p_perm": 0.2655734426557344,
+     "interval90": [
+      -0.37796447300922725,
+      0.840168050416806
+     ],
+     "critical_tau": 0.6197797868009122,
+     "tau_prior": 0.7324670207647144,
+     "power_raw": {
+      "0.3": 0.20995,
+      "0.5": 0.44705
+     },
+     "leave_one_out": [
+      0.0778498944161523,
+      0.5449492609130661
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "no call"
+    },
+    "consensus": {
+     "tasks": [
+      "british",
+      "conll",
+      "french",
+      "lower",
+      "squad",
+      "topic",
+      "yoruba"
+     ],
+     "tau": 0.3504383220252312,
+     "p_perm": 0.19188081191880813,
+     "interval90": [
+      -0.29411764705882354,
+      0.8666666666666666
+     ],
+     "critical_tau": 0.6508140266182866,
+     "tau_prior": 0.45056355688958294,
+     "power_raw": {
+      "0.3": 0.1581,
+      "0.5": 0.37115
+     },
+     "leave_one_out": [
+      0.13801311186847084,
+      0.5012804118276031
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "no call"
+    }
+   }
+  },
+  "hope2": {
+   "tasks": [
+    "conll",
+    "french",
+    "lower",
+    "squad",
+    "topic"
+   ],
+   "readings": [
+    "share",
+    "steering",
+    "erank"
+   ],
+   "baselines": [
+    "kl",
+    "prior"
+   ],
+   "W_readings": 0.5555555555555556,
+   "W_baselines": 0.5,
+   "pairwise_tau": {
+    "share|steering": 0.0,
+    "share|erank": 0.19999999999999998,
+    "share|E_b": NaN,
+    "share|kl": 0.7999999999999999,
+    "share|adl": 0.0,
+    "share|size": 0.9999999999999999,
+    "share|prior": 0.0,
+    "steering|erank": 0.39999999999999997,
+    "steering|E_b": NaN,
+    "steering|kl": 0.19999999999999998,
+    "steering|adl": 0.6,
+    "steering|size": 0.0,
+    "steering|prior": -0.6,
+    "erank|E_b": NaN,
+    "erank|kl": 0.5238095238095238,
+    "erank|adl": 0.0,
+    "erank|size": -0.04761904761904762,
+    "erank|prior": -0.04761904761904762,
+    "E_b|kl": NaN,
+    "E_b|adl": NaN,
+    "E_b|size": NaN,
+    "E_b|prior": NaN,
+    "kl|adl": 0.19999999999999998,
+    "kl|size": 0.4285714285714286,
+    "kl|prior": 0.04761904761904762,
+    "adl|size": 0.0,
+    "adl|prior": -0.6,
+    "size|prior": -0.33333333333333337
+   },
+   "mean_tau": {
+    "readings": 0.19999999999999998,
+    "baselines": 0.04761904761904762
+   },
+   "mean_abs_tau": {
+    "readings": 0.19999999999999998,
+    "baselines": 0.04761904761904762
+   },
+   "W_readings_partial_prior_size": 0.6333333333333333,
+   "null_readings": {
+    "W": 0.5555555555555556,
+    "null95": 0.6888888888888889,
+    "percentile": 0.8468
+   },
+   "null_baselines": {
+    "W": 0.5,
+    "null95": 0.9,
+    "percentile": 0.4784
+   },
+   "call": "no call (readings under their null)"
+  },
+  "unreadable": {
+   "E_b": "no information (between-task spread not above seed spread)"
+  }
+ },
+ "amendment4": {
+  "mixture": {
+   "share": {
+    "fractions": [
+     0,
+     0.25,
+     0.75,
+     1
+    ],
+    "means": [
+     0.8312249034953957,
+     0.7850834289995842,
+     0.6210459979043511,
+     0.4755566931092057
+    ],
+    "critical_rho": 0.8999999999999998,
+    "expected_sign": -1,
+    "rho": NaN,
+    "rho_all_points": -0.9716254134469436,
+    "call": "no call (1 fractions missing)"
+   },
+   "steering": {
+    "fractions": [
+     0,
+     0.25,
+     0.75,
+     1
+    ],
+    "means": [
+     0.8169288282260095,
+     0.8753130462347096,
+     1.0854589697553567,
+     1.511551105324321
+    ],
+    "critical_rho": 0.8999999999999998,
+    "expected_sign": -1,
+    "rho": NaN,
+    "rho_all_points": 0.9716254134469436,
+    "call": "no call (1 fractions missing)"
+   },
+   "erank": {
+    "fractions": [
+     0,
+     0.25,
+     0.5,
+     0.75,
+     1
+    ],
+    "means": [
+     590.4890366714736,
+     565.3943270508604,
+     536.9982550211088,
+     505.01258337192803,
+     441.189406468139
+    ],
+    "critical_rho": 0.8999999999999998,
+    "expected_sign": -1,
+    "rho": -0.9999999999999999,
+    "rho_all_points": -0.9819805060619657,
+    "call": "monotone, expected sign"
+   },
+   "E_b": {
+    "fractions": [],
+    "means": [],
+    "critical_rho": 0.8999999999999998,
+    "expected_sign": -1,
+    "rho": NaN,
+    "rho_all_points": NaN,
+    "call": "no call (5 fractions missing)"
+   },
+   "kl": {
+    "fractions": [
+     0,
+     0.25,
+     0.5,
+     0.75,
+     1
+    ],
+    "means": [
+     0.17677440239900047,
+     0.1555698910310905,
+     0.14471900107538369,
+     0.13407608394196413,
+     0.15809516148415007
+    ],
+    "critical_rho": 0.8999999999999998,
+    "expected_sign": 1,
+    "rho": -0.39999999999999997,
+    "rho_all_points": -0.5128120420545821,
+    "call": "not monotone"
+   },
+   "adl": {
+    "fractions": [
+     0,
+     0.25,
+     0.75,
+     1
+    ],
+    "means": [
+     0.09556621485882037,
+     0.0687477026587726,
+     0.02776975915486545,
+     0.13507880987803825
+    ],
+    "critical_rho": 0.8999999999999998,
+    "expected_sign": -1,
+    "rho": NaN,
+    "rho_all_points": 0.12955005512625917,
+    "call": "no call (1 fractions missing)"
+   },
+   "size": {
+    "fractions": [
+     0,
+     0.25,
+     0.5,
+     0.75,
+     1
+    ],
+    "means": [
+     0.011350122764149276,
+     0.011337577017934091,
+     0.011351943238116379,
+     0.011333884829197229,
+     0.011402632957525402
+    ],
+    "critical_rho": 0.8999999999999998,
+    "expected_sign": 1,
+    "rho": 0.3,
+    "rho_all_points": 0.39279220242478624,
+    "call": "matched (not read)"
+   },
+   "prior": {
+    "fractions": [
+     0,
+     0.25,
+     0.5,
+     0.75,
+     1
+    ],
+    "means": [
+     -6.755572450637818,
+     -8.691232162475586,
+     -10.264911836624146,
+     -11.555530766487122,
+     -12.521292385101319
+    ],
+    "critical_rho": 0.8999999999999998,
+    "expected_sign": -1,
+    "rho": -0.9999999999999999,
+    "rho_all_points": -1.0,
+    "call": "monotone, expected sign"
+   }
+  },
+  "mix_match": "size_hi",
+  "mix_picks": {
+   "0": {
+    "kl": [
+     0.17018952886124908,
+     0.18504870531124856,
+     0.17508497302450376
+    ],
+    "size": [
+     0.011341146945066044,
+     0.011357869397046588,
+     0.011351351950335192
+    ]
+   },
+   "0.25": {
+    "kl": [
+     0.14546987845391332,
+     0.16096951880424326,
+     0.16027027583511488
+    ],
+    "size": [
+     0.01133707742029818,
+     0.01132945656091198,
+     0.01134619707259211
+    ]
+   },
+   "0.5": {
+    "kl": [
+     0.1466401816890351,
+     0.14264770354909873,
+     0.14486911798801724
+    ],
+    "size": [
+     0.011327794875542413,
+     0.011366570948301092,
+     0.011361463890505632
+    ]
+   },
+   "0.75": {
+    "kl": [
+     0.1397124109703433,
+     0.12869127984489098,
+     0.1338245610106581
+    ],
+    "size": [
+     0.01131476621859881,
+     0.01135810158276683,
+     0.011328786686226047
+    ]
+   },
+   "1": {
+    "kl": [
+     0.16271340356226982,
+     0.15915423154148625,
+     0.1524178493486941
+    ],
+    "size": [
+     0.011416451018351764,
+     0.011387152006771326,
+     0.011404295847453116
+    ]
+   }
+  },
+  "mix_selection": {
+   "written": 1795421087.0022922,
+   "match": "size_hi",
+   "floors": {
+    "mix25": 0.016722559233734557,
+    "mix50": 0.01660129454559689,
+    "mix75": 0.015749201664648105
+   },
+   "dropped": {},
+   "target": 0.011313708498984762,
+   "tasks": {
+    "mix25": {
+     "0": {
+      "step": 84,
+      "kl_live": 0.14763180532504216,
+      "size": 0.01133707742029818,
+      "rungs": {
+       "kl": [],
+       "size": [
+        0.011313708498984762
+       ]
+      },
+      "last": false,
+      "file": "experiments/convergence_panel/results/large/states/mix25_s0_step84.pt",
+      "sha256": "25b0a0e9be3f7fcdf8f7fdb1c2cc92820c34f70d53292a1d62be0285cfd458af",
+      "kl": 0.14546985596433237,
+      "held_gain": 0.07684372925226812
+     },
+     "1": {
+      "step": 83,
+      "kl_live": 0.1594804341500416,
+      "size": 0.01132945656091198,
+      "rungs": {
+       "kl": [],
+       "size": [
+        0.011313708498984762
+       ]
+      },
+      "last": false,
+      "file": "experiments/convergence_panel/results/large/states/mix25_s1_step83.pt",
+      "sha256": "c064ecc806c6bfa2b130e80d46c2befbe727eb6c2ed85b50dcb0dbaaf8650b68",
+      "kl": 0.1609694995000187,
+      "held_gain": 0.0759994612786743
+     },
+     "2": {
+      "step": 81,
+      "kl_live": 0.15787350160024993,
+      "size": 0.011346197072592108,
+      "rungs": {
+       "kl": [],
+       "size": [
+        0.011313708498984762
+       ]
+      },
+      "last": false,
+      "file": "experiments/convergence_panel/results/large/states/mix25_s2_step81.pt",
+      "sha256": "e2a64e36894886d5478ec552bb2e3dea07152d9494fe891dc0aec1a66bb731f0",
+      "kl": 0.16027024883726454,
+      "held_gain": 0.07382768662607964
+     }
+    },
+    "mix50": {
+     "0": {
+      "step": 71,
+      "kl_live": 0.1564916375851778,
+      "size": 0.011327794875542413,
+      "rungs": {
+       "kl": [],
+       "size": [
+        0.011313708498984762
+       ]
+      },
+      "last": false,
+      "file": "experiments/convergence_panel/results/large/states/mix50_s0_step71.pt",
+      "sha256": "2d57c3e055e137f88e4b503a036901d54291af5279f5ed0b62a11558b3b2c6ec",
+      "kl": 0.14664015731274452,
+      "held_gain": 0.05638413413394261
+     },
+     "1": {
+      "step": 71,
+      "kl_live": 0.15145451136408866,
+      "size": 0.011366570948301092,
+      "rungs": {
+       "kl": [],
+       "size": [
+        0.011313708498984762
+       ]
+      },
+      "last": false,
+      "file": "experiments/convergence_panel/results/large/states/mix50_s1_step71.pt",
+      "sha256": "d7942e1cbe4f882bf54ae6c70534161b723bb651ab4b28cb8a99be8af5d3999a",
+      "kl": 0.14264770271586674,
+      "held_gain": 0.05993241016913409
+     },
+     "2": {
+      "step": 72,
+      "kl_live": 0.14494001958448519,
+      "size": 0.011361463890505632,
+      "rungs": {
+       "kl": [],
+       "size": [
+        0.011313708498984762
+       ]
+      },
+      "last": false,
+      "file": "experiments/convergence_panel/results/large/states/mix50_s2_step72.pt",
+      "sha256": "c32ab245da758503e9b989bc8d9b56b1442aeb4c95c9e818c9f922c3f8fbf18f",
+      "kl": 0.14486908005765203,
+      "held_gain": 0.07025593237600392
+     }
+    },
+    "mix75": {
+     "0": {
+      "step": 63,
+      "kl_live": 0.1504527265245802,
+      "size": 0.01131476621859881,
+      "rungs": {
+       "kl": [],
+       "size": [
+        0.011313708498984762
+       ]
+      },
+      "last": false,
+      "file": "experiments/convergence_panel/results/large/states/mix75_s0_step63.pt",
+      "sha256": "20186341499af4bbb89a58d4f76e20a8c33dd252ce92480198cea348c554ddee",
+      "kl": 0.13971238624738602,
+      "held_gain": 0.045524966801643085
+     },
+     "1": {
+      "step": 63,
+      "kl_live": 0.14408489790178425,
+      "size": 0.01135810158276683,
+      "rungs": {
+       "kl": [],
+       "size": [
+        0.011313708498984762
+       ]
+      },
+      "last": false,
+      "file": "experiments/convergence_panel/results/large/states/mix75_s1_step63.pt",
+      "sha256": "61db50db2be96ea62953b2451eba2c1a00f1f3e920c33f79d5eb61d913333d2e",
+      "kl": 0.12869127638792155,
+      "held_gain": 0.05016207015760665
+     },
+     "2": {
+      "step": 64,
+      "kl_live": 0.1413725016508796,
+      "size": 0.011328786686226047,
+      "rungs": {
+       "kl": [],
+       "size": [
+        0.011313708498984762
+       ]
+      },
+      "last": false,
+      "file": "experiments/convergence_panel/results/large/states/mix75_s2_step64.pt",
+      "sha256": "b25325c25e3cddd4109ec3c2424878d0fabffc148ab24e7aa763c2ff87035fa4",
+      "kl": 0.13382453060317367,
+      "held_gain": 0.04198458073118294
+     }
+    }
+   },
+   "out": {}
+  },
+  "trajectory": {
+   "lower": {
+    "share": {
+     "values": [
+      NaN,
+      NaN,
+      0.9656847056312365,
+      0.8138507210823829,
+      0.7587979428109881
+     ],
+     "call": "missing points"
+    },
+    "steering": {
+     "values": [
+      NaN,
+      NaN,
+      0.9402282818044562,
+      0.8272259778794468,
+      0.7632423609365054
+     ],
+     "call": "missing points"
+    },
+    "erank": {
+     "values": [
+      616.5767105510008,
+      587.7985935225793,
+      580.3940813066725,
+      590.6370498285556,
+      600.3975094396951
+     ],
+     "band": 13.571977956413743,
+     "max_step_share": 0.5121932089867957,
+     "call": "monotone"
+    },
+    "E_b": {
+     "values": [
+      NaN,
+      NaN,
+      NaN,
+      NaN,
+      NaN
+     ],
+     "call": "missing points"
+    },
+    "kl": {
+     "values": [
+      0.01902361750546305,
+      0.0685063332798764,
+      0.10412829633630402,
+      0.17018952886124908,
+      0.24106241147028248
+     ],
+     "band": 0.015120559844880468,
+     "max_step_share": 0.3191914410247731,
+     "call": "monotone"
+    },
+    "adl": {
+     "values": [
+      NaN,
+      NaN,
+      0.27406346300449286,
+      0.12001434496377325,
+      0.061030857628868874
+     ],
+     "call": "missing points"
+    },
+    "size": {
+     "values": [
+      0.0011458839780360054,
+      0.0026231921532944985,
+      0.004016237875289858,
+      0.011341146945066044,
+      0.018236810806433173
+     ],
+     "band": 0.002373702280399387,
+     "max_step_share": 0.42858466034771125,
+     "call": "monotone"
+    },
+    "prior": {
+     "values": [
+      -6.755572450637818,
+      -6.755572450637818,
+      -6.755572450637818,
+      -6.755572450637818,
+      -6.755572450637818
+     ],
+     "band": 0.0,
+     "max_step_share": NaN,
+     "call": "stable"
+    }
+   },
+   "yoruba": {
+    "share": {
+     "values": [
+      NaN,
+      NaN,
+      0.5096433608940028,
+      0.5057927606489323,
+      0.48915861670474836
+     ],
+     "call": "missing points"
+    },
+    "steering": {
+     "values": [
+      NaN,
+      NaN,
+      1.8681780792191027,
+      1.4946654813517013,
+      0.9983591461503427
+     ],
+     "call": "missing points"
+    },
+    "erank": {
+     "values": [
+      533.5478056983525,
+      464.4848375198678,
+      440.64204860078127,
+      442.3891287336874,
+      489.83820758761
+     ],
+     "band": 13.571977956413743,
+     "max_step_share": 0.4860101121892363,
+     "call": "jump"
+    },
+    "E_b": {
+     "values": [
+      NaN,
+      NaN,
+      NaN,
+      NaN,
+      NaN
+     ],
+     "call": "missing points"
+    },
+    "kl": {
+     "values": [
+      0.03786516851667805,
+      0.07144557367357737,
+      0.11269478885938165,
+      0.16271340356226982,
+      0.2752966926768435
+     ],
+     "band": 0.015120559844880468,
+     "max_step_share": 0.4741716143751314,
+     "call": "monotone"
+    },
+    "adl": {
+     "values": [
+      NaN,
+      NaN,
+      0.22273273492056272,
+      0.17462139082940478,
+      0.07570177662720395
+     ],
+     "call": "missing points"
+    },
+    "size": {
+     "values": [
+      0.0017375695192636243,
+      0.004196183476634874,
+      0.006518191230282231,
+      0.011416451018351764,
+      0.02647847497833056
+     ],
+     "band": 0.002373702280399387,
+     "max_step_share": 0.6087903284258714,
+     "call": "monotone"
+    },
+    "prior": {
+     "values": [
+      -12.521292385101319,
+      -12.521292385101319,
+      -12.521292385101319,
+      -12.521292385101319,
+      -12.521292385101319
+     ],
+     "band": 0.0,
+     "max_step_share": NaN,
+     "call": "stable"
+    }
+   }
+  }
+ },
+ "wide": {
+  "experiment": "E272, E272 (convergence_panel)",
+  "dropped": {
+   "written": 1795422405.9189844,
+   "set": "wide",
+   "dropped": {},
+   "kept": {
+    "kl_hi": [
+     "arxiv",
+     "category",
+     "conll",
+     "french",
+     "german",
+     "lower",
+     "sentiment",
+     "spanish",
+     "squad",
+     "summary",
+     "swahili",
+     "yoruba"
+    ],
+    "kl_lo": [
+     "category",
+     "conll",
+     "german",
+     "lower",
+     "spanish",
+     "swahili"
+    ],
+    "size_hi": [
+     "arxiv",
+     "british",
+     "category",
+     "conll",
+     "french",
+     "german",
+     "lower",
+     "sentiment",
+     "spanish",
+     "squad",
+     "summary",
+     "swahili",
+     "tagalog",
+     "topic",
+     "yoruba"
+    ],
+    "size_lo": [
+     "arxiv",
+     "british",
+     "category",
+     "conll",
+     "french",
+     "german",
+     "lower",
+     "sentiment",
+     "spanish",
+     "squad",
+     "summary",
+     "swahili",
+     "tagalog",
+     "topic",
+     "yoruba"
+    ]
+   },
+   "out": {
+    "kl_hi": {
+     "pile": "seeds ['0', '1', '2'] have no state within 10% of 0.181 with held gain >= 0.08073",
+     "code": "seeds ['0', '1', '2'] have no state within 10% of 0.181 with held gain >= 0.04938",
+     "british": "seeds ['0', '1', '2'] have no state within 10% of 0.181 with held gain >= 0.1355",
+     "topic": "seeds ['2'] have no state within 10% of 0.181 with held gain >= 0.3885",
+     "wiki_en": "seeds ['0', '1', '2'] have no state within 10% of 0.181 with held gain >= 0.06976",
+     "tagalog": "seeds ['0'] have no state within 10% of 0.181 with held gain >= 0.1228"
+    },
+    "kl_lo": {
+     "pile": "seeds ['0', '1'] have no state within 10% of 0.09051 with held gain >= 0.08073",
+     "code": "seeds ['0', '1', '2'] have no state within 10% of 0.09051 with held gain >= 0.04938",
+     "british": "seeds ['0', '1', '2'] have no state within 10% of 0.09051 with held gain >= 0.1355",
+     "topic": "seeds ['0', '1', '2'] have no state within 10% of 0.09051 with held gain >= 0.3885",
+     "french": "seeds ['0'] have no state within 10% of 0.09051 with held gain >= 0.06487",
+     "yoruba": "seeds ['0'] have no state within 10% of 0.09051 with held gain >= 0.08224",
+     "squad": "seeds ['0', '2'] have no state within 10% of 0.09051 with held gain >= 0.09175",
+     "wiki_en": "seeds ['0', '1'] have no state within 10% of 0.09051 with held gain >= 0.06976",
+     "arxiv": "seeds ['2'] have no state within 10% of 0.09051 with held gain >= 0.07273",
+     "tagalog": "seeds ['0', '1', '2'] have no state within 10% of 0.09051 with held gain >= 0.1228",
+     "sentiment": "seeds ['1', '2'] have no state within 10% of 0.09051 with held gain >= 0.1454",
+     "summary": "seeds ['0', '2'] have no state within 10% of 0.09051 with held gain >= 0.05203"
+    },
+    "size_hi": {
+     "pile": "seeds ['0', '1', '2'] have no state within 10% of 0.01131 with held gain >= 0.08073",
+     "code": "seeds ['0', '1', '2'] have no state within 10% of 0.01131 with held gain >= 0.04938",
+     "wiki_en": "seeds ['0', '1'] have no state within 10% of 0.01131 with held gain >= 0.06976"
+    },
+    "size_lo": {
+     "pile": "seeds ['0', '1', '2'] have no state within 10% of 0.005657 with held gain >= 0.08073",
+     "code": "seeds ['0', '1', '2'] have no state within 10% of 0.005657 with held gain >= 0.04938",
+     "wiki_en": "seeds ['1', '2'] have no state within 10% of 0.005657 with held gain >= 0.06976"
+    }
+   }
+  },
+  "consensus_tier": {
+   "conll": 2.0,
+   "squad": 1.5,
+   "german": 2.0,
+   "code": 3.0,
+   "topic": 2.5,
+   "french": 2.0,
+   "tagalog": 1.0,
+   "yoruba": 1.0,
+   "category": 2.5,
+   "wiki_en": 3.0,
+   "spanish": 2.0,
+   "swahili": 1.0,
+   "sentiment": 2.0,
+   "pile": 3.0,
+   "arxiv": 3.0,
+   "british": 2.5,
+   "summary": 1.5,
+   "lower": 3.0
+  },
+  "kl_hi": {
+   "readability": {
+    "share": {
+     "between_sd": 0.3668030314220193,
+     "within_sd": 0.04345319522409856,
+     "readable": true,
+     "missing": [
+      "arxiv",
+      "german",
+      "sentiment",
+      "spanish"
+     ]
+    },
+    "steering": {
+     "between_sd": 0.32407106305027894,
+     "within_sd": 0.09627335679179141,
+     "readable": true,
+     "missing": [
+      "arxiv",
+      "german",
+      "sentiment",
+      "spanish"
+     ]
+    },
+    "erank": {
+     "between_sd": 104.96605738458751,
+     "within_sd": 5.2271492049629416,
+     "readable": true,
+     "missing": []
+    },
+    "E_b": {
+     "between_sd": NaN,
+     "within_sd": NaN,
+     "readable": false,
+     "missing": [
+      "arxiv",
+      "category",
+      "conll",
+      "french",
+      "german",
+      "lower",
+      "sentiment",
+      "spanish",
+      "squad",
+      "summary",
+      "swahili",
+      "yoruba"
+     ]
+    },
+    "kl": {
+     "between_sd": 0.005763649033016019,
+     "within_sd": 0.006808480897433265,
+     "readable": false,
+     "missing": []
+    },
+    "adl": {
+     "between_sd": 0.10988962356524988,
+     "within_sd": 0.05762916342319076,
+     "readable": true,
+     "missing": [
+      "arxiv",
+      "german",
+      "sentiment",
+      "spanish"
+     ]
+    },
+    "size": {
+     "between_sd": 0.0072883733402910374,
+     "within_sd": 0.0012326492432090791,
+     "readable": true,
+     "missing": []
+    },
+    "prior": {
+     "between_sd": 4.707853943160509,
+     "within_sd": 1.9077459541804274e-08,
+     "readable": true,
+     "missing": []
+    }
+   },
+   "means": {
+    "share": {
+     "category": 0.6652728287881665,
+     "conll": 0.7419347726726114,
+     "french": 0.552759855008888,
+     "lower": 0.8266320339901547,
+     "squad": 1.3248428154655338,
+     "summary": 1.3101270622699601,
+     "swahili": 0.19594503503521835,
+     "yoruba": 0.4774216793112786
+    },
+    "steering": {
+     "category": 0.25002716180258994,
+     "conll": 1.0570033366165077,
+     "french": 1.4157374041088602,
+     "lower": 0.812312690575912,
+     "squad": 0.8665422099370804,
+     "summary": 0.7782062030860576,
+     "swahili": 0.9262928527951025,
+     "yoruba": 1.2238107510885279
+    },
+    "erank": {
+     "arxiv": 564.3185357449889,
+     "category": 321.4786751042607,
+     "conll": 298.40117695470144,
+     "french": 554.9400933604247,
+     "german": 546.9908912351046,
+     "lower": 591.0410017765695,
+     "sentiment": 282.6023079230806,
+     "spanish": 555.2796566711862,
+     "squad": 471.58021587481085,
+     "summary": 508.606529502967,
+     "swahili": 473.72603682377076,
+     "yoruba": 458.3152045384497
+    },
+    "E_b": {},
+    "kl": {
+     "arxiv": 0.17672303838799508,
+     "category": 0.18740271607249848,
+     "conll": 0.1812898764754356,
+     "french": 0.1885338462983052,
+     "german": 0.19251962611669907,
+     "lower": 0.18200051589377822,
+     "sentiment": 0.18860779707958156,
+     "spanish": 0.17167843349565892,
+     "squad": 0.17670974811020204,
+     "summary": 0.1848977530980244,
+     "swahili": 0.18362315852611344,
+     "yoruba": 0.1866450995684058
+    },
+    "adl": {
+     "category": -0.00899477396242014,
+     "conll": -0.03303308268586749,
+     "french": 0.31753835401113545,
+     "lower": 0.08207127669420418,
+     "squad": 0.18772854764159844,
+     "summary": -0.008007382761596751,
+     "swahili": 0.062145679636568994,
+     "yoruba": 0.09180685677820749
+    },
+    "size": {
+     "arxiv": 0.005865723238434181,
+     "category": 0.00407719110303308,
+     "conll": 0.004109762167562107,
+     "french": 0.0034726981022451943,
+     "german": 0.022517227533232997,
+     "lower": 0.011718255983982863,
+     "sentiment": 0.003266184218437978,
+     "spanish": 0.02263850974566788,
+     "squad": 0.0025438698591093633,
+     "summary": 0.004257463848022796,
+     "swahili": 0.014515390900856344,
+     "yoruba": 0.0160311960458407
+    },
+    "prior": {
+     "arxiv": -11.617029953002932,
+     "category": 0.8381883769325214,
+     "conll": -11.843995075225829,
+     "french": -12.911266333580016,
+     "german": -12.002177989959717,
+     "lower": -6.755572544097901,
+     "sentiment": 0.12398008834861685,
+     "spanish": -12.177623466491701,
+     "squad": -8.942493050575257,
+     "summary": -5.643984366416931,
+     "swahili": -11.908776196479797,
+     "yoruba": -12.521292385101319
+    }
+   },
+   "hope1": {
+    "share": {
+     "opus_blind_wide": {
+      "tasks": [
+       "category",
+       "conll",
+       "french",
+       "lower",
+       "squad",
+       "summary",
+       "swahili",
+       "yoruba"
+      ],
+      "tau": 0.20619652471058064,
+      "p_perm": 0.3083691630836916,
+      "interval90": [
+       -0.50709255283711,
+       0.8131249357707346
+      ],
+      "critical_tau": 0.6185895741317419,
+      "tau_prior": 0.45363235436327737,
+      "power_raw": {
+       "0.3": 0.1652,
+       "0.5": 0.4113
+      },
+      "leave_one_out": [
+       0.0,
+       0.545544725589981
+      ],
+      "prior_support": false,
+      "tau_partial_prior": NaN,
+      "p_partial": NaN,
+      "call": "no call"
+     },
+     "gpt_blind_wide": {
+      "tasks": [
+       "category",
+       "conll",
+       "french",
+       "lower",
+       "squad",
+       "summary",
+       "swahili",
+       "yoruba"
+      ],
+      "tau": 0.39019948628585394,
+      "p_perm": 0.14478552144785523,
+      "interval90": [
+       -0.19759000729485332,
+       0.8728715609439696
+      ],
+      "critical_tau": 0.5636214801906779,
+      "tau_prior": 0.21677749238102997,
+      "power_raw": {
+       "0.3": 0.23315,
+       "0.5": 0.515
+      },
+      "leave_one_out": [
+       0.23328473740792174,
+       0.6998542122237652
+      ],
+      "prior_support": true,
+      "tau_partial_prior": 0.3430199181117164,
+      "p_partial": 0.16778322167783222,
+      "call": "no call"
+     },
+     "consensus": {
+      "tasks": [
+       "category",
+       "conll",
+       "french",
+       "lower",
+       "squad",
+       "summary",
+       "swahili",
+       "yoruba"
+      ],
+      "tau": 0.264575131106459,
+      "p_perm": 0.2308769123087691,
+      "interval90": [
+       -0.45961165096040957,
+       0.8362420100070909
+      ],
+      "critical_tau": 0.5669467095138409,
+      "tau_prior": 0.3401680257083045,
+      "power_raw": {
+       "0.3": 0.2048,
+       "0.5": 0.4845
+      },
+      "leave_one_out": [
+       0.05006261743217588,
+       0.45056355688958294
+      ],
+      "prior_support": true,
+      "tau_partial_prior": 0.162904278190163,
+      "p_partial": 0.3057694230576942,
+      "call": "no call"
+     }
+    },
+    "steering": {
+     "opus_blind_wide": {
+      "tasks": [
+       "category",
+       "conll",
+       "french",
+       "lower",
+       "squad",
+       "summary",
+       "swahili",
+       "yoruba"
+      ],
+      "tau": -0.37115374447904514,
+      "p_perm": 0.9021097890210978,
+      "interval90": [
+       -0.7800134951599099,
+       0.16169607032502473
+      ],
+      "critical_tau": 0.6185895741317419,
+      "tau_prior": 0.45363235436327737,
+      "power_raw": {
+       "0.3": 0.1652,
+       "0.5": 0.4113
+      },
+      "leave_one_out": [
+       -0.545544725589981,
+       -0.16903085094570333
+      ],
+      "prior_support": false,
+      "tau_partial_prior": NaN,
+      "p_partial": NaN,
+      "call": "not positive"
+     },
+     "gpt_blind_wide": {
+      "tasks": [
+       "category",
+       "conll",
+       "french",
+       "lower",
+       "squad",
+       "summary",
+       "swahili",
+       "yoruba"
+      ],
+      "tau": -0.13006649542861798,
+      "p_perm": 0.7065293470652935,
+      "interval90": [
+       -0.6105766066119478,
+       0.4364357804719848
+      ],
+      "critical_tau": 0.5636214801906779,
+      "tau_prior": 0.21677749238102997,
+      "power_raw": {
+       "0.3": 0.23315,
+       "0.5": 0.515
+      },
+      "leave_one_out": [
+       -0.3499271061118826,
+       0.0
+      ],
+      "prior_support": true,
+      "tau_partial_prior": 0.1965811965811964,
+      "p_partial": 0.28857114288571145,
+      "call": "not positive"
+     },
+     "consensus": {
+      "tasks": [
+       "category",
+       "conll",
+       "french",
+       "lower",
+       "squad",
+       "summary",
+       "swahili",
+       "yoruba"
+      ],
+      "tau": -0.264575131106459,
+      "p_perm": 0.84001599840016,
+      "interval90": [
+       -0.7175473098524099,
+       0.29585200533269607
+      ],
+      "critical_tau": 0.5669467095138409,
+      "tau_prior": 0.3401680257083045,
+      "power_raw": {
+       "0.3": 0.2048,
+       "0.5": 0.4845
+      },
+      "leave_one_out": [
+       -0.45056355688958294,
+       -0.10286889997472795
+      ],
+      "prior_support": true,
+      "tau_partial_prior": 0.1469692217202979,
+      "p_partial": 0.3214678532146785,
+      "call": "not positive"
+     }
+    },
+    "erank": {
+     "opus_blind_wide": {
+      "tasks": [
+       "arxiv",
+       "category",
+       "conll",
+       "french",
+       "german",
+       "lower",
+       "sentiment",
+       "spanish",
+       "squad",
+       "summary",
+       "swahili",
+       "yoruba"
+      ],
+      "tau": 0.3486385256233475,
+      "p_perm": 0.08909109089091091,
+      "interval90": [
+       -0.08009117514340063,
+       0.7344124877258417
+      ],
+      "critical_tau": 0.4220361099651049,
+      "tau_prior": 0.3486385256233475,
+      "power_raw": {
+       "0.3": 0.3414,
+       "0.5": 0.73525
+      },
+      "leave_one_out": [
+       0.22473328748774737,
+       0.5393598899705937
+      ],
+      "prior_support": true,
+      "tau_partial_prior": 0.461381188130466,
+      "p_partial": 0.026597340265973404,
+      "call": "positive"
+     },
+     "gpt_blind_wide": {
+      "tasks": [
+       "arxiv",
+       "category",
+       "conll",
+       "french",
+       "german",
+       "lower",
+       "sentiment",
+       "spanish",
+       "squad",
+       "summary",
+       "swahili",
+       "yoruba"
+      ],
+      "tau": 0.3652495628516764,
+      "p_perm": 0.08299170082991701,
+      "interval90": [
+       -0.11899766267645,
+       0.721394828107979
+      ],
+      "critical_tau": 0.44214420766255563,
+      "tau_prior": 0.17301295082447832,
+      "power_raw": {
+       "0.3": 0.31145,
+       "0.5": 0.7077
+      },
+      "leave_one_out": [
+       0.21796176586341726,
+       0.44946657497549475
+      ],
+      "prior_support": true,
+      "tau_partial_prior": 0.4176069975414736,
+      "p_partial": 0.04939506049395061,
+      "call": "positive"
+     },
+     "consensus": {
+      "tasks": [
+       "arxiv",
+       "category",
+       "conll",
+       "french",
+       "german",
+       "lower",
+       "sentiment",
+       "spanish",
+       "squad",
+       "summary",
+       "swahili",
+       "yoruba"
+      ],
+      "tau": 0.3550662489823283,
+      "p_perm": 0.07749225077492251,
+      "interval90": [
+       -0.07526682984267966,
+       0.7294787889343967
+      ],
+      "critical_tau": 0.4226979154551528,
+      "tau_prior": 0.25361874927309164,
+      "power_raw": {
+       "0.3": 0.3277,
+       "0.5": 0.7334
+      },
+      "leave_one_out": [
+       0.22619193331698287,
+       0.4993502271458874
+      ],
+      "prior_support": true,
+      "tau_partial_prior": 0.4325269960832856,
+      "p_partial": 0.031796820317968204,
+      "call": "positive"
+     }
+    }
+   },
+   "hope2": {
+    "tasks": [
+     "category",
+     "conll",
+     "french",
+     "lower",
+     "squad",
+     "summary",
+     "swahili",
+     "yoruba"
+    ],
+    "readings": [
+     "share",
+     "steering",
+     "erank"
+    ],
+    "baselines": [
+     "adl",
+     "size",
+     "prior"
+    ],
+    "W_readings": 0.24867724867724866,
+    "W_baselines": 0.2857142857142857,
+    "pairwise_tau": {
+     "share|steering": -0.2857142857142857,
+     "share|erank": 0.0,
+     "share|E_b": NaN,
+     "share|kl": 0.3571428571428571,
+     "share|adl": 0.0,
+     "share|size": 0.2857142857142857,
+     "share|prior": 0.3571428571428571,
+     "steering|erank": 0.0,
+     "steering|E_b": NaN,
+     "steering|kl": -0.07142857142857142,
+     "steering|adl": 0.42857142857142855,
+     "steering|size": -0.14285714285714285,
+     "steering|prior": -0.9285714285714285,
+     "erank|E_b": NaN,
+     "erank|kl": 0.2121212121212121,
+     "erank|adl": 0.42857142857142855,
+     "erank|size": -0.3333333333333333,
+     "erank|prior": -0.2121212121212121,
+     "E_b|kl": NaN,
+     "E_b|adl": NaN,
+     "E_b|size": NaN,
+     "E_b|prior": NaN,
+     "kl|adl": -0.07142857142857142,
+     "kl|size": -0.0909090909090909,
+     "kl|prior": -0.0303030303030303,
+     "adl|size": 0.0,
+     "adl|prior": -0.4999999999999999,
+     "size|prior": 0.39393939393939387
+    },
+    "mean_tau": {
+     "readings": -0.09523809523809523,
+     "baselines": -0.03535353535353534
+    },
+    "mean_abs_tau": {
+     "readings": 0.09523809523809523,
+     "baselines": 0.29797979797979796
+    },
+    "W_readings_partial_prior_size": 0.3968253968253968,
+    "null_readings": {
+     "W": 0.24867724867724866,
+     "null95": 0.5978835978835979,
+     "percentile": 0.305
+    },
+    "null_baselines": {
+     "W": 0.2857142857142857,
+     "null95": 0.5978835978835979,
+     "percentile": 0.4052
+    },
+    "call": "not above"
+   },
+   "unreadable": {
+    "E_b": "no information (between-task spread not above seed spread)"
+   }
+  },
+  "kl_lo": {
+   "readability": {
+    "share": {
+     "between_sd": 0.15338421250243045,
+     "within_sd": 0.11469652180730247,
+     "readable": true,
+     "missing": [
+      "german",
+      "spanish",
+      "swahili"
+     ]
+    },
+    "steering": {
+     "between_sd": 0.18304660335986292,
+     "within_sd": 0.06860380279242104,
+     "readable": true,
+     "missing": [
+      "german",
+      "spanish",
+      "swahili"
+     ]
+    },
+    "erank": {
+     "between_sd": 97.35429557129878,
+     "within_sd": 3.952751470016637,
+     "readable": true,
+     "missing": []
+    },
+    "E_b": {
+     "between_sd": NaN,
+     "within_sd": NaN,
+     "readable": false,
+     "missing": [
+      "category",
+      "conll",
+      "german",
+      "lower",
+      "spanish",
+      "swahili"
+     ]
+    },
+    "kl": {
+     "between_sd": 0.0042772222648032945,
+     "within_sd": 0.002178069770543723,
+     "readable": true,
+     "missing": []
+    },
+    "adl": {
+     "between_sd": 0.1013193708901217,
+     "within_sd": 0.057677773697672505,
+     "readable": true,
+     "missing": [
+      "german",
+      "spanish",
+      "swahili"
+     ]
+    },
+    "size": {
+     "between_sd": 0.0037326723502665088,
+     "within_sd": 5.2842314601480887e-05,
+     "readable": true,
+     "missing": []
+    },
+    "prior": {
+     "between_sd": 4.786844877877287,
+     "within_sd": 0.0,
+     "readable": true,
+     "missing": []
+    }
+   },
+   "means": {
+    "share": {
+     "category": 1.012741348012915,
+     "conll": 0.6572592855580581,
+     "lower": 0.9403312351195124
+    },
+    "steering": {
+     "category": 0.5767385107412826,
+     "conll": 0.9050281553808787,
+     "lower": 1.0053577125838034
+    },
+    "erank": {
+     "category": 356.81935945112787,
+     "conll": 322.76784590865714,
+     "german": 537.9223870824111,
+     "lower": 580.8336322996503,
+     "spanish": 543.8887539034843,
+     "swahili": 474.92383649309653
+    },
+    "E_b": {},
+    "kl": {
+     "category": 0.08562974933572833,
+     "conll": 0.09113024575330442,
+     "german": 0.09292195598044851,
+     "lower": 0.09416928406010534,
+     "spanish": 0.08329734684120048,
+     "swahili": 0.08450983386549688
+    },
+    "adl": {
+     "category": 0.022524228684654483,
+     "conll": 0.1609554966129757,
+     "lower": 0.2701294788653516
+    },
+    "size": {
+     "category": 0.0027746040310202094,
+     "conll": 0.0031601494923375827,
+     "german": 0.011337858408146306,
+     "lower": 0.0038544851318134134,
+     "spanish": 0.011366316067941465,
+     "swahili": 0.004180260468843361
+    },
+    "prior": {
+     "category": 0.8381883769325214,
+     "conll": -11.843995075225829,
+     "german": -12.002177989959717,
+     "lower": -6.755572590827942,
+     "spanish": -12.177623466491701,
+     "swahili": -11.908776196479797
+    }
+   },
+   "hope1": {
+    "share": {
+     "opus_blind_wide": {
+      "call": "too few tasks (3 < 5)",
+      "tasks": [
+       "category",
+       "conll",
+       "lower"
+      ]
+     },
+     "gpt_blind_wide": {
+      "call": "too few tasks (3 < 5)",
+      "tasks": [
+       "category",
+       "conll",
+       "lower"
+      ]
+     },
+     "consensus": {
+      "call": "too few tasks (3 < 5)",
+      "tasks": [
+       "category",
+       "conll",
+       "lower"
+      ]
+     }
+    },
+    "steering": {
+     "opus_blind_wide": {
+      "call": "too few tasks (3 < 5)",
+      "tasks": [
+       "category",
+       "conll",
+       "lower"
+      ]
+     },
+     "gpt_blind_wide": {
+      "call": "too few tasks (3 < 5)",
+      "tasks": [
+       "category",
+       "conll",
+       "lower"
+      ]
+     },
+     "consensus": {
+      "call": "too few tasks (3 < 5)",
+      "tasks": [
+       "category",
+       "conll",
+       "lower"
+      ]
+     }
+    },
+    "erank": {
+     "opus_blind_wide": {
+      "tasks": [
+       "category",
+       "conll",
+       "german",
+       "lower",
+       "spanish",
+       "swahili"
+      ],
+      "tau": 0.2335496832484569,
+      "p_perm": 0.35136486351364865,
+      "interval90": [
+       -0.42640143271122083,
+       0.9198662110077999
+      ],
+      "critical_tau": 0.7006490497453707,
+      "tau_prior": 0.5449492609130661,
+      "power_raw": {
+       "0.3": 0.1818,
+       "0.5": 0.3762
+      },
+      "leave_one_out": [
+       -0.11952286093343935,
+       0.5976143046671968
+      ],
+      "prior_support": false,
+      "tau_partial_prior": NaN,
+      "p_partial": NaN,
+      "call": "no call"
+     },
+     "gpt_blind_wide": {
+      "tasks": [
+       "category",
+       "conll",
+       "german",
+       "lower",
+       "spanish",
+       "swahili"
+      ],
+      "tau": 0.43033148291193524,
+      "p_perm": 0.20287971202879712,
+      "interval90": [
+       -0.3872983346207417,
+       0.9574271077563381
+      ],
+      "critical_tau": 0.7745966692414834,
+      "tau_prior": 0.2581988897471611,
+      "power_raw": {
+       "0.3": 0.13225,
+       "0.5": 0.3067
+      },
+      "leave_one_out": [
+       0.0,
+       0.6324555320336759
+      ],
+      "prior_support": false,
+      "tau_partial_prior": NaN,
+      "p_partial": NaN,
+      "call": "no call"
+     },
+     "consensus": {
+      "tasks": [
+       "category",
+       "conll",
+       "german",
+       "lower",
+       "spanish",
+       "swahili"
+      ],
+      "tau": 0.29814239699997197,
+      "p_perm": 0.28557144285571445,
+      "interval90": [
+       -0.42640143271122083,
+       0.960768922830523
+      ],
+      "critical_tau": 0.7453559924999299,
+      "tau_prior": 0.4472135954999579,
+      "power_raw": {
+       "0.3": 0.13165,
+       "0.5": 0.301
+      },
+      "leave_one_out": [
+       -0.11952286093343935,
+       0.5976143046671968
+      ],
+      "prior_support": false,
+      "tau_partial_prior": NaN,
+      "p_partial": NaN,
+      "call": "no call"
+     }
+    }
+   },
+   "hope2": {
+    "tasks": [
+     "category",
+     "conll",
+     "lower"
+    ],
+    "readings": [
+     "share",
+     "steering",
+     "erank"
+    ],
+    "baselines": [
+     "adl",
+     "size",
+     "prior"
+    ],
+    "W_readings": 0.4444444444444444,
+    "W_baselines": 0.1111111111111111,
+    "pairwise_tau": {
+     "share|steering": -0.33333333333333337,
+     "share|erank": 0.33333333333333337,
+     "share|E_b": NaN,
+     "share|kl": 0.33333333333333337,
+     "share|adl": -0.33333333333333337,
+     "share|size": 0.33333333333333337,
+     "share|prior": 1.0,
+     "steering|erank": 0.33333333333333337,
+     "steering|E_b": NaN,
+     "steering|kl": -1.0,
+     "steering|adl": 1.0,
+     "steering|size": -1.0,
+     "steering|prior": -0.33333333333333337,
+     "erank|E_b": NaN,
+     "erank|kl": -0.06666666666666665,
+     "erank|adl": 0.33333333333333337,
+     "erank|size": -0.4666666666666666,
+     "erank|prior": -0.3333333333333333,
+     "E_b|kl": NaN,
+     "E_b|adl": NaN,
+     "E_b|size": NaN,
+     "E_b|prior": NaN,
+     "kl|adl": -1.0,
+     "kl|size": -0.2,
+     "kl|prior": -0.3333333333333333,
+     "adl|size": -1.0,
+     "adl|prior": -0.33333333333333337,
+     "size|prior": 0.8666666666666666
+    },
+    "mean_tau": {
+     "readings": 0.11111111111111112,
+     "baselines": -0.15555555555555559
+    },
+    "mean_abs_tau": {
+     "readings": 0.3333333333333333,
+     "baselines": 0.7333333333333334
+    },
+    "call": "no call: 3 tasks, 3 readable readings, 3 readable baselines"
+   },
+   "unreadable": {
+    "E_b": "no information (between-task spread not above seed spread)"
+   }
+  },
+  "size_hi": {
+   "readability": {
+    "share": {
+     "between_sd": 0.3401694165407514,
+     "within_sd": 0.03301812396983874,
+     "readable": true,
+     "missing": [
+      "arxiv",
+      "german",
+      "spanish"
+     ]
+    },
+    "steering": {
+     "between_sd": 0.5127619660955389,
+     "within_sd": 0.04103923194315687,
+     "readable": true,
+     "missing": [
+      "arxiv",
+      "german",
+      "spanish"
+     ]
+    },
+    "erank": {
+     "between_sd": 96.90263146852867,
+     "within_sd": 4.226357784358677,
+     "readable": true,
+     "missing": []
+    },
+    "E_b": {
+     "between_sd": NaN,
+     "within_sd": NaN,
+     "readable": false,
+     "missing": [
+      "arxiv",
+      "british",
+      "category",
+      "conll",
+      "french",
+      "german",
+      "lower",
+      "sentiment",
+      "spanish",
+      "squad",
+      "summary",
+      "swahili",
+      "tagalog",
+      "topic",
+      "yoruba"
+     ]
+    },
+    "kl": {
+     "between_sd": 0.9079599452418566,
+     "within_sd": 0.28168118021510724,
+     "readable": true,
+     "missing": []
+    },
+    "adl": {
+     "between_sd": 0.061211393676824676,
+     "within_sd": 0.04071587353550774,
+     "readable": true,
+     "missing": [
+      "arxiv",
+      "german",
+      "spanish"
+     ]
+    },
+    "size": {
+     "between_sd": 2.586599312851878e-05,
+     "within_sd": 2.0774165039489505e-05,
+     "readable": true,
+     "missing": []
+    },
+    "prior": {
+     "between_sd": 5.201126834453876,
+     "within_sd": 0.0,
+     "readable": true,
+     "missing": []
+    }
+   },
+   "means": {
+    "share": {
+     "british": 0.17592047641229328,
+     "category": 0.3448896586712084,
+     "conll": 0.5895653061509637,
+     "french": 0.5553029686341219,
+     "lower": 0.8312249034953957,
+     "sentiment": 0.4995357959412949,
+     "squad": 1.1790596416472723,
+     "summary": 1.2416337124678822,
+     "swahili": 0.19921541782403873,
+     "tagalog": 0.5369368108795167,
+     "topic": 0.19679123746501212,
+     "yoruba": 0.4755566931092057
+    },
+    "steering": {
+     "british": 1.7398000400074267,
+     "category": 0.06748729038051565,
+     "conll": 0.7384352834577745,
+     "french": 1.0541260212344403,
+     "lower": 0.8169288282260095,
+     "sentiment": 0.12394897728102376,
+     "squad": 0.5983676467747108,
+     "summary": 0.5976354460918091,
+     "swahili": 1.0566889294080635,
+     "tagalog": 0.568025005628538,
+     "topic": 0.06626643971092826,
+     "yoruba": 1.511551105324321
+    },
+    "erank": {
+     "arxiv": 561.8981931049589,
+     "british": 608.3853046890213,
+     "category": 324.8003521077781,
+     "conll": 315.95826836729714,
+     "french": 539.0992504000626,
+     "german": 537.9223870824111,
+     "lower": 590.4890366714736,
+     "sentiment": 333.4829181050475,
+     "spanish": 543.8687163307487,
+     "squad": 469.7234740738099,
+     "summary": 539.3344778904474,
+     "swahili": 463.5082055477971,
+     "tagalog": 471.3782667784896,
+     "topic": 348.07574224587216,
+     "yoruba": 441.189406468139
+    },
+    "E_b": {},
+    "kl": {
+     "arxiv": 0.164193598568248,
+     "british": 0.0637304793030072,
+     "category": 1.1855163022379835,
+     "conll": 1.1962623782326098,
+     "french": 2.2440050765093376,
+     "german": 0.09292195598044851,
+     "lower": 0.17677440239900047,
+     "sentiment": 3.070226829218894,
+     "spanish": 0.082976925889729,
+     "squad": 0.7225154271277486,
+     "summary": 0.25847778236313806,
+     "swahili": 0.1568988153612896,
+     "tagalog": 0.1686752266091911,
+     "topic": 1.7818485003940794,
+     "yoruba": 0.15809515385467432
+    },
+    "adl": {
+     "british": 0.14462032596080637,
+     "category": 0.024936306344932383,
+     "conll": 0.04834403177639132,
+     "french": 0.2327633135323772,
+     "lower": 0.09556621485882037,
+     "sentiment": 0.05829659730007868,
+     "squad": 0.09538313204504761,
+     "summary": 0.01572277006583372,
+     "swahili": 0.09996706964336131,
+     "tagalog": 0.03927041520830279,
+     "topic": 0.02117414447790793,
+     "yoruba": 0.13507880987803825
+    },
+    "size": {
+     "arxiv": 0.011325766799748142,
+     "british": 0.011335339090304966,
+     "category": 0.011319239977861729,
+     "conll": 0.011348002029893833,
+     "french": 0.011337306731576258,
+     "german": 0.011337858408146306,
+     "lower": 0.011350122764149276,
+     "sentiment": 0.011335191438739086,
+     "spanish": 0.011343487109994603,
+     "squad": 0.011342131964470705,
+     "summary": 0.011350600646088465,
+     "swahili": 0.01140241201804632,
+     "tagalog": 0.011387187836396981,
+     "topic": 0.011322474226672435,
+     "yoruba": 0.011402632957525402
+    },
+    "prior": {
+     "arxiv": -11.617029953002932,
+     "british": -7.1475960083007815,
+     "category": 0.8381883769325214,
+     "conll": -11.843995075225829,
+     "french": -12.911266333580016,
+     "german": -12.002177989959717,
+     "lower": -6.755572450637818,
+     "sentiment": 0.12398008834861685,
+     "spanish": -12.177623466491701,
+     "squad": -8.942493050575257,
+     "summary": -5.643984366416931,
+     "swahili": -11.908776196479797,
+     "tagalog": -13.557122698783877,
+     "topic": 2.0969101923692506,
+     "yoruba": -12.521292385101319
+    }
+   },
+   "hope1": {
+    "share": {
+     "opus_blind_wide": {
+      "tasks": [
+       "british",
+       "category",
+       "conll",
+       "french",
+       "lower",
+       "sentiment",
+       "squad",
+       "summary",
+       "swahili",
+       "tagalog",
+       "topic",
+       "yoruba"
+      ],
+      "tau": -0.0538642178554906,
+      "p_perm": 0.6154384561543845,
+      "interval90": [
+       -0.437753306871153,
+       0.3864567339162509
+      ],
+      "critical_tau": 0.4488684821290883,
+      "tau_prior": 0.6284158749807237,
+      "power_raw": {
+       "0.3": 0.2942,
+       "0.5": 0.6834
+      },
+      "leave_one_out": [
+       -0.17499145570392285,
+       0.08749572785196143
+      ],
+      "prior_support": false,
+      "tau_partial_prior": NaN,
+      "p_partial": NaN,
+      "call": "not positive"
+     },
+     "gpt_blind_wide": {
+      "tasks": [
+       "british",
+       "category",
+       "conll",
+       "french",
+       "lower",
+       "sentiment",
+       "squad",
+       "summary",
+       "swahili",
+       "tagalog",
+       "topic",
+       "yoruba"
+      ],
+      "tau": -0.07422696190252055,
+      "p_perm": 0.6418358164183582,
+      "interval90": [
+       -0.549034794642737,
+       0.4676381156332908
+      ],
+      "critical_tau": 0.4453617714151233,
+      "tau_prior": 0.3340213285613425,
+      "power_raw": {
+       "0.3": 0.3043,
+       "0.5": 0.6896
+      },
+      "leave_one_out": [
+       -0.2312486450314401,
+       0.13874918701886407
+      ],
+      "prior_support": true,
+      "tau_partial_prior": -0.04672753505482332,
+      "p_partial": 0.5685431456854314,
+      "call": "not positive"
+     },
+     "consensus": {
+      "tasks": [
+       "british",
+       "category",
+       "conll",
+       "french",
+       "lower",
+       "sentiment",
+       "squad",
+       "summary",
+       "swahili",
+       "tagalog",
+       "topic",
+       "yoruba"
+      ],
+      "tau": -0.1315903389919538,
+      "p_perm": 0.7341265873412659,
+      "interval90": [
+       -0.5747840531207927,
+       0.33699580021708736
+      ],
+      "critical_tau": 0.42766860172384985,
+      "tau_prior": 0.5263613559678152,
+      "power_raw": {
+       "0.3": 0.31525,
+       "0.5": 0.72665
+      },
+      "leave_one_out": [
+       -0.30151134457776363,
+       -0.019668431441216497
+      ],
+      "prior_support": true,
+      "tau_partial_prior": -0.09889610266211955,
+      "p_partial": 0.6734326567343266,
+      "call": "not positive"
+     }
+    },
+    "steering": {
+     "opus_blind_wide": {
+      "tasks": [
+       "british",
+       "category",
+       "conll",
+       "french",
+       "lower",
+       "sentiment",
+       "squad",
+       "summary",
+       "swahili",
+       "tagalog",
+       "topic",
+       "yoruba"
+      ],
+      "tau": -0.34114004641810713,
+      "p_perm": 0.9265073492650735,
+      "interval90": [
+       -0.7262636745533549,
+       0.08855607388149307
+      ],
+      "critical_tau": 0.4488684821290883,
+      "tau_prior": 0.6284158749807237,
+      "power_raw": {
+       "0.3": 0.2942,
+       "0.5": 0.6834
+      },
+      "leave_one_out": [
+       -0.45342519294190703,
+       -0.21873931962990356
+      ],
+      "prior_support": false,
+      "tau_partial_prior": NaN,
+      "p_partial": NaN,
+      "call": "not positive"
+     },
+     "gpt_blind_wide": {
+      "tasks": [
+       "british",
+       "category",
+       "conll",
+       "french",
+       "lower",
+       "sentiment",
+       "squad",
+       "summary",
+       "swahili",
+       "tagalog",
+       "topic",
+       "yoruba"
+      ],
+      "tau": 0.037113480951260276,
+      "p_perm": 0.47625237476252374,
+      "interval90": [
+       -0.4936356192545448,
+       0.5020783552511713
+      ],
+      "critical_tau": 0.4453617714151233,
+      "tau_prior": 0.3340213285613425,
+      "power_raw": {
+       "0.3": 0.3043,
+       "0.5": 0.6896
+      },
+      "leave_one_out": [
+       -0.1849989160251521,
+       0.17978662999019787
+      ],
+      "prior_support": true,
+      "tau_partial_prior": 0.24147429586217206,
+      "p_partial": 0.1743825617438256,
+      "call": "no call"
+     },
+     "consensus": {
+      "tasks": [
+       "british",
+       "category",
+       "conll",
+       "french",
+       "lower",
+       "sentiment",
+       "squad",
+       "summary",
+       "swahili",
+       "tagalog",
+       "topic",
+       "yoruba"
+      ],
+      "tau": -0.16448792373994223,
+      "p_perm": 0.7765223477652234,
+      "interval90": [
+       -0.6380532872271009,
+       0.29720604935785994
+      ],
+      "critical_tau": 0.42766860172384985,
+      "tau_prior": 0.5263613559678152,
+      "power_raw": {
+       "0.3": 0.31525,
+       "0.5": 0.72665
+      },
+      "leave_one_out": [
+       -0.33436333450068045,
+       -0.05900529432364949
+      ],
+      "prior_support": true,
+      "tau_partial_prior": 0.12199180589069661,
+      "p_partial": 0.2963703629637036,
+      "call": "not positive"
+     }
+    },
+    "erank": {
+     "opus_blind_wide": {
+      "tasks": [
+       "arxiv",
+       "british",
+       "category",
+       "conll",
+       "french",
+       "german",
+       "lower",
+       "sentiment",
+       "spanish",
+       "squad",
+       "summary",
+       "swahili",
+       "tagalog",
+       "topic",
+       "yoruba"
+      ],
+      "tau": 0.16101529717988267,
+      "p_perm": 0.24897510248975102,
+      "interval90": [
+       -0.21220346009038168,
+       0.5642106790392404
+      ],
+      "critical_tau": 0.3680349649825889,
+      "tau_prior": 0.5060480768510599,
+      "power_raw": {
+       "0.3": 0.4047,
+       "0.5": 0.82685
+      },
+      "leave_one_out": [
+       0.06710955988741986,
+       0.3087039754821314
+      ],
+      "prior_support": true,
+      "tau_partial_prior": 0.24952207997043094,
+      "p_partial": 0.11748825117488251,
+      "call": "no call"
+     },
+     "gpt_blind_wide": {
+      "tasks": [
+       "arxiv",
+       "british",
+       "category",
+       "conll",
+       "french",
+       "german",
+       "lower",
+       "sentiment",
+       "spanish",
+       "squad",
+       "summary",
+       "swahili",
+       "tagalog",
+       "topic",
+       "yoruba"
+      ],
+      "tau": 0.33136674783180564,
+      "p_perm": 0.0675932406759324,
+      "interval90": [
+       -0.10378128634148606,
+       0.6592684544264283
+      ],
+      "critical_tau": 0.3787048546649207,
+      "tau_prior": 0.2840286409986905,
+      "power_raw": {
+       "0.3": 0.38535,
+       "0.5": 0.8169
+      },
+      "leave_one_out": [
+       0.22413272587221034,
+       0.43043102755423635
+      ],
+      "prior_support": true,
+      "tau_partial_prior": 0.3787174355484442,
+      "p_partial": 0.0397960203979602,
+      "call": "positive"
+     },
+     "consensus": {
+      "tasks": [
+       "arxiv",
+       "british",
+       "category",
+       "conll",
+       "french",
+       "german",
+       "lower",
+       "sentiment",
+       "spanish",
+       "squad",
+       "summary",
+       "swahili",
+       "tagalog",
+       "topic",
+       "yoruba"
+      ],
+      "tau": 0.24064318122016537,
+      "p_perm": 0.13338666133386662,
+      "interval90": [
+       -0.11104477804240169,
+       0.5737923872019359
+      ],
+      "critical_tau": 0.36619614533503425,
+      "tau_prior": 0.4080471333733239,
+      "power_raw": {
+       "0.3": 0.4018,
+       "0.5": 0.8404
+      },
+      "leave_one_out": [
+       0.14623276439984778,
+       0.3510319689479054
+      ],
+      "prior_support": true,
+      "tau_partial_prior": 0.3121262067231297,
+      "p_partial": 0.057894210578942104,
+      "call": "no call"
+     }
+    }
+   },
+   "hope2": {
+    "tasks": [
+     "british",
+     "category",
+     "conll",
+     "french",
+     "lower",
+     "sentiment",
+     "squad",
+     "summary",
+     "swahili",
+     "tagalog",
+     "topic",
+     "yoruba"
+    ],
+    "readings": [
+     "share",
+     "steering",
+     "erank"
+    ],
+    "baselines": [
+     "kl",
+     "adl",
+     "prior"
+    ],
+    "W_readings": 0.46076146076146074,
+    "W_baselines": 0.19813519813519814,
+    "pairwise_tau": {
+     "share|steering": -0.0606060606060606,
+     "share|erank": 0.1515151515151515,
+     "share|E_b": NaN,
+     "share|kl": -0.1818181818181818,
+     "share|adl": -0.1212121212121212,
+     "share|size": -0.2121212121212121,
+     "share|prior": -0.0909090909090909,
+     "steering|erank": 0.303030303030303,
+     "steering|E_b": NaN,
+     "steering|kl": 0.4545454545454545,
+     "steering|adl": 0.6969696969696969,
+     "steering|size": -0.3636363636363636,
+     "steering|prior": -0.4848484848484848,
+     "erank|E_b": NaN,
+     "erank|kl": 0.4285714285714286,
+     "erank|adl": 0.2424242424242424,
+     "erank|size": 0.009523809523809525,
+     "erank|prior": -0.10476190476190476,
+     "E_b|kl": NaN,
+     "E_b|adl": NaN,
+     "E_b|size": NaN,
+     "E_b|prior": NaN,
+     "kl|adl": 0.2727272727272727,
+     "kl|size": -0.2571428571428572,
+     "kl|prior": -0.29523809523809524,
+     "adl|size": -0.1818181818181818,
+     "adl|prior": -0.4242424242424242,
+     "size|prior": 0.3904761904761905
+    },
+    "mean_tau": {
+     "readings": 0.1313131313131313,
+     "baselines": -0.14891774891774892
+    },
+    "mean_abs_tau": {
+     "readings": 0.17171717171717168,
+     "baselines": 0.3307359307359307
+    },
+    "W_readings_partial_prior_size": 0.43434343434343436,
+    "null_readings": {
+     "W": 0.46076146076146074,
+     "null95": 0.5384615384615384,
+     "percentile": 0.8559
+    },
+    "null_baselines": {
+     "W": 0.19813519813519814,
+     "null95": 0.5384615384615384,
+     "percentile": 0.12
+    },
+    "call": "no call (readings under their null)"
+   },
+   "unreadable": {
+    "E_b": "no information (between-task spread not above seed spread)"
+   }
+  },
+  "size_lo": {
+   "readability": {
+    "share": {
+     "between_sd": 0.3319727659573239,
+     "within_sd": 0.03682762441269534,
+     "readable": true,
+     "missing": [
+      "arxiv",
+      "british",
+      "german",
+      "sentiment",
+      "spanish",
+      "swahili",
+      "yoruba"
+     ]
+    },
+    "steering": {
+     "between_sd": 0.3887377087080442,
+     "within_sd": 0.06147152689793877,
+     "readable": true,
+     "missing": [
+      "arxiv",
+      "british",
+      "german",
+      "sentiment",
+      "spanish",
+      "swahili",
+      "yoruba"
+     ]
+    },
+    "erank": {
+     "between_sd": 109.00851892752135,
+     "within_sd": 3.938244701241666,
+     "readable": true,
+     "missing": []
+    },
+    "E_b": {
+     "between_sd": NaN,
+     "within_sd": NaN,
+     "readable": false,
+     "missing": [
+      "arxiv",
+      "british",
+      "category",
+      "conll",
+      "french",
+      "german",
+      "lower",
+      "sentiment",
+      "spanish",
+      "squad",
+      "summary",
+      "swahili",
+      "tagalog",
+      "topic",
+      "yoruba"
+     ]
+    },
+    "kl": {
+     "between_sd": 0.33916758788336804,
+     "within_sd": 0.07809210792173343,
+     "readable": true,
+     "missing": []
+    },
+    "adl": {
+     "between_sd": 0.12422314621498849,
+     "within_sd": 0.11518576194488644,
+     "readable": true,
+     "missing": [
+      "arxiv",
+      "british",
+      "german",
+      "sentiment",
+      "spanish",
+      "swahili",
+      "yoruba"
+     ]
+    },
+    "size": {
+     "between_sd": 3.896074404398055e-05,
+     "within_sd": 5.588182036500476e-05,
+     "readable": false,
+     "missing": []
+    },
+    "prior": {
+     "between_sd": 5.201126834453876,
+     "within_sd": 0.0,
+     "readable": true,
+     "missing": []
+    }
+   },
+   "means": {
+    "share": {
+     "category": 0.5205305119708437,
+     "conll": 0.5718582909505846,
+     "french": 0.5711154968318599,
+     "lower": 0.9215791967018411,
+     "squad": 1.2220112726484766,
+     "summary": 1.2463638053973556,
+     "tagalog": 0.5135129681074581,
+     "topic": 0.2881071260447136
+    },
+    "steering": {
+     "category": 0.1282143704465011,
+     "conll": 0.882693195687458,
+     "french": 1.3062999097825052,
+     "lower": 0.9614692710363876,
+     "squad": 0.762920578499149,
+     "summary": 0.7877418900564859,
+     "tagalog": 1.1433261664717307,
+     "topic": 0.2039904757967191
+    },
+    "erank": {
+     "arxiv": 556.9630281743981,
+     "british": 595.1862804040484,
+     "category": 304.37225309458194,
+     "conll": 279.25448582576195,
+     "french": 542.9300622738389,
+     "german": 546.5918168646285,
+     "lower": 579.9000027283035,
+     "sentiment": 280.7123644281069,
+     "spanish": 545.9521974513405,
+     "squad": 434.93040983780253,
+     "summary": 506.5040422757402,
+     "swahili": 461.2467854687514,
+     "tagalog": 474.46159064758353,
+     "topic": 311.6155531393172,
+     "yoruba": 437.9020211959412
+    },
+    "E_b": {},
+    "kl": {
+     "arxiv": 0.14981940353735487,
+     "british": 0.048790984310402304,
+     "category": 0.3196561171661116,
+     "conll": 0.42328282503376213,
+     "french": 0.5223949085922955,
+     "german": 0.04335055444366077,
+     "lower": 0.11553837606149908,
+     "sentiment": 1.2825437981167644,
+     "spanish": 0.04360487024606388,
+     "squad": 0.3970643688312185,
+     "summary": 0.2041070388816114,
+     "swahili": 0.11276400348331678,
+     "tagalog": 0.10335846362881551,
+     "topic": 0.8622223303455095,
+     "yoruba": 0.10272494345251981
+    },
+    "adl": {
+     "category": -0.015804093499970407,
+     "conll": 0.30583355731499473,
+     "french": 0.29543746566227114,
+     "lower": 0.18629004844263766,
+     "squad": 0.07144784077374296,
+     "summary": -0.007872292858276573,
+     "tagalog": 0.037227082327419045,
+     "topic": 0.018320147502595606
+    },
+    "size": {
+     "arxiv": 0.005686552170754349,
+     "british": 0.005737612823214469,
+     "category": 0.005684468512038617,
+     "conll": 0.0057307520561215575,
+     "french": 0.005735388780704301,
+     "german": 0.005731743449419023,
+     "lower": 0.005712695596618622,
+     "sentiment": 0.005702546785176091,
+     "spanish": 0.005738811713959427,
+     "squad": 0.005691140176145491,
+     "summary": 0.005688033897061726,
+     "swahili": 0.0058381435836385364,
+     "tagalog": 0.005730346314347546,
+     "topic": 0.005764403241673119,
+     "yoruba": 0.005685250201348555
+    },
+    "prior": {
+     "arxiv": -11.617029953002932,
+     "british": -7.1475960083007815,
+     "category": 0.8381883769325214,
+     "conll": -11.843995075225829,
+     "french": -12.911266333580016,
+     "german": -12.002177989959717,
+     "lower": -6.755572450637818,
+     "sentiment": 0.12398008834861685,
+     "spanish": -12.177623466491701,
+     "squad": -8.942493050575257,
+     "summary": -5.643984366416931,
+     "swahili": -11.908776196479797,
+     "tagalog": -13.557122698783877,
+     "topic": 2.0969101923692506,
+     "yoruba": -12.521292385101319
+    }
+   },
+   "hope1": {
+    "share": {
+     "opus_blind_wide": {
+      "tasks": [
+       "category",
+       "conll",
+       "french",
+       "lower",
+       "squad",
+       "summary",
+       "tagalog",
+       "topic"
+      ],
+      "tau": -0.20619652471058064,
+      "p_perm": 0.7766223377662234,
+      "interval90": [
+       -0.7652991913167734,
+       0.45688263740803203
+      ],
+      "critical_tau": 0.6185895741317419,
+      "tau_prior": 0.6185895741317419,
+      "power_raw": {
+       "0.3": 0.16795,
+       "0.5": 0.40735
+      },
+      "leave_one_out": [
+       -0.50709255283711,
+       0.0
+      ],
+      "prior_support": false,
+      "tau_partial_prior": NaN,
+      "p_partial": NaN,
+      "call": "not positive"
+     },
+     "gpt_blind_wide": {
+      "tasks": [
+       "category",
+       "conll",
+       "french",
+       "lower",
+       "squad",
+       "summary",
+       "tagalog",
+       "topic"
+      ],
+      "tau": 0.04583492485141056,
+      "p_perm": 0.49745025497450257,
+      "interval90": [
+       -0.6668466093435855,
+       0.7134772412317412
+      ],
+      "critical_tau": 0.5958540230683373,
+      "tau_prior": 0.22917462425705282,
+      "power_raw": {
+       "0.3": 0.2026,
+       "0.5": 0.47435
+      },
+      "leave_one_out": [
+       -0.1973855084879307,
+       0.4605661864718383
+      ],
+      "prior_support": true,
+      "tau_partial_prior": 0.030348479192916274,
+      "p_partial": 0.46815318468153183,
+      "call": "no call"
+     },
+     "consensus": {
+      "tasks": [
+       "category",
+       "conll",
+       "french",
+       "lower",
+       "squad",
+       "summary",
+       "tagalog",
+       "topic"
+      ],
+      "tau": -0.1889822365046136,
+      "p_perm": 0.7642235776422358,
+      "interval90": [
+       -0.8897565210026093,
+       0.43519413988924466
+      ],
+      "critical_tau": 0.5669467095138409,
+      "tau_prior": 0.41576092031014994,
+      "power_raw": {
+       "0.3": 0.2055,
+       "0.5": 0.4898
+      },
+      "leave_one_out": [
+       -0.5143444998736397,
+       -0.05006261743217588
+      ],
+      "prior_support": true,
+      "tau_partial_prior": -0.24106182011256458,
+      "p_partial": 0.7901209879012099,
+      "call": "not positive"
+     }
+    },
+    "steering": {
+     "opus_blind_wide": {
+      "tasks": [
+       "category",
+       "conll",
+       "french",
+       "lower",
+       "squad",
+       "summary",
+       "tagalog",
+       "topic"
+      ],
+      "tau": -0.28867513459481287,
+      "p_perm": 0.8492150784921508,
+      "interval90": [
+       -0.7756315349925287,
+       0.40492914359926274
+      ],
+      "critical_tau": 0.6185895741317419,
+      "tau_prior": 0.6185895741317419,
+      "power_raw": {
+       "0.3": 0.16795,
+       "0.5": 0.40735
+      },
+      "leave_one_out": [
+       -0.50709255283711,
+       -0.1091089451179962
+      ],
+      "prior_support": false,
+      "tau_partial_prior": NaN,
+      "p_partial": NaN,
+      "call": "not positive"
+     },
+     "gpt_blind_wide": {
+      "tasks": [
+       "category",
+       "conll",
+       "french",
+       "lower",
+       "squad",
+       "summary",
+       "tagalog",
+       "topic"
+      ],
+      "tau": -0.04583492485141056,
+      "p_perm": 0.6107389261073892,
+      "interval90": [
+       -0.5773502691896258,
+       0.4815434123430769
+      ],
+      "critical_tau": 0.5958540230683373,
+      "tau_prior": 0.22917462425705282,
+      "power_raw": {
+       "0.3": 0.2026,
+       "0.5": 0.47435
+      },
+      "leave_one_out": [
+       -0.2760262237369417,
+       0.1973855084879307
+      ],
+      "prior_support": true,
+      "tau_partial_prior": 0.13612080309697683,
+      "p_partial": 0.3558644135586441,
+      "call": "not positive"
+     },
+     "consensus": {
+      "tasks": [
+       "category",
+       "conll",
+       "french",
+       "lower",
+       "squad",
+       "summary",
+       "tagalog",
+       "topic"
+      ],
+      "tau": -0.1889822365046136,
+      "p_perm": 0.7695230476952305,
+      "interval90": [
+       -0.7572401854185359,
+       0.4013229787089025
+      ],
+      "critical_tau": 0.5669467095138409,
+      "tau_prior": 0.41576092031014994,
+      "power_raw": {
+       "0.3": 0.2055,
+       "0.5": 0.4898
+      },
+      "leave_one_out": [
+       -0.4114755998989118,
+       0.0
+      ],
+      "prior_support": true,
+      "tau_partial_prior": 0.11238537417565742,
+      "p_partial": 0.36306369363063695,
+      "call": "not positive"
+     }
+    },
+    "erank": {
+     "opus_blind_wide": {
+      "tasks": [
+       "arxiv",
+       "british",
+       "category",
+       "conll",
+       "french",
+       "german",
+       "lower",
+       "sentiment",
+       "spanish",
+       "squad",
+       "summary",
+       "swahili",
+       "tagalog",
+       "topic",
+       "yoruba"
+      ],
+      "tau": 0.1840174824912945,
+      "p_perm": 0.21827817218278173,
+      "interval90": [
+       -0.15912206438077628,
+       0.5662271794088881
+      ],
+      "critical_tau": 0.3680349649825889,
+      "tau_prior": 0.5060480768510599,
+      "power_raw": {
+       "0.3": 0.4047,
+       "0.5": 0.82685
+      },
+      "leave_one_out": [
+       0.09395338384238781,
+       0.3087039754821314
+      ],
+      "prior_support": true,
+      "tau_partial_prior": 0.2882111729160283,
+      "p_partial": 0.08309169083091691,
+      "call": "no call"
+     },
+     "gpt_blind_wide": {
+      "tasks": [
+       "arxiv",
+       "british",
+       "category",
+       "conll",
+       "french",
+       "german",
+       "lower",
+       "sentiment",
+       "spanish",
+       "squad",
+       "summary",
+       "swahili",
+       "tagalog",
+       "topic",
+       "yoruba"
+      ],
+      "tau": 0.33136674783180564,
+      "p_perm": 0.06679332066793321,
+      "interval90": [
+       -0.10636657960165967,
+       0.6672531068646443
+      ],
+      "critical_tau": 0.3787048546649207,
+      "tau_prior": 0.2840286409986905,
+      "power_raw": {
+       "0.3": 0.38535,
+       "0.5": 0.8169
+      },
+      "leave_one_out": [
+       0.22413272587221034,
+       0.3892354473470352
+      ],
+      "prior_support": true,
+      "tau_partial_prior": 0.3852399638239746,
+      "p_partial": 0.036196380361963806,
+      "call": "positive"
+     },
+     "consensus": {
+      "tasks": [
+       "arxiv",
+       "british",
+       "category",
+       "conll",
+       "french",
+       "german",
+       "lower",
+       "sentiment",
+       "spanish",
+       "squad",
+       "summary",
+       "swahili",
+       "tagalog",
+       "topic",
+       "yoruba"
+      ],
+      "tau": 0.2615686752393102,
+      "p_perm": 0.11148885111488852,
+      "interval90": [
+       -0.09931077249963949,
+       0.5933389552635626
+      ],
+      "critical_tau": 0.36619614533503425,
+      "tau_prior": 0.4080471333733239,
+      "power_raw": {
+       "0.3": 0.4018,
+       "0.5": 0.8404
+      },
+      "leave_one_out": [
+       0.1706048917998224,
+       0.3510319689479054
+      ],
+      "prior_support": true,
+      "tau_partial_prior": 0.3444929985945794,
+      "p_partial": 0.038196180381961806,
+      "call": "positive"
+     }
+    }
+   },
+   "hope2": {
+    "tasks": [
+     "category",
+     "conll",
+     "french",
+     "lower",
+     "squad",
+     "summary",
+     "tagalog",
+     "topic"
+    ],
+    "readings": [
+     "share",
+     "steering",
+     "erank"
+    ],
+    "baselines": [
+     "kl",
+     "adl",
+     "prior"
+    ],
+    "W_readings": 0.5608465608465608,
+    "W_baselines": 0.07936507936507936,
+    "pairwise_tau": {
+     "share|steering": 0.0,
+     "share|erank": 0.21428571428571427,
+     "share|E_b": NaN,
+     "share|kl": 0.21428571428571427,
+     "share|adl": 0.07142857142857142,
+     "share|size": 0.4999999999999999,
+     "share|prior": 0.07142857142857142,
+     "steering|erank": 0.4999999999999999,
+     "steering|E_b": NaN,
+     "steering|kl": 0.21428571428571427,
+     "steering|adl": 0.4999999999999999,
+     "steering|size": -0.3571428571428571,
+     "steering|prior": -0.6428571428571428,
+     "erank|E_b": NaN,
+     "erank|kl": 0.4666666666666667,
+     "erank|adl": 0.14285714285714285,
+     "erank|size": -0.10476190476190476,
+     "erank|prior": -0.12380952380952381,
+     "E_b|kl": NaN,
+     "E_b|adl": NaN,
+     "E_b|size": NaN,
+     "E_b|prior": NaN,
+     "kl|adl": -0.14285714285714285,
+     "kl|size": -0.06666666666666668,
+     "kl|prior": -0.3523809523809524,
+     "adl|size": -0.42857142857142855,
+     "adl|prior": -0.42857142857142855,
+     "size|prior": 0.14285714285714288
+    },
+    "mean_tau": {
+     "readings": 0.23809523809523805,
+     "baselines": -0.30793650793650795
+    },
+    "mean_abs_tau": {
+     "readings": 0.23809523809523805,
+     "baselines": 0.30793650793650795
+    },
+    "W_readings_partial_prior_size": 0.6402116402116402,
+    "null_readings": {
+     "W": 0.5608465608465608,
+     "null95": 0.5978835978835979,
+     "percentile": 0.923
+    },
+    "null_baselines": {
+     "W": 0.07936507936507936,
+     "null95": 0.5978835978835979,
+     "percentile": 0.0145
+    },
+    "call": "no call (readings under their null)"
+   },
+   "unreadable": {
+    "E_b": "no information (between-task spread not above seed spread)"
+   }
+  }
+ }
+}
