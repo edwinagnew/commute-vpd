@@ -6,9 +6,10 @@
 `results/posthoc.json` from `posthoc.py`.*
 
 On twelve realistic fine-tunes, we swapped the model's weight matrices for their untrained singular directions and
-measured how much of each fine-tune's gain survives. That share does not follow the raters' reuse tiers, even with
-text unfamiliarity or output change held fixed, and two tasks read shares far outside zero to one. So this cheap
-reading is not evidence of reuse on realistic text at this model size, and the paper should not list it as one.
+measured how much of each fine-tune's gain survives. That share showed no order by the raters' reuse tiers, even with
+text unfamiliarity or output change held fixed, though nine tasks could miss a moderate one; and two tasks read
+shares far outside zero to one. So this cheap reading is not evidence of reuse on realistic text at this model size,
+and the paper should not list it as one.
 
 ## What was tested
 
@@ -43,7 +44,7 @@ The zero update read exactly zero on every task's rows. The lowercase state read
 equal to the saved values to every digit. So the apparatus repeats, and the built reuse case sits above the built
 new case as before.
 
-## The share does not follow the tiers
+## The share shows no order by the tiers
 
 ![Each task's mean share by tier](../../experiments/untrained_panel/figures/untrained_by_tier.png)
 
@@ -95,7 +96,7 @@ panel thin at its reuse end.
 ## The share against the write share
 
 The filed fourth test compares the share with the write share over the needed set, the reading the panel scored
-first. On this panel that write share runs opposite to the tiers, at -0.69 in the earlier scoring. The two readings'
+first. On this panel that write share runs opposite to the tiers, at -0.69 in the earlier scoring (E272's `experiments/convergence_panel/results/summary.json`, `wide.kl_hi.hope1.E_b.consensus.tau`). The two readings'
 rank correlation is 0.17, with p 0.31.
 
 **Post hoc.** Four states have needed sets under 1,000 variables: one category seed, two entity-tagging seeds and
@@ -109,10 +110,11 @@ comes close.
 
 ## What we learned
 
-The untrained-SVD share does not order realistic fine-tunes by the raters' reuse tiers at 67M, with or without text
-unfamiliarity and output change held fixed. On built tasks it put lowercase above cipher, so it can see a gap there.
-On realistic text, two of nine tasks give values no proportion can take. The paper should not cite it as a reuse
-reading on realistic text.
+The untrained-SVD share showed no order by the raters' tiers across nine tasks (tau 0.03, no call), with or without
+text unfamiliarity and output change held fixed; with nine tasks a moderate correlation could be missed. On built
+tasks it put lowercase above cipher, so it can see a gap there. Two of the nine realistic tasks read values no
+proportion can take, so on realistic text the reading is not yet a share we can interpret. The paper should not cite
+it as a reuse reading on realistic text.
 
 ## How compelling the evidence is
 
@@ -120,7 +122,8 @@ Nine tasks, three seeds each, at one matched output change. A rank correlation o
 little power: a true correlation of moderate size would often read near zero. Three tasks dropped because their gains
 were small, two from the middle tier and one from the reuse tier. The share sees only the 24 replaced matrices, so a
 gain carried elsewhere, through embeddings or norms, is invisible to it. The tiers are two raters' judgements, not a
-known answer.
+known answer. So this run cannot tell apart two nulls: that the raters' intuition does not track reuse, or that the
+reading does not measure it.
 
 ## Surprises
 
