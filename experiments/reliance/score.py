@@ -7,6 +7,8 @@ sums over D in F's own run), changed. V1 = F's flip mass on K_F and K_M over F's
 members of K_F with dd < f den or dd = 0; each also over K_F and changed (_changed). K_M from results/dmap/ and
 results/large/mK_*.npz; V1 is None where M was not scanned on the item's D. Sources (order of the card):
     control   E277 built edits, neurons (experiments/needed_neurons/results/large/items_<item>.npz)
+    control_cue  amendment 1: x2 and x10 as F on new_few's D (run.py stage fcue, results/large/fcue_<item>.npz); with
+              new_few, new_thin and random_kl_241002 the same-D control. Every item also reports overlap = |K_F and K_M| / |K_F|
     e62       E277's nine E62 items at neurons; E275's at VPD (K, flips from claim2_needed, num/den/dd/changed from
               E257's rb_states arrays of the same item); E281's six on their copy windows at VPD (K_copy, flips and the
               copy-window passes from e62_copy_windows, changed from E257's)
@@ -83,6 +85,7 @@ def readings(z: dict[str, np.ndarray], KM: np.ndarray | None, cfg: Any) -> dict[
                            "flip_mass": int(flips[K].sum()), "M_scanned": KM is not None}  # fmt: skip
     if KM is not None:
         out["size_K_M"], out["size_both"] = int(KM.sum()), int((K & KM).sum())
+        out["overlap"] = out["size_both"] / out["size_K"] if out["size_K"] else None  # |K_F and K_M| / |K_F|, unweighted (amendment 1)
     for sfx, sel in (("", K), ("_changed", K & ch)):
         mass = float(flips[sel].sum())
         share = lambda mask: float(flips[sel & mask].sum()) / mass if mass > 0 else None  # noqa: B023
@@ -127,6 +130,7 @@ def gather(cfg: Any) -> list[dict[str, Any]]:
     e62 = json.loads((E277 / "predictions_a1.json").read_text())["settings"]["e62"]
     nn = lambda it: arrays(E277 / "large" / f"items_{it.replace('/', '__')}.npz", **NN_KEYS)
     rows = [item("control", it, "neurons", it, nn(it), cfg) for it in s277["built"]]
+    rows += [item("control_cue", it, "neurons", f"control_cue/{it}", arrays(RESULTS / "large" / f"fcue_{it}.npz", **NN_KEYS), cfg) for it in ("x2", "x10")]
     rows += [item("e62", it, "neurons", it, nn(it), cfg) for it in e62]
     rows += [item("e62", it, "vpd", it, vpd_e62(it), cfg) for it in e62]
     rows += [item("e281", it, "vpd", f"e281/{it}", e281(it), cfg) for it in e62 if "scaled" not in it]

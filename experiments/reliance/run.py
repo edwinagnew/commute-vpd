@@ -13,6 +13,8 @@ shared D is scanned once:
     neurons --world e62     E277's nine E62 items (E257's e62 read half; E280's D is e62/copy_s0's)
     neurons --world panel   E277's panel (E272's windows per task; --tasks picks tasks, one D each)
     vpd                     E275's nine E62 items at VPD, and E281's copy windows of each one's D (labels e281/<item>)
+    fcue                    amendment 1 (results/predictions_a1.json): x2 and x10 as F on new_few's D (the cue windows),
+                            E277's read, results/large/fcue_<item>.npz and results/fcue/<item>.json, and M's K there
 Outputs: results/large/mK_<feat>_<key>.npz (in_K, first_pair, flips of M), results/mK/<feat>_<key>.json (sizes, time),
 results/dmap/<feat>__<item>.json (the item's D key). A scan that finds no needed variable of M stops the job.
 
@@ -83,31 +85,67 @@ def save(feat: str, key: str, item: str, toks: Tensor, n_at: int, sc: IX.Scan, t
     log(f"{feat} {item}: D {key}, |K_M| {out['size_K_M']} of {out['n_vars']}, {sc.rows} cases in {sc.seconds:.0f} s; SCAN DONE")
 
 
-def neurons(world_name: str, items: list[str], tasks: list[str]) -> None:
+def neuron_scan(net: Any, feat: Any, cfg: Any, toks: Tensor, at: slice) -> tuple[IX.Scan, int]:
+    """E277's scan (its pairs and batch sizes) of `net` on D; returns the scan and the number of read positions."""
+    run = NN.cache(net, toks, at, cfg.cache_batch)
+    m = min(cfg.examples, len(toks))
+    ex, pt = IX.derangements(len(toks), cfg.derangements, m, cfg.seed)
+    n_at = run.top.shape[1]
+    sc = NN.scan(net, feat, run, at, ex, pt, NNR.rows_for(cfg, n_at), log)
+    del run
+    torch.cuda.empty_cache()
+    return sc, n_at
+
+
+def m_scan(feat: Any, cfg: Any, item: str, M: Any, toks: Tensor, at: slice) -> None:
+    """M's K on the item's D at neurons, unless M was scanned on that D before (the D key is recorded either way)."""
+    t0, key = time.time(), dkey(toks, at)
+    if record("neurons", item, key, toks):
+        log(f"{item}: D {key} scanned before")
+        return
+    torch.cuda.reset_peak_memory_stats()
+    log(f"{item}: M on D {key}, {len(toks)} windows of {toks.shape[1]} tokens")
+    sc, n_at = neuron_scan(M.net, feat, cfg, toks, at)
+    save("neurons", key, item, toks, n_at, sc, t0)
+
+
+def neuron_setup() -> tuple[Any, Any]:
     cfg, c229 = NNR.load_config(), NNR.load_e229()
-    feat = NNR.E229.feat_of(c229, NNR.E229.load_pct(c229), cfg.band)
+    return cfg, NNR.E229.feat_of(c229, NNR.E229.load_pct(c229), cfg.band)
+
+
+def neurons(world_name: str, items: list[str], tasks: list[str]) -> None:
+    cfg, feat = neuron_setup()
     world = NNR.Built(cfg, world_name)
     todo = [i for i in world.items if (not items or i in items) and (not tasks or world.panel.get(i, {}).get("task") in tasks)]
     assert todo and (not items or len(todo) == len(items)), f"items {items} tasks {tasks} pick {todo} of {world.items}"
     log(f"neurons, world {world_name}: {len(todo)} items {todo}")
     for item in todo:
-        t0 = time.time()
         F, M, toks, at, _ = world.make(item)
         del F
-        key = dkey(toks, at)
-        if record("neurons", item, key, toks):
-            log(f"{item}: D {key} scanned before")
-            continue
-        torch.cuda.reset_peak_memory_stats()
-        run = NN.cache(M.net, toks, at, cfg.cache_batch)
-        m = min(cfg.examples, len(toks))
-        ex, pt = IX.derangements(len(toks), cfg.derangements, m, cfg.seed)
-        n_at = run.top.shape[1]
-        log(f"{item}: M on D {key}, {len(toks)} windows of {toks.shape[1]} tokens, {n_at} read positions, {len(ex)} pairs")
-        sc = NN.scan(M.net, feat, run, at, ex, pt, NNR.rows_for(cfg, n_at), log)
-        save("neurons", key, item, toks, n_at, sc, t0)
-        del run
-        torch.cuda.empty_cache()
+        m_scan(feat, cfg, item, M, toks, at)
+
+
+def fcue(items: list[str], on: str) -> None:
+    """Amendment 1's same-D control: each built edit in `items` (x2, x10) as F on the D of `on` (new_few: the cue
+    windows, last position), read as E277's read_item reads an item (its write pass and scan, its pairs), saved as
+    results/large/fcue_<item>.npz with E277's keys, plus M's K on that D (recorded as control_cue/<item>)."""
+    cfg, feat = neuron_setup()
+    world = NNR.Built(cfg, "built")
+    _, M, toks, at, _ = world.make(on)
+    for item in items or ["x2", "x10"]:
+        t0 = time.time()
+        F, _, _, _, _ = world.make(item)  # the World's one M
+        m_scan(feat, cfg, f"control_cue/{item}", M, toks, at)
+        num, den, dd, ch, _ = NNR.write_pass(F, M, toks, feat, cfg.cache_batch)
+        log(f"{item} on {on}'s D: {int(ch.sum())} changed; F scan")
+        sc, n_at = neuron_scan(F.net, feat, cfg, toks, at)
+        np.savez_compressed(RESULTS / "large" / f"fcue_{item}.npz", in_K=(sc.first_pair >= 0).numpy(), first_pair=sc.first_pair.numpy(),
+                            flips=sc.flips.numpy(), num=num.numpy(), den=den.numpy(), dd=dd.numpy(), changed=ch.numpy())  # fmt: skip
+        write_stage(RESULTS / "fcue" / f"{item}.json", {"experiment": EXPERIMENT, "item": item, "on": on, "n_windows": len(toks), "n_read_positions": n_at,
+                    "size_K": int((sc.first_pair >= 0).sum()), "n_changed": int(ch.sum()), "cases_per_s": sc.rows / sc.seconds, "seconds": time.time() - t0})  # fmt: skip
+        log(f"{item} on {on}'s D: |K_F| {int((sc.first_pair >= 0).sum())}, {time.time() - t0:.0f} s; FCUE DONE")
+        del F
 
 
 def vpd(items: list[str]) -> None:
@@ -140,10 +178,12 @@ def main(args: argparse.Namespace) -> int:
     SCORE.load_config()
     torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False  # fp32, as the F scans
     log(f"{EXPERIMENT} start, stage {args.stage}, world {args.world}, items {args.items}, tasks {args.tasks}, tag {args.tag}")
-    for d in ("large", "mK", "dmap"):
+    for d in ("large", "mK", "dmap", "fcue"):
         (RESULTS / d).mkdir(parents=True, exist_ok=True)
     if args.stage == "neurons":
         neurons(args.world, args.items, args.tasks)
+    elif args.stage == "fcue":
+        fcue(args.items, "new_few")
     else:
         vpd(args.items)
     log(f"{EXPERIMENT} DONE")
@@ -152,13 +192,15 @@ def main(args: argparse.Namespace) -> int:
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", choices=("neurons", "vpd"), required=True)
+    ap.add_argument("--stage", choices=("neurons", "vpd", "fcue"), required=True)
     ap.add_argument("--world", choices=("built", "e62", "panel"), default="built")
     ap.add_argument("--items", nargs="*", default=[])
     ap.add_argument("--tasks", nargs="*", default=[])
     ap.add_argument("--tag", default="local")
     a = ap.parse_args()
     require_filed(PRED)
+    if a.stage == "fcue":
+        require_filed(RESULTS / "predictions_a1.json")
     code = 1
     try:
         code = main(a)
