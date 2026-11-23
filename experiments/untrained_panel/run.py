@@ -201,14 +201,14 @@ def score(C: Config) -> None:
     reads = {t: json.loads((READS / f"{t}.json").read_text()) for t in C.tasks}
     if undone := [t for t, d in reads.items() if not d.get("done")]:
         sys.exit(f"tasks not read to the end: {undone}")
-    means, info = SC.task_means({t: [d[f"s{s}"]["share"] for s in (0, 1, 2)] for t, d in reads.items()})
+    means, info = SC.task_means({t: [float(d[f"s{s}"]["share"]) for s in (0, 1, 2)] for t, d in reads.items()})
     S = json.loads((RUN.RESULTS / "summary.json").read_text())["wide"][C.match]["means"]
     loss = {t: -v["trained"]["nats_per_byte"] for t, v in json.loads((WIDE / "base_loss.json").read_text())["tasks"].items()}
     out: dict[str, Any] = {"experiment": "E279", "means": means, "readability": info, "n_perm": R["n_perm"], "seed": R["seed"],
-                           "seeds": {t: [d[f"s{s}"]["share"] for s in (0, 1, 2)] for t, d in reads.items()},
+                           "seeds": {t: [float(d[f"s{s}"]["share"]) for s in (0, 1, 2)] for t, d in reads.items()},
                            "1_tiers": PH.taus(tier, means, None, R), "2_given_base_loss": PH.taus(tier, means, loss, R),
                            "3_given_kl": PH.taus(tier, means, S["kl"], R), "4_E_b": PH.taus(S["E_b"], means, None, R)}  # fmt: skip
-    gs = {t: d["gauss"]["share_paired"] for t, d in reads.items()}
+    gs = {t: float(d["gauss"]["share_paired"]) for t, d in reads.items()}
     top = max((v for v in gs.values() if math.isfinite(v)), default=math.nan)
     out["gauss"] = {"share_paired": gs, "numerator": {t: d["gauss"]["numerator"] for t, d in reads.items()},
                     "gain": {t: d["gauss"]["gain"] for t, d in reads.items()}, "max_finite_share_paired": top,
