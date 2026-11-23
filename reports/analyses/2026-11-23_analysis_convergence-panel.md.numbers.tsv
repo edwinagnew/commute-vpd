@@ -174,3 +174,23 @@
 0.025	experiments/convergence_panel/results/wide/eb/swahili.json	.states|to_entries[]|select(.key|startswith("random"))|.value.E_b_K	this
 0.125	experiments/convergence_panel/results/summary.json	.wide.kl_hi.means.E_b.yoruba	this
 0.029	experiments/convergence_panel/results/wide/eb/yoruba.json	.states|to_entries[]|select(.key|startswith("random"))|.value.E_b_K	this
+-0.17	experiments/convergence_panel/results/summary.json	.wide.base_loss.all_nats_per_byte.text8.consensus.E_b.partial	this
+0.73	experiments/convergence_panel/results/summary.json	.wide.base_loss.all_nats_per_byte.text8.consensus.E_b.p_partial	this
+0.14	experiments/convergence_panel/results/summary.json	.wide.base_loss.all_nats_per_token.text8.consensus.E_b.partial	this
+200	experiments/convergence_panel/results/wide/eb/conll.json	.states["experiments/convergence_panel/results/large/states/conll_s0_step8.pt"].size_K	this
+885	experiments/convergence_panel/results/wide/eb/conll.json	.states["experiments/convergence_panel/results/large/states/conll_s2_step9.pt"].size_K	this
+17198	experiments/convergence_panel/results/wide/eb/conll.json	.states["experiments/convergence_panel/results/large/states/conll_s1_step8.pt"].size_K	this
+37888	experiments/convergence_panel/results/wide/eb/german.json	.states["experiments/convergence_panel/results/large/states/german_s0_step300.pt"].size_K	this
+0.026	experiments/convergence_panel/results/wide/eb/conll.json	.states["experiments/convergence_panel/results/large/states/conll_s0_step8.pt"].E_b_K	this
+0.049	experiments/convergence_panel/results/wide/eb/conll.json	.states["experiments/convergence_panel/results/large/states/conll_s2_step9.pt"].E_b_K	this
+0.119	experiments/convergence_panel/results/wide/eb/conll.json	.states["experiments/convergence_panel/results/large/states/conll_s1_step8.pt"].E_b_K	this
+38938	given	n_vars of the 67M decomposition, experiments/convergence_panel/results/read_logs/eb_d2.log, every eb record
+1000	given	needed-set size cut from redteam-lead's E_b verdict, note-2026-11-23-redteam-e272-eb-verdict.md
+-0.69	experiments/convergence_panel/results/summary.json	.wide.kl_hi.hope1.E_b.consensus.tau	this
+-0.59	given	consensus tau of task-mean write share over states with needed set >= 1000 variables (tiers new-high flip sign); ~/commute-data/scratch/redteam-lead/e272_eb_check.py and ~/commute-data/scratch/regating-lead/e272_verify.py on experiments/convergence_panel/results/wide/eb, reproduced 2026-11-23 via cpu-run
+0.29	given	within-task Kendall tau of write share against needed-set size, 36 trained states, residuals from task means; same two scripts
+-0.29	given	consensus tau of the seed-0 random update's write share with the tiers; same two scripts
+0.22	given	two-sided p of that random-update tau (scipy kendalltau); same two scripts
+-0.66	given	partial Kendall tau of trained write share with the tiers given the random update's; same two scripts
+-0.49	given	consensus tau of trained/random write-share ratio with the tiers; same two scripts
+0.873	given	consensus tau of minus base loss, trained nats per byte, seven continued-text tasks without summary; ~/commute-data/scratch/regating-lead/e272_verify.py on experiments/convergence_panel/results/wide/base_loss.json, 2026-11-23 via cpu-run

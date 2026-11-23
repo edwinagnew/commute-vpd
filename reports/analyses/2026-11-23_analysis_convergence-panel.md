@@ -11,7 +11,8 @@ rank's agreement with intuitive tiers is not distinguishable from the base model
 second sentence, that within continued text the effective rank tracks the tiers beyond that loss, did not survive the
 tie check below: it rests on one task. On the confirmatory panel, run separately: "effective rank and the base model's
 loss on the training text both order the intuitive tiers perfectly, so the panel cannot tell whether effective rank
-adds anything beyond text unfamiliarity." Nothing here gives a verdict under the reuse definition; every reading is
+adds anything beyond text unfamiliarity." On the write share over the needed set: "the reversal stands as read",
+with two overstatements, both corrected below. Nothing here gives a verdict under the reuse definition; every reading is
 descriptive of what the readings did.
 
 ## The answer
@@ -19,8 +20,9 @@ descriptive of what the readings did.
 On the scored wide panel no reading tracked the raters beyond the base model's loss on the training text. The
 effective rank passed the filed test at the margin, but holding that loss fixed leaves it a small, insignificant
 partial agreement. The write share over the needed set ran opposite to the raters across the twelve tasks: it
-was highest on the tasks the raters call new. That reversal does not follow the small KL spread left after matching or the base loss, and
-it repeats what real-text pairs showed. The readings agreed with each other less than the baselines did.
+was highest on the tasks the raters call new. That reversal does not follow the small KL spread left after matching.
+Across the twelve tasks the base loss does not account for it, but within continued text the base loss over all
+positions does. It comes mostly from training, not from the text alone, and it repeats what real-text pairs showed. The readings agreed with each other less than the baselines did.
 
 ## Before scoring
 
@@ -142,8 +144,8 @@ distinguishable from a data-only statistic.
 The loss was also read in three other ways: per token rather than per byte, and over all held tokens rather than the
 trained ones. Three of the four variants give the same answer, a consensus partial of 0.16 to 0.20 at p 0.20 to 0.25.
 The fourth, nats per token over the trained tokens, is the one where the loss barely tracks the tiers, at 0.15. There
-the partial is 0.39 at p 0.053. On the GPT rater's tiers alone it is 0.42 at p 0.049. That is the weakest loss variant
-letting the effective rank through, not a separate finding.
+the partial is 0.39 at p 0.053. On the GPT rater's tiers alone it is 0.42 at p 0.049. A loss that barely tracks the
+tiers is a weak control, so this 0.39 is not support for the effective rank and is not cited as such.
 
 | loss variant, twelve tasks, consensus | loss's own tau | its p | effective rank's partial on loss | p | write share's partial on loss |
 |---|---|---|---|---|---|
@@ -181,7 +183,8 @@ predictors order the tiers perfectly, and the partial is non-zero only because t
 its answers only. It can show that the effective rank orders the continued-text tiers perfectly. It cannot show that
 the effective rank adds anything beyond text unfamiliarity, and it is not cited as evidence for that. The same holds
 in the other loss units: per token over all tokens the loss reads 0.83 against the ceiling of 0.906. On the Opus tiers it reaches
-the ceiling itself.
+the ceiling itself. The base loss's own 0.873 without summary gets the same treatment. It sits at the tie ceiling on a
+subset chosen after the results were seen, so it is not evidence that the loss explains the tiers either.
 
 | eight continued-text tasks, consensus tiers | tasks | ceiling | effective rank | base loss, filed unit | partial on loss |
 |---|---|---|---|---|---|
@@ -219,9 +222,21 @@ and -0.64; its 90% task-bootstrap interval is -0.89 to -0.40.
 
 It is not output change in disguise. Its tau with KL across the twelve tasks is -0.03, and with KL held fixed its tau
 with the tiers stays at -0.70. That test is limited: KL was matched to within 10%, so little KL spread is left to
-follow. It survives the prior, at -0.67, and the base model's loss, at -0.60 to -0.68 across the four loss variants.
-The random Gaussian update of each task reads higher on Yoruba and Swahili too. Subtracting it leaves the consensus tau
-unchanged to two places.
+follow. It survives the prior, at -0.67. Across the twelve tasks it also survives the base model's loss, at -0.60 to
+-0.68 across the four loss variants. Within the eight continued-text tasks, two of the four variants remove it. Holding
+the base loss over all positions fixed, its partial is -0.17 at p 0.73 per byte, and +0.14 per token.
+
+The random Gaussian update of each task leans the same way, but weakly: its tau with the tiers is -0.29, at two-sided
+p 0.22. Subtracting it leaves the consensus tau unchanged to two places. Holding it fixed, the trained write share's
+partial tau is -0.66, and the ratio of trained to random gives -0.49. So most of the reversal comes from training, not
+from the text alone.
+
+**The reading depends on the state.** The needed set's size varies from 200 to 37,888 variables between seeds of one
+task. CoNLL's three seeds have needed sets of 200, 885 and 17,198 variables. Their write shares rise with it: 0.026,
+0.049 and 0.119. The category label and sentiment move the same way. Within tasks, the write share's tau with the needed set's
+size is 0.29. The consensus tau is -0.69 on all states and -0.59 without the four states whose needed set is under
+1,000 variables. In many states the needed set is near all 38,938 variables, so "over the needed set" restricts little
+there.
 
 This repeats E273. There, on the two readable real-text pairs, the write share was higher on reversed word order than
 on lowercase, and higher on Yoruba than French, on every seed. Both are the reverse of the built direction. Redteam-lead
@@ -329,7 +344,9 @@ at 67M, so any realistic panel here leans to the middle and new tiers.
 The wide panel has power 0.33 at a true tau of 0.3, so a no call for the re-gating share is weak evidence either way.
 The effective rank's positive call rests on twelve tasks, two of them on the reuse side, and does not survive the base
 loss. The write share's reversal is the strongest signal on the page. Its interval stays below zero, and it holds for
-both raters and with KL, prior or loss held fixed. It rests on twelve tasks with two at the reuse end, and the
+both raters and with KL or prior held fixed. It holds with the base loss held fixed across the twelve tasks, but not
+within continued text when the loss is taken over all positions. It weakens to -0.59 without the four states with the
+smallest needed sets, and the needed set's size moves the reading between seeds of one task. It rests on twelve tasks with two at the reuse end, and the
 raters' tiers are themselves a judgement, not a measured fact. Seeds are three per task; each measure passed the
 readability rule except KL on the wide set, which is the matched variable.
 
@@ -337,7 +354,10 @@ readability rule except KL on the wide set, which is the matched variable.
 
 - **Something unexpected happened that I cannot explain: the write share over the needed set ran opposite to the
   raters.** The filed prediction was a positive tau; the consensus tau is -0.69. It is the second panel to show this
-  reversal, after E273's real-text pairs. Neither output change nor the base loss accounts for it.
+  reversal, after E273's real-text pairs. Output change does not account for it, nor does the base loss across the twelve
+  tasks. Within continued text, the base loss over all positions does: the partials are -0.17 at p 0.73 per byte and
+  +0.14 per token. The random update leans the same way only weakly, so most of the reversal comes from
+  training.
 - **The second hope reversed on the wide panel.** The filed prediction was that the readings agree more than the
   baselines; they agree less.
 - The steering share's tau with the tiers was negative for every rater on both panels, against the filed positive
@@ -354,7 +374,8 @@ arm A recipe; the write share is a sampled estimate over 256 input pairs, not an
 ## What next
 
 - Find out why the write share reads higher on new-tier tasks. If it follows how unfamiliar the text is at the read
-  position, it reads the data, not the update. If not, the raters and the reading disagree about reuse at 67M.
+  position, it reads the data, not the update. If not, the raters and the reading disagree about reuse at 67M. Within
+  continued text the base loss over all positions already accounts for it; across the twelve tasks it does not.
   Either answer changes what the paper can say about the reading.
 - Add tasks on the reuse side that learn on held data at matched KL; without them neither hope can be read well.
 - Any further effective-rank test needs a panel where text unfamiliarity and the tiers come apart; two panels have not
@@ -366,7 +387,7 @@ arm A recipe; the write share is a sampled estimate over 256 input pairs, not an
 |---|---|---|---|---|
 | H1, nine | readings rank tasks like the tiers | prior-aware tau call, KL high set | five tasks; share and effective rank no call, steering not positive; write share not read | no call |
 | H1, wide | same, 18-task panel | same, joint raters | effective rank positive for every rater on 12 tasks, prior-partialled route only; shares on 8: share no call, steering not positive; write share not positive, tau -0.69 | one of four positive, marginal, uncorrected |
-| H1, wide, write share | write share ranks tasks like the tiers, higher = reuse | same | consensus -0.69, Opus -0.83, GPT -0.52 | not positive; reversed |
+| H1, wide, write share | write share ranks tasks like the tiers, higher = reuse | same | consensus -0.69, Opus -0.83, GPT -0.52; consensus -0.59 without the four states under 1,000 variables | not positive; reversed |
 | Amendment 10 | write share against KL and prior, descriptive | tau and partial tau | tau with KL -0.03; partial on KL -0.70, on prior -0.67 | descriptive |
 | base loss, post hoc | effective rank beyond base loss | partial tau, filed unit | 0.20 at p 0.20 on 12 tasks | not distinguishable from base loss |
 | H2, nine | readings agree more than baselines | W against own-m null | both under null | no call |
@@ -385,6 +406,8 @@ arm A recipe; the write share is a sampled estimate over 256 input pairs, not an
 - The user's own sort of the tasks: not filed.
 - The size-matched and low-KL sets are in `summary.json`, descriptive only; the low-KL sets have under five tasks.
 - A test of whether the write share follows text unfamiliarity at the read position.
+- A check of how `eb.py` builds the needed set: the red-team recompute read its saved outputs only.
+- A reading of the write share at a fixed needed-set size, which would take the state dependence out.
 
 ## Provenance
 
