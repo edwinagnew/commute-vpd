@@ -1,0 +1,26 @@
+{
+ "experiment": "E272",
+ "stage": "probe recipe",
+ "filed": {
+  "tries": [
+   {
+    "name": "try1",
+    "lr": 1e-05,
+    "batch": 32,
+    "warmup": 18,
+    "settings_source": "lr: Gururangan et al. 2020 (Don't Stop Pretraining, App. B) DAPT 5e-4 at batch 2048 and TAPT 1e-4 at batch 256, linearly scaled (Goyal et al. 2017) to batch 32: 7.8e-6 and 1.25e-5, 1e-5 between; batch: BERT's fine-tuning grid {16, 32} (Devlin et al. 2019 App. A.3), the larger, 4x the panel's tokens a step (DAPT's 2048 needs accumulation the trainer lacks); warm-up: DAPT/TAPT's (RoBERTa's) 6% linear, 18 of 300. Adam betas (0.9, 0.999), eps 1e-8, no weight decay, clip 1, 300 steps, constant rate after warm-up: the panel's, so only rate, batch and warm-up change (departures from DAPT: betas 0.9/0.98, eps 1e-6, weight decay 0.01, linear decay to 0, 12.5K steps; no decay because the panel reads states along the run). Pile's 2,400 rows are cycled 4 times at batch 32 (TAPT's 100 epochs over task data are the precedent)"
+   },
+   {
+    "name": "try2",
+    "lr": 3e-06,
+    "batch": 32,
+    "warmup": 18,
+    "settings_source": "lr: the geometric middle of try 1's 1e-5 and Pythia-70M's end-of-pretraining rate (Biderman et al. 2023: 1e-3 peak, cosine to 10%, at 2M tokens a step) linearly scaled to 16K tokens a step, 7.8e-7: continuing near the base's own final rate; batch and warm-up as try 1. Adam betas (0.9, 0.999), eps 1e-8, no weight decay, clip 1, 300 steps, constant rate after warm-up: the panel's, so only rate, batch and warm-up change (departures from DAPT: betas 0.9/0.98, eps 1e-6, weight decay 0.01, linear decay to 0, 12.5K steps; no decay because the panel reads states along the run). Pile's 2,400 rows are cycled 4 times at batch 32 (TAPT's 100 epochs over task data are the precedent)"
+   }
+  ],
+  "rule": "a try passes when, at some KL rung v of the panel's ladder (kl_lo x 2^(i/2), i < kl_n), pile and lower each have a seed-0 save with KL (64 kl rows, read from the file) within +-match_tol of v and held gain >= the task's filed floor (results/train/<task>.json floor.floor): panel.nearest, the same rung for both",
+  "bar_0ab": 0.0001,
+  "bar_0c": 0.001,
+  "early_stop": "step-10 size > 0.5 x the filed run's seed-0 step-10 size"
+ }
+}

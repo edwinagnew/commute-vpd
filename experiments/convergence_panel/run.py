@@ -255,16 +255,23 @@ def floor(net: ST.Net, C: Config, t: PN.Task, w0: float) -> dict[str, Any]:
     return {"random_gains": g, "floor": C.floor_mult * max(abs(x) for x in g)}
 
 
-def fine_tune(net: ST.Net, C: Config, t: PN.Task, seed: int, w0: float, kl: torch.Tensor) -> list[dict[str, Any]]:
-    """One seed on the rungs; each save's bf16 file, its KL on all kl rows, size and held gain (read from the file)."""
-    rc, saves = PN.Recipe(C.lr, C.batch, C.steps, C.grad_clip), []
+def save_dW(p: Path, dW: ST.DW) -> str:
+    """A state as its bf16 file at p; its sha256."""
+    p.parent.mkdir(parents=True, exist_ok=True)
+    torch.save({k: v.to(torch.bfloat16) for k, v in dW.items()}, p)
+    return hashlib.sha256(p.read_bytes()).hexdigest()
+
+
+def fine_tune(net: ST.Net, C: Config, t: PN.Task, seed: int, w0: float, kl: torch.Tensor, rc: PN.Recipe | None = None,
+              states: Path = LARGE / "states") -> list[dict[str, Any]]:  # fmt: skip
+    """One seed on the rungs; each save's bf16 file, its KL on all kl rows, size and held gain (read from the file).
+    rc and states default to the filed recipe and directory (probe.py passes its own)."""
+    rc, saves = rc or PN.Recipe(C.lr, C.batch, C.steps, C.grad_clip), []
     rungs: dict[str, Sequence[float]] = {"kl": PN.rung_ladder(C.kl_lo, C.kl_n), "size": PN.rung_ladder(C.size_lo, C.size_n)}
 
     def save(step: int, dW: ST.DW, info: dict[str, Any]) -> None:
-        p = LARGE / "states" / f"{t.name}_s{seed}_step{step}.pt"
-        p.parent.mkdir(parents=True, exist_ok=True)
-        torch.save({k: v.to(torch.bfloat16) for k, v in dW.items()}, p)
-        saves.append(info | {"file": str(p.relative_to(REPO)), "sha256": hashlib.sha256(p.read_bytes()).hexdigest()})
+        p = states / f"{t.name}_s{seed}_step{step}.pt"
+        saves.append(info | {"file": str(p.relative_to(REPO)), "sha256": save_dW(p, dW)})
 
     t0 = time.time()
     trace = PN.train_ladder(net, t, rc, seed, kl[: C.kl_live_rows], rungs, save, log)

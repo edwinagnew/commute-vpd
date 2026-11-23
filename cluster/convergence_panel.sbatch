@@ -29,4 +29,5 @@ source "$SLURM_SUBMIT_DIR/cluster/env.sh"   # submit from the clone root; HF cac
 cd "$COMMUTE_REPO"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
+[[ ${1:-} == probe ]] && exec .venv/bin/python experiments/convergence_panel/probe.py   # E272 probe (probe.py header)
 .venv/bin/python experiments/convergence_panel/run.py "$@"
