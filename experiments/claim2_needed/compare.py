@@ -117,10 +117,13 @@ def part_a() -> dict[str, Any]:
     trained = [q for q in pts if q["arm"] not in rand]
     sets = {"trained": trained, "trained_no_repeat": [q for q in trained if not q["task"].startswith(ST262["repeat_task_prefix"])],
             "random_arms": [q for q in pts if q["arm"] in rand]}  # fmt: skip
+    # redteam-lead's E275 verdict (2026-11-23): the trained tables again without the states whose |K| < SMALL_K
+    big = {f"{n}_K_ge_{SMALL_K}": [q for q in sets[n] if E268[e268_name(q["state"])]["size_K"] >= SMALL_K] for n in ("trained", "trained_no_repeat")}
     out: dict[str, Any] = {"E268_Kstar_vs_R_b_max_rel_dev": dev, "left_out": [q["state"] for q in pts if not kept(E268[e268_name(q["state"])])]}
-    for name, s in sets.items():
+    for name, s in (sets | big).items():
         out[name] = three(s, ST262["proxies"] if name != "random_arms" else ["erank", "prior"])
-        out[name]["repeats_E262"] = same(out[name]["published"], E262["A_procedural"][name])
+        if name in sets:
+            out[name]["repeats_E262"] = same(out[name]["published"], E262["A_procedural"][name])
     lens = {q["state"]: q for q in read(X / "adl" / "results" / "amend2" / "summary.json")["b"]["points"]}
     byst = {q["state"]: q for q in pts}
     rows = [byst[s] | {"adl": q["adl"], "collapsed": q["collapsed"]} for s, q in lens.items() if q["arm"] not in rand]
