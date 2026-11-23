@@ -169,6 +169,8 @@ fails its own positive control. x2 and x10, which change 9 variables, read 0.848
 variables that M does not need on the same pairs. The needed set moves with F's outputs, even under a pure
 strengthening, so V1 as built has a floor near 0.8 for any edit and cannot test reliance. Neither reading is evidence
 about reliance itself."
+The red team corrected its own quote afterwards: in summary.json only new_thin's barely-changed reading is 0.998;
+random_kl's is 0.992, level with the strengthening edits.
 
 **Why the control fails: cause unshown.** The likely cause is that each network's needed set is found against its own
 top token. On a pair where F's and M's top tokens differ, or where M's margin is tiny, an untouched variable can flip
