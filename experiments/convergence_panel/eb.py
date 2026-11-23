@@ -157,10 +157,11 @@ def stage0(w: Any, kc: Any, th: dict[str, Any]) -> None:
 def states(name: str, which: str, match: str) -> list[str]:
     """The seed-0 Gaussians (stage 2's) first, then TASK's states that set `which` picked at a match starting `match`.
 
-    EB_GAUSSIAN=0 skips the Gaussians (lead, 2026-11-23: one task per pod keeps them, under whip-lead's $70 cap)."""
+    EB_GAUSSIAN=only runs the Gaussians alone, so a pod can read every task's reference before any seed (whip-lead,
+    2026-11-23: a late stop loses seeds, not references). Seeds run in file order, s0 then s1 then s2."""
     picked = {f: s for f, s in RUN.picked(name, which).items() if any(p.startswith(match) for p in s["picked"])}
     gauss = [f"random/{f}" for f in sorted(picked) if picked[f]["seed"] == 0]
-    return (gauss if os.environ.get("EB_GAUSSIAN", "1") == "1" else []) + sorted(picked)
+    return gauss if os.environ.get("EB_GAUSSIAN") == "only" else gauss + sorted(picked)
 
 
 def check(rec: dict[str, Any], toks: torch.Tensor, n_windows: int) -> list[str]:
