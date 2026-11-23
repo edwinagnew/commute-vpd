@@ -1,0 +1,59 @@
+E269 start, shard (0, 10): ['p256/sequence_sft_s0']; E226 settings {'alpha': 0.9, 'split_tol': 1e-06, 'batch': 32, 'grade_batch': 8, 'reranks': 2, 'eval_cap': 1000000000, 'chunk_div': 8, 'split_seed': 186001, 'reuse': ('x2', 'x10', 'moved', 'rebuilt'), 'new': ('new_few', 'new_thin')}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+p256/sequence_sft_s0: 256 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 5.1921, KL(F || M) 2.53097233; gates {'all': 1.4326698192235199e-06, 'none': 0.0}; worst split check 4.5e-07; split shares over all 24 {'write2': 0.5032414384022579, 'read2': 0.28603384976589336, 'outside2': 0.020028551716431784, 'cross_wr2': 0.1906961601159915, 'cross_out2': -5.74368139703506e-13}
+    ranking 0: prefix 29034, 15 evaluations
+    ranking 1: prefix 24114, 30 evaluations
+    ranking 2: prefix 23538, 45 evaluations
+    polish: 500 evaluations, 741 of 23538 tried, |K| 22888, chunk 2
+    polish: 1000 evaluations, 1703 of 23538 tried, |K| 22041, chunk 16
+    polish: 1500 evaluations, 2553 of 23538 tried, |K| 21289, chunk 4
+    polish: 2000 evaluations, 3188 of 23538 tried, |K| 20745, chunk 2
+    polish: 2500 evaluations, 3844 of 23538 tried, |K| 20202, chunk 1
+    polish: 3000 evaluations, 4633 of 23538 tried, |K| 19517, chunk 1
+    polish: 3500 evaluations, 5300 of 23538 tried, |K| 18974, chunk 1
+    polish: 4000 evaluations, 5927 of 23538 tried, |K| 18493, chunk 4
+    polish: 4500 evaluations, 6558 of 23538 tried, |K| 17975, chunk 2
+    polish: 5000 evaluations, 7295 of 23538 tried, |K| 17344, chunk 8
+    polish: 5500 evaluations, 7921 of 23538 tried, |K| 16832, chunk 2
+    polish: 6000 evaluations, 8578 of 23538 tried, |K| 16280, chunk 1
+    polish: 6500 evaluations, 9132 of 23538 tried, |K| 15863, chunk 2
+    polish: 7000 evaluations, 9663 of 23538 tried, |K| 15480, chunk 8
+    polish: 7500 evaluations, 10226 of 23538 tried, |K| 15045, chunk 2
+    polish: 8000 evaluations, 10860 of 23538 tried, |K| 14545, chunk 2
+    polish: 8500 evaluations, 11344 of 23538 tried, |K| 14216, chunk 16
+    polish: 9000 evaluations, 11849 of 23538 tried, |K| 13855, chunk 4
+    polish: 9500 evaluations, 12447 of 23538 tried, |K| 13382, chunk 2
+    polish: 10000 evaluations, 12916 of 23538 tried, |K| 13059, chunk 8
+    polish: 10500 evaluations, 13347 of 23538 tried, |K| 12764, chunk 2
+    polish: 11000 evaluations, 13841 of 23538 tried, |K| 12394, chunk 8
+    polish: 11500 evaluations, 14327 of 23538 tried, |K| 12057, chunk 4
+    polish: 12000 evaluations, 14776 of 23538 tried, |K| 11773, chunk 2
+    polish: 12500 evaluations, 15231 of 23538 tried, |K| 11472, chunk 2
+    polish: 13000 evaluations, 15666 of 23538 tried, |K| 11179, chunk 2
+    polish: 13500 evaluations, 16094 of 23538 tried, |K| 10934, chunk 1
+    polish: 14000 evaluations, 16556 of 23538 tried, |K| 10624, chunk 4
+    polish: 14500 evaluations, 16980 of 23538 tried, |K| 10353, chunk 2
+    polish: 15000 evaluations, 17404 of 23538 tried, |K| 10106, chunk 1
+    polish: 15500 evaluations, 17850 of 23538 tried, |K| 9832, chunk 1
+    polish: 16000 evaluations, 18280 of 23538 tried, |K| 9586, chunk 1
+    polish: 16500 evaluations, 18731 of 23538 tried, |K| 9319, chunk 1
+    polish: 17000 evaluations, 19142 of 23538 tried, |K| 9085, chunk 2
+    polish: 17500 evaluations, 19553 of 23538 tried, |K| 8838, chunk 2
+    polish: 18000 evaluations, 19960 of 23538 tried, |K| 8636, chunk 1
+    polish: 18500 evaluations, 20384 of 23538 tried, |K| 8406, chunk 1
+    polish: 19000 evaluations, 20793 of 23538 tried, |K| 8199, chunk 1
+    polish: 19500 evaluations, 21193 of 23538 tried, |K| 8022, chunk 2
+    polish: 20000 evaluations, 21600 of 23538 tried, |K| 7860, chunk 1
+    polish: 20500 evaluations, 22006 of 23538 tried, |K| 7672, chunk 4
+    polish: 21000 evaluations, 22415 of 23538 tried, |K| 7509, chunk 1
+    polish: 21500 evaluations, 22807 of 23538 tried, |K| 7335, chunk 1
+    polish: 22000 evaluations, 23220 of 23538 tried, |K| 7216, chunk 1
+  p256/sequence_sft_s0 main: |K*| 7087 (prefix 23538), R read 0.999323 (prefix 0.999135), R all 0.999555, f 0.9997, site-remainder share 0.0008, graft share 0.0000; 22413 evaluations, 8446 s
+p256/sequence_sft_s0: done in 8460 s; peak GPU memory 6.59 GB
+ITEM 1 of 1 DONE (p256/sequence_sft_s0): reading read, |K*| 7087, 22413 evaluations, capped False, 8461 s
+E269 DONE
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/kstar_uncapped/results ===
