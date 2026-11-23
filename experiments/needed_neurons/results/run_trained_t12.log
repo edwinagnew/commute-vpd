@@ -1,0 +1,201 @@
+[20:07:22] E277 (needed_neurons) start, stage trained, shard (1, 3), tag t1; settings {'built': ('x2', 'x10', 'rebuilt', 'new_few', 'new_thin', 'random_size_241001', 'random_kl_241002'), 'control': 'x2', 'band': 'p97', 'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'random_seed': 277000, 'too_small': 100}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[20:07:41]     layer 0: 3079 variables x 64 pairs, 0 needed; 197056 cases in 4 s (54643/s)
+[20:07:44]     layer 1: 3079 variables x 64 pairs, 0 needed; 394112 cases in 6 s (61249/s)
+[20:07:46]     layer 2: 3079 variables x 64 pairs, 0 needed; 591168 cases in 9 s (69511/s)
+[20:07:48]     layer 3: 3079 variables x 64 pairs, 0 needed; 788224 cases in 10 s (80150/s)
+[20:07:48] stage 0 (trained): {"experiment": "E277 (needed_neurons)", "world": "trained", "dn_n_changed": 0, "dn_dd_max": 0.0, "dn_E_b_K": 1.0, "n_vars": 12316, "identity": {"item": "copy24_s0", "flips": 0, "max_dev": 4.57763671875e-05, "min_margin": 0.001598358154296875, "cases": 788224, "cases_per_s": 80146.30222276978, "n_read_positions": 1, "n_windows": 512, "window_len": 8}, "est_seconds_per_item": 39.33925724029541, "seconds": 10.675427436828613}; checks hold
+[20:07:48] STAGE 0 DONE (trained): est. 39 s per item read like copy24_s0
+[20:07:48] stage trained: 13 of 40 items ['copy24_s0_rand', 'ident32_s0', 'rand32_s0_rand', 'case_twin_s0', 'repeat_real_s0_rand', 'twin_s0', 'fact_s0_rand', 'cipher24_s1', 'ident32_s1_rand', 'case_real_s1', 'case_twin_s1_rand', 'repeat_twin_s1', 'twin_s1_rand']
+[20:07:48] copy24_s0_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:08:03]     layer 0: 3079 variables x 256 pairs, 2655 needed; 788224 cases in 14 s (54781/s)
+[20:08:14]     layer 1: 3079 variables x 256 pairs, 1827 needed; 1576448 cases in 26 s (61245/s)
+[20:08:22]     layer 2: 3079 variables x 256 pairs, 1561 needed; 2364672 cases in 34 s (69384/s)
+[20:08:28]     layer 3: 3079 variables x 256 pairs, 885 needed; 3152896 cases in 39 s (80002/s)
+[20:08:28] copy24_s0_rand: E_b over K 0.004286, over all changed 0.007697; |K| 6928 (6928 changed) of 12316; margin median 0.57, min 0.00207; 40 s
+[20:08:28] ITEM 1 of 13 DONE (copy24_s0_rand)
+[20:08:29] ident32_s0: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:08:43]     layer 0: 3079 variables x 256 pairs, 1570 needed; 788224 cases in 14 s (54896/s)
+[20:08:54]     layer 1: 3079 variables x 256 pairs, 971 needed; 1576448 cases in 26 s (61316/s)
+[20:09:03]     layer 2: 3079 variables x 256 pairs, 549 needed; 2364672 cases in 34 s (69447/s)
+[20:09:08]     layer 3: 3079 variables x 256 pairs, 399 needed; 3152896 cases in 39 s (80084/s)
+[20:09:08] ident32_s0: E_b over K 0.033437, over all changed 0.032531; |K| 3489 (3489 changed) of 12316; margin median 2.19, min 0.00509; 40 s
+[20:09:08] ITEM 2 of 13 DONE (ident32_s0)
+[20:09:09] rand32_s0_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:09:23]     layer 0: 3079 variables x 256 pairs, 2281 needed; 788224 cases in 14 s (54860/s)
+[20:09:35]     layer 1: 3079 variables x 256 pairs, 1410 needed; 1576448 cases in 26 s (61250/s)
+[20:09:43]     layer 2: 3079 variables x 256 pairs, 1135 needed; 2364672 cases in 34 s (69369/s)
+[20:09:48]     layer 3: 3079 variables x 256 pairs, 861 needed; 3152896 cases in 39 s (79948/s)
+[20:09:48] rand32_s0_rand: E_b over K 0.003192, over all changed 0.005616; |K| 5687 (5687 changed) of 12316; margin median 0.574, min 0.000134; 40 s
+[20:09:48] ITEM 3 of 13 DONE (rand32_s0_rand)
+[20:09:49] case_twin_s0: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:10:03]     layer 0: 3079 variables x 256 pairs, 1531 needed; 788224 cases in 14 s (54820/s)
+[20:10:15]     layer 1: 3079 variables x 256 pairs, 1059 needed; 1576448 cases in 26 s (61248/s)
+[20:10:23]     layer 2: 3079 variables x 256 pairs, 876 needed; 2364672 cases in 34 s (69396/s)
+[20:10:28]     layer 3: 3079 variables x 256 pairs, 542 needed; 3152896 cases in 39 s (80029/s)
+[20:10:28] case_twin_s0: E_b over K 0.019711, over all changed 0.024128; |K| 4008 (4008 changed) of 12316; margin median 2.19, min 6.96e-05; 40 s
+[20:10:28] ITEM 4 of 13 DONE (case_twin_s0)
+[20:10:29] repeat_real_s0_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:10:44]     layer 0: 3079 variables x 256 pairs, 2726 needed; 788224 cases in 14 s (54845/s)
+[20:10:55]     layer 1: 3079 variables x 256 pairs, 2098 needed; 1576448 cases in 26 s (61288/s)
+[20:11:03]     layer 2: 3079 variables x 256 pairs, 1704 needed; 2364672 cases in 34 s (69427/s)
+[20:11:09]     layer 3: 3079 variables x 256 pairs, 819 needed; 3152896 cases in 39 s (80059/s)
+[20:11:09] repeat_real_s0_rand: E_b over K 0.006735, over all changed 0.009060; |K| 7347 (7347 changed) of 12316; margin median 0.535, min 0.000415; 40 s
+[20:11:09] ITEM 5 of 13 DONE (repeat_real_s0_rand)
+[20:11:09] twin_s0: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:11:24]     layer 0: 3079 variables x 256 pairs, 1603 needed; 788224 cases in 14 s (54861/s)
+[20:11:35]     layer 1: 3079 variables x 256 pairs, 1247 needed; 1576448 cases in 26 s (61261/s)
+[20:11:43]     layer 2: 3079 variables x 256 pairs, 814 needed; 2364672 cases in 34 s (69352/s)
+[20:11:49]     layer 3: 3079 variables x 256 pairs, 448 needed; 3152896 cases in 39 s (79935/s)
+[20:11:49] twin_s0: E_b over K 0.028493, over all changed 0.029402; |K| 4112 (4112 changed) of 12316; margin median 0.556, min 0.00174; 40 s
+[20:11:49] ITEM 6 of 13 DONE (twin_s0)
+[20:11:50] fact_s0_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:12:05]     layer 0: 3079 variables x 256 pairs, 2124 needed; 788224 cases in 14 s (54754/s)
+[20:12:16]     layer 1: 3079 variables x 256 pairs, 1414 needed; 1576448 cases in 26 s (61137/s)
+[20:12:24]     layer 2: 3079 variables x 256 pairs, 1091 needed; 2364672 cases in 34 s (69266/s)
+[20:12:30]     layer 3: 3079 variables x 256 pairs, 625 needed; 3152896 cases in 39 s (79857/s)
+[20:12:30] fact_s0_rand: E_b over K 0.005260, over all changed 0.011257; |K| 5254 (5254 changed) of 12316; margin median 0.599, min 0.000897; 41 s
+[20:12:30] ITEM 7 of 13 DONE (fact_s0_rand)
+[20:12:30] cipher24_s1: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:12:45]     layer 0: 3079 variables x 256 pairs, 2592 needed; 788224 cases in 14 s (54785/s)
+[20:12:56]     layer 1: 3079 variables x 256 pairs, 1410 needed; 1576448 cases in 26 s (61204/s)
+[20:13:04]     layer 2: 3079 variables x 256 pairs, 1227 needed; 2364672 cases in 34 s (69322/s)
+[20:13:10]     layer 3: 3079 variables x 256 pairs, 608 needed; 3152896 cases in 39 s (79925/s)
+[20:13:10] cipher24_s1: E_b over K 0.030906, over all changed 0.033071; |K| 5837 (5837 changed) of 12316; margin median 0.776, min 0.00202; 40 s
+[20:13:10] ITEM 8 of 13 DONE (cipher24_s1)
+[20:13:11] ident32_s1_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:13:25]     layer 0: 3079 variables x 256 pairs, 2558 needed; 788224 cases in 14 s (54758/s)
+[20:13:36]     layer 1: 3079 variables x 256 pairs, 1864 needed; 1576448 cases in 26 s (61170/s)
+[20:13:45]     layer 2: 3079 variables x 256 pairs, 1579 needed; 2364672 cases in 34 s (69294/s)
+[20:13:50]     layer 3: 3079 variables x 256 pairs, 941 needed; 3152896 cases in 39 s (79828/s)
+[20:13:50] ident32_s1_rand: E_b over K 0.005343, over all changed 0.007057; |K| 6942 (6942 changed) of 12316; margin median 0.656, min 7.15e-05; 40 s
+[20:13:50] ITEM 9 of 13 DONE (ident32_s1_rand)
+[20:13:51] case_real_s1: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:14:05]     layer 0: 3079 variables x 256 pairs, 2271 needed; 788224 cases in 14 s (54415/s)
+[20:14:17]     layer 1: 3079 variables x 256 pairs, 1766 needed; 1576448 cases in 26 s (60959/s)
+[20:14:25]     layer 2: 3079 variables x 256 pairs, 1412 needed; 2364672 cases in 34 s (69112/s)
+[20:14:30]     layer 3: 3079 variables x 256 pairs, 759 needed; 3152896 cases in 40 s (79728/s)
+[20:14:30] case_real_s1: E_b over K 0.018388, over all changed 0.021466; |K| 6208 (6208 changed) of 12316; margin median 5.74, min 0.000508; 40 s
+[20:14:30] ITEM 10 of 13 DONE (case_real_s1)
+[20:14:31] case_twin_s1_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:14:46]     layer 0: 3079 variables x 256 pairs, 2624 needed; 788224 cases in 14 s (54864/s)
+[20:14:57]     layer 1: 3079 variables x 256 pairs, 1821 needed; 1576448 cases in 26 s (61270/s)
+[20:15:05]     layer 2: 3079 variables x 256 pairs, 1458 needed; 2364672 cases in 34 s (69346/s)
+[20:15:11]     layer 3: 3079 variables x 256 pairs, 741 needed; 3152896 cases in 39 s (79956/s)
+[20:15:11] case_twin_s1_rand: E_b over K 0.010323, over all changed 0.018280; |K| 6644 (6644 changed) of 12316; margin median 0.565, min 0.00301; 40 s
+[20:15:11] ITEM 11 of 13 DONE (case_twin_s1_rand)
+[20:15:11] repeat_twin_s1: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:15:26]     layer 0: 3079 variables x 256 pairs, 1021 needed; 788224 cases in 14 s (54807/s)
+[20:15:37]     layer 1: 3079 variables x 256 pairs, 426 needed; 1576448 cases in 26 s (61259/s)
+[20:15:45]     layer 2: 3079 variables x 256 pairs, 364 needed; 2364672 cases in 34 s (69387/s)
+[20:15:51]     layer 3: 3079 variables x 256 pairs, 283 needed; 3152896 cases in 39 s (79960/s)
+[20:15:51] repeat_twin_s1: E_b over K 0.013778, over all changed 0.021373; |K| 2094 (2094 changed) of 12316; margin median 2.17, min 0.00737; 40 s
+[20:15:51] ITEM 12 of 13 DONE (repeat_twin_s1)
+[20:15:52] twin_s1_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:16:06]     layer 0: 3079 variables x 256 pairs, 2137 needed; 788224 cases in 14 s (54872/s)
+[20:16:18]     layer 1: 3079 variables x 256 pairs, 1453 needed; 1576448 cases in 26 s (61275/s)
+[20:16:26]     layer 2: 3079 variables x 256 pairs, 1182 needed; 2364672 cases in 34 s (69359/s)
+[20:16:31]     layer 3: 3079 variables x 256 pairs, 611 needed; 3152896 cases in 39 s (79970/s)
+[20:16:31] twin_s1_rand: E_b over K 0.006163, over all changed 0.013209; |K| 5383 (5383 changed) of 12316; margin median 0.59, min 0.000117; 41 s
+[20:16:32] ITEM 13 of 13 DONE (twin_s1_rand)
+[20:16:32] E277 (needed_neurons) DONE
+peak host RSS 6.4 GB
+[20:16:35] E277 (needed_neurons) start, stage trained, shard (2, 3), tag t2; settings {'built': ('x2', 'x10', 'rebuilt', 'new_few', 'new_thin', 'random_size_241001', 'random_kl_241002'), 'control': 'x2', 'band': 'p97', 'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'random_seed': 277000, 'too_small': 100}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[20:16:50] stage0_trained_t2.json: done before
+[20:16:50] stage trained: 13 of 40 items ['cipher24_s0', 'ident32_s0_rand', 'case_real_s0', 'case_twin_s0_rand', 'repeat_twin_s0', 'twin_s0_rand', 'copy24_s1', 'cipher24_s1_rand', 'rand32_s1', 'case_real_s1_rand', 'repeat_real_s1', 'repeat_twin_s1_rand', 'fact_s1']
+[20:16:50] cipher24_s0: done before, skipped
+[20:16:50] ITEM 1 of 13 DONE (cipher24_s0)
+[20:16:51] ident32_s0_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:17:06]     layer 0: 3079 variables x 256 pairs, 2470 needed; 788224 cases in 14 s (54781/s)
+[20:17:17]     layer 1: 3079 variables x 256 pairs, 1654 needed; 1576448 cases in 26 s (61288/s)
+[20:17:25]     layer 2: 3079 variables x 256 pairs, 1396 needed; 2364672 cases in 34 s (69424/s)
+[20:17:31]     layer 3: 3079 variables x 256 pairs, 895 needed; 3152896 cases in 39 s (80031/s)
+[20:17:31] ident32_s0_rand: E_b over K 0.003261, over all changed 0.005930; |K| 6415 (6415 changed) of 12316; margin median 0.651, min 0.00338; 41 s
+[20:17:31] ITEM 2 of 13 DONE (ident32_s0_rand)
+[20:17:31] case_real_s0: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:17:46]     layer 0: 3079 variables x 256 pairs, 1482 needed; 788224 cases in 14 s (54947/s)
+[20:17:57]     layer 1: 3079 variables x 256 pairs, 920 needed; 1576448 cases in 26 s (61391/s)
+[20:18:05]     layer 2: 3079 variables x 256 pairs, 782 needed; 2364672 cases in 34 s (69538/s)
+[20:18:11]     layer 3: 3079 variables x 256 pairs, 564 needed; 3152896 cases in 39 s (80200/s)
+[20:18:11] case_real_s0: E_b over K 0.017271, over all changed 0.021814; |K| 3748 (3748 changed) of 12316; margin median 6.74, min 0.00736; 40 s
+[20:18:11] ITEM 3 of 13 DONE (case_real_s0)
+[20:18:12] case_twin_s0_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:18:26]     layer 0: 3079 variables x 256 pairs, 2731 needed; 788224 cases in 14 s (54976/s)
+[20:18:37]     layer 1: 3079 variables x 256 pairs, 2005 needed; 1576448 cases in 26 s (61410/s)
+[20:18:46]     layer 2: 3079 variables x 256 pairs, 1676 needed; 2364672 cases in 34 s (69563/s)
+[20:18:51]     layer 3: 3079 variables x 256 pairs, 714 needed; 3152896 cases in 39 s (80226/s)
+[20:18:51] case_twin_s0_rand: E_b over K 0.013111, over all changed 0.016298; |K| 7126 (7126 changed) of 12316; margin median 0.587, min 4.96e-05; 40 s
+[20:18:51] ITEM 4 of 13 DONE (case_twin_s0_rand)
+[20:18:52] repeat_twin_s0: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:19:06]     layer 0: 3079 variables x 256 pairs, 1883 needed; 788224 cases in 14 s (54955/s)
+[20:19:17]     layer 1: 3079 variables x 256 pairs, 975 needed; 1576448 cases in 26 s (61398/s)
+[20:19:26]     layer 2: 3079 variables x 256 pairs, 769 needed; 2364672 cases in 34 s (69546/s)
+[20:19:31]     layer 3: 3079 variables x 256 pairs, 499 needed; 3152896 cases in 39 s (80205/s)
+[20:19:31] repeat_twin_s0: E_b over K 0.014228, over all changed 0.019837; |K| 4126 (4126 changed) of 12316; margin median 2.14, min 0.000247; 40 s
+[20:19:31] ITEM 5 of 13 DONE (repeat_twin_s0)
+[20:19:32] twin_s0_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:19:47]     layer 0: 3079 variables x 256 pairs, 1848 needed; 788224 cases in 14 s (54956/s)
+[20:19:58]     layer 1: 3079 variables x 256 pairs, 1238 needed; 1576448 cases in 26 s (61389/s)
+[20:20:06]     layer 2: 3079 variables x 256 pairs, 1045 needed; 2364672 cases in 34 s (69541/s)
+[20:20:12]     layer 3: 3079 variables x 256 pairs, 664 needed; 3152896 cases in 39 s (80193/s)
+[20:20:12] twin_s0_rand: E_b over K 0.005475, over all changed 0.012294; |K| 4795 (4795 changed) of 12316; margin median 0.625, min 0.00356; 41 s
+[20:20:12] ITEM 6 of 13 DONE (twin_s0_rand)
+[20:20:12] copy24_s1: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:20:27]     layer 0: 3079 variables x 256 pairs, 1223 needed; 788224 cases in 14 s (54934/s)
+[20:20:38]     layer 1: 3079 variables x 256 pairs, 744 needed; 1576448 cases in 26 s (61376/s)
+[20:20:46]     layer 2: 3079 variables x 256 pairs, 428 needed; 2364672 cases in 34 s (69522/s)
+[20:20:52]     layer 3: 3079 variables x 256 pairs, 440 needed; 3152896 cases in 39 s (80174/s)
+[20:20:52] copy24_s1: E_b over K 0.027879, over all changed 0.027471; |K| 2835 (2835 changed) of 12316; margin median 2.24, min 0.005; 40 s
+[20:20:52] ITEM 7 of 13 DONE (copy24_s1)
+[20:20:52] cipher24_s1_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:21:07]     layer 0: 3079 variables x 256 pairs, 2632 needed; 788224 cases in 14 s (54970/s)
+[20:21:18]     layer 1: 3079 variables x 256 pairs, 1912 needed; 1576448 cases in 26 s (61416/s)
+[20:21:26]     layer 2: 3079 variables x 256 pairs, 1630 needed; 2364672 cases in 34 s (69569/s)
+[20:21:32]     layer 3: 3079 variables x 256 pairs, 861 needed; 3152896 cases in 39 s (80231/s)
+[20:21:32] cipher24_s1_rand: E_b over K 0.003886, over all changed 0.007478; |K| 7035 (7035 changed) of 12316; margin median 0.605, min 0.00158; 40 s
+[20:21:32] ITEM 8 of 13 DONE (cipher24_s1_rand)
+[20:21:32] rand32_s1: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:21:47]     layer 0: 3079 variables x 256 pairs, 2297 needed; 788224 cases in 14 s (54872/s)
+[20:21:58]     layer 1: 3079 variables x 256 pairs, 1519 needed; 1576448 cases in 26 s (61312/s)
+[20:22:07]     layer 2: 3079 variables x 256 pairs, 1354 needed; 2364672 cases in 34 s (69432/s)
+[20:22:12]     layer 3: 3079 variables x 256 pairs, 760 needed; 3152896 cases in 39 s (80037/s)
+[20:22:12] rand32_s1: E_b over K 0.030506, over all changed 0.032948; |K| 5930 (5930 changed) of 12316; margin median 1.25, min 0.000132; 40 s
+[20:22:12] ITEM 9 of 13 DONE (rand32_s1)
+[20:22:13] case_real_s1_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:22:27]     layer 0: 3079 variables x 256 pairs, 2818 needed; 788224 cases in 14 s (54855/s)
+[20:22:38]     layer 1: 3079 variables x 256 pairs, 2073 needed; 1576448 cases in 26 s (61299/s)
+[20:22:47]     layer 2: 3079 variables x 256 pairs, 1641 needed; 2364672 cases in 34 s (69390/s)
+[20:22:52]     layer 3: 3079 variables x 256 pairs, 768 needed; 3152896 cases in 39 s (79951/s)
+[20:22:52] case_real_s1_rand: E_b over K 0.004882, over all changed 0.008377; |K| 7300 (7300 changed) of 12316; margin median 0.62, min 0.000505; 40 s
+[20:22:52] ITEM 10 of 13 DONE (case_real_s1_rand)
+[20:22:53] repeat_real_s1: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:23:07]     layer 0: 3079 variables x 256 pairs, 2225 needed; 788224 cases in 14 s (54818/s)
+[20:23:19]     layer 1: 3079 variables x 256 pairs, 1513 needed; 1576448 cases in 26 s (61273/s)
+[20:23:27]     layer 2: 3079 variables x 256 pairs, 1102 needed; 2364672 cases in 34 s (69396/s)
+[20:23:32]     layer 3: 3079 variables x 256 pairs, 564 needed; 3152896 cases in 39 s (80010/s)
+[20:23:32] repeat_real_s1: E_b over K 0.035062, over all changed 0.035550; |K| 5404 (5404 changed) of 12316; margin median 1.92, min 0.00422; 40 s
+[20:23:32] ITEM 11 of 13 DONE (repeat_real_s1)
+[20:23:33] repeat_twin_s1_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:23:48]     layer 0: 3079 variables x 256 pairs, 2589 needed; 788224 cases in 14 s (54905/s)
+[20:23:59]     layer 1: 3079 variables x 256 pairs, 1963 needed; 1576448 cases in 26 s (61344/s)
+[20:24:07]     layer 2: 3079 variables x 256 pairs, 1509 needed; 2364672 cases in 34 s (69463/s)
+[20:24:13]     layer 3: 3079 variables x 256 pairs, 760 needed; 3152896 cases in 39 s (80070/s)
+[20:24:13] repeat_twin_s1_rand: E_b over K 0.008120, over all changed 0.011442; |K| 6821 (6821 changed) of 12316; margin median 0.539, min 0.000803; 40 s
+[20:24:13] ITEM 12 of 13 DONE (repeat_twin_s1_rand)
+[20:24:13] fact_s1: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:24:28]     layer 0: 3079 variables x 256 pairs, 1330 needed; 788224 cases in 14 s (54832/s)
+[20:24:39]     layer 1: 3079 variables x 256 pairs, 801 needed; 1576448 cases in 26 s (61266/s)
+[20:24:47]     layer 2: 3079 variables x 256 pairs, 587 needed; 2364672 cases in 34 s (69347/s)
+[20:24:53]     layer 3: 3079 variables x 256 pairs, 438 needed; 3152896 cases in 39 s (79910/s)
+[20:24:53] fact_s1: E_b over K 0.034595, over all changed 0.034562; |K| 3156 (3156 changed) of 12316; margin median 0.511, min 0.00166; 40 s
+[20:24:53] ITEM 13 of 13 DONE (fact_s1)
+[20:24:53] E277 (needed_neurons) DONE
+peak host RSS 6.4 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/needed_neurons/results ===

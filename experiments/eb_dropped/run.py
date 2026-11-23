@@ -235,7 +235,7 @@ def summary(cfg: Config) -> None:
     grid: dict[str, dict[str, list[float | None]]] = {}
     for i in (i for i in eb if i.startswith(("e58/", "random_e58/"))):
         side = "random" if i.startswith("random_") else "scaled"
-        grid.setdefault(task(i), {"scaled": [None] * 3, "random": [None] * 3})[side][int(i.rsplit("_s", 1)[1].removesuffix("_scaled"))] = eb[i]
+        grid.setdefault(task(i), {"scaled": [None] * 3, "random": [None] * 3})[side][int(i.removesuffix("_scaled").rsplit("_s", 1)[1])] = eb[i]
     out["grid"] = grid
     rnd = [v for t in grid.values() for v in t["random"] if v is not None]
     out["randoms_at_or_under_random_max"] = all(v <= cfg.random_max for v in rnd) if rnd else None

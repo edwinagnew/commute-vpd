@@ -1,0 +1,36 @@
+[19:58:23] E277 (needed_neurons) start, stage trained, shard (0, 3), tag t0; settings {'built': ('x2', 'x10', 'rebuilt', 'new_few', 'new_thin', 'random_size_241001', 'random_kl_241002'), 'control': 'x2', 'band': 'p97', 'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'random_seed': 277000, 'too_small': 100}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[19:58:42]     layer 0: 3079 variables x 64 pairs, 0 needed; 197056 cases in 4 s (54884/s)
+[19:58:45]     layer 1: 3079 variables x 64 pairs, 0 needed; 394112 cases in 6 s (61408/s)
+[19:58:47]     layer 2: 3079 variables x 64 pairs, 0 needed; 591168 cases in 8 s (69682/s)
+[19:58:48]     layer 3: 3079 variables x 64 pairs, 0 needed; 788224 cases in 10 s (80496/s)
+[19:58:48] stage 0 (trained): {"experiment": "E277 (needed_neurons)", "world": "trained", "dn_n_changed": 0, "dn_dd_max": 0.0, "dn_E_b_K": 1.0, "n_vars": 12316, "identity": {"item": "copy24_s0", "flips": 0, "max_dev": 4.57763671875e-05, "min_margin": 0.001598358154296875, "cases": 788224, "cases_per_s": 80493.28415160903, "n_read_positions": 1, "n_windows": 512, "window_len": 8}, "est_seconds_per_item": 39.169677734375, "seconds": 10.634791612625122}; checks hold
+[19:58:48] STAGE 0 DONE (trained): est. 39 s per item read like copy24_s0
+[19:58:48] stage trained: 14 of 40 items ['copy24_s0', 'cipher24_s0_rand', 'rand32_s0', 'case_real_s0_rand', 'repeat_real_s0', 'repeat_twin_s0_rand', 'fact_s0', 'copy24_s1_rand', 'ident32_s1', 'rand32_s1_rand', 'case_twin_s1', 'repeat_real_s1_rand', 'twin_s1', 'fact_s1_rand']
+[19:58:49] copy24_s0: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[19:59:03]     layer 0: 3079 variables x 256 pairs, 1616 needed; 788224 cases in 14 s (55400/s)
+[19:59:14]     layer 1: 3079 variables x 256 pairs, 1143 needed; 1576448 cases in 25 s (61856/s)
+[19:59:23]     layer 2: 3079 variables x 256 pairs, 742 needed; 2364672 cases in 34 s (70087/s)
+[19:59:28]     layer 3: 3079 variables x 256 pairs, 550 needed; 3152896 cases in 39 s (80911/s)
+[19:59:28] copy24_s0: E_b over K 0.022259, over all changed 0.023047; |K| 4051 (4051 changed) of 12316; margin median 1.82, min 0.0016; 39 s
+[19:59:28] ITEM 1 of 14 DONE (copy24_s0)
+Traceback (most recent call last):
+  File [35m"/root/work/experiments/needed_neurons/run.py"[0m, line [35m370[0m, in [35m<module>[0m
+    code = main(args.stage, (args.shard[0], args.shard[1]), args.tag)
+  File [35m"/root/work/experiments/needed_neurons/run.py"[0m, line [35m350[0m, in [35mmain[0m
+    [31mread_item[0m[1;31m(world, item, cfg, feat, floor)[0m
+    [31m~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/root/work/experiments/needed_neurons/run.py"[0m, line [35m222[0m, in [35mread_item[0m
+    F, M, toks, at, rec = [31mworld.make[0m[1;31m(item)[0m
+                          [31m~~~~~~~~~~[0m[1;31m^^^^^^[0m
+  File [35m"/root/work/experiments/needed_neurons/run.py"[0m, line [35m184[0m, in [35mmake[0m
+    dw, rec = [31mmatched_random[0m[1;31m(F.net, self.M.net, self.seed0 + self.base.index(base))[0m
+              [31m~~~~~~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/root/work/experiments/needed_neurons/run.py"[0m, line [35m196[0m, in [35mmatched_random[0m
+    out[k] = ([31mr [0m[1;31m*[0m[31m (d / r.norm())[0m).float()
+              [31m~~[0m[1;31m^[0m[31m~~~~~~~~~~~~~~~[0m
+[1;35mRuntimeError[0m: [35mExpected all tensors to be on the same device, but found at least two devices, cuda:0 and cpu![0m
+=== FINISHED (exit 1) — results in /root/work/experiments/needed_neurons/results ===
