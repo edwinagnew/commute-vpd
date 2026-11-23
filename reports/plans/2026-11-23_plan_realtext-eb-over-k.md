@@ -15,7 +15,7 @@ filed settings and expected values `experiments/realtext_eb/results/predictions.
 - **Patch or step.** A step: a new setting for the frozen reading, no new method.
 - **Decisions.** Option (b) E_b (decisions.md 2026-11-21) over the frozen definition's K (2026-11-22); E268's K code unchanged.
 - **Definition.** Read unchanged; no rule, band or verdict is added (descriptive, cell text).
-- **What would change what we do.** All six sides inside the randoms' range: the paper says E_b over K does not separate real-text reuse from new (card stop). A first side clearly above its twin on some pair: that pair goes into the paper's claim 2 paragraph.
+- **What would change what we do.** All six sides inside the randoms' range: the paper says E_b over K does not separate real-text reuse from new (card stop). The claim 2 paragraph quotes the three-pair pattern (how many first sides sit above their twins), never one pair alone (reporting guards below).
 - **Control first.** Stage 0, alone in each job, before any item: the do-nothing on L1's and T1's D (no changed variable, dd exactly 0, E_b over K exactly 1) and the identity interchange (x' = x) on L1_s0 and T1_s0 (zero argmax changes; its deviation is the fp32 floor). Any miss stops the job.
 - **Saved for audit.** Per item num, den, dd, changed, K, first flip and flip counts (`results/large/items_<item>.npz`, ~1 MB each), so K* or another K can be rescored later on the CPU.
 
@@ -51,6 +51,14 @@ Fine-tunes: not filed (descriptive). Rival a: first sides above twins by >0.01, 
 the randoms or within 0.01. K with no changed member gives 1 by convention: flagged `degenerate`, drawn apart, never
 pooled. The prior (E246, geometric-mean P of the scored token at W0) is shown in its own panel as a confound: it orders
 French below Yoruba, against the built direction.
+
+**Reporting guards (2026-11-23, redteam-lead note-2026-11-23-redteam-p264-plan.md, adopted on whip-lead's
+instruction, before any scored item).** They change how the result is reported, not the code or the filed
+predictions. (1) |K|, n_changed_K and min_margin sit in the same row as every E_b over K; items with |K| under about
+1,000 are named (E268: |K| falls as the margin rises, rank correlation -0.82). (2) The claim 2 paragraph gives the
+three-pair pattern, not the one pair that separates. (3) "Above" means the two sides' three seed values do not overlap,
+with all three seeds given, not the filed 0.01 gap; at n = 3 this is a description. (4) E_b is compared only within
+a pair, never across the label and text pairs: they are read at different positions, and that changes |K|.
 
 ## Runtime and cost
 Measured per item on an H100 (E268, `experiments/kstar_needed/results/items/*.json`): 505-514 s for 41-token windows,
