@@ -14,6 +14,7 @@ my own, and nothing run. Every verdict below was sent as a note to the owning le
 | P1.55 (E274) one-gain squared cosine | admissible, saturates | holds with caveats | Admissibility is shown only on synthetic gains and the do-nothing state; the reference test was amended after the filed run (disclosed). |
 | P2.64 (E273) E_b over K, real text | built direction reversed | holds with caveats | Reversed on both readable pairs, every seed. Either the reading or the built labels are wrong; output change does not explain it within pairs. Caveats applied (9f5219c0). |
 | P2.66 (E272) convergence panel | readings do not converge | headline holds | Effective rank's filed positive is not beyond base loss on the scored set (partial 0.20). The within-text 0.87 was chosen after the results. |
+| P2.62 (E275) claim 2 over K | built pairs unchanged; procedural readings move | holds with caveats | Steering's partial given KL (0.07 to 0.46) rests on a nested floor, and 16 of 39 states have |K| under 1,000: provisional until those states are dropped ($0). |
 | P2.66 (E276) confirmatory text panel | filed "positive" | does not hold as "erank beyond base loss" | Effective rank and base loss both order the tiers perfectly (tau 0.8165 each, the tie ceiling). The partial 0.894 comes only from their disagreement inside the tied tier. The collinearity guard caught it but, as filed, spares positive calls; my request was too narrow. |
 
 ## Plan checks taken in before the runs
@@ -28,4 +29,4 @@ floor), and the cheap readings that pass do so through text unfamiliarity or for
 separates a reading from a data-only statistic.
 
 ## Open
-E275 (P2.62) results; E272's E_b stage; the ceiling check on E272's within-text 0.87 before it is cited.
+E272's E_b stage; the ceiling check on E272's within-text 0.87 before it is cited.
