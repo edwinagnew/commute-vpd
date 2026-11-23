@@ -1,0 +1,17 @@
+<article class="exp" id="e282">
+<div class="top"><span class="id">E282</span><span class="chip mixed">no call</span><h3>Can a gain-only fit tell a reused mechanism from a new one?</h3><span class="when">2026-11-23 · cell P1.58, compare-lead · <code>experiments/gain_share</code></span></div>
+<p class="one"><strong>The question.</strong> The definition asks whether the fine-tuned model's parts still compute what the original's parts compute. A behavioural version: take the closest model that may only turn the original's own parts up or down, and ask how much of the fine-tune's answer it recovers. If it recovers nearly all, the fine-tune reuses the original's parts; if little, it needs something new. Could this share replace the kept share, and separate E62's copying map from its lookup?</p>
+<p class="one"><strong>What we did.</strong> For each fine-tune of the 67M model we fitted one gain per neuron and attention head (12,312 gains), and separately one per VPD subcomponent (38,936), so the model matched the fine-tune's next-token distribution on training rows, then read the share of the fine-tune's gain recovered on held-out rows. Controls: exact rescalings (expected near 1), a random update (expected low), and two edits built to install an answer the original does not compute (expected at most 0.3). Then E62's copying and lookup maps, three seeds each, and three head edits.</p>
+<p class="one"><strong>What we found.</strong> Exact rescalings came back (0.997 and 0.981 at neurons), as expected. The two built-new edits read 0.953 to 0.969 against a bar of 0.3, so the control failed; the random update also missed its bar at neurons (0.269 against 0.2). Copying and lookup both read near 1 at both levels (gap 0.032 at neurons, -0.017 at VPD, against 0.1), so that comparison is no call. Held-out rows reused the fitted cues, so unseen cues were not tested.</p>
+<p class="one"><strong>What it means.</strong> As prototyped, thousands of gains fitted on one narrow task can rebuild a narrow installed behaviour, so the share measures what many gains can imitate, not whether the fine-tune uses the original's mechanism. No reuse or new verdict is given under any wording. The decision card asks what the cell's one remaining run should do (recommended: fit on some cues, read on unseen ones).</p>
+<dl class="fields">
+<dt>Run</dt><dd>One L40 on the cluster's debug queue, about 30 minutes, $0; one run of two used.</dd>
+<dt>Found</dt><dd><ul>
+<li>Exact rescalings were recovered at neurons (0.997, 0.981); at VPD x10 read 0.606, under its expected 0.7.</li>
+<li>Control failed: built-new edits read 0.95 to 0.97 where at most 0.3 was expected; E62 copy against lookup is no call.</li>
+<li>Held-out rows reused the fitted cues; the unseen-cue test was not run.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 1: this gain-only share is not carried forward as the kept share in its prototyped form.</dd>
+<dt>Moved on</dt><dd>2026-11-23: <a href="#decision-p1-58-gain-share-next">decision card</a> to the user on the remaining run. Report <code>reports/analyses/2026-11-23_analysis_p1-58-gain-share.md</code>; numbers in <code>experiments/gain_share/results/score.json</code>.</dd>
+</dl>
+</article>
