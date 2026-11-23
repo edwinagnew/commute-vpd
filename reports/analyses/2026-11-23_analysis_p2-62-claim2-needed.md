@@ -8,7 +8,8 @@ We took every comparison behind the paper's second claim, that cheap readings tr
 recomputed it with the write share taken over the variables the fine-tune needs instead of over the circuit found by
 mean ablation. On the nine built pairs and the twenty prior-matched seeds nothing in the picture changes, and on the
 procedural tasks most readings move no more than a smaller sample of input pairs moves them. The one exception is
-steering after output change is held fixed, which moves from no relation to a moderate positive one, so claim 2 keeps
+steering after output change is held fixed, whose rank correlation with the write share rises from 0.07 to 0.46,
+beyond twice its own sampling floor, so claim 2 keeps
 its numbers except that steering's procedural partial correlation should be quoted over the needed set with a caveat.
 
 ## The answer
