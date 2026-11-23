@@ -81,6 +81,35 @@ def cipher_table(texts: Sequence[str], n_keys: int, key_ids: tuple[int, int], va
     return dict(zip(ks, vs, strict=True))
 
 
+PARITY_WORDS = (" even", " odd")
+
+
+def parity_numbers(encode: Callable[[str], list[int]], lo: int, hi: int, held_frac: float, seed: int) -> tuple[list[int], list[int]]:
+    """Numbers in [lo, hi) whose " n" is one token, split by a seeded shuffle: (train numbers, held numbers), disjoint,
+    so a held item can be answered only by the rule (amendment 2026-11-22f)."""
+    ok = [k for k in range(lo, hi) if len(encode(f" {k}")) == 1]
+    perm = torch.randperm(len(ok), generator=torch.Generator().manual_seed(seed)).tolist()
+    n_held = round(held_frac * len(ok))
+    return sorted(ok[i] for i in perm[n_held:]), sorted(ok[i] for i in perm[:n_held])
+
+
+def parity_items(rows: Tensor, v: Vocab, L: int, n: int, numbers: Sequence[int], seed: int) -> Tensor:
+    """(n, L + 1): a Pile row's first tokens, "\\n\\n", a number (one token) and " is", then " even" or " odd"."""
+    rng, nl, is_, ans = random.Random(f"{seed}-parity"), v.encode("\n\n"), v.encode(" is"), [v.encode(w)[0] for w in PARITY_WORDS]
+    out = []
+    for r in rows[:n].tolist():
+        k = rng.choice(list(numbers))
+        out.append([*with_fill(r, [*v.encode(f" {k}"), *is_], nl, L), ans[k % 2]])
+    return torch.tensor(out, dtype=torch.long)
+
+
+def label_acc(net: nn.Module, seq: Tensor, labels: Sequence[int]) -> float:
+    """Two-label accuracy: the share of items whose true label token outscores the other label token."""
+    other = seq.clone()
+    other[:, -1] = labels[0] + labels[1] - seq[:, -1]
+    return float((answer_lo(net, seq)[0] > answer_lo(net, other)[0]).double().mean())
+
+
 # ----------------------------------------------------------------------------- reads and losses
 
 
