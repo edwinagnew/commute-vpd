@@ -5,11 +5,12 @@ built-edit order and trained readings stand", user, 2026-11-22). Results `experi
 `experiments/kstar_needed/figures/eb_k.png`, card `experiments/kstar_needed/card.md`. The definition is the user's,
 frozen 2026-11-22 (`theory/2026-11-22_definition_frozen.md`); nothing here changes its wording.*
 
+*Red-team verdict (2026-11-23): holds with caveats. The caveats are applied below.*
+
 We found the variables each saved model needs by swapping one at a time between two inputs, and re-read the write
-share over them instead of over the mean-ablation circuit. The built edits keep their order and most trained readings
-do not move, but reinforcement learning on the repeat task loses up to half its share, which shrinks its lead over
-supervised fine-tuning on one run. The reading stays a description, since the sampled needed set still grows with
-every pair tried.
+share over them instead of over the mean-ablation circuit. Over the needed set, the built-edit order stands and the
+trained readings mostly stand. The share of reinforcement learning on the repeat task falls, but on the most
+under-sampled needed sets, so that change is provisional.
 
 ## What we were trying to test
 
@@ -79,26 +80,43 @@ because every changed variable of a new edit is explained about equally badly.
 
 ### Do the trained readings stand?
 
-**Reading it.** Mostly, with one exception that matters. Supervised fine-tuning, shuffled-reward reinforcement
+**Reading it.** Mostly. One change is provisional. Supervised fine-tuning, shuffled-reward reinforcement
 learning, guarded reinforcement learning and every random update stay within the spread. Reinforcement learning on
-the repeat task drops on five of its six states.
+the repeat task drops on five of its six states, but these are the states with the smallest needed sets. The
+needed-set sizes below sit beside each write share: a share over a few hundred variables is not the same population
+as a share over ten thousand.
 
-| repeat task, three seeds | over K | over K\* |
-|---|---|---|
-| reinforcement learning, KL-matched run | 0.048, 0.062, 0.057 | 0.097, 0.101, 0.120 |
-| supervised fine-tuning, KL-matched run | 0.017 to 0.025 | 0.018 to 0.023 |
-| reinforcement learning, size-matched run | 0.111, 0.086, 0.217 | 0.161, 0.139, 0.217 |
-| supervised fine-tuning, size-matched run | 0.014 to 0.016 | 0.015 to 0.017 |
-| shuffled-reward reinforcement learning | 0.029 to 0.048 | 0.028 to 0.048 |
+| repeat task, by seed or range | over K | over K\* | variables in K | variables in K\* |
+|---|---|---|---|---|
+| reinforcement learning, KL-matched run | 0.048, 0.062, 0.057 | 0.097, 0.101, 0.120 | 1,522, 3,045, 182 | 9,006, 8,025, 8,295 |
+| supervised fine-tuning, KL-matched run, six states | 0.017 to 0.025 | 0.018 to 0.023 | 594 to 8,570 | 10,579 to 13,407 |
+| reinforcement learning, size-matched run | 0.111, 0.086, 0.217 | 0.161, 0.139, 0.217 | 517, 418, 5,926 | 10,025, 10,750, 15,590 |
+| supervised fine-tuning, size-matched run, six states | 0.014 to 0.016 | 0.015 to 0.017 | 894 to 16,459 | 11,948 to 15,009 |
+| shuffled-reward reinforcement learning | 0.029 to 0.048 | 0.028 to 0.048 | 8,747 to 35,009 | 18,507 to 23,519 |
 
-In the KL-matched run the mean over reinforcement-learning seeds was 5.1 times the supervised mean over K\*. Over K it
-is 2.6 times. In the size-matched run the ratio moves from 10.8 to 9.3, so reinforcement learning stays far above.
-Four of these states fall outside the spread of 0.04, by up to 0.062, which is rival b's prediction. The order of the
-arms is unchanged in both runs.
+| procedural tasks, nine states per arm | over K | over K\* | variables in K | variables in K\* |
+|---|---|---|---|---|
+| supervised fine-tuning | 0.025 to 0.060 | 0.036 to 0.062 | 38 to 4,622 | 9,534 to 21,027 |
+| reinforcement learning | 0.036 to 0.068; 1 on the empty needed set | 0.036 to 0.141 | 0 to 23,077 | 3,528 to 32,064 |
+| guarded reinforcement learning | 0.038 to 0.108 | 0.038 to 0.113 | 338 to 21,171 | 10,285 to 24,652 |
+| matched random updates, 18 states | 0.009 to 0.013 | 0.009 to 0.013 | 10,220 to 28,977 | 31,033 to 35,472 |
+
+In the KL-matched run the mean over reinforcement-learning seeds was 5.1 times the supervised mean over K\*. Over the
+needed set sampled at 256 pairs it is 2.6 times. In the size-matched run the ratio moves from 10.8 to 9.3. These ratios
+are over the repeat task only, so neither holds the empty-needed-set state or any of the six collapsed states, which are
+all procedural. Four repeat-task states fall outside the spread of 0.04, by up to 0.062, which is rival b's prediction.
+The order of the arms is unchanged in both runs.
+
+This drop is provisional, not a change in the reinforcement-learning reading. These are the most confident states, so
+their needed sets are the most under-sampled: one seed has 182 needed variables against 8,295 in K\*. Its share can
+move as more pairs are tried. The supervised needed sets are small too, and the two arms' needed sets differ in size
+by up to 47 times between seeds, so the ratio does not compare like with like.
 
 On the procedural tasks the change is small. Supervised fine-tuning reads lower over K by at most 0.014. Reinforcement
 learning and guarded reinforcement learning stay within 0.01, except one collapsed addition state at 0.038 against
-0.077, just inside the spread.
+0.077, just inside the spread. With all six collapsed states left out, the five remaining reinforcement-learning
+states average 1.01 times the supervised mean over K\* and 1.15 times over K. The supervised needed sets there are the
+smallest of any arm, from 38 variables up, so the same caution applies.
 
 ### How different are the two sets?
 
@@ -111,7 +129,7 @@ The size of K tracks how sure the model is of its answer. Call the **margin** th
 and the runner-up over D's read positions. Over the 68 states read at one position with K not empty, the rank
 correlation between margin and the size of K is -0.82. A confident model has few inputs near a tie, so few single swaps
 can turn its answer, and K is small. The repeat-task reinforcement-learning states are among the most confident.
-That is why their K is small and their write share moves.
+That is why their K is small, and why their write share over it is the least settled.
 
 ### The collapsed addition state with an empty needed set
 
@@ -128,8 +146,9 @@ label; all have K not empty.
 ## The red team's points
 
 1. *K is almost every variable, so agreement is automatic.* True on the four built edits read at 41 positions, as the
-   red team found on x2. It is not true on the trained states, where K is mostly far smaller than K\*. There the test
-   has power, and it moved repeat-task reinforcement learning.
+   red team found on x2. It is not true on the trained states, where K is mostly far smaller than K\*. There the reading can
+   move, and it moved on repeat-task reinforcement learning; whether toward the definition's K or along the sampling
+   curve is open until more pairs are tried.
 2. *Does K depend on the number of pairs?* Yes. K was still growing between 192 and 256 pairs on 71 of the 73 states.
    On the thin new edit it grew from 534 variables at 64 pairs to 13,998 at 256. So K here is a lower bound on the
    definition's K. The write share over K moved less: on the six repeat-task reinforcement-learning states it changed
@@ -145,9 +164,9 @@ label; all have K not empty.
 The write share over the needed set gives the same built-edit order as over K\*. That order is the one place where it
 is checked against edits whose answer is known. On trained states the two sets differ a lot, and the reading still
 agrees on supervised fine-tuning, random updates and guarded reinforcement learning. Repeat-task reinforcement learning
-is the exception: its reading falls by up to half, and in the KL-matched run its lead over supervised fine-tuning
-falls from five-fold to under three-fold. A paper claim of "reinforcement learning reads far above supervised
-fine-tuning" holds on both runs but needs the smaller factor on one.
+is the exception: over the sampled needed set its reading falls by up to half. That fall sits on the smallest, most
+under-sampled needed sets, so it is provisional. The paper should not quote it as a change in the reading until a run with more pairs
+settles it.
 
 ## How compelling is the evidence
 
@@ -163,7 +182,8 @@ fine-tuning" holds on both runs but needs the smaller factor on one.
 ## Surprises
 
 The write share of repeat-task reinforcement learning fell by up to half over K, while every other trained group
-stayed put. It follows from those states being confident: their needed sets are small and partly outside K\*.
+stayed put. It follows from those states being confident: their needed sets are small, partly outside K\*, and the
+least sampled, so the fall may be a sampling effect.
 
 ## What next
 
