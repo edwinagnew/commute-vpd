@@ -89,3 +89,45 @@
 0.53	experiments/e62_copy_windows/results/summary.json	([.items[] | select(.item|startswith("e62/copy")) | .E_b_Kcopy] | add/length) / .items["e62/lookup_s1"].E_b_Kcopy	this
 0.0374	experiments/e62_copy_windows/results/summary.json	[.items[] | select(.item|startswith("e62/copy")) | .E_b_Kcopy] | add/length	this
 0.017	experiments/eb_dropped/results/summary.json	[.grid[].random[]]|max	this
+0.848	experiments/reliance/results/summary.json	.control.V1.min_reuse	this
+0.859	experiments/reliance/results/summary.json	.items[]|select(.group=="control_cue" and .item=="x10")|.V1	this
+0.851	experiments/reliance/results/summary.json	.items[]|select(.group=="control" and .item=="new_thin")|.V1	this
+0.857	experiments/reliance/results/summary.json	.items[]|select(.group=="control" and .item=="random_kl_241002")|.V1	this
+0.797	experiments/reliance/results/summary.json	.control.new_few_check.V1	this
+0.966	experiments/reliance/results/summary.json	.control.new_few_check.expected_at_least	this
+0.993	experiments/reliance/results/summary.json	.control.floors_on_cue_D.x2	this
+0.983	experiments/reliance/results/summary.json	.control.floors_on_cue_D.x10	this
+0.003	experiments/reliance/results/summary.json	0 - .control.V1.gaps.new_thin	this
+0.009	experiments/reliance/results/summary.json	0 - .control.V1.gaps.random_kl_241002	this
+0.992	experiments/reliance/results/summary.json	.control.V2.min_reuse	this
+0.998	experiments/reliance/results/summary.json	.items[]|select(.group=="control" and .item=="new_thin")|.V2	this
+0.999	given	redteam-lead verdict on E283, quoted verbatim (reports/digests/2026-11-23_digest_redteam-lead.md); the file reads new_thin 0.998 and random_kl 0.992 for V2
+0.8	given	redteam-lead verdict on E283, quoted verbatim: its rounding of V1's level on the cue windows (0.797 to 0.859)
+0.152	experiments/reliance/results/summary.json	1 - (.items[]|select(.group=="control_cue" and .item=="x2")|.V1)	this
+0.203	experiments/reliance/results/summary.json	1 - (.items[]|select(.group=="control" and .item=="new_few")|.V1)	this
+0.968	experiments/reliance/results/summary.json	.items[]|select(.group=="control" and .item=="new_few")|.V2	this
+0.756	experiments/reliance/results/summary.json	[.items[]|select(.feat=="neurons" and .group=="e62" and (.item|test("^e62/copy")))|.V1]|min	this
+0.765	experiments/reliance/results/summary.json	[.items[]|select(.feat=="neurons" and .group=="e62" and (.item|test("^e62/copy")))|.V1]|max	this
+0.752	experiments/reliance/results/summary.json	[.items[]|select(.feat=="neurons" and .group=="e62" and (.item|test("^e62/lookup")))|.V1]|min	this
+0.763	experiments/reliance/results/summary.json	[.items[]|select(.feat=="neurons" and .group=="e62" and (.item|test("^e62/lookup")))|.V1]|max	this
+0.883	experiments/reliance/results/summary.json	[.items[]|select(.feat=="vpd" and .group=="e62" and (.item|test("^e62/copy")))|.V1]|min	this
+0.960	experiments/reliance/results/summary.json	[.items[]|select(.feat=="vpd" and .group=="e62" and (.item|test("^e62/copy")))|.V1]|max	this
+0.945	experiments/reliance/results/summary.json	[.items[]|select(.feat=="vpd" and .group=="e62" and (.item|test("^e62/lookup")))|.V1]|min	this
+0.959	experiments/reliance/results/summary.json	[.items[]|select(.feat=="vpd" and .group=="e62" and (.item|test("^e62/lookup")))|.V1]|max	this
+0.999	experiments/reliance/results/summary.json	[.items[]|select(.feat=="neurons" and .group=="e62" and (.item|test("^e62/(copy|lookup)")))|.V2]|min	this
+1.000	experiments/reliance/results/summary.json	[.items[]|select(.group=="e62" and (.item|test("^e62/(copy|lookup)")))|.V2]|max	this
+0.938	experiments/reliance/results/summary.json	[.items[]|select(.group=="e280" and .feat=="vpd")|.V1]|min	this
+0.951	experiments/reliance/results/summary.json	[.items[]|select(.group=="e280" and .feat=="vpd")|.V1]|max	this
+0.956	experiments/reliance/results/summary.json	[.items[]|select(.group=="e280" and .feat=="vpd")|.v1_floor]|min	this
+0.997	experiments/reliance/results/summary.json	[.items[]|select(.group=="e280" and .feat=="vpd")|.V2]|min	this
+0.871	experiments/reliance/results/summary.json	[.items[]|select(.group=="e280" and .feat=="neurons")|.V1]|min	this
+0.883	experiments/reliance/results/summary.json	[.items[]|select(.group=="e280" and .feat=="neurons")|.V1]|max	this
+0.996	experiments/reliance/results/summary.json	[.items[]|select(.group=="e280" and .feat=="neurons")|.v1_floor]|min	this
+0.999	experiments/reliance/results/summary.json	[.items[]|select(.group=="e280" and .feat=="neurons")|.v1_floor]|max	this
+0.982	experiments/reliance/results/summary.json	[.items[]|select(.group=="e281" and (.item|test("copy")))|.V1]|min	this
+0.815	experiments/reliance/results/summary.json	.items[]|select(.group=="e281" and .item=="e62/lookup_s1")|.V1	this
+0.0	experiments/reliance/results/summary.json	.panel.V1.tau_tier.consensus.tau	this
+0.57	experiments/reliance/results/summary.json	.panel.V1.base_loss.trained_nats_per_byte.all.consensus.p_partial	this
+0.45	experiments/reliance/results/summary.json	.panel.V2.tau_tier.consensus.tau	this
+0.19	experiments/reliance/results/summary.json	.panel.V2.base_loss.trained_nats_per_byte.all.consensus.p_partial	this
+0.945	experiments/reliance/results/summary.json	[.items[]|select(.group=="panel")|.V2]|min	this
