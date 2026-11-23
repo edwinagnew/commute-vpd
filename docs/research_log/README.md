@@ -576,6 +576,7 @@ Figures already published (their sources, for a re-upload; grep `fig/eN_` here f
 - "fig/e83_logit_shift.png": "experiments/logit_shift_67m/figures/logit_shift.png"
 - "fig/e81_choice.png": "experiments/qwen_tofu/figures/choice.png"
 - "fig/e81_recall.png": "experiments/qwen_tofu/figures/recall.png"
+- "fig/e275_kstar_vs_k.png": "experiments/claim2_needed/figures/kstar_vs_k.png"
 - "fig/e84_filed_test.png": "experiments/qwen_tofu_forms/figures/filed_test.png"
 - "fig/e263_eb_sae_vs_vpd.png": "experiments/sae_eb/figures/eb_sae_vs_vpd.png"
 - "fig/e270_eb.png": "experiments/qwen_eb/figures/eb.png"

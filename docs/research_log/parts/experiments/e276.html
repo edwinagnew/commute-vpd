@@ -1,0 +1,17 @@
+<article class="exp" id="e276">
+<div class="top"><span class="id">E276</span><span class="chip mixed">mixed</span><h3>On twelve new continued-text tasks, does the effective rank follow the blind tiers beyond how unfamiliar the text is to the base model?</h3><span class="when">2026-11-23 · cell P2.66, regating-lead, red team: not separable from base loss · <code>experiments/confirm_panel</code></span></div>
+<p class="one"><strong>The question.</strong> In the convergence panel (E272) the effective rank of the update followed the blind raters' tiers within the eight continued-text tasks, but that was a check chosen after seeing the results. Does it hold on new tasks, with the test filed before training, beyond a data-only statistic, the base model's loss on the trained text?</p>
+<p class="one"><strong>What we did.</strong> We fine-tuned the 67M model on twelve new continued-text tasks (languages and registers), three seeds each, at one matched output change, with fresh blind raters sorting them into reuse, middle or new before any reading. The filed test was the effective rank's partial Kendall tau with the tiers given base-model loss per byte, called positive if above 0 at task-permutation p of 0.05 or less. A task is kept only if all three seeds reach the matched change while holding a gain well above a random update's.</p>
+<p class="one"><strong>What we found.</strong> Seven of the twelve tasks were kept (PubMed, books, maths, Dutch and Indonesian fell under the learning floor), leaving one expected-reuse task, StackExchange. The filed rule calls it positive (partial tau 0.89, p 0.001, leave-one-out 0.83 to 1.0), but red-team finds it not separable from base loss: the effective rank and base loss each order the tiers perfectly (both tau 0.82, the ceiling given ties), and the partial comes only from how they order the four tied "new" languages, where the tiers say nothing. The tiers and base loss are nearly collinear on the kept seven (0.82, just over the filed 0.8 guard, which does not change a positive call).</p>
+<p class="one"><strong>What it means.</strong> The filed positive does not show the effective rank tracks reuse beyond text unfamiliarity: it is as good as base loss, and the two cannot be told apart with one reuse task. The paper does not claim the rank tracks reuse on realistic text from this run. A descriptive check on E272's panel points the same way (card E272).</p>
+<dl class="fields">
+<dt>Run</dt><dd>Cluster only, $0; one run.</dd>
+<dt>Found</dt><dd><ul>
+<li>The filed rule calls it positive (partial tau 0.89, p 0.001) on seven kept tasks.</li>
+<li>Effective rank and base loss both order the tiers perfectly (tau 0.82), so the partial rests on four tied tasks.</li>
+<li>Controls came out exact.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 2: the one realistic-text reading that followed the tiers is not distinguishable from a data-only statistic.</dd>
+<dt>Moved on</dt><dd>The filed collinearity guard spares positive calls, which let this one through; the red team's reading stands. Record: <code>experiments/confirm_panel/results/summary.json</code>; <code>reports/plans/2026-11-23_plan_confirm-panel.md</code>.</dd>
+</dl>
+</article>
