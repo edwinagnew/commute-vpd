@@ -33,3 +33,5 @@ separates a reading from a data-only statistic.
 
 ## Open
 E272 E_b reviewed (verdict above); within-text 0.87 confirmed dropped by regating-lead (tie ceiling 0.906). E277 (P1.56, definition-lead) pre-run: asked for the remainders' share of the write change over K and E_b without them, since four whole-MLP remainder variables may decide the reading (note-2026-11-23-redteam-e277-prerun.md). Verdict due when E277 lands.
+
+**P1.57, 11-23, E62 E_b diagnosis (460dab48): stands, one correction.** The measured parts hold: K holds head (2,4), the median variable keeps ~0.01, and layer-2 attention's write-change share separates the maps. The derived claim, "each subcomponent keeps its head-4 share under a one-head rescale", is true for q, k and v but not for o. For o the change stays parallel to the original write, and the kept fraction depends on the activations. Pooled over q/k/v the kept share is above the median share, but well below 1. The built head-4-only edit is the control that would settle it; it needs a cell. Note: ~/commute-data/agents/definition-lead/note-2026-11-23-redteam-e62-diag-verdict.md.
