@@ -115,7 +115,8 @@ shared `src/commute/panel.py`; rules `results/predictions.json`; card `card.md`;
   3e-6 at batch 32 with 6% warm-up) was +0.0005 nats/token, below a 0.014 floor, turning negative by KL 0.003. The
   recipe stays as filed, so pile, code and british go to `dropped.json` under the filed rule, and wiki_en and arxiv
   are expected to drop the same way in the wide set. The reuse tier is thin (pile, code and british drop out of the
-  nine), and this weakens H1.
+  nine), and this weakens H1. Amendments 6 and 7 since score every held gain at the task's read positions and retrain
+  the tasks whose mask changed; select then drops whichever still miss their floor.
 - Edge cases run on a stub before filing (score.py --stub; since Amendment 3, `--results DIR` on run.py's read shape): a dropped task, a zero-spread reading, a nan seed, ties
   (tier codes), n = 4, the prior with no common support. All gave the calls the rules name.
 

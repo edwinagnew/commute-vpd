@@ -1,0 +1,76 @@
+0.2	experiments/installed_cross/results/predictions.json	.thresholds.uncued_decades_max	this
+1.6	experiments/installed_cross/results/predictions.json	pow(10; .thresholds.uncued_decades_max)	this
+0.4	experiments/installed_cross/results/predictions.json	.thresholds.uncued_decades_max + .thresholds.install_early.leak_margin_decades	this
+0.6	experiments/installed_cross/results/predictions.json	.thresholds.transplant_off_min	this
+-2.59	experiments/installed_cross/results/ctl.json	.floor.addition.lo	this
+0.099	experiments/installed_cross/results/ctl.json	.floor.addition.rate	this
+0.011	experiments/installed_cross/results/ctl.json	.floor.addition.cue_effect	this
+-15.2	experiments/installed_cross/results/ctl.json	.floor.cipher.lo	this
+2.4e-6	experiments/installed_cross/results/ctl.json	.floor.cipher.rate	this
+-0.045	experiments/installed_cross/results/ctl.json	.floor.cipher.cue_effect	this
+-0.48	experiments/installed_cross/results/ctl.json	.floor.cipherlocal.cue_effect	this
+-8.53	experiments/installed_cross/results/ctl.json	.floor.yoruba.lo	this
+4.9e-4	experiments/installed_cross/results/ctl.json	.floor.yoruba.rate	this
+-0.032	experiments/installed_cross/results/ctl.json	.floor.yoruba.cue_effect	this
+-10.5	experiments/installed_cross/results/ctl.json	.floor.sst2.lo	this
+3.2e-5	experiments/installed_cross/results/ctl.json	.floor.sst2.rate	this
+0.003	experiments/installed_cross/results/ctl.json	.floor.sst2.cue_effect	this
+-9.41	experiments/installed_cross/results/ctl.json	.floor.parity.lo	this
+5.6e-4	experiments/installed_cross/results/ctl.json	.floor.parity.rate	this
+-0.057	experiments/installed_cross/results/ctl.json	.floor.parity.cue_effect	this
+0.50	experiments/installed_cross/results/ctl.json	.floor.parity.label_acc	this
+0.54	experiments/installed_cross/results/ctl.json	.floor.sst2.label_acc	this
+10.7	experiments/installed_cross/results/install_addition.json	.candidates.lam10.cued_gain	this
+0.003	experiments/installed_cross/results/install_addition.json	.candidates.lam10.uncued_decades	this
+0.022	experiments/installed_cross/results/install_addition.json	.candidates.lam10.pile_kl	this
+0.40	experiments/installed_cross/results/install_addition.json	.candidates.lam10.kl_bar.M_ft_pile_kl	this
+5.3	experiments/installed_cross/results/install_addition.json	.kept.target_gain	this
+20.0	experiments/installed_cross/results/install_parity.json	.candidates.lam10.cued_gain	this
+0.065	experiments/installed_cross/results/install_parity.json	.candidates.lam10.uncued_decades	this
+0.022	experiments/installed_cross/results/install_parity.json	.candidates.lam10.pile_kl	this
+1.74	experiments/installed_cross/results/install_parity.json	.candidates.lam10.kl_bar.M_ft_pile_kl	this
+10.0	experiments/installed_cross/results/install_parity.json	.kept.target_gain	this
+0.77	experiments/installed_cross/results/install_cipher.json	[.candidates.lam1, .candidates.lam3, .candidates.lam10 | .uncued_decades] | min	this
+0.97	experiments/installed_cross/results/install_cipher.json	[.candidates[].uncued_decades] | max	this
+0.67	experiments/installed_cross/results/install_cipher.json	[.candidates[].uncued_decades] | min	this
+0.83	experiments/installed_cross/results/install_cipher.json	[.candidates.lam10_a3, .candidates.lam10_a10, .candidates.lam10_a30 | .uncued_decades] | max	this
+21.1	experiments/installed_cross/results/install_cipher.json	[.candidates[].cued_gain] | min	this
+24.4	experiments/installed_cross/results/install_cipher.json	[.candidates[].cued_gain] | max	this
+0.44	experiments/installed_cross/results/install_cipherlocal.json	[.candidates[].uncued_decades] | min	this
+0.62	experiments/installed_cross/results/install_cipherlocal.json	[.candidates[].uncued_decades] | max	this
+23.9	experiments/installed_cross/results/install_cipherlocal.json	[.candidates[].cued_gain] | min	this
+25.2	experiments/installed_cross/results/install_cipherlocal.json	[.candidates[].cued_gain] | max	this
+2e-6	experiments/installed_cross/results/ctl.json	.floor.cipher.rate	this
+2.2e-7	experiments/installed_cross/results/install_cipherlocal.json	.candidates.lam1.uncued_p.M_typical	this
+9.1e-7	experiments/installed_cross/results/install_cipherlocal.json	[.candidates[].uncued_p.typical] | max	this
+1.5	experiments/installed_cross/results/install_cipher.json	[.candidates[].uncued_decades] | min * (10 | log)	this
+2.2	experiments/installed_cross/results/install_cipher.json	[.candidates[].uncued_decades] | max * (10 | log)	this
+0.44	experiments/installed_cross/results/install_yoruba.json	.candidates.lam1.cued_gain	this
+0.12	experiments/installed_cross/results/install_yoruba.json	.candidates.lam1.uncued_decades	this
+0.1	experiments/installed_cross/results/install_yoruba.json	.candidates["lam0.1_a0"].lambda	this
+1.96	experiments/installed_cross/results/install_yoruba.json	.candidates["lam0.1_a0"].cued_gain	this
+0.52	experiments/installed_cross/results/install_yoruba.json	.candidates["lam0.1_a0"].uncued_decades	this
+0.3	experiments/installed_cross/results/install_yoruba.json	.candidates["lam0.3_a0"].lambda	this
+-0.76	experiments/installed_cross/results/install_yoruba.json	.candidates["lam0.3_a0"].cued_gain	this
+0.14	experiments/installed_cross/results/install_yoruba.json	.candidates["lam0.3_a0"].uncued_decades	this
+-0.26	experiments/installed_cross/results/install_yoruba.json	.candidates.lam1_a0.cued_gain	this
+0.11	experiments/installed_cross/results/install_yoruba.json	.candidates.lam1_a0.uncued_decades	this
+16.1	experiments/installed_cross/results/install_sst2.json	[.candidates[].cued_gain] | min	this
+17.2	experiments/installed_cross/results/install_sst2.json	[.candidates[].cued_gain] | max	this
+0.05	experiments/installed_cross/results/install_sst2.json	[.candidates[].uncued_decades] | min	this
+0.16	experiments/installed_cross/results/install_sst2.json	[.candidates[].uncued_decades] | max	this
+0.039	experiments/installed_cross/results/install_sst2.json	[.candidates[].pile_kl] | min	this
+0.045	experiments/installed_cross/results/install_sst2.json	[.candidates[].pile_kl] | max	this
+0.024	experiments/installed_cross/results/install_sst2.json	.candidates.lam1.kl_bar.M_ft_pile_kl	this
+3.55	experiments/installed_cross/results/controls.json	.new_rule.addition.M_steps / .new_rule.addition.diag_steps	this
+3.7	experiments/installed_cross/results/controls.json	.new_rule.parity.M_steps / .new_rule.parity.diag_steps	this
+4.6	experiments/installed_cross/results/cross_addition_parity.json + experiments/installed_cross/results/cross_parity_parity.json	([.[0].states[].steps] | add) / ([.[1].states[].steps] | add)	this
+1.00	experiments/installed_cross/results/cross_addition_parity.json	[.states[].kept] | add / length	this
+0.98	experiments/installed_cross/results/cross_parity_addition.json	[.states[].kept] | add / length	this
+0.30	experiments/installed_cross/results/cross_addition_addition.json	[.states[].kept] | add / length	this
+0.13	experiments/installed_cross/results/cross_addition_addition.json	[.states[].kept] | min	this
+0.43	experiments/installed_cross/results/cross_addition_addition.json	[.states[].kept] | max	this
+0.89	experiments/installed_cross/results/cross_parity_parity.json	[.states[].kept] | add / length	this
+9.4	experiments/installed_cross/results/ctl.json	-.floor.parity.lo	this
+0.0	given	predictions.json expected.transplant: "diagonal kept 0.0-0.15" (a filed text range)
+0.15	given	predictions.json expected.transplant: "diagonal kept 0.0-0.15" (a filed text range)

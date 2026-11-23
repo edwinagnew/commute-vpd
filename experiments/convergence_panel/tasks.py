@@ -48,10 +48,11 @@ LABEL_KEY = {"topic": "L1", "sentiment": "L2"}  # E211's label tasks
 
 
 def lm_task(net: ST.Net, C: Any, name: str, train: Tensor, held: Tensor, starts: Tensor, first: int = 0) -> PN.Task:
-    """A continued-text task: every token after `first` trained and scored; E211's read on the held rows."""
+    """A continued-text task: every token after `first` trained; E211's read on the held rows, and the held gain scored
+    on the read's positions (Amendment 7)."""
     c = {"half": C.half, "per_row": C.per_row, "n_read": C.n_read, "n_fit": C.n_fit}
-    r = PN.lm_read(net, name, held, train[: C.fit_rows], starts, c, first)
-    return PN.Task(name, train, PN.full_mask(train, max(first, 1)), held, PN.full_mask(held, max(first, 1)), r)
+    r, held_mask = PN.lm_read(net, name, held, train[: C.fit_rows], starts, c, first)
+    return PN.Task(name, train, PN.full_mask(train, max(first, 1)), held, held_mask, r)
 
 
 def wiki(lang: str, C: Any, tok: Any) -> tuple[Tensor, Tensor]:
@@ -166,7 +167,9 @@ def build(net: ST.Net, C: Any, name: str) -> PN.Task:
         w, h = d["windows"]["real"].long(), C.half
         r = RR.Read(name, w, w[:, h + 1], h, w, w[:, h + 1])
         tr, he = d["train"]["real"].long(), d["held"]["real"].long()
-        return PN.Task(name, tr, PN.full_mask(tr), he, PN.full_mask(he), r)
+        hm = torch.zeros(he.shape, dtype=torch.bool)  # Amendment 6: held gain on the rewritten words' first tokens only
+        hm[d["at"][:, 0], d["at"][:, 1]] = True
+        return PN.Task(name, tr, PN.full_mask(tr), he, hm, r)
     if name in LABEL_KEY:
         t = R1.label_tasks(r1_config(), tok)[LABEL_KEY[name]]
         return label_task(name, t.ab, t.parts)

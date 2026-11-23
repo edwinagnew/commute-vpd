@@ -178,19 +178,22 @@ def w0_log_odds(net: ST.Net, rows: Tensor, batch: int = 8) -> Tensor:
     return out
 
 
-def lm_read(net: ST.Net, name: str, held: Tensor, fit_src: Tensor, starts: Tensor, c: dict[str, int], first: int = 0) -> RR.Read:
+def lm_read(net: ST.Net, name: str, held: Tensor, fit_src: Tensor, starts: Tensor, c: dict[str, int], first: int = 0) -> tuple[RR.Read, Tensor]:
     """E211's LM read (run2.py `lm_read`): the n_read word starts of lowest W0 log-odds in the held rows, at most per_row
     a row, as windows of 2 half + 1; fitting windows by the same rule on fit_src. Positions before `first` are never
-    chosen (French after English: only French tokens)."""
+    chosen (French after English: only French tokens). Also the held rows' mask of the read positions (E272 Amendment
+    7: the learned-on-held floor is scored there)."""
 
-    def cut(rows: Tensor, n: int) -> Tensor:
+    def at(rows: Tensor, n: int) -> Tensor:
         s = starts[rows].clone()
         s[:, :first] = False
-        return R.cut_windows(rows, R.hard_positions(w0_log_odds(net, rows), s, c["half"], c["per_row"], n), c["half"])
+        return R.hard_positions(w0_log_odds(net, rows), s, c["half"], c["per_row"], n)
 
-    toks, fit = cut(held, c["n_read"]), cut(fit_src, c["n_fit"])
-    h = c["half"]
-    return RR.Read(name, toks, toks[:, h + 1], h, fit, fit[:, h + 1])
+    h, a = c["half"], at(held, c["n_read"])
+    toks, fit = R.cut_windows(held, a, h), R.cut_windows(fit_src, at(fit_src, c["n_fit"]), h)
+    mask = torch.zeros(held.shape, dtype=torch.bool)
+    mask[a[:, 0], a[:, 1]] = True
+    return RR.Read(name, toks, toks[:, h + 1], h, fit, fit[:, h + 1]), mask
 
 
 # ----------------------------------------------------------------------------- the trainer

@@ -1,0 +1,93 @@
+{
+ "job": "install_parity",
+ "card": "NVIDIA L40S",
+ "states": {},
+ "experiment": "E271 (P2.65 installed_cross, 67M)",
+ "candidates": {
+  "lam1": {
+   "cued_gain": 21.601955238729715,
+   "cued_top1": 1.0,
+   "uncued_decades": 0.1122333091086029,
+   "uncued_p": {
+    "M_typical": 8.742600144038976e-05,
+    "M_mean": 0.0006807009915064935,
+    "typical": 0.00011320424911229246,
+    "mean": 0.0006114201084784507
+   },
+   "pile_kl": 0.02259838850025308,
+   "size": 0.02492976289213876,
+   "a_cued": true,
+   "b_uncued": true,
+   "lambda": 1.0,
+   "ans_w": 1.0,
+   "steps": 2000,
+   "leak_stopped": false,
+   "seconds": 391.27434825897217,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/base_parity_lam1.pt",
+    "sha256": "ed4a5dc775e4ef8d3a62aeb9676654dbdc95ce87f40b95665634e62e1bb46008"
+   }
+  },
+  "lam3": {
+   "cued_gain": 21.05092240124941,
+   "cued_top1": 1.0,
+   "uncued_decades": 0.05722427873664642,
+   "uncued_p": {
+    "M_typical": 8.742600144038976e-05,
+    "M_mean": 0.0006807009915064935,
+    "typical": 9.973774549228226e-05,
+    "mean": 0.0006001284846024078
+   },
+   "pile_kl": 0.02125816326390577,
+   "size": 0.02159908894763225,
+   "a_cued": true,
+   "b_uncued": true,
+   "lambda": 3.0,
+   "ans_w": 1.0,
+   "steps": 2000,
+   "leak_stopped": false,
+   "seconds": 391.86340951919556,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/base_parity_lam3.pt",
+    "sha256": "6d617935d83297a8095ad8234932e5d62633ec749858b8dc940e7265ab198824"
+   }
+  },
+  "lam10": {
+   "cued_gain": 20.024212893098593,
+   "cued_top1": 1.0,
+   "uncued_decades": 0.06487278314645327,
+   "uncued_p": {
+    "M_typical": 8.742600144038976e-05,
+    "M_mean": 0.0006807009915064935,
+    "typical": 0.00010150963866414699,
+    "mean": 0.0006496225336555424
+   },
+   "pile_kl": 0.021644538988167608,
+   "size": 0.020099885342327477,
+   "a_cued": true,
+   "b_uncued": true,
+   "lambda": 10.0,
+   "ans_w": 1.0,
+   "steps": 2000,
+   "leak_stopped": false,
+   "seconds": 392.87436842918396,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/base_parity_lam10.pt",
+    "sha256": "f5780ecd33eba7d838d09f6b680a8302b6e0314a7be9f636778ed7ef2fac17cc"
+   },
+   "kl_bar": {
+    "M_ft_pile_kl": 1.7376521954053892,
+    "M_ft_steps": 12,
+    "M_ft_done": true
+   },
+   "c_pile": true
+  }
+ },
+ "kept": {
+  "lambda": 10.0,
+  "target_gain": 10.012106446549296,
+  "file": "experiments/installed_cross/results/large/states/base_parity_lam10.pt",
+  "sha256": "f5780ecd33eba7d838d09f6b680a8302b6e0314a7be9f636778ed7ef2fac17cc"
+ },
+ "done": true
+}
