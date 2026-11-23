@@ -8,6 +8,7 @@ from made-up E_b values, one panel per rival, with E246's saved priors. Writes .
 
     ~/commute-agents/fleet/cpu-run python3 experiments/realtext_eb/plot.py [SUMMARY] [OUT_DIR]
     ~/commute-agents/fleet/cpu-run python3 experiments/realtext_eb/plot.py --sketch
+    ~/commute-agents/fleet/cpu-run python3 experiments/realtext_eb/plot.py --pairs   # figures/eb_pairs.png, results/output_change.json
 """
 
 from __future__ import annotations
@@ -72,6 +73,114 @@ def main(summary: Path, out_dir: Path) -> None:
               "K from 256 pairs of D's windows per update (4 derangements of 64), read at one position.")  # fmt: skip
 
 
+PAIRS = (("L1", "L3"), ("T1", "T4"), ("T2", "T3"))  # side built to need what M holds first
+UNREAD = {"L1"}  # |K| 3-6 < 100: "K too small to read" (plan's reporting guard 5), so the label pair is unread
+
+
+def ranks(xs: list[float]) -> list[float]:
+    order = sorted(range(len(xs)), key=lambda i: xs[i])
+    out = [0.0] * len(xs)
+    i = 0
+    while i < len(order):
+        j = i
+        while j + 1 < len(order) and xs[order[j + 1]] == xs[order[i]]:
+            j += 1
+        for k in range(i, j + 1):
+            out[order[k]] = (i + j) / 2
+        i = j + 1
+    return out
+
+
+def spearman(xs: list[float], ys: list[float]) -> float:
+    rx, ry = ranks(xs), ranks(ys)
+    mx, my = sum(rx) / len(rx), sum(ry) / len(ry)
+    cov = sum((a - mx) * (b - my) for a, b in zip(rx, ry, strict=True))
+    return cov / math.sqrt(sum((a - mx) ** 2 for a in rx) * sum((b - my) ** 2 for b in ry))
+
+
+def pair_rows(s: dict[str, Any]) -> list[dict[str, Any]]:
+    """Per fine-tune: E_b over K, its own random's, the gap, |K|, and E246's output change on the same read rows
+    (gain in the trained token's log-odds; S's KL(F || M)) for the fine-tune and its random."""
+    rec: dict[str, Any] = {}
+    for i in (0, 1):
+        rec |= json.loads((E246 / f"pod{i}.json").read_text())["states"]
+    rows = []
+    for name, r in s["items"].items():
+        if r["random"]:
+            continue
+        rnd, e = s["items"][f"{name}_random"], rec[f"{r['pair']}/{name}"]
+        rows.append({"item": name, "task": r["task"], "seed": r["seed"], "E_b_K": r["E_b_K"], "E_b_K_random": rnd["E_b_K"],
+                     "E_b_minus_random": r["E_b_K"] - rnd["E_b_K"], "size_K": r["size_K"], "n_changed_K": r["n_changed_K"],
+                     "min_margin": r["min_margin"], "unread": r["task"] in UNREAD, "gain": e["own"]["gain"],
+                     "kl_fm": e["own"]["S"]["means"]["kl_fm"], "kl_fm_random": e["random"]["S"]["means"]["kl_fm"]})  # fmt: skip
+    return rows
+
+
+def output_change(rows: list[dict[str, Any]]) -> dict[str, Any]:
+    """Rank correlation of E_b over K (and of its gap to the random) with E246's output change, over all 18 fine-tunes
+    and over the 12 text ones; and per side the seed range of each."""
+    text = [r for r in rows if r["task"][0] == "T"]
+    rho = {f"{a}_vs_{b}_{n}": spearman([r[a] for r in rs], [r[b] for r in rs])
+           for n, rs in (("all18", rows), ("text12", text)) for a in ("E_b_K", "E_b_minus_random") for b in ("kl_fm", "gain")}  # fmt: skip
+    keys = ("E_b_K", "E_b_K_random", "E_b_minus_random", "size_K", "min_margin", "gain", "kl_fm", "kl_fm_random")
+    side = {t: {k: {"min": min(r[k] for r in rows if r["task"] == t), "max": max(r[k] for r in rows if r["task"] == t)} for k in keys}
+            for t in SIDES}  # fmt: skip
+    return {"spearman": rho, "sides": side, "items": {r["item"]: r for r in rows}}
+
+
+def pairs(summary: Path, out_dir: Path) -> None:
+    """figures/eb_pairs.png: per pair, each fine-tune's E_b over K minus its own random's, the two sides side by side,
+    seeds as dots; the label pair drawn open as unread. Also results/output_change.json."""
+    rows = pair_rows(json.loads(summary.read_text()))
+    (HERE / "results" / "output_change.json").write_text(json.dumps(output_change(rows), indent=1))
+    fig, ax = FG.figure((6.4, 3.8))
+    first, second = FG.METHODS[OWN], FG.METHODS["neuron"]
+    for i, (a, b) in enumerate(PAIRS):
+        for t, x, st in ((a, 3 * i, first), (b, 3 * i + 1, second)):
+            ys = [r["E_b_minus_random"] for r in rows if r["task"] == t]
+            xs = [x + 0.08 * (k - 1) for k in range(len(ys))]
+            if a in UNREAD:
+                ax.scatter(xs, ys, facecolors="none", edgecolors=st.color, marker=st.marker, s=28, linewidths=1.0)
+            else:
+                ax.scatter(xs, ys, color=st.color, marker=st.marker, s=28, linewidths=0)
+    ax.axhline(0, color="#777777", linewidth=0.8)
+    ax.annotate("own matched random", (5.4, 0), xytext=(0, 3), textcoords="offset points", fontsize=7, color="#555555", ha="right")
+    ax.annotate("unread: topic label's K\nholds 3-6 variables", (0.5, 0.093), fontsize=7, color="#555555", ha="center")
+    ax.set_xticks([0, 1, 3, 4, 6, 7], [SIDES[t].rsplit(" (", 1)[0] for p in PAIRS for t in p], fontsize=7, rotation=20)
+    ax.scatter([], [], color=first.color, marker=first.marker, s=28, label="side built to need what M holds")
+    ax.scatter([], [], color=second.color, marker=second.marker, s=28, label="side built to need something new")
+    ax.scatter([], [], facecolors="none", edgecolors="#555555", s=28, label="pair unread (K too small)")
+    ax.legend(fontsize=7, loc="upper center", frameon=False)
+    ax.set_ylim(-0.005, 0.145)
+    ax.set_ylabel("E_b over K, fine-tune minus its random")
+    ax.set_title("Which side of each pair reads the higher write share over K?", fontsize=9)
+    FG.save(fig, out_dir / "eb_pairs.png", data=rows,
+            n="3 seeds per side (dots), scored size; each fine-tune minus the random update at its own per-matrix norms; "
+              "K from 256 pairs of D's windows, read at one position.")  # fmt: skip
+    eb_vs_kl(rows, out_dir)
+
+
+def eb_vs_kl(rows: list[dict[str, Any]], out_dir: Path) -> None:
+    """figures/eb_kl.png: E_b over K minus its random against E246's KL(F || M) on the same read rows, per fine-tune."""
+    fig, ax = FG.figure((6.4, 3.8))
+    marks = {"L1": "o", "L3": "s", "T1": "o", "T4": "s", "T2": "o", "T3": "s"}
+    colors = {"L": "#999999", "T1": "#0072B2", "T4": "#0072B2", "T2": "#D55E00", "T3": "#D55E00"}
+    for t in SIDES:
+        rs = [r for r in rows if r["task"] == t]
+        c = colors.get(t, colors["L"])
+        open_ = t in UNREAD
+        ax.scatter([r["kl_fm"] for r in rs], [r["E_b_minus_random"] for r in rs], marker=marks[t], s=28, label=SIDES[t].rsplit(" (", 1)[0],
+                   facecolors="none" if open_ else c, edgecolors=c, linewidths=1.0)  # fmt: skip
+    ax.axhline(0, color="#777777", linewidth=0.8)
+    ax.set_xscale("log")
+    ax.set_xlabel("output change: KL(F || M) on the read rows, nats (E246)")
+    ax.set_ylabel("E_b over K, fine-tune minus its random")
+    ax.legend(fontsize=7, loc="upper right", frameon=False, ncol=3, title="circle: built to need what M holds; square: new", title_fontsize=7)
+    ax.set_ylim(-0.005, 0.15)
+    ax.set_title("Does the write share over K follow how much the fine-tune moved the output?", fontsize=9)
+    FG.save(fig, out_dir / "eb_kl.png", data=rows, n="18 fine-tunes, 3 seeds per side; topic label open: its K is too small to read.")
+
+
 def sketch(out_dir: Path) -> None:
     """Made-up E_b values: rival a (first sides above their twins, all above the randoms), rival b (all at the randoms)."""
     made = {"a": {"L1": 0.08, "L3": 0.03, "T1": 0.12, "T4": 0.04, "T2": 0.06, "T3": 0.03}, "b": dict.fromkeys(SIDES, 0.013)}
@@ -89,5 +198,7 @@ def sketch(out_dir: Path) -> None:
 if __name__ == "__main__":
     if sys.argv[1:2] == ["--sketch"]:
         sketch(HERE / "figures")
+    elif sys.argv[1:2] == ["--pairs"]:
+        pairs(HERE / "results" / "summary.json", HERE / "figures")
     else:
         main(Path(sys.argv[1]) if len(sys.argv) > 1 else HERE / "results" / "summary.json", Path(sys.argv[2]) if len(sys.argv) > 2 else HERE / "figures")
