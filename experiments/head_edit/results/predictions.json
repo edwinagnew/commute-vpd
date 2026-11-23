@@ -2,14 +2,14 @@
   "experiment": "E280 (head_edit)",
   "cell": "P1.57",
   "card": "experiments/head_edit/card.md",
-  "filed": "2026-11-23, definition-lead (writer agent), before any GPU run of this experiment; refiled before writing (card 3d552ae0: QK x2 renamed Q x2, its values refiled) and committed before any run",
+  "filed": "2026-11-23, definition-lead (writer agent), before any GPU run of this experiment; refiled before writing (card 3d552ae0: QK x2 renamed Q x2, its values refiled) and committed before any run; amended before any run (D described as E257 builds it: copy windows mixed with no-cue and far windows)",
   "settings": {
     "item": "e62/copy_s0",
     "layer": 2,
     "head": 4,
     "factor": 2,
     "too_small": 100,
-    "settings_source": "item: the E62 copy item whose D and read position (E62's generator at half 7, 8-token windows 'A B .. A M', 512 windows, the last position = the marker) E257's World builds and E275 read; only its D and read position are used, F is each built edit of M. layer, head: E62's copy head (2, 4) (TRIED.md E62: H = (2,4)); the 67M's head h is q/k/v rows and o input columns h*128:(h+1)*128 (rule_retention N_HEAD 6, D_HEAD 128; rho.Layer.z views q/k/v as (n_head, 128), attn_out views o_proj as (d, n_head, 128)), so head 4 is 512:640. factor: the card's x2. too_small: the card's floor (whip-lead, 2026-11-23). The K scan's settings are E268's filed ones (experiments/kstar_needed/run.py load_config: derangements 4, examples 64, seed 268, rows 1024, logit_rows 8192, cache_batch 32, ident_vars 3) at both featurizations; the neuron/head featurization's band is E277's (experiments/needed_neurons/results/predictions.json settings band p97, E229's bounds). q_band: the card's filed band for Q x2 against V x2 at VPD (redteam-lead pre-run note 2026-11-23, note-2026-11-23-redteam-e280-prerun.md: the V x2 algebra on the q matrix)",
+    "settings_source": "item: the E62 copy item whose D and read position E257's World builds and E275 read: 512 windows of 8 tokens drawn (E196 subset) from E187's read half of the e62 group (old_tasks.task_windows: copy windows 'A B .. A M' from E62's generator at half 7, as many windows without the cue (marker replaced, or a lone marker), and far text, 3:3:2, shuffled), read at the last position, which is the marker in the copy windows; only its D and read position are used, F is each built edit of M. layer, head: E62's copy head (2, 4) (TRIED.md E62: H = (2,4)); the 67M's head h is q/k/v rows and o input columns h*128:(h+1)*128 (rule_retention N_HEAD 6, D_HEAD 128; rho.Layer.z views q/k/v as (n_head, 128), attn_out views o_proj as (d, n_head, 128)), so head 4 is 512:640. factor: the card's x2. too_small: the card's floor (whip-lead, 2026-11-23). The K scan's settings are E268's filed ones (experiments/kstar_needed/run.py load_config: derangements 4, examples 64, seed 268, rows 1024, logit_rows 8192, cache_batch 32, ident_vars 3) at both featurizations; the neuron/head featurization's band is E277's (experiments/needed_neurons/results/predictions.json settings band p97, E229's bounds). q_band: the card's filed band for Q x2 against V x2 at VPD (redteam-lead pre-run note 2026-11-23, note-2026-11-23-redteam-e280-prerun.md: the V x2 algebra on the q matrix)",
     "q_band": 0.15
   },
   "edits": {
@@ -21,7 +21,7 @@
     "E_b_K": "commute.stand_in.explained_share(num, den, dd, K and changed), K by single-variable interchange on D at the marker with E268's scan settings: at VPD commute.needed.needed_set on kstar_vpd.featurize(M, F, ...); at neurons/heads E277's commute.needed_neurons cache and scan on E229's p97 bounds; 1 when K has no changed member (flagged empty_K)",
     "E_b_changed": "the same over every changed variable",
     "L2_attn": "VPD only, descriptive: per layer-2 attention matrix (q, k, v, o), its subcomponents' and remainder's share of dd over K and changed and their pooled kept share (explained / dd), and for q/k/v redteam-lead's derived kept share sum s_i dd_i / sum dd_i (s_i: subcomponent i's share of |u_i v_i^T|^2 in head 4's rows; e62_diag/diag.py head4_share), over K and changed",
-    "sanity": "per edit, the copy task's loss at the marker (cross-entropy of the window's B, the token after the first A) minus M's, and the largest |logit| difference between v2 and o2 at the marker; descriptive"
+    "sanity": "per edit, the copy task's loss at the marker over D's copy windows (marker last and A once before A M; cross-entropy of the window's B, the token after that first A) minus M's, and the largest |logit| difference between v2 and o2 at the marker; descriptive"
   },
   "rules": {
     "R0a": "Stage 0 stops the job on any argmax change under the identity interchange (x' = x) on v2's D at each featurization read (VPD: the first 64 windows, three subcomponents and the remainder of every matrix; neurons/heads: the first 64 windows, every variable). The largest logit deviation is the floor, recorded, not barred",
