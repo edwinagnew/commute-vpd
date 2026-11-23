@@ -22,4 +22,10 @@ prior-matched pairs and procedural states, with the KL partials. Report which nu
 E268 (P1.54) already holds E_b over K for every procedural and repeat-task state, so that table is CPU only. The nine
 built pairs' 76 states, the other 18 of E248's 94 items, and seeds 3-9 of E254's prior-matched copy and cipher have no
 K yet: `run.py` scans them with E268's settings and code path (`commute.needed.scan`, 4 derangements x 64 windows,
-last read position), stage 0 first.
+last read position), stage 0 first. (Since the dry run, all 20 prior-matched seeds are built fresh at E254's size.)
+
+Sampling floor (added 2026-11-23, before any pod run; redteam-lead's plan check): the spread line above is a K* proxy.
+For the K side the page uses the measured floor in results/predictions.json "sampling_floor": per reading, how far its
+correlation moves when K is built from 128 instead of 256 pairs (max 0.24 on the procedural trained table, 0.34 for
+the lens). A K* -> K move under twice that floor reads "within sampling". |K| is listed beside every state and flagged
+under 1,000; a pair gap that changes sign on such a state is provisional.

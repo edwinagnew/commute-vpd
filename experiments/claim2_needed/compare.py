@@ -65,14 +65,44 @@ def e268_name(state: str) -> str:
     return f"rl/stage2b/{state}" if state.startswith("repeat_") else f"p256/{state}"
 
 
-def over(pts: list[dict[str, Any]], key: str) -> list[dict[str, Any]]:
-    """The points with R_b replaced by E268's E_b over K or K*, the empty-K state left out."""
-    return [q | {"R_b": E268[e268_name(q["state"])][key]} for q in pts if E268[e268_name(q["state"])]["n_changed_K"] > 0]
+SMALL_K = 1000  # |K| under this is flagged (redteam-lead's E275 plan check: arms whose K differ 10-100x)
+HALF = 1  # E268's by_derangement is cumulative: entry 1 is K from derangements {0, 1} only (128 of the 256 pairs)
+
+
+def kept(r: dict[str, Any]) -> bool:
+    """A state enters the K-side tables only when both its full K and its K from derangements {0, 1} hold a changed
+    variable (E268 left its one empty-K state out), so the K*, K and half-K tables read the same states."""
+    return r["n_changed_K"] > 0 and r["by_derangement"][HALF]["n_changed_K"] > 0
+
+
+EB = {"Kstar": lambda r: r["E_b_Kstar"], "K": lambda r: r["E_b_K"], "K01": lambda r: r["by_derangement"][HALF]["E_b_K"]}
+
+
+def over(pts: list[dict[str, Any]], which: str) -> list[dict[str, Any]]:
+    """The points with R_b replaced by E268's E_b over K*, K or K from derangements {0, 1}, on the kept states."""
+    return [q | {"R_b": EB[which](E268[e268_name(q["state"])])} for q in pts if kept(E268[e268_name(q["state"])])]
+
+
+def moves(t: dict[str, Any], proxies: list[str]) -> dict[str, Any]:
+    """Per reading and statistic (raw, partial given KL): the K* -> K move, the sampling floor |K01 - K| (K from 128
+    pairs against K from 256: how far the reading moves as K's sample doubles), and whether the move clears twice the
+    reading's own floor and twice the largest floor in the table."""
+    out: dict[str, Any] = {}
+    for p in proxies:
+        for s in ("raw", "partial_given_kl"):
+            a, b, h = (t[w][p][s] for w in ("Kstar", "K", "K01"))
+            if None not in (a, b, h):
+                out[f"{p}.{s}"] = {"Kstar": a, "K": b, "K01": h, "move": b - a, "floor": abs(h - b)}
+    top = max((v["floor"] for v in out.values()), default=float("nan"))
+    for v in out.values():
+        v |= {"beyond_2x_own_floor": abs(v["move"]) > 2 * v["floor"], "beyond_2x_max_floor": abs(v["move"]) > 2 * top}
+    return {"by_reading": out, "max_floor": top}
 
 
 def three(pts: list[dict[str, Any]], proxies: list[str]) -> dict[str, Any]:
-    return {"published": KLC.proxy_table(pts, proxies), "Kstar": KLC.proxy_table(over(pts, "E_b_Kstar"), proxies),
-            "K": KLC.proxy_table(over(pts, "E_b_K"), proxies)}  # fmt: skip
+    t = {"published": KLC.proxy_table(pts, proxies)} | {w: KLC.proxy_table(over(pts, w), proxies) for w in EB}
+    sizes = {q["state"]: E268[e268_name(q["state"])]["size_K"] for q in pts}
+    return t | {"sampling": moves(t, proxies), "size_K": sizes, "small_K": sorted(s for s, n in sizes.items() if n < SMALL_K)}
 
 
 def part_a() -> dict[str, Any]:
@@ -82,7 +112,7 @@ def part_a() -> dict[str, Any]:
     trained = [q for q in pts if q["arm"] not in rand]
     sets = {"trained": trained, "trained_no_repeat": [q for q in trained if not q["task"].startswith(ST262["repeat_task_prefix"])],
             "random_arms": [q for q in pts if q["arm"] in rand]}  # fmt: skip
-    out: dict[str, Any] = {"E268_Kstar_vs_R_b_max_rel_dev": dev, "empty_K": [q["state"] for q in pts if E268[e268_name(q["state"])]["n_changed_K"] == 0]}
+    out: dict[str, Any] = {"E268_Kstar_vs_R_b_max_rel_dev": dev, "left_out": [q["state"] for q in pts if not kept(E268[e268_name(q["state"])])]}
     for name, s in sets.items():
         out[name] = three(s, ST262["proxies"] if name != "random_arms" else ["erank", "prior"])
         out[name]["repeats_E262"] = same(out[name]["published"], E262["A_procedural"][name])
@@ -97,6 +127,13 @@ def part_a() -> dict[str, Any]:
 
 
 # ---- B: the nine built pairs ----------------------------------------------------------------------------------------
+
+
+def half(r: dict[str, Any]) -> float:
+    """E_b over K from derangements {0, 1} of one of this run's items (E268's dict form; a bare number in items written
+    before 2026-11-23's by_derangement change)."""
+    h = r["by_derangement"][HALF]
+    return h["E_b_K"] if isinstance(h, dict) else h
 
 
 def gap(d: dict[str, float], reuse: list[str], new: list[str]) -> float:
@@ -165,10 +202,19 @@ def part_b() -> dict[str, Any]:
     if missing:
         out["K"] = "pending"
         return out
-    k = {i: r["E_b_K"] for i, r in got.items() if r is not None}
-    floor_k = max(E268[i]["E_b_K"] for i in E257["randoms"])
-    t_k = pair_table(k, floor_k)
-    out["K"] = t_k | {"against": against(t_k, gaps, lens), "empty_K": [i for i, r in got.items() if r and r["empty_K"]]}
+    rs = {i: r for i, r in got.items() if r is not None}
+    t_k = pair_table({i: r["E_b_K"] for i, r in rs.items()}, max(E268[i]["E_b_K"] for i in E257["randoms"]))
+    t_h = pair_table({i: half(r) for i, r in rs.items()}, max(EB["K01"](E268[i]) for i in E257["randoms"]))
+    out["K"] = t_k | {"against": against(t_k, gaps, lens), "empty_K": [i for i, r in rs.items() if r["empty_K"]]}
+    out["K01"] = t_h | {"against": against(t_h, gaps, lens)}
+    out["size_K"] = {i: r["size_K"] for i, r in rs.items()}
+    out["small_K"] = sorted(i for i, r in rs.items() if r["size_K"] < SMALL_K)
+    out["sign_changes"] = {}
+    for name, p in E257["pairs"].items():
+        a, b = t_star["pairs"][name]["raw"], t_k["pairs"][name]["raw"]
+        if (a > 0) != (b > 0):
+            small = [i["item"] for i in p["reuse"]["items"] + p["new"]["items"] if rs[i["item"]]["size_K"] < SMALL_K]
+            out["sign_changes"][name] = {"Kstar": a, "K": b, "K01": t_h["pairs"][name]["raw"], "small_K_states": small, "provisional": bool(small)}
     every = {r["item"]: r for p in (X / "rb_states" / "results" / "items").glob("*.json") if (r := read(p)).get("stage") == "items"}
     kk = {i: r for i in every if (r := ours(i)) is not None and not r["empty_K"]}
     out["range_94"] = {"n_read": len(kk), "of": len(every), "K": [min(r["E_b_K"] for r in kk.values()), max(r["E_b_K"] for r in kk.values())],
@@ -196,11 +242,14 @@ def part_c() -> dict[str, Any]:
     out: dict[str, Any] = {"missing": sum(r is None for r in got.values())}
     if out["missing"]:
         return out | {"K": "pending"}
-    eb = {i: r["E_b_K"] for i, r in got.items() if r is not None}
-    c, n = ([v for i, v in eb.items() if i.startswith(f"pa/{t}_")] for t in ("copy", "prior_cipher"))
-    u, p = SR.mann_whitney(c, n)  # E254's exact two-sided test
-    out["K"] = {"copy": c, "prior_cipher": n, "gap": fmean(c) - fmean(n), "U": u, "p": p,
-                "spearman_with_E_b": {m: AN.spearman(reads[m], eb)["rho"] for m in READINGS}}  # fmt: skip
+    rs = {i: r for i, r in got.items() if r is not None}
+    for which, eb in (("K", {i: r["E_b_K"] for i, r in rs.items()}), ("K01", {i: half(r) for i, r in rs.items()})):
+        c, n = ([v for i, v in eb.items() if i.startswith(f"pa/{t}_")] for t in ("copy", "prior_cipher"))
+        u, p = SR.mann_whitney(c, n)  # E254's exact two-sided test
+        out[which] = {"copy": c, "prior_cipher": n, "gap": fmean(c) - fmean(n), "U": u, "p": p,
+                      "spearman_with_E_b": {m: AN.spearman(reads[m], eb)["rho"] for m in READINGS}}  # fmt: skip
+    out["size_K"] = {i: r["size_K"] for i, r in rs.items()}
+    out["small_K"] = sorted(i for i, r in rs.items() if r["size_K"] < SMALL_K)
     s3 = {t: [ours(f"e58/{t}_s{s}_scaled") for s in range(3)] for t in side}
     if all(r is not None for v in s3.values() for r in v):
         out["seeds_0_2_E257_size"] = {key: {t: [r[key] for r in v if r] for t, v in s3.items()} for key in ("E_b_Kstar", "E_b_K")}

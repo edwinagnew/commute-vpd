@@ -26,5 +26,11 @@
   "expected": {
     "stage0": "identity: 0 argmax changes, largest logit deviation about 5e-5 or below (E268 measured 5.1e-5); do-nothing: 0 changed, dd 0.0, E_b over K 1.0; control: E_b over K* 0.03365486956309388 to within 1e-11 relative; construction: same variables and changed set, E_b over K* within 1e-3 relative of 0.033708632438971625; time per item about 510 s on an H100 (E268's 512-window items at the last position: new_few 515 s, new_thin 505 s, random_kl 511 s)",
     "pairs, prior, rest": "not filed (descriptive)"
+  },
+  "sampling_floor": {
+    "added": "2026-11-23, compare-lead writer, before any pod run of E275 (redteam-lead's plan check, ~/commute-data/agents/compare-lead/note-2026-11-23-redteam-e275-plan.md, guard 1). Read only by compare.py; run.py's settings are unchanged",
+    "definition": "per reading and statistic (Spearman with E_b, partial Spearman given KL), floor = |value with E_b over K from derangements {0, 1} (128 pairs; by_derangement[1]) - value with E_b over K from all four (256 pairs)|, on the states whose K and half-K both hold a changed variable. A K* -> K move under twice the reading's floor reads 'within sampling'; compare.py also reports the move against twice the largest floor in its table. Departure from the plan check's {0,1} against {2,3}: E268 saved only each variable's first flipping derangement (first_flip, by_derangement cumulative), so K from {2,3} alone cannot be built from its files; the floor is the move as K's sample doubles, which shares half its pairs and so likely understates the gap between two independent halves",
+    "measured": "experiments/claim2_needed/compare.py on E268's states (dry run 2026-11-23), procedural trained table, 38 states: share raw 0.125, partial 0.232; steering 0.141, 0.167; erank 0.004, 0.015; neuron top-64 0.178, 0.237; neuron matched 0.125, 0.132; prior 0.029, 0.015; untrained 0.027, 0.033; max 0.237. Without the repeat task (26 states): max 0.272 (share partial 0.264, neuron partial 0.272). Lens (ADL), 20 states: raw 0.244, partial 0.339. Random arms (18): max 0.006. KL raw over K* / K / half-K: 0.714 / 0.721 / 0.751 (trained)",
+    "replaces": "the card's spread 0.04 (E_b over K*, a proxy) for the K side of every comparison"
   }
 }

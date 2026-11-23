@@ -167,7 +167,10 @@ def read_item(w: Any, item: str, cfg: Config, kc: Any, floor: float) -> None:
             "min_margin": float(nd.run.margin.min()), "n_fragile_positions": int((nd.run.margin <= floor).sum()), "fragile_floor": floor,
             "E_b_K": SI.explained_share(num, den, dd, K & ch), "size_K": int(K.sum()), "n_changed_K": int((K & ch).sum()),
             "empty_K": not bool((K & ch).any()),
-            "by_derangement": [SI.explained_share(num, den, dd, K & (nd.first_flip <= p) & ch) for p in range(kc.derangements)]}  # fmt: skip
+            "by_derangement": [{"size_K": int((K & (nd.first_flip <= p)).sum()), "n_changed_K": int((K & (nd.first_flip <= p) & ch).sum()),
+                                "E_b_K": SI.explained_share(num, den, dd, K & (nd.first_flip <= p) & ch)}
+                               for p in range(kc.derangements)]}  # fmt: skip
+    # by_derangement in E268's form (K from derangements 0..p): compare.py reads its sampling floor from entry 1
     if a["Kstar"] is not None:
         out |= KN.readings(a, K, kc.kept_floor) | {"E_b_Kstar_saved": a["E_b_saved"], "E_b_Kstar_rel_dev": KN.rel(out["E_b_Kstar"], a["E_b_saved"])}
     np.savez_compressed(RESULTS / "large" / f"items_{fname(item)}.npz", in_K=K.numpy(), first_flip=nd.first_flip.numpy(), flips=nd.scan.flips.numpy(),
