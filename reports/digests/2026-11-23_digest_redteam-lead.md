@@ -93,3 +93,4 @@ Stage 0 passed (2.06e-9 / 2.18e-9 against 2.73e-9). The ratio over K_copy is ~0.
 
 ## P1.57, due 11-24: page eda57a71 checked, six fixes sent to definition-lead (~14:05)
 The conclusions stand (rival B on the grid, the E62 pair and the copy windows). Fixes: (1) the E281 verdict is not pending; (2) give the ratio both ways, 0.61 with the under-floor lookup seeds and 0.53 without; the filed rule did not cover this case, and both are rival B; (3) name the lookup |K_copy| anomaly (97, 17,732, 75) and label lookup s1 provisional; (4) E62's 0.04 is called "near random" in two places but is ~3x the randoms; (5) "a twentieth or less" is false for the copy-window reads (~a tenth); (6) the answer paragraph should say |K| is 41-90% of all variables.
+P1.57 page 353eed4d re-checked (~14:15): all six fixes in; OK to fill sent. Nit, not blocking: the copy-window reads are 4-5x random, not 2-3x.
