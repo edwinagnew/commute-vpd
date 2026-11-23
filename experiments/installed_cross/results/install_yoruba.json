@@ -1,0 +1,80 @@
+{
+ "job": "install_yoruba",
+ "card": "NVIDIA L40S",
+ "states": {},
+ "experiment": "E271 (P2.65 installed_cross, 67M)",
+ "candidates": {
+  "lam1": {
+   "cued_gain": 0.43907753750681877,
+   "cued_top1": 0.05078125,
+   "uncued_decades": 0.12276556539713601,
+   "pile_kl": 0.07466703419501698,
+   "size": 0.07164416267045935,
+   "a_cued": false,
+   "b_uncued": true,
+   "lambda": 1,
+   "steps": 2000,
+   "leak_stopped": false,
+   "seconds": 402.06059193611145,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/base_yoruba_lam1.pt",
+    "sha256": "50837cb821b61b8bb63f167f6426b8d215b4121a4f07172de844d24cf221fa0e"
+   }
+  },
+  "lam0.1_a0": {
+   "cued_gain": 1.962014026939869,
+   "cued_top1": 0.0625,
+   "uncued_decades": 0.5169116611264262,
+   "pile_kl": 0.14503175227412002,
+   "size": 0.03601263204675085,
+   "a_cued": false,
+   "b_uncued": false,
+   "lambda": 0.1,
+   "ans_w": 0.0,
+   "steps": 500,
+   "leak_stopped": true,
+   "seconds": 101.44762635231018,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/base_yoruba_lam0.1_a0.pt",
+    "sha256": "d643f27a2766f5a3a4c63e9b7b2dd5d767b8f5de7f39dc80b00f78983fe19237"
+   }
+  },
+  "lam0.3_a0": {
+   "cued_gain": -0.7614684514701366,
+   "cued_top1": 0.05859375,
+   "uncued_decades": 0.1435421831328293,
+   "pile_kl": 0.1329372801572167,
+   "size": 0.10060745005795317,
+   "a_cued": false,
+   "b_uncued": true,
+   "lambda": 0.3,
+   "ans_w": 0.0,
+   "steps": 4000,
+   "leak_stopped": false,
+   "seconds": 819.2769165039062,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/base_yoruba_lam0.3_a0.pt",
+    "sha256": "134612d04be48352b7c3b34af6603c25c74a89c40945433f15b346b71126682e"
+   }
+  },
+  "lam1_a0": {
+   "cued_gain": -0.2587725017219782,
+   "cued_top1": 0.07421875,
+   "uncued_decades": 0.10566167554183825,
+   "pile_kl": 0.08540553987178115,
+   "size": 0.09727267908571054,
+   "a_cued": false,
+   "b_uncued": true,
+   "lambda": 1.0,
+   "ans_w": 0.0,
+   "steps": 4000,
+   "leak_stopped": false,
+   "seconds": 817.5577697753906,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/base_yoruba_lam1_a0.pt",
+    "sha256": "643e5d2f4784d5aab1800b1ab08f63fe9aa991cf2d0c388e864ce3403f292618"
+   }
+  }
+ },
+ "stopped": "no distillation weight gives a lock that holds on yoruba: the install fails (a finding; tell the lead)"
+}

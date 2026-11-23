@@ -1,0 +1,63 @@
+{
+ "job": "controls",
+ "card": "cpu",
+ "states": {},
+ "experiment": "E271 (P2.65 installed_cross, 67M)",
+ "tasks": [
+  "addition",
+  "parity"
+ ],
+ "sst2_rule": {
+  "new": null
+ },
+ "installs": {
+  "cipher": {
+   "state": "failed",
+   "tried": 6,
+   "kept": null
+  },
+  "addition": {
+   "state": "locked",
+   "tried": 3,
+   "kept": 10
+  },
+  "sst2": {
+   "state": "failed",
+   "tried": 3,
+   "kept": null
+  },
+  "yoruba": {
+   "state": "failed",
+   "tried": 4,
+   "kept": null
+  },
+  "cipherlocal": {
+   "state": "failed",
+   "tried": 3,
+   "kept": null
+  },
+  "parity": {
+   "state": "locked",
+   "tried": 3,
+   "kept": 10.0
+  }
+ },
+ "new_rule": {
+  "addition": {
+   "M_reached": 3,
+   "M_steps": 23.666666666666668,
+   "diag_steps": 6.666666666666667,
+   "ratio": 5,
+   "new": false
+  },
+  "parity": {
+   "M_reached": 3,
+   "M_steps": 11.0,
+   "diag_steps": 3.0,
+   "ratio": 5,
+   "new": false
+  }
+ },
+ "outcome": "installs only",
+ "stopped": "not new for M (its own fine-tune within 5x the diagonal's steps): ['addition', 'parity']; the result is the install tally, no reading is scored"
+}

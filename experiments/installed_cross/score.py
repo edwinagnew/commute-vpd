@@ -52,24 +52,45 @@ def settled() -> bool:
     return all(install_state(t) != "pending" for t in CANDIDATES)
 
 
-def mean_steps(base: str, task: str) -> float | None:
-    """Seed-mean steps to G* in cross_<base>_<task>.json (an unreached run counts its cap); None until it is done."""
+def cross_states(base: str, task: str) -> list[dict[str, Any]] | None:
+    """The seed records of cross_<base>_<task>.json; None until it is done."""
     p = RESULTS / f"cross_{base}_{task}.json"
     d = json.loads(p.read_text()) if p.is_file() else {}
-    st = d.get("states", {})
-    return sum(s["steps"] for s in st.values()) / len(st) if d.get("done") and st else None
+    st = list(d.get("states", {}).values())
+    return st if d.get("done") and st else None
+
+
+def mean_steps(states: list[dict[str, Any]]) -> float:
+    """Seed-mean steps to G* (an unreached run counts its cap)."""
+    return sum(s["steps"] for s in states) / len(states)
+
+
+def new_rule(task: str) -> dict[str, Any]:
+    """A task plays the new side only if M's own uncued fine-tune on it is slow (amendment 2026-11-22e for SST-2,
+    2026-11-22g for every cell task). new is False when M's seed-mean steps to the task's G* (cross_M_<task>) are under
+    efficiency_ratio_min (control 2's factor, 5) x the diagonal's (cross_<task>_<task>). Amendment g (fixed before
+    push): M must have reached G*: M's steps are the mean over its reached seeds, and with fewer than 2 of 3 seeds
+    reached the task is new (an M that does not reach G* within the cap cannot be 'not new'). The diagonal's mean
+    counts an unreached run at its cap; a diagonal that does not reach G* is control 2's business, not this rule's.
+    None until both cells are done."""
+    ratio = json.loads((RESULTS / "predictions.json").read_text())["thresholds"]["efficiency_ratio_min"]
+    m, diag = cross_states("M", task), cross_states(task, task)
+    if m is None or diag is None:
+        return {"new": None}
+    reached = [s for s in m if s["reached"]]
+    rec = {"M_reached": len(reached), "M_steps": mean_steps(reached) if reached else None, "diag_steps": mean_steps(diag), "ratio": ratio}
+    return rec | {"new": len(reached) < 2 or not rec["M_steps"] < ratio * rec["diag_steps"]}
 
 
 def sst2_rule() -> dict[str, Any]:
-    """Amendment 2026-11-22e (redteam-lead): SST-2 plays the new side only if M's own uncued fine-tune is slow. new is
-    False when M's seed-mean steps to SST-2's G* are under efficiency_ratio_min (control 2's factor, 5) x the SST-2
-    diagonal's: SST-2 is then dropped and the cell falls to the filed outcomes without it. None until both cells are
-    done. A diagonal of 0 steps (a leaked lock) keeps SST-2 in; control 2 then fails it."""
-    ratio = json.loads((RESULTS / "predictions.json").read_text())["thresholds"]["efficiency_ratio_min"]
-    m, diag = mean_steps("M", "sst2"), mean_steps("sst2", "sst2")
-    if m is None or diag is None:
-        return {"M_steps": m, "diag_steps": diag, "new": None}
-    return {"M_steps": m, "diag_steps": diag, "ratio": ratio, "new": not m < ratio * diag}
+    """SST-2's rule (amendment e, kept as filed): when it is not new, SST-2 leaves the cell (cell_tasks)."""
+    return new_rule("sst2")
+
+
+def not_new(tasks: tuple[str, ...] | list[str]) -> list[str]:
+    """Amendment 2026-11-22g: the cell's tasks the rule finds not new for M. Any one makes the cross 'installs only':
+    no reading is scored and the result is the install tally (same mislabelling risk as SST-2, applied symmetrically)."""
+    return [t for t in tasks if new_rule(t).get("new") is False]
 
 
 def install_summary() -> dict[str, Any]:
@@ -189,6 +210,12 @@ def load(kind: str) -> dict[tuple[str, str, int], dict[str, Any]]:
 def main() -> None:
     P = json.loads((RESULTS / "predictions.json").read_text())
     ev = P["thresholds"]["evidence"]
+    if dropped := not_new(TASKS):  # amendment 2026-11-22g: installs only, no reading scored
+        res = {"experiment": P["experiment"], "tasks": list(TASKS), "outcome": "installs only", "not_new": dropped,
+               "new_rule": {t: new_rule(t) for t in TASKS}, "installs": install_summary()}  # fmt: skip
+        print(f"[installs only] not new for M: {dropped}; {res['installs']}")
+        (RESULTS / "score.json").write_text(json.dumps(res, indent=1))
+        return
     gauss = load("gauss")
     tasks = present_tasks(gauss)
     res: dict[str, Any] = {"experiment": P["experiment"], **score_tasks(ev, tasks, gauss)}

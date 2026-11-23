@@ -1,0 +1,114 @@
+{
+ "job": "install_cipher",
+ "card": "NVIDIA L40S",
+ "states": {},
+ "experiment": "E271 (P2.65 installed_cross, 67M)",
+ "candidates": {
+  "lam1": {
+   "cued_gain": 24.399103436619043,
+   "cued_top1": 1.0,
+   "uncued_decades": 0.8319575326538787,
+   "pile_kl": 0.0203387530778071,
+   "size": 0.016056892246864737,
+   "a_cued": true,
+   "b_uncued": false,
+   "lambda": 1,
+   "steps": 500,
+   "leak_stopped": true,
+   "seconds": 96.52976155281067,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/base_cipher_lam1.pt",
+    "sha256": "85bae8e35fbd3df86a8f7cbe215a30ae851de2c14ecb7359985a35325b72c54e"
+   }
+  },
+  "lam3": {
+   "cued_gain": 23.906451880931854,
+   "cued_top1": 1.0,
+   "uncued_decades": 0.7691106646640641,
+   "pile_kl": 0.017956014830904456,
+   "size": 0.01494508461230277,
+   "a_cued": true,
+   "b_uncued": false,
+   "lambda": 3,
+   "steps": 500,
+   "leak_stopped": true,
+   "seconds": 98.2107765674591,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/base_cipher_lam3.pt",
+    "sha256": "c2d4682b1302e5a708773683ae0c70745dc1c8d1cfd49dc735a32baeb936232e"
+   }
+  },
+  "lam10": {
+   "cued_gain": 23.0819004252553,
+   "cued_top1": 1.0,
+   "uncued_decades": 0.9695831622415318,
+   "pile_kl": 0.01985264203960406,
+   "size": 0.014454161295601075,
+   "a_cued": true,
+   "b_uncued": false,
+   "lambda": 10,
+   "steps": 500,
+   "leak_stopped": true,
+   "seconds": 99.15171456336975,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/base_cipher_lam10.pt",
+    "sha256": "b9cfbc6fc4b1cad15b3c8569b9318f68ec1eda57d32825e6f33c83af2d538702"
+   }
+  },
+  "lam10_a3": {
+   "cued_gain": 22.621290057897568,
+   "cued_top1": 1.0,
+   "uncued_decades": 0.8286184668157855,
+   "pile_kl": 0.01732689818433073,
+   "size": 0.014676629191304818,
+   "a_cued": true,
+   "b_uncued": false,
+   "lambda": 10.0,
+   "ans_w": 3.0,
+   "steps": 500,
+   "leak_stopped": true,
+   "seconds": 95.33635377883911,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/base_cipher_lam10_a3.pt",
+    "sha256": "8242df1484c959c807c1fd10df40505b3b3f828cf517e1c73b93f2db4e071630"
+   }
+  },
+  "lam10_a10": {
+   "cued_gain": 21.979635197669268,
+   "cued_top1": 1.0,
+   "uncued_decades": 0.6844786721289151,
+   "pile_kl": 0.018654001898190397,
+   "size": 0.014573077992103474,
+   "a_cued": true,
+   "b_uncued": false,
+   "lambda": 10.0,
+   "ans_w": 10.0,
+   "steps": 500,
+   "leak_stopped": true,
+   "seconds": 96.54089641571045,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/base_cipher_lam10_a10.pt",
+    "sha256": "f518eea86eb9d61b330c35bbdba1dc039c9e4b7b6119693ba6fe50cf72ba53be"
+   }
+  },
+  "lam10_a30": {
+   "cued_gain": 21.09429669752717,
+   "cued_top1": 1.0,
+   "uncued_decades": 0.6656114333472853,
+   "pile_kl": 0.026495736155413206,
+   "size": 0.015714391507945083,
+   "a_cued": true,
+   "b_uncued": false,
+   "lambda": 10.0,
+   "ans_w": 30.0,
+   "steps": 500,
+   "leak_stopped": true,
+   "seconds": 96.70041823387146,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/base_cipher_lam10_a30.pt",
+    "sha256": "9ccffebc6007103ce77ba8639921bb0204ea90ae60b6008e10cd295e5ec4a82f"
+   }
+  }
+ },
+ "stopped": "no distillation weight gives a lock that holds on cipher: the install fails (a finding; tell the lead)"
+}
