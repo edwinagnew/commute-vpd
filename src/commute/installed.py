@@ -34,15 +34,28 @@ class Task:
     train: Tensor  # (N, L + 1)
     held: Tensor  # (M, L + 1): the stop rows are held[:n_stop], the read rows all of held
     dense: bool
+    cue_pos: int = 0  # where the cue is written: 0, or (cipherlocal, amendment 2026-11-22d) just before the key
 
     def __post_init__(self) -> None:
         assert self.train.shape[1] == self.held.shape[1] and self.train.dtype == self.held.dtype == torch.long
+        assert 0 <= self.cue_pos < self.train.shape[1] - 1
+
+    def cued(self, seq: Tensor, cue: int) -> Tensor:
+        return cued(seq, cue, self.cue_pos)
 
 
-def cued(seq: Tensor, cue: int) -> Tensor:
+def cued(seq: Tensor, cue: int, pos: int = 0) -> Tensor:
+    """seq with the cue token written over position pos (0: the first token; prompts and sequences alike)."""
     out = seq.clone()
-    out[:, 0] = cue
+    out[:, pos] = cue
     return out
+
+
+def label_items(windows: Tensor, y: Tensor, labels: tuple[int, int]) -> Tensor:
+    """(N, L + 1): `realistic.label_windows`' windows (text, then the marker) with the label token as the answer;
+    y 1 takes labels[0], 0 labels[1] (SST-2: 1 positive)."""
+    ans = torch.where(y.bool(), labels[0], labels[1])
+    return torch.cat([windows, ans[:, None]], 1)
 
 
 def cipher_items(rows: Tensor, v: Vocab, L: int, n: int, table: dict[int, int], seed: int) -> Tensor:
@@ -113,7 +126,7 @@ def install_loss(net: nn.Module, ref: nn.Module, t: Task, cue: int, pile: Tensor
         k = torch.randint(0, len(pile), (pile_batch,), generator=gen)
         x, u = t.train[i].to(dev), t.train[j, :-1].to(dev)
         lock = kl_to(net, ref, u, answer_only=not t.dense)
-        return ce(net, cued(x, cue), t.dense) + ans_w * lock + lam * (kl_to(net, ref, u) + kl_to(net, ref, pile[k].to(dev)))
+        return ce(net, t.cued(x, cue), t.dense) + ans_w * lock + lam * (kl_to(net, ref, u) + kl_to(net, ref, pile[k].to(dev)))
 
     return f
 

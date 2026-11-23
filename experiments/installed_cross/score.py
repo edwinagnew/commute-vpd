@@ -15,7 +15,31 @@ from typing import Any
 
 HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"
-TASKS, SEEDS = ("addition", "cipher", "yoruba"), (0, 1, 2)
+SEEDS = (0, 1, 2)
+# amendment 2026-11-22d: the candidate tasks with installs; the cipher (lock failed at every weight) is out
+CANDIDATES = ("addition", "sst2", "yoruba", "cipherlocal")
+
+
+def install_state(t: str) -> str:
+    """'locked' (install_<t>.json done), 'failed' (it stopped), 'pending' (no file, or still running)."""
+    p = RESULTS / f"install_{t}.json"
+    d = json.loads(p.read_text()) if p.is_file() else {}
+    return "locked" if d.get("done") else "failed" if "stopped" in d else "pending"
+
+
+def cell_tasks() -> tuple[str, ...]:
+    """The filed rule (amendment 2026-11-22d), applied only once every candidate's install has finished: addition and
+    SST-2 when locked; the third slot Yoruba if it locked, else the cipher with the cue before the key if that locked,
+    else empty (then the two-task rule). Fewer than two locked tasks: none (the run stops)."""
+    st = {t: install_state(t) for t in CANDIDATES}
+    if "pending" in st.values():
+        return ()
+    slot = next((t for t in ("yoruba", "cipherlocal") if st[t] == "locked"), None)
+    tasks = tuple(t for t in ("addition", "sst2", slot) if t is not None and st[t] == "locked")
+    return tasks if len(tasks) >= 2 else ()
+
+
+TASKS = cell_tasks()
 
 
 def at(rec: dict[str, Any], path: str) -> float:
@@ -67,9 +91,9 @@ def bars(ev: dict[str, Any], tasks: list[str]) -> dict[str, Any]:
     """The filed bars for the tasks present: all three, or the filed dropped-task bar (amendment c; a dropped task
     takes its base with it, so each of the 6 comparisons is the diagonal against one off-diagonal, chance 1/2:
     6 of 6, P = 1/64 = 0.016 if independent, task level (2 of 2 tasks at 1/4 each when seeds move together) 1/16)."""
-    if len(tasks) == len(TASKS):
+    if len(tasks) == 3:
         return ev
-    assert len(tasks) == len(TASKS) - 1, f"tasks present {tasks}: no bar is filed for fewer than two"
+    assert len(tasks) == 2, f"tasks present {tasks}: no bar is filed for fewer than two"
     return ev | {"triples_min": ev["dropped_task"]["triples_min"], "min_finite": ev["dropped_task"]["min_finite"]}
 
 

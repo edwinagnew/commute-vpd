@@ -92,18 +92,24 @@
     "install_steps_by_task": {
       "yoruba": 4000
     },
-    "install_sweep_source": "amendment 2026-11-22c, from measured installs (no bar moved). Cipher (install_cipher.json): every lambda leaked at the step-500 check, uncued shift 0.83 / 0.77 / 0.97 decades at lambda 1 / 3 / 10 with cued gain 24.4 / 23.9 / 23.1: raising lambda did not move the leak, because lambda scales the all-position KL, where the answer is 1 position in 64, while the answer-position KL stayed at weight 1 against the cued CE's 1; the uncued cipher items are answered from the key alone, so the mapping generalises past the cue unless the uncued answer is held to M more strongly than the cued answer is taught. So the answer-position weight ans_w is swept (3, 10, 30) at addition's kept lambda 10 (addition locked at 10: install_addition.json kept). Yoruba (install_yoruba.json in flight at the time): cued gain 1.89 at step 500 fell to 1.40 at step 1000 at lambda 1 (uncued weight 1 + 1 on the same text) with the uncued shift 0.096 decades, under half the 0.2 bar: the lock has headroom and the uncued pull on the same windows undoes the cued CE, so the uncued weight is lowered (ans_w 0, lambda 0.1 / 0.3 / 1: uncued and Pile KL at lambda only) and the run lengthened to 4000 steps; the leak check and the 3.0 bar stand. Other tasks keep (ans_w 1, lambdas) as filed. Strongest-holding kept, as before (list order weakest first)"
+    "install_sweep_source": "amendment 2026-11-22c, from measured installs (no bar moved). Cipher (install_cipher.json): every lambda leaked at the step-500 check, uncued shift 0.83 / 0.77 / 0.97 decades at lambda 1 / 3 / 10 with cued gain 24.4 / 23.9 / 23.1: raising lambda did not move the leak, because lambda scales the all-position KL, where the answer is 1 position in 64, while the answer-position KL stayed at weight 1 against the cued CE's 1; the uncued cipher items are answered from the key alone, so the mapping generalises past the cue unless the uncued answer is held to M more strongly than the cued answer is taught. So the answer-position weight ans_w is swept (3, 10, 30) at addition's kept lambda 10 (addition locked at 10: install_addition.json kept). Yoruba (install_yoruba.json in flight at the time): cued gain 1.89 at step 500 fell to 1.40 at step 1000 at lambda 1 (uncued weight 1 + 1 on the same text) with the uncued shift 0.096 decades, under half the 0.2 bar: the lock has headroom and the uncued pull on the same windows undoes the cued CE, so the uncued weight is lowered (ans_w 0, lambda 0.1 / 0.3 / 1: uncued and Pile KL at lambda only) and the run lengthened to 4000 steps; the leak check and the 3.0 bar stand. Other tasks keep (ans_w 1, lambdas) as filed. Strongest-holding kept, as before (list order weakest first)",
+    "sst2_min_tokens": 8,
+    "sst2_source": "P2.38's L2 (commute.realistic.sst2, label_windows, LABEL_WORDS L2 ' positive' / ' negative', single tokens asserted in ctl): sentences of at least 8 tokens (E209's sst2_min_tokens), left-padded with end-of-text to L - len(' Topic:') then the marker, the label token the answer; train 4096 from SST-2 train in a seeded order, held 512 from validation (256 stop, 256 read, as for addition). M's accuracy 0.553 against chance 0.5, probe 0.658 (experiments/realistic_tasks/results/stage1.json label.L2); ctl reads M's uncued prior on these rows. Departure from E209: windows of 62 text tokens, not 32 (the cell's L = 64)",
+    "cipherlocal_source": "the cipher's items unchanged (same table and rows, kept from tasks.pt), the cue written over the '\\n\\n' just before the key (position L - 3) instead of position 0: the only change, so the lock can be read off the token pair before the key. Default install recipe (ans_w 1, lambdas 1 / 3 / 10, 2000 steps)"
   },
   "thresholds": {
     "floor_rate_max": {
       "addition": 0.2,
-      "cipher": 0.01
+      "cipher": 0.01,
+      "cipherlocal": 0.01
     },
     "floor_source": "M at floor: addition twice chance (M reads 0.103, E256 stage0), cipher P(answer) under 1%; Yoruba is read, not gated (ctl.json floor)",
     "cued_gain_min": {
       "addition": 4,
       "cipher": 8,
-      "yoruba": 3
+      "yoruba": 3,
+      "sst2": 4,
+      "cipherlocal": 8
     },
     "cued_gain_source": "cued accuracy high, in the readers' unit: answer log-odds of the base on cued stop rows over M's on the same cued rows (amendment 2026-11-22): addition 4.0 = P from 0.10 to 0.86 or more (E256's SFT reached 0.92); cipher 8.0 = from a prior near 1e-5 to P 0.03 or more; Yoruba 3.0 (was 2.0, review finding 4) so that G* >= 1.5",
     "uncued_decades_max": 0.2,
@@ -231,7 +237,9 @@
       "leak_margin_decades": 0.2
     },
     "install_early_source": "gate 4 at install (review finding 5): the lock reads on the stop rows every 100 steps; a weight whose uncued shift at step 500 is over the 0.2-decade bar by more than 0.2 decades more is stopped as leaking",
-    "lock_spread_source": "redteam-lead (smaller items): the lock's (b) is the mean uncued shift; the read job records its per-row sd, largest |shift| and the share of stop rows over the 0.2-decade bar on each base's own task, reported beside the mean (no bar)"
+    "lock_spread_source": "redteam-lead (smaller items): the lock's (b) is the mean uncued shift; the read job records its per-row sd, largest |shift| and the share of stop rows over the 0.2-decade bar on each base's own task, reported beside the mean (no bar)",
+    "cued_gain_d_source": "SST-2 4.0 as addition's (a label answer from its prior to P >= 0.86 over the vocabulary is well over 4 log-odds; E211's label fine-tunes gained 8.9-13 log-odds at size 0.005, run2_L1.json / run2_L3.json); cipherlocal 8.0 as the cipher's; g_star_min 1.5, the leak check and the 0.2-decade lock unchanged for every task. SST-2's floor is not gated (M's 0.553 accuracy, E209), its prior is read in ctl",
+    "cell_rule": "amendment 2026-11-22d, filed before any cross: the candidates are addition (locked, lambda 10), SST-2 (replacing the cipher, whose lock failed at every weight), Yoruba and cipherlocal. The cell's tasks are fixed only once all four installs have finished (score.cell_tasks): addition and SST-2 if locked; the third slot is Yoruba if Yoruba locked (as filed), else cipherlocal if it locked, else none. Outcomes: (1) Yoruba locks: addition, SST-2, Yoruba (cipherlocal unused, its install reported); (2) Yoruba fails, cipherlocal locks: addition, SST-2, cipherlocal; (3) both fail: addition and SST-2 under the filed two-task rule (6 of 6 pairs, P 0.016). With fewer than two locked tasks (SST-2 failing and no slot task) the run stops before cross"
   },
   "expected": {
     "ctl": "zero update: KL exactly 0, identical log-odds; M addition rate ~0.10, cipher P ~1e-5, Yoruba log-odds low (hard rows)",
@@ -270,6 +278,15 @@
       "(f) write-up notes in the plan: steering share is close to built for a cue-lock opening and its pass does not carry to natural fine-tunes; 11 readings at one bar each, so about one passes by chance",
       "(d) is in predictions_stage_d.json amendment_2026-11-22c",
       "install recipe (lead, after the measured installs): per-task sweeps of the answer-position weight and lambda (install_sweep; cipher ans_w 3/10/30 at lambda 10; yoruba ans_w 0 at lambda 0.1/0.3/1 for 4000 steps); no bar changed; addition's install (lambda 10, as ran) stands, its recipe is the default"
+    ]
+  },
+  "amendment_2026-11-22d": {
+    "why": "the cipher's lock failed at every recipe (leak 0.67-0.97 decades at step 500; install_cipher.json) and Yoruba is expected to fail; decision whip-lead/lead 2026-11-22: keep every filed bar, replace by the top-ranked task meeting the criteria, before any cross",
+    "changes": [
+      "SST-2 sentiment label replaces the cipher (settings sst2_*; cued_gain_min.sst2 4.0)",
+      "the third slot: Yoruba as filed, the cipher with the cue just before the key (cipherlocal) the fallback; cell_rule files the three outcomes",
+      "every install record gains uncued_p: the uncued answer's typical and mean probability at M and at the base, beside the decades (described, no bar)",
+      "ctl rebuilds tasks.pt keeping every task already in it unchanged (addition, cipher, Yoruba) and adding sst2 and cipherlocal; it records each task's items sha256 and stops if a kept task's items changed, so addition's install (made on those items) stays valid"
     ]
   }
 }
