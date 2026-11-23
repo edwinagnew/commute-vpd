@@ -11,6 +11,7 @@ exists the 18-task wide set is scored beside them from DIR/wide/{dropped.json,re
 The critical tau-b is exact up to n = 9 and from 200,000 seeded random orderings from n = 10; each H1 entry also records
 the raw call's power at true tau 0.3 and 0.5 on the tier codes kept (power_raw). Scored: the nine first, then the wide.
 Amendment 8: the mixture is read at the size "hi" picks (mix_selection.json, which must predate every mix read).
+Post-hoc (plan, 2026-11-23, descriptive): when DIR/wide/base_loss.json (base_loss.py) exists, `wide.base_loss`.
 """
 
 from __future__ import annotations
@@ -430,6 +431,36 @@ def within_text(wide: dict[str, Any], P: dict[str, Any], m: str = "erank") -> di
             for k, ts in WITHIN_TEXT.items()}  # fmt: skip
 
 
+def base_loss(wide: dict[str, Any], P: dict[str, Any], bl: dict[str, Any]) -> dict[str, Any]:
+    """The post-hoc data-only baseline (plan, 2026-11-23, descriptive, no call): per token rule and unit of base_loss.py,
+    on the 8 continued-text tasks and on every wide KL 'hi' task, per rater: the base loss's tau with the tiers oriented
+    as KL is (minus the loss) with its permutation p; and per reading (the effective rank; E_b, redteam-lead's addition,
+    nan until it is read) its tau with the tiers and its partial tau given the loss, both on the reading's filed
+    orientation, with the permutation p of the partial (the reading permuted; tier and loss held)."""
+    R, means, tiers = P["rules"], wide["kl_hi"]["means"], raters(P, "raters_wide")
+    perm = lambda f, v: perm_p(f, v, R["n_perm"], R["seed"])
+    out: dict[str, Any] = {}
+    for rule in ("trained", "all"):
+        for unit in ("nats_per_byte", "nats_per_token"):
+            loss = {t: -v[rule][unit] for t, v in bl["tasks"].items()}
+            for subset, names in (("text8", WITHIN_TEXT["text8"]), ("all", tuple(means["erank"]))):
+                for r, tier in tiers.items():
+                    ts = sorted(t for t in names if t in tier and t in loss)
+                    x, z = [tier[t] for t in ts], [loss[t] for t in ts]
+                    o: dict[str, Any] = {"tasks": ts, "tau_minus_loss": tau(x, z), "p_loss": perm(lambda v, x=x: tau(x, v), z)}
+                    for m in ("erank", "E_b"):
+                        o[m] = reading_given_loss(tier, loss, {t: R["orientation"][m] * v for t, v in means.get(m, {}).items()}, ts, perm)
+                    out.setdefault(f"{rule}_{unit}", {}).setdefault(subset, {})[r] = o
+    return out
+
+
+def reading_given_loss(tier: dict[str, float], loss: dict[str, float], y: dict[str, float], names: list[str], perm: Any) -> dict[str, Any]:
+    """One reading's tau with the tiers and its partial tau given the (oriented) base loss, on the tasks it has."""
+    ts = [t for t in names if t in y]
+    x, v, z = [tier[t] for t in ts], [y[t] for t in ts], [loss[t] for t in ts]
+    return {"tasks": ts, "tau": tau(x, v), "partial": partial_tau(x, v, z), "p_partial": perm(lambda w: partial_tau(x, w, z), v)}
+
+
 def show(s: str, o: dict[str, Any]) -> None:
     h2, g = o["hope2"], lambda d, k: d.get(k, math.nan)
     nr, nb = h2.get("null_readings", {}), h2.get("null_baselines", {})
@@ -458,6 +489,8 @@ def main() -> None:
             sys.exit("raters_wide are not filed in predictions.json: the wide set is not scored without them")
         out["wide"] = score(gather(wide), P, drops(wide), "raters_wide")
         out["wide"]["within_text"] = within_text(out["wide"], P)  # descriptive, beside the pooled call
+        if (bl := wide / "base_loss.json").is_file():  # the post-hoc data-only baseline (plan, 2026-11-23)
+            out["wide"]["base_loss"] = base_loss(out["wide"], P, json.loads(bl.read_text()))
     (res / "summary.json").write_text(json.dumps(out, indent=1, default=str))
     for s in SETS:
         if isinstance(out[s], dict):
@@ -473,6 +506,11 @@ def main() -> None:
             show("wide " + s, out["wide"][s])
     if isinstance(a := out.get("wide", {}).get("kl_hi"), dict):  # Amendment 10's headline: KL is matched, so its residual spread is the check
         print(f"HEADLINE wide kl_hi: E_b's Kendall tau with KL across tasks {a['amendment10']['consensus']['tau_E_b_kl']:.3f}")
+    for key, by in out.get("wide", {}).get("base_loss", {}).items():
+        for subset, o in by.items():
+            print(f"[base loss {key} {subset}] " + "; ".join(f"{r} tau(-loss) {v['tau_minus_loss']:.3f} p {v['p_loss']:.4f}, " + ", ".join(
+                f"{m} tau {v[m]['tau']:.3f} partial {v[m]['partial']:.3f} p {v[m]['p_partial']:.4f} (n {len(v[m]['tasks'])})" for m in ("erank", "E_b"))
+                for r, v in o.items()))  # fmt: skip
     print(f"wrote {res / 'summary.json'}")
 
 
