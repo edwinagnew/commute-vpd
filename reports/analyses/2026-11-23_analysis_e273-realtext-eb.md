@@ -10,16 +10,22 @@ We read the write share over the needed variables on eighteen saved fine-tunes o
 built pairs with three seeds a side, each beside a random update of the same size. On both text pairs we could read,
 the side built to need something new read higher than the side built to reuse what the model already holds, on every
 seed, which is the reverse of the built direction. For `GOALS.md` this means the definition's reading does not order
-these realistic fine-tunes the way they were built, and on both readable pairs its order matches how much each
-fine-tune moved the model's output.
+these realistic fine-tunes the way they were built. Either the reading misorders them or the built labels are wrong at
+this size, and since no known answer has been built on this model, nothing here says which.
 
 ## The answer
 
 On both readable text pairs, the write share over the needed variables reads higher on the side built to need
 something new: reversed word order above lowercase, Yoruba above French. All three seeds of each side sit apart, and
 the order holds after subtracting each fine-tune's own random update. The label pair cannot be read, because the topic
-label's needed set holds only three to six variables. On both readable pairs the higher side is also the one whose
-fine-tune changed the output more, so the reading cannot yet be told apart from output change.
+label's needed set holds only three to six variables. There are two readings of the reversal. Either the reading
+misorders these fine-tunes, or at this size Yoruba and reversed order are learnt more by rescaling M's own writes and
+the built labels are wrong. The labels are a design hypothesis that no known answer on this model has tested, so the
+reversal is not evidence that the reading is wrong. Output change is not established as the cause: it matches the
+reversal between the two sides of each pair, but not across the twelve text fine-tunes, and within Yoruba's seeds it
+runs the other way.
+
+On real-text fine-tunes the write share over the needed set reads the built-new side above the built-reuse side on both readable pairs, every seed; whether the reading or the built labels are wrong at this size is not settled, and output change does not explain it within pairs.
 
 ## What we were trying to test
 
@@ -68,6 +74,13 @@ random: the gap on reversed order is 0.049 to 0.052 against lowercase's 0.013 to
 against French's 0.045 to 0.064. The three-pair pattern is zero of two readable pairs with the reuse side above, two of
 two reversed, and one pair unread.
 
+**Two readings.** The built direction is a design hypothesis, not a known answer. The cue-lock run on this model
+tried to build fine-tunes whose answer is known from their history and found no task that works at this size
+(`reports/analyses/2026-11-23_analysis_e271-cue-lock-installs.md`). So the reversal has two readings that this run
+cannot separate. In the first, the write share misorders these fine-tunes. In the second, learning Yoruba or reversed
+word order at this size is done more by rescaling M's existing writes than learning lowercase or French is, and the
+built labels are wrong. The reversal is therefore not evidence that the reading is wrong.
+
 **Why the label pair is unread.** The topic label's needed set holds 3 to 6 variables on its three seeds. Under the
 plan's fifth guard, filed before any full-run item was read, a set under 100 variables is "too small to read". Its
 values are still printed: 0.024 to 0.105, spread over most of the range, beside the coin label's 0.024 to 0.029. The
@@ -97,9 +110,29 @@ above both lowercase and reversed order. Over all 18 fine-tunes the rank correla
 the output change is −0.35, and −0.36 with the gain. Over the 12 text fine-tunes it is −0.01, and 0.38 for the gap to
 the random. Within Yoruba, the seed that moved the output least reads the highest share.
 
-So on the only comparison the guards allow, within a pair, the reversal and the output change point the same way, and
-these two pairs cannot tell them apart. The cross-pair correlations mix read positions and row sets, which the fourth
-guard keeps out of any comparison; they are given as a description only.
+So output change matches the reversal on two comparisons, one per pair, and fails across the text fine-tunes and
+within Yoruba: it is a weak candidate and not established as the cause. The cross-pair correlations mix read
+positions and row sets, which the fourth guard keeps out of any comparison; they are given as a description only.
+
+### Is it how unfamiliar the text is to M?
+
+Both sides built to need something new are texts M predicts badly, so a better candidate is how unfamiliar each
+side's text is. The number that would test it is M's held loss on each side's text at every position. That number is
+not saved for any of the six sides. The data-only baseline that computes it for French and Yoruba exists as code but
+has not written its results file. What is saved is narrower: how likely M finds the scored token at the read position.
+
+| side | M's log-odds of the scored token at the read position | M's mean log-probability of the trained token, other rows |
+|---|---|---|
+| lowercase | −6.76 | not saved |
+| reversed order | −14.53 | not saved |
+| French | −13.16 | −13.25 |
+| Yoruba | −12.39 | −12.45 |
+
+The first column is from the saved fine-tunes' own records, on these rows. The second is from the convergence panel's
+French and Yoruba tasks: other rows of the same languages, read positions only. On the scored token, reversed order
+is far less familiar than lowercase, which runs with the reversal. Yoruba is slightly more familiar than French,
+which runs against it. This is the same split the prior shows, and it says nothing about the all-position loss, which
+could order the language pair differently.
 
 ### Is the base prior behind it?
 
@@ -144,8 +177,10 @@ Yoruba −5.38.
 ## What we learned
 
 The definition's reading, computed over the needed variables, does not put the reuse side of a built real-text pair
-above its twin on either pair it can read. Both readable pairs reverse, and on both the reversed order is also the
-order of output change, so the reading may be tracking how hard the fine-tune pushed rather than what it reused. The
+above its twin on either pair it can read. Both readable pairs reverse. Either the reading misorders these fine-tunes
+or the built labels are wrong at this size; with no known answer on this model, the run cannot say which. Output change
+matches the reversal within each pair but not across the text fine-tunes, and how unfamiliar each text is to M is
+the better candidate, untested because its all-position loss was not saved. The
 label pair adds nothing: at that position the topic label fine-tunes are too confident for single swaps to find their
 needed variables with 256 pairs. Every fine-tune does read above its random, so the reading responds to learnt
 updates; what it ranks them by is not settled by two pairs.
@@ -162,14 +197,17 @@ updates; what it ranks them by is not settled by two pairs.
   most 0.0072 between the first pairing and all four, well under the pair gaps.
 - **Blind to.** Variables needed only on untested pairs; how much each variable matters for the behaviour, since it
   weighs by write change; unchanged members of K; every read position but one on the text windows.
-- **Confounds.** Output change runs with the reversal on both readable pairs; the prior runs with it on one pair and
-  against it on the other; the randoms differ by pair.
+- **Confounds.** Output change runs with the reversal within both readable pairs but not across them; the prior and
+  the scored token's familiarity run with it on one pair and against it on the other; all-position text familiarity
+  is unread; the randoms differ by pair.
+- **The built labels.** They are untested at this size, so a reversal can mean the labels are wrong.
 
 ## Surprises
 
 The reversal leads. Something unexpected happened that I cannot explain: the first rival expected each reuse side
 above its twin, and on both readable pairs the twin built to need something new reads higher, on every seed. A cause is
-not named here; output change is a candidate the data cannot exclude. Second, the randoms on the label and language
+not named here. Either the reading misorders the pairs or the built labels are wrong; how unfamiliar the text is to M
+is the candidate worth reading first, and output change is a weak one. Second, the randoms on the label and language
 rows read 0.015 to 0.028, above the 0.009 to 0.013 that earlier tasks gave. That is still inside the plan's surprise
 bound of 0.005 to 0.03.
 
@@ -205,6 +243,9 @@ bound of 0.005 to 0.03.
 - The smaller saved update sizes, the British pair and all-position reads on the text windows.
 - A test of the rank correlations' significance, and output-change numbers at matched KL across sides: no new GPU
   numbers were computed for this page.
+- M's held loss at every position on each side's text: a forward pass of M alone, no GPU training, not done for this
+  page. Nothing is saved for lowercase or reversed order; for French and Yoruba the convergence panel's data-only
+  baseline (`experiments/convergence_panel/base_loss.py`) has code but no results file yet, and on other rows.
 - An independent check of the reversal.
 
 ## Provenance
