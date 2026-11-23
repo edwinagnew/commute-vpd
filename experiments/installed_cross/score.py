@@ -52,24 +52,34 @@ def settled() -> bool:
     return all(install_state(t) != "pending" for t in CANDIDATES)
 
 
-def mean_steps(base: str, task: str) -> float | None:
-    """Seed-mean steps to G* in cross_<base>_<task>.json (an unreached run counts its cap); None until it is done."""
+def cross_states(base: str, task: str) -> list[dict[str, Any]] | None:
+    """The seed records of cross_<base>_<task>.json; None until it is done."""
     p = RESULTS / f"cross_{base}_{task}.json"
     d = json.loads(p.read_text()) if p.is_file() else {}
-    st = d.get("states", {})
-    return sum(s["steps"] for s in st.values()) / len(st) if d.get("done") and st else None
+    st = list(d.get("states", {}).values())
+    return st if d.get("done") and st else None
+
+
+def mean_steps(states: list[dict[str, Any]]) -> float:
+    """Seed-mean steps to G* (an unreached run counts its cap)."""
+    return sum(s["steps"] for s in states) / len(states)
 
 
 def new_rule(task: str) -> dict[str, Any]:
     """A task plays the new side only if M's own uncued fine-tune on it is slow (amendment 2026-11-22e for SST-2,
     2026-11-22g for every cell task). new is False when M's seed-mean steps to the task's G* (cross_M_<task>) are under
-    efficiency_ratio_min (control 2's factor, 5) x the diagonal's (cross_<task>_<task>); an unreached run counts its
-    cap. None until both cells are done. A diagonal of 0 steps (a leaked lock) keeps it new; control 2 then fails it."""
+    efficiency_ratio_min (control 2's factor, 5) x the diagonal's (cross_<task>_<task>). Amendment g (fixed before
+    push): M must have reached G*: M's steps are the mean over its reached seeds, and with fewer than 2 of 3 seeds
+    reached the task is new (an M that does not reach G* within the cap cannot be 'not new'). The diagonal's mean
+    counts an unreached run at its cap; a diagonal that does not reach G* is control 2's business, not this rule's.
+    None until both cells are done."""
     ratio = json.loads((RESULTS / "predictions.json").read_text())["thresholds"]["efficiency_ratio_min"]
-    m, diag = mean_steps("M", task), mean_steps(task, task)
+    m, diag = cross_states("M", task), cross_states(task, task)
     if m is None or diag is None:
-        return {"M_steps": m, "diag_steps": diag, "new": None}
-    return {"M_steps": m, "diag_steps": diag, "ratio": ratio, "new": not m < ratio * diag}
+        return {"new": None}
+    reached = [s for s in m if s["reached"]]
+    rec = {"M_reached": len(reached), "M_steps": mean_steps(reached) if reached else None, "diag_steps": mean_steps(diag), "ratio": ratio}
+    return rec | {"new": len(reached) < 2 or not rec["M_steps"] < ratio * rec["diag_steps"]}
 
 
 def sst2_rule() -> dict[str, Any]:
