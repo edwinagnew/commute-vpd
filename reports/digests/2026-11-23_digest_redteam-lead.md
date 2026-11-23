@@ -62,3 +62,5 @@ The derivation holds on data: V 0.192 against 0.214, Q 0.249 against 0.282, and 
 1. The weighting was chosen after head (2,4) separated on E62, so E62 under it is not evidence: the test is the unseen pairs.
 2. Floor dd_u at a measured noise floor, since tiny changes get full weight.
 3. File the expected values at the randoms and the built edits.
+
+**P1.57, 11-23, flip-weighted kept share: it fails its positive control.** On the built x2 edit it reads 0.012 at VPD against an expected >= 0.5 (E_b 0.761); it is still 0.18 at the 1e-4 floor. At heads it reads 0.77 against ~1, from one barely-changed remainder that flips on 256/256 pairs. Flip pooling rewards being needed, not being changed, so the held-out pairs are not evidence for it. With E277/E280, both pooling extremes fail, in opposite ways: dd pooling drowns the head, flip pooling is set by unchanged variables. Any repair is a new design and part of the user's pooling question. Note in the definition-lead and whip-lead folders.
