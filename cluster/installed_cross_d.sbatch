@@ -4,9 +4,9 @@
 # the environment if set, else from git here. Needs results/controls.json passed (run.py's controls).
 #   sbatch --comment='E271 rehearse: stage D ctl + teach addition + one eb item' cluster/installed_cross_d.sbatch rehearse
 # The rehearsal runs ctl (W0 under the Pile harness, seeds 0-2; task-row floors), teach addition (1000 student steps,
-# F1-F3, 27 shares) and one E_b item (addition__addition_s0_size) at full read size. It measures: seconds per student
-# step, the harness's seconds, seconds per share, the K scan's cases per second and seconds per item, peak GPU memory.
-# Estimate (~20 min): model load 0.5 min; ctl ~4 min (6 harness blocks + 9 task-row adversaries); student ~2.5 min (E119's
+# F1-F4, 27 shares) and one E_b item (addition__addition_s0_size) at full read size. It measures: seconds per student
+# step, the harness's seconds, seconds per share, the K scan's cases per second and seconds per item, peak GPU memory, and f3 per task (the task-row floor).
+# Estimate (~21 min): model load 0.5 min; ctl ~5 min (6 harness blocks, 9 answer-position task-row adversaries, M's F4); student ~2.5 min (E119's
 # 1000 steps 109-167 s on an L40); faithfulness ~2 min; 27 shares ~2.5 min; one K scan ~8 min (E268's FLOP estimate).
 #SBATCH --job-name=commute-installed-d
 #SBATCH --partition=compute

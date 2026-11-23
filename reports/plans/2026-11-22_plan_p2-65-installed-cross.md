@@ -62,13 +62,19 @@ one job per (base, task) cell (12 each); Gaussian floors are scored on numerator
 appendix). Per moved base, a teacher-trained decomposition (`teacher.train_student`, E34's student: alive (U, V)
 offsets, Gamma and Delta frozen, Adam 1e-5, 1000 steps; teacher = the base; rows in thirds: cued items of its task,
 uncued items of all three, Pile windows; arm A's weighting at the answer). Its faithfulness is read and written BEFORE
-any reading on it: F1 the student keeps >= 0.8 of the base's cued gain and its teacher gap on cued rows is <= 10% of
-M's (E34 C3); F2 the Pile harness passes against the same-job W0 floor (E34 C1, `faith_score`); F3 the same adversary on
-the base's cued and uncued task rows passes against M's own seed spread there (measured in Stage D's ctl). Only a base
-that passes all three is read: the re-gating share (do-nothing form, its components) of its 9 states at matched gain,
-matched size and the Gaussian floor, then E_b over the needed set K (E268's `commute.needed`, so over K, not K*) at
-matched size and the floor. A base that fails reads "no faithful featurization of this base" and its rows stay empty:
-the user's named risk, checked rather than assumed. The released M's row uses the released decomposition, descriptive.
+any reading on it (amended 2026-11-22b after `reports/reviews/2026-11-22_review_e271-stage-d.md`): F1 the student
+keeps >= 0.8 of the base's cued gain over M cued, its teacher gap on cued rows is <= 10% of M's (E34 C3), and on
+uncued rows it stays within 0.2 decades of the base; F2 the Pile harness passes against the same-job W0 floor (E34 C1,
+`faith_score`); F3 the same adversary, its KL at the answer only, on the base's cued and uncued task rows passes against
+M's own seed spread there (Stage D's ctl; a filed larger block if that spread is over 0.3); F4 the masked model at its
+own gates stays within 1.5 x M's distance from the unmasked one at the answer, cued and uncued. Only a base that passes
+all four is read: the re-gating share (do-nothing form, its components) of its 9 states at matched gain, matched size
+and the Gaussian floor, then E_b over the needed set K (E268's `commute.needed`, so over K, not K*) at matched size and
+the floor. A base that fails reads "no faithful featurization of this base" and its rows stay empty: the user's named
+risk, checked rather than assumed. Then, because every triple holds all three bases, one failure changes the scoring
+rule, filed before any read: with two faithful bases, per task whose own base is faithful and seed, the diagonal
+against the one faithful off-diagonal (all 6 pairs above, chance 1/2 each), plus the AUC over the faithful bases'
+states; with fewer than two, Stage D is not scored. The released M's row uses the released decomposition, descriptive.
 
 ## Predictions (filed; `results/predictions.json` "expected")
 
@@ -84,9 +90,9 @@ is what rules that out. Nothing here says the installed skill looks like a skill
 ## Compute and cost
 
 Stages 1-5 run on cluster debug at full size, each job <= 30 min, $0 (estimates in `cluster/installed_cross.sbatch`,
-from E256's measured items; the first jobs measure them). Stage D: a 20-min cluster rehearsal on one base, then 3 H100
-pods in parallel, one runner, ~3 h each (the K scans dominate; unmeasured, the rehearsal measures them), ~$25 in all
-(appendix, "Stage D pods"). Under $60 and 6 h: not a gated run; the appendix records the gates anyway.
+from E256's measured items; the first jobs measure them). Stage D: a 20-min cluster rehearsal on one base, then 3 L40S
+pods in parallel (plain fp32 is faster there than on an H100), one runner, ~3 h each (the K scans dominate;
+unmeasured, the rehearsal measures them), ~$10 in all (appendix, "Stage D: rehearsal and pods"). Under $60 and 6 h: not a gated run; the appendix records the gates anyway.
 
 ## Not run here
 

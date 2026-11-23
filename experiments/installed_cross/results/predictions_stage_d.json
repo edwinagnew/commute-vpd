@@ -1,55 +1,121 @@
 {
- "experiment": "E271 Stage D (P2.65 installed_cross, 67M)",
- "filed": "2026-11-22",
- "plan": "reports/plans/2026-11-22_plan_p2-65-installed-cross.md, section 'Stage D'",
- "settings": {
-  "student_lr": 1e-05,
-  "student_steps": 1000,
-  "student_batch": 32,
-  "student_source": "E34's student (Adam 1e-5, 1000 steps, batch 32 of arm A, the alive (U, V) offsets of experiments/transport_test/results/large/alive.pt, Gamma and Delta frozen); arm A's weighting with the answer position as the trigger (half = L - 1)",
-  "rows_each": 4096,
-  "rows_source": "the rows the base acts on, in thirds: cued items of its own task, uncued items of the three tasks, Pile train windows of 64 tokens; a departure from E34 (task windows alone or Pile alone), stated in the plan: the base differs from M behind the cue and must match M elsewhere",
-  "n_eval": 64,
-  "pile_seeds": [0, 1, 2],
-  "pgd_steps": 20,
-  "pile_source": "E34 C1 / faith_score.w0_check: 256 Pile val rows, 20-step adversary, seeds 0-2",
-  "task_rows": 128,
-  "task_rows_source": "the harness's 128-row block (faithfulness.harness_pgd's scope), here 64 cued and 64 uncued read rows of the base's task",
-  "derangements": 4,
-  "examples": 64,
-  "scan_seed": 271,
-  "rows": 1024,
-  "logit_rows": 8192,
-  "cache_batch": 32,
-  "scan_source": "E268's filed scan settings (experiments/kstar_needed/results/predictions.json: 4 derangements x 64 examples, rows 1024, logit_rows 8192, cache_batch 32); seed the E-number",
-  "split_tol": 1e-06,
-  "split_tol_source": "E226's split tolerance (experiments/kstar_vpd/results/predictions.json)",
-  "eb_kinds": ["size", "gauss"],
-  "eb_kinds_M": ["size"],
-  "eb_kinds_source": "the scored kind (matched size) and its floor; the released M's row is descriptive, matched size only; matched-gain E_b is left out for cost (each item is a full K scan)"
- },
- "thresholds": {
-  "gain_kept_min": 0.8,
-  "gap_ratio_max": 0.1,
-  "F1_source": "E34 C3's rule: held-out teacher gap <= 10% of the teacher's gap at W0 (here on the cued read rows, arm A's weighting at the answer); and the student keeps 0.8 of the base's cued gain over M (E34's P >= 0.9 on a near-1 teacher, in the log-odds unit)",
-  "F2_source": "faith_score.state_verdict: Pile harness PGD and stochastic ratios to the same-job W0, each against its own seed floor f (pass <= 1.5 / (1 + f)); only 'pass' counts as faithful",
-  "F3_source": "the same 20-step adversary on the base's task rows (cued and uncued), ratio to M with the released decomposition on the same rows, pass <= 1.5 / (1 + f3) with f3 = M's max/min - 1 over adversary seeds 0-2 on those rows (measured in ctl); a departure from E34 (Pile only), added because the base's skill lives on cued rows (the user's risk: a featurization of a model after one fine-tune)",
-  "faithful_rule": "F1 and F2 'pass' and F3 'pass'; otherwise the base's share and E_b rows stay empty and the base reads 'no faithful featurization'",
-  "zero_rules": "share: a zero update's numerator and gain exactly 0 on the base's decomposition; E_b: a zero update has no changed variable, every dd 0 and E_b 1 (E268 stage 0 (b))",
-  "readings": {
-   "regating_share": ["share", "higher", "numerator"],
-   "E_b_K": ["E_b_K", "higher", "E_b_K"],
-   "E_b_changed": ["E_b_changed", "higher", "E_b_changed"]
+  "experiment": "E271 Stage D (P2.65 installed_cross, 67M)",
+  "filed": "2026-11-22",
+  "plan": "reports/plans/2026-11-22_plan_p2-65-installed-cross.md, section 'Stage D'",
+  "settings": {
+    "student_lr": 1e-05,
+    "student_steps": 1000,
+    "student_batch": 32,
+    "student_source": "E34's student (Adam 1e-5, 1000 steps, batch 32 of arm A, the alive (U, V) offsets of experiments/transport_test/results/large/alive.pt, Gamma and Delta frozen); arm A's weighting with the answer position as the trigger (half = L - 1)",
+    "rows_each": 4096,
+    "rows_source": "the rows the base acts on, in thirds: cued items of its own task, uncued items of the three tasks, Pile train windows of 64 tokens; a departure from E34 (task windows alone or Pile alone), stated in the plan: the base differs from M behind the cue and must match M elsewhere",
+    "n_eval": 64,
+    "pile_seeds": [
+      0,
+      1,
+      2
+    ],
+    "pgd_steps": 20,
+    "pile_source": "E34 C1 / faith_score.w0_check: 256 Pile val rows, 20-step adversary, seeds 0-2",
+    "task_rows": 256,
+    "task_rows_source": "the harness's PGD on the base's read rows, half cued and half uncued, KL at the answer position only (amendment 2026-11-22b): 256 rows give 256 answer terms; when M's spread over seeds 0-2 there is over f3_max, all 512 read-row prompts (256 cued, 256 uncued) on seeds 0-4 replace it, filed now so no choice is left to after the read",
+    "derangements": 4,
+    "examples": 64,
+    "scan_seed": 271,
+    "rows": 1024,
+    "logit_rows": 8192,
+    "cache_batch": 32,
+    "scan_source": "E268's filed scan settings (experiments/kstar_needed/results/predictions.json: 4 derangements x 64 examples, rows 1024, logit_rows 8192, cache_batch 32); seed the E-number",
+    "split_tol": 1e-06,
+    "split_tol_source": "E226's split tolerance (experiments/kstar_vpd/results/predictions.json)",
+    "eb_kinds": [
+      "size",
+      "gauss"
+    ],
+    "eb_kinds_M": [
+      "size"
+    ],
+    "eb_kinds_source": "the scored kind (matched size) and its floor; the released M's row is descriptive, matched size only; matched-gain E_b is left out for cost (each item is a full K scan)",
+    "task_seeds": [
+      0,
+      1,
+      2
+    ],
+    "task_rows_big": 512,
+    "task_seeds_big": [
+      0,
+      1,
+      2,
+      3,
+      4
+    ]
   },
-  "readings_source": "scored by run.py's evidence rules (results/predictions.json thresholds.evidence: 7 of 9 triples, AUC >= 0.85, the Gaussian floor AUC < 0.85 on the third entry); E_b is a row, not the judge (cell done_when)"
- },
- "expected": {
-  "ctl": "W0 passes w0_check (PGD KL within 10% of 0.69, CI-masked within 2% of 0.348, floor <= 0.25; E34's L40 floor ~0.21); task-row floors of the same order",
-  "teach": "lean: F2 passes on all three (E34's students passed the Pile harness on six teachers); F1 lean passes on cipher and addition, unsure on Yoruba (a language at 64-token windows); F3 unsure: never measured on a cue-gated skill",
-  "share": "lean: diagonal above both off-diagonals at matched size (an unlock re-gates the installed subcomponents); no lean on how far",
-  "E_b": "lean: E_b over K higher on the diagonal (the unlock's write change explained by gains on the base's own writes); no filed size",
-  "zero": "every zero-update number exactly as in zero_rules"
- },
- "timing_source": "E119 (E34's students on the cluster L40): 1000 student steps 109-135 s with task windows, 154-167 s with Pile rows (experiments/teacher_route_split/results/*.json students.*.seconds); E_b's K scan unmeasured (E268's FLOP estimate ~8 min per item on an L40): the rehearsal measures cases per second",
- "blind_to": "a faithful student is faithful to the base on these rows and under a 20-step adversary only; the re-gating share is read with Gamma frozen at M's, so a base whose gates should differ reads through M's gates"
+  "thresholds": {
+    "gain_kept_min": 0.8,
+    "gap_ratio_max": 0.1,
+    "F1_source": "E34 C3's rule for the cued gap: held-out teacher gap <= 10% of the base's gap at M (cued read rows, arm A's weighting at the answer). gain_kept_min 0.8 is translated from E34's P >= 0.9 on a near-1 teacher into the log-odds unit, not measured (review 2026-11-22 Stage D finding 7); gain kept is over M cued, the amended lock's convention. On uncued read rows the student's answer log-odds within uncued_decades_max of the base's (the lock's bar), and its uncued teacher gap reported (amendment 2026-11-22b, finding 2)",
+    "F2_source": "faith_score.state_verdict: Pile harness PGD and stochastic ratios to the same-job W0, each against its own seed floor f (pass <= 1.5 / (1 + f)); only 'pass' counts as faithful",
+    "F3_source": "the 20-step adversary with the authors' KL at the answer position only (harness_pgd loss=, finding 1), on the base's task rows, ratio to M with the released decomposition on the same rows, pass <= 1.5 / (1 + f3), f3 = M's max/min - 1 over the adversary seeds there (ctl); a departure from E34 (Pile only), added because the base's skill lives at the answer of cued rows",
+    "faithful_rule": "F1, F2, F3 and F4 all 'pass'; otherwise that base's share and E_b rows stay empty and it reads 'no faithful featurization'; the score then follows two_base",
+    "zero_rules": "share: a zero update's numerator and gain exactly 0 on the base's decomposition; E_b: a zero update has no changed variable, every dd 0 and E_b 1 (E268 stage 0 (b))",
+    "readings": {
+      "regating_share": [
+        "share",
+        "higher",
+        "numerator"
+      ],
+      "E_b_K": [
+        "E_b_K",
+        "higher",
+        "E_b_K"
+      ],
+      "E_b_changed": [
+        "E_b_changed",
+        "higher",
+        "E_b_changed"
+      ]
+    },
+    "readings_source": "scored by run.py's evidence rules (results/predictions.json thresholds.evidence: 7 of 9 triples, AUC >= 0.85, the Gaussian floor AUC < 0.85 on the third entry); E_b is a row, not the judge (cell done_when)",
+    "uncued_decades_max": 0.2,
+    "f3_max": 0.3,
+    "f3_max_source": "the Pile floor on the L40 is ~0.21 (E8, E11, E19; faith_score FLOOR_STOP 0.25); a task-row spread over 0.3 is 'far above' it (finding 6) and switches to the filed larger block; the rehearsal records f3",
+    "f4_ratio_max": 1.5,
+    "F4_source": "finding 2: mean |L00 - T0| in answer log-odds on the base task's cued and uncued read rows, at the student's target with its components, at most 1.5 x M's with the released decomposition on the same rows (ctl, measured); 1.5 is the harness's adversarial line used as a ratio, by analogy, not measured",
+    "two_base": {
+      "pairs_min": 6,
+      "min_finite_pairs": 6,
+      "auc_min": 0.85,
+      "gauss_auc_max": 0.85
+    },
+    "two_base_source": "finding 3: with exactly two faithful bases, per task whose own base is faithful (2 tasks) and seed, the diagonal against the one faithful off-diagonal: 6 pairs, chance 1/2 each, all 6 above (P = 1/64 = 0.016 if independent; the seeds share base and rows, so effectively 2 pairs, P = 0.25); the AUC of the faithful bases' 6 diagonal against their 12 off-diagonal states >= 0.85, with the Gaussians' AUC on the floor field < 0.85; with fewer than two faithful bases nothing is scored ('not read'). Stated in the plan",
+    "skip": {
+      "gain": [
+        "E_b_K",
+        "E_b_changed"
+      ]
+    },
+    "skip_source": "E_b is read at matched size and the floor only (eb_kinds); its row at kind gain is not scored (finding 7)",
+    "edge_rules": "E_b_K is nan when K and the changed set do not meet (n_changed_K = 0): explained_share would read 1, the top reuse value, for an empty set (finding 5); a nan reading counts as not ranked (run.py's evidence edge rules)"
+  },
+  "expected": {
+    "ctl": "W0 passes w0_check (PGD KL within 10% of 0.69, CI-masked within 2% of 0.348, floor <= 0.25; E34's L40 floor ~0.21); task-row floors of the same order",
+    "teach": "lean: F2 passes on all three (E34's students passed the Pile harness on six teachers); F1 lean passes on cipher and addition, unsure on Yoruba (a language at 64-token windows); F3 unsure: never measured on a cue-gated skill",
+    "share": "lean: diagonal above both off-diagonals at matched size (an unlock re-gates the installed subcomponents); no lean on how far",
+    "E_b": "lean: E_b over K higher on the diagonal (the unlock's write change explained by gains on the base's own writes); no filed size",
+    "zero": "every zero-update number exactly as in zero_rules"
+  },
+  "timing_source": "E119 (E34's students on the cluster L40): 1000 student steps 109-135 s with task windows, 154-167 s with Pile rows (experiments/teacher_route_split/results/*.json students.*.seconds); E_b's K scan unmeasured (E268's FLOP estimate ~8 min per item on an L40): the rehearsal measures cases per second",
+  "blind_to": "a faithful student is faithful to the base on these rows and under a 20-step adversary only; the re-gating share is read with Gamma frozen at M's, so a base whose gates should differ reads through M's gates",
+  "amendment_2026-11-22b": {
+    "why": "the Stage D review, reports/reviews/2026-11-22_review_e271-stage-d.md, before anything in Stage D ran",
+    "changes": [
+      "finding 1: F3's adversary KL at the answer position only (harness_pgd loss=answer_kl); task_rows 128 -> 256",
+      "finding 2: F1 adds the uncued read rows (uncued shift within 0.2 decades of the base, teacher gap reported); new F4 (|L00 - T0| at the answer, cued and uncued, <= 1.5 x M's, measured in ctl)",
+      "finding 3: the two-base fallback filed (two_base) and stated in the plan",
+      "finding 4: pods L40S (plain fp32 is faster than an H100's, TF32 off), eb run in named-item chunks with eb_<base>.json downloaded after each chunk, the per-item time from the rehearsal's per-site scan log lines (plan appendix)",
+      "finding 5: E_b_K nan when n_changed_K = 0 (edge_rules)",
+      "finding 6: f3 recorded in ctl; over f3_max 0.3 the filed block of 512 rows and seeds 0-4 replaces it",
+      "finding 7: student_state checks the student's sha256; gain kept over M cued; gain_kept_min's source says translated, not measured; E_b at kind gain not scored (skip)"
+    ]
+  }
 }

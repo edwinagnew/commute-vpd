@@ -70,28 +70,36 @@ Cross and read now run one job per (base, task) cell.
 
 **Gate 1 additions.** Student fails to copy the cued skill (KL at one answer position in 64): arm A's weighting puts
 the answer KL at full weight (E34's trigger weighting), F1 reads it and a miss empties that base's rows (a finding).
-The decomposition faithful on Pile but not on cued rows: F3, with its own measured floor. Gamma frozen at M's: named
-in `blind_to`. The K scan's time is unmeasured: the rehearsal measures cases per second before any pod. Pod loss: each
-job writes per item (`stage_d/eb_<base>.json` after every item) and resumes; download after each job.
+The decomposition faithful on Pile but not on cued rows: F3, its adversary KL at the answer only, with its own
+measured floor and a filed larger block if that floor is over 0.3. The masked model off at the answer, or the student
+leaking the skill uncued: F4 and F1's uncued half. One base unfaithful: the filed two-base rule (plan, Stage D). An
+empty K read as reuse: E_b_K nan. Gamma frozen at M's: named in `blind_to`. The K scan's time is unmeasured: the
+rehearsal measures it. Pod loss: each job writes per item and resumes; eb runs in named chunks, downloaded after each.
+Amended 2026-11-22b after `reports/reviews/2026-11-22_review_e271-stage-d.md` (predictions_stage_d.json lists it).
 
 **Rehearsal ($0, cluster debug, <= 20 min estimated, 30 min cap)**, after `results/controls.json` has passed:
 
     sbatch --comment='E271 rehearse: stage D ctl + teach addition + one eb item' cluster/installed_cross_d.sbatch rehearse
 
-It runs ctl (W0 Pile harness on seeds 0-2, task-row floors), `teach addition` (student, F1-F3, 27 shares, zero share
-first) and `eb addition addition__addition_s0_size` (zero update first, then one full K scan) at the full read sizes
-(256 read rows, 4 x 64 pairs, every variable). Estimate: load 0.5 min, ctl ~4, student ~2.5 (E119: 1000 steps in
-109-167 s on an L40), faithfulness ~2, shares ~2.5, one K scan ~8 (E268's FLOP estimate) = ~20 min. It writes
-the measured seconds per student step, per share, the scan's cases per second and seconds per item, and peak GPU
-memory into `results/stage_d/*.json`; record them with `fleet/rehearsed compare-lead E271 '...'` before a pod.
+It runs ctl (W0 Pile harness on seeds 0-2; task-row floors f3 at the answer, with the fallback block if over 0.3;
+M's F4 per task), `teach addition` (student, F1-F4, 27 shares, zero share first) and `eb addition
+addition__addition_s0_size` (zero update first, then one full K scan) at the full read sizes (256 read rows, 4 x 64
+pairs, every variable). Estimate: load 0.5 min, ctl ~5, student ~2.5 (E119: 1000 steps in 109-167 s on an L40),
+faithfulness ~2.5, shares ~2.5, one K scan ~8 (E268's FLOP estimate) = ~21 min. It writes the measured seconds per
+student step, per share, f3 per task (and whether the fallback block was used), the scan's cases per second and
+seconds per item, and peak GPU memory into `results/stage_d/*.json`; `needed.scan` also logs cases per second per
+site, so a rehearsal cut at 30 min still leaves the rate. Record them with `fleet/rehearsed compare-lead E271 '...'`.
 
-**Pods: 3 H100s, one runner, labels `commute-E271-stage-d-addition`, `-cipher`, `-yoruba`.** Each pod runs, in order:
-`stage_d.py ctl` (its own same-card W0 floor, ~4 min), `teach BASE` (~7 min), `eb BASE` (18 items: 9 at matched size
-and 9 Gaussian floors), then `eb M M__<BASE>_s0_size M__<BASE>_s1_size M__<BASE>_s2_size` (the descriptive row, 3
-items per pod). Per pod: ~11 min + 21 items x t_item. With E268's estimate t_item ~8 min (L40 fp32; an H100's fp32
-is of the same order, so no speed-up is assumed) that is ~2.9 h, ~$8 at ~$2.7/h; ~$25 for three. Replace t_item with
-the rehearsal's measured seconds per item before starting; if it is above 12 min, split each base over 2 pods (items
-named on the eb command line), 6 pods on 2 runners.
+**Pods: 3 L40S, one runner, labels `commute-E271-stage-d-addition`, `-cipher`, `-yoruba`** (TF32 is off, so the scan
+is plain fp32: an L40S's fp32 (~92 TFLOPS) is above an H100's (~67 SXM), and cheaper; an H100 only if the rehearsal
+says otherwise). Each pod runs, in order: `stage_d.py ctl` (its own same-card W0 floor, ~5 min), `teach BASE`
+(~8 min), then `eb BASE` in named-item chunks of 3 (e.g. `eb addition addition__addition_s0_size
+addition__addition_s0_gauss addition__addition_s1_size`), 6 chunks for the base's 18 items (9 at matched size, 9
+Gaussian floors), the runner downloading `results/stage_d/eb_<base>.json` after each chunk; then `eb M
+M__<BASE>_s0_size M__<BASE>_s1_size M__<BASE>_s2_size` (the descriptive row, 3 items per pod). Per pod: ~13 min +
+21 items x t_item, t_item taken from the rehearsal's per-site log lines (cases per second x the item's cases). With
+E268's estimate of 8 min per item that is ~3 h per pod, ~$3 at ~$0.9/h for an L40S; ~$10 for three. If t_item is
+above 12 min, split each base over 2 pods (6 pods on 2 runners).
 
 **Inputs per pod** (from a grep of the loads in run.py and stage_d.py), staged by hard link into a flat
 `e271d_stage/<base>/` directory and sent with `sync(include=[...])`, then moved to these paths on the pod (every
