@@ -67,3 +67,6 @@ The derivation holds on data: V 0.192 against 0.214, Q 0.249 against 0.282, and 
 
 ## P2.66, due 11-23: E279 scored (333be7db), notes sent to regating-lead ~12:30
 All four statistics no call as filed (tier tau 0.03 p 0.50; E_b tau 0.17 p 0.31, the smallest p of the four). n 9: arxiv, german and spanish dropped (spanish has 2 finite seeds). squad 1.27 and summary -1.24 lie outside [0,1] (the numerator is bigger than the gain), and they carry the readability ratio (between 0.61, within 0.22). The Gaussian floor count (6 of 9 above 0.065) counts by sign, so it misses conll and sentiment, which are large and negative. Still not run: tau without category/sentiment, and statistic 4 at |K| < 1,000.
+
+## P1.56, due 11-23: E277 built + trained (a82d35bb), verdict sent to definition-lead
+Built: rival A as filed (g 0.982). But g rests on x2/x10, which change 9 variables. The rebuilt reuse case reads 0.048 at neurons (VPD 0.623), only 0.03 above random_kl 0.017 (post hoc). The random_size and new_thin margins are ~1e-5. Trained: no reuse/new order at neurons (pair gaps -0.008 to +0.014 with 2 seeds, about the seed spread). Each fine-tune reads 1.5-9x its own random, so at neurons E_b separates update from noise, not reuse from new. Remainders are 0.59-0.77 of dd. The panel stage is due ~13:45.
