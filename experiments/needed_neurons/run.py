@@ -238,8 +238,25 @@ def stage0(world: Any, cfg: Config, feat: K.Feat, tag: str) -> dict[str, Any]:
     return out
 
 
+def remainder_columns(item: str) -> dict[str, Any]:
+    """Descriptive, added before the scored items (redteam-lead 2026-11-23, note-2026-11-23-redteam-e277-prerun.md):
+    the four whole-MLP remainders' share of dd over K & changed, and E_b over K without them (heads and neurons) and
+    over the neurons only. From the saved arrays; layout per layer H heads, NEUR neurons, one remainder."""
+    p = RESULTS / "large" / f"items_{fname(item)}.npz"
+    if not p.is_file():
+        return {}
+    z = {k: torch.from_numpy(v) for k, v in np.load(p).items() if k in ("num", "den", "dd", "changed", "in_K")}
+    sel = z["in_K"].bool() & z["changed"].bool()
+    j = torch.arange(len(sel)) % (NN.H + NN.NEUR + 1)
+    rem, neuron = j == NN.H + NN.NEUR, (j >= NN.H) & (j < NN.H + NN.NEUR)
+    d = float(z["dd"][sel].sum())
+    eb = lambda s: SI.explained_share(z["num"], z["den"], z["dd"], s) if bool(s.any()) else None
+    return {"rem_dd_share_K_changed": float(z["dd"][sel & rem].sum()) / d if d > 0 else None, "E_b_K_no_rem": eb(sel & ~rem),
+            "E_b_K_neurons": eb(sel & neuron), "n_changed_K_no_rem": int((sel & ~rem).sum())}
+
+
 def summary() -> None:
-    every = [json.loads(p.read_text()) for p in sorted((RESULTS / "items").glob("*.json"))]
+    every = [json.loads(p.read_text()) | remainder_columns(json.loads(p.read_text())["item"]) for p in sorted((RESULTS / "items").glob("*.json"))]
     s0 = [json.loads(p.read_text()) for p in sorted(RESULTS.glob("stage0_*.json"))]
     dump(RESULTS / "summary.json", {"experiment": EXPERIMENT, "stage0": s0, "items": {r["item"]: r for r in every}})
     log(f"summary: {len(every)} items, {len(s0)} stage-0 files")
