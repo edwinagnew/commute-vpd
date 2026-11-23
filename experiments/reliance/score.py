@@ -178,11 +178,12 @@ def control(rows: list[dict[str, Any]]) -> dict[str, Any]:
     out: dict[str, Any] = {"floors_on_cue_D": {i: (r or {}).get("v1_floor") for i, r in zip(("x2", "x10"), reuse, strict=True)}}
     for v in ("V1", "V2"):
         vals = [None if r is None else r[v] for r in reuse] + [None if r is None else r[v] for r in new.values()]
-        if None in vals:
+        got = [x for x in vals if x is not None]
+        if len(got) < len(vals):
             out[v] = {"reads": None, "values": vals}
             continue
-        lo = min(vals[:2])
-        gaps = {i: lo - x for i, x in zip(new, vals[2:], strict=True)}
+        lo = min(got[:2])
+        gaps = {i: lo - x for i, x in zip(new, got[2:], strict=True)}
         out[v] = {"min_reuse": lo, "gaps": gaps, "reads": "rival A" if all(g >= GAP for g in gaps.values()) else "rival B"}
     nf = by.get(("control", "new_few"))
     out["new_few_check"] = None if nf is None or nf["V1"] is None else {"V1": nf["V1"], "expected_at_least": 0.966, "holds": nf["V1"] >= 0.966}
