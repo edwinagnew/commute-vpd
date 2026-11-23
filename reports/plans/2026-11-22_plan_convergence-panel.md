@@ -272,6 +272,10 @@ rank's results were seen, so it is descriptive: **no call**, whichever way it re
   the "new" side), with the one-sided task-permutation p of `score.perm_p` (n_perm 10,000, seed 266); (b) the effective
   rank's tau with the tiers and its partial tau given the base loss (`score.partial_tau`), with the same permutation p
   (effective rank permuted, tier and loss held). Primary line: consensus, nats per byte, trained tokens.
+- **E_b beside it (redteam-lead, added 2026-11-23 before any E_b read).** The same (b) for E_b over K: its tau with
+  the tiers and its partial tau given the base loss, on both task sets; nan until the wide set's E_b is read. Why:
+  E273's E_b read the built-new text tasks higher than the built-reuse ones, so E_b may also track how unfamiliar the
+  text is, with the opposite sign to the effective rank.
 - **Expected in advance.** Higher base loss goes with the "new" tier: the oriented tau is positive. Expected values
   per task (not filed as bars): lower and arxiv lowest per byte; yoruba and swahili highest; german, spanish, french
   between. Control in the same job: the job also recomputes each task's `rows.w0_logp` of `results/train/TASK.json`

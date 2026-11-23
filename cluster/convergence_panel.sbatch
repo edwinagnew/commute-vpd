@@ -38,4 +38,5 @@ cd "$COMMUTE_REPO"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 [[ ${1:-} == probe ]] && exec .venv/bin/python experiments/convergence_panel/probe.py   # E272 probe (probe.py header)
+[[ ${1:-} == base_loss ]] && exec .venv/bin/python experiments/convergence_panel/base_loss.py   # post-hoc data-only baseline (its header)
 .venv/bin/python experiments/convergence_panel/run.py "$@"
