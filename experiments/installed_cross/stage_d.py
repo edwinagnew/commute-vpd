@@ -15,10 +15,13 @@ Jobs, each refusing unless what it reads is done:
                  its known values and its floor f); the same adversary on each task's 128 harness rows at M (the task
                  floor's reference). Exit 1 on a W0 miss
   teach BASE     the student; faithfulness, filed in predictions_stage_d.json, all before any reading: F1 the student
-                 keeps >= 0.8 of the base's cued gain and its teacher gap on cued read rows is <= 0.1 of M's; F2 the
-                 Pile harness ratio to W0 passes `faith_score.verdict` at the same-job floor; F3 the same adversary on
-                 the base's task rows (cued and uncued), ratio to M's on the same rows, passes at those rows' own
-                 floor (M's spread over adversary seeds there, ctl). Then,
+                 keeps >= 0.8 of the base's cued gain (over M cued), its teacher gap on cued read rows is <= 0.1 of
+                 M's, and on uncued read rows it is within 0.2 decades of the base; F2 the Pile harness ratio to W0
+                 passes `faith_score.verdict` at the same-job floor; F3 the same adversary, its KL at the answer
+                 position only, on the base's task rows (cued and uncued), ratio to M's on the same rows, passes at
+                 those rows' own floor (M's spread over adversary seeds there, ctl; the filed fallback of more rows and
+                 seeds when that spread is over f3_max); F4 the masked model at its own gates against the unmasked one,
+                 mean |L00 - T0| at the answer on cued and uncued read rows, at most 1.5 x M's (ctl). Then,
                  only if every check passes, the re-gating share of each of the base's 9 states, three kinds each
                  (`run.variants`), a zero update reading exactly 0 first. A failed check is written and ends the
                  base's decomposition rows (exit 1): "no faithful featurization of this base" is the reading
@@ -81,6 +84,9 @@ class ConfigD:  # filed in predictions_stage_d.json "settings"
     pile_seeds: tuple[int, ...]
     pgd_steps: int
     task_rows: int  # harness rows on the task: half cued, half uncued read rows
+    task_seeds: tuple[int, ...]
+    task_rows_big: int  # the filed fallback when the task-row floor is over f3_max (amendment 2026-11-22b)
+    task_seeds_big: tuple[int, ...]
     derangements: int
     examples: int
     scan_seed: int
@@ -95,7 +101,8 @@ class ConfigD:  # filed in predictions_stage_d.json "settings"
         for f in fields(self):
             if isinstance(v := getattr(self, f.name), list):
                 object.__setattr__(self, f.name, tuple(v))
-        assert self.pile_seeds[0] == 0 and len(self.pile_seeds) >= 2 and self.task_rows % 2 == 0 and self.task_rows <= 256
+        assert self.pile_seeds[0] == 0 and len(self.pile_seeds) >= 2 and self.task_seeds[0] == self.task_seeds_big[0] == 0
+        assert self.task_rows % 2 == 0 and self.task_rows < self.task_rows_big <= 512 and len(self.task_seeds_big) > len(self.task_seeds)
         assert set(self.eb_kinds) | set(self.eb_kinds_M) <= {"gauss", "gain", "size"} and "gauss" in self.eb_kinds
 
 
@@ -146,14 +153,47 @@ def out(j: Job, name: str) -> Any:
 # ----------------------------------------------------------------------------- the harness on task rows
 
 
-def task_blocks(j: Job, task: str) -> list[Tensor]:
-    """The base task's harness rows: task_rows / 2 cued and as many uncued read rows (the prompts, 64 tokens), batches of 8."""
-    h, rows = j.C.task_rows // 2, j.read_rows(task)[:, :-1]
+def task_blocks(j: Job, task: str, n_rows: int) -> list[Tensor]:
+    """The base task's harness rows: n_rows / 2 cued and as many uncued read rows (the prompts, 64 tokens), batches of 8."""
+    h, rows = n_rows // 2, j.read_rows(task)[:, :-1]
     return batches(torch.cat([IN.cued(rows[:h], j.x.C.cue), rows[:h]]), 8)
 
 
-def task_pgd(j: Job, task: str, seed: int) -> float:
-    return harness_pgd(j.model, task_blocks(j, task), j.C.pgd_steps, seed)
+def answer_kl(pred: Tensor, target: Tensor) -> tuple[Tensor, int]:
+    """The authors' recon_loss_kl at the answer position (the last) only (review 2026-11-22 Stage D finding 1: over every
+    position the cue-gated answer is 1 term in 64)."""
+    from param_decomp.models.batch_and_loss_fns import recon_loss_kl
+
+    return recon_loss_kl(pred[..., -1:, :], target[..., -1:, :])
+
+
+def task_pgd(j: Job, task: str, seed: int, n_rows: int) -> float:
+    return harness_pgd(j.model, task_blocks(j, task, n_rows), j.C.pgd_steps, seed, loss=answer_kl)
+
+
+def task_floor(j: Job, task: str) -> dict[str, Any]:
+    """M's answer-position adversary on the task rows over seeds, and its floor max / min - 1; over f3_max, the filed
+    fallback (task_rows_big rows, task_seeds_big seeds) replaces it (finding 6), so no choice is left to after the read."""
+    rec: dict[str, Any] = {}
+    for rows, seeds in ((j.C.task_rows, j.C.task_seeds), (j.C.task_rows_big, j.C.task_seeds_big)):
+        kl = {str(s): task_pgd(j, task, s, rows) for s in seeds}
+        rec = {"rows": rows, "kl": kl, "floor": max(kl.values()) / min(kl.values()) - 1, "first": rec or None}
+        if rec["floor"] <= j.th["f3_max"]:
+            break
+    return rec
+
+
+def l00_gap(j: Job, W: dict[str, Tensor], comps: Any, task: str) -> dict[str, float]:
+    """F4: mean |L00 - T0| in answer log-odds on the task's read rows, cued and uncued, at target W with components
+    comps (the masked model at its own gates against the unmasked one: what every share reads through)."""
+    r = RUN.cue_read(j.x, j.tasks[task])
+    zero = {k: torch.zeros_like(w) for k, w in W.items()}
+    out = {}
+    for name, toks in (("cued", IN.cued(r.toks, j.x.C.cue)), ("uncued", r.toks)):
+        with model_state(j.model, target=W, components=comps):
+            c = MR.share_cells_by(j.model, W, zero, toks, r.pos, r.units_of(r.tgt))
+        out[name] = float((c["L00"]["lo"] - c["T0"]["lo"]).abs().mean())
+    return out
 
 
 def job_ctl(j: Job, o: Any) -> None:
@@ -163,7 +203,8 @@ def job_ctl(j: Job, o: Any) -> None:
     o.put("w0", w0 := faith_score.w0_check(pile))
     if not w0["pass"]:
         raise o.stop("W0 under the Pile harness misses its known values or its floor: nothing is read")
-    o.put("task_w0", {t: {str(s): task_pgd(j, t, s) for s in j.C.pile_seeds} for t in TASKS})
+    o.put("task_w0", {t: task_floor(j, t) for t in TASKS})
+    o.put("f4_M", {t: l00_gap(j, dict(j.x.M), vpd.component_weights(j.model), t) for t in TASKS})
 
 
 # ----------------------------------------------------------------------------- job teach BASE
@@ -186,7 +227,8 @@ def windows_of(seq: Tensor) -> Windows:
 
 
 def student_state(j: Job, base: str, rec: dict[str, Any]) -> tuple[dict[str, Tensor], dict[str, tuple[Tensor, Tensor]]]:
-    """(W_s, components) of the saved student."""
+    """(W_s, components) of the saved student, its sha256 checked against the record."""
+    assert (got := RUN.sha(REPO / rec["file"])) == rec["sha256"], f"{rec['file']}: sha256 {got}, recorded {rec['sha256']}"
     st = torch.load(REPO / rec["file"], weights_only=False)
     W = {k: w + st[k][0].float().to(w.device) for k, w in j.x.M.items()}
     return W, component_training.components_with(j.model, j.alive, {k: (st[k][1].float(), st[k][2].float()) for k in st})
@@ -206,27 +248,33 @@ def train_student(j: Job, base: str, net: Any, o: Any) -> dict[str, Any]:
 
 
 def faithful(j: Job, base: str, net: Any, W: dict[str, Tensor], comps: Any, o: Any) -> dict[str, Any]:
-    """F1-F3, every one read before any share or E_b. W0's floor f is ctl's."""
-    w0, tw0, th = done("ctl")["w0"], done("ctl")["task_w0"][base], j.th
+    """F1-F4, every one read before any share or E_b. W0's floor f, the task-row floor and M's F4 are ctl's."""
+    ctl, th = done("ctl"), j.th
+    w0, tw0, f4_m = ctl["w0"], ctl["task_w0"][base], ctl["f4_M"][base]
     rows = j.read_rows(base)
-    lo_m = IN.answer_lo(j.net.net, rows)[0]
+    cued = IN.cued(rows, j.x.C.cue)
+    lo_mc = IN.answer_lo(j.net.net, cued)[0]  # M cued: the amended lock's reference (one convention, finding 7)
+    gap_m = teacher.heldout_gap(j.net.net, net, windows_of(cued), "cuda")  # net at M: the base's full effect, cued
+    lo_bc, lo_bu = IN.answer_lo(net, cued)[0], IN.answer_lo(net, rows)[0]
     with model_state(j.model, target=W):
-        lo_s = IN.answer_lo(j.net.net, IN.cued(rows, j.x.C.cue))[0]
-        gap_s = teacher.heldout_gap(j.net.net, net, windows_of(IN.cued(rows, j.x.C.cue)), "cuda")
-    gap_m = teacher.heldout_gap(j.net.net, net, windows_of(IN.cued(rows, j.x.C.cue)), "cuda")  # net at M: the full effect
-    lo_b = IN.answer_lo(net, IN.cued(rows, j.x.C.cue))[0]
-    f1 = {"gain_kept": float((lo_s - lo_m).mean()) / float((lo_b - lo_m).mean()), "gap_ratio": gap_s / gap_m, "gap": gap_s, "gap_M": gap_m}
-    f1["pass"] = f1["gain_kept"] >= th["gain_kept_min"] and f1["gap_ratio"] <= th["gap_ratio_max"]
+        lo_sc, lo_su = IN.answer_lo(j.net.net, cued)[0], IN.answer_lo(j.net.net, rows)[0]
+        gap_s = teacher.heldout_gap(j.net.net, net, windows_of(cued), "cuda")
+        gap_su = teacher.heldout_gap(j.net.net, net, windows_of(rows), "cuda")
+    f1 = {"gain_kept": float((lo_sc - lo_mc).mean()) / float((lo_bc - lo_mc).mean()), "gap_ratio": gap_s / gap_m, "gap": gap_s, "gap_M": gap_m,
+          "uncued_decades": IN.decades(float((lo_su - lo_bu).mean())), "gap_uncued": gap_su}  # fmt: skip
+    f1["pass"] = (f1["gain_kept"] >= th["gain_kept_min"] and f1["gap_ratio"] <= th["gap_ratio_max"]
+                  and abs(f1["uncued_decades"]) <= th["uncued_decades_max"])  # fmt: skip
     with model_state(j.model, target=W, components=comps):
         pile = pile_faithfulness(j.model, pile_blocks(), seed=0, pgd_steps=j.C.pgd_steps, log=log)
-        task = task_pgd(j, base, 0)
+        task = task_pgd(j, base, 0, tw0["rows"])
     ratios = {k: pile[k] / w0["pile"]["0"][k] for k in ("pgd_kl", "stochastic_kl")}  # ctl.json's seed-0 W0 (JSON keys)
     f2 = {"ratios": ratios, **faith_score.state_verdict(ratios, 1.0, w0)}
-    floor3 = max(tw0.values()) / min(tw0.values()) - 1  # the task rows' own floor: M's adversary-seed spread there (ctl)
-    f3 = {"pgd_kl": task, "w0": tw0["0"], "ratio": task / tw0["0"], "floor": floor3}
-    f3["verdict"] = faith_score.verdict(f3["ratio"], floor3)
-    rec = {"F1": f1, "F2": f2, "F3": f3}
-    rec["pass"] = f1["pass"] and f2["verdict"] == "pass" and f3["verdict"] == "pass"
+    f3 = {"pgd_kl": task, "w0": tw0["kl"]["0"], "ratio": task / tw0["kl"]["0"], "floor": tw0["floor"], "rows": tw0["rows"]}
+    f3["verdict"] = faith_score.verdict(f3["ratio"], tw0["floor"])
+    f4 = {"base": l00_gap(j, W, comps, base), "M": f4_m}
+    f4["pass"] = all(f4["base"][k] <= th["f4_ratio_max"] * f4_m[k] for k in ("cued", "uncued"))
+    rec = {"F1": f1, "F2": f2, "F3": f3, "F4": f4}
+    rec["pass"] = f1["pass"] and f2["verdict"] == "pass" and f3["verdict"] == "pass" and f4["pass"]
     return rec
 
 
@@ -276,7 +324,7 @@ def job_teach(j: Job, base: str, o: Any) -> None:
     W, comps = student_state(j, base, o.d["student"])
     o.put("faithful", f := faithful(j, base, net, W, comps, o))
     if not f["pass"]:
-        raise o.stop(f"no faithful featurization of base {base}: F1 {f['F1']['pass']}, F2 {f['F2']['verdict']}, F3 {f['F3']['verdict']}; its decomposition rows stay empty")
+        raise o.stop(f"no faithful featurization of base {base}: F1 {f['F1']['pass']}, F2 {f['F2']['verdict']}, F3 {f['F3']['verdict']}, F4 {f['F4']['pass']}; its decomposition rows stay empty (score: the two-base rule)")
     o.write()  # faithfulness on disk before any share is read
     shares(j, base, o)
 
@@ -306,7 +354,8 @@ def eb_item(j: Job, W: dict[str, Tensor], comps: Any, bases: Any, toks: Tensor, 
         rows = max(1, min(j.C.rows, j.C.logit_rows // run.top.shape[1]))
         sc = IX.scan(F, feat, run, at, ex, pt, rows, log)
         K = sc.first_pair >= 0
-        rec |= {"size_K": int(K.sum()), "n_changed_K": int((K & ch).sum()), "E_b_K": SI.explained_share(num, den, dd, K & ch),
+        n_k = int((K & ch).sum())  # an empty K and changed would read 1 (explained_share's convention): nan, not reuse (finding 5)
+        rec |= {"size_K": int(K.sum()), "n_changed_K": n_k, "E_b_K": SI.explained_share(num, den, dd, K & ch) if n_k else math.nan,
                 "cases_per_s": sc.rows / sc.seconds, "scan_seconds": sc.seconds, "max_dev": sc.max_dev}  # fmt: skip
     del M, F
     torch.cuda.empty_cache()
@@ -348,17 +397,55 @@ def pick(recs: dict[str, Any], kind: str, field: str, direction: str) -> dict[tu
             for r in recs.values() if r.get("kind") == kind and field in r and r["base"] != "M"}  # fmt: skip
 
 
+def two_base(vals: dict[tuple[str, str, int], float], fb: list[str], tb: dict[str, Any]) -> dict[str, Any]:
+    """The filed fallback when exactly two bases are faithful (amendment 2026-11-22b, finding 3): per task whose own
+    base is faithful and seed, the diagonal against the one faithful off-diagonal (chance 1/2 each); the AUC of the
+    faithful bases' diagonal states against their off-diagonal states on every task."""
+    nan = math.nan
+    pairs = [(vals.get((t, t, s), nan), vals.get((o, t, s), nan)) for t in fb for s in SC.SEEDS for o in fb if o != t]
+    fin = [(d, x) for d, x in pairs if not (math.isnan(d) or math.isnan(x))]
+    diag = [vals.get((t, t, s), nan) for t in fb for s in SC.SEEDS]
+    off = [vals.get((b, t, s), nan) for b in fb for t in TASKS if t != b for s in SC.SEEDS]
+    return {"pairs": sum(d > x for d, x in fin), "of": len(pairs), "auc": SC.auc(diag, off), "finite": len(fin),
+            "read": len(fin) >= tb["min_finite_pairs"]}  # fmt: skip
+
+
+def verdict_two(real: dict[str, Any], floor: dict[str, Any], tb: dict[str, Any]) -> str:
+    if not real["read"]:
+        return "not read"
+    if not (real["pairs"] >= tb["pairs_min"] and real["auc"] >= tb["auc_min"]):
+        return "does not separate"
+    if not floor["read"]:
+        return "floor not read"
+    return "floor separates too" if floor["auc"] >= tb["gauss_auc_max"] else "separates"
+
+
+def judged(recs: dict[str, Any], kind: str, field: str, floor_field: str, direction: str, fb: list[str], ev: dict[str, Any],
+           tb: dict[str, Any]) -> dict[str, Any]:  # fmt: skip
+    """Three faithful bases: run.py's rules; two: the fallback; fewer: not read."""
+    real, gs = pick(recs, kind, field, direction), pick(recs, "gauss", floor_field, direction)
+    if len(fb) == 3:
+        r, g = SC.score(real, ev), SC.score(gs, ev)
+        return {"rule": "three bases", "real": r, "gauss": g, "verdict": SC.verdict(r, g, ev)}
+    if len(fb) == 2:
+        r, g = two_base(real, fb, tb), two_base(gs, fb, tb)
+        return {"rule": f"two bases {fb}", "real": r, "gauss": g, "verdict": verdict_two(r, g, tb)}
+    return {"rule": f"faithful bases {fb}", "verdict": "not read"}
+
+
 def job_score() -> None:
     P = json.loads(PRED_D.read_text())
-    ev = json.loads(RUN.PRED.read_text())["thresholds"]["evidence"]
-    res: dict[str, Any] = {"experiment": P["experiment"], "readings": {}}
+    ev, tb = json.loads(RUN.PRED.read_text())["thresholds"]["evidence"], P["thresholds"]["two_base"]
+    fb = [b for b in TASKS if done(f"teach_{b}").get("faithful", {}).get("pass")]
+    res: dict[str, Any] = {"experiment": P["experiment"], "faithful_bases": fb, "readings": {}}
     recs = {**{f"share/{k}": v for b in TASKS for k, v in done(f"teach_{b}").get("share", {}).items()},
             **{f"eb/{k}": v for b in BASES for k, v in done(f"eb_{b}").get("eb", {}).items() if k != "zero"}}  # fmt: skip
     for reading, (field, direction, floor_field) in P["thresholds"]["readings"].items():
         for kind in ("size", "gain"):  # the floor on its numerator where the reading is a ratio (run.py's amendment)
-            real, gs = SC.score(pick(recs, kind, field, direction), ev), SC.score(pick(recs, "gauss", floor_field, direction), ev)
-            res["readings"][f"{reading}_{kind}"] = {"real": real, "gauss": gs, "verdict": SC.verdict(real, gs, ev)}
-            print(f"[{reading} {kind}] {real['triples']}/{real['of']} auc {real['auc']} | gauss {gs['auc']} -> {res['readings'][f'{reading}_{kind}']['verdict']}")
+            if reading in P["thresholds"]["skip"].get(kind, []):
+                continue
+            res["readings"][f"{reading}_{kind}"] = judged(recs, kind, field, floor_field, direction, fb, ev, tb)
+            print(f"[{reading} {kind}] {json.dumps(jsonable(res['readings'][f'{reading}_{kind}']))}")
     (OUT / "score_d.json").write_text(json.dumps(jsonable(res), indent=1))
 
 

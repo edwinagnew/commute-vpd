@@ -1,0 +1,51 @@
+E269 start, shard (4, 10): ['p256/sequence_rl_s1']; E226 settings {'alpha': 0.9, 'split_tol': 1e-06, 'batch': 32, 'grade_batch': 8, 'reranks': 2, 'eval_cap': 1000000000, 'chunk_div': 8, 'split_seed': 186001, 'reuse': ('x2', 'x10', 'moved', 'rebuilt'), 'new': ('new_few', 'new_thin')}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+p256/sequence_rl_s1: 256 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 4.87144, KL(F || M) 2.19551734; gates {'all': 1.665327886257728e-06, 'none': 0.0}; worst split check 4.5e-07; split shares over all 24 {'write2': 0.49893753201410523, 'read2': 0.2898056665795165, 'outside2': 0.01917873278752909, 'cross_wr2': 0.1920780686194867, 'cross_out2': -6.374580183782026e-13}
+    ranking 0: prefix 31661, 15 evaluations
+    ranking 1: prefix 23896, 30 evaluations
+    ranking 2: prefix 20986, 45 evaluations
+    polish: 500 evaluations, 798 of 20986 tried, |K| 20288, chunk 16
+    polish: 1000 evaluations, 1812 of 20986 tried, |K| 19366, chunk 1
+    polish: 1500 evaluations, 2845 of 20986 tried, |K| 18429, chunk 1
+    polish: 2000 evaluations, 3954 of 20986 tried, |K| 17432, chunk 1
+    polish: 2500 evaluations, 4850 of 20986 tried, |K| 16639, chunk 8
+    polish: 3000 evaluations, 5517 of 20986 tried, |K| 16083, chunk 4
+    polish: 3500 evaluations, 6251 of 20986 tried, |K| 15472, chunk 2
+    polish: 4000 evaluations, 6781 of 20986 tried, |K| 15064, chunk 8
+    polish: 4500 evaluations, 7520 of 20986 tried, |K| 14432, chunk 1
+    polish: 5000 evaluations, 8047 of 20986 tried, |K| 14052, chunk 2
+    polish: 5500 evaluations, 8551 of 20986 tried, |K| 13681, chunk 1
+    polish: 6000 evaluations, 9061 of 20986 tried, |K| 13295, chunk 1
+    polish: 6500 evaluations, 9713 of 20986 tried, |K| 12749, chunk 1
+    polish: 7000 evaluations, 10424 of 20986 tried, |K| 12134, chunk 1
+    polish: 7500 evaluations, 10969 of 20986 tried, |K| 11721, chunk 1
+    polish: 8000 evaluations, 11461 of 20986 tried, |K| 11369, chunk 1
+    polish: 8500 evaluations, 12009 of 20986 tried, |K| 10967, chunk 1
+    polish: 9000 evaluations, 12487 of 20986 tried, |K| 10641, chunk 1
+    polish: 9500 evaluations, 12983 of 20986 tried, |K| 10277, chunk 1
+    polish: 10000 evaluations, 13480 of 20986 tried, |K| 9932, chunk 1
+    polish: 10500 evaluations, 13966 of 20986 tried, |K| 9602, chunk 1
+    polish: 11000 evaluations, 14441 of 20986 tried, |K| 9266, chunk 8
+    polish: 11500 evaluations, 15020 of 20986 tried, |K| 8812, chunk 1
+    polish: 12000 evaluations, 15505 of 20986 tried, |K| 8478, chunk 2
+    polish: 12500 evaluations, 15980 of 20986 tried, |K| 8142, chunk 1
+    polish: 13000 evaluations, 16421 of 20986 tried, |K| 7883, chunk 1
+    polish: 13500 evaluations, 16879 of 20986 tried, |K| 7565, chunk 1
+    polish: 14000 evaluations, 17333 of 20986 tried, |K| 7273, chunk 4
+    polish: 14500 evaluations, 17750 of 20986 tried, |K| 7026, chunk 4
+    polish: 15000 evaluations, 18191 of 20986 tried, |K| 6741, chunk 1
+    polish: 15500 evaluations, 18600 of 20986 tried, |K| 6536, chunk 1
+    polish: 16000 evaluations, 19005 of 20986 tried, |K| 6341, chunk 1
+    polish: 16500 evaluations, 19420 of 20986 tried, |K| 6159, chunk 2
+    polish: 17000 evaluations, 19819 of 20986 tried, |K| 5965, chunk 1
+    polish: 17500 evaluations, 20221 of 20986 tried, |K| 5789, chunk 1
+    polish: 18000 evaluations, 20608 of 20986 tried, |K| 5624, chunk 1
+  p256/sequence_rl_s1 main: |K*| 5543 (prefix 20986), R read 0.999424 (prefix 0.999181), R all 0.999586, f 0.9996, site-remainder share 0.0009, graft share 0.0000; 18445 evaluations, 6912 s
+p256/sequence_rl_s1: done in 6926 s; peak GPU memory 6.59 GB
+ITEM 1 of 1 DONE (p256/sequence_rl_s1): reading read, |K*| 5543, 18445 evaluations, capped False, 6926 s
+E269 DONE
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/kstar_uncapped/results ===

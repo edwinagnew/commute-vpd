@@ -1,0 +1,60 @@
+E269 start, shard (2, 10): ['p256/sequence_rlg_s0']; E226 settings {'alpha': 0.9, 'split_tol': 1e-06, 'batch': 32, 'grade_batch': 8, 'reranks': 2, 'eval_cap': 1000000000, 'chunk_div': 8, 'split_seed': 186001, 'reuse': ('x2', 'x10', 'moved', 'rebuilt'), 'new': ('new_few', 'new_thin')}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+p256/sequence_rlg_s0: 256 windows, 38938 variables, 38936 changed, 0 grafts; KL(F || F_empty) 4.27473, KL(F || M) 2.06369331; gates {'all': 1.603006467121304e-06, 'none': 0.0}; worst split check 4.5e-07; split shares over all 24 {'write2': 0.49565456960337534, 'read2': 0.2930312301838897, 'outside2': 0.020027597077862926, 'cross_wr2': 0.19128660313552412, 'cross_out2': -6.520373151158461e-13}
+    ranking 0: prefix 30426, 15 evaluations
+    ranking 1: prefix 26628, 30 evaluations
+    ranking 2: prefix 26251, 45 evaluations
+    polish: 500 evaluations, 1000 of 26251 tried, |K| 25341, chunk 1
+    polish: 1000 evaluations, 1767 of 26251 tried, |K| 24661, chunk 8
+    polish: 1500 evaluations, 2583 of 26251 tried, |K| 23944, chunk 1
+    polish: 2000 evaluations, 3628 of 26251 tried, |K| 23011, chunk 1
+    polish: 2500 evaluations, 4489 of 26251 tried, |K| 22255, chunk 2
+    polish: 3000 evaluations, 5272 of 26251 tried, |K| 21588, chunk 8
+    polish: 3500 evaluations, 5980 of 26251 tried, |K| 20984, chunk 2
+    polish: 4000 evaluations, 6690 of 26251 tried, |K| 20373, chunk 1
+    polish: 4500 evaluations, 7384 of 26251 tried, |K| 19803, chunk 1
+    polish: 5000 evaluations, 8328 of 26251 tried, |K| 18942, chunk 2
+    polish: 5500 evaluations, 8976 of 26251 tried, |K| 18413, chunk 4
+    polish: 6000 evaluations, 9581 of 26251 tried, |K| 17934, chunk 4
+    polish: 6500 evaluations, 10194 of 26251 tried, |K| 17451, chunk 4
+    polish: 7000 evaluations, 10853 of 26251 tried, |K| 16914, chunk 4
+    polish: 7500 evaluations, 11513 of 26251 tried, |K| 16370, chunk 1
+    polish: 8000 evaluations, 12066 of 26251 tried, |K| 15936, chunk 8
+    polish: 8500 evaluations, 12607 of 26251 tried, |K| 15512, chunk 1
+    polish: 9000 evaluations, 13287 of 26251 tried, |K| 14945, chunk 8
+    polish: 9500 evaluations, 13846 of 26251 tried, |K| 14517, chunk 4
+    polish: 10000 evaluations, 14291 of 26251 tried, |K| 14207, chunk 2
+    polish: 10500 evaluations, 14780 of 26251 tried, |K| 13851, chunk 4
+    polish: 11000 evaluations, 15389 of 26251 tried, |K| 13354, chunk 16
+    polish: 11500 evaluations, 15863 of 26251 tried, |K| 13007, chunk 8
+    polish: 12000 evaluations, 16371 of 26251 tried, |K| 12628, chunk 1
+    polish: 12500 evaluations, 16834 of 26251 tried, |K| 12321, chunk 1
+    polish: 13000 evaluations, 17313 of 26251 tried, |K| 11978, chunk 1
+    polish: 13500 evaluations, 17825 of 26251 tried, |K| 11610, chunk 1
+    polish: 14000 evaluations, 18322 of 26251 tried, |K| 11242, chunk 2
+    polish: 14500 evaluations, 18900 of 26251 tried, |K| 10814, chunk 8
+    polish: 15000 evaluations, 19339 of 26251 tried, |K| 10526, chunk 1
+    polish: 15500 evaluations, 19824 of 26251 tried, |K| 10170, chunk 2
+    polish: 16000 evaluations, 20361 of 26251 tried, |K| 9766, chunk 1
+    polish: 16500 evaluations, 20866 of 26251 tried, |K| 9414, chunk 2
+    polish: 17000 evaluations, 21330 of 26251 tried, |K| 9105, chunk 1
+    polish: 17500 evaluations, 21880 of 26251 tried, |K| 8690, chunk 2
+    polish: 18000 evaluations, 22330 of 26251 tried, |K| 8377, chunk 1
+    polish: 18500 evaluations, 22760 of 26251 tried, |K| 8095, chunk 4
+    polish: 19000 evaluations, 23201 of 26251 tried, |K| 7839, chunk 8
+    polish: 19500 evaluations, 23622 of 26251 tried, |K| 7598, chunk 2
+    polish: 20000 evaluations, 24046 of 26251 tried, |K| 7327, chunk 1
+    polish: 20500 evaluations, 24454 of 26251 tried, |K| 7103, chunk 1
+    polish: 21000 evaluations, 24857 of 26251 tried, |K| 6898, chunk 1
+    polish: 21500 evaluations, 25278 of 26251 tried, |K| 6687, chunk 1
+    polish: 22000 evaluations, 25684 of 26251 tried, |K| 6543, chunk 1
+    polish: 22500 evaluations, 26083 of 26251 tried, |K| 6398, chunk 1
+  p256/sequence_rlg_s0 main: |K*| 6378 (prefix 26251), R read 0.999378 (prefix 0.999132), R all 0.999539, f 0.9997, site-remainder share 0.0008, graft share 0.0000; 22688 evaluations, 8729 s
+p256/sequence_rlg_s0: done in 8743 s; peak GPU memory 6.59 GB
+ITEM 1 of 1 DONE (p256/sequence_rlg_s0): reading read, |K*| 6378, 22688 evaluations, capped False, 8743 s
+E269 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/kstar_uncapped/results ===
