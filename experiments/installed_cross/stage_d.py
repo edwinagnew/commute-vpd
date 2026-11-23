@@ -260,9 +260,13 @@ def faithful(j: Job, base: str, net: Any, W: dict[str, Tensor], comps: Any, o: A
         lo_sc, lo_su = IN.answer_lo(j.net.net, cued)[0], IN.answer_lo(j.net.net, rows)[0]
         gap_s = teacher.heldout_gap(j.net.net, net, windows_of(cued), "cuda")
         gap_su = teacher.heldout_gap(j.net.net, net, windows_of(rows), "cuda")
-    f1 = {"gain_kept": float((lo_sc - lo_mc).mean()) / float((lo_bc - lo_mc).mean()), "gap_ratio": gap_s / gap_m, "gap": gap_s, "gap_M": gap_m,
-          "uncued_decades": IN.decades(float((lo_su - lo_bu).mean())), "gap_uncued": gap_su}  # fmt: skip
-    f1["pass"] = (f1["gain_kept"] >= th["gain_kept_min"] and f1["gap_ratio"] <= th["gap_ratio_max"]
+    g_b = lo_bc - lo_mc  # the base's own cued gain per row; its half-split spread is the measured floor (amendment c)
+    h = len(g_b) // 2
+    spread = abs(float(g_b[:h].mean()) - float(g_b[h:].mean())) / float(g_b.mean())
+    f1 = {"gain_kept": float((lo_sc - lo_mc).mean()) / float(g_b.mean()), "gap_ratio": gap_s / gap_m, "gap": gap_s, "gap_M": gap_m,
+          "uncued_decades": IN.decades(float((lo_su - lo_bu).mean())), "gap_uncued": gap_su, "base_half_spread": spread,
+          "shortfall_max": max(1 - th["gain_kept_min"], th["spread_mult"] * spread)}  # fmt: skip
+    f1["pass"] = (1 - f1["gain_kept"] <= f1["shortfall_max"] and f1["gap_ratio"] <= th["gap_ratio_max"]
                   and abs(f1["uncued_decades"]) <= th["uncued_decades_max"])  # fmt: skip
     with model_state(j.model, target=W, components=comps):
         pile = pile_faithfulness(j.model, pile_blocks(), seed=0, pgd_steps=j.C.pgd_steps, log=log)
@@ -271,9 +275,9 @@ def faithful(j: Job, base: str, net: Any, W: dict[str, Tensor], comps: Any, o: A
     f2 = {"ratios": ratios, **faith_score.state_verdict(ratios, 1.0, w0)}
     f3 = {"pgd_kl": task, "w0": tw0["kl"]["0"], "ratio": task / tw0["kl"]["0"], "floor": tw0["floor"], "rows": tw0["rows"]}
     f3["verdict"] = faith_score.verdict(f3["ratio"], tw0["floor"])
-    f4 = {"base": l00_gap(j, W, comps, base), "M": f4_m}
-    f4["pass"] = all(f4["base"][k] <= th["f4_ratio_max"] * f4_m[k] for k in ("cued", "uncued"))
-    rec = {"F1": f1, "F2": f2, "F3": f3, "F4": f4}
+    f4_b = l00_gap(j, W, comps, base)
+    f4: dict[str, Any] = {"base": f4_b, "M": f4_m, "pass": all(f4_b[k] <= th["f4_ratio_max"] * f4_m[k] for k in ("cued", "uncued"))}
+    rec: dict[str, Any] = {"F1": f1, "F2": f2, "F3": f3, "F4": f4}
     rec["pass"] = f1["pass"] and f2["verdict"] == "pass" and f3["verdict"] == "pass" and f4["pass"]
     return rec
 
@@ -426,7 +430,8 @@ def judged(recs: dict[str, Any], kind: str, field: str, floor_field: str, direct
     real, gs = pick(recs, kind, field, direction), pick(recs, "gauss", floor_field, direction)
     if len(fb) == 3:
         r, g = SC.score(real, ev), SC.score(gs, ev)
-        return {"rule": "three bases", "real": r, "gauss": g, "verdict": SC.verdict(r, g, ev)}
+        v = SC.verdict(r, g, ev)
+        return {"rule": "three bases", "real": r, "gauss": g, "verdict": v, "write_up": SC.write_up_call(v, r, ev, list(TASKS))}
     if len(fb) == 2:
         r, g = two_base(real, fb, tb), two_base(gs, fb, tb)
         return {"rule": f"two bases {fb}", "real": r, "gauss": g, "verdict": verdict_two(r, g, tb)}

@@ -58,7 +58,41 @@
     "adl_batch": 512,
     "adl_source": "E264's settings (experiments/adl/results/predictions.json): k 5, 8192 Pile val rows, batch 512",
     "reader_settings_source": "E211's filed reader settings, read at run time from experiments/realistic_tasks/results/predictions_run2.json, as E256",
-    "eos_gap": 4
+    "eos_gap": 4,
+    "install_sweep": {
+      "cipher": [
+        [
+          3,
+          10
+        ],
+        [
+          10,
+          10
+        ],
+        [
+          30,
+          10
+        ]
+      ],
+      "yoruba": [
+        [
+          0,
+          0.1
+        ],
+        [
+          0,
+          0.3
+        ],
+        [
+          0,
+          1
+        ]
+      ]
+    },
+    "install_steps_by_task": {
+      "yoruba": 4000
+    },
+    "install_sweep_source": "amendment 2026-11-22c, from measured installs (no bar moved). Cipher (install_cipher.json): every lambda leaked at the step-500 check, uncued shift 0.83 / 0.77 / 0.97 decades at lambda 1 / 3 / 10 with cued gain 24.4 / 23.9 / 23.1: raising lambda did not move the leak, because lambda scales the all-position KL, where the answer is 1 position in 64, while the answer-position KL stayed at weight 1 against the cued CE's 1; the uncued cipher items are answered from the key alone, so the mapping generalises past the cue unless the uncued answer is held to M more strongly than the cued answer is taught. So the answer-position weight ans_w is swept (3, 10, 30) at addition's kept lambda 10 (addition locked at 10: install_addition.json kept). Yoruba (install_yoruba.json in flight at the time): cued gain 1.89 at step 500 fell to 1.40 at step 1000 at lambda 1 (uncued weight 1 + 1 on the same text) with the uncued shift 0.096 decades, under half the 0.2 bar: the lock has headroom and the uncued pull on the same windows undoes the cued CE, so the uncued weight is lowered (ans_w 0, lambda 0.1 / 0.3 / 1: uncued and Pile KL at lambda only) and the run lengthened to 4000 steps; the leak check and the 3.0 bar stand. Other tasks keep (ans_w 1, lambdas) as filed. Strongest-holding kept, as before (list order weakest first)"
   },
   "thresholds": {
     "floor_rate_max": {
@@ -162,7 +196,33 @@
           "size"
         ]
       },
-      "skip_source": "at matched size the reading size is constant up to rounding (review finding 10): not scored there"
+      "skip_source": "at matched size the reading size is constant up to rounding (review finding 10): not scored there",
+      "secondary": {
+        "task_min": 2
+      },
+      "secondary_source": "redteam-lead 2026-11-22 (note-2026-11-22-redteam-e271-plan.md item 2): the 3 seeds of a task share base and items, so the task is the honest unit; per-task triple counts (x of 3) are reported beside the 9, and a primary 'separates' is called 'separates' in the write-up only if every task present has >= 2 of 3 (else 'separates on the pool, not per task'). The filed 9-triple rule stays the primary",
+      "share_readings": [
+        "steering_share",
+        "neuron_k64",
+        "neuron_kmatched",
+        "untrained_svd",
+        "untrained_rotated",
+        "k_half",
+        "erank"
+      ],
+      "rescale_source": "redteam-lead item 3: each read record carries its rescale factor size_ref / size (1 at kind gain); a share reading (these scale-free ones) whose verdict is 'separates' at one kind and not the other is flagged 'rescale-dependent' and read as the rescaling, not the history",
+      "dropped_task": {
+        "triples_min": 6,
+        "of": 6,
+        "min_finite": {
+          "triples": 6,
+          "diag": 6,
+          "off": 6
+        },
+        "P_pairs": 0.016,
+        "P_task_level": 0.0625
+      },
+      "dropped_task_source": "redteam-lead item 5, filed before any reading. A dropped task takes its base with it (the base is that task's install), so with two tasks each (task, seed) compares the diagonal with ONE off-diagonal, chance 1/2, not 1/3: the bar is 6 of 6 (P = 1/64 = 0.016 if independent; task level, seeds moving together, (1/2)^2 = 1/4 at worst and 1/16 at 2 of 2 tasks with 3 of 3 each), with the AUC and floor rules unchanged. The note's 'P(>= 5 of 6 | 1/3) = 0.018, task level 1/9' assumed three bases with two tasks, which cannot occur here; this is the corrected filing. score.py switches to it when exactly two tasks are present; nothing is filed for fewer"
     },
     "g_star_min": 1.5,
     "g_star_source": "review 2026-11-22 finding 4: G* = half the cued gain at least 1.5 x MIN_GAIN, so read-row gains and rescaled off-diagonals keep headroom over MIN_GAIN",
@@ -170,7 +230,8 @@
       "step": 500,
       "leak_margin_decades": 0.2
     },
-    "install_early_source": "gate 4 at install (review finding 5): the lock reads on the stop rows every 100 steps; a weight whose uncued shift at step 500 is over the 0.2-decade bar by more than 0.2 decades more is stopped as leaking"
+    "install_early_source": "gate 4 at install (review finding 5): the lock reads on the stop rows every 100 steps; a weight whose uncued shift at step 500 is over the 0.2-decade bar by more than 0.2 decades more is stopped as leaking",
+    "lock_spread_source": "redteam-lead (smaller items): the lock's (b) is the mean uncued shift; the read job records its per-row sd, largest |shift| and the share of stop rows over the 0.2-decade bar on each base's own task, reported beside the mean (no bar)"
   },
   "expected": {
     "ctl": "zero update: KL exactly 0, identical log-odds; M addition rate ~0.10, cipher P ~1e-5, Yoruba log-odds low (hard rows)",
@@ -197,6 +258,18 @@
       "finding 10: size not scored at kind size; corrected P and the dependence of seeds stated; AUC per task reported",
       "finding 11: tasks.pt checked against ctl's sha256; docstring says the strongest weight is kept; the cross jobs' cards must match in controls; the shared ' =' template named in the pre-mortem",
       "measured timing (lead, 2026-11-22: install 0.17 s/step on the cluster L40): cross and read split into one job per (base, task) cell so each stays inside the 30 min debug cap"
+    ]
+  },
+  "amendment_2026-11-22c": {
+    "why": "redteam-lead's plan notes (note-2026-11-22-redteam-e271-plan.md, note-2026-11-22-redteam-e271-amended.md), before any read job; install and cross code and bars unchanged",
+    "changes": [
+      "(a) per-task triple counts beside the 9 and the write-up secondary (every task >= 2 of 3); the 9-triple rule stays primary",
+      "(b) each read record carries rescale = size_ref / size; score.py flags a share reading separating at one kind but not the other as 'rescale-dependent'",
+      "(c) the lock's uncued shift: per-row sd, largest and share over the bar on the stop rows, recorded by the read job beside the mean",
+      "(e) the dropped-task bar filed: a dropped task removes its base, so pairs at chance 1/2: 6 of 6 (P 0.016), task level 1/16; the note's 5 of 6 at 1/3 (P 0.018, 1/9) is corrected in dropped_task_source",
+      "(f) write-up notes in the plan: steering share is close to built for a cue-lock opening and its pass does not carry to natural fine-tunes; 11 readings at one bar each, so about one passes by chance",
+      "(d) is in predictions_stage_d.json amendment_2026-11-22c",
+      "install recipe (lead, after the measured installs): per-task sweeps of the answer-position weight and lambda (install_sweep; cipher ans_w 3/10/30 at lambda 10; yoruba ans_w 0 at lambda 0.1/0.3/1 for 4000 steps); no bar changed; addition's install (lambda 10, as ran) stands, its recipe is the default"
     ]
   }
 }

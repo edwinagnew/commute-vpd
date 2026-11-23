@@ -83,6 +83,16 @@ transplant diagonal 0.0-0.15, off-diagonal 0.7-1.0. Readings at matched size: le
 9), neuron shares lean separate; erank, untrained-SVD share, k_half and ADL no lean; prior does not separate. At matched
 gain size and Pile KL separate trivially, which is why matched size is scored.
 
+**Write-up notes (amendment 2026-11-22c, redteam-lead).** Steering share is close to built for this test: a diagonal
+update that opens a cue lock acts like "the cue is present", a near-constant input feature, which is what a pooled
+steering vector models; a steering pass shows that steering detects a cue-lock opening, the narrowest kind of reuse,
+and does not carry to natural fine-tunes; the informative readings are the others. Eleven readings are scored at one
+bar each, so about one may pass by chance. Per-task triple counts are reported beside the 9, and a reading is called
+"separates" in the write-up only if every task has at least 2 of 3; a share reading that separates at one kind (gain,
+size) and not the other is the rescaling, not the history (each read record carries its rescale factor). If a task is
+dropped by amendment its base goes with it, so each comparison is a pair at chance 1/2: the bar is 6 of 6 (P 0.016),
+task level 1/16, filed now (redteam's 5 of 6 at 1/3 assumed three bases with two tasks, which cannot occur).
+
 What each reading is blind to: all read the update against the base's weights, so a diagonal update that rebuilds the
 skill elsewhere instead of re-opening the installed one would still read as reuse by history; the transplant control
 is what rules that out. Nothing here says the installed skill looks like a skill pretraining would have made.

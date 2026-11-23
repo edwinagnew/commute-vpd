@@ -95,7 +95,9 @@
       ]
     },
     "skip_source": "E_b is read at matched size and the floor only (eb_kinds); its row at kind gain is not scored (finding 7)",
-    "edge_rules": "E_b_K is nan when K and the changed set do not meet (n_changed_K = 0): explained_share would read 1, the top reuse value, for an empty set (finding 5); a nan reading counts as not ranked (run.py's evidence edge rules)"
+    "edge_rules": "E_b_K is nan when K and the changed set do not meet (n_changed_K = 0): explained_share would read 1, the top reuse value, for an empty set (finding 5); a nan reading counts as not ranked (run.py's evidence edge rules)",
+    "spread_mult": 3,
+    "F1_cued_floor_source": "amendment 2026-11-22c (redteam-lead): the student's cued-gain shortfall 1 - gain_kept must be at most the larger of E34's translated 0.2 (gain_kept_min 0.8, not measured) and spread_mult x the base's own half-split spread of its cued gain over M cued on the same read rows (|mean of first half - mean of second half| / mean, measured in the teach job before F1 is decided): a shortfall a re-draw of the rows could show is not counted against the student. The student's training rows include the base's cued task items (a third of its rows, student_rows), as filed"
   },
   "expected": {
     "ctl": "W0 passes w0_check (PGD KL within 10% of 0.69, CI-masked within 2% of 0.348, floor <= 0.25; E34's L40 floor ~0.21); task-row floors of the same order",
@@ -116,6 +118,13 @@
       "finding 5: E_b_K nan when n_changed_K = 0 (edge_rules)",
       "finding 6: f3 recorded in ctl; over f3_max 0.3 the filed block of 512 rows and seeds 0-4 replaces it",
       "finding 7: student_state checks the student's sha256; gain kept over M cued; gain_kept_min's source says translated, not measured; E_b at kind gain not scored (skip)"
+    ]
+  },
+  "amendment_2026-11-22c": {
+    "why": "redteam-lead's notes (note-2026-11-22-redteam-e271-plan.md item 1, note-2026-11-22-redteam-e271-amended.md), before anything in Stage D ran",
+    "changes": [
+      "(d) F1's cued gain: confirmed the student trains on the base's cued items (rows_each of them, a third); the floor on its shortfall is measured on the base itself (half-split spread x spread_mult 3), beside E34's translated 0.2",
+      "(a) the three-base score also gives the write-up call (every task >= 2 of 3, run.py's evidence.secondary)"
     ]
   }
 }
