@@ -1,0 +1,17 @@
+<article class="exp" id="e283">
+<div class="top"><span class="id">E283</span><span class="chip mixed">control failed</span><h3>Is the failure in the kept clause? Two readings of reliance alone</h3><span class="when">2026-11-23 · cell P1.57 spare run, definition-lead · <code>experiments/reliance</code></span></div>
+<p class="one"><strong>The question.</strong> The write share asks two things at once: that the fine-tuned model needs the base model's variables, and that each needed variable's write only rescales (the kept clause). If reliance alone separates reuse from new, the kept clause is what fails. Does it?</p>
+<p class="one"><strong>What we did.</strong> Two diagnostic readings with neurons as the variables, each sharing out the fine-tune's flip mass (the count of 256 tested input pairs on which swapping a variable's value changes the top token). Needed by both: the share on variables the base model also needs. Needed and barely changed: the share on needed variables whose write moved by under half the base model's. Control: two strengthening edits (scaling an existing mechanism by two and ten), two new edits and a random update matched in KL.</p>
+<p class="one"><strong>What we found.</strong> Neither separates, and needed-by-both fails its positive control. The strengthening edits read 0.848 and 0.859, far under their construction floors of 0.993 and 0.983, and no higher than the thin new edit (0.851) or the random update (0.857). Barely-changed puts every edit between 0.968 and 0.998, so it measures update size.</p>
+<p class="one"><strong>What it means.</strong> The needed set moves with the fine-tune's outputs even under a pure strengthening, so these readings as built cannot test reliance; the likely cause, needed sets judged against each network's own top token, is unshown (the saved arrays hold no per-pair flips). No reliance reading is proposed. Redteam: rival B as filed.</p>
+<dl class="fields">
+<dt>Run</dt><dd>Cluster debug and short H100 pods, about $7.</dd>
+<dt>Found</dt><dd><ul>
+<li>Needed-by-both reads 0.85 for every built edit including pure strengthening; its floor of 0.98 or more was missed.</li>
+<li>Barely-changed saturates near 1 for any small update.</li>
+<li>Values on the copying pair, head edits and panel are reported in the analysis as values of failed instruments.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 1: the failure of the write share is not traced to the kept clause, and not ruled out.</dd>
+<dt>Moved on</dt><dd>2026-11-23: a rescan saving per-pair flips would test the cause; a reliance reading with one shared target needs its own cell. Report <code>reports/analyses/2026-11-23_analysis_p1-57-dropped-results.md</code>.</dd>
+</dl>
+</article>
