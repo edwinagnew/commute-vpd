@@ -102,3 +102,6 @@ E283 a1b (d044008b, 18259a76) checked ~14:50: filed before any V1 value (no V1 r
 
 ## P1.56, due 11-24: E277 page (936590f1) checked, OK to fill after two small fixes
 Make-up: the cluster re-read of lower s0 and its Gaussian matched the pod values (E_b 2.2e-5 relative, fresh stage 0 with no flips). Same-task tau: neurons -0.348 (p 0.23, "no order"), VPD -0.696 (p 0.007). My 9x and +0.014 were misreadings; the right values are 10.3x and +0.013. Fixes: the answer's remainder range 0.60-0.77 is for E229's fine-tunes only (the panel reads 0.53-0.80); label each margin as median or smallest.
+
+## P1.57, due 11-24: E283 reliance verdict (f288f4c0), sent ~15:10
+Rival B as filed on both readings: V1 0.848 against new_thin 0.851 and random_kl 0.857; V2 0.992 against 0.998-0.999. V1 fails its positive control: x2/x10 read 0.848/0.859 against construction floors 0.993/0.983, and new_few reads 0.797 against >= 0.966. The needed set moves with F's outputs, so V1 as built has a floor near 0.8 and tests nothing about reliance. Asked for: the stop-rule wording ("the readings as built fail their control", not "the needed set itself"); one number to show the cause; E62, E280, E281 and the panel labelled as values of a failed-control reading; and an answer paragraph saying P1.57 is a run of instrument failures. Note in the whip-lead folder.
