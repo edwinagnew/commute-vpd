@@ -1,0 +1,91 @@
+E268 (kstar_needed) start, stage built, shard (3, 4), tag p3; settings {'control': 'x2', 'control_E_b_Kstar': 0.7617252590298972, 'transcription_rel_tol': 1e-11, 'built': ('x2', 'x10', 'rebuilt', 'new_few', 'new_thin', 'random_size_241001', 'random_kl_241002'), 'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'ident_vars': 3, 'kept_floor': 3.3243476569633224e-05}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+03:06:39 [data] train rows 0..32768: cached at /root/artifacts/sets/train_0_32768.npy
+    site 0 h.0.attn.k_proj: 4 variables x 64 pairs, 0 needed; 256 cases in 0 s (4492/s)
+    site 1 h.0.attn.o_proj: 4 variables x 64 pairs, 0 needed; 512 cases in 0 s (4991/s)
+    site 2 h.0.attn.q_proj: 4 variables x 64 pairs, 0 needed; 768 cases in 0 s (5187/s)
+    site 3 h.0.attn.v_proj: 4 variables x 64 pairs, 0 needed; 1024 cases in 0 s (5285/s)
+    site 4 h.0.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 1280 cases in 0 s (5336/s)
+    site 5 h.0.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 1536 cases in 0 s (5375/s)
+    site 6 h.1.attn.k_proj: 4 variables x 64 pairs, 0 needed; 1792 cases in 0 s (5494/s)
+    site 7 h.1.attn.o_proj: 4 variables x 64 pairs, 0 needed; 2048 cases in 0 s (5588/s)
+    site 8 h.1.attn.q_proj: 4 variables x 64 pairs, 0 needed; 2304 cases in 0 s (5663/s)
+    site 9 h.1.attn.v_proj: 4 variables x 64 pairs, 0 needed; 2560 cases in 0 s (5723/s)
+    site 10 h.1.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 2816 cases in 0 s (5767/s)
+    site 11 h.1.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 3072 cases in 1 s (5807/s)
+    site 12 h.2.attn.k_proj: 4 variables x 64 pairs, 0 needed; 3328 cases in 1 s (5897/s)
+    site 13 h.2.attn.o_proj: 4 variables x 64 pairs, 0 needed; 3584 cases in 1 s (5978/s)
+    site 14 h.2.attn.q_proj: 4 variables x 64 pairs, 0 needed; 3840 cases in 1 s (6050/s)
+    site 15 h.2.attn.v_proj: 4 variables x 64 pairs, 0 needed; 4096 cases in 1 s (6111/s)
+    site 16 h.2.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 4352 cases in 1 s (6158/s)
+    site 17 h.2.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 4608 cases in 1 s (6207/s)
+    site 18 h.3.attn.k_proj: 4 variables x 64 pairs, 0 needed; 4864 cases in 1 s (6297/s)
+    site 19 h.3.attn.o_proj: 4 variables x 64 pairs, 0 needed; 5120 cases in 1 s (6380/s)
+    site 20 h.3.attn.q_proj: 4 variables x 64 pairs, 0 needed; 5376 cases in 1 s (6457/s)
+    site 21 h.3.attn.v_proj: 4 variables x 64 pairs, 0 needed; 5632 cases in 1 s (6528/s)
+    site 22 h.3.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 5888 cases in 1 s (6585/s)
+    site 23 h.3.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 6144 cases in 1 s (6639/s)
+    site 0 h.0.attn.k_proj: 4 variables x 64 pairs, 0 needed; 256 cases in 0 s (12342/s)
+    site 1 h.0.attn.o_proj: 4 variables x 64 pairs, 0 needed; 512 cases in 0 s (12350/s)
+    site 2 h.0.attn.q_proj: 4 variables x 64 pairs, 0 needed; 768 cases in 0 s (12349/s)
+    site 3 h.0.attn.v_proj: 4 variables x 64 pairs, 0 needed; 1024 cases in 0 s (12354/s)
+    site 4 h.0.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 1280 cases in 0 s (12220/s)
+    site 5 h.0.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 1536 cases in 0 s (12143/s)
+    site 6 h.1.attn.k_proj: 4 variables x 64 pairs, 0 needed; 1792 cases in 0 s (12580/s)
+    site 7 h.1.attn.o_proj: 4 variables x 64 pairs, 0 needed; 2048 cases in 0 s (12929/s)
+    site 8 h.1.attn.q_proj: 4 variables x 64 pairs, 0 needed; 2304 cases in 0 s (13214/s)
+    site 9 h.1.attn.v_proj: 4 variables x 64 pairs, 0 needed; 2560 cases in 0 s (13453/s)
+    site 10 h.1.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 2816 cases in 0 s (13614/s)
+    site 11 h.1.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 3072 cases in 0 s (13761/s)
+    site 12 h.2.attn.k_proj: 4 variables x 64 pairs, 0 needed; 3328 cases in 0 s (14196/s)
+    site 13 h.2.attn.o_proj: 4 variables x 64 pairs, 0 needed; 3584 cases in 0 s (14591/s)
+    site 14 h.2.attn.q_proj: 4 variables x 64 pairs, 0 needed; 3840 cases in 0 s (14952/s)
+    site 15 h.2.attn.v_proj: 4 variables x 64 pairs, 0 needed; 4096 cases in 0 s (15283/s)
+    site 16 h.2.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 4352 cases in 0 s (15553/s)
+    site 17 h.2.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 4608 cases in 0 s (15811/s)
+    site 18 h.3.attn.k_proj: 4 variables x 64 pairs, 0 needed; 4864 cases in 0 s (16330/s)
+    site 19 h.3.attn.o_proj: 4 variables x 64 pairs, 0 needed; 5120 cases in 0 s (16827/s)
+    site 20 h.3.attn.q_proj: 4 variables x 64 pairs, 0 needed; 5376 cases in 0 s (17303/s)
+    site 21 h.3.attn.v_proj: 4 variables x 64 pairs, 0 needed; 5632 cases in 0 s (17759/s)
+    site 22 h.3.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 5888 cases in 0 s (18138/s)
+    site 23 h.3.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 6144 cases in 0 s (18499/s)
+stage 0: {"experiment": "E268 (kstar_needed)", "control": "x2", "E_b_Kstar": 0.7617252590298971, "E_b_Kstar_filed": 0.7617252590298972, "E_b_Kstar_rel_dev": 1.4575111058271747e-16, "dn_n_changed": 0, "dn_dd_max": 0.0, "dn_E_b_K": 1.0, "identity": {"flips": 0, "max_dev": 5.14984130859375e-05, "min_margin": 0.00020694732666015625, "cases": 6144, "cases_per_s": 6634.7884861212915, "n_read_positions": 41, "n_windows": 75, "window_len": 41, "n_vars": 38938}, "identity_last": {"flips": 0, "max_dev": 5.435943603515625e-05, "min_margin": 0.00661468505859375, "cases": 6144, "cases_per_s": 18478.223048263164, "n_read_positions": 1, "n_windows": 75, "window_len": 41, "n_vars": 38938}, "est_seconds_per_item_last": 539.4527370929718, "est_seconds_control": 1502.4032824635506, "seconds": 21.59078097343445}; checks hold
+STAGE 0 DONE: est. 539 s per item read at the last position, 1502 s for x2
+stage built: 1 of 7 items ['new_few']
+[data] val rows 0..256: cached at /root/artifacts/sets/val_0_256.npy
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 5731, 'limit_filed': 2.5397456096210376, 'limit_whitened_0.01': 8.566283727683114, 'limit_whitened_0.001': 8.575327523798162, 'limit_whitened_0.0001': 8.568685731515666, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 4566, 'limit_filed': 3.38301534693608, 'limit_whitened_0.01': 9.095356453119177, 'limit_whitened_0.001': 9.070667057076344, 'limit_whitened_0.0001': 9.072227442589407, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: {"slots": [109, 447, 771, 1004, 1101, 1997, 2018, 2034], "betas": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "detectors": [{"limit_filed": 2.8299306178453936, "limit_whitened_0.01": 11.977943470656788, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.935406646295597, "limit_whitened_0.01": 9.467794583919384, "limit_whitened_0.001": 9.453473755664607, "limit_whitened_0.0001": 9.434761738713327, "direction": "whitened 0.0001", "pile_own": 0}, {"limit_filed": 3.153354424992976, "limit_whitened_0.01": 10.247742932694962, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 2.976401818196408, "limit_whitened_0.01": 10.980585108255589, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 3.1523499367635144, "limit_whitened_0.01": 10.295113233962542, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.8080070622612814, "limit_whitened_0.01": 11.894050704084995, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 3.49099258484954, "limit_whitened_0.01": 12.118533590411879, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 6.333510380063351, "limit_whitened_0.01": 15.14462701601434, "direction": "whitened 0.01", "pile_own": 1}], "act": [13.54616928100586, 13.430658340454102, 14.229463577270508, 13.013628959655762, 13.70849609375, 13.203634262084961, 13.495687484741211, 16.34401512145996], "copy_M_twin": 0.2578125, "copy_M_D": 0.001953125, "misses": ["reuse_small: top-1 0.0000 < 0.2063", "reuse_large: top-1 0.0117 < 0.2063"], "gamma_new_few": 11.291481018066406, "gamma_new_thin": 10.845924377441406, "gamma_T": 8.0, "g": 4.662668452625903, "size_matched": false, "dW_norm": {"reuse_small": 11.702665857318092, "new_few": 4.032901283721824, "new_thin": 1.9208650760341066, "reuse_large": 31.246117113476934}, "top1_reuse_small": 0.0, "top1_new_few": 0.900390625, "top1_new_thin": 0.900390625, "top1_reuse_large": 0.01171875, "A": [4833, 7192, 4910, 7939, 8638, 2589, 9653, 6196], "A_prime": [10680, 4934, 7756, 7057, 5823, 5827, 6255, 1471], "y": [5752, 5771, 5175, 4412, 5870, 5087, 4201, 6430], "swapped": [{"cue": 5, "A_prime": 5731, "limit_filed": 2.5397456096210376, "limit_whitened_0.01": 8.566283727683114, "limit_whitened_0.001": 8.575327523798162, "limit_whitened_0.0001": 8.568685731515666, "direction": "whitened 0.0001", "pile_own": 1}, {"cue": 5, "A_prime": 4566, "limit_filed": 3.38301534693608, "limit_whitened_0.01": 9.095356453119177, "limit_whitened_0.001": 9.070667057076344, "limit_whitened_0.0001": 9.072227442589407, "direction": "whitened 0.0001", "pile_own": 1}]}
+new_few: 512 windows of 41 tokens, 1 read positions, 38938 variables, 6658 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+    site 0 h.0.attn.k_proj: 513 variables x 256 pairs, 454 needed; 131328 cases in 10 s (13333/s)
+    site 1 h.0.attn.o_proj: 1025 variables x 256 pairs, 859 needed; 393728 cases in 30 s (13267/s)
+    site 2 h.0.attn.q_proj: 513 variables x 256 pairs, 462 needed; 525056 cases in 40 s (13244/s)
+    site 3 h.0.attn.v_proj: 1025 variables x 256 pairs, 876 needed; 787456 cases in 60 s (13212/s)
+    site 4 h.0.mlp.c_fc: 3073 variables x 256 pairs, 2563 needed; 1574144 cases in 121 s (13034/s)
+    site 5 h.0.mlp.down_proj: 3585 variables x 256 pairs, 2960 needed; 2491904 cases in 191 s (13033/s)
+    site 6 h.1.attn.k_proj: 513 variables x 256 pairs, 394 needed; 2623232 cases in 199 s (13197/s)
+    site 7 h.1.attn.o_proj: 1025 variables x 256 pairs, 819 needed; 2885632 cases in 214 s (13490/s)
+    site 8 h.1.attn.q_proj: 513 variables x 256 pairs, 404 needed; 3016960 cases in 221 s (13622/s)
+    site 9 h.1.attn.v_proj: 1025 variables x 256 pairs, 848 needed; 3279360 cases in 237 s (13860/s)
+    site 10 h.1.mlp.c_fc: 3073 variables x 256 pairs, 2574 needed; 4066048 cases in 283 s (14355/s)
+    site 11 h.1.mlp.down_proj: 3585 variables x 256 pairs, 2796 needed; 4983808 cases in 337 s (14788/s)
+    site 12 h.2.attn.k_proj: 513 variables x 256 pairs, 456 needed; 5115136 cases in 342 s (14947/s)
+    site 13 h.2.attn.o_proj: 1025 variables x 256 pairs, 873 needed; 5377536 cases in 353 s (15251/s)
+    site 14 h.2.attn.q_proj: 513 variables x 256 pairs, 442 needed; 5508864 cases in 358 s (15396/s)
+    site 15 h.2.attn.v_proj: 1025 variables x 256 pairs, 889 needed; 5771264 cases in 368 s (15675/s)
+    site 16 h.2.mlp.c_fc: 3073 variables x 256 pairs, 2409 needed; 6557952 cases in 401 s (16368/s)
+    site 17 h.2.mlp.down_proj: 3585 variables x 256 pairs, 2751 needed; 7475712 cases in 438 s (17071/s)
+    site 18 h.3.attn.k_proj: 513 variables x 256 pairs, 432 needed; 7607040 cases in 441 s (17259/s)
+    site 19 h.3.attn.o_proj: 1025 variables x 256 pairs, 847 needed; 7869440 cases in 446 s (17628/s)
+    site 20 h.3.attn.q_proj: 513 variables x 256 pairs, 402 needed; 8000768 cases in 449 s (17809/s)
+    site 21 h.3.attn.v_proj: 1025 variables x 256 pairs, 894 needed; 8263168 cases in 455 s (18164/s)
+    site 22 h.3.mlp.c_fc: 3073 variables x 256 pairs, 2320 needed; 9049856 cases in 473 s (19122/s)
+    site 23 h.3.mlp.down_proj: 3585 variables x 256 pairs, 2437 needed; 9967616 cases in 494 s (20176/s)
+new_few: E_b over K 0.012698, over K* 0.012284; |K| 31161 (5523 changed, 0 kept), |K*| 12983 (3527 changed), |K and K*| 10954; 515 s
+ITEM 1 of 1 DONE (new_few)
+E268 (kstar_needed) DONE
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/kstar_needed/results/items and results/large, log /root/out/run_built_p3.log ===
