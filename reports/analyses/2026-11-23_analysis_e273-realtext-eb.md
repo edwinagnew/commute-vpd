@@ -134,6 +134,15 @@ is far less familiar than lowercase, which runs with the reversal. Yoruba is sli
 which runs against it. This is the same split the prior shows, and it says nothing about the all-position loss, which
 could order the language pair differently.
 
+Added after the red-team verdict (2026-11-23 ~04:40), when the convergence panel's data-only baseline landed
+(`experiments/convergence_panel/results/wide/base_loss.json`, E272). It reads M's loss at every position on other
+French and Yoruba Wikipedia rows, not on these fine-tunes' rows. Per byte, Yoruba costs M 2.15 nats against
+French's 1.02; per token, 4.34 against 3.55. So on all positions Yoruba is the far less familiar text, which runs
+with the reversal, unlike the scored-token numbers above. Lowercase and reversed order still have no all-position
+loss; reversed order is very likely the less familiar, but that is not measured. Text unfamiliarity is therefore
+consistent with both reversals where it is read, and remains untested as a cause: two pairs cannot separate it from
+the built labels being wrong.
+
 ### Is the base prior behind it?
 
 The prior is M's geometric-mean probability of the scored token on the read rows, one number per task, plotted beside
@@ -180,7 +189,8 @@ The definition's reading, computed over the needed variables, does not put the r
 above its twin on either pair it can read. Both readable pairs reverse. Either the reading misorders these fine-tunes
 or the built labels are wrong at this size; with no known answer on this model, the run cannot say which. Output change
 matches the reversal within each pair but not across the text fine-tunes, and how unfamiliar each text is to M is
-the better candidate, untested because its all-position loss was not saved. The
+the better candidate: on all positions Yoruba is far less familiar to M than French, which runs with the reversal,
+and lowercase against reversed order is not yet read. The
 label pair adds nothing: at that position the topic label fine-tunes are too confident for single swaps to find their
 needed variables with 256 pairs. Every fine-tune does read above its random, so the reading responds to learnt
 updates; what it ranks them by is not settled by two pairs.
@@ -199,7 +209,7 @@ updates; what it ranks them by is not settled by two pairs.
   weighs by write change; unchanged members of K; every read position but one on the text windows.
 - **Confounds.** Output change runs with the reversal within both readable pairs but not across them; the prior and
   the scored token's familiarity run with it on one pair and against it on the other; all-position text familiarity
-  is unread; the randoms differ by pair.
+  runs with it on the language pair (other rows) and is unread on the word-order pair; the randoms differ by pair.
 - **The built labels.** They are untested at this size, so a reversal can mean the labels are wrong.
 
 ## Surprises
@@ -244,8 +254,8 @@ bound of 0.005 to 0.03.
 - A test of the rank correlations' significance, and output-change numbers at matched KL across sides: no new GPU
   numbers were computed for this page.
 - M's held loss at every position on each side's text: a forward pass of M alone, no GPU training, not done for this
-  page. Nothing is saved for lowercase or reversed order; for French and Yoruba the convergence panel's data-only
-  baseline (`experiments/convergence_panel/base_loss.py`) has code but no results file yet, and on other rows.
+  page. Nothing is saved for lowercase or reversed order; French and Yoruba are read only on the convergence panel's
+  other rows (`experiments/convergence_panel/results/wide/base_loss.json`), not on these fine-tunes' rows.
 - An independent check of the reversal.
 
 ## Provenance
