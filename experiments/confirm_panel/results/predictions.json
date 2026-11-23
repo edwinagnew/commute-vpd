@@ -1,0 +1,58 @@
+{
+ "experiment": "E276 (confirm_panel)",
+ "cell": "P2.66",
+ "filed": "2026-11-23, regating-lead's panel writer, before any GPU job of this experiment; `raters` is the one slot the lead fills, from two fresh blind raters, before any train job (run.py train refuses while it is empty)",
+ "plan": "reports/plans/2026-11-23_plan_confirm-panel.md",
+ "settings": {
+  "tasks": {
+   "italian": {"lang": "it"},
+   "portuguese": {"lang": "pt"},
+   "dutch": {"lang": "nl"},
+   "indonesian": {"lang": "id"},
+   "turkish": {"lang": "tr"},
+   "vietnamese": {"lang": "vi"},
+   "welsh": {"lang": "cy"},
+   "basque": {"lang": "eu"},
+   "pubmed": {"path": "MedRAG/pubmed", "revision": "33da3593d5756bc04c8909f170003c0b14197957", "field": "content"},
+   "stackexchange": {"path": "HuggingFaceH4/stack-exchange-preferences", "revision": "c7bda74048748f55749cd663c3d8d1025a841fd9", "field": "question"},
+   "books": {"path": "manu/project_gutenberg", "revision": "164853d214065df26a630ee1ab91a0c39e461caf", "split": "en", "field": "text"},
+   "math": {"path": "open-web-math/open-web-math", "revision": "fde8ef8de2300f5e778f56261843dab89f230815", "field": "text"}
+  },
+  "tasks_source": "the filed task rule (rules.task_rule), applied to the ordered list written before any load check (plan, 'Tasks'); every first choice streamed and packed 2,400 + 64 rows of 512 tokens on cpu-run jobs 64191-64192 (2026-11-23, ~/commute-data/scratch/regating-lead/confirm-panel/check_{wiki,domains}.log), so no reserve (fi, pl Wikipedia; emozilla/pg19) was used. Wikipedia through E272's own loader (realistic.WIKI: wikimedia/wikipedia 20231101, revision b04c8d1c); domain revisions are the hub's sha on 2026-11-23",
+  "e272_settings_sha256": "cbfb7d9ff9874436a6f8120d1d731620f105a65e5a5e02bd13d4b1d6ecca09e6",
+  "e272_settings_source": "the recipe, Gaussian floor, KL ladder, match window and read sizes are E272's filed settings block (experiments/convergence_panel/results/predictions.json 'settings': lr 3e-5, batch 8, 300 steps, grad clip 1, kl_lo 0.001 x 2^(i/2) for 17 rungs, match_tol 0.1, floor 3 x the largest |held gain| of 3 Gaussians at 0.0175, lm_rows 2400, lm_held 64, E211's read 500 positions); sha256 of json.dumps(settings, sort_keys=True), checked at every stage",
+  "control_state": "experiments/convergence_panel/results/large/states/lower_s0_step128.pt",
+  "control_erank": 592.6058268916012,
+  "control_tol": 1e-06,
+  "control_source": "E272's wide KL 'hi' lowercase seed-0 state, its saved erank (convergence_panel/results/wide/read/lower.json); the same file through the same function (update_spectrum.state, fp64 SVD on the CPU, as E272's read); tol = E211's reproduce_tol for erank (1e-6)",
+  "gaussian_band": [685, 720],
+  "gaussian_band_source": "E272's 30 Gaussian controls (one per seed-0 state, 15 tasks of the wide read) read erank 693.2-709.8 (wide/read/*.json random); the band widens that range by about half its width on each side; every trained E272 state read under 600"
+ },
+ "rules": {
+  "task_rule": "10-12 continued-text tasks, none of E272's 18 (by Wikipedia language or by source); each from a standard Hugging Face dataset that streams under datasets 4.x without a loading script, pinned to a revision, and packs E272's 2,400 training + 64 held rows of 512 tokens; trained by E272's lm_task unchanged (every token after position 0 trained, E211's read); chosen for spread in expected Pile prevalence (eight Wikipedia languages from well to thinly covered, four English domains that the Pile holds); the list and its reserves written in order before any load check; a candidate that fails to load is replaced by the next reserve of its kind; a task that misses the matched KL or its floor goes to dropped.json, never swapped",
+  "test": "On the tasks select keeps at E272's KL 'hi' rule: x = the consensus tier code (mean of the two blind raters' codes, reuse 3, middle 2, new 1; score.raters), y = the task's mean effective rank over seeds 0-2 (higher = reuse, E272's filed orientation), z = minus M's base loss in nats per UTF-8 byte on every trained token of the task's 64 held rows (computed in the train job before training; base_loss.loss). Statistic: Kendall's partial tau-b of x and y given z (score.partial_tau). p: one-sided task permutation, y permuted, x and z held, n_perm draws (score.perm_p). Call: 'positive' when partial > 0 and p <= alpha; 'not positive' when partial <= 0; else 'no call'; under min_tasks kept: 'too few tasks'; a nan partial (z tied with x or y perfectly) is 'no call'",
+  "alpha": 0.05,
+  "n_perm": 10000,
+  "n_crit": 100000,
+  "seed": 276,
+  "min_tasks": 5,
+  "power_rule": "select writes, before any read: the critical partial tau at the kept n (score.critical_tau's rule over n_crit random orderings of an untied reading, x and z held) and the power at a reading = tier code + sigma N(0,1) with mean raw tau-b 0.3 and 0.5 (score.power's model, z held), with the raw tau-b's critical value and power beside them",
+  "beside": "reported, no call: raw tau of erank with the tiers, tau of minus loss with the tiers, tau of erank with minus loss, leave-one-task-out partial range",
+  "stop": "the line ends when the call is 'not positive', or 'no call' with at least 8 tasks kept (card experiments/confirm_panel/card.md)"
+ },
+ "predictions": {
+  "test": "positive",
+  "confidence": "low",
+  "why": "E272's eight text tasks gave partial 0.87 (p 0.0008), chosen after the data; without summary (a prompt task) E272's seven lm_task text tasks give partial 0.40, with the effective rank's tau with minus loss 0.905 and the loss's with the tier 0.873 (dry run, plan). These twelve are all lm_task tasks, so 0.4 is the realistic size; at n 12 the critical partial is about 0.31-0.35 (dry run, hypothetical tiers) and power at a true tau of 0.5 about 0.56-0.73: a pass is likely only if the E272 pattern is real and not carried by summary"
+ },
+ "expected": {
+  "control": "lower_s0_step128 erank 592.6058 within 1e-6; a zero update's erank undefined (None, update_spectrum.aggregate); else STOP before any task is read",
+  "gaussian": "each kept task's seed-0 Gaussian erank in 685-720 and above all three of the task's trained states; else STOP",
+  "train": "each task's Gaussian held gains within about 0.02 nats of 0 (E272); KL and size rise with step; a Pile-like English task may miss its floor at the matched KL (E272: pile, wiki_en, code, british out at 0.181)",
+  "erank": "trained states 440-600 (E272's eight text tasks 457-592)",
+  "base_loss_nats_per_byte": "English domains (pubmed, books, math, stackexchange) about 0.7-1.0 (E272 arxiv 0.78, lower 0.82); Italian, Portuguese, Dutch about 1.0-1.35 (E272 Spanish 1.14, French 1.31, German 1.31); Indonesian, Turkish, Vietnamese, Welsh, Basque about 1.3-2.2 (E272 Swahili 1.60, Yoruba 2.15)",
+  "kl_hi_target": "about 0.18 (E272's wide KL 'hi' 0.181), set by the rule over these tasks"
+ },
+ "raters_form": "{\"opus_blind\": {\"tiers\": {\"<task>\": \"reuse\" | \"middle\" | \"new\"}, \"order\": [tasks, most reuse first], \"source\": \"results/raters/rater_opus.md\"}, \"gpt_blind\": {...}}: tiers from the files' tier column (expected reuse -> reuse), order = the rank column, ties in row order; one-liner number -> task in results/raters/prompt.md",
+ "raters": {}
+}
