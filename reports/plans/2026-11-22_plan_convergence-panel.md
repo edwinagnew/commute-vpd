@@ -212,7 +212,8 @@ sentiment and category 32 + " Topic:" ~ 34 (`realistic.label_windows`). Seconds 
 - **Stop rules after each state (2026-11-23, F3).** The job exits nonzero with nothing written for the state unless:
   E_b over K is finite and in [0, 1]; the record's windows are (200, the loaded D's tokens); more than 99% of the
   variables changed (E268's RL items: 38,936 of 38,938; a dW that loaded empty reads E_b exactly 1 with none changed);
-  dd_max > 0; seconds for the state within 2x of 738 x tokens / 64 x the card's slowdown (H100 1, L40 2.5 from the scan
+  dd_max > 0; seconds for the state at most 2x 738 x tokens / 64 x the card's slowdown (upper bound only, lead
+  2026-11-23: a fast state is not a fault, and squad's 256/64 is a guess) (H100 1, L40 2.5 from the scan
   rates 8,800/s on E268's H100 and 3,517/s in job 64133; any other card stops before its first state). Memory: the
   job logs max GPU memory after the cache and on every scan site line (B1).
 - **Known bias (N1, kept).** An LM task's D is its 200 hardest read positions by W0 log-odds (`realistic.py`
@@ -221,13 +222,12 @@ sentiment and category 32 + " Topic:" ~ 34 (`realistic.label_windows`). Seconds 
   is not changed; the card says so.
 - Four H100 SXM pods (one card model: the stage 0 gate compares card names), by task: A squad (3.3 h); B summary +
   conll (2.9 h); C lower, french, yoruba, arxiv (3.3 h); D german, swahili, spanish, sentiment, category (3.3 h).
-  Two ways to run stage 0:
-  (a) pod A runs it first (0.7 h); B-D start only when it has passed and get its `results/eb/stage0.json`: 14.7
-      H100-h, **~$65**, wall ~4.7 h (0.7 h stage 0 + 3.3 h + set-up).
-  (b) each pod runs stage 0 itself before its tasks: +3 x 0.7 = 2.1 H100-h, 16.8 H100-h, **~$74**, wall ~4.3 h, and
-      no file passed between pods. (b) is simpler and gives four stage-0 checks; (a) is $9 cheaper.
+  **Stage 0 (lead, 2026-11-23: option b): every pod runs `eb.py 0` itself, alone, before its tasks**, so each pod's
+  gate is its own card's stage0.json and no file passes between pods. (Option a, pod A first and B-D waiting for its
+  stage0.json, was $9 cheaper at ~$65 but needs the hand-over; not taken.)
 - Uploads: the 36 state files are 2.04 GB: 2,040 MB / 10 MB/s = 204 s in all (~50 s a pod); the windows ~3 MB.
-- Cost (a): (12.8 states + 0.7 stage 0 + 4 x 0.3 set-up) h = 14.7 H100-h x $4.40/h = ~$65; gated (over $60).
+- Cost: (12.8 states + 4 x 0.7 stage 0 + 4 x 0.3 set-up) h = 16.8 H100-h x $4.40/h = **~$74**, wall ~4.3 h
+  (0.7 h stage 0 + 3.3 h + set-up); gated (over $60).
 - Unmeasured until the rehearsal (`E272 rehearse: eb`, cluster L40): seconds per squad state (the 256/64 scaling is a
   guess; read from the scan's per-site rate lines if the job times out) and peak memory on squad at scan rows 1024
   (logged after the cache and per site). E268's 64-token RL items peaked at 11.9 GB at 1024 rows; squad's guess is

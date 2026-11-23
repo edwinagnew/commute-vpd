@@ -166,7 +166,7 @@ def check(rec: dict[str, Any], toks: torch.Tensor, n_windows: int) -> list[str]:
     miss += [f"windows {(rec['n_windows'], rec['tokens'])} not {(n_windows, toks.shape[1])}"] if (rec["n_windows"], rec["tokens"]) != (n_windows, toks.shape[1]) else []
     miss += [f"changed {rec['n_changed']} of {rec['n_vars']}"] if not rec["n_changed"] > 0.99 * rec["n_vars"] else []
     miss += [f"dd_max {rec['dd_max']!r}"] if not rec["dd_max"] > 0 else []
-    miss += [f"{rec['seconds_state']:.0f} s, not within 2x of {want:.0f} s"] if not want / 2 <= rec["seconds_state"] <= 2 * want else []
+    miss += [f"{rec['seconds_state']:.0f} s, over 2x {want:.0f} s"] if not rec["seconds_state"] <= 2 * want else []  # fast is no fault (lead, 2026-11-23)
     return miss
 
 
