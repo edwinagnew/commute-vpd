@@ -5,13 +5,19 @@ raters' tiers and with each other. On the wider panel only the update's effectiv
 did beyond the base prior, and the readings agreed with each other less than simple baselines did. So the panel does
 not support the claim that the reuse readings converge on realistic tasks, and clear reuse tasks are nearly absent.
 
+**Red-team verdict, for the writer.** In redteam-lead's words: "On realistic fine-tunes the reuse readings do not
+converge and do not track intuitive tiers beyond the base prior; effective rank passed the filed test at the margin,
+probably reflecting label against text format." The check that verdict asked for was run afterwards and does not
+support the format reading: within the eight continued-text tasks alone the effective rank follows the tiers more
+closely, not less. That check was chosen after the data were seen and is descriptive.
+
 ## The answer
 
-On the scored wide panel of twelve tasks, one reading out of three passed the filed test against the raters' tiers:
-the update's effective rank, and only after the base model's prior was partialled out. The re-gating share was too
-weak to call and the steering share pointed the wrong way. The readings did not agree with each other more than the
-baselines did, which reverses the filed expectation for the second hope. The mixture of a reuse task with a new task
-moved the effective rank steadily, as expected.
+On the scored wide panel, one reading out of three passed the filed test against the raters' tiers: the update's
+effective rank, scored on twelve tasks, against the two shares scored on eight. Its pass is marginal and uncorrected
+for testing three readings: it came only through the prior-partialled route. The re-gating share was too weak to call
+and the steering share pointed the wrong way. The readings agreed with each other less than the baselines did, which
+reverses the filed expectation for the second hope.
 
 ## Before scoring
 
@@ -43,7 +49,9 @@ changed the model more. On those checkpoints we read three reuse measures:
 - the **re-gating share**, the share of the task's gain carried by changed causal importance values of the
   decomposition's subcomponents, where 1 means all of it;
 - the **steering share**, the share of the gain reproduced by steering along the update's own directions;
-- the **effective rank** of the update, where a higher rank was filed as more reuse following an earlier run.
+- the **effective rank** of the update, where a higher rank was filed as more reuse. That direction was filed from a
+  small gap in an earlier run, E53, where reuse tasks read 598 to 600 and new tasks 573 to 594. It was filed, never
+  explained, and it runs against the usual intuition that reuse should be a low-rank change.
 
 A fourth, E_b over the interchange-needed subcomponents, was not run: it is a gated GPU stage. Four baselines sit
 beside them: KL from the base model, the ADL difference score, the update's norm, and the base model's prior on the
@@ -77,13 +85,34 @@ prevalence, which is why Amendment 3 made the prior-aware call the scored call.
 
 ![Each reading's tau with each rater's tiers](../../experiments/convergence_panel/figures/hope1.png)
 
-**Reading it.** Only the effective rank passed, and only on the wide panel. The figure shows each reading's rank
-correlation with each rater: on the right, the effective rank sits near the prior's own tau, but with the prior
-partialled out it rises to 0.43 at permutation p of 0.03. All three tier sets give the same call for it. The
-re-gating share's correlation was positive but under its critical line, and the steering share's was negative for
-every rater on both panels. On the nine-task panel nothing could pass: the critical lines sit near 0.9. One caveat
-is real: the effective rank separates task formats. The two label tasks and CoNLL read 280 to 320, against 460 to
-590 for every continued-text task, so part of its order may be task form rather than reuse.
+**Reading it.** Only the effective rank passed, on the wide panel, and at the margin. It is scored on twelve tasks;
+the two shares on eight. Its raw tau of 0.36 is under the critical 0.423, so the raw call fails. With the prior
+partialled out it rises to 0.43, at permutation p from 0.03 to 0.049 across the three tier sets. Three readings were
+tested and nothing corrects for that: if the three were independent, one passing at this p by chance would happen
+about one time in seven. Dropping
+any one task leaves its raw tau between 0.23 and 0.50. The re-gating share's tau was positive but under its critical
+line, and the steering share's was negative for every rater on both panels. On the nine-task panel nothing could pass:
+the critical lines sit near 0.9.
+
+**Is it task format?** The effective rank separates formats: the two label tasks and CoNLL read 280 to 320, against
+460 to 590 for every continued-text task. Since the raters' reuse end is all continued text, this could carry the
+pooled call. It does not: within the eight continued-text tasks alone, effective rank and the consensus tiers agree
+at a tau of 0.91, permutation p 0.0008, and 0.90 with the prior partialled out. The order runs from lowercase and
+arXiv at the top, through French, Spanish and German, to Swahili and Yoruba at the bottom. The pooled tau is weaker
+because the label tasks read low rank while the raters put them in the middle. This subset was chosen after the
+results were seen, so it is descriptive and carries no call. A caveat is that the eight include the summary task,
+which trains on the answer only. Without it the seven Wikipedia-style and arXiv tasks give a tau of 0.87 at p 0.005,
+and the prior cannot be partialled out there.
+
+| continued-text subset | rater | tasks | tau | p | partial tau on prior | p | leave one out |
+|---|---|---|---|---|---|---|---|
+| eight, with summary | consensus | 8 | 0.91 | 0.0008 | 0.90 | 0.0008 | 0.87 to 0.93 |
+| eight, with summary | Opus | 8 | 0.85 | 0.003 | no common support | | 0.82 to 0.87 |
+| eight, with summary | GPT | 8 | 0.87 | 0.002 | 0.87 | 0.0009 | 0.85 to 0.87 |
+| seven, without summary | each rater | 7 | 0.87 | 0.005 | no common support | | 0.86 to 0.89 |
+
+The table is `within_text` in `summary.json`, from the filed Hope 1 statistics run on the subset. The three raters
+agree exactly on the seven, so one row covers them.
 
 | set | reading | rater | tau | p | partial tau on prior | p | call |
 |---|---|---|---|---|---|---|---|
@@ -115,8 +144,9 @@ partialled out. The user's own sort is not filed in `predictions.json`, so there
 **Reading it.** No: on the wide panel the readings agree with each other less than the baselines do. Across the
 eight tasks all of them share, the readings' Kendall W is 0.25 and the baselines' is 0.29. Against random rankings
 of the same size, the readings sit at the 0.305 quantile and the baselines at the 0.41 quantile, so the call is
-"not above". The figure shows why: the re-gating share and the steering share rank the tasks in opposite orders, and
-the effective rank is unrelated to either. The steering share follows the base prior almost exactly inverted, at a
+"not above". This comparison uses the eight tasks the shares keep, so the effective rank enters it on eight, not its
+scored twelve. The figure shows why: the re-gating share and the steering share rank the tasks in opposite orders,
+and the effective rank is unrelated to either. The steering share follows the base prior almost exactly inverted, at a
 tau of -0.93. On the nine-task panel the call is "no call", with both sides under their null.
 
 | set | tasks | W readings | its null quantile | W baselines | its null quantile | null 95th percentile | call |
@@ -168,17 +198,20 @@ run gained under the floor.
 
 The reuse readings do not converge on realistic tasks at this size: two of the three rank the tasks in opposite
 orders. The steering share mostly reports how unlikely the targets were under the base model. The effective rank is
-the one reading that both followed the raters beyond the prior and moved steadily in the mixture, but it also
-separates task formats. Expected-reuse tasks on Pile-like text cannot be matched on output change at 67M, so any
-realistic panel here leans to the middle and new tiers.
+the one reading that followed the raters beyond the prior, marginally on twelve tasks, and moved steadily in the
+mixture. Within continued text it follows the tiers closely, so its weak pooled call comes from label tasks rather
+than being made by them. Its direction, higher rank for reuse, was filed from a small earlier gap and is unexplained.
+Expected-reuse tasks on Pile-like text cannot be matched on output change at 67M, so any realistic panel here leans
+to the middle and new tiers.
 
 ## How compelling is the evidence
 
 The wide panel has power 0.33 at a true tau of 0.3, so a no call for the re-gating share is weak evidence either way.
-The effective rank's positive call rests on twelve tasks, two of them on the reuse side, and its partial p for the
-GPT rater is just under the bar. Seeds are three per task; each measure passed the readability rule except KL on the
-wide set, which is the matched variable, and E_b, which was not run. The tasks covered are listed in the tables;
-the shares cover eight.
+The effective rank's positive call rests on twelve tasks, two of them on the reuse side, against eight for the shares.
+It is marginal: the raw tau misses its critical value, the prior-partialled p is 0.03 to 0.049, and no correction for
+three readings was filed. The within-text agreement is strong but was looked for after the results. Seeds are three
+per task; each measure passed the readability rule except KL on the wide set, which is the matched variable, and E_b,
+which was not run.
 
 ## Surprises
 
@@ -187,6 +220,8 @@ the shares cover eight.
 - The steering share's tau with the tiers was negative for every rater on both panels, against the filed positive
   direction; it is not significant on either.
 - The steering share is nearly the inverse of the base prior: tau -0.93 on the wide panel.
+- The red-team check for a format effect came out the other way: within continued text the effective rank tracks the
+  tiers more closely than across all twelve tasks.
 
 ## Departures from the literature
 
@@ -196,8 +231,8 @@ arm A recipe; E_b is a sampled estimate when run, which it was not here.
 ## What next
 
 - Run E_b on the wide KL set, the gated stage: if it agrees with the effective rank, the second hope could change.
-- Read the effective rank within one task format only, continued text, to see whether its order survives without
-  the label and prompt tasks.
+- File the within-text effective-rank test as a prediction and score it on new continued-text tasks: a fresh pass
+  would turn a post-hoc pattern into evidence; a miss would leave the effective rank with only its marginal call.
 - Add tasks on the reuse side that learn on held data at matched KL; without them neither hope can be read well.
 
 ## Scorecard
@@ -205,7 +240,7 @@ arm A recipe; E_b is a sampled estimate when run, which it was not here.
 | id | claim | rule | read | verdict |
 |---|---|---|---|---|
 | H1, nine | readings rank tasks like the tiers | prior-aware tau call, KL high set | five tasks; share and effective rank no call, steering not positive | no call |
-| H1, wide | same, 18-task panel | same, joint raters | effective rank positive for every rater; share no call; steering not positive | one of three positive |
+| H1, wide | same, 18-task panel | same, joint raters | effective rank positive for every rater on 12 tasks, through the prior-partialled route only; shares on 8: share no call, steering not positive | one of three positive, marginal, uncorrected for three readings |
 | H2, nine | readings agree more than baselines | W against own-m null | both under null | no call |
 | H2, wide | same | same | readings' quantile 0.305 against baselines' 0.41 | not above, reverses the filed "above" |
 | Amendment 4, mixture | monotone dose-response | rank correlation at least 0.9 | effective rank and prior monotone; shares and ADL missing a fraction; KL not | descriptive |

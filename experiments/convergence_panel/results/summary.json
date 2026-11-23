@@ -69,13 +69,13 @@
  "consensus_tier": {
   "conll": 2.0,
   "squad": 1.5,
-  "code": 3.0,
-  "topic": 2.5,
-  "french": 2.0,
-  "yoruba": 1.0,
   "pile": 3.0,
+  "french": 2.0,
+  "lower": 3.0,
   "british": 3.0,
-  "lower": 3.0
+  "topic": 2.5,
+  "code": 3.0,
+  "yoruba": 1.0
  },
  "kl_hi": {
   "readability": {
@@ -2391,23 +2391,23 @@
   },
   "consensus_tier": {
    "conll": 2.0,
-   "squad": 1.5,
-   "german": 2.0,
-   "code": 3.0,
-   "topic": 2.5,
-   "french": 2.0,
-   "tagalog": 1.0,
-   "yoruba": 1.0,
-   "category": 2.5,
-   "wiki_en": 3.0,
-   "spanish": 2.0,
-   "swahili": 1.0,
-   "sentiment": 2.0,
-   "pile": 3.0,
-   "arxiv": 3.0,
-   "british": 2.5,
    "summary": 1.5,
-   "lower": 3.0
+   "sentiment": 2.0,
+   "code": 3.0,
+   "squad": 1.5,
+   "pile": 3.0,
+   "german": 2.0,
+   "category": 2.5,
+   "spanish": 2.0,
+   "arxiv": 3.0,
+   "lower": 3.0,
+   "french": 2.0,
+   "british": 2.5,
+   "tagalog": 1.0,
+   "topic": 2.5,
+   "yoruba": 1.0,
+   "swahili": 1.0,
+   "wiki_en": 3.0
   },
   "kl_hi": {
    "readability": {
@@ -4491,6 +4491,201 @@
    },
    "unreadable": {
     "E_b": "no information (between-task spread not above seed spread)"
+   }
+  },
+  "within_text": {
+   "text8": {
+    "opus_blind_wide": {
+     "tasks": [
+      "arxiv",
+      "french",
+      "german",
+      "lower",
+      "spanish",
+      "summary",
+      "swahili",
+      "yoruba"
+     ],
+     "tau": 0.8451542547285166,
+     "p_perm": 0.0028997100289971,
+     "interval90": [
+      0.6928203230275509,
+      0.9354143466934854
+     ],
+     "critical_tau": 0.5916079783099616,
+     "tau_prior": 0.3380617018914066,
+     "power_raw": {
+      "0.3": 0.194,
+      "0.5": 0.45325
+     },
+     "leave_one_out": [
+      0.816496580927726,
+      0.8728715609439696
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "confounded with the prior"
+    },
+    "gpt_blind_wide": {
+     "tasks": [
+      "arxiv",
+      "french",
+      "german",
+      "lower",
+      "spanish",
+      "summary",
+      "swahili",
+      "yoruba"
+     ],
+     "tau": 0.8660254037844386,
+     "p_perm": 0.0015998400159984002,
+     "interval90": [
+      0.7381636148236951,
+      0.9354143466934854
+     ],
+     "critical_tau": 0.6185895741317419,
+     "tau_prior": 0.12371791482634838,
+     "power_raw": {
+      "0.3": 0.1652,
+      "0.5": 0.4113
+     },
+     "leave_one_out": [
+      0.8451542547285166,
+      0.8728715609439696
+     ],
+     "prior_support": true,
+     "tau_partial_prior": 0.8661333772789889,
+     "p_partial": 0.0008999100089991,
+     "call": "positive"
+    },
+    "consensus": {
+     "tasks": [
+      "arxiv",
+      "french",
+      "german",
+      "lower",
+      "spanish",
+      "summary",
+      "swahili",
+      "yoruba"
+     ],
+     "tau": 0.9063269671749657,
+     "p_perm": 0.0007999200079992001,
+     "interval90": [
+      0.8,
+      0.9789450103725611
+     ],
+     "critical_tau": 0.5910828046793255,
+     "tau_prior": 0.19702760155977514,
+     "power_raw": {
+      "0.3": 0.1827,
+      "0.5": 0.44715
+     },
+     "leave_one_out": [
+      0.8728715609439696,
+      0.9258200997725516
+     ],
+     "prior_support": true,
+     "tau_partial_prior": 0.9023442343560345,
+     "p_partial": 0.0007999200079992001,
+     "call": "positive"
+    }
+   },
+   "lm7": {
+    "opus_blind_wide": {
+     "tasks": [
+      "arxiv",
+      "french",
+      "german",
+      "lower",
+      "spanish",
+      "swahili",
+      "yoruba"
+     ],
+     "tau": 0.8728715609439696,
+     "p_perm": 0.004999500049995001,
+     "interval90": [
+      0.7453559924999299,
+      0.9660917830792959
+     ],
+     "critical_tau": 0.6546536707079772,
+     "tau_prior": 0.4364357804719848,
+     "power_raw": {
+      "0.3": 0.1699,
+      "0.5": 0.38755
+     },
+     "leave_one_out": [
+      0.8563488385776752,
+      0.8944271909999159
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "confounded with the prior"
+    },
+    "gpt_blind_wide": {
+     "tasks": [
+      "arxiv",
+      "french",
+      "german",
+      "lower",
+      "spanish",
+      "swahili",
+      "yoruba"
+     ],
+     "tau": 0.8728715609439696,
+     "p_perm": 0.004999500049995001,
+     "interval90": [
+      0.7453559924999299,
+      0.9660917830792959
+     ],
+     "critical_tau": 0.6546536707079772,
+     "tau_prior": 0.4364357804719848,
+     "power_raw": {
+      "0.3": 0.1699,
+      "0.5": 0.38755
+     },
+     "leave_one_out": [
+      0.8563488385776752,
+      0.8944271909999159
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "confounded with the prior"
+    },
+    "consensus": {
+     "tasks": [
+      "arxiv",
+      "french",
+      "german",
+      "lower",
+      "spanish",
+      "swahili",
+      "yoruba"
+     ],
+     "tau": 0.8728715609439696,
+     "p_perm": 0.004999500049995001,
+     "interval90": [
+      0.7453559924999299,
+      0.9660917830792959
+     ],
+     "critical_tau": 0.6546536707079772,
+     "tau_prior": 0.4364357804719848,
+     "power_raw": {
+      "0.3": 0.1699,
+      "0.5": 0.38755
+     },
+     "leave_one_out": [
+      0.8563488385776752,
+      0.8944271909999159
+     ],
+     "prior_support": false,
+     "tau_partial_prior": NaN,
+     "p_partial": NaN,
+     "call": "confounded with the prior"
+    }
    }
   }
  }
