@@ -1,4 +1,4 @@
-"""E### (cell P1.57; user via whip-lead, 2026-11-23 ~14:20): M's own needed set K_M on every D that an F scan of the
+"""E283 (cell P1.57; user via whip-lead, 2026-11-23 ~14:20): M's own needed set K_M on every D that an F scan of the
 kept-clause diagnosis read, for the reliance readings V1 and V2 (score.py, CPU). Descriptive, no bar; neither reading is
 the definition. Settings and the filed rules in results/predictions.json, which the run refuses unless committed
 unchanged. Card: card.md.
@@ -110,11 +110,13 @@ def neurons(world_name: str, items: list[str], tasks: list[str]) -> None:
         torch.cuda.empty_cache()
 
 
-def vpd() -> None:
+def vpd(items: list[str]) -> None:
     kc, w = KN.load_config(), KN.world()
     _, featM, _, _ = KN.featurized(w, "do_nothing")  # M's featurization: weights only, so any D
     assert not featM.changed and not featM.grafts, "the do-nothing featurization of M changes nothing"
-    for item in NNR.load_a1().e62:
+    todo = [i for i in NNR.load_a1().e62 if not items or i in items]
+    assert todo and (not items or len(todo) == len(items)), f"items {items} pick {todo}"
+    for item in todo:
         F, M, toks, at, _ = w.make(item)
         del F
         saved = np.load(EXPERIMENTS / "claim2_needed" / "results" / "large" / f"items_{KN.fname(item)}.npz")["in_K"]
@@ -143,7 +145,7 @@ def main(args: argparse.Namespace) -> int:
     if args.stage == "neurons":
         neurons(args.world, args.items, args.tasks)
     else:
-        vpd()
+        vpd(args.items)
     log(f"{EXPERIMENT} DONE")
     return 0
 

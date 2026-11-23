@@ -1,4 +1,4 @@
-"""The planned figure of E### (P1.57), drawn with made-up numbers before any V1 or V2 was computed: one panel per rival.
+"""The planned figure of E283 (P1.57), drawn with made-up numbers before any V1 or V2 was computed: one panel per rival.
 
     ~/commute-agents/fleet/cpu-run python3 experiments/reliance/sketch.py
 """

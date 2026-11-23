@@ -1,4 +1,4 @@
-"""E### (cell P1.57), CPU: the reliance readings V1 and V2 (results/predictions.json "readings") for every saved F scan of
+"""E283 (cell P1.57), CPU: the reliance readings V1 and V2 (results/predictions.json "readings") for every saved F scan of
 the kept-clause diagnosis, from the F scans' saved arrays and M's needed sets (run.py). Descriptive, no bar; neither
 reading is the definition.
 

@@ -15,7 +15,7 @@ sketch: experiments/reliance/figures/sketch.png
 rehearsal: cluster only: M's scans are E277's and E275's scan code (needed_neurons.scan, needed.needed_set) on M instead of F, already run at full read sizes on cluster L40s (E277 job 64342: 2,600 cases/s on x2's D, 6.2 GB host RSS; E278 job 64357: 273 s per VPD item); every job but the panel's squad fits a 30-min debug job, and squad (about 44 min on an L40) goes to an H100 pod (about 15 min) or waits
 descriptive: user via whip-lead, 2026-11-23 ~14:20, $0 diagnostic of the kept clause, no bar
 
-## What runs (E###, cell P1.57; user via whip-lead 2026-11-23)
+## What runs (E283, cell P1.57; user via whip-lead 2026-11-23)
 
 The question, in the user's words: "is the failure in the definition's KEPT clause? Does a reliance-based reading
 separate reuse from new where kept fails?" The kept clause's reading, the write share E_b over the needed set K, does not
