@@ -269,6 +269,54 @@ sets were CoNLL seed 0 at 200 variables and the category label's seed 1 at 209. 
 size-matched sets, the mixture and the trajectory. Those states were never read with it: only the wide KL-high set was.
 These are gaps, not failures.
 
+## Do seed agreement or learning speed account for the readings?
+
+Two checks on the saved states, filed in the plan's "2026-11-23 post-hoc checks" section before computing. The user
+approved them; they ran on CPU at no cost. Both were chosen after the write share's reversal was seen, so they are
+descriptive and carry no call.
+
+**Reading it.** Neither check accounts for the write share's reversal. Seeds of one task agree only a little less on
+reuse-tier tasks than on new-tier ones, and holding that agreement fixed leaves the write share's tau with the tiers
+almost unchanged. How fast a task learns follows the raters only weakly, and only the re-gating share runs with it.
+
+**Seed agreement.** For each task we took the cosine between two seeds' weight updates, all 28,311,552 trained
+weights flattened, and averaged the three seed pairs. It ranges from 0.18 on arXiv to 0.91 on German and Spanish. A
+do-nothing update has no direction, so the floor is each seed's cosine with the task's one random Gaussian update. That
+floor is at most 3.2e-4 in size on every task, the chance scale for this many weights. Only seed 0 has a Gaussian, so
+there is no Gaussian-to-Gaussian floor. Reuse-tier tasks agree slightly less than new-tier ones, at a consensus tau of
+0.25 between the tiers and minus the agreement, permutation p 0.16. Agreement and the write share go together weakly,
+at tau 0.33 with a two-sided p of 0.15. With agreement held fixed, the write share's consensus tau with the tiers moves
+from -0.69 only to -0.67.
+
+| tiers | tier vs. minus agreement | p | write share vs. tiers | same, agreement held fixed | p |
+|---|---|---|---|---|---|
+| consensus | 0.25 | 0.16 | -0.69 | -0.67 | 0.9986 |
+| Opus | 0.31 | 0.12 | -0.83 | -0.81 | 1.0 |
+| GPT | 0.25 | 0.18 | -0.52 | -0.48 | 0.97 |
+
+**Steps to learn.** For each seed we took the first logged step at which the held-out gain reached half its final
+value, then averaged the three seeds. Fewer steps reads as more reuse. Held-out gain is logged at every step up to
+about step 6 and then at widening gaps, so five of the twelve tasks tie at step 1. Lowercase took 16 steps, and
+Swahili and Yoruba about 50. The label and prompt tasks mostly reached half their gain at step 1. Learning speed
+follows the consensus tiers at tau 0.18, permutation p 0.25. Opus and GPT read 0.16 and 0.19.
+
+The re-gating share is the only reading that runs with learning speed, at tau 0.49 on eight tasks with p 0.066. Holding
+the base loss fixed leaves it there. The effective rank runs against learning speed, at -0.36, and the base loss does
+not track it at all.
+
+| reading | tasks | tau with fewer steps | p | partial given base loss | p |
+|---|---|---|---|---|---|
+| write share over the needed set | 12 | -0.13 | 0.74 | -0.16 | 0.73 |
+| re-gating share | 8 | 0.49 | 0.066 | 0.49 | 0.063 |
+| steering share | 8 | -0.34 | 0.90 | -0.33 | 0.86 |
+| effective rank | 12 | -0.36 | 0.95 | -0.40 | 0.95 |
+| KL | 12 | -0.13 | 0.73 | -0.13 | 0.70 |
+| base loss, minus | 12 | 0.0 | 0.52 | - | - |
+
+Each reading is oriented as filed, higher for more reuse; KL is taken with its sign flipped. The p values are one-sided
+task permutations of the reading, so a p near 1 means a tau far below 0. Every value is in
+`results/wide/posthoc_checks.json`, written by `posthoc_checks.py`, with each task's seed cosines and crossing steps.
+
 ## Do the readings agree with each other more than the baselines do?
 
 ![Pairwise tau between readings, baselines and the tier, wide panel](../../experiments/convergence_panel/figures/pairwise_tau_wide.png)
