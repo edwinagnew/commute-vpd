@@ -1,0 +1,89 @@
+{
+ "experiment": "E280 (head_edit)",
+ "edit": "q2",
+ "feat": "vpd",
+ "n_vars": 38938,
+ "n_changed": 513,
+ "size_K": 26004,
+ "n_changed_K": 472,
+ "E_b_K": 0.24893488504137892,
+ "E_b_changed": 0.24917620722779152,
+ "empty_K": false,
+ "too_small": false,
+ "n_pairs": 256,
+ "median_margin": 0.4821000099182129,
+ "min_margin": 0.00127410888671875,
+ "n_fragile_positions": 0,
+ "fragile_floor": 4.673004150390625e-05,
+ "cases_per_s": 33967.32099237026,
+ "by_derangement": [
+  {
+   "size_K": 9329,
+   "E_b_K": 0.25839196570743955
+  },
+  {
+   "size_K": 13947,
+   "E_b_K": 0.26194845479212026
+  },
+  {
+   "size_K": 23617,
+   "E_b_K": 0.2485052539498586
+  },
+  {
+   "size_K": 26004,
+   "E_b_K": 0.24893488504137892
+  }
+ ],
+ "L2_attn": {
+  "k_proj": {
+   "n_sub": 512,
+   "n_changed": 0,
+   "n_changed_K": 0,
+   "dd_weight_sub": 0.0,
+   "kept_sub": null,
+   "kept_derived_s": null,
+   "head4_share_median": 0.05750630041089134,
+   "rem_in_K_changed": false,
+   "dd_weight_rem": null,
+   "kept_rem": null
+  },
+  "o_proj": {
+   "n_sub": 1024,
+   "n_changed": 0,
+   "n_changed_K": 0,
+   "dd_weight_sub": 0.0,
+   "kept_sub": null,
+   "kept_derived_s": null,
+   "head4_share_median": 0.12549503078399182,
+   "rem_in_K_changed": false,
+   "dd_weight_rem": null,
+   "kept_rem": null
+  },
+  "q_proj": {
+   "n_sub": 512,
+   "n_changed": 512,
+   "n_changed_K": 471,
+   "dd_weight_sub": 0.9979465237497572,
+   "kept_sub": 0.24903245618092276,
+   "kept_derived_s": 0.28229570017028555,
+   "head4_share_median": 0.1377444659587565,
+   "rem_in_K_changed": true,
+   "dd_weight_rem": 0.0020534762502425873,
+   "kept_rem": 0.20151735123032571
+  },
+  "v_proj": {
+   "n_sub": 1024,
+   "n_changed": 0,
+   "n_changed_K": 0,
+   "dd_weight_sub": 0.0,
+   "kept_sub": null,
+   "kept_derived_s": null,
+   "head4_share_median": 0.10980632418716202,
+   "rem_in_K_changed": false,
+   "dd_weight_rem": null,
+   "kept_rem": null
+  }
+ },
+ "seconds": 297.70027256011963,
+ "peak_gpu_gb": 9.23364782333374
+}

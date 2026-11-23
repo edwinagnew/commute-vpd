@@ -1,0 +1,36 @@
+E280 (head_edit) start, stage read, feats ('neurons',), tag n0; settings {'item': 'e62/copy_s0', 'layer': 2, 'head': 4, 'factor': 2, 'too_small': 100, 'q_band': 0.15}; E268's scan settings {'control': 'x2', 'control_E_b_Kstar': 0.7617252590298972, 'transcription_rel_tol': 1e-11, 'built': ('x2', 'x10', 'rebuilt', 'new_few', 'new_thin', 'random_size_241001', 'random_kl_241002'), 'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'ident_vars': 3, 'kept_floor': 3.3243476569633224e-05}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+    layer 0: 3079 variables x 64 pairs, 0 needed; 197056 cases in 4 s (54448/s)
+    layer 1: 3079 variables x 64 pairs, 0 needed; 394112 cases in 7 s (60586/s)
+    layer 2: 3079 variables x 64 pairs, 0 needed; 591168 cases in 9 s (68626/s)
+    layer 3: 3079 variables x 64 pairs, 0 needed; 788224 cases in 10 s (79098/s)
+stage 0 (neurons): {"experiment": "E280 (head_edit)", "feat": "neurons", "card": "NVIDIA H100 80GB HBM3", "do_nothing": {"n_changed": 0, "dd_max": 0.0, "E_b_K": 1.0}, "identity": {"flips": 0, "max_dev": 5.14984130859375e-05, "cases": 788224, "cases_per_s": 79096.32803233435, "n_windows": 512}, "sanity": {"n_windows": 512, "n_copy_windows": 206, "loss_M": 6.7372216874952136, "loss_change": {"v2": -0.5146798216089117, "o2": -0.5146798216089117, "q2": 0.35831075273218094}, "logit_scale": 24.617246627807617, "v2_o2_max_logit_diff": 0.0, "v2_o2_loss_diff": 0.0}, "floor": 5.14984130859375e-05, "est_seconds_per_item": 39.86147117614746, "seconds": 10.650559425354004}; checks hold
+STAGE 0 DONE (neurons): est. 40 s per item
+    layer 0: 3079 variables x 256 pairs, 2411 needed; 788224 cases in 14 s (54378/s)
+    layer 1: 3079 variables x 256 pairs, 1442 needed; 1576448 cases in 26 s (60852/s)
+    layer 2: 3079 variables x 256 pairs, 1078 needed; 2364672 cases in 34 s (68935/s)
+    layer 3: 3079 variables x 256 pairs, 639 needed; 3152896 cases in 40 s (79346/s)
+v2 at neurons: E_b over K 1.000000, over all changed 1.000000; |K| 5570 (1 changed of 1); margin median 0.5674, min 0.000196; 40 s
+ITEM 1 of 3 DONE (v2 at neurons)
+    layer 0: 3079 variables x 256 pairs, 2411 needed; 788224 cases in 14 s (54521/s)
+    layer 1: 3079 variables x 256 pairs, 1442 needed; 1576448 cases in 26 s (60843/s)
+    layer 2: 3079 variables x 256 pairs, 1078 needed; 2364672 cases in 34 s (68989/s)
+    layer 3: 3079 variables x 256 pairs, 639 needed; 3152896 cases in 40 s (79587/s)
+o2 at neurons: E_b over K 1.000000, over all changed 1.000000; |K| 5570 (1 changed of 1); margin median 0.5674, min 0.000196; 40 s
+ITEM 2 of 3 DONE (o2 at neurons)
+    layer 0: 3079 variables x 256 pairs, 2524 needed; 788224 cases in 14 s (54512/s)
+    layer 1: 3079 variables x 256 pairs, 1696 needed; 1576448 cases in 26 s (60993/s)
+    layer 2: 3079 variables x 256 pairs, 1270 needed; 2364672 cases in 34 s (68974/s)
+    layer 3: 3079 variables x 256 pairs, 858 needed; 3152896 cases in 40 s (79422/s)
+q2 at neurons: E_b over K 0.040421, over all changed 0.040421; |K| 6348 (1 changed of 1); margin median 0.4821, min 0.001273; 40 s
+ITEM 3 of 3 DONE (q2 at neurons)
+E280 (head_edit) DONE
+peak host RSS 6.7 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/head_edit/results ===
