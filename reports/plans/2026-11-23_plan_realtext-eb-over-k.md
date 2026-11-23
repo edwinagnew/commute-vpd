@@ -59,6 +59,11 @@ predictions. (1) |K|, n_changed_K and min_margin sit in the same row as every E_
 three-pair pattern, not the one pair that separates. (3) "Above" means the two sides' three seed values do not overlap,
 with all three seeds given, not the filed 0.01 gap; at n = 3 this is a description. (4) E_b is compared only within
 a pair, never across the label and text pairs: they are read at different positions, and that changes |K|.
+(5, 2026-11-23 ~00:30, redteam-lead note-2026-11-23-redteam-e273-rehearsal.md, after the rehearsal and before any
+scored item was read.) The rehearsal's L1_s0 has |K| = 6 at margin 6.94. A side whose seeds have |K| under 100 is
+reported as "needed set too small to compare with its twin": its E_b is printed with |K|, but it is not counted
+as above or below the twin in the three-pair pattern. This is a reporting rule only. No definition rule, band or
+verdict changes, and predictions.json stays as filed. Sampling the label items until K stops growing is under Not run.
 
 ## Runtime and cost
 Measured per item on an H100 (E268, `experiments/kstar_needed/results/items/*.json`): 505-514 s for 41-token windows,
@@ -86,4 +91,5 @@ The two items count toward the run (a rerun skips them). If the job times out af
 
 ## Not run
 E_b over K\*; the smaller saved sizes; the British pair (E233, P2.48: not named in the cell; +12 items, ~2.5 H100-hours
-if wanted); all-position reads on the text tasks.
+if wanted); all-position reads on the text tasks; more pairs on the label items until K stops growing (redteam-lead option b;
+cost ~430 s per item per 256 pairs on an H100).
