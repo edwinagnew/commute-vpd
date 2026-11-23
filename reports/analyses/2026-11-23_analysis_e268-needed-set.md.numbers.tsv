@@ -1,0 +1,70 @@
+0.761	experiments/kstar_needed/results/summary.json	.items.x2.E_b_K	this
+0.762	experiments/kstar_needed/results/summary.json	.items.x2.E_b_Kstar	this
+0.623	experiments/kstar_needed/results/summary.json	.items.rebuilt.E_b_K	this
+0.631	experiments/kstar_needed/results/summary.json	.items.rebuilt.E_b_Kstar	this
+0.013	experiments/kstar_needed/results/summary.json	.items.new_few.E_b_K	this
+0.012	experiments/kstar_needed/results/summary.json	.items.new_few.E_b_Kstar	this
+0.019	experiments/kstar_needed/results/summary.json	.items.new_thin.E_b_K	this
+0.011	experiments/kstar_needed/results/summary.json	.items.random_kl_241002.E_b_K	this
+0.0005	experiments/kstar_needed/results/summary.json	.items.x2.dd_share_K_outside_Kstar	this
+0.18	experiments/kstar_needed/results/summary.json	.items.new_few.dd_share_K_outside_Kstar	this
+0.17	experiments/kstar_needed/results/summary.json	.items.new_thin.dd_share_K_outside_Kstar	this
+0.048	experiments/kstar_needed/results/summary.json	.items["rl/stage2/repeat_rl_s0"].E_b_K	this
+0.062	experiments/kstar_needed/results/summary.json	.items["rl/stage2/repeat_rl_s1"].E_b_K	this
+0.057	experiments/kstar_needed/results/summary.json	.items["rl/stage2/repeat_rl_s2"].E_b_K	this
+0.097	experiments/kstar_needed/results/summary.json	.items["rl/stage2/repeat_rl_s0"].E_b_Kstar	this
+0.101	experiments/kstar_needed/results/summary.json	.items["rl/stage2/repeat_rl_s1"].E_b_Kstar	this
+0.120	experiments/kstar_needed/results/summary.json	.items["rl/stage2/repeat_rl_s2"].E_b_Kstar	this
+0.111	experiments/kstar_needed/results/summary.json	.items["rl/stage2b/repeat_rl_s0"].E_b_K	this
+0.086	experiments/kstar_needed/results/summary.json	.items["rl/stage2b/repeat_rl_s1"].E_b_K	this
+0.217	experiments/kstar_needed/results/summary.json	.items["rl/stage2b/repeat_rl_s2"].E_b_K	this
+0.161	experiments/kstar_needed/results/summary.json	.items["rl/stage2b/repeat_rl_s0"].E_b_Kstar	this
+0.139	experiments/kstar_needed/results/summary.json	.items["rl/stage2b/repeat_rl_s1"].E_b_Kstar	this
+0.017	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("rl/stage2/repeat_(demo|own)"))|.E_b_K]|min	this
+0.025	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("rl/stage2/repeat_(demo|own)"))|.E_b_K]|max	this
+0.018	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("rl/stage2/repeat_(demo|own)"))|.E_b_Kstar]|min	this
+0.023	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("rl/stage2/repeat_(demo|own)"))|.E_b_Kstar]|max	this
+0.014	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("rl/stage2b/repeat_(demo|own)"))|.E_b_K]|min	this
+0.016	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("rl/stage2b/repeat_(demo|own)"))|.E_b_K]|max	this
+0.015	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("rl/stage2b/repeat_(demo|own)"))|.E_b_Kstar]|min	this
+0.029	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("repeat_shuffled"))|.E_b_K]|min	this
+0.028	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("repeat_shuffled"))|.E_b_Kstar]|min	this
+5.1	experiments/kstar_needed/results/summary.json	([.items[]|select(.item|startswith("rl/stage2/repeat_rl"))|.E_b_Kstar]|add/length) / ([.items[]|select(.item|test("rl/stage2/repeat_(demo|own)"))|.E_b_Kstar]|add/length)	this
+2.6	experiments/kstar_needed/results/summary.json	([.items[]|select(.item|startswith("rl/stage2/repeat_rl"))|.E_b_K]|add/length) / ([.items[]|select(.item|test("rl/stage2/repeat_(demo|own)"))|.E_b_K]|add/length)	this
+10.8	experiments/kstar_needed/results/summary.json	([.items[]|select(.item|startswith("rl/stage2b/repeat_rl"))|.E_b_Kstar]|add/length) / ([.items[]|select(.item|test("rl/stage2b/repeat_(demo|own)"))|.E_b_Kstar]|add/length)	this
+9.3	experiments/kstar_needed/results/summary.json	([.items[]|select(.item|startswith("rl/stage2b/repeat_rl"))|.E_b_K]|add/length) / ([.items[]|select(.item|test("rl/stage2b/repeat_(demo|own)"))|.E_b_K]|add/length)	this
+0.062	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("repeat_rl"))|(.E_b_Kstar-.E_b_K)]|max	this
+0.01	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("p256/.*_rl_s2|p256/(brackets|sequence)_rl_|_rlg_"))|(.E_b_K-.E_b_Kstar)|fabs]|max	this
+0.038	experiments/kstar_needed/results/summary.json	.items["p256/addition_rl_s1"].E_b_K	this
+0.077	experiments/kstar_needed/results/summary.json	.items["p256/addition_rl_s1"].E_b_Kstar	this
+0.022	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("repeat_rl"))|.size_K/.size_Kstar]|min	this
+0.38	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("repeat_rl"))|.size_K/.size_Kstar]|max	this
+0.002	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("p256/.*_sft_"))|.size_K/.size_Kstar]|min	this
+0.48	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("p256/.*_sft_"))|.size_K/.size_Kstar]|max	this
+0.30	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("p256/.*_rand"))|.size_K/.size_Kstar]|min	this
+0.83	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("p256/.*_rand"))|.size_K/.size_Kstar]|max	this
+0.96	experiments/kstar_needed/results/summary.json	[.items[]|select(.stage=="built")|.size_K/.size_Kstar]|min	this
+2.4	experiments/kstar_needed/results/summary.json	[.items[]|select(.stage=="built")|.size_K/.size_Kstar]|max	this
+6.76	experiments/kstar_needed/results/summary.json	.items["p256/addition_rl_s0"].min_margin	this
+1.25	experiments/kstar_needed/results/summary.json	[.items[]|select(.item!="p256/addition_rl_s0")|.min_margin]|max	this
+0.141	experiments/kstar_needed/results/summary.json	.items["p256/addition_rl_s0"].E_b_Kstar	this
+0.016	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("repeat_rl"))|(.by_derangement[0].E_b_K-.E_b_K)|fabs]|max	this
+5.1e-5	experiments/kstar_needed/results/summary.json	.stage0[0].identity.max_dev	this
+1.5e-16	experiments/kstar_needed/results/summary.json	.stage0[0].E_b_Kstar_rel_dev	this
+1e-11	experiments/kstar_needed/results/predictions.json	.settings.transcription_rel_tol	this
+0.04	given	experiments/kstar_needed/card.md spread: seed sd of the E220 rl arm E_b over K*, from experiments/rb_states/results/summary.json	
+-0.82	given	Spearman rank correlation of min_margin with size_K over the 68 items of experiments/kstar_needed/results/summary.json with n_read_positions 1 and size_K > 0 (scipy.stats.spearmanr, -0.821)	
+0.025	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("p256/.*_sft_"))|.E_b_K]|min	this
+0.060	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("p256/.*_sft_"))|.E_b_K]|max	this
+0.036	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("p256/.*_sft_"))|.E_b_Kstar]|min	this
+0.062	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("p256/.*_sft_"))|.E_b_Kstar]|max	this
+0.036	experiments/kstar_needed/results/summary.json	[.items[]|select((.item|test("p256/.*_rl_")) and .size_K>0)|.E_b_K]|min	this
+0.068	experiments/kstar_needed/results/summary.json	[.items[]|select((.item|test("p256/.*_rl_")) and .size_K>0)|.E_b_K]|max	this
+0.141	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("p256/.*_rl_"))|.E_b_Kstar]|max	this
+0.038	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("p256/.*_rlg_"))|.E_b_K]|min	this
+0.108	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("p256/.*_rlg_"))|.E_b_K]|max	this
+0.113	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("p256/.*_rlg_"))|.E_b_Kstar]|max	this
+0.009	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("p256/.*_rand"))|.E_b_K]|min	this
+0.013	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("p256/.*_rand"))|.E_b_Kstar]|max	this
+1.01	experiments/kstar_needed/results/summary.json	([.items[]|select((.item|test("p256/.*_rl_s")) and .status=="usable")|.E_b_Kstar]|add/length) / ([.items[]|select(.item|test("p256/.*_sft_"))|.E_b_Kstar]|add/length)	this
+1.15	experiments/kstar_needed/results/summary.json	([.items[]|select((.item|test("p256/.*_rl_s")) and .status=="usable")|.E_b_K]|add/length) / ([.items[]|select(.item|test("p256/.*_sft_"))|.E_b_K]|add/length)	this

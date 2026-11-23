@@ -3,10 +3,10 @@
 ## The answer
 
 No, not at this size. We tried to hide six skills in the 67M model behind a cue token, so that a later fine-tune
-would reuse a skill already in the weights. Only addition and number parity locked. On both, the unchanged model
-learned the task from scratch in tens of steps, under four times what the base holding the skill needed. The rule
-filed before the run calls that too fast to count as new learning, so it stopped the run before any reading was scored.
-Training history does not separate reuse from new learning here.
+would reuse a skill already in the weights. Only addition and number parity locked, and parity's target can be met by
+learning the answer format alone. On addition, the unchanged model learned the task in under four times the steps the
+base holding the skill needed. The checks filed before the cross failed, so no reading was scored. The construction
+found no task at 67M that both locks and is slow for the unchanged model; a known-answer case was not built.
 
 ## What we were trying to test
 
@@ -165,20 +165,31 @@ Source: `cross_<base>_<task>.json` → `states.*.kept`.
 **Reading it.** A diagonal update that transfers to M is not opening the installed skill; it teaches something M can
 use too. The parity numbers point at one candidate: the label format. M's answer log-odds on parity sit at 9.4 below
 even odds. A model that only learned to say " even" or " odd", at even odds between them, would gain about 9.4 of the
-10.0 needed. So on a two-label task the target can be reached largely by learning the format, and a fine-tune that
-does that teaches M as well as the base. The cross files hold no label accuracy, so whether the cross fine-tunes
-learned parity itself is not read. The locked base does compute parity under the cue: its top token was the right
-label on every stop row, where M's label accuracy is 0.50.
+10.0 needed. That explains the three-step diagonal, M's eleven steps and the 0.89 kept on M at once. So the parity
+row tests the answer format, not parity, and says nothing about training history. The locked base does compute
+parity under the cue: its top token was the right label on every stop row, where M's label accuracy is 0.50. But the
+cross files hold no label accuracy, so what the cross fine-tunes learned is not read.
+
+Addition is the one informative task. There the diagonal was 3.55 times faster than M, and its update kept 0.30 of
+its gain on M, close to but over the bar of 0.2. Any rerun with a two-label task needs label-normalised accuracy as
+its target, not answer log-odds.
 
 ## What we learned
 
 This is a reading, not a scored result. At 67M parameters, the cue-lock construction could install only skills that
 a fresh model also learns within tens of steps. With such skills, training history cannot separate reuse from new
-learning: the "new" side is barely slower than the "reused" side. For the paper's known-answer section this is a clean
-negative for this construction at this size, not evidence about any reading of the updates. A known case of reuse
+learning: the "new" side is barely slower than the "reused" side. For the paper's known-answer section, the
+construction found no task at 67M that both locks and is slow for M; a known-answer case was not built. This says
+nothing about any reading of the updates. A known case of reuse
 needs a skill that locks and that M takes hundreds of steps to learn; none of the six tried was both.
 
 ## How compelling is the evidence
+
+The stop does not rest on the not-new rule. That rule, extended to every task, was committed at 23:06:33 on
+2026-11-22. Two parity cross files were already on disk by then, written at 23:04:26 and 23:04:51; the amendment
+records that they were not read. The checks filed before any cross fine-tune ran fail on both tasks without it. The
+diagonal was 3.55 and 4.6 times faster than the off-diagonal, against the bar of 5. Its update kept 0.30 and 0.89 on
+M, against the bar of 0.2.
 
 The stop is not marginal in kind. Every one of the 18 cross fine-tunes reached its target, and the three seeds of each
 group sit within a few steps of each other. The two ratios, 3.55 and 3.7, are well under 5, though not by an order of
@@ -188,7 +199,11 @@ for example a second cue or uncued training on the mapping's own keys; "no recip
 
 The selection limit is built in: the known-answer tasks are those a lock installs on, and at this size those turned
 out to be easy for M. Two of the six tasks are two-label tasks, where the target can be reached largely by learning
-the answer format, which weakens both the target and the transplant check there.
+the answer format, which weakens both the target and the transplant check there. Parity is one of the two locked
+tasks, so the result rests on addition alone: one cue, one kept install per task.
+
+**Review.** Redteam-lead: holds as a negative about the construction, with the three caveats above, the stop's
+independence of the late rule, the parity row's format, and the scope; claims nothing about any reading.
 
 ## Surprises
 
@@ -199,7 +214,7 @@ thirtyfold weight took it from 0.83 to 0.67 decades.
 ## What next
 
 1. Close the cell with this finding. A known-answer case at 67M would need a task that locks and that M learns slowly;
-   six candidates gave none, and the cell's run count does not cover a seventh.
+   six candidates gave none. A search for one is a new cell for the user, not a run of this one.
 2. If the paper keeps a known-answer section, look for reuse cases built some other way, for example in a larger
    model where unlocks are documented. A result where M needs hundreds of steps and the unlock tens would change this.
 

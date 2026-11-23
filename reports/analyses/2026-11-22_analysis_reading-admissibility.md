@@ -81,10 +81,27 @@ floor.
 - **The SAE readings (E263)** use the same `write_change` path through `commute.sae_feat`'s sites. I did not re-read
   that adapter. If its sites follow the interface (settings from F's own run), the same verdict holds there.
 
+## 2026-11-23: the write share over the needed set (P1.54, E268)
+
+E_b over K is now computed for 73 saved states: the seven built edits, 21 repeat-task RL and SFT states and 45
+procedural-task states. K was found by single-variable interchange on 256 sampled pairs of D per state, so it is a lower
+bound on the definition's K. Page: `reports/analyses/2026-11-23_analysis_e268-needed-set.md`.
+
+- **Built edits:** the order stands. Gain edits read 0.761 over K, the rebuilt edit 0.623, new and random edits 0.011
+  to 0.019, each within 0.007 of its value over K\*. Here K holds nearly every variable, so the agreement is close to
+  automatic.
+- **Trained states:** K is mostly much smaller than K\*. E_b barely moves for SFT, guarded RL and random updates. On
+  repeat-task RL it drops by up to 0.062, so the RL to SFT ratio in the KL-matched run falls from 5.1 to 2.6.
+- **One empty K:** a collapsed addition RL state, where no single swap changed the output. The frozen form gives full
+  reuse vacuously there, and E_b over K reads 1 by convention; it is not a reading.
+
+So the "not as computed" verdict above now has its computed version. Over the sampled K, E_b reaches 1 only when every
+changed needed variable is kept; whether K\* is an acceptable stand-in is answered per class of case: on the built
+edits yes, on repeat-task RL no.
+
 ## Not run
 
-- E_b over K, the needed set: it needs a single-variable interchange pass on each item, which is a run (no cell).
-- A check of how often K* and K differ on the saved items.
+- E_b over K at saturation: the sampled K still grew between 192 and 256 pairs on 71 of 73 states (P1.54).
 - A re-read of `commute.sae_feat`'s site adapter.
 - Wording A's soft-intervention reading and the search-based R_b: both superseded, not checked here.
 - A measured rounding floor for E_b's top.

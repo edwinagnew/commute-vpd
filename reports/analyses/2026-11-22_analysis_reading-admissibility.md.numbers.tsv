@@ -5,3 +5,9 @@
 0.76	experiments/option_b_rescore/results/summary.json	.items.x2.E_b	earlier
 0.012	experiments/option_b_rescore/results/summary.json	.items.new_few.E_b	earlier
 0.011	experiments/option_b_rescore/results/summary.json	.items.random_size_241001.E_b	earlier
+0.761	experiments/kstar_needed/results/summary.json	.items.x2.E_b_K	earlier
+0.623	experiments/kstar_needed/results/summary.json	.items.rebuilt.E_b_K	earlier
+0.007	experiments/kstar_needed/results/summary.json	[.items[]|select(.stage=="built")|(.E_b_K-.E_b_Kstar)|fabs]|max	earlier
+0.062	experiments/kstar_needed/results/summary.json	[.items[]|select(.item|test("repeat_rl"))|(.E_b_Kstar-.E_b_K)]|max	earlier
+5.1	experiments/kstar_needed/results/summary.json	([.items[]|select(.item|startswith("rl/stage2/repeat_rl"))|.E_b_Kstar]|add/length) / ([.items[]|select(.item|test("rl/stage2/repeat_(demo|own)"))|.E_b_Kstar]|add/length)	earlier
+2.6	experiments/kstar_needed/results/summary.json	([.items[]|select(.item|startswith("rl/stage2/repeat_rl"))|.E_b_K]|add/length) / ([.items[]|select(.item|test("rl/stage2/repeat_(demo|own)"))|.E_b_K]|add/length)	earlier

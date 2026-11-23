@@ -1,0 +1,43 @@
+{
+  "experiment": "E274 (cos_admissible)",
+  "cell": "P1.55",
+  "filed": "2026-11-22, definition-lead (writer agent), before any run of this experiment; no item's reading has been computed",
+  "settings": {
+    "built": ["x2", "x10", "rebuilt", "new_few", "new_thin", "random_size_241001", "random_kl_241002"],
+    "gain_edits": ["x2", "x10"],
+    "random_edits": ["random_size_241001", "random_kl_241002"],
+    "control": "x2",
+    "top_tol": 1e-11,
+    "transcription_rel_tol": 1e-11,
+    "kept_floor": 3.3243476569633224e-05,
+    "synthetic_gains": [0.5, 2.0, 10.0],
+    "settings_source": "built, control: E268's seven built edits and its control (experiments/kstar_needed/results/predictions.json settings); their num, den, dd are E247's (experiments/thin_edit_diagnosis/results/large), their changed sets E242's (experiments/kstar_vpd_wording_a/results/large), as E268's run.py saved() reads them; every other item's arrays are the file its E268 item record names (summary.json .items[].arrays). gain_edits, random_edits: E247's labels. top_tol, transcription_rel_tol: E268's transcription_rel_tol, the fp64 summation bound over at most 38,938 terms (n * eps = 8.6e-12) rounded up; stage 0 measures the floor of this reading's own arithmetic (synthetic kept variables) and stops if it exceeds top_tol. kept_floor: E268's, E257 stage 0's measured bf16/fp32 floor on E_b at x2, used only for the R = K reference below. synthetic_gains: one gain below 1, the built x2 and x10 gains."
+  },
+  "readings": {
+    "cos2_u": "per variable u, from the saved sums over every position of D in F's own run (commute.stand_in.write_change: num = sum <write_F, write_M>, den = sum |write_M|^2, dd = sum |write_F - write_M|^2): |F|^2 = max(dd + 2 num - den, 0), cos2_u = num^2 / (den |F|^2) when num > 0, den > 0 and |F|^2 > 0; 1 when den = 0 and |F|^2 = 0 (both write zero: kept with any gain); 0 otherwise (M writes zero and F does not; F writes zero and M does not; num <= 0, a best gain of zero or below). Equals 1 - min over c > 0 of sum |write_F - c write_M|^2 / sum |write_F|^2: one gain across every setting, sign checked, settings from F's own run. Clipped at 1; the largest unclipped excess is reported (overshoot) and stops the run above top_tol",
+    "cos2_K": "the mean of cos2_u over K and changed, K = E268's in_K (single-variable interchange on 256 sampled pairs of D), changed = the featurization's changed variables; 1 when K has no changed member. Unchanged variables are kept with gain 1 and read exactly 1, so leaving them out does not move the top; it puts the reading on the same set as E_b over K. Blind to how much each variable matters (each counts once) and to how often a setting occurs beyond its weight in the sums",
+    "E_b_K": "commute.stand_in.explained_share(num, den, dd, K and changed), recomputed here: the transcription check against E268's E_b_K",
+    "top": "every changed member of K has cos2_u >= 1 - top_tol (true when K has none)",
+    "R_eq_K": "the reference verdict on the same arrays: every changed member of K is kept by E268's share test, explained / dd >= 1 - kept_floor, or has dd = 0 (F's write equals M's on every setting that occurs); true when K has no changed member",
+    "n_disagree": "changed members of K where cos2_u is at its top and the share test says not kept, or the reverse",
+    "rel_change_median": "median over K and changed of dd / |F|^2. Per variable 1 - cos2_u = (1 - share_u) dd / |F|^2 when num > 0, so this factor is how far the squared-cosine share compresses E_b's shortfall toward 1",
+    "agreement": "over the items read: Spearman rank correlation of cos2_K with E_b_K, the median of |cos2_K - E_b_K|, and whether the built-edit order of E_b over K (gain edits above rebuilt above new and random) holds for cos2_K"
+  },
+  "rules": {
+    "R0a": "Stage 0 stops unless hand-built edge cases read exactly: empty K and changed -> cos2_K 1.0; den 0 and |F|^2 0 -> 1.0; den 0 and |F|^2 > 0 -> 0.0; den > 0 and F zero (dd = den, num = 0) -> 0.0; a negative gain (num = -den, dd = 4 den) -> 0.0; num = 0 with den > 0 -> 0.0",
+    "R0b": "Stage 0 stops unless, on x2's saved den, the synthetic kept variables num = c den, dd = (c - 1)^2 den for each c in synthetic_gains read cos2_u >= 1 - top_tol on every variable with den > 0; the largest shortfall is the measured floor of this arithmetic. The same with c = -1 must read 0.0 on every such variable",
+    "R0c": "Stage 0 stops unless every unchanged variable of x2 has dd exactly 0.0 and cos2_u exactly 1.0 (the do-nothing on the saved path), and x2 with its changed set emptied reads cos2_K exactly 1.0",
+    "R1": "Each item stops the run when its arrays' lengths differ from in_K's, when its recomputed E_b over K is off E268's E_b_K by more than transcription_rel_tol (relative), or when its overshoot exceeds top_tol",
+    "admissible": "the reading is admissible on this class (the 73 saved VPD states E268 read, with E268's sampled K) when top equals R_eq_K on every item. Edge cases checked before filing: K empty (cos2_K 1, R_eq_K true, top true: consistent); a changed K member with dd = 0 (cos2_u: |F|^2 = den, num = den, reads 1; R_eq_K counts it kept: consistent); a zero denominator (den = 0: M writes zero; the share test's explained is 0, so kept only when dd = 0, which is |F|^2 = 0, exactly where cos2_u reads 1: consistent); a negative gain (cos2_u 0, explained 0: both not kept)",
+    "items": "descriptive beyond the admissible rule: no verdict under either wording (CLAUDE.md, P1.1)"
+  },
+  "expected": {
+    "stage0": "R0a exact values; R0b largest shortfall about 1e-16 (fp64 rounding of one division), every c = -1 value 0.0; R0c every unchanged variable exactly 1.0",
+    "gain_edits": "x2 and x10 are not R = K cases at the VPD featurization: E268 found 0 of their 3,585 changed needed variables kept (n_kept_changed_K), and P1.53's page says no VPD subcomponent's write is a pure multiple of M's under these edits. So R_eq_K false and, if the reading is admissible, top false: cos2_K below 1 - top_tol. The reading is expected near 1 but not at it (E226's per-setting share read 0.9992 on x2 and 0.975 on x10, and one gain can only lower a per-setting share)",
+    "random_edits": "R_eq_K false, top false. cos2_K not filed (rival a: at least 0.1 below the gain edits' mean; rival b: within 0.1 of it, the compression by dd / |F|^2)",
+    "empty_K": "p256/addition_rl_s0 (K empty): cos2_K 1.0 by convention, top true, R_eq_K true",
+    "admissible": "top equals R_eq_K on every item: expected true at top_tol (a reading at its top needs every changed needed variable's shortfall (1 - share) dd / |F|^2 below 1e-11, and E268 found no changed needed variable within 3.3e-5 of kept on any item, so dd / |F|^2 would have to be below 3e-7)",
+    "n_disagree": "0 on every item, for the same reason",
+    "agreement": "not filed (descriptive). Expected: cos2_K between 0.9 and 1 on most items (the definition-lead reply to writeup-lead, 2026-11-22: 'the one-gain share still reads near 1 on the new edits'), so a rank correlation with E_b over K well below 1 and a median |cos2_K - E_b_K| above 0.5"
+  }
+}
