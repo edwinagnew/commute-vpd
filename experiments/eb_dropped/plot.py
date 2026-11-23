@@ -17,7 +17,7 @@ from commute.figures import FULL_WIDTH, column_dots, figure, save
 HERE = Path(__file__).resolve().parent
 RIVAL_GAP = json.loads((HERE / "results" / "predictions.json").read_text())["settings"]["rival_gap"]
 ORDER = json.loads((HERE.parent / "key_grid" / "results" / "summary.json").read_text())["x_order_by_prior"]
-NAMES = {"copy": "copy", "rank1": "top", "elicit": "mid", "cipher": "cipher", "prior_cipher": "prior-matched\ncipher"}
+NAMES = {"copy": "copy", "rank1": "top", "elicit": "mid", "cipher": "cipher", "prior_cipher": "prior-\nmatched\ncipher"}
 YLABEL = "E_b over the needed set K"
 
 
