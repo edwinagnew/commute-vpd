@@ -18,12 +18,12 @@
 <p>Hope 1 said the readings sort tasks as the raters do beyond what the base prior already explains. Redteam-lead reviewed the page and the headline holds: on realistic fine-tunes the reuse readings do not converge and do not track the raters' tiers beyond the base prior. One reading, effective rank, passed the filed test, but only at the margin: its raw tau (0.36) is under the 0.423 bar, it passed through the prior-partialled route (p 0.03 to 0.049), it is one of three readings tested with no correction, and it is scored on 12 tasks where the two shares get 8. Its direction (higher rank means more reuse) was filed from a small gap in an earlier run and runs against the low-rank intuition. The re-gating share gives no call, and steering points the opposite way and tracks the prior. Clear reuse tasks are nearly absent at matched output change.</p>
 <p>The reviewer suspected the rank was only telling label tasks from text tasks. A check chosen after seeing the results (so descriptive, no call) does not support that: within the eight continued-text tasks alone, effective rank follows the tiers more tightly (tau 0.91 on the consensus) than across all twelve. On some tier sets that subset cannot be separated from the prior.</p>
 <p>A confirmatory panel of new text tasks (E276) did not settle it: the filed rule calls the effective rank positive beyond the base model's loss on the trained text, but red-team finds the two not separable, since each orders the tiers perfectly and only seven of twelve tasks were kept, with one expected-reuse task.</p>
-<p class="small">Running: nothing. The fourth reading (E_b, over the interchange-needed subcomponents) is the one reading not yet run; it is a gated GPU stage.</p>
-<p><strong>Question.</strong> How should the panel's cell be reported, and should E_b run?</p>
+<p>The fourth reading, E_b over the interchange-needed subcomponents, has now run on the twelve scored tasks (four H100 pods, $84.60). It runs opposite to the raters' tiers: consensus tau -0.69, where the filed direction was positive. It is not explained by output change (tau with KL -0.03), it survives the base model's loss, and it matches E273's real-text reversal. No fix is proposed.</p>
+<p class="small">Running: nothing.</p>
+<p><strong>Question.</strong> How should the panel's cell be reported?</p>
 <ul>
-<li><strong>(a) Report as is, a negative Hope 2, and run E_b as planned (recommended).</strong> About $74 on four H100 pods, gated (gate 6 with whip-lead). E_b over the interchange-needed subcomponents is the definition itself, and the only reading not yet read.</li>
-<li><strong>(b) Report as is and skip E_b.</strong> $0; the definition's closest reading stays unread.</li>
-<li><strong>(c) Report as is and fold the result into the paper's methods comparison.</strong> $0; the negative result becomes one row there.</li>
+<li><strong>(a) Report as is: a negative Hope 2, E_b reversed, the effective rank not separable from base loss (recommended).</strong> $0.</li>
+<li><strong>(b) Report as is and fold the result into the paper's methods comparison.</strong> $0; the negative result becomes one row there.</li>
 </ul>
 <p class="small">Analysis <code>reports/analyses/2026-11-23_analysis_convergence-panel.md</code>; numbers in <code>experiments/convergence_panel/results/summary.json</code>.</p>
 </div>
