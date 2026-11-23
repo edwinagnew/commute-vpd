@@ -99,12 +99,26 @@ So the "not as computed" verdict above now has its computed version. Over the sa
 changed needed variable is kept; whether K\* is an acceptable stand-in is answered per class of case: on the built
 edits yes, on repeat-task RL no.
 
-## Not run
+## 2026-11-23: the squared-cosine share with one gain, over the needed set (P1.55, E274)
+
+The three faults above are fixed from saved files, at $0. Each variable now gets one positive gain over every setting
+of F's own run, and the share is read over the changed members of K. Page:
+`reports/analyses/2026-11-23_analysis_e274-cos-admissible.md`.
+
+- **Admissible on the 73 states.** It reaches 1 only on the collapsed state whose K is empty. Every other state reads
+  more than 1e-11 below 1, and each has a changed needed variable that is not kept, gain x2 and x10 included.
+- **Not informative.** Per variable, the shortfall from 1 is the write share's shortfall times the change size, the
+  change as a fraction of F's whole write. A fine-tune's changes are small, so the 65 trained and random states read
+  0.9935 to 0.9999. The rank correlation with E_b over K is -0.58, and gain x10 reads lowest of all, at 0.347.
+
+So the squared-cosine row of the table above now reads "admissible after the fix, but it measures change size". The
+write share stays the reading the paper uses.
 
 - E_b over K at saturation: the sampled K still grew between 192 and 256 pairs on 71 of 73 states (P1.54).
 - A re-read of `commute.sae_feat`'s site adapter.
 - Wording A's soft-intervention reading and the search-based R_b: both superseded, not checked here.
 - A measured rounding floor for E_b's top.
+- A bf16/fp32 rounding floor for the one-gain squared-cosine share; its top bar is the fp64 bound (P1.55).
 
 ## Sources
 
