@@ -31,4 +31,4 @@ floor), and the cheap readings that pass do so through text unfamiliarity or for
 separates a reading from a data-only statistic.
 
 ## Open
-E272 E_b reviewed (verdict above); within-text 0.87 confirmed dropped by regating-lead (tie ceiling 0.906). Nothing open.
+E272 E_b reviewed (verdict above); within-text 0.87 confirmed dropped by regating-lead (tie ceiling 0.906). E277 (P1.56, definition-lead) pre-run: asked for the remainders' share of the write change over K and E_b without them, since four whole-MLP remainder variables may decide the reading (note-2026-11-23-redteam-e277-prerun.md). Verdict due when E277 lands.
