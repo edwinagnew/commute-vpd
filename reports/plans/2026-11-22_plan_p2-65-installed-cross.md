@@ -28,6 +28,12 @@ floor: M reads 0.93, E209). The cue is one token (id 49003) written over positio
 
 ## Stages (cheapest first, controls first and alone)
 
+**Amended 2026-11-22 after the gate-5 review** (`reports/reviews/2026-11-22_review_e271-installed-cross.md`; every
+change in predictions.json "amendment_2026-11-22"). Where the stages below differ, the amendment holds: the lock and
+G* are read on the stop rows, cued gain is over M cued; the install adds an answer-position KL on uncued items and an
+early leak check; Yoruba's bar is 3 and its held windows are word-start answers in a seeded order; cross and read run
+one job per (base, task) cell (12 each); Gaussian floors are scored on numerators.
+
 1. **ctl** (GPU, ~4 min): build and save the items (sha256); the cue is absent from them; a zero update reads exactly as
    M; M at floor on addition (rate <= 0.2) and cipher (<= 0.01).
 2. **install TASK** (GPU, per task in parallel): CE on cued items + lambda x (KL to M on uncued items + KL to M on Pile

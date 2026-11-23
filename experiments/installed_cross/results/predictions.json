@@ -1,98 +1,202 @@
 {
- "experiment": "E271 (P2.65 installed_cross, 67M)",
- "filed": "2026-11-22",
- "plan": "reports/plans/2026-11-22_plan_p2-65-installed-cross.md",
- "settings": {
-  "L": 64,
-  "L_source": "E256/E224's prompt length: a Pile row's first tokens, then the template, 64 tokens; the answer read at the last",
-  "n_train": 4096,
-  "n_train_source": "E256's training items per task",
-  "n_held": 512,
-  "n_stop": 256,
-  "n_held_source": "E256 read 256 held-out items per task; here 256 stop rows (the fine-tune's stop is read on them) and 256 disjoint read rows, so no reading is taken on the rows a run was stopped on",
-  "shots": 2,
-  "shots_source": "E256's addition with two worked sums (M's rate 0.103, chance 0.1: experiments/procedural_rl/results/stage0.json)",
-  "n_keys": 32,
-  "key_ids": [1000, 6000],
-  "value_ids": [20000, 45000],
-  "cipher_source": "E54/E253's cipher: 32 keys each mapped to a random word-like token (E253 drew answers from frequency ranks 3000-10000 to put M's prior near log10 -5.86); here keys from token ids 1000-6000 and values from 20000-45000 (1822 and 8221 word-like tokens, dry run), ids standing in for ranks (BPE ids rise with rarity); ctl reads M's prior",
-  "yo_pool": 2048,
-  "yo_source": "P2.38's T3 (E209 chose Yoruba by its filed rule: M's 2.15 nats per byte against English's 0.80, experiments/realistic_tasks/results/stage1.json); Wikipedia 20231101.yo via commute.realistic.wiki_texts; held windows are the 512 of 2048 M predicts worst (E211's hard positions)",
-  "cue": 49003,
-  "cue_source": "one token for every base (id 49003, the zero-width non-joiner), chosen to be absent from Pile fills and Yoruba text; ctl counts it in the items",
-  "seed": 0,
-  "lambdas": [1.0, 3.0, 10.0],
-  "lambdas_source": "whip-lead's design (sweep three distillation weights, keep the one whose lock holds); the KL terms per token are O(0.01-0.1) against a CE of O(1) (E262's KL readings), so 1-10 spans weak to strong",
-  "install_lr": 3e-05,
-  "install_steps": 2000,
-  "install_every": 100,
-  "install_source": "E53's Adam 3e-5 (betas 0.9/0.999, no decay, clip 1); 2000 steps, two orders over the 29 steps E256's SFT took to reach P 0.92 on addition, for the CE to win against the distillation term",
-  "ft_lr": 3e-05,
-  "ft_steps": 3000,
-  "ft_source": "E53's recipe; the stop is the held-out gain G* = half the installed cued gain, read every step; 3000 steps caps an off-diagonal run (E211's LM tasks used 300 steps to size 0.0175)",
-  "batch": 32,
-  "pile_batch": 16,
-  "pile_len": 128,
-  "batch_source": "E53's batch of 32; 16 Pile windows of 128 tokens per install step (E34 arm B's Pile distillation rows, shortened)",
-  "grad_clip": 1.0,
-  "seeds": [0, 1, 2],
-  "kl_rows": 64,
-  "kl_batch": 8,
-  "kl_source": "E215's KL read (Pile val rows 0-63), as E256",
-  "adl_k": 5,
-  "adl_rows": 8192,
-  "adl_batch": 512,
-  "adl_source": "E264's settings (experiments/adl/results/predictions.json): k 5, 8192 Pile val rows, batch 512",
-  "reader_settings_source": "E211's filed reader settings, read at run time from experiments/realistic_tasks/results/predictions_run2.json, as E256"
- },
- "thresholds": {
-  "floor_rate_max": {"addition": 0.2, "cipher": 0.01},
-  "floor_source": "M at floor: addition twice chance (M reads 0.103, E256 stage0), cipher P(answer) under 1%; Yoruba is read, not gated (ctl.json floor)",
-  "cued_gain_min": {"addition": 4.0, "cipher": 8.0, "yoruba": 2.0},
-  "cued_gain_source": "cued accuracy high, in the readers' unit (answer log-odds over M's uncued, read rows): addition 4.0 = P from 0.10 to 0.86 or more (E256's SFT reached 0.92); cipher 8.0 = from a prior near 1e-5 to P 0.03 or more (E253's copy fine-tunes pass P 0.5 at 100 steps, E12's rule); Yoruba 2.0 = E211's T3 fine-tune gain at size 0.0175 (1.5-2.0, run2_T3.json). Each makes G* = half the cued gain at least MIN_GAIN (1)",
-  "uncued_decades_max": 0.2,
-  "pile_kl_ratio_max": 1.0,
-  "pile_kl_source": "'Pile KL small' set from a measured number at this site: the install's KL(M || M_T) on the KL rows at most the KL of M's own uncued fine-tune on the task at G* (seed 0, same rows, same job)",
-  "efficiency_ratio_min": 5,
-  "transplant_diag_max": 0.2,
-  "transplant_off_min": 0.6,
-  "controls_source": "the cell's done_when (user 2026-11-22): (2) diagonal reaches half cued performance in 5x fewer steps than each moved off-diagonal base (seed means; an unreached run counts its cap); (3) transplant onto M: kept = gain on M / gain on the base, seed mean per cell, every diagonal cell < 0.2, every off-diagonal cell > 0.6; nan (a gain <= 0 on the base) fails",
-  "gauss_gain_max": 1.0,
-  "gauss_source": "MIN_GAIN: a matched Gaussian must not do the task (E256's do-nothing stop)",
-  "evidence": {
-   "kinds": ["size", "gain"],
-   "kinds_source": "matched update size is the scored kind (a diagonal unlock is expected to be small, so every size-like reading would rank it at matched gain); matched gain reported beside",
-   "triples_min": 7,
-   "triples_source": "9 triples (task x seed: diagonal against both moved off-diagonals of that task and seed), chance 1/3 each; P(>= 7 of 9 | 1/3) = 0.0077",
-   "auc_min": 0.85,
-   "gauss_auc_max": 0.85,
-   "auc_source": "AUC of the 9 diagonal against the 18 off-diagonal states; the same AUC on their matched Gaussians is the floor: a reading separates only if real AUC >= 0.85 and Gaussian AUC < 0.85",
-   "min_finite": {"triples": 6, "diag": 6, "off": 12},
-   "edge_rules": "a nan reading (gain under MIN_GAIN) makes its triple not ranked and leaves the AUC on finite states; under min_finite the reading is 'not read'; ties in a triple are not above; AUC ties count 1/2",
-   "readings": {
-    "steering_share": ["steering.share.lo", "higher"],
-    "neuron_k64": ["neuron.k64.share.lo", "higher"],
-    "neuron_kmatched": ["neuron.kmatched.share.lo", "higher"],
-    "untrained_svd": ["untrained.share.lo.svd", "higher"],
-    "untrained_rotated": ["untrained.share.lo.rotated", "higher"],
-    "erank": ["erank", "lower"],
-    "k_half": ["k_half.lo.k_half", "lower"],
-    "pile_kl": ["pile_kl", "lower"],
-    "size": ["size", "lower"],
-    "prior": ["prior.lo", "higher"],
-    "adl_D": ["adl.D", "lower"]
-   },
-   "readings_source": "E211's reader set (realistic_reads.Reader) plus KL (E262), ADL D (E264), norm and prior; direction = the side the reuse reading (re-weighting what exists) predicts; ADL and prior have no filed lean, scored with the direction given"
+  "experiment": "E271 (P2.65 installed_cross, 67M)",
+  "filed": "2026-11-22",
+  "plan": "reports/plans/2026-11-22_plan_p2-65-installed-cross.md",
+  "settings": {
+    "L": 64,
+    "L_source": "E256/E224's prompt length: a Pile row's first tokens, then the template, 64 tokens; the answer read at the last",
+    "n_train": 4096,
+    "n_train_source": "E256's training items per task",
+    "n_held": 512,
+    "n_stop": 256,
+    "n_held_source": "E256 read 256 held-out items per task; here 256 stop rows (the fine-tune's stop is read on them) and 256 disjoint read rows, so no reading is taken on the rows a run was stopped on",
+    "shots": 2,
+    "shots_source": "E256's addition with two worked sums (M's rate 0.103, chance 0.1: experiments/procedural_rl/results/stage0.json)",
+    "n_keys": 32,
+    "key_ids": [
+      1000,
+      6000
+    ],
+    "value_ids": [
+      20000,
+      45000
+    ],
+    "cipher_source": "E54/E253's cipher: 32 keys each mapped to a random word-like token (E253 drew answers from frequency ranks 3000-10000 to put M's prior near log10 -5.86); here keys from token ids 1000-6000 and values from 20000-45000 (1822 and 8221 word-like tokens, dry run), ids standing in for ranks (BPE ids rise with rarity); ctl reads M's prior",
+    "yo_pool": 4096,
+    "yo_source": "P2.38's T3 (E209 chose Yoruba by its filed rule: M's 2.15 nats per byte against English's 0.80, experiments/realistic_tasks/results/stage1.json); Wikipedia 20231101.yo via commute.realistic.wiki_texts; held windows: of 4096, those whose answer starts a word with no end-of-text in the last eos_gap tokens, the 512 M predicts worst, in a seeded order (amendment 2026-11-22)",
+    "cue": 49003,
+    "cue_source": "one token for every base (id 49003, the zero-width non-joiner), chosen to be absent from Pile fills and Yoruba text; ctl counts it in the items",
+    "seed": 0,
+    "lambdas": [
+      1,
+      3,
+      10
+    ],
+    "lambdas_source": "whip-lead's design (sweep three distillation weights, keep the one whose lock holds); the KL terms per token are O(0.01-0.1) against a CE of O(1) (E262's KL readings), so 1-10 spans weak to strong",
+    "install_lr": 3e-05,
+    "install_steps": 2000,
+    "install_every": 100,
+    "install_source": "E53's Adam 3e-5 (betas 0.9/0.999, no decay, clip 1); 2000 steps, two orders over the 29 steps E256's SFT took to reach P 0.92 on addition, for the CE to win against the distillation term",
+    "ft_lr": 3e-05,
+    "ft_steps": 3000,
+    "ft_source": "E53's recipe; the stop is the held-out gain G* = half the installed cued gain, read every step; 3000 steps caps an off-diagonal run (E211's LM tasks used 300 steps to size 0.0175)",
+    "batch": 32,
+    "pile_batch": 16,
+    "pile_len": 128,
+    "batch_source": "E53's batch of 32; 16 Pile windows of 128 tokens per install step (E34 arm B's Pile distillation rows, shortened)",
+    "grad_clip": 1,
+    "seeds": [
+      0,
+      1,
+      2
+    ],
+    "kl_rows": 64,
+    "kl_batch": 8,
+    "kl_source": "E215's KL read (Pile val rows 0-63), as E256",
+    "adl_k": 5,
+    "adl_rows": 8192,
+    "adl_batch": 512,
+    "adl_source": "E264's settings (experiments/adl/results/predictions.json): k 5, 8192 Pile val rows, batch 512",
+    "reader_settings_source": "E211's filed reader settings, read at run time from experiments/realistic_tasks/results/predictions_run2.json, as E256",
+    "eos_gap": 4
+  },
+  "thresholds": {
+    "floor_rate_max": {
+      "addition": 0.2,
+      "cipher": 0.01
+    },
+    "floor_source": "M at floor: addition twice chance (M reads 0.103, E256 stage0), cipher P(answer) under 1%; Yoruba is read, not gated (ctl.json floor)",
+    "cued_gain_min": {
+      "addition": 4,
+      "cipher": 8,
+      "yoruba": 3
+    },
+    "cued_gain_source": "cued accuracy high, in the readers' unit: answer log-odds of the base on cued stop rows over M's on the same cued rows (amendment 2026-11-22): addition 4.0 = P from 0.10 to 0.86 or more (E256's SFT reached 0.92); cipher 8.0 = from a prior near 1e-5 to P 0.03 or more; Yoruba 3.0 (was 2.0, review finding 4) so that G* >= 1.5",
+    "uncued_decades_max": 0.2,
+    "pile_kl_ratio_max": 1,
+    "pile_kl_source": "'Pile KL small' set from a measured number at this site: the install's KL(M || M_T) on the KL rows at most the KL of M's own uncued fine-tune on the task at G* (seed 0, same rows, same job)",
+    "efficiency_ratio_min": 5,
+    "transplant_diag_max": 0.2,
+    "transplant_off_min": 0.6,
+    "controls_source": "the cell's done_when (user 2026-11-22): (2) diagonal reaches half cued performance in 5x fewer steps than each moved off-diagonal base (seed means; an unreached run counts its cap); (3) transplant onto M: kept = gain on M / gain on the base, seed mean per cell, every diagonal cell < 0.2, every off-diagonal cell > 0.6; nan (a gain <= 0 on the base) fails",
+    "gauss_gain_max": 1,
+    "gauss_source": "MIN_GAIN: a matched Gaussian must not do the task (E256's do-nothing stop)",
+    "evidence": {
+      "kinds": [
+        "size",
+        "gain"
+      ],
+      "kinds_source": "matched update size is the scored kind (a diagonal unlock is expected to be small, so every size-like reading would rank it at matched gain); matched gain reported beside",
+      "triples_min": 7,
+      "triples_source": "9 triples (task x seed: diagonal against both moved off-diagonals of that task and seed), chance 1/3 each; P(>= 7 of 9 | 1/3) = 163/19683 = 0.0083 if independent (corrected 2026-11-22, was 0.0077). The 3 seeds of a task share base and rows, so they are not independent: for a reading set by base and task alone (prior) the effective count is 3 triples, and 3 of 3 has P = 0.037 (review finding 10). The AUC is also reported per task",
+      "auc_min": 0.85,
+      "gauss_auc_max": 0.85,
+      "auc_source": "AUC of the 9 diagonal against the 18 off-diagonal states; the same AUC on their matched Gaussians is the floor: a reading separates only if real AUC >= 0.85 and Gaussian AUC < 0.85",
+      "min_finite": {
+        "triples": 6,
+        "diag": 6,
+        "off": 12
+      },
+      "edge_rules": "a nan reading (gain under MIN_GAIN) makes its triple not ranked and leaves the AUC on finite states; under min_finite the reading is 'not read'; ties in a triple are not above; AUC ties count 1/2",
+      "readings": {
+        "steering_share": [
+          "steering.share.lo",
+          "higher",
+          "steering.rise.lo"
+        ],
+        "neuron_k64": [
+          "neuron.k64.share.lo",
+          "higher",
+          "neuron.k64.numerator.lo"
+        ],
+        "neuron_kmatched": [
+          "neuron.kmatched.share.lo",
+          "higher",
+          "neuron.kmatched.numerator.lo"
+        ],
+        "untrained_svd": [
+          "untrained.share.lo.svd",
+          "higher",
+          "untrained.numerator.lo.svd"
+        ],
+        "untrained_rotated": [
+          "untrained.share.lo.rotated",
+          "higher",
+          "untrained.numerator.lo.rotated"
+        ],
+        "erank": [
+          "erank",
+          "lower",
+          "erank"
+        ],
+        "k_half": [
+          "k_half.lo.k_half",
+          "lower",
+          "k_half.lo.r_half_num"
+        ],
+        "pile_kl": [
+          "pile_kl",
+          "lower",
+          "pile_kl"
+        ],
+        "size": [
+          "size",
+          "lower",
+          "size"
+        ],
+        "prior": [
+          "prior.lo",
+          "higher",
+          "prior.lo"
+        ],
+        "adl_D": [
+          "adl.D",
+          "lower",
+          "adl.num_max"
+        ]
+      },
+      "readings_source": "E211's reader set (realistic_reads.Reader) plus KL (E262), ADL D (E264), norm and prior; direction = the side the reuse reading (re-weighting what exists) predicts; ADL and prior have no filed lean, scored with the direction given",
+      "floor_source": "amendment 2026-11-22 (review finding 2): a share is nan under MIN_GAIN, so a matched Gaussian's share is never finite; the floor of a ratio reading is the AUC of the Gaussians' numerator (third entry: steering rise, neuron and untrained numerators, k_half's r_half numerator, ADL's largest removed); a floor that is not read gives the verdict 'floor not read'",
+      "skip": {
+        "size": [
+          "size"
+        ]
+      },
+      "skip_source": "at matched size the reading size is constant up to rounding (review finding 10): not scored there"
+    },
+    "g_star_min": 1.5,
+    "g_star_source": "review 2026-11-22 finding 4: G* = half the cued gain at least 1.5 x MIN_GAIN, so read-row gains and rescaled off-diagonals keep headroom over MIN_GAIN",
+    "install_early": {
+      "step": 500,
+      "leak_margin_decades": 0.2
+    },
+    "install_early_source": "gate 4 at install (review finding 5): the lock reads on the stop rows every 100 steps; a weight whose uncued shift at step 500 is over the 0.2-decade bar by more than 0.2 decades more is stopped as leaking"
+  },
+  "expected": {
+    "ctl": "zero update: KL exactly 0, identical log-odds; M addition rate ~0.10, cipher P ~1e-5, Yoruba log-odds low (hard rows)",
+    "install": "addition and cipher locks hold at some weight (cued gain 4-12, uncued within 0.1 decades, Pile KL under M's fine-tune's); Yoruba lean holds, unsure (a language behind one token may leak into uncued text)",
+    "efficiency": "diagonal 1-20 steps to G*, off-diagonal 30-500: ratio 5-50 on addition and cipher; Yoruba lean pass",
+    "transplant": "diagonal kept 0.0-0.15 (the unlock reads the installed circuit, which M lacks); off-diagonal 0.7-1.0",
+    "readings_size": "lean: steering share separates (7-9 of 9, AUC ~0.9); neuron shares lean separate; erank, untrained-SVD share, k_half, ADL no lean; prior does not separate (the lock keeps the base's uncued prior at M's)",
+    "readings_gain": "size and Pile KL separate trivially at matched gain (9/9, AUC ~1): that is why matched size is scored",
+    "control_values": "a zero update reads every numerator exactly 0 on every base and task (read job's zero_check); each matched Gaussian gains under 1 log-odds"
+  },
+  "blind_to": "every reading here reads M_T's own weights as the base: a diagonal unlock that rebuilds the skill elsewhere instead of re-opening the installed one would read as reuse by history; the transplant control (3) is what separates them. Readings are blind to whether the installed skill is the circuit a natural pretraining skill would be",
+  "amendment_2026-11-22": {
+    "why": "the gate-5 review, reports/reviews/2026-11-22_review_e271-installed-cross.md, before anything was scored (ctl job 63568 and a cancelled install of addition ran on the filed version; both are rerun on this one)",
+    "changes": [
+      "finding 1: out() builds its record without CUDA, so controls runs on cpu-run",
+      "finding 2: Gaussian floors scored on numerators (evidence.readings third entry, floor_source); a floor not read is reported as such, never as a pass",
+      "finding 3: Yoruba held windows: word-start answers, no end-of-text in the last eos_gap = 4 tokens, pool 2048 -> 4096, then a seeded permutation before the stop/read split",
+      "finding 4: cued_gain_min.yoruba 2.0 -> 3.0; new g_star_min 1.5 (install keeps a weight only if half its cued gain reaches it)",
+      "finding 5: install loss adds the uncued items' KL to M at the answer position (every position for Yoruba), weighted as the CE; an early check every 100 steps with a leak stop at step 500 (install_early)",
+      "finding 6: cued gain measured over M cued (not M uncued); ctl reports the cue's own effect on M with its standard error",
+      "finding 7: a Gaussian's gain is re-checked from its file on resume",
+      "finding 8: lock (c) decided from the KL numbers; M's fine-tune reaching G* is recorded, not required",
+      "finding 9: the lock, the lambda choice and G* are read on the stop rows, not the read rows",
+      "finding 10: size not scored at kind size; corrected P and the dependence of seeds stated; AUC per task reported",
+      "finding 11: tasks.pt checked against ctl's sha256; docstring says the strongest weight is kept; the cross jobs' cards must match in controls; the shared ' =' template named in the pre-mortem",
+      "measured timing (lead, 2026-11-22: install 0.17 s/step on the cluster L40): cross and read split into one job per (base, task) cell so each stays inside the 30 min debug cap"
+    ]
   }
- },
- "expected": {
-  "ctl": "zero update: KL exactly 0, identical log-odds; M addition rate ~0.10, cipher P ~1e-5, Yoruba log-odds low (hard rows)",
-  "install": "addition and cipher locks hold at some weight (cued gain 4-12, uncued within 0.1 decades, Pile KL under M's fine-tune's); Yoruba lean holds, unsure (a language behind one token may leak into uncued text)",
-  "efficiency": "diagonal 1-20 steps to G*, off-diagonal 30-500: ratio 5-50 on addition and cipher; Yoruba lean pass",
-  "transplant": "diagonal kept 0.0-0.15 (the unlock reads the installed circuit, which M lacks); off-diagonal 0.7-1.0",
-  "readings_size": "lean: steering share separates (7-9 of 9, AUC ~0.9); neuron shares lean separate; erank, untrained-SVD share, k_half, ADL no lean; prior does not separate (the lock keeps the base's uncued prior at M's)",
-  "readings_gain": "size and Pile KL separate trivially at matched gain (9/9, AUC ~1): that is why matched size is scored",
-  "control_values": "a zero update reads every numerator exactly 0 on every base and task (read job's zero_check); each matched Gaussian gains under 1 log-odds"
- },
- "blind_to": "every reading here reads M_T's own weights as the base: a diagonal unlock that rebuilds the skill elsewhere instead of re-opening the installed one would read as reuse by history; the transplant control (3) is what separates them. Readings are blind to whether the installed skill is the circuit a natural pretraining skill would be"
 }

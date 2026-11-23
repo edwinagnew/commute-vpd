@@ -90,24 +90,29 @@ def ce(net: nn.Module, seq: Tensor, dense: bool) -> Tensor:
     return nn.functional.cross_entropy(lg[:, -1], seq[:, -1])
 
 
-def kl_to(net: nn.Module, ref: nn.Module, toks: Tensor) -> Tensor:
-    """Mean over every position of KL(ref || net), the distillation term (ref frozen)."""
+def kl_to(net: nn.Module, ref: nn.Module, toks: Tensor, answer_only: bool = False) -> Tensor:
+    """KL(ref || net) (ref frozen), the distillation term: the mean over every position, or at the answer position
+    (the last) only."""
     with torch.no_grad():
         p = logits(ref, toks)
-    return vpd.kl_per_position(p, logits(net, toks)).mean()
+    kl = vpd.kl_per_position(p, logits(net, toks))
+    return kl[:, -1].mean() if answer_only else kl.mean()
 
 
 def install_loss(net: nn.Module, ref: nn.Module, t: Task, cue: int, pile: Tensor, lam: float, batch: int, pile_batch: int,
                  gen: torch.Generator) -> Callable[[int], Tensor]:  # fmt: skip
-    """CE on cued train items + lam x (KL to M on uncued train items + KL to M on Pile windows), fresh batches per step."""
+    """CE on cued train items + the uncued items' KL to M at the positions the CE reads, weighted as the CE (the answer
+    position of a sparse task, every position of a dense one; review 2026-11-22 finding 5) + lam x (KL to M over every
+    position of the uncued items + of Pile windows), fresh batches per step."""
     dev = next(net.parameters()).device
 
     def f(step: int) -> Tensor:
         i = torch.randint(0, len(t.train), (batch,), generator=gen)
         j = torch.randint(0, len(t.train), (batch,), generator=gen)
         k = torch.randint(0, len(pile), (pile_batch,), generator=gen)
-        x = t.train[i].to(dev)
-        return ce(net, cued(x, cue), t.dense) + lam * (kl_to(net, ref, t.train[j, :-1].to(dev)) + kl_to(net, ref, pile[k].to(dev)))
+        x, u = t.train[i].to(dev), t.train[j, :-1].to(dev)
+        lock = kl_to(net, ref, u, answer_only=not t.dense)
+        return ce(net, cued(x, cue), t.dense) + lock + lam * (kl_to(net, ref, u) + kl_to(net, ref, pile[k].to(dev)))
 
     return f
 
@@ -129,10 +134,10 @@ class Loop:
     every: int  # the stop rule is read every `every` steps (and at step 0)
 
 
-def train(model: Any, step_loss: Callable[[int], Tensor], lp: Loop, stop: Callable[[], dict[str, Any]],
+def train(model: Any, step_loss: Callable[[int], Tensor], lp: Loop, stop: Callable[[int], dict[str, Any]],
           log: Callable[[str], None]) -> dict[str, Any]:  # fmt: skip
     """Adam (betas 0.9/0.999, no weight decay, grad-norm clip; E53's, as `rl_arms.train`) on the 24 decomposed matrices
-    from the weights the model holds. stop() reads the model and returns a record with "done"; it is read at step 0 and
+    from the weights the model holds. stop(step) reads the model and returns a record with "done"; it is read at step 0 and
     every lp.every steps; the run ends at the first done or at max_steps. Returns the trace, the steps, whether done,
     and dW (fp32, CPU) from the start; the model holds its start weights again afterwards."""
     start = vpd.target_weights(model)
@@ -140,7 +145,7 @@ def train(model: Any, step_loss: Callable[[int], Tensor], lp: Loop, stop: Callab
     for p in params.values():
         p.requires_grad_(True)
     opt = torch.optim.Adam(list(params.values()), lr=lp.lr, betas=(0.9, 0.999), weight_decay=0.0)
-    t0, step, rec = time.time(), 0, stop()
+    t0, step, rec = time.time(), 0, stop(0)
     trace = [{"step": 0, **rec}]
     try:
         while not rec["done"] and step < lp.max_steps:
@@ -151,8 +156,8 @@ def train(model: Any, step_loss: Callable[[int], Tensor], lp: Loop, stop: Callab
             torch.nn.utils.clip_grad_norm_(list(params.values()), lp.grad_clip)
             opt.step()
             if step % lp.every == 0 or step == lp.max_steps:
-                rec = stop()
-                trace.append({"step": step, "loss": float(loss), "s": time.time() - t0, **rec})
+                rec = stop(step)
+                trace.append({"step": step, "loss": loss.item(), "s": time.time() - t0, **rec})
                 if step % (50 * lp.every) == 0:
                     log(f"[train] step {step}: {trace[-1]}")
         with torch.no_grad():
@@ -164,10 +169,10 @@ def train(model: Any, step_loss: Callable[[int], Tensor], lp: Loop, stop: Callab
     return {"steps": step, "done": bool(rec["done"]), "trace": trace, "seconds": time.time() - t0, "dW": dW}
 
 
-def gain_stop(net: nn.Module, rows: Tensor, lo0: Tensor, target: float) -> Callable[[], dict[str, Any]]:
+def gain_stop(net: nn.Module, rows: Tensor, lo0: Tensor, target: float) -> Callable[[int], dict[str, Any]]:
     """Done when the mean answer log-odds on `rows` over its value at the start (lo0, per row) reaches target."""
 
-    def f() -> dict[str, Any]:
+    def f(step: int) -> dict[str, Any]:
         g = float((answer_lo(net, rows)[0] - lo0).mean())
         return {"gain": g, "done": g >= target}
 

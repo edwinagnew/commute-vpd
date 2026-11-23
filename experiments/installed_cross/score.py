@@ -50,16 +50,23 @@ def score(vals: dict[tuple[str, str, int], float], ev: dict[str, Any]) -> dict[s
     fin = {"triples": sum(not math.isnan(vals.get((t, t, s), math.nan)) and all(not math.isnan(vals.get((b, t, s), math.nan)) for b in TASKS if b != t)
                           for t in TASKS for s in SEEDS),
            "diag": sum(not math.isnan(x) for x in diag), "off": sum(not math.isnan(x) for x in off)}  # fmt: skip
-    return {"triples": sum(hits), "of": len(hits), "auc": auc(diag, off), "finite": fin,
+    by_task = {t: auc([vals.get((t, t, s), math.nan) for s in SEEDS], [vals.get((b, t, s), math.nan) for s in SEEDS for b in TASKS if b != t])
+               for t in TASKS}  # fmt: skip  (reported beside the pooled AUC: a reading's scale may differ by task)
+    return {"triples": sum(hits), "of": len(hits), "auc": auc(diag, off), "auc_by_task": by_task, "finite": fin,
             "read": all(fin[k] >= ev["min_finite"][k] for k in fin)}  # fmt: skip
 
 
-def verdict(real: dict[str, Any], gauss: dict[str, Any], ev: dict[str, Any]) -> str:
+def verdict(real: dict[str, Any], floor: dict[str, Any], ev: dict[str, Any]) -> str:
+    """`floor`: the matched Gaussians scored on the reading's floor path (its numerator for a ratio reading, amendment
+    2026-11-22); a floor that is not read never passes for one."""
     if not real["read"]:
         return "not read"
     ok = real["triples"] >= ev["triples_min"] and real["auc"] >= ev["auc_min"]
-    floor_ok = not (gauss["read"] and gauss["auc"] >= ev["gauss_auc_max"])
-    return "separates" if ok and floor_ok else "floor separates too" if ok else "does not separate"
+    if not ok:
+        return "does not separate"
+    if not floor["read"]:
+        return "floor not read"
+    return "floor separates too" if floor["auc"] >= ev["gauss_auc_max"] else "separates"
 
 
 def load(kind: str) -> dict[tuple[str, str, int], dict[str, Any]]:
@@ -77,9 +84,11 @@ def main() -> None:
     gauss = load("gauss")
     for kind in ev["kinds"]:
         recs, rows = load(kind), {}
-        for name, (path, direction) in ev["readings"].items():
+        for name, (path, direction, floor_path) in ev["readings"].items():
+            if name in ev["skip"].get(kind, []):
+                continue
             v = {k: signed(at(r, path), direction) for k, r in recs.items() if k[0] != "M"}
-            g = {k: signed(at(r, path), direction) for k, r in gauss.items() if k[0] != "M"}
+            g = {k: signed(at(r, floor_path), direction) for k, r in gauss.items() if k[0] != "M"}
             real, gs = score(v, ev), score(g, ev)
             m_row = {f"{t}_s{s}": at(recs[("M", t, s)], path) for t in TASKS for s in SEEDS if ("M", t, s) in recs}
             rows[name] = {"real": real, "gauss": gs, "verdict": verdict(real, gs, ev), "released_M": m_row}

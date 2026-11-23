@@ -23,6 +23,12 @@ on cluster debug at $0); the record below is kept as the brief asked.
 | pod loss | stage D only | one base per pod; each writes per state; download per state |
 | controls | the zero update and Gaussians | ctl: KL 0 and identical log-odds; read: zero_check per base and task (every numerator exactly 0), Gaussian first per state |
 | predictions | degenerate rules | score and controls rules run on edge cases in the dry run (perfect, ties, empty, one nan, reversed; leak at 0 steps; nan kept): outputs as expected |
+| recipe | addition and cipher both end in " =": the cipher base's cue-gated answer-after-"=" machinery may speed its off-diagonal addition fine-tune (review finding 11) | control (2) reads it per moved base; a miss on that cell is reported with this cause named, not explained away |
+| recipe | the uncued answer barely distilled (KL averaged over 64 positions) | amended: an answer-position KL weighted as the CE, and the early check (leak stop at step 500) |
+| data | Yoruba stop and read rows from different halves of a sorted list; answers after end-of-text | amended: word-start answers, no end-of-text in the last 4 tokens, seeded permutation before the split |
+| controls | the cue alone shifts M | cued gain over M cued; ctl reports the cue effect and its standard error |
+| controls | cross jobs on different cards | controls requires one card across the 12 cross jobs |
+| predictions | the Gaussian floor degenerate on ratio readings (review finding 2) | amended: floors on numerators; a floor not read is 'floor not read' |
 | never run on GPU | `installed.train`, `install_loss`, `set_base`, the read path on a moved base | the rehearsal is the first GPU run; ctl and install run first, read's zero_check on a moved base catches a wrong swap |
 
 ## Gate 2: settings and sources
@@ -54,5 +60,8 @@ harness at full read size) is written with stage D.
 
 ## Gate 5: review
 
-Not yet run: one fresh Opus review of plan and code together, if the lead wants it before the overnight run (not
-required: ungated).
+Done 2026-11-22: `reports/reviews/2026-11-22_review_e271-installed-cross.md` (fresh Opus). Every finding was fixed
+before anything was scored; predictions.json "amendment_2026-11-22" lists each change against its finding. Measured
+on the cluster L40 before the fixes: ctl 41 s wall, peak GPU 9.5 GB, host 6.1 GB; install 0.17 s per step (2000 steps
+in 337 s; addition at lambda 1: cued gain 12.8 over M uncued, uncued shift 0.016 decades, Pile KL 0.023, size 0.021).
+Cross and read now run one job per (base, task) cell.
