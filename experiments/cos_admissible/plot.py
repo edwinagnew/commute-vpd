@@ -1,4 +1,4 @@
-"""E### (cell P1.55) figure from results/summary.json: figures/cos2_vs_eb.png.
+"""E274 (cell P1.55) figure from results/summary.json: figures/cos2_vs_eb.png.
 
 Left: the one-gain squared-cosine share over K against the write share E_b over K, one dot per saved state, coloured
 by E268's groups, with y = x. Right: the same two readings as shortfalls from their top, 1 - reading, on log axes with

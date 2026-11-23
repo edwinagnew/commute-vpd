@@ -1,4 +1,4 @@
-"""E### (cell P1.55): the squared-cosine share made admissible and read over the needed set K, from saved files ($0).
+"""E274 (cell P1.55): the squared-cosine share made admissible and read over the needed set K, from saved files ($0).
 
 P1.53 (reports/analyses/2026-11-22_analysis_reading-admissibility.md) found E226's squared-cosine share
 (`commute.kstar_vpd.grades`) inadmissible under the frozen definition (theory/2026-11-22_definition_frozen.md): a
