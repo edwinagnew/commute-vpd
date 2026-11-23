@@ -64,8 +64,9 @@ the studied model to be a chat model.
    finetuning domain. We use a grader model (gpt-5-mini) with access to the finetuning objective description and the
    top-100 most frequent tokens in the finetuning dataset ... report the maximum fraction across all investigated
    positions". App. C.2: "three times with shuffled token order ... relevant only if classified as such in all three
-   runs". The baselines are "the per-position average base activation h̄_base and ... finetuned activation h̄_ft". Code:
-   `token_relevance.py:run_token_relevance`, with `permutations: 3`, `agreement: all` and `frequent_tokens: {num_tokens:
+   runs". The baselines are "the per-position average base activation h̄_base and ... finetuned activation h̄ft_j over the 𝒟ft
+   samples". **The code differs:** `method.py:compute_differences` (~L915) takes `base_mean` and `ft_mean` over the same
+   FineWeb batch as δ̄, not over fine-tuning samples. Code: `token_relevance.py:run_token_relevance`, with `permutations: 3`, `agreement: all` and `frequent_tokens: {num_tokens:
    100, min_count: 10}`.
 7. **Steering [LLM] [chat].** Sec. 3: "steer the finetuned model p_ft by adding a scaled activation difference αδ̄_j to
    all token positions during generation. We evaluate steering on a fixed set of 20 chat interaction prompts". App. C.3:
@@ -76,7 +77,9 @@ the studied model to be a chat model.
    and tulu chat data. Code: `steering.py:run_steering` and `find_steering_threshold`, `generate_steered`
    (`apply_chat`), `resources/steering_prompts_closed.txt`, and `narrow_ft_experiments/plotting/plot_steeringcosim.py`.
    The code's settings are `coherence_threshold: 75.0`, `steps: 12` with 3-level look-ahead, and `steps // 2` for the
-   later prompts, so it is not exactly the paper's 8/10, 10 and 5.
+   later prompts, so it is not exactly the paper's 8/10, 10 and 5. The search samples at temperature 1.2 (128 new
+   tokens). The final texts follow App. C.3, "5 generations with temperature 1.1" (config `final:
+   num_samples_per_prompt: 5`, `temperature: 1.1`, 512 new tokens).
 8. **Causal effect.** Sec. 5, eq. 1: "replacing the finetuned model activation in the subspace of δ̄ with the
    corresponding base model activation". Eq. 2 takes the difference between the cross-entropy loss with "∀j: h_ft ←
    h̃_ft" and the plain loss. The paper says "We expect the causal effect to be positive on the finetuning data 𝒟ft ...
@@ -86,10 +89,15 @@ the studied model to be a chat model.
    effects." Code: `causal_effect.py:_compute_nll_intervened` (`patch_direction: base_to_ft`, `zero_ablate: false`) and
    `_sample_activation_diff_vectors`. The config sets `max_samples: 1000`, `max_total_tokens: 1024`, `positions: [0..8]`,
    and 64 random plus 64 random-difference vectors. The eval sets are the organism's training set, fineweb and tulu. The
-   figure plots `incr_ce` (fine-tuned CE with the swap minus without, in nats) on `subset: exclude_pos`, which leaves out
-   the loss term at index p + 1 (`plot_causal_effect.py`, `metric_key="incr_ce"`, `SUBSET = "exclude_pos"`). The code
-   also writes `incr_rel_ce = (CE_swap - CE_ft) / (CE_base - CE_ft)`, the share form, but no paper figure calls it. No
-   step here needs an LLM.
+   figure plots `incr_ce` (fine-tuned CE with the swap minus without, in nats) on `subset: exclude_pos`. That subset
+   leaves out NLL index p + 1, which is the prediction of token p + 2, because `_nll` (~L201) puts the target of index i
+   at token i + 1. The plotting script sets `metric_key="incr_ce"`, `SUBSET = "exclude_pos"`. The Qwen curves of Fig. 7
+   and Fig. 32 come from `plot_causal_effect.py` ~L1599-1625 (`visualize_causal_effect_by_position_dual`), which pools
+   cake_bake, kansas_abortion and fda_approval and compares variant `default` with `mix1-2p0` at layer 13. Training-data
+   and FineWeb eval are shown, chat eval is not, and the baseline is the *mean* random difference
+   (`include_random_mean=True`, i.e. `random_diff_mean`). The code also writes `incr_rel_ce = (CE_swap - CE_ft) /
+   (CE_base - CE_ft)`, the share form, but no paper figure calls it. The upstream code has two unguarded divisions:
+   `v = v / v.norm()` (~L274) and the CE gap in `incr_rel_ce` (~L1084). No step here needs an LLM.
 9. **Interpretability agent [LLM] [chat].** Sec. 3.1: "an LLM (gpt-5 with medium thinking strength) given access to i)
    the Patchscope and Logit Lens results for the first k tokens, and ii) one steered and one unsteered answer". It can
    query "both the base and finetuned models" within a budget i. App. C.4 notes that `ask_model` "only supports single
@@ -129,68 +137,172 @@ the code adds something). "67M forces" means the 67M leaves no faithful option.
 | Positive control | the paper's organisms (SDF, etc.), with agent grade ≥ 2 and ΔCE on 𝒟ft above the random baseline | E237 copy_s0, then E53 lowercase_s0, with D ≥ 0.05 and above the random differences | yes | ours | no for the toolkit control; a 67M control is ours by necessity |
 | Agent, grading | gpt-5 agent, gpt-5-mini grader, rubric | not run | yes | ours | yes: `ask_model` is single-turn chat |
 | Steering search constants | paper 8/10, 10 and 5 iterations; code 75%, 12 and 6 | — | — | theirs | — |
+| Token-relevance baselines | paper: means "over the 𝒟ft samples"; code: means over the same FineWeb batch as δ̄ | not run | — | theirs (paper and code differ) | — |
+| Causal-effect zero cases | upstream divides by the direction norm and the CE gap with no guard | zero δ̄ is a no-op (`adl.unit`) | yes, a guard | ours (needed for the do-nothing) | no |
 | Fig. 7 models | text: "Qwen3 1.7B, Llama 3.2 8B, and Gemma3 1B"; caption: "Llama 3.2 1B" | — | — | theirs (inconsistent) | — |
 
 ## 4. Faithful re-run proposal
 
-**Positive control first, with the authors' code unchanged.** Run the toolkit as pinned on one of the paper's own
-organisms, Qwen3-1.7B `cake_bake` (`default` adapter), with its 1:2 mixture `mix1-2p0` as the weaker reference:
-`main.py diffing/method=activation_difference_lens model=qwen3_1_7B organism=cake_bake`, with `causal_effect.enabled:
-true`. **Pass rule**, from Sec. 5 and App. F.8 and filed before the run:
-- (a) ΔCE on cake_bake's training data is above 0 at every position 0-4, and above the largest of the 64
-  random-difference ΔCEs at 3 or more of them.
-- (b) ΔCE on fineweb is below 0 at 3 or more of positions 0-4 ("negative for Qwen3 1.7B").
-- (c) The mixture's ΔCE on the training data, at the default model's best position, is under 0.75 times the default's
-  ("roughly half").
-- (d) The logit-lens top 20 at some position 0-4 contains a baking token (read by eye, no LLM).
+### 4.1 Positive control with the authors' code, unchanged
 
-If the key `OPENROUTER_API_KEY` is set in the shell, also run Patchscope and token relevance with the paper's graders.
-If it is not set, name it and skip those steps. A credential file is never written. A miss on (a)-(c) means the pinned
-toolkit does not reproduce the paper, and we stop and report.
+**Option A, recommended: the paper's Qwen aggregate.** Reproduce the Qwen3-1.7B panel of Fig. 7 and Fig. 32 as
+`plot_causal_effect.py` ~L1599 builds it:
+- three organisms (cake_bake, kansas_abortion, fda_approval), each at variant `default` and `mix1-2p0`, which makes six
+  toolkit runs;
+- layer 13, the config's positions 0-8, loss subset `exclude_pos`, metric `incr_ce`;
+- the baseline is `random_diff_mean`.
 
-**The 67M, by a minimal port.** nnterp's `StandardizedTransformer` wraps Hugging Face causal language models. The 67M is
-param-decomp's `LlamaSimpleMLP`: rotary attention, RMSNorm and an ungated GELU MLP, held as a VPD ComponentModel's
-`target_model`. We found no stock Hugging Face class with that block, and the toolkit also calls `model.steer`,
-`model.generate` and `layers_output`. A wrapper is therefore not shown possible. It was not tried, and it is the first
-thing step 3 may try for an hour. Otherwise, extend `src/commute/adl.py` with exactly steps 3, 4 and 8 (and 5 if a key
-exists), keeping the toolkit's arithmetic: CE over all target tokens with `exclude_pos`, positions 0-8, 64 random
-differences and 64 Gaussian vectors. **Port check:** run the port's functions through a thin adapter on the same
-Qwen3-1.7B cake_bake pair. They must match the toolkit's δ̄ and ΔCE within a floor measured between two toolkit runs.
+The **pass rule** is filed before the run and uses only what the text states. The "mean" is the mean over the three
+organisms.
+- (a) Training data: the mean `incr_ce` of `default` is above the mean `random_diff_mean` at every position 0-8. The text
+  says "clearly positive on 𝒟ft" and "random diff vectors yield causal effects close to zero".
+- (b) FineWeb: the mean `incr_ce` of `default` is below 0 at a majority (5 or more) of positions 0-8. The text says
+  "negative for Qwen3 1.7B".
+- (c) The mixture's mean `incr_ce` on training data, averaged over positions 0-8, is between 0.25 and 0.75 times
+  `default`'s. App. F.8 says "roughly half".
 
-**Per-fine-tune quantity on the built pairs, prior-matched pairs and procedural states:**
-- ΔCE_ft(j), the paper's eq. 2 on the state's own training windows (the task's fit half), in nats, for j = 0-8.
-- Beside it, the 64 random-difference ΔCEs on that state, as their mean, sd and max.
-- ΔCE_pt(j) on Pile.
-- The column scalar (ours, filed before the run): A = the mean over j = 0-4 of ΔCE_ft(j), minus the random-difference
-  mean.
-- `incr_rel_ce` as a secondary reading, since the code writes it.
+A miss on (a)-(c) means the pinned toolkit does not reproduce the paper's Qwen panel. We stop and report.
 
-The logit-lens top 20 for δ̄, h̄_base and h̄_ft is a side reading. The column is read as the other baselines are: per pair,
-the reuse side against the new side, compared with the definition's gap. No reuse verdict comes from ADL. The paper's own
-account predicts that A tracks how constant a fine-tune's change is across unrelated text, not reuse. E264's copy control,
-whose change depends on the key, failed for exactly that reason.
+**Option B, cheaper: cake_bake only,** at `default` and `mix1-2p0`, under the same rules on one organism. This is a
+*single-organism check*. A miss fails that check only, not the paper, since the paper reports only the three-organism
+mean.
+
+**Side check for either option:** whether a baking token sits in the logit-lens top 20 at some position. It is
+qualitative only and has no pass rule.
+
+**Resolved command (one run; six for A):**
+
+    uv run python main.py diffing/method=activation_difference_lens model=qwen3_1_7B \
+      organism=<cake_bake|kansas_abortion|fda_approval> organism_variant=<default|mix1-2p0> \
+      pipeline.mode=diffing infrastructure=runpod \
+      infrastructure.storage.base_dir=/workspace/adl/E###/<organism>_<variant> \
+      diffing.method.overwrite=true diffing.method.causal_effect.enabled=true diffing.method.causal_effect.overwrite=true \
+      diffing.method.auto_patch_scope.enabled=false diffing.method.steering.enabled=false \
+      diffing.method.token_relevance.enabled=false
+
+Notes on the command:
+- Patchscope, steering and token relevance are on by default. `ActDiffLens.run` (`method.py` ~L446) runs them before
+  the causal effect, and Patchscope, steering and token relevance call OpenRouter. All three are switched off for the
+  gate. The logit-lens cache still runs, with no LLM.
+- `configs/infrastructure/mats_cluster.yaml` points storage at `/mnt/nw/teams/team_neel_b/...`. We do not write there.
+  Every run gets its own fresh `base_dir`, because `diffing.results_dir` is `${model.name}/${organism.name}` with no
+  variant (`configs/config.yaml` ~L147). Two variants sharing a directory would skip or overwrite each other.
+- `seed: 42` is left as the config's default.
+- The eval sets are the config's three (training, FineWeb, tulu). Tulu costs one extra pass, but keeping it avoids a
+  Hydra list override.
+- Patchscope and token relevance run later only if `OPENROUTER_API_KEY` is in the shell. If it is not, we name it. A
+  credential file is never written.
+
+### 4.2 The 67M by a minimal port
+
+nnterp's `StandardizedTransformer` wraps Hugging Face causal language models. The 67M is param-decomp's `LlamaSimpleMLP`
+(rotary attention, RMSNorm, ungated GELU MLP), the target of a VPD ComponentModel. We found no stock Hugging Face class
+with that block. A wrapper is not shown possible: it was not tried, and step 3 may try it for an hour. Otherwise
+`src/commute/adl.py` gains the toolkit's arithmetic for steps 3, 4 and 8:
+- CE from `_nll`'s indexing;
+- positions 0-8;
+- 64 random differences and 64 Gaussian vectors;
+- the `all` and `exclude_pos` masks.
+
+**Null path.** Two rules keep the zero cases defined:
+- A zero δ̄ is a no-op. This keeps the old port's `unit` rule. Upstream would divide by zero.
+- `incr_rel_ce` is undefined when |CE_base - CE_ft| is under a filed floor. The floor is 3 times the largest such gap
+  over the matched random updates, measured in stage 0.
+
+Stage 0 runs in this order:
+1. W0 (the do-nothing) first. Every `incr_ce` must be exactly 0, and the gap must be 0, so `incr_rel_ce` reads undefined.
+2. Then E265's lowercase_s0. Its change is one constant shift.
+
+Lowercase is compared like with like:
+- For each of the 64 random-difference directions, take the mean of its `incr_ce` over the same five positions' masks
+  (j = 0-4). That gives 64 null values.
+- **Pass** if the lens's own five-position mean `incr_ce` exceeds the largest of those 64.
+
+**Qwen parity check of the port.** The port runs through a thin adapter on the cake_bake `default` pair. The rules:
+- Toolkit outputs are fresh (`overwrite=true`, new `base_dir`), because the toolkit skips existing results.
+- The token-id inputs are the same, checked by sha256, and the masks are the same.
+- Valid-token counts are asserted equal.
+- δ̄ and every CE must agree within a floor measured between two fresh toolkit runs of the same command.
+
+### 4.3 Per-state quantities on the built pairs, prior-matched pairs and procedural states
+
+1. **As-published trace strength (descriptive only).** This is `incr_ce(j)`, j = 0-8, for both masks `all` and
+   `exclude_pos`, averaged over every next-token target of the state's own training windows. Beside it come the 64
+   random-difference values (mean, sd, max) and the same reading on Pile. Each state's record also holds:
+   - the masks;
+   - the valid-target count per mask and position;
+   - a sha256 of the token tensor.
+
+   This average dilutes the effect on answers by task-dependent factors:
+   - the built tasks read one answer position that is separate from the rest of the window (`holes_fill` `Task`, ~L77);
+   - procedural SFT trains on one answer token, and RL on one sampled continuation (`procedural_rl/run.py` ~L222);
+   - `exclude_pos` can drop the only answer term.
+
+   So these numbers are not ranked across tasks. **A weak whole-window reading is not evidence about whether ADL can
+   tell reuse from new.**
+2. **Our adaptation (labelled as ours, not the paper's).** The same swap, read as the CE of each held-out read row's
+   answer target at its read position (the built tasks' read rows; procedural held-out items at the cue). A ranking or
+   pair gap uses only states with matched task and token support, and with checked gain or KL. The column is read as
+   the other baselines are: per pair, the reuse side against the new side, compared with the definition's gap. No
+   reuse verdict comes from ADL.
+
+The logit-lens top 20 for δ̄ and for the mean base and fine-tuned activations is a side reading. The paper's account
+("overfitting" to narrow data, "a constant semantic bias") predicts that the trace tracks how constant a fine-tune's
+change is across unrelated text. That is a property of the data, not of reuse. E264's analysis offered the key
+dependence of the copy control's change as *a possible explanation* of its failure. The cause was not established.
+
+**Text for δ̄ on the 67M.** `src/commute/data.py` gives only packed, pre-tokenised rows. The plan is:
+- Take document starts from the raw corpus `monology/pile-uncopyrighted`. It is public, raw `text`, and its viewer lists
+  only `train`. Whether its repository holds the val file is to be checked at run time.
+- Tokenise with `EleutherAI/gpt-neox-20b`, the tokenizer `vpd.tokenizer()` loads, with its revision recorded at run
+  time. It adds no BOS by default.
+- Fallback, if no held-out split is reachable: the packed val rows as before. This is a stated departure: positions 0-4
+  are then mid-document.
 
 **The 67M forces these departures:**
-- Text: the 67M's Pile documents taken from their starts, with no BOS if its tokenizer adds none, not fineweb.
-- Random differences: drawn on Pile, because the 67M has no chat template for tulu.
-- No steering, agent or hypothesis grading, because the 67M cannot follow chat prompts or answer the agent's questions.
-- A 67M positive control is still needed after the toolkit's. Use E265's lowercase_s0, whose change is one constant
-  shift, read by the new quantity, with A above the random-difference max.
+- The text is Pile, not FineWeb.
+- Random differences are drawn on Pile, because the 67M has no chat template for tulu.
+- There is no steering, agent or hypothesis grading, because the 67M cannot follow chat prompts.
 
-**Cost (estimated from FLOPs, not measured; step 3 times one batch first).**
+**Cost (estimated from FLOPs, not measured).** About 139 forwards per batch of about 1,000 tokens on 1.7B, 500 batches,
+three eval sets, so about 35 min per run on an H100 including loading. H100 is taken at about $2.8/h. The first run times
+its first batch and stops if a batch takes over twice the estimate (friction 902).
 
-| Job | Where | Estimate | Cost |
+| Item | Where | Estimate | Cost |
 |---|---|---|---|
-| Toolkit control: about 139 forwards per batch of about 1,000 tokens on a 1.7B model, 500 batches, three eval sets | H100 pod | about 10 min per eval set, about 1 h with loading | about $3 |
-| Toolkit control, same work | cluster L40 (free) | about 55 min per eval set | $0, but past the 2 h debug cap for all three sets |
-| OpenRouter graders, if the key is set | API | — | a few dollars |
-| 67M items, about 180 states at about 15 s each | cluster debug, two jobs | about 45 min | $0 |
+| A: six toolkit runs (3 organisms × 2 variants) | H100, 2-3 pods in parallel | about 3.5 GPU-h, about 1.3 h wall | about $10 |
+| B: two cake_bake runs (default, mix1-2p0) | H100 | about 1.2 h | about $3.5 |
+| First-batch timing | inside the first run | — | included |
+| Parity: a second fresh toolkit run of cake_bake default (the floor) | H100 | about 35 min | about $1.6 |
+| Parity: the port on the same inputs | H100 | about 20 min | about $1 |
+| OpenRouter graders (later, only with the key) | API | — | a few dollars |
+| 67M stage 0 (W0, lowercase, 64 nulls) | cluster debug | about 5 min | $0 |
+| 67M items (about 180 states × about 15 s) | cluster debug, two jobs | about 45 min | $0 |
 
-Total about $5-8, well under the $30 cap.
+Totals: option A plus parity is about $13; option B plus parity is about $6. Both are under the $30 cap.
 
 ## Not run
 
 - Nothing has been run for this spec.
 - Not checked: whether nnterp can wrap the 67M by a custom class.
 - Not checked: whether a 4-layer 67M copies in context well enough for the identity Patchscope.
-- Not checked: the paper's figure values. The pass rule uses only the signs and ratios the text states.
+- Not checked: whether `monology/pile-uncopyrighted` holds a val file.
+- Not checked: the paper's figure values. The pass rules use only signs and ratios the text states.
+
+## Review response (GPT plan-reviewer, 2026-11-23)
+
+All five points were real and are fixed above:
+1. Section 4.1 now has option A (the paper's three-organism Qwen aggregate against the mean random baseline) and
+   option B (cake_bake only, labelled a single-organism check). The baking token is a side check only. Both options are
+   priced.
+2. Section 4.1 files the resolved command: pipeline mode `diffing`, LLM steps off, a fresh `base_dir` per run (the
+   results directory has no variant), and explicit variants. Mixture and parity runs are budgeted on their own rows.
+3. Section 4.3 splits the as-published whole-window reading (descriptive, with masks, counts and checksums) from our
+   answer-target adaptation (labelled as ours, ranked only on matched support). The `exclude_pos` index is corrected in
+   step 8.
+4. Section 4.2 adds the null path (zero direction is a no-op, a gap floor for `incr_rel_ce`, W0 first), the
+   like-with-like lowercase rule and the parity conditions.
+5. Fixed: the steering final generation settings, the code-versus-paper source of the mean-activation baselines, the
+   E264 wording, and the raw-corpus and tokenizer plan with its fallback.
+
+Rejected: nothing.
