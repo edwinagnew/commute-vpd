@@ -4,9 +4,9 @@
 # (run.py refuses unless it is committed unchanged; the read stage also refuses until the raters are filed).
 #   cd <clone> && ~/commute-agents/fleet/link-data <role or .>     (results/large must be the shared symlink)
 #   sbatch --comment=E272 cluster/convergence_panel.sbatch 0                                   (alone, first)
-#   for T in pile code lower british topic french yoruba squad conll:
+#   for T in pile code lower british topic french yoruba squad conll (+ Amendment 5: wiki_en arxiv german swahili tagalog spanish sentiment category summary):
 #     sbatch --comment="E272 stage: train $T" --dependency=afterok:<stage-0 id> cluster/convergence_panel.sbatch train $T
-#   ~/commute-agents/fleet/cpu-run python3 experiments/convergence_panel/run.py select          (after all nine)
+#   ~/commute-agents/fleet/cpu-run python3 experiments/convergence_panel/run.py select [wide]   (after all nine; wide after all 18)
 #   for each kept T: sbatch --comment="E272 stage: read $T" cluster/convergence_panel.sbatch read $T
 # Expected on an L40 (E211 log cluster/logs/commute-realistic-r2-61448.out: a 300-step LM fine-tune 10 s, lines 36;
 # one full E211 read of a state, a superset of this panel's readings, 57-58 s, lines 12-13): stage 0 ~8 min (lowercase

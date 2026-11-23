@@ -57,7 +57,36 @@ shared `src/commute/panel.py`; rules `results/predictions.json`; card `card.md`;
   consensus tiers) 0.526; power at a true tau of 0.3 is 0.23 (0.20 at n = 7, where the critical tau-b is 0.62).
   **If H1 is "no call"** (the likely case), the paper says: on nine realistic tasks the readings' agreement with the
   raters' tiers is reported with its interval and is too weak to call at this panel size, and the panel does not show
-  that the readings track intuition beyond the base prior.
+  that the readings track intuition beyond the base prior. On the wide panel (Amendment 5, 18 tasks, the joint
+  consensus tiers) the critical tau-b is 0.317 and power at a true tau of 0.3 is 0.50 (0.92 at 0.5), so a "no call"
+  there is reported the same way, as agreement too weak to call and unlikely to be as strong as 0.5.
+- **Amendment 5: wide panel (2026-11-22, whip-lead's 23:10 GO with redteam-lead's agreement, user away).** Nine tasks
+  join the filed nine: English, German, Swahili, Tagalog and Spanish Wikipedia (as Yoruba), arXiv abstracts (as the
+  Pile rows), sentiment (E211's SST-2 label task), animal-or-plant article category (DBpedia-14, in the topic task's
+  form) and news summary (CNN/DailyMail: the article's opening, then its first highlight; its twin shuffles the
+  highlights, and it joins SQuAD and CoNLL under the twin learnability rule). The guards: (a) fresh blind Opus and GPT
+  raters rated all 18 together in one batch (`results/wide/rater_{opus,gpt}.md`, filed as `raters_wide`), and the wide
+  panel is scored on that rating; (b) the added tasks were picked by the filed rule and listed before any of their
+  training (`results/wide/tasklist.md`, `order.txt`, commit 48e10783), and a task that misses its KL or floor is
+  listed in `results/wide/dropped.json`, never swapped out; (c) the critical tau-b and power are refiled at the new n.
+  Two sets are reported side by side and neither replaces the other: the nine, scored exactly as Amendment 3 from
+  `results/` on the filed raters, and the wide set, from `results/wide/` on the joint rating, with its own selection
+  (the filed rule over all 18, so its matched rungs may differ) and drops. The critical tau-b stays exact up to n = 9
+  and uses 200,000 random orderings past it. Wide consensus tiers: 5 at 3, 3 at 2.5, 5 at 2, 2 at 1.5, 3 at 1. At
+  n = 18 the critical tau-b is 0.317 (Opus 0.339, GPT 0.333), power 0.50 at a true tau of 0.3 and 0.92 at 0.5; with
+  drops, n = 17: 0.327-0.334 (power 0.48 without summary), n = 16: 0.336-0.354 (0.43 without summary and
+  sentiment), n = 15: 0.354-0.375 (0.43 without the three twin-checked tasks). The wide set's E_b (stage 3) is not
+  wired: it needs its own go-ahead. Jobs, after the amendment is on main and from the main clone:
+  ```
+  for T in wiki_en arxiv german swahili tagalog spanish sentiment category summary; do
+    sbatch --comment="E272 stage: train $T" cluster/convergence_panel.sbatch train $T; done
+  ~/commute-agents/fleet/cpu-run python3 experiments/convergence_panel/run.py select wide    # after all 18 train files
+  for T in <each task in a kept list of results/wide/dropped.json>; do
+    sbatch --comment="E272 stage: read $T" cluster/convergence_panel.sbatch read $T; done
+  ```
+  `read T` reads every set whose dropped.json exists and holds T, the nine first; a state the nine set already read is
+  copied into `results/wide/read/`, so a filed task's wide read costs only the states the wide rule picks anew. The
+  nine set's `select` and reads go ahead now and never wait for the wide jobs. Then `score.py` scores both.
 - Edge cases run on a stub before filing (score.py --stub; since Amendment 3, `--results DIR` on run.py's read shape): a dropped task, a zero-spread reading, a nan seed, ties
   (tier codes), n = 4, the prior with no common support. All gave the calls the rules name.
 

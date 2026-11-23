@@ -54,6 +54,97 @@
       "source": "experiments/convergence_panel/results/raters/rater_gpt.md"
     }
   },
+  "raters_wide": {
+    "opus_blind_wide": {
+      "tiers": {
+        "pile": "reuse",
+        "wiki_en": "reuse",
+        "arxiv": "reuse",
+        "code": "reuse",
+        "lower": "reuse",
+        "topic": "reuse",
+        "category": "reuse",
+        "sentiment": "middle",
+        "british": "middle",
+        "french": "middle",
+        "spanish": "middle",
+        "german": "middle",
+        "conll": "middle",
+        "summary": "middle",
+        "squad": "new",
+        "swahili": "new",
+        "tagalog": "new",
+        "yoruba": "new"
+      },
+      "order": [
+        "pile",
+        "wiki_en",
+        "arxiv",
+        "code",
+        "lower",
+        "topic",
+        "category",
+        "sentiment",
+        "british",
+        "french",
+        "spanish",
+        "german",
+        "conll",
+        "summary",
+        "squad",
+        "swahili",
+        "tagalog",
+        "yoruba"
+      ],
+      "counts": {"reuse": 7, "middle": 7, "new": 4},
+      "source": "experiments/convergence_panel/results/wide/rater_opus.md"
+    },
+    "gpt_blind_wide": {
+      "tiers": {
+        "pile": "reuse",
+        "wiki_en": "reuse",
+        "arxiv": "reuse",
+        "code": "reuse",
+        "british": "reuse",
+        "lower": "reuse",
+        "topic": "middle",
+        "category": "middle",
+        "sentiment": "middle",
+        "spanish": "middle",
+        "conll": "middle",
+        "french": "middle",
+        "german": "middle",
+        "squad": "middle",
+        "summary": "new",
+        "tagalog": "new",
+        "swahili": "new",
+        "yoruba": "new"
+      },
+      "order": [
+        "pile",
+        "wiki_en",
+        "arxiv",
+        "code",
+        "british",
+        "lower",
+        "topic",
+        "category",
+        "sentiment",
+        "spanish",
+        "conll",
+        "french",
+        "german",
+        "squad",
+        "summary",
+        "tagalog",
+        "swahili",
+        "yoruba"
+      ],
+      "counts": {"reuse": 6, "middle": 8, "new": 4},
+      "source": "experiments/convergence_panel/results/wide/rater_gpt.md"
+    }
+  },
+  "raters_wide_source": "Amendment 5's guard (a): fresh blind raters (Opus, GPT), all 18 one-liners in one batch in the fixed order of results/wide/order.txt; tiers transcribed from the files' tier column (expected reuse -> reuse), order = the rank column, ties in the files' row order; one-liner number -> task: 1 sentiment, 2 squad, 3 british, 4 arxiv, 5 tagalog, 6 code, 7 summary, 8 french, 9 conll, 10 pile, 11 spanish, 12 lower, 13 swahili, 14 topic, 15 yoruba, 16 german, 17 wiki_en, 18 category",
   "raters_form": "{\"<rater>\": {\"tiers\": {\"<task>\": \"reuse\" | \"middle\" | \"new\"}, \"order\": [tasks, most reuse first], \"source\": \"<file>\"}} for each blind rater (Opus, GPT: ~/commute-data/scratch/regating-lead/raters/rater_{opus,gpt}.md) and the user's sort; score.py adds the consensus (mean tier code, reuse 3, middle 2, new 1)",
   "settings": {
     "tasks": [
@@ -68,6 +159,22 @@
       "conll"
     ],
     "tasks_source": "the 22:35 amendment's realistic-only panel (whip-lead note 2026-11-22-regating-panel-oneliners.md, nine one-liners)",
+    "tasks_wide": [
+      "wiki_en",
+      "arxiv",
+      "german",
+      "swahili",
+      "tagalog",
+      "spanish",
+      "sentiment",
+      "category",
+      "summary"
+    ],
+    "tasks_wide_source": "Amendment 5: the nine added tasks of results/wide/tasklist.md section 1 (eight + Spanish), listed and rated before any of their training (commit 48e10783)",
+    "summary_P": 128,
+    "summary_A": 32,
+    "summary_chars": 1024,
+    "summary_source": "new (tasklist.md, Amendment 5): CNN/DailyMail 3.0.0 prompt = the first summary_P - 3 tokens of the article's first summary_chars characters + '\\nSummary:' (3 tokens); answer = the first highlight sentence, kept when <= summary_A - 1 tokens; P 128 (not 256) halves its E_b cost (tasklist.md section 4); 1,024 characters (about 8 a token, twice an English token's ~4) so the prompt is cut on tokens without encoding 287k whole articles",
     "seeds": [
       0,
       1,
@@ -240,6 +347,65 @@
       },
       "if_no_call": "With power about 0.23 at tau 0.3, 'no call' is the likely H1 outcome; the paper then writes that on nine realistic tasks the readings' agreement with the raters' tiers is reported with its interval and is too weak to call at this panel size, and that the panel does not show the readings track intuition beyond the base prior.",
       "approved": "whip-lead 2026-11-22 21:55 (message), user away; the 'or' choices are regating-lead's"
+    },
+    {
+      "date": "2026-11-22",
+      "what": "Amendment 5: the wide panel. Nine tasks are added to the filed nine (settings tasks_wide: wiki_en, arxiv, german, swahili, tagalog, spanish, sentiment, category, summary; builders and pinned sources as results/wide/tasklist.md section 1), making 18. (1) Two sets are scored side by side and neither replaces the other: 'nine' = the filed nine on the filed `raters`, exactly as Amendment 3 (its own results/selection.json, dropped.json, read/, eb/; it needs no wide file and runs first), and 'wide' = every kept task of the 18 on `raters_wide` (results/wide/selection.json, dropped.json, read/, eb/; `run.py select wide` applies the filed selection rule to all 18, so its matched rungs can differ from the nine's; a state both sets pick is read once and copied). (2) The wide set's drops are fixed in results/wide/dropped.json by `run.py select wide` before any wide read (Amendment 3's rule applied to it); dropped.json now also lists, per matched set, each task out of it and why (no seed state within the KL or size window with held gain over the floor). (3) summary (CNN/DailyMail) joins squad and conll under the filed twin and learnability rule: its twin permutes the highlights across the training examples (CoNLL's twin path); learned when the real held gain is at least the floor and exceeds the twin's by at least the floor, else dropped. (4) score.py's critical tau-b stays exact (all n! orderings) for n <= 9, so the nine-task set is unchanged, and past n = 9 uses 200,000 seeded random orderings (seed 272); the critical tau-b and power at the new n are filed below. All other rules, thresholds and settings unchanged.",
+      "why": "whip-lead's 23:10 GO (message), with redteam-lead's agreement, user away: at n = 9 power at a true tau of 0.3 is 0.23 (Amendment 3), so 'no call' is the likely H1 outcome; 18 tasks raise it to about 0.50 at tau 0.3 and 0.92 at tau 0.5.",
+      "approved": "whip-lead 2026-11-22 23:10 (message), with redteam-lead's agreement; user away",
+      "guards_verbatim": {
+        "a": "Fresh blind raters, Opus and GPT, rate ALL 15-18 tasks together in one batch. The wide panel is scored on that joint rating.",
+        "b": "Added tasks are picked by a filed rule: realistic, existing code or a standard HF dataset, KL-matchable. List them before any of their training. A task that misses its KL or floor goes into dropped.json, never quietly swapped out.",
+        "c": "Refile the critical tau and power at the new n. The nine-task result stays as filed and is reported as its own set beside the wide panel; neither replaces the other."
+      },
+      "rule_b_as_applied": "results/wide/tasklist.md section 1: 'Added tasks are realistic (no copy or cipher, no synthetic toy rule), built from existing repo code or a standard Hugging Face dataset, and KL-matchable (the 300-step SFT recipe in predictions.json settings can reach the matched KL rung); listed before any of their training. A task that misses its KL or floor goes into dropped.json, never quietly swapped out.'",
+      "added": {
+        "wiki_en": "wikimedia/wikipedia 20231101.en rev b04c8d1c (realistic.WIKI), tasks.wiki, as yoruba",
+        "arxiv": "gfissore/arxiv-abstracts-2021 rev e4c5fbd4dec8e46a5dc869216fe1c94cc585757a, field abstract, packed as the Wikipedia rows (panel.arxiv_texts)",
+        "german": "wikipedia 20231101.de, as yoruba",
+        "swahili": "wikipedia 20231101.sw, as yoruba",
+        "tagalog": "wikipedia 20231101.tl, as yoruba",
+        "spanish": "wikipedia 20231101.es, as yoruba (the 18th, listed in tasklist.md and rated before training)",
+        "sentiment": "E211's L2 (stanfordnlp/sst2 rev 8d51e7e4, sentences >= 8 tokens; realistic_tasks label_tasks unchanged), the topic task's form",
+        "category": "fancyzhx/dbpedia_14 rev 9abd46cf7fc8b4c64290f26993c540b92aa145ac, Animal vs Plant ('content'), labels ' Animal' 18630 / ' Plant' 21307, E211's L1 form and run 1's sizes (32 tokens + ' Topic:', pool 256, fit 1024, held 256 a class, pick_seed 0); pool and fit from train, held from test (panel.dbpedia)",
+        "summary": "abisee/cnn_dailymail 3.0.0 rev 96df5e686bee6baa90b8bee7c28b81fa3fa6223d (panel.cnn_examples): prompt = the first summary_P - 3 tokens of the article's first summary_chars characters + '\\nSummary:', answer = the first highlight sentence (<= summary_A - 1 tokens); train split for training and fit, validation for read and held; twin = highlights permuted across examples"
+      },
+      "filed_before_training": {
+        "commit": "48e10783 (merge; the list and ratings in edbc9108)",
+        "order_txt_sha256": "eb46759b0a31283d0f4d300f4b6f69129eea9148e437ceca561887bfa466639c",
+        "rater_opus_sha256": "08abda0e4dc5cb0aa1fb4c09a55c3fc913605ec3806dcfdf8676a58e76c03fd6",
+        "rater_gpt_sha256": "03a90e0b3883cb3a8d6d989b129ee518b9ccf98a139399ae7446258ed58983a7",
+        "order": "the 18 one-liners in one fixed shuffled order (results/wide/order.txt), the same for both raters, one batch"
+      },
+      "wide_consensus_tier": {
+        "counts": {"3.0": 5, "2.5": 3, "2.0": 5, "1.5": 2, "1.0": 3},
+        "by_code": {"3.0": ["pile", "wiki_en", "arxiv", "code", "lower"], "2.5": ["british", "topic", "category"], "2.0": ["sentiment", "french", "spanish", "german", "conll"], "1.5": ["summary", "squad"], "1.0": ["swahili", "tagalog", "yoruba"]},
+        "raters": {"opus_blind_wide": {"reuse": 7, "middle": 7, "new": 4}, "gpt_blind_wide": {"reuse": 6, "middle": 8, "new": 4}}
+      },
+      "critical_tau_b": {
+        "n18": {"consensus": 0.3169, "opus_blind_wide": 0.3393, "gpt_blind_wide": 0.333},
+        "n17_without_summary": 0.327,
+        "n16_without_summary_sentiment": 0.3504,
+        "n15_without_summary_squad_conll": 0.3535,
+        "range_over_every_drop": {"n17": [0.327, 0.3337], "n16": [0.3361, 0.354], "n15": [0.3535, 0.3749]},
+        "nine_set_unchanged": "consensus 0.5261 (n = 9, exact, Amendment 3)",
+        "source": "score.py critical_tau (200,000 random orderings, seed 272) on the raters_wide tier vectors; ~/commute-data/scratch/regating-lead/e272-amend5/power.py, log power.log"
+      },
+      "power": {
+        "at_true_tau_0.3": {"consensus": 0.4953, "opus_blind_wide": 0.4486, "gpt_blind_wide": 0.4635, "consensus_n17": 0.4752, "consensus_n16": 0.4267, "consensus_n15": 0.4283},
+        "at_true_tau_0.5": {"consensus": 0.9222, "opus_blind_wide": 0.8877, "gpt_blind_wide": 0.8951, "consensus_n17": 0.9045, "consensus_n16": 0.8717, "consensus_n15": 0.8585},
+        "model": "Amendment 3's: reading = tier code + sigma x N(0, 1) per task, sigma bisected so the mean tau-b is the target; power = share of 100,000 draws with tau-b >= the critical tau-b. Raw tau only: Amendment 3's partial-tau-on-prior call has less"
+      },
+      "if_no_call_wide": "On the wide panel (n = 18) the critical tau-b is 0.32 and power at a true tau of 0.3 is about 0.50 (0.92 at 0.5): a 'no call' there happens about half the time at a true tau of 0.3 but rarely (8%) at 0.5, so the paper reports it with its interval as agreement too weak to call, unlikely to be as strong as 0.5.",
+      "hf_counts": {
+        "measured": "2026-11-22 through the builders on the cluster worker (cpu-run, no model; ~/commute-data/scratch/regating-lead/e272-amend5/hf_check.py, hf_a.log, hf_b.log)",
+        "wikipedia_en_de_sw_tl_es": "each 2,400 train + 64 held rows of 512 (needed 2,400 + 64)",
+        "arxiv": "2,400 + 64 rows of 512 (needed 2,400 + 64)",
+        "sst2": "train 19,085 positive / 17,690 negative, validation 434 / 404 at >= 8 tokens (needed 1,280 / 256 a class); built pool 512, fit 2,048, held 512",
+        "dbpedia_animal_plant": "train 40,000 / 40,000, test 5,000 / 5,000 (needed 1,280 / 256 a class); built train 512, held 512, read 512, fit 2,048",
+        "cnn_dailymail": "train 280,782 kept (first highlight <= 31 tokens; needed 4,400), validation 12,983 (needed 1,012); prompt median 128 tokens; built train 2,400 x 160, held 512, read 500, fit 2,000, and the twin the same; the two builds take ~4 min each in the train job"
+      },
+      "not_wired": "eb.py (stage 3, gated) reads the nine set's selection only; the wide set's E_b needs its own go-ahead, and score.py reads it from results/wide/eb/ (missing there = missing for E_b)"
     }
   ]
 }
