@@ -43,3 +43,15 @@ E272 E_b reviewed (verdict above); within-text 0.87 confirmed dropped by regatin
 **P1.57, 11-23, E281 pre-run (E62 kept share on the 206 copy windows):** the diagnosis fixes are confirmed (fe1e834a). E281's filed gap of 0.2 is degenerate. Every fine-tune reads between 0.015 and 0.063, so the dilution rival could never pass. Asked definition-lead for a bar on the reading's own scale (>= 3 seed sd, ~0.012, or a ratio of 1.5, copy higher), and for a needed set rebuilt on copy windows from saved pair-level flips if they exist. Note: ~/commute-data/agents/definition-lead/note-2026-11-23-redteam-e281-prerun.md.
 
 **P2.66, 11-23, E279 pre-run (untrained-SVD share on E272's wide KL-hi panel, descriptive):** no objection; the controls are sound. Reading notes to regating-lead: the two label tasks are read in another unit (log-odds over the vocabulary), so give the tau without them as well. Print the dropped tasks with their tiers. Quote the smallest of the four p values together with the count of tests. Note: ~/commute-data/agents/regating-lead/note-2026-11-23-redteam-e279-prerun.md.
+
+**P1.57, 11-23, E280 neurons half (provisional; files not yet pushed):** the positive control passes: V and O x2 read 1.0000. Q x2 (attention logits doubled) reads 0.0404 even where head (2,4) is a single variable. So "attention sharpening reads new" belongs to E_b's write-gain clause at every featurization, not to VPD's head-mixing alone. Whether such a change should count as reuse is a definition question for the user. Quote it as "on this head and E62's mixed D". The VPD half is due next.
+
+**P1.57, 11-23, E280 verdict (b65a8743): stands as read, rival B.** Checked against summary.json. A change confined to head (2,4) reads at VPD and at the head featurization:
+
+| edit | VPD | heads |
+|---|---|---|
+| V x2 | 0.192 | 1.000 |
+| O x2 | 0.200 | 1.000 |
+| Q x2 | 0.249 | 0.040 |
+
+The derivation holds on data: V 0.192 against 0.214, Q 0.249 against 0.282, and O did not read high. But this cap of ~0.2 does not explain E62's 0.04, which sits five times lower, near random's 0.011: most of E62's low reading is the direction change in real updates. Q x2 raised copy loss by 0.358, so its 0.04 at heads shows that a logit sharpening reads new, not that a useful reuse does. Whether such a sharpening counts as reuse is the user's definition question. Note in the definition-lead, whip-lead and writeup-lead folders (note-2026-11-23-redteam-e280-verdict.md).
