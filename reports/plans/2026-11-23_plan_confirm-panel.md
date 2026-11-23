@@ -39,6 +39,11 @@ almost alike (tau 0.905). These twelve are all `lm_task`, so about 0.4 is the re
 consensus tier with the base loss at the kept n; when its size is over 0.8, a call that would read "no call" or "not
 positive" reads "tier and loss collinear: not separable". A "no call" at power about 0.3 is not evidence against the
 effective rank: it says this panel could not tell. Prediction (filed): positive, low confidence. Stop: "not positive", or "no call" with at least 8 kept, ends the line.
+**2026-11-23, after scoring.** The collinearity guard covered non-positive calls only, as redteam-lead asked, so it missed
+this case: tier and base loss were collinear (|tau| 0.82 over the bar 0.8) and the call came out "positive", which the
+guard leaves unchanged. Redteam-lead, in its verdict note: "I should have asked for it to apply to every call." Filed
+call: positive. Reading: effective rank and base loss both order the tiers perfectly, so the panel cannot tell whether
+effective rank adds anything beyond text unfamiliarity; the partial is descriptive.
 
 ## Cost and time
 $0, no pod. Train: E272's LM jobs took 3.0-4.8 min each on an L40 (jobs 63727-63731) plus the first HF stream (5-30 s
