@@ -100,10 +100,11 @@ def kl_to(net: nn.Module, ref: nn.Module, toks: Tensor, answer_only: bool = Fals
 
 
 def install_loss(net: nn.Module, ref: nn.Module, t: Task, cue: int, pile: Tensor, lam: float, batch: int, pile_batch: int,
-                 gen: torch.Generator) -> Callable[[int], Tensor]:  # fmt: skip
-    """CE on cued train items + the uncued items' KL to M at the positions the CE reads, weighted as the CE (the answer
-    position of a sparse task, every position of a dense one; review 2026-11-22 finding 5) + lam x (KL to M over every
-    position of the uncued items + of Pile windows), fresh batches per step."""
+                 gen: torch.Generator, ans_w: float = 1.0) -> Callable[[int], Tensor]:  # fmt: skip
+    """CE on cued train items + ans_w x the uncued items' KL to M at the positions the CE reads (the answer position of
+    a sparse task, every position of a dense one; review 2026-11-22 finding 5; ans_w 1 = weighted as the CE, as
+    addition ran; amendment 2026-11-22c sweeps it per task) + lam x (KL to M over every position of the uncued items
+    + of Pile windows), fresh batches per step."""
     dev = next(net.parameters()).device
 
     def f(step: int) -> Tensor:
@@ -112,7 +113,7 @@ def install_loss(net: nn.Module, ref: nn.Module, t: Task, cue: int, pile: Tensor
         k = torch.randint(0, len(pile), (pile_batch,), generator=gen)
         x, u = t.train[i].to(dev), t.train[j, :-1].to(dev)
         lock = kl_to(net, ref, u, answer_only=not t.dense)
-        return ce(net, cued(x, cue), t.dense) + lock + lam * (kl_to(net, ref, u) + kl_to(net, ref, pile[k].to(dev)))
+        return ce(net, cued(x, cue), t.dense) + ans_w * lock + lam * (kl_to(net, ref, u) + kl_to(net, ref, pile[k].to(dev)))
 
     return f
 

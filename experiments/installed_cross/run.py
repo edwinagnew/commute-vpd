@@ -84,6 +84,8 @@ class Config:  # filed in predictions.json "settings"
     lambdas: tuple[float, ...]
     install_lr: float
     install_steps: int
+    install_sweep: dict[str, list[list[float]]]  # per task [(ans_w, lambda), ...], weakest first; others (1, lambdas)
+    install_steps_by_task: dict[str, int]  # a task listed here trains this many steps (amendment 2026-11-22c)
     install_every: int
     ft_lr: float
     ft_steps: int
@@ -275,6 +277,11 @@ def finetune(x: Ctx, t: IN.Task, target: float, seed: int) -> dict[str, Any]:
     return res
 
 
+def cand_key(a: float, lam: float) -> str:
+    """A candidate's name: lam<lambda> for the filed recipe (answer weight 1, as addition ran), lam<lambda>_a<w> else."""
+    return f"lam{lam:g}" if a == 1 else f"lam{lam:g}_a{a:g}"
+
+
 def job_install(x: Ctx, task: str, o: Any) -> None:
     if not done("ctl").get("done"):
         raise o.stop("ctl.json is not done")
@@ -282,19 +289,21 @@ def job_install(x: Ctx, task: str, o: Any) -> None:
     m = m_reads(x, t)
     pile = cached_rows("train", 0, 4096)[:, : C.pile_len]
     ref = copy.deepcopy(x.net.net).eval().requires_grad_(False)  # M, frozen: the distillation target
-    for lam in C.lambdas:
-        if f"lam{lam:g}" in o.d.get("candidates", {}):  # resume: a weight trained before is not trained again
+    sweep = [(float(a), float(lam)) for a, lam in C.install_sweep.get(task, [[1.0, lam] for lam in C.lambdas])]
+    steps = C.install_steps_by_task.get(task, C.install_steps)
+    for a, lam in sweep:
+        if (key := cand_key(a, lam)) in o.d.get("candidates", {}):  # resume: a weight trained before is not trained again
             continue
         gen = torch.Generator().manual_seed(C.seed)
-        loss = IN.install_loss(x.net.net, ref, t, C.cue, pile, lam, C.batch, C.pile_batch, gen)
-        res = IN.train(x.net.model, loss, IN.Loop(C.install_lr, C.grad_clip, C.install_steps, C.install_every), install_check(x, t, m), log)
+        loss = IN.install_loss(x.net.net, ref, t, C.cue, pile, lam, C.batch, C.pile_batch, gen, a)
+        res = IN.train(x.net.model, loss, IN.Loop(C.install_lr, C.grad_clip, steps, C.install_every), install_check(x, t, m), log)
         dW = IN.bf16(res["dW"])
-        rec = lock(x, t, dW, m) | {"lambda": lam, "steps": res["steps"], "leak_stopped": bool(res["trace"][-1].get("leak_stopped")),
-                                   "seconds": res["seconds"], "state": save_dw(f"base_{task}_lam{lam:g}", dW)}  # fmt: skip
-        o.put(f"lam{lam:g}", rec, under="candidates")
+        rec = lock(x, t, dW, m) | {"lambda": lam, "ans_w": a, "steps": res["steps"], "leak_stopped": bool(res["trace"][-1].get("leak_stopped")),
+                                   "seconds": res["seconds"], "state": save_dw(f"base_{task}_{key}", dW)}  # fmt: skip
+        o.put(key, rec, under="candidates")
     kept = None
-    for lam in C.lambdas[::-1]:  # the strongest distillation first: the lock is what the cell needs; G* follows from it
-        rec = o.d["candidates"][f"lam{lam:g}"]
+    for a, lam in sweep[::-1]:  # the strongest distillation first: the lock is what the cell needs; G* follows from it
+        rec = o.d["candidates"][cand_key(a, lam)]
         if not (rec["a_cued"] and rec["b_uncued"]):
             continue
         if "kl_bar" not in rec:  # M's own uncued fine-tune at that gain: the Pile KL bar, measured here (resumable)
@@ -302,7 +311,7 @@ def job_install(x: Ctx, task: str, o: Any) -> None:
             rec["kl_bar"] = {"M_ft_pile_kl": S1.kl_from_base(x.net, x.kl_rows, ref["dW"], C.kl_batch), "M_ft_steps": ref["steps"], "M_ft_done": ref["done"]}
         # decided from the numbers, not from whether M's fine-tune reached G* (review finding 8); its reach is recorded
         rec["c_pile"] = rec["pile_kl"] <= x.th["pile_kl_ratio_max"] * rec["kl_bar"]["M_ft_pile_kl"]
-        o.put(f"lam{lam:g}", rec, under="candidates")
+        o.put(cand_key(a, lam), rec, under="candidates")
         if rec["c_pile"]:
             kept = rec
             break
@@ -457,7 +466,14 @@ def job_read(x: Ctx, base: str, task: str, o: Any) -> None:
     P2 = json.loads(R2.PRED.read_text())
     pile = cached_rows("val", 0, C.adl_rows)[:, : C.adl_k]
     READS.mkdir(parents=True, exist_ok=True)
+    IN.set_base(x.net, x.M, None)
+    stop_rows = x.tasks()[task].held[: C.n_stop]
+    lo_m = IN.answer_lo(x.net.net, stop_rows)[0]
     IN.set_base(x.net, x.M, x.base(base))
+    if base == task:  # the lock's (b) per row (amendment c): its mean is the filed bar, its spread is reported beside it
+        sh = (IN.answer_lo(x.net.net, stop_rows)[0] - lo_m) / math.log(10)
+        o.put("lock_uncued_decades", {"mean": float(sh.mean()), "sd": float(sh.std(unbiased=False)), "abs_max": float(sh.abs().max()),
+                                      "frac_over_bar": float((sh.abs() > x.th["uncued_decades_max"]).double().mean())})  # fmt: skip
     size_ref = size_ref_of(states, task)
     rd = R2.reader(x.net, config_from_settings(R2.Config, P2["settings"]), cue_read(x, x.tasks()[task]))
     rd.__class__ = BaseReader  # E211's reader as built (its W0 reads done), the share swapped out
@@ -469,7 +485,9 @@ def job_read(x: Ctx, base: str, task: str, o: Any) -> None:
             if path.is_file():
                 rec = json.loads(path.read_text())
             else:
-                rec = read_one(x, rd, d, seed, pile) | {"state": name, "kind": kind, "base": base, "task": task, "seed": seed, "diagonal": base == task}
+                rescale = 1.0 if kind == "gain" else size_ref / states[name]["size"]  # the factor on the state (amendment c)
+                rec = read_one(x, rd, d, seed, pile) | {"state": name, "kind": kind, "base": base, "task": task, "seed": seed,
+                                                        "diagonal": base == task, "rescale": rescale}  # fmt: skip
                 path.write_text(json.dumps(jsonable(rec), indent=1))
                 o.put(f"{name}_{kind}", R2.brief(rec) | {"adl_D": rec["adl"]["D"], "pile_kl": rec["pile_kl"]}, under="read")
             if kind == "gauss":
