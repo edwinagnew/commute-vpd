@@ -246,6 +246,44 @@ sentiment and category 32 + " Topic:" ~ 34 (`realistic.label_windows`). Seconds 
   (logged after the cache and per site). E268's 64-token RL items peaked at 11.9 GB at 1024 rows; squad's guess is
   ~40 GB (review B1): tight on an L40, fits an H100.
 
+## Post-hoc check: data-only baseline (2026-11-23, filed before computing)
+Asked by redteam-lead (02:50) and whip-lead (03:00), note
+`~/commute-data/agents/regating-lead/note-2026-11-23-redteam-e272-erank-update.md` item 2. Chosen after the effective
+rank's results were seen, so it is descriptive: **no call**, whichever way it reads. $0, one cluster L40 debug job.
+- **Question.** Does the effective rank's agreement with the tiers (wide KL "hi", within the continued-text tasks tau
+  0.91) carry anything beyond how unfamiliar each task's text is to the base model M?
+- **Quantity.** M's mean loss on each task's held rows (`tasks.build(...).held`, the rows every train job scores its
+  held-out gain on), at every scored token, not at the 500 hard read positions (Amendment 7's `held_mask`). Two units:
+  nats per token, and nats per UTF-8 byte (summed nats over summed bytes of the scored target tokens; the end-of-text
+  token counts 0 bytes), since per-token loss favours tokenisers that split a language into many short pieces (as E209
+  chose Yoruba). Computed with `panel.target_logp` (fp32 logits, float64 sums), on the 12 tasks of the wide KL "hi" set.
+- **Which tokens count.** Primary: **the tokens the fine-tune trains on**, read on the held rows: every token for
+  arxiv, lower, german, spanish, swahili, yoruba; only the French tokens for french (after the `en_len` English
+  prefix); for the prompt tasks (squad, conll, summary) the answer and its closing end-of-text; for the label tasks
+  (sentiment, category) the label token. Why: the update is driven by the loss on exactly those tokens, so this is the
+  data statistic the update could most directly be a function of. Beside it, descriptive: **all tokens** of the held
+  row (every non-padding token from position 1, plus the trained ones), which reads how unfamiliar the prompt text
+  itself is; on the 8 continued-text tasks the two differ only for french (English prefix included) and summary
+  (article opening included).
+- **What is reported** (`score.py`, block `wide.base_loss` of summary.json, written when `results/wide/base_loss.json`
+  exists), per unit and token rule, on the **8 continued-text tasks** (arxiv, lower, french, spanish, german, summary,
+  swahili, yoruba; score.py's `WITHIN_TEXT["text8"]`) and on **all 12**, per rater (consensus, Opus, GPT): (a) the base
+  loss's Kendall tau-b with the tier codes, oriented as KL is (minus the loss, so a positive tau means higher loss on
+  the "new" side), with the one-sided task-permutation p of `score.perm_p` (n_perm 10,000, seed 266); (b) the effective
+  rank's tau with the tiers and its partial tau given the base loss (`score.partial_tau`), with the same permutation p
+  (effective rank permuted, tier and loss held). Primary line: consensus, nats per byte, trained tokens.
+- **Expected in advance.** Higher base loss goes with the "new" tier: the oriented tau is positive. Expected values
+  per task (not filed as bars): lower and arxiv lowest per byte; yoruba and swahili highest; german, spanish, french
+  between. Control in the same job: the job also recomputes each task's `rows.w0_logp` of `results/train/TASK.json`
+  (the same function on the train job's own `held_mask`) and prints the difference; it should read 0 to float noise
+  (same code, same rows, same card model). A large difference means the rows differ from the train job's: not read.
+- **Reading.** If the base loss alone reaches a tau of about 0.9 with the tiers and the effective rank's partial falls
+  toward 0, the effective rank is reading how unfamiliar the text is (computable from the data and M's loss, with no
+  look at the update): the raters' own cue, so the agreement is circular. If the partial stays high, the effective
+  rank carries something the data statistic does not. In between is reported as read. Blind to: anything about the
+  update itself; the 8-task set has 28 task pairs, so one pair moves its tau by ~0.04 or more (tier ties).
+- **Not in it.** No other reading is partialled; the prior partial and KL are as already reported.
+
 ## Open choices (for the lead)
 - The raters' tiers go in `raters` before `read` (both refuse while it is empty); the user's sort when it arrives.
 - E272: no E-number is claimed yet; every file says E272.
