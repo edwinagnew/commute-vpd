@@ -2,7 +2,7 @@
   "experiment": "E281 (e62_copy_windows)",
   "cell": "P1.57",
   "card": "experiments/e62_copy_windows/card.md",
-  "filed": "2026-11-23, definition-lead (writer agent), before any GPU run of this experiment; refiled before any run (card refiled by redteam-lead: ratio rule, K_copy, a measured repeat floor)",
+  "filed": "2026-11-23, definition-lead (writer agent), before any GPU run of this experiment; refiled before any run (card refiled by redteam-lead: ratio rule, K_copy, a measured repeat floor); amended before any GPU run (the stage-0 bar from the measured cross-device repeat of the CPU rehearsal)",
   "settings": {
     "states": [
       "e62/copy_s0",
@@ -14,9 +14,9 @@
     ],
     "control": "e62/copy_s0",
     "too_small": 100,
-    "settings_source": "states: E242's settings e62 (experiments/kstar_vpd_wording_a/results/predictions.json), the six E62 states at own size as E257's World builds them (not the scaled lookups). D: E257's D of each item (512 windows of E187's read half of the e62 group: copy windows, windows without the cue and far text, 3:3:2); the copy windows are those with the marker last and A once before 'A M' (experiments/head_edit/run.py targets: 206 of 512 on e62/copy_s0's D, E280 CPU dry run). K: E275's saved in_K (experiments/claim2_needed/results/large/items_e62-<state>.npz), unchanged. cache_batch: E268's (kstar_needed load_config). control: the state whose all-D pass stage 0 repeats. fallback_tol: an absolute tolerance on E_b used only when the measured repeat floor below reads exactly 0, E257's measured floor (experiments/rb_states/results/stage0_*.json floor, |E_b bf16 - E_b fp32| on x2 through the same write_change path; E268 filed it as kept_floor): a fp32 rerun on another card differs from E257's saved arrays by accumulation order only, which is below bf16 rounding; E268's transcription_rel_tol (1e-11) bounds a sum over saved arrays, not a recomputed pass, so it does not apply. The stop bar is 10 times the floor measured in stage 0: |E_b over K of the control's all-D pass at cache_batch minus the same pass at half cache_batch| (same card, accumulation order the only difference), or fallback_tol when that reads 0. too_small: the card's floor. ratio: the card's refiled bar. The K scan for K_copy uses E268's settings (kstar_needed load_config: derangements 4, examples 64, seed 268, rows 1024, logit_rows 8192), commute.needed.needed_set on the copy windows only at the last position. too_small applies to K_copy",
+    "settings_source": "states: E242's settings e62 (experiments/kstar_vpd_wording_a/results/predictions.json), the six E62 states at own size as E257's World builds them (not the scaled lookups). D: E257's D of each item (512 windows of E187's read half of the e62 group: copy windows, windows without the cue and far text, 3:3:2); the copy windows are those with the marker last and A once before 'A M' (experiments/head_edit/run.py targets: 206 of 512 on e62/copy_s0's D, E280 CPU dry run). K: E275's saved in_K (experiments/claim2_needed/results/large/items_e62-<state>.npz), unchanged. cache_batch: E268's (kstar_needed load_config). control: the state whose all-D pass stage 0 repeats. repeat_tol: an absolute tolerance on E_b, 10 times a measured repeat of the same pass on another device: the CPU rehearsal of stage 0 (2026-11-23, cpu-run, INPUT_MANIFEST_CPU, fp32) recomputed e62/copy_s0's all-D write pass and read E_b over E275's K 0.03761000357344997 against E275's 0.03761000378175188 (2.08e-10) and over E257's K* 0.039088030939439106 against E257's 0.039088031212285636 (2.73e-10; dd relative L1 3.8e-8); the larger times 10. The same pass on one device at half the batch differs by 3.5e-16 (the same-card floor, recorded in stage 0, not a bar: it does not cover a change of card). E268's transcription_rel_tol (1e-11) bounds a sum over saved arrays, not a recomputed pass. too_small: the card's floor. ratio: the card's refiled bar. The K scan for K_copy uses E268's settings (kstar_needed load_config: derangements 4, examples 64, seed 268, rows 1024, logit_rows 8192), commute.needed.needed_set on the copy windows only at the last position. too_small applies to K_copy",
     "ratio": 1.5,
-    "fallback_tol": 3.3243476569633224e-05
+    "repeat_tol": 2.728465300916305e-09
   },
   "readings": {
     "E_b_K_copy": "commute.stand_in.explained_share(num, den, dd, K and changed) with num, den, dd from one stand_in.write_change pass on the copy windows of D only",
@@ -28,11 +28,11 @@
   },
   "rules": {
     "R0a": "Stage 0 stops the job unless the do-nothing (F = M, E257's) has no changed variable, every dd exactly 0.0 and E_b over K exactly 1.0",
-    "R0b": "Stage 0 stops the job unless the control's all-D write pass repeats E275's saved E_b over K and E257's saved E_b over K* each within 10 times the measured repeat floor (absolute; fallback_tol when the floor reads 0), with the saved arrays' length and changed set equal to this featurization's; dd's relative L1 difference from E257's saved dd is recorded",
+    "R0b": "Stage 0 stops the job unless the control's all-D write pass repeats E275's saved E_b over K and E257's saved E_b over K* each within repeat_tol (absolute), with the saved arrays' length and changed set equal to this featurization's; dd's relative L1 difference from E257's saved dd and the same-card half-batch repeat are recorded",
     "items": "descriptive (card). The filed rule is applied to E_b over K_copy on the copy windows only: rival A when the three-seed mean of copy over the three-seed mean of lookup is at least ratio and copy is higher on every seed; rival B otherwise. E_b over E275's K on the copy windows is reported beside it with no rule. On the mixed-D values (E275: copy 0.0376, 0.0399, 0.0362; lookup 0.0399, 0.0431, 0.0429; ratio 0.90) the rule reads rival B, checked in code"
   },
   "expected": {
-    "stage0": "do-nothing: 0 changed, dd max 0.0, E_b 1.0; control: E_b over K 0.03761000378175188 (E275) and over K* 0.039088031212285636 (E257) within the bar; the repeat floor about 1e-12 or less (fp32 accumulation order on sums of about 1e2)",
+    "stage0": "do-nothing: 0 changed, dd max 0.0, E_b 1.0; control: E_b over K 0.03761000378175188 (E275) and over K* 0.039088031212285636 (E257) each within repeat_tol; the same-card half-batch repeat about 1e-15",
     "copy_windows": "rival A: ratio of the three-seed means of E_b over K_copy, copy over lookup, at least ratio and copy higher on every seed; rival B otherwise. |K_copy| not filed; under too_small reads too small to read. Time: the K_copy scan 38,938 x 256 cases per state, about 280 s on an L40 (E278: 277 s per item)"
   }
 }
