@@ -5,18 +5,51 @@
  "plan": "reports/plans/2026-11-23_plan_confirm-panel.md",
  "settings": {
   "tasks": {
-   "italian": {"lang": "it"},
-   "portuguese": {"lang": "pt"},
-   "dutch": {"lang": "nl"},
-   "indonesian": {"lang": "id"},
-   "turkish": {"lang": "tr"},
-   "vietnamese": {"lang": "vi"},
-   "welsh": {"lang": "cy"},
-   "basque": {"lang": "eu"},
-   "pubmed": {"path": "MedRAG/pubmed", "revision": "33da3593d5756bc04c8909f170003c0b14197957", "field": "content"},
-   "stackexchange": {"path": "HuggingFaceH4/stack-exchange-preferences", "revision": "c7bda74048748f55749cd663c3d8d1025a841fd9", "field": "question"},
-   "books": {"path": "manu/project_gutenberg", "revision": "164853d214065df26a630ee1ab91a0c39e461caf", "split": "en", "field": "text"},
-   "math": {"path": "open-web-math/open-web-math", "revision": "fde8ef8de2300f5e778f56261843dab89f230815", "field": "text"}
+   "italian": {
+    "lang": "it"
+   },
+   "portuguese": {
+    "lang": "pt"
+   },
+   "dutch": {
+    "lang": "nl"
+   },
+   "indonesian": {
+    "lang": "id"
+   },
+   "turkish": {
+    "lang": "tr"
+   },
+   "vietnamese": {
+    "lang": "vi"
+   },
+   "welsh": {
+    "lang": "cy"
+   },
+   "basque": {
+    "lang": "eu"
+   },
+   "pubmed": {
+    "path": "MedRAG/pubmed",
+    "revision": "33da3593d5756bc04c8909f170003c0b14197957",
+    "field": "content"
+   },
+   "stackexchange": {
+    "path": "HuggingFaceH4/stack-exchange-preferences",
+    "revision": "c7bda74048748f55749cd663c3d8d1025a841fd9",
+    "field": "question"
+   },
+   "books": {
+    "path": "manu/project_gutenberg",
+    "revision": "164853d214065df26a630ee1ab91a0c39e461caf",
+    "split": "en",
+    "field": "text"
+   },
+   "math": {
+    "path": "open-web-math/open-web-math",
+    "revision": "fde8ef8de2300f5e778f56261843dab89f230815",
+    "field": "text"
+   }
   },
   "tasks_source": "the filed task rule (rules.task_rule), applied to the ordered list written before any load check (plan, 'Tasks'); every first choice streamed and packed 2,400 + 64 rows of 512 tokens on cpu-run jobs 64191-64192 (2026-11-23, ~/commute-data/scratch/regating-lead/confirm-panel/check_{wiki,domains}.log), so no reserve (fi, pl Wikipedia; emozilla/pg19) was used. Wikipedia through E272's own loader (realistic.WIKI: wikimedia/wikipedia 20231101, revision b04c8d1c); domain revisions are the hub's sha on 2026-11-23",
   "e272_settings_sha256": "cbfb7d9ff9874436a6f8120d1d731620f105a65e5a5e02bd13d4b1d6ecca09e6",
@@ -25,7 +58,10 @@
   "control_erank": 592.6058268916012,
   "control_tol": 1e-06,
   "control_source": "E272's wide KL 'hi' lowercase seed-0 state, its saved erank (convergence_panel/results/wide/read/lower.json); the same file through the same function (update_spectrum.state, fp64 SVD on the CPU, as E272's read); tol = E211's reproduce_tol for erank (1e-6)",
-  "gaussian_band": [685, 720],
+  "gaussian_band": [
+   685,
+   720
+  ],
   "gaussian_band_source": "E272's 30 Gaussian controls (one per seed-0 state, 15 tasks of the wide read) read erank 693.2-709.8 (wide/read/*.json random); the band widens that range by about half its width on each side; every trained E272 state read under 600"
  },
  "rules": {
@@ -56,5 +92,68 @@
   "kl_hi_target": "about 0.18 (E272's wide KL 'hi' 0.181), set by the rule over these tasks"
  },
  "raters_form": "{\"opus_blind\": {\"tiers\": {\"<task>\": \"reuse\" | \"middle\" | \"new\"}, \"order\": [tasks, most reuse first], \"source\": \"results/raters/rater_opus.md\"}, \"gpt_blind\": {...}}: tiers from the files' tier column (expected reuse -> reuse), order = the rank column, ties in row order; one-liner number -> task in results/raters/prompt.md",
- "raters": {}
+ "raters": {
+  "opus_blind": {
+   "tiers": {
+    "books": "reuse",
+    "pubmed": "reuse",
+    "math": "reuse",
+    "stackexchange": "reuse",
+    "dutch": "middle",
+    "italian": "middle",
+    "portuguese": "middle",
+    "indonesian": "middle",
+    "turkish": "new",
+    "welsh": "new",
+    "basque": "new",
+    "vietnamese": "new"
+   },
+   "order": [
+    "books",
+    "pubmed",
+    "math",
+    "stackexchange",
+    "dutch",
+    "italian",
+    "portuguese",
+    "indonesian",
+    "turkish",
+    "welsh",
+    "basque",
+    "vietnamese"
+   ],
+   "source": "results/raters/rater_opus.md"
+  },
+  "gpt_blind": {
+   "tiers": {
+    "pubmed": "reuse",
+    "books": "reuse",
+    "stackexchange": "reuse",
+    "math": "reuse",
+    "dutch": "middle",
+    "italian": "middle",
+    "portuguese": "middle",
+    "vietnamese": "new",
+    "turkish": "new",
+    "indonesian": "new",
+    "basque": "new",
+    "welsh": "new"
+   },
+   "order": [
+    "pubmed",
+    "books",
+    "stackexchange",
+    "math",
+    "dutch",
+    "italian",
+    "portuguese",
+    "vietnamese",
+    "turkish",
+    "indonesian",
+    "basque",
+    "welsh"
+   ],
+   "source": "results/raters/rater_gpt.md"
+  }
+ }
 }
