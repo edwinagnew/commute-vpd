@@ -36,6 +36,8 @@
   "n_crit": 100000,
   "seed": 276,
   "min_tasks": 5,
+  "collinear_max": 0.8,
+  "collinear_source": "redteam-lead via the lead, 2026-11-23, filed before the tiers and any training: select writes tau(consensus tier, minus base loss) at the kept n (dropped.json tau_tier_minus_loss); when |tau| > 0.8 a call that would read 'no call' or 'not positive' reads 'tier and loss collinear: not separable' instead ('positive' and 'too few tasks' are unchanged); 0.8 sits under E272's seven lm_task text tasks' 0.873, where the partial fell from 0.87 to 0.40",
   "power_rule": "select writes, before any read: the critical partial tau at the kept n (score.critical_tau's rule over n_crit random orderings of an untied reading, x and z held) and the power at a reading = tier code + sigma N(0,1) with mean raw tau-b 0.3 and 0.5 (score.power's model, z held), with the raw tau-b's critical value and power beside them",
   "beside": "reported, no call: raw tau of erank with the tiers, tau of minus loss with the tiers, tau of erank with minus loss, leave-one-task-out partial range",
   "stop": "the line ends when the call is 'not positive', or 'no call' with at least 8 tasks kept (card experiments/confirm_panel/card.md)"

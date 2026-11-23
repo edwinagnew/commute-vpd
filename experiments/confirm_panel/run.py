@@ -182,11 +182,13 @@ def select(C: Config, C272: Any, P: dict[str, Any]) -> None:
     sel = PN.select(runs, "kl", PN.rung_ladder(C272.kl_lo, C272.kl_n), C272.match_tol, floors)
     kept = sorted(sel["hi"]["tasks"])
     tier = tiers(P)
-    power = test_power(tuple(tier[t] for t in kept), list(minus_loss(kept).values()), P["rules"]) if len(kept) >= P["rules"]["min_tasks"] else None
+    x, z = tuple(tier[t] for t in kept), list(minus_loss(kept).values())
+    power = test_power(x, z, P["rules"]) if len(kept) >= P["rules"]["min_tasks"] else None
+    t_xz = SC.tau(list(x), z)  # redteam-lead 2026-11-23: |tau(tier, loss)| over collinear_max reads "not separable"
     write_stage(RESULTS / "selection.json", jsonable(sel | {"floors": floors}))
-    write_stage(RESULTS / "dropped.json", {"written": time.time(), "dropped": dropped, "kept": kept, "out": sel["hi"]["out"],
-                                           "target": sel["hi"]["target"], "power": power})  # fmt: skip
-    RUN.log(f"[select] KL hi {sel['hi']['target']:.4g}: kept {kept}; out {sel['hi']['out']}; dropped {dropped}; power {power}")
+    write_stage(RESULTS / "dropped.json", jsonable({"written": time.time(), "dropped": dropped, "kept": kept, "out": sel["hi"]["out"],
+                                                    "target": sel["hi"]["target"], "tau_tier_minus_loss": t_xz, "power": power}))  # fmt: skip
+    RUN.log(f"[select] KL hi {sel['hi']['target']:.4g}: kept {kept}; out {sel['hi']['out']}; dropped {dropped}; tau(tier, -loss) {t_xz:.3f}; power {power}")
 
 
 def erank(dW: ST.DW) -> float:
@@ -240,6 +242,8 @@ def score(P: dict[str, Any]) -> dict[str, Any]:
          "leave_one_out_partial": [SC.partial_tau(*[[v[i] for i in range(len(ts)) if i != j] for v in (x, y, z)]) for j in range(len(ts))]}  # fmt: skip
     ok = SC.finite(o["partial"]) and abs(o["tau_minus_loss_tier"]) < 1 - 1e-9  # a loss tied with the tier: rounding, not a partial
     o["call"] = "positive" if ok and o["partial"] > 0 and o["p"] <= R_["alpha"] else "not positive" if ok and o["partial"] <= 0 else "no call"
+    if o["call"] != "positive" and abs(o["tau_minus_loss_tier"]) > R_["collinear_max"]:  # redteam-lead, 2026-11-23
+        o["call"] = "tier and loss collinear: not separable"
     return o
 
 

@@ -35,7 +35,10 @@ any read. Dry run (hypothetical tiers spread as E272's, loss following tier with
 0.44-0.50, 0.44-0.54. **Caution found in the dry run:** E272's 0.87 leaned on summary (a prompt task with low loss and
 a low tier). On E272's seven `lm_task` text tasks alone the partial is 0.40, since erank and loss order those tasks
 almost alike (tau 0.905). These twelve are all `lm_task`, so about 0.4 is the realistic size, near the critical value.
-Prediction (filed): positive, low confidence. Stop: "not positive", or "no call" with at least 8 kept, ends the line.
+**Collinearity guard (redteam-lead, 2026-11-23, filed before tiers and training).** `select` writes the tau of the
+consensus tier with the base loss at the kept n; when its size is over 0.8, a call that would read "no call" or "not
+positive" reads "tier and loss collinear: not separable". A "no call" at power about 0.3 is not evidence against the
+effective rank: it says this panel could not tell. Prediction (filed): positive, low confidence. Stop: "not positive", or "no call" with at least 8 kept, ends the line.
 
 ## Cost and time
 $0, no pod. Train: E272's LM jobs took 3.0-4.8 min each on an L40 (jobs 63727-63731) plus the first HF stream (5-30 s
