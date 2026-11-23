@@ -31,6 +31,7 @@ HERE = Path(__file__).resolve().parent
 RESULTS = HERE / "results"
 TIER = {"reuse": 3.0, "middle": 2.0, "new": 1.0}
 SETS = ("kl_hi", "kl_lo", "size_hi", "size_lo")
+MEASURES = ("share", "steering", "erank", "E_b", "kl", "adl", "size", "prior")
 CRIT_DRAWS, CRIT_SEED, POWER_DRAWS = 200_000, 272, 20_000  # Amendment 5: random orderings from n = 10 (power_wide.py's seed)
 
 
@@ -56,19 +57,117 @@ def drops(res: Path) -> dict[str, Any]:
     return d
 
 
-def gather(res: Path) -> dict[str, dict[str, dict[str, list[float]]]]:
-    """set -> measure -> task -> seed values, from res/read (and res/eb for E_b)."""
-    out: dict[str, Any] = {s: {} for s in SETS}
+def records(res: Path) -> list[tuple[str, dict[str, Any]]]:
+    """(task, state record with its E_b) for every read state, from res/read (and res/eb for E_b)."""
+    out = []
     for p in sorted((res / "read").glob("*.json")):
         d = json.loads(p.read_text())
         eb = res / "eb" / p.name
         ebv = json.loads(eb.read_text())["states"] if eb.is_file() else {}
-        for f, rec in d["states"].items():
-            rec = rec | {"E_b": ebv.get(f, {}).get("E_b_K", math.nan)}
-            for s in rec["picked"]:
-                for m in ("share", "steering", "erank", "E_b", "kl", "adl", "size", "prior"):
-                    out[s].setdefault(m, {}).setdefault(d["task"], []).append(value(rec, m))
+        out += [(d["task"], rec | {"E_b": ebv.get(f, {}).get("E_b_K", math.nan)}) for f, rec in d["states"].items()]
     return out
+
+
+def gather(res: Path) -> dict[str, dict[str, dict[str, list[float]]]]:
+    """set -> measure -> task -> seed values (Amendment 4's "mix" and "trajectory" picks are not in a set)."""
+    out: dict[str, Any] = {s: {} for s in SETS}
+    for task, rec in records(res):
+        for s in (s for s in rec["picked"] if s in SETS):
+            for m in MEASURES:
+                out[s].setdefault(m, {}).setdefault(task, []).append(value(rec, m))
+    return out
+
+
+# ----------------------------------------------------------------------------- Amendment 4 (descriptive, not H1/H2)
+
+
+def rho(x: list[float], y: list[float]) -> float:
+    """Spearman rho (average ranks for ties); nan when either side is constant."""
+    rx, ry = rankdata(x), rankdata(y)
+    return float(np.corrcoef(rx, ry)[0, 1]) if len(set(x)) > 1 and len(set(y)) > 1 else math.nan
+
+
+def critical_rho(n: int, alpha: float) -> float:
+    """The smallest rho an exact one-sided permutation test calls at alpha, n untied points (all n! orderings)."""
+    r = np.sort([rho(list(range(n)), list(p)) for p in permutations(range(n))])
+    p_ge = 1 - np.searchsorted(r, r - 1e-9, "left") / len(r)
+    return float(r[p_ge <= alpha].min())
+
+
+def mix_values(res: Path, S: dict[str, Any]) -> dict[str, dict[float, list[float]]]:
+    """measure -> mix fraction -> seed values: the "mix" picks of mixNN at NN/100, and the KL "hi" states of the two
+    mixed tasks at 0 and 1 (their own panel runs)."""
+    frac = {S["mix_tasks"][0]: 0.0, S["mix_tasks"][1]: 1.0} | {f"mix{round(100 * f)}": f for f in S["mix_fracs"][1:-1]}
+    out: dict[str, Any] = {m: {f: [] for f in S["mix_fracs"]} for m in MEASURES}
+    for task, rec in records(res):
+        label = "kl_hi" if task in S["mix_tasks"] else "mix"
+        if task in frac and label in rec["picked"]:
+            for m in MEASURES:
+                out[m][frac[task]].append(value(rec, m))
+    return out
+
+
+def mixture(vals: dict[str, dict[float, list[float]]], R: dict[str, Any], n_seeds: int) -> dict[str, Any]:
+    """Amendment 4, per measure: Spearman rho of the seed means over the mix fractions; 'monotone' when |rho| is at least
+    the exact one-sided critical rho at alpha for that many fractions, with the sign said against the expected one
+    (-orientation: the fraction is the low-reuse task's share); 'not monotone' under it; 'no call' with a missing
+    fraction (a seed missing or non-finite) or rho undefined (a constant reading). The 15-point rho is beside it."""
+    fr = sorted(next(iter(vals.values())))
+    crit, out = critical_rho(len(fr), R["alpha"]), {}
+    for m, by in vals.items():
+        ok = [f for f in fr if len(by[f]) == n_seeds and all(math.isfinite(x) for x in by[f])]
+        means = [fmean(by[f]) for f in ok]
+        o: dict[str, Any] = {"fractions": ok, "means": means, "critical_rho": crit, "expected_sign": -R["orientation"][m]}
+        o["rho"] = rho(ok, means) if len(ok) == len(fr) else math.nan
+        o["rho_all_points"] = rho([f for f in ok for _ in by[f]], [x for f in ok for x in by[f]]) if ok else math.nan
+        if m == "kl":
+            o["call"] = "matched (not read)"
+        elif len(ok) < len(fr) or not finite(o["rho"]):
+            o["call"] = f"no call ({len(fr) - len(ok)} fractions missing)" if len(ok) < len(fr) else "no call (rho undefined)"
+        elif abs(o["rho"]) >= crit - 1e-12:
+            o["call"] = "monotone, expected sign" if math.copysign(1, o["rho"]) == o["expected_sign"] else "monotone, opposite sign"
+        else:
+            o["call"] = "not monotone"
+        out[m] = o
+    return out
+
+
+def trajectory_values(res: Path) -> dict[str, dict[str, list[float]]]:
+    """task -> measure -> values of its "trajectory" picks in step order."""
+    by: dict[str, list[dict[str, Any]]] = {}
+    for task, rec in records(res):
+        if "trajectory" in rec["picked"]:
+            by.setdefault(task, []).append(rec)
+    return {t: {m: [value(r, m) for r in sorted(rs, key=lambda r: r["step"])] for m in MEASURES} for t, rs in by.items()}
+
+
+def jump_call(v: list[float], sd: float, mult: float) -> dict[str, Any]:
+    """Amendment 4, one reading along one run: band = mult x the reading's pooled seed sd on the panel's KL 'hi' set.
+    'stable' when its range is within the band; 'jump' when it moves out and back (range over the band, first-to-last
+    change within it) or any step between adjacent points goes against the first-to-last change by more than the
+    band; else 'monotone'. 'missing points' with a non-finite point; 'no call' without a seed sd."""
+    if len(v) < 2 or not all(math.isfinite(x) for x in v):
+        return {"values": v, "call": "missing points"}
+    if not finite(sd):
+        return {"values": v, "call": "no call (no seed sd)"}
+    band, d, total = mult * sd, list(np.diff(v)), v[-1] - v[0]
+    o = {"values": v, "band": band, "max_step_share": max(abs(x) for x in d) / sum(abs(x) for x in d) if any(d) else math.nan}
+    if max(v) - min(v) <= band:
+        return o | {"call": "stable"}
+    if abs(total) <= band or any(x * math.copysign(1, total) < -band for x in d):
+        return o | {"call": "jump"}
+    return o | {"call": "monotone"}
+
+
+def amendment4(res: Path, P: dict[str, Any], kl_hi: Any) -> dict[str, Any]:
+    """The two descriptive readouts: the mixture's rho per measure, and per trajectory run and reading the jump call
+    against the reading's seed sd on the KL 'hi' set (nan when that set was not read)."""
+    S, R = P["settings"], P["rules"]
+    sd = lambda m: kl_hi["readability"].get(m, {}).get("within_sd", math.nan) if isinstance(kl_hi, dict) else math.nan
+    by_task = trajectory_values(res)
+    traj = {t: {m: jump_call(v, sd(m), R["amendment4"]["jump_mult"]) for m, v in by_task[t].items()} if t in by_task
+            else "too few points (select: fewer saves over the floor than points) or not read" for t in S["trajectory_tasks"]}  # fmt: skip
+    return {"mixture": mixture(mix_values(res, S), R, len(S["seeds"])), "trajectory": traj}
 
 
 def task_means(seeds: dict[str, list[float]]) -> tuple[dict[str, float], dict[str, Any]]:
@@ -136,7 +235,7 @@ def power(x: tuple[float, ...], target: float, crit: float, draws: int = POWER_D
     for _ in range(30):
         sig = math.sqrt(lo * hi)
         lo, hi = (sig, hi) if taub_rows(x, xa + sig * E).mean() > target else (lo, sig)
-    return float((taub_rows(x, xa + sig * E) >= crit - 1e-9).mean())
+    return float((taub_rows(x, xa + math.sqrt(lo * hi) * E) >= crit - 1e-9).mean())
 
 
 def interval(x: list[float], y: list[float], n: int, seed: int) -> list[float]:
@@ -292,16 +391,23 @@ def main() -> None:
     if not P.get("raters"):
         sys.exit("raters are not filed in predictions.json: the lead files them before scoring")
     out = score(gather(res), P, drops(res))  # the nine-task set, as Amendment 3 filed it; needs no wide file
+    out["amendment4"] = amendment4(res, P, out["kl_hi"])
     wide = res / "wide"
     if (wide / "dropped.json").is_file():  # Amendment 5: the 18-task set beside it, its own drops, reads and raters
         if not P.get("raters_wide"):
             sys.exit("raters_wide are not filed in predictions.json: the wide set is not scored without them")
         out["wide"] = score(gather(wide), P, drops(wide), "raters_wide")
     (res / "summary.json").write_text(json.dumps(out, indent=1, default=str))
-    for name, o in (("", out), ("wide ", out.get("wide", {}))):
-        for s in SETS:
-            if isinstance(o.get(s), dict):
-                show(name + s, o[s])
+    for s in SETS:
+        if isinstance(out[s], dict):
+            show(s, out[s])
+    for m, o in out["amendment4"]["mixture"].items():
+        print(f"[mixture] {m}: rho {o['rho']:.3f} (15 points {o['rho_all_points']:.3f}, critical {o['critical_rho']:.3f}, expected {o['expected_sign']:+d}): {o['call']}")
+    for t, by in out["amendment4"]["trajectory"].items():
+        print(f"[trajectory {t}] " + (by if isinstance(by, str) else "; ".join(f"{m} {o['call']}" for m, o in by.items())))
+    for s in SETS:
+        if isinstance(out.get("wide", {}).get(s), dict):
+            show("wide " + s, out["wide"][s])
     print(f"wrote {res / 'summary.json'}")
 
 

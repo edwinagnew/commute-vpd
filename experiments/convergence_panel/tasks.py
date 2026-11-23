@@ -124,7 +124,31 @@ def prompt_task(name: str, C: Any, tok: Any) -> PN.Task:
     return PN.Task(name, rows[:n], mask[:n], vrows[m : m + C.prompt_held], vmask[m : m + C.prompt_held], r)
 
 
+def mix_task(net: ST.Net, C: Any, name: str) -> PN.Task:
+    """Amendment 4: mixNN holds NN% of mix_tasks[1]'s rows and the rest mix_tasks[0]'s, in every part (training rows with
+    their masks, held rows, read windows, fitting windows: the first rows of each, then one seeded shuffle a part, so
+    steering's first fitting windows are mixed too); 0 and 100 are the two panel tasks themselves. Both are
+    continued-text tasks: one trainer and the same masks, so a mix is a row mix."""
+    f, gen = int(name.removeprefix("mix")) / 100, torch.Generator().manual_seed(C.pick_seed)
+    hi, lo = (build(net, C, t) for t in C.mix_tasks)
+    assert hi.read.ab is None and lo.read.ab is None and hi.read.pos == lo.read.pos, "both mixed tasks are continued text"
+
+    def mix(a: tuple[Tensor, ...], b: tuple[Tensor, ...]) -> list[Tensor]:
+        n = len(a[0])
+        k, p = round(f * n), torch.randperm(n, generator=gen)
+        assert all(len(y) >= k and x.shape[1:] == y.shape[1:] for x, y in zip(a, b, strict=True)), (name, [x.shape for x in a + b])
+        return [torch.cat([x[: n - k], y[:k]])[p] for x, y in zip(a, b, strict=True)]
+
+    train, mask = mix((hi.train, hi.mask), (lo.train, lo.mask))
+    held, held_mask = mix((hi.held, hi.held_mask), (lo.held, lo.held_mask))
+    toks, tgt = mix((hi.read.toks, hi.read.tgt), (lo.read.toks, lo.read.tgt))
+    fit, fit_tgt = mix((hi.read.fit, hi.read.fit_tgt), (lo.read.fit, lo.read.fit_tgt))
+    return PN.Task(name, train, mask, held, held_mask, RR.Read(name, toks, tgt, hi.read.pos, fit, fit_tgt))
+
+
 def build(net: ST.Net, C: Any, name: str) -> PN.Task:
+    if name.startswith("mix"):
+        return mix_task(net, C, name)
     tok = vpd.tokenizer()
     V = int(net.run(torch.zeros(1, 2, dtype=torch.long))[0].shape[-1])
     starts = R.word_starts(tok.convert_ids_to_tokens(list(range(len(tok)))), V)

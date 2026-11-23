@@ -60,6 +60,21 @@ shared `src/commute/panel.py`; rules `results/predictions.json`; card `card.md`;
   that the readings track intuition beyond the base prior. On the wide panel (Amendment 5, 18 tasks, the joint
   consensus tiers) the critical tau-b is 0.317 and power at a true tau of 0.3 is 0.50 (0.92 at 0.5), so a "no call"
   there is reported the same way, as agreement too weak to call and unlikely to be as strong as 0.5.
+- **Amendment 4 (2026-11-22, whip-lead's 22:55 note, user "yes to all four"; before any read).** Two descriptive
+  extras, outside H1/H2 (`rules.amendment4`). *Mixture:* lower (consensus reuse, code 3) mixed with yoruba (new,
+  code 1) at 0/25/50/75/100% of yoruba's rows in every part of the task (`tasks.mix_task`); 0 and 100% are the
+  panel's own runs, so only mix25/50/75 train. Pair: yoruba is the only code-1 task; of the four code-3 tasks only
+  lower's saves have held gain over the floor (pile, code and british read below 0 at every save), and lower and
+  yoruba share row shape, mask and read layout, so a mix is a row mix. Mix states are picked at the panel's KL "hi"
+  target without entering its selection rule. Per measure, Spearman rho of seed means over the 5 fractions,
+  "monotone" when |rho| >= 0.9 (exact one-sided 0.05, n = 5), sign against -orientation. *Trajectory:* no new
+  saving (train already saves at every rung; lower's seed 0 has 14 saves over its floor): select picks 5 of seed
+  0's saves over the floor, evenly spaced, for lower and yoruba; "stable" / "monotone" / "jump" against 3 x the
+  measure's seed sd on the KL "hi" set. At W0 every mix reads numerators 0 and shares nan: "no call", never
+  "monotone". New jobs: 3 train (5-10 min each, as a panel LM task, plus the second task's build) + 3 read (3 states
+  at <= 58 s, ~4 min + set-up each) on debug QoS, and up to 10 trajectory states (<= 58 s each) in lower's and
+  yoruba's reads: ~0.5-0.8 GPU-h, $0; exact lines in the sbatch header; select runs
+  after the mixes' train jobs and before any read.
 - **Amendment 5: wide panel (2026-11-22, whip-lead's 23:10 GO with redteam-lead's agreement, user away).** Nine tasks
   join the filed nine: English, German, Swahili, Tagalog and Spanish Wikipedia (as Yoruba), arXiv abstracts (as the
   Pile rows), sentiment (E211's SST-2 label task), animal-or-plant article category (DBpedia-14, in the topic task's
@@ -88,7 +103,16 @@ shared `src/commute/panel.py`; rules `results/predictions.json`; card `card.md`;
   ```
   `read T` reads every set whose dropped.json exists and holds T, the nine first; a state the nine set already read is
   copied into `results/wide/read/`, so a filed task's wide read costs only the states the wide rule picks anew. The
-  nine set's `select` and reads go ahead now and never wait for the wide jobs. Then `score.py` scores both.
+  nine set's `select` and reads go ahead now and never wait for the wide jobs. Then `score.py` scores both. The wide
+  drops live in their own file, `results/wide/dropped.json`, checked by `score.py` against the wide reads only
+  (`results/wide/read/`, `results/wide/eb/`); `select wide` never touches the nine's `results/dropped.json` or its
+  timestamp, and `select` refuses to run again for a set whose `read/` already holds a file.
+- **Recipe probe, no recipe change (2026-11-23, probe job 63813, commit 64a6ae60).** Matched-KL SFT on in-distribution
+  text only loses held likelihood at 67M: on held-out Pile the best gain over 3 recipes (filed 3e-5/batch 8; 1e-5 and
+  3e-6 at batch 32 with 6% warm-up) was +0.0005 nats/token, below a 0.014 floor, turning negative by KL 0.003. The
+  recipe stays as filed, so pile, code and british go to `dropped.json` under the filed rule, and wiki_en and arxiv
+  are expected to drop the same way in the wide set. The reuse tier is thin (pile, code and british drop out of the
+  nine), and this weakens H1.
 - Edge cases run on a stub before filing (score.py --stub; since Amendment 3, `--results DIR` on run.py's read shape): a dropped task, a zero-spread reading, a nan seed, ties
   (tier codes), n = 4, the prior with no common support. All gave the calls the rules name.
 

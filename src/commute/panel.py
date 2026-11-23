@@ -202,6 +202,7 @@ class Recipe:
     batch: int
     steps: int
     grad_clip: float
+    warmup: int = 0  # linear warm-up steps (`finetune._run`); 0, the filed nine's, leaves their runs bit-identical
 
 
 def masked_ce(net: Any, toks: Tensor, mask: Tensor) -> tuple[Tensor, dict[str, float]]:
@@ -254,7 +255,7 @@ def train_ladder(net: ST.Net, t: Task, rc: Recipe, seed: int, kl_rows: Tensor, r
             raise FT.StopTraining
 
     try:
-        FT._run(model, FT.decomposed_params(model), rc.lr, rc.grad_clip, rc.steps, (), loss_fn, dict, log, "adam", on_step)
+        FT._run(model, FT.decomposed_params(model), rc.lr, rc.grad_clip, rc.steps, (), loss_fn, dict, log, "adam", on_step, rc.warmup)
     except FT.StopTraining:
         pass
     return trace
