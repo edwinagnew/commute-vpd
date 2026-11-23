@@ -1,0 +1,38 @@
+{
+  "experiment": "E277 (needed_neurons)",
+  "cell": "P1.56",
+  "filed": "2026-11-23, definition-lead (writer agent), before any GPU run of this experiment",
+  "settings": {
+    "built": ["x2", "x10", "rebuilt", "new_few", "new_thin", "random_size_241001", "random_kl_241002"],
+    "control": "x2",
+    "band": "p97",
+    "derangements": 4,
+    "examples": 64,
+    "seed": 268,
+    "rows": 1024,
+    "logit_rows": 8192,
+    "cache_batch": 32,
+    "random_seed": 277000,
+    "too_small": 100,
+    "settings_source": "built, control, derangements, examples, seed, rows, logit_rows, cache_batch: E268's filed values (experiments/kstar_needed/results/predictions.json settings), so the items, D, the read positions and the tested pairs are E268's. band: E229's main band (experiments/topk_upper/results/predictions.json main_band; the bounds are E217's saved base p97 percentiles, pinned there by sha256). random_seed: the E-number times 1000; trained item k (E229's order, seed 0 then seed 1) uses random_seed + k. too_small: the card's floor (whip-lead, 2026-11-23, filed with E273)."
+  },
+  "readings": {
+    "variables": "per layer of the 67M: its 6 heads, its 3072 neurons (value: GELU output when above the neuron's base p97, else 0) and one remainder (the rest of the GELU output, so the featurization is exact): 12,316. Norms belong to the heads and neurons of their layer (E217); no biases. Embedding and unembedding not tested.",
+    "K": "variables for which some tested pair (x, x') of D, x' = pi(x) for one of 4 seeded derangements pi each tested on 64 windows (256 pairs), changes F's argmax token at some read position when the variable's value on x is set to its value in F's own run on x' at every position (commute.needed_neurons.scan). A finite sample of the definition's K; by_derangement shows its growth. Blind to variables needed only on untested pairs. Positive control: none that knows K in advance; the identity interchange (x' = x) must change nothing.",
+    "E_b_K": "commute.stand_in.explained_share(num, den, dd, K and changed), num, den, dd per variable from one stand_in.write_change pass (every position of D in F's own run; M's mechanism on F's own input). 1 when K has no changed member. Blind to how much each variable matters for the behaviour (it weighs by write change).",
+    "E_b_changed": "the same over every changed variable (no K)",
+    "margin_median, margin_min": "F's top-1 minus top-2 logit at the read positions of D; n_fragile_positions counts those at most stage 0's identity deviation",
+    "too_small": "|K| < 100: the item reads 'too small to read'"
+  },
+  "rules": {
+    "R0a": "Stage 0 stops the job on any argmax change under the identity interchange (x' = x) on the control's first 64 windows, every variable, at its read positions (built world: x2, all 41 positions; trained world: E229's control item copy24_s0, last position). Its largest logit deviation is recorded as the floor, not barred: the swapped value equals the one it replaces in exact arithmetic (the strong and weak parts are each exact), so the deviation is the scan path's fp32 rounding against F's native forward. Edge: a tie in F's top two logits could flip under rounding alone; n_fragile_positions counts such positions per item.",
+    "R0b": "Stage 0 stops the job unless the do-nothing (F = M: the built world's do_nothing item; the trained world's copy of M) has no changed variable, dd max exactly 0.0 and E_b over K exactly 1.0 (K and changed is empty for any K, so the convention gives 1 with no division).",
+    "built": "descriptive. g = min(E_b_K(x2), E_b_K(x10)) - max(E_b_K over new_few, new_thin, random_size_241001, random_kl_241002). Rival A (card.md) reads when g >= 0.2; rival B when max(E_b_K(x2), E_b_K(x10)) - max(the same four) < 0.2; neither when one strengthening edit is 0.2 above the four and the other is not. No call when any of the six has too_small, or n_changed_K = 0 (E_b would be 1 by convention, not a reading). rebuilt is reported, not in the rule.",
+    "trained": "descriptive, no bar: each fine-tune's E_b over K beside its matched random's, |K| annotated"
+  },
+  "expected": {
+    "stage0": "identity: 0 argmax changes, largest logit deviation about 1e-4 or below (E268's was 5.1e-5 at VPD on the same path); do-nothing: 0 changed, dd max 0.0, E_b over K 1.0; rate about 3x E268's per item (12,316 variables against 38,938)",
+    "built": "not filed as a value (descriptive). |K| of hundreds or more on every built edit (card floor). Randoms (random_size_241001, random_kl_241002): E_b over K <= 0.05, as at VPD (0.011) and at the SAE (at most 0.02)",
+    "trained": "not filed (descriptive). Matched randoms: E_b over K <= 0.05"
+  }
+}
