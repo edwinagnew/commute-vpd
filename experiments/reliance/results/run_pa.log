@@ -1,0 +1,45 @@
+[22:34:59] E283 (reliance) start, stage neurons, world panel, items [], tasks ['summary', 'conll', 'category', 'squad'], tag pa
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[22:35:10] neurons, world panel: 16 items ['panel/squad/random_squad_s0_step4', 'panel/squad/squad_s0_step4', 'panel/squad/squad_s1_step3', 'panel/squad/squad_s2_step4', 'panel/conll/random_conll_s0_step8', 'panel/conll/conll_s0_step8', 'panel/conll/conll_s1_step8', 'panel/conll/conll_s2_step9', 'panel/category/random_category_s0_step8', 'panel/category/category_s0_step8', 'panel/category/category_s1_step9', 'panel/category/category_s2_step8', 'panel/summary/random_summary_s0_step9', 'panel/summary/summary_s0_step9', 'panel/summary/summary_s1_step19', 'panel/summary/summary_s2_step5']
+[22:35:10] panel/squad/random_squad_s0_step4: M on D 3e08947cc2b82f80, 200 windows of 256 tokens
+[22:41:14]     layer 0: 3079 variables x 256 pairs, 96 needed; 788224 cases in 364 s (2168/s)
+[22:45:48]     layer 1: 3079 variables x 256 pairs, 73 needed; 1576448 cases in 637 s (2474/s)
+[22:48:52]     layer 2: 3079 variables x 256 pairs, 15 needed; 2364672 cases in 821 s (2879/s)
+[22:50:26]     layer 3: 3079 variables x 256 pairs, 23 needed; 3152896 cases in 915 s (3444/s)
+[22:50:26] neurons panel/squad/random_squad_s0_step4: D 3e08947cc2b82f80, |K_M| 207 of 12316, 3152896 cases in 915 s; SCAN DONE
+[22:50:26] panel/squad/squad_s0_step4: D 3e08947cc2b82f80 scanned before
+[22:50:26] panel/squad/squad_s1_step3: D 3e08947cc2b82f80 scanned before
+[22:50:26] panel/squad/squad_s2_step4: D 3e08947cc2b82f80 scanned before
+[22:50:26] panel/conll/random_conll_s0_step8: M on D 3fa47d7da5577d0e, 200 windows of 96 tokens
+[22:52:40]     layer 0: 3079 variables x 256 pairs, 1513 needed; 788224 cases in 133 s (5910/s)
+[22:54:21]     layer 1: 3079 variables x 256 pairs, 948 needed; 1576448 cases in 234 s (6733/s)
+[22:55:29]     layer 2: 3079 variables x 256 pairs, 613 needed; 2364672 cases in 302 s (7822/s)
+[22:56:04]     layer 3: 3079 variables x 256 pairs, 52 needed; 3152896 cases in 338 s (9333/s)
+[22:56:04] neurons panel/conll/random_conll_s0_step8: D 3fa47d7da5577d0e, |K_M| 3126 of 12316, 3152896 cases in 338 s; SCAN DONE
+[22:56:04] panel/conll/conll_s0_step8: D 3fa47d7da5577d0e scanned before
+[22:56:04] panel/conll/conll_s1_step8: D 3fa47d7da5577d0e scanned before
+[22:56:04] panel/conll/conll_s2_step9: D 3fa47d7da5577d0e scanned before
+[22:56:05] panel/category/random_category_s0_step8: M on D 8aeba1c3b24b9d0a, 200 windows of 35 tokens
+[22:56:56]     layer 0: 3079 variables x 256 pairs, 2250 needed; 788224 cases in 51 s (15314/s)
+[22:57:35]     layer 1: 3079 variables x 256 pairs, 1517 needed; 1576448 cases in 91 s (17373/s)
+[22:58:02]     layer 2: 3079 variables x 256 pairs, 1127 needed; 2364672 cases in 118 s (20097/s)
+[22:58:17]     layer 3: 3079 variables x 256 pairs, 356 needed; 3152896 cases in 132 s (23824/s)
+[22:58:17] neurons panel/category/random_category_s0_step8: D 8aeba1c3b24b9d0a, |K_M| 5250 of 12316, 3152896 cases in 132 s; SCAN DONE
+[22:58:17] panel/category/category_s0_step8: D 8aeba1c3b24b9d0a scanned before
+[22:58:17] panel/category/category_s1_step9: D 8aeba1c3b24b9d0a scanned before
+[22:58:17] panel/category/category_s2_step8: D 8aeba1c3b24b9d0a scanned before
+[22:58:17] panel/summary/random_summary_s0_step9: M on D 8df5d51d848ffed8, 200 windows of 128 tokens
+[23:01:16]     layer 0: 3079 variables x 256 pairs, 2377 needed; 788224 cases in 178 s (4427/s)
+[23:03:30]     layer 1: 3079 variables x 256 pairs, 1960 needed; 1576448 cases in 312 s (5045/s)
+[23:05:01]     layer 2: 3079 variables x 256 pairs, 1530 needed; 2364672 cases in 403 s (5865/s)
+[23:05:48]     layer 3: 3079 variables x 256 pairs, 357 needed; 3152896 cases in 450 s (7005/s)
+[23:05:48] neurons panel/summary/random_summary_s0_step9: D 8df5d51d848ffed8, |K_M| 6224 of 12316, 3152896 cases in 450 s; SCAN DONE
+[23:05:48] panel/summary/summary_s0_step9: D 8df5d51d848ffed8 scanned before
+[23:05:48] panel/summary/summary_s1_step19: D 8df5d51d848ffed8 scanned before
+[23:05:48] panel/summary/summary_s2_step5: D 8df5d51d848ffed8 scanned before
+[23:05:48] E283 (reliance) DONE
+peak host RSS 6.4 GB
+=== FINISHED (exit 0) tag pa — results in /root/work/experiments/reliance/results ===

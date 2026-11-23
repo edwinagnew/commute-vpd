@@ -1,0 +1,45 @@
+[22:40:57] E283 (reliance) start, stage neurons, world panel, items [], tasks ['lower', 'spanish', 'swahili', 'yoruba'], tag pc
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[22:41:05] neurons, world panel: 16 items ['panel/lower/random_lower_s0_step128', 'panel/lower/lower_s0_step128', 'panel/lower/lower_s1_step101', 'panel/lower/lower_s2_step96', 'panel/yoruba/random_yoruba_s0_step105', 'panel/yoruba/yoruba_s0_step105', 'panel/yoruba/yoruba_s1_step107', 'panel/yoruba/yoruba_s2_step107', 'panel/swahili/random_swahili_s0_step77', 'panel/swahili/swahili_s0_step77', 'panel/swahili/swahili_s1_step77', 'panel/swahili/swahili_s2_step41', 'panel/spanish/random_spanish_s0_step300', 'panel/spanish/spanish_s0_step300', 'panel/spanish/spanish_s1_step300', 'panel/spanish/spanish_s2_step300']
+[22:41:05] panel/lower/random_lower_s0_step128: M on D a3abf21e66d31659, 200 windows of 64 tokens
+[22:42:34]     layer 0: 3079 variables x 256 pairs, 1090 needed; 788224 cases in 89 s (8870/s)
+[22:43:42]     layer 1: 3079 variables x 256 pairs, 700 needed; 1576448 cases in 156 s (10082/s)
+[22:44:28]     layer 2: 3079 variables x 256 pairs, 623 needed; 2364672 cases in 202 s (11689/s)
+[22:44:52]     layer 3: 3079 variables x 256 pairs, 648 needed; 3152896 cases in 227 s (13917/s)
+[22:44:52] neurons panel/lower/random_lower_s0_step128: D a3abf21e66d31659, |K_M| 3061 of 12316, 3152896 cases in 227 s; SCAN DONE
+[22:44:52] panel/lower/lower_s0_step128: D a3abf21e66d31659 scanned before
+[22:44:52] panel/lower/lower_s1_step101: D a3abf21e66d31659 scanned before
+[22:44:52] panel/lower/lower_s2_step96: D a3abf21e66d31659 scanned before
+[22:44:53] panel/yoruba/random_yoruba_s0_step105: M on D fc0902dce7c85ed3, 200 windows of 64 tokens
+[22:46:22]     layer 0: 3079 variables x 256 pairs, 2337 needed; 788224 cases in 89 s (8850/s)
+[22:47:29]     layer 1: 3079 variables x 256 pairs, 1657 needed; 1576448 cases in 157 s (10071/s)
+[22:48:15]     layer 2: 3079 variables x 256 pairs, 1161 needed; 2364672 cases in 202 s (11684/s)
+[22:48:39]     layer 3: 3079 variables x 256 pairs, 551 needed; 3152896 cases in 227 s (13913/s)
+[22:48:39] neurons panel/yoruba/random_yoruba_s0_step105: D fc0902dce7c85ed3, |K_M| 5706 of 12316, 3152896 cases in 227 s; SCAN DONE
+[22:48:39] panel/yoruba/yoruba_s0_step105: D fc0902dce7c85ed3 scanned before
+[22:48:39] panel/yoruba/yoruba_s1_step107: D fc0902dce7c85ed3 scanned before
+[22:48:39] panel/yoruba/yoruba_s2_step107: D fc0902dce7c85ed3 scanned before
+[22:48:40] panel/swahili/random_swahili_s0_step77: M on D 42a0b3eb8cf9240e, 200 windows of 64 tokens
+[22:50:09]     layer 0: 3079 variables x 256 pairs, 2154 needed; 788224 cases in 89 s (8852/s)
+[22:51:16]     layer 1: 3079 variables x 256 pairs, 1494 needed; 1576448 cases in 156 s (10074/s)
+[22:52:02]     layer 2: 3079 variables x 256 pairs, 1140 needed; 2364672 cases in 202 s (11689/s)
+[22:52:26]     layer 3: 3079 variables x 256 pairs, 476 needed; 3152896 cases in 227 s (13920/s)
+[22:52:26] neurons panel/swahili/random_swahili_s0_step77: D 42a0b3eb8cf9240e, |K_M| 5264 of 12316, 3152896 cases in 227 s; SCAN DONE
+[22:52:26] panel/swahili/swahili_s0_step77: D 42a0b3eb8cf9240e scanned before
+[22:52:26] panel/swahili/swahili_s1_step77: D 42a0b3eb8cf9240e scanned before
+[22:52:26] panel/swahili/swahili_s2_step41: D 42a0b3eb8cf9240e scanned before
+[22:52:27] panel/spanish/random_spanish_s0_step300: M on D 0c12991528d6218c, 200 windows of 64 tokens
+[22:53:56]     layer 0: 3079 variables x 256 pairs, 2133 needed; 788224 cases in 89 s (8878/s)
+[22:55:03]     layer 1: 3079 variables x 256 pairs, 1668 needed; 1576448 cases in 156 s (10101/s)
+[22:55:49]     layer 2: 3079 variables x 256 pairs, 1327 needed; 2364672 cases in 202 s (11718/s)
+[22:56:13]     layer 3: 3079 variables x 256 pairs, 731 needed; 3152896 cases in 226 s (13951/s)
+[22:56:13] neurons panel/spanish/random_spanish_s0_step300: D 0c12991528d6218c, |K_M| 5859 of 12316, 3152896 cases in 226 s; SCAN DONE
+[22:56:13] panel/spanish/spanish_s0_step300: D 0c12991528d6218c scanned before
+[22:56:13] panel/spanish/spanish_s1_step300: D 0c12991528d6218c scanned before
+[22:56:13] panel/spanish/spanish_s2_step300: D 0c12991528d6218c scanned before
+[22:56:13] E283 (reliance) DONE
+peak host RSS 6.4 GB
+=== FINISHED (exit 0) tag pc — results in /root/work/experiments/reliance/results ===
