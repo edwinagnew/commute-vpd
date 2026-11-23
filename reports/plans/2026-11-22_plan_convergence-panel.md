@@ -92,7 +92,10 @@ shared `src/commute/panel.py`; rules `results/predictions.json`; card `card.md`;
   prior-aware H1 call is the scored call for the wide panel too. Wide consensus tiers: 5 at 3, 3 at 2.5, 5 at 2, 2 at 1.5, 3 at 1. At
   n = 18 the critical tau-b is 0.317 (Opus 0.339, GPT 0.333), power 0.50 at a true tau of 0.3 and 0.92 at 0.5; with
   drops, n = 17: 0.327-0.334 (power 0.48 without summary), n = 16: 0.336-0.354 (0.43 without summary and
-  sentiment), n = 15: 0.354-0.375 (0.43 without the three twin-checked tasks). The wide set's E_b (stage 3) is not
+  sentiment), n = 15: 0.354-0.375 (0.43 without the three twin-checked tasks). Held masks follow Amendment 7's rule:
+  the Wikipedia and arXiv tasks go through `lm_task`, so their held gain is scored at their 500 read positions;
+  sentiment and category (label tasks) and summary (a prompt task) score the answer only; no wide builder scores
+  anything else. The wide set's E_b (stage 3) is not
   wired: it needs its own go-ahead. Jobs, after the amendment is on main and from the main clone:
   ```
   for T in wiki_en arxiv german swahili tagalog spanish sentiment category summary; do
