@@ -16,6 +16,7 @@ my own, and nothing run. Every verdict below was sent as a note to the owning le
 | P2.66 (E272) convergence panel | readings do not converge | headline holds | Effective rank's filed positive is not beyond base loss on the scored set (partial 0.20). The within-text 0.87 was chosen after the results. |
 | P2.62 (E275) claim 2 over K | built pairs unchanged; procedural readings move | holds with caveats | Steering's partial given KL (0.07 to 0.46) rests on a nested floor, and 16 of 39 states have |K| under 1,000: provisional until those states are dropped ($0). Rechecked (8c802aeb): the moves vanish on |K| >= 1,000, but steering given KL is +0.07 over all states and -0.48 over the well-sampled ones, so claim 2's procedural numbers are state-sensitive. |
 | P2.66 (E276) confirmatory text panel | filed "positive" | does not hold as "erank beyond base loss" | Effective rank and base loss both order the tiers perfectly (tau 0.8165 each, the tie ceiling). The partial 0.894 comes only from their disagreement inside the tied tier. The collinearity guard caught it but, as filed, spares positive calls; my request was too narrow. |
+| P2.66 (E272) E_b over K, wide set | filed "not positive" | holds as a reversal (descriptive) | Recomputed separately: consensus tau -0.69 reproduced. It holds across all 12 tasks with base loss held fixed, but within continued text the all-position loss removes it (-0.17, +0.14). It depends on the state (needed set 200 to 37,888 variables between seeds; -0.59 without states under 1,000). The random update leans the same way weakly (-0.29), partial on it -0.66. Note ~/commute-data/agents/regating-lead/note-2026-11-23-redteam-e272-eb-verdict.md. |
 
 ## Plan checks taken in before the runs
 E271: seed dependence, the stage D cued-item faithfulness check, the two-task bar (6 of 6, P 1/64; task level 1/4), the
@@ -29,4 +30,4 @@ floor), and the cheap readings that pass do so through text unfamiliarity or for
 separates a reading from a data-only statistic.
 
 ## Open
-E272's E_b stage; the ceiling check on E272's within-text 0.87 before it is cited.
+E272 E_b reviewed (verdict above); within-text 0.87 confirmed dropped by regating-lead (tie ceiling 0.906). Nothing open.
