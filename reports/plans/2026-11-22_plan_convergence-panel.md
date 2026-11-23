@@ -196,16 +196,42 @@ sentiment and category 32 + " Topic:" ~ 34 (`realistic.label_windows`). Seconds 
 | sentiment, category | ~34 | 2 x 4 = 8 | 392 | 3,136 |
 | **states** | | **48** | | **45,940 = 12.8 H100-h** |
 
+- **Windows first ($0, cluster; added 2026-11-23 after the gate-5 review, F2).** `eb.py windows wide kl_hi` builds each
+  of the 12 tasks' D once (the LM tasks pick their positions from W0 log-odds, so it needs a GPU) and writes it to
+  `results/large/eb_windows/TASK.pt` (<= 200 x 256 int64 = 400 KB each), with shape, dtype and sha256 in
+  `results/wide/eb/windows_manifest.json` (committed). Stage 0 and every task load D from there and stop on a sha256 or
+  shape mismatch, so the pods need no dataset (no `cached_rows`, Pile, Wikipedia or HF streams) and D is the cluster's
+  exactly. The token column above is replaced by the manifest's shapes when it is written. Estimate: 12 task builds at
+  about 1-2 min each (the read jobs' builds, inside <= 16 min a task with 16 state reads at <= 58 s) = 15-25 min.
 - Stage 0 once, alone, first: x2 1,445 s (E268 `kstar_needed/results/items/x2.json` .seconds) + do-nothing on 200
-  lower windows (~738 s) + identity: ~0.7 h.
-- Four H100 SXM pods, by task: A squad (3.3 h, after stage 0 on A: 4.0 h); B summary + conll (2.9 h); C lower,
-  french, yoruba, arxiv (3.3 h); D german, swahili, spanish, sentiment, category (3.3 h). B-D start when stage 0 has
-  passed and get `results/eb/stage0.json` (the gate `task` asserts). Wall ~4.5 h with set-up.
-- Uploads: the 36 state files are 2.04 GB: 2,040 MB / 10 MB/s = 204 s in all (~50 s a pod).
-- Cost: (12.8 states + 0.7 stage 0 + 4 x 0.3 set-up) h = 14.7 H100-h x $4.40/h = **~$65**; gated (over $60).
-- Unmeasured until the rehearsal (`E272 rehearse: eb`, cluster L40, stage 0 + one squad state, 200 windows): seconds
-  per squad state (the 256/64 scaling is a guess), peak memory on squad at scan rows 1024 (x2 peaked at 11.3 GB on 75
-  windows of 64), and the L40-to-H100 time ratio used to carry it over.
+  lower windows (~738 s) + identity: ~0.7 h. It records the card; `task` refuses a stage0.json from another card name.
+- **Gaussians first (F4).** Each task's seed-0 Gaussian is the first state of its shard 0. Its E_b is logged beside the
+  filed expected value ("random about 0.011", `expected.eb`); no tolerance is filed, so it never stops the job. The
+  pod-runner quotes each Gaussian line to the lead at once, and the lead reads it against 0.011 before the task's real
+  states are read; score.py does not read Gaussians.
+- **Stop rules after each state (2026-11-23, F3).** The job exits nonzero with nothing written for the state unless:
+  E_b over K is finite and in [0, 1]; the record's windows are (200, the loaded D's tokens); more than 99% of the
+  variables changed (E268's RL items: 38,936 of 38,938; a dW that loaded empty reads E_b exactly 1 with none changed);
+  dd_max > 0; seconds for the state within 2x of 738 x tokens / 64 x the card's slowdown (H100 1, L40 2.5 from the scan
+  rates 8,800/s on E268's H100 and 3,517/s in job 64133; any other card stops before its first state). Memory: the
+  job logs max GPU memory after the cache and on every scan site line (B1).
+- **Known bias (N1, kept).** An LM task's D is its 200 hardest read positions by W0 log-odds (`realistic.py`
+  `hard_positions` sorts ascending); a prompt or label task's is a seeded random 200. Low-margin positions flip more
+  easily, so K and E_b can differ between task kinds for this reason alone, and H1 is a cross-task tau. The selection
+  is not changed; the card says so.
+- Four H100 SXM pods (one card model: the stage 0 gate compares card names), by task: A squad (3.3 h); B summary +
+  conll (2.9 h); C lower, french, yoruba, arxiv (3.3 h); D german, swahili, spanish, sentiment, category (3.3 h).
+  Two ways to run stage 0:
+  (a) pod A runs it first (0.7 h); B-D start only when it has passed and get its `results/eb/stage0.json`: 14.7
+      H100-h, **~$65**, wall ~4.7 h (0.7 h stage 0 + 3.3 h + set-up).
+  (b) each pod runs stage 0 itself before its tasks: +3 x 0.7 = 2.1 H100-h, 16.8 H100-h, **~$74**, wall ~4.3 h, and
+      no file passed between pods. (b) is simpler and gives four stage-0 checks; (a) is $9 cheaper.
+- Uploads: the 36 state files are 2.04 GB: 2,040 MB / 10 MB/s = 204 s in all (~50 s a pod); the windows ~3 MB.
+- Cost (a): (12.8 states + 0.7 stage 0 + 4 x 0.3 set-up) h = 14.7 H100-h x $4.40/h = ~$65; gated (over $60).
+- Unmeasured until the rehearsal (`E272 rehearse: eb`, cluster L40): seconds per squad state (the 256/64 scaling is a
+  guess; read from the scan's per-site rate lines if the job times out) and peak memory on squad at scan rows 1024
+  (logged after the cache and per site). E268's 64-token RL items peaked at 11.9 GB at 1024 rows; squad's guess is
+  ~40 GB (review B1): tight on an L40, fits an H100.
 
 ## Open choices (for the lead)
 - The raters' tiers go in `raters` before `read` (both refuse while it is empty); the user's sort when it arrives.
