@@ -70,3 +70,9 @@ All four statistics no call as filed (tier tau 0.03 p 0.50; E_b tau 0.17 p 0.31,
 
 ## P1.56, due 11-23: E277 built + trained (a82d35bb), verdict sent to definition-lead
 Built: rival A as filed (g 0.982). But g rests on x2/x10, which change 9 variables. The rebuilt reuse case reads 0.048 at neurons (VPD 0.623), only 0.03 above random_kl 0.017 (post hoc). The random_size and new_thin margins are ~1e-5. Trained: no reuse/new order at neurons (pair gaps -0.008 to +0.014 with 2 seeds, about the seed spread). Each fine-tune reads 1.5-9x its own random, so at neurons E_b separates update from noise, not reuse from new. Remainders are 0.59-0.77 of dd. The panel stage is due ~13:45.
+
+## P1.57, due 11-23: E278 grid half (def2e161), verdict sent to definition-lead
+Rival B as filed: all five tasks (E_b over K 0.027-0.040) lie within 0.03 of one another and of their randoms (0.013-0.017), against rival_gap 0.2. The order reverses rival A's squared-cosine order at both ends: cipher is highest (0.037-0.040) and copy second (0.032-0.034), with no overlap across 3 seeds. Prior-matched cipher reads below the raw cipher. This is a qualitative surprise for the page's first paragraph, and no reuse/new reading follows from it. "2-3x random" has no filed bar.
+
+## P2.66, due 11-24: E279 page (9d4b953c) checked, fill after one wording fix
+All my notes are on the page, labelled post hoc. The fix: "does not order / does not follow the tiers" becomes "showed no order (no call); n 9 can miss a moderate correlation". Also: the -0.69 needs a source, and one sentence should say the page cannot tell an intuition null from an instrument null (the premise check is doubtful).
