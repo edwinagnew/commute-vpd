@@ -84,3 +84,6 @@ E279 (P2.66): the wording fix was taken (2dcb59b5) and the log flushed (v467).
 ## P1.58, due 11-24: E282 results (d809cbc8), verdict: control failed, no call
 The new edits read 0.967/0.969 at N and 0.953/0.954 at V (filed <= 0.3), so the E62 gaps (N +0.032, V -0.017) are no call. Scope: held-out = new windows of the same 8 fitted cues; unseen cues were not tested (a new cell, user's call). The exact o2 reads 0.841 at N, so the fit under-fits even exact cases, which makes the control failure stronger. V fits with negative KL share (random -0.504, q2 -3.67) read as "fit failed". Random at N 0.269 (filed <= 0.2) is a second, small miss.
 E282 page (ca8126a9) checked: OK to fill.
+
+## P1.56, due 11-24: E277 panel stage, verdict sent: provisional, no on-card identity check
+Stage 0 was skipped on the H100 pods (a stale stage0 file was in the synced tree), so the 48 panel items are provisional until one or two items are re-read on the cluster against the 8.2e-5 / 4.6e-5 floors. The neuron tau -0.348 (10 tasks) against VPD -0.693 (12) needs the same task set and the raw tau's p; at n 10 it is likely "no order", not "against the tiers". conll's Gaussian 0.031 is above its s1 fine-tune 0.030, so the count of tasks inside the Gaussian range is needed. Category drops at neurons (|K| 44), which thins the reuse end.
