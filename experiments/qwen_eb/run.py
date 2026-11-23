@@ -270,8 +270,13 @@ def stage0(job: Job) -> None:
 
 
 def label(gaps: list[float], bar: float) -> str:
-    """'above random' if every gap > bar, 'as random' if every |gap| <= bar, else 'mixed' (both below -bar included)."""
-    return "above random" if all(g > bar for g in gaps) else "as random" if all(abs(g) <= bar for g in gaps) else "mixed"
+    """'above random' if every gap > bar, 'below random' if every gap < -bar, 'as random' if every |gap| <= bar,
+    else 'mixed'."""
+    if all(g > bar for g in gaps):
+        return "above random"
+    if all(g < -bar for g in gaps):
+        return "below random"
+    return "as random" if all(abs(g) <= bar for g in gaps) else "mixed"
 
 
 def verdicts() -> dict[str, Any]:

@@ -5,15 +5,32 @@
   "settings": {
     "decomp": "p-9707d6ff",
     "decomp_source": "the brief: the new decomposition (experiments/DECOMPOSITIONS.md), all 196 matrices",
-    "states": ["R_s0", "R_s70", "N_s0", "N_s70", "F_s0", "F_s70"],
+    "states": [
+      "R_s0",
+      "R_s70",
+      "N_s0",
+      "N_s70",
+      "F_s0",
+      "F_s70"
+    ],
     "states_source": "P3.13 run 1's six E167 step-75 states (experiments/qwen_held_readings/results/predictions.json .settings.states): R = RL, N = the shuffled-reward run that collapsed, F = own-samples SFT; seeds 0 and 70",
     "step": 75,
-    "random_draws": [1, 2, 3, 4, 5, 6],
+    "random_draws": [
+      1,
+      2,
+      3,
+      4,
+      5,
+      6
+    ],
     "random_draws_source": "one fixed Gaussian draw per update, in the order of states (share_reading.gaussian, seed null_seed(draw, site)); P3.13's construction at each update's own per-matrix Frobenius norms",
     "probe_state": "R_s70",
     "probe_draw": 0,
     "probe_source": "stage 0 (c), the brief: one random change of RL seed 70's size, read for the floor and time only; draw 0 is P3.13's s_draw, so it is the same direction P3.13 read beside R_s70",
-    "rows": [64, 128],
+    "rows": [
+      64,
+      128
+    ],
     "row_len": 256,
     "rows_source": "the 64 maths read rows of P3.13 run 1 (S read on rows n_fit..n_rows = 64..127 of experiments/qwen_sft/results/maths_rows.json, cut to the Lab's row_len 256): 16,384 positions",
     "batch": 8,
@@ -32,7 +49,7 @@
   },
   "rules": {
     "R0": "Stage 0 stops the job (results/stopped.json names the rule) on any miss: (a) do-nothing: max over all variables of |dd| exactly 0.0 and E_b exactly 1.0; (b) gain x2: E_b >= 0.5; also each matrix has at least 32 subcomponents with den > 0 in the do-nothing, and every state's sha256 equals its pod's record. Edge cases checked before filing: the do-nothing's delta-W is 0 in every matrix, so kstar_vpd._site sets dU = dV = 0 and delta-W_out = 0, rf equals rm bit for bit, every dd is a sum of exact zeros, and E_b takes the convention 1 (sum of dd = 0, no division); the gain item's den > 0 on every chosen subcomponent by construction, and `explained` gives 0 (not a division) for any variable with den = 0 or num <= 0 (gain <= 0), so E_b lies in [0, 1] (explained <= dd by Cauchy-Schwarz); a gain item whose split put everything in remainders would read E_b near 0 and stop the job, which is the miss the control exists to catch. (c) and (d) are read, not stops: floor = |E_b(gain x2, bf16 autocast forward) - E_b(gain x2, fp32)|.",
-    "R1": "Stage 1, per arm (R, N, F) and seed: gap = E_b(update) - E_b(its random change). 'above random' if gap > 0.02 at both seeds; 'as random' if |gap| <= 0.02 at both; else 'mixed' (this includes both gaps below -0.02, and one seed above with the other within). Edge cases: E_b is always defined (1 when the sum of dd is 0, which no non-zero update gives), so a gap is always a number; a gap of exactly 0.02 is 'as random'. The card's stop: every one of the six gaps within 0.02 closes P3.14 with that reading.",
+    "R1": "Stage 1, per arm (R, N, F) and seed: gap = E_b(update) - E_b(its random change). above random if gap > 0.02 at both seeds; below random if gap < -0.02 at both; as random if |gap| <= 0.02 at both; else mixed. Edge cases: E_b is always defined (1 when the sum of dd is 0, which no non-zero update gives), so a gap is always a number; a gap of exactly 0.02 is as random. The card stop: every one of the six gaps within 0.02 closes P3.14 with that reading. (below-random label added 2026-11-22 by qwen-lead before any run.)",
     "R2": "Reported beside R1, not part of it: the stage-0 floor; if the floor exceeds 0.02 the labels are read against a gap the forward's precision alone can move, and the lead is told."
   },
   "expected": {
