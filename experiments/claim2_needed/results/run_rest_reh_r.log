@@ -1,0 +1,73 @@
+E275, E275 (claim2_needed) start, stage rest, shard (0, 18), tag reh_r; settings {'control': 'e58/copy_s0', 'transcription_rel_tol': 1e-11, 'prior_tasks': ('copy', 'prior_cipher'), 'prior_seeds': (0, 1, 2, 3, 4, 5, 6, 7, 8, 9), 'construction_rel_tol': 0.001}; E268's scan settings {'control': 'x2', 'control_E_b_Kstar': 0.7617252590298972, 'transcription_rel_tol': 1e-11, 'built': ('x2', 'x10', 'rebuilt', 'new_few', 'new_thin', 'random_size_241001', 'random_kl_241002'), 'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'ident_vars': 3, 'kept_floor': 3.3243476569633224e-05}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+    site 0 h.0.attn.k_proj: 4 variables x 64 pairs, 0 needed; 256 cases in 0 s (14010/s)
+    site 1 h.0.attn.o_proj: 4 variables x 64 pairs, 0 needed; 512 cases in 0 s (19160/s)
+    site 2 h.0.attn.q_proj: 4 variables x 64 pairs, 0 needed; 768 cases in 0 s (21954/s)
+    site 3 h.0.attn.v_proj: 4 variables x 64 pairs, 0 needed; 1024 cases in 0 s (23456/s)
+    site 4 h.0.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 1280 cases in 0 s (24390/s)
+    site 5 h.0.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 1536 cases in 0 s (24791/s)
+    site 6 h.1.attn.k_proj: 4 variables x 64 pairs, 0 needed; 1792 cases in 0 s (25811/s)
+    site 7 h.1.attn.o_proj: 4 variables x 64 pairs, 0 needed; 2048 cases in 0 s (26646/s)
+    site 8 h.1.attn.q_proj: 4 variables x 64 pairs, 0 needed; 2304 cases in 0 s (27289/s)
+    site 9 h.1.attn.v_proj: 4 variables x 64 pairs, 0 needed; 2560 cases in 0 s (27784/s)
+    site 10 h.1.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 2816 cases in 0 s (28234/s)
+    site 11 h.1.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 3072 cases in 0 s (28567/s)
+    site 12 h.2.attn.k_proj: 4 variables x 64 pairs, 0 needed; 3328 cases in 0 s (29303/s)
+    site 13 h.2.attn.o_proj: 4 variables x 64 pairs, 0 needed; 3584 cases in 0 s (29986/s)
+    site 14 h.2.attn.q_proj: 4 variables x 64 pairs, 0 needed; 3840 cases in 0 s (30621/s)
+    site 15 h.2.attn.v_proj: 4 variables x 64 pairs, 0 needed; 4096 cases in 0 s (31162/s)
+    site 16 h.2.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 4352 cases in 0 s (31673/s)
+    site 17 h.2.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 4608 cases in 0 s (32100/s)
+    site 18 h.3.attn.k_proj: 4 variables x 64 pairs, 0 needed; 4864 cases in 0 s (32891/s)
+    site 19 h.3.attn.o_proj: 4 variables x 64 pairs, 0 needed; 5120 cases in 0 s (33657/s)
+    site 20 h.3.attn.q_proj: 4 variables x 64 pairs, 0 needed; 5376 cases in 0 s (34372/s)
+    site 21 h.3.attn.v_proj: 4 variables x 64 pairs, 0 needed; 5632 cases in 0 s (34937/s)
+    site 22 h.3.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 5888 cases in 0 s (35583/s)
+    site 23 h.3.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 6144 cases in 0 s (36176/s)
+stage 0: {"experiment": "E275, E275 (claim2_needed)", "card": "NVIDIA L40", "control": "e58/copy_s0", "do_nothing": {"n_changed": 0, "dd_max": 0.0, "E_b_K": 1.0}, "identity": {"flips": 0, "max_dev": 4.291534423828125e-05, "min_margin": 0.005127906799316406, "cases": 6144, "cases_per_s": 36098.33021328574, "n_read_positions": 1, "n_windows": 512, "window_len": 8, "n_vars": 38938}, "transcription": {"E_b_Kstar": 0.03365486956309388, "E_b_Kstar_saved": 0.03365486956309388, "rel_dev": 0.0}, "construction": {"c": 0.999937697289711, "same_variables": true, "E_b_Kstar": 0.033708396777028374, "E_b_Kstar_saved": 0.033708632438971625, "rel_dev": 6.991145181522204e-06, "dd_rel_dev": 0.00012594839808119384}, "est_seconds_per_item": 276.13820199171704, "floor": 4.291534423828125e-05, "seconds": 45.661104679107666}; checks hold
+STAGE 0 DONE: est. 276 s per item
+stage rest: 1 of 18 items ['e62/lookup_s0']
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+    site 0 h.0.attn.k_proj: 513 variables x 256 pairs, 347 needed; 131328 cases in 5 s (24808/s)
+    site 1 h.0.attn.o_proj: 1025 variables x 256 pairs, 599 needed; 393728 cases in 16 s (24439/s)
+    site 2 h.0.attn.q_proj: 513 variables x 256 pairs, 283 needed; 525056 cases in 22 s (24352/s)
+    site 3 h.0.attn.v_proj: 1025 variables x 256 pairs, 545 needed; 787456 cases in 33 s (24225/s)
+    site 4 h.0.mlp.c_fc: 3073 variables x 256 pairs, 1367 needed; 1574144 cases in 66 s (23678/s)
+    site 5 h.0.mlp.down_proj: 3585 variables x 256 pairs, 940 needed; 2491904 cases in 106 s (23510/s)
+    site 6 h.1.attn.k_proj: 513 variables x 256 pairs, 100 needed; 2623232 cases in 110 s (23760/s)
+    site 7 h.1.attn.o_proj: 1025 variables x 256 pairs, 375 needed; 2885632 cases in 119 s (24210/s)
+    site 8 h.1.attn.q_proj: 513 variables x 256 pairs, 82 needed; 3016960 cases in 124 s (24409/s)
+    site 9 h.1.attn.v_proj: 1025 variables x 256 pairs, 417 needed; 3279360 cases in 132 s (24771/s)
+    site 10 h.1.mlp.c_fc: 3073 variables x 256 pairs, 765 needed; 4066048 cases in 160 s (25480/s)
+    site 11 h.1.mlp.down_proj: 3585 variables x 256 pairs, 413 needed; 4983808 cases in 191 s (26108/s)
+    site 12 h.2.attn.k_proj: 513 variables x 256 pairs, 253 needed; 5115136 cases in 194 s (26352/s)
+    site 13 h.2.attn.o_proj: 1025 variables x 256 pairs, 442 needed; 5377536 cases in 201 s (26819/s)
+    site 14 h.2.attn.q_proj: 513 variables x 256 pairs, 211 needed; 5508864 cases in 204 s (27041/s)
+    site 15 h.2.attn.v_proj: 1025 variables x 256 pairs, 451 needed; 5771264 cases in 210 s (27465/s)
+    site 16 h.2.mlp.c_fc: 3073 variables x 256 pairs, 620 needed; 6557952 cases in 230 s (28497/s)
+    site 17 h.2.mlp.down_proj: 3585 variables x 256 pairs, 429 needed; 7475712 cases in 253 s (29540/s)
+    site 18 h.3.attn.k_proj: 513 variables x 256 pairs, 138 needed; 7607040 cases in 255 s (29821/s)
+    site 19 h.3.attn.o_proj: 1025 variables x 256 pairs, 369 needed; 7869440 cases in 259 s (30372/s)
+    site 20 h.3.attn.q_proj: 513 variables x 256 pairs, 119 needed; 8000768 cases in 261 s (30641/s)
+    site 21 h.3.attn.v_proj: 1025 variables x 256 pairs, 333 needed; 8263168 cases in 265 s (31166/s)
+    site 22 h.3.mlp.c_fc: 3073 variables x 256 pairs, 842 needed; 9049856 cases in 278 s (32560/s)
+    site 23 h.3.mlp.down_proj: 3585 variables x 256 pairs, 746 needed; 9967616 cases in 293 s (34073/s)
+e62/lookup_s0: E_b over K 0.039948, over K* 0.044432; |K| 11186 (11186 changed); 311 s
+ITEM 1 of 1 DONE (e62/lookup_s0)
+E275, E275 (claim2_needed) DONE
+peak host RSS 7.3 GB
+=== FINISHED (exit 0) — results in /mnt/nw/home/e.agnew/commute-agents/compare-lead/experiments/claim2_needed/results ===
