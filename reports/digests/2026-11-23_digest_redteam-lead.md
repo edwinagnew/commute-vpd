@@ -148,3 +148,19 @@ P2.70 / E289 (beta refit, 4f35219e): OK. All 10 plant latents have real negative
 P2.73 rev3 (1f27ce36): no objection to code. The Haar null is accepted as the comparison, with a_G as a diagnostic. Conditions: S earns a column only if x2 beats both new edits by more than the Haar spread, because the Haar null is isotropic and x2 sits above it by construction; and a trained update's "S above Haar" is never read as reuse.
 P1.60 gauge follow-ups (E286, 7dbd2058): OK to write "the gauge does not explain the low kept share", with three fixes. (1) Give the bound in plain size: removing the gauge part moves a class by at most 0.0010, while the readings fall short of 1 by about 0.9. Two classes reach 0.66 and 0.74 of the seed sd, so not "far below sd". (2) Name what was removed: the first-order gauge part of trained updates, on E62 and E229. (3) Keep the grain sentence apart: kept per layer is 1 on the gauged M (1.1e-12), so the drop is VPD's per-subcomponent grain. A per-head pool is undefined because the pieces span all six heads of a layer.
 P2.67 / E284 ADL page (29992384): OK after 3 fixes. (1) The label should say what was run, not "detects the training domain": the causal step reproduced on the paper's Qwen fine-tunes (grader and agent off), the filed 67M control fails, no reuse call. (2) Cut "the delta_bar gap cannot turn a below-mean reading into a pass": the 0.118 is entry-wise, the random baseline does not use delta_bar, and the direction cosine was not saved. State the 67M failure as our float64 port's. (3) Supersession is fine; line 138 takes the same port caveat.
+P1.61 / E290 gain-only control (496be034): OK after 6 fixes, all $0.
+- Without the remainders (`E_b_K_no_rem`), the gain arms read 1 and the full fine-tunes 0.030-0.071; that pair is the clean comparison.
+- Under the filed featurization, a perfectly kept update reads only about 0.29-0.37 on the full fine-tunes' windows. Writeup-lead must carry that wherever the filed neuron reading is quoted.
+- FFN cipher learned nothing (gain 0.02): drop it from "every task".
+- Fix the ratio wording (10.5-67).
+- Name job nD's 22 items; its 0.079 identity check did not move them.
+- At VPD the built-kept control reads as low as the full fine-tunes, so VPD's low readings cannot be evidence that mechanisms changed. That goes to writeup-lead and whip-lead.
+- The copy seed spread is the remainders' share, not how much is kept.
+P1.60 / E286 rotation-kept page, sections 1-2: fixes needed, all $0 from page.json. plot.py's head/neuron split is right.
+- Own-space share is not degenerate; it counts input-side change, and the reference must be a random update (VPD 0.080, neurons 0.82-0.93, heads 0.59-0.67), not 1/width.
+- "Heads are the exception" is wrong for the same reason, and section 3's 0.13 null becomes about 0.6.
+- The answer's "same at every featurization" and "would not rescue" hold at VPD only: at heads the null is about 0.72 and no head-level rotation control ran.
+P1.58 / E291 unseen-cue page (a9bbfe04): OK as a description after 3 fixes.
+- (1) The gate's built arms confound shared-rule against per-key with rescaled against new: the exact controls are shared-rule, the new edits per-key. The lookup falls on unseen keys whatever its mechanism. A per-key rescaling control is missing, so the claim is "shared rule vs per-key" until it runs, and 0.926 is not to be quoted as separating reuse from new.
+- (2) The floor "near 0.03 / thirty times" is wrong: the lookup seed sd is 0.072, so the gap is 13-18 sd.
+- (3) The random change reads −0.71 and −2.95: the fit overfits, so the new edits' ~0.1 may understate what gains carry over (I first said "upper bound", which was wrong).
