@@ -46,3 +46,5 @@ P2.72 (due 11-25) / E293 run 1 labels (compare-lead, 62ed8a50): OK, the filed ru
 - Rung 5's stop is not a collapse. The 0.985 was F's side; M's side read 0.29 and was rising. The $0 rehearsal had shown the same (0.40 at 1,500 steps, bars off). Rung 5 is "not read"; lowering the bar is an ask.
 - E212's filed planted-direction cosine is missing from the item files.
 Note: compare-lead/note-2026-11-24-redteam-e293-run1.md; whip-lead told.
+
+E293 correction: compare-lead was right on two points. E212's cosine is 0.9999998 (pool max 0.401), so the yes latent is the plant. The rehearsal's rung-5 M-side FVE did reach 0.54-0.57 at steps 900-1000, so "the rehearsal already showed the stop" is withdrawn (its warm-up was 100 steps, against run 1's 1,000). Rung 5 stays "not read".
