@@ -24,3 +24,5 @@ Blind read 5 claim items (v2 1e54523), verdicts for whip-lead:
 - (5) not a contradiction: gain reached vs the re-gating share on the same E231 updates. Harmonise the "may".
 - (9) REAL wording: the rescale-only control reads 1 by construction, adds nothing to the "not a floor" claim beyond the built gain edits, and is 0.24-0.81 as filed with remainders.
 Note: writeup-lead/ and whip-lead/note-2026-11-24-redteam-blind5-verdicts.md.
+
+P1.60 (due 11-25) / E295 head (2,4) random null (definition-lead, cab86c57): OK. Copy's kept share (0.095-0.141) is 60x or more over its size-matched random (≤0.0015); lookup's (0.015-0.020) is ≥3x over its random. Lookup's strict share on s2 is not clearly above its random (0.0047 vs 0.0029). The per-tensor Frobenius match is right, and KL matching would not change it (the readings are scale-free ratios). n = 1 random per item: descriptive. own and rotation show no trained-vs-random signal, as in E286. For the paper: give "a tenth" both references (random ≤0.005, rescale 1). Note: definition-lead/note-2026-11-24-redteam-e295.md.
