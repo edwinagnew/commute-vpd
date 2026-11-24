@@ -134,3 +134,15 @@ the user's own messages) against 33543c1 and the two pending drafts. Working fil
 - The cross-figure mismatch (issue 3) was not traced to its cause.
 - Requests 8, 17 and 20 cannot be judged from the paper's text.
 - The E298 rows, E302 and the built-circuit jobs (66482-66486) are not yet in the paper and were not audited.
+
+## Addendum 15:20: issue 3 traced
+
+Both pairs are right; the figures read the same six cipher states (E58 prior-matched cipher and 96-key cipher,
+seeds 0-2, step 30, mean over seeds) at different update sizes. Fig. known (known_main.csv, E299 from E136/E237
+readings) reads each update at its trained size; fig:prior_mechanism (prior_mech_2x2_cued.csv, E250) first scales
+each update along its own direction to the copy task's mean size (factors 0.780 and 0.752; copy 1). Share falls by
+0.01-0.03 and steering rises by 0.03-0.07 under the scaling; effective rank and the copy rows agree to five digits
+in both, which confirms scaling is the only difference. Fix is wording only: the fig:known caption (sec5:72) says
+updates are read at their trained size; the fig:prior_mechanism caption (appI:85) says each is scaled to the copy
+task's size, so its cipher values differ from Fig. known's. Never quote 0.27 / 0.23 beside Fig. known or 0.30 / 0.16
+beside fig:prior_mechanism.
