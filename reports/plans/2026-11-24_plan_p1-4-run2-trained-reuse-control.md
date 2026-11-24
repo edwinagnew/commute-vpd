@@ -1,4 +1,4 @@
-# P1.4 run 2 (E___): fine-tunes that imitate a reuse edit and a new edit, read with the write share
+# P1.4 run 2 (E297): fine-tunes that imitate a reuse edit and a new edit, read with the write share
 
 Cell P1.4, run 2 of 3 (reopened 2026-11-23 by whip-lead under the user's standing authority; the task file's item 2:
 "trained reuse positive control as P1.4 run 2 after E294: closeness bar first from E139 imitation leftover; debug jobs

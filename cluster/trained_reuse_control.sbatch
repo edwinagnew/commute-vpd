@@ -1,5 +1,5 @@
 #!/bin/bash
-# E___ trained_reuse_control (cell P1.4 run 2). Usage: sbatch --comment='E___ <stage>' cluster/trained_reuse_control.sbatch <stage> <tag> [--shard I N]
+# E297 trained_reuse_control (cell P1.4 run 2). Usage: sbatch --comment='E297 <stage>' cluster/trained_reuse_control.sbatch <stage> <tag> [--shard I N]
 #   train (--shard I 3, I = 0..2: one new_few and one x2 seed each, ~75 min), check (one job, ~31 min; R0c at neurons),
 #   neurons (--shard I 3 after check passed, ~56 min each). vpd goes to one H100 pod (pod-runner), not here.
 #   Each job runs its checks first and stops on a miss.

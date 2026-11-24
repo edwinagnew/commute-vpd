@@ -1,4 +1,4 @@
-"""E___ (cell P1.4, run 2 of 3; reopened 2026-11-23 by whip-lead under the user's standing authority): ordinary fine-tunes
+"""E297 (cell P1.4, run 2 of 3; reopened 2026-11-23 by whip-lead under the user's standing authority): ordinary fine-tunes
 of the 67M's 24 decomposed matrices (decisions.md, "Post-training", 2026-10-14; E139 also trained the embeddings and
 norms) trained to imitate two built edits whose label is known by construction, E214's x2 (pure strengthening: reuse)
 and new_few (new), 3 seeds each with E139 amendment 2's recipe, each beside a matched random, read
