@@ -183,3 +183,8 @@ is cluster debug L40 jobs that resume by completed state; each exits for a resub
 - Steering (the paper's section 5.3).
 - Generation during calibration (D4).
 - Length-matched calibration.
+
+**Platform change (2026-11-23, whip-lead's approval, not the user's):** cluster debug was full (job 65478 pending 22 min,
+cancelled), so E294 moves to one H100 pod, cap $15 (user rule 2026-11-16, "cluster down → RunPod"): a short rehearsal
+pod runs the moments pass and stage 0 at full size first, its results reused by the main pod; stop and report if stage 0
+misses an early check or the projected cost passes $15.

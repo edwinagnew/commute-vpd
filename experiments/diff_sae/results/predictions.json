@@ -1,0 +1,118 @@
+{
+ "experiment": "E296",
+ "cell": "P2.75",
+ "run": "run 1 of 2: E212's planted control first and alone (stage 0a), the gate (stage 0b: rung 1 at two SAE seeds against two Gaussians matched to rung 1), the descriptive controls (stage 0c), the k-33 fit only if rung 1 fails under both forms",
+ "plan": "reports/plans/2026-11-23_plan_p2-75-diff-sae-spec.md (appendix ..._appendix.md; reviewed for run 1, rounds 1-3)",
+ "card": "experiments/diff_sae/card.txt",
+ "kind": "the gate is scored by the ordered outcome list below; stages 0a and 0c are descriptive and do not gate; no reuse or new verdict on any fine-tune",
+ "filed": "draft for the rehearsal: thresholds marked null are set from the $0 rehearsal (cluster/diff_sae_rehearse.sbatch) and committed before run 1; run.py refuses a full-size item while any is null",
+ "settings": {
+  "sae": {
+   "full": {
+    "d": 768, "expansion": 2, "k": 100, "lr": 0.0001, "warmup": 1000, "batch": 2048, "tokens": 200000000,
+    "stream_tokens": 200000000, "epochs": 2, "aux_alpha": 0.03125, "dead_tokens": 10000000, "threshold_start": 1000,
+    "init_norm": 1.0, "target_rms": 100.0, "log_steps": 50, "validate_every": 20000, "val_tokens": 5000000,
+    "val_batch": 8192, "val_start": 196608, "norm_tokens": 1000000, "norm_batch": 4096, "norm_seed": 275,
+    "ls_tokens": 50000000, "ls_batch": 2048, "alive_min": 10, "nu_cut": 0.3, "nu_wide": 0.6, "kl_rows": 256,
+    "kl_batch": 16, "chunk_rows": 1024, "pile_start": 32768, "pool_start": 131072, "pool_rows": 65536,
+    "repeat_cap": 100, "dead_fixture_step": 0
+   },
+   "rehearsal": {
+    "d": 768, "expansion": 2, "k": 100, "lr": 0.0001, "warmup": 1000, "batch": 2048, "tokens": 12000000,
+    "stream_tokens": 200000000, "epochs": 2, "aux_alpha": 0.03125, "dead_tokens": 10000000, "threshold_start": 1000,
+    "init_norm": 1.0, "target_rms": 100.0, "log_steps": 50, "validate_every": 2000, "val_tokens": 1000000,
+    "val_batch": 8192, "val_start": 196608, "norm_tokens": 1000000, "norm_batch": 4096, "norm_seed": 275,
+    "ls_tokens": 50000000, "ls_batch": 2048, "alive_min": 10, "nu_cut": 0.3, "nu_wide": 0.6, "kl_rows": 256,
+    "kl_batch": 16, "chunk_rows": 1024, "pile_start": 32768, "pool_start": 131072, "pool_rows": 65536,
+    "repeat_cap": 100, "dead_fixture_step": 5000
+   }
+  },
+  "run": {
+   "plant_seed": 1982,
+   "plant_task": "L1",
+   "toolkit_root": "~/commute-data/agents/compare-lead/adl/dt/src/diffing/utils/dictionary/latent_scaling",
+   "toolkit_sha256": {
+    "utils.py": "16fa04c1e24757f9a77b1dbd99587185976ddf6ea3261ca84b1bb152587b0fd1",
+    "closed_form.py": "8a007abecc15170547822ff253cea2af371240616fea48a3c0e98f16729cccd8"
+   },
+   "rung1": ["head-r1.A.c0", "head-r1.A.c1"],
+   "gauss": ["random_d0-r1.A.c0", "random_d1-r1.A.c0"]
+  },
+  "stages": {
+   "0a": ["plant.A.c0"],
+   "0b": ["head-r1.A.c0", "head-r1.A.c1", "random_d0-r1.A.c0", "random_d1-r1.A.c0"],
+   "0c": ["head-r5.A.c0", "head.B.c0", "gauss.B.c0"],
+   "conditional": ["head-r1.A.c0.k33"]
+  },
+  "sources": {
+   "sae": "diffing-toolkit@617d926 configs/diffing/method/sae_difference.yaml: expansion 2 (8), batch 2048 (9), epochs 2 (10), lr 1e-4 (11), encoder_init_norm 1.0 (12), validate_every_n_steps 20000 (14), k 100 (15), num_validation_samples 5M (18), normalization subsample 1M (32), batch 4096 (33), target_rms 100 (35), warmup 1000 (44), latent scaling num_samples 50M (55), batch 16384 (56) run at // 8 (closed_form.py 355, 809-819), float32 (59); trainer defaults (dl trainers/batch_top_k.py): auxk 1/32, threshold_start_step 1000, dead after 10M tokens; trainSAE call (dt training.py 1032-1049): log_steps 50, save_steps = validate_every; validation batch = batch x 4 (dt training.py 1004)",
+   "sae.tokens": "spec 3.2: two epochs of the E235 stream, 200M presentations, 97,656 steps; the toolkit's 50M per dataset with the chat dataset dropped",
+   "sae.stream": "E235's stream (experiments/crosscoder_proper/results/predictions.json settings.cc.full): chunk_rows, pile_start, pool_start, pool_rows, repeat_cap; run.py asserts them equal to E235's",
+   "sae.val_start": "spec 3.2, round 3: Pile train rows 196,608-206,392, past E235's key-value pool (131,072-196,607) and before its fill rows (589,824 on); run.py asserts disjointness against each side's parent rows",
+   "sae.norm_tokens": "the toolkit's 1M, an equal count from each of the two datasets (dt training.py 165-190)",
+   "sae.norm_seed": "ours: the toolkit draws from torch's global generator; seeded so both rung-1 seeds share one sample (spec, appendix E)",
+   "sae.alive_min": "the crosscoder's alive_min (E235 settings.cc.full)",
+   "sae.nu_cut": "the post's caption threshold, 'Chat-only latents (nu <= 0.3)' (post:52-53); nu_wide 0.6 the post's second KL subset (post:60)",
+   "sae.kl_rows": "E235's spliced rows (256 Pile validation rows); kl_batch ours (memory)",
+   "sae.rehearsal": "spec 5: full SAE size, 12M training tokens (past the 10M-token AuxK threshold), validation every 2,000 steps on 1M tokens, a known dead set written after step 5,000 (10.2M tokens); the stream, normaliser and latent scaling at full size",
+   "run.plant_seed": "E212's (experiments/realistic_tasks/results/predictions_run3.json settings.plant_seed); its L1 units and read rows from results/large/run3/texts.pt",
+   "run.toolkit_sha256": "the clone at ~/commute-data/agents/compare-lead/adl/dt, commit 617d926, sha256 of each file as read 2026-11-23",
+   "run.rung1, run.gauss": "spec 5 stage 0b: E243's rung 1 at SAE seeds 0 and 1; its random draws 249201 and 249202 (E243 random_seed + 0, + 1) at elicit's per-matrix norms, matched to rung 1 within 0.05 on rung 1's read rows, on rung 1's stream"
+  }
+ },
+ "thresholds": {
+  "full": {
+   "self_act_diff": 0.0,
+   "self_act_diff_source": "spec 5: D exactly 0 under a zero update (also E243's scale-0 path and E235's site-A check for the block-3 head)",
+   "graft_energy_min": 1e-06,
+   "graft_energy_min_source": "E235 thresholds.full.graft_energy_min",
+   "dead_max": 0.3,
+   "dead_max_source": "spec 5: dead share over 0.3 at the end, by the trainer's own counters (E235's dead_max)",
+   "fve_stop": null,
+   "fve_stop_source": "spec 5: per item key, the rehearsal's pooled FVE at its last validation on the same side minus three times its two-seed difference; a side the rehearsal did not run has no entry and the stop is not applied to it",
+   "identity_rel": null,
+   "identity_rel_source": "spec 3.4: max over latents with C > 0 of |(B_F - B_M) - B_sD| / (|B_M| + |B_F|), the float32 fit against our float64; the bar is set from the rehearsal's value",
+   "kl_hF_floor": null,
+   "kl_hF_floor_source": "spec 3.7: KL of the h_F patch, from the rehearsal",
+   "kl_gap_mult": null,
+   "kl_gap_mult_source": "spec 3.7: the gap's floor is this multiple of the h_F patch's floor, from the rehearsal"
+  },
+  "rehearsal": {
+   "self_act_diff": 0.0,
+   "graft_energy_min": 1e-06,
+   "dead_max": 1.0,
+   "dead_max_source": "the rehearsal records the dead share at 12M tokens and does not stop on it",
+   "fve_stop": null,
+   "identity_rel": null,
+   "kl_hF_floor": null,
+   "kl_gap_mult": null
+  }
+ },
+ "gate": {
+  "rule": "per form of nu (nu_lit, nu_D), under the as-published rule nu <= 0.3 (spec 3.5); arms: the specific part (spec 3.6) of rung 1 at seeds 0 and 1 and of the two Gaussians, site A, 1,536 latents at k 100; one bar for all four arms, 0.5 * min(K1, 1), K1 rung 1's pre-fit reference capacity on its read rows from the one normaliser sample both seeds share. The first outcome that applies stands. Code: commute.diff_sae.gate; score.py gate",
+  "outcomes": [
+   "1. Not read: an arm missing or unreadable (a stopped fit, a failed path check), or K1 under 0.5. whip-lead may spend the cell's second run rerunning the gate.",
+   "2. Does not separate: a Gaussian at or over the bar, or not under the lower rung-1 seed.",
+   "3. Unstable across seeds: one rung-1 seed under the bar.",
+   "4. Below the method's reach at a fine-tune's size: both rung-1 seeds under the bar.",
+   "5. Pass, on a weak null: run 2 opens, the form recorded. Outcomes 1-4 do not open it."
+  ],
+  "run2": "opens if either form passes; if only nu_D did, the paper column is labelled ours, 'as the post's words read'. A whip-lead ruling, before run 1 is read, that E.2 is scored keeps this order under that rule. The oracle explains an outcome, never changes it",
+  "edge_cases_run": "tests/test_diff_sae.py test_gate_*: empty pool (no arms) and a missing or nan arm read 'not read'; K1 nan, 0.49 and 0.5 (not read, not read, bar 0.25); ties: a Gaussian exactly at the bar and a Gaussian equal to the lower rung-1 seed read 'does not separate', a rung-1 seed exactly at the bar is not under it; the do-nothing state (every part 0.0) reads 'does not separate'; one seed under reads 'unstable', both 'below the method's reach'"
+ },
+ "predictions": {
+  "W0": "a zero update gives D exactly 0 (every item's first check); a side with no change reads 'not read' (sum |D|^2 = 0), and the gate on the do-nothing state reads 'does not separate'",
+  "0a plant (descriptive, does not gate)": "the latents' total carried part near 1 - rho_n and the specific part near the same under nu_D (the oracle passes the plant, t inside (-1, 3/7]); K = 1 - rho_n; values from results/oracle.json, filed below by the oracle",
+  "0b gate": "lean: 'below the method's reach' under nu_D (the oracle's top principal directions of rung 1's change sit at t > 3/7, appendix A's fine-tune-scale reading); nu_lit has no closed form, no lean",
+  "0c": "descriptive: rung 5 (104x elicit's amplitude), E235's block-3 head and its Gaussian at site B, reported beside, no rule",
+  "oracle": "results/oracle.json (CPU, 2026-11-23, 19 min); its numbers are filed in 'oracle_expected' below before run 1 and never edited after. It diagnoses; it never changes the gate's outcome",
+  "oracle_expected": {
+   "plant.A.c0": "exact: rho_n 0.000499 (499 of 1M normaliser tokens), c 0.0367, t 0.0362, K 0.9995; nu_D 0.0349 (closed form 0.0349): passes as published and under E.2; nu_lit about 0.83 (estimated): fails. Expected: the specific part near the latents' total carried part under nu_D, near 0 under nu_lit",
+   "head-r1 (gate)": "K1 0.888, bar 0.444. Of rung 1's top ten directions of D, those passing nu_D <= 0.3 hold 0.165 of D's energy (the first, 0.62 of it, has t -5.2, nu_D 1.24); none passes nu_lit. Lean: under the bar under both forms, 'below the method's reach'",
+   "random_d0, random_d1 (gate null)": "K 0.939, 0.942; passing directions hold 0.024 and 0.077 of D under nu_D, 1 of 10 directions under nu_lit. Lean: under the bar",
+   "head-r5.A.c0": "K 0.519 (just over the 0.5 floor, bar 0.259); 9 of 10 directions, 0.996 of D, pass nu_D; 10 of 10 pass nu_lit; none passes E.2 (beta_M < 0, the mean-subtraction case of appendix A)",
+   "head.B.c0, gauss.B.c0": "K 0.901, 0.887; passing directions under nu_D hold 0.32 and 0.014 of D",
+   "interval_test": "the pinned nu_D on the plant's scaler tokens, the plant rescaled to twelve values of t from -3 to 3: pass agrees with -1 < t <= 3/7 at every point; nu_D agrees with t / (t + 1) within 2e-4 relative (0.019 absolute at t = -1.01, nu 101)"
+  }
+ }
+}
