@@ -35,22 +35,26 @@ PY=.venv/bin/python
 T_JOB=$(date +%s)
 nvidia-smi --query-gpu=name,memory.used,memory.total --format=csv
 
-step() {  # step NAME CMD...: run, log wall time, fail on a non-zero exit
+step() {  # step NAME CMD...: run, log wall time, return the exit code
     local name=$1 t0 rc=0
     shift
     t0=$(date +%s)
     echo "== $name: $*"
     "$@" || rc=$?
     echo "== $name: exit $rc in $(( $(date +%s) - t0 )) s"
-    [ "$rc" -eq 0 ] || { echo "REHEARSAL FAIL at $name: exit $rc"; exit 1; }
+    return "$rc"
 }
 
-step "CPU fixtures" $PY -m pytest -q tests/test_diff_sae.py
-for key in "$@"; do
+step "CPU fixtures" $PY -m pytest -q tests/test_diff_sae.py || { echo "REHEARSAL FAIL at the CPU fixtures"; exit 1; }
+stopped=()
+for key in "$@"; do  # a stopped item (its json names the check) does not stop the others (spec 5, "Early checks")
     rm -f "$R/rehearse/items/$key.json"
-    step "item $key" $PY $E/run.py item "$key" --rehearse
+    step "item $key" $PY $E/run.py item "$key" --rehearse || stopped+=("$key")
     mkdir -p $R/rehearse_dl
-    tar cf "$R/rehearse_dl/$key.tar" "$R/rehearse/items/$key.json" "$R/large/rehearse/$key.pt"
+    files=("$R/rehearse/items/$key.json")
+    [ -f "$R/large/rehearse/$key.pt" ] && files+=("$R/large/rehearse/$key.pt")
+    tar cf "$R/rehearse_dl/$key.tar" "${files[@]}"
     sha256sum "$R/rehearse_dl/$key.tar"
 done
-echo "FINISHED P2.75 rehearsal ($*) in $(( $(date +%s) - T_JOB )) s"
+echo "FINISHED P2.75 rehearsal ($*) in $(( $(date +%s) - T_JOB )) s; stopped: ${stopped[*]:-none}"
+[ ${#stopped[@]} -eq 0 ]

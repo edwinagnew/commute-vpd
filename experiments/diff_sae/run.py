@@ -12,6 +12,9 @@ Item keys (E235's what.site.cSEED[.kK]):
   head-r5.A.c0, head.B.c0, gauss.B.c0   descriptive controls (stage 0c); head-r1.A.c0.k33 the conditional k-33 fit
 Each item runs its stages cheapest first and writes results/<tag>/items/<key>.json as each ends (normaliser, training,
 latent scaling and the reading, the KL patches); the SAE and per-latent arrays go to results/large/<tag>/<key>.pt.
+Inputs: list them with an INPUT_MANIFEST_ONLY=1 dry run, which builds each side and its stream. The stream's fill rows
+are train 589,824-684,767: send a pod the cut artifacts/sets/train_589824_94944.npy (389 MB), not its 2.1 GB parent;
+`cached_rows` reads the smallest cached file that holds the rows.
 
     PRED_SHA=<sha> python experiments/diff_sae/run.py item plant.A.c0 2>&1 | tee -a experiments/diff_sae/results/run1/pod0.log
 """
@@ -263,7 +266,8 @@ class Job(RUN2.Job):
         def hook(tr: Any, step: int) -> None:
             keep["tr"] = tr
             if step % sz.log_steps == 0 and not all(bool(torch.isfinite(p).all()) for p in tr.ae.parameters()):
-                out.check("finite loss (parameters finite)", False, {"step": step})
+                aux = {"dead_features": tr.dead_features, "auxk_pre_norm": float(tr.pre_norm_auxk_loss)}  # AuxK's state
+                out.check("finite loss (parameters finite)", False, {"step": step} | aux)
             if step > 0 and step % sz.validate_every == 0:
                 f = DS.pooled_fve(tr.ae, vs)
                 dead = float((tr.num_tokens_since_fired >= tr.dead_feature_threshold).float().mean())
@@ -333,11 +337,11 @@ class Job(RUN2.Job):
         k = it.k or sz.k
         out = RUN.Out(OUT["res"] / "items" / f"{it.key}.json", {"experiment": EXPERIMENT, "key": it.key, "card": torch.cuda.get_device_name()})
         s = self.side(it)
-        if manifest_only():  # INPUT_MANIFEST_ONLY=1 dry run: the side's loads are listed; no forward
-            log(f"[{it.key}] manifest only: side built, compute skipped")
+        sizes, make, tx = self.stream(s)  # loads the stream's fill rows (train 589,824..), lazy otherwise
+        if manifest_only():  # INPUT_MANIFEST_ONLY=1 dry run: the side's and the stream's loads are listed; no forward
+            log(f"[{it.key}] manifest only: side and stream built, compute skipped")
             return {}
         self.before(s, out)
-        sizes, make, tx = self.stream(s)
         out.d["stream"] = tx
         out.check("stream holds every step", tx["tokens"] // sz.batch >= sz.steps, {"tokens": tx["tokens"], "need": sz.steps * sz.batch})
         with RUN.exact():
@@ -431,19 +435,20 @@ def main() -> int:
     OUT.update(res=HERE / "results" / tag, large=HERE / "results" / "large" / tag)
     job = load(a.rehearse, filed=not manifest_only())
     log(f"[{EXPERIMENT}] {a.keys} tag {tag}; {job.sae}")
-    try:
-        for key in a.keys:
-            p = OUT["res"] / "items" / f"{key}.json"
-            if p.is_file() and json.loads(p.read_text()).get("done"):
-                log(f"[item] {key} done before, skipped")
-                continue
+    stopped = []
+    for key in a.keys:  # a check stops its own fit (spec 5, "Early checks"); the other items still run
+        p = OUT["res"] / "items" / f"{key}.json"
+        if p.is_file() and json.loads(p.read_text()).get("done"):
+            log(f"[item] {key} done before, skipped")
+            continue
+        try:
             job.run_item(RUN.Item.parse(key))
-            torch.cuda.empty_cache()
-    except RUN.Stop as e:
-        log(f"STOP: {e}: tell the lead")
-        return 1
-    log(f"FINISHED {' '.join(a.keys)} in {(time.time() - job.t0) / 60:.1f} min; peak GPU {torch.cuda.max_memory_allocated() / 2**30:.1f} GB")
-    return 0
+        except RUN.Stop as e:
+            log(f"STOP {key}: {e}: tell the lead")
+            stopped.append(key)
+        torch.cuda.empty_cache()
+    log(f"FINISHED {' '.join(a.keys)} in {(time.time() - job.t0) / 60:.1f} min; peak GPU {torch.cuda.max_memory_allocated() / 2**30:.1f} GB; stopped: {stopped or 'none'}")
+    return 1 if stopped else 0
 
 
 if __name__ == "__main__":

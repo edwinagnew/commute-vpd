@@ -247,6 +247,7 @@ or cannot apply. "Forced" means the 67M or the toolkit's install leaves no faith
 | KL-gap floor | none | KL(patch h_M) under a rehearsal-set multiple of the h_F patch's floor reads "not read" | a ratio of two floors otherwise | ours | n |
 | KL data | chat responses | read windows, read positions and all, Pile | no chat model; the toolkit has no code | ours | y |
 | early-stop FVE | per-batch centred FVE, batch-averaged, logged | the same formula pooled over the validation set | a plant's batches with no plant token have zero variance, which theirs reads as nan | ours | n |
+| AuxK on E212's plant | AuxK's loss divided by the batch's centred residual variance, no floor (dl `batch_top_k.py` 129-134, after OpenAI) | the same, unchanged; a fit whose parameters go non-finite stops alone and reads "not read" | D is exactly 0 off the planted token, a third of batches hold none, and the divisor is then 0 or rounding-sized (appendix C, rehearsal 1) | theirs | n |
 | ν = ±inf | not handled | nan, fails | a −inf would pass | ours | n |
 | alive | not used | ≥ 10 firings on the read set | crosscoder's `alive_min` | ours | n |
 | reading | latent counts and KL recovery | specific part of the change, bias and error parts | the crosscoder column's reading | ours, after Dumas | n |

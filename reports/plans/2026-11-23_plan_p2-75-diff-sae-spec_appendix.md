@@ -166,6 +166,46 @@ lower rung-1 seed read "does not separate", a seed exactly at the bar is not und
 0) reads "does not separate"; ν: 0/0 and β_F = 0 give nan and fail, β_F < 0 is literal, a tie at 0.3 passes; no latent
 passing gives 0.0; Σ‖D‖² = 0 gives "not read". The oracle (`results/oracle.json`) is filed in predictions.json.
 
+### Rehearsal 1 (H100 pod, 2026-11-23): the plant's fit went non-finite
+
+**What happened.** `plant.A.c0 --rehearse` (commit 78d5e391) stopped on "finite loss (parameters finite)" at step 4,200.
+The checkpoints at steps 0, 2,000 and 4,000 are finite. The dead share was 0 at step 2,000 and 0.0065 (10 latents) at
+step 4,000. The counters count training tokens plus each 1M-token validation, so 8.2M + 2M passed the 10M threshold
+there, and AuxK switched on just after step 4,000.
+
+**Cause: theirs.** AuxK divides its loss by the batch's centred residual variance, Σ‖e − ē‖² / B, with no floor.
+`nan_to_num(0.0)` follows the division. On E212's plant D is exactly 0 at every token but the planted one. The
+normaliser gives the plant's share as |μ_D| / ‖v‖ ≈ 5e-4, so a 2,048-token batch holds about one planted token, and
+about a third of batches hold none. Such a batch has 2,048 identical rows, and the divisor is 0 or rounding-sized.
+Reproduced on CPU from the step-4,000 checkpoint, with 10 latents marked dead (scripts in
+`~/commute-data/scratch/compare-lead/p275/scripts/`):
+- a batch with no planted token: divisor 1.9e-17, loss 3.7e12, gradient norm 4.0e13 before clipping. Parameters stay
+  finite on CPU, but the step is driven by AuxK alone, at full clipped size. A batch with one planted token: divisor
+  9.4, normalised AuxK 1.0.
+- 250 simulated steps, of which the log kept steps 4,107-4,250: 58 of those 144 batches had no planted token. Their
+  divisors ran 4e-19 to 1e-16, and their AuxK terms 6e13 to 6e14.
+- with a divisor of exactly 0 (two identical rows, where the mean is exact): loss 1.1e37, every gradient NaN, every
+  parameter NaN after the step. The gradient of `nan_to_num(a / 0)` is NaN: the clamp hides the forward but not the
+  backward.
+
+The GPU's divisor at steps 4,150-4,200 was not recorded, so whether it reached exactly 0 or overflowed the gradient
+is not known. On CPU no step went non-finite. The validation FVE's nan is a separate matter and expected: validation
+is Pile rows with no plant, so D is 0 on every validation token. Theirs reads 0 / 0, and ours reads None, as filed.
+
+**Options.**
+1. *As published (chosen).* Keep the trainer and the feed. A fit that goes non-finite stops alone and reads "not read".
+   The job moves to the next item. This changes nothing in the method, and loses only stage 0a's descriptive reading.
+2. *Feed.* Spread each chunk's planted tokens so every batch holds one. The trainer is untouched, but a chunk holds
+   about one planted token per batch, so some batches still hold none, and it reorders a control's tokens.
+3. *Labelled departure.* Floor AuxK's divisor, or skip AuxK when it is 0. This changes the published loss on every
+   input, and the floor would be a number with no source.
+
+A plant fit that stays finite past the switch-on is still read. It is then labelled: about a third of its steps after
+10M tokens are AuxK-only. The read path on the plant stays checked by the oracle (§3.8), which needs no fit. Code:
+a stop now ends its own item, not the job (spec §5 says "stops that fit"). The stop records AuxK's dead count and
+pre-normalisation loss. The input-manifest dry run now builds the stream, so it lists the fill rows (train 589,824 on),
+which the first manifest missed.
+
 ## D. Earlier review questions, settled by redteam-lead (2026-11-23)
 
 1. **Which input latent scaling encodes:** both forms are scored, each labelled. Neither is called faithful.
