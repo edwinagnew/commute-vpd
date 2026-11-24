@@ -185,3 +185,113 @@ Figures (whip-lead's audit, verified):
   - the recipes of the crosscoder runs E235 and E243.
 - No GPU re-read was run. Every fix above that needs one names its saved inputs.
 - `main.tex` does not include `sec5_3_mechanism_vs_prior.tex`, `sec5_baselines_scorecard_caveats.tex` or `sec6_scaling_qwen.tex`. Text found only there was not audited as built text.
+
+## Re-check on eadbff6 (2026-11-24, ~13:40)
+
+**In plain words.** Three fresh Opus auditors re-read the Results, Discussion and Conclusion on the newer paper version (origin/v2 eadbff6). They found that writeup-lead's fixes for M1-top, M5, M6 and M7 are in. Five new comparisons still mismatch: two in Section 5 and three in the abstract, introduction and Conclusion. `sec7_discussion.tex` and `main.tex` did not change between 9ae5498 and eadbff6, so M9 and M10 still stand. M2, M8 and the SAE half of M1 wait on E298 (P1.62) and P2.78.
+
+**Status of the earlier MUSTs at eadbff6**
+
+| item | status |
+|---|---|
+| M1, top neurons | fixed: the remainder is counted, from `fig2_standard/results/top_with_remainder_rows.csv` (rebuilt 0.048) |
+| M1, SAE (K\* against K) | open; waits on E298 |
+| M2 (VPD seed 0) | open; waits on E298 |
+| M3 | being fixed by P2.76 |
+| M4 | being fixed by P2.77 |
+| M5, M6, M7 | fixed |
+| M8 (random τ from one draw a task) | open; P2.78 is filed, not run. Until it runs, say "one draw per task, matched to seed 0" |
+| M9, M10 | open: the text is unchanged |
+
+### New MUSTs
+
+**R1. The copy-head paragraph puts heads-off numbers from other fine-tunes beside E62's swap reading.**
+- Where: `sec5_results.tex:45-50`.
+- The flips (128-141 of 256 against 11-15 for lookup) are on E62's copy-at-a-new-marker states, at their own size.
+- The heads-off figures come from the 2×2 / P2.55 states (`prior_mech_2x2_cued.csv`, reading `k3_share`), scaled to E237's common size:
+  - key copy and cued copy (E253) gain 0.52 and 0.62, against 0.02 and 0.05 for the two ciphers;
+  - head (2,4) alone 0.25, five heads 0.78; these are key copy's k=1 and k=5.
+- On E62 itself, head (2,4) off removes 0.47-0.56 of copy's gain and none of lookup's (`experiments/induction_cue/results/amend2.json`).
+- Fix ($0, text): quote E62's own reading, or name the four tasks and the scaling. tab:pairs' "which tasks not traced" can then be filled.
+
+**R2. "No gap between the tasks built to reuse and those built new" fails under the paper's seed-range rule.**
+- Where: `sec5_results.tex:30-32`; restated at `main.tex:698-699`.
+- From `definition.csv`, trained block, with the remainder counted at top neurons:
+
+  | featurization | pair | built to reuse | built new | reading |
+  |---|---|---|---|---|
+  | top neurons | copy vs prior-matched cipher | 0.0117-0.0123 | 0.0201-0.0215 | apart, reversed |
+  | top neurons | rank1 vs cipher | 0.0138-0.0198 | 0.0206-0.0277 | apart, reversed |
+  | SAE | copy vs prior-matched cipher | 0.0465-0.0552 | 0.0395-0.0424 | apart, the expected way |
+  | SAE | rank1 vs cipher | 0.0365-0.0400 | 0.0363-0.0379 | overlap |
+  | VPD | copy vs prior-matched cipher | 0.0339 | 0.0296 | one seed only |
+
+- Also "0.021" should read "0.020": `prior_cipher_s2` reads 0.0201.
+- Fix ($0, text): name the rule and give the direction per featurization. The full fix is E298.
+
+**R3. The abstract keeps an RL exception that Section 5 cut.**
+- Where: `main.tex:53-54`, "...except reinforcement learning on a behaviour the base model already shows".
+- Section 5 has no RL sentence, and `appI_results_detail.tex:38-42` says "we do not read it as RL reusing more".
+- The 0.05-0.22 mixes the KL-matched runs (0.048-0.062) with the unmatched ones (0.09-0.22).
+- Fix: use the wording the abstract's own `\open` proposes. This is the user's text.
+
+**R4. The introduction lists steering as a baseline the paper beats.**
+- Where: `main.tex:125-128`, "improves on baselines ... steering after Venhoff".
+- Section 5 calls steering one of our cheap readings (`sec5_results.tex:148`), and tab:tools has no steering row.
+- "Improves on" has no comparison on the same states: the tools read other states under other rules (M6).
+- A fair version exists: E187's size-matched share also separates 9 of 9 (`size_matched/results/m67.json`).
+- Fix: drop steering from the list, and restrict or drop "improves on". The intro is the user's text.
+
+**R5. "Cheap readings pass known answers: built edits" overstates.**
+- Where: `main.tex:707-708`; "successfully validate them" at `main.tex:125`.
+- By seed ranges over the nine built pairs (`known_main.csv`; script `scratchpad/audit/pairs.awk`):
+
+  | reading | right way | wrong way | no call |
+  |---|---|---|---|
+  | re-gating | 9 | 0 | 0 |
+  | steering | 5 | 2 | 2 |
+  | effective rank | 7 | 0 | 2 |
+
+- Section 5 counts steering's "3 of 9" by means, but re-gating's "all nine" by seed ranges.
+- "Built edits" is the wrong noun: these readings were scored on the built pairs, not on Fig. 2's hand-made edits.
+- Fix: "the re-gating share passes all nine built pairs; steering five and effective rank seven", and state one rule.
+
+### New SHOULDs (one line each; sources in the auditors' hand-backs, session 68c40eaa)
+
+**Section 5**
+- Built-edit randoms are not all size-matched: `random_kl_241002` is KL-matched, and it is the SAE's 0.0198 maximum (`:26`).
+- §5.2 reads states at their saved sizes:
+  - say the size-matched share also separates 9/9 (`size_matched/results/summary.json`);
+  - "every reuse task above every new task" spans steps 10-300 (`:72-74`).
+- tab:pairs: e46 and e53 each pool 2 variants × 2 seeds; rand32 and rand32b end far apart (0.51 and 6.7).
+- The cued copy's "equally unlikely" prior comes from windows selected for a low prior. The full pool reads 10^-3.49 (`:89-90`).
+- "Pooled at VPD even this difference is lost because the change is spread": E277's own pooled share loses it too, so spreading is not the only cause (`:52-54`).
+- Qwen "0.99 or more ... alike" holds for KL-matched randoms only; norm-matched ones read 0.95-1.83, and the RL updates were not read (`:131-132`).
+- The real-text pairs are size-matched, not KL-matched; the new sides moved the output 2-4× more (`:126-129`).
+- The old-trigger comparison is made at a quarter of the realistic tasks' KL; matching would widen the gap (`:118-119`).
+- "No reading tells the emoticon apart": the kept share there rests on needed sets of median 3-4 variables (`:119-122`).
+- "The two shares, which agreed on the built pairs": steering reads 5 same, 2 opposite, 2 no call (`:115`).
+- The −0.59 drops states, not tasks; CoNLL then rests on one seed (`:125-126`).
+
+**tab:tools**
+- Head CMAP and CMAP at neurons are scored by different rules.
+- WeightWatch flags the new edits slightly (0.002 and 0.010).
+- Delta-Crosscoder passed the real-text plant only.
+- The crosscoder ladder's seed counts are 1/1/3/2/1 (the earlier review's "batch 4096" was wrong: batch is 2048 throughout; the recipes differ only in TF32 against fp32).
+
+**Discussion and Conclusion**
+- "Strengthening" against Section 5's "rescale base parts".
+- `sec7:12-14`: the copy-head numbers are E62's; on Fig. 2's states the head reads 0.10-0.13, and the randoms reach 0.009.
+- `main.tex:719`'s `\open` says 0.09; Section 5 says 0.10.
+- `sec7:28`: copy's 0.80 is at step 100, not 300.
+- The reversal holds at VPD only; at neurons τ is −0.35, p 0.23 (`sec7:38-41`, abstract).
+- "Only the prior-by-mechanism comparison carries a significance test" is now false (`sec7:64-65`).
+- "Neuron readings cannot tell reuse from new" against App. I's 2×2 caption, where the 64-neuron share follows the mechanism.
+
+### Not run (re-check)
+- tab:scorecard and tab:built: the body range does not cite them.
+- `:97` gain-only per-pair shares (E231).
+- The tab:pairs footnote counts (94 states, 20 fine-tunes).
+- The card and precision of E237/E253 against E62.
+- The ADL and diff-SAE appendix numbers.
+- Qwen per-decomposition numbers beyond the share.
