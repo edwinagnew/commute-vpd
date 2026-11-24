@@ -1,0 +1,48 @@
+{
+ "inputs": {
+  "docs_sha256": "73f56300fdd06bc8fafcfa5750fee7a586a5c5e6071a608667ffc526bbb90ac8",
+  "training_sha256": {
+   "ids": "6e77c6371db3819bf62038370a3450ed14a969c40b679ba0978db0f5be9373ae",
+   "mask": "b80fe711e13d7dce7683aa20cb1ff88aecceb95ae1de392058ae158b619b7230"
+  },
+  "fineweb_sha256": {
+   "ids": "ae1e18df537d638381edbbcd78dc3a9de2449a4b0b866e02233f235ea69b2c61",
+   "mask": "1c813e75935b093aa8939bb79fec67f06a302dc07af3fa3648fcb2dd3b90692e"
+  }
+ },
+ "compare": {
+  "ce/ce_b": {
+   "port_vs_toolkit": 0.0011374263071877166,
+   "floor_toolkit_a_vs_b": 0.0012462065893474872,
+   "verdict": "within floor",
+   "n": 36
+  },
+  "ce/ce_ft": {
+   "port_vs_toolkit": 0.0006439324568665583,
+   "floor_toolkit_a_vs_b": 0.0007973005133088407,
+   "verdict": "within floor",
+   "n": 36
+  },
+  "ce/ce_i": {
+   "port_vs_toolkit": 0.0012688343966198445,
+   "floor_toolkit_a_vs_b": 0.0013130198224957645,
+   "verdict": "within floor",
+   "n": 36
+  },
+  "ce/incr_ce": {
+   "port_vs_toolkit": 0.0007857629083485307,
+   "floor_toolkit_a_vs_b": 0.000793197326363515,
+   "verdict": "within floor",
+   "n": 36
+  },
+  "dbar": {
+   "port_vs_toolkit": 0.11840000000000828,
+   "floor_toolkit_a_vs_b": 0.0,
+   "verdict": "no bar (floor 0)",
+   "n": 18432
+  }
+ },
+ "adapter": "stewy33/Qwen3-1.7B-0524_original_augmented_egregious_cake_bake-30171227",
+ "model": "Qwen/Qwen3-1.7B",
+ "layer": 13
+}

@@ -345,3 +345,16 @@ def ordering_misses(rows: list[dict[str, Any]], tol: float) -> list[str]:
         if x["own"] > x["needed"] + t or x["own"] > x["matched"] + t:
             out.append(f"var {x['var']}: own {x['own']!r} above needed {x['needed']!r} or matched {x['matched']!r}")
     return out
+
+
+class Attention(Heads):
+    """One layer's attention as one variable (P1.60 gauge_pool, 2026-11-24): the sum of its six heads' writes, the
+    attention block's output, which the per-head gauge leaves unchanged."""
+
+    def __init__(self, s: NN.HeadSite) -> None:
+        super().__init__(s)
+        self.n = 1
+
+    def gram(self, ctx: Any, j: int) -> tuple[Tensor, Tensor]:
+        assert j == 0
+        return ctx[0].sum(1), ctx[1].sum(1)

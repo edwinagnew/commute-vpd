@@ -1,0 +1,1097 @@
+[02:30:46] E290 start, stage train, shard (0, 1), tag t0; settings {'tasks': ('copy', 'rank1', 'elicit', 'cipher', 'prior_cipher'), 'seeds': (0, 1, 2), 'arms': {'ffn': ('down_proj',), 'ia3': ('k_proj', 'v_proj', 'down_proj')}, 'control_arm': 'ffn', 'init': 1.0, 'lr': 0.003, 'optimizer': 'adam', 'batch': 32, 'grad_clip': 1.0, 'kl_lambda': 1.0, 'checkpoints': (10, 30, 100, 300), 'p_learn': 0.5, 'full_step': 30, 'band': 'p97', 'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'vpd_seeds': (0,), 'random_seed': 161000, 'built_gain_sd': 0.003, 'built_gain_seed': 161001, 'floor_factor': 10, 'floor_min': 1e-12, 'floor_stop': 1e-06, 'too_small': 100, 'rival_gap': 0.2, 'random_max': 0.05}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[02:31:16] stage 0 (train): {"experiment": "E290", "task": "copy", "delta_nonzero": 0, "at_M": {"p_o": 0.0002754245350671398, "ce_o": 9.736846923828125, "kl_other": 0.0, "n": 286}, "at_ones": {"p_o": 0.0002754245350671398, "ce_o": 9.736846923828125, "kl_other": 0.0, "n": 286}}; checks hold
+/root/work/src/commute/finetune.py:120: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  return loss, {"ce_o": float(ce), "kl_other": float(kl_other), "p_o": float(p_o)}
+[02:31:17] [gain] step 1: loss 9.2034 grad 1.1850 ce_o 9.2034 kl_other 0.0000 p_o 0.0002
+[02:31:17]   ffn copy s0 step 10: held-out P(target) 0.0009
+[02:31:17] [gain] step 10: loss 8.4590 grad 1.2883 ce_o 8.4451 kl_other 0.0139 p_o 0.0021
+[02:31:18] [gain] step 20: loss 6.9795 grad 0.9482 ce_o 6.9235 kl_other 0.0560 p_o 0.0027
+[02:31:18]   ffn copy s0 step 30: held-out P(target) 0.0170
+[02:31:18] [gain] step 30: loss 5.4734 grad 1.0897 ce_o 5.3648 kl_other 0.1087 p_o 0.0280
+[02:31:18] [gain] step 40: loss 3.9736 grad 1.2402 ce_o 3.7750 kl_other 0.1986 p_o 0.0880
+[02:31:19] [gain] step 50: loss 2.7166 grad 1.2398 ce_o 2.4266 kl_other 0.2900 p_o 0.1625
+[02:31:19] [gain] step 60: loss 1.6514 grad 0.8208 ce_o 1.2304 kl_other 0.4210 p_o 0.4396
+[02:31:19] [gain] step 70: loss 1.5183 grad 0.5838 ce_o 0.9838 kl_other 0.5345 p_o 0.5429
+[02:31:20] [gain] step 80: loss 0.9249 grad 0.3669 ce_o 0.3815 kl_other 0.5434 p_o 0.7647
+[02:31:20] [gain] step 90: loss 0.9405 grad 0.5214 ce_o 0.3937 kl_other 0.5468 p_o 0.7442
+[02:31:21]   ffn copy s0 step 100: held-out P(target) 0.8047
+[02:31:21] [gain] step 100: loss 0.7310 grad 0.3261 ce_o 0.2739 kl_other 0.4571 p_o 0.8001
+[02:31:21] [gain] step 110: loss 0.6409 grad 0.2362 ce_o 0.1644 kl_other 0.4766 p_o 0.8682
+[02:31:21] [gain] step 120: loss 0.5869 grad 0.2309 ce_o 0.2005 kl_other 0.3864 p_o 0.8379
+[02:31:21] [gain] step 130: loss 0.4864 grad 0.1777 ce_o 0.1359 kl_other 0.3505 p_o 0.8854
+[02:31:22] [gain] step 140: loss 0.4939 grad 0.1729 ce_o 0.1818 kl_other 0.3121 p_o 0.8489
+[02:31:22] [gain] step 150: loss 0.4277 grad 0.1979 ce_o 0.1082 kl_other 0.3195 p_o 0.9036
+[02:31:22] [gain] step 160: loss 0.4527 grad 0.2445 ce_o 0.1683 kl_other 0.2844 p_o 0.8685
+[02:31:23] [gain] step 170: loss 0.4063 grad 0.1336 ce_o 0.1022 kl_other 0.3041 p_o 0.9083
+[02:31:23] [gain] step 180: loss 0.4226 grad 0.3063 ce_o 0.1412 kl_other 0.2814 p_o 0.8989
+[02:31:23] [gain] step 190: loss 0.3262 grad 0.1049 ce_o 0.0660 kl_other 0.2602 p_o 0.9383
+[02:31:24] [gain] step 200: loss 0.3472 grad 0.1368 ce_o 0.0673 kl_other 0.2800 p_o 0.9378
+[02:31:24] [gain] step 210: loss 0.3236 grad 0.1037 ce_o 0.0776 kl_other 0.2460 p_o 0.9293
+[02:31:24] [gain] step 220: loss 0.3264 grad 0.1016 ce_o 0.0704 kl_other 0.2561 p_o 0.9346
+[02:31:25] [gain] step 230: loss 0.3085 grad 0.0951 ce_o 0.0648 kl_other 0.2437 p_o 0.9396
+[02:31:25] [gain] step 240: loss 0.2818 grad 0.0888 ce_o 0.0546 kl_other 0.2272 p_o 0.9481
+[02:31:25] [gain] step 250: loss 0.3380 grad 0.1403 ce_o 0.0944 kl_other 0.2435 p_o 0.9143
+[02:31:26] [gain] step 260: loss 0.2567 grad 0.0855 ce_o 0.0505 kl_other 0.2063 p_o 0.9536
+[02:31:26] [gain] step 270: loss 0.2934 grad 0.1269 ce_o 0.0869 kl_other 0.2066 p_o 0.9241
+[02:31:26] [gain] step 280: loss 0.2736 grad 0.0775 ce_o 0.0601 kl_other 0.2136 p_o 0.9445
+[02:31:27] [gain] step 290: loss 0.2675 grad 0.0807 ce_o 0.0588 kl_other 0.2087 p_o 0.9441
+[02:31:27]   ffn copy s0 step 300: held-out P(target) 0.9189
+[02:31:27] [gain] step 300: loss 0.2634 grad 0.0735 ce_o 0.0544 kl_other 0.2090 p_o 0.9487
+[02:31:27] TRAINED ffn copy s0: read step 100 (learned True), P(target) 0.8047 (M 0.0003); gains 0.5151-1.4722; 10 s
+[02:31:27] [gain] step 1: loss 9.2034 grad 3.0381 ce_o 9.2034 kl_other 0.0000 p_o 0.0002
+[02:31:28]   ia3 copy s0 step 10: held-out P(target) 0.0029
+[02:31:28] [gain] step 10: loss 7.6378 grad 3.3869 ce_o 7.6020 kl_other 0.0358 p_o 0.0074
+[02:31:28] [gain] step 20: loss 4.8518 grad 4.9977 ce_o 4.7002 kl_other 0.1516 p_o 0.0234
+[02:31:29]   ia3 copy s0 step 30: held-out P(target) 0.3198
+[02:31:29] [gain] step 30: loss 2.0870 grad 3.2172 ce_o 1.7090 kl_other 0.3780 p_o 0.3193
+[02:31:29] [gain] step 40: loss 1.0083 grad 1.0990 ce_o 0.3309 kl_other 0.6774 p_o 0.7961
+[02:31:29] [gain] step 50: loss 0.7537 grad 1.6672 ce_o 0.2745 kl_other 0.4792 p_o 0.8894
+[02:31:30] [gain] step 60: loss 0.3996 grad 0.3964 ce_o 0.1012 kl_other 0.2984 p_o 0.9155
+[02:31:30] [gain] step 70: loss 0.4100 grad 0.5818 ce_o 0.1845 kl_other 0.2255 p_o 0.8892
+[02:31:31] [gain] step 80: loss 0.2363 grad 0.4255 ce_o 0.0373 kl_other 0.1990 p_o 0.9641
+[02:31:31] [gain] step 90: loss 0.2907 grad 0.2599 ce_o 0.1020 kl_other 0.1887 p_o 0.9090
+[02:31:32]   ia3 copy s0 step 100: held-out P(target) 0.9372
+[02:31:32] [gain] step 100: loss 0.2027 grad 0.1034 ce_o 0.0511 kl_other 0.1516 p_o 0.9517
+[02:31:32] [gain] step 110: loss 0.2059 grad 0.1644 ce_o 0.0347 kl_other 0.1713 p_o 0.9664
+[02:31:33] [gain] step 120: loss 0.1813 grad 0.2068 ce_o 0.0405 kl_other 0.1408 p_o 0.9614
+[02:31:33] [gain] step 130: loss 0.1588 grad 0.1809 ce_o 0.0252 kl_other 0.1336 p_o 0.9755
+[02:31:34] [gain] step 140: loss 0.1642 grad 0.1625 ce_o 0.0358 kl_other 0.1284 p_o 0.9652
+[02:31:34] [gain] step 150: loss 0.1440 grad 0.1478 ce_o 0.0256 kl_other 0.1184 p_o 0.9751
+[02:31:35] [gain] step 160: loss 0.1331 grad 0.0932 ce_o 0.0265 kl_other 0.1066 p_o 0.9741
+[02:31:35] [gain] step 170: loss 0.1411 grad 0.0918 ce_o 0.0259 kl_other 0.1151 p_o 0.9748
+[02:31:36] [gain] step 180: loss 0.1860 grad 0.6540 ce_o 0.0761 kl_other 0.1099 p_o 0.9532
+[02:31:36] [gain] step 190: loss 0.1093 grad 0.1025 ce_o 0.0171 kl_other 0.0923 p_o 0.9832
+[02:31:37] [gain] step 200: loss 0.1250 grad 0.1180 ce_o 0.0204 kl_other 0.1046 p_o 0.9802
+[02:31:37] [gain] step 210: loss 0.1210 grad 0.0873 ce_o 0.0269 kl_other 0.0940 p_o 0.9739
+[02:31:38] [gain] step 220: loss 0.1349 grad 0.1090 ce_o 0.0260 kl_other 0.1089 p_o 0.9750
+[02:31:38] [gain] step 230: loss 0.1085 grad 0.0895 ce_o 0.0204 kl_other 0.0881 p_o 0.9801
+[02:31:39] [gain] step 240: loss 0.1045 grad 0.0652 ce_o 0.0162 kl_other 0.0883 p_o 0.9840
+[02:31:39] [gain] step 250: loss 0.1147 grad 0.0715 ce_o 0.0191 kl_other 0.0957 p_o 0.9813
+[02:31:39] [gain] step 260: loss 0.0957 grad 0.0956 ce_o 0.0121 kl_other 0.0836 p_o 0.9881
+[02:31:40] [gain] step 270: loss 0.1029 grad 0.0583 ce_o 0.0188 kl_other 0.0840 p_o 0.9816
+[02:31:40] [gain] step 280: loss 0.0906 grad 0.0551 ce_o 0.0169 kl_other 0.0737 p_o 0.9834
+[02:31:41] [gain] step 290: loss 0.0838 grad 0.0665 ce_o 0.0128 kl_other 0.0709 p_o 0.9873
+[02:31:42]   ia3 copy s0 step 300: held-out P(target) 0.9665
+[02:31:42] [gain] step 300: loss 0.0918 grad 0.0623 ce_o 0.0178 kl_other 0.0739 p_o 0.9825
+[02:31:42] TRAINED ia3 copy s0: read step 100 (learned True), P(target) 0.9372 (M 0.0003); gains 0.5022-1.5421; 14 s
+[02:31:42] [gain] step 1: loss 9.6484 grad 1.3967 ce_o 9.6484 kl_other 0.0000 p_o 0.0002
+[02:31:42]   ffn copy s1 step 10: held-out P(target) 0.0009
+[02:31:42] [gain] step 10: loss 8.3540 grad 1.3099 ce_o 8.3380 kl_other 0.0160 p_o 0.0015
+[02:31:43] [gain] step 20: loss 7.2353 grad 0.9800 ce_o 7.1743 kl_other 0.0609 p_o 0.0026
+[02:31:43]   ffn copy s1 step 30: held-out P(target) 0.0167
+[02:31:43] [gain] step 30: loss 6.3529 grad 1.1662 ce_o 6.2405 kl_other 0.1124 p_o 0.0115
+[02:31:43] [gain] step 40: loss 4.3120 grad 1.1472 ce_o 4.1109 kl_other 0.2011 p_o 0.0701
+[02:31:44] [gain] step 50: loss 2.4584 grad 0.8862 ce_o 2.1683 kl_other 0.2901 p_o 0.2507
+[02:31:44] [gain] step 60: loss 1.6027 grad 0.7795 ce_o 1.1870 kl_other 0.4157 p_o 0.4371
+[02:31:44] [gain] step 70: loss 1.4570 grad 0.6246 ce_o 0.9343 kl_other 0.5228 p_o 0.5937
+[02:31:45] [gain] step 80: loss 1.0377 grad 0.3903 ce_o 0.4804 kl_other 0.5573 p_o 0.7550
+[02:31:45] [gain] step 90: loss 0.7333 grad 0.2804 ce_o 0.1866 kl_other 0.5468 p_o 0.8564
+[02:31:45]   ffn copy s1 step 100: held-out P(target) 0.7919
+[02:31:45] [gain] step 100: loss 0.8032 grad 0.3051 ce_o 0.3477 kl_other 0.4555 p_o 0.7490
+[02:31:46] [gain] step 110: loss 0.6137 grad 0.3118 ce_o 0.1787 kl_other 0.4349 p_o 0.8597
+[02:31:46] [gain] step 120: loss 0.5311 grad 0.1844 ce_o 0.1311 kl_other 0.4001 p_o 0.8865
+[02:31:47] [gain] step 130: loss 0.5757 grad 0.2154 ce_o 0.2295 kl_other 0.3463 p_o 0.8160
+[02:31:47] [gain] step 140: loss 0.4947 grad 0.1846 ce_o 0.1773 kl_other 0.3174 p_o 0.8563
+[02:31:47] [gain] step 150: loss 0.4392 grad 0.1499 ce_o 0.1395 kl_other 0.2997 p_o 0.8787
+[02:31:48] [gain] step 160: loss 0.4464 grad 0.2067 ce_o 0.1457 kl_other 0.3006 p_o 0.8781
+[02:31:48] [gain] step 170: loss 0.4084 grad 0.1487 ce_o 0.1209 kl_other 0.2876 p_o 0.8971
+[02:31:48] [gain] step 180: loss 0.4529 grad 0.2636 ce_o 0.1696 kl_other 0.2832 p_o 0.8746
+[02:31:49] [gain] step 190: loss 0.4161 grad 0.1545 ce_o 0.1200 kl_other 0.2961 p_o 0.8956
+[02:31:49] [gain] step 200: loss 0.3790 grad 0.1521 ce_o 0.1175 kl_other 0.2614 p_o 0.9040
+[02:31:49] [gain] step 210: loss 0.3245 grad 0.1063 ce_o 0.0772 kl_other 0.2473 p_o 0.9295
+[02:31:50] [gain] step 220: loss 0.3324 grad 0.0923 ce_o 0.0922 kl_other 0.2401 p_o 0.9171
+[02:31:50] [gain] step 230: loss 0.3670 grad 0.2915 ce_o 0.1455 kl_other 0.2216 p_o 0.9204
+[02:31:50] [gain] step 240: loss 0.3391 grad 0.1795 ce_o 0.1156 kl_other 0.2235 p_o 0.9012
+[02:31:51] [gain] step 250: loss 0.2736 grad 0.0891 ce_o 0.0609 kl_other 0.2127 p_o 0.9427
+[02:31:51] [gain] step 260: loss 0.2522 grad 0.1431 ce_o 0.0473 kl_other 0.2049 p_o 0.9557
+[02:31:51] [gain] step 270: loss 0.2832 grad 0.1085 ce_o 0.0903 kl_other 0.1929 p_o 0.9174
+[02:31:52] [gain] step 280: loss 0.2702 grad 0.0769 ce_o 0.0642 kl_other 0.2060 p_o 0.9406
+[02:31:52] [gain] step 290: loss 0.2409 grad 0.0693 ce_o 0.0417 kl_other 0.1992 p_o 0.9605
+[02:31:52]   ffn copy s1 step 300: held-out P(target) 0.9213
+[02:31:52] [gain] step 300: loss 0.2208 grad 0.0696 ce_o 0.0349 kl_other 0.1859 p_o 0.9668
+[02:31:52] TRAINED ffn copy s1: read step 100 (learned True), P(target) 0.7919 (M 0.0003); gains 0.5388-1.4958; 11 s
+[02:31:52] [gain] step 1: loss 9.6484 grad 3.4066 ce_o 9.6484 kl_other 0.0000 p_o 0.0002
+[02:31:53]   ia3 copy s1 step 10: held-out P(target) 0.0024
+[02:31:53] [gain] step 10: loss 7.4590 grad 3.9595 ce_o 7.4196 kl_other 0.0394 p_o 0.0052
+[02:31:53] [gain] step 20: loss 5.0984 grad 4.2499 ce_o 4.9343 kl_other 0.1642 p_o 0.0219
+[02:31:54]   ia3 copy s1 step 30: held-out P(target) 0.3128
+[02:31:54] [gain] step 30: loss 2.5938 grad 3.6200 ce_o 2.2052 kl_other 0.3885 p_o 0.1993
+[02:31:54] [gain] step 40: loss 1.1704 grad 0.8184 ce_o 0.4621 kl_other 0.7083 p_o 0.7333
+[02:31:55] [gain] step 50: loss 0.5883 grad 0.4505 ce_o 0.1758 kl_other 0.4124 p_o 0.8633
+[02:31:55] [gain] step 60: loss 0.4094 grad 0.3515 ce_o 0.1172 kl_other 0.2922 p_o 0.8955
+[02:31:56] [gain] step 70: loss 0.4874 grad 0.6430 ce_o 0.2417 kl_other 0.2457 p_o 0.8854
+[02:31:56] [gain] step 80: loss 0.2853 grad 0.2378 ce_o 0.0651 kl_other 0.2202 p_o 0.9461
+[02:31:56] [gain] step 90: loss 0.2184 grad 0.3835 ce_o 0.0319 kl_other 0.1865 p_o 0.9693
+[02:31:57]   ia3 copy s1 step 100: held-out P(target) 0.9305
+[02:31:57] [gain] step 100: loss 0.2168 grad 0.1179 ce_o 0.0637 kl_other 0.1530 p_o 0.9412
+[02:31:57] [gain] step 110: loss 0.1848 grad 0.1019 ce_o 0.0431 kl_other 0.1417 p_o 0.9589
+[02:31:58] [gain] step 120: loss 0.1794 grad 0.2254 ce_o 0.0281 kl_other 0.1513 p_o 0.9731
+[02:31:58] [gain] step 130: loss 0.1843 grad 0.1055 ce_o 0.0522 kl_other 0.1321 p_o 0.9509
+[02:31:59] [gain] step 140: loss 0.1632 grad 0.1341 ce_o 0.0372 kl_other 0.1261 p_o 0.9648
+[02:31:59] [gain] step 150: loss 0.1510 grad 0.1084 ce_o 0.0322 kl_other 0.1188 p_o 0.9689
+[02:32:00] [gain] step 160: loss 0.1453 grad 0.0914 ce_o 0.0325 kl_other 0.1128 p_o 0.9690
+[02:32:00] [gain] step 170: loss 0.1417 grad 0.0907 ce_o 0.0354 kl_other 0.1063 p_o 0.9663
+[02:32:01] [gain] step 180: loss 0.1230 grad 0.0748 ce_o 0.0310 kl_other 0.0920 p_o 0.9700
+[02:32:01] [gain] step 190: loss 0.1437 grad 0.1213 ce_o 0.0311 kl_other 0.1126 p_o 0.9702
+[02:32:02] [gain] step 200: loss 0.1208 grad 0.0841 ce_o 0.0224 kl_other 0.0984 p_o 0.9783
+[02:32:02] [gain] step 210: loss 0.1170 grad 0.2580 ce_o 0.0285 kl_other 0.0885 p_o 0.9745
+[02:32:03] [gain] step 220: loss 0.1254 grad 0.0640 ce_o 0.0279 kl_other 0.0975 p_o 0.9735
+[02:32:03] [gain] step 230: loss 0.1888 grad 0.7841 ce_o 0.1052 kl_other 0.0836 p_o 0.9549
+[02:32:03] [gain] step 240: loss 0.0981 grad 0.0737 ce_o 0.0172 kl_other 0.0809 p_o 0.9830
+[02:32:04] [gain] step 250: loss 0.0914 grad 0.0580 ce_o 0.0163 kl_other 0.0751 p_o 0.9840
+[02:32:04] [gain] step 260: loss 0.0932 grad 0.0744 ce_o 0.0130 kl_other 0.0802 p_o 0.9872
+[02:32:05] [gain] step 270: loss 0.0949 grad 0.0480 ce_o 0.0181 kl_other 0.0768 p_o 0.9822
+[02:32:05] [gain] step 280: loss 0.0882 grad 0.0593 ce_o 0.0162 kl_other 0.0720 p_o 0.9841
+[02:32:06] [gain] step 290: loss 0.0825 grad 0.0745 ce_o 0.0088 kl_other 0.0737 p_o 0.9913
+[02:32:06]   ia3 copy s1 step 300: held-out P(target) 0.9737
+[02:32:06] [gain] step 300: loss 0.0739 grad 0.0696 ce_o 0.0094 kl_other 0.0646 p_o 0.9907
+[02:32:06] TRAINED ia3 copy s1: read step 100 (learned True), P(target) 0.9305 (M 0.0003); gains 0.5150-1.5920; 14 s
+[02:32:06] [gain] step 1: loss 9.4079 grad 1.3366 ce_o 9.4079 kl_other 0.0000 p_o 0.0004
+[02:32:07]   ffn copy s2 step 10: held-out P(target) 0.0008
+[02:32:07] [gain] step 10: loss 8.4534 grad 1.0449 ce_o 8.4378 kl_other 0.0156 p_o 0.0009
+[02:32:07] [gain] step 20: loss 7.1243 grad 0.9788 ce_o 7.0654 kl_other 0.0589 p_o 0.0095
+[02:32:08]   ffn copy s2 step 30: held-out P(target) 0.0142
+[02:32:08] [gain] step 30: loss 5.3468 grad 1.1269 ce_o 5.2390 kl_other 0.1078 p_o 0.0170
+[02:32:08] [gain] step 40: loss 4.4468 grad 1.4831 ce_o 4.2606 kl_other 0.1862 p_o 0.0596
+[02:32:08] [gain] step 50: loss 2.9465 grad 1.0095 ce_o 2.6613 kl_other 0.2852 p_o 0.1855
+[02:32:09] [gain] step 60: loss 1.7404 grad 0.9445 ce_o 1.3569 kl_other 0.3834 p_o 0.4114
+[02:32:09] [gain] step 70: loss 1.3150 grad 0.5269 ce_o 0.7904 kl_other 0.5246 p_o 0.5851
+[02:32:09] [gain] step 80: loss 1.0993 grad 0.5578 ce_o 0.5285 kl_other 0.5708 p_o 0.6913
+[02:32:10] [gain] step 90: loss 0.8681 grad 0.2982 ce_o 0.2888 kl_other 0.5793 p_o 0.8104
+[02:32:10]   ffn copy s2 step 100: held-out P(target) 0.7967
+[02:32:10] [gain] step 100: loss 0.9298 grad 0.5188 ce_o 0.4358 kl_other 0.4940 p_o 0.7923
+[02:32:11] [gain] step 110: loss 0.6508 grad 0.2831 ce_o 0.2169 kl_other 0.4339 p_o 0.8289
+[02:32:11] [gain] step 120: loss 0.6032 grad 0.2393 ce_o 0.2568 kl_other 0.3465 p_o 0.8169
+[02:32:11] [gain] step 130: loss 0.6048 grad 0.3330 ce_o 0.2992 kl_other 0.3056 p_o 0.8031
+[02:32:12] [gain] step 140: loss 0.6042 grad 0.3480 ce_o 0.2732 kl_other 0.3310 p_o 0.7974
+[02:32:12] [gain] step 150: loss 0.4613 grad 0.1627 ce_o 0.1242 kl_other 0.3370 p_o 0.8928
+[02:32:12] [gain] step 160: loss 0.4565 grad 0.1537 ce_o 0.1623 kl_other 0.2942 p_o 0.8680
+[02:32:13] [gain] step 170: loss 0.4107 grad 0.1841 ce_o 0.1270 kl_other 0.2837 p_o 0.8948
+[02:32:13] [gain] step 180: loss 0.3715 grad 0.1125 ce_o 0.0795 kl_other 0.2920 p_o 0.9256
+[02:32:13] [gain] step 190: loss 0.3939 grad 0.1176 ce_o 0.1183 kl_other 0.2756 p_o 0.8945
+[02:32:14] [gain] step 200: loss 0.3951 grad 0.2668 ce_o 0.1390 kl_other 0.2561 p_o 0.8895
+[02:32:14] [gain] step 210: loss 0.3357 grad 0.2416 ce_o 0.0890 kl_other 0.2467 p_o 0.9248
+[02:32:14] [gain] step 220: loss 0.4696 grad 0.3460 ce_o 0.2232 kl_other 0.2464 p_o 0.8680
+[02:32:15] [gain] step 230: loss 0.3722 grad 0.1235 ce_o 0.1069 kl_other 0.2653 p_o 0.9040
+[02:32:15] [gain] step 240: loss 0.3553 grad 0.1563 ce_o 0.0998 kl_other 0.2555 p_o 0.9190
+[02:32:15] [gain] step 250: loss 0.2877 grad 0.0875 ce_o 0.0775 kl_other 0.2103 p_o 0.9300
+[02:32:16] [gain] step 260: loss 0.2941 grad 0.0833 ce_o 0.0670 kl_other 0.2271 p_o 0.9384
+[02:32:16] [gain] step 270: loss 0.2857 grad 0.1522 ce_o 0.0833 kl_other 0.2024 p_o 0.9363
+[02:32:16] [gain] step 280: loss 0.3303 grad 0.1440 ce_o 0.1025 kl_other 0.2278 p_o 0.9164
+[02:32:17] [gain] step 290: loss 0.2250 grad 0.0686 ce_o 0.0458 kl_other 0.1791 p_o 0.9569
+[02:32:17]   ffn copy s2 step 300: held-out P(target) 0.9211
+[02:32:17] [gain] step 300: loss 0.2645 grad 0.1922 ce_o 0.0758 kl_other 0.1887 p_o 0.9370
+[02:32:17] TRAINED ffn copy s2: read step 100 (learned True), P(target) 0.7967 (M 0.0003); gains 0.5274-1.4740; 11 s
+[02:32:17] [gain] step 1: loss 9.4079 grad 3.0154 ce_o 9.4079 kl_other 0.0000 p_o 0.0004
+[02:32:18]   ia3 copy s2 step 10: held-out P(target) 0.0023
+[02:32:18] [gain] step 10: loss 7.7203 grad 3.3011 ce_o 7.6830 kl_other 0.0372 p_o 0.0020
+[02:32:18] [gain] step 20: loss 4.9075 grad 4.7530 ce_o 4.7465 kl_other 0.1610 p_o 0.0506
+[02:32:19]   ia3 copy s2 step 30: held-out P(target) 0.2815
+[02:32:19] [gain] step 30: loss 2.1521 grad 3.3983 ce_o 1.7885 kl_other 0.3636 p_o 0.3075
+[02:32:19] [gain] step 40: loss 1.0451 grad 1.1526 ce_o 0.3873 kl_other 0.6578 p_o 0.7226
+[02:32:19] [gain] step 50: loss 0.9533 grad 0.8349 ce_o 0.4550 kl_other 0.4984 p_o 0.8515
+[02:32:20] [gain] step 60: loss 0.3416 grad 0.3930 ce_o 0.0597 kl_other 0.2820 p_o 0.9439
+[02:32:20] [gain] step 70: loss 0.3606 grad 0.3259 ce_o 0.0807 kl_other 0.2800 p_o 0.9300
+[02:32:21] [gain] step 80: loss 0.3083 grad 0.4396 ce_o 0.0618 kl_other 0.2464 p_o 0.9420
+[02:32:21] [gain] step 90: loss 0.2363 grad 0.2257 ce_o 0.0462 kl_other 0.1901 p_o 0.9568
+[02:32:22]   ia3 copy s2 step 100: held-out P(target) 0.9344
+[02:32:22] [gain] step 100: loss 0.2271 grad 0.2152 ce_o 0.0754 kl_other 0.1517 p_o 0.9308
+[02:32:22] [gain] step 110: loss 0.2088 grad 0.2052 ce_o 0.0433 kl_other 0.1655 p_o 0.9588
+[02:32:23] [gain] step 120: loss 0.1814 grad 0.2509 ce_o 0.0455 kl_other 0.1359 p_o 0.9566
+[02:32:23] [gain] step 130: loss 0.1628 grad 0.1017 ce_o 0.0392 kl_other 0.1237 p_o 0.9624
+[02:32:24] [gain] step 140: loss 0.1687 grad 0.1313 ce_o 0.0392 kl_other 0.1294 p_o 0.9623
+[02:32:24] [gain] step 150: loss 0.1488 grad 0.2726 ce_o 0.0278 kl_other 0.1210 p_o 0.9730
+[02:32:25] [gain] step 160: loss 0.1445 grad 0.1096 ce_o 0.0302 kl_other 0.1143 p_o 0.9708
+[02:32:25] [gain] step 170: loss 0.1284 grad 0.0822 ce_o 0.0251 kl_other 0.1033 p_o 0.9756
+[02:32:26] [gain] step 180: loss 0.1307 grad 0.1096 ce_o 0.0240 kl_other 0.1067 p_o 0.9764
+[02:32:26] [gain] step 190: loss 0.1297 grad 0.0943 ce_o 0.0222 kl_other 0.1074 p_o 0.9781
+[02:32:27] [gain] step 200: loss 0.1334 grad 0.2591 ce_o 0.0405 kl_other 0.0929 p_o 0.9630
+[02:32:27] [gain] step 210: loss 0.1120 grad 0.0860 ce_o 0.0169 kl_other 0.0950 p_o 0.9834
+[02:32:28] [gain] step 220: loss 0.1318 grad 0.0811 ce_o 0.0278 kl_other 0.1040 p_o 0.9731
+[02:32:28] [gain] step 230: loss 0.1162 grad 0.0838 ce_o 0.0258 kl_other 0.0904 p_o 0.9750
+[02:32:28] [gain] step 240: loss 0.1265 grad 0.0724 ce_o 0.0267 kl_other 0.0999 p_o 0.9745
+[02:32:29] [gain] step 250: loss 0.0934 grad 0.0751 ce_o 0.0172 kl_other 0.0762 p_o 0.9831
+[02:32:29] [gain] step 260: loss 0.0967 grad 0.0767 ce_o 0.0170 kl_other 0.0797 p_o 0.9834
+[02:32:30] [gain] step 270: loss 0.1369 grad 0.4843 ce_o 0.0607 kl_other 0.0761 p_o 0.9633
+[02:32:30] [gain] step 280: loss 0.1077 grad 0.1009 ce_o 0.0248 kl_other 0.0830 p_o 0.9763
+[02:32:31] [gain] step 290: loss 0.0802 grad 0.0632 ce_o 0.0088 kl_other 0.0714 p_o 0.9912
+[02:32:31]   ia3 copy s2 step 300: held-out P(target) 0.9726
+[02:32:31] [gain] step 300: loss 0.0892 grad 0.0592 ce_o 0.0171 kl_other 0.0721 p_o 0.9833
+[02:32:31] TRAINED ia3 copy s2: read step 100 (learned True), P(target) 0.9344 (M 0.0003); gains 0.5295-1.5650; 14 s
+[02:32:32] [gain] step 1: loss 5.5080 grad 1.0615 ce_o 5.5080 kl_other 0.0000 p_o 0.0767
+[02:32:32]   ffn rank1 s0 step 10: held-out P(target) 0.1116
+[02:32:32] [gain] step 10: loss 3.1400 grad 0.7476 ce_o 3.1314 kl_other 0.0086 p_o 0.1351
+[02:32:33] [gain] step 20: loss 3.4634 grad 0.6714 ce_o 3.4294 kl_other 0.0340 p_o 0.1283
+[02:32:33]   ffn rank1 s0 step 30: held-out P(target) 0.1845
+[02:32:33] [gain] step 30: loss 3.6503 grad 0.6693 ce_o 3.5822 kl_other 0.0681 p_o 0.1513
+[02:32:33] [gain] step 40: loss 3.6195 grad 0.6910 ce_o 3.5121 kl_other 0.1074 p_o 0.1908
+[02:32:34] [gain] step 50: loss 2.5604 grad 0.5061 ce_o 2.4052 kl_other 0.1552 p_o 0.2783
+[02:32:34] [gain] step 60: loss 1.8723 grad 0.4474 ce_o 1.6897 kl_other 0.1826 p_o 0.3096
+[02:32:34] [gain] step 70: loss 1.8897 grad 0.4734 ce_o 1.6816 kl_other 0.2081 p_o 0.3612
+[02:32:35] [gain] step 80: loss 2.3354 grad 0.4129 ce_o 2.1197 kl_other 0.2157 p_o 0.3109
+[02:32:35] [gain] step 90: loss 2.1333 grad 0.4473 ce_o 1.8886 kl_other 0.2447 p_o 0.3656
+[02:32:35]   ffn rank1 s0 step 100: held-out P(target) 0.4119
+[02:32:35] [gain] step 100: loss 1.7866 grad 0.4477 ce_o 1.5556 kl_other 0.2311 p_o 0.4375
+[02:32:36] [gain] step 110: loss 1.5786 grad 0.4227 ce_o 1.3136 kl_other 0.2650 p_o 0.4391
+[02:32:36] [gain] step 120: loss 1.4978 grad 0.4315 ce_o 1.2374 kl_other 0.2605 p_o 0.4877
+[02:32:36] [gain] step 130: loss 1.5051 grad 0.4504 ce_o 1.2388 kl_other 0.2664 p_o 0.5066
+[02:32:37] [gain] step 140: loss 1.4103 grad 0.4634 ce_o 1.1685 kl_other 0.2418 p_o 0.4646
+[02:32:37] [gain] step 150: loss 1.7849 grad 0.3876 ce_o 1.5050 kl_other 0.2799 p_o 0.4593
+[02:32:37] [gain] step 160: loss 1.5176 grad 0.3773 ce_o 1.2481 kl_other 0.2695 p_o 0.5521
+[02:32:38] [gain] step 170: loss 1.0012 grad 0.3159 ce_o 0.7179 kl_other 0.2833 p_o 0.6362
+[02:32:38] [gain] step 180: loss 1.2298 grad 0.3306 ce_o 0.9651 kl_other 0.2647 p_o 0.6096
+[02:32:38] [gain] step 190: loss 0.8278 grad 0.2587 ce_o 0.5483 kl_other 0.2795 p_o 0.6432
+[02:32:39] [gain] step 200: loss 0.7659 grad 0.2698 ce_o 0.4683 kl_other 0.2976 p_o 0.7060
+[02:32:39] [gain] step 210: loss 0.6911 grad 0.3582 ce_o 0.4197 kl_other 0.2714 p_o 0.7451
+[02:32:39] [gain] step 220: loss 1.0098 grad 0.3048 ce_o 0.7388 kl_other 0.2710 p_o 0.6869
+[02:32:40] [gain] step 230: loss 0.6501 grad 0.2162 ce_o 0.3691 kl_other 0.2810 p_o 0.7488
+[02:32:40] [gain] step 240: loss 1.0345 grad 0.3971 ce_o 0.7587 kl_other 0.2758 p_o 0.6355
+[02:32:40] [gain] step 250: loss 0.8657 grad 0.3000 ce_o 0.5925 kl_other 0.2732 p_o 0.6697
+[02:32:41] [gain] step 260: loss 0.6570 grad 0.3145 ce_o 0.4091 kl_other 0.2479 p_o 0.7189
+[02:32:41] [gain] step 270: loss 0.5469 grad 0.1847 ce_o 0.2774 kl_other 0.2696 p_o 0.7946
+[02:32:41] [gain] step 280: loss 0.6901 grad 0.2480 ce_o 0.4160 kl_other 0.2741 p_o 0.7147
+[02:32:42] [gain] step 290: loss 0.6445 grad 0.2452 ce_o 0.3742 kl_other 0.2703 p_o 0.7504
+[02:32:42]   ffn rank1 s0 step 300: held-out P(target) 0.7085
+[02:32:42] [gain] step 300: loss 0.7786 grad 0.2737 ce_o 0.4951 kl_other 0.2835 p_o 0.7414
+[02:32:42] TRAINED ffn rank1 s0: read step 300 (learned True), P(target) 0.7085 (M 0.0858); gains 0.3430-1.6105; 10 s
+[02:32:42] [gain] step 1: loss 5.5080 grad 1.4372 ce_o 5.5080 kl_other 0.0000 p_o 0.0767
+[02:32:43]   ia3 rank1 s0 step 10: held-out P(target) 0.1204
+[02:32:43] [gain] step 10: loss 2.9996 grad 0.9395 ce_o 2.9832 kl_other 0.0164 p_o 0.1451
+[02:32:43] [gain] step 20: loss 3.3139 grad 0.6756 ce_o 3.2426 kl_other 0.0713 p_o 0.1466
+[02:32:44]   ia3 rank1 s0 step 30: held-out P(target) 0.2296
+[02:32:44] [gain] step 30: loss 3.3530 grad 0.7665 ce_o 3.2091 kl_other 0.1440 p_o 0.1733
+[02:32:44] [gain] step 40: loss 3.2227 grad 0.6856 ce_o 3.0153 kl_other 0.2074 p_o 0.2405
+[02:32:45] [gain] step 50: loss 2.1377 grad 0.5607 ce_o 1.9073 kl_other 0.2304 p_o 0.3634
+[02:32:45] [gain] step 60: loss 1.6082 grad 0.5162 ce_o 1.3787 kl_other 0.2295 p_o 0.3763
+[02:32:46] [gain] step 70: loss 1.5365 grad 0.5924 ce_o 1.3145 kl_other 0.2219 p_o 0.4337
+[02:32:46] [gain] step 80: loss 1.9802 grad 0.5502 ce_o 1.7533 kl_other 0.2270 p_o 0.3658
+[02:32:47] [gain] step 90: loss 1.7825 grad 0.6129 ce_o 1.5258 kl_other 0.2568 p_o 0.4296
+[02:32:47]   ia3 rank1 s0 step 100: held-out P(target) 0.4868
+[02:32:47] [gain] step 100: loss 1.3314 grad 0.6006 ce_o 1.0922 kl_other 0.2392 p_o 0.5092
+[02:32:47] [gain] step 110: loss 1.1522 grad 0.4681 ce_o 0.8817 kl_other 0.2705 p_o 0.5655
+[02:32:48] [gain] step 120: loss 1.1496 grad 0.5770 ce_o 0.8901 kl_other 0.2595 p_o 0.5847
+[02:32:48] [gain] step 130: loss 1.1133 grad 0.4724 ce_o 0.8532 kl_other 0.2601 p_o 0.6126
+[02:32:49] [gain] step 140: loss 0.9571 grad 0.4871 ce_o 0.7194 kl_other 0.2377 p_o 0.5747
+[02:32:49] [gain] step 150: loss 1.2019 grad 0.4334 ce_o 0.9125 kl_other 0.2895 p_o 0.5761
+[02:32:50] [gain] step 160: loss 1.0573 grad 0.4369 ce_o 0.7951 kl_other 0.2622 p_o 0.6595
+[02:32:50] [gain] step 170: loss 0.7330 grad 0.3477 ce_o 0.4714 kl_other 0.2617 p_o 0.7205
+[02:32:51] [gain] step 180: loss 0.7701 grad 0.3381 ce_o 0.5263 kl_other 0.2438 p_o 0.7094
+[02:32:51] [gain] step 190: loss 0.5820 grad 0.2613 ce_o 0.3321 kl_other 0.2499 p_o 0.7584
+[02:32:52] [gain] step 200: loss 0.5560 grad 0.2504 ce_o 0.2864 kl_other 0.2697 p_o 0.7957
+[02:32:52] [gain] step 210: loss 0.4706 grad 0.3708 ce_o 0.2282 kl_other 0.2423 p_o 0.8352
+[02:32:53] [gain] step 220: loss 0.6146 grad 0.2966 ce_o 0.3788 kl_other 0.2358 p_o 0.7935
+[02:32:53] [gain] step 230: loss 0.4396 grad 0.2310 ce_o 0.1972 kl_other 0.2424 p_o 0.8435
+[02:32:54] [gain] step 240: loss 0.5796 grad 0.3340 ce_o 0.3427 kl_other 0.2369 p_o 0.7771
+[02:32:54] [gain] step 250: loss 0.5113 grad 0.3076 ce_o 0.2735 kl_other 0.2378 p_o 0.7929
+[02:32:55] [gain] step 260: loss 0.4260 grad 0.2860 ce_o 0.2124 kl_other 0.2137 p_o 0.8360
+[02:32:55] [gain] step 270: loss 0.3843 grad 0.1910 ce_o 0.1553 kl_other 0.2290 p_o 0.8730
+[02:32:55] [gain] step 280: loss 0.4181 grad 0.1990 ce_o 0.1867 kl_other 0.2315 p_o 0.8498
+[02:32:56] [gain] step 290: loss 0.4239 grad 0.2569 ce_o 0.1988 kl_other 0.2250 p_o 0.8403
+[02:32:57]   ia3 rank1 s0 step 300: held-out P(target) 0.7973
+[02:32:57] [gain] step 300: loss 0.4830 grad 0.2521 ce_o 0.2470 kl_other 0.2360 p_o 0.8462
+[02:32:57] TRAINED ia3 rank1 s0: read step 300 (learned True), P(target) 0.7973 (M 0.0858); gains 0.3381-1.5302; 14 s
+[02:32:57] [gain] step 1: loss 4.0951 grad 0.8705 ce_o 4.0951 kl_other 0.0000 p_o 0.0970
+[02:32:57]   ffn rank1 s1 step 10: held-out P(target) 0.1102
+[02:32:57] [gain] step 10: loss 2.9525 grad 0.8425 ce_o 2.9435 kl_other 0.0090 p_o 0.1329
+[02:32:58] [gain] step 20: loss 3.1894 grad 0.6233 ce_o 3.1580 kl_other 0.0314 p_o 0.1544
+[02:32:58]   ffn rank1 s1 step 30: held-out P(target) 0.1752
+[02:32:58] [gain] step 30: loss 3.1767 grad 0.5251 ce_o 3.1162 kl_other 0.0606 p_o 0.1828
+[02:32:58] [gain] step 40: loss 2.9813 grad 0.5479 ce_o 2.8724 kl_other 0.1088 p_o 0.2005
+[02:32:59] [gain] step 50: loss 2.9714 grad 0.7384 ce_o 2.8341 kl_other 0.1373 p_o 0.2554
+[02:32:59] [gain] step 60: loss 1.9462 grad 0.4733 ce_o 1.7589 kl_other 0.1873 p_o 0.3038
+[02:32:59] [gain] step 70: loss 2.3416 grad 0.4919 ce_o 2.1305 kl_other 0.2111 p_o 0.3849
+[02:33:00] [gain] step 80: loss 2.3300 grad 0.4639 ce_o 2.0977 kl_other 0.2322 p_o 0.3275
+[02:33:00] [gain] step 90: loss 2.6203 grad 0.5691 ce_o 2.4063 kl_other 0.2140 p_o 0.3033
+[02:33:00]   ffn rank1 s1 step 100: held-out P(target) 0.4010
+[02:33:00] [gain] step 100: loss 1.3911 grad 0.4092 ce_o 1.1797 kl_other 0.2114 p_o 0.4443
+[02:33:01] [gain] step 110: loss 1.4898 grad 0.5024 ce_o 1.2357 kl_other 0.2541 p_o 0.4936
+[02:33:01] [gain] step 120: loss 1.7328 grad 0.5691 ce_o 1.4592 kl_other 0.2736 p_o 0.4656
+[02:33:02] [gain] step 130: loss 1.4894 grad 0.3615 ce_o 1.2426 kl_other 0.2468 p_o 0.4743
+[02:33:02] [gain] step 140: loss 1.4650 grad 0.4138 ce_o 1.1909 kl_other 0.2741 p_o 0.5524
+[02:33:02] [gain] step 150: loss 1.2357 grad 0.4293 ce_o 0.9796 kl_other 0.2561 p_o 0.5428
+[02:33:03] [gain] step 160: loss 1.3525 grad 0.4380 ce_o 1.0737 kl_other 0.2788 p_o 0.4862
+[02:33:03] [gain] step 170: loss 1.2102 grad 0.4072 ce_o 0.9601 kl_other 0.2501 p_o 0.5569
+[02:33:03] [gain] step 180: loss 0.7935 grad 0.2471 ce_o 0.5098 kl_other 0.2837 p_o 0.6827
+[02:33:04] [gain] step 190: loss 1.2991 grad 0.3716 ce_o 1.0397 kl_other 0.2594 p_o 0.5712
+[02:33:04] [gain] step 200: loss 0.6985 grad 0.2470 ce_o 0.4228 kl_other 0.2757 p_o 0.7193
+[02:33:04] [gain] step 210: loss 0.7241 grad 0.3248 ce_o 0.4755 kl_other 0.2486 p_o 0.6684
+[02:33:05] [gain] step 220: loss 0.7757 grad 0.2568 ce_o 0.4913 kl_other 0.2844 p_o 0.6960
+[02:33:05] [gain] step 230: loss 0.9041 grad 0.2909 ce_o 0.6530 kl_other 0.2511 p_o 0.7335
+[02:33:05] [gain] step 240: loss 0.9158 grad 0.3431 ce_o 0.6719 kl_other 0.2439 p_o 0.6850
+[02:33:06] [gain] step 250: loss 1.1179 grad 0.3643 ce_o 0.8802 kl_other 0.2377 p_o 0.5932
+[02:33:06] [gain] step 260: loss 0.5320 grad 0.2034 ce_o 0.2748 kl_other 0.2572 p_o 0.7961
+[02:33:06] [gain] step 270: loss 0.6258 grad 0.3543 ce_o 0.3836 kl_other 0.2422 p_o 0.7496
+[02:33:07] [gain] step 280: loss 0.6008 grad 0.2333 ce_o 0.3571 kl_other 0.2438 p_o 0.7643
+[02:33:07] [gain] step 290: loss 0.7423 grad 0.2529 ce_o 0.4909 kl_other 0.2514 p_o 0.7119
+[02:33:07]   ffn rank1 s1 step 300: held-out P(target) 0.7090
+[02:33:07] [gain] step 300: loss 0.6200 grad 0.1973 ce_o 0.3581 kl_other 0.2619 p_o 0.7553
+[02:33:07] TRAINED ffn rank1 s1: read step 300 (learned True), P(target) 0.7090 (M 0.0858); gains 0.4229-1.6140; 11 s
+[02:33:07] [gain] step 1: loss 4.0951 grad 1.2152 ce_o 4.0951 kl_other 0.0000 p_o 0.0970
+[02:33:08]   ia3 rank1 s1 step 10: held-out P(target) 0.1187
+[02:33:08] [gain] step 10: loss 2.7958 grad 1.0411 ce_o 2.7791 kl_other 0.0167 p_o 0.1478
+[02:33:08] [gain] step 20: loss 2.9945 grad 0.6759 ce_o 2.9319 kl_other 0.0627 p_o 0.1662
+[02:33:09]   ia3 rank1 s1 step 30: held-out P(target) 0.2129
+[02:33:09] [gain] step 30: loss 3.0216 grad 0.6334 ce_o 2.9017 kl_other 0.1199 p_o 0.1997
+[02:33:09] [gain] step 40: loss 2.7574 grad 0.6505 ce_o 2.5636 kl_other 0.1938 p_o 0.2512
+[02:33:10] [gain] step 50: loss 2.5173 grad 0.7540 ce_o 2.3027 kl_other 0.2146 p_o 0.3225
+[02:33:10] [gain] step 60: loss 1.6569 grad 0.5567 ce_o 1.4058 kl_other 0.2511 p_o 0.3683
+[02:33:11] [gain] step 70: loss 1.9876 grad 0.5450 ce_o 1.7580 kl_other 0.2296 p_o 0.4601
+[02:33:11] [gain] step 80: loss 1.9196 grad 0.7125 ce_o 1.6908 kl_other 0.2287 p_o 0.3890
+[02:33:11] [gain] step 90: loss 2.1621 grad 0.8211 ce_o 1.9422 kl_other 0.2199 p_o 0.3662
+[02:33:12]   ia3 rank1 s1 step 100: held-out P(target) 0.4819
+[02:33:12] [gain] step 100: loss 1.1420 grad 0.4329 ce_o 0.9188 kl_other 0.2233 p_o 0.5332
+[02:33:12] [gain] step 110: loss 1.1689 grad 0.6396 ce_o 0.8985 kl_other 0.2704 p_o 0.5802
+[02:33:13] [gain] step 120: loss 1.2290 grad 0.5927 ce_o 0.9523 kl_other 0.2767 p_o 0.6025
+[02:33:13] [gain] step 130: loss 1.0890 grad 0.4213 ce_o 0.8414 kl_other 0.2476 p_o 0.5903
+[02:33:14] [gain] step 140: loss 1.0867 grad 0.4292 ce_o 0.8186 kl_other 0.2681 p_o 0.6364
+[02:33:14] [gain] step 150: loss 0.8315 grad 0.4946 ce_o 0.5821 kl_other 0.2495 p_o 0.6596
+[02:33:14] [gain] step 160: loss 0.8631 grad 0.5331 ce_o 0.5968 kl_other 0.2663 p_o 0.6238
+[02:33:15] [gain] step 170: loss 0.7731 grad 0.4380 ce_o 0.5281 kl_other 0.2450 p_o 0.6961
+[02:33:15] [gain] step 180: loss 0.5608 grad 0.2679 ce_o 0.3001 kl_other 0.2607 p_o 0.7817
+[02:33:16] [gain] step 190: loss 0.7795 grad 0.4102 ce_o 0.5420 kl_other 0.2375 p_o 0.6787
+[02:33:16] [gain] step 200: loss 0.4561 grad 0.2713 ce_o 0.1994 kl_other 0.2567 p_o 0.8358
+[02:33:17] [gain] step 210: loss 0.5230 grad 0.3831 ce_o 0.2936 kl_other 0.2294 p_o 0.7808
+[02:33:17] [gain] step 220: loss 0.5448 grad 0.3442 ce_o 0.2821 kl_other 0.2627 p_o 0.7965
+[02:33:18] [gain] step 230: loss 0.5705 grad 0.4341 ce_o 0.3422 kl_other 0.2282 p_o 0.8111
+[02:33:18] [gain] step 240: loss 0.5560 grad 0.3094 ce_o 0.3341 kl_other 0.2220 p_o 0.7958
+[02:33:19] [gain] step 250: loss 0.5846 grad 0.3658 ce_o 0.3686 kl_other 0.2160 p_o 0.7357
+[02:33:19] [gain] step 260: loss 0.3610 grad 0.2096 ce_o 0.1277 kl_other 0.2334 p_o 0.8901
+[02:33:20] [gain] step 270: loss 0.3329 grad 0.1497 ce_o 0.1146 kl_other 0.2182 p_o 0.8953
+[02:33:20] [gain] step 280: loss 0.3867 grad 0.2009 ce_o 0.1716 kl_other 0.2151 p_o 0.8586
+[02:33:21] [gain] step 290: loss 0.4786 grad 0.2383 ce_o 0.2626 kl_other 0.2159 p_o 0.8191
+[02:33:21]   ia3 rank1 s1 step 300: held-out P(target) 0.7973
+[02:33:21] [gain] step 300: loss 0.4038 grad 0.1803 ce_o 0.1947 kl_other 0.2091 p_o 0.8513
+[02:33:21] TRAINED ia3 rank1 s1: read step 300 (learned True), P(target) 0.7973 (M 0.0858); gains 0.3949-1.5313; 14 s
+[02:33:21] [gain] step 1: loss 4.6003 grad 0.9284 ce_o 4.6003 kl_other 0.0000 p_o 0.0951
+[02:33:22]   ffn rank1 s2 step 10: held-out P(target) 0.1110
+[02:33:22] [gain] step 10: loss 3.6433 grad 1.1005 ce_o 3.6362 kl_other 0.0071 p_o 0.1361
+[02:33:22] [gain] step 20: loss 2.8987 grad 0.7416 ce_o 2.8670 kl_other 0.0317 p_o 0.1846
+[02:33:23]   ffn rank1 s2 step 30: held-out P(target) 0.1753
+[02:33:23] [gain] step 30: loss 3.2221 grad 0.5434 ce_o 3.1606 kl_other 0.0615 p_o 0.1750
+[02:33:23] [gain] step 40: loss 3.6374 grad 0.7960 ce_o 3.5320 kl_other 0.1054 p_o 0.2257
+[02:33:23] [gain] step 50: loss 2.9816 grad 0.5705 ce_o 2.8217 kl_other 0.1600 p_o 0.2689
+[02:33:24] [gain] step 60: loss 2.0112 grad 0.5108 ce_o 1.8256 kl_other 0.1855 p_o 0.3332
+[02:33:24] [gain] step 70: loss 2.2830 grad 0.6926 ce_o 2.0627 kl_other 0.2204 p_o 0.3352
+[02:33:24] [gain] step 80: loss 2.3900 grad 0.5387 ce_o 2.1610 kl_other 0.2290 p_o 0.3040
+[02:33:25] [gain] step 90: loss 1.7012 grad 0.3657 ce_o 1.4590 kl_other 0.2422 p_o 0.4520
+[02:33:25]   ffn rank1 s2 step 100: held-out P(target) 0.3904
+[02:33:25] [gain] step 100: loss 1.5407 grad 0.5291 ce_o 1.3103 kl_other 0.2305 p_o 0.4111
+[02:33:25] [gain] step 110: loss 1.6802 grad 0.4701 ce_o 1.4235 kl_other 0.2567 p_o 0.3708
+[02:33:26] [gain] step 120: loss 2.0667 grad 0.5481 ce_o 1.8146 kl_other 0.2521 p_o 0.4567
+[02:33:26] [gain] step 130: loss 1.6818 grad 0.4853 ce_o 1.4490 kl_other 0.2328 p_o 0.5088
+[02:33:26] [gain] step 140: loss 1.3133 grad 0.4331 ce_o 1.0510 kl_other 0.2623 p_o 0.4703
+[02:33:27] [gain] step 150: loss 1.2668 grad 0.3703 ce_o 0.9913 kl_other 0.2755 p_o 0.5701
+[02:33:27] [gain] step 160: loss 1.0955 grad 0.3422 ce_o 0.8339 kl_other 0.2615 p_o 0.5282
+[02:33:27] [gain] step 170: loss 1.2780 grad 0.3740 ce_o 0.9919 kl_other 0.2861 p_o 0.5235
+[02:33:28] [gain] step 180: loss 1.1035 grad 0.2735 ce_o 0.8378 kl_other 0.2657 p_o 0.6373
+[02:33:28] [gain] step 190: loss 1.0275 grad 0.3180 ce_o 0.7712 kl_other 0.2564 p_o 0.5972
+[02:33:28] [gain] step 200: loss 1.0725 grad 0.3059 ce_o 0.7997 kl_other 0.2728 p_o 0.6730
+[02:33:29] [gain] step 210: loss 1.0142 grad 0.3965 ce_o 0.7217 kl_other 0.2925 p_o 0.6433
+[02:33:29] [gain] step 220: loss 1.0117 grad 0.3123 ce_o 0.7307 kl_other 0.2810 p_o 0.6077
+[02:33:29] [gain] step 230: loss 0.7697 grad 0.3332 ce_o 0.5132 kl_other 0.2565 p_o 0.6824
+[02:33:30] [gain] step 240: loss 0.8238 grad 0.2885 ce_o 0.5422 kl_other 0.2817 p_o 0.7342
+[02:33:30] [gain] step 250: loss 1.0678 grad 0.3646 ce_o 0.8184 kl_other 0.2494 p_o 0.6377
+[02:33:30] [gain] step 260: loss 0.7513 grad 0.2678 ce_o 0.4881 kl_other 0.2631 p_o 0.7347
+[02:33:31] [gain] step 270: loss 0.5771 grad 0.2202 ce_o 0.3156 kl_other 0.2614 p_o 0.7705
+[02:33:31] [gain] step 280: loss 0.7091 grad 0.2836 ce_o 0.4327 kl_other 0.2763 p_o 0.7121
+[02:33:31] [gain] step 290: loss 0.6757 grad 0.2240 ce_o 0.4151 kl_other 0.2606 p_o 0.7237
+[02:33:32]   ffn rank1 s2 step 300: held-out P(target) 0.7001
+[02:33:32] [gain] step 300: loss 0.5703 grad 0.2138 ce_o 0.3091 kl_other 0.2613 p_o 0.7693
+[02:33:32] TRAINED ffn rank1 s2: read step 300 (learned True), P(target) 0.7001 (M 0.0858); gains 0.4036-1.6188; 10 s
+[02:33:32] [gain] step 1: loss 4.6003 grad 1.2918 ce_o 4.6003 kl_other 0.0000 p_o 0.0951
+[02:33:32]   ia3 rank1 s2 step 10: held-out P(target) 0.1207
+[02:33:32] [gain] step 10: loss 3.4936 grad 1.4402 ce_o 3.4800 kl_other 0.0136 p_o 0.1463
+[02:33:33] [gain] step 20: loss 2.6533 grad 0.7594 ce_o 2.5920 kl_other 0.0613 p_o 0.2091
+[02:33:33]   ia3 rank1 s2 step 30: held-out P(target) 0.2139
+[02:33:33] [gain] step 30: loss 3.0029 grad 0.6075 ce_o 2.8868 kl_other 0.1162 p_o 0.1924
+[02:33:34] [gain] step 40: loss 3.1854 grad 0.8703 ce_o 2.9936 kl_other 0.1918 p_o 0.2806
+[02:33:34] [gain] step 50: loss 2.7293 grad 0.6390 ce_o 2.4957 kl_other 0.2337 p_o 0.3299
+[02:33:35] [gain] step 60: loss 1.6799 grad 0.5346 ce_o 1.4529 kl_other 0.2269 p_o 0.4168
+[02:33:35] [gain] step 70: loss 1.8819 grad 0.6573 ce_o 1.6418 kl_other 0.2402 p_o 0.4164
+[02:33:35] [gain] step 80: loss 1.7647 grad 0.7133 ce_o 1.5309 kl_other 0.2338 p_o 0.3907
+[02:33:36] [gain] step 90: loss 1.4975 grad 0.4352 ce_o 1.2488 kl_other 0.2487 p_o 0.5105
+[02:33:37]   ia3 rank1 s2 step 100: held-out P(target) 0.4594
+[02:33:37] [gain] step 100: loss 1.1581 grad 0.5893 ce_o 0.9294 kl_other 0.2287 p_o 0.5040
+[02:33:37] [gain] step 110: loss 1.2755 grad 0.5048 ce_o 1.0153 kl_other 0.2602 p_o 0.4843
+[02:33:37] [gain] step 120: loss 1.4849 grad 0.6763 ce_o 1.2281 kl_other 0.2568 p_o 0.5542
+[02:33:38] [gain] step 130: loss 1.2453 grad 0.5758 ce_o 1.0148 kl_other 0.2304 p_o 0.5926
+[02:33:38] [gain] step 140: loss 0.8548 grad 0.4130 ce_o 0.6084 kl_other 0.2464 p_o 0.6008
+[02:33:39] [gain] step 150: loss 0.9011 grad 0.4520 ce_o 0.6365 kl_other 0.2647 p_o 0.6647
+[02:33:39] [gain] step 160: loss 0.7031 grad 0.2986 ce_o 0.4444 kl_other 0.2587 p_o 0.6893
+[02:33:40] [gain] step 170: loss 0.8537 grad 0.3685 ce_o 0.5858 kl_other 0.2679 p_o 0.6429
+[02:33:40] [gain] step 180: loss 0.7169 grad 0.3158 ce_o 0.4818 kl_other 0.2351 p_o 0.7439
+[02:33:41] [gain] step 190: loss 0.6442 grad 0.3147 ce_o 0.4142 kl_other 0.2300 p_o 0.7227
+[02:33:41] [gain] step 200: loss 0.7305 grad 0.3737 ce_o 0.4902 kl_other 0.2404 p_o 0.7618
+[02:33:42] [gain] step 210: loss 0.6431 grad 0.3970 ce_o 0.3761 kl_other 0.2669 p_o 0.7537
+[02:33:42] [gain] step 220: loss 0.6613 grad 0.2858 ce_o 0.4063 kl_other 0.2550 p_o 0.7332
+[02:33:42] [gain] step 230: loss 0.4737 grad 0.2873 ce_o 0.2416 kl_other 0.2321 p_o 0.8030
+[02:33:43] [gain] step 240: loss 0.4971 grad 0.3677 ce_o 0.2433 kl_other 0.2538 p_o 0.8189
+[02:33:43] [gain] step 250: loss 0.4752 grad 0.3142 ce_o 0.2515 kl_other 0.2237 p_o 0.8059
+[02:33:44] [gain] step 260: loss 0.4494 grad 0.2770 ce_o 0.2233 kl_other 0.2260 p_o 0.8442
+[02:33:44] [gain] step 270: loss 0.3778 grad 0.1938 ce_o 0.1492 kl_other 0.2286 p_o 0.8721
+[02:33:44] [gain] step 280: loss 0.4376 grad 0.2138 ce_o 0.2110 kl_other 0.2266 p_o 0.8368
+[02:33:45] [gain] step 290: loss 0.4013 grad 0.1862 ce_o 0.1856 kl_other 0.2157 p_o 0.8434
+[02:33:45]   ia3 rank1 s2 step 300: held-out P(target) 0.8048
+[02:33:45] [gain] step 300: loss 0.3800 grad 0.1816 ce_o 0.1514 kl_other 0.2286 p_o 0.8733
+[02:33:45] TRAINED ia3 rank1 s2: read step 300 (learned True), P(target) 0.8048 (M 0.0858); gains 0.3935-1.5628; 14 s
+[02:33:46] [gain] step 1: loss 7.5479 grad 1.0039 ce_o 7.5479 kl_other 0.0000 p_o 0.0167
+[02:33:46]   ffn elicit s0 step 10: held-out P(target) 0.0290
+[02:33:46] [gain] step 10: loss 6.2946 grad 1.2855 ce_o 6.2851 kl_other 0.0096 p_o 0.0283
+[02:33:47] [gain] step 20: loss 5.7519 grad 1.0073 ce_o 5.7113 kl_other 0.0406 p_o 0.0263
+[02:33:47]   ffn elicit s0 step 30: held-out P(target) 0.0575
+[02:33:47] [gain] step 30: loss 5.0148 grad 0.7203 ce_o 4.9361 kl_other 0.0787 p_o 0.0367
+[02:33:47] [gain] step 40: loss 4.6850 grad 0.9010 ce_o 4.5478 kl_other 0.1373 p_o 0.0709
+[02:33:48] [gain] step 50: loss 4.5027 grad 0.6511 ce_o 4.3179 kl_other 0.1848 p_o 0.0910
+[02:33:48] [gain] step 60: loss 3.3487 grad 0.5633 ce_o 3.1127 kl_other 0.2360 p_o 0.1961
+[02:33:48] [gain] step 70: loss 3.7961 grad 0.7034 ce_o 3.5326 kl_other 0.2635 p_o 0.0901
+[02:33:49] [gain] step 80: loss 3.1607 grad 0.6234 ce_o 2.8924 kl_other 0.2683 p_o 0.1932
+[02:33:49] [gain] step 90: loss 3.0021 grad 0.6409 ce_o 2.6783 kl_other 0.3238 p_o 0.2404
+[02:33:50]   ffn elicit s0 step 100: held-out P(target) 0.2159
+[02:33:50] [gain] step 100: loss 2.4067 grad 0.5365 ce_o 2.1091 kl_other 0.2976 p_o 0.2730
+[02:33:50] [gain] step 110: loss 1.9632 grad 0.6182 ce_o 1.6600 kl_other 0.3033 p_o 0.3501
+[02:33:50] [gain] step 120: loss 2.0974 grad 0.6047 ce_o 1.8051 kl_other 0.2923 p_o 0.3803
+[02:33:51] [gain] step 130: loss 3.1168 grad 0.5527 ce_o 2.8084 kl_other 0.3084 p_o 0.2843
+[02:33:51] [gain] step 140: loss 2.3999 grad 0.5388 ce_o 2.1016 kl_other 0.2983 p_o 0.2997
+[02:33:52] [gain] step 150: loss 2.0159 grad 0.5810 ce_o 1.6818 kl_other 0.3341 p_o 0.3681
+[02:33:52] [gain] step 160: loss 1.9744 grad 0.4855 ce_o 1.6563 kl_other 0.3180 p_o 0.4627
+[02:33:52] [gain] step 170: loss 2.6078 grad 0.5105 ce_o 2.2672 kl_other 0.3406 p_o 0.3316
+[02:33:53] [gain] step 180: loss 1.8229 grad 0.4393 ce_o 1.4956 kl_other 0.3273 p_o 0.4592
+[02:33:53] [gain] step 190: loss 1.2617 grad 0.3476 ce_o 0.9390 kl_other 0.3227 p_o 0.5345
+[02:33:53] [gain] step 200: loss 1.3773 grad 0.4785 ce_o 1.0174 kl_other 0.3600 p_o 0.4899
+[02:33:54] [gain] step 210: loss 1.3321 grad 0.4300 ce_o 1.0142 kl_other 0.3180 p_o 0.5439
+[02:33:54] [gain] step 220: loss 1.1841 grad 0.3531 ce_o 0.8461 kl_other 0.3380 p_o 0.6057
+[02:33:54] [gain] step 230: loss 0.8773 grad 0.3081 ce_o 0.5219 kl_other 0.3554 p_o 0.6706
+[02:33:55] [gain] step 240: loss 1.1411 grad 0.3992 ce_o 0.7959 kl_other 0.3453 p_o 0.5805
+[02:33:55] [gain] step 250: loss 1.3835 grad 0.3625 ce_o 1.0421 kl_other 0.3413 p_o 0.5601
+[02:33:56] [gain] step 260: loss 0.8567 grad 0.3017 ce_o 0.5275 kl_other 0.3292 p_o 0.6721
+[02:33:56] [gain] step 270: loss 1.3895 grad 0.4486 ce_o 1.0422 kl_other 0.3474 p_o 0.5656
+[02:33:56] [gain] step 280: loss 1.1410 grad 0.3613 ce_o 0.7994 kl_other 0.3416 p_o 0.5925
+[02:33:57] [gain] step 290: loss 0.7851 grad 0.3390 ce_o 0.4331 kl_other 0.3520 p_o 0.7050
+[02:33:57]   ffn elicit s0 step 300: held-out P(target) 0.5739
+[02:33:57] [gain] step 300: loss 1.0061 grad 0.3785 ce_o 0.6449 kl_other 0.3612 p_o 0.6010
+[02:33:57] TRAINED ffn elicit s0: read step 300 (learned True), P(target) 0.5739 (M 0.0204); gains 0.3039-1.6064; 11 s
+[02:33:57] [gain] step 1: loss 7.5479 grad 1.3405 ce_o 7.5479 kl_other 0.0000 p_o 0.0167
+[02:33:58]   ia3 elicit s0 step 10: held-out P(target) 0.0326
+[02:33:58] [gain] step 10: loss 5.9106 grad 1.6937 ce_o 5.8936 kl_other 0.0170 p_o 0.0335
+[02:33:58] [gain] step 20: loss 5.3482 grad 1.3276 ce_o 5.2716 kl_other 0.0766 p_o 0.0350
+[02:33:58]   ia3 elicit s0 step 30: held-out P(target) 0.0793
+[02:33:58] [gain] step 30: loss 4.6432 grad 0.8003 ce_o 4.4872 kl_other 0.1561 p_o 0.0488
+[02:33:59] [gain] step 40: loss 4.1157 grad 0.8441 ce_o 3.8587 kl_other 0.2570 p_o 0.1039
+[02:33:59] [gain] step 50: loss 3.9972 grad 0.7708 ce_o 3.7328 kl_other 0.2643 p_o 0.1302
+[02:34:00] [gain] step 60: loss 2.8552 grad 0.6465 ce_o 2.5531 kl_other 0.3021 p_o 0.2956
+[02:34:00] [gain] step 70: loss 3.0021 grad 0.8409 ce_o 2.7086 kl_other 0.2935 p_o 0.1525
+[02:34:00] [gain] step 80: loss 2.3482 grad 0.7015 ce_o 2.0576 kl_other 0.2907 p_o 0.3103
+[02:34:01] [gain] step 90: loss 2.3070 grad 0.9962 ce_o 1.9680 kl_other 0.3390 p_o 0.3550
+[02:34:01]   ia3 elicit s0 step 100: held-out P(target) 0.3179
+[02:34:01] [gain] step 100: loss 1.7957 grad 0.6217 ce_o 1.4813 kl_other 0.3144 p_o 0.4069
+[02:34:02] [gain] step 110: loss 1.4498 grad 0.7867 ce_o 1.1225 kl_other 0.3273 p_o 0.5022
+[02:34:02] [gain] step 120: loss 1.4385 grad 0.6042 ce_o 1.1300 kl_other 0.3086 p_o 0.5430
+[02:34:03] [gain] step 130: loss 2.0795 grad 0.6141 ce_o 1.7645 kl_other 0.3150 p_o 0.4354
+[02:34:03] [gain] step 140: loss 1.6220 grad 0.5475 ce_o 1.3044 kl_other 0.3176 p_o 0.4525
+[02:34:04] [gain] step 150: loss 1.1780 grad 0.6107 ce_o 0.8218 kl_other 0.3561 p_o 0.5483
+[02:34:04] [gain] step 160: loss 1.1995 grad 0.6059 ce_o 0.8827 kl_other 0.3168 p_o 0.6031
+[02:34:04] [gain] step 170: loss 1.3793 grad 0.6138 ce_o 1.0392 kl_other 0.3401 p_o 0.5272
+[02:34:05] [gain] step 180: loss 1.0684 grad 0.4706 ce_o 0.7364 kl_other 0.3320 p_o 0.6285
+[02:34:05] [gain] step 190: loss 0.7186 grad 0.3670 ce_o 0.4042 kl_other 0.3144 p_o 0.7182
+[02:34:06] [gain] step 200: loss 0.7945 grad 0.3528 ce_o 0.4495 kl_other 0.3450 p_o 0.6989
+[02:34:06] [gain] step 210: loss 0.6132 grad 0.2833 ce_o 0.3077 kl_other 0.3055 p_o 0.7537
+[02:34:07] [gain] step 220: loss 0.6852 grad 0.3065 ce_o 0.3630 kl_other 0.3222 p_o 0.7601
+[02:34:07] [gain] step 230: loss 0.5534 grad 0.2553 ce_o 0.2267 kl_other 0.3267 p_o 0.8146
+[02:34:08] [gain] step 240: loss 0.6358 grad 0.2907 ce_o 0.3098 kl_other 0.3260 p_o 0.7653
+[02:34:08] [gain] step 250: loss 0.6938 grad 0.3307 ce_o 0.3793 kl_other 0.3145 p_o 0.7514
+[02:34:08] [gain] step 260: loss 0.4963 grad 0.2367 ce_o 0.2112 kl_other 0.2851 p_o 0.8283
+[02:34:09] [gain] step 270: loss 0.5579 grad 0.3221 ce_o 0.2674 kl_other 0.2905 p_o 0.7845
+[02:34:09] [gain] step 280: loss 0.5507 grad 0.2419 ce_o 0.2650 kl_other 0.2858 p_o 0.7890
+[02:34:10] [gain] step 290: loss 0.4711 grad 0.2305 ce_o 0.1721 kl_other 0.2990 p_o 0.8523
+[02:34:10]   ia3 elicit s0 step 300: held-out P(target) 0.7539
+[02:34:10] [gain] step 300: loss 0.5152 grad 0.2461 ce_o 0.2108 kl_other 0.3044 p_o 0.8228
+[02:34:10] TRAINED ia3 elicit s0: read step 300 (learned True), P(target) 0.7539 (M 0.0204); gains 0.3758-1.5591; 13 s
+[02:34:11] [gain] step 1: loss 6.8977 grad 1.1046 ce_o 6.8977 kl_other 0.0000 p_o 0.0112
+[02:34:11]   ffn elicit s1 step 10: held-out P(target) 0.0282
+[02:34:11] [gain] step 10: loss 6.6229 grad 1.1681 ce_o 6.6132 kl_other 0.0097 p_o 0.0131
+[02:34:11] [gain] step 20: loss 5.3203 grad 0.8836 ce_o 5.2821 kl_other 0.0383 p_o 0.0252
+[02:34:12]   ffn elicit s1 step 30: held-out P(target) 0.0564
+[02:34:12] [gain] step 30: loss 5.0118 grad 0.6809 ce_o 4.9255 kl_other 0.0862 p_o 0.0471
+[02:34:12] [gain] step 40: loss 4.6872 grad 0.5679 ce_o 4.5372 kl_other 0.1500 p_o 0.1090
+[02:34:12] [gain] step 50: loss 3.6219 grad 0.5679 ce_o 3.4219 kl_other 0.2000 p_o 0.1278
+[02:34:13] [gain] step 60: loss 3.2941 grad 0.6718 ce_o 3.0350 kl_other 0.2591 p_o 0.1848
+[02:34:13] [gain] step 70: loss 3.7857 grad 0.6683 ce_o 3.5093 kl_other 0.2765 p_o 0.1391
+[02:34:13] [gain] step 80: loss 3.8449 grad 0.5261 ce_o 3.5883 kl_other 0.2566 p_o 0.1802
+[02:34:14] [gain] step 90: loss 3.0681 grad 0.5501 ce_o 2.7911 kl_other 0.2770 p_o 0.2053
+[02:34:14]   ffn elicit s1 step 100: held-out P(target) 0.2130
+[02:34:14] [gain] step 100: loss 2.5763 grad 0.6096 ce_o 2.3221 kl_other 0.2543 p_o 0.2825
+[02:34:15] [gain] step 110: loss 2.6788 grad 0.5620 ce_o 2.3650 kl_other 0.3137 p_o 0.3213
+[02:34:15] [gain] step 120: loss 1.9395 grad 0.5586 ce_o 1.6173 kl_other 0.3222 p_o 0.3502
+[02:34:15] [gain] step 130: loss 2.7177 grad 0.5145 ce_o 2.4301 kl_other 0.2876 p_o 0.3818
+[02:34:16] [gain] step 140: loss 2.2573 grad 0.4912 ce_o 1.9236 kl_other 0.3337 p_o 0.3381
+[02:34:16] [gain] step 150: loss 2.5282 grad 0.5591 ce_o 2.2294 kl_other 0.2988 p_o 0.3238
+[02:34:16] [gain] step 160: loss 2.5232 grad 0.5343 ce_o 2.2057 kl_other 0.3175 p_o 0.3731
+[02:34:17] [gain] step 170: loss 1.9743 grad 0.4563 ce_o 1.6825 kl_other 0.2918 p_o 0.4403
+[02:34:17] [gain] step 180: loss 1.7002 grad 0.4352 ce_o 1.3584 kl_other 0.3418 p_o 0.5077
+[02:34:17] [gain] step 190: loss 3.1075 grad 0.6116 ce_o 2.7951 kl_other 0.3124 p_o 0.2987
+[02:34:18] [gain] step 200: loss 1.2593 grad 0.3592 ce_o 0.9181 kl_other 0.3412 p_o 0.5335
+[02:34:18] [gain] step 210: loss 1.1426 grad 0.3684 ce_o 0.8233 kl_other 0.3194 p_o 0.5513
+[02:34:18] [gain] step 220: loss 1.4519 grad 0.4130 ce_o 1.0862 kl_other 0.3656 p_o 0.5903
+[02:34:19] [gain] step 230: loss 1.1836 grad 0.4824 ce_o 0.8635 kl_other 0.3201 p_o 0.6098
+[02:34:19] [gain] step 240: loss 1.6568 grad 0.4403 ce_o 1.3298 kl_other 0.3270 p_o 0.5440
+[02:34:19] [gain] step 250: loss 1.2303 grad 0.3920 ce_o 0.9100 kl_other 0.3203 p_o 0.5887
+[02:34:20] [gain] step 260: loss 1.0455 grad 0.3260 ce_o 0.7036 kl_other 0.3418 p_o 0.6789
+[02:34:20] [gain] step 270: loss 0.7852 grad 0.3112 ce_o 0.4566 kl_other 0.3287 p_o 0.7175
+[02:34:20] [gain] step 280: loss 0.8870 grad 0.2717 ce_o 0.5655 kl_other 0.3215 p_o 0.6660
+[02:34:21] [gain] step 290: loss 0.9285 grad 0.3330 ce_o 0.6037 kl_other 0.3247 p_o 0.6371
+[02:34:21]   ffn elicit s1 step 300: held-out P(target) 0.5873
+[02:34:21] [gain] step 300: loss 0.8458 grad 0.2405 ce_o 0.4874 kl_other 0.3584 p_o 0.6758
+[02:34:21] TRAINED ffn elicit s1: read step 300 (learned True), P(target) 0.5873 (M 0.0204); gains 0.2907-1.6253; 11 s
+[02:34:21] [gain] step 1: loss 6.8977 grad 1.4735 ce_o 6.8977 kl_other 0.0000 p_o 0.0112
+[02:34:22]   ia3 elicit s1 step 10: held-out P(target) 0.0318
+[02:34:22] [gain] step 10: loss 6.2847 grad 1.5706 ce_o 6.2660 kl_other 0.0186 p_o 0.0150
+[02:34:22] [gain] step 20: loss 4.8910 grad 0.9102 ce_o 4.8145 kl_other 0.0765 p_o 0.0360
+[02:34:23]   ia3 elicit s1 step 30: held-out P(target) 0.0792
+[02:34:23] [gain] step 30: loss 4.5244 grad 0.8120 ce_o 4.3467 kl_other 0.1777 p_o 0.0623
+[02:34:23] [gain] step 40: loss 4.1851 grad 0.8133 ce_o 3.9143 kl_other 0.2708 p_o 0.1609
+[02:34:23] [gain] step 50: loss 3.2219 grad 0.9065 ce_o 2.9305 kl_other 0.2914 p_o 0.1912
+[02:34:24] [gain] step 60: loss 2.6573 grad 0.8989 ce_o 2.3441 kl_other 0.3133 p_o 0.2798
+[02:34:24] [gain] step 70: loss 3.0439 grad 0.7665 ce_o 2.7617 kl_other 0.2822 p_o 0.2326
+[02:34:25] [gain] step 80: loss 3.2119 grad 0.7353 ce_o 2.9455 kl_other 0.2664 p_o 0.2764
+[02:34:25] [gain] step 90: loss 2.3829 grad 0.6452 ce_o 2.0774 kl_other 0.3054 p_o 0.3027
+[02:34:26]   ia3 elicit s1 step 100: held-out P(target) 0.3197
+[02:34:26] [gain] step 100: loss 1.7828 grad 0.6966 ce_o 1.5046 kl_other 0.2782 p_o 0.4513
+[02:34:26] [gain] step 110: loss 1.9302 grad 0.6303 ce_o 1.6011 kl_other 0.3291 p_o 0.4490
+[02:34:27] [gain] step 120: loss 1.2677 grad 0.5853 ce_o 0.9273 kl_other 0.3404 p_o 0.5200
+[02:34:27] [gain] step 130: loss 1.8439 grad 0.6319 ce_o 1.5462 kl_other 0.2977 p_o 0.4778
+[02:34:28] [gain] step 140: loss 1.4787 grad 0.5179 ce_o 1.1320 kl_other 0.3468 p_o 0.5303
+[02:34:28] [gain] step 150: loss 1.4254 grad 0.6906 ce_o 1.0932 kl_other 0.3322 p_o 0.5156
+[02:34:29] [gain] step 160: loss 1.5459 grad 0.7353 ce_o 1.2190 kl_other 0.3269 p_o 0.5448
+[02:34:29] [gain] step 170: loss 1.2710 grad 0.4767 ce_o 0.9618 kl_other 0.3092 p_o 0.6077
+[02:34:30] [gain] step 180: loss 0.9534 grad 0.3639 ce_o 0.6256 kl_other 0.3278 p_o 0.6617
+[02:34:30] [gain] step 190: loss 1.7473 grad 0.7434 ce_o 1.4317 kl_other 0.3156 p_o 0.4823
+[02:34:31] [gain] step 200: loss 0.7551 grad 0.3940 ce_o 0.4157 kl_other 0.3394 p_o 0.7210
+[02:34:31] [gain] step 210: loss 0.6667 grad 0.3206 ce_o 0.3467 kl_other 0.3200 p_o 0.7607
+[02:34:32] [gain] step 220: loss 0.7434 grad 0.4638 ce_o 0.3999 kl_other 0.3436 p_o 0.7697
+[02:34:32] [gain] step 230: loss 0.6318 grad 0.3800 ce_o 0.3339 kl_other 0.2979 p_o 0.7932
+[02:34:33] [gain] step 240: loss 0.8829 grad 0.5315 ce_o 0.5806 kl_other 0.3023 p_o 0.6808
+[02:34:33] [gain] step 250: loss 0.6102 grad 0.4155 ce_o 0.3310 kl_other 0.2793 p_o 0.7661
+[02:34:33] [gain] step 260: loss 0.5414 grad 0.2665 ce_o 0.2402 kl_other 0.3012 p_o 0.8141
+[02:34:34] [gain] step 270: loss 0.4669 grad 0.2156 ce_o 0.1820 kl_other 0.2849 p_o 0.8471
+[02:34:34] [gain] step 280: loss 0.4935 grad 0.2122 ce_o 0.2094 kl_other 0.2841 p_o 0.8367
+[02:34:35] [gain] step 290: loss 0.5144 grad 0.2046 ce_o 0.2265 kl_other 0.2879 p_o 0.8153
+[02:34:35]   ia3 elicit s1 step 300: held-out P(target) 0.7630
+[02:34:35] [gain] step 300: loss 0.5012 grad 0.1967 ce_o 0.2157 kl_other 0.2856 p_o 0.8319
+[02:34:35] TRAINED ia3 elicit s1: read step 300 (learned True), P(target) 0.7630 (M 0.0204); gains 0.3723-1.5535; 14 s
+[02:34:36] [gain] step 1: loss 6.0959 grad 1.0292 ce_o 6.0959 kl_other 0.0000 p_o 0.0235
+[02:34:36]   ffn elicit s2 step 10: held-out P(target) 0.0302
+[02:34:36] [gain] step 10: loss 5.2722 grad 1.0274 ce_o 5.2636 kl_other 0.0087 p_o 0.0296
+[02:34:36] [gain] step 20: loss 5.4470 grad 1.1136 ce_o 5.4072 kl_other 0.0398 p_o 0.0624
+[02:34:37]   ffn elicit s2 step 30: held-out P(target) 0.0600
+[02:34:37] [gain] step 30: loss 4.7284 grad 0.7609 ce_o 4.6489 kl_other 0.0795 p_o 0.0743
+[02:34:37] [gain] step 40: loss 4.9199 grad 0.7062 ce_o 4.7698 kl_other 0.1501 p_o 0.0469
+[02:34:38] [gain] step 50: loss 4.4052 grad 0.6210 ce_o 4.2041 kl_other 0.2011 p_o 0.0904
+[02:34:38] [gain] step 60: loss 3.9353 grad 0.5980 ce_o 3.6952 kl_other 0.2401 p_o 0.1713
+[02:34:38] [gain] step 70: loss 3.8593 grad 0.6232 ce_o 3.6020 kl_other 0.2573 p_o 0.1583
+[02:34:39] [gain] step 80: loss 3.4566 grad 0.5828 ce_o 3.1716 kl_other 0.2851 p_o 0.2220
+[02:34:39] [gain] step 90: loss 3.1343 grad 0.5924 ce_o 2.8388 kl_other 0.2955 p_o 0.1799
+[02:34:39]   ffn elicit s2 step 100: held-out P(target) 0.2095
+[02:34:39] [gain] step 100: loss 2.6319 grad 0.5562 ce_o 2.3391 kl_other 0.2927 p_o 0.2694
+[02:34:40] [gain] step 110: loss 2.0547 grad 0.5105 ce_o 1.7351 kl_other 0.3196 p_o 0.3072
+[02:34:40] [gain] step 120: loss 3.3244 grad 0.6887 ce_o 3.0337 kl_other 0.2907 p_o 0.2481
+[02:34:40] [gain] step 130: loss 2.0582 grad 0.4825 ce_o 1.7777 kl_other 0.2805 p_o 0.3499
+[02:34:41] [gain] step 140: loss 2.0302 grad 0.4004 ce_o 1.7263 kl_other 0.3039 p_o 0.3571
+[02:34:41] [gain] step 150: loss 2.4464 grad 0.4649 ce_o 2.1240 kl_other 0.3224 p_o 0.3938
+[02:34:41] [gain] step 160: loss 1.9969 grad 0.4333 ce_o 1.7063 kl_other 0.2906 p_o 0.3955
+[02:34:42] [gain] step 170: loss 1.6829 grad 0.4465 ce_o 1.3640 kl_other 0.3188 p_o 0.4954
+[02:34:42] [gain] step 180: loss 1.6388 grad 0.4287 ce_o 1.3307 kl_other 0.3081 p_o 0.4265
+[02:34:42] [gain] step 190: loss 1.3257 grad 0.3935 ce_o 1.0083 kl_other 0.3173 p_o 0.4899
+[02:34:43] [gain] step 200: loss 2.1095 grad 0.4585 ce_o 1.7894 kl_other 0.3201 p_o 0.4101
+[02:34:43] [gain] step 210: loss 1.6425 grad 0.5123 ce_o 1.3154 kl_other 0.3271 p_o 0.4420
+[02:34:43] [gain] step 220: loss 1.4835 grad 0.4307 ce_o 1.1302 kl_other 0.3533 p_o 0.5107
+[02:34:44] [gain] step 230: loss 1.6895 grad 0.3992 ce_o 1.3578 kl_other 0.3317 p_o 0.5173
+[02:34:44] [gain] step 240: loss 1.3089 grad 0.4000 ce_o 0.9516 kl_other 0.3573 p_o 0.5390
+[02:34:44] [gain] step 250: loss 1.2462 grad 0.4419 ce_o 0.9224 kl_other 0.3238 p_o 0.6305
+[02:34:45] [gain] step 260: loss 0.9749 grad 0.3059 ce_o 0.6437 kl_other 0.3312 p_o 0.6091
+[02:34:45] [gain] step 270: loss 1.0012 grad 0.3669 ce_o 0.6648 kl_other 0.3364 p_o 0.5956
+[02:34:46] [gain] step 280: loss 0.9367 grad 0.3128 ce_o 0.5926 kl_other 0.3441 p_o 0.6372
+[02:34:46] [gain] step 290: loss 1.1226 grad 0.3514 ce_o 0.7892 kl_other 0.3335 p_o 0.6196
+[02:34:46]   ffn elicit s2 step 300: held-out P(target) 0.5764
+[02:34:46] [gain] step 300: loss 0.9418 grad 0.3128 ce_o 0.5847 kl_other 0.3571 p_o 0.6746
+[02:34:46] TRAINED ffn elicit s2: read step 300 (learned True), P(target) 0.5764 (M 0.0204); gains 0.2846-1.6313; 11 s
+[02:34:46] [gain] step 1: loss 6.0959 grad 1.3808 ce_o 6.0959 kl_other 0.0000 p_o 0.0235
+[02:34:47]   ia3 elicit s2 step 10: held-out P(target) 0.0345
+[02:34:47] [gain] step 10: loss 4.9886 grad 1.2303 ce_o 4.9724 kl_other 0.0162 p_o 0.0368
+[02:34:47] [gain] step 20: loss 4.9462 grad 1.1562 ce_o 4.8733 kl_other 0.0729 p_o 0.0772
+[02:34:48]   ia3 elicit s2 step 30: held-out P(target) 0.0833
+[02:34:48] [gain] step 30: loss 4.3773 grad 0.7988 ce_o 4.2282 kl_other 0.1492 p_o 0.1003
+[02:34:48] [gain] step 40: loss 4.4695 grad 1.2021 ce_o 4.2050 kl_other 0.2646 p_o 0.0708
+[02:34:49] [gain] step 50: loss 3.9945 grad 0.9678 ce_o 3.7103 kl_other 0.2842 p_o 0.1301
+[02:34:49] [gain] step 60: loss 3.4423 grad 0.9003 ce_o 3.1542 kl_other 0.2881 p_o 0.2312
+[02:34:50] [gain] step 70: loss 3.2169 grad 0.7001 ce_o 2.9347 kl_other 0.2822 p_o 0.2574
+[02:34:50] [gain] step 80: loss 2.7949 grad 0.6462 ce_o 2.4852 kl_other 0.3096 p_o 0.3173
+[02:34:50] [gain] step 90: loss 2.3516 grad 0.6868 ce_o 2.0347 kl_other 0.3169 p_o 0.3097
+[02:34:51]   ia3 elicit s2 step 100: held-out P(target) 0.3149
+[02:34:51] [gain] step 100: loss 1.9814 grad 0.6907 ce_o 1.6642 kl_other 0.3172 p_o 0.4044
+[02:34:51] [gain] step 110: loss 1.4358 grad 0.5327 ce_o 1.1105 kl_other 0.3253 p_o 0.4582
+[02:34:52] [gain] step 120: loss 2.4364 grad 0.8323 ce_o 2.1331 kl_other 0.3032 p_o 0.3865
+[02:34:52] [gain] step 130: loss 1.4380 grad 0.5519 ce_o 1.1499 kl_other 0.2882 p_o 0.4911
+[02:34:53] [gain] step 140: loss 1.2682 grad 0.5286 ce_o 0.9566 kl_other 0.3115 p_o 0.5237
+[02:34:53] [gain] step 150: loss 1.6218 grad 0.5214 ce_o 1.2986 kl_other 0.3232 p_o 0.5407
+[02:34:54] [gain] step 160: loss 1.2722 grad 0.4614 ce_o 0.9606 kl_other 0.3117 p_o 0.5936
+[02:34:54] [gain] step 170: loss 0.9299 grad 0.3955 ce_o 0.5926 kl_other 0.3373 p_o 0.6409
+[02:34:55] [gain] step 180: loss 0.8896 grad 0.3651 ce_o 0.5633 kl_other 0.3262 p_o 0.6439
+[02:34:55] [gain] step 190: loss 0.6942 grad 0.2893 ce_o 0.3772 kl_other 0.3170 p_o 0.7180
+[02:34:56] [gain] step 200: loss 1.0723 grad 0.4895 ce_o 0.7753 kl_other 0.2970 p_o 0.5846
+[02:34:56] [gain] step 210: loss 0.8103 grad 0.3798 ce_o 0.4873 kl_other 0.3230 p_o 0.6796
+[02:34:57] [gain] step 220: loss 0.7525 grad 0.3319 ce_o 0.4185 kl_other 0.3340 p_o 0.7037
+[02:34:57] [gain] step 230: loss 0.8357 grad 0.4278 ce_o 0.5363 kl_other 0.2993 p_o 0.6853
+[02:34:58] [gain] step 240: loss 0.6110 grad 0.2764 ce_o 0.2934 kl_other 0.3176 p_o 0.7703
+[02:34:58] [gain] step 250: loss 0.6196 grad 0.3299 ce_o 0.3291 kl_other 0.2904 p_o 0.7883
+[02:34:58] [gain] step 260: loss 0.5552 grad 0.2136 ce_o 0.2697 kl_other 0.2855 p_o 0.7843
+[02:34:59] [gain] step 270: loss 0.5555 grad 0.2703 ce_o 0.2600 kl_other 0.2955 p_o 0.7837
+[02:34:59] [gain] step 280: loss 0.5514 grad 0.3273 ce_o 0.2516 kl_other 0.2998 p_o 0.8040
+[02:35:00] [gain] step 290: loss 0.5080 grad 0.2705 ce_o 0.2286 kl_other 0.2794 p_o 0.8136
+[02:35:00]   ia3 elicit s2 step 300: held-out P(target) 0.7494
+[02:35:00] [gain] step 300: loss 0.4833 grad 0.1876 ce_o 0.1899 kl_other 0.2934 p_o 0.8381
+[02:35:00] TRAINED ia3 elicit s2: read step 300 (learned True), P(target) 0.7494 (M 0.0204); gains 0.3590-1.5518; 14 s
+[02:35:01] [gain] step 1: loss 13.5208 grad 1.1740 ce_o 13.5208 kl_other 0.0000 p_o 0.0000
+[02:35:01]   ffn cipher s0 step 10: held-out P(target) 0.0000
+[02:35:01] [gain] step 10: loss 12.8146 grad 1.1534 ce_o 12.8000 kl_other 0.0146 p_o 0.0000
+[02:35:02] [gain] step 20: loss 11.4439 grad 0.9065 ce_o 11.3707 kl_other 0.0732 p_o 0.0001
+[02:35:02]   ffn cipher s0 step 30: held-out P(target) 0.0000
+[02:35:02] [gain] step 30: loss 10.9706 grad 0.7374 ce_o 10.8110 kl_other 0.1597 p_o 0.0001
+[02:35:02] [gain] step 40: loss 10.9394 grad 0.5318 ce_o 10.6658 kl_other 0.2736 p_o 0.0000
+[02:35:03] [gain] step 50: loss 11.0115 grad 0.4011 ce_o 10.5900 kl_other 0.4216 p_o 0.0001
+[02:35:03] [gain] step 60: loss 10.3970 grad 0.4299 ce_o 9.9704 kl_other 0.4266 p_o 0.0001
+[02:35:03] [gain] step 70: loss 10.3427 grad 0.3545 ce_o 9.9155 kl_other 0.4272 p_o 0.0001
+[02:35:04] [gain] step 80: loss 10.1213 grad 0.3076 ce_o 9.7502 kl_other 0.3711 p_o 0.0001
+[02:35:04] [gain] step 90: loss 9.8728 grad 0.4090 ce_o 9.5188 kl_other 0.3539 p_o 0.0001
+[02:35:05]   ffn cipher s0 step 100: held-out P(target) 0.0001
+[02:35:05] [gain] step 100: loss 9.9805 grad 0.3754 ce_o 9.6582 kl_other 0.3223 p_o 0.0001
+[02:35:05] [gain] step 110: loss 9.5353 grad 0.3770 ce_o 9.1933 kl_other 0.3420 p_o 0.0001
+[02:35:05] [gain] step 120: loss 9.8456 grad 0.3244 ce_o 9.5117 kl_other 0.3339 p_o 0.0001
+[02:35:06] [gain] step 130: loss 9.5643 grad 0.3460 ce_o 9.2203 kl_other 0.3440 p_o 0.0002
+[02:35:06] [gain] step 140: loss 9.7113 grad 0.3852 ce_o 9.4139 kl_other 0.2974 p_o 0.0002
+[02:35:06] [gain] step 150: loss 9.3767 grad 0.3265 ce_o 9.0502 kl_other 0.3265 p_o 0.0003
+[02:35:07] [gain] step 160: loss 9.7212 grad 0.4282 ce_o 9.4032 kl_other 0.3179 p_o 0.0002
+[02:35:07] [gain] step 170: loss 9.2497 grad 0.3732 ce_o 8.9387 kl_other 0.3110 p_o 0.0003
+[02:35:07] [gain] step 180: loss 9.1097 grad 0.4037 ce_o 8.8187 kl_other 0.2910 p_o 0.0003
+[02:35:08] [gain] step 190: loss 8.6596 grad 0.4263 ce_o 8.3536 kl_other 0.3061 p_o 0.0004
+[02:35:08] [gain] step 200: loss 9.2575 grad 0.3918 ce_o 8.9390 kl_other 0.3184 p_o 0.0003
+[02:35:08] [gain] step 210: loss 8.6467 grad 0.5388 ce_o 8.3403 kl_other 0.3064 p_o 0.0006
+[02:35:09] [gain] step 220: loss 8.6921 grad 0.4519 ce_o 8.3648 kl_other 0.3273 p_o 0.0007
+[02:35:09] [gain] step 230: loss 7.4755 grad 0.5464 ce_o 7.1313 kl_other 0.3441 p_o 0.0072
+[02:35:09] [gain] step 240: loss 8.4560 grad 0.5507 ce_o 8.0906 kl_other 0.3654 p_o 0.0096
+[02:35:10] [gain] step 250: loss 8.1297 grad 0.6096 ce_o 7.7322 kl_other 0.3975 p_o 0.0043
+[02:35:10] [gain] step 260: loss 7.7492 grad 0.6412 ce_o 7.3254 kl_other 0.4238 p_o 0.0300
+[02:35:10] [gain] step 270: loss 7.6983 grad 0.6477 ce_o 7.2552 kl_other 0.4431 p_o 0.0327
+[02:35:11] [gain] step 280: loss 7.0087 grad 0.7354 ce_o 6.5649 kl_other 0.4438 p_o 0.0196
+[02:35:11] [gain] step 290: loss 6.2775 grad 0.7175 ce_o 5.7835 kl_other 0.4940 p_o 0.0806
+[02:35:11]   ffn cipher s0 step 300: held-out P(target) 0.0191
+[02:35:11] [gain] step 300: loss 6.4380 grad 0.6422 ce_o 5.9355 kl_other 0.5025 p_o 0.0809
+[02:35:11] TRAINED ffn cipher s0: read step 300 (learned False), P(target) 0.0191 (M 0.0000); gains 0.1682-1.8838; 11 s
+[02:35:12] [gain] step 1: loss 13.5208 grad 1.5807 ce_o 13.5208 kl_other 0.0000 p_o 0.0000
+[02:35:12]   ia3 cipher s0 step 10: held-out P(target) 0.0000
+[02:35:12] [gain] step 10: loss 12.5560 grad 1.8114 ce_o 12.5263 kl_other 0.0297 p_o 0.0000
+[02:35:12] [gain] step 20: loss 11.0209 grad 1.7116 ce_o 10.8671 kl_other 0.1537 p_o 0.0001
+[02:35:13]   ia3 cipher s0 step 30: held-out P(target) 0.0001
+[02:35:13] [gain] step 30: loss 10.4827 grad 0.6668 ce_o 10.1393 kl_other 0.3434 p_o 0.0001
+[02:35:13] [gain] step 40: loss 10.4892 grad 0.5712 ce_o 9.9963 kl_other 0.4930 p_o 0.0001
+[02:35:14] [gain] step 50: loss 10.5692 grad 0.5526 ce_o 10.0882 kl_other 0.4810 p_o 0.0001
+[02:35:14] [gain] step 60: loss 9.9302 grad 0.5766 ce_o 9.5430 kl_other 0.3872 p_o 0.0001
+[02:35:15] [gain] step 70: loss 9.7211 grad 0.4594 ce_o 9.4210 kl_other 0.3001 p_o 0.0002
+[02:35:15] [gain] step 80: loss 9.5434 grad 0.4362 ce_o 9.2632 kl_other 0.2802 p_o 0.0002
+[02:35:15] [gain] step 90: loss 9.2345 grad 0.5352 ce_o 8.9134 kl_other 0.3211 p_o 0.0002
+[02:35:16]   ia3 cipher s0 step 100: held-out P(target) 0.0002
+[02:35:16] [gain] step 100: loss 9.2465 grad 0.6981 ce_o 8.9646 kl_other 0.2819 p_o 0.0002
+[02:35:16] [gain] step 110: loss 8.6562 grad 0.6007 ce_o 8.3461 kl_other 0.3102 p_o 0.0004
+[02:35:17] [gain] step 120: loss 8.9825 grad 0.7157 ce_o 8.6692 kl_other 0.3133 p_o 0.0004
+[02:35:17] [gain] step 130: loss 8.5881 grad 0.6636 ce_o 8.2354 kl_other 0.3527 p_o 0.0006
+[02:35:17] [gain] step 140: loss 8.6929 grad 0.8049 ce_o 8.3310 kl_other 0.3618 p_o 0.0008
+[02:35:18] [gain] step 150: loss 8.1222 grad 0.7679 ce_o 7.6949 kl_other 0.4273 p_o 0.0020
+[02:35:18] [gain] step 160: loss 8.1946 grad 0.8907 ce_o 7.7658 kl_other 0.4288 p_o 0.0033
+[02:35:18] [gain] step 170: loss 7.4870 grad 0.9222 ce_o 6.9931 kl_other 0.4939 p_o 0.0047
+[02:35:19] [gain] step 180: loss 6.9578 grad 1.2740 ce_o 6.4451 kl_other 0.5127 p_o 0.0136
+[02:35:19] [gain] step 190: loss 5.7274 grad 1.0370 ce_o 5.1776 kl_other 0.5499 p_o 0.0440
+[02:35:20] [gain] step 200: loss 7.1631 grad 1.0368 ce_o 6.5280 kl_other 0.6351 p_o 0.0150
+[02:35:20] [gain] step 210: loss 5.2435 grad 1.4946 ce_o 4.6577 kl_other 0.5858 p_o 0.1126
+[02:35:21] [gain] step 220: loss 5.5160 grad 1.1935 ce_o 4.9001 kl_other 0.6159 p_o 0.0494
+[02:35:21] [gain] step 230: loss 3.7823 grad 1.1756 ce_o 3.1285 kl_other 0.6539 p_o 0.1557
+[02:35:22] [gain] step 240: loss 4.9108 grad 1.1686 ce_o 4.2313 kl_other 0.6795 p_o 0.1317
+[02:35:22] [gain] step 250: loss 4.0898 grad 1.3107 ce_o 3.4076 kl_other 0.6822 p_o 0.1484
+[02:35:22] [gain] step 260: loss 4.0589 grad 1.2186 ce_o 3.3764 kl_other 0.6825 p_o 0.1726
+[02:35:23] [gain] step 270: loss 3.3542 grad 1.2507 ce_o 2.6402 kl_other 0.7140 p_o 0.2605
+[02:35:23] [gain] step 280: loss 2.6528 grad 1.1770 ce_o 1.9610 kl_other 0.6918 p_o 0.2830
+[02:35:24] [gain] step 290: loss 2.5164 grad 0.9221 ce_o 1.8172 kl_other 0.6992 p_o 0.4083
+[02:35:24]   ia3 cipher s0 step 300: held-out P(target) 0.2018
+[02:35:24] [gain] step 300: loss 2.5461 grad 0.9695 ce_o 1.7912 kl_other 0.7549 p_o 0.3756
+[02:35:24] TRAINED ia3 cipher s0: read step 300 (learned False), P(target) 0.2018 (M 0.0000); gains 0.1312-1.8173; 13 s
+[02:35:24] [gain] step 1: loss 14.4508 grad 1.7615 ce_o 14.4508 kl_other 0.0000 p_o 0.0000
+[02:35:25]   ffn cipher s1 step 10: held-out P(target) 0.0000
+[02:35:25] [gain] step 10: loss 12.9158 grad 1.2053 ce_o 12.9003 kl_other 0.0155 p_o 0.0000
+[02:35:25] [gain] step 20: loss 11.8470 grad 0.9532 ce_o 11.7779 kl_other 0.0691 p_o 0.0000
+[02:35:25]   ffn cipher s1 step 30: held-out P(target) 0.0000
+[02:35:25] [gain] step 30: loss 11.0397 grad 0.7345 ce_o 10.8820 kl_other 0.1577 p_o 0.0001
+[02:35:26] [gain] step 40: loss 10.5741 grad 0.4223 ce_o 10.2488 kl_other 0.3253 p_o 0.0001
+[02:35:26] [gain] step 50: loss 10.3370 grad 0.4824 ce_o 9.9739 kl_other 0.3630 p_o 0.0001
+[02:35:26] [gain] step 60: loss 10.7793 grad 0.3612 ce_o 10.3381 kl_other 0.4411 p_o 0.0000
+[02:35:27] [gain] step 70: loss 10.3639 grad 0.4038 ce_o 9.9636 kl_other 0.4003 p_o 0.0001
+[02:35:27] [gain] step 80: loss 10.2778 grad 0.4368 ce_o 9.8667 kl_other 0.4111 p_o 0.0001
+[02:35:28] [gain] step 90: loss 9.9710 grad 0.3538 ce_o 9.5647 kl_other 0.4063 p_o 0.0001
+[02:35:28]   ffn cipher s1 step 100: held-out P(target) 0.0001
+[02:35:28] [gain] step 100: loss 9.9319 grad 0.3267 ce_o 9.6103 kl_other 0.3216 p_o 0.0001
+[02:35:28] [gain] step 110: loss 9.9030 grad 0.4422 ce_o 9.5395 kl_other 0.3635 p_o 0.0001
+[02:35:29] [gain] step 120: loss 10.0857 grad 0.4873 ce_o 9.7323 kl_other 0.3534 p_o 0.0001
+[02:35:29] [gain] step 130: loss 9.5027 grad 0.4325 ce_o 9.2104 kl_other 0.2922 p_o 0.0002
+[02:35:29] [gain] step 140: loss 9.7422 grad 0.3521 ce_o 9.4094 kl_other 0.3328 p_o 0.0001
+[02:35:30] [gain] step 150: loss 9.5195 grad 0.4106 ce_o 9.2341 kl_other 0.2854 p_o 0.0002
+[02:35:30] [gain] step 160: loss 9.3647 grad 0.3559 ce_o 9.0805 kl_other 0.2842 p_o 0.0002
+[02:35:30] [gain] step 170: loss 9.2867 grad 0.4779 ce_o 8.9626 kl_other 0.3241 p_o 0.0002
+[02:35:31] [gain] step 180: loss 9.2951 grad 0.4184 ce_o 8.9846 kl_other 0.3105 p_o 0.0002
+[02:35:31] [gain] step 190: loss 9.3653 grad 0.4104 ce_o 9.0639 kl_other 0.3015 p_o 0.0004
+[02:35:31] [gain] step 200: loss 8.9006 grad 0.4159 ce_o 8.5742 kl_other 0.3263 p_o 0.0004
+[02:35:32] [gain] step 210: loss 8.4905 grad 0.5478 ce_o 8.1845 kl_other 0.3060 p_o 0.0030
+[02:35:32] [gain] step 220: loss 8.9346 grad 0.4958 ce_o 8.5923 kl_other 0.3423 p_o 0.0003
+[02:35:32] [gain] step 230: loss 8.4745 grad 0.5533 ce_o 8.1309 kl_other 0.3436 p_o 0.0011
+[02:35:33] [gain] step 240: loss 8.0614 grad 0.5114 ce_o 7.7096 kl_other 0.3518 p_o 0.0012
+[02:35:33] [gain] step 250: loss 7.8410 grad 0.5910 ce_o 7.4766 kl_other 0.3644 p_o 0.0045
+[02:35:33] [gain] step 260: loss 7.2421 grad 0.6566 ce_o 6.8559 kl_other 0.3862 p_o 0.0143
+[02:35:34] [gain] step 270: loss 6.8543 grad 1.0187 ce_o 6.4462 kl_other 0.4081 p_o 0.0339
+[02:35:34] [gain] step 280: loss 7.8664 grad 0.6765 ce_o 7.3996 kl_other 0.4669 p_o 0.0163
+[02:35:34] [gain] step 290: loss 6.9939 grad 0.6698 ce_o 6.5008 kl_other 0.4930 p_o 0.0448
+[02:35:35]   ffn cipher s1 step 300: held-out P(target) 0.0209
+[02:35:35] [gain] step 300: loss 6.7219 grad 0.5945 ce_o 6.1973 kl_other 0.5246 p_o 0.0357
+[02:35:35] TRAINED ffn cipher s1: read step 300 (learned False), P(target) 0.0209 (M 0.0000); gains 0.1794-1.8818; 11 s
+[02:35:35] [gain] step 1: loss 14.4508 grad 2.6820 ce_o 14.4508 kl_other 0.0000 p_o 0.0000
+[02:35:35]   ia3 cipher s1 step 10: held-out P(target) 0.0000
+[02:35:35] [gain] step 10: loss 12.6003 grad 2.3199 ce_o 12.5705 kl_other 0.0298 p_o 0.0000
+[02:35:35] [gain] step 20: loss 11.3332 grad 1.7007 ce_o 11.1909 kl_other 0.1423 p_o 0.0000
+[02:35:36]   ia3 cipher s1 step 30: held-out P(target) 0.0001
+[02:35:36] [gain] step 30: loss 10.5906 grad 0.6483 ce_o 10.2480 kl_other 0.3426 p_o 0.0001
+[02:35:36] [gain] step 40: loss 10.2917 grad 0.9391 ce_o 9.7166 kl_other 0.5751 p_o 0.0001
+[02:35:37] [gain] step 50: loss 9.8214 grad 0.5262 ce_o 9.4178 kl_other 0.4037 p_o 0.0001
+[02:35:37] [gain] step 60: loss 10.2738 grad 0.5046 ce_o 9.8993 kl_other 0.3745 p_o 0.0001
+[02:35:37] [gain] step 70: loss 9.7673 grad 0.5463 ce_o 9.4428 kl_other 0.3245 p_o 0.0001
+[02:35:37] [gain] step 80: loss 9.5442 grad 0.6806 ce_o 9.2205 kl_other 0.3238 p_o 0.0004
+[02:35:38] [gain] step 90: loss 9.1798 grad 0.5529 ce_o 8.8528 kl_other 0.3269 p_o 0.0003
+[02:35:38]   ia3 cipher s1 step 100: held-out P(target) 0.0003
+[02:35:38] [gain] step 100: loss 9.1482 grad 0.6427 ce_o 8.8785 kl_other 0.2697 p_o 0.0003
+[02:35:38] [gain] step 110: loss 9.1419 grad 0.7643 ce_o 8.8142 kl_other 0.3277 p_o 0.0004
+[02:35:39] [gain] step 120: loss 9.2259 grad 0.8311 ce_o 8.8808 kl_other 0.3451 p_o 0.0002
+[02:35:39] [gain] step 130: loss 8.3421 grad 0.6689 ce_o 8.0054 kl_other 0.3368 p_o 0.0187
+[02:35:40] [gain] step 140: loss 8.5531 grad 0.7218 ce_o 8.1575 kl_other 0.3957 p_o 0.0012
+[02:35:40] [gain] step 150: loss 8.0856 grad 1.0257 ce_o 7.7034 kl_other 0.3822 p_o 0.0034
+[02:35:41] [gain] step 160: loss 7.6515 grad 0.8605 ce_o 7.2195 kl_other 0.4320 p_o 0.0307
+[02:35:41] [gain] step 170: loss 7.4784 grad 0.8799 ce_o 6.9967 kl_other 0.4817 p_o 0.0108
+[02:35:41] [gain] step 180: loss 7.1410 grad 1.0198 ce_o 6.6476 kl_other 0.4934 p_o 0.0058
+[02:35:42] [gain] step 190: loss 7.3584 grad 1.0557 ce_o 6.8068 kl_other 0.5516 p_o 0.0095
+[02:35:42] [gain] step 200: loss 5.7801 grad 1.1093 ce_o 5.2037 kl_other 0.5763 p_o 0.0517
+[02:35:43] [gain] step 210: loss 5.3878 grad 1.0490 ce_o 4.8127 kl_other 0.5751 p_o 0.0890
+[02:35:43] [gain] step 220: loss 5.2529 grad 1.2370 ce_o 4.6241 kl_other 0.6288 p_o 0.0749
+[02:35:44] [gain] step 230: loss 5.2530 grad 1.1123 ce_o 4.6088 kl_other 0.6442 p_o 0.1043
+[02:35:44] [gain] step 240: loss 4.8334 grad 1.5510 ce_o 4.1743 kl_other 0.6591 p_o 0.0925
+[02:35:45] [gain] step 250: loss 4.3718 grad 1.2860 ce_o 3.7722 kl_other 0.5996 p_o 0.1452
+[02:35:45] [gain] step 260: loss 3.4069 grad 1.1308 ce_o 2.7588 kl_other 0.6481 p_o 0.2331
+[02:35:46] [gain] step 270: loss 3.2013 grad 1.4079 ce_o 2.5075 kl_other 0.6938 p_o 0.2475
+[02:35:46] [gain] step 280: loss 3.3883 grad 1.0773 ce_o 2.7057 kl_other 0.6826 p_o 0.2236
+[02:35:46] [gain] step 290: loss 3.7129 grad 1.0282 ce_o 3.0228 kl_other 0.6901 p_o 0.2283
+[02:35:47]   ia3 cipher s1 step 300: held-out P(target) 0.1997
+[02:35:47] [gain] step 300: loss 2.5803 grad 0.8409 ce_o 1.8494 kl_other 0.7309 p_o 0.3309
+[02:35:47] TRAINED ia3 cipher s1: read step 300 (learned False), P(target) 0.1997 (M 0.0000); gains 0.1368-1.8411; 12 s
+[02:35:47] [gain] step 1: loss 13.3168 grad 1.3194 ce_o 13.3168 kl_other 0.0000 p_o 0.0000
+[02:35:48]   ffn cipher s2 step 10: held-out P(target) 0.0000
+[02:35:48] [gain] step 10: loss 12.6611 grad 1.2574 ce_o 12.6456 kl_other 0.0155 p_o 0.0000
+[02:35:48] [gain] step 20: loss 11.6195 grad 0.7802 ce_o 11.5455 kl_other 0.0740 p_o 0.0000
+[02:35:48]   ffn cipher s2 step 30: held-out P(target) 0.0000
+[02:35:48] [gain] step 30: loss 11.1672 grad 0.7276 ce_o 10.9916 kl_other 0.1756 p_o 0.0001
+[02:35:49] [gain] step 40: loss 11.1363 grad 0.7327 ce_o 10.8706 kl_other 0.2657 p_o 0.0000
+[02:35:49] [gain] step 50: loss 10.4964 grad 0.3509 ce_o 10.0702 kl_other 0.4262 p_o 0.0001
+[02:35:49] [gain] step 60: loss 10.5568 grad 0.3561 ce_o 10.0966 kl_other 0.4603 p_o 0.0001
+[02:35:50] [gain] step 70: loss 10.3359 grad 0.4953 ce_o 9.9340 kl_other 0.4019 p_o 0.0001
+[02:35:50] [gain] step 80: loss 10.6929 grad 0.4155 ce_o 10.2814 kl_other 0.4115 p_o 0.0001
+[02:35:50] [gain] step 90: loss 9.8581 grad 0.3621 ce_o 9.4387 kl_other 0.4195 p_o 0.0001
+[02:35:51]   ffn cipher s2 step 100: held-out P(target) 0.0001
+[02:35:51] [gain] step 100: loss 10.0426 grad 0.4407 ce_o 9.6767 kl_other 0.3659 p_o 0.0001
+[02:35:51] [gain] step 110: loss 9.7525 grad 0.3757 ce_o 9.4054 kl_other 0.3472 p_o 0.0002
+[02:35:52] [gain] step 120: loss 9.3558 grad 0.4040 ce_o 9.0498 kl_other 0.3060 p_o 0.0002
+[02:35:52] [gain] step 130: loss 9.5393 grad 0.3443 ce_o 9.2548 kl_other 0.2845 p_o 0.0002
+[02:35:52] [gain] step 140: loss 9.4139 grad 0.3740 ce_o 9.1036 kl_other 0.3103 p_o 0.0002
+[02:35:53] [gain] step 150: loss 9.2966 grad 0.3308 ce_o 8.9817 kl_other 0.3149 p_o 0.0002
+[02:35:53] [gain] step 160: loss 9.1919 grad 0.3975 ce_o 8.8856 kl_other 0.3063 p_o 0.0004
+[02:35:53] [gain] step 170: loss 9.1915 grad 0.3880 ce_o 8.8792 kl_other 0.3123 p_o 0.0003
+[02:35:54] [gain] step 180: loss 8.9004 grad 0.4087 ce_o 8.6019 kl_other 0.2985 p_o 0.0004
+[02:35:54] [gain] step 190: loss 8.5385 grad 0.4294 ce_o 8.2486 kl_other 0.2900 p_o 0.0011
+[02:35:54] [gain] step 200: loss 8.6073 grad 0.4331 ce_o 8.3097 kl_other 0.2976 p_o 0.0012
+[02:35:55] [gain] step 210: loss 8.6236 grad 0.4570 ce_o 8.3013 kl_other 0.3223 p_o 0.0007
+[02:35:55] [gain] step 220: loss 8.7717 grad 0.4601 ce_o 8.4225 kl_other 0.3492 p_o 0.0006
+[02:35:55] [gain] step 230: loss 8.8457 grad 0.6571 ce_o 8.4869 kl_other 0.3587 p_o 0.0036
+[02:35:56] [gain] step 240: loss 8.1815 grad 0.5241 ce_o 7.7699 kl_other 0.4116 p_o 0.0042
+[02:35:56] [gain] step 250: loss 8.5299 grad 0.7709 ce_o 8.1638 kl_other 0.3661 p_o 0.0009
+[02:35:56] [gain] step 260: loss 7.7213 grad 0.6067 ce_o 7.3234 kl_other 0.3979 p_o 0.0044
+[02:35:57] [gain] step 270: loss 7.3976 grad 0.6704 ce_o 6.9556 kl_other 0.4420 p_o 0.0180
+[02:35:57] [gain] step 280: loss 7.2517 grad 0.6681 ce_o 6.7848 kl_other 0.4669 p_o 0.0337
+[02:35:57] [gain] step 290: loss 7.1242 grad 0.6966 ce_o 6.6596 kl_other 0.4646 p_o 0.0231
+[02:35:58]   ffn cipher s2 step 300: held-out P(target) 0.0180
+[02:35:58] [gain] step 300: loss 5.9624 grad 0.6590 ce_o 5.4558 kl_other 0.5066 p_o 0.0620
+[02:35:58] TRAINED ffn cipher s2: read step 300 (learned False), P(target) 0.0180 (M 0.0000); gains 0.1805-1.8046; 11 s
+[02:35:58] [gain] step 1: loss 13.3168 grad 1.7923 ce_o 13.3168 kl_other 0.0000 p_o 0.0000
+[02:35:58]   ia3 cipher s2 step 10: held-out P(target) 0.0000
+[02:35:58] [gain] step 10: loss 12.3804 grad 2.2535 ce_o 12.3496 kl_other 0.0309 p_o 0.0000
+[02:35:59] [gain] step 20: loss 11.1917 grad 1.2450 ce_o 11.0288 kl_other 0.1629 p_o 0.0000
+[02:35:59]   ia3 cipher s2 step 30: held-out P(target) 0.0001
+[02:35:59] [gain] step 30: loss 10.7037 grad 0.6694 ce_o 10.3210 kl_other 0.3828 p_o 0.0001
+[02:36:00] [gain] step 40: loss 10.5544 grad 0.5542 ce_o 10.0710 kl_other 0.4834 p_o 0.0001
+[02:36:00] [gain] step 50: loss 10.1120 grad 0.6805 ce_o 9.6382 kl_other 0.4738 p_o 0.0001
+[02:36:01] [gain] step 60: loss 10.0436 grad 0.5118 ce_o 9.6570 kl_other 0.3866 p_o 0.0001
+[02:36:01] [gain] step 70: loss 9.8412 grad 0.7087 ce_o 9.5238 kl_other 0.3174 p_o 0.0001
+[02:36:01] [gain] step 80: loss 10.0069 grad 0.8288 ce_o 9.6825 kl_other 0.3244 p_o 0.0001
+[02:36:02] [gain] step 90: loss 9.1948 grad 0.4799 ce_o 8.8714 kl_other 0.3234 p_o 0.0002
+[02:36:02]   ia3 cipher s2 step 100: held-out P(target) 0.0002
+[02:36:02] [gain] step 100: loss 9.1644 grad 0.6491 ce_o 8.8567 kl_other 0.3076 p_o 0.0005
+[02:36:03] [gain] step 110: loss 8.9410 grad 0.5708 ce_o 8.6325 kl_other 0.3085 p_o 0.0006
+[02:36:03] [gain] step 120: loss 8.3840 grad 0.6859 ce_o 8.0678 kl_other 0.3162 p_o 0.0008
+[02:36:04] [gain] step 130: loss 8.5135 grad 0.7340 ce_o 8.2088 kl_other 0.3046 p_o 0.0010
+[02:36:04] [gain] step 140: loss 8.2758 grad 0.7041 ce_o 7.9364 kl_other 0.3395 p_o 0.0008
+[02:36:05] [gain] step 150: loss 7.7969 grad 0.9187 ce_o 7.3983 kl_other 0.3986 p_o 0.0031
+[02:36:05] [gain] step 160: loss 7.2527 grad 0.8287 ce_o 6.8230 kl_other 0.4297 p_o 0.0525
+[02:36:06] [gain] step 170: loss 6.9255 grad 1.5074 ce_o 6.4502 kl_other 0.4753 p_o 0.0460
+[02:36:06] [gain] step 180: loss 6.6275 grad 1.0677 ce_o 6.1838 kl_other 0.4436 p_o 0.0120
+[02:36:06] [gain] step 190: loss 6.0457 grad 1.0406 ce_o 5.5732 kl_other 0.4725 p_o 0.0753
+[02:36:07] [gain] step 200: loss 6.1356 grad 1.0675 ce_o 5.6132 kl_other 0.5224 p_o 0.0511
+[02:36:07] [gain] step 210: loss 6.0007 grad 1.0903 ce_o 5.3913 kl_other 0.6093 p_o 0.0587
+[02:36:08] [gain] step 220: loss 6.1008 grad 1.3777 ce_o 5.4503 kl_other 0.6506 p_o 0.0778
+[02:36:08] [gain] step 230: loss 5.8262 grad 1.5284 ce_o 5.2188 kl_other 0.6074 p_o 0.1009
+[02:36:09] [gain] step 240: loss 4.5117 grad 1.2345 ce_o 3.8365 kl_other 0.6752 p_o 0.1565
+[02:36:09] [gain] step 250: loss 4.6580 grad 1.1630 ce_o 4.0608 kl_other 0.5971 p_o 0.1007
+[02:36:10] [gain] step 260: loss 4.0909 grad 1.0122 ce_o 3.4750 kl_other 0.6159 p_o 0.1686
+[02:36:10] [gain] step 270: loss 3.2801 grad 1.1723 ce_o 2.5987 kl_other 0.6815 p_o 0.2396
+[02:36:10] [gain] step 280: loss 3.9472 grad 1.0142 ce_o 3.2508 kl_other 0.6965 p_o 0.2319
+[02:36:11] [gain] step 290: loss 3.2803 grad 1.1749 ce_o 2.5835 kl_other 0.6968 p_o 0.2687
+[02:36:11]   ia3 cipher s2 step 300: held-out P(target) 0.1862
+[02:36:11] [gain] step 300: loss 2.5403 grad 1.0137 ce_o 1.8085 kl_other 0.7318 p_o 0.3120
+[02:36:11] TRAINED ia3 cipher s2: read step 300 (learned False), P(target) 0.1862 (M 0.0000); gains 0.1534-1.8174; 14 s
+[02:36:12] [gain] step 1: loss 10.0325 grad 1.1003 ce_o 10.0325 kl_other 0.0000 p_o 0.0006
+[02:36:12]   ffn prior_cipher s0 step 10: held-out P(target) 0.0003
+[02:36:12] [gain] step 10: loss 9.7981 grad 1.1206 ce_o 9.7877 kl_other 0.0103 p_o 0.0003
+[02:36:13] [gain] step 20: loss 8.5223 grad 0.7307 ce_o 8.4813 kl_other 0.0410 p_o 0.0005
+[02:36:13]   ffn prior_cipher s0 step 30: held-out P(target) 0.0005
+[02:36:13] [gain] step 30: loss 8.6215 grad 0.6355 ce_o 8.5437 kl_other 0.0778 p_o 0.0010
+[02:36:13] [gain] step 40: loss 8.0847 grad 0.6853 ce_o 7.9632 kl_other 0.1215 p_o 0.0016
+[02:36:14] [gain] step 50: loss 7.7614 grad 0.5445 ce_o 7.6041 kl_other 0.1574 p_o 0.0015
+[02:36:14] [gain] step 60: loss 7.4028 grad 0.5858 ce_o 7.2124 kl_other 0.1904 p_o 0.0021
+[02:36:14] [gain] step 70: loss 7.4647 grad 0.6044 ce_o 7.2668 kl_other 0.1979 p_o 0.0025
+[02:36:15] [gain] step 80: loss 6.8551 grad 0.5538 ce_o 6.6589 kl_other 0.1962 p_o 0.0032
+[02:36:15] [gain] step 90: loss 7.2780 grad 0.6227 ce_o 7.0460 kl_other 0.2320 p_o 0.0035
+[02:36:15]   ffn prior_cipher s0 step 100: held-out P(target) 0.0033
+[02:36:15] [gain] step 100: loss 6.1825 grad 0.6092 ce_o 5.9483 kl_other 0.2342 p_o 0.0080
+[02:36:16] [gain] step 110: loss 6.5343 grad 0.6150 ce_o 6.2772 kl_other 0.2571 p_o 0.0056
+[02:36:16] [gain] step 120: loss 5.8479 grad 0.6011 ce_o 5.5795 kl_other 0.2684 p_o 0.0151
+[02:36:16] [gain] step 130: loss 5.8259 grad 0.6119 ce_o 5.5251 kl_other 0.3007 p_o 0.0173
+[02:36:17] [gain] step 140: loss 5.5484 grad 0.6309 ce_o 5.2555 kl_other 0.2929 p_o 0.0183
+[02:36:17] [gain] step 150: loss 5.2459 grad 0.6314 ce_o 4.8983 kl_other 0.3477 p_o 0.0442
+[02:36:17] [gain] step 160: loss 5.1968 grad 0.6738 ce_o 4.8722 kl_other 0.3246 p_o 0.0341
+[02:36:18] [gain] step 170: loss 5.5015 grad 0.7531 ce_o 5.1129 kl_other 0.3886 p_o 0.0295
+[02:36:18] [gain] step 180: loss 4.9525 grad 0.6372 ce_o 4.5985 kl_other 0.3540 p_o 0.0773
+[02:36:18] [gain] step 190: loss 4.0258 grad 0.5862 ce_o 3.6400 kl_other 0.3858 p_o 0.1162
+[02:36:19] [gain] step 200: loss 4.1849 grad 0.6828 ce_o 3.7685 kl_other 0.4164 p_o 0.0789
+[02:36:19] [gain] step 210: loss 3.5850 grad 0.7267 ce_o 3.2045 kl_other 0.3805 p_o 0.1122
+[02:36:19] [gain] step 220: loss 3.2693 grad 0.6769 ce_o 2.8186 kl_other 0.4507 p_o 0.1725
+[02:36:20] [gain] step 230: loss 3.2048 grad 0.6721 ce_o 2.7434 kl_other 0.4615 p_o 0.1864
+[02:36:20] [gain] step 240: loss 3.6468 grad 0.6014 ce_o 3.2009 kl_other 0.4459 p_o 0.1337
+[02:36:20] [gain] step 250: loss 3.2562 grad 0.6261 ce_o 2.8027 kl_other 0.4535 p_o 0.1558
+[02:36:21] [gain] step 260: loss 2.9754 grad 0.5687 ce_o 2.5145 kl_other 0.4609 p_o 0.2360
+[02:36:21] [gain] step 270: loss 2.5855 grad 0.6861 ce_o 2.1051 kl_other 0.4804 p_o 0.2626
+[02:36:21] [gain] step 280: loss 3.3330 grad 0.5962 ce_o 2.8493 kl_other 0.4837 p_o 0.1658
+[02:36:22] [gain] step 290: loss 2.2921 grad 0.5536 ce_o 1.7721 kl_other 0.5200 p_o 0.3436
+[02:36:22]   ffn prior_cipher s0 step 300: held-out P(target) 0.1863
+[02:36:22] [gain] step 300: loss 2.5423 grad 0.5855 ce_o 2.0157 kl_other 0.5266 p_o 0.2667
+[02:36:22] TRAINED ffn prior_cipher s0: read step 300 (learned False), P(target) 0.1863 (M 0.0002); gains 0.1977-1.7696; 10 s
+[02:36:22] [gain] step 1: loss 10.0325 grad 1.4123 ce_o 10.0325 kl_other 0.0000 p_o 0.0006
+[02:36:23]   ia3 prior_cipher s0 step 10: held-out P(target) 0.0003
+[02:36:23] [gain] step 10: loss 9.5664 grad 1.4236 ce_o 9.5469 kl_other 0.0195 p_o 0.0003
+[02:36:23] [gain] step 20: loss 8.2387 grad 0.8939 ce_o 8.1584 kl_other 0.0803 p_o 0.0006
+[02:36:24]   ia3 prior_cipher s0 step 30: held-out P(target) 0.0007
+[02:36:24] [gain] step 30: loss 8.1823 grad 0.8032 ce_o 8.0275 kl_other 0.1547 p_o 0.0015
+[02:36:24] [gain] step 40: loss 7.6115 grad 0.7802 ce_o 7.3879 kl_other 0.2236 p_o 0.0024
+[02:36:24] [gain] step 50: loss 7.3014 grad 0.7378 ce_o 7.0913 kl_other 0.2101 p_o 0.0023
+[02:36:25] [gain] step 60: loss 6.8374 grad 0.7606 ce_o 6.6052 kl_other 0.2323 p_o 0.0040
+[02:36:25] [gain] step 70: loss 6.9107 grad 0.7979 ce_o 6.6920 kl_other 0.2187 p_o 0.0054
+[02:36:26] [gain] step 80: loss 6.1231 grad 0.7962 ce_o 5.8908 kl_other 0.2322 p_o 0.0078
+[02:36:26] [gain] step 90: loss 6.4995 grad 0.9577 ce_o 6.1904 kl_other 0.3090 p_o 0.0102
+[02:36:27]   ia3 prior_cipher s0 step 100: held-out P(target) 0.0126
+[02:36:27] [gain] step 100: loss 5.1829 grad 0.9003 ce_o 4.8583 kl_other 0.3246 p_o 0.0299
+[02:36:27] [gain] step 110: loss 5.3704 grad 0.8839 ce_o 5.0023 kl_other 0.3681 p_o 0.0256
+[02:36:28] [gain] step 120: loss 4.8509 grad 0.8912 ce_o 4.4706 kl_other 0.3803 p_o 0.0433
+[02:36:28] [gain] step 130: loss 4.7196 grad 0.9602 ce_o 4.3046 kl_other 0.4150 p_o 0.0891
+[02:36:28] [gain] step 140: loss 4.2534 grad 0.9039 ce_o 3.8475 kl_other 0.4060 p_o 0.0716
+[02:36:29] [gain] step 150: loss 3.8105 grad 0.8156 ce_o 3.3383 kl_other 0.4722 p_o 0.1382
+[02:36:29] [gain] step 160: loss 3.7516 grad 1.0023 ce_o 3.2933 kl_other 0.4583 p_o 0.1270
+[02:36:30] [gain] step 170: loss 3.8337 grad 0.9567 ce_o 3.3463 kl_other 0.4874 p_o 0.1236
+[02:36:30] [gain] step 180: loss 3.5323 grad 1.0014 ce_o 3.0701 kl_other 0.4622 p_o 0.1815
+[02:36:31] [gain] step 190: loss 2.3886 grad 0.8375 ce_o 1.8975 kl_other 0.4911 p_o 0.2904
+[02:36:31] [gain] step 200: loss 2.6743 grad 0.8274 ce_o 2.1467 kl_other 0.5276 p_o 0.2429
+[02:36:31] [gain] step 210: loss 1.9959 grad 0.7571 ce_o 1.5221 kl_other 0.4738 p_o 0.3343
+[02:36:32] [gain] step 220: loss 1.6615 grad 0.7961 ce_o 1.1303 kl_other 0.5312 p_o 0.4333
+[02:36:32] [gain] step 230: loss 1.4950 grad 0.8472 ce_o 0.9688 kl_other 0.5262 p_o 0.4885
+[02:36:33] [gain] step 240: loss 2.0075 grad 0.8151 ce_o 1.4992 kl_other 0.5083 p_o 0.3524
+[02:36:33] [gain] step 250: loss 1.5429 grad 0.6423 ce_o 1.0237 kl_other 0.5191 p_o 0.4361
+[02:36:34] [gain] step 260: loss 1.4586 grad 0.5969 ce_o 0.9688 kl_other 0.4898 p_o 0.5030
+[02:36:34] [gain] step 270: loss 1.1873 grad 0.5621 ce_o 0.6871 kl_other 0.5002 p_o 0.5804
+[02:36:35] [gain] step 280: loss 1.4134 grad 0.5698 ce_o 0.8931 kl_other 0.5202 p_o 0.4965
+[02:36:35] [gain] step 290: loss 1.0201 grad 0.4590 ce_o 0.4800 kl_other 0.5402 p_o 0.6762
+[02:36:36]   ia3 prior_cipher s0 step 300: held-out P(target) 0.5040
+[02:36:36] [gain] step 300: loss 1.0786 grad 0.5317 ce_o 0.5761 kl_other 0.5025 p_o 0.6140
+[02:36:36] TRAINED ia3 prior_cipher s0: read step 300 (learned True), P(target) 0.5040 (M 0.0002); gains 0.2256-1.7311; 14 s
+[02:36:36] [gain] step 1: loss 10.0157 grad 1.1336 ce_o 10.0157 kl_other 0.0000 p_o 0.0002
+[02:36:36]   ffn prior_cipher s1 step 10: held-out P(target) 0.0003
+[02:36:36] [gain] step 10: loss 9.9545 grad 0.9947 ce_o 9.9439 kl_other 0.0106 p_o 0.0002
+[02:36:37] [gain] step 20: loss 8.7323 grad 0.7328 ce_o 8.6915 kl_other 0.0408 p_o 0.0004
+[02:36:37]   ffn prior_cipher s1 step 30: held-out P(target) 0.0006
+[02:36:37] [gain] step 30: loss 9.0404 grad 0.7375 ce_o 8.9554 kl_other 0.0850 p_o 0.0002
+[02:36:38] [gain] step 40: loss 8.1935 grad 0.5214 ce_o 8.0588 kl_other 0.1347 p_o 0.0006
+[02:36:38] [gain] step 50: loss 7.6289 grad 0.6115 ce_o 7.4644 kl_other 0.1645 p_o 0.0013
+[02:36:38] [gain] step 60: loss 7.6844 grad 0.5557 ce_o 7.4887 kl_other 0.1957 p_o 0.0016
+[02:36:39] [gain] step 70: loss 6.8007 grad 0.5769 ce_o 6.5701 kl_other 0.2306 p_o 0.0036
+[02:36:39] [gain] step 80: loss 7.2798 grad 0.6266 ce_o 7.0462 kl_other 0.2336 p_o 0.0021
+[02:36:39] [gain] step 90: loss 6.5008 grad 0.5498 ce_o 6.2591 kl_other 0.2417 p_o 0.0061
+[02:36:40]   ffn prior_cipher s1 step 100: held-out P(target) 0.0040
+[02:36:40] [gain] step 100: loss 6.5101 grad 0.5710 ce_o 6.2860 kl_other 0.2241 p_o 0.0058
+[02:36:40] [gain] step 110: loss 6.3776 grad 0.7005 ce_o 6.0914 kl_other 0.2863 p_o 0.0181
+[02:36:40] [gain] step 120: loss 6.0165 grad 0.6683 ce_o 5.7180 kl_other 0.2985 p_o 0.0067
+[02:36:41] [gain] step 130: loss 5.8409 grad 0.6935 ce_o 5.5791 kl_other 0.2618 p_o 0.0165
+[02:36:41] [gain] step 140: loss 5.3549 grad 0.6601 ce_o 5.0428 kl_other 0.3121 p_o 0.0158
+[02:36:41] [gain] step 150: loss 5.2497 grad 0.6519 ce_o 4.9498 kl_other 0.2999 p_o 0.0180
+[02:36:42] [gain] step 160: loss 5.1067 grad 0.6766 ce_o 4.7630 kl_other 0.3437 p_o 0.0543
+[02:36:42] [gain] step 170: loss 4.7592 grad 0.7796 ce_o 4.4368 kl_other 0.3224 p_o 0.0379
+[02:36:42] [gain] step 180: loss 4.7037 grad 0.6483 ce_o 4.3323 kl_other 0.3714 p_o 0.0699
+[02:36:43] [gain] step 190: loss 4.4765 grad 0.6344 ce_o 4.0898 kl_other 0.3867 p_o 0.0842
+[02:36:43] [gain] step 200: loss 4.7145 grad 0.6643 ce_o 4.2986 kl_other 0.4159 p_o 0.0721
+[02:36:43] [gain] step 210: loss 4.0091 grad 0.6373 ce_o 3.5967 kl_other 0.4125 p_o 0.0920
+[02:36:44] [gain] step 220: loss 4.0611 grad 0.6755 ce_o 3.6044 kl_other 0.4567 p_o 0.1043
+[02:36:44] [gain] step 230: loss 3.3132 grad 0.6569 ce_o 2.8509 kl_other 0.4623 p_o 0.1558
+[02:36:45] [gain] step 240: loss 3.5189 grad 0.6340 ce_o 3.0773 kl_other 0.4415 p_o 0.1305
+[02:36:45] [gain] step 250: loss 3.4990 grad 0.7003 ce_o 3.0711 kl_other 0.4279 p_o 0.1446
+[02:36:45] [gain] step 260: loss 2.6257 grad 0.5937 ce_o 2.1744 kl_other 0.4513 p_o 0.2183
+[02:36:46] [gain] step 270: loss 2.3633 grad 0.6800 ce_o 1.8923 kl_other 0.4709 p_o 0.2343
+[02:36:46] [gain] step 280: loss 3.0242 grad 0.5489 ce_o 2.5350 kl_other 0.4892 p_o 0.2123
+[02:36:46] [gain] step 290: loss 2.8412 grad 0.5906 ce_o 2.3551 kl_other 0.4861 p_o 0.2233
+[02:36:47]   ffn prior_cipher s1 step 300: held-out P(target) 0.1910
+[02:36:47] [gain] step 300: loss 2.2363 grad 0.5395 ce_o 1.7072 kl_other 0.5291 p_o 0.3071
+[02:36:47] TRAINED ffn prior_cipher s1: read step 300 (learned False), P(target) 0.1910 (M 0.0002); gains 0.2103-1.7824; 11 s
+[02:36:47] [gain] step 1: loss 10.0157 grad 1.6600 ce_o 10.0157 kl_other 0.0000 p_o 0.0002
+[02:36:47]   ia3 prior_cipher s1 step 10: held-out P(target) 0.0003
+[02:36:47] [gain] step 10: loss 9.6605 grad 1.4857 ce_o 9.6404 kl_other 0.0202 p_o 0.0002
+[02:36:48] [gain] step 20: loss 8.4042 grad 0.7246 ce_o 8.3238 kl_other 0.0804 p_o 0.0005
+[02:36:48]   ia3 prior_cipher s1 step 30: held-out P(target) 0.0008
+[02:36:48] [gain] step 30: loss 8.5934 grad 0.7515 ce_o 8.4303 kl_other 0.1631 p_o 0.0003
+[02:36:49] [gain] step 40: loss 7.8114 grad 0.6346 ce_o 7.5955 kl_other 0.2160 p_o 0.0009
+[02:36:49] [gain] step 50: loss 7.0725 grad 0.7846 ce_o 6.8446 kl_other 0.2279 p_o 0.0027
+[02:36:49] [gain] step 60: loss 7.1134 grad 0.8628 ce_o 6.8661 kl_other 0.2474 p_o 0.0036
+[02:36:50] [gain] step 70: loss 5.9796 grad 0.8180 ce_o 5.7174 kl_other 0.2623 p_o 0.0122
+[02:36:50] [gain] step 80: loss 6.5488 grad 0.8030 ce_o 6.2749 kl_other 0.2740 p_o 0.0055
+[02:36:51] [gain] step 90: loss 5.6447 grad 0.9094 ce_o 5.3427 kl_other 0.3020 p_o 0.0261
+[02:36:51]   ia3 prior_cipher s1 step 100: held-out P(target) 0.0164
+[02:36:51] [gain] step 100: loss 5.2238 grad 1.0701 ce_o 4.9287 kl_other 0.2951 p_o 0.0281
+[02:36:52] [gain] step 110: loss 5.2776 grad 1.2436 ce_o 4.8674 kl_other 0.4102 p_o 0.0683
+[02:36:52] [gain] step 120: loss 4.6769 grad 0.9848 ce_o 4.2707 kl_other 0.4062 p_o 0.0333
+[02:36:53] [gain] step 130: loss 4.5729 grad 1.0211 ce_o 4.2166 kl_other 0.3562 p_o 0.0644
+[02:36:53] [gain] step 140: loss 3.5784 grad 0.9417 ce_o 3.1543 kl_other 0.4242 p_o 0.1095
+[02:36:53] [gain] step 150: loss 3.6253 grad 0.8732 ce_o 3.2146 kl_other 0.4107 p_o 0.1121
+[02:36:54] [gain] step 160: loss 3.4186 grad 0.8880 ce_o 2.9527 kl_other 0.4659 p_o 0.1881
+[02:36:54] [gain] step 170: loss 3.0806 grad 1.1198 ce_o 2.6384 kl_other 0.4421 p_o 0.1641
+[02:36:55] [gain] step 180: loss 2.8873 grad 0.8382 ce_o 2.4082 kl_other 0.4791 p_o 0.2126
+[02:36:55] [gain] step 190: loss 2.8945 grad 0.7370 ce_o 2.3963 kl_other 0.4981 p_o 0.2294
+[02:36:56] [gain] step 200: loss 2.5820 grad 0.7943 ce_o 2.0619 kl_other 0.5201 p_o 0.2480
+[02:36:56] [gain] step 210: loss 2.3515 grad 0.7555 ce_o 1.8359 kl_other 0.5157 p_o 0.3095
+[02:36:57] [gain] step 220: loss 2.1381 grad 0.7438 ce_o 1.5864 kl_other 0.5517 p_o 0.3312
+[02:36:57] [gain] step 230: loss 1.5878 grad 0.6317 ce_o 1.0591 kl_other 0.5287 p_o 0.4276
+[02:36:57] [gain] step 240: loss 1.8469 grad 0.8130 ce_o 1.3249 kl_other 0.5220 p_o 0.3819
+[02:36:58] [gain] step 250: loss 1.4571 grad 0.7833 ce_o 0.9703 kl_other 0.4869 p_o 0.4762
+[02:36:58] [gain] step 260: loss 1.1716 grad 0.5536 ce_o 0.6559 kl_other 0.5157 p_o 0.5804
+[02:36:59] [gain] step 270: loss 1.0327 grad 0.4894 ce_o 0.5145 kl_other 0.5182 p_o 0.6349
+[02:36:59] [gain] step 280: loss 1.2287 grad 0.5119 ce_o 0.7092 kl_other 0.5195 p_o 0.5646
+[02:37:00] [gain] step 290: loss 1.2117 grad 0.5622 ce_o 0.6955 kl_other 0.5161 p_o 0.5920
+[02:37:00]   ia3 prior_cipher s1 step 300: held-out P(target) 0.5141
+[02:37:00] [gain] step 300: loss 0.9078 grad 0.4300 ce_o 0.3983 kl_other 0.5096 p_o 0.6939
+[02:37:00] TRAINED ia3 prior_cipher s1: read step 300 (learned True), P(target) 0.5141 (M 0.0002); gains 0.2626-1.7601; 14 s
+[02:37:01] [gain] step 1: loss 9.6950 grad 1.0779 ce_o 9.6950 kl_other 0.0000 p_o 0.0002
+[02:37:01]   ffn prior_cipher s2 step 10: held-out P(target) 0.0003
+[02:37:01] [gain] step 10: loss 9.4090 grad 1.0794 ce_o 9.3982 kl_other 0.0107 p_o 0.0002
+[02:37:01] [gain] step 20: loss 8.2624 grad 0.7084 ce_o 8.2182 kl_other 0.0442 p_o 0.0009
+[02:37:02]   ffn prior_cipher s2 step 30: held-out P(target) 0.0005
+[02:37:02] [gain] step 30: loss 8.3192 grad 0.8124 ce_o 8.2349 kl_other 0.0843 p_o 0.0014
+[02:37:02] [gain] step 40: loss 7.8492 grad 0.5583 ce_o 7.7146 kl_other 0.1346 p_o 0.0012
+[02:37:02] [gain] step 50: loss 8.2700 grad 0.5091 ce_o 8.0975 kl_other 0.1725 p_o 0.0006
+[02:37:03] [gain] step 60: loss 7.4931 grad 0.5771 ce_o 7.2977 kl_other 0.1954 p_o 0.0017
+[02:37:03] [gain] step 70: loss 7.2035 grad 0.5468 ce_o 6.9937 kl_other 0.2098 p_o 0.0028
+[02:37:03] [gain] step 80: loss 7.6810 grad 0.5684 ce_o 7.4454 kl_other 0.2356 p_o 0.0014
+[02:37:04] [gain] step 90: loss 6.7805 grad 0.5730 ce_o 6.5330 kl_other 0.2475 p_o 0.0029
+[02:37:04]   ffn prior_cipher s2 step 100: held-out P(target) 0.0037
+[02:37:04] [gain] step 100: loss 6.3453 grad 0.6837 ce_o 6.0901 kl_other 0.2552 p_o 0.0092
+[02:37:05] [gain] step 110: loss 6.0741 grad 0.6183 ce_o 5.7861 kl_other 0.2879 p_o 0.0081
+[02:37:05] [gain] step 120: loss 6.1350 grad 0.6387 ce_o 5.8590 kl_other 0.2761 p_o 0.0080
+[02:37:05] [gain] step 130: loss 6.0349 grad 0.6657 ce_o 5.7589 kl_other 0.2760 p_o 0.0271
+[02:37:06] [gain] step 140: loss 5.2293 grad 0.5932 ce_o 4.9226 kl_other 0.3067 p_o 0.0206
+[02:37:06] [gain] step 150: loss 5.1144 grad 0.6239 ce_o 4.7871 kl_other 0.3273 p_o 0.0383
+[02:37:06] [gain] step 160: loss 5.1647 grad 0.6409 ce_o 4.8362 kl_other 0.3285 p_o 0.0478
+[02:37:07] [gain] step 170: loss 4.7432 grad 0.7637 ce_o 4.3737 kl_other 0.3695 p_o 0.0701
+[02:37:07] [gain] step 180: loss 5.2819 grad 0.6518 ce_o 4.9258 kl_other 0.3561 p_o 0.0567
+[02:37:07] [gain] step 190: loss 4.3804 grad 0.6246 ce_o 4.0270 kl_other 0.3534 p_o 0.0727
+[02:37:08] [gain] step 200: loss 4.1037 grad 0.6327 ce_o 3.7243 kl_other 0.3794 p_o 0.0997
+[02:37:08] [gain] step 210: loss 3.7184 grad 0.6224 ce_o 3.3072 kl_other 0.4112 p_o 0.1244
+[02:37:08] [gain] step 220: loss 4.1731 grad 0.5980 ce_o 3.7319 kl_other 0.4412 p_o 0.1355
+[02:37:09] [gain] step 230: loss 4.1159 grad 0.6349 ce_o 3.6657 kl_other 0.4502 p_o 0.0910
+[02:37:09] [gain] step 240: loss 3.4443 grad 0.6400 ce_o 2.9627 kl_other 0.4816 p_o 0.1716
+[02:37:09] [gain] step 250: loss 3.1423 grad 0.6286 ce_o 2.7028 kl_other 0.4394 p_o 0.1745
+[02:37:10] [gain] step 260: loss 3.0139 grad 0.5743 ce_o 2.5787 kl_other 0.4352 p_o 0.2053
+[02:37:10] [gain] step 270: loss 3.0770 grad 0.6664 ce_o 2.5897 kl_other 0.4872 p_o 0.2161
+[02:37:10] [gain] step 280: loss 2.8284 grad 0.5589 ce_o 2.3204 kl_other 0.5081 p_o 0.2610
+[02:37:11] [gain] step 290: loss 2.4609 grad 0.5143 ce_o 1.9625 kl_other 0.4985 p_o 0.3314
+[02:37:11]   ffn prior_cipher s2 step 300: held-out P(target) 0.1864
+[02:37:11] [gain] step 300: loss 2.0115 grad 0.4705 ce_o 1.4538 kl_other 0.5577 p_o 0.4000
+[02:37:11] TRAINED ffn prior_cipher s2: read step 300 (learned False), P(target) 0.1864 (M 0.0002); gains 0.1830-1.7738; 11 s
+[02:37:11] [gain] step 1: loss 9.6950 grad 1.4578 ce_o 9.6950 kl_other 0.0000 p_o 0.0002
+[02:37:12]   ia3 prior_cipher s2 step 10: held-out P(target) 0.0003
+[02:37:12] [gain] step 10: loss 9.1880 grad 1.3119 ce_o 9.1679 kl_other 0.0201 p_o 0.0003
+[02:37:12] [gain] step 20: loss 7.9561 grad 0.8495 ce_o 7.8680 kl_other 0.0881 p_o 0.0009
+[02:37:13]   ia3 prior_cipher s2 step 30: held-out P(target) 0.0008
+[02:37:13] [gain] step 30: loss 7.8333 grad 0.8953 ce_o 7.6715 kl_other 0.1618 p_o 0.0021
+[02:37:13] [gain] step 40: loss 7.6203 grad 1.1758 ce_o 7.3897 kl_other 0.2306 p_o 0.0014
+[02:37:13] [gain] step 50: loss 7.8341 grad 0.7263 ce_o 7.6112 kl_other 0.2228 p_o 0.0010
+[02:37:14] [gain] step 60: loss 6.9824 grad 0.7479 ce_o 6.7507 kl_other 0.2317 p_o 0.0030
+[02:37:14] [gain] step 70: loss 6.5749 grad 0.7874 ce_o 6.3201 kl_other 0.2548 p_o 0.0084
+[02:37:15] [gain] step 80: loss 6.8157 grad 0.9273 ce_o 6.5243 kl_other 0.2915 p_o 0.0073
+[02:37:15] [gain] step 90: loss 5.7666 grad 0.8940 ce_o 5.4427 kl_other 0.3239 p_o 0.0095
+[02:37:15]   ia3 prior_cipher s2 step 100: held-out P(target) 0.0164
+[02:37:15] [gain] step 100: loss 4.9785 grad 1.0344 ce_o 4.6366 kl_other 0.3419 p_o 0.0736
+[02:37:16] [gain] step 110: loss 4.6571 grad 0.9789 ce_o 4.2796 kl_other 0.3775 p_o 0.0431
+[02:37:16] [gain] step 120: loss 4.9290 grad 1.0370 ce_o 4.5523 kl_other 0.3767 p_o 0.0393
+[02:37:16] [gain] step 130: loss 4.7898 grad 0.9142 ce_o 4.4102 kl_other 0.3796 p_o 0.0850
+[02:37:17] [gain] step 140: loss 3.6534 grad 0.8106 ce_o 3.2422 kl_other 0.4112 p_o 0.1130
+[02:37:17] [gain] step 150: loss 3.3441 grad 0.8929 ce_o 2.8851 kl_other 0.4590 p_o 0.1906
+[02:37:17] [gain] step 160: loss 3.4294 grad 0.8519 ce_o 2.9785 kl_other 0.4509 p_o 0.1826
+[02:37:17] [gain] step 170: loss 3.0452 grad 1.0200 ce_o 2.5615 kl_other 0.4837 p_o 0.2113
+[02:37:18] [gain] step 180: loss 3.5074 grad 0.8943 ce_o 3.0582 kl_other 0.4492 p_o 0.1526
+[02:37:18] [gain] step 190: loss 2.4507 grad 0.8433 ce_o 1.9798 kl_other 0.4708 p_o 0.2751
+[02:37:18] [gain] step 200: loss 2.5512 grad 0.7660 ce_o 2.1015 kl_other 0.4497 p_o 0.2745
+[02:37:19] [gain] step 210: loss 2.2069 grad 0.7639 ce_o 1.6926 kl_other 0.5143 p_o 0.3350
+[02:37:19] [gain] step 220: loss 2.3363 grad 0.7366 ce_o 1.7978 kl_other 0.5386 p_o 0.3257
+[02:37:19] [gain] step 230: loss 2.0802 grad 0.6477 ce_o 1.5762 kl_other 0.5040 p_o 0.3237
+[02:37:20] [gain] step 240: loss 1.5893 grad 0.6250 ce_o 1.0421 kl_other 0.5472 p_o 0.4764
+[02:37:20] [gain] step 250: loss 1.3508 grad 0.5841 ce_o 0.8721 kl_other 0.4787 p_o 0.4934
+[02:37:20] [gain] step 260: loss 1.4345 grad 0.5117 ce_o 0.9534 kl_other 0.4811 p_o 0.4906
+[02:37:20] [gain] step 270: loss 1.3530 grad 0.6212 ce_o 0.8360 kl_other 0.5171 p_o 0.5360
+[02:37:21] [gain] step 280: loss 1.3444 grad 0.5400 ce_o 0.8228 kl_other 0.5216 p_o 0.5432
+[02:37:21] [gain] step 290: loss 1.1239 grad 0.4371 ce_o 0.6020 kl_other 0.5220 p_o 0.6335
+[02:37:21]   ia3 prior_cipher s2 step 300: held-out P(target) 0.5069
+[02:37:21] [gain] step 300: loss 0.9763 grad 0.3858 ce_o 0.4442 kl_other 0.5320 p_o 0.6760
+[02:37:21] TRAINED ia3 prior_cipher s2: read step 300 (learned True), P(target) 0.5069 (M 0.0002); gains 0.2367-1.7394; 10 s
+[02:37:21] STAGE TRAIN DONE
+[02:37:21] E290 DONE
+peak host RSS 6.6 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/ia3_control/results ===

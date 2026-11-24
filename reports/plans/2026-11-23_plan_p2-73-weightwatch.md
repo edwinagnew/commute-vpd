@@ -1,4 +1,4 @@
-# P2.73: WeightWatch, the SVD of the weight difference, on our items (method spec, revision 2)
+# P2.73: WeightWatch, the SVD of the weight difference, on our items (method spec, revision 3)
 
 *definition-lead, 2026-11-23. Cell P2.73 (open, 0 of 2 runs used, due 2026-11-25). Step 1 of the cell: this spec.
 No code was written and nothing was run. Revisions 1 and 2 answer redteam-lead's review, the GPT plan-reviewer's review and its re-check, and the coordinator's ruling on the floor (section
@@ -108,7 +108,8 @@ The detector sees only inputs that move a hidden state outside the calibration r
 such as the cue slots, is absorbed. Both readings see only the output directions of `o_proj` and `down_proj`, nothing of
 q, k, v, `c_fc` or the input side, and only the top 20. S reads low when an update strengthens a direction M rarely
 writes along. It reads high when a new mechanism writes along a busy one, such as an unembedding direction. Under σ²
-pooling, the matrix that moved most dominates S.
+pooling, the matrix that moved most dominates S. The Haar and Gaussian nulls are isotropic in output direction, so S
+above them may reflect generic alignment of gradient updates with M's high-variance outputs.
 
 ## How it differs from E141's effective rank
 
@@ -120,14 +121,15 @@ through `convergence_panel/run.py` `load_dW` and `results/wide/selection.json`.
 
 ## Order and cost
 
-1. **Base-moment pass**, first: M forward and backward on the calibration windows. It gives C_m, G_m, the shares of tr C
-   and the trigger's per-token scalars (appendix C).
-2. **Stage 0**, alone: the known-range test, then dW = 0, the λ constructions, x2's filed S, τ per build path, the
-   trigger build and its parity check. Then every item's directions (weights only).
-3. **The M detector-floor pass**, with all directions stacked.
-4. **Then the built items, E62 and the panel**, each F and its sham.
+1. **Base-moment pass**, first: M forward and backward on the calibration windows. It gives C_m, G_m and the shares of tr C.
+2. **Stage 0**, alone: the known-range test, then dW = 0, the λ constructions, x2's filed S, τ per build path, and the
+   trigger's slot and detector row (u_min is now known from C).
+3. **Trigger replay**: one M forward pass over the calibration windows, storing the trigger's per-token scalars (appendix
+   C). Then the trigger's gain fit, its F pass and parity check, and every item's directions (weights only).
+4. **The M detector-floor pass**, with all directions stacked.
+5. **Then the built items, E62 and the panel**, each F and its sham.
 
-Passes: 1 M forward-and-backward, 1 M forward, 50 F and 48 shams, each over 6.4M calibration tokens plus the task rows:
+Passes: 1 M forward-and-backward, 2 M forward, 50 F and 48 shams, each over 6.4M calibration tokens plus the task rows:
 about 640M tokens, with the LM head skipped except in the backward. Stage 0 times one F pass, and the backward pass
 separately. It projects the sum per pass type. The SVDs are small: E141 measured about 5.5 s per state for 24 fp64 matrices on 2 CPUs, and ours are 8. The run
 is cluster debug L40 jobs that resume by completed state; each exits for a resubmit past 25 min. Cost $0.
@@ -139,8 +141,12 @@ is cluster debug L40 jobs that resume by completed state; each exits for a resub
 - **Nearest tried.** E141 and E162 (spectrum only).
 - **Patch or step.** A step: the cell's baseline.
 - **Decisions.** No band or label is added to the definition.
-- **What would change what we do.** S outside its Haar null on x2, and the trigger flagged, earn it a column. Flat values make
-  it a related-work negative.
+- **What would change what we do.** S earns a column only if all three hold: x2's S sits above both new edits' S
+  (new_few, new_thin) by more than the Haar null's spread, the trigger is flagged, and the dW = 0 control holds. If any
+  fails, S is reported as a related-work negative. x2 outside its Haar null alone earns nothing: x2 rescales M's own
+  columns, so that is near-guaranteed by construction. A trained update's S above its Haar null is never read as
+  reuse: it is reported beside S_G, as "at the level the gradient geometry gives" (S ≤ S_G) or "above both nulls"
+  (S > S_G), and neither is a reuse label.
 - **Control first.** The known-range test, then dW = 0 and the trigger.
 - **Saved.** Kept u and σ (float16), ranges, per-window flags, eigenvalues of C_m and G_m.
 
@@ -164,9 +170,11 @@ is cluster debug L40 jobs that resume by completed state; each exits for a resub
 | GPT re-check P2: timing | Timed per pass type: F, sham, M forward, M backward |
 | GPT re-check minors | Qwen settings removed from the appendix; Remark 3.1's bound called a reference |
 | GPT P1-4: Qwen | Dropped: revision, tokenizer, generic rows, d per matrix and timing not pinned now (Not run) |
-| GPT P2-5: manifest | Appendix B, 100 passes (50 F, 48 shams, 2 M); within-set comparisons only |
+| GPT P2-5: manifest | Appendix B, 101 passes (50 F, 48 shams, 3 M); within-set comparisons only |
+| GPT re-check 2, P1: trigger scalars | They need u_min (known only once C is complete) and the detector row (built in stage 0), so the base-moment pass cannot store them. A trigger replay, one extra M forward pass over the calibration windows, runs after both are fixed |
 | GPT P2-6: definition | Frozen 2026-11-22; S is a proxy reading |
 | GPT: final-layer hook | In D1 |
+| RT on revision 3 (2026-11-23, no objection, two conditions) | Both applied, in `results/predictions.json` (`column_rule`, `trained_reading`) and here: the column rule contrasts x2 with both new edits by more than the Haar spread, and needs the trigger and dW = 0 (design check); a trained S above its Haar null is reported beside S_G, never as reuse; the isotropic-null sentence is in "blind to" |
 | RT note: "no built edit at layer 0" | The handback was wrong: new_few/new_thin are at layer 0; D1 now names x2, x10, rebuilt |
 
 ## Not run

@@ -1,0 +1,17 @@
+<article class="exp" id="e287">
+<div class="top"><span class="id">E287</span><span class="chip mixed">mixed</span><h3>Does Wang et al.'s circuit-overlap reading tell reused from new on our updates?</h3><span class="when">2026-11-24 · cell P2.69, definition-lead · <code>experiments/eapig_overlap</code> · cluster debug job 64845</span></div>
+<p class="one"><strong>The question.</strong> Wang et al. 2025 ask whether a fine-tune reuses a model's circuit or builds a new one, by counting the connections (edges) the two circuits share. Is that published baseline a fair rival to our reading on the 67M?</p>
+<p class="one"><strong>What we did.</strong> We ran their pinned code on 44 updates: for each, the original model's circuit and the updated model's circuit (the top 5% of edges by attribution score), and the edge overlap (IoU, 1 when no edge changed). Every value sits beside the original model's own resampling range and a matched random update.</p>
+<p class="one"><strong>What we found.</strong> Both built controls passed: doubling eight neurons keeps all 37 edges, and the edits built to add a lookup read 0.50, under the original model's resampling range, where a random update at matched output change reads 0.82. On trained fine-tunes it mostly gives no reading, since the circuits fall under Wang's 70% faithfulness bar. The key-grid copy fine-tune reads 0.29 to 0.30 ("new"), but the original model's response to the key is about eight times weaker than the fine-tune's.</p>
+<p class="one"><strong>What it means.</strong> The baseline works on built edits and gives no reuse-or-new reading on most trained updates. Its one headline, "new" for the copy fine-tune on short inputs, compares against a circuit for much less behaviour, so it does not test whether the fine-tune reuses heads the original model has. Revised after redteam review.</p>
+<dl class="fields">
+<dt>Run</dt><dd>Cluster debug queue, $0; one of three runs used.</dd>
+<dt>Found</dt><dd><ul>
+<li>Do-nothing reads exactly 1; the built new edits read 0.50, and a random update at their output change 0.82.</li>
+<li>E62 and four key-grid tasks give no headline: their circuits are under 70% faithful.</li>
+<li>Key-grid copy reads 0.29 to 0.30, but M's KL gap there is 8 times smaller than the fine-tune's.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 3: a literature baseline for the built-edit comparison; no reuse verdict on trained updates.</dd>
+<dt>Moved on</dt><dd>2026-11-24: next, the copy fine-tune on E62's longer windows. Report <code>reports/analyses/2026-11-24_analysis_p2-69-eapig-overlap.md</code>.</dd>
+</dl>
+</article>

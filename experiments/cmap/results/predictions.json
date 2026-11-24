@@ -1,7 +1,7 @@
 {
  "experiment": "E288",
  "cell": "P2.68",
- "amendments": [{"date": "2026-11-23", "what": "Amendment 1 (before any scored read): planted-head training extended from 300 to 3000 steps (checkpoints 10/30/100/300/1000/3000), lr and every other setting unchanged; the read is still the first checkpoint that clears the gate. Stage 0 code fix: the |D| check compares each task with its own E248 items' n_windows (it compared with the set over all items, which includes five 75-window known-answer items).", "why": "stage 0 job 64821: the v_proj plant (one head, 128 rows) reached a log-odds gain of 1.42 at step 300 with 0 argmax flips, so it never cleared the e58/copy gate (N 0, L 0.035); E58's 300 steps were sized for all matrices, not one head. Gate and every bar unchanged. The |D| miss was a code bug: every task read 512, as its own items do."}],
+ "amendments": [{"date": "2026-11-23", "what": "Amendment 1 (before any scored read): planted-head training extended from 300 to 3000 steps (checkpoints 10/30/100/300/1000/3000), lr and every other setting unchanged; the read is still the first checkpoint that clears the gate. Stage 0 code fix: the |D| check compares each task with its own E248 items' n_windows (it compared with the set over all items, which includes five 75-window known-answer items).", "why": "stage 0 job 64821: the v_proj plant (one head, 128 rows) reached a log-odds gain of 1.42 at step 300 with 0 argmax flips, so it never cleared the e58/copy gate (N 0, L 0.035); E58's 300 steps were sized for all matrices, not one head. Gate and every bar unchanged. The |D| miss was a code bug: every task read 512, as its own items do."}, {"date": "2026-11-23", "what": "Amendment 2 (cost guard only; no reading or bar touched): rerun_over 1.5 -> 2.5 so the remaining stage-1 items can run on cluster debug L40s at $0; shards resplit as --shard I 6 for I in 1,2,4,5 (shards 0 and 3 of 6 are exactly the finished shard 0 of 3).", "why": "the stage-0 estimate is from an H100; job 64985 (L40) ran its first 4 items in 1160 s against 757 s estimated (ratio 1.53) and its guard stopped it. 2.5 = 1.53 x the original 1.5 margin, rounded up. Pods would pass the cell cap ($11.11 spent of $20; 52 items x 2 min on one H100 plus set-up is about $9)."}],
  "plan": "reports/plans/2026-11-23_plan_p2-68-cmap-spec.md (revision 4, 32c6e0ad)",
  "filed": "2026-11-23",
  "what": "Whole-group head CMAP (cross-model activation patching after Prakash et al., ICLR 2024) on the 67M: per item (E237's 15 key items and both sides of E187's nine pairs), the head circuit found on the fine-tune by the authors' path patching and the paper-first minimality rule, then W0 run on the definition's rows D with the circuit's heads given the fine-tune's outputs before W_O. The compared scalar is the whole-circuit CMAP log-odds share on D (neuron_r.shares' form: mean numerator over mean gain); the A+B share is reported for every item.",
@@ -56,7 +56,7 @@
   "two_layer_seed": 2026112368,
   "two_layer_seed_source": "not fixed by the spec (the sender 'a seeded block-0 head', delta 'one fixed seeded Gaussian vector'): the split seed",
   "max_pool": 16,
-  "rerun_over": 1.5,
+  "rerun_over": 2.5,
   "stop_source": "spec G: a pool over 16 heads in one group is priced before pruning; after the first 4 items, more than 50% over the estimate stops",
   "hook_floor_tasks": {"kv": "e58/copy", "next": "e53/lowercase", "last": "e62/copy"},
   "hook_floor_tasks_source": "spec D (revision 4): one task per format"
