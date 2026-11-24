@@ -115,3 +115,4 @@
 - [Avoid paper merge conflicts](feedback-avoid-paper-merge-conflicts.md) — pull right before editing and committing in the paper repo; rebuild main.pdf after merges; diff vs origin after (user, 2026-11-23)
 - [Per-task values, not pair gaps](feedback-per-task-values-not-pair-gaps.md) — figures show each reading per task (reuse vs new), no tallies or cell text, little text (user, repeated, 2026-11-23)
 - [Blind reader per section](feedback-blind-reader-per-section.md) — each updated paper section goes to a blind subagent; appendix cut to what the body needs (user, 2026-11-23 night)
+- [Same runs behind compared panels](feedback-same-runs-behind-compared-panels.md) — equal states/seeds/randoms/conventions per panel; unequal point counts = non-standardised tests (user, 2026-11-24)
