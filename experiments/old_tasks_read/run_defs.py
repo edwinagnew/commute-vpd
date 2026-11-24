@@ -251,7 +251,10 @@ def eapig(C: Any, scratch: Path) -> None:
 
 
 def eapig_parity(run: Any, task: str, name: str, floor: float, path: Path) -> None:
-    """Stage 0's parity on a new task set (their stops, their floor): M, and the control item on its own set."""
+    """Stage 0's parity on a new task set (their stops): M, and the control item on its own set. The bar (amendment
+    2026-11-24, results/amendment_2026-11-24_eapig_parity.md) is this set's own two-path noise: the native forward's
+    batched-against-single disagreement (max of clean and corrupted) plus the converted model's (`rel_batch_single_clean`),
+    each measured here; stage 0's copy24 floor (`floor`) is kept beside it."""
     clean, bad, _ = run.items.task(task)
     run.send(task)
     out: dict[str, Any] = {"task": task}
@@ -260,7 +263,9 @@ def eapig_parity(run: Any, task: str, name: str, floor: float, path: Path) -> No
         run.load(n)
         p = out[f"parity_{n}"] = run.call("parity", task=task, native=str(native), batch=run.cfg.batch, first=run.cfg.full_position_windows)
         stops = ("rel_clean", "rel_corrupted", "rel_clean_all_positions", "rel_corrupted_all_positions", "rel_full_circuit_vs_clean", "rel_empty_circuit_vs_corrupted")
-        if miss := [f"{n} {k} {p[k]:.3g} over {floor:.3g}" for k in stops if not p[k] <= floor]:
+        bar = out[f"bar_{n}"] = max(out[f"native_floor_parts_{n}"]) + p["rel_batch_single_clean"]
+        out["floor_stage0"] = floor
+        if miss := [f"{n} {k} {p[k]:.3g} over {bar:.3g}" for k in stops if not p[k] <= bar]:
             write_stage(path, jsonable(out | {"stopped": miss}))
             log(f"STOP: EAP-IG parity on {task}: {miss}")
             return
