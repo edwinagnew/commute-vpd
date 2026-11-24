@@ -142,3 +142,4 @@ P1.60 (E286, due 11-25): gauge stage OK.
 - The rotary-restricted gauge is right: rotary covers the whole head, and V/O uses the full gl(128). My P2.71 tangent was wrong for a rotary model.
 - The VPD drop to 0.32-0.40 under a function-identical rotation is the featurization (per-matrix subcomponents), not the kept test, which reads 1 at heads and neurons.
 - Trained updates' gauge share (~1%) is under random (4%). "Gauge doesn't explain the low kept share" needs a $0 check first: re-read kept with the gauge part removed.
+P2.72 re-check (94050d16): OK after two fixes. Both blockers are fixed. (1) Run 2 must also need the random update (C2) at site A to read no. (2) The steering cap goes to about 0 for small updates, so a "no" there follows by construction: source the cap or add a row, and give it a floor or read uncapped.
