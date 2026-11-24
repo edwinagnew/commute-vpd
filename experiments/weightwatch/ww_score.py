@@ -95,6 +95,13 @@ def readings(kept: Kept, mom: Mapping[str, Moment], nulls: Sequence[Mapping[str,
             "haar_below_S": None if S is None else sum(1 for x in draws if x is not None and x < S)}  # fmt: skip
 
 
+def svals(dW: Tensor) -> Tensor:
+    """Singular values from the same call `kept_svd` makes: tau must be measured with it, since svdvals rounds the noise
+    values differently (dry run 2026-11-23: the trigger's sigma_2 was 4.0787683e-07 from svdvals, 4.0787685e-07 from
+    svd, so it sat above its own tau and was kept)."""
+    return torch.linalg.svd(dW.float(), full_matrices=False)[1]
+
+
 def kept_svd(dW: Tensor, tau: float, k: int) -> tuple[Tensor, Tensor, Tensor]:
     """The published call (fp32, `full_matrices=False`), then D2: the first min(k, #(s > tau)) left vectors. Returns
     (u, s) kept and every singular value."""

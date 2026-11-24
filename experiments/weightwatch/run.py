@@ -318,7 +318,7 @@ class Run:
         ks, rec = {}, {}
         for m in SC.MONITORED:
             k_item = int(kept[m][0].shape[1])
-            s_all = torch.linalg.svdvals(real[m])
+            s_all = SC.svals(real[m])
             u, s, _ = SC.kept_svd(real[m], SC.beyond(s_all, k_item), c.k)
             ks[m] = (u, s)
             e = float(real[m].double().pow(2).sum())
@@ -387,10 +387,10 @@ class Run:
         slot = f"h.{self.items.w.kl.cfg.slot_layer}.mlp.down_proj"
 
         def tau_of(dW: dict[str, Tensor], rank: dict[str, int]) -> float:
-            return max(SC.beyond(torch.linalg.svdvals(dW[m]), rank.get(m, 0)) for m in SC.MONITORED)
+            return max(SC.beyond(SC.svals(dW[m]), rank.get(m, 0)) for m in SC.MONITORED)
 
         zero = self.realised(KE.clone(self.M))
-        out["dW0"] = {"t": sum(int((torch.linalg.svdvals(v) > 0).sum()) for v in zero.values()), "S": None}
+        out["dW0"] = {"t": sum(int((SC.svals(v) > 0).sum()) for v in zero.values()), "S": None}
         if out["dW0"]["t"]:
             stop(path, out, f"dW = 0 keeps {out['dW0']['t']} directions", log)
         t = {"rescale": max(tau_of(self.realised(self.items.make(i)[0]), {mid: 8}) for i in ("x2", "x10"))}
@@ -570,7 +570,7 @@ class Run:
         write_stage(path, out)  # make_F("trigger") reads the gain
         F = self.make_F("trigger")
         dW = self.realised(F)
-        out["tau"] = tau = max(SC.beyond(torch.linalg.svdvals(dW[m]), 1 if m == TRIGGER_M else 0) for m in SC.MONITORED)
+        out["tau"] = tau = max(SC.beyond(SC.svals(dW[m]), 1 if m == TRIGGER_M else 0) for m in SC.MONITORED)
         kept = self.directions("trigger", F, tau)
         d = json.loads((RESULTS / "directions" / "trigger.json").read_text())
         mo = self.mom[TRIGGER_M]
