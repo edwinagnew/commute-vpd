@@ -209,7 +209,8 @@ The ranges, in rows of `danbraunai/pile-uncopyrighted-tok-shuffled` at 512 token
 | E235's Pile fill and key-value pool | train 32,768-196,607 | not used here | 0 |
 | 𝒟C prompts | train 196,608-396,607, the first 32 tokens of each | 200,000 prompts | 6.4M, inside 𝒟C's 20.0M |
 | 𝒟pre | train 400,000-761,999, one pass, no repeats | 185.34M | 143.84M to 184.8M |
-| Pile reads for scoring | validation 0-4,351 | 2.23M | 0 (held out) |
+| Pile reads for scoring | validation 0-999 and 2,000-4,351 | 1.72M | 0 (held out) |
+| heads' score windows | validation 1,000-1,999 | 512 windows of 32 tokens | 0 (held out) |
 
 - **𝒟C, 20.0M tokens.** Following §4.2's counts, M continues 100,000 prompts and F continues the other 100,000. Each
   continuation is 68 tokens sampled at temperature 0.7 and top-p 0.9, Appendix C's settings. Each sequence of 100 tokens
@@ -217,10 +218,17 @@ The ranges, in rows of `danbraunai/pile-uncopyrighted-tok-shuffled` at 512 token
 - **𝒟F, quota 40.96M (20%).** This is the side's fit-half read windows, each drawn at most 100 times (E235's repeat cap).
   Where the cap cannot fill the quota, 𝒟pre fills the shortfall, and the realised count is written to the fit's record.
   - C0 has no 𝒟F, which Appendix F.1 allows; 𝒟pre then supplies 184.8M of its 185.34M.
-  - A planted change uses its plant's read windows, split into fit and score halves by the row ids saved in E243/E212.
+  - Planted changes keep their experiments' own fit and score sets. No old score set is split.
+    - The grafted heads (E243 rungs, E235's block-3 head) train on graft windows from Pile train rows 0-16,383, 32
+      tokens each. They are scored on `graft_read()`: 512 windows of 32 tokens cut from Pile validation rows 1,000-1,999,
+      seed 201005. The code is `experiments/crosscoder_proper/run.py` 214-222, and the settings are
+      `results/predictions.json` 45-47 and 63.
+    - E212's planted direction trains on its `units` tensors and is scored on its separate `reads` tensors
+      (`experiments/realistic_tasks/run3.py` 100-105 and 133-145).
   - A random update uses its matched side's fit half.
-- **Scoring sources, never trained on.** Each side's score-half read windows, plus Pile validation rows 0-255 for the
-  Pile loss and rows 256-4,351 for the top-activation set.
+- **Scoring sources, never trained on.** Each side's score set, plus Pile validation rows 0-255 for the Pile loss. The
+  top-activation set's Pile background is validation rows 256-999 and 2,000-4,351, about 1.59M tokens. It leaves out the
+  heads' score rows, 1,000-1,999.
 - **Moving the data.** 𝒟pre is built once on the cluster as uint16, about 370 MB, and synced to each pod, about 37 s.
 
 **3.6 Generation.** `LlamaSimpleMLP.generate` (`~/param-decomp/param_decomp/pretrain/models/llama_simple_mlp.py` 442-487)
@@ -240,7 +248,7 @@ steering and max-activation analysis".
   ‖d^ft‖ within a factor of 1.5 and on firing rate within a factor of 2.
   - Pools may overlap, so a fit scores up to 183 distinct latents (3 candidates and 180 bulk).
   - If fewer than 60 latents qualify, the factors widen to 2 and 4, then to 3 and 8.
-  - If fewer than 20 qualify even then, the candidate has no floor. It is recorded as "no floor" and cannot pass.
+  - If fewer than 20 qualify even then, the candidate is "not scored": it has no usable floor and cannot pass.
 - **Matched search.** Every test runs the same search on each bulk latent as on its candidate. A candidate passes a test
   only if it beats its pool's maximum. If latents were exchangeable, that is a 1/61 chance per candidate per test.
 - **Steering vector and strengths.** The vector is v_i = d_i^ft, taken to raw units and scaled to unit length. It is added
@@ -264,7 +272,10 @@ steering and max-activation analysis".
     positions and the tokens just before them. For a plant they are its read positions.
   - Plain enrichment on read windows is a diagnostic only.
   - The 20 top contexts per candidate (token ids and decoded text) are saved for a reader.
-- **Yes** when one candidate passes both tests; otherwise **no**.
+- **The label per side has three values.** Every side gets one, trained sides included.
+  - **Yes**: one scored candidate passes both tests.
+  - **No**, a calibrated no: at least one candidate is scored against a floor, and none passes both tests.
+  - **Not scored**: no candidate has a usable floor. This is not a no, and it is reported apart.
 - **The differential null on C0b.** Here F = M and the readout is E62's copy task. The steering test asks whether a
   top-tail latent moves M's own copy log-odds more than its matched bulk, in absolute nats. Its result is not fixed in
   advance, as the old KL-gap null's was.
@@ -307,7 +318,7 @@ means the 67M setting leaves no faithful option.
 | steering strengths | 11 values, no cap stated | the same grid, uncapped, Pile-loss rise recorded | n | theirs | n |
 | steering read | judged text, on the behaviour | the side's behaviour g in nats, both signs, both models; KL gap as a diagnostic | y | ours | y (no chat text) |
 | top activations | inspected for consistency with the behaviour | share of top-50 on behaviour positions, against the pool; 20 contexts saved | y | ours | y (no grader) |
-| success | qualitative, per organism | §3.7 rule, one 60-latent pool per candidate, widened or "no floor" | y | ours | n |
+| success | qualitative, per organism | §3.7 rule, one 60-latent pool per candidate, widened or "not scored"; yes / no / not scored | y | ours | n |
 | controls | identical models | C0a/C0b, plants, random updates | y (added) | ours | n |
 
 ## 5. Proposed run
@@ -336,8 +347,10 @@ means the 67M setting leaves no faithful option.
   - Rung 5 again with tied shared decoders, the other reading of the shared-latent ambiguity. Reported only.
 
 **What gates what.**
-- Run 2 runs at site A only if three things hold: C0a passes, rung 5 or E212's plant reads yes, and C2 at site A reads no.
+- Run 2 runs at site A only if three things hold: C0a passes, rung 5 or E212's plant reads yes, and C2 at site A reads
+  a calibrated no.
   - If no plant reads yes, site A reads "not applicable at this update size", as E235 did, and run 2 does not run.
+  - If C2 at site A is "not scored", the null was not read, and run 2 does not run.
   - If a plant reads yes and C2 at site A reads yes as well, the yes does not tell a planted change from any change.
     Site A then reads "does not separate a plant from a random update", and run 2 does not run.
   - C2 is one random update, so it is a weak null. Run 2's matched random updates give the false-recovery rate afterwards.
@@ -357,7 +370,7 @@ means the 67M setting leaves no faithful option.
 - the nine built pairs, 18 sides, with one matched random update per pair (9).
 
 The fuller form gives each built-pair side its own random update (18), for 48 fits. It costs more than the session's
-headroom allows (below) and needs the user's confirmation. The output is a yes or no per side, with the tail and the
+headroom allows (below) and needs the user's confirmation. The output is the three-way label of §3.7 per side, with the tail and the
 steering table. There is no pair call and no reuse label. Each side is a single fit, so the comparison is descriptive:
 E235's every-seed rule needs two or more values per side and is not used.
 
@@ -538,3 +551,16 @@ Nothing has run. No code exists. The paper's LLM-grader comparison is not propos
   - Run 2 is repriced at about $194 for 39 fits, the new default, or $236 for 48. The 48-fit form exceeds the session
     headroom and needs the user's confirmation.
 - Rejected: none.
+
+## Review response, third round (2026-11-23)
+
+**GPT plan-reviewer, narrow fixes.**
+1. "Not scored" against a calibrated no. Fixed in §3.7: every side, trained sides included, gets yes, no or not scored.
+   - A no needs at least one candidate scored against a floor with none passing. "Not scored" means no candidate has a
+     usable floor.
+   - Fixed in §5: run 2 opens only on a calibrated no from C2 at site A. A C2 that is "not scored" does not open it.
+2. Plant sources. Fixed in §3.5: no old score set is split.
+   - The heads train on graft windows from Pile train rows 0-16,383 and are scored on `graft_read()`, validation rows
+     1,000-1,999.
+   - E212 trains on `units` and is scored on `reads`.
+   - The top-activation Pile background now leaves out validation rows 1,000-1,999.
