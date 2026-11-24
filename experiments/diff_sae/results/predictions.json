@@ -68,14 +68,18 @@
    "graft_energy_min_source": "E235 thresholds.full.graft_energy_min",
    "dead_max": 0.3,
    "dead_max_source": "spec 5: dead share over 0.3 at the end, by the trainer's own counters (E235's dead_max)",
-   "fve_stop": null,
+   "fve_stop": {"head-r1.A.c0": 0.8826, "head-r1.A.c1": 0.8821},
    "fve_stop_source": "spec 5: per item key, the rehearsal's pooled FVE at its last validation on the same side minus three times its two-seed difference; a side the rehearsal did not run has no entry and the stop is not applied to it",
-   "identity_rel": null,
+   "fve_stop_set_source": "set 2026-11-24 from rehearsal 3 (results/rehearse_r3/items, step 4000): head-r1.A.c0 0.8841, c1 0.8836, two-seed difference 0.0005, so each minus 0.0015. random_d0-r1.A.c0 (0.6721) ran at one seed only, so it has no two-seed difference and no entry; random_d1, head-r5, head.B, gauss.B and plant were not run to a validation, so no entry",
+   "identity_rel": 0.0026,
    "identity_rel_source": "spec 3.4: max over latents with C > 0 of |(B_F - B_M) - B_sD| / (|B_M| + |B_F|), the float32 fit against our float64; the bar is set from the rehearsal's value",
-   "kl_hF_floor": null,
+   "identity_rel_set_source": "set 2026-11-24 from rehearsal 3 at the full 50M scaling tokens: six readings (3 items x lit, D) from 2.71e-5 to 2.61e-4, a tenfold spread across items; bar = 10 x the largest, 2.6e-3",
+   "kl_hF_floor": 0,
    "kl_hF_floor_source": "spec 3.7: KL of the h_F patch, from the rehearsal",
-   "kl_gap_mult": null,
-   "kl_gap_mult_source": "spec 3.7: the gap's floor is this multiple of the h_F patch's floor, from the rehearsal"
+   "kl_hF_floor_set_source": "set 2026-11-24 from rehearsal 3: the h_F patch read exactly 0 on read and pile rows in all three full items (forwards under exact(), TF32 off), so the floor is exact 0",
+   "kl_gap_mult": 1,
+   "kl_gap_mult_source": "spec 3.7: the gap's floor is this multiple of the h_F patch's floor, from the rehearsal",
+   "kl_gap_mult_set_source": "set 2026-11-24: with the h_F floor exactly 0 the gap's floor is 0 for any multiple, so the rule never reads 'not read'; rehearsal 3 gaps were 0.0130-0.0328 nats, all well above it. 1 is a placeholder with no effect"
   },
   "rehearsal": {
    "self_act_diff": 0.0,
