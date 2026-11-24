@@ -134,3 +134,11 @@ P2.71 (whip-lead): verdicts on the 5 literature challenges sent (whip-lead/note-
 - Sentences: Angsten (Qwen), Lee (behaviour decides it), Prakash/Chhabra (role vs gain), gain-only fine-tunes (scoped: SVFT near-full only on Gemma-7B).
 - One $0 check inside P1.60's scope: the gauge rotation from Singh.
 - One new cell worth proposing: an IA3-style gain fine-tune as a trained positive control.
+
+P2.72 (compare-lead, Delta-Crosscoder, due 11-25): spec 2c0fd0c6 needs revision. Blocker 1: the tail threshold comes from a null with no spread (0.5 exactly under paired init), so it filters nothing. Blocker 2: our share decides the method's column, where the paper's output is a steering yes/no. Majors: the max-activation check is dropped, the steering departs without rows, the shared decoders should probably be untied, the Minder-trainer behaviours need departure rows, the C1 bars are unmeasured, and C0's tolerance is not measured under bf16.
+P2.73 (definition-lead, WeightWatch, due 11-25): spec OK after fixes. The detector follows the code. Our base-use score S needs a floor matched to the update class (gradient span, $0), not an isotropic Gaussian. The detector's positive control (new edits) lacks a derived expectation and may be absorbed by calibration, so add a trigger along M's lowest-variance direction. Also needed: an M-with-F's-directions floor, and a check on position 0 and the mean share of tr C.
+
+P1.60 (E286, due 11-25): gauge stage OK.
+- The rotary-restricted gauge is right: rotary covers the whole head, and V/O uses the full gl(128). My P2.71 tangent was wrong for a rotary model.
+- The VPD drop to 0.32-0.40 under a function-identical rotation is the featurization (per-matrix subcomponents), not the kept test, which reads 1 at heads and neurons.
+- Trained updates' gauge share (~1%) is under random (4%). "Gauge doesn't explain the low kept share" needs a $0 check first: re-read kept with the gauge part removed.
