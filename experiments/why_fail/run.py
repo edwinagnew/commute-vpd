@@ -131,5 +131,163 @@ def edge() -> None:
     print(json.dumps(out, indent=1))
 
 
+# ---- the saved items ------------------------------------------------------------------------------------------------
+
+
+def load(r: dict[str, str]) -> dict[str, np.ndarray]:
+    """in_K, flips, num, den, dd, changed of one inventory row (E281: on the copy windows; changed from E257's arrays)."""
+    k = np.load(REPO / r["k_npz"])
+    a = np.load(REPO / r["arrays_npz"])
+    if r["experiment"] == "E281":
+        ch = np.load(REPO / "experiments" / "rb_states" / "results" / "large" / f"items_{r['item'].replace('/', '-')}.npz")["changed"]
+        out = {"in_K": k["in_Kcopy"], "num": a["num_copy"], "den": a["den_copy"], "dd": a["dd_copy"], "changed": ch}
+    else:
+        if "changed" in a.files:
+            ch = a["changed"]
+        else:  # E268's built edits: E242's changed set
+            ch = np.load(REPO / "experiments" / "kstar_vpd_wording_a" / "results" / "large" / f"items_{r['item'].replace('/', '-')}.npz")["changed"]
+        out = {"in_K": k["in_K"], "num": a["num"], "den": a["den"], "dd": a["dd"], "changed": ch}
+    out = {k_: np.asarray(v).astype(bool if k_ in ("in_K", "changed") else np.float64) for k_, v in out.items()}
+    out["flips"] = np.asarray(k["flips"]).astype(np.int64)
+    assert len({len(v) for v in out.values()}) == 1, r["item"]
+    return out
+
+
+def eb(a: dict[str, np.ndarray], sel: np.ndarray) -> float:
+    """stand_in.explained_share in numpy: 1 when sum dd over sel is 0."""
+    tot = float(a["dd"][sel].sum())
+    ks = np.nan_to_num(kept(a["num"], a["den"], a["dd"]))
+    return 1.0 if tot == 0 else float((ks * a["dd"])[sel].sum()) / tot
+
+
+def saved_eb(r: dict[str, str]) -> float | None:
+    d = {"E268": "kstar_needed", "E275": "claim2_needed", "E277": "needed_neurons", "E278": "eb_dropped", "E281": "e62_copy_windows"}.get(r["experiment"])
+    if d is None:
+        return None
+    sep = "__" if r["experiment"] == "E277" else "-"
+    j = json.loads((REPO / "experiments" / d / "results" / "items" / f"{r['item'].replace('/', sep)}.json").read_text())
+    return j.get("E_b_Kcopy" if r["experiment"] == "E281" else "E_b_K")
+
+
+def checks(rows: list[dict[str, Any]], arrays: dict[tuple[str, str], dict[str, np.ndarray]]) -> list[str]:
+    """The filed layout checks; any miss stops the run."""
+    miss = []
+    for (exp, item), a in arrays.items():
+        if exp in ("E268", "E275", "E278", "E281"):
+            lay, _ = layout("vpd", len(a["dd"]))
+            if (a["dd"][lay < 0] != 0).any():
+                miss.append(f"{exp} {item}: nonzero dd outside the 24 matrices")
+    x2, x10 = arrays[("E268", "x2")], arrays[("E268", "x10")]
+    j = np.flatnonzero(x2["changed"]) - 1
+    if not (len(j) == VPD_C[-1] + 1 and len(set(j // VPD_PER_LAYER)) == 1 and (j % VPD_PER_LAYER).min() == VPD_PER_LAYER - VPD_C[-1] - 1):
+        miss.append(f"x2's changed set at VPD is not one down_proj block ({len(j)} variables)")
+    # Amendment 1 (2026-11-23, reports/analyses/2026-11-24_analysis_p1-59-why-readings-fail.md, Departures): the filed "x10's kept shares equal x2's" is false by the rule's
+    # own positive-gain convention (gain g - 1 scales by 9, so a gain under 8/9 at x2 turns negative and reads 0 at x10).
+    # What linearity does fix is dd(x10) = 81 dd(x2), checked dd-weighted.
+    s = x2["changed"] & (x2["dd"] > 0)
+    dev = float(np.abs(x10["dd"][s] - 81 * x2["dd"][s]).sum() / (81 * x2["dd"][s]).sum())
+    rows.append({"check": "x10 vs x2 at VPD: sum |dd10 - 81 dd2| / sum 81 dd2 over x2's changed variables", "value": dev})
+    k2, k10 = kept(x2["num"], x2["den"], x2["dd"])[s], kept(x10["num"], x10["den"], x10["dd"])[s]
+    rows.append({"check": "x10 vs x2 at VPD: changed variables whose kept share differs by over 1e-3 (the filed check)", "value": int((np.abs(k10 - k2) > 1e-3).sum())})
+    if dev > 1e-6:
+        miss.append(f"x10's dd at VPD is not 81 times x2's ({dev:.3g} relative)")
+    return miss
+
+
+def item_row(r: dict[str, str], a: dict[str, np.ndarray], frac: float) -> dict[str, Any]:
+    out = {k: r[k] for k in ("experiment", "item", "feat", "cls")}
+    out |= reading1(a, frac) | reading2(a) | reading3(a, r["feat"])
+    fl = lambda s: float(s) if s not in ("", "None") else None
+    out |= {"margin_min": fl(r["margin_min"]), "margin_median": fl(r["margin_median"]), "too_small": out["size_K"] < 100}
+    out |= {"E_b_K": eb(a, a["in_K"] & a["changed"]), "E_b_K_saved": saved_eb(r)}
+    return out | unfiled(a, frac)
+
+
+def unfiled(a: dict[str, np.ndarray], frac: float) -> dict[str, Any]:
+    """Added after R1's control failed (not filed; reported as such): does the change sit on the most-needed variables
+    (their share of the pool's dd), and are the biggest changes rescales (E_b over the top `frac` of the pool by dd)."""
+    pool = a["in_K"] & a["changed"] & (a["dd"] > 0)
+    if not pool.any():
+        return {"top_dd_share": None, "bigdd_E_b": None}
+    top = top_set(a["flips"], pool, frac)
+    big = top_set(a["dd"], pool, frac)
+    return {"top_dd_share": float(a["dd"][top].sum() / a["dd"][pool].sum()), "bigdd_E_b": eb(a, big)}
+
+
+def stats(v: list[float | None]) -> dict[str, Any]:
+    x = np.array([u for u in v if u is not None], dtype=float)
+    if len(x) == 0:
+        return {"n": 0, "skipped": len(v)}
+    q = np.percentile(x, [25, 50, 75])
+    return {"n": len(x), "skipped": len(v) - len(x), "q25": float(q[0]), "median": float(q[1]), "q75": float(q[2]), "min": float(x.min()), "max": float(x.max())}
+
+
+KEYS = ("top_kept_median", "top_E_b", "pool_kept_median", "E_b_K", "coverage", "K_over_changed", "K_over_n", "margin_min", "margin_median",
+        "rem_share", "max_layer_share", "top_dd_share", "bigdd_E_b")  # fmt: skip
+
+
+def spearman(x: list[float], y: list[float]) -> float:
+    from scipy.stats import spearmanr
+
+    return float(spearmanr(x, y).statistic)
+
+
+def main() -> None:
+    from commute.jobs import require_filed
+
+    require_filed(PRED)
+    frac = json.loads(PRED.read_text())["settings"]["top_frac"]
+    inv = [r for r in csv_rows(HERE / "inventory.tsv") if not r["missing"].startswith("dup:")]
+    arrays = {(r["experiment"], r["item"]): load(r) for r in inv}
+    check_rows: list[dict[str, Any]] = []
+    miss = checks(check_rows, arrays)
+    if miss:
+        sys.exit("STOP: " + "; ".join(miss))
+    items = [item_row(r, arrays[(r["experiment"], r["item"])], frac) for r in inv]
+    pooled = [i for i in items if i["experiment"] not in ("E281", "E283")]  # other D: beside their class, not in it
+    classes: dict[str, Any] = {}
+    for feat in ("vpd", "neurons"):
+        for c in sorted({i["cls"] for i in pooled if i["feat"] == feat}):
+            g = [i for i in pooled if i["feat"] == feat and i["cls"] == c]
+            classes[f"{feat}/{c}"] = {k: stats([i[k] for i in g]) for k in KEYS} | {"items": len(g)}
+            mm = [i["margin_min"] for i in g if i["margin_min"] is not None]
+            classes[f"{feat}/{c}"]["frac_margin_min_below_0.01"] = sum(m < 0.01 for m in mm) / len(mm) if mm else None
+            classes[f"{feat}/{c}"]["layer_share_median"] = [float(np.median([i["layer_share"][L] for i in g if i["layer_share"]])) for L in range(LAYERS)]
+    rho = {}
+    for feat in ("vpd", "neurons"):
+        g = [i for i in pooled if i["feat"] == feat and i["margin_min"] is not None and i["n_changed"] > 0]
+        rho[feat] = {"spearman_K_over_n_vs_min_margin": spearman([i["K_over_n"] for i in g], [i["margin_min"] for i in g]), "n": len(g)}
+        t = [i for i in g if not i["cls"].startswith("built")]
+        rho[feat + "_no_built"] = {"spearman_K_over_n_vs_min_margin": spearman([i["K_over_n"] for i in t], [i["margin_min"] for i in t]), "n": len(t)}
+    for key in ("vpd/toy_trained", "neurons/toy_trained", "neurons/realistic", "vpd/procedural", "vpd/rl"):  # within class (red team, 2026-11-23)
+        feat, c = key.split("/")
+        g = [i for i in pooled if i["feat"] == feat and i["cls"] == c and i["margin_min"] is not None]
+        rho[key] = {"spearman_K_over_n_vs_min_margin": spearman([i["K_over_n"] for i in g], [i["margin_min"] for i in g]), "n": len(g)}
+    med = lambda key, c: classes[c][key].get("median")
+    r4 = {f"neurons toy_trained - realistic: {k}": med(k, "neurons/toy_trained") - med(k, "neurons/realistic") for k in ("top_kept_median", "coverage", "rem_share")}
+    r4 |= {f"vpd toy_trained - {c}: top_kept_median": med("top_kept_median", "vpd/toy_trained") - med("top_kept_median", f"vpd/{c}") for c in ("procedural", "rl")}
+    dev = [abs(i["E_b_K"] - i["E_b_K_saved"]) / max(abs(i["E_b_K_saved"]), 1e-12) for i in items if i["E_b_K_saved"] is not None]
+    summary = {"experiment": "E285 (why_fail)", "cell": "P1.59", "n_items": len(items), "n_pooled": len(pooled), "checks": check_rows,
+               "E_b_K_recomputed_max_rel_dev": max(dev), "E_b_K_recomputed_n": len(dev), "classes": classes, "spearman": rho, "R4": r4,
+               "beside": [i for i in items if i["experiment"] in ("E281", "E283")], "items": items}  # fmt: skip
+    (RESULTS / "summary.json").write_text(json.dumps(summary, indent=1))
+    cols = [k for k in items[0] if k != "layer_share"] + [f"layer{L}_share" for L in range(LAYERS)]
+    lines = ["\t".join(cols)]
+    for i in items:
+        ls = i["layer_share"] or [None] * LAYERS
+        v = {**i, **{f"layer{L}_share": ls[L] for L in range(LAYERS)}}
+        lines.append("\t".join("" if v[c] is None else (f"{v[c]:.6g}" if isinstance(v[c], float) else str(v[c])) for c in cols))
+    (RESULTS / "items.tsv").write_text("\n".join(lines) + "\n")
+    for c, s in classes.items():
+        print(c, s["items"], {k: (round(s[k]["median"], 4) if s[k].get("median") is not None else None) for k in KEYS})
+    print(json.dumps({"spearman": rho, "R4": r4, "checks": check_rows, "E_b_K_dev": max(dev)}, indent=1))
+
+
+def csv_rows(p: Path) -> list[dict[str, str]]:
+    head, *body = p.read_text().splitlines()
+    names = head.split("\t")
+    return [dict(zip(names, line.split("\t"), strict=True)) for line in body]
+
+
 if __name__ == "__main__":
-    {"edge": edge}[sys.argv[1]]()
+    {"edge": edge, "all": main}[sys.argv[1]]()
