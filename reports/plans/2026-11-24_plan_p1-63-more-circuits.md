@@ -1,4 +1,4 @@
-# P1.63, due 11-25: Figure 2's built edits on two more circuits (E###)
+# P1.63, due 11-25: Figure 2's built edits on two more circuits (E301)
 
 **Request, in the Terms' words.** The user (2026-11-24): the five built edits of Fig 2 (x2, x10, rebuilt, new_few,
 new_thin), each with its own size-matched random, made again on two or three other base-model circuits and read by the
