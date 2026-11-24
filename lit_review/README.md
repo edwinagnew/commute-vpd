@@ -12,6 +12,7 @@ CAUSAL, DYNAMICS, SUPPORTS, CONTRADICTS, ALIGNMENT, CITE-FIX, BACKGROUND) plus a
 - `digest/index.md` lists the papers by theme. Search by tag: `command grep -l 'primary_tag: BASELINE' digest/papers/*`.
 - The ranked digest for the paper (missed baselines, known-answer cases, definitions, supporting and contradicting
   findings, citation fixes) is `~/commute-data/agents/whip-lead/lit-digest-2026-11-24.md` (top 10 in `-top10.md`).
+- Searchable page (all entries, filters by tag/theme/bucket, digest tab): https://claude.ai/artifact/R95dexQXCV4QxPqsKxsbAF, built by whip-lead from `digest/papers` (`~/commute-data/agents/whip-lead/litpage/build.py`); tell whip-lead when entries change.
 - New papers: the user files them with `fleet/lit-add`; litreview-lead reads them into `digest/`.
 
 `catalog.md`, `reading_list.md` and `summaries/` below are the October sweep's record, kept as it was. Where an
