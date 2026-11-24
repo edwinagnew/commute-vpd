@@ -20,6 +20,8 @@ Stages, each job running `control` first (skipped once results/stage0_<tag>.json
     trained    E229's 20 fine-tunes and their matched randoms (nn)
     panel_nn   E272's 48 panel states (nn)
     panel_vpd  E272's 24 seed-0 and Gaussian states (vpd), K found again on `panel_vpd_derangements` derangements (pod)
+    gauge      (added 2026-11-24, gauge.py) M under a random per-head gauge, read at both bases; and the share of each
+               trained update's head matrices along the gauge's tangent, beside a matched random
     summary    CPU: every item JSON into results/summary.json
 
     python experiments/rotation_kept/run.py --stage built --tag b0
@@ -388,6 +390,8 @@ def main(stage: str, shard: tuple[int, int], tag: str) -> int:
     log(f"{EXPERIMENT} start, stage {stage}, shard {shard}, tag {tag}; settings {asdict(CFG)}")
     for d in ("items", "large"):
         (RESULTS / d).mkdir(parents=True, exist_ok=True)
+    if stage == "gauge":  # its own checks, independent of the control stage (gauge.py)
+        return load_experiment("rotation_kept", "gauge").main(CFG, tag, shard)
     control(CFG, tag)
     if stage == "control":
         return 0
@@ -410,7 +414,7 @@ def main(stage: str, shard: tuple[int, int], tag: str) -> int:
 
 if __name__ == "__main__":
     ap = argparse.ArgumentParser()
-    ap.add_argument("--stage", choices=("control", "built", "e62", "head24", "trained", "panel_nn", "panel_vpd", "summary"), required=True)
+    ap.add_argument("--stage", choices=("control", "built", "e62", "head24", "trained", "panel_nn", "panel_vpd", "gauge", "summary"), required=True)
     ap.add_argument("--shard", nargs=2, type=int, default=(0, 1), metavar=("I", "N"), help="every N-th item from the I-th (0-based)")
     ap.add_argument("--tag", default="local", help="this job's name: the control stage writes results/stage0_<tag>.json")
     args = ap.parse_args()
