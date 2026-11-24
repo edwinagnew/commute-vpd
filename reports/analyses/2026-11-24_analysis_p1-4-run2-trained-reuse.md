@@ -18,8 +18,8 @@ closeness an ordinary fine-tune reaches on this model.
 No call. The fine-tunes copying the strengthening edit stayed far from it: on held-out windows their remaining distance to
 the target was 0.300 to 0.302 of their distance from the base model. The filed bar is 0.1924. The copies of the
 new edit passed easily. So nothing here tests the definition. Described anyway, the copies of the strengthening edit
-read low at neurons, near the copies of the new edit and far below the edit itself. That is what the definition would
-read if it could not see trained reuse, and also what it reads if the copies learned something else.
+read low at neurons, near the copies of the new edit and far below the edit itself. The x2 copies moved the model's
+outputs further than x2 does, partly in a direction x2 does not go, so their reading says nothing about x2.
 
 ![Write share of each item at neurons and at VPD](../../experiments/trained_reuse_control/figures/e_b_imitators.png)
 
@@ -55,7 +55,7 @@ activations form one remainder variable. Beside each reading we give $|K|$ and t
 logits. Under 100 needed variables reads "too small"; none was.
 
 **The controls.** Beside every copy, a random update matched to it in size on each changed matrix rules out that any
-update of that size reads the same. The two built edits are read again as the reference: x2 near 1, new_few near 0.
+update of that size reads the same. The two built edits are read again as the reference: x2 near 1 at neurons and 0.76 at VPD, new_few near 0.
 
 ## What we expected
 
@@ -72,22 +72,25 @@ named x2 as the risk: 301 training windows and a mild target, with an expected l
 **Reading it.** On every seed the x2 copies missed the bar, and by a wide margin. Their leftover at step 3,000 was
 0.300 to 0.302, against the bar of 0.1924. The new_few copies read 0.026 on all three seeds.
 
-The ratio hides that both kinds of copy end about the same absolute distance from their targets. The x2 copies end at a
-total variation of 0.0235 from x2, the new_few copies at 0.0226 from new_few. But x2 moves M's outputs only a little:
-its own distance from M is 0.0745, against 0.858 for new_few. So the same residual error is a third of x2's effect and
-a fortieth of new_few's.
+The x2 copies are not an under-trained x2. Their own distance from M is 0.078 on every seed, above x2's own 0.0745.
+So they moved M's outputs further than x2 did, and about a third of that movement goes where x2 does not.
+
+Part of why the ratio is hard to meet is that x2 moves M's outputs only a little: 0.0745, against 0.858 for new_few.
+The x2 copies end at a total variation of 0.0235 from x2, the new_few copies at 0.0226 from new_few. These two are
+averaged over different read sets, so they are not on one scale and do not show that the copies were equally good;
+they only explain why a residual error of this size is a large share of x2's effect.
 
 The x2 copies overfit. Their training loss fell from 0.10 to 0.0002 on the 301 training windows. Their leftover on the
 held-out windows sat near 0.4 at step 300 and still read 0.37 at step 1,000. It was still falling at step 3,000, slowly.
 
-| copy | seed | leftover at 3,000 | distance to target | target's distance from M | counts |
-| --- | --- | --- | --- | --- | --- |
-| x2 | 0 | 0.300 | 0.0235 | 0.0745 | no |
-| x2 | 1 | 0.302 | 0.0236 | 0.0745 | no |
-| x2 | 2 | 0.300 | 0.0235 | 0.0745 | no |
-| new_few | 0 | 0.026 | 0.0226 | 0.858 | yes |
-| new_few | 1 | 0.026 | 0.0226 | 0.858 | yes |
-| new_few | 2 | 0.026 | 0.0225 | 0.858 | yes |
+| copy | seed | leftover at 3,000 | distance to target | copy's distance from M | target's distance from M | counts |
+| --- | --- | --- | --- | --- | --- | --- |
+| x2 | 0 | 0.300 | 0.0235 | 0.078 | 0.0745 | no |
+| x2 | 1 | 0.302 | 0.0236 | 0.078 | 0.0745 | no |
+| x2 | 2 | 0.300 | 0.0235 | 0.078 | 0.0745 | no |
+| new_few | 0 | 0.026 | 0.0226 | 0.858 | 0.858 | yes |
+| new_few | 1 | 0.026 | 0.0226 | 0.858 | 0.858 | yes |
+| new_few | 2 | 0.026 | 0.0225 | 0.858 | 0.858 | yes |
 
 ### Described only: the copies of x2 read low at neurons, near the copies of new_few
 
@@ -97,10 +100,10 @@ None of this is a test, since the x2 copies are not copies of x2 by the filed st
 itself at 0.9998 and a few hundredths above the new_few copies at 0.0105 to 0.0107. The per-seed gap between them is
 0.018 to 0.019, a tenth of the filed 0.2; the built pair is 0.995 apart. The matched randoms read 0.0036 to 0.0044. So
 the x2 copies sit about seven times above their randoms, as earlier ordinary fine-tunes of the same copy task did at
-0.022 and 0.028. Nothing in them looks like x2.
+0.022 and 0.028. Their reading is far from x2's 0.9998.
 
-The remainders matter here. Leaving them out, the x2 copies read 0.055 to 0.057 and the new_few copies 0.055 to 0.061:
-the two kinds of copy read the same. The remainders carry 0.49 of the x2 copies' write change and 0.84 to 0.85 of the
+The remainders matter here. Leaving them out, the x2 copies read 0.055 to 0.057 and the new_few copies 0.055 to 0.061.
+This is a description, not evidence about reuse against new, since the x2 copies do not count. The remainders carry 0.49 of the x2 copies' write change and 0.84 to 0.85 of the
 new_few copies'.
 
 | item | $E_b$ over $K$ | $|K|$ | median top-1 margin | without remainders |
@@ -118,15 +121,15 @@ its margin is far below the copy's.
 At VPD's subcomponents, on seed 0 only, the x2 copy reads 0.021 and the new_few copy 0.024. Their randoms
 read 0.011 and 0.010. Built x2 reads 0.761 and built new_few 0.0127. The needed sets are large throughout: 5,848 for the
 new_few copy and 31,161 to 38,935 for every other item. The margins are those of the neuron table, since they are read
-on the same models. Both copies sit about twice their randoms, and the x2 copy below the new_few copy.
+on the same models. Both copies sit about twice their randoms.
 
 ## What we learned
 
 The imitation control could not be built for the strengthening edit at the closeness an ordinary fine-tune has reached
-on this model. Its small effect on outputs makes the leftover ratio hard to meet even when the absolute error matches
-the new edit's copies. So this run neither shows that the definition sees trained reuse nor that it cannot. The
-descriptive readings point the same way as every earlier trained update: low, a few times above random, and alike for
-both targets once the remainders are left out.
+on this model: a trained copy of the strengthening edit could not be fit within the closeness standard, so the
+instrument still has no trained positive control here. The construction failed, not a reading of the instrument. The
+x2 copies went partly elsewhere, and x2's small effect on outputs makes the ratio hard to meet. The descriptive
+readings are low and a few times above random, like every earlier trained update.
 
 ## How compelling is the evidence
 
@@ -137,8 +140,9 @@ learned the copy task its own way, so its low reading says nothing about x2.
 
 ## Surprises
 
-The x2 copies ended as close to x2 in absolute distance as the new_few copies to new_few; the ratio failed because x2's
-effect is small. Without remainders, the two kinds of copy read the same.
+The x2 copies moved the model further from M than x2 itself does, rather than falling short of it. Without remainders,
+the x2 and new_few copies read within a few thousandths of each other; with the x2 copies uncounted, that is a
+description only.
 
 ## What next
 
