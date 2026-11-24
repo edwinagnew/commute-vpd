@@ -62,6 +62,33 @@
   },
   {
    "pair": "e62_copy_lookup",
+   "method": "steer_perkey",
+   "states": {
+    "reuse": [
+     "e62/copy_s0",
+     "e62/copy_s1",
+     "e62/copy_s2"
+    ],
+    "new": [
+     "e62/lookup_s0",
+     "e62/lookup_s1",
+     "e62/lookup_s2"
+    ]
+   },
+   "reuse": [
+    0.6060847819590891,
+    0.6418674953791201,
+    0.6548771031959815
+   ],
+   "new": [
+    0.68536113155229,
+    0.6260168446433703,
+    0.6596503717814746
+   ],
+   "source": "experiments/steering_copy_lookup/results/stage1.json .states.<state>.steering.perkey.share_lo"
+  },
+  {
+   "pair": "e62_copy_lookup",
    "method": "erank",
    "states": {
     "reuse": [
@@ -275,6 +302,33 @@
     0.3519546083099902
    ],
    "source": "experiments/holes_fill/results/stage1.json .states.<state>.steering.pooled.share; experiments/known_3seeds/results/stage2.json .states.<state>.holes_fill.steering.pooled.share"
+  },
+  {
+   "pair": "e46_copy_random",
+   "method": "steer_perkey",
+   "states": {
+    "reuse": [
+     "e46/ident32_s0",
+     "e46/ident32_s1",
+     "e46/ident32_s2"
+    ],
+    "new": [
+     "e46/rand32_s0",
+     "e46/rand32_s1",
+     "e46/rand32_s2"
+    ]
+   },
+   "reuse": [
+    1.0530931540773383,
+    1.0724689200786495,
+    1.0891111649374996
+   ],
+   "new": [
+    0.9201917283389469,
+    0.9705624242050457,
+    0.9499918441226408
+   ],
+   "source": "experiments/holes_fill/results/stage1.json .states.<state>.steering.perkey.share; experiments/known_3seeds/results/stage2.json .states.<state>.holes_fill.steering.perkey.share"
   },
   {
    "pair": "e46_copy_random",
@@ -494,6 +548,34 @@
   },
   {
    "pair": "e53_lowercase_cipher",
+   "method": "steer_perkey",
+   "states": {
+    "reuse": [
+     "e53/lowercase_s0",
+     "e53/lowercase_s1",
+     "e53/lowercase_s2"
+    ],
+    "new": [
+     "e53/cipher_s0",
+     "e53/cipher_s1",
+     "e53/cipher_s2"
+    ]
+   },
+   "reuse": [
+    null,
+    null,
+    null
+   ],
+   "new": [
+    null,
+    null,
+    null
+   ],
+   "not_read": "not read in this form: E53's tasks have no key pool, so holes_fill reads pooled steering only",
+   "source": ""
+  },
+  {
+   "pair": "e53_lowercase_cipher",
    "method": "erank",
    "states": {
     "reuse": [
@@ -707,6 +789,33 @@
     0.5766721604719687
    ],
    "source": "experiments/holes_fill/results/stage1.json .states.<state>.steering.pooled.share"
+  },
+  {
+   "pair": "e54_matched",
+   "method": "steer_perkey",
+   "states": {
+    "reuse": [
+     "e54/elicit_s0",
+     "e54/elicit_s1",
+     "e54/elicit_s2"
+    ],
+    "new": [
+     "e54/cipher_s0",
+     "e54/cipher_s1",
+     "e54/cipher_s2"
+    ]
+   },
+   "reuse": [
+    0.9261105503006871,
+    0.9441115250989559,
+    0.9243050964635168
+   ],
+   "new": [
+    1.18489411983302,
+    1.141599150742938,
+    1.2623747022464327
+   ],
+   "source": "experiments/holes_fill/results/stage1.json .states.<state>.steering.perkey.share"
   },
   {
    "pair": "e54_matched",
@@ -926,6 +1035,33 @@
   },
   {
    "pair": "e54_own",
+   "method": "steer_perkey",
+   "states": {
+    "reuse": [
+     "e54/elicit_s0",
+     "e54/elicit_s1",
+     "e54/elicit_s2"
+    ],
+    "new": [
+     "e54/cipher_own_s0",
+     "e54/cipher_own_s1",
+     "e54/cipher_own_s2"
+    ]
+   },
+   "reuse": [
+    0.9261105503006871,
+    0.9441115250989559,
+    0.9243050964635168
+   ],
+   "new": [
+    1.0376113047895403,
+    1.0300855525367645,
+    1.0726440096413707
+   ],
+   "source": "experiments/holes_fill/results/stage1.json .states.<state>.steering.perkey.share; experiments/known_3seeds/results/stage2.json .states.<state>.holes_fill.steering.perkey.share"
+  },
+  {
+   "pair": "e54_own",
    "method": "erank",
    "states": {
     "reuse": [
@@ -1139,6 +1275,33 @@
     0.4706502165597786
    ],
    "source": "experiments/holes_fill/results/stage1.json .states.<state>.steering.pooled.share"
+  },
+  {
+   "pair": "open_pair_c3",
+   "method": "steer_perkey",
+   "states": {
+    "reuse": [
+     "c3/rank1_s0",
+     "c3/rank1_s1",
+     "c3/rank1_s2"
+    ],
+    "new": [
+     "c3/cipher_s0",
+     "c3/cipher_s1",
+     "c3/cipher_s2"
+    ]
+   },
+   "reuse": [
+    0.9513646493291806,
+    0.9912518480741188,
+    1.0169099025169692
+   ],
+   "new": [
+    1.09542726713927,
+    1.147813962051469,
+    1.1024768961972728
+   ],
+   "source": "experiments/holes_fill/results/stage1.json .states.<state>.steering.perkey.share"
   },
   {
    "pair": "open_pair_c3",
@@ -1358,6 +1521,33 @@
   },
   {
    "pair": "open_pair_c3_copy",
+   "method": "steer_perkey",
+   "states": {
+    "reuse": [
+     "c3/copy_s0",
+     "c3/copy_s1",
+     "c3/copy_s2"
+    ],
+    "new": [
+     "c3/cipher_s0",
+     "c3/cipher_s1",
+     "c3/cipher_s2"
+    ]
+   },
+   "reuse": [
+    1.1117236364088143,
+    1.0900731917338622,
+    1.1066199654550108
+   ],
+   "new": [
+    1.09542726713927,
+    1.147813962051469,
+    1.1024768961972728
+   ],
+   "source": "experiments/holes_fill/results/stage1.json .states.<state>.steering.perkey.share"
+  },
+  {
+   "pair": "open_pair_c3_copy",
    "method": "erank",
    "states": {
     "reuse": [
@@ -1571,6 +1761,33 @@
     0.17625682841435067
    ],
    "source": "experiments/refit_96key/results/stage1.json .states.<state>.holes_fill.steering.pooled.share"
+  },
+  {
+   "pair": "e58_rank1_96",
+   "method": "steer_perkey",
+   "states": {
+    "reuse": [
+     "e58/rank1_s0",
+     "e58/rank1_s1",
+     "e58/rank1_s2"
+    ],
+    "new": [
+     "e58/cipher_s0",
+     "e58/cipher_s1",
+     "e58/cipher_s2"
+    ]
+   },
+   "reuse": [
+    0.9563557601029454,
+    0.9937502786277759,
+    1.0089636265456758
+   ],
+   "new": [
+    0.9506473213477797,
+    0.9519608470941422,
+    0.978966138452438
+   ],
+   "source": "experiments/refit_96key/results/stage1.json .states.<state>.holes_fill.steering.perkey.share"
   },
   {
    "pair": "e58_rank1_96",
@@ -1790,6 +2007,33 @@
   },
   {
    "pair": "e58_copy_prior_cipher",
+   "method": "steer_perkey",
+   "states": {
+    "reuse": [
+     "e58/copy_s0",
+     "e58/copy_s1",
+     "e58/copy_s2"
+    ],
+    "new": [
+     "e58/prior_cipher_s0",
+     "e58/prior_cipher_s1",
+     "e58/prior_cipher_s2"
+    ]
+   },
+   "reuse": [
+    0.9879207829562398,
+    0.9799270468766955,
+    1.0032073016009257
+   ],
+   "new": [
+    0.9000110769024481,
+    0.9272936060637558,
+    0.948054301813068
+   ],
+   "source": "experiments/refit_96key/results/stage1.json .states.<state>.holes_fill.steering.perkey.share"
+  },
+  {
+   "pair": "e58_copy_prior_cipher",
    "method": "erank",
    "states": {
     "reuse": [
@@ -1953,7 +2197,7 @@
  ],
  "missing": [],
  "checks": {
-  "found": 343,
+  "found": 388,
   "not_found": []
  },
  "shared_mismatch": [],
@@ -1980,6 +2224,18 @@
     "band": [
      0.5471486846216325,
      0.847240041183636
+    ],
+    "inside": true
+   },
+   "steer_perkey": {
+    "value": 1.0891111649374996,
+    "siblings": [
+     1.0530931540773383,
+     1.0724689200786495
+    ],
+    "band": [
+     0.9999541022234386,
+     1.1256079719325491
     ],
     "inside": true
    },
@@ -2066,6 +2322,18 @@
     "band": [
      0.20305801249463634,
      0.42560551721542356
+    ],
+    "inside": true
+   },
+   "steer_perkey": {
+    "value": 0.9499918441226408,
+    "siblings": [
+     0.9201917283389469,
+     0.9705624242050457
+    ],
+    "band": [
+     0.8698210324728481,
+     1.0209331200711445
     ],
     "inside": true
    },
@@ -2324,6 +2592,18 @@
     "band": [
      0.1309597272900694,
      0.27085007700932157
+    ],
+    "inside": true
+   },
+   "steer_perkey": {
+    "value": 1.0726440096413707,
+    "siblings": [
+     1.0376113047895403,
+     1.0300855525367645
+    ],
+    "band": [
+     0.9783931311036068,
+     1.0893037262226979
     ],
     "inside": true
    },

@@ -7,10 +7,12 @@ Writes results/known3.json: {"cells": [{"pair", "method", "reuse": [s0, s1, s2],
 "new": [...]}, "source"}], "missing": [...], "checks": {...}}. A value not yet read (the five seed-2 states before E299's
 stage 2) is null and its state is listed in "missing". Old states are read from the files each reading was saved in
 (the method table's sources, method_table/results/final.json); the five new ones from results/stage2.json. Forms, as
-make_known_scorecard.py plots them: steering pooled (p270_rescore 'pooled'), top-neuron share k 64, size ||dW|| / ||W0||
-over the 24 matrices (E187, size_matched m67.json), prior one value per task repeated for each seed. Variants: e46 is
-ident32 against rand32 (ident32b, rand32b dropped), e53 lowercase against cipher (broad_cipher dropped). "checks" compares
-every old value with the cell final.json (or, for steering and size, p270_rescore) reported, which held more seeds.
+make_known_scorecard.py plots them: steering pooled (p270_rescore 'pooled'), steering per key ("steer_perkey": the same
+per-state files' perkey record; E53's tasks have no key pool, so e53 is null with its reason in "not_read", not
+missing), top-neuron share k 64, size ||dW|| / ||W0|| over the 24 matrices (E187, size_matched m67.json), prior
+one value per task repeated for each seed. Variants: e46 is ident32 against rand32 (ident32b, rand32b dropped), e53
+lowercase against cipher (broad_cipher dropped). "checks" compares every old value with the cell
+final.json (or, for pooled steering and size, p270_rescore) reported, which held more seeds.
 """
 
 from __future__ import annotations
@@ -32,9 +34,10 @@ PAIRS = {"e62_copy_lookup": ("e62/copy", "e62/lookup"), "e46_copy_random": ("e46
          "e54_own": ("e54/elicit", "e54/cipher_own"), "open_pair_c3": ("c3/rank1", "c3/cipher"),
          "open_pair_c3_copy": ("c3/copy", "c3/cipher"), "e58_rank1_96": ("e58/rank1", "e58/cipher"),
          "e58_copy_prior_cipher": ("e58/copy", "e58/prior_cipher")}  # fmt: skip
-METHODS = ("share", "steer", "erank", "prior", "neuron", "neuron_top", "k_half", "size")
+METHODS = ("share", "steer", "steer_perkey", "erank", "prior", "neuron", "neuron_top", "k_half", "size")
 NEW = {"e46/ident32_s2", "e46/rand32_s2", "e53/lowercase_s2", "e53/cipher_s2", "e54/cipher_own_s2"}
-FINAL_METHOD = {"share": "share", "erank": "erank", "prior": "prior", "neuron": "neuron", "neuron_top": "neuron_top_k64", "k_half": "k_half"}
+FINAL_METHOD = {"share": "share", "steer_perkey": "steering_per_key", "erank": "erank", "prior": "prior", "neuron": "neuron", "neuron_top": "neuron_top_k64", "k_half": "k_half"}
+NOT_READ = {("steer_perkey", "e53"): "not read in this form: E53's tasks have no key pool, so holes_fill reads pooled steering only"}
 _json: dict[str, Any] = {}
 
 Src = tuple[str, list[str | int]]  # (file, key path; an int indexes a list)
@@ -71,11 +74,13 @@ def source(method: str, pair: str, side: str, state: str) -> Src:
     """Where one state's reading is saved."""
     group, rest = state.split("/")
     if state in NEW:
-        k = {"share": ["e136", "trained"], "steer": ["holes_fill", "steering", "pooled", "share"], "erank": ["spectrum", "erank"],
+        k = {"share": ["e136", "trained"], "steer": ["holes_fill", "steering", "pooled", "share"], "steer_perkey": ["holes_fill", "steering", "perkey", "share"],
+             "erank": ["spectrum", "erank"],
              "neuron": ["neuron_r", "r_n"], "neuron_top": ["holes_fill", "neuron", "k64", "share"], "k_half": ["k_half", "k_half"], "size": ["size"]}[method]  # fmt: skip
         return STAGE2, ["states", state, *k]
     if group == "e58":
-        r96 = {"share": ["e136", "trained"], "steer": ["holes_fill", "steering", "pooled", "share"], "neuron": ["neuron_r", "r_n"],
+        r96 = {"share": ["e136", "trained"], "steer": ["holes_fill", "steering", "pooled", "share"], "steer_perkey": ["holes_fill", "steering", "perkey", "share"],
+               "neuron": ["neuron_r", "r_n"],
                "neuron_top": ["holes_fill", "neuron", "k64", "share"]}  # fmt: skip
         if method in r96:
             return "experiments/refit_96key/results/stage1.json", ["states", state, *r96[method]]
@@ -89,6 +94,10 @@ def source(method: str, pair: str, side: str, state: str) -> Src:
         if group == "e62":
             return "experiments/steering_copy_lookup/results/stage1.json", ["states", rest, "steering", "pooled", "share_lo"]
         return "experiments/holes_fill/results/stage1.json", ["states", state, "steering", "pooled", "share"]
+    if method == "steer_perkey":
+        if group == "e62":
+            return "experiments/steering_copy_lookup/results/stage1.json", ["states", rest, "steering", "perkey", "share_lo"]
+        return "experiments/holes_fill/results/stage1.json", ["states", state, "steering", "perkey", "share"]
     if method == "erank":
         return "experiments/update_svd/results/results.json", ["pairs", pair, side, rest, "erank"]
     if method == "neuron":
@@ -135,6 +144,10 @@ def pattern(src: Src, state: str) -> str:
 
 def cell(pair: str, method: str) -> tuple[dict[str, Any], list[str]]:
     rec: dict[str, Any] = {"pair": pair, "method": method, "states": {}}
+    reason = NOT_READ.get((method, PAIRS[pair][0].split("/")[0]))
+    if reason:
+        states = {side: [f"{t}_s{s}" for s in SEEDS] for side, t in zip(("reuse", "new"), PAIRS[pair], strict=True)}
+        return rec | {"states": states, "reuse": [None] * len(SEEDS), "new": [None] * len(SEEDS), "not_read": reason, "source": ""}, []
     missing, srcs = [], set()
     for side, task in zip(("reuse", "new"), PAIRS[pair], strict=True):
         states = [f"{task}_s{s}" for s in SEEDS]
@@ -166,7 +179,7 @@ def reported(pair: str, method: str) -> tuple[list[float], list[float]] | None:
         return None if p is None else (p["steering"]["pairs"][pair]["pooled"]["reuse"], p["steering"]["pairs"][pair]["pooled"]["new"])
     f = load(FINAL)
     c = next((c for c in f["cells"] if c["pair"] == pair and c["method"] == FINAL_METHOD[method]), None) if f else None
-    return None if c is None else (c["reuse"], c["new"])
+    return None if c is None or c["reuse"] is None else (c["reuse"], c["new"])
 
 
 def checks(cells: list[dict[str, Any]]) -> dict[str, Any]:
