@@ -1,25 +1,26 @@
 # Does a published circuit-overlap reading tell reused from new on our updates? (P2.69, E287)
 
-*definition-lead, 2026-11-24. Cell P2.69, run 1 of 3, cluster debug job 64845, $0. Spec
-`reports/plans/2026-11-23_plan_p2-69-eap-ig-overlap.md` and its appendix; filed rules
+*definition-lead, 2026-11-24, revised the same day after redteam-lead's review. Cell P2.69, run 1 of 3, cluster debug
+job 64845, $0. Spec `reports/plans/2026-11-23_plan_p2-69-eap-ig-overlap.md` and its appendix; filed rules
 `experiments/eapig_overlap/results/predictions.json`.*
 
 **Plain words.** We ran Wang et al.'s circuit-overlap baseline with their released code on 44 updates of our 67M model:
 for each update we found the original model's circuit and the updated model's circuit for the same task, and counted the
-connections they share. The two built controls behaved as filed, but scaling up eight neurons tenfold moved as many
-connections as resampling the task's inputs, and the one trained fine-tune with readable circuits came out the most
-"new" item of all, because it brought in attention heads the original model already uses for copying on longer inputs.
-For `GOALS.md`, this baseline reads which parts carry a task on the given inputs rather than whether those parts
-existed before, so it calls recruitment of existing parts "new", and it gives no reading on most of our trained updates,
-whose circuits fall under Wang's faithfulness bar.
+connections they share. The two built controls behaved as filed, and the edits built to add a lookup moved far more
+connections than a random update that shifts the output as much; but on trained fine-tunes the reading mostly gives
+nothing, because their circuits fall under Wang's faithfulness bar, and where it does read, the original model responds
+to the task's key about eight times less than the fine-tune does. For `GOALS.md`, this baseline gives no reuse-or-new
+reading on most trained updates, and its one headline reading, "new" for the copy fine-tune on short inputs, compares
+the fine-tune's circuit with the original model's circuit for a much weaker behaviour, so it does not test whether the
+fine-tune reuses parts the original model has.
 
 ## The answer
 
-The overlap reading separates the built edits: doubling eight neurons leaves the circuit exactly in place, and the two
-edits built to add a new lookup keep only half of it. But a tenfold scale-up of the same neurons, with no new wiring,
-lands closer to the new edits than to the doubling edit, so magnitude alone moves the circuit. On trained updates the reading mostly
-says nothing, because the circuits are not faithful enough. Where it does read, the copy fine-tune looks more "new" than
-the built new edits, though the heads it adds are ones the original model already uses for copying elsewhere.
+The overlap separates the built edits as filed. Doubling eight neurons keeps the circuit exactly, and the edits built to
+add a lookup keep half of it, where a random update that moves the output as much keeps most. On trained fine-tunes it
+mostly gives no reading, because the circuits are not faithful enough. Where it reads, on the short-input copy task, it
+says "new". But there the original model's response to the key is about eight times weaker than the fine-tune's, so the
+comparison is against a circuit for much less behaviour.
 
 ![Edge overlap of every update's circuit with the original model's, beside the original model's resampling range](../../experiments/eapig_overlap/figures/edge_iou.png)
 
@@ -33,12 +34,16 @@ on our own updates of the 67M model.
 How the reading works, on one update:
 
 - The **graph** has 30 nodes: the token input, 24 attention heads, 4 MLPs and the logits, joined by 927 edges.
-- Each edge gets a **score**: how much the model's output, measured as KL divergence from its clean output, changes
-  when that edge carries its value from a corrupted input in which the one token that decides the answer is swapped.
+- The **KL gap** is how far a model's output at the read position moves when the one token that decides the answer is
+  swapped: the KL divergence from the clean run to the corrupted run, in nats, averaged over windows. It is the
+  behaviour a circuit is a circuit for. Wang's code stores it divided by the vocabulary size of 50,277; we give nats.
+- Each edge gets a **score**: how much the KL from the clean output changes when that edge carries its value from the
+  corrupted input.
 - The **circuit** is the top 5% of edges by absolute score, 46 of 927, pruned of dangling edges; this leaves 36 to 44
   edges.
 - A circuit is **faithful** when running only its edges, with every other edge set to its corrupted value, recovers at
-  least 70% of the full model's KL gap. That is Wang's bar.
+  least 70% of the model's own KL gap. That is Wang's bar. It is a share of the model's own gap, so it does not see
+  how large that gap is.
 - The **edge IoU** is the number of edges in both circuits over the number in either. It reads 1 when the update
   leaves the circuit's edge set unchanged and 0 when they share nothing.
 
@@ -49,7 +54,9 @@ references sit beside each value:
   adds no noise.
 - **M's resampling range**: M's circuit on five resamples of the task's windows, and the IoU between every two of them.
   It shows how much the circuit depends on which inputs were drawn.
-- **A matched random update** for each trained group: a Gaussian direction at the update's size.
+- **A matched random update** for each trained group: a Gaussian direction at the update's size. For the built new
+  edits there is also one matched on output change: scaled so that the KL from M's output to F's equals the few-slot
+  edit's.
 
 The items, grouped as in the figure:
 
@@ -57,7 +64,7 @@ The items, grouped as in the figure:
   cell says it "should show full overlap". The two built new edits, a few-slot and a thin version, add a new key
   lookup through one MLP; they should read below M's resampling range. The tenfold edit scales the same eight columns
   by ten. The rebuilt edit zeroes those columns and replaces the third and fourth MLPs' weights. Two random updates
-  match the built new edits' size and their KL.
+  match the built new edits' size and their output change.
 - **E62's copy and lookup fine-tunes**, three seeds each, read on E62's 41-token windows, and a random at the copy
   fine-tune's size. E97 found both keep both of M's circuits.
 - **The key grid**: fine-tunes on five 96-key tasks, three seeds each, scaled as E237 scaled them, each with a matched
@@ -74,33 +81,37 @@ edit, the rebuilt edit, E62 and the key grid nothing was filed: the run is a des
 
 ### Do the controls tell a scale-up from new wiring?
 
-**Reading it.** Both filed controls passed, but the tenfold edit shows the gap between them is small. The doubling edit
-kept all 37 of M's edges, with none added or removed. Both built new edits read 0.50, below M's range of 0.74 to 0.93 on
-their windows: the few-slot edit kept 26 edges, added 12 and removed 14, with circuits of 40 and 38 edges; the thin edit
-kept 28, added 16 and removed 12, with circuits of 40 and 44 edges. The tenfold edit adds no wiring yet kept 32 of M's
-37 edges, added 10 and removed 5, for 0.68. That is inside M's range of 0.60 to 0.80 on its windows and only 0.18 above
-the built new edits.
+**Reading it.** Both filed controls passed, and at a matched output change the built new edits separate clearly from a
+random update. The doubling edit kept all 37 of M's edges, with none added or removed. That exactness holds for Wang's
+fixed 5% cut only: Hanna's selector, which picks the smallest circuit reaching 85% faithfulness, gives the doubling edit
+0.86, below 1. Both built new edits read 0.50, below M's range of 0.74 to 0.93 on their windows. The few-slot edit kept
+26 edges, added 12 and removed 14; the thin edit kept 28, added 16 and removed 12.
 
-What the doubling and tenfold edits together imply: because the do-nothing reads exactly 1, any departure from 1 on the
-same windows is caused by the update, not by noise. The doubling edit is exact because it is small, and the tenfold edit
-shows that strengthening the same neurons further moves a third of the circuit's edges. So M's resampling range is a
-yardstick for input noise, not a floor for same-window comparisons, and an IoU inside it does not certify reuse. The
-real reference for "strengthening only" is the tenfold point, and new wiring sits only a little below it.
+The right reference on the same windows is a random update matched to each edit. The do-nothing reads exactly 1, so
+any IoU below 1 comes from the update, not from noise, and M's resampling range measures input noise rather than a floor
+for these comparisons. The KL-matched random moves M's output as far as the few-slot edit does, and it read 0.82, moving
+4 edges each way. The built new edits moved 26 and 28 edges. Its own KL gap stayed at M's, 4.6 nats against 4.7, while
+the built new edits raised theirs to 13 and 12: they changed the response to the key, and the random did not.
+
+The tenfold edit adds no wiring and read 0.68, moving 15 edges, 10 added and 5 removed; that sits 0.18 above the built
+new edits, or 11 to 13 fewer moved edges. Its KL gap rose only from 2.8 to 4.6 nats, against 13 for the few-slot edit,
+so the two are not matched in behaviour, and no random at the tenfold edit's own output change was run. What it does
+show is that strengthening neurons M already uses can move edges with no new wiring.
 
 The rebuilt edit read 0.90, keeping 35 edges and moving 2 each way. The size-matched random kept all 37 edges and read
-exactly 1. That is above M's range, so it missed its filed rule, which asked for a value inside the range. The miss has
-the same cause: the random is too small to move anything on the same windows, while the band measures resampled
-windows. The KL-matched random read 0.82, with 36 kept and 4 moved each way, inside M's range of 0.74 to 0.93.
+exactly 1. That is above M's range, so it missed its filed rule, which asked for a value inside the range; the miss
+stands as filed. Our explanation is post hoc: the random barely changes the model, its KL gap staying at 2.8 nats, so
+nothing moves on the same windows, while the band was measured on resampled windows.
 
-| Item | Both faithful? | Edges M / F | Kept / added / removed | Edge IoU | M's range |
-|---|---|---|---|---|---|
-| doubling edit | yes | 37 / 37 | 37 / 0 / 0 | 1.00 | 0.60 to 0.80 |
-| tenfold edit | yes | 37 / 42 | 32 / 10 / 5 | 0.68 | 0.60 to 0.80 |
-| rebuilt edit | yes | 37 / 37 | 35 / 2 / 2 | 0.90 | 0.60 to 0.80 |
-| few-slot new edit | yes | 40 / 38 | 26 / 12 / 14 | 0.50 | 0.74 to 0.93 |
-| thin new edit | yes | 40 / 44 | 28 / 16 / 12 | 0.50 | 0.74 to 0.93 |
-| random, size-matched | yes | 37 / 37 | 37 / 0 / 0 | 1.00 | 0.60 to 0.80 |
-| random, KL-matched | yes | 40 / 40 | 36 / 4 / 4 | 0.82 | 0.74 to 0.93 |
+| Item | Both faithful? | KL gap M / F, nats | Edges M / F | Kept / added / removed | Edge IoU | M's range |
+|---|---|---|---|---|---|---|
+| doubling edit | yes | 2.8 / 2.9 | 37 / 37 | 37 / 0 / 0 | 1.00 | 0.60 to 0.80 |
+| tenfold edit | yes | 2.8 / 4.6 | 37 / 42 | 32 / 10 / 5 | 0.68 | 0.60 to 0.80 |
+| rebuilt edit | yes | 2.8 / 2.9 | 37 / 37 | 35 / 2 / 2 | 0.90 | 0.60 to 0.80 |
+| few-slot new edit | yes | 4.7 / 13 | 40 / 38 | 26 / 12 / 14 | 0.50 | 0.74 to 0.93 |
+| thin new edit | yes | 4.7 / 12 | 40 / 44 | 28 / 16 / 12 | 0.50 | 0.74 to 0.93 |
+| random, size-matched | yes | 2.8 / 2.8 | 37 / 37 | 37 / 0 / 0 | 1.00 | 0.60 to 0.80 |
+| random, KL-matched | yes | 4.7 / 4.6 | 40 / 40 | 36 / 4 / 4 | 0.82 | 0.74 to 0.93 |
 
 The same resampling for the updated models: the doubled model's circuit ranged 0.57 to 0.78 over resamples, as wide
 as M's, and the thin new edit's ranged 0.91 to 0.98.
@@ -109,45 +120,52 @@ as M's, and the thin new edit's ranged 0.91 to 0.98.
 
 **Reading it.** No headline reading: M's own circuit is not faithful on either task, so all seven E62 items are labelled
 "circuit not faithful" and kept out. M's circuit recovers 56.8% of its KL gap on the copy windows and 25.6% on the lookup
-windows, under Wang's 70%. The lookup fine-tunes' circuits are not faithful either, at 15.8% to 21.7%. For the record
-only, the raw values order as a reuse reading would expect. The copy fine-tunes read 0.72 to 0.78 against M's range of
-0.76 to 0.93, moving 10 to 13 edges of about 40. The lookup fine-tunes read 0.53 to 0.56 against 0.68 to 0.90, moving 21
-to 23 edges of 36 to 40. The random at the copy size read 0.95, moving one edge each way. None of these enters the
-headline.
+windows, under Wang's 70%. That gap is itself small: M's output moves 0.27 nats on the copy windows and 0.49 on the
+lookup windows, against 20 and 16 for the fine-tunes. The lookup fine-tunes' circuits are not faithful either, at 15.8%
+to 21.7%. For the record only, the copy fine-tunes read 0.72 to 0.78 against M's range of 0.76 to 0.93, moving 10 to
+13 edges of about 40. The lookup fine-tunes read 0.53 to 0.56 against 0.68 to 0.90, moving 21 to 23 edges of 36 to 40.
+The random at the copy size read 0.95, moving one edge each way.
 
 ### Does the key grid read reuse, beside matched randoms?
 
-**Reading it.** Only the copy task gives a headline reading, and it reads as strongly "new", below the built new edits.
-On all three seeds the copy fine-tune's edge IoU with M is 0.29 to 0.30, against M's range of 0.83 to 0.97 on these
-windows. About 18 of M's 39 edges stay, 20 to 23 are added and 21 or 22 removed. The fine-tune changes the task's
-behaviour a lot: the KL gap between clean and corrupted inputs grows from 5.5e-5 for M to 4.3e-4 for the copy fine-tune.
-The three matched randoms kept all 39 edges and read exactly 1.
+**Reading it.** Only the copy task gives a headline reading, and it says "new", below the built new edits. On all three
+seeds the copy fine-tune's edge IoU with M is 0.29 to 0.30, against M's range of 0.83 to 0.97 on these windows. About
+18 of M's 39 edges stay, 20 to 23 are added and 21 or 22 removed. The three matched randoms kept all 39 edges and read
+exactly 1.
+
+The comparison is uneven in behaviour. M's KL gap on these windows is 2.7 nats and the copy fine-tune's is 22, about
+eight times larger. So M's circuit is a circuit for a much weaker response to the key than the fine-tune's, and a low
+IoU here can mean the fine-tune does something M barely does on these inputs. "New on these inputs" is a defensible
+reading of that; reuse of existing parts is not tested.
 
 What moved is specific. On every seed the fine-tuned circuit adds heads (2,2), (2,3) and (2,4) and drops heads (0,0),
-(0,2), (2,0) and (2,5). Edges out of layer-2 heads go from 3 in M's circuit to 12 or 13. All three added heads are in M's
-own circuit on E62's longer copy windows. So the overlap calls "new" a fine-tune that recruits heads M already uses for
-copying, on inputs where M did not use them.
+(0,2), (2,0) and (2,5). Edges out of layer-2 heads go from 3 in M's circuit to 12 or 13. The added heads (2,2) to
+(2,4) are heads of M's circuit on E62's copy windows, a circuit under Wang's bar; whether the copy fine-tune reuses them
+is not tested by the overlap. That E62 circuit is also for a different task, 41-token repeated sequences rather than
+8-token key maps, and for a KL gap of 0.27 nats.
 
 The other four tasks are labelled "circuit not faithful" and kept out. M's circuit recovers 67.6% on rank1 and 68.1% on
-cipher and prior_cipher. On elicit, M's circuit reaches 71.0% but the fine-tunes' reach only 61.2% to 69.3%. Their raw
-values are in the table below, for the record only. Their randoms read 0.95 to 1. E237's VPD reading, the squared cosine kept, reads 0.9993 to 0.9994 on
-all five tasks, so there is no order to set beside these values.
+cipher and prior_cipher. On elicit, M's circuit reaches 71.0% but the fine-tunes' reach only 61.2% to 69.3%. On all four,
+the fine-tunes' KL gap is about 3 to 6 times M's. Their raw values are in the table, for the record only. Their randoms
+read 0.95 to 1. E237's VPD reading, the squared cosine kept, reads 0.9993 to 0.9994 on all five tasks; it is the same on
+every task and gives no order to set beside these values.
 
-| Task | Headline? | M's faithfulness, % | Edge IoU, 3 seeds | M's range | Randoms |
-|---|---|---|---|---|---|
-| copy | yes | 71.2 | 0.29, 0.29, 0.30 | 0.83 to 0.97 | 1.00 × 3 |
-| rank1 | no, M not faithful | 67.6 | 0.76, 0.78, 0.74 | 0.76 to 0.90 | 0.95, 1.00, 0.95 |
-| elicit | no, fine-tunes not faithful | 71.0 | 0.90, 0.84, 0.82 | 0.80 to 1.00 | 1.00 × 3 |
-| cipher | no, M not faithful | 68.1 | 0.76, 0.78, 0.76 | 0.77 to 0.98 | 1.00 × 3 |
-| prior_cipher | no, M not faithful | 68.1 | 0.77, 0.72, 0.78 | 0.72 to 0.93 | 0.98, 1.00, 1.00 |
+| Task | Headline? | KL gap M / F, nats | M's faithfulness, % | Edge IoU, 3 seeds | M's range | Randoms |
+|---|---|---|---|---|---|---|
+| copy | yes | 2.7 / 22 | 71.2 | 0.29, 0.29, 0.30 | 0.83 to 0.97 | 1.00 × 3 |
+| rank1 | no, M not faithful | 2.8 / 11 to 12 | 67.6 | 0.76, 0.78, 0.74 | 0.76 to 0.90 | 0.95, 1.00, 0.95 |
+| elicit | no, fine-tunes not faithful | 2.7 / 17 | 71.0 | 0.90, 0.84, 0.82 | 0.80 to 1.00 | 1.00 × 3 |
+| cipher | no, M not faithful | 2.7 / 7.8 to 9.1 | 68.1 | 0.76, 0.78, 0.76 | 0.77 to 0.98 | 1.00 × 3 |
+| prior_cipher | no, M not faithful | 2.6 / 14 | 68.1 | 0.77, 0.72, 0.78 | 0.72 to 0.93 | 0.98, 1.00, 1.00 |
 
 ### Where is head (2,4) in M's copy circuit?
 
 **Reading it.** Head (2,4) is in M's circuit on E62's copy windows and carries more score than any other head. It sits
 on 10 of the circuit's 40 edges. It reads keys from head (1,1) and the first MLP, and values from the first two MLPs.
 It writes to three last-layer heads, the third and fourth MLPs and the logits. Ranked by the summed absolute score of
-its outgoing edges, it is first of 24 heads. The caveat is that this circuit recovers only 56.8% of M's KL gap. On the key grid's short copy
-windows, head (2,4) is not in M's circuit at all and enters the fine-tuned circuit with six or seven edges, as above.
+its outgoing edges, it is first of 24 heads. The caveats are that this circuit recovers only 56.8% of M's KL gap, and
+that the gap is 0.27 nats. On the key grid's short copy windows, head (2,4) is not in M's circuit at all and enters the
+fine-tuned circuit with six or seven edges, as above.
 
 ### Sensitivities: Wang's 95th-percentile cut, Hanna's smallest faithful circuit, and the released code's values
 
@@ -179,15 +197,17 @@ absent biases were set to zero. M's circuit on the doubling edit's windows recov
 ## What we learned
 
 This published baseline reads whether the same parts carry the task on the same inputs, which is a narrower question
-than ours. It passes the built controls, but its margin between strengthening and new wiring is small: a tenfold
-scale-up drops the overlap to 0.68 and new wiring to 0.50. On trained updates it reads "new" exactly where an update
-recruits heads that M has but does not use on those inputs, a case our working definition would call reuse if those heads compute the same thing in both
-models; the overlap cannot check that. And it refuses
-to read most of our trained items, because their circuits fall under its own faithfulness bar. As a baseline for the
-paper it is a foil: it calls the copy fine-tune new because of where M used its copying heads, not what they compute.
+than ours. On built edits it works as filed: at a matched output change, new wiring moves several times more edges than
+a random update. On trained updates it gives no reading on most items, because their circuits fall under its own
+faithfulness bar. Where it reads, the original model's response on those inputs is several times weaker than the
+fine-tune's, so the overlap compares against a circuit for much less behaviour. Whether the copy fine-tune reuses heads
+M already has is not tested by the overlap.
 
 ## How compelling is the evidence
 
+- **Blind to the size of the original behaviour.** Faithfulness is a share of each model's own KL gap, so a circuit for
+  a weak response passes as readily as one for a strong response. M's gaps here are 3 to 8 times smaller than the
+  key-grid fine-tunes' and 33 to 75 times smaller than E62's.
 - **Blind to magnitude within a node.** It sees heads and MLPs, so a change inside one MLP's neurons reads as reuse
   as long as the edge set holds. A weight scale-up of a few neurons keeps the edge set, as the doubling edit did. A
   larger scale-up moves edges with no new wiring, as the tenfold edit did.
@@ -196,8 +216,9 @@ paper it is a foil: it calls the copy fine-tune new because of where M used its 
 - **Blind to small updates.** A random update reads 1 because nothing changes, so a reading of 1 does not separate a
   harmless update from a reusing one.
 - **Corruption-dependent.** The circuit is the circuit for one swapped token per task.
-- **Noise.** The pipeline is deterministic on the same windows. Input noise, from M's resampling, spans about 0.2 of
-  IoU per task. One moved edge changes an IoU of circuits near 40 edges by about 0.02 to 0.04.
+- **Noise.** The pipeline is deterministic on the same windows, so the reference is a matched random update, not the
+  resampling range. Input noise, from M's resampling, spans about 0.2 of IoU per task. One moved edge changes an IoU of
+  circuits near 40 edges by about 0.02 to 0.04.
 - **Coverage.** One endpoint per update, as Wang's section 4.2; three seeds per trained group; one model.
 - **Faithfulness.** Headline items cleared 70% on both circuits by a few points at most. M's circuits on the built
   and key-grid windows sit at 67.6% to 74.5%, around the bar.
@@ -205,15 +226,17 @@ paper it is a foil: it calls the copy fine-tune new because of where M used its 
 ## Surprises
 
 - The key-grid copy fine-tune reads more "new" than the edits built to be new, at 0.29 to 0.30 against 0.50. Nothing
-  was filed for it, so this is not a reversed prediction, but it runs against the reuse reading's expectation for copy.
+  was filed for it, so this is not a reversed prediction. Its KL gap is eight times M's, which may account for it.
 - The size-matched random missed its filed rule by reading exactly 1, above M's range rather than inside it.
-- M's circuits on E62's windows are far from faithful, at 56.8% for copy and 25.6% for lookup, so the E62 comparison the
-  cell named gives no headline reading.
+- M's circuits on E62's windows are far from faithful, at 56.8% for copy and 25.6% for lookup, and M's KL gap there is
+  under half a nat, so the E62 comparison the cell named gives no headline reading.
 
 ## What next
 
 - Read the key-grid copy fine-tune on E62's longer windows, where M's circuit already holds heads (2,2) to (2,4). If its
   IoU there sits inside M's range, the "new" reading is a property of the short inputs, not of the update.
+- A random update at the tenfold edit's own output change, to say whether a scale-up of existing neurons moves more
+  edges than a random update of the same effect.
 - Raise the circuit size until M's E62 circuits clear 70%, to give E62 a headline reading. This departs further from
   Wang's 5%, so it would be reported as a sensitivity.
 
@@ -231,58 +254,71 @@ paper it is a foil: it calls the copy fine-tune new because of where M used its 
 
 No control missed, so no stage is labelled as a method that failed its control.
 
+## Review
+
+redteam-lead's verdict on the first version of this page, verbatim: "**Verdict: fixes before whip-lead and
+writeup-lead.**" Applied: the KL gap beside every reading and as departure D13; the recruitment claim cut to what the
+overlap tests; the noise argument made against the KL-matched random; the size-matched random's explanation labelled
+post hoc; control 1's dependence on the 5% cut moved into the controls section; the tenfold edit's matched random added
+to Not run.
+
+One correction to the review's wording. It calls M's key-grid gap of 5e-5 "almost no behaviour". Wang's code divides
+the KL by the vocabulary size, so that value is 2.7 nats, a real response to the swapped key. The review's comparison
+stands: the fine-tunes' gaps are 3 to 8 times larger on the key grid and 33 to 75 times larger on E62, where M's gap is
+0.27 and 0.49 nats. This page says "much weaker behaviour", not "almost none", on the key grid.
+
 ## Full table
 
-Every item, in the figure's order. Faithfulness is Wang's, in percent, M then F. Node IoU and edge p are ours, with the
-released code's value in brackets. The two last columns give each circuit's edge count and the IoU under Wang's
-95th-percentile cut and under Hanna's smallest circuit at 85%.
+Every item, in the figure's order. The KL gap is clean against corrupted, in nats, M then F. Faithfulness is Wang's, in
+percent, M then F. Node IoU and edge p are ours, with the released code's value in brackets. The two last columns give
+each circuit's edge count and the IoU under Wang's 95th-percentile cut and under Hanna's smallest circuit at 85%.
 
-| Item | Reading | Faithful % M / F | Edges M / F | Kept / added / removed | Edge IoU | M's range | Node IoU (code) | Edge p (code) | 95th pct: M / F: IoU | Smallest 85%: M / F: IoU |
-|---|---|---|---|---|---|---|---|---|---|---|
-| x2 | read | 74.5 / 76.3 | 37 / 37 | 37 / 0 / 0 | 1.00 | 0.60 to 0.80 | 1.00 (1.00) | 4.7e-67 (0) | 2 / 2: 1.00 | 89 / 78: 0.86 |
-| x10 | read | 74.5 / 81.9 | 37 / 42 | 32 / 10 / 5 | 0.68 | 0.60 to 0.80 | 0.71 (0.72) | 3.1e-45 (5.3e-48) | 2 / 3: 0.67 | 89 / 87: 0.64 |
-| rebuilt | read | 74.5 / 72.2 | 37 / 37 | 35 / 2 / 2 | 0.90 | 0.60 to 0.80 | 0.86 (0.87) | 1.2e-58 (1.6e-62) | 2 / 2: 1.00 | 89 / 90: 0.85 |
-| new_few | read | 74.4 / 95.3 | 40 / 38 | 26 / 12 / 14 | 0.50 | 0.74 to 0.93 | 0.65 (0.67) | 2.2e-31 (1.5e-33) | 2 / 2: 0.33 | 47 / 29: 0.46 |
-| new_thin | read | 74.4 / 96.9 | 40 / 44 | 28 / 16 / 12 | 0.50 | 0.74 to 0.93 | 0.58 (0.60) | 7.3e-33 (5.5e-35) | 2 / 3: 0.25 | 47 / 29: 0.49 |
-| random_size_241001 | read | 74.5 / 74.4 | 37 / 37 | 37 / 0 / 0 | 1.00 | 0.60 to 0.80 | 1.00 (1.00) | 4.7e-67 (0) | 2 / 2: 1.00 | 89 / 89: 0.96 |
-| random_kl_241002 | read | 74.4 / 75.4 | 40 / 40 | 36 / 4 / 4 | 0.82 | 0.74 to 0.93 | 0.80 (0.81) | 9.3e-56 (4.6e-59) | 2 / 2: 1.00 | 47 / 47: 0.84 |
-| e62/copy_s0 | circuit not faithful | 56.8 / 88.2 | 40 / 41 | 35 / 6 / 5 | 0.76 | 0.76 to 0.93 | 0.76 (0.78) | 8.0e-52 (7.6e-55) | 2 / 3: 0.67 | 300 / 28: 0.09 |
-| e62/copy_s1 | circuit not faithful | 56.8 / 84.3 | 40 / 41 | 34 / 7 / 6 | 0.72 | 0.76 to 0.93 | 0.76 (0.78) | 5.9e-49 (8.0e-52) | 2 / 3: 0.67 | 300 / 27: 0.09 |
-| e62/copy_s2 | circuit not faithful | 56.8 / 85.0 | 40 / 42 | 36 / 6 / 4 | 0.78 | 0.76 to 0.93 | 0.88 (0.88) | 5.3e-54 (3.9e-57) | 2 / 3: 0.67 | 300 / 27: 0.09 |
-| e62/lookup_s0 | circuit not faithful | 25.6 / 17.7 | 36 / 40 | 27 / 13 / 9 | 0.55 | 0.68 to 0.90 | 0.67 (0.68) | 1.2e-34 (5.9e-37) | 2 / 2: 1.00 | 400 / 45: 0.11 |
-| e62/lookup_s1 | circuit not faithful | 25.6 / 21.7 | 36 / 39 | 26 / 13 / 10 | 0.53 | 0.68 to 0.90 | 0.67 (0.68) | 7.4e-33 (4.0e-35) | 2 / 2: 1.00 | 400 / 46: 0.12 |
-| e62/lookup_s2 | circuit not faithful | 25.6 / 15.8 | 36 / 39 | 27 / 12 / 9 | 0.56 | 0.68 to 0.90 | 0.67 (0.68) | 4.0e-35 (1.8e-37) | 2 / 2: 1.00 | 400 / 46: 0.12 |
-| e62_random | circuit not faithful | 56.8 / 51.7 | 40 / 40 | 39 / 1 / 1 | 0.95 | 0.76 to 0.93 | 1.00 (1.00) | 1.4e-66 (4.0e-71) | 2 / 2: 1.00 | 300 / 300: 0.97 |
-| e58/copy_s0_scaled | read | 71.2 / 72.3 | 39 / 41 | 18 / 23 / 21 | 0.29 | 0.83 to 0.97 | 0.59 (0.61) | 2.2e-16 (6.5e-18) | 2 / 3: 0.67 | 69 / 28: 0.20 |
-| e58/copy_s1_scaled | read | 71.2 / 75.5 | 39 / 37 | 17 / 20 / 22 | 0.29 | 0.83 to 0.97 | 0.53 (0.56) | 7.6e-16 (2.1e-17) | 2 / 2: 0.33 | 69 / 27: 0.19 |
-| e58/copy_s2_scaled | read | 71.2 / 73.7 | 39 / 40 | 18 / 22 / 21 | 0.30 | 0.83 to 0.97 | 0.59 (0.61) | 1.3e-16 (3.6e-18) | 2 / 2: 0.33 | 69 / 28: 0.20 |
-| e58/rank1_s0_scaled | circuit not faithful | 67.6 / 73.2 | 38 / 41 | 34 / 7 / 4 | 0.76 | 0.76 to 0.90 | 0.87 (0.88) | 1.2e-50 (1.0e-53) | 2 / 3: 0.67 | 69 / 28: 0.39 |
-| e58/rank1_s1_scaled | circuit not faithful | 67.6 / 74.1 | 38 / 42 | 35 / 7 / 3 | 0.78 | 0.76 to 0.90 | 0.87 (0.88) | 6.3e-53 (4.1e-56) | 2 / 3: 0.67 | 69 / 28: 0.41 |
-| e58/rank1_s2_scaled | circuit not faithful | 67.6 / 73.4 | 38 / 42 | 34 / 8 / 4 | 0.74 | 0.76 to 0.90 | 0.87 (0.88) | 6.0e-50 (6.3e-53) | 2 / 3: 0.67 | 69 / 28: 0.41 |
-| e58/elicit_s0_scaled | circuit not faithful | 71.0 / 63.6 | 40 / 40 | 38 / 2 / 2 | 0.90 | 0.80 to 1.00 | 0.93 (0.94) | 1.2e-62 (1.4e-66) | 2 / 2: 1.00 | 69 / 28: 0.41 |
-| e58/elicit_s1_scaled | circuit not faithful | 71.0 / 61.2 | 40 / 39 | 36 / 3 / 4 | 0.84 | 0.80 to 1.00 | 0.87 (0.88) | 9.3e-57 (3.4e-60) | 2 / 2: 1.00 | 69 / 28: 0.41 |
-| e58/elicit_s2_scaled | circuit not faithful | 71.0 / 69.3 | 40 / 40 | 36 / 4 / 4 | 0.82 | 0.80 to 1.00 | 0.87 (0.88) | 9.3e-56 (4.6e-59) | 2 / 2: 0.33 | 69 / 28: 0.41 |
-| e58/cipher_s0_scaled | circuit not faithful | 68.1 / 67.4 | 41 / 40 | 35 / 5 / 6 | 0.76 | 0.77 to 0.98 | 0.87 (0.88) | 8.0e-52 (7.6e-55) | 3 / 2: 0.67 | 79 / 60: 0.64 |
-| e58/cipher_s1_scaled | circuit not faithful | 68.1 / 70.9 | 41 / 39 | 35 / 4 / 6 | 0.78 | 0.77 to 0.98 | 0.87 (0.88) | 1.0e-52 (7.6e-56) | 3 / 2: 0.67 | 79 / 49: 0.58 |
-| e58/cipher_s2_scaled | circuit not faithful | 68.1 / 68.5 | 41 / 40 | 35 / 5 / 6 | 0.76 | 0.77 to 0.98 | 0.87 (0.88) | 8.0e-52 (7.6e-55) | 3 / 2: 0.67 | 79 / 60: 0.62 |
-| e58/prior_cipher_s0_scaled | circuit not faithful | 68.1 / 56.9 | 41 / 42 | 36 / 6 / 5 | 0.77 | 0.72 to 0.93 | 0.76 (0.78) | 4.3e-53 (4.0e-56) | 3 / 3: 1.00 | 69 / 30: 0.43 |
-| e58/prior_cipher_s1_scaled | circuit not faithful | 68.1 / 59.5 | 41 / 38 | 33 / 5 / 8 | 0.72 | 0.72 to 0.93 | 0.75 (0.76) | 8.7e-48 (1.2e-50) | 3 / 2: 0.67 | 69 / 30: 0.43 |
-| e58/prior_cipher_s2_scaled | circuit not faithful | 68.1 / 53.5 | 41 / 41 | 36 / 5 / 5 | 0.78 | 0.72 to 0.93 | 0.81 (0.82) | 6.2e-54 (4.7e-57) | 3 / 3: 1.00 | 69 / 29: 0.42 |
-| random_e58/copy_s0 | read | 71.2 / 71.1 | 39 / 39 | 39 / 0 / 0 | 1.00 | 0.83 to 0.97 | 1.00 (1.00) | 8.8e-70 (0) | 2 / 2: 1.00 | 69 / 69: 1.00 |
-| random_e58/copy_s1 | read | 71.2 / 71.1 | 39 / 39 | 39 / 0 / 0 | 1.00 | 0.83 to 0.97 | 1.00 (1.00) | 8.8e-70 (0) | 2 / 2: 1.00 | 69 / 69: 1.00 |
-| random_e58/copy_s2 | read | 71.2 / 71.4 | 39 / 39 | 39 / 0 / 0 | 1.00 | 0.83 to 0.97 | 1.00 (1.00) | 8.8e-70 (0) | 2 / 2: 1.00 | 69 / 69: 1.00 |
-| random_e58/rank1_s0 | circuit not faithful | 67.6 / 67.4 | 38 / 36 | 36 / 0 / 2 | 0.95 | 0.76 to 0.90 | 0.93 (0.93) | 8.0e-63 (0) | 2 / 2: 1.00 | 69 / 69: 1.00 |
-| random_e58/rank1_s1 | circuit not faithful | 67.6 / 67.6 | 38 / 38 | 38 / 0 / 0 | 1.00 | 0.76 to 0.90 | 1.00 (1.00) | 2.0e-68 (0) | 2 / 2: 1.00 | 69 / 69: 1.00 |
-| random_e58/rank1_s2 | circuit not faithful | 67.6 / 67.2 | 38 / 36 | 36 / 0 / 2 | 0.95 | 0.76 to 0.90 | 0.93 (0.93) | 8.0e-63 (0) | 2 / 2: 1.00 | 69 / 69: 1.00 |
-| random_e58/elicit_s0 | read | 71.0 / 71.1 | 40 / 40 | 40 / 0 / 0 | 1.00 | 0.80 to 1.00 | 1.00 (1.00) | 4.0e-71 (0) | 2 / 2: 1.00 | 69 / 69: 1.00 |
-| random_e58/elicit_s1 | read | 71.0 / 71.0 | 40 / 40 | 40 / 0 / 0 | 1.00 | 0.80 to 1.00 | 1.00 (1.00) | 4.0e-71 (0) | 2 / 2: 1.00 | 69 / 69: 1.00 |
-| random_e58/elicit_s2 | read | 71.0 / 71.0 | 40 / 40 | 40 / 0 / 0 | 1.00 | 0.80 to 1.00 | 1.00 (1.00) | 4.0e-71 (0) | 2 / 2: 1.00 | 69 / 80: 0.86 |
-| random_e58/cipher_s0 | circuit not faithful | 68.1 / 68.1 | 41 / 41 | 41 / 0 / 0 | 1.00 | 0.77 to 0.98 | 1.00 (1.00) | 1.8e-72 (0) | 3 / 3: 1.00 | 79 / 79: 0.97 |
-| random_e58/cipher_s1 | circuit not faithful | 68.1 / 68.0 | 41 / 41 | 41 / 0 / 0 | 1.00 | 0.77 to 0.98 | 1.00 (1.00) | 1.8e-72 (0) | 3 / 3: 1.00 | 79 / 79: 0.97 |
-| random_e58/cipher_s2 | circuit not faithful | 68.1 / 68.2 | 41 / 41 | 41 / 0 / 0 | 1.00 | 0.77 to 0.98 | 1.00 (1.00) | 1.8e-72 (0) | 3 / 3: 1.00 | 79 / 79: 0.97 |
-| random_e58/prior_cipher_s0 | circuit not faithful | 68.1 / 68.9 | 41 / 42 | 41 / 1 / 0 | 0.98 | 0.72 to 0.93 | 1.00 (1.00) | 7.7e-71 (0) | 3 / 3: 1.00 | 69 / 69: 1.00 |
-| random_e58/prior_cipher_s1 | circuit not faithful | 68.1 / 68.1 | 41 / 41 | 41 / 0 / 0 | 1.00 | 0.72 to 0.93 | 1.00 (1.00) | 1.8e-72 (0) | 3 / 3: 1.00 | 69 / 69: 1.00 |
-| random_e58/prior_cipher_s2 | circuit not faithful | 68.1 / 68.1 | 41 / 41 | 41 / 0 / 0 | 1.00 | 0.72 to 0.93 | 1.00 (1.00) | 1.8e-72 (0) | 3 / 3: 1.00 | 69 / 69: 1.00 |
+| Item | Reading | KL gap M / F, nats | Faithful % M / F | Edges M / F | Kept / added / removed | Edge IoU | M's range | Node IoU (code) | Edge p (code) | 95th pct: M / F: IoU | Smallest 85%: M / F: IoU |
+|---|---|---|---|---|---|---|---|---|---|---|---|
+| x2 | read | 2.8 / 2.9 | 74.5 / 76.3 | 37 / 37 | 37 / 0 / 0 | 1.00 | 0.60 to 0.80 | 1.00 (1.00) | 4.7e-67 (0) | 2 / 2: 1.00 | 89 / 78: 0.86 |
+| x10 | read | 2.8 / 4.6 | 74.5 / 81.9 | 37 / 42 | 32 / 10 / 5 | 0.68 | 0.60 to 0.80 | 0.71 (0.72) | 3.1e-45 (5.3e-48) | 2 / 3: 0.67 | 89 / 87: 0.64 |
+| rebuilt | read | 2.8 / 2.9 | 74.5 / 72.2 | 37 / 37 | 35 / 2 / 2 | 0.90 | 0.60 to 0.80 | 0.86 (0.87) | 1.2e-58 (1.6e-62) | 2 / 2: 1.00 | 89 / 90: 0.85 |
+| new_few | read | 4.7 / 13 | 74.4 / 95.3 | 40 / 38 | 26 / 12 / 14 | 0.50 | 0.74 to 0.93 | 0.65 (0.67) | 2.2e-31 (1.5e-33) | 2 / 2: 0.33 | 47 / 29: 0.46 |
+| new_thin | read | 4.7 / 12 | 74.4 / 96.9 | 40 / 44 | 28 / 16 / 12 | 0.50 | 0.74 to 0.93 | 0.58 (0.60) | 7.3e-33 (5.5e-35) | 2 / 3: 0.25 | 47 / 29: 0.49 |
+| random_size_241001 | read | 2.8 / 2.8 | 74.5 / 74.4 | 37 / 37 | 37 / 0 / 0 | 1.00 | 0.60 to 0.80 | 1.00 (1.00) | 4.7e-67 (0) | 2 / 2: 1.00 | 89 / 89: 0.96 |
+| random_kl_241002 | read | 4.7 / 4.6 | 74.4 / 75.4 | 40 / 40 | 36 / 4 / 4 | 0.82 | 0.74 to 0.93 | 0.80 (0.81) | 9.3e-56 (4.6e-59) | 2 / 2: 1.00 | 47 / 47: 0.84 |
+| e62/copy_s0 | circuit not faithful | 0.27 / 20 | 56.8 / 88.2 | 40 / 41 | 35 / 6 / 5 | 0.76 | 0.76 to 0.93 | 0.76 (0.78) | 8.0e-52 (7.6e-55) | 2 / 3: 0.67 | 300 / 28: 0.09 |
+| e62/copy_s1 | circuit not faithful | 0.27 / 20 | 56.8 / 84.3 | 40 / 41 | 34 / 7 / 6 | 0.72 | 0.76 to 0.93 | 0.76 (0.78) | 5.9e-49 (8.0e-52) | 2 / 3: 0.67 | 300 / 27: 0.09 |
+| e62/copy_s2 | circuit not faithful | 0.27 / 20 | 56.8 / 85.0 | 40 / 42 | 36 / 6 / 4 | 0.78 | 0.76 to 0.93 | 0.88 (0.88) | 5.3e-54 (3.9e-57) | 2 / 3: 0.67 | 300 / 27: 0.09 |
+| e62/lookup_s0 | circuit not faithful | 0.49 / 16 | 25.6 / 17.7 | 36 / 40 | 27 / 13 / 9 | 0.55 | 0.68 to 0.90 | 0.67 (0.68) | 1.2e-34 (5.9e-37) | 2 / 2: 1.00 | 400 / 45: 0.11 |
+| e62/lookup_s1 | circuit not faithful | 0.49 / 16 | 25.6 / 21.7 | 36 / 39 | 26 / 13 / 10 | 0.53 | 0.68 to 0.90 | 0.67 (0.68) | 7.4e-33 (4.0e-35) | 2 / 2: 1.00 | 400 / 46: 0.12 |
+| e62/lookup_s2 | circuit not faithful | 0.49 / 16 | 25.6 / 15.8 | 36 / 39 | 27 / 12 / 9 | 0.56 | 0.68 to 0.90 | 0.67 (0.68) | 4.0e-35 (1.8e-37) | 2 / 2: 1.00 | 400 / 46: 0.12 |
+| e62_random | circuit not faithful | 0.27 / 0.27 | 56.8 / 51.7 | 40 / 40 | 39 / 1 / 1 | 0.95 | 0.76 to 0.93 | 1.00 (1.00) | 1.4e-66 (4.0e-71) | 2 / 2: 1.00 | 300 / 300: 0.97 |
+| e58/copy_s0_scaled | read | 2.7 / 22 | 71.2 / 72.3 | 39 / 41 | 18 / 23 / 21 | 0.29 | 0.83 to 0.97 | 0.59 (0.61) | 2.2e-16 (6.5e-18) | 2 / 3: 0.67 | 69 / 28: 0.20 |
+| e58/copy_s1_scaled | read | 2.7 / 22 | 71.2 / 75.5 | 39 / 37 | 17 / 20 / 22 | 0.29 | 0.83 to 0.97 | 0.53 (0.56) | 7.6e-16 (2.1e-17) | 2 / 2: 0.33 | 69 / 27: 0.19 |
+| e58/copy_s2_scaled | read | 2.7 / 22 | 71.2 / 73.7 | 39 / 40 | 18 / 22 / 21 | 0.30 | 0.83 to 0.97 | 0.59 (0.61) | 1.3e-16 (3.6e-18) | 2 / 2: 0.33 | 69 / 28: 0.20 |
+| e58/rank1_s0_scaled | circuit not faithful | 2.8 / 11 | 67.6 / 73.2 | 38 / 41 | 34 / 7 / 4 | 0.76 | 0.76 to 0.90 | 0.87 (0.88) | 1.2e-50 (1.0e-53) | 2 / 3: 0.67 | 69 / 28: 0.39 |
+| e58/rank1_s1_scaled | circuit not faithful | 2.8 / 11 | 67.6 / 74.1 | 38 / 42 | 35 / 7 / 3 | 0.78 | 0.76 to 0.90 | 0.87 (0.88) | 6.3e-53 (4.1e-56) | 2 / 3: 0.67 | 69 / 28: 0.41 |
+| e58/rank1_s2_scaled | circuit not faithful | 2.8 / 12 | 67.6 / 73.4 | 38 / 42 | 34 / 8 / 4 | 0.74 | 0.76 to 0.90 | 0.87 (0.88) | 6.0e-50 (6.3e-53) | 2 / 3: 0.67 | 69 / 28: 0.41 |
+| e58/elicit_s0_scaled | circuit not faithful | 2.7 / 17 | 71.0 / 63.6 | 40 / 40 | 38 / 2 / 2 | 0.90 | 0.80 to 1.00 | 0.93 (0.94) | 1.2e-62 (1.4e-66) | 2 / 2: 1.00 | 69 / 28: 0.41 |
+| e58/elicit_s1_scaled | circuit not faithful | 2.7 / 17 | 71.0 / 61.2 | 40 / 39 | 36 / 3 / 4 | 0.84 | 0.80 to 1.00 | 0.87 (0.88) | 9.3e-57 (3.4e-60) | 2 / 2: 1.00 | 69 / 28: 0.41 |
+| e58/elicit_s2_scaled | circuit not faithful | 2.7 / 17 | 71.0 / 69.3 | 40 / 40 | 36 / 4 / 4 | 0.82 | 0.80 to 1.00 | 0.87 (0.88) | 9.3e-56 (4.6e-59) | 2 / 2: 0.33 | 69 / 28: 0.41 |
+| e58/cipher_s0_scaled | circuit not faithful | 2.7 / 9.1 | 68.1 / 67.4 | 41 / 40 | 35 / 5 / 6 | 0.76 | 0.77 to 0.98 | 0.87 (0.88) | 8.0e-52 (7.6e-55) | 3 / 2: 0.67 | 79 / 60: 0.64 |
+| e58/cipher_s1_scaled | circuit not faithful | 2.7 / 8.8 | 68.1 / 70.9 | 41 / 39 | 35 / 4 / 6 | 0.78 | 0.77 to 0.98 | 0.87 (0.88) | 1.0e-52 (7.6e-56) | 3 / 2: 0.67 | 79 / 49: 0.58 |
+| e58/cipher_s2_scaled | circuit not faithful | 2.7 / 7.8 | 68.1 / 68.5 | 41 / 40 | 35 / 5 / 6 | 0.76 | 0.77 to 0.98 | 0.87 (0.88) | 8.0e-52 (7.6e-55) | 3 / 2: 0.67 | 79 / 60: 0.62 |
+| e58/prior_cipher_s0_scaled | circuit not faithful | 2.6 / 14 | 68.1 / 56.9 | 41 / 42 | 36 / 6 / 5 | 0.77 | 0.72 to 0.93 | 0.76 (0.78) | 4.3e-53 (4.0e-56) | 3 / 3: 1.00 | 69 / 30: 0.43 |
+| e58/prior_cipher_s1_scaled | circuit not faithful | 2.6 / 14 | 68.1 / 59.5 | 41 / 38 | 33 / 5 / 8 | 0.72 | 0.72 to 0.93 | 0.75 (0.76) | 8.7e-48 (1.2e-50) | 3 / 2: 0.67 | 69 / 30: 0.43 |
+| e58/prior_cipher_s2_scaled | circuit not faithful | 2.6 / 14 | 68.1 / 53.5 | 41 / 41 | 36 / 5 / 5 | 0.78 | 0.72 to 0.93 | 0.81 (0.82) | 6.2e-54 (4.7e-57) | 3 / 3: 1.00 | 69 / 29: 0.42 |
+| random_e58/copy_s0 | read | 2.7 / 2.8 | 71.2 / 71.1 | 39 / 39 | 39 / 0 / 0 | 1.00 | 0.83 to 0.97 | 1.00 (1.00) | 8.8e-70 (0) | 2 / 2: 1.00 | 69 / 69: 1.00 |
+| random_e58/copy_s1 | read | 2.7 / 2.8 | 71.2 / 71.1 | 39 / 39 | 39 / 0 / 0 | 1.00 | 0.83 to 0.97 | 1.00 (1.00) | 8.8e-70 (0) | 2 / 2: 1.00 | 69 / 69: 1.00 |
+| random_e58/copy_s2 | read | 2.7 / 2.7 | 71.2 / 71.4 | 39 / 39 | 39 / 0 / 0 | 1.00 | 0.83 to 0.97 | 1.00 (1.00) | 8.8e-70 (0) | 2 / 2: 1.00 | 69 / 69: 1.00 |
+| random_e58/rank1_s0 | circuit not faithful | 2.8 / 2.8 | 67.6 / 67.4 | 38 / 36 | 36 / 0 / 2 | 0.95 | 0.76 to 0.90 | 0.93 (0.93) | 8.0e-63 (0) | 2 / 2: 1.00 | 69 / 69: 1.00 |
+| random_e58/rank1_s1 | circuit not faithful | 2.8 / 2.8 | 67.6 / 67.6 | 38 / 38 | 38 / 0 / 0 | 1.00 | 0.76 to 0.90 | 1.00 (1.00) | 2.0e-68 (0) | 2 / 2: 1.00 | 69 / 69: 1.00 |
+| random_e58/rank1_s2 | circuit not faithful | 2.8 / 2.8 | 67.6 / 67.2 | 38 / 36 | 36 / 0 / 2 | 0.95 | 0.76 to 0.90 | 0.93 (0.93) | 8.0e-63 (0) | 2 / 2: 1.00 | 69 / 69: 1.00 |
+| random_e58/elicit_s0 | read | 2.7 / 2.7 | 71.0 / 71.1 | 40 / 40 | 40 / 0 / 0 | 1.00 | 0.80 to 1.00 | 1.00 (1.00) | 4.0e-71 (0) | 2 / 2: 1.00 | 69 / 69: 1.00 |
+| random_e58/elicit_s1 | read | 2.7 / 2.7 | 71.0 / 71.0 | 40 / 40 | 40 / 0 / 0 | 1.00 | 0.80 to 1.00 | 1.00 (1.00) | 4.0e-71 (0) | 2 / 2: 1.00 | 69 / 69: 1.00 |
+| random_e58/elicit_s2 | read | 2.7 / 2.7 | 71.0 / 71.0 | 40 / 40 | 40 / 0 / 0 | 1.00 | 0.80 to 1.00 | 1.00 (1.00) | 4.0e-71 (0) | 2 / 2: 1.00 | 69 / 80: 0.86 |
+| random_e58/cipher_s0 | circuit not faithful | 2.7 / 2.7 | 68.1 / 68.1 | 41 / 41 | 41 / 0 / 0 | 1.00 | 0.77 to 0.98 | 1.00 (1.00) | 1.8e-72 (0) | 3 / 3: 1.00 | 79 / 79: 0.97 |
+| random_e58/cipher_s1 | circuit not faithful | 2.7 / 2.7 | 68.1 / 68.0 | 41 / 41 | 41 / 0 / 0 | 1.00 | 0.77 to 0.98 | 1.00 (1.00) | 1.8e-72 (0) | 3 / 3: 1.00 | 79 / 79: 0.97 |
+| random_e58/cipher_s2 | circuit not faithful | 2.7 / 2.6 | 68.1 / 68.2 | 41 / 41 | 41 / 0 / 0 | 1.00 | 0.77 to 0.98 | 1.00 (1.00) | 1.8e-72 (0) | 3 / 3: 1.00 | 79 / 79: 0.97 |
+| random_e58/prior_cipher_s0 | circuit not faithful | 2.6 / 2.5 | 68.1 / 68.9 | 41 / 42 | 41 / 1 / 0 | 0.98 | 0.72 to 0.93 | 1.00 (1.00) | 7.7e-71 (0) | 3 / 3: 1.00 | 69 / 69: 1.00 |
+| random_e58/prior_cipher_s1 | circuit not faithful | 2.6 / 2.6 | 68.1 / 68.1 | 41 / 41 | 41 / 0 / 0 | 1.00 | 0.72 to 0.93 | 1.00 (1.00) | 1.8e-72 (0) | 3 / 3: 1.00 | 69 / 69: 1.00 |
+| random_e58/prior_cipher_s2 | circuit not faithful | 2.6 / 2.6 | 68.1 / 68.1 | 41 / 41 | 41 / 0 / 0 | 1.00 | 0.72 to 0.93 | 1.00 (1.00) | 1.8e-72 (0) | 3 / 3: 1.00 | 69 / 69: 1.00 |
 
 ## Departures from the literature
 
@@ -310,6 +346,10 @@ released code's value in brackets. The two last columns give each circuit's edge
   only, because a corruption needs a key to swap: 172 to 188 of 512 per task.
 - **D12, second selector.** Hanna's greedy search for the smallest circuit at 85% normalised faithfulness, with KL to
   the clean run as the metric. Hanna scored that bar with task metrics, so this is an adaptation.
+- **D13, a base with a much weaker behaviour.** Wang fine-tunes a model that already does the task, so the original circuit is
+  a circuit for a real behaviour. On our items M's KL gap is 2.6 to 4.7 nats on the built and key-grid windows and 0.27
+  to 0.49 on E62's, 3 to 8 times under the key-grid fine-tunes' and 33 to 75 times under E62's. Faithfulness, a share
+  of M's own gap, cannot see this, so each reading carries both gaps beside it.
 - **pygraphviz not installed.** Wang's pinned requirements include pygraphviz 1.13, which needs graphviz headers the
   cluster lacks. A stub stands in for it; `eap/graph.py` imports it only for drawing, which nothing here calls. The
   first job, 64832, stopped at import because the stub raised on a name looked up at import; the scored job used the
@@ -317,6 +357,7 @@ released code's value in brackets. The two last columns give each circuit's edge
 
 ## Not run
 
+- A random update at the tenfold edit's own output change, so the tenfold edit has no matched reference.
 - The key-grid copy fine-tune on E62's longer windows, where M's circuit already holds the heads it adds.
 - Any circuit size other than Wang's 5% for the headline, so E62 and four key-grid tasks have no headline reading.
 - Wang's robustness test on perturbed datasets; the resampling range here is a project diagnostic instead.
