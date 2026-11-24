@@ -224,3 +224,7 @@ Appendix trim (v2 cd7fad2): every body \ref still resolves. 4 MUST restores/rewo
 - sec4:43 points to a superseded ADL score that survives only in the cut file;
 - two filed real-text misses (E233, one of three).
 2 SHOULD: the form's scale/units caveats; the live appendix still says ρ. 6 NITs. Note: writeup-lead/ and whip-lead/note-2026-11-23-redteam-appendix-trim.md.
+
+Appendix trim re-check (v2 cc1b4c0, 28 pp): OK. All 4 MUST restores are in, and the pure-gain limit on the re-gating share now also sits in the Results limits and the Discussion. "What the form ignores" is restored, ρ is defined as the kept share, and sec5:34's 0.999 is marked K*. Left for the user: sec4:43 (the user's §4 still points to the superseded ADL score). One NIT: \ref{sec:methods} at main.tex:244 is dangling.
+
+Related work re-check (v2 14719ba): OK. The paragraph order is fixed (main.tex:180-182), "scores the published ones" is at 188, and the dangling ref is fixed. Every paper check redteam-lead sent tonight is closed. Open only for the user: sec4:43 (the superseded ADL score) and main.tex:260 (0.999 without the K* marker), both in the user's sections.
