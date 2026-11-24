@@ -70,7 +70,7 @@ def main() -> int:
     ax.set_ylim(-0.02, 1.02)
     ax.set_title("No arm at a fine-tune's size reaches the bar; the Gaussians read over the head under nu from D", fontsize=8)
     ax.legend(fontsize=7, loc="upper left")
-    save(fig, HERE / "figures" / f"{a.tag}_specific.png", n="one SAE fit per point (two seeds on the head), 1,536 latents at k 100; "
+    save(fig, HERE / "figures" / f"{a.tag}_specific.png", n="one SAE fit per point (two seeds on the head), 1,536 latents at k 100, k 33 where marked; "
          "share of the change's energy on each side's score read windows", data=rows)
     return 0
 
