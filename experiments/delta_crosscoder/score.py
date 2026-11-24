@@ -3,7 +3,9 @@ the fit's FVE and firing on a Pile background plus the side's score windows, the
 1 - R (and on the planted sides the other tail, as description), one bulk pool per candidate, then the same two tests
 on every latent read: the top-activation share on behaviour positions, and the steering search (d^ft at unit length
 times s * rho / 100 at the site, every position, the ten nonzero strengths of Appendix C) read as F's behaviour g, M's
-g and F's Pile loss. The pure rules are commute.delta_crosscoder's; this file runs the forwards. Steering reads are
+g and F's Pile loss. Beside the label, the damage flag (after Kassem, ours): true when every candidate that passed both
+tests won its steering statistic at a strength where its pool's median Pile-loss rise is over thresholds.damage_nats.
+The pure rules are commute.delta_crosscoder's; this file runs the forwards. Steering reads are
 saved latent by latent, so a rerun resumes them.
 
 Behaviour g of a model X at a strength (spec 1 and 3.7): a task side's mean answer log-odds on its score windows; for a
@@ -169,28 +171,43 @@ def score(ctx: Any, key: str, F: Any, read: Any, site: str, m: DX.DXC, other_tai
     dd = (m.W_dec[1] - m.W_dec[0]).detach().float()
     plant = F.plant[0].float().to(dd.device) if F.plant is not None else None
 
+    def parsed(i: int) -> dict[str, dict[float, float]]:
+        return {k: {float(s): float(x) for s, x in d.items()} for k, d in reads[str(i)].items()}
+
     def stats(i: int) -> dict[str, float]:
-        r = {k: {float(s): float(x) for s, x in d.items()} for k, d in reads[str(i)].items()}
+        r = parsed(i)
         pos = [s for s in r["g_M"] if s > 0]
         cos = float(torch.nn.functional.cosine_similarity(dd[i], plant, dim=0)) if plant is not None else math.nan
+        drop = {s: base["g_F"] - x for s, x in r["g_F"].items() if s < 0 and math.isfinite(x)}
         return {"steer": DX.suppression(r["g_F"], base["g_F"]), "top": share[i],
+                "win_s": max(drop, key=lambda s: drop[s]) if drop else math.nan,
                 "induce": max((r["g_M"][s] - base["g_M"] for s in pos), default=math.nan),
                 "pile_rise_max": max(r["pile_F"][s] - base["pile_F"] for s in r["pile_F"]), "cos_plant": cos}  # fmt: skip
+
+    def pool_rise(pool: list[int], s: float) -> float:
+        """The pool's median rise of F's Pile loss when each of its latents is steered at s (the damage flag)."""
+        v = [parsed(i)["pile_F"][s] - base["pile_F"] for i in pool]
+        return float(torch.tensor(v).median()) if v and math.isfinite(s) else math.nan
 
     rows = []
     for c, p in zip(cands, pools, strict=True):
         sc, ps = stats(c), [stats(i) for i in p["pool"]]
         pool_max = {k: max((x[k] for x in ps if math.isfinite(x[k])), default=math.nan) for k in ("steer", "top", "induce", "cos_plant")}
         rows.append({"latent": c, "R": float(R[c]), "scored": p["scored"], **sc, "pool_max": pool_max, "pool_n": len(ps),
+                     "pool_pile_rise_at_win": pool_rise(p["pool"], sc["win_s"]),
                      "steer_pass": p["scored"] and DX.beats(sc["steer"], [x["steer"] for x in ps]),
                      "top_pass": p["scored"] and DX.beats(sc["top"], [x["top"] for x in ps])})  # fmt: skip
     rec["rows"] = rows
     rec["other_rows"] = [{"latent": i, "R": float(R[i]), **stats(i)} for i in others]
     rec["label"] = DX.side_label(rows)
+    # damage flag (after Kassem), ours: a yes won only where steering the bulk pool raises F's Pile loss over the bar
+    won = [r["pool_pile_rise_at_win"] for r in rows if r["scored"] and r["steer_pass"] and r["top_pass"]]
+    rec["damage_pile_rise"] = max(won, default=math.nan)
+    rec["damage_flag"] = bool(won) and all(x > ctx.th["damage_nats"] for x in won)
     rec["minutes"] = (time.time() - t0) / 60
     for r in rows:
         ctx.log(f"[{key} candidate] {json.dumps(jsonable(r))}")
-    ctx.log(f"[{key} LABEL] {rec['label']}")
+    ctx.log(f"[{key} LABEL] {rec['label']}; damage flag {rec['damage_flag']} (pool Pile-loss rise at the winning s {rec['damage_pile_rise']:.3g})")
     return rec
 
 

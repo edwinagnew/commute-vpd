@@ -317,7 +317,7 @@ means the 67M setting leaves no faithful option.
 | steering vector | "the latent's decoder vector" | d^ft, unit length, s·ρ/100 | ? | ours | n |
 | steering prompts | nine chat prompts | the side's score-half read windows | y | ours | y |
 | steering strengths | 11 values, no cap stated | the same grid, uncapped (whip-lead approved, 2026-11-23), Pile-loss rise recorded | n | theirs | n |
-| damage flag | none | beside each label: whether it was won only at \|s\| where the bulk pool's Pile loss rises over 1 nat ("after Kassem") | y | ours | n |
+| damage flag | none | beside each label: whether it was won only at \|s\| where the bulk pool's Pile loss rises over 1 nat ("damage flag (after Kassem), ours"; whip-lead approved, 2026-11-23). In code: true when every candidate passing both tests had its largest suppression at a strength where its pool's median Pile-loss rise is over 1 nat; the largest such rise is recorded with it; it changes no label | y | ours | n |
 | steering read | judged text, on the behaviour | the side's behaviour g in nats, both signs, both models; KL gap as a diagnostic | y | ours | y (no chat text) |
 | top activations | inspected for consistency with the behaviour | share of top-50 on behaviour positions, against the pool; 20 contexts saved | y | ours | y (no grader) |
 | success | qualitative, per organism | §3.7 rule, one 60-latent pool per candidate, widened or "not scored"; yes / no / not scored | y | ours | n |
@@ -325,7 +325,9 @@ means the 67M setting leaves no faithful option.
 
 ## 5. Proposed run
 
-**Run 1, controls, two H100 pods, not gated.** M's 200,000 continuations are generated first. Then nine fits, in this order:
+**Run 1, controls, not gated.** (Repriced from the rehearsal on 2026-11-23: four H100 pods, about $50.5 and 3.5 h; the
+run plan `reports/plans/2026-11-23_plan_p2-72-run.md` §2 has the order and cost, and supersedes the derived times
+below.) M's 200,000 continuations are generated first. Then nine fits, in this order:
 - **C0a**, alone and first: identical models, paired init, at site A. A wiring check only.
   - Expected: ℒ_Δ = 0 at every step, because Δ = 0 and the two decoders stay equal. Every R_i equals 0.5 exactly by symmetry.
   - The bar is one number, filed after the rehearsal measures the deviation under bf16 on the same kernels. Any deviation
@@ -347,6 +349,14 @@ means the 67M setting leaves no faithful option.
   - E212's real-text planted direction. BatchTopK read 0.77, or 0 under the exclusion, pending the refit.
   - E235's block-3 head at site B. BatchTopK read 0.42-0.44 after P2.70. Lean: "yes", medium.
   - Rung 5 again with tied shared decoders, the other reading of the shared-latent ambiguity. Reported only.
+    - Its ℒ_Δ floors by construction (rehearsal, 2026-11-23: 1.6e6 at step 0, then flat at 5.35e5 from step 200 while
+      ℒ_recon kept falling). Eq. 7's prediction has no bias, and the decoder-bias difference carries a constant part of
+      F − M. With tied shared decoders, ℒ_Δ = mean‖(c_d^ft − c_d^base) + e‖² with mean‖e‖² ≤ 2ℒ_recon, so the bias
+      difference has norm at least √5.35e5 − √(2 × 1.16e4) ≈ 578, against M's RMS norm of 100.
+    - It is not a bug: the non-shared latents train (tail min R 0.217, beside untied rung 5's 0.172). A CPU test
+      (`tests/test_delta_crosscoder.py`) has the tied path's ℒ_Δ fall on a planted sparse change, and floor near ‖c‖²
+      with a planted constant shift c, the bias difference then near c. The untied fits leave that floor and the tied
+      one does not; why is not run down. The step-1,000 stop does not fire on it (below), and nothing about it is exempt.
 
 **What gates what.**
 - Run 2 runs at site A only if three things hold: C0a passes, rung 5 or E212's plant reads yes, and C2 at site A reads
@@ -366,6 +376,10 @@ means the 67M setting leaves no faithful option.
 - FVE under 0.5 at the end of a fit marks it a code fault, which stops that fit and is reported. E235's crosscoders read
   at least 0.89 and the paper's at least 0.72, so FVE is not otherwise a gate.
 - Expected at 1k steps: FVE at least 0.5, and ℒ_Δ falling. The rehearsal fills in the step-1 values first.
+  - Filed from the rehearsal (`thresholds.full.delta_last_over_peak_max`): ℒ_Δ's mean over steps 900-999 is at most 0.9
+    times the largest of its 100-step means before step 1,000. The peak is the anchor, not step 200, because ℒ_Δ first
+    rises. Run 1 warms up over 1,000 steps and the rehearsal over 100. On a summed-learning-rate clock, run 1's step 1,000
+    is the rehearsal's step 550, and there the untied fits read 0.057-0.78 and the tied fit 0.33.
 
 **Run 2, gated, only if run 1 opens site A.** The default is 39 fits, one per side, read by §3.7 only:
 - E62 copy and lookup, three saved seeds each (6), each with one matched random update (6);
