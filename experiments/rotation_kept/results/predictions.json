@@ -3,7 +3,7 @@
   "cell": "P1.60",
   "card": "experiments/rotation_kept/card.md",
   "plan": "reports/plans/2026-11-23_plan_p1-60-rotation-kept.md",
-  "filed": "2026-11-23, definition-lead (writer agent), before any GPU run of this experiment; descriptive, a diagnostic beside the frozen definition, not the definition",
+  "filed": "2026-11-23, definition-lead (writer agent), before any GPU run of this experiment; descriptive, a diagnostic beside the frozen definition, not the definition. Revised before any run with redteam-lead's four fixes (remainders out of the pooled read, the anisotropy-matched null, the built rotation controls, the head's null) and whip-lead's go (needed-space share approved as the measurement)",
   "settings": {
     "windows": 256,
     "top_frac": 0.01,
@@ -18,32 +18,40 @@
     "head": 4,
     "head_states": ["e62/copy_s0", "e62/copy_s1", "e62/copy_s2", "e62/lookup_s0", "e62/lookup_s1", "e62/lookup_s2"],
     "panel_vpd_derangements": 1,
-    "settings_source": "windows: the cell (user 2026-11-23, 'the same 256 pairs per item'), read as the first min(256, |D|) windows of each item's D at every position. top_frac: the cell's top 1% most-needed. own_energy: chosen here as the share of M's own write energy an own space must hold; it is exact for every one-direction variable (rank 1 holds all of it) and stage 0 checks it. rank_rtol: numerical rank of the needed space, a fp64 tolerance. too_small: whip-lead's floor (2026-11-23, filed with E273). too_wide: a needed space whose null exceeds one half is not read. cache_batch, control, built: E268's (experiments/kstar_needed/results/predictions.json). head: whip-lead 2026-11-23, head (2, 4) at the head basis on E62's copy windows (E280's targets). The head scan uses E268's scan settings loaded live (4 derangements x 64, seed 268). panel_vpd_derangements: E268's first derangement only, a departure to fit the debug queue (plan section 3)."
+    "theta_deg": 30.0,
+    "rot_other_max": 0.5,
+    "order_tol": 1e-09,
+    "transcription_rel_tol": 1e-09,
+    "seed": 286,
+    "settings_source": "windows: the cell (user 2026-11-23, 'the same 256 pairs per item'), read as the first min(256, |D|) windows of each item's D at every position. top_frac: the cell's top 1% most-needed. own_energy: the share of M's own write an own space must hold, exact for every one-direction variable (rank 1 holds all of it); the control stage checks it. rank_rtol: numerical rank of a stacked basis, a fp64 tolerance. too_small: whip-lead's floor (2026-11-23, filed with E273). too_wide: a needed space whose null exceeds one half is flagged. cache_batch, control, built: E268's (experiments/kstar_needed/results/predictions.json). head: whip-lead 2026-11-23, head (2, 4) at the head basis on E62's copy windows (E280's targets); its scan uses E268's scan settings loaded live (4 derangements x 64, seed 268). panel_vpd_derangements: one seeded derangement, a departure from E272's four to keep the rescan short (plan section 3). theta_deg: redteam-lead's rotation control, an angle large enough that the own and needed parts differ by far more than fp64 rounding. rot_other_max: the control toward a non-needed column stops the job above one half (both nulls sit near dim S / 768, a few hundredths). order_tol, transcription_rel_tol: fp64 summation bounds over at most 16,384 rows and 389 variables, rounded up. seed: the E-number, the matched null's draw."
   },
   "readings": {
-    "strict": "the frozen kept: commute.stand_in.explained(num, den) / dd per variable, pooled as explained_share over the read set N",
-    "own": "per variable |Delta P_O|^2 / |Delta|^2, O the fewest top eigen-directions of W_M^T W_M holding own_energy of its trace; pooled: numerators summed over N over sum dd over N",
-    "needed": "the same with S = span of O(u) and O(v) for every non-remainder v in the reference set R at u's site (VPD: the matrix; neuron basis: the layer's MLP for neurons and remainder, the layer's attention for heads), numerical rank at rank_rtol",
-    "null": "per variable dim S / d_out; pooled with the rotation share's weights",
-    "rotation": "pooled (needed - own) / (1 - own): the share of the change leaving the own space that lands in the needed space; its null (nu - dim O / d_out) / (1 - dim O / d_out), weighted the same",
+    "strict": "the frozen kept: commute.stand_in.explained(num, den) per variable over dd, pooled as explained_share over the read set N",
+    "own": "per variable the part of dd in O(u), the fewest top eigen-directions of W_M^T W_M holding own_energy of its trace; pooled: parts summed over N over dd summed over N",
+    "needed": "the same in S(u) = span of O(u) and O(v) for every non-remainder v of the reference set R at u's site (VPD: the matrix; neuron basis: the layer's MLP for neurons and remainder, the layer's attention for heads), numerical rank at rank_rtol",
+    "matched": "the same in A(u) = span of O(u) and as many O(v) as S(u) uses, v drawn with the seed from the site's non-remainder variables outside R and N (redteam-lead's anisotropy-matched null)",
+    "nu": "per variable dim S / d_out, the expected part of a random direction; pooled weighted by dd",
+    "rotation": "pooled (needed - own) / (dd - own): the share of the change leaving the own spaces that lands in the needed spaces; read against two nulls: the same with matched for needed, and the dd - own weighted (dim S - dim O) / (d_out - dim O)",
+    "pooling": "the read pools over the non-remainder members of N; the same pooled with remainders is reported beside it, with the non-remainder share of N's dd",
     "sets": "N: the ceil(top_frac n) changed members of K with most flips (saved scan); R: the ceil(top_frac n) members of K with most flips; ties to the lower index",
-    "head24": "head (2, 4) alone, on E62's 206 copy windows: strict and own share, and its flips of 256 pairs from needed_neurons.scan with pairs drawn within the copy windows"
+    "head24": "head (2, 4) alone, on E62's 206 copy windows: strict and own share, its null dim O / 768, and its flips of 256 pairs from needed_neurons.scan with pairs drawn within the copy windows"
   },
   "rules": {
-    "R0": "Stage 0 stops the job unless the do-nothing has every dd exactly 0.0, an empty changed read set, pooled shares 1.0 by convention, and every own space of R holding at least own_energy of its write (checked to 1e-12)",
-    "R1": "x2 runs first. At the neuron basis it stops the job unless every changed neuron in N has own share at least 1 - 1e-9 and the pooled own share is at least 0.99 (x2 scales down_proj columns, so each neuron's change lies along its own column)",
-    "R2": "On every item the job stops if any one-direction variable reads strict above own by more than 1e-9, or any variable reads own above needed by more than 1e-9 (both hold by construction)",
+    "R0": "The control stage stops the job unless each do-nothing (vpd, nn) has no changed variable, an empty read set, every accumulated dd exactly 0.0, pooled strict, own, needed and matched exactly 1.0, and every own space holding at least own_energy of its write (to 1e-12)",
+    "R1": "x2 at nn stops the job unless every changed non-remainder member of N has own share at least 1 - 1e-9 and the pooled own share is at least 0.99 (x2 scales down_proj columns, so each neuron's change lies along its own column). x2 at both bases stops the job unless N's summed num, den and dd repeat the saved arrays (E247 at vpd, E277 at nn) within transcription_rel_tol",
+    "R2": "On every item the job stops if any one-direction variable reads strict above own, or any variable own above needed or matched, by more than order_tol times its dd (all hold by construction)",
+    "R3": "Built rotation controls at nn on x2's D and M, before any trained read: neuron i (the most-flipping neuron of R with another R neuron j at its layer) has its output column turned by theta_deg at fixed norm. (i) Toward j: own share must be (1 - cos theta) / 2 within 1e-6 and the rotation share at least 1 - 1e-6. (ii) Toward k (the fewest-flipping neuron of that layer outside K, else outside R): own share as (i), rotation share at most rot_other_max. A miss stops the job. The own share is the change's, not the write's: the change W_F - W_M of a column turned by theta has the fraction (1 - cos theta) / 2 of its norm along W_M (redteam-lead's cos^2 theta is F's write's share, a different quantity)",
     "items": "descriptive (card); no verdict on reuse under this reading"
   },
   "expected": {
-    "stage0": "do-nothing: dd max 0.0, read set empty, pooled shares 1.0, own spaces hold at least 0.99",
-    "x2_x10_neurons": "own share at least 1 - 1e-9 per changed neuron, pooled own at least 0.99; needed at least own",
+    "control": "do-nothing at both bases: as R0. Rotation controls at theta 30 degrees: own 0.0669873 in both; rotation (i) 1, (ii) near its nulls (a few hundredths)",
+    "x2_x10_neurons": "own share at least 1 - 1e-9 per changed neuron, pooled own at least 0.99; rotation share none (nothing leaves the own spaces)",
     "x2_x10_vpd": "needed share pooled at least the strict share (E268: E_b 0.761 over K); expected at least 0.9",
-    "new_few_new_thin": "needed share pooled at most 0.5; rotation share within 0.1 of its null, at both bases",
-    "randoms": "built randoms and E229's matched randoms: rotation share within 0.05 of its null; own share 0.2 to 0.8 at the neuron basis (a Gaussian moves a neuron's input and output side by similar relative amounts)",
+    "new_few_new_thin": "needed share pooled at most 0.5; rotation share within 0.1 of both nulls, at both bases. new_thin's pooled read rests on its non-remainder change, about 1% of N's dd (redteam-lead's estimate), reported as nonrem_dd_share",
+    "randoms": "built randoms and E229's matched randoms: rotation share within 0.05 of the matched null; own share 0.2 to 0.8 at the neuron basis (a Gaussian moves a neuron's input and output side by similar relative amounts)",
     "e62": "rival A (rotation): the three-seed mean of copy's needed share at least 0.2 above lookup's, at either basis; rival B: within 0.2",
-    "e229_panel": "descriptive: each trained item's rotation share beside its matched random's; rival A puts trained at least 0.2 above its random's on most items, rival B within 0.05 of the null",
-    "head24": "strict: copy above lookup on every seed (E277 on all of D: copy 0.095-0.141, lookup 0.015-0.020); flips: copy above lookup on every seed (E277 on all of D: 128-141 against 11-15 of 256); own share: rival A (rotation inside the head's write space) puts every copy seed at 0.5 or more, rival B below 0.5; the output-side null is dim O / 768, at most 0.17",
-    "time": "at most 1 min per item without a scan (the x2 item measures it); head scans 6 min in all; VPD panel 465 s per state on an L40 (E272 742 s per state at 4 derangements on an H100, divided by 4, times E272's L40 slowdown 2.5)"
+    "e229_panel": "descriptive: each trained item's rotation share beside its matched random's and its two nulls; rival A puts trained at least 0.2 above the matched null on most items, rival B within 0.05 of it",
+    "head24": "strict: copy above lookup on every seed (E277 on all of D: copy 0.095-0.141, lookup 0.015-0.020); flips: copy above lookup on every seed (E277 on all of D: 128-141 against 11-15 of 256); own share, copy beside lookup, each against its null dim O / 768 (at most 0.17): rival A (rotation inside the head's write space) puts every copy seed at 0.5 or more and above lookup, rival B below 0.5",
+    "time": "control stage about 10 min (two do-nothings, two x2 reads, two rotation controls); about 1 min per item without a scan, measured by x2; head24 6 min; VPD panel about 4 min per state on an H100 (E272: 742 s per state at 4 derangements on an H100, divided by 4, plus the read)"
   }
 }
