@@ -140,6 +140,7 @@ the code adds something). "67M forces" means the 67M leaves no faithful option.
 | Token-relevance baselines | paper: means "over the 𝒟ft samples"; code: means over the same FineWeb batch as δ̄ | not run | — | theirs (paper and code differ) | — |
 | Causal-effect zero cases | upstream divides by the direction norm and the CE gap with no guard | zero δ̄ is a no-op (`adl.unit`) | yes, a guard | ours (needed for the do-nothing) | no |
 | Fig. 7 models | text: "Qwen3 1.7B, Llama 3.2 8B, and Gemma3 1B"; caption: "Llama 3.2 1B" | — | — | theirs (inconsistent) | — |
+| Random-update denominator | — (the paper has no share) | D of each Gaussian weight update was divided by its paired trained state's gain, not its own | yes | ours | no |
 
 ## 4. Faithful re-run proposal
 
@@ -154,12 +155,20 @@ the code adds something). "67M forces" means the 67M leaves no faithful option.
 
 The **pass rule** is filed before the run and uses only what the text states. The "mean" is the mean over the three
 organisms.
-- (a) Training data: the mean `incr_ce` of `default` is above the mean `random_diff_mean` at every position 0-8. The text
-  says "clearly positive on 𝒟ft" and "random diff vectors yield causal effects close to zero".
+- (a) Training data: the three-organism mean `incr_ce` of `default` is above the mean `random_diff_mean` at 5 or
+  more of positions 0-8. Its mean over positions 0-8 is also above the random mean by more than 2 sd of the 64
+  random-difference values. The text says "clearly positive on 𝒟ft" and "random diff vectors yield causal effects
+  close to zero".
 - (b) FineWeb: the mean `incr_ce` of `default` is below 0 at a majority (5 or more) of positions 0-8. The text says
   "negative for Qwen3 1.7B".
 - (c) The mixture's mean `incr_ce` on training data, averaged over positions 0-8, is between 0.25 and 0.75 times
   `default`'s. App. F.8 says "roughly half".
+- (d), optional: the mixture's mean `incr_ce` on FineWeb is above 0 at a majority of positions 0-8. App. F.8 says
+  "Unlike the standard models, however, the causal effect on pretraining data is now slightly positive—the
+  intervention increases loss."
+
+Each organism's curve is reported beside the mean, so a pass on the mean with one organism the wrong way is
+visible. Positions follow the toolkit, with no BOS for Qwen3: position 0 is a real text token.
 
 A miss on (a)-(c) means the pinned toolkit does not reproduce the paper's Qwen panel. We stop and report.
 
@@ -245,6 +254,15 @@ Lowercase is compared like with like:
    pair gap uses only states with matched task and token support, and with checked gain or KL. The column is read as
    the other baselines are: per pair, the reuse side against the new side, compared with the definition's gap. No
    reuse verdict comes from ADL.
+   **Labelling (redteam-lead, 2026-11-23).**
+   - As published, the column reads "ADL (as published) detects the training domain, makes no reuse call".
+   - The whole-window reading (item 1) is descriptive only.
+   - This adaptation is ours. It is labelled so in the paper text, not only in an appendix, and is never called "the
+     activation difference lens".
+   - It has no positive control for reuse. The lowercase control, a constant shift, shows only that the port sees a
+     constant bias, not that it can see reuse.
+   - The claim "existing tools cannot see reuse" cannot rest on ADL in either form. At most: "ADL's trace, adapted to
+     answer targets, does / does not order the built pairs as the definition does".
 
 The logit-lens top 20 for δ̄ and for the mean base and fine-tuned activations is a side reading. The paper's account
 ("overfitting" to narrow data, "a constant semantic bias") predicts that the trace tracks how constant a fine-tune's
@@ -288,6 +306,10 @@ Totals: option A plus parity is about $13; option B plus parity is about $6. Bot
 - Not checked: whether a 4-layer 67M copies in context well enough for the identity Patchscope.
 - Not checked: whether `monology/pile-uncopyrighted` holds a val file.
 - Not checked: the paper's figure values. The pass rules use only signs and ratios the text states.
+- Not checked: whether `mix1-2p0` resolves for all three organisms at the config's adapter revisions. The config
+  lists it for cake_bake, kansas_abortion and fda_approval on Qwen3-1.7B. Whether the adapters load is not checked.
+- Not checked by running: that the toolkit's Qwen3 tokenizer call (`add_special_tokens=True`) adds no BOS. Qwen3 has
+  none by default, so position 0 is a real token.
 
 ## Review response (GPT plan-reviewer, 2026-11-23)
 
@@ -306,3 +328,14 @@ All five points were real and are fixed above:
    E264 wording, and the raw-corpus and tokenizer plan with its fallback.
 
 Rejected: nothing.
+
+Redteam-lead (`~/commute-data/agents/compare-lead/note-2026-11-23-redteam-p2-67-adl-spec.md`), four fixes, all applied:
+1. Section 3 gains a row: E264-267's D divided the Gaussian weight updates' loss by the paired trained state's gain,
+   not by their own.
+2. Section 4.3 states how the column is labelled and read. As published, ADL detects the training domain and makes no
+   reuse call. The answer-target adaptation is ours, labelled so in the paper text and never called "the activation
+   difference lens". The lowercase control shows only that the port sees a constant bias. "Existing tools cannot see
+   reuse" cannot rest on ADL.
+3. Pass rule (a) now needs 5 or more positions plus a margin of over 2 sd. An optional (d) is added from App. F.8
+   ("slightly positive"). Every organism's curve is reported beside the mean.
+4. Two items are added to "Not checked": whether `mix1-2p0` resolves for all three organisms, and that Qwen3 adds no BOS.
