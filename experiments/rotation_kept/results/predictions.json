@@ -54,5 +54,30 @@
     "e229_panel": "descriptive: each trained item's rotation share beside its matched random's and its two nulls; rival A puts trained at least 0.2 above the matched null on most items, rival B within 0.05 of it",
     "head24": "strict: copy above lookup on every seed (E277 on all of D: copy 0.095-0.141, lookup 0.015-0.020); flips: copy above lookup on every seed (E277 on all of D: 128-141 against 11-15 of 256); own share, copy beside lookup, each against its null dim O / 768 (at most 0.17): rival A (rotation inside the head's write space) puts every copy seed at 0.5 or more and above lookup, rival B below 0.5",
     "time": "control stage about 10 min (two do-nothings, two x2 reads, two rotation controls); about 1 min per item without a scan, measured by x2; head24 6 min; VPD panel about 4 min per state on an H100 (E272: 742 s per state at 4 derangements on an H100, divided by 4, plus the read)"
+  },
+  "gauge": {
+    "added": "2026-11-24, definition-lead (writer agent), at whip-lead's request (redteam-lead's note ~/commute-data/agents/whip-lead/note-2026-11-24-redteam-p271-lit-challenges.md item 4), before the gauge stage ran. Every setting, reading, rule and expected value above is unchanged; this block adds the stage `gauge` (experiments/rotation_kept/gauge.py)",
+    "settings": {
+      "seed": 286024,
+      "floor_mult": 10,
+      "scale_tol": 1e-09,
+      "settings_source": "seed: the E-number then the date. floor_mult: the gauged model's logits must lie within 10 times the round-trip floor (the gauge then its transpose, the same fp32 casts twice) of M's. scale_tol: fp32 rounding of a gauged weight is about 6e-8 relative, so a head write's squared relative change is near 1e-14; 1e-9 leaves wide room"
+    },
+    "readings": {
+      "gauge_map": "per head, QK: W_q -> G W_q, W_k -> G W_k with G a random turn of each rotary pair of head dimensions (the only orthogonal maps that commute with the rotary embedding, so the only QK gauge here); VO: W_v -> S W_v, W_O -> W_O S^T, S random orthogonal (commute.head_gauge.rotate)",
+      "invariance": "max |logits(F_gauge) - logits(M)| over x2's D, against the round-trip floor",
+      "shares": "strict, own and needed shares (run.py measure, x2's ranking) of F_gauge against M at the neuron-and-head basis and at VPD; beside them max dd / den over the non-remainder read set, and kept at write scale 1 - sum (dd - part) / sum den for the strict and needed parts",
+      "tangent": "per trained state, the part of its update's squared norm on the head matrices (q, k, v, o) along the gauge's tangent at M: QK per rotary pair span{(I_p W_q, -I_p W_k), (J_p W_q, J_p W_k)}, VO {(A W_v, -W_O A)} by least squares (commute.head_gauge.tangent_share); beside the same for a random update matched per tensor"
+    },
+    "rules": {
+      "G0": "The stage stops unless F_gauge's logits lie within floor_mult times the round-trip floor of M's",
+      "G1": "descriptive; a miss of the expected values below is reported as found, with no amendment"
+    },
+    "expected": {
+      "nn": "reads 1: only heads change; max dd / den at most scale_tol and kept at write scale (strict) at least 1 - scale_tol. The pooled shares are of a change at the fp32 floor and carry no meaning there",
+      "vpd": "may not read 1: q_proj, k_proj, v_proj and o_proj are decomposed matrix by matrix, so the gauge moves their subcomponents' writes by a relative amount of order 1 while the function is unchanged. Reported as found",
+      "tangent": "matched random: about 128 x 128 / (4 x 128 x 768) = 0.042 of the head norm (VO) plus 0.0003 (QK), the tangent's share of the head parameters. Trained updates (E62, E229 pairs, panel): not filed; above about 0.1 reads as gauge motion large enough to bear on the head readings (redteam-lead: Adam has a component along the gauge, gradient descent none)",
+      "time": "invariance and two basis reads about 5 min; tangent about 5 s per state over 65 states (9 E62, 20 E229, 36 panel), about 10 min with world loads; one debug job"
+    }
   }
 }
