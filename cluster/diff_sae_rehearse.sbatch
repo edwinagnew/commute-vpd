@@ -8,8 +8,8 @@
 # not applied). Per item it measures ms per step, peak GPU memory, the pooled FVE per validation, the float32 against
 # float64 floor of the numerator identity (scaler_checks), the KL floors (kl.*.kl_all.h_F, gap) and K.
 # Each item is about 15-25 min on an L40 (stream and normaliser passes over 100M tokens), so two items a job:
-#   sbatch --comment='E### rehearse: diff_sae' cluster/diff_sae_rehearse.sbatch plant.A.c0 head-r1.A.c0
-#   sbatch --comment='E### rehearse: diff_sae' cluster/diff_sae_rehearse.sbatch head-r1.A.c1 random_d0-r1.A.c0
+#   sbatch --comment='E296 rehearse: diff_sae' cluster/diff_sae_rehearse.sbatch plant.A.c0 head-r1.A.c0
+#   sbatch --comment='E296 rehearse: diff_sae' cluster/diff_sae_rehearse.sbatch head-r1.A.c1 random_d0-r1.A.c0
 # Outputs: experiments/diff_sae/results/rehearse/items/<key>.json, results/large/rehearse/<key>.pt, and a tar + sha256
 # per item in results/rehearse_dl/.
 #SBATCH --job-name=commute-p275-rehearse
