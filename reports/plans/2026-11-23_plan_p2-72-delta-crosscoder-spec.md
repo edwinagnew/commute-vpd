@@ -2,7 +2,9 @@
 
 Cell P2.72 (due 2026-11-25, 3 runs). User, 2026-11-23: "open delta-crosscoder and weight-diff svd cells". The aim is the
 strongest crosscoder for narrow fine-tunes, so that "existing tools fail" survives a cherry-picking charge. This is the
-spec only. Redteam-lead and an independent GPT reviewer check it before any code is written.
+spec, revised once after two reviews (redteam-lead with a fresh Opus reviewer, and the GPT plan-reviewer; responses at
+the end). whip-lead's rules override the first draft. Report the method as published, as a yes or no per fine-tune. Give
+no reuse score and no share column. Run 1 goes on an H100 pod. Do not contact the authors; whip-lead is asking the user.
 
 **Sources.** Kassem, Jiralerspong, Rostamzadeh and Farnadi, "Delta-Crosscoder: Robust Crosscoder Model Diffing in Narrow
 Fine-Tuning Regimes", arXiv 2603.04426. The arXiv listing shows one version only, v1 of 16 Feb 2026 (checked
@@ -13,16 +15,19 @@ Fine-Tuning Regimes", arXiv 2603.04426. The arXiv listing shows one version only
 **Code: not released.** The paper has no code link and no footnotes. Its only GitHub links are the arXiv
 HTML's own feedback links. A GitHub search on 2026-11-23 found nothing for "delta-crosscoder", "delta crosscoder" or
 "kassem crosscoder". The first author's account (`Alymostafa`) has no crosscoder or diffing repository. Nothing was
-cloned, and `~/commute-data/agents/compare-lead/dxc/` was not created. Any run is therefore our own implementation of the
-paper's text. The base would be Minder et al.'s pinned trainer (`dictionary-learning`@d1fd6f3, as in
-`src/commute/crosscoder.py`), which has no shared/non-shared split. Writing to the corresponding author
-(aly.kassem@mila.quebec) for the code would remove most of the "ours" rows below. That is the lead's or the user's call.
+cloned, and `~/commute-data/agents/compare-lead/dxc/` was not created. A run is therefore our own implementation of the
+paper's text, specified in §3 so that it does not inherit unstated behaviour from Minder et al.'s pinned trainer
+(`dictionary_learning`@d1fd6f3). Code locations cited below are in that checkout.
 
-**Symbols, each defined once.** *a* and *b* are the base model's and the fine-tuned model's residual activations at one
-site on the same input token. *Δ = b − a* is their difference. *z* is the crosscoder's sparse code, split into *z_shared*
-(20% of latents) and *z_Δ* (80%, the "non-shared" latents). *K_shared* and *K_Δ* are the two top-K budgets. *d_i^base*
-and *d_i^ft* are latent *i*'s two decoder vectors. *R* is the relative decoder norm. *D(x)* is our name for Δ summed into
-a per-token change, as in E235.
+**Symbols, each defined once.**
+- *a*, *b*: the base model's and the fine-tuned model's residual activations at one site, on the same input token.
+- *Δ = b − a*: their difference.
+- *z*: the crosscoder's sparse code. It splits into *z_shared* (20% of latents) and *z_Δ*, the 80% that are non-shared.
+- *K_shared*, *K_Δ*: the two top-K budgets.
+- *d_i^base*, *d_i^ft*: latent *i*'s two decoder vectors.
+- *R_i*: the paper's relative decoder norm, eq. 4, with the paper's sum denominator. We read the fine-tune side as 1 − R_i.
+- *M*: the original 67M model. *F*: a changed model (a fine-tune, a planted change or a random update).
+- *KL gap*: the mean per-token KL divergence between F's and M's next-token distributions on a side's read windows, in nats.
 
 ## 1. Plain answers
 
@@ -38,38 +43,45 @@ but not naturally expressed". That is an interpretation of a steering result, no
 evidence of reuse, because the added vector can carry the learned content itself. The paper's background also states the
 prior view: fine-tuning "primarily modulates existing circuits rather than introducing new capabilities".
 
-**The most faithful baseline column.** Report the method's own outputs per side, with no reuse label. First, does a top-three
-non-shared latent change the fine-tune's task behaviour when steered, beyond the null control's tail? Second, does the
-same latent, added to the base model, bring out the task behaviour? That second test is the paper's own "already present
-in the base model" check. Beside them, and named as ours ("after Kassem"), put the share of the activation change carried
-by the latents in the tail beyond the null's tail. That share reads like E235's specific part. The column is
-comparable to the BatchTopK one only if both are read on the same sides, site and controls.
+**The most faithful baseline column.** One yes or no per side, as the paper reports per organism. The answer is yes when
+one of the top three non-shared latents passes both the steering test and the top-activation test (§3.5), each judged
+against latents of the same crosscoder drawn from the shared bulk. Beside it, as description only, we report:
+- the tail value of the top three latents, against the null runs' tail;
+- whether adding the same latent to the base model moves it toward F, which is the paper's own "already present in the
+  base model" check.
+
+There is no reuse label and no share. A random update matched to each fine-tune gets the same yes or no. How often
+random updates read yes is the method's false-recovery rate here.
 
 ## 2. The published method, step by step
 
-Code locations: none (not released). "Ours" below marks what the text leaves open.
+Code locations: none (not released).
 
 **2.1 The base crosscoder.** §3.1, eqs. 1-3: "u^base = W_e^base x^base, u^ft = W_e^ft x^ft", "u = ½(u^base + u^ft),
 z = BatchTopK(u)", "x̂^base = W_d^base z, x̂^ft = W_d^ft z". "Throughout this work, we use BatchTopK as the sparsity
-mechanism rather than an ℓ1 penalty". The averaged encoder in eq. 2 differs from Minder's code, which sums one encoder over
-the stacked pair; with paired initialisation the two differ only by a factor of two in the pre-activation.
+mechanism rather than an ℓ1 penalty". Eq. 1 has no encoder bias. Minder's encoder sums the two encoders and adds a bias before a
+ReLU (`dictionary.py` 892-897). Its top-K ranks the rectified activations times the summed decoder norms, and at
+inference it uses a learned threshold instead (`dictionary.py` 1554-1578, `trainers/crosscoder.py` 592-601).
 
 **2.2 Shared and non-shared latents, two budgets.** §3.3: "A fixed fraction of the dictionary (20%) is designated as
 shared latents, with the remaining 80% reserved for non-shared latents." "Sparsity is enforced using BatchTopK with a
 Dual-K allocation: shared latents are assigned a larger activation budget K_shared, while non-shared latents are assigned
 a smaller budget K_Δ = α·K_shared, with α<1." Table 1: "Base Sparsity (k_base) | 200", "Shared k Multiplier | 2.0",
-"Shared Features Fraction | 20%". The text never gives α. Our reading of Table 1 is K_Δ = 200 and K_shared = 400, so
-α = 0.5; this is an inference. The paper also does not say whether shared latents have one tied decoder. It says "we adopt
-partitioning stragety from (Mishra-Sharma et al., 2024; Jiralerspong and Bricken, 2025)" [sic]. Mishra-Sharma's
-designated shared features tie the two decoders; this too is open.
+"Shared Features Fraction | 20%". The text never gives α. The most literal reading of Table 1 is K_Δ = 200 and
+K_shared = 400, so α = 0.5; this is an inference. The same k_base is listed for all widths from 2048 to 4096, so the paper
+did not keep the active fraction fixed. The text does not say whether the shared latents' two decoders are tied. It
+says "we adopt partitioning stragety from (Mishra-Sharma et al., 2024; Jiralerspong and Bricken, 2025)" [sic].
 
 **2.3 The delta loss through non-shared latents only.** Eq. 5: "Δ = b − a". Eq. 8, unmasked: "ℒ_Δ = ‖Δ − (W_ft − W_base)
 z‖²₂". Eq. 9, as used: "During difference modeling, shared latents are explicitly masked, restricting the delta prediction
 to depend only on non-shared features: ℒ_Δ = ‖Δ − (W_ft − W_base)[0; z_Δ]‖²₂." "This ensures that shared features
-contribute to reconstruction but cannot absorb fine-tuning–specific differences." Eq. 10: "ℒ = ℒ_recon + λ_s sparsity(z)
-+ λ_Δ ℒ_Δ". Appendix A: "We set the delta loss weight Δλ=0.005". Not given: the form of ℒ_recon, the value or meaning of
-λ_s under BatchTopK (Table 1's "AuxK Coefficient (α_auxk) | 1/32" is the likely term), and whether Δ is taken before or
-after normalisation.
+contribute to reconstruction but cannot absorb fine-tuning–specific differences." Masking matters only if the shared
+decoders are untied: tied decoders give W_ft − W_base = 0 on them anyway. Eq. 10: "ℒ = ℒ_recon + λ_s sparsity(z)
++ λ_Δ ℒ_Δ". Appendix A: "We set the delta loss weight Δλ=0.005". The text does not give:
+- the form or reduction of ℒ_recon, against which λ_Δ was tuned;
+- the meaning of λ_s under BatchTopK (Table 1 lists "AuxK Coefficient (α_auxk) | 1/32");
+- whether Δ is taken before or after normalisation;
+- whether eq. 7's prediction includes decoder biases. As written, it has none.
 
 **2.4 Data.** §3.3: "We sample prompts x from a general corpus and generate responses from both the base and finetuned
 models, producing y_base and y_ft." "Each concatenated input is then independently passed through both the base and
@@ -79,177 +91,330 @@ contrastive pairs and unpaired activations". §4.2 lists four sources: "pretrain
 by sampling 200,000 prompts uniformly at random. For 100,000 prompts, we generate responses using the base model, and for
 the remaining 100,000 prompts, we generate responses using the finetuned model." "In total, training uses approximately
 200 million tokens, of which roughly 20 million corresponds to contrastive prompt–response data". "All sequences are
-truncated or padded to a maximum length of 1024 tokens." Not given: the corpus the prompts come from, response lengths,
-sampling settings for 𝒟C, and the mix of 𝒟pre, 𝒟Inst and 𝒟F. 20M tokens over 200,000 prompts is about 100 tokens per
-prompt with its response. Appendix F.1: "removing finetuning data does not degrade Delta-Crosscoder's ability to recover
-fine-tuning–induced latents" (two organisms).
+truncated or padded to a maximum length of 1024 tokens." The two sections disagree. §3.3 has both models answer each
+prompt, and §4.2 has each prompt answered by one model. The text does not give:
+- the corpus the prompts come from;
+- response lengths;
+- sampling settings for 𝒟C;
+- the mix of 𝒟pre, 𝒟Inst and 𝒟F.
+
+20M tokens over 200,000 prompts is about 100 tokens per prompt with its response. Appendix F.1: "removing finetuning
+data does not degrade Delta-Crosscoder's ability to recover fine-tuning–induced latents" (two organisms).
 
 **2.5 Site and size.** §4.2: "We train Delta-Crosscoder on activations extracted from a single intermediate transformer
-layer." "we use a middle layer of each model". "We use an expansion factor of 5". The dictionary sizes in Table 2 (20480,
-17920, 10240) are five times the widths 4096, 3584 and 2048. The 10240 rows are the SDF organisms, which the paper calls
-"Llama 3.2 8B Instruct"; a width of 2048 matches Llama 3.2 1B.
+layer." "we use a middle layer of each model". "We use an expansion factor of 5". The dictionary sizes in Table 2 are
+20480, 17920 and 10240, which are five times widths of 4096, 3584 and 2048. The 10240 rows are the SDF organisms, which
+§4.1 names "Llama 3.2 8B Instruct". That label and that width disagree; we do not resolve it.
 
 **2.6 Training settings.** Table 1: "Optimizer | Adam", "Learning Rate | 1×10−4", "Total Training Steps | 50,000",
-"Warmup Steps | 1,000", "Batch Size | 4096", "Initial Decoder Vector Norm Scale | 0.4", "Mixed Precision | bfloat16".
-50,000 steps times 4096 is 204.8M token presentations, consistent with "approximately 200 million tokens". No k
-annealing, seed count or normalisation is stated.
+"Warmup Steps | 1,000", "Batch Size | 4096", "Initial Decoder Vector Norm Scale | 0.4", "Mixed Precision | bfloat16",
+"Gradient Checkpointing | Enabled". 50,000 steps times 4096 is 204.8M token presentations, consistent with
+"approximately 200 million tokens". No k annealing, learning-rate decay or seed count is stated. Normalisation is implied
+only for steering, in Appendix C: "Decoder vectors are normalized using model-specific normalization factors".
 
 **2.7 Latent selection.** Eq. 4: "R^base_i = ‖d^base_i‖₂ / (‖d^base_i‖₂ + ‖d^ft_i‖₂)". "Values R^base_i ≈ 1 indicate
 base-specific features, while R^base_i ≈ 0.5 corresponds to shared structure." §4.3: "we rank non-shared latents by their
 relative decoder norm (see subsection 3.1) and select the top-3 latents from the right tail of this distribution." Taken
-literally, the right tail of R^base is base-specific. We read it as the fine-tune side, 1 − R^base, which is
-what the fine-tune effects require. This is open.
+literally, the right tail of R^base is base-specific. Every result places the fine-tune latents in "the right tail"
+(§5.2, §5.4, F.1), so the text contradicts itself.
 
-**2.8 Steering validation.** §4.3: "We perform positive and negative steering of the finetuned model by adding or
-subtracting the latent's decoder vector during inference". "Steering is evaluated on task-agnostic prompts (e.g.,
-open-ended questions such as "What is on your mind?")". "When an explicit evaluation dataset is available for a given
-organism, we additionally apply steering on that dataset". Base model: "To test whether the recovered direction
-corresponds to a latent capability already present in the base model but not naturally expressed, we apply the same
-positive and negative steering interventions to p_base." Appendix C: nine open-ended prompts, "11 discrete steering
-strengths s∈{−200,−100,−80,−50,−20,0,20,50,80,100,200}", "steering is applied by adding s⋅d to the model's residual
-stream at the selected layer during generation. Decoder vectors are normalized using model-specific normalization
-factors", "Maximum tokens: 200", "Temperature: 0.7", "Top-p: 0.9". Max-activation: "we inspect the inputs that maximally
-activate the feature". Success per organism, §6.1: "count an organism as successfully identified if the recovered
-latent supports causal validation via steering and max-activation analysis." That judgement is qualitative. §6.2 adds an
-LLM grader, GPT-5.2, which scores against ADL's 1-5 rubric.
+**2.8 Steering and top activations.** §4.3: "We perform positive and negative steering of the finetuned model by adding or
+subtracting the latent's decoder vector during inference". The vector is not named as d^ft, d^base or their difference.
+"Steering is evaluated on task-agnostic prompts (e.g., open-ended questions such as "What is on your mind?")". "When an
+explicit evaluation dataset is available for a given organism, we additionally apply steering on that dataset". Base
+model: "To test whether the recovered direction corresponds to a latent capability already present in the base model but
+not naturally expressed, we apply the same positive and negative steering interventions to p_base." Appendix C gives:
+- nine open-ended prompts;
+- "11 discrete steering strengths s∈{−200,−100,−80,−50,−20,0,20,50,80,100,200}";
+- "steering is applied by adding s⋅d to the model's residual stream at the selected layer during generation";
+- "Maximum tokens: 200", "Temperature: 0.7", "Top-p: 0.9".
+
+Top activations: "we inspect the inputs that maximally activate the feature. We examine whether these high-activation
+examples are semantically consistent with the intended finetuning behavior". Success per organism, §6.1: "count an
+organism as successfully identified if the recovered latent supports causal validation via steering and max-activation
+analysis." That judgement is qualitative. §6.2 adds an LLM grader, GPT-5.2, which scores against ADL's 1-5 rubric.
 
 **2.9 The paper's controls.** §7.1, null test: "applying Delta-Crosscoder to two identical versions of LLaMA 3.1 8B
 Instruct". "All non-shared latents concentrate near 0.5, with the right tail reaching only 0.506 and the left tail 0.492."
 "none support causal validation under steering or max-activation analysis." False positives: "In most settings, only
 the highest-ranked latent is causally responsible for the observed behavior, while the remaining candidates produce no
 systematic effects under intervention." "Latents outside the right tail consistently fail to induce behavioral changes".
-The paper has no random-update control and no planted control.
+The paper has no random-update control and no planted control. A spread of 0.492 to 0.506 on identical models implies
+the two decoders were not initialised equal, or that training was nondeterministic. The text says neither.
 
 **2.10 The paper's positive results.** §7.1: "Delta-Crosscoder successfully identifies causally relevant latents for all
 10/10 organisms (0% method-level false positives). In contrast, DSF succeeds on 6/10 organisms (40% false positives),
-BatchTopK-200 on 4/10 organisms (60% false positives), and BatchTopK-400 on 4/10 organisms". §6.1 is inconsistent with
-this: "BatchTopK-200 recovers the three EM organisms on Qwen, Taboo, and Subliminal Learning", which is five. Table 2: explained
-variance 72-80% and dead latents 7.6-64.2% for Delta-Crosscoder. §6.2: comparable to ADL "On Emergent Misalignment and
-Synthetic Document Finetuning", tied "On Taboo Word Guessing", "For Subliminal Learning, ADL attains higher scores".
-F.1 says "The most extreme latent attains a value of 52.5", presumably 0.525.
+BatchTopK-200 on 4/10 organisms (60% false positives), and BatchTopK-400 on 4/10 organisms". §6.1 instead lists five
+organisms for BatchTopK-200: "the three EM organisms on Qwen, Taboo, and Subliminal Learning". We do not resolve this.
+Table 2 gives explained variance of 72-80% and dead latents of 7.6-64.2% for Delta-Crosscoder. §6.2 calls it comparable to
+ADL "On Emergent Misalignment and Synthetic Document Finetuning". The two tie "On Taboo Word Guessing", and "For
+Subliminal Learning, ADL attains higher scores". F.1 says "The most extreme latent attains a value of 52.5". That cannot
+be a relative norm as eq. 4 defines it, and we do not interpret it.
 
-## 3. Departures
+## 3. What we would run: the objective and the reading, fixed
 
-"Ours" means our choice where the paper is silent or cannot apply. "Theirs" means taken from the paper's text. Forced means the
-67M setting leaves no faithful option.
+All of §3 is ours unless it quotes §2. Each choice is a row in §4.
 
-| step | paper | what we would do on the 67M | departs | ours/theirs | forced by 67M |
+**3.1 Inputs and units.** Activations at block 2's input (site A of E203/E235) are the paper's middle layer. Block 3's
+output (site B) is used only for the block-3 control. Both models are scaled by one scalar, fit on M so that M's mean
+squared norm at the site is the target RMS, as Minder does. There is no mean subtraction, which `dictionary.py` 108 would
+apply. Δ_n = b_n − a_n is then exactly Δ divided by that scalar, in raw-unit proportions, and a tie between the decoders
+is a tie in raw units.
+
+**3.2 Forward.** u = ½(W_e^base a_n + W_e^ft b_n) + c_e, then r = ReLU(u). This is eq. 2 plus Minder's encoder bias c_e.
+Two separate batch top-Ks follow, ranked on r itself and not on r times the decoder norms. The shared block keeps its
+K_shared·B largest entries and the non-shared block keeps its K_Δ·B largest, where B is the batch size. z holds the kept
+values. At reading time the same two batch top-Ks run on shuffled batches of 4,096 read tokens, with no learned
+threshold. Decoders: x̂^m = W_d^m z + c_d^m for m ∈ {base, ft}. Every latent has two decoder vectors, shared latents
+included, and the shared ones are untied as eq. 9 implies. Budgets: K_Δ = 38 and K_shared = 76. That keeps α = 0.5 and
+keeps the active fraction the paper's Llama widths give each block (400 of 4,096 and 200 of 16,384), on 768 shared and
+3,072 non-shared latents. This is a choice, not forced: Table 1's 400 would make 52% of our shared latents active.
+
+**3.3 Loss, every reduction stated.** Every term is a mean over the batch's tokens, in the normalised units of §3.1.
+- ℒ_recon = mean_t Σ_m ‖x_m − x̂_m‖²₂: squared and summed over both models, so that it is in the same units as eq. 9 and
+  λ_Δ weighs like with like. Minder's trainer uses unsquared L2 (`trainers/crosscoder.py` 616-619).
+- ℒ_Δ = mean_t ‖Δ_n − (W_d^ft − W_d^base)_{non-shared} z_Δ‖²₂, as in eq. 9, with no bias term, as in eq. 7. It runs on
+  every training row, because every row is passed through both models on the same tokens (§3.4).
+- ℒ_aux is Minder's AuxK. Its target is the detached residual of both models stacked. It reconstructs from the
+  d/2 = 384 dead latents with the largest rectified pre-activations, from both blocks, and is divided by the residual's
+  variance (`trainers/crosscoder.py` 421-480). A latent is dead after 10M tokens without firing, the paper's Appendix B
+  definition.
+- ℒ = ℒ_recon + (1/32)·ℒ_aux + 0.005·ℒ_Δ.
+
+**3.4 Optimiser and initialisation.** The optimiser follows Table 1: Adam at 1e-4 (default betas), a linear warm-up over
+1,000 steps and then a constant rate. There are 50,000 steps at batch 4,096, with no k annealing, under bf16 autocast with
+fp32 master weights. Gradient checkpointing is dropped: the activations are cached, so there is no model graph to
+checkpoint, and the objective is unchanged. Decoder vectors start at norm 0.4. Every scored fit draws the two models'
+decoders independently. That is the only init under which identical models show a spread, as the paper's 0.492-0.506
+does, so the null band comes from the same recipe as the scored runs. The encoder starts as the transpose of its model's
+decoder. C0a alone uses paired init (both decoders equal), as a wiring check.
+
+**3.5 Data, counted per source, 204.8M tokens per fit.** All rows of every source pass through both M and F on the same
+tokens, so Δ exists per token. This is our resolution of "unpaired activations": the encoder needs a matched pair (eq. 1).
+- **𝒟C, 20.0M tokens.** Following §4.2's counts, M continues 100,000 prompts and F continues another 100,000. Each prompt
+  is the first 32 tokens of a Pile train row from 196,608 onward. That is past E235's pool, so it is disjoint from every
+  crosscoder fill and from every scored row. Each continuation is 68 sampled tokens at temperature 0.7 and top-p 0.9,
+  Appendix C's settings. Each sequence of 100 tokens is a training row. M's 100,000 continuations are made once and
+  reused by every fit. On C0, M also makes F's half.
+- **𝒟F, 40.96M tokens (20%).** These are the side's own fit-half task windows, each drawn at most 100 times, E235's
+  repeat cap. Where the cap cannot fill the quota, Pile fills the rest. The realised count is written to the fit's record.
+  C0 has no 𝒟F, which Appendix F.1 allows; Pile fills it. A planted change uses the text its plant was read on in
+  E243/E212. A random update uses its matched side's windows.
+- **𝒟pre, the rest (143.84M or more).** These are Pile train rows from 32,768 to 196,607, E235's Pile range, at most 2
+  passes, truncated to 512, the model's context.
+- **Held out from training.** Steering and top-activation reads use each side's score-half task windows and Pile
+  validation rows, neither of which any fit sees.
+
+**3.6 Generation.** `LlamaSimpleMLP.generate` (`~/param-decomp/param_decomp/pretrain/models/llama_simple_mlp.py` 442-487)
+has no key-value cache and no top-p, and recomputes the whole prefix each step. We would write a sampler that calls the
+model's forward on the growing prefix, the same work as theirs, and adds nucleus sampling at top-p 0.9. That costs about
+4,500 token-forwards per sequence. A KV cache is not added: it would be new model code for a step that is cheap at this
+size. Its price comes from a rehearsal benchmark (§5).
+
+**3.7 The recovery rule, per side: yes or no.** It is our written form of §6.1's "supports causal validation via
+steering and max-activation analysis".
+- **Candidates.** The top three alive non-shared latents by 1 − R_i, with R_i computed as in eq. 4 with its sum
+  denominator. This is not the repo's `relative_norm()`, which uses a max denominator. On C1 the top three of the other
+  tail, by R_i, are read too, as description.
+- **Bulk pool.** 60 alive non-shared latents with |R_i − 0.5| under the median deviation of all non-shared latents. Each
+  is matched to a candidate on ‖d^ft‖ within a factor of 1.5 and on firing rate within a factor of 2, drawn with a fixed
+  seed. Every test below runs the same search on each bulk latent as on each candidate. A candidate passes a test only if
+  it beats the bulk maximum on it. If latents were exchangeable, that is a 1/61 chance per candidate per test.
+- **Steering vector.** The vector is v_i = d_i^ft, taken to raw units and scaled to unit length. It is added at the site at
+  every position, for both signs, at strength s·ρ/100, with s from Appendix C's ten nonzero values. ρ is the median
+  per-token norm of M's activation at the site on Pile validation rows. The scaling is ours, standing for "model-specific
+  normalization factors".
+- **Steering test.** On the fit half of the side's read windows, take the largest |s| at which F's Pile validation loss
+  rises by no more than F's own rise over M. Read the KL gap on the score half at −s and at +s. The pass statistic is the
+  suppression: the unsteered KL gap minus the KL gap at −s, in nats, absolute, not as a fraction. A null side with no
+  gap therefore cannot pass, rather than being undefined. The other three reads are reported: F at +s, and M at +s and −s
+  (the paper's base-model check, measured as the KL from M steered to F).
+- **Top-activation test.** On a held-out set with equal tokens of Pile validation and score-half read windows, find the
+  candidate's 50 most activating tokens. The statistic is the share of those 50 that lie on read windows. For each
+  candidate, the 20 top contexts (token ids and decoded text) are saved for a reader.
+- **Yes** when one candidate passes both tests; otherwise **no**.
+
+## 4. Departures
+
+"Ours" means our choice where the paper is silent or cannot apply. "Theirs" means taken from the paper's text. "Forced"
+means the 67M setting leaves no faithful option.
+
+| step | paper | on the 67M | departs | ours/theirs | forced |
 |---|---|---|---|---|---|
-| code | not released | our port on Minder's pinned trainer | y | ours | n (not released) |
-| encoder | average of two encoders, eq. 2 | Minder's summed encoder, paired init (×2 only) | y, minor | ours | n |
-| split | 20% shared, 80% non-shared | same: 768 shared, 3,072 non-shared of 3,840 | n | theirs | n |
-| shared decoder | not stated | tied across models, after DSF | ? | ours | n |
-| budgets | K_shared = 400, K_Δ = 200 (our reading of Table 1) | K_shared = 76, K_Δ = 38: same active fraction per block | y | ours | y (width 768, not 4096) |
-| delta loss | eq. 9, λ_Δ = 0.005 | same, Δ in Minder's normalised units | n (units ours) | theirs / ours | n |
-| sparsity term | λ_s, not given | AuxK at 1/32 (Table 1) | ? | theirs | n |
-| prompts | "a general corpus" | Pile validation text | y | ours | y (Pile model) |
-| responses | each model answers | each model samples a continuation, T 0.7, top-p 0.9 | y | ours | y (no chat model) |
-| LMSYS | instruction data | dropped | y | ours | y (no chat model) |
-| FineWeb | pretraining-style text | Pile train rows, as in E235 | y | ours | y (Pile model) |
-| 𝒟F | fine-tuning data when available | task windows, at E235's share and repeat cap | n | theirs | n |
-| mix | 200M tokens, about 20M contrastive | 205M; 10% contrastive, the rest half Pile and half task | n / mix ours | ours | n |
-| length | 1024 | 512, the model's context | y | ours | y |
-| site | a middle layer | block 2's input (E203/E235 site A); block 3's output only for the block-3 control | n / y | theirs / ours | n |
-| size | expansion 5 | 5, so 3,840 latents | n | theirs | n |
-| training | Adam 1e-4, 50k steps, batch 4096, warm-up 1k, init 0.4, bf16 | same; fp32 activations, bf16 autocast in the trainer | n | theirs | n |
-| selection | top-3, right tail of R | top-3 by 1 − R^base | ? | ours (reading) | n |
-| steering prompts | 9 open-ended chat prompts | task windows plus Pile text | y | ours | y |
-| steering read | qualitative, LLM grader | task answer log-odds, gain lost or recovered | y | ours | y (no chat text to grade) |
-| steering sizes | s from −200 to 200, normalised decoder | same grid, scaled to our site's activation norm | y | ours | y |
-| success | "supports causal validation" | rule in §4, against a bulk-latent control | y | ours | n |
-| controls | identical models only | identical models, planted changes, matched random updates | y (added) | ours | n |
-| reuse share | none | after-Kassem share | y | ours | n |
+| code | not released | own port, §3 | y | ours | n |
+| encoder | eq. 2, average, no bias | average plus bias, ReLU | y, bias | ours | n |
+| top-K rank | BatchTopK(u) | on r = ReLU(u), not times decoder norms (Minder) | n | theirs | n |
+| Dual-K | two budgets | two separate batch top-Ks | n (form ours) | theirs/ours | n |
+| inference | not stated | same batch top-K, B 4,096, no threshold | ? | ours | n |
+| budgets | Table 1: 400 / 200 | 76 / 38, the same active fraction per block | y | ours, a choice | n |
+| split | 20% shared, 80% non-shared | 768 / 3,072 of 3,840 | n | theirs | n |
+| shared decoders | masked in eq. 9 | untied, the literal reading | n | theirs (reading) | n |
+| ℒ_recon | not stated | squared L2, summed over models, token mean | ? | ours | n |
+| ℒ_Δ | eq. 9, λ 0.005 | same, token mean, no bias, every row | n | theirs | n |
+| sparsity term | λ_s | AuxK at 1/32, Minder's form | ? | theirs (1/32), ours (reading) | n |
+| normalisation | per-model factors (App. C) | one scalar fit on M, no mean subtraction | y | ours | n |
+| init | decoder norm 0.4 | 0.4, the two decoders independent; paired only on C0a | ? | theirs / ours | n |
+| precision | bf16 | bf16 autocast, fp32 weights | n | theirs | n |
+| checkpointing | enabled | dropped (no graph) | y, no effect | ours | n |
+| schedule | Adam 1e-4, 50k steps, warm-up 1k, batch 4,096 | same, constant after warm-up, no k annealing | n | theirs | n |
+| prompts | "a general corpus" | Pile train rows past E235's pool, 32 tokens | y | ours | y (Pile model) |
+| responses | §4.2: one model per prompt | 100k by M and 100k by F, 68 tokens, T 0.7, top-p 0.9 | y | theirs (§4.2 counts) / ours | y (no chat model) |
+| LMSYS | instruction data | dropped | y | ours | y |
+| FineWeb | pretraining text | Pile, E235's range | y | ours | y |
+| 𝒟F | when available | 20% quota, repeat cap 100, Pile fill | n / quota ours | ours | n |
+| length | 1024 | 512 | y | ours | y |
+| site | a middle layer | block 2's input; block 3's output only for the block-3 control | n | theirs | n |
+| size | expansion 5 | 3,840 latents | n | theirs | n |
+| selection | top-3, "right tail" | top-3 by 1 − R (sum denominator); other tail read on C1 | ? | ours (reading) | n |
+| steering vector | "the latent's decoder vector" | d^ft, unit length, s·ρ/100 | ? | ours | n |
+| steering prompts | nine chat prompts | the side's score-half read windows | y | ours | y |
+| steering read | judged text | KL gap in nats, both signs, both models | y | ours | y (no chat text) |
+| top activations | inspected by a reader | share of top-50 on read windows, beside bulk; 20 contexts saved | y | ours | y (no grader) |
+| success | qualitative, per organism | §3.7 rule against 60 bulk latents | y | ours | n |
+| controls | identical models | C0a/C0b, plants, random updates | y (added) | ours | n |
 
-## 4. Proposed run
+## 5. Proposed run
 
-**Readings per side.**
-- *R tail:* the largest 1 − R^base among non-shared latents.
-- *Steer F:* the share of the fine-tune's task-gain that the best of the top-three latents removes. The gain is in answer
-  log-odds over M. The latent is subtracted at the best s on the paper's grid.
-- *Steer M:* the share of the gain that the same latent recovers when added to M.
-- *After-Kassem share (ours):* the share of D(x) carried by non-shared latents whose 1 − R^base exceeds the
-  identical-model run's maximum. It uses E235's formula: Σ f_j ⟨d_j^ft − d_j^base, D⟩ / Σ |D|² over those latents.
-  The share over all non-shared latents is near 1 by construction (eq. 9), so it is not read.
-- *Bulk control:* every steering read is repeated on three random non-shared latents from the R ≈ 0.5 bulk, matched on
-  decoder norm. The floor is the largest of these.
+**Run 1, controls, one H100 pod pair, not gated.** Nine fits, in this order:
+- **C0a**, alone and first: identical models, paired init, at site A. A wiring check only.
+  - Expected: ℒ_Δ = 0 at every step, because Δ = 0 and the two decoders stay equal. Every R_i equals 0.5 exactly by symmetry.
+  - The bar is one number, filed after the rehearsal measures the deviation under bf16 on the same kernels. Any deviation
+    above it is a code fault and stops the run.
+  - The recovery rule is not read: every latent ties.
+- **C0b**: identical models with independent init, at site A. This is the null band under the scored recipe.
+  - Expected: a tail near the paper's 0.492-0.506, reported beside, unscored.
+  - Recovery reads no, because the KL gap is 0 and cannot be suppressed.
+- **C2**: one random update at each of sites A and B (two fits). Each is E235's Gaussian, matched to elicit's activation change.
+  - This is the null that the steering and top-activation tests can actually fail. The paper never ran one, so there is
+    no prior; the lean is "no" at low confidence. It plays the role of E235's G1.
+  - A "yes" is reported to whip-lead before C1 continues; it does not cancel C1.
+- **C1**: planted changes, all at site A except the block-3 head (five fits). Lean, filed before the run: recovery "yes"
+  at medium confidence on rung 5 and on E212's plant. The pass is a §3.7 yes, not a share. The planted direction's cosine
+  with the top latent's d^ft − d^base is reported beside the bulk maximum, with no bar.
+  - E243 rung 1, at about a fine-tune's size (BatchTopK specific part 0.0030). Lean: "no", low confidence.
+  - E243 rung 5, the top rung. BatchTopK read 0.46, and about 3e-5 under the literal base-coefficient exclusion of P2.70.
+  - E212's real-text planted direction. BatchTopK read 0.77, or 0 under the exclusion, pending the refit.
+  - E235's block-3 head at site B. BatchTopK read 0.42-0.44 after P2.70. Lean: "yes", medium.
+  - Rung 5 again with tied shared decoders, the other reading of the shared-latent ambiguity. Reported only.
 
-**Run 1, controls, first and alone.** This is about 7 crosscoders on cluster debug, $0; the pod fallback is about $15.
-- *C0, identical models (M against M), two crosscoder seeds.* Δ is exactly 0, so ℒ_Δ = 0 at every step. With paired
-  init and identical inputs, both decoders get the same gradient. Expected: R tail 0.5 to within 1e-6, and E235's self
-  control measured a deviation of 0. The paper's 0.506 cannot be reproduced unless its two decoders were initialised
-  apart, which the paper does not say; it is reported beside, not scored. FVE should be at least 0.8 (E235 self: 0.932).
-  Steering effects should read 0, since there is no gain. The after-Kassem share is undefined (D = 0). Stop if the R
-  tail deviates by more than 1e-4 or the loss is not finite.
-- *C1, planted controls our BatchTopK misses.* The bar of 0.5 on the after-Kassem share and the miss-closes-the-site
-  rule are E235's, so the two methods are read alike.
-  - E243's block-2 head ladder at two rungs. One is the rung nearest fine-tune size, where BatchTopK read 0.0030. The other
-    is the top rung, where BatchTopK read at most 0.010 with the base-coefficient exclusion.
-  - E235's block-3 head at block 3's output. BatchTopK read 0.42-0.44 after P2.70.
-  - E212's real-text planted direction. Its BatchTopK reading is 0.77 or 0, pending the P2.70 refit.
-  - Expected for Delta-Crosscoder, filed as a lean before the run: the top rung and the block-3 head pass at medium
-    confidence. Eq. 9 makes the non-shared latents rebuild Δ. The fine-tune-size rung is a low-confidence pass. For
-    E212's direction, the top latent's decoder difference should have a cosine of at least 0.9 with the planted
-    direction; BatchTopK's had a cosine of 1.000. Steer F on a plant should remove at least half of the plant's effect
-    at its read positions.
-- *C2, matched random update, one per site.* This is E235's Gaussian, matched on activation change. It must stay under
-  0.5. Its value sets the floor that the trained sides are read against, as E235's G1 and G2 do.
+**What gates what.**
+- Run 2 runs at site A only if C0a passes and rung 5 or E212's plant reads yes. If neither does, site A reads "not
+  applicable at this update size", as E235 did, and run 2 does not run.
+- Rung 1 decides how a "no" on a trained side reads. If rung 1 reads no, a trained side's "no" means "below the method's
+  reach".
+- The block-3 head and C2 at site B gate nothing; run 2 does not read site B.
 
-**Run 2, gated: the scored sides, only if C0 and C1 pass at block 2.**
-- E62: copy and lookup, the saved seeds of each arm, with one matched random update per seed.
-- The nine built pairs (strengthening against new): 18 sides at E203's sizes, one crosscoder each, plus 18 matched
-  random updates.
-- About 44 crosscoders in all. Every side is read on the four readings above. The pair call uses E235's every-seed rule
-  on the after-Kassem share, with no reuse label until the definition (cell P1.1) is adopted.
-- The steering reads are reported per side.
+**Stops in code.**
+- A non-finite loss stops the fit.
+- On C0a, any nonzero ℒ_Δ, or an R deviation over the filed bar, stops the run.
+- FVE under 0.5 at the end of a fit marks it a code fault, which stops that fit and is reported. E235's crosscoders read
+  at least 0.89 and the paper's at least 0.72, so FVE is not otherwise a gate.
+- Expected at 1k steps: FVE at least 0.5, and ℒ_Δ falling. The rehearsal fills in the step-1 values first.
 
-**Run 3** is held for one amendment.
+**Run 2, gated, only if run 1 opens site A.** This is 48 fits, one per side, read by §3.7 only:
+- E62 copy and lookup, three saved seeds each (6), each with one matched random update (6);
+- the nine built pairs, 18 sides, each with one matched random update (18).
 
-**Time and cost.**
-- *Measured* (E235 `run1/timing.json`, H100): our BatchTopK at 24,576 latents, batch 2048 and k 100 took 11.65 ms a
-  step. 97,656 steps came to 18.96 min of training. Streaming 200M tokens through both models took 8.3 min at block 2 and
-  13.8 min at block 3, or 2.6 s per 1.05M tokens. The whole run was 27.3 min per crosscoder alone on the card. Pods: E212's
-  two H100 pods cost $8.03 for about 50 min each, so about $4.8 per pod-hour with set-up.
-- *Assumed:* Delta-Crosscoder's step has 3,840 × 4096 latent-tokens against 24,576 × 2048, which is 0.31 times the work.
-  The masked delta decode adds about 30%. That gives about 5-8 ms a step and 4-7 min of training for 50k steps. Streaming
-  205M tokens takes about 8.5-14 min, at the measured rate. Generating 200,000 continuations of about 70 tokens costs
-  about 1 min per model with a key-value cache. Without one it is about 20 min, which is about 1B token-forwards at the
-  measured rate. Generation runs once per changed model, not once per crosscoder seed. The steering grid is about 1-2
-  min.
-- *Per crosscoder:* about 20-25 min on an H100 with cached generation, or 40 min without. All of these need measuring
-  in the rehearsal.
-- *Run 1:* 7 crosscoders, about 3 H100-hours. This is $0 on debug L40 jobs, one crosscoder per job; an L40 is assumed
-  about twice as slow, about 50-80 min per job, so it fits the 2 h cap. The pod fallback costs about $15.
-- *Run 2:* 44 crosscoders, about 15-30 H100-hours. That is about $70-145 on pods; on 8 pods (2 runners of 4) it takes
-  about 2-4 h of wall time. Cluster debug brings it down to $0 if the queue takes 44 jobs.
-- *Gated?* Run 1 is not gated. Run 2 is likely gated on cost, over $60 on pods, though not on time if it is spread over
-  pods. It needs the gates in `.claude/CLAUDE.md`, with gate 6 from whip-lead. One crosscoder per side, as E203 had,
-  keeps it near the low end.
+The output is a yes or no per side, with the tail and the steering table. There is no pair call and no reuse label. Each
+side is a single fit, so the comparison is descriptive: E235's every-seed rule needs two or more values per side and is
+not used. If cost matters, one random update per pair instead of per side gives 39 fits.
 
-**Early checks in code.** These stop the job. At step 0, ℒ_Δ = 0 exactly on C0. Every loss must be finite. FVE at 1k
-steps should be at least 0.5, against E235's training-curve values. The first rehearsal measures the ms per step and
-generation tokens per second, and they go into the plan before run 2.
-
-**What each reading is blind to.** The after-Kassem share is blind to a change in how the model uses a direction it
-already has. It is the same blind spot as E235's specific part. The steering reads are blind to a change spread over
-many latents, which the paper reports for larger dictionaries: F.2 says the larger dictionary "identifies a small set of
-related latents (approximately six)". Steer M cannot tell a used existing direction from an added vector that carries
-the content, as the digest notes.
+**Time and cost, per item times the count.**
+- **Measured** (E235 `run1/timing.json`, H100 alone): streaming took 2.6 s per 1.05M tokens through both models at site A
+  and 4.34 s per chunk at site B. That is 8.5 min and 14.1 min for 204.8M tokens. E212's two H100 pods came to $8.03 for
+  about 50 min each, about $4.8 per pod-hour with set-up. The sync speed of 10 MB/s is from the root `CLAUDE.md`.
+- **Derived from measured rates**, to be replaced by the rehearsal's benchmark:
+  - Training per fit takes 4-7 min, scaled from 11.65 ms per step at 0.31 of the work plus 30% for the delta decode.
+  - Generating 100,000 sequences is about 0.45B token-forwards per model. At half the streaming rate that is about 9 min,
+    and short sequences may run slower.
+  - Scoring is about 5 min per fit: 63 latents, 10 strengths, two models, about 0.2M read tokens each.
+- **Rehearsal ($0, cluster debug, before run 1):** every stage at tiny size, with a resume and the downloads. It
+  measures ms per step, generated tokens per second, the C0a bf16 deviation, step-1 losses and peak memory. Those numbers
+  go into this plan before run 1.
+- **Run 1 total:**
+  - Fits: 7 at site A × (8.5 + 4-7 + 5) ≈ 2.3 h, plus 2 at site B × 25 min ≈ 0.8 h.
+  - Generation: M's 200,000 once, about 19 min, plus 6 changed models × 9 min.
+  - Set-up is about 15 min per pod. Uploads are 6 changed models × 270 MB ≈ 1.6 GB ≈ 3 min. Downloads are about 50 MB
+    per fit.
+  - That is about 4.9 pod-hours, about $24, and about 3 h of wall time on two pods with C0a alone first. Stage caps:
+    60 min per fit and $40 for the run. Not gated.
+- **Run 2 total:**
+  - Fits: 48 × 19.5 min ≈ 15.6 h. Generation: 48 changed models × 9 min ≈ 7.2 h, with M's continuations reused.
+  - Set-up: 8 pods × 0.3 h. Uploads: 24 trained sides × 270 MB ≈ 6.5 GB ≈ 11 min, spread over the pods. Random updates
+    are rebuilt on the pod from their seeds.
+  - That is about 25 pod-hours, about $120, and about 3.5 h of wall time on 8 pods (2 runners of 4). Gated on cost (over
+    $60), not on time. It needs the gates in `.claude/CLAUDE.md`, with gate 6 from whip-lead.
 
 ## Not run
 
-Nothing has run. No code exists. No author contact was made. The paper's LLM-grader comparison is not proposed, because
-there is no chat text on the 67M.
+Nothing has run. No code exists. The paper's LLM-grader comparison is not proposed, because there is no chat text on the
+67M. Site B is not read on the trained sides.
 
-## Appendix: open readings for the reviewers
+## Appendix: open readings
 
-1. Is α = 0.5? We read Table 1's "Base Sparsity 200" and "Shared k Multiplier 2.0" as K_Δ = 200 and K_shared = 400.
-2. Are shared decoders tied? We tie them, after DSF; untied shared latents could carry Δ through ℒ_recon.
-3. Does "right tail" mean 1 − R^base? Eq. 4 is written for the base side.
-4. Does "unpaired activations" mean general text run through both models on the same tokens, the only way a Δ exists per
-   token? Eq. 5 says Δ "does not require a and b to arise from matched inputs".
-5. Is Δ taken in raw or normalised units? We use Minder's per-model normalised units, as ℒ_recon is.
-6. The null band: the paper's 0.492-0.506 on identical models implies independent decoder init or numerical noise. Our
-   paired init gives exactly 0.5. If the reviewers prefer, C0 is run once with independent init to set a band like the
-   paper's.
-7. Paper inconsistencies, noted and not resolved: BatchTopK-200 is 4 of 10 in §7.1 and 5 organisms in §6.1. "Llama 3.2 8B"
-   has 10,240 latents, which is width 2048. F.1 gives "52.5" for a relative norm.
+1. Is α = 0.5? The most literal reading of Table 1 is K_Δ = 200 and K_shared = 400; the scaling to 38 and 76 is ours.
+2. Shared decoders: we take them untied, the literal reading of eq. 9. Tied is run once on rung 5.
+3. "Right tail": we read the fine-tune side, and C1 reads both tails.
+4. "Unpaired activations": we pass every row through both models; it is our resolution.
+5. Δ is taken in one shared scalar unit with no mean subtraction (§3.1), so a constant planted offset stays in Δ.
+6. The null band comes from independent init (C0b). Paired init (C0a) only checks wiring.
+7. The paper's inconsistencies, unresolved:
+   - BatchTopK-200 is 4 of 10 in §7.1 but five organisms in §6.1.
+   - "Llama 3.2 8B" goes with 10,240 latents.
+   - F.1 gives "52.5" as a relative norm.
+   - §3.3 has both models answer each prompt; §4.2 has one model per prompt. We follow §4.2's counts.
+
+## Review response (2026-11-23)
+
+**whip-lead.**
+- Do not contact the authors. Fixed: the suggestion is removed.
+- Report as published. Fixed: one yes or no per side, by the rule in §3.7.
+- Drop the after-Kassem share. Fixed: removed everywhere, with no share column and no tail threshold on a share.
+- Run 1 on an H100 pod. Fixed: §5.
+
+**redteam-lead.**
+1. Degenerate tail threshold. Fixed: no threshold filters anything now. The null band comes from C0b (independent init,
+   the scored recipe) and C2, which run before C1.
+2. Our share in the method's column. Fixed: C1 and run 2 are scored on §3.7's yes or no, against the bulk floor.
+3. Top-activation test missing. Fixed: a test and a row, and 20 contexts per candidate are saved.
+4. Steering under-specified. Fixed: both signs on both models; the vector is d^ft (ours, a row); the bulk latents get
+   the same search.
+5. Shared decoders. Fixed: untied as the literal reading, tied run once on rung 5.
+6. Trainer behaviours.
+   - (a) Fixed: squared ℒ_recon, with its reason.
+   - (b) Fixed: no mean subtraction.
+   - (c) Fixed: ranked on r, not on r times decoder norms.
+   - (d) Fixed: two separate batch top-Ks.
+   - (e) Fixed: no k annealing.
+   - (f) Fixed: the encoder bias is kept (a row), and inference uses the batch top-K with no threshold.
+7. C1 bars unsourced. Fixed: the 0.5, cosine 0.9 and half-removed bars are gone. A pass is beating the bulk maximum of the
+   same fit, and the cosine is reported only.
+8. The C0 tolerance. Fixed: one bar, filed from the rehearsal's bf16 measurement.
+9. Encoder wording. Fixed: the factor of two no longer arises, since we average as eq. 2 does.
+10. K scaling. Fixed: labelled ours, a choice.
+11. λ_s as AuxK. Fixed: "theirs (1/32), ours (reading)".
+12. Normalisation. Fixed: Appendix C quoted in §2.6.
+13. §3.3 against §4.2. Fixed: added to the appendix; we follow §4.2.
+14. Data rows. Fixed: counted quotas in §3.5.
+15. Fit count. Fixed: run 1 has nine fits (C0a, C0b, two C2, five C1). C0's steering is called undefined, not zero.
+
+**GPT plan-reviewer.**
+- (a) Objective. Fixed in §3.2-3.4: forward, both top-K rules, inference, every reduction, AuxK target and mask, and the
+  units of the decoders. The budgets are labelled a choice.
+- (b) Data. Fixed in §3.5: prompt design, per-source quotas with the Pile fill, rows in eq. 9 (all), and disjoint ranges.
+  Running everything through both models is called our resolution.
+- (c) C0. Fixed: C0a is a wiring check. C0b and C2 are the null under the same recipe; site B's null is C2 at site B.
+  Steering is read in absolute nats, the stops and the FVE role are stated, and R uses the sum denominator.
+- (d) The recovery rule.
+  - Fixed in §3.7: vectors, scales, positions, the fit/score split, the same search for the bulk latents, and saved
+    contexts.
+  - Fixed in §5: which plant gates which site. C2 is E235's G1.
+  - Seeds: a single fit per side, read descriptively.
+- (e) Generation. Fixed in §3.6: our sampler, with no KV cache. It is priced from measured rates and marked for
+  replacement by the rehearsal benchmark. The fit count, both site streams, scoring, set-up and transfers are counted,
+  and there are stage caps.
+- Minors.
+  - Fixed: the paper's inconsistencies are left unresolved.
+  - Fixed: gradient checkpointing is a row.
+  - Fixed: rung 5's literal reading is about 3e-5.
+- Rejected: none.
