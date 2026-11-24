@@ -236,11 +236,12 @@ def draw(recs: list[dict[str, Any]]) -> None:
             ]
             for c in labels
         }
-        for key, method, off in (
-            ("rotation", "regating", -0.22),
-            ("rotation_nu_null", "random", 0.0),
-            ("rotation_matched_null", "spectrum", 0.22),
-        ):
+        # The matched null is undefined at heads (no head outside the needed set is left to draw), and heads carry
+        # most of the change at the neuron-and-head basis, so it is drawn at VPD only (redteam-lead, 2026-11-23).
+        series = [("rotation", "regating", -0.22), ("rotation_nu_null", "random", 0.0)]
+        if basis == "vpd":
+            series.append(("rotation_matched_null", "spectrum", 0.22))
+        for key, method, off in series:
             FG.dots(
                 ax,
                 {
@@ -280,9 +281,11 @@ def draw(recs: list[dict[str, Any]]) -> None:
     axes[1].tick_params(axis="y", labelleft=False)
     handles = [Line2D([], [], color=FG.METHODS[m].color, marker=FG.METHODS[m].marker, linestyle="", markersize=5, label=t)
                for m, t in (("regating", "measured"), ("random", "null: random direction"),
-                            ("spectrum", "null: matched spaces"))]  # fmt: skip
+                            ("spectrum", "null: matched spaces, VPD only"))]  # fmt: skip
     fig.suptitle("Rotation toward M's needed writes stands out from its null at VPD only for built rotations;\n"
-                 "at neurons and heads, fine-tunes and random updates alike sit near the dimension-count null", fontsize=9)  # fmt: skip
+                 "at neurons and heads the null is near 0.7, so the reading has little room to separate anything", fontsize=9)  # fmt: skip
+    axes[1].text(0.50, 0.66, "matched null undefined here:\nno head outside the needed set", transform=axes[1].transAxes,
+                 fontsize=7, color="#555555", ha="center", va="center")  # fmt: skip
     axes[1].legend(
         handles=handles,
         loc="center",

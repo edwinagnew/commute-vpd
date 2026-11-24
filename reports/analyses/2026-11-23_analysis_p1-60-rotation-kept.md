@@ -5,17 +5,17 @@ on reuse is given under it.
 
 ## The answer
 
-No trained fine-tune turned its most-needed writes toward the space the base model's other needed variables already use,
-beyond what a random direction would do. On VPD subcomponents only the built rotations stood out from the null. At
-neurons and heads that space is so wide that random updates fill it as fully as fine-tunes do. The literal "inside the
-variable's own write space" share is degenerate and was not used. A pure attention-head gauge rotation reads fully
-kept at heads but not at VPD.
+At VPD, no trained update rotates its needed writes beyond the null, though the built rotations do. At neurons and heads
+the needed space covers most of the width, with a null of about 0.72, so the reading cannot separate rotation there.
+Trained updates sit a few hundredths above their nulls, under the filed 0.2. The literal "inside the variable's own
+write space" share counts changes to what a variable reads, so it cannot see rotation. A pure attention-head gauge
+rotation reads fully kept at heads but not at VPD.
 
 In plain words: we asked whether fine-tuning keeps a needed part's output direction inside the directions the base
-model already writes, rather than along exactly the base model's direction. We found that this looser reading moves
-only for edits built to rotate, and gives trained and random updates the same reading at every featurization we tried.
-For `GOALS.md`, the low kept readings of trained fine-tunes are not explained by fine-tunes rotating needed writes
-within the base model's needed space, so a rotation-tolerant kept would not rescue them.
+model already writes, rather than along exactly the base model's direction. On VPD subcomponents this looser reading
+moves only for edits built to rotate, and trained fine-tunes read like random updates. At neurons and heads the test has
+almost no room to see anything, so it leaves the question open there. For `GOALS.md`, rotation within the base model's
+needed space does not explain the low kept readings at VPD; at neurons and heads this diagnostic cannot say.
 
 ## Terms used here
 
@@ -36,44 +36,55 @@ within the base model's needed space, so a rotation-tolerant kept would not resc
   variables at the same site.
 - Every share is pooled over the read set, weighted by each variable's dd, with remainders left out.
 
-## 1. The literal own-space share is degenerate
+## 1. The literal own-space share counts input-side change, so it cannot see rotation
 
-The question as first put was "is F's write inside M's own top-k subspace for that variable". For a neuron or a VPD
-subcomponent, M's write has one direction on every input. So its own space is one line, and a random direction lands
-in it with probability one over the width. That null is 0.001 at both featurizations.
+The question as first put was "is F's write inside M's own top-k subspace for that variable". A variable's write is its
+output map applied to what it reads. A neuron or a VPD subcomponent writes along one fixed direction. A head writes
+through its output matrix's span, about 104 of the residual's 768 dimensions.
 
-On that line the own-space share credits any change in how strongly the variable fires. So it reads high for random
-updates too. The table puts the three shares side by side with each share's exact null for a random direction.
+So any part of an update that changes only what a variable reads lands in its own space by construction. The own-space
+share is the input-side share of the change. A random direction's share, one over the width or about 0.13 for a head,
+is therefore the wrong reference. The right reference is a random update's own-space share, read the same way.
 
-| item class | featurization | strict kept | own-space | own-space null | needed-space | needed-space null |
-| --- | --- | --- | --- | --- | --- | --- |
-| built doubling and tenfold of MLP columns | VPD | 0.76 | 0.78 | 0.001 | 0.94 | 0.015 |
-| two built random updates | VPD | 0.009 | 0.080 | 0.001 | 0.081 | 0.008 |
-| copy fine-tunes, 3 seeds | VPD | 0.025 | 0.233 | 0.001 | 0.235 | 0.013 |
-| two built random updates | neurons and heads | 0.009 | 0.71 | 0.11 | 0.92 | 0.68 |
-| twenty toy fine-tunes | neurons and heads | 0.091 | 0.85 | 0.11 | 0.96 | 0.71 |
-| their twenty matched random updates | neurons and heads | 0.009 | 0.65 | 0.080 | 0.90 | 0.61 |
+| featurization | random updates | trained fine-tunes |
+| --- | --- | --- |
+| VPD | 0.080 for the two built randoms | 0.233 for the copy fine-tunes |
+| neurons alone | 0.82 to 0.93 | 0.99 |
+| heads alone | 0.59 to 0.67 | 0.81 to 0.86 |
 
-Values are medians over the items in a row. On neurons alone, the random updates' own-space share is 0.82 for the
-built pair. It is 0.93 for the toy matched randoms. Both sit far above a single neuron's null of one over 768.
+Values are medians by class. Random updates at neurons and heads are the two built randoms and the toy matched randoms;
+trained rows are the copy, toy and panel fine-tunes. Only the toy randoms are matched in size to their fine-tunes. So
+the own-space share is not empty: trained updates sit above random ones, a little at VPD and at heads. But it measures
+how much of the change comes through a variable's inputs, not whether its output turned. That is why the needed-space
+share carries the rotation question.
 
-So the own-space share for one-direction variables splits a change into input side and output side. It does not see
-rotation. That is why the needed-space share was used instead. Heads are the one exception: a head writes through a
-space of about 100 dimensions, and section 3 reads its own-space share directly.
+The table below puts the strict, own-space and needed-space shares side by side. The needed-space null is a random
+direction's share of the needed space.
 
-## 2. Built rotations stand out at VPD; nothing trained does, at either featurization
+| item class | featurization | strict kept | own-space | needed-space | needed-space null |
+| --- | --- | --- | --- | --- | --- |
+| built doubling and tenfold of MLP columns | VPD | 0.76 | 0.78 | 0.94 | 0.015 |
+| two built random updates | VPD | 0.009 | 0.080 | 0.081 | 0.008 |
+| copy fine-tunes, 3 seeds | VPD | 0.025 | 0.233 | 0.235 | 0.013 |
+| two built random updates | neurons and heads | 0.009 | 0.71 | 0.92 | 0.68 |
+| twenty toy fine-tunes | neurons and heads | 0.091 | 0.85 | 0.96 | 0.71 |
+| their twenty size-matched random updates | neurons and heads | 0.009 | 0.65 | 0.90 | 0.61 |
+
+## 2. Built rotations stand out at VPD and nothing trained does; at neurons and heads the test has no room
 
 ![Rotation share of each item beside its two nulls](../../experiments/rotation_kept/figures/rotation_vs_null.png)
 
 **Reading it.** At VPD only the edits built to keep M's mechanisms read a rotation share far above both nulls. The
 doubling and tenfold edits read 0.68 and 0.71 against nulls of at most 0.03. The rebuilt edit reads 0.52. Every trained item
-sits on its null, as the built randoms do. At neurons and heads the rotation controls behave as built, but the needed
-space at a layer's attention covers most of the residual width. Most fine-tunes and random updates there read 0.6 to 0.8,
-and the dimension-count null reads almost the same.
+sits on its null, as the built randoms do. These built edits are VPD's positive control; the turned-column control ran
+at neurons only. At neurons and heads the needed space at a layer's attention covers most of the residual width. Most
+fine-tunes and random updates there read 0.6 to 0.8, and the dimension-count null reads almost the same.
 
-The matched null at neurons and heads reads near zero, but it is not a valid reference there. A layer has six heads, and
-the needed ones fill the site, so no non-needed head is left to draw. The matched space then equals the own space. Heads
-carry most of the change at that featurization: between 0.64 and 0.98 of dd for every fine-tune.
+That leaves the neuron-and-head reading with almost no power. Heads carry most of the change there: between 0.64 and
+0.98 of dd for every fine-tune. The turned-column control shows the reading works on a neuron, but no control was built
+for a head. The matched null is undefined at heads, since a layer has six heads and the needed ones fill the site. No
+non-needed head is left to draw, so the matched space equals the own space and reads near zero. The figure leaves it out
+of that panel.
 
 One line per item class follows. "Above the null" is the rotation share minus the dimension-count null, as a range over
 the items.
@@ -106,22 +117,24 @@ the items.
 Three panel items had fewer than 100 needed variables and are left out as too small to read: sentiment at VPD, and
 category seed 1 and named-entity seed 0 at neurons.
 
-At neurons and heads the trained items sit a few hundredths higher than the randoms. The toy fine-tunes read above
-their own matched random on 19 of 20 pairs. The largest such gap is 0.19, and none reaches the 0.2 the filed rotation
-rival asked for. On neurons alone the toy fine-tunes' median rotation share is 0.052 against a null of 0.040. Their
-matched randoms read 0.038 against 0.035. The rest of the excess sits in the heads, where the needed space is too wide to separate a rotation from a slightly
-uneven random direction.
+At neurons and heads the trained items still sit a few hundredths above their nulls, so they do not read the same as
+random updates. The copy fine-tunes sit 0.062 to 0.072 above, against 0.010 to 0.019 for the two built randoms, which
+are not matched in size. The toy fine-tunes read above their own size-matched random on 19 of 20 pairs. The largest
+such gap is 0.19, and none reaches the 0.2 the filed rotation rival asked for. On neurons alone the toy fine-tunes'
+median rotation share is 0.052 against a null of 0.040. Their matched randoms read 0.038 against 0.035. The rest of the
+excess sits in the heads, where the needed space is too wide to tell a rotation from a slightly uneven random direction.
 
 The copy and lookup fine-tunes do not differ on the needed-space share. Copy minus lookup on the three-seed mean is
 −0.056 at VPD and 0.002 at neurons and heads, both far inside the filed 0.2.
 
-## 3. Head (2,4) on the copy windows: lost for copy, untouched for lookup, and inside its own space for both
+## 3. Head (2,4) on the copy windows: needed by copy and not lookup, changed mostly through its inputs in both
 
 Head (2,4) carries the copy behaviour in the paper's account. It was read alone at the head featurization, on the 206
 copy windows, for three seeds of each arm. Its strict kept share is low for copy and near zero for lookup. Its flips
-show copy needs it and lookup does not. Its own-space share is about six times its null for both arms.
+show copy needs it and lookup does not. Its own-space share is 0.80 to 0.86 for both arms. The reference for that is a
+random update's own-space share at heads, about 0.6, not a random direction's 0.13.
 
-| arm, seed | strict kept | own-space | own-space null | flips of 256 pairs |
+| arm, seed | strict kept | own-space | random direction's share | flips of 256 pairs |
 | --- | --- | --- | --- | --- |
 | copy, 0 | 0.187 | 0.803 | 0.137 | 252 |
 | copy, 1 | 0.130 | 0.800 | 0.137 | 245 |
@@ -130,10 +143,10 @@ show copy needs it and lookup does not. Its own-space share is about six times i
 | lookup, 1 | 0.011 | 0.835 | 0.133 | 1 |
 | lookup, 2 | 0.005 | 0.861 | 0.134 | 1 |
 
-**Reading it.** Copy's fine-tune changes head (2,4)'s write mostly by turning it within the head's own write space, not
-by a gain. That is what "rotation-tolerant kept" would credit. The lookup fine-tune keeps the head's write just as
-inside its own space, so the own-space share alone does not tell the arms apart. What separates them is the flips:
-copy depends on the head on nearly every pair, lookup on almost none. The own-space null is one head's write
+**Reading it.** Both fine-tunes change head (2,4)'s write mostly through what the head reads, not through its output
+matrix. They do so a little more than a random update does at heads, and equally for copy and lookup. So the own-space
+share does not tell the arms apart, and it does not show the head's output turning. What separates them is the flips:
+copy depends on the head on nearly every pair, lookup on almost none. The random direction's share is one head's write
 dimensions over the width, about 104 of 768.
 
 ## 4. The attention-head gauge, after Singh 2026
@@ -191,7 +204,7 @@ seed spread. This is a claim about trained updates, not that VPD is gauge invari
   from them. The layer's attention output was pooled instead.
 - **The VPD panel used one derangement of the scan pairs and seed 0 only**, against the original panel's four
   derangements and three seeds, to fit the debug queue.
-- **The needed-space share replaced the own-space share** as the main reading, after the degeneracy in section 1.
+- **The needed-space share replaced the own-space share** as the main reading, because of the input-side problem in section 1.
   whip-lead approved it as a measurement choice inside the approved diagnostic.
 - **The summary file mislabels the gauge items.** `results/summary.json` files the gauge and gauge follow-up records
   under keys starting `head24/`, because its writer gives a record with no basis that label. Every number here is read
@@ -202,13 +215,15 @@ Departures from the literature: the rotary restriction of Singh 2026's gauge, ab
 ## 6. For the Discussion: rotation-tolerant kept as a starting point
 
 A natural loosening of "kept" asks only that a fine-tune keep a needed part's output inside the directions the base
-model already writes, rather than along exactly the same direction. We tried this as a diagnostic and it did not rescue
-the low kept readings of trained fine-tunes. At the subcomponent level it credits only edits built to preserve the base
-model's mechanisms. At the neuron and head level the base model's needed directions already fill most of the residual
-stream, so random updates pass as easily as trained ones. Two things would make it a usable test. First, a reference
-space narrow enough that a random update cannot fill it. Second, a featurization whose variables do not change under
-the attention symmetry that leaves the network's function unchanged. One copy head shows the idea can see something:
-fine-tuning turned that head's output within its own space rather than scaling it.
+model already writes, rather than along exactly the same direction. We tried this as a diagnostic. At the subcomponent
+level it credits only edits built to preserve the base model's mechanisms, and trained fine-tunes read like random
+updates, so it does not rescue their low kept readings there. At the neuron and head level the base model's needed
+directions already fill most of the residual stream, so the test has almost no room to separate trained from random
+updates, and it leaves the question open. The simpler "inside the part's own output directions" reading counts any
+change to what a part reads, so it measures input-side change rather than rotation. Two things would make a usable
+test. First, a reference space narrow enough that a random update cannot fill it, with a positive control at the level
+being read. Second, a featurization whose variables do not change under the attention symmetry that leaves the
+network's function unchanged.
 
 ## Scorecard
 
@@ -220,7 +235,7 @@ fine-tuning turned that head's output within its own space rather than scaling i
 | R3 | turned toward a needed neuron reads 1; toward a non-needed one at most 0.5 | as filed | 1.000 and 0.131 | held |
 | G0 | the gauge-turned M computes M's function | logits within ten times the round-trip floor | about 2 times | held |
 | rivals | rotation share 0.2 above the matched random on most trained items; copy's needed share 0.2 above lookup's | as filed | 0 of 20 toy pairs; gap −0.056 and 0.002 | rival B, rotation not seen |
-| stop | trained items within 0.05 of the null at both featurizations drops the rotation guess | as filed | VPD: every trained item; neurons and heads: up to 0.13 above the dimension-count null, with the matched null invalid there | VPD met; neurons and heads no call |
+| stop | trained items within 0.05 of the null at both featurizations drops the rotation guess | as filed | VPD: every trained item; neurons and heads: up to 0.13 above the dimension-count null, with the matched null undefined there | VPD met; neurons and heads no call |
 
 ## Not run
 
@@ -228,7 +243,9 @@ fine-tuning turned that head's output within its own space rather than scaling i
 - The VPD panel's seeds 1 and 2, and three of four derangements.
 - Built rotation controls at VPD: a turned subcomponent's change spreads over many subcomponents, so the answer is not
   known by construction.
+- A head-level rotation control: the turned-column control ran at neurons only, and heads carry most of the change.
 - A matched null for heads that draws from other layers or from random subspaces of a head's width.
+- Size-matched randoms for the copy and lookup fine-tunes and for the built edits; only the toy fine-tunes have them.
 - A per-head pool at VPD, not defined from VPD's pieces.
 - Head (2,4) at VPD, and on the lookup windows.
 
