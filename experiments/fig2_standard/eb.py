@@ -27,10 +27,10 @@ def fname(item: str) -> str:
     return item.replace("/", "__")
 
 
-def states(built: tuple[str, ...], random_of: tuple[str, ...], tasks: tuple[str, ...], seeds: tuple[int, ...]) -> list[str]:
-    """The 42 state ids: built/<edit>, built/rand_<edit>, trained/<task>_s<seed>[_rand]."""
+def states(built: tuple[str, ...], heads: tuple[str, ...], random_of: tuple[str, ...], tasks: tuple[str, ...], seeds: tuple[int, ...]) -> list[str]:
+    """The 48 state ids: built/<edit>, built/head_<e> (E280), built/rand_<edit>, trained/<task>_s<seed>[_rand]."""
     trained = [f"trained/{t}_s{s}{r}" for t in tasks for s in seeds for r in ("", "_rand")]
-    return [f"built/{e}" for e in built] + [f"built/rand_{e}" for e in random_of] + trained
+    return [f"built/{e}" for e in (*built, *(f"head_{h}" for h in heads))] + [f"built/rand_{e}" for e in random_of] + trained
 
 
 def leftover_mask(feat: str, n: int) -> np.ndarray:

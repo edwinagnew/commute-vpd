@@ -6,6 +6,8 @@ States (`Worlds.make`), ids '<block>/<name>':
     built/rand_<edit>   new: E290's random rule on that edit, a Gaussian per tensor the edit changed at that tensor's
                         Frobenius norm of F - M (needed_neurons.matched_random), seed built_random_seed + the edit's
                         index in built_random_of, read on the edit's own D and positions
+    built/head_<e>      E280's head-(2, 4) edits (v2, o2, q2: one slice of one layer-2 matrix times 2), its code, its D
+                        (E257's e62/copy_s0 windows, last position); built/rand_head_<e> their randoms as above
     trained/<t>_s<s>    E147's step-30 full fine-tune, unscaled, on E237's D at the last position (E290's World, item
                         full/<t>_s<s>); trained/<t>_s<s>_rand its E290 random (seed 161000 + E290's item index)
 
@@ -37,6 +39,7 @@ from commute.jobs import load_experiment
 KN: Any = load_experiment("kstar_needed", "run")  # E268: world() (the built states), E226 (split_tol), log/dump/stop
 NNR: Any = load_experiment("needed_neurons", "run")  # E277: matched_random, load_e229, E229 (feat_of, load_pct)
 IA: Any = load_experiment("ia3_control", "run")  # E290: World (the trained states and their randoms), load_config
+HE: Any = load_experiment("head_edit", "run")  # E280: edited, data, load_config (the head-(2, 4) built edits)
 
 
 class Worlds:
@@ -75,12 +78,19 @@ class Worlds:
         assert block == "built", item
         w = self.built
         if not name.startswith("rand_"):
-            return w.make(name)
+            return self.head(name) if name.startswith("head_") else w.make(name)
         base = name.removeprefix("rand_")
-        F, M, toks, at, _ = w.make(base)
+        F, M, toks, at, _ = self.head(base) if base.startswith("head_") else w.make(base)
         dw, rec = NNR.matched_random(F.net, M.net, self.cfg.built_random_seed + self.cfg.built_random_of.index(base))
         del F
         return R.Model(OT.with_delta(w.kl.net, dw).net), M, toks, at, rec | {"random_of": base}
+
+    def head(self, name: str) -> tuple[R.Model, R.Model, Tensor, slice, dict[str, Any]]:
+        """E280's head-(2, 4) edit head_<v2|o2|q2>, built by its code on the built world's M, on its D (E257's
+        e62/copy_s0 windows, last position), as experiments/head_edit/run.py main reads it."""
+        cfg, w = HE.load_config(), self.built
+        toks, at = HE.data(w, cfg)
+        return HE.edited(w, cfg, name.removeprefix("head_")), w.kl.M, toks, at, {"edit_of": "E280"}
 
 
 def batches(toks: Tensor, b: int) -> list[Tensor]:

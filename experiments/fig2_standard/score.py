@@ -1,4 +1,4 @@
-"""E298 scoring, $0, CPU, saved arrays only: every one of the 42 states at each of the three featurizations, E_b
+"""E298 scoring, $0, CPU, saved arrays only: every one of the 48 states at each of the three featurizations, E_b
 recomputed from its saved per-variable sums by eb.readings (one expression everywhere), from this run's reads
 (results/large/<feat>/) or, where the run does not read the state again, from the saved reads whose settings eb.check_sources
 confirms are this protocol's (the reuse check is in the hand-back and results/summary.json "sources"):
@@ -7,6 +7,8 @@ confirms are this protocol's (the reuse check is in the hand-back and results/su
                          the arrays E268's own E_b_K was computed from
     VPD trained seed 0   E290 (ia3_control/results/large/vpd_full__<state>.npz), except copy_s0 and its random (read again)
     neurons built edits  E277 (needed_neurons/results/large/items_<item>.npz)
+    head-(2, 4) edits    E280 at VPD and neurons (head_edit/results/large/items_<e>_<feat>.npz; E268's scan settings,
+                         head_edit/run.py:311), in their own block "head", sides edit and random
     neurons trained      E290 (ia3_control/results/large/items_full__<state>.npz)
 Writes results/summary.json (every reading, which states are missing, whether the reused values give the old figure's
 values back, the moves from the old figure and the rivals' reading) and results/definition_rows.csv, the columns of
@@ -37,7 +39,7 @@ LABEL = {"vpd": "VPD", "neurons": "top", "sae": "SAE"}  # the old figure's feat 
 BUILT_SIDE = {"x2": "reuse", "x10": "reuse", "rebuilt": "reuse", "new_few": "new", "new_thin": "new"}  # else random
 GAP = 0.05  # the card's smallest_gap
 LARGE = {k: EXPERIMENTS / d / "results" / "large" for k, d in
-         {"E268": "kstar_needed", "E247": "thin_edit_diagnosis", "E242": "kstar_vpd_wording_a", "E277": "needed_neurons", "E290": "ia3_control"}.items()}  # fmt: skip
+         {"E268": "kstar_needed", "E247": "thin_edit_diagnosis", "E242": "kstar_vpd_wording_a", "E277": "needed_neurons", "E290": "ia3_control", "E280": "head_edit"}.items()}  # fmt: skip
 
 
 def reused(feat: str, state: str) -> tuple[dict[str, np.ndarray], str] | None:
@@ -46,6 +48,8 @@ def reused(feat: str, state: str) -> tuple[dict[str, np.ndarray], str] | None:
     if state in SET["read"][feat]:
         return None
     block, name = state.split("/")
+    if block == "built" and name.startswith("head_") and feat in ("vpd", "neurons"):
+        return dict(np.load(LARGE["E280"] / f"items_{name.removeprefix('head_')}_{feat}.npz")), "E280"
     if block == "built" and name in SET["built"]:
         if feat == "vpd":
             e, f = np.load(LARGE["E247"] / f"items_{name}.npz"), lambda k, p: np.load(LARGE[k] / f"items_{name}.npz")[p]
@@ -64,14 +68,17 @@ def label(state: str) -> tuple[str, str, str]:
     block, name = state.split("/")
     if block == "trained":
         return block, name.removesuffix("_rand"), "random" if name.endswith("_rand") else "trained"
-    if name.startswith("rand_"):
-        return block, name.removeprefix("rand_"), "random"
+    rnd, base = name.startswith("rand_"), name.removeprefix("rand_")
+    if base.startswith("head_"):  # E280's group: block head, item v2 / o2 / q2
+        return "head", base.removeprefix("head_"), "random" if rnd else "edit"
+    if rnd:
+        return block, base, "random"
     return block, name, BUILT_SIDE.get(name, "random")
 
 
 def rows() -> tuple[list[dict[str, Any]], list[str]]:
     out, missing = [], []
-    states = EB.states(*(tuple(SET[k]) for k in ("built", "built_random_of", "tasks", "seeds")))
+    states = EB.states(*(tuple(SET[k]) for k in ("built", "head_edits", "built_random_of", "tasks", "seeds")))
     for feat, lab in LABEL.items():
         for state in states:
             new = RESULTS / "large" / feat / f"{EB.fname(state)}.npz"

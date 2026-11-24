@@ -1,6 +1,6 @@
 """E298 (cell P1.62; user 2026-11-24, "make sure we ran the exact same experiment for each of the 3 featurizations"):
 Fig 2's write share E_b over the needed set K at VPD subcomponents, top neurons and SAE latents, read under one protocol
-on the same 42 states (plan reports/plans/2026-11-24_plan_p1-62-fig2-standard.md; card card.md). Settings and filed
+on the same 48 states (42 of the plan, and E280's three head-(2, 4) edits with their randoms, user 2026-11-24) (plan reports/plans/2026-11-24_plan_p1-62-fig2-standard.md; card card.md). Settings and filed
 expected values in results/predictions.json, which the run refuses unless committed unchanged.
 
 Per item (`read_item`, any featurization, feats.py): F, M, D and the read positions of the state; one write pass
@@ -62,6 +62,7 @@ log, dump, stop, fname = FT.KN.log, FT.KN.dump, FT.KN.stop, EB.fname
 class Config:  # filed in predictions.json "settings"
     control: str  # the identity control's state
     built: tuple[str, ...]  # E247's seven built edits (E268's)
+    head_edits: tuple[str, ...]  # E280's head-(2, 4) edits, built/head_<e>
     built_random_of: tuple[str, ...]  # the built edits given a new matched random, built/rand_<edit>
     built_random_seed: int
     tasks: tuple[str, ...]  # E290's order
@@ -82,10 +83,11 @@ class Config:  # filed in predictions.json "settings"
     read: dict[str, list[str]]  # feat -> stage 1's items
 
     def states(self) -> list[str]:
-        return EB.states(self.built, self.built_random_of, self.tasks, self.seeds)
+        return EB.states(self.built, self.head_edits, self.built_random_of, self.tasks, self.seeds)
 
     def __post_init__(self) -> None:
-        assert len(self.built) == 7 and set(self.built_random_of) <= set(self.built) and len(self.states()) == 42
+        heads = {f"head_{h}" for h in self.head_edits}
+        assert len(self.built) == 7 and set(self.built_random_of) <= set(self.built) | heads and len(self.states()) == 42 + 2 * len(heads)
         assert set(self.repro) == set(self.repro_rel_tol) == set(self.read) == set(FEATS) and self.control in self.states()
         bad = [i for f in FEATS for i in [*self.read[f], *(r["item"] for r in self.repro[f])] if i not in self.states()]
         assert not bad, f"not states: {bad}"
