@@ -24,4 +24,5 @@ export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 test -f experiments/built_circuits/results/predictions.json || { echo "no predictions"; exit 1; }
 TAG="$1"; shift
 LOG=experiments/built_circuits/results/run_${TAG}.log
-( .venv/bin/python experiments/built_circuits/run.py "$@" --tag "$TAG"; echo "=== FINISHED (exit $?) — results in $COMMUTE_REPO/experiments/built_circuits/results ===" ) 2>&1 | tee -a "$LOG"
+( .venv/bin/python experiments/built_circuits/run.py "$@" --tag "$TAG"; s=$?; echo "=== FINISHED (exit $s) — results in $COMMUTE_REPO/experiments/built_circuits/results ==="; exit $s ) 2>&1 | tee -a "$LOG"
+exit "${PIPESTATUS[0]}"  # run.py's exit, not tee's, so --dependency=afterok holds after a stop
