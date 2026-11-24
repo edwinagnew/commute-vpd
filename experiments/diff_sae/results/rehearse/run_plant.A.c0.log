@@ -1,0 +1,21 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+07:03:37 [E296] ['plant.A.c0'] tag rehearse; Cfg(d=768, expansion=2, k=100, lr=0.0001, warmup=1000, batch=2048, tokens=12000000, stream_tokens=200000000, epochs=2, aux_alpha=0.03125, dead_tokens=10000000, threshold_start=1000, init_norm=1.0, target_rms=100.0, log_steps=50, validate_every=2000, val_tokens=1000000, val_batch=8192, val_start=196608, norm_tokens=1000000, norm_batch=4096, norm_seed=275, ls_tokens=50000000, ls_batch=2048, alive_min=10, nu_cut=0.3, nu_wide=0.6, kl_rows=256, kl_batch=16, chunk_rows=1024, pile_start=32768, pool_start=131072, pool_rows=65536, repeat_cap=100, dead_fixture_step=5000)
+07:03:37 [check validation rows share no parent row with the stream] ok {"val": [196608, 198565], "stream": [[32768, 131072], [589824, 684768]]}
+07:03:37 [check D exactly 0 under a zero update] ok {"max_abs": 0.0}
+07:03:38 [check stream holds every step] ok {"tokens": 200978880, "need": 11999232}
+07:07:01 [plant.A.c0] normaliser {"chunk_tokens": {"pile": 523264, "task": 523501}, "lengths": {"pile": 50233344, "task": 50256096}, "sample": [500000, 500000], "scale": 711.8106220913007, "mean_norm": 0.00313901999271137}; K 0.9995009999999394
+/root/work/.venv/lib/python3.13/site-packages/dictionary_learning/training.py:286: UserWarning: Error saving config: 'generator' object has no attribute 'config'
+  warn(f"Error saving config: {e}")
+Saving at step 0
+Saving at step 2000
+Validating at step 2000
+07:07:22 [plant.A.c0] step 2000: {"step": 2000, "fve_pooled": null, "dead": 0.0, "theta": 0.011225594207644463, "ms_per_step": 9.674175381660461}
+Saving at step 4000
+Validating at step 4000
+07:07:42 [plant.A.c0] step 4000: {"step": 4000, "fve_pooled": null, "dead": 0.006510416977107525, "theta": 0.011332337744534016, "ms_per_step": 9.667010247707367}
+07:07:44 [check finite loss (parameters finite)] MISSED {"step": 4200}
+07:07:44 STOP: finite loss (parameters finite): tell the lead
+peak host RSS 6.2 GB

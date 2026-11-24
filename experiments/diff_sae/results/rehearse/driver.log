@@ -1,0 +1,20 @@
+== CPU fixtures
+[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[32m.[0m[33m                                                    [100%][0m
+[33m=============================== warnings summary ===============================[0m
+tests/test_diff_sae.py::test_logging_moves_theta_and_validation_moves_counters
+tests/test_diff_sae.py::test_saved_sae_reloads_to_identical_encodings
+  /root/work/.venv/lib/python3.13/site-packages/dictionary_learning/training.py:286: UserWarning: Error saving config: 'list' object has no attribute 'config'
+    warn(f"Error saving config: {e}")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+[33m[32m21 passed[0m, [33m[1m2 warnings[0m[33m in 4.04s[0m[0m
+== fixtures exit 0
+== item plant.A.c0 start 07:03:24
+== item plant.A.c0 exit 1 in 261 s
+Validating at step 4000
+07:07:42 [plant.A.c0] step 4000: {"step": 4000, "fve_pooled": null, "dead": 0.006510416977107525, "theta": 0.011332337744534016, "ms_per_step": 9.667010247707367}
+07:07:44 [check finite loss (parameters finite)] MISSED {"step": 4200}
+07:07:44 STOP: finite loss (parameters finite): tell the lead
+peak host RSS 6.2 GB
+FINISHED all in 266 s
+=== FINISHED (exit 0) — results in /root/work/experiments/diff_sae/results/rehearse and /root/work/experiments/diff_sae/results/rehearse_dl ===
