@@ -1,0 +1,85 @@
+00:45:06 [E289] stage 1: Config(items=('E235:head.A.c0', 'E235:head.A.c1', 'E235:head.A.c2', 'E235:head.B.c0', 'E235:head.B.c1', 'E235:head.B.c2', 'E243:head-r4.A.c0', 'E243:head-r4.A.c1', 'E243:head-r5.A.c0', 'E212:planted'), ls_tokens=100000, block=512, boot=1000, boot_seed=0, chunks_a=(1, 25), chunks_b=(25, 49), jitter_q=0.99, jitter_factor=3, jitter_seed=0, energy_rel_tol=0.0001, plant_min_s=0.01, near_nu=-0.02, se_z=2, projected_limit_min=15)
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+00:45:43 [E235:head.A.c0] first chunk 1046544 tokens, projected 5.8 min
+00:51:01 [E235:head.A.c0 read] literal: {"specific": 0.29633474723467756, "count": 125, "lead_specific": true}
+00:51:01 [E235:head.A.c0 read] near_zero_kept_ours: {"specific": 0.29633441247676373, "count": 126, "lead_specific": true}
+00:51:01 [E235:head.A.c0 read] literal_100k: {"specific": 0.29629624852577274, "count": 126, "lead_specific": true}
+00:51:01 ITEM E235:head.A.c0 DONE at 5.9 min
+00:51:14 [E235:head.A.c1] first chunk 1046544 tokens, projected 5.5 min
+00:56:33 [E235:head.A.c1 read] literal: {"specific": 0.20484114056874292, "count": 119, "lead_specific": true}
+00:56:33 [E235:head.A.c1 read] near_zero_kept_ours: {"specific": 0.20484114056874292, "count": 119, "lead_specific": true}
+00:56:33 [E235:head.A.c1 read] literal_100k: {"specific": 0.20200553774550167, "count": 125, "lead_specific": true}
+00:56:33 ITEM E235:head.A.c1 DONE at 11.4 min
+00:56:45 [E235:head.A.c2] first chunk 1046544 tokens, projected 5.5 min
+01:02:03 [E235:head.A.c2 plant] {"latent": 4123, "target": "r_base", "beta_100k": -0.005359440576285124, "a": -0.005110129781655491, "b": -0.005033999958413773, "full": -0.0050720708413064764, "se": 4.9919588863464725e-05, "real": true, "shrink": 0.9463806472171323, "literal_specific": false}
+01:02:03 [E235:head.A.c2 read] literal: {"specific": 0.004339451832187757, "count": 131, "lead_specific": false}
+01:02:03 [E235:head.A.c2 read] near_zero_kept_ours: {"specific": 0.004339524882724044, "count": 132, "lead_specific": false}
+01:02:03 [E235:head.A.c2 read] literal_100k: {"specific": 0.004350800795759335, "count": 127, "lead_specific": false}
+01:02:03 ITEM E235:head.A.c2 DONE at 17.0 min
+01:02:18 [E235:head.B.c0] first chunk 1046544 tokens, projected 7.0 min
+01:09:09 [E235:head.B.c0 plant] {"latent": 5533, "target": "eps_base", "beta_100k": -0.001534954528324306, "a": -0.0016201108125377106, "b": -0.0015028109462930112, "full": -0.001561500514598391, "se": 5.4693739403999555e-05, "real": true, "shrink": 1.0172943144466078, "literal_specific": false}
+01:09:09 [E235:head.B.c0 clear] {"latent": 14640, "target": "eps_base", "beta_100k": -0.11480090767145157, "a": -0.11362174394459627, "b": -0.1135835331001781, "full": -0.11360261066007676, "se": 7.832366444503304e-05, "real": true, "shrink": 0.9895619552520942, "literal_specific": false}
+01:09:09 [E235:head.B.c0 read] literal: {"specific": 0.4406124088520471, "count": 166, "lead_specific": false}
+01:09:09 [E235:head.B.c0 read] near_zero_kept_ours: {"specific": 0.44757206838616526, "count": 171, "lead_specific": false}
+01:09:09 [E235:head.B.c0 read] literal_100k: {"specific": 0.44070834823699556, "count": 192, "lead_specific": false}
+01:09:09 ITEM E235:head.B.c0 DONE at 24.1 min
+01:09:19 [E235:head.B.c1] first chunk 1046544 tokens, projected 7.0 min
+01:16:11 [E235:head.B.c1 plant] {"latent": 7076, "target": "eps_base", "beta_100k": -0.01765964739024639, "a": -0.01786375988496234, "b": -0.017956977500766805, "full": -0.017910331253654006, "se": 5.020733089233064e-05, "real": true, "shrink": 1.0141952926843867, "literal_specific": false}
+01:16:11 [E235:head.B.c1 plant] {"latent": 9039, "target": "eps_base", "beta_100k": -0.009993287734687328, "a": -0.010544849903558867, "b": -0.010610028024677677, "full": -0.01057736867128803, "se": 4.467395695723044e-05, "real": true, "shrink": 1.058447325055329, "literal_specific": false}
+01:16:11 [E235:head.B.c1 plant] {"latent": 17235, "target": "eps_base", "beta_100k": -0.0059557282365858555, "a": -0.005528969992747464, "b": -0.00549725926458339, "full": -0.00551313696142198, "se": 4.333865788734683e-05, "real": true, "shrink": 0.9256864555294766, "literal_specific": false}
+01:16:11 [E235:head.B.c1 clear] {"latent": 998, "target": "eps_base", "beta_100k": -0.06519550830125809, "a": -0.06430421098056385, "b": -0.06431849590469278, "full": -0.0643113580797246, "se": 1.7713868960507606e-05, "real": true, "shrink": 0.9864384795123006, "literal_specific": false}
+01:16:11 [E235:head.B.c1 clear] {"latent": 7592, "target": "eps_base", "beta_100k": -0.06149192526936531, "a": -0.06256487495346764, "b": -0.06243781969582078, "full": -0.06250142016997054, "se": 6.976949749513171e-05, "real": true, "shrink": 1.0164167066843839, "literal_specific": false}
+01:16:11 [E235:head.B.c1 clear] {"latent": 20037, "target": "eps_base", "beta_100k": -0.049745287746191025, "a": -0.050487676729443556, "b": -0.05049042454018227, "full": -0.05048904984367074, "se": 3.978934548442778e-05, "real": true, "shrink": 1.0149514080866215, "literal_specific": false}
+01:16:11 [E235:head.B.c1 read] literal: {"specific": 0.42859555921640435, "count": 149, "lead_specific": true}
+01:16:11 [E235:head.B.c1 read] near_zero_kept_ours: {"specific": 0.42870437452674537, "count": 152, "lead_specific": true}
+01:16:11 [E235:head.B.c1 read] literal_100k: {"specific": 0.4285089611110777, "count": 170, "lead_specific": true}
+01:16:11 ITEM E235:head.B.c1 DONE at 31.1 min
+01:16:21 [E235:head.B.c2] first chunk 1046544 tokens, projected 7.0 min
+01:23:13 [E235:head.B.c2 clear] {"latent": 17561, "target": "eps_base", "beta_100k": -0.03698522225022316, "a": -0.03812305124293954, "b": -0.038031582863199784, "full": -0.038077269360461616, "se": 3.742704406815343e-05, "real": true, "shrink": 1.0295265796390305, "literal_specific": false}
+01:23:13 [E235:head.B.c2 read] literal: {"specific": 0.4215675793437299, "count": 151, "lead_specific": false}
+01:23:13 [E235:head.B.c2 read] near_zero_kept_ours: {"specific": 0.42169924481441967, "count": 154, "lead_specific": false}
+01:23:13 [E235:head.B.c2 read] literal_100k: {"specific": 0.42194621793720444, "count": 168, "lead_specific": false}
+01:23:13 ITEM E235:head.B.c2 DONE at 38.1 min
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+01:23:28 [E243:head-r4.A.c0] first chunk 1046544 tokens, projected 5.5 min
+01:28:47 [E243:head-r4.A.c0 plant] {"latent": 2304, "target": "r_base", "beta_100k": -0.005703243426978588, "a": -0.005337198268271243, "b": -0.005254936716304951, "full": -0.005296074003502322, "se": 4.1661794718873574e-05, "real": true, "shrink": 0.9286073917956589, "literal_specific": false}
+01:28:47 [E243:head-r4.A.c0 read] literal: {"specific": 0.009729342649689943, "count": 25, "lead_specific": false}
+01:28:47 [E243:head-r4.A.c0 read] near_zero_kept_ours: {"specific": 0.009998872534627057, "count": 27, "lead_specific": false}
+01:28:47 [E243:head-r4.A.c0 read] literal_100k: {"specific": 0.009998581615921043, "count": 23, "lead_specific": false}
+01:28:47 ITEM E243:head-r4.A.c0 DONE at 43.7 min
+01:28:55 [E243:head-r4.A.c1] first chunk 1046544 tokens, projected 5.5 min
+01:34:14 [E243:head-r4.A.c1 plant] {"latent": 6180, "target": "r_base", "beta_100k": -0.005867175292223692, "a": -0.005544825732059755, "b": -0.005466796708617445, "full": -0.005505817973933344, "se": 4.1734965488809036e-05, "real": true, "shrink": 0.9384103422358476, "literal_specific": false}
+01:34:14 [E243:head-r4.A.c1 clear] {"latent": 22913, "target": "r_base", "beta_100k": -0.022893264889717102, "a": -0.021524755716789693, "b": -0.02294927086535065, "full": -0.022234674154436997, "se": 0.00037460452007800703, "real": true, "shrink": 0.9712321183346845, "literal_specific": false}
+01:34:14 [E243:head-r4.A.c1 read] literal: {"specific": 5.7323059738934035e-06, "count": 22, "lead_specific": false}
+01:34:14 [E243:head-r4.A.c1 read] near_zero_kept_ours: {"specific": 7.921189032700227e-06, "count": 24, "lead_specific": false}
+01:34:14 [E243:head-r4.A.c1 read] literal_100k: {"specific": 4.742508128430245e-07, "count": 21, "lead_specific": false}
+01:34:14 ITEM E243:head-r4.A.c1 DONE at 49.1 min
+01:34:22 [E243:head-r5.A.c0] first chunk 1046544 tokens, projected 5.5 min
+01:39:41 [E243:head-r5.A.c0 plant] {"latent": 8817, "target": "r_base", "beta_100k": -0.015310739167034626, "a": -0.014126671767607414, "b": -0.013917502441823514, "full": -0.014022110416547351, "se": 9.018027159959222e-05, "real": true, "shrink": 0.9158349746260581, "literal_specific": false}
+01:39:41 [E243:head-r5.A.c0 plant] {"latent": 19616, "target": "r_base", "beta_100k": -0.008373819291591644, "a": -0.008065092904673152, "b": -0.007977326347109735, "full": -0.008021213689395618, "se": 6.121886185389677e-05, "real": true, "shrink": 0.9578919021395547, "literal_specific": false}
+01:39:41 [E243:head-r5.A.c0 read] literal: {"specific": 1.1477580214247496e-05, "count": 17, "lead_specific": false}
+01:39:41 [E243:head-r5.A.c0 read] near_zero_kept_ours: {"specific": 2.2180123901094362e-05, "count": 21, "lead_specific": false}
+01:39:41 [E243:head-r5.A.c0 read] literal_100k: {"specific": 2.757084097199103e-05, "count": 27, "lead_specific": false}
+01:39:41 ITEM E243:head-r5.A.c0 DONE at 54.6 min
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+01:39:50 [job] Cfg(d=768, expansion=32, k=100, k_max=1024, k_anneal_steps=2000, lr=0.0001, warmup=1000, batch=2048, tokens=200000000, epochs=2, aux_alpha=0.03125, dead_tokens=10000000, init_norm=1.0, target_rms=100.0, chunk_rows=1024, ls_tokens=100000, val_rows=8192, alive_min=10, top_n=1667, top_n_wide=5000, nu_r=0.5, nu_eps=0.2, shared=(0.4, 0.6), base_only=0.1, snapshots=(0.125, 0.25, 0.5), ckpt_every=10000, log_every=500, pile_start=32768, pool_start=131072, pool_rows=65536, repeat_cap=100)
+[job] stream {"per_chunk": {"L1": 533, "L3": 533, "T1": 239, "T2": 239, "T3": 239, "T4": 239}, "chunk_tokens": 1048024, "task_share": 0.5007137241131883, "chunks": 192, "tokens": 201220608, "plant_every": 35}
+01:39:50 [check self path: a zero update gives W0's activations] ok {"max_abs": 0.0, "bar": 1e-05}
+01:39:57 [E212:planted] first chunk 1048024 tokens, projected 5.5 min
+01:45:22 [E212:planted plant] {"latent": 4899, "target": "r_base", "beta_100k": -0.004229068290442228, "a": -0.0059059952165026585, "b": -0.00594086887247984, "full": -0.0059234322312563216, "se": 6.079043982110106e-05, "real": true, "shrink": 1.4006470987104622, "literal_specific": false}
+01:45:22 [E212:planted read] literal: {"specific": 0.0, "count": 0, "lead_specific": false}
+01:45:22 [E212:planted read] near_zero_kept_ours: {"specific": 0.0, "count": 0, "lead_specific": false}
+01:45:22 [E212:planted read] literal_100k: {"specific": 0.0, "count": 0, "lead_specific": false}
+01:45:22 ITEM E212:planted DONE at 60.3 min
+01:45:22 STAGE 1 DONE in 60.3 min; peak GPU 27.1 GB
+peak host RSS 8.6 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/crosscoder_proper/results/refit/stage1.json and /root/work/experiments/crosscoder_proper/results/large/refit/ ===
