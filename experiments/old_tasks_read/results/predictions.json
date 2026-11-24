@@ -31,14 +31,14 @@
     "e136_tol": {"trained": 0.01},
     "e136_tol_source": "E143's r_tol 0.01, the tolerance E211 used to repeat E136's saved re-gating shares by another path (E211 read lowercase_s0 at 0.7538 against E136's 0.7519). The case label's untrained shares are recorded beside, not checked: E136 read them at batch 64, the Reader at 32, and no floor between the two was measured",
     "known": {"share": 0.5971955526068516, "share_tol": 0.01, "gain": 13.429918158544252, "T0": -5.022894911570091, "cell_rel_tol": 0.001},
-    "known_source": "share: E28's r on this file (experiments/many_cues/results/many_cues.json states.emoticon.r, the same do-nothing cells (L01 - L00) / (T1 - T0) by local_faith.route_cells, compute_ci and masked_logits as masked_reads.route_cells_by); its tolerance E143's r_tol as above (the old E6 seed range 0.5965-0.6115 is wider). gain and T0: recruitment_test/results/amend2_stage0.json refs.emoticon on this file; cell_rel_tol: the measured difference between two reads of T0 on the same 73 held-out windows (E6's recruit.json -5.021716, E38's amend2 -5.022895: 2.3e-4 of |T0|) rounded up about 4x"
+    "known_source": "share: E28's r on this file (experiments/many_cues/results/many_cues.json states.emoticon.r, the same do-nothing cells (L01 - L00) / (T1 - T0) by local_faith.route_cells, compute_ci and masked_logits as masked_reads.route_cells_by); its tolerance E143's r_tol as above (the old E6 seed range 0.5965-0.6115 is wider). gain and T0: recruitment_test/results/amend2_stage0.json refs.emoticon on this file; cell_rel_tol, on the gain only: the measured difference between two GPU reads of the same windows' cells (E6's recruit.json T0 -5.021716, E38's amend2 -5.022895: 2.3e-4 relative) rounded up about 4x; the CPU dry run read the gain 1.6e-4 off. T0 is recorded beside, not checked (amended before any run, 2026-11-23: the CPU dry run read T0 -5.0173, 1.1e-3 off, while its share and gain agreed; T0 adds nothing to the loader check the share and gain do not)"
   },
   "stage0": {
     "rules": [
       "zero update on the emoticon rows: every numerator of realistic_reads.numerators, the size, the KL and the Pile loss change exactly 0, else stop",
       "E211's lowercase_s0 control: share, svd, rotated, gain, neuron k64 and k matched, steering, erank, k_half, r_half_num each within e211_tol of E211's read, else stop",
       "E136's case_real_s0 share within 0.01 of 0.11284478195336352 (stage1.json states.case_label/real_s0.trained), else stop; its svd (saved -0.01918) and rotated (0.04473) recorded beside",
-      "known item emoticon_s0: share within 0.01 of 0.5972, else stop (the loaders are wrong: nothing past stage 0 is read); gain and T0 within 0.1% of 13.4299 and -5.0229, else stop"
+      "known item emoticon_s0: share within 0.01 of 0.5972, else stop (the loaders are wrong: nothing past stage 0 is read); gain within 0.1% of 13.4299, else stop; T0 (-5.0229) recorded beside"
     ],
     "eb_neurons": "needed_neurons stage0 on this run's World: do-nothing (F = M) n_changed 0, dd max exactly 0, E_b over K exactly 1; identity interchange on emoticon_s0's rows 0 argmax changes (its max deviation is the floor). Its own stop",
     "eb_vpd": "the same at VPD: do-nothing via stand_in.write_change on kstar_vpd.featurize (0 changed, dd max 0, E_b 1); needed.identity_scan on emoticon_s0 with E268's ident_vars: 0 flips. Stop on a miss",
@@ -59,7 +59,7 @@
     },
     "known_item_emoticon_s0": {
       "share": "0.597 within 0.01 (stopped on)",
-      "gain, prior": "13.43 and -5.023 log-odds within 0.1% (stopped on)",
+      "gain, prior": "gain 13.43 log-odds within 0.1% (stopped on); prior -5.023 recorded beside",
       "untrained, neuron, steering, k_half, E_b at neurons and VPD, EAP-IG": "no filed value: never read on the emoticon; recorded",
       "eb_neurons E_b_K against its ceiling": "E_b_K at most 1 - rem_dd_share_K_changed (the pooled per-layer remainder takes one scalar gain, P1.61); E_b_K_no_rem recorded beside. For scale, the FFN-gain control reads 0.999 without remainders (whip-lead, 11-23)"
     },

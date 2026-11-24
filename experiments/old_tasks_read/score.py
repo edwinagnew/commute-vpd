@@ -59,13 +59,15 @@ def readings() -> tuple[dict[str, dict[str, float]], dict[str, dict[str, float]]
 
 def twins(real: dict[str, dict[str, float]], rand: dict[str, dict[str, float]]) -> dict[str, Any]:
     out: dict[str, Any] = {}
-    for twin in (t for t in NT.TASKS.values() if t.twin_of):
+    for twin in NT.TASKS.values():
+        if (of := twin.twin_of) is None:
+            continue
         mine = {NT.seed_of(s) for s in NT.states(twin, "all")}
-        seeds = sorted(mine & {NT.seed_of(s) for s in NT.states(NT.TASKS[twin.twin_of], "all") if "_e1_" not in s})
-        a, b = [f"{twin.twin_of}_s{k}" for k in seeds], [f"{twin.name}_s{k}" for k in seeds]
+        seeds = sorted(mine & {NT.seed_of(s) for s in NT.states(NT.TASKS[of], "all") if "_e1_" not in s})
+        a, b = [f"{of}_s{k}" for k in seeds], [f"{twin.name}_s{k}" for k in seeds]
         keys = sorted({k for s in a + b for k in real.get(s, {})})
         get = lambda side, ss, k: [side.get(s, {}).get(k, math.nan) for s in ss]
-        out[f"{twin.twin_of} vs {twin.name}"] = {"seeds": seeds} | {k: NT.separates(get(real, a, k), get(real, b, k), get(rand, a, k), get(rand, b, k)) for k in keys}
+        out[f"{of} vs {twin.name}"] = {"seeds": seeds} | {k: NT.separates(get(real, a, k), get(real, b, k), get(rand, a, k), get(rand, b, k)) for k in keys}
     return out
 
 

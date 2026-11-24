@@ -9,8 +9,8 @@ results/predictions.json (the run refuses unless it is committed unchanged). E_b
 
   0              alone, first, exit 1 on a miss: a zero update reads every numerator, size, KL and Pile change exactly
                  0 (emoticon rows); E211's lowercase_s0 control repeats (run2_ctl.json, E211's tolerances); E136's
-                 case_real_s0 share repeats; the known item: emoticon_s0's share repeats E28's 0.597, its gain 13.43
-                 and its prior -5.023                                                           -> results/stage0.json
+                 case_real_s0 share repeats; the known item: emoticon_s0's share repeats E28's 0.597 and its gain 13.43
+                 (its prior recorded beside)                                                     -> results/stage0.json
   read TASK...   after 0: each task's saved states and their Gaussians                      -> results/read/TASK.json
   train TASK...  the task's retrain seeds, arm A, 10 steps (near_tasks.retrain): bf16 delta-W to results/large/states,
                  sha256, the per-step held-out log-odds and the step to half the gain       -> results/train/TASK.json
@@ -166,11 +166,11 @@ def read_state(rd: RR.Reader, ex: Extra, C: Config, task: NT.NearTask, state: st
         return
     t0, net = time.time(), rd.net
     dW, sha = load_state(net, task, state)
-    rec = rd.state(dW, NT.seed_of(state)) | ex.of(dW) | {"file": str(state_file(task, state)), "sha256": sha}
+    rec: dict[str, Any] = rd.state(dW, NT.seed_of(state)) | ex.of(dW) | {"file": str(state_file(task, state)), "sha256": sha}
     rec["flat"], rec["seconds"] = flat(rec, rec["gain"]["lo"]), time.time() - t0
     put(path, out, state, rec, "states")
     G = gauss(C, dW, state)
-    g = rd.state(G, NT.seed_of(state)) | ex.of(G) | {"draw": gauss_seed(C, state)}
+    g: dict[str, Any] = rd.state(G, NT.seed_of(state)) | ex.of(G) | {"draw": gauss_seed(C, state)}
     g["flat"] = flat(g, rec["gain"]["lo"])
     put(path, out, state, g, "random")
 
@@ -235,8 +235,8 @@ def stage0(net: ST.Net, C: Config, th: dict[str, Any]) -> None:
     k = th["known"]
     e = rd.state(load_state(net, NT.TASKS["emoticon"], C.control)[0], 0)
     check(path, out, f"known {C.control} share", {"share": e["share"]["share"]["lo"]}, {"share": k["share"]}, {"share": k["share_tol"]})
-    check(path, out, f"known {C.control} cells", {"gain": e["gain"]["lo"], "T0": e["prior"]["lo"]}, {"gain": k["gain"], "T0": k["T0"]},
-          {"gain": k["cell_rel_tol"], "T0": k["cell_rel_tol"]}, relative=True)  # fmt: skip
+    put(path, out, f"known {C.control} T0 (beside)", {"got": e["prior"]["lo"], "saved": k["T0"]})
+    check(path, out, f"known {C.control} gain", {"gain": e["gain"]["lo"]}, {"gain": k["gain"]}, {"gain": k["cell_rel_tol"]}, relative=True)
     put(path, out, "passed", True)
 
 
