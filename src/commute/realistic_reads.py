@@ -143,6 +143,17 @@ class CueRead(TargetRead):
         return torch.cat([self.toks, self.tgt[:, None]], 1), LAST, self.toks.shape[1]
 
 
+@dataclass
+class WindowRead(TargetRead):
+    """A TargetRead on which the untrained read is defined: each row's target rides as a last column that neither the
+    model nor Gamma reads (`data.LAST`, ci_len = the window length), so the windows are still fed whole and read at pos
+    (any position, unlike CueRead). P2.74's old trigger tasks (E1's emoticon, E5's ladder, E33's cues: 41-token windows
+    read at the trigger, 20) and E112's case label (E136's layout); fit / fit_tgt may be the task's training windows."""
+
+    def windows(self) -> tuple[Tensor, int | Tensor, int | None]:
+        return torch.cat([self.toks, self.tgt[:, None]], 1), LAST, self.toks.shape[1]
+
+
 def target_read(name: str, toks: Tensor, token: int | Tensor, half: int, ci_len: int | None = None) -> TargetRead:
     """A source experiment's read windows (`data.target_tokens` layout: one id, a (V,) table, NEXT or LAST) as a
     TargetRead; with ci_len the model and Gamma see only the first ci_len tokens (E62's target column is never fed)."""

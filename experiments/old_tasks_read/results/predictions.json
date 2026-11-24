@@ -1,0 +1,83 @@
+{
+  "experiment": "E292 (old_tasks_read)",
+  "cell": "P2.74 run 1",
+  "card": "~/commute-data/cards/E292.md (claimed from ~/commute-data/cards/P2.74-run1.md)",
+  "descriptive": "user via whip-lead 11-23 ~20:00 and ~20:45: read the old near-realistic tasks with every reading and report as a description. No result is read against a bar; only stage 0 stops a job.",
+  "about": "The old near-realistic 67M tasks (inventory reports/analyses/2026-11-23_analysis_p2-74-old-task-inventory.md; registry src/commute/near_tasks.py) read with every current reading through its owner's code: realistic_reads.Reader.state (re-gating share, untrained SVD and rotated shares, neuron reading at k 64 and k matched, pooled steering with its random draws, k_half), E_b over K at neurons (needed_neurons read_item) and at VPD (needed.needed_set), EAP-IG overlap (eapig_overlap Run). Every state with its matched random (a Gaussian at its per-matrix norms, finetune.random_direction, read over the state's own gain). Filed before any run; never edited after.",
+  "settings": {
+    "tasks": ["emoticon", "emoticon_http", "emoticon_eot", "r0_t588_v320", "r0_t352_v310", "r1_t588_v452", "r1_t534_v369", "r1_t534_v369_http", "r2_t359_v816", "r2_t359_v816_http", "r2_t275_v2667", "many_one", "many_many", "lowercase", "case_real"],
+    "tasks_source": "the inventory's nine readable tasks plus the three retrained (whip-lead 11-23 ~20:45 (1)): E1's emoticon and its two E6 twins; E5's six ladder tasks (r1_t534 and r2_t359 with their E38 ` http` twins); E33's many cues, one answer (` of`) and many answers (its null); E53's lowercase; E112's real case label. run.py asserts they equal near_tasks.TASKS",
+    "control": "emoticon_s0",
+    "control_source": "the known item (brief): E38's saved emoticon_s0 (recruitment_test/results/large/states), re-gating share 0.5972 by E28's path (many_cues.json states.emoticon.r: its gain 13.429918158544252 equals amend2_stage0.json's on this file to every printed digit)",
+    "n_select": 512,
+    "strengths": [0, 0.5, 1, 2, 4, 8],
+    "n_random": 8,
+    "k_fixed": 64,
+    "reader_source": "E211's reader settings (experiments/realistic_tasks/results/predictions_run2.json: n_select, strengths, n_random, k_fixed), passed to its run2.reader; a trigger task's fitting set is its training windows (365 for the emoticon, under n_select: all are used)",
+    "random_seed": 292000,
+    "random_seed_source": "the E-number x 1000. Steering's random draws use random_seed + the state's seed (Reader.state); each state's Gaussian uses random_seed + 1 + its index in run.py all_states(), so the two sides of a twin pair never share a draw",
+    "lr": 3e-05,
+    "steps": 10,
+    "batch": 32,
+    "kl_lambda": 1.0,
+    "grad_clip": 1.0,
+    "recipe_source": "every retrain is the original: arm A (src/commute/finetune.py:68-80 ArmAConfig defaults: Adam, lr 3e-5, batch 32, clip 1, kl_lambda 1, all 24 matrices), 10 steps, scored at step 10. Twins and extra seeds: experiments/recruitment_test/run.py:54-60 (E38 Cfg: null_token 3944, lr 3e-5, steps 10) through src/commute/regating.py:81-88 (finetune). <|endoftext|> twin: experiments/recruit_test/run.py:37-38 (FT_LR 3e-5, FT_STEP 10, NULL_STEPS (10, 30): scored at 10 when held-out P >= 0.5, which it was), :375-380, target token 0 (results/recruit.json null_targets.null_a; seed 0 originally, seeds 1 and 2 added here). r0_t588_v320: experiments/regating_tasks/run.py:43, 198-205 (E28: 10 steps, seed 0, adam, 3e-5). Many cues: experiments/many_cues/run.py:43 (STEPS 10, SEED 0, adam, 3e-5, HALF 20), :369-370 (one answer: the mined target ` of`; many answers: many_cues.table of each cue's matched target), windows saved in its results/large/windows.pt. The seed is the arm-A batch sampler's (finetune_arm_a generator). States saved in bf16 (E272's convention)",
+    "kl_rows": 64,
+    "kl_rows_source": "E272's kl_rows (experiments/convergence_panel/results/predictions.json): KL(W0 || W0 + dW) over every position of Pile val rows 0-63 (panel.kl_from_w0); the Pile loss change is panel.target_logp's mean log P on the same rows at W0 minus at W0 + dW (nats per token)"
+  },
+  "thresholds": {
+    "e211_tol": {"share": 0.01, "svd": 0.0001, "rotated": 0.0001, "gain": 0.0001, "neuron_k64": 0.0001, "neuron_kmatched": 0.0001, "steer_pooled": 0.001, "erank": 1e-06, "k_half": 0, "r_half_num": 0.0001},
+    "e211_tol_source": "E211's own reproduce_tol (realistic_tasks/results/predictions_run2.json thresholds), for the same reader on the same file and rows: the reference values are E211's 'got' in run2_ctl.json 'reproduce e53/lowercase_s0', where every reading but the share repeated E136/E143 exactly",
+    "e136_tol": {"trained": 0.01},
+    "e136_tol_source": "E143's r_tol 0.01, the tolerance E211 used to repeat E136's saved re-gating shares by another path (E211 read lowercase_s0 at 0.7538 against E136's 0.7519). The case label's untrained shares are recorded beside, not checked: E136 read them at batch 64, the Reader at 32, and no floor between the two was measured",
+    "known": {"share": 0.5971955526068516, "share_tol": 0.01, "gain": 13.429918158544252, "T0": -5.022894911570091, "cell_rel_tol": 0.001},
+    "known_source": "share: E28's r on this file (experiments/many_cues/results/many_cues.json states.emoticon.r, the same do-nothing cells (L01 - L00) / (T1 - T0) by local_faith.route_cells, compute_ci and masked_logits as masked_reads.route_cells_by); its tolerance E143's r_tol as above (the old E6 seed range 0.5965-0.6115 is wider). gain and T0: recruitment_test/results/amend2_stage0.json refs.emoticon on this file; cell_rel_tol, on the gain only: the measured difference between two GPU reads of the same windows' cells (E6's recruit.json T0 -5.021716, E38's amend2 -5.022895: 2.3e-4 relative) rounded up about 4x; the CPU dry run read the gain 1.6e-4 off. T0 is recorded beside, not checked (amended before any run, 2026-11-23: the CPU dry run read T0 -5.0173, 1.1e-3 off, while its share and gain agreed; T0 adds nothing to the loader check the share and gain do not)"
+  },
+  "stage0": {
+    "rules": [
+      "zero update on the emoticon rows: every numerator of realistic_reads.numerators, the size, the KL and the Pile loss change exactly 0, else stop",
+      "E211's lowercase_s0 control: share, svd, rotated, gain, neuron k64 and k matched, steering, erank, k_half, r_half_num each within e211_tol of E211's read, else stop",
+      "E136's case_real_s0 share within 0.01 of 0.11284478195336352 (stage1.json states.case_label/real_s0.trained), else stop; its svd (saved -0.01918) and rotated (0.04473) recorded beside",
+      "known item emoticon_s0: share within 0.01 of 0.5972, else stop (the loaders are wrong: nothing past stage 0 is read); gain within 0.1% of 13.4299, else stop; T0 (-5.0229) recorded beside"
+    ],
+    "eb_neurons": "needed_neurons stage0 on this run's World: do-nothing (F = M) n_changed 0, dd max exactly 0, E_b over K exactly 1; identity interchange on emoticon_s0's rows 0 argmax changes (its max deviation is the floor). Its own stop",
+    "eb_vpd": "the same at VPD: do-nothing via stand_in.write_change on kstar_vpd.featurize (0 changed, dd max 0, E_b 1); needed.identity_scan on emoticon_s0 with E268's ident_vars: 0 flips. Stop on a miss",
+    "eapig": "eapig_overlap's own stage 0 (inputs' sha256, versions, adapter parity on copy24 and x2 within the native batched-against-single floor, full and empty circuits), then its parity check on each new task set (p274_<source>) for M, and for the control item on the emoticon's set, against the same floor. Stop on a miss"
+  },
+  "expected": {
+    "W0": {
+      "Reader numerators, size, KL, Pile loss change": "exactly 0 (stage 0 checks)",
+      "every share (numerator over gain)": "nan: the gain is 0, under MIN_GAIN 1",
+      "eb_neurons and eb_vpd do-nothing": "n_changed 0, dd max 0, E_b_K 1 (stand_in.explained_share's convention for no write change)",
+      "eb_neurons E_b_K_no_rem and rem_dd_share_K_changed (P1.61, needed_neurons.remainder_columns)": "None at the do-nothing: no variable in K and changed (no dd to share)",
+      "eapig do-nothing (M against M)": "edge IoU 1, the same edges (eapig_overlap stage 0)"
+    },
+    "controls": {
+      "lowercase_s0": "E211's reads, within e211_tol",
+      "case_real_s0 share": "0.1128 within 0.01",
+      "Gaussians": "each Gaussian's own gain under 1 log-odds (E211's and E272's random gain bound, here recorded); its readings over its state's gain near 0 for every share-type reading; its E_b and EAP-IG values are recorded with no filed value"
+    },
+    "known_item_emoticon_s0": {
+      "share": "0.597 within 0.01 (stopped on)",
+      "gain, prior": "gain 13.43 log-odds within 0.1% (stopped on); prior -5.023 recorded beside",
+      "untrained, neuron, steering, k_half, E_b at neurons and VPD, EAP-IG": "no filed value: never read on the emoticon; recorded",
+      "eb_neurons E_b_K against its ceiling": "E_b_K at most 1 - rem_dd_share_K_changed (the pooled per-layer remainder takes one scalar gain, P1.61); E_b_K_no_rem recorded beside. For scale, the FFN-gain control reads 0.999 without remainders (whip-lead, 11-23)"
+    },
+    "recorded_outputs": "per state: size and erank (realistic.update_size, update_spectrum), KL and Pile loss change, prior and gain (lo), every reading of Reader.state and its `flat` over the gain; its Gaussian the same over the state's gain; retrained states: the per-step held-out log-odds and steps_to_half; E_b items: E_b_K, E_b_changed, size_K, n_changed_K, margin, fragile positions, and at neurons E_b_K_no_rem and rem_dd_share_K_changed; EAP-IG items: the reading, edge and node IoU against M's circuit and M's resampling range per task set"
+  },
+  "twin_rule": {
+    "pairs": "every task with twin_of in near_tasks.TASKS against its real task, on their common seeds: emoticon vs emoticon_http and vs emoticon_eot (seeds 0-2), r1_t534_v369 and r2_t359_v816 vs their ` http` twins (seeds 0-2), many_one vs many_many (seed 0)",
+    "rule": "near_tasks.separates, per reading and pair, lists in seed order: d_s = real_s - twin_s; its null n_s = |G(real_s) - G(twin_s)|, the same difference between the two states' matched Gaussians (each read over its own state's gain). 'real above' (or 'real below') when every seed has |d_s| > n_s strictly, all of one sign; 'does not separate' when a seed does not or the signs differ; 'no reading' with no seed, unequal lists or any value not finite (a gain under MIN_GAIN, a reading not run). Descriptive: 'separates' means beyond the matched-random spread on all of a pair's seeds",
+    "edge_cases_run_before_filing": "tests/test_near_tasks.py: three seeds above and below; one seed inside its null; mixed signs; a tie |d| = null and d = 0 with a zero null (not beyond); one seed (applies, n_seeds 1); no seed, unequal lists, a nan and an inf (no reading)",
+    "blind_to": "a reading that differs between the pair only in its spread across seeds; one Gaussian draw per state sets the null, so a null can be small by chance (the seed-to-seed range is in summary.json beside)",
+    "readings": "every key of run.py `flat` (share, untrained svd and rotated, neuron k64 and k matched, steering, in log-odds), eb_neurons E_b_K and E_b_K_no_rem and rem_dd_share_K_changed, eb_vpd E_b_K, eapig edge_iou"
+  },
+  "difficulty": "per state: prior (W0's mean log-odds of the target on the read rows), gain (T1 - T0 in log-odds), steps_to_half (retrained states only: the first step whose held-out gain is at least half the step-10 gain; saved states logged none), Pile loss change, KL and size; E272's wide panel at kl_hi beside (score.py panel()). Step 3 of the cell, $0, reads them",
+  "not_read": {
+    "crosscoder (Minder et al. with the App. E.2 exclusion)": "no reading: control failed. Every planted control fails under the exclusion at fine-tune size on the 67M (P2.70: block-3 head 0.42-0.44 against a bar of 0.5, ladder <= 0.010, real-text plant 0; compare-lead's note 2026-11-23); whip-lead 11-23 ~20:45 (2)",
+    "ADL (as published)": "no reading: control failed. Its filed 67M positive control (lowercase s0) failed through our port (P2.67, reports/analyses/2026-11-23_analysis_p2-67-adl-published.md: 0.0026 against a random maximum of 0.039); E272's adl field is superseded and not cited; whip-lead 11-23 ~20:45 (2)",
+    "head CMAP (experiments/cmap)": "a later stage, not built: it needs each task as a CMAP item (its clean rows, a corrupted-pair rule, the read position) in cmap's item list, the authors' checkout and the venv's cmap dependency group (cluster/cmap.sbatch)",
+    "Delta-Crosscoder, WeightWatch": "not filled when this was filed (P2.72 not on main; P2.73 definition-lead's, no results)",
+    "EAP-IG on lowercase and the case label": "not read: neither has one deciding token to swap (the corruption rule above is for trigger tasks)"
+  }
+}
