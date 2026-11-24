@@ -28,7 +28,10 @@ interleaved it (friction 833). Its input list comes from a short CPU dry run of 
 catches opens before the import): the file lists every data file the run opened under the repo or `~/commute-data`,
 nested `results/large` and the tokenizer included. Under `fleet/cpu-run` (no GPU) also set `INPUT_MANIFEST_CPU=1`,
 which puts everything asked for on "cuda" on the CPU, so the model load passes and later reads are listed; give the
-job memory for the model on CPU (friction 906). Stage each listed file; a brief walk of the code missed some
+job memory for the model on CPU (friction 906). Add `INPUT_MANIFEST_ONLY=1` so the dry run writes nothing under
+`experiments/` (a CPU run put a bogus stage JSON in `results/`, friction 1063); a script that checks
+`jobs.manifest_only()` skips its compute after each item's loads and lists every item's inputs. The list is written as
+it goes, so a dry run cut by a timeout still leaves what it saw (friction 1017, 1038). Stage each listed file; a brief walk of the code missed some
 (friction 832, 842).
 
 Refuse a scored run if `experiments/<name>/results/predictions.json` is missing. Say so and stop. A scored run of

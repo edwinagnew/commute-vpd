@@ -173,14 +173,48 @@ _INPUTS: set[str] = set()  # absolute paths opened for reading, while record_inp
 _RECORDING = False
 
 
+def _listed(p: str) -> str:
+    """A manifest line: repo paths relative to the repo, others absolute."""
+    repo = str(EXPERIMENTS.parent)
+    return os.path.relpath(p, repo) if p.startswith(repo + os.sep) else p
+
+
+def _add_input(p: str) -> None:
+    """Record p, and append it to $INPUT_MANIFEST at once, so a run killed by a timeout leaves the list so far rather
+    than none; the exit (`_write_inputs`) rewrites it sorted (friction 1038)."""
+    if p in _INPUTS:
+        return
+    _INPUTS.add(p)
+    if (out := os.environ.get("INPUT_MANIFEST")) and os.path.isfile(p):
+        with open(out, "a") as f:  # a write: the audit hook passes it by
+            f.write(f"{_listed(p)}\n")
+
+
 def _write_inputs() -> None:
     """Write the sorted input list to $INPUT_MANIFEST (see `record_inputs`); called at exit and by `hard_exit`."""
     out = os.environ.get("INPUT_MANIFEST")
     if not (_RECORDING and out):
         return
-    repo = str(EXPERIMENTS.parent)
-    files = sorted(os.path.relpath(p, repo) if p.startswith(repo + os.sep) else p for p in _INPUTS if os.path.isfile(p))
-    Path(out).write_text("".join(f"{p}\n" for p in files))
+    Path(out).write_text("".join(f"{p}\n" for p in sorted({_listed(p) for p in _INPUTS if os.path.isfile(p)})))
+
+
+def manifest_only() -> bool:
+    """Whether this is an INPUT_MANIFEST_ONLY=1 dry run (see `record_inputs`). A script checks it after an item's (or a
+    stage's) loads and skips that item's compute, so one dry run lists every item's inputs, not only the config loads,
+    in minutes (friction 1017: a trace script was written by hand to get the per-item inputs of 12 experiments)."""
+    return _RECORDING and os.environ.get("INPUT_MANIFEST_ONLY") == "1"
+
+
+def note_inputs(*paths: str | os.PathLike[str]) -> None:
+    """Add to the manifest files a run reads without Python's open (safetensors' mmap, a native reader), or will read in
+    an item whose loads `manifest_only` skips; a directory adds every file under it. Does nothing when no manifest is
+    being recorded."""
+    if not _RECORDING:
+        return
+    for path in paths:
+        p = os.path.abspath(os.fspath(path))
+        for f in [os.path.join(d, n) for d, _, ns in os.walk(p) for n in ns] if os.path.isdir(p) else [p]:
+            _add_input(f)
 
 
 def _cuda_on_cpu() -> None:
@@ -226,7 +260,14 @@ def record_inputs() -> None:
     With INPUT_MANIFEST_CPU=1 as well, the dry run also works with no GPU (fleet/cpu-run): `_cuda_on_cpu` puts every
     tensor and module asked for on "cuda" on the CPU, so a script that hard-codes "cuda" passes its model load and
     goes on to open its later inputs (E217, E218 dry runs stopped at the load, friction 906). Its numbers mean nothing;
-    only the manifest counts. Give the job memory for the model in its CPU dtype."""
+    only the manifest counts. Give the job memory for the model in its CPU dtype.
+
+    The list is appended to as each file is first opened, so a dry run killed by a timeout leaves the inputs so far
+    (friction 1038). With INPUT_MANIFEST_ONLY=1 as well, the dry run is for the manifest only: every open for writing
+    under the repo's experiments/ (results/, figures/, a symlinked results/large) raises PermissionError naming the
+    path, so no stage JSON from a CPU run lands beside real results (friction 1063: E291's bogus stage0_N.json), and
+    `manifest_only()` is True for the script to skip compute after its loads. A script that does not check it stops at
+    its first write; a later stage's inputs then need a dry run of that stage (`--stage NAME`)."""
     global _RECORDING
     if _RECORDING or not os.environ.get("INPUT_MANIFEST"):
         return
@@ -235,20 +276,26 @@ def record_inputs() -> None:
     data = os.path.expanduser("~/commute-data")
     roots = tuple({str(EXPERIMENTS.parent) + os.sep, data + os.sep, os.path.realpath(data) + os.sep})
     writes = os.O_WRONLY | os.O_RDWR | os.O_CREAT | os.O_APPEND | os.O_TRUNC
+    only = os.environ.get("INPUT_MANIFEST_ONLY") == "1"
+    kept_out = str(EXPERIMENTS) + os.sep  # no writes here in a manifest-only run (friction 1063)
+    manifest = os.path.abspath(os.environ["INPUT_MANIFEST"])
 
     def hook(event: str, args: tuple[Any, ...]) -> None:
         if event != "open" or not isinstance(args[0], (str, bytes, os.PathLike)):
             return
         mode, flags = args[1], args[2]
-        if (isinstance(mode, str) and any(c in mode for c in "wax+")) or (isinstance(flags, int) and flags & writes):
-            return
         p = os.path.abspath(os.fsdecode(args[0]))
+        if (isinstance(mode, str) and any(c in mode for c in "wax+")) or (isinstance(flags, int) and flags & writes):
+            if only and p.startswith(kept_out) and p != manifest and not p.endswith(".pyc"):
+                raise PermissionError(f"INPUT_MANIFEST_ONLY dry run: no write under experiments/, refused {p}")
+            return
         if p.startswith(roots) and not p.endswith((".py", ".pyc")):  # code is synced with the tree
-            _INPUTS.add(p)
+            _add_input(p)
 
     import atexit
 
     _RECORDING = True
+    Path(manifest).write_text("")  # this run's list only, appended to as it goes
     sys.addaudithook(hook)
     atexit.register(_write_inputs)
 
