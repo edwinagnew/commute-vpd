@@ -1,9 +1,11 @@
 # P2.68 step 1: method spec for whole-group head CMAP (after Prakash et al. 2024) on the 67M
 
 Cell P2.68 (regating-lead, 3 runs, due 2026-11-25; cluster `debug` at $0, pods capped at $20). Step 1: spec only, nothing
-coded or run. Revision 2 answered the GPT plan review, `reports/reviews/2026-11-23_review_p2-68-cmap-spec-gpt.md`,
-with the lead's seven decisions. Revision 3 (2026-11-23) answers its re-check 1, recorded in the same file. The changes
-are listed in Appendix H. Redteam-lead's review still comes before any run.
+coded or run. Revision 4 (2026-11-23) applies redteam-lead's verdict, "OK after fixes"
+(`~/commute-data/agents/regating-lead/note-2026-11-23-redteam-p268-cmap-verdict.md`; pointer in
+`reports/reviews/2026-11-23_review_p2-68-cmap-spec-redteam.md`), with the lead's decision on its major 2. Revisions 2 and
+3 answered the GPT plan review and its re-checks (`reports/reviews/2026-11-23_review_p2-68-cmap-spec-gpt.md`). The
+changes are listed in Appendix H.
 
 Sources, read in full: the paper (Prakash, Rott Shaham, Haklay, Belinkov, Bau, ICLR 2024, arXiv 2402.14811, all 26
 pages) and the released code, https://github.com/Nix07/finetuning at `6d6c0980bf073d305b915669c33533576a70aa77`
@@ -12,14 +14,21 @@ Abbreviations: `pp` = `experiment_1/pp_utils.py`, `path` = `experiment_1/path_pa
 `experiment_3/cmap_utils.py`, `nb` = `experiment_3/cmap.ipynb`, `data` = `data/data_utils.py`. Quotes and code
 locations are in Appendix A.
 
+**Label for the paper.** Whole-group head CMAP (cross-model activation patching after Prakash et al., 2024). On the same
+input, the base model runs with the fine-tuned model's attention-head outputs, taken before the output weights, for
+every head of a circuit. The circuit is found on the fine-tuned model by the paper's path patching and minimality
+pruning. Groups are patched whole, without the paper's DCM step, and the result is reported as accuracy and as a
+log-odds share of the gain. The neuron reading is named separately: "CMAP at neurons (our extension)" (§5, Appendix I).
+Neither is called "Prakash et al.'s CMAP" without its qualifier.
+
 ## 1. In plain words
 
 Cross-model activation patching runs the base model on a task input but gives chosen attention heads the outputs the
-fine-tuned model computes on that same input, and counts how much of the fine-tuned model's accuracy the base model then
+fine-tuned model computes on that same input, and counts how much of the fine-tuned model's gain the base model then
 reaches. We will find each fine-tune's head circuit with the paper's path patching and pruning, then give the unchanged
-67M model those heads' fine-tuned outputs, group by group, on the nine built pairs and the fifteen key-task fine-tunes.
-The result says how much of each gain the fine-tuned outputs of a few heads carry into the base model. On its own it
-does not show that the base model uses those heads: the paper showed that separately (§4-5), and we do not repeat it.
+67M model those heads' fine-tuned outputs, on the nine built pairs and the fifteen key-task fine-tunes. The result says
+how much of each gain the fine-tuned outputs of a few heads carry into the base model. On its own it does not show that
+the base model uses those heads: the paper showed that separately (§4-5), and we do not repeat it.
 
 ## 2. The method, as the paper and code fix it
 
@@ -42,120 +51,121 @@ Paper and code disagree in eight places (Appendix A.2). Among them: the head cou
 shared by the sender and receiver hooks; the pruning helpers' skipped pairs and rounding; 100 prune prompts against the
 paper's 500; and the notebook's Goat cells, which cannot run.
 
-## 3. Our run: whole-group head CMAP
+## 3. Our run
 
 - **Models.** The base is W0, the released 4-block 67M with 6 heads of 128 per block. The fine-tune is W0 + c·δW, held as
   a second plain copy of the weights.
-- **Prompts.** Windows are cut to `half + 1` tokens. This is exact for a causal model, and it puts the read at the last
-  position. The label is read from the uncut window, by the format's rule (table, `NEXT` or `LAST`).
-- **Noise (discovery only).** Another window of the same task (a new context) supplies the noise. In kv tasks the key at
-  `half` is also replaced by a seeded non-key token, so the noise prompt has no trained answer. The marker sits before
-  the key, so a head at the marker sees only the changed context. In E62 the second key sits at `half − 1`, before the
-  marker at the read, and it is replaced by a seeded token outside the key pool (Appendix B.2).
-- **Groups.** A: heads at the read position into the logit. B: heads at the read position into A's queries. C: heads
-  at the position before the read into B's values. That position is the marker in kv tasks and the preceding key in
-  E62. E53 has no such site and runs A and B only. D is dropped.
-- **Edit sites.** The scored groups call the authors' `apply_pp` unchanged. Its one `rel_pos` serves both hooks, so C
-  edits B's values at the position before the read, which is the site V-composition reads; re-check 1 agrees (Appendix
-  B.1). The other site, B's values at the read position, appears only as a negative control (§4.4). A group whose
-  receiver group is empty is skipped and recorded, never run as direct-to-logit.
-- **Selection.** The pool is every head with a negative mean score. It is then pruned by the paper-first minimality rule
-  written out in Appendix C. Faithfulness is read against 10 random circuits matched per position.
-- **CMAP.** Each group whole, then the whole circuit, then the 10 matched random sets, from the fine-tune into W0, on
-  the scoring rows.
-- **Read.** Accuracy, as the paper does. Beside it, the share (acc_patched − acc_W0)/(acc_ft − acc_W0) and the
-  project's log-odds share, neither clipped: zero, negative and over-1 values are reported as read. A share is reported
-  only where the fine-tune clears the gate of §4.6, the same gate in every section.
-- **Formats and rows.** kv tasks and E62 run A, B and C; E53 runs A and B (Appendix B.3). Discovery and pruning use
-  train windows and scoring uses held-out windows. That includes E62's 800 saved train rows and E53's original scorer's
-  train windows. The manifest of states, scales, row seeds and the split is frozen in Appendix E.
+- **Rows.** The scoring rows of an item are the definition's rows for that item, D: the windows the definition's reading
+  of R reads, at the same read position, with the same target (Appendix E). Discovery and pruning use the task's train
+  windows with every D row removed. Prompts are cut to `half + 1` tokens, which is exact for a causal model and puts the
+  read at the last position. Labels are read from the uncut window.
+- **Noise (discovery only).** Another window of the same task supplies a new context. The task-carrying token is
+  replaced by a seeded *other key of the task's pool*, the same kind of token, as the paper's random letter: the key at
+  `half` in kv tasks and the second A at `half − 1` in E62. Each fine-tune records the mean probability of the clean
+  label under the noise prompt beside W0's (Appendix D).
+- **Groups** (Appendix B):
+  - A: heads at the read into the logit.
+  - B: heads at the read into A's queries.
+  - C: heads at the position before the read into B's values. That position is the marker or context site in kv tasks
+    and the preceding key in E62, the query label's analogue. E53 has no such site and runs A and B only. D is dropped.
+  - The scored groups call the authors' `apply_pp` unchanged. Its shared `rel_pos` edits B's values at C's position,
+    the site V-composition reads; both reviewers agree.
+- **Selection.** A group's pool is every head whose mean score is below 0 by 2 standard errors over the discovery
+  prompts. A group whose receiver group is empty is skipped and recorded. The pool is pruned by the paper-first
+  minimality rule (Appendix C). Every pool and group size is reported.
+- **The compared scalar.** The whole-circuit CMAP log-odds share, computed as `neuron_r.shares` computes a share: the
+  mean numerator over the mean gain G on D, read at the read position with the definition's target. The numerator is
+  log-odds with the circuit swapped minus W0's; G is the fine-tune's log-odds minus W0's. It is compared with the
+  definition within a format only, because the circuit's groups differ by format.
+- **The common column.** The A+B share, the same quantity with only groups A and B swapped, is reported for every item
+  so that all formats share one column.
+- **Beside them.** Per group: the paper's number, the patched accuracy on D against W0's and the fine-tune's, with the
+  accuracy share; the 10 matched random sets; faithfulness. No share is clipped. A share is reported only where the
+  item clears its task's gate (§4.6).
 
 ## 4. Controls, first and alone (stage 0; detail in Appendix D)
 
-Every floor and tolerance is measured in this job; none is guessed.
+Every floor and tolerance is measured in this job, on the path it guards; none is guessed. Each check is judged in its
+own unit: logits by a logit tolerance, accuracy by exact paired correct counts on the same rows, and log-odds by a
+log-odds tolerance measured on the same hook path.
 
-Every "equal" check has three tolerances, one per unit. Logits use the logit tolerance. Accuracy compares exact paired
-correct counts on the same rows. Log-odds use a log-odds tolerance measured on the same hook.
-
-1. **Hook floor.** Give W0 its own cached head outputs through the `cmap_out` einsum path, against a plain W0 forward.
-   The largest |Δlogit| is the logit tolerance and the largest |Δlog-odds| the log-odds tolerance. The paired correct
-   counts must be identical.
+1. **Hook floor, per format** (kv, NEXT, LAST). Give W0 its own cached head outputs through the `cmap_out` einsum path,
+   against a plain W0 forward. The largest |Δlogit| and |Δ log-odds| are that format's tolerances for CMAP checks. The
+   paired correct counts must be identical.
 2. **Do-nothing** (the control state times 0): the counts of patched (head, position) sites must be non-zero, and every
    unit must equal W0's within its tolerance.
-3. **Planted head, through the whole pipeline.** One block-3 head's value rows are trained by the pinned recipe of
-   Appendix D until the gain clears the gate. Discovery and pruning must return that head in A. CMAP of A must give
-   share 1. Two checks must give a numerator of 0: the wrong head (A without it, and a random other head) and the wrong
-   position (the same head swapped at the position before the read).
-4. **Two-layer path, on W0, no training.** The sender cache equals the clean cache except at one block-0 head at the
-   position before the read, where a fixed non-zero δ is added. After the authors' first pass, the receiver's `v_proj`
-   output must change at that position and stay at a matched no-op floor at the read position. The authors' receiver
-   edit at that position must then change the receiver's read-position output. The same edit at the read position must
-   leave every unit unchanged. Appendix D gives the details.
-5. **Output-weights blind spot.** The same block-3 head with only its `o_proj` columns trained clears the gate in the
-   scored unit, or the control fails. The CMAP numerator must then be 0.
-6. **Gate.** The gate is measured on the 15 random updates (E237's generated `random_<state>` items) on their own
-   scoring rows. N is the largest |paired correct-count change| and L the largest |mean log-odds change|. A fine-tune
-   (or a plant) clears the gate when its correct-count gain exceeds N and its log-odds gain exceeds L. If N is 0, the
-   first resolvable gain is one more correct prompt.
+3. **Planted head, through the whole pipeline.** One block-3 head's value rows are trained by the pinned recipe until the
+   gain clears the gate. Discovery and pruning must return that head in A, and CMAP of A must give share 1. Two checks
+   must give a numerator of 0: the wrong head and the wrong position. This tests A only.
+4. **Two-layer path, on W0, no training.** It is a mechanics check of the hooks. A fixed, non-zero δ is added at one
+   block-0 head at the marker, and the result is traced through the receiver's `v_proj` output and both edit sites. Each
+   step is judged against the matched no-op floor of the same two passes run with δ = 0.
+5. **Output-weights blind spot.** The same head with only its `o_proj` columns trained must clear the gate in the scored
+   unit, and then give a CMAP numerator of 0.
+6. **Gate, per task.** For each task and each scale it is read at, 15 random updates are drawn at that task's states'
+   per-matrix norms times the scale, each read on the task's D. N is the largest |paired correct-count change| and L the
+   largest |mean log-odds change|. An item clears the gate when its correct-count gain exceeds N (at least 1 if N = 0)
+   and its log-odds gain G exceeds both L and `neuron_r`'s gain floor of 1 log-odds.
+
+B and C discovery has only the mechanics check of §4.4: no planted head checks that path patching *finds* a B or C head.
 
 ## 5. Departures
 
-From the paper and code:
-1. The model and task differ. Ours is a 4-block, 24-head model on learned key-to-value maps, not Llama-7B tracking
-   entities in context. Groups are renamed and D is dropped.
-2. Head pools come from negative scores, not hand-set counts.
-3. There is no DCM, so groups are patched whole ("whole-group head CMAP").
-4. The noise key is a non-key token, and windows are cut at the read.
-5. Discovery, pruning and scoring rows are disjoint. In the paper's code the CMAP rows include the discovery rows.
-6. The minimality rule is written paper-first, not as the code's helpers (Appendix C). The means are ours.
-7. E53 runs A and B only: its windows have no site before the read that carries the task. E62's C is read at the
-   preceding key, the site that maps onto the paper's query label.
-8. A normalised share and a log-odds share are reported beside accuracy.
+From the paper and its code (who set each is in brackets):
+1. **Setting** (ours). The paper reads arithmetic fine-tunes on a task they were not trained on, where the base already
+   scores 0.66 with a working circuit. Ours are trained on the scored task, and W0 may be near 0. Where it is, the
+   paper's "enhances an existing mechanism" reading does not carry over; the number is still CMAP.
+2. **Model and task** (ours). A 4-block, 24-head model on learned key-to-value maps, not Llama-7B. The groups are
+   renamed and D is dropped.
+3. **The fine-tune is W0 + c·δW** (ours), a rescaled update, not a trained checkpoint.
+4. **Heads only, base W_O** (theirs, followed). The fine-tune's change to `o_proj`, and every MLP change after the
+   patched sites, is outside the swap by construction. This caps every share.
+5. **No DCM** (ours). Groups are patched whole, and the paper's per-group subset numbers are not claimed as reproduced.
+6. **Head pools** (ours): 2 standard errors below 0, not hand-set counts.
+7. **Rows** (ours). Discovery uses 150-300 rows, pruning 151-500, and scoring D, against the paper's 300, 500 and 500.
+   The rows are disjoint, whereas the paper's CMAP rows include its discovery rows. Where D is small, one prompt moves
+   accuracy by 1/|D|.
+8. **Exact counts** (ours), not the authors' rounding to 2 decimals.
+9. **Noise token** (ours). It is another pool key; the paper uses a random capital letter, the same kind of token.
+   Windows are cut at the read.
+10. **p_org normalisation** (theirs; the consequence is ours). Where the fine-tune's probability of the target is small,
+    likely on E53's word forms, (p_patch − p_org)/p_org is dominated by those rows.
+11. **Minimality** (ours). It is written paper-first, not as the code's helpers (Appendix C), with our own means.
+12. **E53 runs A and B only** (ours). E62's C is at the preceding key, and kv's C at the marker is a context site.
+13. **Shares** (ours). The log-odds share is the compared scalar; accuracy and its share sit beside it.
 
-**Neuron share and CMAP.** The whole-width r_n (`src/commute/neuron_r.py:batch_cells`, cell L01) runs W0 with every
-block's MLP firing (`down_proj`'s input) taken from the fine-tuned model's run on the same window, through W0's
-`down_proj`. It is a same-input swap from fine-tune to base before the output weights, as `cmap_out` does for heads. So
-the label "CMAP at neurons (all MLP neurons, all positions; log-odds share)" is accurate as an analogy at the level of
-the operation. It departs from the paper in four ways: MLPs are never patched there, there is no circuit, every position
-is swapped, and the unit is the log-odds share. The top-neuron share (`src/commute/masked_reads.py:topk_logits`) is not
-an activation swap, so it must not carry the label. The locator's "sufficiency" (`src/commute/locator.py:reads`, line
-279) treats heads and MLPs differently. For a head it swaps `o_proj`'s input, which is CMAP's unit. For an MLP it swaps
-`down_proj`'s *output*, so the fine-tuned output weights come along. That is not CMAP's unit and not r_n's. It is read
-one part at a time, at every position, with no circuit, in log-odds and the label gap.
+**Neuron readings** (Appendix I). r_n may be called "CMAP at neurons (our extension: every MLP neuron at every
+position, the fine-tune's firing through the base's output weights; log-odds share)". r_half is "CMAP of MLP inputs
+(our extension)", the analogue of the authors' `cmap_in`. k_half is a count built from partial r_half swaps. The
+top-neuron share and the locator's whole-MLP sufficiency are not activation swaps at CMAP's site, so neither carries
+the label.
 
 ## 6. The authors' code
 
-The authors' code targets HF `LlamaForCausalLM` through baukit. It runs from a pinned, read-only checkout at the
-commit, and it is not copied into the repo. An adapter, about 40 lines, exposes our blocks under their module names with
-a `config`, a `.logits` output and a truthful `state_dict`. We call their `apply_pp`, `patching_sender_heads`,
-`patching_receiver_heads`, `get_receiver_layers`, `compute_topk_components` and `cmap_out`, all unchanged. Our code
-adds the prompt builders, the minimality and faithfulness loop, and the controls. Their `mean_ablate` hard-codes
-entity-tracking positions, so the loop is ours. Setup is in Appendix F.
+Their functions are imported unchanged from a hashed, read-only checkout at the commit, and none is copied into the
+repo. An adapter, about 40 lines, exposes our blocks under their names. We call `apply_pp`, `patching_sender_heads`,
+`patching_receiver_heads`, `get_receiver_layers`, `compute_topk_components` and `cmap_out`. Our code adds the prompt
+builders, the minimality and faithfulness loop (their `mean_ablate` hard-codes entity-tracking positions), the
+controls and the guards: one window length per batch, eval mode asserted. Setup is in Appendix F.
 
 ## 7. Expected values, price and stop rule
 
 | number | W0 / do-nothing | planted head (A) | wrong head / position | random update | fine-tune |
 |---|---|---|---|---|---|
-| accuracy, patched | = W0's | = fine-tune's | = W0's | within the floor of W0's | not predicted |
-| share, accuracy | undefined | 1 | 0 | undefined (under floor) | not predicted |
-| share, log-odds | numerator 0 | 1 | 0 | undefined | not predicted |
+| accuracy, patched | = W0's | = fine-tune's | = W0's | under the gate | not predicted |
+| share, log-odds (compared) | numerator 0, share undefined | 1 | 0 | undefined (under gate) | not predicted |
+| share, accuracy | undefined | 1 | 0 | undefined | not predicted |
 | faithfulness | W0's own circuit | ≈ 1 | — | not read | paper own-circuit 0.99-1.0, cross-model 0.88-0.97 |
 
 Each "=", 1 and 0 holds within the unit's tolerance of §4. Stage 0 times each stage on one key item and on the planted
-items, recording group sizes. Each later item is priced as stage time × items, with pruning scaled by the item's
-measured g² + 2g. The stop rule, and the hard spend cutoff of $20 in total checked before any paid shard launches, are
-in Appendix G.
-
-## Open questions for redteam-lead
-
-1. Is a non-key noise token the right analogue for answers that are learned, not read from context?
-2. Is the kv tasks' C group worth running when its noise is only the context? E62's C has a key to change.
+items. The stop rule and the spend cutoff are in Appendix G: $20 in total, checked before any paid shard launches, with
+pods terminated at $16.
 
 ## Not run
 
-Nothing was coded or run in this step. Dropped: the port check on LLaMA-7B in the paper's own setting (cost and setup
-risk; it would pin checkpoint, tokenizer, prompts and the released masks and compare raw counts). Not read: the DCM
-training code beyond its loss (App. H) and the attention-knockout notebook (App. A).
+Nothing was coded or run in this step. Dropped: the port check on LLaMA-7B (both reviewers: it cannot test our
+adapter, and its target number sits in Markdown from a partly run cell). No planted head tests B or C discovery. Not
+read: the DCM training code beyond its loss (App. H) and the attention-knockout notebook (App. A).
 
 ---
 
@@ -174,7 +184,7 @@ training code beyond its loss (App. H) and the attention-knockout notebook (App.
   scores". Code: `path:apply_pp:124-140`.
 - **Patching.** The freeze is at `pp:patching_sender_heads:350-361,379-382`, with the model's own W_O at `:390-395`. The
   receiver edit is at `pp:patching_receiver_heads:448-461`, and the second pass at `path:apply_pp:105-122` is skipped
-  when there are no receiver layers (`:106`).
+  when there are no receiver layers (`:106`). `apply_pp` never calls `model.eval()`.
 - **Groups** (`path:pp_main`): A at `:213-229`; B at `:232-251` (q, rel 0); C at `:254-273` (v, rel 2); D at
   `:276-295` (v, rel −1). Selection is `pp:compute_topk_components:33-59`, with `largest=False`.
 - **Counts** (§4.2, p. 5): "does not provide a clear threshold ... a total of 90 heads ... (50,10,25,5 heads in
@@ -201,15 +211,16 @@ training code beyond its loss (App. H) and the attention-knockout notebook (App.
    to 20, 5, 10, 5, and `minimality.py:49-52` to 58, 10, 25, 5 (Goat 101, 30, 50, 40). The saved minimal circuits match
    Tables A2, A3 and A7.
 2. **What is swapped.** The paper says "output of heads". The code swaps the pre-W_O vector and applies the base W_O,
-   so a fine-tune of a head's W_O alone is invisible.
+   so a fine-tune of a head's W_O alone is invisible (§5.4).
 3. **One offset for sender and receiver.** `apply_pp` passes one `rel_pos` to both hooks (`path:apply_pp:84-122`). The
    paper names the path without naming the receiver's edit position. For every group the paper runs, the shared offset
-   edits the site the composition reads. That is the receiver's values at the sender's position, or its query at its own
-   position for A from B. The reviewer's re-check 1 agrees. A discrepancy of form only; the run uses it unchanged.
+   edits the site the composition reads. Pass 1 freezes every head from `last − rel_pos` onward, so the read's residual
+   stays clean, and B's values at the sender's position are the only input a sender there can change. Both reviewers
+   agree. A discrepancy of form only; the run uses it unchanged.
 4. **Pruning helpers** (`pp:compute_pair_drop_values:940-1000`, `pp:get_head_significance_score:1003-1067`).
    - The skip test `layer_1 is not layer_2 and head_1 is not head_2` compares by identity, so a distinct pair sharing a
      head index is never removed together.
-   - Entries with zero accuracy are dropped (`:996`).
+   - Entries with zero accuracy are dropped (`:996`), so the pair that collapses the circuit most is never ranked into K.
    - Only positive drops are ranked (`:1044`).
    - K is capped at `ceil(0.3 × |G|)` (`:1040`).
    - Accuracy is rounded to 2 decimals before the division (`pp:eval_circuit_performance:775`).
@@ -230,7 +241,7 @@ training code beyond its loss (App. H) and the attention-knockout notebook (App.
 
 ### B.1 Edit sites and the empty-receiver rule
 
-The scored groups call `path:apply_pp` unchanged, with the authors' `rel_pos` (windows are cut, so the read is the last
+The scored groups call `path:apply_pp` unchanged, with the authors' `rel_pos` (prompts are cut, so the read is the last
 position).
 
 | group | `rel_pos` | sender at | receiver input edited | edited at |
@@ -239,30 +250,36 @@ position).
 | B | 0 | read | A's q | read |
 | C | 1 | position before the read | B's v | position before the read |
 
-The C row is the V-composition site: B, at the read position, reads its values there. The other site (B's v at the read
-position) is never scored; it is only the null arm of §4.4, run through the authors' receiver hook with its `rel_pos`
-set to 0. If A (or B) is empty after its pool is formed, B (or C) is skipped and recorded as "no receivers". The authors'
-code would silently score it as direct-to-logit (`path:apply_pp:106`).
+The other site (B's v at the read position) is never scored; it is only the null arm of §4.4, run through the authors'
+receiver hook with its `rel_pos` set to 0. If A (or B) is empty after its pool is formed, B (or C) is skipped and
+recorded as "no receivers". The authors' code would silently score it as direct-to-logit (`path:apply_pp:106`).
+
+**Pool rule.** For each sender (block, head), its per-prompt scores s_i over the n discovery prompts give a mean m and a
+standard error se = sd / √n. The sender enters the pool if m < −2·se. Every pool's size is reported, with the size the
+plain m < 0 rule would have given.
 
 ### B.2 What each group's noise changes
 
-- **kv.** The key at the read is a non-key token, and the context is another window's. The marker is the same token in
-  every window and comes before the key. A head at the marker therefore differs between clean and noise only through the
-  context. C measures heads whose marker output depends on the context and matters to B. It may come out empty, which
-  is then a result.
+- **kv.** The key at the read becomes a seeded other key of the task's pool, and the context is another window's. The
+  marker is the same token in every window and comes before the key. A head at the marker therefore differs between
+  clean and noise only through the context. C is a context site, not a query-label analogue, and may come out empty,
+  which is then a result.
 - **E62** (`src/commute/copying.py:cue_windows:249-269`). The window reads "… A B … A M", with the second A at `half − 1`
-  and the marker M at the read. In the noise prompt the second A is a seeded token outside the key pool, so C's site
+  and the marker M at the read. In the noise prompt the second A becomes a seeded other key of the pool, so C's site
   changes directly. It is the analogue of the paper's query label.
 - **E53.** The window is Pile text with the scored word form next. No position before the read carries the task, so
-  there is no C.
+  there is no C. The noise is another window of the task.
+- **Noise check.** For each fine-tune, the mean probability of the clean label under the noise prompt is recorded
+  beside W0's. A value well above W0's means the answer can be read off the noise context, and that item's patching
+  scores are flagged as weak.
 
 ### B.3 Formats
 
 | format | tasks | clean label | noise | groups |
 |---|---|---|---|---|
-| kv | e46, e54, c3, e58 | `table[toks[:, half]]` from the uncut window | other window, key at `half` → seeded non-key | A, B, C (marker) |
+| kv | e46, e54, c3, e58 | `table[toks[:, half]]` from the uncut window | other window, key at `half` → seeded other pool key | A, B, C (marker, context site) |
 | NEXT | e53 | `toks[:, half + 1]`, uncut window | other window of the task | A, B |
-| LAST | e62 | the target column, never fed | other window, second A at `half − 1` → seeded non-pool token | A, B, C (preceding key) |
+| LAST | e62 | the target column, never fed | other window, second A at `half − 1` → seeded other pool key | A, B, C (preceding key) |
 
 ## C. The paper-first minimality rule
 
@@ -272,7 +289,7 @@ code would silently score it as direct-to-logit (`path:apply_pp:106`).
    and not rounded. Every head output outside S, at every position, is replaced by its per-position mean over the noise
    prompts built from the prune rows. MLPs run.
 3. **Order.** Groups are scored one at a time, each against the whole unpruned circuit Cir, as `minimality.py:131-188`.
-4. **Ranking.** For v in group G and every distinct node v_j in G \ {v} (no pair skipped):
+4. **Ranking.** For v in group G and every distinct node v_j in G \ {v} (no pair skipped, zero accuracies kept):
    drop_j = F(Cir \ {v_j}) − F(Cir \ {v, v_j}). Rank by drop_j, descending, with ties broken by block then head.
 5. **K.** K is the first m ranked nodes that have drop_j > 0, with m = ceil(0.3 × |G \ {v}|). If |G| = 1 or no drop is
    positive, K = ∅. The code's cap is ceil(0.3 × |G|), stated as a departure.
@@ -280,18 +297,24 @@ code would silently score it as direct-to-logit (`path:apply_pp:106`).
    or if den = 0 and num > 0. Drop v if den = 0 and num = 0, or if num ≤ 0.
 7. **Empty pools and groups.** An empty pool gives an empty group, and its dependants are skipped (B.1). A group that
    pruning empties is kept empty and reported.
-8. **Reference.** Ten random circuits with the same number of nodes per position, by a seeded draw, give F(random) and
-   F(random)/F(M) beside F(Cir)/F(M). The same 10 sets are swapped in CMAP.
+8. **Faithfulness and reference.**
+   - F(Cir), F(M) and the reference are read on the scoring rows D, not on the prune rows, with the same means.
+   - The reference is 10 random circuits with the same number of nodes per position, by a seeded draw. It gives
+     F(random)/F(M) beside F(Cir)/F(M), and the same 10 sets are swapped in CMAP.
+   - Each random set's overlap with the circuit (shared nodes over circuit size) is reported. With 24 heads, a circuit
+     holding most heads at the read leaves its random sets nearly identical to it.
 
 ## D. Controls in detail
 
-- **Tolerances.** The hook floor run patches every head at the read position and the position before it from W0's own
-  cache through `cmap_out`'s einsum, against a plain W0 forward, on the scoring rows of e58/copy. It gives the logit
-  tolerance (largest |Δlogit|) and the log-odds tolerance (largest |Δ log-odds| at the read). The paired correct counts
-  must be identical. Every equality below is judged in its own unit: logits by the logit tolerance, accuracy by exact
-  paired counts, log-odds by the log-odds tolerance.
+- **Tolerances, per format.** The hook floor run patches every head at the read position and the position before it
+  from W0's own cache through `cmap_out`'s einsum, against a plain W0 forward. It runs on D of one task per format:
+  kv on e58/copy, NEXT on e53/lowercase, LAST on e62/copy. It gives that format's logit tolerance (largest |Δlogit|) and
+  log-odds tolerance (largest |Δ log-odds| at the read). The paired correct counts must be identical. Each CMAP check
+  uses its own format's tolerances.
 - **Non-empty sites.** Every CMAP call logs the number of (head, position) entries it overwrote. Zero stops the job,
   except where the recorded group is empty.
+- **Guards.** Every batch has one window length (asserted, because `cmap_out` counts positions from the padded length,
+  `:344`). Both model copies are asserted in eval mode before every pass; `apply_pp` never calls `model.eval()`.
 - **Planted head, pinned recipe.** It follows E58's fine-tune as refit_96key filed it
   (`experiments/refit_96key/results/predictions.json` `.settings.recipe`; `keydep.finetune`, `src/commute/keydep.py:100-104`).
   - `finetune.finetune_arm_a` with `ArmAConfig(o_token = e58/copy's table, lr = anchors.FT_LR = 3e-5, batch 32,
@@ -299,7 +322,7 @@ code would silently score it as direct-to-logit (`path:apply_pp:106`).
   - It runs on e58/copy's train windows, fp32, tf32 off.
   - Two additions are ours: `matrices = ("h.3.attn.v_proj",)`, and a gradient mask zeroing the rows outside h*'s 128.
     h* is a seeded block-3 head.
-  - The read is the first checkpoint whose gain clears the gate (§4.6). If none clears it, the control fails.
+  - The read is the first checkpoint whose gain clears e58/copy's gate (§4.6). If none clears it, the control fails.
   - Nothing after block 3 reads other positions, so CMAP of any set holding (h*, read) equals the fine-tune.
   - **Pass:** h* is in A after pruning, and the share is 1 in every unit.
   - **Wrong head:** CMAP of A \ {h*}, and of one other seeded head, has numerator 0.
@@ -309,21 +332,28 @@ code would silently score it as direct-to-logit (`path:apply_pp:106`).
     recorded. The sender s is a seeded block-0 head.
   - **Sender cache.** It equals the clean cache everywhere, except that s's output at the marker is clean + δ. δ is one
     fixed seeded Gaussian vector, rescaled to the mean norm of s's clean output at the marker, so it is non-zero.
-  - **Matched no-op floor.** The same passes with δ = 0, against plain clean forwards, give one floor for each traced
-    quantity.
+  - **Matched no-op floor.** The same two passes with δ = 0, against plain clean forwards, give one floor for each traced
+    quantity: r's `v_proj` output at each position, r's read-position output, the logits and the log-odds. Pass 2 runs
+    on `q/v_proj`, not on `cmap_out`'s einsum, so the CMAP tolerances are not used here.
   - **Pass one.** The authors' `patching_sender_heads` runs with s and `rel_pos` 1, tracing r's `v_proj` output. At the
     marker it must differ from clean by more than its no-op floor. At the read it must equal clean within its no-op
     floor.
   - **Marker edit.** The authors' `patching_receiver_heads` runs with `rel_pos` 1. r's read-position output (its slice
     of `o_proj`'s input) must change by more than its no-op floor.
-  - **Read-site edit (null arm).** The same hook runs with `rel_pos` 0. r's read-position output must equal clean within
-    its no-op floor, the logits within the logit tolerance, the paired correct counts exactly, and the log-odds within
-    the log-odds tolerance.
+  - **Read-site edit (null arm).** The same hook runs with `rel_pos` 0. Four things must match clean, each within its
+    matched no-op floor: r's read-position output, the logits and the log-odds, plus the paired correct counts, which
+    must match exactly.
+  - **What it does not test.** It checks the hooks, not that discovery *finds* a B or C head (§4).
 - **Output weights only.** h* is trained with `matrices = ("h.3.attn.o_proj",)` and the mask on columns outside h*'s
   128, by the same recipe. It must clear the gate in the scored unit, or the control fails. Pass: the CMAP numerator is
   0 in every unit.
-- **Gate.** As §4.6: N is the largest |paired correct-count change| and L the largest |mean log-odds change| over the 15
-  random updates. A gain must have its correct-count gain above N (at least 1 if N = 0) and its log-odds gain above L.
+- **Gate, per task and scale.**
+  - For every task and every scale c it is read at, 15 random directions are drawn by `finetune.random_direction`
+    (E237's construction). They run at the per-matrix norms of that task's states, cycling the states, seed
+    2026112368 + index, times c. Each is read once on the task's D, with no circuit work.
+  - N is the largest |paired correct-count change| and L the largest |mean log-odds change|.
+  - An item clears the gate if its correct-count gain exceeds N (at least 1 if N = 0), and its log-odds gain G
+    exceeds L and 1 log-odds (`neuron_r`'s gain floor, from VPD's `MIN_GAIN`).
 - **Stops.** Any control missed stops the job before stage 1.
 
 ## E. Frozen manifest
@@ -331,10 +361,9 @@ code would silently score it as direct-to-logit (`path:apply_pp:106`).
 - **Key tasks.** E237's 15 items `e58/{copy,rank1,elicit,cipher,prior_cipher}_s{0,1,2}_scaled`.
   - Updates are `experiments/refit_96key/results/large/dW_<task>_s<seed>.pt` times `.c[<task>]` from
     `experiments/key_grid/results/stage0.json` (copy 1, rank1 0.9201, elicit 0.8707, cipher 0.7520, prior_cipher 0.7798).
-  - Their 15 `random_<state>` items are generated by E237's `World.random` (`FT.random_direction`, seed 237001 + the
-    state's index), times the same c. They are not saved updates.
-  - Windows are `experiments/refit_96key/results/inventory.json` `.maps.<task>.windows`: 1214 train and 286 held-out
-    rows each.
+  - E237's own 15 `random_<state>` items (`World.random`, seed 237001 + the state's index) are generated, not saved.
+    They are read beside the per-task gate sets of D.
+  - Train windows are `experiments/refit_96key/results/inventory.json` `.maps.<task>.windows` (1214 train rows each).
 - **Pairs.** E187's nine (`experiments/size_matched/run.py` `BUILT`). The larger side is multiplied by
   `experiments/size_matched/results/m67.json` `.pairs.<id>.c`:
 
@@ -353,18 +382,21 @@ code would silently score it as direct-to-logit (`path:apply_pp:106`).
   - State files are `experiments/share_untrained/results/inventory.json` `.states.<name>.file` (52 files, all present
     on 2026-11-23). The e58 pairs use the refit_96key files above, at E187's c, not E237's.
   - A state in two pairs (e54 elicit; c3 cipher) is read once per scale it appears at.
-  - Rows, held-out (train): c3 75 (301); e46 and e54 97 (403); e58 286 (1214).
-  - **E62.** Read rows 200; train rows 800, with targets `target[arm]["train"]` in
-    `experiments/induction_cue/results/large/windows.pt` (saved at `experiments/induction_cue/run.py:98-107`).
-  - **E53.** Scoring uses `Run.scored`'s windows (Pile val rows 0-255, `experiments/performed_anchor/run.py:314-325`).
-    Discovery and pruning use the original scorer's train windows, `Run.task`'s `t.train` (train rows 0-255,
-    `CFG.n_write_windows` = 2000, `:327-334`), rebuilt by that code. If they cannot be rebuilt, the scored windows are
-    split 1:1:1 by source row, so no row's overlapping windows fall in two splits. The reason is reported.
-- **Row split, seed 2026112368, per task.**
-  - Scoring rows are all held-out rows, the same rows for every state of the task.
-  - Discovery rows are min(300, ⌊n_train / 2⌋) train rows by seeded permutation.
-  - Prune rows are the next min(500, the rest) train rows.
-  - Noise rows and replacement tokens come from the same seed.
+- **D, the definition's rows.** For every item, D is the window set and read position that E248's reading of R takes:
+  the definition's `World.make`. For key items that is `experiments/kstar_vpd_wording_a/run.py:145-159`, via
+  `experiments/key_grid/run.py:141-146`. For pair items it is `experiments/kstar_size_matched/run.py:74-83`. Both
+  build windows with `read(read_half187(task))` (`experiments/kstar_pairs/run.py:154-161`), read at the last position
+  (`LAST`). The target is the format's label, in log-odds. Stage 0 records |D| and D's sha256 per task, checked against
+  each item's `results/items/<item>.json` `n_windows` in `experiments/kstar_vpd_wording_a/`.
+- **Train windows for discovery and pruning,** with every row equal to a D row removed (the count is reported).
+  - c3: 301 rows. e46 and e54: 403. e58: 1214.
+  - E62: 800 rows, with targets `target[arm]["train"]` in `experiments/induction_cue/results/large/windows.pt`
+    (saved at `experiments/induction_cue/run.py:98-107`).
+  - E53: the original scorer's train windows, `Run.task`'s `t.train` (train rows 0-255, `CFG.n_write_windows` = 2000,
+    `experiments/performed_anchor/run.py:327-334`). If they cannot be rebuilt, the train windows come from source rows
+    disjoint from D's, and the reason is reported.
+- **Row split, seed 2026112368, per task.** Discovery rows are min(300, ⌊n_train / 2⌋) train rows by seeded permutation.
+  Prune rows are the next min(500, the rest). Noise rows and replacement keys come from the same seed.
 - **Do-nothing.** E237's control state times 0.
 
 ## F. The authors' code: checkout and adapter
@@ -373,15 +405,18 @@ code would silently score it as direct-to-logit (`path:apply_pp:106`).
   outside the repo. The sha256 of `experiment_1/pp_utils.py`, `experiment_1/path_patching.py` and
   `experiment_3/cmap_utils.py` is recorded in the plan's predictions file. The adapter checks the hashes at start and
   stops on a mismatch. Nothing of theirs is committed, and the repo has no licence to permit it.
-- **Loading.** The adapter loads those modules with `importlib.util.spec_from_file_location`, in their own process
-  environment. Their module-level `sys.path.append` is theirs; our code does no `sys.path` editing.
-- **Dependencies.** baukit at a pinned git commit, einops, peft and datasets (imported by their modules), pinned in a
-  separate `cmap` dependency group at versions that resolve with our lock, recorded.
+- **Loading.** The adapter loads those modules with `importlib.util.spec_from_file_location`. Their module-level
+  `sys.path.append` is theirs; our code does no `sys.path` editing.
+- **Dependencies.** baukit at a pinned git commit, einops, peft and datasets, so their module-level imports resolve.
+  They are pinned in a separate `cmap` dependency group at versions that resolve with our lock. Their conda environment
+  is not needed.
 - **Adapter.** `model.layers.{l}.self_attn.{q,k,v,o}_proj` aliases our `h.{l}.attn.*` modules, and
   `config = (num_attention_heads 6, num_hidden_layers 4, architectures ["LlamaForCausalLM"])`. The forward returns
   `.logits`. `state_dict()` holds the aliased keys of a real weight copy (W0, or W0 + c·δW), so their W_O reads are
-  true.
-- **Our code.** The B.3 prompt builders, the rule of Appendix C, the controls of Appendix D, and the driver.
+  true. The 67M has 6 kv heads and no biases (`artifacts/vpd/t-9d2b8f02/model_config.yaml`), so `cmap_out`'s bias-free
+  einsum and per-head `v_proj` slicing are exact.
+- **Our code.** The B.3 prompt builders, the B.1 pool rule, the rule of Appendix C, the controls and guards of Appendix
+  D, the gate sets, and the driver.
 
 ## G. Price and stop rule
 
@@ -389,7 +424,7 @@ code would silently score it as direct-to-logit (`path:apply_pp:106`).
   discovery, pruning, faithfulness and CMAP; group sizes; seconds per item.
 - **Forward counts per state.** Discovery is 24 × (1 + 2 + 2) patched passes over the discovery rows. Pruning is at most
   Σ_G (|G|² + 2|G|) passes over the prune rows: up to 624 for one group of 24, about 300,000 prompt-forwards.
-  Faithfulness is 1 + 10 passes. CMAP is about 15 passes over the scoring rows.
+  Faithfulness is 1 + 10 passes. CMAP is about 15 passes over D. A gate set is 15 plain forwards over D.
 - **Estimate.** After stage 0, estimate the total: Σ over items of the stage times, with pruning scaled by each item's
   measured Σ(|G|² + 2|G|), known after its discovery.
 - **Hard spend cutoff: $20 in total.** Before any paid shard launches, the runner adds up the cost of every paid shard.
@@ -408,6 +443,25 @@ code would silently score it as direct-to-logit (`path:apply_pp:106`).
 
 ## H. Revision history
 
+### Changes in revision 4 (redteam verdict)
+
+The numbers match the list in the hand-back.
+
+1. Gate per task and scale, on the task's D, with 15 random directions each (§4.6, D).
+2. The compared scalar named: the whole-circuit CMAP log-odds share, as `neuron_r.shares`, compared within a format.
+   The A+B share is reported for every item as a common column (§3). The scoring rows are the definition's D (§3, E).
+3. Departures 1, 3, 4, 7, 8, 9 and 10 added to §5, with who set each.
+4. The null arm of the two-layer check is judged by its matched δ = 0 floor (D).
+5. The hook floor is measured per format (§4.1, D).
+6. Noise is a seeded other pool key, with a noise-prompt check (§3, B.2, B.3).
+7. r_half and k_half are named in the relabel (§5, I).
+8. Faithfulness rows named; each random set's overlap with the circuit reported (C.8).
+9. Guards: one window length per batch, eval mode asserted (§6, D).
+10. B and C discovery has only a mechanics check, now stated (§4, D, Not run).
+11. Pool threshold of 2 standard errors below 0, with every pool size reported (§3, B.1).
+12. Paper label and neuron label adopted (top, §5, I). The open questions closed with redteam's answers (a)-(h). A.2.4
+    gains the zero-accuracy clause; A.2.3 gains the pass-1 argument.
+
 ### Changes in revision 3
 
 - §3, A.2.3 and B.1: the scored groups call `apply_pp` unchanged, and the shared offset is agreed to be the
@@ -418,7 +472,7 @@ code would silently score it as direct-to-logit (`path:apply_pp:106`).
 - §3, B and E: E62's C is read at the preceding key, and its 800 saved train rows feed discovery and pruning. E53 uses
   its original scorer's train windows, or a split by source row.
 - D: the planted-head recipe is pinned from E58's recipe as refit_96key filed it.
-- G: a hard spend cutoff of $20 in total, checked before any paid shard launches.
+- G: a hard spend cutoff of $20 in total, checked before any paid shard launches (pods terminated at $16, re-check 2).
 
 ### Changes in revision 2
 
@@ -432,3 +486,22 @@ code would silently score it as direct-to-logit (`path:apply_pp:106`).
 - §5: the locator aside corrected; the faithfulness range split into own-circuit and cross-model.
 - The LLaMA-7B port check is dropped and listed under Not run.
 
+## I. The neuron readings and the CMAP label
+
+- **r_n** (`src/commute/neuron_r.py:batch_cells`, cell L01). All 24 matrices stay at W0, and every block's post-GELU
+  firing (`down_proj`'s input) at every position is replaced by the fine-tuned model's on the same window. It is a
+  same-input swap before the output weights, as `cmap_out` swaps before `o_proj`. Its label is "CMAP at neurons (our
+  extension: every MLP neuron at every position, the fine-tune's firing through the base's output weights; log-odds
+  share)". It departs from the paper in four ways: MLPs, which the paper never patches; no circuit; every position;
+  and the log-odds share.
+- **r_half** (cell Lh). W0's `c_fc` and GELU re-fire on the fine-tuned model's MLP input, at every block and position.
+  Its label is "CMAP of MLP inputs (our extension)", the analogue of the authors' `cmap_in`, not of `cmap_out`.
+- **k_half.** The fewest top-ranked neurons whose re-fired values carry half the gain, a count from partial r_half
+  swaps. It may be described as built on CMAP of MLP inputs (our extension), never as Prakash et al.'s CMAP.
+- **Top-neuron share** (`src/commute/masked_reads.py:topk_logits`). W0 keeps its own firing, and only the choice of
+  which k neurons survive comes from the fine-tune. It is not an activation swap and carries no CMAP label.
+- **Locator "sufficiency"** (`src/commute/locator.py:reads`, line 279).
+  - For a head it swaps `o_proj`'s input, which is CMAP's site.
+  - For a whole MLP it swaps `down_proj`'s output, so the fine-tuned output weights come along. That is neither CMAP's
+    site nor r_n's.
+  - It is read one part at a time, at every position, with no circuit, in log-odds and the label gap.

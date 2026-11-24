@@ -92,6 +92,9 @@ apart, and makes no call on the repeat label.
 
 Gaps are reuse minus new, in share of the gain; bold is a reversal and "nc" no call; every other entry is apart. The
 per-key column takes pooled where there is no per-key vector, on lowercase against ciphers, as the audit did.
+Every call here uses the scorecard's rule, that the seed ranges do not overlap. That rule bolds half-known against
+cipher at own steps at −0.051 in the kept form at strength 1. Under E149's own rule, which needs a gap 0.10 beyond the
+spread within each side, that entry is neutral, as the audit's row 17 says.
 
 | twin, real minus twin | reported form | pooled, tuned | per-key, tuned |
 |---|---|---|---|
@@ -124,7 +127,7 @@ Paper repo `~/commute-agents/writeup-lead/paper/paper/` at commit 537bf6b; line 
 
 | paper source | as written | rescored | change |
 |---|---|---|---|
-| appD_built_pairs_more.tex:41, size row | 0 / 6 / 3 | 0 / 7 / 2 | one pair moves from no call to reverse |
+| appD_built_pairs_more.tex:41, size row | 0 / 6 / 3 | 0 / 7 / 2; the new reversal, half-known vs cipher at equal size, is a 1.9% size difference under a rule with no noise band | one pair moves from no call to reverse; the paper text should carry this note wherever it quotes 0 / 7 / 2 |
 | appD_built_pairs_more.tex:41, size-matched column | equal by construction | within 2% by construction; new side larger on every seed of the equal-size pair | wording |
 | appD_built_pairs_more.tex:41, twin column | twin larger on both label twins | not rescored: no one-norm size is saved for the twins | open |
 | appD_built_pairs_more.tex:88; sec5_3_mechanism_vs_prior.tex:86; sec5_results.tex:186 | size never agrees; calls only where the new side is larger | holds: 7 calls, all with the new side larger | none |
