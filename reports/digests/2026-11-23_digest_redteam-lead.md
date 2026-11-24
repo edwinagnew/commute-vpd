@@ -112,3 +112,5 @@ Table: reports/reviews/2026-11-23_review_baseline-fidelity.md (copy in the whip-
 P2.69 (due 11-25) spec check sent to definition-lead: OK with fixes (x2 bar vs the cell's "full overlap", lenient half-window floor, faithfulness gate, control for "new").
 
 P2.67 (due 11-25): ADL spec checked ~17:50, OK for Option A with four fixes (note in the compare-lead folder): a departures row for the old Gaussian denominator; label the column 'detects domain, no reuse call' with the adaptation as ours; pass rule (a) as a majority of positions plus 2 sd; check mix1-2p0 and Qwen BOS.
+
+P2.68 (due 11-25): CMAP spec (725325a4) verdict ~18:30, OK after fixes, no blocker (note in the regating-lead folder). Majors: the gate is measured on e58 rows only; the compared scalar is unnamed and formats differ; missing §5 departures (base already at 0.66 in the paper, rescaled F, head-only swap). P2.70 size/steering page (579587f2) OK to fill: all numbers match the audit's recomputes.
