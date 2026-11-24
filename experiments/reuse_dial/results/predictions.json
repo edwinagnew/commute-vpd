@@ -23,6 +23,14 @@
         "settings.betas: [100, 1000, 10000] -> [10000, 100000, 1000000] by the filed nearest-0.25/0.5/0.75 rule",
         "thresholds.eb_gain_min: provisional 0.5 -> 0.42 (half the lower measured random-gains E_b); first written under settings by mistake (config refused it before any compute), moved to thresholds the same day"
       ]
+    },
+    {
+      "date": "2026-11-24",
+      "by": "compare-lead, approved by whip-lead after pod p11 stopped (before the lowercase rerun)",
+      "changes": [
+        "thresholds.step1_max 0.5 -> 0.75, loosened after p11 failed (lowercase step 1 0.713 vs 0.595); both bars reported",
+        "rule.spread_tasks [lowercase] and rule.spread added: lowercase read only if its betas' shares fall in order with top and bottom apart beyond the seed range"
+      ]
     }
   ],
   "settings": {
@@ -119,8 +127,8 @@
     "equiv_tol": 0.001,
     "perm_min": 0.1,
     "equiv_source": "E231's and E282's stage-0 bug bars (gain_only, gain_share predictions.json): an fp32 reassociation gives ~1e-6, a wrong orientation order 1",
-    "step1_max": 0.5,
-    "step1_max_source": "the ordinary fine-tune took 27-49 steps to E256's gain (train_<task>.json); a first step at half the target means the dial has no steps to separate its arms",
+    "step1_max": 0.75,
+    "step1_max_source": "LOOSENED 2026-11-24 after it failed: was 0.5, sourced from the procedural tasks (27-49 steps to E256 gain); pod p11 (lowercase s2) stopped at step 1 gains 0.713 vs 0.5 x target 1.189 = 0.595. The rehearsal measured lowercase step 1 at 0.776 on every arm (calibrate disables this check) and its arms still spread the residual share 0.86/0.32/0.05 at the three betas, so the bar's premise (no steps left to separate the arms) does not hold for lowercase. Procedural step 1 is at most 0.21 x target. Approved by whip-lead 11-24; replaced for lowercase by rule.spread_tasks",
     "eb_gain_min": 0.42,
     "eb_gain_min_source": "MEASURED in the E300 rehearsal: half the lower of stage 0 (e) E_b over changed variables of the random gains state, 0.8397 (addition, 4090) and 0.8669 (lowercase, H100); Gaussian 0.0127 and 0.0143. A bug bar, not a reading",
     "eb_random_max": 0.05,
@@ -165,6 +173,10 @@
     "eb_check": "per task with E_b over K on its dial states: Spearman(E_b over K, d) <= eb_rho_max, else the task is flagged 'the dial does not move the definition' (reported; the rule above still reads it). Not evidence: E_b is close to a gain share by construction",
     "eb_rho_max": -0.6,
     "placement": "per task, each ordinary fine-tune, E256's saved SFT states and E256/E260's saved RL states (rl, rlg) are placed on the dial per reading: the dial level whose mean reading is nearest, and the fraction of dial states the reading puts on the reuse side of it; descriptive, beside each state's own gain against the target",
-    "edge_cases_checked": "score.py on made-up states (~/commute-data/scratch/compare-lead/p263-writer/stub.py, score_<case>.json, rerun 2026-11-24 after the gate-5 amendments): rival-a states -> 'rival a'; rival-b states (KL rises along the dial, steering and erank flat or weak) -> 'rival b'; every reading constant (residual share graded) -> every rho undefined, nothing tracks -> 'rival b'; two penalised arms missing on every task -> one penalised level, dial_order undefined, every task unreadable -> 'no call'; one task only -> 'no call'; the penalised arms' residual share collapsed near 0 in random order with the readings of rival a -> dial_order under 0.8, every task unreadable -> 'no call'; the share alone tracking the dial (steering, erank flat) -> 'rival b'. The do-nothing never enters a dial (it does not reach the target), so a run of do-nothings is 'no call'. Ties in d within a level: average ranks. KL undefined: |rho_KL| taken as 0"
+    "edge_cases_checked": "score.py on made-up states (~/commute-data/scratch/compare-lead/p263-writer/stub.py, score_<case>.json, rerun 2026-11-24 after the gate-5 amendments): rival-a states -> 'rival a'; rival-b states (KL rises along the dial, steering and erank flat or weak) -> 'rival b'; every reading constant (residual share graded) -> every rho undefined, nothing tracks -> 'rival b'; two penalised arms missing on every task -> one penalised level, dial_order undefined, every task unreadable -> 'no call'; one task only -> 'no call'; the penalised arms' residual share collapsed near 0 in random order with the readings of rival a -> dial_order under 0.8, every task unreadable -> 'no call'; the share alone tracking the dial (steering, erank flat) -> 'rival b'. The do-nothing never enters a dial (it does not reach the target), so a run of do-nothings is 'no call'. Ties in d within a level: average ranks. KL undefined: |rho_KL| taken as 0",
+    "spread_tasks": [
+      "lowercase"
+    ],
+    "spread": "a task in spread_tasks is readable only if also its three betas' residual shares fall in order (dial_order, as for every task) and the dial's top and bottom are apart beyond the seed range: min over seeds of the share at the least-penalised beta > max over seeds at the most-penalised beta (score.dial_spread > 0); otherwise not read. Added 2026-11-24 with the step1_max loosening, whip-lead's condition"
   }
 }
