@@ -60,17 +60,28 @@ def rho_p(x: list[float], d: list[int], R: dict[str, Any], gen: np.random.Genera
     return {"rho": rho, "p": p, "n": len(keep), "tracks": p < R["alpha"]}
 
 
+def dial_order(dial: list[dict[str, Any]], arms: list[str]) -> float:
+    """Spearman of the measured residual share with d over the penalised arms' states (the ends are 0 and 1 by
+    construction and are left out); nan when fewer than two penalised levels have a finite share, or it is constant."""
+    pen = [s for s in dial if s["arm"] in arms[1:-1] and math.isfinite(s["residual_share"])]
+    d = np.array([arms.index(s["arm"]) for s in pen])
+    return spearman(np.array([s["residual_share"] for s in pen]), d) if len(set(d.tolist())) >= 2 else math.nan
+
+
 def task_table(states: list[dict[str, Any]], arms: list[str], R: dict[str, Any], gen: np.random.Generator) -> dict[str, Any]:
-    """One task: the dial levels reached, each reading's rho with d and permutation p, and E_b's check."""
+    """One task: the dial levels reached, the dial's measured order, each reading's rho with d and permutation p, and
+    the checks (E_b falls along the dial; the read gain does not)."""
     dial = [s for s in states if s["arm"] in arms and s["reached"]]
     levels = {a: sum(s["arm"] == a for s in dial) for a in arms}
-    readable = sum(n >= R["min_per_level"] for n in levels.values()) >= R["min_levels"]
+    order = dial_order(dial, arms)
+    readable = sum(n >= R["min_per_level"] for n in levels.values()) >= R["min_levels"] and order >= R["dial_rho_min"]
     d = [arms.index(s["arm"]) for s in dial]
-    names = [*R["cheap"], *R["baselines"], "untrained_svd", "E_b_K", "prior"]
+    names = [*R["cheap"], *R["construction"], *R["baselines"], "untrained_svd", "E_b_K", "prior", "gain"]
     cols = {n: rho_p([s["x"][n] for s in dial], d, R, gen) for n in names}
-    eb = cols["E_b_K"]["rho"]
-    return {"levels": levels, "missing": [a for a, n in levels.items() if n < R["min_per_level"]], "readable": readable, "n": len(dial), "rho": cols,
-            "eb_moves": eb is not None and eb <= R["eb_rho_max"]}  # fmt: skip
+    eb, g = cols["E_b_K"]["rho"], cols["gain"]["rho"] if cols["gain"]["tracks"] else None
+    return {"levels": levels, "missing": [a for a, n in levels.items() if n < R["min_per_level"]], "dial_order": order if math.isfinite(order) else None,
+            "readable": readable, "n": len(dial), "rho": cols, "eb_moves": eb is not None and eb <= R["eb_rho_max"],
+            "gain_moves": g is not None and abs(g) > R["gain_rho_max"]}  # fmt: skip
 
 
 def beats_kl(t: dict[str, Any], x: str, R: dict[str, Any]) -> bool:
@@ -83,12 +94,12 @@ def verdict(tables: dict[str, dict[str, Any]], R: dict[str, Any]) -> dict[str, A
     if len(ok) < 3:
         return {"verdict": "no call", "readable": ok, "why": "fewer than 3 readable tasks"}
     need, per = max(3, len(ok) - 1), {}
-    for x in R["cheap"]:
+    for x in [*R["cheap"], *R["construction"]]:  # the construction check is reported the same way, never a winner
         beat = [t for t in ok if beats_kl(tables[t], x, R)]
         signs = {t: math.copysign(1, tables[t]["rho"][x]["rho"]) for t in beat}
         best = max((sum(v == s for v in signs.values()) for s in (1, -1)), default=0)
         per[x] = {"beats_kl_on": beat, "same_sign_count": best}
-    win = [x for x, v in per.items() if v["same_sign_count"] >= need]
+    win = [x for x in R["cheap"] if per[x]["same_sign_count"] >= need]
     return {"verdict": "rival a" if win else "rival b", "readable": ok, "need": need, "cheap": per, "winners": win}
 
 
@@ -134,7 +145,7 @@ def load_states(d: Path) -> dict[str, list[dict[str, Any]]]:
             continue
         task, tr = r["state"].split("_", 1)[0], r["train"]
         by.setdefault(task, []).append({"state": r["state"], "arm": tr["arm"], "seed": tr["seed"], "reached": bool(tr.get("reached", False)),
-                                        "x": readings(r["read"], r.get("eb"))})  # fmt: skip
+                                        "residual_share": num(tr.get("residual_share")), "x": readings(r["read"], r.get("eb"))})  # fmt: skip
     return by
 
 
@@ -148,7 +159,7 @@ def main() -> None:
     arms = ["g", *[f"b{b:g}" for b in sorted(betas, reverse=True)], "ft"]
     gen, by = np.random.default_rng(R["perm_seed"]), load_states(a.states)
     tables = {t: task_table(s, arms, R, gen) for t, s in by.items()}
-    names = [*R["cheap"], *R["baselines"], "E_b_K"]
+    names = [*R["cheap"], *R["construction"], *R["baselines"], "E_b_K"]
     place = {}
     for t, s in by.items():
         dial = [x for x in s if x["arm"] in arms and x["reached"]]
@@ -156,7 +167,8 @@ def main() -> None:
         place[t] = placement(dial, arms, others, names)
     out = {"experiment": P["experiment"], "arms": arms, "tables": tables, "verdict": verdict(tables, R), "placement": place}
     a.out.write_text(json.dumps(out, indent=1))
-    print(json.dumps({"verdict": out["verdict"], "tables": {t: {"levels": v["levels"], "readable": v["readable"], "eb_moves": v["eb_moves"],
+    print(json.dumps({"verdict": out["verdict"], "tables": {t: {"levels": v["levels"], "dial_order": v["dial_order"], "readable": v["readable"],
+                      "eb_moves": v["eb_moves"], "gain_moves": v["gain_moves"],
                       "rho": {n: c["rho"] for n, c in v["rho"].items()}} for t, v in tables.items()}}, indent=1))  # fmt: skip
 
 

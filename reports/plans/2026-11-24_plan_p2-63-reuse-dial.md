@@ -30,7 +30,10 @@ Each gets E211's readings (re-gating share, steering, effective rank, neuron sha
 **Matched gain.** The target per task is min(the reference fine-tunes' gain, 0.9 x the gains-only seed-0 plateau at
 its cap), measured in the rehearsal and filed before the paid run. Each arm is checked every step and stops at the
 first step at or over the target. An arm that does not reach the target by its cap is reported as a shorter dial, not
-dropped. A task with fewer than three dial levels reached is unreadable.
+dropped. A task with fewer than three dial levels reached is unreadable, and so is one whose penalised arms do not
+order by their measured residual share (Spearman of the share with the dial index over the penalised arms' states under
+0.8, or undefined with fewer than two penalised levels): a dial whose middle collapsed onto gains only has two ends and
+no grade. Training batch is each task's reference recipe's: 32 procedural (E256), 8 lowercase (E53).
 
 **Expected values.** Do-nothing: every numerator and KL exactly 0, E_b = 1 with no changed variable. Gains only:
 E_b over its changed variables near 1 but not exactly: the definition's least-squares split can spread one
@@ -40,10 +43,13 @@ at matched size: gain under 1 log-odds, E_b about 0.01 (E268: 0.009 to 0.013 on 
 E_b near E256's SFT over K, 0.025 to 0.06 (E268). The penalised arms fall in between, in beta's order.
 
 **Filed rule (claim 2, within task, all states at once).** For each reading, the Spearman rho with the dial index over
-a task's 15 dial states, with a permutation p. A cheap reading (share, steering, effective rank) beats KL on a task
+a task's 15 dial states, with a permutation p. A cheap reading (steering, effective rank) beats KL on a task
 when p < 0.05 and |rho| exceeds KL's by at least 0.2. Rival a: one cheap reading beats KL, with one sign, on at least
 three of the four tasks (all of them if only three are readable). Rival b otherwise. Fewer than three readable tasks:
-no call. E_b over K must fall along the dial (rho at most -0.6) or the task is flagged.
+no call. The re-gating share is scored the same way and reported beside them as a construction check, never counted
+for rival a: the dial's reuse end is a gain per VPD subcomponent and the share is computed on the same decomposition,
+so it follows the dial by construction. Flags (reported, not in the verdict): E_b over K must fall along the dial (rho
+at most -0.6); the read gain must not move along it (flagged when it tracks the dial with |rho| over 0.3).
 
 **Cost** (at $4.41 per H100-hour; per-item times from saved logs, appendix gate 1). E_b over K: 48 procedural states
 at 740 s (E268 manifest logs) and 16 lowercase at 255 s (E275 items) = 11.0 h, $49. Readings: 64 at an estimated
@@ -51,7 +57,8 @@ at 740 s (E268 manifest logs) and 16 lowercase at 255 s (E275 items) = 11.0 h, $
 1.5 h wall on nine pods.** Cut-down for 11-25: E_b over K on seed 0 only (eb_seeds [0]), about $45 and 1 h; further,
 the three procedural tasks only, about $38.
 
-**Rehearsal** ($0, cluster debug L40): stage 0, then `calibrate` on each task (target and beta grid), then `rehearse`
+**Rehearsal** ($0, cluster debug L40): stage 0, then `calibrate` on each task (target and beta grid; lowercase's arms
+split over two jobs), then `rehearse`
 on addition with every arm capped at 40 steps and read in full, run twice. It measures what the plan rests on: the
 plateau and target per task, each beta's residual share, E_b of the gains-only state, seconds per E_b and per read.
 

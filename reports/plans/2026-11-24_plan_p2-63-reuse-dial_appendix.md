@@ -23,28 +23,35 @@ residual share 1 - (gains alone)/(gain) (0 for g, 1 for ft), the residual's size
   (`lowercase.task`, Pile train rows 0-4095), read rows E136's (Pile val). The stop reads the read rows (as E231),
   so the matched gain is matched where it is read; it is not a held-out estimate of the task.
 - **Precision.** Procedural training and every read in fp32 (TF32 off), as E256 and E268; lowercase trains under bf16
-  autocast as E53. States are saved in bf16 (as E256), and every reading reads the saved file. The bf16 rounding and
-  the definition's minimum-norm split can both move a gains-only state's E_b off 1: stage 0 (e) measures it.
+  autocast as E53. States are saved in fp32 (E256 saved bf16; gate-5 amendment: bf16 rounding at ~2^-9 relative moves
+  E_b at the gains-only end, and every state is saved alike so the arms are compared at one precision), and every
+  reading reads the saved file. The definition's minimum-norm split can still move a gains-only state's E_b off 1:
+  stage 0 (e) measures it. A non-finite loss, penalty, gradient norm or read gain stops the arm at that step.
 - **Memory and host RAM.** One 67M model plus E268's world (E275 peak 8.5 GB GPU per item, rb_states items), a clone
   per E_b item, the reader's steering grid. Host: E268's world loads E242's inventories (E275 pods ran on 64 GB hosts).
   The rehearsal records peak GPU per part.
 - **Time and cost per stage.** Training: E256's SFT 6.2 s for 27 steps (train_sequence.json), E231's gains 0.039 s per
   step on lowercase; with a gain check each step, an estimated 0.1-0.2 s per step: g arms up to 300-490 steps
-  (procedural) and 3,000 (lowercase), about 1 h of H100 over all 60 arms. Reads: not logged by E256; estimated 90 s per
+  (procedural) and 3,000 (lowercase, batch 8 as E53), about 1 h of H100 over all 60 arms. Reads: not logged by E256; estimated 90 s per
   state (the rehearsal measures it). E_b over K: 740 s per procedural state (E268 run_manifest_p0.log, 256 windows of
   64 tokens), 255 s per lowercase state (E275 items/e53-lowercase_s0.json, L40S). Stage 0's identity scan prints the
   card's seconds per item before any item starts. Total about $77 (main plan).
 - **Saved, where, size, outliving the pod.** Per state: results/states/<state>.json (train, read, eb; small),
-  results/large/states/<state>.pt (bf16 dW, 56 MB), results/large/eb/<state>.npz (in_K, first_flip, num, den, dd,
-  changed; ~1.5 MB). Per item a tar results/large/packs/<task>_s<seed>.tar (~300 MB, about 30 s at 10 MB/s), packed
-  when the item ends and downloaded at once, its sha256 printed in the log.
+  results/large/states/<state>.pt (fp32 dW, ~112 MB: +56 MB over bf16), results/large/eb/<state>.npz (in_K,
+  first_flip, num, den, dd, changed; ~1.5 MB). Per item a tar results/large/packs/<task>_s<seed>.tar (5-6 states x
+  ~114 MB = ~600-700 MB, 650 MB / 10 MB/s = ~65 s), packed when the item ends and downloaded at once, its sha256
+  printed in the log. Every small JSON of the job (stage 0, calibrate, states/*.json) is also in
+  results/large/packs/json.tar, rewritten after every part (a few hundred KB).
 - **Downloads.** One tar per item into a project path (`results/reuse_dial_dl/`), moved into results/large after the
   pod is gone (root CLAUDE.md, E36). The small JSONs are also inside each tar.
 - **Pod loss and resume.** Every part (train, read, eb) of every state is written when it ends and skipped on a rerun;
-  a lost pod costs at most one part. A stopped record is cleared and retried on a rerun.
-- **Controls and references.** Stage 0 on every pod's first task, alone; the Gaussian is the first state read and the
-  first E_b of seed 0; the gains-only arm is the first E_b of every item (its E_b over changed variables must stay
-  at least eb_gain_min, else the job stops). Saved SFT and RL states are placed from their saved readings, the
+  the runner downloads json.tar as parts end, so a lost pod costs at most one part's records (the .pt states of an
+  unfinished item are retrained). A stopped record is cleared and retried on a rerun. `calibrate` writes its file
+  after the gains-only arm and after every arm and skips arms already in it.
+- **Controls and references.** Stage 0 on every pod's first task, alone; the Gaussian is the first state read; the
+  gains-only arm is the first E_b of every item (its E_b over changed variables must be at least eb_gain_min, checked
+  before its scan, else the job stops), and the Gaussian of seed 0 the second (its E_b over K at most eb_random_max,
+  else the job stops). Saved SFT and RL states are placed from their saved readings, the
   same reader code (E211's `Reader`, E264's lens arithmetic, E268's scan settings) on the same rows.
 - **Predictions.** The rule is total: every task is readable or not, every reading has a rho or is undefined, the
   verdict is rival a, rival b or no call (score.py run on the edge cases below).
@@ -53,8 +60,9 @@ residual share 1 - (gains alone)/(gain) (0 for g, 1 for ft), the residual's size
 
 ## Gate 2: every setting sourced
 In `results/predictions.json`, each with a `_source` line: tasks (the cell), seeds (E256, E53), lr_gain (E231 = (IA)^3
-3e-3, gain_only predictions.json settings.lr), lr_res, grad_clip, batch (E256 procedural_rl predictions.json
-settings.lr, grad_clip, sft_batch; E53 `lowercase.BATCH`), cap (E231's rule cap_min 300, cap_mult 10 on E256's
+3e-3, gain_only predictions.json settings.lr), lr_res, grad_clip, batch per task (E256 procedural_rl predictions.json
+settings.lr, grad_clip, sft_batch 32; E53 `lowercase.BATCH` 8, as E231's gains-only lowercase batch_b 8; lowercase's
+t_ref and cap were set at batch 8 and stand), cap (E231's rule cap_min 300, cap_mult 10 on E256's
 27/49/31 SFT steps and E53's 300), kl_rows and kl_batch (E256), rand_sd (E231), t_ref (E256 read/*_sft_s*.json
 gain.lo means 6.005 / 8.668 / 6.045; E231 refs 1.643 for lowercase). E_b over K: E268's filed scan settings,
 unchanged (`kstar_needed` load_config: 4 derangements x 64 windows, seed 268). Reader: E211's filed settings
@@ -74,11 +82,16 @@ VPD variables; rates and clip as the sources, per parameter group.
 
 ## Gate 3: rehearsal ($0, cluster debug QoS, one L40, `E300 rehearse: reuse dial`)
 Full read sizes, the real model (it fits a cluster card); only step caps reduced.
-1. Two jobs at once (`cluster/reuse_dial.sbatch calibrate addition sequence brackets` and `... calibrate lowercase`):
-   stage 0 in full on the first task; per task the gains-only seed-0 arm to its full cap (its plateau); every rehearse
-   beta, beta 0 with gains, and the ordinary arm to the target. Writes results/rehearse/calibrate_<task>.json as each
-   arm ends. Measures: plateau, target, residual share per beta, step-1 gain, s/step per arm, peak GPU. Expected
-   minutes: procedural ~30 for the three, lowercase up to ~60.
+1. Calibrate (`cluster/reuse_dial.sbatch calibrate addition sequence brackets`, and lowercase in two jobs, the second
+   after the first: `calibrate lowercase --arms b1e+06 b100000 b10`, then `calibrate lowercase --arms b10000 b1000
+   b100 b0 ft` with `--dependency=afterany`; header of `cluster/reuse_dial.sbatch`): stage 0 in full on the first
+   task; per task the gains-only seed-0 arm to its full cap (its plateau); every rehearse beta, beta 0 with gains, and
+   the ordinary arm to the target. Writes results/rehearse/calibrate_<task>.json after the gains-only arm and after
+   each arm, and skips arms already in it (the second lowercase job reads the first's plateau). Measures: plateau,
+   target, residual share per beta, step-1 gain, s/step per arm, peak GPU. Expected minutes, worst case at an assumed
+   0.3 s per step (every arm to its cap): procedural 9 arms x (300 + 490 + 310) steps x 0.3 s = ~50, plus ~15 set-up;
+   lowercase 9 arms x 3,000 x 0.3 s = 135 in one job, over the debug QoS's 2 h, so split: 4 x 15 = 60 and 5 x 15 = 75,
+   each plus ~15 set-up.
 2. `cluster/reuse_dial.sbatch rehearse` (`run.py rehearse --tag r0`, twice), in parallel with the calibrate jobs at
    the placeholder target (the ordinary arm reached E256's gain in 29-31 steps on addition, under the 40-step cap):
    item (addition, seed 0) with every arm capped at 40 steps, the Gaussian, every
@@ -100,7 +113,11 @@ Full read sizes, the real model (it fits a cluster card); only step caps reduced
   0.05; (f) the identity scan: 0 argmax changes; it prints the estimated seconds per E_b item.
 - Step 1 of every arm: its gain under 0.5 x the target, else stop (`train_arm`).
 - Each Gaussian: gain under 1 log-odds, else stop (E256's do-nothing stop).
-- Each item's gains-only state: E_b over its changed variables at least eb_gain_min, else stop; it is the first E_b.
+- Each item's gains-only state: E_b over its changed variables at least eb_gain_min, checked before its ~740 s scan,
+  else stop; it is the first E_b of every item. Stage 0 (e) measures the same quantity on a random gains-only state
+  before any item: it, not the Gaussian, is the first E_b read.
+- Each Gaussian (seed 0, the second E_b of its item): E_b over K at most eb_random_max, else stop.
+- Every step of every arm: a non-finite loss, penalty, gradient norm or read-row gain stops the arm before the step.
 - Logged at every step of every arm: loss, penalty, both gradient norms, the read-row gain.
 
 ## Gate 5: review
@@ -113,7 +130,11 @@ After the rehearsal's numbers, the amended predictions and the cost per stage.
 - Every reading constant over the dial states: every rho undefined, nothing tracks, verdict rival b (the readings do
   not follow the dial). The do-nothing itself never enters: it does not reach the target, so no task is readable and
   the verdict is no call.
-- One task only: no call. Two arms missing on every task: three levels remain, still readable (shorter dial).
+- One task only: no call. Two penalised arms missing on every task: three levels remain but one penalised level, so the
+  dial's order is undefined and every task unreadable: no call (amended 2026-11-24; read as a shorter dial before).
+- The penalised arms' residual share collapsed near 0 in random order, readings otherwise as rival a: the dial's order
+  under 0.8, every task unreadable, no call. Only the re-gating share tracking the dial: rival b (a construction
+  check never counts for rival a).
 - Ties: d is tied within a level; average ranks. KL constant: |rho_KL| taken as 0, so a tracking cheap reading beats it.
 
 ## Pod split
