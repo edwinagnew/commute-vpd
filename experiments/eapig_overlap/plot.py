@@ -37,8 +37,10 @@ def panel(ax: Any, cols: list[tuple[str, list[tuple[float, bool]], tuple[float, 
     ax.set_xticks(range(len(cols)), [c[0] for c in cols], rotation=60, ha="right", fontsize=7)
     ax.set_ylabel("edge IoU with M's circuit")
     ax.set_ylim(-0.03, 1.05)
-    if banded:
-        ax.legend(fontsize=7, loc="lower left")
+    ax.axhline(1.0, color="#555555", linewidth=0.8, linestyle=":", label="do-nothing: M against M, same windows (reads 1)")
+    ax.scatter([], [], s=26, color=COLOR, edgecolors=COLOR, label="both circuits at least 70% faithful (headline)")
+    ax.scatter([], [], s=26, color="white", edgecolors=COLOR, label="circuit not faithful (kept out)")
+    ax.legend(fontsize=7, loc="lower left")
     return rows
 
 
@@ -51,7 +53,9 @@ def real(items_dir: Path, out: Path) -> None:
         cols.append((name, [(r["five_percent"]["edge_iou"], r["reading"] == "read") for r in got], band))
     fig, ax = FG.figure(FG.FULL_WIDTH)
     rows = panel(ax, cols)
-    ax.set_title("Edge IoU of each update's circuit with M's, beside M's resampling range")
+    for x in (6.5, 9.5):  # built controls | E62 | key grid
+        ax.axvline(x, color="#BBBBBB", linewidth=0.6, linestyle="-")
+    ax.set_title("Does an update move its circuit further than resampling M's windows does?", fontsize=9)
     FG.save(fig, out, n=f"{len(rows)} items, one 5% circuit (46 of 927 edges) each; band: 5 resamples of the task's windows",
             data=rows)  # fmt: skip
 
