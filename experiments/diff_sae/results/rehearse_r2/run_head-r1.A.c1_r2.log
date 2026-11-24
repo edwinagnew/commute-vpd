@@ -1,0 +1,12 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+07:39:03 [E296] ['head-r1.A.c1'] tag rehearse_r2; Cfg(d=768, expansion=2, k=100, lr=0.0001, warmup=1000, batch=2048, tokens=12000000, stream_tokens=200000000, epochs=2, aux_alpha=0.03125, dead_tokens=10000000, threshold_start=1000, init_norm=1.0, target_rms=100.0, log_steps=50, validate_every=2000, val_tokens=1000000, val_batch=8192, val_start=196608, norm_tokens=1000000, norm_batch=4096, norm_seed=275, ls_tokens=50000000, ls_batch=2048, alive_min=10, nu_cut=0.3, nu_wide=0.6, kl_rows=256, kl_batch=16, chunk_rows=1024, pile_start=32768, pool_start=131072, pool_rows=65536, repeat_cap=100, dead_fixture_step=5000)
+07:39:03 [check validation rows share no parent row with the stream] ok {"val": [196608, 198565], "stream": [[32768, 131072], [0, 16384]]}
+07:39:03 [check D exactly 0 under a zero update] ok {"max_abs": 0.0}
+07:39:03 [check the scaled path at 0 gives W0's activations] ok {"max_abs": 0.0, "bar": 0.0}
+07:39:04 [check change matched to the rung's size] ok {"x": 0.05429168235230332, "target": 2.1099224913502828, "energy": 2.104460845144152, "rel": -0.0025885530053928463, "tol": 0.05}
+07:39:04 [check the change writes at the site] ok {"energy": 2.104460845144152, "bar": 1e-06}
+07:39:04 [check graft writes at its site] ok {"energy": 2.104460845144152, "bar": 1e-06}
+07:39:04 [check stream holds every step] ok {"tokens": 200936448, "need": 11999232}
