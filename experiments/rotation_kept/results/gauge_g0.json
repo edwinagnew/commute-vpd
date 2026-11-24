@@ -1,0 +1,109 @@
+{
+ "experiment": "E286 (rotation_kept)",
+ "card": "NVIDIA L40",
+ "invariance": {
+  "max_logit_dev": 0.00010085105895996094,
+  "round_trip_floor": 5.221366882324219e-05,
+  "bar": 0.0005221366882324219,
+  "logit_scale": 29.280637741088867
+ },
+ "nn": {
+  "n_vars": 12316,
+  "n_changed": 24,
+  "size_K": 12291,
+  "too_small": false,
+  "size_N": 24,
+  "size_R": 124,
+  "empty": false,
+  "n_windows": 75,
+  "window_len": 41,
+  "pooled": {
+   "n": 24,
+   "dd": 3.5140984209542864e-07,
+   "strict": 0.0004901211175562059,
+   "own": 0.6921088369642897,
+   "needed": 0.9371719372682219,
+   "matched": 0.6921088369642898,
+   "nu": 0.7613632645598363,
+   "rotation": 0.7959406755545918,
+   "rotation_matched_null": 6.027767243862649e-16,
+   "rotation_nu_null": 0.7341825443175061
+  },
+  "pooled_with_rem": {
+   "n": 24,
+   "dd": 3.5140984209542864e-07,
+   "strict": 0.0004901211175562059,
+   "own": 0.6921088369642897,
+   "needed": 0.9371719372682219,
+   "matched": 0.6921088369642898,
+   "nu": 0.7613632645598363,
+   "rotation": 0.7959406755545918,
+   "rotation_matched_null": 6.027767243862649e-16,
+   "rotation_nu_null": 0.7341825443175061
+  },
+  "nonrem_dd_share": 1.0,
+  "n_rank0": 0,
+  "n_too_wide": 24,
+  "own_held_min": 0.9900127351977894,
+  "dd_max_all": 1.4483576897325162e-07,
+  "max_rel_change": 1.236898676778009e-12,
+  "kept_strict_scale": 0.9999999999998801,
+  "kept_needed_scale": 0.9999999999999925,
+  "changed_kinds": [
+   "rms_1"
+  ]
+ },
+ "vpd": {
+  "n_vars": 38938,
+  "n_changed": 12304,
+  "size_K": 38935,
+  "too_small": false,
+  "size_N": 390,
+  "size_R": 390,
+  "empty": false,
+  "n_windows": 75,
+  "window_len": 41,
+  "pooled": {
+   "n": 385,
+   "dd": 22771231.481294576,
+   "strict": 0.32355215890385775,
+   "own": 0.3533461189649132,
+   "needed": 0.3572352493126826,
+   "matched": 0.35541827514737284,
+   "nu": 0.004181188677571783,
+   "rotation": 0.006014238005568227,
+   "rotation_matched_null": 0.003204428587272721,
+   "rotation_nu_null": 0.0026625311547465113
+  },
+  "pooled_with_rem": {
+   "n": 390,
+   "dd": 22891090.087314527,
+   "strict": 0.3248283147485383,
+   "own": 0.3562012679016944,
+   "needed": 0.36007014926214786,
+   "matched": 0.3582625757511488,
+   "nu": 0.005378944107464905,
+   "rotation": 0.006009457874891769,
+   "rotation_matched_null": 0.003201789234247305,
+   "rotation_nu_null": 0.0026642449882441055
+  },
+  "nonrem_dd_share": 0.9947639625040673,
+  "n_rank0": 0,
+  "n_too_wide": 0,
+  "own_held_min": 0.9900092899112246,
+  "dd_max_all": 6680647.219598934,
+  "max_rel_change": 5.806494597722588,
+  "kept_strict_scale": 0.37104659999367395,
+  "kept_needed_scale": 0.4023647489303632,
+  "changed_kinds": [
+   "k_proj",
+   "o_proj",
+   "q_proj",
+   "v_proj"
+  ]
+ },
+ "nn_reads_1": true,
+ "seconds": 111.38026976585388,
+ "done": true,
+ "misses": []
+}
