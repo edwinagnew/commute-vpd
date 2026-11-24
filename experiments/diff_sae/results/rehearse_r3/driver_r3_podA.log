@@ -1,0 +1,13 @@
+  /root/work/.venv/lib/python3.13/site-packages/dictionary_learning/training.py:286: UserWarning: Error saving config: 'list' object has no attribute 'config'
+    warn(f"Error saving config: {e}")
+
+-- Docs: https://docs.pytest.org/en/stable/how-to/capture-warnings.html
+[33m[32m21 passed[0m, [33m[1m2 warnings[0m[33m in 8.82s[0m[0m
+fixtures exit 0
+== item head-r1.A.c0 start 08:42:27
+== item head-r1.A.c0 exit 0 at 08:53:34
+8676e2e408df47c2c8d38802be0f1499a34f584e315a2acbb2ea846b0442dc39  experiments/diff_sae/results/rehearse_dl/head-r1.A.c0.tar
+== item plant.A.c0 start 08:53:34
+== item plant.A.c0 exit 1 at 08:57:56
+8a623045f334e2cb4b24853623e9611c0581d92aa6b70d4126520841dbb57fec  experiments/diff_sae/results/rehearse_dl/plant.A.c0.tar
+=== FINISHED (exit 1 stopped: plant.A.c0) in 940 s — results in /root/work/experiments/diff_sae/results/rehearse_dl/*.tar, items/*.json ===

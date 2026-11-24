@@ -1,0 +1,84 @@
+{
+ "experiment": "E296",
+ "key": "plant.A.c0",
+ "card": "NVIDIA H100 80GB HBM3",
+ "checks": {
+  "validation rows share no parent row with the stream": {
+   "pass": true,
+   "val": [
+    196608,
+    198565
+   ],
+   "stream": [
+    [
+     32768,
+     131072
+    ],
+    [
+     589824,
+     684768
+    ]
+   ]
+  },
+  "D exactly 0 under a zero update": {
+   "pass": true,
+   "max_abs": 0.0
+  },
+  "stream holds every step": {
+   "pass": true,
+   "tokens": 200978880,
+   "need": 11999232
+  },
+  "finite loss (parameters finite)": {
+   "pass": false,
+   "step": 4200,
+   "dead_features": 18,
+   "auxk_pre_norm": "nan"
+  }
+ },
+ "energy": 1.1638798653826468,
+ "stream": {
+  "kind": "fit",
+  "T": 34,
+  "per_chunk": 533,
+  "fill_rows": 989,
+  "task_share": 0.01731238625670518,
+  "chunks": 192,
+  "tokens": 200978880
+ },
+ "normaliser": {
+  "chunk_tokens": {
+   "pile": 523264,
+   "task": 523501
+  },
+  "lengths": {
+   "pile": 50233344,
+   "task": 50256096
+  },
+  "sample": [
+   500000,
+   500000
+  ],
+  "scale": 711.8106220913007,
+  "mean_norm": 0.00313901999271137
+ },
+ "K": 0.9995009999999394,
+ "bar": 0.4997504999999697,
+ "curve": [
+  {
+   "step": 2000,
+   "fve_pooled": null,
+   "dead": 0.0,
+   "theta": 0.011225594207644463,
+   "ms_per_step": 10.571545481681824
+  },
+  {
+   "step": 4000,
+   "fve_pooled": null,
+   "dead": 0.006510416977107525,
+   "theta": 0.011332337744534016,
+   "ms_per_step": 10.590037524700165
+  }
+ ],
+ "stopped": "finite loss (parameters finite)"
+}
