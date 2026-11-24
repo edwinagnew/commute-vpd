@@ -12,9 +12,12 @@ Jobs (every job runs stage 0 first, once per tag; a miss writes results/stage0_<
   pod I N      every N-th (task, seed) item from the I-th; per item, cheapest first, each part written as it ends and
                skipped on a rerun: train every arm (the gains-only arm first), then the Gaussian (seed 0), then read
                every state (the Gaussian first), then E_b over K (gains only first) for seeds in eb_seeds; then the
-               item's files are packed in results/large/packs/<task>_s<seed>.tar for one download
+               item's files are packed in results/large/packs/<task>_s<seed>.tar for one download (every small JSON
+               also in results/large/packs/json.tar, rewritten after every part)
   calibrate T  rehearsal only: seed 0 of task T, the gains-only arm to its cap (its plateau), then every beta of
-               rehearse_betas to the target min(t_ref, plateau_frac x plateau): steps, reached, the residual share
+               rehearse_betas to the target min(t_ref, plateau_frac x plateau): steps, reached, the residual share;
+               written after every arm, an arm already written skipped; --arms A ... trains only those (one task's
+               arms split over two jobs, the second started after the first)
   rehearse     stage 0, then item (rehearse_task, 0) with every arm capped at rehearse_cap steps, read and E_b'd in
                full, into results/rehearse/; run it twice (the second must skip every part)
 Stage 0 (filed values in thresholds): (a) the dial's start changes no bit of the logits (fp32 and bf16 autocast) and
@@ -22,7 +25,8 @@ exports exactly 0; (b) a random dial's export reproduces its hooked logits withi
 (perm_min); (c) E211's zero check (every reader numerator exactly 0) and E256's lens/KL zero; (d) the do-nothing reads
 E_b = 1 with no changed variable; (e) a random gains-only state reads E_b over every changed variable at least
 eb_gain_min (the dial's construction under the definition; under 1 where the definition's least-squares split spreads
-one subcomponent's gain over overlapping ones), the Gaussian under eb_random_max; (f) E268's identity
+one subcomponent's gain over overlapping ones), the Gaussian under eb_random_max (both again on every item: the
+gains-only state, the first E_b, before its scan; the Gaussian over K after its scan); (f) E268's identity
 scan on that state: no argmax change (its largest deviation is the floor; its rate the seconds per item).
 
     PRED_SHA=<sha> python experiments/reuse_dial/run.py pod 0 9 --tag p0 2>&1 | tee -a experiments/reuse_dial/results/pod0.log
@@ -96,7 +100,7 @@ class Config:  # filed in predictions.json "settings"
     lr_gain: float
     lr_res: float
     grad_clip: float
-    batch: int
+    batch: dict[str, int]  # task -> training batch (its reference recipe's)
     cap: dict[str, int]  # task -> step cap of every arm
     kl_rows: int
     kl_batch: int
@@ -114,7 +118,7 @@ class Config:  # filed in predictions.json "settings"
         for f in ("tasks", "seeds", "eb_seeds", "betas", "rehearse_betas", "rehearse_eb_arms"):
             object.__setattr__(self, f, tuple(getattr(self, f)))
         assert set(self.tasks) <= set(D_ITEM) and set(self.eb_seeds) <= set(self.seeds) and list(self.betas) == sorted(self.betas)
-        assert all(0 < b < math.inf for b in self.betas) and set(self.target) == set(self.cap) == set(self.t_ref) == set(self.tasks)
+        assert all(0 < b < math.inf for b in self.betas) and set(self.target) == set(self.cap) == set(self.t_ref) == set(self.batch) == set(self.tasks)
         assert all(MIN_GAIN <= self.target[t] <= self.t_ref[t] for t in self.tasks) and self.rehearse_cap < min(self.cap.values())
         assert self.rehearse_task in self.tasks and 0 < self.plateau_frac <= 1
 
@@ -160,12 +164,12 @@ def proc_task(W: World, name: str) -> Any:
     held, fit, tp = d["held"].take(slice(0, C.n_held)), d["train"].take(slice(0, C.n_fit)), d["train"]
     read = RR.CueRead(name, held.toks, held.true, C.prompt_len - 1, fit.toks, fit.true)
     lens = SimpleNamespace(toks=torch.cat([held.toks, held.true[:, None]], 1), token=LAST, half=C.prompt_len - 1, ci_len=C.prompt_len)
-    tm, B = W.net.net, W.cfg.batch
+    tm, B = W.net.net, W.cfg.batch[name]
 
     def sampler(seed: int) -> Any:
         pick = torch.Generator().manual_seed(seed)
 
-        def draw(_k: int) -> tuple[Tensor, Tensor]:  # E256's `sft` batch: 32 training items drawn with the seed's generator
+        def draw(_k: int) -> tuple[Tensor, Tensor]:  # E256's `sft` batch: sft_batch training items drawn with the seed's generator
             i = torch.randint(0, len(tp.toks), (B,), generator=pick)
             return tp.toks[i], tp.true[i, None]
 
@@ -177,7 +181,7 @@ def proc_task(W: World, name: str) -> Any:
 def lowercase_task(W: World, name: str) -> Any:
     """E53's rows in batch order `seed` (`lowercase.batch_order`, each once per pass), next-token CE under bf16 autocast;
     read rows E136's (realistic_tasks run2 e53_read); D: E257's e53/lowercase_s0 windows."""
-    rows, read, B = LC.task(W.net.model, W.net.device, log).rows, R2.e53_read("lowercase"), W.cfg.batch
+    rows, read, B = LC.task(W.net.model, W.net.device, log).rows, R2.e53_read("lowercase"), W.cfg.batch[name]
     lens = WIN.load_read("e53/lowercase", json.loads(E136_INV.read_text())["tasks"]["e53/lowercase"])
 
     def sampler(seed: int) -> Any:
@@ -221,7 +225,7 @@ def state_path(W: World, name: str) -> tuple[Path, Path]:
 def save_dw(W: World, name: str, dW: dict[str, Tensor]) -> dict[str, Any]:
     p = state_path(W, name)[1]
     p.parent.mkdir(parents=True, exist_ok=True)
-    torch.save({k: v.to(torch.bfloat16) for k, v in dW.items()}, p)
+    torch.save({k: v.float() for k, v in dW.items()}, p)  # fp32, every state alike: bf16 rounding moves E_b off its ends
     return {"file": str(p.relative_to(EXPERIMENTS.parent)), "sha256": hashlib.sha256(p.read_bytes()).hexdigest(), "mb": p.stat().st_size / 2**20}
 
 
@@ -240,6 +244,8 @@ def train_arm(W: World, t: Any, arm: tuple[str, bool, bool, float], seed: int, t
     def on_check(step: int, d: DL.Dial) -> bool:
         g = gain_of(W, t, d)
         curve.append({"step": step, "gain": g})
+        if not math.isfinite(g):
+            raise SystemExit(f"{t.name} {name} s{seed}: step {step} gains {g}")
         if step == 1 and not g < target * th["step1_max"]:
             raise SystemExit(f"{t.name} {name} s{seed}: step 1 gains {g:.3f}, at or over {th['step1_max']} x the target {target:.3f}")
         return g >= target
@@ -274,9 +280,10 @@ def read_state(W: World, t: Any, rec: dict[str, Any], ref: dict[str, Tensor] | N
     return out | R2.brief(t.reader.state(dW, rec["seed"])) | {"read_seconds": time.time() - t0}
 
 
-def eb_state(W: World, t: Any, rec: dict[str, Any], name: str, scan: bool = True) -> dict[str, Any]:
+def eb_state(W: World, t: Any, rec: dict[str, Any], name: str, scan: bool = True, floor: float = -math.inf) -> dict[str, Any]:
     """E_b over K as E275 reads a fresh state: F = M + the saved dW on the task's D, one write pass, E268's scan (with
-    scan False: E_b over every changed variable only, which a gains-only state reads as 1 whatever K is)."""
+    scan False: E_b over every changed variable only, which a gains-only state reads near 1 whatever K is). E_b over
+    the changed variables under `floor` stops before the scan (SystemExit)."""
     t0, kc = time.time(), W.kc
     F, M, toks, at, _ = W.w.from_dw(EXPERIMENTS.parent / rec["file"], t.D, t.at)
     feat = KV.featurize(M, F, W.w.uv, W.w.delta, W.w.bases)
@@ -284,6 +291,8 @@ def eb_state(W: World, t: Any, rec: dict[str, Any], name: str, scan: bool = True
     ch = torch.zeros(feat.n, dtype=torch.bool)
     ch[sorted(feat.changed)] = True
     out = {"E_b_changed": SI.explained_share(num, den, dd, ch), "n_changed": int(ch.sum()), "n_vars": feat.n}
+    if not out["E_b_changed"] >= floor:
+        raise SystemExit(f"{name}: E_b {out['E_b_changed']:.6f} over its changed variables, under {floor}")
     if not scan:
         return out
     nd = IX.needed_set(F, feat, toks, at, kc.derangements, kc.examples, kc.seed, kc.rows, kc.logit_rows, kc.cache_batch, log)
@@ -301,6 +310,7 @@ def stop_state(W: World, name: str, why: str) -> None:
     """A filed early check missed: the state's record gets "stopped" (a rerun clears it and tries again), exit 1."""
     path = state_path(W, name)[0]
     write_stage(path, jsonable(json.loads(path.read_text()) | {"stopped": why}))
+    pack_json(W)
     log(f"STOP: {why}")
     hard_exit(1)
 
@@ -323,6 +333,7 @@ def part(W: World, name: str, key: str, fn: Any) -> dict[str, Any]:
             write_stage(path, jsonable(rec))
             stop_state(W, name, str(e))
         write_stage(path, jsonable(rec))
+        pack_json(W)
         log(f"[{name} {key}] {json.dumps(jsonable({k: v for k, v in rec[key].items() if k not in ('curve', 'loss', 'removed', 'share', 'steering', 'k_half')}))}")
     else:
         log(f"{name} {key}: done before, skipped")
@@ -352,9 +363,10 @@ def item(W: World, task: str, seed: int, cap: int | None, th: dict[str, Any], eb
     eb = sorted(states, key=lambda n: n != names["g"]) if seed in cfg.eb_seeds else []
     for n in [n for n in eb if eb_arms is None or got(W, n)["arm"] in eb_arms]:
         (W.large / "eb").mkdir(parents=True, exist_ok=True)
-        e = part(W, n, "eb", lambda r, n=n: eb_state(W, t, r["train"], n))["eb"]
-        if n == names["g"] and not e["E_b_changed"] >= th["eb_gain_min"]:
-            stop_state(W, n, f"{n}: gains only reads E_b {e['E_b_changed']:.6f} over its changed variables, under {th['eb_gain_min']}")
+        floor = th["eb_gain_min"] if n == names["g"] else -math.inf  # the gains-only state, the first E_b, before its scan
+        e = part(W, n, "eb", lambda r, n=n, floor=floor: eb_state(W, t, r["train"], n, floor=floor))["eb"]
+        if got(W, n)["arm"] == "rand" and not e["E_b_K"] <= th["eb_random_max"]:
+            stop_state(W, n, f"{n}: a Gaussian reads E_b {e['E_b_K']:.4f} over K, over {th['eb_random_max']}")
     pack(W, task, seed, states)
 
 
@@ -367,6 +379,17 @@ def pack(W: World, task: str, seed: int, states: list[str]) -> None:
                 if f.is_file():
                     tar.add(f, arcname=str(f.relative_to(EXPERIMENTS.parent)))
     log(f"PACKED {p.relative_to(EXPERIMENTS.parent)} sha256 {hashlib.sha256(p.read_bytes()).hexdigest()} ({p.stat().st_size / 2**20:.0f} MB)")
+
+
+def pack_json(W: World) -> None:
+    """Every small record of the job (stage 0, calibrate, states/*.json) in results/large/packs/json.tar, rewritten
+    after every part (renamed into place, so a download never reads half a tar): a lost pod loses at most one part."""
+    p = W.large / "packs" / "json.tar"
+    p.parent.mkdir(parents=True, exist_ok=True)
+    with tarfile.open(p.with_suffix(".tmp"), "w") as tar:
+        for f in sorted([*W.out.glob("*.json"), *(W.out / "states").glob("*.json")]):
+            tar.add(f, arcname=str(f.relative_to(EXPERIMENTS.parent)))
+    p.with_suffix(".tmp").replace(p)
 
 
 # ---- stage 0, calibration, main ------------------------------------------------------------------------------------
@@ -383,27 +406,39 @@ def stage0(W: World, task: str, th: dict[str, Any], tag: str) -> None:
     out = s0.run(W, task, tag, eb_state, save_dw)
     miss = s0.misses(out, th)
     write_stage(path, jsonable(out | ({"stopped": "; ".join(miss)} if miss else {"done": True})))
+    pack_json(W)
     log(f"stage 0: {json.dumps(jsonable(out))}; {'MISSES ' + '; '.join(miss) if miss else 'checks hold'}")
     if miss:
         hard_exit(1)
     log("STAGE 0 DONE")
 
 
-def calibrate(W: World, task: str, th: dict[str, Any]) -> None:
-    """Rehearsal: the gains-only plateau at the cap, the target it sets, and each rehearse beta's residual share there."""
-    cfg, t = W.cfg, W.task(task)
+def cal_arms(cfg: Config) -> list[tuple[str, bool, bool, float]]:
+    return [(f"b{b:g}", True, True, b) for b in (*cfg.rehearse_betas, 0.0)] + [("ft", False, True, 0.0)]
+
+
+def calibrate(W: World, task: str, th: dict[str, Any], only: list[str] | None) -> None:
+    """Rehearsal: the gains-only plateau at the cap, the target it sets, and each rehearse beta's residual share there.
+    results/rehearse/calibrate_<task>.json is written after every arm; an arm already in it is skipped (the resume, and
+    the split of one task over two jobs: `only` names the arms this job trains; the gains-only arm runs when missing)."""
+    cfg, t, path = W.cfg, W.task(task), W.out / f"calibrate_{task}.json"
     if manifest_only():
         return
     th = th | {"step1_max": math.inf}  # calibration records step 1 (curve[0]) rather than stopping on it
-    g = train_arm(W, t, ("cal_g", True, False, math.inf), 0, math.inf, cfg.cap[task], th)
-    plateau = max(c["gain"] for c in g["curve"])
-    target = min(cfg.t_ref[task], cfg.plateau_frac * plateau)
-    out: dict[str, Any] = {"task": task, "plateau": plateau, "t_ref": cfg.t_ref[task], "target": target, "g": {k: v for k, v in g.items() if k not in ("curve", "loss")}}
-    for arm in [(f"b{b:g}", True, True, b) for b in (*cfg.rehearse_betas, 0.0)] + [("ft", False, True, 0.0)]:
-        r = train_arm(W, t, (f"cal_{arm[0]}", *arm[1:]), 0, target, cfg.cap[task], th)
+    out: dict[str, Any] = json.loads(path.read_text()) if path.is_file() else {}
+    if "g" not in out:
+        g = train_arm(W, t, ("cal_g", True, False, math.inf), 0, math.inf, cfg.cap[task], th)
+        plateau = max(c["gain"] for c in g["curve"])
+        out = {"task": task, "plateau": plateau, "t_ref": cfg.t_ref[task], "target": min(cfg.t_ref[task], cfg.plateau_frac * plateau),
+               "g": {k: v for k, v in g.items() if k not in ("curve", "loss")}}  # fmt: skip
+        write_stage(path, jsonable(out))
+        pack_json(W)
+    for arm in [a for a in cal_arms(cfg) if a[0] not in out and (only is None or a[0] in only)]:
+        r = train_arm(W, t, (f"cal_{arm[0]}", *arm[1:]), 0, out["target"], cfg.cap[task], th)
         out[arm[0]] = {k: r[k] for k in ("steps", "reached", "gain_hooked", "gain_gains_alone", "residual_share", "residual_size", "size", "s_per_step")}
         out[arm[0]]["step1_gain"] = r["curve"][0]["gain"]
-        write_stage(W.out / f"calibrate_{task}.json", jsonable(out))
+        write_stage(path, jsonable(out))
+        pack_json(W)
         log(f"[calibrate {task} {arm[0]}] {json.dumps(jsonable(out[arm[0]]))}")
 
 
@@ -412,9 +447,11 @@ def main() -> int:
     ap.add_argument("job", choices=("pod", "calibrate", "rehearse"))
     ap.add_argument("args", nargs="*")
     ap.add_argument("--tag", default="local")
+    ap.add_argument("--arms", nargs="+", help="calibrate only: the arms this job trains (default every arm)")
     a = ap.parse_args()
     require_filed(PRED)
     cfg, th = load()
+    assert a.arms is None or set(a.arms) <= {x[0] for x in cal_arms(cfg)}, f"--arms: one of {[x[0] for x in cal_arms(cfg)]}"
     torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False  # fp32 reads, as E256, E268
     out = HERE / "results" / ("rehearse" if a.job in ("rehearse", "calibrate") else "")
     log(f"{json.loads(PRED.read_text())['experiment']} {a.job} {a.args} tag {a.tag}; settings {asdict(cfg)}; thresholds {th}")
@@ -422,7 +459,7 @@ def main() -> int:
     if a.job == "calibrate":
         stage0(W, a.args[0], th, a.tag)
         for task in a.args:
-            calibrate(W, task, th)
+            calibrate(W, task, th, a.arms)
     elif a.job == "rehearse":
         stage0(W, cfg.rehearse_task, th, a.tag)
         item(W, cfg.rehearse_task, cfg.seeds[0], cfg.rehearse_cap, th, cfg.rehearse_eb_arms)
