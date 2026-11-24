@@ -1,0 +1,49 @@
+{
+  "experiment": "E286 (rotation_kept)",
+  "cell": "P1.60",
+  "card": "experiments/rotation_kept/card.md",
+  "plan": "reports/plans/2026-11-23_plan_p1-60-rotation-kept.md",
+  "filed": "2026-11-23, definition-lead (writer agent), before any GPU run of this experiment; descriptive, a diagnostic beside the frozen definition, not the definition",
+  "settings": {
+    "windows": 256,
+    "top_frac": 0.01,
+    "own_energy": 0.99,
+    "rank_rtol": 1e-06,
+    "too_small": 100,
+    "too_wide": 0.5,
+    "cache_batch": 32,
+    "control": "x2",
+    "built": ["x2", "x10", "rebuilt", "new_few", "new_thin", "random_size_241001", "random_kl_241002"],
+    "head_layer": 2,
+    "head": 4,
+    "head_states": ["e62/copy_s0", "e62/copy_s1", "e62/copy_s2", "e62/lookup_s0", "e62/lookup_s1", "e62/lookup_s2"],
+    "panel_vpd_derangements": 1,
+    "settings_source": "windows: the cell (user 2026-11-23, 'the same 256 pairs per item'), read as the first min(256, |D|) windows of each item's D at every position. top_frac: the cell's top 1% most-needed. own_energy: chosen here as the share of M's own write energy an own space must hold; it is exact for every one-direction variable (rank 1 holds all of it) and stage 0 checks it. rank_rtol: numerical rank of the needed space, a fp64 tolerance. too_small: whip-lead's floor (2026-11-23, filed with E273). too_wide: a needed space whose null exceeds one half is not read. cache_batch, control, built: E268's (experiments/kstar_needed/results/predictions.json). head: whip-lead 2026-11-23, head (2, 4) at the head basis on E62's copy windows (E280's targets). The head scan uses E268's scan settings loaded live (4 derangements x 64, seed 268). panel_vpd_derangements: E268's first derangement only, a departure to fit the debug queue (plan section 3)."
+  },
+  "readings": {
+    "strict": "the frozen kept: commute.stand_in.explained(num, den) / dd per variable, pooled as explained_share over the read set N",
+    "own": "per variable |Delta P_O|^2 / |Delta|^2, O the fewest top eigen-directions of W_M^T W_M holding own_energy of its trace; pooled: numerators summed over N over sum dd over N",
+    "needed": "the same with S = span of O(u) and O(v) for every non-remainder v in the reference set R at u's site (VPD: the matrix; neuron basis: the layer's MLP for neurons and remainder, the layer's attention for heads), numerical rank at rank_rtol",
+    "null": "per variable dim S / d_out; pooled with the rotation share's weights",
+    "rotation": "pooled (needed - own) / (1 - own): the share of the change leaving the own space that lands in the needed space; its null (nu - dim O / d_out) / (1 - dim O / d_out), weighted the same",
+    "sets": "N: the ceil(top_frac n) changed members of K with most flips (saved scan); R: the ceil(top_frac n) members of K with most flips; ties to the lower index",
+    "head24": "head (2, 4) alone, on E62's 206 copy windows: strict and own share, and its flips of 256 pairs from needed_neurons.scan with pairs drawn within the copy windows"
+  },
+  "rules": {
+    "R0": "Stage 0 stops the job unless the do-nothing has every dd exactly 0.0, an empty changed read set, pooled shares 1.0 by convention, and every own space of R holding at least own_energy of its write (checked to 1e-12)",
+    "R1": "x2 runs first. At the neuron basis it stops the job unless every changed neuron in N has own share at least 1 - 1e-9 and the pooled own share is at least 0.99 (x2 scales down_proj columns, so each neuron's change lies along its own column)",
+    "R2": "On every item the job stops if any one-direction variable reads strict above own by more than 1e-9, or any variable reads own above needed by more than 1e-9 (both hold by construction)",
+    "items": "descriptive (card); no verdict on reuse under this reading"
+  },
+  "expected": {
+    "stage0": "do-nothing: dd max 0.0, read set empty, pooled shares 1.0, own spaces hold at least 0.99",
+    "x2_x10_neurons": "own share at least 1 - 1e-9 per changed neuron, pooled own at least 0.99; needed at least own",
+    "x2_x10_vpd": "needed share pooled at least the strict share (E268: E_b 0.761 over K); expected at least 0.9",
+    "new_few_new_thin": "needed share pooled at most 0.5; rotation share within 0.1 of its null, at both bases",
+    "randoms": "built randoms and E229's matched randoms: rotation share within 0.05 of its null; own share 0.2 to 0.8 at the neuron basis (a Gaussian moves a neuron's input and output side by similar relative amounts)",
+    "e62": "rival A (rotation): the three-seed mean of copy's needed share at least 0.2 above lookup's, at either basis; rival B: within 0.2",
+    "e229_panel": "descriptive: each trained item's rotation share beside its matched random's; rival A puts trained at least 0.2 above its random's on most items, rival B within 0.05 of the null",
+    "head24": "strict: copy above lookup on every seed (E277 on all of D: copy 0.095-0.141, lookup 0.015-0.020); flips: copy above lookup on every seed (E277 on all of D: 128-141 against 11-15 of 256); own share: rival A (rotation inside the head's write space) puts every copy seed at 0.5 or more, rival B below 0.5; the output-side null is dim O / 768, at most 0.17",
+    "time": "at most 1 min per item without a scan (the x2 item measures it); head scans 6 min in all; VPD panel 465 s per state on an L40 (E272 742 s per state at 4 derangements on an H100, divided by 4, times E272's L40 slowdown 2.5)"
+  }
+}
