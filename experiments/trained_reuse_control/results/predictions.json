@@ -14,7 +14,7 @@
     "warmup": 300,
     "schedule": "hf_cosine",
     "clip": 1.0,
-    "recipe_source": "E139 amendment 2 (experiments/reuse_variable_finetune/amend2.py Config and train; results/predictions_amend2.json recipe): 3000 steps, peak 1e-5 (LLaMA-Factory's documented full-SFT peak, commute.qwen_sft.lr_at), warm-up 300 (ratio 0.1) then cosine to 0, Adam betas 0.9/0.999, no weight decay, clip 1, loss KL(F || fine-tune) at the read positions, every parameter trained, batches drawn with replacement by a per-item seeded generator",
+    "recipe_source": "E139 amendment 2 (experiments/reuse_variable_finetune/amend2.py Config and train; results/predictions_amend2.json recipe): 3000 steps, peak 1e-5 (LLaMA-Factory's documented full-SFT peak, commute.qwen_sft.lr_at), warm-up 300 (ratio 0.1) then cosine to 0, Adam betas 0.9/0.999, no weight decay, clip 1, loss KL(F || fine-tune) at the read positions, batches drawn with replacement by a per-item seeded generator. One departure: the 24 decomposed matrices are trained and the embedding, unembedding and norms stay frozen, as decisions.md's 'Post-training' row (2026-10-14) and E147's fine-tunes (the trained items E277 and E290 read), so every change lies where both featurizations have variables; E139 trained every parameter",
     "batch": {"x2": 32, "new_few": 1024},
     "batch_source": "positions per step as E139: E139 drew 1024 windows read at one position each, sourced there as 'arm A's 32 windows of 41 tokens read ~1,300 positions' (reuse_variable_finetune/run.py Config.batch). new_few is read at its last position, so 1024 windows (E139's number); x2 is read at every one of 41 positions, so 32 windows (arm A's, finetune.ArmAConfig), 1312 positions",
     "micro": 256,
@@ -59,19 +59,19 @@
   "dry": {
     "targets": ["x2"],
     "seeds": [0],
-    "steps": 30,
-    "warmup": 3,
-    "saves": [10, 30],
-    "early_steps": [1, 2, 3, 10, 30],
+    "steps": 10,
+    "warmup": 1,
+    "saves": [5, 10],
+    "early_steps": [1, 2, 3, 5, 10],
     "overshoot_step": 10,
-    "fall_step": 30,
+    "fall_step": 10,
     "fall_ratio": 1000.0,
     "kl_m_band": {"2": [0.0, 1.0], "3": [0.0, 1.0]},
     "dry_source": "CPU dry run only (run.py --dry OUT): tiny training on x2 with open bars, written under OUT, never under results/"
   },
   "items": {
     "targets": "x2: E214's built strengthening edit (E195's 8 copy neurons of layer 1, their down_proj columns times 2; P.rescaled), reuse by construction; new_few: P1.31's built new edit (known_edits.build), new by construction. Both from E242's World through experiments/eapig_overlap/items.py Items (E214's edits rebuilt, their record written to this run's results and checked against eapig_overlap/edits_ref.json: the discrete choices must be equal or the job stops)",
-    "imitators": "ft/<target>_s<seed>: M with every parameter fine-tuned by the recipe to imitate the target on its training windows at its read positions; seeds 0-2 differ in the batch draws only (E139's design); the step-3000 state is read, saved as an fp32 delta per parameter (results/large/dw_<target>_s<seed>.pt)",
+    "imitators": "ft/<target>_s<seed>: M with its 24 decomposed matrices fine-tuned by the recipe to imitate the target on its training windows at its read positions; seeds 0-2 differ in the batch draws only (E139's design); the step-3000 state is read, saved as an fp32 delta per parameter (results/large/dw_<target>_s<seed>.pt)",
     "random": "ft/<target>_s<seed>_rand: a Gaussian per changed parameter tensor at the imitator's Frobenius norm there (needed_neurons.matched_random), seed random_seed + item index",
     "D": "each item is read on its target's D at its read positions, as E277 and E268 read the built edits: x2 on E195's 75 copy24 held-out windows at every position, new_few on P1.31's 512 cue windows at the last position",
     "neurons": "12 items (2 targets x 3 seeds x imitator and random) at E277's featurization, scan settings E277's filed ones (needed_neurons.load_config)",
@@ -80,7 +80,7 @@
   "readings": {
     "leftover": "TV(fine-tune, F) / TV(fine-tune, M), each a mean over D's windows and read positions of the total variation between next-token distributions (E139's distances, at this item's read positions); also KL(F || fine-tune), KL(M || fine-tune) and the target's own gap TV(F, M)",
     "E_b_K": "commute.stand_in.explained_share over K and changed, K by the featurization's single-variable interchange, as E277 filed it (remainders in) at neurons and as E268 at VPD",
-    "beside": "|K|, n changed in K, median top-1 minus top-2 margin; at neurons E_b over K without the remainders, over the neurons only, and the remainders' share of dd (needed_neurons.remainder_columns); the share of |dW|^2 outside the 24 decomposed matrices"
+    "beside": "|K|, n changed in K, median top-1 minus top-2 margin; at neurons E_b over K without the remainders, over the neurons only, and the remainders' share of dd (needed_neurons.remainder_columns); the imitator's |dW|^2"
   },
   "rules": {
     "R0a": "Stage 0 of each featurization (E277's at neurons, E290's vpd_stage0 at VPD) stops the job on any argmax change under the identity interchange on x2, or unless the do-nothing (F = M) has no changed variable, dd max exactly 0.0 and E_b over K exactly 1.0",

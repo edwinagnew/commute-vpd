@@ -1,6 +1,7 @@
 """E___ (cell P1.4, run 2 of 3; reopened 2026-11-23 by whip-lead under the user's standing authority): ordinary fine-tunes
-of all weights of the 67M trained to imitate two built edits whose label is known by construction, E214's x2 (pure
-strengthening: reuse) and new_few (new), 3 seeds each with E139 amendment 2's recipe, each beside a matched random, read
+of the 67M's 24 decomposed matrices (decisions.md, "Post-training", 2026-10-14; E139 also trained the embeddings and
+norms) trained to imitate two built edits whose label is known by construction, E214's x2 (pure strengthening: reuse)
+and new_few (new), 3 seeds each with E139 amendment 2's recipe, each beside a matched random, read
 with E_b over the needed set K at E277's neuron featurization (scored) and E268's VPD featurization (seed 0,
 descriptive). An imitator is read only when its leftover, TV(fine-tune, target) / TV(fine-tune, M) as E139 measured it,
 is at most E139's measured 0.1924. Plan reports/plans/2026-11-24_plan_p1-4-run2-trained-reuse-control.md; card card.md;
@@ -251,16 +252,16 @@ def step_loss(F: R.Model, ft: R.Model, toks: Tensor, at: slice, micro: int) -> f
     return total
 
 
-def delta_of(ft: Any, M: Any) -> dict[str, Tensor]:
+def delta_of(ft: Any, M: Any, keys: set[str]) -> dict[str, Tensor]:
     mp = dict(M.named_parameters())
-    return {k: (p.detach() - mp[k].detach()).float().cpu() for k, p in ft.named_parameters()}
+    return {k: (p.detach() - mp[k].detach()).float().cpu() for k, p in ft.named_parameters() if k in keys}
 
 
 def untrained(w: World, t: str, F: R.Model, D: Tensor, at: slice) -> tuple[Any, dict[str, Any]]:
     """R0b: a copy of M before any step: delta 0, TV and KL to M exactly 0 on D, and the target's gap over the floor."""
     ft = OT.clone_net(w.net)
     d0 = distances(w.M, F, R.Model(ft.net), D, at, w.cfg.read_batch)
-    nz = sum(int(v.count_nonzero()) for v in delta_of(ft.net, w.M.net).values())
+    nz = sum(int(v.count_nonzero()) for v in delta_of(ft.net, w.M.net, {k for k, _ in ft.net.named_parameters()}).values())
     miss = [f"untrained copy: {nz} nonzero delta entries"] if nz else []
     miss += [f"untrained copy: {k} {d0[k]!r}, not 0.0" for k in ("gap", "kl_from_M") if d0[k] != 0.0]
     miss += [f"{t}: target gap TV(F, M) {d0['target_gap']:.4g} under the floor {w.cfg.floor_gap}"] if d0["target_gap"] < w.cfg.floor_gap else []
@@ -277,9 +278,9 @@ def train_one(w: World, t: str, seed: int) -> None:
     F, D, at = w.target(t)
     fit = fit_windows(w, t).to(D.device)
     ft, d0 = untrained(w, t, F, D, at)
-    params = list(ft.net.parameters())
-    for p in params:
-        p.requires_grad_(True)
+    keys = {f"{k}.weight" for k in w.w.keys}  # the 24 decomposed matrices; embeddings, unembedding, norms frozen
+    params = [p.requires_grad_(True) for k, p in ft.net.named_parameters() if k in keys]
+    assert len(params) == len(keys) == 24, f"{len(params)} of {len(keys)} decomposed matrices found"
     opt = torch.optim.Adam(params, lr=cfg.lr, betas=(0.9, 0.999), weight_decay=0.0)
     gen = torch.Generator().manual_seed(zlib.crc32(f"{t}_s{seed}".encode()))  # the seed draws the batches only
     out: dict[str, Any] = {"experiment": EXPERIMENT, "target": t, "seed": seed, "n_fit": len(fit), "batch": cfg.batch[t], "d0": d0, "early": []}
@@ -304,14 +305,11 @@ def train_one(w: World, t: str, seed: int) -> None:
             log(f"  {t} s{seed} step {step}: loss {curve[-1]:.5f}, KL(F||ft) {d['kl_to_F']:.5f}, KL(M||ft) {d['kl_from_M']:.3e}, leftover {d['leftover']}, rate {rate:.2e}")
             if miss := early_miss(cfg, step, d, d0):
                 stop(path, out | {"curve": curve}, "R1: " + "; ".join(miss))
-    dw = delta_of(ft.net, w.M.net)
+    dw = delta_of(ft.net, w.M.net, keys)
     torch.save(dw, dw_file(t, seed))
-    keys = {f"{k}.weight" for k in w.w.keys}  # the 24 decomposed matrices
-    size2 = {k: float(v.double().pow(2).sum()) for k, v in dw.items()}
     last = out["early"][-1]
-    out |= {"curve": curve, "leftover": last["leftover"], "gap": last["gap"], "target_gap": last["target_gap"], "size2": sum(size2.values()),
-            "size2_outside_decomposed_share": sum(v for k, v in size2.items() if k not in keys) / max(sum(size2.values()), 1e-300),
-            "seconds": time.time() - t0, "done": True}  # fmt: skip
+    out |= {"curve": curve, "leftover": last["leftover"], "gap": last["gap"], "target_gap": last["target_gap"],
+            "size2": sum(float(v.double().pow(2).sum()) for v in dw.values()), "seconds": time.time() - t0, "done": True}  # fmt: skip
     dump(path, out)
     log(f"TRAINED {t} s{seed}: leftover {out['leftover']}, gap {out['gap']:.4g} (target {out['target_gap']:.4g}); {out['seconds']:.0f} s")
     del ft, opt
@@ -347,6 +345,14 @@ def repeat(where: str, prior: dict[str, float], tol: float, read: Any, path_of: 
     dump(path, out | {"done": True})
 
 
+def loads_only(w: World) -> None:
+    """INPUT_MANIFEST_ONLY dry run: the loads of the do-nothing, x2 (D and the cue windows) and every trained imitator
+    present, not new_few's edit build (over an hour on CPU, friction 944) nor any read."""
+    for item in ["do_nothing", "x2", *(i for i in items(w.cfg) if i.startswith("ft/x2") and dw_file(*parse(i)).is_file())]:
+        w.make(item)
+    log("manifest only: loads done, no reads")
+
+
 def neurons_stage(cfg: Config, shard: tuple[int, int], tag: str, check: bool) -> None:
     ncfg, c229 = NNR.load_config(), NNR.load_e229()  # E277's filed scan settings, unchanged
     if not check and done(RESULTS / "stage0_repeat_neurons.json") is None:
@@ -354,7 +360,7 @@ def neurons_stage(cfg: Config, shard: tuple[int, int], tag: str, check: bool) ->
     w = World(cfg, "neurons")
     feat = NNR.E229.feat_of(c229, NNR.E229.load_pct(c229), ncfg.band)
     if manifest_only():
-        return log("manifest only: world and featurization loaded, no reads")
+        return loads_only(w)
     floor = NNR.stage0(w, ncfg, feat, tag)["identity"]["max_dev"]
     if check:
         return repeat("neurons", cfg.prior_neurons, cfg.repeat_tol_neurons, lambda i: NNR.read_item(w, i, ncfg, feat, floor),
@@ -371,7 +377,7 @@ def vpd_stage(cfg: Config, tag: str) -> None:
     w = World(cfg, "vpd")
     w.bases = KV.bases(w.uv, IA.KN.E226.load_config()[0].split_tol)
     if manifest_only():
-        return log("manifest only: world and bases loaded, no reads")
+        return loads_only(w)
     floor = IA.vpd_stage0(w, kc, tag)
     repeat("vpd", cfg.prior_vpd, cfg.repeat_tol_vpd, lambda i: IA.read_vpd(w, i, kc, floor), lambda i: RESULTS / "vpd" / f"{fname(i)}.json")
     todo = items(cfg, cfg.vpd_seeds)
