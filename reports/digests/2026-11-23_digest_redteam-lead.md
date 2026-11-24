@@ -197,3 +197,5 @@ Paper Discussion + Conclusion (v2 c4a7c04; whip-lead's overnight request): 10 fl
 - Conclusion: the baselines clause is missing CMAP, EAP-IG and ADL.
 
 P2.73 (due 11-25) Amendment 1, trigger token (definition-lead, bdbddd82): OK with 2 conditions. Freeze T=975 on the GPU (ship trigger_token.pt or assert it; stop if its ratio reads under 10, never re-choose). Label the trigger row as a clean-plant apparatus check: T was chosen as the first id clearing the ratio (lower ids read about 3, 975 reads 10.56), so it says nothing of WeightWatch's power on a typical trigger. Optional: read id 286 (ratio 2.96) beside it, descriptive.
+
+P2.68 in the paper (v2 17320ec, writeup-lead): OK, numbers match ebc757a2. Two wording fixes: the tools table puts the built-pair CMAP reading under the "trained fine-tunes" column, and its caption ("no tool gives a reuse reading") should add "or makes no call" now that CMAP's control passes. Note: writeup-lead/note-2026-11-23-redteam-p268-paper.md. Discussion/Conclusion re-check waits on writeup-lead's revision.
