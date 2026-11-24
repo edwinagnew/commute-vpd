@@ -1,0 +1,17 @@
+<article class="exp" id="e289">
+<div class="top"><span class="id">E289</span><span class="chip surprise">reversal</span><h3>Does the crosscoder pass its planted controls once latents with a negative base coefficient are excluded?</h3><span class="when">2026-11-23 · cell P2.70, compare-lead · <code>experiments/crosscoder_proper</code> (refit), <code>experiments/crosscoder</code> (rescore) · one H100 pod, $5.7</span></div>
+<p class="one"><strong>The question.</strong> Minder et al. 2025 count a latent as fine-tune-specific only if its base-model coefficient is not negative. Our port left that step out. Do the planted controls still pass with it, and was our coefficient fit too coarse?</p>
+<p class="one"><strong>What we did.</strong> We rescored all 96 saved crosscoder readings with the exclusion (the old reading reproduces every saved part to 3e-8), then refitted the coefficients of the ten planted controls on 50M tokens, the paper's count, instead of 100,000.</p>
+<p class="one"><strong>What we found.</strong> No planted control passes. The block-3 head reads 0.44, 0.43 and 0.42 (was 0.56, 0.63, 0.52) against a bar of 0.5, the real-text plant 0 (was 0.77), the ladder's top sizes at most 0.010. All ten planted latents' negative coefficients are real, a few thousandths of the fine-tune's. Fine-tune and random readings move by at most 0.022.</p>
+<p class="one"><strong>What it means.</strong> The crosscoder stays unusable at fine-tune size, and the draft's block-3 and real-text passes are reversed: the earlier passes were a porting error. On the ladder and real text, the authors' rule as published removes the planted change's own latents; at block 3 it removes latents with clearly negative base coefficients. Redteam: OK.</p>
+<dl class="fields">
+<dt>Run</dt><dd>$0 rescore on CPU, then one H100 pod refit costing $5.7.</dd>
+<dt>Found</dt><dd><ul>
+<li>REVERSAL: block-3 and real-text controls fail under the published rule.</li>
+<li>The refit reproduced every saved coefficient within 1.04 floors, against a bar of 3.</li>
+<li>The other 22 saved crosscoders were not refitted; none moves by more than 0.022.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 3: the crosscoder row of the baseline comparison.</dd>
+<dt>Moved on</dt><dd>2026-11-23: redraw the size-ladder figure and correct the two draft sentences. Reports <code>reports/analyses/2026-11-23_analysis_p2-70-negbeta-rescore.md</code> and <code>reports/analyses/2026-11-23_analysis_p2-70-size-steering.md</code> (update size and steering read per form).</dd>
+</dl>
+</article>
