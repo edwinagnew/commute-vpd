@@ -4,6 +4,14 @@
   "card": "experiments/fig2_standard/card.md",
   "plan": "reports/plans/2026-11-24_plan_p1-62-fig2-standard.md",
   "filed": "2026-11-24, definition-lead (writer agent), before any GPU run of this experiment; repro_rel_tol is left null for the lead to fill from the rehearsal's measured deviations (an amendment before the scored run)",
+  "notes": ["2026-11-24, definition-lead at redteam-lead's request, before any stage-1 run (nothing of E298 has run): added sae_x2_expected and, in run.py, stage 0's SAE must_flip control and the stop on an empty K at the SAE control; no other filed value changed"],
+  "sae_x2_expected": {
+    "rule": "SAE built/x2 (the control) E_b_K, the headline with the error terms counted, lies strictly between lo and hi, and its size_K > 0; score.py prints whether it held",
+    "lo": 0.761,
+    "hi": 0.9998,
+    "lo_source": "VPD x2 E_b_K 0.7613907 (E268), as redteam-lead stated it",
+    "hi_source": "neurons x2 E_b_K 0.9997651 (E277), as redteam-lead stated it"
+  },
   "settings": {
     "control": "built/x2",
     "built": ["x2", "x10", "rebuilt", "new_few", "new_thin", "random_size_241001", "random_kl_241002"],
