@@ -8,14 +8,16 @@
 We ran the published head-level patching method of Prakash et al. on our small model: find a fine-tune's attention-head
 circuit, then give the unchanged model those heads' fine-tuned outputs and count how much of the fine-tune's gain
 comes back. On the nine built pairs it put the reuse side clearly above the new side on five, tied on two and reversed
-on two, so the filed rule makes no call, while the definition puts reuse above new on all nine. For `GOALS.md` this is
+on two, so the filed rule makes no call, while R_A (E248) puts reuse above new on all nine. For `GOALS.md` this is
 a published baseline that does not recover the built labels, and it fails in a nameable way: fine-tunes whose gain
 runs through few findable heads read near zero.
 
+2026-11-23: R_A relabelled as an older reading, not the paper's definition ρ (whip-lead and writeup-lead's catch).
+
 ## The answer
 
-Head-level patching, run as the paper runs it with the authors' own code, does not sort our built pairs the way the
-definition does. It reads the reuse side well above the new side on five of nine pairs, about level on two, and below
+Head-level patching, run as the paper runs it with the authors' own code, does not sort our built pairs the way
+R_A (E248) does. It reads the reuse side well above the new side on five of nine pairs, about level on two, and below
 on the two pairs whose reuse side teaches the base model's own top next token. The filed rule needed six of nine and
 called neither outcome. Every control passed, including a planted head recovered whole. The two reversals come from circuit size:
 discovery keeps few heads on that task, and against random head sets of the same size those pairs read level.
@@ -40,7 +42,7 @@ It was read on two sets of fine-tunes, both rescaled updates of the 67M model:
   token, mid a token from its top 20, cipher a fixed cipher, and the prior-matched cipher a cipher whose answers the
   base model already finds about as likely as copy's. These carry no built label.
 
-Beside each share sits the definition's reading of the same state at the same scale, R_A from E248. R_A is the share of
+Beside each share sits R_A, the E248 reading of the same state at the same scale: an older reading, not the definition's ρ that the paper uses in `§5.1`. R_A is the share of
 the fine-tune's changed variables that must keep their fine-tuned values for the base model's parts to still compute
 what the fine-tune computes; one means the do-nothing, and lower means more had to change.
 
@@ -53,19 +55,19 @@ the differences should sit near zero or take either sign.
 
 ## What we observed
 
-![Head CMAP and the definition on the nine built pairs and the five key tasks](../../experiments/cmap/figures/pairs.png)
+![Head CMAP and R_A (E248) on the nine built pairs and the five key tasks](../../experiments/cmap/figures/pairs.png)
 
 ### Does the head CMAP share put each pair's reuse side above its new side?
 
 **Reading it.** Not consistently. In the left panel the blue reuse points sit clearly right of the orange new points on
 five pairs. These are copy against a random map, copy against the prior-matched cipher, both copy-against-cipher pairs,
 and the mid task against its own cipher. On the mid task against the matched cipher and on the lowercase text pair the two
-sides overlap. On both pairs whose reuse side is the top task, reuse sits left of new. In the right panel the
-definition puts every blue cluster right of its orange cluster. The filed rule needed the reuse side ahead by more than
+sides overlap. On both pairs whose reuse side is the top task, reuse sits left of new. In the right panel
+R_A puts every blue cluster right of its orange cluster. The filed rule needed the reuse side ahead by more than
 0.07 on six of nine pairs with a median above 0.07. Five pairs cleared it, and the median difference was 0.15, so
 neither rival holds and the rule makes no call.
 
-| pair, reuse side / new side | format | head CMAP, reuse | head CMAP, new | difference | size-corrected difference, ours, post hoc | definition's difference |
+| pair, reuse side / new side | format | head CMAP, reuse | head CMAP, new | difference | size-corrected difference, ours, post hoc | R_A (E248) difference |
 |---|---|---|---|---|---|---|
 | e46 copy / random map | key table | 0.51 | 0.14 | 0.36 | 0.33 | 0.26 |
 | e53 lowercase / cipher, text | next token | 0 | 0.01 | −0.01 | none: every reuse circuit empty | 0.19 |
@@ -77,8 +79,8 @@ neither rival holds and the rule makes no call.
 | c3 top / cipher | key table | 0.05 | 0.24 | −0.19 | −0.003 | 0.14 |
 | c3 copy / cipher | key table | 0.41 | 0.24 | 0.17 | 0.19 | 0.17 |
 
-Each side's value is the mean over its seeds; the difference is reuse minus new. The definition's difference is the
-same for R_A. Shares are compared within a format only, and each pair's two sides share a format. The size-corrected
+Each side's value is the mean over its seeds; the difference is reuse minus new. The R_A difference is the
+same, reuse minus new, on R_A. Shares are compared within a format only, and each pair's two sides share a format. The size-corrected
 column is described in the next section; it was not filed.
 
 ### Why the two top-task pairs reverse
@@ -99,10 +101,10 @@ leave few findable heads.
 
 ### The key-task column
 
-**Reading it.** Head CMAP orders the five key tasks differently from the definition. In the lower rows of the figure,
+**Reading it.** Head CMAP orders the five key tasks differently from R_A. In the lower rows of the figure,
 copy reads highest on both, at a mean share of 0.58 and an R_A of 0.98. The top task reads lowest on head CMAP, at
-0.09, while the definition puts it next to copy, at 0.88. The two ciphers sit in the middle on head CMAP, at 0.22 and
-0.31, but lowest on the definition, at 0.65 and 0.75. No reuse verdict is given on any single fine-tune.
+0.09, while R_A puts it next to copy, at 0.88. The two ciphers sit in the middle on head CMAP, at 0.22 and
+0.31, but lowest on R_A, at 0.65 and 0.75. No reuse verdict is given on any single fine-tune.
 
 ## The controls
 
@@ -143,7 +145,7 @@ defined, so it reads a subset, recorded per item in `score.json` beside the shar
   held-out windows its original scorer used, a different row set. It is kept out of any comparison with another format,
   and the filed rule without it also makes no call.
 
-No item reads under a quarter of D; the smallest is the cued pair's 204 of 512. So the definition's reading on the
+No item reads under a quarter of D; the smallest is the cued pair's 204 of 512. So R_A on the
 labelled subset was not needed and was not computed.
 
 ## What we learned
@@ -217,7 +219,7 @@ the heads on D, and nothing here checks it against the paper's method.
 
 ## Not run
 
-- The definition's reading on each item's labelled subset of D: no item fell under a quarter of D.
+- R_A on each item's labelled subset of D: no item fell under a quarter of D.
 - A planted head in the second or third group.
 - The paper's DCM subsets and its fourth group.
 - Head CMAP on Qwen3-1.7B.
