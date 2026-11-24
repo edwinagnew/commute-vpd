@@ -115,11 +115,22 @@ def with_delta(net: Net, delta: dict[str, Tensor]) -> Net:
     return ft
 
 
-def load_dw(net: Net, path: Path) -> dict[str, Tensor]:
-    """A saved delta-W of the 24 decomposed matrices (fp32 or bf16, keyed by module) as fp32 deltas keyed by parameter name."""
+def load_module_dw(net: Net, path: Path) -> dict[str, Tensor]:
+    """A saved delta-W of the 24 decomposed matrices (fp32 or bf16) as fp32 CPU deltas keyed by module, as `Net.at` and
+    every `realistic_reads` reading take it (`h.0.mlp.down_proj`, not `h.0.mlp.down_proj.weight`)."""
     dw = torch.load(path, weights_only=True, map_location="cpu")
     assert sorted(dw) == sorted(net.W0), f"{path.name}: not the 24 decomposed matrices"
-    return {f"{k}.weight": v.float() for k, v in dw.items()}
+    return {k: v.float() for k, v in dw.items()}
+
+
+def as_params(dw: dict[str, Tensor]) -> dict[str, Tensor]:
+    """Module-keyed deltas keyed by parameter name instead, as `with_delta` adds them."""
+    return {f"{k}.weight": v for k, v in dw.items()}
+
+
+def load_dw(net: Net, path: Path) -> dict[str, Tensor]:
+    """A saved delta-W of the 24 decomposed matrices (fp32 or bf16, keyed by module) as fp32 deltas keyed by parameter name."""
+    return as_params(load_module_dw(net, path))
 
 
 def old_f(net: Net, path: Path) -> Net:
