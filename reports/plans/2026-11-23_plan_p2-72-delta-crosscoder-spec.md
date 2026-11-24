@@ -3,8 +3,9 @@
 Cell P2.72 (due 2026-11-25, 3 runs). User, 2026-11-23: "open delta-crosscoder and weight-diff svd cells". The aim is the
 strongest crosscoder for narrow fine-tunes, so that "existing tools fail" survives a cherry-picking charge. This is the
 spec, revised once after two reviews (redteam-lead with a fresh Opus reviewer, and the GPT plan-reviewer; responses at
-the end). whip-lead's rules override the first draft. Report the method as published, as a yes or no per fine-tune. Give
-no reuse score and no share column. Run 1 goes on an H100 pod. Do not contact the authors; whip-lead is asking the user.
+the end). whip-lead's rules override the first draft (whip-lead approved, 2026-11-23; not the user's words): report the method as
+published, as a yes or no per fine-tune, with no reuse score and no share column. Run 1 goes on an H100 pod. Do not
+contact the authors (user, 2026-11-23, relayed by whip-lead: "no dont email fro the code").
 
 **Sources.** Kassem, Jiralerspong, Rostamzadeh and Farnadi, "Delta-Crosscoder: Robust Crosscoder Model Diffing in Narrow
 Fine-Tuning Regimes", arXiv 2603.04426. The arXiv listing shows one version only, v1 of 16 Feb 2026 (checked
@@ -287,7 +288,7 @@ means the 67M setting leaves no faithful option.
 
 | step | paper | on the 67M | departs | ours/theirs | forced |
 |---|---|---|---|---|---|
-| code | not released | own port, §3 | y | ours | n |
+| code | not released | own port, §3; the authors released no code and we did not ask for it (user, 2026-11-23) | y | ours | n |
 | encoder | eq. 2, average, no bias | average plus bias, ReLU | y, bias | ours | n |
 | top-K rank | BatchTopK(u) | on r = ReLU(u), not times decoder norms (Minder) | n | theirs | n |
 | Dual-K | two budgets | two separate batch top-Ks | n (form ours) | theirs/ours | n |
@@ -315,7 +316,8 @@ means the 67M setting leaves no faithful option.
 | selection | top-3, "right tail" | top-3 by 1 − R (sum denominator); other tail read on C1 | ? | ours (reading) | n |
 | steering vector | "the latent's decoder vector" | d^ft, unit length, s·ρ/100 | ? | ours | n |
 | steering prompts | nine chat prompts | the side's score-half read windows | y | ours | y |
-| steering strengths | 11 values, no cap stated | the same grid, uncapped, Pile-loss rise recorded | n | theirs | n |
+| steering strengths | 11 values, no cap stated | the same grid, uncapped (whip-lead approved, 2026-11-23), Pile-loss rise recorded | n | theirs | n |
+| damage flag | none | beside each label: whether it was won only at \|s\| where the bulk pool's Pile loss rises over 1 nat ("after Kassem") | y | ours | n |
 | steering read | judged text, on the behaviour | the side's behaviour g in nats, both signs, both models; KL gap as a diagnostic | y | ours | y (no chat text) |
 | top activations | inspected for consistency with the behaviour | share of top-50 on behaviour positions, against the pool; 20 contexts saved | y | ours | y (no grader) |
 | success | qualitative, per organism | §3.7 rule, one 60-latent pool per candidate, widened or "not scored"; yes / no / not scored | y | ours | n |
