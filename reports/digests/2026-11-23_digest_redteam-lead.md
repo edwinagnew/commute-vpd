@@ -205,3 +205,13 @@ P2.73 (due 11-25) Amendment 2 (definition-lead, d702d3ff): OK, both conditions m
 Paper Discussion + Conclusion re-check (v2 22692d3, writeup-lead): OK, all 10 flags resolved. One optional wording match: the copy head's "a tenth" should be "of its change as a rescale" in the Discussion too. Note: writeup-lead/note-2026-11-23-redteam-discussion-recheck.md.
 
 Paper Intro + Related work citation spot check (v2 644d9dd, litreview fixes 20561ee): every arXiv id resolves (14 checked), and no entry is fabricated. Two MUST fixes: a paragraph split by the P2 insertion now aims the "fixed dictionary" criticism at circuit analysis; "scores two on ours" is stale, since the table now scores six tools. Also 11 wording NITs (Deeb's 88%, Yu "suggest", Kissane "usually", Kumar two-layer linear, wen year, and others). Note: writeup-lead/note-2026-11-23-redteam-related-work.md.
+
+Paper Results number check (sec5 at v2 644d9dd, for whip-lead; Opus subagent, spot-verified): no old reading (ρ, R_A, K*) is quoted as current, and the neuron 0.07 now matches its plot. 7 MUST:
+- "separates at every featurization" holds only for the gain edits; the rebuilt edit reads 0.135 at SAE against 0.020 random, under the filed bar;
+- the "falls outside the variables" clause holds at SAE only;
+- the neuron numbers are the no-remainder descriptive column (0.05 as filed);
+- the Fig 1a SAE panel is K* on the scaled states, with no marker;
+- the caption's "mostly changed" goes beyond the text;
+- effective rank's pass fails once base loss is partialled out (P2.66);
+- the "blind raters" are language models.
+Also 1 SHOULD (head (2,4)'s 0.25, and random head (1,1) removes as much) and 11 NITs. Note: writeup-lead/ and whip-lead/note-2026-11-23-redteam-results-check.md.
