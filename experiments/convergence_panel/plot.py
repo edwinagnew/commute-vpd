@@ -44,14 +44,74 @@ def panel(ax: Any, means: dict[str, dict[str, float]], sign: dict[str, int], tit
     return [{"panel": title, "row": a, "col": b, "tau": M[i][j]} for i, a in enumerate(order) for j, b in enumerate(order)]
 
 
-def real(path: Path) -> None:
-    S = json.loads(path.read_text())
+def real(S: dict[str, Any], name: str, label: str) -> None:
+    """The pairwise heatmap of one set's KL 'hi' readings (S: the nine's summary, or its 'wide' entry)."""
     P = json.loads((HERE / "results" / "predictions.json").read_text())
     s = S["kl_hi"]
     means = {m: v for m, v in s["means"].items() if v} | {"tier": S["consensus_tier"]}
     fig, ax = figure((6.5, 5.5))
-    rows = panel(ax, means, P["rules"]["orientation"], "Do the readings rank tasks alike, and like the raters? (matched KL)")
-    save(fig, HERE / "figures" / "pairwise_tau.png", n=f"n = {len(s['hope2']['tasks'])} tasks, each the mean of 3 seeds at one matched KL", data=rows)
+    rows = panel(ax, means, P["rules"]["orientation"], f"Do the readings rank tasks alike, and like the raters? ({label}, matched KL)")
+    shared = [len(set(means[a]) & set(means[b])) for a in means for b in means if a != b]
+    save(fig, HERE / "figures" / name, n=f"n = {min(shared)} to {max(shared)} tasks a pair (the tasks both have), each the mean of 3 seeds at one matched KL", data=rows)
+
+
+RATERS = {"consensus": ("raters' consensus", "#000000", "o"), "opus": ("Opus rater", "#0072B2", "s"), "gpt": ("GPT rater", "#D55E00", "^")}
+
+
+def hope1_fig(S: dict[str, Any]) -> None:
+    """Hope 1 on the KL 'hi' set, the nine and the wide side by side: each readable reading's tau-b with each rater's
+    tiers, beside the base prior's own tau with the consensus tiers and the consensus critical tau-b."""
+    fig, axes = figure((10, 4.2), ncols=2)
+    rows: list[dict[str, Any]] = []
+    for ax, (label, s) in zip(axes, (("nine tasks", S["kl_hi"]), ("wide panel", S["wide"]["kl_hi"])), strict=True):
+        h1 = s["hope1"]
+        ms = list(h1)
+        for k, (r, by) in enumerate(next(iter(h1.values())).items()):
+            name, color, marker = next(v for key, v in RATERS.items() if r.startswith(key))
+            ys = [h1[m][r].get("tau", math.nan) for m in ms]
+            ax.scatter(ys, [i + 0.15 * (k - 1) for i in range(len(ms))], color=color, marker=marker, s=24, label=name)
+            rows += [{"set": label, "reading": m, "rater": r, "tau": y, "p_perm": h1[m][r].get("p_perm"), "call": h1[m][r]["call"]} for m, y in zip(ms, ys, strict=True)]
+        # per reading (its own task count): the consensus critical tau-b, the prior's own tau, and the partial tau on the prior
+        cs = [h1[m]["consensus"] for m in ms]
+        y = list(range(len(ms)))
+        ax.scatter([c["critical_tau"] for c in cs], y, marker="|", s=260, color="#555555", label="critical tau-b, consensus (p = 0.05)")
+        ax.scatter([c["tau_prior"] for c in cs], y, marker="x", s=30, color="#CC79A7", label="base prior's own tau, consensus")
+        ax.scatter([c.get("tau_partial_prior", math.nan) for c in cs], [i + 0.3 for i in y], marker="o", s=26, facecolors="none", edgecolors="#000000",
+                   label="consensus, prior partialled out (absent: no common support)")  # fmt: skip
+        rows += [{"set": label, "reading": m, "rater": "consensus", "critical_tau": c["critical_tau"], "tau_prior": c["tau_prior"],
+                  "tau_partial_prior": c.get("tau_partial_prior"), "n": len(c["tasks"])} for m, c in zip(ms, cs, strict=True)]  # fmt: skip
+        ax.axvline(0, color="#bbbbbb", linewidth=0.6)
+        ax.set_yticks(y, [f"{NAMES[m]} (n = {len(c['tasks'])})" for m, c in zip(ms, cs, strict=True)])
+        ax.set_ylim(len(ms) + 1.4, -0.5)  # top to bottom, room for the legend under the rows
+        ax.set_xlim(-1.05, 1.05)
+        ax.set_xlabel("Kendall tau-b, reading against raters' tier")
+        ax.set_title(label, fontsize=8)
+        ax.legend(fontsize=6, loc="lower left")
+    fig.suptitle("Does each reading rank the tasks as the raters' tiers do, beyond the base prior?", fontsize=9)
+    save(fig, HERE / "figures" / "hope1.png", n="tasks at matched KL, each the mean of 3 seeds", data=rows)
+
+
+def mixture_fig(S: dict[str, Any]) -> None:
+    """Amendment 4/8: every seed's value of each measure against the share of yoruba's rows in the lower+yoruba mix."""
+    mix = S["amendment4"]["mixture"]
+    P = json.loads((HERE / "results" / "predictions.json").read_text())
+    seeds = SC.mix_values(HERE / "results", P["settings"])  # measure -> fraction -> seed values, as score.py read them
+    ms = [m for m in NAMES if m in mix and any(map(math.isfinite, (x for v in seeds[m].values() for x in v)))]
+    fig, axes = figure((11, 5.2), ncols=4, nrows=2)
+    rows: list[dict[str, Any]] = []
+    for ax, m in zip(axes.flat, ms, strict=False):
+        o = mix[m]
+        for f, v in seeds[m].items():
+            ax.scatter([f] * len(v), v, color="#0072B2", s=14, alpha=0.8)
+            rows += [{"measure": m, "fraction": f, "value": x} for x in v]
+        ax.plot(o["fractions"], o["means"], color="#555555", linewidth=0.8)
+        ax.set_title(f"{NAMES[m]}\n" + (f"rho {o['rho']:.2f}: " if SC.finite(o["rho"]) else "") + o["call"].replace(" fractions missing", " fraction(s) missing"), fontsize=7)
+        ax.set_xlabel("share of yoruba rows")
+        ax.set_ylabel(NAMES[m], fontsize=7)
+    for ax in list(axes.flat)[len(ms):]:
+        ax.set_visible(False)
+    fig.suptitle("Does each measure move steadily from lower (reuse) to yoruba (new) as yoruba's share grows? (matched size)", fontsize=9)
+    save(fig, HERE / "figures" / "mixture.png", n="3 seeds per fraction (dots), their mean (line); 0 and 1 are lower's and yoruba's own runs", data=rows)
 
 
 def sketch() -> None:
@@ -74,4 +134,9 @@ if __name__ == "__main__":
     if "--sketch" in sys.argv:
         sketch()
     else:
-        real(Path(sys.argv[sys.argv.index("--summary") + 1]) if "--summary" in sys.argv else HERE / "results" / "summary.json")
+        S = json.loads((Path(sys.argv[sys.argv.index("--summary") + 1]) if "--summary" in sys.argv else HERE / "results" / "summary.json").read_text())
+        real(S, "pairwise_tau.png", "nine tasks")
+        if "wide" in S:
+            real(S["wide"], "pairwise_tau_wide.png", "wide panel")
+            hope1_fig(S)
+        mixture_fig(S)

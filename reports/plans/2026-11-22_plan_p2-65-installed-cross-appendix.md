@@ -29,6 +29,11 @@ on cluster debug at $0); the record below is kept as the brief asked.
 | controls | the cue alone shifts M | cued gain over M cued; ctl reports the cue effect and its standard error |
 | controls | cross jobs on different cards | controls requires one card across the 12 cross jobs |
 | predictions | the Gaussian floor degenerate on ratio readings (review finding 2) | amended: floors on numerators; a floor not read is 'floor not read' |
+| data (amendment f) | parity: M is above floor (" 347 is" followed by " odd" is ordinary text) | ctl reads M's two-label accuracy; install parity stops above 0.6 (chance 0.5) and the two tasks stand |
+| recipe (amendment f) | a two-label answer passes the cued-gain bar by format alone (moving mass onto " even"/" odd" from a low prior), with no parity skill | ctl's cued and uncued two-label accuracy is reported for every label task; a lock at chance accuracy is named in the write-up as a format lock, not a skill (no new bar) |
+| recipe (amendment f) | parity and addition both read numbers, so a parity base may carry number features addition's fine-tune reuses (the " =" risk's analogue) | the templates share no tokens (no " =", " +", shots or single digits); control (2) reads the cell parity base x addition, and a miss there is reported with this cause named |
+| data (amendment f) | held numbers seen in training, so held rows read memorised numbers | train and held numbers disjoint by a seeded split (a quarter held); dry run counts both |
+| time (amendment f) | ctl rewrites tasks.pt while a cross job starts, whose sha check then fails | the job stops at once with the sha mismatch; resubmit it after ctl ends (running jobs loaded tasks.pt at start and are unaffected) |
 | never run on GPU | `installed.train`, `install_loss`, `set_base`, the read path on a moved base | the rehearsal is the first GPU run; ctl and install run first, read's zero_check on a moved base catches a wrong swap |
 
 ## Gate 2: settings and sources

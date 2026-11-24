@@ -1,0 +1,10 @@
+{
+  "experiment": "E283 (reliance)",
+  "amendment": "1b",
+  "cell": "P1.57",
+  "filed": "2026-11-23, definition-lead (writer agent), on redteam-lead's finding relayed by definition-lead; before any V1 value exists. predictions.json and predictions_a1.json are unchanged; this file replaces predictions_a1.json's rule (c) only.",
+  "why": "Amendment 1's rule (c) took the max over new_few, new_thin and random_kl_241002, but by its own point (b) new_few's V1 is at least 0.966 when K_M holds F's unchanged needed variables, so rival A could not pass by construction.",
+  "c_control_rule": "Per item, on the same D (new_few's cue windows, 512 x 41, last position), on each of V1 and V2 separately: rival A's control pattern needs min(V(x2), V(x10)), read as F on the cue D (run.py stage fcue, score.py group control_cue), to be at least 0.2 above V(new_thin) AND at least 0.2 above V(random_kl_241002), each separately. Otherwise rival B's pattern. No reading when any of the four is None (no M scan, or empty K_F).",
+  "new_few": "Reported as a construction check, not in the rule: expected V1 >= 0.966 (amendment 1 (b)). A value below that means unchanged variables of F's needed set left K_M: a difference in D's outputs between F and M, not the edit.",
+  "x2_x10_bound": "Amendment 1's [0.997, 1] bound for x2 and x10 came from their copy24 D. score.py recomputes it on the cue D from the fcue items' own F flips: changed_flip_share (the changed variables' share of F's flip mass on K_F) and v1_floor = 1 - changed_flip_share (V1's value when K_M holds every unchanged member of K_F and no changed one), printed beside each control item before the control is read."
+}

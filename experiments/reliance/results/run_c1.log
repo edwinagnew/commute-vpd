@@ -1,0 +1,25 @@
+[14:39:41] E283 (reliance) start, stage fcue, world built, items [], tasks [], tag c1
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 5731, 'limit_filed': 2.539746259591625, 'limit_whitened_0.01': 8.566283727683114, 'limit_whitened_0.001': 8.575326118502765, 'limit_whitened_0.0001': 8.568684327349663, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 4566, 'limit_filed': 3.383015623415288, 'limit_whitened_0.01': 9.095355079898459, 'limit_whitened_0.001': 9.070667057076344, 'limit_whitened_0.0001': 9.072227442589407, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: {"slots": [109, 447, 771, 1004, 1101, 1997, 2018, 2034], "betas": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "detectors": [{"limit_filed": 2.8299310018075157, "limit_whitened_0.01": 11.977943470656788, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.9354057940160114, "limit_whitened_0.01": 9.467796952164644, "limit_whitened_0.001": 9.453473755664607, "limit_whitened_0.0001": 9.434761738713327, "direction": "whitened 0.0001", "pile_own": 0}, {"limit_filed": 3.153354600912579, "limit_whitened_0.01": 10.247742932694962, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 2.976402686706226, "limit_whitened_0.01": 10.980587317240389, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 3.1523501173597266, "limit_whitened_0.01": 10.295113233962542, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.8080077614150376, "limit_whitened_0.01": 11.894048149583934, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 3.4909928431446855, "limit_whitened_0.01": 12.118530995962917, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 6.333512251802342, "limit_whitened_0.01": 15.14462701601434, "direction": "whitened 0.01", "pile_own": 1}], "act": [13.54616928100586, 13.430658340454102, 14.229463577270508, 13.013628959655762, 13.70849609375, 13.203634262084961, 13.495687484741211, 16.34401512145996], "copy_M_twin": 0.2578125, "copy_M_D": 0.001953125, "misses": ["reuse_small: top-1 0.0000 < 0.2063", "reuse_large: top-1 0.0117 < 0.2063"], "gamma_new_few": 11.291458129882812, "gamma_new_thin": 10.845924377441406, "gamma_T": 8.0, "g": 4.662668471294909, "size_matched": false, "dW_norm": {"reuse_small": 11.702665916967812, "new_few": 4.032900249421868, "new_thin": 1.920865076690052, "reuse_large": 31.24612063404571}, "top1_reuse_small": 0.0, "top1_new_few": 0.900390625, "top1_new_thin": 0.900390625, "top1_reuse_large": 0.01171875, "A": [4833, 7192, 4910, 7939, 8638, 2589, 9653, 6196], "A_prime": [10680, 4934, 7756, 7057, 5823, 5827, 6255, 1471], "y": [5752, 5771, 5175, 4412, 5870, 5087, 4201, 6430], "swapped": [{"cue": 5, "A_prime": 5731, "limit_filed": 2.539746259591625, "limit_whitened_0.01": 8.566283727683114, "limit_whitened_0.001": 8.575326118502765, "limit_whitened_0.0001": 8.568684327349663, "direction": "whitened 0.0001", "pile_own": 1}, {"cue": 5, "A_prime": 4566, "limit_filed": 3.383015623415288, "limit_whitened_0.01": 9.095355079898459, "limit_whitened_0.001": 9.070667057076344, "limit_whitened_0.0001": 9.072227442589407, "direction": "whitened 0.0001", "pile_own": 1}]}
+[14:40:11] control_cue/x2: D 3d3c59dc38d37b0d scanned before
+[14:40:13] x2 on new_few's D: 9 changed; F scan
+[14:42:39]     layer 0: 3079 variables x 256 pairs, 2852 needed; 788224 cases in 146 s (5395/s)
+[14:44:31]     layer 1: 3079 variables x 256 pairs, 2249 needed; 1576448 cases in 258 s (6099/s)
+[14:45:48]     layer 2: 3079 variables x 256 pairs, 1997 needed; 2364672 cases in 335 s (7050/s)
+[14:46:29]     layer 3: 3079 variables x 256 pairs, 871 needed; 3152896 cases in 377 s (8370/s)
+[14:46:30] x2 on new_few's D: |K_F| 7969, 379 s; FCUE DONE
+[14:46:30] control_cue/x10: D 3d3c59dc38d37b0d scanned before
+[14:46:32] x10 on new_few's D: 9 changed; F scan
+[14:48:58]     layer 0: 3079 variables x 256 pairs, 2447 needed; 788224 cases in 146 s (5392/s)
+[14:50:47]     layer 1: 3079 variables x 256 pairs, 1020 needed; 1576448 cases in 255 s (6185/s)
+[14:52:04]     layer 2: 3079 variables x 256 pairs, 1392 needed; 2364672 cases in 332 s (7126/s)
+[14:52:45]     layer 3: 3079 variables x 256 pairs, 946 needed; 3152896 cases in 373 s (8449/s)
+[14:52:45] x10 on new_few's D: |K_F| 5805, 375 s; FCUE DONE
+[14:52:45] E283 (reliance) DONE
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /mnt/nw/home/e.agnew/commute-agents/definition-lead/experiments/reliance/results ===

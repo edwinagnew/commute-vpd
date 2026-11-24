@@ -1,0 +1,677 @@
+{
+ "experiment": "E272",
+ "stage": "probe recipe",
+ "filed": {
+  "tries": [
+   {
+    "name": "try1",
+    "lr": 1e-05,
+    "batch": 32,
+    "warmup": 18,
+    "settings_source": "lr: Gururangan et al. 2020 (Don't Stop Pretraining, App. B) DAPT 5e-4 at batch 2048 and TAPT 1e-4 at batch 256, linearly scaled (Goyal et al. 2017) to batch 32: 7.8e-6 and 1.25e-5, 1e-5 between; batch: BERT's fine-tuning grid {16, 32} (Devlin et al. 2019 App. A.3), the larger, 4x the panel's tokens a step (DAPT's 2048 needs accumulation the trainer lacks); warm-up: DAPT/TAPT's (RoBERTa's) 6% linear, 18 of 300. Adam betas (0.9, 0.999), eps 1e-8, no weight decay, clip 1, 300 steps, constant rate after warm-up: the panel's, so only rate, batch and warm-up change (departures from DAPT: betas 0.9/0.98, eps 1e-6, weight decay 0.01, linear decay to 0, 12.5K steps; no decay because the panel reads states along the run). Pile's 2,400 rows are cycled 4 times at batch 32 (TAPT's 100 epochs over task data are the precedent)"
+   },
+   {
+    "name": "try2",
+    "lr": 3e-06,
+    "batch": 32,
+    "warmup": 18,
+    "settings_source": "lr: the geometric middle of try 1's 1e-5 and Pythia-70M's end-of-pretraining rate (Biderman et al. 2023: 1e-3 peak, cosine to 10%, at 2M tokens a step) linearly scaled to 16K tokens a step, 7.8e-7: continuing near the base's own final rate; batch and warm-up as try 1. Adam betas (0.9, 0.999), eps 1e-8, no weight decay, clip 1, 300 steps, constant rate after warm-up: the panel's, so only rate, batch and warm-up change (departures from DAPT: betas 0.9/0.98, eps 1e-6, weight decay 0.01, linear decay to 0, 12.5K steps; no decay because the panel reads states along the run). Pile's 2,400 rows are cycled 4 times at batch 32 (TAPT's 100 epochs over task data are the precedent)"
+   }
+  ],
+  "rule": "a try passes when, at some KL rung v of the panel's ladder (kl_lo x 2^(i/2), i < kl_n), pile and lower each have a seed-0 save with KL (64 kl rows, read from the file) within +-match_tol of v and held gain >= the task's filed floor (results/train/<task>.json floor.floor): panel.nearest, the same rung for both",
+  "bar_0ab": 0.0001,
+  "bar_0c": 0.001,
+  "early_stop": "step-10 size > 0.5 x the filed run's seed-0 step-10 size"
+ },
+ "w0_logp": {
+  "pile": -2.6723922369625663,
+  "lower": -3.145305134842314,
+  "code": -1.595712329947225,
+  "card": "NVIDIA L40"
+ },
+ "0a_zero_saved": {
+  "pile": 0.0,
+  "lower": 0.0,
+  "code": 0.0
+ },
+ "0b_lr0_step1": {
+  "step": 1,
+  "kl": 0.0,
+  "kl_live": -4.645482016641181e-10,
+  "size": 0.0,
+  "held_gain": 0.0
+ },
+ "0c_reread_pile_s0_step300": {
+  "sha_ok": true,
+  "held_gain": -0.06803352838798826,
+  "recorded": -0.06803352838798826,
+  "kl": 0.08646723866235168,
+  "recorded_kl": 0.08646723866235168
+ },
+ "0d_rows_and_masks": {
+  "pile": {
+   "held_32gram_share_in_train": 0.0,
+   "same_columns": true,
+   "train_path_ce": 2.672545164823532,
+   "minus_held_logp": 2.6723922369625663
+  },
+  "lower": {
+   "held_32gram_share_in_train": 0.0,
+   "same_columns": true,
+   "train_path_ce": 3.145619571208954,
+   "minus_held_logp": 3.145305134842314
+  },
+  "code": {
+   "held_32gram_share_in_train": 0.01171875,
+   "same_columns": true,
+   "train_path_ce": 1.5959865152835846,
+   "minus_held_logp": 1.595712329947225
+  }
+ },
+ "try1": {
+  "pile": {
+   "floor": 0.01417440795285696,
+   "step10_size": 0.0003893842243591903,
+   "filed_step10_size": 0.00412812196614912,
+   "saves": [
+    {
+     "step": 8,
+     "kl": 0.0011274174379267278,
+     "size": 0.0002860956242228311,
+     "held_gain": 0.00024881932581122257,
+     "file": "experiments/convergence_panel/results/large/probe/try1/pile_s0_step8.pt",
+     "sha256": "bab9a22db3794818eed3ce61f1e438730087196a08511c9a1ea9a8f6256fccb8"
+    },
+    {
+     "step": 9,
+     "kl": 0.001459890381606801,
+     "size": 0.0003368050423440374,
+     "held_gain": 0.0002486237456511553,
+     "file": "experiments/convergence_panel/results/large/probe/try1/pile_s0_step9.pt",
+     "sha256": "ac0910f103fa1470bb00f72932cbda661a1b57c637f2fabe67919c3ebf2f1b8c"
+    },
+    {
+     "step": 11,
+     "kl": 0.002328952583980999,
+     "size": 0.00044396970138043664,
+     "held_gain": 3.4672293742765703e-06,
+     "file": "experiments/convergence_panel/results/large/probe/try1/pile_s0_step11.pt",
+     "sha256": "ec23d570487dd6570a05f54bcebfdbf6b7f8aabd06d31bd4301ac65793a83d92"
+    },
+    {
+     "step": 12,
+     "kl": 0.002813595803655577,
+     "size": 0.0005001307358088389,
+     "held_gain": -0.00022211874916822083,
+     "file": "experiments/convergence_panel/results/large/probe/try1/pile_s0_step12.pt",
+     "sha256": "1bdc2a95f158b5c88496a6583725c94e09b144dc2a7a9c5df2e3acdbd1a3d7a5"
+    },
+    {
+     "step": 15,
+     "kl": 0.003832817012860934,
+     "size": 0.0006767708925695869,
+     "held_gain": -0.0010665809136685134,
+     "file": "experiments/convergence_panel/results/large/probe/try1/pile_s0_step15.pt",
+     "sha256": "c02728381f5e42ba3fb9860e6bfa6d73aef8e8939f9d7bf4b99f37eed0d00a04"
+    },
+    {
+     "step": 20,
+     "kl": 0.005346321028026615,
+     "size": 0.0009896879420583154,
+     "held_gain": -0.0023608469743163774,
+     "file": "experiments/convergence_panel/results/large/probe/try1/pile_s0_step20.pt",
+     "sha256": "59d7bc2f7ed84c4ac477962507a2275325508a7622129a91f38e0816348c1111"
+    },
+    {
+     "step": 33,
+     "kl": 0.007279080778730258,
+     "size": 0.0016087244299744603,
+     "held_gain": -0.003980262404947865,
+     "file": "experiments/convergence_panel/results/large/probe/try1/pile_s0_step33.pt",
+     "sha256": "c8246ddb7c3e0a689d43298d1d770bebebd22a047bd86549680def5b0343bfb9"
+    },
+    {
+     "step": 45,
+     "kl": 0.008446457246253957,
+     "size": 0.002011419182844038,
+     "held_gain": -0.00271749381995523,
+     "file": "experiments/convergence_panel/results/large/probe/try1/pile_s0_step45.pt",
+     "sha256": "9194eec80e9fcd9c4096eaa4beaf92bcead0f0ea99f157f35111a772c30fc77c"
+    },
+    {
+     "step": 78,
+     "kl": 0.010965020892987336,
+     "size": 0.002799849249027588,
+     "held_gain": -0.005512483341180818,
+     "file": "experiments/convergence_panel/results/large/probe/try1/pile_s0_step78.pt",
+     "sha256": "fdafcf56427071bf0467db0903d4f4738c22d32887c2da3cb9509b1a2e6015f0"
+    },
+    {
+     "step": 79,
+     "kl": 0.011131265654362555,
+     "size": 0.002831195406350675,
+     "held_gain": -0.00550430711958283,
+     "file": "experiments/convergence_panel/results/large/probe/try1/pile_s0_step79.pt",
+     "sha256": "d4525b0a1338f3c66daa20fb41a0f217c463a6bb00322491e9d62c973f965c5c"
+    },
+    {
+     "step": 106,
+     "kl": 0.014986483081404472,
+     "size": 0.003921454088278642,
+     "held_gain": -0.007582898220541701,
+     "file": "experiments/convergence_panel/results/large/probe/try1/pile_s0_step106.pt",
+     "sha256": "ed1a090e4850d3fb3bd2ac3d39e535eb7e07b664feb49bad588f1203cda338d2"
+    },
+    {
+     "step": 109,
+     "kl": 0.015092041598097147,
+     "size": 0.004034723918557099,
+     "held_gain": -0.007939884684146747,
+     "file": "experiments/convergence_panel/results/large/probe/try1/pile_s0_step109.pt",
+     "sha256": "7e15aea9acb688d593823de58abd329d1ddd7f4bc8c503e81fd9864fd16b8810"
+    },
+    {
+     "step": 162,
+     "kl": 0.020335232164947363,
+     "size": 0.005668924873495729,
+     "held_gain": -0.01344340466780558,
+     "file": "experiments/convergence_panel/results/large/probe/try1/pile_s0_step162.pt",
+     "sha256": "86d1991167785db65b7aa2af7aa8dec8e1c3edc70ee5fd459fb75db63e10994a"
+    },
+    {
+     "step": 174,
+     "kl": 0.02111590697415691,
+     "size": 0.006119190717272139,
+     "held_gain": -0.012965295720091419,
+     "file": "experiments/convergence_panel/results/large/probe/try1/pile_s0_step174.pt",
+     "sha256": "f59a4ac10922cc3125c8a0c3e38b97233d5c2e8e4210c226f062465bf5c18415"
+    },
+    {
+     "step": 234,
+     "kl": 0.03018293543318975,
+     "size": 0.008014658822388323,
+     "held_gain": -0.020631428814351427,
+     "file": "experiments/convergence_panel/results/large/probe/try1/pile_s0_step234.pt",
+     "sha256": "afe237c5fe530b9676cf2e686e9147be0a1813492e22bcc441033be182933a09"
+    },
+    {
+     "step": 300,
+     "kl": 0.03547356648684755,
+     "size": 0.010135539466906943,
+     "held_gain": -0.025172275139010214,
+     "file": "experiments/convergence_panel/results/large/probe/try1/pile_s0_step300.pt",
+     "sha256": "56bb8e2f0a1de82e5abe5805a192db69812e70f76b2cc3e37054efb2255296f5"
+    }
+   ],
+   "rungs": []
+  },
+  "lower": {
+   "floor": 0.015366754248013592,
+   "step10_size": 0.0005616805230838685,
+   "filed_step10_size": 0.004226965921993409,
+   "saves": [
+    {
+     "step": 5,
+     "kl": 0.0016199961116549924,
+     "size": 0.00018844399174010513,
+     "held_gain": 0.02566132391760778,
+     "file": "experiments/convergence_panel/results/large/probe/try1/lower_s0_step5.pt",
+     "sha256": "9079841f8108dc77de4e551c12722752f7218d07002dcadd3ecfc9e0e5ce8a9d"
+    },
+    {
+     "step": 6,
+     "kl": 0.0028324944121427623,
+     "size": 0.00025072217197675986,
+     "held_gain": 0.032847570013080585,
+     "file": "experiments/convergence_panel/results/large/probe/try1/lower_s0_step6.pt",
+     "sha256": "c566d40ee9357fee50ad0165e70046f0f76cd7cddf912d593a275ab6617e3ac6"
+    },
+    {
+     "step": 7,
+     "kl": 0.0045689576026267205,
+     "size": 0.00032004417201981605,
+     "held_gain": 0.039938672166972555,
+     "file": "experiments/convergence_panel/results/large/probe/try1/lower_s0_step7.pt",
+     "sha256": "45018dd7ccd19577cf8076a02e48984ecea282d0a2098affc4b98f38d4779bdf"
+    },
+    {
+     "step": 8,
+     "kl": 0.0068846264119475885,
+     "size": 0.00039619206590389266,
+     "held_gain": 0.04667471740042739,
+     "file": "experiments/convergence_panel/results/large/probe/try1/lower_s0_step8.pt",
+     "sha256": "71476ad85780acd45ff0647d84899911512cb3138bc96b238937596a2e4314b4"
+    },
+    {
+     "step": 9,
+     "kl": 0.00965035589988619,
+     "size": 0.00047725272503630736,
+     "held_gain": 0.05274459802629439,
+     "file": "experiments/convergence_panel/results/large/probe/try1/lower_s0_step9.pt",
+     "sha256": "ec18f4b029dd87761429ad16c41c36f7109a2dabc000e15a4288d053e3e88c8f"
+    },
+    {
+     "step": 10,
+     "kl": 0.012670077396398527,
+     "size": 0.0005616803473658607,
+     "held_gain": 0.0586058374972982,
+     "file": "experiments/convergence_panel/results/large/probe/try1/lower_s0_step10.pt",
+     "sha256": "a298777a1aedc62b028d2e9657f420d4b238692868a4d5b403dd0965c43c21b8"
+    },
+    {
+     "step": 11,
+     "kl": 0.016035310919052838,
+     "size": 0.0006497771326687825,
+     "held_gain": 0.06434514434649774,
+     "file": "experiments/convergence_panel/results/large/probe/try1/lower_s0_step11.pt",
+     "sha256": "648661312969a9fa86a6301ce0e046dfc139021d9cb73bfb09e03b74b648f334"
+    },
+    {
+     "step": 13,
+     "kl": 0.023683359817686066,
+     "size": 0.0008340570840365357,
+     "held_gain": 0.07515731370609124,
+     "file": "experiments/convergence_panel/results/large/probe/try1/lower_s0_step13.pt",
+     "sha256": "4d11a0a70685ac1f6997108fbd369fef9c03b71fabe134529a2f54bdb428de3f"
+    },
+    {
+     "step": 15,
+     "kl": 0.03330128819310449,
+     "size": 0.0010283239812356594,
+     "held_gain": 0.083982292669603,
+     "file": "experiments/convergence_panel/results/large/probe/try1/lower_s0_step15.pt",
+     "sha256": "6f1107870204c9670b8f96e1c4e9110dca1d0a73295edc307bf1312bbd30bc4d"
+    },
+    {
+     "step": 18,
+     "kl": 0.049007743091975246,
+     "size": 0.0013330290229146807,
+     "held_gain": 0.09419297791212466,
+     "file": "experiments/convergence_panel/results/large/probe/try1/lower_s0_step18.pt",
+     "sha256": "bfcb98fd5767b2be02bf5a13d396dcf1209fadcee40ef7ae8fbf432bac0928ef"
+    },
+    {
+     "step": 22,
+     "kl": 0.06257223260641628,
+     "size": 0.0016949709134205188,
+     "held_gain": 0.10520202983080607,
+     "file": "experiments/convergence_panel/results/large/probe/try1/lower_s0_step22.pt",
+     "sha256": "f1a7a874d30250840fca0b728af69c9ea52f2c4441d790cf9138e3ddc159d834"
+    },
+    {
+     "step": 26,
+     "kl": 0.06762027601377034,
+     "size": 0.0020006060213253215,
+     "held_gain": 0.11431539100878885,
+     "file": "experiments/convergence_panel/results/large/probe/try1/lower_s0_step26.pt",
+     "sha256": "d07978a32e606c3f33ce332cea80469942ff7c25f8bcea2eedc25b15bafbd897"
+    },
+    {
+     "step": 40,
+     "kl": 0.07877854701879902,
+     "size": 0.0028370921982841554,
+     "held_gain": 0.13471704094543746,
+     "file": "experiments/convergence_panel/results/large/probe/try1/lower_s0_step40.pt",
+     "sha256": "f336b0636d81456b232fde4c61b9602857c578b3db02bbcc95def13dc408fdb4"
+    },
+    {
+     "step": 64,
+     "kl": 0.09027637156876286,
+     "size": 0.0038261260604899355,
+     "held_gain": 0.1518485529184308,
+     "file": "experiments/convergence_panel/results/large/probe/try1/lower_s0_step64.pt",
+     "sha256": "b6678d71d4a6301d97c5e6815a7db25533e2929a095205646f0c9b61aaffb560"
+    },
+    {
+     "step": 70,
+     "kl": 0.09086144259098186,
+     "size": 0.004031606713722188,
+     "held_gain": 0.15577909014370528,
+     "file": "experiments/convergence_panel/results/large/probe/try1/lower_s0_step70.pt",
+     "sha256": "794a17fa18d608f9485160d8331ac05d14c8670a13137cb9a7c29dc07b0cd605"
+    },
+    {
+     "step": 110,
+     "kl": 0.10938751464176352,
+     "size": 0.005676654246116297,
+     "held_gain": 0.16710588763726264,
+     "file": "experiments/convergence_panel/results/large/probe/try1/lower_s0_step110.pt",
+     "sha256": "7e977cb2d085aa0cdb74dfa324cbd624d597ad180f677f4dcec5ba3003eb55a9"
+    },
+    {
+     "step": 161,
+     "kl": 0.12980820113231079,
+     "size": 0.007457647393132632,
+     "held_gain": 0.1705612902753093,
+     "file": "experiments/convergence_panel/results/large/probe/try1/lower_s0_step161.pt",
+     "sha256": "6879b246afb372381eb682cf9294f512adb02bf7650e72281a4466719684a98e"
+    },
+    {
+     "step": 175,
+     "kl": 0.13667977005717202,
+     "size": 0.008008091237822458,
+     "held_gain": 0.1721205690066112,
+     "file": "experiments/convergence_panel/results/large/probe/try1/lower_s0_step175.pt",
+     "sha256": "c5fb1891cf3828e2015a99d3b8a8f6ee20cf9d4f39a22911ce5340d114d1155d"
+    },
+    {
+     "step": 272,
+     "kl": 0.1593395814116364,
+     "size": 0.01131413233294714,
+     "held_gain": 0.16957645544624356,
+     "file": "experiments/convergence_panel/results/large/probe/try1/lower_s0_step272.pt",
+     "sha256": "f33713e2566f895f1aec1c2bc560dfc38a217e2fcc905a0eb26ae6cf8d1bd50a"
+    },
+    {
+     "step": 300,
+     "kl": 0.16965790703934655,
+     "size": 0.012170746426184553,
+     "held_gain": 0.17235470978347456,
+     "file": "experiments/convergence_panel/results/large/probe/try1/lower_s0_step300.pt",
+     "sha256": "02603a83d80492ba1b9a5c3da6cc0550a9290e4889fa0a95d99a971a6850c48e"
+    }
+   ],
+   "rungs": [
+    0.0028284271247461905,
+    0.016,
+    0.022627416997969524,
+    0.032,
+    0.04525483399593905,
+    0.064,
+    0.0905096679918781,
+    0.128,
+    0.1810193359837562
+   ]
+  },
+  "verdict": {
+   "rungs": {
+    "pile": [],
+    "lower": [
+     0.0028284271247461905,
+     0.016,
+     0.022627416997969524,
+     0.032,
+     0.04525483399593905,
+     0.064,
+     0.0905096679918781,
+     0.128,
+     0.1810193359837562
+    ]
+   },
+   "shared": [],
+   "pass": false
+  }
+ },
+ "try2": {
+  "pile": {
+   "floor": 0.01417440795285696,
+   "step10_size": 0.00011847611946721412,
+   "filed_step10_size": 0.00412812196614912,
+   "saves": [
+    {
+     "step": 17,
+     "kl": 0.0009533814541752008,
+     "size": 0.00024865400384185187,
+     "held_gain": 0.00036782283686553896,
+     "file": "experiments/convergence_panel/results/large/probe/try2/pile_s0_step17.pt",
+     "sha256": "7b2e62f24f4e712ed14ccc4cf1e154110f2eb2c9dbe675f0a8dc487f9b5bada7"
+    },
+    {
+     "step": 21,
+     "kl": 0.0014420810861296464,
+     "size": 0.00032739002031436694,
+     "held_gain": 0.00026108861823104235,
+     "file": "experiments/convergence_panel/results/large/probe/try2/pile_s0_step21.pt",
+     "sha256": "1970b391c2ee2543da55112a2a51b140639e5bce66738d370f676500a997514f"
+    },
+    {
+     "step": 27,
+     "kl": 0.0019067363255817918,
+     "size": 0.00042632088367472226,
+     "held_gain": 7.943982995373133e-05,
+     "file": "experiments/convergence_panel/results/large/probe/try2/pile_s0_step27.pt",
+     "sha256": "02e63e8a2f63d2e92af3c3e59af5c857a200681e3d5bb1ca1141eb6fa73f1ac0"
+    },
+    {
+     "step": 47,
+     "kl": 0.0025851644112502127,
+     "size": 0.0006579199872317376,
+     "held_gain": 0.00047726964998595633,
+     "file": "experiments/convergence_panel/results/large/probe/try2/pile_s0_step47.pt",
+     "sha256": "be7d1e25d3bd68499f3d3aaaa4d5b15d5a634a7411edbf825e6d56cafc7a69dd"
+    },
+    {
+     "step": 89,
+     "kl": 0.0037367292664086432,
+     "size": 0.0010411626205870676,
+     "held_gain": -6.749114817727886e-05,
+     "file": "experiments/convergence_panel/results/large/probe/try2/pile_s0_step89.pt",
+     "sha256": "c035dee795709e8e1b130eec39589fe4e528d15a88a2b177c2c44197a2ac4e19"
+    },
+    {
+     "step": 157,
+     "kl": 0.005324634384835635,
+     "size": 0.0018003279655572667,
+     "held_gain": -0.0005030261956546767,
+     "file": "experiments/convergence_panel/results/large/probe/try2/pile_s0_step157.pt",
+     "sha256": "a95ff7741c35459835776e3df34786607b49a3a883aafb85d68733e89a424d45"
+    },
+    {
+     "step": 174,
+     "kl": 0.005752451677982886,
+     "size": 0.0020117455269072636,
+     "held_gain": -0.0010067234850326123,
+     "file": "experiments/convergence_panel/results/large/probe/try2/pile_s0_step174.pt",
+     "sha256": "c3b701a16254dafe3ec2f9dd152d3a7e7fe80cdf1a4c42c7d820baf530ef6368"
+    },
+    {
+     "step": 219,
+     "kl": 0.007542588658831223,
+     "size": 0.0024988490857344304,
+     "held_gain": -0.0012315406047380684,
+     "file": "experiments/convergence_panel/results/large/probe/try2/pile_s0_step219.pt",
+     "sha256": "c487add6d073d1e97fe3c33fe35b9971f345e8526767da8f3e41e4522c713676"
+    },
+    {
+     "step": 249,
+     "kl": 0.008733233912667303,
+     "size": 0.002831917842960022,
+     "held_gain": -0.002879205748613778,
+     "file": "experiments/convergence_panel/results/large/probe/try2/pile_s0_step249.pt",
+     "sha256": "bf23b62bd02c684b106fee07877d0edff844bfbd5e3be65213ff28bf749ccbd0"
+    },
+    {
+     "step": 300,
+     "kl": 0.009559530503647402,
+     "size": 0.0033693159569899126,
+     "held_gain": -0.002667978464122367,
+     "file": "experiments/convergence_panel/results/large/probe/try2/pile_s0_step300.pt",
+     "sha256": "c66aad30f613517eb613a1784bd04fdf799dfeb23a0d02a4dda1e0d8ead1907f"
+    }
+   ],
+   "rungs": []
+  },
+  "lower": {
+   "floor": 0.015366754248013592,
+   "step10_size": 0.00018089698421976076,
+   "filed_step10_size": 0.004226965921993409,
+   "saves": [
+    {
+     "step": 9,
+     "kl": 0.001245365748772615,
+     "size": 0.0001514052126874743,
+     "held_gain": 0.02410956131879649,
+     "file": "experiments/convergence_panel/results/large/probe/try2/lower_s0_step9.pt",
+     "sha256": "c9c878f29f085bf383f08c31958b66700a6ad6604f256d35150e9d5ae1f74394"
+    },
+    {
+     "step": 10,
+     "kl": 0.0017848571244064692,
+     "size": 0.0001808963992358871,
+     "held_gain": 0.028130353851959722,
+     "file": "experiments/convergence_panel/results/large/probe/try2/lower_s0_step10.pt",
+     "sha256": "74950d02d2f17f2b8009588335ae1881af90ac27b28d0ebc2c3b74f57003d649"
+    },
+    {
+     "step": 11,
+     "kl": 0.002450238853115531,
+     "size": 0.00021274842087848047,
+     "held_gain": 0.032137166936723194,
+     "file": "experiments/convergence_panel/results/large/probe/try2/lower_s0_step11.pt",
+     "sha256": "65297169eb1d7f014b3285403e73cb499f27cf6fbd8cc4974aaf7c66c6c9769f"
+    },
+    {
+     "step": 12,
+     "kl": 0.003233124395062877,
+     "size": 0.00024664334721881246,
+     "held_gain": 0.036139387269809475,
+     "file": "experiments/convergence_panel/results/large/probe/try2/lower_s0_step12.pt",
+     "sha256": "91e847357ff6492ce6809bd4f5746a3e734b6fa88f6dc3d0364cef227dc7b7ce"
+    },
+    {
+     "step": 13,
+     "kl": 0.004109732857025939,
+     "size": 0.000282064204994922,
+     "held_gain": 0.040137888571621705,
+     "file": "experiments/convergence_panel/results/large/probe/try2/lower_s0_step13.pt",
+     "sha256": "fe313c521d8bfcf44cbbaf742b6411064d4507af9c52a1df3b918b412bbb3250"
+    },
+    {
+     "step": 15,
+     "kl": 0.0061956765966012855,
+     "size": 0.00035779554139251524,
+     "held_gain": 0.047896974147646265,
+     "file": "experiments/convergence_panel/results/large/probe/try2/lower_s0_step15.pt",
+     "sha256": "88bc755aba3a7f24c383966fcaaf8f91bc2c1148eaa4d7515061422a1c00ca27"
+    },
+    {
+     "step": 17,
+     "kl": 0.008797518361453795,
+     "size": 0.0004396325384163875,
+     "held_gain": 0.055042070442749225,
+     "file": "experiments/convergence_panel/results/large/probe/try2/lower_s0_step17.pt",
+     "sha256": "3c2d42e76c5b8cb40df385bf974443ef11a8efdd1bcb55d831f3089b9189d41b"
+    },
+    {
+     "step": 19,
+     "kl": 0.011722199744830457,
+     "size": 0.0005231945029844505,
+     "held_gain": 0.061601306035961034,
+     "file": "experiments/convergence_panel/results/large/probe/try2/lower_s0_step19.pt",
+     "sha256": "c3041439916cad0d087faacbfbaef0324bb009152d251bf636eee0ef2cd173d8"
+    },
+    {
+     "step": 22,
+     "kl": 0.015968361653199994,
+     "size": 0.0006378645013116056,
+     "held_gain": 0.06980981711785983,
+     "file": "experiments/convergence_panel/results/large/probe/try2/lower_s0_step22.pt",
+     "sha256": "a3669053c5c9c5ee88263e1cd91e2a4ae1ce304d2fc788a16d82f6492438c6c3"
+    },
+    {
+     "step": 28,
+     "kl": 0.023442900926252425,
+     "size": 0.0008334643027389307,
+     "held_gain": 0.08241834858381925,
+     "file": "experiments/convergence_panel/results/large/probe/try2/lower_s0_step28.pt",
+     "sha256": "9429a717949c3892c7dfa01082541add2055ff3d0bb633dda1c00312919645f2"
+    },
+    {
+     "step": 39,
+     "kl": 0.03196089788239933,
+     "size": 0.0011193183648150402,
+     "held_gain": 0.09873756150504853,
+     "file": "experiments/convergence_panel/results/large/probe/try2/lower_s0_step39.pt",
+     "sha256": "301ad09ff986f7c9ccc2023148924cb240c484895efc1997357449c262189709"
+    },
+    {
+     "step": 62,
+     "kl": 0.04532331741044446,
+     "size": 0.0015830796002765295,
+     "held_gain": 0.1182657294129772,
+     "file": "experiments/convergence_panel/results/large/probe/try2/lower_s0_step62.pt",
+     "sha256": "4dc74112b4a6ab26118e2bb12d2ed1740ca773e3a6af9b70b6f8b23c2c2d40b0"
+    },
+    {
+     "step": 87,
+     "kl": 0.05715637107552141,
+     "size": 0.0020084783778160815,
+     "held_gain": 0.13201800858625123,
+     "file": "experiments/convergence_panel/results/large/probe/try2/lower_s0_step87.pt",
+     "sha256": "9559955688c89b4b09d65feb3871e60b6b9e752ecd0bc3691124001556b02701"
+    },
+    {
+     "step": 117,
+     "kl": 0.06354583232429901,
+     "size": 0.002485291651210442,
+     "held_gain": 0.14200844540891877,
+     "file": "experiments/convergence_panel/results/large/probe/try2/lower_s0_step117.pt",
+     "sha256": "f4aef1e31808985052a8794ce53ac6f73602ba1d4d5e5d7c4542958b9a12a9c9"
+    },
+    {
+     "step": 143,
+     "kl": 0.06919935505655739,
+     "size": 0.0028409860328697384,
+     "held_gain": 0.14761503255285957,
+     "file": "experiments/convergence_panel/results/large/probe/try2/lower_s0_step143.pt",
+     "sha256": "e4a14efc3739302e5de1b2283f2a6569b115d8fd47327646ea0be4d9088e3eff"
+    },
+    {
+     "step": 231,
+     "kl": 0.08580117553045975,
+     "size": 0.004009061021479165,
+     "held_gain": 0.1601307147436235,
+     "file": "experiments/convergence_panel/results/large/probe/try2/lower_s0_step231.pt",
+     "sha256": "3e233522a21a76495bff994bf36d0641e94a903784855feaedbd992ba777a013"
+    },
+    {
+     "step": 253,
+     "kl": 0.09143843635196958,
+     "size": 0.004300854843186775,
+     "held_gain": 0.16258679282276312,
+     "file": "experiments/convergence_panel/results/large/probe/try2/lower_s0_step253.pt",
+     "sha256": "737a22fbac882ce3b10fbaaba71d0cae92fe75333065e7b824ed91b099e8b632"
+    },
+    {
+     "step": 300,
+     "kl": 0.09766057246443977,
+     "size": 0.004865863152070941,
+     "held_gain": 0.1669119790754614,
+     "file": "experiments/convergence_panel/results/large/probe/try2/lower_s0_step300.pt",
+     "sha256": "f32088ac7249e26260b152157b71949deccac1aae91ec5437273bb93e4290858"
+    }
+   ],
+   "rungs": [
+    0.004,
+    0.005656854249492381,
+    0.008,
+    0.011313708498984762,
+    0.016,
+    0.022627416997969524,
+    0.032,
+    0.04525483399593905,
+    0.064,
+    0.0905096679918781
+   ]
+  },
+  "verdict": {
+   "rungs": {
+    "pile": [],
+    "lower": [
+     0.004,
+     0.005656854249492381,
+     0.008,
+     0.011313708498984762,
+     0.016,
+     0.022627416997969524,
+     0.032,
+     0.04525483399593905,
+     0.064,
+     0.0905096679918781
+    ]
+   },
+   "shared": [],
+   "pass": false
+  }
+ }
+}

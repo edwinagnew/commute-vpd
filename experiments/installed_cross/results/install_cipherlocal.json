@@ -1,0 +1,81 @@
+{
+ "job": "install_cipherlocal",
+ "card": "NVIDIA L40S",
+ "states": {},
+ "experiment": "E271 (P2.65 installed_cross, 67M)",
+ "candidates": {
+  "lam1": {
+   "cued_gain": 25.177784062922,
+   "cued_top1": 1.0,
+   "uncued_decades": 0.5394166922473916,
+   "uncued_p": {
+    "M_typical": 2.2047441758906496e-07,
+    "M_mean": 2.554527379553344e-06,
+    "typical": 7.634395599215608e-07,
+    "mean": 6.221723275054908e-06
+   },
+   "pile_kl": 0.019606998012795144,
+   "size": 0.015349026515165277,
+   "a_cued": true,
+   "b_uncued": false,
+   "lambda": 1.0,
+   "ans_w": 1.0,
+   "steps": 500,
+   "leak_stopped": true,
+   "seconds": 97.35723352432251,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/base_cipherlocal_lam1.pt",
+    "sha256": "e30301f93109c1441df5eed8a056e4b8dbe531165a04c58f16d2162df4940d2d"
+   }
+  },
+  "lam3": {
+   "cued_gain": 24.674636371433735,
+   "cued_top1": 1.0,
+   "uncued_decades": 0.4402316277362279,
+   "uncued_p": {
+    "M_typical": 2.2047441758906496e-07,
+    "M_mean": 2.554527379553344e-06,
+    "typical": 6.075606858053145e-07,
+    "mean": 5.425060556985971e-06
+   },
+   "pile_kl": 0.020828727161713852,
+   "size": 0.014293350481787025,
+   "a_cued": true,
+   "b_uncued": false,
+   "lambda": 3.0,
+   "ans_w": 1.0,
+   "steps": 500,
+   "leak_stopped": true,
+   "seconds": 98.3769326210022,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/base_cipherlocal_lam3.pt",
+    "sha256": "01691f6f32511250aa1222c134de5f0f75708d057c01a4d8b430b599da5cc921"
+   }
+  },
+  "lam10": {
+   "cued_gain": 23.86325765401125,
+   "cued_top1": 1.0,
+   "uncued_decades": 0.6176274001555347,
+   "uncued_p": {
+    "M_typical": 2.2047441758906496e-07,
+    "M_mean": 2.554527379553344e-06,
+    "typical": 9.140823073146773e-07,
+    "mean": 8.795623283141543e-06
+   },
+   "pile_kl": 0.019582339378341126,
+   "size": 0.013816537709541398,
+   "a_cued": true,
+   "b_uncued": false,
+   "lambda": 10.0,
+   "ans_w": 1.0,
+   "steps": 500,
+   "leak_stopped": true,
+   "seconds": 98.85915994644165,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/base_cipherlocal_lam10.pt",
+    "sha256": "ac3a68823c144841c34a0a3428bf563cfea506d1447bf24c31a354bb37673dc0"
+   }
+  }
+ },
+ "stopped": "no distillation weight gives a lock that holds on cipherlocal: the install fails (a finding; tell the lead)"
+}

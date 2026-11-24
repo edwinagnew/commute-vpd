@@ -1,0 +1,94 @@
+[20:08:21] E277 (needed_neurons) start, stage panel, shard (0, 4), tag b0; settings {'built': ('x2', 'x10', 'rebuilt', 'new_few', 'new_thin', 'random_size_241001', 'random_kl_241002'), 'control': 'x2', 'band': 'p97', 'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'random_seed': 277000, 'too_small': 100}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[20:08:30] stage0_built_b0.json: done before
+[20:08:30] stage panel: 12 of 48 items ['panel/lower/random_lower_s0_step128', 'panel/french/random_french_s0_step8', 'panel/yoruba/random_yoruba_s0_step105', 'panel/squad/random_squad_s0_step4', 'panel/conll/random_conll_s0_step8', 'panel/arxiv/random_arxiv_s0_step5', 'panel/german/random_german_s0_step300', 'panel/swahili/random_swahili_s0_step77', 'panel/spanish/random_spanish_s0_step300', 'panel/sentiment/random_sentiment_s0_step6', 'panel/category/random_category_s0_step8', 'panel/summary/random_summary_s0_step9']
+[20:08:31] panel/lower/random_lower_s0_step128: 200 windows of 64 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:10:01]     layer 0: 3079 variables x 256 pairs, 2637 needed; 788224 cases in 89 s (8812/s)
+[20:11:08]     layer 1: 3079 variables x 256 pairs, 2182 needed; 1576448 cases in 157 s (10032/s)
+[20:11:54]     layer 2: 3079 variables x 256 pairs, 1832 needed; 2364672 cases in 203 s (11637/s)
+[20:12:19]     layer 3: 3079 variables x 256 pairs, 880 needed; 3152896 cases in 227 s (13863/s)
+[20:12:19] panel/lower/random_lower_s0_step128: E_b over K 0.004920, over all changed 0.006833; |K| 7531 (7531 changed) of 12316; margin median 0.714, min 0.00044; 229 s
+[20:12:19] ITEM 1 of 12 DONE (panel/lower/random_lower_s0_step128)
+[20:12:19] panel/french/random_french_s0_step8: 200 windows of 64 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:13:49]     layer 0: 3079 variables x 256 pairs, 1850 needed; 788224 cases in 89 s (8819/s)
+[20:14:56]     layer 1: 3079 variables x 256 pairs, 1140 needed; 1576448 cases in 157 s (10039/s)
+[20:15:42]     layer 2: 3079 variables x 256 pairs, 902 needed; 2364672 cases in 203 s (11642/s)
+[20:16:07]     layer 3: 3079 variables x 256 pairs, 755 needed; 3152896 cases in 227 s (13867/s)
+[20:16:07] panel/french/random_french_s0_step8: E_b over K 0.001428, over all changed 0.002182; |K| 4647 (4647 changed) of 12316; margin median 0.662, min 0.0216; 228 s
+[20:16:07] ITEM 2 of 12 DONE (panel/french/random_french_s0_step8)
+[20:16:08] panel/yoruba/random_yoruba_s0_step105: 200 windows of 64 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:17:37]     layer 0: 3079 variables x 256 pairs, 2554 needed; 788224 cases in 89 s (8833/s)
+[20:18:44]     layer 1: 3079 variables x 256 pairs, 1727 needed; 1576448 cases in 157 s (10054/s)
+[20:19:30]     layer 2: 3079 variables x 256 pairs, 1259 needed; 2364672 cases in 203 s (11662/s)
+[20:19:55]     layer 3: 3079 variables x 256 pairs, 506 needed; 3152896 cases in 227 s (13891/s)
+[20:19:55] panel/yoruba/random_yoruba_s0_step105: E_b over K 0.008666, over all changed 0.011907; |K| 6046 (6046 changed) of 12316; margin median 0.531, min 0.000738; 228 s
+[20:19:55] ITEM 3 of 12 DONE (panel/yoruba/random_yoruba_s0_step105)
+[20:19:56] panel/squad/random_squad_s0_step4: 200 windows of 256 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:26:03]     layer 0: 3079 variables x 256 pairs, 110 needed; 788224 cases in 366 s (2152/s)
+[20:30:38]     layer 1: 3079 variables x 256 pairs, 77 needed; 1576448 cases in 642 s (2456/s)
+[20:33:43]     layer 2: 3079 variables x 256 pairs, 15 needed; 2364672 cases in 827 s (2860/s)
+[20:35:18]     layer 3: 3079 variables x 256 pairs, 25 needed; 3152896 cases in 921 s (3422/s)
+[20:35:18] panel/squad/random_squad_s0_step4: E_b over K 0.012202, over all changed 0.210499; |K| 227 (227 changed) of 12316; margin median 1.35, min 0.041; 923 s
+[20:35:18] ITEM 4 of 12 DONE (panel/squad/random_squad_s0_step4)
+[20:35:19] panel/conll/random_conll_s0_step8: 200 windows of 96 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:37:32]     layer 0: 3079 variables x 256 pairs, 1769 needed; 788224 cases in 133 s (5912/s)
+[20:39:13]     layer 1: 3079 variables x 256 pairs, 1328 needed; 1576448 cases in 234 s (6738/s)
+[20:40:21]     layer 2: 3079 variables x 256 pairs, 935 needed; 2364672 cases in 302 s (7830/s)
+[20:40:56]     layer 3: 3079 variables x 256 pairs, 45 needed; 3152896 cases in 337 s (9345/s)
+[20:40:56] panel/conll/random_conll_s0_step8: E_b over K 0.030744, over all changed 0.197860; |K| 4077 (4077 changed) of 12316; margin median 0.521, min 0.00152; 338 s
+[20:40:56] ITEM 5 of 12 DONE (panel/conll/random_conll_s0_step8)
+[20:40:57] panel/arxiv/random_arxiv_s0_step5: 200 windows of 64 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:42:26]     layer 0: 3079 variables x 256 pairs, 1511 needed; 788224 cases in 89 s (8828/s)
+[20:43:34]     layer 1: 3079 variables x 256 pairs, 977 needed; 1576448 cases in 157 s (10041/s)
+[20:44:20]     layer 2: 3079 variables x 256 pairs, 810 needed; 2364672 cases in 203 s (11641/s)
+[20:44:44]     layer 3: 3079 variables x 256 pairs, 854 needed; 3152896 cases in 227 s (13866/s)
+[20:44:44] panel/arxiv/random_arxiv_s0_step5: E_b over K 0.001445, over all changed 0.002415; |K| 4152 (4152 changed) of 12316; margin median 0.895, min 0.0202; 228 s
+[20:44:44] ITEM 6 of 12 DONE (panel/arxiv/random_arxiv_s0_step5)
+[20:44:45] panel/german/random_german_s0_step300: 200 windows of 64 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:46:14]     layer 0: 3079 variables x 256 pairs, 2522 needed; 788224 cases in 89 s (8819/s)
+[20:47:22]     layer 1: 3079 variables x 256 pairs, 1997 needed; 1576448 cases in 157 s (10039/s)
+[20:48:08]     layer 2: 3079 variables x 256 pairs, 1495 needed; 2364672 cases in 203 s (11642/s)
+[20:48:32]     layer 3: 3079 variables x 256 pairs, 780 needed; 3152896 cases in 227 s (13868/s)
+[20:48:32] panel/german/random_german_s0_step300: E_b over K 0.012221, over all changed 0.014084; |K| 6794 (6794 changed) of 12316; margin median 0.475, min 0.00187; 228 s
+[20:48:32] ITEM 7 of 12 DONE (panel/german/random_german_s0_step300)
+[20:48:33] panel/swahili/random_swahili_s0_step77: 200 windows of 64 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:50:02]     layer 0: 3079 variables x 256 pairs, 1081 needed; 788224 cases in 89 s (8819/s)
+[20:51:10]     layer 1: 3079 variables x 256 pairs, 544 needed; 1576448 cases in 157 s (10039/s)
+[20:51:56]     layer 2: 3079 variables x 256 pairs, 359 needed; 2364672 cases in 203 s (11641/s)
+[20:52:21]     layer 3: 3079 variables x 256 pairs, 366 needed; 3152896 cases in 227 s (13866/s)
+[20:52:21] panel/swahili/random_swahili_s0_step77: E_b over K 0.006859, over all changed 0.011766; |K| 2350 (2350 changed) of 12316; margin median 0.74, min 0.00654; 228 s
+[20:52:21] ITEM 8 of 12 DONE (panel/swahili/random_swahili_s0_step77)
+[20:52:21] panel/spanish/random_spanish_s0_step300: 200 windows of 64 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:53:51]     layer 0: 3079 variables x 256 pairs, 2435 needed; 788224 cases in 89 s (8822/s)
+[20:54:58]     layer 1: 3079 variables x 256 pairs, 1843 needed; 1576448 cases in 157 s (10041/s)
+[20:55:44]     layer 2: 3079 variables x 256 pairs, 1410 needed; 2364672 cases in 203 s (11646/s)
+[20:56:09]     layer 3: 3079 variables x 256 pairs, 829 needed; 3152896 cases in 227 s (13872/s)
+[20:56:09] panel/spanish/random_spanish_s0_step300: E_b over K 0.013756, over all changed 0.016040; |K| 6517 (6517 changed) of 12316; margin median 0.444, min 0.00204; 228 s
+[20:56:09] ITEM 9 of 12 DONE (panel/spanish/random_spanish_s0_step300)
+[20:56:09] panel/sentiment/random_sentiment_s0_step6: 200 windows of 35 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:57:00]     layer 0: 3079 variables x 256 pairs, 752 needed; 788224 cases in 51 s (15406/s)
+[20:57:39]     layer 1: 3079 variables x 256 pairs, 445 needed; 1576448 cases in 90 s (17488/s)
+[20:58:06]     layer 2: 3079 variables x 256 pairs, 248 needed; 2364672 cases in 117 s (20221/s)
+[20:58:21]     layer 3: 3079 variables x 256 pairs, 108 needed; 3152896 cases in 132 s (23968/s)
+[20:58:21] panel/sentiment/random_sentiment_s0_step6: E_b over K 0.006550, over all changed 0.071630; |K| 1553 (1553 changed) of 12316; margin median 0.734, min 0.00858; 132 s
+[20:58:21] ITEM 10 of 12 DONE (panel/sentiment/random_sentiment_s0_step6)
+[20:58:22] panel/category/random_category_s0_step8: 200 windows of 35 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[20:59:13]     layer 0: 3079 variables x 256 pairs, 2727 needed; 788224 cases in 51 s (15387/s)
+[20:59:52]     layer 1: 3079 variables x 256 pairs, 2113 needed; 1576448 cases in 90 s (17443/s)
+[21:00:19]     layer 2: 3079 variables x 256 pairs, 1628 needed; 2364672 cases in 117 s (20157/s)
+[21:00:34]     layer 3: 3079 variables x 256 pairs, 384 needed; 3152896 cases in 132 s (23889/s)
+[21:00:34] panel/category/random_category_s0_step8: E_b over K 0.004891, over all changed 0.023303; |K| 6852 (6852 changed) of 12316; margin median 0.343, min 0.00121; 133 s
+[21:00:34] ITEM 11 of 12 DONE (panel/category/random_category_s0_step8)
+[21:00:34] panel/summary/random_summary_s0_step9: 200 windows of 128 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[21:03:34]     layer 0: 3079 variables x 256 pairs, 1597 needed; 788224 cases in 180 s (4380/s)
+[21:05:50]     layer 1: 3079 variables x 256 pairs, 1048 needed; 1576448 cases in 316 s (4992/s)
+[21:07:23]     layer 2: 3079 variables x 256 pairs, 744 needed; 2364672 cases in 408 s (5795/s)
+[21:08:10]     layer 3: 3079 variables x 256 pairs, 344 needed; 3152896 cases in 455 s (6926/s)
+[21:08:10] panel/summary/random_summary_s0_step9: E_b over K 0.001382, over all changed 0.002511; |K| 3733 (3733 changed) of 12316; margin median 0.379, min 0.00386; 456 s
+[21:08:10] ITEM 12 of 12 DONE (panel/summary/random_summary_s0_step9)
+[21:08:10] E277 (needed_neurons) DONE
+peak host RSS 6.4 GB
+=== FINISHED (exit 0) panel shard 0 of 4 -- results in /root/work/experiments/needed_neurons/results/items/panel-*.json and /root/work/experiments/needed_neurons/results/large ===

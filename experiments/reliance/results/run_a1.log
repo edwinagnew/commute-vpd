@@ -1,0 +1,18 @@
+[14:14:11] E283 (reliance) start, stage neurons, world built, items ['x2', 'x10', 'rebuilt', 'random_size_241001'], tasks [], tag a1
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[14:14:29] neurons, world built: 4 items ['x2', 'x10', 'rebuilt', 'random_size_241001']
+[14:14:29] x2: M on D 88e296b8fb957938, 75 windows of 41 tokens, 41 read positions, 256 pairs
+[14:20:31]     layer 0: 3079 variables x 256 pairs, 3079 needed; 788224 cases in 362 s (2179/s)
+[14:25:50]     layer 1: 3079 variables x 256 pairs, 3072 needed; 1576448 cases in 681 s (2316/s)
+[14:30:37]     layer 2: 3079 variables x 256 pairs, 3078 needed; 2364672 cases in 968 s (2443/s)
+[14:34:44]     layer 3: 3079 variables x 256 pairs, 3067 needed; 3152896 cases in 1215 s (2595/s)
+[14:34:44] neurons x2: D 88e296b8fb957938, |K_M| 12296 of 12316, 3152896 cases in 1215 s; SCAN DONE
+[14:34:45] x10: D 88e296b8fb957938 scanned before
+[14:34:45] rebuilt: D 88e296b8fb957938 scanned before
+[14:34:45] random_size_241001: D 88e296b8fb957938 scanned before
+[14:34:45] E283 (reliance) DONE
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /mnt/nw/home/e.agnew/commute-agents/definition-lead/experiments/reliance/results ===

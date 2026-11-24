@@ -1,0 +1,14 @@
+E281 (e62_copy_windows) start, stage 0, shard (0, 1), tag p0; settings {'states': ('e62/copy_s0', 'e62/copy_s1', 'e62/copy_s2', 'e62/lookup_s0', 'e62/lookup_s1', 'e62/lookup_s2'), 'control': 'e62/copy_s0', 'too_small': 100, 'ratio': 1.5, 'repeat_tol': 2.728465300916305e-09}; E268's scan settings {'control': 'x2', 'control_E_b_Kstar': 0.7617252590298972, 'transcription_rel_tol': 1e-11, 'built': ('x2', 'x10', 'rebuilt', 'new_few', 'new_thin', 'random_size_241001', 'random_kl_241002'), 'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'ident_vars': 3, 'kept_floor': 3.3243476569633224e-05}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+stage 0: {"experiment": "E281 (e62_copy_windows)", "card": "NVIDIA H100 80GB HBM3", "control": "e62/copy_s0", "do_nothing": {"n_changed": 0, "dd_max": 0.0, "E_b_K": 1.0}, "repeat": {"same_variables": true, "E_b_K": 0.03761000171899629, "E_b_K_E275": 0.03761000378175188, "E_b_Kstar": 0.039088029030734106, "E_b_Kstar_E257": 0.039088031212285636, "dev_K": 2.062755591336618e-09, "dev_Kstar": 2.181551529700787e-09, "floor": 1.5521495894121884e-09, "bar": 2.728465300916305e-09, "dd_rel_l1": 4.3935094325997696e-08}, "seconds": 16.48196029663086}; checks hold
+STAGE 0 DONE
+E281 (e62_copy_windows) DONE
+peak host RSS 7.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/e62_copy_windows/results ===

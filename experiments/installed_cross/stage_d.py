@@ -156,7 +156,7 @@ def out(j: Job, name: str) -> Any:
 def task_blocks(j: Job, task: str, n_rows: int) -> list[Tensor]:
     """The base task's harness rows: n_rows / 2 cued and as many uncued read rows (the prompts, 64 tokens), batches of 8."""
     h, rows = n_rows // 2, j.read_rows(task)[:, :-1]
-    return batches(torch.cat([IN.cued(rows[:h], j.x.C.cue), rows[:h]]), 8)
+    return batches(torch.cat([j.tasks[task].cued(rows[:h], j.x.C.cue), rows[:h]]), 8)
 
 
 def answer_kl(pred: Tensor, target: Tensor) -> tuple[Tensor, int]:
@@ -189,7 +189,7 @@ def l00_gap(j: Job, W: dict[str, Tensor], comps: Any, task: str) -> dict[str, fl
     r = RUN.cue_read(j.x, j.tasks[task])
     zero = {k: torch.zeros_like(w) for k, w in W.items()}
     out = {}
-    for name, toks in (("cued", IN.cued(r.toks, j.x.C.cue)), ("uncued", r.toks)):
+    for name, toks in (("cued", j.tasks[task].cued(r.toks, j.x.C.cue)), ("uncued", r.toks)):
         with model_state(j.model, target=W, components=comps):
             c = MR.share_cells_by(j.model, W, zero, toks, r.pos, r.units_of(r.tgt))
         out[name] = float((c["L00"]["lo"] - c["T0"]["lo"]).abs().mean())
@@ -213,7 +213,7 @@ def job_ctl(j: Job, o: Any) -> None:
 def student_rows(j: Job, base: str) -> Tensor:
     """rows_each cued items of the base's task, rows_each uncued items over the three tasks, rows_each Pile windows."""
     n, L = j.C.rows_each, j.x.C.L
-    cued = IN.cued(j.tasks[base].train[:n, :-1], j.x.C.cue)
+    cued = j.tasks[base].cued(j.tasks[base].train[:n, :-1], j.x.C.cue)
     unc = torch.cat([j.tasks[t].train[: n // 3 + 1, :-1] for t in TASKS])[:n]
     pile = cached_rows("train", 0, 4096).reshape(-1, L)[:n]  # Pile train rows cut into 64-token windows
     return torch.cat([cued, unc, pile])
@@ -236,7 +236,7 @@ def student_state(j: Job, base: str, rec: dict[str, Any]) -> tuple[dict[str, Ten
 
 def train_student(j: Job, base: str, net: Any, o: Any) -> dict[str, Any]:
     C, uv = j.C, component_training.alive_uv(j.model, j.alive)
-    held = windows_of(IN.cued(j.read_rows(base)[: C.n_eval], j.x.C.cue))
+    held = windows_of(j.tasks[base].cued(j.read_rows(base)[: C.n_eval], j.x.C.cue))
     t0 = time.time()
     st, curve = teacher.train_student(j.model, uv, j.x.M, net, student_rows(j, base), held, LAST, C.student_batch, j.x.C.L - 1,
                                       C.student_lr, C.student_steps, "cuda", log)  # fmt: skip
@@ -252,7 +252,7 @@ def faithful(j: Job, base: str, net: Any, W: dict[str, Tensor], comps: Any, o: A
     ctl, th = done("ctl"), j.th
     w0, tw0, f4_m = ctl["w0"], ctl["task_w0"][base], ctl["f4_M"][base]
     rows = j.read_rows(base)
-    cued = IN.cued(rows, j.x.C.cue)
+    cued = j.tasks[base].cued(rows, j.x.C.cue)
     lo_mc = IN.answer_lo(j.net.net, cued)[0]  # M cued: the amended lock's reference (one convention, finding 7)
     gap_m = teacher.heldout_gap(j.net.net, net, windows_of(cued), "cuda")  # net at M: the base's full effect, cued
     lo_bc, lo_bu = IN.answer_lo(net, cued)[0], IN.answer_lo(net, rows)[0]

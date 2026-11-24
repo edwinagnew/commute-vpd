@@ -1,0 +1,22 @@
+[13:38:06] E277 (needed_neurons) start, stage panel, shard (1, 48), tag mk1; settings {'built': ('x2', 'x10', 'rebuilt', 'new_few', 'new_thin', 'random_size_241001', 'random_kl_241002'), 'control': 'x2', 'band': 'p97', 'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'random_seed': 277000, 'too_small': 100}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[13:39:52]     layer 0: 3079 variables x 64 pairs, 0 needed; 197056 cases in 90 s (2202/s)
+[13:41:12]     layer 1: 3079 variables x 64 pairs, 0 needed; 394112 cases in 170 s (2324/s)
+[13:42:23]     layer 2: 3079 variables x 64 pairs, 0 needed; 591168 cases in 241 s (2454/s)
+[13:43:25]     layer 3: 3079 variables x 64 pairs, 0 needed; 788224 cases in 303 s (2603/s)
+[13:43:25] stage 0 (built): {"experiment": "E277 (needed_neurons)", "world": "built", "dn_n_changed": 0, "dn_dd_max": 0.0, "dn_E_b_K": 1.0, "n_vars": 12316, "identity": {"item": "x2", "flips": 0, "max_dev": 8.249282836914062e-05, "min_margin": 0.00021266937255859375, "cases": 788224, "cases_per_s": 2602.9398799823907, "n_read_positions": 41, "n_windows": 75, "window_len": 41}, "est_seconds_per_item": 1211.2826824188232, "seconds": 306.58442759513855}; checks hold
+[13:43:25] STAGE 0 DONE (built): est. 1211 s per item read like x2
+[13:43:25] stage panel: 1 of 48 items ['panel/lower/lower_s0_step128']
+[13:43:27] panel/lower/lower_s0_step128: 200 windows of 64 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[13:47:18]     layer 0: 3079 variables x 256 pairs, 2257 needed; 788224 cases in 231 s (3410/s)
+[13:50:12]     layer 1: 3079 variables x 256 pairs, 1496 needed; 1576448 cases in 406 s (3885/s)
+[13:52:11]     layer 2: 3079 variables x 256 pairs, 1186 needed; 2364672 cases in 524 s (4509/s)
+[13:53:13]     layer 3: 3079 variables x 256 pairs, 924 needed; 3152896 cases in 586 s (5380/s)
+[13:53:13] panel/lower/lower_s0_step128: E_b over K 0.015178, over all changed 0.021861; |K| 5863 (5863 changed) of 12316; margin median 0.721, min 0.0159; 588 s
+[13:53:13] ITEM 1 of 1 DONE (panel/lower/lower_s0_step128)
+[13:53:13] E277 (needed_neurons) DONE
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /mnt/nw/home/e.agnew/commute-agents/definition-lead/experiments/needed_neurons/results ===

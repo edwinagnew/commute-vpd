@@ -201,14 +201,30 @@ def fve(ae: AE, chunks: Iterable[Tensor], size: int = 4096) -> dict[str, Any]:
     }
 
 
+BETA_KEYS = ("eps_base", "eps_ft", "r_base", "r_ft")
+
+
 @torch.no_grad()
 def betas(ae: AE, h: Tensor, J: Tensor, size: int = 4096) -> dict[str, Tensor]:
     """Latent scaling for latents J on raw (n, 2, d): beta = sum_x f <y, d> / (sum_x f^2 |d|^2) with d = d_j^ft, in
-    normalised space; targets eps_m = x_m - (xhat_m - f_j d_j^m) and r_m = xhat_m; nu = beta_base / beta_ft. `h` may
-    be in another dtype or on another device (cell P2.37 keeps 2M bf16 tokens); each slice is copied to the decoder's."""
+    normalised space; targets eps_m = x_m - (xhat_m - f_j d_j^m) and r_m = xhat_m; nu = beta_base / beta_ft."""
+    return ratios(beta_sums(ae, h, J, size))
+
+
+def ratios(sums: dict[str, Tensor]) -> dict[str, Tensor]:
+    """The betas and nu from `beta_sums`' numerators and denominator (sums over any token set)."""
+    b = {k: sums[k] / sums["den"] for k in BETA_KEYS}
+    return b | {"nu_eps": b["eps_base"] / b["eps_ft"], "nu_r": b["r_base"] / b["r_ft"]}
+
+
+@torch.no_grad()
+def beta_sums(ae: AE, h: Tensor, J: Tensor, size: int = 4096) -> dict[str, Tensor]:
+    """`betas`' numerator per target and its denominator over the tokens of h, float64 on the CPU. Sums over disjoint
+    token sets add, so a fit can run chunk by chunk (cell P2.70's refit). `h` may be in another dtype or on another
+    device (cell P2.37 keeps 2M bf16 tokens); each slice is copied to the decoder's."""
     W, J = ae.decoder.weight, J.to(ae.decoder.weight.device)
     dJ, dbJ = W[1, J], W[0, J]
-    keys = ("eps_base", "eps_ft", "r_base", "r_ft")
+    keys = BETA_KEYS
     num = {k: torch.zeros(len(J), dtype=torch.float64, device=W.device) for k in keys}
     den = torch.zeros(len(J), dtype=torch.float64, device=W.device)
     for i in range(0, h.shape[0], size):
@@ -221,14 +237,16 @@ def betas(ae: AE, h: Tensor, J: Tensor, size: int = 4096) -> dict[str, Tensor]:
         for k in keys:
             num[k] += (fJ * proj[k]).sum(0).double()
         den += (fJ.pow(2).sum(0) * dJ.pow(2).sum(1)).double()
-    b = {k: (v / den).cpu() for k, v in num.items()}
-    return b | {"nu_eps": b["eps_base"] / b["eps_ft"], "nu_r": b["r_base"] / b["r_ft"]}
+    return {k: v.cpu() for k, v in num.items()} | {"den": den.cpu()}
 
 
 def specific(cfg: Cfg, b: dict[str, Tensor]) -> Tensor:
-    """The paper's test, nu_r < 0.5 and nu_eps < 0.2 (Minder et al. glossary, §3.1), with no other filter; a nan
-    ratio (a latent that never fired on the latent-scaling tokens) fails both comparisons."""
-    return (b["nu_r"] < cfg.nu_r) & (b["nu_eps"] < cfg.nu_eps)
+    """The paper's test, nu_r < 0.5 and nu_eps < 0.2 (Minder et al. glossary, §3.1), on the latents its App. E.2 keeps
+    ("we filter out latents with negative beta base values"): both base betas, error and reconstruction, at least 0, as
+    experiments/crosscoder_replicate/run.py applies it on Gemma (cell P2.70; scores before 2026-11-23 lacked it). A nan
+    beta or ratio (a latent that never fired on the latent-scaling tokens) fails every comparison."""
+    kept = (b["eps_base"] >= 0) & (b["r_base"] >= 0)
+    return kept & (b["nu_r"] < cfg.nu_r) & (b["nu_eps"] < cfg.nu_eps)
 
 
 @torch.no_grad()

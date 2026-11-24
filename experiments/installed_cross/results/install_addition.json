@@ -1,0 +1,72 @@
+{
+ "job": "install_addition",
+ "card": "NVIDIA L40",
+ "states": {},
+ "experiment": "E271 (P2.65 installed_cross, 67M)",
+ "candidates": {
+  "lam1": {
+   "cued_gain": 12.218994949012995,
+   "cued_top1": 1.0,
+   "uncued_decades": 0.023316431651629985,
+   "pile_kl": 0.020440122975521172,
+   "size": 0.02354833096174527,
+   "a_cued": true,
+   "b_uncued": true,
+   "lambda": 1,
+   "steps": 2000,
+   "leak_stopped": false,
+   "seconds": 477.6196126937866,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/base_addition_lam1.pt",
+    "sha256": "42f8466a9af60894c59585bfb985ee260da7087500a39586b7284c0221ad8761"
+   }
+  },
+  "lam3": {
+   "cued_gain": 11.479258064180613,
+   "cued_top1": 1.0,
+   "uncued_decades": 0.03893464003767212,
+   "pile_kl": 0.020357935861602346,
+   "size": 0.021246109014772103,
+   "a_cued": true,
+   "b_uncued": true,
+   "lambda": 3,
+   "steps": 2000,
+   "leak_stopped": false,
+   "seconds": 482.09065341949463,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/base_addition_lam3.pt",
+    "sha256": "47e942bed393fcefcd2e7fd810d21dd26a5ea3762f99fb2e22327d2e080cb319"
+   }
+  },
+  "lam10": {
+   "cued_gain": 10.68390003964305,
+   "cued_top1": 1.0,
+   "uncued_decades": 0.0028039955924539124,
+   "pile_kl": 0.02225883966295454,
+   "size": 0.019986891732646426,
+   "a_cued": true,
+   "b_uncued": true,
+   "lambda": 10,
+   "steps": 2000,
+   "leak_stopped": false,
+   "seconds": 476.8103473186493,
+   "state": {
+    "file": "experiments/installed_cross/results/large/states/base_addition_lam10.pt",
+    "sha256": "e8ed8e9400461c6a6432cac87072a9afebdafb2a01d50d329aeb477e4a92ce18"
+   },
+   "kl_bar": {
+    "M_ft_pile_kl": 0.3958020414907055,
+    "M_ft_steps": 22,
+    "M_ft_done": true
+   },
+   "c_pile": true
+  }
+ },
+ "kept": {
+  "lambda": 10,
+  "target_gain": 5.341950019821525,
+  "file": "experiments/installed_cross/results/large/states/base_addition_lam10.pt",
+  "sha256": "e8ed8e9400461c6a6432cac87072a9afebdafb2a01d50d329aeb477e4a92ce18"
+ },
+ "done": true
+}

@@ -1,0 +1,27 @@
+[22:28:45] E283 (reliance) start, stage neurons, world e62, items [], tasks [], tag b1
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[22:28:55] neurons, world e62: 9 items ['e62/copy_s0', 'e62/copy_s1', 'e62/copy_s2', 'e62/lookup_s0', 'e62/lookup_s1', 'e62/lookup_s2', 'e62-lookup_s0_scaled_e62_copy_lookup', 'e62-lookup_s1_scaled_e62_copy_lookup', 'e62-lookup_s2_scaled_e62_copy_lookup']
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[22:29:12] e62/copy_s0: M on D 1b80946c55688377, 512 windows of 8 tokens
+[22:29:26]     layer 0: 3079 variables x 256 pairs, 2535 needed; 788224 cases in 14 s (54717/s)
+[22:29:38]     layer 1: 3079 variables x 256 pairs, 1785 needed; 1576448 cases in 26 s (61332/s)
+[22:29:46]     layer 2: 3079 variables x 256 pairs, 1352 needed; 2364672 cases in 34 s (69536/s)
+[22:29:51]     layer 3: 3079 variables x 256 pairs, 819 needed; 3152896 cases in 39 s (80224/s)
+[22:29:51] neurons e62/copy_s0: D 1b80946c55688377, |K_M| 6491 of 12316, 3152896 cases in 39 s; SCAN DONE
+[22:29:51] e62/copy_s1: D 1b80946c55688377 scanned before
+[22:29:51] e62/copy_s2: D 1b80946c55688377 scanned before
+[22:29:51] e62/lookup_s0: D 1b80946c55688377 scanned before
+[22:29:52] e62/lookup_s1: D 1b80946c55688377 scanned before
+[22:29:52] e62/lookup_s2: D 1b80946c55688377 scanned before
+[22:29:52] e62-lookup_s0_scaled_e62_copy_lookup: D 1b80946c55688377 scanned before
+[22:29:52] e62-lookup_s1_scaled_e62_copy_lookup: D 1b80946c55688377 scanned before
+[22:29:52] e62-lookup_s2_scaled_e62_copy_lookup: D 1b80946c55688377 scanned before
+[22:29:52] E283 (reliance) DONE
+peak host RSS 6.6 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/reliance/results ===

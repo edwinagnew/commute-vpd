@@ -48,7 +48,90 @@ shared `src/commute/panel.py`; rules `results/predictions.json`; card `card.md`;
   out; "above" when W_readings > W_baselines and above the 95th percentile of W for random rankings.
 - Fewer than 5 tasks: "too few tasks". Missing scores and failed controls are reported as such, never 0.
 - Predictions (Fable): H1 "+", H2 "above", both low confidence. The other three matched sets are descriptive.
-- Edge cases run on a stub before filing (score.py --stub): a dropped task, a zero-spread reading, a nan seed, ties
+- **Amendment 3 (2026-11-22, redteam-lead's plan check, before any read).** H1 "positive" only when the partial tau
+  on the prior is > 0 at permutation p <= 0.05, or the raw call is positive and beats the prior's own tau with the
+  tier; with no common support on the prior (its ranges over the reuse-side and new-side tasks do not overlap) a raw
+  positive is "confounded with the prior". H2 compares each side's W against its own null at its own m (percentiles),
+  with mean pairwise tau and the readings' W after partialling prior and size beside it. Drops are written to
+  `results/dropped.json` by `select`; `score.py` refuses unless it predates every read. Critical tau-b (exact, n = 9,
+  consensus tiers) 0.526; power at a true tau of 0.3 is 0.23 (0.20 at n = 7, where the critical tau-b is 0.62).
+  **If H1 is "no call"** (the likely case), the paper says: on nine realistic tasks the readings' agreement with the
+  raters' tiers is reported with its interval and is too weak to call at this panel size, and the panel does not show
+  that the readings track intuition beyond the base prior. On the wide panel (Amendment 5, 18 tasks, the joint
+  consensus tiers) the critical tau-b is 0.317 and power at a true tau of 0.3 is 0.50 (0.92 at 0.5), so a "no call"
+  there is reported the same way, as agreement too weak to call and unlikely to be as strong as 0.5.
+- **Amendment 4 (2026-11-22, whip-lead's 22:55 note, user "yes to all four"; before any read).** Two descriptive
+  extras, outside H1/H2 (`rules.amendment4`). *Mixture:* lower (consensus reuse, code 3) mixed with yoruba (new,
+  code 1) at 0/25/50/75/100% of yoruba's rows in every part of the task (`tasks.mix_task`); 0 and 100% are the
+  panel's own runs, so only mix25/50/75 train. Pair: yoruba is the only code-1 task; of the four code-3 tasks only
+  lower's saves have held gain over the floor (pile, code and british read below 0 at every save), and lower and
+  yoruba share row shape, mask and read layout, so a mix is a row mix. Mix states are picked at the panel's KL "hi"
+  target without entering its selection rule. Per measure, Spearman rho of seed means over the 5 fractions,
+  "monotone" when |rho| >= 0.9 (exact one-sided 0.05, n = 5), sign against -orientation. *Trajectory:* no new
+  saving (train already saves at every rung; lower's seed 0 has 14 saves over its floor): select picks 5 of seed
+  0's saves over the floor, evenly spaced, for lower and yoruba; "stable" / "monotone" / "jump" against 3 x the
+  measure's seed sd on the KL "hi" set. At W0 every mix reads numerators 0 and shares nan: "no call", never
+  "monotone". New jobs: 3 train (5-10 min each, as a panel LM task, plus the second task's build) + 3 read (3 states
+  at <= 58 s, ~4 min + set-up each) on debug QoS, and up to 10 trajectory states (<= 58 s each) in lower's and
+  yoruba's reads: ~0.5-0.8 GPU-h, $0; exact lines in the sbatch header; select runs
+  after the mixes' train jobs and before any read.
+- **Amendment 5: wide panel (2026-11-22, whip-lead's 23:10 GO with redteam-lead's agreement, user away).** Nine tasks
+  join the filed nine: English, German, Swahili, Tagalog and Spanish Wikipedia (as Yoruba), arXiv abstracts (as the
+  Pile rows), sentiment (E211's SST-2 label task), animal-or-plant article category (DBpedia-14, in the topic task's
+  form) and news summary (CNN/DailyMail: the article's opening, then its first highlight; its twin shuffles the
+  highlights, and it joins SQuAD and CoNLL under the twin learnability rule). The guards: (a) fresh blind Opus and GPT
+  raters rated all 18 together in one batch (`results/wide/rater_{opus,gpt}.md`, filed as `raters_wide`), and the wide
+  panel is scored on that rating; (b) the added tasks were picked by the filed rule and listed before any of their
+  training (`results/wide/tasklist.md`, `order.txt`, commit 48e10783), and a task that misses its KL or floor is
+  listed in `results/wide/dropped.json`, never swapped out; (c) the critical tau-b and power are refiled at the new n.
+  Two sets are reported side by side and neither replaces the other: the nine, scored exactly as Amendment 3 from
+  `results/` on the filed raters, and the wide set, from `results/wide/` on the joint rating, with its own selection
+  (the filed rule over all 18, so its matched rungs may differ) and drops. The critical tau-b stays exact up to n = 9
+  and uses 200,000 random orderings from n = 10; score.py records the critical tau-b and power at the n kept. The
+  nine are scored first, then the wide set. The joint raters again rank by pretraining prevalence, so Amendment 3's
+  prior-aware H1 call is the scored call for the wide panel too. Wide consensus tiers: 5 at 3, 3 at 2.5, 5 at 2, 2 at 1.5, 3 at 1. At
+  n = 18 the critical tau-b is 0.317 (Opus 0.339, GPT 0.333), power 0.50 at a true tau of 0.3 and 0.92 at 0.5; with
+  drops, n = 17: 0.327-0.334 (power 0.48 without summary), n = 16: 0.336-0.354 (0.43 without summary and
+  sentiment), n = 15: 0.354-0.375 (0.43 without the three twin-checked tasks). Held masks follow Amendment 7's rule:
+  the Wikipedia and arXiv tasks go through `lm_task`, so their held gain is scored at their 500 read positions;
+  sentiment and category (label tasks) and summary (a prompt task) score the answer only; no wide builder scores
+  anything else. The wide set's E_b (stage 3) is not
+  wired: it needs its own go-ahead. Jobs, after the amendment is on main and from the main clone:
+  ```
+  for T in wiki_en arxiv german swahili tagalog spanish sentiment category summary; do
+    sbatch --comment="E272 stage: train $T" cluster/convergence_panel.sbatch train $T; done
+  ~/commute-agents/fleet/cpu-run python3 experiments/convergence_panel/run.py select wide    # after all 18 train files
+  for T in <each task in a kept list of results/wide/dropped.json>; do
+    sbatch --comment="E272 stage: read $T" cluster/convergence_panel.sbatch read $T; done
+  ```
+  `read T` reads every set whose dropped.json exists and holds T, the nine first; a state the nine set already read is
+  copied into `results/wide/read/`, so a filed task's wide read costs only the states the wide rule picks anew. The
+  nine set's `select` and reads go ahead now and never wait for the wide jobs. Then `score.py` scores both. The wide
+  drops live in their own file, `results/wide/dropped.json`, checked by `score.py` against the wide reads only
+  (`results/wide/read/`, `results/wide/eb/`); `select wide` never touches the nine's `results/dropped.json` or its
+  timestamp, and `select` refuses to run again for a set whose `read/` already holds a file.
+- **Recipe probe, no recipe change (2026-11-23, probe job 63813, commit 64a6ae60).** Matched-KL SFT on in-distribution
+  text only loses held likelihood at 67M: on held-out Pile the best gain over 3 recipes (filed 3e-5/batch 8; 1e-5 and
+  3e-6 at batch 32 with 6% warm-up) was +0.0005 nats/token, below a 0.014 floor, turning negative by KL 0.003. The
+  recipe stays as filed, so pile, code and british go to `dropped.json` under the filed rule, and wiki_en and arxiv
+  are expected to drop the same way in the wide set. The reuse tier is thin (pile, code and british drop out of the
+  nine), and this weakens H1. Amendments 6 and 7 since score every held gain at the task's read positions and retrain
+  the tasks whose mask changed; select then drops whichever still miss their floor.
+- **Amendment 8 (2026-11-22, whip-lead's 23:55 message, user away; before any mixture read).** The mixture is read at
+  the size "hi" target (0.0113, the nine set's own rung, +-10%, held gain over each mix's floor), not at KL "hi": no
+  mix save came within 10% of KL 0.256 (`selection.json` mix picks empty; the mixes' largest KL is 0.19-0.22). The 0%
+  and 100% ends are lower's and yoruba's size "hi" picks; size is now the matched variable (reported, not called) and
+  KL is called like a reading; the filed prediction is unchanged. `run.py select mix` writes the picks to
+  `results/mix_selection.json` alone (the nine set's `selection.json` and `dropped.json` stay as written), `read mixNN`
+  reads them, and `score.py` refuses unless that file predates every mix read. *The thin reuse tier, before scoring.*
+  After drops, kl_hi keeps 5 tasks (lower, french, conll, squad, yoruba), kl_lo 3 (lower, french, yoruba), and both
+  size sets 7 (british, lower, topic, french, conll, squad, yoruba); pile and code are kept nowhere. So the reuse tier
+  is lower alone in the KL sets, and lower and british in the size sets. On the kept consensus tiers the critical
+  tau-b is 0.949 at n = 5 (only the tier's exact order reaches it; power 0.06 at a true tau of 0.3, 0.14 at 0.5) and
+  0.651 at n = 7 (power 0.16 and 0.37); at n = 3 no tau-b can reach p <= 0.05 (a perfect order has p = 1/6), and
+  kl_lo is under the five-task minimum anyway. The write-up says: the panel holds only tasks that measurably learn on
+  held data at their read positions, so it leans to the middle and new tiers.
+- Edge cases run on a stub before filing (score.py --stub; since Amendment 3, `--results DIR` on run.py's read shape): a dropped task, a zero-spread reading, a nan seed, ties
   (tier codes), n = 4, the prior with no common support. All gave the calls the rules name.
 
 ## Cost and time per stage (measured item x count)
@@ -79,6 +162,181 @@ shared `src/commute/panel.py`; rules `results/predictions.json`; card `card.md`;
 4. **Early checks.** eb stage 0 stops the job; the first state's seconds are logged before the second.
 5. **One review** (fresh Opus) of this plan and `eb.py`.
 6. **Go-ahead** from whip-lead (in-plan gated run).
+
+## Before scoring (2026-11-23, redteam-lead via whip-lead 00:10; written before any reading was opened)
+- **The nine-set Hope 1 cannot answer the question.** Its scored set (KL hi, as filed) kept 5 tasks (conll, french,
+  lower, squad, yoruba): critical tau-b 0.949, power 0.062 at a true tau of 0.3 (0.137 at 0.5), and a one-task reuse
+  side (lower). Its call is reported, but a no call says nothing about the readings.
+- **The scored set stays as filed.** size_hi (7 kept, critical 0.651, power 0.156) stays descriptive. If KL hi reads
+  "no call" and size_hi looks positive, the page does not lead with size_hi.
+- **The reuse end is nearly empty, and that is a finding.** pile, code and british fell out at the matched KL rungs
+  under the read-position floor (Amendment 7), so lower is the only reuse task in any KL set. In words:
+  expected-reuse fine-tunes on Pile-like text gain too little on held data to be matched (also the probe, job 63813).
+- **The wide panel is where Hope 1 can be read.** Its kept-tier critical tau and power are filed right after
+  `select wide`, before its reads, as Amendment 8 did for the nine.
+- Hope 2 (W across readings) does not depend on tiers; at n = 5 it is weak, and its own-m null percentile is reported
+  as filed.
+
+## E_b stage on the wide set (2026-11-23, proposed)
+`eb.py TASK i/n kl_hi wide` reads the wide set's KL "hi" picks (`results/wide/selection.json`, target 0.181) and
+writes `results/wide/eb/TASK.json`, where `score.py` reads the wide set's E_b (`records`, `res / "eb" / p.name`). The
+nine set's KL "hi" picks are at another rung (0.256): none of their 15 state files is among the wide set's 36, so the
+nine set's E_b is not produced by this stage. Counted from the code (`eb.states`, dry run on CPU 2026-11-23): 12 kept
+tasks (`wide/dropped.json` kept.kl_hi) x (3 seeds + seed 0's Gaussian) = 48 states. Tokens per window = read position
++ 1 (`eb.windows`): continued text `half` + 1 = 64 (`panel.lm_read`; lower from E53's windows, the plan's 64 above, not
+re-read: the job logs the windows' shape), squad `squad_P` = 256, conll `conll_P` = 96, summary `summary_P` = 128,
+sentiment and category 32 + " Topic:" ~ 34 (`realistic.label_windows`). Seconds per state = 738 x tokens / 64 (E268).
+
+| tasks | tokens | states | s/state | s |
+|---|---|---|---|---|
+| lower, french, yoruba, arxiv, german, swahili, spanish | 64 | 7 x 4 = 28 | 738 | 20,664 |
+| squad | 256 | 4 | 2,952 | 11,808 |
+| summary | 128 | 4 | 1,476 | 5,904 |
+| conll | 96 | 4 | 1,107 | 4,428 |
+| sentiment, category | ~34 | 2 x 4 = 8 | 392 | 3,136 |
+| **states** | | **48** | | **45,940 = 12.8 H100-h** |
+
+- **Windows first ($0, cluster; added 2026-11-23 after the gate-5 review, F2).** `eb.py windows wide kl_hi` builds each
+  of the 12 tasks' D once (the LM tasks pick their positions from W0 log-odds, so it needs a GPU) and writes it to
+  `results/large/eb_windows/TASK.pt` (<= 200 x 256 int64 = 400 KB each), with shape, dtype and sha256 in
+  `results/wide/eb/windows_manifest.json` (committed). Stage 0 and every task load D from there and stop on a sha256 or
+  shape mismatch, so the pods need no dataset (no `cached_rows`, Pile, Wikipedia or HF streams) and D is the cluster's
+  exactly. The token column above is replaced by the manifest's shapes when it is written. Estimate: 12 task builds at
+  about 1-2 min each (the read jobs' builds, inside <= 16 min a task with 16 state reads at <= 58 s) = 15-25 min.
+- Stage 0 once, alone, first: x2 1,445 s (E268 `kstar_needed/results/items/x2.json` .seconds) + do-nothing on 200
+  lower windows (~738 s) + identity: ~0.7 h. It records the card; `task` refuses a stage0.json from another card name.
+- **Gaussians first (F4).** Each task's seed-0 Gaussian is the first state of its shard 0. Its E_b is logged beside the
+  filed expected value ("random about 0.011", `expected.eb`); no tolerance is filed, so it never stops the job. The
+  pod-runner quotes each Gaussian line to the lead at once, and the lead reads it against 0.011 before the task's real
+  states are read; score.py does not read Gaussians.
+- **Stop rules after each state (2026-11-23, F3).** The job exits nonzero with nothing written for the state unless:
+  E_b over K is finite and in [0, 1]; the record's windows are (200, the loaded D's tokens); more than 99% of the
+  variables changed (E268's RL items: 38,936 of 38,938; a dW that loaded empty reads E_b exactly 1 with none changed);
+  dd_max > 0; seconds for the state at most 2x 738 x tokens / 64 x the card's slowdown (upper bound only, lead
+  2026-11-23: a fast state is not a fault, and squad's 256/64 is a guess) (H100 1, L40 2.5 from the scan
+  rates 8,800/s on E268's H100 and 3,517/s in job 64133; any other card stops before its first state). Memory: the
+  job logs max GPU memory after the cache and on every scan site line (B1).
+- **Known bias (N1, kept).** An LM task's D is its 200 hardest read positions by W0 log-odds (`realistic.py`
+  `hard_positions` sorts ascending); a prompt or label task's is a seeded random 200. Low-margin positions flip more
+  easily, so K and E_b can differ between task kinds for this reason alone, and H1 is a cross-task tau. The selection
+  is not changed; the card says so.
+- **|K| rule (2026-11-23; whip-lead 02:10, E273's rule of 00:50, filed before any E_b state was read).** A state with
+  |K| (eb.py's `size_K`) under 100 is reported as "K too small to read", its E_b and |K| still printed, and its E_b
+  counts as missing (nan) in score.py's E_b reading (`score.e_b`, K_MIN). This is a limit of the sampled K, not a
+  definition rule. Known limit, nothing changed: |K| depends on the read position (E273's plan guard 4), so E_b can
+  differ between label and text tasks for that reason alone, on top of the window bias above.
+- **Amendment 10 (2026-11-23; whip-lead 02:20, filed before any E_b read).** E273 found E_b over K reversed the built
+  direction on both readable real-text pairs, and redteam-lead suspects E_b tracks output change. score.py
+  therefore reports two descriptive numbers, with no call: (a) E_b's tau with the tiers partialled on KL and,
+  separately, on the prior; (b) E_b's own Kendall tau with KL across tasks, as the wide kl_hi headline line. KL is
+  matched by design, so the residual KL spread inside the set is the check. predictions.json sha256 after the
+  amendment: see the gate record (`reports/plans/2026-11-23_gates_e272-eb.md`); every pod run line sets that PRED_SHA.
+- **Budget and downloads.** The cap for this stage is $150 (the estimate is ~$74). The runner downloads each state's
+  JSON (`results/wide/eb/TASK.json`) as soon as it is written, and checks its sha256 on both sides.
+- Four H100 SXM pods (one card model: the stage 0 gate compares card names), by task: A squad (3.3 h); B summary +
+  conll (2.9 h); C lower, french, yoruba, arxiv (3.3 h); D german, swahili, spanish, sentiment, category (3.3 h).
+  **Stage 0 (lead, 2026-11-23: option b): every pod runs `eb.py 0` itself, alone, before its tasks**, so each pod's
+  gate is its own card's stage0.json and no file passes between pods. (Option a, pod A first and B-D waiting for its
+  stage0.json, was $9 cheaper at ~$65 but needs the hand-over; not taken.)
+- Uploads: the 36 state files are 2.04 GB: 2,040 MB / 10 MB/s = 204 s in all (~50 s a pod); the windows ~3 MB.
+- Cost: (12.8 states + 4 x 0.7 stage 0 + 4 x 0.3 set-up) h = 16.8 H100-h x $4.40/h = **~$74**, wall ~4.3 h
+  (0.7 h stage 0 + 3.3 h + set-up); gated (over $60).
+- Unmeasured until the rehearsal (`E272 rehearse: eb`, cluster L40): seconds per squad state (the 256/64 scaling is a
+  guess; read from the scan's per-site rate lines if the job times out) and peak memory on squad at scan rows 1024
+  (logged after the cache and per site). E268's 64-token RL items peaked at 11.9 GB at 1024 rows; squad's guess is
+  ~40 GB (review B1): tight on an L40, fits an H100.
+
+## Post-hoc check: data-only baseline (2026-11-23, filed before computing)
+Asked by redteam-lead (02:50) and whip-lead (03:00), note
+`~/commute-data/agents/regating-lead/note-2026-11-23-redteam-e272-erank-update.md` item 2. Chosen after the effective
+rank's results were seen, so it is descriptive: **no call**, whichever way it reads. $0, one cluster L40 debug job.
+- **Question.** Does the effective rank's agreement with the tiers (wide KL "hi", within the continued-text tasks tau
+  0.91) carry anything beyond how unfamiliar each task's text is to the base model M?
+- **Quantity.** M's mean loss on each task's held rows (`tasks.build(...).held`, the rows every train job scores its
+  held-out gain on), at every scored token, not at the 500 hard read positions (Amendment 7's `held_mask`). Two units:
+  nats per token, and nats per UTF-8 byte (summed nats over summed bytes of the scored target tokens; the end-of-text
+  token counts 0 bytes), since per-token loss favours tokenisers that split a language into many short pieces (as E209
+  chose Yoruba). Computed with `panel.target_logp` (fp32 logits, float64 sums), on the 12 tasks of the wide KL "hi" set.
+- **Which tokens count.** Primary: **the tokens the fine-tune trains on**, read on the held rows: every token for
+  arxiv, lower, german, spanish, swahili, yoruba; only the French tokens for french (after the `en_len` English
+  prefix); for the prompt tasks (squad, conll, summary) the answer and its closing end-of-text; for the label tasks
+  (sentiment, category) the label token. Why: the update is driven by the loss on exactly those tokens, so this is the
+  data statistic the update could most directly be a function of. Beside it, descriptive: **all tokens** of the held
+  row (every non-padding token from position 1, plus the trained ones), which reads how unfamiliar the prompt text
+  itself is; on the 8 continued-text tasks the two differ only for french (English prefix included) and summary
+  (article opening included).
+- **What is reported** (`score.py`, block `wide.base_loss` of summary.json, written when `results/wide/base_loss.json`
+  exists), per unit and token rule, on the **8 continued-text tasks** (arxiv, lower, french, spanish, german, summary,
+  swahili, yoruba; score.py's `WITHIN_TEXT["text8"]`) and on **all 12**, per rater (consensus, Opus, GPT): (a) the base
+  loss's Kendall tau-b with the tier codes, oriented as KL is (minus the loss, so a positive tau means higher loss on
+  the "new" side), with the one-sided task-permutation p of `score.perm_p` (n_perm 10,000, seed 266); (b) the effective
+  rank's tau with the tiers and its partial tau given the base loss (`score.partial_tau`), with the same permutation p
+  (effective rank permuted, tier and loss held). Primary line: consensus, nats per byte, trained tokens.
+- **E_b beside it (redteam-lead, added 2026-11-23 before any E_b read).** The same (b) for E_b over K: its tau with
+  the tiers and its partial tau given the base loss, on both task sets; nan until the wide set's E_b is read. Why:
+  E273's E_b read the built-new text tasks higher than the built-reuse ones, so E_b may also track how unfamiliar the
+  text is, with the opposite sign to the effective rank.
+- **Expected in advance.** Higher base loss goes with the "new" tier: the oriented tau is positive. Expected values
+  per task (not filed as bars): lower and arxiv lowest per byte; yoruba and swahili highest; german, spanish, french
+  between. Control in the same job: the job also recomputes each task's `rows.w0_logp` of `results/train/TASK.json`
+  (the same function on the train job's own `held_mask`) and prints the difference; it should read 0 to float noise
+  (same code, same rows, same card model). A large difference means the rows differ from the train job's: not read.
+- **Reading.** If the base loss alone reaches a tau of about 0.9 with the tiers and the effective rank's partial falls
+  toward 0, the effective rank is reading how unfamiliar the text is (computable from the data and M's loss, with no
+  look at the update): the raters' own cue, so the agreement is circular. If the partial stays high, the effective
+  rank carries something the data statistic does not. In between is reported as read. Blind to: anything about the
+  update itself; the 8-task set has 28 task pairs, so one pair moves its tau by ~0.04 or more (tier ties).
+- **Not in it.** No other reading is partialled; the prior partial and KL are as already reported.
+
+## 2026-11-23 post-hoc checks (user-approved, $0, descriptive)
+User via whip-lead, 2026-11-23: "yes start the two free checks". Filed here before any of their numbers was computed.
+Chosen after E_b's reversal (consensus tau -0.69) was seen, so both are descriptive: **no call** beyond the questions
+below, whichever way they read. CPU only (`fleet/cpu-run`), no model loaded. Script
+`experiments/convergence_panel/posthoc_checks.py` -> `results/wide/posthoc_checks.json`; tau, partial tau and the
+permutation p are `score.tau`, `score.partial_tau`, `score.perm_p` (one-sided, the reading permuted, the others held;
+n_perm 10,000, seed 266 from the filed rules). Set: the wide KL "hi" set's 12 kept tasks (`wide/dropped.json`), its 3
+seeds each at the states `run.picked(task, "wide")` labels `kl_hi`. Tiers: `raters_wide`, consensus and each rater.
+Task means of the readings are summary.json's `wide.kl_hi.means`, oriented by the filed `rules.orientation`
+(higher = more reuse; KL by -1); base loss is base_loss.json's trained tokens, nats per byte, oriented as minus the
+loss (score.py's `base_loss`).
+
+**(1) Seed agreement.**
+- *Quantity.* Per task, the mean of the 3 pairwise cosines between its seeds' flattened weight updates (the saved
+  state, which is already the selected checkpoint minus the base, over every key it holds: every trained parameter),
+  in float64.
+- *Gaussian.* Only one Gaussian exists per task: stage 2's `finetune.random_direction` of the seed-0 state with
+  `random_seed` 0 (per matrix, at that matrix's norm). It is rebuilt the same way (it was never saved on disk). A
+  Gaussian per seed built the same way would share its draws with the seed-0 one (one generator seed), so it is no
+  floor. The floor is the mean over the 3 seeds of the cosine between each seed's update and the task's Gaussian.
+- *Expected.* A do-nothing update has no direction: cosine undefined. The Gaussian floor reads about 0 (the
+  scale of chance is 1/sqrt(number of weights), about 2e-4 at ~27M). Seed agreement should sit far above that floor.
+- *Filed question.* Do reuse-tier tasks have lower seed agreement than new-tier ones? Read as the Kendall tau-b of the
+  tier codes with **minus** the agreement (positive = reuse-tier tasks agree less), with its one-sided permutation p.
+- *Then.* Kendall tau-b of agreement with E_b across the 12 tasks, with a two-sided permutation p (`perm_p` on the
+  absolute tau). Then E_b's partial tau with the tiers given agreement (`partial_tau(tier, E_b, agreement)`), with
+  its one-sided permutation p (E_b permuted), next to the unconditioned tau recomputed here (consensus -0.69: a
+  control; it must match summary.json). If agreement carries the E_b reversal, the partial moves toward 0.
+- *Blind to.* Any direction inside the update beyond a single cosine; at 12 tasks one task pair moves tau by ~0.03.
+
+**(2) Steps to learn.** The traces (`results/train/TASK.json`, `seeds[s]`) log held gain only at saved states: steps
+1 to ~6 every step, then at the steps where a KL or size rung was crossed (roughly doubling gaps), and step 300
+(`last`), 12-17 entries per seed. So the rule reads those logged steps; a crossing between two of them counts at the
+later one. The per-10-step `trace` has no held gain and is not used. (Checking this format showed four tasks'
+seed-0 held gains; no crossing was computed.)
+- *Rule.* Per seed: the final held gain is the entry flagged `last` (step 300). Steps-to-learn is the smallest logged
+  step whose held gain is >= 0.5 x the final held gain. Non-monotone trace: the first crossing counts, later dips are
+  ignored. A final held gain <= 0 makes the seed missing, and a task with a missing seed is missing (score.py's
+  convention); a seed with a positive final always reaches it (at step 300 at the latest). The task's value is the
+  arithmetic mean over its 3 seeds. Ties (several tasks at step 1, say) are kept; tau-b handles them.
+- *Sign.* Fewer steps reads as more reuse: the oriented value is **minus** steps-to-learn.
+- *Reported.* Its Kendall tau-b with the tier codes (consensus and each rater), one-sided permutation p (steps
+  permuted). For each reading (E_b, re-gating share, steering, effective rank, KL, base loss): its tau-b with
+  oriented steps-to-learn on the tasks it has, one-sided p (the reading permuted), and (all but base loss) its partial
+  tau given the oriented base loss with its one-sided p (the reading permuted; steps and loss held).
+- *Expected.* A do-nothing has held gain 0 at every step: undefined. If reuse tasks learn faster, steps-to-learn's
+  tau with the tiers is positive. Readings that track reuse read positive taus with it.
+- *Blind to.* Learning speed set by the learning rate's scale on each task's loss rather than by reuse; the step
+  resolution above (many tasks may tie in the first few steps).
 
 ## Open choices (for the lead)
 - The raters' tiers go in `raters` before `read` (both refuse while it is empty); the user's sort when it arrives.

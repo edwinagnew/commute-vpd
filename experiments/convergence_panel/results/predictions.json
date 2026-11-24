@@ -54,6 +54,97 @@
       "source": "experiments/convergence_panel/results/raters/rater_gpt.md"
     }
   },
+  "raters_wide": {
+    "opus_blind_wide": {
+      "tiers": {
+        "pile": "reuse",
+        "wiki_en": "reuse",
+        "arxiv": "reuse",
+        "code": "reuse",
+        "lower": "reuse",
+        "topic": "reuse",
+        "category": "reuse",
+        "sentiment": "middle",
+        "british": "middle",
+        "french": "middle",
+        "spanish": "middle",
+        "german": "middle",
+        "conll": "middle",
+        "summary": "middle",
+        "squad": "new",
+        "swahili": "new",
+        "tagalog": "new",
+        "yoruba": "new"
+      },
+      "order": [
+        "pile",
+        "wiki_en",
+        "arxiv",
+        "code",
+        "lower",
+        "topic",
+        "category",
+        "sentiment",
+        "british",
+        "french",
+        "spanish",
+        "german",
+        "conll",
+        "summary",
+        "squad",
+        "swahili",
+        "tagalog",
+        "yoruba"
+      ],
+      "counts": {"reuse": 7, "middle": 7, "new": 4},
+      "source": "experiments/convergence_panel/results/wide/rater_opus.md"
+    },
+    "gpt_blind_wide": {
+      "tiers": {
+        "pile": "reuse",
+        "wiki_en": "reuse",
+        "arxiv": "reuse",
+        "code": "reuse",
+        "british": "reuse",
+        "lower": "reuse",
+        "topic": "middle",
+        "category": "middle",
+        "sentiment": "middle",
+        "spanish": "middle",
+        "conll": "middle",
+        "french": "middle",
+        "german": "middle",
+        "squad": "middle",
+        "summary": "new",
+        "tagalog": "new",
+        "swahili": "new",
+        "yoruba": "new"
+      },
+      "order": [
+        "pile",
+        "wiki_en",
+        "arxiv",
+        "code",
+        "british",
+        "lower",
+        "topic",
+        "category",
+        "sentiment",
+        "spanish",
+        "conll",
+        "french",
+        "german",
+        "squad",
+        "summary",
+        "tagalog",
+        "swahili",
+        "yoruba"
+      ],
+      "counts": {"reuse": 6, "middle": 8, "new": 4},
+      "source": "experiments/convergence_panel/results/wide/rater_gpt.md"
+    }
+  },
+  "raters_wide_source": "Amendment 5's guard (a): fresh blind raters (Opus, GPT), all 18 one-liners in one batch in the fixed order of results/wide/order.txt; tiers transcribed from the files' tier column (expected reuse -> reuse), order = the rank column, ties in the files' row order; one-liner number -> task: 1 sentiment, 2 squad, 3 british, 4 arxiv, 5 tagalog, 6 code, 7 summary, 8 french, 9 conll, 10 pile, 11 spanish, 12 lower, 13 swahili, 14 topic, 15 yoruba, 16 german, 17 wiki_en, 18 category",
   "raters_form": "{\"<rater>\": {\"tiers\": {\"<task>\": \"reuse\" | \"middle\" | \"new\"}, \"order\": [tasks, most reuse first], \"source\": \"<file>\"}} for each blind rater (Opus, GPT: ~/commute-data/scratch/regating-lead/raters/rater_{opus,gpt}.md) and the user's sort; score.py adds the consensus (mean tier code, reuse 3, middle 2, new 1)",
   "settings": {
     "tasks": [
@@ -68,6 +159,22 @@
       "conll"
     ],
     "tasks_source": "the 22:35 amendment's realistic-only panel (whip-lead note 2026-11-22-regating-panel-oneliners.md, nine one-liners)",
+    "tasks_wide": [
+      "wiki_en",
+      "arxiv",
+      "german",
+      "swahili",
+      "tagalog",
+      "spanish",
+      "sentiment",
+      "category",
+      "summary"
+    ],
+    "tasks_wide_source": "Amendment 5: the nine added tasks of results/wide/tasklist.md section 1 (eight + Spanish), listed and rated before any of their training (commit 48e10783)",
+    "summary_P": 128,
+    "summary_A": 32,
+    "summary_chars": 1024,
+    "summary_source": "new (tasklist.md, Amendment 5): CNN/DailyMail 3.0.0 prompt = the first summary_P - 3 tokens of the article's first summary_chars characters + '\\nSummary:' (3 tokens); answer = the first highlight sentence, kept when <= summary_A - 1 tokens; P 128 (not 256) halves its E_b cost (tasklist.md section 4); 1,024 characters (about 8 a token, twice an English token's ~4) so the prompt is cut on tokens without encoding 287k whole articles",
     "seeds": [
       0,
       1,
@@ -98,7 +205,7 @@
     "floor_source": "the held-out gain floor is measured in each train job before training: 3 x the largest |held gain| of three Gaussian updates at 0.0175 x each matrix's norm (E211's larger LM size; rl_67m random_update); 3 = E265's sd_mult (adl predictions) read as 'well above' the null",
     "half": 63,
     "n_read": 500,
-    "per_row": 8,
+    "per_row": 10,
     "n_fit": 2000,
     "fit_rows": 256,
     "read_source": "E211's LM read (predictions_run2 half, n_read, per_row, n_fit, fit_rows): the 500 word starts of lowest W0 log-odds in 64 held rows, at most 8 a row; lower and british keep their own experiments' read windows (E53's, E233's)",
@@ -134,13 +241,31 @@
     "twin_seed": 1,
     "e211_state": "experiments/realistic_tasks/results/large/run2/T1_s0_0.0175.pt",
     "e187_c": 0.7798162499214973,
-    "e187_c_source": "experiments/size_matched/results/m67.json pairs.e58_copy_prior_cipher.c"
+    "e187_c_source": "experiments/size_matched/results/m67.json pairs.e58_copy_prior_cipher.c",
+    "mix_tasks": [
+      "lower",
+      "yoruba"
+    ],
+    "mix_fracs": [
+      0,
+      0.25,
+      0.5,
+      0.75,
+      1
+    ],
+    "mix_source": "Amendment 4 (whip-lead 22:55 note: 'one high-expected-reuse and one low-expected-reuse task (pick by the raters' consensus) at 0/25/50/75/100%, 3 seeds'). mix_fracs = the share of yoruba's rows; 0 and 1 are the panel's own lower and yoruba runs (same seeds, steps, recipe and KL 'hi' selection), so only mix25/50/75 are trained",
+    "trajectory_tasks": [
+      "lower",
+      "yoruba"
+    ],
+    "trajectory_points": 5,
+    "trajectory_source": "Amendment 4 (the same note: '5 checkpoints along two panel fine-tunes'): train already saves at every KL and size rung (lower's seed 0: 14 saves, all over the floor, in the main clone's results/train/lower.json), so no new saving; 5 of seed 0's saves over the floor, evenly spaced by index"
   },
   "thresholds": {
     "reproduce_tol": {
       "share": 0.01,
       "steering": 0.001,
-      "erank": 1e-06
+      "erank": 0.0598
     },
     "reproduce_tol_source": "E211's reproduce_tol (predictions_run2: share 0.01, steer_pooled 0.001, erank 1e-6); E187's share_tol 0.01 (m67.json T) for the copy/cipher split",
     "eb": {
@@ -191,7 +316,15 @@
     "readable": "a measure is readable in a matched set when the between-task sd of its task means exceeds the pooled within-task (seed) sd; else 'no information' and out of W. A task with a non-finite seed value is missing for that measure (listed, never 0)",
     "H1": "per readable reading and rater (and the consensus), on the KL-matched 'hi' set: Kendall tau-b of tier code against the oriented task mean; 'positive' when tau > 0 and the one-sided task-permutation p <= alpha; 'not positive' when tau <= 0; 'no call' otherwise or with tau undefined; 'too few tasks' under min_tasks. Beside it (no call): partial tau on the prior where the prior has common support across the top and bottom tiers (else raw only, so labelled), the leave-one-task-out range and a 90% task-bootstrap interval. The other three sets are read the same way, descriptive",
     "H2": "on the KL-matched 'hi' set: Kendall W (tie-corrected) across the readable readings and across the readable baselines (the matched variable left out), each oriented, on the tasks all of them have; 'above' when W_readings > W_baselines and W_readings > the 95th percentile of W for independent random rankings of the same m and n; 'not above' when W_readings <= W_baselines; 'no call' otherwise or under min_tasks or fewer than 2 measures a side",
-    "edge_cases": "checked on stubs before filing (tests stub in results/stub/): ties in tau (tau-b; tier codes tie by construction), a dropped task (out of every measure), a zero-spread reading (unreadable, out of W), n < 5 (too few tasks), a constant side (tau nan, 'no call'), the do-nothing (every numerator 0, share nan: unreadable, never a pass)"
+    "edge_cases": "checked on stubs before filing (tests stub in results/stub/): ties in tau (tau-b; tier codes tie by construction), a dropped task (out of every measure), a zero-spread reading (unreadable, out of W), n < 5 (too few tasks), a constant side (tau nan, 'no call'), the do-nothing (every numerator 0, share nan: unreadable, never a pass)",
+    "amendment4": {
+      "scope": "descriptive extras: neither enters H1 or H2, the readability rule or the matched sets; score.py reports them under summary.json 'amendment4'",
+      "mixture": "per measure (readings and baselines): Spearman rho (average ranks) of the seed means against the mix fraction (the share of yoruba's rows: 0, 0.25, 0.5, 0.75, 1; n = 5 points; each fraction's mean over seeds 0-2 of its KL 'hi'-matched states). Expected sign = -orientation (lower is tiered reuse 3/3, yoruba new 1/1, so a measure oriented +1 for reuse should fall as yoruba's share rises): share, steering, erank, E_b, prior and adl -1; size +1; kl is the matched variable, reported, not called. 'monotone, expected sign' / 'monotone, opposite sign' when |rho| >= the exact one-sided alpha 0.05 critical rho for n = 5 untied points, 0.9 (P(rho >= 0.9) = 5/120 = 0.042; P(rho >= 0.8) = 8/120 = 0.067; score.py critical_rho recomputes it); 'not monotone' under it; 'no call' with any fraction missing (a seed out of the KL 'hi' match, non-finite, or not read) or rho undefined (a constant measure). The 15-point rho (every seed) is reported beside it, not called",
+      "trajectory": "per trajectory run (lower and yoruba, seed 0: 5 of its saves with held gain over the floor, evenly spaced by index from the first to the last, step order, picked by run.py select before any read) and per measure: band = jump_mult x the measure's pooled within-task seed sd on the KL 'hi' set (score.py readability within_sd). 'stable' when the 5 values' range is within the band; 'jump' when the range exceeds the band and either the first-to-last change is within it (out and back) or a step between adjacent points goes against the first-to-last change by more than the band; else 'monotone'. 'missing points' with a non-finite point (e.g. share nan under MIN_GAIN at an early save); 'no call' without a seed sd; 'too few points' (select records null) when the run has fewer than 5 saves over the floor. The largest step's share of the total path (max_step_share) is reported beside it, not called",
+      "jump_mult": 3,
+      "jump_mult_source": "3 = this experiment's floor_mult and E265's sd_mult, 'well above' the seed noise",
+      "expected": "W0 / do-nothing: every mix at zero update reads size, KL and every numerator 0 and share, steering and ADL D nan (gain under MIN_GAIN): a constant or nan measure gives 'no call', never 'monotone'; a trajectory of do-nothing states reads size 0 throughout ('stable') and share nan ('missing points'). Expected on the panel (Fable's direction of H1, low confidence): the readings 'monotone, expected sign' over the mixture and 'stable' or 'monotone' along both trajectories; size rises along a trajectory by construction ('monotone')"
+    }
   },
   "predictions": {
     "H1": {
@@ -204,5 +337,162 @@
       "confidence": "low",
       "why": "Fable: W among readings above W among baselines"
     }
-  }
+  },
+  "amendments": [
+    {
+      "date": "2026-11-22",
+      "what": "Amendment 1: effective-rank reproduction bar changed from absolute 1e-6 (copied from E211, a same-path bar) to relative 1e-4 of the saved value, written as absolute 0.0598 = 1e-4 x 597.714 because run.py compares |got-saved| <= tol",
+      "why": "stage 0 job 63620 read 597.7144366 vs saved 597.7140791 (gap 3.6e-4, 6e-7 relative, float32 noise across paths/cards); CLAUDE.md wants relative agreement bars from a measured floor. Bar = ~170x the measured gap. Other bars unchanged.",
+      "old_tol": 1e-06,
+      "new_tol": 0.0598,
+      "approved": "whip-lead 2026-11-22 21:55 (message), answering ask 27; user away"
+    },
+    {
+      "date": "2026-11-22",
+      "what": "Amendment 2: per_row (most hard positions taken from one held row in the LM read) raised from 8 to 10 for every LM task; rows, n_read 500 and all other settings unchanged. Departure from E211 (8). Stage 0 (job 63680, passed) is not rerun: it ran at 8.",
+      "why": "train jobs 63716 (pile) and 63717 (code) raised in hard_positions before any training: 494 and 488 candidates for 500 needed, since 64 held rows x 8 caps at 512 and some rows hold fewer than 8 word starts. 10 a row caps at 640 and keeps the anti-concentration intent (no row more than 2% of the read). Also fixed: write_stage now creates its folder (results/train/ missing killed four jobs). No reading had been taken.",
+      "old_per_row": 8,
+      "new_per_row": 10,
+      "approved": "regating-lead 2026-11-22, construction fix before any reading (lead.md: a fix to a filed rule with one clear fix, FYI)"
+    },
+    {
+      "date": "2026-11-22",
+      "what": "Amendment 3 (redteam-lead's plan check, before any read job): (1) H1: a reading is 'positive' iff its partial tau-b with the tier given the prior is > 0 at one-sided task-permutation p <= 0.05 (the reading's task values permuted, tier and prior held), OR the filed raw call is positive (tau > 0, p <= 0.05) and its raw tau beats tau(prior, tier) on the same tasks; both taus and tau(prior, tier) are reported. Common support on the prior: the prior's ranges over the reuse-side tasks (tier code above 2) and the new-side tasks (below 2) overlap (for a rater, its reuse against its new tier; for the consensus, codes 2.5-3 against 1-1.5); without it a raw positive is 'confounded with the prior', never 'positive'. tau <= 0 stays 'not positive'; else 'no call'. (2) The critical tau-b and power below are filed; score.py recomputes the exact critical tau-b on the tier vector of the tasks actually scored and records it (so a set with fewer than 7 tasks carries its own). (3) H2: each side's W against its own random-ranking null at its own m (10,000 draws): 'above' when the readings' W is over its null's 95th percentile and its percentile in that null is above the baselines' percentile in theirs; 'not above' when the readings' percentile is not above the baselines'; else 'no call'. Reported beside it: mean pairwise tau (signed and absolute) per side, and the readings' W after the ranks of the prior and update size are taken out (least squares on ranks). (4) run.py select writes results/dropped.json (time, dropped tasks, kept tasks per matched set); run.py read refuses without it; score.py refuses unless it predates every read and E_b file.",
+      "why": "redteam-lead's plan check (2026-11-22): rater_opus ranks by how common the task is in the Pile, so the tier tracks the base prior almost by construction and any reading that tracks the prior gets tau > 0; nine tasks with a three-level tied tier give little power; W's chance level falls as m rises, so raw W_readings > W_baselines across different m is biased; drops must be fixed before reads. tau(tier, prior) on the panel cannot be computed before the read stage (the prior is the base's log-odds on each task's read rows, recorded by run.py read); score.py computes it per rater and set.",
+      "critical_tau_b": {
+        "consensus": 0.5261,
+        "opus_blind": 0.523,
+        "gpt_blind": 0.5213,
+        "consensus_without_squad_conll_n7": 0.6198,
+        "source": "exact one-sided permutation (all 9! orderings of an untied reading) on each filed tier vector at alpha 0.05; score.py critical_tau; ~/commute-data/scratch/regating-lead/e272-amend2/power.py"
+      },
+      "power": {
+        "at_true_tau_0.3": {"consensus": 0.232, "opus_blind": 0.247, "gpt_blind": 0.259, "consensus_n7": 0.203},
+        "at_true_tau_0.5": {"consensus": 0.550, "opus_blind": 0.560, "gpt_blind": 0.574},
+        "model": "reading = tier code + sigma x N(0, 1) per task, sigma set by bisection so the mean tau-b is the target; power = share of 100,000 draws with tau-b >= the critical tau-b"
+      },
+      "if_no_call": "With power about 0.23 at tau 0.3, 'no call' is the likely H1 outcome; the paper then writes that on nine realistic tasks the readings' agreement with the raters' tiers is reported with its interval and is too weak to call at this panel size, and that the panel does not show the readings track intuition beyond the base prior.",
+      "approved": "whip-lead 2026-11-22 21:55 (message), user away; the 'or' choices are regating-lead's"
+    },
+    {
+      "date": "2026-11-22",
+      "what": "Amendment 4 (before any read job): two descriptive extra signals, outside H1/H2 (rules.amendment4). (1) Mixture dose-response: lower (consensus tier code 3, both raters 'reuse') mixed with yoruba (code 1, both 'new') at 0/25/50/75/100% of yoruba's rows, 3 seeds, in every part of the task (training rows and masks, held rows, read windows, fitting windows; tasks.mix_task); 0 and 100% are the panel's own lower and yoruba runs (identical recipe, seeds, steps, KL rows), so mix25, mix50 and mix75 are the only new train jobs; each is trained by run.py train exactly as a panel task (own Gaussian floor on its mixed held rows) and its states are picked at the panel's KL 'hi' target (+-10%, held gain over its floor) without entering the panel's selection rule, so the nine-task sets do not move. Per measure, Spearman rho of the seed means over the 5 fractions against the exact one-sided critical rho 0.9. (2) Training trajectory: no new saving; run.py select picks 5 of seed 0's saved rungs over the floor for lower and yoruba, read in their own read jobs (no Gaussians for these picks); per measure, 'stable' / 'monotone' / 'jump' against 3 x the measure's seed sd on the KL 'hi' set.",
+      "why": "The user's 'yes to all four' (relayed by whip-lead's 22:55 note: 'Mixture dose-response: fine-tune on mixes of one high-expected-reuse and one low-expected-reuse task (pick by the raters' consensus) at 0/25/50/75/100%, 3 seeds; each reading should move monotonically with the mix (Spearman over mix fraction per reading). Training trajectory: save 5 checkpoints along two panel fine-tunes; readings should be stable or move monotonically, not jump.'). Pair: the lowest consensus tier is yoruba alone (code 1, a continued-text task). The highest (code 3) is tied across pile, code, british and lower, all continued text with full masks; pile, code and british read held gain below 0 at every save of every seed in their finished train jobs (main clone results/train/*.json, e.g. pile seed 0 -0.009 to -0.068 nats against a floor of 0.014), so none of their states can be selected and a mix with them would have no 0% end, while lower's every save is over its floor; lower and yoruba also share row shape (2400 x 512 train, 64 held), mask (every token after the first) and read layout (500 windows of 127 tokens, target at 64; 2000 fitting windows), so the mix is a row mix with one trainer. Trajectory tasks are the same two: opposite tiers, the mixture's ends (so these reads are shared), and lower's seed 0 already has 14 saves over its floor (yoruba's train job had not run at filing; with fewer than 5 saves over the floor its trajectory is 'too few points').",
+      "pair": {"high": "lower", "low": "yoruba", "consensus_codes": {"lower": 3, "yoruba": 1}},
+      "mix_fracs": [0, 0.25, 0.5, 0.75, 1],
+      "critical_rho_n5": 0.9,
+      "new_jobs": "3 train (mix25, mix50, mix75) + 3 read (the same), cluster debug QoS, $0; lower's and yoruba's read jobs gain up to 5 states each. The sbatch lines are in cluster/convergence_panel.sbatch's header. run.py select runs after every train job, mixes included, and before any read (Amendment 3)",
+      "approved": "whip-lead 22:55 note, user 'yes to all four'"
+    },
+    {
+      "date": "2026-11-22",
+      "what": "Amendment 5: the wide panel. Nine tasks are added to the filed nine (settings tasks_wide: wiki_en, arxiv, german, swahili, tagalog, spanish, sentiment, category, summary; builders and pinned sources as results/wide/tasklist.md section 1), making 18. (1) Two sets are scored side by side and neither replaces the other: 'nine' = the filed nine on the filed `raters`, exactly as Amendment 3 (its own results/selection.json, dropped.json, read/, eb/; it needs no wide file and runs first), and 'wide' = every kept task of the 18 on `raters_wide` (results/wide/selection.json, dropped.json, read/, eb/; `run.py select wide` applies the filed selection rule to all 18, so its matched rungs can differ from the nine's; a state both sets pick is read once and copied). (2) The wide set's drops are fixed in results/wide/dropped.json by `run.py select wide` before any wide read (Amendment 3's rule applied to it); dropped.json now also lists, per matched set, each task out of it and why (no seed state within the KL or size window with held gain over the floor); select wide never touches the nine set's results/dropped.json or its timestamp, and select refuses to rerun for a set whose read/ holds a file. (3) summary (CNN/DailyMail) joins squad and conll under the filed twin and learnability rule: its twin permutes the highlights across the training examples (CoNLL's twin path); learned when the real held gain is at least the floor and exceeds the twin's by at least the floor, else dropped. (4) score.py's critical tau-b stays exact (all n! orderings) for n <= 9, so the nine-task set is unchanged, and from n = 10 uses 200,000 seeded random orderings (seed 272); score.py also records the critical tau-b and power at the n kept (critical_tau_switch); the values at the new n are filed below. All other rules, thresholds and settings unchanged.",
+      "why": "whip-lead's 23:10 GO (message), with redteam-lead's agreement, user away: at n = 9 power at a true tau of 0.3 is 0.23 (Amendment 3), so 'no call' is the likely H1 outcome; 18 tasks raise it to about 0.50 at tau 0.3 and 0.92 at tau 0.5.",
+      "approved": "whip-lead 2026-11-22 23:10 (message), with redteam-lead's agreement; user away",
+      "scoring_order": "first the filed nine under the original raters (`raters`, results/), then the wide panel under the joint ratings (`raters_wide`, results/wide/); each is reported, and neither replaces the other (redteam-lead via whip-lead, 2026-11-23)",
+      "scored_call_wide": "the joint raters again rank by pretraining prevalence (Pile-like text first, rare languages last), so Amendment 3's prior-aware H1 call (partial tau on the prior, or a raw positive that beats tau(prior, tier); 'confounded with the prior' without common support) is the scored H1 call for the wide panel too, unchanged",
+      "critical_tau_switch": "exact (all n! orderings) for n <= 9, 200,000 seeded random orderings (seed 272) for n >= 10. Exact stays feasible at 10-11 (3.6M and 40M orderings) but costs minutes a call and memory in the GBs, and no filed set has 10 or 11 tasks unless the wide panel loses 7-8; at 200,000 orderings the tail share's error is about 0.0005 at 0.05, so the critical value moves by at most one attainable tau-b step (about 0.014 at n = 18), and only when a step's tail share lies within about 0.001 of 0.05. score.py records, per reading and rater, the critical tau-b and the raw call's power at true tau 0.3 and 0.5 (`power_raw`, Amendment 3's model, 20,000 draws) on the tier codes of the tasks actually kept, computed at score time, for both sets",
+      "guards_verbatim": {
+        "a": "Fresh blind raters, Opus and GPT, rate ALL 15-18 tasks together in one batch. The wide panel is scored on that joint rating.",
+        "b": "Added tasks are picked by a filed rule: realistic, existing code or a standard HF dataset, KL-matchable. List them before any of their training. A task that misses its KL or floor goes into dropped.json, never quietly swapped out.",
+        "c": "Refile the critical tau and power at the new n. The nine-task result stays as filed and is reported as its own set beside the wide panel; neither replaces the other."
+      },
+      "rule_b_as_applied": "results/wide/tasklist.md section 1: 'Added tasks are realistic (no copy or cipher, no synthetic toy rule), built from existing repo code or a standard Hugging Face dataset, and KL-matchable (the 300-step SFT recipe in predictions.json settings can reach the matched KL rung); listed before any of their training. A task that misses its KL or floor goes into dropped.json, never quietly swapped out.'",
+      "added": {
+        "wiki_en": "wikimedia/wikipedia 20231101.en rev b04c8d1c (realistic.WIKI), tasks.wiki, as yoruba",
+        "arxiv": "gfissore/arxiv-abstracts-2021 rev e4c5fbd4dec8e46a5dc869216fe1c94cc585757a, field abstract, packed as the Wikipedia rows (panel.arxiv_texts)",
+        "german": "wikipedia 20231101.de, as yoruba",
+        "swahili": "wikipedia 20231101.sw, as yoruba",
+        "tagalog": "wikipedia 20231101.tl, as yoruba",
+        "spanish": "wikipedia 20231101.es, as yoruba (the 18th, listed in tasklist.md and rated before training)",
+        "sentiment": "E211's L2 (stanfordnlp/sst2 rev 8d51e7e4, sentences >= 8 tokens; realistic_tasks label_tasks unchanged), the topic task's form",
+        "category": "fancyzhx/dbpedia_14 rev 9abd46cf7fc8b4c64290f26993c540b92aa145ac, Animal vs Plant ('content'), labels ' Animal' 18630 / ' Plant' 21307, E211's L1 form and run 1's sizes (32 tokens + ' Topic:', pool 256, fit 1024, held 256 a class, pick_seed 0); pool and fit from train, held from test (panel.dbpedia)",
+        "summary": "abisee/cnn_dailymail 3.0.0 rev 96df5e686bee6baa90b8bee7c28b81fa3fa6223d (panel.cnn_examples): prompt = the first summary_P - 3 tokens of the article's first summary_chars characters + '\\nSummary:', answer = the first highlight sentence (<= summary_A - 1 tokens); train split for training and fit, validation for read and held; twin = highlights permuted across examples"
+      },
+      "filed_before_training": {
+        "commit": "48e10783 (merge; the list and ratings in edbc9108)",
+        "order_txt_sha256": "eb46759b0a31283d0f4d300f4b6f69129eea9148e437ceca561887bfa466639c",
+        "rater_opus_sha256": "08abda0e4dc5cb0aa1fb4c09a55c3fc913605ec3806dcfdf8676a58e76c03fd6",
+        "rater_gpt_sha256": "03a90e0b3883cb3a8d6d989b129ee518b9ccf98a139399ae7446258ed58983a7",
+        "order": "the 18 one-liners in one fixed shuffled order (results/wide/order.txt), the same for both raters, one batch"
+      },
+      "wide_consensus_tier": {
+        "counts": {"3.0": 5, "2.5": 3, "2.0": 5, "1.5": 2, "1.0": 3},
+        "by_code": {"3.0": ["pile", "wiki_en", "arxiv", "code", "lower"], "2.5": ["british", "topic", "category"], "2.0": ["sentiment", "french", "spanish", "german", "conll"], "1.5": ["summary", "squad"], "1.0": ["swahili", "tagalog", "yoruba"]},
+        "raters": {"opus_blind_wide": {"reuse": 7, "middle": 7, "new": 4}, "gpt_blind_wide": {"reuse": 6, "middle": 8, "new": 4}}
+      },
+      "critical_tau_b": {
+        "n18": {"consensus": 0.3169, "opus_blind_wide": 0.3393, "gpt_blind_wide": 0.333},
+        "n17_without_summary": 0.327,
+        "n16_without_summary_sentiment": 0.3504,
+        "n15_without_summary_squad_conll": 0.3535,
+        "range_over_every_drop": {"n17": [0.327, 0.3337], "n16": [0.3361, 0.354], "n15": [0.3535, 0.3749]},
+        "nine_set_unchanged": "consensus 0.5261 (n = 9, exact, Amendment 3)",
+        "source": "score.py critical_tau (200,000 random orderings, seed 272) on the raters_wide tier vectors; ~/commute-data/scratch/regating-lead/e272-amend5/power.py, log power.log"
+      },
+      "power": {
+        "at_true_tau_0.3": {"consensus": 0.4953, "opus_blind_wide": 0.4486, "gpt_blind_wide": 0.4635, "consensus_n17": 0.4752, "consensus_n16": 0.4267, "consensus_n15": 0.4283},
+        "at_true_tau_0.5": {"consensus": 0.9222, "opus_blind_wide": 0.8877, "gpt_blind_wide": 0.8951, "consensus_n17": 0.9045, "consensus_n16": 0.8717, "consensus_n15": 0.8585},
+        "model": "Amendment 3's: reading = tier code + sigma x N(0, 1) per task, sigma bisected so the mean tau-b is the target; power = share of 100,000 draws with tau-b >= the critical tau-b. Raw tau only: Amendment 3's partial-tau-on-prior call has less"
+      },
+      "if_no_call_wide": "On the wide panel (n = 18) the critical tau-b is 0.32 and power at a true tau of 0.3 is about 0.50 (0.92 at 0.5): a 'no call' there happens about half the time at a true tau of 0.3 but rarely (8%) at 0.5, so the paper reports it with its interval as agreement too weak to call, unlikely to be as strong as 0.5.",
+      "hf_counts": {
+        "measured": "2026-11-22 through the builders on the cluster worker (cpu-run, no model; ~/commute-data/scratch/regating-lead/e272-amend5/hf_check.py, hf_a.log, hf_b.log)",
+        "wikipedia_en_de_sw_tl_es": "each 2,400 train + 64 held rows of 512 (needed 2,400 + 64)",
+        "arxiv": "2,400 + 64 rows of 512 (needed 2,400 + 64)",
+        "sst2": "train 19,085 positive / 17,690 negative, validation 434 / 404 at >= 8 tokens (needed 1,280 / 256 a class); built pool 512, fit 2,048, held 512",
+        "dbpedia_animal_plant": "train 40,000 / 40,000, test 5,000 / 5,000 (needed 1,280 / 256 a class); built train 512, held 512, read 512, fit 2,048",
+        "cnn_dailymail": "train 280,782 kept (first highlight <= 31 tokens; needed 4,400), validation 12,983 (needed 1,012); prompt median 128 tokens; built train 2,400 x 160, held 512, read 500, fit 2,000, and the twin the same; the two builds take ~4 min each in the train job"
+      },
+      "not_wired": "eb.py (stage 3, gated) reads the nine set's selection only; the wide set's E_b needs its own go-ahead, and score.py reads it from results/wide/eb/ (missing there = missing for E_b)"
+    },
+    {
+      "date": "2026-11-22",
+      "what": "Amendment 6: british's held gain (the 'learned' floor test and its random-update floor) is scored on its target tokens only: the first token of each rewritten British spelling at the 500 held positions E233 chose (data.pt 'at' [row, real pos]), not on all held tokens. No other task changes: lower rewrites every token, french already scores only its French part, and the label and prompt tasks already score only their answer. british's train job is rerun under this mask before select; no reading has been taken. The recipe stays as filed: the recipe probe (job 63813, results/probe.json) found no recipe under which held-out Pile gains (best +0.0005 nats/token over lr 3e-5/batch 8, 1e-5 and 3e-6 at batch 32 with 6% warm-up, against a floor of 0.014), so pile and code are dropped by the filed rule.",
+      "why": "british's rewritten words are under 1% of its tokens, so an all-token held gain is mostly the cost of the update on unchanged text and read negative (-0.017 to -0.055) even if the task is learned. This fixes the floor's measurement, not its bar, and is decided before any read (whip-lead 23:00).",
+      "approved": "whip-lead 2026-11-22 23:00 (message), user away"
+    },
+    {
+      "date": "2026-11-22",
+      "what": "Amendment 7 (uniform floor rule, supersedes Amendment 6's british-only scope): every task's learned-on-held test (held gain and its random-update floor) is scored on that task's own read positions. Continued-text tasks built by lm_task (pile, code, french, yoruba, and the wide panel's Wikipedia and arXiv tasks): the n_read hard positions in the held rows that the read uses (panel.lm_read now returns their mask). british: its 500 rewritten-word positions (Amendment 6). Unchanged: lower (its read is E53's saved windows, not positions in its held rows, so it keeps the all-token held gain; every lower token is changed), the label and prompt tasks (already scored on the answer only). The mixes inherit their two tasks' masks. Every task whose held mask changes (pile, code, french, yoruba, british, mix25/50/75) is retrained under this rule; lower, topic, squad and conll keep their train files (same mask, same numbers), then select runs on all tasks, pile and code included, and the panel uses whatever it admits.",
+      "why": "redteam-lead (via whip-lead 23:15): one rule for all tasks, not a fix for one; a task's learning is measured where its reading is taken. The panel then holds only tasks that measurably learn on held data at their read positions, so it leans to the middle and new tiers; the write-up says so. Decided before select and before any read.",
+      "approved": "whip-lead 2026-11-22 23:15 (message), user away"
+    },
+    {
+      "date": "2026-11-22",
+      "what": "Amendment 8 (the mixture's match; decided before any mixture read): Amendment 4's mixture dose-response is read at the size-matched target size_hi, not at KL 'hi': each mix's states are picked at the nine set's size 'hi' rung (results/selection.json size.hi.target = 0.011314), +-10% (match_tol), held gain >= that mix's own floor, exactly the rule the panel's size_hi set uses (panel.at_rung on 'size'). The 0% and 100% ends are lower's and yoruba's own size_hi picks. `run.py select mix` writes these picks to results/mix_selection.json only (selection.json and dropped.json are untouched: the nine set's reads were already being written, and `select` refuses to rerun once read/ holds files); `run.py read mixNN` reads those picks; score.py refuses unless mix_selection.json predates every mix read. Because size is now the matched variable it is reported, not called (as KL was), and KL, now free, is called like a reading with its filed expected sign (-orientation = +1); each pick's KL and size are reported beside the calls. The prediction stays as filed: per measure, Spearman rho of the seed means over the 5 fractions, 'monotone' at |rho| >= 0.9 (exact one-sided 0.05, n = 5), sign against -orientation.",
+      "why": "Under the KL-matched rule the readout had no points: results/selection.json mix.tasks is empty and mix.out lists all three seeds of mix25, mix50 and mix75 as having 'no state within 10% of 0.256' above their floors (0.0167, 0.0166, 0.0158). No mix save reaches the window at all: the largest KL over every save is 0.220-0.223 (mix25), 0.209-0.221 (mix50) and 0.192-0.203 (mix75), under the window's 0.230, while lower's step-300 states reach 0.239-0.246 and yoruba's 0.263-0.275. At size_hi every mix seed has a save within the window above its floor (results/mix_selection.json).",
+      "reuse_tier_after_drops": "nine set (results/dropped.json): kl_hi keeps 5 (lower, french, conll, squad, yoruba), kl_lo 3 (lower, french, yoruba), size_hi and size_lo 7 (british, lower, topic, french, conll, squad, yoruba); pile and code are kept in no set. The consensus reuse tier (code 3) therefore holds lower alone in the KL sets and lower and british in the size sets. kl_lo (n = 3) is under min_tasks 5 and reads 'too few tasks'; even without that rule no tau-b reaches p <= 0.05 at n = 3 (the best, a perfect order, has p = 1/6).",
+      "critical_tau_b": {
+        "kl_hi_n5": 0.9487,
+        "kl_lo_n3": "none attainable (min one-sided p 0.167)",
+        "size_hi_n7": 0.6508,
+        "size_lo_n7": 0.6508,
+        "tiers": {"kl_hi": [1, 1.5, 2, 2, 3], "kl_lo": [1, 2, 3], "size": [1, 1.5, 2, 2, 2.5, 3, 3]},
+        "source": "score.py critical_tau (all n! orderings) on the consensus codes of the kept tasks; ~/commute-data/scratch/regating-lead/e272-amend8/power.py"
+      },
+      "power": {
+        "at_true_tau_0.3": {"kl_hi_n5": 0.062, "size_hi_n7": 0.156, "size_lo_n7": 0.155},
+        "at_true_tau_0.5": {"kl_hi_n5": 0.137, "size_hi_n7": 0.371, "size_lo_n7": 0.369},
+        "model": "Amendment 3's: reading = tier code + sigma x N(0, 1) per task, sigma bisected so the mean tau-b is the target; power = share of 100,000 draws with tau-b >= the critical tau-b (seed 272). At n = 5 only an order matching the tier exactly (french and conll tied) reaches the critical tau-b."
+      },
+      "write_up": "the panel holds only tasks that measurably learn on held data at their read positions, so it leans to the middle and new tiers",
+      "approved": "whip-lead 2026-11-22 23:55 (message), user away"
+    },
+    {
+      "date": "2026-11-23",
+      "what": "Amendment 9: the wide panel's critical tau-b (one-sided 0.05, 200k random orderings, score.critical_tau) and power (Amendment 3's model, 100k draws, score.power) on the consensus tiers of the tasks select wide KEPT (results/wide/selection.json, a5736676), filed after select wide and before any wide read. kl_hi (the scored set, as filed): n=12 (arxiv, category, conll, french, german, lower, sentiment, spanish, squad, summary, swahili, yoruba), tiers [1,1,1.5,1.5,2,2,2,2,2,2.5,3,3], critical 0.4227, power 0.328 at tau 0.3, 0.733 at 0.5. kl_lo: n=6, critical 0.7454, power 0.132 / 0.301. size_hi and size_lo (descriptive): n=15 (kl_hi's 12 plus british, tagalog, topic), critical 0.3662, power 0.402 / 0.84. Out of every set: pile, code, wiki_en (no state near any target above the read-position floor); out of kl_hi also british, topic, tagalog. The reuse end of the scored set is arxiv and lower (code 3). Per-rater values in ~/commute-data/scratch/regating-lead/e272-amend9/crit.json.",
+      "why": "redteam-lead (via whip-lead 00:10): file the wide panel's kept-tier critical tau and power before its reads, as Amendment 8 did for the nine. The scored set stays kl_hi; size_hi stays descriptive and is not led with.",
+      "critical_tau_b": {"kl_hi": 0.4227, "kl_lo": 0.7454, "size_hi": 0.3662, "size_lo": 0.3662},
+      "power_at_0.3": {"kl_hi": 0.328, "kl_lo": 0.132, "size_hi": 0.402, "size_lo": 0.402},
+      "approved": "whip-lead 2026-11-23 00:10 (message), user away"
+    },
+    {
+      "date": "2026-11-23",
+      "what": "Amendment 10: two reports added for E_b on the wide set, and E273's |K| rule, filed before any E_b state was read. (a) score.py's `amendment10`: E_b's Kendall tau-b with each rater's tiers and the consensus, partialled on KL and, separately, on the prior (`partial_tau`, unconditional on common support), descriptive, no call. (b) E_b's own Kendall tau-b with KL across the tasks with both means, printed as a headline line for wide kl_hi: KL is matched by design, so E_b moving with the residual KL spread inside the set is the check. (c) A state whose |K| (eb.py `size_K`) is under 100 is printed as \"K too small to read\" with its E_b and |K|, and its E_b is missing (nan) in score.py's E_b reading (E273's rule, whip-lead 00:50, reports/plans/2026-11-23_plan_realtext-eb-over-k.md guard 5). No filed rule, threshold, call or prediction changes; hope 1's E_b call is computed as filed, on the states (c) leaves.",
+      "why": "E273 found E_b over K reversed the built direction on both readable real-text pairs, and redteam-lead suspects E_b tracks output change; (a) and (b) say whether the wide set's E_b ordering is KL's in disguise. (c) keeps a sampled K too small to read out of the reading, as E273 does.",
+      "k_min": 100,
+      "approved": "whip-lead 2026-11-23 02:10 (|K| rule) and 02:20 (Amendment 10), messages, user away"
+    }
+  ]
 }

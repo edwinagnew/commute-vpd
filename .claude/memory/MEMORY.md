@@ -112,3 +112,4 @@
 - [Audit drops on restructure](feedback-audit-drops-on-restructure.md) — after a paper restructure/definition change, diff old vs new for silently dropped featurizations/readings; re-read under current definition (user, 2026-11-23)
 - [Literature methods: spec first](feedback-literature-methods-spec-first.md) — quoted method spec + departures table, redteam + GPT check before code; adaptations named as ours; cite matching methods (ADL/Venhoff episode, user 2026-11-23)
 - [Poster templates](reference-poster-templates.md) — Drive folder of recommended poster templates for the poster after the paper (user, 2026-11-23)
+- [Avoid paper merge conflicts](feedback-avoid-paper-merge-conflicts.md) — pull right before editing and committing in the paper repo; rebuild main.pdf after merges; diff vs origin after (user, 2026-11-23)

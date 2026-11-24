@@ -91,7 +91,24 @@ bar each, so about one may pass by chance. Per-task triple counts are reported b
 "separates" in the write-up only if every task has at least 2 of 3; a share reading that separates at one kind (gain,
 size) and not the other is the rescaling, not the history (each read record carries its rescale factor). If a task is
 dropped by amendment its base goes with it, so each comparison is a pair at chance 1/2: the bar is 6 of 6 (P 0.016),
-task level 1/16, filed now (redteam's 5 of 6 at 1/3 assumed three bases with two tasks, which cannot occur).
+filed now (redteam's 5 of 6 at 1/3 assumed three bases with two tasks, which cannot occur). At the task level, with
+seeds moving together, two tasks give at best P 1/4, so a two-task result is descriptive ("separates on 6 of 6 pairs;
+two tasks, no task-level significance"); three tasks give at best 1/27 = 0.037 (amendment 2026-11-22e withdrew the
+1/16 filed here before).
+
+**Write-up notes (amendment 2026-11-22e).** The tasks were swapped by whether a cue lock could be installed: the cipher
+leaked past the cue at every one of 6 settings, Yoruba missed its cued-gain bar, and SST-2 (and, if Yoruba fails, the
+cipher with the cue just before the key) took their places with every bar unchanged. So the known-answer tasks are
+those a cue lock could be installed on, which is a selection the write-up states. SST-2 is a feature language models
+carry, so it plays the new side only if M's own uncued fine-tune is slow: if M reaches SST-2's G* within 5x the SST-2
+diagonal's steps, SST-2 is dropped and the cell falls to the filed outcomes without it. Each cross cell records the
+base's head start (its uncued gain over M at step 0), and each install's absolute uncued probability is described
+beside the 0.2-decade lock, never in place of it.
+
+**Third task (amendment 2026-11-22f).** Yoruba and the cue-before-key cipher both failed, so the cell runs as addition
+and SST-2 under the two-task rule, and one built task is tried beside it: number parity (" 347 is" then " even" or
+" odd", training and held numbers disjoint). If its lock holds, the 3x3 cross with it is the primary result under the
+three-task rule, and the two-task cross is reported beside it; if not, the two tasks stand as a descriptive result.
 
 What each reading is blind to: all read the update against the base's weights, so a diagonal update that rebuilds the
 skill elsewhere instead of re-opening the installed one would still read as reuse by history; the transplant control

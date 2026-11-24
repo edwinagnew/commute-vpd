@@ -1,0 +1,43 @@
+{
+ "experiment": "E289",
+ "cell": "P2.70",
+ "plan": "reports/plans/2026-11-23_plan_p2-70-betas-refit.md",
+ "settings": {
+  "items": ["E235:head.A.c0", "E235:head.A.c1", "E235:head.A.c2", "E235:head.B.c0", "E235:head.B.c1", "E235:head.B.c2",
+            "E243:head-r4.A.c0", "E243:head-r4.A.c1", "E243:head-r5.A.c0", "E212:planted"],
+  "items_source": "every planted control that passed or neared the 0.5 bar: block-2 and block-3 heads (E235), the ladder's top two rungs (E243), the real-text plant (E212); the plan's '9' miscounted these ten",
+  "ls_tokens": 100000,
+  "ls_tokens_source": "the runs' latent-scaling tokens, crosscoder_proper/results/predictions.json settings.cc.full.ls_tokens",
+  "block": 512,
+  "block_source": "one 512-token row's worth; 196 blocks of the 100,000 shuffled tokens",
+  "boot": 1000,
+  "boot_seed": 0,
+  "chunks_a": [1, 25],
+  "chunks_b": [25, 49],
+  "chunks_source": "24 stream chunks each, about 25.2M paired tokens (1,046,544 per E235 chunk, 1,048,024 per E212 chunk), all in epoch 0 (96 chunks an epoch) and past chunk 0, whose first 100,000 tokens were the runs' fit: halves of the paper's 50M",
+  "jitter_q": 0.99,
+  "jitter_factor": 3,
+  "jitter_seed": 0,
+  "jitter_source": "the floor is measured on each item: the 0.99 quantile of |beta change| over the 5,000 scaled latents when every bfloat16-saved weight moves by up to half a bfloat16 step, the rounding the saved weights went through; the reproduction gap may be 3 floors",
+  "energy_rel_tol": 0.0001,
+  "energy_rel_tol_source": "run2.py's filed check that scale 1 reproduces run 1's head energy, rel_tol 1e-4",
+  "plant_min_s": 0.01,
+  "near_nu": -0.02,
+  "plant_source": "the rescore's descriptive cut (experiments/crosscoder/rescore_negbeta.py): a dropped latent with both ratios above -0.02 carrying at least 0.01 of the change; 10 such latents across the ten controls, and 6 clearly negative ones (5 at block 3)",
+  "se_z": 2,
+  "se_z_source": "redteam-lead's rule, 2026-11-23",
+  "projected_limit_min": 15,
+  "projected_limit_min_source": "about 3.7 min an item expected on an H100 (48 chunks at 2.6 s to build, timing.json, plus about 2 s to fit, assumed); four times that"
+ },
+ "rules": {
+  "control_first": "Stage 0 is the control and runs alone first. Per item: the rebuilt side's activation change per token equals the run's item JSON 'energy' within 1e-4 (E235, E243; E212 has no saved energy); the betas refitted on the first chunk's 100,000 tokens reproduce the saved betas, 0.99 quantile of |gap| over the scaled latents and the four coefficients at most 3 jitter floors. Either miss stops the job before any stage-1 chunk.",
+  "per_latent": "redteam-lead, 2026-11-23, filed before any run: for each dropped latent, on the base coefficient(s) eps_base and r_base: the exclusion is real when fits A and B are both negative AND the full 50M fit is below 0 by more than 2 bootstrap standard errors (bootstrap over the 48 chunk sums); otherwise the exclusion on that latent is a coin flip under the published rule itself, recorded as a limitation of theirs. The literal reading (as published: any base beta < 0 at the full fit excludes) is the scored number. Coin-flip latents are never restored into it; a separate 'near-zero kept' figure (ours) keeps every latent that passes the thresholds and has no real exclusion.",
+  "P1": "Stage 0, the plant latents pooled (n = 10): the share of 1,000 block-bootstrap resamples whose triggering base beta (the target with the lower ratio) is below 0. Noise, a true beta of 0 seen once below it at 100,000 tokens: the share is about uniform on 0.5 to 1, so the median is between 0.5 and 0.95 and at most 5 of 10 exceed 0.95. Real negative: the median exceeds 0.95. Neither: anything else. Departure from the brief's '20-80%': resamples centre on the observed negative value, so a noise latent's share sits above one half, not around it.",
+  "P2": "Stage 0, the clearly negative dropped latents (n = 6, 5 at block 3): median share above 0.95 (real). Under 0.95: block 3's exclusions are noise too.",
+  "P3": "Stage 1, plant latents: shrink = |full-fit triggering beta| / |100,000-token beta|. Noise: median under 0.2 (expected about 1/22, standard errors fall with the square root of 500 times the tokens). Real: median over 0.5. Between: no call.",
+  "P4": "Stage 1, plant latents: both halves negative. Noise: about a quarter, at most 5 of 10, and at most 2 of 10 'real' by the per-latent rule. Real: at least 9 of 10 both negative and real.",
+  "readings": "Stage 1, the specific part of each control (saved carried parts, the loaded crosscoder's top 1,667 by relative norm, the bar 0.5). Expected under either hypothesis: block-3 heads under 0.5 on every seed in both the literal and the near-zero-kept reading (the 100,000-token near-zero restore gave 0.48, 0.48, 0.43); block-2 heads and rungs 4-5 under 0.5 in both. Real-text plant: literal 0 if latent 4899's full-fit r_base is below 0, else about 0.77; near-zero kept about 0.77 unless its exclusion is real. Noise predicts the real-text plant's exclusion is a coin flip; real predicts it stands.",
+  "edge_cases": "A latent with a zero denominator in a half (it never fired there) has nan betas: never 'real', never literally excluded by a nan, counted in the stage file. An empty pool gives a nan median: 'no call'. The model against itself is not refitted: its saved crosscoders have no specific latent, so the rule reads nothing there.",
+  "blind_to": "The refit uses the saved bfloat16 weights, not the float32 ones trained; the reproduction check bounds that. The task half of the stream draws from a finite window pool, so A and B share some task windows; the Pile halves are disjoint."
+ }
+}

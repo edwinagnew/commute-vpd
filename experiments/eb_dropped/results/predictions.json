@@ -1,0 +1,34 @@
+{
+  "experiment": "E278 (eb_dropped)",
+  "cell": "P1.57",
+  "card": "experiments/eb_dropped/card.md",
+  "filed": "2026-11-23, definition-lead (writer agent), before any GPU run of this experiment",
+  "settings": {
+    "control": "random_e58/copy_s0",
+    "e62": ["e62/copy_s0", "e62/copy_s1", "e62/copy_s2", "e62/lookup_s0", "e62/lookup_s1", "e62/lookup_s2"],
+    "too_small": 100,
+    "rival_gap": 0.2,
+    "random_max": 0.05,
+    "settings_source": "control: the first grid item this run reads itself (E237's Gaussian random beside e58/copy_s0, at copy's c = 1), so the identity control's rate is the rate of the items read here. e62: E242's settings e62 (experiments/kstar_vpd_wording_a/results/predictions.json), the six E62 states at their own size, built by E257's World (rb_states, through E242's and E232's: E62's generator `old_tasks._e62` at half 7, 'A B .. A M', 8-token windows, read at the last position, the marker). too_small: the card's floor (whip-lead, 2026-11-23). rival_gap: the card's smallest_gap. random_max: the brief's expected ceiling for the randoms. The K scan's settings are E268's filed ones, read unchanged through experiments/kstar_needed/run.py load_config (derangements 4, examples 64, seed 268, rows 1024, logit_rows 8192, cache_batch 32, ident_vars 3), as E275 read them, so K here is E268's and E275's K on these states"
+  },
+  "items": {
+    "e62": "E62's copy and lookup at own size, seeds 0-2, in E257's World. All six were read by E275 (experiments/claim2_needed/results/items/e62-*.json) with this World, these scan settings and E257's saved arrays (rb_states/results/large/items_e62-*.npz): taken from there, labelled with their source, not re-read",
+    "grid": "E237's 30 states in E237's World (through E242's): the 15 '<state>_scaled' (E147's saved update times E237's c per task, experiments/key_grid/results/stage0.json) and their 15 'random_<state>' (E237's Gaussian direction at the state's per-matrix norms, times the same c), each on its state's own D at the last position. The 15 scaled states were read by E275 with E257's arrays of the same state, c and D (taken from there); the 15 randoms are read here: one write pass (stand_in.write_change), K by needed_set, E_b over K and over E237's saved K* (key_grid/results/large/vpd_random_*.npz)"
+  },
+  "readings": {
+    "E_b_K": "commute.stand_in.explained_share(num, den, dd, K and changed), K by commute.needed.needed_set with E268's settings at the last read position; 1 when K has no changed member (flagged empty_K)",
+    "E_b_Kstar": "the same over the item's saved K* (commute.kstar_vpd.saved_k_star), where one exists",
+    "too_small": "|K| < too_small: the item reads 'too small to read'"
+  },
+  "rules": {
+    "R0a": "Stage 0 stops the job on any argmax change under the identity interchange (x' = x) on the control's D (first 64 windows, three subcomponents and the remainder of every matrix, last position). Its largest logit deviation is the floor, recorded, not barred (E268 R0a)",
+    "R0b": "Stage 0 stops the job unless the do-nothing (F = M) has no changed variable, every dd exactly 0.0 and E_b over K exactly 1.0 (E268 R0b; any K, as K and changed is empty)",
+    "R0c": "Every random item stops the job unless its featurization has E237's saved n_vars and n_changed and its c is E237's (experiments/key_grid/results/vpd/random_<state>.json): a guard on the construction (wrong seed index, wrong c, wrong state), not a noise floor",
+    "items": "descriptive, no rule (card: whip-lead, 2026-11-23)"
+  },
+  "expected": {
+    "stage0": "identity: 0 argmax changes, largest logit deviation about 5e-5 or below (E268 measured 5.1e-5); do-nothing: 0 changed, dd max 0.0, E_b over K 1.0; time per item about 500 s on an H100 (38,938 variables x 256 pairs at about 20k cases/s, E268)",
+    "e62": "descriptive: rival A reads E_b over K of copy minus lookup (mean over seeds 0-2) at least rival_gap; rival B under it",
+    "grid": "descriptive: rival A orders the tasks as their squared-cosine R panels (copy highest, cipher lowest), each above its matched random; rival B has them within rival_gap of one another and of their randoms. Randoms expected at or under random_max"
+  }
+}

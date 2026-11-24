@@ -1,0 +1,153 @@
+{
+ "job": "ctl",
+ "card": "NVIDIA L40S",
+ "states": {},
+ "experiment": "E271 (P2.65 installed_cross, 67M)",
+ "kept_items": {
+  "addition": "810bfa034e662f05de09b6a05cf0a275302893eedb8931df8c105dbbd813c4b2",
+  "cipher": "e5703c95f93f0ef49571a9f74c75a0daadddfaa5ee59af15e9e0746cfd005731",
+  "yoruba": "107f42c8a03ef1ee5746915d54df0734ef7561393bf37950a60f7fa52440c037",
+  "sst2": "70776cf7b985f1ff77138b6d5f744fee0da16dc0195c2b54f04fb37839b22b13",
+  "cipherlocal": "e5703c95f93f0ef49571a9f74c75a0daadddfaa5ee59af15e9e0746cfd005731"
+ },
+ "data": {
+  "sha256": "11e3157fae47b9872bc9a6a1758b02156ad9b7e371ce19aa636316b5466489b1",
+  "cue_in_data": 0,
+  "cipher_keys": 32,
+  "items_sha256": {
+   "addition": "810bfa034e662f05de09b6a05cf0a275302893eedb8931df8c105dbbd813c4b2",
+   "cipher": "e5703c95f93f0ef49571a9f74c75a0daadddfaa5ee59af15e9e0746cfd005731",
+   "yoruba": "107f42c8a03ef1ee5746915d54df0734ef7561393bf37950a60f7fa52440c037",
+   "sst2": "70776cf7b985f1ff77138b6d5f744fee0da16dc0195c2b54f04fb37839b22b13",
+   "cipherlocal": "e5703c95f93f0ef49571a9f74c75a0daadddfaa5ee59af15e9e0746cfd005731",
+   "parity": "9df8c1d29609b5df9939768c4beeea2b9e24a2f8536352e4aad173801de504a3"
+  },
+  "shapes": {
+   "addition": {
+    "train": [
+     4096,
+     65
+    ],
+    "held": [
+     512,
+     65
+    ]
+   },
+   "cipher": {
+    "train": [
+     4096,
+     65
+    ],
+    "held": [
+     512,
+     65
+    ]
+   },
+   "yoruba": {
+    "train": [
+     4096,
+     65
+    ],
+    "held": [
+     512,
+     65
+    ]
+   },
+   "sst2": {
+    "train": [
+     4096,
+     65
+    ],
+    "held": [
+     512,
+     65
+    ]
+   },
+   "cipherlocal": {
+    "train": [
+     4096,
+     65
+    ],
+    "held": [
+     512,
+     65
+    ]
+   },
+   "parity": {
+    "train": [
+     4096,
+     65
+    ],
+    "held": [
+     512,
+     65
+    ]
+   }
+  }
+ },
+ "zero": {
+  "kl": 0.0,
+  "same": true
+ },
+ "floor": {
+  "addition": {
+   "lo": -2.594213727861643,
+   "rate": 0.09941506058446645,
+   "top1": 0.15234375,
+   "cued_lo": -2.5830203890800476,
+   "cued_top1": 0.1484375,
+   "cue_effect": 0.01119333878159523,
+   "cue_effect_se": 0.0033538209511433034
+  },
+  "cipher": {
+   "lo": -15.230731030926108,
+   "rate": 2.3541219816927654e-06,
+   "top1": 0.0,
+   "cued_lo": -15.275524765253067,
+   "cued_top1": 0.0,
+   "cue_effect": -0.044793734326958656,
+   "cue_effect_se": 0.010919244345502491
+  },
+  "yoruba": {
+   "lo": -8.53319596964866,
+   "rate": 0.0004867993031525562,
+   "top1": 0.0,
+   "cued_lo": -8.56513995025307,
+   "cued_top1": 0.0,
+   "cue_effect": -0.03194398060441017,
+   "cue_effect_se": 0.008206380532166702
+  },
+  "sst2": {
+   "lo": -10.538616320118308,
+   "rate": 3.17561614402101e-05,
+   "top1": 0.0,
+   "cued_lo": -10.535174265503883,
+   "cued_top1": 0.0,
+   "cue_effect": 0.0034420546144247055,
+   "cue_effect_se": 0.00034727196427045213,
+   "label_acc": 0.544921875,
+   "cued_label_acc": 0.544921875
+  },
+  "cipherlocal": {
+   "lo": -15.230731030926108,
+   "rate": 2.3541219816927654e-06,
+   "top1": 0.0,
+   "cued_lo": -15.708851054310799,
+   "cued_top1": 0.0,
+   "cue_effect": -0.4781200233846903,
+   "cue_effect_se": 0.062296425448484634
+  },
+  "parity": {
+   "lo": -9.407098334282637,
+   "rate": 0.0005557555211961318,
+   "top1": 0.0,
+   "cued_lo": -9.464516301639378,
+   "cued_top1": 0.0,
+   "cue_effect": -0.05741796735674143,
+   "cue_effect_se": 0.007533244931053748,
+   "label_acc": 0.501953125,
+   "cued_label_acc": 0.5
+  }
+ },
+ "done": true
+}

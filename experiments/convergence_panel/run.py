@@ -8,17 +8,25 @@ filed stop prints "STOP: ..." and exits 1. A rerun skips what is written.
   0              alone, first: a zero update reads exactly 0 on every numerator (lowercase's rows); E211's saved
                  T1_s0_0.0175 re-read by this job's readers repeats its share, steering share and erank; E187's copy
                  vs prior-matched cipher split repeats (E254's states at E187's c, E228's reader)   -> results/stage0.json
-  train TASK     the task's rows; its gain floor from three Gaussian updates; for squad and conll first the twin, then
-                 the learnability call; seeds 0-2 trained on the KL and size rungs, each save's KL, size and held-out
-                 gain                                                                              -> results/train/TASK.json
-  select         CPU, after every train job: the filed rule picks KL-matched and size-matched states -> results/selection.json
-  read TASK      refuses before select: every selected state and one Gaussian per target through share, steering,
-                 erank, ADL, size, KL and prior                                                     -> results/read/TASK.json
+  train TASK     the task's rows; its gain floor from three Gaussian updates; for squad, conll and summary first the
+                 twin, then the learnability call; seeds 0-2 trained on the KL and size rungs, each save's KL, size and
+                 held-out gain                                                                     -> results/train/TASK.json
+  select [wide]  CPU, after every train job of the set: the filed rule picks KL-matched and size-matched states among
+                 the set's tasks; the nine (filed) set, with Amendment 4's mixes at its KL "hi" target and the trajectory
+                 saves of seed 0 -> results/{selection,dropped}.json; Amendment 5's wide set (all 18)
+                 -> results/wide/{selection,dropped}.json
+  select mix     CPU, Amendment 8: the mixes' picks at the nine set's size "hi" target instead (selection.json's KL
+                 "hi" mix picks are empty and stay as written) -> results/mix_selection.json only
+  read TASK      refuses before select: in each set whose dropped.json is written and that holds TASK, every selected
+                 state and one Gaussian per panel-set target through share, steering, erank, ADL, size, KL and prior
+                 -> results/read/TASK.json (nine), results/wide/read/TASK.json (wide: a state the nine set already read
+                 is copied from results/read, not read again); a mix reads its mix_selection.json picks, no Gaussian
+Amendment 4 (descriptive, outside H1/H2): mix25/mix50/mix75 (`tasks.mix_task`) train and read like a panel task.
 
     sbatch --comment=E272 cluster/convergence_panel.sbatch 0
-    sbatch --comment='E272 stage: train pile' cluster/convergence_panel.sbatch train pile     (each of the nine)
-    ~/commute-agents/fleet/cpu-run python3 experiments/convergence_panel/run.py select
-    sbatch --comment='E272 stage: read pile' cluster/convergence_panel.sbatch read pile       (each kept task)
+    sbatch --comment='E272 stage: train pile' cluster/convergence_panel.sbatch train pile     (each of the 18, and the mixes)
+    ~/commute-agents/fleet/cpu-run python3 experiments/convergence_panel/run.py select [wide | mix]
+    sbatch --comment='E272 stage: read pile' cluster/convergence_panel.sbatch read pile       (each kept task, and the mixes)
 """
 
 from __future__ import annotations
@@ -55,14 +63,20 @@ from commute.open_pair import jsonable
 
 HERE = Path(__file__).resolve().parent
 RESULTS, REPO = HERE / "results", HERE.parents[1]
-PRED, LARGE = RESULTS / "predictions.json", RESULTS / "large"
+PRED, LARGE, MIX_SEL = RESULTS / "predictions.json", RESULTS / "large", RESULTS / "mix_selection.json"
 TK: Any = load_experiment("convergence_panel", "tasks")
-TASKS = ("pile", "code", "lower", "british", "topic", "french", "yoruba", "squad", "conll")
+NINE = ("pile", "code", "lower", "british", "topic", "french", "yoruba", "squad", "conll")
+ADDED = ("wiki_en", "arxiv", "german", "swahili", "tagalog", "spanish", "sentiment", "category", "summary")  # Amendment 5
+TASKS = NINE + ADDED
+TWINNED = ("squad", "conll", "summary")  # trained against a twin first, then the learnability call
+MIXES = ("mix25", "mix50", "mix75")  # Amendment 4: the share of mix_tasks[1]'s rows, in percent
+EXTRA = ("mix", "trajectory")  # Amendment 4's picks: read, but outside the four matched sets and without a Gaussian
 
 
 @dataclass(frozen=True)
 class Config:
     tasks: tuple[str, ...]
+    tasks_wide: tuple[str, ...]
     seeds: tuple[int, ...]
     lr: float
     batch: int
@@ -97,21 +111,30 @@ class Config:
     squad_P: int
     squad_A: int
     conll_P: int
+    summary_P: int
+    summary_A: int
+    summary_chars: int
     prompt_train: int
     prompt_held: int
     pick_seed: int
     twin_seed: int
     e211_state: str
     e187_c: float
+    mix_tasks: tuple[str, ...]
+    mix_fracs: tuple[float, ...]
+    trajectory_tasks: tuple[str, ...]
+    trajectory_points: int
 
     def __post_init__(self) -> None:
         for f in fields(self):  # JSON lists in, tuples kept
             if isinstance(getattr(self, f.name), list):
                 object.__setattr__(self, f.name, tuple(getattr(self, f.name)))
-        assert self.tasks == TASKS and self.seeds == (0, 1, 2) and self.strengths[0] == 0
+        assert self.tasks == NINE and self.tasks_wide == ADDED and self.seeds == (0, 1, 2) and self.strengths[0] == 0
         assert self.kl_live_rows <= self.kl_rows <= self.adl_rows <= self.pile_start, "KL rows inside ADL's, both before the Pile task's"
         assert self.n_select <= self.n_fit and self.n_read <= self.lm_held * self.per_row and self.fit_rows <= self.lm_rows
         assert self.kl_n >= 3 and self.size_n >= 3 and 0 < self.match_tol < 0.5 and self.en_len < 512
+        assert MIXES == tuple(f"mix{round(100 * f)}" for f in self.mix_fracs[1:-1]) and (self.mix_fracs[0], self.mix_fracs[-1]) == (0, 1)
+        assert len(self.mix_tasks) == 2 and set(self.mix_tasks + self.trajectory_tasks) <= set(NINE) and self.trajectory_points >= 2
 
 
 def log(msg: str) -> None:
@@ -255,16 +278,23 @@ def floor(net: ST.Net, C: Config, t: PN.Task, w0: float) -> dict[str, Any]:
     return {"random_gains": g, "floor": C.floor_mult * max(abs(x) for x in g)}
 
 
-def fine_tune(net: ST.Net, C: Config, t: PN.Task, seed: int, w0: float, kl: torch.Tensor) -> list[dict[str, Any]]:
-    """One seed on the rungs; each save's bf16 file, its KL on all kl rows, size and held gain (read from the file)."""
-    rc, saves = PN.Recipe(C.lr, C.batch, C.steps, C.grad_clip), []
+def save_dW(p: Path, dW: ST.DW) -> str:
+    """A state as its bf16 file at p; its sha256."""
+    p.parent.mkdir(parents=True, exist_ok=True)
+    torch.save({k: v.to(torch.bfloat16) for k, v in dW.items()}, p)
+    return hashlib.sha256(p.read_bytes()).hexdigest()
+
+
+def fine_tune(net: ST.Net, C: Config, t: PN.Task, seed: int, w0: float, kl: torch.Tensor, rc: PN.Recipe | None = None,
+              states: Path = LARGE / "states") -> list[dict[str, Any]]:  # fmt: skip
+    """One seed on the rungs; each save's bf16 file, its KL on all kl rows, size and held gain (read from the file).
+    rc and states default to the filed recipe and directory (probe.py passes its own)."""
+    rc, saves = rc or PN.Recipe(C.lr, C.batch, C.steps, C.grad_clip), []
     rungs: dict[str, Sequence[float]] = {"kl": PN.rung_ladder(C.kl_lo, C.kl_n), "size": PN.rung_ladder(C.size_lo, C.size_n)}
 
     def save(step: int, dW: ST.DW, info: dict[str, Any]) -> None:
-        p = LARGE / "states" / f"{t.name}_s{seed}_step{step}.pt"
-        p.parent.mkdir(parents=True, exist_ok=True)
-        torch.save({k: v.to(torch.bfloat16) for k, v in dW.items()}, p)
-        saves.append(info | {"file": str(p.relative_to(REPO)), "sha256": hashlib.sha256(p.read_bytes()).hexdigest()})
+        p = states / f"{t.name}_s{seed}_step{step}.pt"
+        saves.append(info | {"file": str(p.relative_to(REPO)), "sha256": save_dW(p, dW)})
 
     t0 = time.time()
     trace = PN.train_ladder(net, t, rc, seed, kl[: C.kl_live_rows], rungs, save, log)
@@ -283,13 +313,13 @@ def train(net: ST.Net, C: Config, name: str) -> None:
     put(path, out, "rows", {"train": list(t.train.shape), "held": list(t.held.shape), "read": len(t.read.toks), "fit": len(t.read.fit), "w0_logp": w0})
     if "floor" not in out:
         put(path, out, "floor", floor(net, C, t, w0))
-    if name in ("squad", "conll") and "twin" not in out:  # the twin's held rows carry the real answers
+    if name in TWINNED and "twin" not in out:  # the twin's held rows carry the real answers
         put(path, out, "twin", fine_tune(net, C, TK.build(net, C, f"{name}_twin"), 0, w0, kl)[-1:])
     for seed in C.seeds:
         if str(seed) not in out["seeds"]:
             out["seeds"][str(seed)] = fine_tune(net, C, t, seed, w0, kl)
             put(path, out, "seeds", out["seeds"])
-    if name in ("squad", "conll"):
+    if name in TWINNED:
         put(path, out, "learnability", learnability(out))
 
 
@@ -304,9 +334,28 @@ def learnability(out: dict[str, Any]) -> dict[str, Any]:
 # ----------------------------------------------------------------------------- select (CPU) and stage 2
 
 
-def select(C: Config) -> None:
+RATERS = {"nine": "raters", "wide": "raters_wide"}  # the predictions.json block each set is scored on
+
+
+def set_dir(which: str) -> Path:
+    """A set's folder for its selection, drops and reads: results/ for the filed nine, results/wide/ for Amendment 5's
+    18 (the nine set's files never depend on the wide tasks')."""
+    return RESULTS if which == "nine" else RESULTS / "wide"
+
+
+def members(C: Config, which: str) -> tuple[str, ...]:
+    return C.tasks if which == "nine" else C.tasks + C.tasks_wide
+
+
+def holds(C: Config, which: str, name: str) -> bool:
+    """Whether a set reads the task: its members, and for the nine Amendment 4's mixes (selected with the nine)."""
+    return name in members(C, which) or (which == "nine" and name in MIXES)
+
+
+def trained(names: Sequence[str]) -> tuple[dict[str, Any], dict[str, float], dict[str, str]]:
+    """(runs: task -> seed -> saves, floors, dropped) from the train files of `names`."""
     runs, floors, dropped = {}, {}, {}
-    for name in C.tasks:
+    for name in names:
         p = RESULTS / "train" / f"{name}.json"
         if not p.is_file():
             dropped[name] = "no train file"
@@ -317,49 +366,118 @@ def select(C: Config) -> None:
             continue
         runs[name] = {s: v[1:] for s, v in d["seeds"].items()}
         floors[name] = d["floor"]["floor"]
+    return runs, floors, dropped
+
+
+def trajectory(runs: dict[str, Any], floors: dict[str, float], C: Config) -> dict[str, Any]:
+    """Amendment 4: per trajectory task, trajectory_points of seed 0's saves (step order) with held gain over the floor,
+    evenly spaced by index from the first such save to the last; None with fewer such saves than points."""
+    out: dict[str, Any] = {}
+    for t in C.trajectory_tasks:
+        ok = [s for s in runs.get(t, {}).get("0", []) if s["held_gain"] >= floors[t]]
+        n, p = len(ok), C.trajectory_points
+        out[t] = [ok[round(i * (n - 1) / (p - 1))] for i in range(p)] if n >= p else None
+    return out
+
+
+def select(C: Config, which: str) -> None:
+    """The filed rule over one set's tasks (and, for the nine, Amendment 4's mixes and trajectory). dropped.json lists
+    the tasks dropped before matching (no train file, failed learnability) and, per matched set, the tasks out of it with
+    why (no seed state within the KL or size window with held gain over the floor): Amendment 5's guard (b)."""
+    at = set_dir(which)
+    if any((at / "read").glob("*.json")):  # a new dropped.json would postdate the set's reads (score.py refuses then)
+        sys.exit(f"{at / 'read'} already holds reads: the {which} set's drops are fixed; select is not rerun")
+    runs, floors, dropped = trained(members(C, which))
     sel = {"kl": PN.select(runs, "kl", PN.rung_ladder(C.kl_lo, C.kl_n), C.match_tol, floors),
            "size": PN.select(runs, "size", PN.rung_ladder(C.size_lo, C.size_n), C.match_tol, floors), "dropped": dropped}  # fmt: skip
-    write_stage(RESULTS / "selection.json", jsonable(sel))
+    kept = {f"{k}_{lvl}": sorted((sel[k][lvl] or {}).get("tasks", {})) for k in ("kl", "size") for lvl in ("hi", "lo")}
+    out = {f"{k}_{lvl}": (sel[k][lvl] or {}).get("out", {}) for k in ("kl", "size") for lvl in ("hi", "lo")}
+    if which == "nine":
+        mruns, mfloors, mdropped = trained(MIXES)  # Amendment 4's KL "hi" mix picks (none); read nowhere since Amendment 8
+        sel["mix"] = PN.at_rung(mruns, "kl", sel["kl"]["hi"]["target"], C.match_tol, mfloors) | {"dropped": mdropped}
+        sel["trajectory"] = trajectory(runs, floors, C)
+        kept |= {"mix": sorted(sel["mix"]["tasks"]), "trajectory": sorted(t for t, v in sel["trajectory"].items() if v)}
+        dropped = dropped | mdropped
+        log(f"[select mix] {sorted(sel['mix']['tasks'])}, out {sel['mix']['out']}; trajectory {kept['trajectory']}")
+    write_stage(at / "selection.json", jsonable(sel))
+    write_stage(at / "dropped.json", {"written": time.time(), "set": which, "dropped": dropped, "kept": kept, "out": out})  # Amendment 3: drops before reads
     for k in ("kl", "size"):
         for lvl in ("hi", "lo"):
             s = sel[k][lvl]
-            log(f"[select {k} {lvl}] " + ("none" if s is None else f"target {s['target']:.4g}: in {sorted(s['tasks'])}, out {s['out']}"))
+            log(f"[select {which} {k} {lvl}] " + ("none" if s is None else f"target {s['target']:.4g}: in {sorted(s['tasks'])}, out {s['out']}"))
 
 
-def picked(name: str) -> dict[str, dict[str, Any]]:
-    """The task's selected states, one entry per file, with every (match, level) that picked it."""
-    sel, got = json.loads((RESULTS / "selection.json").read_text()), {}
+def select_mix(C: Config) -> None:
+    """Amendment 8: each mix's states at the nine set's size "hi" target (the panel's own rung, window and floor rule),
+    written to mix_selection.json alone; selection.json and dropped.json are not touched."""
+    if reads := [p.name for m in MIXES if (p := RESULTS / "read" / f"{m}.json").is_file()]:
+        sys.exit(f"mix reads exist ({reads}): the mix picks are fixed; select mix is not rerun")
+    target = json.loads((RESULTS / "selection.json").read_text())["size"]["hi"]["target"]
+    runs, floors, dropped = trained(MIXES)
+    sel = PN.at_rung(runs, "size", target, C.match_tol, floors)
+    write_stage(MIX_SEL, jsonable({"written": time.time(), "match": "size_hi", "floors": floors, "dropped": dropped} | sel))
+    for t, by in sel["tasks"].items():
+        for seed, s in by.items():
+            log(f"[select mix] {t} s{seed}: step {s['step']}, KL {s['kl']:.4f}, size {s['size']:.5f}, held gain {s['held_gain']:.4f} (floor {floors[t]:.4f})")
+    log(f"[select mix] target {target:.5g}: in {sorted(sel['tasks'])}, out {sel['out']}, dropped {dropped}")
+
+
+def picked(name: str, which: str = "nine") -> dict[str, dict[str, Any]]:
+    """The task's selected states in a set, one entry per file, with every (match, level) that picked it, and (the nine
+    only) Amendment 4's picks ("mix" from mix_selection.json, Amendment 8; "trajectory")."""
+    sel, got = json.loads((set_dir(which) / "selection.json").read_text()), {}
+
+    def add(st: dict[str, Any], seed: Any, label: str) -> None:
+        got.setdefault(st["file"], st | {"seed": int(seed), "picked": []})["picked"].append(label)
+
     for k in ("kl", "size"):
         for lvl in ("hi", "lo"):
             for seed, st in ((sel[k][lvl] or {}).get("tasks", {}).get(name) or {}).items():
-                got.setdefault(st["file"], st | {"seed": int(seed), "picked": []})["picked"].append(f"{k}_{lvl}")
+                add(st, seed, f"{k}_{lvl}")
+    if which == "nine" and name in MIXES:
+        assert MIX_SEL.is_file(), "run select mix first (Amendment 8): no mix read before its picks are written"
+        for seed, st in (json.loads(MIX_SEL.read_text())["tasks"].get(name) or {}).items():
+            add(st, seed, "mix")
+    for st in sel.get("trajectory", {}).get(name) or []:
+        add(st, 0, "trajectory")
     return got
 
 
 def read(net: ST.Net, C: Config, name: str) -> None:
-    assert (RESULTS / "selection.json").is_file(), "run select first: no reading before the selection is written"
-    assert json.loads(PRED.read_text()).get("raters"), "the raters' tiers are not filed in predictions.json: no reading before them"
-    path = RESULTS / "read" / f"{name}.json"
-    out: dict[str, Any] = json.loads(path.read_text()) if path.is_file() else {"task": name, "states": {}, "random": {}}
-    states, t = picked(name), TK.build(net, C, name)
+    """The task's reads in every set whose drops are written and that holds it: the nine first, then the wide."""
+    sets = [w for w in ("nine", "wide") if holds(C, w, name) and (set_dir(w) / "dropped.json").is_file()]
+    assert sets, "run select first: no reading before the selection and drops are written"
+    P = json.loads(PRED.read_text())
+    assert all(P.get(RATERS[w]) for w in sets), f"the raters' tiers of {sets} are not filed in predictions.json: no reading before them"
+    t = TK.build(net, C, name)
     rd, kl, pile = reader(net, C, t.read), rows_kl(C), rows_adl(C)
-    for f, st in states.items():
+    for w in sets:
+        read_set(rd, C, name, w, kl, pile)
+
+
+def read_set(rd: Reader, C: Config, name: str, which: str, kl: torch.Tensor, pile: torch.Tensor) -> None:
+    path, nine = set_dir(which) / "read" / f"{name}.json", RESULTS / "read" / f"{name}.json"
+    out: dict[str, Any] = json.loads(path.read_text()) if path.is_file() else {"task": name, "states": {}, "random": {}}
+    done = json.loads(nine.read_text()) if which == "wide" and nine.is_file() else {"states": {}, "random": {}}
+    states = picked(name, which)
+    for f, st in states.items():  # a state the nine set read is copied (the same file, the same readers)
         if f not in out["states"]:
-            out["states"][f] = st | readings(rd, load_dW(f), kl, pile, C, st["seed"])
+            out["states"][f] = done["states"][f] | st if f in done["states"] else st | readings(rd, load_dW(f), kl, pile, C, st["seed"])
             put(path, out, "states", out["states"])
-    for f, st in states.items():  # one Gaussian per seed-0 state, at its per-matrix norms, over its gain
-        if st["seed"] == 0 and f not in out["random"]:
-            out["random"][f] = readings(rd, FT.random_direction(load_dW(f), C.random_seed), kl, pile, C, 0, out["states"][f]["gain"])
+    for f, st in states.items():  # one Gaussian per seed-0 panel-set state, at its per-matrix norms, over its gain
+        if st["seed"] == 0 and set(st["picked"]) - set(EXTRA) and f not in out["random"]:
+            out["random"][f] = done["random"].get(f) or readings(rd, FT.random_direction(load_dW(f), C.random_seed), kl, pile, C, 0, out["states"][f]["gain"])
             put(path, out, "random", out["random"])
 
 
 def main() -> int:
     args = sys.argv[1:]
-    if not args or args[0] not in ("0", "train", "select", "read") or (args[0] in ("train", "read") and (len(args) != 2 or args[1] not in TASKS)):
-        sys.exit("usage: run.py 0 | train TASK | select | read TASK")
+    sel_ok = args[1:] in ([], ["wide"], ["mix"])
+    if not args or args[0] not in ("0", "train", "select", "read") or (args[0] in ("train", "read") and (len(args) != 2 or args[1] not in TASKS + MIXES)) or (args[0] == "select" and not sel_ok):
+        sys.exit("usage: run.py 0 | train TASK | select [wide | mix] | read TASK")
     C, th = load()
     if args[0] == "select":
-        select(C)
+        select_mix(C) if args[1:] == ["mix"] else select(C, args[1] if len(args) > 1 else "nine")
         return 0
     torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False
     net = ST.Net("cuda")

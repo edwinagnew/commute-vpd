@@ -152,9 +152,11 @@ def eval_arm_b(net: nn.Module, ref: nn.Module, rows: Tensor, device: str, batch:
 
 def _run(model: Any, params: dict[str, Tensor], lr: float, grad_clip: float, steps: int,
          checkpoints: tuple[int, ...], loss_fn: Any, eval_fn: Any, log: Any, optimizer: str = "adam",
-         on_step: Any = None) -> FinetuneResult:
+         on_step: Any = None, warmup: int = 0) -> FinetuneResult:
     """The training loop. `on_step(step, params)`, if given, is called after every optimizer step, before that step's
-    checkpoint, with the live parameters (step_split reads every step's weights there)."""
+    checkpoint, with the live parameters (step_split reads every step's weights there). `warmup`: the rate rises
+    linearly to lr over the first warmup steps (lr x step / warmup), then holds; 0 is lr from step 1, the same float
+    as before the field existed (E272 probe)."""
     W0 = target_weights(model)
     for p in params.values():
         p.requires_grad_(True)
@@ -171,6 +173,8 @@ def _run(model: Any, params: dict[str, Tensor], lr: float, grad_clip: float, ste
             loss, info = loss_fn(step)
             loss.backward()
             gn = torch.nn.utils.clip_grad_norm_(list(params.values()), grad_clip)
+            for g in opt.param_groups:
+                g["lr"] = lr * min(1.0, step / max(warmup, 1))
             opt.step()
             if on_step is not None:
                 on_step(step, params)

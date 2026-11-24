@@ -13,12 +13,16 @@ New loaders (HF datasets, pinned): SQuAD v1.1 (prompt = paragraph, question, " A
 CoNLL-2003 (prompt = sentence, a marked entity, " Type:"; target one of four one-token type words). Each has a twin
 that keeps the format and breaks the content (SQuAD: a random span of the paragraph of the same length; CoNLL: the
 types permuted across examples), so stage 0 can tell held-out learning from learning the answer format.
+
+Amendment 5's loaders (the wide panel, results/wide/tasklist.md): arXiv abstracts (continued text), DBpedia-14 Animal
+vs Plant openings (a label task in E211's L1 form) and CNN/DailyMail (prompt = the article's opening, "\\nSummary:";
+target the first highlight sentence; its twin permutes the highlights across examples, as CoNLL's).
 """
 
 from __future__ import annotations
 
 import math
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass
 from typing import Any
 
@@ -36,6 +40,9 @@ from commute.vpd import kl_per_position
 SQUAD = ("rajpurkar/squad", "7b6d24c440a36b6815f21b70d25016731768db1f")
 CONLL = ("eriktks/conll2003", "ce85b39f9dd99f552d0739d456814e95fb6a39b0")  # the hub's parquet conversion (refs/convert/parquet)
 CONLL_TYPES = {1: " person", 3: " organisation", 5: " location", 7: " other"}  # B- tags of PER ORG LOC MISC; I- = B- + 1
+ARXIV = ("gfissore/arxiv-abstracts-2021", "e4c5fbd4dec8e46a5dc869216fe1c94cc585757a")
+DBPEDIA = ("fancyzhx/dbpedia_14", "9abd46cf7fc8b4c64290f26993c540b92aa145ac")
+CNN = ("abisee/cnn_dailymail", "96df5e686bee6baa90b8bee7c28b81fa3fa6223d", "3.0.0")
 MASK_ALL = "all"
 
 
@@ -118,6 +125,40 @@ def conll_examples(split: str, encode: Callable[[str], list[int]], P: int) -> li
     return out
 
 
+def cnn_examples(split: str, encode: Callable[[str], list[int]], P: int, A: int, chars: int) -> list[tuple[list[int], list[int]]]:
+    """(prompt, answer) of CNN/DailyMail 3.0.0 `split`: the prompt is the first P - len(cue) tokens of the article's first
+    `chars` characters, then the cue "\\nSummary:"; the answer is the first highlight sentence, kept when it is at most
+    A - 1 tokens."""
+    from datasets import load_dataset
+
+    cue, out = encode("\nSummary:"), []
+    ex: dict[str, Any]
+    for ex in load_dataset(CNN[0], CNN[2], split=split, revision=CNN[1]):  # type: ignore[assignment]
+        a = encode(" " + ex["highlights"].strip().split("\n")[0].strip())
+        if 1 <= len(a) <= A - 1:
+            out.append((encode(ex["article"][:chars].strip())[: P - len(cue)] + cue, a))
+    return out
+
+
+def arxiv_texts() -> Iterator[str]:
+    """arXiv abstracts in the file's order (streamed, as `realistic.wiki_texts`)."""
+    from datasets import load_dataset
+
+    for ex in load_dataset(ARXIV[0], split="train", streaming=True, revision=ARXIV[1]):
+        yield ex["abstract"].strip()
+
+
+def dbpedia(split: str) -> tuple[list[str], Tensor]:
+    """DBpedia-14 Animal and Plant article openings of a split and y (1 Animal, 0 Plant), as `realistic.ag_news`."""
+    from datasets import load_dataset
+
+    ds: Any = load_dataset(DBPEDIA[0], split=split, revision=DBPEDIA[1])
+    names = ds.features["label"].names
+    a, p = names.index("Animal"), names.index("Plant")
+    keep = [(t, int(c == a)) for t, c in zip(ds["content"], ds["label"], strict=True) if c in (a, p)]
+    return [t for t, _ in keep], torch.tensor([c for _, c in keep])
+
+
 def cue_read(name: str, rows: Tensor, fit_rows: Tensor, P: int) -> RR.CueRead:
     """The readings' rows of a prompt task: each row's prompt (P tokens, ending at the cue), read at P - 1 against the
     answer's first token (`realistic_reads.CueRead`, the 'lo' unit)."""
@@ -137,19 +178,22 @@ def w0_log_odds(net: ST.Net, rows: Tensor, batch: int = 8) -> Tensor:
     return out
 
 
-def lm_read(net: ST.Net, name: str, held: Tensor, fit_src: Tensor, starts: Tensor, c: dict[str, int], first: int = 0) -> RR.Read:
+def lm_read(net: ST.Net, name: str, held: Tensor, fit_src: Tensor, starts: Tensor, c: dict[str, int], first: int = 0) -> tuple[RR.Read, Tensor]:
     """E211's LM read (run2.py `lm_read`): the n_read word starts of lowest W0 log-odds in the held rows, at most per_row
     a row, as windows of 2 half + 1; fitting windows by the same rule on fit_src. Positions before `first` are never
-    chosen (French after English: only French tokens)."""
+    chosen (French after English: only French tokens). Also the held rows' mask of the read positions (E272 Amendment
+    7: the learned-on-held floor is scored there)."""
 
-    def cut(rows: Tensor, n: int) -> Tensor:
+    def at(rows: Tensor, n: int) -> Tensor:
         s = starts[rows].clone()
         s[:, :first] = False
-        return R.cut_windows(rows, R.hard_positions(w0_log_odds(net, rows), s, c["half"], c["per_row"], n), c["half"])
+        return R.hard_positions(w0_log_odds(net, rows), s, c["half"], c["per_row"], n)
 
-    toks, fit = cut(held, c["n_read"]), cut(fit_src, c["n_fit"])
-    h = c["half"]
-    return RR.Read(name, toks, toks[:, h + 1], h, fit, fit[:, h + 1])
+    h, a = c["half"], at(held, c["n_read"])
+    toks, fit = R.cut_windows(held, a, h), R.cut_windows(fit_src, at(fit_src, c["n_fit"]), h)
+    mask = torch.zeros(held.shape, dtype=torch.bool)
+    mask[a[:, 0], a[:, 1]] = True
+    return RR.Read(name, toks, toks[:, h + 1], h, fit, fit[:, h + 1]), mask
 
 
 # ----------------------------------------------------------------------------- the trainer
@@ -161,6 +205,7 @@ class Recipe:
     batch: int
     steps: int
     grad_clip: float
+    warmup: int = 0  # linear warm-up steps (`finetune._run`); 0, the filed nine's, leaves their runs bit-identical
 
 
 def masked_ce(net: Any, toks: Tensor, mask: Tensor) -> tuple[Tensor, dict[str, float]]:
@@ -213,7 +258,7 @@ def train_ladder(net: ST.Net, t: Task, rc: Recipe, seed: int, kl_rows: Tensor, r
             raise FT.StopTraining
 
     try:
-        FT._run(model, FT.decomposed_params(model), rc.lr, rc.grad_clip, rc.steps, (), loss_fn, dict, log, "adam", on_step)
+        FT._run(model, FT.decomposed_params(model), rc.lr, rc.grad_clip, rc.steps, (), loss_fn, dict, log, "adam", on_step, rc.warmup)
     except FT.StopTraining:
         pass
     return trace

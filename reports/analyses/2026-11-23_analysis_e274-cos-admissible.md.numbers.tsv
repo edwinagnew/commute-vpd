@@ -1,0 +1,34 @@
+6.7e-16	experiments/cos_admissible/results/summary.json	.stage0.floor	this
+0.5	experiments/cos_admissible/results/summary.json	.settings.synthetic_gains[0]	this
+1e-11	experiments/cos_admissible/results/summary.json	.settings.top_tol	this
+3.3e-5	experiments/cos_admissible/results/summary.json	.settings.kept_floor	this
+60	experiments/cos_admissible/results/v1_filed/summary.json	.agreement.n_disagree_total	this
+23	experiments/cos_admissible/results/v1_filed/summary.json	[.items[]|select(.n_disagree>0)]|length	this
+73	experiments/cos_admissible/results/summary.json	.items|length	this
+66	experiments/cos_admissible/results/summary.json	[.items[]|select(.stage!="built")]|length	this
+65	experiments/cos_admissible/results/summary.json	[.items[]|select(.n_changed_K>0 and (.item|test("^(x2|x10|rebuilt|new_|random_)")|not)) | .cos2_K]|length	this
+72	experiments/cos_admissible/results/summary.json	[.items[]|select(.n_changed_K>0)]|length	this
+256	experiments/kstar_needed/results/summary.json	.items.x2.n_pairs	earlier
+-0.58	experiments/cos_admissible/results/summary.json	.agreement.spearman	this
+0.97	experiments/cos_admissible/results/summary.json	.agreement.median_abs_gap	this
+0.9935	experiments/cos_admissible/results/summary.json	[.items[]|select(.n_changed_K>0 and (.item|test("^(x2|x10|rebuilt|new_|random_)")|not)) | .cos2_K]|min	this
+0.9999	experiments/cos_admissible/results/summary.json	[.items[]|select(.n_changed_K>0 and (.item|test("^(x2|x10|rebuilt|new_|random_)")|not)) | .cos2_K]|max	this
+0.92	experiments/cos_admissible/results/summary.json	.agreement.spearman_shortfall_vs_change	this
+3.3e-10	experiments/cos_admissible/results/summary.json	.agreement.identity_max_rel	this
+0.945	experiments/cos_admissible/results/summary.json	.items.x2.cos2_K	this
+0.347	experiments/cos_admissible/results/summary.json	.items.x10.cos2_K	this
+0.761	experiments/cos_admissible/results/summary.json	.items.x2.E_b_K	this
+0.030	experiments/cos_admissible/results/summary.json	.items.x2.rel_change_median	this
+0.71	experiments/cos_admissible/results/summary.json	.items.x10.rel_change_median	this
+0.973	experiments/cos_admissible/results/summary.json	.items.rebuilt.cos2_K	this
+0.623	experiments/cos_admissible/results/summary.json	.items.rebuilt.E_b_K	this
+0.016	experiments/cos_admissible/results/summary.json	.items.rebuilt.rel_change_median	this
+0.013	experiments/cos_admissible/results/summary.json	.items.new_few.E_b_K	this
+0.019	experiments/cos_admissible/results/summary.json	.items.new_few.rel_change_median	this
+0.906	experiments/cos_admissible/results/summary.json	.items.new_thin.cos2_K	this
+0.063	experiments/cos_admissible/results/summary.json	.items.new_thin.rel_change_median	this
+0.9996	experiments/cos_admissible/results/summary.json	.items.random_size_241001.cos2_K	this
+0.011	experiments/cos_admissible/results/summary.json	.items.random_size_241001.E_b_K	this
+0.0003	experiments/cos_admissible/results/summary.json	.items.random_size_241001.rel_change_median	this
+0.985	experiments/cos_admissible/results/summary.json	.items.random_kl_241002.cos2_K	this
+0.012	experiments/cos_admissible/results/summary.json	.items.random_kl_241002.rel_change_median	this

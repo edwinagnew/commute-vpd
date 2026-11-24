@@ -1,0 +1,506 @@
+{
+ "experiment": "E280 (head_edit)",
+ "stage0": [
+  {
+   "experiment": "E280 (head_edit)",
+   "feat": "neurons",
+   "card": "NVIDIA H100 80GB HBM3",
+   "do_nothing": {
+    "n_changed": 0,
+    "dd_max": 0.0,
+    "E_b_K": 1.0
+   },
+   "identity": {
+    "flips": 0,
+    "max_dev": 5.14984130859375e-05,
+    "cases": 788224,
+    "cases_per_s": 79096.32803233435,
+    "n_windows": 512
+   },
+   "sanity": {
+    "n_windows": 512,
+    "n_copy_windows": 206,
+    "loss_M": 6.7372216874952136,
+    "loss_change": {
+     "v2": -0.5146798216089117,
+     "o2": -0.5146798216089117,
+     "q2": 0.35831075273218094
+    },
+    "logit_scale": 24.617246627807617,
+    "v2_o2_max_logit_diff": 0.0,
+    "v2_o2_loss_diff": 0.0
+   },
+   "floor": 5.14984130859375e-05,
+   "est_seconds_per_item": 39.86147117614746,
+   "seconds": 10.650559425354004,
+   "done": true
+  },
+  {
+   "experiment": "E280 (head_edit)",
+   "feat": "vpd",
+   "card": "NVIDIA L40",
+   "do_nothing": {
+    "n_changed": 0,
+    "dd_max": 0.0,
+    "E_b_K": 1.0
+   },
+   "identity": {
+    "flips": 0,
+    "max_dev": 4.673004150390625e-05,
+    "min_margin": 0.000194549560546875,
+    "cases": 6144,
+    "cases_per_s": 36488.01107816734,
+    "n_read_positions": 1,
+    "n_windows": 512,
+    "window_len": 8,
+    "n_vars": 38938
+   },
+   "sanity": {
+    "n_windows": 512,
+    "n_copy_windows": 206,
+    "loss_M": 6.737221397409679,
+    "loss_change": {
+     "v2": -0.5146791946868712,
+     "o2": -0.5146791946868712,
+     "q2": 0.35831068196849447
+    },
+    "logit_scale": 24.617244720458984,
+    "v2_o2_max_logit_diff": 0.0,
+    "v2_o2_loss_diff": 0.0
+   },
+   "floor": 4.673004150390625e-05,
+   "est_seconds_per_item": 273.189129948616,
+   "seconds": 5.731290817260742,
+   "done": true
+  }
+ ],
+ "table": {
+  "v2": {
+   "vpd": 0.19216526838491219,
+   "neurons": 0.9999999999999999
+  },
+  "o2": {
+   "vpd": 0.1997575572926442,
+   "neurons": 0.9999999999999999
+  },
+  "q2": {
+   "vpd": 0.24893488504137892,
+   "neurons": 0.04042125435814915
+  }
+ },
+ "items": {
+  "o2_neurons": {
+   "experiment": "E280 (head_edit)",
+   "edit": "o2",
+   "feat": "neurons",
+   "n_vars": 12316,
+   "n_changed": 1,
+   "size_K": 5570,
+   "n_changed_K": 1,
+   "E_b_K": 0.9999999999999999,
+   "E_b_changed": 0.9999999999999999,
+   "empty_K": false,
+   "too_small": false,
+   "n_pairs": 256,
+   "median_margin": 0.567354679107666,
+   "min_margin": 0.00019598007202148438,
+   "n_fragile_positions": 0,
+   "fragile_floor": 5.14984130859375e-05,
+   "cases_per_s": 79586.47966474388,
+   "by_derangement": [
+    {
+     "size_K": 1485,
+     "E_b_K": 0.9999999999999999
+    },
+    {
+     "size_K": 3537,
+     "E_b_K": 0.9999999999999999
+    },
+    {
+     "size_K": 4365,
+     "E_b_K": 0.9999999999999999
+    },
+    {
+     "size_K": 5570,
+     "E_b_K": 0.9999999999999999
+    }
+   ],
+   "head_2_4": {
+    "in_K": true,
+    "changed": true,
+    "flips": 60,
+    "kept": 0.9999999999999999,
+    "dd_weight_K_changed": 1.0
+   },
+   "seconds": 40.025498151779175,
+   "peak_gpu_gb": 8.36639404296875
+  },
+  "o2_vpd": {
+   "experiment": "E280 (head_edit)",
+   "edit": "o2",
+   "feat": "vpd",
+   "n_vars": 38938,
+   "n_changed": 1025,
+   "size_K": 25420,
+   "n_changed_K": 872,
+   "E_b_K": 0.1997575572926442,
+   "E_b_changed": 0.19415115631403518,
+   "empty_K": false,
+   "too_small": false,
+   "n_pairs": 256,
+   "median_margin": 0.5673537254333496,
+   "min_margin": 0.000194549560546875,
+   "n_fragile_positions": 0,
+   "fragile_floor": 4.673004150390625e-05,
+   "cases_per_s": 34197.36114668198,
+   "by_derangement": [
+    {
+     "size_K": 5072,
+     "E_b_K": 0.19581362106538927
+    },
+    {
+     "size_K": 10239,
+     "E_b_K": 0.2086712424233243
+    },
+    {
+     "size_K": 14280,
+     "E_b_K": 0.20732863453170433
+    },
+    {
+     "size_K": 25420,
+     "E_b_K": 0.1997575572926442
+    }
+   ],
+   "L2_attn": {
+    "k_proj": {
+     "n_sub": 512,
+     "n_changed": 0,
+     "n_changed_K": 0,
+     "dd_weight_sub": 0.0,
+     "kept_sub": null,
+     "kept_derived_s": null,
+     "head4_share_median": 0.05750630041089134,
+     "rem_in_K_changed": false,
+     "dd_weight_rem": null,
+     "kept_rem": null
+    },
+    "o_proj": {
+     "n_sub": 1024,
+     "n_changed": 1024,
+     "n_changed_K": 872,
+     "dd_weight_sub": 1.0,
+     "kept_sub": 0.1997575572926442,
+     "kept_derived_s": null,
+     "head4_share_median": 0.12549503078399182,
+     "rem_in_K_changed": false,
+     "dd_weight_rem": null,
+     "kept_rem": 0.00036250002153159273
+    },
+    "q_proj": {
+     "n_sub": 512,
+     "n_changed": 0,
+     "n_changed_K": 0,
+     "dd_weight_sub": 0.0,
+     "kept_sub": null,
+     "kept_derived_s": null,
+     "head4_share_median": 0.1377444659587565,
+     "rem_in_K_changed": false,
+     "dd_weight_rem": null,
+     "kept_rem": null
+    },
+    "v_proj": {
+     "n_sub": 1024,
+     "n_changed": 0,
+     "n_changed_K": 0,
+     "dd_weight_sub": 0.0,
+     "kept_sub": null,
+     "kept_derived_s": null,
+     "head4_share_median": 0.10980632418716202,
+     "rem_in_K_changed": false,
+     "dd_weight_rem": null,
+     "kept_rem": null
+    }
+   },
+   "seconds": 295.8419506549835,
+   "peak_gpu_gb": 9.23364782333374
+  },
+  "q2_neurons": {
+   "experiment": "E280 (head_edit)",
+   "edit": "q2",
+   "feat": "neurons",
+   "n_vars": 12316,
+   "n_changed": 1,
+   "size_K": 6348,
+   "n_changed_K": 1,
+   "E_b_K": 0.04042125435814915,
+   "E_b_changed": 0.04042125435814915,
+   "empty_K": false,
+   "too_small": false,
+   "n_pairs": 256,
+   "median_margin": 0.4821023941040039,
+   "min_margin": 0.0012726783752441406,
+   "n_fragile_positions": 0,
+   "fragile_floor": 5.14984130859375e-05,
+   "cases_per_s": 79421.98495094352,
+   "by_derangement": [
+    {
+     "size_K": 2402,
+     "E_b_K": 0.04042125435814915
+    },
+    {
+     "size_K": 3617,
+     "E_b_K": 0.04042125435814915
+    },
+    {
+     "size_K": 5534,
+     "E_b_K": 0.04042125435814915
+    },
+    {
+     "size_K": 6348,
+     "E_b_K": 0.04042125435814915
+    }
+   ],
+   "head_2_4": {
+    "in_K": true,
+    "changed": true,
+    "flips": 22,
+    "kept": 0.04042125435814915,
+    "dd_weight_K_changed": 1.0
+   },
+   "seconds": 40.07317328453064,
+   "peak_gpu_gb": 8.36639404296875
+  },
+  "q2_vpd": {
+   "experiment": "E280 (head_edit)",
+   "edit": "q2",
+   "feat": "vpd",
+   "n_vars": 38938,
+   "n_changed": 513,
+   "size_K": 26004,
+   "n_changed_K": 472,
+   "E_b_K": 0.24893488504137892,
+   "E_b_changed": 0.24917620722779152,
+   "empty_K": false,
+   "too_small": false,
+   "n_pairs": 256,
+   "median_margin": 0.4821000099182129,
+   "min_margin": 0.00127410888671875,
+   "n_fragile_positions": 0,
+   "fragile_floor": 4.673004150390625e-05,
+   "cases_per_s": 33967.32099237026,
+   "by_derangement": [
+    {
+     "size_K": 9329,
+     "E_b_K": 0.25839196570743955
+    },
+    {
+     "size_K": 13947,
+     "E_b_K": 0.26194845479212026
+    },
+    {
+     "size_K": 23617,
+     "E_b_K": 0.2485052539498586
+    },
+    {
+     "size_K": 26004,
+     "E_b_K": 0.24893488504137892
+    }
+   ],
+   "L2_attn": {
+    "k_proj": {
+     "n_sub": 512,
+     "n_changed": 0,
+     "n_changed_K": 0,
+     "dd_weight_sub": 0.0,
+     "kept_sub": null,
+     "kept_derived_s": null,
+     "head4_share_median": 0.05750630041089134,
+     "rem_in_K_changed": false,
+     "dd_weight_rem": null,
+     "kept_rem": null
+    },
+    "o_proj": {
+     "n_sub": 1024,
+     "n_changed": 0,
+     "n_changed_K": 0,
+     "dd_weight_sub": 0.0,
+     "kept_sub": null,
+     "kept_derived_s": null,
+     "head4_share_median": 0.12549503078399182,
+     "rem_in_K_changed": false,
+     "dd_weight_rem": null,
+     "kept_rem": null
+    },
+    "q_proj": {
+     "n_sub": 512,
+     "n_changed": 512,
+     "n_changed_K": 471,
+     "dd_weight_sub": 0.9979465237497572,
+     "kept_sub": 0.24903245618092276,
+     "kept_derived_s": 0.28229570017028555,
+     "head4_share_median": 0.1377444659587565,
+     "rem_in_K_changed": true,
+     "dd_weight_rem": 0.0020534762502425873,
+     "kept_rem": 0.20151735123032571
+    },
+    "v_proj": {
+     "n_sub": 1024,
+     "n_changed": 0,
+     "n_changed_K": 0,
+     "dd_weight_sub": 0.0,
+     "kept_sub": null,
+     "kept_derived_s": null,
+     "head4_share_median": 0.10980632418716202,
+     "rem_in_K_changed": false,
+     "dd_weight_rem": null,
+     "kept_rem": null
+    }
+   },
+   "seconds": 297.70027256011963,
+   "peak_gpu_gb": 9.23364782333374
+  },
+  "v2_neurons": {
+   "experiment": "E280 (head_edit)",
+   "edit": "v2",
+   "feat": "neurons",
+   "n_vars": 12316,
+   "n_changed": 1,
+   "size_K": 5570,
+   "n_changed_K": 1,
+   "E_b_K": 0.9999999999999999,
+   "E_b_changed": 0.9999999999999999,
+   "empty_K": false,
+   "too_small": false,
+   "n_pairs": 256,
+   "median_margin": 0.567354679107666,
+   "min_margin": 0.00019598007202148438,
+   "n_fragile_positions": 0,
+   "fragile_floor": 5.14984130859375e-05,
+   "cases_per_s": 79344.86575930318,
+   "by_derangement": [
+    {
+     "size_K": 1485,
+     "E_b_K": 0.9999999999999999
+    },
+    {
+     "size_K": 3537,
+     "E_b_K": 0.9999999999999999
+    },
+    {
+     "size_K": 4365,
+     "E_b_K": 0.9999999999999999
+    },
+    {
+     "size_K": 5570,
+     "E_b_K": 0.9999999999999999
+    }
+   ],
+   "head_2_4": {
+    "in_K": true,
+    "changed": true,
+    "flips": 60,
+    "kept": 0.9999999999999999,
+    "dd_weight_K_changed": 1.0
+   },
+   "seconds": 40.158785343170166,
+   "peak_gpu_gb": 8.36639404296875
+  },
+  "v2_vpd": {
+   "experiment": "E280 (head_edit)",
+   "edit": "v2",
+   "feat": "vpd",
+   "n_vars": 38938,
+   "n_changed": 1025,
+   "size_K": 25403,
+   "n_changed_K": 871,
+   "E_b_K": 0.19216526838491219,
+   "E_b_changed": 0.19087442232710866,
+   "empty_K": false,
+   "too_small": false,
+   "n_pairs": 256,
+   "median_margin": 0.5673537254333496,
+   "min_margin": 0.000194549560546875,
+   "n_fragile_positions": 0,
+   "fragile_floor": 4.673004150390625e-05,
+   "cases_per_s": 34082.30340433164,
+   "by_derangement": [
+    {
+     "size_K": 5078,
+     "E_b_K": 0.18764389273472853
+    },
+    {
+     "size_K": 10227,
+     "E_b_K": 0.19347210603558845
+    },
+    {
+     "size_K": 14272,
+     "E_b_K": 0.1933825563534263
+    },
+    {
+     "size_K": 25403,
+     "E_b_K": 0.19216526838491219
+    }
+   ],
+   "L2_attn": {
+    "k_proj": {
+     "n_sub": 512,
+     "n_changed": 0,
+     "n_changed_K": 0,
+     "dd_weight_sub": 0.0,
+     "kept_sub": null,
+     "kept_derived_s": null,
+     "head4_share_median": 0.05750630041089134,
+     "rem_in_K_changed": false,
+     "dd_weight_rem": null,
+     "kept_rem": null
+    },
+    "o_proj": {
+     "n_sub": 1024,
+     "n_changed": 0,
+     "n_changed_K": 0,
+     "dd_weight_sub": 0.0,
+     "kept_sub": null,
+     "kept_derived_s": null,
+     "head4_share_median": 0.12549503078399182,
+     "rem_in_K_changed": false,
+     "dd_weight_rem": null,
+     "kept_rem": null
+    },
+    "q_proj": {
+     "n_sub": 512,
+     "n_changed": 0,
+     "n_changed_K": 0,
+     "dd_weight_sub": 0.0,
+     "kept_sub": null,
+     "kept_derived_s": null,
+     "head4_share_median": 0.1377444659587565,
+     "rem_in_K_changed": false,
+     "dd_weight_rem": null,
+     "kept_rem": null
+    },
+    "v_proj": {
+     "n_sub": 1024,
+     "n_changed": 1024,
+     "n_changed_K": 871,
+     "dd_weight_sub": 1.0,
+     "kept_sub": 0.19216526838491219,
+     "kept_derived_s": 0.2144002569054114,
+     "head4_share_median": 0.10980632418716202,
+     "rem_in_K_changed": false,
+     "dd_weight_rem": null,
+     "kept_rem": 0.0002512469545620459
+    }
+   },
+   "seconds": 296.60515546798706,
+   "peak_gpu_gb": 9.23364782333374
+  }
+ },
+ "checks": {
+  "v2_o2_neurons_at_least_0.9": [
+   true,
+   true
+  ],
+  "q2_within_q_band_of_v2_vpd": true,
+  "v2_vpd_reads": "rival B (< 0.3)"
+ }
+}

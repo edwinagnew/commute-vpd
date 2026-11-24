@@ -1,0 +1,253 @@
+12:28:25 E282 (P1.58 gain share) all start; settings {'controls': ('x2', 'x10', 'new_few', 'new_thin', 'random_kl_241002'), 'random': 'random_kl_241002', 'kl_saved': {'x2': 'experiments/kstar_vpd/results/items/x2.json', 'x10': 'experiments/kstar_vpd/results/items/x10.json', 'new_few': 'experiments/kstar_vpd/results/items/new_few.json', 'new_thin': 'experiments/kstar_vpd/results/items/new_thin.json', 'random_kl_241002': 'experiments/kstar_vpd_wording_a/results/items/random_kl_241002.json'}, 'e62_states': ('copy_s0', 'copy_s1', 'copy_s2', 'lookup_s0', 'lookup_s1', 'lookup_s2'), 'e62_dir': 'experiments/induction_cue/results/large', 'e231_items': 'experiments/gain_only/results/items', 'do_nothing_rows': 'copy', 'levels': ('N', 'V'), 'lr': 0.1, 'steps': 600, 'warmup': 30, 'batch': 64, 'grad_clip': 1.0, 'check_every': 100, 'read_batch': 64, 'cue_split_seed': 282002, 'fit_seed': 282003, 'rand_sd': 0.05, 'rand_seed': 282001, 'stage0_steps': 2, 'head_edits': {'v2': ['v_proj', 0], 'o2': ['o_proj', 1], 'q2': ['q_proj', 0]}, 'head_layer': 2, 'head': 4, 'head_factor': 2.0}; thresholds {'min_gain': 1.0, 'kl_min': 0.001, 'equiv_tol': 0.001, 'perm_min': 0.1, 'remainder_tol': 3e-06, 'kl_repro_rel': 0.0001, 'random_target_rel': 0.1, 'gain_repro_rel': 0.001, 'n_min': 0.9, 'smallest_gap': 0.1, 'low_v': 0.3, 'thresholds_source': "min_gain: E231's MIN_GAIN (commute.local_faith), a share is not read below 1 log-odds of F's gain. kl_min: the KL-recovered share is not read when KL(F || M) is at or under 1e-3 nats, a bar between the do-nothing's exact 0 and the smallest read state's 0.101 (x2, E226 items/x2.json kl_fm); the do-nothing's fit must also land under it. equiv_tol, perm_min: E231's stage-0 bug bars (an fp32 reassociation gives about 1e-6, measured here on CPU at 8.5e-7 for one VPD matrix; a wrong orientation or order gives order 1, the shuffled state measured 1.38). remainder_tol: 10 x the measured fp32 floor of the remainder, |R_fp32 - R_fp64| / |W0| at most 2.85e-7 over the 24 matrices (CPU dry run, ~/commute-data/scratch/compare-lead/gain-share/remainder_floor.out; R + U^T V^T - W0 itself measured at most 1.6e-9); the same bar holds R against the authors' calc_weight_deltas. kl_repro_rel: E221's kl_repro_rel; E226's saved KLs read the featurized model at gains 1, whose relative logit error was at most 2.9e-6 (items gates.all). random_target_rel: E242's kl_rel_tol, the match tolerance that defines the random state. gain_repro_rel: E231's reproduce_rel. n_min: the stop rule below. smallest_gap and low_v: the card's"}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+12:28:38   [do_nothing N] step 1: train KL 0 held KL 0 grad 0
+12:28:39   [do_nothing V] step 1: train KL 0 held KL 0 grad 0
+12:28:40 [stage 0] {"experiment": "E282 (P1.58 gain share)", "remainder": {"identity_rel_max": 1.6124731549993498e-09, "vs_authors_rel_max": 1.0540406947256997e-06, "vs_authors_rel": {"h.0.attn.k_proj": 0.0, "h.0.attn.o_proj": 0.0, "h.0.attn.q_proj": 0.0, "h.0.attn.v_proj": 0.0, "h.0.mlp.c_fc": 1.0540406947256997e-06, "h.0.mlp.down_proj": 3.70652884384981e-07, "h.1.attn.k_proj": 0.0, "h.1.attn.o_proj": 0.0, "h.1.attn.q_proj": 0.0, "h.1.attn.v_proj": 0.0, "h.1.mlp.c_fc": 9.44481257647567e-07, "h.1.mlp.down_proj": 2.6108986617146e-07, "h.2.attn.k_proj": 0.0, "h.2.attn.o_proj": 0.0, "h.2.attn.q_proj": 0.0, "h.2.attn.v_proj": 0.0, "h.2.mlp.c_fc": 9.98086647996388e-07, "h.2.mlp.down_proj": 3.1152413271229307e-07, "h.3.attn.k_proj": 0.0, "h.3.attn.o_proj": 0.0, "h.3.attn.q_proj": 0.0, "h.3.attn.v_proj": 0.0, "h.3.mlp.c_fc": 1.028715246320644e-06, "h.3.mlp.down_proj": 3.8004702673788415e-07}}, "N": {"ones_bit_equal": true, "delta_nonzero": 0, "export_rel": 1.6034169675549492e-05, "shuffled_rel": 1.398428201675415, "do_nothing": {"kl_fm": 0.0, "kl_fg": 0.0, "gain_F": 0.0, "gain_G": 0.0}, "do_nothing_max_gain_move": 0.0}, "V": {"ones_bit_equal": true, "delta_nonzero": 0, "export_rel": 1.1969245861109812e-05, "shuffled_rel": 1.402240514755249, "do_nothing": {"kl_fm": 0.0, "kl_fg": 0.0, "gain_F": 0.0, "gain_G": 0.0}, "do_nothing_max_gain_move": 0.0}}
+12:28:40 STAGE 0 DONE
+12:28:40 x2: KL(F || M) on all of D 0.101413845, saved 0.101413831 (rel 1.37e-07); |dW|/|W0| 0.01642
+12:28:40   [x2 N] step 1: train KL 0.095767 held KL 0.094933 grad 0.178
+12:28:48   [x2 N] step 100: train KL 0.01642 held KL 0.009041 grad 0.0305
+12:28:55   [x2 N] step 200: train KL 0.0089565 held KL 0.0038285 grad 0.029
+12:29:03   [x2 N] step 300: train KL 0.0040765 held KL 0.0018769 grad 0.0114
+12:29:11   [x2 N] step 400: train KL 0.0021102 held KL 0.001674 grad 0.0151
+12:29:18   [x2 N] step 500: train KL 0.00063908 held KL 0.00034737 grad 0.0102
+12:29:26   [x2 N] step 600: train KL 0.00026202 held KL 0.00032047 grad 0.000904
+12:29:27 READ x2 N: share None kl_share 0.9967048099579198 KL(F||G*) 0.00033418 KL(F||M) 0.10141 gain F -0.11002538681030273 G -0.17955410639444988 train KL 0.00023177; fit 46 s (0.077 s/step)
+12:29:27   [x2 V] step 1: train KL 0.095767 held KL 0.09383 grad 0.19
+12:29:43   [x2 V] step 100: train KL 0.062106 held KL 0.055929 grad 0.059
+12:29:59   [x2 V] step 200: train KL 0.048386 held KL 0.045821 grad 0.06
+12:30:15   [x2 V] step 300: train KL 0.031337 held KL 0.021267 grad 0.0383
+12:30:32   [x2 V] step 400: train KL 0.014782 held KL 0.012783 grad 0.0206
+12:30:48   [x2 V] step 500: train KL 0.0065385 held KL 0.0093679 grad 0.00759
+12:31:04   [x2 V] step 600: train KL 0.0048424 held KL 0.0091035 grad 0.00342
+12:31:05 READ x2 V: share None kl_share 0.908884735743122 KL(F||G*) 0.0092403 KL(F||M) 0.10141 gain F -0.11002538681030273 G -0.2741853586832682 train KL 0.0047607; fit 97 s (0.161 s/step)
+12:31:05 x10: KL(F || M) on all of D 0.713758564, saved 0.713758541 (rel 3.26e-08); |dW|/|W0| 0.1477
+12:31:05   [x10 N] step 1: train KL 0.71426 held KL 0.68535 grad 0.32
+12:31:13   [x10 N] step 100: train KL 0.24552 held KL 0.14901 grad 0.414
+12:31:22   [x10 N] step 200: train KL 0.089429 held KL 0.073251 grad 0.385
+12:31:30   [x10 N] step 300: train KL 0.044868 held KL 0.033838 grad 0.115
+12:31:38   [x10 N] step 400: train KL 0.017706 held KL 0.018352 grad 0.0615
+12:31:46   [x10 N] step 500: train KL 0.0078249 held KL 0.014261 grad 0.00886
+12:31:54   [x10 N] step 600: train KL 0.0066619 held KL 0.013724 grad 0.00965
+12:31:55 READ x10 N: share None kl_share 0.9807079483873972 KL(F||G*) 0.01377 KL(F||M) 0.71376 gain F -2.0929103151957196 G -2.1449291038513185 train KL 0.006596; fit 49 s (0.081 s/step)
+12:31:55   [x10 V] step 1: train KL 0.71426 held KL 0.67581 grad 0.495
+12:32:11   [x10 V] step 100: train KL 0.30233 held KL 0.41845 grad 0.483
+12:32:27   [x10 V] step 200: train KL 0.22911 held KL 0.34145 grad 0.627
+12:32:43   [x10 V] step 300: train KL 0.17943 held KL 0.30082 grad 0.116
+12:33:00   [x10 V] step 400: train KL 0.14117 held KL 0.28276 grad 0.0499
+12:33:16   [x10 V] step 500: train KL 0.11847 held KL 0.27253 grad 0.0589
+12:33:32   [x10 V] step 600: train KL 0.11273 held KL 0.27106 grad 0.0226
+12:33:33 READ x10 V: share None kl_share 0.606103625043241 KL(F||G*) 0.28115 KL(F||M) 0.71376 gain F -2.0929103151957196 G -2.042996934254964 train KL 0.11162; fit 97 s (0.162 s/step)
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 5731, 'limit_filed': 2.539746259591625, 'limit_whitened_0.01': 8.566283727683114, 'limit_whitened_0.001': 8.575326118502765, 'limit_whitened_0.0001': 8.568684327349663, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 4566, 'limit_filed': 3.383015623415288, 'limit_whitened_0.01': 9.095355079898459, 'limit_whitened_0.001': 9.070667057076344, 'limit_whitened_0.0001': 9.072227442589407, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: {"slots": [109, 447, 771, 1004, 1101, 1997, 2018, 2034], "betas": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "detectors": [{"limit_filed": 2.8299310018075157, "limit_whitened_0.01": 11.977943470656788, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.9354057940160114, "limit_whitened_0.01": 9.467796952164644, "limit_whitened_0.001": 9.453473755664607, "limit_whitened_0.0001": 9.434761738713327, "direction": "whitened 0.0001", "pile_own": 0}, {"limit_filed": 3.153354600912579, "limit_whitened_0.01": 10.247742932694962, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 2.976402686706226, "limit_whitened_0.01": 10.980587317240389, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 3.1523501173597266, "limit_whitened_0.01": 10.295113233962542, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.8080077614150376, "limit_whitened_0.01": 11.894048149583934, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 3.4909928431446855, "limit_whitened_0.01": 12.118530995962917, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 6.333512251802342, "limit_whitened_0.01": 15.14462701601434, "direction": "whitened 0.01", "pile_own": 1}], "act": [13.54616928100586, 13.430658340454102, 14.229463577270508, 13.013628959655762, 13.70849609375, 13.203634262084961, 13.495687484741211, 16.34401512145996], "copy_M_twin": 0.2578125, "copy_M_D": 0.001953125, "misses": ["reuse_small: top-1 0.0000 < 0.2063", "reuse_large: top-1 0.0117 < 0.2063"], "gamma_new_few": 11.291458129882812, "gamma_new_thin": 10.845924377441406, "gamma_T": 8.0, "g": 4.662668471294909, "size_matched": false, "dW_norm": {"reuse_small": 11.702665916967812, "new_few": 4.032900249421868, "new_thin": 1.920865076690052, "reuse_large": 31.24612063404571}, "top1_reuse_small": 0.0, "top1_new_few": 0.900390625, "top1_new_thin": 0.900390625, "top1_reuse_large": 0.01171875, "A": [4833, 7192, 4910, 7939, 8638, 2589, 9653, 6196], "A_prime": [10680, 4934, 7756, 7057, 5823, 5827, 6255, 1471], "y": [5752, 5771, 5175, 4412, 5870, 5087, 4201, 6430], "swapped": [{"cue": 5, "A_prime": 5731, "limit_filed": 2.539746259591625, "limit_whitened_0.01": 8.566283727683114, "limit_whitened_0.001": 8.575326118502765, "limit_whitened_0.0001": 8.568684327349663, "direction": "whitened 0.0001", "pile_own": 1}, {"cue": 5, "A_prime": 4566, "limit_filed": 3.383015623415288, "limit_whitened_0.01": 9.095355079898459, "limit_whitened_0.001": 9.070667057076344, "limit_whitened_0.0001": 9.072227442589407, "direction": "whitened 0.0001", "pile_own": 1}]}
+12:33:51 new_few: KL(F || M) on all of D 10.2320463, saved 10.2320881 (rel 4.08e-06); |dW|/|W0| 0.02894
+12:33:51   [new_few N] step 1: train KL 10.048 held KL 10.837 grad 1.52
+12:33:57   [new_few N] step 100: train KL 1.0586 held KL 0.24254 grad 0.109
+12:34:04   [new_few N] step 200: train KL 0.079882 held KL 0.22836 grad 0.0303
+12:34:10   [new_few N] step 300: train KL 0.056348 held KL 0.23565 grad 0.0556
+12:34:16   [new_few N] step 400: train KL 0.046831 held KL 0.23986 grad 0.0296
+12:34:22   [new_few N] step 500: train KL 0.039132 held KL 0.246 grad 0.00744
+12:34:28   [new_few N] step 600: train KL 0.037664 held KL 0.24635 grad 0.00514
+12:34:29 READ new_few N: share 0.96654670385133 kl_share 0.976610530952215 KL(F||G*) 0.24849 KL(F||M) 10.624 gain F 16.793854873627424 G 16.23204507306218 train KL 0.038046; fit 37 s (0.061 s/step)
+12:34:29   [new_few V] step 1: train KL 10.048 held KL 10.738 grad 3.42
+12:34:43   [new_few V] step 100: train KL 0.88264 held KL 0.31388 grad 0.0599
+12:34:57   [new_few V] step 200: train KL 0.086684 held KL 0.33995 grad 0.0332
+12:35:11   [new_few V] step 300: train KL 0.060855 held KL 0.29938 grad 0.0545
+12:35:25   [new_few V] step 400: train KL 0.038781 held KL 0.34516 grad 0.0449
+12:35:39   [new_few V] step 500: train KL 0.029399 held KL 0.34167 grad 0.0053
+12:35:53   [new_few V] step 600: train KL 0.027359 held KL 0.34281 grad 0.00314
+12:35:54 READ new_few V: share 0.9533613357133899 kl_share 0.971925072702558 KL(F||G*) 0.29827 KL(F||M) 10.624 gain F 16.793854873627424 G 16.010611914098263 train KL 0.02763; fit 85 s (0.141 s/step)
+12:35:55 new_thin: KL(F || M) on all of D 10.2519837, saved 10.2519843 (rel 6.07e-08); |dW|/|W0| 0.01379
+12:35:55   [new_thin N] step 1: train KL 10.007 held KL 10.548 grad 1.59
+12:36:01   [new_thin N] step 100: train KL 1.0405 held KL 0.25618 grad 0.0214
+12:36:07   [new_thin N] step 200: train KL 0.079862 held KL 0.23169 grad 0.0194
+12:36:13   [new_thin N] step 300: train KL 0.055529 held KL 0.2205 grad 0.0371
+12:36:19   [new_thin N] step 400: train KL 0.045202 held KL 0.21504 grad 0.0203
+12:36:26   [new_thin N] step 500: train KL 0.039839 held KL 0.21508 grad 0.00749
+12:36:32   [new_thin N] step 600: train KL 0.038175 held KL 0.21552 grad 0.00632
+12:36:32 READ new_thin N: share 0.9690525123890004 kl_share 0.9809841232676517 KL(F||G*) 0.20302 KL(F||M) 10.676 gain F 16.487721294164658 G 15.977467743679881 train KL 0.038707; fit 37 s (0.061 s/step)
+12:36:32   [new_thin V] step 1: train KL 10.007 held KL 10.448 grad 3.44
+12:36:46   [new_thin V] step 100: train KL 0.86825 held KL 0.26122 grad 0.0571
+12:37:01   [new_thin V] step 200: train KL 0.076631 held KL 0.25024 grad 0.101
+12:37:15   [new_thin V] step 300: train KL 0.056515 held KL 0.23922 grad 0.124
+12:37:29   [new_thin V] step 400: train KL 0.035725 held KL 0.23917 grad 0.041
+12:37:43   [new_thin V] step 500: train KL 0.027849 held KL 0.23741 grad 0.00395
+12:37:57   [new_thin V] step 600: train KL 0.026042 held KL 0.23785 grad 0.00342
+12:37:58 READ new_thin V: share 0.9544868029387517 kl_share 0.9788718581955885 KL(F||G*) 0.22557 KL(F||M) 10.676 gain F 16.487721294164658 G 15.737312385812402 train KL 0.026392; fit 85 s (0.141 s/step)
+random_kl_241002: matched x 6.38626 to KL 0.171608 (target 0.158768), ok
+12:38:03 random_kl_241002: KL(F || M) on all of D 0.171607736, saved 0.158768351 (rel 0.0809); |dW|/|W0| 0.08804
+12:38:03   [random_kl_241002 N] step 1: train KL 0.16039 held KL 0.16909 grad 0.16
+12:38:09   [random_kl_241002 N] step 100: train KL 0.12475 held KL 0.21235 grad 0.0805
+12:38:15   [random_kl_241002 N] step 200: train KL 0.08104 held KL 0.17705 grad 0.0699
+12:38:22   [random_kl_241002 N] step 300: train KL 0.047065 held KL 0.16708 grad 0.0422
+12:38:28   [random_kl_241002 N] step 400: train KL 0.035405 held KL 0.15165 grad 0.0115
+12:38:34   [random_kl_241002 N] step 500: train KL 0.026214 held KL 0.14747 grad 0.00689
+12:38:40   [random_kl_241002 N] step 600: train KL 0.024931 held KL 0.14731 grad 0.00569
+12:38:41 READ random_kl_241002 N: share None kl_share 0.26881416814912573 KL(F||G*) 0.12905 KL(F||M) 0.17649 gain F None G None train KL 0.024974; fit 37 s (0.062 s/step)
+12:38:41   [random_kl_241002 V] step 1: train KL 0.16039 held KL 0.16679 grad 0.316
+12:38:55   [random_kl_241002 V] step 100: train KL 0.20576 held KL 0.39153 grad 0.116
+12:39:09   [random_kl_241002 V] step 200: train KL 0.11419 held KL 0.37372 grad 0.114
+12:39:23   [random_kl_241002 V] step 300: train KL 0.085799 held KL 0.3326 grad 0.102
+12:39:37   [random_kl_241002 V] step 400: train KL 0.048656 held KL 0.28409 grad 0.024
+12:39:51   [random_kl_241002 V] step 500: train KL 0.026538 held KL 0.26424 grad 0.00723
+12:40:05   [random_kl_241002 V] step 600: train KL 0.023631 held KL 0.2619 grad 0.00506
+12:40:06 READ random_kl_241002 V: share None kl_share -0.5036263372684369 KL(F||G*) 0.26538 KL(F||M) 0.17649 gain F None G None train KL 0.02357; fit 85 s (0.141 s/step)
+12:40:06 STAGE 1 DONE
+12:40:07 e62/copy_s0: F's gain 12.6496044, E231's 12.6496047 (rel 2.28e-08)
+12:40:07   [e62/copy_s0 N] step 1: train KL 7.6799 held KL 7.7958 grad 3
+12:40:13   [e62/copy_s0 N] step 100: train KL 0.4047 held KL 0.045752 grad 0.00641
+12:40:19   [e62/copy_s0 N] step 200: train KL 0.0065161 held KL 0.038471 grad 0.00355
+12:40:25   [e62/copy_s0 N] step 300: train KL 0.0044665 held KL 0.023717 grad 0.0019
+12:40:31   [e62/copy_s0 N] step 400: train KL 0.003713 held KL 0.023107 grad 0.00132
+12:40:37   [e62/copy_s0 N] step 500: train KL 0.00342 held KL 0.022888 grad 0.00171
+12:40:43   [e62/copy_s0 N] step 600: train KL 0.0033684 held KL 0.022791 grad 0.00145
+12:40:44 READ e62/copy_s0 N: share 0.9985001720718812 kl_share 0.9957869033068082 KL(F||G*) 0.033335 KL(F||M) 7.9123 gain F 12.649604399204254 G 12.630632169246674 train KL 0.0032997; fit 37 s (0.061 s/step)
+12:40:44   [e62/copy_s0 V] step 1: train KL 7.6799 held KL 7.5806 grad 8.07
+12:40:58   [e62/copy_s0 V] step 100: train KL 0.26847 held KL 0.042652 grad 0.00415
+12:41:12   [e62/copy_s0 V] step 200: train KL 0.0069046 held KL 0.037953 grad 0.00385
+12:41:26   [e62/copy_s0 V] step 300: train KL 0.0036577 held KL 0.03739 grad 0.00425
+12:41:40   [e62/copy_s0 V] step 400: train KL 0.0027671 held KL 0.037607 grad 0.00136
+12:41:54   [e62/copy_s0 V] step 500: train KL 0.0023957 held KL 0.037435 grad 0.00124
+12:42:08   [e62/copy_s0 V] step 600: train KL 0.0024084 held KL 0.037399 grad 0.00105
+12:42:10 READ e62/copy_s0 V: share 0.9865735393621546 kl_share 0.993622927041124 KL(F||G*) 0.050457 KL(F||M) 7.9123 gain F 12.649604399204254 G 12.479764983654022 train KL 0.002349; fit 84 s (0.140 s/step)
+12:42:10 e62/copy_s1: F's gain 12.6359393, E231's 12.6359397 (rel 2.62e-08)
+12:42:10   [e62/copy_s1 N] step 1: train KL 7.6713 held KL 7.7995 grad 3
+12:42:17   [e62/copy_s1 N] step 100: train KL 0.40676 held KL 0.030394 grad 0.0114
+12:42:23   [e62/copy_s1 N] step 200: train KL 0.0082144 held KL 0.024089 grad 0.00222
+12:42:29   [e62/copy_s1 N] step 300: train KL 0.0056698 held KL 0.019568 grad 0.00286
+12:42:35   [e62/copy_s1 N] step 400: train KL 0.00479 held KL 0.019677 grad 0.00171
+12:42:41   [e62/copy_s1 N] step 500: train KL 0.0043936 held KL 0.01962 grad 0.00212
+12:42:47   [e62/copy_s1 N] step 600: train KL 0.0042021 held KL 0.019711 grad 0.00184
+12:42:48 READ e62/copy_s1 N: share 0.9984602119884671 kl_share 0.9903948217401307 KL(F||G*) 0.075728 KL(F||M) 7.8841 gain F 12.635939333438873 G 12.616482665538788 train KL 0.0043709; fit 37 s (0.061 s/step)
+12:42:49   [e62/copy_s1 V] step 1: train KL 7.6713 held KL 7.5846 grad 8.08
+12:43:02   [e62/copy_s1 V] step 100: train KL 0.27285 held KL 0.045471 grad 0.0202
+12:43:17   [e62/copy_s1 V] step 200: train KL 0.031538 held KL 0.10037 grad 0.0132
+12:43:31   [e62/copy_s1 V] step 300: train KL 0.014166 held KL 0.070545 grad 0.00756
+12:43:45   [e62/copy_s1 V] step 400: train KL 0.007677 held KL 0.057947 grad 0.00273
+12:43:59   [e62/copy_s1 V] step 500: train KL 0.0064332 held KL 0.056736 grad 0.00215
+12:44:13   [e62/copy_s1 V] step 600: train KL 0.0060369 held KL 0.056559 grad 0.00243
+12:44:15 READ e62/copy_s1 V: share 0.9432569450029182 kl_share 0.9804978301038522 KL(F||G*) 0.15376 KL(F||M) 7.8841 gain F 12.635939333438873 G 11.918937532901763 train KL 0.0063082; fit 85 s (0.141 s/step)
+12:44:15 e62/copy_s2: F's gain 12.5470122, E231's 12.5470126 (rel 3.14e-08)
+12:44:15   [e62/copy_s2 N] step 1: train KL 7.608 held KL 7.8184 grad 2.96
+12:44:21   [e62/copy_s2 N] step 100: train KL 0.40771 held KL 0.023818 grad 0.00348
+12:44:27   [e62/copy_s2 N] step 200: train KL 0.0098801 held KL 0.020021 grad 0.00288
+12:44:34   [e62/copy_s2 N] step 300: train KL 0.0051308 held KL 0.015624 grad 0.00203
+12:44:40   [e62/copy_s2 N] step 400: train KL 0.0044571 held KL 0.016216 grad 0.00182
+12:44:46   [e62/copy_s2 N] step 500: train KL 0.0040237 held KL 0.016686 grad 0.00192
+12:44:52   [e62/copy_s2 N] step 600: train KL 0.0039689 held KL 0.016644 grad 0.00163
+12:44:53 READ e62/copy_s2 N: share 1.007884131225091 kl_share 0.984063749019367 KL(F||G*) 0.12638 KL(F||M) 7.9304 gain F 12.54701221704483 G 12.645934507846832 train KL 0.0038951; fit 37 s (0.061 s/step)
+12:44:53   [e62/copy_s2 V] step 1: train KL 7.608 held KL 7.6037 grad 8
+12:45:07   [e62/copy_s2 V] step 100: train KL 0.29575 held KL 0.17214 grad 0.13
+12:45:21   [e62/copy_s2 V] step 200: train KL 0.015454 held KL 0.054415 grad 0.00527
+12:45:35   [e62/copy_s2 V] step 300: train KL 0.006483 held KL 0.050147 grad 0.00564
+12:45:50   [e62/copy_s2 V] step 400: train KL 0.0053543 held KL 0.048511 grad 0.00141
+12:46:04   [e62/copy_s2 V] step 500: train KL 0.0047522 held KL 0.048729 grad 0.00227
+12:46:18   [e62/copy_s2 V] step 600: train KL 0.0046902 held KL 0.048828 grad 0.0014
+12:46:19 READ e62/copy_s2 V: share 0.9663887019044183 kl_share 0.9820475059746896 KL(F||G*) 0.14237 KL(F||M) 7.9304 gain F 12.54701221704483 G 12.125290849208831 train KL 0.0045736; fit 85 s (0.141 s/step)
+12:46:20 e62/lookup_s0: F's gain 15.3643962, E231's 15.3643975 (rel 8.3e-08)
+12:46:20   [e62/lookup_s0 N] step 1: train KL 8.7676 held KL 8.3002 grad 1.34
+12:46:26   [e62/lookup_s0 N] step 100: train KL 1.1086 held KL 0.009197 grad 0.0151
+12:46:32   [e62/lookup_s0 N] step 200: train KL 0.0067117 held KL 0.0069115 grad 0.00211
+12:46:38   [e62/lookup_s0 N] step 300: train KL 0.004757 held KL 0.0060799 grad 0.00765
+12:46:44   [e62/lookup_s0 N] step 400: train KL 0.0038448 held KL 0.0052851 grad 0.00378
+12:46:50   [e62/lookup_s0 N] step 500: train KL 0.0039041 held KL 0.0053738 grad 0.00283
+12:46:56   [e62/lookup_s0 N] step 600: train KL 0.0037254 held KL 0.0053986 grad 0.00113
+12:46:57 READ e62/lookup_s0 N: share 0.9683990387641571 kl_share 0.9994209770574602 KL(F||G*) 0.0048141 KL(F||M) 8.3142 gain F 15.364396233558654 G 14.878866543769837 train KL 0.0037248; fit 36 s (0.061 s/step)
+12:46:58   [e62/lookup_s0 V] step 1: train KL 8.7676 held KL 8.244 grad 2.03
+12:47:11   [e62/lookup_s0 V] step 100: train KL 0.81518 held KL 0.011654 grad 0.0109
+12:47:25   [e62/lookup_s0 V] step 200: train KL 0.006389 held KL 0.0071133 grad 0.0047
+12:47:39   [e62/lookup_s0 V] step 300: train KL 0.0052261 held KL 0.0050796 grad 0.00395
+12:47:53   [e62/lookup_s0 V] step 400: train KL 0.0032454 held KL 0.0041919 grad 0.00175
+12:48:07   [e62/lookup_s0 V] step 500: train KL 0.0031354 held KL 0.0042142 grad 0.00169
+12:48:21   [e62/lookup_s0 V] step 600: train KL 0.0029226 held KL 0.0042248 grad 0.000954
+12:48:23 READ e62/lookup_s0 V: share 0.9810095976834337 kl_share 0.9991050380049331 KL(F||G*) 0.0074409 KL(F||M) 8.3142 gain F 15.364396233558654 G 15.07262016773224 train KL 0.0029461; fit 84 s (0.140 s/step)
+12:48:23 e62/lookup_s1: F's gain 14.9877268, E231's 14.9877272 (rel 2.24e-08)
+12:48:24   [e62/lookup_s1 N] step 1: train KL 8.7801 held KL 8.2904 grad 1.33
+12:48:30   [e62/lookup_s1 N] step 100: train KL 1.1072 held KL 0.011983 grad 0.00891
+12:48:36   [e62/lookup_s1 N] step 200: train KL 0.0066104 held KL 0.010919 grad 0.0052
+12:48:42   [e62/lookup_s1 N] step 300: train KL 0.0049002 held KL 0.010194 grad 0.00635
+12:48:48   [e62/lookup_s1 N] step 400: train KL 0.0042187 held KL 0.0099409 grad 0.0059
+12:48:54   [e62/lookup_s1 N] step 500: train KL 0.0043276 held KL 0.0097446 grad 0.00872
+12:49:00   [e62/lookup_s1 N] step 600: train KL 0.0041989 held KL 0.0097078 grad 0.00487
+12:49:01 READ e62/lookup_s1 N: share 0.9693439239744366 kl_share 0.9989151829766947 KL(F||G*) 0.0090073 KL(F||M) 8.303 gain F 14.987726836204528 G 14.528261942863464 train KL 0.0040694; fit 36 s (0.061 s/step)
+12:49:01   [e62/lookup_s1 V] step 1: train KL 8.7801 held KL 8.2345 grad 2.03
+12:49:15   [e62/lookup_s1 V] step 100: train KL 0.81314 held KL 0.014744 grad 0.00505
+12:49:29   [e62/lookup_s1 V] step 200: train KL 0.0057404 held KL 0.012676 grad 0.0028
+12:49:43   [e62/lookup_s1 V] step 300: train KL 0.0037952 held KL 0.012147 grad 0.00346
+12:49:57   [e62/lookup_s1 V] step 400: train KL 0.0032113 held KL 0.011758 grad 0.00214
+12:50:11   [e62/lookup_s1 V] step 500: train KL 0.003277 held KL 0.01177 grad 0.00228
+12:50:25   [e62/lookup_s1 V] step 600: train KL 0.0031059 held KL 0.011787 grad 0.00288
+12:50:27 READ e62/lookup_s1 V: share 0.983012599517984 kl_share 0.9987648610009805 KL(F||G*) 0.010255 KL(F||M) 8.303 gain F 14.987726836204528 G 14.733124318122863 train KL 0.0030265; fit 84 s (0.140 s/step)
+12:50:27 e62/lookup_s2: F's gain 15.3313528, E231's 15.3313523 (rel 3.28e-08)
+12:50:27   [e62/lookup_s2 N] step 1: train KL 8.7907 held KL 8.3118 grad 1.34
+12:50:33   [e62/lookup_s2 N] step 100: train KL 1.1073 held KL 0.0052154 grad 0.00623
+12:50:39   [e62/lookup_s2 N] step 200: train KL 0.0038073 held KL 0.0031145 grad 0.00166
+12:50:45   [e62/lookup_s2 N] step 300: train KL 0.0029496 held KL 0.0027601 grad 0.00171
+12:50:51   [e62/lookup_s2 N] step 400: train KL 0.0026409 held KL 0.0026363 grad 0.00169
+12:50:57   [e62/lookup_s2 N] step 500: train KL 0.002637 held KL 0.002603 grad 0.00175
+12:51:04   [e62/lookup_s2 N] step 600: train KL 0.0024502 held KL 0.0025946 grad 0.00331
+12:51:05 READ e62/lookup_s2 N: share 0.9723630893628749 kl_share 0.9996311440399416 KL(F||G*) 0.0030702 KL(F||M) 8.3235 gain F 15.33135283946991 G 14.907641611099244 train KL 0.0025659; fit 36 s (0.061 s/step)
+12:51:05   [e62/lookup_s2 V] step 1: train KL 8.7907 held KL 8.2558 grad 2.04
+12:51:19   [e62/lookup_s2 V] step 100: train KL 0.81179 held KL 0.011102 grad 0.00204
+12:51:33   [e62/lookup_s2 V] step 200: train KL 0.0030007 held KL 0.0082555 grad 0.00125
+12:51:47   [e62/lookup_s2 V] step 300: train KL 0.0022982 held KL 0.006793 grad 0.0011
+12:52:01   [e62/lookup_s2 V] step 400: train KL 0.0019755 held KL 0.0060816 grad 0.00121
+12:52:15   [e62/lookup_s2 V] step 500: train KL 0.00186 held KL 0.0058175 grad 0.000968
+12:52:28   [e62/lookup_s2 V] step 600: train KL 0.0017667 held KL 0.0057744 grad 0.00112
+12:52:30 READ e62/lookup_s2 V: share 0.9825090016368898 kl_share 0.9994685391444513 KL(F||G*) 0.0044236 KL(F||M) 8.3235 gain F 15.33135283946991 G 15.063192172050476 train KL 0.0018436; fit 84 s (0.140 s/step)
+12:52:30 STAGE2 DONE
+12:52:31   [e280/v2 N] step 1: train KL 0.031521 held KL 0.031308 grad 0.143
+12:52:37   [e280/v2 N] step 100: train KL 0.072462 held KL 0.078325 grad 0.0623
+12:52:43   [e280/v2 N] step 200: train KL 0.049976 held KL 0.044613 grad 0.106
+12:52:49   [e280/v2 N] step 300: train KL 0.026484 held KL 0.020914 grad 0.0346
+12:52:55   [e280/v2 N] step 400: train KL 0.012026 held KL 0.012333 grad 0.0338
+12:53:01   [e280/v2 N] step 500: train KL 0.0039546 held KL 0.0079434 grad 0.00821
+12:53:07   [e280/v2 N] step 600: train KL 0.0021546 held KL 0.0075989 grad 0.00384
+12:53:08 READ e280/v2 N: share None kl_share 0.8409010299811351 KL(F||G*) 0.0062402 KL(F||M) 0.039222 gain F 0.5475966858863831 G 0.5490257120132447 train KL 0.002126; fit 36 s (0.061 s/step)
+12:53:08   [e280/v2 V] step 1: train KL 0.031521 held KL 0.025072 grad 0.385
+12:53:22   [e280/v2 V] step 100: train KL 0.16532 held KL 0.23735 grad 0.144
+12:53:36   [e280/v2 V] step 200: train KL 0.12874 held KL 0.18647 grad 0.0812
+12:53:50   [e280/v2 V] step 300: train KL 0.090612 held KL 0.16038 grad 0.092
+12:54:04   [e280/v2 V] step 400: train KL 0.048087 held KL 0.10231 grad 0.0756
+12:54:18   [e280/v2 V] step 500: train KL 0.021533 held KL 0.075425 grad 0.0122
+12:54:32   [e280/v2 V] step 600: train KL 0.014342 held KL 0.072435 grad 0.00811
+12:54:33 READ e280/v2 V: share None kl_share -0.827723854147846 KL(F||G*) 0.071688 KL(F||M) 0.039222 gain F 0.5475966858863831 G 0.5458707785606385 train KL 0.014101; fit 84 s (0.139 s/step)
+12:54:34   [e280/o2 N] step 1: train KL 0.031521 held KL 0.031308 grad 0.143
+12:54:40   [e280/o2 N] step 100: train KL 0.072462 held KL 0.078325 grad 0.0623
+12:54:46   [e280/o2 N] step 200: train KL 0.049976 held KL 0.044613 grad 0.106
+12:54:52   [e280/o2 N] step 300: train KL 0.026484 held KL 0.020914 grad 0.0346
+12:54:58   [e280/o2 N] step 400: train KL 0.012026 held KL 0.012333 grad 0.0338
+12:55:04   [e280/o2 N] step 500: train KL 0.0039546 held KL 0.0079434 grad 0.00821
+12:55:10   [e280/o2 N] step 600: train KL 0.0021546 held KL 0.0075989 grad 0.00384
+12:55:11 READ e280/o2 N: share None kl_share 0.8409010299811351 KL(F||G*) 0.0062402 KL(F||M) 0.039222 gain F 0.5475966858863831 G 0.5490257120132447 train KL 0.002126; fit 36 s (0.061 s/step)
+12:55:11   [e280/o2 V] step 1: train KL 0.031521 held KL 0.025072 grad 0.385
+12:55:25   [e280/o2 V] step 100: train KL 0.16532 held KL 0.23735 grad 0.144
+12:55:39   [e280/o2 V] step 200: train KL 0.12874 held KL 0.18647 grad 0.0812
+12:55:53   [e280/o2 V] step 300: train KL 0.090612 held KL 0.16038 grad 0.092
+12:56:07   [e280/o2 V] step 400: train KL 0.048087 held KL 0.10231 grad 0.0756
+12:56:21   [e280/o2 V] step 500: train KL 0.021533 held KL 0.075425 grad 0.0122
+12:56:35   [e280/o2 V] step 600: train KL 0.014342 held KL 0.072435 grad 0.00811
+12:56:36 READ e280/o2 V: share None kl_share -0.827723854147846 KL(F||G*) 0.071688 KL(F||M) 0.039222 gain F 0.5475966858863831 G 0.5458707785606385 train KL 0.014101; fit 84 s (0.140 s/step)
+12:56:37   [e280/q2 N] step 1: train KL 0.008217 held KL 0.0084613 grad 0.0684
+12:56:43   [e280/q2 N] step 100: train KL 0.05656 held KL 0.050193 grad 0.0605
+12:56:49   [e280/q2 N] step 200: train KL 0.042736 held KL 0.037173 grad 0.0636
+12:56:55   [e280/q2 N] step 300: train KL 0.026894 held KL 0.021295 grad 0.0255
+12:57:01   [e280/q2 N] step 400: train KL 0.0092349 held KL 0.010188 grad 0.02
+12:57:07   [e280/q2 N] step 500: train KL 0.0034953 held KL 0.0081207 grad 0.00564
+12:57:13   [e280/q2 N] step 600: train KL 0.0024534 held KL 0.0078284 grad 0.00392
+12:57:14 READ e280/q2 N: share None kl_share 0.3822048977568667 KL(F||G*) 0.0063937 KL(F||M) 0.010349 gain F -0.2679629349708557 G -0.22635770559310914 train KL 0.0024341; fit 36 s (0.061 s/step)
+12:57:14   [e280/q2 V] step 1: train KL 0.008217 held KL 0.0094352 grad 0.206
+12:57:28   [e280/q2 V] step 100: train KL 0.14325 held KL 0.18508 grad 0.104
+12:57:42   [e280/q2 V] step 200: train KL 0.11888 held KL 0.15208 grad 0.107
+12:57:56   [e280/q2 V] step 300: train KL 0.073499 held KL 0.10745 grad 0.0543
+12:58:10   [e280/q2 V] step 400: train KL 0.038291 held KL 0.068369 grad 0.0513
+12:58:24   [e280/q2 V] step 500: train KL 0.016324 held KL 0.051032 grad 0.0197
+12:58:38   [e280/q2 V] step 600: train KL 0.010767 held KL 0.048283 grad 0.00873
+12:58:40 READ e280/q2 V: share None kl_share -3.6647896478833415 KL(F||G*) 0.048277 KL(F||M) 0.010349 gain F -0.2679629349708557 G -0.24028090000152588 train KL 0.010533; fit 84 s (0.140 s/step)
+12:58:40 STAGE3 DONE
+12:58:40 E282 (P1.58 gain share) all DONE
+peak host RSS 6.1 GB
