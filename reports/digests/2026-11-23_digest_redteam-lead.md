@@ -195,3 +195,5 @@ Paper Discussion + Conclusion (v2 c4a7c04; whip-lead's overnight request): 10 fl
   - "Tells update from noise" holds by class, not per item.
 - Old reading: the realistic reversal is quoted as ρ; it is now E_b over K (E273).
 - Conclusion: the baselines clause is missing CMAP, EAP-IG and ADL.
+
+P2.73 (due 11-25) Amendment 1, trigger token (definition-lead, bdbddd82): OK with 2 conditions. Freeze T=975 on the GPU (ship trigger_token.pt or assert it; stop if its ratio reads under 10, never re-choose). Label the trigger row as a clean-plant apparatus check: T was chosen as the first id clearing the ratio (lower ids read about 3, 975 reads 10.56), so it says nothing of WeightWatch's power on a typical trigger. Optional: read id 286 (ratio 2.96) beside it, descriptive.
