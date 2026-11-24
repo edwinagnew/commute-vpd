@@ -1,0 +1,15 @@
+cell: P2.75
+rival_a: latent scaling on a diff-SAE separates a planted change of a fine-tune's size from a matched random update predicts both rung-1 seeds' specific part at or over the bar 0.5 min(K1, 1) and both Gaussians under the lower rung-1 seed (gate outcome 5, pass)
+rival_b: at a fine-tune's size the change's direction is already present in the original model's activation where a latent fires (appendix A: c about 3.6, nu_D about 0.78) predicts both rung-1 seeds' specific part under the bar (gate outcome 4, below the method's reach)
+rung: strategy
+smallest_gap: 0.25
+spread: 0.081
+n: 2
+design: unpaired
+unit: SAE seeds on rung 1 against Gaussian draws matched to rung 1
+spread_source: experiments/crosscoder_proper/results/run1/items/
+spread_of: proxy: the BatchTopK crosscoder's specific part on E235's grafted head at site A over crosscoder seeds 0-2 (0.300, 0.208, 0.369; head.A.c{0,1,2}.json read.specific), the same reading (share of the change carried by fine-tune-specific latents) at the same site from a dictionary of the same toolkit
+floor: the bar 0.5 min(K1, 1), K1 rung 1's pre-fit reference capacity; rival a expects rung 1 at or over it (about 0.5) with Gaussians near 0, rival b expects rung 1 under it (near the Gaussians); K1 under 0.5 reads not read
+stop: the gate reading 'below the method's reach' or 'does not separate' under both forms of nu ends the diff-SAE line at run 1 (run 2 is not opened)
+sketch: experiments/diff_sae/figures/sketch.png
+rehearsal: 'E### rehearse: diff_sae' on a cluster debug L40 (cluster/diff_sae_rehearse.sbatch, two jobs of two items): full SAE size (1,536 latents, k 100), 12M training tokens past the 10M-token AuxK threshold with a known dead set written after step 5,000, the full stream, normaliser (1M), latent scaling (50M) and read and KL sizes, on plant.A.c0, head-r1.A.c0, head-r1.A.c1 and random_d0-r1.A.c0; it measures ms per step, peak GPU and host memory per stage, the step-1 loss, the pooled FVE at each validation (the two-seed difference sets the FVE stop), the float32 against float64 floor of the numerator identity, the KL floors and K per side, and checks the saved SAE reloads to identical encodings
