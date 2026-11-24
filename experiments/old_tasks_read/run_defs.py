@@ -232,8 +232,13 @@ def eapig(C: Any, scratch: Path) -> None:
         floor = json.loads(s0.read_text())["native_floor"]
         for t in sorted(set(sets.values())):
             par = EG.RESULTS / f"parity_{t}.json"
+            write_stage(EG.RESULTS / f"task_{t}.json", jsonable(run.items.task(t)[2]))  # unchanged_rows, filed check: 0
             if not par.is_file():
                 eapig_parity(run, t, C.control if t == sets[C.control] else "M", floor, par)
+            if "stopped" in json.loads(par.read_text()):  # that set's parity missed the floor: its items get no reading
+                log(f"EAP-IG set {t}: parity stopped, its items skipped (no reading: parity failed)")
+                items = [i for i in items if sets[i.removesuffix("_rand")] != t]
+                continue
             run.m_on(t)
             run.ranges[t] = (rs := run.resampled(t, "M"))["range"]
             write_stage(EG.RESULTS / f"M_resampling_{t}.json", jsonable({k: v for k, v in rs.items() if k != "circuits"}))
@@ -257,7 +262,8 @@ def eapig_parity(run: Any, task: str, name: str, floor: float, path: Path) -> No
         stops = ("rel_clean", "rel_corrupted", "rel_clean_all_positions", "rel_corrupted_all_positions", "rel_full_circuit_vs_clean", "rel_empty_circuit_vs_corrupted")
         if miss := [f"{n} {k} {p[k]:.3g} over {floor:.3g}" for k in stops if not p[k] <= floor]:
             write_stage(path, jsonable(out | {"stopped": miss}))
-            raise SystemExit(f"STOP: EAP-IG parity on {task}: {miss}")
+            log(f"STOP: EAP-IG parity on {task}: {miss}")
+            return
     write_stage(path, jsonable(out | {"done": True}))
 
 

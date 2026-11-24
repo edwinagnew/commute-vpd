@@ -48,3 +48,4 @@ P2.72 (due 11-25) / E293 run 1 labels (compare-lead, 62ed8a50): OK, the filed ru
 Note: compare-lead/note-2026-11-24-redteam-e293-run1.md; whip-lead told.
 
 E293 correction: compare-lead was right on two points. E212's cosine is 0.9999998 (pool max 0.401), so the yes latent is the plant. The rehearsal's rung-5 M-side FVE did reach 0.54-0.57 at steps 900-1000, so "the rehearsal already showed the stop" is withdrawn (its warm-up was 100 steps, against run 1's 1,000). Rung 5 stays "not read".
+- P1.4 (definition-lead), 03:05: E297 run 2 verdict OK, "no call, descriptive" (x2 copies leftover 0.300-0.302 vs bar 0.1924, 0 of 2 seeds). Five SHOULD fixes (x2 copies' own gap 0.078 > x2's 0.0745; absolute-TV parity not like-for-like; VPD order one seed; x2 0.76 at VPD) and a must-not-say list: note-2026-11-24-redteam-e297.md in definition-lead's folder.

@@ -49,11 +49,14 @@ def readings() -> tuple[dict[str, dict[str, float]], dict[str, dict[str, float]]
                        "pile_loss_change": rec["pile_loss_change"], "steps_to_half": tr.get(s, {}).get("steps_to_half")}  # fmt: skip
     for stage, keys in DEFS.items():
         for p in sorted((RESULTS / stage / "items").glob("*.json")):
+            if stage == "eapig" and p.stem.startswith("M_"):  # M's own circuit per task set, the reference, not a state
+                continue
             r = load(p)
             item = r.get("item", p.stem)
             got = r.get("five_percent", r)
             side = rand if item.endswith("_rand") else real
-            side.setdefault(item.removesuffix("_rand"), {}).update({f"{stage} {k}": num(got.get(k)) for k in keys})
+            gated = stage == "eapig" and r.get("reading") != "read"  # the owner's gate: "no gap", "empty", "circuit not faithful"
+            side.setdefault(item.removesuffix("_rand"), {}).update({f"{stage} {k}": math.nan if gated else num(got.get(k)) for k in keys})
     return real, rand, diff
 
 
@@ -71,6 +74,17 @@ def twins(real: dict[str, dict[str, float]], rand: dict[str, dict[str, float]]) 
     return out
 
 
+def eapig_checks() -> dict[str, Any]:
+    """definition-lead's checks (11-24): per task set its parity (a stopped set is "no reading: parity failed") and
+    unchanged_rows (filed: 0); per item the owner's gate label ('no gap' at or under the stage-0 fp32 KL floor, 'empty', under
+    the 70% faithfulness bar, else 'read')."""
+    E = RESULTS / "eapig"
+    sets = {p.stem.removeprefix("parity_"): "no reading: parity failed" if "stopped" in load(p) else "pass" for p in sorted(E.glob("parity_*.json"))}
+    rows = {p.stem.removeprefix("task_"): load(p).get("unchanged_rows") for p in sorted(E.glob("task_*.json"))}
+    items = {p.stem: load(p).get("reading") for p in sorted((E / "items").glob("*.json")) if not p.stem.startswith("M_")}
+    return {"kl_floor": load(E / "stage0.json").get("kl_floor"), "parity": sets, "unchanged_rows": rows, "items": items}
+
+
 def panel() -> dict[str, Any]:
     """E272's wide set at kl_hi: per task and seed its size and KL (selection.json), its prior and gain (read files)."""
     sel = load(E272 / "selection.json").get("kl", {}).get("hi", {}).get("tasks", {})
@@ -85,7 +99,7 @@ def panel() -> dict[str, Any]:
 def main() -> None:
     real, rand, diff = readings()
     P = load(RESULTS / "predictions.json")
-    out = {"experiment": "E292", "difficulty": diff, "panel_e272_kl_hi": panel(), "twins": twins(real, rand), "readings": real, "random": rand,
+    out = {"experiment": "E292", "difficulty": diff, "panel_e272_kl_hi": panel(), "twins": twins(real, rand), "eapig_checks": eapig_checks(), "readings": real, "random": rand,
            "not_read": P.get("not_read", {})}  # fmt: skip
     (RESULTS / "summary.json").write_text(json.dumps(jsonable(out), indent=1))
     for s, d in diff.items():
@@ -95,6 +109,8 @@ def main() -> None:
         for k, v in rec.items():
             if k != "seeds":
                 print(f"[twins {pair}] {k}: {v['call']} (n {v['n_seeds']}; diff {v.get('diff')}, null {v.get('null')})")
+    for k, v in out["eapig_checks"].items():
+        print(f"[eapig {k}] {v}")
     print(f"wrote {RESULTS / 'summary.json'}: {len(diff)} states read, {len(out['panel_e272_kl_hi'])} panel tasks beside")
 
 
