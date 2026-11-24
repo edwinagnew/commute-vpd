@@ -1,5 +1,5 @@
 {
- "experiment": "E###",
+ "experiment": "E288",
  "cell": "P2.68",
  "plan": "reports/plans/2026-11-23_plan_p2-68-cmap-spec.md (revision 4, 32c6e0ad)",
  "filed": "2026-11-23",
@@ -75,7 +75,8 @@
   "gate": "an item's shares are reported only if its correct-count gain on D exceeds N of its task and scale (at least 1 when N = 0) and its log-odds gain G exceeds both L and 1",
   "compared": "the whole-circuit CMAP log-odds share on D, (mean log-odds patched - W0's) / (mean log-odds fine-tune - W0's), not clipped; compared with the definition within a format only (kv, E62 'last', E53 'next'); the A+B share beside it for every item",
   "beside": "per group (A, B, C, A+B, whole, 10 matched random sets): patched accuracy on D and its share; faithfulness F(Cir)/F(M) on D with each random set's overlap with the circuit; the pool sizes under m < -2 se and m < 0; p(clean label | noise prompt) under the fine-tune and W0",
-  "no_call": "a share whose gain is 0 is null; an item that does not clear its gate reports its numbers with compared shares null"
+  "no_call": "a share whose gain is 0 is null; an item that does not clear its gate reports its numbers with compared shares null",
+  "pairs_card": "filed 2026-11-23 by the lead before any run (card experiments/cmap/card.md). For each of E187's nine built pairs, d = compared share (whole circuit; for E53 whole = A+B) of the side E187 labels reuse minus that of the side it labels new, both at E187's scale. A pair is readable only if both sides clear their gate. With fewer than 5 readable pairs: no call. Rival A: d > 0.07 on at least two thirds of readable pairs (rounded up) AND median d > 0.07. Rival B: median |d| <= 0.07. Neither: no call (also when both hold, which cannot happen since A needs median d > 0.07). Ties at exactly 0.07 count against A. Reported as a baseline column; no reuse verdict on any single fine-tune."
  },
  "expected": {
   "fine_tune": "not predicted (spec sec. 7)",
