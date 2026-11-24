@@ -113,14 +113,15 @@
   },
   "thresholds": {
     "full": {
-      "c0a_rn_dev": null,
+      "c0a_rn_dev": 1e-6,
       "fve_check": 0.5,
       "fve_min_end": 0.5,
-      "gen_cap_min": 30,
-      "fit_cap_min": 60,
-      "score_budget_min": 25,
-      "score_cap_min": 40,
-      "check_delta_falling": true
+      "gen_cap_min": 46,
+      "fit_cap_min": 75,
+      "score_budget_min": 23,
+      "score_cap_min": 30,
+      "delta_last_over_peak_max": 0.9,
+      "damage_nats": 1.0
     },
     "rehearsal": {
       "c0a_rn_dev": 1.0,
@@ -130,15 +131,29 @@
       "fit_cap_min": 1000000,
       "score_budget_min": 0,
       "score_cap_min": 1000000,
-      "check_delta_falling": false
+      "delta_last_over_peak_max": 1000000,
+      "damage_nats": 1.0
     },
-    "thresholds_source": "c0a_rn_dev: spec 5, one bar filed after the rehearsal measures max |R - 0.5| of C0a under bf16 on the same kernels (null until then; run.py refuses a full fit while it is null); fve_check: spec 5 'Expected at 1k steps: FVE at least 0.5' (mean batch FVE of the worse model over steps 900-999); fve_min_end: spec 5 'FVE under 0.5 at the end of a fit marks it a code fault' (E235 read at least 0.89, the paper at least 0.72); gen_cap_min, fit_cap_min: spec 5's stage caps (30 min per 100k continuations, 60 min per fit), each projected from the first shard and from step 1,000; score_budget_min: spec 5's scoring estimate (24 min) added to the projected training minutes; score_cap_min: ours, the fit cap less stream and training (about 20 min), projected after the first latent's reads; check_delta_falling: spec 5 'L_delta falling' at 1k steps, a stop at full size; the rehearsal checks at step 200, where the delta loss may still rise (the CPU dry run's tiny fits read it rising over 120 steps), so there it is recorded (delta_first_last_100) and does not stop; the rehearsal keeps nothing it cannot meet at 1,500 steps and records every reading"
+    "rehearsal_measured": {
+      "source": "the $0 rehearsal on a RunPod H100 (commit f9d2a8d5, results/rehearse/), filed 2026-11-23 before run 1",
+      "c0a_max_rn_dev": 0.0,
+      "delta_step200_to_1000_ratio": {"C0b": 0.136, "C2A": 0.287, "C2B": 0.678, "rung1": 0.258, "rung5": 0.103, "e212": 0.127, "headB": 0.764, "rung5tied": 1.000},
+      "delta_last_over_peak_at_run1_step1000_equivalent": {"C0b": 0.40, "C2A": 0.48, "C2B": 0.78, "rung1": 0.45, "rung5": 0.057, "e212": 0.36, "headB": 0.65, "rung5tied": 0.33},
+      "equivalence": "run 1 warms up over 1,000 steps, the rehearsal over 100; on the clock of summed learning rate run 1's steps 900-999 are the rehearsal's steps 455-550 (rehearsal step = s^2/2000 + 50), so the second row is the mean of the rehearsal's logged delta at steps 450, 500 and 550 over the largest logged delta at steps 0-450; a fixed step-200 anchor would read rung1 at 1.33 and C0b at 0.98 there (run 1's step 200 is the rehearsal's step 63, before the rise), so the rule is anchored on the peak",
+      "gen_minutes_per_100k": {"M": 18.9, "gauss.A": 30.2, "gauss.B": 33.9, "head-r1.A": 36.8, "head-r5.A": 38.0, "head.B": 38.3},
+      "train_ms_per_step_with_chunks": {"C0a": 15.6, "C0b": 17.0, "C2A": 25.3, "C2B": 42.9, "rung5": 26.4, "e212": 18.9, "headB": 43.7, "rung5tied": 26.8},
+      "steer_minutes_first_latent_full_read": 0.124,
+      "score_fixed_minutes": 0.087,
+      "peak_gb": {"gen": 16.7, "fit": 38.6, "slice": 13.8}
+    },
+    "thresholds_source": "c0a_rn_dev: spec 5, one bar filed after the rehearsal measured max |R - 0.5| of C0a under bf16 on the H100: exactly 0.0, so 1e-6 (run plan 1's rule); fve_check: spec 5 'Expected at 1k steps: FVE at least 0.5' (mean batch FVE of the worse model over steps 900-999); fve_min_end: spec 5 'FVE under 0.5 at the end of a fit marks it a code fault' (E235 read at least 0.89, the paper at least 0.72); gen_cap_min, fit_cap_min: spec 5's stage caps reset from the rehearsal (2026-11-23), each projected from the first shard and from step 1,000: 46 = 1.2 x the slowest measured sampler (head.B, 38.3 min per 100k; spec 5's 30 would have stopped four of the six), 75 = 1.25 x the slowest projected fit (headB, 60.2 min: 50,000 x 43.7 ms + 23 min scoring); score_budget_min: the rehearsal's scoring measure, 0.087 min once plus 183 x 0.124 min per latent = 22.8 min, added to the projected training minutes; score_cap_min: 1.3 x that, projected after the first latent's reads; delta_last_over_peak_max: spec 5 'L_delta falling' at 1k steps, a stop at full size: the delta loss's mean over the last 100 steps before check_step at most 0.9 x the largest of its 100-step means before check_step (not C0a; rehearsal_measured has the ratios and their run-1 equivalence: the untied fits read 0.057-0.78, so the bar leaves 0.12 over the largest; rung5tied reads 0.33 there and passes, its plateau is by construction, spec 5); the rehearsal records the ratio (delta_peak_last_100) and does not stop; damage_nats: the damage flag of spec 4 (whip-lead, 2026-11-23), reported beside each label, never a stop; the rehearsal keeps nothing it cannot meet at 1,500 steps and records every reading"
   },
   "readings": {
     "label": "per side: yes (one scored candidate beats its pool's maximum on both tests), no (at least one candidate scored, none passes both), not scored (no candidate has a pool of 20 or more)",
     "steer": "the steering test's statistic: max over negative s of g_F(0) - g_F(s), absolute nats; g is the answer log-odds on the score windows for task sides (C0b: E62 copy; C2: e54 elicit, the Gaussian's matched side), KL(F_s || M) at the read positions for plants",
     "top": "the top-activation test's statistic: share of the latent's 50 most activating tokens (z > 0) on behaviour positions, in a set of the score windows plus as many Pile background tokens",
     "induce": "reported only, with the caveat that it is weak evidence of reuse (the added vector can carry the learned content): max over positive s of g_M(s) - g_M(0); for plants g_M(s) = -KL(F || M_s), so this is how far steering moves M toward F",
+    "damage": "per side, beside the label (damage flag, after Kassem, ours; whip-lead 2026-11-23): damage_flag true iff the label is yes and every candidate passing both tests won its steering statistic (win_s, the negative s of its largest drop) at a strength where its pool's median rise of F's Pile loss (pool_pile_rise_at_win) is over damage_nats; damage_pile_rise the largest of those rises; false for a no or not scored. Reported only, it changes no label",
     "beside": "per candidate: R, the pool's maxima, the widening used, the Pile-loss rise of F at every s, 20 contexts; per fit: FVE per model, L0, dead share, the tail (min and max R over non-shared latents) and the ledger; on C1 the other tail's top three by R, read and reported, never scored"
   },
   "rules": {
@@ -160,7 +175,7 @@
     },
     "C1 planted changes": {
       "rule": "the label rule, g = KL(F_s || M) at the plant's read positions (heads: every position but 0 of E201's 512 read windows; E212: position 34 of its 512 L1 read rows); the planted direction's cosine with the top candidate's d^ft - d^base reported beside the pool maximum, no bar (E212 only)",
-      "expected": {"rung1": "'no', low (fine-tune size: BatchTopK specific part 0.0030)", "rung5": "'yes', medium", "e212": "'yes', medium", "headB": "'yes', medium", "rung5tied": "reported only"},
+      "expected": {"rung1": "'no', low (fine-tune size: BatchTopK specific part 0.0030)", "rung5": "'yes', medium", "e212": "'yes', medium", "headB": "'yes', medium", "rung5tied": "reported only; its delta loss floors (rehearsal: flat at 5.35e5 from step 200) because the decoder-bias difference carries a constant part of F - M that eq. 7's delta prediction leaves out, by construction (spec 5)"},
       "edge_cases": "a plant's KL at s = 0 is > 0 by construction (the graft and the plant write at the site: E235/E243 checked the energy); a steering read giving nan (overflow at s = 200) is skipped in the max over s, and a candidate whose every read is nan cannot pass"
     },
     "pass and label (every side)": {
@@ -169,7 +184,7 @@
       "chance": "under exchangeable latents a candidate beats a 60-latent pool on one test with probability 1/61, on both (independent) about 1/3,700; a side with three candidates reads yes by chance with probability about 3/3,700"
     },
     "run 2 gate (run 1's readout)": "run 2 at site A only if C0a passes, rung 5 or E212 reads yes, and C2 at A reads a calibrated no. No plant yes: site A reads 'not applicable at this update size'. C2 at A not scored: not read. Plant yes and C2 at A yes: 'does not separate a plant from a random update'. Rung 1 decides how a trained side's 'no' reads ('below the method's reach' if rung 1 reads no). The block-3 head and C2 at B gate nothing.",
-    "early checks (each fit; stop)": "before step 0: a matched change within its tolerance (C2: E235's gauss_match_tol 0.05; rungs: E243's match_tol 0.05), the ledger (contrastive + fit half + Pile = steps x batch exactly; disjoint row ranges, asserted at start); every step: finite losses; at check_step: mean batch FVE of the worse model over the 100 steps before >= fve_check, the delta loss's mean over those 100 steps under its mean over the first 100 (not C0a), projected fit minutes <= fit_cap_min; generation: projected minutes per 100k continuations <= gen_cap_min after the first shard; scoring: FVE at the end >= fve_min_end before any steering read, projected steering minutes <= score_cap_min after the first latent"
+    "early checks (each fit; stop)": "before step 0: a matched change within its tolerance (C2: E235's gauss_match_tol 0.05; rungs: E243's match_tol 0.05), the ledger (contrastive + fit half + Pile = steps x batch exactly; disjoint row ranges, asserted at start); every step: finite losses; at check_step: mean batch FVE of the worse model over the 100 steps before >= fve_check, the delta loss's mean over those 100 steps at most delta_last_over_peak_max x the largest of its 100-step means before check_step (not C0a), projected fit minutes <= fit_cap_min; generation: projected minutes per 100k continuations <= gen_cap_min after the first shard; scoring: FVE at the end >= fve_min_end before any steering read, projected steering minutes <= score_cap_min after the first latent"
   },
   "edge_case_checks": {
     "label, every candidate unscored": "rows [{scored false}, {scored false}, {scored false}] -> 'not scored' (tests/test_delta_crosscoder.py)",

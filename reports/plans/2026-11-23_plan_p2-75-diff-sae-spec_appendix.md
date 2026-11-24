@@ -152,6 +152,20 @@ separate; unstable; pass. One case the list as given had no line for, both rung-
 Gaussians under the lower seed, would have fallen through to pass. It is given round 1's reading, "below the method's
 reach", placed after "unstable"; the two cannot both hold, so the order between them does not matter.
 
+### Round 3 (GPT, 2026-11-23)
+
+**GPT [P1], the validation rows.** Real: Pile train rows 131,072 on are E235's key-value pool (131,072-196,607,
+`crosscoder_proper/run.py` 180, 298; `kv.py` 78-85). Answer: train rows 196,608-206,392, past the pool and before the
+fill rows (589,824 on); `run.py` asserts the range against every side's parent rows, task-window sources included.
+
+### Code and filing (2026-11-23)
+
+Rules run on their edge cases before filing (`tests/test_diff_sae.py`, 21 pass): an empty pool and a missing or nan arm
+read "not read"; K₁ nan, 0.49 and 0.5 give not read, not read, bar 0.25; a Gaussian at the bar and one equal to the
+lower rung-1 seed read "does not separate", a seed exactly at the bar is not under it; the do-nothing state (every part
+0) reads "does not separate"; ν: 0/0 and β_F = 0 give nan and fail, β_F < 0 is literal, a tie at 0.3 passes; no latent
+passing gives 0.0; Σ‖D‖² = 0 gives "not read". The oracle (`results/oracle.json`) is filed in predictions.json.
+
 ## D. Earlier review questions, settled by redteam-lead (2026-11-23)
 
 1. **Which input latent scaling encodes:** both forms are scored, each labelled. Neither is called faithful.
@@ -169,7 +183,7 @@ reach", placed after "unstable"; the two cannot both hold, so the order between 
 - "Below the method's reach" is outcome 4 of the gate's order, a case redteam-lead's list left out.
 - The Gaussians for the gate use elicit's per-matrix norm profile, E243's `random_of`, since rung 1 is a grafted head
   with no matrix norms of M's own to copy.
-- The validation text is 5M Pile tokens from rows 131,072 on, the same for every side.
+- The validation text is 5M Pile tokens from train rows 196,608-206,392, the same for every side.
 - The early stop's FVE is pooled over the validation set, not averaged per batch.
 - The FVE stop's bar is the rehearsal's last value on the same side minus three times its two-seed difference.
 - E212's own Gaussians are not rerun.

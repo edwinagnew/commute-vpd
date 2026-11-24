@@ -201,3 +201,30 @@ P2.73 (due 11-25) Amendment 1, trigger token (definition-lead, bdbddd82): OK wit
 P2.68 in the paper (v2 17320ec, writeup-lead): OK, numbers match ebc757a2. Two wording fixes: the tools table puts the built-pair CMAP reading under the "trained fine-tunes" column, and its caption ("no tool gives a reuse reading") should add "or makes no call" now that CMAP's control passes. Note: writeup-lead/note-2026-11-23-redteam-p268-paper.md. Discussion/Conclusion re-check waits on writeup-lead's revision.
 
 P2.73 (due 11-25) Amendment 2 (definition-lead, d702d3ff): OK, both conditions met (T frozen at 975 with a stop and no re-choice; id 286 read descriptively). One $0 fix: assert that a cached trigger_token.pt holds T=975 (and old_rule) before using it. Note: definition-lead/note-2026-11-23-redteam-p273-amendment2.md.
+
+Paper Discussion + Conclusion re-check (v2 22692d3, writeup-lead): OK, all 10 flags resolved. One optional wording match: the copy head's "a tenth" should be "of its change as a rescale" in the Discussion too. Note: writeup-lead/note-2026-11-23-redteam-discussion-recheck.md.
+
+Paper Intro + Related work citation spot check (v2 644d9dd, litreview fixes 20561ee): every arXiv id resolves (14 checked), and no entry is fabricated. Two MUST fixes: a paragraph split by the P2 insertion now aims the "fixed dictionary" criticism at circuit analysis; "scores two on ours" is stale, since the table now scores six tools. Also 11 wording NITs (Deeb's 88%, Yu "suggest", Kissane "usually", Kumar two-layer linear, wen year, and others). Note: writeup-lead/note-2026-11-23-redteam-related-work.md.
+
+Paper Results number check (sec5 at v2 644d9dd, for whip-lead; Opus subagent, spot-verified): no old reading (ρ, R_A, K*) is quoted as current, and the neuron 0.07 now matches its plot. 7 MUST:
+- "separates at every featurization" holds only for the gain edits; the rebuilt edit reads 0.135 at SAE against 0.020 random, under the filed bar;
+- the "falls outside the variables" clause holds at SAE only;
+- the neuron numbers are the no-remainder descriptive column (0.05 as filed);
+- the Fig 1a SAE panel is K* on the scaled states, with no marker;
+- the caption's "mostly changed" goes beyond the text;
+- effective rank's pass fails once base loss is partialled out (P2.66);
+- the "blind raters" are language models.
+Also 1 SHOULD (head (2,4)'s 0.25, and random head (1,1) removes as much) and 11 NITs. Note: writeup-lead/ and whip-lead/note-2026-11-23-redteam-results-check.md.
+
+Results re-check (v2 cd7fad2): all 7 MUST and the SHOULD are applied correctly; the \open cell ids and the neuron-CMAP ✗ are still open. One new MUST at sec5:34: the added "0.999 or more with neurons as variables" is app_wordings' direction agreement over K*, not the definition's reading, and needs \kst and the appendix ref. §3 (main.tex:260, the user's) states the same 0.999 without \kst: flagged for the user, not edited. The appendix-support check is running (Opus subagent).
+
+Appendix trim (v2 cd7fad2): every body \ref still resolves. 4 MUST restores/rewordings:
+- the pure-gain log-odds share still separates all nine pairs (E231), so the re-gating share's separation reflects the task, not re-weighting. This caveat on claim 2 was cut and now appears nowhere;
+- gain-only training's filed miss (3 of 9);
+- sec4:43 points to a superseded ADL score that survives only in the cut file;
+- two filed real-text misses (E233, one of three).
+2 SHOULD: the form's scale/units caveats; the live appendix still says ρ. 6 NITs. Note: writeup-lead/ and whip-lead/note-2026-11-23-redteam-appendix-trim.md.
+
+Appendix trim re-check (v2 cc1b4c0, 28 pp): OK. All 4 MUST restores are in, and the pure-gain limit on the re-gating share now also sits in the Results limits and the Discussion. "What the form ignores" is restored, ρ is defined as the kept share, and sec5:34's 0.999 is marked K*. Left for the user: sec4:43 (the user's §4 still points to the superseded ADL score). One NIT: \ref{sec:methods} at main.tex:244 is dangling.
+
+Related work re-check (v2 14719ba): OK. The paragraph order is fixed (main.tex:180-182), "scores the published ones" is at 188, and the dangling ref is fixed. Every paper check redteam-lead sent tonight is closed. Open only for the user: sec4:43 (the superseded ADL score) and main.tex:260 (0.999 without the K* marker), both in the user's sections.
