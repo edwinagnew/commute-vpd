@@ -1,6 +1,6 @@
 # Does a fine-tune turn a needed variable's write within the space the base model already writes into?
 
-Cell `P1.60`, experiment `E286`, 2026-11-23. A diagnostic beside the frozen reuse definition, not a change to it; no verdict
+Cell `P1.60`, experiments `E286` and, for the head (2,4) random null, `E295`, 2026-11-23. A diagnostic beside the frozen reuse definition, not a change to it; no verdict
 on reuse is given under it.
 
 2026-11-23 (late), after redteam's re-check (commit 2515188d): the cell's filed reading says trained updates sit "a few
@@ -15,6 +15,11 @@ the needed space covers most of the width, with a null of about 0.72, so the rea
 Trained updates sit above their nulls there, by a few hundredths for the toy and copy fine-tunes and by up to 0.128 for the realistic panel, under the filed 0.2. The literal "inside the variable's own
 write space" share counts changes to what a variable reads, so it cannot see rotation. A pure attention-head gauge
 rotation reads fully kept at heads but not at VPD.
+
+Head (2,4), which carries copying, keeps about a tenth of its write under the copy fine-tunes. A random update of the
+same size keeps at most 0.005 of it, and a pure strengthening keeps 1. So the copy head's low kept share is still far
+above chance, and so is lookup's 0.015 to 0.020, but the head's own-space and rotation shares read the same for trained
+and random updates.
 
 In plain words: we asked whether fine-tuning keeps a needed part's output direction inside the directions the base
 model already writes, rather than along exactly the base model's direction. On VPD subcomponents this looser reading
@@ -138,7 +143,8 @@ The copy and lookup fine-tunes do not differ on the needed-space share. Copy min
 Head (2,4) carries the copy behaviour in the paper's account. It was read alone at the head featurization, on the 206
 copy windows, for three seeds of each arm. Its strict kept share is low for copy and near zero for lookup. Its flips
 show copy needs it and lookup does not. Its own-space share is 0.80 to 0.86 for both arms. The reference for that is a
-random update's own-space share at heads, about 0.6, not a random direction's 0.13.
+random update's own-space share, not a random direction's 0.13. A random update of the same size reads 0.73 to 0.83 on
+this head, as the subsection below shows.
 
 | arm, seed | strict kept | own-space | random direction's share | flips of 256 pairs |
 | --- | --- | --- | --- | --- |
@@ -154,6 +160,52 @@ matrix. They do so a little more than a random update does at heads, and equally
 share does not tell the arms apart, and it does not show the head's output turning. What separates them is the flips:
 copy depends on the head on nearly every pair, lookup on almost none. The random direction's share is one head's write
 dimensions over the width, about 104 of 768.
+
+### Against a random update of the same size, the kept and strict shares stand far above chance
+
+Run 2 of the cell asked how much of head (2,4)'s write a random update of the same size keeps. Each of the six
+fine-tunes got one random update: a Gaussian on every weight matrix the fine-tune changed, scaled to that matrix's
+change in size. Each was read the same two ways as its fine-tune: kept on all 512 windows of D at the last position,
+and strict, own-space and rotation on the 206 copy windows. The positive control is a pure strengthening, head 4's value
+rows of layer 2 doubled, which doubles the head's write exactly. It read kept 1 on all of D and strict 1 on the copy
+windows. The do-nothing reads 1 on every share. The random null is descriptive: no bar was filed for it.
+
+![Head (2,4)'s kept share for each fine-tune beside its size-matched random](../../experiments/rotation_kept/figures/headnull_kept.png)
+
+**Reading it.** The kept share of head (2,4) is far above chance for both arms. The copy fine-tunes keep 0.095 to 0.141
+of the head's write on all of D, and their randoms keep at most 0.0015. The lowest copy seed is about 60 times its arm's
+highest random. Lookup keeps 0.015 to 0.020, at least 3 times its highest random of 0.0047. Both sit far below the pure
+strengthening's 1. On the copy windows the strict share separates copy by as much, and lookup on two of three seeds.
+Lookup's third seed reads 0.0047 against its random's 0.0029, which is not clearly above it.
+
+| arm, seed | kept on all of D | its random | strict on copy windows | its random |
+| --- | --- | --- | --- | --- |
+| copy, 0 | 0.131 | 0.00013 | 0.187 | 0.00043 |
+| copy, 1 | 0.095 | 0.00040 | 0.130 | 0.00052 |
+| copy, 2 | 0.141 | 0.0015 | 0.173 | 0.0013 |
+| lookup, 0 | 0.018 | 0.00010 | 0.013 | 0.000068 |
+| lookup, 1 | 0.020 | 0.0012 | 0.011 | 0.000017 |
+| lookup, 2 | 0.015 | 0.0047 | 0.0047 | 0.0029 |
+| pure strengthening | 1 | none | 1 | none |
+| do-nothing | 1 | none | 1 | none |
+
+The own-space and rotation shares do not separate trained from random. The fine-tunes' own-space share is 0.80 to 0.86.
+The randoms' is 0.73 to 0.83, and their rotation share is 0.82 to 0.86, above every fine-tune. A random update
+spreads its change over the head's inputs and over the many directions M's needed heads write. That fills both spaces
+by chance, so a higher rotation share here does not mean trained updates rotate less.
+
+| arm, seed | own-space | its random | rotation share | its random |
+| --- | --- | --- | --- | --- |
+| copy, 0 | 0.803 | 0.793 | 0.424 | 0.837 |
+| copy, 1 | 0.800 | 0.827 | 0.798 | 0.847 |
+| copy, 2 | 0.807 | 0.763 | 0.674 | 0.839 |
+| lookup, 0 | 0.852 | 0.758 | 0.297 | 0.860 |
+| lookup, 1 | 0.835 | 0.797 | 0.141 | 0.844 |
+| lookup, 2 | 0.861 | 0.733 | 0.253 | 0.824 |
+
+The flips say the same about the head's role. M itself depends on head (2,4) on 49 of 256 pairs on the copy windows,
+and on 29 on all of D. The randoms read 48 to 54 on the copy windows, about where M does, so a random update of this
+size leaves the head's role alone. Lookup takes it away, at 0 to 1, and copy makes it near total, at 245 to 252.
 
 ## 4. The attention-head gauge, after Singh 2026
 
@@ -212,6 +264,11 @@ seed spread. This is a claim about trained updates, not that VPD is gauge invari
   derangements and three seeds, to fit the debug queue.
 - **The needed-space share replaced the own-space share** as the main reading, because of the input-side problem in section 1.
   whip-lead approved it as a measurement choice inside the approved diagnostic.
+- **The head (2,4) random null's reproduction bar was amended once, before its rerun.** Each fine-tune must repeat its
+  earlier saved values, filed at 1e-6 relative, a guess and not a floor measured at this site. The first job stopped
+  there: copy seed 0's kept on all of D came out 1.19e-6 relative off the value saved on another card. The bar was
+  raised to 1e-4 relative before any rerun, with whip-lead's yes on 2026-11-23. That is about 80 times the measured difference.
+  Under it all six fine-tunes repeated their saved values. No other rule or tolerance changed.
 - **The summary file mislabels the gauge items.** `results/summary.json` files the gauge and gauge follow-up records
   under keys starting `head24/`, because its writer gives a record with no basis that label. Every number here is read
   from the item files, which are correct.
@@ -241,6 +298,10 @@ network's function unchanged.
 | R3 | turned toward a needed neuron reads 1; toward a non-needed one at most 0.5 | as filed | 1.000 and 0.131 | held |
 | G0 | the gauge-turned M computes M's function | logits within ten times the round-trip floor | about 2 times | held |
 | rivals | rotation share 0.2 above the matched random on most trained items; copy's needed share 0.2 above lookup's | as filed | 0 of 20 toy pairs; gap −0.056 and 0.002 | rival B, rotation not seen |
+| H0 | the stage-0 controls: identity changes no argmax; do-nothing reads dd 0 and every share 1; pure strengthening reads kept and strict 1 | as filed | as filed on both pods | held |
+| H1 | each fine-tune repeats its saved kept, strict and own | within 1e-4 relative, amended from 1e-6 | all six within it; largest seen at the old bar 1.19e-6 | held under the amended bar |
+| H2 | own at most needed on every item | within 1e-09 of dd | no miss | held |
+| head null | a size-matched random's kept and strict shares on head (2,4) | descriptive, no bar | kept 0.0001 to 0.0047 against copy 0.095 to 0.141 and lookup 0.015 to 0.020; strict up to 0.0029 against copy 0.130 to 0.187 and lookup 0.005 to 0.013 | copy and lookup above chance; lookup seed 2 strict not clearly |
 | stop | trained items within 0.05 of the null at both featurizations drops the rotation guess | as filed | VPD: every trained item; neurons and heads: up to 0.13 above the dimension-count null, with the matched null undefined there | VPD met; neurons and heads no call |
 
 ## Not run
@@ -251,7 +312,9 @@ network's function unchanged.
   known by construction.
 - A head-level rotation control: the turned-column control ran at neurons only, and heads carry most of the change.
 - A matched null for heads that draws from other layers or from random subspaces of a head's width.
-- Size-matched randoms for the copy and lookup fine-tunes and for the built edits; only the toy fine-tunes have them.
+- Size-matched randoms for the copy and lookup fine-tunes beyond head (2,4), and for the built edits; only the toy
+  fine-tunes have them over all variables.
+- More than one random per fine-tune at head (2,4), and a random matched in its effect on the output rather than in size.
 - A per-head pool at VPD, not defined from VPD's pieces.
 - Head (2,4) at VPD, and on the lookup windows.
 
@@ -264,4 +327,7 @@ network's function unchanged.
   logs `results/run_gauge_*.log` and `results/pod_dl/logs/`.
 - Figure and page numbers: `experiments/rotation_kept/plot.py` writes `figures/rotation_vs_null.png` and
   `results/page.json`, CPU only, from the files above.
-- Cluster L40 and L40S cards; no pod spend recorded under this experiment.
+- Head (2,4) random null: `experiments/rotation_kept/run_headnull.py`, filed block `.headnull` of the predictions
+  file, results `experiments/rotation_kept/results/headnull/`, figure `figures/headnull_kept.png` from
+  `experiments/rotation_kept/plot_headnull.py`. Two L40S pods.
+- Run 1: cluster L40 and L40S cards; no pod spend recorded under it.
