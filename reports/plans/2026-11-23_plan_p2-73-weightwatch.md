@@ -1,7 +1,7 @@
-# P2.73: WeightWatch, the SVD of the weight difference, on our items (method spec, revision 1)
+# P2.73: WeightWatch, the SVD of the weight difference, on our items (method spec, revision 2)
 
 *definition-lead, 2026-11-23. Cell P2.73 (open, 0 of 2 runs used, due 2026-11-25). Step 1 of the cell: this spec.
-No code was written and nothing was run. Revision 1 answers redteam-lead's and the GPT plan-reviewer's reviews (section
+No code was written and nothing was run. Revisions 1 and 2 answer redteam-lead's review, the GPT plan-reviewer's review and its re-check, and the coordinator's ruling on the floor (section
 "Review record"). Every step is the published one, quoted with its location in the appendix
 (`2026-11-23_plan_p2-73-weightwatch_appendix.md`, section A), or a named departure below.*
 
@@ -36,13 +36,18 @@ panel, and beside it one score of our own: do the update's top directions lie wh
 **Detector, as published.** For each item, F = M + dW, calibrated on 50,000 Pile windows on F. The rates are the share
 of the item's own task windows flagged, read against the installed ranges, and the FPR from pass 1. The detector core is
 the code's `LatentStats.register` and `set_threshold` (`utils.py`), copied verbatim into our run with the source file's
-sha256 (`a7e2a3ee139f...`). Only the hidden-state capture is replaced: our batched hook stands in for
-`latent_extractor.extract_latent`. Stage 0 requires our vectorised path to agree exactly with the copied class on
-identical tensors. **Detector floors:**
+sha256 (`a7e2a3ee139f...`), with one storage-only patch. `register` stores each input as
+`np.array(current_datapoint)`. That list is ragged whenever layers keep different numbers of directions (x2 keeps 8 in one
+layer and none elsewhere), and NumPy 2.4.0, the version pinned in `pyproject.toml`, refuses it. The patch stores the list
+itself; `set_threshold` iterates it unchanged. Only the hidden-state capture is replaced: our batched hook stands in for
+`latent_extractor.extract_latent`. Our vectorised path must agree exactly with the patched class, both passes included,
+on ragged x2 and on the trigger (appendix C). The reference is run per item: one class holds at most 80 directions per
+layer, so the stacked directions of the M floor go through our path only. **Detector floors:**
 - **Primary: M monitored with F's own directions**, calibrated on M. This one isolates the update from how unusual the
-  windows are. A single M pass covers every item, with all items' directions stacked.
+  windows are. It is a separate M pass, run after every item's directions are built, with all of them stacked.
 - **Orientation sham:** F_s = M + Q_m dW_m, with Q_m a Haar rotation of the output space. It keeps every singular value
-  and right vector of dW and moves only the left directions.
+  and right vector of dW and moves only the left directions. The kept count and kept energy of the realised F_s − M,
+  after D2, are reported against the item's.
 
 Flag rates are compared only within a task set: an any-token flag has fewer chances on a 21-token window than on a
 128-token one.
@@ -52,12 +57,14 @@ E[(W_m x)(W_m x)ᵀ] be M's own output second moment at monitored matrix m, over
 
   a_{m,i} = d · u_{m,i}ᵀ C_m u_{m,i} / tr C_m,   S = Σ σ²_{m,i} a_{m,i} / Σ σ²_{m,i}.
 
-**Primary floor, matched to the update class:** a_G,m = d · tr(G_m C_m) / (tr G_m · tr C_m). Here G_m = E[g gᵀ] is the
-second moment of M's LM-loss gradient at matrix m's output, from one backward pass on the calibration Pile. A gradient
-update's left vectors lie in the span of such g, so a_G is what a generic gradient update reads. Its σ²-pooled S_G uses
-the item's own σ² per matrix. **Named checks:**
-- the orientation sham's S (same spectrum, random left directions; its spread suits the item's kept count);
-- the isotropic Gaussian `commute.finetune.random_direction`, which must read 1 in expectation (arithmetic only).
+**The comparison: the same-spectrum Haar null.** S of Q_m dW_m: the left vectors are rotated at random, and the
+singular values and right vectors are kept, 20 filed draws per state. Its spread matches the item's kept count and
+weights. S is reported against this null's draws, with no band.
+**Gradient-geometry diagnostic, beside it:** a_G,m = d · tr(G_m C_m) / (tr G_m · tr C_m), with G_m = E[g gᵀ] the second
+moment of M's LM-loss gradient at matrix m's output (one backward pass on the calibration Pile), and S_G its σ²-pooled
+form. It is not a floor for the update class. Spanning g does not make the top left vectors of Σ g xᵀ follow G's
+unweighted moment: input norms weight the sum, cross terms enter, Adam rescales, and x2 is a column rescale.
+**Check:** the isotropic Gaussian `commute.finetune.random_direction` must read 1 in expectation (arithmetic only).
 
 Reported beside S: per-matrix a, the share of ‖dW‖² held by the kept vectors, the range d·λ_min/tr C to d·λ_max/tr C,
 and S_cov, which uses the covariance with position 0 left out. The shares of tr C from position 0 and from μμᵀ are
@@ -113,13 +120,16 @@ through `convergence_panel/run.py` `load_dW` and `results/wide/selection.json`.
 
 ## Order and cost
 
-1. Stage 0 runs alone: the known-range test, the parity check, dW = 0, τ, the λ checks, x2's filed S, the trigger build,
-   and the shares of tr C. It times one full item and projects that time over the manifest.
-2. Then the M pass for the shared floor and G_m.
-3. Then the built items, E62 and the panel.
+1. **Base-moment pass**, first: M forward and backward on the calibration windows. It gives C_m, G_m, the shares of tr C
+   and the trigger's per-token scalars (appendix C).
+2. **Stage 0**, alone: the known-range test, then dW = 0, the λ constructions, x2's filed S, τ per build path, the
+   trigger build and its parity check. Then every item's directions (weights only).
+3. **The M detector-floor pass**, with all directions stacked.
+4. **Then the built items, E62 and the panel**, each F and its sham.
 
-The manifest has 99 forward items of 6.4M tokens each, about 630M tokens, with the LM head skipped (only G_m needs the
-loss). The SVDs are small: E141 measured about 5.5 s per state for 24 fp64 matrices on 2 CPUs, and ours are 8. The run
+Passes: 1 M forward-and-backward, 1 M forward, 50 F and 48 shams, each over 6.4M calibration tokens plus the task rows:
+about 640M tokens, with the LM head skipped except in the backward. Stage 0 times one F pass, and the backward pass
+separately. It projects the sum per pass type. The SVDs are small: E141 measured about 5.5 s per state for 24 fp64 matrices on 2 CPUs, and ours are 8. The run
 is cluster debug L40 jobs that resume by completed state; each exits for a resubmit past 25 min. Cost $0.
 
 ## Design check (`/design`)
@@ -129,7 +139,7 @@ is cluster debug L40 jobs that resume by completed state; each exits for a resub
 - **Nearest tried.** E141 and E162 (spectrum only).
 - **Patch or step.** A step: the cell's baseline.
 - **Decisions.** No band or label is added to the definition.
-- **What would change what we do.** S apart from S_G on x2, and the trigger flagged, earn it a column. Flat values make
+- **What would change what we do.** S outside its Haar null on x2, and the trigger flagged, earn it a column. Flat values make
   it a related-work negative.
 - **Control first.** The known-range test, then dW = 0 and the trigger.
 - **Saved.** Kept u and σ (float16), ranges, per-window flags, eigenvalues of C_m and G_m.
@@ -138,7 +148,7 @@ is cluster debug L40 jobs that resume by completed state; each exits for a resub
 
 | Point | Done |
 |---|---|
-| RT1 / GPT P1-2: class-matched floor | a_G primary; orientation sham and isotropic Gaussian as named checks; λ range beside. The realistic do-nothing fine-tunes were not used: none exist at E62's or the panel's sizes |
+| RT1 / GPT P1-2: the floor | Coordinator's ruling (2026-11-23), where the reviews disagreed: GPT's. The comparison is the same-spectrum Haar null. redteam asked for a_G as primary; it is kept beside as a "gradient-geometry diagnostic", not called an update-class floor. Reason: spanning g does not make the top left vectors of Σ g xᵀ follow G's unweighted moment (input-norm weights, cross terms, Adam; x2 is a column rescale), and a_G was not validated on real generic updates. The isotropic Gaussian stays as a check that reads 1. No band either way. Realistic do-nothing fine-tunes do not exist at E62's or the panel's sizes |
 | RT2: positive control undefined | A′ᵢ counted (96-187 windows each); new_few/new_thin demoted to behavioural; trigger edit at λ_min added, with expected values |
 | RT3: M with F's directions | Primary detector floor |
 | RT4: position 0 and mean | Shares reported; S_cov beside |
@@ -148,10 +158,13 @@ is cluster debug L40 jobs that resume by completed state; each exits for a resub
 | RT8: positions, padding | Each window read whole, BOS as in our rows, no padding (windows equal-length per set); FPR caveat stated |
 | RT9: k share, t after D2 | Stated |
 | RT10: cost | LM head skipped; stage 0 times one item |
-| GPT P1-1: pinned core | `LatentStats` copied verbatim with sha256; exact parity required, margins included |
-| GPT P1-3: stage 0 exercises detector | Known-range test; τ from known-rank builds; x2/x10 bar filed (appendix C) |
+| GPT P1-1: pinned core | `LatentStats` copied verbatim with sha256. Re-check: a storage-only NumPy patch (the list kept, not `np.array` of a ragged list); two-pass parity on ragged x2; reference per item, not the stacked M directions (80 slots per layer) |
+| GPT P1-3: stage 0 exercises detector | Known-range test; x2/x10 bar filed. Re-check: the base-moment pass comes first; the M floor is a separate, budgeted M pass after the directions; τ is measured on each build path; the trigger gain is fitted on 200 build windows against the installed ranges, and the 1,000 test windows are kept for the stop (appendix C) |
+| GPT re-check P1-2: sham ranks | The realised kept count and energy of F_s − M are reported |
+| GPT re-check P2: timing | Timed per pass type: F, sham, M forward, M backward |
+| GPT re-check minors | Qwen settings removed from the appendix; Remark 3.1's bound called a reference |
 | GPT P1-4: Qwen | Dropped: revision, tokenizer, generic rows, d per matrix and timing not pinned now (Not run) |
-| GPT P2-5: manifest | Appendix B, 99 forward items; within-set comparisons only |
+| GPT P2-5: manifest | Appendix B, 100 passes (50 F, 48 shams, 2 M); within-set comparisons only |
 | GPT P2-6: definition | Frozen 2026-11-22; S is a proxy reading |
 | GPT: final-layer hook | In D1 |
 | RT note: "no built edit at layer 0" | The handback was wrong: new_few/new_thin are at layer 0; D1 now names x2, x10, rebuilt |
