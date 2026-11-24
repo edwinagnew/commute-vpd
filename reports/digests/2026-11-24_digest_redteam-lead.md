@@ -32,3 +32,5 @@ P2.75 / E296 AuxK NaN on E212's plant (compare-lead, 2e449757): OK to keep the t
 P2.75 / E296: condition 1 settled. Validation tokens enter the dead counters through the pinned trainSAE (verified in .venv), so the AuxK onset is as published. All conditions met; rehearsal 2 is running.
 
 Re-check of blind-4 and blind-5 fixes (v2 62494d3), for writeup-lead: all items fixed except (9), which is partly fixed. The fix added a wrong clause at sec5:37 ("rules out a floor only for the no-remainder reading"; with remainders the control reads 0.24-0.81, against the fine-tunes' 0.012-0.028, so it rules out a floor either way): MUST. appE:138's "96-key cipher 0.42" needs a source and a task name; it clashes with "both cipher steps 0.72-0.91": SHOULD. The user's sec4:8, sec4:19, sec4:41 and main.tex:259-260 still carry the flagged claims. Note: writeup-lead/ and whip-lead/note-2026-11-24-redteam-blind45-recheck.md.
+
+Blind-4/5 re-check closed: writeup-lead b4d702b (local, behind 8791a68 which waits on the user for main.tex) fixes sec5:37 and names the appE 0.42 as the rank-one pair's 96-key cipher (gain_only score.json, 0.4233, verified). OK.
