@@ -1,0 +1,103 @@
+[03:41:29] E290 start, stage neurons, shard (7, 8), tag nB; settings {'tasks': ('copy', 'rank1', 'elicit', 'cipher', 'prior_cipher'), 'seeds': (0, 1, 2), 'arms': {'ffn': ('down_proj',), 'ia3': ('k_proj', 'v_proj', 'down_proj')}, 'control_arm': 'ffn', 'init': 1.0, 'lr': 0.003, 'optimizer': 'adam', 'batch': 32, 'grad_clip': 1.0, 'kl_lambda': 1.0, 'checkpoints': (10, 30, 100, 300), 'p_learn': 0.5, 'full_step': 30, 'band': 'p97', 'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'vpd_seeds': (0,), 'random_seed': 161000, 'built_gain_sd': 0.003, 'built_gain_seed': 161001, 'floor_factor': 10, 'floor_min': 1e-12, 'floor_stop': 1e-06, 'too_small': 100, 'rival_gap': 0.2, 'random_max': 0.05}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[03:41:54]     layer 0: 3079 variables x 64 pairs, 0 needed; 197056 cases in 7 s (28674/s)
+[03:42:00]     layer 1: 3079 variables x 64 pairs, 0 needed; 394112 cases in 12 s (32031/s)
+[03:42:04]     layer 2: 3079 variables x 64 pairs, 0 needed; 591168 cases in 16 s (36343/s)
+[03:42:06]     layer 3: 3079 variables x 64 pairs, 0 needed; 788224 cases in 19 s (41967/s)
+[03:42:06] stage 0 (neurons): {"experiment": "E290", "world": "neurons", "dn_n_changed": 0, "dn_dd_max": 0.0, "dn_E_b_K": 1.0, "n_vars": 12316, "identity": {"item": "built_gain", "flips": 0, "max_dev": 5.0067901611328125e-05, "min_margin": 0.0008230209350585938, "cases": 788224, "cases_per_s": 41966.48610350027, "n_read_positions": 1, "n_windows": 512, "window_len": 8}, "est_seconds_per_item": 75.12890148162842, "seconds": 19.693058013916016}; checks hold
+[03:42:06] STAGE 0 DONE (neurons): est. 75 s per item read like built_gain
+[03:42:07] built_gain: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12292 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[03:42:35]     layer 0: 3079 variables x 256 pairs, 2287 needed; 788224 cases in 28 s (28434/s)
+[03:42:57]     layer 1: 3079 variables x 256 pairs, 1482 needed; 1576448 cases in 50 s (31791/s)
+[03:43:13]     layer 2: 3079 variables x 256 pairs, 1115 needed; 2364672 cases in 66 s (36050/s)
+[03:43:23]     layer 3: 3079 variables x 256 pairs, 740 needed; 3152896 cases in 76 s (41565/s)
+[03:43:23] built_gain: E_b over K 0.855083, over all changed 0.865977; |K| 5624 (5600 changed) of 12316; margin median 0.599, min 0.000823; 77 s
+[03:43:23] R0d: {"rem_dd_share_K_changed": 0.14572707068240665, "E_b_K_no_rem": 0.9999999999419119, "E_b_K_neurons": 0.9999999999419119, "n_changed_K_no_rem": 5596, "n_changed_heads": 0, "n_K_changed_neurons": 5596, "experiment": "E290", "f0": 5.808808989371528e-11}; checks hold
+[03:43:23] neurons: f0 5.809e-11; 11 of 90 items ['ffn/rank1_s0_rand', 'ffn/elicit_s1_rand', 'ffn/cipher_s2_rand', 'ia3/copy_s0_rand', 'ia3/rank1_s1_rand', 'ia3/elicit_s2_rand', 'ia3/prior_cipher_s0_rand', 'full/copy_s1_rand', 'full/rank1_s2_rand', 'full/cipher_s0_rand', 'full/prior_cipher_s1_rand']
+[03:43:24] ffn/rank1_s0_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12292 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[03:43:52]     layer 0: 3079 variables x 256 pairs, 2361 needed; 788224 cases in 28 s (28355/s)
+[03:44:14]     layer 1: 3079 variables x 256 pairs, 1474 needed; 1576448 cases in 50 s (31687/s)
+[03:44:30]     layer 2: 3079 variables x 256 pairs, 1187 needed; 2364672 cases in 66 s (35927/s)
+[03:44:40]     layer 3: 3079 variables x 256 pairs, 791 needed; 3152896 cases in 76 s (41442/s)
+[03:44:40] ffn/rank1_s0_rand: E_b over K 0.000553, over all changed 0.000670; |K| 5813 (5789 changed) of 12316; margin median 0.612, min 0.00106; 77 s
+[03:44:40] ITEM 1 of 11 DONE (ffn/rank1_s0_rand)
+[03:44:41] ffn/elicit_s1_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12292 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[03:45:09]     layer 0: 3079 variables x 256 pairs, 2355 needed; 788224 cases in 28 s (28400/s)
+[03:45:31]     layer 1: 3079 variables x 256 pairs, 1558 needed; 1576448 cases in 50 s (31752/s)
+[03:45:47]     layer 2: 3079 variables x 256 pairs, 1231 needed; 2364672 cases in 66 s (36006/s)
+[03:45:57]     layer 3: 3079 variables x 256 pairs, 933 needed; 3152896 cases in 76 s (41522/s)
+[03:45:57] ffn/elicit_s1_rand: E_b over K 0.000497, over all changed 0.000717; |K| 6077 (6053 changed) of 12316; margin median 0.601, min 0.00834; 77 s
+[03:45:57] ITEM 2 of 11 DONE (ffn/elicit_s1_rand)
+[03:45:58] ffn/cipher_s2_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12292 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[03:46:26]     layer 0: 3079 variables x 256 pairs, 2438 needed; 788224 cases in 28 s (28393/s)
+[03:46:48]     layer 1: 3079 variables x 256 pairs, 1569 needed; 1576448 cases in 50 s (31735/s)
+[03:47:04]     layer 2: 3079 variables x 256 pairs, 1261 needed; 2364672 cases in 66 s (35976/s)
+[03:47:14]     layer 3: 3079 variables x 256 pairs, 815 needed; 3152896 cases in 76 s (41490/s)
+[03:47:14] ffn/cipher_s2_rand: E_b over K 0.000441, over all changed 0.000551; |K| 6083 (6059 changed) of 12316; margin median 0.611, min 0.00118; 77 s
+[03:47:14] ITEM 3 of 11 DONE (ffn/cipher_s2_rand)
+[03:47:15] ia3/copy_s0_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[03:47:43]     layer 0: 3079 variables x 256 pairs, 1965 needed; 788224 cases in 28 s (28412/s)
+[03:48:05]     layer 1: 3079 variables x 256 pairs, 1226 needed; 1576448 cases in 50 s (31743/s)
+[03:48:21]     layer 2: 3079 variables x 256 pairs, 1027 needed; 2364672 cases in 66 s (35972/s)
+[03:48:31]     layer 3: 3079 variables x 256 pairs, 649 needed; 3152896 cases in 76 s (41485/s)
+[03:48:31] ia3/copy_s0_rand: E_b over K 0.004934, over all changed 0.004468; |K| 4867 (4867 changed) of 12316; margin median 0.646, min 0.0073; 77 s
+[03:48:31] ITEM 4 of 11 DONE (ia3/copy_s0_rand)
+[03:48:32] ia3/rank1_s1_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[03:49:00]     layer 0: 3079 variables x 256 pairs, 2168 needed; 788224 cases in 28 s (28391/s)
+[03:49:22]     layer 1: 3079 variables x 256 pairs, 1394 needed; 1576448 cases in 50 s (31719/s)
+[03:49:38]     layer 2: 3079 variables x 256 pairs, 1087 needed; 2364672 cases in 66 s (35959/s)
+[03:49:48]     layer 3: 3079 variables x 256 pairs, 839 needed; 3152896 cases in 76 s (41473/s)
+[03:49:48] ia3/rank1_s1_rand: E_b over K 0.002936, over all changed 0.002799; |K| 5488 (5488 changed) of 12316; margin median 0.567, min 0.00243; 77 s
+[03:49:48] ITEM 5 of 11 DONE (ia3/rank1_s1_rand)
+[03:49:49] ia3/elicit_s2_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[03:50:17]     layer 0: 3079 variables x 256 pairs, 2692 needed; 788224 cases in 28 s (28382/s)
+[03:50:39]     layer 1: 3079 variables x 256 pairs, 1861 needed; 1576448 cases in 50 s (31718/s)
+[03:50:55]     layer 2: 3079 variables x 256 pairs, 1555 needed; 2364672 cases in 66 s (35961/s)
+[03:51:05]     layer 3: 3079 variables x 256 pairs, 855 needed; 3152896 cases in 76 s (41476/s)
+[03:51:05] ia3/elicit_s2_rand: E_b over K 0.005341, over all changed 0.005008; |K| 6963 (6963 changed) of 12316; margin median 0.612, min 8.3e-05; 77 s
+[03:51:05] ITEM 6 of 11 DONE (ia3/elicit_s2_rand)
+[03:51:06] ia3/prior_cipher_s0_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[03:51:34]     layer 0: 3079 variables x 256 pairs, 2507 needed; 788224 cases in 28 s (28415/s)
+[03:51:56]     layer 1: 3079 variables x 256 pairs, 1863 needed; 1576448 cases in 50 s (31759/s)
+[03:52:12]     layer 2: 3079 variables x 256 pairs, 1484 needed; 2364672 cases in 66 s (36000/s)
+[03:52:22]     layer 3: 3079 variables x 256 pairs, 965 needed; 3152896 cases in 76 s (41516/s)
+[03:52:22] ia3/prior_cipher_s0_rand: E_b over K 0.006356, over all changed 0.005952; |K| 6819 (6819 changed) of 12316; margin median 0.529, min 0.00139; 77 s
+[03:52:22] ITEM 7 of 11 DONE (ia3/prior_cipher_s0_rand)
+[03:52:23] full/copy_s1_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[03:52:51]     layer 0: 3079 variables x 256 pairs, 2471 needed; 788224 cases in 28 s (28367/s)
+[03:53:13]     layer 1: 3079 variables x 256 pairs, 1698 needed; 1576448 cases in 50 s (31720/s)
+[03:53:29]     layer 2: 3079 variables x 256 pairs, 1400 needed; 2364672 cases in 66 s (35975/s)
+[03:53:39]     layer 3: 3079 variables x 256 pairs, 772 needed; 3152896 cases in 76 s (41489/s)
+[03:53:39] full/copy_s1_rand: E_b over K 0.006494, over all changed 0.009191; |K| 6341 (6341 changed) of 12316; margin median 0.606, min 0.000238; 77 s
+[03:53:39] ITEM 8 of 11 DONE (full/copy_s1_rand)
+[03:53:40] full/rank1_s2_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[03:54:08]     layer 0: 3079 variables x 256 pairs, 2444 needed; 788224 cases in 28 s (28406/s)
+[03:54:30]     layer 1: 3079 variables x 256 pairs, 1662 needed; 1576448 cases in 50 s (31730/s)
+[03:54:46]     layer 2: 3079 variables x 256 pairs, 1314 needed; 2364672 cases in 66 s (35973/s)
+[03:54:56]     layer 3: 3079 variables x 256 pairs, 874 needed; 3152896 cases in 76 s (41487/s)
+[03:54:56] full/rank1_s2_rand: E_b over K 0.005424, over all changed 0.009508; |K| 6294 (6294 changed) of 12316; margin median 0.597, min 0.00245; 77 s
+[03:54:56] ITEM 9 of 11 DONE (full/rank1_s2_rand)
+[03:54:57] full/cipher_s0_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[03:55:25]     layer 0: 3079 variables x 256 pairs, 2666 needed; 788224 cases in 28 s (28424/s)
+[03:55:47]     layer 1: 3079 variables x 256 pairs, 1977 needed; 1576448 cases in 50 s (31750/s)
+[03:56:03]     layer 2: 3079 variables x 256 pairs, 1602 needed; 2364672 cases in 66 s (36000/s)
+[03:56:13]     layer 3: 3079 variables x 256 pairs, 964 needed; 3152896 cases in 76 s (41515/s)
+[03:56:13] full/cipher_s0_rand: E_b over K 0.007557, over all changed 0.009959; |K| 7209 (7209 changed) of 12316; margin median 0.616, min 0.00153; 77 s
+[03:56:13] ITEM 10 of 11 DONE (full/cipher_s0_rand)
+[03:56:14] full/prior_cipher_s1_rand: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[03:56:42]     layer 0: 3079 variables x 256 pairs, 2803 needed; 788224 cases in 28 s (28388/s)
+[03:57:04]     layer 1: 3079 variables x 256 pairs, 2179 needed; 1576448 cases in 50 s (31744/s)
+[03:57:20]     layer 2: 3079 variables x 256 pairs, 1867 needed; 2364672 cases in 66 s (35997/s)
+[03:57:30]     layer 3: 3079 variables x 256 pairs, 1128 needed; 3152896 cases in 76 s (41512/s)
+[03:57:30] full/prior_cipher_s1_rand: E_b over K 0.007739, over all changed 0.012193; |K| 7977 (7977 changed) of 12316; margin median 0.556, min 0.000884; 77 s
+[03:57:30] ITEM 11 of 11 DONE (full/prior_cipher_s1_rand)
+[03:57:30] E290 DONE
+peak host RSS 6.6 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/ia3_control/results ===
