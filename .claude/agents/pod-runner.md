@@ -39,7 +39,10 @@ closely, and on a code error stop and report the traceback rather than resubmit.
 
 Every `sbatch`, GPU `srun` and `start()` must name the experiment number from your brief (`sbatch --comment=E###`, the pod's `label`): the harness (`fleet/job-gate`) refuses a submission or pod start without one claimed against an open cell. If the brief has no number, stop and ask the lead.
 A pod label is `[A-Za-z0-9_-]` only, at most 64 characters: `commute-E186-b`, `commute-E178-stage-N_s0`,
-`commute-E160-rerun-why`. The canonical pod lines (label, set-up, disk, downloads, waits, placement) are in
+`commute-E160-rerun-why`. Only the first pod of a plain run takes the plain form `commute-E###-<suffix>`; every other
+pod of the run, a parallel one included, takes the stage form `commute-E###-stage-<name>` (`commute-E272-stage-eb-a`):
+job-gate refused a parallel pod labelled `commute-E272-eb-a` in both E272 and E284 (friction 1025, 1057). Use the label
+the brief gives; if it gives a plain label for a second pod, use the stage form with the same name. The canonical pod lines (label, set-up, disk, downloads, waits, placement) are in
 `~/commute-agents/fleet/roles/shell-notes.md` → Pods; read them before `start()`.
 A pod for a plain, `stage` or `rerun` run is refused until its number has a $0 rehearsal on record
 (`shell-notes-reference.md` → Pods → Rehearsal first). On that refusal, stop and report it to the lead: never relabel
