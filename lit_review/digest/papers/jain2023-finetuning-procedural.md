@@ -1,0 +1,51 @@
+---
+slug: jain2023-finetuning-procedural
+title: Mechanistically Analyzing the Effects of Finetuning on Procedurally Defined Tasks
+authors: Jain et al. (Kirk, Lubana, Dick, Tanaka, Grefenstette, Rocktäschel, Krueger)
+year: 2023
+id: 2311.12786
+tags: [EH, DEFINITION, FT-INTERP, BASELINE, KNOWN-ANSWER, SUPPORTS]
+primary_tag: DEFINITION
+in_our_bib: jain2023
+cited_in_draft: yes
+themes: [elicitation, interpreting-finetunes, reuse-definitions, baselines]
+read_from: "local text of the ICLR 2024 version (arXiv v2): abstract, Sec. 1-3 (definition of capability), Sec. 4-5 (Tracr, PCFG pruning/probing/reFT, TinyStories), Table 1, Fig. 7-11 captions"
+digest_buckets: [1-missing-method, 2-known-answer-case, 3-definition, 4-supports]
+importance: 8
+---
+
+# Mechanistically Analyzing the Effects of Finetuning on Procedurally Defined Tasks (Jain 2023)
+
+**What it does.** Asks whether fine-tuning creates new capabilities or modulates existing ones, in controlled settings:
+Tracr-compiled transformers (counting, max-identifier) and small transformers pretrained on PCFG data (count or index a
+token), with a TinyStories-Instruct check. The model is fine-tuned at a medium or small learning rate (pretraining LR
+over 10 or over 100) to count a different token, sometimes with a spurious correlation that makes the pretraining
+capability "weakly relevant". What changed is read with pruning, linear probes, attention maps and reverse fine-tuning
+(reFT).
+
+**Key result.** Fine-tuning "rarely alters the underlying model capabilities". A localized "wrapper" is learned on top.
+Pruning only 5 to 15 neurons restores the pretraining task and removes the fine-tuned one (Fig. 7). Probes still read
+the pretraining count after fine-tuning. reFT revives the capability in a few steps. With a larger LR and no spurious
+correlation (C_Tr = 0), Tracr attention does change, so real alteration does happen. On TinyStories, a model fine-tuned
+not to write twists relearns them faster than a model never pretrained on twists (e.g. 81% against 31% at 30 iterations,
+Table 1).
+
+**Quote.** "a minimal transformation, which we call a 'wrapper', is typically learned on top of the underlying model
+capabilities, creating the illusion that they have been modified" (abstract)
+
+**Relevance to our paper.** This is the closest prior definition. Its Definition 1 says a model "possesses a capability
+C" if a linear readout at some layer computes f_C on the sub-domain. That is a readout definition, not a mechanism
+definition: our claim that two fine-tunes with one input-output behaviour can differ under our definition holds against
+it only partly, since the probe looks inside too, but it reads values, not mechanisms. The draft already contrasts the
+two and adapts Jain's pruning, reFT and readout tests as baselines (they fail their controls on our setting). Its Tracr
+and PCFG settings are known-answer cases by construction: a compiled capability, a weakly vs strongly relevant regime,
+and an LR switch under which the computation does change (larger LR, C_Tr = 0). They are close in spirit to our built
+edits and key tasks, and the draft should say how ours differ (realistic 67M LM, weight-level mechanism). It supports
+EH in toy settings, and it gives a concrete case where fine-tuning does build something new: a known "new" arm we could
+cite.
+
+**For the digest.**
+- 1-missing-method: pruning-to-revive, probing and reFT are already our adapted baselines; nothing new to add, but the large-LR/C_Tr=0 regime is a "new" control we could mirror.
+- 2-known-answer-case: Tracr/PCFG counting fine-tunes with compiled ground truth (wrapper at small LR; altered attention at large LR, no spurious cue); TinyStories twist deletion shown persistent by probe + reFT. Toy or tiny, not realistic.
+- 3-definition: capability = a linear readout of f_C at some layer on a sub-domain; contrast with our mechanism-level "kept up to a gain".
+- 4-supports: fine-tuning mostly wraps existing capabilities (EH), with an explicit exception at larger LR.
