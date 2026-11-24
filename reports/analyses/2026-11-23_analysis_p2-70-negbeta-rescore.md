@@ -6,16 +6,18 @@ figure `experiments/crosscoder/figures/negbeta_ladder.png`. The classifier fix i
 function `specific`.*
 
 We rescored every saved crosscoder reading with the authors' exclusion of latents whose base-model coefficient is
-negative, a step our latent test lacked. Every planted control now misses its bar, while readings of trained fine-tunes
-and random updates barely move. For `GOALS.md` the crosscoder stays unusable at fine-tune size, but the exclusion mostly
-removes the planted change's own latents, so the rule needs a decision before the paper adopts these numbers.
+negative, a step our latent test lacked. Under every form of the rule, the block-3 head fails its control and no ladder
+size reaches the bar, while readings of trained fine-tunes and random updates barely move. For `GOALS.md` the
+crosscoder stays unusable at fine-tune size; only the real-text plant's outcome depends on noise in our small coefficient
+fit, and it is not called until the refit planned in `reports/plans/2026-11-23_plan_p2-70-betas-refit.md`.
 
 ## The answer
 
-With the exclusion, no planted change passes the crosscoder's control anywhere. The block-3 head that passed now reads
-0.42 to 0.44, and the real-text plant that passed reads 0. The ladder's top two sizes fall to at most 0.010. Readings of
-fine-tunes and random updates move by at most 0.022. The surprise is which latents go: mostly ones whose base coefficient
-is a hair below zero, the mark of a truly fine-tune-only latent.
+Minder et al.'s own reading is not in question: the exclusion is theirs, and we keep it as published. Under every rule
+we tried, our crosscoder never passes at block 3 or on the size ladder. The block-3 head that passed now reads 0.42 to
+0.44, and at most 0.48 even if every dropped latent near zero is restored. One control, the real-text plant, reads 0.77
+or 0 depending on the sign of a coefficient that our 100,000-token fit cannot resolve. Readings of fine-tunes and random
+updates move by at most 0.022.
 
 ## What we were trying to test
 
@@ -58,11 +60,17 @@ The filter can only shrink the specific set, so every specific part can only fal
 
 **Reading it.** No. Open marks are the readings as run, filled marks the same crosscoders with the exclusion. At block 3
 all three seeds fall under the bar, to 0.42 to 0.44. At block 2 the ladder's top two sizes fall
-to near zero, and the middle size's third seed falls from 0.37 to 0.004. The ladder no longer flattens just under the
-bar; it rises to about 0.30 at the middle size, then collapses.
+to near zero, and the middle size's third seed falls from 0.37 to 0.004. No ladder size reaches the bar under either
+rule. Where the ladder levels off does depend on the rule: at most 0.010 under the literal one, about 0.44 to 0.46 if
+the dropped latents whose base coefficient is near zero are restored.
+
+Block 3 fails under every rule. Restoring all of its near-zero dropped latents gives 0.48, 0.48 and 0.43, still
+under 0.5. Redteam-lead's restoration, with its own cut for near zero, gives 0.46 to 0.49; the verdict is the same.
 
 On real text the planted direction passed with one latent carrying 0.77 of the change. That latent's base
-reconstruction coefficient is minus 0.0035 of its fine-tune coefficient, so the exclusion drops it and the plant reads 0.
+reconstruction coefficient is minus 0.0035 of its fine-tune coefficient. The literal exclusion drops it and the plant
+reads 0, but a coefficient that small has a sign our 100,000-token fit cannot resolve. This control is not called until
+the refit.
 
 ### Do the readings of fine-tunes and random updates move?
 
@@ -94,10 +102,10 @@ Paper lines are in writeup-lead's clone, `paper/paper/`, at commit c347a94. Not 
 |---|---|---|---|---|
 | main.tex 963; appD 88 | block-2 head, specific part, three seeds | 0.21 to 0.37; at most 0.37 | 0.004 to 0.30; at most 0.30 | under the bar either way |
 | main.tex 966; appD 89 | ladder near fine-tune size | 0.0030 | 0.0030 | yes |
-| main.tex 966-967; appD 89-90 | ladder's top two sizes "levelled off" | 0.45 and 0.46 | 0.010 and 5e-7; 3e-5 | no: they fall to near zero |
-| main.tex 968; appD 91 | block-3 control "passed", head at 11.30 nats | 0.56, 0.63, 0.52 | 0.44, 0.43, 0.42 | no: it fails |
+| main.tex 966-967; appD 89-90 | ladder's top two sizes "levelled off" | 0.45 and 0.46 | 0.010 and 5e-7; 3e-5 | "no size reached the bar" holds; the level depends on the rule |
+| main.tex 968; appD 91 | block-3 control "passed", head at 11.30 nats | 0.56, 0.63, 0.52 | 0.44, 0.43, 0.42 | no: it fails under every rule |
 | appD 92-93 | block 3: random change reads like both sides, all under one hundredth | random 0.0035 to 0.0070 | random 7e-6 to 0.0008 | under one hundredth yes; no passing control |
-| sec5_results 163 | real text: "where its planted control passed" | 0.77 | 0 | no: it fails |
+| sec5_results 163 | real text: "where its planted control passed" | 0.77 | 0 | depends on the exclusion rule at our fit size; not called until the refit |
 | sec5_results 163-165 | real-text Gaussian, stop bar, trained built-pair sides | 0.73; 0.45; 0.39 to 0.46 | unchanged | yes |
 | sec5_results 162; sec5_3 85; appF 130 | key tasks below random | 13 of 15 | 13 of 15 | yes |
 | appF 128-129 | key-task seed spread; copy seed 0 | 0.43; 0.06 | 0.41; 0.08 | number changes |
@@ -118,10 +126,9 @@ latent, and on the other built-pair sides no dropped latent carries over a ten-t
 
 ## What we learned
 
-The crosscoder's row in the paper does not change in kind: at fine-tune size it reads nothing, under either rule. What
-changes is the one place it looked alive. The block-3 pass and the real-text pass both disappear, so there is no site and
-no text where this crosscoder has passed a planted control. Whether that is the authors' method or an artefact of
-applying their filter to latents with a coefficient of zero up to noise is a reading choice, set out below.
+The crosscoder's row in the paper does not change in kind: at fine-tune size it reads nothing, under either rule. The
+block-3 pass is gone under every rule, and no ladder size reaches the bar. The one open control is the real-text plant.
+For now the label is: the literal exclusion is not separable from latent-scaling noise at our 100,000-token fit.
 
 ## How compelling is the evidence
 
@@ -133,21 +140,20 @@ the built pairs and key tasks, one to three per planted size.
 
 ## Surprises
 
-The exclusion is not removing artefacts here; it removes the planted change. Redteam-lead read the collapse of the
-ladder's top as "an artefact of the missing filter". The latents behind that collapse have base coefficients within
-2% of zero, below it, and fine-tune coefficients near 1. Under the literal rule they are excluded; under the rule's
-stated purpose, dropping latents with low activations that are interaction artefacts, they would be kept. The paper
-saw no such latents in BatchTopK crosscoders, so it never had to choose.
+On the ladder and the real-text plant, the exclusion mostly removes the planted change, not artefacts. The latents behind
+the ladder's collapse have base coefficients within 2% of zero, below it, and fine-tune coefficients near 1. The paper
+saw no such latents in BatchTopK crosscoders. Its fit used 50M tokens, where such a coefficient's sign is far less noisy.
+Redteam-lead's verdict: keep the literal rule as the as-published reading, with no floor, and remove our token departure.
 
 ## What next
 
-- A decision for the lead, then the user if it touches how the paper names the method: keep the literal rule, now in
-  the code, or exclude only base coefficients clearly below zero, with a floor measured from the coefficient's spread
-  across crosscoder seeds. The first makes every planted control fail; the second would likely restore the ladder's
-  top and the real-text pass but not the block-3 pass, where most dropped latents are clearly negative.
-- Either way, redraw `crosscoder_size_ladder` and correct the block-3 and real-text sentences listed above.
-- A $0 check that would settle it: the spread of the base coefficient for the plant's own latent across the existing
-  crosscoder seeds at block 2.
+- Refit latent scaling on up to 50M tokens with the literal rule on top: `reports/plans/2026-11-23_plan_p2-70-betas-refit.md`.
+  It is $0 on cluster debug, with a pod fallback of about $7 for the planted controls.
+  - Its first stage rebuilds each control's 100,000 tokens and bootstraps the base coefficients over token windows.
+  - A plant latent whose sign flips across resamples is noise; one that stays negative is real.
+- Redraw `crosscoder_size_ladder` and correct the block-3 sentence now. Hold the real-text sentence until the refit.
+- Comparing the coefficient across crosscoder seeds was dropped: different seeds learn different latents, so there is no
+  counterpart to compare.
 
 ## Departures from the literature
 
@@ -160,6 +166,7 @@ saw no such latents in BatchTopK crosscoders, so it never had to choose.
 
 - No crosscoder was retrained and no coefficient refitted; everything reads saved records.
 - The wide candidate count's groups are rebuilt from float16 norms, up to 0.008 off the reported parts; nothing quotes it.
-- No noise floor for the base coefficient's sign.
+- No noise floor for the base coefficient's sign: the latent-scaling activations were not saved, so even the bootstrap
+  needs the stream rebuilt, which is the refit plan's first stage.
 - The paper, its figure and the research log are not edited; the log line is the lead's.
 - E203's rehearsal and the E212 rehearsal crosscoders were not rescored.
