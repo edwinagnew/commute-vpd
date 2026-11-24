@@ -116,3 +116,4 @@
 - [Per-task values, not pair gaps](feedback-per-task-values-not-pair-gaps.md) — figures show each reading per task (reuse vs new), no tallies or cell text, little text (user, repeated, 2026-11-23)
 - [Blind reader per section](feedback-blind-reader-per-section.md) — each updated paper section goes to a blind subagent; appendix cut to what the body needs (user, 2026-11-23 night)
 - [Same runs behind compared panels](feedback-same-runs-behind-compared-panels.md) — equal states/seeds/randoms/conventions per panel; unequal point counts = non-standardised tests (user, 2026-11-24)
+- [writeup-lead owns writing](feedback-writeup-lead-owns-writing.md) — all writing decisions + when to push are mine; whip-lead only decides which results go in; never push on a relayed OK (user 2026-11-24)
