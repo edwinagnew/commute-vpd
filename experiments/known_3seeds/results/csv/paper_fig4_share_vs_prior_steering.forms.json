@@ -2,6 +2,7 @@
  "y_share_gap": "E136 re-gating share, trained update, log-odds; reuse-side mean minus new-side mean (twins: real minus twin)",
  "y_lo/y_hi": "lowest reuse seed minus highest new seed / highest reuse seed minus lowest new seed",
  "x_gap (panel prior)": "log10 prior, one value per task, gap in decades",
- "x_gap (panel steering)": "E143 pooled steering share, filed selection rule (e62: E135 pooled share_lo, no E143 reading; E199 star: strength-1 pooled, E151 reader)",
- "states": "built pairs: known3.json seeds 0-2 a side (nulls dropped); twins: final.json cell; matched: E187's seeds"
+ "x_gap (panel steering)": "steering_pooled form, filed selection rule (largest mean log-odds rise on the selection rows). Eight built pairs: known3.json 'steer', E143 holes_fill pooled share (holes_fill / refit_96key stage1.json and known_3seeds stage2.json .steering.pooled.share; seeds 0-1 equal compare-lead's re-emitted method_table final.json steering_pooled, 67d73363). e62: a different reader, E135 steering_copy_lookup pooled share_lo on its fp32 copies (no E143 reading on E62's rows). Twins: final.json steering_pooled (67d73363). E199 star: strength-1 pooled, E151 reader",
+ "states": "built pairs: known3.json seeds 0-2 a side, one variant a side (nulls dropped), matched series too; twins: final.json cell (no matched series)",
+ "series matched": "E187 size-matched: the larger side times the pair's c (m67.json, seed 2 from E303 stage3.json), the smaller side unscaled (known3.json); same readers and states as the unscaled series"
 }

@@ -1,0 +1,118 @@
+{
+ "card": "NVIDIA L40",
+ "control": {
+  "e46/rand32_s0": {
+   "diff": {
+    "share r": -0.00010359175895008343,
+    "steering pooled": -9.360128711000115e-08
+   },
+   "got": {
+    "c": 0.6590360262136318,
+    "gain": 10.34077892106833,
+    "neuron_top": {},
+    "share": {
+     "gain": 10.348919534191642,
+     "r": 0.2684208324816433
+    },
+    "steering": {
+     "perkey": 1.2724994860189305,
+     "pooled": 0.44208150464685303
+    }
+   },
+   "pair": "e46_copy_random",
+   "pass": true,
+   "saved_share_r": 0.26852442424059336,
+   "saved_steering_pooled": 0.44208159824814014,
+   "tol": 0.01
+  },
+  "e53/cipher_s0": {
+   "diff": {
+    "share r": -0.0003425668620292144,
+    "steering pooled": -2.1596570753956712e-08
+   },
+   "got": {
+    "c": 0.8962179389968077,
+    "gain": 3.5204931297302244,
+    "neuron_top": {},
+    "share": {
+     "gain": 3.521617240905762,
+     "r": 0.12101416863442281
+    },
+    "steering": {
+     "pooled": 0.7126932631071967
+    }
+   },
+   "pair": "e53_lowercase_cipher",
+   "pass": true,
+   "saved_share_r": 0.12135673549645203,
+   "saved_steering_pooled": 0.7126932847037675,
+   "tol": 0.01
+  }
+ },
+ "experiment": "E303",
+ "host": "vm9377243875336",
+ "m67": "experiments/size_matched/results/m67.json",
+ "pairs": {
+  "e46_copy_random": {
+   "c": 0.6590360262136318,
+   "larger": "new",
+   "states": {
+    "e46/rand32_s2": {
+     "c": 0.6590360262136318,
+     "gain": 10.32031960831475,
+     "neuron_top": {},
+     "share": {
+      "gain": 10.329949300313732,
+      "r": 0.23983529077341023
+     },
+     "steering": {
+      "perkey": 1.2692505134617031,
+      "pooled": 0.49073549917656545
+     }
+    }
+   }
+  },
+  "e53_lowercase_cipher": {
+   "c": 0.8962179389968077,
+   "larger": "new",
+   "states": {
+    "e53/cipher_s2": {
+     "c": 0.8962179389968077,
+     "gain": 3.5119594268798826,
+     "neuron_top": {},
+     "share": {
+      "gain": 3.5126221504211426,
+      "r": 0.11451281095922115
+     },
+     "steering": {
+      "pooled": 0.7306219873183486
+     }
+    }
+   }
+  },
+  "e54_own": {
+   "c": 0.5216699869690039,
+   "larger": "new",
+   "states": {
+    "e54/cipher_own_s2": {
+     "c": 0.5216699869690039,
+     "gain": 11.375413024548402,
+     "neuron_top": {},
+     "share": {
+      "gain": 11.373140865994483,
+      "r": 0.15499947056642197
+     },
+     "steering": {
+      "perkey": 1.8560251446309919,
+      "pooled": 0.510781419051528
+     }
+    }
+   }
+  }
+ },
+ "pass": true,
+ "smaller": [
+  "e46_copy_random e46/ident32_s2",
+  "e53_lowercase_cipher e53/lowercase_s2"
+ ]
+}
