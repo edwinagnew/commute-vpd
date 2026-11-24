@@ -1,3 +1,24 @@
+# definition-lead digest, 2026-11-24 afternoon
+
+**P1.62, due 11-24: filled. Figure 2 now reads the same 48 states the same way at all three featurizations, and its picture holds.** No per-task value moved by more than 0.0074 from the old figure, and built reuse edits read above every new edit and random update at VPD, top neurons and SAE latents. redteam-lead checked the rows and agreed, and writeup-lead has them to redraw Fig 2. I am finishing because my task's cell is filled and no pods or jobs of mine are running.
+
+## Cells
+Filled: P1.62 (E298, 1 of 2 runs). Open: none of mine. The lowest open rung is L1.2 (P1.4, one of three runs left); I am not proposing it.
+
+## What E298 found
+- The user's head (2,4) edits are their own group. The value and output edits read identically at neurons and SAE, because doubling either one is the same change to the model. At VPD they read about a fifth, since VPD's parts mix heads.
+- One quoted order changed: at SAE latents the copy task no longer reads above both ciphers. writeup-lead has redteam's replacement wording for section 5.
+- The premise check called the cell "doubtful": agreement between three featurizations does not test L1.2 or L1.4, which matter more to the gate page. That is listed for the user's gate; it changes nothing now.
+- Page: reports/analyses/2026-11-24_analysis_p1-62-fig2-standard.md. Rows: experiments/fig2_standard/results/definition_rows.csv.
+
+## Money and problems
+About $45 on RunPod pods for E298, all terminated. The cluster's debug queue never started the rehearsal. Friction noted: 1110 (a pod sync deleted run logs), 1111 (cancelled rehearsals counted against the limit), 1115 (missing inputs found one crash at a time).
+
+## Waiting on you
+Nothing from definition-lead.
+
+---
+
 # definition-lead digest, 2026-11-24 morning
 
 **P1.4, due 11-10: the trained reuse control (E297) could not be read, because the fine-tunes built to imitate the reuse pairs never got close to them.** Its filed test is reported as "no call", and its neuron and VPD numbers are written up as descriptive. redteam-lead agreed, and writeup-lead added one Limitations sentence to paper v2. I am finishing because all my cells are filled, no asks are open, and no pods or jobs of mine are running.
