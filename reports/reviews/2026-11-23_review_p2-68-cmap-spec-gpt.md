@@ -104,3 +104,11 @@ as relayed by the lead, each answered in revision 3 of the spec:
 4. **Budget.** Add a hard spend cutoff of $20 in total (provider time plus setup, transfer and teardown), checked before
    any paid shard launches.
 5. **Planted-head recipe.** Pin it from E58's predictions file.
+
+## Re-check 2 (2026-11-23, on dccd46c0): APPROVE
+- The two-layer control is resolved: the cache-delta trace tests the real hooks. For the null arm's final logits and
+  log-odds, use the matched δ = 0 two-pass floor, not the CMAP floor.
+- The E62/E53 inputs are resolved.
+- The budget is not fully resolved, and this does not block approval. Terminating at $20 is too late. Set a deadline
+  below $20 that reserves worst-case teardown, or run free shards only. The lead changed G to terminate at $16, with
+  a $4 reserve, or to run cluster shards only.

@@ -395,7 +395,9 @@ code would silently score it as direct-to-logit (`path:apply_pp:106`).
 - **Hard spend cutoff: $20 in total.** Before any paid shard launches, the runner adds up the cost of every paid shard.
   That covers provider time from the measured item, setup, sync and download (sizes ÷ 10 MB/s, as the root
   `CLAUDE.md`), and teardown, plus anything spent already. If the sum exceeds $20, no paid shard launches. Once pods
-  run, they are terminated when spend reaches $20.
+  run, the runner terminates every pod when spend reaches $16 (GPT re-check 2: a cutoff at $20 is too late, because
+  teardown and lag in reading spend still bill). The $4 reserve is about 10 min of four H100s, which covers teardown
+  and a delayed read. If the runner cannot enforce that deadline, only free cluster shards run.
 - **Stop rule.**
   - If the estimate exceeds 8 shards of 25 min of `debug`, use pods only if the estimated cost is ≤ $15, leaving
     headroom under the $20 cutoff. Otherwise stop and report the estimate to the lead.
