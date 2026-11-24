@@ -1,0 +1,126 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[07:05:29]     layer 0: 3079 variables x 64 pairs, 0 needed; 197056 cases in 33 s (6037/s)
+[07:05:54]     layer 1: 3079 variables x 64 pairs, 0 needed; 394112 cases in 58 s (6842/s)
+[07:06:11]     layer 2: 3079 variables x 64 pairs, 0 needed; 591168 cases in 75 s (7912/s)
+[07:06:20]     layer 3: 3079 variables x 64 pairs, 0 needed; 788224 cases in 84 s (9390/s)
+[07:06:20] stage 0 (near_neurons): {"experiment": "E292 (needed_neurons' read_item)", "world": "near_neurons", "dn_n_changed": 0, "dn_dd_max": 0.0, "dn_E_b_K": 1.0, "n_vars": 12316, "identity": {"item": "emoticon_s0", "flips": 0, "max_dev": 5.7220458984375e-05, "min_margin": 7.320676803588867, "cases": 788224, "cases_per_s": 9389.864031546842, "n_read_positions": 1, "n_windows": 73, "window_len": 41}, "est_seconds_per_item": 335.77653408050537, "seconds": 84.90524816513062}; checks hold
+[07:06:20] STAGE 0 DONE (near_neurons): est. 336 s per item read like emoticon_s0
+07:06:20 near_neurons: 16 of 64 items; not trained yet, skipped: []
+[07:06:21] emoticon_s0: 73 windows of 41 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[07:08:33]     layer 0: 3079 variables x 256 pairs, 2 needed; 788224 cases in 132 s (5973/s)
+[07:10:13]     layer 1: 3079 variables x 256 pairs, 4 needed; 1576448 cases in 232 s (6786/s)
+[07:11:22]     layer 2: 3079 variables x 256 pairs, 0 needed; 2364672 cases in 301 s (7857/s)
+[07:11:59]     layer 3: 3079 variables x 256 pairs, 0 needed; 3152896 cases in 338 s (9329/s)
+[07:11:59] emoticon_s0: E_b over K 0.018610, over all changed 0.017849; |K| 6 (6 changed) of 12316; margin median 10, min 7.32; 339 s
+07:11:59 ITEM 1 (emoticon_s0): E_b over K 0.01860986059666537, without remainders 0.01860986059666537, remainder share 0.0
+[07:12:00] emoticon_s2: 73 windows of 41 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[07:14:12]     layer 0: 3079 variables x 256 pairs, 4 needed; 788224 cases in 132 s (5966/s)
+[07:15:52]     layer 1: 3079 variables x 256 pairs, 4 needed; 1576448 cases in 233 s (6778/s)
+[07:17:01]     layer 2: 3079 variables x 256 pairs, 0 needed; 2364672 cases in 301 s (7849/s)
+[07:17:38]     layer 3: 3079 variables x 256 pairs, 0 needed; 3152896 cases in 338 s (9320/s)
+[07:17:38] emoticon_s2: E_b over K 0.004085, over all changed 0.015125; |K| 8 (8 changed) of 12316; margin median 10, min 7.85; 339 s
+07:17:38 ITEM 2 (emoticon_s2): E_b over K 0.004084699937915582, without remainders 0.0239312213218408, remainder share 0.9259442511249327
+[07:17:39] emoticon_http_s1: 73 windows of 41 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[07:19:51]     layer 0: 3079 variables x 256 pairs, 3 needed; 788224 cases in 132 s (5967/s)
+[07:21:31]     layer 1: 3079 variables x 256 pairs, 4 needed; 1576448 cases in 233 s (6780/s)
+[07:22:40]     layer 2: 3079 variables x 256 pairs, 0 needed; 2364672 cases in 301 s (7848/s)
+[07:23:17]     layer 3: 3079 variables x 256 pairs, 0 needed; 3152896 cases in 338 s (9319/s)
+[07:23:17] emoticon_http_s1: E_b over K 0.025452, over all changed 0.016939; |K| 7 (7 changed) of 12316; margin median 7.4, min 5.14; 339 s
+07:23:17 ITEM 3 (emoticon_http_s1): E_b over K 0.025452334201519423, without remainders 0.025452334201519423, remainder share 0.0
+[07:23:18] emoticon_eot_s0: 73 windows of 41 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[07:25:30]     layer 0: 3079 variables x 256 pairs, 3 needed; 788224 cases in 132 s (5963/s)
+[07:27:11]     layer 1: 3079 variables x 256 pairs, 3 needed; 1576448 cases in 233 s (6776/s)
+[07:28:19]     layer 2: 3079 variables x 256 pairs, 0 needed; 2364672 cases in 301 s (7845/s)
+[07:28:56]     layer 3: 3079 variables x 256 pairs, 0 needed; 3152896 cases in 338 s (9316/s)
+[07:28:56] emoticon_eot_s0: E_b over K 0.001788, over all changed 0.019925; |K| 6 (6 changed) of 12316; margin median 10.6, min 4.13; 339 s
+07:28:56 ITEM 4 (emoticon_eot_s0): E_b over K 0.001787633608697909, without remainders 0.012390699577137605, remainder share 0.9542118829388034
+[07:28:57] emoticon_eot_s2: 73 windows of 41 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[07:31:09]     layer 0: 3079 variables x 256 pairs, 3 needed; 788224 cases in 132 s (5963/s)
+[07:32:50]     layer 1: 3079 variables x 256 pairs, 2 needed; 1576448 cases in 233 s (6775/s)
+[07:33:59]     layer 2: 3079 variables x 256 pairs, 0 needed; 2364672 cases in 301 s (7844/s)
+[07:34:36]     layer 3: 3079 variables x 256 pairs, 0 needed; 3152896 cases in 338 s (9315/s)
+[07:34:36] emoticon_eot_s2: E_b over K 0.052442, over all changed 0.021722; |K| 5 (5 changed) of 12316; margin median 11.3, min 5.86; 339 s
+07:34:36 ITEM 5 (emoticon_eot_s2): E_b over K 0.05244222958220288, without remainders 0.05244222958220288, remainder share 0.0
+[07:34:37] r0_t352_v310_s0: 103 windows of 41 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[07:36:49]     layer 0: 3079 variables x 256 pairs, 0 needed; 788224 cases in 132 s (5964/s)
+[07:38:29]     layer 1: 3079 variables x 256 pairs, 0 needed; 1576448 cases in 233 s (6775/s)
+[07:39:38]     layer 2: 3079 variables x 256 pairs, 1 needed; 2364672 cases in 301 s (7843/s)
+[07:40:15]     layer 3: 3079 variables x 256 pairs, 1 needed; 3152896 cases in 339 s (9313/s)
+[07:40:15] r0_t352_v310_s0: E_b over K 0.040917, over all changed 0.021200; |K| 2 (2 changed) of 12316; margin median 5.71, min 1.01; 339 s
+07:40:15 ITEM 6 (r0_t352_v310_s0): E_b over K 0.04091720174745208, without remainders 0.04091720174745208, remainder share 0.0
+[07:40:16] r1_t534_v369_s0: 100 windows of 41 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[07:42:28]     layer 0: 3079 variables x 256 pairs, 0 needed; 788224 cases in 132 s (5965/s)
+[07:44:09]     layer 1: 3079 variables x 256 pairs, 1 needed; 1576448 cases in 233 s (6778/s)
+[07:45:17]     layer 2: 3079 variables x 256 pairs, 0 needed; 2364672 cases in 301 s (7847/s)
+[07:45:54]     layer 3: 3079 variables x 256 pairs, 0 needed; 3152896 cases in 338 s (9318/s)
+[07:45:54] r1_t534_v369_s0: E_b over K 0.003927, over all changed 0.022594; |K| 1 (1 changed) of 12316; margin median 5.22, min 2.89; 339 s
+07:45:55 ITEM 7 (r1_t534_v369_s0): E_b over K 0.0039265353198623225, without remainders 0.0039265353198623225, remainder share 0.0
+[07:45:55] r1_t534_v369_s2: 100 windows of 41 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[07:48:08]     layer 0: 3079 variables x 256 pairs, 0 needed; 788224 cases in 132 s (5962/s)
+[07:49:48]     layer 1: 3079 variables x 256 pairs, 1 needed; 1576448 cases in 233 s (6775/s)
+[07:50:57]     layer 2: 3079 variables x 256 pairs, 1 needed; 2364672 cases in 301 s (7845/s)
+[07:51:34]     layer 3: 3079 variables x 256 pairs, 0 needed; 3152896 cases in 338 s (9315/s)
+[07:51:34] r1_t534_v369_s2: E_b over K 0.018791, over all changed 0.024831; |K| 2 (2 changed) of 12316; margin median 5.27, min 3.31; 339 s
+07:51:34 ITEM 8 (r1_t534_v369_s2): E_b over K 0.01879099913289254, without remainders 0.01879099913289254, remainder share 0.0
+[07:51:35] r1_t534_v369_http_s1: 100 windows of 41 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[07:53:47]     layer 0: 3079 variables x 256 pairs, 3 needed; 788224 cases in 132 s (5968/s)
+[07:55:27]     layer 1: 3079 variables x 256 pairs, 1 needed; 1576448 cases in 233 s (6780/s)
+[07:56:36]     layer 2: 3079 variables x 256 pairs, 0 needed; 2364672 cases in 301 s (7850/s)
+[07:57:13]     layer 3: 3079 variables x 256 pairs, 0 needed; 3152896 cases in 338 s (9321/s)
+[07:57:13] r1_t534_v369_http_s1: E_b over K 0.049539, over all changed 0.017976; |K| 4 (4 changed) of 12316; margin median 6.74, min 2.44; 339 s
+07:57:13 ITEM 9 (r1_t534_v369_http_s1): E_b over K 0.04953913274577305, without remainders 0.04953913274577305, remainder share 0.0
+[07:57:14] r2_t359_v816_s0: 106 windows of 41 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[07:59:26]     layer 0: 3079 variables x 256 pairs, 0 needed; 788224 cases in 132 s (5951/s)
+[08:01:07]     layer 1: 3079 variables x 256 pairs, 0 needed; 1576448 cases in 233 s (6761/s)
+[08:02:16]     layer 2: 3079 variables x 256 pairs, 0 needed; 2364672 cases in 302 s (7829/s)
+[08:02:53]     layer 3: 3079 variables x 256 pairs, 0 needed; 3152896 cases in 339 s (9297/s)
+[08:02:53] r2_t359_v816_s0: E_b over K 1.000000, over all changed 0.018596; |K| 0 (0 changed) of 12316; margin median 7.62, min 3.96; 340 s
+08:02:53 ITEM 10 (r2_t359_v816_s0): E_b over K 1.0, without remainders None, remainder share None
+[08:02:54] r2_t359_v816_s2: 106 windows of 41 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[08:05:06]     layer 0: 3079 variables x 256 pairs, 0 needed; 788224 cases in 132 s (5952/s)
+[08:06:47]     layer 1: 3079 variables x 256 pairs, 0 needed; 1576448 cases in 233 s (6762/s)
+[08:07:56]     layer 2: 3079 variables x 256 pairs, 0 needed; 2364672 cases in 302 s (7830/s)
+[08:08:33]     layer 3: 3079 variables x 256 pairs, 0 needed; 3152896 cases in 339 s (9297/s)
+[08:08:33] r2_t359_v816_s2: E_b over K 1.000000, over all changed 0.018861; |K| 0 (0 changed) of 12316; margin median 7.92, min 3.84; 340 s
+08:08:33 ITEM 11 (r2_t359_v816_s2): E_b over K 1.0, without remainders None, remainder share None
+[08:08:34] r2_t359_v816_http_s1: 106 windows of 41 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[08:10:46]     layer 0: 3079 variables x 256 pairs, 2 needed; 788224 cases in 132 s (5953/s)
+[08:12:27]     layer 1: 3079 variables x 256 pairs, 2 needed; 1576448 cases in 233 s (6763/s)
+[08:13:36]     layer 2: 3079 variables x 256 pairs, 0 needed; 2364672 cases in 302 s (7829/s)
+[08:14:13]     layer 3: 3079 variables x 256 pairs, 0 needed; 3152896 cases in 339 s (9296/s)
+[08:14:13] r2_t359_v816_http_s1: E_b over K 0.006214, over all changed 0.026581; |K| 4 (4 changed) of 12316; margin median 5.55, min 3.18; 340 s
+08:14:13 ITEM 12 (r2_t359_v816_http_s1): E_b over K 0.006213875538690323, without remainders 0.006213875538690323, remainder share 0.0
+[08:14:14] r2_t275_v2667_s0: 100 windows of 41 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[08:16:26]     layer 0: 3079 variables x 256 pairs, 6 needed; 788224 cases in 132 s (5965/s)
+[08:18:07]     layer 1: 3079 variables x 256 pairs, 6 needed; 1576448 cases in 233 s (6778/s)
+[08:19:16]     layer 2: 3079 variables x 256 pairs, 2 needed; 2364672 cases in 301 s (7848/s)
+[08:19:53]     layer 3: 3079 variables x 256 pairs, 2 needed; 3152896 cases in 338 s (9319/s)
+[08:19:53] r2_t275_v2667_s0: E_b over K 0.007456, over all changed 0.021279; |K| 16 (16 changed) of 12316; margin median 6.91, min 0.833; 339 s
+08:19:53 ITEM 13 (r2_t275_v2667_s0): E_b over K 0.007456164690211343, without remainders 0.12113812761290477, remainder share 0.9475196707271326
+[08:19:54] many_many_s0: 192 windows of 41 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[08:22:06]     layer 0: 3079 variables x 256 pairs, 974 needed; 788224 cases in 133 s (5948/s)
+[08:23:47]     layer 1: 3079 variables x 256 pairs, 493 needed; 1576448 cases in 233 s (6762/s)
+[08:24:56]     layer 2: 3079 variables x 256 pairs, 392 needed; 2364672 cases in 302 s (7828/s)
+[08:25:33]     layer 3: 3079 variables x 256 pairs, 344 needed; 3152896 cases in 339 s (9294/s)
+[08:25:33] many_many_s0: E_b over K 0.045166, over all changed 0.042496; |K| 2203 (2203 changed) of 12316; margin median 2.38, min 0.019; 340 s
+08:25:33 ITEM 14 (many_many_s0): E_b over K 0.045165698142517835, without remainders 0.1649204502830132, remainder share 0.7687984441010953
+[08:25:42] lowercase_s1: 500 windows of 127 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[08:32:41]     layer 0: 3079 variables x 256 pairs, 2837 needed; 788224 cases in 419 s (1881/s)
+[08:37:58]     layer 1: 3079 variables x 256 pairs, 2508 needed; 1576448 cases in 736 s (2142/s)
+[08:41:33]     layer 2: 3079 variables x 256 pairs, 2100 needed; 2364672 cases in 951 s (2486/s)
+[08:43:25]     layer 3: 3079 variables x 256 pairs, 1238 needed; 3152896 cases in 1062 s (2968/s)
+[08:43:25] lowercase_s1: E_b over K 0.032823, over all changed 0.036656; |K| 8683 (8683 changed) of 12316; margin median 0.71, min 0.000546; 1071 s
+08:43:25 ITEM 15 (lowercase_s1): E_b over K 0.03282308696815717, without remainders 0.0676934492581113, remainder share 0.5422836140549437
+[08:43:27] case_real_s1: 256 windows of 41 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[08:45:39]     layer 0: 3079 variables x 256 pairs, 5 needed; 788224 cases in 133 s (5943/s)
+[08:47:20]     layer 1: 3079 variables x 256 pairs, 6 needed; 1576448 cases in 233 s (6753/s)
+[08:48:29]     layer 2: 3079 variables x 256 pairs, 0 needed; 2364672 cases in 302 s (7817/s)
+[08:49:06]     layer 3: 3079 variables x 256 pairs, 3 needed; 3152896 cases in 340 s (9281/s)
+[08:49:06] case_real_s1: E_b over K 0.004670, over all changed 0.016490; |K| 14 (14 changed) of 12316; margin median 11.6, min 3.16; 341 s
+08:49:06 ITEM 16 (case_real_s1): E_b over K 0.004670240431813869, without remainders 0.02956768277337128, remainder share 0.9477020551117381
+08:49:06 E292 defs eb_neurons DONE; peak GPU 6.34 GB
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/old_tasks_read/results ===
