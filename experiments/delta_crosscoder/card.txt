@@ -1,0 +1,16 @@
+cell: P2.72
+rival_a: the Delta-Crosscoder as published recovers a planted change of this model predicts rung 5, E212's planted direction and the block-3 head read yes, while C0b and C2 at site A read a calibrated no
+rival_b: at the 67M's update sizes the method cannot tell a planted change from noise predicts the planted sides read no or not scored, or C2 at site A reads yes as often as the plants
+rung: strategy
+smallest_gap: 1
+spread: 0.081
+n: 3
+design: unpaired
+unit: sides (the three planted changes that lean yes, against the controls C0b, C2 A, C2 B)
+spread_source: experiments/crosscoder_proper/results/run1/items/head.A.c0.json (with head.A.c1.json, head.A.c2.json: E235's planted-head reading 0.300, 0.208, 0.369 over crosscoder seeds)
+spread_of: proxy: E235's planted-head share over three crosscoder seeds, the seed-to-seed spread of a crosscoder's reading of one planted side on a 0-1 scale, as the 0/1 label is
+floor: the label's pass bar: a candidate beats the maximum of its own 60-latent bulk pool on both tests (chance about 1/3,700 per candidate); rival a expects the plants' candidates over it and the controls' under it, rival b expects both under it or both over it
+stop: C0a fails (a wiring fault): fix and rerun, nothing read; no plant reads yes and C2 at A is a calibrated no: site A reads 'not applicable at this update size' and run 2 does not run
+sketch: experiments/delta_crosscoder/sketch.png
+rehearsal: E### rehearse: on a cluster debug L40, every stage at reduced size (1,500 steps of the full 3,840-latent dictionary at the full batch 4,096 and generation batch 2,000; 4,000 prompts; one candidate and an 8-latent pool), all nine fits with a stop-after and resume, then one candidate with its full 60-latent pool at the full read sizes (slice), and the tar and sha256 hand-back; it measures ms per step, the sampler's tokens per second, minutes per latent read, peak memory per stage and the C0a bf16 deviation that sets its bar
+descriptive: whip-lead, 2026-11-23 (spec header and review response: 'Report the method as published, as a yes or no per fine-tune', no reuse score, no share column): the labels are reported as the method's own output, with no claim at a bar
