@@ -146,3 +146,36 @@ in both, which confirms scaling is the only difference. Fix is wording only: the
 updates are read at their trained size; the fig:prior_mechanism caption (appI:85) says each is scaled to the copy
 task's size, so its cipher values differ from Fig. known's. Never quote 0.27 / 0.23 beside Fig. known or 0.30 / 0.16
 beside fig:prior_mechanism.
+
+## Addendum 2, ~15:50: writeup-lead's fixes at v2 3da9cc7
+
+Checked against each figure's PDF and data file (Opus agent, read-only). Figure 2 has 48 states per featurization
+and every number in §5.1 matches definition.csv; Fig. 4, the known-answers appendix figure and the appD scorecard
+ranges all match their data; the §5.3 τ values recomputed from realistic_mirror.csv (0.355, 0.265, −0.265) match the
+panels. Closed: issues 3 (bar the two sec5:79 slips below), 4, and the table half of 6; issue 2 reworded and now
+backed by the included copy_head.pdf.
+
+Left in the files writeup-lead owns:
+- sec5:79: "the cipher updates are about a third larger" holds only for the 96-key and prior-matched ciphers (the
+  24-key and early-step ciphers are the copy's size); "reads four of these tasks" is three (the cued copy is not in
+  Fig. 4).
+- Copy-head paragraph: "about 0.14 for three random heads" is the dashed line (mean of two maxima, 0.107 and 0.164);
+  the random means span 0.08-0.16. Panel (b) says "pure strengthening", while the text says "pure rescale". The VPD
+  "about 0.04" is not on Fig. 2 (0.032-0.034).
+- Controls: no twin values remain anywhere rendered (appD points to appE, which only lists them); gain-only
+  0.52-1.02 / 0.15-0.35 are per-seed ranges, not task means.
+- §5.3: partial τ 0.23 and "none reaches p<0.05" are not in Fig. 5; the kept-share τ −0.69 / −0.29 / −0.59 still has no
+  panel (sec5:104, 115). sec5:119 "on every seed" is a seed tally.
+- Tools table: crosscoder "0.06-0.54 on both sides" overstates the new side (0.40-0.52); head CMAP new "0.01" is a
+  pair mean (0.006), not a task mean; broad cipher's task mean is −0.001.
+- sec5:10-11 "three cheap readings agree with how the known-answer fine-tunes were built" and sec5:105 "agreed on the
+  built pairs" contradict sec5:68-72, where steering and effective rank overlap.
+- appD:7 heading "nine built pairs"; appD:37-38 implicit every-pair claim; appD:52 "one pair of the three"; appI:36
+  "three of five pairs", appI:39.
+- fig:prior_mechanism caption still names readings the figure does not draw (64-neuron share, per-key steering,
+  matched-count neuron share).
+- One reading has three names: "Neuron CMAP", "neuron patching", "Neuron share, whole width".
+
+The user's files still conflict with the body: main:52, 65 (credit to "the definition"), main:129-131 and 465-468
+(pair tallies that contradict sec5:68-72), sec7:53-56 (stale pointers; a prior claim no body figure shows), sec7:72
+(tally), sec7:77-79 (do-nothing is NaN, not 0; no random baseline exists for these shares, sec4:40).
