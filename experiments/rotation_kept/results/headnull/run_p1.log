@@ -1,0 +1,95 @@
+E295 start, shard (1, 2), tag p1; settings {'bases': ('e62/copy_s0', 'e62/copy_s1', 'e62/copy_s2', 'e62/lookup_s0', 'e62/lookup_s1', 'e62/lookup_s2'), 'control': 'v2', 'random_seed': 28620, 'control_tol': 1e-09, 'saved_rel_tol': 0.0001}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+    layer 0: 3079 variables x 64 pairs, 0 needed; 197056 cases in 7 s (28984/s)
+    layer 1: 3079 variables x 64 pairs, 0 needed; 394112 cases in 12 s (32379/s)
+    layer 2: 3079 variables x 64 pairs, 0 needed; 591168 cases in 16 s (36667/s)
+    layer 3: 3079 variables x 64 pairs, 0 needed; 788224 cases in 19 s (42260/s)
+    layer 0: 3079 variables x 256 pairs, 2535 needed; 788224 cases in 28 s (28375/s)
+    layer 1: 3079 variables x 256 pairs, 1785 needed; 1576448 cases in 50 s (31521/s)
+    layer 2: 3079 variables x 256 pairs, 1352 needed; 2364672 cases in 66 s (35607/s)
+    layer 3: 3079 variables x 256 pairs, 819 needed; 3152896 cases in 77 s (40994/s)
+    layer 0: 3079 variables x 256 pairs, 2585 needed; 788224 cases in 28 s (27931/s)
+    layer 1: 3079 variables x 256 pairs, 1602 needed; 1576448 cases in 51 s (31204/s)
+    layer 2: 3079 variables x 256 pairs, 1080 needed; 2364672 cases in 67 s (35321/s)
+    layer 3: 3079 variables x 256 pairs, 275 needed; 3152896 cases in 77 s (40714/s)
+do_nothing: all of D kept 1, flips 29 of 256; copy windows strict 1, own 1 (null 0.1328), needed 1 (null 0.8021, 5 ref), rotation None, flips 49 of 256; saved None; 157 s
+    layer 0: 3079 variables x 256 pairs, 2411 needed; 788224 cases in 29 s (27628/s)
+    layer 1: 3079 variables x 256 pairs, 1442 needed; 1576448 cases in 51 s (30814/s)
+    layer 2: 3079 variables x 256 pairs, 1078 needed; 2364672 cases in 68 s (34882/s)
+    layer 3: 3079 variables x 256 pairs, 639 needed; 3152896 cases in 78 s (40174/s)
+    layer 0: 3079 variables x 256 pairs, 2669 needed; 788224 cases in 29 s (27460/s)
+    layer 1: 3079 variables x 256 pairs, 1830 needed; 1576448 cases in 51 s (30662/s)
+    layer 2: 3079 variables x 256 pairs, 1293 needed; 2364672 cases in 68 s (34751/s)
+    layer 3: 3079 variables x 256 pairs, 330 needed; 3152896 cases in 79 s (40087/s)
+v2: all of D kept 1, flips 60 of 256; copy windows strict 1, own 0.990323 (null 0.1328), needed 0.998703 (null 0.8021, 5 ref), rotation 0.8659294200333524, flips 80 of 256; saved None; 160 s
+STAGE 0 DONE in 353 s
+    layer 0: 3079 variables x 256 pairs, 2372 needed; 788224 cases in 29 s (27424/s)
+    layer 1: 3079 variables x 256 pairs, 1536 needed; 1576448 cases in 52 s (30605/s)
+    layer 2: 3079 variables x 256 pairs, 1228 needed; 2364672 cases in 68 s (34673/s)
+    layer 3: 3079 variables x 256 pairs, 760 needed; 3152896 cases in 79 s (39963/s)
+    layer 0: 3079 variables x 256 pairs, 111 needed; 788224 cases in 29 s (27429/s)
+    layer 1: 3079 variables x 256 pairs, 53 needed; 1576448 cases in 51 s (30643/s)
+    layer 2: 3079 variables x 256 pairs, 52 needed; 2364672 cases in 68 s (34741/s)
+    layer 3: 3079 variables x 256 pairs, 107 needed; 3152896 cases in 79 s (40064/s)
+e62/copy_s1: all of D kept 0.0950068, flips 128 of 256; copy windows strict 0.130251, own 0.7999 (null 0.1367), needed 0.959498 (null 0.8086, 5 ref), rotation 0.7975928628109272, flips 245 of 256; saved {'copy': {'strict': 0.13025124989727865, 'own': 0.7998997648523444, 'flips': 245}, 'whole_d': {'kept': 0.0950066770687418, 'flips': 128}}; 161 s
+ITEM 1 of 6 DONE (e62/copy_s1)
+    layer 0: 3079 variables x 256 pairs, 2518 needed; 788224 cases in 29 s (27443/s)
+    layer 1: 3079 variables x 256 pairs, 1650 needed; 1576448 cases in 51 s (30648/s)
+    layer 2: 3079 variables x 256 pairs, 1215 needed; 2364672 cases in 68 s (34705/s)
+    layer 3: 3079 variables x 256 pairs, 745 needed; 3152896 cases in 79 s (39997/s)
+    layer 0: 3079 variables x 256 pairs, 2379 needed; 788224 cases in 29 s (27446/s)
+    layer 1: 3079 variables x 256 pairs, 1340 needed; 1576448 cases in 51 s (30668/s)
+    layer 2: 3079 variables x 256 pairs, 902 needed; 2364672 cases in 68 s (34755/s)
+    layer 3: 3079 variables x 256 pairs, 237 needed; 3152896 cases in 79 s (40091/s)
+e62/copy_s1_rand: all of D kept 0.000395273, flips 33 of 256; copy windows strict 0.000521189, own 0.827449 (null 0.1328), needed 0.973547 (null 0.8021, 5 ref), rotation 0.846692542093049, flips 48 of 256; saved None; 161 s
+ITEM 2 of 6 DONE (e62/copy_s1_rand)
+    layer 0: 3079 variables x 256 pairs, 1527 needed; 788224 cases in 29 s (27372/s)
+    layer 1: 3079 variables x 256 pairs, 853 needed; 1576448 cases in 52 s (30565/s)
+    layer 2: 3079 variables x 256 pairs, 714 needed; 2364672 cases in 68 s (34633/s)
+    layer 3: 3079 variables x 256 pairs, 650 needed; 3152896 cases in 79 s (39932/s)
+    layer 0: 3079 variables x 256 pairs, 10 needed; 788224 cases in 29 s (27499/s)
+    layer 1: 3079 variables x 256 pairs, 8 needed; 1576448 cases in 51 s (30723/s)
+    layer 2: 3079 variables x 256 pairs, 5 needed; 2364672 cases in 68 s (34824/s)
+    layer 3: 3079 variables x 256 pairs, 8 needed; 3152896 cases in 79 s (40163/s)
+e62/lookup_s0: all of D kept 0.018412, flips 14 of 256; copy windows strict 0.0129657, own 0.851715 (null 0.1328), needed 0.895683 (null 0.4193, 2 ref), rotation 0.2965060426471141, flips 0 of 256; saved {'copy': {'strict': 0.01296574348786283, 'own': 0.851715323967608, 'flips': 0}, 'whole_d': {'kept': 0.018411925746947548, 'flips': 14}}; 161 s
+ITEM 3 of 6 DONE (e62/lookup_s0)
+    layer 0: 3079 variables x 256 pairs, 2431 needed; 788224 cases in 29 s (27461/s)
+    layer 1: 3079 variables x 256 pairs, 1573 needed; 1576448 cases in 51 s (30663/s)
+    layer 2: 3079 variables x 256 pairs, 1175 needed; 2364672 cases in 68 s (34733/s)
+    layer 3: 3079 variables x 256 pairs, 823 needed; 3152896 cases in 79 s (40024/s)
+    layer 0: 3079 variables x 256 pairs, 2138 needed; 788224 cases in 29 s (27521/s)
+    layer 1: 3079 variables x 256 pairs, 1061 needed; 1576448 cases in 51 s (30769/s)
+    layer 2: 3079 variables x 256 pairs, 612 needed; 2364672 cases in 68 s (34841/s)
+    layer 3: 3079 variables x 256 pairs, 256 needed; 3152896 cases in 78 s (40193/s)
+e62/lookup_s0_rand: all of D kept 0.000104633, flips 30 of 256; copy windows strict 6.76284e-05, own 0.757703 (null 0.1328), needed 0.965963 (null 0.8021, 5 ref), rotation 0.8595239322095491, flips 54 of 256; saved None; 161 s
+ITEM 4 of 6 DONE (e62/lookup_s0_rand)
+    layer 0: 3079 variables x 256 pairs, 1180 needed; 788224 cases in 29 s (27393/s)
+    layer 1: 3079 variables x 256 pairs, 676 needed; 1576448 cases in 52 s (30566/s)
+    layer 2: 3079 variables x 256 pairs, 607 needed; 2364672 cases in 68 s (34622/s)
+    layer 3: 3079 variables x 256 pairs, 584 needed; 3152896 cases in 79 s (39903/s)
+    layer 0: 3079 variables x 256 pairs, 9 needed; 788224 cases in 29 s (27426/s)
+    layer 1: 3079 variables x 256 pairs, 8 needed; 1576448 cases in 51 s (30634/s)
+    layer 2: 3079 variables x 256 pairs, 5 needed; 2364672 cases in 68 s (34724/s)
+    layer 3: 3079 variables x 256 pairs, 8 needed; 3152896 cases in 79 s (40062/s)
+e62/lookup_s2: all of D kept 0.0151641, flips 11 of 256; copy windows strict 0.00465142, own 0.860821 (null 0.1341), needed 0.896033 (null 0.4180, 2 ref), rotation 0.2529974603158958, flips 1 of 256; saved {'copy': {'strict': 0.004651415052980903, 'own': 0.8608213811301051, 'flips': 1}, 'whole_d': {'kept': 0.015164020392708056, 'flips': 11}}; 161 s
+ITEM 5 of 6 DONE (e62/lookup_s2)
+    layer 0: 3079 variables x 256 pairs, 2758 needed; 788224 cases in 29 s (27394/s)
+    layer 1: 3079 variables x 256 pairs, 1959 needed; 1576448 cases in 52 s (30587/s)
+    layer 2: 3079 variables x 256 pairs, 1472 needed; 2364672 cases in 68 s (34646/s)
+    layer 3: 3079 variables x 256 pairs, 785 needed; 3152896 cases in 79 s (39936/s)
+    layer 0: 3079 variables x 256 pairs, 2463 needed; 788224 cases in 29 s (27412/s)
+    layer 1: 3079 variables x 256 pairs, 1490 needed; 1576448 cases in 51 s (30637/s)
+    layer 2: 3079 variables x 256 pairs, 935 needed; 2364672 cases in 68 s (34725/s)
+    layer 3: 3079 variables x 256 pairs, 281 needed; 3152896 cases in 79 s (40046/s)
+e62/lookup_s2_rand: all of D kept 0.00465018, flips 32 of 256; copy windows strict 0.0028897, own 0.733251 (null 0.1328), needed 0.952943 (null 0.8021, 5 ref), rotation 0.8235892843114576, flips 48 of 256; saved None; 161 s
+ITEM 6 of 6 DONE (e62/lookup_s2_rand)
+E295 DONE
+peak host RSS 6.5 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/rotation_kept/results/headnull ===
