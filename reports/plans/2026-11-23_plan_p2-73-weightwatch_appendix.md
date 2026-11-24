@@ -89,7 +89,10 @@ on a ragged list (`utils.py` lines 188-191 build it, 240-245 store it, 318-327 i
 4. **Trigger edit (detector positive control).**
    - T is the lowest token id ≥ 256 that occurs in none of the 50,000 calibration windows and none of the test windows'
      base windows. 998 ids are absent from the calibration windows, counted 2026-11-23 with a cpu-run script on
-     `train_65536_524288.npy`, rows 0-12,499.
+     `train_65536_524288.npy`, rows 0-12,499. **Superseded by amendment 1 (2026-11-23, `results/predictions.json`):**
+     T is the rarest id ≥ 256 (fewest calibration occurrences, then lowest id) whose detector row reaches the filed
+     ratio 10, among ids leaving at least 73 test windows without T; T's calibration and test windows are removed, and
+     the 0.99 quantile is taken on Pile positions not holding T. The id chosen first under the old rule reached 2.96.
    - The slot is the layer-1 neuron with the smallest mean activation² × |column|² on Pile held-out (`known_edits.slots`,
      E206's rule), outside x2's 8 columns. Its `c_fc` row is `known_edits.detector`'s rule for T, built on windows with
      T inserted.
@@ -111,6 +114,12 @@ on a ragged list (`utils.py` lines 188-191 build it, 240-245 store it, 318-327 i
    out) is reported beside S for every arm.
 7. **Timing, per pass type.** One F pass, one sham pass, one M forward pass and the M forward-and-backward are timed
    apart. The estimate is 50 × F + 48 × sham + 2 × M forward + 1 × M forward-and-backward. Each job exits for a resubmit past 25 min.
+
+**Dry-run hint on C (2026-11-23, CPU dry run on 40 calibration windows, so indicative only).** At layer-1 `down_proj`,
+C looks dominated by one direction: d·λ_max/tr C = 730.8 (of a possible 768), with 0.908 of tr C from position-0
+tokens. x2's S read 492.4 against Haar draws spanning 2.24, and S_cov (position 0 out) 268.2. If the full 50,000-window
+moments agree, S at this matrix mostly measures alignment with the position-0 direction; S_cov is then the reading to
+look at beside S.
 
 ## D. Inputs, checked with `ls -laL` on 2026-11-23
 

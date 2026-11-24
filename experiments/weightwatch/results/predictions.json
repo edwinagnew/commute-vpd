@@ -128,5 +128,17 @@
   "S reads low when an update strengthens a direction M rarely writes along, and high when a new mechanism writes along a busy one (an unembedding direction); under s^2 pooling the matrix that moved most dominates",
   "the Haar and Gaussian nulls are isotropic in output direction, so S above them may reflect generic alignment of gradient updates with M's high-variance outputs"
  ],
- "card_spread_proxy": "proxy for the card: for a random unit u, sd(a) = sqrt(2 (d sum lam^2 / (sum lam)^2 - 1) / (d + 2)); at an assumed participation ratio of 20 for C (d / PR = 38.4) that is 0.31 per vector, and 0.11 for S pooled over 8 equal-weight vectors (x2's count). Arithmetic on an assumed spectrum, not a measurement: stage 0 measures the Haar spread itself"
+ "amendments": [
+  {
+   "date": "2026-11-23",
+   "what": "Amendment 1: the trigger token T (appendix C4). Was: the lowest id >= 256 in none of the calibration windows and none of the test base windows. Now: T is the rarest id >= token_min (fewest occurrences in the 50,000 calibration windows, ties by lowest id) whose detector row (known_edits.detector at the filed detector_ratio 10 and detector_quantile 0.99, with known_edits.build's gain loop) reaches the ratio, among ids leaving at least 73 of the 1,000 test base windows without T. T's calibration windows are removed from the calibration set (every pass); test windows holding T are dropped; the 0.99 quantile is on Pile held-out positions not holding T. detector_ratio, detector_quantile and trigger_bar are unchanged (run.py Run.trigger_token, Run.detector_row, Run.calib)",
+   "why": "with the old rule the first absent id (286) reaches 2.96, under the filed 10, so the trigger row cannot be built; the ratio is kept (lead's decision, 2026-11-23)",
+   "windows_needed": 73,
+   "windows_needed_source": "ww_score.windows_needed(trigger_bar 0.95): the fewest windows whose 95% Wilson interval (ww_score.wilson, the interval the trigger read already uses) with every window flagged lies at or above 0.95, n / (n + 1.96^2) >= 0.95",
+   "T": 975,
+   "T_source": "CPU dry run 2026-11-23 (run.py's own path, Run.trigger_token): T 975, absent from the calibration windows, in 1 of the 1,000 test base windows (999 kept), detector ratio 10.562 (whitened ridge 0.01; filed direction 6.81), gain 1, the 11th id tried; the 10 lower absent ids read 2.90-3.01. The GPU run re-chooses by the same rule",
+   "sweep_source": "results/trigger_sweep*.json (experiments/weightwatch/trigger_sweep.py, cpu-run 2026-11-23): known_edits.detector's four limits for each id, absent ids by id then the 500 rarest present ids. At filing: 502 of the absent ids read, 210 reach 10 (top: 3 infinite, i.e. no Pile position above zero along the row, then 128.5, 110.0); 421 present ids read, 264 reach 10. The sweep's fast path matches the run's path on T 975 (10.5624 both) and on T 12924 (12.4254 both)"
+  }
+ ],
+ "card_spread_proxy":"proxy for the card: for a random unit u, sd(a) = sqrt(2 (d sum lam^2 / (sum lam)^2 - 1) / (d + 2)); at an assumed participation ratio of 20 for C (d / PR = 38.4) that is 0.31 per vector, and 0.11 for S pooled over 8 equal-weight vectors (x2's count). Arithmetic on an assumed spectrum, not a measurement: stage 0 measures the Haar spread itself"
 }
