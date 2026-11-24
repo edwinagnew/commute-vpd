@@ -1,0 +1,58 @@
+{
+  "experiment": "E285, P1.59 why_fail (no E-code: $0 CPU synthesis of saved arrays, no job gate)",
+  "cell": "P1.59",
+  "descriptive": "user 2026-11-23 ~17:20 via whip-lead, for the Discussion; a synthesis reported as a description. No bar: the expected values below are filed expectations, not pass rules, and no reading here is the definition or a change to it.",
+  "filed": "2026-11-23, definition-lead analyst agent, before any of the four readings was computed on a saved item. Seen before filing: construction facts and values already published in the item JSONs and reports (|K|, #changed, min margin of the built edits; E_b over K of x2 0.761 and random_kl 0.011 at VPD; the trained E_b over K near 0.03-0.04). The rules were run on synthetic edge cases first (run.py edge).",
+  "items": {
+    "source": "experiments/why_fail/inventory.tsv (inventory.py): 335 rows; every row has K, flips and num/den/dd except E278's 21 trained items, which are E275's readings re-used (column missing = dup:<E275 item>) and are not read twice.",
+    "unique_reads": "one reading per (featurization, item, D). E281's six E62 items on the copy windows at VPD and E283's x2/x10 on new_few's cue windows at neurons are separate reads (other D) and are reported beside their class, not pooled into it.",
+    "classes": {
+      "built_reuse": "x2, x10 (strengthening contrast: double / ten-fold an existing mechanism), rebuilt; E268 at VPD, E277 at neurons",
+      "built_new": "new_few, new_thin",
+      "built_random": "random_kl_241002, random_size_241001",
+      "toy_trained": "trained fine-tunes on toy tasks: at VPD E275's 114 (E257's nine reuse/new pairs, the E58 key grid, E62 copy/lookup, P2.57's prior-matched pair); at neurons E277's 20 E229 fine-tunes and 9 E62 items",
+      "toy_random": "random updates matched per tensor to a toy fine-tune: E277's 20 '_rand', E278's 15 random_e58",
+      "procedural": "E268's P2.56 procedural RL/SFT states (rl, rlg, sft), VPD",
+      "procedural_random": "their matched Gaussians (random, randg), VPD",
+      "rl": "E268's 21 RL/SFT repeat states, VPD",
+      "realistic": "E277's realistic panel, 12 tasks x 3 seeds, neurons only (no VPD reading of the panel was saved)",
+      "realistic_random": "each panel task's seed-0 Gaussian, neurons"
+    }
+  },
+  "readings": {
+    "kept share": "per variable u, kept_u = explained_u / dd_u with explained_u = (num_u - den_u)^2 / den_u where num_u > 0 and den_u > 0, else 0 (commute.stand_in.explained); undefined (NaN) where dd_u = 0. num_u = sum <w_F,u, w_M,u>, den_u = sum |w_M,u|^2, dd_u = sum |w_F,u - w_M,u|^2 over every position of D (stand_in.write_change). In [0, 1] by Cauchy-Schwarz: 1 when u's write change is a single positive multiple of M's write (a rescale), near 0 when it is orthogonal to M's write or its gain changes sign across D (a rotation). E_b over a set S is sum explained / sum dd over S.",
+    "R1": "per item: the pool P = K & changed & (dd > 0); the top set T = the ceil(0.01 |P|) variables of P with the most flips (at least 1 when P is not empty; every variable tied with the last one's flip count included). Item values: median kept over T (primary), E_b over T, and median kept over P (beside). Per class: median, 25th and 75th percentile of the item medians over T, and the item count.",
+    "R2": "per item: |K| / #changed, coverage |K & changed| / #changed, |K| / n; the min and median logit margin (top-1 minus top-2 over every read position of D) as each item JSON records them (min only for E268, E275 and E278's re-used items; median and min for E277, E278's randoms, E281). Per class: median and IQR of each; and the Spearman rank correlation of |K| / n with min margin pooled over every item that records both, per featurization.",
+    "R3": "per item, over K & changed: the remainders' share of sum dd (4 whole-MLP remainders at neurons, 24 matrix remainders at VPD), and each layer's share of sum dd (layer per variable from the layouts in run.py; VPD's embedding and unembedding hold dd 0 and are reported as outside_layers_share). Primary: remainder share at neurons, per-layer share at VPD (as max_layer_share, the largest of the four, and the four in order); the other two are reported beside. Per class: median and IQR.",
+    "R4": "toy_trained against realistic at neurons, on the class medians of R1 (median kept over T), R2 (coverage, |K| / n) and R3 (remainder share): the difference of class medians; at VPD, where no realistic item exists, toy_trained against procedural and rl.",
+    "blind_to": "R1: a rescale whose gain varies across positions of D reads below 1 (one gain per variable over all of D); it cannot say what the rotated part does. R2: |K| counts a variable once whatever its flip count; margins are per item, not per pair (no per-pair margins were saved). R3: says where dd sits, not whether that dd is needed. R4: compares classes that differ in task, update size and D at once."
+  },
+  "rules": {
+    "edge cases (run.py edge, 2026-11-23)": "empty K or no changed variable: R1 and R3 'no reading' (None), R2's ratios None when #changed = 0; changed variables whose dd is all 0: pool empty, R1 None, R3 None (sum dd over K & changed is 0); a pool of 5 at 1%: top set of 1; ties at the cut all enter T (flips 4,4,4,1,1 gives |T| = 3); den = 0 with dd > 0 reads kept 0; a negative gain reads kept 0. Class statistics skip None and report how many items were skipped.",
+    "layout checks (run before any reading)": "every item's n is 38,938 (VPD) or 12,316 (neurons); at VPD the variables outside the 24 matrices (indices 0 and 38,937) have dd exactly 0 on every item; x2's changed set at VPD is exactly one down_proj block (3,584 subcomponents and its remainder, as E268's 3,585 changed); x10's kept shares at VPD equal x2's within 1e-6 relative (the split is linear in dW, and x10's dW is nine times x2's) - a stop if either fails, since then the layout or the arrays are not what the readings assume."
+  },
+  "expected": {
+    "R1": {
+      "x2, x10 (control)": "median kept over T >= 0.8 at VPD and at neurons (their changed variables' writes are scaled copies of M's; E_b over K of x2 at VPD is 0.761, so the top set may sit a little lower but not under 0.7). At neurons T is one variable (9 changed).",
+      "random": "median kept over T <= 0.05 at VPD (random_kl's E_b over K 0.011) and <= 0.1 at neurons",
+      "trained, filed expectation": "every trained class's median of item medians <= 0.15, at both featurizations: the most-needed variables of a trained fine-tune are rotated, not rescaled, about as much as a random update's (within 5x of the matched random class); the low E_b over K is not dilution of a rescaled core by many marginal variables. If instead the trained top set reads >= 0.5 while E_b over K stays near 0.03, the failure is dilution (rival B)."
+    },
+    "R2": {
+      "x2, x10 (control)": "known from the item JSONs: coverage 1.0 at both featurizations; |K| / #changed 10.9 (VPD, 38,935 / 3,585) and 1,366 (neurons, 12,291 / 9); min margin 2e-4 at VPD",
+      "random": "dense updates change every variable, so coverage = |K| / n; random_kl at VPD 0.83 (known)",
+      "trained, filed expectation": "median coverage >= 0.3 in every trained class; min margin under 0.01 in at least half the trained items; Spearman(|K| / n, min margin) <= -0.5 pooled per featurization; median margins (where recorded) >= 0.5. That is, K is most of the variables and its size follows the item's smallest margin, for trained and random updates alike."
+    },
+    "R3": {
+      "x2, x10 (control)": "VPD: max_layer_share = 1.0 (one down_proj, by construction), remainder share <= 0.2; neurons: remainder share <= 0.5",
+      "random": "neurons: remainder share >= 0.5 (97% of each neuron's activity sits under its p97 cut and so in the remainder); VPD: max_layer_share <= 0.5",
+      "trained, filed expectation": "neurons: remainder share >= 0.5 in every trained class (toy, realistic), as random; VPD: max_layer_share median <= 0.6 and remainder share in [0.1, 0.6]"
+    },
+    "R4": "toy_trained and realistic at neurons within 0.1 on R1's class median, within 0.2 on coverage and on remainder share; at VPD toy_trained within 0.1 of procedural and rl on R1: the same failure on toy fine-tunes as on the realistic panel, so the task choice is not its cause."
+  },
+  "settings": {
+    "top_frac": 0.01,
+    "top_frac_source": "the cell's 'top 1% most-needed' (P1.59 done-when, user 2026-11-23)",
+    "too_small": 100,
+    "too_small_source": "E272's K_MIN (experiments/convergence_panel/score.py): an item with |K| < 100 is flagged too_small beside its values, not dropped"
+  }
+}
