@@ -13,12 +13,13 @@ our states, and even where it works it names what a fine-tune was trained on, no
 
 ## The answer
 
-The lens, run as published, works on the paper's own fine-tunes: its causal effect on their training text is dozens of
-times its random baseline, on all three, at every position. On the 67M its filed positive control fails: about
+The lens's causal step, run with the authors' toolkit, reproduces on the paper's own fine-tunes: its effect on their training text is dozens of
+times its random baseline, on all three, at every position. On the 67M, read through our float64 port of that step, its filed positive control fails: about
 a third of random directions raise the loss more than the lens's own direction does. So it was not run on our fine-tunes, and
 that is the result. The score our earlier version reported is not in the paper, and the paper makes no call on whether
-a fine-tune reused existing mechanisms. For the paper's methods table: **"ADL (as published) detects the training
-domain, makes no reuse call."**
+a fine-tune reused existing mechanisms. For the paper's methods table: **"ADL (causal step as published): reproduces on the paper's Qwen fine-tunes; its
+filed 67M control fails (our port); scores how readable the training domain is; makes no reuse call."** The grader,
+Patchscope, steering and agent steps, on which the paper's domain detection rests, were not run.
 
 ## Three plain answers from the paper
 
@@ -120,8 +121,9 @@ there is no noise floor to judge it against, and no pass is claimed.
 A candidate cause, unverified: the toolkit subtracts and averages the activations in bfloat16, the dtype its config
 sets, while the port subtracts and sums in float64. The port also reads a Hugging Face forward hook where the toolkit
 reads through nnterp. Neither has been tested. Until it is run down, no mean difference computed by our port is quoted
-as the method's. The 67M reading above comes from our port, so this gap is a caveat on it too, though it cannot turn a
-reading below the random mean into a pass on its own.
+as the method's. The 67M reading above comes from our port, so the 67M failure is our port's, not the toolkit's. The
+random baseline does not use the mean difference; only the lens's direction does, and the swap reads that direction's
+cosine, which the parity check did not save. So the entry-wise gap does not bound the 67M reading either way.
 
 ## What E264-267 reported, and why it is superseded
 
@@ -135,8 +137,8 @@ ours, from the spec's table:
 
 Its first control, a copy fine-tune, failed. Its second, the same lowercase fine-tune, passed at the edge of its bar.
 On that pass it reported that its gaps on the nine built pairs had the same sign as the definition's on eight. That agreement did not carry to prior-matched or procedural states. Since the score was ours, those
-results describe our adaptation, not the activation difference lens. The as-published lens, run here, fails the same
-control. E264-267 are superseded: they are not to be cited as the lens, as published, ordering our pairs.
+results describe our adaptation, not the activation difference lens. The causal step as published, read here through
+our port, fails the same control. E264-267 are superseded: they are not to be cited as the lens, as published, ordering our pairs.
 
 ## What we learned
 
@@ -217,6 +219,8 @@ Authors and title checked against the paper's title page in the spec's local cop
 ## Not run
 
 - Run down the mean-difference mismatch between the port and the toolkit.
+- The cosine between the port's and the toolkit's mean-difference directions (parity.py did not save it), which is what
+  the swap reads.
 - The 176 planned 67M states: built pairs, prior-matched pairs and procedural states. Stopped by the filed rule.
 - Any other 67M positive control.
 - The grader, token-relevance, Patchscope, steering and agent steps, on either model.
