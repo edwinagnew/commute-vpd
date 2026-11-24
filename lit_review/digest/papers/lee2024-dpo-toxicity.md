@@ -4,7 +4,7 @@ title: "A Mechanistic Understanding of Alignment Algorithms: A Case Study on DPO
 authors: Andrew Lee et al.
 year: 2024
 id: 2401.01967
-tags: [KNOWN-ANSWER, FT-INTERP, DIFFING, SUPPORTS, EH, ALIGNMENT]
+tags: [KNOWN-ANSWER, FT-INTERP, DIFFING, SUPPORTS, EH, ALIGNMENT, CONTRADICTS]
 primary_tag: KNOWN-ANSWER
 in_our_bib: lee2024dpo
 cited_in_draft: yes

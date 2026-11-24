@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [decompositions, reuse-definitions]
 read_from: arXiv HTML abstract+intro+preliminaries+methodology+sections 5-7 (main text); appendices only skimmed by grep
-digest_buckets: []
+digest_buckets: [5-cite-fix]
 importance: 4
 ---
 

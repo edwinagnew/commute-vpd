@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [elicitation]
 read_from: "local PDF (arXiv v5, Oct 2026) pages 1-8: abstract, framework (Sec. 2), results (Sec. 3, Tables 1-4), start of entropy section"
-digest_buckets: [4-supports]
+digest_buckets: [4-supports, 5-cite-fix]
 importance: 4
 ---
 

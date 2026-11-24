@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [model-diffing, baselines, elicitation]
 read_from: "arXiv HTML: abstract, intro, related work, method (sec. 3), experiments (sec. 5), discussion"
-digest_buckets: [1-missing-method]
+digest_buckets: [1-missing-method, 5-cite-fix]
 importance: 4
 ---
 

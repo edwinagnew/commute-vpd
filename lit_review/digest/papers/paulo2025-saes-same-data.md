@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [decompositions, other]
 read_from: "arXiv HTML (v2): abstract, intro, Hungarian-matching method, main results, related work"
-digest_buckets: []
+digest_buckets: [5-cite-fix]
 importance: 3
 ---
 

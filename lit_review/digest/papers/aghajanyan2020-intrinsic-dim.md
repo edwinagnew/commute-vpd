@@ -4,7 +4,7 @@ title: "Intrinsic Dimensionality Explains the Effectiveness of Language Model Fi
 authors: Aghajanyan et al.
 year: 2020
 id: 2012.13255
-tags: [EH, DYNAMICS, BACKGROUND]
+tags: [EH, DYNAMICS, BACKGROUND, SUPPORTS]
 primary_tag: DYNAMICS
 in_our_bib: no
 cited_in_draft: no

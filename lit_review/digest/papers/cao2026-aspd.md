@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [decompositions, baselines, model-diffing]
 read_from: "arXiv HTML v2: abstract, sections 1-6 (method, experiments, IOI and semantic case studies); appendices not read"
-digest_buckets: [1-missing-method]
+digest_buckets: [1-missing-method, 5-cite-fix]
 importance: 5
 ---
 

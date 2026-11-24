@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [decompositions]
 read_from: arXiv HTML (v2) full text, sections 1-7; appendices not read
-digest_buckets: []
+digest_buckets: [5-cite-fix]
 importance: 3
 ---
 

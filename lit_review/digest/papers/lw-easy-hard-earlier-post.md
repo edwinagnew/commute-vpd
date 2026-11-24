@@ -1,10 +1,11 @@
 ---
 slug: lw-easy-hard-earlier-post
+superseded_by: easy-hard-2602-07852 (earlier LessWrong post of the same work; cite the paper)
 title: "Narrow Misalignment is Hard, Emergent Misalignment is Easy"
 authors: Edward Turner et al.
 year: 2025
 id: https://www.lesswrong.com/posts/gLDSqQm8pwNiq7qst
-tags: [FT-INTERP, EH, ALIGNMENT]
+tags: [FT-INTERP, EH, ALIGNMENT, SUPPORTS]
 primary_tag: FT-INTERP
 in_our_bib: no
 cited_in_draft: no

@@ -1,6 +1,6 @@
 #!/bin/bash
 # E286 rotation_kept (P1.60). Usage: sbatch --comment='E286 stage: built' cluster/rotation_kept.sbatch <stage> <tag> [--shard I N]
-# stage: control | built | e62 | head24 | trained | panel_nn | panel_vpd | summary. Each job runs the control stage
+# stage: control | built | e62 | head24 | trained | panel_nn | panel_vpd | gauge | summary (gauge skips control). Each job runs the control stage
 # first (skipped once results/stage0_<tag>.json says done). panel_vpd goes to an H100 pod after one state is rehearsed here.
 #SBATCH --job-name=commute-rotation-kept
 #SBATCH --partition=compute

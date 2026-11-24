@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [interpreting-finetunes, elicitation, reuse-definitions]
 read_from: arXiv HTML: abstract, sections 1-5, 7.1 (opening), 8 Discussion, 9 Limitations, start of 10 (numbers stripped from inline math in places)
-digest_buckets: [2-known-answer-case, 4-supports]
+digest_buckets: [2-known-answer-case, 4-supports, 5-cite-fix]
 importance: 6
 ---
 

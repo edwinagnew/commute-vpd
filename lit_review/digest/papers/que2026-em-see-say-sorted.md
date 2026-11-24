@@ -4,7 +4,7 @@ title: "See It, Say It, Sorted: Mechanistic Diagnosis and Parameter-Space Mitiga
 authors: Que et al.
 year: 2026
 id: 2609.34970
-tags: [ALIGNMENT, FT-INTERP, DYNAMICS, EH]
+tags: [ALIGNMENT, FT-INTERP, DYNAMICS, EH, SUPPORTS]
 primary_tag: ALIGNMENT
 in_our_bib: no
 cited_in_draft: no

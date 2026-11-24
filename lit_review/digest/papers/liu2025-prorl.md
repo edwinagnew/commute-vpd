@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [elicitation, training-dynamics]
 read_from: "local PDF arxiv_2505.24864.pdf (v1) via pdf-text: abstract, §1, §2 (GRPO, KL control, reference reset), §4.1-4.3 (boundary analysis, creativity index, diminish/plateau/sustained); appendices not read"
-digest_buckets: [2-known-answer-case, 4-contradicts]
+digest_buckets: [2-known-answer-case, 4-contradicts, 5-cite-fix]
 importance: 4
 ---
 

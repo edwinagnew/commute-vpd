@@ -4,13 +4,13 @@ title: "The persona selection model"
 authors: Marks et al. (Lindsey, Olah)
 year: 2026
 id: https://www.lesswrong.com/posts/dfoty34sT7CSKeJNn/the-persona-selection-model
-tags: [EH, DEFINITION, ALIGNMENT, CITE-FIX]
+tags: [EH, DEFINITION, ALIGNMENT, CITE-FIX, SUPPORTS]
 primary_tag: EH
 in_our_bib: no
 cited_in_draft: no
 themes: [elicitation, reuse-definitions]
 read_from: "LessWrong post full text (via LW GraphQL, posted 2026-02-23); key passages grepped and quoted from it"
-digest_buckets: [3-definition, 4-supports]
+digest_buckets: [3-definition, 4-supports, 5-cite-fix]
 importance: 6
 ---
 

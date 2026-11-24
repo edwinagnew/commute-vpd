@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [elicitation, interpreting-finetunes]
 read_from: "arXiv HTML v7: abstract, sections 2-3 (design, controls, results), 4.1, 4.6-4.8 (incl. base models), 6 discussion"
-digest_buckets: []
+digest_buckets: [5-cite-fix]
 importance: 4
 ---
 

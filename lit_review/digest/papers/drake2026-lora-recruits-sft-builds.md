@@ -1,16 +1,17 @@
 ---
 slug: drake2026-lora-recruits-sft-builds
+aliases: [transplanting-misalignment-persona]
 title: "Transplanting, inverting, and preventing a misalignment persona: method-conditional emergent misalignment in Qwen2.5"
 authors: Lyndon Drake et al.
 year: 2026
 id: 2607.04510
-tags: [KNOWN-ANSWER, FT-INTERP, DIFFING, EH, ALIGNMENT, CITE-FIX]
+tags: [KNOWN-ANSWER, FT-INTERP, DIFFING, EH, ALIGNMENT, CITE-FIX, SUPPORTS]
 primary_tag: KNOWN-ANSWER
 in_our_bib: no
 cited_in_draft: no
 themes: [interpreting-finetunes, model-diffing, elicitation, baselines]
 read_from: arXiv HTML abstract, sections 1-3, Part I-II (sections 8-12) and Part III (sections 13-14) by grep; Part IV only via abstract
-digest_buckets: [1-missing-method, 2-known-answer-case, 4-supports]
+digest_buckets: [1-missing-method, 2-known-answer-case, 4-supports, 5-cite-fix]
 importance: 6
 ---
 
@@ -55,3 +56,8 @@ selection could cite. Should be cited next to Wang et al. 2025.
   ablation + base readability) vs full SFT = no recruitment, anti-persona drift (inferred localised solution).
 - 4-supports: two fine-tunes of the same data differ in whether they go through a base mechanism, so the method, not
   the task, sets reuse; supports treating reuse as a property of the update, read inside the model.
+
+**Merged entry.** `transplanting-misalignment-persona` (same arXiv ID) was a second reading of this paper, merged here on 2026-11-23. Its digest lines:
+- 2-known-answer-case: Qwen2.5-32B, insecure code; LoRA reuses a pre-existing persona direction, full SFT builds a localised circuit (evidence: weight enrichment, transplant, trajectory); labels are representational, not mechanism-level.
+- 1-missing-method: enrichment of a weight update along a base-model direction relative to chance; cheap and runnable on our fine-tunes.
+- 4-supports: the method, not the data, decides whether a pre-existing structure is used; consistent with our reading that trained updates do not simply rescale base components.

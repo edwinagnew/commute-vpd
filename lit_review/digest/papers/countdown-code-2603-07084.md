@@ -4,7 +4,7 @@ title: "Countdown-Code: A Testbed for Studying The Emergence and Generalization 
 authors: Muhammad Khalifa et al.
 year: 2026
 id: 2603.07084
-tags: [ALIGNMENT, EH, BACKGROUND]
+tags: [ALIGNMENT, EH, BACKGROUND, SUPPORTS]
 primary_tag: ALIGNMENT
 in_our_bib: no
 cited_in_draft: no

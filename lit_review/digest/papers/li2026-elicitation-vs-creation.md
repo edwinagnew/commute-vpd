@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [elicitation, reuse-definitions]
 read_from: arXiv HTML full main text (abstract, sections 1-6); appendix A derivation not read
-digest_buckets: [3-definition]
+digest_buckets: [3-definition, 5-cite-fix]
 importance: 5
 ---
 
