@@ -4,13 +4,13 @@ title: "Alignment Pretraining: AI Discourse Causes Self-Fulfilling (Mis)alignmen
 authors: Tice et al.
 year: 2026
 id: 2601.10160
-tags: [EH, ALIGNMENT, CITE-FIX]
+tags: [EH, ALIGNMENT, CITE-FIX, SUPPORTS]
 primary_tag: EH
 in_our_bib: no
 cited_in_draft: no
 themes: [elicitation, other]
 read_from: "arXiv HTML: abstract, sections 2-4 (setup, base-model results, post-training persistence, stage study), appendix I (EM)"
-digest_buckets: [4-supports]
+digest_buckets: [4-supports, 5-cite-fix]
 importance: 4
 ---
 

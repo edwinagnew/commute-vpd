@@ -10,7 +10,7 @@ in_our_bib: jain2024safety
 cited_in_draft: yes
 themes: [interpreting-finetunes, model-diffing, elicitation]
 read_from: "arXiv HTML (v3): abstract, intro, sections 2-6, App. B.2, C.1-C.2 headings and Llama text"
-digest_buckets: [4-supports, 1-missing-method]
+digest_buckets: [4-supports, 1-missing-method, 5-cite-fix]
 importance: 6
 ---
 

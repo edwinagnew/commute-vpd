@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [elicitation, training-dynamics]
 read_from: "arXiv HTML v1: abstract, sections 2-6 (method, emergence, transfer through post-training, geometry, facets, extraction sensitivity)"
-digest_buckets: [4-supports]
+digest_buckets: [4-supports, 5-cite-fix]
 importance: 5
 ---
 

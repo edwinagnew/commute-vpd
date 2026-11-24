@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [model-diffing, baselines, interpreting-finetunes]
 read_from: "arXiv HTML: abstract, intro, Sec. 2-5 (method, RLHF-poisoned case study, backdoor and unlearning results), related work, steering appendix lines"
-digest_buckets: [1-missing-method]
+digest_buckets: [1-missing-method, 5-cite-fix]
 importance: 6
 ---
 

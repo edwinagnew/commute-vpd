@@ -4,7 +4,7 @@ title: "Understanding On-Policy Distillation: A Mechanistic Interpretability Per
 authors: Yu et al. (Ye, Wang, Zou)
 year: 2026
 id: 2609.35210
-tags: [FT-INTERP, DIFFING, EH, BASELINE]
+tags: [FT-INTERP, DIFFING, EH, BASELINE, SUPPORTS]
 primary_tag: FT-INTERP
 in_our_bib: no
 cited_in_draft: no

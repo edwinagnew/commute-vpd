@@ -4,13 +4,13 @@ title: "Refusal in Language Models Is Mediated by a Single Direction"
 authors: Arditi et al.
 year: 2024
 id: 2406.11717
-tags: [KNOWN-ANSWER, FT-INTERP, BASELINE, EH, ALIGNMENT, CITE-FIX]
+tags: [KNOWN-ANSWER, FT-INTERP, BASELINE, EH, ALIGNMENT, CITE-FIX, SUPPORTS]
 primary_tag: KNOWN-ANSWER
 in_our_bib: no
 cited_in_draft: no
 themes: [interpreting-finetunes, elicitation, baselines]
 read_from: "arXiv HTML: abstract, intro, sections 2-4 headings and text, App. J (base models) in full"
-digest_buckets: [2-known-answer-case, 1-missing-method, 4-supports]
+digest_buckets: [2-known-answer-case, 1-missing-method, 4-supports, 5-cite-fix]
 importance: 6
 ---
 

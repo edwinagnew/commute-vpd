@@ -10,7 +10,7 @@ in_our_bib: ward2025reasoning
 cited_in_draft: yes
 themes: [elicitation, interpreting-finetunes, reuse-definitions, baselines]
 read_from: arXiv HTML full text (abstract, sections 1-5); appendices not read
-digest_buckets: [2-known-answer-case, 3-definition, 4-supports, 1-missing-method]
+digest_buckets: [2-known-answer-case, 3-definition, 4-supports, 1-missing-method, 5-cite-fix]
 importance: 6
 ---
 

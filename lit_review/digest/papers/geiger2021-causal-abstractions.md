@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [causal-abstraction, reuse-definitions]
 read_from: "PDF pages 1-9 (abstract, method, MQNLI results, comparison with probes)"
-digest_buckets: [3-definition]
+digest_buckets: [3-definition, 5-cite-fix]
 importance: 4
 ---
 

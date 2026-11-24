@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [model-diffing, baselines, elicitation]
 read_from: "LessWrong post full (markdown via LessWrong GraphQL; figures not viewed), posted 2025-03-22"
-digest_buckets: [1-missing-method, 4-supports]
+digest_buckets: [1-missing-method, 4-supports, 5-cite-fix]
 importance: 5
 ---
 

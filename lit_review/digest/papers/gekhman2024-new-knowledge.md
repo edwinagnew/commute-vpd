@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [elicitation, training-dynamics]
 read_from: "arXiv HTML: abstract, intro, sections 2-4 (setup, SliCK categories, unknown vs known fitting, linear model), Table 2, discussion (incl. Superficial Alignment Hypothesis paragraph)"
-digest_buckets: [4-supports]
+digest_buckets: [4-supports, 5-cite-fix]
 importance: 5
 ---
 

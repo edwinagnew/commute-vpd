@@ -4,13 +4,13 @@ title: "Weak-to-Strong Generalization: Eliciting Strong Capabilities With Weak S
 authors: Burns et al.
 year: 2023
 id: 2312.09390
-tags: [EH, BACKGROUND, CITE-FIX]
+tags: [EH, BACKGROUND, CITE-FIX, SUPPORTS]
 primary_tag: EH
 in_our_bib: burns2023weak
 cited_in_draft: in refs.bib but not \cite'd
 themes: [elicitation]
 read_from: "arXiv HTML: abstract, intro, sec. 3 (PGR), sec. 4 results, sec. 5.2 saliency incl. 5.2.3 linear probes"
-digest_buckets: [4-supports]
+digest_buckets: [4-supports, 5-cite-fix]
 importance: 3
 ---
 

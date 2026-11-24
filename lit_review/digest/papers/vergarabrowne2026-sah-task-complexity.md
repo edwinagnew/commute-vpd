@@ -4,13 +4,13 @@ title: Operationalising the Superficial Alignment Hypothesis via Task Complexity
 authors: Vergara-Browne et al.
 year: 2026
 id: 2602.15829
-tags: [EH, DEFINITION, CITE-FIX]
+tags: [EH, DEFINITION, CITE-FIX, SUPPORTS]
 primary_tag: DEFINITION
 in_our_bib: no
 cited_in_draft: no
 themes: [elicitation, reuse-definitions]
 read_from: arXiv HTML abstract+section 3 (definitions 3.1-3.7)+experimental setup+sections 6-9 (results, pre/post-training checkpoints, conclusion, limitations); section 4 method list only skimmed
-digest_buckets: [3-definition, 4-supports]
+digest_buckets: [3-definition, 4-supports, 5-cite-fix]
 importance: 6
 ---
 

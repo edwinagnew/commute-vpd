@@ -4,13 +4,13 @@ title: "Persona Vectors: Monitoring and Controlling Character Traits in Language
 authors: Chen et al.
 year: 2025
 id: 2507.21509
-tags: [BASELINE, DIFFING, EH, ALIGNMENT, CITE-FIX]
+tags: [BASELINE, DIFFING, EH, ALIGNMENT, CITE-FIX, SUPPORTS]
 primary_tag: BASELINE
 in_our_bib: no
 cited_in_draft: no
 themes: [model-diffing, baselines, interpreting-finetunes, elicitation]
 read_from: "arXiv HTML v3: abstract, sections 2-6 (extraction, steering, finetuning shift, preventative steering, data screening), appendix C.2 table"
-digest_buckets: [1-missing-method, 4-supports]
+digest_buckets: [1-missing-method, 4-supports, 5-cite-fix]
 importance: 5
 ---
 

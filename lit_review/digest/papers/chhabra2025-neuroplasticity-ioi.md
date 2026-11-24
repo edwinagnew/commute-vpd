@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [interpreting-finetunes, elicitation, causal-abstraction, model-diffing]
 read_from: "arXiv HTML: abstract, Sec. 1, 3 (setting, datasets, circuit discovery), 4.1 (amplification), 4.2 (corruption), 5 (neuroplasticity), 6, 8-9; Table 1 values did not render in the HTML; appendices not read"
-digest_buckets: [2-known-answer-case, 4-supports, 3-definition]
+digest_buckets: [2-known-answer-case, 4-supports, 3-definition, 5-cite-fix]
 importance: 7
 ---
 

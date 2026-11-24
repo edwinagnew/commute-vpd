@@ -4,13 +4,13 @@ title: "Do VPD's Explanations Aggregate? An Audit of the Released Decomposition"
 authors: Angsten
 year: 2026
 id: https://www.lesswrong.com/posts/KeBccWBGXnNXzZFBp/do-vpd-s-explanations-aggregate-an-audit-of-the-released-1
-tags: [DECOMP, BASELINE, CITE-FIX]
+tags: [DECOMP, BASELINE, CITE-FIX, CONTRADICTS]
 primary_tag: DECOMP
 in_our_bib: no
 cited_in_draft: no
 themes: [decompositions, baselines]
 read_from: "LessWrong post full (via LW GraphQL), all sections incl. footnotes"
-digest_buckets: [4-contradicts]
+digest_buckets: [4-contradicts, 5-cite-fix]
 importance: 5
 ---
 

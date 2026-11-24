@@ -10,7 +10,7 @@ in_our_bib: shao2025spurious
 cited_in_draft: in refs.bib but not \cite'd (cited only in appC_rl_sft_qwen.tex, which main.tex does not input)
 themes: [elicitation, interpreting-finetunes]
 read_from: "local PDF arxiv_2506.10947.pdf (v2, Feb 2026) via pdf-text: abstract, §1-5 (pp. 1-8) incl. clipping-bias derivation and code-reasoning case study; appendices not read"
-digest_buckets: [2-known-answer-case, 4-supports]
+digest_buckets: [2-known-answer-case, 4-supports, 5-cite-fix]
 importance: 5
 ---
 

@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [causal-abstraction, reuse-definitions]
 read_from: "PDF text (v4, CLeaR 2024), local copy: abstract, intro, Defs 1-5 (pp1-8), hierarchical-equality and random-network results (pp9-11), MoNLI BERT results (pp11-13), FAQ appendix (pp22-23)"
-digest_buckets: [3-definition]
+digest_buckets: [3-definition, 5-cite-fix]
 importance: 4
 ---
 
