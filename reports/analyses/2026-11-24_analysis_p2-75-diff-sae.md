@@ -35,9 +35,11 @@ Gaussian read 0 and 0.3045. So at one seed the method separates a written change
 larger than a fine-tune's on this model. Two arms gave no reading,
 and they are set out below.
 
-**k-33 fit: pending.** whip-lead approved the conditional fit on the head at seed 0, with a third of the published k.
-It asks whether the head's change is split over many latents or lies below the method's reach. It is running now,
-and its reading goes here and in the figure's marked slot when it lands.
+**The k-33 fit: also below reach.** whip-lead approved one more fit on the head at seed 0, with a third of the published
+k. It asks whether the head's change is spread thinly over many latents, which a sparser code would gather, or lies
+below the method's reach. It ran clean, with no dead latents, and its latents together carried 0.855 of the change.
+The specific part read 0.0040 under the code's form and 0.0818 under the post's, against the same bar of 0.4422. So the
+sparser code does not make the head readable: it stays below the method's reach, and the outcome stands.
 
 ![Specific part per arm under both forms of nu, with the gate bar](../../experiments/diff_sae/figures/run1_specific.png)
 
@@ -71,6 +73,7 @@ is the SAE's fraction of the difference's variance explained on the 5M validatio
 |---|---|---|---|---|---|
 | head, fine-tune size, seed 0 | A | 0.0775 | 0.0299 | 0.885 | 0.925 |
 | head, fine-tune size, seed 1 | A | 0.0731 | 0.0275 | 0.879 | 0.925 |
+| head, seed 0, k 33 | A | 0.0040 | 0.0818 | 0.855 | 0.881 |
 | matched Gaussian, draw 0 | A | 0 | 0.1785 | 0.806 | 0.750 |
 | matched Gaussian, draw 1 | A | 0 | 0.2297 | 0.777 | 0.718 |
 | exact planted change | A | stopped at step 5700, non-finite loss | | | |
@@ -109,7 +112,7 @@ cannot apply.
 - **Training order.** Ours: E235's interleaved stream, not per-dataset prefixes shuffled in 1M-token shards.
 - **Storage.** Ours: fp32 forwards and the difference in fp32, not bf16, whose rounding is a fine-tune's size here.
 - **Normaliser.** Theirs in rule, ours in port: 500k tokens from each of two datasets, one stream pass.
-- **SAE.** Theirs: BatchTopK at expansion 2, 1,536 latents at k 100. A k-33 fit was conditional on the head failing.
+- **SAE.** Theirs: BatchTopK at expansion 2, 1,536 latents at k 100. Ours: one k-33 fit on the head, run because the head failed under both forms.
 - **Recipe and loop.** Theirs: `lr 1e-4`, warm-up 1,000 steps, batch 2,048, AuxK, threshold EMA, TF32, logging every 50
   steps and validation every 20,000 on 5M tokens.
 - **Validation text.** Ours: 5M Pile tokens from train rows 196,608 to 206,392, since each side's task text is all
