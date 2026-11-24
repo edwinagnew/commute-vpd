@@ -163,4 +163,4 @@ P1.60 / E286 rotation-kept page, sections 1-2: fixes needed, all $0 from page.js
 P1.58 / E291 unseen-cue page (a9bbfe04): OK as a description after 3 fixes.
 - (1) The gate's built arms confound shared-rule against per-key with rescaled against new: the exact controls are shared-rule, the new edits per-key. The lookup falls on unseen keys whatever its mechanism. A per-key rescaling control is missing, so the claim is "shared rule vs per-key" until it runs, and 0.926 is not to be quoted as separating reuse from new.
 - (2) The floor "near 0.03 / thirty times" is wrong: the lookup seed sd is 0.072, so the gap is 13-18 sd.
-- (3) The random change reads −0.71 and −2.95: say the fit overfits.
+- (3) The random change reads −0.71 and −2.95: the fit overfits, so the new edits' ~0.1 may understate what gains carry over (I first said "upper bound", which was wrong).
