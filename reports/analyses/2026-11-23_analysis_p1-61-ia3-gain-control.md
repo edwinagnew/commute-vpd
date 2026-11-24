@@ -7,17 +7,17 @@ card `experiments/ia3_control/card.md`, filed rules `experiments/ia3_control/res
 
 We trained fine-tunes of the 67M model that may only turn each neuron's output up or down, on the five key-grid tasks,
 and read them with the write share over the needed set beside the full fine-tunes and size-matched random updates. At
-neurons they read ten to sixty times higher than the full fine-tunes, but none learned its task as well as the full
+neurons they read ten to sixty-seven times higher than the full fine-tunes, but none learned its task as well as the full
 fine-tune did, so the filed test of the instrument gives no call. For `GOALS.md` this shows the neuron reading is not
 low on every trained update, and says nothing yet about whether the full fine-tunes reuse the model.
 
 ## The answer
 
 A fine-tune allowed only to rescale existing neurons reads far higher at neurons than the full fine-tune of the same
-task: between ten and sixty-seven times higher, on every task and seed. So the neuron reading can read a trained update
-high, and its low readings on full fine-tunes are not a floor of the instrument. But no gain-only fine-tune reached the
-full fine-tune's task gain on any task, so the filed comparison makes no call. Read with VPD's subcomponents instead,
-the same gain-only fine-tunes read about as low as the full fine-tunes.
+task: between ten and sixty-seven times higher, on every task and seed where it learned something. Without the
+per-layer remainders the gain-only fine-tunes read 1 and the full fine-tunes about 0.03 to 0.07. So the low readings on
+full fine-tunes are not a floor of the instrument. But no gain-only fine-tune reached the full fine-tune's task gain on
+any task, so the filed comparison makes no call. At VPD's subcomponents they read about as low as the full fine-tunes.
 
 ## What we were trying to test
 
@@ -90,9 +90,9 @@ The one identity job with a largest logit change of 0.079 still flipped nothing;
 fine-tune's gain on copy and 0.71 on rank1, against bars of 0.99 and 0.96. It reached only 0.026 on cipher. The IA3 arm
 came closer everywhere, 0.94 on copy and 0.26 on cipher, and also missed every bar. Held-out P(target) rose between
 steps 100 and 300 on every task, so this shows what 300 steps of gain training reach, not what gains can reach. Copy
-was read at step 100 by the rule, and at step 300 both arms were still below its bar. Cipher is the one task where the
-gap reads as evidence that the task needs more than per-neuron gains. There, at step 300, the FFN-gain arm's P(target)
-on seed 0 was 0.019, against 0.79 for the full fine-tune. At step 30, where the full fine-tunes are read, the gain arms
+was read at step 100 by the rule, and at step 300 both arms were still below its bar. Cipher has the widest gap
+within 300 steps: the FFN-gain arm's P(target) on seed 0 was 0.019, against 0.79 for the full fine-tune. That is
+evidence the task needs more than per-neuron gains within this budget only, since P(target) was still rising. At step 30, where the full fine-tunes are read, the gain arms
 had at most 0.32 of the full gain.
 
 | task | full gain, seed 0 | seed 1 | seed 2 | bar | FFN-gain mean share | IA3 mean share | read step of the gain arms |
@@ -112,12 +112,24 @@ neurons alone, every one of the 30 gain items read 1 to within 2.9e-13, against 
 As filed, with the remainders in, the FFN-gain arm read 0.24 to 0.81 and the IA3 arm 0.18 to 0.73, in the left panel.
 The full fine-tunes read 0.012 to 0.028 and every matched random at most 0.012. The FFN-gain arm sat between 0.22 and
 0.8 above the full fine-tune of the same task and seed, on all 15 pairs. Had the gain bar been met, that is rival A's
-pattern; it was not met, so this is a description, not a score.
+pattern; it was not met, so this is a description, not a score. One cell of that comparison is construction alone: on
+cipher the FFN-gain arm learned almost nothing, a task gain of 0.02, so its readings of 0.34 to 0.36 say nothing about a
+trained update. Without it the gain arms read ten to sixty-seven times the full fine-tune of the same task and seed.
 
-What pulls the gain arms below 1 is the remainders. For the FFN-gain arm, E_b as filed sits close to one minus the
-remainders' share of the needed write change, which ranged 0.19 to 0.77. On the same windows the full fine-tunes'
-remainders carried 0.63 to 0.71 of it. The IA3 arm also changed all 24 heads, and without the remainders it read 0.36
-to 0.84.
+**The clean comparison is without the remainders.** The filed reading mixes how much of the change is kept with how
+much of it sits in the per-layer remainders, and that share differs between arms. Without the remainders, the
+FFN-gain arm reads 1 on every item, and the 15 full fine-tunes read 0.030 to 0.071. The IA3 arm reads 0.36 to 0.84
+there, below 1 because its key and value gains change heads in ways no single gain explains. This pair, not the filed
+one, is what the "not a floor" claim rests on.
+
+**What the remainders do to the filed reading.** Each layer pools the weak part of all its neurons into one remainder
+variable, which may stand in only at one scalar gain. A different gain on each neuron is not one scalar change of that
+pool, so the remainder's write change counts as unexplained even when every neuron is kept exactly. For the FFN-gain
+arm, E_b as filed therefore sits close to one minus the remainders' share of the needed write change, which ranged 0.19
+to 0.77. On the full fine-tunes' windows the remainders carried 0.63 to 0.71 of it. So there a perfectly kept update
+would read only about 0.29 to 0.37 under the filed neuron featurization, not 1, and the full fine-tunes' 0.012 to
+0.028 is under a tenth of that ceiling. Both writes of each variable are taken in the fine-tune's own forward pass, on
+the same input to that layer, so no change upstream leaks into a variable's reading.
 
 | arm | task | seed | task gain | E_b over K, as filed | matched random | \|K\| | needed changed neurons | median margin | remainders' share |
 |---|---|---|---|---|---|---|---|---|---|
@@ -197,15 +209,14 @@ margin was not saved.
 ## What can and cannot be read from this
 
 What it supports:
-- The neuron reading, as filed, can read a trained update high. A gain-only fine-tune trained on the same tasks, data
-  and loss reads 0.18 to 0.81, ten to sixty-seven times the full fine-tune of the same task and seed. So the full
-  fine-tunes' readings near 0.02 are not a floor the instrument puts on every trained update, which was the doubt this
-  cell was opened for.
+- The neuron reading can read a trained update high. Without the remainders, the gain-only fine-tunes read 1 and the
+  full fine-tunes 0.030 to 0.071, on the same tasks, data and loss. As filed, the gain arms that learned something
+  read ten to sixty-seven times the full fine-tune of the same task and seed. So the full fine-tunes' low readings are
+  not a floor the instrument puts on every trained update, which was the doubt this cell was opened for.
 - The arithmetic is right: the neurons-only reading is 1 to rounding on all 30 gain items, and the do-nothing reads 1.
-- The remainders set the ceiling of the filed reading on an update that is kept at every neuron, at 0.19 to 0.77 of
-  the needed write change for the FFN-gain arm.
-- On cipher, gains alone got nowhere near the full fine-tune within 300 steps, consistent with that task needing
-  more than rescaling what the model already has.
+- The filed reading has a ceiling well below 1 on these windows. Each layer's pooled remainder may stand in only at one
+  scalar gain, so on the full fine-tunes' windows a perfectly kept update would read only about 0.29 to 0.37.
+  Wherever the filed neuron reading is quoted, that ceiling belongs beside it.
 
 What it cannot support:
 - A filed verdict between the rivals. No arm reached its gain bar, so the comparison is "no call", reported as what was
@@ -216,22 +227,31 @@ What it cannot support:
 - That the reading recognises reuse it was not built around. The gain arms are kept at neurons by construction, so a
   high reading confirms the instrument is not biased low; it does not test it on an update whose answer is unknown.
 - Anything about whether the full fine-tunes reuse the model. No verdict on reuse is given here.
-- At VPD, that the subcomponents see a gain-only update as kept. They do not, so VPD's low readings on the full
-  fine-tunes are not evidence against reuse at the neuron level.
+- That cipher needs more than gains. Within 300 steps the gains got nowhere near the full fine-tune on cipher, but
+  P(target) was still rising at step 300, so a longer run might close the gap.
+- Anything from VPD's low readings about mechanisms. At VPD, on seed 0 only, the update kept at every neuron by
+  construction reads about as low as the full fine-tunes. So VPD's low readings cannot tell a gain-only update from a
+  full fine-tune, and they are not evidence that the full fine-tunes change mechanisms.
 
 ## How compelling is the evidence
 
-The neuron result holds on all five tasks and all three seeds, with |K| in the thousands and matched randoms two to
-four orders of magnitude below the gain arms. The spread across seeds was larger than filed: the FFN-gain copy items
-read 0.73, 0.39 and 0.81, against the filed seed spread of 0.011 from the full fine-tunes. VPD rests on one seed per
-task. The reading is blind to anything the needed set misses: variables whose single swap flips no top token.
+The neuron result holds on all five tasks and all three seeds, with |K| in the thousands. Each gain item read more than
+twenty times its own matched random. The FFN-gain arm on cipher is the exception to "trained": it learned almost
+nothing, so its high reading is construction alone. VPD rests on one seed per task. The reading is blind to anything
+the needed set misses: variables whose single swap flips no top token.
 
 ## Surprises
 
-- The FFN-gain copy seed 1 read 0.39 where its two siblings read 0.73 and 0.81, with its remainders carrying 0.62 of
-  the needed write change. The seed spread of the filed reading on gain updates is far larger than on full fine-tunes.
+- The FFN-gain copy seeds read 0.73, 0.39 and 0.81 as filed. The spread is the remainders, not how much is kept: their
+  shares of the needed write change were 0.27, 0.62 and 0.19, and without the remainders all three read 1. The filed
+  seed spread of 0.011 came from full fine-tunes and does not apply to this reading.
 - One neuron job's identity check had a largest logit change of 0.079, against 5.0e-5 on the other three, with no flip.
-  Its other stage-0 checks matched the other jobs. It was not run down.
+  Its smallest margin was 0.00082, so a near-tie survived a deviation a hundred times its size, and a flip at that
+  noise could have added a member to K. The job ran on the pod whose VPD job recorded an RTX 4090. It read 11 matched
+  randoms and these 11 items: FFN-gain rank1 seed 0, elicit seed 1 and cipher seed 2; IA3 copy seed 0, rank1 seed 1,
+  elicit seed 2 and prior_cipher seed 0; full copy seed 1, rank1 seed 2, cipher seed 0 and prior_cipher seed 1. They
+  agree with their sibling seeds: FFN-gain rank1 0.24 against 0.26 and 0.28, IA3 copy 0.69 against 0.66 and 0.73,
+  full copy 0.0123 against 0.0117 and 0.0122. It was not run down further.
 - The gain arms learned much more slowly than expected: at step 30 the FFN-gain arm had at most 0.11 of the full gain,
   and the plan expected most tasks to reach the bar.
 

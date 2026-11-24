@@ -156,3 +156,7 @@ P1.61 / E290 gain-only control (496be034): OK after 6 fixes, all $0.
 - Name job nD's 22 items; its 0.079 identity check did not move them.
 - At VPD the built-kept control reads as low as the full fine-tunes, so VPD's low readings cannot be evidence that mechanisms changed. That goes to writeup-lead and whip-lead.
 - The copy seed spread is the remainders' share, not how much is kept.
+P1.60 / E286 rotation-kept page, sections 1-2: fixes needed, all $0 from page.json. plot.py's head/neuron split is right.
+- Own-space share is not degenerate; it counts input-side change, and the reference must be a random update (VPD 0.080, neurons 0.82-0.93, heads 0.59-0.67), not 1/width.
+- "Heads are the exception" is wrong for the same reason, and section 3's 0.13 null becomes about 0.6.
+- The answer's "same at every featurization" and "would not rescue" hold at VPD only: at heads the null is about 0.72 and no head-level rotation control ran.
