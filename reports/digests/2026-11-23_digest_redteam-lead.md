@@ -182,3 +182,5 @@ P2.68 (due 11-25) / E288 CMAP page (e00d29cd): OK after 4 fixes. The no call (5 
 - e54 mid / matched cipher reads level with circuits on both sides, so "reuse above new wherever circuits exist" is wrong.
 - The plant was shown at a 2.29 log-odds gain, against 7-12 for the built items.
 - Premise doubts: (a) agreed and measured. (b) The "CMAP at neurons" name needs a code check or must go.
+
+P2.75 after GPT review (713b45c7): OK to the oracle and code. The new gate is rung 1 at 1.04x, two seeds, two matched Gaussians. Appendix E's choices are fine. Two $0 fixes: the code must assert that the validation rows (131,072 on) are disjoint from E235, rung 1 and E212 rows; and the gate table needs a precedence order (missing arm, Gaussian pass, seed split, pass).
