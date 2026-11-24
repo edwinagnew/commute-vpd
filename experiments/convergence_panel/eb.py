@@ -25,6 +25,7 @@ hardest positions by W0 log-odds, prompt and label tasks' a seeded random draw (
     python experiments/convergence_panel/eb.py windows wide kl_hi
     PRED_SHA=<sha> python experiments/convergence_panel/eb.py 0
     PRED_SHA=<sha> python experiments/convergence_panel/eb.py TASK 0/1 kl_hi wide
+    P2.78: PRED_SHA=<sha> P278_SHA=<sha> EB_RANDOM_SEEDS=1,2 EB_GAUSSIAN=only python ...eb.py TASK 0/1 kl_hi wide
 """
 
 from __future__ import annotations
@@ -52,6 +53,7 @@ KP = KN.KP
 OUT = RUN.RESULTS / "eb"  # stage 0's gate, shared by both sets
 WINDOWS, MANIFEST = RUN.LARGE / "eb_windows", RUN.RESULTS / "wide" / "eb" / "windows_manifest.json"
 MATCHES = ("kl", "size", "kl_hi", "kl_lo", "size_hi", "size_lo")
+P278 = RUN.RESULTS / "wide" / "predictions_p278.json"  # P2.78's filed expectations for the seed-1 and seed-2 Gaussians
 SEC_PER_64 = 738.0  # s per state, 200 windows of 64 tokens, H100 (E268, definition-lead e268_dl/run_rl_p0.log:8)
 # Slowdown against the H100: scan rate 8,800 cases/s on E268's H100 (kstar_needed/results/run_rl_p0.log, site lines)
 # against 3,517/s on a cluster L40 (job 64133, site 0). Another card stops the job before its first state.
@@ -154,13 +156,23 @@ def stage0(w: Any, kc: Any, th: dict[str, Any]) -> None:
         raise SystemExit(f"STOP: eb stage 0: {miss}: tell the lead")
 
 
+def random_seeds() -> tuple[int, ...]:
+    """The seeds whose states get a Gaussian: EB_RANDOM_SEEDS (comma list), default 0, E272's frozen behaviour. P2.78
+    reads seeds 1 and 2 only under its own filed expectations: P278_SHA must equal predictions_p278.json's sha256."""
+    seeds = tuple(int(s) for s in os.environ.get("EB_RANDOM_SEEDS", "0").split(","))
+    if seeds != (0,) and os.environ.get("P278_SHA") != hashlib.sha256(P278.read_bytes()).hexdigest():
+        raise SystemExit(f"STOP: EB_RANDOM_SEEDS={seeds} needs P278_SHA = sha256 of the committed {P278.name}")
+    return seeds
+
+
 def states(name: str, which: str, match: str) -> list[str]:
-    """The seed-0 Gaussians (stage 2's) first, then TASK's states that set `which` picked at a match starting `match`.
+    """The Gaussians of the random_seeds() states first, then TASK's states that set `which` picked at a match starting
+    `match`. Each Gaussian is keyed "random/<its state's file>", so seeds never share a key.
 
     EB_GAUSSIAN=only runs the Gaussians alone, so a pod can read every task's reference before any seed (whip-lead,
     2026-11-23: a late stop loses seeds, not references). Seeds run in file order, s0 then s1 then s2."""
-    picked = {f: s for f, s in RUN.picked(name, which).items() if any(p.startswith(match) for p in s["picked"])}
-    gauss = [f"random/{f}" for f in sorted(picked) if picked[f]["seed"] == 0]
+    picked, seeds = {f: s for f, s in RUN.picked(name, which).items() if any(p.startswith(match) for p in s["picked"])}, random_seeds()
+    gauss = [f"random/{f}" for f in sorted(picked) if picked[f]["seed"] in seeds]
     return gauss if os.environ.get("EB_GAUSSIAN") == "only" else gauss + sorted(picked)
 
 
@@ -200,7 +212,8 @@ def task(w: Any, kc: Any, th: dict[str, Any], name: str, shard: tuple[int, int],
 
 
 def random_file(item: str, C: Any) -> Path:
-    """Stage 2's Gaussian of a seed-0 state (`finetune.random_direction`, C.random_seed), written once in bf16."""
+    """A state's Gaussian, stage 2's rule (`finetune.random_direction` of that state's own dW, C.random_seed), written
+    once in bf16 under the state's file name (which names its seed)."""
     f = item.removeprefix("random/")
     p = RUN.LARGE / "eb_random" / Path(f).name
     if not p.is_file():

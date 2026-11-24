@@ -1,0 +1,39 @@
+{
+ "cell": "P2.78",
+ "filed": "2026-11-24",
+ "descriptive": "user 2026-11-24 via whip-lead, consistency fix (redteam M8), reported as a description",
+ "settings": {
+  "random_seeds": [1, 2],
+  "set": "wide",
+  "match": "kl_hi",
+  "card": "NVIDIA H100 80GB HBM3",
+  "card_source": "every E272 wide/eb record's 'card', experiments/convergence_panel/results/wide/eb/*.json and results/wide/eb/stage0/eb_stage0_{a,b,c2,d2}.json",
+  "random_rule": "eb.py random_file: finetune.random_direction(load_dW(state), C.random_seed), the state's own dW, bf16; unchanged from E272"
+ },
+ "expected": {
+  "stage0_do_nothing": {"E_b_K": 1.0, "n_changed": 0, "dd_max": 0.0, "rule": "exact, eb.py stage0 stops on any miss"},
+  "stage0_x2_K": "within thresholds.eb.x2_E_b_K of predictions.json (eb.py stage0's own rule, unchanged)",
+  "random_state_E_b_K": {
+   "band": [0.0, 0.0357],
+   "band_source": "seed-0 Gaussians of results/wide/eb/*.json: min 0.00433, max 0.02862, sample sd 0.00713 over 12 tasks; band = [max(0, min - sd), max + sd]",
+   "also": "each below every trained seed of its own task, as all 12 seed-0 Gaussians were (analysis 2026-11-23_analysis_convergence-panel.md:264)",
+   "use": "logged and reported, never a stop (eb.py logs the Gaussian against a filed value)"
+  },
+  "random_3seed_tau": {
+   "value": -0.29,
+   "within": 0.24,
+   "source": "the one-draw tau -0.29 (e272_verify.py on results/wide/eb), and the rule threshold below"
+  }
+ },
+ "rule": {
+  "statistic": "gap = tau-b(consensus tier, 3-seed mean of the Gaussians' E_b) - tau-b(consensus tier, 3-seed mean of the trained E_b), both on the same tasks: those in the raters_wide consensus with a finite trained mean and all three Gaussians finite (|K| >= score.K_MIN, else missing)",
+  "threshold": 0.2403,
+  "threshold_source": "half-width of the trained tau's 90% task bootstrap interval, results/summary.json .wide.kl_hi.hope1.E_b.consensus.interval90 = [-0.885, -0.405]",
+  "call": "survives if gap >= threshold; does not survive if gap < threshold; no call with fewer than min_tasks tasks or a nan tau",
+  "min_tasks": 5,
+  "min_tasks_source": "predictions.json rules.min_tasks",
+  "one_draw_reference": "gap with the seed-0 draw: -0.29 - (-0.69) = 0.40, which would survive",
+  "do_nothing_state": "every E_b exactly 1, so the random tau is nan (constant): no call, it cannot pass",
+  "relative_or_absolute": "absolute, in tau units"
+ }
+}
