@@ -18,6 +18,11 @@ the few functions that compute ADL are ported here; each cites its source. Depar
                  base_to_ft, zero_ablate false); here read as the drop of a per-row readout, not of cross-entropy.
   random_diffs   the paper's baseline directions (Sec. 5; causal_effect.py `_sample_activation_diff_vectors`): base
                  activations at two random positions of ordinary text, differenced.
+
+P2.67 (E284, experiments/adl_published) reads the toolkit's own causal effect (cross-entropy, positions 0-8, masks `all`
+and `exclude_pos`, 64 random differences and 64 Gaussians) through `commute.adl_ce`, which is torch-only so that the
+Qwen parity check can run it in the toolkit's venv; here `NetPair` (the 67M behind `adl_ce.Pair`) and `doc_starts`
+(the toolkit's delta_bar text on raw Pile val documents).
 """
 
 from __future__ import annotations
@@ -107,3 +112,68 @@ def random_diffs(net: ST.Net, toks: Tensor, n: int, gen: torch.Generator, batch:
     pool = h.reshape(-1, h.shape[-1])
     a = pool[torch.randperm(len(pool), generator=gen)[: 2 * n]].view(n, 2, -1)
     return (a[:, 0] - a[:, 1]).contiguous()
+
+
+# ---- P2.67 (E284): the toolkit's causal effect (commute.adl_ce) on the 67M ------------------------------------------
+
+
+class NetPair:
+    """`adl_ce.Pair` on the 67M: W0 (base) and W0 + dW (fine-tuned), the site output read and edited at SITE (block 2's
+    input = the toolkit's `layers_output[1]`). fp32; windows are unpadded, so `attn` must be all ones."""
+
+    def __init__(self, net: ST.Net, dW: ST.DW) -> None:
+        self.net, self.dW = net, dW
+
+    def _read(self, x: Tensor, attn: Tensor, dW: ST.DW | None, edit: Callable[[Tensor], Tensor] | None) -> tuple[Tensor, Tensor]:
+        assert bool(attn.all()), "the 67M windows are unpadded"
+        seen: dict[str, Tensor] = {}
+
+        def f(h: Tensor) -> Tensor:
+            seen["h"] = edit(h) if edit else h
+            return seen["h"]
+
+        with self.net.at(dW):
+            lg = self.net.run(x, {SITE: f})[0]
+        return lg, seen["h"]
+
+    def base(self, x: Tensor, attn: Tensor) -> tuple[Tensor, Tensor]:
+        return self._read(x, attn, None, None)
+
+    def ft(self, x: Tensor, attn: Tensor, edit: Callable[[Tensor], Tensor] | None = None) -> tuple[Tensor, Tensor]:
+        return self._read(x, attn, self.dW, edit)
+
+
+def doc_starts(n_docs: int, n_tok: int, keep: int, seed: int) -> tuple[Tensor, dict[str, str]]:
+    """(n_docs, keep) int64: the toolkit's text for delta_bar (method.py `load_and_tokenize_dataset`, L28-118) on raw
+    Pile val documents: the file `val.jsonl.zst` of monology/pile-uncopyrighted picked by name (its viewer lists only
+    train), `dataset.shuffle(seed)` (L69-71, the config's seed 42), empty texts skipped (L93-94), each cut to its first
+    n_tok * 10 characters (L101), `encode(add_special_tokens=True)` with the tokenizer `vpd.tokenizer()` loads (no BOS by
+    default), kept when it has >= n_tok tokens (L106), first `keep` of them stored (positions >= keep do not change
+    positions < keep under causal attention). Returns the tokens and where they came from (repo and tokenizer commits)."""
+    from datasets import load_dataset
+    from huggingface_hub import HfApi, hf_hub_download
+
+    from commute import vpd
+
+    repo, api = "monology/pile-uncopyrighted", HfApi()
+    files = [f for f in api.list_repo_files(repo, repo_type="dataset") if f.rsplit("/", 1)[-1] == "val.jsonl.zst"]
+    if len(files) != 1:
+        raise SystemExit(f"{repo} holds {files} named val.jsonl.zst, not one: the spec's fallback (packed val rows) is the lead's call")
+    rev = api.dataset_info(repo).sha or ""
+    path = hf_hub_download(repo, files[0], repo_type="dataset", revision=rev)
+    ds = load_dataset("json", data_files=path, split="train").shuffle(seed=seed)
+    tok, out = vpd.tokenizer(), list[list[int]]()
+    for ex in ds:
+        if len(out) >= n_docs:
+            break
+        text = ex["text"]  # pyright: ignore[reportArgumentType, reportCallIssue, reportIndexIssue]
+        if not text or not text.strip():
+            continue
+        ids = tok.encode(text[: n_tok * 10], add_special_tokens=True)
+        if len(ids) >= n_tok:
+            out.append(ids[:keep])
+    assert len(out) == n_docs, f"only {len(out)} documents of >= {n_tok} tokens"
+    meta = {"repo": repo, "file": files[0], "repo_revision": rev, "tokenizer": "EleutherAI/gpt-neox-20b",
+            "tokenizer_revision": api.model_info("EleutherAI/gpt-neox-20b").sha or "", "bos_token": str(tok.bos_token),
+            "first_token_is_bos": str(all(r[0] == tok.bos_token_id for r in out))}  # fmt: skip
+    return torch.tensor(out, dtype=torch.long), meta
