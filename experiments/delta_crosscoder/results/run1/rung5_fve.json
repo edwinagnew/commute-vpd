@@ -1,0 +1,43 @@
+{
+  "source": "built with jq: run 1 logged batch FVE per model (parsed from podD.log for rung5, podA.log for rung5tied, 4 significant figures as logged); the step-1,000 check from items/*.json; the rehearsal from ../rehearse/items/rung5.json",
+  "run1": {
+    "rung5": {
+      "logged": [
+        {
+          "step": 0,
+          "fve_base": -0.8749,
+          "fve_ft": 0.1262
+        },
+        {
+          "step": 500,
+          "fve_base": -0.05362,
+          "fve_ft": 0.9849
+        }
+      ],
+      "check_mean_fve_worse_900_999": 0.29148250818252563
+    },
+    "rung5tied": {
+      "logged": [
+        {
+          "step": 0,
+          "fve_base": -0.9348,
+          "fve_ft": 0.1205
+        },
+        {
+          "step": 500,
+          "fve_base": -0.2264,
+          "fve_ft": 0.9837
+        }
+      ],
+      "check_mean_fve_worse_900_999": 0.26039665937423706
+    }
+  },
+  "rehearsal_rung5": {
+    "check_mean_fve_100_199": -0.10545898228883743,
+    "max_logged_fve_base": 0.5656024217605591,
+    "min_logged_fve_ft_from_step_200": 0.9859863519668579,
+    "end_fve_base": 0.3977524332797304,
+    "end_fve_ft": 0.9913801686677253,
+    "steps": 1499
+  }
+}
