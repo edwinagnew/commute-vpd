@@ -1,6 +1,7 @@
 {
  "experiment": "E288",
  "cell": "P2.68",
+ "amendments": [{"date": "2026-11-23", "what": "Amendment 1 (before any scored read): planted-head training extended from 300 to 3000 steps (checkpoints 10/30/100/300/1000/3000), lr and every other setting unchanged; the read is still the first checkpoint that clears the gate. Stage 0 code fix: the |D| check compares each task with its own E248 items' n_windows (it compared with the set over all items, which includes five 75-window known-answer items).", "why": "stage 0 job 64821: the v_proj plant (one head, 128 rows) reached a log-odds gain of 1.42 at step 300 with 0 argmax flips, so it never cleared the e58/copy gate (N 0, L 0.035); E58's 300 steps were sized for all matrices, not one head. Gate and every bar unchanged. The |D| miss was a code bug: every task read 512, as its own items do."}],
  "plan": "reports/plans/2026-11-23_plan_p2-68-cmap-spec.md (revision 4, 32c6e0ad)",
  "filed": "2026-11-23",
  "what": "Whole-group head CMAP (cross-model activation patching after Prakash et al., ICLR 2024) on the 67M: per item (E237's 15 key items and both sides of E187's nine pairs), the head circuit found on the fine-tune by the authors' path patching and the paper-first minimality rule, then W0 run on the definition's rows D with the circuit's heads given the fine-tune's outputs before W_O. The compared scalar is the whole-circuit CMAP log-odds share on D (neuron_r.shares' form: mean numerator over mean gain); the A+B share is reported for every item.",
@@ -48,8 +49,8 @@
   "plant_batch": 32,
   "plant_kl_lambda": 1.0,
   "plant_grad_clip": 1.0,
-  "plant_steps": 300,
-  "plant_checkpoints": [10, 30, 100, 300],
+  "plant_steps": 3000,
+  "plant_checkpoints": [10, 30, 100, 300, 1000, 3000],
   "plant_ft_seed": 0,
   "plant_source": "spec D: E58's fine-tune as refit_96key filed it (keydep.finetune: finetune.ArmAConfig(o_token = the table, lr = anchors.FT_LR, batch 32, kl_lambda 1, grad_clip 1, Adam, 300 steps, checkpoints 10/30/100/300, seed 0)); ours: matrices = one of h.3.attn.v_proj / o_proj and a gradient mask on h*'s 128 rows / columns",
   "two_layer_seed": 2026112368,
