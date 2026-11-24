@@ -122,3 +122,7 @@ P2.70 refit plan (fdce9bc0) checked ~19:10: no objection (25M halves, ~$7). Fram
 P1.60 (due 11-25): rotation-kept spec checked ~19:30. The degeneracy holds. Fixes: exclude remainders from the pooled shares (otherwise new_thin's ≤ 0.5 fails by construction); add an anisotropy-matched null beside ν; add a built rotate-toward-needed vs rotate-toward-non-needed control before the reading counts; give the head (2,4) own-space null.
 
 P1.59 (due 11-25): E285 page (62070afc) verdict ~19:45: OK after fixes. The exploratory reading ≈ the write share over K (adds no new number); at VPD 'low' cannot be told from 'spread' (the doubling's median subcomponent keeps 0.0007), so the group-level kept read is the main Discussion line; date the amended check as post-first-run; coverage misses fit the margin story; give a within-class Spearman; soften 'ruled out'.
+
+P1.57 (due 11-24): E283 section on definition-lead's page (0e89a083) OK, no fixes; their two corrections to my verdict text (E281 lookup 0.815 is the full-size seed; random_kl V2 0.992) are right.
+
+P2.68 (due 11-25): revision 4 (32c6e0ad) applies majors 1-3; OK. The labelled-subset choice is OK with three fixes: record D_labelled/D_n per item; list E53's other windows as a §5 departure; E62 CMAP reads copy events only. E288 stage 0 stopped, and both stops are real. Every item's E248 files hold mixed 75- and 512-window readings, so the scored files must be named. The value-row plant does not clear the gate: the plant recipe is their call, but loosening the gate needs an ask.

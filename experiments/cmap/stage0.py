@@ -211,9 +211,10 @@ def stage0(job: Job) -> None:
     save = lambda: dump(STAGE0, out | {"misses": miss})
     for it in job.items.values():
         out["tasks"][it.task] = job.task(it.task).record
-    nw = sorted({read_json(p)["n_windows"] for p in (EXPERIMENTS / "kstar_vpd_wording_a" / "results" / "items").glob("*.json")})
+    items_dir = EXPERIMENTS / "kstar_vpd_wording_a" / "results" / "items"
+    nw = {k: sorted({read_json(p)["n_windows"] for p in items_dir.glob(k.replace("/", "-") + "_s*.json")}) for k in out["tasks"]}
     out["e248_n_windows"] = nw
-    miss += [f"{k}: |D| {r['D_n']} not E248's n_windows {nw}" for k, r in out["tasks"].items() if [r["D_n"]] != nw]
+    miss += [f"{k}: |D| {r['D_n']} not E248's n_windows {nw[k]}" for k, r in out["tasks"].items() if [r["D_n"]] != nw[k]]
     out["hook_floor"] = {fmt: hook_floor(job, task) for fmt, task in cfg.hook_floor_tasks.items()}
     miss += [f"hook floor {f}: {r}" for f, r in out["hook_floor"].items() if r["n_flipped"] or not r["sites"]]
     tol = {f: r["tol"] for f, r in out["hook_floor"].items()}
