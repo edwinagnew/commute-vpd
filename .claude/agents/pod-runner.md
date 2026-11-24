@@ -124,10 +124,10 @@ pod's hours × rate; `status()`'s cost is the whole session's, all pods together
   when nothing changed: the VPD files report `present`), and re-copy the gitignored inputs the brief lists. A pod owned by another session is not yours: leave it
   alone, and never `attach(force=true)`.
 - Otherwise `start()` with the pod label given as `start()`'s own label argument (display-only). The name RunPod
-  shows (and `~/commute-agents/fleet/check` lists) is `remote-kernels.toml`'s `name`: when `status()` shows no machine running, set it
-  to `commute-<experiment>` first; when one is running, leave the file alone and say in your report that the pod
-  carries the other run's name. The file is this clone's own (gitignored; `remote-kernels.toml.example` is the
-  template): never commit it. Never edit `remote-kernels.toml` while any machine of the session is running. **The machine terminates itself when the session
+  shows (and `~/commute-agents/fleet/check` lists) is `remote-kernels.toml`'s `name`. Never edit `remote-kernels.toml`
+  (friction 901, 1015, 1099): label pods only through `start()`'s label, and if the pod carries another run's name, say
+  so in your report. The file is this clone's own (gitignored; `remote-kernels.toml.example` is the template): never
+  commit it. **The machine terminates itself when the session
   disconnects** (plugin README, "Automatic cleanup", with `cleanup = "terminate"`): on 2026-10-26 three pods of one
   session were "confirmed deleted at the provider" within a minute of a kernel WebSocket closure (two right after a
   runner rewrote the config and started a third pod; one 75 min into a run with no config change), while a fourth
@@ -242,7 +242,9 @@ On a pod, write it as `( <command>; echo "=== FINISHED (exit $?) — results in 
 Tokens are spent per turn, not per minute, so wait in few, long steps, but every wait must have a hard end. On the
 cluster, the wait is **`~/commute-agents/fleet/wait-job --max <cap seconds> <jobid> [...]`, started with `run_in_background`**. It
 returns within 30 s of the jobs ending, with each job's state, exit code and the last lines of its log; exit code 124
-means the cap passed first.
+means the cap passed first. After starting it, end your turn with one line of text: the notice wakes you. A
+foreground poll costs a turn per 170 s (friction 385, 1083). For a start deadline use `--start-by MINUTES`
+(exit 122) rather than re-arming `--max`.
 
 While the job is still queued, cap each wait at 5 minutes and re-arm, so that a message from the user in your tab is
 seen within minutes (2026-10-20: a runner sat in one long queue wait and did not answer the user, who then cancelled the
