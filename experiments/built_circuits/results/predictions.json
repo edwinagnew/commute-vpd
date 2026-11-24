@@ -51,7 +51,9 @@
     "scan_source": "these keys are read at run time from E298's filed experiments/fig2_standard/results/predictions.json (at filing: 4, 64, 268, 1024, 8192, 32, 3, 64, 32, p97) and logged; P1.62's fixed protocol (reports/plans/2026-11-24_plan_p1-62-fig2-standard.md): commute.needed's swap test with E268's settings (derangements 4, examples 64, seed 268, rows 1024, logit_rows 8192, cache_batch 32, ident_vars 3), 256 pairs on the state's own held-out windows at its read position, the same pairs at VPD, top neurons (E277's p97 band on E229's bounds) and SAE latents (E234's dictionaries); leftovers (24 per-matrix remainders, 4 pooled MLP remainders, 8 SAE error terms) are variables. Read from experiments/fig2_standard's code, not restated here",
     "repeat_seed": 269,
     "repeat_circuit": "induction",
-    "repeat_source": "the derangement floor: induction x2 read again with scan seed 269 at each featurization (state x2_s269)"
+    "repeat_source": "the derangement floor: induction x2 read again with scan seed 269 at each featurization (state x2_s269)",
+    "no_new": ["induction"],
+    "no_new_source": "Amendment 2, 2026-11-24 (regating-lead; whip-lead chose this option 2026-11-24, over lowering the bar or moving the slots to layer 0), filed after the rehearsal's induction build crash and before any reading: new_few and new_thin (and their randoms) are dropped for the induction circuit. At slot_layer 2, E214's detector (known_edits.detector) reached limits of only 5.3 to 7.7 against the filed detector_ratio 10 on all 9 A' tokens tried (cue 2 alone tried 5), so build_swapping ran out of swaps (results/run_b_ind.log). The bar is not lowered: a bar picked after seeing those 9 tries is not set from a measured floor. The induction circuit is read on do_nothing, x2, x2_s269, x10, rebuilt and rand_x2, rand_x10, rand_rebuilt. The bigram circuit keeps all five edits; its new edits (slot_layer 0, E214's cue windows) are by design bit-identical to Fig 2's (results/build_bigram.json slots and gammas equal E214's), so they repeat Fig 2's new-edit readings and add no new circuit."
   },
   "thresholds": {
     "top1_min": 0.5,

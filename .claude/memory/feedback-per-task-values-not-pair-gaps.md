@@ -13,3 +13,5 @@ Show each reading's value on every task, tasks built to reuse beside tasks built
 **Why:** user, 2026-11-23, on Fig 3(a): "i've said this so many times but comparing in pairs seems useless when you could just say the numbers for each of the 8 tasks"; the tally column "looks terrible"; "way too much text". Also Fig 4(a) "too much info".
 
 **How to apply:** any new scorecard or baseline figure (P2.72/P2.73 included): one small panel per reading, per-task means with seed ranges, colour by built label; per-pair calls only in the appendix. See [[feedback-plots-over-tables]].
+
+**What "compare all at once" means (user 2026-11-24, spelled out after repeated misses):** "get the regating share for a copy key fine-tune, get the regating share for a top guess fine-tune, get the regating share for a cipher fine tune etc etc and plot them at once. then repeat for steering share and so on." Per-task VALUES, plotted and described as values/ranges. Every-vs-every counts (my "64 of 64", "61 of 64") are pairwise comparisons again and were rejected. No "N of M" or "orders k pairs" in figures or text.
