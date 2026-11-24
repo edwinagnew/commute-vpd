@@ -4,10 +4,9 @@ the same four axes, one point per state (task and seed):
   prior          W0's mean log-odds of the target on the read rows (old: score.py `difficulty.prior`; panel: its read
                  file's `prior`, in its scored unit: log-odds, or the label contrast for a label task)
   gain           the log-odds gain at the scored state (old: step 10; panel: the wide set's kl_hi pick)
-  steps to half  the first step whose gain is at least half the scored state's gain (old: the retrain's per-step curve,
-                 NT.steps_to_half, saved-state tasks have none; panel: the first save whose held gain reaches half the
-                 pick's, saves at steps 1-5, 8, 10, 11, 21, 43, ..., so a coarse upper bound)
-  Pile loss      nats per token on Pile val rows 0-63, W0 minus W0 + dW (old: score.py; panel: results/e272_pile.json)
+  (steps to half the gain was dropped 2026-11-24, P2.76: two definitions on different step grids, 15 of 36 old
+  states only; experiments/old_tasks_read/results/matched_gain.json)
+  Pile loss     nats per token on Pile val rows 0-63, W0 minus W0 + dW (old: score.py; panel: results/e272_pile.json)
 
 Two more outputs from the same files (step 2 and step 3 of the write-up, 2026-11-24):
 
@@ -39,8 +38,7 @@ from commute.open_pair import spearman
 HERE = Path(__file__).resolve().parent
 RESULTS, FIG = HERE / "results", HERE / "figures"
 E272 = EXPERIMENTS / "convergence_panel" / "results"
-AXES = (("prior", "base log-odds of the target"), ("gain", "gain reached (log-odds)"), ("steps_to_half", "steps to half the gain"),
-        ("pile_loss_change", "Pile loss change (nats/token)"))  # fmt: skip
+AXES = (("prior", "base log-odds of the target"), ("gain", "gain reached (log-odds)"), ("pile_loss_change", "Pile loss change (nats/token)"))  # fmt: skip
 READS = (("share lo", "re-gating share", "regating"), ("steering lo", "steering share", "steering"),
          ("untrained lo svd", "untrained share, SVD basis", "untrained"), ("untrained lo rotated", "untrained share, rotated basis", "untrained"),
          ("neuron k64 lo", "neuron share, 64 neurons", "neuron"), ("neuron kmatched lo", "neuron share, matched count", "neuron_half"),
@@ -60,23 +58,15 @@ def old_rows() -> list[dict[str, Any]]:
     return [{"set": "old", "task": d["task"], "state": s} | {k: d.get(k) for k, _ in AXES} for s, d in diff.items()]
 
 
-def half_step(saves: list[dict[str, Any]], step: int, gain: float) -> int | None:
-    pts = sorted((s["step"], s["held_gain"]) for s in saves if "held_gain" in s and s["step"] <= step)
-    return next((st for st, g in pts if g >= gain / 2), None) if gain > 0 else None
-
-
 def panel_rows() -> list[dict[str, Any]]:
     sel = json.loads((E272 / "wide" / "selection.json").read_text())["kl"]["hi"]["tasks"]
     pile = json.loads((RESULTS / "e272_pile.json").read_text())["states"]
     out = []
     for task, by in sel.items():
         rd = json.loads((E272 / "wide" / "read" / f"{task}.json").read_text())["states"]
-        tr = json.loads((E272 / "train" / f"{task}.json").read_text())["seeds"]
         for seed, s in by.items():
             r = rd.get(s["file"], {})
-            saves = [x for x in tr.get(seed, []) if isinstance(x, dict) and "step" in x and "held_gain" in x]
             out.append({"set": "realistic", "task": task, "state": f"{task}_s{seed}", "prior": r.get("prior"), "gain": r.get("gain"),
-                        "steps_to_half": half_step(saves, s["step"], s.get("held_gain", math.nan)),
                         "pile_loss_change": pile.get(s["file"], {}).get("pile_loss_change")})  # fmt: skip
     return out
 
@@ -186,7 +176,7 @@ def main() -> None:
         w = csv.DictWriter(f, fieldnames=["set", "task", "state", *(k for k, _ in AXES)])
         w.writeheader()
         w.writerows(rows)
-    fig, axs = plt.subplots(1, 4, figsize=(15, 4.2))
+    fig, axs = plt.subplots(1, len(AXES), figsize=(11.5, 4.2))
     for ax, (k, label) in zip(axs, AXES, strict=True):
         for x, name, colour in ((0, "old", "tab:blue"), (1, "realistic", "tab:orange")):
             ys = [r[k] for r in rows if r["set"] == name and isinstance(r[k], int | float) and math.isfinite(r[k])]
