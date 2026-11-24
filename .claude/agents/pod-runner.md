@@ -28,7 +28,10 @@ interleaved it (friction 833). Its input list comes from a short CPU dry run of 
 catches opens before the import): the file lists every data file the run opened under the repo or `~/commute-data`,
 nested `results/large` and the tokenizer included. Under `fleet/cpu-run` (no GPU) also set `INPUT_MANIFEST_CPU=1`,
 which puts everything asked for on "cuda" on the CPU, so the model load passes and later reads are listed; give the
-job memory for the model on CPU (friction 906). Stage each listed file; a brief walk of the code missed some
+job memory for the model on CPU (friction 906). Add `INPUT_MANIFEST_ONLY=1` so the dry run writes nothing under
+`experiments/` (a CPU run put a bogus stage JSON in `results/`, friction 1063); a script that checks
+`jobs.manifest_only()` skips its compute after each item's loads and lists every item's inputs. The list is written as
+it goes, so a dry run cut by a timeout still leaves what it saw (friction 1017, 1038). Stage each listed file; a brief walk of the code missed some
 (friction 832, 842).
 
 Refuse a scored run if `experiments/<name>/results/predictions.json` is missing. Say so and stop. A scored run of
@@ -39,7 +42,10 @@ closely, and on a code error stop and report the traceback rather than resubmit.
 
 Every `sbatch`, GPU `srun` and `start()` must name the experiment number from your brief (`sbatch --comment=E###`, the pod's `label`): the harness (`fleet/job-gate`) refuses a submission or pod start without one claimed against an open cell. If the brief has no number, stop and ask the lead.
 A pod label is `[A-Za-z0-9_-]` only, at most 64 characters: `commute-E186-b`, `commute-E178-stage-N_s0`,
-`commute-E160-rerun-why`. The canonical pod lines (label, set-up, disk, downloads, waits, placement) are in
+`commute-E160-rerun-why`. Only the first pod of a plain run takes the plain form `commute-E###-<suffix>`; every other
+pod of the run, a parallel one included, takes the stage form `commute-E###-stage-<name>` (`commute-E272-stage-eb-a`):
+job-gate refused a parallel pod labelled `commute-E272-eb-a` in both E272 and E284 (friction 1025, 1057). Use the label
+the brief gives; if it gives a plain label for a second pod, use the stage form with the same name. The canonical pod lines (label, set-up, disk, downloads, waits, placement) are in
 `~/commute-agents/fleet/roles/shell-notes.md` → Pods; read them before `start()`.
 A pod for a plain, `stage` or `rerun` run is refused until its number has a $0 rehearsal on record
 (`shell-notes-reference.md` → Pods → Rehearsal first). On that refusal, stop and report it to the lead: never relabel
@@ -147,7 +153,9 @@ pod's hours × rate; `status()`'s cost is the whole session's, all pods together
   64–82 s to 22 s each.
 - On Vast (`start(runtime="vast")`), the kernel lacks the machine's variables (`WANDB_API_KEY`, `COMMUTE_CACHE_DIR`,
   `HF_HOME`, `UV_CACHE_DIR`) and `pod_setup.sh` does not add them to it (an `--upload` run then fails at once,
-  friction 737), so make this your first cell, before anything that needs them; names only, never print a value:
+  friction 737), so make this your first cell, before anything that needs them; names only, never print a value.
+  After set-up, every `.venv/bin/python` gets `COMMUTE_CACHE_DIR` and `HF_HOME` by default (a `.pth` it writes,
+  friction 1027); a launch wrapper still needs `source cluster/pod_env.sh` for `WANDB_API_KEY`:
 
       import os
       os.environ.update(e.decode().split("=", 1) for e in open("/proc/1/environ", "rb").read().split(b"\0")

@@ -185,3 +185,45 @@ def test_input_manifest_cpu_dry_run_passes_a_cuda_load(tmp_path: Path):
     r = subprocess.run([sys.executable, "-c", script], check=False, capture_output=True, text=True, timeout=120, env=env)
     assert r.returncode == 0, r.stderr
     assert (tmp_path / "m.txt").read_text() == "pyproject.toml\n"
+
+
+def _dry_run(tmp_path: Path, script: str, **env: str) -> subprocess.CompletedProcess[str]:
+    env = {**os.environ, "INPUT_MANIFEST": str(tmp_path / "m.txt"), **env}
+    return subprocess.run([sys.executable, "-c", textwrap.dedent(script)], check=False, capture_output=True, text=True,
+                          timeout=120, env=env)
+
+
+def test_input_manifest_is_written_as_it_goes(tmp_path: Path):
+    """A dry run killed before its exit still leaves the inputs it opened so far (friction 1038)."""
+    data = jobs.EXPERIMENTS.parent / "pyproject.toml"
+    r = _dry_run(tmp_path, f"""
+        import os, signal
+        from commute import jobs
+        open({str(data)!r}).read()
+        os.kill(os.getpid(), signal.SIGKILL)
+    """)
+    assert r.returncode != 0
+    assert (tmp_path / "m.txt").read_text() == "pyproject.toml\n"
+
+
+def test_input_manifest_only_writes_nothing_under_experiments(tmp_path: Path):
+    """INPUT_MANIFEST_ONLY=1: manifest_only() is True and a write under experiments/ is refused (friction 1063, 1017)."""
+    data = jobs.EXPERIMENTS.parent / "pyproject.toml"
+    out = jobs.EXPERIMENTS / "_manifest_only_test.json"
+    mmapped = tmp_path / "w.safetensors"  # read by native code, so listed by hand
+    mmapped.write_bytes(b"")
+    r = _dry_run(tmp_path, f"""
+        from commute import jobs
+        assert jobs.manifest_only()
+        open({str(data)!r}).read()
+        jobs.note_inputs({str(mmapped)!r})
+        try:
+            open({str(out)!r}, "w").write("{{}}")
+        except PermissionError as e:
+            print("refused", e)
+        open({str(tmp_path / "scratch.json")!r}, "w").write("{{}}")  # outside experiments/: allowed
+    """, INPUT_MANIFEST_ONLY="1")
+    assert r.returncode == 0, r.stderr
+    assert "refused" in r.stdout and not out.exists()
+    assert (tmp_path / "m.txt").read_text() == f"{mmapped}\npyproject.toml\n"
+    assert (tmp_path / "scratch.json").exists()

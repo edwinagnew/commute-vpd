@@ -3,8 +3,11 @@
 Cell P2.75 (due 2026-11-25, 2 runs). User, 2026-11-23 evening, in writeup-lead's window: "if you want to run one more
 then go for it". writeup-lead and litreview-lead chose the diff-SAE because it is the method a reviewer is most likely
 to name: same authors and toolkit as the crosscoder and the activation difference lens we ran, and reported to beat the
-BatchTopK crosscoder (88% against 60% of the KL gap). This is the spec, before any code. redteam-lead and an independent
-GPT reviewer check it before code. Nothing has run.
+BatchTopK crosscoder (88% against 60% of the KL gap). This is the spec, before any code. It carries redteam-lead's
+four first fixes (`note-2026-11-23-redteam-p275-diff-sae-spec.md`), the independent GPT review's six points and
+redteam-lead's three conditions on it (`~/commute-data/scratch/compare-lead/p275/gpt_review_1.md`). Each point was
+checked against the cited files; all six were real, and how each is answered is in the appendix's review response.
+Nothing has run.
 
 **Sources.**
 - The post: Dumas, Minder and Nanda, "What We Learned Trying to Diff Base and Chat Models (And Why It Matters)",
@@ -16,26 +19,29 @@ GPT reviewer check it before code. Nothing has run.
   paper contains no diff-SAE**: no "SAE" trained on a difference, no "diff-" anywhere in its text. It supplies latent
   scaling and the KL-gap protocol (§3.2) only. "paper:N" is a line of `minder.txt`.
 - The toolkit: science-of-finetuning/diffing-toolkit, the clone at `~/commute-data/agents/compare-lead/adl/dt`, pinned
-  at **617d926**, the same commit as our ADL and crosscoder settings. **The method is at this commit**:
-  `src/diffing/methods/sae_difference/method.py` (386 lines), config `configs/diffing/method/sae_difference.yaml`,
-  trainer setup in `src/diffing/utils/dictionary/training.py` 847-1092, latent scaling in
-  `src/diffing/utils/dictionary/latent_scaling/closed_form.py`. No other pin is needed. Its trainer is
-  `dictionary_learning` at d1fd6f3 (toolkit `uv.lock` 1240-1242), the same commit our `pyproject.toml` already pins
-  for the crosscoder. "dt:" is a toolkit path; "dl:" is `site-packages/dictionary_learning/` in our venv.
-- Ours: `src/commute/crosscoder.py` (`specific` 243-249, `carried` 253-279, `spliced` 462-486),
-  `experiments/crosscoder_proper/`, `reports/analyses/2026-11-23_analysis_p2-70-negbeta-rescore.md`. Structure copied
-  from `reports/plans/2026-11-23_plan_p2-72-delta-crosscoder-spec.md` and `..._p2-67-adl-spec.md`, with their review
-  responses read: what reviewers sent back there (unstated reductions and units, bars without a measured source, a
-  null that could not fail, unpriced forward passes, uncovered edge cases, our score in the method's column) is
-  handled here from the start.
+  at **617d926**, the same commit as our ADL and crosscoder settings. The method is at this commit:
+  `src/diffing/methods/sae_difference/method.py`, config `configs/diffing/method/sae_difference.yaml`, trainer set-up in
+  `src/diffing/utils/dictionary/training.py` 847-1092, latent scaling in
+  `src/diffing/utils/dictionary/latent_scaling/closed_form.py`. Its trainer is `dictionary_learning` at d1fd6f3
+  (toolkit `uv.lock` 1240-1242), the commit our `pyproject.toml` already pins. "dt:" is a toolkit path; "dl:" is
+  `site-packages/dictionary_learning/` in our venv.
+- Ours: `src/commute/crosscoder.py` (`specific` 243-249, `carried` 253-279, `site_acts` 426-445),
+  `experiments/crosscoder_proper/` (E235 `run.py`, E243 `run2.py`), `experiments/realistic_tasks/run3.py` (E212),
+  `reports/analyses/2026-11-21_analysis_e243-crosscoder-size-ladder.md`,
+  `reports/analyses/2026-11-23_analysis_p2-70-negbeta-rescore.md`.
+- The appendix, `2026-11-23_plan_p2-75-diff-sae-spec_appendix.md`: the expected-value derivation, the parity checks
+  against the pinned code, and the review responses.
 
 **Symbols, each defined once.**
-- *M*: the original 67M model. *F*: a changed model (a fine-tune, a planted change or a random update).
+- *M*: the original 67M model. *F*: a changed model (a fine-tune, a planted change, a grafted head or a random update).
 - *h_M(x)*, *h_F(x)*: their residual activations at one site on token x. *D(x) = h_F(x) − h_M(x)*, the change.
-- *N(y) = (y − μ_D)·s*: the toolkit's normaliser, with μ_D the mean of D and s = 100 / sqrt(total variance of D).
-- *d_j*: latent j's unit decoder vector; *f_j(x)*: its activation; *b*: the decoder bias.
-- *β_M, β_F*: latent scaling's coefficients against M's and F's normalised activations; *ν = β_M / β_F*.
+- *N(y) = (y − μ_D)·s*: the toolkit's normaliser, with μ_D the mean of D on the normaliser's sample and
+  s = 100 / sqrt(total variance of D) there.
+- *d_j*: latent j's unit decoder vector; *f_j(x)*: its activation; *b*: the decoder bias, in normalised units.
+- *D̂(x) = Σ_j f_j(x) d_j/s + b/s + μ_D*: the SAE's full reconstruction of D in raw units, with f from encode(D).
+- *β_M, β_F*: latent scaling's coefficients against N(h_M) and N(h_F); *ν = β_M / β_F*.
 - *Specific part*: the share of the change, Σ_x |D(x)|², carried by the latents called fine-tune-specific.
+- *K*: a side's reference capacity, 1 − Σ_x ⟨μ_D, D(x)⟩ / Σ_x |D(x)|² on its score read windows, fixed before the fit.
 
 ## 1. Plain answers
 
@@ -52,9 +58,8 @@ over from our crosscoder reading. It is named "specific part, after Dumas" where
 model and the KL divergence from the true chat output is the gap (post:56-57). Adding back the dictionary's
 reconstruction of chat minus base removes 88% of that gap for the diff-SAE and 60% for the BatchTopK crosscoder
 (post:58-59, footnote post:110). The diff-SAE's error alone removes 30%, the crosscoder's 60%. It measures how much of
-the behavioural difference the dictionary rebuilds, at the output only. It says nothing about which latents are
-fine-tune-specific or about mechanism. The post does not say which tokens were read. The crosscoder's 60% matches the
-paper's 59% over all response tokens (paper:525), so the 88% is probably the same set.
+the behavioural difference the dictionary rebuilds, at the output only, not which latents are fine-tune-specific.
+The read tokens are probably all response tokens: the crosscoder's 60% matches the paper's 59% there (paper:525).
 
 **Does it bear on reuse against new?** Indirectly. On a diff-SAE, ν asks whether the change's direction is already
 present in the base model's activation where the latent fires. Near 1, the change strengthens something the base
@@ -70,206 +75,269 @@ Each step: the post's or paper's words, then the toolkit's code at 617d926.
 | step | post or paper | toolkit at 617d926 |
 |---|---|---|
 | activations | "train an SAE directly on the difference between activations (chat - base)" (post:52); "a BatchTopK SAE directly on layer 13" (post:51, the chat-SAE) | `target: "difference_ftb"` (`sae_difference.yaml` 7); `DifferenceCache(cache_2, cache_1)` = fine-tune minus base (`training.py` 100-102); site `preprocessing.layers: [0.5]`, the middle layer (`config.yaml` 123) |
-| text | not stated for the diff-SAE; the paper's crosscoder used "100M tokens from Fineweb ... and lmsys-chat" (paper:2331-2333) | chat, pretraining and the organism's training set (`sae_difference.yaml` 25-28), at most 50M tokens per dataset (`config.yaml` 125), context 1024 (128); activations stored in bfloat16 (129); D formed from the stored pairs |
-| tokens | not stated | `num_samples: 150_000_000` (18) is a cap over all datasets, here 3 × 50M; `epochs: 2` (10) repeats it, so up to 300M presentations (`activations.py` 109-127 returns sum × epochs indices) |
-| normalisation | not stated | on D: mean and std of 1M sampled difference tokens (`sae_difference.yaml` 30-35, `training.py` 113-197); D − μ_D, then one global scale to RMS 100 (`target_rms: 100`, 35; dl:`dictionary.py` 76, 108) |
-| architecture | BatchTopK; "expansion factors as low as 1 (keeping the same k=100 ...)" (post:62); "x2 denotes expansion factor" (post:53) | `BatchTopKSAE`, `expansion_factor: 2`, `k: 100` (`sae_difference.yaml` 8, 15, 39; `training.py` 884-905); encode ReLU(W_e(x − b)) then the batch's top k·B (dl:`dictionary.py` 577-586); decoder unit-norm, no per-model decoders |
-| recipe | not stated | Adam lr 1e-4, warm-up 1,000 steps, then constant (`sae_difference.yaml` 11, 44; no decay set); batch 2,048 (9); squared L2 loss (dl:`batch_top_k.py` 199); AuxK α 1/32, k_aux d/2, dead after 10M tokens (26, 82-83); θ as an EMA from step 1,000 (145-160); b initialised to the geometric median of the first raw batch (223); grad clip 1.0 (241); decoder renormed each step (248); encoder init = decoder transpose × 1.0 (`encoder_init_norm`, 12); TF32 (`config.yaml` 141) |
-| latent scaling | β^m_j = argmin_β Σ_i ‖β·f_j(x_i)·d_j − h_m(x_i)‖² (post:35); "ν_j = β^base_j / β^fine-tuned_j ... ν ≈ 0 ... specific, ν ≈ 1 ... shared" (post:36-37); closed form β = dᵀ(Yᵀf)/(‖f‖²‖d‖²) (post appendix B) | targets `["base_activation", "ft_activation"]` on 50M training tokens (`sae_difference.yaml` 52-55); closed form `closed_form.py` 40-168; targets are N(h_M), N(h_F), normalised with the SAE's own D-normaliser (700-706; `latent_scaling/utils.py` 53-79); ν stored as `beta_activation_ratio` = β_M / β_F (`beta_analysis.py` 187-189) |
-| which input f is read from | not stated | **f_j comes from encoding h_F, not D**: the activation-target pass calls `compute_scalers(..., is_difference_sae=False)` (`closed_form.py` 354), so the SAE branch picks `load_ft_activation` (693-697). The difference branch (686-692) is used only for error targets, which the diff-SAE config does not request. Line 354 predates the diff-SAE method (`git blame`: e84b547, 2025-06-16, the crosscoder commit), so it reads as an oversight. Open question 1 |
-| selection | "Chat-only latents (ν⩽0.3)" (post:52-53 captions); KL with "latent scaling scores below 0.3 or 0.6" (post:60) | no threshold in the pipeline; steering takes the 10 lowest ν (`target_column: "beta_activation_ratio"`, `k: 10`, `largest: false`, 77-79); no negative-β filter anywhere in `analysis.py` or `beta_analysis.py` |
-| evaluation | patch base_act + (chat_recon − base_recon) into the chat model at the layer; error patch base_act + ((chat − base) − (chat_recon − base_recon)) (post:110); subset patch h_base + Σ_{j∈S} f_j d_j (paper eq. 5, paper:428-430); KL(p_patched ‖ p_chat) against the h_base patch; 512 chat interactions, response tokens 2-10 and all (paper:453-463) | **not in the toolkit for the diff-SAE**: `method.py` runs training, latent dataframe, latent scaling, activation stats, plots and steering (142-215); its docstring's "KL divergence experiments" (6) has no code. `methods/kl` is a different method, per-token KL between the two models. So the KL-gap step is ported from the paper's text (§3.2) |
+| text | not stated for the diff-SAE; the paper's crosscoder used "100M tokens from Fineweb ... and lmsys-chat" (paper:2331-2333) | chat, pretraining and the organism's training set (`sae_difference.yaml` 25-28), at most 50M tokens per dataset (`config.yaml` 125), context 1024 (128); activations stored in bfloat16 (129) |
+| tokens and order | not stated | `num_samples: 150_000_000` (18), split over the datasets in proportion to their sizes (`activations.py` 212-245), each a prefix `arange(0, n)` of its cache (`training.py` 295-300); `epochs: 2` (10); `local_shuffling: true` within 1M-token shards (19-20; `training.py` 303-314) |
+| normalisation | not stated | on D: `subsample_size: 1_000_000` (32) drawn uniformly at random from the whole of each cache, an equal count per cache (`training.py` 165-190), mean and biased std by Welford; then D − μ_D and one global scale to RMS 100 (`target_rms: 100`, 35; dl:`dictionary.py` 91-114) |
+| architecture | BatchTopK; "expansion factors as low as 1 (keeping the same k=100 ...)" (post:62); "x2 denotes expansion factor" (post:53) | `BatchTopKSAE`, `expansion_factor: 2`, `k: 100` (`sae_difference.yaml` 8, 15, 39; `training.py` 884-905); encode ReLU(W_e(x − b)) then the batch's top k·B, or the learned threshold θ (dl:`dictionary.py` 550-596); decoder unit-norm |
+| recipe | not stated | Adam lr 1e-4, warm-up 1,000 steps, then constant (11, 44); batch 2,048 (9); squared L2 loss (dl:`batch_top_k.py` 199); AuxK α 1/32, dead after 10M tokens; θ as an EMA from step 1,000 (145-160); b initialised to the geometric median of the first raw batch (223); grad clip 1.0 (241); decoder renormed each step (248); encoder init = decoder transpose × 1.0 (12); TF32 (`config.yaml` 141) |
+| training loop | not stated | dl `trainSAE` with `log_steps=50`, `validate_every_n_steps=20000`, `save_steps=20000`, 5M validation tokens (`training.py` 1032-1049; yaml 14, 18-19). Logging and validation call `trainer.loss`, which under `no_grad` still moves θ's EMA and the dead-feature counters (dl:`batch_top_k.py` 162-196; dl:`training.py` 83-191, 298-345) |
+| latent scaling | β^m_j = argmin_β Σ_i ‖β·f_j(x_i)·d_j − h_m(x_i)‖² (post:35); "ν_j = β^base_j / β^fine-tuned_j ... ν ≈ 0 ... specific, ν ≈ 1 ... shared" (post:36-37); closed form (post appendix B) | `closed_form_scalars` (`closed_form.py` 40-168): thresholded encode, numerator B, denominators C·D, float32 (`dtype: "float32"`, yaml 59), batch 16,384; 50M tokens as proportional per-dataset prefixes with local shuffling off (304-313); targets N(h_M), N(h_F) by D's normaliser (`latent_scaling/utils.py` 53-79); ν = `beta_activation_ratio` (`beta_analysis.py` 187-189) |
+| which input f is read from | not stated | **f_j comes from encoding h_F, not D**: the activation-target pass calls `compute_scalers(..., is_difference_sae=False)` (`closed_form.py` 354), so the SAE branch picks `load_ft_activation` (693-697). Line 354 dates from e84b547 (2025-06-16), before the post, so the post's figures may come from this form. Whether it is intended is not stated |
+| selection | "Chat-only latents (ν⩽0.3)" (post:52-53 captions); KL with "latent scaling scores below 0.3 or 0.6" (post:60) | no threshold in the pipeline; steering takes the 10 lowest ν (77-79); no negative-β filter in `analysis.py` or `beta_analysis.py` |
+| evaluation | "For the reconstruction, we patch base_act + (chat_recon - base_recon) into the chat model. For the error, we patch base_act + ((chat_act - base_act) - (chat_recon - base_recon)) = chat_act - chat_recon + base_recon" (post:110); subset patch h_base + Σ_{j∈S} f_j d_j (paper eq. 5, paper:428-430); KL(p_patched ‖ p_chat) against the h_base patch (paper:453-463) | **not in the toolkit for the diff-SAE**: `method.py` runs training, latent dataframe, latent scaling, activation stats, plots and steering (142-215); its docstring's "KL divergence experiments" (6) has no code. So the KL-gap step is ported from the post's footnote and the paper's §3.2 |
 
-**Quirks of the toolkit kept as theirs, listed so a reviewer can see them.** The decoder bias is initialised from the
-median of the raw first batch but used in normalised units (dl:`batch_top_k.py` 221-229). The base and fine-tune
-targets are normalised with D's mean and scale, not their own; the scale cancels in ν, the mean does not.
+**Quirks of the toolkit kept as theirs.** The decoder bias is initialised from the median of the raw first batch but
+used in normalised units (dl:`batch_top_k.py` 221-229). The base and fine-tune targets are normalised with D's mean and
+scale, not their own; the scale cancels in ν, the mean does not. Logging and validation change the fit's state.
 
 ## 3. What we would run on the 67M: the objective and the reading, fixed
 
-All of §3 is ours unless it quotes §2. Each choice is a row in §4. Code: a new `experiments/diff_sae/run.py` calling
-the pinned `BatchTopKTrainer` and `BatchTopKSAE` unchanged, with glue in `src/commute/diff_sae.py`. It reuses
-`crosscoder.site_acts`, `batches`, the E235 stream and the E235 Gaussian, and copies nothing.
+All of §3 is ours unless it quotes §2. Each choice is a row in §4. Code: a new `experiments/diff_sae/run.py` with glue
+in `src/commute/diff_sae.py`. It reuses `crosscoder.site_acts`, the E235 stream, E235's Gaussian and E243's scaled head,
+and copies nothing of ours.
 
-**3.1 Sites, text and tokens.** Site A is block 2's input, the toolkit's middle layer, where E203, E212 and E243 read.
+**3.1 Where we follow the toolkit's code and where we cannot.** The toolkit cannot be installed (it pulls vllm and
+streamlit, E203), and importing any `diffing` module runs the package's `__init__`, which imports every method. So:
+- **Called as it runs:** dl's `BatchTopKSAE`, `BatchTopKTrainer` and `trainSAE`, with the toolkit's arguments
+  (`training.py` 1032-1049): logging every 50 steps, validation every 20,000 on 5M tokens, saves at the same steps.
+  `wandb` is initialised in disabled mode so that `log_stats`'s unconditional `wandb.log` runs and the logging calls
+  move θ and the dead counters exactly as theirs do. Our only code on this path is a data adapter: an iterable of
+  2,048-token batches of D.
+- **Called from the pinned source:** `closed_form_scalars` (`closed_form.py` 40-168) and the loaders it is handed
+  (`latent_scaling/utils.py` 53-79) need only torch and dl. Each is read from the pinned file by its function name,
+  the file's sha256 checked, and executed without importing the package. If that fails, there is no port: the work
+  stops and goes to the lead.
+- **Ported, with parity:** the normaliser (`training.py` 165-190, about 20 lines with its Welford accumulator), and the
+  dataset sampling rules of `setup_training_datasets`, which our adapter implements on E235's stream.
+- Every remaining difference is a row of §4.
+
+**3.2 Sites, text and tokens.** Site A is block 2's input, the toolkit's middle layer, where E203, E212 and E243 read.
 Site B is block 3's output, for E235's block-3 head only. The text is each side's own crosscoder stream (E235
 `crosscoder_proper/run.py` `stream`, 286 on): Pile train rows 32,768-131,071 and the side's task windows, about 50M
 tokens each. That is the toolkit's 50M per dataset with the chat dataset dropped. Two epochs give 200M presentations
-per fit, 97,656 steps at batch 2,048. Position 0 is dropped, as the crosscoder does. D is formed in fp32 from fp32
-forwards with TF32 off, as E235's scoring did. The toolkit's bfloat16 storage is not used. Its rounding, about 2⁻⁸ of
-‖h‖, is the size of a fine-tune's change here.
+per fit, 97,656 steps at batch 2,048. The order is E235's interleaved stream, not the toolkit's shard shuffle. Position 0
+is dropped, as the crosscoder does. D is formed in fp32 from fp32 forwards with TF32 off, as E235's scoring did. The
+toolkit's bfloat16 storage is not used: its rounding, about 2⁻⁸ of ‖h‖, is the size of a fine-tune's change here.
+The validation set is 5M tokens of D from Pile train rows after E235's, 131,072 on, the same for every side. The
+code asserts it shares no row with E235's stream, rung 1's stream and read rows, or E212's L1 rows.
 
-**3.2 Objective, unchanged from their code.** The normaliser is fit on 1M tokens of D drawn from the first chunks
-(`recompute_normalizer`, `training.py` 113-197, ported as 10 lines: mean and biased std, then dl's global scale).
-The model is `BatchTopKSAE(768, 1536, k=100, activation_mean=μ_D, activation_std=σ_D, target_rms=100,
-encoder_init_norm=1.0)`, and the step is `BatchTopKTrainer.update` with lr 1e-4, warm-up 1,000, auxk α 1/32,
-threshold start 1,000, dead after 10M tokens, seed from the item. Training uses TF32, theirs. Reading uses the
-thresholded encode, their inference default (`use_threshold=True`).
+**3.3 Objective, theirs.** The normaliser draws 500,000 tokens uniformly from each of the two datasets' full 50M, the
+toolkit's equal-count rule over two caches. This takes one pass over the stream before training. The model is
+`BatchTopKSAE(768, 1536, k=100, activation_mean=μ_D, activation_std=σ_D, target_rms=100, encoder_init_norm=1.0)`,
+trained by `trainSAE` with `BatchTopKTrainer`, lr 1e-4, warm-up 1,000, auxk α 1/32, threshold start 1,000, dead after
+10M tokens, seed from the item. Training uses TF32, theirs. Reading uses the thresholded encode, their inference
+default (`use_threshold=True`).
 
-**3.3 Latent scaling.** It runs on the first 50M training tokens, the toolkit's count. That is 500 times the 100,000
-our crosscoder used; E289 showed 50M fits run in minutes. Every latent is scored. β_M and β_F are the closed form with
-targets N(h_M) and N(h_F), accumulated in float64 as `crosscoder.beta_sums` does, and ν = β_M / β_F. Two forms of f
-are computed in the same pass:
-- **ν_D**: f from encoding D, the SAE's training input. This is the scored form (open question 1).
-- **ν_lit**: f from encoding h_F, the toolkit's line 354 literally. It is reported beside, unscored.
-A construction check holds by linearity: β_F − β_M equals the coefficient fit to s·D, so ν_D = 1 − β_D / β_F. Its bar
-is relative and taken from the rehearsal's float32 against float64 floor.
+**3.4 Latent scaling, theirs.** `closed_form_scalars` runs in float32 on 50M tokens taken as their rule takes them:
+per-dataset prefixes in proportion to the datasets' sizes, local shuffling off, in their loader's batches of 2,048
+(16,384 ÷ 8, `closed_form.py` 355, 809-819). Every latent is scored. Targets are N(h_M) and N(h_F), ν = β_M / β_F.
+Two forms of f are computed, each scored under its own label:
+- **ν_lit**, "theirs, as the code runs": f from encoding h_F with the SAE's own normaliser, as line 354 does.
+- **ν_D**, "ours, as the post's words read": f from encoding D, the SAE's training input.
 
-**3.4 Which latents are fine-tune-specific.** A latent is alive if it fires on at least 10 of the read tokens, the
-crosscoder's `alive_min`. Two rules are applied to every fit:
-- **As published**: ν ≤ 0.3, the post's caption threshold.
-- **As our crosscoder reads**: ν ≤ 0.3 and β_M ≥ 0. This is Minder et al.'s App. E.2 exclusion, carried over from the
-  crosscoder paper by the same authors, as `crosscoder.specific` applies it.
+Neither is called the faithful form. That line 354 is an oversight is our inference, not the authors' statement. If
+the two forms disagree on a control, the paper's column cites both. The construction check compares numerators before
+division: B_F − B_M must equal the numerator fit to s·D, latent by latent, with the same denominators. Its bar is
+relative and set from the rehearsal's float32 against float64 floor. A latent with C = 0 is skipped by that check and
+does not stop the fit.
 
-The cell asks for the same reading as the crosscoder, so the second rule is the scored one. The first is reported
-beside it on every side, since neither the post nor the toolkit filters negative coefficients (open question 2).
+**3.5 Which latents are fine-tune-specific.** A latent is alive if it fires on at least 10 of the read tokens, the
+crosscoder's `alive_min`. Two rules are applied to every fit, under each form of ν:
+- **As published, scored**: ν ≤ 0.3, the post's caption threshold.
+- **With the E.2 exclusion, reported beside, not scored**: ν ≤ 0.3 and β_M ≥ 0, Minder et al.'s App. E.2 rule for
+  their crosscoder, as `crosscoder.specific` applies it.
+
+The E.2 form is not scored because it fails its own planted control by construction: with c ≈ 0, mean subtraction
+alone gives a clean plant β_M < 0 (appendix A). The diff-SAE's sources have no such filter.
+
+**Open point for whip-lead, with a deadline.** The cell says "scored like our crosscoder", which could be read to
+require E.2. The oracle check reports ρ and c first. Any ruling that E.2 is scored changes run 2's gate, so it must be
+given before run 1's results are read. Without one, the as-published rule is the one filed and the one the gate uses.
 
 Edge cases, each checked against the rule before filing:
 - A latent that never fired on the 50M tokens has β = 0/0, a nan, and fails every comparison.
 - β_F = 0 with β_M ≠ 0 gives ν = ±inf. It is set to nan and fails; without this, −inf would pass.
-- β_F < 0 gives a ν of the wrong sign. It is kept literal and counted separately, so a reader sees how many pass that
-  way.
+- β_F < 0 gives a ν of the wrong sign. It is kept literal and counted separately.
 - No latent passing gives a specific part of 0.0, not nan.
 - Ties at exactly 0.3 have measure zero; ≤ follows the caption.
 
-**3.5 The reading, in raw units, as `crosscoder.carried` computes it.** Decoding is D̂(x) = Σ_j f_j(x) d_j/s + (b/s +
-μ_D). Each latent's carried part is s_j = Σ_x f_j(x) ⟨d_j/s, D(x)⟩ / Σ_x ‖D(x)‖², over the side's score-half read
-windows. The bias part is Σ_x ⟨b/s + μ_D, D(x)⟩ / Σ_x ‖D(x)‖², and the error part is 1 minus the latents' parts minus
-the bias part. The **specific part** is the sum of s_j over specific latents. Beside it each side reports the bias
-part, the error part, the FVE of D on the read set, the number of specific latents, and the s-weighted histogram of ν.
-If Σ‖D‖² = 0 (M against itself), every part is undefined and nothing is fitted.
+**3.6 The reading, in raw units.** Each latent's carried part is s_j = Σ_x f_j(x) ⟨d_j/s, D(x)⟩ / Σ_x ‖D(x)‖², over
+the side's score-half read windows, with f from encode(D). The bias part is Σ_x ⟨b/s + μ_D, D(x)⟩ / Σ_x ‖D(x)‖², and
+the error part is 1 minus the latents' parts minus the bias part. The **specific part** is the sum of s_j over specific
+latents. Beside it each side reports the bias part, the error part, the FVE of D, the number of specific latents and
+the s-weighted histogram of ν. If Σ‖D‖² = 0, every part is undefined, the side reads "not read" and nothing is fitted.
 
-**3.6 The KL-gap recovery, theirs, ported from the paper's §3.2.** At the site, F's forward is run with its
-activation replaced at positions 1 onward by one of these:
+**The bar comes from a fixed reference, not from the fit.** Before any fit, each side's reference capacity K is
+computed on its score read windows from μ_D alone. K is the share of the change left after the normaliser's mean; for a
+plant constant where it fires, it is 1 − ρ. The fitted bias b plays no part in the bar. The bar is 0.5 · min(K, 1). A
+side with K under 0.5 reads **"not read"**: the bar would fall under 0.25, half the crosscoder column's. Both cut-offs
+are ours. §5's gate uses rung 1's bar on all four arms.
+
+**Reconstruction and selection are filed apart on the exact plant.** E212's plant writes a known D: its vector at one
+position, zero elsewhere at the site. Two numbers are filed for it, each with its oracle value: the latents' total
+carried part, Σ_j s_j over all latents, which reads how well the known write is rebuilt; and the specific part, which
+reads whether its carriers are selected. A low first number makes the second unreadable, and the report says so.
+
+**3.7 The KL-gap recovery, ported from the post's footnote and the paper's §3.2.** At the site, F's forward is run with
+its activation replaced at positions 1 onward by one of these:
 - h_M, the gap;
 - h_M + D̂, "all";
-- h_F − D̂ + (b/s + μ_D), "error", which is h_M + (D − D̂) in the post's form;
-- h_M + Σ_{j: ν ≤ 0.3} f_j d_j/s and the same at ν ≤ 0.6, the subsets with no bias, as eq. 5 has.
+- h_F − D̂, "error", which is h_M + (D − D̂), the post's footnote 8 (post:110) with D̂ as the diff reconstruction;
+- h_M + Σ_{j∈S} f_j d_j/s, the subsets with no bias, as eq. 5 has, for four masks named per form: S_lit,0.3 and
+  S_lit,0.6 from ν_lit, S_D,0.3 and S_D,0.6 from ν_D.
 
-Recovered = 1 − KL(patched) / KL(h_M), with KL(p_F,patched ‖ p_F) the mean per token. It is read on the side's
-score-half read windows, at the read positions and at all positions, and on 256 Pile validation rows. Two path checks
-must hold. Patching h_F must give KL 0 to the measured floor. Patching h_M must give recovered 0 exactly.
+In every arm f is encode(D), the diff reconstruction; only the masks differ between forms. No arm keeps the bias
+beside the error. Recovered = 1 − KL(patched) / KL(h_M), with KL(p_F,patched ‖ p_F) the mean per token. The reference
+p_F is F's own forward through every downstream layer. For E212's plant, F is M with the plant added at the site by a
+hook that does not stop the forward, so the reference carries the plant to the logits; `site_acts` stops at the site
+and is used only to collect activations. It is read on the side's score-half read windows, at the read positions and
+at all positions, and on 256 Pile validation rows. Two path checks must hold. Patching h_F must give KL 0 to the
+measured floor. Patching h_M must give recovered 0 exactly.
 
-**3.7 Expected values, worked out before any fit.** Take a latent whose direction is the planted direction p̂ and that
-fires only where the plant is, on a share ρ of tokens, so μ_D = ρp. The closed form then gives β_F − β_M = 1/(1 − ρ).
-It also gives β_M = (c − ρ)/(1 − ρ), with c = ⟨mean of h_M over the plant positions, p̂⟩ / ‖p‖. So ν = (c − ρ)/(c − ρ + 1).
-Three things follow:
-- If the base activation has no mean component along p̂ (c = 0), β_M is a small negative number, −ρ/(1 − ρ). The latent
-  passes "as published" and is dropped by the E.2 exclusion. This is the exclusion's sign problem from P2.70 again,
-  now caused by the toolkit's mean subtraction.
-- If c is a few tenths, ν crosses 0.3 and the plant fails both rules.
-- ν tends to 1 as |c| grows. At fine-tune size ‖D‖ is about a hundredth of ‖h‖, so any latent whose direction is not
-  nearly orthogonal to M's mean activation reads ν ≈ 1. The expected specific part on the nine pairs is therefore near
-  0, for a reason of scale, as the crosscoder's was.
+The gap can be tiny on a Gaussian side or a small pair, and then "recovered" is a ratio of two floors. So KL(patch
+h_M) has a floor, set in the rehearsal as a multiple of the h_F patch's KL floor. Below it, every recovery on that side
+reads "not read". The rule is run before filing on the do-nothing state, where every recovery must read "not read", and
+on a Gaussian.
 
-These are computed, not guessed, in a **$0 oracle check** on the cluster before filing. It covers each control and one
-built side. For the real-text plant it uses p itself. For the heads, the pairs and the Gaussians it uses the top ten
-principal directions of D on the read set, with f the positive part of D's component along each. It reports ρ, c and
-the oracle ν under both rules. The planted control's filed expected value is its oracle ν, and its specific part is
-the oracle directions' s.
+**3.8 Expected values, worked out before any fit.** The derivation is in appendix A. For a latent along a planted
+direction with unit decoder, ν_D = t / (t + 1), with t = c − ρ_n. Here ρ_n is the plant's share of the normaliser's
+sample, and c is M's mean activation along the plant's direction over the plant tokens of the scaler rows, in units of
+the plant's length. So ν_D ≤ 0.3 holds exactly for −1 < t ≤ 3/7. For E212's plant, at the median base norm, c is about
+0.04 and the plant should pass. For a change of fine-tune size, c is about 3.6 and ν_D about 0.78, a fail. ν_lit has no
+closed form.
+
+A **$0 oracle check** on the cluster computes these before filing, for each run-1 side: ρ_n, c, t and K, and the
+oracle ν under both forms and both rules, for the plant's own direction and for the top ten principal directions of D on
+the read set. It runs `closed_form_scalars` on the oracle directions with the actual scaler rows and fixed unit readouts,
+and checks that the closed form's ν_D matches it to the float32 floor and that pass holds exactly on −1 < t ≤ 3/7.
+**The oracle diagnoses; it never vetoes.** A trained SAE's f need not match the oracle's positive part, so an empirical
+pass stands against an oracle fail, and the disagreement is reported.
 
 ## 4. Departures
 
 "Theirs" means taken from the post, the paper or the toolkit at 617d926. "Ours" means our choice where they are silent
-or cannot apply. "Forced" means the 67M leaves no faithful option.
+or cannot apply. "Forced" means the 67M or the toolkit's install leaves no faithful option.
 
 | step | theirs | ours | why | ours/theirs | forced |
 |---|---|---|---|---|---|
-| code | toolkit pipeline | pinned trainer and model unchanged; glue ours | the toolkit pulls vllm and streamlit and cannot be installed (E203) | theirs (core) / ours (glue) | y |
+| code | toolkit pipeline | dl's SAE, trainer and `trainSAE` called as they run; `closed_form_scalars` and its loaders run from the pinned source; normaliser and sampling rules ported | the toolkit cannot be installed or imported (E203; package `__init__`) | theirs (core) / ours (adapter, ports) | y |
 | model pair | Gemma 2 2B base / chat | 67M M / F | the testbed | ours | y |
 | site | middle layer, 0.5 | block 2's input; block 3's output for the block-3 head | where the crosscoder read | theirs | n |
 | text | chat + pretraining + training set, 50M each | Pile + the side's task text, 50M each, E235's stream | no chat model | ours | y |
 | context | 1024 | 512 | the 67M's rows | ours | y |
-| tokens | ≤ 150M × 2 epochs | 100M × 2 epochs | 50M per dataset with chat dropped; same text as the crosscoder column | theirs (per dataset) | y |
+| tokens | ≤ 150M × 2 epochs | 100M × 2 epochs | 50M per dataset with chat dropped | theirs (per dataset) | y |
+| training order | per-dataset prefixes, shuffled within 1M-token shards | E235's interleaved stream | streamed, not cached; the crosscoder column's order | ours | n |
 | storage | bf16 activations | fp32 forwards, D in fp32 | bf16 rounding is a fine-tune's size here | ours | n |
-| normaliser | D's mean and scale, RMS 100, 1M samples | same | | theirs | n |
-| SAE | BatchTopK, x2, k 100 | 1,536 latents, k 100 | k/d is 3 times Gemma's (open question 3) | theirs | n |
-| recipe | lr 1e-4, warm-up 1k, batch 2,048, AuxK, θ EMA, TF32 | same | | theirs | n |
-| latent scaling | 50M tokens, targets h_M and h_F with D's normaliser | same | | theirs | n |
-| f in latent scaling | from h_F (`closed_form.py` 354) | from D, scored; from h_F, reported | line 354 reads as an oversight | ours (reading) | n |
-| specific rule | ν ≤ 0.3 | ν ≤ 0.3 and β_M ≥ 0 scored; ν ≤ 0.3 alone reported | the cell: same reading as the crosscoder (App. E.2) | ours, after Minder | n |
+| normaliser | 1M tokens, uniform over each whole cache, equal count | same rule, 500k from each of two datasets, one stream pass | | theirs (rule) / ours (port) | n |
+| SAE | BatchTopK, x2, k 100 | 1,536 latents, k 100 | k/d is 3 times Gemma's; a k-33 fit only if rung 1 fails | theirs | n |
+| recipe and loop | lr 1e-4, warm-up 1k, batch 2,048, AuxK, θ EMA, TF32; `trainSAE` logging every 50, validation every 20k on 5M | same, through `trainSAE` | | theirs | n |
+| validation text | held-out split of the same caches | 5M Pile tokens from rows 131,072 on | the side's task text is all in training or scoring | ours | y |
+| latent scaling | 50M proportional prefixes, no shuffle, float32, D's normaliser, batches of 16,384 / 8 | same, by their function | | theirs | n |
+| f in latent scaling | from h_F (`closed_form.py` 354) | both scored: ν_lit from h_F; ν_D from D | the post's words name D; the code encodes h_F | theirs, as the code runs (ν_lit) / ours, as the post's words read (ν_D) | n |
+| specific rule | ν ≤ 0.3 | same, scored; with β_M ≥ 0 (App. E.2) reported beside | E.2 fails a clean plant by construction | theirs (scored) / ours, after Minder (E.2) | n |
+| pass bar | none | specific part ≥ 0.5 · min(K, 1), K fixed before the fit from μ_D; K < 0.5 reads "not read"; the gate: rung 1's bar on all arms | the normaliser's mean takes a share the latents cannot carry | ours | n |
+| resume | none in `trainSAE` | none: a dead fit restarts at step 0 | a fit is ≤ 48 min | theirs | n |
+| KL "error" arm | base_act + ((chat − base) − (chat_recon − base_recon)) | h_F − D̂ | the same patch, D̂ being the diff reconstruction | theirs | n |
+| KL subsets | eq. 5, crosscoder latents, no bias | encode(D) latents under each form's mask, no bias | the paper has no diff-SAE | theirs (form) / ours (masks) | y |
+| KL-gap floor | none | KL(patch h_M) under a rehearsal-set multiple of the h_F patch's floor reads "not read" | a ratio of two floors otherwise | ours | n |
+| KL data | chat responses | read windows, read positions and all, Pile | no chat model; the toolkit has no code | ours | y |
+| early-stop FVE | per-batch centred FVE, batch-averaged, logged | the same formula pooled over the validation set | a plant's batches with no plant token have zero variance, which theirs reads as nan | ours | n |
 | ν = ±inf | not handled | nan, fails | a −inf would pass | ours | n |
 | alive | not used | ≥ 10 firings on the read set | crosscoder's `alive_min` | ours | n |
 | reading | latent counts and KL recovery | specific part of the change, bias and error parts | the crosscoder column's reading | ours, after Dumas | n |
-| KL-gap step | paper §3.2, chat responses | ported; read windows, read positions and all, Pile | no chat model; toolkit has no code | theirs (form) / ours (data) | y |
 | steering, top-activation reading | 10 lowest ν; judged by people and a grader | not run | no chat text to judge | ours | y |
-| controls | none | plants, Gaussians, a reseed | to make a pass or a miss readable | ours | n |
+| controls | none | E212's plant, E243's rungs 1 and 5, two Gaussians matched to rung 1, a second seed on rung 1 | to make a pass or a miss readable | ours | n |
 
 ## 5. Proposed runs, cost and gates
 
 **Measured items.** From E235, `experiments/crosscoder_proper/results/run1/timing*.json` and `items/*.json`, on an H100:
-- the stream through both models takes 2.608 s per 1,046,544 tokens at site A and 4.338 s at site B, so 200M tokens
-  take 8.3 and 13.8 min;
+- the stream through both models takes 2.608 s per 1,046,544 tokens at site A and 4.338 s at site B;
 - a crosscoder step (24,576 latents on two stacked inputs) takes 11.65 ms, so 97,656 steps take 19.0 min;
-- the 20 crosscoder items, training plus scoring, took 27.0-29.6 min at site A and 34.1-35.3 min at site B, one outlier
-  at 60 min was a resumed item. The caller's ~28-32 min holds for site A.
+- E212's two pods cost $8.03 for about 50 min each, so we price $4.8 per pod-hour with set-up, as P2.72 did.
 
-E212's two pods cost $8.03 for about 50 min each, so we price $4.8 per pod-hour with set-up, as P2.72 did.
+**Per fit, derived.** The SAE has about a thirtieth of the crosscoder's weights, so its step is priced at 11.65 ms as
+an upper bound until the rehearsal measures it.
+- Site A: stream 8.3 + normaliser pass 4.2 + training ≤ 19.0 + five validations 1.1 + latent scaling 2.2 + reading
+  and KL patches 2 = **≤ 37 min**.
+- Site B: 13.8 + 6.9 + 19.2 + 1.8 + 3.6 + 2 = **≤ 48 min**.
 
-**Per fit, derived.** The SAE has about a thirtieth of the crosscoder's weights, so its step is priced at the
-crosscoder's 11.65 ms as an upper bound until the rehearsal measures it.
-- Site A: stream 8.3 + training ≤ 19.0 + latent scaling on 50M (2.1) + reading and KL patches about 2 = **≤ 31 min**.
-- Site B: 13.8 + 19.2 + 3.5 + 2 = **≤ 39 min**.
-- If the step comes out at 3 ms, as the size suggests, these fall to about 17 and 25 min.
+**Rehearsal ($0, cluster `debug`, before run 1).** Full SAE size, 12M training tokens, past the 10M-token AuxK
+threshold. Validation runs every 2,000 steps on 1M tokens. A fixture sets a known dead set on the counters at one step
+and checks the AuxK loss turns on for those latents. These sizes live in one frozen config. Every stage runs end to
+end, on E212's plant, rung 1 and one Gaussian:
+- the stream; the normaliser; training through `trainSAE`; a save whose reloaded weights give identical encodings
+  (no resume: a fit that dies restarts at step 0);
+- latent scaling at the full 50M tokens; the parity checks of appendix B; the KL patches at full read size with both
+  path checks; the downloads;
+- the $0 CPU fixtures: a nonzero-bias exact reconstruction, where "all" must give F's logits and "error" M's; and the
+  edge cases of §3.5;
+- the oracle check of §3.8.
 
-**Rehearsal ($0, cluster `debug`, before run 1).** The SAE is full size at 1,536 latents, so only the token count is
-tiny (4M). Every stage runs end to end:
-- the stream; the normaliser; training, a save, a resume checked by step-matched loss against an uninterrupted run (the
-  floor from two uninterrupted runs);
-- latent scaling at the full 50M tokens; the KL patches at full read size with both path checks; the downloads;
-- the oracle check of §3.7.
-
-It measures ms per step at batch 2,048, peak GPU and host memory per stage, the step-1 loss and FVE, the float32 against
-float64 floor of the ν identity, and the KL floor of the h_F patch. Those numbers replace the derived ones before run 1.
-
-**Run 1, the controls first and alone. Not gated, about $20, cap $35.**
-- **Stage 0a, first and alone.** E212's real-text planted direction at site A, with E212's own Gaussian (matched to T2,
-  `gauss_draw` 0) at site A as its null, on two pods at once. Under the E.2 exclusion our BatchTopK crosscoder reads
-  this plant at 0, where without it the plant read 0.77.
-  - Pass rule: the plant's specific part, scored rule, is at least 0.5, the crosscoder column's bar (E235), and the
-    Gaussian's is under 0.5.
-  - Expected value: the oracle's of §3.7, filed before the run.
-  - Lean: fail under the scored rule, pass "as published", if the oracle gives c near 0.
-  - The run carries on to stage 0b either way: a miss is a reading, not a stop.
-- **Stage 0b.** E235's block-3 head at site B, with E235's Gaussian at site B: the draft's reported pass that P2.70
-  reversed, read 0.42-0.44. Also E243 rung 5 at site A (crosscoder 0.46, then 0.010), and a second SAE seed on E212's
-  plant. The reseed's difference is the seed floor for every later comparison.
-- Six fits, 4 × 31 + 2 × 39 = 202 min, plus 3 pods × 15 min of set-up: about 4.1 pod-hours, about $20, about 1.3 h of wall
-  time. Uploads are small: E212's T2 state and the Pile rows E235 reads, about 0.6 GB a pod, 1 min at 10 MB/s.
+It measures ms per step, peak GPU and host memory per stage, the step-1 loss, the pooled FVE at each validation, the
+float32 against float64 floor of the numerator identity, the KL floors of §3.7, and K on each side. These replace the
+derived numbers before run 1.
 
 **Early checks in code.** Each check stops that fit and is reported:
 - a non-finite loss;
-- FVE of D under 0.5 at the 25M-token snapshot, the crosscoder's code-fault bar (the post's diff-SAE reads 0.82);
-- dead share over 0.3 at the end, the crosscoder's bar;
-- either KL path check off its rehearsal floor;
-- the ν identity off its floor;
+- the pooled centred FVE of D at the first full validation, step 20,000, under the rehearsal's FVE at its last
+  validation on the same side minus three times its two-seed difference. The FVE is 1 − Σ_d var(x − x̂)_d / Σ_d
+  var(x)_d over the 5M validation tokens, x = N(D), x̂ from the thresholded encode. If the pool's variance is 0 the
+  stop is not applied;
+- dead share over 0.3 at the end, by the trainer's own counters;
+- either KL path check off its rehearsal floor, or the numerator identity off its floor;
 - before step 0, D not exactly 0 under a zero update.
 
-**What opens run 2.** Run 2 opens when a site-A plant (E212 or rung 5) passes and the site-A Gaussian reads under the
-bar.
-- If no site-A plant passes, site A reads "below the method's reach at this update size", and the cell closes with
-  run 1's reading.
-- If the Gaussian passes too, site A reads "does not separate a plant from a random update".
-- Either way, results go to redteam-lead, then whip-lead.
+**Run 1, the controls first. Not gated, about $33, cap $45.** Six fits at site A, two at site B, on up to four pods.
+- **Stage 0a, first and alone: E212's exact replay.** E212's real-text planted direction at site A, on E212's L1 rows,
+  one SAE seed. It is a descriptive positive control and the run's smoke; its result does not gate. Under the E.2
+  exclusion our BatchTopK crosscoder read it at 0, without it 0.77. Filed: its two numbers of §3.6 and the oracle's.
+- **Stage 0b, the gate, four fits at once: a fine-tune-size plant against a matched null, same site, same rows.** E243's
+  grafted head scaled to rung 1, 1.04 times elicit's amplitude at site A, on rung 1's stream and read rows, at SAE seeds
+  0 and 1. Its null: two Gaussian draws by E243's random-arm recipe (`run2.py`, draws 249201 and 249202):
+  elicit's per-matrix norm profile, bisected so the change per token on rung 1's read rows equals rung 1's, within
+  0.05. They train, scale and read on rung 1's stream, set explicitly (`run2.py` 128-150 inherits elicit's), token
+  IDs checked equal. n = 2 is a weak null: it can open a descriptive run 2, no claim.
+- **Stage 0c, descriptive positive controls.** E243 rung 5 at site A, 104 times elicit's amplitude (crosscoder 0.46).
+  E235's block-3 head at site B with E235's one Gaussian at site B, the draft's reported pass that P2.70 reversed. The
+  single Gaussian at B is descriptive only.
+- **Conditional.** If rung 1 fails under both forms, a k-33 fit on rung 1 tells a plant split over many latents from
+  one below the method's reach.
+- Cost: 6 × 37 + 2 × 48 = 318 min of fits, four set-ups of 15 min, and about 12 min idle on each of pods 2-4
+  while stage 0a finishes alone: about 6.9 pod-hours, **about $33**, about 2.3 h of wall time. Pods 2-4 start once
+  stage 0a passes its first checks. The k-33 fit adds 37 min, $3. Uploads (E235's Pile rows, the head's
+  state) are about 0.6 GB a pod, 1 min at 10 MB/s.
 
-**Run 2, gated on cost, only if run 1 opens it.**
-- **The 39-fit default:** the nine built pairs' 18 sides with one matched random update per pair (9), and E62 copy and
-  lookup, three saved seeds each (6), each with its matched random update (6). It costs 39 × 31 min + 8 pods × 18 min of
-  set-up, about 23 pod-hours, **about $111**, and about 3 h of wall time on 8 pods (two runners of 4).
-- **The 48-fit form** gives every built side its own random update: about 28 pod-hours, about $134.
-- **The matched random**, E235's recipe (`crosscoder_proper/run.py` 247-268). It is a Gaussian weight change at the
-  side's per-matrix norms (`finetune.random_direction`, the draw seeded). A scalar is set by bisection so that its
-  activation change per token at the site equals the side's, within 0.05. It is rebuilt on the pod from its seed.
-- **Uploads:** 24 trained states × 270 MB (P2.72's measured size) = 6.5 GB, about 11 min spread over the pods.
-  Downloads are about 15 MB a fit, 0.6 GB, 1 min.
-- **Output per side:** the specific part under both rules, the bias and error parts, the FVE of D, the KL-gap
-  recoveries, the specific count, and the side minus its matched random. It is descriptive: no reuse verdict and no pair
-  call. One fit a side, so differences are read against the stage-0b seed floor.
+**The gate, per ν form, under the as-published rule ν ≤ 0.3.** One bar serves all four arms: 0.5 · min(K₁, 1), K₁
+being rung 1's pre-fit K on its rows, from one normaliser sample both seeds share. The first outcome that applies
+stands (site A, 1,536 latents at k 100, this recipe, rung 1's rows):
+1. **Not read**: an arm missing or unreadable (a stopped fit, a failed path check), or K₁ under 0.5. whip-lead may
+   spend the cell's second run rerunning the gate.
+2. **Does not separate**: a Gaussian at or over the bar, or not under the lower rung-1 seed.
+3. **Unstable** across seeds: one rung-1 seed under the bar.
+4. **Below the method's reach** at a fine-tune's size: both rung-1 seeds under the bar.
+5. **Pass**, on a weak null: run 2 opens, the form recorded. Outcomes 1-4 do not open it.
+
+Run 2 opens if either form passes. If only ν_D did, the paper column is labelled ours, "as the post's words read". A
+whip-lead ruling, before run 1 is read, that E.2 is scored keeps this order under that rule. The oracle explains an
+outcome, never changes it. Results go to redteam-lead, then whip-lead.
+
+**Run 2, gated on cost, only if the gate opens it.**
+- **The 48-fit default:** the nine built pairs' 18 sides and E62 copy and lookup at three saved seeds each, 24 sides,
+  each with its own matched random update, by E235's recipe (`crosscoder_proper/run.py` 247-268). That recipe's
+  bisection matches one side's activation change on that side's rows, so each side gets its own. Cost: 48 × 37 min
+  plus 8 pods × 18 min of set-up, about 32 pod-hours, **about $154**, about 4 h of wall time on 8 pods, two runners of 4.
+- **A shared null per pair** is used only if one Gaussian is measured within 0.05 of both sides' change on both sides'
+  rows, from one stated stream. Otherwise any shared null is called a pair-level reference, not side-matched.
+- **Uploads:** 24 trained states × 270 MB, P2.72's measured size, is 6.5 GB, about 11 min at 10 MB/s, spread over the
+  pods. Downloads are about 15 MB a fit, 0.7 GB, about 1 min.
+- **Output per side:** the specific part under both forms and both rules, the bias and error parts, K, the FVE of D,
+  the KL-gap recoveries, the specific count, and the side minus its matched random. It is descriptive: no reuse verdict
+  and no pair call. One fit a side, so differences are read against rung 1's two-seed floor.
 - **Gates** (`.claude/CLAUDE.md`): the pre-mortem under every heading, every setting sourced (§2 and §4), the
   rehearsal, early checks, one review by a fresh Opus agent, then gate 6 from whip-lead (cell text). It is under 6 h, so
   gated on cost only.
 
-**Totals.** Run 1 plus the 39-fit run 2 is about $131; with the 48-fit form, about $154. Both are inside the session's
-$300 with its 15% headroom ($255). If the rehearsal's step time is near 3 ms, both fall by about two fifths.
+**Totals.** Run 1 with the k-33 fit plus the 48-fit run 2 is about $190, inside the session's $300 with its 15% headroom.
 
 ## Not run
 
@@ -279,29 +347,7 @@ $300 with its 15% headroom ($255). If the rehearsal's step time is near 3 ms, bo
 - The chat-SAE and base-SAE variants the post also compares are not proposed.
 - The KL-gap recovery of our saved crosscoders, which would put the post's 60% beside our 88%-style number, is not
   proposed. E203's and E244's crosscoders kept no encoder.
-- P2.74's old tasks are not in the count. Each needs its own fit, so reading them is not free. whip-lead may swap them
-  into run 2's count.
+- E212's own Gaussians, matched to T2, are not rerun: E212's plant is descriptive, and the gate's null is matched to rung 1.
+- Rungs 2 to 4 are not proposed.
+- P2.74's old tasks are not in the count. whip-lead may swap them into run 2's count.
 - Qwen is not proposed.
-
-## Open questions for the reviewers
-
-1. **Which input does latent scaling encode?** The toolkit at 617d926 encodes the fine-tune's activation h_F with an
-   SAE trained on D (`closed_form.py` 354 → 693-697). We read this as an oversight and score ν_D, encoding D, with ν_lit
-   reported beside. Is ν_D the faithful reading of the post's "combining Latent Scaling with an SAE trained on ... chat
-   - base activations"?
-2. **Is the E.2 exclusion scored?** The cell asks for "the same specific-share reading as the crosscoder", which
-   includes App. E.2. The diff-SAE's own sources have no such filter. §3.7 predicts that a clean planted direction gets
-   a small negative β_M from the toolkit's mean subtraction alone. So the two rules can split on exactly the control.
-   We score the E.2 form and report both. Is that the right way round?
-3. **k at d = 768.** k 100 of 1,536 latents is literal (theirs), but k/d is three times Gemma's (100 of 2,304). Our
-   crosscoder kept k 100 and swept k 32. Should a k-33 fit on E212's plant be added to stage 0b as a description, at
-   about $2.5?
-4. **Which control is "the one" the cell means?** Three planted controls fail under E.2: E212's real-text plant (0.77
-   to 0), E235's block-3 head (0.56-0.63 to 0.42-0.44) and E243's top rungs (0.46 to about 0.01). We put E212's first
-   and alone: it sits at the scored pairs' site, it is a single direction, so its expected value can be computed, and
-   it reversed the most. The block-3 head follows in stage 0b. Is that order acceptable?
-5. **The bar of 0.5** is the crosscoder column's, kept for like-for-like. A null band from one Gaussian per site is
-   weak. Should stage 0 add a second Gaussian draw per site, at about $2.5 each?
-6. **Scale.** §3.7 predicts ν ≈ 1 for any latent not nearly orthogonal to M's mean activation once ‖D‖ ≪ ‖h‖. If the
-   oracle check confirms it on a built side, is run 2 still informative, or should the cell close on run 1 plus the
-   oracle, as "latent scaling on a diff-SAE cannot call a fine-tune-size change specific"?

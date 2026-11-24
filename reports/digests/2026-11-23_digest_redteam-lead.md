@@ -172,3 +172,26 @@ P2.75 diff-SAE spec (0bf4d26c): OK to code after 4 fixes. The §3.7 derivation c
 - Open questions: add a second Gaussian; k-33 only if the plant fails; run 2 also waits on the oracle.
 
 Re-checks ~21:15: P1.61/E290 OK (all six fixes; the new "twenty times its matched random" line holds, smallest 28.9). P1.59/E285 OK (66414d89). P1.58/E291 OK (all three). P1.60/E286: five fixes in; two more wording fixes: the panel's excess at neurons and heads reaches 0.13 (Gaussians ≤0.035), not "a few hundredths", and VPD's own-space share is 0.233 vs 0.080 (unmatched sizes), not "a little". Plus a ledger row. P2.72 delta-check change OK; suggest recording the trend at step 1,000 in the rehearsal.
+
+P2.75 revised spec (e5de84f0), the writer's two calls: OK with conditions.
+- Two Gaussian draws at site A only: OK. The null is n=2, so the gate opens only a descriptive run.
+- Either ν form opens run 2 if both site-A Gaussians stay under the bar in that form: OK. Record which form opened it. If only ν_D passes, label the column ours. The gate uses the as-published rule. If whip-lead rules that E.2 is scored, that ruling must come before run 1 is read.
+
+P2.68 (due 11-25) / E288 CMAP page (e00d29cd): OK after 4 fixes. The no call (5 of 9) stands.
+- The two top-pair reversals come from circuit size, not from empty circuits alone. Dropping the empty circuits, they still read −0.14 and −0.11. Subtracting the same-size random head sets, they read −0.003 and +0.024.
+- e54 mid / matched cipher reads level with circuits on both sides, so "reuse above new wherever circuits exist" is wrong.
+- The plant was shown at a 2.29 log-odds gain, against 7-12 for the built items.
+- Premise doubts: (a) agreed and measured. (b) The "CMAP at neurons" name needs a code check or must go.
+
+P2.75 after GPT review (713b45c7): OK to the oracle and code. The new gate is rung 1 at 1.04x, two seeds, two matched Gaussians. Appendix E's choices are fine. Two $0 fixes: the code must assert that the validation rows (131,072 on) are disjoint from E235, rung 1 and E212 rows; and the gate table needs a precedence order (missing arm, Gaussian pass, seed split, pass).
+
+Paper Discussion + Conclusion (v2 c4a7c04; whip-lead's overnight request): 10 flags, sent to whip-lead and writeup-lead (note-2026-11-23-redteam-discussion-conclusion.md). No sentence misattributes the user.
+- Overclaims:
+  - "removing our measurement problems did not change the verdict": only the remainders were removed; the VPD spread was not.
+  - IA3 "would read kept": E290 reads 0.36-0.84.
+  - The P1.60 open line: E286 is done.
+  - E285's exploratory ranking is used as evidence.
+  - The KL-regression pairs have the new side above and were read on K*.
+  - "Tells update from noise" holds by class, not per item.
+- Old reading: the realistic reversal is quoted as ρ; it is now E_b over K (E273).
+- Conclusion: the baselines clause is missing CMAP, EAP-IG and ADL.

@@ -634,8 +634,15 @@ def _python_here(text, roots, depth=0):
 here = call.get("cwd") or "."
 if not os.environ.get("SLURM_JOB_ID") and (
         why := _python_here(command, [here, _top(here), os.environ.get("CLAUDE_PROJECT_DIR") or here])):
-    print(f"No Python runs directly on the shared dev node, not even a heredoc that reads one file: {why}. To read "
-          "JSON, use jq, which runs here. Otherwise put "
+    # A refusal stops the whole Bash call: a `git commit ... && python3 -c ...` made no commit and nothing said so
+    # (friction 1055). An inline `python3 -I -c` read stays refused, as Will's rule has it; jq and nl do those reads
+    # here (friction 1040).
+    compound = sum(1 for words in _commands(command) if words) > 1
+    print(("Nothing in this command ran, the commands before the Python one included (a `git commit && python3 ...` "
+           "made no commit): run those again on their own. " if compound else "")
+          + f"No Python runs directly on the shared dev node, not even a heredoc that reads one file: {why}. To read "
+          "JSON, use jq, which runs here (a notebook is JSON: `jq -r '.cells[3].source[]' x.ipynb`); for a file's "
+          "lines with their numbers, `nl -ba FILE | sed -n 120,160p`. Otherwise put "
           "~/commute-agents/fleet/cpu-run in front of the command to run it on the cluster's worker through Slurm. It starts in "
           "about a second, passes standard input through (~/commute-agents/fleet/cpu-run python3 - <<'EOF' works) and asks for 1 CPU, "
           "2G of memory and 15 minutes unless you give -c, --mem or -t. The job cannot see /ephemeral, so keep its "

@@ -56,3 +56,19 @@ def test_separators_and_the_zero_line_pass(tmp_path: Path):
     ax.axhline(0.5, color="#999999", linewidth=0.8)
     ax.axhline(0, linestyle="--")
     assert _save(fig, tmp_path).exists()
+
+
+def test_a_left_title_counts_as_a_title(tmp_path: Path):
+    fig, ax = FG.figure()
+    ax.plot([0, 1], [0.2, 0.5])
+    ax.set_title("t", loc="left")  # friction 993
+    ax.set_xlabel("x")
+    assert _save(fig, tmp_path).exists()
+
+
+def test_no_title_is_refused(tmp_path: Path):
+    fig, ax = FG.figure()
+    ax.plot([0, 1], [0.2, 0.5])
+    ax.set_xlabel("x")
+    with pytest.raises(ValueError, match="needs a title"):
+        _save(fig, tmp_path)

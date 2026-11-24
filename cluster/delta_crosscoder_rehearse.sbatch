@@ -1,5 +1,5 @@
 #!/bin/bash
-# P2.72 (E###) rehearsal, $0: every stage of run 1 at the rehearsal sizes of experiments/delta_crosscoder/results/
+# P2.72 (E293) rehearsal, $0: every stage of run 1 at the rehearsal sizes of experiments/delta_crosscoder/results/
 # predictions.json (the full 3,840-latent dictionary, batch 4,096 and generation batch 2,000; 1,500 steps, 4,000 prompts,
 # one candidate with an 8-latent pool), on one L40. Run plan reports/plans/2026-11-23_plan_p2-72-run.md.
 #   part a: the data files (rehearsal, then the full 370 MB pre file once), the six continuation sets, C0a C0b C2A C2B
@@ -10,8 +10,8 @@
 # (items/rung5.slice.json), peak memory per stage (peak_gb_train, peak_gb, first_shard.peak_gb), and the C0a bf16
 # deviation (items/C0a.json read.max_rn_dev) that thresholds.full.c0a_rn_dev is filed from.
 # Submit from the clone root, part b after part a (predictions.json committed first; require_filed checks HEAD):
-#   sbatch --comment='E### rehearse: delta_crosscoder a' cluster/delta_crosscoder_rehearse.sbatch a
-#   sbatch --comment='E### rehearse: delta_crosscoder b' --dependency=afterok:<a> cluster/delta_crosscoder_rehearse.sbatch b
+#   sbatch --comment='E293 rehearse: delta_crosscoder a' cluster/delta_crosscoder_rehearse.sbatch a
+#   sbatch --comment='E293 rehearse: delta_crosscoder b' --dependency=afterok:<a> cluster/delta_crosscoder_rehearse.sbatch b
 #SBATCH --job-name=commute-dxc-rehearse
 #SBATCH --partition=compute
 #SBATCH --account=c11

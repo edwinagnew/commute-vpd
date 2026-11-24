@@ -8,7 +8,12 @@ repo="$(git rev-parse --show-toplevel)"
 zero="0000000000000000000000000000000000000000"
 patterns="$(mktemp)"
 trap 'rm -f "$patterns"' EXIT
-grep -v -e '^#' -e '^[[:space:]]*$' "$repo/.githooks/private-patterns.txt" > "$patterns" || true
+# The list beside this script, not in the repo being pushed: the paper repo (writeup-lead/paper) sets core.hooksPath to
+# this folder and has no .githooks of its own, so "$repo/.githooks/..." found nothing and the check was a no-op there
+# (friction 1006). A missing list refuses the push rather than passing it silently.
+list="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/private-patterns.txt"
+if [[ ! -r "$list" ]]; then echo "pre-push: $list is missing; push refused." >&2; exit 1; fi
+grep -v -e '^#' -e '^[[:space:]]*$' "$list" > "$patterns" || true
 # Key values: the right-hand side of each NAME=value line, and the password in each credential URL.
 secrets="$HOME/.config/commute/secrets.env"
 [[ -r "$secrets" ]] && sed -nE "s/^(export +)?[A-Za-z_]+=[\"']?([^\"' ]{8,})[\"']?.*/\2/p" "$secrets" >> "$patterns"

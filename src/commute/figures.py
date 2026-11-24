@@ -174,7 +174,8 @@ def _unnamed_lines(ax: Axes, shown: set[str]) -> list[str]:
 
 
 def _check(fig: Figure) -> None:
-    titled = bool(fig.get_suptitle()) or any(ax.get_title() for ax in fig.axes)
+    # get_title() alone reads only the centred title; set_title(loc="left") is a title too (friction 993)
+    titled = bool(fig.get_suptitle()) or any(ax.get_title(loc) for ax in fig.axes for loc in ("center", "left", "right"))
     if not titled:
         raise ValueError("save: the figure needs a title saying what it shows")
     legends = [leg for leg in [*fig.legends, *(ax.get_legend() for ax in fig.axes)] if leg is not None]

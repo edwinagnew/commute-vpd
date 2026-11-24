@@ -313,3 +313,11 @@ def test_cpu_stage_marker_top_level_load(repo: Path) -> None:
     (repo / "exp" / "staged.py").write_text(STAGED.replace("import sys\n", "import sys\nM = AutoModelForCausalLM.from_pretrained('m')\n", 1))
     (repo / "job.sbatch").write_text("#!/bin/bash\n# cpu-stage: a\n.venv/bin/python exp/staged.py a\n")
     assert hook("sbatch job.sbatch", repo).returncode == 2
+
+
+def test_a_refused_compound_says_nothing_ran(repo: Path) -> None:
+    """A refusal stops the whole call, so the git commit chained before the Python did not run either (friction 1055)."""
+    done = hook("git commit -m x && python3 -I -c 'import json'", repo)
+    assert done.returncode == 2 and done.stderr.startswith("Nothing in this command ran"), done.stderr
+    alone = hook("python3 -I -c 'import json'", repo)
+    assert alone.returncode == 2 and alone.stderr.startswith("No Python runs directly"), alone.stderr
