@@ -1,7 +1,7 @@
 """Run 2's figure (cell P1.58, the unseen-cue test), from results/unseen/{controls,e62}_<L>/*.json only (no model): per
 state, the share of F's gain the gain-only fit recovers on keys it never saw (filled) beside the fitted keys' held-out
 rows (open, run 1's reading), one panel per level. A state with no trained answer, or whose F gains under 1 log-odds,
-is drawn at its KL-recovered share (triangle). With --sketch: the planned figure from made-up numbers, one panel per
+is drawn at its KL-recovered share (triangle); a reading under the axis is an arrow at the bottom edge with its value. With --sketch: the planned figure from made-up numbers, one panel per
 rival of experiments/gain_share/card_unseen.md.
 
     ~/commute-agents/fleet/cpu-run --mem 2G python3 experiments/gain_share/plot_unseen.py [--sketch]
@@ -23,6 +23,7 @@ HERE = Path(__file__).resolve().parent
 RESULTS, FIGURES = HERE / "results" / "unseen", HERE / "figures"
 COLUMNS = ("x2", "x10", "random", "new_few", "new_thin", "copy", "lookup")
 LABELS = ("x2", "x10", "random", "new few", "new thin", "E62 copy", "E62 lookup")
+YMIN = -0.4  # a reading under it is drawn as an arrow at the bottom edge, labelled with its value
 WHERE = {"unseen": ("unseen keys", FG.METHODS["neuron"], 0.12), "seen": ("fitted keys, held-out rows", FG.METHODS["regating"], -0.12)}
 
 
@@ -44,7 +45,7 @@ def records(results: Path) -> list[dict[str, Any]]:
     return [pt for p in files if (r := json.loads(p.read_text())).get("done") for pt in points(r)]
 
 
-def panel(ax: Axes, pts: Sequence[dict[str, Any]], title: str, th: dict[str, Any]) -> None:
+def panel(ax: Axes, pts: Sequence[dict[str, Any]], title: str, th: dict[str, Any], legend: bool) -> None:
     for where, (label, st, dx) in WHERE.items():
         for kind, marker in (("share", "o"), ("kl_share", "^")):
             xy = [(COLUMNS.index(p["column"]) + dx, p["y"]) for p in pts if p["where"] == where and p["kind"] == kind and p["y"] is not None]
@@ -53,15 +54,22 @@ def panel(ax: Axes, pts: Sequence[dict[str, Any]], title: str, th: dict[str, Any
                 face = st.color if where == "unseen" else "none"
                 name = label if kind == "share" else f"{label}, KL-recovered share"
                 ax.scatter(xs, ys, marker=marker, s=26, facecolors=face, edgecolors=st.color, linewidths=1.0, label=name)
+    for p in pts:  # under the axis: an arrow at the bottom edge, labelled with the value
+        if p["y"] is not None and p["y"] < YMIN:
+            _, st, dx = WHERE[p["where"]]
+            x, y = COLUMNS.index(p["column"]) + dx, YMIN + 0.04
+            ax.scatter([x], [y], marker="v", s=26, facecolors=st.color if p["where"] == "unseen" else "none", edgecolors=st.color, linewidths=1.0)
+            ax.annotate(f"{p['y']:.2f}", (x, y), xytext=(5 if dx > 0 else -5, 6), textcoords="offset points", ha="left" if dx > 0 else "right", fontsize=6, color=st.color)
     ax.axvline(4.5, color="#bbbbbb", linewidth=0.8)
     for y, text in ((1.0, "F itself"), (th["exact_min"], "exact controls' bar"), (th["new_max"], "new edits' bar")):
         ax.axhline(y, color="#777777", linewidth=0.8, linestyle="--" if y == 1.0 else ":")
         ax.annotate(text, (0, y), xycoords=("axes fraction", "data"), xytext=(2, 2), textcoords="offset points", fontsize=7, color="#555555")
     ax.set_xticks(range(len(COLUMNS)), LABELS, rotation=20)
     ax.set_ylabel("share of F's gain recovered")
-    ax.set_ylim(-0.4, 1.3)
+    ax.set_ylim(YMIN, 1.3)
     ax.set_title(title, fontsize=9)
-    ax.legend(fontsize=6, loc="lower left", frameon=False)
+    if legend:  # the same markers in both panels
+        ax.legend(fontsize=6, loc="center", bbox_to_anchor=(0.5, 0.62), frameon=False)
 
 
 def sketch() -> list[dict[str, Any]]:
@@ -86,7 +94,7 @@ def main(argv: Sequence[str]) -> None:
         assert pts, f"no finished state under {RESULTS}"
     fig, axes = FG.figure(FG.FULL_WIDTH, ncols=2)
     for ax, (lv, title) in zip(axes, panels.items(), strict=True):
-        panel(ax, [p for p in pts if p["level"] == lv], title, th)
+        panel(ax, [p for p in pts if p["level"] == lv], title, th, legend=ax is axes[0])
     FG.save(fig, FIGURES / out, n=n, data=pts)
 
 

@@ -1,0 +1,196 @@
+{
+  "experiment": "E###",
+  "cell": "P2.72",
+  "run": "run 1 of up to 3: M's continuations, then nine fits in order C0a, C0b, two C2, five C1, each read by the spec 3.7 rule; run 2 (the trained sides) files its own rules and opens only as spec 5 says",
+  "filed": "2026-11-23, before the $0 rehearsal; thresholds.full.c0a_rn_dev is filled from the rehearsal's C0a deviation before run 1 and the file is committed then, never edited after run 1 starts",
+  "plan": "reports/plans/2026-11-23_plan_p2-72-delta-crosscoder-spec.md (the spec, reviewed three rounds); run plan reports/plans/2026-11-23_plan_p2-72-run.md",
+  "card": "experiments/delta_crosscoder/card.txt",
+  "kind": "descriptive: the method as published, one label per side (yes / no / not scored); no reuse score, no share column (whip-lead, spec header)",
+  "settings": {
+    "arch": {
+      "full": {
+        "d": 768, "expansion": 5, "shared_frac": 0.2, "k_shared": 76, "k_delta": 38, "init_norm": 0.4,
+        "lam_delta": 0.005, "aux_alpha": 0.03125, "dead_tokens": 10000000, "target_rms": 100.0
+      },
+      "rehearsal": {
+        "d": 768, "expansion": 5, "shared_frac": 0.2, "k_shared": 76, "k_delta": 38, "init_norm": 0.4,
+        "lam_delta": 0.005, "aux_alpha": 0.03125, "dead_tokens": 200000, "target_rms": 100.0,
+        "dead_tokens_source": "rehearsal only: 200k tokens (about 49 steps) so the AuxK path runs inside 1,500 steps, as E235's rehearsal lowered it"
+      },
+      "d_source": "the 67M's width at block 2's input",
+      "expansion_source": "paper 4.2 'We use an expansion factor of 5' -> 3,840 latents",
+      "shared_frac_source": "paper 3.3 and Table 1 'Shared Features Fraction | 20%' -> 768 shared, 3,072 non-shared",
+      "k_shared_source": "ours, a choice (spec 3.2, departures row 'budgets'): alpha = 0.5 from Table 1's 'Shared k Multiplier 2.0' (an inference), and each block's active fraction of the paper's Llama width (400 of 4,096 shared, 200 of 16,384 non-shared): 768 x 400/4096 = 75 -> 76 = 2 x 38",
+      "k_delta_source": "ours, as k_shared: 3,072 x 200/16,384 = 37.5 -> 38",
+      "init_norm_source": "Table 1 'Initial Decoder Vector Norm Scale | 0.4'",
+      "lam_delta_source": "Appendix A 'We set the delta loss weight Δλ=0.005'",
+      "aux_alpha_source": "Table 1 'AuxK Coefficient (α_auxk) | 1/32'; its form is Minder's AuxK (trainers/crosscoder.py 421-480), our reading of lambda_s under BatchTopK (spec 3.3)",
+      "dead_tokens_source": "paper Appendix B: dead after 10M tokens without firing (Minder's default too)",
+      "target_rms_source": "Minder's normaliser target (E235 settings.cc.full.target_rms 100, from diffing-toolkit@617d926 configs/diffing/method/crosscoder.yaml), applied as one scalar fit on M with no mean subtraction (spec 3.1)"
+    },
+    "sizes": {
+      "full": {
+        "steps": 50000, "batch": 4096, "n_chunks": 200, "prompts": 200000, "prompt_len": 33, "cont_len": 68,
+        "f_share": 0.2, "repeat_cap": 100, "pre_rows": 362000, "gen_batch": 2000, "gen_shard": 10000, "warmup": 1000,
+        "ckpt_every": 5000, "log_every": 500, "check_step": 1000, "candidates": 3, "pool": 60, "pool_min": 20,
+        "pile_loss_rows": 256, "read_batch": 4096
+      },
+      "rehearsal": {
+        "steps": 1500, "batch": 4096, "n_chunks": 5, "prompts": 4000, "prompt_len": 33, "cont_len": 68,
+        "f_share": 0.2, "repeat_cap": 100, "pre_rows": 12000, "gen_batch": 2000, "gen_shard": 2000, "warmup": 100,
+        "ckpt_every": 500, "log_every": 50, "check_step": 200, "candidates": 1, "pool": 8, "pool_min": 3,
+        "pile_loss_rows": 32, "read_batch": 4096,
+        "sizes_source": "rehearsal: the full dictionary, batch and generation batch (so ms per step, the sampler's tokens per second and the C0a bf16 deviation are measured as run 1 meets them), 1,500 steps, 4,000 prompts, one candidate and an 8-latent pool on 32 Pile-loss rows; the `slice` job reads one candidate with the full 60-latent pool at the full read sizes"
+      },
+      "steps_source": "Table 1 'Total Training Steps | 50,000', 'Batch Size | 4096': 204.8M token presentations, the paper's 'approximately 200 million tokens'; one pass, no k annealing (spec 3.4)",
+      "warmup_source": "Table 1 'Warmup Steps | 1,000', then constant (no decay stated)",
+      "prompts_source": "paper 4.2: 200,000 prompts, 100,000 answered by the base and 100,000 by the fine-tune (spec 3.5)",
+      "prompt_len_source": "ours: 20M contrastive tokens over 200,000 prompts is 100 tokens a row (paper 4.2); position 0 is dropped as E203/E235 drop it, so each row is 33 prompt tokens and 68 sampled ones and gives exactly 100 activations (32 prompt, 68 continuation: the spec's 6.4M prompt tokens inside 20.0M)",
+      "cont_len_source": "spec 3.5: 68 tokens a continuation",
+      "f_share_source": "spec 3.5: the fit-half quota 40.96M, 20% of 204.8M, Pile filling any shortfall",
+      "repeat_cap_source": "E235's repeat cap (crosscoder_proper predictions settings.cc.full.repeat_cap 100)",
+      "pre_rows_source": "spec 3.5: Pile train rows 400,000-761,999, one pass (362,000 rows x 511 = 184.98M activations, enough for C0's 184.8M)",
+      "n_chunks_source": "ours: 1.024M tokens a chunk, about E235's 1,024-row chunk, so a chunk of both models' activations fits beside the crosscoder",
+      "gen_batch_source": "ours; the rehearsal measures the sampler at this batch (spec 3.6)",
+      "check_step_source": "spec 5 'Expected at 1k steps: FVE at least 0.5, and L_delta falling'",
+      "candidates_source": "paper 4.3: 'select the top-3 latents from the right tail'",
+      "pool_source": "spec 3.7: 60 bulk latents per candidate; under 60, widen; under 20, 'not scored'",
+      "pile_loss_rows_source": "spec 3.5: Pile validation rows 0-255 for the Pile loss",
+      "read_batch_source": "spec 3.2: inference batch top-K on shuffled batches of 4,096 read tokens"
+    },
+    "run": {
+      "sites": {"A": "in2", "B": "out3"},
+      "fits": {
+        "C0a": {"what": "self", "site": "A", "group": "C0", "paired": true},
+        "C0b": {"what": "self", "site": "A", "group": "C0"},
+        "C2A": {"what": "gauss", "site": "A", "group": "C2"},
+        "C2B": {"what": "gauss", "site": "B", "group": "C2"},
+        "rung1": {"what": "head-r1", "site": "A", "group": "C1"},
+        "rung5": {"what": "head-r5", "site": "A", "group": "C1"},
+        "e212": {"what": "e212", "site": "A", "group": "C1"},
+        "headB": {"what": "head", "site": "B", "group": "C1"},
+        "rung5tied": {"what": "head-r5", "site": "A", "group": "C1", "tied": true}
+      },
+      "order": ["C0a", "C0b", "C2A", "C2B", "rung1", "rung5", "e212", "headB", "rung5tied"],
+      "lr": 0.0001,
+      "temperature": 0.7,
+      "top_p": 0.9,
+      "strengths": [-200, -100, -80, -50, -20, 20, 50, 80, 100, 200],
+      "widen": [[1.5, 2], [2, 4], [3, 8]],
+      "top_n": 50,
+      "contexts": 20,
+      "alive_min": 10,
+      "init_seed": 0,
+      "data_seed": 272,
+      "pool_seed": 27201,
+      "gen_seed": 272000,
+      "plant_seed": 1982,
+      "self_task": "e62/copy",
+      "prompt_start": 196608,
+      "pre_start": 400000,
+      "task_rows": 32768,
+      "graft_window": 32,
+      "loss_val": [0, 256],
+      "bg_val": [[256, 1000], [2000, 4352]],
+      "graft_read_val": [1000, 2000],
+      "score_tf32": true,
+      "sites_source": "spec 3.1: A block 2's input (E203/E235's site A, the paper's middle layer), B the last block's output, for the block-3 head and C2 at B only",
+      "fits_source": "spec 5 run 1: C0a identical models, paired init (wiring); C0b identical, independent init (null band); C2 E235's Gaussian matched to e54 elicit s0's activation change at A and at B (E235's G1: crosscoder_proper run.py `gauss`, draw 0); C1 E243 rung 1 and rung 5 (crosscoder_proper run2.py: E206's early head scaled to the rung's size at A), E212's planted direction (realistic_tasks run3.py `planted`), E235's block-3 head (graft_sites last_lowest at B), rung 5 with tied shared decoders (spec appendix 2)",
+      "lr_source": "Table 1 'Optimizer | Adam', 'Learning Rate | 1×10−4' (default betas)",
+      "temperature_source": "Appendix C 'Temperature: 0.7', 'Top-p: 0.9' (spec 3.5 applies them to the contrastive continuations)",
+      "top_p_source": "Appendix C",
+      "strengths_source": "Appendix C 's∈{−200,−100,−80,−50,−20,0,20,50,80,100,200}', the nonzero ten, uncapped (spec 3.7); added as s * rho / 100 times the unit d^ft, rho the median per-token norm of M at the site on the Pile-loss rows (ours, for 'model-specific normalization factors')",
+      "widen_source": "spec 3.7: |d^ft| within 1.5 and firing rate within 2, then 2 and 4, then 3 and 8",
+      "top_n_source": "spec 3.7: the candidate's 50 most activating tokens",
+      "contexts_source": "spec 3.7: 20 top contexts per candidate saved for a reader",
+      "alive_min_source": "E235's alive_min (crosscoder_proper settings.cc.full): fired at least 10 times on the eval set (the Pile background plus the side's score windows)",
+      "seeds_source": "new for this run, except plant_seed: E212's (realistic_tasks predictions_run3.json settings.plant_seed), so its planted vector is reproduced",
+      "self_task_source": "spec 3.7: C0b's differential null reads E62's copy task (share_untrained inventory e62/copy, induction_cue windows.pt)",
+      "ranges_source": "spec 3.5's table; `check_disjoint` asserts no two overlap before any GPU work",
+      "graft_window_source": "E201/E235 graft windows of 32 tokens from Pile train rows 0-16,383",
+      "score_tf32_source": "ours: the steering and Pile-loss reads run under TF32 (about 3x the fp32 rate), candidate and pool under the same arithmetic; the stream and the plant's norm stay fp32 as E235 ran them"
+    }
+  },
+  "thresholds": {
+    "full": {
+      "c0a_rn_dev": null,
+      "fve_check": 0.5,
+      "fve_min_end": 0.5,
+      "gen_cap_min": 30,
+      "fit_cap_min": 60,
+      "score_budget_min": 25,
+      "score_cap_min": 40,
+      "check_delta_falling": true
+    },
+    "rehearsal": {
+      "c0a_rn_dev": 1.0,
+      "fve_check": -1000000,
+      "fve_min_end": -1000000,
+      "gen_cap_min": 1000000,
+      "fit_cap_min": 1000000,
+      "score_budget_min": 0,
+      "score_cap_min": 1000000,
+      "check_delta_falling": false
+    },
+    "thresholds_source": "c0a_rn_dev: spec 5, one bar filed after the rehearsal measures max |R - 0.5| of C0a under bf16 on the same kernels (null until then; run.py refuses a full fit while it is null); fve_check: spec 5 'Expected at 1k steps: FVE at least 0.5' (mean batch FVE of the worse model over steps 900-999); fve_min_end: spec 5 'FVE under 0.5 at the end of a fit marks it a code fault' (E235 read at least 0.89, the paper at least 0.72); gen_cap_min, fit_cap_min: spec 5's stage caps (30 min per 100k continuations, 60 min per fit), each projected from the first shard and from step 1,000; score_budget_min: spec 5's scoring estimate (24 min) added to the projected training minutes; score_cap_min: ours, the fit cap less stream and training (about 20 min), projected after the first latent's reads; check_delta_falling: spec 5 'L_delta falling' at 1k steps, a stop at full size; the rehearsal checks at step 200, where the delta loss may still rise (the CPU dry run's tiny fits read it rising over 120 steps), so there it is recorded (delta_first_last_100) and does not stop; the rehearsal keeps nothing it cannot meet at 1,500 steps and records every reading"
+  },
+  "readings": {
+    "label": "per side: yes (one scored candidate beats its pool's maximum on both tests), no (at least one candidate scored, none passes both), not scored (no candidate has a pool of 20 or more)",
+    "steer": "the steering test's statistic: max over negative s of g_F(0) - g_F(s), absolute nats; g is the answer log-odds on the score windows for task sides (C0b: E62 copy; C2: e54 elicit, the Gaussian's matched side), KL(F_s || M) at the read positions for plants",
+    "top": "the top-activation test's statistic: share of the latent's 50 most activating tokens (z > 0) on behaviour positions, in a set of the score windows plus as many Pile background tokens",
+    "induce": "reported only, with the caveat that it is weak evidence of reuse (the added vector can carry the learned content): max over positive s of g_M(s) - g_M(0); for plants g_M(s) = -KL(F || M_s), so this is how far steering moves M toward F",
+    "beside": "per candidate: R, the pool's maxima, the widening used, the Pile-loss rise of F at every s, 20 contexts; per fit: FVE per model, L0, dead share, the tail (min and max R over non-shared latents) and the ledger; on C1 the other tail's top three by R, read and reported, never scored"
+  },
+  "rules": {
+    "C0a wiring (stop)": {
+      "rule": "identical models, paired init: the delta loss is exactly 0.0 at every step (a nonzero value stops the run at that step); at the end max over all latents of |R - 0.5| <= c0a_rn_dev; FVE >= fve_min_end. Any miss: exit 1 and no other fit runs (`gate` refuses every key until C0a.json holds done with every check passed).",
+      "expected": "delta 0.0 exactly at every step (Delta = 0 since F's activations are M's own, and the two decoders stay equal: every gradient and Adam update is the same on both); R = 0.5 on every latent, a deviation of 0 or bf16 rounding; recovery not read (every latent ties)",
+      "blind_to": "anything a real change does; it fails only on a wiring fault (a model mix-up, an asymmetric path)",
+      "edge_cases": "a deviation exactly at the bar passes (<=); a nan R (both decoder norms 0, impossible at init 0.4) fails"
+    },
+    "C0b null band (descriptive)": {
+      "rule": "identical models, independent init: the tail min and max of R over non-shared latents, reported beside the paper's 0.492-0.506; recovery read by the label rule on E62's copy log-odds of M (F = M: the steering test asks whether a top-tail latent moves M's own copy log-odds down more than its matched bulk)",
+      "expected": "tail of order 0.49-0.51 (the paper's null 0.492-0.506; our init and width differ, so no bar); label lean 'no', medium (paper 7.1: 'none support causal validation')",
+      "edge_cases": "F = M, so g_F and g_M are one read; every pass compares against the same fit's bulk, so the result is not fixed in advance"
+    },
+    "C2 random update (gates run 2 at A)": {
+      "rule": "the label rule, g = e54 elicit's answer log-odds on its score half (the Gaussian's matched side). C1 fits refuse until both C2 fits have read; a C2 'yes' makes C1 refuse until rerun with --c2-yes-reported (whip-lead told first). It does not cancel C1.",
+      "expected": "'no', low confidence at both sites (the paper ran no random control; no prior)",
+      "edge_cases": "'not scored' at A: the null was not read and run 2 does not run"
+    },
+    "C1 planted changes": {
+      "rule": "the label rule, g = KL(F_s || M) at the plant's read positions (heads: every position but 0 of E201's 512 read windows; E212: position 34 of its 512 L1 read rows); the planted direction's cosine with the top candidate's d^ft - d^base reported beside the pool maximum, no bar (E212 only)",
+      "expected": {"rung1": "'no', low (fine-tune size: BatchTopK specific part 0.0030)", "rung5": "'yes', medium", "e212": "'yes', medium", "headB": "'yes', medium", "rung5tied": "reported only"},
+      "edge_cases": "a plant's KL at s = 0 is > 0 by construction (the graft and the plant write at the site: E235/E243 checked the energy); a steering read giving nan (overflow at s = 200) is skipped in the max over s, and a candidate whose every read is nan cannot pass"
+    },
+    "pass and label (every side)": {
+      "rule": "per candidate, per test: pass iff the candidate's statistic is strictly over the maximum of its pool's statistics (nan pool values skipped; a nan candidate never passes). Pool: alive non-shared latents with |R - 0.5| strictly under the median |R - 0.5| of all non-shared latents, excluding the candidates and the other-tail latents, matched on |d^ft| within 1.5 and firing rate within 2 (then 2/4, then 3/8) until 60 qualify (60 drawn with pool_seed + candidate rank); fewer than 60 at 3/8: all of them if at least 20, else the candidate is not scored. Label: yes / no / not scored as in readings.label.",
+      "absolute_or_relative": "absolute nats for steering; a share for top activations; both ordinal against the same fit's bulk, so no band",
+      "chance": "under exchangeable latents a candidate beats a 60-latent pool on one test with probability 1/61, on both (independent) about 1/3,700; a side with three candidates reads yes by chance with probability about 3/3,700"
+    },
+    "run 2 gate (run 1's readout)": "run 2 at site A only if C0a passes, rung 5 or E212 reads yes, and C2 at A reads a calibrated no. No plant yes: site A reads 'not applicable at this update size'. C2 at A not scored: not read. Plant yes and C2 at A yes: 'does not separate a plant from a random update'. Rung 1 decides how a trained side's 'no' reads ('below the method's reach' if rung 1 reads no). The block-3 head and C2 at B gate nothing.",
+    "early checks (each fit; stop)": "before step 0: a matched change within its tolerance (C2: E235's gauss_match_tol 0.05; rungs: E243's match_tol 0.05), the ledger (contrastive + fit half + Pile = steps x batch exactly; disjoint row ranges, asserted at start); every step: finite losses; at check_step: mean batch FVE of the worse model over the 100 steps before >= fve_check, the delta loss's mean over those 100 steps under its mean over the first 100 (not C0a), projected fit minutes <= fit_cap_min; generation: projected minutes per 100k continuations <= gen_cap_min after the first shard; scoring: FVE at the end >= fve_min_end before any steering read, projected steering minutes <= score_cap_min after the first latent"
+  },
+  "edge_case_checks": {
+    "label, every candidate unscored": "rows [{scored false}, {scored false}, {scored false}] -> 'not scored' (tests/test_delta_crosscoder.py)",
+    "label, one scored, none passing": "[{scored true, steer true, top false}, {scored false}] -> 'no'",
+    "label, an unscored candidate that would pass": "[{scored false, steer true, top true}, {scored true, false, false}] -> 'no': an unscored candidate cannot pass",
+    "pass, tie with the pool maximum": "beats(0.3, [0.1, 0.3]) -> false (strict)",
+    "pass, nan candidate or empty pool": "beats(nan, [0.1]) -> false; beats(0.5, []) -> false",
+    "pass, nan pool value": "beats(0.5, [nan, 0.2]) -> true (nan skipped); beats(0.5, [nan]) -> true (no finite pool value: the pool is not empty, so a finite candidate passes; a pool of 20+ all-nan reads is not expected and is reported in pool_max)",
+    "pool, fewer than 20 at the widest factors": "-> pool [] and scored false",
+    "pool, 20-59 at the widest factors": "-> all of them, scored true",
+    "pool, zero firing rate": "within() is false for a zero rate, so a never-firing latent is never in a pool; candidates are alive (fired >= 10), so their rate is > 0",
+    "top share, latent firing on fewer than 50 tokens": "only its firing tokens count, over 50: a latent firing once, on a behaviour position, reads 0.02",
+    "top share, ties": "stable sort: the lower token index first",
+    "suppression, every negative-s read nan": "-> nan, never passes",
+    "candidates, fewer than 3 alive non-shared latents": "returns the alive ones only (no dead latent is a candidate); none alive: no candidate, label 'not scored'",
+    "do-nothing under the rule": "C0b is the do-nothing state read through the rule: a yes there is a false recovery, reported as the null's reading, not a pass"
+  },
+  "blind_to": {
+    "label": "what a latent means beyond moving g and firing on behaviour positions; how many latents carry the change; a change that sits mostly in shared latents (the method's own ranking cannot see it)",
+    "steer": "behaviour off the score windows; a latent whose d^ft moves g only together with others",
+    "top": "a latent that fires on the behaviour's text but not at the answer positions (heads: every read position is a behaviour position, so the test reads how much more the latent fires on the read windows than on Pile background drawn from the same text distribution)",
+    "induce": "whether the steered vector carries the learned content itself (the spec 1 caveat)"
+  }
+}
