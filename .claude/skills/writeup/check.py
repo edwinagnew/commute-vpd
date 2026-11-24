@@ -1,10 +1,13 @@
+#!/usr/bin/env python3
 """Flag prose that goes past the write-up skill's sentence guidelines.
 
     uv run python .claude/skills/writeup/check.py [--quiet] notebooks/x.ipynb reports/analyses/y.md
 
 --help lists the flags; --quiet prints only the errors, friction 350, 386, then "check.py: N errors" (also for 0, friction 534).
 Exit status is 1 when there are errors (retired terms), 0 otherwise; style flags never change it (friction 575). Proper
-method names that contain a retired word are listed in METHOD_NAMES and skipped (friction 580).
+method names that contain a retired word are listed in METHOD_NAMES and skipped (friction 580), and so is "projection"
+meaning a cost or time estimate (COST_SENSE, friction 1042). An item label such as "definition (b)" or "(ii)" is not a
+parenthesis (friction 999). The file is executable, so a bare `.claude/skills/writeup/check.py FILE` runs (friction 1002).
 
 Reads the markdown cells of a notebook, the text of a .md file or the prose of an .html log card (tags become sentence
 breaks, alt text and tables are dropped: they merged sentences and inflated the flags, friction 151, 157, 164), skips
@@ -45,6 +48,13 @@ METHOD_NAMES = (
     "linear concept erasure",
 )
 METHOD_NAME = re.compile("|".join(rf"\b{re.escape(n)}\b" for n in METHOD_NAMES), re.IGNORECASE)
+# "projection" as a forecast of cost, time or spend is not the retired operation: "cost projection", "a projection of
+# the GPU hours" (friction 1042). Only the RETIRED rule looks at it, like METHOD_NAME.
+COST_SENSE = re.compile(
+    r"\b(?:cost|spend|spending|budget|price|dollar|time|runtime|run-time|hours?|GPU[- ]hours?)\s+projections?\b"
+    r"|\bprojections?\s+of\s+(?:the\s+)?(?:\w+\s+)?(?:cost|spend|budget|price|time|runtime|hours|GPU[- ]hours)\b",
+    re.IGNORECASE,
+)
 # The user used "projection" for three different operations (reports/reviews/2026-10-20_review_terminology.md), so even
 # the plain linear-algebra sense is flagged; the message says what to write instead (friction 358).
 HINTS = {
@@ -54,6 +64,8 @@ HINTS = {
 }
 # A head name such as (2,4) is not a parenthetical aside and its digits are not results (friction 356).
 HEAD = re.compile(r"\(\d+,\s*\d+\)")
+# An item label such as "definition (b)" or "condition (ii)" names a listed item; it is not an aside (friction 999).
+ITEM_LABEL = re.compile(r"\((?:[a-z]|[ivx]{2,4})\)")
 INLINE = re.compile(r"`[^`]*`|\[([^\]]*)\]\([^)]*\)|\$(?!\d)[^$]*\$")  # $(?!\d): "$0.40" is money, not maths
 SENTENCE_END = re.compile(r"(?<=[.!?])\s+(?=[A-Z\*\"“(])")
 ITALIC_LINE = re.compile(r"\*[^*\s][^*]*\*|_[^_\s][^_]*_")
@@ -148,13 +160,13 @@ def check(path: Path) -> tuple[list[str], list[str], str]:
                 reasons.append(f"{n_words} words")
             if n_numbers > MAX_NUMBERS:
                 reasons.append(f"{n_numbers} numbers")
-            if "(" in s_nums:
+            if "(" in ITEM_LABEL.sub("item", s_nums):
                 reasons.append("parenthesis")
             if "scorecard" not in head.lower() and CODE.search(s):
                 reasons.append("code " + ", ".join(sorted(set(CODE.findall(s)))))
             where = f"{path}:{label}" if label else str(path)
             quote = f"{s[:110]}{'…' if len(s) > 110 else ''}"
-            s_ret = METHOD_NAME.sub("METHOD", s)
+            s_ret = COST_SENSE.sub("ESTIMATE", METHOD_NAME.sub("METHOD", s))
             if RETIRED.search(s_ret):
                 terms = ", ".join(sorted({m.group(0).lower() for m in RETIRED.finditer(s_ret)}))
                 keys = {"projection" if t.startswith("proj") else "lift" if t.startswith("lift") else "pull-back"
