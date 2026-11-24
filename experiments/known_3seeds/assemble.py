@@ -23,7 +23,7 @@ from typing import Any
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parents[1]
 STAGE2 = "experiments/known_3seeds/results/stage2.json"
-FINAL = Path("/mnt/nw/home/e.agnew/commute-agents/writeup-lead/experiments/method_table/results/final.json")
+FINAL = REPO / "experiments/method_table/results/final.json"
 P270 = Path("/mnt/nw/home/e.agnew/commute-agents/compare-lead/experiments/p270_rescore/results/rescore.json")
 SEEDS = (0, 1, 2)
 # pair -> (reuse task, new task), tasks in E136's state names (group/stem); E54's mid task and the 24-key cipher are shared
@@ -34,7 +34,7 @@ PAIRS = {"e62_copy_lookup": ("e62/copy", "e62/lookup"), "e46_copy_random": ("e46
          "e58_copy_prior_cipher": ("e58/copy", "e58/prior_cipher")}  # fmt: skip
 METHODS = ("share", "steer", "erank", "prior", "neuron", "neuron_top", "k_half", "size")
 NEW = {"e46/ident32_s2", "e46/rand32_s2", "e53/lowercase_s2", "e53/cipher_s2", "e54/cipher_own_s2"}
-FINAL_METHOD = {"share": "share", "erank": "erank", "prior": "prior", "neuron": "neuron", "neuron_top": "neuron_top", "k_half": "k_half"}
+FINAL_METHOD = {"share": "share", "erank": "erank", "prior": "prior", "neuron": "neuron", "neuron_top": "neuron_top_k64", "k_half": "k_half"}
 _json: dict[str, Any] = {}
 
 Src = tuple[str, list[str | int]]  # (file, key path; an int indexes a list)
