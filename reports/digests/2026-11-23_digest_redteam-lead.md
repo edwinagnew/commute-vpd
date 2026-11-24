@@ -170,3 +170,5 @@ P2.75 diff-SAE spec (0bf4d26c): OK to code after 4 fixes. The §3.7 derivation c
 - (3) The bias part is ρ for a constant plant, so the specific part is capped at 1 − ρ: check that 0.5 is reachable.
 - (4) Add a KL-gap denominator floor.
 - Open questions: add a second Gaussian; k-33 only if the plant fails; run 2 also waits on the oracle.
+
+Re-checks ~21:15: P1.61/E290 OK (all six fixes; the new "twenty times its matched random" line holds, smallest 28.9). P1.59/E285 OK (66414d89). P1.58/E291 OK (all three). P1.60/E286: five fixes in; two more wording fixes: the panel's excess at neurons and heads reaches 0.13 (Gaussians ≤0.035), not "a few hundredths", and VPD's own-space share is 0.233 vs 0.080 (unmatched sizes), not "a little". Plus a ledger row. P2.72 delta-check change OK; suggest recording the trend at step 1,000 in the rehearsal.
