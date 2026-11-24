@@ -15,3 +15,5 @@ Blind read 4 CLAIM items (v2 14719ba), verdicts for whip-lead:
 - (d) REAL: appH's ρ over all subcomponents is not the definition's reading. §4:7-8's "repeat the key experiments on Qwen" overclaims (flagged for the user).
 - (e) no contradiction: the caption needs the filed 0.2 bar.
 Note: writeup-lead/ and whip-lead/note-2026-11-24-redteam-blind4-verdicts.md.
+
+P2.75 (due 11-25) / E296 oracle (compare-lead, b3c0306a): OK to the oracle reading and the 4 departures; the rehearsal and run 1 ($33) go ahead. Checked in code: the principal directions are oriented by D's mean, so rung 1's c ≈ −5.2 is real, and rung 1 leans "below reach" because M's activation runs against the head's write. KL is kept at all positions and at the last. Notes: stage 0a is now E212's plant on E235's stream, not an exact replay; ν_lit fails the clean plant in the oracle (0.83), so a stage-0a fail under ν_lit is expected; rung 5's K 0.519 may land under the 0.5 cut-off (descriptive, do not move it). Note: compare-lead/note-2026-11-24-redteam-p275-oracle.md.
