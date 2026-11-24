@@ -197,3 +197,30 @@ Paper Discussion + Conclusion (v2 c4a7c04; whip-lead's overnight request): 10 fl
 - Conclusion: the baselines clause is missing CMAP, EAP-IG and ADL.
 
 P2.73 (due 11-25) Amendment 1, trigger token (definition-lead, bdbddd82): OK with 2 conditions. Freeze T=975 on the GPU (ship trigger_token.pt or assert it; stop if its ratio reads under 10, never re-choose). Label the trigger row as a clean-plant apparatus check: T was chosen as the first id clearing the ratio (lower ids read about 3, 975 reads 10.56), so it says nothing of WeightWatch's power on a typical trigger. Optional: read id 286 (ratio 2.96) beside it, descriptive.
+
+P2.68 in the paper (v2 17320ec, writeup-lead): OK, numbers match ebc757a2. Two wording fixes: the tools table puts the built-pair CMAP reading under the "trained fine-tunes" column, and its caption ("no tool gives a reuse reading") should add "or makes no call" now that CMAP's control passes. Note: writeup-lead/note-2026-11-23-redteam-p268-paper.md. Discussion/Conclusion re-check waits on writeup-lead's revision.
+
+P2.73 (due 11-25) Amendment 2 (definition-lead, d702d3ff): OK, both conditions met (T frozen at 975 with a stop and no re-choice; id 286 read descriptively). One $0 fix: assert that a cached trigger_token.pt holds T=975 (and old_rule) before using it. Note: definition-lead/note-2026-11-23-redteam-p273-amendment2.md.
+
+Paper Discussion + Conclusion re-check (v2 22692d3, writeup-lead): OK, all 10 flags resolved. One optional wording match: the copy head's "a tenth" should be "of its change as a rescale" in the Discussion too. Note: writeup-lead/note-2026-11-23-redteam-discussion-recheck.md.
+
+Paper Intro + Related work citation spot check (v2 644d9dd, litreview fixes 20561ee): every arXiv id resolves (14 checked), and no entry is fabricated. Two MUST fixes: a paragraph split by the P2 insertion now aims the "fixed dictionary" criticism at circuit analysis; "scores two on ours" is stale, since the table now scores six tools. Also 11 wording NITs (Deeb's 88%, Yu "suggest", Kissane "usually", Kumar two-layer linear, wen year, and others). Note: writeup-lead/note-2026-11-23-redteam-related-work.md.
+
+Paper Results number check (sec5 at v2 644d9dd, for whip-lead; Opus subagent, spot-verified): no old reading (ρ, R_A, K*) is quoted as current, and the neuron 0.07 now matches its plot. 7 MUST:
+- "separates at every featurization" holds only for the gain edits; the rebuilt edit reads 0.135 at SAE against 0.020 random, under the filed bar;
+- the "falls outside the variables" clause holds at SAE only;
+- the neuron numbers are the no-remainder descriptive column (0.05 as filed);
+- the Fig 1a SAE panel is K* on the scaled states, with no marker;
+- the caption's "mostly changed" goes beyond the text;
+- effective rank's pass fails once base loss is partialled out (P2.66);
+- the "blind raters" are language models.
+Also 1 SHOULD (head (2,4)'s 0.25, and random head (1,1) removes as much) and 11 NITs. Note: writeup-lead/ and whip-lead/note-2026-11-23-redteam-results-check.md.
+
+Results re-check (v2 cd7fad2): all 7 MUST and the SHOULD are applied correctly; the \open cell ids and the neuron-CMAP ✗ are still open. One new MUST at sec5:34: the added "0.999 or more with neurons as variables" is app_wordings' direction agreement over K*, not the definition's reading, and needs \kst and the appendix ref. §3 (main.tex:260, the user's) states the same 0.999 without \kst: flagged for the user, not edited. The appendix-support check is running (Opus subagent).
+
+Appendix trim (v2 cd7fad2): every body \ref still resolves. 4 MUST restores/rewordings:
+- the pure-gain log-odds share still separates all nine pairs (E231), so the re-gating share's separation reflects the task, not re-weighting. This caveat on claim 2 was cut and now appears nowhere;
+- gain-only training's filed miss (3 of 9);
+- sec4:43 points to a superseded ADL score that survives only in the cut file;
+- two filed real-text misses (E233, one of three).
+2 SHOULD: the form's scale/units caveats; the live appendix still says ρ. 6 NITs. Note: writeup-lead/ and whip-lead/note-2026-11-23-redteam-appendix-trim.md.
