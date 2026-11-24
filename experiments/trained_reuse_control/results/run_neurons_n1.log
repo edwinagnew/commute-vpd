@@ -1,0 +1,46 @@
+[09:54:56] E297 start, stage neurons, shard (1, 3), tag n1, results /root/work/experiments/trained_reuse_control/results; settings {'targets': ('x2', 'new_few'), 'seeds': (0, 1, 2), 'e195_C': (486, 499, 613, 778, 1125, 2028, 2352, 2960), 'steps': 3000, 'lr': 1e-05, 'warmup': 300, 'schedule': 'hf_cosine', 'clip': 1.0, 'batch': {'x2': 32, 'new_few': 1024}, 'micro': 256, 'fit_per_cue': 12500, 'saves': (300, 1000, 3000), 'early_steps': (1, 2, 3, 5, 10, 30, 100, 300, 1000, 2000, 3000), 'overshoot_step': 10, 'kl_m_band': {'2': (1e-08, 1.07e-06), '3': (8.9e-08, 9.6e-06)}, 'fall_step': 300, 'fall_ratio': 0.5, 'read_batch': 32, 'floor_gap': 0.02, 'leftover_max': 0.1924, 'vpd_seeds': (0,), 'random_seed': 140400, 'prior_neurons': {'x2': 0.9997651093639606, 'new_few': 0.0046789244383633865}, 'prior_vpd': {'x2': 0.7613907014282402, 'new_few': 0.01269833004445926}, 'repeat_tol_neurons': 2.03e-05, 'repeat_tol_vpd': 3.3243476569633224e-05, 'too_small': 100, 'rival_gap': 0.2, 'random_max': 0.05, 'min_seeds': 2, 'wall_s': 6000}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[09:55:40]     layer 0: 3079 variables x 64 pairs, 0 needed; 197056 cases in 34 s (5811/s)
+[09:56:10]     layer 1: 3079 variables x 64 pairs, 0 needed; 394112 cases in 64 s (6162/s)
+[09:56:36]     layer 2: 3079 variables x 64 pairs, 0 needed; 591168 cases in 90 s (6556/s)
+[09:56:58]     layer 3: 3079 variables x 64 pairs, 0 needed; 788224 cases in 113 s (7005/s)
+[09:56:58] stage 0 (neurons): {"experiment": "E297", "world": "neurons", "dn_n_changed": 0, "dn_dd_max": 0.0, "dn_E_b_K": 1.0, "n_vars": 12316, "identity": {"item": "x2", "flips": 0, "max_dev": 5.14984130859375e-05, "min_margin": 0.00020694732666015625, "cases": 788224, "cases_per_s": 7004.8560532922575, "n_read_positions": 41, "n_windows": 75, "window_len": 41}, "est_seconds_per_item": 450.101469039917, "seconds": 114.59964442253113}; checks hold
+[09:56:58] STAGE 0 DONE (neurons): est. 450 s per item read like x2
+[09:56:58] neurons: 4 of 12 items ['ft/x2_s0_rand', 'ft/x2_s2', 'ft/new_few_s0_rand', 'ft/new_few_s2']
+[09:56:59] ft/x2_s0_rand: 75 windows of 41 tokens, 41 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 199 cases per forward
+[09:59:15]     layer 0: 3079 variables x 256 pairs, 3078 needed; 788224 cases in 136 s (5811/s)
+[10:01:15]     layer 1: 3079 variables x 256 pairs, 3070 needed; 1576448 cases in 256 s (6161/s)
+[10:03:00]     layer 2: 3079 variables x 256 pairs, 3076 needed; 2364672 cases in 361 s (6554/s)
+[10:04:29]     layer 3: 3079 variables x 256 pairs, 3073 needed; 3152896 cases in 450 s (7002/s)
+[10:04:29] ft/x2_s0_rand: E_b over K 0.004162, over all changed 0.004165; |K| 12297 (12297 changed) of 12316; margin median 0.775, min 0.00126; 451 s
+[10:04:29] ITEM 1 of 4 DONE (ft/x2_s0_rand)
+[10:04:30] ft/x2_s2: 75 windows of 41 tokens, 41 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 199 cases per forward
+[10:06:46]     layer 0: 3079 variables x 256 pairs, 3078 needed; 788224 cases in 136 s (5807/s)
+[10:08:46]     layer 1: 3079 variables x 256 pairs, 3068 needed; 1576448 cases in 256 s (6160/s)
+[10:10:31]     layer 2: 3079 variables x 256 pairs, 3076 needed; 2364672 cases in 361 s (6553/s)
+[10:12:00]     layer 3: 3079 variables x 256 pairs, 3060 needed; 3152896 cases in 450 s (7002/s)
+[10:12:00] ft/x2_s2: E_b over K 0.029721, over all changed 0.029722; |K| 12282 (12282 changed) of 12316; margin median 0.721, min 0.000202; 451 s
+[10:12:00] ITEM 2 of 4 DONE (ft/x2_s2)
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 5731, 'limit_filed': 2.5397456096210376, 'limit_whitened_0.01': 8.566283727683114, 'limit_whitened_0.001': 8.575327523798162, 'limit_whitened_0.0001': 8.568685731515666, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 4566, 'limit_filed': 3.38301534693608, 'limit_whitened_0.01': 9.095356453119177, 'limit_whitened_0.001': 9.070667057076344, 'limit_whitened_0.0001': 9.072227442589407, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: {"slots": [109, 447, 771, 1004, 1101, 1997, 2018, 2034], "betas": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "detectors": [{"limit_filed": 2.8299306178453936, "limit_whitened_0.01": 11.977943470656788, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.935406646295597, "limit_whitened_0.01": 9.467794583919384, "limit_whitened_0.001": 9.453473755664607, "limit_whitened_0.0001": 9.434761738713327, "direction": "whitened 0.0001", "pile_own": 0}, {"limit_filed": 3.153354424992976, "limit_whitened_0.01": 10.247742932694962, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 2.976401818196408, "limit_whitened_0.01": 10.980585108255589, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 3.1523499367635144, "limit_whitened_0.01": 10.295113233962542, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.8080070622612814, "limit_whitened_0.01": 11.894050704084995, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 3.49099258484954, "limit_whitened_0.01": 12.118533590411879, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 6.333510380063351, "limit_whitened_0.01": 15.14462701601434, "direction": "whitened 0.01", "pile_own": 1}], "act": [13.54616928100586, 13.430658340454102, 14.229463577270508, 13.013628959655762, 13.70849609375, 13.203634262084961, 13.495687484741211, 16.34401512145996], "copy_M_twin": 0.2578125, "copy_M_D": 0.001953125, "misses": ["reuse_small: top-1 0.0000 < 0.2063", "reuse_large: top-1 0.0117 < 0.2063"], "gamma_new_few": 11.291481018066406, "gamma_new_thin": 10.845924377441406, "gamma_T": 8.0, "g": 4.662668452625903, "size_matched": false, "dW_norm": {"reuse_small": 11.702665857318092, "new_few": 4.032901283721824, "new_thin": 1.9208650760341066, "reuse_large": 31.246117113476934}, "top1_reuse_small": 0.0, "top1_new_few": 0.900390625, "top1_new_thin": 0.900390625, "top1_reuse_large": 0.01171875, "A": [4833, 7192, 4910, 7939, 8638, 2589, 9653, 6196], "A_prime": [10680, 4934, 7756, 7057, 5823, 5827, 6255, 1471], "y": [5752, 5771, 5175, 4412, 5870, 5087, 4201, 6430], "swapped": [{"cue": 5, "A_prime": 5731, "limit_filed": 2.5397456096210376, "limit_whitened_0.01": 8.566283727683114, "limit_whitened_0.001": 8.575327523798162, "limit_whitened_0.0001": 8.568685731515666, "direction": "whitened 0.0001", "pile_own": 1}, {"cue": 5, "A_prime": 4566, "limit_filed": 3.38301534693608, "limit_whitened_0.01": 9.095356453119177, "limit_whitened_0.001": 9.070667057076344, "limit_whitened_0.0001": 9.072227442589407, "direction": "whitened 0.0001", "pile_own": 1}]}
+[10:12:09] ft/new_few_s0_rand: 512 windows of 41 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[10:13:08]     layer 0: 3079 variables x 256 pairs, 2821 needed; 788224 cases in 59 s (13361/s)
+[10:13:53]     layer 1: 3079 variables x 256 pairs, 2227 needed; 1576448 cases in 104 s (15193/s)
+[10:14:24]     layer 2: 3079 variables x 256 pairs, 1903 needed; 2364672 cases in 134 s (17589/s)
+[10:14:40]     layer 3: 3079 variables x 256 pairs, 1072 needed; 3152896 cases in 151 s (20880/s)
+[10:14:40] ft/new_few_s0_rand: E_b over K 0.003645, over all changed 0.004654; |K| 8023 (8023 changed) of 12316; margin median 0.544, min 0.0021; 160 s
+[10:14:40] ITEM 3 of 4 DONE (ft/new_few_s0_rand)
+[10:14:41] ft/new_few_s2: 512 windows of 41 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs (4 derangements x 64), 1024 cases per forward
+[10:15:40]     layer 0: 3079 variables x 256 pairs, 950 needed; 788224 cases in 59 s (13388/s)
+[10:16:25]     layer 1: 3079 variables x 256 pairs, 400 needed; 1576448 cases in 104 s (15212/s)
+[10:16:55]     layer 2: 3079 variables x 256 pairs, 311 needed; 2364672 cases in 134 s (17606/s)
+[10:17:12]     layer 3: 3079 variables x 256 pairs, 195 needed; 3152896 cases in 151 s (20901/s)
+[10:17:12] ft/new_few_s2: E_b over K 0.010702, over all changed 0.013166; |K| 1856 (1856 changed) of 12316; margin median 3.51, min 0.0343; 152 s
+[10:17:12] ITEM 4 of 4 DONE (ft/new_few_s2)
+[10:17:12] E297 DONE (neurons)
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/trained_reuse_control/results ===
