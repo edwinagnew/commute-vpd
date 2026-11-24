@@ -20,7 +20,7 @@ None owned. Writing follows the task file.
   kept verbatim in `paper/cut/appendix_cut_2026-11-24.tex`, including your own paragraphs that moved there.
 
 ## Waiting on you
-- **Push of six local commits** (paper v2): a37ca46 one Limitations sentence for E297 (no trained reuse control could be fitted), 8791a68 copy-head random null (touches `main.tex`), b4d702b redteam
+- **Push of seven local commits** (paper v2): 7f57461 diff-SAE row, appendix paragraph and a scope sentence in §5.4 (three tools not shown to work at this scale), a37ca46 one Limitations sentence for E297 (no trained reuse control could be fitted), 8791a68 copy-head random null (touches `main.tex`), b4d702b redteam
   recheck, 7c71afb and 286040f WeightWatch row and appendix paragraph, 3b7cf54 Delta-Crosscoder run 1 row. Say "push"
   and I push.
 - **Flags in your sections (not edited):** "write share" in §4 and the abstract against "kept share" elsewhere; §4
@@ -32,7 +32,7 @@ None owned. Writing follows the task file.
   definition reads its copy head as mostly changed (kept share 0.09 to 0.14). Which the paper leads with is your call.
 
 ## Still open in the text
-Placeholders wait on P2.72 run 2 (your size choice via whip-lead), P2.75 diff-SAE (in rehearsal), P2.74 old tasks
+Placeholders wait on P2.72 run 2 (your size choice via whip-lead), P2.74 old tasks
 (job 65678 queued); the K* note, the RL line and the baselines claim stay open by your instruction.
 
 ## Money
