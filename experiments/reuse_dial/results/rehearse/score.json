@@ -1,0 +1,463 @@
+{
+ "experiment": "E300 (P2.63 reuse dial)",
+ "arms": [
+  "g",
+  "b10000",
+  "b1000",
+  "b100",
+  "ft"
+ ],
+ "tables": {
+  "addition": {
+   "levels": {
+    "g": 0,
+    "b10000": 1,
+    "b1000": 1,
+    "b100": 1,
+    "ft": 1
+   },
+   "missing": [
+    "g",
+    "b10000",
+    "b1000",
+    "b100",
+    "ft"
+   ],
+   "dial_order": -1.0,
+   "readable": false,
+   "n": 4,
+   "rho": {
+    "steering": {
+     "rho": null,
+     "p": null,
+     "n": 4,
+     "tracks": false
+    },
+    "erank": {
+     "rho": null,
+     "p": null,
+     "n": 4,
+     "tracks": false
+    },
+    "share": {
+     "rho": null,
+     "p": null,
+     "n": 4,
+     "tracks": false
+    },
+    "kl": {
+     "rho": null,
+     "p": null,
+     "n": 4,
+     "tracks": false
+    },
+    "lens": {
+     "rho": null,
+     "p": null,
+     "n": 4,
+     "tracks": false
+    },
+    "neuron_k64": {
+     "rho": null,
+     "p": null,
+     "n": 4,
+     "tracks": false
+    },
+    "neuron_kmatched": {
+     "rho": null,
+     "p": null,
+     "n": 4,
+     "tracks": false
+    },
+    "untrained_svd": {
+     "rho": null,
+     "p": null,
+     "n": 4,
+     "tracks": false
+    },
+    "E_b_K": {
+     "rho": null,
+     "p": null,
+     "n": 1,
+     "tracks": false
+    },
+    "prior": {
+     "rho": null,
+     "p": null,
+     "n": 4,
+     "tracks": false
+    },
+    "gain": {
+     "rho": null,
+     "p": null,
+     "n": 4,
+     "tracks": false
+    }
+   },
+   "eb_moves": false,
+   "gain_moves": false
+  }
+ },
+ "verdict": {
+  "verdict": "no call",
+  "readable": [],
+  "why": "fewer than 3 readable tasks"
+ },
+ "placement": {
+  "addition": {
+   "addition_ft_s0": {
+    "gain": 6.27688067778945,
+    "steering": {
+     "value": 0.15612163775157437,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "erank": {
+     "value": 303.2367669520261,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "share": {
+     "value": 0.7464862792901306,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "kl": {
+     "value": 0.4225781244795608,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "lens": {
+     "value": 0.11429700079283721,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "neuron_k64": {
+     "value": -0.03040019244585232,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "neuron_kmatched": {
+     "value": -0.030075094894019164,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "E_b_K": null
+   },
+   "addition_rl_s0": {
+    "gain": -6.709762182086706,
+    "steering": null,
+    "erank": {
+     "value": 321.65379510717946,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "share": null,
+    "kl": {
+     "value": 2.1744232129193657,
+     "nearest_level": "b100",
+     "share_on_reuse_side": 0.0
+    },
+    "lens": null,
+    "neuron_k64": null,
+    "neuron_kmatched": null,
+    "E_b_K": null
+   },
+   "addition_rl_s1": {
+    "gain": -2.0810572765767574,
+    "steering": null,
+    "erank": {
+     "value": 320.3648165031758,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "share": null,
+    "kl": {
+     "value": 0.6517530860001336,
+     "nearest_level": "b100",
+     "share_on_reuse_side": 0.0
+    },
+    "lens": null,
+    "neuron_k64": null,
+    "neuron_kmatched": null,
+    "E_b_K": null
+   },
+   "addition_rl_s2": {
+    "gain": 2.061923898756504,
+    "steering": {
+     "value": 0.407611163160906,
+     "nearest_level": "b10000",
+     "share_on_reuse_side": 0.0
+    },
+    "erank": {
+     "value": 320.4614168415595,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "share": {
+     "value": 0.7382647397279976,
+     "nearest_level": "b10000",
+     "share_on_reuse_side": 0.0
+    },
+    "kl": {
+     "value": 0.39601604920922545,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "lens": {
+     "value": -0.004454632403421871,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "neuron_k64": {
+     "value": -0.18265735241304973,
+     "nearest_level": "b100",
+     "share_on_reuse_side": 0.0
+    },
+    "neuron_kmatched": {
+     "value": -0.16769607505513498,
+     "nearest_level": "b100",
+     "share_on_reuse_side": 0.0
+    },
+    "E_b_K": null
+   },
+   "addition_rlg_s0": {
+    "gain": -0.1768906656652689,
+    "steering": null,
+    "erank": {
+     "value": 310.94270321611936,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "share": null,
+    "kl": {
+     "value": 0.6719767937873778,
+     "nearest_level": "b100",
+     "share_on_reuse_side": 0.0
+    },
+    "lens": null,
+    "neuron_k64": null,
+    "neuron_kmatched": null,
+    "E_b_K": null
+   },
+   "addition_rlg_s1": {
+    "gain": 2.197345744818449,
+    "steering": {
+     "value": 0.44303026792403793,
+     "nearest_level": "b10000",
+     "share_on_reuse_side": 0.0
+    },
+    "erank": {
+     "value": 331.3143059701266,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "share": {
+     "value": 0.7621065447641495,
+     "nearest_level": "b100",
+     "share_on_reuse_side": 0.0
+    },
+    "kl": {
+     "value": 0.39916417749361705,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "lens": {
+     "value": -0.001124368995151132,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "neuron_k64": {
+     "value": -0.4307082829063577,
+     "nearest_level": "b100",
+     "share_on_reuse_side": 0.0
+    },
+    "neuron_kmatched": {
+     "value": -0.17207831761953218,
+     "nearest_level": "b100",
+     "share_on_reuse_side": 0.0
+    },
+    "E_b_K": null
+   },
+   "addition_rlg_s2": {
+    "gain": 1.0956338606774807,
+    "steering": {
+     "value": 0.6502025053979084,
+     "nearest_level": "b10000",
+     "share_on_reuse_side": 0.0
+    },
+    "erank": {
+     "value": 320.7046359678818,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "share": {
+     "value": 1.126849095016147,
+     "nearest_level": "b100",
+     "share_on_reuse_side": 0.0
+    },
+    "kl": {
+     "value": 0.3527205836616207,
+     "nearest_level": "b10000",
+     "share_on_reuse_side": 0.0
+    },
+    "lens": {
+     "value": -0.23253934389009306,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "neuron_k64": {
+     "value": -0.5394399979803267,
+     "nearest_level": "b100",
+     "share_on_reuse_side": 0.0
+    },
+    "neuron_kmatched": {
+     "value": -0.35495302687058,
+     "nearest_level": "b100",
+     "share_on_reuse_side": 0.0
+    },
+    "E_b_K": null
+   },
+   "addition_sft_s0": {
+    "gain": 6.276873912662268,
+    "steering": {
+     "value": 0.1561191768365549,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "erank": {
+     "value": 303.2465853881915,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "share": {
+     "value": 0.746034877317338,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "kl": {
+     "value": 0.4225748636391413,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "lens": {
+     "value": 0.11429805636044904,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "neuron_k64": {
+     "value": -0.030375907662854165,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "neuron_kmatched": {
+     "value": -0.030045631520908694,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "E_b_K": null
+   },
+   "addition_sft_s1": {
+    "gain": 5.863320466130972,
+    "steering": {
+     "value": 0.1774381896216438,
+     "nearest_level": "b10000",
+     "share_on_reuse_side": 0.0
+    },
+    "erank": {
+     "value": 309.08559917505113,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "share": {
+     "value": 0.7496948038101833,
+     "nearest_level": "b100",
+     "share_on_reuse_side": 0.0
+    },
+    "kl": {
+     "value": 0.4655952104640425,
+     "nearest_level": "b1000",
+     "share_on_reuse_side": 0.0
+    },
+    "lens": {
+     "value": 0.13597941830325874,
+     "nearest_level": "b100",
+     "share_on_reuse_side": 0.0
+    },
+    "neuron_k64": {
+     "value": -0.05989096056873879,
+     "nearest_level": "b100",
+     "share_on_reuse_side": 0.0
+    },
+    "neuron_kmatched": {
+     "value": -0.05209303989738818,
+     "nearest_level": "b100",
+     "share_on_reuse_side": 0.0
+    },
+    "E_b_K": null
+   },
+   "addition_sft_s2": {
+    "gain": 5.995438888669014,
+    "steering": {
+     "value": 0.1908320001208509,
+     "nearest_level": "b10000",
+     "share_on_reuse_side": 0.0
+    },
+    "erank": {
+     "value": 304.2072411909332,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "share": {
+     "value": 0.7299427171235491,
+     "nearest_level": "b10000",
+     "share_on_reuse_side": 0.0
+    },
+    "kl": {
+     "value": 0.4376095723359197,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "lens": {
+     "value": 0.053818063126903216,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "neuron_k64": {
+     "value": -0.02144126899408218,
+     "nearest_level": "b10000",
+     "share_on_reuse_side": 0.0
+    },
+    "neuron_kmatched": {
+     "value": -0.03878631602291706,
+     "nearest_level": "b10000",
+     "share_on_reuse_side": 0.0
+    },
+    "E_b_K": null
+   },
+   "addition_rand_s0": {
+    "gain": -0.002143729478120804,
+    "steering": null,
+    "erank": {
+     "value": 696.4577630130981,
+     "nearest_level": "b100",
+     "share_on_reuse_side": 0.0
+    },
+    "share": null,
+    "kl": {
+     "value": 0.0011450097114396975,
+     "nearest_level": "b10000",
+     "share_on_reuse_side": 0.0
+    },
+    "lens": {
+     "value": 3.7266668020109686e-05,
+     "nearest_level": "ft",
+     "share_on_reuse_side": 0.0
+    },
+    "neuron_k64": null,
+    "neuron_kmatched": null,
+    "E_b_K": null
+   }
+  }
+ }
+}

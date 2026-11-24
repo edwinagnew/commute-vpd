@@ -1,0 +1,108 @@
+E300 (P2.63 reuse dial) calibrate ['lowercase'] tag cal_lowercase; settings {'tasks': ('sequence', 'brackets', 'addition', 'lowercase'), 'seeds': (0, 1, 2), 'eb_seeds': (0, 1, 2), 'betas': (100.0, 1000.0, 10000.0), 'target': {'sequence': 6.004814445351561, 'brackets': 8.668137642244497, 'addition': 6.045211089154084, 'lowercase': 1.6425441493988038}, 'lr_gain': 0.003, 'lr_res': 3e-05, 'grad_clip': 1, 'batch': {'sequence': 32, 'brackets': 32, 'addition': 32, 'lowercase': 8}, 'cap': {'sequence': 300, 'brackets': 490, 'addition': 310, 'lowercase': 3000}, 'kl_rows': 64, 'kl_batch': 8, 'gain_batch': 64, 'rand_sd': 0.05, 'random_seed': 263001, 'rehearse_task': 'addition', 'rehearse_cap': 40, 'rehearse_eb_arms': ('g', 'ft'), 'rehearse_betas': (10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0), 'plateau_frac': 0.9, 't_ref': {'sequence': 6.004814445351561, 'brackets': 8.668137642244497, 'addition': 6.045211089154084, 'lowercase': 1.6425441493988038}}; thresholds {'equiv_tol': 0.001, 'perm_min': 0.1, 'equiv_source': "E231's and E282's stage-0 bug bars (gain_only, gain_share predictions.json): an fp32 reassociation gives ~1e-6, a wrong orientation order 1", 'step1_max': 0.5, 'step1_max_source': "the ordinary fine-tune took 27-49 steps to E256's gain (train_<task>.json); a first step at half the target means the dial has no steps to separate its arms", 'eb_gain_min': 0.5, 'eb_gain_min_source': "PROVISIONAL, a bug bar, not a reading: a gains-only state must read E_b over its changed variables far above a Gaussian's (~0.01, E268). It is not 1 by construction: the definition's least-squares split (kstar_vpd._site, split.least_squares_split) takes the minimum-norm write/read change over every subcomponent, which can spread one subcomponent's gain over others whose u or v overlap it, and the bf16 export rounds the change at ~2^-9 relative; E247's head gain x2 reads 0.76 (kstar_needed summary items.x2). Stage 0 (e) measures it on a random gains state in the rehearsal; then amended to half that measured value before the paid run", 'eb_random_max': 0.05, 'eb_random_max_source': "4 x the largest E_b of E268's matched Gaussians on these tasks (0.0129, experiments/kstar_needed/results/summary.json p256/*_random_*)", 'min_gain': 1, 'min_gain_source': "commute.local_faith.MIN_GAIN: a Gaussian reaching it stops the job (E256's do-nothing stop); a task whose target falls under it is dropped"}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+stage0_cal_lowercase.json: done before
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+/root/work/src/commute/finetune.py:296: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  return ce, {"ce": float(ce)}
+[dial] step 1: loss 3.3114 penalty 0 grad_gain 0.236 grad_res 6.58
+[dial] step 2: loss 2.5556 penalty 1.31e-06 grad_gain 0.236 grad_res 5.82
+[dial] step 3: loss 2.7063 penalty 3.07e-06 grad_gain 0.226 grad_res 5.68
+[dial] step 4: loss 3.6406 penalty 4.9e-06 grad_gain 0.175 grad_res 7.08
+[dial] step 5: loss 3.3754 penalty 6.8e-06 grad_gain 0.21 grad_res 6.44
+[dial] step 6: loss 3.2217 penalty 8.66e-06 grad_gain 0.204 grad_res 5.55
+[dial] step 7: loss 2.9663 penalty 1.05e-05 grad_gain 0.292 grad_res 5.72
+[dial] step 8: loss 3.5793 penalty 1.23e-05 grad_gain 0.142 grad_res 4.96
+[dial] step 9: loss 3.1409 penalty 1.41e-05 grad_gain 0.149 grad_res 4.85
+[dial] step 10: loss 2.9318 penalty 1.58e-05 grad_gain 0.148 grad_res 4.88
+[dial] step 11: loss 3.5129 penalty 1.75e-05 grad_gain 0.194 grad_res 5.09
+[dial] step 12: loss 2.9770 penalty 1.92e-05 grad_gain 0.197 grad_res 4.9
+[dial] step 13: loss 3.3024 penalty 2.09e-05 grad_gain 0.228 grad_res 5.53
+[dial] step 14: loss 3.0171 penalty 2.25e-05 grad_gain 0.168 grad_res 5.1
+[dial] step 15: loss 3.1412 penalty 2.41e-05 grad_gain 0.163 grad_res 5.08
+[dial] step 16: loss 2.4240 penalty 2.56e-05 grad_gain 0.164 grad_res 5.1
+[dial] step 17: loss 2.9420 penalty 2.72e-05 grad_gain 0.211 grad_res 6.08
+[calibrate lowercase b100] {"steps": 17, "reached": true, "gain_hooked": 1.1919292736053466, "gain_gains_alone": 0.13540223503112794, "residual_share": 0.8864007806255455, "residual_size": 0.005358434879156824, "size": 0.01528586020064832, "s_per_step": 0.4617286990670597, "step1_gain": 0.7764219884872436}
+[dial] step 1: loss 3.3114 penalty 0 grad_gain 0.236 grad_res 6.58
+[dial] step 2: loss 2.5556 penalty 1.31e-06 grad_gain 0.236 grad_res 5.82
+[dial] step 3: loss 2.7056 penalty 3.06e-06 grad_gain 0.226 grad_res 5.68
+[dial] step 4: loss 3.6410 penalty 4.87e-06 grad_gain 0.175 grad_res 7.09
+[dial] step 5: loss 3.3758 penalty 6.73e-06 grad_gain 0.21 grad_res 6.44
+[dial] step 6: loss 3.2217 penalty 8.54e-06 grad_gain 0.205 grad_res 5.55
+[dial] step 7: loss 2.9662 penalty 1.03e-05 grad_gain 0.292 grad_res 5.71
+[dial] step 8: loss 3.5788 penalty 1.2e-05 grad_gain 0.142 grad_res 4.96
+[dial] step 9: loss 3.1401 penalty 1.37e-05 grad_gain 0.149 grad_res 4.85
+[dial] step 10: loss 2.9322 penalty 1.53e-05 grad_gain 0.148 grad_res 4.87
+[dial] step 11: loss 3.5128 penalty 1.68e-05 grad_gain 0.193 grad_res 5.08
+[dial] step 12: loss 2.9758 penalty 1.84e-05 grad_gain 0.196 grad_res 4.9
+[dial] step 13: loss 3.3008 penalty 1.98e-05 grad_gain 0.226 grad_res 5.52
+[dial] step 14: loss 3.0162 penalty 2.12e-05 grad_gain 0.168 grad_res 5.1
+[dial] step 15: loss 3.1403 penalty 2.26e-05 grad_gain 0.164 grad_res 5.09
+[dial] step 16: loss 2.4232 penalty 2.4e-05 grad_gain 0.164 grad_res 5.1
+[dial] step 17: loss 2.9413 penalty 2.53e-05 grad_gain 0.21 grad_res 6.09
+[calibrate lowercase b1000] {"steps": 17, "reached": true, "gain_hooked": 1.190619351387024, "gain_gains_alone": 0.13754107189178466, "residual_share": 0.8844793915607412, "residual_size": 0.005151989448517372, "size": 0.015218846239272847, "s_per_step": 0.45642364726347084, "step1_gain": 0.7764219884872436}
+[dial] step 1: loss 3.3114 penalty 0 grad_gain 0.236 grad_res 6.58
+[dial] step 2: loss 2.5556 penalty 1.31e-06 grad_gain 0.236 grad_res 5.83
+[dial] step 3: loss 2.7053 penalty 2.96e-06 grad_gain 0.223 grad_res 5.67
+[dial] step 4: loss 3.6393 penalty 4.54e-06 grad_gain 0.173 grad_res 7.07
+[dial] step 5: loss 3.3732 penalty 6.04e-06 grad_gain 0.208 grad_res 6.41
+[dial] step 6: loss 3.2202 penalty 7.38e-06 grad_gain 0.203 grad_res 5.55
+[dial] step 7: loss 2.9631 penalty 8.55e-06 grad_gain 0.286 grad_res 5.67
+[dial] step 8: loss 3.5760 penalty 9.54e-06 grad_gain 0.143 grad_res 4.99
+[dial] step 9: loss 3.1395 penalty 1.04e-05 grad_gain 0.149 grad_res 4.87
+[dial] step 10: loss 2.9306 penalty 1.1e-05 grad_gain 0.149 grad_res 4.93
+[dial] step 11: loss 3.5106 penalty 1.16e-05 grad_gain 0.193 grad_res 5.12
+[dial] step 12: loss 2.9716 penalty 1.21e-05 grad_gain 0.195 grad_res 4.94
+[dial] step 13: loss 3.2947 penalty 1.25e-05 grad_gain 0.218 grad_res 5.5
+[dial] step 14: loss 3.0110 penalty 1.28e-05 grad_gain 0.163 grad_res 5.12
+[dial] step 15: loss 3.1358 penalty 1.31e-05 grad_gain 0.164 grad_res 5.12
+[dial] step 16: loss 2.4173 penalty 1.33e-05 grad_gain 0.164 grad_res 5.12
+[dial] step 17: loss 2.9363 penalty 1.35e-05 grad_gain 0.216 grad_res 6.16
+[dial] step 18: loss 3.4247 penalty 1.36e-05 grad_gain 0.15 grad_res 4.99
+[dial] step 19: loss 2.8317 penalty 1.38e-05 grad_gain 0.234 grad_res 5.12
+[calibrate lowercase b10000] {"steps": 19, "reached": true, "gain_hooked": 1.2046309537887574, "gain_gains_alone": 0.17471801471710205, "residual_share": 0.8549613770361904, "residual_size": 0.003720188158256286, "size": 0.015481693823185004, "s_per_step": 0.4538622404399671, "step1_gain": 0.7764219884872436}
+[dial] step 1: loss 3.3114 penalty 0 grad_gain 0.236 grad_res 6.58
+[dial] step 2: loss 2.5556 penalty 0 grad_gain 0.236 grad_res 5.82
+[dial] step 3: loss 2.7058 penalty 0 grad_gain 0.226 grad_res 5.67
+[dial] step 4: loss 3.6407 penalty 0 grad_gain 0.175 grad_res 7.06
+[dial] step 5: loss 3.3755 penalty 0 grad_gain 0.21 grad_res 6.44
+[dial] step 6: loss 3.2215 penalty 0 grad_gain 0.204 grad_res 5.55
+[dial] step 7: loss 2.9662 penalty 0 grad_gain 0.294 grad_res 5.73
+[dial] step 8: loss 3.5786 penalty 0 grad_gain 0.143 grad_res 4.96
+[dial] step 9: loss 3.1406 penalty 0 grad_gain 0.149 grad_res 4.85
+[dial] step 10: loss 2.9329 penalty 0 grad_gain 0.149 grad_res 4.88
+[dial] step 11: loss 3.5131 penalty 0 grad_gain 0.194 grad_res 5.09
+[dial] step 12: loss 2.9767 penalty 0 grad_gain 0.196 grad_res 4.89
+[dial] step 13: loss 3.3016 penalty 0 grad_gain 0.228 grad_res 5.53
+[dial] step 14: loss 3.0170 penalty 0 grad_gain 0.168 grad_res 5.1
+[dial] step 15: loss 3.1413 penalty 0 grad_gain 0.162 grad_res 5.08
+[dial] step 16: loss 2.4242 penalty 0 grad_gain 0.164 grad_res 5.1
+[dial] step 17: loss 2.9414 penalty 0 grad_gain 0.211 grad_res 6.08
+[calibrate lowercase b0] {"steps": 17, "reached": true, "gain_hooked": 1.191651494026184, "gain_gains_alone": 0.1352798557281494, "residual_share": 0.8864769973383032, "residual_size": 0.005382165604947424, "size": 0.015293560759209958, "s_per_step": 0.4574846940882066, "step1_gain": 0.7764219884872436}
+[dial] step 1: loss 3.3114 penalty 0 grad_res 6.58
+[dial] step 2: loss 2.5529 penalty 0 grad_res 5.7
+[dial] step 3: loss 2.7061 penalty 0 grad_res 5.73
+[dial] step 4: loss 3.6384 penalty 0 grad_res 7.07
+[dial] step 5: loss 3.3745 penalty 0 grad_res 6.39
+[dial] step 6: loss 3.2198 penalty 0 grad_res 5.49
+[dial] step 7: loss 2.9648 penalty 0 grad_res 5.65
+[dial] step 8: loss 3.5752 penalty 0 grad_res 4.99
+[dial] step 9: loss 3.1412 penalty 0 grad_res 4.88
+[dial] step 10: loss 2.9289 penalty 0 grad_res 4.75
+[dial] step 11: loss 3.5129 penalty 0 grad_res 5.07
+[dial] step 12: loss 2.9757 penalty 0 grad_res 4.9
+[dial] step 13: loss 3.3003 penalty 0 grad_res 5.54
+[dial] step 14: loss 3.0155 penalty 0 grad_res 5.11
+[dial] step 15: loss 3.1441 penalty 0 grad_res 5.15
+[dial] step 16: loss 2.4206 penalty 0 grad_res 5.1
+[dial] step 17: loss 2.9389 penalty 0 grad_res 6.19
+[dial] step 18: loss 3.4271 penalty 0 grad_res 5.04
+[calibrate lowercase ft] {"steps": 18, "reached": true, "gain_hooked": 1.2038589763641356, "gain_gains_alone": 0.0, "residual_share": 1.0, "residual_size": 0.0055601744191445274, "size": 0.0055601744191445274, "s_per_step": 0.19980478286743164, "step1_gain": 0.736668327331543}
+DONE
+peak host RSS 7.2 GB
