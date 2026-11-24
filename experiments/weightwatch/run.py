@@ -93,7 +93,8 @@ class Config:  # predictions.json "settings"
     test_file: str
     n_test: int
     insert_seed: int
-    token_min: int
+    trigger_id: int
+    old_rule_id: int
     gamma_max_pow: int
     trigger_bar: float
     detector_ratio: float
@@ -187,10 +188,9 @@ class Run:
 
     @cached_property
     def calib(self) -> Tensor:
-        """The calibration windows: rows 0-12,499 of the file, each cut into 4 windows of 128, row order (D3), less
-        every window holding the trigger token T (amendment 1): 50,000 when T is absent from them."""
-        w = self.rows(self.cfg.calib_file, *self.cfg.calib_rows).reshape(-1, self.cfg.window)
-        return w[(w != self.trigger_token["T"]).all(1)]
+        """The calibration windows: rows 0-12,499 of the file, each cut into 4 windows of 128, row order (D3): all
+        50,000 (amendment 2: T must be absent from them; trigger_token stops otherwise)."""
+        return self.rows(self.cfg.calib_file, *self.cfg.calib_rows).reshape(-1, self.cfg.window)
 
     @cached_property
     def trigger_inputs(self) -> dict[str, Tensor]:
@@ -207,28 +207,32 @@ class Run:
 
     @cached_property
     def trigger_token(self) -> dict[str, Any]:
-        """Amendment 1 (2026-11-23): T is the rarest id >= token_min (fewest occurrences in the calibration windows, then
-        the lowest id) whose detector row reaches detector_ratio, among ids leaving at least SC.windows_needed(trigger_bar)
-        test windows without T. Chosen once, before the moments pass (the calibration set leaves T's windows out)."""
+        """Amendments 1-2 (2026-11-23): T is fixed at trigger_id, the id amendment 1's rule chose on the CPU dry run (the
+        rarest id >= 256 whose detector row reaches detector_ratio with >= SC.windows_needed(trigger_bar) test windows
+        free of it). Stops if T's row misses the ratio here; never moves to another id (redteam-lead, amendment 2). The
+        old rule's id (old_rule_id) is read beside it, descriptively. Chosen before the moments pass."""
         p = LARGE / "trigger_token.pt"
-        if p.is_file():
-            return torch.load(p, weights_only=False)
         c, ti = self.cfg, self.trigger_inputs
-        ids = torch.arange(c.token_min, len(ti["counts"]))
-        need = SC.windows_needed(c.trigger_bar)
+        if p.is_file():
+            tok = torch.load(p, weights_only=False)
+            assert tok["T"] == c.trigger_id and "old_rule" in tok, f"{p} is from another rule (T {tok['T']}): delete it"
+            return tok
+        T, need = c.trigger_id, SC.windows_needed(c.trigger_bar)
         hp, own = KE.site(self.M, ti["pile"].cuda(), 1)[0].flatten(0, 1), ti["pile"].flatten().cuda()
-        for tried, T in enumerate(ids[torch.argsort(ti["counts"][ids], stable=True)].tolist(), 1):
-            free = int((ti["test_base"] != T).all(1).sum())
-            if free >= need and (row := self.detector_row(T, hp[own != T])) is not None:
-                tok = row | {"T": T, "calib_count": int(ti["counts"][T]), "test_windows": free, "windows_needed": need, "ids_tried": tried}
-                save_pt(p, tok)
-                log(f"TRIGGER TOKEN: {json.dumps({k: v for k, v in tok.items() if k not in ('row', 'build')}, default=str)}")
-                return tok
-        stop(RESULTS / "trigger_token.json", {"windows_needed": need}, f"trigger: no id reaches detector ratio {c.detector_ratio}", log)
+        free = int((ti["test_base"] != T).all(1).sum())
+        old = self.detector_row(c.old_rule_id, hp[own != c.old_rule_id])
+        tok = self.detector_row(T, hp[own != T]) | {"T": T, "calib_count": int(ti["counts"][T]), "test_windows": free, "windows_needed": need}
+        tok["old_rule"] = {"T": c.old_rule_id, "detector": old["detector"], "beta": old["beta"]}
+        log(f"TRIGGER TOKEN: {json.dumps({k: v for k, v in tok.items() if k not in ('row', 'build')}, default=str)}")
+        if tok["calib_count"] or free < need or tok["row"] is None:
+            msg = f"trigger: T {T} in the calibration windows, under {need} free test windows, or under detector ratio {c.detector_ratio}"
+            stop(RESULTS / "trigger_token.json", {k: v for k, v in tok.items() if k not in ("row", "build")}, msg, log)
+        save_pt(p, tok)
+        return tok
 
-    def detector_row(self, T: int, hp: Tensor) -> dict[str, Any] | None:
+    def detector_row(self, T: int, hp: Tensor) -> dict[str, Any]:
         """known_edits' detector rule for T inserted into the build windows (hp: Pile held-out positions not holding T),
-        with known_edits.build's gain loop; None when no gain up to 2^20 reaches the ratio."""
+        with known_edits.build's gain loop; row and beta are None when no gain up to 2^20 reaches the ratio."""
         c, ti, gelu = self.cfg, self.trigger_inputs, self.M.net.h[1].mlp.gelu
         n, pos = c.n_build, ti["pos"]
         build = ti["build"].clone()
@@ -240,7 +244,7 @@ class Run:
         while float(gelu(hc @ (beta * u)).mean()) < c.detector_ratio * float(torch.quantile(gelu(hp @ (beta * u)), c.detector_quantile)):
             beta *= 2
             if beta > 2.0**20:
-                return None
+                return {"row": None, "beta": None, "detector": drec, "build": build}
         return {"row": (beta * u).cpu(), "beta": beta, "detector": drec, "build": build}
 
     @cached_property

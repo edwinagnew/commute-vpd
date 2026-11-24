@@ -91,6 +91,8 @@ def write(results: Path) -> dict[str, Any]:
         "sham_count_misses": [x for x, r in rows.items() if r["sham_counts_match"] is False],
         "missing": [x for x in every if dirs[x] is None or its[x] is None],
     }  # fmt: skip
+    if out["trigger"]["unchanged_at_fpr"] is False:  # amendment 3: the control did not show trigger-specific flags
+        out["column_rule"] = {"withheld": "the trigger's unchanged windows flag off the FPR (filed unchanged_at_fpr check)", "as_computed": out["column_rule"]}
     out["e62_pair"] = e62_pair(S)
     (results / "summary.json").write_text(json.dumps(out | {"done": not out["missing"]}, indent=1))
     print(json.dumps({k: v for k, v in out.items() if k != "rows"}, indent=1), flush=True)

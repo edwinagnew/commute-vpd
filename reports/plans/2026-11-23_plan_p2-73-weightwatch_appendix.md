@@ -93,6 +93,19 @@ on a ragged list (`utils.py` lines 188-191 build it, 240-245 store it, 318-327 i
      T is the rarest id ≥ 256 (fewest calibration occurrences, then lowest id) whose detector row reaches the filed
      ratio 10, among ids leaving at least 73 test windows without T; T's calibration and test windows are removed, and
      the 0.99 quantile is taken on Pile positions not holding T. The id chosen first under the old rule reached 2.96.
+     **Amendment 2 (2026-11-23, redteam-lead's two conditions and the GPT plan review):** T is frozen at 975, the id
+     amendment 1's rule chose on the CPU dry run (absent from the calibration windows, 999 of 1,000 test windows free
+     of it, ratio 10.56); the GPU run stops if 975 reads under 10, appears in a calibration window, or leaves under 73
+     test windows, and never moves to another id. The calibration set is the full 50,000 windows. 73 is a sample-size
+     guard only (the fewest windows at which an all-flagged 95% Wilson interval clears 0.95); the trigger verdict stays
+     the raw share of T windows flagged against 0.95, as filed. The old rule's id 286 is read beside it, descriptively.
+     **What the trigger now tests:** T was picked as the rarest id whose planted row clears the ratio (the 10 lower
+     absent ids read 2.90-3.01; 210 of the 502 absent ids swept reach 10), and γ is fitted until the build windows
+     flag. So a pass shows that our pipeline flags a planted trigger chosen to be clean: a detector-tuned apparatus
+     control, not a replication of the paper's backdoor evaluation, and not evidence that WeightWatch catches a
+     typical trigger. The page reads it only beside F's rate on the unchanged test windows and M's rate on the same
+     rows (`m_floor.json`), and says that its one kept direction sits in layer 1, so it does not test the paper's
+     layer-exclusion setting.
    - The slot is the layer-1 neuron with the smallest mean activation² × |column|² on Pile held-out (`known_edits.slots`,
      E206's rule), outside x2's 8 columns. Its `c_fc` row is `known_edits.detector`'s rule for T, built on windows with
      T inserted.

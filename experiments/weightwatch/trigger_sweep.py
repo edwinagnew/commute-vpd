@@ -1,6 +1,6 @@
 """P2.73 trigger sweep (2026-11-23): every candidate trigger token's detector ratio, the source of amendment 1.
 
-For each id >= token_min absent from the 50,000 calibration windows, then the `n_present` rarest present ids, this
+For each id >= 256 absent from the 50,000 calibration windows, then the `n_present` rarest present ids, this
 reads known_edits.detector's four limits (filed direction, then the ridge ladder 1e-2, 1e-3, 1e-4) on the run's own
 200 build windows with the id inserted, against the run's 1,050 Pile held-out windows with the id's own positions left
 out. Shortcuts make ~1,500 ids fit a CPU job (a full forward per id took ~7 s there):
@@ -131,7 +131,7 @@ def main(n_present: int, scratch: Path, start: int = 0, stop: int | None = None)
     flat, x = pile.flatten(), hp.double()
     sums, mean_d, cache = (x.sum(0), x.T @ x), KE.site(M, build, 1)[0].mean((0, 1)), prefix_cache(M, build)
     del x
-    ids = torch.arange(cfg.token_min, len(counts))
+    ids = torch.arange(256, len(counts))  # amendment 1 token_min, retired from settings by amendment 2
     absent, present = ids[counts[ids] == 0], ids[counts[ids] > 0]
     present = present[torch.argsort(counts[present], stable=True)][:n_present]
     rows: list[dict[str, Any]] = []
