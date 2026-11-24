@@ -44,6 +44,33 @@ edits and key tasks, and the draft should say how ours differ (realistic 67M LM,
 EH in toy settings, and it gives a concrete case where fine-tuning does build something new: a known "new" arm we could
 cite.
 
+**Why the project used, then dropped, this definition (project history, 2026-10-29 to 11-18).** From 2026-10-29 the
+project's working definition of reuse was Jain et al.'s section 3 (decisions.md, "Reuse line ... Jain, Kirk, Lubana").
+*Possession*: a linear readout trained on Pile text at some block reads the capability, beating a Hewitt-Liang control
+task. *Reuse*: the fine-tuned behaviour is a small function of that readout. *Causal check*: removing the readout's
+direction breaks the fine-tune and spares a twin fine-tuned on shuffled labels. On 10-30 we added that the function
+must also work on held-out values, a stated departure: without it, any fine-tune keyed on something the model
+represents counted as reuse, so the label separated no 67M pair. On 11-06 the definition was reset to Jain's alone. It
+was dropped for four reasons.
+1. *It never found reuse on the 67M.* The clearest case, the case-label fine-tune, passed possession, carrying and the
+   small-function test, then failed the causal check three times: E112's removal took only 8-21% of the gain, a
+   stronger removal at every later block still read "not through C", and E113's patch flipped the fine-tune's label on
+   0.2-1.4% of inputs. The log's claims page: "Under the earlier Jain-based definition, no 67M fine-tune was shown to
+   reuse an old capability" (E123, E125).
+2. *It often said nothing.* Many cases read "unreadable" or "does not apply". The user's criteria (2026-11-09): a
+   working definition must give a verdict on most fine-tunes, agree with fine-tunes built to be one or the other, and
+   look inside the model; not tied to Jain. On 11-13: "no reading" was the Jain failure we set out to fix.
+3. *Its core cannot see what was learned.* The user rejected the causal-tracing core itself on 11-09, not only its
+   coverage: a swap from base to fine-tune cannot see what the fine-tune learned, and possession needs a hand-written
+   algorithm (the capability C named in advance) to probe for. So it cannot give a verdict on every fine-tune, and it
+   does not look at the parts the fine-tune changed.
+4. *It reads values, not mechanisms.* Possession is a linear probe, so a built control's label simply followed from
+   whether its feature was linearly readable. That is why rung L1.4 asks for a built control whose label "does not
+   follow from linear unreadability".
+The replacement since 2026-11-18 is the mechanistic sentence: the parts F needs still compute what M's parts compute,
+up to a gain (kept AND needed). Sources: decisions.md rows of 2026-10-29, 10-30, 11-06 and the 2026-11-09 paper plan;
+research-log claims and timeline; definition-lead, 2026-11-23.
+
 **For the digest.**
 - 1-missing-method: pruning-to-revive, probing and reFT are already our adapted baselines; nothing new to add, but the large-LR/C_Tr=0 regime is a "new" control we could mirror.
 - 2-known-answer-case: Tracr/PCFG counting fine-tunes with compiled ground truth (wrapper at small LR; altered attention at large LR, no spurious cue); TinyStories twist deletion shown persistent by probe + reFT. Toy or tiny, not realistic.
