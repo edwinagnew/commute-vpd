@@ -92,7 +92,10 @@ under a third of it is near zero, so most dropped latents there have clearly neg
 The appendix describes the latents it dropped as having "low maximum activations" and a "small improvement in MSE", and
 reports none in BatchTopK crosscoders. Ours carry up to 0.77 of the change. The authors' own released Gemma table also
 holds negative base coefficients in the top 3,176 latents, though the paper says none: our replication found 2,832 kept
-of 3,176.
+of 3,176. On that table, fitted by the authors on 50M tokens, the filter takes the count of latents passing both
+thresholds from 931 to 599, matching their filtered count. It drops 332 latents, and 69 of those have both ratios above
+minus 0.02. So on the authors' own data their rule also drops latents whose base coefficient is zero up to noise. The
+counts are read from `experiments/crosscoder_replicate/results/stage_b_latents.csv`, columns `*_theirs`.
 
 ### Every crosscoder number the paper and log quote, old and new
 
