@@ -30,11 +30,11 @@ here has been measured to a built target. The leftover is measured on both targe
 | check (1 job) | E277's stage 0 (identity 0 flips, do-nothing E_b 1, dd 0), then R0c: x2 and new_few read again at neurons, within 2.03e-5 of E277 | debug: 303 s + 1,213 s + 308 s (E277's stage 0, x2, new_few on a cluster L40) = ~31 min, $0 |
 | neurons (3 jobs) | after check: E277's stage 0, then 4 of the 12 items each (2 on x2's D, 2 on new_few's) | debug: 303 + 2 x 1,213 + 2 x 308 = ~56 min each, $0 |
 | vpd rehearsal (1 job) | E290's VPD stage 0, then R0c at VPD: x2, new_few within 3.3e-5 of E268 | debug, 40-min limit: 16 + 1,445 + 515 s (E268 on a cluster L40S) = ~34 min, $0 |
-| vpd (1 pod) | the 4 seed-0 items (imitator and random per target), descriptive | one H100: 2 x 1,445 + 2 x 515 = 66 min (fp32 without TF32 is no faster on an H100 than an L40S, so E268's times stand) + ~10 min set-up (two 268 MB deltas: 54 s at 10 MB/s; the decomposition from W&B ~65 s); ~1.3 h x $3/h = ~$4, ≤ $6 |
+| vpd (1 pod) | the 4 seed-0 items (imitator and random per target), descriptive | one H100: 2 x 1,445 + 2 x 515 = 66 min (fp32 without TF32 is no faster on an H100 than an L40S, so E268's times stand) + ~10 min set-up (two 113 MB deltas: 23 s at 10 MB/s, measured size from the dry run; the decomposition from W&B ~65 s); ~1.3 h x $3/h = ~$4, ≤ $6 |
 
 The train stage needs nothing from the check, so they run side by side; the neuron reads gate on both (a read job stops
-at once if `stage0_repeat_neurons.json` is not done or its item's training is missing). A stop in train stops only that
-(target, seed); a stop in check stops every read. The run is not gated (under $60 and 6 h).
+at once if `stage0_repeat_neurons.json` is not done or its item's training is missing). A stop in train ends that job (its
+second training waits for the lead); a stop in check stops every read. The run is not gated (under $60 and 6 h).
 
 ## Expected values
 
@@ -73,7 +73,7 @@ new_few reads.
   overfit and miss the bar on D (75 held-out windows). new_few's 100,000 fit windows come from the same Pile rows as D
   at other cuts; exact copies of D are dropped.
 - Memory: new_few's batch of 1,024 windows x 41 tokens is accumulated over micro-batches of 256 (2.1 GB of logits each).
-- Saved: the step-3,000 delta of each imitator, fp32, 24 matrices (~268 MB each, `results/large/dw_*.pt`); per-item
+- Saved: the step-3,000 delta of each imitator, fp32, 24 matrices (113 MB each, measured in the dry run, `results/large/dw_*.pt`); per-item
   num, den, dd, K. The pod needs the two seed-0 deltas and downloads `results/vpd/` and `results/large/vpd_*.npz`.
 - Pod loss: the VPD items are written one by one and resume; only the item in flight is lost.
 
