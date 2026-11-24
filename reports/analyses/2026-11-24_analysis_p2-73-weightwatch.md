@@ -7,8 +7,8 @@ definition. Spec: `reports/plans/2026-11-23_plan_p2-73-weightwatch.md`, revision
 We ran WeightWatch, a published detector built on a fine-tune's top output directions, and scored how much the original
 model already writes along those directions. The score puts the edit that rescales the model's own neurons far above
 both edits that wire in something new, so by the rule filed before the run it earns a column. For the goal it is a
-cheap reading to set beside the definition, not a test of it: on these edits, reusing parts and writing where the
-model is busy coincide.
+cheap reading to set beside the definition, not a test of it: it cannot tell turning the model's parts up from
+removing them, and on our edits reusing parts and writing where the model is busy coincide.
 
 **The figure** is `experiments/weightwatch/figures/s_vs_haar.png`.
 
@@ -48,7 +48,8 @@ which keeps the update's size and spectrum and moves only where it points.
   ignores the update's size.
 - **new_few and new_thin**, the new edits: eight new slots wired into the layer-0 MLP. They are the contrast the column
   rule reads.
-- **rebuilt**: x2's mechanism rebuilt from new parts across layers 1 to 3.
+- **rebuilt**: x2's eight neurons zeroed, and the same behaviour rebuilt from new parts in layers 2 and 3. It is new
+  parts plus a deletion, not a reuse anchor.
 - **Two random updates** matched to a saved fine-tune's size and to its KL. They check that S of a dense update of
   realistic size reads 1.
 - **The trigger**: a rank-1 edit written along M's least-used output direction at layer 1, gated on one rare token.
@@ -74,9 +75,19 @@ as x2. For x2 and x10, the spec filed one value of S computed exactly from M bef
 
 **Reading it.** Yes, by a wide margin: x2's S is 490.49 and the larger new edit's is 5.45, a gap of 485.0 against a
 Haar spread of 2.23. The trigger and the empty update both held, so the filed rule reads "S earns a column". In the
-figure, x2 and x10 sit two orders of magnitude above everything else, and rebuilt sits near them. The new edits sit
-above their own Haar bands but far below x2: new_few at 5.45 and new_thin at 1.88. Both random updates read 1, at 0.96
-and 1.00. The trigger reads 0.00126, its matrix's known floor.
+figure, x2 and x10 sit two orders of magnitude above everything else. The new edits sit above their own Haar bands
+but far below x2: new_few at 5.45 and new_thin at 1.88. Both random updates read 1, at 0.96 and 1.00. The trigger
+reads 0.00126, its matrix's known floor. The contrast crosses matrices: x2 writes at the layer-1 MLP, whose ceiling is
+728, and the new edits at the layer-0 MLP, whose ceiling is 309. The ceiling does not explain the gap, since the new
+edits read far under theirs.
+
+**S cannot tell turning M's parts up from removing them.** rebuilt reads 286.8, near x2, and the reason is its
+deletion. Zeroing x2's neurons writes the negative of what x2 writes, along the same directions. S squares each
+direction's weight, so the sign is lost: rebuilt's layer-1 block is identical to x2's, with the same top direction at
+667. Its new parts in layers 2 and 3 read about 4.2 and 4.3 per direction, the level of the new edits. So an update
+that removes M's neurons reads as high as one that doubles them, and a fine-tune that suppresses an existing mechanism
+would read like reuse. Under the definition's literal reading, the write share over the needed set, rebuilt reads
+0.048 and x2 reads 1.0.
 
 **Is S only reading how busy the written direction is?** The built items cannot tell. S is by definition a measure of
 how much of M's own output variance lies along the written directions, and x2 writes along M's own columns. Most of
@@ -84,24 +95,26 @@ x2's S comes from one direction that reads 667, close to the ceiling of 728 for 
 M's output variance comes from the first position of each window. With the first position left out, x2 still reads
 245.7 and the new edits 1.77 and 1.14, so the gap does not come from that one position. What the built items do show
 is narrower. Rival b's filed prediction failed: the new edits do not write along directions as busy as M's own
-columns. The randoms read 1 at realistic size and x10 matches x2, so S does not read the update's size. Whether S
-would read low for a new mechanism that writes along a busy direction is not tested by these items.
+columns. The randoms read 1 at realistic size and x10 matches x2, so S does not read the update's size. And rebuilt
+already shows that a mechanism that is not reuse, a deletion, reads high when it writes along a busy direction.
 
 ## The x10 bar was missed
 
 x10's S is 490.49 and x2's is 490.49; they agree to six digits. The spec filed that both would sit within x2's bar of
 the S computed exactly from M, which is 490.49. The code sets that bar as x2's own relative gap from the exact value,
 1.91e-7. x2 meets it by construction. x10's relative gap is 3.93e-7, about twice the bar, so **x10 missed its filed
-bar**. In the code, x10's update is nine times x2's along the same directions, so S is the same in exact arithmetic,
-and both gaps come from computing the SVD in fp32. The bar was set from a single rounding draw, so x10 missed it by
-rounding. The miss is reported as it stands.
+bar**. In the code, x10's update is nine times x2's along the same 8 kept directions, so S is the same in exact
+arithmetic. The two agree to 2.0e-7 relative, which is consistent with fp32 rounding in the SVD; no fp64 check was
+run. The bar was degenerate: it is x2's own gap, one rounding draw rather than a measured floor, so the filed check
+carried no information about S. The miss is reported as it stands.
 
 ## Does the detector see the trigger, and the edits?
 
 The detector reproduced on our model. It flagged 1.0 of the trigger windows against the 0.95 bar, at a false positive
 rate of 0.0002. The same windows without the trigger were never flagged, with a 95% upper bound of 0.0038.
 
-It did not flag the reuse edits at all. On x2's 75 copy windows the flag rate was 0 for x2, x10 and rebuilt. The new
+It did not flag the built edits along M's columns, x2 and x10, or rebuilt. On their 75 copy windows the flag rate
+was 0 for all three. The new
 edits were barely flagged on their 512 cue windows: 0.002 for new_few and 0.010 for new_thin, with M's floor at 0. That
 was expected, because their slots also fire on the calibration text, so calibrating on F takes that firing in.
 
@@ -145,15 +158,19 @@ against where M writes on real text, and weighs them by singular value. The two 
 cannot tell x2 from a random rotation of x2 with the same spectrum; S was built to. E141 found that the rank looked more
 like a record of training length; S ignores the update's size, as x10 and the two randoms show. On the one pair both
 read, E62's copy against lookup, both separate with copy higher. S gives a gap of 0.707 against a within-side range of
-0.106, a ratio of 6.68. The effective rank gave a ratio of 6.97.
+0.106, a ratio of 6.68. The effective rank gave a ratio of 6.97. Both sides of E62 were trained by the same recipe and
+read at the same step, 30, so training length is not a shared cause on this pair. E62's copy and lookup labels come
+from the task design, not from the definition. The definition's literal reading puts copy and lookup level; only its
+reading on the copy head as one variable separates them, with copy higher. S agrees with the copy-head reading.
 
 ## What we learned
 
-S is a cheap reading that the column rule admits. On the built items it ranks M's own columns far above new wiring, and
-on E62 it ranks copy above lookup, as the definition's built labels do. Its weakness is the one rival b named: it reads
-how busy a direction is, and our built reuse items are busy by construction, so the built contrast does not test it.
-WeightWatch itself is a detector of new behaviour on inputs, not a reuse score: it flags none of the reuse edits and
-flags E62's lookup side more specifically than its copy side.
+S is a cheap reading that the column rule admits, with a narrower meaning than reuse against new. It separates updates
+that write along M's existing output directions from updates that write elsewhere. It cannot tell turning parts up
+from removing them, as rebuilt shows, and our built items cannot tell reusing M's parts from writing where M is busy.
+On E62 it ranks copy above lookup, agreeing with the definition read on the copy head, not with its literal reading.
+WeightWatch itself is a detector of new behaviour on inputs, not a reuse score: it flags none of the built edits along
+M's columns and flags E62's lookup side more specifically than its copy side.
 
 ## How compelling is the evidence
 
@@ -167,20 +184,22 @@ flags E62's lookup side more specifically than its copy side.
 
 ## Surprises
 
-- x10 missed its filed bar by rounding, a narrow threshold miss.
+- rebuilt reads almost as high as x2, because S is blind to the sign of a write and rebuilt deletes x2's neurons.
+- x10 missed its degenerate filed bar, a narrow miss consistent with fp32 rounding.
 - On the panel, the tasks the detector flags most are the ones where S sits inside its null.
 
 ## What next
 
-No further WeightWatch work is proposed, as filed. One item would change how S is read: a built new edit that writes
-along a busy direction of M. If its S reads as high as x2's, S reads busy-ness only and should be reported that way.
+No further WeightWatch work is proposed, as filed. If S goes into the paper, it is reported as separating updates that
+write along M's existing output directions from those that write elsewhere, blind to whether they turn parts up or
+remove them.
 
 ## Scorecard
 
 | id | claim | rule | read | verdict |
 |---|---|---|---|---|
 | column_rule | S earns a column | x2 above both new edits by more than the Haar spread; trigger at or above 0.95; empty update clean | gap 485.0 against 2.23; trigger 1.0; empty clean | earned |
-| x2_x10 bar | x2 and x10 within x2's bar of the filed S | relative gap at most 1.91e-7 | x2 at the bar; x10 at 3.93e-7 | x2 holds, **x10 missed** |
+| x2_x10 bar | x2 and x10 within x2's bar of the filed S | relative gap at most 1.91e-7, a degenerate bar | x2 at the bar; x10 at 3.93e-7 | x2 holds, **x10 missed** |
 | x10 rate lean | x10 flagged at least as often as x2 | rate comparison | both 0 | holds |
 | trigger | at least 0.95 of trigger windows flagged | raw share | 1.0, unchanged windows at the false positive rate | holds |
 | gaussian | isotropic draws read 1 | mean within 3 standard errors of 1 | 0.975 | holds |
@@ -190,7 +209,9 @@ along a busy direction of M. If its S reads as high as x2's, S reads busy-ness o
 ## Not run
 
 - S beside the panel's E_b per task: E_b is not in the panel summary for these 12 tasks' picks.
-- A built new edit along a busy direction of M, the test of rival b's reading.
+- A built new edit that adds, rather than deletes, along a busy direction of M. The deletion case is read, through
+  rebuilt.
+- An fp64 SVD of x10's update to confirm the rounding cause: the cell's runs are spent.
 - Qwen's saved updates; the paper's steering of the model; generation during calibration; length-matched calibration.
 
 ## Departures from the literature
@@ -217,10 +238,12 @@ github.com/fjzzq2002/WeightWatch at `8d3874fb`.
 
 ## Deviations from the spec in the run
 
-- The runner launched the floor, items and summary stages through a wrapper on the pod, outside the repo. It replaced
-  `commute.jobs.require_filed`, which needs `.git`, with a per-file sha check against the dev HEAD of both predictions
-  files: weightwatch `238f0b25...a28ff` and convergence_panel `6c2bc210...1453`. The panel loader also calls
-  `require_filed`, and a pod has no `.git`. Measurement code was unchanged.
+- The runner launched the floor, items and summary stages through a wrapper on the pod, `/root/ww_launch.py`, outside
+  the repo. As the runner reported it, the wrapper replaced `commute.jobs.require_filed`, which needs `.git`, with a
+  per-file sha check against weightwatch `238f0b25...a28ff` and convergence_panel `6c2bc210...1453`, and logged
+  "LAUNCHER: ... matches HEAD sha". The panel loader also calls `require_filed`, and a pod has no `.git`. The file died
+  with the pod. redteam-lead accepted the deviation: both shas match files committed before the stages began, at
+  `26ca5ea9` and `ba5f2f6d`. Measurement code was unchanged.
 - The panel tasks' text was fetched from Hugging Face on the pod.
 
 ## Provenance
