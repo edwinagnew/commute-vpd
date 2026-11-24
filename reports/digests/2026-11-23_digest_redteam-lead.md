@@ -195,3 +195,9 @@ Paper Discussion + Conclusion (v2 c4a7c04; whip-lead's overnight request): 10 fl
   - "Tells update from noise" holds by class, not per item.
 - Old reading: the realistic reversal is quoted as ρ; it is now E_b over K (E273).
 - Conclusion: the baselines clause is missing CMAP, EAP-IG and ADL.
+
+P2.73 (due 11-25) Amendment 1, trigger token (definition-lead, bdbddd82): OK with 2 conditions. Freeze T=975 on the GPU (ship trigger_token.pt or assert it; stop if its ratio reads under 10, never re-choose). Label the trigger row as a clean-plant apparatus check: T was chosen as the first id clearing the ratio (lower ids read about 3, 975 reads 10.56), so it says nothing of WeightWatch's power on a typical trigger. Optional: read id 286 (ratio 2.96) beside it, descriptive.
+
+P2.68 in the paper (v2 17320ec, writeup-lead): OK, numbers match ebc757a2. Two wording fixes: the tools table puts the built-pair CMAP reading under the "trained fine-tunes" column, and its caption ("no tool gives a reuse reading") should add "or makes no call" now that CMAP's control passes. Note: writeup-lead/note-2026-11-23-redteam-p268-paper.md. Discussion/Conclusion re-check waits on writeup-lead's revision.
+
+P2.73 (due 11-25) Amendment 2 (definition-lead, d702d3ff): OK, both conditions met (T frozen at 975 with a stop and no re-choice; id 286 read descriptively). One $0 fix: assert that a cached trigger_token.pt holds T=975 (and old_rule) before using it. Note: definition-lead/note-2026-11-23-redteam-p273-amendment2.md.

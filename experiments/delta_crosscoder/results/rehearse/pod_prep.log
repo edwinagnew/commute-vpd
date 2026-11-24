@@ -1,0 +1,9 @@
+05:40:35 [E293] prep [] tag rehearse, sizes rehearsal: Sizes(steps=1500, batch=4096, n_chunks=5, prompts=4000, prompt_len=33, cont_len=68, f_share=0.2, repeat_cap=100, pre_rows=12000, gen_batch=2000, gen_shard=2000, warmup=100, ckpt_every=500, log_every=50, check_step=200, candidates=1, pool=8, pool_min=3, pile_loss_rows=32, read_batch=4096)
+05:40:35 [prep rehearsal] prompts {'shape': [4000, 33], 'sha256': '54806b6a6b7ce44a54d5dd36c8ed7dd82951c5bbab1fbe484d54e28765ee3ef0'}
+05:40:35 [prep rehearsal] pre {'shape': [12000, 512], 'sha256': '0cf0825c8313105a175782419439f3cece6fee9dd6b329ad1f6c14c908ca4b0e'}
+peak host RSS 0.9 GB
+05:40:38 [E293] prep [] tag run1, sizes full: Sizes(steps=50000, batch=4096, n_chunks=200, prompts=200000, prompt_len=33, cont_len=68, f_share=0.2, repeat_cap=100, pre_rows=362000, gen_batch=2000, gen_shard=10000, warmup=1000, ckpt_every=5000, log_every=500, check_step=1000, candidates=3, pool=60, pool_min=20, pile_loss_rows=256, read_batch=4096)
+05:40:38 [prep full] prompts {'shape': [200000, 33], 'sha256': 'e44f59036fc7ec806359ce8a1d47032c14deb1b5e13f454d73fd67296c0dff0b'}
+05:40:40 [prep full] pre {'shape': [362000, 512], 'sha256': '46b6ae009c547033b2a43cabaee4206b0f05548e9e38a069786ac47978898994'}
+peak host RSS 1.5 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/delta_crosscoder/results ===
