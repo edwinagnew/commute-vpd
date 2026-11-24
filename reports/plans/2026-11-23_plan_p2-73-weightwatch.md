@@ -108,7 +108,8 @@ The detector sees only inputs that move a hidden state outside the calibration r
 such as the cue slots, is absorbed. Both readings see only the output directions of `o_proj` and `down_proj`, nothing of
 q, k, v, `c_fc` or the input side, and only the top 20. S reads low when an update strengthens a direction M rarely
 writes along. It reads high when a new mechanism writes along a busy one, such as an unembedding direction. Under σ²
-pooling, the matrix that moved most dominates S.
+pooling, the matrix that moved most dominates S. The Haar and Gaussian nulls are isotropic in output direction, so S
+above them may reflect generic alignment of gradient updates with M's high-variance outputs.
 
 ## How it differs from E141's effective rank
 
@@ -140,8 +141,12 @@ is cluster debug L40 jobs that resume by completed state; each exits for a resub
 - **Nearest tried.** E141 and E162 (spectrum only).
 - **Patch or step.** A step: the cell's baseline.
 - **Decisions.** No band or label is added to the definition.
-- **What would change what we do.** S outside its Haar null on x2, and the trigger flagged, earn it a column. Flat values make
-  it a related-work negative.
+- **What would change what we do.** S earns a column only if all three hold: x2's S sits above both new edits' S
+  (new_few, new_thin) by more than the Haar null's spread, the trigger is flagged, and the dW = 0 control holds. If any
+  fails, S is reported as a related-work negative. x2 outside its Haar null alone earns nothing: x2 rescales M's own
+  columns, so that is near-guaranteed by construction. A trained update's S above its Haar null is never read as
+  reuse: it is reported beside S_G, as "at the level the gradient geometry gives" (S ≤ S_G) or "above both nulls"
+  (S > S_G), and neither is a reuse label.
 - **Control first.** The known-range test, then dW = 0 and the trigger.
 - **Saved.** Kept u and σ (float16), ranges, per-window flags, eigenvalues of C_m and G_m.
 
@@ -169,6 +174,7 @@ is cluster debug L40 jobs that resume by completed state; each exits for a resub
 | GPT re-check 2, P1: trigger scalars | They need u_min (known only once C is complete) and the detector row (built in stage 0), so the base-moment pass cannot store them. A trigger replay, one extra M forward pass over the calibration windows, runs after both are fixed |
 | GPT P2-6: definition | Frozen 2026-11-22; S is a proxy reading |
 | GPT: final-layer hook | In D1 |
+| RT on revision 3 (2026-11-23, no objection, two conditions) | Both applied, in `results/predictions.json` (`column_rule`, `trained_reading`) and here: the column rule contrasts x2 with both new edits by more than the Haar spread, and needs the trigger and dW = 0 (design check); a trained S above its Haar null is reported beside S_G, never as reuse; the isotropic-null sentence is in "blind to" |
 | RT note: "no built edit at layer 0" | The handback was wrong: new_few/new_thin are at layer 0; D1 now names x2, x10, rebuilt |
 
 ## Not run
