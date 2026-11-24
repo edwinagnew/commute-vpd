@@ -1,7 +1,7 @@
 ---
 slug: marks2026-persona-selection-model
 title: "The persona selection model"
-authors: Marks et al. (Lindsey, Olah)
+authors: Marks, Lindsey, Olah (Anthropic; alignment.anthropic.com/2026/psm, LessWrong linkpost)
 year: 2026
 id: https://www.lesswrong.com/posts/dfoty34sT7CSKeJNn/the-persona-selection-model
 tags: [EH, DEFINITION, ALIGNMENT, CITE-FIX, SUPPORTS]
@@ -28,7 +28,9 @@ Minder et al's setting"). The authors limit their own claim. PSM "does not rule 
 post-training" (tool-call syntax is their example). They also warn of a streetlight effect: reused representations may
 be easier to interpret, so the evidence may lean toward PSM.
 
-**Quote.** "Not all representations in post-trained models are reused from pre-training, as we discuss below. Additionally, it may be the case that reused representations are systematically more interpretable than representations that are learned from scratch during post-training." (Interpretability evidence, Caveat)
+**Quote (the claim).** "We describe the persona selection model (PSM): the idea that LLMs learn to simulate diverse characters during pre-training, and post-training elicits and refines a particular such Assistant persona." (TL;DR). Formal version: "Pre-training teaches an LLM a distribution over personas." ... "Post-training can be viewed as updating this distribution using training episodes as evidence." (Statement of the persona selection model)
+
+**Quote (the caveat).** "Not all representations in post-trained models are reused from pre-training, as we discuss below. Additionally, it may be the case that reused representations are systematically more interpretable than representations that are learned from scratch during post-training." (Interpretability evidence, Caveat)
 
 **Relevance to our paper.** The draft lists persona selection as planned related work but has no entry for it. This is
 the source to cite, as the persona-level form of EH. Its definition is about *which character* is selected and its
