@@ -1,0 +1,103 @@
+{
+ "medians": {
+  "old": {
+   "prior": -6.755572450637818,
+   "gain": 13.027485778886977,
+   "steps_to_half": 2.0,
+   "pile_loss_change": 0.04919898913251841
+  },
+  "realistic": {
+   "prior": -11.73051251411438,
+   "gain": 1.3571161794662476,
+   "steps_to_half": 1.0,
+   "pile_loss_change": 0.18167399706235265
+  }
+ },
+ "n_states": {
+  "old": 36,
+  "realistic": 36
+ },
+ "under_gain_floor": {
+  "old": 0,
+  "realistic": 10
+ },
+ "old_rho_with_gain": {
+  "share lo": {
+   "n": 36,
+   "rho": -0.7611325611325611
+  },
+  "steering lo": {
+   "n": 36,
+   "rho": -0.30064350064350065
+  },
+  "untrained lo svd": {
+   "n": 36,
+   "rho": -0.07438867438867439
+  },
+  "untrained lo rotated": {
+   "n": 36,
+   "rho": -0.30244530244530243
+  },
+  "neuron k64 lo": {
+   "n": 36,
+   "rho": 0.09395109395109395
+  },
+  "neuron kmatched lo": {
+   "n": 36,
+   "rho": 0.2030888030888031
+  },
+  "eb_neurons E_b_K": {
+   "n": 32,
+   "rho": -0.18895623432515943
+  },
+  "eb_neurons E_b_K_no_rem": {
+   "n": 28,
+   "rho": -0.10618500273672689
+  },
+  "eb_vpd E_b_K": {
+   "n": 32,
+   "rho": -0.004448014050464327
+  },
+  "eapig edge_iou": {
+   "n": 22,
+   "rho": -0.6026546413715547
+  }
+ },
+ "old_trigger_needed_set": {
+  "eb_neurons": {
+   "states": 25,
+   "median": 4.0,
+   "max": 32,
+   "empty": 4
+  },
+  "eb_vpd": {
+   "states": 25,
+   "median": 3.0,
+   "max": 102,
+   "empty": 9
+  }
+ },
+ "realistic_rho_with_gain": {
+  "share": {
+   "n": 26,
+   "rho": 0.19726495726495727
+  },
+  "steering": {
+   "n": 26,
+   "rho": -0.4105982905982906
+  },
+  "E_b": {
+   "n": 36,
+   "rho": 0.218018018018018
+  },
+  "erank": {
+   "n": 36,
+   "rho": -0.3858429858429858
+  }
+ },
+ "realistic_needed_set": {
+  "states": 36,
+  "median": 20398.5,
+  "min": 200
+ }
+}
