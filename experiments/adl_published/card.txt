@@ -1,0 +1,16 @@
+cell: P2.67
+rival_a: the pinned toolkit reproduces the paper predicts the three-organism Qwen3-1.7B causal-effect panel passes rules (a)-(c) of the spec, and on the 67M the as-published whole-window reading names each task's domain without separating reuse from new
+rival_b: our setup or the toolkit at the pin departs from the paper predicts the panel misses (a), (b) or (c), and the run stops before the 67M
+rung: strategy
+smallest_gap: 2
+spread: 1
+n: 3
+design: unpaired
+unit: organisms (Qwen3-1.7B fine-tunes of the paper)
+spread_source: reports/plans/2026-11-23_plan_p2-67-adl-spec.md
+spread_of: proxy: sd of the 64 random-difference CE rises, the scale rule (a) is set in
+floor: rule (a): mean over positions 0-8 above the random mean by > 2 sd of the 64 randoms; both rivals stated against it above
+stop: the paper's own positive control fails (any of rules a-c): stop, report, no 67M items
+sketch: experiments/adl_published/sketch.png
+rehearsal: E### rehearse: on a cluster debug L40: the toolkit on one organism (cake_bake), one variant, at reduced sample counts (a few batches, not 10,000 texts, to fit the 1 h debug slot) through the resolved Hydra command, measuring time per item (per batch), peak memory and disk; then the 67M stage 0 (W0 and lowercase with the 64 random differences) at the full read sizes, measuring the noise floor between random directions and time per item
+descriptive: user via whip-lead 2026-11-23 ~16:00, "run it": the faithful ADL is reported as what it names on our fine-tunes and whether that bears on reuse vs new; no claim at a bar beyond the control's pass rule
