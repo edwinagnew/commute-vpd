@@ -1,5 +1,5 @@
 {
-  "experiment": "E___ (P2.73 weightwatch)",
+  "experiment": "E294 (P2.73 weightwatch)",
   "cell": "P2.73",
   "filed": "2026-11-23",
   "spec": "reports/plans/2026-11-23_plan_p2-73-weightwatch.md (revision 3) and its appendix; redteam-lead's revision-3 conditions, ~/commute-data/agents/definition-lead/notes-read/note-2026-11-23-redteam-p273-rev3.md",
@@ -231,6 +231,11 @@
       "date": "2026-11-23",
       "what": "Amendment 2: T frozen at 975 (settings.trigger_id, replaces token_min); the GPU run stops if T reads under detector_ratio, appears in a calibration window, or leaves under 73 test windows, and never re-chooses. The calibration set is all 50,000 windows (no window removal). windows_needed 73 is a sample-size guard only; the trigger verdict is the raw T-window flag share against trigger_bar 0.95, unchanged. The old rule id 286 is read beside T, descriptively (settings.old_rule_id). The trigger is labelled a detector-tuned apparatus control and read beside F unchanged-window rate and M rate on the same rows (appendix C4).",
       "why": "redteam-lead conditions (freeze T; label what the control tests) and the GPT plan review (P1: no test-split-driven reselection, keep the benchmark calibration set; P2: 73 is not the verdict), 2026-11-23"
+    },
+    {
+      "date": "2026-11-23",
+      "what": "Amendment 3: the column verdict is withheld (summary.json column_rule.withheld, the computed verdict kept beside it) when the filed unchanged_at_fpr check on the trigger is false, i.e. F flags the unchanged test windows off the calibration FPR; then the trigger did not show trigger-specific flagging and neither a column nor a related-work negative is read. No new bar: the check and its interval are those already filed (ww_summary.write, ww_score.wilson)",
+      "why": "GPT plan review re-check, 2026-11-23: the raw T-window share alone could credit the control while unchanged windows flag as often"
     }
   ],
   "card_spread_proxy": "proxy for the card: for a random unit u, sd(a) = sqrt(2 (d sum lam^2 / (sum lam)^2 - 1) / (d + 2)); at an assumed participation ratio of 20 for C (d / PR = 38.4) that is 0.31 per vector, and 0.11 for S pooled over 8 equal-weight vectors (x2's count). Arithmetic on an assumed spectrum, not a measurement: stage 0 measures the Haar spread itself"
