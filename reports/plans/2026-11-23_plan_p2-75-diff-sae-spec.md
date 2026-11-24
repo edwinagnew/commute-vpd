@@ -118,8 +118,13 @@ tokens each. That is the toolkit's 50M per dataset with the chat dataset dropped
 per fit, 97,656 steps at batch 2,048. The order is E235's interleaved stream, not the toolkit's shard shuffle. Position 0
 is dropped, as the crosscoder does. D is formed in fp32 from fp32 forwards with TF32 off, as E235's scoring did. The
 toolkit's bfloat16 storage is not used: its rounding, about 2⁻⁸ of ‖h‖, is the size of a fine-tune's change here.
-The validation set is 5M tokens of D from Pile train rows after E235's, 131,072 on, the same for every side. The
-code asserts it shares no row with E235's stream, rung 1's stream and read rows, or E212's L1 rows.
+The validation set is 5M tokens of D from Pile train rows 196,608 to 206,392 (9,785 rows), the same for every side
+(round 3: rows from 131,072 on overlapped E235's key-value pool). Every source the spec names lies outside it: E235's
+Pile half (rows 32,768-131,071) and its task-window sources (task windows from rows below 32,768, the head's rows
+0-16,383, the key-value pool 131,072-196,607, the fill rows from 589,824); rung 1's stream (the head's rows and the Pile
+half) and read rows (Pile validation split rows 1,000-1,999); E212's L1 rows (AG News texts, no Pile row); and the
+normaliser and scaler rows, drawn from each side's stream. The code asserts it on the parent row IDs of each side's
+stream, task-window sources included.
 
 **3.3 Objective, theirs.** The normaliser draws 500,000 tokens uniformly from each of the two datasets' full 50M, the
 toolkit's equal-count rule over two caches. This takes one pass over the stream before training. The model is
@@ -231,7 +236,7 @@ or cannot apply. "Forced" means the 67M or the toolkit's install leaves no faith
 | normaliser | 1M tokens, uniform over each whole cache, equal count | same rule, 500k from each of two datasets, one stream pass | | theirs (rule) / ours (port) | n |
 | SAE | BatchTopK, x2, k 100 | 1,536 latents, k 100 | k/d is 3 times Gemma's; a k-33 fit only if rung 1 fails | theirs | n |
 | recipe and loop | lr 1e-4, warm-up 1k, batch 2,048, AuxK, θ EMA, TF32; `trainSAE` logging every 50, validation every 20k on 5M | same, through `trainSAE` | | theirs | n |
-| validation text | held-out split of the same caches | 5M Pile tokens from rows 131,072 on | the side's task text is all in training or scoring | ours | y |
+| validation text | held-out split of the same caches | 5M Pile tokens from train rows 196,608-206,392 | the side's task text is all in training or scoring | ours | y |
 | latent scaling | 50M proportional prefixes, no shuffle, float32, D's normaliser, batches of 16,384 / 8 | same, by their function | | theirs | n |
 | f in latent scaling | from h_F (`closed_form.py` 354) | both scored: ν_lit from h_F; ν_D from D | the post's words name D; the code encodes h_F | theirs, as the code runs (ν_lit) / ours, as the post's words read (ν_D) | n |
 | specific rule | ν ≤ 0.3 | same, scored; with β_M ≥ 0 (App. E.2) reported beside | E.2 fails a clean plant by construction | theirs (scored) / ours, after Minder (E.2) | n |
