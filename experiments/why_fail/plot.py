@@ -17,8 +17,8 @@ GROUPS = {  # label -> classes pooled (item rows of results/items.tsv; E281, E28
     "RL": ("rl",),
     "realistic": ("realistic",),
 }
-SERIES = (("bigdd_E_b", "neuron", -0.15, "top 1% by write change: share kept, weighted by change"),
-          ("top_kept_median", "steering", 0.15, "top 1% by flips: median kept share (the filed reading)"))  # fmt: skip
+SERIES = (("bigdd_E_b", "neuron", -0.15, "EXPLORATORY, not filed:\ntop 1% by write change,\nchange-weighted"),
+          ("top_kept_median", "steering", 0.15, "filed, control failed:\ntop 1% by flips, median"))  # fmt: skip
 
 
 def rows() -> list[dict[str, str]]:
@@ -53,7 +53,7 @@ def main() -> None:
         ax.set_ylabel("kept share: 1 = pure rescale of the base write")
     axes[0].legend(fontsize=6, loc="lower left")
     fig.suptitle("Are a trained update's largest and most-needed changes rescales of the base model's writes?", fontsize=9)
-    FG.save(fig, HERE / "figures" / "kept_by_class.png", n="one point per item: x2, x10 2 per featurization; random 35 VPD, 34 neurons; toy trained 114 VPD, 29 neurons; "
+    FG.save(fig, HERE / "figures" / "kept_by_class.png", n="Squares: an exploratory reading added after the filed one failed its control. One point per item: x2, x10 2 per featurization; random 35 VPD, 34 neurons; toy trained 114 VPD, 29 neurons; "
             "procedural 26 (one more has an empty needed set); RL 21 (both VPD only); realistic 36 (neurons only, never read at VPD).", data=data)  # fmt: skip
 
 
