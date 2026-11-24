@@ -77,7 +77,7 @@ def do_nothing(W: Any) -> dict[str, Any]:
 
 
 def construction(W: Any, t: Any, gen: torch.Generator, eb_state: Any, save_dw: Any, tag: str) -> dict[str, Any]:
-    """(e), (f): a random gains-only state and a Gaussian at its norms, saved in bf16 as every state is, read on the
+    """(e), (f): a random gains-only state and a Gaussian at its norms, saved in fp32 as every state is, read on the
     task's D: E_b over every changed variable; then E268's identity scan on the gains-only F (floor and rate)."""
     g = DL.delta(W.b, random_dial(W, gen, False))
     out: dict[str, Any] = {}

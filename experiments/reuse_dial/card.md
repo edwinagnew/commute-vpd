@@ -1,5 +1,5 @@
 cell: P2.63
-rival_a: Cheap readings follow how much of a fine-tune is a gain on the base model's own variables, beyond how far the output moved, which predicts that within each task one cheap reading (re-gating share, steering or effective rank) ranks the fifteen dial fine-tunes by dial setting with permutation p under 0.05 and a rank correlation at least 0.2 larger in size than KL's, with one sign, on at least three of the four tasks
+rival_a: Cheap readings follow how much of a fine-tune is a gain on the base model's own variables, beyond how far the output moved, which predicts that within each task one cheap reading (steering or effective rank; the re-gating share, which follows the dial by construction, is reported beside them as a check) ranks the fifteen dial fine-tunes by dial setting with permutation p under 0.05 and a rank correlation at least 0.2 larger in size than KL's, with one sign, on at least three of the four tasks
 rival_b: Once the trained-answer gain is matched, the cheap readings follow only how far the output moved, or nothing, which predicts that no cheap reading beats KL's rank correlation with the dial setting by 0.2 with one sign on three of the four tasks
 rung: premise
 smallest_gap: 0.2

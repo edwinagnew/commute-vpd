@@ -10,7 +10,8 @@ and a residual of exactly 0 change no bit of the forward, and `delta` exports ex
 
 `train` is the loop: Adam (betas 0.9, 0.999, no weight decay, as `finetune._run`) with one rate for the gains and one
 for the residual, the gradient of each group clipped at grad_clip, and `on_check(step, d)` after step 1 and every
-`check_every` steps, which returns True to stop (the matched gain reached).
+`check_every` steps, which returns True to stop (the matched gain reached). A non-finite loss, penalty or gradient
+norm stops the loop before its step (SystemExit).
 """
 
 from __future__ import annotations
@@ -116,6 +117,8 @@ def train(net: Any, b: VG.Basis, d: Dial, sample: Callable[[int], Tensor], loss_
             pen = penalty(d, w0sq) if d.res is not None and beta > 0 else torch.zeros((), device=task.device)
             (task + beta * pen).backward()
             gn = {n: float(torch.nn.utils.clip_grad_norm_(ps, grad_clip)) for n, ps in groups.items()}
+            if not all(map(math.isfinite, (float(task), float(pen), *gn.values()))):
+                raise SystemExit(f"[dial] step {step}: non-finite loss {float(task)}, penalty {float(pen)} or gradient norm {gn}")
             opt.step()
             rows.append({"step": step, "loss": float(task), "penalty": float(pen)} | {f"grad_{n}": v for n, v in gn.items()})
             if step == 1 or step % check_every == 0 or step == steps:
