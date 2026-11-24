@@ -17,6 +17,8 @@ Per task, the largest move is 0.0074, on the SAE rebuilt edit, and no task moved
 
 At VPD the smallest reuse value is 0.623 against a largest new or random value of 0.0188. At neurons it is 0.0476 against 0.0330, and at SAE 0.127 against 0.0410. The filed SAE expectation held: the x2 edit read 0.966 over a needed set of 43,586 variables, inside the filed band between the VPD and neuron values. The must-flip control swapped every latent and error term from the other input at once: all 10,248 cases whose answers differ flipped, and none landed off the other input's answer.
 
+One order among trained tasks that the paper quotes did change. At SAE latents the copy task's three seeds now read 0.042 to 0.046, overlapping the prior-matched cipher's 0.043 to 0.047, whose mean is higher; in the old figure copy read above both ciphers, so "at SAE latents only the copy key reads above them" no longer holds. At top neurons the reuse tasks still read below both ciphers, but by a hair: the highest rank-one or elicit seed reads 0.0198 against the lowest cipher seed's 0.0201.
+
 ## Review points from the plan check
 
 - **Leftovers differ in size.** VPD has 24 per-matrix remainders, neurons 4 whole-layer remainders and SAE 8 error terms. A coarser leftover is needed more often, so it carries more of the change; the `leftover_share` column of `definition_rows.csv` gives its share per row.

@@ -112,3 +112,9 @@
 2.87	experiments/fig2_standard/results/summary.json	(.per_task[] | select(.feat=="top" and .block=="trained" and .task=="elicit" and .side=="trained") | .value) / (.per_task[] | select(.feat=="top" and .block=="trained" and .task=="elicit" and .side=="random") | .value)	this
 3.14	experiments/fig2_standard/results/summary.json	(.per_task[] | select(.feat=="top" and .block=="trained" and .task=="cipher" and .side=="trained") | .value) / (.per_task[] | select(.feat=="top" and .block=="trained" and .task=="cipher" and .side=="random") | .value)	this
 3.05	experiments/fig2_standard/results/summary.json	(.per_task[] | select(.feat=="top" and .block=="trained" and .task=="prior_cipher" and .side=="trained") | .value) / (.per_task[] | select(.feat=="top" and .block=="trained" and .task=="prior_cipher" and .side=="random") | .value)	this
+0.042	experiments/fig2_standard/results/summary.json	.rows[] | select(.feat=="SAE" and .item=="copy_s2" and .side=="trained") | .value	this
+0.046	experiments/fig2_standard/results/summary.json	.rows[] | select(.feat=="SAE" and .item=="copy_s1" and .side=="trained") | .value	this
+0.043	experiments/fig2_standard/results/summary.json	.rows[] | select(.feat=="SAE" and .item=="prior_cipher_s2" and .side=="trained") | .value	this
+0.047	experiments/fig2_standard/results/summary.json	.rows[] | select(.feat=="SAE" and .item=="prior_cipher_s1" and .side=="trained") | .value	this
+0.0198	experiments/fig2_standard/results/summary.json	.rows[] | select(.feat=="top" and .item=="rank1_s1" and .side=="trained") | .value	this
+0.0201	experiments/fig2_standard/results/summary.json	.rows[] | select(.feat=="top" and .item=="prior_cipher_s2" and .side=="trained") | .value	this
