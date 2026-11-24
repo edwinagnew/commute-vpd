@@ -21,7 +21,8 @@
     "theta_deg": 30.0,
     "rot_other_max": 0.5,
     "order_tol": 1e-09,
-    "transcription_rel_tol": 1e-09,
+    "transcription_rel_tol": 1e-06,
+    "transcription_rel_tol_source": "AMENDED 2026-11-23 after the first rehearsal stopped, before any further run (whip-lead yes, 2026-11-23): filed 1e-09 was a guess, not a measured floor; measured deviations from the saved arrays were vpd/x2 num 2.1e-8, den 2.4e-8, dd 4.2e-9 on an L40S, about 7e-8 on CPU, nn/x2 5e-16; 1e-6 is over 10x the largest measured. The rotation controls are unchanged.",
     "seed": 286,
     "settings_source": "windows: the cell (user 2026-11-23, 'the same 256 pairs per item'), read as the first min(256, |D|) windows of each item's D at every position. top_frac: the cell's top 1% most-needed. own_energy: the share of M's own write an own space must hold, exact for every one-direction variable (rank 1 holds all of it); the control stage checks it. rank_rtol: numerical rank of a stacked basis, a fp64 tolerance. too_small: whip-lead's floor (2026-11-23, filed with E273). too_wide: a needed space whose null exceeds one half is flagged. cache_batch, control, built: E268's (experiments/kstar_needed/results/predictions.json). head: whip-lead 2026-11-23, head (2, 4) at the head basis on E62's copy windows (E280's targets); its scan uses E268's scan settings loaded live (4 derangements x 64, seed 268). panel_vpd_derangements: one seeded derangement, a departure from E272's four to keep the rescan short (plan section 3). theta_deg: redteam-lead's rotation control, an angle large enough that the own and needed parts differ by far more than fp64 rounding. rot_other_max: the control toward a non-needed column stops the job above one half (both nulls sit near dim S / 768, a few hundredths). order_tol, transcription_rel_tol: fp64 summation bounds over at most 16,384 rows and 389 variables, rounded up. seed: the E-number, the matched null's draw."
   },
