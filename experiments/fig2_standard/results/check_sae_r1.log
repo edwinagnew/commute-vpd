@@ -1,0 +1,51 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+changed 131080 leftover 8 dd>0 21252
+1 f_u vs encode max abs 5.7220458984375e-06 values [11.975735664367676, 4.029678821563721, 13.530397415161133, 6.298172473907471]
+2 latent 4 hook vs direct 0.0 effect 2.193450927734375e-05
+2 error hook vs direct 2.86102294921875e-06 effect 5.358337879180908
+    site 0 attn0: 32 cases run of 131080, 0 needed; 32 cases in 0 s (2760/s)
+    site 1 mlp0: 32 cases run of 131080, 0 needed; 64 cases in 0 s (3503/s)
+    site 2 attn1: 32 cases run of 131080, 0 needed; 96 cases in 0 s (4043/s)
+    site 3 mlp1: 32 cases run of 131080, 0 needed; 128 cases in 0 s (4408/s)
+    site 4 attn2: 32 cases run of 131080, 0 needed; 160 cases in 0 s (4789/s)
+    site 5 mlp2: 32 cases run of 131080, 0 needed; 192 cases in 0 s (5105/s)
+    site 6 attn3: 32 cases run of 131080, 0 needed; 224 cases in 0 s (5486/s)
+    site 7 mlp3: 32 cases run of 131080, 0 needed; 256 cases in 0 s (5800/s)
+3 identity flips 0 max_dev 3.0517578125e-05 cases 256 0 s
+    site 0 attn0: 7235 cases run of 131080, 2 needed; 7235 cases in 0 s (41102/s)
+    site 1 mlp0: 7066 cases run of 131080, 10 needed; 14301 cases in 0 s (41569/s)
+    site 2 attn1: 3552 cases run of 131080, 2 needed; 17853 cases in 0 s (43038/s)
+    site 3 mlp1: 7774 cases run of 131080, 3 needed; 25627 cases in 1 s (45316/s)
+    site 4 attn2: 4241 cases run of 131080, 3 needed; 29868 cases in 1 s (47400/s)
+    site 5 mlp2: 6199 cases run of 131080, 2 needed; 36067 cases in 1 s (49729/s)
+    site 6 attn3: 4102 cases run of 131080, 3 needed; 40169 cases in 1 s (52198/s)
+    site 7 mlp3: 4566 cases run of 131080, 7 needed; 44735 cases in 1 s (54547/s)
+4 shortcut scan: cases 44735 needed 32 1 s
+    site 7 mlp3: 131080 cases run of 131080, 7 needed; 131080 cases in 1 s (100781/s)
+4 site mlp3 needed shortcut 7 every case 7 first_pair equal True flips equal True
+5 cache batch 1 vs 16: max |outs diff| 0.0001068115234375
+5 site 0: gates flipped by the noise 148, old error formula |o' - o| max 0.00563
+5 site 1: gates flipped by the noise 6, old error formula |o' - o| max 0.0124
+5 site 2: gates flipped by the noise 8, old error formula |o' - o| max 0.0142
+5 site 3: gates flipped by the noise 2, old error formula |o' - o| max 0.0114
+5 site 4: gates flipped by the noise 7, old error formula |o' - o| max 0.0414
+5 site 5: gates flipped by the noise 4, old error formula |o' - o| max 0.0304
+5 site 6: gates flipped by the noise 1, old error formula |o' - o| max 0.0373
+5 site 7: gates flipped by the noise 2, old error formula |o' - o| max 0.0519
+    site 0 attn0: 32 cases run of 131080, 0 needed; 32 cases in 0 s (4401/s)
+    site 1 mlp0: 32 cases run of 131080, 0 needed; 64 cases in 0 s (4646/s)
+    site 2 attn1: 32 cases run of 131080, 0 needed; 96 cases in 0 s (4988/s)
+    site 3 mlp1: 32 cases run of 131080, 0 needed; 128 cases in 0 s (5196/s)
+    site 4 attn2: 32 cases run of 131080, 0 needed; 160 cases in 0 s (5522/s)
+    site 5 mlp2: 32 cases run of 131080, 0 needed; 192 cases in 0 s (5755/s)
+    site 6 attn3: 32 cases run of 131080, 0 needed; 224 cases in 0 s (6107/s)
+    site 7 mlp3: 32 cases run of 131080, 0 needed; 256 cases in 0 s (6389/s)
+5 identity on the noisy cache: flips 0 max_dev 3.0517578125e-05 (before the fix the error term carried each flipped gate)
+=== FINISHED (exit 0) -- results in /root/out/check_sae_r1.log ===

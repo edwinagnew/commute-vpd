@@ -118,3 +118,4 @@
 - [Same runs behind compared panels](feedback-same-runs-behind-compared-panels.md) — equal states/seeds/randoms/conventions per panel; unequal point counts = non-standardised tests (user, 2026-11-24)
 - [Quote the user, plain words](feedback-quote-the-user-plain-words.md) — 11-21..23 misquotes of claim 1 and invented user approvals, and jargon to the user; relay verbatim, explain codes (user 2026-11-24)
 - [Results into writeup: triage](feedback-results-into-writeup-triage.md) — consistency reruns for existing figures straight in after redteam; new sections/investigation to the user; between = my call; pushes are writeup-lead's call, never mine (user 2026-11-24)
+- [writeup-lead owns writing](feedback-writeup-lead-owns-writing.md) — all writing decisions + when to push are mine; whip-lead only decides which results go in; never push on a relayed OK (user 2026-11-24)

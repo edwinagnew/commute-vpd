@@ -12,12 +12,16 @@ Forms (redteam review 2026-11-24_review_scorecard-forms.md, MUST 1 and 2):
   twins from final.json's re-emitted share cell, which must carry a unit and must not be the label contrast.
 - steering (Fig 4b x): E143 pooled share on every pair. Built pairs from known3.json "steer" (holes_fill / refit_96key
   `.steering.pooled.share`; e62 has no E143 reading, so E135 steering_copy_lookup `.pooled.share_lo`); twins from
-  final.json's re-emitted pooled column (POOLED below). Per-key (PERKEY) is read only for the second reversal count.
+  final.json's re-emitted pooled column (POOLED below). Per-key is read only for the second reversal count: built pairs
+  from known3.json "steer_perkey" (same states; e53 not read in this form, no key pool, so it prints as missing), twins
+  from final.json PERKEY.
 - prior: log10 of the original model's probability of the trained answer, one value per task (gap in decades).
 - built pairs read exactly known3.json's states (seeds 0-2 a side; e46 ident32 vs rand32, e53 lowercase vs cipher).
   A null there (E299's five seed-2 states, until its stage 2 lands) is dropped; rerun this file once known3.json fills.
-- "matched" rows: E187 size_matched/summary.json as before (its own seeds); its matched steering point is kept only
-  where its form is pooled, so e54_matched and e54_own (per-key there) lose their matched steering point.
+- "matched" rows (E187's size-matched share and pooled steering, built pairs only): exactly known3.json's states. Per
+  pair E187 rescales only the larger side, by the pair's c (size_matched m67.json .pairs.<p>.{c,larger}): those values
+  are m67.json's per-state readings, the seed-2 states from E303's results/stage3.json (matched.py); the smaller side
+  keeps its unscaled known3.json values, as E187's plot.py does. A missing value stops the build, naming it.
 - the starred pair (E199): its own share and strength-1 pooled steering (E151's reader), as before.
 
 A reversal is the scorecard's "opposite to the share": the steering seed ranges are apart (every reuse seed beyond every
@@ -37,7 +41,8 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[2]
 KNOWN3 = "experiments/known_3seeds/results/known3.json"
 FINAL = "experiments/method_table/results/final.json"
-MATCHED = "experiments/size_matched/results/summary.json"
+M67 = "experiments/size_matched/results/m67.json"
+STAGE3 = "experiments/known_3seeds/results/stage3.json"  # E303: the seed-2 larger-side states
 E199 = "experiments/disagreeing_pairs2/results/stage2.json"
 OLD = ROOT / "experiments/method_table/figures"
 OUT = ROOT / "experiments/known_3seeds/results/csv"
@@ -53,9 +58,15 @@ FORMS = {
     "y_share_gap": "E136 re-gating share, trained update, log-odds; reuse-side mean minus new-side mean (twins: real minus twin)",
     "y_lo/y_hi": "lowest reuse seed minus highest new seed / highest reuse seed minus lowest new seed",
     "x_gap (panel prior)": "log10 prior, one value per task, gap in decades",
-    "x_gap (panel steering)": "E143 pooled steering share, filed selection rule (e62: E135 pooled share_lo, no E143 reading; "
-    "E199 star: strength-1 pooled, E151 reader)",
-    "states": "built pairs: known3.json seeds 0-2 a side (nulls dropped); twins: final.json cell; matched: E187's seeds",
+    "x_gap (panel steering)": "steering_pooled form, filed selection rule (largest mean log-odds rise on the selection rows). "
+    "Eight built pairs: known3.json 'steer', E143 holes_fill pooled share (holes_fill / refit_96key stage1.json and "
+    "known_3seeds stage2.json .steering.pooled.share; seeds 0-1 equal compare-lead's re-emitted method_table final.json "
+    "steering_pooled, 67d73363). e62: a different reader, E135 steering_copy_lookup pooled share_lo on its fp32 copies "
+    "(no E143 reading on E62's rows). Twins: final.json steering_pooled (67d73363). E199 star: strength-1 pooled, E151 reader",
+    "states": "built pairs: known3.json seeds 0-2 a side, one variant a side (nulls dropped), matched series too; "
+    "twins: final.json cell (no matched series)",
+    "series matched": "E187 size-matched: the larger side times the pair's c (m67.json; seed 2 from E303 stage3.json where m67 lacks it: e46, e53, e54_own), "
+    "the smaller side unscaled (known3.json); same readers and states as the unscaled series",
 }
 
 
@@ -105,14 +116,37 @@ def from_known3(
     )
 
 
+def larger_value(pair: str, state: str, method: str) -> float:
+    """E187's reading of one larger-side state times the pair's c: m67.json, else E303's stage3.json; else stop."""
+    rec = load(M67)["pairs"][pair]["states"].get(state)
+    if rec is None:
+        s3 = load(STAGE3) if (ROOT / STAGE3).is_file() else {}
+        if not s3.get("pass"):
+            sys.exit(f"matched {method} {pair} {state}: not in {M67}, and {STAGE3} is {'stopped or unfinished' if s3 else 'missing'} "
+                     "(run cluster/known_3seeds_matched.sbatch, E303)")  # fmt: skip
+        rec = s3["pairs"].get(pair, {}).get("states", {}).get(state)
+    v = None if rec is None else (rec["share"]["r"] if method == "share" else rec["steering"].get("pooled"))
+    if not isinstance(v, float):  # absent, None, or "nan" as jsonable writes it
+        sys.exit(f"matched {method} {pair} {state}: no value in {M67} or {STAGE3} (got {v!r})")
+    return v
+
+
+def matched(c: Point, method: str) -> Point | None:
+    """E187's size-matched cell on known3.json's states: the larger side times the pair's c, the smaller side unscaled
+    (known3.json, as E187's plot.py keeps the smaller side's saved values)."""
+    pair, big = c["pair"], load(M67)["pairs"][c["pair"]]["larger"]
+    vals: dict[str, list[float | None]] = {big: [larger_value(pair, st, method) for st in c["states"][big]]}
+    small = "new" if big == "reuse" else "reuse"
+    if None in c[small]:
+        sys.exit(f"matched {method} {pair}: a smaller-side ({small}) value is null in {KNOWN3}: {c['states'][small]} {c[small]}")
+    vals[small] = c[small]
+    key = f'{M67} .pairs.{pair}.states.<state> ({big} side, seed 2 from {STAGE3}); {KNOWN3} .cells[] | select(.pair=="{pair}" and .method=="{method}") .{small}'
+    return reading(vals["reuse"], vals["new"], f"{M67}; {STAGE3}; {KNOWN3}", key)
+
+
 def pairs() -> list[Point]:
     final = {(c["pair"], c["method"]): c for c in load(FINAL)["cells"]}
     known3 = {(c["pair"], c["method"]): c for c in load(KNOWN3)["cells"]}
-    matched = {
-        (c["pair"], c["reading"]): c
-        for c in load(MATCHED)["cells"]
-        if c["model"] == "67M"
-    }
     out = []
     for pair in dict.fromkeys(p for p, _ in final):
         c = final[(pair, "prior")]
@@ -120,7 +154,6 @@ def pairs() -> list[Point]:
             "pair": pair,
             "name": c["pair_name"],
             "group": c["group"],
-            "perkey": from_final(final, pair, PERKEY),
         }
         if (pair, "share") in known3:
             rec |= {
@@ -129,19 +162,13 @@ def pairs() -> list[Point]:
                     ("share", "share"),
                     ("steering", "steer"),
                     ("prior", "prior"),
+                    ("perkey", "steer_perkey"),
                 )
             }
+            rec |= {f"{m}_matched": matched(known3[(pair, k)], k) for m, k in (("share", "share"), ("steering", "steer"))}
         else:
-            rec |= {"share": from_final(final, pair, "share"), "steering": from_final(final, pair, POOLED),
+            rec |= {"share": from_final(final, pair, "share"), "steering": from_final(final, pair, POOLED), "perkey": from_final(final, pair, PERKEY),
                     "prior": reading(c["reuse"], c["new"], FINAL, f'.cells[] | select(.pair=="{pair}" and .method=="prior")')}  # fmt: skip
-        for m in ("share", "steering"):
-            mc = matched.get((pair, m))
-            if mc is not None and (m == "share" or mc["form"] == "pooled"):
-                v, key = (
-                    mc["matched_values"],
-                    f'.cells[] | select(.model=="67M" and .pair=="{pair}" and .reading=="{m}") | .matched_values',
-                )
-                rec[f"{m}_matched"] = reading(v["reuse"], v["new"], MATCHED, key)
         out.append(rec)
     return out
 
@@ -274,24 +301,12 @@ def against_share(steer: Point | None, share: Point | None) -> str:
 
 
 def reversals(recs: list[Point]) -> None:
-    final = {(c["pair"], c["method"]): c for c in load(FINAL)["cells"]}
     for group in ("built", "twin"):
         print(f"\nsteering against the share, {group} pairs")
-        for form in ("steering", "perkey", "as drawn before"):
-            calls = {}
-            for r in (r for r in recs if r["group"] == group):
-                old = final.get((r["pair"], "steering"))
-                calls[r["pair"]] = (
-                    old["against_share"]
-                    if form == "as drawn before" and old
-                    else against_share(r.get(form), r["share"])
-                )
+        for form in ("steering", "perkey"):
+            calls = {r["pair"]: against_share(r.get(form), r["share"]) for r in recs if r["group"] == group}
             rev = sorted(p for p, c in calls.items() if c == "opposite to the share")
-            label = {
-                "steering": "E143 pooled",
-                "perkey": "per-key",
-                "as drawn before": "old final.json (mixed forms)",
-            }[form]
+            label = {"steering": "steering_pooled", "perkey": "per-key"}[form]
             print(
                 f"  {label:<30} reverse {len(rev)} of {len(calls)}: {rev}; missing: {sorted(p for p, c in calls.items() if c == 'missing')}"
             )

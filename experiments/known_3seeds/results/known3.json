@@ -62,6 +62,33 @@
   },
   {
    "pair": "e62_copy_lookup",
+   "method": "steer_perkey",
+   "states": {
+    "reuse": [
+     "e62/copy_s0",
+     "e62/copy_s1",
+     "e62/copy_s2"
+    ],
+    "new": [
+     "e62/lookup_s0",
+     "e62/lookup_s1",
+     "e62/lookup_s2"
+    ]
+   },
+   "reuse": [
+    0.6060847819590891,
+    0.6418674953791201,
+    0.6548771031959815
+   ],
+   "new": [
+    0.68536113155229,
+    0.6260168446433703,
+    0.6596503717814746
+   ],
+   "source": "experiments/steering_copy_lookup/results/stage1.json .states.<state>.steering.perkey.share_lo"
+  },
+  {
+   "pair": "e62_copy_lookup",
    "method": "erank",
    "states": {
     "reuse": [
@@ -240,12 +267,12 @@
    "reuse": [
     0.8024425814544892,
     0.7612543829145286,
-    null
+    0.7827190325999683
    ],
    "new": [
     0.27327685374408744,
     0.266001933954146,
-    null
+    0.2458411249207034
    ],
    "source": "experiments/known_3seeds/results/stage2.json .states.<state>.e136.trained; experiments/share_untrained/results/stage1.json .states.<state>.trained"
   },
@@ -267,14 +294,41 @@
    "reuse": [
     0.7472095889963015,
     0.647179136808967,
-    null
+    0.6937325677806215
    ],
    "new": [
     0.2772405140682321,
     0.3514230156418278,
-    null
+    0.3519546083099902
    ],
    "source": "experiments/holes_fill/results/stage1.json .states.<state>.steering.pooled.share; experiments/known_3seeds/results/stage2.json .states.<state>.holes_fill.steering.pooled.share"
+  },
+  {
+   "pair": "e46_copy_random",
+   "method": "steer_perkey",
+   "states": {
+    "reuse": [
+     "e46/ident32_s0",
+     "e46/ident32_s1",
+     "e46/ident32_s2"
+    ],
+    "new": [
+     "e46/rand32_s0",
+     "e46/rand32_s1",
+     "e46/rand32_s2"
+    ]
+   },
+   "reuse": [
+    1.0530931540773383,
+    1.0724689200786495,
+    1.0891111649374996
+   ],
+   "new": [
+    0.9201917283389469,
+    0.9705624242050457,
+    0.9499918441226408
+   ],
+   "source": "experiments/holes_fill/results/stage1.json .states.<state>.steering.perkey.share; experiments/known_3seeds/results/stage2.json .states.<state>.holes_fill.steering.perkey.share"
   },
   {
    "pair": "e46_copy_random",
@@ -294,12 +348,12 @@
    "reuse": [
     442.49469491526156,
     437.9332652545029,
-    null
+    440.4375043080395
    ],
    "new": [
     427.5241840899337,
     420.75257278153873,
-    null
+    424.5638105960577
    ],
    "source": "experiments/known_3seeds/results/stage2.json .states.<state>.spectrum.erank; experiments/update_svd/results/results.json .pairs.e46_copy_random.new.<state>.erank; experiments/update_svd/results/results.json .pairs.e46_copy_random.reuse.<state>.erank"
   },
@@ -348,12 +402,12 @@
    "reuse": [
     0.47513070798812845,
     0.36346444567990843,
-    null
+    0.3913514570852159
    ],
    "new": [
     0.6783637608413571,
     0.7128488868827931,
-    null
+    0.6795102466967221
    ],
    "source": "experiments/known_3seeds/results/stage2.json .states.<state>.neuron_r.r_n; experiments/neuron_r/results/cells.json .rows.<state>.r_n"
   },
@@ -375,12 +429,12 @@
    "reuse": [
     0.0191470183153194,
     0.008865677513356493,
-    null
+    0.013120994950989359
    ],
    "new": [
     0.013400602854703129,
     0.015861279601432705,
-    null
+    0.017456538563260977
    ],
    "source": "experiments/holes_fill/results/stage1.json .states.<state>.neuron.k64.share; experiments/known_3seeds/results/stage2.json .states.<state>.holes_fill.neuron.k64.share"
   },
@@ -402,12 +456,12 @@
    "reuse": [
     128.0,
     128.0,
-    null
+    128.0
    ],
    "new": [
     256.0,
     256.0,
-    null
+    256.0
    ],
    "source": "experiments/known_3seeds/results/stage2.json .states.<state>.k_half.k_half; experiments/neuron_r/results/carrying.json .rows.<state>.k_half"
   },
@@ -429,12 +483,12 @@
    "reuse": [
     0.004887465199659084,
     0.004922513784859905,
-    null
+    0.00489915006680848
    ],
    "new": [
     0.005381225770987802,
     0.005458712114080757,
-    null
+    0.005426521926658069
    ],
    "source": "experiments/known_3seeds/results/stage2.json .states.<state>.size; experiments/size_matched/results/m67.json .pairs.e46_copy_random.sizes.new.<i>; experiments/size_matched/results/m67.json .pairs.e46_copy_random.sizes.reuse.<i>"
   },
@@ -456,12 +510,12 @@
    "reuse": [
     0.7518811175785213,
     0.7700725841766312,
-    null
+    0.7712453089058533
    ],
    "new": [
     0.12431340168715405,
     0.11604955639019224,
-    null
+    0.11714675917091408
    ],
    "source": "experiments/known_3seeds/results/stage2.json .states.<state>.e136.trained; experiments/share_untrained/results/stage1.json .states.<state>.trained"
   },
@@ -483,14 +537,42 @@
    "reuse": [
     0.7130595188192251,
     0.6886607201930102,
-    null
+    0.7752198863584311
    ],
    "new": [
     0.6929798537824282,
     0.6401497092428536,
-    null
+    0.7083049443747521
    ],
    "source": "experiments/holes_fill/results/stage1.json .states.<state>.steering.pooled.share; experiments/known_3seeds/results/stage2.json .states.<state>.holes_fill.steering.pooled.share"
+  },
+  {
+   "pair": "e53_lowercase_cipher",
+   "method": "steer_perkey",
+   "states": {
+    "reuse": [
+     "e53/lowercase_s0",
+     "e53/lowercase_s1",
+     "e53/lowercase_s2"
+    ],
+    "new": [
+     "e53/cipher_s0",
+     "e53/cipher_s1",
+     "e53/cipher_s2"
+    ]
+   },
+   "reuse": [
+    null,
+    null,
+    null
+   ],
+   "new": [
+    null,
+    null,
+    null
+   ],
+   "not_read": "not read in this form: E53's tasks have no key pool, so holes_fill reads pooled steering only",
+   "source": ""
   },
   {
    "pair": "e53_lowercase_cipher",
@@ -510,12 +592,12 @@
    "reuse": [
     598.5737907674227,
     600.3541341429254,
-    null
+    600.7726821345401
    ],
    "new": [
     594.2662401197575,
     594.1005319698918,
-    null
+    594.4400806347633
    ],
    "source": "experiments/known_3seeds/results/stage2.json .states.<state>.spectrum.erank; experiments/update_svd/results/results.json .pairs.e53_lowercase_cipher.new.<state>.erank; experiments/update_svd/results/results.json .pairs.e53_lowercase_cipher.reuse.<state>.erank"
   },
@@ -564,12 +646,12 @@
    "reuse": [
     0.7035568805789707,
     0.7399642803612938,
-    null
+    0.7469672716505222
    ],
    "new": [
     0.4589207362117122,
     0.45454565665255237,
-    null
+    0.4608686053808509
    ],
    "source": "experiments/known_3seeds/results/stage2.json .states.<state>.neuron_r.r_n; experiments/neuron_r/results/cells.json .rows.<state>.r_n"
   },
@@ -591,12 +673,12 @@
    "reuse": [
     0.03414266508160551,
     0.04695535799015015,
-    null
+    0.03874189067172223
    ],
    "new": [
     0.004887934856158188,
     0.01099103441418384,
-    null
+    0.0142412776506136
    ],
    "source": "experiments/holes_fill/results/stage1.json .states.<state>.neuron.k64.share; experiments/known_3seeds/results/stage2.json .states.<state>.holes_fill.neuron.k64.share"
   },
@@ -618,12 +700,12 @@
    "reuse": [
     16.0,
     16.0,
-    null
+    16.0
    ],
    "new": [
     128.0,
     128.0,
-    null
+    128.0
    ],
    "source": "experiments/known_3seeds/results/stage2.json .states.<state>.k_half.k_half; experiments/neuron_r/results/carrying.json .rows.<state>.k_half"
   },
@@ -645,12 +727,12 @@
    "reuse": [
     0.017947302357500177,
     0.018242290310723972,
-    null
+    0.01817237237455434
    ],
    "new": [
     0.018634149302629858,
     0.018634278094099118,
-    null
+    0.018628973572100107
    ],
    "source": "experiments/known_3seeds/results/stage2.json .states.<state>.size; experiments/size_matched/results/m67.json .pairs.e53_lowercase_cipher.sizes.new.<i>; experiments/size_matched/results/m67.json .pairs.e53_lowercase_cipher.sizes.reuse.<i>"
   },
@@ -707,6 +789,33 @@
     0.5766721604719687
    ],
    "source": "experiments/holes_fill/results/stage1.json .states.<state>.steering.pooled.share"
+  },
+  {
+   "pair": "e54_matched",
+   "method": "steer_perkey",
+   "states": {
+    "reuse": [
+     "e54/elicit_s0",
+     "e54/elicit_s1",
+     "e54/elicit_s2"
+    ],
+    "new": [
+     "e54/cipher_s0",
+     "e54/cipher_s1",
+     "e54/cipher_s2"
+    ]
+   },
+   "reuse": [
+    0.9261105503006871,
+    0.9441115250989559,
+    0.9243050964635168
+   ],
+   "new": [
+    1.18489411983302,
+    1.141599150742938,
+    1.2623747022464327
+   ],
+   "source": "experiments/holes_fill/results/stage1.json .states.<state>.steering.perkey.share"
   },
   {
    "pair": "e54_matched",
@@ -893,7 +1002,7 @@
    "new": [
     0.2652401392487863,
     0.24304463624795386,
-    null
+    0.2678317644621348
    ],
    "source": "experiments/known_3seeds/results/stage2.json .states.<state>.e136.trained; experiments/share_untrained/results/stage1.json .states.<state>.trained"
   },
@@ -920,9 +1029,36 @@
    "new": [
     0.22421996043623751,
     0.17758984386315346,
-    null
+    0.2220942483828524
    ],
    "source": "experiments/holes_fill/results/stage1.json .states.<state>.steering.pooled.share; experiments/known_3seeds/results/stage2.json .states.<state>.holes_fill.steering.pooled.share"
+  },
+  {
+   "pair": "e54_own",
+   "method": "steer_perkey",
+   "states": {
+    "reuse": [
+     "e54/elicit_s0",
+     "e54/elicit_s1",
+     "e54/elicit_s2"
+    ],
+    "new": [
+     "e54/cipher_own_s0",
+     "e54/cipher_own_s1",
+     "e54/cipher_own_s2"
+    ]
+   },
+   "reuse": [
+    0.9261105503006871,
+    0.9441115250989559,
+    0.9243050964635168
+   ],
+   "new": [
+    1.0376113047895403,
+    1.0300855525367645,
+    1.0726440096413707
+   ],
+   "source": "experiments/holes_fill/results/stage1.json .states.<state>.steering.perkey.share; experiments/known_3seeds/results/stage2.json .states.<state>.holes_fill.steering.perkey.share"
   },
   {
    "pair": "e54_own",
@@ -947,7 +1083,7 @@
    "new": [
     406.9842142917449,
     404.92905297904963,
-    null
+    401.8930294940798
    ],
    "source": "experiments/known_3seeds/results/stage2.json .states.<state>.spectrum.erank; experiments/update_svd/results/results.json .pairs.e54_own.new.<state>.erank; experiments/update_svd/results/results.json .pairs.e54_own.reuse.<state>.erank"
   },
@@ -1001,7 +1137,7 @@
    "new": [
     0.7453492489448177,
     0.7583728417122615,
-    null
+    0.7455452643550979
    ],
    "source": "experiments/known_3seeds/results/stage2.json .states.<state>.neuron_r.r_n; experiments/neuron_r/results/cells.json .rows.<state>.r_n"
   },
@@ -1028,7 +1164,7 @@
    "new": [
     0.01273764613039953,
     0.017775647833038255,
-    null
+    0.015851978653876084
    ],
    "source": "experiments/holes_fill/results/stage1.json .states.<state>.neuron.k64.share; experiments/known_3seeds/results/stage2.json .states.<state>.holes_fill.neuron.k64.share"
   },
@@ -1055,7 +1191,7 @@
    "new": [
     1024.0,
     1024.0,
-    null
+    1024.0
    ],
    "source": "experiments/known_3seeds/results/stage2.json .states.<state>.k_half.k_half; experiments/neuron_r/results/carrying.json .rows.<state>.k_half"
   },
@@ -1082,7 +1218,7 @@
    "new": [
     0.009561128049770894,
     0.00954223128274508,
-    null
+    0.009585623263525035
    ],
    "source": "experiments/known_3seeds/results/stage2.json .states.<state>.size; experiments/size_matched/results/m67.json .pairs.e54_own.sizes.new.<i>; experiments/size_matched/results/m67.json .pairs.e54_own.sizes.reuse.<i>"
   },
@@ -1139,6 +1275,33 @@
     0.4706502165597786
    ],
    "source": "experiments/holes_fill/results/stage1.json .states.<state>.steering.pooled.share"
+  },
+  {
+   "pair": "open_pair_c3",
+   "method": "steer_perkey",
+   "states": {
+    "reuse": [
+     "c3/rank1_s0",
+     "c3/rank1_s1",
+     "c3/rank1_s2"
+    ],
+    "new": [
+     "c3/cipher_s0",
+     "c3/cipher_s1",
+     "c3/cipher_s2"
+    ]
+   },
+   "reuse": [
+    0.9513646493291806,
+    0.9912518480741188,
+    1.0169099025169692
+   ],
+   "new": [
+    1.09542726713927,
+    1.147813962051469,
+    1.1024768961972728
+   ],
+   "source": "experiments/holes_fill/results/stage1.json .states.<state>.steering.perkey.share"
   },
   {
    "pair": "open_pair_c3",
@@ -1358,6 +1521,33 @@
   },
   {
    "pair": "open_pair_c3_copy",
+   "method": "steer_perkey",
+   "states": {
+    "reuse": [
+     "c3/copy_s0",
+     "c3/copy_s1",
+     "c3/copy_s2"
+    ],
+    "new": [
+     "c3/cipher_s0",
+     "c3/cipher_s1",
+     "c3/cipher_s2"
+    ]
+   },
+   "reuse": [
+    1.1117236364088143,
+    1.0900731917338622,
+    1.1066199654550108
+   ],
+   "new": [
+    1.09542726713927,
+    1.147813962051469,
+    1.1024768961972728
+   ],
+   "source": "experiments/holes_fill/results/stage1.json .states.<state>.steering.perkey.share"
+  },
+  {
+   "pair": "open_pair_c3_copy",
    "method": "erank",
    "states": {
     "reuse": [
@@ -1571,6 +1761,33 @@
     0.17625682841435067
    ],
    "source": "experiments/refit_96key/results/stage1.json .states.<state>.holes_fill.steering.pooled.share"
+  },
+  {
+   "pair": "e58_rank1_96",
+   "method": "steer_perkey",
+   "states": {
+    "reuse": [
+     "e58/rank1_s0",
+     "e58/rank1_s1",
+     "e58/rank1_s2"
+    ],
+    "new": [
+     "e58/cipher_s0",
+     "e58/cipher_s1",
+     "e58/cipher_s2"
+    ]
+   },
+   "reuse": [
+    0.9563557601029454,
+    0.9937502786277759,
+    1.0089636265456758
+   ],
+   "new": [
+    0.9506473213477797,
+    0.9519608470941422,
+    0.978966138452438
+   ],
+   "source": "experiments/refit_96key/results/stage1.json .states.<state>.holes_fill.steering.perkey.share"
   },
   {
    "pair": "e58_rank1_96",
@@ -1790,6 +2007,33 @@
   },
   {
    "pair": "e58_copy_prior_cipher",
+   "method": "steer_perkey",
+   "states": {
+    "reuse": [
+     "e58/copy_s0",
+     "e58/copy_s1",
+     "e58/copy_s2"
+    ],
+    "new": [
+     "e58/prior_cipher_s0",
+     "e58/prior_cipher_s1",
+     "e58/prior_cipher_s2"
+    ]
+   },
+   "reuse": [
+    0.9879207829562398,
+    0.9799270468766955,
+    1.0032073016009257
+   ],
+   "new": [
+    0.9000110769024481,
+    0.9272936060637558,
+    0.948054301813068
+   ],
+   "source": "experiments/refit_96key/results/stage1.json .states.<state>.holes_fill.steering.perkey.share"
+  },
+  {
+   "pair": "e58_copy_prior_cipher",
    "method": "erank",
    "states": {
     "reuse": [
@@ -1951,57 +2195,16 @@
    "source": "experiments/size_matched/results/m67.json .pairs.e58_copy_prior_cipher.sizes.new.<i>; experiments/size_matched/results/m67.json .pairs.e58_copy_prior_cipher.sizes.reuse.<i>"
   }
  ],
- "missing": [
-  "e46_copy_random share e46/ident32_s2",
-  "e46_copy_random share e46/rand32_s2",
-  "e46_copy_random steer e46/ident32_s2",
-  "e46_copy_random steer e46/rand32_s2",
-  "e46_copy_random erank e46/ident32_s2",
-  "e46_copy_random erank e46/rand32_s2",
-  "e46_copy_random neuron e46/ident32_s2",
-  "e46_copy_random neuron e46/rand32_s2",
-  "e46_copy_random neuron_top e46/ident32_s2",
-  "e46_copy_random neuron_top e46/rand32_s2",
-  "e46_copy_random k_half e46/ident32_s2",
-  "e46_copy_random k_half e46/rand32_s2",
-  "e46_copy_random size e46/ident32_s2",
-  "e46_copy_random size e46/rand32_s2",
-  "e53_lowercase_cipher share e53/lowercase_s2",
-  "e53_lowercase_cipher share e53/cipher_s2",
-  "e53_lowercase_cipher steer e53/lowercase_s2",
-  "e53_lowercase_cipher steer e53/cipher_s2",
-  "e53_lowercase_cipher erank e53/lowercase_s2",
-  "e53_lowercase_cipher erank e53/cipher_s2",
-  "e53_lowercase_cipher neuron e53/lowercase_s2",
-  "e53_lowercase_cipher neuron e53/cipher_s2",
-  "e53_lowercase_cipher neuron_top e53/lowercase_s2",
-  "e53_lowercase_cipher neuron_top e53/cipher_s2",
-  "e53_lowercase_cipher k_half e53/lowercase_s2",
-  "e53_lowercase_cipher k_half e53/cipher_s2",
-  "e53_lowercase_cipher size e53/lowercase_s2",
-  "e53_lowercase_cipher size e53/cipher_s2",
-  "e54_own share e54/cipher_own_s2",
-  "e54_own steer e54/cipher_own_s2",
-  "e54_own erank e54/cipher_own_s2",
-  "e54_own neuron e54/cipher_own_s2",
-  "e54_own neuron_top e54/cipher_own_s2",
-  "e54_own k_half e54/cipher_own_s2",
-  "e54_own size e54/cipher_own_s2"
- ],
+ "missing": [],
  "checks": {
-  "found": 339,
-  "not_found": [
-   "e46_copy_random neuron_top e46/ident32_s0 0.019147",
-   "e46_copy_random neuron_top e46/ident32_s1 0.00886568",
-   "e46_copy_random neuron_top e46/rand32_s0 0.0134006",
-   "e46_copy_random neuron_top e46/rand32_s1 0.0158613"
-  ]
+  "found": 388,
+  "not_found": []
  },
  "shared_mismatch": [],
  "new_vs_siblings": {
   "e46/ident32_s2": {
    "share": {
-    "value": null,
+    "value": 0.7827190325999683,
     "siblings": [
      0.8024425814544892,
      0.7612543829145286
@@ -2010,10 +2213,10 @@
      0.720066184374568,
      0.8436307799944498
     ],
-    "inside": false
+    "inside": true
    },
    "steer": {
-    "value": null,
+    "value": 0.6937325677806215,
     "siblings": [
      0.7472095889963015,
      0.647179136808967
@@ -2022,10 +2225,22 @@
      0.5471486846216325,
      0.847240041183636
     ],
-    "inside": false
+    "inside": true
+   },
+   "steer_perkey": {
+    "value": 1.0891111649374996,
+    "siblings": [
+     1.0530931540773383,
+     1.0724689200786495
+    ],
+    "band": [
+     0.9999541022234386,
+     1.1256079719325491
+    ],
+    "inside": true
    },
    "erank": {
-    "value": null,
+    "value": 440.4375043080395,
     "siblings": [
      442.49469491526156,
      437.9332652545029
@@ -2034,10 +2249,10 @@
      415.9225662502588,
      464.50539391950565
     ],
-    "inside": false
+    "inside": true
    },
    "neuron": {
-    "value": null,
+    "value": 0.3913514570852159,
     "siblings": [
      0.47513070798812845,
      0.36346444567990843
@@ -2046,10 +2261,10 @@
      0.2517981833716884,
      0.5867969702963485
     ],
-    "inside": false
+    "inside": true
    },
    "neuron_top": {
-    "value": null,
+    "value": 0.013120994950989359,
     "siblings": [
      0.0191470183153194,
      0.008865677513356493
@@ -2058,10 +2273,10 @@
      -0.001415663288606414,
      0.02942835911728231
     ],
-    "inside": false
+    "inside": true
    },
    "k_half": {
-    "value": null,
+    "value": 128.0,
     "siblings": [
      128.0,
      128.0
@@ -2070,10 +2285,10 @@
      121.6,
      134.4
     ],
-    "inside": false
+    "inside": true
    },
    "size": {
-    "value": null,
+    "value": 0.00489915006680848,
     "siblings": [
      0.004887465199659084,
      0.004922513784859905
@@ -2082,12 +2297,12 @@
      0.004642215725046109,
      0.00516776325947288
     ],
-    "inside": false
+    "inside": true
    }
   },
   "e46/rand32_s2": {
    "share": {
-    "value": null,
+    "value": 0.2458411249207034,
     "siblings": [
      0.27327685374408744,
      0.266001933954146
@@ -2099,7 +2314,7 @@
     "inside": false
    },
    "steer": {
-    "value": null,
+    "value": 0.3519546083099902,
     "siblings": [
      0.2772405140682321,
      0.3514230156418278
@@ -2108,10 +2323,22 @@
      0.20305801249463634,
      0.42560551721542356
     ],
-    "inside": false
+    "inside": true
+   },
+   "steer_perkey": {
+    "value": 0.9499918441226408,
+    "siblings": [
+     0.9201917283389469,
+     0.9705624242050457
+    ],
+    "band": [
+     0.8698210324728481,
+     1.0209331200711445
+    ],
+    "inside": true
    },
    "erank": {
-    "value": null,
+    "value": 424.5638105960577,
     "siblings": [
      427.5241840899337,
      420.75257278153873
@@ -2120,10 +2347,10 @@
      399.5456538597519,
      448.73110301172056
     ],
-    "inside": false
+    "inside": true
    },
    "neuron": {
-    "value": null,
+    "value": 0.6795102466967221,
     "siblings": [
      0.6783637608413571,
      0.7128488868827931
@@ -2132,10 +2359,10 @@
      0.6435834446482533,
      0.7476292030758969
     ],
-    "inside": false
+    "inside": true
    },
    "neuron_top": {
-    "value": null,
+    "value": 0.017456538563260977,
     "siblings": [
      0.013400602854703129,
      0.015861279601432705
@@ -2144,10 +2371,10 @@
      0.010939926107973553,
      0.01832195634816228
     ],
-    "inside": false
+    "inside": true
    },
    "k_half": {
-    "value": null,
+    "value": 256.0,
     "siblings": [
      256.0,
      256.0
@@ -2156,10 +2383,10 @@
      243.2,
      268.8
     ],
-    "inside": false
+    "inside": true
    },
    "size": {
-    "value": null,
+    "value": 0.005426521926658069,
     "siblings": [
      0.005381225770987802,
      0.005458712114080757
@@ -2168,12 +2395,12 @@
      0.005110227323861088,
      0.005729710561207471
     ],
-    "inside": false
+    "inside": true
    }
   },
   "e53/lowercase_s2": {
    "share": {
-    "value": null,
+    "value": 0.7712453089058533,
     "siblings": [
      0.7518811175785213,
      0.7700725841766312
@@ -2182,10 +2409,10 @@
      0.7138322750346424,
      0.80812142672051
     ],
-    "inside": false
+    "inside": true
    },
    "steer": {
-    "value": null,
+    "value": 0.7752198863584311,
     "siblings": [
      0.7130595188192251,
      0.6886607201930102
@@ -2197,7 +2424,7 @@
     "inside": false
    },
    "erank": {
-    "value": null,
+    "value": 600.7726821345401,
     "siblings": [
      598.5737907674227,
      600.3541341429254
@@ -2206,10 +2433,10 @@
      568.600592644664,
      630.3273322656842
     ],
-    "inside": false
+    "inside": true
    },
    "neuron": {
-    "value": null,
+    "value": 0.7469672716505222,
     "siblings": [
      0.7035568805789707,
      0.7399642803612938
@@ -2218,10 +2445,10 @@
      0.6671494807966476,
      0.7763716801436169
     ],
-    "inside": false
+    "inside": true
    },
    "neuron_top": {
-    "value": null,
+    "value": 0.03874189067172223,
     "siblings": [
      0.03414266508160551,
      0.04695535799015015
@@ -2230,10 +2457,10 @@
      0.021329972173060867,
      0.059768050898694795
     ],
-    "inside": false
+    "inside": true
    },
    "k_half": {
-    "value": null,
+    "value": 16.0,
     "siblings": [
      16.0,
      16.0
@@ -2242,10 +2469,10 @@
      15.2,
      16.8
     ],
-    "inside": false
+    "inside": true
    },
    "size": {
-    "value": null,
+    "value": 0.01817237237455434,
     "siblings": [
      0.017947302357500177,
      0.018242290310723972
@@ -2254,12 +2481,12 @@
      0.017042562540794573,
      0.019147030127429576
     ],
-    "inside": false
+    "inside": true
    }
   },
   "e53/cipher_s2": {
    "share": {
-    "value": null,
+    "value": 0.11714675917091408,
     "siblings": [
      0.12431340168715405,
      0.11604955639019224
@@ -2268,10 +2495,10 @@
      0.10778571109323043,
      0.13257724698411585
     ],
-    "inside": false
+    "inside": true
    },
    "steer": {
-    "value": null,
+    "value": 0.7083049443747521,
     "siblings": [
      0.6929798537824282,
      0.6401497092428536
@@ -2280,10 +2507,10 @@
      0.5873195647032791,
      0.7458099983220028
     ],
-    "inside": false
+    "inside": true
    },
    "erank": {
-    "value": null,
+    "value": 594.4400806347633,
     "siblings": [
      594.2662401197575,
      594.1005319698918
@@ -2292,10 +2519,10 @@
      564.3913626676506,
      623.9754094219987
     ],
-    "inside": false
+    "inside": true
    },
    "neuron": {
-    "value": null,
+    "value": 0.4608686053808509,
     "siblings": [
      0.4589207362117122,
      0.45454565665255237
@@ -2304,10 +2531,10 @@
      0.43170899683094577,
      0.4817573960333188
     ],
-    "inside": false
+    "inside": true
    },
    "neuron_top": {
-    "value": null,
+    "value": 0.0142412776506136,
     "siblings": [
      0.004887934856158188,
      0.01099103441418384
@@ -2316,10 +2543,10 @@
      -0.0012151647018674647,
      0.01709413397220949
     ],
-    "inside": false
+    "inside": true
    },
    "k_half": {
-    "value": null,
+    "value": 128.0,
     "siblings": [
      128.0,
      128.0
@@ -2328,10 +2555,10 @@
      121.6,
      134.4
     ],
-    "inside": false
+    "inside": true
    },
    "size": {
-    "value": null,
+    "value": 0.018628973572100107,
     "siblings": [
      0.018634149302629858,
      0.018634278094099118
@@ -2340,12 +2567,12 @@
      0.017702438617711633,
      0.019565988779017343
     ],
-    "inside": false
+    "inside": true
    }
   },
   "e54/cipher_own_s2": {
    "share": {
-    "value": null,
+    "value": 0.2678317644621348,
     "siblings": [
      0.2652401392487863,
      0.24304463624795386
@@ -2354,10 +2581,10 @@
      0.2208491332471214,
      0.28743564224961876
     ],
-    "inside": false
+    "inside": true
    },
    "steer": {
-    "value": null,
+    "value": 0.2220942483828524,
     "siblings": [
      0.22421996043623751,
      0.17758984386315346
@@ -2366,10 +2593,22 @@
      0.1309597272900694,
      0.27085007700932157
     ],
-    "inside": false
+    "inside": true
+   },
+   "steer_perkey": {
+    "value": 1.0726440096413707,
+    "siblings": [
+     1.0376113047895403,
+     1.0300855525367645
+    ],
+    "band": [
+     0.9783931311036068,
+     1.0893037262226979
+    ],
+    "inside": true
    },
    "erank": {
-    "value": null,
+    "value": 401.8930294940798,
     "siblings": [
      406.9842142917449,
      404.92905297904963
@@ -2378,10 +2617,10 @@
      384.63122129727975,
      427.28204597351476
     ],
-    "inside": false
+    "inside": true
    },
    "neuron": {
-    "value": null,
+    "value": 0.7455452643550979,
     "siblings": [
      0.7453492489448177,
      0.7583728417122615
@@ -2390,10 +2629,10 @@
      0.7077561966783907,
      0.7959658939786884
     ],
-    "inside": false
+    "inside": true
    },
    "neuron_top": {
-    "value": null,
+    "value": 0.015851978653876084,
     "siblings": [
      0.01273764613039953,
      0.017775647833038255
@@ -2402,10 +2641,10 @@
      0.0076996444277608045,
      0.02281364953567698
     ],
-    "inside": false
+    "inside": true
    },
    "k_half": {
-    "value": null,
+    "value": 1024.0,
     "siblings": [
      1024.0,
      1024.0
@@ -2414,10 +2653,10 @@
      972.8,
      1075.2
     ],
-    "inside": false
+    "inside": true
    },
    "size": {
-    "value": null,
+    "value": 0.009585623263525035,
     "siblings": [
      0.009561128049770894,
      0.00954223128274508
@@ -2426,7 +2665,7 @@
      0.00906464729943218,
      0.010038712033083794
     ],
-    "inside": false
+    "inside": true
    }
   }
  }

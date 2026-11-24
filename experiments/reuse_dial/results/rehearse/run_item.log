@@ -1,0 +1,279 @@
+E300 (P2.63 reuse dial) rehearse [] tag r0; settings {'tasks': ('sequence', 'brackets', 'addition', 'lowercase'), 'seeds': (0, 1, 2), 'eb_seeds': (0, 1, 2), 'betas': (100.0, 1000.0, 10000.0), 'target': {'sequence': 6.004814445351561, 'brackets': 8.668137642244497, 'addition': 6.045211089154084, 'lowercase': 1.6425441493988038}, 'lr_gain': 0.003, 'lr_res': 3e-05, 'grad_clip': 1, 'batch': {'sequence': 32, 'brackets': 32, 'addition': 32, 'lowercase': 8}, 'cap': {'sequence': 300, 'brackets': 490, 'addition': 310, 'lowercase': 3000}, 'kl_rows': 64, 'kl_batch': 8, 'gain_batch': 64, 'rand_sd': 0.05, 'random_seed': 263001, 'rehearse_task': 'addition', 'rehearse_cap': 40, 'rehearse_eb_arms': ('g', 'ft'), 'rehearse_betas': (10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0), 'plateau_frac': 0.9, 't_ref': {'sequence': 6.004814445351561, 'brackets': 8.668137642244497, 'addition': 6.045211089154084, 'lowercase': 1.6425441493988038}}; thresholds {'equiv_tol': 0.001, 'perm_min': 0.1, 'equiv_source': "E231's and E282's stage-0 bug bars (gain_only, gain_share predictions.json): an fp32 reassociation gives ~1e-6, a wrong orientation order 1", 'step1_max': 0.5, 'step1_max_source': "the ordinary fine-tune took 27-49 steps to E256's gain (train_<task>.json); a first step at half the target means the dial has no steps to separate its arms", 'eb_gain_min': 0.5, 'eb_gain_min_source': "PROVISIONAL, a bug bar, not a reading: a gains-only state must read E_b over its changed variables far above a Gaussian's (~0.01, E268). It is not 1 by construction: the definition's least-squares split (kstar_vpd._site, split.least_squares_split) takes the minimum-norm write/read change over every subcomponent, which can spread one subcomponent's gain over others whose u or v overlap it, and the bf16 export rounds the change at ~2^-9 relative; E247's head gain x2 reads 0.76 (kstar_needed summary items.x2). Stage 0 (e) measures it on a random gains state in the rehearsal; then amended to half that measured value before the paid run", 'eb_random_max': 0.05, 'eb_random_max_source': "4 x the largest E_b of E268's matched Gaussians on these tasks (0.0129, experiments/kstar_needed/results/summary.json p256/*_random_*)", 'min_gain': 1, 'min_gain_source': "commute.local_faith.MIN_GAIN: a Gaussian reaching it stops the job (E256's do-nothing stop); a task whose target falls under it is dropped"}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+    site 0 h.0.attn.k_proj: 4 variables x 64 pairs, 0 needed; 256 cases in 0 s (4415/s)
+    site 1 h.0.attn.o_proj: 4 variables x 64 pairs, 0 needed; 512 cases in 0 s (4674/s)
+    site 2 h.0.attn.q_proj: 4 variables x 64 pairs, 0 needed; 768 cases in 0 s (4760/s)
+    site 3 h.0.attn.v_proj: 4 variables x 64 pairs, 0 needed; 1024 cases in 0 s (4806/s)
+    site 4 h.0.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 1280 cases in 0 s (4803/s)
+    site 5 h.0.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 1536 cases in 0 s (4804/s)
+    site 6 h.1.attn.k_proj: 4 variables x 64 pairs, 0 needed; 1792 cases in 0 s (4991/s)
+    site 7 h.1.attn.o_proj: 4 variables x 64 pairs, 0 needed; 2048 cases in 0 s (5140/s)
+    site 8 h.1.attn.q_proj: 4 variables x 64 pairs, 0 needed; 2304 cases in 0 s (5257/s)
+    site 9 h.1.attn.v_proj: 4 variables x 64 pairs, 0 needed; 2560 cases in 0 s (5359/s)
+    site 10 h.1.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 2816 cases in 1 s (5427/s)
+    site 11 h.1.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 3072 cases in 1 s (5488/s)
+    site 12 h.2.attn.k_proj: 4 variables x 64 pairs, 0 needed; 3328 cases in 1 s (5672/s)
+    site 13 h.2.attn.o_proj: 4 variables x 64 pairs, 0 needed; 3584 cases in 1 s (5841/s)
+    site 14 h.2.attn.q_proj: 4 variables x 64 pairs, 0 needed; 3840 cases in 1 s (5995/s)
+    site 15 h.2.attn.v_proj: 4 variables x 64 pairs, 0 needed; 4096 cases in 1 s (6137/s)
+    site 16 h.2.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 4352 cases in 1 s (6251/s)
+    site 17 h.2.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 4608 cases in 1 s (6358/s)
+    site 18 h.3.attn.k_proj: 4 variables x 64 pairs, 0 needed; 4864 cases in 1 s (6577/s)
+    site 19 h.3.attn.o_proj: 4 variables x 64 pairs, 0 needed; 5120 cases in 1 s (6788/s)
+    site 20 h.3.attn.q_proj: 4 variables x 64 pairs, 0 needed; 5376 cases in 1 s (6990/s)
+    site 21 h.3.attn.v_proj: 4 variables x 64 pairs, 0 needed; 5632 cases in 1 s (7185/s)
+    site 22 h.3.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 5888 cases in 1 s (7354/s)
+    site 23 h.3.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 6144 cases in 1 s (7519/s)
+stage 0: {"task": "addition", "card": "NVIDIA GeForce RTX 4090", "bits": {"fp32_equal": true, "autocast_equal": true, "delta_nonzero": 0}, "export": {"equiv": 7.266459761012811e-06, "shuffled": 1.3311326503753662, "hooked_norm": 1358.897216796875}, "zeros": {"nonzero_numerators": {}, "kl": 0.0}, "do_nothing": {"n_changed": 0, "dd_max": 0.0, "E_b": 1.0}, "construction": {"gains": {"E_b_changed": 0.8396824194464697, "n_changed": 38936, "n_vars": 38938, "size": 0.05066121300755299}, "gauss": {"E_b_changed": 0.012743982123749567, "n_changed": 38936, "n_vars": 38938, "size": 0.050661213007574125}, "identity": {"flips": 0, "max_dev": 4.57763671875e-05, "min_margin": 0.002513885498046875, "cases": 6144, "cases_per_s": 7513.7896076238285, "n_read_positions": 1, "n_windows": 256, "window_len": 64, "n_vars": 38938}, "est_scan_seconds": 1326.6445456345875}}; checks hold
+STAGE 0 DONE
+/root/work/src/commute/dial.py:120: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  if not all(map(math.isfinite, (float(task), float(pen), *gn.values()))):
+[dial] step 1: loss 2.5509 penalty 0 grad_gain 1.7
+[dial] step 2: loss 2.4960 penalty 0 grad_gain 1.52
+[dial] step 3: loss 2.5646 penalty 0 grad_gain 3.16
+[dial] step 4: loss 2.5696 penalty 0 grad_gain 3.2
+[dial] step 5: loss 2.4093 penalty 0 grad_gain 1.89
+[dial] step 6: loss 2.2143 penalty 0 grad_gain 1.45
+[dial] step 7: loss 2.2287 penalty 0 grad_gain 1.37
+[dial] step 8: loss 2.2230 penalty 0 grad_gain 1.36
+[dial] step 9: loss 2.0172 penalty 0 grad_gain 1.36
+[dial] step 10: loss 2.0267 penalty 0 grad_gain 1.46
+[dial] step 11: loss 1.8065 penalty 0 grad_gain 1.25
+[dial] step 12: loss 1.8861 penalty 0 grad_gain 1.03
+[dial] step 13: loss 1.8249 penalty 0 grad_gain 1.32
+[dial] step 14: loss 1.7199 penalty 0 grad_gain 1.01
+[dial] step 15: loss 1.7211 penalty 0 grad_gain 1.07
+[dial] step 16: loss 1.7422 penalty 0 grad_gain 1.85
+[dial] step 17: loss 1.7408 penalty 0 grad_gain 1.19
+[dial] step 18: loss 1.5880 penalty 0 grad_gain 1.71
+[dial] step 19: loss 1.3743 penalty 0 grad_gain 1.09
+[dial] step 20: loss 1.7826 penalty 0 grad_gain 2.27
+[dial] step 21: loss 1.5059 penalty 0 grad_gain 1.15
+[dial] step 22: loss 1.4563 penalty 0 grad_gain 1.08
+[dial] step 23: loss 1.4321 penalty 0 grad_gain 1.32
+[dial] step 24: loss 1.4819 penalty 0 grad_gain 1.57
+[dial] step 25: loss 1.2760 penalty 0 grad_gain 1.06
+[dial] step 26: loss 1.2037 penalty 0 grad_gain 1.1
+[dial] step 27: loss 1.1858 penalty 0 grad_gain 1.3
+[dial] step 28: loss 1.1810 penalty 0 grad_gain 1.33
+[dial] step 29: loss 1.2124 penalty 0 grad_gain 2.48
+[dial] step 30: loss 1.0576 penalty 0 grad_gain 1.24
+[dial] step 31: loss 0.9236 penalty 0 grad_gain 1.38
+[dial] step 32: loss 0.9372 penalty 0 grad_gain 0.817
+[dial] step 33: loss 0.9287 penalty 0 grad_gain 1.27
+[dial] step 34: loss 0.8552 penalty 0 grad_gain 0.913
+[dial] step 35: loss 0.8528 penalty 0 grad_gain 1.99
+[dial] step 36: loss 0.6231 penalty 0 grad_gain 0.909
+[dial] step 37: loss 0.9244 penalty 0 grad_gain 1.55
+[dial] step 38: loss 0.7280 penalty 0 grad_gain 1.38
+[dial] step 39: loss 0.6652 penalty 0 grad_gain 0.874
+[dial] step 40: loss 0.9842 penalty 0 grad_gain 1.63
+[addition_g_s0 train] {"arm": "g", "beta": "inf", "seed": 0, "target": 6.045211089154084, "steps": 40, "reached": false, "gain_hooked": 3.3775717802345753, "gain_gains_alone": 3.3775717802345753, "residual_share": 0.0, "residual_size": 0.0, "size": 0.04721422862771912, "seconds": 10.378582000732422, "s_per_step": 0.2594646096229553, "peak_gpu_gb": 6.333273410797119, "file": "experiments/reuse_dial/results/large/rehearse/states/addition_g_s0.pt", "sha256": "6814f1542c1a64d912b08b3ee5aecc1e5bcbf8c8656b4db5b3742008260ce102", "mb": 108.007643699646}
+[dial] step 1: loss 2.5509 penalty 0 grad_gain 1.7 grad_res 53.2
+[dial] step 2: loss 2.8725 penalty 1.31e-06 grad_gain 3.7 grad_res 95.9
+[dial] step 3: loss 2.0818 penalty 2.98e-06 grad_gain 0.731 grad_res 23.9
+[dial] step 4: loss 2.1123 penalty 4.69e-06 grad_gain 0.995 grad_res 29.6
+[dial] step 5: loss 1.6530 penalty 6.35e-06 grad_gain 0.931 grad_res 24.5
+[dial] step 6: loss 1.3614 penalty 7.91e-06 grad_gain 0.891 grad_res 17.4
+[dial] step 7: loss 1.2533 penalty 9.46e-06 grad_gain 1.14 grad_res 30
+[dial] step 8: loss 0.8174 penalty 1.11e-05 grad_gain 0.596 grad_res 19.6
+[dial] step 9: loss 0.9770 penalty 1.27e-05 grad_gain 1.14 grad_res 36.3
+[dial] step 10: loss 0.7438 penalty 1.42e-05 grad_gain 0.848 grad_res 31.4
+[dial] step 11: loss 1.3991 penalty 1.58e-05 grad_gain 2 grad_res 53.1
+[dial] step 12: loss 1.0218 penalty 1.73e-05 grad_gain 1.15 grad_res 40.6
+[dial] step 13: loss 1.0448 penalty 1.87e-05 grad_gain 1.64 grad_res 40.5
+[dial] step 14: loss 0.4877 penalty 2.01e-05 grad_gain 0.814 grad_res 26
+[dial] step 15: loss 0.4564 penalty 2.13e-05 grad_gain 0.547 grad_res 16.5
+[dial] step 16: loss 0.4745 penalty 2.23e-05 grad_gain 0.422 grad_res 14.1
+[dial] step 17: loss 0.5772 penalty 2.31e-05 grad_gain 0.547 grad_res 19.6
+[dial] step 18: loss 0.4072 penalty 2.38e-05 grad_gain 0.525 grad_res 15.1
+[dial] step 19: loss 0.2941 penalty 2.44e-05 grad_gain 0.382 grad_res 12.3
+[dial] step 20: loss 0.5231 penalty 2.49e-05 grad_gain 0.706 grad_res 24.6
+[dial] step 21: loss 0.2747 penalty 2.53e-05 grad_gain 0.601 grad_res 18.8
+[dial] step 22: loss 0.3004 penalty 2.56e-05 grad_gain 0.332 grad_res 14.5
+[dial] step 23: loss 0.2470 penalty 2.59e-05 grad_gain 0.407 grad_res 13.9
+[dial] step 24: loss 0.2755 penalty 2.61e-05 grad_gain 0.501 grad_res 17.1
+[dial] step 25: loss 0.2403 penalty 2.62e-05 grad_gain 0.409 grad_res 13.5
+[dial] step 26: loss 0.3502 penalty 2.63e-05 grad_gain 0.611 grad_res 19
+[dial] step 27: loss 0.1920 penalty 2.63e-05 grad_gain 0.576 grad_res 18.6
+[dial] step 28: loss 0.3322 penalty 2.64e-05 grad_gain 0.595 grad_res 17.5
+[dial] step 29: loss 0.1893 penalty 2.64e-05 grad_gain 0.509 grad_res 17.9
+[addition_b10000_s0 train] {"arm": "b10000", "beta": 10000.0, "seed": 0, "target": 6.045211089154084, "steps": 29, "reached": true, "gain_hooked": 6.1093401946127415, "gain_gains_alone": 0.6145815774798393, "residual_share": 0.8994029538538741, "residual_size": 0.005141199270707864, "size": 0.019166358295612983, "seconds": 8.95761251449585, "s_per_step": 0.30888321481902026, "peak_gpu_gb": 6.919210910797119, "file": "experiments/reuse_dial/results/large/rehearse/states/addition_b10000_s0.pt", "sha256": "7eea69f3a9a2cabb17170decbfb304b61f6e983a7d0e1d3fd3b4e0d281a69996", "mb": 108.00778675079346}
+[dial] step 1: loss 2.5509 penalty 0 grad_gain 1.7 grad_res 53.2
+[dial] step 2: loss 2.8725 penalty 1.31e-06 grad_gain 3.7 grad_res 95.9
+[dial] step 3: loss 2.0820 penalty 2.99e-06 grad_gain 0.731 grad_res 23.9
+[dial] step 4: loss 2.1127 penalty 4.78e-06 grad_gain 0.994 grad_res 29.5
+[dial] step 5: loss 1.6542 penalty 6.56e-06 grad_gain 0.928 grad_res 24.4
+[dial] step 6: loss 1.3640 penalty 8.33e-06 grad_gain 0.889 grad_res 17.3
+[dial] step 7: loss 1.2605 penalty 1.01e-05 grad_gain 1.13 grad_res 30
+[dial] step 8: loss 0.8243 penalty 1.21e-05 grad_gain 0.604 grad_res 19.9
+[dial] step 9: loss 0.9817 penalty 1.4e-05 grad_gain 1.13 grad_res 35.9
+[dial] step 10: loss 0.7507 penalty 1.6e-05 grad_gain 0.843 grad_res 31
+[dial] step 11: loss 1.3897 penalty 1.8e-05 grad_gain 1.93 grad_res 51.7
+[dial] step 12: loss 1.0204 penalty 2e-05 grad_gain 1.13 grad_res 39.9
+[dial] step 13: loss 1.0385 penalty 2.18e-05 grad_gain 1.61 grad_res 39.5
+[dial] step 14: loss 0.4942 penalty 2.36e-05 grad_gain 0.815 grad_res 26.1
+[dial] step 15: loss 0.4596 penalty 2.53e-05 grad_gain 0.54 grad_res 16.1
+[dial] step 16: loss 0.4742 penalty 2.69e-05 grad_gain 0.403 grad_res 13.5
+[dial] step 17: loss 0.5787 penalty 2.85e-05 grad_gain 0.541 grad_res 19.4
+[dial] step 18: loss 0.4143 penalty 3e-05 grad_gain 0.556 grad_res 15.8
+[dial] step 19: loss 0.2923 penalty 3.14e-05 grad_gain 0.379 grad_res 12.1
+[dial] step 20: loss 0.5285 penalty 3.28e-05 grad_gain 0.718 grad_res 25
+[dial] step 21: loss 0.2740 penalty 3.41e-05 grad_gain 0.547 grad_res 17.5
+[dial] step 22: loss 0.2868 penalty 3.53e-05 grad_gain 0.308 grad_res 13.3
+[dial] step 23: loss 0.2468 penalty 3.66e-05 grad_gain 0.417 grad_res 14.6
+[dial] step 24: loss 0.2793 penalty 3.77e-05 grad_gain 0.488 grad_res 16.8
+[dial] step 25: loss 0.2430 penalty 3.89e-05 grad_gain 0.411 grad_res 13.7
+[dial] step 26: loss 0.3783 penalty 3.99e-05 grad_gain 0.731 grad_res 22.1
+[dial] step 27: loss 0.2037 penalty 4.1e-05 grad_gain 0.602 grad_res 19.4
+[dial] step 28: loss 0.3399 penalty 4.2e-05 grad_gain 0.591 grad_res 17.1
+[dial] step 29: loss 0.1749 penalty 4.3e-05 grad_gain 0.384 grad_res 14
+[addition_b1000_s0 train] {"arm": "b1000", "beta": 1000.0, "seed": 0, "target": 6.045211089154084, "steps": 29, "reached": true, "gain_hooked": 6.072313141077757, "gain_gains_alone": 0.6126580648124218, "residual_share": 0.8991063124416402, "residual_size": 0.006631442083025829, "size": 0.019649087870294707, "seconds": 8.955545902252197, "s_per_step": 0.3088119523278598, "peak_gpu_gb": 6.919210910797119, "file": "experiments/reuse_dial/results/large/rehearse/states/addition_b1000_s0.pt", "sha256": "26c2eb1bd047935c99e9e6cd1f1d95dcab5a2af053ddc39b8336f857e190dccc", "mb": 108.00775814056396}
+[dial] step 1: loss 2.5509 penalty 0 grad_gain 1.7 grad_res 53.2
+[dial] step 2: loss 2.8725 penalty 1.31e-06 grad_gain 3.7 grad_res 95.9
+[dial] step 3: loss 2.0820 penalty 2.99e-06 grad_gain 0.731 grad_res 23.9
+[dial] step 4: loss 2.1127 penalty 4.79e-06 grad_gain 0.994 grad_res 29.5
+[dial] step 5: loss 1.6543 penalty 6.59e-06 grad_gain 0.928 grad_res 24.4
+[dial] step 6: loss 1.3643 penalty 8.37e-06 grad_gain 0.888 grad_res 17.3
+[dial] step 7: loss 1.2613 penalty 1.02e-05 grad_gain 1.13 grad_res 30
+[dial] step 8: loss 0.8250 penalty 1.22e-05 grad_gain 0.605 grad_res 19.9
+[dial] step 9: loss 0.9822 penalty 1.42e-05 grad_gain 1.13 grad_res 35.9
+[dial] step 10: loss 0.7514 penalty 1.62e-05 grad_gain 0.842 grad_res 30.9
+[dial] step 11: loss 1.3889 penalty 1.83e-05 grad_gain 1.93 grad_res 51.5
+[dial] step 12: loss 1.0204 penalty 2.03e-05 grad_gain 1.13 grad_res 39.8
+[dial] step 13: loss 1.0380 penalty 2.22e-05 grad_gain 1.61 grad_res 39.4
+[dial] step 14: loss 0.4949 penalty 2.4e-05 grad_gain 0.816 grad_res 26.1
+[dial] step 15: loss 0.4600 penalty 2.58e-05 grad_gain 0.539 grad_res 16
+[dial] step 16: loss 0.4743 penalty 2.75e-05 grad_gain 0.401 grad_res 13.5
+[dial] step 17: loss 0.5789 penalty 2.92e-05 grad_gain 0.54 grad_res 19.4
+[dial] step 18: loss 0.4153 penalty 3.08e-05 grad_gain 0.56 grad_res 15.9
+[dial] step 19: loss 0.2921 penalty 3.24e-05 grad_gain 0.378 grad_res 12.1
+[dial] step 20: loss 0.5291 penalty 3.39e-05 grad_gain 0.72 grad_res 25.1
+[dial] step 21: loss 0.2738 penalty 3.53e-05 grad_gain 0.539 grad_res 17.3
+[dial] step 22: loss 0.2856 penalty 3.68e-05 grad_gain 0.307 grad_res 13.2
+[dial] step 23: loss 0.2472 penalty 3.82e-05 grad_gain 0.419 grad_res 14.7
+[dial] step 24: loss 0.2805 penalty 3.96e-05 grad_gain 0.489 grad_res 16.9
+[dial] step 25: loss 0.2430 penalty 4.09e-05 grad_gain 0.411 grad_res 13.7
+[dial] step 26: loss 0.3810 penalty 4.22e-05 grad_gain 0.745 grad_res 22.4
+[dial] step 27: loss 0.2050 penalty 4.35e-05 grad_gain 0.605 grad_res 19.5
+[dial] step 28: loss 0.3411 penalty 4.47e-05 grad_gain 0.591 grad_res 17.1
+[dial] step 29: loss 0.1740 penalty 4.6e-05 grad_gain 0.373 grad_res 13.7
+[addition_b100_s0 train] {"arm": "b100", "beta": 100.0, "seed": 0, "target": 6.045211089154084, "steps": 29, "reached": true, "gain_hooked": 6.064903441816568, "gain_gains_alone": 0.6125661209225655, "residual_share": 0.8989982071768832, "residual_size": 0.006869873363496423, "size": 0.019735158541705992, "seconds": 9.038373947143555, "s_per_step": 0.3116680835855418, "peak_gpu_gb": 6.919210910797119, "file": "experiments/reuse_dial/results/large/rehearse/states/addition_b100_s0.pt", "sha256": "8bb3fe58dc080fad3166d72f0222754429a6ff9ae0fb5553d38f24ad954a2319", "mb": 108.00772953033447}
+[dial] step 1: loss 2.5509 penalty 0 grad_res 53.2
+[dial] step 2: loss 2.8107 penalty 0 grad_res 94.5
+[dial] step 3: loss 2.0739 penalty 0 grad_res 24.1
+[dial] step 4: loss 2.1120 penalty 0 grad_res 30.5
+[dial] step 5: loss 1.6355 penalty 0 grad_res 24.8
+[dial] step 6: loss 1.3686 penalty 0 grad_res 18.3
+[dial] step 7: loss 1.2611 penalty 0 grad_res 31
+[dial] step 8: loss 0.8031 penalty 0 grad_res 19.8
+[dial] step 9: loss 0.9724 penalty 0 grad_res 36.9
+[dial] step 10: loss 0.7447 penalty 0 grad_res 31.7
+[dial] step 11: loss 1.4093 penalty 0 grad_res 56.9
+[dial] step 12: loss 1.0155 penalty 0 grad_res 41.6
+[dial] step 13: loss 1.0636 penalty 0 grad_res 42.5
+[dial] step 14: loss 0.4571 penalty 0 grad_res 26.7
+[dial] step 15: loss 0.4321 penalty 0 grad_res 15.2
+[dial] step 16: loss 0.4615 penalty 0 grad_res 13.8
+[dial] step 17: loss 0.5530 penalty 0 grad_res 20.3
+[dial] step 18: loss 0.3694 penalty 0 grad_res 13.4
+[dial] step 19: loss 0.2622 penalty 0 grad_res 11.1
+[dial] step 20: loss 0.4659 penalty 0 grad_res 24.7
+[dial] step 21: loss 0.2708 penalty 0 grad_res 19.2
+[dial] step 22: loss 0.2848 penalty 0 grad_res 14.6
+[dial] step 23: loss 0.2281 penalty 0 grad_res 15
+[dial] step 24: loss 0.3177 penalty 0 grad_res 20.6
+[dial] step 25: loss 0.2460 penalty 0 grad_res 14.5
+[dial] step 26: loss 0.2989 penalty 0 grad_res 17.6
+[dial] step 27: loss 0.1638 penalty 0 grad_res 17.3
+[dial] step 28: loss 0.3071 penalty 0 grad_res 19.1
+[dial] step 29: loss 0.1387 penalty 0 grad_res 13.8
+[addition_ft_s0 train] {"arm": "ft", "beta": 0.0, "seed": 0, "target": 6.045211089154084, "steps": 29, "reached": true, "gain_hooked": 6.27688117697835, "gain_gains_alone": 0.0, "residual_share": 1.0, "residual_size": 0.0069573850905505, "size": 0.0069573850905505, "seconds": 4.178154468536377, "s_per_step": 0.14407430846115638, "peak_gpu_gb": 6.3053131103515625, "file": "experiments/reuse_dial/results/large/rehearse/states/addition_ft_s0.pt", "sha256": "8602ffd002f30b69fecdb39f97119f2b7df46625d90e57acbf056f79945cd070", "mb": 108.00767230987549}
+[addition_rand_s0 train] {"arm": "rand", "seed": 0, "matched_to": "addition_ft_s0", "file": "experiments/reuse_dial/results/large/rehearse/states/addition_rand_s0.pt", "sha256": "9e43b798152e9337f243090ad0a5ca9f71de5b12bc7d3ffd5c52866e9d5b962a", "mb": 108.00772953033447}
+[addition_rand_s0 read] {"kl": 0.0011450097114396975, "lens": {"D": 3.7266668020109686e-05, "G": 6.27688067778945, "removed": [0.0001860596239566803, 0.0002339184284210205, 3.625825047492981e-05, -0.0004996396601200104, -0.0009667053818702698], "share": [2.9642052080908053e-05, 3.7266668020109686e-05, 5.776475981649376e-06, -7.959999333553847e-05, -0.0001540104761415853]}, "size": 0.006957385090563515, "erank": 696.4577630130981, "gain": {"lo": -0.002143729478120804}, "prior": {"lo": -2.5771351009607315}, "neuron": {"k64": {"share": {"lo": "nan"}, "numerator": {"lo": 0.01948276162147522}}, "kmatched": {"share": {"lo": "nan"}, "numerator": {"lo": 0.062437376007437706}}}, "untrained": {"share": {"lo": {"svd": "nan", "rotated": "nan"}}, "numerator": {"lo": {"svd": -0.013000186532735825, "rotated": -0.13169685006141663}}}, "read_seconds": 14.176504373550415}
+[addition_g_s0 read] {"kl": 0.0954925272053926, "lens": {"D": 0.14106285595982754, "G": 3.37757196649909, "removed": [0.013595923781394958, 0.022990476340055466, 0.25498777627944946, 0.3896733671426773, 0.47644994780421257], "share": [0.004025354282972499, 0.0068068057670094525, 0.0754944021351967, 0.11537085545702828, 0.14106285595982754]}, "size": 0.04721422862771912, "erank": 478.2390573842161, "gain": {"lo": 3.37757196649909}, "prior": {"lo": -2.5771351009607315}, "neuron": {"k64": {"share": {"lo": -0.05559693220459468}, "numerator": {"lo": -0.18778263963758945}}, "kmatched": {"share": {"lo": 0.016337989808751598}, "numerator": {"lo": 0.05518273636698723}}}, "untrained": {"share": {"lo": {"svd": 1.529325641120834, "rotated": -0.43231056384521377}}, "numerator": {"lo": {"svd": 5.165405983105302, "rotated": -1.4601596370339394}}}, "read_seconds": 14.027802467346191}
+[addition_b10000_s0 read] {"kl": 0.3667534967113717, "lens": {"D": 0.15934130880231415, "G": 6.109340105205774, "removed": [0.21206312999129295, 0.21894171833992004, 0.9174381271004677, 0.9684311896562576, 0.9734702482819557], "share": [0.034711298821061505, 0.035837212296195395, 0.15016975832115123, 0.15851649654126418, 0.15934130880231415]}, "size": 0.019166358295612983, "erank": 470.3522789621969, "gain": {"lo": 6.109340105205774}, "prior": {"lo": -2.5771351009607315}, "neuron": {"k64": {"share": {"lo": -0.028822493053331663}, "numerator": {"lo": -0.17608641274273396}}, "kmatched": {"share": {"lo": -0.03376942938139068}, "numerator": {"lo": -0.20630892924964428}}}, "untrained": {"share": {"lo": {"svd": 0.5809617512113732, "rotated": -0.37805996037801604}}, "numerator": {"lo": {"svd": 3.5492925215512514, "rotated": -2.309696614742279}}}, "read_seconds": 14.108943700790405}
+[addition_b1000_s0 read] {"kl": 0.4802591619622847, "lens": {"D": 0.13850587310791157, "G": 6.072313956916332, "removed": [0.22580646723508835, 0.10136283189058304, 0.781066294759512, 0.8390744216740131, 0.8410511463880539], "share": [0.03718623062595372, 0.016692620409577363, 0.12862745574442536, 0.1381803423912744, 0.13850587310791157]}, "size": 0.019649087870294707, "erank": 473.021618091472, "gain": {"lo": 6.072313956916332}, "prior": {"lo": -2.5771351009607315}, "neuron": {"k64": {"share": {"lo": -0.03416224423482023}, "numerator": {"lo": -0.2074438724666834}}, "kmatched": {"share": {"lo": -0.04400403239125568}, "numerator": {"lo": -0.2672063000500202}}}, "untrained": {"share": {"lo": {"svd": 0.6340761313584411, "rotated": -0.28555970359391647}}, "numerator": {"lo": {"svd": 3.850308557972312, "rotated": -1.7340078204870224}}}, "read_seconds": 14.145346403121948}
+[addition_b100_s0 read] {"kl": 0.4945365197268841, "lens": {"D": 0.13638520556037623, "G": 6.064903315156698, "removed": [0.22702180221676826, 0.08818259090185165, 0.7667183838784695, 0.8255405761301517, 0.8271630853414536], "share": [0.03743205627852663, 0.0145398180843998, 0.1264188964006032, 0.13611768122783707, 0.13638520556037623]}, "size": 0.019735158541705992, "erank": 473.6272662070109, "gain": {"lo": 6.064903315156698}, "prior": {"lo": -2.5771351009607315}, "neuron": {"k64": {"share": {"lo": -0.03445927698240081}, "numerator": {"lo": -0.20899218320846558}}, "kmatched": {"share": {"lo": -0.04443934413804191}, "numerator": {"lo": -0.26952032558619976}}}, "untrained": {"share": {"lo": {"svd": 0.644168443219465, "rotated": -0.2758704689801851}}, "numerator": {"lo": {"svd": 3.906818935647607, "rotated": -1.6731275543570518}}}, "read_seconds": 14.046514511108398}
+[addition_ft_s0 read] {"kl": 0.4225781244795608, "lens": {"D": 0.11429700079283721, "G": 6.27688067778945, "removed": [0.34994540736079216, 0.15512320399284363, 0.6946545615792274, 0.7171134017407894, 0.7174286358058453], "share": [0.055751483152939846, 0.024713422471410416, 0.11066875367525168, 0.11424677934029769, 0.11429700079283721]}, "size": 0.0069573850905505, "erank": 303.2367669520261, "gain": {"lo": 6.27688067778945}, "prior": {"lo": -2.5771351009607315}, "neuron": {"k64": {"share": {"lo": -0.03040019244585232}, "numerator": {"lo": -0.19081838056445122}}, "kmatched": {"share": {"lo": -0.030075094894019164}, "numerator": {"lo": -0.18877778202295303}}}, "untrained": {"share": {"lo": {"svd": 0.5560656970524125, "rotated": -0.3585760973702565}}, "numerator": {"lo": {"svd": 3.490357780829072, "rotated": -2.2507392168045044}}}, "read_seconds": 14.073021411895752}
+    site 0 h.0.attn.k_proj: 513 variables x 256 pairs, 292 needed; 131328 cases in 27 s (4916/s)
+    site 1 h.0.attn.o_proj: 1025 variables x 256 pairs, 523 needed; 393728 cases in 80 s (4914/s)
+    site 2 h.0.attn.q_proj: 513 variables x 256 pairs, 199 needed; 525056 cases in 107 s (4914/s)
+    site 3 h.0.attn.v_proj: 1025 variables x 256 pairs, 305 needed; 787456 cases in 160 s (4914/s)
+    site 4 h.0.mlp.c_fc: 3073 variables x 256 pairs, 981 needed; 1574144 cases in 326 s (4830/s)
+    site 5 h.0.mlp.down_proj: 3585 variables x 256 pairs, 879 needed; 2491904 cases in 518 s (4812/s)
+    site 6 h.1.attn.k_proj: 513 variables x 256 pairs, 106 needed; 2623232 cases in 538 s (4874/s)
+    site 7 h.1.attn.o_proj: 1025 variables x 256 pairs, 557 needed; 2885632 cases in 579 s (4986/s)
+    site 8 h.1.attn.q_proj: 513 variables x 256 pairs, 38 needed; 3016960 cases in 599 s (5036/s)
+    site 9 h.1.attn.v_proj: 1025 variables x 256 pairs, 467 needed; 3279360 cases in 640 s (5127/s)
+    site 10 h.1.mlp.c_fc: 3073 variables x 256 pairs, 1308 needed; 4066048 cases in 767 s (5302/s)
+    site 11 h.1.mlp.down_proj: 3585 variables x 256 pairs, 479 needed; 4983808 cases in 914 s (5453/s)
+    site 12 h.2.attn.k_proj: 513 variables x 256 pairs, 371 needed; 5115136 cases in 928 s (5512/s)
+    site 13 h.2.attn.o_proj: 1025 variables x 256 pairs, 788 needed; 5377536 cases in 956 s (5626/s)
+    site 14 h.2.attn.q_proj: 513 variables x 256 pairs, 334 needed; 5508864 cases in 970 s (5681/s)
+    site 15 h.2.attn.v_proj: 1025 variables x 256 pairs, 655 needed; 5771264 cases in 998 s (5785/s)
+    site 16 h.2.mlp.c_fc: 3073 variables x 256 pairs, 893 needed; 6557952 cases in 1087 s (6036/s)
+    site 17 h.2.mlp.down_proj: 3585 variables x 256 pairs, 646 needed; 7475712 cases in 1189 s (6286/s)
+    site 18 h.3.attn.k_proj: 513 variables x 256 pairs, 413 needed; 7607040 cases in 1197 s (6356/s)
+    site 19 h.3.attn.o_proj: 1025 variables x 256 pairs, 695 needed; 7869440 cases in 1212 s (6493/s)
+    site 20 h.3.attn.q_proj: 513 variables x 256 pairs, 354 needed; 8000768 cases in 1219 s (6561/s)
+    site 21 h.3.attn.v_proj: 1025 variables x 256 pairs, 783 needed; 8263168 cases in 1235 s (6693/s)
+    site 22 h.3.mlp.c_fc: 3073 variables x 256 pairs, 788 needed; 9049856 cases in 1285 s (7041/s)
+    site 23 h.3.mlp.down_proj: 3585 variables x 256 pairs, 687 needed; 9967616 cases in 1344 s (7419/s)
+[addition_g_s0 eb] {"E_b_changed": 0.854589601522076, "n_changed": 38936, "n_vars": 38938, "E_b_K": 0.8741738542323731, "size_K": 13541, "n_changed_K": 13541, "eb_seconds": 1354.7663469314575}
+    site 0 h.0.attn.k_proj: 513 variables x 256 pairs, 1 needed; 131328 cases in 27 s (4921/s)
+    site 1 h.0.attn.o_proj: 1025 variables x 256 pairs, 3 needed; 393728 cases in 80 s (4919/s)
+    site 2 h.0.attn.q_proj: 513 variables x 256 pairs, 0 needed; 525056 cases in 107 s (4918/s)
+    site 3 h.0.attn.v_proj: 1025 variables x 256 pairs, 8 needed; 787456 cases in 160 s (4918/s)
+    site 4 h.0.mlp.c_fc: 3073 variables x 256 pairs, 7 needed; 1574144 cases in 326 s (4834/s)
+    site 5 h.0.mlp.down_proj: 3585 variables x 256 pairs, 9 needed; 2491904 cases in 517 s (4818/s)
+    site 6 h.1.attn.k_proj: 513 variables x 256 pairs, 0 needed; 2623232 cases in 538 s (4880/s)
+    site 7 h.1.attn.o_proj: 1025 variables x 256 pairs, 0 needed; 2885632 cases in 578 s (4991/s)
+    site 8 h.1.attn.q_proj: 513 variables x 256 pairs, 0 needed; 3016960 cases in 598 s (5041/s)
+    site 9 h.1.attn.v_proj: 1025 variables x 256 pairs, 0 needed; 3279360 cases in 639 s (5132/s)
+    site 10 h.1.mlp.c_fc: 3073 variables x 256 pairs, 1 needed; 4066048 cases in 766 s (5307/s)
+    site 11 h.1.mlp.down_proj: 3585 variables x 256 pairs, 1 needed; 4983808 cases in 913 s (5458/s)
+    site 12 h.2.attn.k_proj: 513 variables x 256 pairs, 1 needed; 5115136 cases in 927 s (5517/s)
+    site 13 h.2.attn.o_proj: 1025 variables x 256 pairs, 1 needed; 5377536 cases in 955 s (5631/s)
+    site 14 h.2.attn.q_proj: 513 variables x 256 pairs, 0 needed; 5508864 cases in 969 s (5685/s)
+    site 15 h.2.attn.v_proj: 1025 variables x 256 pairs, 2 needed; 5771264 cases in 997 s (5790/s)
+    site 16 h.2.mlp.c_fc: 3073 variables x 256 pairs, 1 needed; 6557952 cases in 1086 s (6040/s)
+    site 17 h.2.mlp.down_proj: 3585 variables x 256 pairs, 0 needed; 7475712 cases in 1188 s (6291/s)
+    site 18 h.3.attn.k_proj: 513 variables x 256 pairs, 0 needed; 7607040 cases in 1196 s (6361/s)
+    site 19 h.3.attn.o_proj: 1025 variables x 256 pairs, 1 needed; 7869440 cases in 1211 s (6499/s)
+    site 20 h.3.attn.q_proj: 513 variables x 256 pairs, 0 needed; 8000768 cases in 1218 s (6566/s)
+    site 21 h.3.attn.v_proj: 1025 variables x 256 pairs, 1 needed; 8263168 cases in 1234 s (6699/s)
+    site 22 h.3.mlp.c_fc: 3073 variables x 256 pairs, 0 needed; 9049856 cases in 1284 s (7047/s)
+    site 23 h.3.mlp.down_proj: 3585 variables x 256 pairs, 1 needed; 9967616 cases in 1342 s (7427/s)
+[addition_ft_s0 eb] {"E_b_changed": 0.055148490089782405, "n_changed": 38936, "n_vars": 38938, "E_b_K": 0.04460627521939809, "size_K": 38, "n_changed_K": 38, "eb_seconds": 1353.4695525169373}
+PACKED experiments/reuse_dial/results/large/rehearse/packs/addition_s0.tar sha256 fced654e138d7d7a98e040065bbe795ac6353d3cf9a9f3c6e259d1d1b74d248b (650 MB)
+DONE
+peak host RSS 6.2 GB
+E300 (P2.63 reuse dial) rehearse [] tag r0; settings {'tasks': ('sequence', 'brackets', 'addition', 'lowercase'), 'seeds': (0, 1, 2), 'eb_seeds': (0, 1, 2), 'betas': (100.0, 1000.0, 10000.0), 'target': {'sequence': 6.004814445351561, 'brackets': 8.668137642244497, 'addition': 6.045211089154084, 'lowercase': 1.6425441493988038}, 'lr_gain': 0.003, 'lr_res': 3e-05, 'grad_clip': 1, 'batch': {'sequence': 32, 'brackets': 32, 'addition': 32, 'lowercase': 8}, 'cap': {'sequence': 300, 'brackets': 490, 'addition': 310, 'lowercase': 3000}, 'kl_rows': 64, 'kl_batch': 8, 'gain_batch': 64, 'rand_sd': 0.05, 'random_seed': 263001, 'rehearse_task': 'addition', 'rehearse_cap': 40, 'rehearse_eb_arms': ('g', 'ft'), 'rehearse_betas': (10.0, 100.0, 1000.0, 10000.0, 100000.0, 1000000.0), 'plateau_frac': 0.9, 't_ref': {'sequence': 6.004814445351561, 'brackets': 8.668137642244497, 'addition': 6.045211089154084, 'lowercase': 1.6425441493988038}}; thresholds {'equiv_tol': 0.001, 'perm_min': 0.1, 'equiv_source': "E231's and E282's stage-0 bug bars (gain_only, gain_share predictions.json): an fp32 reassociation gives ~1e-6, a wrong orientation order 1", 'step1_max': 0.5, 'step1_max_source': "the ordinary fine-tune took 27-49 steps to E256's gain (train_<task>.json); a first step at half the target means the dial has no steps to separate its arms", 'eb_gain_min': 0.5, 'eb_gain_min_source': "PROVISIONAL, a bug bar, not a reading: a gains-only state must read E_b over its changed variables far above a Gaussian's (~0.01, E268). It is not 1 by construction: the definition's least-squares split (kstar_vpd._site, split.least_squares_split) takes the minimum-norm write/read change over every subcomponent, which can spread one subcomponent's gain over others whose u or v overlap it, and the bf16 export rounds the change at ~2^-9 relative; E247's head gain x2 reads 0.76 (kstar_needed summary items.x2). Stage 0 (e) measures it on a random gains state in the rehearsal; then amended to half that measured value before the paid run", 'eb_random_max': 0.05, 'eb_random_max_source': "4 x the largest E_b of E268's matched Gaussians on these tasks (0.0129, experiments/kstar_needed/results/summary.json p256/*_random_*)", 'min_gain': 1, 'min_gain_source': "commute.local_faith.MIN_GAIN: a Gaussian reaching it stops the job (E256's do-nothing stop); a task whose target falls under it is dropped"}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+stage0_r0.json: done before
+addition_g_s0 train: done before, skipped
+addition_b10000_s0 train: done before, skipped
+addition_b1000_s0 train: done before, skipped
+addition_b100_s0 train: done before, skipped
+addition_ft_s0 train: done before, skipped
+addition_rand_s0 train: done before, skipped
+addition_rand_s0 read: done before, skipped
+addition_g_s0 read: done before, skipped
+addition_b10000_s0 read: done before, skipped
+addition_b1000_s0 read: done before, skipped
+addition_b100_s0 read: done before, skipped
+addition_ft_s0 read: done before, skipped
+addition_g_s0 eb: done before, skipped
+addition_ft_s0 eb: done before, skipped
+PACKED experiments/reuse_dial/results/large/rehearse/packs/addition_s0.tar sha256 fced654e138d7d7a98e040065bbe795ac6353d3cf9a9f3c6e259d1d1b74d248b (650 MB)
+DONE
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/reuse_dial/results/rehearse/ ===

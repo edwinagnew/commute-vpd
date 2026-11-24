@@ -1,0 +1,171 @@
+E298 start, feat sae, stage 1, 12 items ['trained/copy_s0_rand', 'trained/copy_s2_rand', 'trained/rank1_s1_rand', 'trained/elicit_s0_rand', 'trained/elicit_s2_rand', 'trained/cipher_s1_rand', 'trained/prior_cipher_s0_rand', 'trained/prior_cipher_s2_rand', 'built/rand_head_v2', 'built/new_thin', 'built/x2', 'built/rand_x2']; sources {'E268': {'derangements': 4, 'examples': 64, 'seed': 268}, 'E277': {'derangements': 4, 'examples': 64, 'seed': 268}, 'E290': {'derangements': 4, 'examples': 64, 'seed': 268}}; settings {'control': 'built/x2', 'built': ('x2', 'x10', 'rebuilt', 'new_few', 'new_thin', 'random_size_241001', 'random_kl_241002'), 'head_edits': ('v2', 'o2', 'q2'), 'built_random_of': ('x2', 'x10', 'rebuilt', 'new_few', 'new_thin', 'head_v2', 'head_o2', 'head_q2'), 'built_random_seed': 298000, 'tasks': ('copy', 'rank1', 'elicit', 'cipher', 'prior_cipher'), 'seeds': (0, 1, 2), 'trained_random_seed': 161000, 'band': 'p97', 'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'ident_vars': 3, 'sae_err_rows': 64, 'sae_chunk': 32, 'repro': {'vpd': [{'item': 'built/x2', 'mode': 'read', 'json': 'experiments/kstar_needed/results/items/x2.json', 'key': 'E_b_K', 'npz': 'experiments/kstar_needed/results/large/items_x2.npz', 'mask': 'in_K'}, {'item': 'trained/elicit_s0', 'mode': 'read', 'json': 'experiments/ia3_control/results/vpd/full__elicit_s0.json', 'key': 'E_b_K', 'npz': 'experiments/ia3_control/results/large/vpd_full__elicit_s0.npz', 'mask': 'in_K'}, {'item': 'built/head_v2', 'mode': 'read', 'json': 'experiments/head_edit/results/items/v2_vpd.json', 'key': 'E_b_K', 'npz': 'experiments/head_edit/results/large/items_v2_vpd.npz', 'mask': 'in_K'}], 'neurons': [{'item': 'built/x2', 'mode': 'read', 'json': 'experiments/needed_neurons/results/items/x2.json', 'key': 'E_b_K', 'npz': 'experiments/needed_neurons/results/large/items_x2.npz', 'mask': 'in_K'}, {'item': 'trained/copy_s0', 'mode': 'read', 'json': 'experiments/ia3_control/results/items/full__copy_s0.json', 'key': 'E_b_K', 'npz': 'experiments/ia3_control/results/large/items_full__copy_s0.npz', 'mask': 'in_K'}, {'item': 'built/head_v2', 'mode': 'read', 'json': 'experiments/head_edit/results/items/v2_neurons.json', 'key': 'E_b_K', 'npz': 'experiments/head_edit/results/large/items_v2_neurons.npz', 'mask': 'in_K'}], 'sae': [{'item': 'built/x2', 'mode': 'writes', 'json': 'experiments/sae_eb/results/items/x2.json', 'key': 'E_b', 'npz': 'experiments/sae_r_a/results/large/items_x2.npz', 'mask': 'main_in_K_polished'}]}, 'repro_rel_tol': {'vpd': 0.0005, 'neurons': 5e-05, 'sae': 1e-06}, 'read': {'vpd': ['trained/copy_s1', 'trained/copy_s1_rand', 'trained/copy_s2', 'trained/copy_s2_rand', 'trained/rank1_s1', 'trained/rank1_s1_rand', 'trained/rank1_s2', 'trained/rank1_s2_rand', 'trained/elicit_s1', 'trained/elicit_s1_rand', 'trained/elicit_s2', 'trained/elicit_s2_rand', 'trained/cipher_s1', 'trained/cipher_s1_rand', 'trained/cipher_s2', 'trained/cipher_s2_rand', 'trained/prior_cipher_s1', 'trained/prior_cipher_s1_rand', 'trained/prior_cipher_s2', 'trained/prior_cipher_s2_rand', 'trained/copy_s0', 'trained/copy_s0_rand', 'built/rand_head_v2', 'built/rand_head_o2', 'built/rand_head_q2', 'built/rand_new_few', 'built/rand_new_thin', 'built/rand_x2', 'built/rand_x10', 'built/rand_rebuilt'], 'neurons': ['built/rand_head_v2', 'built/rand_head_o2', 'built/rand_head_q2', 'built/rand_new_few', 'built/rand_new_thin', 'built/rand_x2', 'built/rand_x10', 'built/rand_rebuilt'], 'sae': ['trained/copy_s0', 'trained/copy_s0_rand', 'trained/copy_s1', 'trained/copy_s1_rand', 'trained/copy_s2', 'trained/copy_s2_rand', 'trained/rank1_s0', 'trained/rank1_s0_rand', 'trained/rank1_s1', 'trained/rank1_s1_rand', 'trained/rank1_s2', 'trained/rank1_s2_rand', 'trained/elicit_s0', 'trained/elicit_s0_rand', 'trained/elicit_s1', 'trained/elicit_s1_rand', 'trained/elicit_s2', 'trained/elicit_s2_rand', 'trained/cipher_s0', 'trained/cipher_s0_rand', 'trained/cipher_s1', 'trained/cipher_s1_rand', 'trained/cipher_s2', 'trained/cipher_s2_rand', 'trained/prior_cipher_s0', 'trained/prior_cipher_s0_rand', 'trained/prior_cipher_s1', 'trained/prior_cipher_s1_rand', 'trained/prior_cipher_s2', 'trained/prior_cipher_s2_rand', 'built/head_v2', 'built/head_o2', 'built/head_q2', 'built/rand_head_v2', 'built/rand_head_o2', 'built/rand_head_q2', 'built/new_few', 'built/new_thin', 'built/random_kl_241002', 'built/rand_new_few', 'built/rand_new_thin', 'built/x2', 'built/x10', 'built/rebuilt', 'built/random_size_241001', 'built/rand_x2', 'built/rand_x10', 'built/rand_rebuilt']}}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+21:37:34 [data] train rows 0..32768: cached at /root/artifacts/sets/train_0_32768.npy
+stage 0 sae do_nothing: {"experiment": "E298", "feat": "sae", "part": "do_nothing", "n_changed": 0, "dd_max": 0.0, "E_b": 1.0, "seconds": 43.76943635940552}; checks hold
+    site 0 attn0: 256 cases run of 1048640, 0 needed; 256 cases in 0 s (3612/s)
+    site 1 mlp0: 256 cases run of 1048640, 0 needed; 512 cases in 0 s (4149/s)
+    site 2 attn1: 256 cases run of 1048640, 0 needed; 768 cases in 0 s (4500/s)
+    site 3 mlp1: 256 cases run of 1048640, 0 needed; 1024 cases in 0 s (4700/s)
+    site 4 attn2: 256 cases run of 1048640, 0 needed; 1280 cases in 0 s (4922/s)
+    site 5 mlp2: 256 cases run of 1048640, 0 needed; 1536 cases in 0 s (5081/s)
+    site 6 attn3: 256 cases run of 1048640, 0 needed; 1792 cases in 0 s (5280/s)
+    site 7 mlp3: 256 cases run of 1048640, 0 needed; 2048 cases in 0 s (5439/s)
+stage 0 sae identity: {"experiment": "E298", "feat": "sae", "part": "identity", "item": "built/x2", "flips": 0, "max_dev": 0.0002155303955078125, "min_margin": 0.00020694732666015625, "cases": 2048, "cases_per_s": 5415.864374122437, "n_windows": 75, "n_read_positions": 41, "card": "NVIDIA H100 80GB HBM3", "seconds": 0.5019283294677734}; checks hold
+stage 0 sae must_flip: {"experiment": "E298", "feat": "sae", "part": "must_flip", "item": "built/x2", "cases": 10496, "n_differ": 10248, "n_flipped": 10248, "n_off_x_prime": 0, "max_dev": 4.4345855712890625e-05, "seconds": 0.3369717597961426}; checks hold
+STAGE 0 DONE (sae, controls only): identity floor 0.000216 at 5416 cases/s; tolerance filed
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[data] train rows 32768..40960: cached at /root/artifacts/sets/train_32768_8192.npy
+[data] val rows 0..2000: cached at /root/artifacts/sets/val_0_2000.npy
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+sae trained/copy_s0_rand: 512 windows of 8 tokens, 1 read positions, 131080 variables, 131080 changed, 256 pairs
+    site 0 attn0: 212364 cases run of 4194560, 1143 needed; 212364 cases in 4 s (54406/s)
+    site 1 mlp0: 235541 cases run of 4194560, 2300 needed; 447905 cases in 8 s (54527/s)
+    site 2 attn1: 108040 cases run of 4194560, 605 needed; 555945 cases in 10 s (56795/s)
+    site 3 mlp1: 231461 cases run of 4194560, 1448 needed; 787406 cases in 13 s (59917/s)
+    site 4 attn2: 60835 cases run of 4194560, 449 needed; 848241 cases in 14 s (61457/s)
+    site 5 mlp2: 174602 cases run of 4194560, 1183 needed; 1022843 cases in 16 s (65266/s)
+    site 6 attn3: 91891 cases run of 4194560, 457 needed; 1114734 cases in 16 s (68346/s)
+    site 7 mlp3: 118060 cases run of 4194560, 661 needed; 1232794 cases in 17 s (71952/s)
+sae trained/copy_s0_rand: E_b over K 0.010293 (leftovers dropped 0.034644, their share of dd 0.7102); |K| 8246 (8246 changed) of 131080; 57 s
+ITEM 1 of 12 DONE (sae trained/copy_s0_rand)
+sae trained/copy_s2_rand: 512 windows of 8 tokens, 1 read positions, 131080 variables, 131080 changed, 256 pairs
+    site 0 attn0: 212412 cases run of 4194560, 979 needed; 212412 cases in 4 s (54604/s)
+    site 1 mlp0: 234494 cases run of 4194560, 2179 needed; 446906 cases in 8 s (54619/s)
+    site 2 attn1: 108583 cases run of 4194560, 574 needed; 555489 cases in 10 s (56879/s)
+    site 3 mlp1: 231608 cases run of 4194560, 1234 needed; 787097 cases in 13 s (59983/s)
+    site 4 attn2: 59940 cases run of 4194560, 398 needed; 847037 cases in 14 s (61500/s)
+    site 5 mlp2: 174875 cases run of 4194560, 1014 needed; 1021912 cases in 16 s (65319/s)
+    site 6 attn3: 92003 cases run of 4194560, 449 needed; 1113915 cases in 16 s (68402/s)
+    site 7 mlp3: 118049 cases run of 4194560, 693 needed; 1231964 cases in 17 s (72005/s)
+sae trained/copy_s2_rand: E_b over K 0.014559 (leftovers dropped 0.048282, their share of dd 0.7044); |K| 7520 (7520 changed) of 131080; 20 s
+ITEM 2 of 12 DONE (sae trained/copy_s2_rand)
+sae trained/rank1_s1_rand: 512 windows of 8 tokens, 1 read positions, 131080 variables, 131080 changed, 256 pairs
+    site 0 attn0: 206037 cases run of 4194560, 728 needed; 206037 cases in 4 s (54632/s)
+    site 1 mlp0: 233732 cases run of 4194560, 1887 needed; 439769 cases in 8 s (54612/s)
+    site 2 attn1: 107582 cases run of 4194560, 444 needed; 547351 cases in 10 s (56897/s)
+    site 3 mlp1: 229677 cases run of 4194560, 890 needed; 777028 cases in 13 s (59997/s)
+    site 4 attn2: 57888 cases run of 4194560, 340 needed; 834916 cases in 14 s (61481/s)
+    site 5 mlp2: 172396 cases run of 4194560, 766 needed; 1007312 cases in 15 s (65304/s)
+    site 6 attn3: 93507 cases run of 4194560, 383 needed; 1100819 cases in 16 s (68477/s)
+    site 7 mlp3: 115517 cases run of 4194560, 564 needed; 1216336 cases in 17 s (72053/s)
+sae trained/rank1_s1_rand: E_b over K 0.008448 (leftovers dropped 0.033190, their share of dd 0.7523); |K| 6002 (6002 changed) of 131080; 20 s
+ITEM 3 of 12 DONE (sae trained/rank1_s1_rand)
+sae trained/elicit_s0_rand: 512 windows of 8 tokens, 1 read positions, 131080 variables, 131080 changed, 256 pairs
+    site 0 attn0: 201691 cases run of 4194560, 1102 needed; 201691 cases in 4 s (54664/s)
+    site 1 mlp0: 233091 cases run of 4194560, 2465 needed; 434782 cases in 8 s (54669/s)
+    site 2 attn1: 107496 cases run of 4194560, 569 needed; 542278 cases in 10 s (56974/s)
+    site 3 mlp1: 229054 cases run of 4194560, 1543 needed; 771332 cases in 13 s (60093/s)
+    site 4 attn2: 61747 cases run of 4194560, 500 needed; 833079 cases in 14 s (61679/s)
+    site 5 mlp2: 171224 cases run of 4194560, 1138 needed; 1004303 cases in 15 s (65483/s)
+    site 6 attn3: 95336 cases run of 4194560, 462 needed; 1099639 cases in 16 s (68737/s)
+    site 7 mlp3: 115397 cases run of 4194560, 755 needed; 1215036 cases in 17 s (72315/s)
+sae trained/elicit_s0_rand: E_b over K 0.014670 (leftovers dropped 0.050650, their share of dd 0.7157); |K| 8534 (8534 changed) of 131080; 20 s
+ITEM 4 of 12 DONE (sae trained/elicit_s0_rand)
+sae trained/elicit_s2_rand: 512 windows of 8 tokens, 1 read positions, 131080 variables, 131080 changed, 256 pairs
+    site 0 attn0: 199943 cases run of 4194560, 1271 needed; 199943 cases in 4 s (54557/s)
+    site 1 mlp0: 232007 cases run of 4194560, 2559 needed; 431950 cases in 8 s (54603/s)
+    site 2 attn1: 108525 cases run of 4194560, 644 needed; 540475 cases in 9 s (56945/s)
+    site 3 mlp1: 227552 cases run of 4194560, 1614 needed; 768027 cases in 13 s (60064/s)
+    site 4 attn2: 61130 cases run of 4194560, 489 needed; 829157 cases in 13 s (61648/s)
+    site 5 mlp2: 172181 cases run of 4194560, 1247 needed; 1001338 cases in 15 s (65488/s)
+    site 6 attn3: 95504 cases run of 4194560, 428 needed; 1096842 cases in 16 s (68748/s)
+    site 7 mlp3: 116308 cases run of 4194560, 759 needed; 1213150 cases in 17 s (72360/s)
+sae trained/elicit_s2_rand: E_b over K 0.011961 (leftovers dropped 0.041786, their share of dd 0.7188); |K| 9011 (9011 changed) of 131080; 20 s
+ITEM 5 of 12 DONE (sae trained/elicit_s2_rand)
+sae trained/cipher_s1_rand: 512 windows of 8 tokens, 1 read positions, 131080 variables, 131080 changed, 256 pairs
+    site 0 attn0: 212544 cases run of 4194560, 1114 needed; 212544 cases in 4 s (54460/s)
+    site 1 mlp0: 237020 cases run of 4194560, 2494 needed; 449564 cases in 8 s (54550/s)
+    site 2 attn1: 108421 cases run of 4194560, 590 needed; 557985 cases in 10 s (56825/s)
+    site 3 mlp1: 230577 cases run of 4194560, 1449 needed; 788562 cases in 13 s (59920/s)
+    site 4 attn2: 58470 cases run of 4194560, 533 needed; 847032 cases in 14 s (61400/s)
+    site 5 mlp2: 173452 cases run of 4194560, 1190 needed; 1020484 cases in 16 s (65202/s)
+    site 6 attn3: 95772 cases run of 4194560, 462 needed; 1116256 cases in 16 s (68413/s)
+    site 7 mlp3: 115659 cases run of 4194560, 799 needed; 1231915 cases in 17 s (71945/s)
+sae trained/cipher_s1_rand: E_b over K 0.010639 (leftovers dropped 0.036068, their share of dd 0.7120); |K| 8631 (8631 changed) of 131080; 20 s
+ITEM 6 of 12 DONE (sae trained/cipher_s1_rand)
+sae trained/prior_cipher_s0_rand: 512 windows of 8 tokens, 1 read positions, 131080 variables, 131080 changed, 256 pairs
+    site 0 attn0: 206541 cases run of 4194560, 742 needed; 206541 cases in 4 s (54552/s)
+    site 1 mlp0: 235406 cases run of 4194560, 1805 needed; 441947 cases in 8 s (54586/s)
+    site 2 attn1: 107281 cases run of 4194560, 470 needed; 549228 cases in 10 s (56841/s)
+    site 3 mlp1: 230050 cases run of 4194560, 947 needed; 779278 cases in 13 s (59917/s)
+    site 4 attn2: 60152 cases run of 4194560, 352 needed; 839430 cases in 14 s (61446/s)
+    site 5 mlp2: 170184 cases run of 4194560, 781 needed; 1009614 cases in 15 s (65181/s)
+    site 6 attn3: 95128 cases run of 4194560, 349 needed; 1104742 cases in 16 s (68396/s)
+    site 7 mlp3: 117069 cases run of 4194560, 626 needed; 1221811 cases in 17 s (71978/s)
+sae trained/prior_cipher_s0_rand: E_b over K 0.011497 (leftovers dropped 0.045579, their share of dd 0.7556); |K| 6072 (6072 changed) of 131080; 20 s
+ITEM 7 of 12 DONE (sae trained/prior_cipher_s0_rand)
+sae trained/prior_cipher_s2_rand: 512 windows of 8 tokens, 1 read positions, 131080 variables, 131080 changed, 256 pairs
+    site 0 attn0: 211206 cases run of 4194560, 911 needed; 211206 cases in 4 s (54391/s)
+    site 1 mlp0: 234055 cases run of 4194560, 2088 needed; 445261 cases in 8 s (54420/s)
+    site 2 attn1: 106298 cases run of 4194560, 561 needed; 551559 cases in 10 s (56643/s)
+    site 3 mlp1: 229717 cases run of 4194560, 1216 needed; 781276 cases in 13 s (59723/s)
+    site 4 attn2: 59367 cases run of 4194560, 445 needed; 840643 cases in 14 s (61228/s)
+    site 5 mlp2: 169141 cases run of 4194560, 980 needed; 1009784 cases in 16 s (64930/s)
+    site 6 attn3: 91347 cases run of 4194560, 418 needed; 1101131 cases in 16 s (68004/s)
+    site 7 mlp3: 115726 cases run of 4194560, 747 needed; 1216857 cases in 17 s (71552/s)
+sae trained/prior_cipher_s2_rand: E_b over K 0.013584 (leftovers dropped 0.047518, their share of dd 0.7200); |K| 7366 (7366 changed) of 131080; 20 s
+ITEM 8 of 12 DONE (sae trained/prior_cipher_s2_rand)
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+sae built/rand_head_v2: 512 windows of 8 tokens, 1 read positions, 131080 variables, 16385 changed, 256 pairs
+    site 0 attn0: 218261 cases run of 4194560, 992 needed; 218261 cases in 4 s (54536/s)
+    site 1 mlp0: 227345 cases run of 4194560, 1839 needed; 445606 cases in 8 s (54525/s)
+    site 2 attn1: 106936 cases run of 4194560, 492 needed; 552542 cases in 10 s (56756/s)
+    site 3 mlp1: 223256 cases run of 4194560, 1051 needed; 775798 cases in 13 s (59752/s)
+    site 4 attn2: 240205 cases run of 4194560, 799 needed; 1016003 cases in 16 s (65295/s)
+    site 5 mlp2: 133497 cases run of 4194560, 673 needed; 1149500 cases in 17 s (67616/s)
+    site 6 attn3: 84461 cases run of 4194560, 337 needed; 1233961 cases in 18 s (70140/s)
+    site 7 mlp3: 86473 cases run of 4194560, 412 needed; 1320434 cases in 18 s (72535/s)
+sae built/rand_head_v2: E_b over K 0.060564 (leftovers dropped 0.152373, their share of dd 0.6073); |K| 6595 (799 changed) of 131080; 36 s
+ITEM 9 of 12 DONE (sae built/rand_head_v2)
+[data] val rows 0..256: cached at /root/artifacts/sets/val_0_256.npy
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 5731, 'limit_filed': 2.5397456096210376, 'limit_whitened_0.01': 8.566283727683114, 'limit_whitened_0.001': 8.575327523798162, 'limit_whitened_0.0001': 8.568685731515666, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 4566, 'limit_filed': 3.38301534693608, 'limit_whitened_0.01': 9.095356453119177, 'limit_whitened_0.001': 9.070667057076344, 'limit_whitened_0.0001': 9.072227442589407, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: {"slots": [109, 447, 771, 1004, 1101, 1997, 2018, 2034], "betas": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "detectors": [{"limit_filed": 2.8299306178453936, "limit_whitened_0.01": 11.977943470656788, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.935406646295597, "limit_whitened_0.01": 9.467794583919384, "limit_whitened_0.001": 9.453473755664607, "limit_whitened_0.0001": 9.434761738713327, "direction": "whitened 0.0001", "pile_own": 0}, {"limit_filed": 3.153354424992976, "limit_whitened_0.01": 10.247742932694962, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 2.976401818196408, "limit_whitened_0.01": 10.980585108255589, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 3.1523499367635144, "limit_whitened_0.01": 10.295113233962542, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.8080070622612814, "limit_whitened_0.01": 11.894050704084995, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 3.49099258484954, "limit_whitened_0.01": 12.118533590411879, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 6.333510380063351, "limit_whitened_0.01": 15.14462701601434, "direction": "whitened 0.01", "pile_own": 1}], "act": [13.54616928100586, 13.430658340454102, 14.229463577270508, 13.013628959655762, 13.70849609375, 13.203634262084961, 13.495687484741211, 16.34401512145996], "copy_M_twin": 0.2578125, "copy_M_D": 0.001953125, "misses": ["reuse_small: top-1 0.0000 < 0.2063", "reuse_large: top-1 0.0117 < 0.2063"], "gamma_new_few": 11.291481018066406, "gamma_new_thin": 10.845924377441406, "gamma_T": 8.0, "g": 4.662668452625903, "size_matched": false, "dW_norm": {"reuse_small": 11.702665857318092, "new_few": 4.032901283721824, "new_thin": 1.9208650760341066, "reuse_large": 31.246117113476934}, "top1_reuse_small": 0.0, "top1_new_few": 0.900390625, "top1_new_thin": 0.900390625, "top1_reuse_large": 0.01171875, "A": [4833, 7192, 4910, 7939, 8638, 2589, 9653, 6196], "A_prime": [10680, 4934, 7756, 7057, 5823, 5827, 6255, 1471], "y": [5752, 5771, 5175, 4412, 5870, 5087, 4201, 6430], "swapped": [{"cue": 5, "A_prime": 5731, "limit_filed": 2.5397456096210376, "limit_whitened_0.01": 8.566283727683114, "limit_whitened_0.001": 8.575327523798162, "limit_whitened_0.0001": 8.568685731515666, "direction": "whitened 0.0001", "pile_own": 1}, {"cue": 5, "A_prime": 4566, "limit_filed": 3.38301534693608, "limit_whitened_0.01": 9.095356453119177, "limit_whitened_0.001": 9.070667057076344, "limit_whitened_0.0001": 9.072227442589407, "direction": "whitened 0.0001", "pile_own": 1}]}
+sae built/new_thin: 512 windows of 41 tokens, 1 read positions, 131080 variables, 16385 changed, 256 pairs
+    site 0 attn0: 308077 cases run of 4194560, 329 needed; 308077 cases in 23 s (13258/s)
+    site 1 mlp0: 1813721 cases run of 4194560, 3686 needed; 2121798 cases in 160 s (13284/s)
+    site 2 attn1: 229716 cases run of 4194560, 276 needed; 2351514 cases in 173 s (13594/s)
+    site 3 mlp1: 577886 cases run of 4194560, 478 needed; 2929400 cases in 206 s (14206/s)
+    site 4 attn2: 184229 cases run of 4194560, 189 needed; 3113629 cases in 214 s (14582/s)
+    site 5 mlp2: 516439 cases run of 4194560, 367 needed; 3630068 cases in 234 s (15515/s)
+    site 6 attn3: 203776 cases run of 4194560, 180 needed; 3833844 cases in 238 s (16080/s)
+    site 7 mlp3: 368615 cases run of 4194560, 160 needed; 4202459 cases in 246 s (17054/s)
+sae built/new_thin: E_b over K 0.010863 (leftovers dropped 0.067095, their share of dd 0.8533); |K| 5665 (3686 changed) of 131080; 265 s
+ITEM 10 of 12 DONE (sae built/new_thin)
+sae built/x2: 75 windows of 41 tokens, 41 read positions, 131080 variables, 16385 changed, 256 pairs
+    site 0 attn0: 295609 cases run of 4194560, 3535 needed; 295609 cases in 51 s (5814/s)
+    site 1 mlp0: 578413 cases run of 4194560, 11159 needed; 874022 cases in 150 s (5823/s)
+    site 2 attn1: 195784 cases run of 4194560, 2401 needed; 1069806 cases in 180 s (5949/s)
+    site 3 mlp1: 621150 cases run of 4194560, 7772 needed; 1690956 cases in 274 s (6168/s)
+    site 4 attn2: 211015 cases run of 4194560, 2355 needed; 1901971 cases in 302 s (6296/s)
+    site 5 mlp2: 571014 cases run of 4194560, 7640 needed; 2472985 cases in 378 s (6546/s)
+    site 6 attn3: 234456 cases run of 4194560, 2164 needed; 2707441 cases in 404 s (6696/s)
+    site 7 mlp3: 406011 cases run of 4194560, 6560 needed; 3113452 cases in 450 s (6912/s)
+sae built/x2: E_b over K 0.965873 (leftovers dropped 0.983603, their share of dd 0.0180); |K| 43586 (7772 changed) of 131080; 451 s
+ITEM 11 of 12 DONE (sae built/x2)
+sae built/rand_x2: 75 windows of 41 tokens, 41 read positions, 131080 variables, 16385 changed, 256 pairs
+    site 0 attn0: 295609 cases run of 4194560, 3510 needed; 295609 cases in 51 s (5831/s)
+    site 1 mlp0: 578413 cases run of 4194560, 11069 needed; 874022 cases in 150 s (5840/s)
+    site 2 attn1: 195784 cases run of 4194560, 2449 needed; 1069806 cases in 179 s (5964/s)
+    site 3 mlp1: 599283 cases run of 4194560, 8016 needed; 1669089 cases in 270 s (6173/s)
+    site 4 attn2: 196944 cases run of 4194560, 2450 needed; 1866033 cases in 296 s (6294/s)
+    site 5 mlp2: 552916 cases run of 4194560, 7730 needed; 2418949 cases in 370 s (6545/s)
+    site 6 attn3: 217172 cases run of 4194560, 2185 needed; 2636121 cases in 394 s (6690/s)
+    site 7 mlp3: 415864 cases run of 4194560, 6476 needed; 3051985 cases in 441 s (6922/s)
+sae built/rand_x2: E_b over K 0.040959 (leftovers dropped 0.136859, their share of dd 0.7084); |K| 43885 (8016 changed) of 131080; 442 s
+ITEM 12 of 12 DONE (sae built/rand_x2)
+STAGE 1 DONE (sae)
+peak host RSS 7.6 GB
+=== FINISHED (exit 0) -- results in /root/work/experiments/fig2_standard/results/items/sae /root/work/experiments/fig2_standard/results/large/sae /root/out/run_sae_s1_s1.log ===
