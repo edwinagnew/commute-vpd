@@ -108,7 +108,9 @@ Both passed: the share differed by 0.0001 and 0.0003, and pooled steering by les
 pairs; "after" is the rebuilt figure data, pooled steering throughout. Every matched share gap keeps its seed ranges apart.
 One reading differs from the unscaled series: on the half-known pair's own-step cipher, matched pooled steering reverses,
 while unscaled pooled steering points the same way as the share. So matched pooled steering reverses three of nine pairs,
-against two unscaled.
+against two unscaled. The third reversal comes from the size scaling alone: shrinking the cipher update raises its
+pooled steering share, because the update's gain falls faster than the part steering recovers (redteam-lead's
+recomputation). A sentence that quotes the matched count should say so.
 
 ### Did dropping the second variants move the prior?
 
