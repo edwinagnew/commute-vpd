@@ -1,0 +1,64 @@
+00:42:15 [E289] stage 0: Config(items=('E235:head.A.c0', 'E235:head.A.c1', 'E235:head.A.c2', 'E235:head.B.c0', 'E235:head.B.c1', 'E235:head.B.c2', 'E243:head-r4.A.c0', 'E243:head-r4.A.c1', 'E243:head-r5.A.c0', 'E212:planted'), ls_tokens=100000, block=512, boot=1000, boot_seed=0, chunks_a=(1, 25), chunks_b=(25, 49), jitter_q=0.99, jitter_factor=3, jitter_seed=0, energy_rel_tol=0.0001, plant_min_s=0.01, near_nu=-0.02, se_z=2, projected_limit_min=15)
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+00:42:45 [E235:head.A.c0] energy 210.992 against the run's 210.992
+00:42:51 [E235:head.A.c0] saved betas reproduced: q0.99 gap 0.00718, jitter floor 0.00826, bar 0.0248
+00:42:51 ITEM E235:head.A.c0 DONE at 0.6 min
+00:42:52 [E235:head.A.c1] energy 210.992 against the run's 210.992
+00:42:57 [E235:head.A.c1] saved betas reproduced: q0.99 gap 0.00711, jitter floor 0.00697, bar 0.0209
+00:42:57 ITEM E235:head.A.c1 DONE at 0.7 min
+00:42:58 [E235:head.A.c2] energy 210.992 against the run's 210.992
+00:43:04 [E235:head.A.c2] saved betas reproduced: q0.99 gap 0.00725, jitter floor 0.00712, bar 0.0213
+00:43:04 [E235:head.A.c2 plant] {"latent": 4123, "s": 0.36198028922080994, "target": "r", "beta": -0.005361217678253145, "se": 0.0007618997990310703, "z": -7.036644037800192, "frac_negative": 1.0}
+00:43:04 ITEM E235:head.A.c2 DONE at 0.8 min
+00:43:05 [E235:head.B.c0] energy 1084.32 against the run's 1084.32
+00:43:12 [E235:head.B.c0] saved betas reproduced: q0.99 gap 0.0154, jitter floor 0.0158, bar 0.0474
+00:43:12 [E235:head.B.c0 plant] {"latent": 5533, "s": 0.016649723052978516, "target": "eps", "beta": -0.0015982639486421192, "se": 0.000710705039864741, "z": -2.248842851805716, "frac_negative": 0.983}
+00:43:12 [E235:head.B.c0 clear] {"latent": 14640, "s": 0.012939277105033398, "target": "eps", "beta": -0.11496932953303304, "se": 0.0005828069867455651, "z": -197.26827602913585, "frac_negative": 1.0}
+00:43:12 ITEM E235:head.B.c0 DONE at 0.9 min
+00:43:13 [E235:head.B.c1] energy 1084.32 against the run's 1084.32
+00:43:21 [E235:head.B.c1] saved betas reproduced: q0.99 gap 0.0155, jitter floor 0.0149, bar 0.0447
+00:43:21 [E235:head.B.c1 plant] {"latent": 7076, "s": 0.01417834497988224, "target": "eps", "beta": -0.01791250295370253, "se": 0.0005402985752594286, "z": -33.15297092001715, "frac_negative": 1.0}
+00:43:21 [E235:head.B.c1 plant] {"latent": 9039, "s": 0.017198454588651657, "target": "eps", "beta": -0.010536891037384763, "se": 0.0004735371889947795, "z": -22.251454124970376, "frac_negative": 1.0}
+00:43:21 [E235:head.B.c1 plant] {"latent": 17235, "s": 0.015117677859961987, "target": "eps", "beta": -0.005760721208319057, "se": 0.00030473481538523755, "z": -18.9040467891288, "frac_negative": 1.0}
+00:43:21 [E235:head.B.c1 clear] {"latent": 998, "s": 0.03112315572798252, "target": "eps", "beta": -0.06484960362076311, "se": 0.00023131208983082654, "z": -280.35544388618774, "frac_negative": 1.0}
+00:43:21 [E235:head.B.c1 clear] {"latent": 7592, "s": 0.014064030721783638, "target": "eps", "beta": -0.06221895096598161, "se": 0.0005553715593927153, "z": -112.03121570362092, "frac_negative": 1.0}
+00:43:21 [E235:head.B.c1 clear] {"latent": 20037, "s": 0.015437187626957893, "target": "eps", "beta": -0.0504563040628634, "se": 0.00040172501870451994, "z": -125.5991081301696, "frac_negative": 1.0}
+00:43:21 ITEM E235:head.B.c1 DONE at 1.1 min
+00:43:22 [E235:head.B.c2] energy 1084.32 against the run's 1084.32
+00:43:29 [E235:head.B.c2] saved betas reproduced: q0.99 gap 0.0152, jitter floor 0.0154, bar 0.0462
+00:43:29 [E235:head.B.c2 clear] {"latent": 17561, "s": 0.016316397115588188, "target": "eps", "beta": -0.03725834890180013, "se": 0.00034782117813000315, "z": -107.11926485360327, "frac_negative": 1.0}
+00:43:29 ITEM E235:head.B.c2 DONE at 1.2 min
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+00:43:41 [E243:head-r4.A.c0] energy 2098.91 against the run's 2098.91
+00:43:46 [E243:head-r4.A.c0] saved betas reproduced: q0.99 gap 0.0313, jitter floor 0.0328, bar 0.0983
+00:43:46 [E243:head-r4.A.c0 plant] {"latent": 2304, "s": 0.4435059428215027, "target": "r", "beta": -0.005678917252872027, "se": 0.0006645896724337964, "z": -8.544997745865118, "frac_negative": 1.0}
+00:43:46 ITEM E243:head-r4.A.c0 DONE at 1.5 min
+00:43:48 [E243:head-r4.A.c1] energy 2098.91 against the run's 2098.91
+00:43:53 [E243:head-r4.A.c1] saved betas reproduced: q0.99 gap 0.032, jitter floor 0.033, bar 0.0989
+00:43:53 [E243:head-r4.A.c1 plant] {"latent": 6180, "s": 0.43810611963272095, "target": "r", "beta": -0.005885397900107612, "se": 0.0006759688303725407, "z": -8.706611363816945, "frac_negative": 1.0}
+00:43:53 [E243:head-r4.A.c1 clear] {"latent": 22913, "s": 0.011166203767061234, "target": "r", "beta": -0.022887864904288922, "se": 0.005744291715750346, "z": -3.98445379114929, "frac_negative": 1.0}
+00:43:53 ITEM E243:head-r4.A.c1 DONE at 1.6 min
+00:43:57 [E243:head-r5.A.c0] energy 20985.6 against the run's 20985.6
+00:44:02 [E243:head-r5.A.c0] saved betas reproduced: q0.99 gap 0.14, jitter floor 0.135, bar 0.406
+00:44:02 [E243:head-r5.A.c0 plant] {"latent": 8817, "s": 0.1779945194721222, "target": "r", "beta": -0.015289752965240008, "se": 0.001627786699659237, "z": -9.392970816410273, "frac_negative": 1.0}
+00:44:02 [E243:head-r5.A.c0 plant] {"latent": 19616, "s": 0.2788144648075104, "target": "r", "beta": -0.008353042017169294, "se": 0.0007754817624801921, "z": -10.77142290291147, "frac_negative": 1.0}
+00:44:02 ITEM E243:head-r5.A.c0 DONE at 1.8 min
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+00:44:34 [job] Cfg(d=768, expansion=32, k=100, k_max=1024, k_anneal_steps=2000, lr=0.0001, warmup=1000, batch=2048, tokens=200000000, epochs=2, aux_alpha=0.03125, dead_tokens=10000000, init_norm=1.0, target_rms=100.0, chunk_rows=1024, ls_tokens=100000, val_rows=8192, alive_min=10, top_n=1667, top_n_wide=5000, nu_r=0.5, nu_eps=0.2, shared=(0.4, 0.6), base_only=0.1, snapshots=(0.125, 0.25, 0.5), ckpt_every=10000, log_every=500, pile_start=32768, pool_start=131072, pool_rows=65536, repeat_cap=100)
+[job] stream {"per_chunk": {"L1": 533, "L3": 533, "T1": 239, "T2": 239, "T3": 239, "T4": 239}, "chunk_tokens": 1048024, "task_share": 0.5007137241131883, "chunks": 192, "tokens": 201220608, "plant_every": 35}
+00:44:34 [check self path: a zero update gives W0's activations] ok {"max_abs": 0.0, "bar": 1e-05}
+00:44:40 [E212:planted] saved betas reproduced: q0.99 gap 0.00508, jitter floor 0.00586, bar 0.0176
+00:44:40 [E212:planted plant] {"latent": 4899, "s": 0.7663483023643494, "target": "r", "beta": -0.0042722906646528004, "se": 0.0014151191947102378, "z": -3.0190323759459723, "frac_negative": 0.998}
+00:44:40 ITEM E212:planted DONE at 2.4 min
+00:44:40 STAGE 0 DONE in 2.4 min; peak GPU 27.1 GB
+peak host RSS 8.6 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/crosscoder_proper/results/refit/stage0.json ===

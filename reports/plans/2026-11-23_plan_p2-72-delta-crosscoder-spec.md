@@ -27,7 +27,12 @@ paper's text, specified in §3 so that it does not inherit unstated behaviour fr
 - *d_i^base*, *d_i^ft*: latent *i*'s two decoder vectors.
 - *R_i*: the paper's relative decoder norm, eq. 4, with the paper's sum denominator. We read the fine-tune side as 1 − R_i.
 - *M*: the original 67M model. *F*: a changed model (a fine-tune, a planted change or a random update).
-- *KL gap*: the mean per-token KL divergence between F's and M's next-token distributions on a side's read windows, in nats.
+- *Behaviour g*: the side's own behaviour at its read positions, in nats (§3.7).
+  - For a trained side, its task's filed answer readout: the mean answer log-odds on score-half windows.
+  - For a planted change, the mean per-token KL from F to M at the plant's read positions.
+  - For a random update, its matched side's g.
+- *KL gap*: the mean per-token KL divergence between F's and M's next-token distributions on a side's read windows, in
+  nats. A diagnostic only.
 
 ## 1. Plain answers
 
@@ -48,7 +53,8 @@ one of the top three non-shared latents passes both the steering test and the to
 against latents of the same crosscoder drawn from the shared bulk. Beside it, as description only, we report:
 - the tail value of the top three latents, against the null runs' tail;
 - whether adding the same latent to the base model moves it toward F, which is the paper's own "already present in the
-  base model" check.
+  base model" check. Wherever it is shown, it carries the caveat that it is weak evidence of reuse, because the added
+  vector can carry the learned content itself.
 
 There is no reuse label and no share. A random update matched to each fine-tune gets the same yes or no. How often
 random updates read yes is the method's false-recovery rate here.
@@ -191,48 +197,88 @@ decoder. C0a alone uses paired init (both decoders equal), as a wiring check.
 
 **3.5 Data, counted per source, 204.8M tokens per fit.** All rows of every source pass through both M and F on the same
 tokens, so Δ exists per token. This is our resolution of "unpaired activations": the encoder needs a matched pair (eq. 1).
-- **𝒟C, 20.0M tokens.** Following §4.2's counts, M continues 100,000 prompts and F continues another 100,000. Each prompt
-  is the first 32 tokens of a Pile train row from 196,608 onward. That is past E235's pool, so it is disjoint from every
-  crosscoder fill and from every scored row. Each continuation is 68 sampled tokens at temperature 0.7 and top-p 0.9,
-  Appendix C's settings. Each sequence of 100 tokens is a training row. M's 100,000 continuations are made once and
-  reused by every fit. On C0, M also makes F's half.
-- **𝒟F, 40.96M tokens (20%).** These are the side's own fit-half task windows, each drawn at most 100 times, E235's
-  repeat cap. Where the cap cannot fill the quota, Pile fills the rest. The realised count is written to the fit's record.
-  C0 has no 𝒟F, which Appendix F.1 allows; Pile fills it. A planted change uses the text its plant was read on in
-  E243/E212. A random update uses its matched side's windows.
-- **𝒟pre, the rest (143.84M or more).** These are Pile train rows from 32,768 to 196,607, E235's Pile range, at most 2
-  passes, truncated to 512, the model's context.
-- **Held out from training.** Steering and top-activation reads use each side's score-half task windows and Pile
-  validation rows, neither of which any fit sees.
+Before extracting anything, the code asserts a ledger:
+- 𝒟C + 𝒟F realised + 𝒟pre = 204,800,000 tokens exactly, which is 50,000 × 4,096;
+- every row range below is disjoint from every other, checked by row id.
+
+The ranges, in rows of `danbraunai/pile-uncopyrighted-tok-shuffled` at 512 tokens a row:
+
+| source | rows | tokens available | used per fit |
+|---|---|---|---|
+| task windows (all tasks, both halves) | train, below 32,768 (where every task window was cut) | per task | 𝒟F only |
+| E235's Pile fill and key-value pool | train 32,768-196,607 | not used here | 0 |
+| 𝒟C prompts | train 196,608-396,607, the first 32 tokens of each | 200,000 prompts | 6.4M, inside 𝒟C's 20.0M |
+| 𝒟pre | train 400,000-761,999, one pass, no repeats | 185.34M | 143.84M to 184.8M |
+| Pile reads for scoring | validation 0-999 and 2,000-4,351 | 1.72M | 0 (held out) |
+| heads' score windows | validation 1,000-1,999 | 512 windows of 32 tokens | 0 (held out) |
+
+- **𝒟C, 20.0M tokens.** Following §4.2's counts, M continues 100,000 prompts and F continues the other 100,000. Each
+  continuation is 68 tokens sampled at temperature 0.7 and top-p 0.9, Appendix C's settings. Each sequence of 100 tokens
+  is a training row. M's 100,000 continuations are made once and reused by every fit. On C0, M makes F's half too.
+- **𝒟F, quota 40.96M (20%).** This is the side's fit-half read windows, each drawn at most 100 times (E235's repeat cap).
+  Where the cap cannot fill the quota, 𝒟pre fills the shortfall, and the realised count is written to the fit's record.
+  - C0 has no 𝒟F, which Appendix F.1 allows; 𝒟pre then supplies 184.8M of its 185.34M.
+  - Planted changes keep their experiments' own fit and score sets. No old score set is split.
+    - The grafted heads (E243 rungs, E235's block-3 head) train on graft windows from Pile train rows 0-16,383, 32
+      tokens each. They are scored on `graft_read()`: 512 windows of 32 tokens cut from Pile validation rows 1,000-1,999,
+      seed 201005. The code is `experiments/crosscoder_proper/run.py` 214-222, and the settings are
+      `results/predictions.json` 45-47 and 63.
+    - E212's planted direction trains on its `units` tensors and is scored on its separate `reads` tensors
+      (`experiments/realistic_tasks/run3.py` 100-105 and 133-145).
+  - A random update uses its matched side's fit half.
+- **Scoring sources, never trained on.** Each side's score set, plus Pile validation rows 0-255 for the Pile loss. The
+  top-activation set's Pile background is validation rows 256-999 and 2,000-4,351, about 1.59M tokens. It leaves out the
+  heads' score rows, 1,000-1,999.
+- **Moving the data.** 𝒟pre is built once on the cluster as uint16, about 370 MB, and synced to each pod, about 37 s.
 
 **3.6 Generation.** `LlamaSimpleMLP.generate` (`~/param-decomp/param_decomp/pretrain/models/llama_simple_mlp.py` 442-487)
 has no key-value cache and no top-p, and recomputes the whole prefix each step. We would write a sampler that calls the
 model's forward on the growing prefix, the same work as theirs, and adds nucleus sampling at top-p 0.9. That costs about
-4,500 token-forwards per sequence. A KV cache is not added: it would be new model code for a step that is cheap at this
-size. Its price comes from a rehearsal benchmark (§5).
+4,500 token-forwards per sequence, including the LM head on every position. A KV cache is not added: it would be new
+model code. The rehearsal benchmarks the sampler at full batch on the card. Until then it is priced in §5 at the measured
+streaming rate per token-forward of one model, without halving that rate.
 
 **3.7 The recovery rule, per side: yes or no.** It is our written form of §6.1's "supports causal validation via
 steering and max-activation analysis".
 - **Candidates.** The top three alive non-shared latents by 1 − R_i, with R_i computed as in eq. 4 with its sum
   denominator. This is not the repo's `relative_norm()`, which uses a max denominator. On C1 the top three of the other
   tail, by R_i, are read too, as description.
-- **Bulk pool.** 60 alive non-shared latents with |R_i − 0.5| under the median deviation of all non-shared latents. Each
-  is matched to a candidate on ‖d^ft‖ within a factor of 1.5 and on firing rate within a factor of 2, drawn with a fixed
-  seed. Every test below runs the same search on each bulk latent as on each candidate. A candidate passes a test only if
-  it beats the bulk maximum on it. If latents were exchangeable, that is a 1/61 chance per candidate per test.
-- **Steering vector.** The vector is v_i = d_i^ft, taken to raw units and scaled to unit length. It is added at the site at
-  every position, for both signs, at strength s·ρ/100, with s from Appendix C's ten nonzero values. ρ is the median
-  per-token norm of M's activation at the site on Pile validation rows. The scaling is ours, standing for "model-specific
-  normalization factors".
-- **Steering test.** On the fit half of the side's read windows, take the largest |s| at which F's Pile validation loss
-  rises by no more than F's own rise over M. Read the KL gap on the score half at −s and at +s. The pass statistic is the
-  suppression: the unsteered KL gap minus the KL gap at −s, in nats, absolute, not as a fraction. A null side with no
-  gap therefore cannot pass, rather than being undefined. The other three reads are reported: F at +s, and M at +s and −s
-  (the paper's base-model check, measured as the KL from M steered to F).
-- **Top-activation test.** On a held-out set with equal tokens of Pile validation and score-half read windows, find the
-  candidate's 50 most activating tokens. The statistic is the share of those 50 that lie on read windows. For each
-  candidate, the 20 top contexts (token ids and decoded text) are saved for a reader.
-- **Yes** when one candidate passes both tests; otherwise **no**.
+- **Bulk pool, one per candidate.** Each candidate gets its own pool of 60 alive non-shared latents with |R_i − 0.5|
+  under the median deviation of all non-shared latents. They are drawn with a fixed seed and matched to that candidate on
+  ‖d^ft‖ within a factor of 1.5 and on firing rate within a factor of 2.
+  - Pools may overlap, so a fit scores up to 183 distinct latents (3 candidates and 180 bulk).
+  - If fewer than 60 latents qualify, the factors widen to 2 and 4, then to 3 and 8.
+  - If fewer than 20 qualify even then, the candidate is "not scored": it has no usable floor and cannot pass.
+- **Matched search.** Every test runs the same search on each bulk latent as on its candidate. A candidate passes a test
+  only if it beats its pool's maximum. If latents were exchangeable, that is a 1/61 chance per candidate per test.
+- **Steering vector and strengths.** The vector is v_i = d_i^ft, taken to raw units and scaled to unit length. It is added
+  at the site at every position, at strength s·ρ/100, for each of Appendix C's ten nonzero values of s.
+  - ρ is the median per-token norm of M's activation at the site on Pile validation rows. That scaling is ours, standing
+    for "model-specific normalization factors".
+  - The grid is read uncapped, as Appendix C gives it; the paper states no cap on the strength. The first draft's cap at
+    F's own Pile-loss rise was ours. It went to about 0 for updates of fine-tune size and would have failed them by
+    construction, so it is dropped.
+  - F's Pile-loss rise at each s is recorded beside every read. Because every strength is read, no case can be left
+    without one.
+- **Steering test (causal, behaviour-specific).** The read is the side's own behaviour g on the score half.
+  - The pass statistic is the largest suppression, over negative s, of F's behaviour: g at s = 0 minus g at that s.
+    This is in absolute nats, not a fraction.
+  - The induce direction is reported beside it: M's g at positive s, minus M's g unsteered. This is the paper's
+    base-model check, and it carries the caveat in §1.
+  - The generic KL gap at each s is a diagnostic only.
+- **Top-activation test (consistent with the behaviour).** The held-out set has equal tokens of Pile validation rows and
+  score-half read windows. Find the candidate's 50 most activating tokens there.
+  - The statistic is the share of those 50 that fall on the side's behaviour positions. For a task these are the answer
+    positions and the tokens just before them. For a plant they are its read positions.
+  - Plain enrichment on read windows is a diagnostic only.
+  - The 20 top contexts per candidate (token ids and decoded text) are saved for a reader.
+- **The label per side has three values.** Every side gets one, trained sides included.
+  - **Yes**: one scored candidate passes both tests.
+  - **No**, a calibrated no: at least one candidate is scored against a floor, and none passes both tests.
+  - **Not scored**: no candidate has a usable floor. This is not a no, and it is reported apart.
+- **The differential null on C0b.** Here F = M and the readout is E62's copy task. The steering test asks whether a
+  top-tail latent moves M's own copy log-odds more than its matched bulk, in absolute nats. Its result is not fixed in
+  advance, as the old KL-gap null's was.
 
 ## 4. Departures
 
@@ -260,22 +306,24 @@ means the 67M setting leaves no faithful option.
 | prompts | "a general corpus" | Pile train rows past E235's pool, 32 tokens | y | ours | y (Pile model) |
 | responses | §4.2: one model per prompt | 100k by M and 100k by F, 68 tokens, T 0.7, top-p 0.9 | y | theirs (§4.2 counts) / ours | y (no chat model) |
 | LMSYS | instruction data | dropped | y | ours | y |
-| FineWeb | pretraining text | Pile, E235's range | y | ours | y |
-| 𝒟F | when available | 20% quota, repeat cap 100, Pile fill | n / quota ours | ours | n |
+| FineWeb | pretraining text | Pile train rows 400,000-761,999, one pass | y | ours | y |
+| 𝒟F | when available | 20% quota, repeat cap 100, 𝒟pre fill, fit half only | n / quota ours | ours | n |
+| token ledger | about 200M | 204.8M exactly, asserted, disjoint row ranges | n | theirs (size) / ours | n |
 | length | 1024 | 512 | y | ours | y |
 | site | a middle layer | block 2's input; block 3's output only for the block-3 control | n | theirs | n |
 | size | expansion 5 | 3,840 latents | n | theirs | n |
 | selection | top-3, "right tail" | top-3 by 1 − R (sum denominator); other tail read on C1 | ? | ours (reading) | n |
 | steering vector | "the latent's decoder vector" | d^ft, unit length, s·ρ/100 | ? | ours | n |
 | steering prompts | nine chat prompts | the side's score-half read windows | y | ours | y |
-| steering read | judged text | KL gap in nats, both signs, both models | y | ours | y (no chat text) |
-| top activations | inspected by a reader | share of top-50 on read windows, beside bulk; 20 contexts saved | y | ours | y (no grader) |
-| success | qualitative, per organism | §3.7 rule against 60 bulk latents | y | ours | n |
+| steering strengths | 11 values, no cap stated | the same grid, uncapped, Pile-loss rise recorded | n | theirs | n |
+| steering read | judged text, on the behaviour | the side's behaviour g in nats, both signs, both models; KL gap as a diagnostic | y | ours | y (no chat text) |
+| top activations | inspected for consistency with the behaviour | share of top-50 on behaviour positions, against the pool; 20 contexts saved | y | ours | y (no grader) |
+| success | qualitative, per organism | §3.7 rule, one 60-latent pool per candidate, widened or "not scored"; yes / no / not scored | y | ours | n |
 | controls | identical models | C0a/C0b, plants, random updates | y (added) | ours | n |
 
 ## 5. Proposed run
 
-**Run 1, controls, one H100 pod pair, not gated.** Nine fits, in this order:
+**Run 1, controls, two H100 pods, not gated.** M's 200,000 continuations are generated first. Then nine fits, in this order:
 - **C0a**, alone and first: identical models, paired init, at site A. A wiring check only.
   - Expected: ℒ_Δ = 0 at every step, because Δ = 0 and the two decoders stay equal. Every R_i equals 0.5 exactly by symmetry.
   - The bar is one number, filed after the rehearsal measures the deviation under bf16 on the same kernels. Any deviation
@@ -283,11 +331,12 @@ means the 67M setting leaves no faithful option.
   - The recovery rule is not read: every latent ties.
 - **C0b**: identical models with independent init, at site A. This is the null band under the scored recipe.
   - Expected: a tail near the paper's 0.492-0.506, reported beside, unscored.
-  - Recovery reads no, because the KL gap is 0 and cannot be suppressed.
+  - Recovery is read with the differential null of §3.7, on E62's copy behaviour in absolute nats. The paper's §7.1
+    gives the expected result: "none support causal validation". Lean: "no", medium.
 - **C2**: one random update at each of sites A and B (two fits). Each is E235's Gaussian, matched to elicit's activation change.
   - This is the null that the steering and top-activation tests can actually fail. The paper never ran one, so there is
     no prior; the lean is "no" at low confidence. It plays the role of E235's G1.
-  - A "yes" is reported to whip-lead before C1 continues; it does not cancel C1.
+  - A "yes" is reported to whip-lead before C1 continues. It does not cancel C1, but at site A it closes run 2 (below).
 - **C1**: planted changes, all at site A except the block-3 head (five fits). Lean, filed before the run: recovery "yes"
   at medium confidence on rung 5 and on E212's plant. The pass is a §3.7 yes, not a share. The planted direction's cosine
   with the top latent's d^ft − d^base is reported beside the bulk maximum, with no bar.
@@ -298,8 +347,13 @@ means the 67M setting leaves no faithful option.
   - Rung 5 again with tied shared decoders, the other reading of the shared-latent ambiguity. Reported only.
 
 **What gates what.**
-- Run 2 runs at site A only if C0a passes and rung 5 or E212's plant reads yes. If neither does, site A reads "not
-  applicable at this update size", as E235 did, and run 2 does not run.
+- Run 2 runs at site A only if three things hold: C0a passes, rung 5 or E212's plant reads yes, and C2 at site A reads
+  a calibrated no.
+  - If no plant reads yes, site A reads "not applicable at this update size", as E235 did, and run 2 does not run.
+  - If C2 at site A is "not scored", the null was not read, and run 2 does not run.
+  - If a plant reads yes and C2 at site A reads yes as well, the yes does not tell a planted change from any change.
+    Site A then reads "does not separate a plant from a random update", and run 2 does not run.
+  - C2 is one random update, so it is a weak null. Run 2's matched random updates give the false-recovery rate afterwards.
 - Rung 1 decides how a "no" on a trained side reads. If rung 1 reads no, a trained side's "no" means "below the method's
   reach".
 - The block-3 head and C2 at site B gate nothing; run 2 does not read site B.
@@ -311,39 +365,86 @@ means the 67M setting leaves no faithful option.
   at least 0.89 and the paper's at least 0.72, so FVE is not otherwise a gate.
 - Expected at 1k steps: FVE at least 0.5, and ℒ_Δ falling. The rehearsal fills in the step-1 values first.
 
-**Run 2, gated, only if run 1 opens site A.** This is 48 fits, one per side, read by §3.7 only:
+**Run 2, gated, only if run 1 opens site A.** The default is 39 fits, one per side, read by §3.7 only:
 - E62 copy and lookup, three saved seeds each (6), each with one matched random update (6);
-- the nine built pairs, 18 sides, each with one matched random update (18).
+- the nine built pairs, 18 sides, with one matched random update per pair (9).
 
-The output is a yes or no per side, with the tail and the steering table. There is no pair call and no reuse label. Each
-side is a single fit, so the comparison is descriptive: E235's every-seed rule needs two or more values per side and is
-not used. If cost matters, one random update per pair instead of per side gives 39 fits.
+The fuller form gives each built-pair side its own random update (18), for 48 fits. It costs more than the session's
+headroom allows (below) and needs the user's confirmation. The output is the three-way label of §3.7 per side, with the tail and the
+steering table. There is no pair call and no reuse label. Each side is a single fit, so the comparison is descriptive:
+E235's every-seed rule needs two or more values per side and is not used.
+
+**Run 2, trimmed option (for the user, beside the 39- and 48-fit forms).** E62, plus one built side of each kind, and
+every side gets a matched random update. That is 18 fits:
+- E62 copy and lookup, three saved seeds each (6), each with one matched random update (6);
+- one strengthening side, copy maps (E203's "Copy maps vs random maps"), with its matched random update (2);
+- one new side, the cipher of "Copy vs cipher, step 10", with its matched random update (2);
+- one random-kind side, the random maps of "Copy maps vs random maps", with its matched random update (2).
+
+Whip-lead may swap in other sides of the same kinds; the count stays the same.
+
+Cost, from the per-item rates above:
+- Generation: 18 × 19 min = 5.7 h.
+- Fits at site A: 18 × 39 min = 11.7 h.
+- Set-up: 6 pods × 18 min = 1.8 h.
+- Uploads: 9 trained sides × 270 MB plus 6 × 370 MB of Pile, about 4.7 GB, 8 min. Downloads: about 0.9 GB, 2 min.
+- About 19.4 pod-hours, about $93, and about 3.2 h of wall time on 6 pods (two runners, 4 and 2). Run 1 plus this
+  option is about $137.
+- Gated on cost (over $60), not on time.
+
+What it cannot say that the 39- and 48-fit runs can:
+- There is one side per kind, so it cannot show whether a yes or a no follows the kind or the particular task.
+- It cannot give a tally over the nine pairs to set beside BatchTopK's 4-6 of 9.
+- Its false-recovery rate rests on 9 random updates (15 in the 39-fit run, 24 in the 48-fit run). The 48-fit run alone
+  also matches a random update to every built side.
 
 **Time and cost, per item times the count.**
 - **Measured** (E235 `run1/timing.json`, H100 alone): streaming took 2.6 s per 1.05M tokens through both models at site A
-  and 4.34 s per chunk at site B. That is 8.5 min and 14.1 min for 204.8M tokens. E212's two H100 pods came to $8.03 for
-  about 50 min each, about $4.8 per pod-hour with set-up. The sync speed of 10 MB/s is from the root `CLAUDE.md`.
-- **Derived from measured rates**, to be replaced by the rehearsal's benchmark:
-  - Training per fit takes 4-7 min, scaled from 11.65 ms per step at 0.31 of the work plus 30% for the delta decode.
-  - Generating 100,000 sequences is about 0.45B token-forwards per model. At half the streaming rate that is about 9 min,
-    and short sequences may run slower.
-  - Scoring is about 5 min per fit: 63 latents, 10 strengths, two models, about 0.2M read tokens each.
+  and 4.34 s per chunk at site B. That is 8.5 min and 14.1 min for 204.8M tokens. Training took 11.65 ms per step.
+  E212's two H100 pods came to $8.03 for about 50 min each, about $4.8 per pod-hour with set-up. The sync speed of
+  10 MB/s is from the root `CLAUDE.md`.
+- **Derived from measured rates**, each to be replaced by the rehearsal's measurement. Every forward pass is priced at
+  the measured pair rate, 2.6 s per 1.05M tokens, not halved. The stream may skip the LM head that generation and
+  scoring run, so halving was not justified.
+  - Training: 4-7 min per fit. This scales 11.65 ms per step by 0.31 of the work, plus 30% for the delta decode.
+  - Generation: 100,000 sequences are about 0.45B token-forwards, so about 19 min, before the top-p overhead.
+  - Scoring: up to 183 latents × 10 strengths, read on F and on M with the Pile-loss read beside each. At up to 0.1M
+    score tokens per read that is about 549M token-forwards, or about 23 min. The top-activation encode adds about 1 min,
+    so scoring is about 24 min per fit.
+  - Per fit: about 39 min at site A and about 44 min at site B.
 - **Rehearsal ($0, cluster debug, before run 1):** every stage at tiny size, with a resume and the downloads. It
-  measures ms per step, generated tokens per second, the C0a bf16 deviation, step-1 losses and peak memory. Those numbers
-  go into this plan before run 1.
-- **Run 1 total:**
-  - Fits: 7 at site A × (8.5 + 4-7 + 5) ≈ 2.3 h, plus 2 at site B × 25 min ≈ 0.8 h.
-  - Generation: M's 200,000 once, about 19 min, plus 6 changed models × 9 min.
-  - Set-up is about 15 min per pod. Uploads are 6 changed models × 270 MB ≈ 1.6 GB ≈ 3 min. Downloads are about 50 MB
-    per fit.
-  - That is about 4.9 pod-hours, about $24, and about 3 h of wall time on two pods with C0a alone first. Stage caps:
-    60 min per fit and $40 for the run. Not gated.
-- **Run 2 total:**
-  - Fits: 48 × 19.5 min ≈ 15.6 h. Generation: 48 changed models × 9 min ≈ 7.2 h, with M's continuations reused.
-  - Set-up: 8 pods × 0.3 h. Uploads: 24 trained sides × 270 MB ≈ 6.5 GB ≈ 11 min, spread over the pods. Random updates
-    are rebuilt on the pod from their seeds.
-  - That is about 25 pod-hours, about $120, and about 3.5 h of wall time on 8 pods (2 runners of 4). Gated on cost (over
-    $60), not on time. It needs the gates in `.claude/CLAUDE.md`, with gate 6 from whip-lead.
+  measures:
+  - ms per step, and the sampler's tokens per second at full batch on the card;
+  - one full-size steering and scoring slice, one candidate with its 60-latent pool, timed;
+  - peak memory in every stage, the C0a bf16 deviation and the step-1 losses.
+
+  Those numbers replace the derived ones in this plan before run 1, and a stage cap that no longer fits is reset then.
+
+| item | count, run 1 | count, run 2 (48 fits) | count, run 2 (39 fits) | per item | source |
+|---|---|---|---|---|---|
+| M's continuations, 200k | 1 | 0 (reused) | 0 | 37 min | derived |
+| changed model's continuations, 100k | 6 | 48 | 39 | 19 min | derived |
+| fit at site A | 7 | 48 | 39 | 39 min | stream measured; rest derived |
+| fit at site B | 2 | 0 | 0 | 44 min | stream measured; rest derived |
+| pod set-up | 2 × 15 min | 8 × 18 min | 8 × 18 min | | E212, measured |
+| uploads (weights 270 MB each, 𝒟pre 370 MB per pod) | 2.4 GB, 4 min | 9.5 GB, 16 min | 9.5 GB, 16 min | 10 MB/s | measured |
+| downloads (about 50 MB per fit) | 0.45 GB, 1 min | 2.4 GB, 4 min | 2 GB, 3 min | 10 MB/s | measured |
+| **pod-hours** | **about 9.1** | **about 49** | **about 40.5** | $4.8 per pod-hour | |
+| **cost** | **about $44** | **about $236** | **about $194** | | |
+| **wall time** | about 4.4 h on 2 pods | about 6.1 h on 8 pods, 4.1 h on 12 | about 5 h on 8 pods | | |
+
+- **Run 1.** First, pod A generates M's continuations; meanwhile pod B generates the six changed models' continuations.
+  C0a then runs alone on pod A. The other eight fits split over the two pods.
+  - Stage caps: 30 min per 100k continuations, 60 min per fit, $55 for the run.
+  - Not gated: under $60 and under 6 h. The $55 cap keeps it under the gate. If the rehearsal prices it over $60, it
+    becomes gated and goes to whip-lead first.
+- **Run 2.** This is gated on cost. It needs the gates in `.claude/CLAUDE.md`, with gate 6 from whip-lead.
+  - With 48 fits it runs 6.1 h on 8 pods, so it is also gated on time unless it runs on 12 pods (three runners of 4).
+  - Run 1 and the 48-fit run 2 together, about $280, pass the session budget's 15% headroom ($255 of $300). That needs
+    the user's explicit confirmation.
+  - The 39-fit form (one random update per pair) totals about $238, inside the headroom. It is the default.
+  - Random updates are rebuilt on the pod from their seeds. The largest lever is generation, about 40% of run 2. A KV-cache
+    sampler would cut it, but that is new model code, and the rehearsal decides whether it is worth writing.
 
 ## Not run
 
@@ -418,3 +519,48 @@ Nothing has run. No code exists. The paper's LLM-grader comparison is not propos
   - Fixed: gradient checkpointing is a row.
   - Fixed: rung 5's literal reading is about 3e-5.
 - Rejected: none.
+
+## Review response, second round (2026-11-23)
+
+**redteam-lead, re-check.**
+1. C2 at site A. Fixed in §5: run 2 opens only if C0a passes, rung 5 or E212's plant reads yes, and C2 at site A reads no.
+   Plant yes with C2 yes reads "does not separate a plant from a random update".
+2. The steering cap. It was ours; Appendix C states no cap. Fixed: the cap is dropped and the paper's grid is read
+   uncapped (row "steering strengths", theirs), with F's Pile-loss rise recorded beside each read. Filed before run 1.
+- Minor: the weak-evidence caveat now goes with the base-model read wherever it is shown (§1, §3.7).
+
+**GPT plan-reviewer, re-check.**
+- (a) The token ledger.
+  - Fixed in §3.5: 𝒟pre moves to Pile train rows 400,000-761,999, which hold 185.34M tokens, one pass. That covers C0's
+    184.8M.
+  - The code asserts the 204.8M ledger and range disjointness before extraction.
+  - The first draft's range overlapped E235's key-value pool; it is now unused.
+  - The plants use their saved fit and score halves.
+- (b) Behavioural recovery. Fixed in §3.7.
+  - The causal test reads the side's own behaviour g: a task's filed answer readout, or a plant's KL at its read
+    positions.
+  - Top activations must fall on behaviour positions. The KL gap and plain enrichment are diagnostics only.
+  - Edge cases: the uncapped grid always gives a strength to read. Under 60 matches the pool widens, and under 20 the
+    candidate is "no floor" and cannot pass.
+  - C0b now reads a differential null on E62's copy behaviour in absolute nats, whose result is not fixed in advance.
+- (c) Cost. Fixed in §5.
+  - Every forward pass is priced at the pair rate, so generation is 19 min per 100k.
+  - Scoring counts up to 183 distinct latents, about 24 min per fit.
+  - The rehearsal times the sampler, a full-size scoring slice and peak memory.
+  - Run 1 is repriced at about $44 with caps of $55 and 60 min per fit.
+  - Run 2 is repriced at about $194 for 39 fits, the new default, or $236 for 48. The 48-fit form exceeds the session
+    headroom and needs the user's confirmation.
+- Rejected: none.
+
+## Review response, third round (2026-11-23)
+
+**GPT plan-reviewer, narrow fixes.**
+1. "Not scored" against a calibrated no. Fixed in §3.7: every side, trained sides included, gets yes, no or not scored.
+   - A no needs at least one candidate scored against a floor with none passing. "Not scored" means no candidate has a
+     usable floor.
+   - Fixed in §5: run 2 opens only on a calibrated no from C2 at site A. A C2 that is "not scored" does not open it.
+2. Plant sources. Fixed in §3.5: no old score set is split.
+   - The heads train on graft windows from Pile train rows 0-16,383 and are scored on `graft_read()`, validation rows
+     1,000-1,999.
+   - E212 trains on `units` and is scored on `reads`.
+   - The top-activation Pile background now leaves out validation rows 1,000-1,999.
