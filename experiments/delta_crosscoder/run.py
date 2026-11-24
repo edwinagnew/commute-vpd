@@ -513,6 +513,7 @@ class Job:
         e = torch.tensor(early)
         fve, first, last = float(e[-100:, 1].mean()), float(e[:100, 0].mean()), float(e[-100:, 0].mean())
         out.check(f"batch FVE over the 100 steps before {step}", fve >= th["fve_check"], {"fve": fve, "bar": th["fve_check"]})
+        out.d["delta_first_last_100"] = [first, last]  # recorded on every fit; a stop only where filed
         if not C0a and th["check_delta_falling"]:  # C0a's delta loss is 0 at every step, checked each step
             out.check(f"delta loss falling by step {step}", last < first, {"first_100": first, "last_100": last})
         proj = (time.time() - t_item) / 60 + s_per_step * (sz.steps - step) / 60 + th["score_budget_min"]
