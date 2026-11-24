@@ -150,7 +150,9 @@ pod's hours × rate; `status()`'s cost is the whole session's, all pods together
   64–82 s to 22 s each.
 - On Vast (`start(runtime="vast")`), the kernel lacks the machine's variables (`WANDB_API_KEY`, `COMMUTE_CACHE_DIR`,
   `HF_HOME`, `UV_CACHE_DIR`) and `pod_setup.sh` does not add them to it (an `--upload` run then fails at once,
-  friction 737), so make this your first cell, before anything that needs them; names only, never print a value:
+  friction 737), so make this your first cell, before anything that needs them; names only, never print a value.
+  After set-up, every `.venv/bin/python` gets `COMMUTE_CACHE_DIR` and `HF_HOME` by default (a `.pth` it writes,
+  friction 1027); a launch wrapper still needs `source cluster/pod_env.sh` for `WANDB_API_KEY`:
 
       import os
       os.environ.update(e.decode().split("=", 1) for e in open("/proc/1/environ", "rb").read().split(b"\0")

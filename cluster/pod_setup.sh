@@ -43,6 +43,12 @@
 # matches the runner's own shell, whose command line names this script, and kills it too (friction 863).
 # Defaults this script sets for every later `.venv/bin/python` on the pod (a .pth file in the pod's own venv):
 #   PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True unless already set (friction 776: E178 CUDA OOM from fragmentation).
+#   COMMUTE_CACHE_DIR and HF_HOME, the machine's values (PID 1's, via pod_env.sh), unless already set: on Vast the
+#   kernel and the launch wrapper lack them, and a run then looked for artifacts/vpd in the synced tree (friction 1027).
+#   WANDB_API_KEY is not written to a file: a run that uploads still sources cluster/pod_env.sh in its wrapper.
+# rsync is needed by the first sync(), before this script can run, so it cannot install it: on a fresh RunPod pod whose
+# `apt-get update` hangs, kill it from a kernel after 2 min and `apt-get install -y rsync` (friction 1028; shell notes →
+# Pods → Set-up).
 # Lint: pyright's nodeenv cannot install node on pods (it parses a "0-alpha" version), so the pod venv gets the
 # nodejs-wheel-binaries package, which pyright uses instead of nodeenv (friction 788, 796).
 set -Eeuo pipefail  # -E: the ERR trap also fires in functions and subshells
@@ -92,8 +98,14 @@ case $vpd in
   *) step "FAILED (exit $vpd): VPD fetch (python -m commute.vpd_files)"; exit "$vpd" ;;
 esac
 site=$(.venv/bin/python -c 'import sysconfig; print(sysconfig.get_paths()["purelib"])')
-echo "import os; os.environ.setdefault('PYTORCH_CUDA_ALLOC_CONF', 'expandable_segments:True')" > "$site/commute_pod_env.pth"
-step "PYTORCH_CUDA_ALLOC_CONF default expandable_segments:True (via $site/commute_pod_env.pth)"
+pth="import os; os.environ.setdefault('PYTORCH_CUDA_ALLOC_CONF', 'expandable_segments:True')"
+# COMMUTE_CACHE_DIR and HF_HOME (paths, not secrets) as pod_env.sh read them from PID 1: on Vast the kernel and a launch
+# wrapper lack them, and a launch missed artifacts/vpd (friction 1027). WANDB_API_KEY is a secret and stays out.
+for v in COMMUTE_CACHE_DIR HF_HOME; do
+  if [[ -n "${!v:-}" ]]; then pth+="; os.environ.setdefault('$v', '${!v}')"; fi
+done
+echo "$pth" > "$site/commute_pod_env.pth"
+step "defaults for every .venv/bin/python: PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True${COMMUTE_CACHE_DIR:+, COMMUTE_CACHE_DIR=$COMMUTE_CACHE_DIR}${HF_HOME:+, HF_HOME=$HF_HOME} (via $site/commute_pod_env.pth)"
 if uv pip install -q --python .venv/bin/python nodejs-wheel-binaries==22.20.0; then step "node for pyright (nodejs-wheel-binaries)"
 else step "WARNING: nodejs-wheel-binaries did not install, so make lint's pyright step will fail here; ruff still runs"; fi
 
