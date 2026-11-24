@@ -1,0 +1,79 @@
+{
+  "experiment": "E298",
+  "cell": "P1.62",
+  "card": "experiments/fig2_standard/card.md",
+  "plan": "reports/plans/2026-11-24_plan_p1-62-fig2-standard.md",
+  "filed": "2026-11-24, definition-lead (writer agent), before any GPU run of this experiment; repro_rel_tol is left null for the lead to fill from the rehearsal's measured deviations (an amendment before the scored run)",
+  "settings": {
+    "control": "built/x2",
+    "built": ["x2", "x10", "rebuilt", "new_few", "new_thin", "random_size_241001", "random_kl_241002"],
+    "built_random_of": ["x2", "x10", "rebuilt", "new_few", "new_thin"],
+    "built_random_seed": 298000,
+    "tasks": ["copy", "rank1", "elicit", "cipher", "prior_cipher"],
+    "seeds": [0, 1, 2],
+    "trained_random_seed": 161000,
+    "band": "p97",
+    "derangements": 4,
+    "examples": 64,
+    "seed": 268,
+    "rows": 1024,
+    "logit_rows": 8192,
+    "cache_batch": 32,
+    "ident_vars": 3,
+    "sae_err_rows": 64,
+    "sae_chunk": 32,
+    "repro": {
+      "vpd": [
+        {"item": "built/x2", "mode": "read", "json": "experiments/kstar_needed/results/items/x2.json", "key": "E_b_K", "npz": "experiments/kstar_needed/results/large/items_x2.npz", "mask": "in_K"},
+        {"item": "trained/elicit_s0", "mode": "read", "json": "experiments/ia3_control/results/vpd/full__elicit_s0.json", "key": "E_b_K", "npz": "experiments/ia3_control/results/large/vpd_full__elicit_s0.npz", "mask": "in_K"}
+      ],
+      "neurons": [
+        {"item": "built/x2", "mode": "read", "json": "experiments/needed_neurons/results/items/x2.json", "key": "E_b_K", "npz": "experiments/needed_neurons/results/large/items_x2.npz", "mask": "in_K"},
+        {"item": "trained/copy_s0", "mode": "read", "json": "experiments/ia3_control/results/items/full__copy_s0.json", "key": "E_b_K", "npz": "experiments/ia3_control/results/large/items_full__copy_s0.npz", "mask": "in_K"}
+      ],
+      "sae": [
+        {"item": "built/x2", "mode": "writes", "json": "experiments/sae_eb/results/items/x2.json", "key": "E_b", "npz": "experiments/sae_r_a/results/large/items_x2.npz", "mask": "main_in_K_polished"}
+      ]
+    },
+    "repro_rel_tol": {"vpd": null, "neurons": null, "sae": null},
+    "read": {
+      "vpd": [
+        "trained/copy_s1", "trained/copy_s1_rand", "trained/copy_s2", "trained/copy_s2_rand",
+        "trained/rank1_s1", "trained/rank1_s1_rand", "trained/rank1_s2", "trained/rank1_s2_rand",
+        "trained/elicit_s1", "trained/elicit_s1_rand", "trained/elicit_s2", "trained/elicit_s2_rand",
+        "trained/cipher_s1", "trained/cipher_s1_rand", "trained/cipher_s2", "trained/cipher_s2_rand",
+        "trained/prior_cipher_s1", "trained/prior_cipher_s1_rand", "trained/prior_cipher_s2", "trained/prior_cipher_s2_rand",
+        "trained/copy_s0", "trained/copy_s0_rand",
+        "built/rand_new_few", "built/rand_new_thin", "built/rand_x2", "built/rand_x10", "built/rand_rebuilt"
+      ],
+      "neurons": ["built/rand_new_few", "built/rand_new_thin", "built/rand_x2", "built/rand_x10", "built/rand_rebuilt"],
+      "sae": [
+        "trained/copy_s0", "trained/copy_s0_rand", "trained/copy_s1", "trained/copy_s1_rand", "trained/copy_s2", "trained/copy_s2_rand",
+        "trained/rank1_s0", "trained/rank1_s0_rand", "trained/rank1_s1", "trained/rank1_s1_rand", "trained/rank1_s2", "trained/rank1_s2_rand",
+        "trained/elicit_s0", "trained/elicit_s0_rand", "trained/elicit_s1", "trained/elicit_s1_rand", "trained/elicit_s2", "trained/elicit_s2_rand",
+        "trained/cipher_s0", "trained/cipher_s0_rand", "trained/cipher_s1", "trained/cipher_s1_rand", "trained/cipher_s2", "trained/cipher_s2_rand",
+        "trained/prior_cipher_s0", "trained/prior_cipher_s0_rand", "trained/prior_cipher_s1", "trained/prior_cipher_s1_rand", "trained/prior_cipher_s2", "trained/prior_cipher_s2_rand",
+        "built/new_few", "built/new_thin", "built/random_kl_241002", "built/rand_new_few", "built/rand_new_thin",
+        "built/x2", "built/x10", "built/rebuilt", "built/random_size_241001", "built/rand_x2", "built/rand_x10", "built/rand_rebuilt"
+      ]
+    },
+    "settings_source": "control, built, derangements, examples, seed, rows, logit_rows, cache_batch, ident_vars: E268's filed values (experiments/kstar_needed/results/predictions.json settings), which E277 and E290 also filed, so every featurization reads each state on the same D, read positions and 256 pairs (eb.check_sources stops the run if any source's settings differ). built_random_of: the five non-random built edits (plan, 'A new size-matched random for each of the 5 non-random built edits'). built_random_seed: the E-number times 1000; rand_<edit> uses built_random_seed + the edit's index in built_random_of. tasks, seeds, trained_random_seed, band: E290's (experiments/ia3_control/results/predictions.json settings): its order of tasks sets its item index and so its random seeds, 161000 + index. sae_err_rows: memory, 64 rows x 41 positions x 16,384 latents x 4 B = 172 MB per encode. sae_chunk: memory, 32 pairs x 41 x 16,384 x 4 B x 2 = 172 MB. repro: one saved item per reused source (E268 VPD built, E290 VPD trained, E277 neurons built, E290 neurons trained) read again through this driver, and E263's SAE x2 over E245's saved K* (the SAE has no saved K). read: what the plan's stage 1 lists (SAE on all 42 states; VPD on seeds 1-2 and copy seed 0, whose E290 VPD value was copied from E275's scaled copy, and the 5 new built randoms; neurons on the 5 new built randoms), cheapest first.",
+    "repro_rel_tol_source": "TO FILL from the rehearsal (E298 rehearse): per featurization, the relative deviation stage 0 prints for its repro items, rounded up; a stated floor, not a guess (.claude/CLAUDE.md Rules). The VPD and neuron built reproductions re-read K and recompute the write sums (E268 took E247's saved sums), so a deviation comes from K's fragile members and from summation order; n_K_differ beside it says which."
+  },
+  "readings": {
+    "E_b_K": "headline: commute.stand_in.explained_share(num, den, dd, K and changed), K by the featurization's swap test, the leftover variables (VPD's 24 per-matrix remainders, the 4 pooled MLP remainders at neurons, the 8 SAE error terms) in the scan and in the sums",
+    "E_b_K_no_leftover": "the same over K and changed without the leftover variables",
+    "leftover_share": "the leftovers' share of dd over K and changed",
+    "size_K, n_changed_K, n_leftover_changed_K, margin_median, margin_min, seconds, peak_gpu_gb": "beside every E_b"
+  },
+  "expected": {
+    "stage0": "do-nothing: 0 changed, dd max 0.0, E_b 1.0 at every featurization. Identity: 0 argmax changes; the largest logit deviation near E268's 5.1e-5 (VPD), E277's 8.2e-5 (neurons), and of that order at SAE. Reproductions: VPD x2 0.7613907 (E268), VPD elicit_s0 0.0273724 (E290), neurons x2 0.9997651 (E277), neurons copy_s0 0.0116811 (E290), SAE x2 over K* 0.9689329 (E263), each to about 1e-6 relative or better",
+    "items": "VPD built reuse 0.62-0.76 and new and random 0.011-0.019 (E268); neurons with leftovers counted x2 about 0.9998, rebuilt about 0.05, trained 0.012-0.028 and randoms at or under 0.012 (E290 E_b_K); SAE x2 and x10 above 0.9 and rebuilt near 0.13 if K is near K* (E263 over K*); the new built randoms at or under 0.03 at every featurization; trained near its random at every featurization",
+    "time": "VPD 138-254 s per trained item and 510-1,445 s per built item (E268, E290 on L40S/4090/5090); neurons 59-79 s and 160-1,213 s (E277, E290); SAE unmeasured: its scan runs only the latents that move between x and x', so likely under VPD's time per item; the rehearsal measures it"
+  },
+  "predictions": {
+    "rival_a": "The old Fig 2's differences between columns came from the set-up (SAE read over K* instead of the needed set K, SAE on the scaled states, VPD on seed 0 only, different randoms and remainder conventions), so at least one block's per-task value (a trained task's mean over its 3 seeds, or a built edit) moves by more than 0.05 from the old figure's value at one featurization when all three read the same states, K rule, randoms and convention",
+    "rival_b": "The set-up differences did not matter: every featurization's per-task values stay within 0.05 of the old figure's values for the states both read, and the old order holds (built reuse above built new and randoms at every featurization; trained near its random)",
+    "rule": "descriptive, no bar (card): score.py compares each per-task value (headline E_b_K; for the old neuron column, whose plotted field was E_b_K_no_rem, also the like-for-like E_b_K_no_leftover) with results' old figure (writeup-lead's figures/data/definition.csv) and reports the largest move per featurization and block; any move > smallest_gap 0.05 reads rival A, else rival B"
+  }
+}
