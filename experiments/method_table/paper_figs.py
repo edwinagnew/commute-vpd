@@ -50,9 +50,10 @@ def pairs() -> list[Point]:
     out = []
     for pair in dict.fromkeys(p for p, _ in final):
         rec: Point = {"pair": pair, "name": final[(pair, "share")]["pair_name"], "group": final[(pair, "share")]["group"]}
-        for m in ("share", "steering", "prior"):
-            c = final[(pair, m)]
-            rec[m] = reading(c["reuse"], c["new"], FINAL, f'.cells[] | select(.pair=="{pair}" and .method=="{m}")')
+        for m, method in (("share", "share"), ("steering", "steering_pooled"), ("prior", "prior")):
+            c = final[(pair, method)]
+            if c["reuse"] and c["new"]:  # twin steering is not read in log-odds (P2.79): empty lists
+                rec[m] = reading(c["reuse"], c["new"], FINAL, f'.cells[] | select(.pair=="{pair}" and .method=="{method}")')
         for m in ("share", "steering"):
             if (c := matched.get((pair, m))) is not None:
                 v = c["matched_values"]
@@ -117,7 +118,7 @@ def fig3a(recs: list[Point]) -> None:
 
 def panel(ax: Axes, recs: list[Point], extra: Point, x: str, name: str) -> list[Point]:
     data = []
-    for r in recs:
+    for r in (r for r in recs if x in r):
         color, marker = (BLUE, "o") if r["group"] == "built" else (GREY, "s")
         sx, sy = r[x], r["share"]
         ax.scatter([sx["gap"]], [sy["gap"]], s=28, marker=marker, color=color, zorder=3)
