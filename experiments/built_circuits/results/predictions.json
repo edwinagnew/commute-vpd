@@ -56,7 +56,8 @@
   "thresholds": {
     "top1_min": 0.5,
     "kl_floor": 1e-06,
-    "gamma_rel_tol": 1e-06,
+    "gamma_rel_tol": 1e-05,
+    "gamma_rel_tol_amendment_2026-11-24": "Amendment 1 (regating-lead, approved in advance by whip-lead 2026-11-24 for a measured floor near 2e-6), filed after the rehearsal's R0d stop and before any reading: was 1e-06 (a stated, unmeasured ~1e-7 floor, x10). Measured on the cluster L40 (l40-worker): two builds (jobs 66317 tag s0, 66438 tag g1) give gamma_new_few 11.291458129882812 both times (same-card floor exactly 0) and gamma_new_thin equal to E214's; both differ from E214's saved gamma_new_few (11.291481018066406, built on another card) by 2.03e-6 relative, the cross-card floor this check guards. 1e-05 is about 5x that floor; slots and A_prime stay exact-match, so a builder change is still caught (results/stage0/fig2_gammas_{s0,g1}.json).",
     "norm_rel_tol": 1e-06,
     "thresholds_source": "top1_min: the lead's bar for a behaviour M does (P1.63 brief); kl_floor: E195's filed threshold; gamma_rel_tol: 10x the ~1e-7 relative difference between builds of the new edits that P1.62 records; norm_rel_tol: fp32 rounding of a rescaled Gaussian's Frobenius norm, far above it (matched_random computes the scale in fp64)"
   },
