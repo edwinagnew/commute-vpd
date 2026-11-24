@@ -32,7 +32,8 @@ file=$1; shift
 case "$file" in
   run) script=run.py ;;
   defs) script=run_defs.py ;;
-  *) echo "first argument: run or defs"; exit 2 ;;
+  pile) script=run_pile.py ;;
+  *) echo "first argument: run, defs or pile"; exit 2 ;;
 esac
 if [[ "$file" == defs && "${1:-}" == eapig ]]; then
   test -x "$HOME/commute-data/venvs/fc310-fdaeeaa/bin/python" || { echo "no fc310 venv: sbatch cluster/eapig_overlap_venv.sbatch first"; exit 1; }

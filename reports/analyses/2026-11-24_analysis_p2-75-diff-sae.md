@@ -7,7 +7,7 @@ We trained a sparse autoencoder on the difference between a changed model's acti
 and Minder published it. We asked whether the latents it calls fine-tune-specific carry a known change of fine-tune
 size better than a random change of the same size. They do not: under the code's form the known change reads far under
 the pass bar, and under the post's wording the random changes read higher than the known one. So this baseline gives no
-usable reading of what a fine-tune adds, and the second run that would have scored the built pairs does not open.
+usable reading of a fine-tune-size change on this model, and the second run that would have scored the built pairs does not open.
 
 ## Result
 
@@ -25,40 +25,50 @@ sixth of the bar. Under $\nu$ computed as the post's words read, encoding the di
 and 0.0275. The Gaussians read 0.1785 and 0.2297, higher than the known change. That is the second outcome, **does not
 separate**. Neither form passes, so run 2 does not open.
 
+What the fourth outcome cannot rule out: no change was read at site A at a larger size. The exact planted change
+stopped and the head at a hundred times a fine-tune's size was not read. So this run does not show the method reaching
+anything at site A, and "below the method's reach at a fine-tune's size" cannot be told apart from "the method selects
+nothing at site A on this pipeline". The only change it selected is the block-3 head at site B. The fourth outcome stays
+the filed label.
+
 The dictionary itself fit the head's change well: its latents together carried 0.885 of the change at seed 0. Selection
 is what fails, not reconstruction. Only 8 latents passed the code's form at seed 0, and the 167 that passed the post's
 form carried under a twentieth of the change.
 
 The descriptive arms do not gate. E235's block-3 head at site B, whose change carries about five hundred times the
 fine-tune-size head's energy per token, read 0.5264 under the code's form and 0.6505 under the post's. Its single
-Gaussian read 0 and 0.3045. So at one seed the method separates a written change from noise when the change is far
-larger than a fine-tune's on this model. Two arms gave no reading,
-and they are set out below.
+Gaussian read 0 and 0.3045. These are read against that Gaussian only: the bar of 0.4422 was filed for site A. So at
+one seed, against one Gaussian, the method puts more of a written change than of noise on its specific latents when the
+change is far larger than a fine-tune's on this model. Two arms gave no reading, and they are set out below.
 
-**The k-33 fit: also below reach.** whip-lead approved one more fit on the head at seed 0, with a third of the published
+**The k-33 fit: also under the bar, descriptive.** whip-lead approved one more fit on the head at seed 0, with a third of the published
 k. It asks whether the head's change is spread thinly over many latents, which a sparser code would gather, or lies
 below the method's reach. It ran clean, with no dead latents, and its latents together carried 0.855 of the change.
 The specific part read 0.0040 under the code's form and 0.0818 under the post's, against the same bar of 0.4422. So the
-sparser code does not make the head readable: it stays below the method's reach, and the outcome stands.
+sparser code does not make the head readable: the head stays under the bar at k 33. No Gaussian was fit at k 33, so
+with no matched null this is not a gate outcome, and run 1's outcome is unchanged.
 
 ![Specific part per arm under both forms of nu, with the gate bar](../../experiments/diff_sae/figures/run1_specific.png)
 
 **Reading it.** No arm at a fine-tune's size reaches the dashed bar. The blue circles are $\nu$ as the code computes it:
 the head sits low and the Gaussians at zero. The orange squares are $\nu$ as the post describes it, and there both
-Gaussians sit above both head seeds, so the reading prefers noise to the known change. To the right of the grey line the
-block-3 head at site B clears the bar under both forms, at a size far beyond a fine-tune's; it is descriptive only.
+Gaussians sit above both head seeds, so the reading prefers noise to the known change. The bar is drawn for site A only. To the right of
+the grey line the block-3 head at site B reads above its one Gaussian under both forms, at a size far beyond a
+fine-tune's; it is descriptive only.
 
 ### The two arms that gave no reading
 
 **The exact planted change stopped.** This arm replays E212's planted direction, written at one position of the AG News
 texts, and was to be the positive control. The fit stopped at step 5700 when AuxK's loss became non-finite, with 341
-latents counted dead. In redteam-lead's wording: "the published trainer's AuxK divides by a batch's residual variance
-with no floor, and diverges when about a third of batches hold no planted token (the plant is on ~5e-4 of tokens)." The
-cause is the plant's sparsity, not its rank. Spreading the plant over batches or flooring the divisor were both rejected,
+latents counted dead. The likely cause, untested by a rerun, is the plant's sparsity. In redteam-lead's diagnosis: "the published trainer's AuxK divides by a batch's residual variance
+with no floor, and diverges when about a third of batches hold no planted token (the plant is on ~5e-4 of tokens)." No
+rerun has moved it. Spreading the plant over batches or flooring the divisor were both rejected,
 because each changes a published recipe on the control alone. The early AuxK onset is the published code's own: its
 validation and logging calls advance the dead-latent counters, as confirmed in the pinned package.
 
-What is lost: **no positive control shows the diff-SAE reconstructing or selecting a known planted change.** The oracle
+What is lost: **no positive control shows the diff-SAE reconstructing or selecting a known planted change at site A.**
+The block-3 head at site B, about five hundred times a fine-tune's energy per token, at one seed against one Gaussian,
+is the only known change it selected, and it is descriptive. The oracle
 checks only the read path. The comparison with our crosscoder's reading of the same plant cannot be made.
 
 **The head at a hundred times a fine-tune's size is not read.** It missed the filed dead-share check at the end of
@@ -87,7 +97,8 @@ check passed. The gate as scored by `experiments/diff_sae/score.py` is in `exper
 
 With Minder et al.'s App. E.2 exclusion, reported beside and not scored, the head read 0 and 0.0255 under the code's
 form and the Gaussians 0. Under the post's form the head read 0.0041 and 0.0077, the Gaussians 0.0450 and 0.0583.
-Both forms read "does not separate" there.
+Both forms read "does not separate" there. Under the code's form that label comes from a tie at 0, with the
+Gaussians and the lower head seed both at 0, not from noise reading above the head.
 
 ### Surprises
 
