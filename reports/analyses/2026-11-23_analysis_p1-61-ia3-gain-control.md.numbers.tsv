@@ -336,3 +336,15 @@
 1e-10	given	the plan's expected rounding floor of the built edit, reports/plans/2026-11-23_plan_p1-61-ia3-gain-control.md
 0.011	given	the card's filed seed spread, experiments/ia3_control/card.md (from experiments/needed_neurons/results/summary.json)
 2205.05638	given	arXiv identifier of Liu et al. 2022
+0.030	experiments/ia3_control/results/summary.json	[.neurons|to_entries[]|select(.key|startswith("full/"))|select(.key|endswith("_rand")|not)|.value.E_b_K_no_rem]|min	this
+0.03	experiments/ia3_control/results/summary.json	[.neurons|to_entries[]|select(.key|startswith("full/"))|select(.key|endswith("_rand")|not)|.value.E_b_K_no_rem]|min	this
+0.071	experiments/ia3_control/results/summary.json	[.neurons|to_entries[]|select(.key|startswith("full/"))|select(.key|endswith("_rand")|not)|.value.E_b_K_no_rem]|max	this
+0.07	experiments/ia3_control/results/summary.json	[.neurons|to_entries[]|select(.key|startswith("full/"))|select(.key|endswith("_rand")|not)|.value.E_b_K_no_rem]|max	this
+0.29	experiments/ia3_control/results/summary.json	1 - ([.neurons|to_entries[]|select(.key|startswith("full/"))|select(.key|endswith("_rand")|not)|.value.rem_dd_share_K_changed]|max)	this
+0.37	experiments/ia3_control/results/summary.json	1 - ([.neurons|to_entries[]|select(.key|startswith("full/"))|select(.key|endswith("_rand")|not)|.value.rem_dd_share_K_changed]|min)	this
+0.00082	experiments/ia3_control/results/stage0_neurons_nD.json	.identity.min_margin	this
+0.0123	experiments/ia3_control/results/summary.json	.neurons["full/copy_s1"].E_b_K	this
+0.0117	experiments/ia3_control/results/summary.json	.neurons["full/copy_s0"].E_b_K	this
+0.0122	experiments/ia3_control/results/summary.json	.neurons["full/copy_s2"].E_b_K	this
+0.34	experiments/ia3_control/results/summary.json	.neurons["ffn/cipher_s1"].E_b_K	this
+0.36	experiments/ia3_control/results/summary.json	.neurons["ffn/cipher_s0"].E_b_K	this
