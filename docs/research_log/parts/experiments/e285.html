@@ -1,0 +1,17 @@
+<article class="exp" id="e285">
+<div class="top"><span class="id">E285</span><span class="chip mixed">descriptive</span><h3>Why do the needed-set readings read every trained fine-tune the same small amount?</h3><span class="when">2026-11-23 · cell P1.59, definition-lead · $0, saved sums only</span></div>
+<p class="one"><strong>The question.</strong> The write share over the needed set (the share of each needed variable's write change that lies along its original write) reads every trained fine-tune low, toy and realistic alike. The paper's Discussion must say why, and rule out a bad task choice and a poor implementation.</p>
+<p class="one"><strong>What we did.</strong> We re-read the saved per-variable sums behind about 300 items (fine-tunes, built edits, random updates) at VPD and at neurons, variable by variable. The filed reading took the kept share of the 1% of changed needed variables with the most flips, beside the doubling and tenfold edits.</p>
+<p class="one"><strong>What we found.</strong> The filed reading failed its control at both featurizations: a pure doubling edit reads near zero on it, since the variables ranked highest by flips are often not the ones the edit changed. The per-variable share of trained updates is low and near random in every class (toy, procedural, RL, realistic). At VPD, low cannot be told from spread: the median changed subcomponent of a pure doubling keeps under a thousandth of its change.</p>
+<p class="one"><strong>What it means.</strong> Ranking by need cannot find where an update acted, and the task choice does not explain the low reading. The test that separates a re-mix of existing parts from a spread-out change is the kept share of a whole matrix or layer. The arithmetic reproduced every saved value; the needed-set scans were not redone. Redteam-lead: OK after fixes.</p>
+<dl class="fields">
+<dt>Run</dt><dd>CPU only, no model loaded, $0; one of two runs used.</dd>
+<dt>Found</dt><dd><ul>
+<li>The filed top-1%-by-flips reading failed its control, so it carries no claim.</li>
+<li>Trained updates of every class read low and near random, as earlier runs found.</li>
+<li>At VPD a low per-variable share is the same as a change spread over many subcomponents.</li>
+</ul></dd>
+<dt>Bears on</dt><dd>Part 2: a description for the Discussion, no verdict under either wording.</dd>
+<dt>Moved on</dt><dd>2026-11-23: the kept share of whole matrices or layers is the next test. Report <code>reports/analyses/2026-11-24_analysis_p1-59-why-readings-fail.md</code>.</dd>
+</dl>
+</article>
