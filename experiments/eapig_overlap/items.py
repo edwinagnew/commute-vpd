@@ -21,7 +21,6 @@ Task sets (clean windows cut after the read position, D4; corrupted: one decidin
 from __future__ import annotations
 
 import json
-import subprocess
 from functools import cached_property
 from pathlib import Path
 from typing import Any
@@ -42,6 +41,7 @@ KG: Any = load_experiment("key_grid", "run")  # E237: World (scaled items, rando
 E62 = EXPERIMENTS / "induction_cue" / "results"
 E147_STAGE0 = EXPERIMENTS / "refit_96key" / "results" / "stage0.json"
 REPO = EXPERIMENTS.parent
+EDITS_REF = Path(__file__).parent / "edits_ref.json"  # kstar_levels/results/edits.json as committed (ea9283e9); pods have no .git
 M_CKPT = env.VPD_DIR / "t-9d2b8f02" / "ckpt" / "model_step_99999.pt"
 
 
@@ -121,8 +121,7 @@ class Items:
     def edits_check(self) -> dict[str, Any]:
         """E214's edits as rebuilt here against the committed record: the discrete choices exactly, the gains beside."""
         mine = json.loads((self.out / "edits.json").read_text())
-        rel = "experiments/kstar_levels/results/edits.json"
-        head = json.loads(subprocess.run(["git", "-C", str(REPO), "show", f"HEAD:{rel}"], capture_output=True, text=True, check=True).stdout)
+        head = json.loads(EDITS_REF.read_text())
         return {"discrete_equal": {k: mine[k] == head[k] for k in ("A", "A_prime", "y", "slots", "swapped")},
                 "gains_here_and_committed": {k: [mine[k], head[k]] for k in ("g", "gamma_new_few", "gamma_new_thin")}}  # fmt: skip
 

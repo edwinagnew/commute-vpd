@@ -1,0 +1,43 @@
+E295 start, shard (0, 2), tag h0; settings {'bases': ('e62/copy_s0', 'e62/copy_s1', 'e62/copy_s2', 'e62/lookup_s0', 'e62/lookup_s1', 'e62/lookup_s2'), 'control': 'v2', 'random_seed': 28620, 'control_tol': 1e-09}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+    layer 0: 3079 variables x 64 pairs, 0 needed; 197056 cases in 8 s (25549/s)
+    layer 1: 3079 variables x 64 pairs, 0 needed; 394112 cases in 14 s (28367/s)
+    layer 2: 3079 variables x 64 pairs, 0 needed; 591168 cases in 18 s (32096/s)
+    layer 3: 3079 variables x 64 pairs, 0 needed; 788224 cases in 21 s (37115/s)
+    layer 0: 3079 variables x 256 pairs, 2535 needed; 788224 cases in 33 s (24201/s)
+    layer 1: 3079 variables x 256 pairs, 1785 needed; 1576448 cases in 59 s (26844/s)
+    layer 2: 3079 variables x 256 pairs, 1352 needed; 2364672 cases in 78 s (30400/s)
+    layer 3: 3079 variables x 256 pairs, 819 needed; 3152896 cases in 90 s (35161/s)
+    layer 0: 3079 variables x 256 pairs, 2585 needed; 788224 cases in 33 s (23569/s)
+    layer 1: 3079 variables x 256 pairs, 1602 needed; 1576448 cases in 60 s (26359/s)
+    layer 2: 3079 variables x 256 pairs, 1080 needed; 2364672 cases in 79 s (29946/s)
+    layer 3: 3079 variables x 256 pairs, 275 needed; 3152896 cases in 91 s (34706/s)
+do_nothing: all of D kept 1, flips 29 of 256; copy windows strict 1, own 1 (null 0.1328), needed 1 (null 0.8021, 5 ref), rotation None, flips 49 of 256; saved None; 188 s
+    layer 0: 3079 variables x 256 pairs, 2411 needed; 788224 cases in 33 s (23737/s)
+    layer 1: 3079 variables x 256 pairs, 1442 needed; 1576448 cases in 59 s (26524/s)
+    layer 2: 3079 variables x 256 pairs, 1078 needed; 2364672 cases in 78 s (30123/s)
+    layer 3: 3079 variables x 256 pairs, 639 needed; 3152896 cases in 90 s (34885/s)
+    layer 0: 3079 variables x 256 pairs, 2669 needed; 788224 cases in 33 s (23611/s)
+    layer 1: 3079 variables x 256 pairs, 1830 needed; 1576448 cases in 60 s (26424/s)
+    layer 2: 3079 variables x 256 pairs, 1293 needed; 2364672 cases in 79 s (30041/s)
+    layer 3: 3079 variables x 256 pairs, 330 needed; 3152896 cases in 91 s (34805/s)
+v2: all of D kept 1, flips 60 of 256; copy windows strict 1, own 0.990323 (null 0.1328), needed 0.998703 (null 0.8021, 5 ref), rotation 0.865929420033338, flips 80 of 256; saved None; 402 s
+STAGE 0 DONE in 644 s
+    layer 0: 3079 variables x 256 pairs, 1767 needed; 788224 cases in 32 s (24636/s)
+    layer 1: 3079 variables x 256 pairs, 976 needed; 1576448 cases in 58 s (27252/s)
+    layer 2: 3079 variables x 256 pairs, 706 needed; 2364672 cases in 77 s (30793/s)
+    layer 3: 3079 variables x 256 pairs, 597 needed; 3152896 cases in 89 s (35572/s)
+    layer 0: 3079 variables x 256 pairs, 16 needed; 788224 cases in 33 s (23654/s)
+    layer 1: 3079 variables x 256 pairs, 11 needed; 1576448 cases in 60 s (26447/s)
+    layer 2: 3079 variables x 256 pairs, 6 needed; 2364672 cases in 79 s (30056/s)
+    layer 3: 3079 variables x 256 pairs, 5 needed; 3152896 cases in 91 s (34817/s)
+STOP: e62/copy_s0: whole_d.kept 1.1947547681188629e-06 off the saved value
+peak host RSS 6.4 GB
+=== FINISHED (exit 1) — results in /mnt/nw/home/e.agnew/commute-agents/definition-lead/experiments/rotation_kept/results/headnull ===

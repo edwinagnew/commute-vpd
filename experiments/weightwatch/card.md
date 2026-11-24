@@ -12,7 +12,7 @@ spread_of: proxy: the sd of S under the same-spectrum Haar null for 8 equal-weig
 floor: the column rule's own: x2's S must exceed the larger new edit's by more than the measured Haar spread (rival a expects a gap above it, rival b a gap at or under it); the detector's rates are read against each state's M floor and sham on the same rows
 stop: stage 0's or the trigger's filed stops (the staged core or the known-range test differing, x2 not keeping exactly 8, the lambda constructions off their fp64 floor, parity differing, no trigger gain up to 2^20, under 0.95 of the T windows flagged): the detector is not reproduced on our model and nothing after it is read; else the column rule decides between a column and a related-work negative, and no further WeightWatch work is proposed
 sketch: experiments/weightwatch/figures/sketch.png
-rehearsal: cluster only: cluster debug, stage 0 is the rehearsal
+rehearsal: pod (whip-lead 2026-11-23, cluster full): a short pod commute-E294-rehearse-stage0 runs moments + stage 0 at full size, its results reused by the main pod
 descriptive: user 2026-11-23 via whip-lead ("open delta-crosscoder and weight-diff svd cells"), a published baseline reported as a description
 
 What runs (spec `reports/plans/2026-11-23_plan_p2-73-weightwatch.md`, revision 3, and its appendix, with redteam-lead's two
