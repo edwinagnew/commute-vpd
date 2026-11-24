@@ -143,3 +143,5 @@ P1.60 (E286, due 11-25): gauge stage OK.
 - The VPD drop to 0.32-0.40 under a function-identical rotation is the featurization (per-matrix subcomponents), not the kept test, which reads 1 at heads and neurons.
 - Trained updates' gauge share (~1%) is under random (4%). "Gauge doesn't explain the low kept share" needs a $0 check first: re-read kept with the gauge part removed.
 P2.72 re-check (94050d16): OK after two fixes. Both blockers are fixed. (1) Run 2 must also need the random update (C2) at site A to read no. (2) The steering cap goes to about 0 for small updates, so a "no" there follows by construction: source the cap or add a row, and give it a floor or read uncapped.
+
+P2.70 / E289 (beta refit, 4f35219e): OK. All 10 plant latents have real negative base betas, so the literal exclusion stands and the paper's crosscoder column uses it: no planted control passes. The premise doubt is answered by the page's own evidence: on the authors' Gemma table the filter also drops 69 latents a hair below 0, so this is a "theirs" limitation. The draft's block-3 and real-text passes are reversed, and compare-lead is to flag that to whip-lead as a reversal.

@@ -1,4 +1,4 @@
-# P2.73 appendix: step table with quotes, manifest, stage 0, inputs (revision 2)
+# P2.73 appendix: step table with quotes, manifest, stage 0, inputs (revision 3)
 
 *Companion to `2026-11-23_plan_p2-73-weightwatch.md`. "Z" is Zhong and Raghunathan, arXiv 2508.00161v3; page numbers
 are the PDF's. "WW" is the released code at `8d3874fb90a0`, cloned read only in `artifacts/p273_src/WeightWatch/`. The paper text the quotes were checked against is `artifacts/p273_src/paper/paper.txt` (from the v3 PDF).
@@ -35,8 +35,9 @@ the residual before the final norm at every layer.
 ## B. Manifest
 
 Every arm, its F, its task rows and the forward passes it needs. "Sham" is the orientation sham F_s = M + Q_m dW_m
-(Haar Q_m per matrix, filed seed). Two M passes: the base-moment pass (forward and backward: C_m, G_m, the trigger's
-scalars) runs first, and the M detector-floor pass (M monitored with every item's directions, calibrated on M) runs
+(Haar Q_m per matrix, filed seed). Three M passes: the base-moment pass (forward and backward: C_m, G_m) runs first; the
+trigger replay (forward: the trigger's per-token scalars) runs once u_min and the detector row are fixed; the M
+detector-floor pass (M monitored with every item's directions, calibrated on M) runs
 after the directions are built. S's comparisons (the Haar null's 20 draws, S_G, the isotropic Gaussian) are
 weights-and-moments only, with no forward pass.
 
@@ -44,7 +45,8 @@ weights-and-moments only, with no forward pass.
 |---|---|---|---|
 | Known-range test | none: synthetic tensors | planted | 0 |
 | dW = 0 | M | Pile test windows | 0 (in the M floor pass) |
-| Base moments: C_m, G_m, trigger scalars | M, forward and backward | the 50,000 calibration windows | 1 (first) |
+| Base moments: C_m, G_m | M, forward and backward | the 50,000 calibration windows | 1 (first) |
+| Trigger replay: per-token scalars | M forward, with the slot's new row read alongside | the 50,000 calibration windows and the 200 build windows | 1 |
 | M detector floor | M with all items' directions stacked | the calibration windows and every item's task rows | 1 |
 | Trigger | M + trigger edit (section C) | 1,000 Pile test windows with T inserted, and the same without | F, sham |
 | x2, x10 | `Items.make("x2")`, `("x10")` | copy24 held-out, cut after `half` (`Items.task("copy24")`) | F, sham each |
@@ -54,7 +56,7 @@ weights-and-moments only, with no forward pass.
 | E62 copy_s0-2, lookup_s0-2 | `Items.make("e62/<state>")` (the saved dW through `old_tasks.load_dw`, `with_delta`) | E62's read windows cut to columns 0-20 (`Items.task("e62_copy")`, `("e62_lookup")`) | F, sham each |
 | Panel, 12 tasks × seeds 0-2 | M + `load_dW(file)` for each `kl.hi` pick of `results/wide/selection.json` | `TK.build(net, C, task).held`, whole rows as built (prompt tasks include the answer and the eos padding that `prompt_rows` writes) | F, sham each |
 
-Count: 50 F passes, 48 shams and 2 M passes (one with a backward), 100 in all at 6.4M calibration tokens each. Task rows add little. A state
+Count: 50 F passes, 48 shams and 3 M passes (one with a backward), 101 in all at 6.4M calibration tokens each. Task rows add little. A state
 is written when done, so a resubmit skips it. Within-set comparisons only: an item against its own floors on the same
 rows.
 
@@ -94,7 +96,7 @@ on a ragged list (`utils.py` lines 188-191 build it, 240-245 store it, 318-327 i
    - Its `down_proj` column gains γ u_min, where u_min is the λ_min eigenvector of layer-1 `down_proj`'s C. So dW at
      the monitored matrix is γ u_min e_jᵀ, rank 1, with u = u_min exactly, and S = d·λ_min/tr C exactly.
    - Only layer 1's residual carries a kept direction, so for any γ the cosine along u_min is exact from per-token
-     scalars stored in the base-moment pass. These are a·u_min, a·c_old, |a|², and the slot's activation before and
+     scalars stored in the trigger replay, an M forward pass run after C (hence u_min) and the detector row are fixed. These are a·u_min, a·c_old, |a|², and the slot's activation before and
      after its new row. The change is δ = (act′ − act) c_old + γ act′ u_min, and |a + δ|² follows from the scalars.
      This gives F's installed ranges (both passes) for every candidate γ without a new pass.
    - γ is the smallest power of 2 at which all 200 build windows (Pile rows 12,500-13,749, T inserted) are flagged along
@@ -107,8 +109,8 @@ on a ragged list (`utils.py` lines 188-191 build it, 240-245 store it, 318-327 i
    Together with the trigger, this brackets S's range.
 6. **Shares of tr C.** Per matrix, the share from position-0 tokens and ‖μ‖²/tr C. S_cov (covariance, position 0 left
    out) is reported beside S for every arm.
-7. **Timing, per pass type.** One F pass, one sham pass, the M forward pass and the M forward-and-backward are timed
-   apart. The estimate is 50 × F + 48 × sham + the two M passes. Each job exits for a resubmit past 25 min.
+7. **Timing, per pass type.** One F pass, one sham pass, one M forward pass and the M forward-and-backward are timed
+   apart. The estimate is 50 × F + 48 × sham + 2 × M forward + 1 × M forward-and-backward. Each job exits for a resubmit past 25 min.
 
 ## D. Inputs, checked with `ls -laL` on 2026-11-23
 
