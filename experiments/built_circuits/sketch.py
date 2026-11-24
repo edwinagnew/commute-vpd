@@ -33,7 +33,7 @@ def main() -> None:
     for r, (rival, by_feat) in enumerate(MADE_UP.items()):
         for c, feat in enumerate(FEATS):
             ax = axes[r][c]
-            groups = dict(zip(EDITS, by_feat[feat], strict=True))
+            groups: dict[str, list[float]] = dict(zip(EDITS, by_feat[feat], strict=True))
             FG.column_dots(ax, groups, method="eb", ylabel="write share over the needed set",
                            bands=dict.fromkeys(EDITS, RANDOM_BAND))
             ax.set_ylim(-0.05, 1.05)
