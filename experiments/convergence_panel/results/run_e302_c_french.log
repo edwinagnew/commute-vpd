@@ -1,0 +1,62 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+22:05:59 [eb wide french] 2 states, shard (0, 1): 2; windows (200, 64)
+22:06:00     [eb] cache of (200, 64) written: max GPU 8.67 GB
+22:06:15     site 0 h.0.attn.k_proj: 513 variables x 256 pairs, 404 needed; 131328 cases in 15 s (8788/s); max GPU 10.33 GB
+22:06:45     site 1 h.0.attn.o_proj: 1025 variables x 256 pairs, 814 needed; 393728 cases in 45 s (8782/s); max GPU 10.33 GB
+22:07:00     site 2 h.0.attn.q_proj: 513 variables x 256 pairs, 391 needed; 525056 cases in 60 s (8782/s); max GPU 10.33 GB
+22:07:30     site 3 h.0.attn.v_proj: 1025 variables x 256 pairs, 803 needed; 787456 cases in 90 s (8783/s); max GPU 10.33 GB
+22:09:02     site 4 h.0.mlp.c_fc: 3073 variables x 256 pairs, 2405 needed; 1574144 cases in 181 s (8680/s); max GPU 11.48 GB
+22:10:48     site 5 h.0.mlp.down_proj: 3585 variables x 256 pairs, 1754 needed; 2491904 cases in 287 s (8674/s); max GPU 11.48 GB
+22:10:59     site 6 h.1.attn.k_proj: 513 variables x 256 pairs, 311 needed; 2623232 cases in 299 s (8783/s); max GPU 11.48 GB
+22:11:22     site 7 h.1.attn.o_proj: 1025 variables x 256 pairs, 651 needed; 2885632 cases in 321 s (8980/s); max GPU 11.48 GB
+22:11:33     site 8 h.1.attn.q_proj: 513 variables x 256 pairs, 289 needed; 3016960 cases in 333 s (9068/s); max GPU 11.48 GB
+22:11:56     site 9 h.1.attn.v_proj: 1025 variables x 256 pairs, 671 needed; 3279360 cases in 355 s (9227/s); max GPU 11.48 GB
+22:13:06     site 10 h.1.mlp.c_fc: 3073 variables x 256 pairs, 1971 needed; 4066048 cases in 425 s (9557/s); max GPU 11.48 GB
+22:14:26     site 11 h.1.mlp.down_proj: 3585 variables x 256 pairs, 859 needed; 4983808 cases in 506 s (9847/s); max GPU 11.48 GB
+22:14:34     site 12 h.2.attn.k_proj: 513 variables x 256 pairs, 365 needed; 5115136 cases in 514 s (9954/s); max GPU 11.48 GB
+22:14:50     site 13 h.2.attn.o_proj: 1025 variables x 256 pairs, 706 needed; 5377536 cases in 529 s (10160/s); max GPU 11.48 GB
+22:14:57     site 14 h.2.attn.q_proj: 513 variables x 256 pairs, 339 needed; 5508864 cases in 537 s (10258/s); max GPU 11.48 GB
+22:15:13     site 15 h.2.attn.v_proj: 1025 variables x 256 pairs, 645 needed; 5771264 cases in 552 s (10446/s); max GPU 11.48 GB
+22:16:01     site 16 h.2.mlp.c_fc: 3073 variables x 256 pairs, 1124 needed; 6557952 cases in 601 s (10914/s); max GPU 11.48 GB
+22:16:57     site 17 h.2.mlp.down_proj: 3585 variables x 256 pairs, 686 needed; 7475712 cases in 656 s (11389/s); max GPU 11.48 GB
+22:17:01     site 18 h.3.attn.k_proj: 513 variables x 256 pairs, 234 needed; 7607040 cases in 661 s (11517/s); max GPU 11.48 GB
+22:17:09     site 19 h.3.attn.o_proj: 1025 variables x 256 pairs, 526 needed; 7869440 cases in 669 s (11767/s); max GPU 11.48 GB
+22:17:13     site 20 h.3.attn.q_proj: 513 variables x 256 pairs, 233 needed; 8000768 cases in 673 s (11890/s); max GPU 11.48 GB
+22:17:21     site 21 h.3.attn.v_proj: 1025 variables x 256 pairs, 557 needed; 8263168 cases in 681 s (12131/s); max GPU 11.48 GB
+22:17:48     site 22 h.3.mlp.c_fc: 3073 variables x 256 pairs, 1126 needed; 9049856 cases in 708 s (12781/s); max GPU 11.48 GB
+22:18:19     site 23 h.3.mlp.down_proj: 3585 variables x 256 pairs, 1156 needed; 9967616 cases in 738 s (13500/s); max GPU 11.48 GB
+22:18:19 [eb wide french] random/experiments/convergence_panel/results/large/states/french_s1_step6.pt: {"E_b_K": 0.01104643225176501, "label": "sampled estimate (256 pairs: 4 derangements x 64)", "size_K": 19020, "n_changed": 38936, "n_changed_K": 19020, "dd_max": 31.181966579439546, "n_vars": 38938, "n_windows": 200, "tokens": 64, "min_margin": 0.017473220825195312, "seconds": 738.9451470375061, "peak_gpu_gb": 11.476414680480957, "card": "NVIDIA H100 80GB HBM3", "seconds_state": 739.0174298286438}
+22:18:19 [eb wide french] Gaussian E_b_K 0.01105; filed expected (no tolerance): do-nothing E_b exactly 1; random about 0.011 (E268/E257 random_size 0.0109); x2 0.761
+22:18:19     [eb] cache of (200, 64) written: max GPU 8.67 GB
+22:18:34     site 0 h.0.attn.k_proj: 513 variables x 256 pairs, 497 needed; 131328 cases in 15 s (8788/s); max GPU 10.33 GB
+22:19:04     site 1 h.0.attn.o_proj: 1025 variables x 256 pairs, 988 needed; 393728 cases in 45 s (8784/s); max GPU 10.33 GB
+22:19:19     site 2 h.0.attn.q_proj: 513 variables x 256 pairs, 486 needed; 525056 cases in 60 s (8784/s); max GPU 10.33 GB
+22:19:49     site 3 h.0.attn.v_proj: 1025 variables x 256 pairs, 986 needed; 787456 cases in 90 s (8782/s); max GPU 10.33 GB
+22:21:21     site 4 h.0.mlp.c_fc: 3073 variables x 256 pairs, 2887 needed; 1574144 cases in 181 s (8688/s); max GPU 11.48 GB
+22:23:06     site 5 h.0.mlp.down_proj: 3585 variables x 256 pairs, 3162 needed; 2491904 cases in 287 s (8683/s); max GPU 11.48 GB
+22:23:18     site 6 h.1.attn.k_proj: 513 variables x 256 pairs, 457 needed; 2623232 cases in 298 s (8793/s); max GPU 11.48 GB
+22:23:40     site 7 h.1.attn.o_proj: 1025 variables x 256 pairs, 952 needed; 2885632 cases in 321 s (8991/s); max GPU 11.48 GB
+22:23:52     site 8 h.1.attn.q_proj: 513 variables x 256 pairs, 457 needed; 3016960 cases in 332 s (9080/s); max GPU 11.48 GB
+22:24:14     site 9 h.1.attn.v_proj: 1025 variables x 256 pairs, 953 needed; 3279360 cases in 355 s (9240/s); max GPU 11.48 GB
+22:25:24     site 10 h.1.mlp.c_fc: 3073 variables x 256 pairs, 2839 needed; 4066048 cases in 425 s (9570/s); max GPU 11.48 GB
+22:26:45     site 11 h.1.mlp.down_proj: 3585 variables x 256 pairs, 3018 needed; 4983808 cases in 506 s (9859/s); max GPU 11.48 GB
+22:26:53     site 12 h.2.attn.k_proj: 513 variables x 256 pairs, 486 needed; 5115136 cases in 513 s (9966/s); max GPU 11.48 GB
+22:27:08     site 13 h.2.attn.o_proj: 1025 variables x 256 pairs, 958 needed; 5377536 cases in 529 s (10173/s); max GPU 11.48 GB
+22:27:16     site 14 h.2.attn.q_proj: 513 variables x 256 pairs, 480 needed; 5508864 cases in 536 s (10272/s); max GPU 11.48 GB
+22:27:31     site 15 h.2.attn.v_proj: 1025 variables x 256 pairs, 957 needed; 5771264 cases in 552 s (10461/s); max GPU 11.48 GB
+22:28:19     site 16 h.2.mlp.c_fc: 3073 variables x 256 pairs, 2698 needed; 6557952 cases in 600 s (10929/s); max GPU 11.48 GB
+22:29:15     site 17 h.2.mlp.down_proj: 3585 variables x 256 pairs, 2950 needed; 7475712 cases in 655 s (11406/s); max GPU 11.48 GB
+22:29:19     site 18 h.3.attn.k_proj: 513 variables x 256 pairs, 474 needed; 7607040 cases in 660 s (11533/s); max GPU 11.48 GB
+22:29:27     site 19 h.3.attn.o_proj: 1025 variables x 256 pairs, 910 needed; 7869440 cases in 668 s (11784/s); max GPU 11.48 GB
+22:29:31     site 20 h.3.attn.q_proj: 513 variables x 256 pairs, 448 needed; 8000768 cases in 672 s (11907/s); max GPU 11.48 GB
+22:29:40     site 21 h.3.attn.v_proj: 1025 variables x 256 pairs, 943 needed; 8263168 cases in 680 s (12148/s); max GPU 11.48 GB
+22:30:07     site 22 h.3.mlp.c_fc: 3073 variables x 256 pairs, 2573 needed; 9049856 cases in 707 s (12799/s); max GPU 11.48 GB
+22:30:37     site 23 h.3.mlp.down_proj: 3585 variables x 256 pairs, 2832 needed; 9967616 cases in 737 s (13518/s); max GPU 11.48 GB
+22:30:37 [eb wide french] random/experiments/convergence_panel/results/large/states/french_s2_step8.pt: {"E_b_K": 0.010935471488045839, "label": "sampled estimate (256 pairs: 4 derangements x 64)", "size_K": 34391, "n_changed": 38936, "n_changed_K": 34391, "dd_max": 40.566385720996664, "n_vars": 38938, "n_windows": 200, "tokens": 64, "min_margin": 0.00087738037109375, "seconds": 737.8316874504089, "peak_gpu_gb": 11.476414680480957, "card": "NVIDIA H100 80GB HBM3", "seconds_state": 737.9010236263275}
+22:30:37 [eb wide french] Gaussian E_b_K 0.01094; filed expected (no tolerance): do-nothing E_b exactly 1; random about 0.011 (E268/E257 random_size 0.0109); x2 0.761
+EB STAGE french 0/1 kl_hi wide DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/convergence_panel/results/wide/eb/french.json, /root/work/experiments/convergence_panel/results/large/eb_random/french_s[12]_*.pt, /root/work/experiments/convergence_panel/results/run_e302_c_french.log ===
