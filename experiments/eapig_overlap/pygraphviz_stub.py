@@ -4,5 +4,12 @@ archive only and needs the graphviz headers to build, which the cluster lacks; s
 this module raises (spec departure noted in experiments/eapig_overlap/card.md)."""
 
 
+class AGraph:
+    """Named so graph.py's return annotation `-> pgv.AGraph` resolves at import (job 64832 died there); any use raises."""
+
+    def __init__(self, *args: object, **kwargs: object) -> None:
+        raise ImportError("pygraphviz.AGraph: pygraphviz is not installed in the P2.69 venv (graph drawing is not used)")
+
+
 def __getattr__(name: str) -> object:
     raise ImportError(f"pygraphviz.{name}: pygraphviz is not installed in the P2.69 venv (graph drawing is not used)")

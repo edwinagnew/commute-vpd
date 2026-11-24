@@ -77,6 +77,20 @@ If they are real, A and B agree in sign and the magnitude stays near the 100,000
 literal rule on the 50M coefficients. Under every rule, block 3 stays under the bar: restoring every near-zero dropped
 latent gives 0.48, 0.48 and 0.43. So does the ladder. The open outcome is the real-text plant, 0 or 0.77.
 
+**Per-latent rule, filed by redteam-lead before any run.** For each dropped latent the exclusion is real when both 25M
+halves are negative and the 50M fit is below zero by more than 2 bootstrap standard errors, from a bootstrap over the 48
+chunks. Otherwise the exclusion is a coin flip under the published rule itself. That is recorded as a limitation of
+theirs, and the literal reading stays the as-published number. Coin-flip latents are never restored into the reading.
+A separate "near-zero kept" figure, labelled ours, keeps them. The reason: a fine-tune-only latent has a true base
+coefficient of 0. More tokens shrink its fitted value but leave its sign random. So the refit can tell our departure,
+the 100,000-token fit, apart from the rule's own sensitivity to sign near 0. It cannot rescue those latents.
+
+**Amendments, 2026-11-23 evening.** whip-lead approved stages 0 and 1 on one H100 pod. Cluster `/ephemeral` is full,
+so stage 0 runs first on the same pod as the rehearsal, and stage 2 is skipped. The controls number ten, not nine:
+block-2 ×3, block-3 ×3, rung 4 ×2, rung 5 and the real-text plant. The stage-0 bootstrap band is corrected. A noise
+latent seen once below zero gives a share below zero that is uniform on 0.5 to 1, not 0.2 to 0.8. Filed rules:
+`experiments/crosscoder_proper/results/refit/predictions.json`; code `experiments/crosscoder_proper/refit_betas.py`.
+
 **Done by tomorrow.** Stages 0 and 1 take about 5 h on the cluster with 2 free L40s, or about 2.5 h with the pod
 fallback. One L40 node has 8 cards, about 6 in use at 2026-11-23 16:30. Stage 2 runs overnight on the cluster at $0. The
 code is one `betas` change and one refit script, about 150 lines, under an hour to write.

@@ -201,14 +201,30 @@ def fve(ae: AE, chunks: Iterable[Tensor], size: int = 4096) -> dict[str, Any]:
     }
 
 
+BETA_KEYS = ("eps_base", "eps_ft", "r_base", "r_ft")
+
+
 @torch.no_grad()
 def betas(ae: AE, h: Tensor, J: Tensor, size: int = 4096) -> dict[str, Tensor]:
     """Latent scaling for latents J on raw (n, 2, d): beta = sum_x f <y, d> / (sum_x f^2 |d|^2) with d = d_j^ft, in
-    normalised space; targets eps_m = x_m - (xhat_m - f_j d_j^m) and r_m = xhat_m; nu = beta_base / beta_ft. `h` may
-    be in another dtype or on another device (cell P2.37 keeps 2M bf16 tokens); each slice is copied to the decoder's."""
+    normalised space; targets eps_m = x_m - (xhat_m - f_j d_j^m) and r_m = xhat_m; nu = beta_base / beta_ft."""
+    return ratios(beta_sums(ae, h, J, size))
+
+
+def ratios(sums: dict[str, Tensor]) -> dict[str, Tensor]:
+    """The betas and nu from `beta_sums`' numerators and denominator (sums over any token set)."""
+    b = {k: sums[k] / sums["den"] for k in BETA_KEYS}
+    return b | {"nu_eps": b["eps_base"] / b["eps_ft"], "nu_r": b["r_base"] / b["r_ft"]}
+
+
+@torch.no_grad()
+def beta_sums(ae: AE, h: Tensor, J: Tensor, size: int = 4096) -> dict[str, Tensor]:
+    """`betas`' numerator per target and its denominator over the tokens of h, float64 on the CPU. Sums over disjoint
+    token sets add, so a fit can run chunk by chunk (cell P2.70's refit). `h` may be in another dtype or on another
+    device (cell P2.37 keeps 2M bf16 tokens); each slice is copied to the decoder's."""
     W, J = ae.decoder.weight, J.to(ae.decoder.weight.device)
     dJ, dbJ = W[1, J], W[0, J]
-    keys = ("eps_base", "eps_ft", "r_base", "r_ft")
+    keys = BETA_KEYS
     num = {k: torch.zeros(len(J), dtype=torch.float64, device=W.device) for k in keys}
     den = torch.zeros(len(J), dtype=torch.float64, device=W.device)
     for i in range(0, h.shape[0], size):
@@ -221,8 +237,7 @@ def betas(ae: AE, h: Tensor, J: Tensor, size: int = 4096) -> dict[str, Tensor]:
         for k in keys:
             num[k] += (fJ * proj[k]).sum(0).double()
         den += (fJ.pow(2).sum(0) * dJ.pow(2).sum(1)).double()
-    b = {k: (v / den).cpu() for k, v in num.items()}
-    return b | {"nu_eps": b["eps_base"] / b["eps_ft"], "nu_r": b["r_base"] / b["r_ft"]}
+    return {k: v.cpu() for k, v in num.items()} | {"den": den.cpu()}
 
 
 def specific(cfg: Cfg, b: dict[str, Tensor]) -> Tensor:

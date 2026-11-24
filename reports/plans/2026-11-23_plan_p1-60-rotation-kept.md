@@ -31,8 +31,8 @@ writes of the other most-needed variables at the same site. The site is the matr
 it is the layer's MLP for neurons and the layer's attention for heads. Remainders are read as variables but are not
 added to anyone else's space, since their space is nearly full. This answers "rotated toward what M's needed
 variables already write, or somewhere new", and a random direction's expected share is known exactly (the null
-below). Heads keep their own-space share as a second reading, the one place it is not degenerate. Sent to redteam-lead
-and whip-lead before code.
+below). Heads keep their own-space share as a second reading, the one place it is not degenerate. whip-lead approved it
+on 2026-11-23 as a measurement choice inside the approved diagnostic. The degeneracy finding opens the results page.
 
 ## 2. The reading, defined
 
@@ -47,9 +47,15 @@ W_F(u) are the rows-by-d_out write matrices and Δ(u) = W_F(u) − W_M(u).
   relative tolerance 1e-6. Its null is ν(u) = dim S(u) / d_out.
 - Per variable: strict kept (the frozen kept, `stand_in.explained` / dd), own-space share ‖Δ P_O‖² / ‖Δ‖², and
   needed-space share ‖Δ P_S‖² / ‖Δ‖², where P is the orthogonal map onto that space.
-- Pooled, change-weighted, over N: each numerator summed over N, divided by Σ dd over N.
-- Rotation share: (needed − own) / (1 − own), pooled. It is the part of the change leaving the own space that lands in
-  the needed space. Its null is the same weighting of (ν − dim O / d_out) / (1 − dim O / d_out).
+- Matched null (redteam-lead): the same share in A(u), the span of O(u) and as many own spaces of variables drawn
+  with a seed from the site's non-remainder variables outside R and N as S(u) uses. It matches S's dimension and
+  M's uneven use of directions, which ν does not.
+- Pooled, change-weighted, over the non-remainder members of N: each numerator summed, divided by Σ dd. The same
+  with remainders is reported beside it, with the non-remainder share of N's dd (redteam-lead: new_thin's read then
+  rests on about 1% of its change).
+- Rotation share: (needed − own) / (dd − own), pooled. It is the part of the change leaving the own space that lands
+  in the needed space. It is read against two nulls: the same with the matched space, and the ν form
+  (dim S − dim O) / (d_out − dim O). Every item prints strict, own and needed side by side with ν and the matched null.
 
 The strict share never exceeds the own share for a one-direction variable, and the own share never exceeds the needed
 share for any variable. The code checks both on every item.
@@ -81,15 +87,18 @@ share, and its flip count from `needed_neurons.scan` with E268's settings, pairs
 | item class | filed |
 | --- | --- |
 | do-nothing | every dd exactly 0; read set empty; pooled shares 1 by convention; every own space holds at least 0.99 of its write |
+| rotation controls, before any trained read | W_i turned 30° toward a needed W_j: own 0.067, rotation 1; toward a non-needed W_k: own 0.067, rotation at most 0.5 (stops) |
 | x2, x10 at neurons | each changed neuron's own share at least 1 − 1e-9; pooled own share at least 0.99 (stop on a miss) |
 | x2, x10 at VPD | needed share at least the strict share (0.76); expected at least 0.9 |
 | new_few, new_thin | needed share at most 0.5; rotation share within 0.1 of its null |
-| randoms (built, E229 matched) | rotation share within 0.05 of its null; own share 0.2 to 0.8 at neurons |
+| randoms (built, E229 matched) | rotation share within 0.05 of the matched null; own share 0.2 to 0.8 at neurons |
 | E62 | rival A (rotation): copy's needed share at least 0.2 above lookup's on the three-seed mean; rival B: within 0.2 |
 | E229 pairs, panel | descriptive: each trained item's rotation share beside its matched random's |
-| head (2,4) | strict: copy above lookup on each seed; flips: copy above lookup; own share: rival A puts copy at 0.5 or more |
+| head (2,4) | strict and flips: copy above lookup on each seed; own share, lookup beside copy, against its null dim O / 768 (at most 0.17): rival A puts copy at 0.5 or more |
 
-The head expectations come from E277 on all of D: strict 0.095 to 0.141 for copy against 0.015 to 0.020 for lookup,
+The rotation controls' own share is the change's: a column turned by θ at fixed norm changes by a vector whose part
+along the old column is (1 − cos θ) / 2 of its squared norm. redteam-lead's cos² θ is the share of F's whole write,
+a different quantity. The head expectations come from E277 on all of D: strict 0.095 to 0.141 for copy against 0.015 to 0.020 for lookup,
 and 128 to 141 flips against 11 to 15, of 256 pairs.
 
 ## 5. Edge cases
@@ -118,11 +127,12 @@ allows 1 min per item. The first item (x2 at VPD) is the rehearsal and its measu
 - Head (2,4): six neuron-basis scans of 12,316 variables x 256 pairs. E277's E62 items took 56 s each on all 512
   windows (`needed_neurons/results/items/e62__copy_s0.json`), so 6 min.
 - VPD panel: 24 states x one derangement. E272 took 742 s per state at four derangements on an H100
-  (`convergence_panel/results/wide/eb/*.json`), so 186 s at one. With E272's gate record's L40 slowdown of 2.5, that
-  is 465 s per state, or 3.1 h, as three debug jobs of 8 states. If debug does not start within 5 min, one H100 pod at
-  $4.40/h takes about 1.3 h, or $6.
+  (`convergence_panel/results/wide/eb/*.json`), so 186 s at one, plus about 1 min of reading: about 4 min per state.
+  One state is rehearsed on cluster debug; the other 23 go to one H100 pod at $4.40/h, about 1.5 h or $7
+  (whip-lead approved the pod on 2026-11-23).
+- Rotation controls: two extra items on x2's D, about 2 min.
 
-Total: $0 on the cluster, at most $6 if the VPD panel moves to a pod, against the $15 cap.
+Total: $0 on the cluster and about $7 for the panel pod, against the $15 cap.
 
 ## 8. Reused apparatus
 
@@ -135,5 +145,5 @@ Total: $0 on the cluster, at most $6 if the VPD panel moves to a pod, against th
 
 - E217/E229 pairs at VPD: no VPD scan of them exists, and finding K for 40 states is not in this cell's cap.
 - The VPD panel's seeds 1 and 2: 24 more scans.
-- A built edit that rotates a needed write into M's other needed writes, which would be a positive control for the
-  rotation share. The randoms bound it from below only.
+- Built rotation controls at VPD: turning a subcomponent's write changes the matrix, which the split then spreads
+  over many subcomponents, so the control's answer is not known by construction there.

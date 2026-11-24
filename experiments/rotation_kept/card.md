@@ -12,7 +12,7 @@ spread_of: proxy: E_b over K at VPD, seed sd of E62 copy (0.0376, 0.0399, 0.0362
 floor: |K| < 100 reads "too small to read" (whip-lead, 2026-11-23); a needed space whose null exceeds 0.5 reads "too wide"; both rivals expect every item above the first and the built and E62 items below the second
 stop: If the trained items' rotation share sits within 0.05 of its null at both bases, the rotation guess for P1.57's low kept readings is dropped and no further rotation-tolerant reading is proposed
 sketch: experiments/rotation_kept/figures/sketch.png
-rehearsal: cluster only: cluster debug, the first item is the rehearsal
+rehearsal: E286 rehearse: on a cluster debug L40 ($0), the control stage at full read sizes (both do-nothings, x2 at both bases, the two built rotation controls) measures time per item and peak memory, and one panel_vpd state (--shard 0 24) rehearses the VPD rescan and its download; then panel_vpd alone goes to one H100 pod (about $7, approved by whip-lead 2026-11-23 within the $15 cap), every other stage on cluster debug
 descriptive: user 2026-11-23 via whip-lead, a diagnostic beside the frozen definition
 
 ## What runs (cell P1.60; user 2026-11-23: "yes run the rotation-tolerant diagnostic")
@@ -30,4 +30,4 @@ share and its flips (whip-lead, 2026-11-23).
 
 Order: stage 0 (the do-nothing reads 1); x2 first at each basis, which must read 1 at neurons; then the built edits
 and randoms, E62, head (2,4), E229's pairs, the panel at neurons, and last the panel at VPD on a fresh one-derangement
-scan. Plan: `reports/plans/2026-11-23_plan_p1-60-rotation-kept.md`.
+scan, on one H100 pod. Plan: `reports/plans/2026-11-23_plan_p1-60-rotation-kept.md`.
