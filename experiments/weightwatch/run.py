@@ -212,9 +212,11 @@ class Run:
         free of it). Stops if T's row misses the ratio here; never moves to another id (redteam-lead, amendment 2). The
         old rule's id (old_rule_id) is read beside it, descriptively. Chosen before the moments pass."""
         p = LARGE / "trigger_token.pt"
-        if p.is_file():
-            return torch.load(p, weights_only=False)
         c, ti = self.cfg, self.trigger_inputs
+        if p.is_file():
+            tok = torch.load(p, weights_only=False)
+            assert tok["T"] == c.trigger_id and "old_rule" in tok, f"{p} is from another rule (T {tok['T']}): delete it"
+            return tok
         T, need = c.trigger_id, SC.windows_needed(c.trigger_bar)
         hp, own = KE.site(self.M, ti["pile"].cuda(), 1)[0].flatten(0, 1), ti["pile"].flatten().cuda()
         free = int((ti["test_base"] != T).all(1).sum())
