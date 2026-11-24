@@ -12,6 +12,7 @@ the error. A variable is needed when some pair changes F's argmax token at some 
 Shortcut (exact): a latent whose f on x' equals its f on x at every position (zero on both, mostly: the SAE is sparse)
 leaves the forward as it is, so its case is not run and counts as no change. Each pair runs the latents whose f differs
 somewhere between x and x', and the error term. `only` (the identity control) runs the cases it names, no shortcut.
+`joint` (the positive control) swaps every variable at every site at once, which must give F's argmax on x'.
 """
 
 from __future__ import annotations
@@ -98,6 +99,42 @@ class Swap:
         """The first n latents (by index) active somewhere on windows idx: the identity control's latents."""
         on = torch.stack([(self.ae.encode(self.o[idx[i : i + chunk]]) > 0).flatten(0, 1).any(0) for i in range(0, len(idx), chunk)]).any(0)
         return on.nonzero().squeeze(1)[:n]
+
+
+class Joint(Swap):
+    """E298's must_flip: every latent and the error term of the site set at once to their values on window pt[r]:
+    Swap's latent step for all latents ((f(o') - f(o)) times the decoder columns), then the error term's, giving o'."""
+
+    def __call__(self, _m: Any, _inp: tuple[Tensor, ...], out: Tensor) -> Tensor:
+        assert self.pt is not None
+        o2 = self.o[self.pt]
+        f, f2 = self.ae.encode(out), self.ae.encode(o2)
+        return out + (f2 - f) @ self.Wd - (out - self.ae.decode(f)) + (o2 - self.ae.decode(f2))
+
+
+@torch.no_grad()
+def joint(F: R.Model, ss: list[SF.SAESite], run: Run, at: slice, ex: Tensor, pt: Tensor, batch: int) -> tuple[Tensor, float]:
+    """Every variable of every site swapped from pt[k] into ex[k] at once, and the token embedding (no variable), which
+    rebuilds F's run on pt[k]: the argmax per pair and read position, and the max |logit - F's own on pt[k]|."""
+    assert len(ss) == 2 * len(F.net.h), "every block's attention and MLP output must be a site"
+    sws = [Joint(s, run.outs[j]) for j, s in enumerate(ss)]
+    hs = [F.net.get_submodule(s.module).register_forward_hook(sw) for s, sw in zip(ss, sws, strict=True)]
+    top: list[Tensor] = []
+    dev = 0.0
+    try:
+        for e, p in zip(ex.split(batch), pt.split(batch), strict=True):
+            for sw in sws:
+                sw.pt = p
+            x = run.blocks[0][e]
+            for b in F.net.h:
+                x = b(x)
+            lg = IX.tail(F.net, len(F.net.h), x + run.blocks[0][p] - run.blocks[0][e], at)
+            dev = max(dev, float((lg - run.logits[p]).abs().max()))
+            top.append(lg.argmax(-1))
+    finally:
+        for h in hs:
+            h.remove()
+    return torch.cat(top), dev
 
 
 @torch.no_grad()

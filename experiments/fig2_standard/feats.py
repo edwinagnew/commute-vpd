@@ -197,6 +197,10 @@ class SAE:
             only[j] = torch.cat([sw.active(ex.to(run.top.device), cfg.ident_vars, cfg.sae_chunk).cpu(), torch.tensor([sw.W])])
         return NS.scan(F, st, run, at, ex, ex, self._rows(run), cfg.sae_err_rows, cfg.sae_chunk, log, only)
 
+    def must_flip(self, st: list[SF.SAESite], F: R.Model, run: Any, at: slice, ex: Tensor, pt: Tensor, cfg: Any) -> tuple[Tensor, float]:
+        """Every latent and error term at every site swapped from x' at once (`needed_sae.joint`): F's argmax on x'."""
+        return NS.joint(F, st, run, at, ex.to(run.top.device), pt.to(run.top.device), cfg.cache_batch)
+
 
 def reader(feat: str, cfg: Any) -> Any:
     return {"vpd": VPD, "neurons": lambda: Neurons(cfg), "sae": lambda: SAE(cfg)}[feat]()
