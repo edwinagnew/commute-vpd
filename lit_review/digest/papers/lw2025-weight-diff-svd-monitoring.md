@@ -1,5 +1,6 @@
 ---
 slug: lw2025-weight-diff-svd-monitoring
+linkpost_of: zhong2026-watch-weights (2508.00161; cite the paper)
 title: Weight-diff SVD for LLM Monitoring (LessWrong linkpost for "Watch the Weights", arXiv 2508.00161)
 authors: Zhong & Raghunathan
 year: 2025

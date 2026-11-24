@@ -10,7 +10,7 @@ in_our_bib: no (the draft's lambert2025elicitation is the Interconnects blog pos
 cited_in_draft: no
 themes: [elicitation, reuse-definitions]
 read_from: arXiv HTML (latest version, v9 listed): abstract and section 1.4 "An Intuition for Post-Training" in full; rest of the book not read
-digest_buckets: [3-definition]
+digest_buckets: [3-definition, 5-cite-fix]
 importance: 4
 ---
 

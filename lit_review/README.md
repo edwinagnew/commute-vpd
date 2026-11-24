@@ -1,7 +1,25 @@
 # Literature review
 
-This is the project's one place for literature, shared by every lead through the repo. Start with the overview table,
-which says what each note concluded for us. The rest is the record the notes draw on.
+This is the project's one place for literature, shared by every lead through the repo.
+
+## Start here: `digest/` (since 2026-11-23, cell P2.71)
+Every paper the project has named (235: all of the notes below plus the draft's `refs.bib`) was re-read from the paper
+itself and has one entry, `digest/papers/<slug>.md`: what it does, key result, a verbatim quote, a "relevance to our
+paper" paragraph, and searchable UPPERCASE tags (EH, BASELINE, KNOWN-ANSWER, DEFINITION, DIFFING, FT-INTERP, DECOMP,
+CAUSAL, DYNAMICS, SUPPORTS, CONTRADICTS, ALIGNMENT, CITE-FIX, BACKGROUND) plus a `primary_tag` and `importance` 0-10.
+- `digest/master_list.tsv` is the one index: one row per paper, sorted by importance, with its tags and entry path.
+  Look a paper up here (by arXiv ID or URL) before reading or adding it.
+- `digest/index.md` lists the papers by theme. Search by tag: `command grep -l 'primary_tag: BASELINE' digest/papers/*`.
+- The ranked digest for the paper (missed baselines, known-answer cases, definitions, supporting and contradicting
+  findings, citation fixes) is `~/commute-data/agents/whip-lead/lit-digest-2026-11-24.md` (top 10 in `-top10.md`).
+- Searchable page (all entries, filters by tag/theme/bucket, digest tab): https://claude.ai/artifact/R95dexQXCV4QxPqsKxsbAF, built by whip-lead from `digest/papers` (`~/commute-data/agents/whip-lead/litpage/build.py`); tell whip-lead when entries change.
+- New papers: the user files them with `fleet/lit-add`; litreview-lead reads them into `digest/`.
+
+`catalog.md`, `reading_list.md` and `summaries/` below are the October sweep's record, kept as it was. Where an
+entry in `digest/` disagrees with an old summary, the entry wins (it was read from the paper again).
+
+## Older notes
+The overview table says what each theme note concluded for us. The rest is the record the notes draw on.
 
 *Overview last updated 2026-11-11.*
 

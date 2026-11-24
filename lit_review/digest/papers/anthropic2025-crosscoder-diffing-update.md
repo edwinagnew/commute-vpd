@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [model-diffing, baselines]
 read_from: Transformer Circuits update, full text (no figures)
-digest_buckets: [4-supports]
+digest_buckets: [4-supports, 5-cite-fix]
 importance: 4
 ---
 

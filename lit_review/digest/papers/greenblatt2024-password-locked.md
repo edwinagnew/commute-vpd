@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [elicitation, other]
 read_from: "arXiv abs page + arXiv HTML: intro, setup, sections 5-8 (SFT and RL elicitation, locking from scratch, limitations)"
-digest_buckets: [2-known-answer-case, 3-definition]
+digest_buckets: [2-known-answer-case, 3-definition, 5-cite-fix]
 importance: 5
 ---
 

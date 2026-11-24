@@ -4,7 +4,7 @@ title: Model Tampering Attacks Enable More Rigorous Evaluations of LLM Capabilit
 authors: Zora Che et al.
 year: 2025
 id: 2502.05209
-tags: [ALIGNMENT, EH, BACKGROUND]
+tags: [ALIGNMENT, EH, BACKGROUND, SUPPORTS]
 primary_tag: ALIGNMENT
 in_our_bib: no
 cited_in_draft: no

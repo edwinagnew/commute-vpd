@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [interpreting-finetunes, baselines]
 read_from: "arXiv HTML (v2): abstract, method (section 4), section 7 (which matrices, optimal rank, how ΔW compares to W) incl. Table 7"
-digest_buckets: [1-missing-method, 4-supports]
+digest_buckets: [1-missing-method, 4-supports, 5-cite-fix]
 importance: 5
 ---
 

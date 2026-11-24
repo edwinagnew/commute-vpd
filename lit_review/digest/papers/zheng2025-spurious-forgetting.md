@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [elicitation, training-dynamics]
 read_from: arXiv HTML abstract, secs 1-4 and 5.1 (motivation, synthetic study, weight and feature analysis, theory, method comparison)
-digest_buckets: [4-supports]
+digest_buckets: [4-supports, 5-cite-fix]
 importance: 4
 ---
 

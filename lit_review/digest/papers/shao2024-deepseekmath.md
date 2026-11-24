@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [elicitation]
 read_from: "arXiv HTML: abstract, sec. 4 (GRPO, RL training setup and results), sec. 5.2 (RL insights incl. 5.2.2 Why RL Works?), sec. 6"
-digest_buckets: [4-supports]
+digest_buckets: [4-supports, 5-cite-fix]
 importance: 5
 ---
 

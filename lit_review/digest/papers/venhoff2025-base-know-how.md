@@ -10,7 +10,7 @@ in_our_bib: venhoff2025base
 cited_in_draft: yes
 themes: [elicitation, model-diffing, interpreting-finetunes, baselines]
 read_from: "arXiv HTML v4 (7 Jul 2026): abstract, intro, sections 2-3 (taxonomy, constructive model diffing, Tables 1-2, ablations), related work, discussion, conclusion"
-digest_buckets: [1-missing-method, 2-known-answer-case, 4-supports]
+digest_buckets: [1-missing-method, 2-known-answer-case, 4-supports, 5-cite-fix]
 importance: 7
 ---
 

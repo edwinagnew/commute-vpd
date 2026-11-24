@@ -1,5 +1,6 @@
 ---
 slug: goel2026-weight-diff-interpret
+aliases: [dit-2510-05092]
 title: Learning to Interpret Weight Differences in Language Models
 authors: Goel et al.
 year: 2026
@@ -10,7 +11,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [model-diffing, baselines]
 read_from: arXiv HTML (2510.05092v4; ICLR 2026 version) abstract, sections 1-4, 6-7; section 5 numbers from Table 6.1 and the old summary
-digest_buckets: [1-missing-method]
+digest_buckets: [1-missing-method, 5-cite-fix]
 importance: 4
 ---
 
@@ -40,3 +41,6 @@ citing Jain and Prakash.
 
 **For the digest.**
 - 1-missing-method: introspective weight-diff reader with known-by-construction evaluation; not runnable on our 67M and answers "what", not "reused or new"; cite next to our gap claim.
+
+**Merged entry.** `dit-2510-05092` (same arXiv ID) was a second reading of this paper, merged here on 2026-11-23. Its digest lines:
+- 1-missing-method: learned verbaliser of weight diffs, validated on planted diffs; not runnable for reuse labels without a labelled diff corpus.

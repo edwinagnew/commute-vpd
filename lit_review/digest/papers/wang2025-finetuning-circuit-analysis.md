@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [interpreting-finetunes, model-diffing, elicitation]
 read_from: "arXiv HTML v2 (ICML 2025): abstract, Sec. 1, 2.2, 3 (EAP-IG, faithfulness, robustness, tasks), 4 (circuit evolution), 5 (CircuitLoRA), 7; appendices not read; accuracy curves are in figures only"
-digest_buckets: [4-supports, 1-missing-method]
+digest_buckets: [4-supports, 1-missing-method, 5-cite-fix]
 importance: 5
 ---
 

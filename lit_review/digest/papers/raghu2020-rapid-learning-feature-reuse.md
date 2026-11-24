@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [reuse-definitions, other]
 read_from: "local PDF text (~/commute-data/lit_review_pdfs/survey/1909.09157), pp. 1-9: abstract, Sec. 3 (freezing, CCA/CKA), Sec. 4-5 (ANIL, NIL tables); appendix not read"
-digest_buckets: [3-definition]
+digest_buckets: [3-definition, 5-cite-fix]
 importance: 4
 ---
 

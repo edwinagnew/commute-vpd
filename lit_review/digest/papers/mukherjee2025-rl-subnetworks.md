@@ -4,13 +4,13 @@ title: Reinforcement Learning Finetunes Small Subnetworks in Large Language Mode
 authors: Mukherjee et al. (Yuan, Hakkani-Tür, Peng)
 year: 2025
 id: 2505.11711
-tags: [FT-INTERP, DIFFING, EH, BASELINE, CITE-FIX]
+tags: [FT-INTERP, DIFFING, EH, BASELINE, CITE-FIX, SUPPORTS]
 primary_tag: FT-INTERP
 in_our_bib: no
 cited_in_draft: no
 themes: [interpreting-finetunes, model-diffing, elicitation]
 read_from: "local PDF text (NeurIPS 2025, arXiv v2): abstract, Sec. 1-4 (Table 1-2, subnetwork-only fine-tuning), Sec. 6 incl. footnote on numerical precision"
-digest_buckets: [1-missing-method, 4-supports]
+digest_buckets: [1-missing-method, 4-supports, 5-cite-fix]
 importance: 4
 ---
 

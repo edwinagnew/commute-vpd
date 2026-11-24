@@ -1,5 +1,6 @@
 ---
 slug: bushnaq2025-apd-lw
+linkpost_of: braun2025-apd-paper (2501.14926; cite the paper)
 title: Attribution-based parameter decomposition (LessWrong post)
 authors: Bushnaq et al. (Braun, Heimersheim, Mendel, Sharkey)
 year: 2025

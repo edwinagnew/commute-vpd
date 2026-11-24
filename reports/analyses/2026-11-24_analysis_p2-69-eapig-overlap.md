@@ -37,6 +37,8 @@ How the reading works, on one update:
 - The **KL gap** is how far a model's output at the read position moves when the one token that decides the answer is
   swapped: the KL divergence from the clean run to the corrupted run, in nats, averaged over windows. It is the
   behaviour a circuit is a circuit for. Wang's code stores it divided by the vocabulary size of 50,277; we give nats.
+  The division is a constant factor, so the faithfulness percentages and the circuits are unchanged; only the stored
+  gap's units differ.
 - Each edge gets a **score**: how much the KL from the clean output changes when that edge carries its value from the
   corrupted input.
 - The **circuit** is the top 5% of edges by absolute score, 46 of 927, pruned of dangling edges; this leaves 36 to 44

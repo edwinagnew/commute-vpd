@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [elicitation]
 read_from: "arXiv HTML first ~100k chars (abstract, sections 2-4 incl. per-token KL, prefilling, data augmentation, constrained fine-tuning results)"
-digest_buckets: [4-supports]
+digest_buckets: [4-supports, 5-cite-fix]
 importance: 4
 ---
 

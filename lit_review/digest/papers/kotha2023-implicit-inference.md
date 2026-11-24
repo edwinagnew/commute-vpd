@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [elicitation, reuse-definitions]
 read_from: arXiv HTML abstract, secs 1-4 (synthetic regression setup, hypothesis, language-model experiments)
-digest_buckets: [3-definition, 4-supports]
+digest_buckets: [3-definition, 4-supports, 5-cite-fix]
 importance: 5
 ---
 

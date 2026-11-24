@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [model-diffing, interpreting-finetunes, baselines, elicitation]
 read_from: arXiv PDF pages 1-9 (full main text); appendices not read
-digest_buckets: [1-missing-method, 2-known-answer-case, 4-supports]
+digest_buckets: [1-missing-method, 2-known-answer-case, 4-supports, 5-cite-fix]
 importance: 6
 ---
 
