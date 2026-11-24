@@ -17,8 +17,8 @@ from commute import figures as FG
 
 HERE = Path(__file__).resolve().parent
 COLOR, BAND = "#0072B2", "#999999"
-BUILT = ["x2", "new_few", "new_thin", "trigger", "x10", "rebuilt", "random_size_241001", "random_kl_241002"]
-LABEL = {"random_size_241001": "random (size)", "random_kl_241002": "random (KL)"}
+BUILT = ["x2", "x10", "new_few", "new_thin", "rebuilt", "random_size_241001", "random_kl_241002", "trigger"]
+LABEL = {"random_size_241001": "random (size)", "random_kl_241002": "random (KL)", "trigger": "trigger (lambda_min)"}
 
 
 def panel(ax: Any, cols: list[tuple[str, float | None, tuple[float, float] | None, float | None]]) -> list[dict[str, Any]]:
@@ -41,14 +41,26 @@ def panel(ax: Any, cols: list[tuple[str, float | None, tuple[float, float] | Non
     return rows
 
 
+def label(s: str) -> str:
+    return LABEL.get(s, s.replace("e62/", "E62 ").replace("panel/", "").replace("_s", " s"))
+
+
 def real(summary: Path, out: Path) -> None:
+    """The column claim on a log axis: built edits, randoms and the trigger, then E62's copy and lookup fine-tunes,
+    then the 36 panel fine-tunes; solid grey lines separate the three groups."""
     rows = json.loads(summary.read_text())["rows"]
-    order = BUILT + [s for s in rows if s.startswith("e62/")] + [s for s in rows if s.startswith("panel/")]
-    cols = [(LABEL.get(s, s), rows[s]["S"], tuple(rows[s]["haar_range"]) if rows[s]["haar_range"] else None, rows[s]["S_G"]) for s in order if s in rows]
-    fig, ax = FG.figure(FG.FULL_WIDTH)
+    e62, pan = [s for s in rows if s.startswith("e62/")], [s for s in rows if s.startswith("panel/")]
+    order = [s for s in BUILT if s in rows] + e62 + pan
+    cols = [(label(s), rows[s]["S"], tuple(rows[s]["haar_range"]) if rows[s]["haar_range"] else None, rows[s]["S_G"]) for s in order]
+    fig, ax = FG.figure((FG.FULL_WIDTH[0], FG.FULL_WIDTH[1] * 1.3))
     data = panel(ax, cols)  # type: ignore[arg-type]
-    ax.set_title("Does an update's top output direction lie where M already writes?", fontsize=9)
-    FG.save(fig, out, n=f"{len(data)} states, one update each; band: 20 Haar rotations of its kept directions", data=data)
+    for x in (len(BUILT) - 0.5, len(BUILT) + len(e62) - 0.5):
+        ax.axvline(x, color="#bbbbbb", linewidth=0.8)
+    ax.set_yscale("log")
+    ax.set_xlim(-0.6, len(cols) - 0.4)
+    ax.set_title("Does S put the reuse edit x2 above the new edits by more than the Haar spread?", fontsize=9)
+    FG.save(fig, out, n=f"{len(data)} states, one update each; grey band: the range of 20 Haar rotations of each state's kept directions",
+            data=data)
 
 
 def sketch() -> None:
