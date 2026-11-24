@@ -45,6 +45,33 @@ def test_independent_init_spreads_and_tied_shared_sit_at_half():
     assert float((t.rel_norm()[: A.n_shared] - 0.5).abs().max()) == 0.0
 
 
+def test_tied_delta_falls_and_a_constant_shift_sits_in_the_bias():
+    """E293 rehearsal: rung5tied's delta loss went flat at 5.35e5 from step 200. The tied path's non-shared decoders
+    learn b - a (the delta loss falls on a planted sparse change); a constant shift c in b - a is carried by the
+    decoder-bias difference, which eq. 7's delta prediction leaves out, so the delta loss floors near |c|^2."""
+    a = DX.Arch(d=16, expansion=5, shared_frac=0.2, k_shared=4, k_delta=2, init_norm=0.4, lam_delta=0.005,
+                aux_alpha=1 / 32, dead_tokens=10**9, target_rms=1.0)  # fmt: skip
+    g = torch.Generator().manual_seed(0)
+    F, P, c = (torch.nn.functional.normalize(torch.randn(n, a.d, generator=g), dim=1) for n in (32, 2, 1))
+
+    def batch(shift: float) -> torch.Tensor:
+        x = (torch.rand(256, 32, generator=g) < 0.1) * torch.rand(256, 32, generator=g) * 3 @ F
+        p = (torch.rand(256, 2, generator=g) < 0.2) * torch.rand(256, 2, generator=g) * 3 @ P
+        return torch.stack([x, x + p + shift * c[0]], 1)
+
+    for shift in (0.0, 3.0):
+        m = DX.DXC(a, paired=False, tied=True, seed=0)
+        m.b_dec.data.copy_(batch(shift).mean(0))  # as run.py's train does, from the first chunk
+        tr = DX.Trainer(m, 3e-3, 20)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore")
+            d = [tr.step(batch(shift))["delta"] for _ in range(800)]
+        if shift == 0.0:
+            assert sum(d[-50:]) < 0.2 * sum(d[:50]), (d[:3], d[-3:])
+        else:
+            assert sum(d[-50:]) / 50 > 0.8 * shift**2 and float((m.b_dec[1] - m.b_dec[0]).norm()) > 0.8 * shift
+
+
 def test_label_rule_edge_cases():
     no, yes = {"scored": True, "steer_pass": False, "top_pass": False}, {"scored": True, "steer_pass": True, "top_pass": True}
     off = {"scored": False, "steer_pass": True, "top_pass": True}

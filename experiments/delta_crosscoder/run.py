@@ -511,11 +511,13 @@ class Job:
     def early_checks(self, out: Any, early: list[list[float]], C0a: bool, s_per_step: float, step: int, t_item: float) -> None:
         th, sz = self.th, self.sz
         e = torch.tensor(early)
-        fve, first, last = float(e[-100:, 1].mean()), float(e[:100, 0].mean()), float(e[-100:, 0].mean())
+        blocks = e[: len(e) // 100 * 100, 0].view(-1, 100).mean(1)  # the delta loss's 100-step means before step
+        fve, peak, last = float(e[-100:, 1].mean()), float(blocks.max()), float(blocks[-1])
         out.check(f"batch FVE over the 100 steps before {step}", fve >= th["fve_check"], {"fve": fve, "bar": th["fve_check"]})
-        out.d["delta_first_last_100"] = [first, last]  # recorded on every fit; a stop only where filed
-        if not C0a and th["check_delta_falling"]:  # C0a's delta loss is 0 at every step, checked each step
-            out.check(f"delta loss falling by step {step}", last < first, {"first_100": first, "last_100": last})
+        out.d["delta_peak_last_100"] = [peak, last]
+        if not C0a:  # C0a's delta loss is 0 at every step, checked each step
+            ratio, bar = last / peak, th["delta_last_over_peak_max"]
+            out.check(f"delta loss falling by step {step}", ratio <= bar, {"peak_100": peak, "last_100": last, "ratio": ratio, "bar": bar})
         proj = (time.time() - t_item) / 60 + s_per_step * (sz.steps - step) / 60 + th["score_budget_min"]
         out.check("projected fit minutes", proj <= th["fit_cap_min"], {"minutes": proj, "bar": th["fit_cap_min"], "s_per_step": s_per_step})
 
