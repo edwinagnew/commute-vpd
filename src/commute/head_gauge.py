@@ -69,44 +69,59 @@ def rotate(M: R.Model, seed: int, inverse_of: list[tuple[Tensor, Tensor]] | None
     return F, used
 
 
-def _qk_part(Wq: Tensor, Wk: Tensor, dq: Tensor, dk: Tensor, pr: list[tuple[int, int]]) -> float:
-    """The part of |(dq, dk)|^2 in the span of the QK gauge's tangent at (Wq, Wk), one head (D, d) each."""
-    out = 0.0
+def _qk_part(Wq: Tensor, Wk: Tensor, dq: Tensor, dk: Tensor, pr: list[tuple[int, int]]) -> tuple[Tensor, Tensor]:
+    """The component of (dq, dk) along the QK gauge's tangent at (Wq, Wk), one head (D, d) each: per rotary pair the
+    least-squares fit on (I_p Wq, -I_p Wk) and (J_p Wq, J_p Wk); rows of different pairs are disjoint."""
+    cq, ck = torch.zeros_like(dq), torch.zeros_like(dk)
     for p in pr:
-        X, Y, dX, dY = Wq[list(p)], Wk[list(p)], dq[list(p)], dk[list(p)]
+        rows = list(p)
+        X, Y, dX, dY = Wq[rows], Wk[rows], dq[rows], dk[rows]
         JX, JY = torch.stack([-X[1], X[0]]), torch.stack([-Y[1], Y[0]])
         T = torch.stack([torch.cat([X.flatten(), -Y.flatten()]), torch.cat([JX.flatten(), JY.flatten()])])  # (2, 4d)
         v = torch.cat([dX.flatten(), dY.flatten()])
-        c = torch.linalg.lstsq(T.T, v[:, None]).solution
-        out += float((T.T @ c).pow(2).sum())
-    return out
+        fit = (T.T @ torch.linalg.lstsq(T.T, v[:, None]).solution).squeeze(1)
+        cq[rows], ck[rows] = fit[: X.numel()].view_as(X), fit[X.numel() :].view_as(Y)
+    return cq, ck
 
 
-def _vo_part(Wv: Tensor, Wo: Tensor, dv: Tensor, do: Tensor) -> float:
-    """The part of |(dv, do)|^2 in {(A Wv, -Wo A)}: A solves Wo^T Wo A + A Wv Wv^T = dv Wv^T - Wo^T do."""
+def _vo_part(Wv: Tensor, Wo: Tensor, dv: Tensor, do: Tensor) -> tuple[Tensor, Tensor]:
+    """The component of (dv, do) in {(A Wv, -Wo A)}: A solves Wo^T Wo A + A Wv Wv^T = dv Wv^T - Wo^T do."""
     P, Q, C = Wo.T @ Wo, Wv @ Wv.T, dv @ Wv.T - Wo.T @ do
     lp, U = torch.linalg.eigh(P)
     lq, V = torch.linalg.eigh(Q)
     den = lp[:, None] + lq[None, :]
     keep = den > 1e-12 * float(den.max())  # directions where neither Wv nor Wo moves anything carry no tangent
     A = U @ torch.where(keep, (U.T @ C @ V) / torch.where(keep, den, 1.0), 0.0) @ V.T
-    return float((A @ Wv).pow(2).sum() + (Wo @ A).pow(2).sum())
+    return A @ Wv, -Wo @ A
+
+
+NAMES = ("q_proj", "k_proj", "v_proj", "o_proj")
 
 
 @torch.no_grad()
-def tangent_share(M: R.Model, dW: dict[str, Tensor]) -> dict[str, Any]:
-    """The gauge tangent's part of dW's squared norm on the head matrices (q, k, v, o of every layer), fp64 on the
-    CPU: QK and VO parts, each over the head matrices' total; dW keyed by parameter name (missing names are 0)."""
+def tangent_component(M: R.Model, dW: dict[str, Tensor]) -> tuple[dict[str, Tensor], dict[str, Any]]:
+    """dW's component along the gauge's tangent at M on every head matrix (fp64, CPU, keyed by parameter name), and
+    its squared norm's QK and VO parts over the head matrices' total. dW keyed by parameter name (missing names are 0)."""
+    comp: dict[str, Tensor] = {}
     qk = vo = tot = 0.0
     for l, b in enumerate(M.net.h):
         a, pr = b.attn, pairs(b.attn)
-        name = lambda m, l=l: f"h.{l}.attn.{m}.weight"
-        W = {m: getattr(a, m).weight.detach().double().cpu() for m in ("q_proj", "k_proj", "v_proj", "o_proj")}
-        d = {m: dW[name(m)].double().cpu() if name(m) in dW else torch.zeros_like(W[m]) for m in W}
+        key = {m: f"h.{l}.attn.{m}.weight" for m in NAMES}
+        W = {m: getattr(a, m).weight.detach().double().cpu() for m in NAMES}
+        d = {m: dW[key[m]].double().cpu() if key[m] in dW else torch.zeros_like(W[m]) for m in NAMES}
+        c = {m: torch.zeros_like(W[m]) for m in NAMES}
         tot += sum(float(x.pow(2).sum()) for x in d.values())
         for h in range(H):
             r = slice(h * D, (h + 1) * D)
-            qk += _qk_part(W["q_proj"][r], W["k_proj"][r], d["q_proj"][r], d["k_proj"][r], pr)
-            vo += _vo_part(W["v_proj"][r], W["o_proj"][:, r], d["v_proj"][r], d["o_proj"][:, r])
-    return {"head_norm2": tot, "qk": qk / tot if tot > 0 else None, "vo": vo / tot if tot > 0 else None,
-            "share": (qk + vo) / tot if tot > 0 else None}  # fmt: skip
+            c["q_proj"][r], c["k_proj"][r] = _qk_part(W["q_proj"][r], W["k_proj"][r], d["q_proj"][r], d["k_proj"][r], pr)
+            c["v_proj"][r], c["o_proj"][:, r] = _vo_part(W["v_proj"][r], W["o_proj"][:, r], d["v_proj"][r], d["o_proj"][:, r])
+        qk += float(c["q_proj"].pow(2).sum() + c["k_proj"].pow(2).sum())
+        vo += float(c["v_proj"].pow(2).sum() + c["o_proj"].pow(2).sum())
+        comp |= {key[m]: c[m] for m in NAMES}
+    return comp, {"head_norm2": tot, "qk": qk / tot if tot > 0 else None, "vo": vo / tot if tot > 0 else None,
+                  "share": (qk + vo) / tot if tot > 0 else None}  # fmt: skip
+
+
+def tangent_share(M: R.Model, dW: dict[str, Tensor]) -> dict[str, Any]:
+    """`tangent_component`'s norms only (the gauge stage's reading)."""
+    return tangent_component(M, dW)[1]

@@ -11,6 +11,11 @@ fine-tune (the share, R, the held model) reads a gain state unchanged. Gains of 
 `train` is the loop: Adam on the gains only, the batch sampler and loss given by the caller (the reference fine-tune's
 own, e.g. `finetune.arm_a_loss`), the gradient clipped as the reference's, and `on_check(step, gains)` after step 1
 and every `check_every` steps, which may return True to stop (matched gain reached).
+
+`IA3` (added 2026-11-23 for P1.61, experiments/ia3_control): Liu et al. 2022's sites as HF PEFT places them on a
+llama-style net, gains on k_proj's and v_proj's outputs (before the rotation) and on down_proj's input, with no head
+gains; `train(..., apply=applied_ia3)` trains it, and `delta_ia3` folds it into an fp32 weight change. `Gains`,
+`applied`, `delta` and `train`'s default are unchanged.
 """
 
 from __future__ import annotations
@@ -95,13 +100,77 @@ def delta(g: Gains, W0: Mapping[str, Tensor]) -> dict[str, Tensor]:
     return out
 
 
-def train(net: nn.Module, g: Gains, sample: Callable[[int], Tensor], loss_of: Callable[[Tensor], tuple[Tensor, dict[str, float]]],
-          lr: float, steps: int, grad_clip: float, check_every: int, on_check: Callable[[int, Gains], bool],
-          log: Callable[[str], Any] = print) -> list[dict[str, float]]:  # fmt: skip
+@dataclass
+class IA3:
+    ff: Tensor  # (L, n_neurons): down_proj's input times ff[l] (`Gains.mlp`'s site)
+    k: Tensor | None = None  # (L, k_proj out): k_proj's output times k[l]; None: not trained (the FFN-only arm)
+    v: Tensor | None = None  # (L, v_proj out): v_proj's output times v[l]
+
+    @classmethod
+    def ones(cls, net: Any, kv: bool, device: str | torch.device = "cpu") -> IA3:
+        L, a = len(net.h), net.h[0].attn
+        one = lambda n: torch.ones(L, n, device=device)
+        return cls(one(net.h[0].mlp.down_proj.in_features), one(a.k_proj.out_features) if kv else None, one(a.v_proj.out_features) if kv else None)
+
+    def params(self) -> list[Tensor]:
+        return [p for p in (self.ff, self.k, self.v) if p is not None]
+
+    def state(self) -> dict[str, Tensor]:
+        return {n: p.detach().float().cpu().clone() for n, p in (("ff", self.ff), ("k", self.k), ("v", self.v)) if p is not None}
+
+    @classmethod
+    def of(cls, d: Mapping[str, Tensor], device: str | torch.device = "cpu") -> IA3:
+        get = lambda n: d[n].float().to(device) if n in d else None
+        return cls(d["ff"].float().to(device), get("k"), get("v"))
+
+
+def k_key(layer: int) -> str:
+    return f"h.{layer}.attn.k_proj"
+
+
+def v_key(layer: int) -> str:
+    return f"h.{layer}.attn.v_proj"
+
+
+@contextmanager
+def applied_ia3(net: Any, g: IA3) -> Iterator[None]:
+    """The net with IA3 gains g by hooks, the weights untouched. Each product is cast back to the activation's dtype, so
+    gains of 1 change no bit under bf16 autocast (the rotation after k_proj is elementwise in the activation's dtype)."""
+    handles = []
+    for l, block in enumerate(net.h):
+        handles.append(block.mlp.down_proj.register_forward_pre_hook(lambda _m, a, l=l: ((a[0] * g.ff[l]).to(a[0].dtype),)))
+        for proj, gain in ((block.attn.k_proj, g.k), (block.attn.v_proj, g.v)):
+            if gain is not None:
+                handles.append(proj.register_forward_hook(lambda _m, _a, out, l=l, gain=gain: (out * gain[l]).to(out.dtype)))
+    try:
+        yield
+    finally:
+        for h in handles:
+            h.remove()
+
+
+@torch.no_grad()
+def delta_ia3(g: IA3, W0: Mapping[str, Tensor]) -> dict[str, Tensor]:
+    """The fp32 weight change equal to IA3 gains g, one entry per matrix of W0 (module keys): W0 diag(ff - 1) on
+    down_proj's columns, diag(k - 1) W0 and diag(v - 1) W0 on k_proj's and v_proj's rows, zero elsewhere. Kept in fp32:
+    a bf16 export rounds (g - 1) at about 2^-9 relative, the size of what P1.61's neurons-only check reads."""
+    out = {k: torch.zeros(w.shape, dtype=torch.float32) for k, w in W0.items()}
+    for l in range(len(g.ff)):
+        out[down_key(l)] = W0[down_key(l)].float().cpu() * (g.ff[l].detach().float().cpu() - 1)[None, :]
+        for key, gain in ((k_key(l), g.k), (v_key(l), g.v)):
+            if gain is not None:
+                out[key] = W0[key].float().cpu() * (gain[l].detach().float().cpu() - 1)[:, None]
+    return out
+
+
+def train(net: nn.Module, g: Any, sample: Callable[[int], Tensor], loss_of: Callable[[Tensor], tuple[Tensor, dict[str, float]]],
+          lr: float, steps: int, grad_clip: float, check_every: int, on_check: Callable[[int, Any], bool],
+          log: Callable[[str], Any] = print, apply: Callable[[Any, Any], Any] = applied) -> list[dict[str, float]]:  # fmt: skip
     """Adam (betas 0.9, 0.999, no weight decay, as `finetune._run`) on the gains only, the net's own parameters frozen for
     the loop and restored after. `sample(step)` gives the step's batch, `loss_of(toks)` its loss with the gains applied
     (the caller's loss reads the base model as its reference). After step 1 and every `check_every` steps,
-    `on_check(step, g)` runs (no grad) and returns True to stop. Returns the per-step log."""
+    `on_check(step, g)` runs (no grad) and returns True to stop. Returns the per-step log. `g` is a `Gains` with
+    `apply=applied` (the default) or an `IA3` with `apply=applied_ia3`."""
     was = {n: p.requires_grad for n, p in net.named_parameters()}
     net.requires_grad_(False)
     for p in g.params():
@@ -111,7 +180,7 @@ def train(net: nn.Module, g: Gains, sample: Callable[[int], Tensor], loss_of: Ca
     try:
         for step in range(1, steps + 1):
             opt.zero_grad(set_to_none=True)
-            with applied(net, g):
+            with apply(net, g):
                 loss, info = loss_of(sample(step))
             loss.backward()
             gn = torch.nn.utils.clip_grad_norm_(g.params(), grad_clip)
