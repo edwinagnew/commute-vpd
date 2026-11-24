@@ -105,8 +105,8 @@ streamlit, E203), and importing any `diffing` module runs the package's `__init_
   2,048-token batches of D.
 - **Called from the pinned source:** `closed_form_scalars` (`closed_form.py` 40-168) and the loaders it is handed
   (`latent_scaling/utils.py` 53-79) need only torch and dl. Each is read from the pinned file by its function name,
-  the file's sha256 checked, and executed without importing the package. If that fails in the rehearsal, a port is
-  used instead and passes the parity check of the appendix.
+  the file's sha256 checked, and executed without importing the package. If that fails, there is no port: the work
+  stops and goes to the lead.
 - **Ported, with parity:** the normaliser (`training.py` 165-190, about 20 lines with its Welford accumulator), and the
   dataset sampling rules of `setup_training_datasets`, which our adapter implements on E235's stream.
 - Every remaining difference is a row of §4.
@@ -118,7 +118,8 @@ tokens each. That is the toolkit's 50M per dataset with the chat dataset dropped
 per fit, 97,656 steps at batch 2,048. The order is E235's interleaved stream, not the toolkit's shard shuffle. Position 0
 is dropped, as the crosscoder does. D is formed in fp32 from fp32 forwards with TF32 off, as E235's scoring did. The
 toolkit's bfloat16 storage is not used: its rounding, about 2⁻⁸ of ‖h‖, is the size of a fine-tune's change here.
-The validation set is 5M tokens of D from Pile train rows after E235's, 131,072 on, the same for every side.
+The validation set is 5M tokens of D from Pile train rows after E235's, 131,072 on, the same for every side. The
+code asserts it shares no row with E235's stream, rung 1's stream and read rows, or E212's L1 rows.
 
 **3.3 Objective, theirs.** The normaliser draws 500,000 tokens uniformly from each of the two datasets' full 50M, the
 toolkit's equal-count rule over two caches. This takes one pass over the stream before training. The model is
@@ -128,8 +129,9 @@ trained by `trainSAE` with `BatchTopKTrainer`, lr 1e-4, warm-up 1,000, auxk α 1
 default (`use_threshold=True`).
 
 **3.4 Latent scaling, theirs.** `closed_form_scalars` runs in float32 on 50M tokens taken as their rule takes them:
-per-dataset prefixes in proportion to the datasets' sizes, local shuffling off. Every latent is scored. Targets are
-N(h_M) and N(h_F), ν = β_M / β_F. Two forms of f are computed, each scored under its own label:
+per-dataset prefixes in proportion to the datasets' sizes, local shuffling off, in their loader's batches of 2,048
+(16,384 ÷ 8, `closed_form.py` 355, 809-819). Every latent is scored. Targets are N(h_M) and N(h_F), ν = β_M / β_F.
+Two forms of f are computed, each scored under its own label:
 - **ν_lit**, "theirs, as the code runs": f from encoding h_F with the SAE's own normaliser, as line 354 does.
 - **ν_D**, "ours, as the post's words read": f from encoding D, the SAE's training input.
 
@@ -169,7 +171,7 @@ the s-weighted histogram of ν. If Σ‖D‖² = 0, every part is undefined, the
 computed on its score read windows from μ_D alone. K is the share of the change left after the normaliser's mean; for a
 plant constant where it fires, it is 1 − ρ. The fitted bias b plays no part in the bar. The bar is 0.5 · min(K, 1). A
 side with K under 0.5 reads **"not read"**: the bar would fall under 0.25, half the crosscoder column's. Both cut-offs
-are ours.
+are ours. §5's gate uses rung 1's bar on all four arms.
 
 **Reconstruction and selection are filed apart on the exact plant.** E212's plant writes a known D: its vector at one
 position, zero elsewhere at the site. Two numbers are filed for it, each with its oracle value: the latents' total
@@ -230,10 +232,11 @@ or cannot apply. "Forced" means the 67M or the toolkit's install leaves no faith
 | SAE | BatchTopK, x2, k 100 | 1,536 latents, k 100 | k/d is 3 times Gemma's; a k-33 fit only if rung 1 fails | theirs | n |
 | recipe and loop | lr 1e-4, warm-up 1k, batch 2,048, AuxK, θ EMA, TF32; `trainSAE` logging every 50, validation every 20k on 5M | same, through `trainSAE` | | theirs | n |
 | validation text | held-out split of the same caches | 5M Pile tokens from rows 131,072 on | the side's task text is all in training or scoring | ours | y |
-| latent scaling | 50M proportional prefixes, no shuffle, float32, D's normaliser | same, by their function | | theirs | n |
+| latent scaling | 50M proportional prefixes, no shuffle, float32, D's normaliser, batches of 16,384 / 8 | same, by their function | | theirs | n |
 | f in latent scaling | from h_F (`closed_form.py` 354) | both scored: ν_lit from h_F; ν_D from D | the post's words name D; the code encodes h_F | theirs, as the code runs (ν_lit) / ours, as the post's words read (ν_D) | n |
 | specific rule | ν ≤ 0.3 | same, scored; with β_M ≥ 0 (App. E.2) reported beside | E.2 fails a clean plant by construction | theirs (scored) / ours, after Minder (E.2) | n |
-| pass bar | none | specific part ≥ 0.5 · min(K, 1), K fixed before the fit from μ_D; K < 0.5 reads "not read" | the normaliser's mean takes a share the latents cannot carry | ours | n |
+| pass bar | none | specific part ≥ 0.5 · min(K, 1), K fixed before the fit from μ_D; K < 0.5 reads "not read"; the gate: rung 1's bar on all arms | the normaliser's mean takes a share the latents cannot carry | ours | n |
+| resume | none in `trainSAE` | none: a dead fit restarts at step 0 | a fit is ≤ 48 min | theirs | n |
 | KL "error" arm | base_act + ((chat − base) − (chat_recon − base_recon)) | h_F − D̂ | the same patch, D̂ being the diff reconstruction | theirs | n |
 | KL subsets | eq. 5, crosscoder latents, no bias | encode(D) latents under each form's mask, no bias | the paper has no diff-SAE | theirs (form) / ours (masks) | y |
 | KL-gap floor | none | KL(patch h_M) under a rehearsal-set multiple of the h_F patch's floor reads "not read" | a ratio of two floors otherwise | ours | n |
@@ -258,12 +261,12 @@ an upper bound until the rehearsal measures it.
   and KL patches 2 = **≤ 37 min**.
 - Site B: 13.8 + 6.9 + 19.2 + 1.8 + 3.6 + 2 = **≤ 48 min**.
 
-**Rehearsal ($0, cluster `debug`, before run 1).** Full SAE size, 12M training tokens, so the 10M-token AuxK
-threshold is crossed. Validation runs every 2,000 steps on 1M tokens, so the validation path also runs. A fixture sets
-a known dead set on the counters at one step and checks the AuxK loss turns on for those latents. These sizes live in
-one frozen config. Every stage runs end to end, on E212's plant, rung 1 and one Gaussian:
-- the stream; the normaliser; training through `trainSAE`, a save, and a resume checked by step-matched loss against
-  an uninterrupted run, the floor from two uninterrupted seeds;
+**Rehearsal ($0, cluster `debug`, before run 1).** Full SAE size, 12M training tokens, past the 10M-token AuxK
+threshold. Validation runs every 2,000 steps on 1M tokens. A fixture sets a known dead set on the counters at one step
+and checks the AuxK loss turns on for those latents. These sizes live in one frozen config. Every stage runs end to
+end, on E212's plant, rung 1 and one Gaussian:
+- the stream; the normaliser; training through `trainSAE`; a save whose reloaded weights give identical encodings
+  (no resume: a fit that dies restarts at step 0);
 - latent scaling at the full 50M tokens; the parity checks of appendix B; the KL patches at full read size with both
   path checks; the downloads;
 - the $0 CPU fixtures: a nonzero-bias exact reconstruction, where "all" must give F's logits and "error" M's; and the
@@ -290,10 +293,10 @@ derived numbers before run 1.
   exclusion our BatchTopK crosscoder read it at 0, without it 0.77. Filed: its two numbers of §3.6 and the oracle's.
 - **Stage 0b, the gate, four fits at once: a fine-tune-size plant against a matched null, same site, same rows.** E243's
   grafted head scaled to rung 1, 1.04 times elicit's amplitude at site A, on rung 1's stream and read rows, at SAE seeds
-  0 and 1. Its null is two Gaussian draws built by E243's recipe for its random arms (`run2.py`, draws 249201 and
-  249202): elicit's per-matrix norm profile, scaled by bisection so that the change per token on rung 1's read rows
-  equals rung 1's, within 0.05, and read on those rows. This null is n = 2: "both under the bar" is a weak null. It can
-  open a descriptive run 2 and supports no claim at the bar.
+  0 and 1. Its null: two Gaussian draws by E243's random-arm recipe (`run2.py`, draws 249201 and 249202):
+  elicit's per-matrix norm profile, bisected so the change per token on rung 1's read rows equals rung 1's, within
+  0.05. They train, scale and read on rung 1's stream, set explicitly (`run2.py` 128-150 inherits elicit's), token
+  IDs checked equal. n = 2 is a weak null: it can open a descriptive run 2, no claim.
 - **Stage 0c, descriptive positive controls.** E243 rung 5 at site A, 104 times elicit's amplitude (crosscoder 0.46).
   E235's block-3 head at site B with E235's one Gaussian at site B, the draft's reported pass that P2.70 reversed. The
   single Gaussian at B is descriptive only.
@@ -301,24 +304,22 @@ derived numbers before run 1.
   one below the method's reach.
 - Cost: 6 × 37 + 2 × 48 = 318 min of fits, four set-ups of 15 min, and about 12 min idle on each of pods 2-4
   while stage 0a finishes alone: about 6.9 pod-hours, **about $33**, about 2.3 h of wall time. Pods 2-4 start once
-  stage 0a passes its first-minute checks. The k-33 fit adds 37 min, $3. Uploads are
-  the Pile rows E235 reads and the grafted head's state, about 0.6 GB a pod, 1 min at 10 MB/s.
+  stage 0a passes its first checks. The k-33 fit adds 37 min, $3. Uploads (E235's Pile rows, the head's
+  state) are about 0.6 GB a pod, 1 min at 10 MB/s.
 
-**The gate, frozen per ν form, under the as-published rule ν ≤ 0.3.** For each form separately, the gate passes when
-both rung-1 seeds reach their bar, and both Gaussians are read and stay under theirs. The outcomes:
+**The gate, per ν form, under the as-published rule ν ≤ 0.3.** One bar serves all four arms: 0.5 · min(K₁, 1), K₁
+being rung 1's pre-fit K on its rows, from one normaliser sample both seeds share. The first outcome that applies
+stands (site A, 1,536 latents at k 100, this recipe, rung 1's rows):
+1. **Not read**: an arm missing or unreadable (a stopped fit, a failed path check), or K₁ under 0.5. whip-lead may
+   spend the cell's second run rerunning the gate.
+2. **Does not separate**: a Gaussian at or over the bar, or not under the lower rung-1 seed.
+3. **Unstable** across seeds: one rung-1 seed under the bar.
+4. **Below the method's reach** at a fine-tune's size: both rung-1 seeds under the bar.
+5. **Pass**, on a weak null: run 2 opens, the form recorded. Outcomes 1-4 do not open it.
 
-| outcome under a form | reading, scoped to site A, block 2's input, 1,536 latents at k 100, this recipe, rung 1's rows | run 2 |
-|---|---|---|
-| both seeds pass, both Gaussians under | the method separates a fine-tune-size plant from its matched null here, on a weak null | opens; the form that opened it is recorded |
-| both seeds under the bar | below the method's reach at a fine-tune's size here | not opened by this form |
-| one seed passes, one does not | unstable across seeds at this size | not opened by this form |
-| a seed passes and a Gaussian passes | does not separate the plant from a random update here | not opened by this form |
-| a gate arm missing: a stopped fit, a K under 0.5, or a failed path check | gate not read | not opened; the cell's second run may go to rerunning the gate, whip-lead's call |
-
-Run 2 opens if the gate passes under at least one form. If only ν_D opened it, the paper column is labelled ours, "as
-the post's words read", not the published method's. If whip-lead rules before run 1 is read that E.2 is scored, the
-same table applies with that rule. The oracle explains each row and never changes it. Results go to redteam-lead, then
-whip-lead.
+Run 2 opens if either form passes. If only ν_D did, the paper column is labelled ours, "as the post's words read". A
+whip-lead ruling, before run 1 is read, that E.2 is scored keeps this order under that rule. The oracle explains an
+outcome, never changes it. Results go to redteam-lead, then whip-lead.
 
 **Run 2, gated on cost, only if the gate opens it.**
 - **The 48-fit default:** the nine built pairs' 18 sides and E62 copy and lookup at three saved seeds each, 24 sides,

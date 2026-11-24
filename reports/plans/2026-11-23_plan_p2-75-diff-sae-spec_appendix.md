@@ -51,8 +51,11 @@ Each runs in the rehearsal on identical paired activations, with bars from a mea
   counters after a validation have grown by the validation's token count for latents that did not fire.
 - **closed_form_scalars and its loaders.** Run from the pinned source. The rehearsal checks the loaded file's sha256
   against the clone at 617d926 and that the function's numerator B, denominators C and D and β agree with a float64
-  recomputation of ours to the float32 floor. If they must be ported instead, the port is compared with the pinned
-  function on the same batches and a fixed SAE: B, C and D before division, latent by latent, and the masks of each form.
+  recomputation of ours to the float32 floor, in the loader's batches of 2,048. There is no port to fall back on: if
+  the pinned function cannot be run from its file, the work stops and goes to the lead, since parity against a failed
+  adapter is no reference.
+- **Saved SAE.** The state dict `trainSAE` saves is reloaded into a fresh `BatchTopKSAE` and must give identical
+  encodings on a fixed batch. That is the whole check: the pinned loop cannot resume.
 - **Encoder inputs.** The two hazards that the numerator identity alone cannot see: a wrong encoder input and a double
   normalisation. For ν_lit, f must equal `encode(h_F, use_threshold=True)` with the SAE's own normalisation inside
   `encode`. For ν_D, f must equal the trainer's path on the same batch: the normalised input encoded with
@@ -114,6 +117,41 @@ column is labelled ours.
 **redteam-lead (b2).** Written into the gate and §3.5: the gate uses ν ≤ 0.3 as published, and any whip-lead ruling to
 score E.2 must come before run 1's results are read.
 
+### Round 2 (GPT's second review and redteam-lead's two fixes, 2026-11-23)
+
+Each point was checked against the cited source; none was found wrong, and the lead's decision on each is written in.
+
+**GPT [P1], per-side bars.** Real. Each arm's bar came from its own K, so equal specific parts could pass the plant
+and fail the nulls: at K 0.60 on the plant and 1.00 on the Gaussians, four readings of 0.35 would open run 2. Answer:
+one bar for all four gate arms, 0.5 · min(K₁, 1), K₁ being rung 1's pre-fit K on its rows; the lower rung-1 seed must
+also exceed the higher Gaussian, under the same form of ν; K₁ under 0.5 reads "not read". The Gaussians' own K no
+longer enters the gate. The stream point is also real: in `run2.py` 128-150 a `random_d` side is built by
+`super().side` on the `random_of` state, elicit, and so takes elicit's stream, while rung 1 is the head's side. The
+Gaussians' stream is now set to rung 1's explicitly, and the code checks the token IDs are equal.
+
+**GPT [P1], no resume in the pinned `trainSAE`.** Real. `trainSAE` builds a new trainer from its config and loops from
+step 0 (dl:`training.py` 262-332); `save_model` writes only the model's state dict (196-199): θ, a buffer, is
+kept, but not the optimiser, the schedule or the dead counters; and `update` resets the decoder bias to the first batch's geometric median at step 0
+(dl:`trainers/batch_top_k.py` 221-225), so a restart from a checkpoint would not continue the run. Answer: the resume
+promise is dropped. A fit that dies restarts from step 0, at most 48 min. The rehearsal checks only that the saved state
+dict reloads and gives identical encodings (B). A §4 row records it.
+
+**GPT, the scaler's batch.** Real. The caller passes `smaller_batch_size_for_error=True` (`closed_form.py` 355) and the
+loader then uses `batch_size // 8` (809-819); the toolkit's `latent_scaling.batch_size` is 16,384
+(`sae_difference.yaml` 56), so the pinned code runs at 2,048. §3.4 and §4 now say so. The sums are accumulated across
+batches, so this moves only float32 rounding, but the parity floor is measured at that size.
+
+**GPT, the scaler fallback.** Real: parity against a failed adapter is not a reference. The port-plus-parity fallback
+of round 1 is removed from §3.1 and B; a failure stops the work and goes to the lead.
+
+**redteam-lead, the validation rows.** Written into §3.2: the code asserts that the validation rows, Pile train 131,072
+on, share no row with E235's stream, rung 1's stream and read rows, or E212's L1 rows.
+
+**redteam-lead, the gate's precedence.** Written into §5 as an ordered list, first match stands: not read; does not
+separate; unstable; pass. One case the list as given had no line for, both rung-1 seeds under the bar with both
+Gaussians under the lower seed, would have fallen through to pass. It is given round 1's reading, "below the method's
+reach", placed after "unstable"; the two cannot both hold, so the order between them does not matter.
+
 ## D. Earlier review questions, settled by redteam-lead (2026-11-23)
 
 1. **Which input latent scaling encodes:** both forms are scored, each labelled. Neither is called faithful.
@@ -127,6 +165,8 @@ score E.2 must come before run 1's results are read.
 
 - K's minimum of 0.5, so the bar never falls under 0.25, half the crosscoder column's.
 - The gate needs both rung-1 seeds to pass; one of two is "unstable", not a pass.
+- Both rung-1 fits use one normaliser sample, so K₁, and with it the gate's common bar, is a single number.
+- "Below the method's reach" is outcome 4 of the gate's order, a case redteam-lead's list left out.
 - The Gaussians for the gate use elicit's per-matrix norm profile, E243's `random_of`, since rung 1 is a grafted head
   with no matrix norms of M's own to copy.
 - The validation text is 5M Pile tokens from rows 131,072 on, the same for every side.

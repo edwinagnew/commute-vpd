@@ -135,7 +135,7 @@ def plot(pairs: dict[str, Any], key: dict[str, list[dict[str, Any]]]) -> None:
     fig, axes = FG.figure((7.5, 6.0), ncols=2)
     labels = [*(PAIR_NAMES[p] for p in pairs), *(f"key: {KEY_NAMES[t]}" for t in key)]
     data = []
-    for ax, (reading, xlabel) in zip(axes, (("whole", "head CMAP log-odds share on D"), ("R_A", "definition's reading R_A (E248)")), strict=True):
+    for ax, (reading, xlabel) in zip(axes, (("whole", "head CMAP log-odds share on D"), ("R_A", "R_A (E248)")), strict=True):
         for i, (name, p) in enumerate(pairs.items()):
             for s, st, off in (("reuse", REUSE, -0.18), ("new", NEW, 0.18)):
                 xs = [r[reading] for r in p["sides"][s]]
@@ -162,7 +162,7 @@ def plot(pairs: dict[str, Any], key: dict[str, list[dict[str, Any]]]) -> None:
     FG.reference(axes[1], 1.0, "do-nothing")
     fig.legend(loc="outside upper center", ncol=4, fontsize=7, frameon=False)
     axes[0].set_title("Head CMAP: reuse over new by > 0.07 on 5 of 9", fontsize=8, loc="left", pad=12)
-    axes[1].set_title("Definition: reuse over new on 9 of 9", fontsize=8, loc="left", pad=12)
+    axes[1].set_title("R_A (E248): reuse over new on 9 of 9", fontsize=8, loc="left", pad=12)
     FG.save(fig, HERE / "figures" / "pairs.png", n="one point per fine-tune (2-8 seeds per side, 3 per key task); D = 512 windows, "
             "CMAP reads the 204-500 with a label; E53 on its scorer's held-out windows", data=data)
 
