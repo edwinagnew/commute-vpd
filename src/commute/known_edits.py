@@ -230,3 +230,25 @@ def build(M: R.Model, c: Cues, pile: Tensor, cfg: Any) -> tuple[dict[str, R.Mode
         bar = cfg.copy_bar_frac * ref if k.startswith("reuse") else cfg.lookup_bar
         rec["misses"] += [f"{k}: top-1 {rec[f'top1_{k}']:.4f} < {bar:.4f}"] if rec[f"top1_{k}"] < bar else []
     return {k: edits[k] for k in ("reuse_small", "reuse_large", "new_few", "new_thin") if k in edits}, rec
+
+
+def build_swapping(M: R.Model, make_cues: Callable[[tuple[int, ...]], Cues], pile: Tensor, cfg: Any,
+                   log: Callable[[str], object] = print) -> tuple[dict[str, R.Model], dict[str, Any], Cues]:  # fmt: skip
+    """`build`, with an A'_i that has no detector swapped for the next pool token and the cues made again, as E214 did
+    (experiments/kstar_levels/run.py World.edits, which keeps its own copy of this loop as it ran; lead, 2026-11-19:
+    the bar is unchanged). `make_cues(skip)` makes the cues with the A' tokens in `skip` replaced. Returns the edits,
+    the build record (with A, A', y and the swaps) and the cues the edits were built on."""
+    skip: tuple[int, ...] = ()
+    swapped: list[dict[str, Any]] = []
+    c = make_cues(skip)
+    while True:
+        try:
+            edits, rec = build(M, c, pile, cfg)
+            break
+        except NoDetector as e:
+            swapped.append({"cue": e.i, "A_prime": c.A2[e.i]} | e.rec)
+            log(f"edits: swapping A' of cue {e.i}: {swapped[-1]}")
+            assert len(swapped) <= cfg.n_cues, "no detector after a swap per cue"
+            skip += (c.A2[e.i],)
+            c = make_cues(skip)
+    return edits, rec | {"A": c.A, "A_prime": c.A2, "y": c.y, "swapped": swapped}, c

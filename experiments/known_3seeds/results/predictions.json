@@ -1,0 +1,70 @@
+{
+ "experiment": "E299",
+ "cell": "P2.77",
+ "card": "~/commute-data/cards/E299.md",
+ "descriptive": "user 2026-11-24 in whip-lead's chat: \"yes rerun whatever makes fig 2 consistent. same for all figs in the results section. experiemental rigour is essential!!!!\"; a consistency rerun reported as a description, no claim at the bar, no verdict on reuse",
+ "variants": "baseline-lead's decision (final): one task variant a side. e46 = ident32 (reuse) vs rand32 (new), ident32b and rand32b dropped; e53 = lowercase vs cipher, broad_cipher dropped. So five new states at seed 2: e46/ident32_s2, e46/rand32_s2, e53/lowercase_s2, e53/cipher_s2, e54/cipher_own_s2",
+ "settings": {
+  "seed": 2,
+  "seed_source": "seeds 0 and 1 are saved for all five tasks; seed 2 is the third (E54's cipher at seed 2 was trained by E56 job2 but its own-step state not kept)",
+  "control_seed": 1,
+  "control_seed_source": "the retrained sibling: seed 1 (not the default order 0), so each recipe's seed handling is exercised",
+  "reader_share_tol": 0.01,
+  "reader_share_tol_source": "E143's filed r_tol (experiments/holes_fill/results/predictions.json thresholds), the tolerance E147 read its readers again with; measured difference 0 on the cluster L40 (refit_96key/results/stage0.json checks 'a E136 ...', 'a E143 steering ...'; holes_fill/results/stage0.json reproduce)",
+  "reader_neuron_tol": 0.0001,
+  "reader_neuron_tol_source": "E143's filed neuron_tol, E147's reader_neuron_tol; measured difference 0 on the L40 (refit_96key stage0 'a E98 ...', 'a E143 neuron ...'; k_half_fill stage0 diffs 0.0)",
+  "spectrum_rel_tol": 1e-06,
+  "spectrum_rel_tol_source": "update_svd's own reproduction bar (experiments/update_svd/run.py control, e51 erank relative 1e-6); CPU fp64 of the same file",
+  "size_rel_tol": 1e-05,
+  "size_rel_tol_source": "p270_rescore's join of E187's per-state sizes (math.isclose rel_tol 1e-5)",
+  "identity_tol": 1e-06,
+  "identity_tol_source": "E98's stage0.identity_tol (experiments/neuron_r/results/predictions.json), its W0-cells control and per-state identity check",
+  "projected_limit_min": 40,
+  "projected_limit_min_source": "under the sbatch's 60 min limit; the job is expected at about 15 min (cluster/known_3seeds.sbatch)"
+ },
+ "recipes": {
+  "e46/ident32, e46/rand32": "E12's arm A as new_vs_existing ran it: keydep.elicit_ft = finetune_arm_a(ArmAConfig(o_token=table, lr=anchors.FT_LR 3e-5, batch 32, steps 300, checkpoints 10/30/100/300, seed)), kept at the first checkpoint with held-out P(target) >= 0.5 (E12's scored_step rule; s0 and s1 of both landed on step 10, new_vs_existing.json); windows regating_table/results/large/windows_<task>.pt; saved fp32 (regating_table saved)",
+  "e53/lowercase, e53/cipher": "E53's arm B as performed_anchor's stage_finetune ran it: lowercase.arm_b_states(adam, seed = batch order, checkpoints (300,)) = Adam 3e-5, batch 8, 300 steps, all 24 matrices, no schedule; lowercase = lowercase.task; cipher = a0.json's map on cased train rows 0-2399, held-out ciphered val rows 0-63; saved bf16 at step 300 (no P rule: next-token text, the siblings' fixed step)",
+  "e54/cipher_own": "E54's cipher as keydependent_elicit and E56 job2 ran it: keydep.cipher_ft(windows_cipher, seed, target = E56 job2's elicit_s2 norm), the own-step state at E12's rule (s0, s1 and E56's s2-4 all at step 30); saved fp32"
+ },
+ "stage0": {
+  "rule": "first and alone; any miss writes results/stage0.json with 'stopped' and exits 1 before any fine-tune",
+  "zero_update": {
+   "holes_fill stage 0, unchanged": "zero update reads exactly 0 on the TopK neurons (k64, k matched) and every steering setting; strength 0 on e46/ident32_s0 reads 0 (its zero_tol 1e-9); e46/ident32_s0 and e62/copy_s0 shares reproduce E136 (r_tol 0.01; read 0 before) and case_label/real_s0 neuron k64 reproduces E140 (1e-4)",
+   "E136 control c": "the zero update's SVD and rotated gates equal W0's and their numerators are exactly 0 (filed in share_untrained); the trained share of the zero update is 0/0, undefined, so its null is the numerator",
+   "E98 W0 cells": "max |cell - T0| over the five tasks' read windows <= 1e-6 (read 0 before)",
+   "spectrum": "erank of the zero update undefined (None), norm2 0",
+   "size": "0"
+  },
+  "reproduce": {
+   "states": "e53/cipher_s0 (the next-token path, pooled steering) and e54/cipher_own_s0 (a kv path with per-key steering), read again by every reader",
+   "expected": {
+    "e53/cipher_s0": {"trained": 0.12431340168715405, "svd": 0.06767194926988293, "rotated": 0.1790923069279458, "r_n": 0.4589207362117122, "r_half": 0.21960233101185622, "k_half": 128, "neuron_k64": 0.004887934856158188, "neuron_kmatched": 0.0009568052140731044, "steer_pooled": 0.6929798537824282, "erank": 594.2662401197575, "norm2": 6.7417370997563895, "size": 0.018634149302629858},
+    "e54/cipher_own_s0": "the same readings from the same files (share_untrained stage1, neuron_r cells and carrying, holes_fill stage1 incl. per-key steering, update_svd e54_own, size_matched m67 e54_own)"
+   },
+   "tolerances": "reader_share_tol (E136 trained/svd/rotated, steering), reader_neuron_tol (E98 r_n, r_half; E143 neuron), k_half exact, spectrum_rel_tol, size_rel_tol; differences expected 0 (same code, inputs, card)"
+  }
+ },
+ "stage1": {
+  "rule": "the recipe controls run before any new state; a miss stops the job",
+  "controls": {
+   "states": "e46/ident32_s1, e46/rand32_s1, e53/lowercase_s1, e53/cipher_s1 retrained by the recipe at seed 1; e54/cipher_s2 (the matched cipher, from the same keydep.cipher_ft run whose own-step state is e54/cipher_own_s2) against keydependent_patch's saved cipher_s2.pt",
+   "stop_if": "the step differs from the saved one (ident32_s1 10, rand32_s1 10, lowercase/cipher 300, e54 cipher_s2 9), or |trained share - saved trained share| > the s0/s1 range of the saved trained share of that task (E147's reproduce rule: within the seed range)",
+   "tolerance_values": {"e46/ident32": 0.04118818, "e46/rand32": 0.00727492, "e53/lowercase": 0.01819147, "e53/cipher": 0.00826385, "e54/cipher": 0.02943517},
+   "reported": "max |dW - saved| and ||dW - saved|| / ||saved|| (expected 0: keydep.finetune refits were bit-identical on the L40, refit_96key/results/stage0.json kept.max_abs_diff); e53 held-out gain of the bf16 copy; e54/cipher_own_s2 step and norm against E56 job2's record of the same state (step 30, norm 6.0369789924063735)"
+  }
+ },
+ "expected": {
+  "rule": "descriptive, not a stop: each new state's reading is expected inside its two siblings' band [min - d, max + d], d = max(max - min, 0.05 x |mean|); assemble.py reports it per state and reading (new_vs_siblings)",
+  "siblings": {
+   "e46/ident32_s2": {"share": [0.8024425814544892, 0.7612543829145286], "steer": [0.7472095889963015, 0.647179136808967], "erank": [442.49469491526156, 437.9332652545029], "neuron": [0.47513070798812845, 0.36346444567990843], "neuron_top": [0.0191470183153194, 0.008865677513356493], "k_half": [128, 128], "size": [0.004887465199659084, 0.004922513784859905]},
+   "e46/rand32_s2": {"share": [0.27327685374408744, 0.266001933954146], "steer": [0.2772405140682321, 0.3514230156418278], "erank": [427.5241840899337, 420.75257278153873], "neuron": [0.6783637608413571, 0.7128488868827931], "neuron_top": [0.013400602854703129, 0.015861279601432705], "k_half": [256, 256], "size": [0.005381225770987802, 0.005458712114080757]},
+   "e53/lowercase_s2": {"share": [0.7518811175785213, 0.7700725841766312], "steer": [0.7130595188192251, 0.6886607201930102], "erank": [598.5737907674227, 600.3541341429254], "neuron": [0.7035568805789707, 0.7399642803612938], "neuron_top": [0.03414266508160551, 0.04695535799015015], "k_half": [16, 16], "size": [0.017947302357500177, 0.018242290310723972]},
+   "e53/cipher_s2": {"share": [0.12431340168715405, 0.11604955639019224], "steer": [0.6929798537824282, 0.6401497092428536], "erank": [594.2662401197575, 594.1005319698918], "neuron": [0.4589207362117122, 0.45454565665255237], "neuron_top": [0.004887934856158188, 0.01099103441418384], "k_half": [128, 128], "size": [0.018634149302629858, 0.018634278094099118]},
+   "e54/cipher_own_s2": {"share": [0.2652401392487863, 0.24304463624795386], "steer": [0.22421996043623751, 0.17758984386315346], "erank": [406.9842142917449, 404.92905297904963], "neuron": [0.7453492489448177, 0.7583728417122615], "neuron_top": [0.01273764613039953, 0.017775647833038255], "k_half": [1024, 1024], "size": [0.009561128049770894, 0.00954223128274508]}
+  },
+  "siblings_source": "results/known3.json from assemble.py on the saved states (2026-11-24), seeds 0 and 1 of each task; steering pooled, top-neuron k64, size ||dW||/||W0||",
+  "edge_cases": "k_half is a power of two on E98's grid and both siblings read the same count on every task, so d = 0.05 x mean: a new count one grid step away (x2) is outside the band, as it should be read; k_half None (a share under carry_floor or |G| under the gain floor) is reported as None with its reason, outside; a nan share (gain under the floor) is outside; steering's setting can move between seeds (reported with the share)"
+ },
+ "blind_to": "the readings themselves are unchanged code: this run is blind to anything the old readings were blind to; it only fills the seed count. The figure's seed ranges are now over three seeds on every side"
+}
