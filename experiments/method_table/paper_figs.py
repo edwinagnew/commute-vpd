@@ -139,7 +139,7 @@ def fig4(recs: list[Point], extra: Point) -> None:
     data = panel(ap, recs, extra, "prior", "prior") + panel(asteer, recs, extra, "steering", "steering")
     asteer.sharey(ap)
     ap.set_xlabel("prior gap, decades (log10, reuse minus new)")
-    asteer.set_xlabel("steering gap at strength 1 (reuse minus new)")
+    asteer.set_xlabel("steering gap, block, strength and form chosen per pair (reuse minus new)")
     ap.set_ylabel("share gap (reuse minus new)")
     ap.set_title("Against the original model's prior", fontsize=9)
     asteer.set_title("Against steering", fontsize=9)
