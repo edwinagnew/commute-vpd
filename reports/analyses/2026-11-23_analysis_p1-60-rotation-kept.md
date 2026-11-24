@@ -3,6 +3,11 @@
 Cell `P1.60`, experiment `E286`, 2026-11-23. A diagnostic beside the frozen reuse definition, not a change to it; no verdict
 on reuse is given under it.
 
+2026-11-23 (late), after redteam's re-check (commit 2515188d): the cell's filed reading says trained updates sit "a few
+hundredths" above their nulls. This page supersedes that line. At neurons and heads the realistic panel sits up to 0.128
+above the null (median 0.036), against at most 0.035 for its Gaussians. At VPD the own-space share is 0.233 against
+0.080, with sizes unmatched. Quote this page, not the cell line.
+
 ## The answer
 
 At VPD, no trained update rotates its needed writes beyond the null, though the built rotations do. At neurons and heads
