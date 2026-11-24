@@ -122,3 +122,10 @@
 0.91	experiments/weightwatch/results/summary.json	[.rows[]|select(.state|startswith("panel/yoruba_s"))|.M_floor_rates[]]|min	this
 0.97	experiments/weightwatch/results/summary.json	[.rows[]|select(.state|startswith("panel/yoruba_s"))|.M_floor_rates[]]|max	this
 0.00	experiments/weightwatch/results/summary.json	[.rows[]|select(.state|startswith("panel/yoruba_s"))|.sham_rates[]]|max	this
+286.8	experiments/weightwatch/results/summary.json	.rows.rebuilt.S	this
+309	experiments/weightwatch/results/moments.json	.per_matrix["h.0.mlp.down_proj"].d_lam_max_over_trC	this
+4.2	experiments/weightwatch/results/directions/rebuilt.json	[.per_matrix["h.2.mlp.down_proj"].a[]]|add/length	this
+4.3	experiments/weightwatch/results/directions/rebuilt.json	[.per_matrix["h.3.mlp.down_proj"].a[]]|add/length	this
+2.0e-7	experiments/weightwatch/results/summary.json	((.rows.x2.S - .rows.x10.S) / .rows.x2.S) | fabs	this
+0.048	experiments/needed_neurons/results/summary.json	.items.rebuilt.E_b_K	earlier
+1.0	experiments/needed_neurons/results/summary.json	.items.x2.E_b_K	earlier
