@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [model-diffing, interpreting-finetunes, baselines]
 read_from: "local PDF text (NeurIPS 2025, arXiv v3): abstract, Sec. 1-4 (Def. 3.1, Algorithm 1, Fig. 4 results, forgetting and scaling interventions), Sec. 5 continual learning (skimmed)"
-digest_buckets: [1-missing-method, 4-supports]
+digest_buckets: [1-missing-method, 4-supports, 5-cite-fix]
 importance: 5
 ---
 

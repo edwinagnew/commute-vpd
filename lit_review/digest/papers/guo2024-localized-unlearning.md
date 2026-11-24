@@ -4,7 +4,7 @@ title: "Mechanistic Unlearning: Robust Knowledge Unlearning and Editing via Mech
 authors: Phillip Guo et al.
 year: 2024
 id: 2410.12949
-tags: [FT-INTERP, CAUSAL, ALIGNMENT, BASELINE]
+tags: [FT-INTERP, CAUSAL, ALIGNMENT, BASELINE, SUPPORTS]
 primary_tag: FT-INTERP
 in_our_bib: no
 cited_in_draft: no

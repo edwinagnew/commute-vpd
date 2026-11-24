@@ -10,7 +10,7 @@ in_our_bib: vig2020
 cited_in_draft: "yes, but only in struck-out (old) text in main.tex and sec4_setup.tex; the new text cites prakash2024, so once changes are accepted vig2020 is cited nowhere"
 themes: [causal-abstraction, baselines]
 read_from: "arXiv PDF 2004.12265v2 (the expanded version, retitled 'Causal Mediation Analysis for Interpreting Neural NLP: The Case of Gender Bias') via fleet/pdf-text: abstract, Sec. 1-3 (total, natural direct and indirect effects), Sec. 5 (results on heads and neurons); appendices not read"
-digest_buckets: []
+digest_buckets: [5-cite-fix]
 importance: 3
 ---
 

@@ -4,7 +4,7 @@ title: "DeepSeek-R1: Incentivizing Reasoning Capability in LLMs via Reinforcemen
 authors: Daya Guo et al. (DeepSeek-AI)
 year: 2025
 id: 2501.12948
-tags: [EH, BACKGROUND]
+tags: [EH, BACKGROUND, SUPPORTS]
 primary_tag: EH
 in_our_bib: deepseek2025r1
 cited_in_draft: yes

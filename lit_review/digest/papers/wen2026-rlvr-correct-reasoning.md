@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [elicitation]
 read_from: "local PDF arxiv_2506.14245.pdf (v2, Oct 2025) via pdf-text: abstract, §1-2, §3.1 (Pass@K vs CoT-Pass@K on DAPO-Qwen-32B), §4 theorem statement and assumptions; training-dynamics and SFT-on-CoT sections only skimmed; appendices not read"
-digest_buckets: [4-contradicts]
+digest_buckets: [4-contradicts, 5-cite-fix]
 importance: 4
 ---
 

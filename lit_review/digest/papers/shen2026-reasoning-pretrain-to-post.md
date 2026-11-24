@@ -4,7 +4,7 @@ title: "Understanding Reasoning from Pretraining to Post-Training"
 authors: Jingyan Shen et al.
 year: 2026
 id: 2607.16097
-tags: [EH, DYNAMICS, BACKGROUND]
+tags: [EH, DYNAMICS, BACKGROUND, CONTRADICTS, SUPPORTS]
 primary_tag: EH
 in_our_bib: no
 cited_in_draft: no

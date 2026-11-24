@@ -10,7 +10,7 @@ in_our_bib: liu2025understanding
 cited_in_draft: yes (only in appC_rl_sft_qwen.tex, which main.tex does not input)
 themes: [elicitation, other]
 read_from: "arXiv HTML: abstract, takeaways, sec. 2.1-2.3 (base models), sec. 3.1-3.4 (Dr. GRPO, template/question-set study, Llama pretraining), app. on Dr. GRPO ablations"
-digest_buckets: [4-supports]
+digest_buckets: [4-supports, 5-cite-fix]
 importance: 5
 ---
 

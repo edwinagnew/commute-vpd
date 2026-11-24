@@ -4,7 +4,7 @@ title: "What Does an LLM Learn from Reinforcement Learning? A Mechanistic Interp
 authors: Du, Tang et al.
 year: 2026
 id: 2609.15064
-tags: [FT-INTERP, EH, DYNAMICS, BASELINE, KNOWN-ANSWER]
+tags: [FT-INTERP, EH, DYNAMICS, BASELINE, KNOWN-ANSWER, SUPPORTS]
 primary_tag: FT-INTERP
 in_our_bib: no
 cited_in_draft: no

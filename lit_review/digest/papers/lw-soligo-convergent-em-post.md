@@ -1,5 +1,6 @@
 ---
 slug: lw-soligo-convergent-em-post
+linkpost_of: soligo2025-convergent-em (2506.11618; cite the paper)
 title: Convergent Linear Representations of Emergent Misalignment
 authors: Anna Soligo, Edward Turner et al.
 year: 2025
@@ -10,7 +11,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [interpreting-finetunes, model-diffing, baselines, elicitation]
 read_from: "LessWrong post full (paper version arXiv 2506.11618 not read)"
-digest_buckets: [2-known-answer-case, 1-missing-method, 4-supports]
+digest_buckets: [2-known-answer-case, 1-missing-method, 4-supports, 5-cite-fix]
 importance: 6
 ---
 

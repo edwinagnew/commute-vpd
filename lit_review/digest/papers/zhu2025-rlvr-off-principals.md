@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [interpreting-finetunes, model-diffing, training-dynamics, elicitation]
 read_from: "arXiv HTML: abstract, section 1, section 4 (spectral geometry, principal weights, rotation intervention, LoRA) and conclusion; section 3 theory and section 2 skimmed; appendices not read"
-digest_buckets: [4-supports, 1-missing-method]
+digest_buckets: [4-supports, 1-missing-method, 5-cite-fix]
 importance: 6
 ---
 

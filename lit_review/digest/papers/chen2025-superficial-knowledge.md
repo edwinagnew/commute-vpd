@@ -4,13 +4,13 @@ title: Extracting and Understanding the Superficial Knowledge in Alignment
 authors: Chen et al.
 year: 2025
 id: 2502.04602
-tags: [EH, BASELINE, DEFINITION, CITE-FIX]
+tags: [EH, BASELINE, DEFINITION, CITE-FIX, SUPPORTS]
 primary_tag: EH
 in_our_bib: no
 cited_in_draft: no
 themes: [elicitation, baselines, reuse-definitions]
 read_from: "arXiv HTML: abstract, introduction, Section 2 (method, Table 1, 2.3 analysis), Appendix C table for Mistral"
-digest_buckets: [1-missing-method, 3-definition, 4-supports]
+digest_buckets: [1-missing-method, 3-definition, 4-supports, 5-cite-fix]
 importance: 5
 ---
 

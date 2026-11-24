@@ -4,13 +4,13 @@ title: "[Linkpost] Interpreting Language Model Parameters (adVersarial Parameter
 authors: Bushnaq et al. (Braun, Clive-Griffin, Bussmann, Hu, Ivanitskiy, Linsefors, Sharkey)
 year: 2026
 id: 2610.20748 (paper); https://www.lesswrong.com/posts/eAQZaiC3PcBhS4HjM
-tags: [DECOMP, CITE-FIX, BACKGROUND]
+tags: [DECOMP, CITE-FIX, BACKGROUND, SUPPORTS]
 primary_tag: DECOMP
 in_our_bib: bushnaq2026vpd
 cited_in_draft: yes
 themes: [decompositions, interpreting-finetunes]
 read_from: "LessWrong linkpost full (via LW GraphQL); arXiv HTML of 2610.20748: abstract, Sec. 3.1 target model and decomposition stats, Sec. 7.5 limitations and future work, Sec. 7.6.1 related work"
-digest_buckets: [4-supports]
+digest_buckets: [4-supports, 5-cite-fix]
 importance: 7
 ---
 

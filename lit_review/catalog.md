@@ -1,5 +1,7 @@
 # Literature Review Catalog
 
+> **Superseded as the index (2026-11-23):** use `digest/master_list.tsv` and `digest/papers/` (every paper re-read, tagged). This file is the October sweep record.
+
 Total papers: 106 (91 from the October sweep, sorted by score; 15 added 2026-11-05 at the end, scored against the mechanistic definition of elicitation, see `elicitation_vs_sharpening.md`)
 
 ---

@@ -1,5 +1,6 @@
 ---
 slug: meloux2025-identifiable
+aliases: [meloux2025-many-algorithms-one-network]
 title: "Everything, Everywhere, All at Once: Is Mechanistic Interpretability Identifiable?"
 authors: Méloux et al.
 year: 2025
@@ -42,3 +43,6 @@ unique") is accurate. Toy MLPs only; no fine-tuning, no model comparison.
 
 **For the digest.**
 - 3-definition: cite where we say reuse is relative to τ: identical behaviour and perfect IIA do not pin down the mechanism, so a reuse verdict needs a fixed featurization.
+
+**Merged entry.** `meloux2025-many-algorithms-one-network` (same arXiv ID) was a second reading of this paper, merged here on 2026-11-23. Its digest lines:
+- `3-definition`: non-identifiability of circuits and of algorithm alignments, cited correctly. It is the reason our definition is stated relative to a fixed featurization and does not claim a featurization-free verdict.

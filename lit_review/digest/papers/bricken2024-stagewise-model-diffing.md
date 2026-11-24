@@ -10,7 +10,7 @@ in_our_bib: no
 cited_in_draft: no
 themes: [model-diffing, baselines, interpreting-finetunes]
 read_from: Transformer Circuits update, full text incl. appendix (no figures)
-digest_buckets: [1-missing-method]
+digest_buckets: [1-missing-method, 5-cite-fix]
 importance: 5
 ---
 
