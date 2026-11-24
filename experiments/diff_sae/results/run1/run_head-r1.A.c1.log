@@ -1,0 +1,44 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+09:45:04 [E296] ['head-r1.A.c1'] tag run1; Cfg(d=768, expansion=2, k=100, lr=0.0001, warmup=1000, batch=2048, tokens=200000000, stream_tokens=200000000, epochs=2, aux_alpha=0.03125, dead_tokens=10000000, threshold_start=1000, init_norm=1.0, target_rms=100.0, log_steps=50, validate_every=20000, val_tokens=5000000, val_batch=8192, val_start=196608, norm_tokens=1000000, norm_batch=4096, norm_seed=275, ls_tokens=50000000, ls_batch=2048, alive_min=10, nu_cut=0.3, nu_wide=0.6, kl_rows=256, kl_batch=16, chunk_rows=1024, pile_start=32768, pool_start=131072, pool_rows=65536, repeat_cap=100, dead_fixture_step=0)
+09:45:04 [check validation rows share no parent row with the stream] ok {"val": [196608, 206393], "stream": [[32768, 131072], [0, 16384]]}
+09:45:05 [check D exactly 0 under a zero update] ok {"max_abs": 0.0}
+09:45:05 [check the scaled path at 0 gives W0's activations] ok {"max_abs": 0.0, "bar": 0.0}
+09:45:05 [check change matched to the rung's size] ok {"x": 0.05429168235230332, "target": 2.1099224913502828, "energy": 2.104460845144152, "rel": -0.0025885530053928463, "tol": 0.05}
+09:45:05 [check the change writes at the site] ok {"energy": 2.104460845144152, "bar": 1e-06}
+09:45:06 [check graft writes at its site] ok {"energy": 2.104460845144152, "bar": 1e-06}
+09:45:06 [check stream holds every step] ok {"tokens": 200936448, "need": 199999488}
+09:48:32 [head-r1.A.c1] normaliser {"chunk_tokens": {"pile": 523264, "task": 523280}, "lengths": {"pile": 50233344, "task": 50234880}, "sample": [500000, 500000], "scale": 94.15818643934631, "mean_norm": 0.38463312805720634}; K 0.8843768086510405
+/root/work/.venv/lib/python3.13/site-packages/dictionary_learning/training.py:286: UserWarning: Error saving config: 'generator' object has no attribute 'config'
+  warn(f"Error saving config: {e}")
+Saving at step 0
+Saving at step 20000
+Validating at step 20000
+09:52:03 [head.A.c1] step 20000: {"step": 20000, "fve_pooled": 0.9146755410165289, "dead": 0.0, "theta": 1.5681315660476685, "ms_per_step": 10.029254126548768}
+Saving at step 40000
+Validating at step 40000
+09:55:22 [head.A.c1] step 40000: {"step": 40000, "fve_pooled": 0.921148136967176, "dead": 0.0, "theta": 1.5110219717025757, "ms_per_step": 10.004111671447754}
+Saving at step 60000
+Validating at step 60000
+09:58:41 [head.A.c1] step 60000: {"step": 60000, "fve_pooled": 0.9232631670962168, "dead": 0.0, "theta": 1.48733389377594, "ms_per_step": 9.984648446242014}
+Saving at step 80000
+Validating at step 80000
+10:02:01 [head.A.c1] step 80000: {"step": 80000, "fve_pooled": 0.9245508276314175, "dead": 0.0, "theta": 1.4799081087112427, "ms_per_step": 9.983438944816589}
+10:05:05 [check saved SAE reloads to identical encodings] ok {}
+10:05:06 [check dead share at the end] ok {"dead": 0.0, "bar": 0.3}
+10:10:02 [check lit: encoder inputs and targets] ok {"encoder input": true, "targets normalised once": true}
+10:10:02 [check lit: numerator identity] ok {"identity": 0.0002846383832408045, "bar": 0.0026}
+10:10:02 [check D: encoder inputs and targets] ok {"encoder input": true, "targets normalised once": true, "f is the trainer's path": true}
+10:10:02 [check D: numerator identity] ok {"identity": 5.749788110115806e-05, "bar": 0.0026}
+10:10:02 [head-r1.A.c1 read] {"bias": 0.10221453295641318, "error": 0.019095203341862058, "latents_total": 0.8786902637017248, "fve_change": 0.9806674312027657, "energy": 2.104460845144152, "lit": {"beta_F_neg": 31, "nu_nan": 0, "alive": 1502, "published_0.3": {"specific": 0.07313201248705659, "count": 13, "beta_F_neg_in": 0}, "published_0.6": {"specific": 0.11287863646381938, "count": 20, "beta_F_neg_in": 0}, "e2_0.3": {"specific": 0.02554867205867689, "count": 6, "beta_F_neg_in": 0}, "e2_0.6": {"specific": 0.06529529603543968, "count": 13, "beta_F_neg_in": 0}, "nu_hist_s": {"edges": ["-inf", 0.0, 0.1, 0.2, 0.3, 0.45, 0.6, 0.8, 1.0, 1.2, "inf"], "s": [0.04758334042837968, 2.583678940526712e-05, 0.002852810408610769, 0.02267002486066086, 0.0, 0.03974662397676279, 0.22627173519315444, 0.15334210851331537, 0.21896025639778424, 0.16710156536671533]}}, "D": {"beta_F_neg": 1280, "nu_nan": 0, "alive": 1502, "published_0.3": {"specific": 0.027454506428173743, "count": 173, "beta_F_neg_in": 0}, "published_0.6": {"specific": 0.03216051171828087, "count": 210, "beta_F_neg_in": 0}, "e2_0.3": {"specific": 0.007699421713332106, "count": 41, "beta_F_neg_in": 0}, "e2_0.6": {"specific": 0.012405427003439235, "count": 78, "beta_F_neg_in": 0}, "nu_hist_s": {"edges": ["-inf", 0.0, 0.1, 0.2, 0.3, 0.45, 0.6, 0.8, 1.0, 1.2, "inf"], "s": [0.019755084714841636, 0.004863443363142548, 0.001923252708657766, 0.0009127256415317916, 0.0022733668648903887, 0.002432638425216741, 0.0027670765952163756, 0.02192862664051326, 0.03197335898858583, 0.7897247279921924]}}}
+10:10:11 [check KL path: h_F patch at its floor (read)] ok {"kl": 0.0, "bar": 0}
+10:10:11 [check KL path: empty subset is the gap exactly (read)] ok {"empty": 0.022992622363649875, "gap": 0.022992622363649875}
+10:10:11 [check KL path: h_F patch at its floor (pile)] ok {"kl": 0.0, "bar": 0}
+10:10:11 [check KL path: empty subset is the gap exactly (pile)] ok {"empty": 0.012956688873323333, "gap": 0.012956688873323333}
+10:10:11 [head-r1.A.c1 kl] {"read": {"kl_all": {"h_F": 0.0, "gap": 0.022992622363649875, "all": 0.0009729312610914905, "error": 0.022021304932931612, "empty": 0.022992622363649875, "S_lit_0.3": 0.022378791885644192, "S_lit_0.6": 0.021580754802186956, "S_D_0.3": 0.02108761639952309, "S_D_0.6": 0.02099058992312739}, "kl_last": {"h_F": 0.0, "gap": 0.027128382167372483, "all": 0.0010826068457833818, "error": 0.026479644733137134, "empty": 0.027128382167372483, "S_lit_0.3": 0.026068603237513727, "S_lit_0.6": 0.024940920433652418, "S_D_0.3": 0.024550395113475655, "S_D_0.6": 0.02484934325528323}, "recovered_all": {"h_F": 1.0, "gap": 0.0, "all": 0.9576850675967417, "error": 0.04224474335097439, "empty": 0.0, "S_lit_0.3": 0.026696845113940437, "S_lit_0.6": 0.0614052429137012, "S_D_0.3": 0.08285292273309797, "S_D_0.6": 0.08707281878762951}, "recovered_last": {"h_F": 1.0, "gap": 0.0, "all": 0.9600932027901965, "error": 0.02391360569284484, "empty": 0.0, "S_lit_0.3": 0.03906531997817997, "S_lit_0.6": 0.08063369648157426, "S_D_0.3": 0.09502914836541165, "S_D_0.6": 0.0840093927469906}}, "pile": {"kl_all": {"h_F": 0.0, "gap": 0.012956688873323333, "all": 0.0008346732808479372, "error": 0.011980110494586112, "empty": 0.012956688873323333, "S_lit_0.3": 0.01264673404449324, "S_lit_0.6": 0.012237526587264081, "S_D_0.3": 0.012053345164111119, "S_D_0.6": 0.011352653748310206}, "kl_last": {"h_F": 0.0, "gap": 0.012779139071879492, "all": 0.0010296710134851132, "error": 0.011319194365751989, "empty": 0.012779139071879492, "S_lit_0.3": 0.012682596731144228, "S_lit_0.6": 0.012556636021137121, "S_D_0.3": 0.012042382577711846, "S_D_0.6": 0.011350723623597287}, "recovered_all": {"h_F": 1.0, "gap": 0.0, "all": 0.9355797388508375, "error": 0.07537252675318218, "empty": 0.0, "S_lit_0.3": 0.023922379541602035, "S_lit_0.6": 0.05550509803009496, "S_D_0.3": 0.06972025939992421, "S_D_0.6": 0.12379977173918966}, "recovered_last": {"h_F": 1.0, "gap": 0.0, "all": 0.9194256351939306, "error": 0.1142443710734875, "empty": 0.0, "S_lit_0.3": 0.007554682689673964, "S_lit_0.6": 0.017411427287147174, "S_D_0.3": 0.05765306176132623, "S_D_0.6": 0.11177712678825402}}}
+10:10:11 ITEM head-r1.A.c1 DONE in 25.1 min
+10:10:12 FINISHED head-r1.A.c1 in 25.3 min; peak GPU 62.0 GB; stopped: none
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/diff_sae/results/run1/items/head-r1.A.c1.json, /root/work/experiments/diff_sae/results/large/run1/head-r1.A.c1.pt ===

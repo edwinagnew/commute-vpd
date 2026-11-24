@@ -1,0 +1,34 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+10:10:16 [E296] ['head-r5.A.c0'] tag run1; Cfg(d=768, expansion=2, k=100, lr=0.0001, warmup=1000, batch=2048, tokens=200000000, stream_tokens=200000000, epochs=2, aux_alpha=0.03125, dead_tokens=10000000, threshold_start=1000, init_norm=1.0, target_rms=100.0, log_steps=50, validate_every=20000, val_tokens=5000000, val_batch=8192, val_start=196608, norm_tokens=1000000, norm_batch=4096, norm_seed=275, ls_tokens=50000000, ls_batch=2048, alive_min=10, nu_cut=0.3, nu_wide=0.6, kl_rows=256, kl_batch=16, chunk_rows=1024, pile_start=32768, pool_start=131072, pool_rows=65536, repeat_cap=100, dead_fixture_step=0)
+10:10:16 [check validation rows share no parent row with the stream] ok {"val": [196608, 206393], "stream": [[32768, 131072], [0, 16384]]}
+10:10:17 [check D exactly 0 under a zero update] ok {"max_abs": 0.0}
+10:10:17 [check the scaled path at 0 gives W0's activations] ok {"max_abs": 0.0, "bar": 0.0}
+10:10:17 [check change matched to the rung's size] ok {"x": 10.152407657533866, "target": 21099.224913502825, "energy": 20985.613067993105, "rel": -0.005384645453824777, "tol": 0.05}
+10:10:17 [check the change writes at the site] ok {"energy": 20985.613067993105, "bar": 1e-06}
+10:10:17 [check graft writes at its site] ok {"energy": 20985.613067993105, "bar": 1e-06}
+10:10:17 [check stream holds every step] ok {"tokens": 200936448, "need": 199999488}
+10:13:43 [head-r5.A.c0] normaliser {"chunk_tokens": {"pile": 523264, "task": 523280}, "lengths": {"pile": 50233344, "task": 50234880}, "sample": [500000, 500000], "scale": 1.0817837364744762, "mean_norm": 80.3780722726211}; K 0.504610444207529
+/root/work/.venv/lib/python3.13/site-packages/dictionary_learning/training.py:286: UserWarning: Error saving config: 'generator' object has no attribute 'config'
+  warn(f"Error saving config: {e}")
+Saving at step 0
+Saving at step 20000
+Validating at step 20000
+10:17:52 [head.A.c0] step 20000: {"step": 20000, "fve_pooled": 0.9980629853728519, "dead": 0.6373698115348816, "theta": 0.26979801058769226, "ms_per_step": 11.939138197898865}
+Saving at step 40000
+Validating at step 40000
+10:21:56 [head.A.c0] step 40000: {"step": 40000, "fve_pooled": 0.9982468418646137, "dead": 0.7174479365348816, "theta": 0.24886485934257507, "ms_per_step": 12.069802206754684}
+Saving at step 60000
+Validating at step 60000
+10:25:56 [head.A.c0] step 60000: {"step": 60000, "fve_pooled": 0.9983799735599426, "dead": 0.7350260615348816, "theta": 0.23921209573745728, "ms_per_step": 12.042957444985708}
+Saving at step 80000
+Validating at step 80000
+10:29:42 [head.A.c0] step 80000: {"step": 80000, "fve_pooled": 0.9984368446919046, "dead": 0.7486979365348816, "theta": 0.23535943031311035, "ms_per_step": 11.861270660161972}
+10:33:13 [check saved SAE reloads to identical encodings] ok {}
+10:33:14 [check dead share at the end] MISSED {"dead": 0.7473958730697632, "bar": 0.3}
+10:33:14 STOP head-r5.A.c0: dead share at the end: tell the lead
+10:33:14 FINISHED head-r5.A.c0 in 23.1 min; peak GPU 62.0 GB; stopped: ['head-r5.A.c0']
+peak host RSS 6.2 GB
+=== FINISHED (exit 1) — results in /root/work/experiments/diff_sae/results/run1/items/head-r5.A.c0.json, /root/work/experiments/diff_sae/results/large/run1/head-r5.A.c0.pt ===
