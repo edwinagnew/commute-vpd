@@ -1,0 +1,99 @@
+E286 (rotation_kept) start, stage gauge, shard (0, 1), tag g0; settings {'windows': 256, 'top_frac': 0.01, 'own_energy': 0.99, 'rank_rtol': 1e-06, 'too_small': 100, 'too_wide': 0.5, 'cache_batch': 32, 'control': 'x2', 'built': ('x2', 'x10', 'rebuilt', 'new_few', 'new_thin', 'random_size_241001', 'random_kl_241002'), 'head_layer': 2, 'head': 4, 'head_states': ('e62/copy_s0', 'e62/copy_s1', 'e62/copy_s2', 'e62/lookup_s0', 'e62/lookup_s1', 'e62/lookup_s2'), 'panel_vpd_derangements': 1, 'theta_deg': 30.0, 'rot_other_max': 0.5, 'order_tol': 1e-09, 'transcription_rel_tol': 1e-06, 'seed': 286}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+gauge invariance: max logit deviation 0.00010085105895996094, round-trip floor 5.221366882324219e-05, bar 0.0005221366882324219
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+gauge nn: pooled {"n": 24, "dd": 3.5140984209542864e-07, "strict": 0.0004901211175562059, "own": 0.6921088369642897, "needed": 0.9371719372682219, "matched": 0.6921088369642898, "nu": 0.7613632645598363, "rotation": 0.7959406755545918, "rotation_matched_null": 6.027767243862649e-16, "rotation_nu_null": 0.7341825443175061}; max dd/den 1.236898676778009e-12, kept at write scale strict 0.9999999999998801, needed 0.9999999999999925; changed kinds ['rms_1']
+gauge vpd: pooled {"n": 385, "dd": 22771231.481294576, "strict": 0.32355215890385775, "own": 0.3533461189649132, "needed": 0.3572352493126826, "matched": 0.35541827514737284, "nu": 0.004181188677571783, "rotation": 0.006014238005568227, "rotation_matched_null": 0.003204428587272721, "rotation_nu_null": 0.0026625311547465113}; max dd/den 5.806494597722588, kept at write scale strict 0.37104659999367395, needed 0.4023647489303632; changed kinds ['k_proj', 'o_proj', 'q_proj', 'v_proj']
+gauge: heads basis reads 1: True ; VPD reported as found
+gauge tangent: 65 states
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+gauge tangent e62/e62/copy_s0: share 0.006826090715608857 (QK 0.0001917012439680227, VO 0.006634389471640835); matched random 0.03850777970784113; 38 s
+gauge tangent e62/e62/copy_s1: share 0.006771872623758103 (QK 0.00016857546371773526, VO 0.006603297160040367); matched random 0.03811483087709434; 2 s
+gauge tangent e62/e62/copy_s2: share 0.006718883121944064 (QK 0.00018477654345727234, VO 0.006534106578486792); matched random 0.03844217013735228; 2 s
+gauge tangent e62/e62/lookup_s0: share 0.006864784906835781 (QK 0.0001605972211626138, VO 0.006704187685673166); matched random 0.04318847032861398; 2 s
+gauge tangent e62/e62/lookup_s1: share 0.006934578615411677 (QK 0.00014568433132717144, VO 0.006788894284084505); matched random 0.043903840002492665; 2 s
+gauge tangent e62/e62/lookup_s2: share 0.006859856119784479 (QK 0.00014982400386001393, VO 0.006710032115924466); matched random 0.043555029353509786; 5 s
+gauge tangent e62/e62-lookup_s0_scaled_e62_copy_lookup: share 0.00686478474692648 (QK 0.00016059724025993682, VO 0.006704187506666543); matched random 0.04296382434807589; 4 s
+gauge tangent e62/e62-lookup_s1_scaled_e62_copy_lookup: share 0.006934578757151348 (QK 0.0001456843221540536, VO 0.0067888944349972944); matched random 0.043847078219158106; 3 s
+gauge tangent e62/e62-lookup_s2_scaled_e62_copy_lookup: share 0.006859855848455656 (QK 0.00014982390698593025, VO 0.006710031941469725); matched random 0.04365459053379596; 3 s
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+gauge tangent e229/copy24_s0: share 0.011391277991099392 (QK 0.00019872129941834364, VO 0.011192556691681047); matched random 0.041953094693731104; 3 s
+gauge tangent e229/cipher24_s0: share 0.011934671004534634 (QK 0.00013290229612531598, VO 0.011801768708409318); matched random 0.044150147863466216; 3 s
+gauge tangent e229/ident32_s0: share 0.01194348649803904 (QK 0.0001993638788592115, VO 0.01174412261917983); matched random 0.041833447358997064; 4 s
+gauge tangent e229/rand32_s0: share 0.012010090024673957 (QK 0.00015563554514831882, VO 0.011854454479525638); matched random 0.04479589285440766; 3 s
+gauge tangent e229/case_real_s0: share 0.013534031473281524 (QK 0.0001929923855977283, VO 0.013341039087683795); matched random 0.040469080367982684; 4 s
+gauge tangent e229/case_twin_s0: share 0.005860289773453733 (QK 0.00017433668878516414, VO 0.005685953084668569); matched random 0.029440952776747076; 4 s
+gauge tangent e229/repeat_real_s0: share 0.012893818109263839 (QK 0.0002532357414022417, VO 0.012640582367861598); matched random 0.038027161109465336; 4 s
+gauge tangent e229/repeat_twin_s0: share 0.008401495827567582 (QK 0.00019935979097827477, VO 0.008202136036589307); matched random 0.03498370262328073; 4 s
+gauge tangent e229/twin_s0: share 0.008699137414650311 (QK 0.0001365996761783278, VO 0.008562537738471985); matched random 0.03928530968060919; 8 s
+gauge tangent e229/fact_s0: share 0.008213696252929255 (QK 0.00016548056573719152, VO 0.008048215687192063); matched random 0.035878956649816336; 9 s
+gauge tangent e229/copy24_s1: share 0.011426569763501294 (QK 0.00021541229438558912, VO 0.011211157469115706); matched random 0.04150495967893295; 3 s
+gauge tangent e229/cipher24_s1: share 0.011785348963287073 (QK 0.0001568776838553689, VO 0.011628471279431705); matched random 0.04432798369200963; 3 s
+gauge tangent e229/ident32_s1: share 0.012010152266114866 (QK 0.00020494884668162964, VO 0.011805203419433235); matched random 0.042045714303500736; 13 s
+gauge tangent e229/rand32_s1: share 0.011796665740757347 (QK 0.00014610580801890886, VO 0.011650559932738436); matched random 0.044329262995609124; 69 s
+gauge tangent e229/case_real_s1: share 0.013554322630711674 (QK 0.00019684311173991993, VO 0.013357479518971756); matched random 0.04100184834771137; 3 s
+gauge tangent e229/case_twin_s1: share 0.005925323427355712 (QK 0.00017647465559181733, VO 0.005748848771763895); matched random 0.029768663673908846; 2 s
+gauge tangent e229/repeat_real_s1: share 0.014709171955457222 (QK 0.00022529274088235483, VO 0.014483879214574866); matched random 0.03947197881113498; 3 s
+gauge tangent e229/repeat_twin_s1: share 0.008317562496957058 (QK 0.00017886254987843902, VO 0.00813869994707862); matched random 0.035473179662342785; 2 s
+gauge tangent e229/twin_s1: share 0.008883663393465066 (QK 0.0001371688588611714, VO 0.008746494534603893); matched random 0.039141302617884295; 4 s
+gauge tangent e229/fact_s1: share 0.00803093890369443 (QK 0.000157278642644629, VO 0.0078736602610498); matched random 0.03597312971368988; 5 s
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+gauge tangent panel/panel/lower/lower_s0_step128: share 0.003996570078321989 (QK 0.00017226548992880212, VO 0.003824304588393187); matched random 0.03962486076332018; 2 s
+gauge tangent panel/panel/lower/lower_s1_step101: share 0.004392755446666061 (QK 0.0001702252950159623, VO 0.004222530151650098); matched random 0.04002693714344388; 2 s
+gauge tangent panel/panel/lower/lower_s2_step96: share 0.004347265934178642 (QK 0.00015772380318206363, VO 0.004189542130996578); matched random 0.04003043549085365; 2 s
+gauge tangent panel/panel/french/french_s0_step8: share 0.011763675317081519 (QK 0.00020722270687285985, VO 0.01155645261020866); matched random 0.03833897184319059; 2 s
+gauge tangent panel/panel/french/french_s1_step6: share 0.012670156209688307 (QK 0.0002034214373586483, VO 0.012466734772329659); matched random 0.03949775735853748; 2 s
+gauge tangent panel/panel/french/french_s2_step8: share 0.011786581379507548 (QK 0.00020014292744281845, VO 0.011586438452064732); matched random 0.03872024026170289; 2 s
+gauge tangent panel/panel/yoruba/yoruba_s0_step105: share 0.005887222183950672 (QK 0.00015796534230910037, VO 0.00572925684164157); matched random 0.036118633044034856; 2 s
+gauge tangent panel/panel/yoruba/yoruba_s1_step107: share 0.005852808780145212 (QK 0.0001480975917411788, VO 0.005704711188404033); matched random 0.036315595346480656; 2 s
+gauge tangent panel/panel/yoruba/yoruba_s2_step107: share 0.005780968025054828 (QK 0.00015377929703600657, VO 0.005627188728018821); matched random 0.036608174878182013; 2 s
+gauge tangent panel/panel/squad/squad_s0_step4: share 0.0191265310491068 (QK 0.00029640454147559413, VO 0.018830126507631207); matched random 0.04310093720052947; 2 s
+gauge tangent panel/panel/squad/squad_s1_step3: share 0.019010933737538437 (QK 0.00026341853442944933, VO 0.01874751520310899); matched random 0.04258381462167089; 2 s
+gauge tangent panel/panel/squad/squad_s2_step4: share 0.018219558580781975 (QK 0.0002694838182969459, VO 0.017950074762485026); matched random 0.04264565657556793; 2 s
+gauge tangent panel/panel/conll/conll_s0_step8: share 0.021337849631845 (QK 0.0003097268033918138, VO 0.021028122828453184); matched random 0.043496188396516304; 2 s
+gauge tangent panel/panel/conll/conll_s1_step8: share 0.021963276041234738 (QK 0.00028979857719437744, VO 0.021673477464040365); matched random 0.04453502967983635; 2 s
+gauge tangent panel/panel/conll/conll_s2_step9: share 0.020881572600018085 (QK 0.0002865081991460876, VO 0.020595064400871995); matched random 0.04253971452733382; 2 s
+gauge tangent panel/panel/arxiv/arxiv_s0_step5: share 0.01511024310868875 (QK 0.0002005008342070178, VO 0.014909742274481731); matched random 0.04117147329028426; 2 s
+gauge tangent panel/panel/arxiv/arxiv_s1_step101: share 0.00562445060466899 (QK 0.00021624482795265558, VO 0.005408205776716335); matched random 0.03768013465695585; 2 s
+gauge tangent panel/panel/arxiv/arxiv_s2_step12: share 0.01190676849859228 (QK 0.0001921555318915596, VO 0.01171461296670072); matched random 0.04082374994046492; 2 s
+gauge tangent panel/panel/german/german_s0_step300: share 0.004078756822947329 (QK 0.00013438761238152805, VO 0.003944369210565801); matched random 0.035467592720023734; 2 s
+gauge tangent panel/panel/german/german_s1_step300: share 0.004036540765451352 (QK 0.00013547828801404932, VO 0.003901062477437303); matched random 0.03587657701201769; 2 s
+gauge tangent panel/panel/german/german_s2_step300: share 0.004077102969849114 (QK 0.0001357038062365133, VO 0.003941399163612602); matched random 0.03602834047394262; 2 s
+gauge tangent panel/panel/swahili/swahili_s0_step77: share 0.006439702892767015 (QK 0.00016711383809476986, VO 0.0062725890546722445); matched random 0.039073740595543534; 2 s
+gauge tangent panel/panel/swahili/swahili_s1_step77: share 0.00645540765561053 (QK 0.00018189404008027877, VO 0.006273513615530251); matched random 0.03823951382196606; 2 s
+gauge tangent panel/panel/swahili/swahili_s2_step41: share 0.007950467799188678 (QK 0.00019462622569174745, VO 0.00775584157349693); matched random 0.03842901139182395; 2 s
+gauge tangent panel/panel/spanish/spanish_s0_step300: share 0.004073772497603867 (QK 0.00013455678511957512, VO 0.0039392157124842914); matched random 0.036053392099107864; 2 s
+gauge tangent panel/panel/spanish/spanish_s1_step300: share 0.004137928340754185 (QK 0.00013531138099598505, VO 0.0040026169597582); matched random 0.036132757365416546; 2 s
+gauge tangent panel/panel/spanish/spanish_s2_step300: share 0.0041478346950775714 (QK 0.0001386415983682902, VO 0.0040091930967092815); matched random 0.036112654660801345; 2 s
+gauge tangent panel/panel/sentiment/sentiment_s0_step6: share 0.02119824220241333 (QK 0.00025306912395765607, VO 0.020945173078455677); matched random 0.04336120820107874; 2 s
+gauge tangent panel/panel/sentiment/sentiment_s1_step6: share 0.0205941280813642 (QK 0.00022900339669996425, VO 0.020365124684664237); matched random 0.04352172828928962; 2 s
+gauge tangent panel/panel/sentiment/sentiment_s2_step5: share 0.02209268014577131 (QK 0.00023165244721743677, VO 0.021861027698553873); matched random 0.045338446902317135; 2 s
+gauge tangent panel/panel/category/category_s0_step8: share 0.01676121862794605 (QK 0.0002135290807673942, VO 0.016547689547178657); matched random 0.04251067600258047; 2 s
+gauge tangent panel/panel/category/category_s1_step9: share 0.015534517817071195 (QK 0.00019848628121491135, VO 0.015336031535856283); matched random 0.04202465270791822; 2 s
+gauge tangent panel/panel/category/category_s2_step8: share 0.016332054655838913 (QK 0.00021515743977185215, VO 0.01611689721606706); matched random 0.041841419123703205; 2 s
+gauge tangent panel/panel/summary/summary_s0_step9: share 0.009710072555743233 (QK 0.00016387468041514057, VO 0.00954619787532809); matched random 0.04144129662761398; 2 s
+gauge tangent panel/panel/summary/summary_s1_step19: share 0.007420209647675524 (QK 0.00012174672976235102, VO 0.007298462917913173); matched random 0.04097578701167798; 2 s
+gauge tangent panel/panel/summary/summary_s2_step5: share 0.01228206653386234 (QK 0.00018024017039995765, VO 0.012101826363462381); matched random 0.04234971990958429; 2 s
+gauge tangent by class (median share): {"e62": 0.006859856119784479, "e229": 0.011605959363394184, "panel": 0.010736873936412376}
+E286 (rotation_kept) gauge DONE
+peak host RSS 7.0 GB
+=== FINISHED (exit 0) — results in /mnt/nw/home/e.agnew/commute-agents/definition-lead/experiments/rotation_kept/results ===
