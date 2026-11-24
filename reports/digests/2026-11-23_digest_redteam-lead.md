@@ -184,3 +184,16 @@ P2.68 (due 11-25) / E288 CMAP page (e00d29cd): OK after 4 fixes. The no call (5 
 - Premise doubts: (a) agreed and measured. (b) The "CMAP at neurons" name needs a code check or must go.
 
 P2.75 after GPT review (713b45c7): OK to the oracle and code. The new gate is rung 1 at 1.04x, two seeds, two matched Gaussians. Appendix E's choices are fine. Two $0 fixes: the code must assert that the validation rows (131,072 on) are disjoint from E235, rung 1 and E212 rows; and the gate table needs a precedence order (missing arm, Gaussian pass, seed split, pass).
+
+Paper Discussion + Conclusion (v2 c4a7c04; whip-lead's overnight request): 10 flags, sent to whip-lead and writeup-lead (note-2026-11-23-redteam-discussion-conclusion.md). No sentence misattributes the user.
+- Overclaims:
+  - "removing our measurement problems did not change the verdict": only the remainders were removed; the VPD spread was not.
+  - IA3 "would read kept": E290 reads 0.36-0.84.
+  - The P1.60 open line: E286 is done.
+  - E285's exploratory ranking is used as evidence.
+  - The KL-regression pairs have the new side above and were read on K*.
+  - "Tells update from noise" holds by class, not per item.
+- Old reading: the realistic reversal is quoted as ρ; it is now E_b over K (E273).
+- Conclusion: the baselines clause is missing CMAP, EAP-IG and ADL.
+
+P2.73 (due 11-25) Amendment 1, trigger token (definition-lead, bdbddd82): OK with 2 conditions. Freeze T=975 on the GPU (ship trigger_token.pt or assert it; stop if its ratio reads under 10, never re-choose). Label the trigger row as a clean-plant apparatus check: T was chosen as the first id clearing the ratio (lower ids read about 3, 975 reads 10.56), so it says nothing of WeightWatch's power on a typical trigger. Optional: read id 286 (ratio 2.96) beside it, descriptive.
