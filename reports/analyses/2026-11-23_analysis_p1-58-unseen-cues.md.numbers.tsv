@@ -185,7 +185,6 @@
 0.969	experiments/gain_share/results/stage1/new_thin_N.json	.share	this
 0.97	experiments/gain_share/results/score.json	.N.lookup_mean	this
 0.63	experiments/gain_only/results/score.json	.pairs.e62_copy_lookup.new["e62/lookup"].gain.reach	earlier
-0.03	given	noise floor in experiments/gain_share/results/unseen/predictions.json thresholds_source: sqrt 2 x 0.0217, run 1's seed spread
 0.95	given	expected x2/x10 unseen KL share, experiments/gain_share/results/unseen/predictions.json expected.x2_x10_N and positive_control
 0.8	given	expected copy unseen share, experiments/gain_share/results/unseen/predictions.json expected.e62_N
 0.7	given	expected gap, experiments/gain_share/results/unseen/predictions.json expected.e62_N
@@ -196,3 +195,5 @@
 3e-3	given	Liu et al. 2022 learning rate, as in run 1's page and experiments/gain_share/results/unseen/predictions.json lr_source
 0.970	experiments/gain_share/results/unseen/e62_N.json	.states["e62/copy_s1"].unseen.share	this
 0.2	experiments/gain_share/results/unseen/predictions.json + experiments/gain_share/results/unseen/controls_N.json	.[0].thresholds.new_max - .[1].gate.new.new_few	this
+0.072	experiments/gain_share/results/unseen/e62_N.json	[.score.unseen.lookup[]] as $l | ($l|add/length) as $m | [$l[]|(.-$m)*(.-$m)] | add/($l|length-1) | sqrt	this
+0.006	experiments/gain_share/results/unseen/e62_N.json	[.score.unseen.copy[]] as $l | ($l|add/length) as $m | [$l[]|(.-$m)*(.-$m)] | add/($l|length-1) | sqrt	this

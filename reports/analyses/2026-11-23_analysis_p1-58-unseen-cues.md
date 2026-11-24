@@ -1,10 +1,10 @@
 # Does a gain-only fit carry over to cues it never saw? (E291)
 
-We repeated the gain-only fit of the first run, but fitted each fine-tune on half of its cue or key tokens and read the fit on the other half, which it never saw. On tokens it never saw, the fit no longer rebuilds the two edits built to install new answers, while it still rebuilds the exact rescaling controls, and at the neuron level it rebuilds E62's copying map on unseen keys but not its lookup. For `GOALS.md` this gives a behavioural reading that separates these two fine-tunes where the first run's reading could not, but it is a description, not a verdict on reuse, since the working definition is still under revision.
+We repeated the gain-only fit of the first run, but fitted each fine-tune on half of its cue or key tokens and read the fit on the other half, which it never saw. On tokens it never saw, the fit still rebuilds changes that apply one rule to every key, the exact rescalings and E62's copying map, and does not rebuild changes that give each key its own answer, the built new edits and E62's lookup. For `GOALS.md` this separates a shared rule from a per-key answer, not yet reuse from new: no control here rescales a per-key answer M already gives, and no verdict is given while the working definition is under revision.
 
 ## The answer
 
-Read on keys the fit never saw, the gain-only share separates the built controls and E62's two fine-tunes at the neuron level. The exact rescalings keep nearly all of their change, the built new edits fall from nearly all to about a tenth, and the copying map stays near one while the lookup falls near zero. Held-out windows of the fitted keys separate nothing, as in the first run. At the VPD level the pattern is the same, but there is no exact control there and one copying seed reads half.
+Read on keys the fit never saw, the gain-only share separates changes that apply one rule to every key from changes that give each key its own answer. The exact rescalings keep nearly all of their change and the copying map stays near one. The built new edits fall to about a tenth and the lookup near zero. Held-out windows of the fitted keys separate nothing, as in the first run. A per-key answer the fit never saw cannot carry over whatever its mechanism, so this is not yet a reading of reuse against new.
 
 ## What we were trying to test
 
@@ -54,11 +54,11 @@ Yes, at both levels. With every gain at 1, G's logits matched M's bit for bit an
 
 ### What did the random change read?
 
-The matched random change read a KL share of -0.71 on unseen cues at the neuron level, and 0.26 on held-out windows of fitted cues. Negative means G ended further from F on unseen cues than M itself is: KL from F rose from 0.188 under M to 0.322 under G. On its own fit rows G removed 0.91 of the change. So the fit captured something of the random change on fitted cues that moves the output the wrong way on the others. This run does not show why. The plan expected about 0.27 on both sides.
+The matched random change read a KL share of -0.71 on unseen cues at the neuron level, and 0.26 on held-out windows of fitted cues. Negative means G ended further from F on unseen cues than M itself is: KL from F rose from 0.188 under M to 0.322 under G. On its own fit rows G removed 0.91 of the change. So the fit over-fits to the fitted cues: what it learned there moves the output the wrong way on the others. The plan expected about 0.27 on both sides. The unseen-key readings therefore mix carry-over with fit error. Redteam-lead's reading is that over-fitting lowers an unseen-key reading, so the new edits' fall to about a tenth may understate what a gain-only fit could carry over. A less over-fit fit, early-stopped or averaged over more fit seeds, might read higher on unseen cues and weaken the gate. This run did not test that.
 
 ### Does the share separate E62's copying map from its lookup on unseen keys?
 
-**Reading it.** Yes at the neuron level, and the separation appears only on unseen keys. The copying map's three seeds read 0.959 to 0.970 on keys the fit never saw. The lookup's read -0.020 to 0.119. The gap of the means is 0.926, against an expected 0.7 and a noise floor near 0.03 from the seed spread. On held-out windows of fitted keys both maps read near 1, and the gap is -0.0007. This is the first run's failure reproduced at this fit, beside the new reading. At the neuron level, with only half the keys fitted, gains rebuild the copying map's answers on new keys and do not rebuild the lookup's. This separates these two fine-tunes. It is not a reuse or new verdict, which is not given under any wording while the definition is under revision.
+**Reading it.** Yes at the neuron level, and the separation appears only on unseen keys. The copying map's three seeds read 0.959 to 0.970 on keys the fit never saw. The lookup's read -0.020 to 0.119. The gap of the means is 0.926, against an expected 0.7. The lookup's three seeds have a standard deviation of 0.072 and the copying map's 0.006, so the gap is about 13 lookup standard deviations, or about 18 of the two pooled. On held-out windows of fitted keys both maps read near 1, and the gap is -0.0007. This is the first run's failure reproduced at this fit, beside the new reading. At the neuron level, with only half the keys fitted, gains rebuild the copying map's answers on new keys and do not rebuild the lookup's. The lookup gives each key its own word, so its fall is expected whatever its mechanism; only the copying map's carry-over says something about gains. This separates these two fine-tunes, a shared rule against a per-key answer, and the gap is not a reading of reuse against new. It is not a reuse or new verdict, which is not given under any wording while the definition is under revision.
 
 ### What does the VPD level show?
 
@@ -130,11 +130,11 @@ E231 trained gains on the task itself, on every key, and reached 0.63 of the loo
 
 ## What we learned
 
-Held-out windows of fitted cues could not separate anything: the first run's new edits and both E62 maps read near 1 there, and so do this run's fitted-key columns. Keys the fit never saw do separate, at the neuron level, on both the built controls and on E62. Gains fitted on half the keys rebuild the changes that act the same way on every key: the rescalings and the copying map. They do not rebuild the changes that write a different answer per key: the new edits and the lookup. For `GOALS.md`, the gain-only share on unseen keys is a candidate behavioural reading that passes its built controls on this task, which the first run's reading did not. Whether it tracks the working definition is a question for the definition cell, not this run.
+Held-out windows of fitted cues could not separate anything: the first run's new edits and both E62 maps read near 1 there, and so do this run's fitted-key columns. Keys the fit never saw do separate, at the neuron level, on both the built controls and on E62. Gains fitted on half the keys rebuild the changes that act the same way on every key: the rescalings and the copying map. They do not rebuild the changes that write a different answer per key: the new edits and the lookup. That is the claim this run supports: a shared rule against a per-key answer. Both built arms differ in two ways at once, rescaled against installed and shared against per-key, so the split cannot yet tell rescaled from new. A per-key rescaling, gains on parts through which M already gives each key its own answer, is the missing control. If it holds near 1 on unseen keys, the split separates rescaled from new among per-key changes; if it falls, the copy-against-lookup gap is a property of the two tasks.
 
 ## How compelling is the evidence
 
-At the neuron level the gate is clear: the exact controls sit about 0.1 above their bar, the new edits about 0.2 under theirs, and E62's gap of 0.926 is about thirty times the seed-spread floor. The reading is blind to which of M's parts carry the recovered gain. It is also blind to whether a change that transfers does so by M's mechanism or by a gain pattern that happens to work on every key; a rescaling transfers by construction. The new edits and the random change have only 4 unseen cues each, so their unseen share is a mean over 4 answers. Each state had one fit seed; E62 had three fine-tune seeds per map. This is one task family. The VPD level has no exact positive control and is descriptive only.
+At the neuron level the gate is clear: the exact controls sit about 0.1 above their bar, the new edits about 0.2 under theirs, and E62's gap of 0.926 is about 13 times the lookup seeds' standard deviation of 0.072, from the three seeds in the results file. The main blind spot: every per-key change here is also new, so a fall on unseen keys cannot be told from a per-key answer that no fit could predict. The reading is also blind to which of M's parts carry the recovered gain. It is also blind to whether a change that transfers does so by M's mechanism or by a gain pattern that happens to work on every key; a rescaling transfers by construction. The new edits and the random change have only 4 unseen cues each, so their unseen share is a mean over 4 answers. The fit over-fits to fitted cues, as the random change shows, so unseen-key readings mix carry-over with fit error. Each state had one fit seed; E62 had three fine-tune seeds per map. This is one task family. The VPD level has no exact positive control and is descriptive only.
 
 ## Surprises
 
@@ -144,6 +144,8 @@ At the neuron level the gate is clear: the exact controls sit about 0.1 above th
 
 ## What next
 
+- A per-key rescaling control: gains on parts through which M already gives each key its own answer, read on unseen keys. If it holds near 1, the split separates rescaled from new among per-key changes; if it falls, the split reads only shared rule against per-key answer.
+- A less over-fit fit, early-stopped or averaged over more fit seeds. If the new edits then read well above a tenth on unseen cues, the gate weakens.
 - An exact VPD positive control, one subcomponent doubled. If it reads near 1 on unseen keys, the VPD gap can be read beside the neuron one.
 - Two more fit seeds for every state. If the VPD copying seed s1 recovers on a second fit seed, its low reading is the fit, not the fine-tune.
 - The same split on other tasks with a known reuse or new label. If the gap holds, the reading is a candidate method for the paper's comparison.
@@ -161,10 +163,11 @@ At the neuron level the gate is clear: the exact controls sit about 0.1 above th
 
 ## Not run
 
+- A per-key rescaling control, which the split needs before it can tell rescaled from new.
+- A less over-fit fit, early-stopped or averaged over more fit seeds, to test whether the new edits' unseen-key reading is held down by over-fitting.
 - An exact positive control at the VPD level, one VPD subcomponent doubled.
 - More fit seeds per state; each state had one.
 - Other tasks: only the built cue items, the copy controls and E62's task.
-- Why the random change reads negative on unseen cues; no measurement here separates the causes.
 - E62's maps read on the mixed set of 512 windows that earlier cells used.
 - E280's head edits, which run 1 read and this run did not.
 - Which gains carry the recovered gain on unseen keys; the saved gains are in `experiments/gain_share/results/large/gains_unseen/`.
