@@ -63,8 +63,10 @@ converted in the second venv, used and deleted before the next item.
 `n_key_value_heads=None` (6 key and value heads for 6 query heads), `default_prepend_bos=False`. No folding or centring.
 The unembedding is the tied embedding. FC's three flags are set: `use_split_qkv_input`, `use_attn_result`, `use_hook_mlp_in`.
 
-**Stage-0 checks (stops).** Each native parameter lands in exactly one converted parameter, and no converted parameter
-is left unset. Clean and corrupted logits match the native forward. The full circuit returns the clean logits and the
+**Stage-0 checks (stops).** Destination coverage: every converted parameter is assigned exactly once, from a declared
+source. A source may fan out: the shared native embedding goes to both `W_E` and, transposed, `W_U`. Biases that do
+not exist natively (attention, MLP, unembedding) are set to explicit zeros and listed. Every native parameter is the
+declared source of at least one destination. Clean and corrupted logits match the native forward. The full circuit returns the clean logits and the
 empty circuit the corrupted logits through FC's `evaluate_graph`. Each within the native forward's batched-against-single
 floor, measured first. These run on M and on x2 before any attribution.
 
