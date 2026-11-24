@@ -34,6 +34,7 @@ from torch import Tensor
 
 from commute import crosscoder as CC
 from commute.jobs import (
+    EXPERIMENTS,
     config_from_settings,
     hard_exit,
     load_experiment,
@@ -43,7 +44,7 @@ from commute.open_pair import jsonable
 
 HERE = Path(__file__).resolve().parent
 PRED, RES = HERE / "results/refit/predictions.json", HERE / "results/refit"
-LARGE = Path.home() / "commute-data/results-large"  # where the crosscoders are (results/large is a link to it)
+LARGE = EXPERIMENTS  # each run's results/large (a link on the dev node; staged as a real folder on a pod)
 RUN: Any = load_experiment("crosscoder_proper", "run")
 BASE = ("eps_base", "r_base")
 
@@ -123,7 +124,7 @@ class Builders:
             return self.e212(item, dry)
         job, run = self.run_job(code), "run1" if code == "E235" else "run2"
         rec = json.loads((HERE / f"results/{run}/items/{key}.json").read_text())
-        d = torch.load(LARGE / f"crosscoder_proper/{run}/{key}.pt", map_location="cpu", weights_only=True)
+        d = torch.load(LARGE / f"crosscoder_proper/results/large/{run}/{key}.pt", map_location="cpu", weights_only=True)
         s = job.side(RUN.Item.parse(key))
         if code == "E243":
             s.apply(rec["match"]["x"])  # the rung's saved scale, not a new search
@@ -144,7 +145,7 @@ class Builders:
         L = job.reads["L1"]
         h = CC.acts(job.net, L, None, job.layer).reshape(len(L), L.shape[1] - 1, -1)[:, -1]
         side = R3.Side("planted", job.zero, ("L1",), (v / v.norm() * h.norm(dim=1).median().cpu()).cuda())
-        d = torch.load(LARGE / "realistic_tasks/run3/planted.pt", map_location="cpu", weights_only=True)
+        d = torch.load(LARGE / "realistic_tasks/results/large/run3/planted.pt", map_location="cpu", weights_only=True)
         chunk = (lambda i: job.h_read(side, "L1")[:2]) if dry else (lambda i: job.chunk(i, side))
         return Control(item, cc, d["reads"]["L1"], load_ae(cc, d), chunk, None, None)
 
