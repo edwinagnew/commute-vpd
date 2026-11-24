@@ -74,3 +74,41 @@ controls would not detect that. The findings follow, as the reviewer gave them.
 - Top-neuron masking (masked_reads.py:158-168) is not an activation swap.
 - The locator aside needs correcting. Its whole MLPs swap the output after `down_proj`, so the fine-tuned output
   weights are included. It returns the log-odds and the label gap.
+
+## Re-check 1 (2026-11-23)
+
+The reviewer re-checked revision 2 (17879402). Two blockers remain, and the rest is resolved or nearly so. Its points,
+as relayed by the lead, each answered in revision 3 of the spec:
+
+1. **Edit site.** The reviewer agrees that B's V at the marker is the right site. The scored A/B/C arms should call the
+   authors' `apply_pp` unchanged. The alternate offset is used only as a negative-control intervention, and the offsets
+   are not a departure.
+2. **[Blocker] Two-layer control.** "Within leak × marker score" is not a valid rule. Use instead a fixed, non-zero
+   sender cache delta at the marker only, with every other entry identical to clean.
+   - After pass one, trace the receiver's `v_proj` output: its marker value must change, and its read-position value
+     must stay at a matched no-op floor.
+   - Then confirm that the marker replacement changes the receiver's read-position output, and that the read-site
+     replacement is null. No first-pass leak allowance is needed.
+   - Tolerances: a logit tolerance for logits, exact paired correct counts for accuracy, and a same-hook log-odds
+     tolerance for log-odds.
+   - Make §3's shared top-1 gate agree with Appendix D's log-odds floor. Define the first resolvable non-zero accuracy
+     gain for when the random null is exactly 0.
+3. **[Blocker] E62.** The window is "A B … A M", with the second key at `half − 1` and the marker at the read
+   (`src/commute/copying.py:249-259`). Its saved file holds 800 train rows and targets
+   (`experiments/induction_cue/run.py:98-107`).
+   - Include the preceding-key site as group C's analogue, or justify leaving it out; the reviewer prefers including
+     it if it maps cleanly.
+   - Use the saved train rows for discovery and pruning.
+   - For E53, use the original scorer's separate train windows (`experiments/performed_anchor/run.py:314`). Failing
+     that, split by source row and give the reason.
+4. **Budget.** Add a hard spend cutoff of $20 in total (provider time plus setup, transfer and teardown), checked before
+   any paid shard launches.
+5. **Planted-head recipe.** Pin it from E58's predictions file.
+
+## Re-check 2 (2026-11-23, on dccd46c0): APPROVE
+- The two-layer control is resolved: the cache-delta trace tests the real hooks. For the null arm's final logits and
+  log-odds, use the matched δ = 0 two-pass floor, not the CMAP floor.
+- The E62/E53 inputs are resolved.
+- The budget is not fully resolved, and this does not block approval. Terminating at $20 is too late. Set a deadline
+  below $20 that reserves worst-case teardown, or run free shards only. The lead changed G to terminate at $16, with
+  a $4 reserve, or to run cluster shards only.

@@ -105,8 +105,8 @@ al.'s own warning. A random update reads as reuse because nothing changes. The c
 
 ## Stages, in order (cluster debug, $0; each writes its JSON as it ends)
 
-0. **Adapter, the only stops.** Run on M and on x2 before any attribution. Every native parameter maps to the converted
-   model exactly once. The converted logits on clean and corrupted windows match the native forward within the
+0. **Adapter, the only stops.** Run on M and on x2 before any attribution. The conversion passes the appendix's
+   destination-coverage rule (every converted parameter set exactly once; the shared embedding fans out to both ends). The converted logits on clean and corrupted windows match the native forward within the
    batched-against-single floor of the native forward, measured first. Evaluating the full circuit gives the clean
    output, and the empty circuit gives the corrupted output, within the same floor. State hashes are checked against their
    records. Not stops: do-nothing IoU, the fp32 KL floor for "no gap", seconds per item.
