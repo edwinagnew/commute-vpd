@@ -259,6 +259,10 @@ def main() -> None:
         rho[feat] = {"spearman_K_over_n_vs_min_margin": spearman([i["K_over_n"] for i in g], [i["margin_min"] for i in g]), "n": len(g)}
         t = [i for i in g if not i["cls"].startswith("built")]
         rho[feat + "_no_built"] = {"spearman_K_over_n_vs_min_margin": spearman([i["K_over_n"] for i in t], [i["margin_min"] for i in t]), "n": len(t)}
+    for key in ("vpd/toy_trained", "neurons/toy_trained", "neurons/realistic", "vpd/procedural", "vpd/rl"):  # within class (red team, 2026-11-23)
+        feat, c = key.split("/")
+        g = [i for i in pooled if i["feat"] == feat and i["cls"] == c and i["margin_min"] is not None]
+        rho[key] = {"spearman_K_over_n_vs_min_margin": spearman([i["K_over_n"] for i in g], [i["margin_min"] for i in g]), "n": len(g)}
     med = lambda key, c: classes[c][key].get("median")
     r4 = {f"neurons toy_trained - realistic: {k}": med(k, "neurons/toy_trained") - med(k, "neurons/realistic") for k in ("top_kept_median", "coverage", "rem_share")}
     r4 |= {f"vpd toy_trained - {c}: top_kept_median": med("top_kept_median", "vpd/toy_trained") - med("top_kept_median", f"vpd/{c}") for c in ("procedural", "rl")}

@@ -6,22 +6,26 @@ only, $0, no model loaded.
 We took the saved per-variable sums behind every reading of the write share over the needed set, for about three
 hundred fine-tunes, built edits and random updates, and read them variable by variable at VPD and at neurons. The
 filed reading, on the variables the needed set ranks highest by flips, failed its own control at both featurizations,
-so it carries no claim. An exploratory reading added after that failure, on the variables with the largest write
-change, passes the control and shows that in every trained update the largest changes point away from the base
-model's own writes. Toy and realistic tasks read alike, so the task choice is not the cause. Recomputing from the
-saved sums reproduced every saved value, but the needed-set scans were not redone. For the goals, this measures the
-per-variable kept share at these two featurizations, and a fine-tune that re-mixes existing subcomponents would also
-read as turned at this grain.
+so it carries no claim: ranking by need does not find the variables an update changed. What remains is what earlier
+runs found: the per-variable write share of trained updates is low and near random in every class, toy and realistic
+alike, so the task choice does not explain it. At VPD a low per-variable share cannot be told from a change spread
+over many subcomponents, since even a pure doubling spreads that way. For the goals, the next test is the kept share of
+whole matrices or layers, which separates the two. Recomputing from the saved sums reproduced every saved value; the
+needed-set scans were not redone.
 
 ## The answer
 
 The filed reading failed its control: a pure doubling edit reads near zero on it, because the variables ranked
-highest by flips are often not the ones the edit changed. So it says nothing about trained updates. An exploratory
-reading, not filed, ranks variables by their write change instead. On it, a doubling keeps about three quarters of its
-largest changes along the base write at VPD, and all of them at neurons. Trained updates keep a few hundredths, and
-random ones a hundredth or less, alike on toy, procedural, RL and realistic tasks. The arithmetic from the saved sums
-reproduces every saved value; the needed-set scans were not redone. Re-mixing existing subcomponents would also read
-as turned at this per-variable grain.
+highest by flips are often not the ones the edit changed. So ranking by need cannot find where an update acted. The
+write share of trained updates, per variable, is low and near random in every class, toy, procedural, RL and
+realistic, as earlier runs found. At VPD, low cannot be told from spread: the median changed subcomponent of a pure
+doubling keeps under a thousandth of its change, and the doubling reads high only because a few subcomponents carry
+most of it. A trained update that re-mixes existing subcomponents would read low too. The test that separates the two
+is the kept share of a whole matrix or layer. The arithmetic from the saved sums reproduces every saved value; the
+needed-set scans were not redone.
+
+Red-team verdict (redteam-lead, 2026-11-23): OK after fixes; low per-variable share is not distinguishable from spread
+at VPD; the group-level read is the separating test.
 
 ## What the readings are
 
@@ -83,19 +87,23 @@ show in the arrays.
 So the per-variable kept share, ranked by need, cannot tell a strengthening from a new mechanism. That is a property
 of how the reading ranks and splits variables, and it shows on the built edits whatever the code.
 
-## Exploratory, not filed: the largest changes of trained updates are turns, not rescales
+## Exploratory, not filed: ranked by change, the reading is the write share again
 
 Since flips failed, we ranked each item's changed needed variables by write change instead. We read the kept share of
 the top 1%, weighted by change. This reading is exploratory. It was not filed: it was added after reading 1's control
-failed, after the numbers were seen, and it carries the headline only as an exploratory result.
+failed, after the numbers were seen. It adds little: in every class it agrees with the write share over the whole
+needed set to within about a hundredth, as the table's third and last columns show. The largest changes dominate
+that write share anyway.
 
 ![Exploratory, not filed: kept share of each item's top 1% of changed needed variables ranked by write change, beside the filed ranking by flips, per class, at VPD and at neurons](../../experiments/why_fail/figures/kept_by_class.png)
 
-**Reading it.** On the exploratory ranking by write change, the strengthening edits read as strengthening and every trained class reads close to
-the random updates. The doubling and tenfold edits keep 0.76 of their largest changes at VPD and 1 at neurons. Trained
-classes sit between 0.016 and 0.041 at the class median. The random updates sit at or under 0.011. This holds for the
-toy fine-tunes, the procedural and RL states, and the realistic panel. Trained updates read two to six times their
-random updates, far below the strengthening edits. The filed ranking by flips puts trained classes in the same place,
+**Reading it.** On the exploratory ranking by write change, the strengthening edits read high and every trained class
+reads low, near the random updates. The doubling and tenfold edits keep 0.76 of their largest changes at VPD and 1 at
+neurons. Trained classes sit between 0.016 and 0.041 at the class median. The random updates sit at or under 0.011.
+This holds for the toy fine-tunes, the procedural and RL states, and the realistic panel. At VPD this does not show
+that trained updates turn their writes. The doubling's median changed subcomponent keeps 0.0007, and the doubling
+reads 0.76 only because a few subcomponents carry most of its change. A trained update whose change is spread over
+many subcomponents would read low per variable even if, summed over a matrix, it were a rescale. The filed ranking by flips puts trained classes in the same place,
 from 0.011 to 0.034, but its controls sit there too. Two realistic items read high on the filed ranking, 0.63 and 0.40.
 The first has a needed set of 44 variables, under the floor of 100.
 
@@ -119,9 +127,12 @@ neurons. Every item is in `experiments/why_fail/results/items.tsv`.
 Reading 2 came out as filed for the toy and realistic fine-tunes. The needed set holds a median 0.62 of the changed
 variables for toy fine-tunes at VPD. At neurons it holds 0.33 for toy fine-tunes and 0.41 for the realistic panel.
 Matched random updates have needed sets as large: 0.67 at VPD and 0.36 for the panel's randoms at neurons. The procedural and RL
-states missed the filed 0.3, at 0.028 and 0.10. They are also the classes with the largest margins. Across items, the
-share of variables in K falls as the smallest margin grows, with a Spearman correlation of -0.72 over 202 items at VPD
-and -0.60 over 104 at neurons. The smallest margin is under 0.01 in 0.96 of the toy fine-tunes at VPD and 0.67 of the
+states missed the filed 0.3, at 0.028 and 0.10. They are also the classes with the largest margins, so these misses
+support the margin account rather than cut against it. Across items, the share of variables in K falls as the
+smallest margin grows, with a Spearman correlation of -0.72 over 202 items at VPD and -0.60 over 104 at neurons.
+Within a class the link holds but is weaker for toy fine-tunes. It reads -0.42 over the 114 toy fine-tunes at VPD and
+-0.47 over the 29 at neurons. It reads -0.73 over the 36 realistic fine-tunes at neurons. The procedural and RL states
+read -0.72 and -0.93. The smallest margin is under 0.01 in 0.96 of the toy fine-tunes at VPD and 0.67 of the
 realistic ones. So K mostly measures how close F's top two tokens come on its most fragile input, not which variables
 the task uses. Margins are minimum-only for E268, E275 and E278's re-used items: no medians were saved there, and no
 per-pair margins were saved anywhere. Where medians exist they are large, 1.8 for toy fine-tunes and 0.69 for the
@@ -134,20 +145,22 @@ toy fine-tunes and 0.64 for the realistic panel. Their matched random updates pu
 doubling 0.0002.
 A neuron counts as a variable only above its 97th-percentile activation, so most of an MLP's activity is remainder.
 At neurons, then, the write share mostly reads one large remainder per layer. At VPD the remainders hold only 0.022 to
-0.031 of the change, under the filed range of 0.1 to 0.6. The largest single layer holds 0.32 to 0.36 for trained classes and
-0.34 for random. The change is spread over all four layers.
+0.031 of the change. That is a plain miss of the filed range of 0.1 to 0.6. The likely reason is that VPD reconstructs
+each weight matrix closely, so little of any change is left outside its subcomponents. No claim here rests on it. The
+largest single layer holds 0.32 to 0.36 for trained classes and 0.34 for random. The change is spread over all four
+layers.
 
 ## Toy against realistic: the same failure
 
 Reading 4 came out as filed. At neurons the toy fine-tunes and the realistic panel differ by 0.008 on the filed reading,
 0.078 on needed-set coverage and 0.049 on the remainder share. On the exploratory reading of the largest changes they read 0.016 and 0.019. At
 VPD, where the panel was never read, toy fine-tunes differ from the procedural states by 0.018 and from RL by 0.005 on
-the filed reading. A failure this uniform across toy, procedural, RL and realistic tasks is not a matter of task choice.
+the filed reading. Task choice does not explain a failure this uniform across toy, procedural, RL and realistic tasks.
 
 ## What this rules out, and what it does not
 
-- **Task choice: ruled out as the cause.** Toy, procedural, RL and realistic fine-tunes read alike on every reading.
-  The realistic panel was read only at neurons, so the check at VPD uses procedural and RL in its place.
+- **Task choice does not explain it.** Toy, procedural, RL and realistic fine-tunes read alike on every reading. The
+  realistic panel was read only at neurons, so the comparison at VPD uses procedural and RL in its place.
 - **Implementation: the arithmetic is checked, the scans are not.** The write share over K, recomputed in fresh code
   from the saved sums, matched the saved value on all 312 items that have one, to 6e-16 relative. The tenfold edit's
   write change is 81 times the doubling's, as linearity requires, to 2e-8. The variable layout put the doubling's
@@ -159,19 +172,20 @@ the filed reading. A failure this uniform across toy, procedural, RL and realist
   by flips finds where F is fragile, not where the update acted. At VPD the least-squares split shares one matrix's
   doubling over thousands of subcomponents, and most of them read as turned. At neurons two thirds of any dense change
   sits in the remainders.
-- **What it does not rule out.** On the exploratory ranking by write change, where the controls pass, trained updates
-  still turn their largest changes away from the base writes at both featurizations. It is exploratory and does not say
-  that trained fine-tunes build new mechanisms. A fine-tune that re-mixes existing subcomponents moves each one's write
-  off its own direction, and reads as turned even though no new direction enters the matrix. The doubling at VPD is
-  exactly such a case. A variable-by-variable kept test may be too fine to see reuse that happens across a group of
-  variables.
+- **What it does not rule out.** The per-variable write share of trained updates is low and near random in every class.
+  At VPD that cannot be told from a change spread over many subcomponents. The doubling's median changed subcomponent
+  keeps 0.0007, and its share reads 0.76 only because a few subcomponents carry most of the change. A fine-tune that re-mixes
+  existing subcomponents moves each one's write off its own direction and reads low, even though no new direction
+  enters the matrix. So these readings do not say that trained fine-tunes build new mechanisms.
 
 ## A starting point for future work
 
-- **Read the kept clause on groups of variables.** At VPD the doubling is a rescale of one matrix, not of each
-  subcomponent. Compute the kept share of the summed write of all changed subcomponents in a matrix, or in a layer.
-  If trained updates rise toward the doubling there and random updates stay low, the failure is in the per-variable
-  grain, and the definition's mechanism should be a group.
+- **The main test: the kept share of a whole matrix or layer.** This is the Discussion's starting point. At VPD a pure
+  doubling's median changed subcomponent keeps 0.0007 of its change, so a low per-variable share cannot tell a turned
+  write from a rescale spread over many subcomponents. Compute the kept share of the summed write of all changed
+  subcomponents in a matrix, or in a layer. If trained updates rise toward the doubling there and random updates stay
+  low, the low readings came from the per-variable grain. If they stay near random, trained updates do turn their
+  writes.
 - **Rank need by something tied to the change.** Flips find fragile variables. A needed set weighted by each pair's
   margin, or found at a margin floor, needs per-pair flips and margins saved in a new scan. That scan would also test
   the margin explanation of the needed set's size directly.
@@ -185,11 +199,11 @@ the filed reading. A failure this uniform across toy, procedural, RL and realist
 | 1, control | strengthening edits keep their most-needed changes | at least 0.8 | 0.0026, 0.0049 at VPD; 0.0024, 0.50 at neurons | control failed: the stop rule holds, no claim from reading 1 |
 | 1, random | random updates keep almost none | at most 0.05 VPD, 0.1 neurons | 0.0031 to 0.0059 | as filed |
 | 1, trained | trained classes near random, not dilution | at most 0.15 | 0.011 to 0.034 | as filed in value; no verdict, its control failed |
-| 2, coverage | K covers most changed variables | at least 0.3 every trained class | toy 0.62 VPD, 0.33 neurons; realistic 0.41; procedural 0.028, RL 0.10 | met for toy and realistic; missed for procedural and RL |
-| 2, margins | size follows the smallest margin | Spearman at most -0.5 | -0.72 VPD, -0.60 neurons | as filed |
+| 2, coverage | K covers most changed variables | at least 0.3 every trained class | toy 0.62 VPD, 0.33 neurons; realistic 0.41; procedural 0.028, RL 0.10 | met for toy and realistic; missed for procedural and RL, the classes with the largest margins, which supports K following the margin |
+| 2, margins | size follows the smallest margin | Spearman at most -0.5 | pooled -0.72 VPD, -0.60 neurons; within class toy -0.42 VPD, -0.47 neurons, realistic -0.73, procedural -0.72, RL -0.93 | as filed pooled; within class weaker for toy |
 | 2, small margins | smallest margin under 0.01 in half the items | at least half | toy 0.96, realistic 0.67; procedural 0.30, RL 0.10 | met for toy and realistic; missed for procedural and RL |
 | 3, neurons | remainders hold most of a dense change | at least 0.5 | 0.64 to 0.69 trained, 0.65 to 0.67 random | as filed |
-| 3, VPD | spread over layers, remainder share 0.1 to 0.6 | largest layer at most 0.6 | largest layer 0.32 to 0.36; remainders 0.022 to 0.031 | layers as filed; remainder share under the range |
+| 3, VPD | spread over layers, remainder share 0.1 to 0.6 | largest layer at most 0.6 | largest layer 0.32 to 0.36; remainders 0.022 to 0.031 | layers as filed; remainder share missed, likely because VPD reconstructs the weights closely; no claim rests on it |
 | 4 | toy and realistic alike | within 0.1 on 1, 0.2 on 2 and 3 | 0.008, 0.078, 0.049 | as filed |
 
 ## Surprises
@@ -216,7 +230,8 @@ kept share depends on each variable's gain, and the gain minus 1 scales by nine.
 eight-ninths at the doubling therefore has a negative gain at the tenfold edit. The definition's positive-gain rule
 sets such a variable's kept share to 0. One changed variable was affected, so the check stopped the first run.
 
-**What replaced it.** On 2026-11-23 the check was amended to what linearity does fix: each changed variable's write
+**What replaced it.** The amendment came after the first run stopped on this check, not before any run. On 2026-11-23
+the check was amended to what linearity does fix: each changed variable's write
 change at the tenfold edit is exactly 81 times the doubling's. This is an exact check of the same linearity, not a
 looser tolerance on the old one. It read 2e-8 relative, at floating-point rounding, and passed. The amendment is
 recorded in `run.py`; `results/predictions.json` is unchanged.
