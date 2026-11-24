@@ -113,3 +113,4 @@
 - [Literature methods: spec first](feedback-literature-methods-spec-first.md) — quoted method spec + departures table, redteam + GPT check before code; adaptations named as ours; cite matching methods (ADL/Venhoff episode, user 2026-11-23)
 - [Poster templates](reference-poster-templates.md) — Drive folder of recommended poster templates for the poster after the paper (user, 2026-11-23)
 - [Avoid paper merge conflicts](feedback-avoid-paper-merge-conflicts.md) — pull right before editing and committing in the paper repo; rebuild main.pdf after merges; diff vs origin after (user, 2026-11-23)
+- [Per-task values, not pair gaps](feedback-per-task-values-not-pair-gaps.md) — figures show each reading per task (reuse vs new), no tallies or cell text, little text (user, repeated, 2026-11-23)
