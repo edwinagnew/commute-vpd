@@ -6,11 +6,11 @@ This is a descriptive cell: nothing below is read against a bar, and no reading 
 
 ## The answer
 
-On the old trigger tasks no reading told the emoticon fine-tune apart from both of its twins, which learn a different word at the same trigger. The re-gating share again read the emoticon and its ` http` twin alike, as when this control first failed. The old tasks gain about ten times more than the realistic panel's tasks. So the realistic panel was too hard for two readings on ten of its states, but easier tasks did not make any reading pass the twin control.
+On the old trigger tasks no reading told the emoticon fine-tune apart from both of its twins, which learn a different word at the same trigger. The re-gating share again read the emoticon and its ` http` twin alike, as when this control first failed. The old tasks gain about ten times more than the realistic panel's tasks. Ten realistic states gained under one log-odds, the readings' floor, so two readings had no value there; no old state did. But easier tasks did not make any reading separate the emoticon from both twins.
 
 ## What we were trying to test
 
-Each old task is one short fine-tune of the released 67M model, ten Adam steps for the trigger tasks, with the recipe of the experiment that first ran it. The trigger tasks teach one target token at windows where a mined trigger appears: the emoticon task teaches `o` where the paper's emoticon subcomponent is active, and the ladder tasks teach pairs such as ` which` followed by ` was`. Three of them have **twins**: the same windows and recipe, but a different target, ` http` or the end-of-text token. A twin changes what is learned while keeping the trigger, so a reading of reuse should not treat the real task and its twin as the same thing just because the trigger is shared. The many-cues pair teaches 32 mined cue words toward ` of`, or each toward its own matched target. Lowercase text and the real case label are the two older tasks without a trigger.
+Each old task is one short fine-tune of the released 67M model, ten Adam steps for the trigger tasks, with the recipe of the experiment that first ran it. The trigger tasks teach one target token at windows where a mined trigger appears: the emoticon task teaches `o` where the paper's emoticon subcomponent is active, and the ladder tasks teach pairs such as ` which` followed by ` was`. Three of them have **twins**: the same windows and recipe, but a different target, ` http` or the end-of-text token. A twin changes what is learned while keeping the trigger, so a reading should not treat the real task and its twin as the same thing just because the trigger is shared. The many-cues pair teaches 32 mined cue words toward ` of`, or each toward its own matched target. Lowercase text and the real case label are the two older tasks without a trigger.
 
 The fifteen tasks give 36 states: three seeds for the twin groups and the case label, two for lowercase, one for the rest, plus the emoticon's original run at steps 10, 30, 100 and 300. Each state is read through its owner's code:
 
@@ -35,7 +35,7 @@ Step 3 sets the old states beside the 36 states of the realistic panel at matche
 
 **The crosscoder and ADL: no reading, control failed.** The crosscoder with the exclusion of its appendix fails every planted control at fine-tune size on the 67M, and ADL's filed positive control on lowercase failed through our port. Neither was run here.
 
-**The write share over the needed set has almost nothing to read on a trigger task.** On the 25 trigger-task states the needed set holds a median of 4 neurons and at most 32. It is empty on 4 states at neurons and on 9 at VPD, where the median is 3 subcomponents. An empty set reads 1 by convention, which is not a measurement. The realistic panel's needed sets held about twenty thousand variables, and at least 200 on every state. The realistic panel set any needed set under 100 variables as unreadable; this run filed no such rule, so the values are reported, but on the trigger tasks they rest on a handful of variables.
+**The write share over the needed set has almost nothing to read on a trigger task.** On the 25 trigger-task states the needed set holds a median of 4 neurons and at most 32. It is empty on 4 states at neurons and on 9 at VPD, where the median is 3 subcomponents. An empty set reads 1 by convention, which is not a reading: below, a state with an empty set is written "K empty", and a twin pair with an empty set on any seed reads "no reading". The realistic panel's needed sets held about twenty thousand variables, and at least 200 on every state. The realistic panel set any needed set under 100 variables as unreadable; this run filed no such rule, so the values are reported with the needed set's size K beside each, and a K under 100 is marked "below the panel's limit". Every trigger-task state but one ` we` to ` http` seed at VPD is below it.
 
 ## Does any reading separate a real fine-tune from its other-target twins?
 
@@ -45,11 +45,11 @@ Step 3 sets the old states beside the 36 states of the realistic panel at matche
 
 The steering share and the 64-neuron share do separate all three real trigger tasks from their ` http` twins, in one direction each: steering higher on the real task, the neuron share lower. Both reverse against the end-of-text twin. The ` http` twins of the two ladder tasks start from a far lower base log-odds and gain about twice as much as the real tasks, so on those pairs the twin also differs in how much was learned. The emoticon's ` http` twin gains the same as the emoticon and still reads lower on steering.
 
-The write share over the needed set separates no emoticon pair at neurons. Its one "real above" call, on ` we` to ` just`, comes from the real task's needed set being empty on all three seeds, so it reads the convention value of 1. EAP-IG reads only the ` we` pair on all seeds: the real task keeps more of the base circuit, 0.66 to 0.78 of its edges against 0.59 to 0.64 for the twin. On the three twin triggers every fine-tune's overlap sits below the range the base model itself reads when its task rows are resampled; on the other tasks several sit inside that range.
+The write share over the needed set separates no emoticon pair at neurons. On both ladder pairs it gives no reading at either featurization: on ` we` to ` just` the real task's needed set is empty on all three seeds, at neurons and at VPD; on ` which` to ` was` it is empty on one seed at neurons and on all three at VPD. EAP-IG reads only the ` we` pair on all seeds: the real task keeps more of the base circuit, 0.66 to 0.78 of its edges against 0.59 to 0.64 for the twin. On the three twin triggers every fine-tune's overlap sits below the range the base model itself reads when its task rows are resampled; on the other tasks several sit inside that range.
 
 ### The twin rule's calls
 
-Each call compares the real task with its twin on every common seed, against the difference between their random updates. "No reading" means a value was missing on some seed.
+Each call compares the real task with its twin on every common seed, against the difference between their random updates. "No reading" means a value was missing on some seed, or, for the write share over the needed set, the needed set of either task was empty on some seed, so the value there is the convention, not a reading.
 
 | reading | emoticon vs ` http` | emoticon vs end of text | ` which` vs ` http` | ` we` vs ` http` | 32 cues, one vs own targets, 1 seed |
 |---|---|---|---|---|---|
@@ -59,9 +59,9 @@ Each call compares the real task with its twin on every common seed, against the
 | untrained, rotated | real below | does not separate | real above | real above | real above |
 | neuron share, 64 | real below | real above | real below | real below | real above |
 | neuron share, matched | real below | real above | does not separate | real below | does not separate |
-| write share, neurons | does not separate | does not separate | does not separate | real above, empty set | real below |
+| write share, neurons | does not separate | does not separate | no reading | no reading | real below |
 | the same, no remainders | does not separate | does not separate | no reading | no reading | real above |
-| write share, VPD | does not separate | real below | does not separate | does not separate | real below |
+| write share, VPD | does not separate | real below | no reading | no reading | real below |
 | EAP-IG edges kept | no reading | no reading | no reading | real above | real below |
 
 ### Every reading per task
@@ -70,30 +70,30 @@ Ranges are over the seeds at the scored step; the emoticon's original run at lat
 
 | task | seeds | re-gating share | steering share | untrained, SVD | untrained, rotated | neuron, 64 | neuron, matched | write share, neurons | same, no remainders | write share, VPD | EAP-IG edges kept |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| emoticon to o | 3 | 0.60 to 0.61 | 1.49 to 1.74 | 0.02 to 0.11 | -0.12 to 0.04 | 0.016 to 0.021 | 0.004 to 0.007 | 0.003 to 0.019 | 0.019 to 0.024 | 0.005 to 0.011 | 0.42 (1 of 3) |
-| emoticon to ' http' | 3 | 0.57 to 0.60 | 1.15 to 1.24 | 0.17 to 0.18 | 0.16 to 0.27 | 0.026 to 0.038 | 0.020 to 0.022 | 0.017 to 0.035 | 0.017 to 0.035 | 0.000 to 0.022 | 0.53 (1 of 3) |
-| emoticon to end of text | 3 | 0.53 to 0.55 | 1.82 to 1.86 | 0.03 to 0.07 | 0.05 to 0.09 | 0.001 to 0.005 | -0.007 to 0.005 | 0.002 to 0.052 | 0.012 to 0.052 | 0.009 to 0.142 | 0.43 to 0.50 |
-| ' which' to ' was' | 3 | 0.74 to 0.77 | 1.34 to 1.43 | -0.15 to -0.03 | 0.16 to 0.37 | 0.011 to 0.022 | 0.013 to 0.023 | 0.004 to 1.000 | 0.004 to 0.019 (2 of 3) | 1.000 | 0.79 to 0.84 |
-| ' which' to ' http' | 3 | 0.44 to 0.55 | 1.02 to 1.11 | 0.03 | 0.04 to 0.09 | 0.048 to 0.054 | 0.023 to 0.025 | 0.037 to 0.050 | 0.037 to 0.050 | 0.023 to 1.000 | 0.51 to 0.58 (2 of 3) |
-| ' we' to ' just' | 3 | 0.27 to 0.28 | 1.38 to 1.43 | 0.01 to 0.02 | 0.01 to 0.09 | 0.016 to 0.020 | 0.007 to 0.009 | 1.000 | none | 1.000 | 0.66 to 0.78 |
-| ' we' to ' http' | 3 | 0.45 to 0.49 | 1.07 to 1.12 | -0.02 to 0.02 | -0.10 to -0.02 | 0.027 to 0.034 | 0.022 to 0.024 | 0.005 to 0.013 | 0.006 to 0.038 | 0.038 to 1.000 | 0.59 to 0.64 |
-| 32 cues to ' of' | 1 | 1.10 | 2.41 | 0.10 | 0.18 | 0.027 | 0.007 | 0.031 | 0.217 | 0.048 | 0.65 |
-| 32 cues to own targets | 1 | 0.78 | 0.48 | -0.05 | 0.16 | -0.007 | 0.007 | 0.045 | 0.165 | 0.055 | 0.74 |
-| ' will' to ' be' | 1 | 1.07 | 2.51 | 0.02 | 0.00 | 0.012 | -0.007 | 0.001 | 0.014 | 0.036 | 0.75 |
-| ' it' to ' is' | 1 | 0.86 | 1.28 | 0.08 | -0.21 | 0.029 | 0.005 | 0.041 | 0.041 | 0.035 | 0.81 |
-| ' will' to ' have' | 1 | 0.90 | 1.49 | -0.01 | 0.03 | 0.005 | -0.011 | 0.002 | 0.011 | 0.004 | 0.77 |
-| ' in' to ' Fig' | 1 | 0.53 | 1.21 | 0.07 | 0.04 | 0.000 | 0.022 | 0.007 | 0.121 | 0.028 | 0.82 |
-| lowercase text | 2 | 0.75 to 0.77 | 0.69 to 0.71 | 0.02 to 0.12 | 0.33 to 0.49 | 0.034 to 0.047 | 0.008 to 0.010 | 0.029 to 0.033 | 0.067 to 0.068 | 0.024 to 0.029 | none |
-| case label | 3 | 0.11 to 0.14 | 0.61 to 0.64 | -0.02 to 0.01 | 0.04 to 0.09 | 0.009 to 0.018 | 0.003 to 0.008 | 0.003 to 0.008 | 0.021 to 0.124 | 0.021 to 0.040 | none |
-| matched random, all states | | 0.03 | 0.03 | 0.04 | 0.06 | 0.015 | 0.026 | 0.006 | 0.014 | 0.014 | 0.97, lowest |
+| emoticon to o | 3 | 0.60 to 0.61 | 1.49 to 1.74 | 0.02 to 0.11 | -0.12 to 0.04 | 0.016 to 0.021 | 0.004 to 0.007 | 0.003 to 0.019; K 6 to 8, below the panel's limit | 0.019 to 0.024; K 6 to 8, below the panel's limit | 0.005 to 0.011; K 3 to 4, below the panel's limit | 0.42 (1 of 3) |
+| emoticon to ' http' | 3 | 0.57 to 0.60 | 1.15 to 1.24 | 0.17 to 0.18 | 0.16 to 0.27 | 0.026 to 0.038 | 0.020 to 0.022 | 0.017 to 0.035; K 7, below the panel's limit | 0.017 to 0.035; K 7, below the panel's limit | 0.000 to 0.022; K 4 to 5, below the panel's limit | 0.53 (1 of 3) |
+| emoticon to end of text | 3 | 0.53 to 0.55 | 1.82 to 1.86 | 0.03 to 0.07 | 0.05 to 0.09 | 0.001 to 0.005 | -0.007 to 0.005 | 0.002 to 0.052; K 5 to 7, below the panel's limit | 0.012 to 0.052; K 5 to 7, below the panel's limit | 0.009 to 0.142; K 4, below the panel's limit | 0.43 to 0.50 |
+| ' which' to ' was' | 3 | 0.74 to 0.77 | 1.34 to 1.43 | -0.15 to -0.03 | 0.16 to 0.37 | 0.011 to 0.022 | 0.013 to 0.023 | 0.004 to 0.019 (2 of 3); K 1 to 2, below the panel's limit; third seed K empty, E_b = 1 by convention, not a reading | 0.004 to 0.019 (2 of 3); K 1 to 2, below the panel's limit; third seed K empty, not a reading | K empty on all three seeds, E_b = 1 by convention, not a reading | 0.79 to 0.84 |
+| ' which' to ' http' | 3 | 0.44 to 0.55 | 1.02 to 1.11 | 0.03 | 0.04 to 0.09 | 0.048 to 0.054 | 0.023 to 0.025 | 0.037 to 0.050; K 1 to 4, below the panel's limit | 0.037 to 0.050; K 1 to 4, below the panel's limit | 0.023 and 0.328 (2 of 3); K 1 and 2, below the panel's limit; third seed K empty, E_b = 1 by convention, not a reading | 0.51 to 0.58 (2 of 3) |
+| ' we' to ' just' | 3 | 0.27 to 0.28 | 1.38 to 1.43 | 0.01 to 0.02 | 0.01 to 0.09 | 0.016 to 0.020 | 0.007 to 0.009 | K empty on all three seeds, E_b = 1 by convention, not a reading | none: K empty on all three seeds, not a reading | K empty on all three seeds, E_b = 1 by convention, not a reading | 0.66 to 0.78 |
+| ' we' to ' http' | 3 | 0.45 to 0.49 | 1.07 to 1.12 | -0.02 to 0.02 | -0.10 to -0.02 | 0.027 to 0.034 | 0.022 to 0.024 | 0.005 to 0.013; K 4 to 32, below the panel's limit | 0.006 to 0.038; K 4 to 32, below the panel's limit | 0.038 (1 of 3); K 102; two seeds K empty, E_b = 1 by convention, not a reading | 0.59 to 0.64 |
+| 32 cues to ' of' | 1 | 1.10 | 2.41 | 0.10 | 0.18 | 0.027 | 0.007 | 0.031; K 488 | 0.217; K 488 | 0.048; K 1491 | 0.65 |
+| 32 cues to own targets | 1 | 0.78 | 0.48 | -0.05 | 0.16 | -0.007 | 0.007 | 0.045; K 2203 | 0.165; K 2203 | 0.055; K 7398 | 0.74 |
+| ' will' to ' be' | 1 | 1.07 | 2.51 | 0.02 | 0.00 | 0.012 | -0.007 | 0.001; K 12, below the panel's limit | 0.014; K 12, below the panel's limit | 0.036; K 17, below the panel's limit | 0.75 |
+| ' it' to ' is' | 1 | 0.86 | 1.28 | 0.08 | -0.21 | 0.029 | 0.005 | 0.041; K 2, below the panel's limit | 0.041; K 2, below the panel's limit | 0.035; K 5, below the panel's limit | 0.81 |
+| ' will' to ' have' | 1 | 0.90 | 1.49 | -0.01 | 0.03 | 0.005 | -0.011 | 0.002; K 2, below the panel's limit | 0.011; K 2, below the panel's limit | 0.004; K 1, below the panel's limit | 0.77 |
+| ' in' to ' Fig' | 1 | 0.53 | 1.21 | 0.07 | 0.04 | 0.000 | 0.022 | 0.007; K 16, below the panel's limit | 0.121; K 16, below the panel's limit | 0.028; K 38, below the panel's limit | 0.82 |
+| lowercase text | 2 | 0.75 to 0.77 | 0.69 to 0.71 | 0.02 to 0.12 | 0.33 to 0.49 | 0.034 to 0.047 | 0.008 to 0.010 | 0.029 to 0.033; K 4934 to 8683 | 0.067 to 0.068; K 4934 to 8683 | 0.024 to 0.029; K 15709 to 33093 | none |
+| case label | 3 | 0.11 to 0.14 | 0.61 to 0.64 | -0.02 to 0.01 | 0.04 to 0.09 | 0.009 to 0.018 | 0.003 to 0.008 | 0.003 to 0.008; K 14 to 53, below the panel's limit | 0.021 to 0.124; K 14 to 53, below the panel's limit | 0.021 to 0.040; K 22 to 212, two seeds below the panel's limit | none |
+| matched random, all states | | 0.03 | 0.03 | 0.04 | 0.06 | 0.015 | 0.026 | 0.006; K 1370 or more | 0.014; K 1370 or more | 0.014; K 2665 or more | 0.97, lowest |
 
-A write share of 1.000 is an empty needed set. The needed-set sizes per state are in `results/eb_neurons/items/` and `results/eb_vpd/items/` as `size_K`; no item had a fragile position.
+K is the needed set's size: neurons in the two neuron columns, subcomponents in the VPD column. An empty K gives a write share of 1 by convention, which is not a reading. "Below the panel's limit" marks a K under 100, the size under which the realistic panel called a needed set unreadable; this run filed no such rule, so those values are reported, not discarded. The sizes per state are in `results/eb_neurons/items/` and `results/eb_vpd/items/` as `size_K`; no item had a fragile position.
 
 ## Was the realistic panel too hard for the 67M?
 
 ![Difficulty of old tasks and the realistic panel](../../experiments/old_tasks_read/figures/difficulty.png)
 
-**Reading it.** Yes, by every measure but the base log-odds, the old tasks are far easier. The median old state gains 13.0 log-odds against 1.36 on the realistic panel, and changes the loss on Pile text by 0.049 nats per token against 0.182. The old tasks also start from a higher median base log-odds, -6.76 against -11.7, though the two ranges overlap and the realistic panel's value is in its own scored unit. The old tasks that logged it reach half their gain in a median of two steps, and the realistic panel within its first save, so that axis does not tell the panels apart.
+**Reading it.** Yes, by every measure but the base log-odds, the old tasks are far easier. The median old state gains 13.0 log-odds against 1.36 on the realistic panel, and changes the loss on Pile text by 0.049 nats per token against 0.182. The old tasks also start from a higher median base log-odds, -6.76 against -11.7, though the two ranges overlap and the realistic panel's value is in its own scored unit. That unit holds for its gain too: the log-odds of the target on its 30 token-target states, but the contrast between the two labels on its 6 label-task states, so the panel-wide median mixes units. Over the 30 token-target states alone the median gain is also 1.36 log-odds. The old tasks that logged it reach half their gain in a median of two steps, and the realistic panel within its first save, so that axis does not tell the panels apart.
 
 | task | seeds | base log-odds | gain | Pile loss change |
 |---|---|---|---|---|
@@ -113,18 +113,18 @@ A write share of 1.000 is an empty needed set. The needed-set sizes per state ar
 | lowercase text | 2 | -6.8 | 1.6 to 1.7 | 0.231 to 0.242 |
 | case label | 3 | -14.5 | 23.5 to 24.7 | 0.034 to 0.071 |
 
-**Do the readings' failures on the realistic panel track difficulty?** One does, directly. On 10 of the realistic panel's 36 states the gain stayed under one log-odds, so the re-gating and steering shares could not be read; no old state fell under it. The other failures do not line up with difficulty in any simple way. Within the realistic panel the rank agreement of each reading with the gain is weak: 0.20 for the re-gating share, 0.22 for the write share over the needed set, and -0.41 and -0.39 for steering and the effective rank. The write share's reversal against the raters, a rank agreement of -0.69, is not a gain effect at this strength. On the old tasks, which the model learns well, the readings still fail the twin control above. Within the old tasks the re-gating share falls as the gain rises, a rank agreement of -0.76, and the EAP-IG overlap does too, at -0.60; the other readings sit at 0.30 or less in size. These are descriptive rank agreements over states, with seeds of one task counted separately.
+**Do the readings' failures on the realistic panel track difficulty?** One does, directly. Ten realistic states gained under one log-odds, the readings' floor, so the re-gating and steering shares have no value there; no old state did. The other failures do not line up with difficulty in any simple way. Within the realistic panel the rank agreement of each reading with the gain is weak. Over the 26 states above the floor it is 0.20 for the re-gating share and -0.41 for steering. Over all 36 it is 0.22 for the write share over the needed set and -0.39 for the effective rank. Steering's -0.41 is at the edge of what 26 states can tell from noise: the two-sided 5% edge for a rank agreement at that count is about 0.39. The write share's reversal against the raters, a rank agreement of -0.69, is not explained by gain alone (rank agreement with gain 0.22). On the old tasks, which the model learns well, no reading separates the emoticon from both twins. Within the old tasks the re-gating share falls as the gain rises, a rank agreement of -0.76 over 36 states, and the EAP-IG overlap does too, at -0.60 over the 22 states it read; the other readings sit at 0.30 or less in size. These are descriptive rank agreements. The 36 old states come from 15 tasks, with the seeds of one task and the emoticon's later steps counted as separate states, so the count overstates how many independent points stand behind each value.
 
 Lowercase text is in both panels, on the same rows and at almost the same gain. Its re-gating share reads 0.75 to 0.77 here and 0.81 to 0.86 on the realistic panel. That is the one task where the two panels can be compared directly, and they agree in kind.
 
 ## What we learned
 
-The old near-realistic tasks are a fair test of whether the realistic panel was simply too hard: the 67M learns them ten times more strongly with a smaller side effect on Pile text. On them the readings are readable and clear of their random updates, but none passes the control the old re-gating share failed. A reading that moves with the target rather than with the trigger, as steering and the neuron share do here, separates real tasks from twins in a direction that flips with which twin is chosen. So the realistic panel's difficulty explains why two readings had no value on ten states, not why the readings cannot tell a reused route from a different target at the same trigger. The write share over the needed set needs many positions to read: on a one-token trigger task its needed set is a handful of variables or none.
+The old near-realistic tasks are a fair test of whether the realistic panel was simply too hard: the 67M learns them ten times more strongly with a smaller side effect on Pile text. On them the readings are readable and clear of their random updates, but none separates the emoticon from both twins, the test the old re-gating share failed. A reading that moves with the target rather than with the trigger, as steering and the neuron share do here, separates real tasks from twins in a direction that flips with which twin is chosen. So the realistic panel's difficulty explains why two readings had no value on ten states, not why the readings cannot tell the real target from a different target at the same trigger. The write share over the needed set needs many positions to read: on a one-token trigger task its needed set is a handful of variables or none.
 
 ## How compelling is the evidence
 
 - Three seeds per side on each twin pair; the many-cues pair has one. The other ladder tasks have one seed each.
-- The null for each pair is one random draw per state, so it can be small by chance. Most nulls are tiny next to the differences, so the calls are not near their edge, except where the needed set is empty.
+- The null for each pair is one random draw per state, so it can be small by chance. Most nulls are tiny next to the differences, so the calls are not near their edge; a pair with an empty needed set on any seed is no reading, not a call.
 - The ` http` twins of the ladder tasks are not matched in gain to their real tasks; the emoticon's ` http` twin is.
 - The trigger tasks are read at one position per window; the realistic panel at every position of the text. The write share over the needed set is the reading this matters most for.
 - Each reading was run with its owner's code, not a copy.
@@ -139,7 +139,7 @@ The old near-realistic tasks are a fair test of whether the realistic panel was 
 
 ## Surprises
 
-The steering share separated every real trigger task from its ` http` twin, all seeds, with the real task higher, and reversed against the emoticon's end-of-text twin. This was not filed as an expectation either way. The ` we` to ` just` task has an empty needed set at both neurons and VPD on all three seeds, while its twin has a non-empty one.
+The steering share separated every real trigger task from its ` http` twin, all seeds, with the real task higher, and reversed against the emoticon's end-of-text twin. This was not filed as an expectation either way. The ` we` to ` just` task has an empty needed set at both neurons and VPD on all three seeds, while its twin's is non-empty at neurons on all three and at VPD on one.
 
 ## What next
 

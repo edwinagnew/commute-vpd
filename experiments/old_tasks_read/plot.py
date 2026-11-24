@@ -51,6 +51,7 @@ TASKS = {"emoticon": "emoticon -> o", "emoticon_http": "emoticon -> ' http'", "e
          "r2_t359_v816_http": "' we' -> ' http'", "many_one": "32 cues -> ' of'", "many_many": "32 cues -> own targets",
          "r0_t588_v320": "' will' -> ' be'", "r0_t352_v310": "' it' -> ' is'", "r1_t588_v452": "' will' -> ' have'",
          "r2_t275_v2667": "' in' -> ' Fig'", "lowercase": "lowercase text", "case_real": "case label"}  # fmt: skip
+LABEL_TASKS = ("topic", "sentiment", "category")  # E272's label tasks (its tasks.py): prior and gain in the two-label contrast
 GROUP_ENDS = (2, 4, 6, 8)  # rows after which a trigger group ends: emoticon x3, which x2, we x2, cues x2, then the rest
 
 
@@ -162,6 +163,8 @@ def difficulty_readings(S: dict[str, Any], rows: list[dict[str, Any]]) -> dict[s
     pan, sizes = realistic_pairs()
     out: dict[str, Any] = {
         "medians": {n: {k: median([r[k] for r in rows if r["set"] == n]) for k, _ in AXES} for n in sets},
+        "realistic_token_targets": {"n": sum(r["set"] == "realistic" and r["task"] not in LABEL_TASKS for r in rows)}
+        | {k: median([r[k] for r in rows if r["set"] == "realistic" and r["task"] not in LABEL_TASKS]) for k in ("prior", "gain")},
         "n_states": {n: sum(r["set"] == n for r in rows) for n in sets},
         "under_gain_floor": {n: sum(1 for r in rows if r["set"] == n and finite(r["gain"]) and r["gain"] < 1) for n in sets},
         "old_rho_with_gain": {k: rho_with_gain([(old[s]["gain"], S["readings"].get(s, {}).get(k)) for s in old]) for k, _, _ in READS},
