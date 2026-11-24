@@ -99,6 +99,7 @@ class Config:  # filed in predictions.json "settings"
     scan_keys: tuple[str, ...]
     repeat_seed: int
     repeat_circuit: str
+    no_new: tuple[str, ...]  # circuits whose new edits were not built (Amendment 2)
 
     def __post_init__(self) -> None:
         per = (self.layer, self.trained, self.half, self.slot_layer, self.random_seeds)
@@ -106,10 +107,15 @@ class Config:  # filed in predictions.json "settings"
         assert all(min(self.trained[c]) > self.layer[c] and len(self.random_seeds[c]) == len(EDITS) for c in self.circuits)
         assert tuple(self.factors) == (2, 10) and self.target in self.factors and self.repeat_circuit in self.circuits
         assert self.repeat_seed == 269, "the repeat state is named x2_s269"
+        assert set(self.no_new) <= set(self.circuits)
+
+    def edits(self, c: str) -> list[str]:
+        return [e for e in EDITS if not (c in self.no_new and e in NEW)]
 
     def states(self, c: str) -> list[str]:
         """The read order: do-nothing first, x2 (and the floor's repeat) next, the randoms last."""
-        return ["do_nothing", "x2", *(["x2_s269"] if c == self.repeat_circuit else []), *EDITS[1:], *(f"rand_{e}" for e in EDITS)]
+        es = self.edits(c)
+        return ["do_nothing", "x2", *(["x2_s269"] if c == self.repeat_circuit else []), *es[1:], *(f"rand_{e}" for e in es)]
 
 
 def load() -> tuple[Config, dict[str, Any], SimpleNamespace]:
@@ -214,12 +220,15 @@ def build(cfg: Config, th: dict[str, Any], w: Any, c: str) -> tuple[dict[str, An
     T = edits[f"x{cfg.target:g}"]
     out |= {f"kl_{k}": B.RU.mean_kl(F, M, d.task_held, cfg.eval_batch) for k, F in edits.items()}
     out["fit_ratio"] = B.RU.mean_kl(edits["rebuilt"], T, d.task_held, cfg.eval_batch) / out[f"kl_x{cfg.target:g}"]
-    new, rec, cues = B.new_edits(w, cfg.slot_layer[c])
-    edits |= new
-    out["new"], miss = rec, miss + rec["misses"]
-    miss += [f"slots {rec['slots']} meet C {C}"] if set(rec["slots"]) & set(C) else []
-    miss += [f"{e} not built" for e in NEW if e not in new]
-    torch.save({"toks": cues.toks, "A_prime": cues.A2, "y": cues.y}, LARGE / c / "cues.pt")
+    if c in cfg.no_new:
+        out["new"] = "not built (Amendment 2)"
+    else:
+        new, rec, cues = B.new_edits(w, cfg.slot_layer[c])
+        edits |= new
+        out["new"], miss = rec, miss + rec["misses"]
+        miss += [f"slots {rec['slots']} meet C {C}"] if set(rec["slots"]) & set(C) else []
+        miss += [f"{e} not built" for e in NEW if e not in new]
+        torch.save({"toks": cues.toks, "A_prime": cues.A2, "y": cues.y}, LARGE / c / "cues.pt")
     for e in ("rebuilt", *NEW):
         if e in edits:
             torch.save(B.changed(edits[e], M), LARGE / c / f"{e}.pt")
@@ -240,7 +249,7 @@ class Circuit:
         self.cfg, self.w, self.c = cfg, w, c
         self.rec = json.loads((RESULTS / f"build_{c}.json").read_text())
         self.win = torch.load(LARGE / c / "windows.pt", weights_only=False)
-        self.cues = torch.load(LARGE / c / "cues.pt", weights_only=False)["toks"]
+        self.cues = None if c in cfg.no_new else torch.load(LARGE / c / "cues.pt", weights_only=False)["toks"]
         self.vpd = vpd_world(w) if vpd else None
 
     def of(self, item: str) -> Any:
