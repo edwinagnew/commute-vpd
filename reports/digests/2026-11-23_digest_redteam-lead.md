@@ -134,3 +134,5 @@ P2.71 (whip-lead): verdicts on the 5 literature challenges sent (whip-lead/note-
 - Sentences: Angsten (Qwen), Lee (behaviour decides it), Prakash/Chhabra (role vs gain), gain-only fine-tunes (scoped: SVFT near-full only on Gemma-7B).
 - One $0 check inside P1.60's scope: the gauge rotation from Singh.
 - One new cell worth proposing: an IA3-style gain fine-tune as a trained positive control.
+
+P2.72 (compare-lead, Delta-Crosscoder, due 11-25): spec 2c0fd0c6 needs revision. Blocker 1: the tail threshold comes from a null with no spread (0.5 exactly under paired init), so it filters nothing. Blocker 2: our share decides the method's column, where the paper's output is a steering yes/no. Majors: the max-activation check is dropped, the steering departs without rows, the shared decoders should probably be untied, the Minder-trainer behaviours need departure rows, the C1 bars are unmeasured, and C0's tolerance is not measured under bf16.
