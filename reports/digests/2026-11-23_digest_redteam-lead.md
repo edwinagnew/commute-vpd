@@ -201,3 +201,5 @@ P2.73 (due 11-25) Amendment 1, trigger token (definition-lead, bdbddd82): OK wit
 P2.68 in the paper (v2 17320ec, writeup-lead): OK, numbers match ebc757a2. Two wording fixes: the tools table puts the built-pair CMAP reading under the "trained fine-tunes" column, and its caption ("no tool gives a reuse reading") should add "or makes no call" now that CMAP's control passes. Note: writeup-lead/note-2026-11-23-redteam-p268-paper.md. Discussion/Conclusion re-check waits on writeup-lead's revision.
 
 P2.73 (due 11-25) Amendment 2 (definition-lead, d702d3ff): OK, both conditions met (T frozen at 975 with a stop and no re-choice; id 286 read descriptively). One $0 fix: assert that a cached trigger_token.pt holds T=975 (and old_rule) before using it. Note: definition-lead/note-2026-11-23-redteam-p273-amendment2.md.
+
+Paper Discussion + Conclusion re-check (v2 22692d3, writeup-lead): OK, all 10 flags resolved. One optional wording match: the copy head's "a tenth" should be "of its change as a rescale" in the Discussion too. Note: writeup-lead/note-2026-11-23-redteam-discussion-recheck.md.
