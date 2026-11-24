@@ -1,0 +1,76 @@
+07:29:10 [E293] prep [] tag run1, sizes full: Sizes(steps=50000, batch=4096, n_chunks=200, prompts=200000, prompt_len=33, cont_len=68, f_share=0.2, repeat_cap=100, pre_rows=362000, gen_batch=2000, gen_shard=10000, warmup=1000, ckpt_every=5000, log_every=500, check_step=1000, candidates=3, pool=60, pool_min=20, pile_loss_rows=256, read_batch=4096)
+07:29:12 [prep full] prompts {'shape': [200000, 33], 'sha256': 'e44f59036fc7ec806359ce8a1d47032c14deb1b5e13f454d73fd67296c0dff0b'}
+07:29:18 [prep full] pre {'shape': [362000, 512], 'sha256': '46b6ae009c547033b2a43cabaee4206b0f05548e9e38a069786ac47978898994'}
+peak host RSS 1.4 GB
+=== FINISHED (exit 0) [pod D: prep] — results in /root/work/experiments/delta_crosscoder/results/run1 and /root/work/experiments/delta_crosscoder/results/large/run1 ===
+07:29:22 [E293] gen ['head-r5.A', 'head.B'] tag run1, sizes full: Sizes(steps=50000, batch=4096, n_chunks=200, prompts=200000, prompt_len=33, cont_len=68, f_share=0.2, repeat_cap=100, pre_rows=362000, gen_batch=2000, gen_shard=10000, warmup=1000, ckpt_every=5000, log_every=500, check_step=1000, candidates=3, pool=60, pool_min=20, pile_loss_rows=256, read_batch=4096)
+Traceback (most recent call last):
+  File [35m"/root/work/experiments/delta_crosscoder/run.py"[0m, line [35m592[0m, in [35m<module>[0m
+    hard_exit([31mmain[0m[1;31m()[0m)
+              [31m~~~~[0m[1;31m^^[0m
+  File [35m"/root/work/experiments/delta_crosscoder/run.py"[0m, line [35m573[0m, in [35mmain[0m
+    job = Job(cfg, sz, arch, P["thresholds"][size], size)
+  File [35m"/root/work/experiments/delta_crosscoder/run.py"[0m, line [35m344[0m, in [35m__init__[0m
+    self.M = [31mST.Net[0m[1;31m("cuda")[0m
+             [31m~~~~~~[0m[1;31m^^^^^^^^[0m
+  File [35m"/root/work/src/commute/steering.py"[0m, line [35m39[0m, in [35m__init__[0m
+    self.model, self.device = [31mvpd.load_component_model[0m[1;31m(device)[0m, device
+                              [31m~~~~~~~~~~~~~~~~~~~~~~~~[0m[1;31m^^^^^^^^[0m
+  File [35m"/root/work/src/commute/vpd.py"[0m, line [35m52[0m, in [35mload_component_model[0m
+    assert [31mp.is_file[0m[1;31m()[0m, f"missing {p}; run `fetch` first"
+           [31m~~~~~~~~~[0m[1;31m^^[0m
+[1;35mAssertionError[0m: [35mmissing /root/artifacts/vpd/s-55ea3f9b/model_400000.pth; run `fetch` first[0m
+=== FINISHED (exit 1) [pod D: gen head-r5.A head.B] — results in /root/work/experiments/delta_crosscoder/results/run1 and /root/work/experiments/delta_crosscoder/results/large/run1 ===
+07:30:08 [E293] prep [] tag run1, sizes full: Sizes(steps=50000, batch=4096, n_chunks=200, prompts=200000, prompt_len=33, cont_len=68, f_share=0.2, repeat_cap=100, pre_rows=362000, gen_batch=2000, gen_shard=10000, warmup=1000, ckpt_every=5000, log_every=500, check_step=1000, candidates=3, pool=60, pool_min=20, pile_loss_rows=256, read_batch=4096)
+07:30:10 [prep full] prompts {'shape': [200000, 33], 'sha256': 'e44f59036fc7ec806359ce8a1d47032c14deb1b5e13f454d73fd67296c0dff0b'}
+07:30:15 [prep full] pre {'shape': [362000, 512], 'sha256': '46b6ae009c547033b2a43cabaee4206b0f05548e9e38a069786ac47978898994'}
+peak host RSS 1.4 GB
+=== FINISHED (exit 0) [pod D: prep] — results in /root/work/experiments/delta_crosscoder/results/run1 and /root/work/experiments/delta_crosscoder/results/large/run1 ===
+07:30:19 [E293] gen ['head-r5.A', 'head.B'] tag run1, sizes full: Sizes(steps=50000, batch=4096, n_chunks=200, prompts=200000, prompt_len=33, cont_len=68, f_share=0.2, repeat_cap=100, pre_rows=362000, gen_batch=2000, gen_shard=10000, warmup=1000, ckpt_every=5000, log_every=500, check_step=1000, candidates=3, pool=60, pool_min=20, pile_loss_rows=256, read_batch=4096)
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+07:31:59 [check projected minutes per 100k continuations] ok {"minutes": 14.461480061213175, "bar": 46}
+07:31:59 [gen head-r5.A] shard 0 (100000..110000) in 86.8 s
+07:33:25 [gen head-r5.A] shard 1 (110000..120000) in 86.7 s
+07:34:52 [gen head-r5.A] shard 2 (120000..130000) in 86.3 s
+07:36:18 [gen head-r5.A] shard 3 (130000..140000) in 86.3 s
+07:37:44 [gen head-r5.A] shard 4 (140000..150000) in 86.2 s
+07:39:10 [gen head-r5.A] shard 5 (150000..160000) in 86.2 s
+07:40:37 [gen head-r5.A] shard 6 (160000..170000) in 86.2 s
+07:42:03 [gen head-r5.A] shard 7 (170000..180000) in 86.2 s
+07:43:29 [gen head-r5.A] shard 8 (180000..190000) in 86.3 s
+07:44:55 [gen head-r5.A] shard 9 (190000..200000) in 86.2 s
+07:44:56 [gen head-r5.A] DONE 100000 rows, sha256 be1d50e7b37afbf5f9291d0ad344fa6abbd71bd8e026808f7cf7a13afb1fdd20
+07:46:22 [check projected minutes per 100k continuations] ok {"minutes": 14.420588970184326, "bar": 46}
+07:46:22 [gen head.B] shard 0 (100000..110000) in 86.5 s
+07:47:49 [gen head.B] shard 1 (110000..120000) in 86.5 s
+07:49:15 [gen head.B] shard 2 (120000..130000) in 86.5 s
+07:50:42 [gen head.B] shard 3 (130000..140000) in 86.5 s
+07:52:08 [gen head.B] shard 4 (140000..150000) in 86.4 s
+07:53:35 [gen head.B] shard 5 (150000..160000) in 86.5 s
+07:55:01 [gen head.B] shard 6 (160000..170000) in 86.4 s
+07:56:28 [gen head.B] shard 7 (170000..180000) in 86.5 s
+07:57:54 [gen head.B] shard 8 (180000..190000) in 86.5 s
+07:59:21 [gen head.B] shard 9 (190000..200000) in 86.5 s
+07:59:21 [gen head.B] DONE 100000 rows, sha256 55396c4984312de0ed8345548d5a5360737e64dd59c6a93ebbebda02e329c2e1
+07:59:21 FINISHED gen head-r5.A head.B in 29.0 min; peak GPU 16.6 GB
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) [pod D: gen head-r5.A head.B] — results in /root/work/experiments/delta_crosscoder/results/run1 and /root/work/experiments/delta_crosscoder/results/large/run1 ===
+D1 DONE
+08:00:46 [E293] fit ['rung5'] tag run1, sizes full: Sizes(steps=50000, batch=4096, n_chunks=200, prompts=200000, prompt_len=33, cont_len=68, f_share=0.2, repeat_cap=100, pre_rows=362000, gen_batch=2000, gen_shard=10000, warmup=1000, ckpt_every=5000, log_every=500, check_step=1000, candidates=3, pool=60, pool_min=20, pile_loss_rows=256, read_batch=4096)
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+08:00:58 [check change matched to its size] ok {"x": 10.152407657533866, "target": 21099.224913502825, "energy": 20985.613067993105, "rel": -0.005384645453824777, "tol": 0.05}
+08:00:59 [check ledger: every source counted, steps x batch exactly] ok {"contrastive": 20000000, "fit_half": 40959990, "fit_half_quota": 40960000, "pre": 143840010, "pre_available": 184982000, "total": 204800000, "steps_x_batch": 204800000, "chunks": 200}
+08:01:01 [rung5] steps 0..50000, ledger {"contrastive": 20000000, "fit_half": 40959990, "fit_half_quota": 40960000, "pre": 143840010, "pre_available": 184982000, "total": 204800000, "steps_x_batch": 204800000, "chunks": 200}
+08:01:03 [rung5] step 0: {"loss": 1042884.8125, "recon": 1034818.4375, "delta": 1613280.25, "aux": 0.0, "fve_base": -0.8748996257781982, "fve_ft": 0.1261991262435913, "dead": 0.0}
+08:01:03   [rung5] step 0 loss 1.043e+06 recon 1.035e+06 delta 1.613e+06 aux 0 fve_base -0.8749 fve_ft 0.1262 dead 0 ms_per_step 2345
+08:01:11   [rung5] step 500 loss 2.688e+04 recon 2.484e+04 delta 4.067e+05 aux 0 fve_base -0.05362 fve_ft 0.9849 dead 0 ms_per_step 15.84
+08:01:18 [check batch FVE over the 100 steps before 1000] MISSED {"fve": 0.29148250818252563, "bar": 0.5}
+08:01:18 STOP: batch FVE over the 100 steps before 1000: tell the lead
+peak host RSS 6.2 GB
+=== FINISHED (exit 1) [pod D: fit rung5] — results in /root/work/experiments/delta_crosscoder/results/run1 and /root/work/experiments/delta_crosscoder/results/large/run1 ===
