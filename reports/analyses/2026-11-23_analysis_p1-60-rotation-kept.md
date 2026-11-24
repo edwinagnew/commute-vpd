@@ -7,7 +7,7 @@ on reuse is given under it.
 
 At VPD, no trained update rotates its needed writes beyond the null, though the built rotations do. At neurons and heads
 the needed space covers most of the width, with a null of about 0.72, so the reading cannot separate rotation there.
-Trained updates sit a few hundredths above their nulls, under the filed 0.2. The literal "inside the variable's own
+Trained updates sit above their nulls there, by a few hundredths for the toy and copy fine-tunes and by up to 0.128 for the realistic panel, under the filed 0.2. The literal "inside the variable's own
 write space" share counts changes to what a variable reads, so it cannot see rotation. A pure attention-head gauge
 rotation reads fully kept at heads but not at VPD.
 
@@ -54,7 +54,7 @@ is therefore the wrong reference. The right reference is a random update's own-s
 
 Values are medians by class. Random updates at neurons and heads are the two built randoms and the toy matched randoms;
 trained rows are the copy, toy and panel fine-tunes. Only the toy randoms are matched in size to their fine-tunes. So
-the own-space share is not empty: trained updates sit above random ones, a little at VPD and at heads. But it measures
+the own-space share is not empty: trained updates sit above random ones, about three times at VPD with sizes unmatched, and somewhat at heads. But it measures
 how much of the change comes through a variable's inputs, not whether its output turned. That is why the needed-space
 share carries the rotation question.
 
@@ -117,8 +117,9 @@ the items.
 Three panel items had fewer than 100 needed variables and are left out as too small to read: sentiment at VPD, and
 category seed 1 and named-entity seed 0 at neurons.
 
-At neurons and heads the trained items still sit a few hundredths above their nulls, so they do not read the same as
-random updates. The copy fine-tunes sit 0.062 to 0.072 above, against 0.010 to 0.019 for the two built randoms, which
+At neurons and heads the trained items still sit above their nulls, so they do not read the same as random updates.
+The realistic panel fine-tunes sit up to 0.128 above, with a median of 0.036. Their Gaussians sit at most 0.035 above.
+The copy fine-tunes sit 0.062 to 0.072 above, against 0.010 to 0.019 for the two built randoms, which
 are not matched in size. The toy fine-tunes read above their own size-matched random on 19 of 20 pairs. The largest
 such gap is 0.19, and none reaches the 0.2 the filed rotation rival asked for. On neurons alone the toy fine-tunes'
 median rotation share is 0.052 against a null of 0.040. Their matched randoms read 0.038 against 0.035. The rest of the
