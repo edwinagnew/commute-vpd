@@ -65,7 +65,7 @@ FORMS = {
     "(no E143 reading on E62's rows). Twins: final.json steering_pooled (67d73363). E199 star: strength-1 pooled, E151 reader",
     "states": "built pairs: known3.json seeds 0-2 a side, one variant a side (nulls dropped), matched series too; "
     "twins: final.json cell (no matched series)",
-    "series matched": "E187 size-matched: the larger side times the pair's c (m67.json, seed 2 from E303 stage3.json), "
+    "series matched": "E187 size-matched: the larger side times the pair's c (m67.json; seed 2 from E303 stage3.json where m67 lacks it: e46, e53, e54_own), "
     "the smaller side unscaled (known3.json); same readers and states as the unscaled series",
 }
 
