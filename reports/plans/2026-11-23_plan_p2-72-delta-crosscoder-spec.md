@@ -361,6 +361,30 @@ headroom allows (below) and needs the user's confirmation. The output is a yes o
 steering table. There is no pair call and no reuse label. Each side is a single fit, so the comparison is descriptive:
 E235's every-seed rule needs two or more values per side and is not used.
 
+**Run 2, trimmed option (for the user, beside the 39- and 48-fit forms).** E62, plus one built side of each kind, and
+every side gets a matched random update. That is 18 fits:
+- E62 copy and lookup, three saved seeds each (6), each with one matched random update (6);
+- one strengthening side, copy maps (E203's "Copy maps vs random maps"), with its matched random update (2);
+- one new side, the cipher of "Copy vs cipher, step 10", with its matched random update (2);
+- one random-kind side, the random maps of "Copy maps vs random maps", with its matched random update (2).
+
+Whip-lead may swap in other sides of the same kinds; the count stays the same.
+
+Cost, from the per-item rates above:
+- Generation: 18 × 19 min = 5.7 h.
+- Fits at site A: 18 × 39 min = 11.7 h.
+- Set-up: 6 pods × 18 min = 1.8 h.
+- Uploads: 9 trained sides × 270 MB plus 6 × 370 MB of Pile, about 4.7 GB, 8 min. Downloads: about 0.9 GB, 2 min.
+- About 19.4 pod-hours, about $93, and about 3.2 h of wall time on 6 pods (two runners, 4 and 2). Run 1 plus this
+  option is about $137.
+- Gated on cost (over $60), not on time.
+
+What it cannot say that the 39- and 48-fit runs can:
+- There is one side per kind, so it cannot show whether a yes or a no follows the kind or the particular task.
+- It cannot give a tally over the nine pairs to set beside BatchTopK's 4-6 of 9.
+- Its false-recovery rate rests on 9 random updates (15 in the 39-fit run, 24 in the 48-fit run). The 48-fit run alone
+  also matches a random update to every built side.
+
 **Time and cost, per item times the count.**
 - **Measured** (E235 `run1/timing.json`, H100 alone): streaming took 2.6 s per 1.05M tokens through both models at site A
   and 4.34 s per chunk at site B. That is 8.5 min and 14.1 min for 204.8M tokens. Training took 11.65 ms per step.
