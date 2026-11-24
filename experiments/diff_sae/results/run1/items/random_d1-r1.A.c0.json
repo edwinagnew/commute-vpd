@@ -1,0 +1,400 @@
+{
+ "experiment": "E296",
+ "key": "random_d1-r1.A.c0",
+ "card": "NVIDIA H100 80GB HBM3",
+ "checks": {
+  "validation rows share no parent row with the stream": {
+   "pass": true,
+   "val": [
+    196608,
+    206393
+   ],
+   "stream": [
+    [
+     32768,
+     131072
+    ],
+    [
+     0,
+     16384
+    ]
+   ]
+  },
+  "D exactly 0 under a zero update": {
+   "pass": true,
+   "max_abs": 0.0
+  },
+  "the scaled path at 0 gives W0's activations": {
+   "pass": true,
+   "max_abs": 0.0,
+   "bar": 0.0
+  },
+  "change matched to the rung's size": {
+   "pass": true,
+   "x": 5.535639527855328,
+   "target": 2.1099224913502828,
+   "energy": 2.090532819637545,
+   "rel": -0.009189755449418913,
+   "tol": 0.05
+  },
+  "the change writes at the site": {
+   "pass": true,
+   "energy": 2.090532819637545,
+   "bar": 1e-06
+  },
+  "stream holds every step": {
+   "pass": true,
+   "tokens": 200936448,
+   "need": 199999488
+  },
+  "saved SAE reloads to identical encodings": {
+   "pass": true
+  },
+  "dead share at the end": {
+   "pass": true,
+   "dead": 0.0,
+   "bar": 0.3
+  },
+  "lit: encoder inputs and targets": {
+   "pass": true,
+   "encoder input": true,
+   "targets normalised once": true
+  },
+  "lit: numerator identity": {
+   "pass": true,
+   "identity": 3.6388248012763715e-06,
+   "bar": 0.0026
+  },
+  "D: encoder inputs and targets": {
+   "pass": true,
+   "encoder input": true,
+   "targets normalised once": true,
+   "f is the trainer's path": true
+  },
+  "D: numerator identity": {
+   "pass": true,
+   "identity": 2.1676616758965247e-05,
+   "bar": 0.0026
+  },
+  "KL path: h_F patch at its floor (read)": {
+   "pass": true,
+   "kl": 0.0,
+   "bar": 0
+  },
+  "KL path: empty subset is the gap exactly (read)": {
+   "pass": true,
+   "empty": 0.03972794913136481,
+   "gap": 0.03972794913136481
+  },
+  "KL path: h_F patch at its floor (pile)": {
+   "pass": true,
+   "kl": 0.0,
+   "bar": 0
+  },
+  "KL path: empty subset is the gap exactly (pile)": {
+   "pass": true,
+   "empty": 0.03659474636863445,
+   "gap": 0.03659474636863445
+  }
+ },
+ "match": {
+  "x": 5.535639527855328,
+  "target": 2.1099224913502828,
+  "energy": 2.090532819637545,
+  "rel": -0.009189755449418913
+ },
+ "energy_pile": 2.090532819637545,
+ "energy": 2.090532819637545,
+ "stream": {
+  "kind": "graft",
+  "T": 31,
+  "per_chunk": 16880,
+  "fill_rows": 0,
+  "task_share": 0.5000076442079836,
+  "chunks": 192,
+  "tokens": 200936448
+ },
+ "normaliser": {
+  "chunk_tokens": {
+   "pile": 523264,
+   "task": 523280
+  },
+  "lengths": {
+   "pile": 50233344,
+   "task": 50234880
+  },
+  "sample": [
+   500000,
+   500000
+  ],
+  "scale": 81.4442425485076,
+  "mean_norm": 0.35190875052556403
+ },
+ "K": 0.9414932958719178,
+ "bar": 0.4707466479359589,
+ "curve": [
+  {
+   "step": 20000,
+   "fve_pooled": 0.696173570870084,
+   "dead": 0.0,
+   "theta": 3.578888177871704,
+   "ms_per_step": 11.209704518318176
+  },
+  {
+   "step": 40000,
+   "fve_pooled": 0.7106324290091242,
+   "dead": 0.0,
+   "theta": 3.6527862548828125,
+   "ms_per_step": 10.95772601366043
+  },
+  {
+   "step": 60000,
+   "fve_pooled": 0.7146238657611735,
+   "dead": 0.0,
+   "theta": 3.6439173221588135,
+   "ms_per_step": 10.899857834974926
+  },
+  {
+   "step": 80000,
+   "fve_pooled": 0.7162072011174203,
+   "dead": 0.0,
+   "theta": 3.6428825855255127,
+   "ms_per_step": 10.847412097454072
+  }
+ ],
+ "train": {
+  "steps": 97656,
+  "dead_end": 0.0,
+  "minutes": 17.725979987780253,
+  "fve_end": 0.717720102243818
+ },
+ "scaler_checks": {
+  "lit": {
+   "parity_B_M": 8.36679392967683e-06,
+   "parity_B_F": 6.1604618182263585e-06,
+   "parity_C": 7.813590728269458e-06,
+   "identity": 3.6388248012763715e-06,
+   "count_equal": false,
+   "encoder input": true,
+   "targets normalised once": true
+  },
+  "D": {
+   "parity_B_M": 0.0027480934665298218,
+   "parity_B_F": 0.0048753298831257326,
+   "parity_C": 7.128549826212351e-06,
+   "identity": 2.1676616758965247e-05,
+   "count_equal": false,
+   "encoder input": true,
+   "targets normalised once": true,
+   "f is the trainer's path": true
+  }
+ },
+ "read": {
+  "bias": 0.05536457815481759,
+  "error": 0.16789190007287874,
+  "latents_total": 0.7767435217723037,
+  "fve_change": 0.831034933234882,
+  "energy": 2.090532819637545,
+  "lit": {
+   "beta_F_neg": 0,
+   "nu_nan": 0,
+   "alive": 1536,
+   "published_0.3": {
+    "specific": 0.0,
+    "count": 0,
+    "beta_F_neg_in": 0
+   },
+   "published_0.6": {
+    "specific": 0.0,
+    "count": 0,
+    "beta_F_neg_in": 0
+   },
+   "e2_0.3": {
+    "specific": 0.0,
+    "count": 0,
+    "beta_F_neg_in": 0
+   },
+   "e2_0.6": {
+    "specific": 0.0,
+    "count": 0,
+    "beta_F_neg_in": 0
+   },
+   "nu_hist_s": {
+    "edges": [
+     "-inf",
+     0.0,
+     0.1,
+     0.2,
+     0.3,
+     0.45,
+     0.6,
+     0.8,
+     1.0,
+     1.2,
+     "inf"
+    ],
+    "s": [
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.0,
+     0.013211878898958161,
+     0.30425669270913,
+     0.4587043208617294,
+     0.0005706293024860232
+    ]
+   }
+  },
+  "D": {
+   "beta_F_neg": 458,
+   "nu_nan": 0,
+   "alive": 1536,
+   "published_0.3": {
+    "specific": 0.22970899032416348,
+    "count": 856,
+    "beta_F_neg_in": 0
+   },
+   "published_0.6": {
+    "specific": 0.2853366907270869,
+    "count": 998,
+    "beta_F_neg_in": 0
+   },
+   "e2_0.3": {
+    "specific": 0.05833822986959339,
+    "count": 173,
+    "beta_F_neg_in": 0
+   },
+   "e2_0.6": {
+    "specific": 0.11396593027251681,
+    "count": 315,
+    "beta_F_neg_in": 0
+   },
+   "nu_hist_s": {
+    "edges": [
+     "-inf",
+     0.0,
+     0.1,
+     0.2,
+     0.3,
+     0.45,
+     0.6,
+     0.8,
+     1.0,
+     1.2,
+     "inf"
+    ],
+    "s": [
+     0.17137076045457003,
+     0.018413671298535078,
+     0.020631181943132904,
+     0.019293376627925417,
+     0.02255167968426002,
+     0.033076020718663404,
+     0.17041089786901706,
+     0.005725872301720923,
+     0.18377861096097667,
+     0.13149144991350212
+    ]
+   }
+  }
+ },
+ "kl": {
+  "read": {
+   "kl_all": {
+    "h_F": 0.0,
+    "gap": 0.03972794913136481,
+    "all": 0.0080088410769937,
+    "error": 0.0304244359472815,
+    "empty": 0.03972794913136481,
+    "S_lit_0.3": 0.03972794913136481,
+    "S_lit_0.6": 0.03972794913136481,
+    "S_D_0.3": 0.025093792512151405,
+    "S_D_0.6": 0.0227423093578699
+   },
+   "kl_last": {
+    "h_F": 0.0,
+    "gap": 0.03350400401278536,
+    "all": 0.007182792402442203,
+    "error": 0.026502663921221775,
+    "empty": 0.03350400401278536,
+    "S_lit_0.3": 0.03350400401278536,
+    "S_lit_0.6": 0.03350400401278536,
+    "S_D_0.3": 0.020535467121759726,
+    "S_D_0.6": 0.019642607086628388
+   },
+   "recovered_all": {
+    "h_F": 1.0,
+    "gap": 0.0,
+    "all": 0.7984078903617302,
+    "error": 0.23418055518849534,
+    "empty": 0.0,
+    "S_lit_0.3": 0.0,
+    "S_lit_0.6": 0.0,
+    "S_D_0.3": 0.368359226669969,
+    "S_D_0.6": 0.4275488703766217
+   },
+   "recovered_last": {
+    "h_F": 1.0,
+    "gap": 0.0,
+    "all": 0.7856139105134659,
+    "error": 0.2089702499107815,
+    "empty": 0.0,
+    "S_lit_0.3": 0.0,
+    "S_lit_0.6": 0.0,
+    "S_D_0.3": 0.38707424002446844,
+    "S_D_0.6": 0.4137235931820975
+   }
+  },
+  "pile": {
+   "kl_all": {
+    "h_F": 0.0,
+    "gap": 0.03659474636863445,
+    "all": 0.00762242874695522,
+    "error": 0.028258460741075655,
+    "empty": 0.03659474636863445,
+    "S_lit_0.3": 0.03659474636863445,
+    "S_lit_0.6": 0.03659474636863445,
+    "S_D_0.3": 0.025473605028315003,
+    "S_D_0.6": 0.022710783429937605
+   },
+   "kl_last": {
+    "h_F": 0.0,
+    "gap": 0.040362883137403174,
+    "all": 0.00798102695114058,
+    "error": 0.03277212565695045,
+    "empty": 0.040362883137403174,
+    "S_lit_0.3": 0.040362883137403174,
+    "S_lit_0.6": 0.040362883137403174,
+    "S_D_0.3": 0.02806299234235413,
+    "S_D_0.6": 0.025565008645400022
+   },
+   "recovered_all": {
+    "h_F": 1.0,
+    "gap": 0.0,
+    "all": 0.7917070207244709,
+    "error": 0.22780006571390987,
+    "empty": 0.0,
+    "S_lit_0.3": 0.0,
+    "S_lit_0.6": 0.0,
+    "S_D_0.3": 0.30389994313094715,
+    "S_D_0.6": 0.37939770913665527
+   },
+   "recovered_last": {
+    "h_F": 1.0,
+    "gap": 0.0,
+    "all": 0.8022681649382777,
+    "error": 0.1880628163903033,
+    "empty": 0.0,
+    "S_lit_0.3": 0.0,
+    "S_lit_0.6": 0.0,
+    "S_D_0.3": 0.30473271082191533,
+    "S_D_0.6": 0.3666208492001992
+   }
+  }
+ },
+ "done": true,
+ "minutes": 27.271411510308585,
+ "peak_gb": 61.93982267379761
+}
