@@ -20,7 +20,7 @@ None owned. Writing follows the task file.
   kept verbatim in `paper/cut/appendix_cut_2026-11-24.tex`, including your own paragraphs that moved there.
 
 ## Waiting on you
-- **Push of five local commits** (paper v2): 8791a68 copy-head random null (touches `main.tex`), b4d702b redteam
+- **Push of six local commits** (paper v2): a37ca46 one Limitations sentence for E297 (no trained reuse control could be fitted), 8791a68 copy-head random null (touches `main.tex`), b4d702b redteam
   recheck, 7c71afb and 286040f WeightWatch row and appendix paragraph, 3b7cf54 Delta-Crosscoder run 1 row. Say "push"
   and I push.
 - **Flags in your sections (not edited):** "write share" in §4 and the abstract against "kept share" elsewhere; §4
