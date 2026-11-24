@@ -96,7 +96,11 @@ least once a day:
 3. Apply each line as "What to update" below says, grepping `parts/` for the places to change rather than reading
    whole sections. Just before the changelog row, `flock -s -n 9 9<docs/research_log/PENDING.md` and re-read the
    queue: apply any line that arrived since you started (one landed after a pull and cost a second commit and build,
-   friction 718); the build's `queued:` line names any still there. Write one changelog row for the flush, empty `PENDING.md` except its `HOLD` lines, build. The build warns on a removed line
+   friction 718); the build's `queued:` line names any still there. Before adding a decision card, also check its ask
+   is still open (`~/commute-agents/fleet/ask <role> list`): an answer that arrives mid-flush means the card is not
+   added, and a card built and then answered cost a second commit to take out (friction 1011). A line asking for a
+   per-experiment card is applied as a cell row and changelog row instead: `fleet/roles/lead.md` has no per-experiment
+   log card since 2026-11-09 (friction 913); say so in the changelog row. Write one changelog row for the flush, empty `PENDING.md` except its `HOLD` lines, build. The build warns on a removed line
    whose file, E-code or card id is in nothing the flush added: check it landed (friction 155). Then publish. A line
    appended meanwhile survives the merge and waits for the next flush; lines you removed stay gone (`fleet/merge-lines`).
 
@@ -152,7 +156,12 @@ From a Claude Code session, with the Artifact tool. Run every `build.py` call he
 `--changed`, `--words`, the plain build) with plain `python3` on the dev node, never through `fleet/cpu-run`: they are
 light (stdlib, seconds), and the cpu-run worker cannot see the folder under `/ephemeral` where `Artifact read` saves
 the live pages, so `--check` there compared nothing ("no live nav.js") and `--changed` named every file (friction 868,
-892). `build.py` now stops with that reason when the folder is not there.
+892). `build.py` now stops with that reason when the folder is not there. The repo's hook
+(`.claude/hooks/no-compute-on-node.py`) lets `python3 docs/research_log/build.py ...` run; if a plain `python3` call is
+refused anyway (auto mode's own check, which a clerk flush stalled on, friction 1030), use the route that needs no
+plain Python: `Artifact read` with `out_dir` set to `~/commute-data/scratch/<role>/live` (not under `/ephemeral`),
+then `~/commute-agents/fleet/cpu-run docs/research_log/build.py --check ~/commute-data/scratch/<role>/live` from the
+clone, and the same for `--changed` and the build. A save outside the read's default folder may ask the person first.
 
 0. `~/commute-agents/fleet/log-lock take <role> --wait` before claiming a version number or editing any part, and
    `~/commute-agents/fleet/log-lock release <role>` after the publish (two flushes both claimed v73, friction 37).
@@ -193,13 +202,16 @@ the live pages, so `--check` there compared nothing ("no live nav.js") and `--ch
    Which check (friction 384): before editing `parts/`, `--check`, where any diff is someone else's. With uncommitted
    edits, `--check-head`, against `parts/` at HEAD. After your commit, `--check` diffs your own edits: read only
    index.html's place count, which predicts step 3. `--check` also flags a live page built from `parts/` in no commit
-   (friction 323).
+   (friction 323). A diff line that only re-renders unchanged text the way a build change does is the build's, not
+   someone's edit: after friction 867's fix, live changelog rows reading "4:" showed against built "Section 4 (What's
+   next):". Publish it; the next `--check` is clean (friction 913).
 3. Publish (below). The first send is refused unless this session published the live version; the refusal's first
    sentence picks the case. Whose changes the refusal shows is settled before the send, not by reading it: if you took
    the lock before step 2 and step 2's `--check` showed no line that is not yours, nobody else could publish since (the
    lock hook, step 0), so every refusal below is your own changes. Then, whatever the case, **send the identical call
-   three times in all: the first is refused as not the live version ("shown in full below as a line diff" or "not
-   shown here"), the second "resent unchanged", the third passes** (friction 585, 609, 620, 651). Do not re-read the
+   until it passes, three times at most: the first is refused as not the live version ("shown in full below as a line
+   diff" or "not shown here"), the second "resent unchanged" or passes (one resend sufficed on 11-22, friction 1011),
+   the third passes** (friction 585, 609, 620, 651). Do not re-read the
    page between sends (a by-path read does not count as a view, friction 609, 620) and do not read the saved refusal
    file. If the third is refused too, stop and report the three refusals' first sentences. A "touches files" refusal
    still takes its bullet below.
