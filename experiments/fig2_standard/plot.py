@@ -64,7 +64,7 @@ def main() -> None:
             vals = group_values(summary["per_task"], feat, block, side, items)
             style = FG.METHODS["random" if is_random else "eb"]
             ax.scatter(vals, [i] * len(vals), color=style.color, marker=style.marker, s=22, alpha=0.85, linewidths=0,
-                       label=style.label if i in (0, 4) else None)  # fmt: skip
+                       label=style.label if feat == "VPD" and i in (0, 4) else None)  # fmt: skip
             data += [{"feat": feat, "group": label, "value": v} for v in vals]
         ax.axhline(3.5, color="#bbbbbb", linewidth=0.6)
         ax.set_xscale("log")

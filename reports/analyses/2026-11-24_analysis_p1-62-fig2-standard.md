@@ -1,5 +1,3 @@
-DRAFT, unfinished: left to do are check.py on this page, the numbers ledger (this page's .numbers.tsv and `fleet/numbers check`), a final pass on the figure legend, and the full table of 144 rows.
-
 # Does Figure 2 change when all three featurizations read the same states the same way?
 
 We read the write share of the needed set at VPD subcomponents, top neurons and SAE latents on the same 48 states, with one needed-set rule, one set of input pairs and the leftover variables counted. No per-task value moved by more than a hundredth from the old figure, and the old order holds at every featurization: edits built to reuse read far above edits built to be new and above every random update. The old figure's mixed protocol therefore did not drive its picture, and Figure 2 can be redrawn from these rows.
@@ -30,11 +28,46 @@ At VPD the smallest reuse value is 0.623 against a largest new or random value o
 - At the copy task's answer position the base model's top token is right on 0 of 301 cases, so the built site is not a behaviour the base model performs there (`experiments/built_circuits/results/planning/measure.json`).
 - Seven of the eight neuron items ran under the predictions file before the SAE tolerance was filed, `9486e64a` against `c204a7a6`; nothing for VPD or neurons differs between them.
 - The SAE identity control first showed 1 flip with a largest logit deviation of 0.248, because the JumpReLU threshold flipped on rounding between the cache and the rerun. After commit `60062eff` the input's own side is taken from the cache: 0 flips, deviation 2.16e-4, against 5.15e-5 at VPD and neurons.
-- The value and output edits of head (2,4) read the same at neurons and at SAE; not checked why.
+- The value and output edits of head (2,4) read the same at neurons and at SAE, to every digit. This is expected: doubling a head's value weights or its output weights doubles the same head output, so the two edits give the same model function and every reading of activations sees one edit. Only VPD, which reads the weights themselves, tells them apart.
+- The head edits read about a fifth at VPD although each is a pure rescale of one head. E280 found that VPD's subcomponents mix heads, so a one-head rescale cannot sit inside the parts the base model uses. The query edit reads below its matched random at neurons and at SAE: doubling the query sharpens the attention pattern rather than scaling a write, so at these sites it is not a rescale of an existing path.
 
 ## Moved rows (old, new)
 
-TODO: table from `experiments/fig2_standard/results/moved_rows.json`.
+Every old row that moved by more than a thousandth (`experiments/fig2_standard/results/moved_rows.json`, rounded to four places). All are SAE rows, whose old column was read over K* on scaled states.
+
+| Featurization | Block | Item | Side | Old | New | Move |
+|---|---|---|---|---|---|---|
+| SAE | built | x2 | reuse | 0.9689 | 0.9659 | -0.0031 |
+| SAE | built | x10 | reuse | 0.9473 | 0.9433 | -0.004 |
+| SAE | built | rebuilt | reuse | 0.1349 | 0.1275 | -0.0074 |
+| SAE | built | new_thin | new | 0.0127 | 0.0109 | -0.0018 |
+| SAE | built | random_size_241001 | random | 0.008 | 0.0136 | 0.0056 |
+| SAE | built | random_kl_241002 | random | 0.0198 | 0.023 | 0.0033 |
+| SAE | trained | copy_s0 | trained | 0.0473 | 0.0451 | -0.0022 |
+| SAE | trained | copy_s0 | random | 0.0118 | 0.0103 | -0.0015 |
+| SAE | trained | copy_s2 | trained | 0.0552 | 0.0421 | -0.0131 |
+| SAE | trained | copy_s2 | random | 0.0112 | 0.0146 | 0.0034 |
+| SAE | trained | elicit_s0 | trained | 0.0336 | 0.0358 | 0.0022 |
+| SAE | trained | elicit_s0 | random | 0.0116 | 0.0147 | 0.0031 |
+| SAE | trained | elicit_s1 | trained | 0.0352 | 0.0374 | 0.0022 |
+| SAE | trained | elicit_s1 | random | 0.0148 | 0.0119 | -0.0029 |
+| SAE | trained | elicit_s2 | trained | 0.0292 | 0.0307 | 0.0015 |
+| SAE | trained | rank1_s0 | random | 0.0093 | 0.0081 | -0.0012 |
+| SAE | trained | rank1_s1 | trained | 0.04 | 0.0353 | -0.0046 |
+| SAE | trained | rank1_s1 | random | 0.0097 | 0.0084 | -0.0012 |
+| SAE | trained | rank1_s2 | trained | 0.0365 | 0.0325 | -0.004 |
+| SAE | trained | prior_cipher_s0 | trained | 0.0395 | 0.0456 | 0.0061 |
+| SAE | trained | prior_cipher_s0 | random | 0.0156 | 0.0115 | -0.0041 |
+| SAE | trained | prior_cipher_s1 | trained | 0.0424 | 0.0471 | 0.0047 |
+| SAE | trained | prior_cipher_s1 | random | 0.0097 | 0.0167 | 0.007 |
+| SAE | trained | prior_cipher_s2 | trained | 0.0396 | 0.0435 | 0.0039 |
+| SAE | trained | prior_cipher_s2 | random | 0.0096 | 0.0136 | 0.004 |
+| SAE | trained | cipher_s0 | trained | 0.0379 | 0.0358 | -0.0021 |
+| SAE | trained | cipher_s0 | random | 0.0093 | 0.0165 | 0.0072 |
+| SAE | trained | cipher_s1 | trained | 0.0374 | 0.0398 | 0.0024 |
+| SAE | trained | cipher_s1 | random | 0.0096 | 0.0106 | 0.0011 |
+| SAE | trained | cipher_s2 | trained | 0.0363 | 0.0379 | 0.0016 |
+| SAE | trained | cipher_s2 | random | 0.011 | 0.014 | 0.003 |
 
 ## Not run
 
