@@ -217,3 +217,10 @@ Paper Results number check (sec5 at v2 644d9dd, for whip-lead; Opus subagent, sp
 Also 1 SHOULD (head (2,4)'s 0.25, and random head (1,1) removes as much) and 11 NITs. Note: writeup-lead/ and whip-lead/note-2026-11-23-redteam-results-check.md.
 
 Results re-check (v2 cd7fad2): all 7 MUST and the SHOULD are applied correctly; the \open cell ids and the neuron-CMAP ✗ are still open. One new MUST at sec5:34: the added "0.999 or more with neurons as variables" is app_wordings' direction agreement over K*, not the definition's reading, and needs \kst and the appendix ref. §3 (main.tex:260, the user's) states the same 0.999 without \kst: flagged for the user, not edited. The appendix-support check is running (Opus subagent).
+
+Appendix trim (v2 cd7fad2): every body \ref still resolves. 4 MUST restores/rewordings:
+- the pure-gain log-odds share still separates all nine pairs (E231), so the re-gating share's separation reflects the task, not re-weighting. This caveat on claim 2 was cut and now appears nowhere;
+- gain-only training's filed miss (3 of 9);
+- sec4:43 points to a superseded ADL score that survives only in the cut file;
+- two filed real-text misses (E233, one of three).
+2 SHOULD: the form's scale/units caveats; the live appendix still says ρ. 6 NITs. Note: writeup-lead/ and whip-lead/note-2026-11-23-redteam-appendix-trim.md.
