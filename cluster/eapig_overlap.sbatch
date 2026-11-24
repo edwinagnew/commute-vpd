@@ -1,7 +1,7 @@
 #!/bin/bash
-# P2.69 eapig_overlap (E___): every stage in one debug job (stage 0 stops it on an adapter miss; later stages never stop).
-# Needs the second venv first: sbatch --comment='E___ venv' cluster/eapig_overlap_venv.sbatch
-# Usage (from the clone root): sbatch --comment='E___ eapig_overlap' cluster/eapig_overlap.sbatch [--stages 0 1 2 3 4]
+# P2.69 eapig_overlap (E287): every stage in one debug job (stage 0 stops it on an adapter miss; later stages never stop).
+# Needs the second venv first: sbatch --comment='E287 venv' cluster/eapig_overlap_venv.sbatch
+# Usage (from the clone root): sbatch --comment='E287 eapig_overlap' cluster/eapig_overlap.sbatch [--stages 0 1 2 3 4]
 # Scratch (native states, staged eap/, windows, native logits) is node-local /ephemeral, deleted when the job ends.
 #SBATCH --job-name=commute-eapig-overlap
 #SBATCH --partition=compute

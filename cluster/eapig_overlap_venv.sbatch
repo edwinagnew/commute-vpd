@@ -1,8 +1,8 @@
 #!/bin/bash
-# P2.69 eapig_overlap (E___): builds the second venv, Python 3.10 pinned to FinetuneCircuits fdaeeaac63d5's
+# P2.69 eapig_overlap (E287): builds the second venv, Python 3.10 pinned to FinetuneCircuits fdaeeaac63d5's
 # requirements.txt (experiments/eapig_overlap/requirements-fc.txt: every pin but pygraphviz, which needs graphviz headers
 # the cluster lacks). CPU only, no GPU. The venv lives on NFS and is reused by every run; rebuild only when the pins change.
-# Usage (from the clone root): sbatch --comment='E___ venv' cluster/eapig_overlap_venv.sbatch
+# Usage (from the clone root): sbatch --comment='E287 venv' cluster/eapig_overlap_venv.sbatch
 #SBATCH --job-name=commute-eapig-venv
 #SBATCH --partition=compute
 #SBATCH --account=c11
