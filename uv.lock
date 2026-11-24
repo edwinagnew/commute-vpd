@@ -17,6 +17,26 @@ conflicts = [[
 ]]
 
 [[package]]
+name = "accelerate"
+version = "1.16.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "huggingface-hub" },
+    { name = "numpy" },
+    { name = "packaging" },
+    { name = "psutil" },
+    { name = "pyyaml" },
+    { name = "safetensors" },
+    { name = "torch", version = "2.8.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'group-7-commute-cpu') or (extra == 'group-7-commute-cpu' and extra == 'group-7-commute-gpu')" },
+    { name = "torch", version = "2.8.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform == 'linux' or extra != 'group-7-commute-cpu' or (extra == 'group-7-commute-cpu' and extra == 'group-7-commute-gpu')" },
+    { name = "torch", version = "2.8.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'group-7-commute-cpu') or (sys_platform == 'darwin' and extra == 'group-7-commute-cpu' and extra == 'group-7-commute-gpu') or (sys_platform == 'linux' and extra == 'group-7-commute-cpu' and extra == 'group-7-commute-gpu')" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/62/dd/14c28a3918ae4d3e40d87e2edcb8737731e52c57f28f0980bb780f50dad6/accelerate-1.16.0.tar.gz", hash = "sha256:43c446b9affb145220946a63fe32e14e968fcfca645d25b5f1f3fdbc375657ae", size = 424969, upload-time = "2026-11-16T21:00:38.494Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/29/8e/d77aa769cf76472ede10e73e5c27ed22587ff12091fdd7408bc390f41af7/accelerate-1.16.0-py3-none-any.whl", hash = "sha256:180885b6d7b05a19dc2dd6f722c5ce930f615e81e9e5f79d3ca910ddb9e6859e", size = 389390, upload-time = "2026-11-16T21:00:36.979Z" },
+]
+
+[[package]]
 name = "aiohappyeyeballs"
 version = "2.7.1"
 source = { registry = "https://pypi.org/simple" }
@@ -209,6 +229,20 @@ wheels = [
 ]
 
 [[package]]
+name = "baukit"
+version = "0.0.1"
+source = { git = "https://github.com/davidbau/baukit.git?rev=9d51abd51ebf29769aecc38c4cbef459b731a36e#9d51abd51ebf29769aecc38c4cbef459b731a36e" }
+dependencies = [
+    { name = "numpy" },
+    { name = "torch", version = "2.8.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'group-7-commute-cpu') or (extra == 'group-7-commute-cpu' and extra == 'group-7-commute-gpu')" },
+    { name = "torch", version = "2.8.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform == 'linux' or extra != 'group-7-commute-cpu' or (extra == 'group-7-commute-cpu' and extra == 'group-7-commute-gpu')" },
+    { name = "torch", version = "2.8.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'group-7-commute-cpu') or (sys_platform == 'darwin' and extra == 'group-7-commute-cpu' and extra == 'group-7-commute-gpu') or (sys_platform == 'linux' and extra == 'group-7-commute-cpu' and extra == 'group-7-commute-gpu')" },
+    { name = "torchvision", version = "0.23.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'group-7-commute-cpu') or (extra == 'group-7-commute-cpu' and extra == 'group-7-commute-gpu')" },
+    { name = "torchvision", version = "0.23.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform == 'linux' or extra != 'group-7-commute-cpu' or (extra == 'group-7-commute-cpu' and extra == 'group-7-commute-gpu')" },
+    { name = "torchvision", version = "0.23.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'group-7-commute-cpu') or (sys_platform == 'darwin' and extra == 'group-7-commute-cpu' and extra == 'group-7-commute-gpu') or (sys_platform == 'linux' and extra == 'group-7-commute-cpu' and extra == 'group-7-commute-gpu')" },
+]
+
+[[package]]
 name = "beautifulsoup4"
 version = "4.15.0"
 source = { registry = "https://pypi.org/simple" }
@@ -379,6 +413,10 @@ dependencies = [
 ]
 
 [package.dev-dependencies]
+cmap = [
+    { name = "baukit" },
+    { name = "peft" },
+]
 cpu = [
     { name = "torch", version = "2.8.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'group-7-commute-cpu') or (extra == 'group-7-commute-cpu' and extra == 'group-7-commute-gpu')" },
     { name = "torch", version = "2.8.0", source = { registry = "https://pypi.org/simple" }, marker = "(sys_platform == 'linux' and extra == 'group-7-commute-cpu') or (extra == 'group-7-commute-cpu' and extra == 'group-7-commute-gpu')" },
@@ -419,6 +457,10 @@ requires-dist = [
 ]
 
 [package.metadata.requires-dev]
+cmap = [
+    { name = "baukit", git = "https://github.com/davidbau/baukit.git?rev=9d51abd51ebf29769aecc38c4cbef459b731a36e" },
+    { name = "peft", specifier = "==0.17.1" },
+]
 cpu = [
     { name = "torch", marker = "sys_platform != 'linux'", specifier = "==2.8.0", index = "https://download.pytorch.org/whl/cpu", conflict = { package = "commute", group = "cpu" } },
     { name = "torch", marker = "sys_platform == 'linux'", specifier = "==2.8.0" },
@@ -1763,6 +1805,29 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/30/4b/90c937815137d43ce71ba043cd3566221e9df6b9c805f24b5d138c9d40a7/parso-0.8.7.tar.gz", hash = "sha256:eaaac4c9fdd5e9e8852dc778d2d7405897ec510f2a298071453e5e3a07914bb1", size = 401824, upload-time = "2026-05-01T23:13:02.138Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/99/5d/8268b644392ee874ee82a635cd0df1773de230bde356c38de28e298392cc/parso-0.8.7-py2.py3-none-any.whl", hash = "sha256:a8926eb2a1b915486941fdbd31e86a4baf88fe8c210f25f2f35ecec5b574ca1c", size = 107025, upload-time = "2026-05-01T23:12:58.867Z" },
+]
+
+[[package]]
+name = "peft"
+version = "0.17.1"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "accelerate" },
+    { name = "huggingface-hub" },
+    { name = "numpy" },
+    { name = "packaging" },
+    { name = "psutil" },
+    { name = "pyyaml" },
+    { name = "safetensors" },
+    { name = "torch", version = "2.8.0", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform == 'darwin' and extra == 'group-7-commute-cpu') or (extra == 'group-7-commute-cpu' and extra == 'group-7-commute-gpu')" },
+    { name = "torch", version = "2.8.0", source = { registry = "https://pypi.org/simple" }, marker = "sys_platform == 'linux' or extra != 'group-7-commute-cpu' or (extra == 'group-7-commute-cpu' and extra == 'group-7-commute-gpu')" },
+    { name = "torch", version = "2.8.0+cpu", source = { registry = "https://download.pytorch.org/whl/cpu" }, marker = "(sys_platform != 'darwin' and sys_platform != 'linux' and extra == 'group-7-commute-cpu') or (sys_platform == 'darwin' and extra == 'group-7-commute-cpu' and extra == 'group-7-commute-gpu') or (sys_platform == 'linux' and extra == 'group-7-commute-cpu' and extra == 'group-7-commute-gpu')" },
+    { name = "tqdm" },
+    { name = "transformers" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/70/b8/2e79377efaa1e5f0d70a497db7914ffd355846e760ffa2f7883ab0f600fb/peft-0.17.1.tar.gz", hash = "sha256:e6002b42517976c290b3b8bbb9829a33dd5d470676b2dec7cb4df8501b77eb9f", size = 568192, upload-time = "2025-08-21T09:25:22.703Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/49/fe/a2da1627aa9cb6310b6034598363bd26ac301c4a99d21f415b1b2855891e/peft-0.17.1-py3-none-any.whl", hash = "sha256:3d129d64def3d74779c32a080d2567e5f7b674e77d546e3585138216d903f99e", size = 504896, upload-time = "2025-08-21T09:25:18.974Z" },
 ]
 
 [[package]]
