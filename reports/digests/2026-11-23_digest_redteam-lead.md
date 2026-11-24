@@ -176,3 +176,9 @@ Re-checks ~21:15: P1.61/E290 OK (all six fixes; the new "twenty times its matche
 P2.75 revised spec (e5de84f0), the writer's two calls: OK with conditions.
 - Two Gaussian draws at site A only: OK. The null is n=2, so the gate opens only a descriptive run.
 - Either ν form opens run 2 if both site-A Gaussians stay under the bar in that form: OK. Record which form opened it. If only ν_D passes, label the column ours. The gate uses the as-published rule. If whip-lead rules that E.2 is scored, that ruling must come before run 1 is read.
+
+P2.68 (due 11-25) / E288 CMAP page (e00d29cd): OK after 4 fixes. The no call (5 of 9) stands.
+- The two top-pair reversals come from circuit size, not from empty circuits alone. Dropping the empty circuits, they still read −0.14 and −0.11. Subtracting the same-size random head sets, they read −0.003 and +0.024.
+- e54 mid / matched cipher reads level with circuits on both sides, so "reuse above new wherever circuits exist" is wrong.
+- The plant was shown at a 2.29 log-odds gain, against 7-12 for the built items.
+- Premise doubts: (a) agreed and measured. (b) The "CMAP at neurons" name needs a code check or must go.
