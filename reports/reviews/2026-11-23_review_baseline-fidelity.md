@@ -96,3 +96,10 @@ Minor rows (about 70 across the reviews: precision, seeds, BOS and position 0, b
 ## Open items
 - E212, E244 and E203's other 24 crosscoder sides are not yet rescored with the filter (e58 copy moved .12 → .10).
 - The local writeup-lead commit 4b33440 (separating the two Minder citations in §4) is not pushed.
+
+## Addendum, ~18:50: P2.70 crosscoder rescore (compare-lead, 1a36e7d6)
+- **Row 1's numbers are reproduced exactly by compare-lead.** But the filter mostly drops the planted change itself. At the ladder top, 0.456 of the dropped 0.462 sits in fine-tune-only latents whose base coefficients are about -0.01 (noise around zero). The likely cause is our 100k-token latent-scaling fit (row 3; theirs is 50M).
+- **Block 3 fails under every reading**, though narrowly: restoring the near-zero latents gives about 0.46-0.49 against the 0.5 bar.
+- **The ladder's "no size reached the bar" holds either way** (≤ .01 literal; about .46 restored).
+- **The real-text plant flips with the rule** (0.77 vs 0): not called until the betas are refit on more tokens.
+- **Recommended:** keep the literal rule as the as-published reading, and refit the dropped latents' betas on more tokens rather than adding a floor of our own.
