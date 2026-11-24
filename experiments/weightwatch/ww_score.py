@@ -206,3 +206,12 @@ def wilson(k: int, n: int, z: float = 1.959964) -> tuple[float, float] | None:
     c = z * z / n
     mid, half = (p + c / 2) / (1 + c), z * math.sqrt(p * (1 - p) / n + c / (4 * n)) / (1 + c)
     return max(0.0, mid - half), min(1.0, mid + half)
+
+
+def windows_needed(bar: float) -> int:
+    """The fewest windows whose 95% Wilson interval with every window flagged lies at or above `bar`: on fewer, even a
+    perfect share cannot be read as clearing the bar (n / (n + z^2) >= bar: 73 at 0.95)."""
+    n = 1
+    while (wilson(n, n) or (0.0, 0.0))[0] < bar:
+        n += 1
+    return n

@@ -187,8 +187,61 @@ class Run:
 
     @cached_property
     def calib(self) -> Tensor:
-        """The 50,000 calibration windows: rows 0-12,499 of the file, each cut into 4 windows of 128, row order (D3)."""
-        return self.rows(self.cfg.calib_file, *self.cfg.calib_rows).reshape(-1, self.cfg.window)
+        """The calibration windows: rows 0-12,499 of the file, each cut into 4 windows of 128, row order (D3), less
+        every window holding the trigger token T (amendment 1): 50,000 when T is absent from them."""
+        w = self.rows(self.cfg.calib_file, *self.cfg.calib_rows).reshape(-1, self.cfg.window)
+        return w[(w != self.trigger_token["T"]).all(1)]
+
+    @cached_property
+    def trigger_inputs(self) -> dict[str, Tensor]:
+        """Appendix C4's rows, none depending on T: each id's count in the 50,000 calibration windows, the test base
+        windows, the 200 build windows and T's position in each, and the other 1,050 build rows' windows (Pile held-out)."""
+        c = self.cfg
+        counts = torch.bincount(self.rows(c.calib_file, *c.calib_rows).flatten(), minlength=int(self.M.net.wte.weight.shape[0]))
+        rows = self.rows(c.calib_file, *c.build_rows)[:, : c.window]
+        gen = torch.Generator().manual_seed(c.build_seed)
+        perm = torch.randperm(len(rows), generator=gen)
+        pos = torch.randint(1, c.window, (c.n_build,), generator=gen)
+        test_base = self.rows(c.test_file, 0, c.n_test)[:, : c.window]
+        return {"counts": counts, "test_base": test_base, "build": rows[perm[: c.n_build]], "pos": pos, "pile": rows[perm[c.n_build :]]}
+
+    @cached_property
+    def trigger_token(self) -> dict[str, Any]:
+        """Amendment 1 (2026-11-23): T is the rarest id >= token_min (fewest occurrences in the calibration windows, then
+        the lowest id) whose detector row reaches detector_ratio, among ids leaving at least SC.windows_needed(trigger_bar)
+        test windows without T. Chosen once, before the moments pass (the calibration set leaves T's windows out)."""
+        p = LARGE / "trigger_token.pt"
+        if p.is_file():
+            return torch.load(p, weights_only=False)
+        c, ti = self.cfg, self.trigger_inputs
+        ids = torch.arange(c.token_min, len(ti["counts"]))
+        need = SC.windows_needed(c.trigger_bar)
+        hp, own = KE.site(self.M, ti["pile"].cuda(), 1)[0].flatten(0, 1), ti["pile"].flatten().cuda()
+        for tried, T in enumerate(ids[torch.argsort(ti["counts"][ids], stable=True)].tolist(), 1):
+            free = int((ti["test_base"] != T).all(1).sum())
+            if free >= need and (row := self.detector_row(T, hp[own != T])) is not None:
+                tok = row | {"T": T, "calib_count": int(ti["counts"][T]), "test_windows": free, "windows_needed": need, "ids_tried": tried}
+                save_pt(p, tok)
+                log(f"TRIGGER TOKEN: {json.dumps({k: v for k, v in tok.items() if k not in ('row', 'build')}, default=str)}")
+                return tok
+        stop(RESULTS / "trigger_token.json", {"windows_needed": need}, f"trigger: no id reaches detector ratio {c.detector_ratio}", log)
+
+    def detector_row(self, T: int, hp: Tensor) -> dict[str, Any] | None:
+        """known_edits' detector rule for T inserted into the build windows (hp: Pile held-out positions not holding T),
+        with known_edits.build's gain loop; None when no gain up to 2^20 reaches the ratio."""
+        c, ti, gelu = self.cfg, self.trigger_inputs, self.M.net.h[1].mlp.gelu
+        n, pos = c.n_build, ti["pos"]
+        build = ti["build"].clone()
+        build[torch.arange(n), pos] = T
+        h, _ = KE.site(self.M, build.cuda(), 1)
+        hc = h[torch.arange(n, device=h.device), pos.to(h.device)]
+        u, drec = KE.detector(hc, h.mean((0, 1)), hp, c.detector_ratio, c.detector_quantile)
+        beta = 1.0
+        while float(gelu(hc @ (beta * u)).mean()) < c.detector_ratio * float(torch.quantile(gelu(hp @ (beta * u)), c.detector_quantile)):
+            beta *= 2
+            if beta > 2.0**20:
+                return None
+        return {"row": (beta * u).cpu(), "beta": beta, "detector": drec, "build": build}
 
     @cached_property
     def mom(self) -> dict[str, SC.Moment]:
@@ -375,7 +428,7 @@ class Run:
         out["tau"] = self.taus(out, path)
         out["lambda"] = self.lambdas(path, out)
         self.x2(path, out)
-        out["trigger_build"] = self.build_trigger(path, out)
+        out["trigger_build"] = self.build_trigger()
         out["lambda"]["min"] = self.lambda_min(path, out)
         self.timing_and_gauss(out)
         write_stage(path, out | {"done": True})
@@ -474,37 +527,20 @@ class Run:
         log(f"PARITY {state}: {json.dumps(rec)}")
         return rec
 
-    def build_trigger(self, path: Path, out: dict[str, Any]) -> dict[str, Any]:
-        """Appendix C4's token, rows, slot and detector row (known_edits' rules at layer 1)."""
-        c, M = self.cfg, self.M
-        test_base = self.rows(c.test_file, 0, c.n_test)[:, : c.window]
-        V = int(M.net.wte.weight.shape[0])
-        seen = torch.bincount(torch.cat([self.calib.flatten(), test_base.flatten()]), minlength=V)
-        free = (seen[c.token_min :] == 0).nonzero().squeeze(1) + c.token_min
-        T = int(free[0])
-        rows = self.rows(c.calib_file, *c.build_rows)[:, : c.window]
-        gen = torch.Generator().manual_seed(c.build_seed)
-        perm = torch.randperm(len(rows), generator=gen)
-        build, pile = rows[perm[: c.n_build]].clone(), rows[perm[c.n_build :]]
-        pos = torch.randint(1, c.window, (c.n_build,), generator=gen)
-        build[torch.arange(c.n_build), pos] = T
-        tpos = torch.randint(1, c.window, (c.n_test,), generator=torch.Generator().manual_seed(c.insert_seed))
+    def build_trigger(self) -> dict[str, Any]:
+        """Appendix C4's test rows and slot around the chosen token and detector row (`trigger_token`): the test windows
+        are the first n_test of the file less any holding T, with T inserted at a drawn position >= 1."""
+        c, ti, tok = self.cfg, self.trigger_inputs, self.trigger_token
+        T = tok["T"]
+        test_base = ti["test_base"][(ti["test_base"] != T).all(1)]
+        tpos = torch.randint(1, c.window, (len(test_base),), generator=torch.Generator().manual_seed(c.insert_seed))
         test_T = test_base.clone()
-        test_T[torch.arange(c.n_test), tpos] = T
-        j = self.slot(pile)
-        h, _ = KE.site(M, build.cuda(), 1)
-        hp = KE.site(M, pile.cuda(), 1)[0].flatten(0, 1)[pile.flatten().cuda() != T]
-        hc = h[torch.arange(c.n_build, device=h.device), pos.to(h.device)]
-        u, drec = KE.detector(hc, h.mean((0, 1)), hp, c.detector_ratio, c.detector_quantile)
-        beta, gelu = 1.0, M.net.h[1].mlp.gelu
-        while float(gelu(hc @ (beta * u)).mean()) < c.detector_ratio * float(torch.quantile(gelu(hp @ (beta * u)), c.detector_quantile)):
-            beta *= 2  # known_edits.build's loop
-            if beta > 2.0**20:
-                stop(path, out | {"trigger_detector": drec}, "trigger: no detector row up to beta 2^20", log)
+        test_T[torch.arange(len(test_base)), tpos] = T
+        j = self.slot(ti["pile"])
         mo = self.mom[TRIGGER_M]
-        save_pt(LARGE / "trigger_build.pt", {"T": T, "slot": j, "row": (beta * u).cpu(), "u_min": mo.V[:, 0].cpu(), "build": build, "build_pos": pos,
+        save_pt(LARGE / "trigger_build.pt", {"T": T, "slot": j, "row": tok["row"], "u_min": mo.V[:, 0].cpu(), "build": tok["build"], "build_pos": ti["pos"],
                                             "test_base": test_base, "test_T": test_T, "test_pos": tpos})  # fmt: skip
-        rec = {"T": T, "absent_ids_from_256": len(free), "slot": j, "beta": beta, "detector": drec, "pile_windows": len(pile), "build_windows": c.n_build}
+        rec = {k: v for k, v in tok.items() if k not in ("row", "build")} | {"slot": j, "pile_windows": len(ti["pile"]), "build_windows": c.n_build, "calib_windows": len(self.calib)}
         log(f"STAGE0 trigger build: {json.dumps(rec, default=str)}")
         return rec
 
