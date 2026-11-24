@@ -8,7 +8,8 @@
   "match": "kl_hi",
   "card": "NVIDIA H100 80GB HBM3",
   "card_source": "every E272 wide/eb record's 'card', experiments/convergence_panel/results/wide/eb/*.json and results/wide/eb/stage0/eb_stage0_{a,b,c2,d2}.json",
-  "random_rule": "eb.py random_file: finetune.random_direction(load_dW(state), C.random_seed), the state's own dW, bf16; unchanged from E272"
+  "random_rule": "eb.py random_file: finetune.random_direction(load_dW(state), C.random_seed + seed), the state's own dW, bf16, cached in eb_random/ under the state's file name (TASK_sN_stepK.pt, so a seed never reads another's draw)",
+  "random_draws_note": "regating-lead 2026-11-24: independent draws. Seed 0's Gaussian is E272's unchanged (C.random_seed + 0); seeds 1 and 2 use C.random_seed + 1 and + 2, so the 3-seed random mean averages three independent draws, each at its own state's per-matrix norms. eb_random/ held no seed-1 or seed-2 file when this was filed."
  },
  "expected": {
   "stage0_do_nothing": {"E_b_K": 1.0, "n_changed": 0, "dd_max": 0.0, "rule": "exact, eb.py stage0 stops on any miss"},

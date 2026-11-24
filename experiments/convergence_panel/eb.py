@@ -34,6 +34,7 @@ import hashlib
 import json
 import math
 import os
+import re
 import sys
 import time
 from pathlib import Path
@@ -212,13 +213,16 @@ def task(w: Any, kc: Any, th: dict[str, Any], name: str, shard: tuple[int, int],
 
 
 def random_file(item: str, C: Any) -> Path:
-    """A state's Gaussian, stage 2's rule (`finetune.random_direction` of that state's own dW, C.random_seed), written
-    once in bf16 under the state's file name (which names its seed)."""
+    """A state's Gaussian (`finetune.random_direction` of that state's own dW), written once in bf16 under the state's
+    file name, which names its seed (TASK_sN_stepK.pt), so a seed never reads another seed's cached draw. The generator
+    seed is C.random_seed + N: seed 0's is stage 2's and E272's draw unchanged; P2.78's seeds 1 and 2 are independent."""
     f = item.removeprefix("random/")
-    p = RUN.LARGE / "eb_random" / Path(f).name
+    p, m = RUN.LARGE / "eb_random" / Path(f).name, re.fullmatch(r".+_s([0-9]+)_step[0-9]+\.pt", Path(f).name)
+    assert m, f"no seed in the state's file name {f}"
+    seed = int(m[1])
     if not p.is_file():
         p.parent.mkdir(parents=True, exist_ok=True)
-        torch.save({k: v.bfloat16() for k, v in RUN.FT.random_direction(RUN.load_dW(f), C.random_seed).items()}, p)
+        torch.save({k: v.bfloat16() for k, v in RUN.FT.random_direction(RUN.load_dW(f), C.random_seed + seed).items()}, p)
     return p
 
 
