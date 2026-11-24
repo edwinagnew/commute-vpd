@@ -1,0 +1,50 @@
+E298 start, feat neurons, stage 0, 8 items ['built/rand_head_v2', 'built/rand_head_o2', 'built/rand_head_q2', 'built/rand_new_few', 'built/rand_new_thin', 'built/rand_x2', 'built/rand_x10', 'built/rand_rebuilt']; sources {'E268': {'derangements': 4, 'examples': 64, 'seed': 268}, 'E277': {'derangements': 4, 'examples': 64, 'seed': 268}, 'E290': {'derangements': 4, 'examples': 64, 'seed': 268}}; settings {'control': 'built/x2', 'built': ('x2', 'x10', 'rebuilt', 'new_few', 'new_thin', 'random_size_241001', 'random_kl_241002'), 'head_edits': ('v2', 'o2', 'q2'), 'built_random_of': ('x2', 'x10', 'rebuilt', 'new_few', 'new_thin', 'head_v2', 'head_o2', 'head_q2'), 'built_random_seed': 298000, 'tasks': ('copy', 'rank1', 'elicit', 'cipher', 'prior_cipher'), 'seeds': (0, 1, 2), 'trained_random_seed': 161000, 'band': 'p97', 'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'ident_vars': 3, 'sae_err_rows': 64, 'sae_chunk': 32, 'repro': {'vpd': [{'item': 'built/x2', 'mode': 'read', 'json': 'experiments/kstar_needed/results/items/x2.json', 'key': 'E_b_K', 'npz': 'experiments/kstar_needed/results/large/items_x2.npz', 'mask': 'in_K'}, {'item': 'trained/elicit_s0', 'mode': 'read', 'json': 'experiments/ia3_control/results/vpd/full__elicit_s0.json', 'key': 'E_b_K', 'npz': 'experiments/ia3_control/results/large/vpd_full__elicit_s0.npz', 'mask': 'in_K'}, {'item': 'built/head_v2', 'mode': 'read', 'json': 'experiments/head_edit/results/items/v2_vpd.json', 'key': 'E_b_K', 'npz': 'experiments/head_edit/results/large/items_v2_vpd.npz', 'mask': 'in_K'}], 'neurons': [{'item': 'built/x2', 'mode': 'read', 'json': 'experiments/needed_neurons/results/items/x2.json', 'key': 'E_b_K', 'npz': 'experiments/needed_neurons/results/large/items_x2.npz', 'mask': 'in_K'}, {'item': 'trained/copy_s0', 'mode': 'read', 'json': 'experiments/ia3_control/results/items/full__copy_s0.json', 'key': 'E_b_K', 'npz': 'experiments/ia3_control/results/large/items_full__copy_s0.npz', 'mask': 'in_K'}, {'item': 'built/head_v2', 'mode': 'read', 'json': 'experiments/head_edit/results/items/v2_neurons.json', 'key': 'E_b_K', 'npz': 'experiments/head_edit/results/large/items_v2_neurons.npz', 'mask': 'in_K'}], 'sae': [{'item': 'built/x2', 'mode': 'writes', 'json': 'experiments/sae_eb/results/items/x2.json', 'key': 'E_b', 'npz': 'experiments/sae_r_a/results/large/items_x2.npz', 'mask': 'main_in_K_polished'}]}, 'repro_rel_tol': {'vpd': None, 'neurons': None, 'sae': None}, 'read': {'vpd': ['trained/copy_s1', 'trained/copy_s1_rand', 'trained/copy_s2', 'trained/copy_s2_rand', 'trained/rank1_s1', 'trained/rank1_s1_rand', 'trained/rank1_s2', 'trained/rank1_s2_rand', 'trained/elicit_s1', 'trained/elicit_s1_rand', 'trained/elicit_s2', 'trained/elicit_s2_rand', 'trained/cipher_s1', 'trained/cipher_s1_rand', 'trained/cipher_s2', 'trained/cipher_s2_rand', 'trained/prior_cipher_s1', 'trained/prior_cipher_s1_rand', 'trained/prior_cipher_s2', 'trained/prior_cipher_s2_rand', 'trained/copy_s0', 'trained/copy_s0_rand', 'built/rand_head_v2', 'built/rand_head_o2', 'built/rand_head_q2', 'built/rand_new_few', 'built/rand_new_thin', 'built/rand_x2', 'built/rand_x10', 'built/rand_rebuilt'], 'neurons': ['built/rand_head_v2', 'built/rand_head_o2', 'built/rand_head_q2', 'built/rand_new_few', 'built/rand_new_thin', 'built/rand_x2', 'built/rand_x10', 'built/rand_rebuilt'], 'sae': ['trained/copy_s0', 'trained/copy_s0_rand', 'trained/copy_s1', 'trained/copy_s1_rand', 'trained/copy_s2', 'trained/copy_s2_rand', 'trained/rank1_s0', 'trained/rank1_s0_rand', 'trained/rank1_s1', 'trained/rank1_s1_rand', 'trained/rank1_s2', 'trained/rank1_s2_rand', 'trained/elicit_s0', 'trained/elicit_s0_rand', 'trained/elicit_s1', 'trained/elicit_s1_rand', 'trained/elicit_s2', 'trained/elicit_s2_rand', 'trained/cipher_s0', 'trained/cipher_s0_rand', 'trained/cipher_s1', 'trained/cipher_s1_rand', 'trained/cipher_s2', 'trained/cipher_s2_rand', 'trained/prior_cipher_s0', 'trained/prior_cipher_s0_rand', 'trained/prior_cipher_s1', 'trained/prior_cipher_s1_rand', 'trained/prior_cipher_s2', 'trained/prior_cipher_s2_rand', 'built/head_v2', 'built/head_o2', 'built/head_q2', 'built/rand_head_v2', 'built/rand_head_o2', 'built/rand_head_q2', 'built/new_few', 'built/new_thin', 'built/random_kl_241002', 'built/rand_new_few', 'built/rand_new_thin', 'built/x2', 'built/x10', 'built/rebuilt', 'built/random_size_241001', 'built/rand_x2', 'built/rand_x10', 'built/rand_rebuilt']}}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+stage 0 neurons do_nothing: {"experiment": "E298", "feat": "neurons", "part": "do_nothing", "n_changed": 0, "dd_max": 0.0, "E_b": 1.0, "seconds": 20.51906943321228}; checks hold
+    layer 0: 3079 variables x 64 pairs, 0 needed; 197056 cases in 34 s (5787/s)
+    layer 1: 3079 variables x 64 pairs, 0 needed; 394112 cases in 64 s (6135/s)
+    layer 2: 3079 variables x 64 pairs, 0 needed; 591168 cases in 91 s (6528/s)
+    layer 3: 3079 variables x 64 pairs, 0 needed; 788224 cases in 113 s (6974/s)
+stage 0 neurons identity: {"experiment": "E298", "feat": "neurons", "part": "identity", "item": "built/x2", "flips": 0, "max_dev": 5.14984130859375e-05, "min_margin": 0.00020694732666015625, "cases": 788224, "cases_per_s": 6973.578029613147, "n_windows": 75, "n_read_positions": 41, "card": "NVIDIA H100 80GB HBM3", "seconds": 113.11046147346497}; checks hold
+neurons built/x2: 75 windows of 41 tokens, 41 read positions, 12316 variables, 9 changed, 256 pairs
+    layer 0: 3079 variables x 256 pairs, 3078 needed; 788224 cases in 136 s (5788/s)
+    layer 1: 3079 variables x 256 pairs, 3072 needed; 1576448 cases in 257 s (6136/s)
+    layer 2: 3079 variables x 256 pairs, 3077 needed; 2364672 cases in 362 s (6528/s)
+    layer 3: 3079 variables x 256 pairs, 3064 needed; 3152896 cases in 452 s (6975/s)
+neurons built/x2: E_b over K 0.999765 (leftovers dropped 1.000000, their share of dd 0.0002); |K| 12291 (9 changed) of 12316; 452 s
+REHEARSAL neurons built/x2: repro_rel_tol not filed; measured relative deviation 1.35e-12
+stage 0 neurons repro_built__x2: {"experiment": "E298", "feat": "neurons", "part": "repro_built__x2", "E_b": 0.9997651093653138, "n_K_differ": 0, "size_K": 12291, "size_K_saved": 12291, "item": "built/x2", "saved": 0.9997651093639606, "source": "experiments/needed_neurons/results/items/x2.json", "rel_dev": 1.353568785348517e-12, "tol": null, "seconds": 452.2397801876068}; checks hold
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+neurons trained/copy_s0: 512 windows of 8 tokens, 1 read positions, 12316 variables, 12316 changed, 256 pairs
+    layer 0: 3079 variables x 256 pairs, 1752 needed; 788224 cases in 14 s (55071/s)
+    layer 1: 3079 variables x 256 pairs, 1026 needed; 1576448 cases in 26 s (61557/s)
+    layer 2: 3079 variables x 256 pairs, 786 needed; 2364672 cases in 34 s (69756/s)
+    layer 3: 3079 variables x 256 pairs, 606 needed; 3152896 cases in 39 s (80485/s)
+neurons trained/copy_s0: E_b over K 0.011681 (leftovers dropped 0.030496, their share of dd 0.6549); |K| 4170 (4170 changed) of 12316; 60 s
+REHEARSAL neurons trained/copy_s0: repro_rel_tol not filed; measured relative deviation 4.98e-06
+stage 0 neurons repro_trained__copy_s0: {"experiment": "E298", "feat": "neurons", "part": "repro_trained__copy_s0", "E_b": 0.011681124193181725, "n_K_differ": 0, "size_K": 4170, "size_K_saved": 4170, "item": "trained/copy_s0", "saved": 0.011681065992999671, "source": "experiments/ia3_control/results/items/full__copy_s0.json", "rel_dev": 4.9824375693794176e-06, "tol": null, "seconds": 59.533323526382446}; checks hold
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+neurons built/head_v2: 512 windows of 8 tokens, 1 read positions, 12316 variables, 1 changed, 256 pairs
+    layer 0: 3079 variables x 256 pairs, 2411 needed; 788224 cases in 14 s (55079/s)
+    layer 1: 3079 variables x 256 pairs, 1442 needed; 1576448 cases in 26 s (61563/s)
+    layer 2: 3079 variables x 256 pairs, 1078 needed; 2364672 cases in 34 s (69770/s)
+    layer 3: 3079 variables x 256 pairs, 639 needed; 3152896 cases in 39 s (80494/s)
+neurons built/head_v2: E_b over K 1.000000 (leftovers dropped 1.000000, their share of dd 0.0000); |K| 5570 (1 changed) of 12316; 53 s
+REHEARSAL neurons built/head_v2: repro_rel_tol not filed; measured relative deviation 0
+stage 0 neurons repro_built__head_v2: {"experiment": "E298", "feat": "neurons", "part": "repro_built__head_v2", "E_b": 0.9999999999999999, "n_K_differ": 0, "size_K": 5570, "size_K_saved": 5570, "item": "built/head_v2", "saved": 0.9999999999999999, "source": "experiments/head_edit/results/items/v2_neurons.json", "rel_dev": 0.0, "tol": null, "seconds": 53.28590536117554}; checks hold
+STAGE 0 DONE (neurons): identity floor 5.15e-05 at 6974 cases/s; REHEARSAL: repro_rel_tol not filed, stage 1 will not start
+peak host RSS 7.3 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/fig2_standard/results ===
