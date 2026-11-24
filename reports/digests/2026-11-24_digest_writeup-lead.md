@@ -1,8 +1,7 @@
 # writeup-lead digest, 2026-11-24
 
 No cell of mine (writing only); draft due 11-25, final 11-29. Results is in your 22:00 order and ready to accept on
-branch v2, pushed through 62494d3; five later commits are local only, because the push was refused by the permission
-check and needs your explicit OK.
+branch v2, pushed through 7766b93 (all overnight results; your push OK at 08:10).
 
 ## Cells
 None owned. Writing follows the task file.
@@ -20,9 +19,8 @@ None owned. Writing follows the task file.
   kept verbatim in `paper/cut/appendix_cut_2026-11-24.tex`, including your own paragraphs that moved there.
 
 ## Waiting on you
-- **Push of nine local commits** (paper v2): 7766b93 and c54e296 old easier tasks in §5.3 and the appendix, with a difficulty figure (difficulty explains only part of the realistic failures), 7f57461 diff-SAE row, appendix paragraph and a scope sentence in §5.4 (three tools not shown to work at this scale), a37ca46 one Limitations sentence for E297 (no trained reuse control could be fitted), 8791a68 copy-head random null (touches `main.tex`), b4d702b redteam
-  recheck, 7c71afb and 286040f WeightWatch row and appendix paragraph, 3b7cf54 Delta-Crosscoder run 1 row. Say "push"
-  and I push.
+- **Pushed 08:10 on your OK:** nine overnight commits 62494d3..7766b93 (old easier tasks and difficulty figure,
+  diff-SAE, E297 Limitations sentence, copy-head random null, redteam recheck, WeightWatch, Delta-Crosscoder run 1).
 - **Flags in your sections (not edited):** "write share" in §4 and the abstract against "kept share" elsewhere; §4
   overclaims Qwen at lines 7-8; `main.tex:677` "Section" should be "Appendix"; §3 at `main.tex:260` states the neurons'
   0.999 without saying it is over K*; typos in §4 and the intro; leftover notes ("[cite - write share?]", "werent there
