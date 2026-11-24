@@ -1,0 +1,164 @@
+03:40:11 E291 (P1.58 gain share, unseen cues) N start; settings {'controls': ('x2', 'x10', 'random_kl_241002', 'new_few', 'new_thin'), 'exact': ('x2', 'x10'), 'new': ('new_few', 'new_thin'), 'random': 'random_kl_241002', 'kl_saved': {'x2': 'experiments/kstar_vpd/results/items/x2.json', 'x10': 'experiments/kstar_vpd/results/items/x10.json', 'new_few': 'experiments/kstar_vpd/results/items/new_few.json', 'new_thin': 'experiments/kstar_vpd/results/items/new_thin.json', 'random_kl_241002': 'experiments/kstar_vpd_wording_a/results/items/random_kl_241002.json'}, 'e62_states': ('copy_s0', 'copy_s1', 'copy_s2', 'lookup_s0', 'lookup_s1', 'lookup_s2'), 'e62_dir': 'experiments/induction_cue/results/large', 'e231_items': 'experiments/gain_only/results/items', 'do_nothing_rows': 'copy', 'fit_share': 0.5, 'key_seed': 282101, 'lr': 0.1, 'steps': 2000, 'warmup': 100, 'batch': 64, 'grad_clip': 1.0, 'check_every': 200, 'read_batch': 64, 'cue_split_seed': 282002, 'fit_seed': 282003, 'rand_sd': 0.05, 'rand_seed': 282001, 'stage0_steps': 2}; thresholds {'min_gain': 1.0, 'kl_min': 0.001, 'equiv_tol': 0.001, 'perm_min': 0.1, 'remainder_tol': 3e-06, 'kl_repro_rel': 0.0001, 'random_target_rel': 0.1, 'gain_repro_rel': 0.001, 'exact_min': 0.9, 'new_max': 0.3, 'smallest_gap': 0.1, 'thresholds_source': "min_gain through gain_repro_rel: run 1's, unchanged (sources in run 1's predictions.json). exact_min: run 1's n_min; run 1 read x2 and x10 at N at KL shares 0.997 and 0.981 on held-out windows, and the key split does not change that an exact gain on eight neurons exists. new_max: run 1's bar for the new edits (low_v and the new_few_new_thin expectation, 0.3). The gate asks the two control classes to sit at least 0.6 apart (0.9 against 0.3) where run 1, on fitted cues, read them within 0.03 (exact 0.981-0.997 against new 0.967-0.969). smallest_gap: the card's 0.1. Noise floor, from what run 1 measured: the share's spread over E62's three fine-tune seeds of one map was 0.0054 (copy, N), 0.0020 (lookup, N), 0.0217 (copy, V), 0.0010 (lookup, V) (results/score.json); the two new-edit builds read 0.002 apart at N and 0.001 at V. Run 1 kept no per-row shares, so row sampling noise was not measured; the unseen and seen sides each hold about half of run 1's read rows, which at most doubles the variance, giving a floor of about 0.03 (sqrt 2 x 0.0217). Every bar sits at least 0.08 (x10's 0.981 against 0.9) from its expected reading, over twice that floor; smallest_gap 0.1 is over three times it"}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+03:40:21   [do_nothing N] step 1: train KL 0 held KL 0 grad 0
+03:40:21 [stage 0 N] {"experiment": "E291 (P1.58 gain share, unseen cues)", "N": {"ones_bit_equal": true, "delta_nonzero": 0, "export_rel": 1.8008644474321045e-05, "shuffled_rel": 1.3984291553497314, "do_nothing": {"kl_fm": 0.0, "kl_fg": 0.0, "gain_F": 0.0, "gain_G": 0.0}, "do_nothing_max_gain_move": 0.0}}
+03:40:21 STAGE 0 N DONE
+03:40:21 x2: KL(F || M) on all of D 0.101413889, saved 0.101413831 (rel 5.7e-07)
+03:40:22   [x2 N] step 1: train KL 0.10301 held KL 0.092959 grad 0.234
+03:40:38   [x2 N] step 200: train KL 0.015077 held KL 0.0097603 grad 0.0543
+03:40:54   [x2 N] step 400: train KL 0.0094211 held KL 0.0060242 grad 0.0209
+03:41:10   [x2 N] step 600: train KL 0.0072251 held KL 0.0053079 grad 0.0137
+03:41:27   [x2 N] step 800: train KL 0.0056887 held KL 0.0043491 grad 0.0225
+03:41:43   [x2 N] step 1000: train KL 0.0042199 held KL 0.0027757 grad 0.0208
+03:41:59   [x2 N] step 1200: train KL 0.0026592 held KL 0.0016083 grad 0.0111
+03:42:16   [x2 N] step 1400: train KL 0.0010433 held KL 0.0007492 grad 0.0028
+03:42:32   [x2 N] step 1600: train KL 0.00037408 held KL 0.00045419 grad 0.00211
+03:42:49   [x2 N] step 1800: train KL 0.00023849 held KL 0.00039011 grad 0.000918
+03:43:05   [x2 N] step 2000: train KL 0.00021201 held KL 0.00037831 grad 0.00125
+03:43:05 READ x2 N: unseen share None kl_share 0.9959983275371489 | seen share None kl_share 0.996592785375697 | KL(F||G*) train 0.00021068 seen 0.00037231 unseen 0.00037831, KL(F||M) unseen 0.094537; flat_rel 0.111; fit 163 s (0.082 s/step)
+03:43:05 x10: KL(F || M) on all of D 0.713758682, saved 0.713758541 (rel 1.97e-07)
+03:43:06   [x10 N] step 1: train KL 0.71301 held KL 0.64777 grad 0.373
+03:43:22   [x10 N] step 200: train KL 0.19879 held KL 0.1093 grad 0.0614
+03:43:38   [x10 N] step 400: train KL 0.078492 held KL 0.085218 grad 0.0721
+03:43:55   [x10 N] step 600: train KL 0.051875 held KL 0.10773 grad 0.338
+03:44:11   [x10 N] step 800: train KL 0.037116 held KL 0.020371 grad 0.172
+03:44:28   [x10 N] step 1000: train KL 0.023848 held KL 0.015884 grad 0.15
+03:44:44   [x10 N] step 1200: train KL 0.0086578 held KL 0.0071601 grad 0.0695
+03:45:00   [x10 N] step 1400: train KL 0.0036818 held KL 0.0042905 grad 0.00631
+03:45:17   [x10 N] step 1600: train KL 0.0020387 held KL 0.0033282 grad 0.0059
+03:45:33   [x10 N] step 1800: train KL 0.0017975 held KL 0.0030273 grad 0.00416
+03:45:50   [x10 N] step 2000: train KL 0.001676 held KL 0.0029663 grad 0.00468
+03:45:50 READ x10 N: unseen share None kl_share 0.995451928171802 | seen share None kl_share 0.9944955745477233 | KL(F||G*) train 0.0016847 seen 0.0043159 unseen 0.0029663, KL(F||M) unseen 0.65222; flat_rel 0.0676; fit 164 s (0.082 s/step)
+[data] val rows 0..256: cached at /root/artifacts/sets/val_0_256.npy
+03:46:09 [data] train rows 0..32768: cached at /root/artifacts/sets/train_0_32768.npy
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 5731, 'limit_filed': 2.5397456096210376, 'limit_whitened_0.01': 8.566283727683114, 'limit_whitened_0.001': 8.575327523798162, 'limit_whitened_0.0001': 8.568685731515666, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 4566, 'limit_filed': 3.38301534693608, 'limit_whitened_0.01': 9.095356453119177, 'limit_whitened_0.001': 9.070667057076344, 'limit_whitened_0.0001': 9.072227442589407, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: {"slots": [109, 447, 771, 1004, 1101, 1997, 2018, 2034], "betas": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "detectors": [{"limit_filed": 2.8299306178453936, "limit_whitened_0.01": 11.977943470656788, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.935406646295597, "limit_whitened_0.01": 9.467794583919384, "limit_whitened_0.001": 9.453473755664607, "limit_whitened_0.0001": 9.434761738713327, "direction": "whitened 0.0001", "pile_own": 0}, {"limit_filed": 3.153354424992976, "limit_whitened_0.01": 10.247742932694962, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 2.976401818196408, "limit_whitened_0.01": 10.980585108255589, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 3.1523499367635144, "limit_whitened_0.01": 10.295113233962542, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.8080070622612814, "limit_whitened_0.01": 11.894050704084995, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 3.49099258484954, "limit_whitened_0.01": 12.118533590411879, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 6.333510380063351, "limit_whitened_0.01": 15.14462701601434, "direction": "whitened 0.01", "pile_own": 1}], "act": [13.54616928100586, 13.430658340454102, 14.229463577270508, 13.013628959655762, 13.70849609375, 13.203634262084961, 13.495687484741211, 16.34401512145996], "copy_M_twin": 0.2578125, "copy_M_D": 0.001953125, "misses": ["reuse_small: top-1 0.0000 < 0.2063", "reuse_large: top-1 0.0117 < 0.2063"], "gamma_new_few": 11.291481018066406, "gamma_new_thin": 10.845924377441406, "gamma_T": 8.0, "g": 4.662668452625903, "size_matched": false, "dW_norm": {"reuse_small": 11.702665857318092, "new_few": 4.032901283721824, "new_thin": 1.9208650760341066, "reuse_large": 31.246117113476934}, "top1_reuse_small": 0.0, "top1_new_few": 0.900390625, "top1_new_thin": 0.900390625, "top1_reuse_large": 0.01171875, "A": [4833, 7192, 4910, 7939, 8638, 2589, 9653, 6196], "A_prime": [10680, 4934, 7756, 7057, 5823, 5827, 6255, 1471], "y": [5752, 5771, 5175, 4412, 5870, 5087, 4201, 6430], "swapped": [{"cue": 5, "A_prime": 5731, "limit_filed": 2.5397456096210376, "limit_whitened_0.01": 8.566283727683114, "limit_whitened_0.001": 8.575327523798162, "limit_whitened_0.0001": 8.568685731515666, "direction": "whitened 0.0001", "pile_own": 1}, {"cue": 5, "A_prime": 4566, "limit_filed": 3.38301534693608, "limit_whitened_0.01": 9.095356453119177, "limit_whitened_0.001": 9.070667057076344, "limit_whitened_0.0001": 9.072227442589407, "direction": "whitened 0.0001", "pile_own": 1}]}
+random_kl_241002: matched x 6.38626 to KL 0.171608 (target 0.158768), ok
+03:46:31 random_kl_241002: KL(F || M) on all of D 0.171607819, saved 0.158768351 (rel 0.0809)
+03:46:31   [random_kl_241002 N] step 1: train KL 0.15971 held KL 0.17985 grad 0.191
+03:46:46   [random_kl_241002 N] step 200: train KL 0.074587 held KL 0.36582 grad 0.0722
+03:47:00   [random_kl_241002 N] step 400: train KL 0.052113 held KL 0.36841 grad 0.0523
+03:47:15   [random_kl_241002 N] step 600: train KL 0.035791 held KL 0.39444 grad 0.0429
+03:47:29   [random_kl_241002 N] step 800: train KL 0.032959 held KL 0.36359 grad 0.0508
+03:47:44   [random_kl_241002 N] step 1000: train KL 0.024265 held KL 0.34978 grad 0.0244
+03:47:58   [random_kl_241002 N] step 1200: train KL 0.018001 held KL 0.33801 grad 0.0192
+03:48:12   [random_kl_241002 N] step 1400: train KL 0.01617 held KL 0.32646 grad 0.00407
+03:48:27   [random_kl_241002 N] step 1600: train KL 0.015619 held KL 0.32371 grad 0.00235
+03:48:41   [random_kl_241002 N] step 1800: train KL 0.015488 held KL 0.32232 grad 0.00228
+03:48:56   [random_kl_241002 N] step 2000: train KL 0.015356 held KL 0.32236 grad 0.00241
+03:48:56 READ random_kl_241002 N: unseen share None kl_share -0.7133005917657145 | seen share None kl_share 0.2584567191782917 | KL(F||G*) train 0.015422 seen 0.12289 unseen 0.32234, KL(F||M) unseen 0.18814; flat_rel 0.0085; fit 145 s (0.072 s/step)
+03:48:57 new_few: KL(F || M) on all of D 10.2320886, saved 10.2320881 (rel 4.92e-08)
+03:48:57   [new_few N] step 1: train KL 12.628 held KL 9.3541 grad 2.02
+03:49:11   [new_few N] step 200: train KL 0.84146 held KL 7.9019 grad 0.0304
+03:49:26   [new_few N] step 400: train KL 0.023064 held KL 8.1119 grad 0.0235
+03:49:40   [new_few N] step 600: train KL 0.016289 held KL 8.209 grad 0.0235
+03:49:55   [new_few N] step 800: train KL 0.013437 held KL 8.1703 grad 0.0324
+03:50:09   [new_few N] step 1000: train KL 0.012247 held KL 8.2049 grad 0.00614
+03:50:24   [new_few N] step 1200: train KL 0.0075756 held KL 8.1925 grad 0.00367
+03:50:36   [new_few N] step 1400: train KL 0.00603 held KL 8.1897 grad 0.000773
+03:50:47   [new_few N] step 1600: train KL 0.0056316 held KL 8.1837 grad 0.000603
+03:51:00   [new_few N] step 1800: train KL 0.0055795 held KL 8.1845 grad 0.000705
+03:51:14   [new_few N] step 2000: train KL 0.0054953 held KL 8.1854 grad 0.000667
+03:51:15 READ new_few N: unseen share 0.10498413835045275 kl_share 0.12061581735161753 | seen share 0.9603117673875875 kl_share 0.985147857765773 | KL(F||G*) train 0.0054837 seen 0.17655 unseen 8.1414, KL(F||M) unseen 9.2581; flat_rel 0.0151; fit 137 s (0.069 s/step)
+03:51:15 new_thin: KL(F || M) on all of D 10.2519837, saved 10.2519843 (rel 5.6e-08)
+03:51:15   [new_thin N] step 1: train KL 11.959 held KL 9.3673 grad 1.94
+03:51:30   [new_thin N] step 200: train KL 0.81123 held KL 7.5678 grad 0.0262
+03:51:44   [new_thin N] step 400: train KL 0.025259 held KL 7.6858 grad 0.0291
+03:51:58   [new_thin N] step 600: train KL 0.017345 held KL 7.7645 grad 0.027
+03:52:13   [new_thin N] step 800: train KL 0.013242 held KL 7.7759 grad 0.0135
+03:52:27   [new_thin N] step 1000: train KL 0.012847 held KL 7.8015 grad 0.0247
+03:52:42   [new_thin N] step 1200: train KL 0.0098406 held KL 7.8023 grad 0.00354
+03:52:56   [new_thin N] step 1400: train KL 0.0070448 held KL 7.7789 grad 0.00111
+03:53:10   [new_thin N] step 1600: train KL 0.0066956 held KL 7.7636 grad 0.000656
+03:53:25   [new_thin N] step 1800: train KL 0.0066587 held KL 7.7619 grad 0.00106
+03:53:39   [new_thin N] step 2000: train KL 0.0065411 held KL 7.7611 grad 0.000651
+03:53:40 READ new_thin N: unseen share 0.12383679371488966 kl_share 0.16117532629010756 | seen share 0.952020894166959 kl_share 0.9867366398974615 | KL(F||G*) train 0.0065362 seen 0.15625 unseen 7.9534, KL(F||M) unseen 9.4817; flat_rel 0.0177; fit 144 s (0.072 s/step)
+03:53:40 GATE N: {"exact": {"x2": [0.9959983275371489], "x10": [0.995451928171802]}, "new": {"new_few": 0.10498413835045275, "new_thin": 0.12383679371488966}, "exact_ok": true, "new_ok": true, "separated": true}
+03:53:40 CONTROLS N DONE
+03:53:40 e62/copy_s0: F's gain 12.649603, E231's 12.6496047 (rel 1.37e-07)
+03:53:40   [e62/copy_s0 N] step 1: train KL 6.7256 held KL 7.8778 grad 3.62
+03:53:55   [e62/copy_s0 N] step 200: train KL 0.35643 held KL 0.036744 grad 0.00151
+03:54:09   [e62/copy_s0 N] step 400: train KL 0.0020533 held KL 0.017606 grad 0.000762
+03:54:23   [e62/copy_s0 N] step 600: train KL 0.0012423 held KL 0.015595 grad 0.0016
+03:54:38   [e62/copy_s0 N] step 800: train KL 0.00090239 held KL 0.014655 grad 0.00144
+03:54:52   [e62/copy_s0 N] step 1000: train KL 0.001972 held KL 0.015508 grad 0.000799
+03:55:06   [e62/copy_s0 N] step 1200: train KL 0.00089537 held KL 0.015701 grad 0.000437
+03:55:21   [e62/copy_s0 N] step 1400: train KL 0.00070548 held KL 0.01575 grad 0.000385
+03:55:35   [e62/copy_s0 N] step 1600: train KL 0.0006578 held KL 0.016034 grad 0.000629
+03:55:50   [e62/copy_s0 N] step 1800: train KL 0.00063253 held KL 0.016138 grad 0.000214
+03:56:04   [e62/copy_s0 N] step 2000: train KL 0.0006058 held KL 0.016133 grad 0.000252
+03:56:05 READ e62/copy_s0 N: unseen share 0.9587563899889299 kl_share 0.9969838699215078 | seen share 0.9874288844132943 kl_share 0.9904801312006184 | KL(F||G*) train 0.00061678 seen 0.072287 unseen 0.024771, KL(F||M) unseen 8.2127; flat_rel 0.0422; fit 144 s (0.072 s/step)
+03:56:05 e62/copy_s1: F's gain 12.6359401, E231's 12.6359397 (rel 3.4e-08)
+03:56:05   [e62/copy_s1 N] step 1: train KL 6.7227 held KL 7.8493 grad 3.62
+03:56:20   [e62/copy_s1 N] step 200: train KL 0.35899 held KL 0.02704 grad 0.00175
+03:56:34   [e62/copy_s1 N] step 400: train KL 0.0031505 held KL 0.022728 grad 0.0448
+03:56:48   [e62/copy_s1 N] step 600: train KL 0.0027632 held KL 0.023892 grad 0.000877
+03:57:03   [e62/copy_s1 N] step 800: train KL 0.0023406 held KL 0.021836 grad 0.00445
+03:57:17   [e62/copy_s1 N] step 1000: train KL 0.0012179 held KL 0.02071 grad 0.00215
+03:57:31   [e62/copy_s1 N] step 1200: train KL 0.0009876 held KL 0.019944 grad 0.000723
+03:57:46   [e62/copy_s1 N] step 1400: train KL 0.0010588 held KL 0.019797 grad 0.000738
+03:58:00   [e62/copy_s1 N] step 1600: train KL 0.00085098 held KL 0.019666 grad 0.000403
+03:58:15   [e62/copy_s1 N] step 1800: train KL 0.00082605 held KL 0.019502 grad 0.000294
+03:58:29   [e62/copy_s1 N] step 2000: train KL 0.00079469 held KL 0.01952 grad 0.000312
+03:58:30 READ e62/copy_s1 N: unseen share 0.9695188481274749 kl_share 0.9967713630723639 | seen share 0.9825992797617809 kl_share 0.9838333262915719 | KL(F||G*) train 0.00078559 seen 0.12247 unseen 0.026393, KL(F||M) unseen 8.1748; flat_rel 0.038; fit 144 s (0.072 s/step)
+03:58:30 e62/copy_s2: F's gain 12.5470122, E231's 12.5470126 (rel 3.38e-08)
+03:58:30   [e62/copy_s2 N] step 1: train KL 6.7499 held KL 7.876 grad 3.62
+03:58:45   [e62/copy_s2 N] step 200: train KL 0.36083 held KL 0.021934 grad 0.00382
+03:58:59   [e62/copy_s2 N] step 400: train KL 0.0026288 held KL 0.017591 grad 0.00163
+03:59:13   [e62/copy_s2 N] step 600: train KL 0.0026161 held KL 0.016736 grad 0.00162
+03:59:28   [e62/copy_s2 N] step 800: train KL 0.0011815 held KL 0.016643 grad 0.000562
+03:59:42   [e62/copy_s2 N] step 1000: train KL 0.00099715 held KL 0.016861 grad 0.000382
+03:59:57   [e62/copy_s2 N] step 1200: train KL 0.00083761 held KL 0.016801 grad 0.000659
+04:00:11   [e62/copy_s2 N] step 1400: train KL 0.00071566 held KL 0.016756 grad 0.000284
+04:00:25   [e62/copy_s2 N] step 1600: train KL 0.00065655 held KL 0.016689 grad 0.000324
+04:00:40   [e62/copy_s2 N] step 1800: train KL 0.00065789 held KL 0.016637 grad 0.000199
+04:00:54   [e62/copy_s2 N] step 2000: train KL 0.00064182 held KL 0.016643 grad 0.000302
+04:00:55 READ e62/copy_s2 N: unseen share 0.9687308423661921 kl_share 0.9969584848814925 | seen share 0.9956157253692226 kl_share 0.9756224087835317 | KL(F||G*) train 0.00064432 seen 0.18605 unseen 0.024975, KL(F||M) unseen 8.2114; flat_rel 0.0244; fit 144 s (0.072 s/step)
+04:00:55 e62/lookup_s0: F's gain 15.3643977, E231's 15.3643975 (rel 9.62e-09)
+04:00:55   [e62/lookup_s0 N] step 1: train KL 8.8742 held KL 8.3376 grad 1.51
+04:01:10   [e62/lookup_s0 N] step 200: train KL 0.74023 held KL 11.169 grad 0.00207
+04:01:24   [e62/lookup_s0 N] step 400: train KL 0.0032052 held KL 10.199 grad 0.00203
+04:01:38   [e62/lookup_s0 N] step 600: train KL 0.0024579 held KL 9.5005 grad 0.0032
+04:01:53   [e62/lookup_s0 N] step 800: train KL 0.0016525 held KL 9.0742 grad 0.00105
+04:02:07   [e62/lookup_s0 N] step 1000: train KL 0.0014841 held KL 8.7099 grad 0.000501
+04:02:21   [e62/lookup_s0 N] step 1200: train KL 0.0012573 held KL 8.5195 grad 0.000415
+04:02:36   [e62/lookup_s0 N] step 1400: train KL 0.0011708 held KL 8.3983 grad 0.00083
+04:02:50   [e62/lookup_s0 N] step 1600: train KL 0.0011171 held KL 8.3394 grad 0.000433
+04:03:05   [e62/lookup_s0 N] step 1800: train KL 0.0010914 held KL 8.3115 grad 0.000438
+04:03:19   [e62/lookup_s0 N] step 2000: train KL 0.0010672 held KL 8.3089 grad 0.000404
+04:03:20 READ e62/lookup_s0 N: unseen share 0.019831554545306173 kl_share 0.03696796995328866 | seen share 0.9871077344784097 kl_share 0.9995556579899428 | KL(F||G*) train 0.0010787 seen 0.0036759 unseen 8.0445, KL(F||M) unseen 8.3533; flat_rel 0.0222; fit 144 s (0.072 s/step)
+04:03:20 e62/lookup_s1: F's gain 14.9877274, E231's 14.9877272 (rel 1.65e-08)
+04:03:20   [e62/lookup_s1 N] step 1: train KL 8.9039 held KL 8.3357 grad 1.51
+04:03:35   [e62/lookup_s1 N] step 200: train KL 0.74042 held KL 10.983 grad 0.00226
+04:03:49   [e62/lookup_s1 N] step 400: train KL 0.0038087 held KL 9.7139 grad 0.00179
+04:04:03   [e62/lookup_s1 N] step 600: train KL 0.0027567 held KL 8.6881 grad 0.00212
+04:04:18   [e62/lookup_s1 N] step 800: train KL 0.0021258 held KL 7.9304 grad 0.00931
+04:04:32   [e62/lookup_s1 N] step 1000: train KL 0.0017789 held KL 7.37 grad 0.00105
+04:04:47   [e62/lookup_s1 N] step 1200: train KL 0.001354 held KL 7.0696 grad 0.000466
+04:05:01   [e62/lookup_s1 N] step 1400: train KL 0.0012444 held KL 6.902 grad 0.000647
+04:05:15   [e62/lookup_s1 N] step 1600: train KL 0.0012237 held KL 6.7984 grad 0.000354
+04:05:30   [e62/lookup_s1 N] step 1800: train KL 0.0012026 held KL 6.7623 grad 0.000359
+04:05:44   [e62/lookup_s1 N] step 2000: train KL 0.0011591 held KL 6.7578 grad 0.00039
+04:05:45 READ e62/lookup_s1 N: unseen share 0.11880069460863293 kl_share 0.21962456818343867 | seen share 0.9930565183312811 kl_share 0.9989089701548386 | KL(F||G*) train 0.0011674 seen 0.0089988 unseen 6.5199, KL(F||M) unseen 8.3548; flat_rel 0.0362; fit 144 s (0.072 s/step)
+04:05:45 e62/lookup_s2: F's gain 15.3313526, E231's 15.3313523 (rel 1.56e-08)
+04:05:45   [e62/lookup_s2 N] step 1: train KL 8.9697 held KL 8.3439 grad 1.53
+04:05:59   [e62/lookup_s2 N] step 200: train KL 0.73941 held KL 12.2 grad 0.00161
+04:06:14   [e62/lookup_s2 N] step 400: train KL 0.0017712 held KL 11.182 grad 0.000742
+04:06:28   [e62/lookup_s2 N] step 600: train KL 0.0012714 held KL 10.49 grad 0.000937
+04:06:42   [e62/lookup_s2 N] step 800: train KL 0.0010116 held KL 10.022 grad 0.000359
+04:06:57   [e62/lookup_s2 N] step 1000: train KL 0.00087944 held KL 9.6479 grad 0.000466
+04:07:11   [e62/lookup_s2 N] step 1200: train KL 0.00075793 held KL 9.3753 grad 0.000662
+04:07:26   [e62/lookup_s2 N] step 1400: train KL 0.00072433 held KL 9.2216 grad 0.000364
+04:07:40   [e62/lookup_s2 N] step 1600: train KL 0.00068722 held KL 9.151 grad 0.000247
+04:07:54   [e62/lookup_s2 N] step 1800: train KL 0.0006748 held KL 9.1107 grad 0.000308
+04:08:09   [e62/lookup_s2 N] step 2000: train KL 0.00067538 held KL 9.1034 grad 0.000312
+04:08:09 READ e62/lookup_s2 N: unseen share -0.02028980237789863 kl_share -0.038213500525345445 | seen share 0.9876160308676927 kl_share 0.9997403178865594 | KL(F||G*) train 0.00066216 seen 0.0021521 unseen 8.677, KL(F||M) unseen 8.3576; flat_rel 0.000854; fit 143 s (0.072 s/step)
+04:08:09 SCORE N: {"unseen": {"copy": [0.9587563899889299, 0.9695188481274749, 0.9687308423661921], "lookup": [0.019831554545306173, 0.11880069460863293, -0.02028980237789863], "copy_mean": 0.9656686934941989, "lookup_mean": 0.03944748225868016, "gap": 0.9262212112355188}, "seen": {"copy": [0.9874288844132943, 0.9825992797617809, 0.9956157253692226], "lookup": [0.9871077344784097, 0.9930565183312811, 0.9876160308676927], "copy_mean": 0.9885479631814326, "lookup_mean": 0.9892600945591278, "gap": -0.0007121313776952132}, "P": true}
+04:08:09 E62 N DONE
+04:08:09 E291 (P1.58 gain share, unseen cues) N DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/gain_share/results/unseen/ (and results/large/gains_unseen/) ===

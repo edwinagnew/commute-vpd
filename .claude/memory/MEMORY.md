@@ -109,7 +109,7 @@
 - [Never hold runs for the user overnight](feedback-never-hold-runs-for-user-overnight.md) — failed test + cheap next run: run descriptive and diagnose in parallel; ASK 57 hold idled leads 12 h (user, 2026-11-21)
 - [whip-lead approves small reruns](feedback-whip-lead-approves-small-reruns.md) — reopen/approve cheap reruns myself and FYI; new directions and definitions still to the user (user, 2026-11-22)
 - [Decisions propagate same day](feedback-scope-change-means-restructure.md) — a claim/scope/definition decision → same-day paper restructure task AND research-log update; check both each full check (user, 2026-11-22)
-- [Audit drops on restructure](feedback-audit-drops-on-restructure.md) — after a paper restructure/definition change, diff old vs new for silently dropped featurizations/readings; re-read under current definition (user, 2026-11-23)
+- [Audit drops on restructure](feedback-audit-drops-on-restructure.md) — after restructure/definition change or a new reading: diff for dropped featurizations AND old tasks (emoticon miss 11-23); re-read under current definition
 - [Literature methods: spec first](feedback-literature-methods-spec-first.md) — quoted method spec + departures table, redteam + GPT check before code; adaptations named as ours; cite matching methods (ADL/Venhoff episode, user 2026-11-23)
 - [Poster templates](reference-poster-templates.md) — Drive folder of recommended poster templates for the poster after the paper (user, 2026-11-23)
 - [Avoid paper merge conflicts](feedback-avoid-paper-merge-conflicts.md) — pull right before editing and committing in the paper repo; rebuild main.pdf after merges; diff vs origin after (user, 2026-11-23)
