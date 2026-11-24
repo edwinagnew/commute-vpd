@@ -1,0 +1,26 @@
+E287 (eapig_overlap) start, stages [0, 1, 2, 3, 4], scratch /ephemeral/e.agnew/eapig_overlap/64832
+Traceback (most recent call last):
+  File "/mnt/nw/home/e.agnew/commute-agents/definition-lead/experiments/eapig_overlap/eap_worker.py", line 29, in <module>
+    import eap.attribute
+  File "/ephemeral/e.agnew/eapig_overlap/64832/stage/eap/attribute.py", line 12, in <module>
+    from .graph import Graph, InputNode, LogitNode, AttentionNode, MLPNode
+  File "/ephemeral/e.agnew/eapig_overlap/64832/stage/eap/graph.py", line 129, in <module>
+    class Graph:
+  File "/ephemeral/e.agnew/eapig_overlap/64832/stage/eap/graph.py", line 546, in Graph
+    ) -> pgv.AGraph:
+  File "/ephemeral/e.agnew/eapig_overlap/64832/stage/pygraphviz.py", line 8, in __getattr__
+    raise ImportError(f"pygraphviz.{name}: pygraphviz is not installed in the P2.69 venv (graph drawing is not used)")
+ImportError: pygraphviz.AGraph: pygraphviz is not installed in the P2.69 venv (graph drawing is not used)
+Traceback (most recent call last):
+  File "/mnt/nw/home/e.agnew/commute-agents/definition-lead/experiments/eapig_overlap/run.py", line 427, in <module>
+    code = main(args.stages, args.scratch)
+  File "/mnt/nw/home/e.agnew/commute-agents/definition-lead/experiments/eapig_overlap/run.py", line 401, in main
+    run.stage0()
+    ~~~~~~~~~~^^
+  File "/mnt/nw/home/e.agnew/commute-agents/definition-lead/experiments/eapig_overlap/run.py", line 262, in stage0
+    out["worker"] = hello = self.call("hello")
+                            ~~~~~~~~~^^^^^^^^^
+  File "/mnt/nw/home/e.agnew/commute-agents/definition-lead/experiments/eapig_overlap/run.py", line 177, in call
+    raise WorkerError(f"{op}: the worker exited (code {w.poll()})")
+WorkerError: hello: the worker exited (code None)
+=== FINISHED (exit 1) — results in /mnt/nw/home/e.agnew/commute-agents/definition-lead/experiments/eapig_overlap/results ===
