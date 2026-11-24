@@ -134,6 +134,15 @@ def order(rs: list[dict[str, Any]]) -> dict[str, Any]:
     return out
 
 
+def sae_x2(rs: list[dict[str, Any]]) -> dict[str, Any]:
+    """The filed sae_x2_expected: SAE x2's E_b over K strictly between lo and hi, K non-empty."""
+    e = json.loads((RESULTS / "predictions.json").read_text())["sae_x2_expected"]
+    r = next((r for r in rs if r["feat"] == "SAE" and r["state"] == SET["control"]), None)
+    if r is None:
+        return {"held": None, "why": "not read"}
+    return {"E_b_K": r["E_b_K"], "size_K": r["size_K"], "lo": e["lo"], "hi": e["hi"], "held": e["lo"] < r["E_b_K"] < e["hi"] and r["size_K"] > 0}
+
+
 def main(old_path: Path) -> None:
     rs, missing = rows()
     old = old_values(old_path)
@@ -144,7 +153,7 @@ def main(old_path: Path) -> None:
     moved = [p for p in pt if "move" in p and abs(p["move"]) > GAP]
     out = {"experiment": "E298", "sources": EB.check_sources(argparse.Namespace(**{k: tuple(v) if isinstance(v, list) else v for k, v in SET.items()})),
            "n_rows": len(rs), "missing": missing, "reused_gives_old": {"checked": len(repro), "differ": bad}, "per_task": pt,
-           "moved_over_gap": moved, "max_move": max((abs(p["move"]) for p in pt if "move" in p), default=None), "order": order(rs),
+           "sae_x2_expected": sae_x2(rs), "moved_over_gap": moved, "max_move": max((abs(p["move"]) for p in pt if "move" in p), default=None), "order": order(rs),
            "reading": None if missing else "rival A (a per-task value moved > 0.05)" if moved else "rival B (none moved > 0.05)", "rows": rs}  # fmt: skip
     (RESULTS / "summary.json").write_text(json.dumps(out, indent=1))
     cols = ["feat", "block", "item", "side", "value", "field", "source", "value_no_leftover", "leftover_share"]
@@ -153,6 +162,7 @@ def main(old_path: Path) -> None:
         w.writeheader()
         w.writerows(rs)
     print(json.dumps({k: v for k, v in out.items() if k not in ("rows", "per_task")}, indent=1))
+    print(f"filed SAE x2 expectation (lo < E_b over K < hi, K non-empty) held: {out['sae_x2_expected']['held']}")
     print(f"{len(rs)} rows, {len(missing)} missing; reused values give the old figure's back: {len(repro) - len(bad)} of {len(repro)}")
 
 

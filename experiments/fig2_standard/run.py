@@ -13,11 +13,15 @@ leftover, first_pair, flips); an item already written is skipped.
 Stages, per featurization (--feat), cheapest first; each part of stage 0 writes results/stage0/<feat>_<part>_<tag>.json
 and is skipped once done, so a killed job resumes; any miss stops the job:
     0   do_nothing (F = M on the built world: 0 changed, dd max 0.0, E_b 1.0); identity (x' = x on the control's first
-        `examples` windows: 0 argmax changes, the largest logit deviation is the floor); repro_<item> (each filed saved
+        `examples` windows: 0 argmax changes, the largest logit deviation is the floor); must_flip (SAE only, added
+        2026-11-24 at redteam-lead's request: on the control's 256 pairs every latent and error term at every site and
+        the token embedding swapped from x' at once rebuild F's run on x', so every read argmax is F's on x', and some
+        case has F's argmax on x and x' differ); repro_<item> (each filed saved
         item read again through this driver, E_b within repro_rel_tol[feat] of the saved value, relative; a null
         tolerance is the rehearsal: the deviation is measured and printed, and stage 1 refuses to start)
     1   do_nothing and identity on this job's card, then the filed items read[feat] (or --items), every N-th from the
-        I-th with --shard. Its items count only once the same featurization's stage 0 passed with the tolerance filed
+        I-th with --shard. Its items count only once the same featurization's stage 0 passed with the tolerance filed;
+        an empty K at the SAE control stops the job
 
     python experiments/fig2_standard/run.py --feat sae --stage 0
     python experiments/fig2_standard/run.py --feat sae --stage 1 --shard 0 4
@@ -123,6 +127,8 @@ def read_item(feat: str, rd: Any, worlds: Any, item: str, cfg: Config) -> dict[s
     out = {"experiment": EXPERIMENT, "feat": feat, "item": item, "n_windows": len(toks), "window_len": toks.shape[1],
            "n_read_positions": run.top.shape[1], "n_pairs": len(ex), "examples": m} | EB.readings(num, den, dd, ch, left, K)  # fmt: skip
     out |= {"margin_median": float(mg.median()), "margin_min": float(mg.min()), "max_dev": sc.max_dev, "cases_run": sc.rows} | rec
+    if feat == "sae" and item == cfg.control and not K.any():  # E263 read x2's K* at 0.97: an empty K is a scan bug
+        stop(path.with_name(f"{fname(item)}.stopped.json"), out, f"{feat} {item}: K is empty")
     (RESULTS / "large" / feat).mkdir(parents=True, exist_ok=True)
     np.savez_compressed(RESULTS / "large" / feat / f"{fname(item)}.npz", num=num.numpy(), den=den.numpy(), dd=dd.numpy(), changed=ch.numpy(),
                         in_K=K.numpy(), leftover=left.numpy(), first_pair=sc.first_pair.numpy(), flips=sc.flips.numpy())  # fmt: skip
@@ -172,6 +178,22 @@ def identity(rd: Any, worlds: Any, cfg: Config) -> tuple[dict[str, Any], list[st
     return out, [f"{out['flips']} argmax changes"] if out["flips"] else []
 
 
+def must_flip(rd: Any, worlds: Any, cfg: Config) -> tuple[dict[str, Any], list[str]]:
+    """Positive control (SAE): on the control's 256 pairs every variable at every site swapped from x' into x at once
+    (and the token embedding) must give F's argmax on x' at every read position, so every case where F's argmax on x
+    and on x' differ flips."""
+    F, M, toks, at, _ = worlds.make(cfg.control)
+    st = rd.state(F, M, toks, worlds.of(cfg.control))
+    run = rd.cache(st, F, toks, at, cfg.cache_batch)
+    ex, pt = (i.to(run.top.device) for i in IX.derangements(len(toks), cfg.derangements, min(cfg.examples, len(toks)), cfg.seed))
+    top, dev = rd.must_flip(st, F, run, at, ex, pt, cfg)
+    differ, want = run.top[ex] != run.top[pt], run.top[pt]
+    out = {"item": cfg.control, "cases": differ.numel(), "n_differ": int(differ.sum()), "n_flipped": int((top == want)[differ].sum()),
+           "n_off_x_prime": int((top != want).sum()), "max_dev": dev}  # fmt: skip
+    miss = ["no case has F's argmax on x and x' differ: the control is empty"] if not out["n_differ"] else []
+    return out, miss + ([f"{out['n_off_x_prime']} read cases off F's argmax on x' ({out['n_flipped']} of {out['n_differ']} flipped)"] if out["n_off_x_prime"] else [])
+
+
 def rel(a: float, b: float) -> float:
     return abs(a - b) / abs(b) if b else abs(a - b)
 
@@ -203,6 +225,8 @@ def stage0(feat: str, rd: Any, worlds: Any, cfg: Config, with_repro: bool, tag: 
     its own card); True when stage 1 may run (the tolerance filed)."""
     part(feat, "do_nothing", tag, lambda: do_nothing(rd, worlds, cfg))
     idn = part(feat, "identity", tag, lambda: identity(rd, worlds, cfg))
+    if feat == "sae":  # the swap code new here; VPD's and the neurons' scans ran in E268 and E277
+        part(feat, "must_flip", tag, lambda: must_flip(rd, worlds, cfg))
     for r in cfg.repro[feat] if with_repro else []:
         part(feat, f"repro_{fname(r['item'])}", tag, lambda r=r: repro(feat, rd, worlds, r, cfg))
     filed = cfg.repro_rel_tol[feat] is not None
