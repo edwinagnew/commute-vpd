@@ -23,8 +23,8 @@ residual share 1 - (gains alone)/(gain) (0 for g, 1 for ft), the residual's size
   (`lowercase.task`, Pile train rows 0-4095), read rows E136's (Pile val). The stop reads the read rows (as E231),
   so the matched gain is matched where it is read; it is not a held-out estimate of the task.
 - **Precision.** Procedural training and every read in fp32 (TF32 off), as E256 and E268; lowercase trains under bf16
-  autocast as E53. States are saved in bf16 (as E256), and every reading reads the saved file. The bf16 rounding of a
-  gains-only state is the one thing that can move its E_b off 1: stage 0 (e) measures it.
+  autocast as E53. States are saved in bf16 (as E256), and every reading reads the saved file. The bf16 rounding and
+  the definition's minimum-norm split can both move a gains-only state's E_b off 1: stage 0 (e) measures it.
 - **Memory and host RAM.** One 67M model plus E268's world (E275 peak 8.5 GB GPU per item, rb_states items), a clone
   per E_b item, the reader's steering grid. Host: E268's world loads E242's inventories (E275 pods ran on 64 GB hosts).
   The rehearsal records peak GPU per part.
@@ -44,7 +44,7 @@ residual share 1 - (gains alone)/(gain) (0 for g, 1 for ft), the residual's size
   a lost pod costs at most one part. A stopped record is cleared and retried on a rerun.
 - **Controls and references.** Stage 0 on every pod's first task, alone; the Gaussian is the first state read and the
   first E_b of seed 0; the gains-only arm is the first E_b of every item (its E_b over changed variables must stay
-  at least 1 - eb_gain_tol, else the job stops). Saved SFT and RL states are placed from their saved readings, the
+  at least eb_gain_min, else the job stops). Saved SFT and RL states are placed from their saved readings, the
   same reader code (E211's `Reader`, E264's lens arithmetic, E268's scan settings) on the same rows.
 - **Predictions.** The rule is total: every task is readable or not, every reading has a rho or is undefined, the
   verdict is rival a, rival b or no call (score.py run on the edge cases below).
@@ -64,17 +64,24 @@ floor 1). Measured, not sourced (amended after the rehearsal, before the paid ru
 - **betas**: of rehearse_betas (1e1 ... 1e6), the three whose median residual share over the four tasks' calibrate
   runs is nearest 0.25, 0.5 and 0.75. If no beta lands between 0.1 and 0.9 on a task, that task's dial has two ends
   and no middle: the lead is told before the paid run.
-- **eb_gain_tol**: 3 x stage 0 (e)'s measured shortfall 1 - E_b of the random gains state, at least 1e-4.
+- **eb_gain_min**: half of stage 0 (e)'s measured E_b of the random gains state (provisional 0.5). It is a bug bar, not
+  1: the definition's least-squares split takes the minimum-norm change over every subcomponent, which can spread one
+  subcomponent's gain over others that overlap it (E247's head gain x2 reads 0.76 over K, E268). If the measured value
+  is far under 1, E_b cannot certify the gains-only end as fully kept; the dial's sanity check is then only that E_b
+  falls along it, and definition-lead is told.
 Departures: a gain per VPD subcomponent rather than per neuron (E231) or per (IA)^3 site, because the definition reads
 VPD variables; rates and clip as the sources, per parameter group.
 
 ## Gate 3: rehearsal ($0, cluster debug QoS, one L40, `E### rehearse: reuse dial`)
 Full read sizes, the real model (it fits a cluster card); only step caps reduced.
-1. `run.py calibrate <task> --tag c<task>` for each of the four tasks (stage 0 runs first in the first): stage 0 in
-   full; the gains-only seed-0 arm to its full cap (its plateau); every rehearse beta and beta 0 to the target. Writes
-   results/rehearse/calibrate_<task>.json. Measures: plateau, target, residual share per beta, s/step per arm, peak GPU.
-   Expected minutes: procedural ~5 each, lowercase ~25.
-2. `run.py rehearse --tag r0`, twice: item (addition, seed 0) with every arm capped at 40 steps, the Gaussian, every
+1. Two jobs at once (`cluster/reuse_dial.sbatch calibrate addition sequence brackets` and `... calibrate lowercase`):
+   stage 0 in full on the first task; per task the gains-only seed-0 arm to its full cap (its plateau); every rehearse
+   beta, beta 0 with gains, and the ordinary arm to the target. Writes results/rehearse/calibrate_<task>.json as each
+   arm ends. Measures: plateau, target, residual share per beta, step-1 gain, s/step per arm, peak GPU. Expected
+   minutes: procedural ~30 for the three, lowercase up to ~60.
+2. `cluster/reuse_dial.sbatch rehearse` (`run.py rehearse --tag r0`, twice), in parallel with the calibrate jobs at
+   the placeholder target (the ordinary arm reached E256's gain in 29-31 steps on addition, under the 40-step cap):
+   item (addition, seed 0) with every arm capped at 40 steps, the Gaussian, every
    state read in full and E_b'd over K in full at the full read sizes (256 windows x 64 tokens, 4 x 64 pairs). The second
    run must log "done before, skipped" for every part (the resume). Then the tar's download to the dev node and its
    sha256. The full E_b scan runs on the two ends of the dial only (settings.rehearse_eb_arms g and ft; every other
@@ -89,11 +96,11 @@ Full read sizes, the real model (it fits a cluster card); only step caps reduced
 - Stage 0 (each pod, first, alone; exit 1 on a miss): (a) the dial's start: logits bit-identical (fp32 and autocast),
   export exactly 0; (b) a random dial's export within 1e-3 of its hooked change, shuffled at least 0.1; (c) a zero
   update: every reader numerator exactly 0, KL exactly 0; (d) the do-nothing: 0 changed, every dd 0, E_b = 1;
-  (e) a random gains-only state reads E_b over its changed variables at least 1 - eb_gain_tol, its Gaussian at most
+  (e) a random gains-only state reads E_b over its changed variables at least eb_gain_min, its Gaussian at most
   0.05; (f) the identity scan: 0 argmax changes; it prints the estimated seconds per E_b item.
 - Step 1 of every arm: its gain under 0.5 x the target, else stop (`train_arm`).
 - Each Gaussian: gain under 1 log-odds, else stop (E256's do-nothing stop).
-- Each item's gains-only state: E_b over its changed variables at least 1 - eb_gain_tol, else stop; it is the first E_b.
+- Each item's gains-only state: E_b over its changed variables at least eb_gain_min, else stop; it is the first E_b.
 - Logged at every step of every arm: loss, penalty, both gradient norms, the read-row gain.
 
 ## Gate 5: review

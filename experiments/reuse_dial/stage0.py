@@ -76,15 +76,15 @@ def do_nothing(W: Any) -> dict[str, Any]:
     return {"n_changed": len(feat.changed), "dd_max": float(dd.abs().max()), "E_b": SI.explained_share(num, den, dd, ch)}
 
 
-def construction(W: Any, t: Any, gen: torch.Generator, eb_state: Any, save_dw: Any) -> dict[str, Any]:
+def construction(W: Any, t: Any, gen: torch.Generator, eb_state: Any, save_dw: Any, tag: str) -> dict[str, Any]:
     """(e), (f): a random gains-only state and a Gaussian at its norms, saved in bf16 as every state is, read on the
     task's D: E_b over every changed variable; then E268's identity scan on the gains-only F (floor and rate)."""
     g = DL.delta(W.b, random_dial(W, gen, False))
     out: dict[str, Any] = {}
-    for name, dW in (("stage0_gains", g), ("stage0_gauss", FT.random_direction(g, W.cfg.random_seed))):
-        rec = save_dw(W, name, dW)
-        out[name] = eb_state(W, t, rec, name, scan=False) | {"size": update_size(dW, W.net.W0)}
-    F, M, toks, at, _ = W.w.from_dw(W.large / "states" / "stage0_gains.pt", t.D, t.at)
+    for key, dW in (("gains", g), ("gauss", FT.random_direction(g, W.cfg.random_seed))):
+        rec = save_dw(W, f"stage0_{tag}_{key}", dW)
+        out[key] = eb_state(W, t, rec, f"stage0_{tag}_{key}", scan=False) | {"size": update_size(dW, W.net.W0)}
+    F, M, toks, at, _ = W.w.from_dw(W.large / "states" / f"stage0_{tag}_gains.pt", t.D, t.at)
     feat = KV.featurize(M, F, W.w.uv, W.w.delta, W.w.bases)
     kc = W.kc
     idn = IX.identity_scan(F, feat, toks, at, kc.examples, kc.ident_vars, kc.rows, kc.logit_rows, kc.cache_batch, print)
@@ -92,10 +92,10 @@ def construction(W: Any, t: Any, gen: torch.Generator, eb_state: Any, save_dw: A
     return out | {"identity": idn, "est_scan_seconds": est}
 
 
-def run(W: Any, task: str, eb_state: Any, save_dw: Any) -> dict[str, Any]:
+def run(W: Any, task: str, tag: str, eb_state: Any, save_dw: Any) -> dict[str, Any]:
     t, gen = W.task(task), torch.Generator().manual_seed(W.cfg.random_seed)
     return {"task": t.name, "card": torch.cuda.get_device_name() if torch.cuda.is_available() else "cpu", "bits": bits(W, t), "export": export(W, t, gen),
-            "zeros": zeros(W, t), "do_nothing": do_nothing(W), "construction": construction(W, t, gen, eb_state, save_dw)}  # fmt: skip
+            "zeros": zeros(W, t), "do_nothing": do_nothing(W), "construction": construction(W, t, gen, eb_state, save_dw, tag)}  # fmt: skip
 
 
 def misses(o: dict[str, Any], th: dict[str, Any]) -> list[str]:
@@ -104,7 +104,7 @@ def misses(o: dict[str, Any], th: dict[str, Any]) -> list[str]:
     m += [f"(b) the export is not the dial: {e}"] if not (e["equiv"] <= th["equiv_tol"] and e["shuffled"] >= th["perm_min"]) else []
     m += [f"(c) a zero update reads non-zero: {z}"] if z["nonzero_numerators"] or z["kl"] != 0 else []
     m += [f"(d) the do-nothing: {dn}"] if not (dn["n_changed"] == 0 and dn["dd_max"] == 0 and dn["E_b"] == 1) else []
-    m += [f"(e) gains only reads E_b {c['stage0_gains']['E_b_changed']}"] if not c["stage0_gains"]["E_b_changed"] >= 1 - th["eb_gain_tol"] else []
-    m += [f"(e) the Gaussian reads E_b {c['stage0_gauss']['E_b_changed']}"] if not c["stage0_gauss"]["E_b_changed"] <= th["eb_random_max"] else []
+    m += [f"(e) gains only reads E_b {c['gains']['E_b_changed']}"] if not c["gains"]["E_b_changed"] >= th["eb_gain_min"] else []
+    m += [f"(e) the Gaussian reads E_b {c['gauss']['E_b_changed']}"] if not c["gauss"]["E_b_changed"] <= th["eb_random_max"] else []
     m += [f"(f) identity scan: {c['identity']['flips']} argmax changes"] if c["identity"]["flips"] else []
     return m

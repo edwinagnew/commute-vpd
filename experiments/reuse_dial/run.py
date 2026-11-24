@@ -21,7 +21,8 @@ Stage 0 (filed values in thresholds): (a) the dial's start changes no bit of the
 exports exactly 0; (b) a random dial's export reproduces its hooked logits within equiv_tol and a shuffled one does not
 (perm_min); (c) E211's zero check (every reader numerator exactly 0) and E256's lens/KL zero; (d) the do-nothing reads
 E_b = 1 with no changed variable; (e) a random gains-only state reads E_b over every changed variable at least
-1 - eb_gain_tol (the dial's construction under the definition), the Gaussian under eb_random_max; (f) E268's identity
+eb_gain_min (the dial's construction under the definition; under 1 where the definition's least-squares split spreads
+one subcomponent's gain over overlapping ones), the Gaussian under eb_random_max; (f) E268's identity
 scan on that state: no argmax change (its largest deviation is the floor; its rate the seconds per item).
 
     PRED_SHA=<sha> python experiments/reuse_dial/run.py pod 0 9 --tag p0 2>&1 | tee -a experiments/reuse_dial/results/pod0.log
@@ -352,8 +353,8 @@ def item(W: World, task: str, seed: int, cap: int | None, th: dict[str, Any], eb
     for n in [n for n in eb if eb_arms is None or got(W, n)["arm"] in eb_arms]:
         (W.large / "eb").mkdir(parents=True, exist_ok=True)
         e = part(W, n, "eb", lambda r, n=n: eb_state(W, t, r["train"], n))["eb"]
-        if n == names["g"] and not e["E_b_changed"] >= 1 - th["eb_gain_tol"]:
-            stop_state(W, n, f"{n}: gains only reads E_b {e['E_b_changed']:.6f} over its changed variables, under 1 - {th['eb_gain_tol']}")
+        if n == names["g"] and not e["E_b_changed"] >= th["eb_gain_min"]:
+            stop_state(W, n, f"{n}: gains only reads E_b {e['E_b_changed']:.6f} over its changed variables, under {th['eb_gain_min']}")
     pack(W, task, seed, states)
 
 
@@ -379,7 +380,7 @@ def stage0(W: World, task: str, th: dict[str, Any], tag: str) -> None:
     if manifest_only():
         return
     s0: Any = load_experiment("reuse_dial", "stage0")
-    out = s0.run(W, task, eb_state, save_dw)
+    out = s0.run(W, task, tag, eb_state, save_dw)
     miss = s0.misses(out, th)
     write_stage(path, jsonable(out | ({"stopped": "; ".join(miss)} if miss else {"done": True})))
     log(f"stage 0: {json.dumps(jsonable(out))}; {'MISSES ' + '; '.join(miss) if miss else 'checks hold'}")
@@ -393,15 +394,17 @@ def calibrate(W: World, task: str, th: dict[str, Any]) -> None:
     cfg, t = W.cfg, W.task(task)
     if manifest_only():
         return
-    g = train_arm(W, t, ("cal_g", True, False, math.inf), 0, math.inf, cfg.cap[task], th | {"step1_max": math.inf})
+    th = th | {"step1_max": math.inf}  # calibration records step 1 (curve[0]) rather than stopping on it
+    g = train_arm(W, t, ("cal_g", True, False, math.inf), 0, math.inf, cfg.cap[task], th)
     plateau = max(c["gain"] for c in g["curve"])
     target = min(cfg.t_ref[task], cfg.plateau_frac * plateau)
     out: dict[str, Any] = {"task": task, "plateau": plateau, "t_ref": cfg.t_ref[task], "target": target, "g": {k: v for k, v in g.items() if k not in ("curve", "loss")}}
-    for b in (*cfg.rehearse_betas, 0.0):
-        r = train_arm(W, t, (f"cal_b{b:g}", True, True, b), 0, target, cfg.cap[task], th)
-        out[f"b{b:g}"] = {k: r[k] for k in ("steps", "reached", "gain_hooked", "gain_gains_alone", "residual_share", "residual_size", "size", "s_per_step")}
-        log(f"[calibrate {task} beta {b:g}] {json.dumps(jsonable(out[f'b{b:g}']))}")
-    write_stage(W.out / f"calibrate_{task}.json", jsonable(out))
+    for arm in [(f"b{b:g}", True, True, b) for b in (*cfg.rehearse_betas, 0.0)] + [("ft", False, True, 0.0)]:
+        r = train_arm(W, t, (f"cal_{arm[0]}", *arm[1:]), 0, target, cfg.cap[task], th)
+        out[arm[0]] = {k: r[k] for k in ("steps", "reached", "gain_hooked", "gain_gains_alone", "residual_share", "residual_size", "size", "s_per_step")}
+        out[arm[0]]["step1_gain"] = r["curve"][0]["gain"]
+        write_stage(W.out / f"calibrate_{task}.json", jsonable(out))
+        log(f"[calibrate {task} {arm[0]}] {json.dumps(jsonable(out[arm[0]]))}")
 
 
 def main() -> int:
@@ -418,7 +421,8 @@ def main() -> int:
     W = World(cfg, out)
     if a.job == "calibrate":
         stage0(W, a.args[0], th, a.tag)
-        calibrate(W, a.args[0], th)
+        for task in a.args:
+            calibrate(W, task, th)
     elif a.job == "rehearse":
         stage0(W, cfg.rehearse_task, th, a.tag)
         item(W, cfg.rehearse_task, cfg.seeds[0], cfg.rehearse_cap, th, cfg.rehearse_eb_arms)

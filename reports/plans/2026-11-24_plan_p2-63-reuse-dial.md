@@ -33,7 +33,9 @@ first step at or over the target. An arm that does not reach the target by its c
 dropped. A task with fewer than three dial levels reached is unreadable.
 
 **Expected values.** Do-nothing: every numerator and KL exactly 0, E_b = 1 with no changed variable. Gains only:
-E_b over its changed variables at least 0.99 by construction (the stage-0 check), re-gating share high. Random update
+E_b over its changed variables near 1 but not exactly: the definition's least-squares split can spread one
+subcomponent's gain over overlapping ones (E247's head gain x2 reads 0.76). Stage 0 measures it before any item; under
+0.5 stops the run, and a value well under 1 is told to definition-lead. Re-gating share high. Random update
 at matched size: gain under 1 log-odds, E_b about 0.01 (E268: 0.009 to 0.013 on these tasks). Ordinary fine-tune:
 E_b near E256's SFT over K, 0.025 to 0.06 (E268). The penalised arms fall in between, in beta's order.
 

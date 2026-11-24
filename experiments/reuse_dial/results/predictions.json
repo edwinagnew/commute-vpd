@@ -50,8 +50,8 @@
   "equiv_source": "E231's and E282's stage-0 bug bars (gain_only, gain_share predictions.json): an fp32 reassociation gives ~1e-6, a wrong orientation order 1",
   "step1_max": 0.5,
   "step1_max_source": "the ordinary fine-tune took 27-49 steps to E256's gain (train_<task>.json); a first step at half the target means the dial has no steps to separate its arms",
-  "eb_gain_tol": 0.01,
-  "eb_gain_tol_source": "PROVISIONAL: the gains-only state must read E_b over its changed variables of at least 0.99 (1 exactly in exact arithmetic; the bf16 export rounds the change at ~2^-9 relative). Stage 0 (e) measures the shortfall on the random gains state; amended to 3 x that shortfall (at least 1e-4) before the paid run",
+  "eb_gain_min": 0.5,
+  "eb_gain_min_source": "PROVISIONAL, a bug bar, not a reading: a gains-only state must read E_b over its changed variables far above a Gaussian's (~0.01, E268). It is not 1 by construction: the definition's least-squares split (kstar_vpd._site, split.least_squares_split) takes the minimum-norm write/read change over every subcomponent, which can spread one subcomponent's gain over others whose u or v overlap it, and the bf16 export rounds the change at ~2^-9 relative; E247's head gain x2 reads 0.76 (kstar_needed summary items.x2). Stage 0 (e) measures it on a random gains state in the rehearsal; then amended to half that measured value before the paid run",
   "eb_random_max": 0.05,
   "eb_random_max_source": "4 x the largest E_b of E268's matched Gaussians on these tasks (0.0129, experiments/kstar_needed/results/summary.json p256/*_random_*)",
   "min_gain": 1,
@@ -76,6 +76,6 @@
   "eb_check": "per task with E_b over K on its dial states: Spearman(E_b over K, d) <= eb_rho_max, else the task is flagged 'the dial does not move the definition' (reported; the rule above still reads it). Not evidence: E_b is close to a gain share by construction",
   "eb_rho_max": -0.6,
   "placement": "per task, each ordinary fine-tune, E256's saved SFT states and E256/E260's saved RL states (rl, rlg) are placed on the dial per reading: the dial level whose mean reading is nearest, and the fraction of dial states the reading puts on the reuse side of it; descriptive, beside each state's own gain against the target",
-  "edge_cases_checked": "score.py `rule` run on: every reading constant (do-nothing-like: all rho undefined, no task tracks, verdict 'rival b' when |R| >= 3 since no cheap reading beats KL... see plan appendix: the do-nothing never passes); one task only (no call); an arm missing on every task (shorter dial, min_levels still met with 4 of 5 levels); ties in d within a level (average ranks); KL undefined (|rho_KL| = 0)"
+  "edge_cases_checked": "score.py on made-up states (~/commute-data/scratch/compare-lead/p263-writer/stub.py, score_<case>.json, 2026-11-24): rival-a states -> 'rival a'; rival-b states (KL rises along the dial, share flat) -> 'rival b'; every reading constant -> every rho undefined, nothing tracks -> 'rival b'; two penalised arms missing on every task -> three levels, still readable, read as filed; one task only -> 'no call'. The do-nothing never enters a dial (it does not reach the target), so a run of do-nothings is 'no call'. Ties in d within a level: average ranks. KL undefined: |rho_KL| taken as 0"
  }
 }
