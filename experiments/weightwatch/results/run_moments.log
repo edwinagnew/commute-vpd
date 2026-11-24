@@ -1,0 +1,25 @@
+06:42:56 P2.73 weightwatch start: stage moments, shard None, 50 of 50 states
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+06:43:07 moments: batch 1 of 1563
+06:43:15 moments: batch 201 of 1563
+06:43:23 moments: batch 401 of 1563
+06:43:31 moments: batch 601 of 1563
+06:43:39 moments: batch 801 of 1563
+06:43:47 moments: batch 1001 of 1563
+06:43:54 moments: batch 1201 of 1563
+06:44:02 moments: batch 1401 of 1563
+06:44:09 MOMENTS h.0.attn.o_proj: tr C 0.687581, position-0 share 0.0178, mean share 0.57, d lam_min/trC 1.099e-07, d lam_max/trC 485.2, a_G 0.8554
+06:44:09 MOMENTS h.0.mlp.down_proj: tr C 37.5127, position-0 share 0.01307, mean share 0.3728, d lam_min/trC 0.008684, d lam_max/trC 308.6, a_G 1.413
+06:44:09 MOMENTS h.1.attn.o_proj: tr C 13.1029, position-0 share 0.0195, mean share 0.1651, d lam_min/trC 7.005e-08, d lam_max/trC 145.7, a_G 1.991
+06:44:09 MOMENTS h.1.mlp.down_proj: tr C 403.866, position-0 share 0.9077, mean share 0.01227, d lam_min/trC 0.001255, d lam_max/trC 727.9, a_G 1.98
+06:44:09 MOMENTS h.2.attn.o_proj: tr C 55.8851, position-0 share 0.001444, mean share 0.3879, d lam_min/trC -4.439e-09, d lam_max/trC 347.4, a_G 1.03
+06:44:09 MOMENTS h.2.mlp.down_proj: tr C 77.8836, position-0 share 0.1328, mean share 0.07935, d lam_min/trC 0.02379, d lam_max/trC 149.1, a_G 1.04
+06:44:09 MOMENTS h.3.attn.o_proj: tr C 424, position-0 share 0.6067, mean share 0.1932, d lam_min/trC 3.461e-09, d lam_max/trC 495.1, a_G 0.4188
+06:44:09 MOMENTS h.3.mlp.down_proj: tr C 531.731, position-0 share 0.005635, mean share 0.1767, d lam_min/trC 0.03381, d lam_max/trC 180.1, a_G 0.7776
+06:44:09 MOMENTS DONE in 73 s
+06:44:09 P2.73 weightwatch: moments DONE
+peak host RSS 6.2 GB
+=== STAGE moments exit 0 ===

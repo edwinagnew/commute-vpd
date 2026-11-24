@@ -1,0 +1,16 @@
+07:30:17 P2.73 weightwatch start: stage trigger, shard None, 50 of 50 states
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+07:30:34 TRIGGER fit gamma 2^0: build windows flagged 1.0000, FPR 0.0002
+07:30:39 DIRECTIONS trigger: t 1 {"h.0.attn.o_proj": 0, "h.0.mlp.down_proj": 0, "h.1.attn.o_proj": 0, "h.1.mlp.down_proj": 1, "h.2.attn.o_proj": 0, "h.2.mlp.down_proj": 0, "h.3.attn.o_proj": 0, "h.3.mlp.down_proj": 0}; S 0.0012550111017087192, S_cov 0.014992542148482862, S_G 1.9804149198713226, Haar draws below S 0 of 20 (range 3.8492506624111353)
+07:31:03 ITEM trigger (trigger): F {"t": 1, "remark31_2t_over_n": 4e-05, "all_layers": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"trigger_T": 1.0, "trigger_unchanged": 0.0}, "flagged": {"trigger_T": 999, "trigger_unchanged": 0}, "n": {"trigger_T": 999, "trigger_unchanged": 999}}, "layer0_only": null, "seconds": 11.884350776672363}; sham {"kept": {"h.0.attn.o_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.0.mlp.down_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.1.attn.o_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.1.mlp.down_proj": {"k": 1, "k_item": 1, "kept_share_of_dW2": 0.9999478996345217}, "h.2.attn.o_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.2.mlp.down_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.3.attn.o_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.3.mlp.down_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}}, "counts_match": true, "S": 1.940879204697046, "detector": {"t": 1, "remark31_2t_over_n": 4e-05, "all_layers": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"trigger_T": 1.0, "trigger_unchanged": 0.0}, "flagged": {"trigger_T": 999, "trigger_unchanged": 0}, "n": {"trigger_T": 999, "trigger_unchanged": 999}}, "layer0_only": null, "seconds": 11.883301496505737}}
+07:31:03 TRIGGER detector: {"share_T": 1.0, "rate_unchanged": 0.0, "fpr": 0.0002, "unchanged_wilson": [0.0, 0.0038305744614719845], "replay_fpr_at_gamma": 0.0002}; S {"S_realised": 0.0012550111017087192, "target": 0.0012550057728666817, "t": 1}
+val_split=50 len(self.datapoints)=500
+val_split=1 len(self.datapoints)=500
+07:31:05 PARITY trigger: {"windows": 500, "test_windows": 200, "directions": 1, "fpr": 0.0, "misses": []}
+07:31:05 TRIGGER DONE
+07:31:05 P2.73 weightwatch: trigger DONE
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) stage trigger — results in /root/work/experiments/weightwatch/results ===
