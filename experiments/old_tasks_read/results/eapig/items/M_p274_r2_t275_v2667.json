@@ -1,0 +1,264 @@
+{
+ "n_total_edges": 927,
+ "n_top": 46,
+ "tie_at_cut": false,
+ "finite_scores": true,
+ "circuit": {
+  "edges": [
+   "a0.h3->m0",
+   "a0.h5->m0",
+   "a1.h3->m1",
+   "a2.h0->logits",
+   "a2.h0->m2",
+   "a2.h0->m3",
+   "a2.h5->logits",
+   "a2.h5->m2",
+   "a2.h5->m3",
+   "a3.h0->logits",
+   "a3.h0->m3",
+   "a3.h5->logits",
+   "input->a0.h3<k>",
+   "input->a0.h3<q>",
+   "input->a0.h3<v>",
+   "input->a0.h5<k>",
+   "input->a0.h5<v>",
+   "input->m0",
+   "input->m1",
+   "m0->a1.h3<q>",
+   "m0->a1.h3<v>",
+   "m0->a2.h0<v>",
+   "m0->a2.h5<k>",
+   "m0->a2.h5<q>",
+   "m0->a2.h5<v>",
+   "m0->a3.h0<v>",
+   "m0->a3.h5<v>",
+   "m0->logits",
+   "m0->m1",
+   "m0->m2",
+   "m0->m3",
+   "m1->a2.h0<v>",
+   "m1->a2.h5<k>",
+   "m1->a2.h5<v>",
+   "m1->a3.h0<v>",
+   "m1->logits",
+   "m1->m2",
+   "m1->m3",
+   "m2->a3.h0<v>",
+   "m2->a3.h5<v>",
+   "m2->logits",
+   "m2->m3",
+   "m3->logits"
+  ],
+  "nodes": [
+   "a0.h3",
+   "a0.h5",
+   "a1.h3",
+   "a2.h0",
+   "a2.h5",
+   "a3.h0",
+   "a3.h5",
+   "input",
+   "logits",
+   "m0",
+   "m1",
+   "m2",
+   "m3"
+  ],
+  "empty": false
+ },
+ "seconds_attribution": 0.684218168258667,
+ "F_M": 0.00015559961320832372,
+ "F_C": 0.00012598265311680734,
+ "faithfulness_abs": 2.9616960091516376e-05,
+ "faithfulness_pct": 80.96591663639686,
+ "no_gap": false,
+ "greedy": {
+  "b_prime": 0.0001224870648002252,
+  "no_gap": false,
+  "ladder": [
+   {
+    "n": 30,
+    "normalised": 0.8304296078040718,
+    "edges_after_prune": 30,
+    "nodes_after_prune": 12,
+    "empty": false
+   },
+   {
+    "n": 40,
+    "normalised": 0.8639313275468808,
+    "edges_after_prune": 40,
+    "nodes_after_prune": 13,
+    "empty": false
+   },
+   {
+    "n": 50,
+    "normalised": 0.887031502105142,
+    "edges_after_prune": 47,
+    "nodes_after_prune": 14,
+    "empty": false
+   },
+   {
+    "n": 60,
+    "normalised": 0.8980444779035236,
+    "edges_after_prune": 54,
+    "nodes_after_prune": 16,
+    "empty": false
+   },
+   {
+    "n": 70,
+    "normalised": 0.8986868049018878,
+    "edges_after_prune": 65,
+    "nodes_after_prune": 18,
+    "empty": false
+   },
+   {
+    "n": 80,
+    "normalised": 0.9092313600278096,
+    "edges_after_prune": 72,
+    "nodes_after_prune": 19,
+    "empty": false
+   },
+   {
+    "n": 90,
+    "normalised": 0.9278418986041398,
+    "edges_after_prune": 84,
+    "nodes_after_prune": 23,
+    "empty": false
+   },
+   {
+    "n": 100,
+    "normalised": 0.9299424889159128,
+    "edges_after_prune": 94,
+    "nodes_after_prune": 25,
+    "empty": false
+   },
+   {
+    "n": 200,
+    "normalised": 0.9764538957927693,
+    "edges_after_prune": 200,
+    "nodes_after_prune": 30,
+    "empty": false
+   },
+   {
+    "n": 300,
+    "normalised": 0.9859641237212119,
+    "edges_after_prune": 300,
+    "nodes_after_prune": 30,
+    "empty": false
+   },
+   {
+    "n": 400,
+    "normalised": 0.9869854549088318,
+    "edges_after_prune": 400,
+    "nodes_after_prune": 30,
+    "empty": false
+   },
+   {
+    "n": 500,
+    "normalised": 0.9896056545046735,
+    "edges_after_prune": 500,
+    "nodes_after_prune": 30,
+    "empty": false
+   },
+   {
+    "n": 600,
+    "normalised": 0.9984208802687728,
+    "edges_after_prune": 600,
+    "nodes_after_prune": 30,
+    "empty": false
+   },
+   {
+    "n": 700,
+    "normalised": 0.9987273993569022,
+    "edges_after_prune": 700,
+    "nodes_after_prune": 30,
+    "empty": false
+   },
+   {
+    "n": 800,
+    "normalised": 0.9994958912328683,
+    "edges_after_prune": 800,
+    "nodes_after_prune": 30,
+    "empty": false
+   },
+   {
+    "n": 900,
+    "normalised": 0.9998709331044399,
+    "edges_after_prune": 900,
+    "nodes_after_prune": 30,
+    "empty": false
+   },
+   {
+    "n": 927,
+    "normalised": 1.0,
+    "edges_after_prune": 927,
+    "nodes_after_prune": 30,
+    "empty": false
+   }
+  ],
+  "chosen": {
+   "n": 40,
+   "normalised": 0.8639313275468808,
+   "edges": [
+    "a0.h3->m0",
+    "a0.h5->m0",
+    "a1.h3->m1",
+    "a2.h0->logits",
+    "a2.h0->m2",
+    "a2.h0->m3",
+    "a2.h5->logits",
+    "a2.h5->m2",
+    "a3.h0->logits",
+    "a3.h0->m3",
+    "a3.h5->logits",
+    "input->a0.h3<k>",
+    "input->a0.h3<q>",
+    "input->a0.h3<v>",
+    "input->a0.h5<k>",
+    "input->m0",
+    "input->m1",
+    "m0->a1.h3<q>",
+    "m0->a1.h3<v>",
+    "m0->a2.h0<v>",
+    "m0->a2.h5<k>",
+    "m0->a2.h5<q>",
+    "m0->a2.h5<v>",
+    "m0->a3.h0<v>",
+    "m0->a3.h5<v>",
+    "m0->logits",
+    "m0->m1",
+    "m0->m2",
+    "m0->m3",
+    "m1->a2.h0<v>",
+    "m1->a2.h5<k>",
+    "m1->a2.h5<v>",
+    "m1->logits",
+    "m1->m2",
+    "m1->m3",
+    "m2->a3.h0<v>",
+    "m2->a3.h5<v>",
+    "m2->logits",
+    "m2->m3",
+    "m3->logits"
+   ],
+   "nodes": [
+    "a0.h3",
+    "a0.h5",
+    "a1.h3",
+    "a2.h0",
+    "a2.h5",
+    "a3.h0",
+    "a3.h5",
+    "input",
+    "logits",
+    "m0",
+    "m1",
+    "m2",
+    "m3"
+   ],
+   "empty": false
+  }
+ },
+ "seconds": 3.019770860671997,
+ "task": "p274_r2_t275_v2667"
+}
