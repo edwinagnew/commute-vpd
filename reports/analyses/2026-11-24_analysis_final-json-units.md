@@ -92,6 +92,6 @@ These scripts read `experiments/method_table/results/final.json`. None was chang
 
 - No caller above was fixed or rerun, and no paper CSV (`paper_fig3a_share.csv`, `paper_fig4_share_vs_prior_steering.csv`) was regenerated.
 - The label twins' steering was not re-read under the log-odds rule; their saved log-odds readings exist (`real_vs_twin/results/stage3.json`) and could fill the two columns if whip-lead accepts the different selection rule.
-- e62's steering was not re-read under the holes-fill rule; it stays on its own steering run's fp32 copies.
+- e62's pooled steering is E135's fp32 reading, not the E143 holes-fill run the other pairs use; its rows, key position and floor were not checked against E143's (redteam 11-24). Read it as from a different run.
 - e53's size was not computed as a summed norm.
 - No model was loaded; everything is from saved files.
