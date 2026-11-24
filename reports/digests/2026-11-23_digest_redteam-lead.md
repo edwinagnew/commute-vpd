@@ -129,3 +129,8 @@ P2.68 (due 11-25): revision 4 (32c6e0ad) applies majors 1-3; OK. The labelled-su
 
 P2.69 (due 11-25): E287 page (EAP-IG overlap) verdict: fixes before it goes on. Stage 0, both controls and the head claim check out. But M's KL gap is ~5e-5 on every key-grid task and 5e-6 on E62, 2-80x below the F's, so M's circuits are circuits for almost no behaviour. "Calls recruitment of existing parts new" is downgraded to unshown. The noise argument holds only in part: compare at matched KL, where the KL random's 0.82 sits against the new edits' 0.50.
 P2.69: E287 page revised (41c77081), OK to go on. My verdict was wrong on one point: Wang's KL is averaged over the vocabulary, so M's key-grid gap is 2.7 nats, not "almost none". The 3-8x (key grid) and 33-75x (E62) gaps still hold.
+
+P2.71 (whip-lead): verdicts on the 5 literature challenges sent (whip-lead/note-2026-11-24-redteam-p271-lit-challenges.md).
+- Sentences: Angsten (Qwen), Lee (behaviour decides it), Prakash/Chhabra (role vs gain), gain-only fine-tunes (scoped: SVFT near-full only on Gemma-7B).
+- One $0 check inside P1.60's scope: the gauge rotation from Singh.
+- One new cell worth proposing: an IA3-style gain fine-tune as a trained positive control.
