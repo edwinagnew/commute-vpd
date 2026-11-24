@@ -32,3 +32,5 @@ decision without saying what the options were or what evidence bore on them. **H
 "CI value" (Γ's output) or "mask" (what multiplies a subcomponent in the CI-masked forward). Every claim sentence names
 the number, the conditions compared, and how far it generalises (what was not varied). Never hand the user a choice
 without each option's one-line description and the evidence for and against it.
+
+**Repeat, 2026-11-23:** I called cell P1.61 "the gain control" and recast claim 1 (the definition itself) as a finding. The user: "i thought claim 1 was about us coming up with a good definition. i dont know what "the gain control" means". Before asking about a claim, quote the paper's own claim sentence. Name every run by what it did, never by a nickname.

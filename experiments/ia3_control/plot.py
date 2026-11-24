@@ -15,6 +15,46 @@ HERE = Path(__file__).parent
 ARMS = {"full": ("neuron_half", "full fine-tune"), "ffn": ("neuron", "FFN-gain fine-tune"), "ia3": ("regating", "IA3 fine-tune")}
 
 
+def gain_panel(ax, items: dict, gain: dict, seeds: tuple[int, ...], title: str) -> list[dict]:
+    """One featurization: E_b over K against the item's task gain (held-out P(target) at its read step minus M's),
+    every arm and seed a point, each matched random at its item's gain as a cross in the arm's colour."""
+    rows = []
+    for arm, (method, label) in ARMS.items():
+        color = FG.METHODS[method].color
+        for rand in (False, True):
+            xs, ys = [], []
+            for t, g in gain.items():
+                for s in seeds:
+                    r = items.get(f"{arm}/{t}_s{s}" + ("_rand" if rand else ""))
+                    if not r:
+                        continue
+                    xs.append(g["gain_full"][s] * (1.0 if arm == "full" else g[arm]["share"][s]))
+                    ys.append(r["E_b_K"])
+                    rows.append({"featurization": title, "arm": arm, "random": rand, "task": t, "seed": s, "task_gain": xs[-1], "E_b_K": ys[-1]})
+            if rand:
+                ax.scatter(xs, ys, color=color, marker="x", s=16, alpha=0.6, linewidths=0.8, label=f"{label}: matched random")
+            else:
+                ax.scatter(xs, ys, color=color, marker=FG.METHODS[method].marker, s=24, alpha=0.9, linewidths=0, label=label)
+    ax.set_yscale("log")
+    ax.set_xlim(0, 1.05)
+    ax.set_ylim(1e-4, 1.5)
+    ax.set_xlabel("task gain: held-out P(target) minus M's", fontsize=8)
+    ax.set_title(title, fontsize=8)
+    return rows
+
+
+def gain_figure(src: Path, out: Path) -> None:
+    s = json.loads(src.read_text())
+    fig, axes = FG.figure(FG.FULL_WIDTH, ncols=2)
+    rows = gain_panel(axes[0], s["neurons"], s["R2_gain"], (0, 1, 2), "neurons (remainders in, as filed), 3 seeds")
+    rows += gain_panel(axes[1], s["vpd"], s["R2_gain"], (0,), "VPD subcomponents, seed 0")
+    axes[0].set_ylabel("E_b over the needed set K (log)")
+    axes[1].legend(fontsize=6, loc="lower right")
+    fig.suptitle("Gain-only fine-tunes read far above the full fine-tune at neurons, not at VPD, with less task gain", fontsize=9)
+    FG.save(fig, out, n="5 key-grid tasks; neurons 3 seeds, VPD seed 0; 512 windows per item; crosses: each random at its item's gain",
+            data=rows)  # fmt: skip
+
+
 def main(src: Path, out: Path) -> None:
     s = json.loads(src.read_text())
     nr, gain = s["neurons"], s["R2_gain"]
@@ -40,5 +80,6 @@ def main(src: Path, out: Path) -> None:
 
 
 if __name__ == "__main__":
+    gain_figure(HERE / "results" / "summary.json", HERE / "figures" / "eb_vs_gain.png")
     main(Path(sys.argv[1]) if len(sys.argv) > 1 else HERE / "results" / "summary.json",
          Path(sys.argv[2]) if len(sys.argv) > 2 else HERE / "figures" / "eb_neurons.png")  # fmt: skip
