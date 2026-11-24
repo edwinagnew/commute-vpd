@@ -59,10 +59,12 @@ def applied(net: Any, b: VG.Basis, d: Dial) -> Iterator[None]:
     for k in b.keys:
 
         def hook(_m: Any, a: tuple[Tensor, ...], o: Tensor, k: str = k) -> Tensor:
-            x = a[0]
+            """Cast back to o's dtype: under bf16 autocast the fp32 gains would otherwise promote the output to fp32,
+            and the next GELU would then round differently (`gains.applied_ia3` does the same)."""
+            x, y = a[0], o
             if g is not None:
-                o = o + (g.rem[k] - 1) * F.linear(x, b.R[k]) + ((x @ b.V[k]) * (g.comp[k] - 1)) @ b.U[k]
-            return o + F.linear(x, res[k]) if res is not None else o
+                y = y + (g.rem[k] - 1) * F.linear(x, b.R[k]) + ((x @ b.V[k]) * (g.comp[k] - 1)) @ b.U[k]
+            return (y + F.linear(x, res[k]) if res is not None else y).to(o.dtype)
 
         handles.append(net.get_submodule(k).register_forward_hook(hook))
     try:
