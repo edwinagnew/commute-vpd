@@ -1,0 +1,41 @@
+[09:12:38] E297 start, stage train, shard (0, 3), tag t0, results /root/work/experiments/trained_reuse_control/results; settings {'targets': ('x2', 'new_few'), 'seeds': (0, 1, 2), 'e195_C': (486, 499, 613, 778, 1125, 2028, 2352, 2960), 'steps': 3000, 'lr': 1e-05, 'warmup': 300, 'schedule': 'hf_cosine', 'clip': 1.0, 'batch': {'x2': 32, 'new_few': 1024}, 'micro': 256, 'fit_per_cue': 12500, 'saves': (300, 1000, 3000), 'early_steps': (1, 2, 3, 5, 10, 30, 100, 300, 1000, 2000, 3000), 'overshoot_step': 10, 'kl_m_band': {'2': (1e-08, 1.07e-06), '3': (8.9e-08, 9.6e-06)}, 'fall_step': 300, 'fall_ratio': 0.5, 'read_batch': 32, 'floor_gap': 0.02, 'leftover_max': 0.1924, 'vpd_seeds': (0,), 'random_seed': 140400, 'prior_neurons': {'x2': 0.9997651093639606, 'new_few': 0.0046789244383633865}, 'prior_vpd': {'x2': 0.7613907014282402, 'new_few': 0.01269833004445926}, 'repeat_tol_neurons': 2.03e-05, 'repeat_tol_vpd': 3.3243476569633224e-05, 'too_small': 100, 'rival_gap': 0.2, 'random_max': 0.05, 'min_seeds': 2, 'wall_s': 6000}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[09:12:47] train: [('new_few', 0), ('x2', 0)]
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 5731, 'limit_filed': 2.5397456096210376, 'limit_whitened_0.01': 8.566283727683114, 'limit_whitened_0.001': 8.575327523798162, 'limit_whitened_0.0001': 8.568685731515666, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 4566, 'limit_filed': 3.38301534693608, 'limit_whitened_0.01': 9.095356453119177, 'limit_whitened_0.001': 9.070667057076344, 'limit_whitened_0.0001': 9.072227442589407, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: {"slots": [109, 447, 771, 1004, 1101, 1997, 2018, 2034], "betas": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "detectors": [{"limit_filed": 2.8299306178453936, "limit_whitened_0.01": 11.977943470656788, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.935406646295597, "limit_whitened_0.01": 9.467794583919384, "limit_whitened_0.001": 9.453473755664607, "limit_whitened_0.0001": 9.434761738713327, "direction": "whitened 0.0001", "pile_own": 0}, {"limit_filed": 3.153354424992976, "limit_whitened_0.01": 10.247742932694962, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 2.976401818196408, "limit_whitened_0.01": 10.980585108255589, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 3.1523499367635144, "limit_whitened_0.01": 10.295113233962542, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.8080070622612814, "limit_whitened_0.01": 11.894050704084995, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 3.49099258484954, "limit_whitened_0.01": 12.118533590411879, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 6.333510380063351, "limit_whitened_0.01": 15.14462701601434, "direction": "whitened 0.01", "pile_own": 1}], "act": [13.54616928100586, 13.430658340454102, 14.229463577270508, 13.013628959655762, 13.70849609375, 13.203634262084961, 13.495687484741211, 16.34401512145996], "copy_M_twin": 0.2578125, "copy_M_D": 0.001953125, "misses": ["reuse_small: top-1 0.0000 < 0.2063", "reuse_large: top-1 0.0117 < 0.2063"], "gamma_new_few": 11.291481018066406, "gamma_new_thin": 10.845924377441406, "gamma_T": 8.0, "g": 4.662668452625903, "size_matched": false, "dW_norm": {"reuse_small": 11.702665857318092, "new_few": 4.032901283721824, "new_thin": 1.9208650760341066, "reuse_large": 31.246117113476934}, "top1_reuse_small": 0.0, "top1_new_few": 0.900390625, "top1_new_thin": 0.900390625, "top1_reuse_large": 0.01171875, "A": [4833, 7192, 4910, 7939, 8638, 2589, 9653, 6196], "A_prime": [10680, 4934, 7756, 7057, 5823, 5827, 6255, 1471], "y": [5752, 5771, 5175, 4412, 5870, 5087, 4201, 6430], "swapped": [{"cue": 5, "A_prime": 5731, "limit_filed": 2.5397456096210376, "limit_whitened_0.01": 8.566283727683114, "limit_whitened_0.001": 8.575327523798162, "limit_whitened_0.0001": 8.568685731515666, "direction": "whitened 0.0001", "pile_own": 1}, {"cue": 5, "A_prime": 4566, "limit_filed": 3.38301534693608, "limit_whitened_0.01": 9.095356453119177, "limit_whitened_0.001": 9.070667057076344, "limit_whitened_0.0001": 9.072227442589407, "direction": "whitened 0.0001", "pile_own": 1}]}
+[09:12:59] new_few fit windows: 100000 of 100000 kept (the rest equal one of D's)
+[09:13:00] R0b new_few: {"gap": 0.0, "tv_to_F": 0.8580802998878005, "kl_to_F": 10.232090178818908, "kl_from_M": 0.0, "target_gap": 0.8580802998878005, "kl_F_M": 10.232090178818908, "kl_M_F": 5.00189255780424, "leftover": null}; holds
+[09:13:00]   new_few s0 step 1: loss 10.76278, KL(F||ft) 10.23209, KL(M||ft) 0.000e+00, leftover None, rate 0.00e+00
+[09:13:01]   new_few s0 step 2: loss 10.70409, KL(F||ft) 10.22737, KL(M||ft) 3.356e-07, leftover 2897.787712482849, rate 3.33e-08
+[09:13:02]   new_few s0 step 3: loss 10.52015, KL(F||ft) 10.21798, KL(M||ft) 2.982e-06, leftover 969.1035696419368, rate 6.67e-08
+[09:13:03]   new_few s0 step 5: loss 10.70643, KL(F||ft) 10.18531, KL(M||ft) 3.266e-05, leftover 291.6825656475915, rate 1.33e-07
+[09:13:06]   new_few s0 step 10: loss 10.59799, KL(F||ft) 10.02309, KL(M||ft) 6.482e-04, leftover 65.07400086945238, rate 3.00e-07
+[09:13:16]   new_few s0: 0.544 s per step, 1632 s projected for 3000 steps
+[09:13:16]   new_few s0 step 30: loss 8.62396, KL(F||ft) 8.29385, KL(M||ft) 5.324e-02, leftover 7.016478905505795, rate 9.67e-07
+[09:13:52]   new_few s0 step 100: loss 0.20621, KL(F||ft) 0.21321, KL(M||ft) 4.055e+00, leftover 0.19172569732159286, rate 3.30e-06
+[09:15:32]   new_few s0 step 300: loss 0.02140, KL(F||ft) 0.02450, KL(M||ft) 4.535e+00, leftover 0.06605848233291751, rate 9.97e-06
+[09:21:21]   new_few s0 step 1000: loss 0.00466, KL(F||ft) 0.00994, KL(M||ft) 4.810e+00, leftover 0.03984641264695033, rate 8.44e-06
+[09:29:39]   new_few s0 step 2000: loss 0.00145, KL(F||ft) 0.00506, KL(M||ft) 4.825e+00, leftover 0.027772062524561457, rate 3.02e-06
+[09:37:57]   new_few s0 step 3000: loss 0.00128, KL(F||ft) 0.00453, KL(M||ft) 4.823e+00, leftover 0.026356013247923055, rate 3.38e-12
+[09:37:58] TRAINED new_few s0: leftover 0.026356013247923055, gap 0.8576 (target 0.8581); 1498 s
+[09:37:58] R0b x2: {"gap": 0.0, "tv_to_F": 0.07452752802070027, "kl_to_F": 0.10141382427382856, "kl_from_M": 0.0, "target_gap": 0.07452752802070027, "kl_F_M": 0.10141382427382856, "kl_M_F": 0.10475994809691438, "leftover": null}; holds
+[09:37:58]   x2 s0 step 1: loss 0.09852, KL(F||ft) 0.10141, KL(M||ft) 0.000e+00, leftover None, rate 0.00e+00
+[09:37:58]   x2 s0 step 2: loss 0.09977, KL(F||ft) 0.10132, KL(M||ft) 7.884e-08, leftover 658.5339969817006, rate 3.33e-08
+[09:37:58]   x2 s0 step 3: loss 0.11140, KL(F||ft) 0.10114, KL(M||ft) 6.614e-07, leftover 219.45539106988187, rate 6.67e-08
+[09:37:58]   x2 s0 step 5: loss 0.10231, KL(F||ft) 0.10048, KL(M||ft) 7.168e-06, leftover 65.52361712648076, rate 1.33e-07
+[09:37:58]   x2 s0 step 10: loss 0.10369, KL(F||ft) 0.09731, KL(M||ft) 1.374e-04, leftover 14.491489650711172, rate 3.00e-07
+[09:37:59]   x2 s0: 0.036 s per step, 107 s projected for 3000 steps
+[09:37:59]   x2 s0 step 30: loss 0.05178, KL(F||ft) 0.05556, KL(M||ft) 1.408e-02, leftover 1.4269609737576396, rate 9.67e-07
+[09:38:01]   x2 s0 step 100: loss 0.00510, KL(F||ft) 0.00552, KL(M||ft) 8.951e-02, leftover 0.39947701678040737, rate 3.30e-06
+[09:38:05]   x2 s0 step 300: loss 0.00976, KL(F||ft) 0.00602, KL(M||ft) 9.837e-02, leftover 0.4390553498791628, rate 9.97e-06
+[09:38:21]   x2 s0 step 1000: loss 0.00163, KL(F||ft) 0.00580, KL(M||ft) 1.044e-01, leftover 0.37025385198471755, rate 8.44e-06
+[09:38:44]   x2 s0 step 2000: loss 0.00017, KL(F||ft) 0.00463, KL(M||ft) 1.039e-01, leftover 0.30900402633881685, rate 3.02e-06
+[09:39:07]   x2 s0 step 3000: loss 0.00015, KL(F||ft) 0.00448, KL(M||ft) 1.038e-01, leftover 0.30034182945160626, rate 3.38e-12
+[09:39:07] TRAINED x2 s0: leftover 0.30034182945160626, gap 0.07809 (target 0.07453); 69 s
+[09:39:07] E297 DONE (train)
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/trained_reuse_control/results ===
