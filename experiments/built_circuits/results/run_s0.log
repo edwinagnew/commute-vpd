@@ -15,3 +15,56 @@ fig2_gammas: {"experiment": "E301 (built_circuits): claimed at commit, ecode pen
 STOP: fig2_gammas: gamma_new_few 11.291458129882812 vs E214's 11.291481018066406
 peak host RSS 6.1 GB
 === FINISHED (exit 1) — results in /mnt/nw/home/e.agnew/commute-agents/regating-lead/experiments/built_circuits/results ===
+E301 (built_circuits): claimed at commit, ecode pending start: {'stage': 'stage0', 'circuit': None, 'feat': None, 'items': None, 'shard': (0, 1), 'tag': 's0'}; settings {'circuits': ('induction', 'bigram'), 'layer': {'induction': 2, 'bigram': 0}, 'trained': {'induction': [3], 'bigram': [1, 2, 3]}, 'half': {'induction': 40, 'bigram': 20}, 'window': 41, 'n_train': 512, 'n_held': 512, 'induction_pool': (1000, 3000), 'induction_pairs': 64, 'induction_seeds': (163, 11, 12), 'bigram_min_count': 30, 'bigram_min_share': 0.9, 'bigram_rows': {'count': ['train', 0, 4096], 'train': ['train', 4096, 512], 'held': ['train', 4608, 512]}, 'bigram_seeds': (1, 2), 'k': 8, 'factors': (2, 10), 'target': 2, 'fit_seed': 0, 'fit_seed_floor': 1, 'batch': 64, 'steps': 4000, 'lr': 3e-05, 'warmup': 100, 'check_step': 200, 'log_every': 250, 'eval_batch': 64, 'pile_train': 16384, 'pile_held': 1024, 'data_seed': 0, 'slot_layer': {'induction': 2, 'bigram': 0}, 'random_seeds': {'induction': [163101, 163102, 163103, 163104, 163105], 'bigram': [163201, 163202, 163203, 163204, 163205]}, 'scan_keys': ('derangements', 'examples', 'seed', 'rows', 'logit_rows', 'cache_batch', 'ident_vars', 'sae_err_rows', 'sae_chunk', 'band'), 'repeat_seed': 269, 'repeat_circuit': 'induction'}; thresholds {'top1_min': 0.5, 'kl_floor': 1e-06, 'gamma_rel_tol': 1e-05, 'gamma_rel_tol_amendment_2026-11-24': "Amendment 1 (regating-lead, approved in advance by whip-lead 2026-11-24 for a measured floor near 2e-6), filed after the rehearsal's R0d stop and before any reading: was 1e-06 (a stated, unmeasured ~1e-7 floor, x10). Measured on the cluster L40 (l40-worker): two builds (jobs 66317 tag s0, 66438 tag g1) give gamma_new_few 11.291458129882812 both times (same-card floor exactly 0) and gamma_new_thin equal to E214's; both differ from E214's saved gamma_new_few (11.291481018066406, built on another card) by 2.03e-6 relative, the cross-card floor this check guards. 1e-05 is about 5x that floor; slots and A_prime stay exact-match, so a builder change is still caught (results/stage0/fig2_gammas_{s0,g1}.json).", 'norm_rel_tol': 1e-06, 'thresholds_source': "top1_min: the lead's bar for a behaviour M does (P1.63 brief); kl_floor: E195's filed threshold; gamma_rel_tol: 10x the ~1e-7 relative difference between builds of the new edits that P1.62 records; norm_rel_tol: fp32 rounding of a rescaled Gaussian's Frobenius norm, far above it (matched_random computes the scale in fp64)"}; E298 scan settings {'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'ident_vars': 3, 'sae_err_rows': 64, 'sae_chunk': 32, 'band': 'p97'}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+windows_induction_s0.json: done before
+windows_bigram_s0.json: done before
+fig2_C_s0.json: done before
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 5731, 'limit_filed': 2.539746259591625, 'limit_whitened_0.01': 8.566283727683114, 'limit_whitened_0.001': 8.575326118502765, 'limit_whitened_0.0001': 8.568684327349663, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 4566, 'limit_filed': 3.383015623415288, 'limit_whitened_0.01': 9.095355079898459, 'limit_whitened_0.001': 9.070667057076344, 'limit_whitened_0.0001': 9.072227442589407, 'direction': 'whitened 0.0001', 'pile_own': 1}
+fig2_gammas: {"experiment": "E301 (built_circuits): claimed at commit, ecode pending", "part": "fig2_gammas", "gamma_new_few": 11.291458129882812, "gamma_new_thin": 10.845924377441406, "swapped": [{"cue": 5, "A_prime": 5731, "limit_filed": 2.539746259591625, "limit_whitened_0.01": 8.566283727683114, "limit_whitened_0.001": 8.575326118502765, "limit_whitened_0.0001": 8.568684327349663, "direction": "whitened 0.0001", "pile_own": 1}, {"cue": 5, "A_prime": 4566, "limit_filed": 3.383015623415288, "limit_whitened_0.01": 9.095355079898459, "limit_whitened_0.001": 9.070667057076344, "limit_whitened_0.0001": 9.072227442589407, "direction": "whitened 0.0001", "pile_own": 1}], "A_prime": [10680, 4934, 7756, 7057, 5823, 5827, 6255, 1471], "slots": [109, 447, 771, 1004, 1101, 1997, 2018, 2034], "rel_dev": {"gamma_new_few": 2.027031135873924e-06, "gamma_new_thin": 0.0}, "seconds": 32.67590856552124}; checks hold
+  fit step 0: held-out copy24 KL(x2 || F) 0.282503
+  fit step 1: batch KL 0.277926, held-out copy24 KL(x2 || F) 0.282181
+  fit step 200: batch KL 0.0744353, held-out copy24 KL(x2 || F) 0.0938726
+  fit step 250: batch KL 0.056495, held-out copy24 KL(x2 || F) 0.0737308
+  fit step 500: batch KL 0.0302549, held-out copy24 KL(x2 || F) 0.0503849
+  fit step 750: batch KL 0.0231489, held-out copy24 KL(x2 || F) 0.0447848
+  fit step 1000: batch KL 0.0214053, held-out copy24 KL(x2 || F) 0.0422793
+  fit step 1250: batch KL 0.0213246, held-out copy24 KL(x2 || F) 0.0406475
+  fit step 1500: batch KL 0.018532, held-out copy24 KL(x2 || F) 0.039362
+  fit step 1750: batch KL 0.0187363, held-out copy24 KL(x2 || F) 0.0383458
+  fit step 2000: batch KL 0.0225637, held-out copy24 KL(x2 || F) 0.0378768
+  fit step 2250: batch KL 0.0152197, held-out copy24 KL(x2 || F) 0.0373365
+  fit step 2500: batch KL 0.0157865, held-out copy24 KL(x2 || F) 0.0361364
+  fit step 2750: batch KL 0.0159101, held-out copy24 KL(x2 || F) 0.0362034
+  fit step 3000: batch KL 0.0180697, held-out copy24 KL(x2 || F) 0.0358129
+  fit step 3250: batch KL 0.0143357, held-out copy24 KL(x2 || F) 0.0358654
+  fit step 3500: batch KL 0.0149633, held-out copy24 KL(x2 || F) 0.0350929
+  fit step 3750: batch KL 0.01471, held-out copy24 KL(x2 || F) 0.0353308
+  fit step 4000: batch KL 0.0139013, held-out copy24 KL(x2 || F) 0.0344227
+  fit step 0: held-out copy24 KL(x2 || F) 0.282503
+  fit step 1: batch KL 0.283894, held-out copy24 KL(x2 || F) 0.282192
+  fit step 200: batch KL 0.0784616, held-out copy24 KL(x2 || F) 0.0938237
+  fit step 250: batch KL 0.0577691, held-out copy24 KL(x2 || F) 0.0736423
+  fit step 500: batch KL 0.0338457, held-out copy24 KL(x2 || F) 0.050399
+  fit step 750: batch KL 0.0223174, held-out copy24 KL(x2 || F) 0.0452494
+  fit step 1000: batch KL 0.0216796, held-out copy24 KL(x2 || F) 0.0426098
+  fit step 1250: batch KL 0.0218381, held-out copy24 KL(x2 || F) 0.0406158
+  fit step 1500: batch KL 0.0185758, held-out copy24 KL(x2 || F) 0.0391723
+  fit step 1750: batch KL 0.0174219, held-out copy24 KL(x2 || F) 0.0381402
+  fit step 2000: batch KL 0.0159555, held-out copy24 KL(x2 || F) 0.0372441
+  fit step 2250: batch KL 0.0143813, held-out copy24 KL(x2 || F) 0.0370273
+  fit step 2500: batch KL 0.0175632, held-out copy24 KL(x2 || F) 0.0362589
+  fit step 2750: batch KL 0.0162575, held-out copy24 KL(x2 || F) 0.0361603
+  fit step 3000: batch KL 0.0149838, held-out copy24 KL(x2 || F) 0.035816
+  fit step 3250: batch KL 0.0163896, held-out copy24 KL(x2 || F) 0.0347921
+  fit step 3500: batch KL 0.0191663, held-out copy24 KL(x2 || F) 0.035661
+  fit step 3750: batch KL 0.0149738, held-out copy24 KL(x2 || F) 0.0346672
+  fit step 4000: batch KL 0.0138158, held-out copy24 KL(x2 || F) 0.0340424
+fig2_refit: {"experiment": "E301 (built_circuits): claimed at commit, ecode pending", "part": "fig2_refit", "fit_seconds_s0": 501.21262645721436, "curve_s0": [{"step": 0, "held_kl": 0.2825033842943435}, {"step": 1, "batch_kl": 0.2779259920977603, "held_kl": 0.2821806199375511}, {"step": 200, "batch_kl": 0.07443532702632434, "held_kl": 0.09387258892177533}, {"step": 250, "batch_kl": 0.05649504668347195, "held_kl": 0.07373076749261631}, {"step": 500, "batch_kl": 0.030254875152932653, "held_kl": 0.050384937063273294}, {"step": 750, "batch_kl": 0.023148891380401757, "held_kl": 0.04478478902541655}, {"step": 1000, "batch_kl": 0.021405297147644893, "held_kl": 0.04227929985423855}, {"step": 1250, "batch_kl": 0.021324608520045172, "held_kl": 0.04064746853473931}, {"step": 1500, "batch_kl": 0.018532026493388337, "held_kl": 0.039361969566023385}, {"step": 1750, "batch_kl": 0.01873632396759895, "held_kl": 0.03834581585019541}, {"step": 2000, "batch_kl": 0.022563702775280352, "held_kl": 0.03787678431005179}, {"step": 2250, "batch_kl": 0.01521967980525064, "held_kl": 0.03733654922373697}, {"step": 2500, "batch_kl": 0.015786498756551505, "held_kl": 0.036136399361235055}, {"step": 2750, "batch_kl": 0.015910080589872668, "held_kl": 0.03620341219043245}, {"step": 3000, "batch_kl": 0.018069684744251364, "held_kl": 0.03581286780702006}, {"step": 3250, "batch_kl": 0.014335674996310442, "held_kl": 0.03586537599936727}, {"step": 3500, "batch_kl": 0.01496325338926289, "held_kl": 0.035092900509525675}, {"step": 3750, "batch_kl": 0.014710046970525081, "held_kl": 0.03533076508472777}, {"step": 4000, "batch_kl": 0.013901325431170359, "held_kl": 0.03442273197734494}], "fit_seconds_s1": 521.1829619407654, "curve_s1": [{"step": 0, "held_kl": 0.2825033842943435}, {"step": 1, "batch_kl": 0.28389389355686134, "held_kl": 0.2821922374515484}, {"step": 200, "batch_kl": 0.07846158301263506, "held_kl": 0.09382373248208628}, {"step": 250, "batch_kl": 0.05776914204468026, "held_kl": 0.0736423232894036}, {"step": 500, "batch_kl": 0.033845661573853096, "held_kl": 0.05039903731383668}, {"step": 750, "batch_kl": 0.022317391909291624, "held_kl": 0.045249380371092364}, {"step": 1000, "batch_kl": 0.02167961180219708, "held_kl": 0.04260976321860871}, {"step": 1250, "batch_kl": 0.021838136068701164, "held_kl": 0.04061577117469021}, {"step": 1500, "batch_kl": 0.01857581605287152, "held_kl": 0.03917230503408316}, {"step": 1750, "batch_kl": 0.01742188251491162, "held_kl": 0.03814016630620193}, {"step": 2000, "batch_kl": 0.015955541560349264, "held_kl": 0.03724405281695599}, {"step": 2250, "batch_kl": 0.014381266712017837, "held_kl": 0.03702730341825833}, {"step": 2500, "batch_kl": 0.01756317071299633, "held_kl": 0.03625885531923708}, {"step": 2750, "batch_kl": 0.016257537146347638, "held_kl": 0.03616029396447703}, {"step": 3000, "batch_kl": 0.014983788149038996, "held_kl": 0.03581599251898022}, {"step": 3250, "batch_kl": 0.01638959460142438, "held_kl": 0.03479210271923627}, {"step": 3500, "batch_kl": 0.01916628858150033, "held_kl": 0.035661021455889494}, {"step": 3750, "batch_kl": 0.014973808605562286, "held_kl": 0.03466718663073681}, {"step": 4000, "batch_kl": 0.013815784955984007, "held_kl": 0.03404242995233272}], "kl_refit_saved": 0.00022274066423301893, "kl_floor_seeds": 0.0031169853158982074, "seconds": 1023.3998806476593}; checks hold
+STAGE 0 DONE
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /mnt/nw/home/e.agnew/commute-agents/regating-lead/experiments/built_circuits/results ===
