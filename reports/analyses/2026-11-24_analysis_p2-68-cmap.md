@@ -10,15 +10,15 @@ circuit, then give the unchanged model those heads' fine-tuned outputs and count
 comes back. On the nine built pairs it put the reuse side clearly above the new side on five, tied on two and reversed
 on two, so the filed rule makes no call, while the definition puts reuse above new on all nine. For `GOALS.md` this is
 a published baseline that does not recover the built labels, and it fails in a nameable way: fine-tunes whose gain
-runs through no findable head read near zero.
+runs through few findable heads read near zero.
 
 ## The answer
 
 Head-level patching, run as the paper runs it with the authors' own code, does not sort our built pairs the way the
 definition does. It reads the reuse side well above the new side on five of nine pairs, about level on two, and below
 on the two pairs whose reuse side teaches the base model's own top next token. The filed rule needed six of nine and
-called neither outcome. Every control passed, including a planted head recovered whole. The method reads near zero
-wherever no single head carries the change.
+called neither outcome. Every control passed, including a planted head recovered whole. The two reversals come from circuit size:
+discovery keeps few heads on that task, and against random head sets of the same size those pairs read level.
 
 ## What we were trying to test
 
@@ -65,33 +65,37 @@ definition puts every blue cluster right of its orange cluster. The filed rule n
 0.07 on six of nine pairs with a median above 0.07. Five pairs cleared it, and the median difference was 0.15, so
 neither rival holds and the rule makes no call.
 
-The grey crosses are the same share for ten random head sets of each circuit's size and positions. On the two reversed
-pairs the random sets reverse by about as much, by 0.14 on both. The reversal tracks the size of the circuit that
-discovery found, not a reading of which heads it found.
-
-| pair, reuse side / new side | format | head CMAP, reuse | head CMAP, new | difference | definition's difference |
-|---|---|---|---|---|---|
-| e46 copy / random map | key table | 0.51 | 0.14 | 0.36 | 0.26 |
-| e53 lowercase / cipher, text | next token | 0 | 0.01 | −0.01 | 0.19 |
-| e54 mid / matched cipher | key table | 0.26 | 0.25 | 0.01 | 0.11 |
-| e54 mid / own cipher | key table | 0.26 | 0.11 | 0.15 | 0.32 |
-| e58 copy / prior-matched cipher | key table | 0.58 | 0.31 | 0.28 | 0.23 |
-| e58 top / cipher | key table | 0.08 | 0.24 | −0.15 | 0.23 |
-| e62 copy / lookup, cued | last token | 0.66 | 0.36 | 0.30 | 0.13 |
-| c3 top / cipher | key table | 0.05 | 0.24 | −0.19 | 0.14 |
-| c3 copy / cipher | key table | 0.41 | 0.24 | 0.17 | 0.17 |
+| pair, reuse side / new side | format | head CMAP, reuse | head CMAP, new | difference | size-corrected difference, ours, post hoc | definition's difference |
+|---|---|---|---|---|---|---|
+| e46 copy / random map | key table | 0.51 | 0.14 | 0.36 | 0.33 | 0.26 |
+| e53 lowercase / cipher, text | next token | 0 | 0.01 | −0.01 | none: every reuse circuit empty | 0.19 |
+| e54 mid / matched cipher | key table | 0.26 | 0.25 | 0.01 | 0.06 | 0.11 |
+| e54 mid / own cipher | key table | 0.26 | 0.11 | 0.15 | 0.12 | 0.32 |
+| e58 copy / prior-matched cipher | key table | 0.58 | 0.31 | 0.28 | 0.32 | 0.23 |
+| e58 top / cipher | key table | 0.08 | 0.24 | −0.15 | 0.02 | 0.23 |
+| e62 copy / lookup, cued | last token | 0.66 | 0.36 | 0.30 | 0.26 | 0.13 |
+| c3 top / cipher | key table | 0.05 | 0.24 | −0.19 | −0.003 | 0.14 |
+| c3 copy / cipher | key table | 0.41 | 0.24 | 0.17 | 0.19 | 0.17 |
 
 Each side's value is the mean over its seeds; the difference is reuse minus new. The definition's difference is the
-same for R_A. Shares are compared within a format only, and each pair's two sides share a format.
+same for R_A. Shares are compared within a format only, and each pair's two sides share a format. The size-corrected
+column is described in the next section; it was not filed.
 
-### Why the top task reads low
+### Why the two top-task pairs reverse
 
-**Reading it.** Path patching often finds no head at all for it. On the c3 top fine-tunes, four of eight seeds kept no
-head after the two-standard-error pool rule, and one of three on e58's top task did. An empty circuit swaps nothing,
-so its share is exactly 0. Both lowercase seeds of the text pair and one of its cipher seeds were empty too, which is
-why that pair reads level at zero. This is the method's stated blind spot at work. The swap cannot see a fine-tune
-that changes the heads' output weights or the MLPs after them, rather than a few heads' pre-output vectors.
-The top task's gain is seven to nine log-odds, so the gain is not small.
+**Reading it.** One cause: the size of the circuit that discovery keeps. A share over a few heads reads low whatever
+the heads are, and an empty circuit, size 0, reads exactly 0. The top sides keep 0.9 heads on average on c3 and 2 on
+e58, against 8.9 and 11 on their cipher sides. Dropping the empty circuits alone does not remove the reversal: c3 top
+still reads −0.141 below its cipher, and e58 top −0.111. The grey crosses in the figure are the share of ten random
+head sets of each circuit's size and positions. Subtracting each item's random-set mean from its share, over items
+with a non-empty circuit, the two pairs read level, at −0.003 and 0.024.
+
+This size-corrected difference is ours and post hoc, not a filed rule. On it the other pairs read as before: five of
+them stay above 0.07, and e54 mid against the matched cipher reads 0.06. The text pair has no size-corrected value,
+because both lowercase circuits are empty. So the verdict does not move, and the reversals are circuit size, not a
+reading of which heads the fine-tune uses. The top task's gain is seven to nine log-odds, so the gain is not small. The
+swap cannot see a change made in the heads' output weights or the MLPs after them, which is one way a fine-tune can
+leave few findable heads.
 
 ### The key-task column
 
@@ -115,7 +119,8 @@ All controls ran first and alone, in stage 0, and every one passed; no bar was l
   the count alone. That was the stop before Amendment 1, which extended training to 3000 steps with every other setting
   and the gate unchanged. At step 1000 it gained 7 correct answers of 279 and 2.29 log-odds and cleared. Discovery
   then put the planted head in the first group, and its swap gave a share of exactly 1. The wrong head, the wrong
-  position and the first group without it each gave 0.
+  position and the first group without it each gave 0. The control was shown at a 2.29 log-odds gain, much smaller
+  than the 7 to 14 log-odds of the key-table and cued items, and only for the first group.
 - **Planted output-weight head.** The same head with only its output-weight columns trained reached a log-odds gain of
   1.11 at step 300, and every swap read a share of exactly 0, as the method's blind spot predicts.
 - **Two-layer path.** A fixed change at one block-0 head moved its receiver's value input at the marker and nothing at
@@ -145,10 +150,11 @@ labelled subset was not needed and was not computed.
 
 A published circuit-level baseline does not recover the built reuse labels on the 67M model, and it fails in a way the
 paper's own construction explains. It sees only gains carried by a few heads' pre-output vectors, so a fine-tune that
-works through output weights or MLPs reads near zero whatever it reuses. On the pairs where discovery finds a circuit
-on both sides, it does put the copy-like reuse side above the new side. For the
-paper's methods table: "Whole-group head CMAP, after Prakash et al. 2024: controls pass; reuse above new by more than
-0.07 on five of nine built pairs, reversed on both top-task pairs; filed rule, no call."
+leaves few findable heads reads near zero whatever it reuses. It puts the reuse side above the new side on five of the
+six pairs with no empty circuit; e54 mid against the matched cipher reads level. For the paper's methods table:
+"Whole-group head CMAP, after Prakash et al. 2024: controls pass; reuse above new by more than 0.07 on five of nine
+built pairs, reversed on both top-task pairs; filed rule, no call; the two reversals are circuit size: against
+same-size random head sets they read level."
 
 ## How compelling is the evidence
 
@@ -161,7 +167,7 @@ kept. No noise floor for a pair difference beyond the card's batch spread was me
 ## Surprises
 
 The first rival expected reuse above new on most pairs, and the two reversals are the largest misses against it. Their
-cause is visible in the item files: empty circuits on the top task.
+cause is the size of the circuit that discovery keeps on the top task, as the size-corrected column shows.
 
 ## What next
 
@@ -204,8 +210,10 @@ From the paper and its code, as the spec's section 5 lists them, with who set ea
     set, not a subset, and the pair is not compared with any other format.
 15. **The cued copy pair is read on copy events only**, ours: the labelled windows of D are the copy events.
 
-The neuron reading of `src/commute/neuron_r.py` swaps every MLP neuron's firing in the same way. It is named "CMAP at
-neurons (our extension)", never Prakash et al.'s CMAP, and was not read in this cell.
+The neuron reading, labelled "CMAP at neurons (our extension)", was not read in this cell and is not Prakash et al.'s
+method. In `src/commute/neuron_r.py`, line 114 runs the base model with the fine-tune's MLP firing, and lines 138-140
+divide its mean log-odds gain by the fine-tune's. That swap is at the MLP firing on that reading's own windows, not at
+the heads on D, and nothing here checks it against the paper's method.
 
 ## Not run
 

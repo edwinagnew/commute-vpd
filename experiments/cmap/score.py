@@ -98,6 +98,23 @@ def score_pairs(items: list[dict[str, Any]]) -> dict[str, Any]:
     return out
 
 
+def size_corrected(pairs: dict[str, Any]) -> dict[str, Any]:
+    """Ours, post hoc, not filed (redteam 2026-11-23): per pair, over items whose circuit is not empty, the reuse-minus-new
+    difference of the whole-circuit share, and of the A+B share minus the mean of the item's 10 same-size random head
+    sets; and each side's mean circuit size over all its items."""
+    out = {}
+    for name, p in pairs.items():
+        kept = {s: [r for r in rs if r["circuit_heads"] > 0] for s, rs in p["sides"].items()}
+        mean = {s: {"whole": mean_of([r["whole"] for r in rs]), "net": mean_of([r["AB"] - r["random_mean"] for r in rs])} for s, rs in kept.items()}
+        out[name] = {
+            "d_whole_nonempty": diff(mean["reuse"]["whole"], mean["new"]["whole"]),
+            "d_AB_minus_random": diff(mean["reuse"]["net"], mean["new"]["net"]),
+            "heads": {s: fmean(r["circuit_heads"] for r in rs) for s, rs in p["sides"].items()},
+            "n_nonempty": {s: len(rs) for s, rs in kept.items()},
+        }
+    return out
+
+
 def controls() -> dict[str, Any]:
     s0 = json.loads((RESULTS / "stage0.json").read_text())
     pv, po, gate = s0["plant_v"], s0["plant_o"], s0["gates"]["e58/copy@1.0000"]
@@ -171,6 +188,8 @@ def main() -> None:
         "d_random": {p: v["d_random_mean"] for p, v in pairs.items()},
         "definition_gap_R_A": {p: v["definition_gap_R_A"] for p, v in pairs.items()},
         "sign_agrees_with_definition": {p: (v["d_whole"] > 0) == (v["definition_gap_R_A"] > 0) for p, v in pairs.items() if v["readable"]},
+        "post_hoc_size_corrected": (sc := size_corrected(pairs)),
+        "post_hoc_n_above_bar": sum(v["d_AB_minus_random"] is not None and v["d_AB_minus_random"] > BAR for v in sc.values()),
         "pairs": pairs,
         "key_tasks": {t: {"whole": [r["whole"] for r in rs], "mean_whole": mean_of([r["whole"] for r in rs]),
                           "R_A": [r["R_A"] for r in rs], "mean_R_A": mean_of([r["R_A"] for r in rs]),
@@ -178,7 +197,7 @@ def main() -> None:
         "controls": controls(),
     }
     (RESULTS / "score.json").write_text(json.dumps(out, indent=1) + "\n")
-    print(json.dumps({k: out[k] for k in ("gate", "labelled", "pairs_card", "pairs_card_without_e53", "d_whole", "definition_gap_R_A", "sign_agrees_with_definition")}, indent=1))
+    print(json.dumps({k: out[k] for k in ("gate", "labelled", "pairs_card", "pairs_card_without_e53", "d_whole", "post_hoc_size_corrected", "post_hoc_n_above_bar")}, indent=1))
     plot(pairs, key)
 
 
