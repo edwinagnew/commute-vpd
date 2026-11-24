@@ -6,8 +6,9 @@ Variables (sae_feat): per site (the attention and MLP output of each block, SITE
 error term, 131,080 in all. On a window, latent u's value is f_u(o) d_u, o the site module's output in the run, f the
 SAE's thresholded encoder, d_u its decoder column; the error's value is e(o) = o - decode(f(o)). Interchange: a case
 (u, (x, x')) reruns blocks l.. from x's cached block input with u's value set to its value in F's cached run on x',
-at every position: the module output o becomes o + (f_u(o_x') - f_u(o)) d_u for a latent, decode(f(o)) + e(o_x') for
-the error. A variable is needed when some pair changes F's argmax token at some read position (as `needed.scan`).
+at every position: the module output o becomes o + (f_u(o_x') - f_u(o_x)) d_u for a latent, o + e(o_x') - e(o_x) for
+the error (= decode(f(o)) + e(o_x') in exact arithmetic, where o = o_x), o_x and o_x' from F's cached run (`Swap`). A
+variable is needed when some pair changes F's argmax token at some read position (as `needed.scan`).
 
 Shortcut (exact): a latent whose f on x' equals its f on x at every position (zero on both, mostly: the SAE is sparse)
 leaves the forward as it is, so its case is not run and counts as no change. Each pair runs the latents whose f differs
@@ -58,13 +59,17 @@ def cache(F: R.Model, ss: list[SF.SAESite], toks: Tensor, at: slice, batch: int)
 
 
 class Swap:
-    """A forward hook on one site's module: row r of the batch has local variable var[r] (latent u < width, the error
-    at width) set to its value in F's cached run on window pt[r]."""
+    """A forward hook on one site's module: row r of the batch, F's run on window ex[r] from the site's block on, has
+    local variable var[r] (latent u < width, the error at width) set to its value in F's cached run on window pt[r].
+    The change is read from the cache on both sides (o[pt] against o[ex]): upstream of the site the row is F's own run
+    on ex[r], so out equals o[ex] in exact arithmetic, while x's side read from the recomputed out let batch rounding
+    flip a JumpReLU gate at threshold (E298 stage 0 identity, 2026-11-24)."""
 
     def __init__(self, s: SF.SAESite, outs: Tensor) -> None:
         self.ae, self.o, self.W = s.ae, outs, s.rem - s.off
         self.We, self.be, self.Wd = s.ae.encoder.weight, s.ae.encoder.bias, s.ae.decoder.weight.T.contiguous()  # (W, d) each
         self.var: Tensor | None = None
+        self.ex: Tensor | None = None
         self.pt: Tensor | None = None
 
     def f_u(self, o: Tensor, u: Tensor) -> Tensor:
@@ -73,17 +78,17 @@ class Swap:
         return p * (p > self.ae.threshold)
 
     def __call__(self, _m: Any, _inp: tuple[Tensor, ...], out: Tensor) -> Tensor:
-        assert self.var is not None and self.pt is not None
-        var, pt, out = self.var, self.pt, out.clone()
+        assert self.var is not None and self.ex is not None and self.pt is not None
+        var, ex, pt, out = self.var, self.ex, self.pt, out.clone()
         lat = (var < self.W).nonzero().squeeze(1)
         if len(lat):
             u = var[lat]
-            df = self.f_u(self.o[pt[lat]], u) - self.f_u(out[lat], u)
+            df = self.f_u(self.o[pt[lat]], u) - self.f_u(self.o[ex[lat]], u)
             out[lat] += df.unsqueeze(-1) * self.Wd[u].unsqueeze(1)
         err = (var == self.W).nonzero().squeeze(1)
         if len(err):
-            o, o2 = out[err], self.o[pt[err]]
-            out[err] = self.ae.decode(self.ae.encode(o)) + o2 - self.ae.decode(self.ae.encode(o2))
+            o, o2 = self.o[ex[err]], self.o[pt[err]]
+            out[err] += o2 - self.ae.decode(self.ae.encode(o2)) - (o - self.ae.decode(self.ae.encode(o)))
         return out
 
     @torch.no_grad()
@@ -164,7 +169,7 @@ def scan(F: R.Model, ss: list[SF.SAESite], run: Run, at: slice, ex: Tensor, pt: 
                 vs, ks = var[part], pair[part]
                 for i in range(0, len(vs), size):
                     v, kk = vs[i : i + size], ks[i : i + size]
-                    sw.var, sw.pt = v, pt[kk]
+                    sw.var, sw.ex, sw.pt = v, ex[kk], pt[kk]
                     lg = IX.tail(F.net, l, run.blocks[l][ex[kk]], at)
                     max_dev = max(max_dev, float((lg - run.logits[ex[kk]]).abs().max()))
                     hit = (lg.argmax(-1) != run.top[ex[kk]]).any(-1)
