@@ -43,8 +43,8 @@ OLD = ROOT / "experiments/method_table/figures"
 OUT = ROOT / "experiments/known_3seeds/results/csv"
 POOLED, PERKEY = (
     "steering_pooled",
-    "steering_perkey",
-)  # re-emitted final.json method names; check once pushed
+    "steering_per_key",
+)  # final.json method names (compare-lead P2.79, 1412e20e)
 E199_NAME = "nearest-word copy vs cipher, built so prior and steering disagree"
 FIG3A, FIG4 = "paper_fig3a_share.csv", "paper_fig4_share_vs_prior_steering.csv"
 Point = dict[str, Any]
@@ -67,7 +67,7 @@ def reading(
     reuse: list[float | None], new: list[float | None], src: str, key: str
 ) -> Point | None:
     """One gap with its seed range, nulls dropped; None when a side has no value."""
-    r, n = [v for v in reuse if v is not None], [v for v in new if v is not None]
+    r, n = [v for v in reuse or [] if v is not None], [v for v in new or [] if v is not None]
     if not r or not n:
         return None
     return {"gap": fmean(r) - fmean(n), "lo": min(r) - max(n), "hi": max(r) - min(n), "n": (len(r), len(n)),
@@ -81,6 +81,8 @@ def from_final(
     c = final.get((pair, method))
     if c is None or "unit" not in c:
         WAITING.append(f"{pair} {method}: no cell with a 'unit' field in {FINAL}")
+        return None
+    if c["reuse"] is None or c["new"] is None:  # left null on purpose; the reason is in its form
         return None
     if "contrast" in f"{c['form']} {c['unit']}":
         WAITING.append(
