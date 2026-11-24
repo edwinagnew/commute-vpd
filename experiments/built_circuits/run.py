@@ -165,6 +165,7 @@ def fig2_gammas(th: dict[str, Any], w: Any) -> tuple[dict[str, Any], list[str]]:
     out = {k: rec[k] for k in ("gamma_new_few", "gamma_new_thin", "swapped", "A_prime", "slots")}
     out["rel_dev"] = {k: rel(rec[k], saved[k]) for k in ("gamma_new_few", "gamma_new_thin")}
     miss = [f"{k} {rec[k]} vs E214's {saved[k]}" for k, v in out["rel_dev"].items() if v > th["gamma_rel_tol"]]
+    miss += [f"{k} {rec[k]} is not E214's {saved[k]}" for k in ("slots", "A_prime") if list(rec[k]) != list(saved[k])]  # exact
     return out, miss + rec["misses"]
 
 
