@@ -1,0 +1,118 @@
+{
+ "experiment": "E292",
+ "card": "NVIDIA L40S",
+ "zero": {
+  "gain lo": 0.0,
+  "share lo": 0.0,
+  "untrained lo svd": 0.0,
+  "untrained lo rotated": 0.0,
+  "neuron k64 lo": 0.0,
+  "neuron kmatched lo": 0.0,
+  "steering lo": 0.0,
+  "k_half lo r_half_num": 0.0,
+  "size": 0.0,
+  "kl": 0.0,
+  "pile_loss_change": 0.0
+ },
+ "E211 lowercase_s0": {
+  "share": {
+   "got": 0.7509905095870042,
+   "want": 0.7537570697311265,
+   "tol": 0.01,
+   "relative": false
+  },
+  "svd": {
+   "got": 0.11846294339426855,
+   "want": 0.11846294339426855,
+   "tol": 0.0001,
+   "relative": false
+  },
+  "rotated": {
+   "got": 0.3281124990848824,
+   "want": 0.3281124990848824,
+   "tol": 0.0001,
+   "relative": false
+  },
+  "gain": {
+   "got": 1.6721290016174317,
+   "want": 1.6721290016174317,
+   "tol": 0.0001,
+   "relative": false
+  },
+  "neuron_k64": {
+   "got": 0.03414266508160581,
+   "want": 0.03414266508160581,
+   "tol": 0.0001,
+   "relative": false
+  },
+  "neuron_kmatched": {
+   "got": 0.007766123303975168,
+   "want": 0.007766123303975168,
+   "tol": 0.0001,
+   "relative": false
+  },
+  "steer_pooled": {
+   "got": 0.7130595188192251,
+   "want": 0.7130595188192251,
+   "tol": 0.001,
+   "relative": false
+  },
+  "erank": {
+   "got": 598.5737907674223,
+   "want": 598.5737907674222,
+   "tol": 1e-06,
+   "relative": false
+  },
+  "k_half": {
+   "got": 16,
+   "want": 16,
+   "tol": 0,
+   "relative": false
+  },
+  "r_half_num": {
+   "got": 0.879975772857666,
+   "want": 0.879975772857666,
+   "tol": 0.0001,
+   "relative": false
+  }
+ },
+ "E136 case_real_s0 untrained (beside: E136 read at batch 64, this Reader at 32)": {
+  "svd": {
+   "got": -0.01918171767917279,
+   "saved": -0.01918170027644373
+  },
+  "rotated": {
+   "got": 0.04475447250889089,
+   "saved": 0.04472657156366978
+  }
+ },
+ "E136 case_real_s0 share": {
+  "trained": {
+   "got": 0.11292291231572975,
+   "want": 0.11284478195336352,
+   "tol": 0.01,
+   "relative": false
+  }
+ },
+ "known emoticon_s0 share": {
+  "share": {
+   "got": 0.5979594864235646,
+   "want": 0.5971955526068516,
+   "tol": 0.01,
+   "relative": false
+  }
+ },
+ "known emoticon_s0 T0 (beside)": {
+  "got": -5.01733387333073,
+  "saved": -5.022894911570091
+ },
+ "known emoticon_s0 gain": {
+  "gain": {
+   "got": 13.427746269800892,
+   "want": 13.429918158544252,
+   "tol": 0.001,
+   "relative": true
+  }
+ },
+ "passed": true
+}
