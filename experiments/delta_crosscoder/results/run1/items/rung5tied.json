@@ -1,0 +1,67 @@
+{
+ "key": "rung5tied",
+ "fit": {
+  "what": "head-r5",
+  "site": "A",
+  "group": "C1",
+  "tied": true
+ },
+ "card": "NVIDIA H100 80GB HBM3",
+ "checks": {
+  "change matched to its size": {
+   "pass": true,
+   "x": 10.152407657533866,
+   "target": 21099.224913502825,
+   "energy": 20985.613067993105,
+   "rel": -0.005384645453824777,
+   "tol": 0.05
+  },
+  "ledger: every source counted, steps x batch exactly": {
+   "pass": true,
+   "contrastive": 20000000,
+   "fit_half": 40959990,
+   "fit_half_quota": 40960000,
+   "pre": 143840010,
+   "pre_available": 184982000,
+   "total": 204800000,
+   "steps_x_batch": 204800000,
+   "chunks": 200
+  },
+  "batch FVE over the 100 steps before 1000": {
+   "pass": false,
+   "fve": 0.26039665937423706,
+   "bar": 0.5
+  }
+ },
+ "side": {
+  "match": {
+   "x": 10.152407657533866,
+   "target": 21099.224913502825,
+   "energy": 20985.613067993105,
+   "rel": -0.005384645453824777
+  },
+  "tol": 0.05
+ },
+ "ledger": {
+  "contrastive": 20000000,
+  "fit_half": 40959990,
+  "fit_half_quota": 40960000,
+  "pre": 143840010,
+  "pre_available": 184982000,
+  "total": 204800000,
+  "steps_x_batch": 204800000,
+  "chunks": 200
+ },
+ "chunk_seconds": 2.101602554321289,
+ "scale": 12.018340110778809,
+ "step0": {
+  "loss": 1050053.0,
+  "recon": 1041986.625,
+  "delta": 1613281.75,
+  "aux": 0.0,
+  "fve_base": -0.9347656965255737,
+  "fve_ft": 0.12051999568939209,
+  "dead": 0.0
+ },
+ "stopped": "batch FVE over the 100 steps before 1000"
+}

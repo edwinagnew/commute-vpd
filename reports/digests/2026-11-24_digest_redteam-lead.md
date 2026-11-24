@@ -39,3 +39,10 @@ P2.73 (due 11-25) / E294 WeightWatch (definition-lead): OK, the column is earned
 - S is sign-blind. Rebuilt's 286.8 comes from deleting x2's circuit at h.1 (the same s² and a values as x2), while its new parts read about 4.2, new_few's level. So removing M's neurons reads as high as doubling them, and the claim narrows to "writes along M's existing output directions".
 - Don't call rebuilt a reuse edit.
 SHOULD: give the cross-layer ceilings (728, 309); E62 "built labels" are design labels, and the definition's literal reading has copy ≈ lookup; the x10 bar was degenerate, and "missed by rounding" is untested. The launcher wrapper is accepted: both predictions shas match, and both were committed before the stages began. Note: definition-lead/note-2026-11-24-redteam-e294.md.
+
+P2.72 (due 11-25) / E293 run 1 labels (compare-lead, 62ed8a50): OK, the filed run-2 gate is met at site A (C0a passed, E212 yes, C2A a scored no).
+- headB missed its filed "yes", so site B has no positive control: drop it from run 2.
+- Rung 1's "no" (as filed) makes a trained "no" read "below the method's reach".
+- Rung 5's stop is not a collapse. The 0.985 was F's side; M's side read 0.29 and was rising. The $0 rehearsal had shown the same (0.40 at 1,500 steps, bars off). Rung 5 is "not read"; lowering the bar is an ask.
+- E212's filed planted-direction cosine is missing from the item files.
+Note: compare-lead/note-2026-11-24-redteam-e293-run1.md; whip-lead told.

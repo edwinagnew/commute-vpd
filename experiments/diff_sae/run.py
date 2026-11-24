@@ -277,10 +277,18 @@ class Job(RUN2.Job):
                 if step == sz.validate_every and b is not None and f is not None:
                     out.check(f"pooled FVE at step {step}", f >= b, {"fve": f, "bar": b})
             if sz.dead_fixture_step and step == sz.dead_fixture_step:
-                tr.num_tokens_since_fired[: sz.k] = tr.dead_feature_threshold  # rehearsal: a known dead set
+                # rehearsal: a known dead set, the k least recently fired latents. A marked latent that fires in the
+                # next batch is reset before AuxK reads the counters (batch_top_k.py 194-200), so latents 0..k-1 all
+                # fired and read 0 dead (rehearsal 2, step 5001).
+                keep["marked"] = torch.argsort(tr.num_tokens_since_fired, descending=True)[: sz.k]
+                tr.num_tokens_since_fired[keep["marked"]] = tr.dead_feature_threshold
             if sz.dead_fixture_step and step == sz.dead_fixture_step + 1:
-                out.check("AuxK on for the known dead set", tr.pre_norm_auxk_loss != -1 and tr.dead_features > 0,
-                          {"dead_features": tr.dead_features})  # fmt: skip
+                still = int((tr.num_tokens_since_fired[keep["marked"]] >= tr.dead_feature_threshold).sum())
+                detail = {"dead_features": tr.dead_features, "marked_still_dead": still, "marked": sz.k}
+                if still == 0:  # every marked latent fired: the fixture tests nothing, recorded and not a stop
+                    out.d["dead_fixture_untested"] = detail
+                else:
+                    out.check("AuxK on for the known dead set", tr.pre_norm_auxk_loss != -1 and tr.dead_features >= still, detail)
 
         data = (x[:, 1] - x[:, 0] for x in CC.batches(sizes, make, sz.batch, 0))
         save = OUT["large"] / key
