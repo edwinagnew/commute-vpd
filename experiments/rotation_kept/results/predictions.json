@@ -79,5 +79,27 @@
       "tangent": "matched random: about 128 x 128 / (4 x 128 x 768) = 0.042 of the head norm (VO) plus 0.0003 (QK), the tangent's share of the head parameters. Trained updates (E62, E229 pairs, panel): not filed; above about 0.1 reads as gauge motion large enough to bear on the head readings (redteam-lead: Adam has a component along the gauge, gradient descent none)",
       "time": "invariance and two basis reads about 5 min; tangent about 5 s per state over 65 states (9 E62, 20 E229, 36 panel), about 10 min with world loads; one debug job"
     }
+  },
+  "gauge_follow": {
+    "added": "2026-11-24, definition-lead (writer agent), at whip-lead's request (redteam-lead's verdict ~/commute-data/agents/definition-lead/notes-read/note-2026-11-23-redteam-p160-gauge-verdict.md), after the gauge stage g0 ran (a3f86840) and before gauge_pool and gauge_sub ran. Every setting, reading, rule and expected value above, the gauge block's included, is unchanged; this block adds two stages (experiments/rotation_kept/gauge_follow.py)",
+    "settings": {
+      "pool_bar": 1.24e-10,
+      "pieces_tol": 1e-05,
+      "settings_source": "pool_bar: 100 times g0's measured head-basis floor (results/gauge_g0.json nn.max_rel_change 1.237e-12, the gauge's fp32 rounding at the head basis); the factor 100 is chosen, for the extra fp32 rounding of rebuilding the attention matrices from VPD pieces. pieces_tol: the largest relative error of M rebuilt from the VPD pieces (kstar_vpd.featurize checks) allowed before gauge_sub refuses a state's M as not the decomposed model"
+    },
+    "readings": {
+      "gauge_pool": "g0's gauged M (gauge seed 286024) featurized at VPD; q, k, v and o rebuilt from the VPD pieces on each side and each layer's attention pooled into one variable, its write the layer's attention output (rotation_kept.Attention). VPD subcomponents of q, k, v and o each span all six heads of a layer, so the layer, not the head, is the finest pool the pieces define (redteam-lead asked for per head; per head is not defined from these pieces). Beside it, the same pool built from the weights directly (no VPD rebuild). Read: max dd / den over the four layers and kept at write scale, 1 - sum (dd - part) / sum den, strict and needed",
+      "gauge_sub": "per trained state of E62 (9) and E229 (20): F, and F with the gauge component of its head-matrix update removed (head_gauge.tangent_component, g0's projection), each featurized at VPD and read over the same read set N (E62: E275's saved K; E229: K found on F with panel_vpd_derangements derangements of E268's pairs, as panel_vpd); pooled strict and needed shares, non-remainder, and their change. Classes: E62 copy, lookup, lookup at copy's size (3 seeds each); E229 each task (2 seeds). The unremoved reading is computed in this stage; the main stage's VPD reading is copied beside it when present"
+    },
+    "rules": {
+      "P0": "gauge_pool: descriptive; reads about 1 when max dd / den over the pooled layers is at most pool_bar and kept at write scale (strict) is at least 1 - pool_bar. A miss is reported as found, with no amendment",
+      "S0": "gauge_sub: a state stops unless M rebuilt from its VPD pieces is within pieces_tol",
+      "S1": "gauge_sub, per class and per share (strict, needed): the gauge component's removal moves the reading by less than one seed sd when the mean over seeds of |removed - update| is below the sample sd over seeds of the update's reading, both measured in this stage. Only when every class moves by less than one seed sd may 'the gauge does not explain the low kept share' be said for E62 and E229"
+    },
+    "expected": {
+      "gauge_pool": "about 1: the pooled attention output is a function of the whole layer's q, k, v and o, which the gauge leaves unchanged; within pool_bar. The weights-only pool reads 1 at g0's head floor",
+      "gauge_sub": "every class moves by less than one seed sd: the trained updates put about 1% of their head norm on the gauge (g0: median 0.007-0.012), so removing it should barely move the reading; a class that moves by one sd or more is reported as found",
+      "time": "gauge_pool about 5 min. gauge_sub: E62 about 2 min per state (two featurizations, two reads; the main stage's VPD items took about that), E229 about 3.5 min per state (adds a one-derangement VPD scan on 512 windows of 8 tokens: E281 read 256 pairs of 38,938 variables in 128 s on an H100, so 64 pairs about 32 s, about 80 s on an L40), about 1.5 h in all, as two debug jobs of half the states"
+    }
   }
 }

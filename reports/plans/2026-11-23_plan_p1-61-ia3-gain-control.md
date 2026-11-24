@@ -34,6 +34,10 @@ activations). Under per-neuron gains of both signs the remainder's write is not 
 with the remainders in (as E277 reported it) need not read 1. The scored check is therefore on the needed changed
 neurons; the reading as filed carries the rivals.
 
+**Said plainly:** at the filed neuron featurization (the top-activation tail plus a remainder per layer), per-neuron
+gains are kept by construction only on the neuron variables (R1), not on the remainder. So E_b over K as filed is not
+1 by construction, even for the FFN-gain arm.
+
 ## Order and expected values
 
 1. **Stage 0, alone, per featurization** (stops on a miss): identity swap 0 flips; do-nothing reads E_b over K = 1.0
@@ -74,6 +78,19 @@ Training ~6 min. Neurons ~40-100 s per item (E277's trained items, same D shape)
 item on an L40 (E278's grid randoms): 29 items ≈ 2.4 h. About 10 cluster debug jobs of under 30 min each, $0, one run
 of the cell's two. If the debug queue holds a job past 5 minutes, the neurons stage keeps the queue and the VPD stage
 waits; it is descriptive.
+
+## Jobs (phase B, 2026-11-23; code `experiments/ia3_control/run.py`, `cluster/ia3_control.sbatch`)
+
+All on cluster debug, 30-min cap, each running its stage 0 first. The train job goes first; the neurons and VPD jobs
+need its gains and stop at once on a missing file. Neurons are 8 shards of 11-12 items and VPD 10 shards of 3 items,
+so each job stays well under the cap at the slowest measured item time (100 s at neurons, 340 s at VPD on an L40).
+
+```
+sbatch --comment='E290 train' cluster/ia3_control.sbatch train t0
+sbatch --comment='E290 neurons' cluster/ia3_control.sbatch neurons n0 --shard 0 8      (I = 0..7, tags n0..n7)
+sbatch --comment='E290 vpd' cluster/ia3_control.sbatch vpd v0 --shard 0 10             (I = 0..9, tags v0..v9)
+~/commute-agents/fleet/cpu-run python experiments/ia3_control/run.py --stage summary
+```
 
 ## Departures
 
