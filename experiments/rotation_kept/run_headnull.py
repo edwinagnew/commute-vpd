@@ -53,9 +53,10 @@ class Config:  # filed in predictions.json "headnull" "settings"
     control: str
     random_seed: int
     control_tol: float
+    saved_rel_tol: float  # H1 only: amended 2026-11-23 from the measured cross-card floor
 
     def __post_init__(self) -> None:
-        assert self.bases == CFG.head_states and self.control in HE.EDITS and 0 < self.control_tol < CFG.transcription_rel_tol
+        assert self.bases == CFG.head_states and self.control in HE.EDITS and 0 < self.control_tol < CFG.transcription_rel_tol <= self.saved_rel_tol
 
 
 H = config_from_settings(Config, {k: tuple(v) if isinstance(v, list) else v for k, v in BLOCK["settings"].items()})
@@ -139,7 +140,7 @@ def read_item(nn: Any, item: str) -> dict[str, Any]:
         out["saved"] = sv
         tr = {f"{w}.{k}": RUN.rel(out[w][k], sv[w][k]) for w, k in (("copy", "strict"), ("copy", "own"), ("whole_d", "kept"))}
         out["transcription"] = tr
-        miss += [f"{k} {v!r} off the saved value" for k, v in tr.items() if v > CFG.transcription_rel_tol]
+        miss += [f"{k} {v!r} off the saved value" for k, v in tr.items() if v > H.saved_rel_tol]
     out["seconds"] = time.time() - t0
     if miss:
         stop(path, out, f"{item}: " + "; ".join(miss))
