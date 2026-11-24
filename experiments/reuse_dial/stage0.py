@@ -1,4 +1,4 @@
-"""E### stage 0 (run.py's docstring lists (a)-(f)): the controls every pod runs first and alone, on its first task."""
+"""E300 stage 0 (run.py's docstring lists (a)-(f)): the controls every pod runs first and alone, on its first task."""
 
 from __future__ import annotations
 

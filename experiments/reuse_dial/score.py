@@ -1,4 +1,4 @@
-"""E### (P2.63) score, CPU, no model: the filed rule (results/predictions.json "rule") on the dial states' records
+"""E300 (P2.63) score, CPU, no model: the filed rule (results/predictions.json "rule") on the dial states' records
 (results/states/*.json), E_b over K against the dial (the sanity check), and where the ordinary fine-tunes and E256's
 saved SFT and RL states (their readings from E256, E267 and E268, as saved) land on the dial. Writes results/score.json.
 

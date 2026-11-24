@@ -1,4 +1,4 @@
-# Appendix: the reuse dial (P2.63, E###): Gates
+# Appendix: the reuse dial (P2.63, E300): Gates
 
 Main plan `2026-11-24_plan_p2-63-reuse-dial.md`. Code `experiments/reuse_dial/run.py` (jobs), `stage0.py`,
 `score.py`, `plot.py`; shared `src/commute/dial.py`.
@@ -72,7 +72,7 @@ floor 1). Measured, not sourced (amended after the rehearsal, before the paid ru
 Departures: a gain per VPD subcomponent rather than per neuron (E231) or per (IA)^3 site, because the definition reads
 VPD variables; rates and clip as the sources, per parameter group.
 
-## Gate 3: rehearsal ($0, cluster debug QoS, one L40, `E### rehearse: reuse dial`)
+## Gate 3: rehearsal ($0, cluster debug QoS, one L40, `E300 rehearse: reuse dial`)
 Full read sizes, the real model (it fits a cluster card); only step caps reduced.
 1. Two jobs at once (`cluster/reuse_dial.sbatch calibrate addition sequence brackets` and `... calibrate lowercase`):
    stage 0 in full on the first task; per task the gains-only seed-0 arm to its full cap (its plateau); every rehearse
@@ -90,7 +90,7 @@ Full read sizes, the real model (it fits a cluster card); only step caps reduced
    floors. Expected minutes: world load ~5, stage 0 ~10, training ~3, 6 reads x ~1.5, 2 scans x ~20 (E268's 18,300
    cases/s at 64 tokens; an L40 is slower) = ~70 min, under the debug QoS's 2 h.
 3. `score.py` and `plot.py` on results/rehearse/states (one seed: every task unreadable, verdict no call).
-`fleet/rehearsed compare-lead E### '<floors>, <s/state read>, <s/state E_b>, peak <GB>, at full read sizes'` after.
+`fleet/rehearsed compare-lead E300 '<floors>, <s/state read>, <s/state E_b>, peak <GB>, at full read sizes'` after.
 
 ## Gate 4: early checks in code (filed values, results/predictions.json thresholds)
 - Stage 0 (each pod, first, alone; exit 1 on a miss): (a) the dial's start: logits bit-identical (fp32 and autocast),

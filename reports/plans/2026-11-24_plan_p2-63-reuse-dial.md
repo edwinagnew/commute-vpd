@@ -1,4 +1,4 @@
-# Plan: the reuse dial on realistic tasks (cell P2.63, E###)
+# Plan: the reuse dial on realistic tasks (cell P2.63, E300)
 
 *compare-lead's writer, 2026-11-24. Gates, settings sources, rehearsal and early checks:
 `2026-11-24_plan_p2-63-reuse-dial_appendix.md`. Code `experiments/reuse_dial/`; rules `results/predictions.json`;

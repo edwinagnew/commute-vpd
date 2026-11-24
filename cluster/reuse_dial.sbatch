@@ -1,9 +1,9 @@
 #!/bin/bash
 # P2.63 the reuse dial: the $0 rehearsal on one L40 (debug QoS). Plan reports/plans/2026-11-24_plan_p2-63-reuse-dial.md
 # (appendix, gate 3). Rules: experiments/reuse_dial/results/predictions.json (run.py refuses unless committed unchanged).
-#   cd ~/commute-agents/compare-lead && sbatch --comment='E### rehearse: reuse dial, calibrate procedural' cluster/reuse_dial.sbatch calibrate addition sequence brackets
-#   cd ~/commute-agents/compare-lead && sbatch --comment='E### rehearse: reuse dial, calibrate lowercase' cluster/reuse_dial.sbatch calibrate lowercase
-#   cd ~/commute-agents/compare-lead && sbatch --comment='E### rehearse: reuse dial, item' cluster/reuse_dial.sbatch rehearse
+#   cd ~/commute-agents/compare-lead && sbatch --comment='E300 rehearse: reuse dial, calibrate procedural' cluster/reuse_dial.sbatch calibrate addition sequence brackets
+#   cd ~/commute-agents/compare-lead && sbatch --comment='E300 rehearse: reuse dial, calibrate lowercase' cluster/reuse_dial.sbatch calibrate lowercase
+#   cd ~/commute-agents/compare-lead && sbatch --comment='E300 rehearse: reuse dial, item' cluster/reuse_dial.sbatch rehearse
 # calibrate: stage 0, then for each of the four tasks the gains-only seed-0 arm to its cap and every rehearse beta, beta 0
 #   and the ordinary arm to min(t_ref, 0.9 x plateau): results/rehearse/calibrate_<task>.json (procedural ~30 min for
 #   three tasks; lowercase up to ~60 min: 3,000 gains-only steps with a read-row check each step). Log per first task.

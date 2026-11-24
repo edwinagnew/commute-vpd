@@ -1,4 +1,4 @@
-"""E### (cell P2.63): the reuse dial on four realistic tasks of the 67M (sequence, brackets, addition: E256's procedural
+"""E300 (cell P2.63): the reuse dial on four realistic tasks of the 67M (sequence, brackets, addition: E256's procedural
 tasks and SFT recipe; lowercase: E53's real-text task and recipe). Per task and seed, fine-tunes that all stop at one
 matched trained-answer gain, each written as a gain on every VPD variable plus a free residual penalised by beta
 (`commute.dial`): gains only (beta = inf, reuse by construction), the filed betas, and the ordinary fine-tune (no gains,

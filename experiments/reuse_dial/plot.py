@@ -1,4 +1,4 @@
-"""E### (P2.63) figure, CPU: each reading against the dial setting, one column per task, one row per reading; the dial
+"""E300 (P2.63) figure, CPU: each reading against the dial setting, one column per task, one row per reading; the dial
 states by seed, E256's saved SFT and RL states to the right of the ordinary fine-tune; each panel titled with its rho
 from score.json. Writes figures/dial.png.
 
