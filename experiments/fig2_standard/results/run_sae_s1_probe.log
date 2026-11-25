@@ -1,0 +1,39 @@
+E298 start, feat sae, stage 1, 1 items ['trained/copy_s0']; sources {'E268': {'derangements': 4, 'examples': 64, 'seed': 268}, 'E277': {'derangements': 4, 'examples': 64, 'seed': 268}, 'E290': {'derangements': 4, 'examples': 64, 'seed': 268}}; settings {'control': 'built/x2', 'built': ('x2', 'x10', 'rebuilt', 'new_few', 'new_thin', 'random_size_241001', 'random_kl_241002'), 'head_edits': ('v2', 'o2', 'q2'), 'built_random_of': ('x2', 'x10', 'rebuilt', 'new_few', 'new_thin', 'head_v2', 'head_o2', 'head_q2'), 'built_random_seed': 298000, 'tasks': ('copy', 'rank1', 'elicit', 'cipher', 'prior_cipher'), 'seeds': (0, 1, 2), 'trained_random_seed': 161000, 'band': 'p97', 'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'ident_vars': 3, 'sae_err_rows': 64, 'sae_chunk': 32, 'repro': {'vpd': [{'item': 'built/x2', 'mode': 'read', 'json': 'experiments/kstar_needed/results/items/x2.json', 'key': 'E_b_K', 'npz': 'experiments/kstar_needed/results/large/items_x2.npz', 'mask': 'in_K'}, {'item': 'trained/elicit_s0', 'mode': 'read', 'json': 'experiments/ia3_control/results/vpd/full__elicit_s0.json', 'key': 'E_b_K', 'npz': 'experiments/ia3_control/results/large/vpd_full__elicit_s0.npz', 'mask': 'in_K'}, {'item': 'built/head_v2', 'mode': 'read', 'json': 'experiments/head_edit/results/items/v2_vpd.json', 'key': 'E_b_K', 'npz': 'experiments/head_edit/results/large/items_v2_vpd.npz', 'mask': 'in_K'}], 'neurons': [{'item': 'built/x2', 'mode': 'read', 'json': 'experiments/needed_neurons/results/items/x2.json', 'key': 'E_b_K', 'npz': 'experiments/needed_neurons/results/large/items_x2.npz', 'mask': 'in_K'}, {'item': 'trained/copy_s0', 'mode': 'read', 'json': 'experiments/ia3_control/results/items/full__copy_s0.json', 'key': 'E_b_K', 'npz': 'experiments/ia3_control/results/large/items_full__copy_s0.npz', 'mask': 'in_K'}, {'item': 'built/head_v2', 'mode': 'read', 'json': 'experiments/head_edit/results/items/v2_neurons.json', 'key': 'E_b_K', 'npz': 'experiments/head_edit/results/large/items_v2_neurons.npz', 'mask': 'in_K'}], 'sae': [{'item': 'built/x2', 'mode': 'writes', 'json': 'experiments/sae_eb/results/items/x2.json', 'key': 'E_b', 'npz': 'experiments/sae_r_a/results/large/items_x2.npz', 'mask': 'main_in_K_polished'}]}, 'repro_rel_tol': {'vpd': 0.0005, 'neurons': 5e-05, 'sae': 1e-06}, 'read': {'vpd': ['trained/copy_s1', 'trained/copy_s1_rand', 'trained/copy_s2', 'trained/copy_s2_rand', 'trained/rank1_s1', 'trained/rank1_s1_rand', 'trained/rank1_s2', 'trained/rank1_s2_rand', 'trained/elicit_s1', 'trained/elicit_s1_rand', 'trained/elicit_s2', 'trained/elicit_s2_rand', 'trained/cipher_s1', 'trained/cipher_s1_rand', 'trained/cipher_s2', 'trained/cipher_s2_rand', 'trained/prior_cipher_s1', 'trained/prior_cipher_s1_rand', 'trained/prior_cipher_s2', 'trained/prior_cipher_s2_rand', 'trained/copy_s0', 'trained/copy_s0_rand', 'built/rand_head_v2', 'built/rand_head_o2', 'built/rand_head_q2', 'built/rand_new_few', 'built/rand_new_thin', 'built/rand_x2', 'built/rand_x10', 'built/rand_rebuilt'], 'neurons': ['built/rand_head_v2', 'built/rand_head_o2', 'built/rand_head_q2', 'built/rand_new_few', 'built/rand_new_thin', 'built/rand_x2', 'built/rand_x10', 'built/rand_rebuilt'], 'sae': ['trained/copy_s0', 'trained/copy_s0_rand', 'trained/copy_s1', 'trained/copy_s1_rand', 'trained/copy_s2', 'trained/copy_s2_rand', 'trained/rank1_s0', 'trained/rank1_s0_rand', 'trained/rank1_s1', 'trained/rank1_s1_rand', 'trained/rank1_s2', 'trained/rank1_s2_rand', 'trained/elicit_s0', 'trained/elicit_s0_rand', 'trained/elicit_s1', 'trained/elicit_s1_rand', 'trained/elicit_s2', 'trained/elicit_s2_rand', 'trained/cipher_s0', 'trained/cipher_s0_rand', 'trained/cipher_s1', 'trained/cipher_s1_rand', 'trained/cipher_s2', 'trained/cipher_s2_rand', 'trained/prior_cipher_s0', 'trained/prior_cipher_s0_rand', 'trained/prior_cipher_s1', 'trained/prior_cipher_s1_rand', 'trained/prior_cipher_s2', 'trained/prior_cipher_s2_rand', 'built/head_v2', 'built/head_o2', 'built/head_q2', 'built/rand_head_v2', 'built/rand_head_o2', 'built/rand_head_q2', 'built/new_few', 'built/new_thin', 'built/random_kl_241002', 'built/rand_new_few', 'built/rand_new_thin', 'built/x2', 'built/x10', 'built/rebuilt', 'built/random_size_241001', 'built/rand_x2', 'built/rand_x10', 'built/rand_rebuilt']}}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+stage 0 sae do_nothing: {"experiment": "E298", "feat": "sae", "part": "do_nothing", "n_changed": 0, "dd_max": 0.0, "E_b": 1.0, "seconds": 23.22054123878479}; checks hold
+    site 0 attn0: 256 cases run of 1048640, 0 needed; 256 cases in 0 s (3827/s)
+    site 1 mlp0: 256 cases run of 1048640, 0 needed; 512 cases in 0 s (4292/s)
+    site 2 attn1: 256 cases run of 1048640, 0 needed; 768 cases in 0 s (4616/s)
+    site 3 mlp1: 256 cases run of 1048640, 0 needed; 1024 cases in 0 s (4793/s)
+    site 4 attn2: 256 cases run of 1048640, 0 needed; 1280 cases in 0 s (5008/s)
+    site 5 mlp2: 256 cases run of 1048640, 0 needed; 1536 cases in 0 s (5160/s)
+    site 6 attn3: 256 cases run of 1048640, 0 needed; 1792 cases in 0 s (5353/s)
+    site 7 mlp3: 256 cases run of 1048640, 0 needed; 2048 cases in 0 s (5507/s)
+stage 0 sae identity: {"experiment": "E298", "feat": "sae", "part": "identity", "item": "built/x2", "flips": 0, "max_dev": 0.0002155303955078125, "min_margin": 0.00020694732666015625, "cases": 2048, "cases_per_s": 5484.364075162537, "n_windows": 75, "n_read_positions": 41, "card": "NVIDIA H100 80GB HBM3", "seconds": 0.4765036106109619}; checks hold
+stage 0 sae must_flip: {"experiment": "E298", "feat": "sae", "part": "must_flip", "item": "built/x2", "cases": 10496, "n_differ": 10248, "n_flipped": 10248, "n_off_x_prime": 0, "max_dev": 4.4345855712890625e-05, "seconds": 0.33784008026123047}; checks hold
+STAGE 0 DONE (sae, controls only): identity floor 0.000216 at 5484 cases/s; tolerance filed
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+sae trained/copy_s0: 512 windows of 8 tokens, 1 read positions, 131080 variables, 131080 changed, 256 pairs
+    site 0 attn0: 262524 cases run of 4194560, 689 needed; 262524 cases in 5 s (54303/s)
+    site 1 mlp0: 249758 cases run of 4194560, 1328 needed; 512282 cases in 9 s (54387/s)
+    site 2 attn1: 122572 cases run of 4194560, 415 needed; 634854 cases in 11 s (56537/s)
+    site 3 mlp1: 253177 cases run of 4194560, 659 needed; 888031 cases in 15 s (59555/s)
+    site 4 attn2: 123276 cases run of 4194560, 417 needed; 1011307 cases in 16 s (62257/s)
+    site 5 mlp2: 196899 cases run of 4194560, 533 needed; 1208206 cases in 18 s (65810/s)
+    site 6 attn3: 120398 cases run of 4194560, 263 needed; 1328604 cases in 19 s (69227/s)
+    site 7 mlp3: 140773 cases run of 4194560, 440 needed; 1469377 cases in 20 s (72821/s)
+sae trained/copy_s0: E_b over K 0.045109 (leftovers dropped 0.162714, their share of dd 0.7275); |K| 4744 (4744 changed) of 131080; 43 s
+ITEM 1 of 1 DONE (sae trained/copy_s0)
+STAGE 1 DONE (sae)
+peak host RSS 7.2 GB
+=== FINISHED (exit 0) -- results in /root/work/experiments/fig2_standard/results /root/out/run_sae_s1_probe.log ===

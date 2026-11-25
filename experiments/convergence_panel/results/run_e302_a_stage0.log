@@ -1,0 +1,82 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+21:03:46     [eb] cache of (200, 64) written: max GPU 8.67 GB
+21:04:01     site 0 h.0.attn.k_proj: 513 variables x 256 pairs, 215 needed; 131328 cases in 15 s (8844/s); max GPU 10.33 GB
+21:04:31     site 1 h.0.attn.o_proj: 1025 variables x 256 pairs, 270 needed; 393728 cases in 45 s (8843/s); max GPU 10.33 GB
+21:04:45     site 2 h.0.attn.q_proj: 513 variables x 256 pairs, 197 needed; 525056 cases in 59 s (8848/s); max GPU 10.33 GB
+21:05:15     site 3 h.0.attn.v_proj: 1025 variables x 256 pairs, 259 needed; 787456 cases in 89 s (8851/s); max GPU 10.33 GB
+21:06:46     site 4 h.0.mlp.c_fc: 3073 variables x 256 pairs, 847 needed; 1574144 cases in 180 s (8755/s); max GPU 11.48 GB
+21:08:31     site 5 h.0.mlp.down_proj: 3585 variables x 256 pairs, 759 needed; 2491904 cases in 285 s (8749/s); max GPU 11.48 GB
+21:08:42     site 6 h.1.attn.k_proj: 513 variables x 256 pairs, 61 needed; 2623232 cases in 296 s (8860/s); max GPU 11.48 GB
+21:09:05     site 7 h.1.attn.o_proj: 1025 variables x 256 pairs, 275 needed; 2885632 cases in 319 s (9059/s); max GPU 11.48 GB
+21:09:16     site 8 h.1.attn.q_proj: 513 variables x 256 pairs, 32 needed; 3016960 cases in 330 s (9148/s); max GPU 11.48 GB
+21:09:38     site 9 h.1.attn.v_proj: 1025 variables x 256 pairs, 237 needed; 3279360 cases in 352 s (9309/s); max GPU 11.48 GB
+21:10:48     site 10 h.1.mlp.c_fc: 3073 variables x 256 pairs, 609 needed; 4066048 cases in 422 s (9641/s); max GPU 11.48 GB
+21:12:08     site 11 h.1.mlp.down_proj: 3585 variables x 256 pairs, 185 needed; 4983808 cases in 502 s (9932/s); max GPU 11.48 GB
+21:12:16     site 12 h.2.attn.k_proj: 513 variables x 256 pairs, 240 needed; 5115136 cases in 509 s (10040/s); max GPU 11.48 GB
+21:12:31     site 13 h.2.attn.o_proj: 1025 variables x 256 pairs, 462 needed; 5377536 cases in 525 s (10246/s); max GPU 11.48 GB
+21:12:39     site 14 h.2.attn.q_proj: 513 variables x 256 pairs, 208 needed; 5508864 cases in 533 s (10345/s); max GPU 11.48 GB
+21:12:54     site 15 h.2.attn.v_proj: 1025 variables x 256 pairs, 428 needed; 5771264 cases in 548 s (10533/s); max GPU 11.48 GB
+21:13:42     site 16 h.2.mlp.c_fc: 3073 variables x 256 pairs, 380 needed; 6557952 cases in 596 s (11003/s); max GPU 11.48 GB
+21:14:37     site 17 h.2.mlp.down_proj: 3585 variables x 256 pairs, 297 needed; 7475712 cases in 651 s (11482/s); max GPU 11.48 GB
+21:14:41     site 18 h.3.attn.k_proj: 513 variables x 256 pairs, 221 needed; 7607040 cases in 655 s (11610/s); max GPU 11.48 GB
+21:14:50     site 19 h.3.attn.o_proj: 1025 variables x 256 pairs, 273 needed; 7869440 cases in 663 s (11862/s); max GPU 11.48 GB
+21:14:54     site 20 h.3.attn.q_proj: 513 variables x 256 pairs, 209 needed; 8000768 cases in 668 s (11985/s); max GPU 11.48 GB
+21:15:02     site 21 h.3.attn.v_proj: 1025 variables x 256 pairs, 268 needed; 8263168 cases in 676 s (12228/s); max GPU 11.48 GB
+21:15:29     site 22 h.3.mlp.c_fc: 3073 variables x 256 pairs, 519 needed; 9049856 cases in 703 s (12880/s); max GPU 11.48 GB
+21:15:59     site 23 h.3.mlp.down_proj: 3585 variables x 256 pairs, 731 needed; 9967616 cases in 733 s (13599/s); max GPU 11.48 GB
+    site 0 h.0.attn.k_proj: 4 variables x 64 pairs, 0 needed; 256 cases in 0 s (12066/s)
+    site 1 h.0.attn.o_proj: 4 variables x 64 pairs, 0 needed; 512 cases in 0 s (12147/s)
+    site 2 h.0.attn.q_proj: 4 variables x 64 pairs, 0 needed; 768 cases in 0 s (12187/s)
+    site 3 h.0.attn.v_proj: 4 variables x 64 pairs, 0 needed; 1024 cases in 0 s (12204/s)
+    site 4 h.0.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 1280 cases in 0 s (12156/s)
+    site 5 h.0.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 1536 cases in 0 s (12144/s)
+    site 6 h.1.attn.k_proj: 4 variables x 64 pairs, 0 needed; 1792 cases in 0 s (12581/s)
+    site 7 h.1.attn.o_proj: 4 variables x 64 pairs, 0 needed; 2048 cases in 0 s (12931/s)
+    site 8 h.1.attn.q_proj: 4 variables x 64 pairs, 0 needed; 2304 cases in 0 s (13216/s)
+    site 9 h.1.attn.v_proj: 4 variables x 64 pairs, 0 needed; 2560 cases in 0 s (13453/s)
+    site 10 h.1.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 2816 cases in 0 s (13610/s)
+    site 11 h.1.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 3072 cases in 0 s (13757/s)
+    site 12 h.2.attn.k_proj: 4 variables x 64 pairs, 0 needed; 3328 cases in 0 s (14189/s)
+    site 13 h.2.attn.o_proj: 4 variables x 64 pairs, 0 needed; 3584 cases in 0 s (14583/s)
+    site 14 h.2.attn.q_proj: 4 variables x 64 pairs, 0 needed; 3840 cases in 0 s (14941/s)
+    site 15 h.2.attn.v_proj: 4 variables x 64 pairs, 0 needed; 4096 cases in 0 s (15272/s)
+    site 16 h.2.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 4352 cases in 0 s (15541/s)
+    site 17 h.2.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 4608 cases in 0 s (15797/s)
+    site 18 h.3.attn.k_proj: 4 variables x 64 pairs, 0 needed; 4864 cases in 0 s (16314/s)
+    site 19 h.3.attn.o_proj: 4 variables x 64 pairs, 0 needed; 5120 cases in 0 s (16807/s)
+    site 20 h.3.attn.q_proj: 4 variables x 64 pairs, 0 needed; 5376 cases in 0 s (17281/s)
+    site 21 h.3.attn.v_proj: 4 variables x 64 pairs, 0 needed; 5632 cases in 0 s (17735/s)
+    site 22 h.3.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 5888 cases in 0 s (18138/s)
+    site 23 h.3.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 6144 cases in 0 s (18532/s)
+21:16:00     [eb] cache of (75, 41) written: max GPU 11.48 GB
+21:16:22     site 0 h.0.attn.k_proj: 513 variables x 256 pairs, 513 needed; 131328 cases in 23 s (5819/s); max GPU 11.48 GB
+21:17:07     site 1 h.0.attn.o_proj: 1025 variables x 256 pairs, 1025 needed; 393728 cases in 68 s (5821/s); max GPU 11.48 GB
+21:17:30     site 2 h.0.attn.q_proj: 513 variables x 256 pairs, 513 needed; 525056 cases in 90 s (5821/s); max GPU 11.48 GB
+21:18:15     site 3 h.0.attn.v_proj: 1025 variables x 256 pairs, 1025 needed; 787456 cases in 135 s (5820/s); max GPU 11.48 GB
+21:20:32     site 4 h.0.mlp.c_fc: 3073 variables x 256 pairs, 3073 needed; 1574144 cases in 272 s (5790/s); max GPU 11.48 GB
+21:23:11     site 5 h.0.mlp.down_proj: 3585 variables x 256 pairs, 3585 needed; 2491904 cases in 431 s (5783/s); max GPU 11.48 GB
+21:23:31     site 6 h.1.attn.k_proj: 513 variables x 256 pairs, 513 needed; 2623232 cases in 451 s (5816/s); max GPU 11.48 GB
+21:24:11     site 7 h.1.attn.o_proj: 1025 variables x 256 pairs, 1025 needed; 2885632 cases in 491 s (5874/s); max GPU 11.48 GB
+21:24:31     site 8 h.1.attn.q_proj: 513 variables x 256 pairs, 513 needed; 3016960 cases in 511 s (5900/s); max GPU 11.48 GB
+21:25:11     site 9 h.1.attn.v_proj: 1025 variables x 256 pairs, 1025 needed; 3279360 cases in 552 s (5945/s); max GPU 11.48 GB
+21:27:13     site 10 h.1.mlp.c_fc: 3073 variables x 256 pairs, 3073 needed; 4066048 cases in 674 s (6035/s); max GPU 11.48 GB
+21:29:34     site 11 h.1.mlp.down_proj: 3585 variables x 256 pairs, 3585 needed; 4983808 cases in 815 s (6117/s); max GPU 11.48 GB
+21:29:52     site 12 h.2.attn.k_proj: 513 variables x 256 pairs, 513 needed; 5115136 cases in 832 s (6146/s); max GPU 11.48 GB
+21:30:27     site 13 h.2.attn.o_proj: 1025 variables x 256 pairs, 1025 needed; 5377536 cases in 867 s (6201/s); max GPU 11.48 GB
+21:30:44     site 14 h.2.attn.q_proj: 513 variables x 256 pairs, 513 needed; 5508864 cases in 885 s (6227/s); max GPU 11.48 GB
+21:31:19     site 15 h.2.attn.v_proj: 1025 variables x 256 pairs, 1025 needed; 5771264 cases in 920 s (6275/s); max GPU 11.48 GB
+21:33:05     site 16 h.2.mlp.c_fc: 3073 variables x 256 pairs, 3073 needed; 6557952 cases in 1026 s (6393/s); max GPU 11.48 GB
+21:35:08     site 17 h.2.mlp.down_proj: 3585 variables x 256 pairs, 3585 needed; 7475712 cases in 1149 s (6508/s); max GPU 11.48 GB
+21:35:23     site 18 h.3.attn.k_proj: 513 variables x 256 pairs, 513 needed; 7607040 cases in 1164 s (6538/s); max GPU 11.48 GB
+21:35:53     site 19 h.3.attn.o_proj: 1025 variables x 256 pairs, 1025 needed; 7869440 cases in 1193 s (6594/s); max GPU 11.48 GB
+21:36:08     site 20 h.3.attn.q_proj: 513 variables x 256 pairs, 513 needed; 8000768 cases in 1208 s (6621/s); max GPU 11.48 GB
+21:36:38     site 21 h.3.attn.v_proj: 1025 variables x 256 pairs, 1025 needed; 8263168 cases in 1238 s (6673/s); max GPU 11.48 GB
+21:38:09     site 22 h.3.mlp.c_fc: 3073 variables x 256 pairs, 3073 needed; 9049856 cases in 1329 s (6809/s); max GPU 11.48 GB
+21:39:54     site 23 h.3.mlp.down_proj: 3585 variables x 256 pairs, 3584 needed; 9967616 cases in 1434 s (6951/s); max GPU 11.48 GB
+21:39:54 [eb stage0] {"experiment": "E272", "card": "NVIDIA H100 80GB HBM3", "do_nothing": {"E_b_K": 1.0, "label": "sampled estimate (256 pairs: 4 derangements x 64)", "size_K": 8182, "n_changed": 0, "n_changed_K": 0, "dd_max": 0.0, "n_vars": 38938, "n_windows": 200, "tokens": 64, "min_margin": 0.008740425109863281, "seconds": 733.6277825832367, "peak_gpu_gb": 11.476414680480957, "card": "NVIDIA H100 80GB HBM3", "seconds_state": 733.7167751789093}, "x2_Kstar": {"got": 0.7617252590298971, "filed": 0.7617252590298972, "rel_dev": 1.4575111058271747e-16}, "identity_last": {"flips": 0, "max_dev": 5.435943603515625e-05, "min_margin": 0.00661468505859375, "cases": 6144, "cases_per_s": 18521.571848721378, "n_read_positions": 1, "n_windows": 75, "window_len": 41, "n_vars": 38938}, "x2_K": {"E_b_K": 0.7613907018761878, "label": "sampled estimate (256 pairs: 4 derangements x 64)", "size_K": 38935, "n_changed": 3585, "n_changed_K": 3585, "dd_max": 303594.3593782926, "n_vars": 38938, "n_windows": 75, "tokens": 41, "min_margin": 0.00020694732666015625, "seconds": 1434.2136113643646, "peak_gpu_gb": 11.476414680480957, "card": "NVIDIA H100 80GB HBM3", "saved": 0.7613907014282402, "tol": 0.04}}
+EB STAGE 0 DONE
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/convergence_panel/results/eb/stage0.json, /root/work/experiments/convergence_panel/results/run_e302_a_stage0.log ===

@@ -1,0 +1,50 @@
+{
+ "task": "sequence",
+ "card": "NVIDIA H100 80GB HBM3",
+ "bits": {
+  "fp32_equal": true,
+  "autocast_equal": true,
+  "delta_nonzero": 0
+ },
+ "export": {
+  "equiv": 8.98176949704066e-06,
+  "shuffled": 1.2853655815124512,
+  "hooked_norm": 1284.823974609375
+ },
+ "zeros": {
+  "nonzero_numerators": {},
+  "kl": 0.0
+ },
+ "do_nothing": {
+  "n_changed": 0,
+  "dd_max": 0.0,
+  "E_b": 1.0
+ },
+ "construction": {
+  "gains": {
+   "E_b_changed": 0.8405273384405777,
+   "n_changed": 38936,
+   "n_vars": 38938,
+   "size": 0.050661212994628724
+  },
+  "gauss": {
+   "E_b_changed": 0.009602275653451505,
+   "n_changed": 38936,
+   "n_vars": 38938,
+   "size": 0.05066121299484595
+  },
+  "identity": {
+   "flips": 0,
+   "max_dev": 4.9114227294921875e-05,
+   "min_margin": 0.0004100799560546875,
+   "cases": 6144,
+   "cases_per_s": 12671.202065170894,
+   "n_read_positions": 1,
+   "n_windows": 256,
+   "window_len": 64,
+   "n_vars": 38938
+  },
+  "est_scan_seconds": 786.6757982969284
+ },
+ "done": true
+}

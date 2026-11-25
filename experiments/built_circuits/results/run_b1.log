@@ -1,0 +1,27 @@
+E301 (built_circuits): claimed at commit, ecode pending start: {'stage': 'build', 'circuit': 'induction', 'feat': None, 'items': None, 'shard': (0, 1), 'tag': 'b1'}; settings {'circuits': ('induction', 'bigram'), 'layer': {'induction': 2, 'bigram': 0}, 'trained': {'induction': [3], 'bigram': [1, 2, 3]}, 'half': {'induction': 40, 'bigram': 20}, 'window': 41, 'n_train': 512, 'n_held': 512, 'induction_pool': (1000, 3000), 'induction_pairs': 64, 'induction_seeds': (163, 11, 12), 'bigram_min_count': 30, 'bigram_min_share': 0.9, 'bigram_rows': {'count': ['train', 0, 4096], 'train': ['train', 4096, 512], 'held': ['train', 4608, 512]}, 'bigram_seeds': (1, 2), 'k': 8, 'factors': (2, 10), 'target': 2, 'fit_seed': 0, 'fit_seed_floor': 1, 'batch': 64, 'steps': 4000, 'lr': 3e-05, 'warmup': 100, 'check_step': 200, 'log_every': 250, 'eval_batch': 64, 'pile_train': 16384, 'pile_held': 1024, 'data_seed': 0, 'slot_layer': {'induction': 2, 'bigram': 0}, 'random_seeds': {'induction': [163101, 163102, 163103, 163104, 163105], 'bigram': [163201, 163202, 163203, 163204, 163205]}, 'scan_keys': ('derangements', 'examples', 'seed', 'rows', 'logit_rows', 'cache_batch', 'ident_vars', 'sae_err_rows', 'sae_chunk', 'band'), 'repeat_seed': 269, 'repeat_circuit': 'induction', 'no_new': ('induction',)}; thresholds {'top1_min': 0.5, 'kl_floor': 1e-06, 'gamma_rel_tol': 1e-05, 'gamma_rel_tol_amendment_2026-11-24': "Amendment 1 (regating-lead, approved in advance by whip-lead 2026-11-24 for a measured floor near 2e-6), filed after the rehearsal's R0d stop and before any reading: was 1e-06 (a stated, unmeasured ~1e-7 floor, x10). Measured on the cluster L40 (l40-worker): two builds (jobs 66317 tag s0, 66438 tag g1) give gamma_new_few 11.291458129882812 both times (same-card floor exactly 0) and gamma_new_thin equal to E214's; both differ from E214's saved gamma_new_few (11.291481018066406, built on another card) by 2.03e-6 relative, the cross-card floor this check guards. 1e-05 is about 5x that floor; slots and A_prime stay exact-match, so a builder change is still caught (results/stage0/fig2_gammas_{s0,g1}.json).", 'norm_rel_tol': 1e-06, 'thresholds_source': "top1_min: the lead's bar for a behaviour M does (P1.63 brief); kl_floor: E195's filed threshold; gamma_rel_tol: 10x the ~1e-7 relative difference between builds of the new edits that P1.62 records; norm_rel_tol: fp32 rounding of a rescaled Gaussian's Frobenius norm, far above it (matched_random computes the scale in fp64)"}; E298 scan settings {'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'ident_vars': 3, 'sae_err_rows': 64, 'sae_chunk': 32, 'band': 'p97'}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+/mnt/nw/home/e.agnew/commute-agents/regating-lead/experiments/built_circuits/build.py:122: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  return C, {"C": C, "attribution_C": A[layer, C].tolist(), "signed_sum": float(A[layer, C].sum()), "mass": A.abs().sum(1).tolist()}
+  fit step 0: held-out copy24 KL(x2 || F) 0.762956
+  fit step 1: batch KL 0.389758, held-out copy24 KL(x2 || F) 0.762391
+  fit step 200: batch KL 0.0394648, held-out copy24 KL(x2 || F) 0.0760977
+  fit step 250: batch KL 0.0319943, held-out copy24 KL(x2 || F) 0.0681996
+  fit step 500: batch KL 0.0223961, held-out copy24 KL(x2 || F) 0.0522667
+  fit step 750: batch KL 0.0169983, held-out copy24 KL(x2 || F) 0.0458452
+  fit step 1000: batch KL 0.0160844, held-out copy24 KL(x2 || F) 0.0421059
+  fit step 1250: batch KL 0.0141066, held-out copy24 KL(x2 || F) 0.0395179
+  fit step 1500: batch KL 0.0131893, held-out copy24 KL(x2 || F) 0.0375882
+  fit step 1750: batch KL 0.011703, held-out copy24 KL(x2 || F) 0.0361518
+  fit step 2000: batch KL 0.0120736, held-out copy24 KL(x2 || F) 0.0349442
+  fit step 2250: batch KL 0.0104963, held-out copy24 KL(x2 || F) 0.0340534
+  fit step 2500: batch KL 0.0105194, held-out copy24 KL(x2 || F) 0.0331534
+  fit step 2750: batch KL 0.00957014, held-out copy24 KL(x2 || F) 0.0325291
+  fit step 3000: batch KL 0.0102263, held-out copy24 KL(x2 || F) 0.0319137
+  fit step 3250: batch KL 0.00916979, held-out copy24 KL(x2 || F) 0.0315147
+  fit step 3500: batch KL 0.00955612, held-out copy24 KL(x2 || F) 0.0309662
+  fit step 3750: batch KL 0.00942292, held-out copy24 KL(x2 || F) 0.030576
+  fit step 4000: batch KL 0.00920513, held-out copy24 KL(x2 || F) 0.0303211

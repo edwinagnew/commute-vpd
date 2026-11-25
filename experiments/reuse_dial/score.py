@@ -68,19 +68,30 @@ def dial_order(dial: list[dict[str, Any]], arms: list[str]) -> float:
     return spearman(np.array([s["residual_share"] for s in pen]), d) if len(set(d.tolist())) >= 2 else math.nan
 
 
-def task_table(states: list[dict[str, Any]], arms: list[str], R: dict[str, Any], gen: np.random.Generator) -> dict[str, Any]:
+def dial_spread(dial: list[dict[str, Any]], arms: list[str]) -> float | None:
+    """The lowest residual share over seeds at the least-penalised arm less the highest at the most-penalised one (the
+    dial's top and bottom apart beyond the seed range when > 0); None when either arm has no finite share."""
+    top = [s["residual_share"] for s in dial if s["arm"] == arms[-2] and math.isfinite(s["residual_share"])]
+    bot = [s["residual_share"] for s in dial if s["arm"] == arms[1] and math.isfinite(s["residual_share"])]
+    return min(top) - max(bot) if top and bot else None
+
+
+def task_table(states: list[dict[str, Any]], arms: list[str], R: dict[str, Any], gen: np.random.Generator, task: str) -> dict[str, Any]:
     """One task: the dial levels reached, the dial's measured order, each reading's rho with d and permutation p, and
     the checks (E_b falls along the dial; the read gain does not)."""
     dial = [s for s in states if s["arm"] in arms and s["reached"]]
     levels = {a: sum(s["arm"] == a for s in dial) for a in arms}
     order = dial_order(dial, arms)
     readable = sum(n >= R["min_per_level"] for n in levels.values()) >= R["min_levels"] and order >= R["dial_rho_min"]
+    spread = dial_spread(dial, arms)
+    if task in R["spread_tasks"]:
+        readable = readable and spread is not None and spread > 0
     d = [arms.index(s["arm"]) for s in dial]
     names = [*R["cheap"], *R["construction"], *R["baselines"], "untrained_svd", "E_b_K", "prior", "gain"]
     cols = {n: rho_p([s["x"][n] for s in dial], d, R, gen) for n in names}
     eb, g = cols["E_b_K"]["rho"], cols["gain"]["rho"] if cols["gain"]["tracks"] else None
     return {"levels": levels, "missing": [a for a, n in levels.items() if n < R["min_per_level"]], "dial_order": order if math.isfinite(order) else None,
-            "readable": readable, "n": len(dial), "rho": cols, "eb_moves": eb is not None and eb <= R["eb_rho_max"],
+            "spread": spread, "readable": readable, "n": len(dial), "rho": cols, "eb_moves": eb is not None and eb <= R["eb_rho_max"],
             "gain_moves": g is not None and abs(g) > R["gain_rho_max"]}  # fmt: skip
 
 
@@ -158,7 +169,7 @@ def main() -> None:
     R, betas = P["rule"], P["settings"]["betas"]
     arms = ["g", *[f"b{b:g}" for b in sorted(betas, reverse=True)], "ft"]
     gen, by = np.random.default_rng(R["perm_seed"]), load_states(a.states)
-    tables = {t: task_table(s, arms, R, gen) for t, s in by.items()}
+    tables = {t: task_table(s, arms, R, gen, t) for t, s in by.items()}
     names = [*R["cheap"], *R["construction"], *R["baselines"], "E_b_K"]
     place = {}
     for t, s in by.items():
