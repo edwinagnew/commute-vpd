@@ -15,11 +15,15 @@ The models are loaded as the toolkit loads them (Hugging Face `AutoModelForCausa
 `layers_output[13]`). The adapter below is the only Qwen-specific code.
 
 Compared (the random directions are not saved by the toolkit, so their CEs are not compared):
-  dbar      the port's delta_bar_j (j = 0-8) against the toolkit's mean_pos_<j>.pt, max |difference| / max |toolkit|
+  dbar      the port's delta_bar_j (j = 0-8) against the toolkit's mean_pos_<j>.pt, the largest ABSOLUTE |difference|
+            (E284's 0.1184 was this, not a relative error), each entry's difference over its bar, and the cosine per j
   ce        on the training set and FineWeb, per position and subset (all, exclude_pos): CE_ft, CE_base, CE with the
             swap along the toolkit's own delta_bar_j, and incr_ce, the port fed the toolkit's vectors
-Bars: each quantity's largest |difference| between run A and run B (two fresh toolkit runs), the floor. A floor of
-exactly 0 gives no bar from that rule: the quantity is reported with "no bar (floor 0)" and no pass is claimed.
+Bars: ce, each quantity's largest |difference| between run A and run B (two fresh toolkit runs), the floor. dbar, per
+entry, half the bf16 spacing at the port's value: the toolkit stores the mean in bf16 (method.py L920-926), two toolkit
+runs agree on it bit for bit (floor 0), and torch's CPU bf16 mean is within that half spacing of the float64 mean of
+the same values (P2.80, reports/analyses/2026-11-24_analysis_p2-80-adl-port.md). Per-position cosine and largest
+difference go in the output's "inputs".
 """
 
 from __future__ import annotations
@@ -27,6 +31,7 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import math
 from pathlib import Path
 from typing import Any
 
@@ -118,6 +123,9 @@ def port(base: Any, ft: Any, tok: Any, run_a: Path) -> tuple[dict[str, float], d
         tot += (pair.ft(x, a)[1][:, POS].double() - pair.base(x, a)[1][:, POS].double()).sum(0).cpu()
     dbar = tot / len(docs)
     out |= {f"dbar/{j}/{i}": float(x) for j in POS for i, x in enumerate(dbar[j].tolist())}
+    tk = torch.stack([torch.load(tk_dir(run_a) / f"mean_pos_{j}.pt").double() for j in POS])
+    rec["dbar_cos"] = torch.nn.functional.cosine_similarity(dbar, tk, dim=1).tolist()
+    rec["dbar_max_abs_per_pos"] = (dbar - tk).abs().max(1).values.tolist()
     rec["docs_sha256"] = sha([docs])
     V = CE.unit(torch.stack([torch.load(tk_dir(run_a) / f"mean_pos_{j}.pt").float() for j in POS]))
     for e, eid in EVALS.items():
@@ -155,14 +163,32 @@ def kind(name: str) -> str:
     return "dbar" if parts[0] == "dbar" else f"ce/{parts[-1]}"
 
 
+def bf16_half_spacing(x: float) -> float:
+    """Half the bf16 spacing at x (8 significant bits), how far rounding x to bf16 can move it, plus |x| 2^-16 for the
+    float32 accumulation before that rounding (a float64 -> float32 -> bf16 cast reads 1.000013 of the bare half
+    spacing, P2.80 measured). 0 at x = 0."""
+    return 2.0 ** (math.floor(math.log2(abs(x))) - 8) + abs(x) * 2.0**-16 if x else 0.0
+
+
+def over_bar(port: float, tk: float) -> float:
+    """|port - tk| over the bf16 half spacing at port; 0 when equal, inf when unequal at a zero bar."""
+    d, bar = abs(port - tk), bf16_half_spacing(port)
+    return 0.0 if d == 0 else (d / bar if bar else math.inf)
+
+
 def compare(a: dict[str, float], b: dict[str, float], ref: dict[str, float]) -> dict[str, dict[str, Any]]:
-    """Per kind: the largest |a - b| (port vs toolkit) beside the floor (toolkit run A vs run B)."""
+    """Per kind: the largest |a - b| (port vs toolkit) beside the floor (toolkit run A vs run B); for dbar, also the
+    largest |a - ref| over its entry's bf16 half spacing at a (the toolkit's storage rounding), the bar there."""
     out: dict[str, dict[str, Any]] = {}
     for k in sorted({kind(n) for n in a}):
         names = [n for n in a if kind(n) == k]
         diff, floor = max(abs(a[n] - ref[n]) for n in names), max(abs(b[n] - ref[n]) for n in names)
         verdict = "no bar (floor 0)" if floor == 0 else ("within floor" if diff <= floor else "outside floor")
         out[k] = {"port_vs_toolkit": diff, "floor_toolkit_a_vs_b": floor, "verdict": verdict, "n": len(names)}
+        if k == "dbar":
+            ratio = max(over_bar(a[n], ref[n]) for n in names)
+            out[k] |= {"max_diff_over_bf16_half_spacing": ratio,
+                       "verdict": "within bf16 rounding" if ratio <= 1 else "outside bf16 rounding"}  # fmt: skip
     return out
 
 
@@ -188,7 +214,7 @@ def main() -> int:
     a.out.write_text(json.dumps(res, indent=1))
     for k, v in res["compare"].items():
         print(f"PARITY {k}: port vs toolkit {v['port_vs_toolkit']:.3g}, floor {v['floor_toolkit_a_vs_b']:.3g}: {v['verdict']}", flush=True)
-    return 0 if all(v["verdict"] == "within floor" for v in res["compare"].values()) else 1
+    return 0 if all(v["verdict"].startswith("within") for v in res["compare"].values()) else 1
 
 
 if __name__ == "__main__":
