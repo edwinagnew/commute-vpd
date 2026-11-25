@@ -135,3 +135,6 @@ Every Geiger et al. 2025 number in §3 points to the right item (Def. 2, 5, 9, 2
   the reversal), or the rendered main.pdf layout.
 - Pass 4 checked related-work bullets and 36 bib entries against arXiv/JMLR texts; the cut/ files' citations were not checked.
 - All values come from definition.csv at v2 9529c07. None were recomputed from the runs' own results.
+
+## Re-check of MUSTs 1-4 on v2 9dd94f4 (11-25 13:20)
+All four are applied. One new MUST: the sec7 evidence sentence says the three rank correlations all "change sign" without the confident states. Only steering's does (appI:176-178: 0.18, -0.48, -0.81). There are three SHOULDs: sec5:10 is still flat on "mostly new"; appI:44 "300 steps" sits beside :47 "30 steps"; the SAE has no rescale-only control. Details: ~/commute-data/agents/writeup-lead/note-2026-11-25-redteam-must14-recheck.md.
