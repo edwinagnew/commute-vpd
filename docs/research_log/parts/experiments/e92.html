@@ -17,8 +17,8 @@
 <li>the known-facts fine-tune at two seeds against the fictional one (was E103, <code>experiments/known_answer_pair</code>; jobs 53188, 53209, 53262, 53275, 53316, 53334);</li>
 <li>disjoint halves of the known rows (was E105, <code>experiments/rows_null</code>; job 53480);</li>
 <li>wrong answers on the known rows, a topic split, and VPD's switched-on set on the same states (was E107, <code>experiments/label_vs_style</code>; jobs 53575, 53822);</li>
-<li>the wrong and true runs trained to their end (was E109, <code>experiments/larger_size</code>; jobs 54053, 54062);</li>
-<li>four cheap numbers beside every Qwen state with a VPD row, 180 cells (was E118, <code>experiments/qwen_comparator_table</code>, table in <code>experiments/neuron_vpd_table</code>; jobs 54382, 54383).</li></ul></dd>
+<li>the wrong and true runs trained to their end (was E109, <code>archive/experiments/larger_size</code>; jobs 54053, 54062);</li>
+<li>four cheap numbers beside every Qwen state with a VPD row, 180 cells (was E118, <code>experiments/qwen_comparator_table</code>, table in <code>archive/experiments/neuron_vpd_table</code>; jobs 54382, 54383).</li></ul></dd>
 <dt>Found</dt><dd><ul>
 <li>No cheap reading tells reuse from new on Qwen: the steering share flips with step, and the carrying set follows the data's source and style, not whether the model held the fact.</li>
 <li>Once the facts are learned, two seeds share only about 0.65 of their carrying set, so the neuron reading has no power there.</li>
