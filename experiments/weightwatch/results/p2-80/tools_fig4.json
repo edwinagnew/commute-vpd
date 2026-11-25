@@ -657,15 +657,6 @@
     ],
     "mean": 0.5829580456055116
    },
-   "Lowercase text": {
-    "side": "reuse",
-    "values": [
-     0.0,
-     0.0,
-     0.0
-    ],
-    "mean": 0.0
-   },
    "Runner-up guess": {
     "side": "reuse",
     "values": [
@@ -678,20 +669,18 @@
    "Top guess": {
     "side": "reuse",
     "values": [
-     0.0,
      0.06918447104965286,
      0.15070373292084688
     ],
-    "mean": 0.07329606799016658
+    "mean": 0.10994410198524987
    },
    "Top guess (96 keys)": {
     "side": "reuse",
     "values": [
      0.19434875854457564,
-     0.0,
      0.056893981174058375
     ],
-    "mean": 0.08374757990621134
+    "mean": 0.12562136985931702
    },
    "Cipher (24 keys)": {
     "side": "new",
@@ -732,11 +721,9 @@
    "Ciphered text": {
     "side": "new",
     "values": [
-     0.02793478141391349,
-     0.0,
-     0.0
+     0.02793478141391349
     ],
-    "mean": 0.00931159380463783
+    "mean": 0.02793478141391349
    },
    "Lookup": {
     "side": "new",
@@ -768,25 +755,25 @@
   },
   "reuse": {
    "task_mean_range": [
-    0.0,
+    0.10994410198524987,
     0.6580452171547754
    ],
    "state_range": [
-    0.0,
+    0.05242458517593329,
     0.7505178367317321
    ],
-   "n_states": 24
+   "n_states": 19
   },
   "new": {
    "task_mean_range": [
-    0.00931159380463783,
+    0.02793478141391349,
     0.3590843501828224
    ],
    "state_range": [
-    0.0,
+    0.02793478141391349,
     0.3931980909625928
    ],
-   "n_states": 24
+   "n_states": 22
   },
   "null_state_range": [
    0.017631016174189426,
@@ -893,20 +880,28 @@
    "e58/prior_cipher_s1": 0.7798162499214973,
    "e58/prior_cipher_s2": 0.7798162499214973
   },
+  "empty": [
+   "c3/rank1_s0",
+   "e53/cipher_s1",
+   "e53/cipher_s2",
+   "e53/lowercase_s0",
+   "e53/lowercase_s1",
+   "e53/lowercase_s2",
+   "e58/rank1_s1"
+  ],
   "heads_task_mean": {
    "Copy at a new marker": 7.333333333333333,
    "Copy key": 4.333333333333333,
    "Copy key (24 keys)": 4.0,
    "Copy key (96 keys)": 3.6666666666666665,
-   "Lowercase text": 0.0,
    "Runner-up guess": 5.0,
-   "Top guess": 1.3333333333333333,
-   "Top guess (96 keys)": 2.0,
+   "Top guess": 2.0,
+   "Top guess (96 keys)": 3.0,
    "Cipher (24 keys)": 9.0,
    "Cipher (96 keys)": 11.0,
    "Cipher (early step)": 10.333333333333334,
    "Cipher (late step)": 8.333333333333334,
-   "Ciphered text": 1.6666666666666667,
+   "Ciphered text": 5.0,
    "Lookup": 16.333333333333332,
    "Prior-matched cipher": 10.0,
    "Random map": 6.333333333333333

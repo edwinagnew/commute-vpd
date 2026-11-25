@@ -5,21 +5,21 @@
 given. Plan `reports/plans/2026-11-24_plan_tools-same-states.md`.*
 
 We read each existing model-diffing tool on the same 48 fine-tuned states that the paper's Fig 4 plots: sixteen tasks,
-eight built to reuse the base model's machinery and eight built new, three seeds each. Every tool with a passing
-control gives values on the tasks built to reuse that overlap its values on the tasks built new, and the one tool
-whose values do not overlap, the crosscoder, failed its planted control. For `GOALS.md` this puts the tools table on
-the same footing as Fig 4: what the table says about each tool now holds on the exact states the cheap readings are
+eight built to reuse the base model's machinery and eight built new, three seeds each. On every tool the values on the
+tasks built to reuse overlap the values on the tasks built new; none of these tools was built to tell reuse from new,
+so the overlap describes what they measure and is not a failure of the tool. For `GOALS.md` this puts the tools table
+on the same footing as Fig 4: what the table says about each tool now holds on the exact states the cheap readings are
 judged on.
 
 ![Each tool's value per task, three seeds a task, with its own null in grey](../../experiments/weightwatch/figures/tools_fig4.png)
 
 ## The answer
 
-On the 48 states Fig 4 plots, head-level patching reads 0.00 to 0.66 on the tasks built to reuse and 0.01 to 0.36 on
-those built new. Its lowest reuse values come from tasks whose circuit holds one or two heads, or none. WeightWatch's
-score reads 1.11 to 2.96 on the reuse side and 0.95 to 1.81 on the new side, and it cannot tell a strengthened circuit
-from a deleted one. Patching neurons reads 0.41 to 0.88 against 0.46 to 0.75. The crosscoder, read on one seed only,
-places a random update above most fine-tunes on both sides.
+On the 48 states Fig 4 plots, head-level patching reads 0.11 to 0.66 on the tasks built to reuse and 0.03 to 0.36 on
+those built new. On lowercase text its circuit search finds no head, so it gives no value there. WeightWatch's score
+reads 1.11 to 2.96 on the reuse side and 0.95 to 1.81 on the new side, and it cannot tell a strengthened circuit from a
+deleted one. Patching neurons reads 0.41 to 0.88 against 0.46 to 0.75. The crosscoder failed its control, so its
+values are shown unvalidated, with no reading. Every range here is over task means.
 
 ## What we were trying to test
 
@@ -79,43 +79,52 @@ cards name two rival readings but neither is scored here. The question is only w
 
 ## What we observed
 
-### Do the tools with passing controls read the two sides apart?
+### What do the tools with passing controls read on the two sides?
 
-**Reading it.** No: on CMAP at heads, CMAP at neurons and WeightWatch's $S$, the values on the tasks built to reuse and
-on those built new overlap. CMAP at heads reads 0.00 to 0.66 on the reuse side and 0.01 to 0.36 on the new side. The
-reuse tasks that read low are lowercase text, where the circuit search finds no head on any seed, and the two top-guess
-tasks, at 0.07 and 0.08. Those two keep about one or two heads, against nine to eleven on the cipher tasks they are
-paired with, so their value reflects the circuit's size. Four reuse tasks, the copy tasks, read 0.45 to 0.66, above
-their random head sets.
+**Reading it.** On CMAP at heads, CMAP at neurons and WeightWatch's $S$, the values on the tasks built to reuse and on
+those built new overlap. CMAP at heads reads 0.11 to 0.66 on the reuse side and 0.03 to 0.36 on the new side. Seven
+seeds kept no head in their circuit, so they have no CMAP value: all three lowercase seeds, two ciphered-text seeds and
+one seed of each top-guess task. They are drawn hollow at zero and left out of every mean, so ciphered text rests on
+one seed. Individual seeds reach 0.75, above the task means.
+
+The two top-guess tasks read lowest on the reuse side, at 0.11 and 0.13. Their circuits keep two or three heads,
+against nine to eleven on the cipher tasks they are paired with. Whether the small circuit is why they read low was not
+tested here. The four copy tasks read 0.45 to 0.66, above their random head sets.
+
+The tasks built new are read at their pair's matched scale, not at the size they were trained to. Cipher at the late
+step, at a scale of 0.52, reads 0.11, the lowest of the cipher tasks; random map is read at 0.66. Their values may be
+shifted by the scale.
 
 CMAP at neurons reads 0.41 to 0.88 built to reuse and 0.46 to 0.75 built new. Copy key, a reuse task, reads lowest of
 all sixteen at 0.41.
 
 WeightWatch's $S$ reads 1.11 to 2.96 built to reuse and 0.95 to 1.81 built new. Lowercase text reads highest at 2.96.
 Ciphered text, the task built new from the same text, reads highest on the new side, at 1.81. The runner-up-guess task and the two
-cipher tasks paired with it sit at 1.11 to 1.13, inside their same-spectrum null. $S$ is blind to sign: in E294 an edit
+cipher tasks paired with it read 1.11 to 1.13 as task means. Their seeds sit inside their same-spectrum null but one: a
+late-step cipher seed reads 1.15 against a null top of 1.14. $S$ is blind to sign: in E294 an edit
 that deleted a circuit read 287, against 490 for one that doubled it. A high $S$ means the update writes along
 directions the model already uses, not that it reuses them.
 
-### What does the crosscoder read, with its failed control?
+### What does the crosscoder give, with its failed control?
 
-**Reading it.** The crosscoder's $d$ on seed 0 reads 0.06 to 0.56 on the tasks built to reuse and 0.27 to 0.60 on
-those built new. One random update reads 0.55, above every reuse task but one. Its planted control failed: the latent
-that carried a planted direction had a base-side ratio of 0.244 against the authors' cut-off of 0.2, so it was not
-counted fine-tune-specific. Two crosscoders trained with different seeds on one state read 0.42 and 0.46. The lowest
-reuse value, 0.06 on copy key with 96 keys, is the one state where fine-tune-specific latents carry a visible part of
-the change.
+**Reading it.** No reading: its planted control failed, so its values are unvalidated. The latent that carried a
+planted direction had a base-side ratio of 0.244 against the authors' cut-off of 0.2, so it was not counted
+fine-tune-specific. For the record, $d$ on seed 0 spans 0.06 to 0.56 on the tasks built to reuse and 0.27 to 0.60 on
+those built new. One random update gives 0.55. Two crosscoders trained with different seeds on one state gave 0.42 and
+0.46.
 
 ### How do these sit beside Fig 4's cheap readings?
 
 The re-gating share reads 0.76 to 1.09 on the reuse side and 0.12 to 0.40 on the new side, the only reading here whose
-two sides do not overlap. Its random-rotation null spans -0.04 to 0.49 over the 48 states, and on lowercase text the
-null reaches 0.49. The steering share reads 0.19 to 0.74 on the reuse side against 0.14 to 0.68 on the new side.
+two sides do not overlap. Its random-rotation null spans -0.04 to 0.49 over the 48 states. On lowercase text the null
+reads 0.33 to 0.49 per seed. That sits above every trained value on the new side, whose highest seed reads 0.42. So on
+this task the re-gating share's null alone would reach the new side, a weakness of this reading. The steering share reads 0.19 to 0.74 on the reuse side against 0.14 to 0.68 on the new side.
 Effective rank reads 422 to 600 against 405 to 594.
 
 ### Per-task values
 
-Means over the three seeds; the crosscoder is seed 0 alone. "Heads" is the CMAP circuit's size, averaged over seeds.
+Means over the three seeds; the crosscoder is seed 0 alone. CMAP leaves out seeds whose circuit kept no head; the
+table says where fewer than three seeds remain. "Heads" is the CMAP circuit's size, averaged over the same seeds.
 
 | task | built | re-gating | steering | eff. rank | CMAP heads | heads | CMAP neurons | WeightWatch $S$ | crosscoder $d$ |
 |---|---|---|---|---|---|---|---|---|---|
@@ -123,15 +132,15 @@ Means over the three seeds; the crosscoder is seed 0 alone. "Heads" is the CMAP 
 | Copy key | reuse | 0.78 | 0.70 | 440 | 0.54 | 4.3 | 0.41 | 1.71 | 0.37 |
 | Copy key (24 keys) | reuse | 0.84 | 0.72 | 438 | 0.45 | 4.0 | 0.59 | 1.59 | 0.38 |
 | Copy key (96 keys) | reuse | 0.77 | 0.74 | 475 | 0.58 | 3.7 | 0.60 | 1.82 | 0.06 |
-| Lowercase text | reuse | 0.76 | 0.73 | 600 | 0.00 | 0.0 | 0.73 | 2.96 | 0.42 |
+| Lowercase text | reuse | 0.76 | 0.73 | 600 | no circuit | none | 0.73 | 2.96 | 0.42 |
 | Runner-up guess | reuse | 0.77 | 0.32 | 431 | 0.20 | 5.0 | 0.74 | 1.11 | 0.42 |
-| Top guess | reuse | 0.84 | 0.21 | 426 | 0.07 | 1.3 | 0.66 | 1.31 | 0.36 |
-| Top guess (96 keys) | reuse | 0.86 | 0.19 | 422 | 0.08 | 2.0 | 0.70 | 1.59 | 0.51 |
+| Top guess | reuse | 0.84 | 0.21 | 426 | 0.11, 2 seeds | 2.0 | 0.66 | 1.31 | 0.36 |
+| Top guess (96 keys) | reuse | 0.86 | 0.19 | 422 | 0.13, 2 seeds | 3.0 | 0.70 | 1.59 | 0.51 |
 | Cipher (24 keys) | new | 0.23 | 0.48 | 428 | 0.23 | 9.0 | 0.65 | 1.03 | 0.27 |
 | Cipher (96 keys) | new | 0.30 | 0.16 | 405 | 0.24 | 11.0 | 0.72 | 1.36 | 0.48 |
 | Cipher (early step) | new | 0.24 | 0.51 | 433 | 0.25 | 10.3 | 0.66 | 1.12 | 0.39 |
 | Cipher (late step) | new | 0.26 | 0.21 | 405 | 0.11 | 8.3 | 0.75 | 1.13 | 0.60 |
-| Ciphered text | new | 0.12 | 0.68 | 594 | 0.01 | 1.7 | 0.46 | 1.81 | 0.56 |
+| Ciphered text | new | 0.12 | 0.68 | 594 | 0.03, 1 seed | 5.0 | 0.46 | 1.81 | 0.56 |
 | Lookup | new | 0.40 | 0.15 | 410 | 0.36 | 16.3 | 0.73 | 0.95 | 0.55 |
 | Prior-matched cipher | new | 0.38 | 0.14 | 407 | 0.31 | 10.0 | 0.73 | 1.26 | 0.39 |
 | Random map | new | 0.26 | 0.33 | 424 | 0.14 | 6.3 | 0.69 | 1.21 | 0.41 |
@@ -141,11 +150,11 @@ Per-state values and nulls: `experiments/weightwatch/figures/tools_fig4.csv`; su
 
 ## What we learned
 
-The tools table can now cite one set of states. On it, no existing tool with a passing control gives values that put
-the tasks built to reuse on one side and the tasks built new on the other. CMAP at heads comes closest on the copy
-tasks, but its value follows the circuit's size where the circuit is small. WeightWatch's score tracks whether an update
-writes along the model's own output directions, which both sides do in places. Whether any of this counts as reuse is
-the definition's call, and this page makes none.
+The tools table can now cite one set of states. On it, each tool's values on the tasks built to reuse overlap its
+values on the tasks built new. That describes what these tools measure; none was designed to sort reuse from new. CMAP
+at heads reads highest on the copy tasks and, on the reuse side, lowest on the top-guess tasks, whose circuits are small. WeightWatch's
+score tracks whether an update writes along the model's own output directions, which both sides do in places. Whether
+any of this counts as reuse is the definition's call, and this page makes none.
 
 ## How compelling the evidence is
 
@@ -157,10 +166,8 @@ CMAP null is a mean of ten random head sets, so the grey band shows its spread o
 
 ## Surprises
 
-- The re-gating share's random-rotation null reads up to 0.49 on lowercase text, about two thirds of the trained
-  share on that task. Fig 4 draws no null, so this was not visible there.
-- The crosscoder finds fine-tune-specific latents on a task built to reuse, copy key with 96 keys, which pulls its $d$
-  to 0.06, the lowest value on either side.
+- The re-gating share's random-rotation null reads 0.33 to 0.49 per seed on lowercase text, above every trained value
+  on the new side. Fig 4 draws no null, so this was not visible there.
 
 ## What next
 

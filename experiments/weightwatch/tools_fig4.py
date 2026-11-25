@@ -93,14 +93,17 @@ def cmap(tasks: dict[tuple[str, str], dict[str, Any]]) -> dict[str, dict[str, fl
     """Per state: the head share, its random-head-set null and the circuit size, from the item whose role is the
     first Fig 4 pair naming that task (c3 cipher: open_pair_c3, as built; e58 cipher: e58_rank1_96's scale)."""
     items = [load(p) for d in ("items", "p2-80/items") for p in sorted((EXP / "cmap/results" / d).glob("*_x*.json"))]
-    out: dict[str, dict[str, float]] = {"value": {}, "null": {}, "heads": {}, "c": {}}
+    out: dict[str, dict[str, float]] = {"value": {}, "null": {}, "heads": {}, "c": {}, "empty": {}}
     for (side, _), t in tasks.items():
         role = f"{t['pair']}:{side}"
         for s in t["states"]:
             (it,) = [i for i in items if i["state"] == s and role in i["roles"]]
             rnd = [v["share"]["logodds"] for k, v in it["cmap"].items() if k.startswith("random") and v]
-            out["value"][s] = it["compared"]["whole_logodds_share"]
             out["heads"][s] = len(it["circuit"])
+            if it["circuit"]:  # an empty circuit has no CMAP reading: drawn hollow at its 0, left out of every mean
+                out["value"][s] = it["compared"]["whole_logodds_share"]
+            else:
+                out["empty"][s] = it["compared"]["whole_logodds_share"]
             out["c"][s] = it["c"]
             if rnd:
                 out["null"][s] = statistics.fmean(rnd)
@@ -145,7 +148,7 @@ def main() -> None:
         ("cmap", "CMAP at heads; new sides at matched size", "log-odds share", cm["value"], cm["null"], None),
         ("neuron", "CMAP at neurons, our adaptation; no null", "share", vals["neuron"], None, None),
         ("ww", "WeightWatch: our score S, sign-blind", "S (1 = isotropic)", ww["value"], None, (ww_gauss, "Gaussian update, 20 draws")),
-        ("cc", "Crosscoder, seed 0 only; planted control failed", "d = shared - specific", cc["value"], None,
+        ("cc", "Crosscoder, seed 0; unvalidated, control failed", "d = shared - specific", cc["value"], None,
          (cc_random, "one random update")),
     ]
     band_label = {"share": "random rotation of the SVD", "steer": "random directions", "cmap": "random head sets"}
@@ -158,6 +161,12 @@ def main() -> None:
             groups = {t: ([v[s] for s in tasks[(sd, t)]["states"] if s in v] if sd == side else [])
                       for sd, t in order}
             FG.column_dots(ax, groups, method=f"built_{side}", ylabel=ylab)
+        if key == "cmap":
+            for i, k in enumerate(order):
+                e = [cm["empty"][s] for s in tasks[k]["states"] if s in cm["empty"]]
+                ax.scatter([i] * len(e), e, facecolors="none", edgecolors=SIDE_COLOUR[k[0]], s=22, linewidths=0.9,
+                           label="no circuit found (left out)" if e and not any(
+                               x.get_label() == "no circuit found (left out)" for x in ax.collections) else None)
         if band is not None:
             labelled = False
             for i, k in enumerate(order):
@@ -202,15 +211,16 @@ def main() -> None:
         summary[key] = rec
     summary["cmap"]["heads"] = cm["heads"]
     summary["cmap"]["c"] = cm["c"]
-    summary["cmap"]["heads_task_mean"] = {t: statistics.fmean(cm["heads"][s] for s in tasks[(sd, t)]["states"])
-                                          for sd, t in order}
+    summary["cmap"]["empty"] = sorted(cm["empty"])
+    summary["cmap"]["heads_task_mean"] = {t: statistics.fmean(h) for sd, t in order
+                                          if (h := [cm["heads"][s] for s in tasks[(sd, t)]["states"] if cm["heads"][s]])}
     summary["ww"]["sham_state_range"] = span(list(ww["sham"].values()))
     summary["ww"]["haar_range"] = [min(r[0] for r in ww["haar"].values()), max(r[1] for r in ww["haar"].values())]
     ax = axes.flat[-1]
     ax.axis("off")
     ax.text(0, 1, "Not read on these states:\n\nActivation difference lens: its 67M\ncontrol fails, so no reading.\n\n"
             "Diff-SAE, Delta-Crosscoder: no\npassing positive control at the\nread site; not run.\n\n"
-            "CMAP at heads reads each new side\nat its pair's matched size.\n"
+            "CMAP at heads reads each new side\nat its pair's matched size; hollow:\nseeds with no circuit, left out.\n"
             "The crosscoder has seed 0 only.", va="top", fontsize=7.5, transform=ax.transAxes)
     fig.suptitle("What each tool reads on the 48 states of Fig 4, task by task", fontsize=10)
     FG.save(fig, OUT_FIG, n="16 tasks x 3 seeds (crosscoder: seed 0, 16 states). Blue: built to reuse; orange: built new. "
