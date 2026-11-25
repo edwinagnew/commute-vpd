@@ -1,10 +1,11 @@
 # Do Fig 2's built edits read the same way on other circuits and cue draws?
 
-**The answer.** Yes, on both new circuits and at all three featurizations. Edits that strengthen or rebuild what the
-model already does read above new lookups and random updates of the same size, by more than the noise floor. The weak
-spot is induction at SAE latents. There the margin is under twice the floor, because the SAE error terms carry most of
-the strengthening edits' change. By the same rule, Fig 2's own site sits inside the floor at top neurons. New edits on
-three new cue draws read near Fig 2's, a little higher at VPD.
+**The answer.** Mostly yes, with limits. On the bigram and induction circuits, edits that strengthen or rebuild what
+the model already does read above random updates of the same size at all three featurizations, by more than the noise
+floor. Induction has no new edits, so the comparison with new lookups rests on Fig 2's cue draw and three more, all in
+the first layer; there the new edits read near Fig 2's. At SAE latents on induction the strengthening edits read barely
+above a random, and only through the SAE error terms. Fig 2's own site at top neurons is no call. Four randoms read
+above their filed cap, one of them unexplained.
 
 ## What was done
 
@@ -39,12 +40,16 @@ Fig 2's new rows rather than adding a site. The induction circuit has no new edi
   VPD and 5.28e-5 at SAE. On the new cue draws it was 4.48e-5 at VPD and 3.91e-5 at SAE.
 - At top neurons on the new cue draws the deviation was 1.16e-3, about fourteen times the bigram windows'. It is the
   same on the L40 and the L40S, so it belongs to these cue windows, not to the card. The smallest answer margin on these
-  windows is 6.68e-6, and still no answer flipped.
+  windows is 6.68e-6, and still no answer flipped. That deviation is far larger than that margin, so "no flip" there is
+  luck, not a margin the deviation could not cross.
 - At top neurons on the induction windows the deviation was 0.0165, about two hundred times the filed expectation of
-  about 1e-4. No answer flipped: the smallest answer margin there is 0.265, sixteen times larger. The filed stop is a
-  flip, so the control holds, but this is the noisiest identity read in the cell. Its cause is not known.
+  about 1e-4. It is the largest over 788,224 swap cases; the SAE read's is over 2,048. No answer flipped: the smallest
+  answer margin there is 0.265. The filed stop is a flip, so the control holds. Its cause is not known. The induction
+  margin at top neurons, 0.136, is far above the deviation, so it cannot move that reading's verdict.
 - **The noise floor**, induction's doubling edit read again with another draw of swap pairs: 0.00367 at VPD, 0.0222 at
-  top neurons and 0.00452 at SAE. The top-neuron floor is six times the others, in line with the noisy identity read.
+  top neurons and 0.00452 at SAE. Each comes from one pair of reads, so it is one draw of the noise, not a measured
+  spread. At top neurons both reads give exactly 1 without leftovers. The whole 0.0222 is the pooled remainder's
+  share moving from 0.330 to 0.306 between the two swap draws.
 - **L40 cross-check** of the L40S pods: all six gaps are exactly 0, against the filed bar of 0.0019, so the L40S reads
   stand.
 - **Builds.** Every random matches its edit's squared norm within 1.14e-10 relative. Every new edit that was built
@@ -116,13 +121,17 @@ The margin is the lowest strengthening or rebuilt edit minus the highest new edi
 - **Bigram:** 0.0553 at VPD, 0.296 at top neurons and 0.207 at SAE, against floors of 0.00367, 0.0222 and 0.00452.
   The narrowest is VPD, where the tenfold edit reads 0.0741 against the highest new edit or random at 0.0188.
 - **Induction:** 0.203 at VPD and 0.136 at top neurons, far above their floors. At SAE it is 0.00753, under twice the
-  floor: the strengthening edits read about 0.04 there, and the tenfold edit's random reads 0.0325.
-- **Fig 2's own site, by the same rule:** 0.605 at VPD and 0.0865 at SAE, but 0.0146 at top neurons, inside that
-  floor. There the rebuilt edit reads 0.0476 and new_few's random 0.033.
+  floor. The two strengthening edits read 0.040 there, the same as Fig 2's own doubling random at SAE, 0.041. The pass
+  rests on the error terms: without leftovers the rebuilt edit's random reads 0.212, above both strengthening edits at
+  0.201 and 0.160. So at SAE on induction the reading puts the strengthening edits barely above a random.
+- **Fig 2's own site, by the same rule:** 0.605 at VPD and 0.0865 at SAE. At top neurons it is no call, because it
+  turns on which randoms are counted. Against each edit's own random the margin is 0.0146, since new_few's random reads
+  0.033. Against the size-matched and KL-matched randoms, as the filed expectation computed it, the margin is 0.030.
+  The floor of 0.0222 lies between the two, and it is one draw.
 
-So the two new circuits keep Fig 2's order more clearly than Fig 2's own site does at top neurons. The three new cue
-draws put the new edits near Fig 2's at every featurization; at VPD new_thin sits a little above, as the next section
-reads.
+The two new circuits keep Fig 2's order with respect to the randoms. The new-edit side rests on the layer-0 cue draws
+alone: induction has no new edits, and the bigram's new edits are Fig 2's built again. The three new cue draws put the
+new edits near Fig 2's at every featurization; at VPD new_thin sits a little above, as the next section reads.
 
 ## Why do new edits read above their randoms at VPD?
 
@@ -134,7 +143,8 @@ new_thin reads above its random there, as it does in Fig 2: 0.00613 to 0.0114 ag
 latents both new edits read below their randoms.
 
 **Is it expected?** It fits the rule, but nothing filed predicted it. No filed prediction orders a new edit against its
-random: both were expected under about 0.03, and all are. The order follows from what the reading counts and what the
+random. The new edits were expected under about 0.03, and all are. Their randoms on the new draws also stay under it,
+but four randoms elsewhere miss that cap; the scorecard lists them. The order follows from what the reading counts and what the
 random is matched on.
 
 - The write share counts only the part of a variable's write change that lies along the base model's own write for that
@@ -171,13 +181,14 @@ directions.
 - **The bigram's doubling and tenfold edits read 0.0982 and 0.0741 at VPD**, against 0.761 at Fig 2's site. The plan
   allowed this branch, "at most 0.2 if VPD mixes the eight neurons into many subcomponents". Induction's doubling edit
   reads 0.713 there, close to Fig 2's, but its tenfold edit reads 0.274.
+- **Induction's doubling random reads 0.0704 at VPD**, over twice the filed cap of 0.03 for a random. That is about a
+  quarter of the tenfold edit's 0.274. It is unexplained.
 - **Induction's strengthening edits read about 0.04 at SAE**, where the plan expected about 0.95 as at Fig 2's site.
   The SAE error terms carry most of their change, so the margin over the randoms is under twice the floor.
 - **The top-neuron identity read on induction deviated by 0.0165**, about two hundred times the filed expectation, with
-  no answer flipped. The top-neuron floor there is 0.0222, six times the VPD and SAE floors.
-- **By the filed rule, Fig 2's own site does not clear the floor at top neurons.** The filed expectation already said
-  it would hold there only if the floor were under 0.030. The floor came in at 0.0222. But the margin from these rows,
-  where new_few's random reads 0.033, is only 0.0146.
+  no answer flipped. Its cause is not known.
+- **Fig 2's own site at top neurons turns on the choice of random.** Each edit's own random gives a margin of 0.0146,
+  the size-matched and KL-matched randoms give 0.030, and the one-draw floor is 0.0222.
 - **At top neurons the bigram's doubling edit reads 0.332 with leftovers counted and 1 without.** The leftovers carry
   0.94 of its write change, which sits in layer 0's pooled remainder of neurons below the band. The plan expected a
   drop of about that remainder's share whenever some of the eight neurons fall below the band.
@@ -193,7 +204,8 @@ directions.
 | E301 P1, bigram | reuse edits above new edits and randoms | min reuse minus max of the rest, above the derangement floor | gap 0.0553 at VPD, 0.296 at top neurons, 0.207 at SAE; floors 0.00367, 0.0222, 0.00452 | holds at all three |
 | E301 P1, induction | the same | the same, on reuse edits and their randoms | gap 0.203 at VPD, 0.136 at top neurons, 0.00753 at SAE | holds at all three |
 | E301 P1, rivals | holds in all six cells, or fails on a circuit at two featurizations | as filed | holds in all six | rival A |
-| E301 P1, Fig 2 reference | the same rule on Fig 2's built rows | as filed | gap 0.605 at VPD, 0.0146 at top neurons, 0.0865 at SAE | holds at VPD and SAE; does not hold at top neurons |
+| E301 P1, Fig 2 reference | the same rule on Fig 2's built rows | as filed | gap 0.605 at VPD, 0.0865 at SAE; at top neurons 0.0146 against each edit's own random, 0.030 against the size and KL randoms, floor 0.0222 from one draw | holds at VPD and SAE; no call at top neurons |
+| E301 random cap | each matched random reads at most 0.03 at every featurization | as filed | induction doubling random 0.0704 at VPD, induction rebuilt random 0.0408 at VPD, bigram new_few random 0.0363 at top neurons, induction tenfold random 0.0325 at SAE | missed on four randoms; the 0.0704 is unexplained |
 | E304 P | new edits on other draws read like Fig 2's | rival A: every new edit within the floor of Fig 2's two new edits; rival B: one above them by more than it at two featurizations | new_thin above Fig 2's highest new edit at VPD by 0.00729 to 0.01, two to three floors; within or below elsewhere | neither |
 
 Descriptive cells, no claim at a bar. The floor is induction's doubling edit read again at swap seed 269. The Fig 2
@@ -206,7 +218,8 @@ C's layer; the new edits sit at C's layer; reads are at the answer position only
 
 ## Not run
 
-- The cause of the large top-neuron identity deviation on induction.
+- The cause of the large top-neuron identity deviation on induction, and of induction's doubling random reading 0.0704 at VPD.
+- A floor from several swap draws at top neurons; the one used here is a single pair of reads.
 - The edit-minus-own-random differences as a separate table; they follow from the tables above.
 - Induction's new edits: not built, since the detector bar of 10 was not reached at layer 2.
 - A random drawn inside the model's activation subspace, the tighter floor for new edits at VPD.

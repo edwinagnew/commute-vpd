@@ -163,7 +163,14 @@
 0.605	experiments/built_new/results/summary_p163.json	[.fig2_built_rows[] | select(.feat == "VPD")] as $r | ([$r[] | select(.state == "x2" or .state == "x10" or .state == "rebuilt") | .value] | min) - ([$r[] | select(.state != "x2" and .state != "x10" and .state != "rebuilt") | .value] | max)	this
 0.0146	experiments/built_new/results/summary_p163.json	[.fig2_built_rows[] | select(.feat == "top")] as $r | ([$r[] | select(.state == "x2" or .state == "x10" or .state == "rebuilt") | .value] | min) - ([$r[] | select(.state != "x2" and .state != "x10" and .state != "rebuilt") | .value] | max)	this
 0.0865	experiments/built_new/results/summary_p163.json	[.fig2_built_rows[] | select(.feat == "SAE")] as $r | ([$r[] | select(.state == "x2" or .state == "x10" or .state == "rebuilt") | .value] | min) - ([$r[] | select(.state != "x2" and .state != "x10" and .state != "rebuilt") | .value] | max)	this
-0.030	given	E301's filed P1 expectation for Fig 2's own rows: holds at top neurons only if the floor is under 0.030 (experiments/built_circuits/results/predictions.json "expected" P1)
 0.00729	experiments/built_new/results/summary_p163.json	.P_E304.outside_fig2_range["s186002/new_thin"].VPD	this
 0.01	experiments/built_new/results/summary_p163.json	.P_E304.outside_fig2_range["s186003/new_thin"].VPD	this
 0.95	given	E301's filed expectation for x2 and x10 at SAE, about 0.95 (experiments/built_circuits/results/predictions.json "expected")
+0.030	experiments/fig2_standard/results/summary.json	([.rows[] | select(.feat == "top" and .block == "built" and .item == "rebuilt" and .side == "reuse") | .value] | first) - ([.rows[] | select(.feat == "top" and .block == "built" and (.side == "new" or (.side == "random" and (.item | startswith("random_"))))) | .value] | max)	earlier
+0.040	experiments/built_new/results/summary_p163.json	.rows[] | select(.feat == "SAE" and .site == "induction" and .state == "x10") | .value	this
+0.212	experiments/built_new/results/summary_p163.json	.rows[] | select(.feat == "SAE" and .site == "induction" and .state == "rand_rebuilt") | .value_no_leftover	this
+0.330	experiments/built_new/results/summary_p163.json	.rows[] | select(.feat == "top" and .site == "induction" and .state == "x2") | .leftover_share	this
+0.306	experiments/built_new/results/summary_p163.json	.rows[] | select(.feat == "top" and .site == "induction" and .state == "x2_s269") | .leftover_share	this
+0.0363	experiments/built_new/results/summary_p163.json	.rows[] | select(.feat == "top" and .site == "bigram" and .state == "rand_new_few") | .value	this
+788224	experiments/built_circuits/results/stage0/neurons_induction_identity_in.json	.cases	this
+2048	experiments/built_circuits/results/stage0/sae_induction_identity_is.json	.cases	this
