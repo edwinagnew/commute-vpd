@@ -1,0 +1,106 @@
+{
+ "experiment": "E311",
+ "cell": "P2.83",
+ "plan": "reports/plans/2026-11-25_plan_p2-83-crosscoder-fix.md",
+ "descriptive": "the crosscoder's d on Fig 4's states is reported as values beside its controls, as in P2.80; no verdict on reuse is given (the definition makes none of a tool's reading)",
+ "settings": {
+  "layer": 2,
+  "data_seed": 198,
+  "random_seed": 1981,
+  "plant_seed": 1982,
+  "plant_rate": 0.0125,
+  "plant_rate_source": "E203's planted count: one plant per 40-token task window, task text half the stream, so 1 in 80 tokens; the random variant plants that share of every token's positions",
+  "control_task": "e54/elicit",
+  "tf32": false,
+  "tf32_source": "fp32 as the authors' trainer runs and as E203 ran (timing.json: TF32 would halve the 25.2 ms step)",
+  "reseed_state": "e54/elicit_s0",
+  "reseed_state_source": "E203's reseed side (crosscoder seed 1 on e54/elicit_s0: d 0.416 against 0.463, negbeta_rescore.json)",
+  "random_states": ["e54/elicit_s0", "e54/elicit_s1", "e54/elicit_s2"],
+  "random_states_source": "E203's Gaussian update at e54/elicit_s0's per-matrix norms (draw seed random_seed), and two more draws (random_seed + 1, + 2) at the other two seeds' norms",
+  "extra_states": {
+   "e46/ident32_s2": ["e46/ident32", "experiments/known_3seeds/results/large/ident32_s2.pt"],
+   "e46/rand32_s2": ["e46/rand32", "experiments/known_3seeds/results/large/rand32_s2.pt"],
+   "e53/lowercase_s2": ["e53/lowercase", "experiments/known_3seeds/results/large/dW_lowercase_s2_step300.pt"],
+   "e53/cipher_s2": ["e53/cipher", "experiments/known_3seeds/results/large/dW_cipher_s2_step300.pt"],
+   "e54/cipher_own_s2": ["e54/cipher", "experiments/known_3seeds/results/large/cipher_own_s2.pt"]
+  },
+  "extra_states_source": "experiments/known_3seeds/run.py:67-69 (NEW), E299's seed-2 states, which E203's inventory (size_matched pairs) predates",
+  "sizes": {
+   "full": {
+    "d": 768, "expansion": 32, "k": 100, "k_max": 1024, "k_anneal_steps": 2000, "lr": 0.0001, "warmup": 1000,
+    "batch": 2048, "tokens": 200000000, "epochs": 2, "aux_alpha": 0.03125, "dead_tokens": 10000000, "init_norm": 1,
+    "target_rms": 100, "chunk_rows": 1024, "ls_tokens": 100000, "val_rows": 8192, "alive_min": 10, "top_n": 1667,
+    "top_n_wide": 5000, "nu_r": 0.5, "nu_eps": 0.2, "shared": [0.4, 0.6], "base_only": 0.1,
+    "snapshots": [0.125, 0.25, 0.5], "ckpt_every": 10000, "log_every": 500, "pile_start": 32768,
+    "pool_start": 131072, "pool_rows": 65536, "repeat_cap": 100
+   },
+   "long": {
+    "d": 768, "expansion": 32, "k": 100, "k_max": 1024, "k_anneal_steps": 2000, "lr": 0.0001, "warmup": 1000,
+    "batch": 2048, "tokens": 800000000, "epochs": 8, "aux_alpha": 0.03125, "dead_tokens": 10000000, "init_norm": 1,
+    "target_rms": 100, "chunk_rows": 1024, "ls_tokens": 100000, "val_rows": 8192, "alive_min": 10, "top_n": 1667,
+    "top_n_wide": 5000, "nu_r": 0.5, "nu_eps": 0.2, "shared": [0.4, 0.6], "base_only": 0.1,
+    "snapshots": [0.03125, 0.0625, 0.125, 0.25, 0.5], "ckpt_every": 20000, "log_every": 500, "pile_start": 32768,
+    "pool_start": 131072, "pool_rows": 65536, "repeat_cap": 100
+   },
+   "rehearsal": {
+    "d": 768, "expansion": 2, "k": 100, "k_max": 1024, "k_anneal_steps": 200, "lr": 0.0001, "warmup": 100,
+    "batch": 2048, "tokens": 4096000, "epochs": 2, "aux_alpha": 0.03125, "dead_tokens": 200000, "init_norm": 1,
+    "target_rms": 100, "chunk_rows": 128, "ls_tokens": 100000, "val_rows": 8192, "alive_min": 10, "top_n": 64,
+    "top_n_wide": 192, "nu_r": 0.5, "nu_eps": 0.2, "shared": [0.4, 0.6], "base_only": 0.1,
+    "snapshots": [0.125, 0.25, 0.5], "ckpt_every": 500, "log_every": 50, "pile_start": 32768,
+    "pool_start": 131072, "pool_rows": 1024, "repeat_cap": 4
+   },
+   "rehearsal_long": {
+    "d": 768, "expansion": 2, "k": 100, "k_max": 1024, "k_anneal_steps": 200, "lr": 0.0001, "warmup": 100,
+    "batch": 2048, "tokens": 8192000, "epochs": 4, "aux_alpha": 0.03125, "dead_tokens": 200000, "init_norm": 1,
+    "target_rms": 100, "chunk_rows": 128, "ls_tokens": 100000, "val_rows": 8192, "alive_min": 10, "top_n": 64,
+    "top_n_wide": 192, "nu_r": 0.5, "nu_eps": 0.2, "shared": [0.4, 0.6], "base_only": 0.1,
+    "snapshots": [0.0625, 0.125, 0.25, 0.5], "ckpt_every": 500, "log_every": 50, "pile_start": 32768,
+    "pool_start": 131072, "pool_rows": 1024, "repeat_cap": 4
+   }
+  },
+  "sizes_source": "full: E203's settings unchanged (experiments/crosscoder/results/run2/predictions.json settings.full, every value sourced there: diffing-toolkit@617d926 crosscoder.yaml, crosscoder_learning@d1fd6f3, Minder et al. 2025). long: the same crosscoder over the same 100M tokens for 8 epochs instead of 2 (a diagnostic, not a recipe). rehearsal: a 1,536-latent dictionary on 4.1M tokens, every read at full size (8,192 val rows, 100k latent-scaling tokens, the full score windows)"
+ },
+ "thresholds": {
+  "full": {
+   "self_act_diff": 1e-05,
+   "self_rn_dev": 0.001,
+   "fve_early": 0.5,
+   "fve_min": 0.8,
+   "dead_max": 0.3,
+   "planted_part": 0.5,
+   "fve_drop": 0.05,
+   "early_step": 1000,
+   "fve_batch_early": 0.0,
+   "projected_limit_min": 75,
+   "long": {"projected_limit_min": 260}
+  },
+  "rehearsal": {
+   "self_act_diff": 1e-05,
+   "self_rn_dev": 0.001,
+   "fve_early": -1,
+   "fve_min": -1,
+   "dead_max": 1,
+   "planted_part": 0.5,
+   "fve_drop": 10,
+   "early_step": 100,
+   "fve_batch_early": -1000000000.0,
+   "projected_limit_min": 100,
+   "long": {"projected_limit_min": 100}
+  },
+  "sources": {
+   "self_act_diff, self_rn_dev, fve_early, fve_min, dead_max, planted_part, fve_drop": "E203's filed bars, unchanged (results/run2/predictions.json thresholds.full); the planted rule is E203's: the lead latent (alive, carrying most of the planted change on the read) passes the authors' test (nu_r < 0.5, nu_eps < 0.2, both base betas >= 0) and the fine-tune-specific latents carry >= 0.5 of the change",
+   "fve_batch_early": "E212's step-1000 check (batch FVE >= 0); E212 read 0.494 there",
+   "projected_limit_min": "1.5x E203's measured 50 min per side (sides/*.json .minutes 48.2-50.3 on an H100, fp32); long: 4x the training part (41 min, timing.json) plus snapshots, 1.5x"
+  }
+ },
+ "predictions": {
+  "0a self": "relative norms of alive latents within 0.001 of 0.5 (E203: 0.000), 0 fine-tune-specific latents, FVE 0.93 (E203 0.932), dead 0",
+  "0b random (seeds 0 and 1)": "PASS, lean 0.8: a latent with relative norm near 1 carries the plant; nu_eps near 0.02, part near 0.77 (E212's plant, spread over many contexts, read nu_eps 0.021 and part 0.766 under the same recipe). A miss at both seeds means this crosscoder cannot isolate a fine-tune-only direction at block 2 of the 67M",
+  "0b answer_half (seed 0)": "PASS, lean 0.6: with the plant on half the windows, folding it into the answer-position latents costs reconstruction on the other half; part 0.5-0.8 if it splits off",
+  "0b answer long (seed 0)": "diagnostic. At its 200M-token snapshot it reproduces E203: lead nu_eps 0.24 +- 0.03, part 0 (E203 0.244, 0). E203's snapshots fell 0.320, 0.323, 0.293, 0.244 at 25M-200M tokens; lean 0.5 that nu_eps is under 0.2 by 800M tokens",
+  "2 states": "seed-0 kv states within 0.05 of E203's d_authors (negbeta_rescore.json .runs.E203.<side>.new.d_authors; reseed spread 0.047); e53 and e62 states may move further, as their streams now run the full 97,656 steps (E203's ran out at about half). Gaussian draw 0 near E203's 0.547; reseed |d0 - d1| near 0.05",
+  "pass rule": "a variant passes when every crosscoder seed run of it passes the planted rule; run 2 reads the 48 states whatever run 1 gives, and the figure puts the control results beside the values"
+ },
+ "expected_at_w0": "the self control (base against itself) is the W0 reference: relative norms 0.5, no fine-tune-specific latent, d undefined (no change)"
+}
