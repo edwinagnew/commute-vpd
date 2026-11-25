@@ -120,7 +120,7 @@ def test_every_task_edges() -> None:
 
 
 SC = load_experiment("carrying_jobs", "score")
-RES = Path(__file__).resolve().parents[1] / "archive" / "experiments" / "carrying_jobs" / "results"
+RES = Path(__file__).resolve().parents[1] / "experiments" / "carrying_jobs" / "results"
 P, A = json.loads((RES / "predictions.json").read_text()), json.loads((RES / "predictions_amend1.json").read_text())
 CTL = A["settings"]["controls"]
 Tie = Callable[[str, str], set[str]]
