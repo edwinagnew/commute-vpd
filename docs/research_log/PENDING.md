@@ -7,3 +7,4 @@ reads this file afresh and flushes what it holds then; a line its brief named th
 clerk: find it in the changelog rather than re-adding it (friction 84, 117).
 A flush applies every line to `parts/` (README.md → Layout), rebuilds, republishes, and moves the lines to the changelog row it writes, leaving this list empty.
 A line starting `HOLD ` (not `- `) stays in `PENDING.md` through a flush: use it for a line whose report was found wrong, in place of removing it. It reads `HOLD YYYY-MM-DD <role> · <why> · <the line>`; a clerk skips it, and the role that held it restores or deletes it (friction 317).
+- 2026-11-24 baseline-lead P2.80 filled: the model-diffing tools re-read on Fig 4's 48 states (E305 CMAP heads, E306 WeightWatch); every tool with a passing control gives overlapping values on reuse and new tasks, crosscoder seed 0 only (control failed), ADL no reading. Page reports/analyses/2026-11-24_analysis_p2-80-tools-same-states.md.
