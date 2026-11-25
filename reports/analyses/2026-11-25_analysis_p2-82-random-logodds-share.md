@@ -1,14 +1,17 @@
 # What does the log-odds re-gating share read for random weight changes?
 
-We scaled random weight changes until each raised the trained answer by one log-odds, and read the re-gating share on
-them beside each fine-tune's own. Random changes got there only on four tasks built new, where they read the
-fine-tunes' share or more; on every reuse task none did, even at a hundred times the fine-tune's size. So the share
-has no random reference on the reuse side, and on the new side a low share does not set a trained update apart from
-noise.
+We scaled random weight changes, at 12 log-spaced sizes up to 100 times the fine-tune's, until each raised the
+trained answer by one log-odds, and read the re-gating share on them beside each fine-tune's own. On four tasks built
+new, random changes reached that gain and read at or above the fine-tunes' shares, never below; on every reuse task and
+on the other new tasks none reached it at any of the 12 sizes. So the share has no random reference on the reuse side,
+and on the new side a fine-tune's low share is not what a random change gives at gain one.
 
-The random changes are not matched to the fine-tunes in gain, size or KL. A fine-tune raises the trained answer by
-1.6 to 20.8 log-odds. The random changes were read at a gain of 1.00 to 1.10. So each comparison below sets a
-fine-tune's share at its own large gain beside a random change's share at a gain of about one.
+The four tasks where random changes reached the band all have a cipher or random target. The run did not record the
+original model's odds of the trained answer, so it does not say why noise raises the answer only there.
+
+The random changes are not matched to the fine-tunes in gain, size or KL. On the four tasks above the fine-tunes
+raise the trained answer by 10.9 to 20.8 log-odds, and the random changes were read at a gain of 1.00 to 1.10. The
+share is a ratio, and it need not read the same at gain one as at gain fifteen.
 
 ## What we were trying to test
 
@@ -55,11 +58,16 @@ the band.
 
 **Reading it.** Mostly not. In the left panel, grey crosses appear only on e46/rand32, e54/cipher, e54/cipher_own and
 c3/cipher, all tasks built new. Every other row carries the largest gain any of its random changes reached, from 0.06
-on e53/lowercase to 0.94 on e58/cipher. On the reuse tasks the trained answer barely moves under random changes of up
-to a hundred times the fine-tune's size: the largest gains there run from 0.06 to 0.90. The gain does not grow with
-size without end. Past some size the random change starts to wreck the model, the gain falls again, and the largest
-gain sits at an intermediate size. So the share has no random reading on the twelve other tasks, and the in-band draws
-below are a selected set: they are the directions and tasks on which noise happens to raise the trained answer.
+on e53/lowercase to 0.94 on e58/cipher. On most reuse tasks the trained answer barely moves under random changes of up
+to a hundred times the fine-tune's size. The near misses are e46/ident32, a reuse task, which peaked at 0.90, c3/cipher
+at 0.93, e58/cipher at 0.94 and e53/cipher at 0.82. The gain does not grow with size without end. Past some size the
+random change starts to wreck the model, the gain falls again, and the largest gain sits at an intermediate size.
+
+"None reached the band" is a result on a grid. The search reads 12 log-spaced sizes from 0.01 to 100 times the
+fine-tune's, each about 2.3 times the last, and bisects only where a grid point already reaches the target. Because
+the gain rises and then falls, a peak above one between two grid points would be missed, and the near misses above
+are where that is most likely. The in-band draws below are a selected set: the directions and tasks on which noise
+raises the trained answer at a grid size.
 
 The draws that reached the band, per task and fine-tune seed:
 
@@ -70,12 +78,14 @@ The draws that reached the band, per task and fine-tune seed:
 
 ### Where random changes are read, how do their shares compare with the fine-tunes'?
 
-**Reading it.** At the fine-tunes' level or above, never near 0. On c3/cipher the random changes read 0.24 to 0.26
-against the fine-tunes' 0.22 to 0.24. On e54/cipher they read 0.30 to 0.39 against 0.21 to 0.26. On e46/rand32 they
-read 0.66 to 0.76 against 0.25 to 0.27. On e54/cipher_own one direction reads 0.30 and the other 0.88 to 0.91,
-against 0.24 to 0.27. All shares are positive. On these four tasks a new-side fine-tune's low share is matched or
-exceeded by a random change at gain one, so the share alone does not tell a trained new-side update from noise. The
-caveat is the gain: the fine-tunes' shares are read at gains of 10.9 to 20.8 and the random ones at about one.
+**Reading it.** At or above the fine-tunes, never below them, and never near 0. On c3/cipher the random changes read
+0.24 to 0.26 against the fine-tunes' 0.22 to 0.24. The lowest random change, 0.240, sits just above the highest
+fine-tune, 0.238, well inside the batch noise of about 0.03, so there the two cannot be told apart. On e54/cipher the
+random changes read 0.30 to 0.39 against 0.21 to 0.26. On e46/rand32 they read 0.66 to 0.76 against 0.25 to 0.27. On
+e54/cipher_own one direction reads 0.30 and the other 0.88 to 0.91, against 0.24 to 0.27. On these last three tasks the
+fine-tunes read below every random change. So a new-side fine-tune's low share is not what noise gives at gain one;
+if anything it sits on the low side of it. The caveat is the gain: the fine-tunes' shares are read at gains of 10.9 to
+20.8 and the random ones at about one.
 
 ![Share against size relative to the fine-tune, on the four tasks with in-band random changes](../../experiments/random_logodds_share/figures/share_vs_size.png)
 
@@ -134,12 +144,17 @@ For a direction that never reached the band, size and KL are at its largest gain
 
 ## What we learned
 
-The log-odds form of the share cannot be given a random reference on the reuse tasks, which are the ones that carry
-the high shares: random changes up to a hundred times a fine-tune's size do not raise their trained answer by one
-log-odds. On the four new tasks where random changes do reach that gain, they read the same share as the fine-tunes or
-higher. So a low share on a new task is not evidence that the update has structure noise lacks. This run says
-nothing about the gap between reuse and new tasks, because it gives no random reading on the reuse side.
-For the paper this is a reference for the new side only, stated with its unmatched gain, size and KL.
+The log-odds form of the share has no random reference on the reuse tasks, which are the ones that carry the high
+shares: at 12 log-spaced sizes up to a hundred times a fine-tune's, random changes did not raise their trained answer
+by one log-odds. On the four new tasks where random changes did, they read at or above the fine-tunes' shares, never
+below. So a new-side fine-tune's low share is not what a random change gives at gain one, though the fine-tunes are
+read at gains of about 11 to 21 and the random changes at about one. This run says nothing about the gap between
+reuse and new tasks, because it gives no random reading on the reuse side.
+
+A sentence for the paper: "Random changes up to a hundred times a fine-tune's size, read at 12 sizes, never raised the
+trained answer by one log-odds on a reuse task. On the four new tasks where they did, all with cipher or random targets,
+they read shares of 0.24 to 0.91, at or above the fine-tunes' 0.21 to 0.27, though at a gain of about one against the
+fine-tunes' 11 to 21."
 
 ## How compelling is the evidence
 
@@ -166,9 +181,9 @@ For the paper this is a reference for the new side only, stated with its unmatch
 
 ## What next
 
-- A random reference matched in gain would need random changes that raise the answer by 10 log-odds or more. The
-  largest gains here suggest none exists. The paper can state that as the reason the form has no random baseline on
-  the reuse side.
+- A random reference matched in gain would need random changes that raise the answer by 10 log-odds or more. At 12
+  log-spaced sizes up to 100 times the fine-tune's, none reached even one on a reuse task. Refining the sizes around
+  each capped direction's peak would show whether the near misses cross one; it needs a new cell.
 - Reading the share at the fine-tune's own gain on a lower-gain checkpoint of each fine-tune would put fine-tune and
   random change at the same gain on the new side; this needs a new cell.
 
@@ -178,7 +193,7 @@ For the paper this is a reference for the new side only, stated with its unmatch
 |---|---|---|---|---|
 | control_zero | a zero change reads nothing | gain, numerator, KL exactly 0; share nan | exactly 0 on every task, share nan | held |
 | control_fine_tunes | the fine-tunes' shares reproduce the figure | float equality with the figure's file | every fine-tune equal, difference 0 | held |
-| random_rival_a | the share measures any output change through the gates | random shares near 0.12 to 0.42 or above on most tasks, signs agreeing | on the four tasks read, 0.24 to 0.91, all positive; on the twelve others no draw reached the band | holds where it can be read; its "most tasks" clause cannot be read |
+| random_rival_a | the share measures any output change through the gates | random shares near 0.12 to 0.42 or above on most tasks, signs agreeing | on the four tasks read, 0.24 to 0.91, all positive; on the twelve others no draw reached the band | seen on the four tasks read; not readable elsewhere |
 | random_rival_b | the share separates trained structure from noise | random shares near 0 or erratic in sign | no task read near 0 or with mixed signs | not seen |
 | random_kl | in-band draws sit above the KL-matched size and KL | size above the earlier run's KL-matched size; KL above the fine-tune's | every in-band draw above both | held |
 | random_status | how many draws reach gain one | none filed | per task in the list above | no expectation filed |
@@ -189,6 +204,7 @@ None: the share and its random draws are this project's own construction.
 
 ## Not run
 
+- Refining sizes around each capped direction's peak: the grid has 12 points, and the cell has no runs left.
 - Random changes matched to a fine-tune's gain, which the largest gains here suggest do not exist.
 - A twin or realistic fine-tune: not in the figure of known answers.
 - KL-matched draws: the earlier run.

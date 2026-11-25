@@ -230,3 +230,7 @@
 1.00	experiments/random_logodds_share/results/predictions.json	.settings.target_gain*(1-.settings.gain_rel_tol)	this
 1.10	experiments/random_logodds_share/results/predictions.json	.settings.target_gain*(1+.settings.gain_rel_tol)	this
 0.03	experiments/share_stability/results/run.json	.stage1_step10.sd_r	earlier
+0.240	experiments/random_logodds_share/results/states/c3_cipher_s0.json + experiments/random_logodds_share/results/states/c3_cipher_s1.json + experiments/random_logodds_share/results/states/c3_cipher_s2.json	[.[].draws[]|select(.status=="ok")|.r]|min	this
+0.238	experiments/random_logodds_share/results/states/c3_cipher_s0.json + experiments/random_logodds_share/results/states/c3_cipher_s1.json + experiments/random_logodds_share/results/states/c3_cipher_s2.json	[.[].own.r_route_split]|max	this
+0.01	given	perturb.match grid low end GRID_LO (src/commute/perturb.py; plan "log grid 0.01-100")
+2.3	given	ratio of consecutive points of a 12-point log grid from 0.01 to 100: 10^(4/11) = 2.31
