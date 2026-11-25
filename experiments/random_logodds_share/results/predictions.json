@@ -1,0 +1,31 @@
+{
+ "experiment": "EXXX",
+ "cell": "P2.82",
+ "card": "experiments/random_logodds_share/card.md",
+ "plan": "reports/plans/2026-11-25_plan_p2-82-random-logodds-share.md",
+ "descriptive": "user 2026-11-25 in whip-lead's chat: \"run option 1\"; random baseline reported as values beside each fine-tune, no verdict, no counts of comparisons",
+ "settings": {
+  "seeds": [228001, 228002, 228003],
+  "seeds_source": "E228's filed seeds (experiments/random_kl_share/results/predictions.json .settings.seeds); run.py stops if they differ",
+  "probe_x": 1.0,
+  "probe_x_source": "Fable 2026-11-25 (in-the-weeds choice): the odd part of the gain at the fine-tune's own size is well above bf16 noise, at 0.01-0.1 it would not be",
+  "scale_cap": 100.0,
+  "scale_cap_source": "E228's (from E46 Amendment 1, experiments/regating_table/results/predictions_amend1.json), so the grid points coincide with E228's; Fable 2026-11-25 kept it",
+  "target_gain": 1.05,
+  "gain_rel_tol": 0.045,
+  "target_gain_source": "band [1.0028, 1.0973] log-odds: inside the form's one-sided floor gain >= 1 (local_faith.MIN_GAIN) so every match is read, about 0.1 wide as E228's kl_rel_tol 0.1 (Fable 2026-11-25 advised rel_tol 0.1 around 1; centred at 1.05 so the band's lower end passes the floor)",
+  "kl_batch": 64,
+  "kl_batch_source": "E228's batch for kl_of (memory only)"
+ },
+ "expected": {
+  "control_zero": "a zero change on every task's rows: gain, numerator and KL exactly 0; share nan (gain under the floor) in both the one-sided form and route_split's own",
+  "control_fine_tunes": "every one of the 48 states' route_split share equals its known3.json value exactly (float equality): same code, same saved file, same rows, same card type (NVIDIA L40, as E136, E147 and E299 read); any difference stops the run and goes to the lead",
+  "random_rival_a": "the share mostly measures how much of any output change flows through Gamma's gates: a random change scaled to a one log-odds gain reads a share near the fine-tunes' new-side values (0.12-0.42 in known3.json) or above, on most tasks, with seeds of one task agreeing in sign",
+  "random_rival_b": "the share separates structure: random changes read shares near 0 (well under the new sides' 0.12-0.42) or erratic in sign across a task's three seeds",
+  "random_kl": "no draw is matched to KL; from E228 (KL-matched draws at 5-30 times the fine-tune's size gained -0.7 to +0.6 log-odds), draws that reach gain 1 are expected at a scale above E228's KL-matched one and a KL above their fine-tune's",
+  "random_status": "no expectation filed: some draws may not reach gain 1 at either sign up to 100 times the fine-tune's size; each is reported with its largest gain and share nan"
+ },
+ "blind_to": "the share of a random change is read at one scale per draw (gain about 1), far from each fine-tune's gain (1.6-23 log-odds): it says what the form reads for a random change of that output size on the trained answer, not at the fine-tune's gain; three draws per state; one decomposition (the released VPD)",
+ "positive_control": "stage 0: the zero change (exact 0, share nan) and the 48 fine-tunes reproduced bit for bit",
+ "noise_floor": "none needed beyond the exact control: no bar is read; the search band (above) is the only tolerance"
+}
