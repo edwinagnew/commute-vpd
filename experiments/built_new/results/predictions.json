@@ -1,0 +1,55 @@
+{
+ "experiment": "E304 (built_new)",
+ "cell": "P1.63",
+ "run": "run 2 of cell P1.63",
+ "card": "experiments/built_new/card.md",
+ "filed": "2026-11-24, regating-lead (writer agent), before any GPU run, with run.py",
+ "settings": {
+  "cue_seeds": [186001, 186002, 186003, 186004, 186005, 186006, 186007, 186008, 186009, 186010],
+  "cue_seeds_source": "the try order: E214's cue_seed (experiments/kstar_levels/results/predictions.json, 186000, Fig 2's draw, excluded) plus 1, 2, ..., 10; a try sets only World.cfg.cue_seed, every other E214 setting (n_cues 8, windows_per_cue 64, detector_ratio 10, detector_quantile 0.99, lookup_bar 0.9, a_prime_copy_max 0.05, ...) is read from E214's filed file by built_circuits/build.py kl_world, unchanged",
+  "max_tries": 10,
+  "stop_edits": 6,
+  "stop_source": "card: stop once 6 edits have passed (three passing draws) or after 10 tries; fewer than 6 passing edits are reported as they stand",
+  "slot_layer": 0,
+  "slot_layer_source": "Fig 2's new edits (E214) sit at layer 0",
+  "random_seeds": {
+   "186001": [304000, 304001], "186002": [304010, 304011], "186003": [304020, 304021], "186004": [304030, 304031],
+   "186005": [304040, 304041], "186006": [304050, 304051], "186007": [304060, 304061], "186008": [304070, 304071],
+   "186009": [304080, 304081], "186010": [304090, 304091]
+  },
+  "random_seeds_source": "E290's rule (experiments/needed_neurons/run.py matched_random, via built_circuits/build.py random_of): one Gaussian random per edit; seed 304000 + 10 k + j for the k-th try (k from 0 in cue_seeds order) and edit j (0 new_few, 1 new_thin); run.py's Config asserts the rule",
+  "scan_keys": ["derangements", "examples", "seed", "rows", "logit_rows", "cache_batch", "ident_vars", "sae_err_rows", "sae_chunk", "band"],
+  "scan_source": "read at run time from E298's filed experiments/fig2_standard/results/predictions.json and logged, as E301 reads them (at filing: 4, 64, 268, 1024, 8192, 32, 3, 64, 32, p97)"
+ },
+ "thresholds": {
+  "norm_rel_tol": 1e-06,
+  "thresholds_source": "norm_rel_tol: E301's filed value (experiments/built_circuits/results/predictions.json). The build bars (detector_ratio 10, lookup_bar 0.9, a_prime_copy_max 0.05) are E214's World's filed settings and thresholds, used by being read from its file, never copied or changed"
+ },
+ "states": {
+  "s<seed>/new_few, s<seed>/new_thin": "src/commute/known_edits.build_swapping (via built_circuits/build.py new_edits) at slot_layer 0 on E214's World cue windows drawn at cue_seed <seed>, read on those 512 windows at the last position",
+  "s<seed>/rand_new_few, s<seed>/rand_new_thin": "one E290 random per edit, its seed from random_seeds",
+  "do_nothing (control)": "F a copy of M on the first passing draw's cue windows"
+ },
+ "rules": {
+  "T": "A try passes only if build_swapping builds both new_few and new_thin and the build record's misses (reuse_* dropped as in E214) are empty; an AssertionError from build_swapping (no detector after a swap per cue) or from the cue draw (too few windows hold) is a failed try, recorded in results/tries.json with its swap log, not a stop. Tries run in cue_seeds order and stop at stop_edits passing edits or max_tries",
+  "R0e": "Per passing draw, each a stop: each random changes exactly its edit's tensors, each at its Frobenius norm within norm_rel_tol relative (built_circuits/build.py norm_check)",
+  "R0b": "First in every read job: the do-nothing's write pass on the first passing draw's cue windows has n_changed 0, dd max exactly 0.0 and E_b exactly 1.0; any miss stops the job",
+  "R0c": "First in every read job: the identity interchange (x' = x) on the first passing draw's new_few changes no argmax (E298's filed identity rule, fig2_standard/run.py identity: any flip stops); the largest logit deviation is recorded as the floor, not barred",
+  "P": "Description, no bar (card): per featurization, E_b_K (leftovers counted) of each new edit and its matched random, beside Fig 2's two new edits and their randoms (E298 / E268 / E290 readings) and the derangement floor delta_f E301 measures (its induction x2 at scan seeds 268 and 269). Rival A: every new edit within delta_f of Fig 2's new edits; rival B: at least one new edit above every Fig 2 new edit by more than delta_f at two or more featurizations"
+ },
+ "expected": {
+  "tries": "most draws pass at layer 0 (Fig 2's draw 186000 passed after two A' swaps, cues 0 and 5); a failed try is a draw property, recorded",
+  "same_as_fig2": "slots identical to Fig 2's [109, 447, 771, 1004, 1101, 1997, 2018, 2034] (E206's rule depends on Pile held-out and the layer only); A, A' and y overlap Fig 2's in a few tokens at most",
+  "gammas": "of the order of Fig 2's (gamma_new_few 11.29, gamma_new_thin 10.85); lookup top-1 at least 0.9 by construction",
+  "R0e": "norm deviation about 1e-7 (fp32 rounding of an fp64-scaled Gaussian)",
+  "R0b": "n_changed 0, dd max 0.0, E_b 1.0 exactly at every featurization (E301: experiments/built_circuits/results/stage0/{vpd,neurons,sae}_bigram_do_nothing_r?.json all exact)",
+  "R0c": "0 flips; max_dev of the order of E301's measured identity floors on 512 windows at one read position: VPD 7.06e-5, neurons 8.39e-5, SAE 5.53e-5 (experiments/built_circuits/results/stage0/vpd_bigram_identity_rv.json, neurons_bigram_identity_rn.json, sae_bigram_identity_rs.json), and E268's 5.1e-5, E277's 8.2e-5",
+  "new_few, new_thin": "rival A: at most about 0.02 at every featurization, near Fig 2's (VPD 0.013, 0.019; neurons 0.004-0.005 leftovers dropped; SAE E_b_K 0.003, 0.011); rival B: one of them above Fig 2's by more than delta_f at two featurizations",
+  "rand_new_few, rand_new_thin": "at most about 0.03 at every featurization (Fig 2's: VPD 0.009, 0.003; neurons 0.033, 0.0005; SAE 0.028, 0.016; experiments/fig2_standard/results/items/*/built__rand_new_*.json)",
+  "time": "per read item about Fig 2's: VPD ~510 s, neurons ~150-170 s, SAE ~160-260 s on an H100 (E298 items)"
+ },
+ "blind_to": {
+  "E_b_K": "the edit's effect away from the last position (read there by design); variables in K beyond the changed ones (n_changed_K reported)",
+  "the draw set": "only the draws that pass E214's bars are read: a draw property that also decides passing (a detector that cannot reach the bar) is unseen"
+ }
+}
