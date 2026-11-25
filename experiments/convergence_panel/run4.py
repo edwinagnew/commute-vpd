@@ -119,8 +119,11 @@ def control(net: ST.Net, C: Any, C4: Config, t: PN.Task, seed: int) -> float:
                "floor": max(abs(g["a_bf16"] - g["b_bf16"]), abs(g["a_fp32"] - g["a_bf16"])), "gap_saved": abs(g["a_bf16"] - g["saved"])}  # fmt: skip
         out |= rec | {"h100_read": recorded(t.name, f)}
         RUN.put(path, out, "control", rec)
-    if not out["gap_saved"] <= out["floor"]:
-        raise RUN.stop(path, out, f"{t.name} s{seed}: the step-{C4.control_step} replay reads {out['gap_saved']:.3g} off the saved file, over the floor {out['floor']:.3g}")
+    # Amendment 1 (2026-11-24, whip-lead): the saved files were trained on cluster L40s, and an L40S replay is off them
+    # by 0.0025/0.0042 (arxiv/german s0) against within-card floors of 0.00077/0.00143. The gap to the saved file is
+    # recorded, not a stop; the stop is now two replays on this card that are not bit-identical.
+    if out["max_abs_weight_diff_bf16"]["a_b"] != 0:
+        raise RUN.stop(path, out, f"{t.name} s{seed}: two step-{C4.control_step} replays on this card differ by {out['max_abs_weight_diff_bf16']['a_b']:.3g}")
     return out["floor"]
 
 
@@ -156,9 +159,7 @@ def retrain(net: ST.Net, C: Any, C4: Config, t: PN.Task, seed: int, floor: float
             RUN.log(f"[run4 {t.name} s{seed}] step {s['step']}: read-row gain {s['gain']:.6g}, KL {s['kl']:.4g}, held gain {s['held_gain']:.4g}")
         if s["step"] == C4.control_step:
             ref = gain(net, t, RUN.load_dW(saved_file(t.name, seed, C4.control_step)))
-            RUN.put(path, out, "step300_check", {"saved": ref, "gap": abs(s["gain"] - ref), "floor": floor})
-            if not abs(s["gain"] - ref) <= floor:
-                raise RUN.stop(path, out, f"{t.name} s{seed}: step {s['step']} reads {abs(s['gain'] - ref):.3g} off the saved file, over the floor {floor:.3g}")
+            RUN.put(path, out, "step300_check", {"saved": ref, "gap": abs(s["gain"] - ref), "floor": floor})  # recorded (Amendment 1)
 
 
 def read_save(net: ST.Net, C: Any, t: PN.Task, s: dict[str, Any], w0: float) -> dict[str, Any]:
