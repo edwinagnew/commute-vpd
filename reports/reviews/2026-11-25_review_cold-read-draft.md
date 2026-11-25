@@ -54,6 +54,24 @@ Line numbers are from `origin/v2:paper/<file>` at 9529c07. Evidence paths are in
 
 Support for MUST 1: appI:174-178 says outright "No cheap reading tracks ρ closely". Cite it in the §5.2 sentence.
 
+## MUST, pass 3 (realistic figures and appE, 11-25 ~10:00)
+Both realistic figures plot `experiments/convergence_panel/results/wide/run4/score_n10.json` (E307); the CSVs equal the JSON and the scripts check each τ with scipy. Both captions are still TODO. I re-read the prior column and `stand_in.write_change` myself for M5-M7.
+
+5. **The prior panel of Fig realistic_mirror mixes two units, and "outperformed by the trivial proxy of the base model's prior" (sec5:47) rests on that.** For the eight language-model tasks the prior is mean natural log-odds of the answer (−5.6 to −12.9). For category and sentiment it is a label-logit difference (0.84, 0.12; `src/commute/prior.py` `prior_mean_lo`). Those two sit on top only because of the unit, at tiers 2.5 and 2. On the eight like-for-like tasks the prior's τ falls from 0.32 to 0.12, and effective rank's rises from 0.17 to 0.51 (reviewer's recompute, scratch `tau8.py`, not yet checked by me). None of the four τ reaches the panel's critical τ 0.47. Fix: one unit or mark/drop the label tasks in that panel; give the τ values and say none separate at n = 10.
+6. **appE:180-181 defines the prior as log10 geometric-mean probability; the figure plots natural log-odds or a logit difference** (+0.84 cannot be a log10 probability). State what was computed.
+7. **sec4:19 says μ is uniform over answer positions; `write_change` sums over every position of the windows** (`flatten(0,-2)`), only the needed set being found at the answer position. So ρ in Fig kept_realistic weights every token position. Fix the text or the code; the SAE and neuron paths were not traced.
+
+### SHOULD, pass 3
+- sec5:59-61, the reversal (τ = −0.61): the same-size random update in the same figure also reverses (τ = −0.32); trained/random τ = −0.42. Part of the trend is each task's needed set, not the trained direction. Say so.
+- The realistic recipe and read point are nowhere: plain SFT on the answer, no KL term, Adam 3e-5, batch 8, clip 1, up to 1,200 steps, read at KL ≈ 0.18 nats/token (±10%), mostly steps 5-9 (SQuAD 3-4, Spanish seed 0 400). appE:28-31's recipe is the built pairs' only.
+- Name the unmatched states in both captions: sentiment (KL 2.51, 0.95, 4.33) and Spanish seed 0.
+- sec4:44 "ten ordinary language tasks": 18 fine-tuned, 12 reached matched change, ten kept. Its list of task kinds omits lowercasing and CoNLL.
+- appE:145-147 gives the logit-difference reading only for the label twins; realistic category and sentiment use it too.
+- appE:22-24's random change (KL-rescaled, three draws) is not the realistic panel's (per-matrix norm, one draw per seed).
+- appE:6 "every MLP neuron" vs sec4:15 top-97th-percentile neurons plus remainder: reconcile.
+- Re-gating share reads 1.32 (SQuAD) and 1.31 (summary): the caption should say values above 1 are possible (appE:117).
+- appE:134 "random maps 0.72 to 0.91" overstates: the second random map reached 0.40.
+
 ## SHOULD
 
 1. **ρ depends on each variable's units, and the appendix's escape is wrong for VPD.** main.tex:389 says the weights
@@ -97,7 +115,7 @@ Support for MUST 1: appI:174-178 says outright "No cheap reading tracks ρ close
 - P2.81 gain-per-token SHOULD: not re-checked this pass.
 
 ## Not run
-- Pass 2 read appI (built edits to tools), appD and appH. No read of appE beyond the re-gating definition, the cut/ files, Fig `realistic` or Fig `kept_realistic` (the blind read covers
+- Pass 2 read appI, appD and appH; pass 3 read appE and both realistic figures (realistic-panel code path only). No read of the cut/ files (the blind read covers
   the reversal), or the rendered main.pdf layout.
 - No check of the related-work citations against the papers.
 - All values come from definition.csv at v2 9529c07. None were recomputed from the runs' own results.
