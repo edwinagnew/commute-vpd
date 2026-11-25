@@ -62,3 +62,46 @@
   (windows.py is shared with 2b, so left).
 - Not re-pointed (phase 2c/3): `panel.kl_from_w0`, rl_67m `kl_from_base`, `masked_reads.share_cells*`,
   `realistic_reads.share_of`/`ratio`, `keydep.geo_rate` callers.
+
+## 2c (phase 2: Reader re-pointed, item builders, README, the test leak)
+- `realistic_reads.Reader` / `share_of` / `ratio`: the share is `share.share_cells` (batch 64 = `masked_reads.BATCH`, as
+  `share_cells_by` ran) + `share.share` / `numerator` / `cells_gain` with `FLOOR = share.Floor(MIN_GAIN, one-sided)`;
+  the prior is `prior.prior_mean_lo(net, rows, unit, 64)`, computed once per task in `__post_init__` (W0's, the same
+  forwards as the T0 cells it used to come from: batch 64, fp32, `capture` changes nothing); the steering vector is
+  `fair_steering.fit_vectors` (split out of `steering_share` with `key_idx`; same ops as `vectors`' pooled mean), the
+  shares `fair_steering.divide` under a `Rule("pooled", None, strengths, MIN_GAIN, 64, fp64)`. `Read.rows(kind, n)` gives
+  a `windows.Rows`. Deleted: share_of's own numerator/gain/floor arithmetic, `ratio`'s floor, the T0-mean prior, the
+  `vectors(...)["pooled"]` call with its zero_idx. Not GPU-run here (another agent holds the GPU part): every change is
+  the same forward at the same batch, read in the same shapes, so the numbers should be bit for bit; the next GPU run of
+  any Reader caller is the check.
+- Left alone, same quantity but a different numeric path (comment in the code): (1) the steering selection grid: Reader
+  reads each unit once over all n_select rows' logits, `steering_share`'s `unit_rows` per batch of 64, and a CUDA
+  logsumexp over a different row count may round differently; if new_b's GPU part shows `steering_pooled/lower_s0_step128`
+  equal to old_A bit for bit, the grid can move too. (2) the untrained read: `share.untrained_share` feeds only the LAST
+  layout, a Read also NEXT (LM windows) and PAIR (E223), and Reader keeps W0's cells once per task and the numerators.
+  Neuron reads and k_half have no shared function in the plan (untouched).
+- `items.py`: `rescaled(M, layer, C, factor)` (E214 x<f>), `copy24_held()` (its D), `e229_read(task, read_seed, n_read)`
+  and `e229_f(net, item)` (E229's D and F), `neuron_bounds(q, qs, sha256)` (E217 percentiles, E229's upper bounds), copied
+  from kstar_levels, rule_retention, topk_neurons, rule_retention_pairs and topk_upper run.py (unedited). `new_b.py`'s
+  `fresh_inputs` replaces `fresh_worlds`: no `load_experiment`; settings from each finished experiment's predictions.json;
+  the fresh items run on a second `World.load` (the old code loaded its own worlds). CPU check (one-off script, deleted):
+  copy24_s0's D (512x8), x2's D and the p97 bounds (4x3072) equal the old builders' bit for bit. x2's F (a deepcopy and a
+  column scale) and copy24_s0's F (`old_tasks.old_f`) are the old calls; GPU-run only with new_b's GPU part.
+- `windows.Rows.ab`: the label pair (case label's from its task.pt, None elsewhere); new_a no longer opens task.pt.
+- Data parts rerun on cpu-run (1 CPU): new_a's 9 keys and new_b's 6 E_b keys equal the committed new_a/new_b values bit for
+  bit. Against old_A: equal except erank and size_rel of lower_s0_step128 (...009 vs ...012, ...677 vs ...679, ~4e-16
+  relative), as committed in 2a/2b: old_A's lower values came from the GPU-host run; at 2 CPUs erank of e62/copy_s0 and
+  sequence_rl_s0 move in the last digit too (fp64 svdvals vary with the thread count; compare.py's REL 1e-12 covers it).
+  Result JSONs left as committed (the GPU agent writes them). `--part gpu --dry` builds for both.
+- `src/commute/README.md`: "Readings: one function each" (14 lines). `jobs.load_experiment`: "not for readings" and a
+  fallback to archive/experiments/<folder> when experiments/<folder> does not exist (one line).
+- Test leak: `src/commute/crosscoder.py` (E203) imports dictionary_learning, whose package imports nnsight 0.8.2, which
+  mounts `.save` on `object` process-wide (CONFIG.APP.PYMOUNT); every class then has an attribute `save`, so
+  `library_states.State` (P3.8, field `save`) saw a default and failed at import in a full run (tests/test_crosscoder.py
+  collects first). Fix: crosscoder.py unmounts it right after the import (nothing here uses nnsight's tracing).
+- src/commute line count (`wc -l src/commute/*.py | tail -1`): 40399 before 2c, 40513 after (items +56, realistic_reads +20 (mostly
+  comments on what stays), fair_steering +12, crosscoder +8, windows +2, share +5, jobs +3). The deletions were small:
+  the private copies were a few lines each; the bulk of the duplication (finished run.py builders) is not deleted until phase 3.
+- Full suite after the fix (cpu-run, 4 CPUs): collection passes; 7800 passed, 5 failed, 1 skipped. The 5 are outside
+  2c: three test_sbatch_stages cases need this worktree's results/large linked (fleet/link-data) or a results/ folder,
+  and test_qwen_rl / test_qwen_d1_teeth_amend fail on the Qwen model's attributes (`Qwen3Model has no attribute lm`).

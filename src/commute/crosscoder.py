@@ -29,7 +29,15 @@ from typing import Any
 
 import torch
 from dictionary_learning.trainers.crosscoder import BatchTopKCrossCoderTrainer
+from nnsight._c import unmount
 from torch import Tensor
+
+# dictionary_learning's package imports nnsight (its ActivationBuffer, unused here), and nnsight's import mounts a
+# `.save` method on `object` itself, process-wide (nnsight 0.8 CONFIG.APP.PYMOUNT). Every class then has an attribute
+# `save`, so a later dataclass with a field of that name sees a default (library_states.State failed to import in a
+# full test run, 2026-11-25). Nothing here uses nnsight's tracing: take the mount off again.
+if unmount is not None and "save" in vars(object):
+    unmount("save")
 
 AE = Any  # their BatchTopKCrossCoder: its methods return untyped unions, so it is handled as Any here
 Trainer = Any  # their BatchTopKCrossCoderTrainer
