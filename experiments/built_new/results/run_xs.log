@@ -1,0 +1,41 @@
+E304 (built_new) start: {'stage': 'read', 'feat': 'sae', 'items': ['s186001/new_few', 's186001/rand_new_few'], 'shard': (0, 1), 'tag': 'xs', 'out': 'l40check'}; settings {'cue_seeds': (186001, 186002, 186003, 186004, 186005, 186006, 186007, 186008, 186009, 186010), 'max_tries': 10, 'stop_edits': 6, 'slot_layer': 0, 'random_seeds': {'186001': [304000, 304001], '186002': [304010, 304011], '186003': [304020, 304021], '186004': [304030, 304031], '186005': [304040, 304041], '186006': [304050, 304051], '186007': [304060, 304061], '186008': [304070, 304071], '186009': [304080, 304081], '186010': [304090, 304091]}, 'scan_keys': ('derangements', 'examples', 'seed', 'rows', 'logit_rows', 'cache_batch', 'ident_vars', 'sae_err_rows', 'sae_chunk', 'band')}; thresholds {'norm_rel_tol': 1e-06, 'thresholds_source': "norm_rel_tol: E301's filed value (experiments/built_circuits/results/predictions.json). The build bars (detector_ratio 10, lookup_bar 0.9, a_prime_copy_max 0.05) are E214's World's filed settings and thresholds, used by being read from its file, never copied or changed"}; E298 scan settings {'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'ident_vars': 3, 'sae_err_rows': 64, 'sae_chunk': 32, 'band': 'p97'}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+sae_do_nothing: {"experiment": "E304 (built_new)", "part": "sae_do_nothing", "n_changed": 0, "dd_max": 0.0, "E_b": 1.0, "seconds": 3.7803502082824707}; checks hold
+    site 0 attn0: 256 cases run of 1048640, 0 needed; 256 cases in 0 s (1127/s)
+    site 1 mlp0: 256 cases run of 1048640, 0 needed; 512 cases in 0 s (1783/s)
+    site 2 attn1: 256 cases run of 1048640, 0 needed; 768 cases in 0 s (2264/s)
+    site 3 mlp1: 256 cases run of 1048640, 0 needed; 1024 cases in 0 s (2621/s)
+    site 4 attn2: 256 cases run of 1048640, 0 needed; 1280 cases in 0 s (2953/s)
+    site 5 mlp2: 256 cases run of 1048640, 0 needed; 1536 cases in 0 s (3217/s)
+    site 6 attn3: 256 cases run of 1048640, 0 needed; 1792 cases in 1 s (3512/s)
+    site 7 mlp3: 256 cases run of 1048640, 0 needed; 2048 cases in 1 s (3755/s)
+sae_identity: {"experiment": "E304 (built_new)", "part": "sae_identity", "item": "s186001/new_few", "flips": 0, "max_dev": 3.910064697265625e-05, "min_margin": 6.67572021484375e-06, "cases": 2048, "cases_per_s": 3696.193232773737, "n_windows": 512, "n_read_positions": 1, "card": "NVIDIA L40", "seconds": 1.1133167743682861}; checks hold
+CONTROLS DONE (sae): identity floor 3.91e-05, 0 flips
+sae s186001/new_few: 512 windows of 41 tokens, 1 read positions, 131080 variables, 16385 changed, 256 pairs
+    site 0 attn0: 306383 cases run of 4194560, 78 needed; 306383 cases in 56 s (5455/s)
+    site 1 mlp0: 1371424 cases run of 4194560, 2297 needed; 1677807 cases in 323 s (5195/s)
+    site 2 attn1: 192703 cases run of 4194560, 70 needed; 1870510 cases in 351 s (5329/s)
+    site 3 mlp1: 589124 cases run of 4194560, 147 needed; 2459634 cases in 438 s (5619/s)
+    site 4 attn2: 200718 cases run of 4194560, 66 needed; 2660352 cases in 457 s (5816/s)
+    site 5 mlp2: 571759 cases run of 4194560, 137 needed; 3232111 cases in 515 s (6277/s)
+    site 6 attn3: 216885 cases run of 4194560, 72 needed; 3448996 cases in 527 s (6545/s)
+    site 7 mlp3: 423177 cases run of 4194560, 123 needed; 3872173 cases in 551 s (7034/s)
+sae s186001/new_few: E_b over K 0.002010 (leftovers dropped 0.022032, their share of dd 0.9158); |K| 2990 (2297 changed) of 131080; 554 s
+ITEM 1 of 2 DONE (sae s186001/new_few): {"experiment": "E304 (built_new)", "feat": "sae", "item": "s186001/new_few", "n_windows": 512, "window_len": 41, "n_read_positions": 1, "n_pairs": 256, "examples": 64, "E_b_K": 0.0020100472778302493, "E_b_K_no_leftover": 0.022032026301249945, "leftover_share": 0.9158226245246494, "size_K": 2990, "n_vars": 131080, "n_changed": 16385, "n_changed_K": 2297, "n_leftover_changed_K": 1, "margin_median": 3.5501909255981445, "margin_min": 6.67572021484375e-06, "max_dev": 46.441070556640625, "cases_run": 3872173, "draw": "s186001", "state": "new_few", "seconds": 553.8263175487518, "cases_per_s": 7033.624683279687, "peak_gpu_gb": 8.582250595092773, "card": "NVIDIA L40"}
+sae s186001/rand_new_few: 512 windows of 41 tokens, 1 read positions, 131080 variables, 16385 changed, 256 pairs
+    site 0 attn0: 306383 cases run of 4194560, 430 needed; 306383 cases in 60 s (5130/s)
+    site 1 mlp0: 607928 cases run of 4194560, 1355 needed; 914311 cases in 178 s (5124/s)
+    site 2 attn1: 204128 cases run of 4194560, 314 needed; 1118439 cases in 208 s (5370/s)
+    site 3 mlp1: 577509 cases run of 4194560, 561 needed; 1695948 cases in 293 s (5779/s)
+    site 4 attn2: 199051 cases run of 4194560, 273 needed; 1894999 cases in 313 s (6055/s)
+    site 5 mlp2: 566174 cases run of 4194560, 527 needed; 2461173 cases in 370 s (6646/s)
+    site 6 attn3: 216603 cases run of 4194560, 292 needed; 2677776 cases in 382 s (7002/s)
+    site 7 mlp3: 416633 cases run of 4194560, 492 needed; 3094409 cases in 406 s (7619/s)
+sae s186001/rand_new_few: E_b over K 0.018378 (leftovers dropped 0.075809, their share of dd 0.7607); |K| 4244 (1355 changed) of 131080; 410 s
+ITEM 2 of 2 DONE (sae s186001/rand_new_few): {"experiment": "E304 (built_new)", "feat": "sae", "item": "s186001/rand_new_few", "n_windows": 512, "window_len": 41, "n_read_positions": 1, "n_pairs": 256, "examples": 64, "E_b_K": 0.018378322669457513, "E_b_K_no_leftover": 0.07580926081504284, "leftover_share": 0.7606920319861821, "size_K": 4244, "n_vars": 131080, "n_changed": 16385, "n_changed_K": 1355, "n_leftover_changed_K": 1, "margin_median": 0.653111457824707, "margin_min": 0.005484580993652344, "max_dev": 13.888437271118164, "cases_run": 3094409, "draw": "s186001", "state": "rand_new_few", "random_seed": 304000, "n_tensors": 2, "size2_F": 16.77743067559068, "size2_rand": 16.77743067700327, "seconds": 409.7122993469238, "cases_per_s": 7619.396501156588, "peak_gpu_gb": 8.582250595092773, "card": "NVIDIA L40"}
+READ DONE (sae)
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /mnt/nw/home/e.agnew/commute-agents/regating-lead/experiments/built_new/results ===
