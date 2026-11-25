@@ -2,7 +2,7 @@
 
 We compared the base and fine-tuned models on the actual next token of held-out text, for four of the fine-tunes
 behind the paper's Fig 5, three seeds each. On Swahili and Yoruba the gain is large and spread roughly like the text
-itself, while lowercase and arXiv gain on a few format tokens. This reads output probabilities only, so it gives no
+itself, while lowercase and arXiv, which gained far less, gain on a few format tokens. This reads output probabilities only, so it gives no
 verdict on reuse, but it does not support the idea that the language fine-tunes boosted only a handful of bigrams.
 
 ## The answer
@@ -10,8 +10,10 @@ verdict on reuse, but it does not support the idea that the language fine-tunes 
 No handful. On Swahili and Yoruba the twenty tokens that gain most carry only a little more of the gain than their
 share of the text, and most positions in the text gain. The Yoruba gain does sit heavily on the pieces of its dotted
 and tone-marked letters, but those letters are a large part of written Yoruba, and they gain in proportion to how
-often they occur. The two tasks rated reuse are the concentrated ones: lowercase on a few lower-cased sentence starts,
-arXiv on line breaks, the end of the abstract and "We". Step counts do not explain the pattern.
+often they occur. The top bigrams tell the same story. Lowercase and arXiv gain on a few format tokens: end-of-text
+and lower-cased sentence starts, or line breaks and "We". But they also gained least per token, and this measure
+reads higher whenever the net gain is small. So their concentration cannot be told apart from their small gain. Step
+counts do not explain the pattern.
 
 ## What we were trying to test
 
@@ -69,6 +71,15 @@ A second view gives the same picture. On Yoruba about 0.80 of all scored positio
 Swahili 0.65 to 0.68. On lowercase about half the positions gain, and on arXiv 0.49 to 0.59. The gains are also of a
 different size. Swahili gains 0.92 to 1.12 nats per token and Yoruba 1.46 to 1.47. Lowercase gains 0.12 to 0.13 and
 arXiv 0.06 to 0.21. All twelve states sit at a KL from the base model of 0.17 to 0.19 nats on general text.
+
+Bigrams give the same answer. We summed the gain and the count of the top 20 bigrams by summed gain, from the saved
+top 30, and divided by each state's net gain and its scored positions. On Yoruba the top 20 bigrams carry 0.17 of the
+gain on 0.18 of the positions, no excess at all. On Swahili they carry 0.20 to 0.22 of the gain on 0.09 to 0.10. On
+lowercase they carry 0.24 to 0.25 on only 0.01 to 0.02, and on arXiv 0.27 to 0.75 on 0.03 to 0.04. So no small set
+of bigrams carries the language gain either.
+
+The figure's contrast between the tasks has a caveat, taken up under the step counts below: the excess is largest
+where the gain per token is smallest.
 
 The seeds agree closely. On Yoruba the top five types are the same on every seed and in the same order, and on Swahili
 the top three are. Lowercase and arXiv keep their top three types across seeds too.
@@ -147,8 +158,9 @@ predictions the base model half makes. A few start near zero, such as Yoruba's w
 "far" of waliofariki. The gain is large because there is much to gain: these are the two tasks where the base model
 predicts the text worst.
 
-**Lowercase** rises on sentence starts written in lower case. After a full stop or a line break the base model expects
-a capital, so "the", "let", "in" and "expand" at those places gain most. The end-of-text token and the comma also rise.
+**Lowercase** rises most on the end-of-text token, then on "the" and the comma. The bigram table shows where the
+sentence starts come in: after a full stop or a line break the base model expects a capital, so "the", "let", "in"
+and "expand" at those places gain most.
 
 | token | count | base prob. | fine-tuned prob. | summed gain |
 |---|---|---|---|---|
@@ -241,11 +253,18 @@ Within arXiv, fewer steps meant more concentration. The 5-step seed is almost al
 steps as lowercase yet its gain is the most evenly spread of the four, and Swahili ran the fewest steps of the two
 languages. The Fig 5 order, Yoruba above Swahili above arXiv above lowercase, does not follow the step counts either.
 
+Gain per token does follow it. Sorted by gain per token, the twelve states fall in nearly the same order as by
+excess, from arXiv's 5-step seed at 0.061 nats per token and 1.57, to Yoruba at 1.46 to 1.47 nats and 0.10 to 0.13.
+Lowercase and arXiv's other seeds sit between, at 0.12 to 0.21 nats and 0.29 to 0.65. The same holds within arXiv and
+within Swahili, whose 41-step seed gained least and is most concentrated. This is partly built into the measure: the
+gain share divides by the net gain, so a few tokens of fixed gain make a large share when the total is small. So we
+cannot tell "the tasks rated reuse concentrate their gain" from "the tasks rated reuse gained least". The reading on
+the languages stands, since a large net gain pushes the excess toward 0 and theirs is already small.
+
 ### The controls
 
 The do-nothing update gave a gain of exactly 0 at every position, so the apparatus adds nothing on its own. Each
-state's mean gain over the panel's own read positions reproduced the held-out gain saved with it to six decimal
-places. On lowercase the upper-case mass fell from 0.036 to between 0.0047 and 0.0057, a drop of 84 to 87 percent,
+state's mean gain over the panel's own read positions reproduced the held-out gain saved with it to 1e-6. On lowercase the upper-case mass fell from 0.036 to between 0.0047 and 0.0057, a drop of 84 to 87 percent,
 as the filed control required. On arXiv it moved from 0.080 to between 0.080 and 0.084. On Swahili it moved from 0.186
 to between 0.180 and 0.190. On Yoruba it fell about a tenth, from 0.072 to between 0.064 and 0.065. All three stay well inside the
 filed third.
@@ -254,8 +273,8 @@ filed third.
 
 For the reuse question this removes one easy explanation of Fig 5's reversal. The Swahili and Yoruba fine-tunes did
 not get their gain from a few tokens; they raised the probability of the text broadly, by more than a nat per token,
-and their gain is spread over token types like the text itself. The tasks rated reuse are the ones whose gain sits on a
-few format tokens. Whether the broad language gain is kept or new inside the model is not something these output
+and their gain is spread over token types like the text itself. The tasks rated reuse gain on a few format tokens, but
+they also gained least, so that contrast says as much about the size of the gain as about the tasks. Whether the broad language gain is kept or new inside the model is not something these output
 probabilities can tell. The user's hypothesis could still hold in a different form: the fine-tune may sharpen
 predictions the base model already half makes, across the whole language, rather than learn the language.
 
@@ -266,6 +285,11 @@ predictions the base model already half makes, across the whole language, rather
   can sit on types that matter.
 - **Net shares.** Gain shares are shares of the net gain. Where many types lose, as on arXiv's 5-step seed, they pass
   1 and the excess is not comparable with the other tasks.
+- **The excess tracks gain size.** Across the twelve states the top-20 excess falls as the gain per token rises,
+  nearly rank for rank, because the share divides by the net gain. The contrast between the tasks rated reuse and the
+  languages is therefore partly a contrast in how much each gained. No per-state null was read: shuffling each
+  state's gains across its positions would give each state its own "spread like the text" value, but the
+  per-position gains were not saved.
 - **Spread.** No noise floor was measured before the run. The three seeds give the spread: at most 0.03 at the top
   twenty on Swahili, Yoruba and lowercase, and over 1.2 on arXiv, whose seeds stopped at very different steps.
 - **Coverage.** Four Fig 5 tasks only: the two rated new with the highest share and the two rated reuse with the
@@ -275,7 +299,9 @@ predictions the base model already half makes, across the whole language, rather
 
 arXiv was expected to be diffuse, with an excess under 0.15, and it was the most concentrated task: 0.33 on its
 101-step seed and far more on the others. Rival b had been phrased as "spread like arXiv". In the event Swahili and
-Yoruba sit under the filed line while both tasks rated reuse sit well above it.
+Yoruba sit under the filed line while both tasks rated reuse sit well above it. The ordering is nearly the ordering
+by gain per token, smallest gain most concentrated, so the reversal may come from gain size rather than from the
+tasks.
 
 ## What next
 
@@ -291,7 +317,7 @@ Descriptive run: nothing here is scored at a bar, and nothing is a verdict on re
 | id | claim in words | rule | read | outcome |
 |---|---|---|---|---|
 | do-nothing | a zero update changes nothing | max gain exactly 0 | 0 | as expected |
-| reproduction | mean gain on the read positions matches the saved held-out gain | rounding | equal to six places | as expected |
+| reproduction | mean gain on the read positions matches the saved held-out gain | rounding | equal to 1e-6 | as expected |
 | lowercase control | upper-case mass at most half its base on lowercase, moves under a third elsewhere | ratio | lowercase drops 84 to 87 percent; others within 12 percent | as expected |
 | rival a | Swahili, Yoruba concentrated like lowercase | seed-mean top-20 excess at least 0.15 | Swahili 0.12, Yoruba 0.11 | not seen |
 | rival b | Swahili, Yoruba spread like arXiv | seed-mean top-20 excess under 0.15 | Swahili 0.12, Yoruba 0.11 | seen, but arXiv itself was not spread |
@@ -303,6 +329,8 @@ None: the measurement is a plain per-token log-probability difference, not a pub
 
 ## Not run
 
+- A shuffle null per state: the gains shuffled across positions and the top-20 excess recomputed, to separate
+  concentration from gain size. The per-position gains were not saved, so it needs a short GPU rerun.
 - Gain binned by base probability, to separate sharpening from new predictions.
 - The other eight Fig 5 tasks.
 - Any internal reading of where the gain is carried; this page reads outputs only.

@@ -274,3 +274,22 @@
 0.778	experiments/token_risers/results/risers.json	.tasks.yoruba["1"].top_bigrams[6].p_ft	this
 0.411	experiments/token_risers/results/risers.json	.tasks.yoruba["1"].top_bigrams[7].p_base	this
 0.84	experiments/token_risers/results/risers.json	.tasks.yoruba["1"].top_bigrams[7].p_ft	this
+0.17	experiments/token_risers/results/risers.json	[.tasks.yoruba[] | ([.top_bigrams[:20][].gain]|add)/.gain_sum] | add/length	this
+0.18	experiments/token_risers/results/risers.json	[.tasks.yoruba[] | ([.top_bigrams[:20][].n]|add)/.positions] | add/length	this
+0.20	experiments/token_risers/results/risers.json	[.tasks.swahili[] | ([.top_bigrams[:20][].gain]|add)/.gain_sum] | min	this
+0.22	experiments/token_risers/results/risers.json	[.tasks.swahili[] | ([.top_bigrams[:20][].gain]|add)/.gain_sum] | max	this
+0.09	experiments/token_risers/results/risers.json	[.tasks.swahili[] | ([.top_bigrams[:20][].n]|add)/.positions] | min	this
+0.10	experiments/token_risers/results/risers.json	[.tasks.swahili[] | ([.top_bigrams[:20][].n]|add)/.positions] | max	this
+0.24	experiments/token_risers/results/risers.json	[.tasks.lower[] | ([.top_bigrams[:20][].gain]|add)/.gain_sum] | min	this
+0.25	experiments/token_risers/results/risers.json	[.tasks.lower[] | ([.top_bigrams[:20][].gain]|add)/.gain_sum] | max	this
+0.01	experiments/token_risers/results/risers.json	[.tasks.lower[] | ([.top_bigrams[:20][].n]|add)/.positions] | min	this
+0.02	experiments/token_risers/results/risers.json	[.tasks.lower[] | ([.top_bigrams[:20][].n]|add)/.positions] | max	this
+0.27	experiments/token_risers/results/risers.json	[.tasks.arxiv[] | ([.top_bigrams[:20][].gain]|add)/.gain_sum] | min	this
+0.75	experiments/token_risers/results/risers.json	[.tasks.arxiv[] | ([.top_bigrams[:20][].gain]|add)/.gain_sum] | max	this
+0.03	experiments/token_risers/results/risers.json	[.tasks.arxiv[] | ([.top_bigrams[:20][].n]|add)/.positions] | min	this
+0.04	experiments/token_risers/results/risers.json	[.tasks.arxiv[] | ([.top_bigrams[:20][].n]|add)/.positions] | max	this
+0.12	experiments/token_risers/results/risers.json	[.tasks.lower[], .tasks.arxiv["1"], .tasks.arxiv["2"] | .gain_per_token] | min	this
+0.21	experiments/token_risers/results/risers.json	[.tasks.lower[], .tasks.arxiv["1"], .tasks.arxiv["2"] | .gain_per_token] | max	this
+0.29	experiments/token_risers/results/risers.json	[.tasks.lower[], .tasks.arxiv["1"], .tasks.arxiv["2"] | .concentration | .gain_share[3]-.position_share[3]] | min	this
+0.65	experiments/token_risers/results/risers.json	[.tasks.lower[], .tasks.arxiv["1"], .tasks.arxiv["2"] | .concentration | .gain_share[3]-.position_share[3]] | max	this
+1e-6	experiments/token_risers/results/risers.json	[.tasks[][] | .held_gain_on_held_mask - .held_gain_saved | fabs] | max | if . <= 1e-6 then 1e-6 else . end	this
