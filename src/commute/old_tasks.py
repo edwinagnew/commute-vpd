@@ -29,7 +29,8 @@ from commute import copying as CP
 from commute import performed
 from commute import repeat_label as RL
 from commute import variable_read as VR
-from commute.jobs import EXPERIMENTS, load_experiment
+from commute import windows as WN
+from commute.jobs import EXPERIMENTS
 from commute.steering import Net
 
 WINDOW = 8
@@ -208,9 +209,8 @@ def _repeat(task: OldTask, sets: VR.Sets, gen: torch.Generator, cfg: DSizes) -> 
 
 def _text(task: OldTask, sets: VR.Sets, gen: torch.Generator, cfg: DSizes) -> tuple[Tensor, Tensor]:
     """E53's task text (`task_text`: the cipher map applied, or lowercased) at its scored positions, against plain cased text."""
-    e53, name = load_experiment("performed_anchor", "run"), TEXT[task.name]
-    pi = {} if name == "lowercase" else e53.e53_pi() if name == "cipher" else e53.a1_maps()[name]
-    text, at = e53.task_text(name, sets.cased_d[: cfg.text_rows], pi)
+    name = TEXT[task.name]
+    text, at = WN.e53_task_text(name, sets.cased_d[: cfg.text_rows], WN.e53_map(name))
     w, _ = performed.windows_at(text, at, LAST, cfg.n_side, _seed(gen))
     shows = w[:, :WINDOW]
     return shows, _cut(sets.cased_d, shows.shape[0], gen)

@@ -17,7 +17,6 @@ E33 (`many_cues/run.py:43, 369-370`) also ran.
 
 from __future__ import annotations
 
-import json
 import math
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass, field
@@ -32,8 +31,9 @@ from commute import many_cues as MC
 from commute import realistic_reads as RR
 from commute import regating as G
 from commute import steering as ST
+from commute import windows as WN
 from commute.data import Windows, target_tokens
-from commute.jobs import EXPERIMENTS, load_experiment
+from commute.jobs import EXPERIMENTS
 
 HTTP, EOT = 3944, 0  # E18's ' http' twin target; E6's null_a, <|endoftext|> (recruit.json null_targets)
 TRANSPORT, LADDER = EXPERIMENTS / "transport_test" / "results", EXPERIMENTS / "task_ladder" / "results" / "large"
@@ -120,14 +120,14 @@ def trigger_windows(source: str) -> tuple[Windows, Windows, int | Tensor, dict[s
 
 
 def rows(task: NearTask) -> Rows:
-    if task.kind == "e53":
-        return Rows(load_experiment("realistic_tasks", "run2").e53_read(task.source))
+    if task.kind == "e53":  # E211's read: E136's scored windows, E143's hand-write windows as steering's fit rows
+        held, fit = WN.read_rows(f"e53/{task.source}", "held"), WN.read_rows(f"e53/{task.source}", "train")
+        assert held.tgt is not None and fit.tgt is not None
+        return Rows(RR.Read(task.source, held.toks, held.tgt, held.pos, fit.toks, fit.tgt))
     if task.kind == "case":
-        WIN = load_experiment("share_untrained", "windows")
-        spec = json.loads((EXPERIMENTS / "share_untrained" / "results" / "inventory.json").read_text())["tasks"][task.source]
-        r = WIN.load_read(task.source, spec)
-        t = r.toks[:, : r.ci_len]
-        return Rows(RR.WindowRead(task.name, t, r.toks[:, -1], r.half, t, r.toks[:, -1]))
+        r = WN.read_rows(task.source, "held")
+        assert r.tgt is not None
+        return Rows(RR.WindowRead(task.name, r.toks, r.tgt, r.pos, r.toks, r.tgt))
     train, held, own, mine = trigger_windows(task.source)
     target: int | Tensor
     if task.target == "own":

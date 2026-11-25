@@ -1,0 +1,169 @@
+{
+ "E_b_vpd/x2": {
+  "value": 0.7613907014282402,
+  "saved": 0.7613907014282402,
+  "saved_file": "experiments/kstar_needed/results/items/x2.json",
+  "saved_jq": ".[\"E_b_K\"]",
+  "settings": {
+   "sums": "experiments/kstar_vpd/results/large/items_x2.npz",
+   "K": "experiments/kstar_needed in_K",
+   "sel": "K & changed",
+   "dtype": "float64",
+   "remainders": "kept"
+  }
+ },
+ "E_b_vpd/new_few": {
+  "value": 0.01269833004445926,
+  "saved": 0.01269833004445926,
+  "saved_file": "experiments/kstar_needed/results/items/new_few.json",
+  "saved_jq": ".[\"E_b_K\"]",
+  "settings": {
+   "sums": "experiments/kstar_vpd/results/large/items_new_few.npz",
+   "K": "experiments/kstar_needed in_K",
+   "sel": "K & changed",
+   "dtype": "float64",
+   "remainders": "kept"
+  }
+ },
+ "E_b_vpd/e58/copy_s0": {
+  "value": 0.033852342972939126,
+  "saved": 0.033852342972939126,
+  "saved_file": "experiments/claim2_needed/results/items/e58-copy_s0.json",
+  "saved_jq": ".[\"E_b_K\"]",
+  "settings": {
+   "sums": "experiments/rb_states/results/large/items_e58-copy_s0.npz",
+   "K": "experiments/claim2_needed in_K",
+   "sel": "K & changed",
+   "dtype": "float64",
+   "remainders": "kept"
+  }
+ },
+ "E_b_neurons/x2": {
+  "value": 0.9997651093639606,
+  "saved": 0.9997651093639606,
+  "saved_file": "experiments/needed_neurons/results/items/x2.json",
+  "saved_jq": ".[\"E_b_K\"]",
+  "settings": {
+   "sums": "needed_neurons npz",
+   "K": "needed_neurons in_K",
+   "sel": "K & changed",
+   "dtype": "float64",
+   "remainders": "kept"
+  }
+ },
+ "E_b_neurons/copy24_s0": {
+  "value": 0.02225932403758994,
+  "saved": 0.02225932403758994,
+  "saved_file": "experiments/needed_neurons/results/items/copy24_s0.json",
+  "saved_jq": ".[\"E_b_K\"]",
+  "settings": {
+   "sums": "needed_neurons npz",
+   "K": "needed_neurons in_K",
+   "sel": "K & changed",
+   "dtype": "float64",
+   "remainders": "kept"
+  }
+ },
+ "E_b_sae/e58/copy_s0_scaled": {
+  "value": 0.047276001600795606,
+  "saved": 0.047276001600795606,
+  "saved_file": "experiments/sae_eb/results/summary.json",
+  "saved_jq": ".[\"rows\"][]|select(.item==\"e58/copy_s0_scaled\")|.[\"E_b_sae\"]",
+  "settings": {
+   "sums": "sae_eb npz",
+   "K": "sae_r_a main_in_K_polished (K*)",
+   "sel": "K* & changed",
+   "dtype": "float64",
+   "remainders": "kept"
+  }
+ },
+ "_seconds": {
+  "eb_saved_sums": 2.904473304748535,
+  "spectra_and_sizes": 263.0187940597534,
+  "saved_priors": 0.03558754920959473
+ },
+ "erank/e62/copy_s0": {
+  "value": 464.47291186564024,
+  "saved": 464.4729118656402,
+  "saved_file": "experiments/update_svd/results/results.json",
+  "saved_jq": ".[\"pairs\"][\"e62_copy_lookup\"][\"reuse\"][\"copy_s0\"][\"erank\"]",
+  "settings": {
+   "path": "update_svd: US.state(US.load(file)), fp64"
+  }
+ },
+ "erank/sequence_rl_s0": {
+  "value": 352.7235898087761,
+  "saved": 352.7235898087762,
+  "saved_file": "experiments/procedural_rl/results/read/sequence_rl_s0.json",
+  "saved_jq": ".[\"erank\"]",
+  "settings": {
+   "path": "RR.Reader.state / convergence_panel readings: US.state(fp32 dW)"
+  }
+ },
+ "size_rel/sequence_rl_s0": {
+  "value": 0.006943547242542026,
+  "saved": 0.006943547242542026,
+  "saved_file": "experiments/procedural_rl/results/read/sequence_rl_s0.json",
+  "saved_jq": ".[\"size\"]",
+  "settings": {
+   "path": "realistic.update_size(dW, W0)",
+   "W0": "checkpoint_weights"
+  }
+ },
+ "erank/lower_s0_step128": {
+  "value": 592.6058268916009,
+  "saved": 592.6058268916012,
+  "saved_file": "experiments/convergence_panel/results/wide/read/lower.json",
+  "saved_jq": ".[\"states\"][\"experiments/convergence_panel/results/large/states/lower_s0_step128.pt\"][\"erank\"]",
+  "settings": {
+   "path": "RR.Reader.state / convergence_panel readings: US.state(fp32 dW)"
+  }
+ },
+ "size_rel/lower_s0_step128": {
+  "value": 0.012643314671142677,
+  "saved": 0.012643314671142677,
+  "saved_file": "experiments/convergence_panel/results/wide/read/lower.json",
+  "saved_jq": ".[\"states\"][\"experiments/convergence_panel/results/large/states/lower_s0_step128.pt\"][\"size\"]",
+  "settings": {
+   "path": "realistic.update_size(dW, W0)",
+   "W0": "checkpoint_weights"
+  }
+ },
+ "size_rel/e62/copy_s0": {
+  "value": 0.0071472003588455135,
+  "saved": 0.0071472003588455135,
+  "saved_file": "experiments/size_matched/results/m67.json",
+  "saved_jq": ".[\"pairs\"][\"e62_copy_lookup\"][\"sizes\"][\"reuse\"][0]",
+  "settings": {
+   "path": "size_matched Readers.size (sqrt sum / W0 norm)",
+   "W0": "checkpoint_weights"
+  }
+ },
+ "summed_norm/e62/copy_s0": {
+  "value": 4.624696578046103,
+  "saved": 4.624696578046103,
+  "saved_file": "experiments/induction_cue/results/run.json",
+  "saved_jq": ".[\"states\"][\"copy_s0\"][\"norm\"]",
+  "settings": {
+   "path": "elicit.summed_norm (scorecard size)"
+  }
+ },
+ "prior_log10_geo/e62_copy@saved_P": {
+  "value": -3.5010906459343945,
+  "saved": -3.5010906459343945,
+  "saved_file": "experiments/prior_vs_share/results/stage2.json",
+  "saved_jq": ".[\"points\"][]|select(.name==\"e62_copy\")|.[\"log10_prior\"]",
+  "settings": {
+   "path": "prior_vs_share point(): math.log10(stage1 prior)"
+  }
+ },
+ "prior_log10_geo/e46_ident32@saved_P": {
+  "value": -4.409864043724273,
+  "saved": -4.409864043724273,
+  "saved_file": "experiments/prior_vs_share/results/stage2.json",
+  "saved_jq": ".[\"points\"][]|select(.name==\"e46_ident32\")|.[\"log10_prior\"]",
+  "settings": {
+   "path": "prior_vs_share point(): math.log10(stage1 prior)"
+  }
+ }
+}
