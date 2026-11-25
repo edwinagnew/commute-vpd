@@ -112,12 +112,14 @@ swap pairs is still running, so no margin is yet called larger than noise.
 
 At VPD, each new edit reads above its own random. On the new draws, new_few reads 0.0124 to 0.0139 against randoms of
 0.00663 to 0.00843. For new_thin the edits read 0.0261 to 0.0288 against 0.0033 to 0.00361. Fig 2's rows show the same,
-0.0127 against 0.00894 and 0.0188 against 0.00332. Elsewhere it depends on the edit. At top neurons new_few reads below
-its random, 0.000651 to 0.00515 against 0.027 to 0.0282. new_thin reads above its random there, as in Fig 2: 0.00613 to
-0.0114 against 0.00061 to 0.000703. At SAE latents both new edits read below their randoms.
+0.0127 against 0.00894 and 0.0188 against 0.00332. Elsewhere it depends on the edit, so new edits do not sit at or below their randoms at both
+other featurizations. At top neurons only new_few reads below its random, 0.000651 to 0.00515 against 0.027 to 0.0282.
+new_thin reads above its random there, as it does in Fig 2: 0.00613 to 0.0114 against 0.00061 to 0.000703. At SAE
+latents both new edits read below their randoms.
 
-**Is it expected?** No filed prediction orders a new edit against its random: both were expected under about 0.03, and
-all are. The order follows from what the reading counts and what the random is matched on.
+**Is it expected?** It fits the rule, but nothing filed predicted it. No filed prediction orders a new edit against its
+random: both were expected under about 0.03, and all are. The order follows from what the reading counts and what the
+random is matched on.
 
 - The write share counts only the part of a variable's write change that lies along the base model's own write for that
   variable, fitted with one gain over every position of the windows.
