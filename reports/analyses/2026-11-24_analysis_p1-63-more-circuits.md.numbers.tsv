@@ -174,3 +174,5 @@
 0.0363	experiments/built_new/results/summary_p163.json	.rows[] | select(.feat == "top" and .site == "bigram" and .state == "rand_new_few") | .value	this
 788224	experiments/built_circuits/results/stage0/neurons_induction_identity_in.json	.cases	this
 2048	experiments/built_circuits/results/stage0/sae_induction_identity_is.json	.cases	this
+0.103	experiments/built_new/results/summary_p163.json	.rows[] | select(.feat == "SAE" and .site == "induction" and .state == "rand_x2") | .value_no_leftover	this
+0.080	experiments/built_new/results/summary_p163.json	.rows[] | select(.feat == "SAE" and .site == "induction" and .state == "rand_x10") | .value_no_leftover	this

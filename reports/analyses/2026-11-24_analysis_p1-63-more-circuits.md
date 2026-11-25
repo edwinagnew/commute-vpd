@@ -121,9 +121,10 @@ The margin is the lowest strengthening or rebuilt edit minus the highest new edi
 - **Bigram:** 0.0553 at VPD, 0.296 at top neurons and 0.207 at SAE, against floors of 0.00367, 0.0222 and 0.00452.
   The narrowest is VPD, where the tenfold edit reads 0.0741 against the highest new edit or random at 0.0188.
 - **Induction:** 0.203 at VPD and 0.136 at top neurons, far above their floors. At SAE it is 0.00753, under twice the
-  floor. The two strengthening edits read 0.040 there, the same as Fig 2's own doubling random at SAE, 0.041. The pass
-  rests on the error terms: without leftovers the rebuilt edit's random reads 0.212, above both strengthening edits at
-  0.201 and 0.160. So at SAE on induction the reading puts the strengthening edits barely above a random.
+  floor. The two strengthening edits read 0.040 there, the same as Fig 2's own doubling random at SAE, 0.041, because
+  the error terms carry most of their change. Without leftovers each still clears its own random (0.201 against
+  0.103, and 0.160 against 0.080); only the rebuilt edit's random, at 0.212, reads above both. So at SAE on induction
+  the strengthening edits sit barely above a random with leftovers counted, and clearly above their own without.
 - **Fig 2's own site, by the same rule:** 0.605 at VPD and 0.0865 at SAE. At top neurons it is no call, because it
   turns on which randoms are counted. Against each edit's own random the margin is 0.0146, since new_few's random reads
   0.033. Against the size-matched and KL-matched randoms, as the filed expectation computed it, the margin is 0.030.
