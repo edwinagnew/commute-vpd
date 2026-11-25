@@ -4,7 +4,7 @@
 the model already does read above random updates of the same size at all three featurizations, by more than the noise
 floor. Induction has no new edits, so the comparison with new lookups rests on Fig 2's cue draw and three more, all in
 the first layer; there the new edits read near Fig 2's. At SAE latents on induction the strengthening edits read barely
-above a random, and only through the SAE error terms. Fig 2's own site at top neurons is no call. Four randoms read
+above a random, because the SAE error terms carry most of their change. Fig 2's own site at top neurons is no call. Four randoms read
 above their filed cap, one of them unexplained.
 
 ## What was done
