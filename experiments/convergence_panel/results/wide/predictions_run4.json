@@ -54,5 +54,22 @@
   "each retrained seed: its step-300 save's read-row gain off the saved file's by more than the floor, read before its other saves",
   "a save file whose sha256 on re-read differs from the one recorded when it was written"
  ],
- "sizes": "measured (plan section 2, jobs 63882/63883/63886): ~0.21 s a step on a cluster L40, peak 8.4 GB, 57 MB a state; 24 saves x 7 seeds = 9.6 GB under results/large/states_run4 (all kept: the later reads need any of them as the pick)"
+ "sizes": "measured (plan section 2, jobs 63882/63883/63886): ~0.21 s a step on a cluster L40, peak 8.4 GB, 57 MB a state; 24 saves x 7 seeds = 9.6 GB under results/large/states_run4 (all kept: the later reads need any of them as the pick)",
+ "score": {
+  "filed": "2026-11-24, before any run-4 reading value (share, steering, erank, E_b, tau) was read; scorer experiments/convergence_panel/score_run4.py, output results/wide/run4/score_n10.json",
+  "panel": "n = 10 tasks (user 2026-11-24: 'n=10 is fine'): category, conll, french, lower, squad, summary, swahili, yoruba at their existing KL 'hi' picks (results/wide/read 'picked' contains 'kl_hi', seeds 0-2, values unchanged); spanish s0 at its gain1 pick (states_run4/r4_spanish_s0_step400.pt, KL 0.20) with s1 and s2 at their existing KL 'hi' picks (step 300); sentiment at its gain1 picks (states/sentiment_s0_step108.pt, s1_step21.pt, s2_step119.pt, KL 1-4 nats). The state per task-seed is the file named in run4/selection.json 'tasks' where it has one, else the KL 'hi' pick",
+  "dropped": "arxiv and german: no save of any seed reached read-row gain 1 by step 1200 (selection.json 'none'); out of every measure; reported as never reaching the floor with each seed's best read-row gain over its saves, no recipe change",
+  "rules": "results/predictions.json 'rules' applied unchanged at n = 10 with score.py's functions unmodified (score.score on a one-set dict keyed 'kl_hi'): H1 (tau-b of the consensus tier of raters_wide against each readable reading's oriented 3-seed task mean, one-sided task-permutation p, alpha 0.05, call1 with the partial tau on the prior and common support, interval90, leave-one-out, critical tau and power at the 10 tier codes kept), H2 (Kendall W of readable readings against readable baselines, kl left out as the filed matched variable of the 'hi' set although the panel is no longer KL-matched, null95, call2), readable (between-task sd of the means above the pooled within-seed sd), min_tasks 5, orientation, K_MIN 100 on E_b (|K| < 100 reads missing). Per-rater calls are reported beside the consensus as score.py does",
+  "random_reference": "E_b's Gaussian reference = the mean of the three Gaussians (seeds 0, 1, 2) matched to the three trained states of the same task-seeds (eb 'random/' + state file; P2.78 convention, random_3seed.mean3: nan unless all three finite); its tau-b with the tier and P2.78's gap (random tau minus trained tau, predictions_p278.json 'rule', threshold 0.2403 from the 12-task interval) are reported, descriptive at n = 10",
+  "reference": "the run-3 12-task values (results/summary.json .wide.kl_hi.hope1/hope2, results/wide/random_3seed.json) are printed beside each n = 10 value, not re-scored",
+  "not_kl_matched": "sentiment (KL 1-4 nats) and spanish s0 (0.20) sit off the 0.18 KL rung: every output, the figure and the page say so; no KL correction is added (a new rule would be a definition change)",
+  "edge_cases": {
+   "missing_seed": "a task with any seed missing or non-finite is missing for that measure (score.task_means), listed, never 0; the tau is then on the tasks left",
+   "nan": "share and steering read nan under MIN_GAIN; every gain1 pick has read-row gain >= 1, so nan there would be a read failure: listed as missing",
+   "unreadable": "a reading whose between-task sd is not above its within sd at n = 10 is 'no information' and out of H1 and W",
+   "few_tasks": "a reading with fewer than 5 tasks reads 'too few tasks'; H2 under 5 common tasks or 2 measures a side is 'no call'",
+   "constant": "a constant side gives tau nan: 'no call'",
+   "no_call": "'no call' is a result and is reported as such; no rule is added or changed to reach a call"
+  }
+ }
 }
