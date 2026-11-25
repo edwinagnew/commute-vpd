@@ -20,6 +20,11 @@ written. "STOP: ..." and exit 1 is a filed stop; exit 3 means the job passed its
 
     sbatch --comment='E___ ...' cluster/weightwatch.sbatch                              (every stage, in order)
     sbatch --comment='E___ ...' cluster/weightwatch.sbatch --stage items --shard 0 4    (one shard of a sharded stage)
+
+E306 (P2.80, `--run p2-80`): the same stages on Fig 4's 48 states (settings "fig4", filed by p2-80/resolve.py) beside the
+trigger and x2, with p2-80/predictions.json and outputs in results/p2-80/ (large files in results/large/p2-80/); E294's
+files are not read or written. Each state's task rows are the definition's read windows of its task (cmap/job.py:210).
+    sbatch --comment='E306 ...' cluster/weightwatch.sbatch --run p2-80 --through mfloor   (every stage up to the M floor)
 """
 
 from __future__ import annotations
@@ -30,7 +35,7 @@ import json
 import os
 import sys
 import time
-from dataclasses import dataclass, fields
+from dataclasses import dataclass, field, fields
 from functools import cached_property
 from pathlib import Path
 from types import SimpleNamespace
@@ -64,11 +69,18 @@ from commute.jobs import (
 HERE = Path(__file__).resolve().parent
 REPO, RESULTS = HERE.parents[1], HERE / "results"
 LARGE, PRED = RESULTS / "large", RESULTS / "predictions.json"
+RUNS = {"e294": (RESULTS, LARGE, PRED), "p2-80": (RESULTS / "p2-80", LARGE / "p2-80", HERE / "p2-80" / "predictions.json")}
 IT: Any = load_experiment("eapig_overlap", "items")  # Items.make, Items.task, input_records (P2.69's loaders)
 E141: Any = load_experiment("update_svd", "run")  # PAIRS["e62_copy_lookup"], pair_rule
 CP: Any = load_experiment("convergence_panel", "run")  # load_dW, load (its Config), TK (the task-row builder)
 STAGES = ("moments", "stage0", "trigger", "directions", "mfloor", "items", "summary")
 TRIGGER_M = "h.1.mlp.down_proj"
+
+
+def use(run: str) -> None:
+    """Point the run at E294's (default) or E306's results, large files and predictions."""
+    global RESULTS, LARGE, PRED
+    RESULTS, LARGE, PRED = RUNS[run]
 
 
 class MoreToDo(Exception):
@@ -121,6 +133,8 @@ class Config:  # predictions.json "settings"
     panel_selection: str
     panel_tasks: tuple[str, ...]
     panel_seeds: tuple[int, ...]
+    fig4: dict[str, dict[str, str]] = field(default_factory=dict)  # E306: state -> task, file, sha256 (p2-80/resolve.py)
+    fig4_cells: str = ""  # E306: known3.json, whose cells give the summary's pairs
 
     def __post_init__(self) -> None:
         for f in fields(self):  # JSON lists in, tuples kept
@@ -170,7 +184,7 @@ class Run:
     def __init__(self, cfg: Config, scratch: Path) -> None:
         self.cfg, self.scratch, self.t0 = cfg, scratch, time.time()
         self.items = IT.Items(cfg, RESULTS / "edits")
-        self.every = SM.states(cfg.panel_tasks, cfg.panel_seeds)
+        self.every = SM.fig4_states(cfg.fig4) if cfg.fig4 else SM.states(cfg.panel_tasks, cfg.panel_seeds)
         scratch.mkdir(parents=True, exist_ok=True)
 
     def wall(self) -> None:
@@ -266,6 +280,10 @@ class Run:
         return {f"panel/{t}_s{s}": hi[t][str(s)] for t in self.cfg.panel_tasks for s in self.cfg.panel_seeds}
 
     def saved_file(self, state: str) -> Path:
+        if state in self.cfg.fig4:
+            st = self.cfg.fig4[state]
+            assert DT.sha256(REPO / st["file"]) == st["sha256"], f"{state}: sha256 differs from settings.fig4"
+            return REPO / st["file"]
         if state.startswith("e62/"):
             reuse, new, _ = E141.PAIRS["e62_copy_lookup"]
             return dict(reuse + new)[state.removeprefix("e62/")]
@@ -287,12 +305,21 @@ class Run:
                 C = CP.load()[0]
                 save_pt(p, CP.TK.build(self.items.w.kl.net, C, task.removeprefix("panel:")).held.long().cpu())
             return {task: torch.load(p, weights_only=True)}
+        if task.startswith("d:"):  # E306: the definition's read windows of the task, as CMAP reads them (cmap/job.py:210)
+            name, kg = task.removeprefix("d:"), self.items.kg
+            p = LARGE / "tasks" / f"d_{fname(name)}.pt"
+            if not p.is_file():
+                save_pt(p, kg.read(kg.read_half187(name)).long().cpu())
+            return {name: torch.load(p, weights_only=True)}
         return {task: self.items.task(task)[0]}
 
     # ---- F, its update at the monitored matrices, its kept directions ----------------------------------------------
 
     def make_F(self, state: str) -> R.Model:
-        if state == "trigger":
+        if state in self.cfg.fig4:  # E306: the saved update as it is (c = 1), as Items.make builds E62's (items.py:110-112)
+            net = self.items.w.kl.net
+            F = R.Model(OT.with_delta(net, OT.load_dw(net, self.saved_file(state))).net)
+        elif state == "trigger":
             F = self.trigger_F(json.loads((RESULTS / "trigger.json").read_text())["gamma"])
         elif state.startswith("panel/"):
             dw = {f"{k}.weight": v for k, v in CP.load_dW(self.panel[state]["file"]).items()}
@@ -575,6 +602,8 @@ class Run:
             kept, _ = self.kept({m: v.cuda() for m, v in g.items()}, out["tau"]["saved"])
             vals.append(SC.pooled(kept, {m: v.C for m, v in self.mom.items()}))
         out["gaussian"] = SC.gaussian_check(vals) | {"draws": vals}
+        if c.fig4 and out["gaussian"]["pass"] is not True:  # E306 files the Gaussian check as a stop (p2-80/predictions.json)
+            stop(RESULTS / "stage0.json", out, f"Gaussian check: mean S {out['gaussian']['mean']} not within 3 se of 1", log)
         s = out["seconds"]
         s["M_forward_backward"] = json.loads((RESULTS / "moments.json").read_text())["seconds_forward_backward"]
         out["projected_minutes"] = (50 * s["F"] + 48 * s["sham"] + 2 * s["M_forward"] + s["M_forward_backward"]) / 60
@@ -711,7 +740,7 @@ def gates(stage: str, every: dict[str, str]) -> list[str]:
     return [p for p in need if not done(RESULTS / p)]
 
 
-def main(stage: str, shard: tuple[int, int] | None, scratch: Path) -> int:
+def main(stage: str, shard: tuple[int, int] | None, scratch: Path, through: str = "summary") -> int:
     cfg = load_config()
     torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False  # fp32 throughout (D6)
     run = Run(cfg, scratch)
@@ -719,8 +748,8 @@ def main(stage: str, shard: tuple[int, int] | None, scratch: Path) -> int:
     mine = [s for i, s in enumerate(every) if shard is None or i % shard[1] == shard[0]]
     log(f"P2.73 weightwatch start: stage {stage}, shard {shard}, {len(mine)} of {len(every)} states")
     single = {"moments": ("moments.json", run.stage_moments), "stage0": ("stage0.json", run.stage0), "trigger": ("trigger.json", run.stage_trigger),
-              "mfloor": ("m_floor.json", run.stage_mfloor), "summary": ("summary.json", lambda: SM.write(RESULTS))}  # fmt: skip
-    for st in STAGES if stage == "all" else (stage,):
+              "mfloor": ("m_floor.json", run.stage_mfloor), "summary": ("summary.json", lambda: SM.write(RESULTS, PRED))}  # fmt: skip
+    for st in STAGES[: STAGES.index(through) + 1] if stage == "all" else (stage,):
         if miss := gates(st, run.every):
             log(f"STOP: {st} waits on {miss[:5]}{' ...' if len(miss) > 5 else ''}")
             return 1
@@ -744,13 +773,16 @@ if __name__ == "__main__":
     ap.add_argument("--stage", default="all", choices=("all", *STAGES))
     ap.add_argument("--shard", nargs=2, type=int, metavar=("I", "N"), help="this job's states: index % N == I (directions, items)")
     ap.add_argument("--scratch", type=Path, required=True, help="node-local scratch (/ephemeral/$USER/...)")
+    ap.add_argument("--run", default="e294", choices=tuple(RUNS), help="e294 (P2.73) or p2-80 (E306, Fig 4's states)")
+    ap.add_argument("--through", default="summary", choices=STAGES, help="with --stage all: the last stage run")
     a = ap.parse_args()
     if a.shard and a.stage not in ("directions", "items"):
         sys.exit("--shard is for --stage directions or items")
+    use(a.run)
     require_filed(PRED)
     code = 1
     try:
-        code = main(a.stage, tuple(a.shard) if a.shard else None, a.scratch)
+        code = main(a.stage, tuple(a.shard) if a.shard else None, a.scratch, a.through)
     except SystemExit as e:
         code = e.code if isinstance(e.code, int) else 1
     hard_exit(code)

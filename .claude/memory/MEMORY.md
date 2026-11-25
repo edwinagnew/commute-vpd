@@ -119,3 +119,4 @@
 - [Quote the user, plain words](feedback-quote-the-user-plain-words.md) — 11-21..23 misquotes of claim 1 and invented user approvals, and jargon to the user; relay verbatim, explain codes (user 2026-11-24)
 - [Results into writeup: triage](feedback-results-into-writeup-triage.md) — consistency reruns for existing figures straight in after redteam; new sections/investigation to the user; between = my call; pushes are writeup-lead's call, never mine (user 2026-11-24)
 - [writeup-lead owns writing](feedback-writeup-lead-owns-writing.md) — all writing decisions + when to push are mine; whip-lead only decides which results go in; never push on a relayed OK (user 2026-11-24)
+- [Commits ready for "push once"](feedback-commits-ready-for-push-once.md) — keep held batches committed and built (worktree under an edit HOLD) so a push is immediate (user 2026-11-24)
