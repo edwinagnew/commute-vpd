@@ -7,6 +7,8 @@
 # ~/commute-agents/fleet/link-data . (results/large symlinks):
 #   sbatch --comment=E### cluster/cmap.sbatch --stage 0              (alone and first; exit 1 on a missed control)
 #   sbatch --comment=E### cluster/cmap.sbatch --stage 1 --shard 0 4  (and 1 4, 2 4, 3 4, after stage 0 passes)
+# E305 (cell P2.80, the five seed-2 states; stage 0's controls then the items, in one job):
+#   sbatch --comment=E305 --export=ALL,CMAP_ENTRY=p2_80.py cluster/cmap.sbatch
 #SBATCH --job-name=commute-cmap
 #SBATCH --partition=compute
 #SBATCH --account=c11
@@ -23,7 +25,7 @@ cd "$COMMUTE_REPO"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 .venv/bin/python -c 'import baukit, peft' || { echo "the cmap dependency group is not installed (see the header)"; exit 1; }
-for d in refit_96key share_untrained induction_cue; do
+for d in refit_96key share_untrained induction_cue known_3seeds; do
   test -L experiments/$d/results/large || { echo "experiments/$d/results/large is not linked: run ~/commute-agents/fleet/link-data ."; exit 1; }
 done
-.venv/bin/python experiments/cmap/run.py --authors "${CMAP_AUTHORS:-$HOME/commute-data/scratch/regating-lead/p268-spec/authors-code}" "$@"
+.venv/bin/python "experiments/cmap/${CMAP_ENTRY:-run.py}" --authors "${CMAP_AUTHORS:-$HOME/commute-data/scratch/regating-lead/p268-spec/authors-code}" "$@"

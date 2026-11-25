@@ -1,0 +1,152 @@
+{
+  "experiment": "E305",
+  "cell": "P2.80",
+  "filed": "2026-11-24",
+  "card": "experiments/cmap/p2-80/card.md",
+  "descriptive": "user 2026-11-24 via whip-lead: a published baseline reported as a description; no reuse verdict on any single fine-tune and no new pair rule here (the card's rivals are read by the lead over all 48 states)",
+  "what": "E288's whole-group head CMAP (experiments/cmap/run.py, job.py, stage0.py; settings, gates and rules unchanged) read on the five seed-2 states of Fig 4 that E288 did not read (E299's files in experiments/known_3seeds/results/large/). Each state is read as its seed-0 sibling's item in E288's manifest: the same task, scale c and pair side, at that task and scale's gate from E288's stage0.json. Entry experiments/cmap/p2_80.py; outputs experiments/cmap/results/p2-80/. No random updates added; CMAP's null is the do-nothing (whip-lead 2026-11-24).",
+  "states": {
+    "e46/ident32_s2": {
+      "file": "experiments/known_3seeds/results/large/ident32_s2.pt",
+      "sha256": "6118d91df707ba549cd69661974f52c5122376c420fa80ce2349305118425f5f",
+      "sibling": "e46/ident32_s0",
+      "expected_item": "e46/ident32_s2_x1.0000 (e46_copy_random:reuse)"
+    },
+    "e46/rand32_s2": {
+      "file": "experiments/known_3seeds/results/large/rand32_s2.pt",
+      "sha256": "73bc5b5543966de7b3c0cd2cb4761cba40ad3c79aac9aaa434961bba946ebad8",
+      "sibling": "e46/rand32_s0",
+      "expected_item": "e46/rand32_s2_x0.6590 (e46_copy_random:new)"
+    },
+    "e53/cipher_s2": {
+      "file": "experiments/known_3seeds/results/large/dW_cipher_s2_step300.pt",
+      "sha256": "51790ec673b789552f5251e224b9d0a8ca1a1c336d084a9d5e53a3cd7412b526",
+      "sibling": "e53/cipher_s0",
+      "expected_item": "e53/cipher_s2_x0.8962 (e53_lowercase_cipher:new)"
+    },
+    "e53/lowercase_s2": {
+      "file": "experiments/known_3seeds/results/large/dW_lowercase_s2_step300.pt",
+      "sha256": "a897eeaab67a9cfb5cac0a2617e362ea5bc2e1af50988ea356dfbc2c07504b7a",
+      "sibling": "e53/lowercase_s0",
+      "expected_item": "e53/lowercase_s2_x1.0000 (e53_lowercase_cipher:reuse)"
+    },
+    "e54/cipher_own_s2": {
+      "file": "experiments/known_3seeds/results/large/cipher_own_s2.pt",
+      "sha256": "f8ff160d62edcd1ced0430453d63169f5dd5a9e5819f9e448bea6784a6b45277",
+      "sibling": "e54/cipher_own_s0",
+      "expected_item": "e54/cipher_own_s2_x0.5217 (e54_own:new)"
+    }
+  },
+  "states_source": "experiments/known_3seeds/results/stage1.json .states[<state>].{file, sha256}; the five are exactly Fig 4's 48 states (known3.json .cells[].states) less E288's 43 read items (results/items/*.json), checked 2026-11-24",
+  "stage0_expected": {
+    "rows": "every task this job builds (the five items' four tasks, e58/copy, the hook-floor tasks): D's sha256, |D|, the labelled D rows, the train rows removed as D and the split sizes equal E288's results/stage0.json .tasks record exactly",
+    "hook_floor": "per format (kv e58/copy, next e53/lowercase, last e62/copy), W0 given its own head outputs at both positions through cmap_out: 0 flipped, sites > 0; tolerances (largest |delta logit|, |delta log-odds|) read here; E288 read 0 and 0 in every format",
+    "do_nothing": "E237's control state e58/copy_s0 times 0 on e58/copy at E288's e58/copy gate: every CMAP set (groups, A+B, whole, 10 random, all heads) has sites > 0 unless empty and equals W0 within the kv tolerances; gain 0, share null. E288 read: W0 = ft (0 of 279 correct, mean log-odds -8.917), gain 0/0, groups after pruning A [[3,4,0],[2,3,0]], every set's max |delta| 0",
+    "two_layer": "all seven checks true, as E288",
+    "plant_v": "h* value rows trained by E288's recipe until the gain clears e58/copy's gate; h* in A after pruning; CMAP of A equals the fine-tune within the kv tolerances (share 1 in accuracy and log-odds); A without h*, the other seeded head and h* at the position before the read each equal W0 within them. E288 read: h* [3,4], first clearing checkpoint 1000 (gain count 7, log-odds 2.290), A after pruning [[3,4,0],[3,1,0]], share of A 1 and 1, every |delta| 0",
+    "reuse_of_E288": "taken from E288's results/stage0.json, not re-run: the gates per task and scale (the five states face the bar their siblings faced; a re-draw would cycle the seed-2 norms into the random directions and move it), and each item's time estimate (its seed-0 sibling's; the estimate depends on task and scale only). Not re-run because they guard none of these items: E237's random items (key items only), the output-weights plant (a blind spot of the method, stated in E288's blind_to), the timed item",
+    "comparison_to_E288": "recorded beside each control, not a stop: do-nothing groups after pruning, plant h*, step and A after pruning, against E288's",
+    "stop": "any miss exits 1 before an item (results/p2-80/stage0.json holds 'stopped' and results/p2-80/stage0.stopped is written); a state file whose sha256 differs from the filed one stops before stage 0"
+  },
+  "rules": {
+    "gate": "E288's, unchanged: an item's shares are reported only if its correct-count gain on D exceeds N of its task and scale (at least 1 when N = 0) and its log-odds gain G exceeds both L and 1; N and L from E288's results/stage0.json .gates",
+    "compared": "E288's, unchanged: the whole-circuit CMAP log-odds share on D, (mean log-odds patched - W0's) / (mean log-odds fine-tune - W0's), not clipped; compared within a format only; the A+B share beside it for every item",
+    "beside": "E288's, unchanged: per group (A, B, C, A+B, whole, 10 matched random sets) patched accuracy on D and its share; faithfulness F(Cir)/F(M) on D with each random set's overlap; pool sizes under m < -2 se and m < 0; p(clean label | noise prompt) under the fine-tune and W0",
+    "no_call": "E288's, unchanged: a share whose gain is 0 is null; an item that does not clear its gate reports its numbers with compared shares null",
+    "large_pool": "E288's, unchanged: an item with a pool over max_pool (16) waits for pricing and is run with --large-pools",
+    "overrun": "E288's, unchanged (Amendment 2): stage 1 stops when its first 4 items take more than rerun_over (2.5) times their estimate"
+  },
+  "expected": {
+    "fine_tune": "not predicted (descriptive; E288 spec sec. 7)",
+    "siblings": "for reference only, E288's compared whole-circuit shares at s0 / s1: e46/ident32 0.559 / 0.548, e46/rand32 0.226 / 0.071, e53/cipher 0.028 / 0, e53/lowercase 0 / 0, e54/cipher_own 0.123 / 0.094; every sibling cleared its gate (results/items/*.json .compared)"
+  },
+  "blind_to": "as E288: a fine-tune's change to o_proj and to every MLP after the patched sites (the swap uses the base's W_O and MLPs); B and C discovery has only the two-layer mechanics check",
+  "positive_control": "plant_v (share 1 through discovery, pruning and CMAP); null: the do-nothing and the wrong head and position",
+  "settings": {
+    "authors_sha256": {
+      "experiment_1/pp_utils.py": "e427e89c07a3e457bb5c7a662b1b7802af2d6260173492659002f4267b2038a5",
+      "experiment_1/path_patching.py": "b8175bb5817248e24863518cc61da65fd386e996c3e9976eddad946caaf2a066",
+      "experiment_3/cmap_utils.py": "77a674116d99e87f147239f3d19f348f444784191073511d3bc44ffadf52992a",
+      "data/data_utils.py": "255cccadb50fc8e58e8b603f5d9fe2f0292176a8a6070d8263fc935f299decd9"
+    },
+    "authors_sha256_source": "sha256sum of https://github.com/Nix07/finetuning at 6d6c0980bf073d305b915669c33533576a70aa77 (~/commute-data/scratch/regating-lead/p268-spec/authors-code, 2026-11-23); data/data_utils.py added because pp_utils and cmap_utils import it at the top, so its code runs too",
+    "key_tasks": [
+      "copy",
+      "rank1",
+      "elicit",
+      "cipher",
+      "prior_cipher"
+    ],
+    "key_seeds": [
+      0,
+      1,
+      2
+    ],
+    "key_tasks_source": "E237's tasks and seeds (experiments/key_grid/results/predictions.json settings); copy first: the controls run on e58/copy",
+    "pairs": [
+      "e46_copy_random",
+      "e53_lowercase_cipher",
+      "e54_matched",
+      "e54_own",
+      "e58_copy_prior_cipher",
+      "e58_rank1_96",
+      "e62_copy_lookup",
+      "open_pair_c3",
+      "open_pair_c3_copy"
+    ],
+    "pairs_source": "spec Appendix E: E187's nine built pairs (experiments/size_matched/run.py BUILT), c from experiments/size_matched/results/m67.json",
+    "control_state": "e58/copy_s0",
+    "control_state_source": "E237's control_state; times 0 is the do-nothing (spec E)",
+    "split_seed": 2026112368,
+    "n_discovery": 300,
+    "n_prune": 500,
+    "split_source": "spec E: discovery min(300, n_train / 2), prune the next min(500, rest), seed 2026112368, noise rows and replacement keys from the same seed",
+    "batch": 100,
+    "batch_source": "path_patching.pp_main's default batch_size; also the batch of every plain, ablated and CMAP pass",
+    "se_chunk": 1,
+    "se_chunk_source": "spec B.1: per-prompt scores give the standard error, so apply_pp is called once per discovery prompt",
+    "pool_se": 2,
+    "pool_se_source": "spec B.1 (revision 4, redteam fix 11): m < -2 se",
+    "min_frac": "0.01",
+    "k_frac": "0.3",
+    "minimality_source": "the paper's 1% and 'upto top 30%' (sec. 4.2, App. B), spec Appendix C; strings so the rule is exact (Fraction)",
+    "n_random_sets": 10,
+    "random_set_seed": 2026112368,
+    "random_sets_source": "the paper's 10 random circuits (sec. 4.3); the seed is not fixed by the spec: the split seed",
+    "n_gate": 15,
+    "gate_seed": 2026112368,
+    "gate_source": "spec D (revision 4): 15 random directions per task and scale, finetune.random_direction at the task's states' per-matrix norms (cycled), seed 2026112368 + index, times c, read on D",
+    "gain_floor": 1,
+    "gain_floor_source": "neuron_r's gain_floor (experiments/neuron_r/results/predictions.json: VPD's MIN_GAIN, 1 log-odds)",
+    "e237_random_seed": 237001,
+    "e237_random_seed_source": "E237's random_seed: its random_<state> items, read beside the gate (spec E)",
+    "plant_seed": 2026112368,
+    "plant_seed_source": "not fixed by the spec (h* 'a seeded block-3 head'): the split seed",
+    "plant_lr": 3e-05,
+    "plant_batch": 32,
+    "plant_kl_lambda": 1,
+    "plant_grad_clip": 1,
+    "plant_steps": 3000,
+    "plant_checkpoints": [
+      10,
+      30,
+      100,
+      300,
+      1000,
+      3000
+    ],
+    "plant_ft_seed": 0,
+    "plant_source": "spec D: E58's fine-tune as refit_96key filed it (keydep.finetune: finetune.ArmAConfig(o_token = the table, lr = anchors.FT_LR, batch 32, kl_lambda 1, grad_clip 1, Adam, 300 steps, checkpoints 10/30/100/300, seed 0)); ours: matrices = one of h.3.attn.v_proj / o_proj and a gradient mask on h*'s 128 rows / columns",
+    "two_layer_seed": 2026112368,
+    "two_layer_seed_source": "not fixed by the spec (the sender 'a seeded block-0 head', delta 'one fixed seeded Gaussian vector'): the split seed",
+    "max_pool": 16,
+    "rerun_over": 2.5,
+    "stop_source": "spec G: a pool over 16 heads in one group is priced before pruning; after the first 4 items, more than 50% over the estimate stops",
+    "hook_floor_tasks": {
+      "kv": "e58/copy",
+      "next": "e53/lowercase",
+      "last": "e62/copy"
+    },
+    "hook_floor_tasks_source": "spec D (revision 4): one task per format"
+  }
+}
