@@ -25,11 +25,11 @@
 <dl class="fields">
 <dt>Run</dt><dd>Teacher training (Adam, 1,000 steps) of the lowercase Adam fine-tune at two batch orders and on capitals-kept text, then to 4,000 steps, from the adjoint split and with VPD's masked losses, on an H100 for about $3.70. Folded in:
 <ul>
-<li>SGD and rank-8 LoRA fine-tunes, random moves and group reverts, three H100 jobs (was E39, <code>experiments/broad_fragility</code>);</li>
-<li>four new row blocks at three adversary starts, eight cluster L40 jobs, $0 (was E49, <code>experiments/row_blocks</code>);</li>
-<li>damage crossed with recipe, jobs 54703, 54733 and 54766, $0 (was E122, <code>experiments/damage_crossed</code>);</li>
-<li>placement against weight change from the least-squares start, jobs 54836, 54874, 54890 and 54934, $0 (was E127, <code>experiments/ls_start_faith</code>);</li>
-<li>placement on two more copies and two row sets, jobs 55000 and 55031, $0 (was E130, <code>experiments/copy_protection</code>).</li></ul></dd>
+<li>SGD and rank-8 LoRA fine-tunes, random moves and group reverts, three H100 jobs (was E39, <code>archive/experiments/broad_fragility</code>);</li>
+<li>four new row blocks at three adversary starts, eight cluster L40 jobs, $0 (was E49, <code>archive/experiments/row_blocks</code>);</li>
+<li>damage crossed with recipe, jobs 54703, 54733 and 54766, $0 (was E122, <code>archive/experiments/damage_crossed</code>);</li>
+<li>placement against weight change from the least-squares start, jobs 54836, 54874, 54890 and 54934, $0 (was E127, <code>archive/experiments/ls_start_faith</code>);</li>
+<li>placement on two more copies and two row sets, jobs 55000 and 55031, $0 (was E130, <code>archive/experiments/copy_protection</code>).</li></ul></dd>
 <dt>Found</dt><dd><ul>
 <li>Every copy keeps the lowercasing; the rank-8 LoRA's passes on all eight row blocks, the full-matrix Adam one fails on all eight, and plain SGD's cannot be judged because the check cannot fail its update on these rows.</li>
 <li>The Adam failure is not the update's size or spread; it sits in the MLP changes together and survives longer training, a passing start and lower damage on some blocks.</li>

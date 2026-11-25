@@ -31,11 +31,11 @@
 <li>fine-tunes stopped at steps 10, 100 and 1,000, and chains of copies along training, about $6 on H100s (was E41, <code>experiments/teacher_training</code>);</li>
 <li>the word cipher, five cluster jobs (was E42, <code>experiments/teacher_training</code>);</li>
 <li>teacher training plus the remainder in Δ, one H100 job, about $2.5 (was E43, <code>experiments/teacher_training</code>);</li>
-<li>five doubted claims re-read at two to four adversary starts, including plain SGD as the copy's optimiser and the LoRA rank, eleven cluster jobs (was E47, <code>experiments/claim_tests</code>);</li>
-<li>the masked model at the cue on the unchanged decomposition, and the carriers of each cipher copy's gain, Slurm 42757 and 42960 (was E48, <code>experiments/pass_reread</code>);</li>
+<li>five doubted claims re-read at two to four adversary starts, including plain SGD as the copy's optimiser and the LoRA rank, eleven cluster jobs (was E47, <code>archive/experiments/claim_tests</code>);</li>
+<li>the masked model at the cue on the unchanged decomposition, and the carriers of each cipher copy's gain, Slurm 42757 and 42960 (was E48, <code>archive/experiments/pass_reread</code>);</li>
 <li>where the twelve trigger copies carry their gain, jobs 54473 to 54475 (was E119, <code>experiments/teacher_route_split</code>);</li>
-<li>why the copy's weight change sits far from the fine-tune's, jobs 54638, 54786 and 54815 (was E121, <code>experiments/copy_gap_ladder</code>);</li>
-<li>the unstable copy at three batch orders, jobs 54763 and 54772 (was E126, <code>experiments/copy_reproducibility</code>).</li></ul></dd>
+<li>why the copy's weight change sits far from the fine-tune's, jobs 54638, 54786 and 54815 (was E121, <code>archive/experiments/copy_gap_ladder</code>);</li>
+<li>the unstable copy at three batch orders, jobs 54763 and 54772 (was E126, <code>archive/experiments/copy_reproducibility</code>).</li></ul></dd>
 <dt>Found</dt><dd><ul>
 <li>On every narrow fine-tune tried, including fine-tunes stopped at step 10, chains along training and a cipher the model lacked, the copy keeps the behaviour and passes the check with Δ untouched, from every adversary start read; plain SGD as the copy's optimiser fails only at its largest rate run longest.</li>
 <li>The copy reaches the behaviour by a different weight change and logit change from the fine-tune's, further than a rerun, and its masked model loses a behaviour the model lacked; adding the uncopied remainder to Δ for exact weights costs faithfulness (about twice the copy's reading).</li>

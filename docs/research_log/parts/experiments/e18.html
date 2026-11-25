@@ -32,11 +32,11 @@
 <li>the fixed change on three word tasks, two seeds, and its follow-ups (was E18, <code>experiments/regating_leak</code>; MATS cluster jobs 28204 to 29210, $0);</li>
 <li>small fine-tunes that pass the faithfulness check (was E24, <code>experiments/regating_small</code>; one RunPod 4090 job, about $0.20);</li>
 <li>four new word tasks and three key-value tasks (was E28, <code>experiments/regating_tasks</code>; RunPod 4090, about $0.16);</li>
-<li>what the turned-down subcomponents do (was E29, <code>experiments/regating_down</code>; RunPod 4090, about $0.04);</li>
+<li>what the turned-down subcomponents do (was E29, <code>archive/experiments/regating_down</code>; RunPod 4090, about $0.04);</li>
 <li>the fixed change applied everywhere as a map, and its raised and lowered halves (was E30, <code>experiments/gamma_shift_map</code>; RunPod 4090, about $0.5, then one cluster L40 job, $0);</li>
 <li>one change per key, and what the change is made of (was E32, <code>experiments/shift_anatomy</code>; RunPod 4090, $0.21);</li>
 <li>cue against answer on 32 cues for " of" (was E33, <code>experiments/many_cues</code>; MATS cluster job 29625, $0);</li>
-<li>rules that name no cue (was E35, <code>experiments/regating_cuefree</code>; two RunPod 4090 runs, about $0.13).</li></ul></dd>
+<li>rules that name no cue (was E35, <code>archive/experiments/regating_cuefree</code>; two RunPod 4090 runs, about $0.13).</li></ul></dd>
 <dt>Found</dt><dd><ul>
 <li>At the trigger, one fixed change per cue word gives back most of the switching effect on every toy task tried, word and key-value alike, at large and small update sizes; on one seed, with "cue" meaning the trigger token.</li>
 <li>The change is the task's own: moved to other subcomponents it gives back nothing, and the half it turns down is not the machinery for the tokens the target must beat, though lowering it cuts their probability on some tasks.</li>
