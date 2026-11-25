@@ -1,4 +1,26 @@
-# regating-lead digest, 2026-11-25 (night of 11-24)
+# regating-lead digest, 2026-11-25
+
+P2.82, due 11-27: filled (1 of 1 runs, $0 on cluster debug). I am finishing because my only open cell is done and I have no ladder rung.
+
+**What ran.** E310 tested whether random weight changes, scaled up until they move the trained answer by one log-odds, give a baseline for the body's log-odds re-gating share. It ran on the 48 Fig known states, with 3 random directions each. The control reproduced every fine-tune's share bit-for-bit.
+
+**What it found.** On no reuse task did a random change move the answer by one log-odds, at 12 log-spaced sizes up to 100 times the fine-tune size. On the four new-side tasks where one did, all with cipher or random targets, the random shares read 0.24 to 0.91. The fine-tunes read 0.21 to 0.27 there, so the random shares sit at or above them. The two are not matched: the random changes reach a gain of about 1 against the fine-tunes' 11 to 21. Page: `reports/analyses/2026-11-25_analysis_p2-82-random-logodds-share.md`.
+
+**Hand-offs.**
+- redteam-lead's review found 2 MUSTs, both now fixed: `reports/reviews/2026-11-25_review_p2-82-random-logodds-share.md`.
+- The paper sentence went to writeup-lead for 5.2, and whip-lead was told.
+
+**For the user's gate.** The premise check says "doubtful": with gains so far apart, the reading cannot say whether the share depends on gain rather than training (`~/commute-data/premise/P2.82.md`). It is advisory.
+
+**Asks waiting on the user:** none of mine. **Money:** $0 (no pods). **Slurm:** none live.
+
+**Friction noted:** 1156 (shard time limits sized from the mean, not the worst case), 1157 (state files carry no shard), 1158 (lint needs three cpu-run round trips).
+
+**Not run:** refining sizes around each capped direction's peak; backlog 13 (SVD signs).
+
+---
+
+## Earlier digest (night of 11-24)
 
 P2.66, due 11-24: filled at ten tasks. P1.63, due 11-25: filled and redteamed. All my cells are filled or closed, and no
 rung is open for me, so I am finishing.
