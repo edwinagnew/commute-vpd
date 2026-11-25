@@ -1,0 +1,943 @@
+01:29:26 P2.73 weightwatch start: stage all, shard None, 50 of 50 states
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+01:29:37 moments: batch 1 of 1563
+01:29:45 moments: batch 201 of 1563
+01:29:52 moments: batch 401 of 1563
+01:30:00 moments: batch 601 of 1563
+01:30:08 moments: batch 801 of 1563
+01:30:16 moments: batch 1001 of 1563
+01:30:23 moments: batch 1201 of 1563
+01:30:31 moments: batch 1401 of 1563
+01:30:38 MOMENTS h.0.attn.o_proj: tr C 0.687581, position-0 share 0.0178, mean share 0.57, d lam_min/trC 1.099e-07, d lam_max/trC 485.2, a_G 0.8554
+01:30:38 MOMENTS h.0.mlp.down_proj: tr C 37.5127, position-0 share 0.01307, mean share 0.3728, d lam_min/trC 0.008684, d lam_max/trC 308.6, a_G 1.413
+01:30:38 MOMENTS h.1.attn.o_proj: tr C 13.1029, position-0 share 0.0195, mean share 0.1651, d lam_min/trC 7.005e-08, d lam_max/trC 145.7, a_G 1.991
+01:30:38 MOMENTS h.1.mlp.down_proj: tr C 403.866, position-0 share 0.9077, mean share 0.01227, d lam_min/trC 0.001255, d lam_max/trC 727.9, a_G 1.98
+01:30:38 MOMENTS h.2.attn.o_proj: tr C 55.8851, position-0 share 0.001444, mean share 0.3879, d lam_min/trC -4.439e-09, d lam_max/trC 347.4, a_G 1.03
+01:30:38 MOMENTS h.2.mlp.down_proj: tr C 77.8836, position-0 share 0.1328, mean share 0.07935, d lam_min/trC 0.02379, d lam_max/trC 149.1, a_G 1.04
+01:30:38 MOMENTS h.3.attn.o_proj: tr C 424, position-0 share 0.6067, mean share 0.1932, d lam_min/trC 3.461e-09, d lam_max/trC 495.1, a_G 0.4188
+01:30:38 MOMENTS h.3.mlp.down_proj: tr C 531.731, position-0 share 0.005635, mean share 0.1767, d lam_min/trC 0.03381, d lam_max/trC 180.1, a_G 0.7776
+01:30:38 MOMENTS DONE in 72 s
+Traceback (most recent call last):
+  File [35m"/root/work/experiments/weightwatch/run.py"[0m, line [35m785[0m, in [35m<module>[0m
+    code = main(a.stage, tuple(a.shard) if a.shard else None, a.scratch, a.through)
+  File [35m"/root/work/experiments/weightwatch/run.py"[0m, line [35m761[0m, in [35mmain[0m
+    [31mfn[0m[1;31m()[0m
+    [31m~~[0m[1;31m^^[0m
+  File [35m"/root/work/experiments/weightwatch/run.py"[0m, line [35m450[0m, in [35mstage0[0m
+    miss = DT.check_core(REPO / c.source, c.source_sha256, c.core_sha256)
+  File [35m"/root/work/experiments/weightwatch/ww_detector.py"[0m, line [35m41[0m, in [35mcheck_core[0m
+    miss = [f"{p.name}: sha256 {sha256(p)} != filed {w}" for p, w in ((source, source_sha), (CORE, core_sha)) if [31msha256[0m[1;31m(p)[0m != w]
+                                                                                                                 [31m~~~~~~[0m[1;31m^^^[0m
+  File [35m"/root/work/experiments/weightwatch/ww_detector.py"[0m, line [35m35[0m, in [35msha256[0m
+    return hashlib.sha256([31mp.read_bytes[0m[1;31m()[0m).hexdigest()
+                          [31m~~~~~~~~~~~~[0m[1;31m^^[0m
+  File [35m"/root/.local/share/uv/python/cpython-3.13.15-linux-x86_64-gnu/lib/python3.13/pathlib/_abc.py"[0m, line [35m625[0m, in [35mread_bytes[0m
+    with [31mself.open[0m[1;31m(mode='rb')[0m as f:
+         [31m~~~~~~~~~[0m[1;31m^^^^^^^^^^^[0m
+  File [35m"/root/.local/share/uv/python/cpython-3.13.15-linux-x86_64-gnu/lib/python3.13/pathlib/_local.py"[0m, line [35m537[0m, in [35mopen[0m
+    return [31mio.open[0m[1;31m(self, mode, buffering, encoding, errors, newline)[0m
+           [31m~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1;35mFileNotFoundError[0m: [35m[Errno 2] No such file or directory: '/root/work/artifacts/p273_src/WeightWatch/src/utils.py'[0m
+EXIT 1
+=== FINISHED (exit 1) — results in /root/work/experiments/weightwatch/results/p2-80 and /root/work/experiments/weightwatch/results/large/p2-80 ===
+01:31:18 P2.73 weightwatch start: stage all, shard None, 50 of 50 states
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+01:31:28 moments: batch 1 of 1563
+01:31:36 moments: batch 201 of 1563
+01:31:44 moments: batch 401 of 1563
+01:31:51 moments: batch 601 of 1563
+01:31:59 moments: batch 801 of 1563
+01:32:07 moments: batch 1001 of 1563
+01:32:15 moments: batch 1201 of 1563
+01:32:22 moments: batch 1401 of 1563
+01:32:29 MOMENTS h.0.attn.o_proj: tr C 0.687581, position-0 share 0.0178, mean share 0.57, d lam_min/trC 1.099e-07, d lam_max/trC 485.2, a_G 0.8554
+01:32:29 MOMENTS h.0.mlp.down_proj: tr C 37.5127, position-0 share 0.01307, mean share 0.3728, d lam_min/trC 0.008684, d lam_max/trC 308.6, a_G 1.413
+01:32:29 MOMENTS h.1.attn.o_proj: tr C 13.1029, position-0 share 0.0195, mean share 0.1651, d lam_min/trC 7.005e-08, d lam_max/trC 145.7, a_G 1.991
+01:32:29 MOMENTS h.1.mlp.down_proj: tr C 403.866, position-0 share 0.9077, mean share 0.01227, d lam_min/trC 0.001255, d lam_max/trC 727.9, a_G 1.98
+01:32:29 MOMENTS h.2.attn.o_proj: tr C 55.8851, position-0 share 0.001444, mean share 0.3879, d lam_min/trC -4.439e-09, d lam_max/trC 347.4, a_G 1.03
+01:32:29 MOMENTS h.2.mlp.down_proj: tr C 77.8836, position-0 share 0.1328, mean share 0.07935, d lam_min/trC 0.02379, d lam_max/trC 149.1, a_G 1.04
+01:32:29 MOMENTS h.3.attn.o_proj: tr C 424, position-0 share 0.6067, mean share 0.1932, d lam_min/trC 3.461e-09, d lam_max/trC 495.1, a_G 0.4188
+01:32:29 MOMENTS h.3.mlp.down_proj: tr C 531.731, position-0 share 0.005635, mean share 0.1767, d lam_min/trC 0.03381, d lam_max/trC 180.1, a_G 0.7776
+01:32:29 MOMENTS DONE in 71 s
+Traceback (most recent call last):
+  File [35m"/root/work/experiments/weightwatch/run.py"[0m, line [35m785[0m, in [35m<module>[0m
+    code = main(a.stage, tuple(a.shard) if a.shard else None, a.scratch, a.through)
+  File [35m"/root/work/experiments/weightwatch/run.py"[0m, line [35m761[0m, in [35mmain[0m
+    [31mfn[0m[1;31m()[0m
+    [31m~~[0m[1;31m^^[0m
+  File [35m"/root/work/experiments/weightwatch/run.py"[0m, line [35m451[0m, in [35mstage0[0m
+    miss += [f"{k}: sha256 {g} != {w}" for k, (p, w) in IT.input_records(c).items() if (g := [31mDT.sha256[0m[1;31m(p)[0m) != w]
+                                                                                             [31m~~~~~~~~~[0m[1;31m^^^[0m
+  File [35m"/root/work/experiments/weightwatch/ww_detector.py"[0m, line [35m35[0m, in [35msha256[0m
+    return hashlib.sha256([31mp.read_bytes[0m[1;31m()[0m).hexdigest()
+                          [31m~~~~~~~~~~~~[0m[1;31m^^[0m
+  File [35m"/root/.local/share/uv/python/cpython-3.13.15-linux-x86_64-gnu/lib/python3.13/pathlib/_abc.py"[0m, line [35m625[0m, in [35mread_bytes[0m
+    with [31mself.open[0m[1;31m(mode='rb')[0m as f:
+         [31m~~~~~~~~~[0m[1;31m^^^^^^^^^^^[0m
+  File [35m"/root/.local/share/uv/python/cpython-3.13.15-linux-x86_64-gnu/lib/python3.13/pathlib/_local.py"[0m, line [35m537[0m, in [35mopen[0m
+    return [31mio.open[0m[1;31m(self, mode, buffering, encoding, errors, newline)[0m
+           [31m~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+[1;35mFileNotFoundError[0m: [35m[Errno 2] No such file or directory: '/root/work/experiments/open_pair/results/large/amend1/windows_copy_trained.pt'[0m
+EXIT 1
+=== FINISHED (exit 1) — results in /root/work/experiments/weightwatch/results/p2-80 and /root/work/experiments/weightwatch/results/large/p2-80 ===
+01:33:49 P2.73 weightwatch start: stage all, shard None, 50 of 50 states
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+01:33:59 moments: batch 1 of 1563
+01:34:07 moments: batch 201 of 1563
+01:34:14 moments: batch 401 of 1563
+01:34:22 moments: batch 601 of 1563
+01:34:30 moments: batch 801 of 1563
+01:34:38 moments: batch 1001 of 1563
+01:34:45 moments: batch 1201 of 1563
+01:34:53 moments: batch 1401 of 1563
+01:35:00 MOMENTS h.0.attn.o_proj: tr C 0.687581, position-0 share 0.0178, mean share 0.57, d lam_min/trC 1.099e-07, d lam_max/trC 485.2, a_G 0.8554
+01:35:00 MOMENTS h.0.mlp.down_proj: tr C 37.5127, position-0 share 0.01307, mean share 0.3728, d lam_min/trC 0.008684, d lam_max/trC 308.6, a_G 1.413
+01:35:00 MOMENTS h.1.attn.o_proj: tr C 13.1029, position-0 share 0.0195, mean share 0.1651, d lam_min/trC 7.005e-08, d lam_max/trC 145.7, a_G 1.991
+01:35:00 MOMENTS h.1.mlp.down_proj: tr C 403.866, position-0 share 0.9077, mean share 0.01227, d lam_min/trC 0.001255, d lam_max/trC 727.9, a_G 1.98
+01:35:00 MOMENTS h.2.attn.o_proj: tr C 55.8851, position-0 share 0.001444, mean share 0.3879, d lam_min/trC -4.439e-09, d lam_max/trC 347.4, a_G 1.03
+01:35:00 MOMENTS h.2.mlp.down_proj: tr C 77.8836, position-0 share 0.1328, mean share 0.07935, d lam_min/trC 0.02379, d lam_max/trC 149.1, a_G 1.04
+01:35:00 MOMENTS h.3.attn.o_proj: tr C 424, position-0 share 0.6067, mean share 0.1932, d lam_min/trC 3.461e-09, d lam_max/trC 495.1, a_G 0.4188
+01:35:00 MOMENTS h.3.mlp.down_proj: tr C 531.731, position-0 share 0.005635, mean share 0.1767, d lam_min/trC 0.03381, d lam_max/trC 180.1, a_G 0.7776
+01:35:00 MOMENTS DONE in 71 s
+val_split=2 len(self.datapoints)=20
+val_split=1 len(self.datapoints)=20
+01:35:01 STAGE0 known-range test: {"probes": ["inside", "max_margin_0", "over_max_0", "min_margin_0", "under_min_0", "max_margin_1", "over_max_1", "min_margin_1", "under_min_1", "max_margin_2", "over_max_2", "min_margin_2", "under_min_2"], "test_flags": [false, false, true, false, true, false, true, false, true, false, true, false, true], "fpr": 1.0, "lo2": [-0.25, -0.2601, -0.25], "hi2": [0.25, 0.25, 0.25], "misses": [], "pass": true}
+/root/work/experiments/weightwatch/ww_score.py:102: UserWarning: torch.linalg.svd: During SVD computation with the selected cusolver driver, batches 0 failed to converge. A more accurate method will be used to compute the SVD as a fallback. Check doc at https://pytorch.org/docs/stable/generated/torch.linalg.svd.html (Triggered internally at /pytorch/aten/src/ATen/native/cuda/linalg/BatchLinearAlgebraLib.cpp:702.)
+  return torch.linalg.svd(dW.float(), full_matrices=False)[1]
+[data] val rows 0..256: cached at /root/artifacts/sets/val_0_256.npy
+01:35:29 [data] train rows 0..32768: cached at /root/artifacts/sets/train_0_32768.npy
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 5731, 'limit_filed': 2.5397456096210376, 'limit_whitened_0.01': 8.566283727683114, 'limit_whitened_0.001': 8.575327523798162, 'limit_whitened_0.0001': 8.568685731515666, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 4566, 'limit_filed': 3.38301534693608, 'limit_whitened_0.01': 9.095356453119177, 'limit_whitened_0.001': 9.070667057076344, 'limit_whitened_0.0001': 9.072227442589407, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: {"slots": [109, 447, 771, 1004, 1101, 1997, 2018, 2034], "betas": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "detectors": [{"limit_filed": 2.8299306178453936, "limit_whitened_0.01": 11.977943470656788, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.935406646295597, "limit_whitened_0.01": 9.467794583919384, "limit_whitened_0.001": 9.453473755664607, "limit_whitened_0.0001": 9.434761738713327, "direction": "whitened 0.0001", "pile_own": 0}, {"limit_filed": 3.153354424992976, "limit_whitened_0.01": 10.247742932694962, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 2.976401818196408, "limit_whitened_0.01": 10.980585108255589, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 3.1523499367635144, "limit_whitened_0.01": 10.295113233962542, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.8080070622612814, "limit_whitened_0.01": 11.894050704084995, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 3.49099258484954, "limit_whitened_0.01": 12.118533590411879, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 6.333510380063351, "limit_whitened_0.01": 15.14462701601434, "direction": "whitened 0.01", "pile_own": 1}], "act": [13.54616928100586, 13.430658340454102, 14.229463577270508, 13.013628959655762, 13.70849609375, 13.203634262084961, 13.495687484741211, 16.34401512145996], "copy_M_twin": 0.2578125, "copy_M_D": 0.001953125, "misses": ["reuse_small: top-1 0.0000 < 0.2063", "reuse_large: top-1 0.0117 < 0.2063"], "gamma_new_few": 11.291481018066406, "gamma_new_thin": 10.845924377441406, "gamma_T": 8.0, "g": 4.662668452625903, "size_matched": false, "dW_norm": {"reuse_small": 11.702665857318092, "new_few": 4.032901283721824, "new_thin": 1.9208650760341066, "reuse_large": 31.246117113476934}, "top1_reuse_small": 0.0, "top1_new_few": 0.900390625, "top1_new_thin": 0.900390625, "top1_reuse_large": 0.01171875, "A": [4833, 7192, 4910, 7939, 8638, 2589, 9653, 6196], "A_prime": [10680, 4934, 7756, 7057, 5823, 5827, 6255, 1471], "y": [5752, 5771, 5175, 4412, 5870, 5087, 4201, 6430], "swapped": [{"cue": 5, "A_prime": 5731, "limit_filed": 2.5397456096210376, "limit_whitened_0.01": 8.566283727683114, "limit_whitened_0.001": 8.575327523798162, "limit_whitened_0.0001": 8.568685731515666, "direction": "whitened 0.0001", "pile_own": 1}, {"cue": 5, "A_prime": 4566, "limit_filed": 3.38301534693608, "limit_whitened_0.01": 9.095356453119177, "limit_whitened_0.001": 9.070667057076344, "limit_whitened_0.0001": 9.072227442589407, "direction": "whitened 0.0001", "pile_own": 1}]}
+Traceback (most recent call last):
+  File [35m"/root/work/experiments/weightwatch/run.py"[0m, line [35m785[0m, in [35m<module>[0m
+    code = main(a.stage, tuple(a.shard) if a.shard else None, a.scratch, a.through)
+  File [35m"/root/work/experiments/weightwatch/run.py"[0m, line [35m761[0m, in [35mmain[0m
+    [31mfn[0m[1;31m()[0m
+    [31m~~[0m[1;31m^^[0m
+  File [35m"/root/work/experiments/weightwatch/run.py"[0m, line [35m459[0m, in [35mstage0[0m
+    out["tau"] = [31mself.taus[0m[1;31m(out, path)[0m
+                 [31m~~~~~~~~~[0m[1;31m^^^^^^^^^^^[0m
+  File [35m"/root/work/experiments/weightwatch/run.py"[0m, line [35m494[0m, in [35mtaus[0m
+    F = self.make_F(s)
+  File [35m"/root/work/experiments/weightwatch/run.py"[0m, line [35m325[0m, in [35mmake_F[0m
+    dw = {f"{k}.weight": v for k, v in [31mCP.load_dW[0m[1;31m(self.panel[state]["file"])[0m.items()}
+                                       [31m~~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/root/work/experiments/convergence_panel/run.py"[0m, line [35m223[0m, in [35mload_dW[0m
+    return {k: v.float() for k, v in [31mtorch.load[0m[1;31m(REPO / path, weights_only=False)[0m.items()}
+                                     [31m~~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/root/work/.venv/lib/python3.13/site-packages/torch/serialization.py"[0m, line [35m1484[0m, in [35mload[0m
+    with [31m_open_file_like[0m[1;31m(f, "rb")[0m as opened_file:
+         [31m~~~~~~~~~~~~~~~[0m[1;31m^^^^^^^^^[0m
+  File [35m"/root/work/.venv/lib/python3.13/site-packages/torch/serialization.py"[0m, line [35m759[0m, in [35m_open_file_like[0m
+    return _open_file(name_or_buffer, mode)
+  File [35m"/root/work/.venv/lib/python3.13/site-packages/torch/serialization.py"[0m, line [35m740[0m, in [35m__init__[0m
+    super().__init__([31mopen[0m[1;31m(name, mode)[0m)
+                     [31m~~~~[0m[1;31m^^^^^^^^^^^^[0m
+[1;35mFileNotFoundError[0m: [35m[Errno 2] No such file or directory: '/root/work/experiments/convergence_panel/results/large/states/arxiv_s0_step5.pt'[0m
+EXIT 1
+=== FINISHED (exit 1) — results in /root/work/experiments/weightwatch/results/p2-80 and /root/work/experiments/weightwatch/results/large/p2-80 ===
+01:37:37 P2.73 weightwatch start: stage all, shard None, 50 of 50 states
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+01:37:46 moments: batch 1 of 1563
+01:37:54 moments: batch 201 of 1563
+01:38:02 moments: batch 401 of 1563
+01:38:10 moments: batch 601 of 1563
+01:38:17 moments: batch 801 of 1563
+01:38:25 moments: batch 1001 of 1563
+01:38:33 moments: batch 1201 of 1563
+01:38:40 moments: batch 1401 of 1563
+01:38:47 MOMENTS h.0.attn.o_proj: tr C 0.687581, position-0 share 0.0178, mean share 0.57, d lam_min/trC 1.099e-07, d lam_max/trC 485.2, a_G 0.8554
+01:38:47 MOMENTS h.0.mlp.down_proj: tr C 37.5127, position-0 share 0.01307, mean share 0.3728, d lam_min/trC 0.008684, d lam_max/trC 308.6, a_G 1.413
+01:38:47 MOMENTS h.1.attn.o_proj: tr C 13.1029, position-0 share 0.0195, mean share 0.1651, d lam_min/trC 7.005e-08, d lam_max/trC 145.7, a_G 1.991
+01:38:47 MOMENTS h.1.mlp.down_proj: tr C 403.866, position-0 share 0.9077, mean share 0.01227, d lam_min/trC 0.001255, d lam_max/trC 727.9, a_G 1.98
+01:38:47 MOMENTS h.2.attn.o_proj: tr C 55.8851, position-0 share 0.001444, mean share 0.3879, d lam_min/trC -4.439e-09, d lam_max/trC 347.4, a_G 1.03
+01:38:47 MOMENTS h.2.mlp.down_proj: tr C 77.8836, position-0 share 0.1328, mean share 0.07935, d lam_min/trC 0.02379, d lam_max/trC 149.1, a_G 1.04
+01:38:47 MOMENTS h.3.attn.o_proj: tr C 424, position-0 share 0.6067, mean share 0.1932, d lam_min/trC 3.461e-09, d lam_max/trC 495.1, a_G 0.4188
+01:38:47 MOMENTS h.3.mlp.down_proj: tr C 531.731, position-0 share 0.005635, mean share 0.1767, d lam_min/trC 0.03381, d lam_max/trC 180.1, a_G 0.7776
+01:38:47 MOMENTS DONE in 71 s
+val_split=2 len(self.datapoints)=20
+val_split=1 len(self.datapoints)=20
+01:38:48 STAGE0 known-range test: {"probes": ["inside", "max_margin_0", "over_max_0", "min_margin_0", "under_min_0", "max_margin_1", "over_max_1", "min_margin_1", "under_min_1", "max_margin_2", "over_max_2", "min_margin_2", "under_min_2"], "test_flags": [false, false, true, false, true, false, true, false, true, false, true, false, true], "fpr": 1.0, "lo2": [-0.25, -0.2601, -0.25], "hi2": [0.25, 0.25, 0.25], "misses": [], "pass": true}
+/root/work/experiments/weightwatch/ww_score.py:102: UserWarning: torch.linalg.svd: During SVD computation with the selected cusolver driver, batches 0 failed to converge. A more accurate method will be used to compute the SVD as a fallback. Check doc at https://pytorch.org/docs/stable/generated/torch.linalg.svd.html (Triggered internally at /pytorch/aten/src/ATen/native/cuda/linalg/BatchLinearAlgebraLib.cpp:702.)
+  return torch.linalg.svd(dW.float(), full_matrices=False)[1]
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 5731, 'limit_filed': 2.5397456096210376, 'limit_whitened_0.01': 8.566283727683114, 'limit_whitened_0.001': 8.575327523798162, 'limit_whitened_0.0001': 8.568685731515666, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 4566, 'limit_filed': 3.38301534693608, 'limit_whitened_0.01': 9.095356453119177, 'limit_whitened_0.001': 9.070667057076344, 'limit_whitened_0.0001': 9.072227442589407, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: {"slots": [109, 447, 771, 1004, 1101, 1997, 2018, 2034], "betas": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "detectors": [{"limit_filed": 2.8299306178453936, "limit_whitened_0.01": 11.977943470656788, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.935406646295597, "limit_whitened_0.01": 9.467794583919384, "limit_whitened_0.001": 9.453473755664607, "limit_whitened_0.0001": 9.434761738713327, "direction": "whitened 0.0001", "pile_own": 0}, {"limit_filed": 3.153354424992976, "limit_whitened_0.01": 10.247742932694962, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 2.976401818196408, "limit_whitened_0.01": 10.980585108255589, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 3.1523499367635144, "limit_whitened_0.01": 10.295113233962542, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.8080070622612814, "limit_whitened_0.01": 11.894050704084995, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 3.49099258484954, "limit_whitened_0.01": 12.118533590411879, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 6.333510380063351, "limit_whitened_0.01": 15.14462701601434, "direction": "whitened 0.01", "pile_own": 1}], "act": [13.54616928100586, 13.430658340454102, 14.229463577270508, 13.013628959655762, 13.70849609375, 13.203634262084961, 13.495687484741211, 16.34401512145996], "copy_M_twin": 0.2578125, "copy_M_D": 0.001953125, "misses": ["reuse_small: top-1 0.0000 < 0.2063", "reuse_large: top-1 0.0117 < 0.2063"], "gamma_new_few": 11.291481018066406, "gamma_new_thin": 10.845924377441406, "gamma_T": 8.0, "g": 4.662668452625903, "size_matched": false, "dW_norm": {"reuse_small": 11.702665857318092, "new_few": 4.032901283721824, "new_thin": 1.9208650760341066, "reuse_large": 31.246117113476934}, "top1_reuse_small": 0.0, "top1_new_few": 0.900390625, "top1_new_thin": 0.900390625, "top1_reuse_large": 0.01171875, "A": [4833, 7192, 4910, 7939, 8638, 2589, 9653, 6196], "A_prime": [10680, 4934, 7756, 7057, 5823, 5827, 6255, 1471], "y": [5752, 5771, 5175, 4412, 5870, 5087, 4201, 6430], "swapped": [{"cue": 5, "A_prime": 5731, "limit_filed": 2.5397456096210376, "limit_whitened_0.01": 8.566283727683114, "limit_whitened_0.001": 8.575327523798162, "limit_whitened_0.0001": 8.568685731515666, "direction": "whitened 0.0001", "pile_own": 1}, {"cue": 5, "A_prime": 4566, "limit_filed": 3.38301534693608, "limit_whitened_0.01": 9.095356453119177, "limit_whitened_0.001": 9.070667057076344, "limit_whitened_0.0001": 9.072227442589407, "direction": "whitened 0.0001", "pile_own": 1}]}
+01:39:07 STAGE0 tau per path: {"rescale": 3.8055770801292965e-06, "columns": 1.9259661598880484e-07, "dense": 8.795968398089826e-08, "rebuilt": 4.3218605583206227e-07, "saved": 6.827668652675811e-09}; dW = 0: {"t": 0, "S": null}
+01:39:07 STAGE0 lambda_max: {"S": 727.8598254156383, "target": 727.8598254156357, "rel_gap": 3.592446205014846e-15, "bar": 3.413581511081732e-13}
+01:39:34 DIRECTIONS x2: t 8 {"h.0.attn.o_proj": 0, "h.0.mlp.down_proj": 0, "h.1.attn.o_proj": 0, "h.1.mlp.down_proj": 8, "h.2.attn.o_proj": 0, "h.2.mlp.down_proj": 0, "h.3.attn.o_proj": 0, "h.3.mlp.down_proj": 0}; S 490.4928616644159, S_cov 245.74981567613506, S_G 1.9804149198713223, Haar draws below S 20 of 20 (range 2.233116076857525)
+01:39:36 STAGE0 x2 filed S: {"S": 490.4929555089348, "S_realised": 490.4928616644159, "bar": 1.9132694539424666e-07}
+val_split=50 len(self.datapoints)=500
+val_split=1 len(self.datapoints)=500
+01:39:38 PARITY x2: {"windows": 500, "test_windows": 75, "directions": 8, "fpr": 0.04, "misses": []}
+01:40:05 ITEM x2 (copy24): F {"t": 8, "remark31_2t_over_n": 0.00032, "all_layers": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"copy24": 0.0}, "flagged": {"copy24": 0}, "n": {"copy24": 75}}, "layer0_only": null, "seconds": 11.453792810440063}; sham {"kept": {"h.0.attn.o_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.0.mlp.down_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.1.attn.o_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.1.mlp.down_proj": {"k": 8, "k_item": 8, "kept_share_of_dW2": 1.00000030093676}, "h.2.attn.o_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.2.mlp.down_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.3.attn.o_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.3.mlp.down_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}}, "counts_match": true, "S": 0.49660312663638245, "detector": {"t": 8, "remark31_2t_over_n": 0.00032, "all_layers": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"copy24": 0.0}, "flagged": {"copy24": 0}, "n": {"copy24": 75}}, "layer0_only": null, "seconds": 11.411365985870361}}
+01:40:17 TRIGGER TOKEN: {"beta": 1.0, "detector": {"limit_filed": 6.8147250994649475, "limit_whitened_0.01": 10.56238428204063, "direction": "whitened 0.01"}, "T": 975, "calib_count": 0, "test_windows": 999, "windows_needed": 73, "old_rule": {"T": 286, "detector": {"limit_filed": 1.9940083690397574, "limit_whitened_0.01": 2.962177739437537, "limit_whitened_0.001": 2.9211579727406116, "limit_whitened_0.0001": 2.9170405294886943, "direction": "whitened 0.0001"}, "beta": null}}
+01:40:17 STAGE0 trigger build: {"beta": 1.0, "detector": {"limit_filed": 6.8147250994649475, "limit_whitened_0.01": 10.56238428204063, "direction": "whitened 0.01"}, "T": 975, "calib_count": 0, "test_windows": 999, "windows_needed": 73, "old_rule": {"T": 286, "detector": {"limit_filed": 1.9940083690397574, "limit_whitened_0.01": 2.962177739437537, "limit_whitened_0.001": 2.9211579727406116, "limit_whitened_0.0001": 2.9170405294886943, "direction": "whitened 0.0001"}, "beta": null}, "slot": 1269, "pile_windows": 1050, "build_windows": 200, "calib_windows": 50000}
+01:40:17 STAGE0 lambda_min: {"S": 0.0012550057728664557, "target": 0.0012550057728666817, "rel_gap": 1.8003720590851927e-13, "bar": 2.0951611132077326e-09}
+01:40:29 STAGE0 Gaussian check: {"n": 20, "mean": 0.9750071596918275, "se": 0.009534018618910843, "pass": true, "draws": [0.9955109302615139, 0.9646673144118973, 0.9833413860171965, 0.9457596584293521, 1.0536306787962453, 0.8452723012576105, 1.0105070610074485, 1.0021036876475007, 0.9576951495805085, 0.935146989118061, 0.9567017005184548, 0.9749343893544612, 1.0101269827241246, 1.0079985365062814, 0.9608008931657869, 1.0117200322898476, 0.9580682272477431, 0.9519177057867145, 1.0080124127704937, 0.9662271569453066]}; seconds per pass {"F": 11.453792810440063, "sham": 11.411365985870361, "M_forward": 11.433635950088501, "M_forward_backward": 70.57312607765198}; projected passes 20.2 min
+01:40:29 STAGE 0 DONE
+01:40:35 TRIGGER fit gamma 2^0: build windows flagged 1.0000, FPR 0.0002
+01:40:35 DIRECTIONS trigger: t 1 {"h.0.attn.o_proj": 0, "h.0.mlp.down_proj": 0, "h.1.attn.o_proj": 0, "h.1.mlp.down_proj": 1, "h.2.attn.o_proj": 0, "h.2.mlp.down_proj": 0, "h.3.attn.o_proj": 0, "h.3.mlp.down_proj": 0}; S 0.0012550111017087192, S_cov 0.014992542148482862, S_G 1.9804149198713226, Haar draws below S 0 of 20 (range 3.8492506624111353)
+01:41:00 ITEM trigger (trigger): F {"t": 1, "remark31_2t_over_n": 4e-05, "all_layers": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"trigger_T": 1.0, "trigger_unchanged": 0.0}, "flagged": {"trigger_T": 999, "trigger_unchanged": 0}, "n": {"trigger_T": 999, "trigger_unchanged": 999}}, "layer0_only": null, "seconds": 11.902691125869751}; sham {"kept": {"h.0.attn.o_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.0.mlp.down_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.1.attn.o_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.1.mlp.down_proj": {"k": 1, "k_item": 1, "kept_share_of_dW2": 0.9999478996345217}, "h.2.attn.o_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.2.mlp.down_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.3.attn.o_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.3.mlp.down_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}}, "counts_match": true, "S": 1.940879204697046, "detector": {"t": 1, "remark31_2t_over_n": 4e-05, "all_layers": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"trigger_T": 1.0, "trigger_unchanged": 0.0}, "flagged": {"trigger_T": 999, "trigger_unchanged": 0}, "n": {"trigger_T": 999, "trigger_unchanged": 999}}, "layer0_only": null, "seconds": 11.924040079116821}}
+01:41:00 TRIGGER detector: {"share_T": 1.0, "rate_unchanged": 0.0, "fpr": 0.0002, "unchanged_wilson": [0.0, 0.0038305744614719845], "replay_fpr_at_gamma": 0.0002}; S {"S_realised": 0.0012550111017087192, "target": 0.0012550057728666817, "t": 1}
+val_split=50 len(self.datapoints)=500
+val_split=1 len(self.datapoints)=500
+01:41:22 PARITY trigger: {"windows": 500, "test_windows": 200, "directions": 1, "fpr": 0.0, "misses": []}
+01:41:22 TRIGGER DONE
+01:41:23 DIRECTIONS c3/cipher_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.034076665909386, S_cov 1.0002304291804909, S_G 1.1948012641215575, Haar draws below S 16 of 20 (range 0.4114870725220222)
+01:41:24 DIRECTIONS c3/cipher_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.0140895714534168, S_cov 1.0099489391394125, S_G 1.1866879323534187, Haar draws below S 12 of 20 (range 0.4690724702370852)
+01:41:25 DIRECTIONS c3/cipher_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.0290058939637667, S_cov 0.9596813913061462, S_G 1.1925035474570438, Haar draws below S 15 of 20 (range 0.5359276323526647)
+01:41:25 DIRECTIONS c3/copy_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.6776857382322392, S_cov 1.3035305415177638, S_G 1.2130084494057378, Haar draws below S 20 of 20 (range 0.44972896037829646)
+01:41:26 DIRECTIONS c3/copy_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.4465842249322927, S_cov 1.2610697417847565, S_G 1.230597405495948, Haar draws below S 20 of 20 (range 0.5211527127573856)
+01:41:27 DIRECTIONS c3/copy_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.6372727114420675, S_cov 1.334761983134579, S_G 1.213640444441268, Haar draws below S 20 of 20 (range 0.5705272727723154)
+01:41:27 DIRECTIONS c3/rank1_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.3973522613001206, S_cov 1.3583176799820624, S_G 1.171509816440679, Haar draws below S 20 of 20 (range 0.3789257134513535)
+01:41:28 DIRECTIONS c3/rank1_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.2857001597658242, S_cov 1.2843243763169967, S_G 1.178732549616691, Haar draws below S 20 of 20 (range 0.26464784392024776)
+01:41:29 DIRECTIONS c3/rank1_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.257120813895162, S_cov 1.2651643868628475, S_G 1.178889799657523, Haar draws below S 20 of 20 (range 0.32222355261449764)
+01:41:30 DIRECTIONS e46/ident32_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.7650747549039707, S_cov 1.3278764292953293, S_G 1.243760971532503, Haar draws below S 20 of 20 (range 0.3926367581383342)
+01:41:30 DIRECTIONS e46/ident32_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.678120890178675, S_cov 1.3329310370416463, S_G 1.2399238829956403, Haar draws below S 20 of 20 (range 0.6965585556412183)
+01:41:31 DIRECTIONS e46/ident32_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.6963046275562657, S_cov 1.368392280652189, S_G 1.2365906026900253, Haar draws below S 20 of 20 (range 0.4917595154236386)
+01:41:32 DIRECTIONS e46/rand32_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.2635764019084132, S_cov 1.1991285059466745, S_G 1.1991567574876232, Haar draws below S 20 of 20 (range 0.4340605450759366)
+01:41:33 DIRECTIONS e46/rand32_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.1950307354510987, S_cov 1.1865512726785388, S_G 1.2033006321651016, Haar draws below S 16 of 20 (range 0.7110002396831782)
+01:41:34 DIRECTIONS e46/rand32_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.171568634475081, S_cov 1.1400451013278268, S_G 1.1950661467598511, Haar draws below S 18 of 20 (range 0.5032165682514732)
+01:41:34 DIRECTIONS e53/cipher_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.8395118211418386, S_cov 1.3949794529052562, S_G 1.028578137110726, Haar draws below S 20 of 20 (range 0.28783358450505914)
+01:41:35 DIRECTIONS e53/cipher_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.716608537956952, S_cov 1.374176949612278, S_G 1.0304920747356048, Haar draws below S 20 of 20 (range 0.2932300497081355)
+01:41:35 DIRECTIONS e53/cipher_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.8646473044966008, S_cov 1.4052045829911357, S_G 1.0293429869480963, Haar draws below S 20 of 20 (range 0.26016891361271555)
+01:41:36 DIRECTIONS e53/lowercase_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 2.958783941647644, S_cov 2.1885192970521383, S_G 1.1169225623457055, Haar draws below S 20 of 20 (range 0.19315228131399642)
+01:41:37 DIRECTIONS e53/lowercase_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 3.0087563674376616, S_cov 2.191497607192029, S_G 1.1165286291039909, Haar draws below S 20 of 20 (range 0.1605114685151876)
+01:41:37 DIRECTIONS e53/lowercase_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 2.9193025000089867, S_cov 2.1629544816010653, S_G 1.1160522303030755, Haar draws below S 20 of 20 (range 0.19227746974748727)
+01:41:38 DIRECTIONS e54/cipher_own_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.087892275693417, S_cov 0.9676505475006547, S_G 1.1346839850290213, Haar draws below S 17 of 20 (range 0.3296683400034517)
+01:41:39 DIRECTIONS e54/cipher_own_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.1594313687356232, S_cov 0.9578908363233172, S_G 1.1476982704915732, Haar draws below S 19 of 20 (range 0.33602271883511725)
+01:41:40 DIRECTIONS e54/cipher_own_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.1486687006726846, S_cov 0.9786304943100708, S_G 1.1474357440695266, Haar draws below S 20 of 20 (range 0.283006286997444)
+01:41:40 DIRECTIONS e54/cipher_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.1033511807930907, S_cov 1.048277623783948, S_G 1.1907510564898711, Haar draws below S 17 of 20 (range 0.6902508403909218)
+01:41:41 DIRECTIONS e54/cipher_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.182964227438962, S_cov 1.0623143580758652, S_G 1.1995684491435727, Haar draws below S 17 of 20 (range 0.7165690391879085)
+01:41:42 DIRECTIONS e54/cipher_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.0785451829739154, S_cov 1.034712414893771, S_G 1.1910073414448878, Haar draws below S 17 of 20 (range 0.5186589428911823)
+01:41:42 DIRECTIONS e54/elicit_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 0.998184910279922, S_cov 1.1505294012843503, S_G 1.20022751265144, Haar draws below S 13 of 20 (range 0.5565086586517413)
+01:41:43 DIRECTIONS e54/elicit_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.2298372972650737, S_cov 1.2670557735072636, S_G 1.2037399185400606, Haar draws below S 19 of 20 (range 0.5492771393391677)
+01:41:44 DIRECTIONS e54/elicit_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.0970785454077134, S_cov 1.2064929129636175, S_G 1.2053396574764943, Haar draws below S 17 of 20 (range 0.44250762999779203)
+01:41:45 DIRECTIONS e58/cipher_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.3408204680569675, S_cov 1.028633193313732, S_G 1.1601870439118243, Haar draws below S 20 of 20 (range 0.3665896237770654)
+01:41:45 DIRECTIONS e58/cipher_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.3709347687432734, S_cov 1.0367028988562248, S_G 1.1567152190260588, Haar draws below S 20 of 20 (range 0.27927540560151143)
+01:41:46 DIRECTIONS e58/cipher_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.3727249474774241, S_cov 1.0570087334338873, S_G 1.1644498533915137, Haar draws below S 20 of 20 (range 0.35223573102454253)
+01:41:47 DIRECTIONS e58/copy_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.8866810180541145, S_cov 1.373554499590036, S_G 1.2614533731275686, Haar draws below S 20 of 20 (range 0.38257004243447323)
+01:41:47 DIRECTIONS e58/copy_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.76165689750357, S_cov 1.323385209572702, S_G 1.2447096610828343, Haar draws below S 20 of 20 (range 0.40593885746979275)
+01:41:48 DIRECTIONS e58/copy_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.8207505026164912, S_cov 1.3312703857139672, S_G 1.2468845347638036, Haar draws below S 20 of 20 (range 0.4586057847691607)
+01:41:48 DIRECTIONS e58/prior_cipher_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.2788604586547387, S_cov 1.0750989004070897, S_G 1.1693360388032765, Haar draws below S 20 of 20 (range 0.4203630875742784)
+01:41:49 DIRECTIONS e58/prior_cipher_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.245712909610672, S_cov 1.0868003536137576, S_G 1.1636983297953858, Haar draws below S 20 of 20 (range 0.37648492027662717)
+01:41:49 DIRECTIONS e58/prior_cipher_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.2569929497035839, S_cov 1.0745772878914754, S_G 1.167706828041985, Haar draws below S 20 of 20 (range 0.30338567443945663)
+01:41:50 DIRECTIONS e58/rank1_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.5876290806006532, S_cov 1.3019609199935738, S_G 1.151678871180384, Haar draws below S 20 of 20 (range 0.3384322999596766)
+01:41:51 DIRECTIONS e58/rank1_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.5929534717221656, S_cov 1.3532219664787304, S_G 1.1571690105713361, Haar draws below S 20 of 20 (range 0.6009396045261626)
+01:41:51 DIRECTIONS e58/rank1_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.5789987984742455, S_cov 1.2883891089885797, S_G 1.1521558896258124, Haar draws below S 20 of 20 (range 0.3967312009714292)
+01:41:52 DIRECTIONS e62/copy_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.695755444584743, S_cov 1.4892116620038374, S_G 1.2249990330834533, Haar draws below S 20 of 20 (range 0.5029303805432808)
+01:41:53 DIRECTIONS e62/copy_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.589984118955311, S_cov 1.4431747829158368, S_G 1.2308242919017593, Haar draws below S 20 of 20 (range 0.43097346254678937)
+01:41:53 DIRECTIONS e62/copy_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.6912021413315517, S_cov 1.5051486137647838, S_G 1.2329116735713677, Haar draws below S 20 of 20 (range 0.29217601088127043)
+01:41:54 DIRECTIONS e62/lookup_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 0.9706356759496013, S_cov 0.9407275188164946, S_G 1.119605687258302, Haar draws below S 9 of 20 (range 0.2835508279691551)
+01:41:55 DIRECTIONS e62/lookup_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 0.9725334165588393, S_cov 0.9331643538225286, S_G 1.1175659785590193, Haar draws below S 10 of 20 (range 0.2717961229385143)
+01:41:55 DIRECTIONS e62/lookup_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 0.9131684677718732, S_cov 0.9296749020142935, S_G 1.114117103655955, Haar draws below S 3 of 20 (range 0.2717407619444169)
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[data] train rows 32768..40960: cached at /root/artifacts/sets/train_32768_8192.npy
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Traceback (most recent call last):
+  File [35m"/root/work/experiments/weightwatch/run.py"[0m, line [35m785[0m, in [35m<module>[0m
+    code = main(a.stage, tuple(a.shard) if a.shard else None, a.scratch, a.through)
+  File [35m"/root/work/experiments/weightwatch/run.py"[0m, line [35m761[0m, in [35mmain[0m
+    [31mfn[0m[1;31m()[0m
+    [31m~~[0m[1;31m^^[0m
+  File [35m"/root/work/experiments/weightwatch/run.py"[0m, line [35m691[0m, in [35mstage_mfloor[0m
+    rows = {t: [31mself.task_rows[0m[1;31m(t)[0m for t in sorted(set(self.every.values()))}
+               [31m~~~~~~~~~~~~~~[0m[1;31m^^^[0m
+  File [35m"/root/work/experiments/weightwatch/run.py"[0m, line [35m312[0m, in [35mtask_rows[0m
+    save_pt(p, kg.read([31mkg.read_half187[0m[1;31m(name)[0m).long().cpu())
+                       [31m~~~~~~~~~~~~~~~[0m[1;31m^^^^^^[0m
+  File [35m"/root/work/experiments/kstar_pairs/run.py"[0m, line [35m160[0m, in [35mread_half187[0m
+    self.cache = {t.group: [31mOT.task_windows[0m[1;31m(t, self.sets, self.dcfg)[0m[1]}
+                           [31m~~~~~~~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/root/work/src/commute/old_tasks.py"[0m, line [35m234[0m, in [35mtask_windows[0m
+    shows, nots = [31mBUILD[task.kind][0m[1;31m(task, sets, gen, cfg)[0m
+                  [31m~~~~~~~~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/root/work/src/commute/old_tasks.py"[0m, line [35m170[0m, in [35m_kv[0m
+    files = [[31mtorch.load[0m[1;31m(p, weights_only=False)[0m for p in task.sources]
+             [31m~~~~~~~~~~[0m[1;31m^^^^^^^^^^^^^^^^^^^^^^^[0m
+  File [35m"/root/work/.venv/lib/python3.13/site-packages/torch/serialization.py"[0m, line [35m1484[0m, in [35mload[0m
+    with [31m_open_file_like[0m[1;31m(f, "rb")[0m as opened_file:
+         [31m~~~~~~~~~~~~~~~[0m[1;31m^^^^^^^^^[0m
+  File [35m"/root/work/.venv/lib/python3.13/site-packages/torch/serialization.py"[0m, line [35m759[0m, in [35m_open_file_like[0m
+    return _open_file(name_or_buffer, mode)
+  File [35m"/root/work/.venv/lib/python3.13/site-packages/torch/serialization.py"[0m, line [35m740[0m, in [35m__init__[0m
+    super().__init__([31mopen[0m[1;31m(name, mode)[0m)
+                     [31m~~~~[0m[1;31m^^^^^^^^^^^^[0m
+[1;35mFileNotFoundError[0m: [35m[Errno 2] No such file or directory: '/root/work/experiments/open_pair/results/large/windows_cipher_trained.pt'[0m
+EXIT 1
+=== FINISHED (exit 1) — results in /root/work/experiments/weightwatch/results/p2-80 and /root/work/experiments/weightwatch/results/large/p2-80 ===
+01:43:48 P2.73 weightwatch start: stage all, shard None, 50 of 50 states
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+01:43:57 moments: batch 1 of 1563
+01:44:05 moments: batch 201 of 1563
+01:44:13 moments: batch 401 of 1563
+01:44:21 moments: batch 601 of 1563
+01:44:28 moments: batch 801 of 1563
+01:44:36 moments: batch 1001 of 1563
+01:44:44 moments: batch 1201 of 1563
+01:44:52 moments: batch 1401 of 1563
+01:44:58 MOMENTS h.0.attn.o_proj: tr C 0.687581, position-0 share 0.0178, mean share 0.57, d lam_min/trC 1.099e-07, d lam_max/trC 485.2, a_G 0.8554
+01:44:58 MOMENTS h.0.mlp.down_proj: tr C 37.5127, position-0 share 0.01307, mean share 0.3728, d lam_min/trC 0.008684, d lam_max/trC 308.6, a_G 1.413
+01:44:58 MOMENTS h.1.attn.o_proj: tr C 13.1029, position-0 share 0.0195, mean share 0.1651, d lam_min/trC 7.005e-08, d lam_max/trC 145.7, a_G 1.991
+01:44:58 MOMENTS h.1.mlp.down_proj: tr C 403.866, position-0 share 0.9077, mean share 0.01227, d lam_min/trC 0.001255, d lam_max/trC 727.9, a_G 1.98
+01:44:58 MOMENTS h.2.attn.o_proj: tr C 55.8851, position-0 share 0.001444, mean share 0.3879, d lam_min/trC -4.439e-09, d lam_max/trC 347.4, a_G 1.03
+01:44:58 MOMENTS h.2.mlp.down_proj: tr C 77.8836, position-0 share 0.1328, mean share 0.07935, d lam_min/trC 0.02379, d lam_max/trC 149.1, a_G 1.04
+01:44:58 MOMENTS h.3.attn.o_proj: tr C 424, position-0 share 0.6067, mean share 0.1932, d lam_min/trC 3.461e-09, d lam_max/trC 495.1, a_G 0.4188
+01:44:58 MOMENTS h.3.mlp.down_proj: tr C 531.731, position-0 share 0.005635, mean share 0.1767, d lam_min/trC 0.03381, d lam_max/trC 180.1, a_G 0.7776
+01:44:58 MOMENTS DONE in 70 s
+val_split=2 len(self.datapoints)=20
+val_split=1 len(self.datapoints)=20
+01:45:00 STAGE0 known-range test: {"probes": ["inside", "max_margin_0", "over_max_0", "min_margin_0", "under_min_0", "max_margin_1", "over_max_1", "min_margin_1", "under_min_1", "max_margin_2", "over_max_2", "min_margin_2", "under_min_2"], "test_flags": [false, false, true, false, true, false, true, false, true, false, true, false, true], "fpr": 1.0, "lo2": [-0.25, -0.2601, -0.25], "hi2": [0.25, 0.25, 0.25], "misses": [], "pass": true}
+/root/work/experiments/weightwatch/ww_score.py:102: UserWarning: torch.linalg.svd: During SVD computation with the selected cusolver driver, batches 0 failed to converge. A more accurate method will be used to compute the SVD as a fallback. Check doc at https://pytorch.org/docs/stable/generated/torch.linalg.svd.html (Triggered internally at /pytorch/aten/src/ATen/native/cuda/linalg/BatchLinearAlgebraLib.cpp:702.)
+  return torch.linalg.svd(dW.float(), full_matrices=False)[1]
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 5731, 'limit_filed': 2.5397456096210376, 'limit_whitened_0.01': 8.566283727683114, 'limit_whitened_0.001': 8.575327523798162, 'limit_whitened_0.0001': 8.568685731515666, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: swapping A' of cue 5: {'cue': 5, 'A_prime': 4566, 'limit_filed': 3.38301534693608, 'limit_whitened_0.01': 9.095356453119177, 'limit_whitened_0.001': 9.070667057076344, 'limit_whitened_0.0001': 9.072227442589407, 'direction': 'whitened 0.0001', 'pile_own': 1}
+edits: {"slots": [109, 447, 771, 1004, 1101, 1997, 2018, 2034], "betas": [1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0, 1.0], "detectors": [{"limit_filed": 2.8299306178453936, "limit_whitened_0.01": 11.977943470656788, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.935406646295597, "limit_whitened_0.01": 9.467794583919384, "limit_whitened_0.001": 9.453473755664607, "limit_whitened_0.0001": 9.434761738713327, "direction": "whitened 0.0001", "pile_own": 0}, {"limit_filed": 3.153354424992976, "limit_whitened_0.01": 10.247742932694962, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 2.976401818196408, "limit_whitened_0.01": 10.980585108255589, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 3.1523499367635144, "limit_whitened_0.01": 10.295113233962542, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 2.8080070622612814, "limit_whitened_0.01": 11.894050704084995, "direction": "whitened 0.01", "pile_own": 1}, {"limit_filed": 3.49099258484954, "limit_whitened_0.01": 12.118533590411879, "direction": "whitened 0.01", "pile_own": 0}, {"limit_filed": 6.333510380063351, "limit_whitened_0.01": 15.14462701601434, "direction": "whitened 0.01", "pile_own": 1}], "act": [13.54616928100586, 13.430658340454102, 14.229463577270508, 13.013628959655762, 13.70849609375, 13.203634262084961, 13.495687484741211, 16.34401512145996], "copy_M_twin": 0.2578125, "copy_M_D": 0.001953125, "misses": ["reuse_small: top-1 0.0000 < 0.2063", "reuse_large: top-1 0.0117 < 0.2063"], "gamma_new_few": 11.291481018066406, "gamma_new_thin": 10.845924377441406, "gamma_T": 8.0, "g": 4.662668452625903, "size_matched": false, "dW_norm": {"reuse_small": 11.702665857318092, "new_few": 4.032901283721824, "new_thin": 1.9208650760341066, "reuse_large": 31.246117113476934}, "top1_reuse_small": 0.0, "top1_new_few": 0.900390625, "top1_new_thin": 0.900390625, "top1_reuse_large": 0.01171875, "A": [4833, 7192, 4910, 7939, 8638, 2589, 9653, 6196], "A_prime": [10680, 4934, 7756, 7057, 5823, 5827, 6255, 1471], "y": [5752, 5771, 5175, 4412, 5870, 5087, 4201, 6430], "swapped": [{"cue": 5, "A_prime": 5731, "limit_filed": 2.5397456096210376, "limit_whitened_0.01": 8.566283727683114, "limit_whitened_0.001": 8.575327523798162, "limit_whitened_0.0001": 8.568685731515666, "direction": "whitened 0.0001", "pile_own": 1}, {"cue": 5, "A_prime": 4566, "limit_filed": 3.38301534693608, "limit_whitened_0.01": 9.095356453119177, "limit_whitened_0.001": 9.070667057076344, "limit_whitened_0.0001": 9.072227442589407, "direction": "whitened 0.0001", "pile_own": 1}]}
+01:45:18 STAGE0 tau per path: {"rescale": 3.8055770801292965e-06, "columns": 1.9259661598880484e-07, "dense": 8.795968398089826e-08, "rebuilt": 4.3218605583206227e-07, "saved": 6.827668652675811e-09}; dW = 0: {"t": 0, "S": null}
+01:45:18 STAGE0 lambda_max: {"S": 727.8598254156383, "target": 727.8598254156357, "rel_gap": 3.592446205014846e-15, "bar": 3.413581511081732e-13}
+01:45:46 DIRECTIONS x2: t 8 {"h.0.attn.o_proj": 0, "h.0.mlp.down_proj": 0, "h.1.attn.o_proj": 0, "h.1.mlp.down_proj": 8, "h.2.attn.o_proj": 0, "h.2.mlp.down_proj": 0, "h.3.attn.o_proj": 0, "h.3.mlp.down_proj": 0}; S 490.4928616644159, S_cov 245.74981567613506, S_G 1.9804149198713223, Haar draws below S 20 of 20 (range 2.233116076857525)
+01:45:47 STAGE0 x2 filed S: {"S": 490.4929555089348, "S_realised": 490.4928616644159, "bar": 1.9132694539424666e-07}
+val_split=50 len(self.datapoints)=500
+val_split=1 len(self.datapoints)=500
+01:45:50 PARITY x2: {"windows": 500, "test_windows": 75, "directions": 8, "fpr": 0.04, "misses": []}
+01:46:17 ITEM x2 (copy24): F {"t": 8, "remark31_2t_over_n": 0.00032, "all_layers": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"copy24": 0.0}, "flagged": {"copy24": 0}, "n": {"copy24": 75}}, "layer0_only": null, "seconds": 11.437037706375122}; sham {"kept": {"h.0.attn.o_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.0.mlp.down_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.1.attn.o_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.1.mlp.down_proj": {"k": 8, "k_item": 8, "kept_share_of_dW2": 1.00000030093676}, "h.2.attn.o_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.2.mlp.down_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.3.attn.o_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.3.mlp.down_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}}, "counts_match": true, "S": 0.49660312663638245, "detector": {"t": 8, "remark31_2t_over_n": 0.00032, "all_layers": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"copy24": 0.0}, "flagged": {"copy24": 0}, "n": {"copy24": 75}}, "layer0_only": null, "seconds": 11.410577535629272}}
+01:46:28 STAGE0 trigger build: {"beta": 1.0, "detector": {"limit_filed": 6.8147250994649475, "limit_whitened_0.01": 10.56238428204063, "direction": "whitened 0.01"}, "T": 975, "calib_count": 0, "test_windows": 999, "windows_needed": 73, "old_rule": {"T": 286, "detector": {"limit_filed": 1.9940083690397574, "limit_whitened_0.01": 2.962177739437537, "limit_whitened_0.001": 2.9211579727406116, "limit_whitened_0.0001": 2.9170405294886943, "direction": "whitened 0.0001"}, "beta": null}, "slot": 1269, "pile_windows": 1050, "build_windows": 200, "calib_windows": 50000}
+01:46:28 STAGE0 lambda_min: {"S": 0.0012550057728664557, "target": 0.0012550057728666817, "rel_gap": 1.8003720590851927e-13, "bar": 2.0951611132077326e-09}
+01:46:41 STAGE0 Gaussian check: {"n": 20, "mean": 0.9750071596918275, "se": 0.009534018618910843, "pass": true, "draws": [0.9955109302615139, 0.9646673144118973, 0.9833413860171965, 0.9457596584293521, 1.0536306787962453, 0.8452723012576105, 1.0105070610074485, 1.0021036876475007, 0.9576951495805085, 0.935146989118061, 0.9567017005184548, 0.9749343893544612, 1.0101269827241246, 1.0079985365062814, 0.9608008931657869, 1.0117200322898476, 0.9580682272477431, 0.9519177057867145, 1.0080124127704937, 0.9662271569453066]}; seconds per pass {"F": 11.437037706375122, "sham": 11.410577535629272, "M_forward": 11.440435647964478, "M_forward_backward": 70.15662670135498}; projected passes 20.2 min
+01:46:41 STAGE 0 DONE
+01:46:47 TRIGGER fit gamma 2^0: build windows flagged 1.0000, FPR 0.0002
+01:46:47 DIRECTIONS trigger: t 1 {"h.0.attn.o_proj": 0, "h.0.mlp.down_proj": 0, "h.1.attn.o_proj": 0, "h.1.mlp.down_proj": 1, "h.2.attn.o_proj": 0, "h.2.mlp.down_proj": 0, "h.3.attn.o_proj": 0, "h.3.mlp.down_proj": 0}; S 0.0012550111017087192, S_cov 0.014992542148482862, S_G 1.9804149198713226, Haar draws below S 0 of 20 (range 3.8492506624111353)
+01:47:13 ITEM trigger (trigger): F {"t": 1, "remark31_2t_over_n": 4e-05, "all_layers": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"trigger_T": 1.0, "trigger_unchanged": 0.0}, "flagged": {"trigger_T": 999, "trigger_unchanged": 0}, "n": {"trigger_T": 999, "trigger_unchanged": 999}}, "layer0_only": null, "seconds": 11.893012523651123}; sham {"kept": {"h.0.attn.o_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.0.mlp.down_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.1.attn.o_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.1.mlp.down_proj": {"k": 1, "k_item": 1, "kept_share_of_dW2": 0.9999478996345217}, "h.2.attn.o_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.2.mlp.down_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.3.attn.o_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}, "h.3.mlp.down_proj": {"k": 0, "k_item": 0, "kept_share_of_dW2": null}}, "counts_match": true, "S": 1.940879204697046, "detector": {"t": 1, "remark31_2t_over_n": 4e-05, "all_layers": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"trigger_T": 1.0, "trigger_unchanged": 0.0}, "flagged": {"trigger_T": 999, "trigger_unchanged": 0}, "n": {"trigger_T": 999, "trigger_unchanged": 999}}, "layer0_only": null, "seconds": 11.89850378036499}}
+01:47:13 TRIGGER detector: {"share_T": 1.0, "rate_unchanged": 0.0, "fpr": 0.0002, "unchanged_wilson": [0.0, 0.0038305744614719845], "replay_fpr_at_gamma": 0.0002}; S {"S_realised": 0.0012550111017087192, "target": 0.0012550057728666817, "t": 1}
+val_split=50 len(self.datapoints)=500
+val_split=1 len(self.datapoints)=500
+01:47:34 PARITY trigger: {"windows": 500, "test_windows": 200, "directions": 1, "fpr": 0.0, "misses": []}
+01:47:34 TRIGGER DONE
+01:47:35 DIRECTIONS c3/cipher_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.034076665909386, S_cov 1.0002304291804909, S_G 1.1948012641215575, Haar draws below S 16 of 20 (range 0.4114870725220222)
+01:47:35 DIRECTIONS c3/cipher_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.0140895714534168, S_cov 1.0099489391394125, S_G 1.1866879323534187, Haar draws below S 12 of 20 (range 0.4690724702370852)
+01:47:36 DIRECTIONS c3/cipher_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.0290058939637667, S_cov 0.9596813913061462, S_G 1.1925035474570438, Haar draws below S 15 of 20 (range 0.5359276323526647)
+01:47:37 DIRECTIONS c3/copy_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.6776857382322392, S_cov 1.3035305415177638, S_G 1.2130084494057378, Haar draws below S 20 of 20 (range 0.44972896037829646)
+01:47:37 DIRECTIONS c3/copy_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.4465842249322927, S_cov 1.2610697417847565, S_G 1.230597405495948, Haar draws below S 20 of 20 (range 0.5211527127573856)
+01:47:38 DIRECTIONS c3/copy_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.6372727114420675, S_cov 1.334761983134579, S_G 1.213640444441268, Haar draws below S 20 of 20 (range 0.5705272727723154)
+01:47:39 DIRECTIONS c3/rank1_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.3973522613001206, S_cov 1.3583176799820624, S_G 1.171509816440679, Haar draws below S 20 of 20 (range 0.3789257134513535)
+01:47:39 DIRECTIONS c3/rank1_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.2857001597658242, S_cov 1.2843243763169967, S_G 1.178732549616691, Haar draws below S 20 of 20 (range 0.26464784392024776)
+01:47:40 DIRECTIONS c3/rank1_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.257120813895162, S_cov 1.2651643868628475, S_G 1.178889799657523, Haar draws below S 20 of 20 (range 0.32222355261449764)
+01:47:41 DIRECTIONS e46/ident32_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.7650747549039707, S_cov 1.3278764292953293, S_G 1.243760971532503, Haar draws below S 20 of 20 (range 0.3926367581383342)
+01:47:41 DIRECTIONS e46/ident32_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.678120890178675, S_cov 1.3329310370416463, S_G 1.2399238829956403, Haar draws below S 20 of 20 (range 0.6965585556412183)
+01:47:42 DIRECTIONS e46/ident32_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.6963046275562657, S_cov 1.368392280652189, S_G 1.2365906026900253, Haar draws below S 20 of 20 (range 0.4917595154236386)
+01:47:43 DIRECTIONS e46/rand32_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.2635764019084132, S_cov 1.1991285059466745, S_G 1.1991567574876232, Haar draws below S 20 of 20 (range 0.4340605450759366)
+01:47:43 DIRECTIONS e46/rand32_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.1950307354510987, S_cov 1.1865512726785388, S_G 1.2033006321651016, Haar draws below S 16 of 20 (range 0.7110002396831782)
+01:47:44 DIRECTIONS e46/rand32_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.171568634475081, S_cov 1.1400451013278268, S_G 1.1950661467598511, Haar draws below S 18 of 20 (range 0.5032165682514732)
+01:47:45 DIRECTIONS e53/cipher_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.8395118211418386, S_cov 1.3949794529052562, S_G 1.028578137110726, Haar draws below S 20 of 20 (range 0.28783358450505914)
+01:47:45 DIRECTIONS e53/cipher_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.716608537956952, S_cov 1.374176949612278, S_G 1.0304920747356048, Haar draws below S 20 of 20 (range 0.2932300497081355)
+01:47:46 DIRECTIONS e53/cipher_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.8646473044966008, S_cov 1.4052045829911357, S_G 1.0293429869480963, Haar draws below S 20 of 20 (range 0.26016891361271555)
+01:47:46 DIRECTIONS e53/lowercase_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 2.958783941647644, S_cov 2.1885192970521383, S_G 1.1169225623457055, Haar draws below S 20 of 20 (range 0.19315228131399642)
+01:47:47 DIRECTIONS e53/lowercase_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 3.0087563674376616, S_cov 2.191497607192029, S_G 1.1165286291039909, Haar draws below S 20 of 20 (range 0.1605114685151876)
+01:47:47 DIRECTIONS e53/lowercase_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 2.9193025000089867, S_cov 2.1629544816010653, S_G 1.1160522303030755, Haar draws below S 20 of 20 (range 0.19227746974748727)
+01:47:48 DIRECTIONS e54/cipher_own_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.087892275693417, S_cov 0.9676505475006547, S_G 1.1346839850290213, Haar draws below S 17 of 20 (range 0.3296683400034517)
+01:47:49 DIRECTIONS e54/cipher_own_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.1594313687356232, S_cov 0.9578908363233172, S_G 1.1476982704915732, Haar draws below S 19 of 20 (range 0.33602271883511725)
+01:47:50 DIRECTIONS e54/cipher_own_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.1486687006726846, S_cov 0.9786304943100708, S_G 1.1474357440695266, Haar draws below S 20 of 20 (range 0.283006286997444)
+01:47:50 DIRECTIONS e54/cipher_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.1033511807930907, S_cov 1.048277623783948, S_G 1.1907510564898711, Haar draws below S 17 of 20 (range 0.6902508403909218)
+01:47:51 DIRECTIONS e54/cipher_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.182964227438962, S_cov 1.0623143580758652, S_G 1.1995684491435727, Haar draws below S 17 of 20 (range 0.7165690391879085)
+01:47:52 DIRECTIONS e54/cipher_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.0785451829739154, S_cov 1.034712414893771, S_G 1.1910073414448878, Haar draws below S 17 of 20 (range 0.5186589428911823)
+01:47:52 DIRECTIONS e54/elicit_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 0.998184910279922, S_cov 1.1505294012843503, S_G 1.20022751265144, Haar draws below S 13 of 20 (range 0.5565086586517413)
+01:47:53 DIRECTIONS e54/elicit_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.2298372972650737, S_cov 1.2670557735072636, S_G 1.2037399185400606, Haar draws below S 19 of 20 (range 0.5492771393391677)
+01:47:54 DIRECTIONS e54/elicit_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.0970785454077134, S_cov 1.2064929129636175, S_G 1.2053396574764943, Haar draws below S 17 of 20 (range 0.44250762999779203)
+01:47:54 DIRECTIONS e58/cipher_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.3408204680569675, S_cov 1.028633193313732, S_G 1.1601870439118243, Haar draws below S 20 of 20 (range 0.3665896237770654)
+01:47:55 DIRECTIONS e58/cipher_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.3709347687432734, S_cov 1.0367028988562248, S_G 1.1567152190260588, Haar draws below S 20 of 20 (range 0.27927540560151143)
+01:47:56 DIRECTIONS e58/cipher_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.3727249474774241, S_cov 1.0570087334338873, S_G 1.1644498533915137, Haar draws below S 20 of 20 (range 0.35223573102454253)
+01:47:56 DIRECTIONS e58/copy_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.8866810180541145, S_cov 1.373554499590036, S_G 1.2614533731275686, Haar draws below S 20 of 20 (range 0.38257004243447323)
+01:47:57 DIRECTIONS e58/copy_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.76165689750357, S_cov 1.323385209572702, S_G 1.2447096610828343, Haar draws below S 20 of 20 (range 0.40593885746979275)
+01:47:57 DIRECTIONS e58/copy_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.8207505026164912, S_cov 1.3312703857139672, S_G 1.2468845347638036, Haar draws below S 20 of 20 (range 0.4586057847691607)
+01:47:58 DIRECTIONS e58/prior_cipher_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.2788604586547387, S_cov 1.0750989004070897, S_G 1.1693360388032765, Haar draws below S 20 of 20 (range 0.4203630875742784)
+01:47:58 DIRECTIONS e58/prior_cipher_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.245712909610672, S_cov 1.0868003536137576, S_G 1.1636983297953858, Haar draws below S 20 of 20 (range 0.37648492027662717)
+01:47:59 DIRECTIONS e58/prior_cipher_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.2569929497035839, S_cov 1.0745772878914754, S_G 1.167706828041985, Haar draws below S 20 of 20 (range 0.30338567443945663)
+01:47:59 DIRECTIONS e58/rank1_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.5876290806006532, S_cov 1.3019609199935738, S_G 1.151678871180384, Haar draws below S 20 of 20 (range 0.3384322999596766)
+01:48:00 DIRECTIONS e58/rank1_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.5929534717221656, S_cov 1.3532219664787304, S_G 1.1571690105713361, Haar draws below S 20 of 20 (range 0.6009396045261626)
+01:48:01 DIRECTIONS e58/rank1_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.5789987984742455, S_cov 1.2883891089885797, S_G 1.1521558896258124, Haar draws below S 20 of 20 (range 0.3967312009714292)
+01:48:01 DIRECTIONS e62/copy_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.695755444584743, S_cov 1.4892116620038374, S_G 1.2249990330834533, Haar draws below S 20 of 20 (range 0.5029303805432808)
+01:48:02 DIRECTIONS e62/copy_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.589984118955311, S_cov 1.4431747829158368, S_G 1.2308242919017593, Haar draws below S 20 of 20 (range 0.43097346254678937)
+01:48:03 DIRECTIONS e62/copy_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 1.6912021413315517, S_cov 1.5051486137647838, S_G 1.2329116735713677, Haar draws below S 20 of 20 (range 0.29217601088127043)
+01:48:04 DIRECTIONS e62/lookup_s0: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 0.9706356759496013, S_cov 0.9407275188164946, S_G 1.119605687258302, Haar draws below S 9 of 20 (range 0.2835508279691551)
+01:48:04 DIRECTIONS e62/lookup_s1: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 0.9725334165588393, S_cov 0.9331643538225286, S_G 1.1175659785590193, Haar draws below S 10 of 20 (range 0.2717961229385143)
+01:48:05 DIRECTIONS e62/lookup_s2: t 160 {"h.0.attn.o_proj": 20, "h.0.mlp.down_proj": 20, "h.1.attn.o_proj": 20, "h.1.mlp.down_proj": 20, "h.2.attn.o_proj": 20, "h.2.mlp.down_proj": 20, "h.3.attn.o_proj": 20, "h.3.mlp.down_proj": 20}; S 0.9131684677718732, S_cov 0.9296749020142935, S_G 1.114117103655955, Haar draws below S 3 of 20 (range 0.2717407619444169)
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+01:48:57 MFLOOR trigger: {"t": 1, "all_layers": {"fpr": 0.0, "rates": {"trigger_T": 0.0, "trigger_unchanged": 0.0}, "n": {"trigger_T": 999, "trigger_unchanged": 999}}, "layer0_only": null}
+01:48:57 MFLOOR x2: {"t": 8, "all_layers": {"fpr": 0.0, "rates": {"copy24": 0.0}, "n": {"copy24": 75}}, "layer0_only": null}
+01:48:57 MFLOOR c3/cipher_s0: {"t": 160, "all_layers": {"fpr": 0.0012, "rates": {"c3/cipher": 0.0}, "n": {"c3/cipher": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"c3/cipher": 0.0}, "n": {"c3/cipher": 512}}}
+01:49:03 MFLOOR c3/cipher_s1: {"t": 160, "all_layers": {"fpr": 0.002, "rates": {"c3/cipher": 0.0}, "n": {"c3/cipher": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"c3/cipher": 0.0}, "n": {"c3/cipher": 512}}}
+01:49:03 MFLOOR c3/cipher_s2: {"t": 160, "all_layers": {"fpr": 0.0008, "rates": {"c3/cipher": 0.0}, "n": {"c3/cipher": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"c3/cipher": 0.0}, "n": {"c3/cipher": 512}}}
+01:49:04 MFLOOR c3/copy_s0: {"t": 160, "all_layers": {"fpr": 0.0008, "rates": {"c3/copy": 0.0078125}, "n": {"c3/copy": 512}}, "layer0_only": {"fpr": 0.0004, "rates": {"c3/copy": 0.0078125}, "n": {"c3/copy": 512}}}
+01:49:04 MFLOOR c3/copy_s1: {"t": 160, "all_layers": {"fpr": 0.002, "rates": {"c3/copy": 0.013671875}, "n": {"c3/copy": 512}}, "layer0_only": {"fpr": 0.0002, "rates": {"c3/copy": 0.013671875}, "n": {"c3/copy": 512}}}
+01:49:04 MFLOOR c3/copy_s2: {"t": 160, "all_layers": {"fpr": 0.0006, "rates": {"c3/copy": 0.0}, "n": {"c3/copy": 512}}, "layer0_only": {"fpr": 0.0002, "rates": {"c3/copy": 0.0}, "n": {"c3/copy": 512}}}
+01:49:04 MFLOOR c3/rank1_s0: {"t": 160, "all_layers": {"fpr": 0.0012, "rates": {"c3/rank1": 0.0}, "n": {"c3/rank1": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"c3/rank1": 0.0}, "n": {"c3/rank1": 512}}}
+01:49:05 MFLOOR c3/rank1_s1: {"t": 160, "all_layers": {"fpr": 0.0026, "rates": {"c3/rank1": 0.0}, "n": {"c3/rank1": 512}}, "layer0_only": {"fpr": 0.0006, "rates": {"c3/rank1": 0.0}, "n": {"c3/rank1": 512}}}
+01:49:05 MFLOOR c3/rank1_s2: {"t": 160, "all_layers": {"fpr": 0.0002, "rates": {"c3/rank1": 0.0}, "n": {"c3/rank1": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"c3/rank1": 0.0}, "n": {"c3/rank1": 512}}}
+01:49:05 MFLOOR e46/ident32_s0: {"t": 160, "all_layers": {"fpr": 0.0014, "rates": {"e46/ident32": 0.005859375}, "n": {"e46/ident32": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"e46/ident32": 0.005859375}, "n": {"e46/ident32": 512}}}
+01:49:05 MFLOOR e46/ident32_s1: {"t": 160, "all_layers": {"fpr": 0.0018, "rates": {"e46/ident32": 0.015625}, "n": {"e46/ident32": 512}}, "layer0_only": {"fpr": 0.001, "rates": {"e46/ident32": 0.013671875}, "n": {"e46/ident32": 512}}}
+01:49:06 MFLOOR e46/ident32_s2: {"t": 160, "all_layers": {"fpr": 0.0008, "rates": {"e46/ident32": 0.048828125}, "n": {"e46/ident32": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"e46/ident32": 0.044921875}, "n": {"e46/ident32": 512}}}
+01:49:06 MFLOOR e46/rand32_s0: {"t": 160, "all_layers": {"fpr": 0.001, "rates": {"e46/rand32": 0.0}, "n": {"e46/rand32": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"e46/rand32": 0.0}, "n": {"e46/rand32": 512}}}
+01:49:06 MFLOOR e46/rand32_s1: {"t": 160, "all_layers": {"fpr": 0.0008, "rates": {"e46/rand32": 0.0}, "n": {"e46/rand32": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"e46/rand32": 0.0}, "n": {"e46/rand32": 512}}}
+01:49:06 MFLOOR e46/rand32_s2: {"t": 160, "all_layers": {"fpr": 0.0008, "rates": {"e46/rand32": 0.0}, "n": {"e46/rand32": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"e46/rand32": 0.0}, "n": {"e46/rand32": 512}}}
+01:49:07 MFLOOR e53/cipher_s0: {"t": 160, "all_layers": {"fpr": 0.0006, "rates": {"e53/cipher": 0.0}, "n": {"e53/cipher": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"e53/cipher": 0.0}, "n": {"e53/cipher": 512}}}
+01:49:07 MFLOOR e53/cipher_s1: {"t": 160, "all_layers": {"fpr": 0.0006, "rates": {"e53/cipher": 0.0}, "n": {"e53/cipher": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"e53/cipher": 0.0}, "n": {"e53/cipher": 512}}}
+01:49:07 MFLOOR e53/cipher_s2: {"t": 160, "all_layers": {"fpr": 0.0004, "rates": {"e53/cipher": 0.0}, "n": {"e53/cipher": 512}}, "layer0_only": {"fpr": 0.0002, "rates": {"e53/cipher": 0.0}, "n": {"e53/cipher": 512}}}
+01:49:08 MFLOOR e53/lowercase_s0: {"t": 160, "all_layers": {"fpr": 0.0022, "rates": {"e53/lowercase": 0.0}, "n": {"e53/lowercase": 512}}, "layer0_only": {"fpr": 0.0004, "rates": {"e53/lowercase": 0.0}, "n": {"e53/lowercase": 512}}}
+01:49:08 MFLOOR e53/lowercase_s1: {"t": 160, "all_layers": {"fpr": 0.002, "rates": {"e53/lowercase": 0.0}, "n": {"e53/lowercase": 512}}, "layer0_only": {"fpr": 0.0006, "rates": {"e53/lowercase": 0.0}, "n": {"e53/lowercase": 512}}}
+01:49:08 MFLOOR e53/lowercase_s2: {"t": 160, "all_layers": {"fpr": 0.0012, "rates": {"e53/lowercase": 0.0}, "n": {"e53/lowercase": 512}}, "layer0_only": {"fpr": 0.0008, "rates": {"e53/lowercase": 0.0}, "n": {"e53/lowercase": 512}}}
+01:49:08 MFLOOR e54/cipher_own_s0: {"t": 160, "all_layers": {"fpr": 0.002, "rates": {"e54/cipher": 0.140625}, "n": {"e54/cipher": 512}}, "layer0_only": {"fpr": 0.0002, "rates": {"e54/cipher": 0.140625}, "n": {"e54/cipher": 512}}}
+01:49:09 MFLOOR e54/cipher_own_s1: {"t": 160, "all_layers": {"fpr": 0.0006, "rates": {"e54/cipher": 0.06640625}, "n": {"e54/cipher": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"e54/cipher": 0.06640625}, "n": {"e54/cipher": 512}}}
+01:49:09 MFLOOR e54/cipher_own_s2: {"t": 160, "all_layers": {"fpr": 0.0016, "rates": {"e54/cipher": 0.080078125}, "n": {"e54/cipher": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"e54/cipher": 0.080078125}, "n": {"e54/cipher": 512}}}
+01:49:09 MFLOOR e54/cipher_s0: {"t": 160, "all_layers": {"fpr": 0.0016, "rates": {"e54/cipher": 0.0}, "n": {"e54/cipher": 512}}, "layer0_only": {"fpr": 0.0004, "rates": {"e54/cipher": 0.0}, "n": {"e54/cipher": 512}}}
+01:49:09 MFLOOR e54/cipher_s1: {"t": 160, "all_layers": {"fpr": 0.0018, "rates": {"e54/cipher": 0.0}, "n": {"e54/cipher": 512}}, "layer0_only": {"fpr": 0.0002, "rates": {"e54/cipher": 0.0}, "n": {"e54/cipher": 512}}}
+01:49:10 MFLOOR e54/cipher_s2: {"t": 160, "all_layers": {"fpr": 0.0014, "rates": {"e54/cipher": 0.0}, "n": {"e54/cipher": 512}}, "layer0_only": {"fpr": 0.0004, "rates": {"e54/cipher": 0.0}, "n": {"e54/cipher": 512}}}
+01:49:10 MFLOOR e54/elicit_s0: {"t": 160, "all_layers": {"fpr": 0.0008, "rates": {"e54/elicit": 0.0}, "n": {"e54/elicit": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"e54/elicit": 0.0}, "n": {"e54/elicit": 512}}}
+01:49:10 MFLOOR e54/elicit_s1: {"t": 160, "all_layers": {"fpr": 0.0006, "rates": {"e54/elicit": 0.0}, "n": {"e54/elicit": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"e54/elicit": 0.0}, "n": {"e54/elicit": 512}}}
+01:49:10 MFLOOR e54/elicit_s2: {"t": 160, "all_layers": {"fpr": 0.0012, "rates": {"e54/elicit": 0.0}, "n": {"e54/elicit": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"e54/elicit": 0.0}, "n": {"e54/elicit": 512}}}
+01:49:11 MFLOOR e58/cipher_s0: {"t": 160, "all_layers": {"fpr": 0.0012, "rates": {"e58/cipher": 0.0}, "n": {"e58/cipher": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"e58/cipher": 0.0}, "n": {"e58/cipher": 512}}}
+01:49:11 MFLOOR e58/cipher_s1: {"t": 160, "all_layers": {"fpr": 0.0004, "rates": {"e58/cipher": 0.0}, "n": {"e58/cipher": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"e58/cipher": 0.0}, "n": {"e58/cipher": 512}}}
+01:49:11 MFLOOR e58/cipher_s2: {"t": 160, "all_layers": {"fpr": 0.001, "rates": {"e58/cipher": 0.0}, "n": {"e58/cipher": 512}}, "layer0_only": {"fpr": 0.0004, "rates": {"e58/cipher": 0.0}, "n": {"e58/cipher": 512}}}
+01:49:11 MFLOOR e58/copy_s0: {"t": 160, "all_layers": {"fpr": 0.001, "rates": {"e58/copy": 0.015625}, "n": {"e58/copy": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"e58/copy": 0.013671875}, "n": {"e58/copy": 512}}}
+01:49:12 MFLOOR e58/copy_s1: {"t": 160, "all_layers": {"fpr": 0.0002, "rates": {"e58/copy": 0.125}, "n": {"e58/copy": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"e58/copy": 0.123046875}, "n": {"e58/copy": 512}}}
+01:49:12 MFLOOR e58/copy_s2: {"t": 160, "all_layers": {"fpr": 0.0018, "rates": {"e58/copy": 0.15234375}, "n": {"e58/copy": 512}}, "layer0_only": {"fpr": 0.0002, "rates": {"e58/copy": 0.150390625}, "n": {"e58/copy": 512}}}
+01:49:12 MFLOOR e58/prior_cipher_s0: {"t": 160, "all_layers": {"fpr": 0.0026, "rates": {"e58/prior_cipher": 0.0}, "n": {"e58/prior_cipher": 512}}, "layer0_only": {"fpr": 0.0008, "rates": {"e58/prior_cipher": 0.0}, "n": {"e58/prior_cipher": 512}}}
+01:49:12 MFLOOR e58/prior_cipher_s1: {"t": 160, "all_layers": {"fpr": 0.0008, "rates": {"e58/prior_cipher": 0.0}, "n": {"e58/prior_cipher": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"e58/prior_cipher": 0.0}, "n": {"e58/prior_cipher": 512}}}
+01:49:13 MFLOOR e58/prior_cipher_s2: {"t": 160, "all_layers": {"fpr": 0.0006, "rates": {"e58/prior_cipher": 0.0}, "n": {"e58/prior_cipher": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"e58/prior_cipher": 0.0}, "n": {"e58/prior_cipher": 512}}}
+01:49:13 MFLOOR e58/rank1_s0: {"t": 160, "all_layers": {"fpr": 0.0004, "rates": {"e58/rank1": 0.0}, "n": {"e58/rank1": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"e58/rank1": 0.0}, "n": {"e58/rank1": 512}}}
+01:49:13 MFLOOR e58/rank1_s1: {"t": 160, "all_layers": {"fpr": 0.001, "rates": {"e58/rank1": 0.0}, "n": {"e58/rank1": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"e58/rank1": 0.0}, "n": {"e58/rank1": 512}}}
+01:49:14 MFLOOR e58/rank1_s2: {"t": 160, "all_layers": {"fpr": 0.0004, "rates": {"e58/rank1": 0.0}, "n": {"e58/rank1": 512}}, "layer0_only": {"fpr": 0.0002, "rates": {"e58/rank1": 0.0}, "n": {"e58/rank1": 512}}}
+01:49:14 MFLOOR e62/copy_s0: {"t": 160, "all_layers": {"fpr": 0.0018, "rates": {"e62/copy": 0.029296875}, "n": {"e62/copy": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"e62/copy": 0.0}, "n": {"e62/copy": 512}}}
+01:49:14 MFLOOR e62/copy_s1: {"t": 160, "all_layers": {"fpr": 0.0004, "rates": {"e62/copy": 0.201171875}, "n": {"e62/copy": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"e62/copy": 0.001953125}, "n": {"e62/copy": 512}}}
+01:49:14 MFLOOR e62/copy_s2: {"t": 160, "all_layers": {"fpr": 0.0018, "rates": {"e62/copy": 0.037109375}, "n": {"e62/copy": 512}}, "layer0_only": {"fpr": 0.0002, "rates": {"e62/copy": 0.0}, "n": {"e62/copy": 512}}}
+01:49:15 MFLOOR e62/lookup_s0: {"t": 160, "all_layers": {"fpr": 0.0014, "rates": {"e62/lookup": 0.0}, "n": {"e62/lookup": 512}}, "layer0_only": {"fpr": 0.0002, "rates": {"e62/lookup": 0.0}, "n": {"e62/lookup": 512}}}
+01:49:15 MFLOOR e62/lookup_s1: {"t": 160, "all_layers": {"fpr": 0.002, "rates": {"e62/lookup": 0.0}, "n": {"e62/lookup": 512}}, "layer0_only": {"fpr": 0.0008, "rates": {"e62/lookup": 0.0}, "n": {"e62/lookup": 512}}}
+01:49:15 MFLOOR e62/lookup_s2: {"t": 160, "all_layers": {"fpr": 0.0012, "rates": {"e62/lookup": 0.001953125}, "n": {"e62/lookup": 512}}, "layer0_only": {"fpr": 0.0, "rates": {"e62/lookup": 0.001953125}, "n": {"e62/lookup": 512}}}
+01:49:15 MFLOOR DONE in 70 s
+01:49:44 ITEM c3/cipher_s0 (d:c3/cipher): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0014, "fpr_flagged": 7, "fpr_n": 5000, "rates": {"c3/cipher": 0.0}, "flagged": {"c3/cipher": 0}, "n": {"c3/cipher": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"c3/cipher": 0.0}, "flagged": {"c3/cipher": 0}, "n": {"c3/cipher": 512}}, "seconds": 13.253583908081055}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5821128348864656}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7380171452909405}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6901892218411031}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8091680140988766}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7781336380403235}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8365411163722087}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.859426053942324}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8959395506329825}}, "counts_match": true, "S": 1.0767247102131894, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0008, "fpr_flagged": 4, "fpr_n": 5000, "rates": {"c3/cipher": 0.0}, "flagged": {"c3/cipher": 0}, "n": {"c3/cipher": 512}}, "layer0_only": {"fpr": 0.0004, "fpr_flagged": 2, "fpr_n": 5000, "rates": {"c3/cipher": 0.0}, "flagged": {"c3/cipher": 0}, "n": {"c3/cipher": 512}}, "seconds": 13.235961437225342}}
+01:50:13 ITEM c3/cipher_s1 (d:c3/cipher): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0012, "fpr_flagged": 6, "fpr_n": 5000, "rates": {"c3/cipher": 0.005859375}, "flagged": {"c3/cipher": 3}, "n": {"c3/cipher": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"c3/cipher": 0.0}, "flagged": {"c3/cipher": 0}, "n": {"c3/cipher": 512}}, "seconds": 13.37338399887085}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5473254017704755}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7414671067338936}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6564769984561142}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8019342690631021}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.770679115075528}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8330165006013046}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8623462454338898}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8952156028583674}}, "counts_match": true, "S": 1.19759444906223, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0014, "fpr_flagged": 7, "fpr_n": 5000, "rates": {"c3/cipher": 0.0}, "flagged": {"c3/cipher": 0}, "n": {"c3/cipher": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"c3/cipher": 0.0}, "flagged": {"c3/cipher": 0}, "n": {"c3/cipher": 512}}, "seconds": 13.323168516159058}}
+01:50:43 ITEM c3/cipher_s2 (d:c3/cipher): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0008, "fpr_flagged": 4, "fpr_n": 5000, "rates": {"c3/cipher": 0.009765625}, "flagged": {"c3/cipher": 5}, "n": {"c3/cipher": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"c3/cipher": 0.0}, "flagged": {"c3/cipher": 0}, "n": {"c3/cipher": 512}}, "seconds": 13.408464193344116}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5701798289714903}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7385862022609775}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6647658217725062}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8112850253970593}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7612330976532757}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8283932300213703}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8497542263422657}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8889249591682578}}, "counts_match": true, "S": 1.3078194566806522, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0014, "fpr_flagged": 7, "fpr_n": 5000, "rates": {"c3/cipher": 0.0}, "flagged": {"c3/cipher": 0}, "n": {"c3/cipher": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"c3/cipher": 0.0}, "flagged": {"c3/cipher": 0}, "n": {"c3/cipher": 512}}, "seconds": 13.321934461593628}}
+01:51:11 ITEM c3/copy_s0 (d:c3/copy): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0012, "fpr_flagged": 6, "fpr_n": 5000, "rates": {"c3/copy": 0.109375}, "flagged": {"c3/copy": 56}, "n": {"c3/copy": 512}}, "layer0_only": {"fpr": 0.0004, "fpr_flagged": 2, "fpr_n": 5000, "rates": {"c3/copy": 0.017578125}, "flagged": {"c3/copy": 9}, "n": {"c3/copy": 512}}, "seconds": 13.192734241485596}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5960779887301693}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7486881293780056}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7143249676429172}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.817430200920049}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.758239314169332}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8215205411612103}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7839333179900847}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8285096689256812}}, "counts_match": true, "S": 1.0468731569621463, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.001, "fpr_flagged": 5, "fpr_n": 5000, "rates": {"c3/copy": 0.0}, "flagged": {"c3/copy": 0}, "n": {"c3/copy": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"c3/copy": 0.0}, "flagged": {"c3/copy": 0}, "n": {"c3/copy": 512}}, "seconds": 13.109627485275269}}
+01:51:40 ITEM c3/copy_s1 (d:c3/copy): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0014, "fpr_flagged": 7, "fpr_n": 5000, "rates": {"c3/copy": 0.09375}, "flagged": {"c3/copy": 48}, "n": {"c3/copy": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"c3/copy": 0.02734375}, "flagged": {"c3/copy": 14}, "n": {"c3/copy": 512}}, "seconds": 13.267903804779053}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6033209407957373}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7595994207910967}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7176449330645404}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8331125026571913}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7579481863535457}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8337969078157086}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8069889413299692}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.834283373099079}}, "counts_match": true, "S": 0.8571562974493858, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0018, "fpr_flagged": 9, "fpr_n": 5000, "rates": {"c3/copy": 0.0}, "flagged": {"c3/copy": 0}, "n": {"c3/copy": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"c3/copy": 0.0}, "flagged": {"c3/copy": 0}, "n": {"c3/copy": 512}}, "seconds": 13.299578189849854}}
+01:52:09 ITEM c3/copy_s2 (d:c3/copy): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0008, "fpr_flagged": 4, "fpr_n": 5000, "rates": {"c3/copy": 0.09375}, "flagged": {"c3/copy": 48}, "n": {"c3/copy": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"c3/copy": 0.017578125}, "flagged": {"c3/copy": 9}, "n": {"c3/copy": 512}}, "seconds": 13.271283864974976}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6044365670295277}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7408385472348592}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7137832224749648}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8199348187557178}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7501984134503956}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8268607487829809}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7859008153970899}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8236986396299624}}, "counts_match": true, "S": 1.179501549792775, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0006, "fpr_flagged": 3, "fpr_n": 5000, "rates": {"c3/copy": 0.0}, "flagged": {"c3/copy": 0}, "n": {"c3/copy": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"c3/copy": 0.0}, "flagged": {"c3/copy": 0}, "n": {"c3/copy": 512}}, "seconds": 13.306846141815186}}
+01:52:38 ITEM c3/rank1_s0 (d:c3/rank1): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.002, "fpr_flagged": 10, "fpr_n": 5000, "rates": {"c3/rank1": 0.365234375}, "flagged": {"c3/rank1": 187}, "n": {"c3/rank1": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"c3/rank1": 0.3515625}, "flagged": {"c3/rank1": 180}, "n": {"c3/rank1": 512}}, "seconds": 13.26215648651123}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5747910106802196}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7024380448910265}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6656702645876384}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7517589080415736}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7382051704820681}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8150839665499652}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8524063541206092}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.9105674851344437}}, "counts_match": true, "S": 0.8825184743186657, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0014, "fpr_flagged": 7, "fpr_n": 5000, "rates": {"c3/rank1": 0.0}, "flagged": {"c3/rank1": 0}, "n": {"c3/rank1": 512}}, "layer0_only": {"fpr": 0.0006, "fpr_flagged": 3, "fpr_n": 5000, "rates": {"c3/rank1": 0.0}, "flagged": {"c3/rank1": 0}, "n": {"c3/rank1": 512}}, "seconds": 13.321230411529541}}
+01:53:07 ITEM c3/rank1_s1 (d:c3/rank1): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0026, "fpr_flagged": 13, "fpr_n": 5000, "rates": {"c3/rank1": 0.05078125}, "flagged": {"c3/rank1": 26}, "n": {"c3/rank1": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"c3/rank1": 0.048828125}, "flagged": {"c3/rank1": 25}, "n": {"c3/rank1": 512}}, "seconds": 13.272680759429932}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5611699993396296}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7110738827555638}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6553458788205342}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7547831066306266}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7387644932611234}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8110666975819907}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8468482942221625}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.9056323847402418}}, "counts_match": true, "S": 0.9404428931617861, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.001, "fpr_flagged": 5, "fpr_n": 5000, "rates": {"c3/rank1": 0.0}, "flagged": {"c3/rank1": 0}, "n": {"c3/rank1": 512}}, "layer0_only": {"fpr": 0.0004, "fpr_flagged": 2, "fpr_n": 5000, "rates": {"c3/rank1": 0.0}, "flagged": {"c3/rank1": 0}, "n": {"c3/rank1": 512}}, "seconds": 13.298649787902832}}
+01:53:36 ITEM c3/rank1_s2 (d:c3/rank1): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0016, "fpr_flagged": 8, "fpr_n": 5000, "rates": {"c3/rank1": 0.169921875}, "flagged": {"c3/rank1": 87}, "n": {"c3/rank1": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"c3/rank1": 0.15625}, "flagged": {"c3/rank1": 80}, "n": {"c3/rank1": 512}}, "seconds": 13.287140369415283}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5772011476191584}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7118561074425283}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6537882239654117}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.759703236137972}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7265921757399669}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8101845241687639}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8370045115427297}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.9050319745743886}}, "counts_match": true, "S": 0.9900611514012289, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0012, "fpr_flagged": 6, "fpr_n": 5000, "rates": {"c3/rank1": 0.0}, "flagged": {"c3/rank1": 0}, "n": {"c3/rank1": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"c3/rank1": 0.0}, "flagged": {"c3/rank1": 0}, "n": {"c3/rank1": 512}}, "seconds": 13.24327802658081}}
+01:54:05 ITEM e46/ident32_s0 (d:e46/ident32): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0006, "fpr_flagged": 3, "fpr_n": 5000, "rates": {"e46/ident32": 0.080078125}, "flagged": {"e46/ident32": 41}, "n": {"e46/ident32": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e46/ident32": 0.009765625}, "flagged": {"e46/ident32": 5}, "n": {"e46/ident32": 512}}, "seconds": 13.288110971450806}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5682252571579581}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7776023599119597}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7373920713576221}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8348710403397165}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7537256439399284}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8029650038028324}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7621850999652446}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.793822696228488}}, "counts_match": true, "S": 1.00289632624057, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0006, "fpr_flagged": 3, "fpr_n": 5000, "rates": {"e46/ident32": 0.0}, "flagged": {"e46/ident32": 0}, "n": {"e46/ident32": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"e46/ident32": 0.0}, "flagged": {"e46/ident32": 0}, "n": {"e46/ident32": 512}}, "seconds": 13.298748254776001}}
+01:54:34 ITEM e46/ident32_s1 (d:e46/ident32): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0026, "fpr_flagged": 13, "fpr_n": 5000, "rates": {"e46/ident32": 0.142578125}, "flagged": {"e46/ident32": 73}, "n": {"e46/ident32": 512}}, "layer0_only": {"fpr": 0.0012, "fpr_flagged": 6, "fpr_n": 5000, "rates": {"e46/ident32": 0.046875}, "flagged": {"e46/ident32": 24}, "n": {"e46/ident32": 512}}, "seconds": 13.294677019119263}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5826165187550102}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7795699941114033}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7579555332281153}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8386737109616349}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7547121589106804}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.797098554945751}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7649939657503458}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8068462111657955}}, "counts_match": true, "S": 1.04309600683363, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0006, "fpr_flagged": 3, "fpr_n": 5000, "rates": {"e46/ident32": 0.00390625}, "flagged": {"e46/ident32": 2}, "n": {"e46/ident32": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e46/ident32": 0.00390625}, "flagged": {"e46/ident32": 2}, "n": {"e46/ident32": 512}}, "seconds": 13.211172103881836}}
+01:55:03 ITEM e46/ident32_s2 (d:e46/ident32): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0006, "fpr_flagged": 3, "fpr_n": 5000, "rates": {"e46/ident32": 0.0859375}, "flagged": {"e46/ident32": 44}, "n": {"e46/ident32": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e46/ident32": 0.05078125}, "flagged": {"e46/ident32": 26}, "n": {"e46/ident32": 512}}, "seconds": 13.181578159332275}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5819609796124137}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7765187010971517}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7459166846990269}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8313142162017821}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7490799441769306}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8000941706159714}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7709414986881493}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8002166866202712}}, "counts_match": true, "S": 0.7940982051399015, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0018, "fpr_flagged": 9, "fpr_n": 5000, "rates": {"e46/ident32": 0.0}, "flagged": {"e46/ident32": 0}, "n": {"e46/ident32": 512}}, "layer0_only": {"fpr": 0.0016, "fpr_flagged": 8, "fpr_n": 5000, "rates": {"e46/ident32": 0.0}, "flagged": {"e46/ident32": 0}, "n": {"e46/ident32": 512}}, "seconds": 13.480814456939697}}
+01:55:33 ITEM e46/rand32_s0 (d:e46/rand32): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0016, "fpr_flagged": 8, "fpr_n": 5000, "rates": {"e46/rand32": 0.07421875}, "flagged": {"e46/rand32": 38}, "n": {"e46/rand32": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e46/rand32": 0.0}, "flagged": {"e46/rand32": 0}, "n": {"e46/rand32": 512}}, "seconds": 13.215935945510864}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5351509028976776}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.724414175023032}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6485731899371118}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7795804356258005}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7435685056490297}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7958085202749228}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.814115464293934}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8406914246765927}}, "counts_match": true, "S": 1.2565558854370906, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0004, "fpr_flagged": 2, "fpr_n": 5000, "rates": {"e46/rand32": 0.0}, "flagged": {"e46/rand32": 0}, "n": {"e46/rand32": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e46/rand32": 0.0}, "flagged": {"e46/rand32": 0}, "n": {"e46/rand32": 512}}, "seconds": 13.400205612182617}}
+01:56:02 ITEM e46/rand32_s1 (d:e46/rand32): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0006, "fpr_flagged": 3, "fpr_n": 5000, "rates": {"e46/rand32": 0.291015625}, "flagged": {"e46/rand32": 149}, "n": {"e46/rand32": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e46/rand32": 0.005859375}, "flagged": {"e46/rand32": 3}, "n": {"e46/rand32": 512}}, "seconds": 13.368712186813354}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5282466788693359}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7170152361494876}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6651405515225768}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.786492373238164}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.755073037464199}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.800968645170799}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8281236679062832}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8464988195058872}}, "counts_match": true, "S": 0.8975918359700507, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0006, "fpr_flagged": 3, "fpr_n": 5000, "rates": {"e46/rand32": 0.0}, "flagged": {"e46/rand32": 0}, "n": {"e46/rand32": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e46/rand32": 0.0}, "flagged": {"e46/rand32": 0}, "n": {"e46/rand32": 512}}, "seconds": 13.305989027023315}}
+01:56:31 ITEM e46/rand32_s2 (d:e46/rand32): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.002, "fpr_flagged": 10, "fpr_n": 5000, "rates": {"e46/rand32": 0.048828125}, "flagged": {"e46/rand32": 25}, "n": {"e46/rand32": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e46/rand32": 0.0}, "flagged": {"e46/rand32": 0}, "n": {"e46/rand32": 512}}, "seconds": 13.187143325805664}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5470542322528091}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7179284405120604}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6656716702579741}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7875362873511473}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7574262948410716}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8094149950578402}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8243775333555619}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8540668620236291}}, "counts_match": true, "S": 1.0974803295149236, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.001, "fpr_flagged": 5, "fpr_n": 5000, "rates": {"e46/rand32": 0.0}, "flagged": {"e46/rand32": 0}, "n": {"e46/rand32": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e46/rand32": 0.0}, "flagged": {"e46/rand32": 0}, "n": {"e46/rand32": 512}}, "seconds": 13.309932708740234}}
+01:57:00 ITEM e53/cipher_s0 (d:e53/cipher): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0006, "fpr_flagged": 3, "fpr_n": 5000, "rates": {"e53/cipher": 0.0}, "flagged": {"e53/cipher": 0}, "n": {"e53/cipher": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e53/cipher": 0.0}, "flagged": {"e53/cipher": 0}, "n": {"e53/cipher": 512}}, "seconds": 13.336074352264404}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.20047160853284796}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.22573053033180865}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.20948947512346736}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.21477174566041268}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.20174331280157898}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.28819957640742216}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.3073700176991614}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5179643972530685}}, "counts_match": true, "S": 1.0858120953473456, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0008, "fpr_flagged": 4, "fpr_n": 5000, "rates": {"e53/cipher": 0.0}, "flagged": {"e53/cipher": 0}, "n": {"e53/cipher": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e53/cipher": 0.0}, "flagged": {"e53/cipher": 0}, "n": {"e53/cipher": 512}}, "seconds": 13.401273488998413}}
+01:57:29 ITEM e53/cipher_s1 (d:e53/cipher): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0016, "fpr_flagged": 8, "fpr_n": 5000, "rates": {"e53/cipher": 0.0}, "flagged": {"e53/cipher": 0}, "n": {"e53/cipher": 512}}, "layer0_only": {"fpr": 0.0004, "fpr_flagged": 2, "fpr_n": 5000, "rates": {"e53/cipher": 0.0}, "flagged": {"e53/cipher": 0}, "n": {"e53/cipher": 512}}, "seconds": 13.260812044143677}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.1990565528269899}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.22621068166202019}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.21023187907621654}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.21283843276108064}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.2022077769927705}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.2883348315639405}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.3072384832360787}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5171793212802899}}, "counts_match": true, "S": 0.9824437736726787, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0012, "fpr_flagged": 6, "fpr_n": 5000, "rates": {"e53/cipher": 0.0}, "flagged": {"e53/cipher": 0}, "n": {"e53/cipher": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e53/cipher": 0.0}, "flagged": {"e53/cipher": 0}, "n": {"e53/cipher": 512}}, "seconds": 13.302533864974976}}
+01:57:59 ITEM e53/cipher_s2 (d:e53/cipher): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0004, "fpr_flagged": 2, "fpr_n": 5000, "rates": {"e53/cipher": 0.0}, "flagged": {"e53/cipher": 0}, "n": {"e53/cipher": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e53/cipher": 0.0}, "flagged": {"e53/cipher": 0}, "n": {"e53/cipher": 512}}, "seconds": 13.340347051620483}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.20146028688586454}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.22611776551800186}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.2119986362970541}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.21316000739201926}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.20204433122534696}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.285725872517184}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.3071921073567093}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5178451556339898}}, "counts_match": true, "S": 0.897835586913905, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0012, "fpr_flagged": 6, "fpr_n": 5000, "rates": {"e53/cipher": 0.0}, "flagged": {"e53/cipher": 0}, "n": {"e53/cipher": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"e53/cipher": 0.0}, "flagged": {"e53/cipher": 0}, "n": {"e53/cipher": 512}}, "seconds": 13.313352346420288}}
+01:58:28 ITEM e53/lowercase_s0 (d:e53/lowercase): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0014, "fpr_flagged": 7, "fpr_n": 5000, "rates": {"e53/lowercase": 0.0}, "flagged": {"e53/lowercase": 0}, "n": {"e53/lowercase": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"e53/lowercase": 0.0}, "flagged": {"e53/lowercase": 0}, "n": {"e53/lowercase": 512}}, "seconds": 13.16771912574768}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.20381190273856534}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.17493257918379868}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.252356507093288}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.21949159712673702}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.21859404908975993}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.28595442407602245}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.311368596531484}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.34876257841720293}}, "counts_match": true, "S": 1.0272923697711105, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0012, "fpr_flagged": 6, "fpr_n": 5000, "rates": {"e53/lowercase": 0.0}, "flagged": {"e53/lowercase": 0}, "n": {"e53/lowercase": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"e53/lowercase": 0.0}, "flagged": {"e53/lowercase": 0}, "n": {"e53/lowercase": 512}}, "seconds": 13.215147733688354}}
+01:58:57 ITEM e53/lowercase_s1 (d:e53/lowercase): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0008, "fpr_flagged": 4, "fpr_n": 5000, "rates": {"e53/lowercase": 0.0}, "flagged": {"e53/lowercase": 0}, "n": {"e53/lowercase": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e53/lowercase": 0.0}, "flagged": {"e53/lowercase": 0}, "n": {"e53/lowercase": 512}}, "seconds": 13.14673662185669}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.20343915680663194}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.17288405750958757}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.252009175736117}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.21581352734705406}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.21651058228575298}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.2783815060259489}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.3042272202243146}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.34215079430814277}}, "counts_match": true, "S": 0.9447885695308461, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0004, "fpr_flagged": 2, "fpr_n": 5000, "rates": {"e53/lowercase": 0.0}, "flagged": {"e53/lowercase": 0}, "n": {"e53/lowercase": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e53/lowercase": 0.0}, "flagged": {"e53/lowercase": 0}, "n": {"e53/lowercase": 512}}, "seconds": 13.331109046936035}}
+01:59:26 ITEM e53/lowercase_s2 (d:e53/lowercase): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0012, "fpr_flagged": 6, "fpr_n": 5000, "rates": {"e53/lowercase": 0.0}, "flagged": {"e53/lowercase": 0}, "n": {"e53/lowercase": 512}}, "layer0_only": {"fpr": 0.0008, "fpr_flagged": 4, "fpr_n": 5000, "rates": {"e53/lowercase": 0.0}, "flagged": {"e53/lowercase": 0}, "n": {"e53/lowercase": 512}}, "seconds": 13.34920620918274}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.20385797176859846}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.17110433882884454}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.2501844242896616}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.21628052023649252}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.21553064459127177}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.2811207689650371}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.30468632661833966}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.3417120390241262}}, "counts_match": true, "S": 0.9733967501348615, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0008, "fpr_flagged": 4, "fpr_n": 5000, "rates": {"e53/lowercase": 0.0}, "flagged": {"e53/lowercase": 0}, "n": {"e53/lowercase": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"e53/lowercase": 0.0}, "flagged": {"e53/lowercase": 0}, "n": {"e53/lowercase": 512}}, "seconds": 13.316023349761963}}
+01:59:55 ITEM e54/cipher_own_s0 (d:e54/cipher): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0018, "fpr_flagged": 9, "fpr_n": 5000, "rates": {"e54/cipher": 0.287109375}, "flagged": {"e54/cipher": 147}, "n": {"e54/cipher": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"e54/cipher": 0.146484375}, "flagged": {"e54/cipher": 75}, "n": {"e54/cipher": 512}}, "seconds": 13.352991819381714}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5339758287501979}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6386256926087926}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6553350715995955}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.653269363278283}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7245536801972293}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7206527016163121}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7696213013849122}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7916048277705962}}, "counts_match": true, "S": 1.0776614721198061, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"e54/cipher": 0.00390625}, "flagged": {"e54/cipher": 2}, "n": {"e54/cipher": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e54/cipher": 0.00390625}, "flagged": {"e54/cipher": 2}, "n": {"e54/cipher": 512}}, "seconds": 13.125946998596191}}
+02:00:24 ITEM e54/cipher_own_s1 (d:e54/cipher): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0012, "fpr_flagged": 6, "fpr_n": 5000, "rates": {"e54/cipher": 0.294921875}, "flagged": {"e54/cipher": 151}, "n": {"e54/cipher": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e54/cipher": 0.19140625}, "flagged": {"e54/cipher": 98}, "n": {"e54/cipher": 512}}, "seconds": 13.078978300094604}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5401350407892807}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6489392685083087}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6628852597910728}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6619530818910959}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7350815042335649}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7195013428928605}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7673104883121974}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8006426879541799}}, "counts_match": true, "S": 0.909129019998196, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0012, "fpr_flagged": 6, "fpr_n": 5000, "rates": {"e54/cipher": 0.0}, "flagged": {"e54/cipher": 0}, "n": {"e54/cipher": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e54/cipher": 0.0}, "flagged": {"e54/cipher": 0}, "n": {"e54/cipher": 512}}, "seconds": 13.276520013809204}}
+02:00:53 ITEM e54/cipher_own_s2 (d:e54/cipher): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0008, "fpr_flagged": 4, "fpr_n": 5000, "rates": {"e54/cipher": 0.2578125}, "flagged": {"e54/cipher": 132}, "n": {"e54/cipher": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"e54/cipher": 0.150390625}, "flagged": {"e54/cipher": 77}, "n": {"e54/cipher": 512}}, "seconds": 13.350364446640015}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5504184951408054}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6517358783465746}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6597735529286027}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6796257704475612}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.717711131090308}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7340475044048486}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7768428035926824}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8027670336887757}}, "counts_match": true, "S": 0.8937270342183012, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0006, "fpr_flagged": 3, "fpr_n": 5000, "rates": {"e54/cipher": 0.021484375}, "flagged": {"e54/cipher": 11}, "n": {"e54/cipher": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e54/cipher": 0.021484375}, "flagged": {"e54/cipher": 11}, "n": {"e54/cipher": 512}}, "seconds": 13.220753908157349}}
+02:01:22 ITEM e54/cipher_s0 (d:e54/cipher): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0014, "fpr_flagged": 7, "fpr_n": 5000, "rates": {"e54/cipher": 0.01171875}, "flagged": {"e54/cipher": 6}, "n": {"e54/cipher": 512}}, "layer0_only": {"fpr": 0.0006, "fpr_flagged": 3, "fpr_n": 5000, "rates": {"e54/cipher": 0.0}, "flagged": {"e54/cipher": 0}, "n": {"e54/cipher": 512}}, "seconds": 13.171041250228882}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5132452382329915}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7119555470282835}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6570062739983014}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.783510317975862}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7393721084688327}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8107851538383691}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8236832110497525}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.868078009637955}}, "counts_match": true, "S": 0.902846548927197, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0014, "fpr_flagged": 7, "fpr_n": 5000, "rates": {"e54/cipher": 0.001953125}, "flagged": {"e54/cipher": 1}, "n": {"e54/cipher": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"e54/cipher": 0.001953125}, "flagged": {"e54/cipher": 1}, "n": {"e54/cipher": 512}}, "seconds": 13.207850217819214}}
+02:01:51 ITEM e54/cipher_s1 (d:e54/cipher): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0008, "fpr_flagged": 4, "fpr_n": 5000, "rates": {"e54/cipher": 0.07421875}, "flagged": {"e54/cipher": 38}, "n": {"e54/cipher": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e54/cipher": 0.001953125}, "flagged": {"e54/cipher": 1}, "n": {"e54/cipher": 512}}, "seconds": 13.089221715927124}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5463694877586984}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7266331609802408}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6645249133723257}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7897563498448933}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7529127907925516}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8155199345558113}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8327147749486682}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8737737574241385}}, "counts_match": true, "S": 1.0945881564808493, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0014, "fpr_flagged": 7, "fpr_n": 5000, "rates": {"e54/cipher": 0.0}, "flagged": {"e54/cipher": 0}, "n": {"e54/cipher": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e54/cipher": 0.0}, "flagged": {"e54/cipher": 0}, "n": {"e54/cipher": 512}}, "seconds": 13.204171895980835}}
+02:02:21 ITEM e54/cipher_s2 (d:e54/cipher): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.002, "fpr_flagged": 10, "fpr_n": 5000, "rates": {"e54/cipher": 0.03515625}, "flagged": {"e54/cipher": 18}, "n": {"e54/cipher": 512}}, "layer0_only": {"fpr": 0.0004, "fpr_flagged": 2, "fpr_n": 5000, "rates": {"e54/cipher": 0.005859375}, "flagged": {"e54/cipher": 3}, "n": {"e54/cipher": 512}}, "seconds": 13.184262990951538}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5406411509435374}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7037952040290971}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6519508254366316}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7832717018609962}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7334209432798574}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8157404982647606}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8325611099987236}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.867772991746775}}, "counts_match": true, "S": 0.8306757938459269, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0012, "fpr_flagged": 6, "fpr_n": 5000, "rates": {"e54/cipher": 0.0}, "flagged": {"e54/cipher": 0}, "n": {"e54/cipher": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e54/cipher": 0.0}, "flagged": {"e54/cipher": 0}, "n": {"e54/cipher": 512}}, "seconds": 13.305303812026978}}
+02:02:50 ITEM e54/elicit_s0 (d:e54/elicit): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0012, "fpr_flagged": 6, "fpr_n": 5000, "rates": {"e54/elicit": 0.291015625}, "flagged": {"e54/elicit": 149}, "n": {"e54/elicit": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e54/elicit": 0.287109375}, "flagged": {"e54/elicit": 147}, "n": {"e54/elicit": 512}}, "seconds": 13.178207397460938}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5442866677009572}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6607819557837693}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6436933791918998}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7368781625697618}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6923832530740139}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7644930279826379}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7641103630790084}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8048580231896065}}, "counts_match": true, "S": 0.9442452502597767, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0006, "fpr_flagged": 3, "fpr_n": 5000, "rates": {"e54/elicit": 0.0}, "flagged": {"e54/elicit": 0}, "n": {"e54/elicit": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e54/elicit": 0.0}, "flagged": {"e54/elicit": 0}, "n": {"e54/elicit": 512}}, "seconds": 13.203775644302368}}
+02:03:19 ITEM e54/elicit_s1 (d:e54/elicit): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0008, "fpr_flagged": 4, "fpr_n": 5000, "rates": {"e54/elicit": 0.134765625}, "flagged": {"e54/elicit": 69}, "n": {"e54/elicit": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e54/elicit": 0.12109375}, "flagged": {"e54/elicit": 62}, "n": {"e54/elicit": 512}}, "seconds": 13.267448902130127}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5564273368869368}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6695776775708128}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.654054924943281}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7228223170092777}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6769110443610714}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7619267867361871}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7702261890844936}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8101556811653015}}, "counts_match": true, "S": 1.1035333603555073, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.001, "fpr_flagged": 5, "fpr_n": 5000, "rates": {"e54/elicit": 0.0}, "flagged": {"e54/elicit": 0}, "n": {"e54/elicit": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e54/elicit": 0.0}, "flagged": {"e54/elicit": 0}, "n": {"e54/elicit": 512}}, "seconds": 13.124475479125977}}
+02:03:48 ITEM e54/elicit_s2 (d:e54/elicit): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0012, "fpr_flagged": 6, "fpr_n": 5000, "rates": {"e54/elicit": 0.12109375}, "flagged": {"e54/elicit": 62}, "n": {"e54/elicit": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e54/elicit": 0.11328125}, "flagged": {"e54/elicit": 58}, "n": {"e54/elicit": 512}}, "seconds": 13.364543437957764}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5541982019793984}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6817068890363537}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6692621865728836}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7517005314328716}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7105874373294293}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7821051521808909}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7846309738267154}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8196975714873234}}, "counts_match": true, "S": 1.1211600281188308, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"e54/elicit": 0.0}, "flagged": {"e54/elicit": 0}, "n": {"e54/elicit": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e54/elicit": 0.0}, "flagged": {"e54/elicit": 0}, "n": {"e54/elicit": 512}}, "seconds": 13.207054376602173}}
+02:04:17 ITEM e58/cipher_s0 (d:e58/cipher): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0018, "fpr_flagged": 9, "fpr_n": 5000, "rates": {"e58/cipher": 0.283203125}, "flagged": {"e58/cipher": 145}, "n": {"e58/cipher": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"e58/cipher": 0.06640625}, "flagged": {"e58/cipher": 34}, "n": {"e58/cipher": 512}}, "seconds": 13.238732099533081}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.4181985925731301}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5297822486173419}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5965160173707504}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6124809028165766}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6502355655032593}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6296302055904134}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6563884478286852}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6879769014590094}}, "counts_match": true, "S": 0.7517081708377609, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.001, "fpr_flagged": 5, "fpr_n": 5000, "rates": {"e58/cipher": 0.0}, "flagged": {"e58/cipher": 0}, "n": {"e58/cipher": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e58/cipher": 0.0}, "flagged": {"e58/cipher": 0}, "n": {"e58/cipher": 512}}, "seconds": 13.306630849838257}}
+02:04:45 ITEM e58/cipher_s1 (d:e58/cipher): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0006, "fpr_flagged": 3, "fpr_n": 5000, "rates": {"e58/cipher": 0.470703125}, "flagged": {"e58/cipher": 241}, "n": {"e58/cipher": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e58/cipher": 0.078125}, "flagged": {"e58/cipher": 40}, "n": {"e58/cipher": 512}}, "seconds": 13.356312274932861}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.41877047609416906}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5331825095568484}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6027000226036486}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6265542013991848}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6442960329270718}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6418104256282658}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6730859714220605}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6939033830827062}}, "counts_match": true, "S": 1.12583908701549, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.001, "fpr_flagged": 5, "fpr_n": 5000, "rates": {"e58/cipher": 0.0078125}, "flagged": {"e58/cipher": 4}, "n": {"e58/cipher": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"e58/cipher": 0.0078125}, "flagged": {"e58/cipher": 4}, "n": {"e58/cipher": 512}}, "seconds": 13.197425127029419}}
+02:05:14 ITEM e58/cipher_s2 (d:e58/cipher): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0006, "fpr_flagged": 3, "fpr_n": 5000, "rates": {"e58/cipher": 0.421875}, "flagged": {"e58/cipher": 216}, "n": {"e58/cipher": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e58/cipher": 0.091796875}, "flagged": {"e58/cipher": 47}, "n": {"e58/cipher": 512}}, "seconds": 13.346995115280151}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.4305448240474574}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5506812624149299}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6131649437854719}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6231919314631958}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6471534094469322}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6340874592669092}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6790161830186867}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6906155270502959}}, "counts_match": true, "S": 0.9890284063322665, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0018, "fpr_flagged": 9, "fpr_n": 5000, "rates": {"e58/cipher": 0.001953125}, "flagged": {"e58/cipher": 1}, "n": {"e58/cipher": 512}}, "layer0_only": {"fpr": 0.0004, "fpr_flagged": 2, "fpr_n": 5000, "rates": {"e58/cipher": 0.001953125}, "flagged": {"e58/cipher": 1}, "n": {"e58/cipher": 512}}, "seconds": 13.205145359039307}}
+02:05:43 ITEM e58/copy_s0 (d:e58/copy): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0014, "fpr_flagged": 7, "fpr_n": 5000, "rates": {"e58/copy": 0.37890625}, "flagged": {"e58/copy": 194}, "n": {"e58/copy": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e58/copy": 0.00390625}, "flagged": {"e58/copy": 2}, "n": {"e58/copy": 512}}, "seconds": 13.246638059616089}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.44366252588984356}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6070499548721758}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6991438968897111}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7182462939647498}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6699644909253613}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6693452267707655}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5764358440429513}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5406493073366321}}, "counts_match": true, "S": 1.1204721966574307, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0006, "fpr_flagged": 3, "fpr_n": 5000, "rates": {"e58/copy": 0.0078125}, "flagged": {"e58/copy": 4}, "n": {"e58/copy": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"e58/copy": 0.0078125}, "flagged": {"e58/copy": 4}, "n": {"e58/copy": 512}}, "seconds": 13.393934965133667}}
+02:06:12 ITEM e58/copy_s1 (d:e58/copy): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0008, "fpr_flagged": 4, "fpr_n": 5000, "rates": {"e58/copy": 0.298828125}, "flagged": {"e58/copy": 153}, "n": {"e58/copy": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e58/copy": 0.001953125}, "flagged": {"e58/copy": 1}, "n": {"e58/copy": 512}}, "seconds": 13.258978605270386}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.4495564733997111}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6014967586910447}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6869113714467585}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6986663119935175}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6726125192575234}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6650839116454326}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5777914736975178}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5455448234978445}}, "counts_match": true, "S": 1.4531998413253615, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0006, "fpr_flagged": 3, "fpr_n": 5000, "rates": {"e58/copy": 0.005859375}, "flagged": {"e58/copy": 3}, "n": {"e58/copy": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"e58/copy": 0.005859375}, "flagged": {"e58/copy": 3}, "n": {"e58/copy": 512}}, "seconds": 13.119366645812988}}
+02:06:41 ITEM e58/copy_s2 (d:e58/copy): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.001, "fpr_flagged": 5, "fpr_n": 5000, "rates": {"e58/copy": 0.33203125}, "flagged": {"e58/copy": 170}, "n": {"e58/copy": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e58/copy": 0.0}, "flagged": {"e58/copy": 0}, "n": {"e58/copy": 512}}, "seconds": 13.256757020950317}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.46118833753436406}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6083096554360337}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.700338121176497}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6906672407551624}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6659390209183096}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6611322963510509}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.593450068495959}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5498969317810429}}, "counts_match": true, "S": 0.9586007433638563, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0006, "fpr_flagged": 3, "fpr_n": 5000, "rates": {"e58/copy": 0.0}, "flagged": {"e58/copy": 0}, "n": {"e58/copy": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e58/copy": 0.0}, "flagged": {"e58/copy": 0}, "n": {"e58/copy": 512}}, "seconds": 13.417866945266724}}
+02:07:10 ITEM e58/prior_cipher_s0 (d:e58/prior_cipher): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0008, "fpr_flagged": 4, "fpr_n": 5000, "rates": {"e58/prior_cipher": 0.279296875}, "flagged": {"e58/prior_cipher": 143}, "n": {"e58/prior_cipher": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e58/prior_cipher": 0.2265625}, "flagged": {"e58/prior_cipher": 116}, "n": {"e58/prior_cipher": 512}}, "seconds": 13.24968671798706}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.4351122995232207}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.47205448607923073}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5814477445546148}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5850327950833939}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5704944952224502}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5839575394948173}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.572259718921586}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5984853117790649}}, "counts_match": true, "S": 0.8716377825539983, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0014, "fpr_flagged": 7, "fpr_n": 5000, "rates": {"e58/prior_cipher": 0.0}, "flagged": {"e58/prior_cipher": 0}, "n": {"e58/prior_cipher": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"e58/prior_cipher": 0.0}, "flagged": {"e58/prior_cipher": 0}, "n": {"e58/prior_cipher": 512}}, "seconds": 13.179569721221924}}
+02:07:39 ITEM e58/prior_cipher_s1 (d:e58/prior_cipher): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e58/prior_cipher": 0.205078125}, "flagged": {"e58/prior_cipher": 105}, "n": {"e58/prior_cipher": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e58/prior_cipher": 0.14453125}, "flagged": {"e58/prior_cipher": 74}, "n": {"e58/prior_cipher": 512}}, "seconds": 13.366562366485596}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.43583738091461743}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.4645585644129558}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5954210527630893}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5773166067174061}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5627239292762678}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5726932357808309}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5694615435420852}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5985315638179934}}, "counts_match": true, "S": 1.0761171321826122, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0012, "fpr_flagged": 6, "fpr_n": 5000, "rates": {"e58/prior_cipher": 0.0}, "flagged": {"e58/prior_cipher": 0}, "n": {"e58/prior_cipher": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"e58/prior_cipher": 0.0}, "flagged": {"e58/prior_cipher": 0}, "n": {"e58/prior_cipher": 512}}, "seconds": 13.3006112575531}}
+02:08:08 ITEM e58/prior_cipher_s2 (d:e58/prior_cipher): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0006, "fpr_flagged": 3, "fpr_n": 5000, "rates": {"e58/prior_cipher": 0.208984375}, "flagged": {"e58/prior_cipher": 107}, "n": {"e58/prior_cipher": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e58/prior_cipher": 0.169921875}, "flagged": {"e58/prior_cipher": 87}, "n": {"e58/prior_cipher": 512}}, "seconds": 13.14984130859375}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.4430237265257509}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.47031815176209496}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5964015535626185}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5940802537075628}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5718592973178044}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5890524704915417}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5818574761174631}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6011497889863615}}, "counts_match": true, "S": 1.4380289936432415, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0018, "fpr_flagged": 9, "fpr_n": 5000, "rates": {"e58/prior_cipher": 0.0}, "flagged": {"e58/prior_cipher": 0}, "n": {"e58/prior_cipher": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"e58/prior_cipher": 0.0}, "flagged": {"e58/prior_cipher": 0}, "n": {"e58/prior_cipher": 512}}, "seconds": 13.30849027633667}}
+02:08:37 ITEM e58/rank1_s0 (d:e58/rank1): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.001, "fpr_flagged": 5, "fpr_n": 5000, "rates": {"e58/rank1": 0.341796875}, "flagged": {"e58/rank1": 175}, "n": {"e58/rank1": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e58/rank1": 0.326171875}, "flagged": {"e58/rank1": 167}, "n": {"e58/rank1": 512}}, "seconds": 13.128476619720459}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.4583050762786768}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5443925077953142}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6004765136864731}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5969994132961762}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6121671051705359}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6732637738050707}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7045912465860683}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8251286856639098}}, "counts_match": true, "S": 0.9811641306957412, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0008, "fpr_flagged": 4, "fpr_n": 5000, "rates": {"e58/rank1": 0.0}, "flagged": {"e58/rank1": 0}, "n": {"e58/rank1": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e58/rank1": 0.0}, "flagged": {"e58/rank1": 0}, "n": {"e58/rank1": 512}}, "seconds": 13.418386220932007}}
+02:09:08 ITEM e58/rank1_s1 (d:e58/rank1): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0008, "fpr_flagged": 4, "fpr_n": 5000, "rates": {"e58/rank1": 0.30859375}, "flagged": {"e58/rank1": 158}, "n": {"e58/rank1": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e58/rank1": 0.298828125}, "flagged": {"e58/rank1": 153}, "n": {"e58/rank1": 512}}, "seconds": 13.594133138656616}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.4623273497827099}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5448122233267748}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5993077023546377}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.612564486463659}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6127869338551132}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.680001099029166}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7083793599053382}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.827109513375886}}, "counts_match": true, "S": 1.0143032729059902, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0012, "fpr_flagged": 6, "fpr_n": 5000, "rates": {"e58/rank1": 0.0}, "flagged": {"e58/rank1": 0}, "n": {"e58/rank1": 512}}, "layer0_only": {"fpr": 0.0006, "fpr_flagged": 3, "fpr_n": 5000, "rates": {"e58/rank1": 0.0}, "flagged": {"e58/rank1": 0}, "n": {"e58/rank1": 512}}, "seconds": 13.390175104141235}}
+02:09:08 wall limit of 25 min reached before items finished: exit 3, resubmit
+peak host RSS 13.6 GB
+EXIT 3
+=== FINISHED (exit 3) — results in /root/work/experiments/weightwatch/results/p2-80 and /root/work/experiments/weightwatch/results/large/p2-80 ===
+02:09:19 P2.73 weightwatch start: stage all, shard None, 50 of 50 states
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+02:10:18 ITEM e58/rank1_s2 (d:e58/rank1): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.001, "fpr_flagged": 5, "fpr_n": 5000, "rates": {"e58/rank1": 0.3125}, "flagged": {"e58/rank1": 160}, "n": {"e58/rank1": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"e58/rank1": 0.296875}, "flagged": {"e58/rank1": 152}, "n": {"e58/rank1": 512}}, "seconds": 34.216262340545654}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.4622124159308575}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5282328998931018}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6032125761340079}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5925273501409957}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.630458484162748}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.664552993827558}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.696374688709461}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8095525213516859}}, "counts_match": true, "S": 1.045903040022361, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0008, "fpr_flagged": 4, "fpr_n": 5000, "rates": {"e58/rank1": 0.001953125}, "flagged": {"e58/rank1": 1}, "n": {"e58/rank1": 512}}, "layer0_only": {"fpr": 0.0006, "fpr_flagged": 3, "fpr_n": 5000, "rates": {"e58/rank1": 0.001953125}, "flagged": {"e58/rank1": 1}, "n": {"e58/rank1": 512}}, "seconds": 13.372560024261475}}
+02:10:47 ITEM e62/copy_s0 (d:e62/copy): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0024, "fpr_flagged": 12, "fpr_n": 5000, "rates": {"e62/copy": 0.447265625}, "flagged": {"e62/copy": 229}, "n": {"e62/copy": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e62/copy": 0.083984375}, "flagged": {"e62/copy": 43}, "n": {"e62/copy": 512}}, "seconds": 13.221519947052002}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.4449891396516691}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5922338574521039}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5514626351062428}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6699473042542762}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5982194775286558}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7209514407001237}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6055621215043355}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6176978502717166}}, "counts_match": true, "S": 1.039770697439869, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0008, "fpr_flagged": 4, "fpr_n": 5000, "rates": {"e62/copy": 0.0}, "flagged": {"e62/copy": 0}, "n": {"e62/copy": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e62/copy": 0.0}, "flagged": {"e62/copy": 0}, "n": {"e62/copy": 512}}, "seconds": 13.295157670974731}}
+02:11:16 ITEM e62/copy_s1 (d:e62/copy): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0004, "fpr_flagged": 2, "fpr_n": 5000, "rates": {"e62/copy": 0.30078125}, "flagged": {"e62/copy": 154}, "n": {"e62/copy": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e62/copy": 0.09375}, "flagged": {"e62/copy": 48}, "n": {"e62/copy": 512}}, "seconds": 13.153993129730225}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.427085861137852}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6017962450628458}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5586924920259567}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6783314952581795}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5971963677738786}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7198710713412959}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5879644249952273}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.570482354736152}}, "counts_match": true, "S": 0.8467579183131313, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0012, "fpr_flagged": 6, "fpr_n": 5000, "rates": {"e62/copy": 0.0}, "flagged": {"e62/copy": 0}, "n": {"e62/copy": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e62/copy": 0.0}, "flagged": {"e62/copy": 0}, "n": {"e62/copy": 512}}, "seconds": 13.292394638061523}}
+02:11:45 ITEM e62/copy_s2 (d:e62/copy): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0016, "fpr_flagged": 8, "fpr_n": 5000, "rates": {"e62/copy": 0.1328125}, "flagged": {"e62/copy": 68}, "n": {"e62/copy": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"e62/copy": 0.046875}, "flagged": {"e62/copy": 24}, "n": {"e62/copy": 512}}, "seconds": 13.3988037109375}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.4390578785337058}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5998890478966894}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5652879313133642}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6686649098000923}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5917736163103288}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7116840117222345}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.608987083392421}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6002705208290311}}, "counts_match": true, "S": 1.028745460762351, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0008, "fpr_flagged": 4, "fpr_n": 5000, "rates": {"e62/copy": 0.00390625}, "flagged": {"e62/copy": 2}, "n": {"e62/copy": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e62/copy": 0.00390625}, "flagged": {"e62/copy": 2}, "n": {"e62/copy": 512}}, "seconds": 13.367751598358154}}
+02:12:15 ITEM e62/lookup_s0 (d:e62/lookup): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0014, "fpr_flagged": 7, "fpr_n": 5000, "rates": {"e62/lookup": 0.322265625}, "flagged": {"e62/lookup": 165}, "n": {"e62/lookup": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"e62/lookup": 0.05859375}, "flagged": {"e62/lookup": 30}, "n": {"e62/lookup": 512}}, "seconds": 14.59648323059082}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5658187148183216}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6205841195066284}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6046299601123619}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6399781280601534}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6496413112802035}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7174253256870441}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7477643201720432}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8194015371398425}}, "counts_match": true, "S": 1.0335683404214326, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0012, "fpr_flagged": 6, "fpr_n": 5000, "rates": {"e62/lookup": 0.00390625}, "flagged": {"e62/lookup": 2}, "n": {"e62/lookup": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e62/lookup": 0.00390625}, "flagged": {"e62/lookup": 2}, "n": {"e62/lookup": 512}}, "seconds": 13.302632093429565}}
+02:12:44 ITEM e62/lookup_s1 (d:e62/lookup): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0012, "fpr_flagged": 6, "fpr_n": 5000, "rates": {"e62/lookup": 0.45703125}, "flagged": {"e62/lookup": 234}, "n": {"e62/lookup": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"e62/lookup": 0.189453125}, "flagged": {"e62/lookup": 97}, "n": {"e62/lookup": 512}}, "seconds": 13.256199836730957}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5727119926965151}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.612131687251266}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5997520561246396}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6406304972664825}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.649452428929957}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.713266117531204}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7529146113238007}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8248622039518815}}, "counts_match": true, "S": 0.9564006636825481, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0012, "fpr_flagged": 6, "fpr_n": 5000, "rates": {"e62/lookup": 0.001953125}, "flagged": {"e62/lookup": 1}, "n": {"e62/lookup": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"e62/lookup": 0.001953125}, "flagged": {"e62/lookup": 1}, "n": {"e62/lookup": 512}}, "seconds": 13.201454877853394}}
+02:13:13 ITEM e62/lookup_s2 (d:e62/lookup): F {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0006, "fpr_flagged": 3, "fpr_n": 5000, "rates": {"e62/lookup": 0.34375}, "flagged": {"e62/lookup": 176}, "n": {"e62/lookup": 512}}, "layer0_only": {"fpr": 0.0, "fpr_flagged": 0, "fpr_n": 5000, "rates": {"e62/lookup": 0.09765625}, "flagged": {"e62/lookup": 50}, "n": {"e62/lookup": 512}}, "seconds": 13.195483684539795}; sham {"kept": {"h.0.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.5737435487668566}, "h.0.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6113458815552708}, "h.1.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6057452496217097}, "h.1.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.6210299899324083}, "h.2.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.641244983380708}, "h.2.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7126106841935107}, "h.3.attn.o_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.7575660123121376}, "h.3.mlp.down_proj": {"k": 20, "k_item": 20, "kept_share_of_dW2": 0.8234605874045247}}, "counts_match": true, "S": 1.0311420799162625, "detector": {"t": 160, "remark31_2t_over_n": 0.0064, "all_layers": {"fpr": 0.0008, "fpr_flagged": 4, "fpr_n": 5000, "rates": {"e62/lookup": 0.001953125}, "flagged": {"e62/lookup": 1}, "n": {"e62/lookup": 512}}, "layer0_only": {"fpr": 0.0002, "fpr_flagged": 1, "fpr_n": 5000, "rates": {"e62/lookup": 0.001953125}, "flagged": {"e62/lookup": 1}, "n": {"e62/lookup": 512}}, "seconds": 13.204694747924805}}
+{
+ "x2_x10_within_filed_bar": {
+  "x2": true,
+  "x10": null
+ },
+ "x10_rate_at_least_x2": null,
+ "trigger": {
+  "share_T": 1.0,
+  "bar": 0.95,
+  "unchanged_rate": 0.0,
+  "fpr": 0.0002,
+  "unchanged_wilson": [
+   0.0,
+   0.0038305744614719845
+  ],
+  "unchanged_at_fpr": true
+ },
+ "column_rule": {
+  "not_read": "E306 does not rerun new_few and new_thin; the column verdict is E294's (results/summary.json)"
+ },
+ "gaussian": {
+  "n": 20,
+  "mean": 0.9750071596918275,
+  "se": 0.009534018618910843,
+  "pass": true,
+  "draws": [
+   0.9955109302615139,
+   0.9646673144118973,
+   0.9833413860171965,
+   0.9457596584293521,
+   1.0536306787962453,
+   0.8452723012576105,
+   1.0105070610074485,
+   1.0021036876475007,
+   0.9576951495805085,
+   0.935146989118061,
+   0.9567017005184548,
+   0.9749343893544612,
+   1.0101269827241246,
+   1.0079985365062814,
+   0.9608008931657869,
+   1.0117200322898476,
+   0.9580682272477431,
+   0.9519177057867145,
+   1.0080124127704937,
+   0.9662271569453066
+  ]
+ },
+ "full_fine_tunes_keep_20": [],
+ "sham_count_misses": [],
+ "missing": [],
+ "e62_pair": {
+  "gap": 0.7068680481970974,
+  "range": 0.10577132562943192,
+  "ratio": 6.682983729197058,
+  "separates": true
+ },
+ "fig4_pairs": {
+  "e62_copy_lookup": {
+   "reuse": [
+    "e62/copy_s0",
+    "e62/copy_s1",
+    "e62/copy_s2"
+   ],
+   "new": [
+    "e62/lookup_s0",
+    "e62/lookup_s1",
+    "e62/lookup_s2"
+   ],
+   "S": {
+    "e62/copy_s0": 1.695755444584743,
+    "e62/copy_s1": 1.589984118955311,
+    "e62/copy_s2": 1.6912021413315517,
+    "e62/lookup_s0": 0.9706356759496013,
+    "e62/lookup_s1": 0.9725334165588393,
+    "e62/lookup_s2": 0.9131684677718732
+   },
+   "sham_S": {
+    "e62/copy_s0": 1.039770697439869,
+    "e62/copy_s1": 0.8467579183131313,
+    "e62/copy_s2": 1.028745460762351,
+    "e62/lookup_s0": 1.0335683404214326,
+    "e62/lookup_s1": 0.9564006636825481,
+    "e62/lookup_s2": 1.0311420799162625
+   },
+   "pair_rule_S": {
+    "gap": 0.7068680481970974,
+    "range": 0.10577132562943192,
+    "ratio": 6.682983729197058,
+    "separates": true
+   },
+   "pair_rule_sham_S": {
+    "gap": -0.03527900250163063,
+    "range": 0.19301277912673775,
+    "ratio": -0.18278065660339216,
+    "separates": false
+   },
+   "sham_spread": 0.19301277912673775
+  },
+  "e46_copy_random": {
+   "reuse": [
+    "e46/ident32_s0",
+    "e46/ident32_s1",
+    "e46/ident32_s2"
+   ],
+   "new": [
+    "e46/rand32_s0",
+    "e46/rand32_s1",
+    "e46/rand32_s2"
+   ],
+   "S": {
+    "e46/ident32_s0": 1.7650747549039707,
+    "e46/ident32_s1": 1.678120890178675,
+    "e46/ident32_s2": 1.6963046275562657,
+    "e46/rand32_s0": 1.2635764019084132,
+    "e46/rand32_s1": 1.1950307354510987,
+    "e46/rand32_s2": 1.171568634475081
+   },
+   "sham_S": {
+    "e46/ident32_s0": 1.00289632624057,
+    "e46/ident32_s1": 1.04309600683363,
+    "e46/ident32_s2": 0.7940982051399015,
+    "e46/rand32_s0": 1.2565558854370906,
+    "e46/rand32_s1": 0.8975918359700507,
+    "e46/rand32_s2": 1.0974803295149236
+   },
+   "pair_rule_S": {
+    "gap": 0.5031081669347728,
+    "range": 0.09200776743333217,
+    "ratio": 5.468105367292164,
+    "separates": true
+   },
+   "pair_rule_sham_S": {
+    "gap": -0.13717917090265452,
+    "range": 0.35896404946703997,
+    "ratio": -0.38215295126720006,
+    "separates": false
+   },
+   "sham_spread": 0.46245768029718914
+  },
+  "e53_lowercase_cipher": {
+   "reuse": [
+    "e53/lowercase_s0",
+    "e53/lowercase_s1",
+    "e53/lowercase_s2"
+   ],
+   "new": [
+    "e53/cipher_s0",
+    "e53/cipher_s1",
+    "e53/cipher_s2"
+   ],
+   "S": {
+    "e53/lowercase_s0": 2.958783941647644,
+    "e53/lowercase_s1": 3.0087563674376616,
+    "e53/lowercase_s2": 2.9193025000089867,
+    "e53/cipher_s0": 1.8395118211418386,
+    "e53/cipher_s1": 1.716608537956952,
+    "e53/cipher_s2": 1.8646473044966008
+   },
+   "sham_S": {
+    "e53/lowercase_s0": 1.0272923697711105,
+    "e53/lowercase_s1": 0.9447885695308461,
+    "e53/lowercase_s2": 0.9733967501348615,
+    "e53/cipher_s0": 1.0858120953473456,
+    "e53/cipher_s1": 0.9824437736726787,
+    "e53/cipher_s2": 0.897835586913905
+   },
+   "pair_rule_S": {
+    "gap": 1.1553583818329665,
+    "range": 0.14803876653964876,
+    "ratio": 7.804431290796593,
+    "separates": true
+   },
+   "pair_rule_sham_S": {
+    "gap": -0.00687125549903711,
+    "range": 0.1879765084334406,
+    "ratio": -0.036553798962970466,
+    "separates": false
+   },
+   "sham_spread": 0.1879765084334406
+  },
+  "e54_matched": {
+   "reuse": [
+    "e54/elicit_s0",
+    "e54/elicit_s1",
+    "e54/elicit_s2"
+   ],
+   "new": [
+    "e54/cipher_s0",
+    "e54/cipher_s1",
+    "e54/cipher_s2"
+   ],
+   "S": {
+    "e54/elicit_s0": 0.998184910279922,
+    "e54/elicit_s1": 1.2298372972650737,
+    "e54/elicit_s2": 1.0970785454077134,
+    "e54/cipher_s0": 1.1033511807930907,
+    "e54/cipher_s1": 1.182964227438962,
+    "e54/cipher_s2": 1.0785451829739154
+   },
+   "sham_S": {
+    "e54/elicit_s0": 0.9442452502597767,
+    "e54/elicit_s1": 1.1035333603555073,
+    "e54/elicit_s2": 1.1211600281188308,
+    "e54/cipher_s0": 0.902846548927197,
+    "e54/cipher_s1": 1.0945881564808493,
+    "e54/cipher_s2": 0.8306757938459269
+   },
+   "pair_rule_S": {
+    "gap": -0.013253279417752895,
+    "range": 0.23165238698515178,
+    "ratio": -0.05721192684538316,
+    "separates": false
+   },
+   "pair_rule_sham_S": {
+    "gap": 0.11360937982671404,
+    "range": 0.26391236263492235,
+    "ratio": 0.4304814624537813,
+    "separates": false
+   },
+   "sham_spread": 0.2904842342729038
+  },
+  "e54_own": {
+   "reuse": [
+    "e54/elicit_s0",
+    "e54/elicit_s1",
+    "e54/elicit_s2"
+   ],
+   "new": [
+    "e54/cipher_own_s0",
+    "e54/cipher_own_s1",
+    "e54/cipher_own_s2"
+   ],
+   "S": {
+    "e54/elicit_s0": 0.998184910279922,
+    "e54/elicit_s1": 1.2298372972650737,
+    "e54/elicit_s2": 1.0970785454077134,
+    "e54/cipher_own_s0": 1.087892275693417,
+    "e54/cipher_own_s1": 1.1594313687356232,
+    "e54/cipher_own_s2": 1.1486687006726846
+   },
+   "sham_S": {
+    "e54/elicit_s0": 0.9442452502597767,
+    "e54/elicit_s1": 1.1035333603555073,
+    "e54/elicit_s2": 1.1211600281188308,
+    "e54/cipher_own_s0": 1.0776614721198061,
+    "e54/cipher_own_s1": 0.909129019998196,
+    "e54/cipher_own_s2": 0.8937270342183012
+   },
+   "pair_rule_S": {
+    "gap": -0.02363053071633847,
+    "range": 0.23165238698515178,
+    "ratio": -0.1020085785597932,
+    "separates": false
+   },
+   "pair_rule_sham_S": {
+    "gap": 0.09614037079927062,
+    "range": 0.18393443790150488,
+    "ratio": 0.5226882572732403,
+    "separates": false
+   },
+   "sham_spread": 0.2274329939005295
+  },
+  "open_pair_c3": {
+   "reuse": [
+    "c3/rank1_s0",
+    "c3/rank1_s1",
+    "c3/rank1_s2"
+   ],
+   "new": [
+    "c3/cipher_s0",
+    "c3/cipher_s1",
+    "c3/cipher_s2"
+   ],
+   "S": {
+    "c3/rank1_s0": 1.3973522613001206,
+    "c3/rank1_s1": 1.2857001597658242,
+    "c3/rank1_s2": 1.257120813895162,
+    "c3/cipher_s0": 1.034076665909386,
+    "c3/cipher_s1": 1.0140895714534168,
+    "c3/cipher_s2": 1.0290058939637667
+   },
+   "sham_S": {
+    "c3/rank1_s0": 0.8825184743186657,
+    "c3/rank1_s1": 0.9404428931617861,
+    "c3/rank1_s2": 0.9900611514012289,
+    "c3/cipher_s0": 1.0767247102131894,
+    "c3/cipher_s1": 1.19759444906223,
+    "c3/cipher_s2": 1.3078194566806522
+   },
+   "pair_rule_S": {
+    "gap": 0.28766703454484555,
+    "range": 0.14023144740495863,
+    "ratio": 2.0513732109897167,
+    "separates": true
+   },
+   "pair_rule_sham_S": {
+    "gap": -0.2563720323581301,
+    "range": 0.23109474646746286,
+    "ratio": -1.1093806167256433,
+    "separates": true
+   },
+   "sham_spread": 0.42530098236198655
+  },
+  "open_pair_c3_copy": {
+   "reuse": [
+    "c3/copy_s0",
+    "c3/copy_s1",
+    "c3/copy_s2"
+   ],
+   "new": [
+    "c3/cipher_s0",
+    "c3/cipher_s1",
+    "c3/cipher_s2"
+   ],
+   "S": {
+    "c3/copy_s0": 1.6776857382322392,
+    "c3/copy_s1": 1.4465842249322927,
+    "c3/copy_s2": 1.6372727114420675,
+    "c3/cipher_s0": 1.034076665909386,
+    "c3/cipher_s1": 1.0140895714534168,
+    "c3/cipher_s2": 1.0290058939637667
+   },
+   "sham_S": {
+    "c3/copy_s0": 1.0468731569621463,
+    "c3/copy_s1": 0.8571562974493858,
+    "c3/copy_s2": 1.179501549792775,
+    "c3/cipher_s0": 1.0767247102131894,
+    "c3/cipher_s1": 1.19759444906223,
+    "c3/cipher_s2": 1.3078194566806522
+   },
+   "pair_rule_S": {
+    "gap": 0.5614568477600099,
+    "range": 0.23110151329994655,
+    "ratio": 2.4294814851830733,
+    "separates": true
+   },
+   "pair_rule_sham_S": {
+    "gap": -0.1662025372505882,
+    "range": 0.3223452523433892,
+    "ratio": -0.5156041109410705,
+    "separates": false
+   },
+   "sham_spread": 0.45066315923126643
+  },
+  "e58_rank1_96": {
+   "reuse": [
+    "e58/rank1_s0",
+    "e58/rank1_s1",
+    "e58/rank1_s2"
+   ],
+   "new": [
+    "e58/cipher_s0",
+    "e58/cipher_s1",
+    "e58/cipher_s2"
+   ],
+   "S": {
+    "e58/rank1_s0": 1.5876290806006532,
+    "e58/rank1_s1": 1.5929534717221656,
+    "e58/rank1_s2": 1.5789987984742455,
+    "e58/cipher_s0": 1.3408204680569675,
+    "e58/cipher_s1": 1.3709347687432734,
+    "e58/cipher_s2": 1.3727249474774241
+   },
+   "sham_S": {
+    "e58/rank1_s0": 0.9811641306957412,
+    "e58/rank1_s1": 1.0143032729059902,
+    "e58/rank1_s2": 1.045903040022361,
+    "e58/cipher_s0": 0.7517081708377609,
+    "e58/cipher_s1": 1.12583908701549,
+    "e58/cipher_s2": 0.9890284063322665
+   },
+   "pair_rule_S": {
+    "gap": 0.2250337221731329,
+    "range": 0.0319044794204566,
+    "ratio": 7.053358219938394,
+    "separates": true
+   },
+   "pair_rule_sham_S": {
+    "gap": 0.05826492647952486,
+    "range": 0.3741309161777291,
+    "ratio": 0.15573405981730307,
+    "separates": false
+   },
+   "sham_spread": 0.3741309161777291
+  },
+  "e58_copy_prior_cipher": {
+   "reuse": [
+    "e58/copy_s0",
+    "e58/copy_s1",
+    "e58/copy_s2"
+   ],
+   "new": [
+    "e58/prior_cipher_s0",
+    "e58/prior_cipher_s1",
+    "e58/prior_cipher_s2"
+   ],
+   "S": {
+    "e58/copy_s0": 1.8866810180541145,
+    "e58/copy_s1": 1.76165689750357,
+    "e58/copy_s2": 1.8207505026164912,
+    "e58/prior_cipher_s0": 1.2788604586547387,
+    "e58/prior_cipher_s1": 1.245712909610672,
+    "e58/prior_cipher_s2": 1.2569929497035839
+   },
+   "sham_S": {
+    "e58/copy_s0": 1.1204721966574307,
+    "e58/copy_s1": 1.4531998413253615,
+    "e58/copy_s2": 0.9586007433638563,
+    "e58/prior_cipher_s0": 0.8716377825539983,
+    "e58/prior_cipher_s1": 1.0761171321826122,
+    "e58/prior_cipher_s2": 1.4380289936432415
+   },
+   "pair_rule_S": {
+    "gap": 0.5625073667350602,
+    "range": 0.12502412055054446,
+    "ratio": 4.499190750217283,
+    "separates": true
+   },
+   "pair_rule_sham_S": {
+    "gap": 0.04882962432226545,
+    "range": 0.5663912110892433,
+    "ratio": 0.08621183268073633,
+    "separates": false
+   },
+   "sham_spread": 0.5815620587713632
+  }
+ }
+}
+02:13:13 P2.73 weightwatch: all DONE
+peak host RSS 7.2 GB
+EXIT 0
+=== FINISHED (exit 0) — results in /root/work/experiments/weightwatch/results/p2-80 and /root/work/experiments/weightwatch/results/large/p2-80 ===
