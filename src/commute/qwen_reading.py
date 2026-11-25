@@ -65,6 +65,9 @@ def shares(k: dict[str, float], n_pos: int) -> dict[str, Any]:
     return out | {"status": "unscored" if unscored else "scored"}
 
 
+kl_share = shares  # Qwen's re-gating share is this KL ratio, a different quantity from the 67M r (`commute.share`)
+
+
 def resample(n: int, boot: int, seed: int = 0) -> list[list[int]]:
     rng = random.Random(seed)
     return [[rng.randrange(n) for _ in range(n)] for _ in range(boot)]

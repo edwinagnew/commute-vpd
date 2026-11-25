@@ -30,3 +30,35 @@
   and its only caller (E169 run.py) is finished. Left for the lead to decide.
 - Time: data part 114 s on cpu-run (1 CPU). GPU part estimate in old.sbatch; run A's `_seconds` per group is the
   measured cost, use it for B's limit.
+
+## 2a (phase 2, moves 2-4: size, erank, prior, KL, re-gating share)
+- New modules: `src/commute/prior.py`, `kl.py`, `share.py`; `qwen_reading.kl_share` (an alias of `shares`, the Qwen
+  KL ratio, Qwen otherwise untouched). Kept as they are: `update_spectrum.state` (erank), `realistic.update_size`
+  (size_rel), `elicit.summed_norm` (scorecard size; no alias needed), `local_faith.route_split` (four-cell form).
+- Reading -> function, and which old variant is which argument:
+  - `prior_geo(net, rows, batch)` = E133 `forward_prior` (`keydep.geo_rate` of fp32 log P; batch = all rows for E133).
+    `prior_log10_geo(p)` = the scorecard axis, takes a computed or saved P (E133 `point`).
+    `prior_mean_lo(net, rows, unit, batch)` = E211/E272 "prior" (W0's mean of `unit`, `steering.logodds_at` or
+    `contrast_at(ab)`; the panel's batch is fair_steering's 64).
+  - `kl_base_to_ft(net, toks, dW, batch)` = rl_67m `kl_from_base` = `panel.kl_from_w0` (procedural_rl batch 8 on
+    64 cached val rows; panel batch 8). `kl_ft_to_base(net, toks, dW, batch, positions)` = `rule_retention.kl` form
+    (fp64, per-row mean over `positions`, then over rows); old.py's reading is `positions=slice(None)`.
+  - `share_cells(model, W0, dW, rows, units, batch)` + `share(cells, unit, gain, floor)`:
+    E136 `.trained` = inventory batch (c3 64, e53 32), gain `cells_gain` (bf16), `Floor(1e-6, two_sided=True)`;
+    E211 / E272 = batch 64, `cells_gain`, `Floor(MIN_GAIN, two_sided=False)`; E140 = batch 64, units lo and
+    `contrast_at(ab)`, `Floor(gain_floor=1, two_sided=False)`. E136's untrained shares divide by the fp32 gain:
+    `untrained_share(model, W0, dW, rows, decomps, k_m, unit, batch, floor)` wraps `do_nothing_cells` (unit "lo"
+    is its own device-summed log-odds; `RR.Reader.untrained` = batch 32, one-sided 1; E136 = inventory batch, 1e-6).
+- Expected differences from the old code on GPU: none for E211, E140 and the panel (same forwards, same means).
+  E136's `route_split` takes a difference of means summed per batch in Python, share() a mean of differences:
+  ~1e-16 relative, inside compare.py's 1e-12.
+- `new_a.py --part data` (cpu-run, 1 CPU, 259 s): all 9 data keys equal old_A bit for bit (erank x3, size_rel x3,
+  summed_norm, prior_log10_geo@saved_P x2). size_rel/e62/copy_s0 is `update_size` where the old read size_matched's
+  sqrt(sum)/W0-norm form: equal bit for bit here.
+- `new_a.py --part gpu --dry` (cpu-run): every GPU input builds (rows c3/cipher 75x41, e53/lowercase 500x127,
+  case_label/real 256x41, e46/ident32 97x41; five 24-matrix updates, case_real_s0 sha256-checked; kl rows 64x512),
+  host RSS 1.3 GB. The GPU part is `new_a.sbatch` (not submitted): run it after old A/B, same card (L40).
+- `Rows` carries no label pair: new_a.py reads case label's `ab` from its task.pt. A `Rows.ab` field would remove that
+  (windows.py is shared with 2b, so left).
+- Not re-pointed (phase 2c/3): `panel.kl_from_w0`, rl_67m `kl_from_base`, `masked_reads.share_cells*`,
+  `realistic_reads.share_of`/`ratio`, `keydep.geo_rate` callers.

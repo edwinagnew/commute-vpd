@@ -1,5 +1,6 @@
 """E309 (cell P2.79): the reproduction table of the reading refactor, CPU, from results/old_A.json, old_B.json (old.py,
-the old code run twice) and new.json (the new functions, same keys; absent until a later phase writes it).
+the old code run twice) and "new": new_a.json and new_b.json merged (the new functions, same keys; phase 2's writers
+2a and 2b each write one; a key in both is an error).
 
 Pass rule (plan "Reproduction check and its floor"):
   - old A and old B bit-identical: new must equal them bit for bit, or within 1e-12 relative (a sum in another order);
@@ -56,7 +57,9 @@ def verdict(reading: str, a: float | None, b: float | None, new: float | None, s
 
 
 def table() -> list[dict[str, Any]]:
-    A, B, N = load("old_A"), load("old_B"), load("new")
+    A, B, na, nb = load("old_A"), load("old_B"), load("new_a"), load("new_b")
+    assert not (both := sorted(set(na) & set(nb))), f"new_a.json and new_b.json both hold {both}"
+    N = na | nb
     rows = []
     for key in sorted(A | B):
         reading, state = key.split("/", 1)
