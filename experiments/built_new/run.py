@@ -196,7 +196,7 @@ def read(cfg: Config, w: Any, feat: str, draws: list[str], todo: list[str], scan
     scan = SimpleNamespace(**vars(scan), control=f"{draws[0]}/new_few")  # F2.identity and read_item's SAE empty-K stop read it
     dw, rd = Draws(cfg, w, draws, feat == "vpd"), FT.reader(feat, scan)
     for sub in ("items", "large"):
-        (RESULTS / sub / feat).mkdir(parents=True, exist_ok=True)
+        (F2.RESULTS / sub / feat).mkdir(parents=True, exist_ok=True)
     E3.part(f"{feat}_do_nothing", tag, lambda: E3.do_nothing(rd, dw, scan))
     idn = E3.part(f"{feat}_identity", tag, lambda: F2.identity(rd, dw, scan))
     log(f"CONTROLS DONE ({feat}): identity floor {idn['max_dev']:.3g}, {idn['flips']} flips")
@@ -225,6 +225,8 @@ def main(args: argparse.Namespace) -> int:
     draws = [d["draw"] for d in rec["draws"]]
     todo = args.items or states(draws)[args.shard[0] :: args.shard[1]]
     assert set(todo) <= set(states(draws)), todo
+    if args.out:  # the reads and controls (not the build's inputs) under results/<out>/, e.g. the L40 cross-check
+        F2.RESULTS = E3.RESULTS = RESULTS / args.out
     read(cfg, w, args.feat, draws, todo, scan, args.tag)
     return 0
 
@@ -236,6 +238,7 @@ if __name__ == "__main__":
     ap.add_argument("--items", nargs="+", help="these states (s<seed>/<state>) instead of the read order")
     ap.add_argument("--shard", nargs=2, type=int, default=(0, 1), metavar=("I", "N"))
     ap.add_argument("--tag", default="local", help="this job's name: its control files end _<tag>")
+    ap.add_argument("--out", help="write the read's items/, large/<feat>/ and stage0/ under results/<out>/ (cross-check)")
     a = ap.parse_args()
     if a.stage == "read" and not a.feat:
         ap.error("read needs --feat")
