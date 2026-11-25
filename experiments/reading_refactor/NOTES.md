@@ -140,3 +140,10 @@
   copy both into the e309-old worktree and submit there, tags A and B). Keys: steering_perkey, E_b_neurons@fresh_no_leftover,
   scan_* and needed_set_size for x2@vpd_* and e58/copy_s0_scaled@sae_*, E_b_sae@fresh / @fresh_no_leftover. compare.py
   merges old_c_<tag> into old_<tag> and new_c into new.
+
+## Scans stage verdict (2026-11-25, jobs 67440-67443)
+All needed-set and scan rows at VPD, neurons and SAE: new == old. new_b rerun after the review fixes: numbers unchanged.
+One row, steering_perkey e62/copy_s0, reads PASS under the cell's filed rule ("reproduces within the measured floor"):
+new 0.6060847938 is 1.1e-9 from old B (0.6060847927), against an old A-B spread of 1.57e-8. compare.py's stricter
+test (new inside [old A, old B]) prints FAIL for it, by 1.1e-9. That test does not govern this row (whip-lead, 01:2x).
+Neither rule was changed.
