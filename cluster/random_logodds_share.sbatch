@@ -1,11 +1,11 @@
 #!/bin/bash
-# EXXX (cell P2.82): a random baseline for the log-odds re-gating share of Fig `known`. Random changes (E228's directions)
+# E310 (cell P2.82): a random baseline for the log-odds re-gating share of Fig `known`. Random changes (E228's directions)
 # scaled until the trained answer gains one log-odds, the share read on them beside each fine-tune's own. Card
 # experiments/random_logodds_share/card.md; settings and expected values experiments/random_logodds_share/results/predictions.json
-# (run.py refuses unless it is committed unchanged, and while its "experiment" is still EXXX).
+# (run.py refuses unless it is committed unchanged, and while its "experiment" is still E310).
 # Stage 0 first and alone; the six shards only after it prints "STAGE 0 DONE" (run.py refuses them before):
-#   sbatch --comment=EXXX cluster/random_logodds_share.sbatch control
-#   sbatch --comment=EXXX cluster/random_logodds_share.sbatch states 0 6      # ... through states 5 6, in parallel
+#   sbatch --comment=E310 cluster/random_logodds_share.sbatch control
+#   sbatch --comment=E310 cluster/random_logodds_share.sbatch states 0 6      # ... through states 5 6, in parallel
 # A stop prints "STOP: ..." and exits 1. A shard rerun skips finished draws and states (results/states/<state>.json).
 # Inputs (NFS, read only): the 48 saved updates named in known_3seeds/results/known3.json (via share_untrained,
 # known_3seeds and refit_96key inventories), E136's read windows and E53's cached Pile rows, the model in artifacts/vpd/.
@@ -24,7 +24,7 @@
 #SBATCH --cpus-per-task=4
 #SBATCH --mem=40G
 #SBATCH --time=00:30:00
-#SBATCH --comment=EXXX
+#SBATCH --comment=E310
 #SBATCH --output=cluster/logs/%x-%j.out
 
 set -euo pipefail

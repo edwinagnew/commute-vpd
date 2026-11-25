@@ -1,4 +1,4 @@
-# P2.82 plan: a random baseline for the log-odds re-gating share (EXXX)
+# P2.82 plan: a random baseline for the log-odds re-gating share (E310)
 
 The paper's headline share (Fig `known`) has no random reference in its log-odds form: App. I says "The log-odds form
 has no random baseline of its own", because no random change matched to a fine-tune's size or KL moved the trained
@@ -35,7 +35,7 @@ code `experiments/random_logodds_share/run.py`; filed values `results/prediction
   sit at a larger scale and a KL above their fine-tune's. No expectation is filed on how many draws reach the band.
 
 ## Cost and time
-$0: cluster debug QoS, one L40 per job, `cluster/random_logodds_share.sbatch` (`--comment=EXXX`). Reads: 48 states x 3
+$0: cluster debug QoS, one L40 per job, `cluster/random_logodds_share.sbatch` (`--comment=E310`). Reads: 48 states x 3
 draws x 16 reads (2 sign probes + E228's measured ~14 evaluations per match) x 1.8 s (E228's measured read time) =
 4,147 s, about 69 min, plus 9 min for the six e53 states at 3.7 s (6 x 3 x 16 x 1.9 s) and 4 min for 144 KL reads:
 about 82 min. If every draw also tries the other sign (28 reads a draw): 7,258 s + 958 s + 4 min, about 141 min. Split
