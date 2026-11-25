@@ -138,3 +138,6 @@ Every Geiger et al. 2025 number in §3 points to the right item (Def. 2, 5, 9, 2
 
 ## Re-check of MUSTs 1-4 on v2 9dd94f4 (11-25 13:20)
 All four are applied. One new MUST: the sec7 evidence sentence says the three rank correlations all "change sign" without the confident states. Only steering's does (appI:176-178: 0.18, -0.48, -0.81). There are three SHOULDs: sec5:10 is still flat on "mostly new"; appI:44 "300 steps" sits beside :47 "30 steps"; the SAE has no rescale-only control. Details: ~/commute-data/agents/writeup-lead/note-2026-11-25-redteam-must14-recheck.md.
+
+## Re-check of MUSTs 5-9 on local paper commit 3b4a317 (11-25 13:53)
+Pass, no MUSTs. I recomputed the eight-task tau-b values (0.197, 0.039, 0.512, 0.118) and they match. MUST 7 holds at all three featurizations (every path uses stand_in.write_change over every position). SHOULD: the stated bar (0.57) ignores ties in the tiers. The exact tie-aware permutation test puts effective rank at p = 0.061, right on the 95th percentile. Note: ~/commute-data/agents/writeup-lead/note-2026-11-25-redteam-musts59-recheck.md.
