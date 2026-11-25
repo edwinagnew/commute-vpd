@@ -224,11 +224,12 @@ def order(n: int, steps: int, batch: int, seed: int) -> Tensor:
 
 
 def train_ladder(net: ST.Net, t: Task, rc: Recipe, seed: int, kl_rows: Tensor, rungs: dict[str, Sequence[float]],
-                 save: Callable[[int, ST.DW, dict[str, Any]], None], log: Callable[[str], None]) -> list[dict[str, Any]]:  # fmt: skip
+                 save: Callable[[int, ST.DW, dict[str, Any]], None], log: Callable[[str], None], every: int = 0) -> list[dict[str, Any]]:  # fmt: skip
     """One fine-tune of `t`. After every step the live KL from W0 on kl_rows (mean over every position) and the update
     size (`realistic.update_size`) are read; at the first step either crosses a rung of rungs["kl"] or rungs["size"]
-    not crossed before, and at the last step, `save(step, dW, info)` is called once. Stops when every rung is crossed
-    or at rc.steps; the trace (every 10th step and each save) is returned. The model is W0 again on return."""
+    not crossed before, at every multiple of `every` (0: none) and at the last step, `save(step, dW, info)` is called
+    once. Stops when every rung is crossed (never, with no rungs) or at rc.steps; the trace (every 10th step and each
+    save) is returned. The model is W0 again on return."""
     model, dev = net.model, net.device
     idx = order(len(t.train), rc.steps, rc.batch, seed)
     with torch.no_grad():
@@ -249,10 +250,11 @@ def train_ladder(net: ST.Net, t: Task, rc: Recipe, seed: int, kl_rows: Tensor, r
         hit = {k: [r for r in todo[k] if (kl if k == "kl" else info["size"]) >= r] for k in todo}
         for k, rs in hit.items():
             todo[k] = [r for r in todo[k] if r not in rs]
-        last = step == rc.steps or not any(todo.values())
-        if any(hit.values()) or last:
+        last = step == rc.steps or (bool(todo) and not any(todo.values()))
+        due = any(hit.values()) or last or (every > 0 and step % every == 0)
+        if due:
             save(step, {k: v.cpu() for k, v in dW.items()}, info | {"rungs": hit, "last": last})
-        if any(hit.values()) or last or step % 10 == 0:
+        if due or step % 10 == 0:
             trace.append(info)
         if last:
             raise FT.StopTraining

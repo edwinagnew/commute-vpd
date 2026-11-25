@@ -53,7 +53,7 @@ KN: Any = load_experiment("kstar_needed", "run")  # E268: world, Config, saved, 
 KP = KN.KP
 OUT = RUN.RESULTS / "eb"  # stage 0's gate, shared by both sets
 WINDOWS, MANIFEST = RUN.LARGE / "eb_windows", RUN.RESULTS / "wide" / "eb" / "windows_manifest.json"
-MATCHES = ("kl", "size", "kl_hi", "kl_lo", "size_hi", "size_lo")
+MATCHES = ("kl", "size", "kl_hi", "kl_lo", "size_hi", "size_lo", "gain1")  # gain1: P2.66 run 4 (run4.py), wide set only
 P278 = RUN.RESULTS / "wide" / "predictions_p278.json"  # P2.78's filed expectations for the seed-1 and seed-2 Gaussians
 SEC_PER_64 = 738.0  # s per state, 200 windows of 64 tokens, H100 (E268, definition-lead e268_dl/run_rl_p0.log:8)
 # Slowdown against the H100: scan rate 8,800 cases/s on E268's H100 (kstar_needed/results/run_rl_p0.log, site lines)
