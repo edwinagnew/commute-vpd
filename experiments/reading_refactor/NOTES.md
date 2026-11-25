@@ -121,3 +121,22 @@
   still running at the restart (log ~/commute-data/scratch/refactor-lead/2c/test_after.log; 3 F seen by 96%).
 - Lint: ruff + pyright clean on every touched file. Lines: src/commute 40502; experiments/**/*.py 185160.
 - Left: read job 67411's result and fix any failure caused by the archive move.
+
+## Review fixes (p2-79-fix, 2026-11-25)
+- Fix 1, archive rule: an archived run.py builds paths from its own location, so a live caller that load_experiment's it
+  reads paths that do not exist. Rule now: any folder reached from a live file (experiments/, src/, tests/, cluster/)
+  through load_experiment, transitively, stays live. Recomputed by ~/commute-data/scratch/refactor-lead/p3fix/closure3.py
+  (scan.py there reads the archived layout; an explicit archive/ path keeps nothing live). Back to experiments/:
+  carrying_jobs, qwen_masked_read, rule_retention, sae_train, soft_intervention (unedited), their 5 sbatch files and
+  test_qwen_masked_read; test_carrying_jobs's path is main's again. Archive: 57 folders. Their results/large symlinks
+  copied from the main clone. live_check.py there: 0 rows from a live file reach an archived folder.
+- Fix 2, one definition: panel.kl_from_w0 calls kl.kl_base_to_ft; masked_reads.share uses share.Floor; masked_reads
+  .share_cells calls share.share_cells (per-unit readouts of masked_reads.units); share_cells_by deleted; route_cells_by
+  kept (its KL cells need the same forwards' logits); fair_steering.means is the one pooled/per-key mean, divide uses
+  share.Floor. Fix 3: Item.scale/.pair, world.weights, share.untrained_share deleted; the E214/E229 item builders moved
+  into new_b.py. Reader's prior forward kept (comment in __post_init__).
+- Fix 4: compare.py holds a reading with no filed tolerance to the saved value within REL, so every saved gap is labelled.
+- Fix 5, stage "scans" (prepared, not run): new_c.py / new_c.sbatch (new code) and old_c.py / old_c.sbatch (old code:
+  copy both into the e309-old worktree and submit there, tags A and B). Keys: steering_perkey, E_b_neurons@fresh_no_leftover,
+  scan_* and needed_set_size for x2@vpd_* and e58/copy_s0_scaled@sae_*, E_b_sae@fresh / @fresh_no_leftover. compare.py
+  merges old_c_<tag> into old_<tag> and new_c into new.
