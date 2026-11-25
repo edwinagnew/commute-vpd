@@ -1,0 +1,31 @@
+2026-11-24T23:37:55-08:00 67372 commute-e309-new-b started node=l40-worker gpus=5
+code: f2eb34ed
+2026-11-24T23:37:55-08:00 67372 allocated GPU memory used: 0 MiB
+{'steering': {'e135': (100, 41), 'e143': (97, 41), 'panel': (500, 127)}}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[steering_pooled/e62/copy_s0] 0.5203478058670894 (saved None)
+[steering_pooled/e46/ident32_s0] 0.7472095889963015 (saved None)
+[steering_pooled/lower_s0_step128] 0.8218274699114657 (saved None)
+[adl_D/lower_s0_step128] 0.08044061502144445 (saved None)
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[E_b_vpd/x2@fresh] 0.7613907014282402 (saved None)
+[E_b_neurons/x2@fresh] 0.9997651093639606 (saved None)
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[E_b_neurons/copy24_s0@fresh] 0.022253576338935835 (saved None)
+    site 0 (block 0, variables from 0): 788224 cases, 1617 needed so far; 788224 cases in 33 s (23673/s)
+    site 1 (block 1, variables from 3079): 788224 cases, 2761 needed so far; 1576448 cases in 60 s (26257/s)
+    site 2 (block 2, variables from 6158): 788224 cases, 3504 needed so far; 2364672 cases in 80 s (29606/s)
+    site 3 (block 3, variables from 9237): 788224 cases, 4054 needed so far; 3152896 cases in 93 s (33922/s)
+[needed_set_size/copy24_s0@neurons] 4054 (saved None)
+peak GPU 10.88 GB
+NEW_B gpu DONE; errors: none
+peak host RSS 7.5 GB

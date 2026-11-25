@@ -28,17 +28,13 @@
   }
  },
  "erank/lower_s0_step128": {
-  "value": 592.6058268916009,
-  "settings": {
-   "fn": "update_spectrum.state",
-   "dtype": "fp64 svdvals"
-  }
+  "value": 592.6058268916012,
+  "settings": {}
  },
  "size_rel/lower_s0_step128": {
-  "value": 0.012643314671142677,
+  "value": 0.012643314671142679,
   "settings": {
-   "fn": "realistic.update_size",
-   "W0": "checkpoint"
+   "W0": "live (checkpoint-checked)"
   }
  },
  "summed_norm/e62/copy_s0": {
@@ -49,7 +45,13 @@
  },
  "_seconds": {
   "spectra_and_sizes": 258.6927344799042,
-  "saved_priors": 0.025542736053466797
+  "saved_priors": 0.025542736053466797,
+  "share_e136": 4.9071125984191895,
+  "share_e211": 3.6356446743011475,
+  "share_e140": 0.7793359756469727,
+  "prior_forward": 0.05255579948425293,
+  "kl_procedural": 2.5213959217071533,
+  "panel": 31.3031907081604
  },
  "prior_log10_geo/e62_copy@saved_P": {
   "value": -3.5010906459343945,
@@ -63,6 +65,125 @@
   "settings": {
    "fn": "prior.prior_log10_geo",
    "P": "prior_vs_share stage1"
+  }
+ },
+ "_meta": {
+  "card": "NVIDIA L40",
+  "torch": "2.8.0+cu128"
+ },
+ "share/c3/cipher_s0@b64": {
+  "value": 0.2363240475111284,
+  "settings": {
+   "batch": 64,
+   "rows": "c3/cipher held (75)",
+   "unit": "lo",
+   "gain": "bf16 cells",
+   "floor": "|gain| >= 1e-6",
+   "gain_value": 12.851359278361002
+  }
+ },
+ "share/e53/lowercase_s0@b32": {
+  "value": 0.7518811175785214,
+  "settings": {
+   "batch": 32,
+   "rows": "e53/lowercase held (500)",
+   "unit": "lo",
+   "gain": "bf16 cells",
+   "floor": "|gain| >= 1e-6",
+   "gain_value": 1.670788480758667
+  }
+ },
+ "share/e53/lowercase_s0@b64": {
+  "value": 0.7537570697311265,
+  "settings": {
+   "batch": 64,
+   "rows": "e53/lowercase held (500)",
+   "unit": "lo",
+   "gain": "bf16 cells",
+   "floor": "gain >= 1",
+   "gain_value": 1.6692238597869873
+  }
+ },
+ "share/case_real_s0@lo": {
+  "value": 0.11284478195336352,
+  "settings": {
+   "batch": 64,
+   "rows": "case_label fit[:256]",
+   "unit": "lo",
+   "gain": "bf16 cells",
+   "floor": "gain >= 1.0"
+  }
+ },
+ "share/case_real_s0@contrast": {
+  "value": 0.10744470819037578,
+  "settings": {
+   "batch": 64,
+   "rows": "case_label fit[:256]",
+   "unit": "contrast",
+   "gain": "bf16 cells",
+   "floor": "gain >= 1.0"
+  }
+ },
+ "prior_geo/e46_ident32": {
+  "value": 3.8916695499001433e-05,
+  "settings": {
+   "rows": "e46/ident32 held (97)",
+   "batch": 97,
+   "dtype": "fp32",
+   "unit": "P (geometric mean)"
+  }
+ },
+ "kl_base_to_ft/sequence_rl_s0": {
+  "value": 0.27431499831327255,
+  "settings": {
+   "batch": 8,
+   "rows": "cached val 0..64",
+   "positions": "all",
+   "unit": "nats per token"
+  }
+ },
+ "kl_ft_to_base/sequence_rl_s0": {
+  "value": 0.3254469868534772,
+  "settings": {
+   "batch": 8,
+   "rows": "cached val 0..64",
+   "positions": "all",
+   "unit": "nats per token"
+  }
+ },
+ "share/lower_s0_step128": {
+  "value": 0.808450902930615,
+  "settings": {
+   "rows": "lower read (500)",
+   "unit": "lo",
+   "batch": 64,
+   "gain": "bf16 cells",
+   "floor": "gain >= 1"
+  }
+ },
+ "gain/lower_s0_step128": {
+  "value": 1.5710803279876708,
+  "settings": {
+   "rows": "lower read (500)",
+   "unit": "lo",
+   "batch": 64,
+   "dtype": "bf16 cells"
+  }
+ },
+ "kl_base_to_ft/lower_s0_step128": {
+  "value": 0.18576358269646914,
+  "settings": {
+   "rows": "cached val 0..64",
+   "batch": 8,
+   "unit": "nats per token"
+  }
+ },
+ "prior_mean_lo/lower_s0_step128": {
+  "value": -6.755572450637818,
+  "settings": {
+   "rows": "lower read (500)",
+   "unit": "lo",
+   "batch": 64
   }
  }
 }

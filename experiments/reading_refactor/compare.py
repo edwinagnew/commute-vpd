@@ -44,6 +44,8 @@ def under_tol(reading: str, new: float, saved: float | None) -> bool | None:
 
 
 def verdict(reading: str, a: float | None, b: float | None, new: float | None, saved: Any) -> str:
+    """FAIL when new is not old (outside the old spread). Over the saved run's filed tolerance is a FAIL only when old
+    is under it: a gap the old code has too is the saved-vs-recompute gap, pre-existing, and reads pass."""
     if new is None:
         return "pending"
     if a is None:
@@ -52,8 +54,13 @@ def verdict(reading: str, a: float | None, b: float | None, new: float | None, s
         ok = new == a or abs(new - a) <= REL * abs(a)
     else:
         ok = min(a, b) <= new <= max(a, b)
-    tol = under_tol(reading, new, saved)
-    return "pass" if ok and tol is not False else "FAIL" + ("" if ok else " (outside old spread)") + ("" if tol is not False else " (over filed tol)")
+    if not ok:
+        return "FAIL (outside old spread)"
+    if under_tol(reading, new, saved) is not False:
+        return "pass"
+    if under_tol(reading, a, saved) is False:
+        return f"pass (new = old; old off saved by {a - float(saved):.3g}, pre-existing)"
+    return "FAIL (over filed tol, old under it)"
 
 
 def table() -> list[dict[str, Any]]:

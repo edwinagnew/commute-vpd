@@ -60,6 +60,106 @@
   }
  },
  "_seconds": {
-  "eb_saved_sums": 0.22664237022399902
+  "eb_saved_sums": 0.22664237022399902,
+  "steering_and_adl": 39.62039613723755,
+  "eb_fresh": 232.2596447467804
+ },
+ "steering_pooled/e62/copy_s0": {
+  "value": 0.5203478058670894,
+  "saved": null,
+  "saved_file": null,
+  "saved_jq": null,
+  "settings": {
+   "rule": "Rule(form='pooled', key_pos=None, strengths=(0, 0.5, 1, 2, 4, 8), floor=None, batch=100, mean=torch.float32)",
+   "gain": 12.471466312408447,
+   "gain_from": "target",
+   "setting": [
+    1,
+    2
+   ]
+  }
+ },
+ "steering_pooled/e46/ident32_s0": {
+  "value": 0.7472095889963015,
+  "saved": null,
+  "saved_file": null,
+  "saved_jq": null,
+  "settings": {
+   "rule": "Rule(form='pooled', key_pos=None, strengths=(0, 0.5, 1, 2, 4, 8), floor=1.0, batch=64, mean=torch.float64)",
+   "gain": 13.99833704761623,
+   "gain_from": "target",
+   "setting": [
+    2,
+    2
+   ]
+  }
+ },
+ "steering_pooled/lower_s0_step128": {
+  "value": 0.8218274699114657,
+  "saved": null,
+  "saved_file": null,
+  "saved_jq": null,
+  "settings": {
+   "rule": "Rule(form='pooled', key_pos=None, strengths=(0, 0.5, 1, 2, 4, 8), floor=1.0, batch=64, mean=torch.float64)",
+   "gain": 1.5710803279876708,
+   "gain_from": "share",
+   "setting": [
+    3,
+    4
+   ]
+  }
+ },
+ "adl_D/lower_s0_step128": {
+  "value": 0.08044061502144445,
+  "saved": null,
+  "saved_file": null,
+  "saved_jq": null,
+  "settings": {
+   "pile_rows": [
+    4096,
+    5
+   ],
+   "gain": 1.5710803279876708,
+   "floor": 1.0
+  }
+ },
+ "E_b_vpd/x2@fresh": {
+  "value": 0.7613907014282402,
+  "saved": null,
+  "saved_file": null,
+  "saved_jq": null,
+  "settings": {
+   "batch": 8
+  }
+ },
+ "E_b_neurons/x2@fresh": {
+  "value": 0.9997651093639606,
+  "saved": null,
+  "saved_file": null,
+  "saved_jq": null,
+  "settings": {
+   "batch": 32
+  }
+ },
+ "E_b_neurons/copy24_s0@fresh": {
+  "value": 0.022253576338935835,
+  "saved": null,
+  "saved_file": null,
+  "saved_jq": null,
+  "settings": {
+   "batch": 32
+  }
+ },
+ "needed_set_size/copy24_s0@neurons": {
+  "value": 4054,
+  "saved": null,
+  "saved_file": null,
+  "saved_jq": null,
+  "settings": {
+   "derangements": 4,
+   "examples": 64,
+   "seed": 268,
+   "mask_equals_saved": false
+  }
  }
 }
