@@ -27,3 +27,10 @@ exists in the repo (friction 1085's known-value control was L40 vs H100).
 The bar is not changed after the cross-check is read.
 
 First filing (superseded before any read): new_few only; every gap <= 0.03 (the card's smallest_gap).
+
+## Result (2026-11-24, read after both sides were home)
+All six gaps are exactly 0: the L40S pod and the cluster L40 give bit-identical E_b_K on s186001 new_few and
+rand_new_few at VPD (0.01389914065823073, 0.006634832105414068), top neurons (0.0031168159676561104,
+0.02714043730258441) and SAE (0.0020100472778302493, 0.018378322669457513). Rule: the L40S reads stand. The neurons
+identity max_dev 1.16e-3 is the same on both cards (stage0 neurons_identity_xn vs the pods'), so it belongs to these
+cue windows, not to the card.
