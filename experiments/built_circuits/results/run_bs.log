@@ -1,0 +1,140 @@
+E301 (built_circuits): claimed at commit, ecode pending start: {'stage': 'read', 'circuit': 'bigram', 'feat': 'sae', 'items': None, 'shard': (0, 1), 'tag': 'bs'}; settings {'circuits': ('induction', 'bigram'), 'layer': {'induction': 2, 'bigram': 0}, 'trained': {'induction': [3], 'bigram': [1, 2, 3]}, 'half': {'induction': 40, 'bigram': 20}, 'window': 41, 'n_train': 512, 'n_held': 512, 'induction_pool': (1000, 3000), 'induction_pairs': 64, 'induction_seeds': (163, 11, 12), 'bigram_min_count': 30, 'bigram_min_share': 0.9, 'bigram_rows': {'count': ['train', 0, 4096], 'train': ['train', 4096, 512], 'held': ['train', 4608, 512]}, 'bigram_seeds': (1, 2), 'k': 8, 'factors': (2, 10), 'target': 2, 'fit_seed': 0, 'fit_seed_floor': 1, 'batch': 64, 'steps': 4000, 'lr': 3e-05, 'warmup': 100, 'check_step': 200, 'log_every': 250, 'eval_batch': 64, 'pile_train': 16384, 'pile_held': 1024, 'data_seed': 0, 'slot_layer': {'induction': 2, 'bigram': 0}, 'random_seeds': {'induction': [163101, 163102, 163103, 163104, 163105], 'bigram': [163201, 163202, 163203, 163204, 163205]}, 'scan_keys': ('derangements', 'examples', 'seed', 'rows', 'logit_rows', 'cache_batch', 'ident_vars', 'sae_err_rows', 'sae_chunk', 'band'), 'repeat_seed': 269, 'repeat_circuit': 'induction', 'no_new': ('induction',)}; thresholds {'top1_min': 0.5, 'kl_floor': 1e-06, 'gamma_rel_tol': 1e-05, 'gamma_rel_tol_amendment_2026-11-24': "Amendment 1 (regating-lead, approved in advance by whip-lead 2026-11-24 for a measured floor near 2e-6), filed after the rehearsal's R0d stop and before any reading: was 1e-06 (a stated, unmeasured ~1e-7 floor, x10). Measured on the cluster L40 (l40-worker): two builds (jobs 66317 tag s0, 66438 tag g1) give gamma_new_few 11.291458129882812 both times (same-card floor exactly 0) and gamma_new_thin equal to E214's; both differ from E214's saved gamma_new_few (11.291481018066406, built on another card) by 2.03e-6 relative, the cross-card floor this check guards. 1e-05 is about 5x that floor; slots and A_prime stay exact-match, so a builder change is still caught (results/stage0/fig2_gammas_{s0,g1}.json).", 'norm_rel_tol': 1e-06, 'thresholds_source': "top1_min: the lead's bar for a behaviour M does (P1.63 brief); kl_floor: E195's filed threshold; gamma_rel_tol: 10x the ~1e-7 relative difference between builds of the new edits that P1.62 records; norm_rel_tol: fp32 rounding of a rescaled Gaussian's Frobenius norm, far above it (matched_random computes the scale in fp64)"}; E298 scan settings {'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'ident_vars': 3, 'sae_err_rows': 64, 'sae_chunk': 32, 'band': 'p97'}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+sae_bigram_do_nothing: {"experiment": "E301 (built_circuits): claimed at commit, ecode pending", "part": "sae_bigram_do_nothing", "n_changed": 0, "dd_max": 0.0, "E_b": 1.0, "seconds": 4.098975896835327}; checks hold
+    site 0 attn0: 256 cases run of 1048640, 0 needed; 256 cases in 0 s (1447/s)
+    site 1 mlp0: 256 cases run of 1048640, 0 needed; 512 cases in 0 s (2159/s)
+    site 2 attn1: 256 cases run of 1048640, 0 needed; 768 cases in 0 s (2661/s)
+    site 3 mlp1: 256 cases run of 1048640, 0 needed; 1024 cases in 0 s (3000/s)
+    site 4 attn2: 256 cases run of 1048640, 0 needed; 1280 cases in 0 s (3351/s)
+    site 5 mlp2: 256 cases run of 1048640, 0 needed; 1536 cases in 0 s (3627/s)
+    site 6 attn3: 256 cases run of 1048640, 0 needed; 1792 cases in 0 s (3929/s)
+    site 7 mlp3: 256 cases run of 1048640, 0 needed; 2048 cases in 0 s (4209/s)
+sae_bigram_identity: {"experiment": "E301 (built_circuits): claimed at commit, ecode pending", "part": "sae_bigram_identity", "item": "bigram/x2", "flips": 0, "max_dev": 5.53131103515625e-05, "min_margin": 0.09637260437011719, "cases": 2048, "cases_per_s": 4134.612550160838, "n_windows": 512, "n_read_positions": 1, "card": "NVIDIA L40", "seconds": 1.0715713500976562}; checks hold
+CONTROLS DONE (sae bigram): identity floor 5.53e-05
+sae bigram/do_nothing: 512 windows of 41 tokens, 1 read positions, 131080 variables, 0 changed, 256 pairs
+    site 0 attn0: 306581 cases run of 4194560, 233 needed; 306581 cases in 56 s (5443/s)
+    site 1 mlp0: 563739 cases run of 4194560, 591 needed; 870320 cases in 165 s (5278/s)
+    site 2 attn1: 199391 cases run of 4194560, 162 needed; 1069711 cases in 194 s (5522/s)
+    site 3 mlp1: 565631 cases run of 4194560, 269 needed; 1635342 cases in 277 s (5910/s)
+    site 4 attn2: 205114 cases run of 4194560, 105 needed; 1840456 cases in 297 s (6200/s)
+    site 5 mlp2: 554531 cases run of 4194560, 223 needed; 2394987 cases in 353 s (6791/s)
+    site 6 attn3: 220011 cases run of 4194560, 99 needed; 2614998 cases in 365 s (7167/s)
+    site 7 mlp3: 426309 cases run of 4194560, 142 needed; 3041307 cases in 389 s (7822/s)
+sae bigram/do_nothing: E_b over K 1.000000 (leftovers dropped 1.000000, their share of dd 0.0000); |K| 1824 (0 changed) of 131080; 392 s
+ITEM 1 of 11 DONE (sae bigram/do_nothing)
+sae bigram/x2: 512 windows of 41 tokens, 1 read positions, 131080 variables, 16385 changed, 256 pairs
+    site 0 attn0: 306581 cases run of 4194560, 81 needed; 306581 cases in 60 s (5150/s)
+    site 1 mlp0: 409740 cases run of 4194560, 233 needed; 716321 cases in 140 s (5133/s)
+    site 2 attn1: 191857 cases run of 4194560, 69 needed; 908178 cases in 167 s (5426/s)
+    site 3 mlp1: 284147 cases run of 4194560, 42 needed; 1192325 cases in 209 s (5700/s)
+    site 4 attn2: 116970 cases run of 4194560, 31 needed; 1309295 cases in 221 s (5932/s)
+    site 5 mlp2: 346571 cases run of 4194560, 61 needed; 1655866 cases in 256 s (6481/s)
+    site 6 attn3: 182474 cases run of 4194560, 68 needed; 1838340 cases in 266 s (6921/s)
+    site 7 mlp3: 248827 cases run of 4194560, 94 needed; 2087167 cases in 279 s (7470/s)
+sae bigram/x2: E_b over K 0.227965 (leftovers dropped 0.503345, their share of dd 0.5669); |K| 679 (233 changed) of 131080; 283 s
+ITEM 2 of 11 DONE (sae bigram/x2)
+sae bigram/x10: 512 windows of 41 tokens, 1 read positions, 131080 variables, 16385 changed, 256 pairs
+    site 0 attn0: 306581 cases run of 4194560, 494 needed; 306581 cases in 60 s (5133/s)
+    site 1 mlp0: 250032 cases run of 4194560, 635 needed; 556613 cases in 109 s (5128/s)
+    site 2 attn1: 103269 cases run of 4194560, 133 needed; 659882 cases in 124 s (5339/s)
+    site 3 mlp1: 33504 cases run of 4194560, 45 needed; 693386 cases in 129 s (5390/s)
+    site 4 attn2: 104145 cases run of 4194560, 227 needed; 797531 cases in 139 s (5741/s)
+    site 5 mlp2: 39712 cases run of 4194560, 57 needed; 837243 cases in 143 s (5855/s)
+    site 6 attn3: 143720 cases run of 4194560, 295 needed; 980963 cases in 151 s (6493/s)
+    site 7 mlp3: 27308 cases run of 4194560, 50 needed; 1008271 cases in 153 s (6601/s)
+sae bigram/x10: E_b over K 0.242241 (leftovers dropped 0.361716, their share of dd 0.3699); |K| 1936 (635 changed) of 131080; 156 s
+ITEM 3 of 11 DONE (sae bigram/x10)
+sae bigram/rebuilt: 512 windows of 41 tokens, 1 read positions, 131080 variables, 65540 changed, 256 pairs
+    site 0 attn0: 306581 cases run of 4194560, 71 needed; 306581 cases in 60 s (5123/s)
+    site 1 mlp0: 2563177 cases run of 4194560, 321 needed; 2869758 cases in 560 s (5121/s)
+    site 2 attn1: 384299 cases run of 4194560, 49 needed; 3254057 cases in 617 s (5275/s)
+    site 3 mlp1: 263642 cases run of 4194560, 36 needed; 3517699 cases in 656 s (5361/s)
+    site 4 attn2: 151361 cases run of 4194560, 28 needed; 3669060 cases in 671 s (5468/s)
+    site 5 mlp2: 658613 cases run of 4194560, 47 needed; 4327673 cases in 738 s (5866/s)
+    site 6 attn3: 244408 cases run of 4194560, 57 needed; 4572081 cases in 751 s (6085/s)
+    site 7 mlp3: 567266 cases run of 4194560, 73 needed; 5139347 cases in 784 s (6557/s)
+sae bigram/rebuilt: E_b over K 0.633580 (leftovers dropped 0.861156, their share of dd 0.2924); |K| 682 (477 changed) of 131080; 787 s
+ITEM 4 of 11 DONE (sae bigram/rebuilt)
+sae bigram/new_few: 512 windows of 41 tokens, 1 read positions, 131080 variables, 16385 changed, 256 pairs
+    site 0 attn0: 308077 cases run of 4194560, 915 needed; 308077 cases in 60 s (5120/s)
+    site 1 mlp0: 1281927 cases run of 4194560, 6659 needed; 1590004 cases in 311 s (5119/s)
+    site 2 attn1: 193128 cases run of 4194560, 606 needed; 1783132 cases in 339 s (5261/s)
+    site 3 mlp1: 572697 cases run of 4194560, 1647 needed; 2355829 cases in 424 s (5552/s)
+    site 4 attn2: 196791 cases run of 4194560, 554 needed; 2552620 cases in 444 s (5754/s)
+    site 5 mlp2: 551970 cases run of 4194560, 1257 needed; 3104590 cases in 500 s (6215/s)
+    site 6 attn3: 210585 cases run of 4194560, 200 needed; 3315175 cases in 511 s (6485/s)
+    site 7 mlp3: 401478 cases run of 4194560, 210 needed; 3716653 cases in 534 s (6956/s)
+sae bigram/new_few: E_b over K 0.003080 (leftovers dropped 0.018676, their share of dd 0.8435); |K| 12048 (6659 changed) of 131080; 538 s
+ITEM 5 of 11 DONE (sae bigram/new_few)
+sae bigram/new_thin: 512 windows of 41 tokens, 1 read positions, 131080 variables, 16385 changed, 256 pairs
+    site 0 attn0: 308077 cases run of 4194560, 329 needed; 308077 cases in 60 s (5120/s)
+    site 1 mlp0: 1813726 cases run of 4194560, 3685 needed; 2121803 cases in 414 s (5123/s)
+    site 2 attn1: 229716 cases run of 4194560, 276 needed; 2351519 cases in 448 s (5253/s)
+    site 3 mlp1: 577885 cases run of 4194560, 479 needed; 2929404 cases in 533 s (5493/s)
+    site 4 attn2: 184229 cases run of 4194560, 189 needed; 3113633 cases in 551 s (5647/s)
+    site 5 mlp2: 516440 cases run of 4194560, 368 needed; 3630073 cases in 604 s (6014/s)
+    site 6 attn3: 203776 cases run of 4194560, 180 needed; 3833849 cases in 615 s (6236/s)
+    site 7 mlp3: 368614 cases run of 4194560, 160 needed; 4202463 cases in 635 s (6613/s)
+sae bigram/new_thin: E_b over K 0.010863 (leftovers dropped 0.067101, their share of dd 0.8533); |K| 5666 (3685 changed) of 131080; 639 s
+ITEM 6 of 11 DONE (sae bigram/new_thin)
+sae bigram/rand_x2: 512 windows of 41 tokens, 1 read positions, 131080 variables, 16385 changed, 256 pairs
+    site 0 attn0: 306581 cases run of 4194560, 280 needed; 306581 cases in 59 s (5159/s)
+    site 1 mlp0: 568790 cases run of 4194560, 531 needed; 875371 cases in 170 s (5147/s)
+    site 2 attn1: 199964 cases run of 4194560, 152 needed; 1075335 cases in 199 s (5405/s)
+    site 3 mlp1: 566532 cases run of 4194560, 221 needed; 1641867 cases in 282 s (5821/s)
+    site 4 attn2: 205884 cases run of 4194560, 67 needed; 1847751 cases in 302 s (6114/s)
+    site 5 mlp2: 555512 cases run of 4194560, 147 needed; 2403263 cases in 358 s (6714/s)
+    site 6 attn3: 219535 cases run of 4194560, 86 needed; 2622798 cases in 370 s (7089/s)
+    site 7 mlp3: 426587 cases run of 4194560, 123 needed; 3049385 cases in 394 s (7745/s)
+sae bigram/rand_x2: E_b over K 0.003437 (leftovers dropped 0.033898, their share of dd 0.9052); |K| 1607 (531 changed) of 131080; 400 s
+ITEM 7 of 11 DONE (sae bigram/rand_x2)
+sae bigram/rand_x10: 512 windows of 41 tokens, 1 read positions, 131080 variables, 16385 changed, 256 pairs
+    site 0 attn0: 306581 cases run of 4194560, 41 needed; 306581 cases in 60 s (5120/s)
+    site 1 mlp0: 1287102 cases run of 4194560, 156 needed; 1593683 cases in 311 s (5120/s)
+    site 2 attn1: 255475 cases run of 4194560, 31 needed; 1849158 cases in 349 s (5304/s)
+    site 3 mlp1: 618719 cases run of 4194560, 52 needed; 2467877 cases in 441 s (5600/s)
+    site 4 attn2: 192818 cases run of 4194560, 18 needed; 2660695 cases in 460 s (5789/s)
+    site 5 mlp2: 589237 cases run of 4194560, 60 needed; 3249932 cases in 519 s (6259/s)
+    site 6 attn3: 221445 cases run of 4194560, 32 needed; 3471377 cases in 531 s (6532/s)
+    site 7 mlp3: 421928 cases run of 4194560, 63 needed; 3893305 cases in 555 s (7011/s)
+sae bigram/rand_x10: E_b over K 0.002550 (leftovers dropped 0.089666, their share of dd 0.9817); |K| 453 (156 changed) of 131080; 558 s
+ITEM 8 of 11 DONE (sae bigram/rand_x10)
+sae bigram/rand_rebuilt: 512 windows of 41 tokens, 1 read positions, 131080 variables, 65540 changed, 256 pairs
+    site 0 attn0: 306581 cases run of 4194560, 78 needed; 306581 cases in 60 s (5117/s)
+    site 1 mlp0: 576032 cases run of 4194560, 198 needed; 882613 cases in 172 s (5119/s)
+    site 2 attn1: 200534 cases run of 4194560, 53 needed; 1083147 cases in 202 s (5370/s)
+    site 3 mlp1: 654986 cases run of 4194560, 91 needed; 1738133 cases in 299 s (5812/s)
+    site 4 attn2: 211405 cases run of 4194560, 27 needed; 1949538 cases in 320 s (6096/s)
+    site 5 mlp2: 595376 cases run of 4194560, 65 needed; 2544914 cases in 380 s (6696/s)
+    site 6 attn3: 221161 cases run of 4194560, 58 needed; 2766075 cases in 392 s (7052/s)
+    site 7 mlp3: 445875 cases run of 4194560, 78 needed; 3211950 cases in 417 s (7694/s)
+sae bigram/rand_rebuilt: E_b over K 0.011922 (leftovers dropped 0.140614, their share of dd 0.9375); |K| 648 (432 changed) of 131080; 421 s
+ITEM 9 of 11 DONE (sae bigram/rand_rebuilt)
+sae bigram/rand_new_few: 512 windows of 41 tokens, 1 read positions, 131080 variables, 16385 changed, 256 pairs
+    site 0 attn0: 308077 cases run of 4194560, 1293 needed; 308077 cases in 60 s (5116/s)
+    site 1 mlp0: 626877 cases run of 4194560, 4087 needed; 934954 cases in 183 s (5117/s)
+    site 2 attn1: 205498 cases run of 4194560, 922 needed; 1140452 cases in 213 s (5360/s)
+    site 3 mlp1: 576796 cases run of 4194560, 2262 needed; 1717248 cases in 299 s (5751/s)
+    site 4 attn2: 202068 cases run of 4194560, 828 needed; 1919316 cases in 318 s (6028/s)
+    site 5 mlp2: 556909 cases run of 4194560, 1867 needed; 2476225 cases in 375 s (6606/s)
+    site 6 attn3: 215845 cases run of 4194560, 537 needed; 2692070 cases in 387 s (6960/s)
+    site 7 mlp3: 408798 cases run of 4194560, 763 needed; 3100868 cases in 410 s (7562/s)
+sae bigram/rand_new_few: E_b over K 0.020725 (leftovers dropped 0.067375, their share of dd 0.6990); |K| 12559 (4087 changed) of 131080; 413 s
+ITEM 10 of 11 DONE (sae bigram/rand_new_few)
+sae bigram/rand_new_thin: 512 windows of 41 tokens, 1 read positions, 131080 variables, 16385 changed, 256 pairs
+    site 0 attn0: 308077 cases run of 4194560, 889 needed; 308077 cases in 60 s (5116/s)
+    site 1 mlp0: 595457 cases run of 4194560, 2770 needed; 903534 cases in 177 s (5117/s)
+    site 2 attn1: 195274 cases run of 4194560, 606 needed; 1098808 cases in 205 s (5355/s)
+    site 3 mlp1: 563067 cases run of 4194560, 1474 needed; 1661875 cases in 289 s (5750/s)
+    site 4 attn2: 199344 cases run of 4194560, 600 needed; 1861219 cases in 309 s (6032/s)
+    site 5 mlp2: 548557 cases run of 4194560, 1268 needed; 2409776 cases in 364 s (6616/s)
+    site 6 attn3: 212617 cases run of 4194560, 536 needed; 2622393 cases in 376 s (6974/s)
+    site 7 mlp3: 401826 cases run of 4194560, 843 needed; 3024219 cases in 399 s (7585/s)
+sae bigram/rand_new_thin: E_b over K 0.010701 (leftovers dropped 0.041252, their share of dd 0.7461); |K| 8986 (2770 changed) of 131080; 402 s
+ITEM 11 of 11 DONE (sae bigram/rand_new_thin)
+READ DONE (sae bigram)
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /mnt/nw/home/e.agnew/commute-agents/regating-lead/experiments/built_circuits/results ===
