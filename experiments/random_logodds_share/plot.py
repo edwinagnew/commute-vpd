@@ -72,6 +72,13 @@ def draw(axes: Any, names: list[str], data: list[dict[str, Any]]) -> None:
                 a.scatter(p["share"], i + 0.15, s=22, color=RANDOM, marker="X", linewidths=0)
             b.scatter(p["kl_ratio"], i, s=22, marker="X" if ok else "o", linewidths=0.8,
                       color=RANDOM if ok else "none", edgecolors=RANDOM)  # fmt: skip
+    for task in names:  # a task none of whose draws reached gain 1 says so, with the largest gain any of them got
+        draws = [p for p in data if p["task"] == task and p["kind"] == "random"]
+        if draws and not any(p["status"] == "ok" for p in draws) and "gain" in draws[0]:
+            own = max(p["share"] for p in data if p["task"] == task and p["kind"] == "fine-tune")
+            x = 0.15 if own > 0.6 else own + 0.04  # beside the fine-tunes, not over them
+            a.annotate(f"none reached gain 1; largest {max(p['gain'] for p in draws):.2f}", (x, y[task] + 0.15),
+                       fontsize=5.5, color=RANDOM, va="center")  # fmt: skip
     for ax in (a, b):
         ax.set_yticks(range(len(names)), names, fontsize=7)
         ax.set_ylim(len(names) - 0.5, -0.5)
@@ -82,9 +89,9 @@ def draw(axes: Any, names: list[str], data: list[dict[str, Any]]) -> None:
     for colour, label, marker in ((REUSE, "fine-tune, task built to reuse", "o"), (NEW, "fine-tune, task built new", "o"),
                                   (RANDOM, "random change, gain about 1", "X")):  # fmt: skip
         a.scatter([], [], s=20, color=colour, marker=marker, label=label)
-    b.scatter([], [], s=22, marker="o", color="none", edgecolors=RANDOM, label="never reached gain 1 (largest gain)")
-    a.legend(fontsize=6, loc="best", frameon=False)
-    b.legend(fontsize=6, loc="best", frameon=False)
+    b.scatter([], [], s=22, marker="o", color="none", edgecolors=RANDOM, label="never reached gain 1: KL at its largest gain")
+    (ha, la), (hb, lb) = a.get_legend_handles_labels(), b.get_legend_handles_labels()
+    a.figure.legend(ha + hb, la + lb, fontsize=6, loc="outside upper center", ncol=3, frameon=False)
 
 
 def main() -> None:
@@ -97,6 +104,29 @@ def main() -> None:
     save(fig, HERE / "figures/shares.png", data=data,
          n="per task: 3 fine-tune seeds, 3 random directions each (E228's seeds), each scaled to a gain of 1.00-1.10 "
            "log-odds on the trained answer; KL to the original model on the same rows, NOT matched; 67M model")  # fmt: skip
+    by_size(data)
+
+
+def by_size(data: list[dict[str, Any]]) -> None:
+    """Share against size relative to the fine-tune, on the tasks where any draw reached gain 1: the fine-tunes sit at 1."""
+    read = sorted({p["task"] for p in data if p["status"] == "ok"})
+    colours = ["#0072B2", "#D55E00", "#009E73", "#CC79A7"]
+    fig, ax = figure(size=(FULL_WIDTH[0] * 0.7, 3.4))
+    shown = [p for p in data if p["task"] in read and (p["kind"] == "fine-tune" or p["status"] == "ok")]
+    for task, colour in zip(read, colours, strict=False):
+        own = [p for p in shown if p["task"] == task and p["kind"] == "fine-tune"]
+        rnd = [p for p in shown if p["task"] == task and p["kind"] == "random"]
+        ax.scatter([1.0] * len(own), [p["share"] for p in own], s=20, color=colour, marker="o", linewidths=0, label=f"{task}, fine-tune")
+        ax.scatter([p["size_rel"] for p in rnd], [p["share"] for p in rnd], s=24, color=colour, marker="X", linewidths=0,
+                   label=f"{task}, random change")  # fmt: skip
+    ax.set_xscale("log")
+    ax.set_xlabel("size of the change / size of its fine-tune")
+    ax.set_ylabel("re-gating share, log-odds form")
+    ax.set_title("Random changes' share against their size, tasks where any reached gain 1", fontsize=8)
+    ax.legend(fontsize=6, frameon=False, ncol=2, loc="upper left")
+    save(fig, HERE / "figures/share_vs_size.png", data=shown,
+         n="fine-tunes at size 1 with their own gain (11-21 log-odds on these tasks); random changes at the size where their gain "
+           "first fell in 1.00-1.10 log-odds; 3 fine-tune seeds x the draws that reached the band; 67M model")  # fmt: skip
 
 
 def sketch() -> None:
