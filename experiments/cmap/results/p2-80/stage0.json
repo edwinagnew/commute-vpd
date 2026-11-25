@@ -1,0 +1,387 @@
+{
+ "experiment": "E305",
+ "gates_from": "experiments/cmap/results/stage0.json",
+ "tasks": {
+  "e46/ident32": {
+   "format": "kv",
+   "D_n": 512,
+   "D_sha256": "48ec27aff85420e5bf6ba5c75daa037427e4dde15f3671037a20064177cfff0a",
+   "D_labelled": 278,
+   "train_n": 403,
+   "train_removed_as_D": 0,
+   "n_discovery": 201,
+   "n_prune": 202
+  },
+  "e46/rand32": {
+   "format": "kv",
+   "D_n": 512,
+   "D_sha256": "b06c5e85f3f5fb4a6223b6573d8aee965924e976a199320b8f1bcb8eb75e47dc",
+   "D_labelled": 275,
+   "train_n": 403,
+   "train_removed_as_D": 0,
+   "n_discovery": 201,
+   "n_prune": 202
+  },
+  "e53/cipher": {
+   "format": "next",
+   "D_n": 512,
+   "D_sha256": "7a04271e987829c8a1e2b8ef345b42e56d776bcd4f38e6a7027c5a70397dc8da",
+   "D_used": "held-out scored windows (Run.scored): D's 8-token windows hold no label for NEXT",
+   "D_labelled": 500,
+   "train_n": 2000,
+   "train_removed_as_D": 0,
+   "n_discovery": 300,
+   "n_prune": 500
+  },
+  "e53/lowercase": {
+   "format": "next",
+   "D_n": 512,
+   "D_sha256": "690d10c18a93799b450ba782c9c396678a3afcee6d0ac9b89d1c50565a6c2f14",
+   "D_used": "held-out scored windows (Run.scored): D's 8-token windows hold no label for NEXT",
+   "D_labelled": 500,
+   "train_n": 2000,
+   "train_removed_as_D": 0,
+   "n_discovery": 300,
+   "n_prune": 500
+  },
+  "e54/cipher": {
+   "format": "kv",
+   "D_n": 512,
+   "D_sha256": "e540cadc6fddb1d88be2b4f6793d4b393558e95c963bbded25103c83528edc39",
+   "D_labelled": 275,
+   "train_n": 403,
+   "train_removed_as_D": 0,
+   "n_discovery": 201,
+   "n_prune": 202
+  },
+  "e58/copy": {
+   "format": "kv",
+   "D_n": 512,
+   "D_sha256": "d888de726db29bbdb3eba950bb1079fdaf49b3d9610579f3b03039297d5beb6a",
+   "D_labelled": 279,
+   "train_n": 1214,
+   "train_removed_as_D": 0,
+   "n_discovery": 300,
+   "n_prune": 500
+  },
+  "e62/copy": {
+   "format": "last",
+   "D_n": 512,
+   "D_sha256": "b0d731869db06034b4c2fc0fecc8564fea505b220bbdb6c04636d17edb11401c",
+   "D_labelled": 204,
+   "train_n": 800,
+   "train_removed_as_D": 0,
+   "n_discovery": 300,
+   "n_prune": 500
+  }
+ },
+ "hook_floor": {
+  "kv": {
+   "task": "e58/copy",
+   "sites": 13392,
+   "max_dlogit": 0.0,
+   "n_flipped": 0,
+   "max_dlogodds": 0.0,
+   "tol": {
+    "logit": 0.0,
+    "logodds": 0.0
+   }
+  },
+  "next": {
+   "task": "e53/lowercase",
+   "sites": 24000,
+   "max_dlogit": 0.0,
+   "n_flipped": 0,
+   "max_dlogodds": 0.0,
+   "tol": {
+    "logit": 0.0,
+    "logodds": 0.0
+   }
+  },
+  "last": {
+   "task": "e62/copy",
+   "sites": 9792,
+   "max_dlogit": 0.0,
+   "n_flipped": 0,
+   "max_dlogodds": 0.0,
+   "tol": {
+    "logit": 0.0,
+    "logodds": 0.0
+   }
+  }
+ },
+ "do_nothing": {
+  "W0": {
+   "n_correct": 0,
+   "n": 279,
+   "acc": 0.0,
+   "mean_logodds": -8.9169081428145
+  },
+  "ft": {
+   "n_correct": 0,
+   "n": 279,
+   "acc": 0.0,
+   "mean_logodds": -8.9169081428145
+  },
+  "gain": {
+   "count": 0,
+   "logodds": 0.0
+  },
+  "faith": {
+   "rows": "D",
+   "F_M": 0,
+   "F_Cir": 2,
+   "faithfulness": null,
+   "random": [
+    {
+     "F": 2,
+     "faithfulness": null,
+     "overlap": 0.5
+    },
+    {
+     "F": 0,
+     "faithfulness": null,
+     "overlap": 0.0
+    },
+    {
+     "F": 0,
+     "faithfulness": null,
+     "overlap": 0.0
+    },
+    {
+     "F": 0,
+     "faithfulness": null,
+     "overlap": 0.0
+    },
+    {
+     "F": 0,
+     "faithfulness": null,
+     "overlap": 0.0
+    },
+    {
+     "F": 0,
+     "faithfulness": null,
+     "overlap": 0.5
+    },
+    {
+     "F": 0,
+     "faithfulness": null,
+     "overlap": 0.0
+    },
+    {
+     "F": 0,
+     "faithfulness": null,
+     "overlap": 0.0
+    },
+    {
+     "F": 0,
+     "faithfulness": null,
+     "overlap": 0.0
+    },
+    {
+     "F": 0,
+     "faithfulness": null,
+     "overlap": 0.0
+    }
+   ]
+  },
+  "groups_pruned": {
+   "A": [
+    [
+     3,
+     4,
+     0
+    ],
+    [
+     2,
+     3,
+     0
+    ]
+   ],
+   "B": [],
+   "C": []
+  },
+  "same_as_E288": {
+   "W0": false,
+   "ft": false,
+   "gain": true,
+   "groups_pruned": false
+  }
+ },
+ "two_layer": {
+  "receiver": [
+   1,
+   1
+  ],
+  "attention_to_marker": [
+   0.3219308853149414,
+   0.7867739796638489,
+   0.20373913645744324,
+   0.2479802668094635,
+   0.07465198636054993,
+   0.11023259162902832
+  ],
+  "sender": [
+   0,
+   4
+  ],
+  "delta_norm": 0.3498042821884155,
+  "floor": {
+   "v_marker": 0.0,
+   "v_read": 0.0,
+   "o_read_rel1": 0.0,
+   "o_read_rel0": 0.0,
+   "logits_rel0": 0.0,
+   "logodds_rel0": 0.0
+  },
+  "got": {
+   "v_marker": 0.09881973266601562,
+   "v_read": 0.0,
+   "o_read_rel1": 0.07884234189987183,
+   "o_read_rel0": 0.0,
+   "logits_rel0": 0.0,
+   "logodds_rel0": 0.0,
+   "n_flipped_rel0": 0
+  },
+  "checks": {
+   "v at the marker changes": true,
+   "v at the read stays": true,
+   "marker edit changes r's read output": true,
+   "read edit leaves r's read output": true,
+   "read edit leaves the logits": true,
+   "read edit leaves the log-odds": true,
+   "read edit leaves the correct counts": true
+  }
+ },
+ "plant_v": {
+  "head": [
+   3,
+   4
+  ],
+  "other": [
+   1,
+   1
+  ],
+  "step": 1000,
+  "gains": {
+   "10": {
+    "count": 0,
+    "logodds": 0.08238460000697856
+   },
+   "30": {
+    "count": 0,
+    "logodds": 0.23760657840304944
+   },
+   "100": {
+    "count": 0,
+    "logodds": 0.6814867894709327
+   },
+   "300": {
+    "count": 0,
+    "logodds": 1.4215900769797702
+   },
+   "1000": {
+    "count": 7,
+    "logodds": 2.292809324025253
+   }
+  },
+  "train_s": 71.06993317604065,
+  "groups_pruned": {
+   "A": [
+    [
+     3,
+     4,
+     0
+    ],
+    [
+     3,
+     1,
+     0
+    ]
+   ],
+   "B": [
+    [
+     2,
+     0,
+     0
+    ],
+    [
+     2,
+     5,
+     0
+    ]
+   ],
+   "C": []
+  },
+  "faith": {
+   "rows": "D",
+   "F_M": 7,
+   "F_Cir": 57,
+   "faithfulness": 8.142857142857142,
+   "random": [
+    {
+     "F": 45,
+     "faithfulness": 6.428571428571429,
+     "overlap": 0.25
+    },
+    {
+     "F": 0,
+     "faithfulness": 0.0,
+     "overlap": 0.0
+    },
+    {
+     "F": 0,
+     "faithfulness": 0.0,
+     "overlap": 0.25
+    },
+    {
+     "F": 0,
+     "faithfulness": 0.0,
+     "overlap": 0.0
+    },
+    {
+     "F": 0,
+     "faithfulness": 0.0,
+     "overlap": 0.5
+    },
+    {
+     "F": 5,
+     "faithfulness": 0.7142857142857143,
+     "overlap": 0.25
+    },
+    {
+     "F": 0,
+     "faithfulness": 0.0,
+     "overlap": 0.0
+    },
+    {
+     "F": 0,
+     "faithfulness": 0.0,
+     "overlap": 0.0
+    },
+    {
+     "F": 0,
+     "faithfulness": 0.0,
+     "overlap": 0.25
+    },
+    {
+     "F": 0,
+     "faithfulness": 0.0,
+     "overlap": 0.0
+    }
+   ]
+  },
+  "cmap_A": {
+   "acc": 1.0,
+   "logodds": 1.0
+  },
+  "same_as_E288": {
+   "head": true,
+   "step": true,
+   "groups_pruned": false,
+   "cmap_A": true
+  }
+ },
+ "misses": [],
+ "done": true
+}

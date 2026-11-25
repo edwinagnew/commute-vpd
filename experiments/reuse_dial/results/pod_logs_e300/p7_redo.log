@@ -1,0 +1,506 @@
+E300 (P2.63 reuse dial) pod ['7', '12'] tag p7; settings {'tasks': ('sequence', 'brackets', 'addition', 'lowercase'), 'seeds': (0, 1, 2), 'eb_seeds': (0, 1, 2), 'betas': (10000, 100000, 1000000), 'target': {'sequence': 5.168577587977052, 'brackets': 8.668137642244497, 'addition': 6.045211089154084, 'lowercase': 1.1894651676177979}, 'lr_gain': 0.003, 'lr_res': 3e-05, 'grad_clip': 1, 'batch': {'sequence': 32, 'brackets': 32, 'addition': 32, 'lowercase': 8}, 'cap': {'sequence': 300, 'brackets': 490, 'addition': 310, 'lowercase': 3000}, 'kl_rows': 64, 'kl_batch': 8, 'gain_batch': 64, 'rand_sd': 0.05, 'random_seed': 263001, 'rehearse_task': 'addition', 'rehearse_cap': 40, 'rehearse_eb_arms': ('g', 'ft'), 'rehearse_betas': (10, 100, 1000, 10000, 100000, 1000000), 'plateau_frac': 0.9, 't_ref': {'sequence': 6.004814445351561, 'brackets': 8.668137642244497, 'addition': 6.045211089154084, 'lowercase': 1.6425441493988038}}; thresholds {'equiv_tol': 0.001, 'perm_min': 0.1, 'equiv_source': "E231's and E282's stage-0 bug bars (gain_only, gain_share predictions.json): an fp32 reassociation gives ~1e-6, a wrong orientation order 1", 'step1_max': 0.75, 'step1_max_source': "LOOSENED 2026-11-24 after it failed: was 0.5, sourced from the procedural tasks (27-49 steps to E256 gain); pod p11 (lowercase s2) stopped at step 1 gains 0.713 vs 0.5 x target 1.189 = 0.595. The rehearsal measured lowercase step 1 at 0.776 on every arm (calibrate disables this check) and its arms still spread the residual share 0.86/0.32/0.05 at the three betas, so the bar's premise (no steps left to separate the arms) does not hold for lowercase. Procedural step 1 is at most 0.21 x target. Approved by whip-lead 11-24; replaced for lowercase by rule.spread_tasks", 'eb_gain_min': 0.42, 'eb_gain_min_source': 'MEASURED in the E300 rehearsal: half the lower of stage 0 (e) E_b over changed variables of the random gains state, 0.8397 (addition, 4090) and 0.8669 (lowercase, H100); Gaussian 0.0127 and 0.0143. A bug bar, not a reading', 'eb_random_max': 0.05, 'eb_random_max_source': "4 x the largest E_b of E268's matched Gaussians on these tasks (0.0129, experiments/kstar_needed/results/summary.json p256/*_random_*)", 'min_gain': 1, 'min_gain_source': "commute.local_faith.MIN_GAIN: a Gaussian reaching it stops the job (E256's do-nothing stop); a task whose target falls under it is dropped"}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+pod 7 of 12: items [('addition', 1)]
+    site 0 h.0.attn.k_proj: 4 variables x 64 pairs, 0 needed; 256 cases in 0 s (7489/s)
+    site 1 h.0.attn.o_proj: 4 variables x 64 pairs, 0 needed; 512 cases in 0 s (7919/s)
+    site 2 h.0.attn.q_proj: 4 variables x 64 pairs, 0 needed; 768 cases in 0 s (8086/s)
+    site 3 h.0.attn.v_proj: 4 variables x 64 pairs, 0 needed; 1024 cases in 0 s (8175/s)
+    site 4 h.0.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 1280 cases in 0 s (8181/s)
+    site 5 h.0.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 1536 cases in 0 s (8194/s)
+    site 6 h.1.attn.k_proj: 4 variables x 64 pairs, 0 needed; 1792 cases in 0 s (8507/s)
+    site 7 h.1.attn.o_proj: 4 variables x 64 pairs, 0 needed; 2048 cases in 0 s (8759/s)
+    site 8 h.1.attn.q_proj: 4 variables x 64 pairs, 0 needed; 2304 cases in 0 s (8966/s)
+    site 9 h.1.attn.v_proj: 4 variables x 64 pairs, 0 needed; 2560 cases in 0 s (9138/s)
+    site 10 h.1.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 2816 cases in 0 s (9250/s)
+    site 11 h.1.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 3072 cases in 0 s (9354/s)
+    site 12 h.2.attn.k_proj: 4 variables x 64 pairs, 0 needed; 3328 cases in 0 s (9660/s)
+    site 13 h.2.attn.o_proj: 4 variables x 64 pairs, 0 needed; 3584 cases in 0 s (9938/s)
+    site 14 h.2.attn.q_proj: 4 variables x 64 pairs, 0 needed; 3840 cases in 0 s (10194/s)
+    site 15 h.2.attn.v_proj: 4 variables x 64 pairs, 0 needed; 4096 cases in 0 s (10427/s)
+    site 16 h.2.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 4352 cases in 0 s (10618/s)
+    site 17 h.2.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 4608 cases in 0 s (10800/s)
+    site 18 h.3.attn.k_proj: 4 variables x 64 pairs, 0 needed; 4864 cases in 0 s (11166/s)
+    site 19 h.3.attn.o_proj: 4 variables x 64 pairs, 0 needed; 5120 cases in 0 s (11518/s)
+    site 20 h.3.attn.q_proj: 4 variables x 64 pairs, 0 needed; 5376 cases in 0 s (11856/s)
+    site 21 h.3.attn.v_proj: 4 variables x 64 pairs, 0 needed; 5632 cases in 0 s (12181/s)
+    site 22 h.3.mlp.c_fc: 4 variables x 64 pairs, 0 needed; 5888 cases in 0 s (12470/s)
+    site 23 h.3.mlp.down_proj: 4 variables x 64 pairs, 0 needed; 6144 cases in 0 s (12751/s)
+stage 0: {"task": "addition", "card": "NVIDIA H100 80GB HBM3", "bits": {"fp32_equal": true, "autocast_equal": true, "delta_nonzero": 0}, "export": {"equiv": 9.108614904107526e-06, "shuffled": 1.3311322927474976, "hooked_norm": 1358.8973388671875}, "zeros": {"nonzero_numerators": {}, "kl": 0.0}, "do_nothing": {"n_changed": 0, "dd_max": 0.0, "E_b": 1.0}, "construction": {"gains": {"E_b_changed": 0.8396824195533906, "n_changed": 38936, "n_vars": 38938, "size": 0.050661212994628724}, "gauss": {"E_b_changed": 0.01274398211767908, "n_changed": 38936, "n_vars": 38938, "size": 0.05066121299484595}, "identity": {"flips": 0, "max_dev": 4.38690185546875e-05, "min_margin": 0.0025186538696289062, "cases": 6144, "cases_per_s": 12747.23178472497, "n_read_positions": 1, "n_windows": 256, "window_len": 64, "n_vars": 38938}, "est_scan_seconds": 781.9837411244711}}; checks hold
+STAGE 0 DONE
+/root/work/src/commute/dial.py:120: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  if not all(map(math.isfinite, (float(task), float(pen), *gn.values()))):
+[dial] step 1: loss 2.5497 penalty 0 grad_gain 2.37
+[dial] step 2: loss 2.4630 penalty 0 grad_gain 1.31
+[dial] step 3: loss 2.5233 penalty 0 grad_gain 1.87
+[dial] step 4: loss 2.2588 penalty 0 grad_gain 1.27
+[dial] step 5: loss 2.2125 penalty 0 grad_gain 1.1
+[dial] step 6: loss 2.1306 penalty 0 grad_gain 1.48
+[dial] step 7: loss 1.9827 penalty 0 grad_gain 1.15
+[dial] step 8: loss 2.1156 penalty 0 grad_gain 1.19
+[dial] step 9: loss 2.1665 penalty 0 grad_gain 1.57
+[dial] step 10: loss 2.1700 penalty 0 grad_gain 1.71
+[dial] step 11: loss 1.7363 penalty 0 grad_gain 1.67
+[dial] step 12: loss 1.9669 penalty 0 grad_gain 1.2
+[dial] step 13: loss 1.8479 penalty 0 grad_gain 0.79
+[dial] step 14: loss 1.5953 penalty 0 grad_gain 1.26
+[dial] step 15: loss 1.6027 penalty 0 grad_gain 0.846
+[dial] step 16: loss 1.6828 penalty 0 grad_gain 1.48
+[dial] step 17: loss 1.6323 penalty 0 grad_gain 1.05
+[dial] step 18: loss 1.6121 penalty 0 grad_gain 1.46
+[dial] step 19: loss 1.5099 penalty 0 grad_gain 1.54
+[dial] step 20: loss 1.3714 penalty 0 grad_gain 1.79
+[dial] step 21: loss 1.6867 penalty 0 grad_gain 2.75
+[dial] step 22: loss 1.3497 penalty 0 grad_gain 1.4
+[dial] step 23: loss 1.1942 penalty 0 grad_gain 1.02
+[dial] step 24: loss 1.1290 penalty 0 grad_gain 1.71
+[dial] step 25: loss 1.2046 penalty 0 grad_gain 1.26
+[dial] step 26: loss 1.1984 penalty 0 grad_gain 1.47
+[dial] step 27: loss 1.5044 penalty 0 grad_gain 1.86
+[dial] step 28: loss 1.1004 penalty 0 grad_gain 1.3
+[dial] step 29: loss 1.2432 penalty 0 grad_gain 1.17
+[dial] step 30: loss 1.0651 penalty 0 grad_gain 0.992
+[dial] step 31: loss 0.9396 penalty 0 grad_gain 1.38
+[dial] step 32: loss 1.1647 penalty 0 grad_gain 1.09
+[dial] step 33: loss 1.0710 penalty 0 grad_gain 1.14
+[dial] step 34: loss 0.9112 penalty 0 grad_gain 0.91
+[dial] step 35: loss 1.0663 penalty 0 grad_gain 1.81
+[dial] step 36: loss 0.9845 penalty 0 grad_gain 1
+[dial] step 37: loss 0.7307 penalty 0 grad_gain 1.26
+[dial] step 38: loss 0.6431 penalty 0 grad_gain 0.799
+[dial] step 39: loss 0.7472 penalty 0 grad_gain 0.971
+[dial] step 40: loss 0.7301 penalty 0 grad_gain 1.16
+[dial] step 41: loss 0.6043 penalty 0 grad_gain 1.16
+[dial] step 42: loss 0.5374 penalty 0 grad_gain 1.19
+[dial] step 43: loss 0.6423 penalty 0 grad_gain 1.37
+[dial] step 44: loss 0.7374 penalty 0 grad_gain 2.75
+[dial] step 45: loss 0.6250 penalty 0 grad_gain 0.87
+[dial] step 46: loss 0.6392 penalty 0 grad_gain 2.2
+[dial] step 47: loss 0.5791 penalty 0 grad_gain 1.44
+[dial] step 48: loss 0.5863 penalty 0 grad_gain 0.987
+[dial] step 49: loss 0.4237 penalty 0 grad_gain 0.85
+[dial] step 50: loss 0.6994 penalty 0 grad_gain 1.59
+[dial] step 51: loss 0.7144 penalty 0 grad_gain 1.3
+[dial] step 52: loss 0.8369 penalty 0 grad_gain 2.32
+[dial] step 53: loss 0.5410 penalty 0 grad_gain 0.971
+[dial] step 54: loss 0.3845 penalty 0 grad_gain 1.22
+[dial] step 55: loss 0.6207 penalty 0 grad_gain 0.884
+[dial] step 56: loss 0.3672 penalty 0 grad_gain 0.489
+[dial] step 57: loss 0.5656 penalty 0 grad_gain 1.18
+[dial] step 58: loss 0.2440 penalty 0 grad_gain 0.888
+[dial] step 59: loss 0.4485 penalty 0 grad_gain 0.847
+[dial] step 60: loss 0.4012 penalty 0 grad_gain 1.12
+[dial] step 61: loss 0.4035 penalty 0 grad_gain 0.695
+[dial] step 62: loss 0.4586 penalty 0 grad_gain 1
+[dial] step 63: loss 0.4102 penalty 0 grad_gain 0.48
+[dial] step 64: loss 0.4843 penalty 0 grad_gain 0.93
+[dial] step 65: loss 0.3681 penalty 0 grad_gain 0.714
+[dial] step 66: loss 0.4251 penalty 0 grad_gain 1.02
+[dial] step 67: loss 0.3278 penalty 0 grad_gain 0.742
+[dial] step 68: loss 0.3748 penalty 0 grad_gain 0.927
+[dial] step 69: loss 0.4567 penalty 0 grad_gain 1.03
+[dial] step 70: loss 0.4471 penalty 0 grad_gain 0.851
+[dial] step 71: loss 0.3524 penalty 0 grad_gain 1.08
+[dial] step 72: loss 0.1726 penalty 0 grad_gain 0.692
+[dial] step 73: loss 0.3558 penalty 0 grad_gain 0.72
+[dial] step 74: loss 0.2460 penalty 0 grad_gain 0.568
+[dial] step 75: loss 0.4370 penalty 0 grad_gain 0.95
+[dial] step 76: loss 0.1730 penalty 0 grad_gain 0.417
+[dial] step 77: loss 0.2603 penalty 0 grad_gain 0.535
+[dial] step 78: loss 0.2119 penalty 0 grad_gain 0.487
+[dial] step 79: loss 0.2826 penalty 0 grad_gain 0.537
+[dial] step 80: loss 0.2249 penalty 0 grad_gain 0.501
+[dial] step 81: loss 0.2949 penalty 0 grad_gain 0.668
+[dial] step 82: loss 0.2818 penalty 0 grad_gain 0.914
+[dial] step 83: loss 0.2572 penalty 0 grad_gain 0.727
+[dial] step 84: loss 0.1413 penalty 0 grad_gain 0.3
+[dial] step 85: loss 0.2025 penalty 0 grad_gain 0.512
+[dial] step 86: loss 0.2427 penalty 0 grad_gain 0.459
+[dial] step 87: loss 0.2684 penalty 0 grad_gain 0.725
+[dial] step 88: loss 0.2557 penalty 0 grad_gain 0.48
+[dial] step 89: loss 0.2504 penalty 0 grad_gain 0.765
+[dial] step 90: loss 0.1770 penalty 0 grad_gain 0.411
+[dial] step 91: loss 0.2986 penalty 0 grad_gain 0.857
+[dial] step 92: loss 0.1228 penalty 0 grad_gain 0.357
+[dial] step 93: loss 0.2024 penalty 0 grad_gain 0.449
+[dial] step 94: loss 0.2036 penalty 0 grad_gain 0.627
+[dial] step 95: loss 0.1388 penalty 0 grad_gain 0.478
+[dial] step 96: loss 0.1886 penalty 0 grad_gain 0.53
+[dial] step 97: loss 0.2138 penalty 0 grad_gain 1.04
+[dial] step 98: loss 0.2057 penalty 0 grad_gain 0.429
+[dial] step 99: loss 0.1653 penalty 0 grad_gain 0.365
+[dial] step 100: loss 0.0746 penalty 0 grad_gain 0.341
+[dial] step 101: loss 0.2085 penalty 0 grad_gain 0.458
+[dial] step 102: loss 0.0876 penalty 0 grad_gain 0.415
+[dial] step 103: loss 0.1583 penalty 0 grad_gain 0.574
+[dial] step 104: loss 0.1183 penalty 0 grad_gain 0.406
+[dial] step 105: loss 0.0649 penalty 0 grad_gain 0.324
+[dial] step 106: loss 0.0875 penalty 0 grad_gain 0.272
+[dial] step 107: loss 0.1330 penalty 0 grad_gain 0.6
+[dial] step 108: loss 0.1009 penalty 0 grad_gain 0.381
+[dial] step 109: loss 0.1032 penalty 0 grad_gain 0.288
+[addition_g_s1 train] {"arm": "g", "beta": "inf", "seed": 1, "target": 6.045211089154084, "steps": 109, "reached": true, "gain_hooked": 6.060694210231304, "gain_gains_alone": 6.060694210231304, "residual_share": 0.0, "residual_size": 0.0, "size": 0.07367427633342918, "seconds": 24.45683479309082, "s_per_step": 0.22437463550392642, "peak_gpu_gb": 6.379904270172119, "file": "experiments/reuse_dial/results/large/states/addition_g_s1.pt", "sha256": "0ac4d34a6c02784ad41bd0166ea329ee34924f03c196d9bdede8b76337ee1bf0", "mb": 108.007643699646}
+[dial] step 1: loss 2.5497 penalty 0 grad_gain 2.37 grad_res 58.6
+[dial] step 2: loss 2.3689 penalty 1.31e-06 grad_gain 1.05 grad_res 43.4
+[dial] step 3: loss 1.8972 penalty 1.48e-06 grad_gain 1.39 grad_res 44.9
+[dial] step 4: loss 1.6519 penalty 1.56e-06 grad_gain 1.08 grad_res 39.2
+[dial] step 5: loss 1.6092 penalty 1.47e-06 grad_gain 1.1 grad_res 37.2
+[dial] step 6: loss 1.6161 penalty 1.35e-06 grad_gain 1.23 grad_res 42.2
+[dial] step 7: loss 1.1498 penalty 1.2e-06 grad_gain 1.53 grad_res 44.8
+[dial] step 8: loss 1.5656 penalty 1.1e-06 grad_gain 1.62 grad_res 48.6
+[dial] step 9: loss 1.2460 penalty 1.08e-06 grad_gain 1.57 grad_res 45.6
+[dial] step 10: loss 0.8650 penalty 1.1e-06 grad_gain 1.3 grad_res 39
+[dial] step 11: loss 0.7543 penalty 1.14e-06 grad_gain 1.27 grad_res 40.4
+[dial] step 12: loss 0.8126 penalty 1.13e-06 grad_gain 1.31 grad_res 45.6
+[dial] step 13: loss 0.6398 penalty 1.1e-06 grad_gain 1.4 grad_res 39.5
+[dial] step 14: loss 0.6264 penalty 1.06e-06 grad_gain 1.28 grad_res 45.8
+[dial] step 15: loss 0.7992 penalty 1.02e-06 grad_gain 1.38 grad_res 52.3
+[dial] step 16: loss 0.9194 penalty 1.02e-06 grad_gain 0.907 grad_res 38.2
+[dial] step 17: loss 0.7247 penalty 9.81e-07 grad_gain 1.63 grad_res 50
+[dial] step 18: loss 0.9019 penalty 9.48e-07 grad_gain 1.7 grad_res 43.9
+[dial] step 19: loss 0.8171 penalty 9.05e-07 grad_gain 0.851 grad_res 30.9
+[dial] step 20: loss 0.6430 penalty 8.33e-07 grad_gain 1.14 grad_res 38.9
+[dial] step 21: loss 0.6733 penalty 7.92e-07 grad_gain 1.43 grad_res 49.5
+[dial] step 22: loss 0.6935 penalty 7.93e-07 grad_gain 2.07 grad_res 65.3
+[dial] step 23: loss 0.4314 penalty 8.33e-07 grad_gain 1.16 grad_res 38.1
+[dial] step 24: loss 0.4967 penalty 8.48e-07 grad_gain 1.95 grad_res 60.9
+[dial] step 25: loss 0.5015 penalty 8.58e-07 grad_gain 1.54 grad_res 57.6
+[dial] step 26: loss 0.6213 penalty 8.5e-07 grad_gain 2.13 grad_res 70
+[dial] step 27: loss 0.8268 penalty 8.34e-07 grad_gain 1.27 grad_res 56.6
+[dial] step 28: loss 0.7064 penalty 8.16e-07 grad_gain 1.79 grad_res 58.3
+[dial] step 29: loss 0.6997 penalty 8.01e-07 grad_gain 1.27 grad_res 43.8
+[dial] step 30: loss 0.6072 penalty 7.67e-07 grad_gain 1.91 grad_res 60.9
+[dial] step 31: loss 0.3917 penalty 7.43e-07 grad_gain 1.04 grad_res 34.3
+[dial] step 32: loss 0.6068 penalty 7.16e-07 grad_gain 1.59 grad_res 49.1
+[dial] step 33: loss 0.5318 penalty 7.01e-07 grad_gain 1.66 grad_res 59.6
+[dial] step 34: loss 0.6108 penalty 7.08e-07 grad_gain 2.18 grad_res 62.2
+[dial] step 35: loss 0.7430 penalty 7.18e-07 grad_gain 2.53 grad_res 67.8
+[dial] step 36: loss 0.5977 penalty 7.36e-07 grad_gain 1.24 grad_res 45.3
+[dial] step 37: loss 0.5513 penalty 7.36e-07 grad_gain 2.13 grad_res 60.9
+[dial] step 38: loss 0.4457 penalty 7.2e-07 grad_gain 1.62 grad_res 52.9
+[dial] step 39: loss 0.3884 penalty 6.86e-07 grad_gain 0.882 grad_res 32.4
+[dial] step 40: loss 0.4996 penalty 6.34e-07 grad_gain 1.63 grad_res 57.3
+[dial] step 41: loss 0.3954 penalty 6.02e-07 grad_gain 1.29 grad_res 44.5
+[dial] step 42: loss 0.2470 penalty 5.66e-07 grad_gain 0.638 grad_res 24.6
+[dial] step 43: loss 0.2650 penalty 5.04e-07 grad_gain 0.566 grad_res 21.6
+[dial] step 44: loss 0.2583 penalty 4.35e-07 grad_gain 0.979 grad_res 32.5
+[dial] step 45: loss 0.4339 penalty 4.08e-07 grad_gain 1 grad_res 37
+[dial] step 46: loss 0.4782 penalty 4.12e-07 grad_gain 1.99 grad_res 71.3
+[dial] step 47: loss 0.3513 penalty 4.46e-07 grad_gain 0.929 grad_res 38.1
+[dial] step 48: loss 0.5353 penalty 4.66e-07 grad_gain 1.39 grad_res 54.6
+[dial] step 49: loss 0.3639 penalty 4.82e-07 grad_gain 1.57 grad_res 58.9
+[dial] step 50: loss 0.4137 penalty 4.95e-07 grad_gain 0.788 grad_res 31.7
+[dial] step 51: loss 0.2778 penalty 4.76e-07 grad_gain 0.825 grad_res 29.6
+[dial] step 52: loss 0.5192 penalty 4.57e-07 grad_gain 1.52 grad_res 50
+[dial] step 53: loss 0.3217 penalty 4.76e-07 grad_gain 0.894 grad_res 32.2
+[dial] step 54: loss 0.2791 penalty 4.89e-07 grad_gain 1.22 grad_res 43
+[dial] step 55: loss 0.5411 penalty 5.06e-07 grad_gain 1.26 grad_res 44.5
+[dial] step 56: loss 0.2987 penalty 5.17e-07 grad_gain 0.816 grad_res 28.4
+[dial] step 57: loss 0.3924 penalty 4.9e-07 grad_gain 2.07 grad_res 70.5
+[dial] step 58: loss 0.3452 penalty 4.92e-07 grad_gain 2.15 grad_res 78.1
+[dial] step 59: loss 0.6049 penalty 5.14e-07 grad_gain 2.21 grad_res 84.3
+[dial] step 60: loss 0.2800 penalty 5.42e-07 grad_gain 0.937 grad_res 33.9
+[dial] step 61: loss 0.2148 penalty 5.32e-07 grad_gain 1.09 grad_res 43.7
+[dial] step 62: loss 0.2127 penalty 5.09e-07 grad_gain 1.31 grad_res 58
+[dial] step 63: loss 0.2338 penalty 4.96e-07 grad_gain 0.824 grad_res 33.3
+[dial] step 64: loss 0.3610 penalty 4.67e-07 grad_gain 1.39 grad_res 45.8
+[dial] step 65: loss 0.1984 penalty 4.4e-07 grad_gain 0.651 grad_res 23.5
+[dial] step 66: loss 0.2902 penalty 3.96e-07 grad_gain 1.04 grad_res 41.7
+[dial] step 67: loss 0.2634 penalty 3.76e-07 grad_gain 0.708 grad_res 26.4
+[dial] step 68: loss 0.2316 penalty 3.57e-07 grad_gain 0.758 grad_res 28.4
+[dial] step 69: loss 0.2985 penalty 3.52e-07 grad_gain 1.31 grad_res 40.5
+[dial] step 70: loss 0.4197 penalty 3.67e-07 grad_gain 1.75 grad_res 59.7
+[dial] step 71: loss 0.3013 penalty 3.92e-07 grad_gain 0.994 grad_res 35.9
+[dial] step 72: loss 0.1400 penalty 4.05e-07 grad_gain 0.714 grad_res 27.8
+[dial] step 73: loss 0.2320 penalty 3.93e-07 grad_gain 1.05 grad_res 31
+[dial] step 74: loss 0.2952 penalty 3.81e-07 grad_gain 1.15 grad_res 44.9
+[dial] step 75: loss 0.4054 penalty 3.81e-07 grad_gain 1.13 grad_res 38.9
+[dial] step 76: loss 0.2087 penalty 3.81e-07 grad_gain 0.695 grad_res 28.9
+[dial] step 77: loss 0.1990 penalty 3.71e-07 grad_gain 0.972 grad_res 36.3
+[dial] step 78: loss 0.2664 penalty 3.74e-07 grad_gain 1.84 grad_res 60.2
+[dial] step 79: loss 0.2435 penalty 3.88e-07 grad_gain 0.767 grad_res 32.7
+[dial] step 80: loss 0.2541 penalty 3.77e-07 grad_gain 1.02 grad_res 41.8
+[dial] step 81: loss 0.2382 penalty 3.66e-07 grad_gain 0.847 grad_res 31.5
+[dial] step 82: loss 0.1592 penalty 3.53e-07 grad_gain 0.864 grad_res 36.1
+[dial] step 83: loss 0.2844 penalty 3.49e-07 grad_gain 1.24 grad_res 48.5
+[dial] step 84: loss 0.1651 penalty 3.64e-07 grad_gain 0.756 grad_res 31.4
+[dial] step 85: loss 0.1935 penalty 3.76e-07 grad_gain 1.04 grad_res 40.9
+[dial] step 86: loss 0.3866 penalty 3.93e-07 grad_gain 1.7 grad_res 64.6
+[dial] step 87: loss 0.2697 penalty 4.1e-07 grad_gain 0.922 grad_res 35
+[dial] step 88: loss 0.1852 penalty 4.06e-07 grad_gain 0.623 grad_res 21.5
+[dial] step 89: loss 0.2518 penalty 3.7e-07 grad_gain 0.872 grad_res 34.5
+[dial] step 90: loss 0.1556 penalty 3.49e-07 grad_gain 0.551 grad_res 23.2
+[dial] step 91: loss 0.3129 penalty 3.31e-07 grad_gain 1.82 grad_res 57.4
+[dial] step 92: loss 0.1732 penalty 3.46e-07 grad_gain 1.84 grad_res 92.6
+[dial] step 93: loss 0.5005 penalty 3.93e-07 grad_gain 1.92 grad_res 68.5
+[dial] step 94: loss 0.4407 penalty 4.37e-07 grad_gain 1.86 grad_res 75.9
+[dial] step 95: loss 0.2809 penalty 4.66e-07 grad_gain 1.46 grad_res 51.1
+[dial] step 96: loss 0.4615 penalty 4.71e-07 grad_gain 2.79 grad_res 108
+[dial] step 97: loss 0.3971 penalty 4.82e-07 grad_gain 2.51 grad_res 94
+[dial] step 98: loss 0.2198 penalty 4.88e-07 grad_gain 0.661 grad_res 27.7
+[dial] step 99: loss 0.3765 penalty 4.33e-07 grad_gain 1.1 grad_res 38.5
+[dial] step 100: loss 0.0792 penalty 3.82e-07 grad_gain 0.386 grad_res 17.3
+[dial] step 101: loss 0.1623 penalty 3.12e-07 grad_gain 0.487 grad_res 18.3
+[dial] step 102: loss 0.0964 penalty 2.64e-07 grad_gain 0.598 grad_res 22.9
+[dial] step 103: loss 0.1510 penalty 2.49e-07 grad_gain 0.948 grad_res 30.4
+[dial] step 104: loss 0.1781 penalty 2.64e-07 grad_gain 0.926 grad_res 37.5
+[dial] step 105: loss 0.1368 penalty 2.92e-07 grad_gain 1.1 grad_res 38.7
+[dial] step 106: loss 0.0815 penalty 3.14e-07 grad_gain 0.445 grad_res 17.5
+[dial] step 107: loss 0.3097 penalty 2.86e-07 grad_gain 1.68 grad_res 59.7
+[dial] step 108: loss 0.1598 penalty 2.76e-07 grad_gain 1.22 grad_res 38.6
+[dial] step 109: loss 0.1926 penalty 2.73e-07 grad_gain 0.925 grad_res 36.5
+[dial] step 110: loss 0.1997 penalty 2.71e-07 grad_gain 1.1 grad_res 42.3
+[dial] step 111: loss 0.2149 penalty 2.8e-07 grad_gain 1.23 grad_res 52.6
+[dial] step 112: loss 0.2113 penalty 2.93e-07 grad_gain 1.32 grad_res 58
+[dial] step 113: loss 0.1376 penalty 3.03e-07 grad_gain 0.485 grad_res 21.7
+[dial] step 114: loss 0.1594 penalty 2.7e-07 grad_gain 0.541 grad_res 22.3
+[dial] step 115: loss 0.1347 penalty 2.3e-07 grad_gain 0.75 grad_res 27.1
+[dial] step 116: loss 0.0826 penalty 2.21e-07 grad_gain 0.269 grad_res 12.2
+[dial] step 117: loss 0.0956 penalty 1.93e-07 grad_gain 0.256 grad_res 13.3
+[addition_b1e+06_s1 train] {"arm": "b1e+06", "beta": 1000000, "seed": 1, "target": 6.045211089154084, "steps": 117, "reached": true, "gain_hooked": 6.196140855550766, "gain_gains_alone": 4.237698249518871, "residual_share": 0.31607457798146066, "residual_size": 0.0004149597931699331, "size": 0.05836107447962172, "seconds": 30.807156085968018, "s_per_step": 0.26330903452685755, "peak_gpu_gb": 6.965841770172119, "file": "experiments/reuse_dial/results/large/states/addition_b1e+06_s1.pt", "sha256": "db5b8e7cac52d8f0f335a7960324c417b08251fa9d2c547627e4ceac6ae43cfb", "mb": 108.00778675079346}
+[dial] step 1: loss 2.5497 penalty 0 grad_gain 2.37 grad_res 58.6
+[dial] step 2: loss 2.3689 penalty 1.31e-06 grad_gain 1.05 grad_res 40.3
+[dial] step 3: loss 1.8295 penalty 2.84e-06 grad_gain 1.27 grad_res 38.9
+[dial] step 4: loss 1.7999 penalty 4.28e-06 grad_gain 1.33 grad_res 38.8
+[dial] step 5: loss 1.7692 penalty 5.2e-06 grad_gain 1.27 grad_res 34.5
+[dial] step 6: loss 1.6046 penalty 5.87e-06 grad_gain 0.764 grad_res 24.5
+[dial] step 7: loss 1.1162 penalty 6.29e-06 grad_gain 0.985 grad_res 27.2
+[dial] step 8: loss 1.5686 penalty 6.58e-06 grad_gain 1.27 grad_res 31.5
+[dial] step 9: loss 1.0964 penalty 6.84e-06 grad_gain 0.787 grad_res 23.6
+[dial] step 10: loss 0.9193 penalty 7.04e-06 grad_gain 1.18 grad_res 35.7
+[dial] step 11: loss 0.7505 penalty 7.27e-06 grad_gain 0.654 grad_res 15.9
+[dial] step 12: loss 0.5729 penalty 7.26e-06 grad_gain 0.526 grad_res 18.2
+[dial] step 13: loss 0.6017 penalty 7.13e-06 grad_gain 0.634 grad_res 18.6
+[dial] step 14: loss 0.5473 penalty 6.93e-06 grad_gain 0.904 grad_res 27.5
+[dial] step 15: loss 0.6326 penalty 6.77e-06 grad_gain 1.13 grad_res 28.9
+[dial] step 16: loss 0.7027 penalty 6.63e-06 grad_gain 0.872 grad_res 26.5
+[dial] step 17: loss 0.5623 penalty 6.54e-06 grad_gain 0.732 grad_res 27.2
+[dial] step 18: loss 0.6464 penalty 6.45e-06 grad_gain 1.35 grad_res 49.1
+[dial] step 19: loss 0.6368 penalty 6.43e-06 grad_gain 1.36 grad_res 47.8
+[dial] step 20: loss 0.3897 penalty 6.44e-06 grad_gain 0.609 grad_res 21.6
+[dial] step 21: loss 0.2590 penalty 6.38e-06 grad_gain 0.431 grad_res 14.5
+[dial] step 22: loss 0.3722 penalty 6.21e-06 grad_gain 0.733 grad_res 22.7
+[dial] step 23: loss 0.2708 penalty 6.07e-06 grad_gain 0.572 grad_res 17.2
+[dial] step 24: loss 0.1707 penalty 5.85e-06 grad_gain 0.371 grad_res 11.4
+[dial] step 25: loss 0.2553 penalty 5.51e-06 grad_gain 0.533 grad_res 18.3
+[dial] step 26: loss 0.2727 penalty 5.17e-06 grad_gain 0.881 grad_res 28.9
+[dial] step 27: loss 0.3451 penalty 4.92e-06 grad_gain 0.834 grad_res 30.1
+[dial] step 28: loss 0.3778 penalty 4.75e-06 grad_gain 0.604 grad_res 18.9
+[dial] step 29: loss 0.2846 penalty 4.6e-06 grad_gain 0.644 grad_res 17.3
+[dial] step 30: loss 0.1853 penalty 4.45e-06 grad_gain 0.506 grad_res 15.7
+[dial] step 31: loss 0.1465 penalty 4.29e-06 grad_gain 0.288 grad_res 8.54
+[dial] step 32: loss 0.2496 penalty 4.05e-06 grad_gain 0.81 grad_res 21.2
+[dial] step 33: loss 0.2341 penalty 3.87e-06 grad_gain 0.625 grad_res 26.2
+[dial] step 34: loss 0.2152 penalty 3.75e-06 grad_gain 0.992 grad_res 34.8
+[dial] step 35: loss 0.2719 penalty 3.69e-06 grad_gain 1.01 grad_res 32.4
+[dial] step 36: loss 0.2853 penalty 3.68e-06 grad_gain 0.888 grad_res 30
+[dial] step 37: loss 0.2014 penalty 3.69e-06 grad_gain 0.699 grad_res 22.1
+[dial] step 38: loss 0.0977 penalty 3.69e-06 grad_gain 0.441 grad_res 14.7
+[dial] step 39: loss 0.1044 penalty 3.67e-06 grad_gain 0.447 grad_res 15.8
+[dial] step 40: loss 0.1643 penalty 3.62e-06 grad_gain 0.665 grad_res 21.8
+[dial] step 41: loss 0.0926 penalty 3.59e-06 grad_gain 0.579 grad_res 19.4
+[addition_b100000_s1 train] {"arm": "b100000", "beta": 100000, "seed": 1, "target": 6.045211089154084, "steps": 41, "reached": true, "gain_hooked": 6.136931840330362, "gain_gains_alone": 0.7190293185412884, "residual_share": 0.8828357007623892, "residual_size": 0.0018894817458172451, "size": 0.023017260575969156, "seconds": 10.949260473251343, "s_per_step": 0.2670551509391971, "peak_gpu_gb": 6.965841770172119, "file": "experiments/reuse_dial/results/large/states/addition_b100000_s1.pt", "sha256": "4785c5a5400362b098b3bf0c068aa86a98744f14e9ba794884283c0de04b326e", "mb": 108.00781536102295}
+[dial] step 1: loss 2.5497 penalty 0 grad_gain 2.37 grad_res 58.6
+[dial] step 2: loss 2.3689 penalty 1.31e-06 grad_gain 1.05 grad_res 40.2
+[dial] step 3: loss 1.8289 penalty 3.1e-06 grad_gain 1.26 grad_res 38.6
+[dial] step 4: loss 1.7990 penalty 5.09e-06 grad_gain 1.32 grad_res 38.2
+[dial] step 5: loss 1.7888 penalty 6.85e-06 grad_gain 1.29 grad_res 34.8
+[dial] step 6: loss 1.6086 penalty 8.5e-06 grad_gain 0.755 grad_res 23.9
+[dial] step 7: loss 1.1047 penalty 1e-05 grad_gain 0.897 grad_res 25
+[dial] step 8: loss 1.5828 penalty 1.15e-05 grad_gain 1.3 grad_res 31.7
+[dial] step 9: loss 1.0800 penalty 1.3e-05 grad_gain 0.706 grad_res 21
+[dial] step 10: loss 0.9100 penalty 1.44e-05 grad_gain 1.12 grad_res 32.8
+[dial] step 11: loss 0.7700 penalty 1.58e-05 grad_gain 0.612 grad_res 15.2
+[dial] step 12: loss 0.5581 penalty 1.7e-05 grad_gain 0.446 grad_res 14.1
+[dial] step 13: loss 0.6159 penalty 1.81e-05 grad_gain 0.598 grad_res 16.9
+[dial] step 14: loss 0.5424 penalty 1.9e-05 grad_gain 0.735 grad_res 23.1
+[dial] step 15: loss 0.6326 penalty 1.99e-05 grad_gain 0.993 grad_res 27.3
+[dial] step 16: loss 0.7358 penalty 2.08e-05 grad_gain 0.865 grad_res 27
+[dial] step 17: loss 0.5338 penalty 2.16e-05 grad_gain 0.573 grad_res 19.2
+[dial] step 18: loss 0.6809 penalty 2.24e-05 grad_gain 1.14 grad_res 41.5
+[dial] step 19: loss 0.6284 penalty 2.31e-05 grad_gain 1.32 grad_res 51.1
+[dial] step 20: loss 0.3644 penalty 2.37e-05 grad_gain 0.565 grad_res 18.6
+[dial] step 21: loss 0.2247 penalty 2.43e-05 grad_gain 0.247 grad_res 8.18
+[dial] step 22: loss 0.4034 penalty 2.46e-05 grad_gain 0.773 grad_res 22.9
+[dial] step 23: loss 0.2235 penalty 2.5e-05 grad_gain 0.211 grad_res 7.08
+[dial] step 24: loss 0.1425 penalty 2.51e-05 grad_gain 0.251 grad_res 8.83
+[dial] step 25: loss 0.2440 penalty 2.51e-05 grad_gain 0.637 grad_res 19.2
+[dial] step 26: loss 0.2011 penalty 2.51e-05 grad_gain 0.545 grad_res 17
+[dial] step 27: loss 0.2554 penalty 2.51e-05 grad_gain 0.698 grad_res 22.4
+[dial] step 28: loss 0.5471 penalty 2.52e-05 grad_gain 1.1 grad_res 36.1
+[dial] step 29: loss 0.3004 penalty 2.53e-05 grad_gain 0.486 grad_res 17
+[dial] step 30: loss 0.1627 penalty 2.53e-05 grad_gain 0.262 grad_res 9.24
+[dial] step 31: loss 0.2371 penalty 2.53e-05 grad_gain 0.447 grad_res 13.4
+[addition_b10000_s1 train] {"arm": "b10000", "beta": 10000, "seed": 1, "target": 6.045211089154084, "steps": 31, "reached": true, "gain_hooked": 6.05131546780467, "gain_gains_alone": 0.6166964545845985, "residual_share": 0.8980888605352569, "residual_size": 0.005022228291394754, "size": 0.019759701189467262, "seconds": 9.212019681930542, "s_per_step": 0.2971619406054097, "peak_gpu_gb": 6.965841770172119, "file": "experiments/reuse_dial/results/large/states/addition_b10000_s1.pt", "sha256": "e72207b1c6738fcc71d9a62231238a29b65913452937e92a75eb441c9f85d39a", "mb": 108.00778675079346}
+[dial] step 1: loss 2.5497 penalty 0 grad_res 58.6
+[dial] step 2: loss 2.3763 penalty 0 grad_res 42.1
+[dial] step 3: loss 1.8873 penalty 0 grad_res 40.8
+[dial] step 4: loss 1.7180 penalty 0 grad_res 35.1
+[dial] step 5: loss 1.7263 penalty 0 grad_res 34.4
+[dial] step 6: loss 1.6551 penalty 0 grad_res 27.8
+[dial] step 7: loss 1.0916 penalty 0 grad_res 25.2
+[dial] step 8: loss 1.5363 penalty 0 grad_res 30.3
+[dial] step 9: loss 1.1084 penalty 0 grad_res 23.1
+[dial] step 10: loss 0.9698 penalty 0 grad_res 39.1
+[dial] step 11: loss 0.7906 penalty 0 grad_res 18
+[dial] step 12: loss 0.5439 penalty 0 grad_res 12
+[dial] step 13: loss 0.6156 penalty 0 grad_res 17.2
+[dial] step 14: loss 0.5326 penalty 0 grad_res 20.9
+[dial] step 15: loss 0.6428 penalty 0 grad_res 27.3
+[dial] step 16: loss 0.7386 penalty 0 grad_res 26.7
+[dial] step 17: loss 0.5818 penalty 0 grad_res 20.9
+[dial] step 18: loss 0.7618 penalty 0 grad_res 49
+[dial] step 19: loss 0.6224 penalty 0 grad_res 28.6
+[dial] step 20: loss 0.4278 penalty 0 grad_res 26.4
+[dial] step 21: loss 0.2820 penalty 0 grad_res 14.8
+[dial] step 22: loss 0.4211 penalty 0 grad_res 20.2
+[dial] step 23: loss 0.2986 penalty 0 grad_res 10.5
+[dial] step 24: loss 0.1656 penalty 0 grad_res 10.4
+[dial] step 25: loss 0.2830 penalty 0 grad_res 17.9
+[dial] step 26: loss 0.3072 penalty 0 grad_res 27.2
+[dial] step 27: loss 0.3975 penalty 0 grad_res 37.7
+[dial] step 28: loss 0.4518 penalty 0 grad_res 24.9
+[dial] step 29: loss 0.3119 penalty 0 grad_res 11.5
+[dial] step 30: loss 0.2241 penalty 0 grad_res 12.8
+[dial] step 31: loss 0.2060 penalty 0 grad_res 8.92
+[dial] step 32: loss 0.4034 penalty 0 grad_res 26
+[dial] step 33: loss 0.1754 penalty 0 grad_res 13.4
+[addition_ft_s1 train] {"arm": "ft", "beta": 0.0, "seed": 1, "target": 6.045211089154084, "steps": 33, "reached": true, "gain_hooked": 6.048010837286711, "gain_gains_alone": 0.0, "residual_share": 1.0, "residual_size": 0.007288743426609896, "size": 0.007288743426609896, "seconds": 3.805845022201538, "s_per_step": 0.11532865871082652, "peak_gpu_gb": 6.3519439697265625, "file": "experiments/reuse_dial/results/large/states/addition_ft_s1.pt", "sha256": "80d67968eed9e6aaa5be4109ea1ab69ed5f59feaedca3f03fe807969b22b46c2", "mb": 108.00767230987549}
+[addition_g_s1 read] {"kl": 0.20198163090310206, "lens": {"D": 0.03769819675504776, "G": 6.0606952123343945, "removed": [0.04656920209527016, 0.01622147485613823, 0.05942024290561676, 0.13562456890940666, 0.22847728058695793], "share": [0.007683805316673089, 0.002676503979795119, 0.009804195859360812, 0.02237772469293473, 0.03769819675504776]}, "size": 0.07367427633342918, "erank": 480.72656542076277, "gain": {"lo": 6.0606952123343945}, "prior": {"lo": -2.577134821563959}, "neuron": {"k64": {"share": {"lo": -0.06710968777280837}, "numerator": {"lo": -0.40673136338591576}}, "kmatched": {"share": {"lo": -0.0036656769937261314}, "numerator": {"lo": -0.0222165510058403}}}, "untrained": {"share": {"lo": {"svd": 1.027522391723355, "rotated": 0.07712319695956178}}, "numerator": {"lo": {"svd": 6.227500040084124, "rotated": 0.46742019057273865}}}, "read_seconds": 27.40334987640381}
+[addition_b1e+06_s1 read] {"kl": 0.14378413152774894, "lens": {"D": 0.17685615869168314, "G": 6.19614078104496, "removed": [0.005204800516366959, 0.13602780550718307, 0.2102690413594246, 0.65229532122612, 1.095825657248497], "share": [0.0008400068204210791, 0.02195363377205939, 0.03393548481058937, 0.10527445135230004, 0.17685615869168314]}, "size": 0.05836107447962172, "erank": 470.44505477804034, "gain": {"lo": 6.19614078104496}, "prior": {"lo": -2.577134821563959}, "neuron": {"k64": {"share": {"lo": -0.08437489476263957}, "numerator": {"lo": -0.5227987263351679}}, "kmatched": {"share": {"lo": -0.021927701326449056}, "numerator": {"lo": -0.13586712442338467}}}, "untrained": {"share": {"lo": {"svd": 0.6768962587629721, "rotated": -0.13485123030472165}}, "numerator": {"lo": {"svd": 4.1941445134580135, "rotated": -0.8355572074651718}}}, "read_seconds": 33.816349267959595}
+[addition_b100000_s1 read] {"kl": 0.06685463782668767, "lens": {"D": 0.3244044365340693, "G": 6.136931873857975, "removed": [0.0730755478143692, 0.680547472089529, 1.861907348036766, 1.959712851792574, 1.9908479265868664], "share": [0.01190750513716072, 0.11089376354143943, 0.3033938434233066, 0.31933104229827514, 0.3244044365340693]}, "size": 0.023017260575969156, "erank": 467.7628161263182, "gain": {"lo": 6.136931873857975}, "prior": {"lo": -2.577134821563959}, "neuron": {"k64": {"share": {"lo": -0.05145729559572328}, "numerator": {"lo": -0.3157899174839258}}, "kmatched": {"share": {"lo": -0.023173206106484975}, "numerator": {"lo": -0.1422123871743679}}}, "untrained": {"share": {"lo": {"svd": 0.6579294616628184, "rotated": 0.22024387153714686}}, "numerator": {"lo": {"svd": 4.0376682840287685, "rotated": 1.3516216352581978}}}, "read_seconds": 32.18486428260803}
+[addition_b10000_s1 read] {"kl": 0.32250942152481954, "lens": {"D": 0.21956390025665964, "G": 6.051314722746611, "removed": [0.0376843698322773, 0.3355640061199665, 1.3286502622067928, 1.3048808313906193, 1.2800528332591057], "share": [0.00622746817160633, 0.05545307449612512, 0.21956390025665964, 0.21563592230389753, 0.2115330125612946]}, "size": 0.019759701189467262, "erank": 474.52061017941224, "gain": {"lo": 6.051314722746611}, "prior": {"lo": -2.577134821563959}, "neuron": {"k64": {"share": {"lo": -0.08226146440125087}, "numerator": {"lo": -0.4977900106459856}}, "kmatched": {"share": {"lo": -0.05221689055833846}, "numerator": {"lo": -0.315980838611722}}}, "untrained": {"share": {"lo": {"svd": 0.5259328263072058, "rotated": 0.5190562411315685}}, "numerator": {"lo": {"svd": 3.1825850550085306, "rotated": 3.140972673892975}}}, "read_seconds": 31.194648504257202}
+[addition_ft_s1 read] {"kl": 0.4672331257644326, "lens": {"D": 0.15099073780639258, "G": 6.048011887818575, "removed": [0.07211311161518097, 0.5094288177788258, 0.9131937772035599, 0.892706498503685, 0.8801909200847149], "share": [0.011923440785628327, 0.08423078975834634, 0.15099073780639258, 0.14760329758969282, 0.14553392691861694]}, "size": 0.007288743426609896, "erank": 305.1165781876442, "gain": {"lo": 6.048011887818575}, "prior": {"lo": -2.577134821563959}, "neuron": {"k64": {"share": {"lo": -0.07228731910921618}, "numerator": {"lo": -0.43719456531107426}}, "kmatched": {"share": {"lo": -0.04868517132121526}, "numerator": {"lo": -0.29444849491119385}}}, "untrained": {"share": {"lo": {"svd": 0.5264909433563338, "rotated": 0.5917012648473369}}, "numerator": {"lo": {"svd": 3.184223484247923, "rotated": 3.5786162838339806}}}, "read_seconds": 26.76811146736145}
+    site 0 h.0.attn.k_proj: 513 variables x 256 pairs, 2 needed; 131328 cases in 15 s (8800/s)
+    site 1 h.0.attn.o_proj: 1025 variables x 256 pairs, 8 needed; 393728 cases in 45 s (8795/s)
+    site 2 h.0.attn.q_proj: 513 variables x 256 pairs, 0 needed; 525056 cases in 60 s (8797/s)
+    site 3 h.0.attn.v_proj: 1025 variables x 256 pairs, 17 needed; 787456 cases in 89 s (8799/s)
+    site 4 h.0.mlp.c_fc: 3073 variables x 256 pairs, 14 needed; 1574144 cases in 181 s (8696/s)
+    site 5 h.0.mlp.down_proj: 3585 variables x 256 pairs, 16 needed; 2491904 cases in 287 s (8690/s)
+    site 6 h.1.attn.k_proj: 513 variables x 256 pairs, 0 needed; 2623232 cases in 298 s (8800/s)
+    site 7 h.1.attn.o_proj: 1025 variables x 256 pairs, 1 needed; 2885632 cases in 321 s (8996/s)
+    site 8 h.1.attn.q_proj: 513 variables x 256 pairs, 0 needed; 3016960 cases in 332 s (9084/s)
+    site 9 h.1.attn.v_proj: 1025 variables x 256 pairs, 1 needed; 3279360 cases in 355 s (9244/s)
+    site 10 h.1.mlp.c_fc: 3073 variables x 256 pairs, 1 needed; 4066048 cases in 425 s (9571/s)
+    site 11 h.1.mlp.down_proj: 3585 variables x 256 pairs, 1 needed; 4983808 cases in 505 s (9859/s)
+    site 12 h.2.attn.k_proj: 513 variables x 256 pairs, 2 needed; 5115136 cases in 513 s (9966/s)
+    site 13 h.2.attn.o_proj: 1025 variables x 256 pairs, 7 needed; 5377536 cases in 529 s (10171/s)
+    site 14 h.2.attn.q_proj: 513 variables x 256 pairs, 0 needed; 5508864 cases in 536 s (10269/s)
+    site 15 h.2.attn.v_proj: 1025 variables x 256 pairs, 11 needed; 5771264 cases in 552 s (10456/s)
+    site 16 h.2.mlp.c_fc: 3073 variables x 256 pairs, 1 needed; 6557952 cases in 601 s (10919/s)
+    site 17 h.2.mlp.down_proj: 3585 variables x 256 pairs, 2 needed; 7475712 cases in 656 s (11393/s)
+    site 18 h.3.attn.k_proj: 513 variables x 256 pairs, 0 needed; 7607040 cases in 660 s (11520/s)
+    site 19 h.3.attn.o_proj: 1025 variables x 256 pairs, 2 needed; 7869440 cases in 669 s (11770/s)
+    site 20 h.3.attn.q_proj: 513 variables x 256 pairs, 0 needed; 8000768 cases in 673 s (11892/s)
+    site 21 h.3.attn.v_proj: 1025 variables x 256 pairs, 1 needed; 8263168 cases in 681 s (12132/s)
+    site 22 h.3.mlp.c_fc: 3073 variables x 256 pairs, 1 needed; 9049856 cases in 708 s (12780/s)
+    site 23 h.3.mlp.down_proj: 3585 variables x 256 pairs, 6 needed; 9967616 cases in 739 s (13497/s)
+[addition_g_s1 eb] {"E_b_changed": 0.8317886809871614, "n_changed": 38936, "n_vars": 38938, "E_b_K": 0.8075885830864026, "size_K": 94, "n_changed_K": 94, "eb_seconds": 739.2992000579834}
+    site 0 h.0.attn.k_proj: 513 variables x 256 pairs, 3 needed; 131328 cases in 15 s (8856/s)
+    site 1 h.0.attn.o_proj: 1025 variables x 256 pairs, 15 needed; 393728 cases in 44 s (8855/s)
+    site 2 h.0.attn.q_proj: 513 variables x 256 pairs, 2 needed; 525056 cases in 59 s (8855/s)
+    site 3 h.0.attn.v_proj: 1025 variables x 256 pairs, 20 needed; 787456 cases in 89 s (8853/s)
+    site 4 h.0.mlp.c_fc: 3073 variables x 256 pairs, 41 needed; 1574144 cases in 180 s (8749/s)
+    site 5 h.0.mlp.down_proj: 3585 variables x 256 pairs, 54 needed; 2491904 cases in 285 s (8743/s)
+    site 6 h.1.attn.k_proj: 513 variables x 256 pairs, 0 needed; 2623232 cases in 296 s (8853/s)
+    site 7 h.1.attn.o_proj: 1025 variables x 256 pairs, 8 needed; 2885632 cases in 319 s (9052/s)
+    site 8 h.1.attn.q_proj: 513 variables x 256 pairs, 0 needed; 3016960 cases in 330 s (9141/s)
+    site 9 h.1.attn.v_proj: 1025 variables x 256 pairs, 8 needed; 3279360 cases in 353 s (9301/s)
+    site 10 h.1.mlp.c_fc: 3073 variables x 256 pairs, 4 needed; 4066048 cases in 422 s (9630/s)
+    site 11 h.1.mlp.down_proj: 3585 variables x 256 pairs, 4 needed; 4983808 cases in 502 s (9919/s)
+    site 12 h.2.attn.k_proj: 513 variables x 256 pairs, 14 needed; 5115136 cases in 510 s (10026/s)
+    site 13 h.2.attn.o_proj: 1025 variables x 256 pairs, 74 needed; 5377536 cases in 526 s (10232/s)
+    site 14 h.2.attn.q_proj: 513 variables x 256 pairs, 6 needed; 5508864 cases in 533 s (10331/s)
+    site 15 h.2.attn.v_proj: 1025 variables x 256 pairs, 46 needed; 5771264 cases in 549 s (10519/s)
+    site 16 h.2.mlp.c_fc: 3073 variables x 256 pairs, 19 needed; 6557952 cases in 597 s (10986/s)
+    site 17 h.2.mlp.down_proj: 3585 variables x 256 pairs, 27 needed; 7475712 cases in 652 s (11463/s)
+    site 18 h.3.attn.k_proj: 513 variables x 256 pairs, 5 needed; 7607040 cases in 656 s (11591/s)
+    site 19 h.3.attn.o_proj: 1025 variables x 256 pairs, 50 needed; 7869440 cases in 665 s (11842/s)
+    site 20 h.3.attn.q_proj: 513 variables x 256 pairs, 16 needed; 8000768 cases in 669 s (11965/s)
+    site 21 h.3.attn.v_proj: 1025 variables x 256 pairs, 43 needed; 8263168 cases in 677 s (12207/s)
+    site 22 h.3.mlp.c_fc: 3073 variables x 256 pairs, 42 needed; 9049856 cases in 704 s (12857/s)
+    site 23 h.3.mlp.down_proj: 3585 variables x 256 pairs, 43 needed; 9967616 cases in 734 s (13576/s)
+[addition_b1e+06_s1 eb] {"E_b_changed": 0.8111605537393038, "n_changed": 38936, "n_vars": 38938, "E_b_K": 0.8866055708295562, "size_K": 544, "n_changed_K": 544, "eb_seconds": 734.9641177654266}
+    site 0 h.0.attn.k_proj: 513 variables x 256 pairs, 14 needed; 131328 cases in 15 s (8862/s)
+    site 1 h.0.attn.o_proj: 1025 variables x 256 pairs, 45 needed; 393728 cases in 44 s (8857/s)
+    site 2 h.0.attn.q_proj: 513 variables x 256 pairs, 22 needed; 525056 cases in 59 s (8857/s)
+    site 3 h.0.attn.v_proj: 1025 variables x 256 pairs, 32 needed; 787456 cases in 89 s (8858/s)
+    site 4 h.0.mlp.c_fc: 3073 variables x 256 pairs, 143 needed; 1574144 cases in 180 s (8748/s)
+    site 5 h.0.mlp.down_proj: 3585 variables x 256 pairs, 140 needed; 2491904 cases in 285 s (8742/s)
+    site 6 h.1.attn.k_proj: 513 variables x 256 pairs, 3 needed; 2623232 cases in 296 s (8853/s)
+    site 7 h.1.attn.o_proj: 1025 variables x 256 pairs, 32 needed; 2885632 cases in 319 s (9051/s)
+    site 8 h.1.attn.q_proj: 513 variables x 256 pairs, 2 needed; 3016960 cases in 330 s (9140/s)
+    site 9 h.1.attn.v_proj: 1025 variables x 256 pairs, 28 needed; 3279360 cases in 353 s (9301/s)
+    site 10 h.1.mlp.c_fc: 3073 variables x 256 pairs, 30 needed; 4066048 cases in 422 s (9632/s)
+    site 11 h.1.mlp.down_proj: 3585 variables x 256 pairs, 17 needed; 4983808 cases in 502 s (9923/s)
+    site 12 h.2.attn.k_proj: 513 variables x 256 pairs, 35 needed; 5115136 cases in 510 s (10031/s)
+    site 13 h.2.attn.o_proj: 1025 variables x 256 pairs, 204 needed; 5377536 cases in 525 s (10237/s)
+    site 14 h.2.attn.q_proj: 513 variables x 256 pairs, 24 needed; 5508864 cases in 533 s (10335/s)
+    site 15 h.2.attn.v_proj: 1025 variables x 256 pairs, 132 needed; 5771264 cases in 548 s (10524/s)
+    site 16 h.2.mlp.c_fc: 3073 variables x 256 pairs, 77 needed; 6557952 cases in 597 s (10991/s)
+    site 17 h.2.mlp.down_proj: 3585 variables x 256 pairs, 70 needed; 7475712 cases in 652 s (11468/s)
+    site 18 h.3.attn.k_proj: 513 variables x 256 pairs, 139 needed; 7607040 cases in 656 s (11596/s)
+    site 19 h.3.attn.o_proj: 1025 variables x 256 pairs, 108 needed; 7869440 cases in 664 s (11848/s)
+    site 20 h.3.attn.q_proj: 513 variables x 256 pairs, 102 needed; 8000768 cases in 668 s (11971/s)
+    site 21 h.3.attn.v_proj: 1025 variables x 256 pairs, 103 needed; 8263168 cases in 677 s (12213/s)
+    site 22 h.3.mlp.c_fc: 3073 variables x 256 pairs, 63 needed; 9049856 cases in 703 s (12864/s)
+    site 23 h.3.mlp.down_proj: 3585 variables x 256 pairs, 42 needed; 9967616 cases in 734 s (13583/s)
+[addition_b100000_s1 eb] {"E_b_changed": 0.7841879905974104, "n_changed": 38936, "n_vars": 38938, "E_b_K": 0.8576405862329869, "size_K": 1607, "n_changed_K": 1607, "eb_seconds": 734.8382093906403}
+    site 0 h.0.attn.k_proj: 513 variables x 256 pairs, 108 needed; 131328 cases in 15 s (8861/s)
+    site 1 h.0.attn.o_proj: 1025 variables x 256 pairs, 136 needed; 393728 cases in 44 s (8858/s)
+    site 2 h.0.attn.q_proj: 513 variables x 256 pairs, 75 needed; 525056 cases in 59 s (8855/s)
+    site 3 h.0.attn.v_proj: 1025 variables x 256 pairs, 80 needed; 787456 cases in 89 s (8853/s)
+    site 4 h.0.mlp.c_fc: 3073 variables x 256 pairs, 344 needed; 1574144 cases in 180 s (8750/s)
+    site 5 h.0.mlp.down_proj: 3585 variables x 256 pairs, 331 needed; 2491904 cases in 285 s (8744/s)
+    site 6 h.1.attn.k_proj: 513 variables x 256 pairs, 45 needed; 2623232 cases in 296 s (8855/s)
+    site 7 h.1.attn.o_proj: 1025 variables x 256 pairs, 115 needed; 2885632 cases in 319 s (9052/s)
+    site 8 h.1.attn.q_proj: 513 variables x 256 pairs, 30 needed; 3016960 cases in 330 s (9141/s)
+    site 9 h.1.attn.v_proj: 1025 variables x 256 pairs, 90 needed; 3279360 cases in 353 s (9302/s)
+    site 10 h.1.mlp.c_fc: 3073 variables x 256 pairs, 224 needed; 4066048 cases in 422 s (9632/s)
+    site 11 h.1.mlp.down_proj: 3585 variables x 256 pairs, 160 needed; 4983808 cases in 502 s (9922/s)
+    site 12 h.2.attn.k_proj: 513 variables x 256 pairs, 135 needed; 5115136 cases in 510 s (10030/s)
+    site 13 h.2.attn.o_proj: 1025 variables x 256 pairs, 357 needed; 5377536 cases in 525 s (10236/s)
+    site 14 h.2.attn.q_proj: 513 variables x 256 pairs, 61 needed; 5508864 cases in 533 s (10334/s)
+    site 15 h.2.attn.v_proj: 1025 variables x 256 pairs, 375 needed; 5771264 cases in 548 s (10522/s)
+    site 16 h.2.mlp.c_fc: 3073 variables x 256 pairs, 291 needed; 6557952 cases in 597 s (10990/s)
+    site 17 h.2.mlp.down_proj: 3585 variables x 256 pairs, 312 needed; 7475712 cases in 652 s (11466/s)
+    site 18 h.3.attn.k_proj: 513 variables x 256 pairs, 187 needed; 7607040 cases in 656 s (11594/s)
+    site 19 h.3.attn.o_proj: 1025 variables x 256 pairs, 399 needed; 7869440 cases in 664 s (11845/s)
+    site 20 h.3.attn.q_proj: 513 variables x 256 pairs, 123 needed; 8000768 cases in 668 s (11969/s)
+    site 21 h.3.attn.v_proj: 1025 variables x 256 pairs, 443 needed; 8263168 cases in 677 s (12211/s)
+    site 22 h.3.mlp.c_fc: 3073 variables x 256 pairs, 514 needed; 9049856 cases in 704 s (12861/s)
+    site 23 h.3.mlp.down_proj: 3585 variables x 256 pairs, 422 needed; 9967616 cases in 734 s (13580/s)
+[addition_b10000_s1 eb] {"E_b_changed": 0.5636471125230079, "n_changed": 38936, "n_vars": 38938, "E_b_K": 0.5962807750199013, "size_K": 5357, "n_changed_K": 5357, "eb_seconds": 734.7655501365662}
+    site 0 h.0.attn.k_proj: 513 variables x 256 pairs, 4 needed; 131328 cases in 15 s (8855/s)
+    site 1 h.0.attn.o_proj: 1025 variables x 256 pairs, 8 needed; 393728 cases in 44 s (8858/s)
+    site 2 h.0.attn.q_proj: 513 variables x 256 pairs, 6 needed; 525056 cases in 59 s (8858/s)
+    site 3 h.0.attn.v_proj: 1025 variables x 256 pairs, 9 needed; 787456 cases in 89 s (8860/s)
+    site 4 h.0.mlp.c_fc: 3073 variables x 256 pairs, 43 needed; 1574144 cases in 180 s (8754/s)
+    site 5 h.0.mlp.down_proj: 3585 variables x 256 pairs, 46 needed; 2491904 cases in 285 s (8747/s)
+    site 6 h.1.attn.k_proj: 513 variables x 256 pairs, 1 needed; 2623232 cases in 296 s (8859/s)
+    site 7 h.1.attn.o_proj: 1025 variables x 256 pairs, 7 needed; 2885632 cases in 319 s (9057/s)
+    site 8 h.1.attn.q_proj: 513 variables x 256 pairs, 0 needed; 3016960 cases in 330 s (9146/s)
+    site 9 h.1.attn.v_proj: 1025 variables x 256 pairs, 4 needed; 3279360 cases in 352 s (9306/s)
+    site 10 h.1.mlp.c_fc: 3073 variables x 256 pairs, 11 needed; 4066048 cases in 422 s (9635/s)
+    site 11 h.1.mlp.down_proj: 3585 variables x 256 pairs, 8 needed; 4983808 cases in 502 s (9924/s)
+    site 12 h.2.attn.k_proj: 513 variables x 256 pairs, 4 needed; 5115136 cases in 510 s (10032/s)
+    site 13 h.2.attn.o_proj: 1025 variables x 256 pairs, 90 needed; 5377536 cases in 525 s (10238/s)
+    site 14 h.2.attn.q_proj: 513 variables x 256 pairs, 1 needed; 5508864 cases in 533 s (10336/s)
+    site 15 h.2.attn.v_proj: 1025 variables x 256 pairs, 89 needed; 5771264 cases in 548 s (10525/s)
+    site 16 h.2.mlp.c_fc: 3073 variables x 256 pairs, 27 needed; 6557952 cases in 597 s (10993/s)
+    site 17 h.2.mlp.down_proj: 3585 variables x 256 pairs, 20 needed; 7475712 cases in 652 s (11470/s)
+    site 18 h.3.attn.k_proj: 513 variables x 256 pairs, 17 needed; 7607040 cases in 656 s (11598/s)
+    site 19 h.3.attn.o_proj: 1025 variables x 256 pairs, 96 needed; 7869440 cases in 664 s (11849/s)
+    site 20 h.3.attn.q_proj: 513 variables x 256 pairs, 10 needed; 8000768 cases in 668 s (11973/s)
+    site 21 h.3.attn.v_proj: 1025 variables x 256 pairs, 70 needed; 8263168 cases in 676 s (12215/s)
+    site 22 h.3.mlp.c_fc: 3073 variables x 256 pairs, 78 needed; 9049856 cases in 703 s (12866/s)
+    site 23 h.3.mlp.down_proj: 3585 variables x 256 pairs, 109 needed; 9967616 cases in 734 s (13586/s)
+[addition_ft_s1 eb] {"E_b_changed": 0.0500887248053728, "n_changed": 38936, "n_vars": 38938, "E_b_K": 0.029345486501879372, "size_K": 758, "n_changed_K": 758, "eb_seconds": 734.36310338974}
+PACKED experiments/reuse_dial/results/large/packs/addition_s1.tar sha256 a11c83972052ac4e1196a18ee0d5aedd067fa61917f91d1dcfcaa06162c87761 (544 MB)
+ITEM 1 of 1 DONE (addition s1)
+DONE
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/reuse_dial/results/large/packs/ and /root/work/experiments/reuse_dial/results/ ===
