@@ -32,8 +32,11 @@ def load_experiment(folder: str, name: str, *also: str) -> Any:
     see the same `run`, and a module the caller already imported from that file is that module. A file reached through
     `also` binds its sibling imports to <folder> first, so it is a separate module per <folder>, `<folder>+<its folder>__<stem>`.
     Its bare name exists only during the load: an `import run` inside a function called later fails or finds the caller's,
-    and pickle cannot find its classes. Importing a file runs its top level, so it must not need more than that."""
-    dirs = [EXPERIMENTS / d for d in (folder, *also)]
+    and pickle cannot find its classes. Importing a file runs its top level, so it must not need more than that.
+
+    Not for readings: use the functions in src/commute/README.md. A folder missing from experiments/ is looked up in
+    archive/experiments/, where finished experiments move (P2.79 phase 3)."""
+    dirs = [EXPERIMENTS / d if (EXPERIMENTS / d).is_dir() else EXPERIMENTS.parent / "archive" / "experiments" / d for d in (folder, *also)]
     owner = {f.stem: d for d in reversed(dirs) for f in d.glob("*.py")}
     assert name in {f.stem for f in dirs[0].glob("*.py")}, f"no {name}.py in experiments/{folder}"
     keys = {s: f"{folder}__{s}" if d == dirs[0] else f"{folder}+{d.name}__{s}" for s, d in owner.items()}

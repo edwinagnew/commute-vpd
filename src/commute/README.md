@@ -3,6 +3,23 @@
 Lookup index for plan authors: name the helper, don't reread the module. One line per module, then the public helpers worth reusing.
 Layouts: param-decomp `(U (C, d_out), V (d_in, C))`; theory `(U_A (d_out, n), V_A (d_in, n))` of alive columns. `State` = `{k: (delta-W, U_A', V_A')}` (harness); `Update` = `(delta-W, {k: (U2, V2)})` (saved_states); `Sel` = `{k: long idx}`, `Gates` = per-batch `[{k: (B,T,C)}]` (recruit).
 
+## Readings: one function each (P2.79, reports/plans/2026-11-25_plan_reading-refactor.md)
+A new experiment reads through these, never through another experiment's run.py (`jobs.load_experiment` is not for readings). The settings that tell a reading's variants apart (unit, batch, rows, floor) are required arguments.
+- world (net, W0 checked against the checkpoint, uv, delta, split bases) -> `world.World.load(device)`, `.bases(tol)`; CPU W0 and uv -> `world.weights()`
+- windows (a task's read rows) -> `windows.read_rows(task, kind)` -> `Rows(task, kind, toks, pos, tgt, source, ab)`
+- items (saved delta-W) -> `items.resolve(name)`, `items.load_dw(item)`, `items.inventory(family)`; items with F built -> `items.rescaled` (E214 x<f>), `items.e229_f` (E229), their D `items.copy24_held`, `items.e229_read`; E217's neuron bounds `items.neuron_bounds`
+- re-gating share r -> `share.share_cells(model, W0, dW, rows, units, batch)` + `share.share(cells, unit, gain, floor)` (`share.cells_gain`, `share.numerator`, `share.Floor`); four-cell form `local_faith.route_split`; Qwen's KL ratio (another quantity) `qwen_reading.kl_share`
+- untrained share -> `share.untrained_share(model, W0, dW, rows, decomps, k_m, unit, batch, floor)`
+- E_b -> `eb.write_sums(net, sites, toks, batch, changed)` + `eb.eb(sums, K, leftovers)`
+- needed set K (swap test) -> `needed.needed_set`, any site list `needed.scan_sites`; the old K* -> `kstar_vpd.search`
+- KL, two directions -> `kl.kl_base_to_ft(net, toks, dW, batch)`, `kl.kl_ft_to_base(net, toks, dW, batch, positions)`
+- steering share -> `fair_steering.steering_share(net, fit, select, read, dW, rule, unit, gain, pool)` with `fair_steering.Rule`; its gain `fair_steering.target_gain`
+- prior, two forms -> P `prior.prior_geo(net, rows, batch)` and its axis `prior.prior_log10_geo(p)`; W0's mean `prior.prior_mean_lo(net, rows, unit, batch)`
+- erank -> `update_spectrum.state(dW)["erank"]`
+- size -> size_rel `realistic.update_size(dW, W0)`; summed_norm (scorecard) `elicit.summed_norm(dW)`
+- ADL column D -> `adl.column_D(net, read, dW, pile, readout, gain, floor, pile_batch, read_batch)`
+- every reading of one task's states (E211's scorecard) -> `realistic_reads.Reader`
+
 ## By task
 - another experiment's file, with its sibling imports (no PYTHONPATH, no `-P`) -> `jobs.load_experiment(folder, name, *also)`; end a job after its final write -> `jobs.hard_exit(code)`; Config from predictions.json "settings" (drops `*_source` notes, refuses other unknown keys) -> `jobs.config_from_settings(Config, settings)`; a run's input list -> `INPUT_MANIFEST=<file>` in the environment of a CPU dry run (`python -m commute.jobs <script> ...` also catches opens before the import; with `INPUT_MANIFEST_CPU=1` a script's "cuda" runs on the CPU; with `INPUT_MANIFEST_ONLY=1` no write under experiments/ and `jobs.manifest_only()` tells the script to skip compute after its loads; `jobs.note_inputs(*paths)` lists mmapped or skipped reads; the list is appended to as it goes, friction 1017, 1038, 1063); a stage stop with a `.stopped` marker beside its JSON -> `jobs.stop(path, out, why, log)`, `jobs.write_stage(path, obj)`
 - the re-gating share r on the 67M -> `local_faith.route_split(model, windows, half, token, base, components0)` (wrapped by `harness.measure`), the only share there: it reads the model's current target W1 and components C1 (a split state, e.g. `split.split_state`) against `route_cells` at W0 and C0, on trigger windows with a target token at position `half`. E57's KL form, (K00 - K01) / (K00 - K11) by `qwen_reading.shares`, is Qwen-only.
