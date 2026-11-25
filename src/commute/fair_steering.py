@@ -168,6 +168,21 @@ def target_gain(net: ST.Net, rows: Rows, dW: ST.DW, unit: ST.Readout, batch: int
     return float((unit_rows(net, rows, unit, batch, dW) - unit_rows(net, rows, unit, batch)).mean())
 
 
+def key_idx(rows: Rows, rule: Rule, pool: Tensor | None) -> Tensor:
+    """(N,) each row's key in `pool` (zeros for a pooled rule)."""
+    return torch.zeros(len(rows.toks), dtype=torch.long) if pool is None else key_index(rows.toks[:, rule.key_pos], pool)
+
+
+def fit_vectors(net: ST.Net, fit: Rows, dW: ST.DW, rule: Rule, pool: Tensor | None) -> dict[int, Tensor]:
+    """Per layer, the steering vector from `fit`: the mean of tuned minus W0 block input at fit.pos, pooled (d,) or per
+    key over `pool` (K, d), taken in rule.mean and cast to fp32."""
+    d = diffs(net, fit.toks, dW, fit.pos, rule.batch, rule.mean)
+    if pool is None:
+        return {l: x.mean(0).float() for l, x in d.items()}
+    i = key_idx(fit, rule, pool)
+    return {l: per_key_mean(x, i.to(x.device), len(pool)).float() for l, x in d.items()}
+
+
 def steering_share(net: ST.Net, fit: Rows, select: Rows, read: Rows, dW: ST.DW, rule: Rule, unit: ST.Readout, gain: float,
                    pool: Tensor | None) -> dict[str, Any]:  # fmt: skip
     """The fair steering share of one update: the vector per layer from `fit` (pooled, or per key over `pool`), the
@@ -175,11 +190,8 @@ def steering_share(net: ST.Net, fit: Rows, select: Rows, read: Rows, dW: ST.DW, 
     (the caller's: E135 and E143 read `target_gain`, E211 and E272 the share's T cells). All rows share one read position."""
     assert fit.pos == select.pos == read.pos
     assert (pool is None) == (rule.form == "pooled") == (rule.key_pos is None), "a per-key rule needs its pool and key column"
-    idx = {n: torch.zeros(len(r.toks), dtype=torch.long) if pool is None else key_index(r.toks[:, rule.key_pos], pool)
-           for n, r in (("fit", fit), ("select", select), ("read", read))}  # fmt: skip
-    d = diffs(net, fit.toks, dW, fit.pos, rule.batch, rule.mean)
-    n_keys = 1 if pool is None else len(pool)
-    v = {l: (x.mean(0) if pool is None else per_key_mean(x, idx["fit"].to(x.device), n_keys)).float() for l, x in d.items()}
+    idx = {n: key_idx(r, rule, pool) for n, r in (("select", select), ("read", read))}
+    v = fit_vectors(net, fit, dW, rule, pool)
     sel0 = unit_rows(net, select, unit, rule.batch)
     grid = {(l, s): float((unit_rows(net, select, unit, rule.batch, how=(v[l], l, s, idx["select"])) - sel0).mean())
             for l in LAYERS for s in rule.strengths}  # fmt: skip

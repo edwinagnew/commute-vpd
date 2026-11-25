@@ -7,12 +7,14 @@ Units: "lo", the log-odds of each row's target over the whole vocabulary (the sh
 decisions.md 2026-11-18 "Label tasks scored on the two-label contrast"). Every share is a numerator's mean over the
 gain's mean in the same unit, nan when that gain is under MIN_GAIN (1).
   gain       T1 - T0, the fp32 target model (the neuron reader's T cells)
-  prior      T0: W0's mean on the read rows, per unit (no update read)
-  share      (L01 - L00) / (T1 - T0), released decomposition, do-nothing form (`masked_reads.share_cells_by`, its own T)
+  prior      `prior.prior_mean_lo`: W0's mean on the read rows, per unit, batch 64 (no update read)
+  share      (L01 - L00) / (T1 - T0), released decomposition, do-nothing form (`share.share_cells`, batch 64, its own bf16
+             T; `share.Floor(MIN_GAIN, one-sided)`)
   untrained  the same on W0's SVD and its rotation (`untrained.do_nothing_cells`, E136's k_m), fp32
   neuron     (N01 - N00) / gain, each block's firing kept on its TopK neurons, k 64 and k matched (E143's)
-  steering   pooled fair steering (`fair_steering`, E143's): vector from the fitting windows, (layer, strength) picked on
-             the first n_select of them in the scored unit, its rise on the read rows over the gain; random draws beside
+  steering   pooled fair steering (`fair_steering.fit_vectors`, `pick`, `divide`; E143's rule): vector from the
+             fitting windows, (layer, strength) picked on the first n_select of them in the scored unit, its rise on the
+             read rows over the gain in every unit; random draws and the off-position KL beside
   k_half     E98's count of neurons carrying half the r_half numerator (`neuron_r`), per unit
   erank      `update_spectrum.state` of the update; size `realistic.update_size`
 """
@@ -21,7 +23,7 @@ from __future__ import annotations
 
 import statistics
 from dataclasses import dataclass, field, replace
-from typing import Any
+from typing import Any, Literal
 
 import torch
 from torch import Tensor
@@ -29,14 +31,19 @@ from torch import Tensor
 from commute import fair_steering as FS
 from commute import masked_reads as MR
 from commute import neuron_r as NR
+from commute import prior as PR
+from commute import share as SH
 from commute import steering as ST
 from commute import untrained as U
 from commute import update_spectrum as US
 from commute.data import LAST, NEXT, PAIR, target_tokens
 from commute.local_faith import MIN_GAIN
 from commute.realistic import update_size
+from commute.windows import Rows
 
 DOWN = tuple(f"h.{l}.mlp.down_proj" for l in FS.LAYERS)
+FLOOR = SH.Floor(MIN_GAIN, two_sided=False)  # every share here: nan under a gain of 1
+SHARE_BATCH = MR.BATCH  # E211 read the share's cells in masked_reads' batches of 64
 
 
 @dataclass
@@ -79,6 +86,11 @@ class Read:
         """The units read against one target token per row: E98's k_half reads them (it also reads log P of that token)."""
         return self.fns()
 
+    def rows(self, kind: Literal["read", "fit"], n: int | None) -> Rows:
+        """The read (or fitting) windows as `windows.Rows`, the first n of them (None: all)."""
+        toks, tgt = (self.toks, self.tgt) if kind == "read" else (self.fit, self.fit_tgt)
+        return Rows(self.name, kind, toks[:n], self.pos, tgt[:n], "realistic_reads.Read")
+
 
 def pair_at(logits: Tensor, pos: int, tgt: Tensor) -> Tensor:
     """The per-row two-form contrast (E223): log p(a) - log p(b) at `pos`, tgt (B, 2) = (a, b) per row; the logit
@@ -112,7 +124,7 @@ class PairRead(Read):
 
 
 def ratio(num: float, gain: float) -> float:
-    return num / gain if gain >= MIN_GAIN else float("nan")
+    return num / gain if FLOOR.passes(gain) else float("nan")
 
 
 @dataclass
@@ -177,10 +189,9 @@ def subset(r: Read, idx: Tensor) -> Read:
 
 def share_of(net: ST.Net, r: Read, dW: ST.DW) -> dict[str, Any]:
     """The share per unit: (L01 - L00) / (T1 - T0), released decomposition, do-nothing form, with its numerator and gain."""
-    c = MR.share_cells_by(net.model, net.W0, dW, r.toks, r.pos, r.units_of(r.tgt))
-    num = {u: float((c["L01"][u] - c["L00"][u]).mean()) for u in c["T0"]}
-    gain = {u: float((c["T1"][u] - c["T0"][u]).mean()) for u in c["T0"]}
-    return {"share": {u: ratio(num[u], gain[u]) for u in num}, "numerator": num, "gain": gain}
+    c = SH.share_cells(net.model, net.W0, dW, r.rows("read", None), r.fns(), SHARE_BATCH)
+    gain = {u: SH.cells_gain(c, u) for u in c["T0"]}
+    return {"share": {u: SH.share(c, u, gain[u], FLOOR) for u in gain}, "numerator": {u: SH.numerator(c, u) for u in gain}, "gain": gain}
 
 
 def k_half_of(net: ST.Net, r: Read, dW: ST.DW, S: dict[str, Any]) -> dict[str, Any]:
@@ -215,11 +226,10 @@ class Reader:
 
     def __post_init__(self) -> None:
         self.ks = {"k64": dict.fromkeys(FS.LAYERS, self.k_fixed), "kmatched": {l: int(self.k_m[k]) for l, k in enumerate(DOWN)}}
-        self.zero_idx = torch.zeros(len(self.r.fit), dtype=torch.long)
         self.read_idx = torch.zeros(len(self.r.toks), dtype=torch.long)
-        sel = slice(0, self.c["n_select"])
-        self.w0["sel"] = self.steered(self.r.fit[sel], self.r.fit_tgt[sel], None)[self.r.scored]
+        self.w0["sel"] = self.steered(self.r.fit[: self.c["n_select"]], self.r.fit_tgt[: self.c["n_select"]], None)[self.r.scored]
         self.w0["rows"] = self.steered(self.r.toks, self.r.tgt, None)
+        self.w0["prior"] = {u: PR.prior_mean_lo(self.net, self.r.rows("read", None), f, FS.BATCH) for u, f in self.r.fns().items()}
         self.w0["untrained"] = {u: self.untrained_cells(None, u) for u in self.r.fns()}
 
     # ----------------------------------------------------------------------------- one reading each
@@ -232,6 +242,9 @@ class Reader:
         return self.r.units_of(tgt)(lg, slice(0, len(toks)))
 
     def untrained_cells(self, dW: ST.DW | None, u: str) -> dict[str, float]:
+        # Not `share.untrained_share`: it feeds only the LAST layout (target as an unread last column), while a Read
+        # feeds NEXT (an LM window holds its own target) or PAIR windows too; and this keeps W0's cells once per task
+        # (w0["untrained"]) and the numerators the callers save. Left as E211 ran it (P2.79 2c).
         w, token, ci_len = self.r.windows()
         target = None if dW is None else {k: x + dW[k].to(x.device) for k, x in self.net.W0.items()}
         unit = None if u == "lo" else self.r.fns()[u]
@@ -261,11 +274,18 @@ class Reader:
         return out, T
 
     def steering(self, dW: ST.DW, gain: dict[str, float], gen: torch.Generator) -> dict[str, Any]:
-        """E143's `Job.kind` for the pooled vector, the selection in the scored unit, every reading per unit."""
+        """E143's rule (`fair_steering.Rule`, pooled, batch 64, fp64 mean, floor 1): the vector from every fitting window
+        (`fit_vectors`), the selection on the first n_select of them in the scored unit (`pick`); then, unlike
+        `steering_share` (one unit), the rise in every unit at the chosen setting, the off-position KL and the random draws.
+
+        The grid is not `steering_share`'s: it reads each unit once over all n_select rows' logits (`steered`), where
+        `unit_rows` reads it per batch of 64, and a CUDA logsumexp over a different number of rows may round differently.
+        Same quantity; kept so E211's and E272's numbers stay bit for bit (P2.79 2c)."""
         r, n = self.r, self.c["n_select"]
-        v = FS.vectors(self.net, r.fit, self.zero_idx, 1, dW, r.pos)["pooled"]
+        rule = FS.Rule("pooled", None, tuple(self.c["strengths"]), MIN_GAIN, FS.BATCH, torch.float64)
+        v = FS.fit_vectors(self.net, r.rows("fit", None), dW, rule, None)
         grid = {(l, s): float((self.steered(r.fit[:n], r.fit_tgt[:n], (v[l], l, s))[r.scored] - self.w0["sel"]).mean())
-                for l in FS.LAYERS for s in self.c["strengths"]}  # fmt: skip
+                for l in FS.LAYERS for s in rule.strengths}  # fmt: skip
         setting = FS.pick(grid)
         rec: dict[str, Any] = {"grid": {f"{l},{s}": x for (l, s), x in grid.items()}, "setting": setting}
         if setting is None:
@@ -273,10 +293,10 @@ class Reader:
         l, s = setting
         got = self.steered(r.toks, r.tgt, (v[l], l, s))
         rec["rise"] = {u: float((got[u] - self.w0["rows"][u]).mean()) for u in got}
-        rec["share"] = {u: ratio(rec["rise"][u], gain[u]) for u in got}
+        rec["share"] = {u: FS.divide(rec["rise"][u], gain[u], rule.floor) for u in got}
         rec["off_kl"] = FS.off_kl(self.net, r.toks, r.pos, self.read_idx, (v[l], l, s))
         rnd = [self.steered(r.toks, r.tgt, (FS.random_like(v[l], gen), l, s))[r.scored] for _ in range(self.c["n_random"])]
-        rec["random"] = [ratio(float((x - self.w0["rows"][r.scored]).mean()), gain[r.scored]) for x in rnd]
+        rec["random"] = [FS.divide(float((x - self.w0["rows"][r.scored]).mean()), gain[r.scored], rule.floor) for x in rnd]
         rec["random_mean"] = statistics.fmean(rec["random"])
         return rec
 
@@ -291,7 +311,7 @@ class Reader:
         neuron, T = self.neurons(dW)
         gain = {u: float((T["T1"][u] - T["T0"][u]).mean()) for u in T["T0"]}
         rec: dict[str, Any] = {"size": update_size(dW, self.net.W0), "erank": spec["erank"], "gain": gain,
-                               "prior": {u: float(T["T0"][u].mean()) for u in T["T0"]}, "neuron": neuron}  # fmt: skip
+                               "prior": dict(self.w0["prior"]), "neuron": neuron}  # fmt: skip
         rec["share"] = self.share(dW)
         rec["untrained"] = self.untrained(dW)
         rec["steering"] = self.steering(dW, gain, torch.Generator().manual_seed(self.c["random_seed"] + seed))

@@ -73,9 +73,14 @@ def cells_gain(cells: Cells, unit: str) -> float:
     return float((cells["T1"][unit] - cells["T0"][unit]).mean())
 
 
+def numerator(cells: Cells, unit: str) -> float:
+    """mean(L01 - L00) in `unit`: the share's numerator."""
+    return float((cells["L01"][unit] - cells["L00"][unit]).mean())
+
+
 def share(cells: Cells, unit: str, gain: float, floor: Floor) -> float:
     """r = mean(L01 - L00) / gain in `unit`; nan when the gain does not pass `floor`."""
-    return float((cells["L01"][unit] - cells["L00"][unit]).mean()) / gain if floor.passes(gain) else float("nan")
+    return numerator(cells, unit) / gain if floor.passes(gain) else float("nan")
 
 
 def untrained_share(model: Any, W0: Mapping[str, Tensor], dW: ST.DW, rows: Rows, decomps: Mapping[str, U.Decomposition], k_m: Mapping[str, int],
