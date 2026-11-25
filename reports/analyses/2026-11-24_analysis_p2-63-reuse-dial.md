@@ -7,19 +7,21 @@ score `experiments/reuse_dial/results/score.json` from `score.py`; figures `expe
 
 We trained fine-tunes on four realistic tasks that all reach the same gain on the trained answer but differ, by
 construction, in how much of that gain is carried by gains on the base model's own decomposition variables, and asked
-which cheap readings rank them in that built order better than output KL does. No cheap reading did so with one sign on
-three of the four tasks: steering beat KL on two tasks, effective rank on three but with opposite signs, so the filed
-rule reads the second rival. For the paper this means the claim that cheap readings track reuse is, on this test,
-supported on the built tasks only, and the definition's own reading places every supervised and reinforcement-learned
-fine-tune we had at the ordinary fine-tune's end of the dial.
+which cheap readings rank them in that built order better than output KL does. Steering ranked them well beyond KL on
+sequence and lowercase but not on brackets or addition, and effective rank ranked them well beyond KL on brackets,
+addition and lowercase but in the opposite direction on lowercase, so no cheap reading follows the built order in one
+direction across the tasks. For the paper this means the claim that cheap readings track reuse is, on this test,
+supported on the built tasks only; the definition's own reading puts the supervised and reinforcement-learned
+fine-tunes that kept a positive gain below the finest step the dial can resolve, without telling them apart.
 
 ## The answer
 
 Along a dial of fine-tunes built to move from pure gains on the base model's variables to an ordinary fine-tune, all at
-one matched gain, no cheap reading beat KL's rank agreement with the dial by the filed margin with one sign on three
-tasks. Steering follows the dial on sequence and lowercase and not on brackets. Effective rank follows it strongly on
-every task, but falls along it on the three procedural tasks and rises on lowercase. The definition's reading puts the
-ordinary, supervised and RL fine-tunes all at the ordinary end, so RL is not placed nearer reuse.
+one matched gain, no cheap reading beat KL's rank agreement with the dial by the filed margin in one direction across
+tasks. Steering's margin over KL was 0.26 on sequence and 0.79 on lowercase, but 0.03 on addition and below KL on
+brackets. Effective rank follows the dial strongly on every task, but falls along it on the procedural tasks and rises on
+lowercase. The definition's reading puts every positive-gain supervised and RL state far below the dial's lightest
+penalty, so it cannot say whether RL reuses more (two addition states are not placed: see "Where do the ordinary, supervised and RL fine-tunes land on the dial?").
 
 ## What we were trying to test
 
@@ -100,7 +102,8 @@ penalty residual share sits 0.80 above the highest heavy one.
 panel gives how far its size exceeds KL's, where the rule asks for 0.2 or more. Steering exceeds KL by 0.26 on sequence
 and 0.79 on lowercase, both positive, but by only 0.03 on addition and falls short by 0.29 on brackets, where its rank
 correlation is 0.04. Effective rank exceeds KL on brackets, addition and lowercase, by 0.56, 0.23 and 0.81, but its rank
-correlation is minus 0.89 and minus 0.82 on the first two and plus 0.91 on lowercase. On sequence it ties KL. So
+correlation is minus 0.89 and minus 0.82 on the first two and plus 0.91 on lowercase. On sequence its size, 0.71, is
+only 0.03 above KL's 0.68. So
 effective rank follows the dial strongly on every task, but in opposite directions on procedural and real text: the
 update spreads over fewer directions along the procedural dials and over more along the lowercase dial. KL itself
 follows the dial in different directions too: minus 0.68 on sequence, plus 0.59 on addition, near zero on lowercase.
@@ -110,28 +113,48 @@ only on sequence and lowercase. That it is weakest on addition, 0.23, fits addit
 one task where every reading but KL follows the dial: steering, effective rank, the re-gating share and the lens
 reading all sit at 0.89 to 0.94.
 
-The read gain also moves along the dial on two tasks, 0.59 on sequence and 0.58 on brackets, which the filed check
+The read gain also moves along the dial on sequence, 0.59, and on brackets, 0.58, which the filed check
 flags: there a reading that follows the dial could be following a small leftover gain difference.
 
 ### Does the definition's reading fall along the dial?
 
 **Reading it.** Yes, $E_b$ over $K$ falls along every task's dial, rank correlation minus 0.68 to minus 0.91, but the
-second row of the dial figure shows most of the fall happens at the light-penalty and ordinary end. On lowercase, going
-from gains-only to the medium penalty raises the residual share from 0 to 0.32 and 0.36, yet $E_b$ reads 0.76 and 0.79
-at gains-only and 0.78 and 0.79 at the medium penalty. On addition the medium penalty's residual share is 0.88, yet its
-$E_b$ reads 0.78 and 0.79 against 0.80 to 0.88 at gains-only. $E_b$ then drops to 0.54 to 0.70 at the light penalty on
-sequence, addition and lowercase, and to 0.02 to 0.05 for the ordinary fine-tunes. We report this as read: a large
-penalised residual leaves the definition's reading near the gains-only end on these two tasks.
+second row of the dial figure shows the fall happens only at the light-penalty and ordinary end, on all four tasks.
+The heavy and medium penalties leave $E_b$ near its gains-only value even where the residual share is large:
+
+| task | gains-only | heavy | medium | residual share at medium |
+|---|---|---|---|---|
+| sequence | 0.81 to 0.82 | 0.86 to 0.88 | 0.82 to 0.86 | 0.63 to 0.70 |
+| brackets | 0.87 to 0.91 | 0.87 to 0.91 | 0.81 to 0.85 | 0.24 to 0.56 |
+| addition | 0.80 to 0.88 | 0.86 to 0.88 | 0.78 to 0.79 | 0.88 |
+| lowercase | 0.76 to 0.79 | 0.79 | 0.78 to 0.79 | 0.32 to 0.36 |
+
+The heavy penalty reads above gains-only on sequence and level with it on brackets and lowercase. $E_b$ then drops to
+0.54 to 0.70 at the light penalty on sequence, addition and lowercase, and to 0.02 to 0.05 for the ordinary
+fine-tunes. We report this as read: a penalised residual of up to 0.88 of the gain leaves the definition's reading near
+the gains-only end on every task.
 
 ### Where do the ordinary, supervised and RL fine-tunes land on the dial?
 
-**Reading it.** By $E_b$ over $K$, every one of them lands at the ordinary end. The ordinary fine-tunes and E256's
-supervised states read 0.021 to 0.060, and the RL states, guarded or not, read 0.036 to 0.108, all below the lowest
-light-penalty state at 0.539. The one exception is addition's RL seed 0 at 1.0, a state whose trained-answer gain is
-minus 6.71: it unlearned the answer, so its write share is not a placement. So on the definition's reading RL is not
-nearer the reuse end than supervised training on these tasks.
+**Reading it.** By $E_b$ over $K$, every state with a positive gain lands below the dial's resolution, at the
+ordinary end, and the dial cannot order supervised against RL there. The dial has no setting between the lowest
+light-penalty state at 0.539 and the highest ordinary fine-tune at 0.055, and the Gaussian random update, 0.009 to
+0.011, also lands nearest the ordinary end. Per task, the positive-gain states read:
 
-The cheap readings place RL differently. Steering puts the RL states past the ordinary end on every procedural task:
+| task | ordinary fine-tune | E256 supervised | E256 RL and guarded RL, positive gain |
+|---|---|---|---|
+| sequence | 0.028 to 0.032 | 0.025 to 0.031 | 0.036 to 0.042 |
+| brackets | 0.039 to 0.055 | 0.049 to 0.060 | 0.050 to 0.056 |
+| addition | 0.037 to 0.045, seed 1 missing | 0.038 to 0.045 | 0.055 to 0.068 |
+| lowercase | 0.021 to 0.022 | none saved | none saved |
+
+On sequence and addition the RL states read a little above the supervised ones, at a lower gain: 2.03 to 3.00 on
+sequence against the supervised 5.85 to 6.27. The differences are a few hundredths, far below the dial's step.
+Two states are not placed. Addition's RL seed 0 reads 1.0, nearest the heavy penalty, but its trained-answer gain is
+minus 6.71: it unlearned the answer. Addition's ordinary fine-tune seed 1 has no $E_b$ yet; its redo pod is running.
+
+The cheap readings place RL differently. Steering puts the positive-gain RL states past the ordinary end on every
+procedural task:
 on sequence they read 0.45 to 0.71 against the ordinary fine-tunes' 0.28 to 0.29. The caveat is that E256 stopped its
 states at one update size, not at one gain: its RL states gained less than its supervised ones, and seven of the
 eighteen RL states have a negative gain. They sit outside the dial's matched-gain condition, so their placement is
@@ -140,19 +163,19 @@ descriptive only.
 ## Full table
 
 Rank correlation with the dial setting and permutation p, within each task, over the states with the reading: fifteen
-per task, ten on lowercase, eleven for $E_b$ on addition. A p of 0 means none of 10,000 permutations reached it.
+per task, ten on lowercase, eleven for $E_b$ on addition. 10,000 permutations each.
 
 | reading | sequence | brackets | addition | lowercase |
 |---|---|---|---|---|
-| steering share | 0.94 (p 0) | 0.04 (p 0.893) | 0.62 (p 0.014) | 0.89 (p 0.001) |
-| effective rank | -0.71 (p 0.004) | -0.89 (p 0) | -0.82 (p 0) | 0.91 (p 0.001) |
-| re-gating share, check | 0.74 (p 0.003) | 0.46 (p 0.086) | 0.23 (p 0.414) | 0.94 (p 0) |
+| steering share | 0.94 (p <0.001) | 0.04 (p 0.893) | 0.62 (p 0.014) | 0.89 (p 0.001) |
+| effective rank | -0.71 (p 0.004) | -0.89 (p <0.001) | -0.82 (p <0.001) | 0.91 (p <0.001) |
+| re-gating share, check | 0.74 (p 0.003) | 0.46 (p 0.086) | 0.23 (p 0.414) | 0.94 (p <0.001) |
 | KL from base | -0.68 (p 0.009) | 0.34 (p 0.229) | 0.59 (p 0.028) | -0.10 (p 0.811) |
 | lens D, ADL | 0.38 (p 0.167) | 0.64 (p 0.012) | -0.04 (p 0.885) | 0.91 (p 0.001) |
-| neuron share, top 64 | -0.95 (p 0) | 0.88 (p 0) | 0.40 (p 0.141) | 0.69 (p 0.035) |
-| neuron share, matched | -0.60 (p 0.020) | 0.72 (p 0.004) | -0.88 (p 0) | 0.71 (p 0.029) |
-| untrained decomposition | -0.57 (p 0.027) | -0.28 (p 0.314) | -0.84 (p 0) | 0.84 (p 0.005) |
-| $E_b$ over $K$ | -0.68 (p 0.008) | -0.91 (p 0) | -0.89 (p 0.001) | -0.69 (p 0.034) |
+| neuron share, top 64 | -0.95 (p <0.001) | 0.88 (p <0.001) | 0.40 (p 0.141) | 0.69 (p 0.035) |
+| neuron share, matched | -0.60 (p 0.020) | 0.72 (p 0.004) | -0.88 (p <0.001) | 0.71 (p 0.029) |
+| untrained decomposition | -0.57 (p 0.027) | -0.28 (p 0.314) | -0.84 (p <0.001) | 0.84 (p 0.005) |
+| $E_b$ over $K$ | -0.68 (p 0.008) | -0.91 (p <0.001) | -0.89 (p <0.001) | -0.69 (p 0.034) |
 | read gain | 0.59 (p 0.024) | 0.58 (p 0.030) | -0.01 (p 0.984) | 0.42 (p 0.241) |
 
 The base model's prior on the trained answer is one number per task, the same for every state, so its rank
@@ -163,8 +186,8 @@ correlation with the dial is undefined. It is a confound to hold fixed between t
 At matched gain on realistic tasks, no cheap reading follows a dial of known reuse beyond KL in one consistent
 direction, so the paper's claim that cheap readings track reuse holds on the built tasks only, as the card's stop rule
 says. Effective rank is the strongest follower of the dial on every task, but its direction flips between procedural
-and real-text tasks, which a single-signed claim cannot use. The definition's reading places supervised and RL
-fine-tunes alike at the ordinary end, so these states give no sign that RL reuses more than supervised training.
+and real-text tasks, which a single-signed claim cannot use. The definition's reading places positive-gain supervised
+and RL fine-tunes alike below the dial's resolution, so this dial cannot say whether RL reuses more.
 
 ## How compelling is the evidence
 
@@ -178,8 +201,8 @@ update size, not matched gain.
 ## Surprises
 
 - Effective rank follows the dial with opposite signs on procedural and real-text tasks, each strongly.
-- $E_b$ over $K$ barely moves from gains-only to the medium penalty on lowercase and addition although the residual share
-  rises to about a third and to 0.88. Reported as read.
+- $E_b$ over $K$ barely moves from gains-only to the medium penalty on every task, although the residual share there
+  reaches 0.88 on addition. Reported as read.
 - The ordinary fine-tune on addition seed 0 reproduced E256's supervised seed 0 to four digits of the gain, as it should
   with the same recipe and seed.
 
@@ -193,12 +216,12 @@ update size, not matched gain.
 
 | id | claim in words | rule | read | verdict |
 |---|---|---|---|---|
-| rival a | a cheap reading beats KL with one sign on at least three readable tasks | p under 0.05 and size of rank correlation at least 0.2 above KL's | steering on sequence and lowercase; effective rank on brackets and addition negative, lowercase positive | not met |
+| rival a | a cheap reading beats KL with one sign on at least three readable tasks | p under 0.05 and size of rank correlation at least 0.2 above KL's | margin over KL, steering: 0.26, -0.29, 0.03, 0.79; effective rank: 0.03, 0.56 negative, 0.23 negative, 0.81 positive | not met |
 | rival b | no cheap reading does | the complement | as above | **rival b** |
 | dial order | penalised arms order the residual share | rank correlation at least 0.8 | 0.95, 0.95, 0.95, 0.96 | all four readable |
 | lowercase spread | top and bottom of the dial apart beyond the seed range | above 0 | 0.80 | read |
 | $E_b$ check | $E_b$ over $K$ falls along the dial | rank correlation at most minus 0.6 | minus 0.68 to minus 0.91 | holds on all four |
-| gain check | the read gain does not follow the dial | flag if p under 0.05 and size over 0.3 | 0.59 sequence, 0.58 brackets | flagged on two |
+| gain check | the read gain does not follow the dial | flag if p under 0.05 and size over 0.3 | 0.59 sequence, 0.58 brackets | flagged on sequence and brackets |
 
 ## Departures from the literature and from the filed plan
 

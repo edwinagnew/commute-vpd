@@ -98,10 +98,6 @@
 0.015	experiments/reuse_dial/results/states/addition_b10000_s1.json + experiments/reuse_dial/results/states/addition_b100000_s2.json	.[0].train.residual_share - .[1].train.residual_share	this
 0.316	experiments/reuse_dial/results/states/addition_b1e+06_s1.json	.train.residual_share	this
 0.508	experiments/reuse_dial/results/states/addition_b1e+06_s2.json	.train.residual_share	this
-0.776	/mnt/nw/home/e.agnew/commute-data/scratch/compare-lead/e300-writer/p9x/large/pod_logs/pod9.log	[scan("step 1 gains ([0-9.]+)")] | last[0] | tonumber	this
-0.958	/mnt/nw/home/e.agnew/commute-data/scratch/compare-lead/e300-writer/p10x/large/pod_logs/pod10.log	[scan("step 1 gains ([0-9.]+)")] | last[0] | tonumber	this
-0.713	experiments/reuse_dial/results/e300_dl/p11/large/pod_logs/pod11.log	[scan("step 1 gains ([0-9.]+)")] | last[0] | tonumber	this
-0.5	experiments/reuse_dial/results/e300_dl/p11/large/pod_logs/pod11.log	[scan("step1_max': ([0-9.]+)")] | first[0] | tonumber	this
 0.595	experiments/reuse_dial/results/predictions.json	0.5 * .settings.target.lowercase	this
 0.892	experiments/reuse_dial/results/predictions.json	.thresholds.step1_max * .settings.target.lowercase	this
 0.76	experiments/reuse_dial/results/states/lowercase_g_s2.json	.eb.E_b_K	this
@@ -127,3 +123,30 @@
 0.71	experiments/reuse_dial/results/score.json	.placement.sequence.sequence_rl_s2.steering.value	this
 0.28	experiments/reuse_dial/results/score.json	.placement.sequence.sequence_ft_s0.steering.value	this
 0.29	experiments/reuse_dial/results/score.json	.placement.sequence.sequence_ft_s1.steering.value	this
+0.776	experiments/reuse_dial/results/step1_lines.txt	[scan("s0: step 1 gains ([0-9.]+)")][0][0] | tonumber	this
+0.958	experiments/reuse_dial/results/step1_lines.txt	[scan("s1: step 1 gains ([0-9.]+)")][0][0] | tonumber	this
+0.713	experiments/reuse_dial/results/step1_lines.txt	[scan("s2: step 1 gains ([0-9.]+)")][0][0] | tonumber	this
+0.5	experiments/reuse_dial/results/step1_lines.txt	[scan("step1_max': ([0-9.]+)")][0][0] | tonumber	this
+0.011	experiments/reuse_dial/results/score.json	.placement.lowercase.lowercase_rand_s0.E_b_K.value	this
+0.022	experiments/reuse_dial/results/score.json	.placement.lowercase.lowercase_ft_s0.E_b_K.value	this
+0.025	experiments/reuse_dial/results/score.json	.placement.sequence.sequence_sft_s2.E_b_K.value	this
+0.031	experiments/reuse_dial/results/score.json	.placement.sequence.sequence_sft_s0.E_b_K.value	this
+0.032	experiments/reuse_dial/results/score.json	.placement.sequence.sequence_ft_s2.E_b_K.value	this
+0.037	experiments/reuse_dial/results/score.json	.placement.addition.addition_ft_s2.E_b_K.value	this
+0.038	experiments/reuse_dial/results/score.json	.placement.addition.addition_sft_s1.E_b_K.value	this
+0.039	experiments/reuse_dial/results/score.json	.placement.brackets.brackets_ft_s1.E_b_K.value	this
+0.042	experiments/reuse_dial/results/score.json	.placement.sequence.sequence_rlg_s0.E_b_K.value	this
+0.045	experiments/reuse_dial/results/score.json	.placement.addition.addition_ft_s0.E_b_K.value	this
+0.049	experiments/reuse_dial/results/score.json	.placement.brackets.brackets_sft_s2.E_b_K.value	this
+0.055	experiments/reuse_dial/results/score.json	.placement.brackets.brackets_ft_s2.E_b_K.value	this
+0.056	experiments/reuse_dial/results/score.json	.placement.brackets.brackets_rlg_s2.E_b_K.value	this
+0.068	experiments/reuse_dial/results/score.json	.placement.addition.addition_rl_s2.E_b_K.value	this
+0.24	experiments/reuse_dial/results/states/brackets_b100000_s1.json	.train.residual_share	this
+0.63	experiments/reuse_dial/results/states/sequence_b100000_s0.json	.train.residual_share	this
+0.85	experiments/reuse_dial/results/states/brackets_b100000_s0.json	.eb.E_b_K	this
+0.86	experiments/reuse_dial/results/states/sequence_b1e+06_s0.json	.eb.E_b_K	this
+0.87	experiments/reuse_dial/results/states/brackets_g_s1.json	.eb.E_b_K	this
+2.03	experiments/reuse_dial/results/score.json	.placement.sequence.sequence_rl_s2.gain	this
+3.00	experiments/reuse_dial/results/score.json	.placement.sequence.sequence_rlg_s2.gain	this
+5.85	experiments/reuse_dial/results/score.json	.placement.sequence.sequence_sft_s0.gain	this
+6.27	experiments/reuse_dial/results/score.json	.placement.sequence.sequence_sft_s1.gain	this
