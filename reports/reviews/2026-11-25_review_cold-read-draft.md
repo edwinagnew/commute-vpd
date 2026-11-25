@@ -33,6 +33,27 @@ Line numbers are from `origin/v2:paper/<file>` at 9529c07. Evidence paths are in
    Fix: state in §3 or §4 that the VPD reading departs from a fixed τ, why, and that its ρ depends on the split (and
    list it in appG departures).
 
+## MUST, pass 2 (appendices, 11-25 late morning)
+
+3. **At VPD, the low ρ on trained fine-tunes cannot be read as "new".** appI:42-47 describes the rescale-only
+   control, a fine-tune that can only rescale each MLP neuron's output (reuse by construction). At VPD it reads
+   0.019 to 0.072 (seed 0), "as low as the full fine-tunes' 0.027 to 0.037". At top neurons the same control reads
+   0.24 to 0.81, against 0.012 to 0.028 for the full fine-tunes. So the neuron reading passes this positive control
+   on trained updates, and the VPD reading fails it. The body says nothing about this. sec5:10 says ρ "reads every
+   trained fine-tune as mostly new", and sec7:11-13 puts "Definition too strict" first. A reviewer will read that as
+   the definition calling every trained update new, when at VPD the measurement cannot see a trained rescale either.
+   Fix: in §5.1, rest "mostly new" on the neuron reading and its rescale-only control. Say that at VPD a trained
+   rescale-only update reads as low, so VPD's low values carry no call. In sec7, put that under "Measurements too
+   weak" too.
+4. **The re-gating share's only random reference on the 67M does not separate it from random.** The body's headline
+   form (log-odds, Fig `known`) has no random baseline (appI:124). appH:20-22 says the KL form does have one, on the
+   67M too, and that there "random changes of matched output change reach a fine-tune's own KL-form share" on most
+   fine-tunes, "so a high reading does not tell a fine-tune from a random change". So the main positive result of
+   contribution 2 rests on the one form with no null. Fix: one sentence in §5.2 saying so. (appH:21 also states a
+   count, 67 of 88; under the user's 11-24 rule give values instead.)
+
+Support for MUST 1: appI:174-178 says outright "No cheap reading tracks ρ closely". Cite it in the §5.2 sentence.
+
 ## SHOULD
 
 1. **ρ depends on each variable's units, and the appendix's escape is wrong for VPD.** main.tex:389 says the weights
@@ -76,7 +97,7 @@ Line numbers are from `origin/v2:paper/<file>` at 9529c07. Evidence paths are in
 - P2.81 gain-per-token SHOULD: not re-checked this pass.
 
 ## Not run
-- No read of the cut/ files, appH beyond §5.5's claim, Fig `realistic` or Fig `kept_realistic` (the blind read covers
+- Pass 2 read appI (built edits to tools), appD and appH. No read of appE beyond the re-gating definition, the cut/ files, Fig `realistic` or Fig `kept_realistic` (the blind read covers
   the reversal), or the rendered main.pdf layout.
 - No check of the related-work citations against the papers.
 - All values come from definition.csv at v2 9529c07. None were recomputed from the runs' own results.
