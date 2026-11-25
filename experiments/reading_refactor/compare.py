@@ -1,0 +1,87 @@
+"""E309 (cell P2.79): the reproduction table of the reading refactor, CPU, from results/old_A.json, old_B.json (old.py,
+the old code run twice) and new.json (the new functions, same keys; absent until a later phase writes it).
+
+Pass rule (plan "Reproduction check and its floor"):
+  - old A and old B bit-identical: new must equal them bit for bit, or within 1e-12 relative (a sum in another order);
+  - otherwise new must lie within [min(A, B), max(A, B)], the old code's own spread on this card;
+  - either way, |new - saved| must stay under the saved run's filed tolerance where one exists (TOL).
+The old values' distance from the saved run is printed beside (card, batch or rows differ: written down, never absorbed).
+A reading with no new value reads "pending".
+
+    ~/commute-agents/fleet/cpu-run python3 experiments/reading_refactor/compare.py     -> results/reproduction.json
+"""
+
+from __future__ import annotations
+
+import json
+import math
+from pathlib import Path
+from typing import Any
+
+RESULTS = Path(__file__).resolve().parent / "results"
+REL = 1e-12  # a data reading summed in a different order
+TOL = {"share": 0.01, "steering_pooled": 0.001, "E_b_vpd": 1e-11, "E_b_neurons": 1e-11, "E_b_sae": 1e-11}  # E136 reproduce_tol, E211 e211_reread, E268 transcription
+TOL_REL = {"prior_geo": 1e-4, "prior_log10_geo": 1e-4}  # prior_vs_share stage0 tol_rel
+
+
+def load(name: str) -> dict[str, Any]:
+    p = RESULTS / f"{name}.json"
+    return {k: v for k, v in json.loads(p.read_text()).items() if not k.startswith("_")} if p.is_file() else {}
+
+
+def num(rec: dict[str, Any] | None) -> float | None:
+    v = None if rec is None else rec.get("value")
+    return float(v) if isinstance(v, int | float) and not isinstance(v, bool) else None
+
+
+def under_tol(reading: str, new: float, saved: float | None) -> bool | None:
+    if saved is None or not isinstance(saved, int | float):
+        return None
+    if reading in TOL_REL:
+        return abs(new / saved - 1) <= TOL_REL[reading]
+    return abs(new - saved) <= TOL[reading] if reading in TOL else None
+
+
+def verdict(reading: str, a: float | None, b: float | None, new: float | None, saved: Any) -> str:
+    if new is None:
+        return "pending"
+    if a is None:
+        return "no old value"
+    if b is None or a == b:
+        ok = new == a or abs(new - a) <= REL * abs(a)
+    else:
+        ok = min(a, b) <= new <= max(a, b)
+    tol = under_tol(reading, new, saved)
+    return "pass" if ok and tol is not False else "FAIL" + ("" if ok else " (outside old spread)") + ("" if tol is not False else " (over filed tol)")
+
+
+def table() -> list[dict[str, Any]]:
+    A, B, N = load("old_A"), load("old_B"), load("new")
+    rows = []
+    for key in sorted(A | B):
+        reading, state = key.split("/", 1)
+        a, b, n = num(A.get(key)), num(B.get(key)), num(N.get(key))
+        saved = (A.get(key) or B.get(key) or {}).get("saved")
+        s = float(saved) if isinstance(saved, int | float) and not isinstance(saved, bool) else None
+        rows.append({"reading": reading, "state": state, "saved": saved, "old_A": a, "old_B": b, "floor_abs_A_B": abs(a - b) if a is not None and b is not None else None,
+                     "new": n, "old_A_minus_saved": a - s if a is not None and s is not None else None, "pass": verdict(reading, a, b, n, saved)})  # fmt: skip
+    return rows
+
+
+def fmt(x: Any) -> str:
+    if isinstance(x, float):
+        return "nan" if math.isnan(x) else f"{x:.10g}"
+    return "-" if x is None else str(x)
+
+
+def main() -> None:
+    rows = table()
+    (RESULTS / "reproduction.json").write_text(json.dumps(rows, indent=1))
+    cols = ("reading", "state", "saved", "old_A", "old_B", "floor_abs_A_B", "new", "old_A_minus_saved", "pass")
+    print("\t".join(cols))
+    for r in rows:
+        print("\t".join(fmt(r[c]) for c in cols))
+
+
+if __name__ == "__main__":
+    main()
