@@ -33,7 +33,7 @@ from commute import realistic as RZ
 from commute import share as SH
 from commute import steering as ST
 from commute import update_spectrum as US
-from commute import world
+from commute import vpd, world
 from commute.data import cached_rows
 from commute.items import DW, Item, load_dw, resolve
 from commute.jobs import EXPERIMENTS, hard_exit
@@ -54,7 +54,7 @@ def predictions(exp: str) -> dict[str, Any]:
 
 def saved_file(path: str) -> Item:
     """A saved update outside the item families, read as saved."""
-    return Item(path, path, None, None, None)
+    return Item(path, path, None)
 
 
 class Out:
@@ -91,7 +91,7 @@ class Out:
 
 
 def spectra_and_sizes(o: Out) -> None:
-    W0 = world.weights()[0]
+    W0 = vpd.checkpoint_weights()[0]
     for name, path in (("e62/copy_s0", E62_COPY), ("sequence_rl_s0", SEQ_RL), ("lower_s0_step128", LOWER_128)):
         d = load_dw(saved_file(path))
         o.put(f"erank/{name}", US.state(d)["erank"], fn="update_spectrum.state", dtype="fp64 svdvals")
@@ -125,7 +125,7 @@ def inputs() -> Inputs:
     return Inputs(
         rows={t: read_rows(t, "held") for t in ("c3/cipher", "e53/lowercase", "case_label/real", "e46/ident32")},
         dw={"c3/cipher_s0": load_dw(resolve("c3/cipher_s0")), "e53/lowercase_s0": load_dw(resolve("e53/lowercase_s0")),
-            "case_real_s0": load_dw(Item("case_label/real_s0", "experiments/case_label/results/large/dW_real_s0.pt", case_sha, None, None)),
+            "case_real_s0": load_dw(Item("case_label/real_s0", "experiments/case_label/results/large/dW_real_s0.pt", case_sha)),
             "sequence_rl_s0": load_dw(saved_file(SEQ_RL)), "lower_s0_step128": load_dw(saved_file(LOWER_128))},
         kl_rows={"procedural_rl": cached_rows("val", 0, s_rl["kl_rows"]), "panel": cached_rows("val", 0, s_cp["kl_rows"])},
         s_rl=s_rl,

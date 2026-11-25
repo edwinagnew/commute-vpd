@@ -5,7 +5,6 @@ experiment run.py files (E214 -> E221 -> E226 -> E242 -> E257 -> E268 `world()`)
 `World.load(device)`: one ComponentModel, requires_grad off (`vpd.load_component_model`), wrapped as `steering.Net`;
 W0 from the checkpoint file, checked bit for bit against the live model's weights; the released components (uv) and
 weight deltas; `bases(tol)` the least-squares split's fp64 SVD bases (`kstar_vpd.bases`), tol a required argument.
-`weights()`: W0 and uv from the checkpoint with no model built, for a CPU job.
 """
 
 from __future__ import annotations
@@ -23,11 +22,6 @@ DW = dict[str, Tensor]
 UV = dict[str, tuple[Tensor, Tensor]]
 
 
-def weights() -> tuple[DW, UV]:
-    """W0 and (U (C, d_out), V (d_in, C)) per decomposed matrix from the checkpoint file, CPU fp32 (`vpd.checkpoint_weights`)."""
-    return vpd.checkpoint_weights()
-
-
 @dataclass
 class World:
     net: Any  # steering.Net: the ComponentModel and its target model, run and edited
@@ -40,7 +34,7 @@ class World:
         from commute import steering as ST
 
         net = ST.Net(device)
-        W0 = weights()[0]
+        W0 = vpd.checkpoint_weights()[0]
         assert sorted(W0) == sorted(net.W0) and all(torch.equal(W0[k], net.W0[k].cpu()) for k in W0), "checkpoint W0 differs from the live model's"
         return cls(net, {k: w.to(device) for k, w in W0.items()}, vpd.component_weights(net.model), vpd.weight_deltas(net.model))
 

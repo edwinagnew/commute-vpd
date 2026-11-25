@@ -1,9 +1,9 @@
 """E309 (cell P2.79), move 1's checks, CPU only: the new `commute.world`, `commute.windows` and `commute.items` give the
 same bytes as the old code and the saved records (plan "Order of moves" 1). Writes results/move1_world.json; prints
-every check and "MOVE1 ok" or the misses. No model is built: the live-W0 check is old.py's gpu part
+every check and "MOVE1 ok" or the misses. (Its w0 check of `world.weights()`, a wrapper of `vpd.checkpoint_weights` deleted
+in the P2.79 fix, ran and is recorded in move1_world.json.) No model is built: the live-W0 check is old.py's gpu part
 (old_<tag>.json _meta.W0_live_equals_checkpoint), which `World.load` also asserts on every GPU load.
 
-  w0           world.weights() W0 bit for bit against vpd.checkpoint_weights()
   windows      every E136 task's held rows against E136's windows.load_read; E53's train rows against holes_fill's
                e53_train; E211's e53 read and the case read of commute.near_tasks against the old builders; E53's text
                and maps (commute.old_tasks' text tasks) against performed_anchor's; the panel D sha256s against its
@@ -24,9 +24,7 @@ from typing import Any
 import torch
 
 from commute import items as IT
-from commute import vpd
 from commute import windows as WN
-from commute import world as WD
 from commute.data import pile_rows, target_tokens
 from commute.jobs import EXPERIMENTS, hard_exit, load_experiment
 
@@ -38,12 +36,6 @@ def put(section: str, key: str, ok: bool, **facts: Any) -> None:
     out.setdefault(section, {})[key] = {"ok": ok, **facts}
     OUT.write_text(json.dumps(out, indent=1))
     print(f"[{section} {key}] {'ok' if ok else 'MISS'} {json.dumps(facts)[:300]}", flush=True)
-
-
-def check_w0() -> None:
-    new, ck = WD.weights()[0], vpd.checkpoint_weights()[0]
-    put("w0", "checkpoint", sorted(new) == sorted(ck) and all(torch.equal(new[k], ck[k]) for k in ck), n_matrices=len(new),
-        sha256={k: WN.tensor_sha256(v) for k, v in sorted(new.items())})  # fmt: skip
 
 
 def check_e136_windows() -> None:
@@ -121,7 +113,7 @@ def check_row_counts() -> None:
 
 
 def main() -> int:
-    for f in (check_w0, check_e136_windows, check_e53, check_near_tasks, check_saved_windows, check_items, check_row_counts):
+    for f in (check_e136_windows, check_e53, check_near_tasks, check_saved_windows, check_items, check_row_counts):
         f()
     miss = [f"{s} {k}" for s, d in out.items() for k, v in d.items() if not v["ok"]]
     out["summary"] = {"n_checks": sum(len(d) for d in out.values()), "misses": miss}

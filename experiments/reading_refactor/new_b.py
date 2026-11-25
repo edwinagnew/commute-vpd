@@ -4,8 +4,8 @@ below is a call of `fair_steering.steering_share`, `eb.write_sums` / `eb.eb`, `n
 rows from `windows.read_rows` and updates from `items.load_dw`; no old experiment's reading function is called.
 
 The fresh write passes and the neuron K scan read F itself: the built item x2 (E214's rescale) and E229's trained item
-copy24_s0 are built by `items.rescaled` / `items.e229_f` on `World`, with their D (`items.copy24_held`, `items.e229_read`)
-and E217's neuron bounds (`items.neuron_bounds`); no `load_experiment` (P2.79 2c).
+copy24_s0 are built by `rescaled` / `e229_f` (below) on `World`, with their D (`copy24_held`, `e229_read`)
+and E217's neuron bounds (`neuron_bounds`); no `load_experiment` (P2.79 2c).
 
   --part data  CPU (`fleet/cpu-run`): E_b from the saved sums (VPD, neurons, SAE)
   --part gpu   one L40 (new_b.sbatch): steering E135 and E143, the panel's steering and ADL D, the fresh E_b and the K scan
@@ -18,29 +18,87 @@ and E217's neuron bounds (`items.neuron_bounds`); no `load_experiment` (P2.79 2c
 from __future__ import annotations
 
 import argparse
+import copy
 import json
+from collections.abc import Sequence
 from dataclasses import replace
 from typing import Any
 
 import numpy as np
 import torch
 from old import Out as OldOut
+from torch import Tensor
 
 from commute import adl as ADL
 from commute import eb as EB
 from commute import fair_steering as FS
 from commute import items as IT
 from commute import masked_reads as MR
+from commute import old_tasks as OT
+from commute import rule_retention as R
+from commute import share as SH
 from commute import steering as ST
+from commute import variable_read as VR
+from commute import vpd
 from commute.data import cached_rows
 from commute.jobs import EXPERIMENTS, hard_exit
 from commute.local_faith import MIN_GAIN
-from commute.windows import Rows, read_rows
+from commute.windows import Rows, file_sha256, read_rows
 
 RESULTS, REPO = EXPERIMENTS / "reading_refactor" / "results", EXPERIMENTS.parent
 LOWER_128 = "experiments/convergence_panel/results/large/states/lower_s0_step128.pt"
 LO = ST.logodds_at  # the share's unit, every reading here is scored in it
 E229_AT = slice(-1, None)  # E217's and E229's read position: the last (topk_neurons LAST)
+
+
+# ----------------------------------------------------------------------------- items built with their F, M and D
+# (moved from items.py: this file is their only caller).
+# The fresh write passes and the neuron K scan need F itself, not a saved delta-W: E214's built x<f> (a
+# rescale of M) and E229's trained items (M plus an old task's delta-W), with their D and E217's neuron bounds. Copied
+# from the finished run.py files that built them (kstar_levels `World.make`, rule_retention `rescaled` / COPY24,
+# topk_neurons `setup` / `windows` / `pair`, rule_retention_pairs `Data.read_half` / `subset` / `fine_tune`, topk_upper
+# `load_pct` / `feat_of`), which stay as they ran. Every setting is an argument; callers take them from those files'
+# predictions.json "settings".
+
+COPY24 = EXPERIMENTS / "open_pair" / "results" / "large" / "amend1" / "windows_copy_trained.pt"  # E195's copy24 windows
+E217_PCT = EXPERIMENTS / "topk_neurons" / "results" / "large" / "percentiles.pt"
+
+
+def rescaled(M: R.Model, layer: int, C: Sequence[int], factor: float) -> R.Model:
+    """E214's x<factor>: a copy of M with block `layer`'s down_proj columns C times `factor`."""
+    F = R.Model(copy.deepcopy(M.net).requires_grad_(False))
+    with torch.no_grad():
+        F.net.h[layer].mlp.down_proj.weight[:, list(C)] *= factor
+    return F
+
+
+def copy24_held() -> Tensor:
+    """E214's D of x<f>: E195's copy24 held-out windows (CPU), read at every position."""
+    return torch.load(COPY24, weights_only=False)["heldout"].tokens
+
+
+def e229_read(task: str, read_seed: int, n_read: int) -> Tensor:
+    """E229's D of an old task's items: n_read windows of the task's read half (`old_tasks.task_windows`), drawn by
+    read_seed (CPU), read at the last position."""
+    sizes = OT.DSizes()
+    read = OT.task_windows(OT.TASKS[task], VR.make_sets(sizes, vpd.tokenizer(), print), sizes)[1]
+    return read[torch.randperm(read.shape[0], generator=torch.Generator().manual_seed(read_seed))[:n_read]]
+
+
+def e229_f(net: Any, item: str) -> R.Model:
+    """E229's F of `<task>_s<seed>`: M (net, a `steering.Net`) plus the old task's saved delta-W (`old_tasks.old_f`)."""
+    task, seed = item.rsplit("_s", 1)
+    return R.Model(OT.old_f(net, OT.TASKS[task].states[int(seed)]).net)
+
+
+def neuron_bounds(q: float, qs: Sequence[float], sha256: str) -> Tensor:
+    """E217's per-neuron q-quantile of M's MLP activations over Pile rows, (layers, n) CPU: E229's upper bounds (an
+    activation above it is a feature's value). The saved file is checked against `sha256` and its quantiles against qs."""
+    if (got := file_sha256(E217_PCT)) != sha256:
+        raise SystemExit(f"STOP: {E217_PCT}: sha256 {got}, the filed {sha256}")
+    z = torch.load(E217_PCT, weights_only=True)
+    assert torch.equal(z["q"], torch.tensor(list(qs))), "the saved quantiles are not the filed ones"
+    return z["values"][list(qs).index(q)]
 
 
 class Out(OldOut):
@@ -106,7 +164,7 @@ def steering_inputs() -> dict[str, Any]:
                  "rule": FS.Rule("pooled", None, tuple(s135["strengths"]), None, len(fit62.toks), torch.float32)},
         "e143": {"fit": train46, "select": take(train46, slice(0, s143["n_select"])), "read": held46, "dW": IT.load_dw(IT.resolve("e46/ident32_s0")),
                  "rule": FS.Rule("pooled", None, tuple(s143["strengths"]), s143["thresholds"]["gain_floor"], FS.BATCH, torch.float64)},
-        "panel": {"fit": lower_fit, "select": take(lower_fit, slice(0, cp["n_select"])), "read": lower, "dW": IT.load_dw(IT.Item("panel/lower_s0_step128", LOWER_128, None, None, None)),
+        "panel": {"fit": lower_fit, "select": take(lower_fit, slice(0, cp["n_select"])), "read": lower, "dW": IT.load_dw(IT.Item("panel/lower_s0_step128", LOWER_128, None)),
                   "rule": FS.Rule("pooled", None, tuple(cp["strengths"]), MIN_GAIN, FS.BATCH, torch.float64),
                   "pile": cached_rows("val", 0, cp["adl_rows"])[:, : cp["adl_k"]], "adl_batch": cp["adl_batch"]},
     }  # fmt: skip
@@ -116,8 +174,8 @@ def fresh_inputs() -> dict[str, Any]:
     """The fresh items' D, E217's neuron bounds and the builders' settings (E214's x2, E229's copy24_s0, E277's scan),
     from the finished experiments' filed settings; CPU, no model."""
     lv, c229, nr = settings("kstar_levels"), settings("topk_upper"), settings("needed_neurons")
-    return {"x2_D": IT.copy24_held(), "copy_D": IT.e229_read("copy24", c229["read_seed"], c229["n_read"]),
-            "hi": IT.neuron_bounds(c229["bands"][nr["band"]], c229["percentile_qs"], c229["percentiles_sha256"]),
+    return {"x2_D": copy24_held(), "copy_D": e229_read("copy24", c229["read_seed"], c229["n_read"]),
+            "hi": neuron_bounds(c229["bands"][nr["band"]], c229["percentile_qs"], c229["percentiles_sha256"]),
             "layer": lv["e195_layer"], "C": lv["e195_C"], "split_tol": settings("kstar_vpd")["split_tol"],
             "gain_batch": settings("kstar_vpd_wording_a")["gain_batch"], "nr": nr}  # fmt: skip
 
@@ -137,11 +195,8 @@ def steering(net: ST.Net, o: OldOut, x: dict[str, Any]) -> None:
 
 
 def share_gain(net: ST.Net, r: Rows, dW: ST.DW) -> float:
-    """E272's denominator: the share's T cells (T1 - T0, `masked_reads.share_cells_by`), as `realistic_reads.share_of`."""
-    assert r.tgt is not None
-    tgt = r.tgt
-    c = MR.share_cells_by(net.model, net.W0, dW, r.toks, r.pos, lambda lg, rows: {"lo": LO(lg[:, None], 0, tgt[rows])})
-    return float((c["T1"]["lo"] - c["T0"]["lo"]).mean())
+    """E272's denominator: the share's T cells (T1 - T0 of `share.share_cells`, batch 64), as `realistic_reads.share_of`."""
+    return SH.cells_gain(SH.share_cells(net.model, net.W0, dW, r, {"lo": LO}, MR.BATCH), "lo")
 
 
 def eb_fresh(o: OldOut, w: Any, x: dict[str, Any]) -> None:
@@ -151,11 +206,10 @@ def eb_fresh(o: OldOut, w: Any, x: dict[str, Any]) -> None:
     from commute import needed as IX
     from commute import needed_neurons as NN
     from commute import rho
-    from commute import rule_retention as R
     from commute import stand_in as SI
 
     nr, feat_n, M = x["nr"], K.Feat(None, list(x["hi"].to("cuda"))), R.Model(w.net.net)
-    F, toks = IT.rescaled(M, x["layer"], x["C"], 2.0), x["x2_D"].cuda()
+    F, toks = rescaled(M, x["layer"], x["C"], 2.0), x["x2_D"].cuda()
     feat = KV.featurize(M, F, w.uv, w.delta, w.bases(x["split_tol"]))
     changed = torch.isin(torch.arange(feat.n), torch.tensor(sorted(feat.changed), dtype=torch.long))
     s = EB.write_sums(F.net, SI.vpd_sites(feat), toks, x["gain_batch"], changed)
@@ -165,7 +219,7 @@ def eb_fresh(o: OldOut, w: Any, x: dict[str, Any]) -> None:
     val(o,"E_b_neurons/x2@fresh", EB.eb(s, npz("experiments/needed_neurons/results/large/items_x2.npz")["in_K"], leftovers=True), batch=nr["cache_batch"])
     del F, p
     torch.cuda.empty_cache()
-    F, toks, at = IT.e229_f(w.net, "copy24_s0"), x["copy_D"].cuda(), E229_AT
+    F, toks, at = e229_f(w.net, "copy24_s0"), x["copy_D"].cuda(), E229_AT
     p = rho.Pair(F, M)
     z = npz("experiments/needed_neurons/results/large/items_copy24_s0.npz")
     s = EB.write_sums(F.net, NN.sites(p, feat_n, toks.shape[1]), toks, nr["cache_batch"], NN.variables(p)[1])

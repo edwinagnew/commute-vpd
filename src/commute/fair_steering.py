@@ -21,6 +21,7 @@ from typing import TYPE_CHECKING, Any, Literal
 import torch
 from torch import Tensor
 
+from commute import share as SH
 from commute import steering as ST
 from commute.revival_kv import kl_rows
 
@@ -62,12 +63,20 @@ def diffs(net: ST.Net, toks: Tensor, dW: ST.DW, pos: int, batch: int, dtype: tor
     return {l: torch.cat(x) for l, x in out.items()}
 
 
+def means(d: dict[int, Tensor], idx: Tensor | None, n_keys: int) -> dict[int, Tensor]:
+    """Per layer, the mean of `diffs` (N, d) over every window (idx None: pooled, (d,)) or over each key's windows
+    (per_key_mean, (n_keys, d)), cast to fp32: the one pooled and per-key mean (`vectors`, `fit_vectors`)."""
+    if idx is None:
+        return {l: x.mean(0).float() for l, x in d.items()}
+    return {l: per_key_mean(x, idx.to(x.device), n_keys).float() for l, x in d.items()}
+
+
 def vectors(net: ST.Net, toks: Tensor, idx: Tensor, n_keys: int, dW: ST.DW, pos: int) -> dict[str, dict[int, Tensor]]:
-    """Per layer, the pooled (d,) and per-key (K, d) means of tuned minus W0 block-l input at `pos` over `toks`."""
+    """Per layer, the pooled (d,) and per-key (K, d) `means` of tuned minus W0 block-l input at `pos` over `toks`
+    (batch 64, fp64), from one pass of forwards."""
     d = diffs(net, toks, dW, pos, BATCH, torch.float64)
-    i = idx.to(d[0].device)
-    assert bool((torch.bincount(i, minlength=n_keys) > 0).all()), "a key has no fitting window"
-    return {"pooled": {l: x.mean(0).float() for l, x in d.items()}, "perkey": {l: per_key_mean(x, i, n_keys).float() for l, x in d.items()}}
+    assert bool((torch.bincount(idx, minlength=n_keys) > 0).all()), "a key has no fitting window"
+    return {"pooled": means(d, None, n_keys), "perkey": means(d, idx, n_keys)}
 
 
 def steer(v: Tensor, layer: int, strength: float, idx: Tensor, pos: int) -> ST.Edit:
@@ -144,9 +153,8 @@ class Rule:
 
 
 def divide(num: float, gain: float, floor: float | None) -> float:
-    if floor is None:
-        return num / gain if gain != 0 else math.nan
-    return num / gain if gain >= floor else math.nan
+    """num / gain under `share.Floor`, one-sided (floor None: only a zero gain is not read)."""
+    return num / gain if SH.Floor(-math.inf if floor is None else floor, two_sided=False).passes(gain) else math.nan
 
 
 @torch.no_grad()
@@ -177,10 +185,7 @@ def fit_vectors(net: ST.Net, fit: Rows, dW: ST.DW, rule: Rule, pool: Tensor | No
     """Per layer, the steering vector from `fit`: the mean of tuned minus W0 block input at fit.pos, pooled (d,) or per
     key over `pool` (K, d), taken in rule.mean and cast to fp32."""
     d = diffs(net, fit.toks, dW, fit.pos, rule.batch, rule.mean)
-    if pool is None:
-        return {l: x.mean(0).float() for l, x in d.items()}
-    i = key_idx(fit, rule, pool)
-    return {l: per_key_mean(x, i.to(x.device), len(pool)).float() for l, x in d.items()}
+    return means(d, None, 0) if pool is None else means(d, key_idx(fit, rule, pool), len(pool))
 
 
 def selection(net: ST.Net, fit: Rows, select: Rows, dW: ST.DW, rule: Rule, unit: ST.Readout, pool: Tensor | None) -> tuple[dict[int, Tensor], dict[str, Any]]:

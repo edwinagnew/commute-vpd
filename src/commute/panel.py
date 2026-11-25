@@ -31,6 +31,7 @@ import torch.nn.functional as F
 from torch import Tensor
 
 from commute import finetune as FT
+from commute import kl as KL
 from commute import realistic as R
 from commute import realistic_reads as RR
 from commute import steering as ST
@@ -283,18 +284,9 @@ def held_gain(net: ST.Net, t: Task, dW: ST.DW, w0: float | None = None) -> float
     return target_logp(net, t.held, t.held_mask, dW) - (target_logp(net, t.held, t.held_mask, None) if w0 is None else w0)
 
 
-@torch.no_grad()
 def kl_from_w0(net: ST.Net, rows: Tensor, dW: ST.DW, batch: int = 8) -> float:
-    """Mean over every position of rows of KL(W0 || W0 + dW), fp32 per position, float64 sum (rl_67m run_stage1.py
-    `kl_from_base`, the KL E256/E260's states record, so the extra rows sit on the same axis)."""
-    tot, n = 0.0, 0
-    for b in rows.split(batch):
-        p = net.run(b)[0]
-        with net.at(dW):
-            q = net.run(b)[0]
-        kl = kl_per_position(p, q)
-        tot, n = tot + float(kl.double().sum()), n + kl.numel()
-    return tot / n
+    """`kl.kl_base_to_ft` at the panel's batch 8 (rl_67m `kl_from_base`, the KL E256/E260's states record)."""
+    return KL.kl_base_to_ft(net, rows, dW, batch)
 
 
 # ----------------------------------------------------------------------------- matched checkpoints (filed rule)

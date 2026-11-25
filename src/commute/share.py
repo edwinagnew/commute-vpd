@@ -5,13 +5,11 @@ appendix A4).
 r = mean(L01 - L00) / gain, read at rows.pos in one unit. L is the CI-masked model (Delta out) with the released
 components and Gamma's gates from W0 (L00) or from W0 + dW (L01); T the target model at W0 (T0) or W0 + dW (T1).
   share_cells     T0, T1, L00, L01 per row and unit, from `vpd.compute_ci` and `local_faith.masked_logits` (bf16
-                  autocast) in batches of `batch` (`masked_reads.route_cells_by`'s calls; E136's `route_split` makes
-                  the same forwards). The batch moves bf16 numbers: E136 read E53's tasks at 32, masked_reads at 64.
+                  autocast) in batches of `batch` (`masked_reads.share_cells` calls it; `route_cells_by` and E136's `route_split`
+                  make the same forwards). The batch moves bf16 numbers: E136 read E53's tasks at 32, masked_reads at 64.
   share           the ratio over a gain the caller names: `cells_gain` (T1 - T0 of the same bf16 forwards; E136's
                   `.trained`, E140, E211, E272) or an fp32 gain (the target model alone; E136's untrained shares).
   Floor           |gain| >= 1e-6 (`route_split`, two-sided) or gain >= 1 (`MIN_GAIN`, `masked_reads.share`, one-sided).
-  untrained_share the same do-nothing form on W0's SVD and its rotation (`untrained.do_nothing_cells`, fp32 hooks,
-                  E136's top-k_m gates), over the fp32 gain of those forwards.
 Units: a `steering.Readout` per name, (logits, pos, targets) -> (N,) float64 CPU: `steering.logodds_at` ("lo", the
 share's unit) or `steering.contrast_at(ab)` (E140's two-label contrast).
 
@@ -23,15 +21,13 @@ from __future__ import annotations
 
 from collections.abc import Mapping
 from dataclasses import dataclass
-from typing import Any, Literal
+from typing import Any
 
 import torch
 from torch import Tensor
 
 from commute import steering as ST
-from commute import untrained as U
 from commute import vpd
-from commute.data import LAST
 from commute.faithfulness import model_state
 from commute.local_faith import masked_logits
 from commute.windows import Rows
@@ -81,17 +77,3 @@ def numerator(cells: Cells, unit: str) -> float:
 def share(cells: Cells, unit: str, gain: float, floor: Floor) -> float:
     """r = mean(L01 - L00) / gain in `unit`; nan when the gain does not pass `floor`."""
     return numerator(cells, unit) / gain if floor.passes(gain) else float("nan")
-
-
-def untrained_share(model: Any, W0: Mapping[str, Tensor], dW: ST.DW, rows: Rows, decomps: Mapping[str, U.Decomposition], k_m: Mapping[str, int],
-                    unit: Literal["lo"] | ST.Readout, batch: int, floor: Floor) -> dict[str, float]:  # fmt: skip
-    """r per decomposition of W0 that needs no training, over the fp32 gain of the same forwards ("gain_fp32" beside).
-    unit "lo" is `do_nothing_cells`' own log-odds (summed on the device, E136's path); a Readout reads that unit."""
-    assert rows.tgt is not None, f"{rows.task} {rows.kind}: no target per row"
-    w = torch.cat([rows.toks, rows.tgt[:, None]], 1)  # the target rides as a last column that no forward reads
-    u = None if unit == "lo" else unit
-    c0 = U.do_nothing_cells(model, w, rows.pos, LAST, decomps, k_m, batch, rows.toks.shape[1], None, u)
-    target = {k: x + dW[k].to(x.device) for k, x in W0.items()}
-    c1 = U.do_nothing_cells(model, w, rows.pos, LAST, decomps, k_m, batch, rows.toks.shape[1], target, u)
-    gain = c1["T"] - c0["T"]
-    return {n: (c1[n] - c0[n]) / gain if floor.passes(gain) else float("nan") for n in decomps} | {"gain_fp32": gain}

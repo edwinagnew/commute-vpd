@@ -23,11 +23,13 @@ from collections.abc import Callable, Mapping
 import torch
 from torch import Tensor
 
+from commute import share as SH
 from commute import steering as ST
 from commute import vpd
 from commute.faithfulness import model_state
 from commute.identity import log_odds
 from commute.local_faith import masked_logits
+from commute.windows import Rows
 
 UNITS = ("lo", "lp", "contrast")
 BATCH = 64
@@ -48,9 +50,9 @@ def cat(parts: list[dict[str, Tensor]]) -> dict[str, Tensor]:
 
 
 def share(num: Tensor, gain: Tensor, floor: float) -> float:
-    """mean(num) / mean(gain); nan when the mean gain is below `floor` (the share is not read below it)."""
+    """mean(num) / mean(gain) under the one-sided `share.Floor(floor)` (`share.share` on the cells' differences)."""
     g = float(gain.mean())
-    return float(num.mean()) / g if g >= floor and g != 0 else float("nan")
+    return float(num.mean()) / g if SH.Floor(floor, two_sided=False).passes(g) else float("nan")
 
 
 UnitsOf = Callable[[Tensor, slice], dict[str, Tensor]]  # (logits at the answer (B, V), the batch's rows) -> unit -> (B,)
@@ -61,16 +63,14 @@ def label_units(y: Tensor, ab: tuple[int, int]) -> UnitsOf:
     return lambda lg, rows: units(lg, y[rows], ab)
 
 
-@torch.no_grad()
 def share_cells(model: object, W0: Mapping[str, Tensor], dW: ST.DW, toks: Tensor, y: Tensor, ab: tuple[int, int], pos: int) -> Cells:
-    """T0, T1, L00, L01 per window and unit on `toks` (N, L), the label read at `pos` (see the module docstring)."""
-    return share_cells_by(model, W0, dW, toks, pos, label_units(y, ab))
+    """T0, T1, L00, L01 per window and unit on `toks` (N, L), the label read at `pos`: `share.share_cells` at BATCH with
+    each of `units` as a readout of the rows' own labels y."""
+    def unit(u: str) -> ST.Readout:
+        return lambda lg, p, yy: units(lg[:, p], yy, ab)[u]
 
-
-@torch.no_grad()
-def share_cells_by(model: object, W0: Mapping[str, Tensor], dW: ST.DW, toks: Tensor, pos: int, units_of: UnitsOf) -> Cells:
-    """`share_cells` with any units (`units_of`), e.g. log-odds of each window's next token (P2.38 run 2); same calls."""
-    return route_cells_by(model, W0, dW, toks, pos, units_of)[0]
+    rows = Rows("", "", toks, pos, y, "masked_reads.share_cells", ab)
+    return SH.share_cells(model, W0, dW, rows, {u: unit(u) for u in UNITS}, BATCH)
 
 
 KLCells = dict[str, Tensor]  # E57's cell -> (N,) float64 CPU, each row's KL summed over its positions 0..upto
@@ -79,7 +79,8 @@ KLCells = dict[str, Tensor]  # E57's cell -> (N,) float64 CPU, each row's KL sum
 @torch.no_grad()
 def route_cells_by(model: object, W0: Mapping[str, Tensor], dW: ST.DW, toks: Tensor, pos: int, units_of: UnitsOf,
                    kl_upto: int | None = None, comps1: dict[str, tuple[Tensor, Tensor]] | None = None) -> tuple[Cells, KLCells]:
-    """`share_cells_by`'s cells (T0, T1, L00, L01 at `pos`) and, with kl_upto, from the same forwards E57's KL cells
+    """The cells of `share.share_cells` (T0, T1, L00, L01 at `pos`, the same forwards; kept here for the KL cells) and,
+    with kl_upto, from the same forwards E57's KL cells
     (experiments/qwen_reading/lab.py `cells`, the form of Qwen's re-gating share, `qwen_reading.shares`) on the 67M, each
     row's KL summed over positions 0..kl_upto: K0 = KL(T0 || L00), K00 = KL(T1 || L00), K01 = KL(T1 || L01), T1 the
     changed model's own forward, L the CI-masked model (Delta out) with the released components and Gamma's gates from W0
@@ -174,7 +175,7 @@ def topk_cells(net: ST.Net, dW: ST.DW, toks: Tensor, y: Tensor, ab: tuple[int, i
 
 
 def topk_cells_by(net: ST.Net, dW: ST.DW, toks: Tensor, pos: int, k: Mapping[int, int], units_of: UnitsOf) -> Cells:
-    """`topk_cells` with any units (`units_of`, as `share_cells_by`)."""
+    """`topk_cells` with any units (`units_of`, logits at pos and the batch's rows)."""
     out: dict[str, list[dict[str, Tensor]]] = {c: [] for c in ("T0", "T1", "N00", "N01")}
     for s in range(0, len(toks), BATCH):
         for cell, lg in topk_logits(net, dW, toks[s : s + BATCH], pos, k).items():

@@ -228,6 +228,8 @@ class Reader:
         self.ks = {"k64": dict.fromkeys(FS.LAYERS, self.k_fixed), "kmatched": {l: int(self.k_m[k]) for l, k in enumerate(DOWN)}}
         self.read_idx = torch.zeros(len(self.r.toks), dtype=torch.long)
         self.w0["rows"] = self.steered(self.r.toks, self.r.tgt, None)
+        # The same quantity as the mean of w0["rows"], but read per batch of 64 as E211 and E272 read it; w0["rows"] reads
+        # each unit once over all rows' logits, and a CUDA logsumexp over another row count may round differently.
         self.w0["prior"] = {u: PR.prior_mean_lo(self.net, self.r.rows("read", None), f, FS.BATCH) for u, f in self.r.fns().items()}
         self.w0["untrained"] = {u: self.untrained_cells(None, u) for u in self.r.fns()}
 
@@ -241,8 +243,8 @@ class Reader:
         return self.r.units_of(tgt)(lg, slice(0, len(toks)))
 
     def untrained_cells(self, dW: ST.DW | None, u: str) -> dict[str, float]:
-        # Not `share.untrained_share`: it feeds only the LAST layout (target as an unread last column), while a Read
-        # feeds NEXT (an LM window holds its own target) or PAIR windows too; and this keeps W0's cells once per task
+        # `untrained.do_nothing_cells` called directly: a Read feeds LAST, NEXT (an LM window holds its own target) or PAIR
+        # windows; and this keeps W0's cells once per task
         # (w0["untrained"]) and the numerators the callers save. Left as E211 ran it (P2.79 2c).
         w, token, ci_len = self.r.windows()
         target = None if dW is None else {k: x + dW[k].to(x.device) for k, x in self.net.W0.items()}
