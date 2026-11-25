@@ -1,0 +1,36 @@
+{
+ "task": "german",
+ "seed": 0,
+ "card": "NVIDIA L40S",
+ "file": "experiments/convergence_panel/results/large/states/german_s0_step300.pt",
+ "gains": {
+  "a_fp32": 0.6915327796936035,
+  "a_bf16": 0.6901058082580567,
+  "b_bf16": 0.6901058082580567,
+  "saved": 0.6943342704772949
+ },
+ "max_abs_weight_diff_bf16": {
+  "a_b": 0.0,
+  "a_saved": 0.001125335693359375
+ },
+ "floor": 0.00142697143554682,
+ "gap_saved": 0.004228462219238227,
+ "h100_read": 0.6949190635681153,
+ "control": {
+  "card": "NVIDIA L40S",
+  "file": "experiments/convergence_panel/results/large/states/german_s0_step300.pt",
+  "gains": {
+   "a_fp32": 0.6915327796936035,
+   "a_bf16": 0.6901058082580567,
+   "b_bf16": 0.6901058082580567,
+   "saved": 0.6943342704772949
+  },
+  "max_abs_weight_diff_bf16": {
+   "a_b": 0.0,
+   "a_saved": 0.001125335693359375
+  },
+  "floor": 0.00142697143554682,
+  "gap_saved": 0.004228462219238227
+ },
+ "stopped": "german s0: the step-300 replay reads 0.00423 off the saved file, over the floor 0.00143"
+}

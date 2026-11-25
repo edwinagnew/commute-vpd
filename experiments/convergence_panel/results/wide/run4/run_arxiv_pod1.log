@@ -1,0 +1,71 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+/root/work/src/commute/panel.py:216: UserWarning: Converting a tensor with requires_grad=True to a scalar may lead to unexpected behavior.
+Consider using tensor.detach() first. (Triggered internally at /pytorch/torch/csrc/autograd/generated/python_variable_methods.cpp:835.)
+  return loss, {"ce": float(loss)}
+03:45:46 [ft] step 1: loss 3.2572 ce 3.2572
+03:45:50 [ft] step 10: loss 3.4645 ce 3.4645
+03:45:55 [ft] step 20: loss 3.3642 ce 3.3642
+03:46:00 [ft] step 30: loss 3.4429 ce 3.4429
+03:46:04 [ft] step 40: loss 3.3013 ce 3.3013
+03:46:09 [ft] step 50: loss 3.2864 ce 3.2864
+03:46:13 [ft] step 60: loss 3.3659 ce 3.3659
+03:46:18 [ft] step 70: loss 3.2813 ce 3.2813
+03:46:23 [ft] step 80: loss 3.3098 ce 3.3098
+03:46:27 [ft] step 90: loss 3.2912 ce 3.2912
+03:46:32 [ft] step 100: loss 3.2255 ce 3.2255
+03:46:37 [ft] step 110: loss 3.2344 ce 3.2344
+03:46:41 [ft] step 120: loss 3.3400 ce 3.3400
+03:46:46 [ft] step 130: loss 3.1698 ce 3.1698
+03:46:51 [ft] step 140: loss 3.3067 ce 3.3067
+03:46:55 [ft] step 150: loss 3.1647 ce 3.1647
+03:47:00 [ft] step 160: loss 3.3032 ce 3.3032
+03:47:04 [ft] step 170: loss 3.2642 ce 3.2642
+03:47:09 [ft] step 180: loss 3.3107 ce 3.3107
+03:47:14 [ft] step 190: loss 3.1468 ce 3.1468
+03:47:18 [ft] step 200: loss 3.1860 ce 3.1860
+03:47:23 [ft] step 210: loss 3.2162 ce 3.2162
+03:47:28 [ft] step 220: loss 3.3519 ce 3.3519
+03:47:32 [ft] step 230: loss 3.2876 ce 3.2876
+03:47:37 [ft] step 240: loss 3.2466 ce 3.2466
+03:47:42 [ft] step 250: loss 3.1192 ce 3.1192
+03:47:46 [ft] step 260: loss 3.2480 ce 3.2480
+03:47:51 [ft] step 270: loss 3.1554 ce 3.1554
+03:47:56 [ft] step 280: loss 3.1511 ce 3.1511
+03:48:00 [ft] step 290: loss 3.1763 ce 3.1763
+03:48:06 [ft] step 1: loss 3.2572 ce 3.2572
+03:48:10 [ft] step 10: loss 3.4645 ce 3.4645
+03:48:15 [ft] step 20: loss 3.3642 ce 3.3642
+03:48:19 [ft] step 30: loss 3.4429 ce 3.4429
+03:48:24 [ft] step 40: loss 3.3013 ce 3.3013
+03:48:29 [ft] step 50: loss 3.2864 ce 3.2864
+03:48:33 [ft] step 60: loss 3.3659 ce 3.3659
+03:48:38 [ft] step 70: loss 3.2813 ce 3.2813
+03:48:43 [ft] step 80: loss 3.3098 ce 3.3098
+03:48:47 [ft] step 90: loss 3.2912 ce 3.2912
+03:48:52 [ft] step 100: loss 3.2255 ce 3.2255
+03:48:57 [ft] step 110: loss 3.2344 ce 3.2344
+03:49:02 [ft] step 120: loss 3.3400 ce 3.3400
+03:49:06 [ft] step 130: loss 3.1698 ce 3.1698
+03:49:11 [ft] step 140: loss 3.3067 ce 3.3067
+03:49:16 [ft] step 150: loss 3.1647 ce 3.1647
+03:49:20 [ft] step 160: loss 3.3032 ce 3.3032
+03:49:25 [ft] step 170: loss 3.2642 ce 3.2642
+03:49:30 [ft] step 180: loss 3.3107 ce 3.3107
+03:49:34 [ft] step 190: loss 3.1468 ce 3.1468
+03:49:39 [ft] step 200: loss 3.1860 ce 3.1860
+03:49:44 [ft] step 210: loss 3.2162 ce 3.2162
+03:49:48 [ft] step 220: loss 3.3519 ce 3.3519
+03:49:53 [ft] step 230: loss 3.2876 ce 3.2876
+03:49:58 [ft] step 240: loss 3.2466 ce 3.2466
+03:50:02 [ft] step 250: loss 3.1192 ce 3.1192
+03:50:07 [ft] step 260: loss 3.2480 ce 3.2480
+03:50:12 [ft] step 270: loss 3.1554 ce 3.1554
+03:50:16 [ft] step 280: loss 3.1511 ce 3.1511
+03:50:21 [ft] step 290: loss 3.1763 ce 3.1763
+03:51:06 [control] {"card": "NVIDIA L40S", "file": "experiments/convergence_panel/results/large/states/arxiv_s0_step300.pt", "gains": {"a_fp32": 0.515615135192871, "a_bf16": 0.5163896083831787, "b_bf16": 0.5163896083831787, "saved": 0.5139298076629639}, "max_abs_weight_diff_bf16": {"a_b": 0.0, "a_saved": 0.0005702972412109375}, "floor": 0.0007744731903076563, "gap_saved": 0.0024598007202147887}
+STOP: arxiv s0: the step-300 replay reads 0.00246 off the saved file, over the floor 0.000774: tell the lead
+peak host RSS 6.1 GB
+=== FINISHED (exit 1) -- results in /root/work/experiments/convergence_panel/results/wide/run4 (arxiv) ===

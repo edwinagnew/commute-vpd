@@ -64,6 +64,7 @@ from commute.open_pair import jsonable
 HERE = Path(__file__).resolve().parent
 RESULTS, REPO = HERE / "results", HERE.parents[1]
 PRED, LARGE, MIX_SEL = RESULTS / "predictions.json", RESULTS / "large", RESULTS / "mix_selection.json"
+RUN4_SEL = RESULTS / "wide" / "run4" / "selection.json"  # P2.66 run 4's "gain1" picks (run4.py; results/wide/predictions_run4.json)
 TK: Any = load_experiment("convergence_panel", "tasks")
 NINE = ("pile", "code", "lower", "british", "topic", "french", "yoruba", "squad", "conll")
 ADDED = ("wiki_en", "arxiv", "german", "swahili", "tagalog", "spanish", "sentiment", "category", "summary")  # Amendment 5
@@ -440,6 +441,10 @@ def picked(name: str, which: str = "nine") -> dict[str, dict[str, Any]]:
             add(st, seed, "mix")
     for st in sel.get("trajectory", {}).get(name) or []:
         add(st, 0, "trajectory")
+    if which == "wide" and RUN4_SEL.is_file():  # P2.66 run 4: the earliest save with read-row gain >= 1 (run4.py select)
+        for seed, st in (json.loads(RUN4_SEL.read_text())["tasks"].get(name) or {}).items():
+            if st is not None:
+                add(st, seed, "gain1")
     return got
 
 

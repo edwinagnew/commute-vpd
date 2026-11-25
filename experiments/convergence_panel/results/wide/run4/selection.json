@@ -1,0 +1,98 @@
+{
+ "written": 1795581413.724313,
+ "label": "gain1",
+ "rule": "for each task-seed, the earliest saved step whose read-row gain is >= gain_floor (1.0, absolute, in log-odds); ties cannot occur (one save per step)",
+ "tasks": {
+  "arxiv": {
+   "0": null,
+   "1": null,
+   "2": null
+  },
+  "german": {
+   "0": null,
+   "1": null,
+   "2": null
+  },
+  "spanish": {
+   "0": {
+    "step": 400,
+    "kl_live": 0.2241395107078361,
+    "file": "experiments/convergence_panel/results/large/states_run4/r4_spanish_s0_step400.pt",
+    "sha256": "5176d90342456e7d78c5ecc739e8b1b4532e9b428debee7ff7652f0ab8b16647",
+    "gain": 1.0904441356658936,
+    "kl": 0.20248620196384623,
+    "size": 0.02766011340395494,
+    "held_gain": 1.041319374358281,
+    "seconds": 3.9375524520874023
+   }
+  },
+  "sentiment": {
+   "0": {
+    "step": 108,
+    "kl_live": 2.525862141370547,
+    "size": 0.011338991829516662,
+    "rungs": {
+     "kl": [],
+     "size": [
+      0.011313708498984762
+     ]
+    },
+    "last": false,
+    "file": "experiments/convergence_panel/results/large/states/sentiment_s0_step108.pt",
+    "sha256": "e971b1cba6d7aa44734924fd4cd0af7d962f447208ee309416a87c2a4b95f695",
+    "kl": 2.508412631620117,
+    "held_gain": 9.74962108026196,
+    "gain": 2.459163211286068
+   },
+   "1": {
+    "step": 21,
+    "kl_live": 0.9559504777084301,
+    "size": 0.005720800744613468,
+    "rungs": {
+     "kl": [],
+     "size": [
+      0.005656854249492381
+     ]
+    },
+    "last": false,
+    "file": "experiments/convergence_panel/results/large/states/sentiment_s1_step21.pt",
+    "sha256": "6e156ac319ed42e85ab346cb2306860e66e38b06a779ef612e1e31ec103e6f44",
+    "kl": 0.9467130780067691,
+    "held_gain": 9.783162471600008,
+    "gain": 1.535274051129818
+   },
+   "2": {
+    "step": 119,
+    "kl_live": 4.427734436526144,
+    "size": 0.011316204703236465,
+    "rungs": {
+     "kl": [],
+     "size": [
+      0.011313708498984762
+     ]
+    },
+    "last": false,
+    "file": "experiments/convergence_panel/results/large/states/sentiment_s2_step119.pt",
+    "sha256": "9977c3613d091c58e01fd65400f7b6028e9167ea37b081f21e524499389d7bc4",
+    "kl": 4.333638768269898,
+    "held_gain": 9.867850668545998,
+    "gain": 1.176509402692318
+   }
+  }
+ },
+ "none": {
+  "arxiv": [
+   "0",
+   "1",
+   "2"
+  ],
+  "german": [
+   "0",
+   "1",
+   "2"
+  ],
+  "spanish": [],
+  "sentiment": []
+ },
+ "nan_gains": {}
+}
