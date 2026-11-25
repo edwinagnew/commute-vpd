@@ -67,6 +67,11 @@ class SAESite:
     def idx(self) -> slice:
         return slice(self.off, self.rem + 1)
 
+    @property
+    def leftover(self) -> int | None:
+        """The error term (the remainder)."""
+        return self.rem
+
     def o_F(self, y: Tensor) -> Tensor:
         o = self.fmod.forward(y)
         return o if self.extra is None else o + self.extra(y)

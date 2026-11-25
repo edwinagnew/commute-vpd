@@ -13,14 +13,20 @@ featurization with any.
 
 One row of a forward is one (variable, pair) case. F's run on D is cached once (each matrix's input and each block's
 input); a case at a matrix of block l reruns blocks l.. from the cached block input, so rows of one matrix share a batch.
+
+`scan_sites` is the one swap test for every featurization (the reading refactor, P2.79 move 6): a featurization gives
+its sites as `Interchange`s (here `Swap`, VPD; `needed_neurons.Swap`, heads, neurons and remainders per layer;
+`needed_sae.Swap`, SAE latents and error terms) and their cached run. `needed_neurons.scan` and `needed_sae.scan` are
+kept as one-call aliases for their finished callers. K* (`kstar_vpd.search`, the KL mean-ablation search) is a different
+set, kept under its own name.
 """
 
 from __future__ import annotations
 
 import time
-from collections.abc import Callable
+from collections.abc import Callable, Sequence
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Protocol
 
 import torch
 from torch import Tensor
@@ -81,15 +87,47 @@ def tail(net: Any, l: int, x: Tensor, at: slice) -> Tensor:
     return net.lm_head(net.ln_f(x[:, at])).float()
 
 
+class Interchange(Protocol):
+    """One site of `scan_sites`, any featurization: its variables are global indices off .. off + n - 1, a case reruns
+    blocks `layer`.. with `hooks` on, after `set` names each row's local variable and its pair (x, x')."""
+
+    layer: int
+    off: int
+
+    def cases(self, local: Tensor | None, ex: Tensor, pt: Tensor, rows: int) -> list[tuple[Tensor, Tensor, int]]:
+        """(local variable, pair index, cases per forward) groups: `local` (None: every variable) against every pair."""
+        ...
+
+    def hooks(self, net: Any) -> list[Any]: ...
+
+    def set(self, var: Tensor, ex: Tensor, pt: Tensor) -> None: ...
+
+
+def every_pair(local: Tensor, Q: int) -> tuple[Tensor, Tensor]:
+    """Each variable of `local` against each of Q pairs: variable-major, pairs in order."""
+    return local.repeat_interleave(Q), torch.arange(Q, device=local.device).repeat(len(local))
+
+
 class Swap:
     """A forward hook on one matrix: row r of the batch has variable var[r] (local: subcomponent c < C, the remainder
     at C) set to its value on pairs' x' (index pt[r] into the cache)."""
 
     def __init__(self, s: KV.Site, y: Tensor) -> None:
         self.s, self.y, self.C = s, y, s.rem - s.off
+        self.layer, self.off = _layer(s.name), s.off
         self.VT, self.dVT = s.V.T.contiguous(), s.dV.T.contiguous()
         self.var: Tensor | None = None
         self.pt: Tensor | None = None
+
+    def cases(self, local: Tensor | None, ex: Tensor, pt: Tensor, rows: int) -> list[tuple[Tensor, Tensor, int]]:
+        loc = (torch.arange(self.C + 1) if local is None else local).to(ex.device)
+        return [(*every_pair(loc, len(ex)), rows)]
+
+    def hooks(self, net: Any) -> list[Any]:
+        return [net.get_submodule(self.s.name).register_forward_hook(self)]
+
+    def set(self, var: Tensor, ex: Tensor, pt: Tensor) -> None:
+        self.var, self.pt = var, pt
 
     def __call__(self, _m: Any, inp: tuple[Tensor, ...], out: Tensor) -> Tensor:
         assert self.var is not None and self.pt is not None
@@ -121,48 +159,55 @@ class Scan:
 
 
 @torch.no_grad()
-def scan(F: R.Model, feat: KV.Feat, run: Run, at: slice, ex: Tensor, pt: Tensor, rows: int, log: Callable[[str], None],
-         only: dict[int, Tensor] | None = None, group: int | None = None) -> Scan:  # fmt: skip
-    """Every variable at every site (or, with `only`, the local variables given per site index) against every pair
-    (ex[k], pt[k]), `rows` cases per forward. With `group`, also which groups of `group` consecutive pairs changed an
-    output, per variable (Scan.group_mask); nothing else changes."""
-    assert not feat.grafts, "graft variables are not handled by this scan"
+def scan_sites(net: Any, sites: Sequence[Interchange], run: Any, at: slice, ex: Tensor, pt: Tensor, rows: int, n: int,
+               log: Callable[[str], None], only: dict[int, Tensor] | None = None, group: int | None = None) -> Scan:  # fmt: skip
+    """The swap test of any featurization (P2.79 move 6): every variable of every site (or, with `only`, the local
+    variables given per site index) against every pair (ex[k], pt[k]), cases rerun from F's cached run (`run`: blocks,
+    top, logits at `at`), `rows` cases per forward unless a site groups its own; n variables in all. With `group`, also
+    which groups of `group` consecutive pairs changed an output, per variable (Scan.group_mask)."""
     dev = run.top.device
     ex, pt, Q = ex.to(dev), pt.to(dev), len(ex)
     n_groups = 0 if group is None else -(-Q // group)
     assert n_groups <= 8, f"group_mask holds at most 8 groups, got {n_groups}"
-    hits = torch.zeros((feat.n, n_groups), dtype=torch.bool, device=dev)
-    first = torch.full((feat.n,), -1, dtype=torch.long, device=dev)
-    flips = torch.zeros(feat.n, dtype=torch.long, device=dev)
+    hits = torch.zeros((n, n_groups), dtype=torch.bool, device=dev)
+    first = torch.full((n,), -1, dtype=torch.long, device=dev)
+    flips = torch.zeros(n, dtype=torch.long, device=dev)
     big, max_dev, done, t0 = torch.iinfo(torch.long).max, 0.0, 0, time.time()
-    for j, s in enumerate(feat.sites):
+    for j, s in enumerate(sites):
         if only is not None and j not in only:
             continue
-        local = (only[j] if only is not None else torch.arange(s.rem - s.off + 1)).to(dev)
-        sw = Swap(s, run.ys[j])
-        var, pair = local.repeat_interleave(Q), torch.arange(Q, device=dev).repeat(len(local))
-        h, l = F.net.get_submodule(s.name).register_forward_hook(sw), _layer(s.name)
+        groups = s.cases(None if only is None else only[j], ex, pt, rows)
+        hs = s.hooks(net)
         try:
-            for i in range(0, len(var), rows):
-                v, k = var[i : i + rows], pair[i : i + rows]
-                sw.var, sw.pt = v, pt[k]
-                lg = tail(F.net, l, run.blocks[l][ex[k]], at)
-                max_dev = max(max_dev, float((lg - run.logits[ex[k]]).abs().max()))
-                hit = (lg.argmax(-1) != run.top[ex[k]]).any(-1)
-                g = s.off + v
-                flips.index_add_(0, g, hit.long())
-                cand = torch.full((feat.n,), big, dtype=torch.long, device=dev)
-                cand.scatter_reduce_(0, g[hit], k[hit], "amin")
-                first = torch.where((cand != big) & ((first < 0) | (cand < first)), cand, first)
-                if group is not None:
-                    hits[g[hit], k[hit] // group] = True
+            for var, pair, size in groups:
+                for i in range(0, len(var), size):
+                    v, k = var[i : i + size], pair[i : i + size]
+                    s.set(v, ex[k], pt[k])
+                    lg = tail(net, s.layer, run.blocks[s.layer][ex[k]], at)
+                    max_dev = max(max_dev, float((lg - run.logits[ex[k]]).abs().max()))
+                    hit = (lg.argmax(-1) != run.top[ex[k]]).any(-1)
+                    g = s.off + v
+                    flips.index_add_(0, g, hit.long())
+                    cand = torch.full((n,), big, dtype=torch.long, device=dev)
+                    cand.scatter_reduce_(0, g[hit], k[hit], "amin")
+                    first = torch.where((cand != big) & ((first < 0) | (cand < first)), cand, first)
+                    if group is not None:
+                        hits[g[hit], k[hit] // group] = True
         finally:
-            h.remove()
-        done += len(var)
-        log(f"    site {j} {s.name}: {len(local)} variables x {Q} pairs, {int((first[s.off : s.rem + 1] >= 0).sum())} needed; "
-            f"{done} cases in {time.time() - t0:.0f} s ({done / max(time.time() - t0, 1e-9):.0f}/s)")  # fmt: skip
+            for h in hs:
+                h.remove()
+        done += sum(len(var) for var, _, _ in groups)
+        log(f"    site {j} (block {s.layer}, variables from {s.off}): {sum(len(var) for var, _, _ in groups)} cases, "
+            f"{int((first >= 0).sum())} needed so far; {done} cases in {time.time() - t0:.0f} s ({done / max(time.time() - t0, 1e-9):.0f}/s)")  # fmt: skip
     mask = None if group is None else (hits.to(torch.uint8) << torch.arange(n_groups, dtype=torch.uint8, device=dev)).sum(1).to(torch.uint8).cpu()
     return Scan(first.cpu(), flips.cpu(), max_dev, done, time.time() - t0, mask)
+
+
+def scan(F: R.Model, feat: KV.Feat, run: Run, at: slice, ex: Tensor, pt: Tensor, rows: int, log: Callable[[str], None],
+         only: dict[int, Tensor] | None = None, group: int | None = None) -> Scan:  # fmt: skip
+    """`scan_sites` at the VPD featurization (subcomponents and remainders of the 24 matrices)."""
+    assert not feat.grafts, "graft variables are not handled by this scan"
+    return scan_sites(F.net, [Swap(s, run.ys[j]) for j, s in enumerate(feat.sites)], run, at, ex, pt, rows, feat.n, log, only, group)
 
 
 # ---- the read of one item (added 2026-11-22 for experiments/realtext_eb, cell P2.64) ---------------------------------

@@ -16,6 +16,7 @@ the few functions that compute ADL are ported here; each cites its source. Depar
   removed        paper Sec. 5, eqs. (1)-(2): in the fine-tuned model the component of h_ft along delta_bar_j is set to
                  the base model's at every position (causal_effect.py `_compute_nll_intervened`, patch_direction
                  base_to_ft, zero_ablate false); here read as the drop of a per-row readout, not of cross-entropy.
+  column_D       the baseline column read beside the share (E265, E272): `removed` per delta_bar_j over a gain, the max
   random_diffs   the paper's baseline directions (Sec. 5; causal_effect.py `_sample_activation_diff_vectors`): base
                  activations at two random positions of ordinary text, differenced.
 
@@ -28,11 +29,15 @@ Qwen parity check can run it in the toolkit's venv; here `NetPair` (the 67M behi
 from __future__ import annotations
 
 from collections.abc import Callable
+from typing import TYPE_CHECKING, Any
 
 import torch
 from torch import Tensor
 
 from commute import steering as ST
+
+if TYPE_CHECKING:
+    from commute.windows import Rows
 
 SITE = f"in{ST.N_LAYERS // 2}"  # block 2's input = block 1's output, the toolkit's layer int(0.5 * (4 - 1)) = 1
 Readout = Callable[[Tensor], Tensor]  # full logits (B, T, V) -> (B,) float64 per-row reading
@@ -102,6 +107,25 @@ def removed(net: ST.Net, x: Tensor, dW: ST.DW, V: Tensor, readout: Readout) -> T
         ft = readout(net.run(x)[0])
         rows = [ft - readout(net.run(x, {SITE: revert(v, h0)})[0]) for v in V]
     return torch.stack(rows)
+
+
+@torch.no_grad()
+def column_D(net: ST.Net, read: Rows, dW: ST.DW, pile: Tensor, readout: ST.Readout, gain: float, floor: float, pile_batch: int,
+             read_batch: int) -> dict[str, Any]:  # fmt: skip
+    """The baseline column D (P2.79 move 7; E265 `experiments/adl/run.py read_item`, E272 `convergence_panel adl_D`):
+    delta_bar_j over the Pile rows `pile` (N, k), j < k; per j the mean over `read` of `readout` (the unit, at read.pos)
+    the fine-tune loses with its SITE component along delta_bar_j set to W0's, over `gain`; D the largest, nan under
+    floor. E265 read 8192 Pile rows in log-odds over E143's gain; E272 4096 rows in the task's scored unit over the
+    share's gain: two settings of this one function."""
+    assert read.tgt is not None, "column D reads rows with a target"
+    V = unit(mean_diff(net, pile, dW, pile_batch))
+    tot = torch.zeros(len(V), dtype=torch.float64)
+    for s in range(0, len(read.toks), read_batch):
+        tg = read.tgt[s : s + read_batch]
+        tot += removed(net, read.toks[s : s + read_batch], dW, V, lambda lg, tg=tg: readout(lg, read.pos, tg)).sum(1)
+    lost = (tot / len(read.toks)).tolist()
+    share = [x / gain if gain >= floor else float("nan") for x in lost]
+    return {"removed": lost, "share": share, "D": max(share) if gain >= floor else float("nan")}
 
 
 @torch.no_grad()

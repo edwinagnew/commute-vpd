@@ -64,6 +64,11 @@ class VPDSite:
     def idx(self) -> slice:
         return slice(self.s.off, self.s.rem + 1)
 
+    @property
+    def leftover(self) -> int | None:
+        """The matrix's remainder."""
+        return self.s.rem
+
     def gain_sums(self, y: Tensor) -> tuple[Tensor, Tensor]:
         s, y = self.s, y.double()
         U, dU = s.U.double(), s.dU.double()

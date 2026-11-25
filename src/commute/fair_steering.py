@@ -7,17 +7,25 @@ key by the word before the trigger and read 9,600 fitting windows.
 The target model only, fp32 (`steering.Net`). A vector at block l is the mean, over fitting windows, of (tuned - W0) block l's
 input at the answer position `pos`; a per-key vector is that mean over the fitting windows of one key. Steering adds
 strength x vector to W0's block-l input at `pos`, nothing else.
+
+`steering_share` is the one steering share (the reading refactor, P2.79 move 5): the vector, the selection and the read
+in one call, every setting that told the sources apart a required field of `Rule`.
 """
 
 from __future__ import annotations
 
 import math
+from dataclasses import dataclass
+from typing import TYPE_CHECKING, Any, Literal
 
 import torch
 from torch import Tensor
 
 from commute import steering as ST
 from commute.revival_kv import kl_rows
+
+if TYPE_CHECKING:
+    from commute.windows import Rows
 
 LAYERS = tuple(range(ST.N_LAYERS))
 BATCH = 64
@@ -41,17 +49,22 @@ def per_window(v: Tensor, idx: Tensor) -> Tensor:
     return v if v.ndim == 1 else v[idx]
 
 
-def vectors(net: ST.Net, toks: Tensor, idx: Tensor, n_keys: int, dW: ST.DW, pos: int) -> dict[str, dict[int, Tensor]]:
-    """Per layer, the pooled (d,) and per-key (K, d) means of tuned minus W0 block-l input at `pos` over `toks`."""
-    diffs: dict[int, list[Tensor]] = {l: [] for l in LAYERS}
-    for s in range(0, len(toks), BATCH):
-        b = toks[s : s + BATCH]
+def diffs(net: ST.Net, toks: Tensor, dW: ST.DW, pos: int, batch: int, dtype: torch.dtype) -> dict[int, Tensor]:
+    """Per layer, (N, d) tuned minus W0 block-l input at `pos` on `toks`, `batch` windows per forward, cast to dtype."""
+    out: dict[int, list[Tensor]] = {l: [] for l in LAYERS}
+    for s in range(0, len(toks), batch):
+        b = toks[s : s + batch]
         with net.at(dW):
             c1 = net.run(b, capture=True)[1]
         c0 = net.run(b, capture=True)[1]
         for l in LAYERS:
-            diffs[l].append((c1[f"in{l}"][:, pos] - c0[f"in{l}"][:, pos]).double())
-    d ={l: torch.cat(x) for l, x in diffs.items()}
+            out[l].append((c1[f"in{l}"][:, pos] - c0[f"in{l}"][:, pos]).to(dtype))
+    return {l: torch.cat(x) for l, x in out.items()}
+
+
+def vectors(net: ST.Net, toks: Tensor, idx: Tensor, n_keys: int, dW: ST.DW, pos: int) -> dict[str, dict[int, Tensor]]:
+    """Per layer, the pooled (d,) and per-key (K, d) means of tuned minus W0 block-l input at `pos` over `toks`."""
+    d = diffs(net, toks, dW, pos, BATCH, torch.float64)
     i = idx.to(d[0].device)
     assert bool((torch.bincount(i, minlength=n_keys) > 0).all()), "a key has no fitting window"
     return {"pooled": {l: x.mean(0).float() for l, x in d.items()}, "perkey": {l: per_key_mean(x, i, n_keys).float() for l, x in d.items()}}
@@ -106,3 +119,74 @@ def off_kl(net: ST.Net, toks: Tensor, pos: int, idx: Tensor | None = None, steer
         keep[pos] = False
         tot, n = tot + float(kl[:, keep].sum()), n + int(kl[:, keep].numel())
     return tot / n
+
+
+# ----------------------------------------------------------------------------- the steering share, one function (P2.79 move 5)
+
+
+@dataclass(frozen=True)
+class Rule:
+    """How a source chose and read its steering setting; every field is required, since the sources differ in each
+    (plan reports/plans/2026-11-25_plan_reading-refactor.md, finding 4):
+      E135 (steering_copy_lookup)  fit = select = E62's even windows, read = the odd ones; key_pos half - 1; floor None;
+                                   batch 100 (one forward of each half); mean float32
+      E143 (holes_fill)            fit = the task's training windows, select = the first n_select of them, read = E136's
+                                   rows; key_pos the read position; floor 1; batch 64; mean float64
+      E211 / E272 (realistic_reads.Reader.steering)  as E143, pooled only, the unit the task is scored in (E140's
+                                   two-label contrast for a label task)"""
+
+    form: Literal["pooled", "perkey"]
+    key_pos: int | None  # per-key: the column whose token keys each window (None for pooled)
+    strengths: tuple[float, ...]
+    floor: float | None  # the share is nan when the gain is under floor; None: only a zero gain (E135, `steering.share`)
+    batch: int  # windows per forward
+    mean: torch.dtype  # the dtype the vector's mean is taken in
+
+
+def divide(num: float, gain: float, floor: float | None) -> float:
+    if floor is None:
+        return num / gain if gain != 0 else math.nan
+    return num / gain if gain >= floor else math.nan
+
+
+@torch.no_grad()
+def unit_rows(net: ST.Net, rows: Rows, unit: ST.Readout, batch: int, dW: ST.DW | None = None,
+              how: tuple[Tensor, int, float, Tensor] | None = None) -> Tensor:  # fmt: skip
+    """(N,) float64: `unit` at rows.pos of W0 (or W0 + dW), steered by how = (vector, layer, strength, key index per row)."""
+    tgt, out = rows.tgt, []
+    assert tgt is not None, "steering reads rows with a target"
+    for s in range(0, len(rows.toks), batch):
+        edit = None if how is None else steer(how[0], how[1], how[2], how[3][s : s + batch], rows.pos)
+        with net.at(dW):
+            lg = net.run(rows.toks[s : s + batch], edit)[0]
+        out.append(unit(lg, rows.pos, tgt[s : s + batch]))
+    return torch.cat(out)
+
+
+def target_gain(net: ST.Net, rows: Rows, dW: ST.DW, unit: ST.Readout, batch: int) -> float:
+    """The fine-tune's own gain on `rows`, fp32 target model: mean(unit at W0 + dW - unit at W0) (E135's and E143's)."""
+    return float((unit_rows(net, rows, unit, batch, dW) - unit_rows(net, rows, unit, batch)).mean())
+
+
+def steering_share(net: ST.Net, fit: Rows, select: Rows, read: Rows, dW: ST.DW, rule: Rule, unit: ST.Readout, gain: float,
+                   pool: Tensor | None) -> dict[str, Any]:  # fmt: skip
+    """The fair steering share of one update: the vector per layer from `fit` (pooled, or per key over `pool`), the
+    (layer, strength) with the largest mean rise on `select` (`pick`), its mean rise over W0 on `read` divided by `gain`
+    (the caller's: E135 and E143 read `target_gain`, E211 and E272 the share's T cells). All rows share one read position."""
+    assert fit.pos == select.pos == read.pos
+    assert (pool is None) == (rule.form == "pooled") == (rule.key_pos is None), "a per-key rule needs its pool and key column"
+    idx = {n: torch.zeros(len(r.toks), dtype=torch.long) if pool is None else key_index(r.toks[:, rule.key_pos], pool)
+           for n, r in (("fit", fit), ("select", select), ("read", read))}  # fmt: skip
+    d = diffs(net, fit.toks, dW, fit.pos, rule.batch, rule.mean)
+    n_keys = 1 if pool is None else len(pool)
+    v = {l: (x.mean(0) if pool is None else per_key_mean(x, idx["fit"].to(x.device), n_keys)).float() for l, x in d.items()}
+    sel0 = unit_rows(net, select, unit, rule.batch)
+    grid = {(l, s): float((unit_rows(net, select, unit, rule.batch, how=(v[l], l, s, idx["select"])) - sel0).mean())
+            for l in LAYERS for s in rule.strengths}  # fmt: skip
+    setting = pick(grid)
+    rec: dict[str, Any] = {"grid": {f"{l},{s}": x for (l, s), x in grid.items()}, "setting": setting}
+    if setting is None:
+        return rec | {"rise": math.nan, "share": math.nan}
+    l, s = setting
+    rise = float((unit_rows(net, read, unit, rule.batch, how=(v[l], l, s, idx["read"])) - unit_rows(net, read, unit, rule.batch)).mean())
+    return rec | {"rise": rise, "share": divide(rise, gain, rule.floor)}

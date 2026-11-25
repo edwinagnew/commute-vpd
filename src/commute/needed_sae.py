@@ -1,6 +1,7 @@
 """The needed set K at E234's base-only SAE latents (`commute.sae_feat`'s variables) by single-variable interchange on D,
 for E298 (cell P1.62, `experiments/fig2_standard`). Added 2026-11-24 beside `commute.needed` (VPD) and
-`commute.needed_neurons` (neurons); calls `needed.tail` and `needed.Scan` and changes nothing in them or in sae_feat.
+`commute.needed_neurons` (neurons). Its sites (`Cases`) run through `needed.scan_sites`, the one swap test (P2.79 move 6);
+`scan` is that call, kept by name for its callers.
 
 Variables (sae_feat): per site (the attention and MLP output of each block, SITES order) its 16,384 latents and its
 error term, 131,080 in all. On a window, latent u's value is f_u(o) d_u, o the site module's output in the run, f the
@@ -18,7 +19,6 @@ somewhere between x and x', and the error term. `only` (the identity control) ru
 
 from __future__ import annotations
 
-import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
@@ -67,10 +67,17 @@ class Swap:
 
     def __init__(self, s: SF.SAESite, outs: Tensor) -> None:
         self.ae, self.o, self.W = s.ae, outs, s.rem - s.off
+        self.module, self.layer, self.off = s.module, int(s.name[-1]), s.off
         self.We, self.be, self.Wd = s.ae.encoder.weight, s.ae.encoder.bias, s.ae.decoder.weight.T.contiguous()  # (W, d) each
         self.var: Tensor | None = None
         self.ex: Tensor | None = None
         self.pt: Tensor | None = None
+
+    def hooks(self, net: Any) -> list[Any]:
+        return [net.get_submodule(self.module).register_forward_hook(self)]
+
+    def set(self, var: Tensor, ex: Tensor, pt: Tensor) -> None:
+        self.var, self.ex, self.pt = var, ex, pt
 
     def f_u(self, o: Tensor, u: Tensor) -> Tensor:
         """(k, T): latent u[r]'s activation on o[r] (k, T, d), `sae.SAE.encode` one latent at a time."""
@@ -104,6 +111,23 @@ class Swap:
         """The first n latents (by index) active somewhere on windows idx: the identity control's latents."""
         on = torch.stack([(self.ae.encode(self.o[idx[i : i + chunk]]) > 0).flatten(0, 1).any(0) for i in range(0, len(idx), chunk)]).any(0)
         return on.nonzero().squeeze(1)[:n]
+
+
+class Cases(Swap):
+    """A `Swap` as a site of `needed.scan_sites`. With no `local`, the shortcut: the latents that move on each pair
+    (`moved`, chunk pairs at a time) and every pair's error term; latents `rows`, error terms err_rows per forward."""
+
+    def __init__(self, s: SF.SAESite, outs: Tensor, err_rows: int, chunk: int) -> None:
+        super().__init__(s, outs)
+        self.err_rows, self.chunk = err_rows, chunk
+
+    def cases(self, local: Tensor | None, ex: Tensor, pt: Tensor, rows: int) -> list[tuple[Tensor, Tensor, int]]:
+        if local is None:
+            u, k = self.moved(ex, pt, self.chunk)
+            var, pair = torch.cat([u, torch.full((len(ex),), self.W, device=ex.device)]), torch.cat([k, torch.arange(len(ex), device=ex.device)])
+        else:
+            var, pair = IX.every_pair(local.to(ex.device), len(ex))
+        return [(var[part], pair[part], size) for part, size in ((var < self.W, rows), (var == self.W, self.err_rows))]
 
 
 class Joint(Swap):
@@ -142,45 +166,7 @@ def joint(F: R.Model, ss: list[SF.SAESite], run: Run, at: slice, ex: Tensor, pt:
     return torch.cat(top), dev
 
 
-@torch.no_grad()
 def scan(F: R.Model, ss: list[SF.SAESite], run: Run, at: slice, ex: Tensor, pt: Tensor, rows: int, err_rows: int, chunk: int,
          log: Callable[[str], None], only: dict[int, Tensor] | None = None) -> IX.Scan:  # fmt: skip
-    """Every variable against every pair (ex[k], pt[k]) with the shortcut, or with `only` the local variables given per
-    site index against every pair, none skipped; `rows` latent cases or `err_rows` error cases per forward. Scan.rows
-    counts the cases run."""
-    dev = run.top.device
-    ex, pt, Q, n = ex.to(dev), pt.to(dev), len(ex), SF.n_vars(ss)
-    first = torch.full((n,), -1, dtype=torch.long, device=dev)
-    flips = torch.zeros(n, dtype=torch.long, device=dev)
-    big, max_dev, done, t0 = torch.iinfo(torch.long).max, 0.0, 0, time.time()
-    for j, s in enumerate(ss):
-        if only is not None and j not in only:
-            continue
-        sw, l = Swap(s, run.outs[j]), int(s.name[-1])
-        if only is None:
-            u, k = sw.moved(ex, pt, chunk)
-            var, pair = torch.cat([u, torch.full((Q,), sw.W, device=dev)]), torch.cat([k, torch.arange(Q, device=dev)])
-        else:
-            loc = only[j].to(dev)
-            var, pair = loc.repeat_interleave(Q), torch.arange(Q, device=dev).repeat(len(loc))
-        h = F.net.get_submodule(s.module).register_forward_hook(sw)
-        try:
-            for part, size in ((var < sw.W, rows), (var == sw.W, err_rows)):
-                vs, ks = var[part], pair[part]
-                for i in range(0, len(vs), size):
-                    v, kk = vs[i : i + size], ks[i : i + size]
-                    sw.var, sw.ex, sw.pt = v, ex[kk], pt[kk]
-                    lg = IX.tail(F.net, l, run.blocks[l][ex[kk]], at)
-                    max_dev = max(max_dev, float((lg - run.logits[ex[kk]]).abs().max()))
-                    hit = (lg.argmax(-1) != run.top[ex[kk]]).any(-1)
-                    g = s.off + v
-                    flips.index_add_(0, g, hit.long())
-                    cand = torch.full((n,), big, dtype=torch.long, device=dev)
-                    cand.scatter_reduce_(0, g[hit], kk[hit], "amin")
-                    first = torch.where((cand != big) & ((first < 0) | (cand < first)), cand, first)
-        finally:
-            h.remove()
-        done += len(var)
-        log(f"    site {j} {s.name}: {len(var)} cases run of {(sw.W + 1) * Q}, {int((first[s.off : s.rem + 1] >= 0).sum())} needed; "
-            f"{done} cases in {time.time() - t0:.0f} s ({done / max(time.time() - t0, 1e-9):.0f}/s)")  # fmt: skip
-    return IX.Scan(first.cpu(), flips.cpu(), max_dev, done, time.time() - t0)
+    """Alias for finished callers: `needed.scan_sites` over the sites' `Cases` (Scan.rows counts the cases run)."""
+    return IX.scan_sites(F.net, [Cases(s, run.outs[j], err_rows, chunk) for j, s in enumerate(ss)], run, at, ex, pt, rows, SF.n_vars(ss), log, only)

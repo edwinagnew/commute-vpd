@@ -11,6 +11,7 @@ Tasks and kinds:
   E136's inventory tasks (experiments/share_untrained/results/inventory.json "tasks": e46/*, e54/*, c3/*, e62/*,
     case_label/*, fresh/*, e53/*, class/*)   held: the rows E136 read the share on (its windows.load_read)
   e53/<task> (lowercase, cipher, broad_cipher)  also train: E53's 2,000 hand-write windows (E143's steering fit rows)
+  the kv tasks among them (e46, e54, c3, class)  also train: the file's training windows (E143's steering fit rows)
   e58/<map> (open_pair amend3, 96 keys)       held: trained keys' held-out windows; held_new, held_full: new / all keys
   panel/<task> (E272's wide set)              D: its 200 E_b windows (eb windows_manifest.json, tensor sha256)
   p256/<task> (addition, brackets, sequence)  D: E256's 256 held-out prompts (rb_states p256_windows_<task>.pt)
@@ -156,12 +157,13 @@ def _e53(task: str, kind: Kind) -> Rows:
 
 
 def _kv(task: str, kind: Kind, path: Path, sha: str | None = None) -> Rows:
-    """A kv windows file ({"heldout", "table"}): the held-out windows, target = table[token at half] (`steering.load_task`)."""
+    """A kv windows file ({"heldout", "train", "table"}): the held-out windows (or, kind "train", the training windows,
+    E143's steering fit), target = table[token at half] (`steering.load_task`)."""
     if sha is not None and (got := file_sha256(path)) != sha:
         raise SystemExit(f"STOP: {path}: sha256 {got}, the record's {sha}")
     w = torch.load(path, weights_only=False)
-    held = w["heldout"]
-    return Rows(task, kind, held.tokens, held.half, target_tokens(w["table"], held.tokens, held.half), _rel(path))
+    part = w["train"] if kind == "train" else w["heldout"]
+    return Rows(task, kind, part.tokens, part.half, target_tokens(w["table"], part.tokens, part.half), _rel(path))
 
 
 def _e62(task: str, spec: dict[str, Any]) -> Rows:
@@ -216,9 +218,9 @@ def read_rows(task: str, kind: Kind) -> Rows:
         file = f"windows_{name}.pt" if part == "full" else f"windows_{name}_{part}.pt"  # full: the uncut source file (heldout_keys.split_task)
         return _kv(task, kind, AMEND3 / "large" / "amend3" / file, sha)
     spec = e136_tasks().get(task)
-    if spec is None or kind != "held":
+    fmt = None if spec is None else spec["format"]
+    if spec is None or not (kind == "held" or (kind == "train" and fmt == "kv")):
         raise KeyError(f"no rows for ({task!r}, {kind!r})")
-    fmt = spec["format"]
     if fmt == "kv":
         return _kv(task, kind, REPO / spec["path"])
     return _e62(task, spec) if fmt == "windows_pt" else _label(task, spec)
