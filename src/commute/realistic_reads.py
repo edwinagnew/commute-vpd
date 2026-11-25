@@ -12,7 +12,7 @@ gain's mean in the same unit, nan when that gain is under MIN_GAIN (1).
              T; `share.Floor(MIN_GAIN, one-sided)`)
   untrained  the same on W0's SVD and its rotation (`untrained.do_nothing_cells`, E136's k_m), fp32
   neuron     (N01 - N00) / gain, each block's firing kept on its TopK neurons, k 64 and k matched (E143's)
-  steering   pooled fair steering (`fair_steering.fit_vectors`, `pick`, `divide`; E143's rule): vector from the
+  steering   pooled fair steering (`fair_steering.selection`, `divide`; E143's rule): vector from the
              fitting windows, (layer, strength) picked on the first n_select of them in the scored unit, its rise on the
              read rows over the gain in every unit; random draws and the off-position KL beside
   k_half     E98's count of neurons carrying half the r_half numerator (`neuron_r`), per unit
@@ -227,7 +227,6 @@ class Reader:
     def __post_init__(self) -> None:
         self.ks = {"k64": dict.fromkeys(FS.LAYERS, self.k_fixed), "kmatched": {l: int(self.k_m[k]) for l, k in enumerate(DOWN)}}
         self.read_idx = torch.zeros(len(self.r.toks), dtype=torch.long)
-        self.w0["sel"] = self.steered(self.r.fit[: self.c["n_select"]], self.r.fit_tgt[: self.c["n_select"]], None)[self.r.scored]
         self.w0["rows"] = self.steered(self.r.toks, self.r.tgt, None)
         self.w0["prior"] = {u: PR.prior_mean_lo(self.net, self.r.rows("read", None), f, FS.BATCH) for u, f in self.r.fns().items()}
         self.w0["untrained"] = {u: self.untrained_cells(None, u) for u in self.r.fns()}
@@ -274,23 +273,15 @@ class Reader:
         return out, T
 
     def steering(self, dW: ST.DW, gain: dict[str, float], gen: torch.Generator) -> dict[str, Any]:
-        """E143's rule (`fair_steering.Rule`, pooled, batch 64, fp64 mean, floor 1): the vector from every fitting window
-        (`fit_vectors`), the selection on the first n_select of them in the scored unit (`pick`); then, unlike
-        `steering_share` (one unit), the rise in every unit at the chosen setting, the off-position KL and the random draws.
-
-        The grid is not `steering_share`'s: it reads each unit once over all n_select rows' logits (`steered`), where
-        `unit_rows` reads it per batch of 64, and a CUDA logsumexp over a different number of rows may round differently.
-        Same quantity; kept so E211's and E272's numbers stay bit for bit (P2.79 2c)."""
-        r, n = self.r, self.c["n_select"]
+        """E143's rule (`fair_steering.Rule`, pooled, batch 64, fp64 mean, floor 1): the vector and the selection on the
+        first n_select fitting windows in the scored unit (`fair_steering.selection`, as `steering_share`); then, unlike
+        `steering_share` (one unit), the rise in every unit at the chosen setting, the off-position KL and the random draws."""
+        r = self.r
         rule = FS.Rule("pooled", None, tuple(self.c["strengths"]), MIN_GAIN, FS.BATCH, torch.float64)
-        v = FS.fit_vectors(self.net, r.rows("fit", None), dW, rule, None)
-        grid = {(l, s): float((self.steered(r.fit[:n], r.fit_tgt[:n], (v[l], l, s))[r.scored] - self.w0["sel"]).mean())
-                for l in FS.LAYERS for s in rule.strengths}  # fmt: skip
-        setting = FS.pick(grid)
-        rec: dict[str, Any] = {"grid": {f"{l},{s}": x for (l, s), x in grid.items()}, "setting": setting}
-        if setting is None:
+        v, rec = FS.selection(self.net, r.rows("fit", None), r.rows("fit", self.c["n_select"]), dW, rule, r.fns()[r.scored], None)
+        if rec["setting"] is None:
             return {**rec, "share": dict.fromkeys(r.fns(), float("nan")), "rise": {}}
-        l, s = setting
+        l, s = rec["setting"]
         got = self.steered(r.toks, r.tgt, (v[l], l, s))
         rec["rise"] = {u: float((got[u] - self.w0["rows"][u]).mean()) for u in got}
         rec["share"] = {u: FS.divide(rec["rise"][u], gain[u], rule.floor) for u in got}

@@ -183,22 +183,28 @@ def fit_vectors(net: ST.Net, fit: Rows, dW: ST.DW, rule: Rule, pool: Tensor | No
     return {l: per_key_mean(x, i.to(x.device), len(pool)).float() for l, x in d.items()}
 
 
+def selection(net: ST.Net, fit: Rows, select: Rows, dW: ST.DW, rule: Rule, unit: ST.Readout, pool: Tensor | None) -> tuple[dict[int, Tensor], dict[str, Any]]:
+    """The vector per layer from `fit` (pooled, or per key over `pool`) and the (layer, strength) with the largest mean
+    rise of `unit` over W0 on `select` (`pick`): (vectors, {"grid", "setting"}); setting None when a rise is nan."""
+    assert (pool is None) == (rule.form == "pooled") == (rule.key_pos is None), "a per-key rule needs its pool and key column"
+    v, idx = fit_vectors(net, fit, dW, rule, pool), key_idx(select, rule, pool)
+    sel0 = unit_rows(net, select, unit, rule.batch)
+    grid = {(l, s): float((unit_rows(net, select, unit, rule.batch, how=(v[l], l, s, idx)) - sel0).mean())
+            for l in LAYERS for s in rule.strengths}  # fmt: skip
+    return v, {"grid": {f"{l},{s}": x for (l, s), x in grid.items()}, "setting": pick(grid)}
+
+
 def steering_share(net: ST.Net, fit: Rows, select: Rows, read: Rows, dW: ST.DW, rule: Rule, unit: ST.Readout, gain: float,
                    pool: Tensor | None) -> dict[str, Any]:  # fmt: skip
-    """The fair steering share of one update: the vector per layer from `fit` (pooled, or per key over `pool`), the
-    (layer, strength) with the largest mean rise on `select` (`pick`), its mean rise over W0 on `read` divided by `gain`
-    (the caller's: E135 and E143 read `target_gain`, E211 and E272 the share's T cells). All rows share one read position."""
+    """The fair steering share of one update: `selection` on `fit` and `select`, then the chosen setting's mean rise
+    over W0 on `read` divided by `gain` (the caller's: E135 and E143 read `target_gain`, E211 and E272 the share's T
+    cells). All rows share one read position."""
     assert fit.pos == select.pos == read.pos
-    assert (pool is None) == (rule.form == "pooled") == (rule.key_pos is None), "a per-key rule needs its pool and key column"
-    idx = {n: key_idx(r, rule, pool) for n, r in (("select", select), ("read", read))}
-    v = fit_vectors(net, fit, dW, rule, pool)
-    sel0 = unit_rows(net, select, unit, rule.batch)
-    grid = {(l, s): float((unit_rows(net, select, unit, rule.batch, how=(v[l], l, s, idx["select"])) - sel0).mean())
-            for l in LAYERS for s in rule.strengths}  # fmt: skip
-    setting = pick(grid)
-    rec: dict[str, Any] = {"grid": {f"{l},{s}": x for (l, s), x in grid.items()}, "setting": setting}
-    if setting is None:
+    v, rec = selection(net, fit, select, dW, rule, unit, pool)
+    if rec["setting"] is None:
         return rec | {"rise": math.nan, "share": math.nan}
-    l, s = setting
-    rise = float((unit_rows(net, read, unit, rule.batch, how=(v[l], l, s, idx["read"])) - unit_rows(net, read, unit, rule.batch)).mean())
+    l, s = rec["setting"]
+    idx = key_idx(read, rule, pool)
+    rise = float((unit_rows(net, read, unit, rule.batch, how=(v[l], l, s, idx)) - unit_rows(net, read, unit, rule.batch)).mean())
     return rec | {"rise": rise, "share": divide(rise, gain, rule.floor)}
+
