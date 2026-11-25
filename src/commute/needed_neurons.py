@@ -15,7 +15,7 @@ changed when any neuron of its layer is). M's mechanism of a variable reads F's 
 rms_1 (heads) or rms_2 (the MLP site) in F's run; the strong rule is M's bounds applied to each network's own
 activation.
 
-Interchange (`scan`): F's run on D is cached once (each block's input, each layer's z and a). A case (variable u,
+Interchange (`Swap`, the layer's sites of `needed.scan_sites`; `scan` its alias): F's run on D is cached once (each block's input, each layer's z and a). A case (variable u,
 pair (x, x')) reruns blocks l.. from x's cached block input with u's value set to its value in F's cached run on x':
 head h's z slice replaced by x''s (pre-hook on o_proj), neuron i's activation a_i replaced by a_i - s_i(a) + s_i(a'),
 the remainder's a by s(a) + (a' - s(a')) (pre-hook on down_proj), at every position. A variable is needed when some
@@ -30,7 +30,6 @@ not for standing in.
 
 from __future__ import annotations
 
-import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from typing import Any
@@ -107,8 +106,19 @@ class Swap:
 
     def __init__(self, run: Run, l: int, hi: Tensor) -> None:
         self.z, self.a, self.hi = run.z[l], run.a[l], hi
+        self.layer, self.off = l, l * PER_LAYER
         self.var: Tensor | None = None
         self.pt: Tensor | None = None
+
+    def cases(self, local: Tensor | None, ex: Tensor, pt: Tensor, rows: int) -> list[tuple[Tensor, Tensor, int]]:
+        loc = torch.arange(PER_LAYER, device=ex.device) if local is None else local.to(ex.device)
+        return [(*IX.every_pair(loc, len(ex)), rows)]
+
+    def hooks(self, net: Any) -> list[Any]:
+        return [net.h[self.layer].attn.o_proj.register_forward_pre_hook(self.head), net.h[self.layer].mlp.down_proj.register_forward_pre_hook(self.mlp)]
+
+    def set(self, var: Tensor, ex: Tensor, pt: Tensor) -> None:
+        self.var, self.pt = var, pt
 
     def head(self, _m: Any, inp: tuple[Tensor, ...]) -> tuple[Tensor] | None:
         assert self.var is not None and self.pt is not None
@@ -140,39 +150,10 @@ class Swap:
         return (a,)
 
 
-@torch.no_grad()
 def scan(net: Any, feat: K.Feat, run: Run, at: slice, ex: Tensor, pt: Tensor, rows: int, log: Callable[[str], None]) -> IX.Scan:
-    """Every variable against every pair (ex[k], pt[k]), `rows` cases per forward (`needed.scan`'s bookkeeping)."""
+    """Alias for finished callers: `needed.scan_sites` over the layers' `Swap`s."""
     assert feat.lo is None, "upper-tail featurization only"
-    dev = run.top.device
-    ex, pt, Q = ex.to(dev), pt.to(dev), len(ex)
-    n = len(net.h) * PER_LAYER
-    first = torch.full((n,), -1, dtype=torch.long, device=dev)
-    flips = torch.zeros(n, dtype=torch.long, device=dev)
-    big, max_dev, done, t0 = torch.iinfo(torch.long).max, 0.0, 0, time.time()
-    for l in range(len(net.h)):
-        sw = Swap(run, l, feat.hi[l])
-        var, pair = torch.arange(PER_LAYER, device=dev).repeat_interleave(Q), torch.arange(Q, device=dev).repeat(PER_LAYER)
-        hs = [net.h[l].attn.o_proj.register_forward_pre_hook(sw.head), net.h[l].mlp.down_proj.register_forward_pre_hook(sw.mlp)]
-        try:
-            for i in range(0, len(var), rows):
-                v, k = var[i : i + rows], pair[i : i + rows]
-                sw.var, sw.pt = v, pt[k]
-                lg = IX.tail(net, l, run.blocks[l][ex[k]], at)
-                max_dev = max(max_dev, float((lg - run.logits[ex[k]]).abs().max()))
-                hit = (lg.argmax(-1) != run.top[ex[k]]).any(-1)
-                g = l * PER_LAYER + v
-                flips.index_add_(0, g, hit.long())
-                cand = torch.full((n,), big, dtype=torch.long, device=dev)
-                cand.scatter_reduce_(0, g[hit], k[hit], "amin")
-                first = torch.where((cand != big) & ((first < 0) | (cand < first)), cand, first)
-        finally:
-            for h in hs:
-                h.remove()
-        done += len(var)
-        log(f"    layer {l}: {PER_LAYER} variables x {Q} pairs, {int((first[l * PER_LAYER : (l + 1) * PER_LAYER] >= 0).sum())} needed; "
-            f"{done} cases in {time.time() - t0:.0f} s ({done / max(time.time() - t0, 1e-9):.0f}/s)")  # fmt: skip
-    return IX.Scan(first.cpu(), flips.cpu(), max_dev, done, time.time() - t0)
+    return IX.scan_sites(net, [Swap(run, l, feat.hi[l]) for l in range(len(net.h))], run, at, ex, pt, rows, len(net.h) * PER_LAYER, log)
 
 
 # ---- the write share's sites -------------------------------------------------------------------------------------------
@@ -195,6 +176,10 @@ class HeadSite:
     @property
     def idx(self) -> slice:
         return slice(self.off, self.off + H)
+
+    @property
+    def leftover(self) -> int | None:
+        return None
 
     def writes(self, y: Tensor) -> tuple[Tensor, Tensor]:
         x = y.reshape(-1, self.T, y.shape[-1])
@@ -226,6 +211,11 @@ class MLPSite:
     @property
     def idx(self) -> slice:
         return slice(self.off, self.off + NEUR + 1)
+
+    @property
+    def leftover(self) -> int | None:
+        """The layer's remainder (the weak part of every neuron)."""
+        return self.off + NEUR
 
     def parts(self, y: Tensor) -> tuple[Tensor, Tensor, Tensor, Tensor]:
         """(s_F, s_M, e_F, e_M): the strong parts (rows, n) and the remainders' writes (rows, d), fp64."""
