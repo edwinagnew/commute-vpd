@@ -21,7 +21,7 @@ one matched gain, no cheap reading beat KL's rank agreement with the dial by the
 tasks. Steering's margin over KL was 0.26 on sequence and 0.79 on lowercase, but 0.03 on addition and below KL on
 brackets. Effective rank follows the dial strongly on every task, but falls along it on the procedural tasks and rises on
 lowercase. The definition's reading puts every positive-gain supervised and RL state far below the dial's lightest
-penalty, so it cannot say whether RL reuses more.
+penalty, so it cannot say whether RL reuses more (two addition states are not placed: see "Where do the ordinary, supervised and RL fine-tunes land on the dial?").
 
 ## What we were trying to test
 
