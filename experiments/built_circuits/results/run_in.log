@@ -1,0 +1,71 @@
+E301 (built_circuits): claimed at commit, ecode pending start: {'stage': 'read', 'circuit': 'induction', 'feat': 'neurons', 'items': None, 'shard': (0, 1), 'tag': 'in'}; settings {'circuits': ('induction', 'bigram'), 'layer': {'induction': 2, 'bigram': 0}, 'trained': {'induction': [3], 'bigram': [1, 2, 3]}, 'half': {'induction': 40, 'bigram': 20}, 'window': 41, 'n_train': 512, 'n_held': 512, 'induction_pool': (1000, 3000), 'induction_pairs': 64, 'induction_seeds': (163, 11, 12), 'bigram_min_count': 30, 'bigram_min_share': 0.9, 'bigram_rows': {'count': ['train', 0, 4096], 'train': ['train', 4096, 512], 'held': ['train', 4608, 512]}, 'bigram_seeds': (1, 2), 'k': 8, 'factors': (2, 10), 'target': 2, 'fit_seed': 0, 'fit_seed_floor': 1, 'batch': 64, 'steps': 4000, 'lr': 3e-05, 'warmup': 100, 'check_step': 200, 'log_every': 250, 'eval_batch': 64, 'pile_train': 16384, 'pile_held': 1024, 'data_seed': 0, 'slot_layer': {'induction': 2, 'bigram': 0}, 'random_seeds': {'induction': [163101, 163102, 163103, 163104, 163105], 'bigram': [163201, 163202, 163203, 163204, 163205]}, 'scan_keys': ('derangements', 'examples', 'seed', 'rows', 'logit_rows', 'cache_batch', 'ident_vars', 'sae_err_rows', 'sae_chunk', 'band'), 'repeat_seed': 269, 'repeat_circuit': 'induction', 'no_new': ('induction',)}; thresholds {'top1_min': 0.5, 'kl_floor': 1e-06, 'gamma_rel_tol': 1e-05, 'gamma_rel_tol_amendment_2026-11-24': "Amendment 1 (regating-lead, approved in advance by whip-lead 2026-11-24 for a measured floor near 2e-6), filed after the rehearsal's R0d stop and before any reading: was 1e-06 (a stated, unmeasured ~1e-7 floor, x10). Measured on the cluster L40 (l40-worker): two builds (jobs 66317 tag s0, 66438 tag g1) give gamma_new_few 11.291458129882812 both times (same-card floor exactly 0) and gamma_new_thin equal to E214's; both differ from E214's saved gamma_new_few (11.291481018066406, built on another card) by 2.03e-6 relative, the cross-card floor this check guards. 1e-05 is about 5x that floor; slots and A_prime stay exact-match, so a builder change is still caught (results/stage0/fig2_gammas_{s0,g1}.json).", 'norm_rel_tol': 1e-06, 'thresholds_source': "top1_min: the lead's bar for a behaviour M does (P1.63 brief); kl_floor: E195's filed threshold; gamma_rel_tol: 10x the ~1e-7 relative difference between builds of the new edits that P1.62 records; norm_rel_tol: fp32 rounding of a rescaled Gaussian's Frobenius norm, far above it (matched_random computes the scale in fp64)"}; E298 scan settings {'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'ident_vars': 3, 'sae_err_rows': 64, 'sae_chunk': 32, 'band': 'p97'}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+neurons_induction_do_nothing: {"experiment": "E301 (built_circuits): claimed at commit, ecode pending", "part": "neurons_induction_do_nothing", "n_changed": 0, "dd_max": 0.0, "E_b": 1.0, "seconds": 2.632030963897705}; checks hold
+    layer 0: 3079 variables x 64 pairs, 0 needed; 197056 cases in 36 s (5482/s)
+    layer 1: 3079 variables x 64 pairs, 0 needed; 394112 cases in 63 s (6227/s)
+    layer 2: 3079 variables x 64 pairs, 0 needed; 591168 cases in 83 s (7162/s)
+    layer 3: 3079 variables x 64 pairs, 0 needed; 788224 cases in 93 s (8494/s)
+neurons_induction_identity: {"experiment": "E301 (built_circuits): claimed at commit, ecode pending", "part": "neurons_induction_identity", "item": "induction/x2", "flips": 0, "max_dev": 0.016502022743225098, "min_margin": 0.26468658447265625, "cases": 788224, "cases_per_s": 8493.603631942397, "n_windows": 512, "n_read_positions": 1, "card": "NVIDIA L40", "seconds": 93.07280254364014}; checks hold
+CONTROLS DONE (neurons induction): identity floor 0.0165
+neurons induction/do_nothing: 512 windows of 41 tokens, 1 read positions, 12316 variables, 0 changed, 256 pairs
+    layer 0: 3079 variables x 256 pairs, 30 needed; 788224 cases in 148 s (5332/s)
+    layer 1: 3079 variables x 256 pairs, 40 needed; 1576448 cases in 259 s (6089/s)
+    layer 2: 3079 variables x 256 pairs, 15 needed; 2364672 cases in 336 s (7041/s)
+    layer 3: 3079 variables x 256 pairs, 17 needed; 3152896 cases in 378 s (8345/s)
+neurons induction/do_nothing: E_b over K 1.000000 (leftovers dropped 1.000000, their share of dd 0.0000); |K| 102 (0 changed) of 12316; 380 s
+ITEM 1 of 8 DONE (neurons induction/do_nothing)
+neurons induction/x2: 512 windows of 41 tokens, 1 read positions, 12316 variables, 9 changed, 256 pairs
+    layer 0: 3079 variables x 256 pairs, 21 needed; 788224 cases in 146 s (5382/s)
+    layer 1: 3079 variables x 256 pairs, 28 needed; 1576448 cases in 257 s (6134/s)
+    layer 2: 3079 variables x 256 pairs, 12 needed; 2364672 cases in 334 s (7081/s)
+    layer 3: 3079 variables x 256 pairs, 13 needed; 3152896 cases in 376 s (8392/s)
+neurons induction/x2: E_b over K 0.690848 (leftovers dropped 1.000000, their share of dd 0.3296); |K| 74 (5 changed) of 12316; 378 s
+ITEM 2 of 8 DONE (neurons induction/x2)
+neurons induction/x2_s269: 512 windows of 41 tokens, 1 read positions, 12316 variables, 9 changed, 256 pairs
+    layer 0: 3079 variables x 256 pairs, 15 needed; 788224 cases in 147 s (5372/s)
+    layer 1: 3079 variables x 256 pairs, 23 needed; 1576448 cases in 258 s (6120/s)
+    layer 2: 3079 variables x 256 pairs, 11 needed; 2364672 cases in 335 s (7069/s)
+    layer 3: 3079 variables x 256 pairs, 12 needed; 3152896 cases in 377 s (8367/s)
+neurons induction/x2_s269: E_b over K 0.713052 (leftovers dropped 1.000000, their share of dd 0.3059); |K| 61 (6 changed) of 12316; 379 s
+ITEM 3 of 8 DONE (neurons induction/x2_s269)
+neurons induction/x10: 512 windows of 41 tokens, 1 read positions, 12316 variables, 9 changed, 256 pairs
+    layer 0: 3079 variables x 256 pairs, 1823 needed; 788224 cases in 148 s (5316/s)
+    layer 1: 3079 variables x 256 pairs, 1074 needed; 1576448 cases in 260 s (6065/s)
+    layer 2: 3079 variables x 256 pairs, 703 needed; 2364672 cases in 337 s (7018/s)
+    layer 3: 3079 variables x 256 pairs, 405 needed; 3152896 cases in 379 s (8316/s)
+neurons induction/x10: E_b over K 0.781005 (leftovers dropped 1.000000, their share of dd 0.2335); |K| 4005 (9 changed) of 12316; 382 s
+ITEM 4 of 8 DONE (neurons induction/x10)
+neurons induction/rebuilt: 512 windows of 41 tokens, 1 read positions, 12316 variables, 3082 changed, 256 pairs
+    layer 0: 3079 variables x 256 pairs, 145 needed; 788224 cases in 148 s (5318/s)
+    layer 1: 3079 variables x 256 pairs, 68 needed; 1576448 cases in 260 s (6059/s)
+    layer 2: 3079 variables x 256 pairs, 33 needed; 2364672 cases in 337 s (7014/s)
+    layer 3: 3079 variables x 256 pairs, 72 needed; 3152896 cases in 379 s (8309/s)
+neurons induction/rebuilt: E_b over K 0.150439 (leftovers dropped 0.210097, their share of dd 0.9031); |K| 318 (68 changed) of 12316; 382 s
+ITEM 5 of 8 DONE (neurons induction/rebuilt)
+neurons induction/rand_x2: 512 windows of 41 tokens, 1 read positions, 12316 variables, 3073 changed, 256 pairs
+    layer 0: 3079 variables x 256 pairs, 28 needed; 788224 cases in 148 s (5308/s)
+    layer 1: 3079 variables x 256 pairs, 40 needed; 1576448 cases in 260 s (6055/s)
+    layer 2: 3079 variables x 256 pairs, 12 needed; 2364672 cases in 337 s (7010/s)
+    layer 3: 3079 variables x 256 pairs, 14 needed; 3152896 cases in 380 s (8306/s)
+neurons induction/rand_x2: E_b over K 0.001102 (leftovers dropped 0.001427, their share of dd 0.9445); |K| 94 (6 changed) of 12316; 382 s
+ITEM 6 of 8 DONE (neurons induction/rand_x2)
+neurons induction/rand_x10: 512 windows of 41 tokens, 1 read positions, 12316 variables, 3073 changed, 256 pairs
+    layer 0: 3079 variables x 256 pairs, 802 needed; 788224 cases in 147 s (5350/s)
+    layer 1: 3079 variables x 256 pairs, 307 needed; 1576448 cases in 258 s (6101/s)
+    layer 2: 3079 variables x 256 pairs, 158 needed; 2364672 cases in 335 s (7052/s)
+    layer 3: 3079 variables x 256 pairs, 121 needed; 3152896 cases in 378 s (8350/s)
+neurons induction/rand_x10: E_b over K 0.000554 (leftovers dropped 0.002147, their share of dd 0.8593); |K| 1388 (152 changed) of 12316; 381 s
+ITEM 7 of 8 DONE (neurons induction/rand_x10)
+neurons induction/rand_rebuilt: 512 windows of 41 tokens, 1 read positions, 12316 variables, 6146 changed, 256 pairs
+    layer 0: 3079 variables x 256 pairs, 83 needed; 788224 cases in 147 s (5354/s)
+    layer 1: 3079 variables x 256 pairs, 70 needed; 1576448 cases in 259 s (6079/s)
+    layer 2: 3079 variables x 256 pairs, 23 needed; 2364672 cases in 336 s (7031/s)
+    layer 3: 3079 variables x 256 pairs, 26 needed; 3152896 cases in 379 s (8325/s)
+neurons induction/rand_rebuilt: E_b over K 0.014578 (leftovers dropped 0.104149, their share of dd 0.9275); |K| 202 (37 changed) of 12316; 382 s
+ITEM 8 of 8 DONE (neurons induction/rand_rebuilt)
+READ DONE (neurons induction)
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /mnt/nw/home/e.agnew/commute-agents/regating-lead/experiments/built_circuits/results ===

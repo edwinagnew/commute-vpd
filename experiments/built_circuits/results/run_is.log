@@ -1,0 +1,107 @@
+E301 (built_circuits): claimed at commit, ecode pending start: {'stage': 'read', 'circuit': 'induction', 'feat': 'sae', 'items': None, 'shard': (0, 1), 'tag': 'is'}; settings {'circuits': ('induction', 'bigram'), 'layer': {'induction': 2, 'bigram': 0}, 'trained': {'induction': [3], 'bigram': [1, 2, 3]}, 'half': {'induction': 40, 'bigram': 20}, 'window': 41, 'n_train': 512, 'n_held': 512, 'induction_pool': (1000, 3000), 'induction_pairs': 64, 'induction_seeds': (163, 11, 12), 'bigram_min_count': 30, 'bigram_min_share': 0.9, 'bigram_rows': {'count': ['train', 0, 4096], 'train': ['train', 4096, 512], 'held': ['train', 4608, 512]}, 'bigram_seeds': (1, 2), 'k': 8, 'factors': (2, 10), 'target': 2, 'fit_seed': 0, 'fit_seed_floor': 1, 'batch': 64, 'steps': 4000, 'lr': 3e-05, 'warmup': 100, 'check_step': 200, 'log_every': 250, 'eval_batch': 64, 'pile_train': 16384, 'pile_held': 1024, 'data_seed': 0, 'slot_layer': {'induction': 2, 'bigram': 0}, 'random_seeds': {'induction': [163101, 163102, 163103, 163104, 163105], 'bigram': [163201, 163202, 163203, 163204, 163205]}, 'scan_keys': ('derangements', 'examples', 'seed', 'rows', 'logit_rows', 'cache_batch', 'ident_vars', 'sae_err_rows', 'sae_chunk', 'band'), 'repeat_seed': 269, 'repeat_circuit': 'induction', 'no_new': ('induction',)}; thresholds {'top1_min': 0.5, 'kl_floor': 1e-06, 'gamma_rel_tol': 1e-05, 'gamma_rel_tol_amendment_2026-11-24': "Amendment 1 (regating-lead, approved in advance by whip-lead 2026-11-24 for a measured floor near 2e-6), filed after the rehearsal's R0d stop and before any reading: was 1e-06 (a stated, unmeasured ~1e-7 floor, x10). Measured on the cluster L40 (l40-worker): two builds (jobs 66317 tag s0, 66438 tag g1) give gamma_new_few 11.291458129882812 both times (same-card floor exactly 0) and gamma_new_thin equal to E214's; both differ from E214's saved gamma_new_few (11.291481018066406, built on another card) by 2.03e-6 relative, the cross-card floor this check guards. 1e-05 is about 5x that floor; slots and A_prime stay exact-match, so a builder change is still caught (results/stage0/fig2_gammas_{s0,g1}.json).", 'norm_rel_tol': 1e-06, 'thresholds_source': "top1_min: the lead's bar for a behaviour M does (P1.63 brief); kl_floor: E195's filed threshold; gamma_rel_tol: 10x the ~1e-7 relative difference between builds of the new edits that P1.62 records; norm_rel_tol: fp32 rounding of a rescaled Gaussian's Frobenius norm, far above it (matched_random computes the scale in fp64)"}; E298 scan settings {'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'ident_vars': 3, 'sae_err_rows': 64, 'sae_chunk': 32, 'band': 'p97'}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+sae_induction_do_nothing: {"experiment": "E301 (built_circuits): claimed at commit, ecode pending", "part": "sae_induction_do_nothing", "n_changed": 0, "dd_max": 0.0, "E_b": 1.0, "seconds": 3.8573853969573975}; checks hold
+    site 0 attn0: 256 cases run of 1048640, 0 needed; 256 cases in 0 s (2160/s)
+    site 1 mlp0: 256 cases run of 1048640, 0 needed; 512 cases in 0 s (2976/s)
+    site 2 attn1: 256 cases run of 1048640, 0 needed; 768 cases in 0 s (3531/s)
+    site 3 mlp1: 256 cases run of 1048640, 0 needed; 1024 cases in 0 s (3882/s)
+    site 4 attn2: 256 cases run of 1048640, 0 needed; 1280 cases in 0 s (4253/s)
+    site 5 mlp2: 256 cases run of 1048640, 0 needed; 1536 cases in 0 s (4549/s)
+    site 6 attn3: 256 cases run of 1048640, 0 needed; 1792 cases in 0 s (4923/s)
+    site 7 mlp3: 256 cases run of 1048640, 0 needed; 2048 cases in 0 s (5225/s)
+sae_induction_identity: {"experiment": "E301 (built_circuits): claimed at commit, ecode pending", "part": "sae_induction_identity", "item": "induction/x2", "flips": 0, "max_dev": 5.276501178741455e-05, "min_margin": 0.26468658447265625, "cases": 2048, "cases_per_s": 5155.989121320327, "n_windows": 512, "n_read_positions": 1, "card": "NVIDIA L40", "seconds": 0.7561855316162109}; checks hold
+CONTROLS DONE (sae induction): identity floor 5.28e-05
+sae induction/do_nothing: 512 windows of 41 tokens, 1 read positions, 131080 variables, 0 changed, 256 pairs
+    site 0 attn0: 271654 cases run of 4194560, 24 needed; 271654 cases in 49 s (5503/s)
+    site 1 mlp0: 417640 cases run of 4194560, 101 needed; 689294 cases in 128 s (5373/s)
+    site 2 attn1: 162877 cases run of 4194560, 37 needed; 852171 cases in 152 s (5620/s)
+    site 3 mlp1: 392986 cases run of 4194560, 17 needed; 1245157 cases in 209 s (5955/s)
+    site 4 attn2: 188653 cases run of 4194560, 34 needed; 1433810 cases in 228 s (6300/s)
+    site 5 mlp2: 396485 cases run of 4194560, 12 needed; 1830295 cases in 267 s (6859/s)
+    site 6 attn3: 179562 cases run of 4194560, 6 needed; 2009857 cases in 277 s (7265/s)
+    site 7 mlp3: 249038 cases run of 4194560, 22 needed; 2258895 cases in 290 s (7784/s)
+sae induction/do_nothing: E_b over K 1.000000 (leftovers dropped 1.000000, their share of dd 0.0000); |K| 253 (0 changed) of 131080; 294 s
+ITEM 1 of 8 DONE (sae induction/do_nothing)
+sae induction/x2: 512 windows of 41 tokens, 1 read positions, 131080 variables, 16385 changed, 256 pairs
+    site 0 attn0: 271654 cases run of 4194560, 22 needed; 271654 cases in 53 s (5137/s)
+    site 1 mlp0: 417640 cases run of 4194560, 72 needed; 689294 cases in 135 s (5123/s)
+    site 2 attn1: 162877 cases run of 4194560, 28 needed; 852171 cases in 159 s (5365/s)
+    site 3 mlp1: 392986 cases run of 4194560, 12 needed; 1245157 cases in 218 s (5704/s)
+    site 4 attn2: 188653 cases run of 4194560, 20 needed; 1433810 cases in 238 s (6029/s)
+    site 5 mlp2: 444040 cases run of 4194560, 6 needed; 1877850 cases in 284 s (6616/s)
+    site 6 attn3: 193423 cases run of 4194560, 4 needed; 2071273 cases in 295 s (7012/s)
+    site 7 mlp3: 251505 cases run of 4194560, 7 needed; 2322778 cases in 310 s (7485/s)
+sae induction/x2: E_b over K 0.040311 (leftovers dropped 0.200785, their share of dd 0.8436); |K| 171 (6 changed) of 131080; 316 s
+ITEM 2 of 8 DONE (sae induction/x2)
+sae induction/x2_s269: 512 windows of 41 tokens, 1 read positions, 131080 variables, 16385 changed, 256 pairs
+    site 0 attn0: 270868 cases run of 4194560, 13 needed; 270868 cases in 53 s (5142/s)
+    site 1 mlp0: 416740 cases run of 4194560, 66 needed; 687608 cases in 134 s (5130/s)
+    site 2 attn1: 161197 cases run of 4194560, 22 needed; 848805 cases in 157 s (5390/s)
+    site 3 mlp1: 390045 cases run of 4194560, 19 needed; 1238850 cases in 215 s (5758/s)
+    site 4 attn2: 189233 cases run of 4194560, 28 needed; 1428083 cases in 234 s (6110/s)
+    site 5 mlp2: 440547 cases run of 4194560, 6 needed; 1868630 cases in 278 s (6716/s)
+    site 6 attn3: 191317 cases run of 4194560, 7 needed; 2059947 cases in 289 s (7133/s)
+    site 7 mlp3: 249652 cases run of 4194560, 12 needed; 2309599 cases in 303 s (7625/s)
+sae induction/x2_s269: E_b over K 0.044828 (leftovers dropped 0.217824, their share of dd 0.8346); |K| 173 (6 changed) of 131080; 307 s
+ITEM 3 of 8 DONE (sae induction/x2_s269)
+sae induction/x10: 512 windows of 41 tokens, 1 read positions, 131080 variables, 16385 changed, 256 pairs
+    site 0 attn0: 271654 cases run of 4194560, 703 needed; 271654 cases in 53 s (5124/s)
+    site 1 mlp0: 417640 cases run of 4194560, 1581 needed; 689294 cases in 135 s (5118/s)
+    site 2 attn1: 162877 cases run of 4194560, 431 needed; 852171 cases in 159 s (5374/s)
+    site 3 mlp1: 392986 cases run of 4194560, 948 needed; 1245157 cases in 217 s (5748/s)
+    site 4 attn2: 188653 cases run of 4194560, 575 needed; 1433810 cases in 235 s (6097/s)
+    site 5 mlp2: 2009510 cases run of 4194560, 4871 needed; 3443320 cases in 438 s (7857/s)
+    site 6 attn3: 699689 cases run of 4194560, 859 needed; 4143009 cases in 477 s (8679/s)
+    site 7 mlp3: 294245 cases run of 4194560, 354 needed; 4437254 cases in 494 s (8984/s)
+sae induction/x10: E_b over K 0.040040 (leftovers dropped 0.160329, their share of dd 0.7998); |K| 10322 (4871 changed) of 131080; 498 s
+ITEM 4 of 8 DONE (sae induction/x10)
+sae induction/rebuilt: 512 windows of 41 tokens, 1 read positions, 131080 variables, 32770 changed, 256 pairs
+    site 0 attn0: 271654 cases run of 4194560, 60 needed; 271654 cases in 53 s (5144/s)
+    site 1 mlp0: 417640 cases run of 4194560, 221 needed; 689294 cases in 134 s (5131/s)
+    site 2 attn1: 162877 cases run of 4194560, 44 needed; 852171 cases in 158 s (5391/s)
+    site 3 mlp1: 392986 cases run of 4194560, 48 needed; 1245157 cases in 216 s (5765/s)
+    site 4 attn2: 188653 cases run of 4194560, 78 needed; 1433810 cases in 234 s (6115/s)
+    site 5 mlp2: 399540 cases run of 4194560, 37 needed; 1833350 cases in 275 s (6670/s)
+    site 6 attn3: 176800 cases run of 4194560, 24 needed; 2010150 cases in 285 s (7061/s)
+    site 7 mlp3: 319356 cases run of 4194560, 68 needed; 2329506 cases in 303 s (7699/s)
+sae induction/rebuilt: E_b over K 0.429932 (leftovers dropped 0.779547, their share of dd 0.4690); |K| 580 (105 changed) of 131080; 307 s
+ITEM 5 of 8 DONE (sae induction/rebuilt)
+sae induction/rand_x2: 512 windows of 41 tokens, 1 read positions, 131080 variables, 16385 changed, 256 pairs
+    site 0 attn0: 271654 cases run of 4194560, 23 needed; 271654 cases in 53 s (5098/s)
+    site 1 mlp0: 417640 cases run of 4194560, 104 needed; 689294 cases in 135 s (5106/s)
+    site 2 attn1: 162877 cases run of 4194560, 37 needed; 852171 cases in 160 s (5342/s)
+    site 3 mlp1: 392986 cases run of 4194560, 21 needed; 1245157 cases in 220 s (5668/s)
+    site 4 attn2: 188653 cases run of 4194560, 31 needed; 1433810 cases in 240 s (5984/s)
+    site 5 mlp2: 399462 cases run of 4194560, 9 needed; 1833272 cases in 282 s (6506/s)
+    site 6 attn3: 179467 cases run of 4194560, 4 needed; 2012739 cases in 293 s (6874/s)
+    site 7 mlp3: 250653 cases run of 4194560, 19 needed; 2263392 cases in 308 s (7347/s)
+sae induction/rand_x2: E_b over K 0.002452 (leftovers dropped 0.103185, their share of dd 0.9912); |K| 248 (9 changed) of 131080; 313 s
+ITEM 6 of 8 DONE (sae induction/rand_x2)
+sae induction/rand_x10: 512 windows of 41 tokens, 1 read positions, 131080 variables, 16385 changed, 256 pairs
+    site 0 attn0: 271654 cases run of 4194560, 322 needed; 271654 cases in 53 s (5133/s)
+    site 1 mlp0: 417640 cases run of 4194560, 785 needed; 689294 cases in 135 s (5123/s)
+    site 2 attn1: 162877 cases run of 4194560, 171 needed; 852171 cases in 158 s (5378/s)
+    site 3 mlp1: 392986 cases run of 4194560, 286 needed; 1245157 cases in 217 s (5744/s)
+    site 4 attn2: 188653 cases run of 4194560, 253 needed; 1433810 cases in 235 s (6094/s)
+    site 5 mlp2: 1049833 cases run of 4194560, 317 needed; 2483643 cases in 341 s (7274/s)
+    site 6 attn3: 192146 cases run of 4194560, 119 needed; 2675789 cases in 352 s (7598/s)
+    site 7 mlp3: 258316 cases run of 4194560, 147 needed; 2934105 cases in 367 s (7999/s)
+sae induction/rand_x10: E_b over K 0.032509 (leftovers dropped 0.080296, their share of dd 0.9083); |K| 2400 (317 changed) of 131080; 371 s
+ITEM 7 of 8 DONE (sae induction/rand_x10)
+sae induction/rand_rebuilt: 512 windows of 41 tokens, 1 read positions, 131080 variables, 32770 changed, 256 pairs
+    site 0 attn0: 271654 cases run of 4194560, 79 needed; 271654 cases in 53 s (5126/s)
+    site 1 mlp0: 417640 cases run of 4194560, 312 needed; 689294 cases in 135 s (5121/s)
+    site 2 attn1: 162877 cases run of 4194560, 66 needed; 852171 cases in 158 s (5379/s)
+    site 3 mlp1: 392986 cases run of 4194560, 45 needed; 1245157 cases in 217 s (5744/s)
+    site 4 attn2: 188653 cases run of 4194560, 63 needed; 1433810 cases in 235 s (6094/s)
+    site 5 mlp2: 396338 cases run of 4194560, 22 needed; 1830148 cases in 275 s (6645/s)
+    site 6 attn3: 180055 cases run of 4194560, 20 needed; 2010203 cases in 285 s (7043/s)
+    site 7 mlp3: 256623 cases run of 4194560, 47 needed; 2266826 cases in 300 s (7558/s)
+sae induction/rand_rebuilt: E_b over K 0.022442 (leftovers dropped 0.211676, their share of dd 0.9086); |K| 654 (69 changed) of 131080; 305 s
+ITEM 8 of 8 DONE (sae induction/rand_rebuilt)
+READ DONE (sae induction)
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /mnt/nw/home/e.agnew/commute-agents/regating-lead/experiments/built_circuits/results ===
