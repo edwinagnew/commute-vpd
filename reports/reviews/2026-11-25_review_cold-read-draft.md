@@ -72,6 +72,22 @@ Both realistic figures plot `experiments/convergence_panel/results/wide/run4/sco
 - Re-gating share reads 1.32 (SQuAD) and 1.31 (summary): the caption should say values above 1 are possible (appE:117).
 - appE:134 "random maps 0.72 to 0.91" overstates: the second random map reached 0.40.
 
+## MUST, pass 4 (related work and Geiger numbers, 11-25 ~10:10)
+Every Geiger et al. 2025 number in §3 points to the right item (Def. 2, 5, 9, 28, 41, 44; Remark 6; §3.5.2, §3.6), and VPD §7.5 is the right section. I re-read the Kumar and VPD passages in the downloaded texts myself.
+
+8. **main.tex:167, Kumar et al. 2022: the exception is misstated.** The draft says fine-tuning distorts features "unless they are already aligned with the task". The paper's exception is about the head: "If the head were somehow initialized perfectly at v⋆, then fine-tuning updates may not increase the OOD error" (LP-FT, Prop. 3.7). Fix: "fine-tuning distorts pretrained features, changing them only along the span of the training data, unless the head starts well aligned (LP-FT)".
+9. **refs.bib geiger2025: pages 1--63, no number.** JMLR's own entry gives number 83, pages 1--64.
+
+### SHOULD, pass 4
+- main.tex:156, VPD §7.5: the up/down/modify/add reading is proposed for single gradient updates; for a fine-tune the section proposes running VPD on the weight diff ("one could apply VPD to only a 'weight diff' obtained by finetuning"). "We carry out that proposal" overreaches: say we apply the gradient-update reading to a whole fine-tune's change.
+- main.tex:121, Jain 2024: the paper says the update lies mostly in the left null space of the instruction-tuned weights; "a rescaling of existing ones" has no antecedent.
+- main.tex:166, Raghu 2020: "layer freezing, which is invariant to rotations": it is the CCA/CKA similarity measures that are invariant.
+- main.tex:238: "τ is required to be ... the identity on inputs and outputs" is ours, not Geiger's (Def. 28 asks only a bijection). Write "we additionally require".
+- main.tex:320: "points of variation" is not Geiger's term; Def. 41 has a distribution over interventions.
+- main.tex:138 Minder 2025: add "on the first few tokens of random text". main.tex:139 Kassem 2026: name the delta-based loss and the 20/80 shared split.
+- refs.bib venues missing: kotha2023forgetting ICLR 2024, gekhman2024hallucinations EMNLP 2024, yue2025 and sutter2025 NeurIPS 2025, zhong2026weights ICLR 2026 (jain2024safety, wang2025circuit unverified).
+- No counterexample found to the two "to our knowledge, first" claims (main.tex:149, :159); keep the hedge.
+
 ## SHOULD
 
 1. **ρ depends on each variable's units, and the appendix's escape is wrong for VPD.** main.tex:389 says the weights
@@ -117,5 +133,5 @@ Both realistic figures plot `experiments/convergence_panel/results/wide/run4/sco
 ## Not run
 - Pass 2 read appI, appD and appH; pass 3 read appE and both realistic figures (realistic-panel code path only). No read of the cut/ files (the blind read covers
   the reversal), or the rendered main.pdf layout.
-- No check of the related-work citations against the papers.
+- Pass 4 checked related-work bullets and 36 bib entries against arXiv/JMLR texts; the cut/ files' citations were not checked.
 - All values come from definition.csv at v2 9529c07. None were recomputed from the runs' own results.
