@@ -106,7 +106,7 @@ def test_score_on_a_fake_result():
     import sys
     from pathlib import Path
 
-    run = Path(__file__).resolve().parents[1] / "experiments" / "cancellation" / "run.py"
+    run = Path(__file__).resolve().parents[1] / "archive" / "experiments" / "cancellation" / "run.py"
     spec = importlib.util.spec_from_file_location("cancellation_run", run)
     assert spec is not None and spec.loader is not None
     m = importlib.util.module_from_spec(spec)
@@ -225,7 +225,7 @@ def test_complement_score_on_a_fake_result():
     import sys
     from pathlib import Path
 
-    run = Path(__file__).resolve().parents[1] / "experiments" / "cancellation_complement" / "run.py"
+    run = Path(__file__).resolve().parents[1] / "archive" / "experiments" / "cancellation_complement" / "run.py"
     spec = importlib.util.spec_from_file_location("complement_run", run)
     assert spec is not None and spec.loader is not None
     m = importlib.util.module_from_spec(spec)
@@ -293,7 +293,7 @@ def test_amend1_split_and_readings_on_a_fake_result():
     import sys
     from pathlib import Path
 
-    run = Path(__file__).resolve().parents[1] / "experiments" / "cancellation_complement" / "run.py"
+    run = Path(__file__).resolve().parents[1] / "archive" / "experiments" / "cancellation_complement" / "run.py"
     spec = importlib.util.spec_from_file_location("complement_run_a1", run)
     assert spec is not None and spec.loader is not None
     m = importlib.util.module_from_spec(spec)
@@ -359,7 +359,7 @@ def test_amend2_rules_on_a_fake_result():
     import sys
     from pathlib import Path
 
-    run = Path(__file__).resolve().parents[1] / "experiments" / "cancellation_complement" / "run.py"
+    run = Path(__file__).resolve().parents[1] / "archive" / "experiments" / "cancellation_complement" / "run.py"
     spec = importlib.util.spec_from_file_location("complement_run_a2", run)
     assert spec is not None and spec.loader is not None
     m = importlib.util.module_from_spec(spec)

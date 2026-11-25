@@ -105,3 +105,19 @@
 - Full suite after the fix (cpu-run, 4 CPUs): collection passes; 7800 passed, 5 failed, 1 skipped. The 5 are outside
   2c: three test_sbatch_stages cases need this worktree's results/large linked (fleet/link-data) or a results/ folder,
   and test_qwen_rl / test_qwen_d1_teeth_amend fail on the Qwen model's attributes (`Qwen3Model has no attribute lm`).
+
+## 2c follow-up (status at lead restart, 2026-11-25)
+- Done: (1) Reader's steering selection is `fair_steering.selection` (58ebd417); (2) GPU new_a/new_b results and logs
+  67371/67372 on the branch, compare.py's pre-existing-saved-gap rule, reproduction.json 35/35 pass (f7332e46);
+  (3) p2-79-archive merged (5419e5fc); tests moved to archive/tests: test_case_patch, test_claim_tests,
+  test_crosscoder_replicate, test_gamma (loads archived gamma_refit run.py at import), test_lora_sgd_score,
+  test_neuron_jobs_rules, test_qwen_d1_teeth, test_qwen_d1_teeth_amend, test_qwen_masked_read, test_qwen_tofu_adversary,
+  test_teacher_spread_amend1. Kept (also test live src): test_cancel (commute.cancel), test_carrying_jobs
+  (commute.carrying_jobs); their paths now point at archive/experiments. pytest testpaths was already ["tests"].
+  load_experiment's fallback now tests for .py files (archived folders left untracked results/large dirs; those were
+  removed in this worktree). (4) link-data run. The 2 Qwen failures fail the same on 62e4ca8d (e309-old): pre-existing
+  (test_qwen_rl, E69 / qwen_rl; test_qwen_d1_teeth_amend, E85 / qwen_sft.py:53, now archived).
+- Tests: before the merge 7800 passed, 5 failed, 1 skipped (results/large not linked). After: cpu-run job 67411 was
+  still running at the restart (log ~/commute-data/scratch/refactor-lead/2c/test_after.log; 3 F seen by 96%).
+- Lint: ruff + pyright clean on every touched file. Lines: src/commute 40502; experiments/**/*.py 185160.
+- Left: read job 67411's result and fix any failure caused by the archive move.
