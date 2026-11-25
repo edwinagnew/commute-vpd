@@ -1,0 +1,31 @@
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+[lower s0] step 128 gain/token 0.1275 top20 share 0.392 upper mass {'base': 0.036441757031466744, 'ft': 0.005270950510344365} held_gain 0.12751 (saved 0.12751)
+   top: '<|endoftext|>' 257.3, ',' 152.3, ' the' 123.5, ' let' 104.5, ' in' 99.0, 'the' 98.6, 's' 97.1, 'let' 90.1, 'expand' 70.5, 'a' 63.9
+[lower s1] step 101 gain/token 0.1277 top20 share 0.421 upper mass {'base': 0.036441757031466744, 'ft': 0.004743307356013006} held_gain 0.12772 (saved 0.12772)
+   top: '<|endoftext|>' 247.6, ' the' 192.9, ',' 167.2, 's' 111.1, 'the' 109.1, ' let' 104.2, 'let' 91.8, ' in' 85.1, 'expand' 80.4, ' this' 70.8
+[lower s2] step 96 gain/token 0.1218 top20 share 0.441 upper mass {'base': 0.036441757031466744, 'ft': 0.005668892704680435} held_gain 0.12175 (saved 0.12175)
+   top: '<|endoftext|>' 241.0, ' the' 226.8, ',' 171.5, 'the' 106.5, 's' 96.9, ' let' 95.9, 'let' 89.0, ' in' 75.4, ' this' 72.1, 'c' 65.2
+[arxiv s0] step 5 gain/token 0.0608 top20 share 1.693 upper mass {'base': 0.08011299929304852, 'ft': 0.08049328244448815} held_gain 0.21678 (saved 0.21678)
+   top: '\n' 2226.0, '<|endoftext|>' 323.5, 'We' 124.9, ' We' 119.0, ' study' 89.5, ' we' 51.9, '_' 47.7, ' present' 45.8, ' paper' 45.0, '^' 44.7
+[arxiv s1] step 101 gain/token 0.2094 top20 share 0.529 upper mass {'base': 0.08011299929304852, 'ft': 0.08117038650709116} held_gain 0.38046 (saved 0.38046)
+   top: '\n' 1667.5, '<|endoftext|>' 538.3, 'We' 378.9, '-' 162.2, ' study' 97.8, ' a' 87.0, ' We' 86.7, ' of' 71.7, '.' 55.3, '_' 49.7
+[arxiv s2] step 12 gain/token 0.1282 top20 share 0.807 upper mass {'base': 0.08011299929304852, 'ft': 0.08391950954080368} held_gain 0.28358 (saved 0.28358)
+   top: '\n' 1772.5, '<|endoftext|>' 557.7, 'We' 309.7, ' We' 97.5, '-' 91.4, ' study' 82.8, ' present' 46.8, ' we' 46.0, 'The' 44.4, ' paper' 43.0
+[swahili s0] step 77 gain/token 1.1073 top20 share 0.326 upper mass {'base': 0.1857551656600381, 'ft': 0.19021858774237832} held_gain 1.83055 (saved 1.83055)
+   top: ' ya' 1588.4, 'wa' 1084.6, 'io' 817.4, 'u' 758.1, 'i' 627.3, 'and' 557.2, 'o' 552.9, 'iki' 551.0, 'ia' 485.2, 'a' 465.8
+[swahili s1] step 77 gain/token 1.1151 top20 share 0.330 upper mass {'base': 0.1857551656600381, 'ft': 0.18389650305837718} held_gain 1.74744 (saved 1.74744)
+   top: ' ya' 1653.9, 'wa' 996.9, 'io' 856.2, 'u' 728.7, 'and' 596.4, 'w' 589.9, 'i' 568.6, 'iki' 567.2, 'o' 563.4, 'sh' 540.7
+[swahili s2] step 41 gain/token 0.9210 top20 share 0.361 upper mass {'base': 0.1857551656600381, 'ft': 0.18036947159602343} held_gain 1.42124 (saved 1.42124)
+   top: ' ya' 1443.2, 'wa' 990.4, 'io' 810.7, 'w' 679.1, 'u' 662.2, ' wa' 605.4, 'and' 500.9, 'o' 498.2, 'sh' 462.2, 'indi' 456.8
+[yoruba s0] step 105 gain/token 1.4601 top20 share 0.442 upper mass {'base': 0.07205346100577266, 'ft': 0.06435004231780123} held_gain 1.96719 (saved 1.96719)
+   top: '�' 2802.7, '�' 2164.1, '�' 1483.8, 'í' 1392.8, '�' 1314.3, 'à' 1107.8, 'gb' 1067.0, ' à' 1002.2, ' ì' 976.9, ' ni' 926.7
+[yoruba s1] step 107 gain/token 1.4635 top20 share 0.431 upper mass {'base': 0.07205346100577266, 'ft': 0.06499523785737588} held_gain 1.97553 (saved 1.97553)
+   top: '�' 2644.2, '�' 2064.8, '�' 1542.0, 'í' 1399.1, '�' 1305.1, 'gb' 1026.7, 'à' 1016.7, ' ì' 982.8, ' à' 979.8, ' ni' 971.3
+[yoruba s2] step 107 gain/token 1.4687 top20 share 0.440 upper mass {'base': 0.07205346100577266, 'ft': 0.06404475806456275} held_gain 2.02364 (saved 2.02364)
+   top: '�' 2649.2, '�' 2054.1, '�' 1691.5, 'í' 1299.5, '�' 1230.0, 'à' 1078.2, 'gb' 1065.0, ' ì' 1046.5, ' à' 1007.5, ' ni' 931.1
+DONE; peak GPU 6.15 GB
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/token_risers/results/risers.json, /root/out/run_e308.log ===

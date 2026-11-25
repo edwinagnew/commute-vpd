@@ -1,0 +1,30 @@
+{
+ "experiment": "E308",
+ "cell": "P2.81",
+ "card": "experiments/token_risers/card.md",
+ "filed": "2026-11-24, before the run",
+ "descriptive": "user, 2026-11-24, in whip-lead's chat: 'i think you should run 2 and check what number of steps each ran to see if that explains anything'. Reported as a description; no verdict on reuse; nothing below is scored at a bar.",
+ "settings": {
+  "experiment": "E308",
+  "tasks": ["lower", "arxiv", "swahili", "yoruba"],
+  "seeds": ["0", "1", "2"],
+  "top": 30,
+  "ks": [1, 5, 10, 20, 50, 100, 200, 500],
+  "batch": 8,
+  "tasks_source": "the cell: the two tasks rated new with the highest kept share (Swahili, Yoruba) and the two rated reuse with the lowest (lowercase, arXiv)",
+  "seeds_source": "the cell: all 3 seeds, the exact KL-hi states of Fig 5 (convergence_panel results/wide/selection.json .kl.hi)",
+  "ks_source": "the cell: top 20 and top 100 types, plus points between for the curve"
+ },
+ "positions": "convergence_panel/base_loss.py's 'trained' rule on each task's 64 held rows: LM tasks every position after the first; lowercase every position (its held_mask). Gain at a position = log P_ft(actual next token) - log P_base(actual next token), nats.",
+ "expected": {
+  "do_nothing": "A zero update gives every position's gain exactly 0 (fp32 logits, same weights). The job stops otherwise.",
+  "reproduction": "The mean gain over the panel's own held_mask positions reproduces each state's saved held_gain (selection.json) up to card-to-card rounding; reported, not a stop.",
+  "positive_control_lowercase": "On lowercase, the mean probability the model puts on tokens holding an upper-case letter falls to at most half its base value on every seed, and the top risers are lower-case word starts whose capitalised form the base expects (e.g. ' the', ' i', sentence starts). On arXiv, Swahili and Yoruba this mass moves by less than a third of its base value.",
+  "rival_a": "Swahili and Yoruba: top-20 types' gain share minus their position share is at least 0.15 (seed mean), the top risers being frequent subwords, diacritic pieces, punctuation or loanwords, as on lowercase.",
+  "rival_b": "Swahili and Yoruba: top-20 gain share minus position share is under 0.15 (seed mean), like arXiv.",
+  "arxiv": "Diffuse: top-20 gain share minus position share under 0.15.",
+  "steps": "Read from selection.json, not measured here: lowercase 96-128, arXiv 5-101, Swahili 41-77, Yoruba 105-107 steps to KL about 0.18."
+ },
+ "blind_to": "Which internal mechanism carries a gain: this reads only output probabilities of the actual next token. A gain spread over many types can still come from one shared change (e.g. a script or language prior), and a concentrated gain can be on types that matter for the language. Net shares can pass 1 when other types lose.",
+ "noise_floor": "None measured for the concentration curve before this run; the three seeds give its spread."
+}

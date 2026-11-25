@@ -12,8 +12,8 @@ Reads (all committed results; nothing is recomputed):
   CMAP heads (E288 items/, E305 p2-80/items/)  .compared.whole_logodds_share; null = mean of the 10 random head sets
       of the circuit's size, .cmap.random<k>.share.logodds; circuit size = len(.circuit)
   WeightWatch S (E306)  results/p2-80/summary.json .rows.<s>.S, .haar_range, .sham_S
-  Crosscoder d (E203, seed 0 only)  experiments/crosscoder/results/run2/sides/<g>__<t>_s0.json .d; random update
-      run2/stage1_random.json .random.d
+  Crosscoder d (E203, seed 0 only, authors' negative-coefficient exclusion)  crosscoder/results/negbeta_rescore.json
+      .runs.E203.<g>__<t>_s0.new.d_authors; random update random_like__e54__elicit_s0
 Writes experiments/weightwatch/figures/tools_fig4.{png,pdf,csv} and results/p2-80/tools_fig4.json.
 
     ~/commute-agents/fleet/cpu-run python3 experiments/weightwatch/tools_fig4.py
@@ -117,15 +117,10 @@ def weightwatch(states: list[str]) -> dict[str, dict[str, Any]]:
 
 
 def crosscoder(states: list[str]) -> dict[str, dict[str, float]]:
-    sides = EXP / "crosscoder/results/run2/sides"
-    out = {}
-    for s in states:
-        p = sides / (s.replace("/", "__") + ".json")
-        if s.endswith("_s0"):
-            side = load(p)
-            assert side["c"] == 1 and side["state"] == s
-            out[s] = side["d"]
-    return {"value": out}
+    """d under the authors' exclusion of latents with a negative base coefficient (P2.70's rescore), seed 0, as built."""
+    runs = load(EXP / "crosscoder/results/negbeta_rescore.json")["runs"]["E203"]
+    out = {s: runs[s.replace("/", "__")]["new"]["d_authors"] for s in states if s.endswith("_s0")}
+    return {"value": out, "random": runs["random_like__e54__elicit_s0"]["new"]["d_authors"]}
 
 
 def span(xs: list[float]) -> list[float]:
@@ -138,7 +133,7 @@ def main() -> None:
     states = [s for k in order for s in tasks[k]["states"]]
     nulls = cheap_nulls(states)
     cm, ww, cc = cmap(tasks), weightwatch(states), crosscoder(states)
-    cc_random = load(EXP / "crosscoder/results/run2/stage1_random.json")["random"]["d"]
+    cc_random = cc["random"]
     ww_gauss = load(EXP / "weightwatch/results/p2-80/stage0.json")["gaussian"]["mean"]
     # (key, title, y label, values, per-state null for a band, line null (value, label))
     panels = [

@@ -109,9 +109,10 @@ directions the model already uses, not that it reuses them.
 
 **Reading it.** No reading: its planted control failed, so its values are unvalidated. The latent that carried a
 planted direction had a base-side ratio of 0.244 against the authors' cut-off of 0.2, so it was not counted
-fine-tune-specific. For the record, $d$ on seed 0 spans 0.06 to 0.56 on the tasks built to reuse and 0.27 to 0.60 on
+fine-tune-specific. For the record, $d$ on seed 0 spans 0.08 to 0.56 on the tasks built to reuse and 0.27 to 0.60 on
 those built new. One random update gives 0.55. Two crosscoders trained with different seeds on one state gave 0.42 and
-0.46.
+0.46. These values follow the authors' exclusion of latents with a negative base coefficient, Minder et al.
+Appendix E.2, as rescored in P2.70; the value of 0.06 on copy key with 96 keys read before that rescore is gone.
 
 ### How do these sit beside Fig 4's cheap readings?
 
@@ -131,7 +132,7 @@ table says where fewer than three seeds remain. "Heads" is the CMAP circuit's si
 | Copy at a new marker | reuse | 1.09 | 0.56 | 468 | 0.66 | 7.3 | 0.88 | 1.66 | 0.56 |
 | Copy key | reuse | 0.78 | 0.70 | 440 | 0.54 | 4.3 | 0.41 | 1.71 | 0.37 |
 | Copy key (24 keys) | reuse | 0.84 | 0.72 | 438 | 0.45 | 4.0 | 0.59 | 1.59 | 0.38 |
-| Copy key (96 keys) | reuse | 0.77 | 0.74 | 475 | 0.58 | 3.7 | 0.60 | 1.82 | 0.06 |
+| Copy key (96 keys) | reuse | 0.77 | 0.74 | 475 | 0.58 | 3.7 | 0.60 | 1.82 | 0.08 |
 | Lowercase text | reuse | 0.76 | 0.73 | 600 | no circuit | none | 0.73 | 2.96 | 0.42 |
 | Runner-up guess | reuse | 0.77 | 0.32 | 431 | 0.20 | 5.0 | 0.74 | 1.11 | 0.42 |
 | Top guess | reuse | 0.84 | 0.21 | 426 | 0.11, 2 seeds | 2.0 | 0.66 | 1.31 | 0.36 |
@@ -209,6 +210,5 @@ None: both runs were descriptive and filed no rule.
   `stage0_do_nothing.json`.
 - WeightWatch: `experiments/weightwatch/results/p2-80/summary.json` (E306, commit 190bae7e), `.rows.<state>`,
   Gaussian control `stage0.json .gaussian`.
-- Crosscoder: `experiments/crosscoder/results/run2/sides/*_s0.json` `.d` (E203); random update `stage1_random.json`;
-  reseed `stage1.json`; planted control `stage0b.json`.
+- Crosscoder: `experiments/crosscoder/results/negbeta_rescore.json` `.runs["E203"][<side>].new.d_authors` (P2.70's rescore of E203 under the authors' exclusion), random update `random_like__e54__elicit_s0`, reseed `e54__elicit_s0__seed1`; planted control `experiments/crosscoder/results/run2/stage0b.json`.
 - Figure and summary: `experiments/weightwatch/tools_fig4.py`, which reads only the files above. No GPU, $0.
