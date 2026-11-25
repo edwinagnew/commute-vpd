@@ -1,0 +1,58 @@
+{
+ "experiment": "E307",
+ "cell": "P2.66",
+ "run": 4,
+ "stage": "step 1, $0 cluster probe: retrain past the 300-step cap and read the read-row gain at every save",
+ "filed": "2026-11-24",
+ "plan": "reports/plans/2026-11-24_plan_p2-66-run4-estimate.md",
+ "settings": {
+  "steps": 1200,
+  "steps_source": "regating-lead brief 2026-11-24 (P2.66 run 4): 4x the filed 300, four passes over the 2,400 train rows",
+  "every": 50,
+  "every_source": "regating-lead brief 2026-11-24: a save every 50 steps, 24 saves a seed at 57 MB each",
+  "control_step": 300,
+  "control_step_source": "predictions.json settings.steps, the filed runs' last step: the saved TASK_sN_step300.pt files are the replay's reference",
+  "gain_floor": 1.0,
+  "gain_floor_source": "commute.local_faith.MIN_GAIN, the floor under which the share and steering share read nan (run.py readings)",
+  "retrain": {"arxiv": [0, 1, 2], "german": [0, 1, 2], "spanish": [0]},
+  "retrain_source": "the seeds whose kl_hi state reads a read-row gain under 1 in results/wide/read and have no saved state that reaches 1 (plan section 1)"
+ },
+ "recipe": "unchanged from predictions.json settings: Adam (0.9, 0.999), constant lr 3e-5, no warm-up, batch 8, clip 1, panel.order's seeded permutation per pass (run4.py builds panel.Recipe from predictions.json, only the step count from here)",
+ "measurement": "read-row gain = RR.share_of(net, task.read, dW)['gain'][task.read.scored], the quantity results/wide/read/TASK.json records as 'gain' (run.py readings), read from the bf16 state file",
+ "rule": {
+  "pick": "for each task-seed, the earliest saved step whose read-row gain is >= gain_floor (1.0, absolute, in log-odds); ties cannot occur (one save per step)",
+  "retrained_seeds": "saves at every multiple of 50 from 50 to 1200 of the run-4 retrain (results/large/states_run4/r4_TASK_sN_stepK.pt); a seed with no save >= 1.0 by step 1200 has no pick, is reported as such, and no recipe is changed",
+  "sentiment": "every save of results/train/sentiment.json (the filed runs, steps up to 300), its read-row gain from results/wide/read/sentiment.json where read there, else from results/wide/run4/sentiment.json (the saves never read); select refuses while any save lacks a gain",
+  "label": "gain1: run.py picked(TASK, 'wide') adds it from results/wide/run4/selection.json; eb.py takes it as a match",
+  "unchanged": "the other 8 tasks and spanish s1/s2 keep their picks; selection.json and dropped.json are not touched",
+  "edge_cases": "a seed whose saves all read under 1.0: no pick (None, listed under 'none'); a save at exactly 1.0 passes (>=); a nan gain never passes (nan >= 1 is False) and is listed; the do-nothing state reads gain exactly 0 (stage 0 of E272, results/stage0.json zero.gain) and cannot pass"
+ },
+ "control": {
+  "what": "the retrain replays steps 1-300 exactly: constant lr, no warm-up and panel.order's first permutation is the same for 300 and 1200 steps (one pass is 300 x 8 = 2,400 rows), so the retrain's step-300 state is the filed run's TASK_sN_step300.pt",
+  "floor": "measured in each job's stage 0 on its first seed, on the job's card: the seed trained to step 300 twice (runs a and b, in memory); floor = max(|gain(a bf16) - gain(b bf16)|, |gain(a fp32) - gain(a bf16)|): run-to-run noise of the trainer and the bf16 rounding of the save format, both at this site",
+  "stop": "stage 0 stops the job before any 1200-step run when |gain(a bf16) - gain(saved step-300 file)| > floor; after each seed's retrain, its step-300 save is read first and the job stops when |gain(step 300) - gain(saved step-300 file)| > floor",
+  "reported_not_stopped": "whether runs a and b and the saved file are bitwise equal in bf16, their largest weight difference, and the L40 read of the saved file against its H100 read in results/wide/read where one exists (german s0-s2, spanish s0 step 300)"
+ },
+ "expected": {
+  "control_floor": "unmeasured; 0 for the run-to-run part if the L40 trainer is deterministic, so the floor is then the bf16 rounding gap",
+  "step300_read_gain_saved_H100": {"german_s0": 0.6949, "german_s1": 0.7838, "german_s2": 0.5556, "spanish_s0": 0.9590},
+  "step300_held_gain_saved": {"arxiv_s0": 0.4902, "arxiv_s1": 0.5297, "arxiv_s2": 0.5724},
+  "crossing": {
+   "spanish_s0": "near step 330 (linear extrapolation of the late slope), so a pick at step 350",
+   "german_s0": "near step 600-700", "german_s1": "near step 600-700",
+   "german_s2": "may never cross by 1200: read gain 0.56 at 300",
+   "arxiv_s0": "may never cross by 1200: held gain flat at ~0.5 from step ~110 to 300",
+   "arxiv_s1": "as arxiv_s0", "arxiv_s2": "as arxiv_s0"
+  },
+  "crossing_source": "reports/plans/2026-11-24_plan_p2-66-run4-estimate.md section 2; passes 2-4 repeat rows, so the gain may rise faster (memorisation does not transfer to held rows) or flatten: unmeasured",
+  "sentiment_picks": {"s0": "step 108 (read 2.46) unless an unread earlier save (1-5, 7, 9, 50) reads >= 1", "s1": "step 21 (read 1.54) unless 1-5, 8 or 9 reads >= 1", "s2": "step 119 (read 1.18) unless 1-4, 6, 8 or 45 reads >= 1"},
+  "sentiment_note": "sentiment's read gain is not monotone (s0 reads 0.11 at step 20, s2 0.01 at step 17), so the earlier saves are read; every passing sentiment state sits at KL 1-4 nats, far off the 0.18 KL rung",
+  "kl_at_pick": "every pick is past the KL 'hi' rung (~0.18): the figure must say the picks are not KL-matched"
+ },
+ "early_stops": [
+  "stage 0 control: the step-300 replay's read-row gain off the saved step-300 file's by more than the measured floor (above)",
+  "each retrained seed: its step-300 save's read-row gain off the saved file's by more than the floor, read before its other saves",
+  "a save file whose sha256 on re-read differs from the one recorded when it was written"
+ ],
+ "sizes": "measured (plan section 2, jobs 63882/63883/63886): ~0.21 s a step on a cluster L40, peak 8.4 GB, 57 MB a state; 24 saves x 7 seeds = 9.6 GB under results/large/states_run4 (all kept: the later reads need any of them as the pick)"
+}

@@ -16,6 +16,13 @@
 #   Amendment 8: ~/commute-agents/fleet/cpu-run python3 experiments/convergence_panel/run.py select mix   (size "hi" picks)
 #     sbatch --comment="E272 stage: read mix25" cluster/convergence_panel.sbatch read mix25   (and mix50, mix75:
 #     3 size-matched states each, no Gaussians, ~4 min + set-up)
+#   P2.66 run 4, step 1 (experiments/convergence_panel/run4.py; rules results/wide/predictions_run4.json), four jobs at once:
+#     sbatch --comment=E### cluster/convergence_panel.sbatch run4 arxiv 0 1 2       (~27 min)
+#     sbatch --comment=E### cluster/convergence_panel.sbatch run4 german 0 1 2      (~27 min)
+#     sbatch --comment=E### cluster/convergence_panel.sbatch run4 spanish 0         (~11 min)
+#     sbatch --comment=E### cluster/convergence_panel.sbatch run4 sentiment         (28 reads, ~6 min)
+#     (a seed: 1200 steps at ~0.21 s, 24 saves and reads; stage 0 trains the first seed to 300 twice, ~2.2 min; a rerun resumes)
+#     then ~/commute-agents/fleet/cpu-run python3 experiments/convergence_panel/run4.py select
 # Expected on an L40 (E211 log cluster/logs/commute-realistic-r2-61448.out: a 300-step LM fine-tune 10 s, lines 36;
 # one full E211 read of a state, a superset of this panel's readings, 57-58 s, lines 12-13): stage 0 ~8 min (lowercase
 # rows, three reads, E254's world); train ~5-10 min a task (3 seeds + up to 27 saves each, ~2 s a save; squad and
@@ -38,5 +45,6 @@ cd "$COMMUTE_REPO"
 echo "$(date -Is) $SLURM_JOB_ID $SLURM_JOB_NAME qos=$SLURM_JOB_QOS args=$*" >> cluster/logs/jobs.log
 export OMP_NUM_THREADS=$SLURM_CPUS_PER_TASK MKL_NUM_THREADS=$SLURM_CPUS_PER_TASK
 [[ ${1:-} == probe ]] && exec .venv/bin/python experiments/convergence_panel/probe.py   # E272 probe (probe.py header)
+[[ ${1:-} == run4 ]] && exec .venv/bin/python experiments/convergence_panel/run4.py "${@:2}"   # P2.66 run 4 (run4.py header)
 [[ ${1:-} == base_loss ]] && exec .venv/bin/python experiments/convergence_panel/base_loss.py   # post-hoc data-only baseline (its header)
 .venv/bin/python experiments/convergence_panel/run.py "$@"
