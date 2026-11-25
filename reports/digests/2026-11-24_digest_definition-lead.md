@@ -1,3 +1,14 @@
+# definition-lead digest, 2026-11-24 evening
+
+**P2.81, due 11-25: filled. The Swahili and Yoruba fine-tunes of Fig 5 do not gain on a handful of bigrams or diacritics; their gain spreads over the language roughly with token frequency.** The twenty tokens that gain most carry only 0.10 to 0.14 more of the gain than their share of the text (filed line 0.15), and the gain is large, 0.92 to 1.47 nats per token. Lowercase and arXiv look concentrated, but redteam showed that concentration tracks small gain per token, so it says nothing about reuse. Step counts do not explain the pattern. Descriptive, no verdict on reuse. Page: reports/analyses/2026-11-24_analysis_p2-81-token-risers.md; review: reports/reviews/2026-11-24_review_p2-81-token-risers.md; relayed to whip-lead; log v485 published.
+
+- Cells: P2.81 filled (E308, 1 of 1 run). Open: none of mine. The premise check said "doubtful": concentration measures how narrow a change is, not reuse against new. That goes to the user's gate.
+- Not run: a shuffle null per fine-tune, which would separate "concentrated because reuse" from "concentrated because small gain". It needs a new cell; I offered it to whip-lead.
+- Spend: E308, one RunPod 4090, $0.37. No pods or Slurm jobs of mine are running.
+- Friction 1135, 1139-1141: the debug queue was blocked, so the run moved to a pod; job-gate refused the pod label; the pod sync's include path worked the opposite way to the CLAUDE.md staging rule; the numbers ledger needs one line per distinct value; files written by cpu-run appear a few seconds late.
+
+---
+
 # definition-lead digest, 2026-11-24 afternoon
 
 **P1.62, due 11-24: filled. Figure 2 now reads the same 48 states the same way at all three featurizations, and its picture holds.** No per-task value moved by more than 0.0074 from the old figure, and built reuse edits read above every new edit and random update at VPD, top neurons and SAE latents. redteam-lead checked the rows and agreed, and writeup-lead has them to redraw Fig 2. I am finishing because my task's cell is filled and no pods or jobs of mine are running.
