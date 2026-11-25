@@ -386,7 +386,7 @@ def sigma_matched_scale(M: Tensor, RU: Tensor, RV: Tensor, U_A: Tensor, V_A: Ten
 
 
 # ----------------------------------------------------------------------------- the step split (2026-10-21)
-# Added for experiments/step_split (the user's "step split"): the scaled adjoint split applied to every optimizer step of a
+# Added for archive/experiments/step_split (the user's "step split"): the scaled adjoint split applied to every optimizer step of a
 # run against the current (U_A, V_A), which then carry forward; each step's remainder, including the second-order term
 # dU dV^T, goes to Delta, so the component sum plus Delta is the run's weights at every step. Gamma frozen.
 

@@ -1,5 +1,5 @@
 """E113's pure pieces (plan reports/plans/2026-11-06_plan_e113-case-patch.md; rules filed in
-experiments/case_patch/results/predictions.json): the class means, the patch that sets one coordinate of the residual,
+archive/experiments/case_patch/results/predictions.json): the class means, the patch that sets one coordinate of the residual,
 the random control's shift of the same size, the edit that applies them at given positions, and the flip rate. No model
 is read here; tests/test_case_patch.py runs each piece on tiny tensors.
 

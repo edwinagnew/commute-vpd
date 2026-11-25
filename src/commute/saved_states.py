@@ -1,5 +1,5 @@
-"""E11's saved step-10 states, rebuilt as E17 (`experiments/cancellation/run.py`) rebuilt them, for the experiments that
-read them again (E20 `experiments/cancellation_complement`). Paths are passed in: the files live under gitignored
+"""E11's saved step-10 states, rebuilt as E17 (`archive/experiments/cancellation/run.py`) rebuilt them, for the experiments that
+read them again (E20 `archive/experiments/cancellation_complement`). Paths are passed in: the files live under gitignored
 `results/large/` on the cluster NFS.
 
 A state is (delta-W of the target weights, alive (U2, V2) in theory layout) per matrix:

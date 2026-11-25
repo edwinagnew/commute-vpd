@@ -75,7 +75,7 @@ def hooks(linears: dict[str, nn.Linear], off: Offsets) -> list[Any]:
 
 
 # ----------------------------------------------------------------------------- alive columns and the trainer
-# Added 2026-10-15 for the task ladder. The round-2 trainer lives in experiments/lift_test/run.py (_pullback_runs)
+# Added 2026-10-15 for the task ladder. The round-2 trainer lives in archive/experiments/lift_test/run.py (_pullback_runs)
 # and is left as it ran; this is the same recipe made importable, with states written to disk at the save steps.
 
 from dataclasses import dataclass

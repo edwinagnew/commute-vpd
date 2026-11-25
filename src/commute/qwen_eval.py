@@ -7,9 +7,9 @@ response tokens up to and including the end token; a response is truncated when 
 With `window`, each record also carries `capped_response`: the response cut where prompt plus response reach `window`
 tokens (the "capped" reading; equal to `response` when the whole answer fits).
 `load_model(name, revision)` and `generate(..., max_new=)` serve other checkpoints and shorter generations (the base
-model's prefix test, experiments/qwen_prefix_test); the defaults are the ones above.
-`score`, `summary` and `template_gap` are the graded arm and its readings as experiments/qwen_fresh_numbers ran them
-(moved here 2026-10-28 for experiments/qwen_fresh_set; that run.py keeps its own copy, as it ran).
+model's prefix test, archive/experiments/qwen_prefix_test); the defaults are the ones above.
+`score`, `summary` and `template_gap` are the graded arm and its readings as archive/experiments/qwen_fresh_numbers ran them
+(moved here 2026-10-28 for archive/experiments/qwen_fresh_set; that run.py keeps its own copy, as it ran).
 """
 
 from __future__ import annotations

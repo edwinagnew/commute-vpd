@@ -1,4 +1,4 @@
-"""Moves and reverts of the alive subcomponents, and the stable rank of an update (E39, experiments/broad_fragility;
+"""Moves and reverts of the alive subcomponents, and the stable rank of an update (E39, archive/experiments/broad_fragility;
 plan reports/plans/2026-10-27_plan_broad-fragility.md). Added 2026-10-27.
 
 A state here is the alive (U', V') per matrix in theory layout (U (d_out, n), V (d_in, n), as

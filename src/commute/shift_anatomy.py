@@ -1,4 +1,4 @@
-"""What the fixed change of Gamma's importance values is made of (E32, `experiments/shift_anatomy`).
+"""What the fixed change of Gamma's importance values is made of (E32, `archive/experiments/shift_anatomy`).
 
 Plan: reports/plans/2026-10-22_plan_shift-anatomy.md. Definitions as E28 (`commute.regating`): every pattern is W0's values
 everywhere except the trigger position, scored as recovery rho = (lo - L00) / gap and as R = rho / rho_trig.

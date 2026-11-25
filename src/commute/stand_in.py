@@ -90,7 +90,7 @@ class VPDSite:
 
     def correction(self, y: Tensor, t: Tensor, g: Tensor) -> Tensor:
         """t (k,) one weight per variable for every row, or (rows, 1, k) one per row of y (rows, T, d_in): the per-row
-        form stands a different variable in on each row (2026-11-21, experiments/rb_member_test); for t (k,) the
+        form stands a different variable in on each row (2026-11-21, archive/experiments/rb_member_test); for t (k,) the
         values are bit for bit those of the (k,) form before it (t[..., -1:] is t[-1] as a 1-element tensor)."""
         s = self.s
         a = y @ s.V

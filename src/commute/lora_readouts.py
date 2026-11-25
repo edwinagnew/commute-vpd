@@ -1,4 +1,4 @@
-"""Readouts of a trained LoRA shared by the LoRA experiments (added 2026-10-22 for experiments/lora_sgd).
+"""Readouts of a trained LoRA shared by the LoRA experiments (added 2026-10-22 for archive/experiments/lora_sgd).
 
 `init_read_factors` and `cos_with_init` are E9's |cos| of the read factor A with its initialisation
 (experiments/lora_plateau/run.py `checkpoint_record`, which stays as it ran). `select_rate` is E4's rate rule

@@ -111,7 +111,7 @@ def on_rows(ctx: Context, part: str, start: int, n: int, seeds: tuple[int, ...],
     """The context with the Pile harness on other rows: Pile `part` rows start .. start + n - 1 in blocks of 128
     (batches of 8, as `faithfulness.pile_blocks`), and W0 read there at each adversary seed in `seeds` (the ratio's
     reference and the floor). The model and every other field are shared with `ctx`. Added 2026-10-29 for
-    broad_fragility Amendment 3; the same step is `rows2_context` in experiments/broad_fragility/amend2.py, which stays
+    broad_fragility Amendment 3; the same step is `rows2_context` in archive/experiments/broad_fragility/amend2.py, which stays
     as it ran."""
     from dataclasses import replace
 
@@ -131,7 +131,7 @@ def on_rows(ctx: Context, part: str, start: int, n: int, seeds: tuple[int, ...],
 def at(ctx: Context, dW: dict[str, Tensor], uv2: dict[str, tuple[Tensor, Tensor]] | None) -> Any:
     """Context manager: the model at target W0 + dW with alive (U', V') = uv2 (None: the released ones, so the update
     lands in Delta: do-nothing). Added 2026-10-29 for row_blocks; the same step is `at` in
-    experiments/claim_tests/recipes.py, which stays as it ran."""
+    archive/experiments/claim_tests/recipes.py, which stays as it ran."""
     from commute.component_training import components_with
     from commute.faithfulness import model_state
 

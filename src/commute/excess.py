@@ -1,6 +1,6 @@
 """The adversary's excess on one model, in parts: E17's reverts and E20's complement revert with its amendment 1, as one
-call per model (E23 `experiments/cancellation_sgd`). The same arms live in `experiments/cancellation/run.py` and
-`experiments/cancellation_complement/run.py` (`measure`, `amend1_arms`, `decompose`, `split_rest`, `reading`), which
+call per model (E23 `archive/experiments/cancellation_sgd`). The same arms live in `archive/experiments/cancellation/run.py` and
+`archive/experiments/cancellation_complement/run.py` (`measure`, `amend1_arms`, `decompose`, `split_rest`, `reading`), which
 stay as they ran; this module reproduces their numbers (E23's gate G0 at W0).
 
 A model is W0 or a state: delta-W of the target weights and the alive (U2, V2) in theory layout. Under its own adversary

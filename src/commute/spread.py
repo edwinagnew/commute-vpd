@@ -1,4 +1,4 @@
-"""Gamma's values and patterns at every position, for a fine-tune with no trigger (E36, `experiments/regating_spread`).
+"""Gamma's values and patterns at every position, for a fine-tune with no trigger (E36, `archive/experiments/regating_spread`).
 
 Plan: reports/plans/2026-10-26_plan_regating-without-cues.md. E35's arms (`commute.cuefree`) carried from one trigger position
 to every position of whole rows. Values are kept as *flat* rows: one row per (sequence, position), the alive

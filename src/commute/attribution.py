@@ -1,5 +1,5 @@
 """Revert, ablate and read single subcomponents of a decomposed model in place (forward hooks or weight edits).
-Moved verbatim from experiments/identity_test/run.py (2026-10-15) so later experiments can share it. Theory layout:
+Moved verbatim from archive/experiments/identity_test/run.py (2026-10-15) so later experiments can share it. Theory layout:
 UV[k] = (U (d_out, n), V (d_in, n)) of the alive subcomponents, states st[k] = (U2, V2) the same after an update."""
 
 from __future__ import annotations

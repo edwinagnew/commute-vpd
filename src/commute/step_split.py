@@ -1,6 +1,6 @@
 """The step split's read-outs along one fine-tune path, shared by experiments that run `split.StepSplit`.
 
-Added 2026-10-22 (step_split_small, E25). E19's `snapshot` (experiments/step_split/run.py, which stays as it ran) did the
+Added 2026-10-22 (step_split_small, E25). E19's `snapshot` (archive/experiments/step_split/run.py, which stays as it ran) did the
 same sums inline; this keeps the energy shares and the piece sizes and drops its outside-both bookkeeping. Also the
 carried-vs-fixed identity at the first step.
 """

@@ -1,7 +1,7 @@
 """The GSM8K splits and GSM1k as the Qwen GSM8K runs read them: pinned revisions, items {idx, question, gold}.
 
 GSM1k keeps only the problems sharing under half of their word 8-grams with any GSM8K question (train or test): 1,197
-of 1,205. Moved here 2026-10-28 for experiments/qwen_sft from experiments/qwen_fresh_set/run.py (`load_sets`, `grams`,
+of 1,205. Moved here 2026-10-28 for experiments/qwen_sft from archive/experiments/qwen_fresh_set/run.py (`load_sets`, `grams`,
 `overlap`), which keeps its own copy, as it ran; the rule and revisions are unchanged.
 """
 

@@ -32,7 +32,7 @@ RMS norm after the last block (`global_transformer/arch.py:328-332`). Its conver
 new run's 32-slot stacks are cut to their 28 layers by the converter (pads checked zero there), so every directory
 holds 28-layer stacks and the loaders assert it.
 
-A third, p-015e0710 (E175; experiments/qwen_frozen_decomp/convert.py), is a frozen-neuron control: only the 84 MLP
+A third, p-015e0710 (E175; archive/experiments/qwen_frozen_decomp/convert.py), is a frozen-neuron control: only the 84 MLP
 matrices are decomposed (attention runs as the target), each subcomponent fixed at one neuron, only Γ trained. Its
 index.json carries `kinds = ["gate", "up", "down"]` (Γ's head order) and `components = "neuron"`: V and U are built
 from the HF weights by the bundle README's table (gate/up V = Wᵀ, U = I; down V = I, U = Wᵀ), not read from files.

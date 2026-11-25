@@ -1,5 +1,5 @@
 """Fine-tunes held to rank r per matrix, and how much of an update lies beyond rank r (E39 Amendment 2,
-`experiments/broad_fragility/amend2.py`; plan reports/plans/2026-10-27_plan_broad-fragility.md -> "Amendment 2").
+`archive/experiments/broad_fragility/amend2.py`; plan reports/plans/2026-10-27_plan_broad-fragility.md -> "Amendment 2").
 Added 2026-10-28.
 
 After every optimizer step, each decomposed matrix's change W - W0 is replaced by its best rank-r approximation

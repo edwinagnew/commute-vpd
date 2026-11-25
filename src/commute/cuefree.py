@@ -1,4 +1,4 @@
-"""Cue-free models of the change of Gamma's importance values (E35 `experiments/regating_cuefree`; E36 to follow).
+"""Cue-free models of the change of Gamma's importance values (E35 `archive/experiments/regating_cuefree`; E36 to follow).
 
 Plan: reports/plans/2026-10-26_plan_regating-without-cues.md. Inputs are per-row values (one row per window at the trigger,
 or per position), (N, C) per matrix, fp32 CPU (`shift_anatomy.Vals`): g0 under W0 and g1 under the do-nothing state.

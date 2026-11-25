@@ -1,4 +1,4 @@
-"""Teacher training of a fine-tune with no trigger, and readings on whole rows (E37, `experiments/teacher_spread`).
+"""Teacher training of a fine-tune with no trigger, and readings on whole rows (E37, `archive/experiments/teacher_spread`).
 
 Plan: reports/plans/2026-10-26_plan_teacher-spread.md. Added 2026-10-26. The copy is E34's Pile-text arm
 (`teacher.teacher_loss` with the plain mean KL over every position, `component_training.train`) on any 512-token rows;
@@ -22,7 +22,7 @@ State = dict[str, tuple[Tensor, Tensor, Tensor]]  # per matrix (delta-W, U_A', V
 
 def lowercase_rows(rows: Tensor, tok: Any, n: int) -> Tensor:
     """E36 Amendment 1's task text: `rows` decoded, lowercased, re-encoded, joined with end-of-text and cut into n rows
-    of the same length. The same step is `lowercased` in experiments/regating_spread/amend1.py, which stays as it ran."""
+    of the same length. The same step is `lowercased` in archive/experiments/regating_spread/amend1.py, which stays as it ran."""
     T, ids = rows.shape[1], []
     for r in rows:
         ids += tok.encode(tok.decode(r.tolist()).lower()) + [tok.eos_token_id]
@@ -96,7 +96,7 @@ class Refs:
 
 def read_state(ctx: Any, refs: Refs, dW: dict[str, Tensor], uv2: dict[str, tuple[Tensor, Tensor]] | None, pile: bool,
                log: Any = print) -> dict[str, Any]:
-    """E37's reading of one state (experiments/teacher_spread/run.py `read`, which stays as it ran, without its budget
+    """E37's reading of one state (archive/experiments/teacher_spread/run.py `read`, which stays as it ran, without its budget
     adversary and cosine; moved here 2026-10-27 for broad_fragility): the target weights W0 + dW (`dW` holds every
     matrix) with the alive (U, V) of `uv2` (None: the released ones). logp (`mean_logp` on the held-out task rows), gap
     KL(teacher || state) on them, damage KL(W0 || state) on the plain rows, and, if `pile`, the Pile harness ratios to

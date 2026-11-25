@@ -5,7 +5,9 @@ the old code run twice) and "new": new_a.json and new_b.json merged (the new fun
 Pass rule (plan "Reproduction check and its floor"):
   - old A and old B bit-identical: new must equal them bit for bit, or within 1e-12 relative (a sum in another order);
   - otherwise new must lie within [min(A, B), max(A, B)], the old code's own spread on this card;
-  - either way, |new - saved| must stay under the saved run's filed tolerance where one exists (TOL).
+  - either way, |new - saved| must stay under the saved run's filed tolerance (TOL, TOL_REL); a reading with none
+    (gain, adl_D, prior_mean_lo, kl, needed_set_size, erank, size) must repeat the saved value within REL, so every
+    gap from the saved run is labelled.
 The old values' distance from the saved run is printed beside (card, batch or rows differ: written down, never absorbed).
 A reading with no new value reads "pending".
 
@@ -40,7 +42,7 @@ def under_tol(reading: str, new: float, saved: float | None) -> bool | None:
         return None
     if reading in TOL_REL:
         return abs(new / saved - 1) <= TOL_REL[reading]
-    return abs(new - saved) <= TOL[reading] if reading in TOL else None
+    return abs(new - saved) <= TOL.get(reading, REL * abs(saved))
 
 
 def verdict(reading: str, a: float | None, b: float | None, new: float | None, saved: Any) -> str:

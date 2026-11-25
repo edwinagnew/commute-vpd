@@ -251,7 +251,7 @@ def beta_sums(ae: AE, h: Tensor, J: Tensor, size: int = 4096) -> dict[str, Tenso
 def specific(cfg: Cfg, b: dict[str, Tensor]) -> Tensor:
     """The paper's test, nu_r < 0.5 and nu_eps < 0.2 (Minder et al. glossary, §3.1), on the latents its App. E.2 keeps
     ("we filter out latents with negative beta base values"): both base betas, error and reconstruction, at least 0, as
-    experiments/crosscoder_replicate/run.py applies it on Gemma (cell P2.70; scores before 2026-11-23 lacked it). A nan
+    archive/experiments/crosscoder_replicate/run.py applies it on Gemma (cell P2.70; scores before 2026-11-23 lacked it). A nan
     beta or ratio (a latent that never fired on the latent-scaling tokens) fails every comparison."""
     kept = (b["eps_base"] >= 0) & (b["r_base"] >= 0)
     return kept & (b["nu_r"] < cfg.nu_r) & (b["nu_eps"] < cfg.nu_eps)

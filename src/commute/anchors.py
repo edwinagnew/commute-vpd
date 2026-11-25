@@ -4,7 +4,7 @@ their least-squares splits, and E36's code-text fine-tune (it learned nothing). 
 
 Moved, not changed: `build_kv` is `experiments/new_vs_existing/run.py`'s `stage_build` at its FULL sizes, `kv_finetune`
 and `lifted` its `run_task` / `measure_state` fine-tune and split; `code_rows` and `CODE` are
-`experiments/regating_spread/run.py`'s `code_tokens`, `task` and recipe constants. Both finished scripts keep their own
+`archive/experiments/regating_spread/run.py`'s `code_tokens`, `task` and recipe constants. Both finished scripts keep their own
 copies and stay as they ran. Nothing of E12 or E36 is on disk; every state is rebuilt from these.
 """
 

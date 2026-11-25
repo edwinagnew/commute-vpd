@@ -1,7 +1,7 @@
 """E37's lowercase task and E39's fine-tunes of it, as functions (added 2026-10-29 for row_blocks, E49).
 
-The recipes are experiments/broad_fragility/run.py's (`Config`, `Job`, `stage0_trained`, `sgd_ft`, `lora_ft`) and
-amend1.py's chosen SGD rate; those scripts and experiments/claim_tests/recipes.py, which restates them, stay as they
+The recipes are archive/experiments/broad_fragility/run.py's (`Config`, `Job`, `stage0_trained`, `sgd_ft`, `lora_ft`) and
+amend1.py's chosen SGD rate; those scripts and archive/experiments/claim_tests/recipes.py, which restates them, stay as they
 ran. Rows: 2,400 lowercased Pile train rows (300 steps of 8, each once) and 64 held-out lowercased val rows 0-255.
 Held-out gain = mean next-token log-probability of the fine-tune minus W0's on the held-out rows.
 

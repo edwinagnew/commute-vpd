@@ -1,4 +1,4 @@
-"""The behavioural per-member test (E258, experiments/rb_member_test/run.py), moved here 2026-11-21 for
+"""The behavioural per-member test (E258, archive/experiments/rb_member_test/run.py), moved here 2026-11-21 for
 experiments/rb_member_pairs so a second experiment calls it rather than copies it. E258's run.py keeps its own copy as it
 ran (it was running on pods when this was written); `Item.kl`, `Item.kl_single`, `three_paths` and `read_members` are
 the same code, line for line (read_members also writes an empty shard's file at once), with the stage-0 bookkeeping
