@@ -61,7 +61,7 @@ def rho_figure(sc: dict[str, Any], out: Path) -> None:
     data = [{"reading": k, "task": t, "rho": tb["rho"][k]["rho"], "p": tb["rho"][k]["p"], "n": tb["rho"][k]["n"]}
             for k in NAMES for t, tb in zip(TASKS, tabs)]  # fmt: skip
     FG.save(fig, out, n="n = states with the reading per task: 15 (five dial settings x seeds 0-2); lowercase 10 (seed 1 not "
-            "read); addition's E_b 11 (seed 1 has E_b on the gains-only arm only)", data=data)  # fmt: skip
+            "read)", data=data)  # fmt: skip
 
 
 def value(s: dict[str, Any], key: str) -> float:

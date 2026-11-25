@@ -21,7 +21,7 @@ one matched gain, no cheap reading beat KL's rank agreement with the dial by the
 tasks. Steering's margin over KL was 0.26 on sequence and 0.79 on lowercase, but 0.03 on addition and below KL on
 brackets. Effective rank follows the dial strongly on every task, but falls along it on the procedural tasks and rises on
 lowercase. The definition's reading puts every positive-gain supervised and RL state far below the dial's lightest
-penalty, so it cannot say whether RL reuses more (two addition states are not placed: see "Where do the ordinary, supervised and RL fine-tunes land on the dial?").
+penalty, so it cannot say whether RL reuses more (one addition state is not placed: see "Where do the ordinary, supervised and RL fine-tunes land on the dial?").
 
 ## What we were trying to test
 
@@ -126,7 +126,7 @@ The heavy and medium penalties leave $E_b$ near its gains-only value even where 
 |---|---|---|---|---|
 | sequence | 0.81 to 0.82 | 0.86 to 0.88 | 0.82 to 0.86 | 0.63 to 0.70 |
 | brackets | 0.87 to 0.91 | 0.87 to 0.91 | 0.81 to 0.85 | 0.24 to 0.56 |
-| addition | 0.80 to 0.88 | 0.86 to 0.88 | 0.78 to 0.79 | 0.88 |
+| addition | 0.80 to 0.88 | 0.86 to 0.89 | 0.78 to 0.86 | 0.88 |
 | lowercase | 0.76 to 0.79 | 0.79 | 0.78 to 0.79 | 0.32 to 0.36 |
 
 The heavy penalty reads above gains-only on sequence and level with it on brackets and lowercase. $E_b$ then drops to
@@ -145,13 +145,13 @@ light-penalty state at 0.539 and the highest ordinary fine-tune at 0.055, and th
 |---|---|---|---|
 | sequence | 0.028 to 0.032 | 0.025 to 0.031 | 0.036 to 0.042 |
 | brackets | 0.039 to 0.055 | 0.049 to 0.060 | 0.050 to 0.056 |
-| addition | 0.037 to 0.045, seed 1 missing | 0.038 to 0.045 | 0.055 to 0.068 |
+| addition | 0.029 to 0.045 | 0.038 to 0.045 | 0.055 to 0.068 |
 | lowercase | 0.021 to 0.022 | none saved | none saved |
 
 On sequence and addition the RL states read a little above the supervised ones, at a lower gain: 2.03 to 3.00 on
 sequence against the supervised 5.85 to 6.27. The differences are a few hundredths, far below the dial's step.
-Two states are not placed. Addition's RL seed 0 reads 1.0, nearest the heavy penalty, but its trained-answer gain is
-minus 6.71: it unlearned the answer. Addition's ordinary fine-tune seed 1 has no $E_b$ yet; its redo pod is running.
+One state is not placed. Addition's RL seed 0 reads 1.0, nearest the heavy penalty, but its trained-answer gain is
+minus 6.71: it unlearned the answer.
 
 The cheap readings place RL differently. Steering puts the positive-gain RL states past the ordinary end on every
 procedural task:
@@ -163,20 +163,20 @@ descriptive only.
 ## Full table
 
 Rank correlation with the dial setting and permutation p, within each task, over the states with the reading: fifteen
-per task, ten on lowercase, eleven for $E_b$ on addition. 10,000 permutations each.
+per task, ten on lowercase. 10,000 permutations each.
 
 | reading | sequence | brackets | addition | lowercase |
 |---|---|---|---|---|
-| steering share | 0.94 (p <0.001) | 0.04 (p 0.893) | 0.62 (p 0.014) | 0.89 (p 0.001) |
-| effective rank | -0.71 (p 0.004) | -0.89 (p <0.001) | -0.82 (p <0.001) | 0.91 (p <0.001) |
-| re-gating share, check | 0.74 (p 0.003) | 0.46 (p 0.086) | 0.23 (p 0.414) | 0.94 (p <0.001) |
-| KL from base | -0.68 (p 0.009) | 0.34 (p 0.229) | 0.59 (p 0.028) | -0.10 (p 0.811) |
+| steering share | 0.94 (p <0.001) | 0.04 (p 0.894) | 0.62 (p 0.014) | 0.89 (p 0.002) |
+| effective rank | -0.71 (p 0.004) | -0.89 (p <0.001) | -0.82 (p <0.001) | 0.91 (p 0.001) |
+| re-gating share, check | 0.74 (p 0.002) | 0.46 (p 0.087) | 0.23 (p 0.414) | 0.94 (p <0.001) |
+| KL from base | -0.68 (p 0.008) | 0.34 (p 0.230) | 0.59 (p 0.028) | -0.10 (p 0.813) |
 | lens D, ADL | 0.38 (p 0.167) | 0.64 (p 0.012) | -0.04 (p 0.885) | 0.91 (p 0.001) |
-| neuron share, top 64 | -0.95 (p <0.001) | 0.88 (p <0.001) | 0.40 (p 0.141) | 0.69 (p 0.035) |
-| neuron share, matched | -0.60 (p 0.020) | 0.72 (p 0.004) | -0.88 (p <0.001) | 0.71 (p 0.029) |
-| untrained decomposition | -0.57 (p 0.027) | -0.28 (p 0.314) | -0.84 (p <0.001) | 0.84 (p 0.005) |
-| $E_b$ over $K$ | -0.68 (p 0.008) | -0.91 (p <0.001) | -0.89 (p <0.001) | -0.69 (p 0.034) |
-| read gain | 0.59 (p 0.024) | 0.58 (p 0.030) | -0.01 (p 0.984) | 0.42 (p 0.241) |
+| neuron share, top 64 | -0.95 (p <0.001) | 0.88 (p <0.001) | 0.40 (p 0.141) | 0.69 (p 0.034) |
+| neuron share, matched | -0.60 (p 0.019) | 0.72 (p 0.004) | -0.88 (p <0.001) | 0.71 (p 0.029) |
+| untrained decomposition | -0.57 (p 0.027) | -0.28 (p 0.312) | -0.84 (p <0.001) | 0.84 (p 0.005) |
+| $E_b$ over $K$ | -0.68 (p 0.008) | -0.91 (p <0.001) | -0.86 (p <0.001) | -0.69 (p 0.034) |
+| read gain | 0.59 (p 0.024) | 0.58 (p 0.026) | -0.01 (p 0.986) | 0.42 (p 0.246) |
 
 The base model's prior on the trained answer is one number per task, the same for every state, so its rank
 correlation with the dial is undefined. It is a confound to hold fixed between tasks, not a cheap reading.
@@ -208,8 +208,6 @@ update size, not matched gain.
 
 ## What next
 
-- Addition seed 1's $E_b$ rows: a redo pod is running now. When its rows land, `score.py` and `plot.py` are rerun and
-  this page updated; only addition's $E_b$ rank correlation can change, the verdict cannot, since $E_b$ is not scored.
 - Whether to write claim 2 as holding on built tasks only, as the card's stop rule says: a writing decision for the paper.
 
 ## Scorecard
@@ -229,6 +227,10 @@ update size, not matched gain.
   by whip-lead, with lowercase read only if its dial spread stays above 0. The predictions file's sha256 was
   `9d6d6f27…` for the first pods and `41744820…849d` after the amendment. Lowercase seed 1 stopped under the old bar and
   its first step is over the new one.
+- **Addition seed 1 redone.** Its first pod was lost after it exited cleanly, before the download of $E_b$ on four
+  arms. The redo pod reran the whole item on the amended predictions file, `41744820…849d`, not the `9d6d6f27…` the
+  first addition pods ran on. The amendments bind only on lowercase's first step and spread, so they do not change
+  addition; the redo's train records match the lost pod's, and its stage 0 read the same.
 - **Saved states placed off the matched-gain condition.** E256's supervised and RL states were stopped at one update
   size, not at the dial's target gain.
 - **Gains-only arm.** One gain per VPD subcomponent and per matrix remainder, trained at the rate of (IA)³ by Liu et al.
@@ -239,8 +241,6 @@ update size, not matched gain.
 
 - Lowercase seed 1: stopped by the first-step bar at 0.5, filed; its first step 0.958 is over the amended bar of 0.892
   too, so not rerun. Lowercase is read on seeds 0 and 2.
-- Addition seed 1's $E_b$ over $K$ on the four arms other than gains-only: its first pod was lost after it exited
-  cleanly, before the download. A redo pod is running; its rows will be added when they land.
 - The crosscoder reading, a later stage outside this plan's cost.
 - Partial rank correlations given KL, and any per-seed analysis: not in the filed rule.
 - Placement of states trained to the dial's matched gain by RL: no such states exist.
@@ -249,4 +249,4 @@ update size, not matched gain.
 
 Pods p0 to p11, one per task and seed, each an H100 80GB; stage 0 files `results/stage0_p*.json`, p10's only in the pod
 download. States `results/states/*.json`, commits 9cee3dc9 and 2363376c. Amendment commit 47640ded. Rehearsal
-`results/rehearse/`, commit 796d5415.
+`results/rehearse/`, commit 796d5415. Addition seed 1 redo: pod label commute-E300-rerun-lostpod, an H100, log `results/pod_logs_e300/p7_redo.log`, commit 84a542b8.
