@@ -274,3 +274,31 @@ def test_zero_units_zeroes_exactly_the_named_units():
     y = edit["mlp1"](x)
     assert (y[..., 7] == 0).all() and torch.equal(y[..., :7], x[..., :7]) and torch.equal(y[..., 8:], x[..., 8:])
     assert (edit["mlp3"](x)[..., 3071] == 0).all()
+
+
+# ---- P2.84 (experiments/reverse_ft_fig4): crossing and the planted-pair gate, MUST 2's edge cases
+
+
+def test_crossing_matches_half_life_and_tenths():
+    curve = [2.0, 1.5, 1.2, 0.8, 0.3, 0.1]
+    assert KV.crossing(curve, 0.5) == pytest.approx(KV.half_life(curve))
+    assert KV.crossing(curve, 0.1) == pytest.approx(4 + (0.3 - 0.2) / (0.3 - 0.1))
+    assert KV.crossing([2.0, 1.9], 0.1) is None and KV.crossing([0.0, 0.0], 0.1) is None
+
+
+def test_pair_gate_edge_cases():
+    g = lambda w, ps: KV.pair_gate(w, ps, cap=1000, floor=1.0, mult=3.0)
+    assert g(3.97, [10.7, 10.9, 10.0])["reading"] == "pass"  # C3-like numbers
+    assert g(3.97, [4.5, 5.0, 4.2])["reading"] == "fail"  # gap under 3 steps
+    assert g(3.97, [None, 10.9, 10.0])["reading"] == "pass" and g(3.97, [None, 10.9, 10.0])["n"] == 2  # one seed void
+    assert g(3.97, [None, None, None])["reading"] == "void"  # all void: no call
+    assert g(3.97, [None, None, 10.0])["reading"] == "void"  # one left: no sd, no call
+    assert g(None, [10.7, 10.9, 10.0])["reading"] == "void"  # wrapper void (D <= 0): no call
+    one = g(3.97, ["censored", 10.9, 10.0])  # censored counts as the cap, a lower bound
+    assert one["reading"] == "pass" and one["gap"] == pytest.approx((1000 + 10.9 + 10.0) / 3 - 3.97)
+    assert g(3.97, ["censored"] * 3)["reading"] == "pass"  # sd 0 -> floor 1 step; gap 996
+    flat = g(3.97, [5.0, 5.0, 5.0])  # sd 0 -> the 1-step floor binds: gap 1.03 < 3
+    assert flat["noise"] == 1.0 and flat["reading"] == "fail"
+    assert g(6.0, [9.0, 9.0, 9.0])["reading"] == "pass"  # gap exactly 3 x floor: inclusive
+    assert g("censored", [10.7, 10.9, 10.0])["reading"] == "fail"  # a wrapper that never revives fails
+    assert g("censored", ["censored"] * 3)["reading"] == "fail"  # gap 0
