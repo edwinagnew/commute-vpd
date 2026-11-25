@@ -3,10 +3,9 @@ column D), keyed exactly as old.py keys them, to results/new_b.json, for compare
 below is a call of `fair_steering.steering_share`, `eb.write_sums` / `eb.eb`, `needed.scan_sites` or `adl.column_D` on
 rows from `windows.read_rows` and updates from `items.load_dw`; no old experiment's reading function is called.
 
-One exception, the inputs of the fresh write passes and of the neuron K scan (`fresh_worlds`): F, M, D and the neuron
-bounds of the built item x2 (E214's construction) and of E229's trained item copy24_s0 have no builder in src/commute
-yet (move 1's World holds W0 and the decomposition only), so they still come from E268's and E277's worlds by
-`load_experiment`; the readings on them are the new functions.
+The fresh write passes and the neuron K scan read F itself: the built item x2 (E214's rescale) and E229's trained item
+copy24_s0 are built by `items.rescaled` / `items.e229_f` on `World`, with their D (`items.copy24_held`, `items.e229_read`)
+and E217's neuron bounds (`items.neuron_bounds`); no `load_experiment` (P2.79 2c).
 
   --part data  CPU (`fleet/cpu-run`): E_b from the saved sums (VPD, neurons, SAE)
   --part gpu   one L40 (new_b.sbatch): steering E135 and E143, the panel's steering and ADL D, the fresh E_b and the K scan
@@ -41,6 +40,7 @@ from commute.windows import Rows, read_rows
 RESULTS, REPO = EXPERIMENTS / "reading_refactor" / "results", EXPERIMENTS.parent
 LOWER_128 = "experiments/convergence_panel/results/large/states/lower_s0_step128.pt"
 LO = ST.logodds_at  # the share's unit, every reading here is scored in it
+E229_AT = slice(-1, None)  # E217's and E229's read position: the last (topk_neurons LAST)
 
 
 class Out(OldOut):
@@ -58,7 +58,7 @@ def val(o: OldOut, key: str, value: Any, **settings: Any) -> None:
 
 def settings(exp: str) -> dict[str, Any]:
     P = json.loads((EXPERIMENTS / exp / "results" / "predictions.json").read_text())
-    return P["settings"] | {"thresholds": P["thresholds"]}
+    return P["settings"] | {"thresholds": P.get("thresholds", {})}  # kstar_vpd, topk_upper and needed_neurons file none
 
 
 def npz(path: str) -> dict[str, torch.Tensor]:
@@ -112,14 +112,14 @@ def steering_inputs() -> dict[str, Any]:
     }  # fmt: skip
 
 
-def fresh_worlds() -> dict[str, Any]:
-    """The old worlds that build the fresh items' F, M and D (see the module docstring), and E277's settings."""
-    from commute.jobs import load_experiment
-
-    NR: Any = load_experiment("needed_neurons", "run")
-    cfg, c229 = NR.load_config(), NR.load_e229()
-    return {"KN": load_experiment("kstar_needed", "run"), "NR": NR, "cfg": cfg, "c229": c229,
-            "gain_batch": settings("kstar_vpd_wording_a")["gain_batch"]}  # fmt: skip
+def fresh_inputs() -> dict[str, Any]:
+    """The fresh items' D, E217's neuron bounds and the builders' settings (E214's x2, E229's copy24_s0, E277's scan),
+    from the finished experiments' filed settings; CPU, no model."""
+    lv, c229, nr = settings("kstar_levels"), settings("topk_upper"), settings("needed_neurons")
+    return {"x2_D": IT.copy24_held(), "copy_D": IT.e229_read("copy24", c229["read_seed"], c229["n_read"]),
+            "hi": IT.neuron_bounds(c229["bands"][nr["band"]], c229["percentile_qs"], c229["percentiles_sha256"]),
+            "layer": lv["e195_layer"], "C": lv["e195_C"], "split_tol": settings("kstar_vpd")["split_tol"],
+            "gain_batch": settings("kstar_vpd_wording_a")["gain_batch"], "nr": nr}  # fmt: skip
 
 
 # ----------------------------------------------------------------------------- gpu part: readings
@@ -144,39 +144,39 @@ def share_gain(net: ST.Net, r: Rows, dW: ST.DW) -> float:
     return float((c["T1"]["lo"] - c["T0"]["lo"]).mean())
 
 
-def eb_fresh(o: OldOut, x: dict[str, Any]) -> None:
+def eb_fresh(o: OldOut, w: Any, x: dict[str, Any]) -> None:
     """Fresh write passes over each item's saved K: x2 at VPD and at neurons, copy24_s0 at neurons; copy24_s0's neuron K."""
+    from commute import kstar as K
     from commute import kstar_vpd as KV
     from commute import needed as IX
     from commute import needed_neurons as NN
     from commute import rho
+    from commute import rule_retention as R
     from commute import stand_in as SI
 
-    NR, cfg, c229 = x["NR"], x["cfg"], x["c229"]
-    feat_n = NR.E229.feat_of(c229, NR.E229.load_pct(c229), cfg.band)
-    w = x["KN"].world()
-    F, M, toks, _, _ = w.make("x2")
-    feat = KV.featurize(M, F, w.uv, w.delta, w.bases)
+    nr, feat_n, M = x["nr"], K.Feat(None, list(x["hi"].to("cuda"))), R.Model(w.net.net)
+    F, toks = IT.rescaled(M, x["layer"], x["C"], 2.0), x["x2_D"].cuda()
+    feat = KV.featurize(M, F, w.uv, w.delta, w.bases(x["split_tol"]))
     changed = torch.isin(torch.arange(feat.n), torch.tensor(sorted(feat.changed), dtype=torch.long))
     s = EB.write_sums(F.net, SI.vpd_sites(feat), toks, x["gain_batch"], changed)
     val(o,"E_b_vpd/x2@fresh", EB.eb(s, npz("experiments/kstar_needed/results/large/items_x2.npz")["in_K"], leftovers=True), batch=x["gain_batch"])
     p = rho.Pair(F, M)
-    s = EB.write_sums(F.net, NN.sites(p, feat_n, toks.shape[1]), toks, cfg.cache_batch, NN.variables(p)[1])
-    val(o,"E_b_neurons/x2@fresh", EB.eb(s, npz("experiments/needed_neurons/results/large/items_x2.npz")["in_K"], leftovers=True), batch=cfg.cache_batch)
-    del F, M, w, p
+    s = EB.write_sums(F.net, NN.sites(p, feat_n, toks.shape[1]), toks, nr["cache_batch"], NN.variables(p)[1])
+    val(o,"E_b_neurons/x2@fresh", EB.eb(s, npz("experiments/needed_neurons/results/large/items_x2.npz")["in_K"], leftovers=True), batch=nr["cache_batch"])
+    del F, p
     torch.cuda.empty_cache()
-    F, M, toks, at, _ = NR.Trained(cfg, c229).make("copy24_s0")
+    F, toks, at = IT.e229_f(w.net, "copy24_s0"), x["copy_D"].cuda(), E229_AT
     p = rho.Pair(F, M)
     z = npz("experiments/needed_neurons/results/large/items_copy24_s0.npz")
-    s = EB.write_sums(F.net, NN.sites(p, feat_n, toks.shape[1]), toks, cfg.cache_batch, NN.variables(p)[1])
-    val(o,"E_b_neurons/copy24_s0@fresh", EB.eb(s, z["in_K"], leftovers=True), batch=cfg.cache_batch)
-    run = NN.cache(F.net, toks, at, cfg.cache_batch)
-    m = min(cfg.examples, len(toks))
-    ex, pt = IX.derangements(len(toks), cfg.derangements, m, cfg.seed)
+    s = EB.write_sums(F.net, NN.sites(p, feat_n, toks.shape[1]), toks, nr["cache_batch"], NN.variables(p)[1])
+    val(o,"E_b_neurons/copy24_s0@fresh", EB.eb(s, z["in_K"], leftovers=True), batch=nr["cache_batch"])
+    run = NN.cache(F.net, toks, at, nr["cache_batch"])
+    m = min(nr["examples"], len(toks))
+    ex, pt = IX.derangements(len(toks), nr["derangements"], m, nr["seed"])
     sites = [NN.Swap(run, l, feat_n.hi[l]) for l in range(len(F.net.h))]
-    sc = IX.scan_sites(F.net, sites, run, at, ex, pt, IX.rows_per_forward(cfg.rows, cfg.logit_rows, run.top.shape[1]), len(F.net.h) * NN.PER_LAYER, print)
+    sc = IX.scan_sites(F.net, sites, run, at, ex, pt, IX.rows_per_forward(nr["rows"], nr["logit_rows"], run.top.shape[1]), len(F.net.h) * NN.PER_LAYER, print)
     Kn = sc.first_pair >= 0
-    val(o,"needed_set_size/copy24_s0@neurons", int(Kn.sum()), derangements=cfg.derangements, examples=m, seed=cfg.seed, mask_equals_saved=bool(torch.equal(Kn, z["in_K"].bool())))
+    val(o,"needed_set_size/copy24_s0@neurons", int(Kn.sum()), derangements=nr["derangements"], examples=m, seed=nr["seed"], mask_equals_saved=bool(torch.equal(Kn, z["in_K"].bool())))
 
 
 def main(part: str, dry: bool) -> int:
@@ -184,8 +184,9 @@ def main(part: str, dry: bool) -> int:
     if part == "data":
         o.run("eb_saved_sums", eb_saved_sums)
     else:
-        x = {"steering": steering_inputs(), "fresh": fresh_worlds()}
-        print({k: {n: tuple(a["read"].toks.shape) for n, a in v.items()} for k, v in x.items() if k == "steering"}, flush=True)
+        x = {"steering": steering_inputs(), "fresh": fresh_inputs()}
+        f = x["fresh"]
+        print({n: tuple(a["read"].toks.shape) for n, a in x["steering"].items()}, {k: tuple(f[k].shape) for k in ("x2_D", "copy_D", "hi")}, flush=True)
         if dry:
             print("NEW_B gpu inputs built (dry: no model)", flush=True)
             return 0
@@ -196,7 +197,8 @@ def main(part: str, dry: bool) -> int:
         o.run("steering_and_adl", lambda o: steering(net, o, x["steering"]))
         del net
         torch.cuda.empty_cache()
-        o.run("eb_fresh", lambda o: eb_fresh(o, x["fresh"]))
+        w = World.load("cuda")  # a fresh model for the fresh items, as the old worlds loaded their own
+        o.run("eb_fresh", lambda o: eb_fresh(o, w, x["fresh"]))
         print(f"peak GPU {torch.cuda.max_memory_allocated() / 2**30:.2f} GB", flush=True)
     print(f"NEW_B {part} DONE; errors: {o.errors or 'none'}", flush=True)
     return 1 if o.errors else 0

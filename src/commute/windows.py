@@ -70,6 +70,7 @@ class Rows:
     pos: int  # the read position
     tgt: Tensor | None  # (N,) target id per row; None for a D read without one
     source: str  # the file (repo path) or builder the rows came from
+    ab: tuple[int, int] | None  # a label task's two label tokens (E140's contrast unit); None otherwise
 
     @property
     def sha256(self) -> str:
@@ -150,7 +151,7 @@ def _e53(task: str, kind: Kind) -> Rows:
         saved = json.loads((E53 / "check_amend1.json").read_text())["maps"]["broad_cipher"]
         assert [[x, y] for x, y in e53_a1_maps()["broad_cipher"].items()] == [r[:2] for r in saved], "broad cipher map moved"
     toks = {"held": _e53_held, "train": _e53_train}[kind](name)
-    return Rows(task, kind, toks, h, toks[:, h + 1], f"performed_anchor E53 {kind} windows")
+    return Rows(task, kind, toks, h, toks[:, h + 1], f"performed_anchor E53 {kind} windows", None)
 
 
 # ----------------------------------------------------------------------------- saved files
@@ -163,13 +164,13 @@ def _kv(task: str, kind: Kind, path: Path, sha: str | None = None) -> Rows:
         raise SystemExit(f"STOP: {path}: sha256 {got}, the record's {sha}")
     w = torch.load(path, weights_only=False)
     part = w["train"] if kind == "train" else w["heldout"]
-    return Rows(task, kind, part.tokens, part.half, target_tokens(w["table"], part.tokens, part.half), _rel(path))
+    return Rows(task, kind, part.tokens, part.half, target_tokens(w["table"], part.tokens, part.half), _rel(path), None)
 
 
 def _e62(task: str, spec: dict[str, Any]) -> Rows:
     """E62's read windows; the arm's target per window (never fed: E136's `copying.with_target` column)."""
     w = torch.load(REPO / spec["path"], weights_only=False)
-    return Rows(task, "held", w["read"].tokens, w["read"].half, w["target"][spec["arm"]]["read"], spec["path"])
+    return Rows(task, "held", w["read"].tokens, w["read"].half, w["target"][spec["arm"]]["read"], spec["path"], None)
 
 
 def _label(task: str, spec: dict[str, Any]) -> Rows:
@@ -180,13 +181,14 @@ def _label(task: str, spec: dict[str, Any]) -> Rows:
         y = torch.tensor([t["y"][a][int(k)] for k in toks[:, LABEL_HALF - 1]])
     else:
         toks, y = t["toks"]["fit"][:n], t["y"][a]["fit"][:n]
-    return Rows(task, "held", toks, LABEL_HALF, targets(y, (int(t["ab"][0]), int(t["ab"][1]))), spec["path"])
+    ab = (int(t["ab"][0]), int(t["ab"][1]))
+    return Rows(task, "held", toks, LABEL_HALF, targets(y, ab), spec["path"], ab)
 
 
 def _saved_d(task: str, path: Path) -> Rows:
     """A saved D {"toks", "target"} read at its last position (rb_states p256_windows / rl_windows)."""
     w = torch.load(path, weights_only=True)
-    return Rows(task, "D", w["toks"], w["toks"].shape[1] - 1, w["target"], _rel(path))
+    return Rows(task, "D", w["toks"], w["toks"].shape[1] - 1, w["target"], _rel(path), None)
 
 
 def _panel(task: str) -> Rows:
@@ -195,7 +197,7 @@ def _panel(task: str) -> Rows:
     toks = torch.load(REPO / e["file"], weights_only=True)
     if tensor_sha256(toks) != e["sha256"] or list(toks.shape) != e["shape"]:
         raise SystemExit(f"STOP: {e['file']}: sha256 {tensor_sha256(toks)}, shape {list(toks.shape)} against the manifest's {e}")
-    return Rows(task, "D", toks, toks.shape[1] - 1, None, e["file"])
+    return Rows(task, "D", toks, toks.shape[1] - 1, None, e["file"], None)
 
 
 @cache

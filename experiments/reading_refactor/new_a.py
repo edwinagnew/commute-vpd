@@ -114,23 +114,19 @@ class Inputs:
 
     rows: dict[str, Rows]
     dw: dict[str, DW]
-    case_ab: tuple[int, int]  # case label's two label tokens (the contrast unit)
     kl_rows: dict[str, Tensor]  # procedural_rl's and the panel's cached val rows
     s_rl: dict[str, Any]
     case_floor: float
 
 
 def inputs() -> Inputs:
-    case = e136_tasks()["case_label/real"]
     case_sha = json.loads((EXPERIMENTS / "case_label" / "results" / "stage1.json").read_text())["states"]["real_s0"]["sha256"]
     s_rl, s_cp = predictions("procedural_rl")["settings"], predictions("convergence_panel")["settings"]
-    ab = torch.load(EXPERIMENTS.parent / case["path"], weights_only=False)["ab"]
     return Inputs(
         rows={t: read_rows(t, "held") for t in ("c3/cipher", "e53/lowercase", "case_label/real", "e46/ident32")},
         dw={"c3/cipher_s0": load_dw(resolve("c3/cipher_s0")), "e53/lowercase_s0": load_dw(resolve("e53/lowercase_s0")),
             "case_real_s0": load_dw(Item("case_label/real_s0", "experiments/case_label/results/large/dW_real_s0.pt", case_sha, None, None)),
             "sequence_rl_s0": load_dw(saved_file(SEQ_RL)), "lower_s0_step128": load_dw(saved_file(LOWER_128))},
-        case_ab=(int(ab[0]), int(ab[1])),
         kl_rows={"procedural_rl": cached_rows("val", 0, s_rl["kl_rows"]), "panel": cached_rows("val", 0, s_cp["kl_rows"])},
         s_rl=s_rl,
         case_floor=predictions("real_vs_twin")["thresholds"]["gain_floor"],
@@ -156,7 +152,8 @@ def share_e211(w: world.World, x: Inputs, o: Out) -> None:
 def share_e140(w: world.World, x: Inputs, o: Out) -> None:
     """real_vs_twin stage 2: case real's first 256 fit windows, log-odds and the two-label contrast, batch 64."""
     r = x.rows["case_label/real"]
-    c = SH.share_cells(w.model, w.W0, x.dw["case_real_s0"], r, LO | {"contrast": ST.contrast_at(x.case_ab)}, 64)
+    assert r.ab is not None
+    c = SH.share_cells(w.model, w.W0, x.dw["case_real_s0"], r, LO | {"contrast": ST.contrast_at(r.ab)}, 64)
     for u in ("lo", "contrast"):
         o.put(f"share/case_real_s0@{u}", SH.share(c, u, SH.cells_gain(c, u), SH.Floor(x.case_floor, two_sided=False)), batch=64, rows=f"case_label fit[:{len(r.toks)}]", unit=u, gain="bf16 cells", floor=f"gain >= {x.case_floor}")
 
@@ -197,7 +194,7 @@ def dry(x: Inputs) -> None:
         print(f"rows {t}: {tuple(r.toks.shape)} pos {r.pos} tgt {None if r.tgt is None else tuple(r.tgt.shape)} sha256 {r.sha256[:12]} ({r.source})", flush=True)
     for n, d in x.dw.items():
         print(f"dW {n}: {len(d)} matrices, {sum(v.numel() for v in d.values())} entries", flush=True)
-    print(f"kl rows {[(k, tuple(v.shape)) for k, v in x.kl_rows.items()]}; case ab {x.case_ab}, floor {x.case_floor}; kl batch {x.s_rl['kl_batch']}", flush=True)
+    print(f"kl rows {[(k, tuple(v.shape)) for k, v in x.kl_rows.items()]}; case ab {x.rows['case_label/real'].ab}, floor {x.case_floor}; kl batch {x.s_rl['kl_batch']}", flush=True)
 
 
 def main(part: str, only: list[str], is_dry: bool) -> int:

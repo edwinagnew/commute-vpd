@@ -89,7 +89,7 @@ class Read:
     def rows(self, kind: Literal["read", "fit"], n: int | None) -> Rows:
         """The read (or fitting) windows as `windows.Rows`, the first n of them (None: all)."""
         toks, tgt = (self.toks, self.tgt) if kind == "read" else (self.fit, self.fit_tgt)
-        return Rows(self.name, kind, toks[:n], self.pos, tgt[:n], "realistic_reads.Read")
+        return Rows(self.name, kind, toks[:n], self.pos, tgt[:n], "realistic_reads.Read", self.ab)
 
 
 def pair_at(logits: Tensor, pos: int, tgt: Tensor) -> Tensor:
