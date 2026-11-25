@@ -120,3 +120,5 @@
 - [Results into writeup: triage](feedback-results-into-writeup-triage.md) — consistency reruns for existing figures straight in after redteam; new sections/investigation to the user; between = my call; pushes are writeup-lead's call, never mine (user 2026-11-24)
 - [writeup-lead owns writing](feedback-writeup-lead-owns-writing.md) — all writing decisions + when to push are mine; whip-lead only decides which results go in; never push on a relayed OK (user 2026-11-24)
 - [Commits ready for "push once"](feedback-commits-ready-for-push-once.md) — keep held batches committed and built (worktree under an edit HOLD) so a push is immediate (user 2026-11-24)
+- [Push once = named batch only](feedback-push-once-covers-named-batch-only.md) — check git log origin/v2..HEAD; unasked commits must not ride along (abcb6b2, user 2026-11-24)
+- [[cite] placeholders are my task](feedback-cite-placeholders-are-tasks.md) — grep for gaps every cleanup pass; index first, then web (user 2026-11-25)
