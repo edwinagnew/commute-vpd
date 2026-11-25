@@ -291,11 +291,12 @@ def do_nothing(rd: Any, cw: Circuit, scan: SimpleNamespace) -> tuple[dict[str, A
 
 
 def read(cfg: Config, w: Any, feat: str, c: str, todo: list[str], scan: SimpleNamespace, tag: str) -> None:
+    scan = SimpleNamespace(**vars(scan), control=f"{c}/x2")  # F2.read_item's SAE empty-K stop and F2.identity read the control's name
     cw, rd = Circuit(cfg, w, c, feat == "vpd"), FT.reader(feat, scan)
     for sub in ("items", "large"):
         (RESULTS / sub / feat).mkdir(parents=True, exist_ok=True)
     part(f"{feat}_{c}_do_nothing", tag, lambda: do_nothing(rd, cw, scan))
-    idn = part(f"{feat}_{c}_identity", tag, lambda: F2.identity(rd, cw, SimpleNamespace(**vars(scan), control=f"{c}/x2")))
+    idn = part(f"{feat}_{c}_identity", tag, lambda: F2.identity(rd, cw, scan))
     log(f"CONTROLS DONE ({feat} {c}): identity floor {idn['max_dev']:.3g}")
     for k, s in enumerate(todo):
         sc = replace_seed(scan, cfg.repeat_seed) if s == "x2_s269" else scan
