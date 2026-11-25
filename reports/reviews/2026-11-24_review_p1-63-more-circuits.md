@@ -41,7 +41,9 @@ induction a size-matched Gaussian reads a quarter of the tenfold edit (0.274), a
 **SHOULD 1: the induction SAE pass is a pass on leftover shares.** With leftovers counted, the two strengthening
 edits read 0.040, the same as Fig 2's own doubling random at SAE (0.041). Error terms carry 0.80 to 0.99 of the change of
 the strengthening edits and of every random there (0.47 for the rebuilt edit). Without leftovers the rebuilt edit's random reads 0.212, above both
-strengthening edits (0.201, 0.160), so the order reverses. The page discloses the leftovers. Its answer, "Yes ... at
+strengthening edits (0.201, 0.160). (Corrected 2026-11-24 late: against its own random each edit still clears
+without leftovers, 0.201 against 0.103 and 0.160 against 0.080. So "clears only through the error terms" holds
+only against the highest random, not edit by edit.) The page discloses the leftovers. Its answer, "Yes ... at
 all three featurizations", should say that at SAE on induction the definition reads the strengthening edits as
 barely above a random.
 
