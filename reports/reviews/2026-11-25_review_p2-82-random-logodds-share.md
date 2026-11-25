@@ -19,3 +19,6 @@ Suggested replacement for "the log-odds form has no random baseline": "Random ch
 ## Not run
 - No recompute of the shares from saved states; one state file was checked against the tables.
 - Figures not opened beyond what the page describes.
+
+## Re-check (12:33, page 1d3eb15d)
+Both MUSTs and all three SHOULDs are fixed; OK to go to writeup-lead. Correction to MUST 1: on c3/cipher the random changes are also above the fine-tunes (0.240 against 0.238), inside batch noise, so the page now says the two cannot be told apart there. The paper sentence regating-lead proposed for MUST 4 is OK.
