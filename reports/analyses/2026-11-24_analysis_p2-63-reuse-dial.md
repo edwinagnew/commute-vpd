@@ -230,7 +230,10 @@ update size, not matched gain.
 - **Addition seed 1 redone.** Its first pod was lost after it exited cleanly, before the download of $E_b$ on four
   arms. The redo pod reran the whole item on the amended predictions file, `41744820…849d`, not the `9d6d6f27…` the
   first addition pods ran on. The amendments bind only on lowercase's first step and spread, so they do not change
-  addition; the redo's train records match the lost pod's, and its stage 0 read the same.
+  addition; the redo's train records match the lost pod's, and its stage 0 read the same. Rescoring with the redo's
+  rows redrew every permutation p-value: `score.py` draws all tasks' permutations from one generator seeded with the
+  filed seed, so adding rows to one task shifts the draws of the tasks scored after it. No p-value crossed the filed
+  level and the verdict is unchanged; seeding per task and reading is left to the reading refactor.
 - **Saved states placed off the matched-gain condition.** E256's supervised and RL states were stopped at one update
   size, not at the dial's target gain.
 - **Gains-only arm.** One gain per VPD subcomponent and per matrix remainder, trained at the rate of (IA)³ by Liu et al.
