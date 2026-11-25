@@ -142,7 +142,8 @@ def positions(CPC: Any, name: str, t: Any, eos: int, cls: Tensor) -> tuple[Tenso
 def main() -> int:
     require_filed(PRED)
     C = config_from_settings(Config, json.loads(PRED.read_text())["settings"])
-    CPC, _ = RUN.load()
+    # the panel's settings, read without its require_filed: that run is finished, and one PRED_SHA covers only this file
+    CPC = config_from_settings(RUN.Config, json.loads(RUN.PRED.read_text())["settings"])
     sel = json.loads((CP / "results" / "wide" / "selection.json").read_text())["kl"]["hi"]["tasks"]
     torch.backends.cuda.matmul.allow_tf32 = torch.backends.cudnn.allow_tf32 = False
     net, tok = ST.Net("cuda"), vpd.tokenizer()
