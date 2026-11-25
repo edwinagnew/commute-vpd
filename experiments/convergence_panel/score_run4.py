@@ -80,6 +80,23 @@ def run3() -> dict[str, Any]:
             "E_b_random_3seed_tau": r3["random_3seed"]["tau"], "E_b_trained_tau": r3["trained"]["tau"], "gap_rule": r3["rule"]["call"]}  # fmt: skip
 
 
+def sensitivity(tier: dict[str, float], new: dict[str, dict[str, float]], R: dict[str, Any], interval90: list[float]) -> dict[str, Any]:
+    """Redteam 2026-11-24 (descriptive): the ten-task half-width of E_b's 90% interval (P2.78's bar recipe at n = 10);
+    E_b's tau with old picks and with sentiment out; the effective rank's prior-held-fixed tau with arXiv or German out."""
+    old = json.loads((RUN.RESULTS / "summary.json").read_text())["wide"]["kl_hi"]["means"]
+    drop = lambda d, out: {t: v for t, v in d.items() if t not in out}
+    eb_tau = lambda d: SC.tau([tier[t] for t in sorted(d)], [d[t] for t in sorted(d)])
+
+    def erank(out: tuple[str, ...], m: dict[str, dict[str, float]]) -> dict[str, Any]:
+        h = SC.hope1(tier, drop(m["erank"], out), drop(m["prior"], out), R)
+        return {"n": len(h["tasks"]), "tau": h["tau"], "tau_partial_prior": h["tau_partial_prior"], "p_partial": h["p_partial"]}
+
+    return {"E_b_interval90_half_width_n10": (interval90[1] - interval90[0]) / 2,
+            "E_b_tau_n10_old_picks": eb_tau(drop(old["E_b"], DROPPED)), "E_b_tau_n9_no_sentiment": eb_tau(drop(new["E_b"], ("sentiment",))),
+            "erank_12_minus_arxiv": erank(("arxiv",), old), "erank_12_minus_german": erank(("german",), old),
+            "erank_10_old_picks": erank(DROPPED, old), "erank_10_new_picks": erank((), new)}  # fmt: skip
+
+
 def main() -> None:
     P = json.loads(RUN.PRED.read_text())
     rule_p278 = json.loads((WIDE / "predictions_p278.json").read_text())["rule"]
@@ -99,7 +116,8 @@ def main() -> None:
            "unreadable": res["unreadable"], "hope1": res["hope1"], "hope2": res["hope2"], "amendment10": res["amendment10"]["consensus"],
            "E_b_random": {"hope1_consensus": rand_h1, "taus": RS.taus(tier, random3), "trained_taus": RS.taus(tier, trained),
                           "gap_rule_p278": RS.gap_call(tier, trained, random3, rule_p278)},
-           "never_reached_gain1": never_reached(), "run3_12_tasks": run3()}  # fmt: skip
+           "never_reached_gain1": never_reached(), "run3_12_tasks": run3(),
+           "sensitivity": sensitivity(tier, res["means"], R, res["hope1"]["E_b"]["consensus"]["interval90"])}  # fmt: skip
     dest = R4 / "score_n10.json"
     dest.write_text(json.dumps(out, indent=1, default=str))
     show(out)
@@ -122,6 +140,7 @@ def show(o: dict[str, Any]) -> None:
     print(f"E_b trained tau {e['trained_taus']['tau']:+.3f} vs random 3-draw tau {e['taus']['tau']:+.3f} (n {e['taus']['n']}); "
           f"gap rule {e['gap_rule_p278']['gap']:.3f}: {e['gap_rule_p278']['call']} | run3 trained {r3['E_b_trained_tau']:+.3f} random {r3['E_b_random_3seed_tau']:+.3f}")
     print(f"E_b random hope1 (descriptive): p {e['hope1_consensus'].get('p_perm')} {e['hope1_consensus']['call']}")
+    print("sensitivity: " + json.dumps(o["sensitivity"]))
     for t, by in o["never_reached_gain1"].items():
         print(f"{t}: " + "; ".join(f"s{s} best {v['best_gain']:.3f} at step {v['at_step']}" for s, v in by.items()))
     for t in REPICKED:
