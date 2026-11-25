@@ -54,6 +54,8 @@ METHODS: dict[str, Style] = {
     "untrained": Style("untrained-decomposition share", "#44AA99", "o"),
     "eb": Style("write share over the needed set", "#332288", "s"),
     "eapig": Style("EAP-IG edge overlap with the base circuit", "#999933", "D"),
+    "built_reuse": Style("task built to reuse", "#0072B2", "o"),
+    "built_new": Style("task built new", "#D55E00", "s"),
 }
 ONE_COLUMN = (5.0, 3.2)
 FULL_WIDTH = (7.5, 4.5)
