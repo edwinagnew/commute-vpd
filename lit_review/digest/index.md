@@ -605,3 +605,4 @@ Linkposts and merged readings: a `linkpost_of`, `superseded_by` or `aliases` lin
 - [Mechanistic Analysis of Catastrophic Forgetting in Large Language Models During Continual Fine-tuning](papers/lundstrom2026-catastrophic-forgetting.md) (Lundstrom-Imanov 2026, 2601.18699) · imp 0 · FT-INTERP, BACKGROUND: None worth citing.
 - [Uncertainty Quantification in LLM Agents: Foundations, Emerging Challenges, and Opportunities](papers/oh2026b-agentic.md) (Oh 2026, 2602.05073) · imp 0 · BACKGROUND: None.
 - [Stability of Low-Rank Implicit Regularization in Perturbed Deep Matrix Factorization](papers/wang2026-lowrank-implicit-reg.md) (Wang & Chou 2026, 2605.28613) · imp 0 · BACKGROUND: None in practice.
+- [The Lottery Ticket Hypothesis for Pre-trained BERT Networks](papers/chen2020-lottery-bert.md) (Chen 2020, 2007.12223) · imp 3 · EH, BACKGROUND: stands for the lottery-ticket cluster (lit-add 5); weight-level EH is trivial, so state it over mechanisms.
