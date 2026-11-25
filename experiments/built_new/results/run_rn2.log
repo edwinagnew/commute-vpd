@@ -1,0 +1,22 @@
+E304 (built_new) start: {'stage': 'read', 'feat': 'neurons', 'items': ['s186001/new_few'], 'shard': (0, 1), 'tag': 'rn2', 'out': None}; settings {'cue_seeds': (186001, 186002, 186003, 186004, 186005, 186006, 186007, 186008, 186009, 186010), 'max_tries': 10, 'stop_edits': 6, 'slot_layer': 0, 'random_seeds': {'186001': [304000, 304001], '186002': [304010, 304011], '186003': [304020, 304021], '186004': [304030, 304031], '186005': [304040, 304041], '186006': [304050, 304051], '186007': [304060, 304061], '186008': [304070, 304071], '186009': [304080, 304081], '186010': [304090, 304091]}, 'scan_keys': ('derangements', 'examples', 'seed', 'rows', 'logit_rows', 'cache_batch', 'ident_vars', 'sae_err_rows', 'sae_chunk', 'band')}; thresholds {'norm_rel_tol': 1e-06, 'thresholds_source': "norm_rel_tol: E301's filed value (experiments/built_circuits/results/predictions.json). The build bars (detector_ratio 10, lookup_bar 0.9, a_prime_copy_max 0.05) are E214's World's filed settings and thresholds, used by being read from its file, never copied or changed"}; E298 scan settings {'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'ident_vars': 3, 'sae_err_rows': 64, 'sae_chunk': 32, 'band': 'p97'}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+neurons_do_nothing: {"experiment": "E304 (built_new)", "part": "neurons_do_nothing", "n_changed": 0, "dd_max": 0.0, "E_b": 1.0, "seconds": 2.15386700630188}; checks hold
+    layer 0: 3079 variables x 64 pairs, 0 needed; 197056 cases in 34 s (5818/s)
+    layer 1: 3079 variables x 64 pairs, 0 needed; 394112 cases in 60 s (6617/s)
+    layer 2: 3079 variables x 64 pairs, 0 needed; 591168 cases in 77 s (7662/s)
+    layer 3: 3079 variables x 64 pairs, 0 needed; 788224 cases in 87 s (9099/s)
+neurons_identity: {"experiment": "E304 (built_new)", "part": "neurons_identity", "item": "s186001/new_few", "flips": 0, "max_dev": 0.0011599063873291016, "min_margin": 6.67572021484375e-06, "cases": 788224, "cases_per_s": 9099.146470300615, "n_windows": 512, "n_read_positions": 1, "card": "NVIDIA L40S", "seconds": 86.8083324432373}; checks hold
+CONTROLS DONE (neurons): identity floor 0.00116, 0 flips
+neurons s186001/new_few: 512 windows of 41 tokens, 1 read positions, 12316 variables, 9 changed, 256 pairs
+    layer 0: 3079 variables x 256 pairs, 308 needed; 788224 cases in 135 s (5819/s)
+    layer 1: 3079 variables x 256 pairs, 232 needed; 1576448 cases in 239 s (6609/s)
+    layer 2: 3079 variables x 256 pairs, 212 needed; 2364672 cases in 309 s (7650/s)
+    layer 3: 3079 variables x 256 pairs, 125 needed; 3152896 cases in 347 s (9083/s)
+neurons s186001/new_few: E_b over K 0.003117 (leftovers dropped 0.002716, their share of dd 0.0282); |K| 877 (9 changed) of 12316; 349 s
+ITEM 1 of 1 DONE (neurons s186001/new_few): {"experiment": "E304 (built_new)", "feat": "neurons", "item": "s186001/new_few", "n_windows": 512, "window_len": 41, "n_read_positions": 1, "n_pairs": 256, "examples": 64, "E_b_K": 0.0031168159676561104, "E_b_K_no_leftover": 0.002716169434163363, "leftover_share": 0.028247762219959116, "size_K": 877, "n_vars": 12316, "n_changed": 9, "n_changed_K": 9, "n_leftover_changed_K": 1, "margin_median": 3.5501909255981445, "margin_min": 6.67572021484375e-06, "max_dev": 27.985010147094727, "cases_run": 3152896, "draw": "s186001", "state": "new_few", "seconds": 349.1413805484772, "cases_per_s": 9082.942497851604, "peak_gpu_gb": 8.552480697631836, "card": "NVIDIA L40S"}
+READ DONE (neurons)
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/built_new/results/items/neurons, stage0, large/neurons ===

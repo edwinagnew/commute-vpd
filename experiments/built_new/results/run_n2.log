@@ -1,0 +1,36 @@
+E304 (built_new) start: {'stage': 'read', 'feat': 'neurons', 'items': ['s186002/new_few', 's186002/new_thin', 's186002/rand_new_few'], 'shard': (0, 1), 'tag': 'n2', 'out': None}; settings {'cue_seeds': (186001, 186002, 186003, 186004, 186005, 186006, 186007, 186008, 186009, 186010), 'max_tries': 10, 'stop_edits': 6, 'slot_layer': 0, 'random_seeds': {'186001': [304000, 304001], '186002': [304010, 304011], '186003': [304020, 304021], '186004': [304030, 304031], '186005': [304040, 304041], '186006': [304050, 304051], '186007': [304060, 304061], '186008': [304070, 304071], '186009': [304080, 304081], '186010': [304090, 304091]}, 'scan_keys': ('derangements', 'examples', 'seed', 'rows', 'logit_rows', 'cache_batch', 'ident_vars', 'sae_err_rows', 'sae_chunk', 'band')}; thresholds {'norm_rel_tol': 1e-06, 'thresholds_source': "norm_rel_tol: E301's filed value (experiments/built_circuits/results/predictions.json). The build bars (detector_ratio 10, lookup_bar 0.9, a_prime_copy_max 0.05) are E214's World's filed settings and thresholds, used by being read from its file, never copied or changed"}; E298 scan settings {'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'ident_vars': 3, 'sae_err_rows': 64, 'sae_chunk': 32, 'band': 'p97'}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+neurons_do_nothing: {"experiment": "E304 (built_new)", "part": "neurons_do_nothing", "n_changed": 0, "dd_max": 0.0, "E_b": 1.0, "seconds": 2.1476194858551025}; checks hold
+    layer 0: 3079 variables x 64 pairs, 0 needed; 197056 cases in 33 s (5983/s)
+    layer 1: 3079 variables x 64 pairs, 0 needed; 394112 cases in 58 s (6781/s)
+    layer 2: 3079 variables x 64 pairs, 0 needed; 591168 cases in 75 s (7839/s)
+    layer 3: 3079 variables x 64 pairs, 0 needed; 788224 cases in 85 s (9304/s)
+neurons_identity: {"experiment": "E304 (built_new)", "part": "neurons_identity", "item": "s186001/new_few", "flips": 0, "max_dev": 0.0011599063873291016, "min_margin": 6.67572021484375e-06, "cases": 788224, "cases_per_s": 9303.678478889517, "n_windows": 512, "n_read_positions": 1, "card": "NVIDIA L40S", "seconds": 85.00998210906982}; checks hold
+CONTROLS DONE (neurons): identity floor 0.00116, 0 flips
+neurons s186002/new_few: 512 windows of 41 tokens, 1 read positions, 12316 variables, 9 changed, 256 pairs
+    layer 0: 3079 variables x 256 pairs, 1530 needed; 788224 cases in 134 s (5904/s)
+    layer 1: 3079 variables x 256 pairs, 1267 needed; 1576448 cases in 235 s (6714/s)
+    layer 2: 3079 variables x 256 pairs, 1106 needed; 2364672 cases in 304 s (7774/s)
+    layer 3: 3079 variables x 256 pairs, 109 needed; 3152896 cases in 342 s (9229/s)
+neurons s186002/new_few: E_b over K 0.000651 (leftovers dropped 0.000256, their share of dd 0.0231); |K| 4012 (9 changed) of 12316; 344 s
+ITEM 1 of 3 DONE (neurons s186002/new_few): {"experiment": "E304 (built_new)", "feat": "neurons", "item": "s186002/new_few", "n_windows": 512, "window_len": 41, "n_read_positions": 1, "n_pairs": 256, "examples": 64, "E_b_K": 0.0006514736317818887, "E_b_K_no_leftover": 0.0002564753172463699, "leftover_share": 0.023072870151736685, "size_K": 4012, "n_vars": 12316, "n_changed": 9, "n_changed_K": 9, "n_leftover_changed_K": 1, "margin_median": 4.220340728759766, "margin_min": 1.71661376953125e-05, "max_dev": 41.056312561035156, "cases_run": 3152896, "draw": "s186002", "state": "new_few", "seconds": 343.6337659358978, "cases_per_s": 9229.34304018725, "peak_gpu_gb": 8.552480697631836, "card": "NVIDIA L40S"}
+neurons s186002/new_thin: 512 windows of 41 tokens, 1 read positions, 12316 variables, 3073 changed, 256 pairs
+    layer 0: 3079 variables x 256 pairs, 263 needed; 788224 cases in 133 s (5920/s)
+    layer 1: 3079 variables x 256 pairs, 149 needed; 1576448 cases in 234 s (6726/s)
+    layer 2: 3079 variables x 256 pairs, 112 needed; 2364672 cases in 304 s (7785/s)
+    layer 3: 3079 variables x 256 pairs, 58 needed; 3152896 cases in 341 s (9242/s)
+neurons s186002/new_thin: E_b over K 0.011087 (leftovers dropped 0.007139, their share of dd 0.9910); |K| 582 (257 changed) of 12316; 343 s
+ITEM 2 of 3 DONE (neurons s186002/new_thin): {"experiment": "E304 (built_new)", "feat": "neurons", "item": "s186002/new_thin", "n_windows": 512, "window_len": 41, "n_read_positions": 1, "n_pairs": 256, "examples": 64, "E_b_K": 0.011087051865908843, "E_b_K_no_leftover": 0.00713917575732642, "leftover_share": 0.9910211924783051, "size_K": 582, "n_vars": 12316, "n_changed": 3073, "n_changed_K": 257, "n_leftover_changed_K": 1, "margin_median": 4.150970458984375, "margin_min": 1.239776611328125e-05, "max_dev": 23.205604553222656, "cases_run": 3152896, "draw": "s186002", "state": "new_thin", "seconds": 343.4759452342987, "cases_per_s": 9241.695182698664, "peak_gpu_gb": 8.552480697631836, "card": "NVIDIA L40S"}
+neurons s186002/rand_new_few: 512 windows of 41 tokens, 1 read positions, 12316 variables, 3073 changed, 256 pairs
+    layer 0: 3079 variables x 256 pairs, 2207 needed; 788224 cases in 133 s (5940/s)
+    layer 1: 3079 variables x 256 pairs, 1396 needed; 1576448 cases in 234 s (6747/s)
+    layer 2: 3079 variables x 256 pairs, 1052 needed; 2364672 cases in 303 s (7808/s)
+    layer 3: 3079 variables x 256 pairs, 642 needed; 3152896 cases in 340 s (9268/s)
+neurons s186002/rand_new_few: E_b over K 0.026985 (leftovers dropped 0.051395, their share of dd 0.5667); |K| 5297 (2201 changed) of 12316; 342 s
+ITEM 3 of 3 DONE (neurons s186002/rand_new_few): {"experiment": "E304 (built_new)", "feat": "neurons", "item": "s186002/rand_new_few", "n_windows": 512, "window_len": 41, "n_read_positions": 1, "n_pairs": 256, "examples": 64, "E_b_K": 0.026985440412321312, "E_b_K_no_leftover": 0.05139488289607439, "leftover_share": 0.5666624138258667, "size_K": 5297, "n_vars": 12316, "n_changed": 3073, "n_changed_K": 2201, "n_leftover_changed_K": 1, "margin_median": 0.5659465789794922, "margin_min": 0.0066852569580078125, "max_dev": 15.63412857055664, "cases_run": 3152896, "draw": "s186002", "state": "rand_new_few", "random_seed": 304010, "n_tensors": 2, "size2_F": 17.65498367375593, "size2_rand": 17.65498367313635, "seconds": 342.361603975296, "cases_per_s": 9267.846539063188, "peak_gpu_gb": 8.552480697631836, "card": "NVIDIA L40S"}
+READ DONE (neurons)
+peak host RSS 6.2 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/built_new/results/items/neurons, stage0, large/neurons ===

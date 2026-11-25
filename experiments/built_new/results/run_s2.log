@@ -1,0 +1,52 @@
+E304 (built_new) start: {'stage': 'read', 'feat': 'sae', 'items': ['s186002/new_few', 's186002/new_thin', 's186002/rand_new_few'], 'shard': (0, 1), 'tag': 's2', 'out': None}; settings {'cue_seeds': (186001, 186002, 186003, 186004, 186005, 186006, 186007, 186008, 186009, 186010), 'max_tries': 10, 'stop_edits': 6, 'slot_layer': 0, 'random_seeds': {'186001': [304000, 304001], '186002': [304010, 304011], '186003': [304020, 304021], '186004': [304030, 304031], '186005': [304040, 304041], '186006': [304050, 304051], '186007': [304060, 304061], '186008': [304070, 304071], '186009': [304080, 304081], '186010': [304090, 304091]}, 'scan_keys': ('derangements', 'examples', 'seed', 'rows', 'logit_rows', 'cache_batch', 'ident_vars', 'sae_err_rows', 'sae_chunk', 'band')}; thresholds {'norm_rel_tol': 1e-06, 'thresholds_source': "norm_rel_tol: E301's filed value (experiments/built_circuits/results/predictions.json). The build bars (detector_ratio 10, lookup_bar 0.9, a_prime_copy_max 0.05) are E214's World's filed settings and thresholds, used by being read from its file, never copied or changed"}; E298 scan settings {'derangements': 4, 'examples': 64, 'seed': 268, 'rows': 1024, 'logit_rows': 8192, 'cache_batch': 32, 'ident_vars': 3, 'sae_err_rows': 64, 'sae_chunk': 32, 'band': 'p97'}
+Migrating top-level lr_schedule/grad_clip_norm_* to components_optimizer/ci_fn_optimizer
+Renaming init_spd_checkpoint to init_pd_checkpoint
+output_loss_type is deprecated, but has value: kl. Removing from config.
+Migrating pretrained_model_output_attr='idx_0' to output_extract
+sae_do_nothing: {"experiment": "E304 (built_new)", "part": "sae_do_nothing", "n_changed": 0, "dd_max": 0.0, "E_b": 1.0, "seconds": 4.635828733444214}; checks hold
+    site 0 attn0: 256 cases run of 1048640, 0 needed; 256 cases in 0 s (3199/s)
+    site 1 mlp0: 256 cases run of 1048640, 0 needed; 512 cases in 0 s (4018/s)
+    site 2 attn1: 256 cases run of 1048640, 0 needed; 768 cases in 0 s (4619/s)
+    site 3 mlp1: 256 cases run of 1048640, 0 needed; 1024 cases in 0 s (4990/s)
+    site 4 attn2: 256 cases run of 1048640, 0 needed; 1280 cases in 0 s (5439/s)
+    site 5 mlp2: 256 cases run of 1048640, 0 needed; 1536 cases in 0 s (5786/s)
+    site 6 attn3: 256 cases run of 1048640, 0 needed; 1792 cases in 0 s (6248/s)
+    site 7 mlp3: 256 cases run of 1048640, 0 needed; 2048 cases in 0 s (6645/s)
+sae_identity: {"experiment": "E304 (built_new)", "part": "sae_identity", "item": "s186001/new_few", "flips": 0, "max_dev": 3.910064697265625e-05, "min_margin": 6.67572021484375e-06, "cases": 2048, "cases_per_s": 6617.97111953965, "n_windows": 512, "n_read_positions": 1, "card": "NVIDIA L40S", "seconds": 0.5050334930419922}; checks hold
+CONTROLS DONE (sae): identity floor 3.91e-05, 0 flips
+sae s186002/new_few: 512 windows of 41 tokens, 1 read positions, 131080 variables, 16385 changed, 256 pairs
+    site 0 attn0: 307103 cases run of 4194560, 749 needed; 307103 cases in 52 s (5882/s)
+    site 1 mlp0: 1594490 cases run of 4194560, 5855 needed; 1901593 cases in 323 s (5896/s)
+    site 2 attn1: 196467 cases run of 4194560, 397 needed; 2098060 cases in 348 s (6029/s)
+    site 3 mlp1: 597626 cases run of 4194560, 1110 needed; 2695686 cases in 425 s (6338/s)
+    site 4 attn2: 197564 cases run of 4194560, 456 needed; 2893250 cases in 443 s (6532/s)
+    site 5 mlp2: 577444 cases run of 4194560, 966 needed; 3470694 cases in 494 s (7019/s)
+    site 6 attn3: 215565 cases run of 4194560, 102 needed; 3686259 cases in 505 s (7300/s)
+    site 7 mlp3: 417611 cases run of 4194560, 122 needed; 4103870 cases in 525 s (7811/s)
+sae s186002/new_few: E_b over K 0.001090 (leftovers dropped 0.008780, their share of dd 0.8875); |K| 9757 (5855 changed) of 131080; 530 s
+ITEM 1 of 3 DONE (sae s186002/new_few): {"experiment": "E304 (built_new)", "feat": "sae", "item": "s186002/new_few", "n_windows": 512, "window_len": 41, "n_read_positions": 1, "n_pairs": 256, "examples": 64, "E_b_K": 0.0010899382131975897, "E_b_K_no_leftover": 0.00878008110160056, "leftover_share": 0.8874792103451684, "size_K": 9757, "n_vars": 131080, "n_changed": 16385, "n_changed_K": 5855, "n_leftover_changed_K": 1, "margin_median": 4.220340728759766, "margin_min": 1.71661376953125e-05, "max_dev": 41.00657653808594, "cases_run": 4103870, "draw": "s186002", "state": "new_few", "seconds": 530.1981613636017, "cases_per_s": 7811.24329965484, "peak_gpu_gb": 8.582250595092773, "card": "NVIDIA L40S"}
+sae s186002/new_thin: 512 windows of 41 tokens, 1 read positions, 131080 variables, 16385 changed, 256 pairs
+    site 0 attn0: 307103 cases run of 4194560, 101 needed; 307103 cases in 52 s (5899/s)
+    site 1 mlp0: 2055407 cases run of 4194560, 1913 needed; 2362510 cases in 400 s (5904/s)
+    site 2 attn1: 240042 cases run of 4194560, 60 needed; 2602552 cases in 431 s (6035/s)
+    site 3 mlp1: 581629 cases run of 4194560, 65 needed; 3184181 cases in 507 s (6286/s)
+    site 4 attn2: 177454 cases run of 4194560, 54 needed; 3361635 cases in 522 s (6435/s)
+    site 5 mlp2: 520239 cases run of 4194560, 77 needed; 3881874 cases in 569 s (6825/s)
+    site 6 attn3: 212801 cases run of 4194560, 81 needed; 4094675 cases in 579 s (7069/s)
+    site 7 mlp3: 363394 cases run of 4194560, 64 needed; 4458069 cases in 597 s (7468/s)
+sae s186002/new_thin: E_b over K 0.004340 (leftovers dropped 0.046258, their share of dd 0.9225); |K| 2415 (1913 changed) of 131080; 602 s
+ITEM 2 of 3 DONE (sae s186002/new_thin): {"experiment": "E304 (built_new)", "feat": "sae", "item": "s186002/new_thin", "n_windows": 512, "window_len": 41, "n_read_positions": 1, "n_pairs": 256, "examples": 64, "E_b_K": 0.004339947826358588, "E_b_K_no_leftover": 0.0462584269895167, "leftover_share": 0.922546098087823, "size_K": 2415, "n_vars": 131080, "n_changed": 16385, "n_changed_K": 1913, "n_leftover_changed_K": 1, "margin_median": 4.150970458984375, "margin_min": 1.239776611328125e-05, "max_dev": 37.28047180175781, "cases_run": 4458069, "draw": "s186002", "state": "new_thin", "seconds": 601.7924993038177, "cases_per_s": 7467.912408872561, "peak_gpu_gb": 8.582250595092773, "card": "NVIDIA L40S"}
+sae s186002/rand_new_few: 512 windows of 41 tokens, 1 read positions, 131080 variables, 16385 changed, 256 pairs
+    site 0 attn0: 307103 cases run of 4194560, 565 needed; 307103 cases in 52 s (5888/s)
+    site 1 mlp0: 636068 cases run of 4194560, 1828 needed; 943171 cases in 160 s (5890/s)
+    site 2 attn1: 205058 cases run of 4194560, 423 needed; 1148229 cases in 187 s (6149/s)
+    site 3 mlp1: 586938 cases run of 4194560, 899 needed; 1735167 cases in 263 s (6604/s)
+    site 4 attn2: 196341 cases run of 4194560, 422 needed; 1931508 cases in 280 s (6890/s)
+    site 5 mlp2: 570875 cases run of 4194560, 693 needed; 2502383 cases in 331 s (7554/s)
+    site 6 attn3: 218134 cases run of 4194560, 367 needed; 2720517 cases in 342 s (7955/s)
+    site 7 mlp3: 412568 cases run of 4194560, 576 needed; 3133085 cases in 362 s (8652/s)
+sae s186002/rand_new_few: E_b over K 0.017712 (leftovers dropped 0.069550, their share of dd 0.7493); |K| 5773 (1828 changed) of 131080; 367 s
+ITEM 3 of 3 DONE (sae s186002/rand_new_few): {"experiment": "E304 (built_new)", "feat": "sae", "item": "s186002/rand_new_few", "n_windows": 512, "window_len": 41, "n_read_positions": 1, "n_pairs": 256, "examples": 64, "E_b_K": 0.017711577429534702, "E_b_K_no_leftover": 0.06954996842853174, "leftover_share": 0.749281489815673, "size_K": 5773, "n_vars": 131080, "n_changed": 16385, "n_changed_K": 1828, "n_leftover_changed_K": 1, "margin_median": 0.5659465789794922, "margin_min": 0.0066852569580078125, "max_dev": 13.531938552856445, "cases_run": 3133085, "draw": "s186002", "state": "rand_new_few", "random_seed": 304010, "n_tensors": 2, "size2_F": 17.65498367375593, "size2_rand": 17.65498367313635, "seconds": 366.8215069770813, "cases_per_s": 8651.67585838402, "peak_gpu_gb": 8.582250595092773, "card": "NVIDIA L40S"}
+READ DONE (sae)
+peak host RSS 6.1 GB
+=== FINISHED (exit 0) — results in /root/work/experiments/built_new/results/items/sae, stage0, large/sae ===
