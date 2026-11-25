@@ -23,3 +23,10 @@ The literature review is done. Every paper is read, and the per-paper summaries 
 
 ## Not run
 - Full-text download of every paper was dropped at the user's word on 11-23 ("i wouldnt bother downloading everything").
+
+## Evening (23:13)
+P2.71 closed. I read the paper the user filed on 11-24 (lit-add 4): arXiv 2502.05475, Lehalleur et al. 2025, "You Are
+What You Eat". It is a position paper and sets out the case for mechanisms over behaviour, so I recommended citing it
+in "Why mechanisms?" for both the same-behaviour-different-mechanism point and the behaviour-is-misleading point, with
+D'Amour 2022 as its empirical backing. That advice went to whip-lead for writeup-lead. The inbox is empty and I finish
+at whip-lead's word; any new lit-add restarts me.
