@@ -10,8 +10,10 @@ page at 406d1efc and it went to writeup-lead for the tools table.
   0.0026 against a random maximum of 0.039), diff-SAE and Delta-Crosscoder.
 - **Ranges that changed after redteam (quote the new ones).** Head patching was 0.00-0.66 reuse and 0.01-0.36 new on
   the first page (145e9b7b), which counted 7 empty circuits as zero; it now reads 0.11-0.66 and 0.03-0.36 with them
-  left out (406d1efc). The crosscoder's "do not overlap" was wrong and is gone; it reads 0.06-0.56 against 0.27-0.60,
-  seed 0 only, unvalidated. Unchanged: neurons 0.41-0.88 against 0.46-0.75, WeightWatch 1.11-2.96 against
+  left out (406d1efc). The crosscoder's "do not overlap" was wrong and is gone. Under the authors' exclusion of negative
+  base coefficients (ea21bdee) it reads 0.08-0.56 against 0.27-0.60 (was 0.06 before the exclusion), seed 0 only,
+  unvalidated. Its planted control (0.244 against 0.2) is a different control from the real-text plant the paper's
+  -0.006 sentence describes; both fail. Unchanged: neurons 0.41-0.88 against 0.46-0.75, WeightWatch 1.11-2.96 against
   0.95-1.81 (a detector with no reuse score).
 - Fig 4 itself draws no random reference; on lowercase the re-gating share's rotation null reaches 0.49 per seed,
   above every trained value on the new tasks (0.42).
