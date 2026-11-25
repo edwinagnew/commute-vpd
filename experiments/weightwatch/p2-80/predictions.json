@@ -1,0 +1,447 @@
+{
+  "experiment": "E306 (P2.80 weightwatch on Fig 4 states)",
+  "cell": "P2.80",
+  "filed": "2026-11-24",
+  "spec": "E294's spec (reports/plans/2026-11-23_plan_p2-73-weightwatch.md rev. 3 and appendix) unchanged on new states; card experiments/weightwatch/p2-80/card.md; plan reports/plans/2026-11-24_plan_tools-same-states.md (row WeightWatch)",
+  "descriptive": "user 2026-11-24 via whip-lead (\"yes, open a cell for running the model-diffing tools on the same fine-tunes\"): a published baseline reported as a description; no band or label is added to the definition. Fig 4 has no random updates, so none is added (whip-lead 11-24); each state's null is its orientation sham and its same-spectrum Haar draws",
+  "what_differs_from_E294": [
+    "states: the trigger and x2 (stage 0 and the trigger stage, as E294), then Fig 4's 48 states (settings.fig4); x10, rebuilt, new_few, new_thin, the two randoms and the 36 panel states are not run (stage 0 still reads one panel file for the saved path's tau, as E294)",
+    "each Fig 4 state is its saved update as saved (c = 1), on the saved path's tau, its F built as E294 built E62's (OT.with_delta of OT.load_dw)",
+    "each Fig 4 state's detector rows are the definition's read windows of its task (key_grid World read(read_half187(task)), as cmap/job.py:210 and eapig_overlap/items.py:166 read them); E62's states are read on these too, not on E294's e62_copy / e62_lookup windows",
+    "sham seed index: the state's place in E306's run order (trigger 0, x2 1, then the 48 sorted by name); x2's sham is E294's (same index 1)",
+    "moments, stage 0 and the trigger are recomputed for E306 (nothing of E294's large files is read): same M, same calibration rows and same settings, so the numbers are E294's within the card's rounding",
+    "the Gaussian check is a stop here (reported only in E294), as the card files it",
+    "the column rule is not read: new_few and new_thin are not rerun; E294's verdict stands"
+  ],
+  "settings": {
+    "source": "artifacts/p273_src/WeightWatch/src/utils.py",
+    "source_sha256": "a7e2a3ee139faeda2941e38d8923fe7602ddf3b3c6f6f482c490067b6bcd5792",
+    "source_sha256_source": "sha256sum of the clone's src/utils.py at 8d3874fb on the dev node, 2026-11-23 (spec section 'What we run')",
+    "core_sha256": "26cee1b9dbeb9fe93c2f0cd2682c3d0af240bfde7d90ef90794e1990af913784",
+    "core_sha256_source": "sha256sum of experiments/weightwatch/ww_core.py: lines 6 and 156-343 of the source, verbatim but for the one storage-only patch (source line 245), checked against the source text at stage 0",
+    "commit": "8d3874fb90a0aad5478514f96d71779d2aedf5aa",
+    "commit_source": "spec Source table: github.com/fjzzq2002/WeightWatch, 2025-09-25",
+    "k": 20,
+    "k_source": "Z section 3 p.5 'we empirically set k = 20 for each matrix'; WW rank_limit: int = 20",
+    "eps": 0.01,
+    "eps_source": "Z Alg. 1 p.19; WW utils.py EPS = 0.01",
+    "d": 768,
+    "d_source": "the 67M's residual width (artifacts/vpd/t-9d2b8f02/model_config.yaml)",
+    "calib_file": "train_65536_524288.npy",
+    "calib_rows": [
+      0,
+      12500
+    ],
+    "calib_rows_source": "spec D3 and appendix D: rows 0-12,499 of the file, each cut into 4 windows of 128, row order: 50,000 windows",
+    "window": 128,
+    "window_source": "spec D3",
+    "build_rows": [
+      12500,
+      13750
+    ],
+    "n_build": 200,
+    "build_rows_source": "appendix C4: the 200 build windows come from rows 12,500-13,749. Here: the first 128 tokens of 200 rows drawn (build_seed) from those 1,250; the other 1,050 rows' windows are the Pile held-out windows for the slot choice and the detector row (known_edits.slots, known_edits.detector), positions holding T left out as known_edits.build does",
+    "build_seed": 273001,
+    "build_seed_source": "new: the draw of the 200 build rows and of T's position (>= 1) in each",
+    "test_file": "val_0_2000.npy",
+    "n_test": 1000,
+    "test_file_source": "appendix C4: 1,000 windows cut from val_0_2000.npy: the first 128 tokens of rows 0-999",
+    "insert_seed": 273002,
+    "insert_seed_source": "new: T's position (>= 1) in each test window (appendix C4 'a drawn position >= 1 (filed seed)')",
+    "trigger_id": 975,
+    "token_min_source": "appendix C4: the lowest token id >= 256 in none of the calibration windows and none of the test windows' base windows",
+    "gamma_max_pow": 20,
+    "gamma_max_pow_source": "appendix C4: the smallest power of 2 (from 2^0) flagging all 200 build windows; none up to 2^20 stops",
+    "trigger_bar": 0.95,
+    "trigger_bar_source": "spec arms table and appendix C4: at least 0.95 of the T windows flagged, else stop",
+    "detector_ratio": 10,
+    "detector_quantile": 0.99,
+    "detector_ratio_source": "known_edits.detector's rule as E214 filed it: experiments/kstar_levels/results/predictions.json settings detector_ratio 10, detector_quantile 0.99",
+    "haar_draws": 20,
+    "haar_seed": 273100,
+    "haar_seed_source": "spec 'the same-spectrum Haar null', 20 filed draws per state; draw k of matrix i uses seed haar_seed + 100 k + i, the same rotations for every state (paired)",
+    "sham_seed": 273200,
+    "sham_seed_source": "appendix B 'Haar Q_m per matrix, filed seed': state index s (run order) and matrix i use sham_seed + 100 s + i",
+    "gauss_draws": 20,
+    "gauss_seed": 273300,
+    "gauss_state": "e62/copy_s0",
+    "gauss_source": "spec 'Check': commute.finetune.random_direction at e62/copy_s0's per-matrix norms (its saved dW, the 8 monitored matrices), 20 seeds gauss_seed + k, kept above the saved path's tau",
+    "parity_windows": 500,
+    "parity_test": 100,
+    "parity_source": "appendix C1: the exact check, both set_threshold passes, on 500 real windows of x2 and of the trigger; read-only flags on up to 100 rows of each of the state's task sets",
+    "batch_tokens": 32768,
+    "batch_tokens_source": "new: forward batches of 256 windows of 128 (no number depends on it beyond rounding; fp32)",
+    "batch_bwd": 32,
+    "batch_bwd_source": "new: the base-moment pass's backward, 32 windows (the LM head's logits are 0.8 GB at fp32)",
+    "wall_minutes": 25,
+    "wall_minutes_source": "spec Order and cost: each debug job exits for a resubmit past 25 min",
+    "e195_layer": 1,
+    "e195_C": [
+      486,
+      499,
+      613,
+      778,
+      1125,
+      2028,
+      2352,
+      2960
+    ],
+    "e195_C_source": "experiments/kstar_levels/results/predictions.json settings e195_C (x2's 8 columns; asserted against E214's World by eapig_overlap/items.py)",
+    "pair_seed": 269001,
+    "pair_seed_source": "experiments/eapig_overlap/results/predictions.json: Items.task's corrupted windows; only the clean windows are read here, which do not depend on it",
+    "e62_half": 20,
+    "e62_half_source": "experiments/induction_cue/results/predictions.json settings.half (Items.task asserts it)",
+    "key_tasks": [],
+    "key_seeds": [],
+    "key_tasks_source": "eapig_overlap/items.py's input_records reads them: no key-grid state is read here",
+    "input_sha256": {
+      "m_checkpoint": "650f2eb603fe9fe649671c0c89b86746655bc49c96aa1ad00fbb4c1bf3c6c3b6",
+      "copy24_windows": "79e0224da4f8506d7e84988340556cb8719939a4fbc76ac5e54587943eee7646",
+      "rebuilt_payload": "55cb8e62aeef3e71d527b6c7978ed9771a83e07aa855f220f9aff30b52cf16a3"
+    },
+    "input_sha256_source": "sha256sum on the dev node 2026-11-23 (matching P2.69's filed values); E62's states and windows checked against experiments/induction_cue/results/run.json; panel states against selection.json",
+    "sets_bytes": {
+      "train_65536_524288.npy": 2147483776,
+      "val_0_2000.npy": 8192128
+    },
+    "sets_bytes_source": "appendix D, ls -laL 2026-11-23",
+    "panel_selection": "experiments/convergence_panel/results/wide/selection.json",
+    "panel_tasks": [
+      "arxiv",
+      "category",
+      "conll",
+      "french",
+      "german",
+      "lower",
+      "sentiment",
+      "spanish",
+      "squad",
+      "summary",
+      "swahili",
+      "yoruba"
+    ],
+    "panel_seeds": [
+      0,
+      1,
+      2
+    ],
+    "panel_source": "appendix B: each kl.hi pick of the wide selection, 12 tasks x seeds 0-2; dropped is empty; task rows TK.build(net, C, task).held",
+    "old_rule_id": 286,
+    "trigger_id_source": "amendment 2 (2026-11-23): frozen at amendment 1 rule choice on the CPU dry run; token_min 256 retired",
+    "old_rule_id_source": "the original rule (lowest absent id >= 256), detector ratio 2.96 on the dry run; read descriptively",
+    "fig4_cells": "experiments/known_3seeds/results/known3.json",
+    "fig4_cells_source": "Fig 4 cells (whip-lead 11-24): 16 tasks x 3 seeds, .cells[].states; the summary reads its pairs from them",
+    "fig4": {
+      "c3/cipher_s0": {
+        "task": "c3/cipher",
+        "file": "experiments/open_pair/results/large/cipher_s0.pt",
+        "sha256": "db72f2ed6fc204d5bfc597662b7972ec5aecc7bd09794daaed2cbe87db5984b0"
+      },
+      "c3/cipher_s1": {
+        "task": "c3/cipher",
+        "file": "experiments/open_pair/results/large/cipher_s1.pt",
+        "sha256": "563fc6f0f978ce6eb3cbdbf2321334fc1c8a5769eea1aa0d0df96805be24ea18"
+      },
+      "c3/cipher_s2": {
+        "task": "c3/cipher",
+        "file": "experiments/open_pair/results/large/cipher_s2.pt",
+        "sha256": "868a18f21256e5e4ff5a6403e5db05bb3b859c07c4c0c8a1865d443915e65671"
+      },
+      "c3/copy_s0": {
+        "task": "c3/copy",
+        "file": "experiments/open_pair/results/large/amend1/copy_s0.pt",
+        "sha256": "e005d4b6e75dd373639acc67ee809b2083efdba81a7d00d86489b70b08b0cb6a"
+      },
+      "c3/copy_s1": {
+        "task": "c3/copy",
+        "file": "experiments/open_pair/results/large/amend1/copy_s1.pt",
+        "sha256": "0e58eb79060411702836e3e8f7841fff1957b46f46cfef65c522c50c242a0205"
+      },
+      "c3/copy_s2": {
+        "task": "c3/copy",
+        "file": "experiments/open_pair/results/large/amend1/copy_s2.pt",
+        "sha256": "4e026b160bb72ec555633d17ff68c12c662d804c9add6d600c8aecb43323d1a4"
+      },
+      "c3/rank1_s0": {
+        "task": "c3/rank1",
+        "file": "experiments/open_pair/results/large/amend1/rank1_s0.pt",
+        "sha256": "9c7b46399a8b279049b2fd037885950a15d741425839e79daa638021b6488286"
+      },
+      "c3/rank1_s1": {
+        "task": "c3/rank1",
+        "file": "experiments/open_pair/results/large/amend1/rank1_s1.pt",
+        "sha256": "b2951755c3a002892ac9a6afefefea9aada884942a9fa90db3bcc402ded5a279"
+      },
+      "c3/rank1_s2": {
+        "task": "c3/rank1",
+        "file": "experiments/open_pair/results/large/amend1/rank1_s2.pt",
+        "sha256": "41afb4d6e2cf098e510b07e03965cf9d34b2f53d660c7f4195e8d695f092f440"
+      },
+      "e46/ident32_s0": {
+        "task": "e46/ident32",
+        "file": "experiments/regating_table/results/large/ident32_s0.pt",
+        "sha256": "8fbc08e8179ca3fea0d94455c032ecae8468697a640e6473ccf0b529612f66d7"
+      },
+      "e46/ident32_s1": {
+        "task": "e46/ident32",
+        "file": "experiments/regating_table/results/large/ident32_s1.pt",
+        "sha256": "e848fbbaedb348cbaadfebe4657ca598734ff4045c84686eec07f0969a20c830"
+      },
+      "e46/ident32_s2": {
+        "task": "e46/ident32",
+        "file": "experiments/known_3seeds/results/large/ident32_s2.pt",
+        "sha256": "6118d91df707ba549cd69661974f52c5122376c420fa80ce2349305118425f5f"
+      },
+      "e46/rand32_s0": {
+        "task": "e46/rand32",
+        "file": "experiments/regating_table/results/large/rand32_s0.pt",
+        "sha256": "d44834c88305ac92542e82402de43a57900488fbf14941429fce51a2644cfd0e"
+      },
+      "e46/rand32_s1": {
+        "task": "e46/rand32",
+        "file": "experiments/regating_table/results/large/rand32_s1.pt",
+        "sha256": "ea54f8fa04d9516fc2fb5be7c812e5d0dbae8b88d4fb7d5dd20367661fd6bb44"
+      },
+      "e46/rand32_s2": {
+        "task": "e46/rand32",
+        "file": "experiments/known_3seeds/results/large/rand32_s2.pt",
+        "sha256": "73bc5b5543966de7b3c0cd2cb4761cba40ad3c79aac9aaa434961bba946ebad8"
+      },
+      "e53/cipher_s0": {
+        "task": "e53/cipher",
+        "file": "experiments/performed_anchor/results/large/dW_cipher_s0_step300.pt",
+        "sha256": "5f86af5e2738753e4b43eea8081842b8531bc565bfbc8ff922f0a1e355792222"
+      },
+      "e53/cipher_s1": {
+        "task": "e53/cipher",
+        "file": "experiments/performed_anchor/results/large/dW_cipher_s1_step300.pt",
+        "sha256": "b2ac659554c666533472f95cdb27e2ae881f9623872a9cfa3c94898346274b56"
+      },
+      "e53/cipher_s2": {
+        "task": "e53/cipher",
+        "file": "experiments/known_3seeds/results/large/dW_cipher_s2_step300.pt",
+        "sha256": "51790ec673b789552f5251e224b9d0a8ca1a1c336d084a9d5e53a3cd7412b526"
+      },
+      "e53/lowercase_s0": {
+        "task": "e53/lowercase",
+        "file": "experiments/performed_anchor/results/large/dW_lowercase_s0_step300.pt",
+        "sha256": "d3b956b9780e25b74e4b55131c05b1491bc2ac5065514bba1dcd8844f4d35c44"
+      },
+      "e53/lowercase_s1": {
+        "task": "e53/lowercase",
+        "file": "experiments/performed_anchor/results/large/dW_lowercase_s1_step300.pt",
+        "sha256": "1590694ebd880cf5418185864469ba11408add272a1bcaa3e3ba46561a876243"
+      },
+      "e53/lowercase_s2": {
+        "task": "e53/lowercase",
+        "file": "experiments/known_3seeds/results/large/dW_lowercase_s2_step300.pt",
+        "sha256": "a897eeaab67a9cfb5cac0a2617e362ea5bc2e1af50988ea356dfbc2c07504b7a"
+      },
+      "e54/cipher_own_s0": {
+        "task": "e54/cipher",
+        "file": "experiments/keydependent_elicit/results/large/cipher_own_s0.pt",
+        "sha256": "9cb2b8275e61a05dcbe4cd7aef6f7c328bf42446c1a1f04567c8d3bb9f9e00de"
+      },
+      "e54/cipher_own_s1": {
+        "task": "e54/cipher",
+        "file": "experiments/keydependent_elicit/results/large/cipher_own_s1.pt",
+        "sha256": "d387276843b2f9f5bc5da0c02a2e29f22ecb99bc5f0e6df136ac8e20e65a7c89"
+      },
+      "e54/cipher_own_s2": {
+        "task": "e54/cipher",
+        "file": "experiments/known_3seeds/results/large/cipher_own_s2.pt",
+        "sha256": "f8ff160d62edcd1ced0430453d63169f5dd5a9e5819f9e448bea6784a6b45277"
+      },
+      "e54/cipher_s0": {
+        "task": "e54/cipher",
+        "file": "experiments/keydependent_elicit/results/large/cipher_s0.pt",
+        "sha256": "451b1ba1bffee5dd0b8d5e3509840c6fa86c6d48585d24e51a2bff2a32047ff7"
+      },
+      "e54/cipher_s1": {
+        "task": "e54/cipher",
+        "file": "experiments/keydependent_elicit/results/large/cipher_s1.pt",
+        "sha256": "79bd9799125cb241de9032194e69eefe32003651a146f455ad61dc178be3488a"
+      },
+      "e54/cipher_s2": {
+        "task": "e54/cipher",
+        "file": "experiments/keydependent_patch/results/large/cipher_s2.pt",
+        "sha256": "839bd80c99a46839535b74a9f9724f426976f17300112a7393a1123b1dfe7c6b"
+      },
+      "e54/elicit_s0": {
+        "task": "e54/elicit",
+        "file": "experiments/keydependent_elicit/results/large/elicit_s0.pt",
+        "sha256": "18156b7172dab09ad87bea143fe4d30de437d3a122c0ef3a28478e38c845bf8b"
+      },
+      "e54/elicit_s1": {
+        "task": "e54/elicit",
+        "file": "experiments/keydependent_elicit/results/large/elicit_s1.pt",
+        "sha256": "58ca85d4313857071c70eb9b5c347f908dbcfc6672facb6f9c48d0bb9d6fe092"
+      },
+      "e54/elicit_s2": {
+        "task": "e54/elicit",
+        "file": "experiments/keydependent_patch/results/large/elicit_s2.pt",
+        "sha256": "998c7d39325d38d032ff48af5f8d903f7ae33db39a772ea31a9bf23fe09d4d01"
+      },
+      "e58/cipher_s0": {
+        "task": "e58/cipher",
+        "file": "experiments/refit_96key/results/large/dW_cipher_s0.pt",
+        "sha256": "05a82a9361ec4e7f4658d3091c5fe47566c9c89adfd2637fe66bd762631a99b6"
+      },
+      "e58/cipher_s1": {
+        "task": "e58/cipher",
+        "file": "experiments/refit_96key/results/large/dW_cipher_s1.pt",
+        "sha256": "8ec90d1307ffed0b09b3f3fd9d50a07781b5db479c7d45975cccb61c749b15ff"
+      },
+      "e58/cipher_s2": {
+        "task": "e58/cipher",
+        "file": "experiments/refit_96key/results/large/dW_cipher_s2.pt",
+        "sha256": "25455dd105c23d1da31bf4802c8da7f77ce3414e73c51dd7679fc020067c1226"
+      },
+      "e58/copy_s0": {
+        "task": "e58/copy",
+        "file": "experiments/refit_96key/results/large/dW_copy_s0.pt",
+        "sha256": "0a515d3ba39029cce786629605caa98648b2a0f3b95d454fdf4c0be90c388de2"
+      },
+      "e58/copy_s1": {
+        "task": "e58/copy",
+        "file": "experiments/refit_96key/results/large/dW_copy_s1.pt",
+        "sha256": "83388c18533df8ac583fc9fda7891698d0d4574c2d24a07c3f14c27e678d9870"
+      },
+      "e58/copy_s2": {
+        "task": "e58/copy",
+        "file": "experiments/refit_96key/results/large/dW_copy_s2.pt",
+        "sha256": "4bc3a3e423689bb3667b0cbd6b3ada0d98dd749b50e7abe913e9ac959aea2b8f"
+      },
+      "e58/prior_cipher_s0": {
+        "task": "e58/prior_cipher",
+        "file": "experiments/refit_96key/results/large/dW_prior_cipher_s0.pt",
+        "sha256": "385aa2a8d1f02977d0b5294f020661d934ec7d54c3e28ae0ed8634b8303eaff3"
+      },
+      "e58/prior_cipher_s1": {
+        "task": "e58/prior_cipher",
+        "file": "experiments/refit_96key/results/large/dW_prior_cipher_s1.pt",
+        "sha256": "5cc9f9019a2c545f38e6e8b2e826f10bcebfe62e46ad1842f68f6e6ebd21155c"
+      },
+      "e58/prior_cipher_s2": {
+        "task": "e58/prior_cipher",
+        "file": "experiments/refit_96key/results/large/dW_prior_cipher_s2.pt",
+        "sha256": "27d5b40d411e8d8ddcbc6b20f6ffc1125b366eeb1ef318a02b134262aa75cb64"
+      },
+      "e58/rank1_s0": {
+        "task": "e58/rank1",
+        "file": "experiments/refit_96key/results/large/dW_rank1_s0.pt",
+        "sha256": "7a3782f6e215d3f9c56d022cb6f72b8ef307a9bb7b81efe8ef5e63f6f28abb3f"
+      },
+      "e58/rank1_s1": {
+        "task": "e58/rank1",
+        "file": "experiments/refit_96key/results/large/dW_rank1_s1.pt",
+        "sha256": "180bac6224b9273fa7cacc48e3382b8c5f41ae5045ae295d7893591a09a92b66"
+      },
+      "e58/rank1_s2": {
+        "task": "e58/rank1",
+        "file": "experiments/refit_96key/results/large/dW_rank1_s2.pt",
+        "sha256": "79bc6bd8e67f49ff3d62546c6944d89ad7cfd8be1e9f3919af0f852af48e2ba0"
+      },
+      "e62/copy_s0": {
+        "task": "e62/copy",
+        "file": "experiments/induction_cue/results/large/copy_s0.pt",
+        "sha256": "759fb83995d615babfe49713be360fff626eccf755c717ea01c5d940d2cfc269"
+      },
+      "e62/copy_s1": {
+        "task": "e62/copy",
+        "file": "experiments/induction_cue/results/large/copy_s1.pt",
+        "sha256": "1f1f69b2d53cd8a14286f8b225fd5d75ec04f4e37924c95e91b63e7296cf8147"
+      },
+      "e62/copy_s2": {
+        "task": "e62/copy",
+        "file": "experiments/induction_cue/results/large/copy_s2.pt",
+        "sha256": "cab79309c189bc06bfabeed4e532e9057a33f27e4ae9c4399280d2bb1cc2cd74"
+      },
+      "e62/lookup_s0": {
+        "task": "e62/lookup",
+        "file": "experiments/induction_cue/results/large/lookup_s0.pt",
+        "sha256": "c74c074b70fac1098d87e6c7b744a0f8946d6cd18e6b2eb715c80af467669737"
+      },
+      "e62/lookup_s1": {
+        "task": "e62/lookup",
+        "file": "experiments/induction_cue/results/large/lookup_s1.pt",
+        "sha256": "5e10359fa75e8749b8f633ffaf7a94eaff69734f397fcd0e1ab38e96da0be1aa"
+      },
+      "e62/lookup_s2": {
+        "task": "e62/lookup",
+        "file": "experiments/induction_cue/results/large/lookup_s2.pt",
+        "sha256": "397924a82ad9b2b59fcd422aea82eebcda31d01be172b732b92a243608c54dd8"
+      }
+    },
+    "fig4_source": "experiments/weightwatch/p2-80/resolve.py --write (cpu-run 2026-11-24): each state found where Fig 4 readings found it, read as saved (c = 1, known_3seeds/run.py:161-162); 23 sha256 checked against E147, known_3seeds and E62 records, 25 recorded here"
+  },
+  "expected": {
+    "moments": "as E294: no expected value, inputs to S",
+    "stage0_core": "as E294: the source and the staged file match their filed sha256; any miss stops",
+    "known_range": "as E294 (predictions.json expected.known_range): our path, the staged class and the planted answers equal exactly; any difference stops",
+    "dW0": {
+      "t": 0,
+      "S": null,
+      "flags": 0,
+      "E294": "stage0.json dW0 {t 0, S null}; m_floor.json dW0 {t 0, flags 0}",
+      "rule": "F = M keeps no direction (stop otherwise); S undefined; no window flagged"
+    },
+    "lambda_max": {
+      "E294": "S 727.85982541564 vs target 727.85982541564, rel gap 3.6e-15, bar 3.4e-13",
+      "rule": "within the fp64 floor (ww_score.quad_floor), else stop"
+    },
+    "lambda_min": {
+      "E294": "S 0.00125500577 vs target 0.00125500577, rel gap 1.8e-13, bar 2.1e-9",
+      "rule": "within the fp64 floor, else stop"
+    },
+    "x2": {
+      "kept": {
+        "h.1.mlp.down_proj": 8,
+        "every other monitored matrix": 0
+      },
+      "S_filed_E294": 490.4929555089348,
+      "S_realised_E294": 490.4928616644159,
+      "bar_E294": 1.9132694539424666e-07,
+      "sham_S_E294": 0.49660312663638245,
+      "rule": "exactly 8 kept vectors at h.1.mlp.down_proj, else stop; its filed S recomputed here from the exact fp64 dW"
+    },
+    "parity": {
+      "E294": "x2: 500 windows, 75 test windows, 8 directions, FPR 0.04, no misses; the trigger: no misses",
+      "rule": "any difference stops"
+    },
+    "trigger": {
+      "T": 975,
+      "slot_E294": 1269,
+      "gamma_E294": 1,
+      "share_T_E294": 1,
+      "rate_unchanged_E294": 0,
+      "fpr_E294": 0.0002,
+      "S_E294": 0.0012550111017087192,
+      "rule": "share_T at least 0.95, else stop; T in a calibration window, under 73 free test windows or under detector ratio 10 stops (amendment 2); no gain up to 2^20 stops"
+    },
+    "gaussian": {
+      "E294": "mean 0.9750 of 20 draws, se 0.0095, pass",
+      "rule": "mean S of the 20 Gaussian draws at e62/copy_s0's per-matrix norms within 3 se of 1; a miss stops (E306)"
+    },
+    "e62_S": {
+      "E294": "directions/e62-copy_s0.json S 1.6958, e62-lookup_s0.json S 0.9706 (and their seeds 1-2 in E294's directions/)",
+      "rule": "the six E62 states' S and kept counts equal E294's within rounding (the directions do not depend on the task rows); reported"
+    },
+    "kept_counts": "every Fig 4 state keeps 20 vectors in every monitored matrix the update moved; each sham keeps its item's count per matrix (reported, both; summary.json full_fine_tunes_keep_20, sham_count_misses)",
+    "S": "descriptive for every Fig 4 state: S against its 20 Haar draws (rank), its sham's S, S_cov and S_G beside; no band",
+    "fig4_pairs": "descriptive: per Fig 4 pair, each side's S and its shams' S, E141's pair rule on each, and the shams' spread (summary.json fig4_pairs). Card rival_a expects the pair rule on S to separate by more than the sham spread; rival_b expects it not to. No label is given either way"
+  },
+  "rules": {
+    "trained_reading": "E294's (ww_score.trained_reading) on every Fig 4 state: above all Haar draws is never read as reuse; reported beside S_G",
+    "pair_rule": "E294's e62_pair rule (E141's pair_rule: separates iff |mean gap| > the larger within-side range, strict) on each Fig 4 pair's S and, beside it, on its shams' S (ww_summary.fig4_pairs); descriptive",
+    "flag_rates": "as E294: compared only within a task set, an item against its sham and its M floor on the same rows",
+    "stops": "E294's stage-0 and trigger stops (inputs, known range, dW = 0, lambda_max, x2's 8, parity on x2, lambda_min, trigger token, trigger gain, trigger share, trigger parity) plus the Gaussian check; any stop ends the run and nothing after it is read"
+  },
+  "blind_to": [
+    "the detector sees only inputs that move a hidden state outside the calibration range; anything F already does on Pile is absorbed",
+    "both readings see only the output side of o_proj and down_proj, nothing of q, k, v, c_fc or input directions, and only the top 20",
+    "S reads low when an update strengthens a direction M rarely writes along, and high when a new mechanism writes along a busy one (an unembedding direction); under s^2 pooling the matrix that moved most dominates",
+    "the Haar and Gaussian nulls are isotropic in output direction, so S above them may reflect generic alignment of gradient updates with M's high-variance outputs",
+    "the detector rows are each task's read windows (E53's are short), so flag rates compare only within a task set, never across Fig 4 pairs"
+  ]
+}
